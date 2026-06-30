@@ -1,5 +1,10 @@
 {
     "base": {},
     "bonus": {},
-    "super": {}
+    "super": {},
+    "BASE": {},
+    "BONUS": {},
+    "SUPER": {},
+    "FEATURE": {},
+    "CHANCE": {}
 }

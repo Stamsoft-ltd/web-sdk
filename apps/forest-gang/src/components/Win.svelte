@@ -20,7 +20,7 @@
 	import PressToContinue from './PressToContinue.svelte';
 	import { SYMBOL_SIZE } from '../game/constants';
 	import { getContext } from '../game/context';
-	import { winBoardByAlias } from '../game/utils';
+	import { winBoardByAlias, winAliasByBoard } from '../game/utils';
 	import { stateBet } from 'state-shared';
 
 	const context = getContext();
@@ -78,6 +78,10 @@
 		{#key oncomplete}
 		<WinCountUpProvider {amount} {duration} oncomplete={() => { if (!hasBoardAnimation) oncomplete(); }}>
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
+				{@const mult = stateBet.betAmount > 0 ? countUpAmount / stateBet.betAmount : 0}
+				{@const boardKey = mult >= 1000 ? winBoardByAlias.max : mult >= 250 ? winBoardByAlias.epic : mult >= 100 ? winBoardByAlias.mega : mult >= 50 ? winBoardByAlias.superwin : winBoardByAlias.big}
+				{@const coinAlias = hasBoardAnimation ? (winAliasByBoard[boardKey] ?? winLevelData?.alias) : winLevelData?.alias}
+
 				{#if isBigWin}
 					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
 				{/if}
@@ -91,8 +95,6 @@
 					>
 						{#if hasBoardAnimation}
 							{@const bs = boardLayout.boardScale}
-							{@const mult = stateBet.betAmount > 0 ? countUpAmount / stateBet.betAmount : 0}
-							{@const boardKey = mult >= 1000 ? winBoardByAlias.max : mult >= 250 ? winBoardByAlias.epic : mult >= 100 ? winBoardByAlias.mega : mult >= 50 ? winBoardByAlias.superwin : winBoardByAlias.big}
 							{@const maxBoardSize = Math.min(boardLayout.width * bs * 0.55, boardLayout.height * bs * 0.85)}
 							<WinBoard
 								{boardKey}
@@ -119,7 +121,7 @@
 					</Container>
 				</MainContainer>
 
-				<WinCoins emit={true} levelAlias={winLevelData?.alias} boardMode={hasBoardAnimation} />
+				<WinCoins emit={true} levelAlias={coinAlias} boardMode={hasBoardAnimation} />
 
 				{#if hasBoardAnimation}
 					<PressToContinue onpress={() => {

@@ -41,7 +41,7 @@
 		{symbolInfo}
 		x={props.x}
 		y={props.y}
-		showWinFrame={props.state === 'win' && !['SCATTER', 'T'].includes(props.rawSymbol.name)}
+		showWinFrame={props.state === 'win' && !['SCATTER', 'WILD'].includes(props.rawSymbol.name)}
 		listener={{
 			complete: props.oncomplete,
 			event: (_, event) => {

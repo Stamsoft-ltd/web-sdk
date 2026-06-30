@@ -3,76 +3,86 @@ const BOARD_ROWS = 7;
 const TOTAL_FS = 10;
 const FEATURE_FS = 1;
 const MAX_WIN_X = 20000;
+const MAX_WIN_AMOUNT = MAX_WIN_X * 100;
+const MAX_NATURAL_RESPINS = 3;
 
-const PAY_SYMBOLS = ['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL', 'A', 'K', 'Q', 'J', 'T'];
+const PAY_SYMBOLS = ['H1', 'H2', 'H3', 'H4', 'L1', 'L2', 'L3', 'L4'];
 const SYMBOL_WEIGHTS = [
-  ['T', 18],
-  ['J', 16],
-  ['Q', 14],
-  ['K', 12],
-  ['A', 10],
-  ['SQUIRREL', 8],
-  ['RABBIT', 6],
-  ['BEAR', 4],
-  ['WOLF', 3],
-  ['FOX', 2],
+  ['L4', 12],
+  ['L3', 12],
+  ['L2', 12],
+  ['L1', 11],
+  ['H4', 11],
+  ['H3', 10],
+  ['H2', 10],
+  ['H1', 10],
 ];
-const MAGNET_MULTIPLIERS = [
-  [1, 54],
-  [2, 26],
-  [3, 14],
-  [4, 6],
-];
+const MULTIPLIER_WILD_VALUES = {
+  FEATURE: [[2, 40], [3, 28], [4, 18], [5, 9], [10, 4], [25, 1]],
+  BONUS: [[2, 40], [3, 28], [4, 18], [5, 9], [10, 4], [25, 1]],
+  SUPER: [[2, 34], [3, 24], [4, 18], [5, 11], [10, 6], [25, 3], [50, 2], [100, 1]],
+};
 
 const PAYTABLE_BANDS = {
-  FOX: [[5, 7, 1.5], [8, 11, 4], [12, 19, 10], [20, 49, 40]],
-  WOLF: [[5, 7, 1.25], [8, 11, 3.5], [12, 19, 8], [20, 49, 30]],
-  BEAR: [[5, 7, 1], [8, 11, 3], [12, 19, 7], [20, 49, 24]],
-  RABBIT: [[5, 7, 0.8], [8, 11, 2.2], [12, 19, 5], [20, 49, 18]],
-  SQUIRREL: [[5, 7, 0.7], [8, 11, 2], [12, 19, 4.5], [20, 49, 14]],
-  A: [[5, 7, 0.6], [8, 11, 1.7], [12, 19, 4], [20, 49, 12]],
-  K: [[5, 7, 0.5], [8, 11, 1.5], [12, 19, 3.5], [20, 49, 10]],
-  Q: [[5, 7, 0.4], [8, 11, 1.3], [12, 19, 3], [20, 49, 8]],
-  J: [[5, 7, 0.35], [8, 11, 1.1], [12, 19, 2.5], [20, 49, 7]],
-  T: [[5, 7, 0.3], [8, 11, 1], [12, 19, 2.2], [20, 49, 6]],
+  H1: [[5, 5, 0.5], [6, 6, 1], [7, 7, 2], [8, 8, 4], [9, 9, 8], [10, 11, 15], [12, 14, 30], [15, 19, 75], [20, 24, 200], [25, 29, 500], [30, 32, 1000], [33, 49, 2000]],
+  H2: [[5, 5, 0.4], [6, 6, 0.8], [7, 7, 1.5], [8, 8, 3], [9, 9, 6], [10, 11, 12], [12, 14, 25], [15, 19, 60], [20, 24, 150], [25, 29, 350], [30, 32, 750], [33, 49, 1500]],
+  H3: [[5, 5, 0.3], [6, 6, 0.6], [7, 7, 1.2], [8, 8, 2.5], [9, 9, 5], [10, 11, 10], [12, 14, 20], [15, 19, 45], [20, 24, 120], [25, 29, 275], [30, 32, 600], [33, 49, 1200]],
+  H4: [[5, 5, 0.2], [6, 6, 0.5], [7, 7, 1], [8, 8, 2], [9, 9, 4], [10, 11, 8], [12, 14, 15], [15, 19, 35], [20, 24, 90], [25, 29, 200], [30, 32, 450], [33, 49, 900]],
+  L1: [[5, 5, 0.15], [6, 6, 0.3], [7, 7, 0.6], [8, 8, 1.2], [9, 9, 2.5], [10, 11, 5], [12, 14, 10], [15, 19, 25], [20, 24, 60], [25, 29, 125], [30, 32, 250], [33, 49, 500]],
+  L2: [[5, 5, 0.12], [6, 6, 0.25], [7, 7, 0.5], [8, 8, 1], [9, 9, 2], [10, 11, 4], [12, 14, 8], [15, 19, 20], [20, 24, 50], [25, 29, 100], [30, 32, 200], [33, 49, 400]],
+  L3: [[5, 5, 0.1], [6, 6, 0.2], [7, 7, 0.4], [8, 8, 0.8], [9, 9, 1.6], [10, 11, 3], [12, 14, 6], [15, 19, 15], [20, 24, 40], [25, 29, 80], [30, 32, 150], [33, 49, 300]],
+  L4: [[5, 5, 0.08], [6, 6, 0.15], [7, 7, 0.3], [8, 8, 0.6], [9, 9, 1.2], [10, 11, 2.5], [12, 14, 5], [15, 19, 12], [20, 24, 30], [25, 29, 60], [30, 32, 120], [33, 49, 250]],
 };
 
 const BASE_MODE_SETTINGS = {
-  triggerBonusRate: 0.024,
-  triggerSuperRate: 0.009,
-  magnetSpinRate: 0.24,
-  magnetRespinRate: 0.18,
-  targetBoost: 0.28,
+  triggerBonusRate: 0.0004,
+  triggerSuperRate: 0.00015,
+  magnetSpinRate: 0.02,
+  magnetRespinRate: 0.015,
+  targetBoost: 0.015,
   scatterRange: [0, 2],
+  wildRate: 0,
+  multiplierWildRate: 0,
+  payoutScale: 1.08,
 };
 
 const MODE_SETTINGS = {
   BASE: { ...BASE_MODE_SETTINGS },
   CHANCE: {
     ...BASE_MODE_SETTINGS,
-    triggerBonusRate: BASE_MODE_SETTINGS.triggerBonusRate * 3,
-    triggerSuperRate: BASE_MODE_SETTINGS.triggerSuperRate * 3,
-    magnetSpinRate: 0.26,
-    magnetRespinRate: 0.2,
-    targetBoost: 0.3,
+    triggerBonusRate: 0.0012,
+    triggerSuperRate: 0.00045,
+    magnetSpinRate: 0.03,
+    magnetRespinRate: 0.02,
+    targetBoost: 0.02,
+    payoutScale: 1.28,
   },
   FEATURE: {
     magnetSpinRate: 1,
-    magnetRespinRate: 0.24,
-    targetBoost: 0.38,
+    magnetRespinRate: 0.02,
+    targetBoost: 0.015,
     scatterRange: [0, 0],
+    wildRate: 0,
+    multiplierWildRate: 0.0005,
+    payoutScale: 0.88,
   },
   BONUS: {
-    magnetSpinRate: 0.56,
-    magnetRespinRate: 0.26,
-    targetBoost: 0.38,
+    magnetSpinRate: 0.11,
+    magnetRespinRate: 0.03,
+    targetBoost: 0.04,
     scatterRange: [0, 0],
+    wildRate: 0,
+    multiplierWildRate: 0.004,
+    payoutScale: 1.06,
   },
   SUPER: {
-    magnetSpinRate: 1,
-    magnetRespinRate: 0.34,
-    targetBoost: 0.42,
+    magnetSpinRate: 0.12,
+    magnetRespinRate: 0.008,
+    targetBoost: -0.12,
     scatterRange: [0, 0],
+    wildRate: 0,
+    multiplierWildRate: 0,
+    payoutScale: 0.77,
   },
 };
 
@@ -113,9 +123,10 @@ const weightedChoice = (rng, entries) => {
 
 const makePaySymbol = (name) => ({ name });
 const makeScatter = () => ({ name: 'SCATTER', scatter: true });
-const makeMagnet = (multiplier) => ({
-  name: 'MAGNET',
-  magnet: true,
+const makeMagnet = () => ({ name: 'MAGNET', magnet: true });
+const makeWild = (multiplier = 1) => ({
+  name: 'WILD',
+  wild: true,
   ...(multiplier > 1 ? { multiplier } : {}),
 });
 
@@ -127,7 +138,7 @@ const randomPaySymbol = (rng, targetSymbol = null, boost = 0) => {
   return weightedChoice(rng, boosted);
 };
 
-const emptyBoard = () => Array.from({ length: BOARD_REELS }, () => Array.from({ length: BOARD_ROWS }, () => makePaySymbol('T')));
+const emptyBoard = () => Array.from({ length: BOARD_REELS }, () => Array.from({ length: BOARD_ROWS }, () => makePaySymbol('L4')));
 const cloneBoard = (board) => board.map((reel) => reel.map((cell) => ({ ...cell })));
 
 const getNeighbors = ({ reel, row }) => {
@@ -171,6 +182,13 @@ const randomMagnetCount = (rng, rate) => {
   return 1;
 };
 
+const randomWildCount = (rng, rate) => {
+  if (!chance(rng, rate)) return 0;
+  return chance(rng, Math.min(0.45, rate * 4)) ? 2 : 1;
+};
+
+const randomMultiplierWildValue = (rng, mode) => weightedChoice(rng, MULTIPLIER_WILD_VALUES[mode]);
+
 const createBoard = ({
   rng,
   mode,
@@ -200,8 +218,21 @@ const createBoard = ({
   const blocked = new Set([...lockedKeys, ...scatterPositions.map(posKey)]);
   const magnetPositions = samplePositions(rng, magnetCount, blocked);
   for (const position of magnetPositions) {
-    const multiplier = weightedChoice(rng, MAGNET_MULTIPLIERS);
-    board[position.reel][position.row] = makeMagnet(multiplier);
+    board[position.reel][position.row] = makeMagnet();
+  }
+
+  const blockedWithMagnets = new Set([...blocked, ...magnetPositions.map(posKey)]);
+  const wildPositions = samplePositions(rng, randomWildCount(rng, MODE_SETTINGS[mode]?.wildRate ?? 0), blockedWithMagnets);
+  for (const position of wildPositions) board[position.reel][position.row] = makeWild();
+
+  const blockedWithWilds = new Set([...blockedWithMagnets, ...wildPositions.map(posKey)]);
+  const multiplierWildPositions = samplePositions(
+    rng,
+    randomWildCount(rng, MODE_SETTINGS[mode]?.multiplierWildRate ?? 0),
+    blockedWithWilds,
+  );
+  for (const position of multiplierWildPositions) {
+    board[position.reel][position.row] = makeWild(randomMultiplierWildValue(rng, mode));
   }
 
   return board;
@@ -219,7 +250,16 @@ const getMagnetPositions = (board) => {
   const positions = [];
   for (let reel = 0; reel < BOARD_REELS; reel += 1) {
     for (let row = 0; row < BOARD_ROWS; row += 1) {
-      if (board[reel][row].name === 'MAGNET') positions.push({ reel, row, multiplier: board[reel][row].multiplier ?? 1 });
+      if (board[reel][row].name === 'MAGNET') positions.push({ reel, row });
+    }
+  }
+  return positions;
+};
+const getWildPositions = (board) => {
+  const positions = [];
+  for (let reel = 0; reel < BOARD_REELS; reel += 1) {
+    for (let row = 0; row < BOARD_ROWS; row += 1) {
+      if (board[reel][row].name === 'WILD') positions.push({ reel, row, multiplier: board[reel][row].multiplier ?? 1 });
     }
   }
   return positions;
@@ -251,12 +291,20 @@ const chooseMagnetTargetSymbol = (rng, board) => {
   return visible[randInt(rng, visible.length)];
 };
 
+const multiplierWildProduct = (board) =>
+  getWildPositions(board).reduce((product, wild) => product * (wild.multiplier > 1 ? wild.multiplier : 1), 1);
+
 const getPayForSize = (symbol, size) => {
   for (const [from, to, value] of PAYTABLE_BANDS[symbol] ?? []) {
     if (size >= from && size <= to) return value;
   }
   const last = PAYTABLE_BANDS[symbol]?.at(-1);
   return last && size >= last[0] ? last[2] : 0;
+};
+
+const isSymbolMatch = (board, position, symbol) => {
+  const name = getSymbolAt(board, position);
+  return name === symbol || name === 'WILD';
 };
 
 const getComponentsForSymbol = (board, symbol) => {
@@ -266,7 +314,7 @@ const getComponentsForSymbol = (board, symbol) => {
     for (let row = 0; row < BOARD_ROWS; row += 1) {
       const position = { reel, row };
       const key = posKey(position);
-      if (visited.has(key) || getSymbolAt(board, position) !== symbol) continue;
+      if (visited.has(key) || !isSymbolMatch(board, position, symbol)) continue;
       const queue = [position];
       const component = [];
       visited.add(key);
@@ -276,7 +324,7 @@ const getComponentsForSymbol = (board, symbol) => {
         for (const neighbor of getNeighbors(current)) {
           const neighborKey = posKey(neighbor);
           if (visited.has(neighborKey)) continue;
-          if (getSymbolAt(board, neighbor) !== symbol) continue;
+          if (!isSymbolMatch(board, neighbor, symbol)) continue;
           visited.add(neighborKey);
           queue.push(neighbor);
         }
@@ -288,11 +336,24 @@ const getComponentsForSymbol = (board, symbol) => {
 };
 
 const getQualifyingNaturalSeries = (board) => {
-  const groups = [];
+  const candidates = [];
   for (const symbol of PAY_SYMBOLS) {
     for (const component of getComponentsForSymbol(board, symbol)) {
-      if (component.length >= 5) groups.push({ symbol, positions: component });
+      if (component.length < 5) continue;
+      if (!component.some((position) => getSymbolAt(board, position) === symbol)) continue;
+      const payout = getPayForSize(symbol, component.length);
+      if (payout <= 0) continue;
+      candidates.push({ symbol, positions: component, payout });
     }
+  }
+  candidates.sort((a, b) => (b.payout - a.payout) || (b.positions.length - a.positions.length));
+  const claimed = new Set();
+  const groups = [];
+  for (const candidate of candidates) {
+    const keys = candidate.positions.map(posKey);
+    if (keys.some((key) => claimed.has(key))) continue;
+    keys.forEach((key) => claimed.add(key));
+    groups.push({ symbol: candidate.symbol, positions: candidate.positions });
   }
   return groups;
 };
@@ -309,23 +370,24 @@ const snapshotOf = (series) => ({
 
 const seriesKeySet = (positions) => new Set(positions.map(posKey));
 
-const reconcileSeriesComponents = ({ prevSeries, nextComponents, kind, multiplier, persistent, allowNewAnchors }) => {
+const reconcileSeriesComponents = ({ prevSeries, nextComponents, kind, multiplier, persistent, allowNewAnchors, symbol }) => {
   const nextSeries = [];
   let newSerial = 1;
-  const prevById = new Map(prevSeries.map((series) => [series.id, series]));
+  const consumedIds = new Set();
 
   for (const component of nextComponents) {
     const componentKeys = new Set(component.map(posKey));
     const matched = prevSeries.filter((series) => series.lockedPositions.some((position) => componentKeys.has(posKey(position))));
     if (!matched.length && !allowNewAnchors) continue;
-    const id = matched.length ? matched.map((series) => series.id).sort()[0] : `${kind}-${newSerial++}`;
+    matched.forEach((series) => consumedIds.add(series.id));
+    const id = matched.length ? matched.map((series) => series.id).sort()[0] : `${kind}-new-${newSerial++}`;
     const anchorPositions = uniqPositions([
       ...matched.flatMap((series) => series.anchorPositions),
       ...(matched.length ? [] : component),
     ]);
     nextSeries.push({
       id,
-      symbol: matched[0]?.symbol ?? null,
+      symbol,
       kind,
       anchorPositions,
       lockedPositions: uniqPositions(component),
@@ -334,10 +396,9 @@ const reconcileSeriesComponents = ({ prevSeries, nextComponents, kind, multiplie
     });
   }
 
-  const assigned = new Set(nextSeries.map((series) => series.id));
-  for (const prev of prevSeries) {
-    if (assigned.has(prev.id)) continue;
-    if (!allowNewAnchors) {
+  if (!allowNewAnchors) {
+    for (const prev of prevSeries) {
+      if (consumedIds.has(prev.id) || nextSeries.some((series) => series.id === prev.id)) continue;
       nextSeries.push({
         ...prev,
         multiplier,
@@ -346,17 +407,16 @@ const reconcileSeriesComponents = ({ prevSeries, nextComponents, kind, multiplie
     }
   }
 
-  const decorated = nextSeries
+  return nextSeries
     .map((series, index) => ({
       ...series,
       id: series.id || `${kind}-${index + 1}`,
-      symbol: series.symbol ?? prevById.get(series.id)?.symbol,
+      symbol: series.symbol || symbol,
       multiplier,
       persistent,
     }))
-    .filter((series) => series.symbol);
-
-  return decorated.sort((a, b) => a.id.localeCompare(b.id));
+    .filter((series) => series.symbol)
+    .sort((a, b) => a.id.localeCompare(b.id));
 };
 
 const didSeriesGrow = (prevSeries, nextSeries) => {
@@ -365,7 +425,7 @@ const didSeriesGrow = (prevSeries, nextSeries) => {
   return nextSeries.some((series) => (prevMap.get(series.id) ?? 0) !== series.lockedPositions.length);
 };
 
-const renderSeriesWins = ({ series, totalMultiplier, kind }) => {
+const renderSeriesWins = ({ series, totalMultiplier, kind, payoutScale = 1 }) => {
   const wins = [];
   for (const entry of series) {
     const baseX = getPayForSize(entry.symbol, entry.lockedPositions.length);
@@ -376,7 +436,7 @@ const renderSeriesWins = ({ series, totalMultiplier, kind }) => {
       symbol: entry.symbol,
       size: entry.lockedPositions.length,
       positions: clonePositions(entry.lockedPositions),
-      amount: baseAmount * totalMultiplier,
+      amount: Math.round(baseAmount * payoutScale) * totalMultiplier,
       meta: {
         baseAmount,
         totalMultiplier,
@@ -400,6 +460,21 @@ const winLevelFromAmount = (amount) => {
   if (x < 250) return 8;
   if (x < 1000) return 9;
   return 10;
+};
+
+const clampAmount = (amount) => Math.max(0, Math.min(Math.trunc(amount), MAX_WIN_AMOUNT));
+
+const capWins = (wins, cap) => {
+  let remaining = Math.max(0, Math.trunc(cap));
+  const out = [];
+  for (const win of wins) {
+    if (remaining <= 0) break;
+    const amount = Math.min(Math.trunc(win.amount), remaining);
+    if (amount <= 0) continue;
+    out.push({ ...structuredClone(win), amount });
+    remaining -= amount;
+  }
+  return out;
 };
 
 const paddingPositions = () => Array.from({ length: BOARD_REELS }, (_, index) => index * 2 + 1);
@@ -482,6 +557,8 @@ const getLockedMap = (series) => {
   return map;
 };
 
+const boardFullyLocked = (series) => getLockedMap(series).size >= BOARD_REELS * BOARD_ROWS;
+
 const getTargetComponents = ({ board, targetSymbol, prevSeries, allowNewAnchors }) => {
   const components = getComponentsForSymbol(board, targetSymbol);
   if (allowNewAnchors) return components;
@@ -528,17 +605,31 @@ const respinBoard = ({ rng, mode, board, lockedMap, targetSymbol = null, targetB
   }
   const blocked = new Set([...lockedMap.keys()]);
   const magnetPositions = samplePositions(rng, magnetCount, blocked);
-  for (const position of magnetPositions) out[position.reel][position.row] = makeMagnet(weightedChoice(rng, MAGNET_MULTIPLIERS));
+  for (const position of magnetPositions) out[position.reel][position.row] = makeMagnet();
+  const blockedWithMagnets = new Set([...blocked, ...magnetPositions.map(posKey)]);
+  const wildPositions = samplePositions(rng, randomWildCount(rng, MODE_SETTINGS[mode]?.wildRate ?? 0), blockedWithMagnets);
+  for (const position of wildPositions) out[position.reel][position.row] = makeWild();
+  const blockedWithWilds = new Set([...blockedWithMagnets, ...wildPositions.map(posKey)]);
+  const multiplierWildPositions = samplePositions(
+    rng,
+    randomWildCount(rng, MODE_SETTINGS[mode]?.multiplierWildRate ?? 0),
+    blockedWithWilds,
+  );
+  for (const position of multiplierWildPositions) {
+    out[position.reel][position.row] = makeWild(randomMultiplierWildValue(rng, mode));
+  }
   return out;
 };
 
 const resolveNaturalSequence = ({ rng, board, mode, gameType }) => {
   const events = [];
+  const payoutScale = MODE_SETTINGS[mode]?.payoutScale ?? 1;
   let activeSeries = createNaturalSeries(board);
   if (!activeSeries.length) return { events, totalWin: 0, finalBoard: board, series: [] };
 
   emitSeriesUpdate(events, activeSeries, null, 1);
   let currentBoard = cloneBoard(board);
+  let respins = 0;
   while (true) {
     const nextBoard = respinBoard({
       rng,
@@ -562,6 +653,7 @@ const resolveNaturalSequence = ({ rng, board, mode, gameType }) => {
         multiplier: 1,
         persistent: false,
         allowNewAnchors: false,
+        symbol,
       });
       nextSeriesBySymbol.push(...reconciled);
     }
@@ -570,10 +662,11 @@ const resolveNaturalSequence = ({ rng, board, mode, gameType }) => {
     activeSeries = nextSeriesBySymbol;
     currentBoard = nextBoard;
     emitSeriesUpdate(events, activeSeries, null, 1);
-    if (!grew) break;
+    respins += 1;
+    if (!grew || boardFullyLocked(activeSeries) || respins >= MAX_NATURAL_RESPINS) break;
   }
 
-  const wins = renderSeriesWins({ series: activeSeries, totalMultiplier: 1, kind: 'natural' });
+  const wins = capWins(renderSeriesWins({ series: activeSeries, totalMultiplier: 1, kind: 'natural', payoutScale }), MAX_WIN_AMOUNT);
   emitSeriesResolved(events, wins);
   const totalWin = wins.length ? emitWinInfo(events, wins) : 0;
   return { events, totalWin, finalBoard: currentBoard, series: activeSeries };
@@ -581,6 +674,7 @@ const resolveNaturalSequence = ({ rng, board, mode, gameType }) => {
 
 const resolveMagnetSequence = ({ rng, board, mode, gameType, targetSymbol = null, persistent = false, carrySeries = [], carryMultiplier = 1 }) => {
   const events = [];
+  const payoutScale = MODE_SETTINGS[mode]?.payoutScale ?? 1;
   let currentBoard = cloneBoard(board);
   let seriesTarget = targetSymbol ?? chooseMagnetTargetSymbol(rng, currentBoard);
   let totalMultiplier = carryMultiplier;
@@ -597,14 +691,14 @@ const resolveMagnetSequence = ({ rng, board, mode, gameType, targetSymbol = null
     : createMagnetSeriesFromBoard({ board: currentBoard, targetSymbol: seriesTarget, kind, totalMultiplier, persistent });
 
   const initialMagnets = getMagnetPositions(currentBoard);
-  const initialMagnetMult = initialMagnets.reduce((acc, magnet) => acc * (magnet.multiplier || 1), 1);
+  const initialMagnetMult = MULTIPLIER_WILD_VALUES[mode] ? multiplierWildProduct(currentBoard) : 1;
   totalMultiplier *= initialMagnetMult;
   activeSeries = activeSeries.map((entry) => ({ ...entry, multiplier: totalMultiplier }));
   emitMagnetActivated(events, {
     seriesId: activeSeries[0]?.id ?? `${kind}-1`,
     symbol: seriesTarget,
     positions: initialMagnets.length ? initialMagnets : activeSeries[0]?.anchorPositions ?? [],
-    multiplier: initialMagnetMult,
+    multiplier: 1,
     totalMultiplier,
     persistent,
   });
@@ -617,7 +711,7 @@ const resolveMagnetSequence = ({ rng, board, mode, gameType, targetSymbol = null
       symbol: group.symbol,
       size: group.positions.length,
       positions: clonePositions(group.positions),
-      amount: Math.round(getPayForSize(group.symbol, group.positions.length) * 100),
+      amount: Math.round(Math.round(getPayForSize(group.symbol, group.positions.length) * 100) * payoutScale),
       meta: {
         baseAmount: Math.round(getPayForSize(group.symbol, group.positions.length) * 100),
         totalMultiplier: 1,
@@ -640,14 +734,14 @@ const resolveMagnetSequence = ({ rng, board, mode, gameType, targetSymbol = null
     emitReveal(events, nextBoard, gameType);
 
     const respinMagnets = getMagnetPositions(nextBoard);
-    const respinMagnetMult = respinMagnets.reduce((acc, magnet) => acc * (magnet.multiplier || 1), 1);
+    const respinMagnetMult = MULTIPLIER_WILD_VALUES[mode] ? multiplierWildProduct(nextBoard) : 1;
+    if (respinMagnetMult > 1) totalMultiplier *= respinMagnetMult;
     if (respinMagnets.length) {
-      totalMultiplier *= respinMagnetMult;
       emitMagnetActivated(events, {
         seriesId: activeSeries[0]?.id ?? `${kind}-1`,
         symbol: seriesTarget,
         positions: respinMagnets,
-        multiplier: respinMagnetMult,
+        multiplier: 1,
         totalMultiplier,
         persistent,
       });
@@ -662,6 +756,7 @@ const resolveMagnetSequence = ({ rng, board, mode, gameType, targetSymbol = null
       multiplier: totalMultiplier,
       persistent,
       allowNewAnchors,
+      symbol: seriesTarget,
     }).map((entry) => ({ ...entry, symbol: seriesTarget }));
 
     const grew = didSeriesGrow(activeSeries, nextSeries);
@@ -672,9 +767,11 @@ const resolveMagnetSequence = ({ rng, board, mode, gameType, targetSymbol = null
     if (!grew && !multiplierChanged) break;
   }
 
-  const targetWins = renderSeriesWins({ series: activeSeries, totalMultiplier, kind });
+  const cappedNonTargetWins = capWins(nonTargetWins, MAX_WIN_AMOUNT);
+  const remainingCap = MAX_WIN_AMOUNT - cappedNonTargetWins.reduce((sum, win) => sum + win.amount, 0);
+  const targetWins = capWins(renderSeriesWins({ series: activeSeries, totalMultiplier, kind, payoutScale }), remainingCap);
   emitSeriesResolved(events, targetWins);
-  const allWins = [...nonTargetWins, ...targetWins];
+  const allWins = [...cappedNonTargetWins, ...targetWins];
   const totalWin = allWins.length ? emitWinInfo(events, allWins) : 0;
   return {
     events,
@@ -849,7 +946,15 @@ function buildBonusSequence({ rng, mode, triggerPositions = [], runningTotal = 0
     persistentState = spin.nextState;
   }
 
-  const finalWins = renderSeriesWins({ series: persistentState.series, totalMultiplier: persistentState.totalMultiplier, kind: 'super' });
+  const finalWins = capWins(
+    renderSeriesWins({
+      series: persistentState.series,
+      totalMultiplier: persistentState.totalMultiplier,
+      kind: 'super',
+      payoutScale: MODE_SETTINGS.SUPER?.payoutScale ?? 1,
+    }),
+    MAX_WIN_AMOUNT - runningTotal,
+  );
   emitSeriesResolved(events, finalWins);
   const finalAward = finalWins.length ? emitWinInfo(events, finalWins) : 0;
   runningTotal = clamp(runningTotal + finalAward, 0, MAX_WIN_X * 100);

@@ -22,18 +22,18 @@ export const DESKTOP_MAIN_SIZES = { width: DESKTOP_HEIGHT * DESKTOP_RATIO, heigh
 export const LANDSCAPE_MAIN_SIZES = { width: LANDSCAPE_HEIGHT * LANDSCAPE_RATIO, height: LANDSCAPE_HEIGHT };
 export const PORTRAIT_MAIN_SIZES = { width: PORTRAIT_HEIGHT * PORTRAIT_RATIO, height: PORTRAIT_HEIGHT };
 
-export const PAY_SYMBOLS: SymbolName[] = ['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL', 'A', 'K', 'Q', 'J', 'T'];
-export const PREMIUM_SYMBOLS: SymbolName[] = ['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL'];
-export const LOW_SYMBOLS: SymbolName[] = ['A', 'K', 'Q', 'J', 'T'];
+export const PAY_SYMBOLS: SymbolName[] = ['H1', 'H2', 'H3', 'H4', 'L1', 'L2', 'L3', 'L4'];
+export const PREMIUM_SYMBOLS: SymbolName[] = ['H1', 'H2', 'H3', 'H4'];
+export const LOW_SYMBOLS: SymbolName[] = ['L1', 'L2', 'L3', 'L4'];
 
 const baseRows: RawSymbol[][] = [
-	['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL', 'A', 'K'],
-	['Q', 'J', 'T', 'FOX', 'WOLF', 'BEAR', 'RABBIT'],
-	['SQUIRREL', 'A', 'K', 'Q', 'J', 'T', 'FOX'],
-	['WOLF', 'BEAR', 'RABBIT', 'SQUIRREL', 'A', 'K', 'Q'],
-	['J', 'T', 'FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL'],
-	['A', 'K', 'Q', 'J', 'T', 'FOX', 'WOLF'],
-	['BEAR', 'RABBIT', 'SQUIRREL', 'A', 'K', 'Q', 'MAGNET'],
+	['H1', 'H2', 'H3', 'H4', 'L1', 'L2', 'L3'],
+	['L4', 'H1', 'H2', 'H3', 'H4', 'L1', 'L2'],
+	['L3', 'L4', 'H1', 'H2', 'H3', 'H4', 'L1'],
+	['L2', 'L3', 'L4', 'H1', 'H2', 'H3', 'H4'],
+	['L1', 'L2', 'L3', 'L4', 'H1', 'H2', 'H3'],
+	['H4', 'L1', 'L2', 'L3', 'L4', 'WILD', 'H1'],
+	['H3', 'H4', 'L1', 'L2', 'L3', 'L4', 'MAGNET'],
 ].map((row) => row.map((name) => ({ name: name as SymbolName, magnet: name === 'MAGNET', scatter: name === 'SCATTER' })));
 
 export const INITIAL_BOARD = baseRows.map((row) => [...row]);
@@ -43,16 +43,15 @@ const sprite = (assetKey: string) => ({ type: 'sprite', assetKey, sizeRatios: { 
 const special = (assetKey: string) => ({ type: 'sprite', assetKey, sizeRatios: { width: 1.04, height: 1.04 } });
 
 export const SYMBOL_INFO_MAP = {
-	FOX: { static: sprite('foxTile'), spin: sprite('foxTile'), land: sprite('foxTile'), win: sprite('foxWinTile'), locked: sprite('foxWinTile'), magnet: sprite('foxWinTile') },
-	WOLF: { static: sprite('wolfTile'), spin: sprite('wolfTile'), land: sprite('wolfTile'), win: sprite('wolfWinTile'), locked: sprite('wolfWinTile'), magnet: sprite('wolfWinTile') },
-	BEAR: { static: sprite('bearTile'), spin: sprite('bearTile'), land: sprite('bearTile'), win: sprite('bearWinTile'), locked: sprite('bearWinTile'), magnet: sprite('bearWinTile') },
-	RABBIT: { static: sprite('rabbitTile'), spin: sprite('rabbitTile'), land: sprite('rabbitTile'), win: sprite('rabbitWinTile'), locked: sprite('rabbitWinTile'), magnet: sprite('rabbitWinTile') },
-	SQUIRREL: { static: sprite('squirrelTile'), spin: sprite('squirrelTile'), land: sprite('squirrelTile'), win: sprite('squirrelWinTile'), locked: sprite('squirrelWinTile'), magnet: sprite('squirrelWinTile') },
-	A: { static: sprite('aTile'), spin: sprite('aTile'), land: sprite('aTile'), win: sprite('aWinTile'), locked: sprite('aWinTile'), magnet: sprite('aWinTile') },
-	K: { static: sprite('kTile'), spin: sprite('kTile'), land: sprite('kTile'), win: sprite('kWinTile'), locked: sprite('kWinTile'), magnet: sprite('kWinTile') },
-	Q: { static: sprite('qTile'), spin: sprite('qTile'), land: sprite('qTile'), win: sprite('qWinTile'), locked: sprite('qWinTile'), magnet: sprite('qWinTile') },
-	J: { static: sprite('jTile'), spin: sprite('jTile'), land: sprite('jTile'), win: sprite('jWinTile'), locked: sprite('jWinTile'), magnet: sprite('jWinTile') },
-	T: { static: sprite('tTile'), spin: sprite('tTile'), land: sprite('tTile'), win: sprite('tWinTile'), locked: sprite('tWinTile'), magnet: sprite('tWinTile') },
+	H1: { static: sprite('foxTile'), spin: sprite('foxTile'), land: sprite('foxTile'), win: sprite('foxWinTile'), locked: sprite('foxWinTile'), magnet: sprite('foxWinTile') },
+	H2: { static: sprite('wolfTile'), spin: sprite('wolfTile'), land: sprite('wolfTile'), win: sprite('wolfWinTile'), locked: sprite('wolfWinTile'), magnet: sprite('wolfWinTile') },
+	H3: { static: sprite('bearTile'), spin: sprite('bearTile'), land: sprite('bearTile'), win: sprite('bearWinTile'), locked: sprite('bearWinTile'), magnet: sprite('bearWinTile') },
+	H4: { static: sprite('rabbitTile'), spin: sprite('rabbitTile'), land: sprite('rabbitTile'), win: sprite('rabbitWinTile'), locked: sprite('rabbitWinTile'), magnet: sprite('rabbitWinTile') },
+	L1: { static: sprite('squirrelTile'), spin: sprite('squirrelTile'), land: sprite('squirrelTile'), win: sprite('squirrelWinTile'), locked: sprite('squirrelWinTile'), magnet: sprite('squirrelWinTile') },
+	L2: { static: sprite('aTile'), spin: sprite('aTile'), land: sprite('aTile'), win: sprite('aWinTile'), locked: sprite('aWinTile'), magnet: sprite('aWinTile') },
+	L3: { static: sprite('kTile'), spin: sprite('kTile'), land: sprite('kTile'), win: sprite('kWinTile'), locked: sprite('kWinTile'), magnet: sprite('kWinTile') },
+	L4: { static: sprite('qTile'), spin: sprite('qTile'), land: sprite('qTile'), win: sprite('qWinTile'), locked: sprite('qWinTile'), magnet: sprite('qWinTile') },
+	WILD: { static: special('wildTile'), spin: special('wildTile'), land: special('wildTile'), win: special('wildWinTile'), locked: special('wildWinTile'), magnet: special('wildWinTile') },
 	MAGNET: { static: special('wildTile'), spin: special('wildTile'), land: special('wildTile'), win: special('wildWinTile'), locked: special('wildWinTile'), magnet: special('wildWinTile') },
 	SCATTER: { static: special('scatterCustom'), spin: special('scatterCustom'), land: special('scatterCustom'), win: special('scatterWin'), locked: special('scatterWin'), magnet: special('scatterWin') },
 } as const;

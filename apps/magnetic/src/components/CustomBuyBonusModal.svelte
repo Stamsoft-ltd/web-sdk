@@ -25,8 +25,8 @@
 
 	const betAmount   = $derived(stateBet.betAmount);
 	const chanceCost  = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 2));
-	const bonusCost   = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 150));
-	const superCost   = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 400));
+	const bonusCost   = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 100));
+	const superCost   = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 500));
 	const featureCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 50));
 	const canBuy      = $derived(stateBetDerived.isBetCostAvailable());
 
@@ -37,7 +37,7 @@
 	const closeConfirm = () => { confirmMode = null; };
 	const toggleActivateMode = (toggle: () => void) => { toggle(); props.onclose(); };
 
-	const confirmLabel = $derived(confirmMode === 'SUPER' ? 'SUPER BONUS' : 'NORMAL BONUS');
+	const confirmLabel = $derived(confirmMode === 'SUPER' ? 'MEGA CHAIN' : 'DROP-O-MAGNET');
 	const confirmCost  = $derived(confirmMode === 'SUPER' ? superCost : bonusCost);
 
 	onMount(() => {
@@ -64,7 +64,7 @@
 
 		<!-- DEAL IT -->
 		<div class="card" style="--frame:url('{cardFrame}')">
-			<span class="card-title">NORMAL BONUS</span>
+			<span class="card-title">DROP-O-MAGNET</span>
 			<span class="card-desc">10 FREE SPINS · BOOSTED MAGNET CHANCE · RANDOM TARGET PER MAGNET SERIES</span>
 			<img class="card-icon" src={dealItIcon} alt="" />
 			<span class="card-price">{bonusCost}</span>
@@ -107,7 +107,7 @@
 
 		<!-- ALL IN -->
 		<div class="card" style="--frame:url('{cardFrame}')">
-			<span class="card-title">SUPER BONUS</span>
+			<span class="card-title">MEGA CHAIN</span>
 			<span class="card-desc">10 FREE SPINS · FIRST SPIN GUARANTEED MAGNET · TARGET + MULTIPLIER PERSIST</span>
 			<img class="card-icon" src={allInIcon} alt="" />
 			<span class="card-price">{superCost}</span>

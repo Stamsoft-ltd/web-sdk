@@ -48,10 +48,17 @@
 	$effect(() => {
 		if (canProceed && !_notified) {
 			_notified = true;
-			props.oncanproceed?.(() => {
+
+			const proceed = () => {
 				loadingType = 'ready';
 				props.onloaded();
-			});
+			};
+
+			if (props.oncanproceed) {
+				props.oncanproceed(proceed);
+			} else {
+				proceed();
+			}
 		}
 	});
 

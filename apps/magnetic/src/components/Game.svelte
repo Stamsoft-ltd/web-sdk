@@ -33,8 +33,8 @@
 	const heroArt = './assets/components/backgrounds/visual_v2.png';
 	const bonusArt = './assets/components/backgrounds/splash.jpg';
 	const scatterArt = './assets/components/symbols/scatter.png';
-	const uiRefArt = './assets/components/reference/controls_reference.png';
-	const paytableArt = './assets/components/reference/buy_bonus_reference.png';
+	const uiRefArt = './assets/components/ui/scatter-panel-image.png';
+	const paytableArt = './assets/components/backgrounds/visual_v2.png';
 	const heroArtBackdrop = new URL('../../static/assets/components/backgrounds/visual_v2.png', import.meta.url).href;
 
 	$effect(() => {
@@ -55,13 +55,13 @@
 				maxWin: 20000,
 			},
 			BONUS: {
-				mode: 'BONUS', costMultiplier: 150, type: 'buy', parent: '', children: '', assets: { icon: '', volatility: '', button: '', dialogImage: bonusArt, dialogVolatility: scatterArt },
-				text: { title: 'NORMAL BONUS', dialog: '10 free spins. Magnet chance is heavily increased.', description: 'Buy 10 free spins with boosted magnet odds for 150x bet.', button: 'BUY', tickerIdle: 'PLACE YOUR BET', tickerSpin: 'BONUS ACTIVE' },
+				mode: 'BONUS', costMultiplier: 100, type: 'buy', parent: '', children: '', assets: { icon: '', volatility: '', button: '', dialogImage: bonusArt, dialogVolatility: scatterArt },
+				text: { title: 'DROP-O-MAGNET', dialog: '10 free spins. One random symbol becomes magnetic each spin.', description: 'Buy the 10-spin Drop-O-Magnet bonus for 100x bet.', button: 'BUY', tickerIdle: 'PLACE YOUR BET', tickerSpin: 'BONUS ACTIVE' },
 				maxWin: 20000,
 			},
 			SUPER: {
-				mode: 'SUPER', costMultiplier: 400, type: 'buy', parent: '', children: '', assets: { icon: '', volatility: '', button: '', dialogImage: heroArt, dialogVolatility: scatterArt },
-				text: { title: 'SUPER BONUS', dialog: '10 free spins. First spin guarantees a magnet and the chosen target persists for the full bonus.', description: 'Buy the persistent super bonus for 400x bet.', button: 'BUY', tickerIdle: 'PLACE YOUR BET', tickerSpin: 'SUPER ACTIVE' },
+				mode: 'SUPER', costMultiplier: 500, type: 'buy', parent: '', children: '', assets: { icon: '', volatility: '', button: '', dialogImage: heroArt, dialogVolatility: scatterArt },
+				text: { title: 'MEGA CHAIN', dialog: '10 free spins. A magnetic cluster persists and grows across the full bonus.', description: 'Buy the persistent Magnetic Mega Chain bonus for 500x bet.', button: 'BUY', tickerIdle: 'PLACE YOUR BET', tickerSpin: 'SUPER ACTIVE' },
 				maxWin: 20000,
 			},
 		};
@@ -73,9 +73,9 @@
 					containers: [
 						{ title: 'MAGNETIC', text: 'Magnetic is a 7x7 cluster-pay slot. Wins form when 5 or more matching symbols touch orthogonally. Diagonal touches do not count.', image: heroArt, row: 0, column: 0, imagePosition: 'left' },
 						{ title: 'CLUSTERS', text: 'Natural winning clusters stay locked while all other positions respin. If new matching symbols land touching the active cluster, they join it and another respin follows.', image: paytableArt, row: 1, column: 0, imagePosition: 'left' },
-						{ title: 'MAGNETS', text: 'A magnet chooses one visible symbol and only that symbol keeps collecting during the active magnet series. Multiple magnet anchors can merge into a larger cluster.', image: scatterArt, row: 2, column: 0, imagePosition: 'left' },
-						{ title: 'BONUSES', text: '3 scatters trigger the Normal Bonus with 10 free spins and boosted magnet odds. 4 scatters trigger the Super Bonus with a guaranteed first-spin magnet and a persistent target series.', image: bonusArt, row: 3, column: 0, imagePosition: 'left' },
-						{ title: 'FEATURES', text: 'Chance Spin costs 2x bet and triples bonus odds. Feature Spin costs 50x bet and guarantees a base-style magnet spin. Max advertised win: 20,000x.', image: uiRefArt, row: 4, column: 0, imagePosition: 'left' },
+						{ title: 'MAGNETS', text: 'A visible magnet symbol selects one pay symbol. Only that target keeps growing during the active magnetic series, and multiple anchors may merge into one larger cluster.', image: scatterArt, row: 2, column: 0, imagePosition: 'left' },
+						{ title: 'BONUSES', text: '3 scatters trigger Drop-O-Magnet with 10 free spins and a fresh magnetic target each spin. 4 scatters trigger Magnetic Mega Chain with a persistent magnetic cluster.', image: bonusArt, row: 3, column: 0, imagePosition: 'left' },
+						{ title: 'FEATURES', text: 'Chance Spin costs 2x bet and triples bonus odds. Feature Spin costs 50x bet and guarantees a magnetic connection. Max advertised win: 20,000x.', image: uiRefArt, row: 4, column: 0, imagePosition: 'left' },
 					],
 				},
 			],
@@ -83,12 +83,12 @@
 				{
 					title: 'PAYTABLE', rows: 3, columns: 2,
 					containers: [
-						{ title: 'PREMIUMS', text: 'FOX\n5-7 = 1.5x\n8-11 = 4x\n12-19 = 10x\n20+ = 40x\n\nWOLF\n5-7 = 1.25x\n8-11 = 3.5x\n12-19 = 8x\n20+ = 30x', image: heroArt, row: 0, column: 0, imagePosition: 'left' },
-						{ title: 'MID SYMBOLS', text: 'BEAR\n5-7 = 1x\n8-11 = 3x\n12-19 = 7x\n20+ = 24x\n\nRABBIT\n5-7 = 0.8x\n8-11 = 2.2x\n12-19 = 5x\n20+ = 18x', image: heroArt, row: 0, column: 1, imagePosition: 'left' },
-						{ title: 'LOWS', text: 'SQUIRREL, A, K, Q, J, T all pay from 5 symbols upward on the same 5/8/12/20+ cluster thresholds.', image: uiRefArt, row: 1, column: 0, imagePosition: 'left' },
-						{ title: 'SPECIALS', text: 'Scatter triggers bonus only. Magnet can appear with or without a multiplier. During a magnet series, magnet multipliers multiply together.', image: scatterArt, row: 1, column: 1, imagePosition: 'left' },
-						{ title: 'BUY MODES', text: 'Normal Bonus: 150x\nSuper Bonus: 400x\nFeature Spin: 50x / spin\nChance Spin: 2x / spin', image: bonusArt, row: 2, column: 0, imagePosition: 'left' },
-						{ title: 'SUPER BONUS', text: 'The first free spin guarantees a magnet. The chosen target symbol, collected cluster and multiplied value persist across all 10 free spins.', image: heroArt, row: 2, column: 1, imagePosition: 'left' },
+						{ title: 'PREMIUMS', text: 'Horseshoe Magnet, Plasma Drill, Magnetic Core Cube, and Electromagnetic Device use the full 5 / 6 / 7 / 8 / 9 / 10+ / 12+ / 15+ / 20+ / 25+ / 30+ / 33+ cluster ladder.', image: heroArt, row: 0, column: 0, imagePosition: 'left' },
+						{ title: 'LOW SYMBOLS', text: 'Bolt, Nut, Washer, and Energy Screw follow the same 12-tier cluster ladder with lower values and very high-volatility scaling.', image: heroArt, row: 0, column: 1, imagePosition: 'left' },
+						{ title: 'TOP PAYS', text: 'Top premium: 33+ = 2,000x\nSecond premium: 33+ = 1,500x\nThird premium: 33+ = 1,200x\nFourth premium: 33+ = 900x', image: uiRefArt, row: 1, column: 0, imagePosition: 'left' },
+						{ title: 'SPECIALS', text: 'Wild substitutes for all pay symbols except Scatter. Multiplier Wilds stack the active bonus multiplier. Scatter triggers bonuses and Magnet starts the magnetic series.', image: scatterArt, row: 1, column: 1, imagePosition: 'left' },
+						{ title: 'BUY MODES', text: 'Drop-O-Magnet: 100x\nMagnetic Mega Chain: 500x\nFeature Spin: 50x / spin\nChance Spin: 2x / spin', image: bonusArt, row: 2, column: 0, imagePosition: 'left' },
+						{ title: 'MEGA CHAIN', text: 'The persistent Mega Chain bonus locks the chosen magnetic symbol type, keeps its cluster on the grid, and continues stacking multipliers across all 10 free spins.', image: heroArt, row: 2, column: 1, imagePosition: 'left' },
 					],
 				},
 			],

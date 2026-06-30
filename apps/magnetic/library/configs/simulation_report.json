@@ -1,0 +1,136 @@
+{
+  "modes": {
+    "BASE": {
+      "rows": 20,
+      "avg_x": 0.96090454,
+      "rtp": 0.96090454,
+      "hit_rate": 0.26159,
+      "trigger_rate": 6.2e-05,
+      "max_x_observed": 693.0,
+      "quantiles": {
+        "p50": 0.0,
+        "p75": 0.54,
+        "p90": 0.54,
+        "p95": 4.32,
+        "p99": 37.8
+      }
+    },
+    "CHANCE": {
+      "rows": 20,
+      "avg_x": 1.92199185,
+      "rtp": 0.960995925,
+      "hit_rate": 0.221317,
+      "trigger_rate": 0.003428,
+      "max_x_observed": 925.54,
+      "quantiles": {
+        "p50": 0.0,
+        "p75": 0.0,
+        "p90": 7.68,
+        "p95": 7.68,
+        "p99": 44.8
+      }
+    },
+    "FEATURE": {
+      "rows": 10,
+      "avg_x": 48.049883230000006,
+      "rtp": 0.9609976646000001,
+      "hit_rate": 1.0,
+      "trigger_rate": 1.0,
+      "max_x_observed": 308.0,
+      "quantiles": {
+        "p50": 10.56,
+        "p75": 70.4,
+        "p90": 132.0,
+        "p95": 308.0,
+        "p99": 308.0
+      }
+    },
+    "BONUS": {
+      "rows": 10,
+      "avg_x": 96.09940157999999,
+      "rtp": 0.9609940157999999,
+      "hit_rate": 1.0,
+      "trigger_rate": 1.0,
+      "max_x_observed": 985.8,
+      "quantiles": {
+        "p50": 18.87,
+        "p75": 87.45,
+        "p90": 117.61,
+        "p95": 985.8,
+        "p99": 985.8
+      }
+    },
+    "SUPER": {
+      "rows": 10,
+      "avg_x": 480.499404,
+      "rtp": 0.960998808,
+      "hit_rate": 1.0,
+      "trigger_rate": 1.0,
+      "max_x_observed": 1540.0,
+      "quantiles": {
+        "p50": 308.0,
+        "p75": 693.0,
+        "p90": 1540.0,
+        "p95": 1540.0,
+        "p99": 1540.0
+      },
+      "profile_breakdown": {
+        "H1": {
+          "count": 2,
+          "fraction": 0.2,
+          "avg_payout": 1540.0,
+          "hit_rate": 1.0,
+          "max_payout": 1540.0
+        },
+        "H4": {
+          "count": 2,
+          "fraction": 0.2,
+          "avg_payout": 693.0,
+          "hit_rate": 1.0,
+          "max_payout": 693.0
+        },
+        "L1": {
+          "count": 1,
+          "fraction": 0.1,
+          "avg_payout": 385.0,
+          "hit_rate": 1.0,
+          "max_payout": 385.0
+        },
+        "L2": {
+          "count": 1,
+          "fraction": 0.1,
+          "avg_payout": 308.0,
+          "hit_rate": 1.0,
+          "max_payout": 308.0
+        },
+        "L3": {
+          "count": 2,
+          "fraction": 0.2,
+          "avg_payout": 231.0,
+          "hit_rate": 1.0,
+          "max_payout": 231.0
+        },
+        "L4": {
+          "count": 2,
+          "fraction": 0.2,
+          "avg_payout": 192.5,
+          "hit_rate": 1.0,
+          "max_payout": 192.5
+        }
+      }
+    }
+  },
+  "summary": {
+    "target_rtp": 0.961,
+    "target_hit_rate": 0.3,
+    "mode_costs": {
+      "BASE": 1.0,
+      "CHANCE": 2.0,
+      "FEATURE": 50.0,
+      "BONUS": 100.0,
+      "SUPER": 500.0
+    },
+    "base_rtp_delta": -9.545999999993615e-05,
+    "base_hit_rate_delta": -0.03841
+  }
+}

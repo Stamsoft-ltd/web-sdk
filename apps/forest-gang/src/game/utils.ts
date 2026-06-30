@@ -126,6 +126,15 @@ export const winBoardByAlias: Record<string, string> = {
 	max: 'legendaryWinBoard',
 };
 
+// Reverse: board asset key → win level alias (for dynamic coin escalation)
+export const winAliasByBoard: Record<string, string> = {
+	sweetWinBoard: 'big',
+	wildWinBoard: 'superwin',
+	epicWinBoard: 'mega',
+	mythicWinBoard: 'epic',
+	legendaryWinBoard: 'max',
+};
+
 export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; state: SymbolState }) => {
 	return SYMBOL_INFO_MAP[rawSymbol.name][state];
 };

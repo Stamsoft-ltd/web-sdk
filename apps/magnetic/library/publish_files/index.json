@@ -7,6 +7,18 @@
             "weights": "lookUpTable_BASE_0.csv"
         },
         {
+            "name": "CHANCE",
+            "cost": 2.0,
+            "events": "books_CHANCE.jsonl.zst",
+            "weights": "lookUpTable_CHANCE_0.csv"
+        },
+        {
+            "name": "FEATURE",
+            "cost": 50.0,
+            "events": "books_FEATURE.jsonl.zst",
+            "weights": "lookUpTable_FEATURE_0.csv"
+        },
+        {
             "name": "BONUS",
             "cost": 100.0,
             "events": "books_BONUS.jsonl.zst",
@@ -14,15 +26,9 @@
         },
         {
             "name": "SUPER",
-            "cost": 400.0,
+            "cost": 500.0,
             "events": "books_SUPER.jsonl.zst",
             "weights": "lookUpTable_SUPER_0.csv"
-        },
-        {
-            "name": "FEATURE",
-            "cost": 20.0,
-            "events": "books_FEATURE.jsonl.zst",
-            "weights": "lookUpTable_FEATURE_0.csv"
         }
     ]
 }

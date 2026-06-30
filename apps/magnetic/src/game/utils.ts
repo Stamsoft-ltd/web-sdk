@@ -8,16 +8,15 @@ import type { RawSymbol, SymbolName, SymbolState } from './types';
 import { SYMBOL_INFO_MAP, SYMBOL_W } from './constants';
 
 export const spriteKeyByName: Record<SymbolName, string> = {
-	FOX: 'foxTile',
-	WOLF: 'wolfTile',
-	BEAR: 'bearTile',
-	RABBIT: 'rabbitTile',
-	SQUIRREL: 'squirrelTile',
-	A: 'aTile',
-	K: 'kTile',
-	Q: 'qTile',
-	J: 'jTile',
-	T: 'tTile',
+	H1: 'foxTile',
+	H2: 'wolfTile',
+	H3: 'bearTile',
+	H4: 'rabbitTile',
+	L1: 'squirrelTile',
+	L2: 'aTile',
+	L3: 'kTile',
+	L4: 'qTile',
+	WILD: 'wildTile',
 	MAGNET: 'wildTile',
 	SCATTER: 'scatterCustom',
 };
@@ -28,16 +27,15 @@ export const bonusSpriteKeyByName: Record<SymbolName, string> = {
 };
 
 export const winSpriteKeyByName: Record<SymbolName, string> = {
-	FOX: 'foxWinTile',
-	WOLF: 'wolfWinTile',
-	BEAR: 'bearWinTile',
-	RABBIT: 'rabbitWinTile',
-	SQUIRREL: 'squirrelWinTile',
-	A: 'aWinTile',
-	K: 'kWinTile',
-	Q: 'qWinTile',
-	J: 'jWinTile',
-	T: 'tWinTile',
+	H1: 'foxWinTile',
+	H2: 'wolfWinTile',
+	H3: 'bearWinTile',
+	H4: 'rabbitWinTile',
+	L1: 'squirrelWinTile',
+	L2: 'aWinTile',
+	L3: 'kWinTile',
+	L4: 'qWinTile',
+	WILD: 'wildWinTile',
 	MAGNET: 'wildWinTile',
 	SCATTER: 'scatterWin',
 };

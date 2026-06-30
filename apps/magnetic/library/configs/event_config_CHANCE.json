@@ -4,11 +4,84 @@
         "board": [
             [
                 {
+                    "name": "L4"
+                },
+                {
+                    "name": "L2"
+                },
+                {
+                    "name": "H1"
+                },
+                {
+                    "name": "L4"
+                },
+                {
+                    "name": "H1"
+                },
+                {
+                    "name": "L2"
+                },
+                {
+                    "name": "H4"
+                }
+            ],
+            [
+                {
                     "name": "H2"
+                },
+                {
+                    "name": "MAGNET",
+                    "magnet": true
+                },
+                {
+                    "name": "L2"
+                },
+                {
+                    "name": "L4"
+                },
+                {
+                    "name": "L3"
+                },
+                {
+                    "name": "L1"
+                },
+                {
+                    "name": "H2"
+                }
+            ],
+            [
+                {
+                    "name": "L2"
+                },
+                {
+                    "name": "H3"
+                },
+                {
+                    "name": "H3"
                 },
                 {
                     "name": "SCATTER",
                     "scatter": true
+                },
+                {
+                    "name": "L2"
+                },
+                {
+                    "name": "L3"
+                },
+                {
+                    "name": "H2"
+                }
+            ],
+            [
+                {
+                    "name": "L2"
+                },
+                {
+                    "name": "L2"
+                },
+                {
+                    "name": "L3"
                 },
                 {
                     "name": "L1"
@@ -21,76 +94,27 @@
                 },
                 {
                     "name": "H3"
-                },
-                {
-                    "name": "L1"
                 }
             ],
             [
-                {
-                    "name": "H3"
-                },
-                {
-                    "name": "L2"
-                },
-                {
-                    "name": "H3"
-                },
-                {
-                    "name": "L3"
-                },
-                {
-                    "name": "H2"
-                },
-                {
-                    "name": "H3"
-                },
-                {
-                    "name": "L1"
-                }
-            ],
-            [
-                {
-                    "name": "H4"
-                },
-                {
-                    "name": "H3"
-                },
                 {
                     "name": "SCATTER",
                     "scatter": true
                 },
                 {
-                    "name": "H4"
-                },
-                {
-                    "name": "H2"
-                },
-                {
                     "name": "L3"
                 },
                 {
-                    "name": "H2"
-                }
-            ],
-            [
-                {
                     "name": "H3"
-                },
-                {
-                    "name": "H2"
-                },
-                {
-                    "name": "L2"
                 },
                 {
                     "name": "L4"
                 },
                 {
-                    "name": "H2"
+                    "name": "H3"
                 },
                 {
-                    "name": "H2"
+                    "name": "L4"
                 },
                 {
                     "name": "L1"
@@ -98,37 +122,30 @@
             ],
             [
                 {
-                    "name": "L4"
-                },
-                {
-                    "name": "L3"
+                    "name": "L1"
                 },
                 {
                     "name": "H4"
-                },
-                {
-                    "name": "SCATTER",
-                    "scatter": true
                 },
                 {
                     "name": "H1"
                 },
                 {
-                    "name": "H4"
+                    "name": "L3"
                 },
                 {
                     "name": "L3"
+                },
+                {
+                    "name": "H2"
+                },
+                {
+                    "name": "H1"
                 }
             ],
             [
                 {
-                    "name": "H4"
-                },
-                {
-                    "name": "L2"
-                },
-                {
-                    "name": "H1"
+                    "name": "L1"
                 },
                 {
                     "name": "H1"
@@ -137,34 +154,16 @@
                     "name": "L1"
                 },
                 {
-                    "name": "H4"
+                    "name": "H2"
                 },
                 {
-                    "name": "H3"
-                }
-            ],
-            [
+                    "name": "L1"
+                },
                 {
                     "name": "H2"
                 },
                 {
-                    "name": "H1"
-                },
-                {
-                    "name": "L4"
-                },
-                {
                     "name": "L2"
-                },
-                {
-                    "name": "SCATTER",
-                    "scatter": true
-                },
-                {
-                    "name": "L2"
-                },
-                {
-                    "name": "H4"
                 }
             ]
         ],
@@ -188,60 +187,46 @@
         ],
         "gameType": "basegame"
     },
-    "freeSpinTrigger": {
-        "type": "freeSpinTrigger",
-        "totalFs": 10,
-        "positions": [
-            {
-                "reel": 0,
-                "row": 1
-            },
-            {
-                "reel": 2,
-                "row": 2
-            },
-            {
-                "reel": 4,
-                "row": 3
-            },
-            {
-                "reel": 6,
-                "row": 4
-            }
-        ]
-    },
-    "updateFreeSpin": {
-        "type": "updateFreeSpin",
-        "amount": 0,
-        "total": 10
-    },
-    "superSeriesCarry": {
-        "type": "superSeriesCarry",
-        "series": null,
-        "magnetTargetSymbol": null,
-        "totalMultiplier": 1
-    },
     "magnetActivated": {
         "type": "magnetActivated",
-        "seriesId": "super-1",
-        "symbol": "L3",
+        "seriesId": "magnet-1",
+        "symbol": "H1",
         "positions": [
             {
-                "reel": 4,
-                "row": 0
+                "reel": 1,
+                "row": 1
             }
         ],
         "multiplier": 1,
         "totalMultiplier": 1,
-        "persistent": true
+        "persistent": false
     },
     "clusterSeriesUpdate": {
         "type": "clusterSeriesUpdate",
         "series": [
             {
-                "id": "super-1",
-                "symbol": "L3",
-                "kind": "super",
+                "id": "magnet-1",
+                "symbol": "H1",
+                "kind": "magnet",
+                "anchorPositions": [
+                    {
+                        "reel": 0,
+                        "row": 2
+                    }
+                ],
+                "lockedPositions": [
+                    {
+                        "reel": 0,
+                        "row": 2
+                    }
+                ],
+                "multiplier": 1,
+                "persistent": false
+            },
+            {
+                "id": "magnet-2",
+                "symbol": "H1",
+                "kind": "magnet",
                 "anchorPositions": [
                     {
                         "reel": 0,
@@ -255,88 +240,50 @@
                     }
                 ],
                 "multiplier": 1,
-                "persistent": true
+                "persistent": false
             },
             {
-                "id": "super-2",
-                "symbol": "L3",
-                "kind": "super",
-                "anchorPositions": [
-                    {
-                        "reel": 0,
-                        "row": 6
-                    }
-                ],
-                "lockedPositions": [
-                    {
-                        "reel": 0,
-                        "row": 6
-                    }
-                ],
-                "multiplier": 1,
-                "persistent": true
-            },
-            {
-                "id": "super-3",
-                "symbol": "L3",
-                "kind": "super",
-                "anchorPositions": [
-                    {
-                        "reel": 1,
-                        "row": 0
-                    }
-                ],
-                "lockedPositions": [
-                    {
-                        "reel": 1,
-                        "row": 0
-                    }
-                ],
-                "multiplier": 1,
-                "persistent": true
-            },
-            {
-                "id": "super-4",
-                "symbol": "L3",
-                "kind": "super",
-                "anchorPositions": [
-                    {
-                        "reel": 3,
-                        "row": 5
-                    }
-                ],
-                "lockedPositions": [
-                    {
-                        "reel": 3,
-                        "row": 5
-                    }
-                ],
-                "multiplier": 1,
-                "persistent": true
-            },
-            {
-                "id": "super-5",
-                "symbol": "L3",
-                "kind": "super",
+                "id": "magnet-3",
+                "symbol": "H1",
+                "kind": "magnet",
                 "anchorPositions": [
                     {
                         "reel": 5,
-                        "row": 5
+                        "row": 2
                     }
                 ],
                 "lockedPositions": [
                     {
                         "reel": 5,
-                        "row": 5
+                        "row": 2
                     }
                 ],
                 "multiplier": 1,
-                "persistent": true
+                "persistent": false
             },
             {
-                "id": "super-6",
-                "symbol": "L3",
-                "kind": "super",
+                "id": "magnet-4",
+                "symbol": "H1",
+                "kind": "magnet",
+                "anchorPositions": [
+                    {
+                        "reel": 5,
+                        "row": 6
+                    }
+                ],
+                "lockedPositions": [
+                    {
+                        "reel": 5,
+                        "row": 6
+                    }
+                ],
+                "multiplier": 1,
+                "persistent": false
+            },
+            {
+                "id": "magnet-5",
+                "symbol": "H1",
+                "kind": "magnet",
                 "anchorPositions": [
                     {
                         "reel": 6,
@@ -350,172 +297,176 @@
                     }
                 ],
                 "multiplier": 1,
-                "persistent": true
-            },
-            {
-                "id": "super-7",
-                "symbol": "L3",
-                "kind": "super",
-                "anchorPositions": [
-                    {
-                        "reel": 6,
-                        "row": 6
-                    }
-                ],
-                "lockedPositions": [
-                    {
-                        "reel": 6,
-                        "row": 6
-                    }
-                ],
-                "multiplier": 1,
-                "persistent": true
+                "persistent": false
             }
         ],
-        "magnetTargetSymbol": "L3",
+        "magnetTargetSymbol": "H1",
         "totalMultiplier": 1
-    },
-    "setTotalWin": {
-        "type": "setTotalWin",
-        "amount": 0
     },
     "clusterSeriesResolved": {
         "type": "clusterSeriesResolved",
-        "seriesId": "super-3",
-        "symbol": "L3",
+        "seriesId": "magnet-1",
+        "symbol": "H1",
         "positions": [
             {
                 "reel": 0,
-                "row": 0
+                "row": 1
             },
             {
                 "reel": 1,
-                "row": 0
+                "row": 1
             },
             {
                 "reel": 0,
-                "row": 1
-            },
-            {
-                "reel": 2,
-                "row": 0
-            },
-            {
-                "reel": 1,
-                "row": 1
+                "row": 2
             },
             {
                 "reel": 1,
                 "row": 2
+            },
+            {
+                "reel": 0,
+                "row": 3
+            },
+            {
+                "reel": 0,
+                "row": 4
+            },
+            {
+                "reel": 1,
+                "row": 4
+            },
+            {
+                "reel": 0,
+                "row": 5
             }
         ],
-        "amount": 15,
+        "amount": 512,
         "multiplier": 1
     },
     "winInfo": {
         "type": "winInfo",
-        "totalWin": 30,
+        "totalWin": 768,
         "wins": [
             {
-                "seriesId": "super-3",
-                "symbol": "L3",
-                "size": 6,
+                "seriesId": "magnet-1",
+                "symbol": "H1",
+                "size": 8,
                 "positions": [
                     {
                         "reel": 0,
-                        "row": 0
+                        "row": 1
                     },
                     {
                         "reel": 1,
-                        "row": 0
+                        "row": 1
                     },
                     {
                         "reel": 0,
-                        "row": 1
-                    },
-                    {
-                        "reel": 2,
-                        "row": 0
-                    },
-                    {
-                        "reel": 1,
-                        "row": 1
+                        "row": 2
                     },
                     {
                         "reel": 1,
                         "row": 2
+                    },
+                    {
+                        "reel": 0,
+                        "row": 3
+                    },
+                    {
+                        "reel": 0,
+                        "row": 4
+                    },
+                    {
+                        "reel": 1,
+                        "row": 4
+                    },
+                    {
+                        "reel": 0,
+                        "row": 5
                     }
                 ],
-                "amount": 15,
+                "amount": 512,
                 "meta": {
-                    "baseAmount": 20,
+                    "baseAmount": 400,
                     "totalMultiplier": 1,
-                    "seriesKind": "super",
+                    "seriesKind": "magnet",
                     "anchors": [
                         {
-                            "reel": 1,
-                            "row": 0
+                            "reel": 0,
+                            "row": 2
+                        },
+                        {
+                            "reel": 0,
+                            "row": 4
                         }
                     ]
                 }
             },
             {
-                "seriesId": "super-4",
-                "symbol": "L3",
-                "size": 6,
+                "seriesId": "magnet-3",
+                "symbol": "H1",
+                "size": 7,
                 "positions": [
                     {
-                        "reel": 2,
-                        "row": 3
-                    },
-                    {
-                        "reel": 3,
-                        "row": 3
-                    },
-                    {
-                        "reel": 3,
-                        "row": 4
-                    },
-                    {
                         "reel": 4,
-                        "row": 4
+                        "row": 3
                     },
                     {
-                        "reel": 3,
-                        "row": 5
+                        "reel": 5,
+                        "row": 3
                     },
                     {
-                        "reel": 2,
-                        "row": 5
+                        "reel": 6,
+                        "row": 3
+                    },
+                    {
+                        "reel": 5,
+                        "row": 2
+                    },
+                    {
+                        "reel": 6,
+                        "row": 2
+                    },
+                    {
+                        "reel": 5,
+                        "row": 1
+                    },
+                    {
+                        "reel": 6,
+                        "row": 1
                     }
                 ],
-                "amount": 15,
+                "amount": 256,
                 "meta": {
-                    "baseAmount": 20,
+                    "baseAmount": 200,
                     "totalMultiplier": 1,
-                    "seriesKind": "super",
+                    "seriesKind": "magnet",
                     "anchors": [
                         {
-                            "reel": 3,
-                            "row": 5
+                            "reel": 5,
+                            "row": 2
+                        },
+                        {
+                            "reel": 6,
+                            "row": 1
                         }
                     ]
                 }
             }
         ]
     },
+    "setTotalWin": {
+        "type": "setTotalWin",
+        "amount": 768
+    },
     "setWin": {
         "type": "setWin",
-        "amount": 23100,
-        "winLevel": 8
-    },
-    "freeSpinEnd": {
-        "type": "freeSpinEnd",
-        "amount": 23100,
-        "winLevel": 8
+        "amount": 768,
+        "winLevel": 4
     },
     "finalWin": {
         "type": "finalWin",
-        "amount": 23100
+        "amount": 768
     }
 }

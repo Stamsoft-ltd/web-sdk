@@ -4,7 +4,7 @@
 
 	// splash.jpg = forest + 5 characters holding 3 empty wooden boards (no logo, no text).
 	const bgSrc   = './assets/components/backgrounds/splash.jpg?v=20260622';
-	const logoSrc = './assets/components/ui/magnetic_logo.png';
+	const logoSrc = './assets/components/ui/forest_gang_logo.png';
 	// Pre-styled feature text graphics exported from the Figma design — placed on the boards.
 	const featExpanding = './assets/components/splash/feat_expanding.png';
 	const featBonus     = './assets/components/splash/feat_bonus.png';

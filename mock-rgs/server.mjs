@@ -58,7 +58,7 @@ const GAME_REGISTRY = {
   magnetic: {
     slug: 'magnetic',
     gameID: '0_0_magnetic',
-    modeCostMultipliers: { BASE: 1, CHANCE: 2, FEATURE: 50, BONUS: 150, SUPER: 400 },
+    modeCostMultipliers: { BASE: 1, CHANCE: 2, FEATURE: 50, BONUS: 100, SUPER: 500 },
     getRoundForMode: getMagneticRoundForMode,
     getReplayRound: getMagneticReplayRound,
     booksDir: process.env.MAGNETIC_MATH_SDK_BOOKS_DIR || path.resolve(__dirname, '__disabled__/magnetic/books'),

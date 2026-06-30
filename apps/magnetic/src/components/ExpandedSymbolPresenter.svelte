@@ -15,6 +15,7 @@
 	import { anchorToPivot, Container, Sprite } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
+	import { PAY_SYMBOLS } from '../game/constants';
 	import { winSpriteKeyByName } from '../game/utils';
 
 	const context = getContext();
@@ -31,7 +32,7 @@
 	const deerW = $derived(deerH * DEER_RATIO);
 
 	// Symbols the board rolls through before landing on the chosen one.
-	const ALL_SYMBOLS: SymbolName[] = ['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL', 'A', 'K', 'Q', 'J', 'T'];
+	const ALL_SYMBOLS: SymbolName[] = [...PAY_SYMBOLS];
 	const ROLL_MS = 1700;
 
 	let show = $state(false);

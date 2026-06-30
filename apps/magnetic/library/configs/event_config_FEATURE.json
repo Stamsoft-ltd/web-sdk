@@ -1,4 +1,14 @@
 {
+    "freeSpinTrigger": {
+        "type": "freeSpinTrigger",
+        "totalFs": 1,
+        "positions": []
+    },
+    "updateFreeSpin": {
+        "type": "updateFreeSpin",
+        "amount": 0,
+        "total": 1
+    },
     "reveal": {
         "type": "reveal",
         "board": [
@@ -10,8 +20,7 @@
                     "name": "H2"
                 },
                 {
-                    "name": "SCATTER",
-                    "scatter": true
+                    "name": "L1"
                 },
                 {
                     "name": "L3"
@@ -20,7 +29,8 @@
                     "name": "L4"
                 },
                 {
-                    "name": "H3"
+                    "name": "MAGNET",
+                    "magnet": true
                 },
                 {
                     "name": "L1"
@@ -83,8 +93,7 @@
                     "name": "L2"
                 },
                 {
-                    "name": "SCATTER",
-                    "scatter": true
+                    "name": "L4"
                 },
                 {
                     "name": "H2"
@@ -147,8 +156,7 @@
                     "name": "H2"
                 },
                 {
-                    "name": "SCATTER",
-                    "scatter": true
+                    "name": "H1"
                 },
                 {
                     "name": "L4"
@@ -185,47 +193,16 @@
             0,
             0
         ],
-        "gameType": "basegame"
-    },
-    "freeSpinTrigger": {
-        "type": "freeSpinTrigger",
-        "totalFs": 10,
-        "positions": [
-            {
-                "reel": 0,
-                "row": 2
-            },
-            {
-                "reel": 3,
-                "row": 3
-            },
-            {
-                "reel": 6,
-                "row": 1
-            }
-        ]
-    },
-    "updateFreeSpin": {
-        "type": "updateFreeSpin",
-        "amount": 0,
-        "total": 10
-    },
-    "setTotalWin": {
-        "type": "setTotalWin",
-        "amount": 0
+        "gameType": "feature"
     },
     "magnetActivated": {
         "type": "magnetActivated",
         "seriesId": "magnet-1",
-        "symbol": "L3",
+        "symbol": "L1",
         "positions": [
             {
                 "reel": 0,
                 "row": 5
-            },
-            {
-                "reel": 2,
-                "row": 4
             }
         ],
         "multiplier": 1,
@@ -237,18 +214,18 @@
         "series": [
             {
                 "id": "magnet-1",
-                "symbol": "L3",
+                "symbol": "L1",
                 "kind": "magnet",
                 "anchorPositions": [
                     {
                         "reel": 0,
-                        "row": 3
+                        "row": 2
                     }
                 ],
                 "lockedPositions": [
                     {
                         "reel": 0,
-                        "row": 3
+                        "row": 2
                     }
                 ],
                 "multiplier": 1,
@@ -256,44 +233,13 @@
             },
             {
                 "id": "magnet-2",
-                "symbol": "L3",
+                "symbol": "L1",
                 "kind": "magnet",
                 "anchorPositions": [
                     {
-                        "reel": 1,
-                        "row": 1
+                        "reel": 0,
+                        "row": 6
                     },
-                    {
-                        "reel": 2,
-                        "row": 1
-                    },
-                    {
-                        "reel": 1,
-                        "row": 2
-                    }
-                ],
-                "lockedPositions": [
-                    {
-                        "reel": 1,
-                        "row": 1
-                    },
-                    {
-                        "reel": 2,
-                        "row": 1
-                    },
-                    {
-                        "reel": 1,
-                        "row": 2
-                    }
-                ],
-                "multiplier": 1,
-                "persistent": false
-            },
-            {
-                "id": "magnet-3",
-                "symbol": "L3",
-                "kind": "magnet",
-                "anchorPositions": [
                     {
                         "reel": 1,
                         "row": 6
@@ -301,7 +247,30 @@
                 ],
                 "lockedPositions": [
                     {
+                        "reel": 0,
+                        "row": 6
+                    },
+                    {
                         "reel": 1,
+                        "row": 6
+                    }
+                ],
+                "multiplier": 1,
+                "persistent": false
+            },
+            {
+                "id": "magnet-3",
+                "symbol": "L1",
+                "kind": "magnet",
+                "anchorPositions": [
+                    {
+                        "reel": 3,
+                        "row": 6
+                    }
+                ],
+                "lockedPositions": [
+                    {
+                        "reel": 3,
                         "row": 6
                     }
                 ],
@@ -310,55 +279,17 @@
             },
             {
                 "id": "magnet-4",
-                "symbol": "L3",
+                "symbol": "L1",
                 "kind": "magnet",
                 "anchorPositions": [
                     {
-                        "reel": 2,
-                        "row": 5
-                    }
-                ],
-                "lockedPositions": [
-                    {
-                        "reel": 2,
-                        "row": 5
-                    }
-                ],
-                "multiplier": 1,
-                "persistent": false
-            },
-            {
-                "id": "magnet-5",
-                "symbol": "L3",
-                "kind": "magnet",
-                "anchorPositions": [
-                    {
-                        "reel": 4,
-                        "row": 5
-                    }
-                ],
-                "lockedPositions": [
-                    {
-                        "reel": 4,
-                        "row": 5
-                    }
-                ],
-                "multiplier": 1,
-                "persistent": false
-            },
-            {
-                "id": "magnet-6",
-                "symbol": "L3",
-                "kind": "magnet",
-                "anchorPositions": [
-                    {
-                        "reel": 6,
+                        "reel": 5,
                         "row": 4
                     }
                 ],
                 "lockedPositions": [
                     {
-                        "reel": 6,
+                        "reel": 5,
                         "row": 4
                     }
                 ],
@@ -366,76 +297,28 @@
                 "persistent": false
             }
         ],
-        "magnetTargetSymbol": "L3",
+        "magnetTargetSymbol": "L1",
         "totalMultiplier": 1
     },
     "clusterSeriesResolved": {
         "type": "clusterSeriesResolved",
         "seriesId": "magnet-1",
-        "symbol": "L3",
+        "symbol": "L1",
         "positions": [
             {
                 "reel": 0,
-                "row": 0
+                "row": 1
             },
             {
                 "reel": 0,
-                "row": 1
-            },
-            {
-                "reel": 1,
-                "row": 1
-            },
-            {
-                "reel": 2,
-                "row": 1
-            },
-            {
-                "reel": 1,
                 "row": 2
             },
             {
-                "reel": 2,
-                "row": 0
-            },
-            {
-                "reel": 2,
-                "row": 2
-            },
-            {
-                "reel": 3,
-                "row": 0
-            },
-            {
-                "reel": 3,
-                "row": 2
-            },
-            {
-                "reel": 2,
+                "reel": 0,
                 "row": 3
             },
             {
-                "reel": 4,
-                "row": 2
-            },
-            {
-                "reel": 3,
-                "row": 3
-            },
-            {
-                "reel": 2,
-                "row": 4
-            },
-            {
-                "reel": 4,
-                "row": 1
-            },
-            {
-                "reel": 4,
-                "row": 3
-            },
-            {
-                "reel": 3,
+                "reel": 0,
                 "row": 4
             },
             {
@@ -443,128 +326,76 @@
                 "row": 4
             },
             {
+                "reel": 0,
+                "row": 5
+            },
+            {
+                "reel": 1,
+                "row": 5
+            },
+            {
+                "reel": 0,
+                "row": 6
+            },
+            {
                 "reel": 2,
                 "row": 5
             },
             {
-                "reel": 5,
-                "row": 3
+                "reel": 1,
+                "row": 6
             },
             {
                 "reel": 3,
                 "row": 5
             },
             {
-                "reel": 0,
-                "row": 4
-            },
-            {
-                "reel": 6,
-                "row": 3
-            },
-            {
-                "reel": 5,
-                "row": 4
-            },
-            {
-                "reel": 4,
-                "row": 5
-            },
-            {
-                "reel": 0,
-                "row": 3
-            },
-            {
-                "reel": 6,
-                "row": 2
-            },
-            {
-                "reel": 6,
-                "row": 4
-            },
-            {
-                "reel": 5,
-                "row": 5
+                "reel": 3,
+                "row": 6
             },
             {
                 "reel": 4,
                 "row": 6
+            },
+            {
+                "reel": 5,
+                "row": 6
+            },
+            {
+                "reel": 6,
+                "row": 6
+            },
+            {
+                "reel": 6,
+                "row": 5
             }
         ],
-        "amount": 8480,
+        "amount": 2200,
         "multiplier": 1
     },
     "winInfo": {
         "type": "winInfo",
-        "totalWin": 8480,
+        "totalWin": 2253,
         "wins": [
             {
                 "seriesId": "magnet-1",
-                "symbol": "L3",
-                "size": 29,
+                "symbol": "L1",
+                "size": 16,
                 "positions": [
                     {
                         "reel": 0,
-                        "row": 0
+                        "row": 1
                     },
                     {
                         "reel": 0,
-                        "row": 1
-                    },
-                    {
-                        "reel": 1,
-                        "row": 1
-                    },
-                    {
-                        "reel": 2,
-                        "row": 1
-                    },
-                    {
-                        "reel": 1,
                         "row": 2
                     },
                     {
-                        "reel": 2,
-                        "row": 0
-                    },
-                    {
-                        "reel": 2,
-                        "row": 2
-                    },
-                    {
-                        "reel": 3,
-                        "row": 0
-                    },
-                    {
-                        "reel": 3,
-                        "row": 2
-                    },
-                    {
-                        "reel": 2,
+                        "reel": 0,
                         "row": 3
                     },
                     {
-                        "reel": 4,
-                        "row": 2
-                    },
-                    {
-                        "reel": 3,
-                        "row": 3
-                    },
-                    {
-                        "reel": 2,
-                        "row": 4
-                    },
-                    {
-                        "reel": 4,
-                        "row": 1
-                    },
-                    {
-                        "reel": 4,
-                        "row": 3
-                    },
-                    {
-                        "reel": 3,
+                        "reel": 0,
                         "row": 4
                     },
                     {
@@ -572,90 +403,117 @@
                         "row": 4
                     },
                     {
+                        "reel": 0,
+                        "row": 5
+                    },
+                    {
+                        "reel": 1,
+                        "row": 5
+                    },
+                    {
+                        "reel": 0,
+                        "row": 6
+                    },
+                    {
                         "reel": 2,
                         "row": 5
                     },
                     {
-                        "reel": 5,
-                        "row": 3
+                        "reel": 1,
+                        "row": 6
                     },
                     {
                         "reel": 3,
                         "row": 5
                     },
                     {
-                        "reel": 0,
-                        "row": 4
-                    },
-                    {
-                        "reel": 6,
-                        "row": 3
-                    },
-                    {
-                        "reel": 5,
-                        "row": 4
-                    },
-                    {
-                        "reel": 4,
-                        "row": 5
-                    },
-                    {
-                        "reel": 0,
-                        "row": 3
-                    },
-                    {
-                        "reel": 6,
-                        "row": 2
-                    },
-                    {
-                        "reel": 6,
-                        "row": 4
-                    },
-                    {
-                        "reel": 5,
-                        "row": 5
+                        "reel": 3,
+                        "row": 6
                     },
                     {
                         "reel": 4,
                         "row": 6
+                    },
+                    {
+                        "reel": 5,
+                        "row": 6
+                    },
+                    {
+                        "reel": 6,
+                        "row": 6
+                    },
+                    {
+                        "reel": 6,
+                        "row": 5
                     }
                 ],
-                "amount": 8480,
+                "amount": 2200,
                 "meta": {
-                    "baseAmount": 8000,
+                    "baseAmount": 2500,
                     "totalMultiplier": 1,
                     "seriesKind": "magnet",
                     "anchors": [
                         {
                             "reel": 0,
-                            "row": 3
-                        },
-                        {
-                            "reel": 1,
-                            "row": 1
-                        },
-                        {
-                            "reel": 2,
-                            "row": 1
-                        },
-                        {
-                            "reel": 1,
                             "row": 2
                         },
                         {
-                            "reel": 2,
-                            "row": 5
-                        },
-                        {
-                            "reel": 4,
-                            "row": 5
-                        },
-                        {
                             "reel": 0,
-                            "row": 0
+                            "row": 6
                         },
                         {
-                            "reel": 6,
+                            "reel": 1,
+                            "row": 6
+                        },
+                        {
+                            "reel": 3,
+                            "row": 6
+                        }
+                    ]
+                }
+            },
+            {
+                "seriesId": "magnet-4",
+                "symbol": "L1",
+                "size": 7,
+                "positions": [
+                    {
+                        "reel": 4,
+                        "row": 3
+                    },
+                    {
+                        "reel": 5,
+                        "row": 3
+                    },
+                    {
+                        "reel": 4,
+                        "row": 4
+                    },
+                    {
+                        "reel": 6,
+                        "row": 3
+                    },
+                    {
+                        "reel": 5,
+                        "row": 2
+                    },
+                    {
+                        "reel": 5,
+                        "row": 4
+                    },
+                    {
+                        "reel": 5,
+                        "row": 1
+                    }
+                ],
+                "amount": 53,
+                "meta": {
+                    "baseAmount": 60,
+                    "totalMultiplier": 1,
+                    "seriesKind": "magnet",
+                    "anchors": [
+                        {
+                            "reel": 5,
                             "row": 4
                         }
                     ]
@@ -663,18 +521,22 @@
             }
         ]
     },
+    "setTotalWin": {
+        "type": "setTotalWin",
+        "amount": 2253
+    },
     "setWin": {
         "type": "setWin",
-        "amount": 8480,
-        "winLevel": 7
+        "amount": 2253,
+        "winLevel": 6
     },
     "freeSpinEnd": {
         "type": "freeSpinEnd",
-        "amount": 8745,
-        "winLevel": 7
+        "amount": 2253,
+        "winLevel": 6
     },
     "finalWin": {
         "type": "finalWin",
-        "amount": 8745
+        "amount": 2253
     }
 }

@@ -11,13 +11,13 @@
 
 <Story name="component">
 	<StoryPixiApp>
-		<Symbol rawSymbol={{ name: 'FOX' }} state={'static'} x={120} y={120} />
+		<Symbol rawSymbol={{ name: 'H1' }} state={'static'} x={120} y={120} />
 	</StoryPixiApp>
 </Story>
 
 <Story name="symbols">
 	<StoryPixiApp>
-		{#each ['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL', 'A', 'K', 'Q', 'J', 'T', 'MAGNET', 'SCATTER'] as name, i}
+		{#each ['H1', 'H2', 'H3', 'H4', 'L1', 'L2', 'L3', 'L4', 'WILD', 'MAGNET', 'SCATTER'] as name, i}
 			<Symbol rawSymbol={{ name }} state={'static'} x={80 + (i % 4) * 120} y={80 + Math.floor(i / 4) * 120} />
 		{/each}
 	</StoryPixiApp>

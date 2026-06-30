@@ -10,17 +10,16 @@
 	import type { SymbolName } from '../game/types';
 
 	const EXPANDED_ASSET: Partial<Record<SymbolName, string>> = {
-		FOX:      'foxExpTile',
-		WOLF:     'wolfExpTile',
-		BEAR:     'bearExpTile',
-		RABBIT:   'rabbitExpTile',
-		SQUIRREL: 'squirrelExpTile',
+		H1: 'foxExpTile',
+		H2: 'wolfExpTile',
+		H3: 'bearExpTile',
+		H4: 'rabbitExpTile',
 	};
 
 	const context = getContext();
 	const expanded = $derived(context.stateGame.expandedSymbol);
 
-	const LOW_SYMBOLS = new Set<SymbolName>(['T', 'J', 'Q', 'K', 'A']);
+	const LOW_SYMBOLS = new Set<SymbolName>(['L1', 'L2', 'L3', 'L4']);
 
 	const colHeight = SYMBOL_H * BOARD_DIMENSIONS.y;
 	const halfH = colHeight * 0.5;

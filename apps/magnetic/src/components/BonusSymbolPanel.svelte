@@ -9,7 +9,7 @@
 
 	import BoardContainer from './BoardContainer.svelte';
 	import { getContext } from '../game/context';
-	import { SYMBOL_SIZE, SYMBOL_W, SYMBOL_H } from '../game/constants';
+	import { PAY_SYMBOLS, SYMBOL_SIZE, SYMBOL_W, SYMBOL_H } from '../game/constants';
 	import { spriteKeyByName } from '../game/utils';
 	import type { SymbolName } from '../game/types';
 
@@ -19,7 +19,7 @@
 	const PANEL_H = PANEL_W / PAD_ASPECT;
 	const SYM_SIZE = PANEL_W * 0.52;
 
-	const ALL_SYMBOLS: SymbolName[] = ['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL', 'A', 'K', 'Q', 'J', 'T'];
+	const ALL_SYMBOLS: SymbolName[] = [...PAY_SYMBOLS];
 	const ROLL_DURATION_MS = 2000;
 
 	const context = getContext();

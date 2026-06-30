@@ -1,7 +1,7 @@
 import type config from './config';
 
 export type SymbolName = keyof typeof config.symbols;
-export type PaySymbolName = Exclude<SymbolName, 'MAGNET' | 'SCATTER'>;
+export type PaySymbolName = Exclude<SymbolName, 'MAGNET' | 'SCATTER' | 'WILD'>;
 export type BetMode = keyof typeof config.betModes;
 export type GameType = 'basegame' | 'freegame' | 'superspin' | 'feature';
 export type SeriesKind = 'natural' | 'magnet' | 'super';
@@ -11,6 +11,7 @@ export type RawSymbol = {
 	multiplier?: number;
 	scatter?: boolean;
 	magnet?: boolean;
+	wild?: boolean;
 };
 
 export const SYMBOL_STATES = ['static', 'spin', 'land', 'win', 'locked', 'magnet'] as const;
