@@ -103,7 +103,7 @@ export const stateGame = $state({
 const getBoardViewportPadding = () => {
 	const layoutType = stateLayoutDerived.layoutType();
 
-	if (layoutType === 'portrait') return { top: 8, right: 6, bottom: 146, left: 6 };
+	if (layoutType === 'portrait') return { top: 8, right: 2, bottom: 146, left: 2 };
 	if (layoutType === 'landscape') return { top: 4, right: 16, bottom: 22, left: 8 };
 	if (layoutType === 'tablet') return { top: 10, right: 20, bottom: 86, left: 20 };
 	return { top: 108, right: 220, bottom: 172, left: 208 };
@@ -145,8 +145,9 @@ const getBoardOffset = () => {
 	const centeredCanvasY = padding.top + availableCanvasHeight * 0.5 - canvasSizes.height * 0.5;
 	// extraLeftShiftPx (75) and shiftRightPx cancel → board sits centred in the
 	// padded area. Lower shiftRightPx to nudge the whole board left.
-	const shiftRightPx = 90;
-	const shiftDownPx = 10;
+	// Portrait has no left-shift to cancel, so it must not shift right either.
+	const shiftRightPx = layoutType === 'portrait' ? 0 : 90;
+	const shiftDownPx = layoutType === 'portrait' ? 0 : 10;
 
 	return {
 		x: (centeredCanvasX - extraLeftShiftPx + shiftRightPx) / (mainLayout.scale || 1),
@@ -162,8 +163,35 @@ const _FRAME_INNER_W_FRAC = 0.762;
 const _FRAME_ASPECT_H_W = 2364 / 3220;
 const _FRAME_ANCHOR_Y = 0.489; // = slot_pad window centre y (grid centred vertically)
 const _FRAME_EXTRA_SCALE = 1.30 / 1.15;
+const PORTRAIT_FRAME_FILL = 1.0; // portrait: mobile frame fills the full canvas width
+const PORTRAIT_TOP_OFFSET = 236; // portrait: push frame down from the top (main-layout units)
+// Mobile board frame (board_frame_mobile.png) — full width, top/bottom borders only.
+// Fractions of the drawn frame the reel grid occupies. Mirrored in BoardFrame.svelte.
+const MOBILE_FRAME_INNER_W = 0.965;
+const MOBILE_FRAME_INNER_H = 0.78;
 
 const boardLayout = () => {
+	const layoutType = stateLayoutDerived.layoutType();
+
+	// Portrait: the mobile frame is a full-width wood panel (no side poles). Size the grid
+	// to fill MOBILE_FRAME_INNER_W of the frame and the frame to ~fill the canvas width.
+	if (layoutType === 'portrait') {
+		const { availableCanvasWidth, mainLayout } = getBoardViewportMetrics();
+		const availWidthMain = availableCanvasWidth / (mainLayout.scale || 1);
+		const boardScale =
+			(availWidthMain * PORTRAIT_FRAME_FILL * MOBILE_FRAME_INNER_W) / BOARD_SIZES.width;
+		const mFrameH = (BOARD_SIZES.height * boardScale) / MOBILE_FRAME_INNER_H;
+		return {
+			x: stateLayoutDerived.mainLayout().width * 0.5 + getBoardOffset().x,
+			y: PORTRAIT_TOP_OFFSET + mFrameH * 0.5,
+			frameTopY: PORTRAIT_TOP_OFFSET,
+			boardScale,
+			anchor: { x: 0.5, y: 0.5 },
+			pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
+			...BOARD_SIZES,
+		};
+	}
+
 	const boardScale = getBoardScale() * 0.81 * 1.15;
 	// Frame top is pinned to canvas y=0; inner panel centre is at ANCHOR_Y × frameH
 	const frameW =
@@ -172,6 +200,7 @@ const boardLayout = () => {
 	return {
 		x: stateLayoutDerived.mainLayout().width * 0.5 + getBoardOffset().x,
 		y: frameH * _FRAME_ANCHOR_Y,
+		frameTopY: 0,
 		boardScale,
 		anchor: { x: 0.5, y: 0.5 },
 		pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },

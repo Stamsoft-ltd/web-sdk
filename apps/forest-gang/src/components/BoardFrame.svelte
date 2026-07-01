@@ -5,6 +5,15 @@
 
 	const context = getContext();
 	const board = $derived(context.stateGameDerived.boardLayout());
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+
+	// Mobile board frame (board_frame_mobile.png) — full-width panel, top/bottom borders
+	// only. Drawn centred on the grid, stretched so the reels fill its inner window.
+	// Fractions mirror stateGame.svelte.ts MOBILE_FRAME_INNER_*.
+	const MOBILE_INNER_W = 0.965;
+	const MOBILE_INNER_H = 0.78;
+	const mFrameW = $derived((board.width * board.boardScale) / MOBILE_INNER_W);
+	const mFrameH = $derived((board.height * board.boardScale) / MOBILE_INNER_H);
 
 	// slot_pad.png is 3220×2364. Geometry of the inner brown panel (where the reels
 	// sit): inner panel ≈ 76% of image width, centred at ~(0.52, 0.50). We scale the
@@ -23,11 +32,22 @@
 	const frameW = $derived(((board.width * board.boardScale * MARGIN * FRAME_EXTRA_SCALE) / INNER_W_FRAC) * H_SQUASH);
 </script>
 
-<Sprite
-	key="slotPad"
-	anchor={{ x: ANCHOR_X, y: 0 }}
-	x={board.x}
-	y={0}
-	width={frameW}
-	height={frameH}
-/>
+{#if isPortrait}
+	<Sprite
+		key="slotPadMobile"
+		anchor={0.5}
+		x={board.x}
+		y={board.y}
+		width={mFrameW}
+		height={mFrameH}
+	/>
+{:else}
+	<Sprite
+		key="slotPad"
+		anchor={{ x: ANCHOR_X, y: 0 }}
+		x={board.x}
+		y={board.frameTopY ?? 0}
+		width={frameW}
+		height={frameH}
+	/>
+{/if}

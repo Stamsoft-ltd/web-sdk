@@ -1,4 +1,18 @@
-export default {
+// Portrait phones load a dedicated mobile symbol set (same aliases, different art).
+// Decided once at boot from the viewport ratio (mirrors layoutType 'portrait' = ratio ≤ 0.8).
+const _isPortraitViewport =
+	typeof window !== 'undefined' && window.innerWidth / Math.max(1, window.innerHeight) <= 0.8;
+const MOBILE_SYMBOLS = new Set([
+	'card_a.png', 'card_a_win.png', 'card_k.png', 'card_k_win.png',
+	'card_q.png', 'card_q_win.png', 'card_j.png', 'card_j_win.png',
+	'card_t.png', 'card_t_win.png',
+	'fox.png', 'wolf.png', 'bear.png', 'rabbit.png', 'squirrel.png',
+	'wild.png', 'scatter.png',
+	'card_a_bonus.png', 'card_k_bonus.png', 'card_q_bonus.png',
+	'card_j_bonus.png', 'card_t_bonus.png',
+]);
+
+const assets = {
 	loader: {
 		type: 'spine',
 		src: {
@@ -48,6 +62,16 @@ export default {
 		src: './assets/components/frames/slot_pad.png?v=20260629',
 		preload: true,
 	},
+	slotPadMobile: {
+		type: 'sprite',
+		src: './assets/components/frames/board_frame_mobile.png?v=20260701',
+		preload: true,
+	},
+	badgeFrame: {
+		type: 'sprite',
+		src: './assets/components/frames/badge_frame.png?v=20260701',
+		preload: true,
+	},
 	symbolPad: {
 		type: 'sprite',
 		src: './assets/components/frames/symbol_pad.png?v=20260625',
@@ -61,6 +85,11 @@ export default {
 	deerPresenter: {
 		type: 'sprite',
 		src: './assets/components/characters/deer_presenter.png?v=20260625',
+		preload: true,
+	},
+	deerPresenterMobile: {
+		type: 'sprite',
+		src: './assets/components/characters/deer_presenter_mobile.png?v=20260701',
 		preload: true,
 	},
 	multiplierHand: {
@@ -88,14 +117,14 @@ export default {
 		src: './assets/components/ui/scatter-panel-image.png?v=20260611',
 		preload: true,
 	},
-	aTile: { type: 'sprite', src: './assets/components/symbols/card_a.png?v=20260630b', preload: true },
-	aWinTile: { type: 'sprite', src: './assets/components/symbols/card_a_win.png?v=20260630b', preload: true },
-	kTile: { type: 'sprite', src: './assets/components/symbols/card_k.png?v=20260630b', preload: true },
-	kWinTile: { type: 'sprite', src: './assets/components/symbols/card_k_win.png?v=20260630b', preload: true },
-	qTile: { type: 'sprite', src: './assets/components/symbols/card_q.png?v=20260630b', preload: true },
-	qWinTile: { type: 'sprite', src: './assets/components/symbols/card_q_win.png?v=20260630b', preload: true },
-	jTile: { type: 'sprite', src: './assets/components/symbols/card_j.png?v=20260630b', preload: true },
-	jWinTile: { type: 'sprite', src: './assets/components/symbols/card_j_win.png?v=20260630b', preload: true },
+	aTile: { type: 'sprite', src: './assets/components/symbols/card_a.png?v=20260701c', preload: true },
+	aWinTile: { type: 'sprite', src: './assets/components/symbols/card_a_win.png?v=20260701c', preload: true },
+	kTile: { type: 'sprite', src: './assets/components/symbols/card_k.png?v=20260701c', preload: true },
+	kWinTile: { type: 'sprite', src: './assets/components/symbols/card_k_win.png?v=20260701c', preload: true },
+	qTile: { type: 'sprite', src: './assets/components/symbols/card_q.png?v=20260701c', preload: true },
+	qWinTile: { type: 'sprite', src: './assets/components/symbols/card_q_win.png?v=20260701c', preload: true },
+	jTile: { type: 'sprite', src: './assets/components/symbols/card_j.png?v=20260701c', preload: true },
+	jWinTile: { type: 'sprite', src: './assets/components/symbols/card_j_win.png?v=20260701c', preload: true },
 	squirrelJAnim: {
 		type: 'spine',
 		src: {
@@ -119,8 +148,8 @@ export default {
 		src: './assets/new_assets/slots_replacement/standard_expanded/rabbit_10_anim/rabbit_10_anim_sheet.json',
 		preload: true,
 	},
-	tTile: { type: 'sprite', src: './assets/components/symbols/card_t.png?v=20260630b', preload: true },
-	tWinTile: { type: 'sprite', src: './assets/components/symbols/card_t_win.png?v=20260630b', preload: true },
+	tTile: { type: 'sprite', src: './assets/components/symbols/card_t.png?v=20260701c', preload: true },
+	tWinTile: { type: 'sprite', src: './assets/components/symbols/card_t_win.png?v=20260701c', preload: true },
 	wildTile: { type: 'sprite', src: './assets/components/symbols/wild.png?v=20260630c', preload: true },
 	wildWinTile: { type: 'sprite', src: './assets/components/symbols/wild.png?v=20260630c', preload: true },
 	scatterCustom: { type: 'sprite', src: './assets/components/symbols/scatter.png?v=20260630c', preload: true },
@@ -259,3 +288,18 @@ export default {
 		preload: true,
 	},
 } as const;
+
+// Portrait-only: redirect the reel symbol sprites to the mobile art at boot.
+// Desktop/landscape keep the original './symbols/...' paths untouched.
+if (_isPortraitViewport) {
+	for (const entry of Object.values(assets as Record<string, { type?: string; src?: unknown }>)) {
+		if (entry && entry.type === 'sprite' && typeof entry.src === 'string') {
+			entry.src = entry.src.replace(
+				/\/symbols\/([^?]+)/,
+				(match: string, file: string) => (MOBILE_SYMBOLS.has(file) ? `/symbols_mobile/${file}` : match),
+			);
+		}
+	}
+}
+
+export default assets;

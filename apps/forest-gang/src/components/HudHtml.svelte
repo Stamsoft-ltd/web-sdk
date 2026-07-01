@@ -27,6 +27,11 @@
 	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.png'); // wooden round — utility buttons
 	const btnSpinBg = ap('/assets/components/navbar/btn_bg_spin.png'); // green round — spin
 	const btnWideBg = ap('/assets/components/navbar/btn_bg_wide.png'); // wide green — buy bonus
+	// Portrait/mobile pads (Figma 2792-4133)
+	const navPadMobile = ap('/assets/components/navbar/nav_pad_mobile.png'); // control-bar pill
+	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.png'); // − value + pill
+	const buyBonusMobile = ap('/assets/components/navbar/buy_bonus_mobile.png'); // round green badge
+	const spinMobile = ap('/assets/components/navbar/spin_mobile.png'); // green spin w/ leaves
 
 	// Gold icons layered over the button backgrounds
 	const iconMenu = ap('/assets/hud/icon-menu.png');
@@ -312,8 +317,109 @@
 <div
 	class="hud-shell"
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}')`}
+	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}')`}
 >
+	{#if isPortrait}
+		<!-- Dedicated portrait HUD (Figma mobile 2792-4133). Desktop/landscape markup below is untouched. -->
+		<div class="pt-hud">
+			<div class="pt-controls">
+				<div class="pt-grp">
+					<button class="pt-round" type="button" onclick={openRules} aria-label="Game rules">
+						<img class="pt-icon" src={iconMenu} alt="menu" />
+					</button>
+					<button class="pt-round" type="button" onclick={toggleSound} aria-label="Sound">
+						<img class="pt-icon" src={iconSound} alt="sound" class:is-muted={isMuted} />
+					</button>
+				</div>
+
+				<button
+					class="pt-spin"
+					type="button"
+					onclick={onSpinButton}
+					aria-label="Spin"
+					disabled={canInteract && !hasAuto && !canAffordBet}
+				>
+					{#if !isSpinStop}
+						<img src={iconSpin} alt="" class="pt-spin__icon" />
+					{/if}
+					{#if hasAuto}
+						<span class="pt-spin__count">{autoSpinsRemainingText}</span>
+					{:else if isSpinStop}
+						<img src={iconStop} alt="" class="pt-spin__stop" aria-hidden="true" />
+					{/if}
+				</button>
+
+				<div class="pt-grp">
+					<button
+						class="pt-round pt-round--turbo"
+						class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
+						class:turbo-super={stateBet.isSuperTurbo}
+						type="button"
+						onclick={onTurbo}
+						aria-label={i18nDerived.turboLabel()}
+					>
+						<img class="pt-icon" src={turboIcon} alt="turbo" />
+					</button>
+					<button
+						class="pt-round"
+						class:active={hasAuto}
+						type="button"
+						onclick={onAuto}
+						disabled={disableAuto}
+						aria-label={i18nDerived.autoplayLabel()}
+					>
+						<img class="pt-icon" src={iconAuto} alt="auto" />
+					</button>
+				</div>
+			</div>
+
+			<div class="pt-stats">
+				<div class="pt-balance">
+					<span class="pt-balance__label">{i18nDerived.balance()}</span>
+					<span class="pt-balance__value" use:fitText={formattedBalance}>{formattedBalance}</span>
+				</div>
+
+				<div class="pt-bet">
+					<button
+						class="pt-round pt-round--sm"
+						type="button"
+						onclick={onDecrease}
+						disabled={disableDecrease}
+						aria-label="Decrease bet"
+					>
+						<img class="pt-icon" src={iconMinus} alt="minus" />
+					</button>
+					<span
+						class="pt-bet__value"
+						class:value--feature={isAnyModeActive}
+						role="button"
+						tabindex="0"
+						onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
+						onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
+						use:fitText={formattedBet}
+					>{formattedBet}</span>
+					<button
+						class="pt-round pt-round--sm"
+						type="button"
+						onclick={onIncrease}
+						disabled={disableIncrease}
+						aria-label="Increase bet"
+					>
+						<img class="pt-icon" src={iconPlus} alt="plus" />
+					</button>
+				</div>
+
+				<button
+					class="pt-buy"
+					type="button"
+					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
+					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
+				>
+					<span class="pt-buy__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
+				</button>
+			</div>
+		</div>
+	{/if}
 	<div class="hud-bottom">
 		<div class="hud-left">
 			<div class="hud-system">
@@ -1359,5 +1465,145 @@
 	.hud-shell[data-layout='landscape'] .action-cluster .nav-btn {
 		width: clamp(42px, 6vh, 50px);
 		height: clamp(42px, 6vh, 50px);
+	}
+
+	/* ==================== Portrait mobile HUD (Figma 2792-4133) ==================== */
+	.hud-shell[data-layout='portrait'] { padding: 0; }
+	.hud-shell[data-layout='portrait'] .hud-bottom { display: none; }
+
+	.pt-hud {
+		position: absolute;
+		left: 0; right: 0; bottom: 0;
+		z-index: 6;
+		pointer-events: auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
+		padding: 0 12px calc(10px + env(safe-area-inset-bottom, 0px));
+	}
+
+	/* --- control row: menu·sound · SPIN · turbo·auto --- */
+	.pt-controls {
+		position: relative;
+		width: min(412px, 97vw);
+		height: 78px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0 20px;
+		box-sizing: border-box;
+	}
+	.pt-controls::before {
+		content: '';
+		position: absolute;
+		left: 0; right: 0; top: 8px; bottom: 2px;
+		background: var(--pt-navpad) center / 100% 100% no-repeat;
+		z-index: -1;
+	}
+	.pt-grp { display: flex; align-items: center; gap: 16px; }
+
+	.pt-round {
+		width: 46px; height: 46px;
+		border: 0; padding: 0; cursor: pointer;
+		background: var(--btn-round-bg) center / contain no-repeat;
+		display: grid; place-items: center;
+		flex: 0 0 auto;
+		transition: transform 0.12s ease, filter 0.12s ease;
+	}
+	.pt-round--sm { width: 42px; height: 42px; }
+	.pt-round:not(:disabled):hover { filter: brightness(1.12); }
+	.pt-round:not(:disabled):active { transform: translateY(1px) scale(0.94); }
+	.pt-round:disabled { opacity: 0.45; cursor: default; }
+	.pt-round.active { filter: drop-shadow(0 0 6px rgba(120,220,90,0.85)); }
+	.pt-icon { width: 52%; height: 52%; object-fit: contain; pointer-events: none; }
+	.pt-icon.is-muted { opacity: 0.4; }
+	.pt-round--turbo.turbo-fast { filter: drop-shadow(0 0 5px rgba(255,210,80,0.85)); }
+	.pt-round--turbo.turbo-super { filter: drop-shadow(0 0 7px rgba(120,220,90,0.95)); }
+
+	.pt-spin {
+		width: 94px; height: 94px;
+		margin-top: -22px;
+		border: 0; padding: 0; cursor: pointer;
+		background: var(--pt-spin) center / contain no-repeat;
+		display: grid; place-items: center;
+		flex: 0 0 auto;
+		position: relative;
+		transition: transform 0.12s ease, filter 0.12s ease;
+	}
+	.pt-spin:not(:disabled):hover { filter: brightness(1.1); }
+	.pt-spin:not(:disabled):active { transform: scale(0.96); }
+	.pt-spin:disabled { opacity: 0.5; cursor: default; }
+	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; } /* arrow overlay (base has none) */
+	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; }
+	.pt-spin__count {
+		font-family: 'Cinzel', serif; font-weight: 900; font-size: 1.3rem; color: #fff;
+		text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+	}
+
+	/* --- stats row: BALANCE · (− bet +) · BUY BONUS --- */
+	.pt-stats {
+		width: min(400px, 96vw);
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 6px;
+	}
+	.pt-balance {
+		display: flex; flex-direction: column; align-items: flex-start;
+		min-width: 0; flex: 1 1 0;
+		overflow: hidden;
+	}
+	.pt-balance__label {
+		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 11px;
+		letter-spacing: 0.04em; white-space: nowrap;
+		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
+		-webkit-background-clip: text; background-clip: text;
+		-webkit-text-fill-color: transparent; color: transparent;
+	}
+	.pt-balance__value {
+		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px;
+		white-space: nowrap; transform-origin: left center;
+		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
+		-webkit-background-clip: text; background-clip: text;
+		-webkit-text-fill-color: transparent; color: transparent;
+	}
+
+	/* Bet pill: dark rounded pad with − value + (no BET label, per Figma) */
+	.pt-bet {
+		flex: 0 0 auto;
+		display: flex; align-items: center; justify-content: space-between;
+		gap: 4px;
+		width: 164px; height: 56px;
+		padding: 0 7px;
+		box-sizing: border-box;
+		background: var(--pt-betpad) center / 100% 100% no-repeat;
+	}
+	.pt-bet__value {
+		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 16px; color: #fff;
+		white-space: nowrap; cursor: pointer; transform-origin: center;
+		text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+	}
+	.pt-bet__value.value--feature { color: #ffd84a; }
+
+	/* Buy bonus: round green badge with 2-line label inside */
+	.pt-buy {
+		flex: 0 0 auto;
+		width: 62px; height: 58px;
+		border: 0; padding: 0; cursor: pointer;
+		background: var(--pt-buybonus) center / contain no-repeat;
+		display: grid; place-items: center;
+		transition: filter 0.12s ease, transform 0.12s ease;
+	}
+	.pt-buy:hover { filter: brightness(1.1); }
+	.pt-buy:active { transform: scale(0.95); }
+	.pt-buy__label {
+		font-family: 'Cinzel', serif; font-weight: 900; font-size: 8.5px; line-height: 1.05;
+		letter-spacing: 0.01em; text-align: center;
+		max-width: 74%;
+		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
+		-webkit-background-clip: text; background-clip: text;
+		-webkit-text-fill-color: transparent; color: transparent;
+		filter: drop-shadow(0 1px 1px rgba(0,0,0,0.7));
 	}
 </style>

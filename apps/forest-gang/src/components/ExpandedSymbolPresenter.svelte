@@ -21,18 +21,28 @@
 
 	const context = getContext();
 
-	// deer_presenter.png is 792×670; the empty board the deer holds has its
-	// interior centred at (0.494, 0.645) of the image, roughly 0.34×0.20 in size.
-	const DEER_RATIO = 792 / 670;
-	const PLACEHOLDER = { cx: 0.494, cy: 0.645, h: 0.18 };
+	// Portrait uses a taller full-body deer (deer_presenter_mobile.png 360×730) that rises
+	// from the bottom; desktop uses deer_presenter.png (792×670) that zooms in centred.
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	const deerKey = $derived(isPortrait ? 'deerPresenterMobile' : 'deerPresenter');
+	const MOBILE_RATIO = 360 / 730;
+	const DEER_RATIO = $derived(isPortrait ? MOBILE_RATIO : 792 / 670);
+	// Empty-board interior centre + height as a fraction of the deer image.
+	const PLACEHOLDER = $derived(
+		isPortrait ? { cx: 0.486, cy: 0.585, h: 0.14 } : { cx: 0.494, cy: 0.645, h: 0.18 },
+	);
 	// Per-symbol vertical nudge (fraction of deer height). The animal tiles are content-centred,
 	// so they sit right at PLACEHOLDER.cy; some letter glyphs read low and need a small lift.
 	const CY_NUDGE: Partial<Record<SymbolName, number>> = { J: -0.03 };
-	const LETTER_ASPECT = 1.17; // default symbol sprites are ~cell aspect
+	const LETTER_ASPECT = $derived(isPortrait ? 1.34 : 1.17); // symbol sprites ~cell aspect
 
 	const main = $derived(context.stateLayoutDerived.mainLayout());
-	// Fit the deer to the screen (portrait-friendly): cap by both height and width.
-	const deerH = $derived(Math.min(main.height * 0.92, main.width * 0.62));
+	// Portrait: much bigger (height-capped full body). Desktop: fit both ways.
+	const deerH = $derived(
+		isPortrait
+			? Math.min(main.height * 0.92, (main.width / MOBILE_RATIO) * 0.98)
+			: Math.min(main.height * 0.92, main.width * 0.62),
+	);
 	const deerW = $derived(deerH * DEER_RATIO);
 
 	// Symbols the board rolls through before landing on the chosen one.
@@ -48,8 +58,9 @@
 	const letterH = $derived(deerH * PLACEHOLDER.h);
 	const letterW = $derived(letterH * LETTER_ASPECT);
 
-	// Deer zooms + fades in (fade comes from FadeContainer).
+	// Deer zooms + fades in (desktop) or rises from the bottom (portrait).
 	let deerScale = new Tween(1);
+	let slideY = new Tween(0);
 	// Letter rotation (jiggle, after landing) and scale (settle pop on landing).
 	let rot = new Tween(0);
 	let sc = new Tween(1);
@@ -117,9 +128,17 @@
 			wiggling = false;
 			rot.set(0, { duration: 0 });
 			sc.set(1, { duration: 0 });
-			// deer zooms in
-			deerScale.set(0.82, { duration: 0 });
-			deerScale.set(1, { duration: 420, easing: backOut });
+			if (isPortrait) {
+				// deer rises up from the bottom
+				deerScale.set(1, { duration: 0 });
+				slideY.set(deerH, { duration: 0 });
+				slideY.set(0, { duration: 520, easing: backOut });
+			} else {
+				// deer zooms in
+				slideY.set(0, { duration: 0 });
+				deerScale.set(0.82, { duration: 0 });
+				deerScale.set(1, { duration: 420, easing: backOut });
+			}
 			// roll through symbols, then land on the chosen one
 			startRoll(emitterEvent.symbol);
 		},
@@ -153,11 +172,14 @@
 	<MainContainer>
 		<Container
 			x={main.width / 2}
-			y={main.height / 2}
-			scale={deerScale.current}
-			pivot={anchorToPivot({ anchor: 0.5, sizes: { width: deerW, height: deerH } })}
+			y={isPortrait ? main.height + slideY.current : main.height / 2}
+			scale={isPortrait ? 1 : deerScale.current}
+			pivot={anchorToPivot({
+				anchor: isPortrait ? { x: 0.5, y: 1 } : 0.5,
+				sizes: { width: deerW, height: deerH },
+			})}
 		>
-			<Sprite key="deerPresenter" width={deerW} height={deerH} />
+			<Sprite key={deerKey} width={deerW} height={deerH} />
 			{#if letterKey}
 				<Container
 					x={deerW * PLACEHOLDER.cx}
