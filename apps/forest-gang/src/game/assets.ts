@@ -78,6 +78,11 @@ export default {
 		src: './assets/components/ui/press_play_logo.png?v=20260630',
 		preload: true,
 	},
+	earnedCoin: {
+		type: 'sprite',
+		src: './assets/components/ui/earned_coin.png?v=20260701b',
+		preload: true,
+	},
 	scatterPanelImage: {
 		type: 'sprite',
 		src: './assets/components/ui/scatter-panel-image.png?v=20260611',

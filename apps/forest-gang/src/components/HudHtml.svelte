@@ -65,6 +65,8 @@
 	const isFeatureActive = $derived(stateBet.activeBetModeKey === 'FEATURE');
 	const isChanceActive = $derived(stateBet.activeBetModeKey === 'CHANCE');
 	const isAnyModeActive = $derived(isFeatureActive || isChanceActive);
+	// Buying a bonus is not allowed while a bonus round is in progress.
+	const isInBonus = $derived(context.stateGame.bonusMode !== null);
 	const turboIcon = $derived(
 		stateBet.isSuperTurbo ? iconTurbo3 : stateBet.isTurbo ? iconTurbo2 : iconTurbo1,
 	);
@@ -337,6 +339,7 @@
 				<button
 					class="buy-btn"
 					type="button"
+					disabled={isInBonus}
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
@@ -814,13 +817,13 @@
 	}
 
 	.circle-btn:not(:disabled):hover,
-	.buy-btn:hover {
+	.buy-btn:not(:disabled):hover {
 		transform: translateY(-1px);
 		filter: brightness(1.1);
 	}
 
 	.circle-btn:not(:disabled):active,
-	.buy-btn:active {
+	.buy-btn:not(:disabled):active {
 		transform: translateY(1px) scale(0.95);
 	}
 
@@ -1146,6 +1149,12 @@
 		transition:
 			transform 0.12s ease,
 			filter 0.12s ease;
+	}
+
+	.buy-btn:disabled {
+		opacity: 0.45;
+		cursor: default;
+		filter: grayscale(0.35);
 	}
 
 	.buy-btn__label {
