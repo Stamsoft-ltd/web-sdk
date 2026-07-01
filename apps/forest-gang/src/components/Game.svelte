@@ -29,6 +29,7 @@
 	import Transition from './Transition.svelte';
 	import BonusSymbolPanel from './BonusSymbolPanel.svelte';
 	import GlobalMultiplier from './GlobalMultiplier.svelte';
+	import BonusEarnedPanel from './BonusEarnedPanel.svelte';
 	import ExpandedSymbolOverlay from './ExpandedSymbolOverlay.svelte';
 	import ExpandedSymbolPresenter from './ExpandedSymbolPresenter.svelte';
 	import DealItMultiplierPanel from './DealItMultiplierPanel.svelte';
@@ -389,6 +390,7 @@
 				<BonusSymbolPanel />
 				<GlobalMultiplier />
 				<DealItMultiplierPanel />
+				<BonusEarnedPanel />
 				<ExpandedSymbolPresenter />
 				<Win />
 				<FreeSpinIntro />
