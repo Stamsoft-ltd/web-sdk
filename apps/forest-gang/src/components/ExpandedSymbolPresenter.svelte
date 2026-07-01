@@ -22,19 +22,27 @@
 	const context = getContext();
 
 	// Portrait uses a taller full-body deer (deer_presenter_mobile.png 360×730) that rises
-	// from the bottom; desktop uses deer_presenter.png (792×670) that zooms in centred.
+	// from the bottom; desktop uses deer_presenter.png (1087×1447, clean transparent bg — the
+	// previous art had a baked cream halo that read as a cut glow) and zooms in centred.
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 	const deerKey = $derived(isPortrait ? 'deerPresenterMobile' : 'deerPresenter');
 	const MOBILE_RATIO = 360 / 730;
-	const DEER_RATIO = $derived(isPortrait ? MOBILE_RATIO : 792 / 670);
+	const DEER_RATIO = $derived(isPortrait ? MOBILE_RATIO : 1087 / 1447);
 	// Empty-board interior centre + height as a fraction of the deer image.
 	const PLACEHOLDER = $derived(
-		isPortrait ? { cx: 0.486, cy: 0.585, h: 0.14 } : { cx: 0.494, cy: 0.645, h: 0.18 },
+		isPortrait ? { cx: 0.486, cy: 0.585, h: 0.17 } : { cx: 0.488, cy: 0.622, h: 0.18 },
 	);
-	// Per-symbol vertical nudge (fraction of deer height). The animal tiles are content-centred,
-	// so they sit right at PLACEHOLDER.cy; some letter glyphs read low and need a small lift.
-	const CY_NUDGE: Partial<Record<SymbolName, number>> = { J: -0.03 };
 	const LETTER_ASPECT = $derived(isPortrait ? 1.34 : 1.17); // symbol sprites ~cell aspect
+
+	// Per-type size compensation so every symbol reads at the same visual size on the board.
+	// Card letters / emblems fill their tile less than the framed animals, so scale them up to match.
+	const HIGH_SYMBOLS_SET = new Set<SymbolName>(['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL']);
+	const symScale = (name: SymbolName | null) => {
+		if (name === 'WILD') return 1.22;
+		if (name === 'SCATTER') return 1.26;
+		if (name && HIGH_SYMBOLS_SET.has(name)) return 1.15; // framed animals — match the card size
+		return 1.19; // A / K / Q / J / T card letters
+	};
 
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	// Portrait: much bigger (height-capped full body). Desktop: fit both ways.
@@ -53,9 +61,10 @@
 	// displaySymbol cycles during the roll, then settles on the real symbol.
 	let displaySymbol = $state<SymbolName | null>(null);
 	const letterKey = $derived(displaySymbol ? (spriteKeyByName[displaySymbol] ?? null) : null);
-	const symbolCy = $derived(PLACEHOLDER.cy + (displaySymbol ? (CY_NUDGE[displaySymbol] ?? 0) : 0));
+	// All symbols centre on the board (no per-symbol vertical nudge).
+	const symbolCy = $derived(PLACEHOLDER.cy);
 
-	const letterH = $derived(deerH * PLACEHOLDER.h);
+	const letterH = $derived(deerH * PLACEHOLDER.h * symScale(displaySymbol));
 	const letterW = $derived(letterH * LETTER_ASPECT);
 
 	// Deer zooms + fades in (desktop) or rises from the bottom (portrait).

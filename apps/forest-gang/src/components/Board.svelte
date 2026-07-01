@@ -14,7 +14,13 @@
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
-	import { spriteKeyByName, bonusSpriteKeyByName, winSpriteKeyByName } from '../game/utils';
+	import {
+		spriteKeyByName,
+		bonusSpriteKeyByName,
+		winSpriteKeyByName,
+		spriteKeyByNameLandscape,
+		winSpriteKeyByNameLandscape,
+	} from '../game/utils';
 	import type { SymbolName } from '../game/types';
 
 	const LOW_SYMBOLS_SET = new Set<SymbolName>(['T', 'J', 'Q', 'K', 'A']);
@@ -24,13 +30,46 @@
 	const layout = $derived(context.stateGameDerived.boardLayout());
 	let show = $state(true);
 
-	const activeMap = $derived(context.stateGame.bonusMode ? bonusSpriteKeyByName : spriteKeyByName);
+	// Mobile-landscape uses dedicated framed symbol art; desktop/portrait keep the standard maps.
+	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+	const activeMap = $derived(
+		isLandscape
+			? spriteKeyByNameLandscape
+			: context.stateGame.bonusMode
+				? bonusSpriteKeyByName
+				: spriteKeyByName,
+	);
+	const activeWinMap = $derived(isLandscape ? winSpriteKeyByNameLandscape : winSpriteKeyByName);
 	const getSpriteKey = (name: SymbolName, state?: string) => {
-		if (state === 'win') return winSpriteKeyByName[name] ?? activeMap[name] ?? 'aTile';
-		return activeMap[name] ?? 'aTile';
+		if (state === 'win') return activeWinMap[name] ?? activeMap[name] ?? activeMap.A;
+		return activeMap[name] ?? activeMap.A;
 	};
 
 	const getX = (reelIndex: number) => SYMBOL_W * (reelIndex + 0.5);
+
+	// Landscape spreads the reel pitch on each axis (boardScaleX/Y) to fill the panel. Compensate
+	// each symbol's width/height so it renders at the uniform boardScale size (undistorted).
+	const scaleX = $derived(layout.boardScaleX ?? layout.boardScale);
+	const scaleY = $derived(layout.boardScaleY ?? layout.boardScale);
+	// Desktop symbols carry a lot of built-in tile padding, so enlarge them to fill the cell more
+	// (reduces the gaps between symbols). Landscape/portrait keep their own tuned sizing.
+	const isDesktop = $derived(context.stateLayoutDerived.layoutType() === 'desktop');
+	const SIZE_BOOST = $derived(isDesktop ? 1.1 : 1);
+	const symbolW = $derived(SYMBOL_W * (layout.boardScale / scaleX) * SIZE_BOOST);
+	const symbolH = $derived(SYMBOL_H * (layout.boardScale / scaleY) * SIZE_BOOST);
+
+	// Per-type visual balance: card (low) letters fill their tile much more than the framed
+	// animal / wild / scatter art, so they read bigger. Shrink the low cards and nudge the
+	// wild/scatter emblems up so all symbol types appear a similar size on the reels.
+	const HIGH_SYMBOLS_SET = new Set<SymbolName>(['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL']);
+	const symScale = (name: SymbolName) => {
+		if (LOW_SYMBOLS_SET.has(name)) return 0.86;
+		if (name === 'WILD' || name === 'SCATTER') return 1.1;
+		// Premium animals: desktop art has built-in margin (reads small) so enlarge it; the
+		// landscape art already fills its tile, so keep it at reference size there.
+		if (HIGH_SYMBOLS_SET.has(name)) return isLandscape ? 1.0 : 1.18;
+		return 1;
+	};
 
 	// True while any symbol is in 'win' state — used to dim non-winning symbols
 	const hasWinState = $derived(
@@ -82,12 +121,15 @@
 </script>
 
 {#if show}
-	<Container x={layout.x} y={layout.y + BOARD_GRID_OFFSET_Y} pivot={layout.pivot} scale={layout.boardScale}>
+	<Container x={layout.x + (isDesktop ? 3 : 0)} y={layout.y + BOARD_GRID_OFFSET_Y} pivot={layout.pivot} scale={{ x: scaleX, y: scaleY }}>
 		<Graphics
 			isMask
 			draw={(graphics) => {
+				// Inset the mask a few units top & bottom so the top slivers of the buffer symbols
+				// (just outside the visible rows) don't bleed in as thin lines at the grid edge.
+				const inset = isDesktop ? 2 : 0;
 				graphics.beginFill(0xffffff);
-				graphics.rect(0, 0, SYMBOL_W * BOARD_DIMENSIONS.x, SYMBOL_H * BOARD_DIMENSIONS.y);
+				graphics.rect(0, inset, SYMBOL_W * BOARD_DIMENSIONS.x, SYMBOL_H * BOARD_DIMENSIONS.y - inset * 2);
 				graphics.endFill();
 			}}
 		/>
@@ -104,13 +146,14 @@
 					alpha={0.02}
 				/>
 				{@const isWin = reelSymbol.symbolState === 'win'}
+				{@const s = symScale(reelSymbol.rawSymbol.name)}
 				<Sprite
 					key={getSpriteKey(reelSymbol.rawSymbol.name, reelSymbol.symbolState)}
 					x={getX(reelIndex)}
 					y={y}
 					anchor={{ x: 0.5, y: 0.5 }}
-					width={SYMBOL_W}
-					height={SYMBOL_H}
+					width={symbolW * s}
+					height={symbolH * s}
 					alpha={hasWinState && !isWin ? 0.35 : 1}
 					tint={isWin ? 0xffffff : 0xffffff}
 				/>

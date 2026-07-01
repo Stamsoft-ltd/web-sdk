@@ -466,4 +466,18 @@
 		background-position: center 12%;
 		transform: scale(1.2);
 	}
+
+	/* Landscape: the forest should fill the whole screen (incl. behind the bottom controls).
+	   Lighten the blurred backdrop and soften the darkening gradient so it doesn't read as a
+	   black band below the frame. */
+	.forest-shell[data-layout='landscape']::before {
+		filter: blur(8px) brightness(0.5) saturate(0.9);
+		transform: scale(1.06);
+		opacity: 1;
+	}
+	.forest-shell[data-layout='landscape']::after {
+		background:
+			radial-gradient(circle at center, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.4) 80%),
+			linear-gradient(180deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.05) 26%, rgba(0, 0, 0, 0.12) 78%, rgba(0, 0, 0, 0.3));
+	}
 </style>

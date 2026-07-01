@@ -5,13 +5,24 @@
 	import { getContext } from '../game/context';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
 	import { spriteKeyByName } from '../game/utils';
+	import { SYMBOL_SIZE } from '../game/constants';
 
 	const context = getContext();
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+
+	// Free-spins board geometry (mirrors FreeSpinCounter.svelte) so the portrait logo can be
+	// centred over the board and sized to match its width.
+	const FS_PANEL_W = $derived(SYMBOL_SIZE * 2.0 * 0.96);
+	const fsBoardLeftX = $derived(
+		Math.max(18 / main.scale, main.width / 2 - 702 / main.scale) + SYMBOL_SIZE * 0.7,
+	);
+	const fsBoardCx = $derived(fsBoardLeftX + FS_PANEL_W * 0.5);
 
 	const LOGO_ASPECT = 1176 / 572;
-	const LOGO_W = $derived(main.width * 0.15);
+	// Landscape uses a smaller logo than desktop.
+	const LOGO_W = $derived(main.width * (isLandscape ? 0.10 : 0.15));
 	const LOGO_H = $derived(LOGO_W / LOGO_ASPECT);
 	const MARGIN_X = $derived(main.width * 0.02);
 	const MARGIN_Y = $derived(main.height * 0.03);
@@ -21,9 +32,12 @@
 	const BRAND_W = $derived(main.width * 0.11);
 	const BRAND_H = $derived(BRAND_W / BRAND_ASPECT);
 
-	// Portrait: big centred FOREST GANG logo above the board, small "Press Play" above it.
-	const P_LOGO_W = $derived(main.width * 0.42);
+	// Portrait: FOREST GANG logo centred over the Free Spins board and matched to its width, so the
+	// two read as a stacked, left-aligned pair (Figma). Slightly wider than the board to account for
+	// the logo art's transparent side margins.
+	const P_LOGO_W = $derived(FS_PANEL_W * 1.15);
 	const P_LOGO_H = $derived(P_LOGO_W / LOGO_ASPECT);
+	const P_LOGO_CX = $derived(fsBoardCx);
 	const P_LOGO_CY = $derived(main.height * 0.085);
 	const P_PP_W = $derived(main.width * 0.16);
 	const P_PP_H = $derived(P_PP_W / BRAND_ASPECT);
@@ -89,16 +103,16 @@
 		<Sprite
 			key="pressPlayLogo"
 			anchor={{ x: 0.5, y: 1 }}
-			x={main.width * 0.5}
+			x={P_LOGO_CX}
 			y={P_LOGO_CY - P_LOGO_H * 0.5 - main.height * 0.006}
 			width={P_PP_W}
 			height={P_PP_H}
 		/>
-		<!-- Big FOREST GANG logo, centred above the board -->
+		<!-- Big FOREST GANG logo, centred above the board and matched to its width -->
 		<Sprite
 			key="forestGangLogo"
 			anchor={0.5}
-			x={main.width * 0.5}
+			x={P_LOGO_CX}
 			y={P_LOGO_CY}
 			width={P_LOGO_W}
 			height={P_LOGO_H}

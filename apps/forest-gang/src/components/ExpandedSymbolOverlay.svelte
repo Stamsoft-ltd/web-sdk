@@ -66,11 +66,11 @@
 		anim.pop.set(1, { duration: 0 });
 		anim.looping = false;
 
-		anim.h.set(colHeight, { duration: 280, easing: cubicOut });
-		anim.y.set(halfH, { duration: 280, easing: cubicOut });
+		anim.h.set(colHeight, { duration: 460, easing: cubicOut });
+		anim.y.set(halfH, { duration: 460, easing: cubicOut });
 
 		anim.pop.set(1.08, { duration: 0 });
-		setTimeout(() => anim.pop.set(1, { duration: 180, easing: (t) => 1 - (1 - t) ** 3 }), 280);
+		setTimeout(() => anim.pop.set(1, { duration: 220, easing: (t) => 1 - (1 - t) ** 3 }), 460);
 	});
 </script>
 

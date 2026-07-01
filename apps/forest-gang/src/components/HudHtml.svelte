@@ -28,6 +28,10 @@
 	const btnSpinBg = ap('/assets/components/navbar/btn_bg_spin.png'); // green round — spin
 	const btnWideBg = ap('/assets/components/navbar/btn_bg_wide.png'); // wide green — buy bonus
 	// Portrait/mobile pads (Figma 2792-4133)
+	// Mobile-landscape HUD art (Figma 2682-3639)
+	const lsRightBar = ap('/assets/components/symbols/landscape/right_bar.png'); // vertical control bar
+	const lsBetPad = ap('/assets/components/symbols/landscape/stepper_pad.png'); // − value + bottom pad
+	const lsBuyBonus = ap('/assets/components/symbols/landscape/buy_bonus.png'); // round green badge
 	const navPadMobile = ap('/assets/components/navbar/nav_pad_mobile.png'); // control-bar pill
 	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.png'); // − value + pill
 	const buyBonusMobile = ap('/assets/components/navbar/buy_bonus_mobile.png'); // round green badge
@@ -204,7 +208,7 @@
 
 		if (context.stateXstateDerived.isIdle()) {
 			// Always reset to BASE before a new spin (unless feature toggle is on)
-			stateBet.activeBetModeKey = isFeatureActive ? 'FEATURE' : 'BASE';
+			stateBet.activeBetModeKey = isFeatureActive ? 'FEATURE' : isChanceActive ? 'CHANCE' : 'BASE';
 			context.eventEmitter.broadcast({ type: 'bet' });
 			return;
 		}
@@ -244,7 +248,7 @@
 		context.eventEmitter.broadcast({ type: 'soundPressBet' });
 
 		if (context.stateXstateDerived.isIdle()) {
-			stateBet.activeBetModeKey = isFeatureActive ? 'FEATURE' : 'BASE';
+			stateBet.activeBetModeKey = isFeatureActive ? 'FEATURE' : isChanceActive ? 'CHANCE' : 'BASE';
 			context.eventEmitter.broadcast({ type: 'bet' });
 			return;
 		}
@@ -317,7 +321,7 @@
 <div
 	class="hud-shell"
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}')`}
+	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}')`}
 >
 	{#if isPortrait}
 		<!-- Dedicated portrait HUD (Figma mobile 2792-4133). Desktop/landscape markup below is untouched. -->
@@ -420,6 +424,105 @@
 			</div>
 		</div>
 	{/if}
+	{#if isLandscapeMobile}
+		<!-- Dedicated mobile-landscape HUD (Figma 2682-3639). Desktop markup below is untouched
+		     and hidden via CSS in landscape. -->
+		<div class="ls-hud">
+			<!-- Left rail: BUY BONUS + BALANCE (logo is drawn separately by GameLogoFrame) -->
+			<div class="ls-left">
+				<button
+					class="ls-buy"
+					type="button"
+					disabled={isInBonus && !isAnyModeActive}
+					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
+					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
+				>
+					<span class="ls-buy__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
+				</button>
+				<div class="ls-balance">
+					<span class="ls-balance__label">{i18nDerived.balance()}</span>
+					<span class="ls-balance__value" use:fitText={formattedBalance}>{formattedBalance}</span>
+				</div>
+			</div>
+
+			<!-- Bottom-centre bet pad: − value + -->
+			<div class="ls-bet">
+				<button
+					class="ls-step"
+					type="button"
+					onclick={onDecrease}
+					disabled={disableDecrease}
+					aria-label="Decrease bet"
+				>
+					<img class="ls-icon" src={iconMinus} alt="minus" />
+				</button>
+				<span
+					class="ls-bet__value"
+					class:value--feature={isAnyModeActive}
+					role="button"
+					tabindex="0"
+					onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
+					onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
+					use:fitText={formattedBet}
+				>{formattedBet}</span>
+				<button
+					class="ls-step"
+					type="button"
+					onclick={onIncrease}
+					disabled={disableIncrease}
+					aria-label="Increase bet"
+				>
+					<img class="ls-icon" src={iconPlus} alt="plus" />
+				</button>
+			</div>
+
+			<!-- Right rail: menu, sound, spin, turbo, autospin -->
+			<div class="ls-right">
+				<button class="ls-round" type="button" onclick={openRules} aria-label="Game rules">
+					<img class="ls-icon" src={iconMenu} alt="menu" />
+				</button>
+				<button class="ls-round" type="button" onclick={toggleSound} aria-label="Sound">
+					<img class="ls-icon" src={iconSound} alt="sound" class:is-muted={isMuted} />
+				</button>
+				<button
+					class="ls-spin"
+					type="button"
+					onclick={onSpinButton}
+					aria-label="Spin"
+					disabled={canInteract && !hasAuto && !canAffordBet}
+				>
+					{#if !isSpinStop}
+						<img src={iconSpin} alt="" class="ls-spin__icon" />
+					{/if}
+					{#if hasAuto}
+						<span class="ls-spin__count">{autoSpinsRemainingText}</span>
+					{:else if isSpinStop}
+						<img src={iconStop} alt="" class="ls-spin__stop" aria-hidden="true" />
+					{/if}
+				</button>
+				<button
+					class="ls-round ls-round--turbo"
+					class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
+					class:turbo-super={stateBet.isSuperTurbo}
+					type="button"
+					onclick={onTurbo}
+					aria-label={i18nDerived.turboLabel()}
+				>
+					<img class="ls-icon" src={turboIcon} alt="turbo" />
+				</button>
+				<button
+					class="ls-round"
+					class:active={hasAuto}
+					type="button"
+					onclick={onAuto}
+					disabled={disableAuto}
+					aria-label={i18nDerived.autoplayLabel()}
+				>
+					<img class="ls-icon" src={iconAuto} alt="auto" />
+				</button>
+			</div>
+		</div>
+	{/if}
 	<div class="hud-bottom">
 		<div class="hud-left">
 			<div class="hud-system">
@@ -445,7 +548,7 @@
 				<button
 					class="buy-btn"
 					type="button"
-					disabled={isInBonus}
+					disabled={isInBonus && !isAnyModeActive}
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
@@ -622,6 +725,12 @@
 		z-index: 5;
 		pointer-events: none;
 		background: linear-gradient(to top, #070b06 0%, #070b06 78%, rgba(7, 11, 6, 0) 100%);
+	}
+
+	/* Landscape has no wooden bottom bar — drop the dark shelf so the forest shows behind
+	   the bottom controls (Figma 2682-3639) instead of a black band. */
+	.hud-shell[data-layout='landscape']::after {
+		display: none;
 	}
 
 	.hud-bottom,
@@ -1368,24 +1477,184 @@
 		padding: 8px 12px;
 	}
 
+	/* Landscape uses the dedicated .ls-hud block below; the generic bottom bar is hidden. */
 	.hud-shell[data-layout='landscape'] .hud-bottom {
+		display: none;
+	}
+
+	/* ===== Mobile-landscape HUD (Figma 2682-3639) ===== */
+	.ls-hud {
 		position: absolute;
-		top: 58px;
-		left: 12px;
-		right: 12px;
-		bottom: auto;
-		width: auto;
-		height: auto;
+		inset: 0;
+		pointer-events: none;
+		z-index: 20;
+		font-family: 'Cinzel', serif;
+	}
+	.ls-hud button,
+	.ls-hud .ls-bet__value {
+		pointer-events: auto;
+	}
+
+	/* Left rail: BUY BONUS + BALANCE, bottom-left */
+	.ls-left {
+		position: absolute;
+		left: 4px;
+		bottom: 14px;
 		display: flex;
-		align-content: center;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+	}
+	.ls-buy {
+		/* Round green leaf-corner disc (buy_bonus.png, 247×212) */
+		width: clamp(84px, 9vw, 124px);
+		aspect-ratio: 247 / 212;
+		border: 0;
+		padding: 0 0 6%;
+		cursor: pointer;
+		background: var(--ls-buybonus) center / 100% 100% no-repeat;
+		display: grid;
+		place-items: center;
+		transition: filter 0.12s ease, transform 0.12s ease;
+	}
+	.ls-buy:not(:disabled):hover { filter: brightness(1.1); transform: translateY(-1px); }
+	.ls-buy:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
+	.ls-buy__label {
+		font-family: 'Poppins', sans-serif;
+		font-size: 0.62rem;
+		font-weight: 700;
+		line-height: 1.05;
+		letter-spacing: 0.02em;
+		max-width: 62%;
+		text-align: center;
+		/* "BUY BONUS" wraps to two lines to fit the round disc */
+		background: linear-gradient(184deg, #ffd84a 10%, #ffa90e 60%, #d18005 95%);
+		background-clip: text;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+	}
+	.ls-balance {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+	}
+	.ls-balance__label {
+		font-size: 0.62rem;
+		letter-spacing: 0.04em;
+		color: transparent;
+		background: linear-gradient(184deg, #e2d981 8.6%, #fbc503 60%, #d98503 129%);
+		background-clip: text;
+		-webkit-background-clip: text;
+	}
+	.ls-balance__value {
+		font-family: 'Poppins', sans-serif;
+		font-weight: 600;
+		font-size: 0.8rem;
+		color: #fff;
+	}
+
+	/* Bottom-centre bet pad: − value + */
+	.ls-bet {
+		position: absolute;
+		left: 50%;
+		bottom: 12px;
+		transform: translateX(-50%);
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 4px 14px;
+		border: 0;
+		background: var(--ls-betpad) center / 100% 100% no-repeat;
+		min-width: 210px;
+		justify-content: center;
+	}
+	.ls-bet__value {
+		font-family: 'Poppins', sans-serif;
+		font-weight: 700;
+		font-size: 1rem;
+		color: #fff;
+		min-width: 68px;
+		text-align: center;
+		cursor: pointer;
+	}
+	.ls-step {
+		width: clamp(38px, 4.8vh, 48px);
+		height: clamp(38px, 4.8vh, 48px);
+		border: 0;
+		background: var(--btn-round-bg) center / contain no-repeat;
+		padding: 0;
+		cursor: pointer;
+		display: grid;
+		place-items: center;
+		transition: filter 0.12s ease, transform 0.12s ease;
+	}
+	.ls-step:not(:disabled):hover { filter: brightness(1.1); }
+	.ls-step:disabled { opacity: 0.45; cursor: default; }
+	.ls-step .ls-icon { width: 44%; height: 44%; object-fit: contain; }
+
+	/* Right rail: menu, sound, spin, turbo, autospin (vertical bar) */
+	.ls-right {
+		position: absolute;
+		right: 10px;
+		top: 50%;
+		transform: translateY(-50%);
+		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 4px;
+		gap: clamp(6px, 1.4vh, 12px);
+		padding: 18px 8px;
+		background: var(--ls-rightbar) center / 100% 100% no-repeat;
+	}
+	.ls-round {
+		width: clamp(40px, 5vh, 52px);
+		height: clamp(40px, 5vh, 52px);
+		border: 0;
+		background: var(--btn-round-bg) center / contain no-repeat;
 		padding: 0;
-		background: none;
-		box-shadow: none;
-		border-radius: 0;
-		overflow: visible;
+		cursor: pointer;
+		display: grid;
+		place-items: center;
+		transition: filter 0.12s ease, transform 0.12s ease;
+	}
+	.ls-round:not(:disabled):hover { filter: brightness(1.1); }
+	.ls-round:disabled { opacity: 0.5; cursor: default; }
+	.ls-round .ls-icon { width: 46%; height: 46%; object-fit: contain; }
+	.ls-round .ls-icon.is-muted { opacity: 0.55; }
+
+	.ls-spin {
+		width: clamp(72px, 11vh, 104px);
+		height: clamp(72px, 11vh, 104px);
+		border: 0;
+		background: var(--ls-spin) center / contain no-repeat;
+		padding: 0;
+		cursor: pointer;
+		position: relative;
+		display: grid;
+		place-items: center;
+		transition: filter 0.12s ease, transform 0.12s ease;
+	}
+	.ls-spin:not(:disabled):hover { filter: brightness(1.08); }
+	.ls-spin:disabled { opacity: 0.5; cursor: default; }
+	.ls-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translateY(7%); }
+	.ls-spin__stop {
+		position: absolute;
+		top: 48.5%;
+		left: 51.2%;
+		width: 30%;
+		aspect-ratio: 1;
+		transform: translate(-50%, -50%);
+		object-fit: contain;
+	}
+	.ls-spin__count {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-weight: 800;
+		font-size: 1.1rem;
+		color: #fff;
 	}
 
 	.hud-shell[data-layout='landscape'] .hud-buy {

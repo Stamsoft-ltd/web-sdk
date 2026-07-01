@@ -86,15 +86,14 @@
 		dealItMultiplierSetTarget: ({ multiplier: m }: { multiplier: number }) => {
 			pendingTarget = m;
 		},
-		// Commit point (after the win resolves): animate only if the value actually changed.
+		// Commit point (after the win resolves): the hand always spins to reveal this spin's
+		// multiplier (even when the value is unchanged) for excitement, then lands on it.
 		dealItMultiplierAwaitCycle: async () => {
-			if (pendingTarget !== multiplier) {
-				context.eventEmitter.broadcast({
-					type: 'soundOnce',
-					name: pendingTarget > multiplier ? 'sfx_multiplier_update' : 'sfx_multiplier_reset',
-				});
-				await swapTo(pendingTarget);
-			}
+			context.eventEmitter.broadcast({
+				type: 'soundOnce',
+				name: pendingTarget > multiplier ? 'sfx_multiplier_update' : 'sfx_multiplier_reset',
+			});
+			await swapTo(pendingTarget);
 		},
 		// Bonus end (or switch to All In): clear and hide.
 		dealItMultiplierHide: () => {

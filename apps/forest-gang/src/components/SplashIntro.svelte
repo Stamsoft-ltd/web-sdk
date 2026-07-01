@@ -21,9 +21,6 @@
 	const bgMobileSrc = './assets/components/backgrounds/splash_mobile.jpg?v=20260630';
 	const logoSrc = './assets/components/ui/forest_gang_logo.png';
 	const brandSrc = './assets/components/ui/press_play_logo.png?v=20260630';
-	// Big gold values stay as images (stylised); everything else is localizable text.
-	const valExpanding = './assets/components/splash/feat_value_expanding.png?v=20260626b';
-	const valEpic = './assets/components/splash/feat_value_epic.png?v=20260626b';
 
 	// Mobile = portrait viewport: show the three feature blocks one at a time, 3s each.
 	let isPortrait = $state(false);
@@ -63,8 +60,8 @@
 				{#if slide === 0}
 					<!-- EPIC WIN -->
 					<div class="f-title f-purple">{t('SPLASH EPIC TITLE')}</div>
-					<div class="f-sub f-pre">{t('SPLASH EPIC TOP')}</div>
-					<img class="f-value" src={valEpic} alt="25'000x" draggable="false" />
+					<div class="f-sub f-sub--fit f-pre">{t('SPLASH EPIC TOP')}</div>
+					<div class="f-value-num f-gold">25'000x</div>
 					<div class="f-hl f-gold">{t('SPLASH EPIC BOTTOM')}</div>
 				{:else if slide === 1}
 					<!-- BONUS GAME -->
@@ -77,7 +74,7 @@
 					<!-- EXPANDING REELS -->
 					<div class="f-title f-green">{t('SPLASH EXP TITLE')}</div>
 					<div class="f-sub">{t('SPLASH EXP TOP')}</div>
-					<img class="f-value" src={valExpanding} alt="1024x" draggable="false" />
+					<div class="f-value-num f-gold">1024x</div>
 					<div class="f-sub">{t('SPLASH EXP BOTTOM')}</div>
 				{/if}
 			</div>
@@ -100,7 +97,7 @@
 			<div class="feat feat-left">
 				<div class="f-title f-green">{t('SPLASH EXP TITLE')}</div>
 				<div class="f-sub">{t('SPLASH EXP TOP')}</div>
-				<img class="f-value" src={valExpanding} alt="1024x" draggable="false" />
+				<div class="f-value-num f-gold">1024x</div>
 				<div class="f-sub">{t('SPLASH EXP BOTTOM')}</div>
 			</div>
 
@@ -116,8 +113,8 @@
 			<!-- EPIC WIN -->
 			<div class="feat feat-right">
 				<div class="f-title f-purple">{t('SPLASH EPIC TITLE')}</div>
-				<div class="f-sub f-pre">{t('SPLASH EPIC TOP')}</div>
-				<img class="f-value" src={valEpic} alt="25'000x" draggable="false" />
+				<div class="f-sub f-sub--fit f-pre">{t('SPLASH EPIC TOP')}</div>
+				<div class="f-value-num f-gold">25'000x</div>
 				<div class="f-hl f-gold f-hl-sm">{t('SPLASH EPIC BOTTOM')}</div>
 			</div>
 
@@ -208,7 +205,7 @@
 
 	/* Top-anchored so the titles line up across all three boards. */
 	.feat-left {
-		left: 27.6%;
+		left: 28.2%;
 		top: 59%;
 	}
 	.feat-center {
@@ -243,36 +240,53 @@
 		filter: drop-shadow(0 0 0.7em #000);
 	}
 
-	/* White descriptive lines — serif with real lowercase (Cinzel is caps-only) */
+	/* Descriptive / multiplier lines — Poppins per Figma (color #D7D7D7, letter-spacing 0.42px@14px) */
 	.f-sub {
-		font-family: 'EB Garamond', Georgia, serif;
-		font-weight: 600;
-		font-size: 1.3cqw;
-		line-height: 1.18;
-		color: #f4ecdf;
+		font-family: 'Poppins', sans-serif;
+		font-weight: 400;
+		font-size: 1.15cqw;
+		line-height: normal;
+		color: #d7d7d7;
+		letter-spacing: 0.03em;
 		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.75);
 	}
 	.f-pre {
 		white-space: pre-line;
 	}
+	/* Epic board's top line is longer ("become the king of the forest with") — shrink it a touch
+	   so it stays on two lines without shrinking the other boards' text. */
+	.f-sub.f-sub--fit {
+		font-size: 1.08cqw;
+	}
 
-	/* Gold leading numbers in the bonus lines (3 / 4) */
+	/* Gold leading numbers in the scatter lines (3 / 4) — Cinzel Black, gold gradient (Figma 2473-1629).
+	   17px number vs 12px surrounding Poppins text = 1.42×; letter-spacing 0.51px@17px = 0.03em. */
 	.f-num {
-		font-weight: 700;
-		font-size: 1.4em;
+		font-family: 'Cinzel', serif;
+		font-weight: 900;
+		font-size: 1.28em;
+		letter-spacing: 0.03em;
+		/* inline-block + a tight line-height hug the glyph's cap height so background-clip:text maps
+		   the gold gradient onto the glyph itself (a taller box offsets the gradient and the number
+		   looks pale/whitish at the top). Matches the title / 25000x rendering. */
+		display: inline-block;
+		vertical-align: baseline;
+		line-height: 0.86;
+		text-shadow: none;
+		filter: drop-shadow(0 0 0.28em rgba(0, 0, 0, 0.7));
 	}
 
 	/* Gold highlight sub-labels (SUPER BONUS / MAX WIN) */
 	.f-hl {
 		font-weight: 900;
-		font-size: 1.5cqw;
+		font-size: 1.4cqw;
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
 		white-space: nowrap;
 		filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.7));
 	}
 	.f-hl-sm {
-		font-size: 1.25cqw;
+		font-size: 1.15cqw;
 	}
 
 	/* Big gold value images */
@@ -283,11 +297,28 @@
 		filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.55));
 	}
 
-	/* Thin divider on the bonus board */
+	/* Big gold value as text (Cinzel Black gold gradient) — e.g. the 1024x expanding value.
+	   Figma: 37px / letter-spacing 1.11px / text-shadow 0 0 17px #000 (em-based so it scales). */
+	.f-value-num {
+		font-family: 'Cinzel', serif;
+		font-weight: 900;
+		font-size: 3.2cqw;
+		line-height: 1;
+		letter-spacing: 0.03em;
+		text-align: center;
+		margin: 0.2cqw 0;
+		filter: drop-shadow(0 0 0.46em #000);
+	}
+	.feat-m .f-value-num {
+		font-size: 8.5cqw;
+	}
+
+	/* Thin divider on the bonus board — negative margin pulls the two scatter text blocks
+	   closer to it (space-between otherwise spreads the gaps too wide). */
 	.f-divider {
 		width: 55%;
 		height: 2px;
-		margin: 0.25cqw 0;
+		margin: -1cqw 0;
 		background: linear-gradient(90deg, transparent, rgba(251, 197, 11, 0.7), transparent);
 	}
 
@@ -298,8 +329,11 @@
 	.feat-m .f-sub {
 		font-size: 3.8cqw;
 	}
+	.feat-m .f-sub.f-sub--fit {
+		font-size: 3.15cqw;
+	}
 	.feat-m .f-hl {
-		font-size: 4.5cqw;
+		font-size: 4.2cqw;
 	}
 	.feat-m .f-value {
 		width: 46%;
