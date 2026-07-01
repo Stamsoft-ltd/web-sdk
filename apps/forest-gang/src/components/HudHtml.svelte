@@ -223,6 +223,10 @@
 	};
 
 	const onSpinHotkey = () => {
+		// Ignore Space while the "Unfinished Round" resume dialog is open — the player
+		// must choose Play/End there; a stray spin would launch the game and throw.
+		if (context.stateGame.resumeModalOpen) return;
+
 		if (hasAuto) {
 			if (context.stateXstateDerived.isIdle()) return;
 			context.eventEmitter.broadcast({ type: 'soundPressBet' });
@@ -1107,11 +1111,13 @@
 	/* Gold stop tile shown over the green disc while spinning (replaces the ■ glyph). */
 	.spin-btn__stop {
 		position: absolute;
-		top: 50%;
-		left: 50%;
+		/* Anchor to the green disc's visual center in btn_bg_spin.png (slightly right of
+		   and above the button box center) so the square sits centered on the disc. */
+		top: 48.5%;
+		left: 51.2%;
 		width: 30%;
 		aspect-ratio: 1;
-		transform: translate(-50%, -50%) translateY(7%);
+		transform: translate(-50%, -50%);
 		object-fit: contain;
 		pointer-events: none;
 		filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.55));
