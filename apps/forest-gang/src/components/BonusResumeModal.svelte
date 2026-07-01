@@ -1,79 +1,96 @@
 <script lang="ts">
-	import { stateBet, stateUi } from 'state-shared';
+	import { stateBet } from 'state-shared';
 
 	type Props = { onPlay: () => void; onEnd: () => void };
 	const props: Props = $props();
+
+	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
+	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.png?v=20260624');
 
 	const mode = $derived(stateBet.betToResume?.mode ?? '');
 	const modeLabel = $derived(mode === 'SUPER' ? 'All In' : mode === 'BONUS' ? 'Deal It' : 'Bonus');
 </script>
 
-<div class="modal-overlay">
-	<div class="modal">
-		<h2 class="title">Unfinished Round</h2>
-		<p class="subtitle">You have an active <strong>{modeLabel}</strong> bonus in progress.</p>
-		<div class="buttons">
-			<button class="btn btn-play" onclick={props.onPlay}>
-				▶ Play Round
-			</button>
-			<button class="btn btn-end" onclick={props.onEnd}>
-				✕ End Round
-			</button>
+<!-- Backdrop -->
+<div class="backdrop"></div>
+
+<!-- Confirm-styled panel -->
+<div class="confirm" role="dialog" aria-modal="true">
+	<div class="confirm-panel" style={`background-image:url('${confirmPanelBg}')`}>
+		<div class="confirm-content">
+			<div class="confirm-title">UNFINISHED ROUND</div>
+			<div class="confirm-text">You have an active <strong>{modeLabel}</strong> bonus in progress.</div>
+			<div class="confirm-row">
+				<button class="confirm-btn confirm-btn--cancel" type="button" onclick={props.onEnd}>✕ END ROUND</button>
+				<button class="confirm-btn confirm-btn--ok" type="button" onclick={props.onPlay}>▶ PLAY ROUND</button>
+			</div>
 		</div>
 	</div>
 </div>
 
 <style>
-	.modal-overlay {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.75);
-		display: flex;
-		align-items: center;
-		justify-content: center;
+	.backdrop {
+		position: fixed; inset: 0; z-index: 9998;
+		background: rgba(0, 0, 0, 0.7);
+		backdrop-filter: blur(4px);
+	}
+
+	.confirm {
+		position: fixed; left: 50%; top: 50%;
+		transform: translate(-50%, -50%);
 		z-index: 9999;
+		width: min(680px, 94vw);
+		font-family: 'Cinzel', serif;
 	}
-	.modal {
-		background: #0d1a0e;
-		border: 2px solid #d4a017;
-		border-radius: 16px;
-		padding: 2rem 2.5rem;
+
+	.confirm-panel {
+		aspect-ratio: 505 / 301;
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
+		display: flex; align-items: center; justify-content: center;
+		padding: 15% 13%;
+		box-sizing: border-box;
+	}
+
+	.confirm-content {
+		width: 100%;
+		display: flex; flex-direction: column; align-items: center;
+		gap: clamp(14px, 2.6vw, 26px);
 		text-align: center;
-		max-width: 380px;
-		width: 90%;
 	}
-	.title {
-		color: #ffd84d;
-		font-size: 1.4rem;
-		margin: 0 0 0.5rem;
-		font-family: serif;
+
+	.confirm-title {
+		font-weight: 900; font-size: clamp(1.4rem, 3.2vw, 2.1rem);
+		letter-spacing: 0.06em;
+		background: linear-gradient(180deg, #ffd84a 10%, #ffa90e 60%, #d18005 95%);
+		-webkit-background-clip: text; background-clip: text;
+		-webkit-text-fill-color: transparent; color: transparent;
+		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 	}
-	.subtitle {
-		color: #ccc;
-		font-size: 0.95rem;
-		margin: 0 0 1.5rem;
+	.confirm-text {
+		font-size: clamp(0.95rem, 2vw, 1.25rem); font-weight: 700;
+		color: #fff; line-height: 1.45;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
 	}
-	.buttons {
-		display: flex;
-		gap: 1rem;
-		justify-content: center;
+	.confirm-text strong { color: #ffd84a; }
+
+	.confirm-row { display: flex; gap: 16px; justify-content: center; width: 100%; }
+	.confirm-btn {
+		flex: 1 1 0; border-radius: 11px; padding: clamp(11px, 2vw, 16px);
+		font-family: 'Cinzel', serif; font-size: clamp(0.85rem, 1.7vw, 1.05rem); font-weight: 900;
+		letter-spacing: 0.06em; cursor: pointer;
+		transition: filter 0.12s ease;
+		white-space: nowrap;
 	}
-	.btn {
-		padding: 0.65rem 1.4rem;
-		border-radius: 8px;
-		font-size: 0.95rem;
-		font-weight: bold;
-		cursor: pointer;
-		border: none;
+	.confirm-btn:hover { filter: brightness(1.08); }
+	.confirm-btn--cancel {
+		border: 1px solid rgba(217, 133, 3, 0.5);
+		background: rgba(20, 14, 6, 0.6); color: #e8c878;
 	}
-	.btn-play {
-		background: #2e7d32;
-		color: #fff;
+	.confirm-btn--ok {
+		border: 0;
+		background: linear-gradient(180deg, #ffa90e 15%, #ee960b 70%, #d18005 93%);
+		color: #452b01;
+		box-shadow: 0 0 4px #d98503;
 	}
-	.btn-play:hover { background: #388e3c; }
-	.btn-end {
-		background: #5a1a1a;
-		color: #ccc;
-	}
-	.btn-end:hover { background: #7b2020; }
 </style>

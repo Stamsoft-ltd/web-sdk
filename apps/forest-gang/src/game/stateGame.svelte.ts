@@ -97,6 +97,7 @@ export const stateGame = $state({
 	awaitingFirstReveal: false,
 	stopAutoOnBonus: false,     // autoplay stops when a bonus triggers
 	hasAnticipationPending: false,  // true when current spin has unskipped anticipation reels
+	resumeModalOpen: false,     // the "Unfinished Round" resume dialog is on screen
 });
 
 const getBoardViewportPadding = () => {

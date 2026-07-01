@@ -13,7 +13,9 @@ export default {
 
 	visualV2: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/visual_v2.png?v=20260625',
+		// 1920×1080 — the 4800×2680 PNG exceeded the WebGL max texture size on some GPUs
+		// and rendered black. Matches the bonus backgrounds' resolution.
+		src: './assets/components/backgrounds/visual_v2.jpg?v=20260701',
 		preload: true,
 	},
 	bonusNormalBackground: {

@@ -93,7 +93,11 @@
 			await new Promise<void>((resolve) => { rollAwaitResolve = resolve; });
 		},
 		stopButtonClick: () => {
-			// Space/stop during symbol roll: skip to result immediately
+			// Space/stop during symbol roll: land on the final symbol immediately and
+			// halt the rolling loop (otherwise the frame keeps cycling behind the presenter).
+			clearTimeout(rollTimer);
+			if (selectedSymbol) displaySymbol = selectedSymbol;
+			rollDone = true;
 			rollAwaitResolve?.();
 			rollAwaitResolve = null;
 		},
