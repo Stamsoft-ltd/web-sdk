@@ -101,7 +101,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// Deer presenter reveals the chosen expanding symbol at the start of the round
 		eventEmitter.broadcast({ type: 'expandedPresenterShow', symbol: bookEvent.symbol });
 		await eventEmitter.broadcastAsync({ type: 'bonusSymbolRollAwait' });
-		await waitForTimeout(1100);
+		// Hold the presenter on screen — resolves after ~1.1s, or immediately if the player skips
+		// (space / tap, broadcast as stopButtonClick).
+		await eventEmitter.broadcastAsync({ type: 'expandedPresenterAwaitClose' });
 		eventEmitter.broadcast({ type: 'expandedPresenterHide' });
 	},
 	expandedSymbolReveal: async (bookEvent: BookEventOfType<'expandedSymbolReveal'>) => {

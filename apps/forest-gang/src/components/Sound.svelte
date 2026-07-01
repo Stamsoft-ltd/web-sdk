@@ -25,6 +25,7 @@
 	const ambientTrackUrl = './assets/audio/audio-idea.wav';
 	let ambientAudio: HTMLAudioElement | null = null;
 	let ambientUnlocked = false;
+	let wasMuted = false;
 
 	const playAmbient = async (mode: 'base' | 'bonus') => {
 		if (!browser || !ambientAudio) return;
@@ -96,11 +97,17 @@
 	});
 
 	$effect(() => {
-		if (stateSound.volumeValueMaster === 0) {
+		const muted = stateSound.volumeValueMaster === 0;
+		if (muted) {
 			stopAmbient();
 			sound.stop({ name: 'bgm_main' });
 			sound.stop({ name: 'bgm_freespin' });
+		} else if (wasMuted) {
+			// Just unmuted — the ambient music was stopped while muted, so restart it for the
+			// current mode (base/bonus). Without this, unmuting leaves the music silent.
+			playAmbient(stateBet.activeBetModeKey === 'SUPER' ? 'bonus' : 'base');
 		}
+		wasMuted = muted;
 	});
 
 	onMount(() => {

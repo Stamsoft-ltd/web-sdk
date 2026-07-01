@@ -3,14 +3,16 @@
 
 	export type EmitterEventExpandedSymbolPresenter =
 		| { type: 'expandedPresenterShow'; symbol: SymbolName }
-		| { type: 'expandedPresenterHide' };
+		| { type: 'expandedPresenterHide' }
+		| { type: 'expandedPresenterAwaitClose' };
 </script>
 
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
 	import { sineInOut, backOut } from 'svelte/easing';
 
-	import { MainContainer, CanvasSizeRectangle } from 'components-layout';
+	import { MainContainer, CanvasSizeRectangle, OnPressFullScreen } from 'components-layout';
+	import { OnHotkey } from 'components-shared';
 	import { FadeContainer } from 'components-pixi';
 	import { anchorToPivot, Container, Sprite } from 'pixi-svelte';
 
@@ -54,6 +56,25 @@
 	let wiggling = false;
 	let rollTimer = 0;
 
+	// Skip support: land the roll instantly and release the book's hold on space / tap.
+	let finalSymbol: SymbolName | null = null;
+	let skipped = false;
+	let closeResolve: (() => void) | null = null;
+	let holdTimer = 0;
+
+	const skip = () => {
+		if (!show || skipped) return;
+		skipped = true;
+		clearTimeout(rollTimer);
+		wiggling = false;
+		if (finalSymbol) displaySymbol = finalSymbol;
+		sc.set(1, { duration: 120, easing: backOut });
+		rot.set(0, { duration: 120 });
+		clearTimeout(holdTimer);
+		closeResolve?.();
+		closeResolve = null;
+	};
+
 	const startWiggle = async () => {
 		if (wiggling) return;
 		wiggling = true;
@@ -91,6 +112,8 @@
 	context.eventEmitter.subscribeOnMount({
 		expandedPresenterShow: (emitterEvent) => {
 			show = true;
+			skipped = false;
+			finalSymbol = emitterEvent.symbol;
 			wiggling = false;
 			rot.set(0, { duration: 0 });
 			sc.set(1, { duration: 0 });
@@ -100,10 +123,27 @@
 			// roll through symbols, then land on the chosen one
 			startRoll(emitterEvent.symbol);
 		},
+		// The book awaits this before hiding — resolve after a short hold, or instantly if skipped.
+		expandedPresenterAwaitClose: async () => {
+			if (skipped) return;
+			await new Promise<void>((resolve) => {
+				closeResolve = resolve;
+				holdTimer = setTimeout(() => {
+					closeResolve?.();
+					closeResolve = null;
+				}, 1100) as unknown as number;
+			});
+		},
+		// Space / tap (broadcast as stopButtonClick) lands the roll and ends the hold.
+		stopButtonClick: () => skip(),
 		expandedPresenterHide: () => {
 			show = false;
 			wiggling = false;
+			skipped = false;
 			clearTimeout(rollTimer);
+			clearTimeout(holdTimer);
+			closeResolve?.();
+			closeResolve = null;
 		},
 	});
 </script>
@@ -131,3 +171,8 @@
 		</Container>
 	</MainContainer>
 </FadeContainer>
+
+{#if show}
+	<OnHotkey hotkey="Space" onpress={() => context.eventEmitter.broadcast({ type: 'stopButtonClick' })} />
+	<OnPressFullScreen onpress={() => context.eventEmitter.broadcast({ type: 'stopButtonClick' })} />
+{/if}
