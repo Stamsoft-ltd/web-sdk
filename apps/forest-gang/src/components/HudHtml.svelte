@@ -1045,7 +1045,8 @@
 		cursor: pointer;
 		display: grid;
 		place-items: center;
-		transform: translateY(-10px);
+		/* Centered vertically within the wooden bar (no upward lift). */
+		transform: translateY(0);
 		position: relative;
 		z-index: 3;
 		transition:
@@ -1059,18 +1060,18 @@
 		object-fit: contain;
 		display: block;
 		pointer-events: none;
-		/* The green frame's disc sits ~2% below the asset's box center (leaves are
-		   heavier at the bottom), so nudge the icon down to center it on the disc. */
+		/* The green disc sits slightly below the asset's box center, so nudge the icon
+		   down to center it on the disc. */
 		transform: translateY(7%);
 	}
 
 	.spin-btn:not(:disabled):hover {
-		transform: translateY(-12px);
+		transform: translateY(-2px);
 		filter: brightness(1.08);
 	}
 
 	.spin-btn:not(:disabled):active {
-		transform: translateY(-8px) scale(0.96);
+		transform: translateY(0) scale(0.96);
 	}
 
 	.spin-btn:disabled {
@@ -1142,12 +1143,18 @@
 	}
 
 	.buy-btn__label {
-		font-family: 'Cinzel', serif;
-		font-size: 0.82rem;
-		font-weight: 900;
-		color: #ffd84a;
-		letter-spacing: 0.08em;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+		font-family: 'Poppins', sans-serif;
+		font-size: 0.95rem;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		white-space: nowrap;
+		/* Golden gradient clipped to the BUY BONUS text */
+		background: linear-gradient(184deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
+		background-clip: text;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+		filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.75));
 		line-height: 1;
 		pointer-events: none;
 	}

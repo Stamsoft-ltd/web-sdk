@@ -35,8 +35,8 @@
 		),
 		y:
 			context.stateGameDerived.boardLayout().y -
-			context.stateGameDerived.boardLayout().height * 0.5 * context.stateGameDerived.boardLayout().boardScale -
-			20,
+			context.stateGameDerived.boardLayout().height * 0.5 * context.stateGameDerived.boardLayout().boardScale +
+			SYMBOL_SIZE * 0.15,
 	});
 
 	const titleFont = $derived(SYMBOL_SIZE * 0.14);
