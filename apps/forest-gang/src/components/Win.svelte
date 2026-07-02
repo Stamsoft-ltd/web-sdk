@@ -11,19 +11,18 @@
 	import { Container, Text } from 'pixi-svelte';
 	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
-	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
+	import { bookEventAmountToCurrencyString, bookEventAmountToBetAmountMultiplier } from 'utils-shared/amount';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
 	import { OnMount } from 'components-shared';
 
 	import WinCoins from './WinCoins.svelte';
 	import WinBoard from './WinBoard.svelte';
+	import MaxWinScreen from './MaxWinScreen.svelte';
 	import PressToContinue from './PressToContinue.svelte';
 	import { SYMBOL_SIZE } from '../game/constants';
 	import { getContext } from '../game/context';
-	import { winBoardByAlias, winAliasByBoard } from '../game/utils';
 	import { WIN_GRADIENT } from '../game/goldGradient';
 	import { stateBet } from 'state-shared';
-	import { BOOK_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 
 	const context = getContext();
 
@@ -79,18 +78,27 @@
 		{@const hasBoardAnimation = !!winLevelData?.animation}
 		{@const duration = (stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation ? Math.min(winLevelData.presentDuration, 400) : winLevelData.presentDuration}
 		{#key oncomplete}
-		<WinCountUpProvider {amount} {duration} oncomplete={() => { if (!hasBoardAnimation) oncomplete(); }}>
+		<WinCountUpProvider {amount} {duration} oncomplete={() => { if (!hasBoardAnimation && !boardClickHandled) { boardClickHandled = true; oncomplete(); } }}>
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
-				{@const mult = countUpAmount / BOOK_AMOUNT_MULTIPLIER}
-				{@const boardKey = mult >= 1000 ? winBoardByAlias.max : mult >= 250 ? winBoardByAlias.epic : mult >= 100 ? winBoardByAlias.mega : mult >= 50 ? winBoardByAlias.superwin : winBoardByAlias.big}
-				{@const coinAlias = hasBoardAnimation ? (winAliasByBoard[boardKey] ?? winLevelData?.alias) : winLevelData?.alias}
 
 				{#if isBigWin}
-					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
+					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.3} />
 				{/if}
 
 				<OnMount onmount={() => startCountUp()} />
 
+				<!-- Coins on a low zIndex so the win panel (zIndex 20 below) always stays the hero
+				     on top of them — sibling MainContainers don't sort reliably by template order. -->
+				<Container zIndex={0}>
+					<WinCoins emit={true} levelAlias={winLevelData?.alias} boardMode={hasBoardAnimation} winMult={bookEventAmountToBetAmountMultiplier(countUpAmount)} />
+				</Container>
+
+				<Container zIndex={20}>
+				{#if hasBoardAnimation && bookEventAmountToBetAmountMultiplier(countUpAmount) >= 1000}
+					<!-- MAX WIN: only once the LIVE count-up crosses 1000×, so a max win still climbs
+					     through the tier boards (Sweet→…→Legendary) before switching to this screen. -->
+					<MaxWinScreen countUpText={bookEventAmountToCurrencyString(countUpAmount)} {breatheScale} />
+				{:else}
 				<MainContainer>
 					<Container
 						x={boardLayout.x}
@@ -98,6 +106,14 @@
 					>
 						{#if hasBoardAnimation}
 							{@const bs = boardLayout.boardScale}
+							<!-- Win multiplier = book amount ÷ 100 (100 book units = 1× bet). Do NOT divide by
+							     betAmount — the book amount is already bet-relative, and doing so inflated the
+							     tier ~100× (a 25× win showed LEGENDARY instead of SWEET). -->
+							{@const mult = bookEventAmountToBetAmountMultiplier(countUpAmount)}
+							<!-- Win-tier thresholds (× bet): 20 SWEET · 50 WILD · 100 EPIC · 200 MYTHIC · 500 LEGENDARY.
+							     (1000×+ MAX WIN is a separate special screen.) A board only shows from 20× via the
+							     winLevel gate, so <50× maps to SWEET. -->
+							{@const boardKey = mult >= 500 ? 'legendaryWinBoard' : mult >= 200 ? 'mythicWinBoard' : mult >= 100 ? 'epicWinBoard' : mult >= 50 ? 'wildWinBoard' : 'sweetWinBoard'}
 							{@const maxBoardSize = Math.min(boardLayout.width * bs * 0.55, boardLayout.height * bs * 0.85)}
 							<WinBoard
 								{boardKey}
@@ -130,20 +146,18 @@
 						{/if}
 					</Container>
 				</MainContainer>
-
-				<WinCoins emit={true} levelAlias={coinAlias} boardMode={hasBoardAnimation} />
-
-				{#if hasBoardAnimation}
-					<PressToContinue onpress={() => {
-						if (!countUpCompleted) {
-							finishCountUp();
-						} else {
-							if (boardClickHandled) return;
-							boardClickHandled = true;
-							oncomplete();
-						}
-					}} />
 				{/if}
+				</Container>
+
+				<PressToContinue onpress={() => {
+					if (!countUpCompleted) {
+						finishCountUp();
+					} else {
+						if (boardClickHandled) return;
+						boardClickHandled = true;
+						oncomplete();
+					}
+				}} />
 			{/snippet}
 		</WinCountUpProvider>
 		{/key}

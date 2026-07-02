@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
-	import { cubicOut, linear } from 'svelte/easing';
+	import { cubicOut, cubicInOut, linear } from 'svelte/easing';
 
 	import { FillGradient } from 'pixi.js';
 	import { Sprite, Container, Text } from 'pixi-svelte';
@@ -27,51 +27,57 @@
 	const TIER_RANGES = [
 		{ key: 'sweetWinBoard',     min: 0,    max: 50 },
 		{ key: 'wildWinBoard',      min: 50,   max: 100 },
-		{ key: 'epicWinBoard',      min: 100,  max: 250 },
-		{ key: 'mythicWinBoard',    min: 250,  max: 1000 },
-		{ key: 'legendaryWinBoard', min: 1000, max: 5000 },
+		{ key: 'epicWinBoard',      min: 100,  max: 200 },
+		{ key: 'mythicWinBoard',    min: 200,  max: 500 },
+		{ key: 'legendaryWinBoard', min: 500,  max: 5000 },
 	];
 
-	// Transition tweens for the incoming board
-	const currScaleTween = new Tween(1, { duration: 260, easing: cubicOut });
-	const currAlphaTween = new Tween(1, { duration: 180, easing: linear });
-	// Transition tweens for the outgoing board
-	const prevScaleTween = new Tween(1, { duration: 220, easing: cubicOut });
-	const prevAlphaTween = new Tween(0, { duration: 220, easing: linear });
+	// Transition tweens — a gentle centred cross-dissolve: the incoming board eases up from a
+	// slightly smaller size (cubicOut, no overshoot) while the outgoing one eases down and fades.
+	const currScaleTween = new Tween(1, { duration: 520, easing: cubicOut });
+	const currAlphaTween = new Tween(1, { duration: 360, easing: linear });
+	const prevScaleTween = new Tween(1, { duration: 460, easing: cubicInOut });
+	const prevAlphaTween = new Tween(0, { duration: 420, easing: linear });
 
 	let prevKey = $state<string | null>(null);
+	let outgoingKey = $state<string | null>(null);
 	let showPrev = $state(false);
+
+	// Gentle "start size" for the cross-dissolve — close to full so the scale change is subtle.
+	const FROM = 0.82;
 
 	$effect(() => {
 		const key = boardKey;
 		if (prevKey === null) {
-			// First render: just appear
+			// First appearance: soft zoom-in from the centre (no bounce).
 			prevKey = key;
-			currScaleTween.set(1, { duration: 0 });
-			currAlphaTween.set(1, { duration: 0 });
+			currScaleTween.set(0.7, { duration: 0 });
+			currAlphaTween.set(0, { duration: 0 });
+			currScaleTween.set(1, { duration: 520, easing: cubicOut });
+			currAlphaTween.set(1, { duration: 360, easing: linear });
 			return;
 		}
 		if (key === prevKey) return;
 
-		// Capture outgoing key before updating
-		const outgoing = prevKey;
+		// Keep the outgoing board on screen (as its own key) so it cross-dissolves with the new one.
+		outgoingKey = prevKey;
 		prevKey = key;
 		showPrev = true;
 
-		// Outgoing: grow slightly then fade out
+		// Outgoing: ease down from its CURRENT on-screen size and fade out.
 		prevScaleTween.set(1, { duration: 0 });
 		prevAlphaTween.set(1, { duration: 0 });
-		prevScaleTween.set(1.08, { duration: 220, easing: cubicOut });
-		prevAlphaTween.set(0, { duration: 220, easing: linear });
+		prevScaleTween.set(FROM, { duration: 460, easing: cubicInOut });
+		prevAlphaTween.set(0, { duration: 420, easing: linear });
 
-		// Incoming: start big, pop down to natural size, fade in
-		currScaleTween.set(1.14, { duration: 0 });
+		// Incoming: ease up from a slightly smaller size and fade in (smooth, no overshoot).
+		currScaleTween.set(FROM, { duration: 0 });
 		currAlphaTween.set(0, { duration: 0 });
-		currScaleTween.set(1, { duration: 280, easing: cubicOut });
-		currAlphaTween.set(1, { duration: 180, easing: linear });
+		currScaleTween.set(1, { duration: 520, easing: cubicOut });
+		currAlphaTween.set(1, { duration: 360, easing: linear });
 
-		// Hide prev sprite once fade completes
-		setTimeout(() => { showPrev = false; }, 250);
+		// Hide the outgoing sprite once it has fully faded.
+		setTimeout(() => { showPrev = false; }, 440);
 	});
 
 	const tierRange = $derived(TIER_RANGES.find((t) => t.key === boardKey) ?? TIER_RANGES[0]);
@@ -83,7 +89,15 @@
 		TIER_BASE_SCALE[boardKey] + (nextTierBaseScale - TIER_BASE_SCALE[boardKey]) * tierProgress * 0.8,
 	);
 	const boardSize = $derived(maxBoardSize * accumulationScale * breatheScale * currScaleTween.current);
-	const prevBoardSize = $derived(maxBoardSize * (TIER_BASE_SCALE[prevKey ?? boardKey] ?? 1) * prevScaleTween.current);
+	// The outgoing tier was on-screen near its GROWN size (base + 80% toward the next tier), so start
+	// its zoom-out from there — using the bare base caused a visible snap-smaller at the swap.
+	const maxAccumFor = (key: string | null) => {
+		const idx = TIER_RANGES.findIndex((t) => t.key === key);
+		const base = TIER_BASE_SCALE[key ?? ''] ?? 1;
+		const nextBase = TIER_BASE_SCALE[TIER_RANGES[Math.min(idx + 1, TIER_RANGES.length - 1)]?.key] ?? base;
+		return idx < 0 ? base : base + (nextBase - base) * 0.8;
+	};
+	const prevBoardSize = $derived(maxBoardSize * maxAccumFor(outgoingKey) * breatheScale * prevScaleTween.current);
 
 	// Win-amount text style: Cinzel 900 with the gold gradient (Figma spec).
 	const goldFill = new FillGradient({
@@ -115,9 +129,9 @@
 	const textYFrac = $derived(TIER_TEXT_Y[boardKey] ?? 0.36);
 </script>
 
-{#if showPrev && prevKey && prevKey !== boardKey}
+{#if showPrev && outgoingKey && outgoingKey !== boardKey}
 	<Sprite
-		key={prevKey}
+		key={outgoingKey}
 		anchor={0.5}
 		width={prevBoardSize}
 		height={prevBoardSize}

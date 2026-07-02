@@ -12,6 +12,12 @@
 	const props: Props = $props();
 	const context = getContext();
 
+	// Match the reel's per-axis scaling (boardScaleX/Y) so the glow lines up with the reel column
+	// width/height — the reels are NOT scaled by the uniform boardScale in landscape/desktop.
+	const bl = $derived(context.stateGameDerived.boardLayout());
+	const scaleX = $derived(bl.boardScaleX ?? bl.boardScale);
+	const scaleY = $derived(bl.boardScaleY ?? bl.boardScale);
+
 	type AnimationName = 'anticipation_intro' | 'anticipation_loop' | 'anticipation_out';
 
 	let animationName = $state<AnimationName>('anticipation_intro');
@@ -33,13 +39,13 @@
 </script>
 
 <Container
-	x={context.stateGameDerived.boardLayout().x + ((props.reel.reelIndex + 0.5) * SYMBOL_W - BOARD_SIZES.width * 0.5) * context.stateGameDerived.boardLayout().boardScale}
-	y={context.stateGameDerived.boardLayout().y + BOARD_GRID_OFFSET_Y}
+	x={bl.x + ((props.reel.reelIndex + 0.5) * SYMBOL_W - BOARD_SIZES.width * 0.5) * scaleX}
+	y={bl.y + BOARD_GRID_OFFSET_Y}
 >
 <SpineProvider
 	key="anticipation"
-	width={SYMBOL_W * context.stateGameDerived.boardLayout().boardScale / 2}
-	height={SYMBOL_SIZE * 4 * context.stateGameDerived.boardLayout().boardScale / 2}
+	width={SYMBOL_W * scaleX / 2}
+	height={SYMBOL_SIZE * 4 * scaleY / 2}
 >
 	<SpineTrack
 		trackIndex={0}

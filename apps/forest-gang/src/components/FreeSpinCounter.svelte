@@ -18,30 +18,36 @@
 	const context = getContext();
 	const t = (key: string) => stateI18nDerived.translate(key);
 
-	// Leaf-corner wooden board (confirm_frame.png is 505×301; wood centre ≈ 0.507).
-	const PANEL_RATIO = 505 / 301;
+	// Free-spins board (card_pad.png, 372×248) — full leaf corners on all four sides, matches the
+	// Figma design. The old confirm_frame had a plank seam that cut through the text.
+	const PANEL_RATIO = 372 / 248;
 	const WOOD_CENTER_Y = 0.5;
-	const panelWidth = $derived(SYMBOL_SIZE * 2.0);
+	// Scale of the whole board (and its text). Widened so the board matches the FOREST GANG
+	// logo width above it (Figma) — the logo frame mirrors this factor.
+	const SIZE = 0.96;
+	const panelWidth = $derived(SYMBOL_SIZE * 2.0 * SIZE);
 	const panelSizes = $derived({
 		width: panelWidth,
 		height: panelWidth / PANEL_RATIO,
 	});
 	const scale = 1;
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 	const position = $derived({
-		// Mirror the scatter card CSS: left: max(18px, calc(50% - 702px))
-		x: Math.max(
-			18 / context.stateLayoutDerived.mainLayout().scale,
-			context.stateLayoutDerived.mainLayout().width / 2 - 702 / context.stateLayoutDerived.mainLayout().scale,
-		),
+		// Mirror the scatter card CSS: left: max(18px, calc(50% - 702px)); nudge right in portrait.
+		x:
+			Math.max(
+				18 / context.stateLayoutDerived.mainLayout().scale,
+				context.stateLayoutDerived.mainLayout().width / 2 - 702 / context.stateLayoutDerived.mainLayout().scale,
+			) + (isPortrait ? SYMBOL_SIZE * 0.7 : 0),
 		y:
 			context.stateGameDerived.boardLayout().y -
 			context.stateGameDerived.boardLayout().height * 0.5 * context.stateGameDerived.boardLayout().boardScale +
 			SYMBOL_SIZE * 0.15,
 	});
 
-	const titleFont = $derived(SYMBOL_SIZE * 0.14);
-	const counterFont = $derived(SYMBOL_SIZE * 0.36);
-	const GAP = $derived(SYMBOL_SIZE * 0.12);
+	const titleFont = $derived(SYMBOL_SIZE * 0.14 * SIZE);
+	const counterFont = $derived(SYMBOL_SIZE * 0.36 * SIZE);
+	const GAP = $derived(SYMBOL_SIZE * 0.12 * SIZE);
 
 	let show = $state(false);
 	let current = $state(0);
@@ -77,7 +83,7 @@
 
 <MainContainer>
 	<FadeContainer show={visible} {...position} {scale}>
-		<Sprite key="counterFrame" {...panelSizes} />
+		<Sprite key="cardPadLs" {...panelSizes} />
 
 		<Container
 			x={panelSizes.width * 0.5}

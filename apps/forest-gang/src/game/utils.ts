@@ -71,6 +71,38 @@ export const spriteKeyByName: Record<string, string> = {
 // Board sprites in bonus mode — same as base (premiums use the standard animal art)
 export const bonusSpriteKeyByName: Record<string, string> = { ...spriteKeyByName };
 
+// Mobile-landscape base + win art (dedicated framed tiles). Only used when
+// layoutType() === 'landscape'; desktop/portrait keep the maps above untouched.
+export const spriteKeyByNameLandscape: Record<string, string> = {
+	FOX: 'foxTileLs',
+	WOLF: 'wolfTileLs',
+	BEAR: 'bearTileLs',
+	RABBIT: 'rabbitTileLs',
+	SQUIRREL: 'squirrelTileLs',
+	A: 'aTileLs',
+	K: 'kTileLs',
+	Q: 'qTileLs',
+	J: 'jTileLs',
+	T: 'tTileLs',
+	WILD: 'wildTileLs',
+	SCATTER: 'scatterCustomLs',
+};
+
+export const winSpriteKeyByNameLandscape: Record<string, string> = {
+	FOX: 'foxWinTileLs',
+	WOLF: 'wolfWinTileLs',
+	BEAR: 'bearWinTileLs',
+	RABBIT: 'rabbitWinTileLs',
+	SQUIRREL: 'squirrelWinTileLs',
+	A: 'aWinTileLs',
+	K: 'kWinTileLs',
+	Q: 'qWinTileLs',
+	J: 'jWinTileLs',
+	T: 'tWinTileLs',
+	WILD: 'wildTileLs',
+	SCATTER: 'scatterCustomLs',
+};
+
 // Expanded symbol overlay — premiums use expand art, cards use win art
 export const expandedSpriteKeyByName: Record<string, string> = {
 	FOX: 'foxExpTile',

@@ -9,6 +9,7 @@
 
 	// Themed bonus backgrounds: green forest for the normal bonus (Deal It / freegame),
 	// golden forest for the super bonus (All In / superspin); everything else keeps the default.
+	// The swap is instant here and masked by the alpha Transition overlay (TransitionAnimation).
 	const backgroundKey = $derived.by(() => {
 		switch (context.stateGame.bonusMode) {
 			case 'freegame':

@@ -94,12 +94,19 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			console.info('[forest-gang] ALL IN global multiplier after spin', stateGame.globalMultiplier);
 		}
 	},
-	bonusSymbolSelected: async (bookEvent: BookEventOfType<'bonusSymbolSelected'>) => {
-		stateGame.selectedBonusSymbol = bookEvent.symbol;
+	bonusSymbolSelected: async (bookEvent: BookEventOfType<'bonusSymbolSelected'>, { bookEvents }: BookEventContext) => {
+		// The deer must reveal the symbol that ACTUALLY expands on the reels. In some modes
+		// (e.g. feature spins) the book's bonusSymbolSelected.symbol can differ from the reel's
+		// expandedSymbolReveal.symbol, so prefer the upcoming reveal symbol when present.
+		const reveal = bookEvents.find(
+			(e) => e.type === 'expandedSymbolReveal' && e.index > bookEvent.index,
+		) as BookEventOfType<'expandedSymbolReveal'> | undefined;
+		const symbol = reveal?.symbol ?? bookEvent.symbol;
+		stateGame.selectedBonusSymbol = symbol;
 		stateGame.bonusMode = bookEvent.mode;
 		if (stateBet.isSuperTurbo) return;
 		// Deer presenter reveals the chosen expanding symbol at the start of the round
-		eventEmitter.broadcast({ type: 'expandedPresenterShow', symbol: bookEvent.symbol });
+		eventEmitter.broadcast({ type: 'expandedPresenterShow', symbol });
 		await eventEmitter.broadcastAsync({ type: 'bonusSymbolRollAwait' });
 		// Hold the presenter on screen — resolves after ~1.1s, or immediately if the player skips
 		// (space / tap, broadcast as stopButtonClick).
@@ -129,9 +136,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			return dA !== dB ? dA - dB : a - b;
 		});
 
-		// Reveal one by one in distance order (origin first, then outward)
+		// Reveal one by one in distance order (origin first, then outward) — slower for drama.
 		for (let i = 0; i < reelsByDistance.length; i++) {
-			await waitForTimeout(i * 90);
+			if (i > 0) await waitForTimeout(190);
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_reel_stop_1' });
 			const reel = reelsByDistance[i];
 			stateGame.expandedSymbol = {
@@ -139,8 +146,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 				reels: [...stateGame.expandedSymbol!.reels, reel],
 			};
 		}
-		// Brief pause after final reel expands before win state flips in
-		await waitForTimeout(320);
+		// Hold on the fully-expanded board before the win/multiplier sequence begins.
+		await waitForTimeout(650);
 	},
 	applyTempMultiplier: async (bookEvent: BookEventOfType<'applyTempMultiplier'>) => {
 		stateGame.tempMultiplier = bookEvent.multiplier;
@@ -293,9 +300,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if (stateGame.expandedSymbol) {
 			stateGame.expandedSymbolWon = true;
 		}
-		// Wait for Deal It multiplier cycling to finish before showing win amount
+		// Let the multiplier hand appear, spin and land on its value first…
 		if ((stateGame.bonusMode === 'freegame' || stateGame.bonusMode === 'feature')) {
 			await eventEmitter.broadcastAsync({ type: 'dealItMultiplierAwaitCycle' });
+			// …then a beat before the coins start flying, so the two moments read separately.
+			await waitForTimeout(550);
 		}
 		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
 		eventEmitter.broadcast({ type: 'winShow' });

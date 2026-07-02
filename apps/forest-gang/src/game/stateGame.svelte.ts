@@ -12,6 +12,7 @@ import { eventEmitter } from './eventEmitter';
 import {
 	SYMBOL_SIZE,
 	BOARD_SIZES,
+	BOARD_GRID_OFFSET_Y,
 	INITIAL_BOARD,
 	BOARD_DIMENSIONS,
 	SPIN_OPTIONS_DEFAULT,
@@ -103,7 +104,7 @@ export const stateGame = $state({
 const getBoardViewportPadding = () => {
 	const layoutType = stateLayoutDerived.layoutType();
 
-	if (layoutType === 'portrait') return { top: 8, right: 6, bottom: 146, left: 6 };
+	if (layoutType === 'portrait') return { top: 8, right: 2, bottom: 146, left: 2 };
 	if (layoutType === 'landscape') return { top: 4, right: 16, bottom: 22, left: 8 };
 	if (layoutType === 'tablet') return { top: 10, right: 20, bottom: 86, left: 20 };
 	return { top: 108, right: 220, bottom: 172, left: 208 };
@@ -145,8 +146,9 @@ const getBoardOffset = () => {
 	const centeredCanvasY = padding.top + availableCanvasHeight * 0.5 - canvasSizes.height * 0.5;
 	// extraLeftShiftPx (75) and shiftRightPx cancel → board sits centred in the
 	// padded area. Lower shiftRightPx to nudge the whole board left.
-	const shiftRightPx = 90;
-	const shiftDownPx = 10;
+	// Portrait has no left-shift to cancel, so it must not shift right either.
+	const shiftRightPx = layoutType === 'portrait' ? 0 : 90;
+	const shiftDownPx = layoutType === 'portrait' ? 0 : 10;
 
 	return {
 		x: (centeredCanvasX - extraLeftShiftPx + shiftRightPx) / (mainLayout.scale || 1),
@@ -160,11 +162,108 @@ const getBoardOffset = () => {
 const _FRAME_MARGIN = 1.04;
 const _FRAME_INNER_W_FRAC = 0.762;
 const _FRAME_ASPECT_H_W = 2364 / 3220;
-const _FRAME_ANCHOR_Y = 0.489; // = slot_pad window centre y (grid centred vertically)
-const _FRAME_EXTRA_SCALE = 1.30 / 1.15;
+const _FRAME_ANCHOR_Y = 0.515; // = slot_pad window centre y (grid centred vertically)
+const _FRAME_EXTRA_SCALE = 1.30 / 1.27;
+const PORTRAIT_FRAME_FILL = 1.0; // portrait: mobile frame fills the full canvas width
+const PORTRAIT_TOP_OFFSET = 236; // portrait: push frame down from the top (main-layout units)
+// Mobile board frame (board_frame_mobile.png) — full width, top/bottom borders only.
+// Fractions of the drawn frame the reel grid occupies. Mirrored in BoardFrame.svelte.
+const MOBILE_FRAME_INNER_W = 0.965;
+const MOBILE_FRAME_INNER_H = 0.78;
+
+// Mobile-landscape reserves a bottom control strip + side rails (Figma 2682-3639) and
+// centres the reel grid in the remaining play area. Desktop/portrait are unaffected.
+const LS_PANEL_TOP = 88;   // where the inner wood panel (reel area) begins — near the top
+const LS_BOTTOM_BAR = 66;  // gap below the frame for the bet pad
+const LS_LEFT_RAIL = 150;
+const LS_RIGHT_RAIL = 120;
+// reel_frame.png cropped to opaque bounds (2121×1638). The rope hangs from the top ~25% of the
+// image; the inner wood panel (where the reels sit) is measured below it.
+const LS_FRAME_ASPECT = 2121 / 1638;
+const LS_FRAME_INNER_W = 0.78;
+const LS_FRAME_INNER_H = 0.70;
+const LS_FRAME_INNER_CX = 0.5;
+const LS_FRAME_INNER_CY = 0.59;
+const LS_PANEL_FILL = 0.98;  // reel pitch fills ~98% of the inner panel (both axes)
+const LS_SYMBOL_FILL = 0.86; // symbol size vs its cell (smaller → even gaps, as in the design)
+const LS_FRAME_WIDTH = 0.9;  // slight narrowing of the frame/background (forest margin on sides)
 
 const boardLayout = () => {
-	const boardScale = getBoardScale() * 0.81 * 1.15;
+	const layoutType = stateLayoutDerived.layoutType();
+
+	// Mobile landscape: frame-driven. Fit the whole rope-hung reel frame (rope + poles
+	// included) inside the play area, then place the reel grid inside its inner wood region.
+	if (layoutType === 'landscape') {
+		const main = stateLayoutDerived.mainLayout();
+		const availW = main.width - LS_LEFT_RAIL - LS_RIGHT_RAIL;
+		// Pin the inner PANEL: its top sits at LS_PANEL_TOP (near the screen top) and the frame
+		// bottom sits just above the bet pad. The rope extends off-screen above (that's fine — it
+		// keeps the wood panel high, as in the design). Solve frameH from these two constraints.
+		const frameBottom = main.height - LS_BOTTOM_BAR;
+		const panelTopFrac = LS_FRAME_INNER_CY - LS_FRAME_INNER_H * 0.5;
+		const frameH = (frameBottom - LS_PANEL_TOP) / (1 - panelTopFrac);
+		const frameW = frameH * LS_FRAME_ASPECT * LS_FRAME_WIDTH;
+		const frameCx = LS_LEFT_RAIL + availW * 0.5;
+		const frameCy = frameBottom - frameH * 0.5;
+		// Inner wood panel (where the reels sit).
+		const innerW = frameW * LS_FRAME_INNER_W;
+		const innerH = frameH * LS_FRAME_INNER_H;
+		// Reel PITCH fills the panel on each axis; symbol SIZE is the smaller of the two, scaled
+		// down a touch so cells have even gaps (as in the design). Board.svelte compensates each
+		// sprite's width/height so symbols keep their proportions despite the non-uniform pitch.
+		const boardScaleX = (innerW / BOARD_SIZES.width) * LS_PANEL_FILL;
+		const boardScaleY = (innerH / BOARD_SIZES.height) * LS_PANEL_FILL;
+		const boardScale = Math.min(boardScaleX, boardScaleY) * LS_SYMBOL_FILL;
+		return {
+			x: frameCx + (LS_FRAME_INNER_CX - 0.5) * frameW,
+			y: frameCy + (LS_FRAME_INNER_CY - 0.5) * frameH - BOARD_GRID_OFFSET_Y,
+			frameTopY: 0,
+			frameCx,
+			frameCy,
+			frameW,
+			frameH,
+			boardScale,
+			boardScaleX,
+			boardScaleY,
+			anchor: { x: 0.5, y: 0.5 },
+			pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
+			...BOARD_SIZES,
+		};
+	}
+
+	// Portrait: the mobile frame is a full-width wood panel (no side poles). Size the grid
+	// to fill MOBILE_FRAME_INNER_W of the frame and the frame to ~fill the canvas width.
+	if (layoutType === 'portrait') {
+		const { availableCanvasWidth, mainLayout } = getBoardViewportMetrics();
+		const availWidthMain = availableCanvasWidth / (mainLayout.scale || 1);
+		const boardScale =
+			(availWidthMain * PORTRAIT_FRAME_FILL * MOBILE_FRAME_INNER_W) / BOARD_SIZES.width;
+		const mFrameH = (BOARD_SIZES.height * boardScale) / MOBILE_FRAME_INNER_H;
+		return {
+			x: stateLayoutDerived.mainLayout().width * 0.5 + getBoardOffset().x,
+			y: PORTRAIT_TOP_OFFSET + mFrameH * 0.5,
+			frameTopY: PORTRAIT_TOP_OFFSET,
+			frameCx: 0,
+			frameCy: 0,
+			frameW: 0,
+			frameH: 0,
+			boardScale,
+			boardScaleX: boardScale,
+			boardScaleY: boardScale,
+			anchor: { x: 0.5, y: 0.5 },
+			pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
+			...BOARD_SIZES,
+		};
+	}
+
+	const boardScale = getBoardScale() * 0.81 * 1.27;
+	// Spread the columns a touch wider than the symbol size so the outer reels sit closer to the
+	// frame edges (less L/R padding, matching Figma). Board.svelte compensates symbol width so the
+	// symbols themselves stay undistorted — only the reel pitch widens.
+	const H_SPREAD = 1.06;
+	// Tighten the vertical reel pitch so the rows sit closer together (less dead space between
+	// rows). Symbols keep their size — only the row-to-row spacing shrinks.
+	const V_TIGHTEN = 0.93;
 	// Frame top is pinned to canvas y=0; inner panel centre is at ANCHOR_Y × frameH
 	const frameW =
 		(BOARD_SIZES.width * boardScale * _FRAME_MARGIN * _FRAME_EXTRA_SCALE) / _FRAME_INNER_W_FRAC;
@@ -172,7 +271,14 @@ const boardLayout = () => {
 	return {
 		x: stateLayoutDerived.mainLayout().width * 0.5 + getBoardOffset().x,
 		y: frameH * _FRAME_ANCHOR_Y,
+		frameTopY: 0,
+		frameCx: 0,
+		frameCy: 0,
+		frameW,
+		frameH,
 		boardScale,
+		boardScaleX: boardScale * H_SPREAD,
+		boardScaleY: boardScale * V_TIGHTEN,
 		anchor: { x: 0.5, y: 0.5 },
 		pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
 		...BOARD_SIZES,
