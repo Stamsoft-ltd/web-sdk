@@ -1792,7 +1792,7 @@
 
 	.pt-spin {
 		width: 94px; height: 94px;
-		margin-top: -22px;
+		margin-top: 0; /* vertically centred on the control bar */
 		border: 0; padding: 0; cursor: pointer;
 		background: var(--pt-spin) center / contain no-repeat;
 		display: grid; place-items: center;
@@ -1826,16 +1826,12 @@
 	.pt-balance__label {
 		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 11px;
 		letter-spacing: 0.04em; white-space: nowrap;
-		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
-		-webkit-background-clip: text; background-clip: text;
-		-webkit-text-fill-color: transparent; color: transparent;
+		color: #fff;
 	}
 	.pt-balance__value {
 		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px;
 		white-space: nowrap; transform-origin: left center;
-		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
-		-webkit-background-clip: text; background-clip: text;
-		-webkit-text-fill-color: transparent; color: transparent;
+		color: #fff;
 	}
 
 	/* Bet pill: dark rounded pad with − value + (no BET label, per Figma) */
