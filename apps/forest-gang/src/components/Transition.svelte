@@ -11,21 +11,21 @@
 	const context = getContext();
 
 	let transitioning = $state(false);
-	let oncomplete = $state(() => {});
+	// Resolved once the screen is fully covered, so the caller (bookEventHandlerMap) swaps the
+	// background / bonus state while it is hidden; the overlay then fades back out to reveal it.
+	let resolveCover = $state(() => {});
 
 	context.eventEmitter.subscribeOnMount({
 		transition: async () => {
 			transitioning = true;
-			await waitForResolve((resolve) => (oncomplete = resolve));
+			await waitForResolve((resolve) => (resolveCover = resolve));
 		},
 	});
 </script>
 
 {#if transitioning}
 	<TransitionAnimation
-		oncomplete={() => {
-			oncomplete();
-			transitioning = false;
-		}}
+		oncover={() => resolveCover()}
+		ondone={() => (transitioning = false)}
 	/>
 {/if}

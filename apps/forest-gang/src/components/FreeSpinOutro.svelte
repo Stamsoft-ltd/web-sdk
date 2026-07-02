@@ -19,7 +19,6 @@
 	import { getContext } from '../game/context';
 	import { WIN_GRADIENT } from '../game/goldGradient';
 	import PressToContinue from './PressToContinue.svelte';
-	import WinCoins from './WinCoins.svelte';
 	import FreeSpinAnimation from './FreeSpinAnimation.svelte';
 
 	const context = getContext();
@@ -119,8 +118,6 @@
 						</Container>
 					{/snippet}
 				</FreeSpinAnimation>
-
-				<WinCoins emit={!countUpCompleted} levelAlias={winLevelData?.alias} />
 
 				<PressToContinue onpress={() => (countUpCompleted ? oncomplete() : finishCountUp())} />
 			{/snippet}
