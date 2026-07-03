@@ -29,12 +29,12 @@
 	const P_LOGO_CX = $derived(main.width * 0.5);
 	const P_PP_W = $derived(main.width * 0.16);
 	const P_PP_H = $derived(P_PP_W / BRAND_ASPECT);
-	// The Press Play sprite stacks above the logo; on very short screens 8.5%·height puts the whole
-	// stack partly off the top, so floor the logo centre to keep Press Play below a top margin.
-	const P_LOGO_TOP_MARGIN = $derived(main.height * 0.03);
+	// The Press Play sprite stacks above the logo; on very short screens the floor keeps the whole
+	// stack below a small top margin. Sits near the top of the screen (above the board).
+	const P_LOGO_TOP_MARGIN = $derived(main.height * 0.008);
 	const P_LOGO_CY = $derived(
 		Math.max(
-			main.height * 0.085,
+			main.height * 0.055,
 			P_LOGO_TOP_MARGIN + P_PP_H + main.height * 0.006 + P_LOGO_H * 0.5,
 		),
 	);
@@ -42,14 +42,14 @@
 	// Portrait top-bar counters flanking the logo (Figma 2792-4133). Same data/logic as
 	// desktop: free-spins current/total via events, bonus symbol + global multiplier from state.
 	const BADGE_ASPECT = 1431 / 1099; // badge_frame.png
-	const badgeW = $derived(main.width * 0.15);
+	const badgeW = $derived(main.width * 0.19);
 	const badgeH = $derived(badgeW / BADGE_ASPECT);
 	// Left column: bonus symbol badge on top, multiplier badge underneath (like the FS counter).
-	const symBadgeCY = $derived(main.height * 0.072);
-	const multBadgeCY = $derived(symBadgeCY + badgeH * 0.92);
-	const fsBadgeCY = $derived(main.height * 0.098);
-	const leftBadgeX = $derived(main.width * 0.135);
-	const rightBadgeX = $derived(main.width * 0.865);
+	const symBadgeCY = $derived(main.height * 0.058);
+	const multBadgeCY = $derived(symBadgeCY + badgeH * 0.9);
+	const fsBadgeCY = $derived(main.height * 0.085);
+	const leftBadgeX = $derived(main.width * 0.145);
+	const rightBadgeX = $derived(main.width * 0.855);
 
 	// Free-spins counter state (mirrors FreeSpinCounter.svelte).
 	let fsShow = $state(false);
@@ -119,11 +119,11 @@
 		{#if showBonusBadge && bonusSymbolKey}
 			<Container x={leftBadgeX} y={symBadgeCY}>
 				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />
-				<Sprite key={bonusSymbolKey} anchor={0.5} width={badgeH * 0.6} height={badgeH * 0.6} />
+				<Sprite key={bonusSymbolKey} anchor={0.5} y={-badgeH * 0.02} width={badgeH * 0.56} height={badgeH * 0.42} />
 			</Container>
 			<Container x={leftBadgeX} y={multBadgeCY}>
 				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />
-				<Text anchor={0.5} text={`x${globalMultiplier}`} style={titleStyle(badgeH * 0.34)} />
+				<Text anchor={0.5} y={-badgeH * 0.02} text={`x${globalMultiplier}`} style={titleStyle(badgeH * 0.3)} />
 			</Container>
 		{/if}
 
@@ -131,8 +131,8 @@
 		{#if showFsBadge}
 			<Container x={rightBadgeX} y={fsBadgeCY}>
 				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />
-				<Text anchor={0.5} y={-badgeH * 0.22} text="FREE SPINS" style={titleStyle(badgeH * 0.14)} />
-				<Text anchor={0.5} y={badgeH * 0.15} text={`${fsCurrent}/${fsTotal}`} style={titleStyle(badgeH * 0.32)} />
+				<Text anchor={0.5} y={-badgeH * 0.15} text="FREE SPINS" style={titleStyle(badgeH * 0.13)} />
+				<Text anchor={0.5} y={badgeH * 0.08} text={`${fsCurrent}/${fsTotal}`} style={titleStyle(badgeH * 0.26)} />
 			</Container>
 		{/if}
 	{:else}

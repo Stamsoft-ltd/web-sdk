@@ -32,6 +32,20 @@ const assets = {
 		src: './assets/components/backgrounds/visual_v2.jpg?v=20260701',
 		preload: true,
 	},
+	// Dedicated portrait forest scene (360×800) — used in the base game on portrait phones
+	// instead of the cropped landscape visualV2.
+	visualPortrait: {
+		type: 'sprite',
+		src: './assets/components/backgrounds/bg_mobile_portrait.jpg?v=20260703',
+		preload: true,
+	},
+	// Figma top+bottom shadow (node 2792-4133) layered on top of the portrait bg ONLY —
+	// rendered below the board/symbols/logo so it darkens the scene, never the UI.
+	portraitShadow: {
+		type: 'sprite',
+		src: './assets/components/backgrounds/portrait_shadow.png?v=20260703',
+		preload: true,
+	},
 	bonusNormalBackground: {
 		type: 'sprite',
 		src: './assets/components/backgrounds/bonus_normal_bg.webp?v=20260630',
@@ -64,7 +78,7 @@ const assets = {
 	},
 	slotPadMobile: {
 		type: 'sprite',
-		src: './assets/components/frames/board_frame_mobile.png?v=20260701',
+		src: './assets/components/frames/board_frame_mobile.png?v=20260703',
 		preload: true,
 	},
 	badgeFrame: {
