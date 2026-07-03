@@ -219,12 +219,15 @@
 				statCard: `${infoDir}/stat_card.webp`,
 				featureCard: `${infoDir}/feature_card.webp`,
 				specialFrame: `${infoDir}/special_frame.webp`,
+				framePortrait: `${infoDir}/portrait_frame.webp`,
 			},
 			infoPages: [
 				{
 					kind: 'overview',
 					frame: infoFrame,
 					background: infoForestBg,
+					// Character group art — only rendered on the portrait overview page (landscape ignores it).
+					image: `${infoDir}/gang_group.webp`,
 					title: forestStakeTitle('INFO OVERVIEW TITLE'),
 					body: forestStakeTitle('INFO OVERVIEW BODY'),
 					highlight: '25,000x',
