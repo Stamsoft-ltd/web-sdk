@@ -10,7 +10,7 @@
 	import BoardContainer from './BoardContainer.svelte';
 	import { getContext } from '../game/context';
 	import { PAY_SYMBOLS, SYMBOL_SIZE, SYMBOL_W, SYMBOL_H } from '../game/constants';
-	import { spriteKeyByName } from '../game/utils';
+	import { getSpriteKeyByName } from '../game/utils';
 	import type { SymbolName } from '../game/types';
 
 	// symbolPad.png is 624×420
@@ -96,7 +96,7 @@
 		expandedPresenterHide: () => (presenterActive = false),
 	});
 
-	const spriteKey = $derived(displaySymbol ? (spriteKeyByName[displaySymbol] ?? 'aTile') : 'aTile');
+	const spriteKey = $derived(displaySymbol ? getSpriteKeyByName({ name: displaySymbol, state: 'static' }) : 'aTile');
 </script>
 
 <BoardContainer>

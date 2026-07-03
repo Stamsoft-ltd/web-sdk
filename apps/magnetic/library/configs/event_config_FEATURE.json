@@ -370,12 +370,12 @@
                 "row": 5
             }
         ],
-        "amount": 2200,
+        "amount": 2665,
         "multiplier": 1
     },
     "winInfo": {
         "type": "winInfo",
-        "totalWin": 2253,
+        "totalWin": 2729,
         "wins": [
             {
                 "seriesId": "magnet-1",
@@ -447,7 +447,7 @@
                         "row": 5
                     }
                 ],
-                "amount": 2200,
+                "amount": 2665,
                 "meta": {
                     "baseAmount": 2500,
                     "totalMultiplier": 1,
@@ -506,7 +506,7 @@
                         "row": 1
                     }
                 ],
-                "amount": 53,
+                "amount": 64,
                 "meta": {
                     "baseAmount": 60,
                     "totalMultiplier": 1,
@@ -523,20 +523,20 @@
     },
     "setTotalWin": {
         "type": "setTotalWin",
-        "amount": 2253
+        "amount": 2729
     },
     "setWin": {
         "type": "setWin",
-        "amount": 2253,
+        "amount": 2729,
         "winLevel": 6
     },
     "freeSpinEnd": {
         "type": "freeSpinEnd",
-        "amount": 2253,
+        "amount": 2729,
         "winLevel": 6
     },
     "finalWin": {
         "type": "finalWin",
-        "amount": 2253
+        "amount": 2729
     }
 }

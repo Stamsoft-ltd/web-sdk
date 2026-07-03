@@ -98,6 +98,7 @@ export const stateGame = $state({
 	awaitingFirstReveal: false,
 	stopAutoOnBonus: false,     // autoplay stops when a bonus triggers
 	hasAnticipationPending: false,  // true when current spin has unskipped anticipation reels
+	anticipationSkipped: false,     // set when stop is pressed during anticipation so any newly-mounted anticipation overlay self-skips
 	resumeModalOpen: false,     // the "Unfinished Round" resume dialog is on screen
 });
 

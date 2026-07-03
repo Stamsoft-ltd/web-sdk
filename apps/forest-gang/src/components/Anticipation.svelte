@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { Container, SpineProvider, SpineTrack } from 'pixi-svelte';
 	import type { Reel } from '../game/stateGame.svelte';
 	import { SYMBOL_W, SYMBOL_SIZE, BOARD_SIZES, BOARD_GRID_OFFSET_Y } from '../game/constants';
@@ -23,6 +24,15 @@
 	let animationName = $state<AnimationName>('anticipation_intro');
 	let speedUp = $state(false);
 
+	// If skip was already pressed for a previous reel's anticipation, self-terminate immediately
+	// so cascaded anticipation overlays don't play out after the player pressed stop.
+	onMount(() => {
+		if (context.stateGame.anticipationSkipped) {
+			props.reel.stop();
+			props.oncomplete();
+		}
+	});
+
 	$effect(() => {
 		if (props.reel.reelState.motion === 'stopped') {
 			animationName = 'anticipation_out';
@@ -30,8 +40,9 @@
 	});
 
 	context.eventEmitter.subscribeOnMount({
-		// Press during anticipation: stop reel and skip out animation entirely
+		// Press during anticipation: stop reel, flag so any next reel's overlay self-skips, and skip out animation
 		stopButtonClick: () => {
+			context.stateGame.anticipationSkipped = true;
 			props.reel.stop();
 			props.oncomplete();
 		},

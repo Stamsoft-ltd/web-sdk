@@ -3,11 +3,15 @@ import { createPlayBookUtils } from 'utils-book';
 
 import { bookEventHandlerMap } from './bookEventHandlerMap';
 import { eventEmitter } from './eventEmitter';
+import { stateLayoutDerived } from './stateLayout';
 import type { Bet, BookEventOfType } from './typesBookEvent';
 import type { RawSymbol, SymbolName, SymbolState } from './types';
-import { SYMBOL_INFO_MAP, SYMBOL_W } from './constants';
+import { LOW_SYMBOLS, PREMIUM_SYMBOLS, SYMBOL_SIZE_RATIOS, SYMBOL_W } from './constants';
 
-export const spriteKeyByName: Record<SymbolName, string> = {
+const MOBILE_LAYOUT_TYPES = new Set(['portrait']);
+const MOBILE_ELIGIBLE_SYMBOLS = new Set<SymbolName>(['L1', 'L2', 'L3', 'L4', 'WILD', 'SCATTER']);
+
+const DESKTOP_STATIC_KEYS: Record<SymbolName, string> = {
 	H1: 'foxTile',
 	H2: 'wolfTile',
 	H3: 'bearTile',
@@ -17,16 +21,20 @@ export const spriteKeyByName: Record<SymbolName, string> = {
 	L3: 'kTile',
 	L4: 'qTile',
 	WILD: 'wildTile',
-	MAGNET: 'wildTile',
+	MAGNET: 'magnetTile',
 	SCATTER: 'scatterCustom',
 };
 
-export const bonusSpriteKeyByName: Record<SymbolName, string> = {
-	...spriteKeyByName,
-	MAGNET: 'wildWinTile',
+const MOBILE_STATIC_KEYS: Partial<Record<SymbolName, string>> = {
+	L1: 'squirrelTileMobile',
+	L2: 'aTileMobile',
+	L3: 'kTileMobile',
+	L4: 'qTileMobile',
+	WILD: 'wildTileMobile',
+	SCATTER: 'scatterCustomMobile',
 };
 
-export const winSpriteKeyByName: Record<SymbolName, string> = {
+const DESKTOP_WIN_KEYS: Record<SymbolName, string> = {
 	H1: 'foxWinTile',
 	H2: 'wolfWinTile',
 	H3: 'bearWinTile',
@@ -36,8 +44,64 @@ export const winSpriteKeyByName: Record<SymbolName, string> = {
 	L3: 'kWinTile',
 	L4: 'qWinTile',
 	WILD: 'wildWinTile',
-	MAGNET: 'wildWinTile',
+	MAGNET: 'magnetWinTile',
 	SCATTER: 'scatterWin',
+};
+
+const MOBILE_WIN_KEYS: Partial<Record<SymbolName, string>> = {
+	L1: 'squirrelWinTileMobile',
+	L2: 'aWinTileMobile',
+	L3: 'kWinTileMobile',
+	L4: 'qWinTileMobile',
+	WILD: 'wildWinTileMobile',
+	SCATTER: 'scatterWinMobile',
+};
+
+const MULTIPLIER_WILD_KEYS: Record<number, string> = {
+	2: 'wild2xTile',
+	3: 'wild3xTile',
+	4: 'wild4xTile',
+	5: 'wild5xTile',
+	10: 'wild10xTile',
+};
+
+const MULTIPLIER_WILD_KEYS_MOBILE: Record<number, string> = {
+	2: 'wild2xTileMobile',
+	3: 'wild3xTileMobile',
+	4: 'wild4xTileMobile',
+	5: 'wild5xTileMobile',
+	10: 'wild10xTileMobile',
+};
+
+const useMobileVariant = (name: SymbolName) =>
+	MOBILE_LAYOUT_TYPES.has(stateLayoutDerived.layoutType()) && MOBILE_ELIGIBLE_SYMBOLS.has(name);
+
+export const getSpriteKeyByName = ({
+	name,
+	state = 'static',
+	multiplier,
+}: {
+	name: SymbolName;
+	state?: 'static' | 'win';
+	multiplier?: number;
+}) => {
+	const mobile = useMobileVariant(name);
+
+	if (name === 'WILD' && multiplier && multiplier > 1) {
+		const normalizedMultiplier = multiplier > 10 ? 10 : multiplier;
+		return (mobile ? MULTIPLIER_WILD_KEYS_MOBILE : MULTIPLIER_WILD_KEYS)[normalizedMultiplier]
+			?? (mobile ? 'wild10xTileMobile' : 'wild10xTile');
+	}
+
+	if (state === 'win') {
+		return (mobile ? MOBILE_WIN_KEYS[name] : undefined)
+			?? DESKTOP_WIN_KEYS[name]
+			?? DESKTOP_STATIC_KEYS[name];
+	}
+
+	return (mobile ? MOBILE_STATIC_KEYS[name] : undefined)
+		?? DESKTOP_STATIC_KEYS[name]
+		?? DESKTOP_WIN_KEYS[name];
 };
 
 export const winBoardByAlias: Record<string, string> = {
@@ -56,8 +120,33 @@ export const winBoardByAlias: Record<string, string> = {
 export const getReelCenterX = (reelIndex: number): number => SYMBOL_W * (reelIndex + 0.5);
 export const getSymbolX = (reelIndex: number): number => SYMBOL_W * (reelIndex + 0.5);
 
-export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; state: SymbolState }) =>
-	SYMBOL_INFO_MAP[rawSymbol.name][state];
+export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; state: SymbolState }) => {
+	const assetState = ['win', 'locked', 'magnet'].includes(state) ? 'win' : 'static';
+	const assetKey = getSpriteKeyByName({
+		name: rawSymbol.name,
+		state: assetState as 'static' | 'win',
+		multiplier: rawSymbol.multiplier,
+	});
+
+	const sizeRatios =
+		rawSymbol.name === 'WILD' && rawSymbol.multiplier && rawSymbol.multiplier > 1
+			? SYMBOL_SIZE_RATIOS.multiplierWild
+			: PREMIUM_SYMBOLS.includes(rawSymbol.name)
+				? SYMBOL_SIZE_RATIOS.premium
+				: LOW_SYMBOLS.includes(rawSymbol.name)
+					? SYMBOL_SIZE_RATIOS.low
+					: SYMBOL_SIZE_RATIOS.special;
+
+	return {
+		type: 'sprite' as const,
+		assetKey,
+		sizeRatios,
+	};
+};
+
+export const shouldShowMultiplierText = (rawSymbol: RawSymbol) =>
+	(rawSymbol.name === 'WILD' && !!rawSymbol.multiplier && rawSymbol.multiplier > 10)
+	|| (rawSymbol.name === 'MAGNET' && !!rawSymbol.multiplier && rawSymbol.multiplier > 1);
 
 export const { playBookEvent, playBookEvents } = createPlayBookUtils({ bookEventHandlerMap });
 

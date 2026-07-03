@@ -234,7 +234,7 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 		if (stateBet.isSuperTurbo) {
 			await slideDown();
 		} else if (noStop) {
-			await slideDown();
+			await interruptible.add(slideDown);
 		} else if ((stateBet.isTurbo || stateBet.isSuperTurbo) && isSpinning) {
 			// skip
 		} else {

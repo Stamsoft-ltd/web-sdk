@@ -16,7 +16,7 @@
 
 	import { getContext } from '../game/context';
 	import { PAY_SYMBOLS } from '../game/constants';
-	import { winSpriteKeyByName } from '../game/utils';
+	import { getSpriteKeyByName } from '../game/utils';
 
 	const context = getContext();
 
@@ -38,7 +38,7 @@
 	let show = $state(false);
 	// displaySymbol cycles during the roll, then settles on the real symbol.
 	let displaySymbol = $state<SymbolName | null>(null);
-	const letterKey = $derived(displaySymbol ? (winSpriteKeyByName[displaySymbol] ?? null) : null);
+	const letterKey = $derived(displaySymbol ? getSpriteKeyByName({ name: displaySymbol, state: 'win' }) : null);
 
 	const letterH = $derived(deerH * PLACEHOLDER.h);
 	const letterW = $derived(letterH * LETTER_ASPECT);

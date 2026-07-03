@@ -6,14 +6,14 @@
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_H, SYMBOL_W, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
-	import { getReelCenterX, winSpriteKeyByName } from '../game/utils';
+	import { getReelCenterX, getSpriteKeyByName } from '../game/utils';
 	import type { SymbolName } from '../game/types';
 
 	const EXPANDED_ASSET: Partial<Record<SymbolName, string>> = {
-		H1: 'foxExpTile',
-		H2: 'wolfExpTile',
-		H3: 'bearExpTile',
-		H4: 'rabbitExpTile',
+		H1: 'foxWinTile',
+		H2: 'wolfWinTile',
+		H3: 'bearWinTile',
+		H4: 'rabbitWinTile',
 	};
 
 	const context = getContext();
@@ -76,7 +76,7 @@
 {#if expanded}
 	{@const assetKey = EXPANDED_ASSET[expanded.symbol] ?? 'foxExpTile'}
 	{@const isLowExpanded = LOW_SYMBOLS.has(expanded.symbol)}
-	{@const lowAssetKey = winSpriteKeyByName[expanded.symbol] ?? 'aWinTile'}
+	{@const lowAssetKey = getSpriteKeyByName({ name: expanded.symbol, state: 'win' })}
 	<MainContainer>
 		<Container
 			x={context.stateGameDerived.boardLayout().x}

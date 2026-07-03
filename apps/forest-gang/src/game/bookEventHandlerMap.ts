@@ -62,6 +62,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.expandedSymbolWon = false;
 		stateGame.paylineWins = [];
 		stateGame.hasAnticipationPending = !!hasAnticipation;
+		stateGame.anticipationSkipped = false;
 
 		// Add a brief pause between bonus spins so players can read the result
 		if (isBonusGame && bookEvent.gameType !== 'basegame' && !stateBet.isSuperTurbo) {

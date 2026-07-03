@@ -29,8 +29,8 @@ export default {
 		L2: { paytable: makeTierPaytable([[5, 5, 0.12], [6, 6, 0.25], [7, 7, 0.5], [8, 8, 1], [9, 9, 2], [10, 11, 4], [12, 14, 8], [15, 19, 20], [20, 24, 50], [25, 29, 100], [30, 32, 200], [33, 49, 400]]) },
 		L3: { paytable: makeTierPaytable([[5, 5, 0.1], [6, 6, 0.2], [7, 7, 0.4], [8, 8, 0.8], [9, 9, 1.6], [10, 11, 3], [12, 14, 6], [15, 19, 15], [20, 24, 40], [25, 29, 80], [30, 32, 150], [33, 49, 300]]) },
 		L4: { paytable: makeTierPaytable([[5, 5, 0.08], [6, 6, 0.15], [7, 7, 0.3], [8, 8, 0.6], [9, 9, 1.2], [10, 11, 2.5], [12, 14, 5], [15, 19, 12], [20, 24, 30], [25, 29, 60], [30, 32, 120], [33, 49, 250]]) },
-		WILD: { special_properties: ['wild', 'multiplier'] },
-		MAGNET: { special_properties: ['magnet'] },
+		WILD: { special_properties: ['wild'] },
+		MAGNET: { special_properties: ['magnet', 'multiplier'] },
 		SCATTER: { special_properties: ['scatter'] },
 	},
 } as const;

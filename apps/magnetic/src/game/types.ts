@@ -1,4 +1,5 @@
 import type config from './config';
+import type { Tween } from 'svelte/motion';
 
 export type SymbolName = keyof typeof config.symbols;
 export type PaySymbolName = Exclude<SymbolName, 'MAGNET' | 'SCATTER' | 'WILD'>;
@@ -36,6 +37,9 @@ export type BoardCell = RawSymbol & {
 	key: string;
 	position: Position;
 	symbolState: SymbolState;
+	displayY: Tween<number>;
+	displayAlpha: Tween<number>;
+	displayScale: Tween<number>;
 	locked: boolean;
 	highlighted: boolean;
 	anchor: boolean;

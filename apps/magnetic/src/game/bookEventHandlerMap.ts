@@ -40,6 +40,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
 		const hasAnticipation = bookEvent.anticipation?.some(Boolean);
+		const revealMode = stateGame.nextRevealMode;
 		if (isBonusGame || hasAnticipation) eventEmitter.broadcast({ type: 'stopButtonEnable' });
 		if (isBonusGame) recordBookEvent({ bookEvent });
 
@@ -48,11 +49,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		} else if (!stateBet.isSuperTurbo) {
 			await waitForTimeout(220);
 		}
+		if (revealMode === 'respin' && !stateBet.isSuperTurbo) {
+			await waitForTimeout(stateBet.isTurbo ? 140 : 280);
+		}
 
 		stateGame.awaitingFirstReveal = false;
 		stateGame.pendingStop = false;
 		stateGame.tempMultiplier = null;
-		stateGameDerived.applyReveal({ rawBoard: bookEvent.board, gameType: bookEvent.gameType });
+		await stateGameDerived.applyReveal({ rawBoard: bookEvent.board, gameType: bookEvent.gameType });
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
 	},
 	magnetActivated: async (bookEvent: BookEventOfType<'magnetActivated'>) => {
@@ -60,7 +64,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.magnetTargetSymbol = bookEvent.symbol;
 		stateGame.globalMultiplier = bookEvent.totalMultiplier;
 		stateGame.seriesTotalMultiplier = bookEvent.totalMultiplier;
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_landing' });
+		stateGame.tempMultiplier = bookEvent.multiplier > 1 ? bookEvent.multiplier : null;
+		if (bookEvent.multiplier > 1) eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_landing' });
+		await stateGameDerived.activateMagnetPulse(bookEvent.positions);
 		if (bookEvent.persistent) {
 			eventEmitter.broadcast({ type: 'globalMultiplierShow' });
 			eventEmitter.broadcast({ type: 'globalMultiplierUpdate', multiplier: bookEvent.totalMultiplier });
@@ -145,6 +151,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 	},
 	updateFreeSpin: async (bookEvent: BookEventOfType<'updateFreeSpin'>) => {
+		stateGameDerived.markNextRevealAsSpin();
 		if (stateGame.bonusMode === 'feature') {
 			stateUi.freeSpinCounterShow = false;
 			eventEmitter.broadcast({ type: 'freeSpinCounterHide' });

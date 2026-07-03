@@ -2,7 +2,7 @@
     "workingName": "Magnetic",
     "frontendConfig": {
         "file": "fe_config.json",
-        "sha256": "42e523d387281caf297ef003c89d9a0a91a396f245ffdc439dec6e7614f59313"
+        "sha256": "61224696f2ce65188a206de92e185d5026835acca6311cfd7ef24e36c32444f4"
     },
     "gameID": "0_0_magnetic",
     "rtp": 96.1,
@@ -19,12 +19,12 @@
             "tables": [
                 {
                     "file": "lookUpTable_BASE_0.csv",
-                    "sha256": "85d18f43836971a17813f5b793a68ee38babb5ff01ffe510e1f6844475902b28"
+                    "sha256": "72e0127108c4ff5bcd3fa75965a7ea87e782fcd51ce456924707b2d65579c2bf"
                 }
             ],
             "cost": 1.0,
             "rtp": 0.961,
-            "std": 5.01,
+            "std": 4.99,
             "bookLength": 20,
             "feature": true,
             "autoEndRoundDisabled": false,
@@ -32,7 +32,7 @@
             "maxWin": 20000.0,
             "booksFile": {
                 "file": "books_BASE.jsonl.zst",
-                "sha256": "3c96c02fae35b6caba9708264bf827e7e96b9382b7e6fb449700301a2c813bf4"
+                "sha256": "18834fad113c1ac59718b3af9fda28ac7b4a339499a9a5f307d779865aff7620"
             },
             "forceFile": {
                 "file": "force_record_BASE.json",
@@ -44,12 +44,12 @@
             "tables": [
                 {
                     "file": "lookUpTable_CHANCE_0.csv",
-                    "sha256": "147352f7df4e55a998f66b6517a6a0c898029232e877f3abcad9bcc8f09afe04"
+                    "sha256": "a3f7cc5fcd8f00d08f1cdf1c6ea9a2ebbfc4cc1fcf0ca40f300a3782928b81ee"
                 }
             ],
             "cost": 2.0,
             "rtp": 0.961,
-            "std": 2.49,
+            "std": 2.51,
             "bookLength": 20,
             "feature": true,
             "autoEndRoundDisabled": false,
@@ -57,7 +57,7 @@
             "maxWin": 20000.0,
             "booksFile": {
                 "file": "books_CHANCE.jsonl.zst",
-                "sha256": "98cbb843c49512722d93ce1ac1e1c1ee4ce92247dfd744eddaab7fe7e4d8be0e"
+                "sha256": "3d6591e6da7f98cda88d69cc83fa0fa5de31e47c19a3f1338242952947605259"
             },
             "forceFile": {
                 "file": "force_record_CHANCE.json",
@@ -69,12 +69,12 @@
             "tables": [
                 {
                     "file": "lookUpTable_FEATURE_0.csv",
-                    "sha256": "11d19d75e507f5e846f745a1cfb1f21016a34805b5f707938208d7e39c166615"
+                    "sha256": "cf8aeb55d7dbb1342bd011e719acceca1d3c640ccdc0353e09d8718fcef121f9"
                 }
             ],
             "cost": 50.0,
             "rtp": 0.961,
-            "std": 1.69,
+            "std": 1.8,
             "bookLength": 10,
             "feature": false,
             "autoEndRoundDisabled": false,
@@ -82,7 +82,7 @@
             "maxWin": 20000.0,
             "booksFile": {
                 "file": "books_FEATURE.jsonl.zst",
-                "sha256": "4d0f3d3c4d48567c7a31c599f4c4a5318928b95e2850f3468a1ca0f4d5eee3dc"
+                "sha256": "3ca0023ec93ce48ccee480a87f4f883706e455915b704e9bcb31a5bc0652f1c8"
             },
             "forceFile": {
                 "file": "force_record_FEATURE.json",
@@ -94,12 +94,12 @@
             "tables": [
                 {
                     "file": "lookUpTable_BONUS_0.csv",
-                    "sha256": "3c87ef8786ea82c9d77b2159a65a454129b3d31c8e186500079bec8e16483f2e"
+                    "sha256": "e4388ee83656ec08c3590f2780776adde85964d716afb909115255e928188ceb"
                 }
             ],
             "cost": 100.0,
             "rtp": 0.961,
-            "std": 2.34,
+            "std": 2.41,
             "bookLength": 10,
             "feature": false,
             "autoEndRoundDisabled": false,
@@ -107,7 +107,7 @@
             "maxWin": 20000.0,
             "booksFile": {
                 "file": "books_BONUS.jsonl.zst",
-                "sha256": "edf103c088adbe0da69a4593d09a65228b20ab3c56a79287cddfd91a3d353cf2"
+                "sha256": "4573ca73814eeca207fb1445788aa0a0a1d246e7b5e36bb3466b47b4b71c1071"
             },
             "forceFile": {
                 "file": "force_record_BONUS.json",
@@ -119,7 +119,7 @@
             "tables": [
                 {
                     "file": "lookUpTable_SUPER_0.csv",
-                    "sha256": "944d3ef2f23e4edc22ee0545c6d46fe202dbe2e56007fcadd6ae2a741f0e9a73"
+                    "sha256": "83549ea98d520e483afcc823607b55106cfa1fdf100a0c8e1dc80c3474208cda"
                 }
             ],
             "cost": 500.0,
@@ -132,7 +132,7 @@
             "maxWin": 20000.0,
             "booksFile": {
                 "file": "books_SUPER.jsonl.zst",
-                "sha256": "7ea2b2e0bb684932e66d200d99d6655434ac9e87d6337046b288e829026cdebc"
+                "sha256": "5773f268e5d4df71df2f8dcf3ff68ad7ebbdb5427ff285555cb3a71be1fd2ef8"
             },
             "forceFile": {
                 "file": "force_record_SUPER.json",

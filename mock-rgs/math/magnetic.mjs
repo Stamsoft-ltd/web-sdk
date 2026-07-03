@@ -4,7 +4,7 @@ const TOTAL_FS = 10;
 const FEATURE_FS = 1;
 const MAX_WIN_X = 20000;
 const MAX_WIN_AMOUNT = MAX_WIN_X * 100;
-const MAX_NATURAL_RESPINS = 3;
+const MAX_SEQUENCE_RESPINS_SAFETY = 64;
 
 const PAY_SYMBOLS = ['H1', 'H2', 'H3', 'H4', 'L1', 'L2', 'L3', 'L4'];
 const SYMBOL_WEIGHTS = [
@@ -17,7 +17,9 @@ const SYMBOL_WEIGHTS = [
   ['H2', 10],
   ['H1', 10],
 ];
-const MULTIPLIER_WILD_VALUES = {
+const MAGNET_MULTIPLIER_VALUES = {
+  BASE: [[2, 44], [3, 28], [4, 16], [5, 8], [10, 3], [25, 1]],
+  CHANCE: [[2, 42], [3, 28], [4, 17], [5, 8], [10, 4], [25, 1]],
   FEATURE: [[2, 40], [3, 28], [4, 18], [5, 9], [10, 4], [25, 1]],
   BONUS: [[2, 40], [3, 28], [4, 18], [5, 9], [10, 4], [25, 1]],
   SUPER: [[2, 34], [3, 24], [4, 18], [5, 11], [10, 6], [25, 3], [50, 2], [100, 1]],
@@ -39,10 +41,10 @@ const BASE_MODE_SETTINGS = {
   triggerSuperRate: 0.00015,
   magnetSpinRate: 0.02,
   magnetRespinRate: 0.015,
+  magnetMultiplierRate: 0.015,
   targetBoost: 0.015,
   scatterRange: [0, 2],
   wildRate: 0,
-  multiplierWildRate: 0,
   payoutScale: 1.08,
 };
 
@@ -54,35 +56,36 @@ const MODE_SETTINGS = {
     triggerSuperRate: 0.00045,
     magnetSpinRate: 0.03,
     magnetRespinRate: 0.02,
+    magnetMultiplierRate: 0.025,
     targetBoost: 0.02,
     payoutScale: 1.28,
   },
   FEATURE: {
     magnetSpinRate: 1,
     magnetRespinRate: 0.02,
+    magnetMultiplierRate: 0.12,
     targetBoost: 0.015,
     scatterRange: [0, 0],
     wildRate: 0,
-    multiplierWildRate: 0.0005,
-    payoutScale: 0.88,
+    payoutScale: 1.066,
   },
   BONUS: {
     magnetSpinRate: 0.11,
     magnetRespinRate: 0.03,
+    magnetMultiplierRate: 0.14,
     targetBoost: 0.04,
     scatterRange: [0, 0],
     wildRate: 0,
-    multiplierWildRate: 0.004,
-    payoutScale: 1.06,
+    payoutScale: 1.184,
   },
   SUPER: {
     magnetSpinRate: 0.12,
     magnetRespinRate: 0.008,
+    magnetMultiplierRate: 0.18,
     targetBoost: -0.12,
     scatterRange: [0, 0],
     wildRate: 0,
-    multiplierWildRate: 0,
-    payoutScale: 0.77,
+    payoutScale: 0.793,
   },
 };
 
@@ -123,7 +126,11 @@ const weightedChoice = (rng, entries) => {
 
 const makePaySymbol = (name) => ({ name });
 const makeScatter = () => ({ name: 'SCATTER', scatter: true });
-const makeMagnet = () => ({ name: 'MAGNET', magnet: true });
+const makeMagnet = (multiplier = 1) => ({
+  name: 'MAGNET',
+  magnet: true,
+  ...(multiplier > 1 ? { multiplier } : {}),
+});
 const makeWild = (multiplier = 1) => ({
   name: 'WILD',
   wild: true,
@@ -187,7 +194,12 @@ const randomWildCount = (rng, rate) => {
   return chance(rng, Math.min(0.45, rate * 4)) ? 2 : 1;
 };
 
-const randomMultiplierWildValue = (rng, mode) => weightedChoice(rng, MULTIPLIER_WILD_VALUES[mode]);
+const randomMagnetMultiplierValue = (rng, mode) => weightedChoice(rng, MAGNET_MULTIPLIER_VALUES[mode]);
+const makeRandomMagnet = (rng, mode) => {
+  const multiplierRate = MODE_SETTINGS[mode]?.magnetMultiplierRate ?? 0;
+  const multiplier = MAGNET_MULTIPLIER_VALUES[mode] && chance(rng, multiplierRate) ? randomMagnetMultiplierValue(rng, mode) : 1;
+  return makeMagnet(multiplier);
+};
 
 const createBoard = ({
   rng,
@@ -218,22 +230,12 @@ const createBoard = ({
   const blocked = new Set([...lockedKeys, ...scatterPositions.map(posKey)]);
   const magnetPositions = samplePositions(rng, magnetCount, blocked);
   for (const position of magnetPositions) {
-    board[position.reel][position.row] = makeMagnet();
+    board[position.reel][position.row] = makeRandomMagnet(rng, mode);
   }
 
   const blockedWithMagnets = new Set([...blocked, ...magnetPositions.map(posKey)]);
   const wildPositions = samplePositions(rng, randomWildCount(rng, MODE_SETTINGS[mode]?.wildRate ?? 0), blockedWithMagnets);
   for (const position of wildPositions) board[position.reel][position.row] = makeWild();
-
-  const blockedWithWilds = new Set([...blockedWithMagnets, ...wildPositions.map(posKey)]);
-  const multiplierWildPositions = samplePositions(
-    rng,
-    randomWildCount(rng, MODE_SETTINGS[mode]?.multiplierWildRate ?? 0),
-    blockedWithWilds,
-  );
-  for (const position of multiplierWildPositions) {
-    board[position.reel][position.row] = makeWild(randomMultiplierWildValue(rng, mode));
-  }
 
   return board;
 };
@@ -291,8 +293,8 @@ const chooseMagnetTargetSymbol = (rng, board) => {
   return visible[randInt(rng, visible.length)];
 };
 
-const multiplierWildProduct = (board) =>
-  getWildPositions(board).reduce((product, wild) => product * (wild.multiplier > 1 ? wild.multiplier : 1), 1);
+const magnetMultiplierProduct = (board) =>
+  getMagnetPositions(board).reduce((product, magnet) => product * Math.max(1, board[magnet.reel][magnet.row].multiplier ?? 1), 1);
 
 const getPayForSize = (symbol, size) => {
   for (const [from, to, value] of PAYTABLE_BANDS[symbol] ?? []) {
@@ -605,19 +607,10 @@ const respinBoard = ({ rng, mode, board, lockedMap, targetSymbol = null, targetB
   }
   const blocked = new Set([...lockedMap.keys()]);
   const magnetPositions = samplePositions(rng, magnetCount, blocked);
-  for (const position of magnetPositions) out[position.reel][position.row] = makeMagnet();
+  for (const position of magnetPositions) out[position.reel][position.row] = makeRandomMagnet(rng, mode);
   const blockedWithMagnets = new Set([...blocked, ...magnetPositions.map(posKey)]);
   const wildPositions = samplePositions(rng, randomWildCount(rng, MODE_SETTINGS[mode]?.wildRate ?? 0), blockedWithMagnets);
   for (const position of wildPositions) out[position.reel][position.row] = makeWild();
-  const blockedWithWilds = new Set([...blockedWithMagnets, ...wildPositions.map(posKey)]);
-  const multiplierWildPositions = samplePositions(
-    rng,
-    randomWildCount(rng, MODE_SETTINGS[mode]?.multiplierWildRate ?? 0),
-    blockedWithWilds,
-  );
-  for (const position of multiplierWildPositions) {
-    out[position.reel][position.row] = makeWild(randomMultiplierWildValue(rng, mode));
-  }
   return out;
 };
 
@@ -663,7 +656,7 @@ const resolveNaturalSequence = ({ rng, board, mode, gameType }) => {
     currentBoard = nextBoard;
     emitSeriesUpdate(events, activeSeries, null, 1);
     respins += 1;
-    if (!grew || boardFullyLocked(activeSeries) || respins >= MAX_NATURAL_RESPINS) break;
+    if (!grew || boardFullyLocked(activeSeries) || respins >= MAX_SEQUENCE_RESPINS_SAFETY) break;
   }
 
   const wins = capWins(renderSeriesWins({ series: activeSeries, totalMultiplier: 1, kind: 'natural', payoutScale }), MAX_WIN_AMOUNT);
@@ -691,14 +684,14 @@ const resolveMagnetSequence = ({ rng, board, mode, gameType, targetSymbol = null
     : createMagnetSeriesFromBoard({ board: currentBoard, targetSymbol: seriesTarget, kind, totalMultiplier, persistent });
 
   const initialMagnets = getMagnetPositions(currentBoard);
-  const initialMagnetMult = MULTIPLIER_WILD_VALUES[mode] ? multiplierWildProduct(currentBoard) : 1;
+  const initialMagnetMult = MAGNET_MULTIPLIER_VALUES[mode] ? magnetMultiplierProduct(currentBoard) : 1;
   totalMultiplier *= initialMagnetMult;
   activeSeries = activeSeries.map((entry) => ({ ...entry, multiplier: totalMultiplier }));
   emitMagnetActivated(events, {
     seriesId: activeSeries[0]?.id ?? `${kind}-1`,
     symbol: seriesTarget,
     positions: initialMagnets.length ? initialMagnets : activeSeries[0]?.anchorPositions ?? [],
-    multiplier: 1,
+    multiplier: initialMagnetMult,
     totalMultiplier,
     persistent,
   });
@@ -721,6 +714,7 @@ const resolveMagnetSequence = ({ rng, board, mode, gameType, targetSymbol = null
     }))
     .filter((entry) => entry.amount > 0);
 
+  let respins = 0;
   while (true) {
     const nextBoard = respinBoard({
       rng,
@@ -734,14 +728,14 @@ const resolveMagnetSequence = ({ rng, board, mode, gameType, targetSymbol = null
     emitReveal(events, nextBoard, gameType);
 
     const respinMagnets = getMagnetPositions(nextBoard);
-    const respinMagnetMult = MULTIPLIER_WILD_VALUES[mode] ? multiplierWildProduct(nextBoard) : 1;
+    const respinMagnetMult = MAGNET_MULTIPLIER_VALUES[mode] ? magnetMultiplierProduct(nextBoard) : 1;
     if (respinMagnetMult > 1) totalMultiplier *= respinMagnetMult;
     if (respinMagnets.length) {
       emitMagnetActivated(events, {
         seriesId: activeSeries[0]?.id ?? `${kind}-1`,
         symbol: seriesTarget,
         positions: respinMagnets,
-        multiplier: 1,
+        multiplier: respinMagnetMult,
         totalMultiplier,
         persistent,
       });
@@ -764,7 +758,8 @@ const resolveMagnetSequence = ({ rng, board, mode, gameType, targetSymbol = null
     activeSeries = nextSeries;
     currentBoard = nextBoard;
     emitSeriesUpdate(events, activeSeries, seriesTarget, totalMultiplier);
-    if (!grew && !multiplierChanged) break;
+    respins += 1;
+    if ((!grew && !multiplierChanged) || boardFullyLocked(activeSeries) || respins >= MAX_SEQUENCE_RESPINS_SAFETY) break;
   }
 
   const cappedNonTargetWins = capWins(nonTargetWins, MAX_WIN_AMOUNT);

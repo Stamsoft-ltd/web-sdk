@@ -409,12 +409,12 @@
                 "row": 2
             }
         ],
-        "amount": 15,
+        "amount": 16,
         "multiplier": 1
     },
     "winInfo": {
         "type": "winInfo",
-        "totalWin": 30,
+        "totalWin": 32,
         "wins": [
             {
                 "seriesId": "super-3",
@@ -446,7 +446,7 @@
                         "row": 2
                     }
                 ],
-                "amount": 15,
+                "amount": 16,
                 "meta": {
                     "baseAmount": 20,
                     "totalMultiplier": 1,
@@ -489,7 +489,7 @@
                         "row": 5
                     }
                 ],
-                "amount": 15,
+                "amount": 16,
                 "meta": {
                     "baseAmount": 20,
                     "totalMultiplier": 1,
@@ -506,16 +506,16 @@
     },
     "setWin": {
         "type": "setWin",
-        "amount": 23100,
+        "amount": 23790,
         "winLevel": 8
     },
     "freeSpinEnd": {
         "type": "freeSpinEnd",
-        "amount": 23100,
+        "amount": 23790,
         "winLevel": 8
     },
     "finalWin": {
         "type": "finalWin",
-        "amount": 23100
+        "amount": 23790
     }
 }

@@ -65,7 +65,7 @@
 		<!-- DEAL IT -->
 		<div class="card" style="--frame:url('{cardFrame}')">
 			<span class="card-title">DROP-O-MAGNET</span>
-			<span class="card-desc">10 FREE SPINS · BOOSTED MAGNET CHANCE · RANDOM TARGET PER MAGNET SERIES</span>
+			<span class="card-desc">10 FREE SPINS · BOOSTED MAGNET CHANCE · TARGET LOCKS ONLY WHEN MAGNET HITS</span>
 			<img class="card-icon" src={dealItIcon} alt="" />
 			<span class="card-price">{bonusCost}</span>
 			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('BONUS')}>BUY</button>
@@ -108,7 +108,7 @@
 		<!-- ALL IN -->
 		<div class="card" style="--frame:url('{cardFrame}')">
 			<span class="card-title">MEGA CHAIN</span>
-			<span class="card-desc">10 FREE SPINS · FIRST SPIN GUARANTEED MAGNET · TARGET + MULTIPLIER PERSIST</span>
+			<span class="card-desc">10 FREE SPINS · FIRST SPIN GUARANTEED MAGNET · TARGET + CLUSTER + MULTIPLIER PERSIST</span>
 			<img class="card-icon" src={allInIcon} alt="" />
 			<span class="card-price">{superCost}</span>
 			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('SUPER')}>BUY</button>

@@ -34,26 +34,75 @@ const baseRows: RawSymbol[][] = [
 	['L1', 'L2', 'L3', 'L4', 'H1', 'H2', 'H3'],
 	['H4', 'L1', 'L2', 'L3', 'L4', 'WILD', 'H1'],
 	['H3', 'H4', 'L1', 'L2', 'L3', 'L4', 'MAGNET'],
-].map((row) => row.map((name) => ({ name: name as SymbolName, magnet: name === 'MAGNET', scatter: name === 'SCATTER' })));
+].map((row) =>
+	row.map((name) => ({
+		name: name as SymbolName,
+		wild: name === 'WILD',
+		magnet: name === 'MAGNET',
+		scatter: name === 'SCATTER',
+	})),
+);
 
 export const INITIAL_BOARD = baseRows.map((row) => [...row]);
 export const INITIAL_SYMBOL_STATE: SymbolState = 'static';
 
-const sprite = (assetKey: string) => ({ type: 'sprite', assetKey, sizeRatios: { width: 1, height: 1 } });
-const special = (assetKey: string) => ({ type: 'sprite', assetKey, sizeRatios: { width: 1.04, height: 1.04 } });
+export const SYMBOL_SIZE_RATIOS = {
+	premium: { width: 0.92, height: 0.92 },
+	low: { width: 0.92, height: 0.92 },
+	special: { width: 0.98, height: 0.98 },
+	multiplierWild: { width: 0.98, height: 0.98 },
+} as const;
 
-export const SYMBOL_INFO_MAP = {
-	H1: { static: sprite('foxTile'), spin: sprite('foxTile'), land: sprite('foxTile'), win: sprite('foxWinTile'), locked: sprite('foxWinTile'), magnet: sprite('foxWinTile') },
-	H2: { static: sprite('wolfTile'), spin: sprite('wolfTile'), land: sprite('wolfTile'), win: sprite('wolfWinTile'), locked: sprite('wolfWinTile'), magnet: sprite('wolfWinTile') },
-	H3: { static: sprite('bearTile'), spin: sprite('bearTile'), land: sprite('bearTile'), win: sprite('bearWinTile'), locked: sprite('bearWinTile'), magnet: sprite('bearWinTile') },
-	H4: { static: sprite('rabbitTile'), spin: sprite('rabbitTile'), land: sprite('rabbitTile'), win: sprite('rabbitWinTile'), locked: sprite('rabbitWinTile'), magnet: sprite('rabbitWinTile') },
-	L1: { static: sprite('squirrelTile'), spin: sprite('squirrelTile'), land: sprite('squirrelTile'), win: sprite('squirrelWinTile'), locked: sprite('squirrelWinTile'), magnet: sprite('squirrelWinTile') },
-	L2: { static: sprite('aTile'), spin: sprite('aTile'), land: sprite('aTile'), win: sprite('aWinTile'), locked: sprite('aWinTile'), magnet: sprite('aWinTile') },
-	L3: { static: sprite('kTile'), spin: sprite('kTile'), land: sprite('kTile'), win: sprite('kWinTile'), locked: sprite('kWinTile'), magnet: sprite('kWinTile') },
-	L4: { static: sprite('qTile'), spin: sprite('qTile'), land: sprite('qTile'), win: sprite('qWinTile'), locked: sprite('qWinTile'), magnet: sprite('qWinTile') },
-	WILD: { static: special('wildTile'), spin: special('wildTile'), land: special('wildTile'), win: special('wildWinTile'), locked: special('wildWinTile'), magnet: special('wildWinTile') },
-	MAGNET: { static: special('wildTile'), spin: special('wildTile'), land: special('wildTile'), win: special('wildWinTile'), locked: special('wildWinTile'), magnet: special('wildWinTile') },
-	SCATTER: { static: special('scatterCustom'), spin: special('scatterCustom'), land: special('scatterCustom'), win: special('scatterWin'), locked: special('scatterWin'), magnet: special('scatterWin') },
+export const BOARD_MOTION_DEFAULT = {
+	spin: {
+		dropRows: 9,
+		fadeOutMs: 0,
+		durationMs: 360,
+		scaleFrom: 0.94,
+		reelDelayMs: 58,
+		rowDelayMs: 12,
+		bounceMs: 120,
+	},
+	respin: {
+		dropRows: 3.8,
+		fadeOutMs: 110,
+		durationMs: 340,
+		scaleFrom: 0.9,
+		reelDelayMs: 42,
+		rowDelayMs: 12,
+		bounceMs: 130,
+	},
+	pulse: {
+		magnetMs: 300,
+		freshMs: 340,
+		winMs: 560,
+	},
+} as const;
+
+export const BOARD_MOTION_FAST = {
+	spin: {
+		dropRows: 7,
+		fadeOutMs: 0,
+		durationMs: 160,
+		scaleFrom: 0.96,
+		reelDelayMs: 18,
+		rowDelayMs: 3,
+		bounceMs: 70,
+	},
+	respin: {
+		dropRows: 2.2,
+		fadeOutMs: 24,
+		durationMs: 110,
+		scaleFrom: 0.96,
+		reelDelayMs: 10,
+		rowDelayMs: 2,
+		bounceMs: 48,
+	},
+	pulse: {
+		magnetMs: 90,
+		freshMs: 120,
+		winMs: 140,
+	},
 } as const;
 
 export const SCATTER_LAND_SOUND_MAP = {
