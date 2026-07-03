@@ -23,6 +23,7 @@
 
 	const context = getContext();
 	const t = (key: string) => stateI18nDerived.translate(key);
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 
 	// Same Cinzel styling as the free-spins intro (Figma: Cinzel 900, soft drop shadow, proportional spacing).
 	const textStyle = (fontSize: number, fill: number) => ({
@@ -67,9 +68,12 @@
 
 				<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
 
-				<FreeSpinAnimation>
+				<FreeSpinAnimation portraitScale={1.3}>
 					{#snippet children({ sizes })}
-						{@const BW = sizes.width * 1.8}
+						<!-- Portrait: fixed BW (like the intro) so the board scales LINEARLY with the
+						     portrait factor — deriving it from `sizes` (which already scales with the
+						     factor) compounded to factor² and overflowed. Other layouts unchanged. -->
+						{@const BW = isPortrait ? 1100 : sizes.width * 1.8}
 
 						<Sprite key="fsBoardBg" anchor={{ x: 0.5, y: 0.5 }} width={BW} height={BW} />
 

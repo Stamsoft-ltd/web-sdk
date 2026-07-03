@@ -17,6 +17,9 @@
 	type Props = {
 		children: Snippet<[{ sizes: Sizes }]>;
 		xOffset?: number;
+		// Portrait size factor (fraction of the screen's short side). Per-instance so the intro
+		// can be enlarged without also scaling the outro, whose content is sized off `sizes`.
+		portraitScale?: number;
 	};
 
 	const props: Props = $props();
@@ -36,7 +39,7 @@
 	// (board + all text scale together through this); other layouts keep the original size.
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const introSizeFactor = $derived(
-		context.stateLayoutDerived.layoutType() === 'portrait' ? 1.3 : 0.72,
+		context.stateLayoutDerived.layoutType() === 'portrait' ? (props.portraitScale ?? 0.72) : 0.72,
 	);
 	const bs = $derived((Math.min(main.width, main.height) * introSizeFactor) / LAYOUT_WIDTH);
 	const scaledBackground = $derived({ width: LAYOUT_WIDTH * bs, height: (LAYOUT_WIDTH / BACKGROUND_RATIO) * bs });

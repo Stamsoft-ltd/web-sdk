@@ -104,7 +104,7 @@
 <FadeContainer {show}>
 	<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
 
-	<FreeSpinAnimation xOffset={120}>
+	<FreeSpinAnimation xOffset={120} portraitScale={1.3}>
 		{#snippet children(_)}
 			{@const BW = 1100}
 
