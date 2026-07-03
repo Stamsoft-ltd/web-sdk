@@ -32,18 +32,29 @@
 	});
 	const scale = 1;
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
-	const position = $derived({
-		// Mirror the scatter card CSS: left: max(18px, calc(50% - 702px)); nudge right in portrait.
-		x:
-			Math.max(
-				18 / context.stateLayoutDerived.mainLayout().scale,
-				context.stateLayoutDerived.mainLayout().width / 2 - 702 / context.stateLayoutDerived.mainLayout().scale,
-			) + (isPortrait ? SYMBOL_SIZE * 0.7 : 0),
-		y:
-			context.stateGameDerived.boardLayout().y -
-			context.stateGameDerived.boardLayout().height * 0.5 * context.stateGameDerived.boardLayout().boardScale +
-			SYMBOL_SIZE * 0.15,
-	});
+	// Mobile-landscape: the FS card is the 3rd box of the LEFT bonus column (see landscapeRail).
+	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+	const lsRail = $derived(context.stateGameDerived.landscapeRail());
+	const position = $derived(
+		isLandscape
+			? {
+					// landscapeRail gives the column centre; the card is drawn from its top-left.
+					x: lsRail.x - panelSizes.width * 0.5,
+					y: lsRail.fsY - panelSizes.height * 0.5,
+				}
+			: {
+					// Mirror the scatter card CSS: left: max(18px, calc(50% - 702px)); nudge right in portrait.
+					x:
+						Math.max(
+							18 / context.stateLayoutDerived.mainLayout().scale,
+							context.stateLayoutDerived.mainLayout().width / 2 - 702 / context.stateLayoutDerived.mainLayout().scale,
+						) + (isPortrait ? SYMBOL_SIZE * 0.7 : 0),
+					y:
+						context.stateGameDerived.boardLayout().y -
+						context.stateGameDerived.boardLayout().height * 0.5 * context.stateGameDerived.boardLayout().boardScale +
+						SYMBOL_SIZE * 0.15,
+				},
+	);
 
 	const titleFont = $derived(SYMBOL_SIZE * 0.14 * SIZE);
 	const counterFont = $derived(SYMBOL_SIZE * 0.36 * SIZE);

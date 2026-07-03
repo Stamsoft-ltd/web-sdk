@@ -43,7 +43,7 @@
 	// more on portrait phones where the celebration should dominate the screen. Board + amount
 	// text both scale by this so their proportions are preserved.
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
-	const winBoardBoost = $derived(layoutType === 'portrait' ? 1.9 : 1.6);
+	const winBoardBoost = $derived(layoutType === 'portrait' ? 1.58 : 1.6);
 
 	context.eventEmitter.subscribeOnMount({
 		winShow: () => (show = true),

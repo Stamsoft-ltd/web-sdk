@@ -11,6 +11,7 @@
 
 	import { Container, Sprite, Text } from 'pixi-svelte';
 	import { FadeContainer } from 'components-pixi';
+	import { MainContainer } from 'components-layout';
 	import { waitForTimeout } from 'utils-shared/wait';
 
 	import BoardContainer from './BoardContainer.svelte';
@@ -31,13 +32,22 @@
 	const NUM_Y = BOARD_W * 0.012;
 	const SLIDE = BOARD_W * 0.55;
 	const context = getContext();
-	const scale = $derived(context.stateLayoutDerived.isStacked() ? 1.28 : 1);
+	// Shrink + pull-in on short desktop laptop canvases so the rail fits alongside the enlarged board.
+	const railAdj = $derived(context.stateGameDerived.bonusRailAdjust());
+	// Mobile-landscape: the rail becomes a full-height LEFT column (rendered in MainContainer).
+	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+	const lsRail = $derived(context.stateGameDerived.landscapeRail());
+	const scale = $derived(
+		isLandscape
+			? lsRail.refWidth / BOARD_W
+			: (context.stateLayoutDerived.isStacked() ? 1.28 : 1) * railAdj.scale,
+	);
 	// Mirror BonusSymbolPanel geometry to place multiplier directly below it
 	const _symPadW = SYMBOL_W * 1.1;
 	const _symPadH = _symPadW * (420 / 624);
 	// Desktop: symbol pad center is at boardW + 40
 	const desktopPosition = $derived({
-		x: context.stateGameDerived.boardLayout().width + 40,
+		x: context.stateGameDerived.boardLayout().width + 40 + railAdj.x,
 		y: SYMBOL_SIZE * 0.3 + _symPadH * 0.5 + 18 + 30,
 	});
 	const portraitPosition = $derived({
@@ -45,7 +55,11 @@
 		y: -SYMBOL_SIZE * 0.6 + _symPadH * 0.5 + 18 + 30,
 	});
 	const position = $derived(
-		context.stateLayoutDerived.isStacked() ? portraitPosition : desktopPosition,
+		isLandscape
+			? { x: lsRail.x, y: lsRail.multiplierY }
+			: context.stateLayoutDerived.isStacked()
+				? portraitPosition
+				: desktopPosition,
 	);
 
 	let show = $state(false);
@@ -92,10 +106,9 @@
 	});
 </script>
 
-<FadeContainer {show}>
-	<BoardContainer>
-		<!-- The whole hand+board+number group slides + fades on a multiplier change -->
-		<Container x={position.x + groupX.current} y={position.y} alpha={groupAlpha.current} {scale}>
+{#snippet panel()}
+	<!-- The whole hand+board+number group slides + fades on a multiplier change -->
+	<Container x={position.x + groupX.current} y={position.y} alpha={groupAlpha.current} {scale}>
 			<!-- Bear-hand board: panel centre (0.39/0.458) at the container origin, paw extends right -->
 			<Sprite key="multiplierHand" anchor={{ x: 0.39, y: 0.458 }} width={HAND_W} height={HAND_H} />
 
@@ -124,5 +137,14 @@
 				/>
 			{/if}
 		</Container>
-	</BoardContainer>
-</FadeContainer>
+{/snippet}
+
+{#if isLandscape}
+	<FadeContainer {show}>
+		<MainContainer>{@render panel()}</MainContainer>
+	</FadeContainer>
+{:else}
+	<FadeContainer {show}>
+		<BoardContainer>{@render panel()}</BoardContainer>
+	</FadeContainer>
+{/if}

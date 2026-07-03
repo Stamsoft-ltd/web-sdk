@@ -3,6 +3,7 @@ import { createSound } from 'utils-sound';
 export type MusicName =
 	| 'bgm_main'
 	| 'bgm_freespin'
+	| 'bgm_superspin'
 	| 'bgm_winlevel_big'
 	| 'bgm_winlevel_epic'
 	| 'bgm_winlevel_max'

@@ -332,7 +332,7 @@ const assets = {
 	},
 	sound: {
 		type: 'audio',
-		src: './assets/audio/sounds.json?v=20260611',
+		src: './assets/audio/sounds.json?v=20260703n',
 		preload: true,
 	},
 } as const;

@@ -13,71 +13,42 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
 
-	import { waitForTimeout } from 'utils-shared/wait';
-	import { SECOND } from 'constants-shared/time';
-	import { stateBet, stateSound } from 'state-shared';
+	import { stateSound } from 'state-shared';
 
 	import { getContext } from '../game/context';
 
 	const context = getContext();
-	const ambientTrackUrl = './assets/audio/audio-idea.wav';
-	let ambientAudio: HTMLAudioElement | null = null;
-	let ambientUnlocked = false;
 	let wasMuted = false;
 
-	const playAmbient = async (mode: 'base' | 'bonus') => {
-		if (!browser || !ambientAudio) return;
-		if (stateSound.volumeValueMaster === 0) {
-			stopAmbient();
-			return;
-		}
-		ambientAudio.loop = true;
-		ambientAudio.volume = mode === 'bonus' ? 0.32 : 0.22;
-		try {
-			await ambientAudio.play();
-			ambientUnlocked = true;
-		} catch {
-			// ignore autoplay block until first gesture
-		}
+	// Background track for the current game state: All In bonus → superspin loop, Deal It / feature
+	// bonus → free-spin loop, otherwise the base-game loop.
+	const currentMusic = (): MusicName => {
+		const gameType = context.stateGame.gameType;
+		if (gameType === 'superspin') return 'bgm_superspin';
+		if (gameType === 'freegame' || gameType === 'feature') return 'bgm_freespin';
+		return 'bgm_main';
 	};
 
-	const stopAmbient = () => {
-		if (!ambientAudio) return;
-		ambientAudio.pause();
-		ambientAudio.currentTime = 0;
-	};
+	// The three long-form background loops — only one should ever be audible at a time.
+	const BGM_LOOPS: MusicName[] = ['bgm_main', 'bgm_freespin', 'bgm_superspin'];
 
+	// All music plays through the sprite player (single track). Stop the other loops before starting
+	// the requested one so a bonus loop never lingers after switching back to the base game.
 	const playMusic = ({ name }: { name: MusicName }) => {
 		if (stateSound.volumeValueMaster === 0) {
-			stopAmbient();
-			sound.stop({ name: 'bgm_main' });
-			sound.stop({ name: 'bgm_freespin' });
+			BGM_LOOPS.forEach((n) => sound.stop({ name: n }));
 			return;
 		}
-
-		if (name === 'bgm_main') {
-			sound.stop({ name: 'bgm_freespin' });
-			return playAmbient('base');
-		}
-
-		if (name === 'bgm_freespin') {
-			sound.stop({ name: 'bgm_main' });
-			return playAmbient('bonus');
-		}
-
-		stopAmbient();
+		BGM_LOOPS.forEach((n) => n !== name && sound.stop({ name: n }));
 		sound.players.music.play({ name });
 	};
 
 	context.eventEmitter.subscribeOnMount({
 		// ui
-		soundBetMode: async ({ betModeKey }) => {
+		soundBetMode: ({ betModeKey }) => {
+			// Music preview when switching bet mode; the actual bonus track is set by freeSpinTrigger.
 			if (betModeKey === 'SUPER') {
-				// check if SUPERSPIN, when changing the bet mode.
-				sound.players.once.play({ name: 'sfx_winlevel_end' });
-				await waitForTimeout(SECOND);
 				sound.players.music.play({ name: 'bgm_freespin' });
 			} else {
 				sound.players.music.play({ name: 'bgm_main' });
@@ -92,44 +63,22 @@
 		soundMusic: ({ name }) => playMusic({ name }),
 		soundLoop: ({ name }) => sound.players.loop.play({ name }),
 		soundOnce: ({ name, forcePlay }) => sound.players.once.play({ name, forcePlay }),
-		soundStop: ({ name }) => { if (name === 'bgm_main' || name === 'bgm_freespin') stopAmbient(); sound.stop({ name }); },
+		soundStop: ({ name }) => sound.stop({ name }),
 		soundFade: async ({ name, duration, from, to }) => await sound.fade({ name, duration, from, to }), // prettier-ignore
 	});
 
 	$effect(() => {
 		const muted = stateSound.volumeValueMaster === 0;
 		if (muted) {
-			stopAmbient();
-			sound.stop({ name: 'bgm_main' });
-			sound.stop({ name: 'bgm_freespin' });
+			BGM_LOOPS.forEach((n) => sound.stop({ name: n }));
 		} else if (wasMuted) {
-			// Just unmuted — the ambient music was stopped while muted, so restart it for the
-			// current mode (base/bonus). Without this, unmuting leaves the music silent.
-			playAmbient(stateBet.activeBetModeKey === 'SUPER' ? 'bonus' : 'base');
+			// Just unmuted — restart the current mode's track (it was stopped while muted).
+			playMusic({ name: currentMusic() });
 		}
 		wasMuted = muted;
 	});
 
 	onMount(() => {
-		ambientAudio = browser ? new Audio(ambientTrackUrl) : null;
-		const unlockAmbient = async () => {
-			if (ambientUnlocked) return;
-			await playAmbient(stateBet.activeBetModeKey === 'SUPER' ? 'bonus' : 'base');
-		};
-
-		window.addEventListener('pointerdown', unlockAmbient, { once: true });
-		window.addEventListener('keydown', unlockAmbient, { once: true });
-
-		if (stateSound.volumeValueMaster !== 0 && stateBet.activeBetModeKey === 'SUPER') {
-			playAmbient('bonus');
-		} else if (stateSound.volumeValueMaster !== 0) {
-			playAmbient('base');
-		}
-
-		return () => {
-			window.removeEventListener('pointerdown', unlockAmbient);
-			window.removeEventListener('keydown', unlockAmbient);
-			stopAmbient();
-		};
+		if (stateSound.volumeValueMaster !== 0) playMusic({ name: currentMusic() });
 	});
 </script>

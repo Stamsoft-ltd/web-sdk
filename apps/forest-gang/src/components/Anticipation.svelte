@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
 	import { Container, SpineProvider, SpineTrack } from 'pixi-svelte';
 	import type { Reel } from '../game/stateGame.svelte';
 	import { SYMBOL_W, SYMBOL_SIZE, BOARD_SIZES, BOARD_GRID_OFFSET_Y } from '../game/constants';
@@ -35,6 +37,12 @@
 			props.reel.stop();
 			props.oncomplete();
 		},
+	});
+
+	// Scatter "tease" loop while the anticipation glow is on screen; stops when this reel resolves.
+	onMount(() => {
+		context.eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_anticipation' });
+		return () => context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_anticipation' });
 	});
 </script>
 

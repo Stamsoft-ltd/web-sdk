@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Container, Sprite, Text, type Sizes } from 'pixi-svelte';
 	import { FadeContainer } from 'components-pixi';
+	import { MainContainer } from 'components-layout';
 	import { stateBet } from 'state-shared';
 
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
@@ -34,7 +35,16 @@
 	// Half of the vertical spacing between the EARNED row and the amount row (kept tight).
 	const ROW_GAP = EARN_H * 0.06;
 
-	const scale = $derived(context.stateLayoutDerived.isStacked() ? 1.28 : 1);
+	// Shrink + pull-in on short desktop laptop canvases so the rail fits alongside the enlarged board.
+	const railAdj = $derived(context.stateGameDerived.bonusRailAdjust());
+	// Mobile-landscape: the rail becomes a full-height LEFT column (rendered in MainContainer).
+	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+	const lsRail = $derived(context.stateGameDerived.landscapeRail());
+	const scale = $derived(
+		isLandscape
+			? lsRail.refWidth / EARN_W
+			: (context.stateLayoutDerived.isStacked() ? 1.28 : 1) * railAdj.scale,
+	);
 
 	// Mirror the multiplier board position, then drop below it (board center + half hand board + gap).
 	const _symPadW = SYMBOL_W * 1.1;
@@ -45,7 +55,7 @@
 	// the board); add a small gap, then the EARNED board's half-height to reach its center.
 	const BELOW_MULTIPLIER = HAND_H * 0.35;
 	const desktopPosition = $derived({
-		x: boardW + 40,
+		x: boardW + 40 + railAdj.x,
 		y: multiplierY + BELOW_MULTIPLIER + EARN_H * 0.5,
 	});
 	const portraitPosition = $derived({
@@ -53,7 +63,11 @@
 		y: (-SYMBOL_SIZE * 0.6 + _symPadH * 0.5 + 18 + 30) + BELOW_MULTIPLIER + EARN_H * 0.5,
 	});
 	const position = $derived(
-		context.stateLayoutDerived.isStacked() ? portraitPosition : desktopPosition,
+		isLandscape
+			? { x: lsRail.x, y: lsRail.earnedY }
+			: context.stateLayoutDerived.isStacked()
+				? portraitPosition
+				: desktopPosition,
 	);
 
 	let show = $state(false);
@@ -75,9 +89,8 @@
 	});
 </script>
 
-<FadeContainer {show}>
-	<BoardContainer>
-		<Container x={position.x} y={position.y} {scale}>
+{#snippet panel()}
+	<Container x={position.x} y={position.y} {scale}>
 			<!-- Leaf-corner wooden board -->
 			<Sprite key="counterFrame" anchor={0.5} width={EARN_W} height={EARN_H} />
 
@@ -125,5 +138,14 @@
 				}}
 			/>
 		</Container>
-	</BoardContainer>
-</FadeContainer>
+{/snippet}
+
+{#if isLandscape}
+	<FadeContainer {show}>
+		<MainContainer>{@render panel()}</MainContainer>
+	</FadeContainer>
+{:else}
+	<FadeContainer {show}>
+		<BoardContainer>{@render panel()}</BoardContainer>
+	</FadeContainer>
+{/if}
