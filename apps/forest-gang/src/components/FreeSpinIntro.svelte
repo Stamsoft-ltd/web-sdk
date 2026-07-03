@@ -23,6 +23,29 @@
 	let freeSpinsFromEvent = $state(0);
 	let oncomplete = $state(() => {});
 
+	// Which bonus was played (superspin = ALL IN, freegame = DEAL IT) + its description from the buy
+	// bonus screen. bonusMode is set before this intro shows (see freeSpinTrigger).
+	const isAllIn = $derived(context.stateGame.bonusMode === 'superspin');
+	const bonusName = $derived(isAllIn ? 'ALL IN BONUS' : 'DEAL IT BONUS');
+	const bonusDesc = $derived(
+		isAllIn
+			? '10 Free Spins with random expanding symbol and multiplier start at 2x and doubles on every connection.'
+			: '10 Free Spins with random expanding symbol and a random multiplier up to 1024x.',
+	);
+
+	// Paragraph style for the bonus description (wrapped, lighter than the Cinzel headings).
+	const descStyle = (fontSize: number) => ({
+		fontFamily: 'Cinzel',
+		fontWeight: '700' as const,
+		fontSize,
+		fill: 0xe9dcc0,
+		align: 'center' as const,
+		letterSpacing: fontSize * 0.02,
+		wordWrap: true,
+		wordWrapWidth: 1100 * 0.6,
+		lineHeight: fontSize * 1.34,
+	});
+
 	// Live (translatable) text styled per Figma: Cinzel 900, soft drop shadow (offset/blur 2.78 @ 25%
 	// alpha, straight down) and letter-spacing 0.72 — all kept proportional to the font size.
 	const textStyle = (fontSize: number, fill: number) => ({
@@ -65,47 +88,61 @@
 			<Text
 				anchor={{ x: 0.5, y: 0.5 }}
 				text={t('FS CONGRATS')}
-				style={textStyle(Math.round(BW * 0.044), 0xf1c14a)}
-				y={Math.round(-BW * 0.31)}
+				style={textStyle(Math.round(BW * 0.042), 0xf1c14a)}
+				y={Math.round(-BW * 0.318)}
 			/>
 			<!-- YOU WON (green) -->
 			<Text
 				anchor={{ x: 0.5, y: 0.5 }}
 				text={t('FS YOU WON')}
-				style={textStyle(Math.round(BW * 0.031), 0x7cc23f)}
-				y={Math.round(-BW * 0.238)}
+				style={textStyle(Math.round(BW * 0.029), 0x7cc23f)}
+				y={Math.round(-BW * 0.268)}
+			/>
+			<!-- Bonus name (gold) — which bonus was played -->
+			<Text
+				anchor={{ x: 0.5, y: 0.5 }}
+				text={bonusName}
+				style={textStyle(Math.round(BW * 0.028), 0xf1c14a)}
+				y={Math.round(-BW * 0.226)}
+			/>
+			<!-- Bonus description (from the buy bonus screen) — wrapped, right under the bonus name -->
+			<Text
+				anchor={{ x: 0.5, y: 0.5 }}
+				text={bonusDesc}
+				style={descStyle(Math.round(BW * 0.023))}
+				y={Math.round(-BW * 0.168)}
 			/>
 
-			<!-- Scatter medallion -->
+			<!-- Scatter medallion — shrunk to make room for the name + description -->
 			<Sprite
 				key="fsMedallion"
 				anchor={{ x: 0.5, y: 0.5 }}
-				width={Math.round(BW * 0.28)}
-				height={Math.round(BW * 0.28 * (273 / 300))}
-				y={Math.round(-BW * 0.051)}
+				width={Math.round(BW * 0.15)}
+				height={Math.round(BW * 0.15 * (273 / 300))}
+				y={Math.round(-BW * 0.035)}
 			/>
 
 			<!-- Number frame (no baked-in number) -->
 			<Sprite
 				key="bonusBuyButtonFrame"
 				anchor={{ x: 0.5, y: 0.5 }}
-				width={Math.round(BW * 0.37)}
-				height={Math.round(BW * 0.37 * (1084 / 3065))}
-				y={Math.round(BW * 0.165)}
+				width={Math.round(BW * 0.32)}
+				height={Math.round(BW * 0.32 * (1084 / 3065))}
+				y={Math.round(BW * 0.135)}
 			/>
 			<Text
 				anchor={{ x: 0.5, y: 0.5 }}
 				text={freeSpinsFromEvent}
-				style={textStyle(Math.round(BW * 0.08), 0xf1c14a)}
-				y={Math.round(BW * 0.16)}
+				style={textStyle(Math.round(BW * 0.07), 0xf1c14a)}
+				y={Math.round(BW * 0.13)}
 			/>
 
-			<!-- FREE SPINS (green, large) — live translatable text -->
+			<!-- FREE SPINS (green) — live translatable text -->
 			<Text
 				anchor={{ x: 0.5, y: 0.5 }}
 				text={t('FS FREE SPINS')}
-				style={textStyle(Math.round(BW * 0.048), 0x7cc23f)}
-				y={Math.round(BW * 0.305)}
+				style={textStyle(Math.round(BW * 0.044), 0x7cc23f)}
+				y={Math.round(BW * 0.275)}
 			/>
 		{/snippet}
 	</FreeSpinAnimation>

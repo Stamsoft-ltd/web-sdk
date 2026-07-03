@@ -50,61 +50,56 @@
 		context.stateLayoutDerived.isStacked() ? portraitPosition : desktopPosition,
 	);
 
-	// The panel stays on screen for the whole Deal It bonus (shown on the first winning spin,
-	// hidden only at bonus end). It only animates when the multiplier value actually changes —
-	// the hand slides out, swaps the value while hidden, and slides back in.
+	// The hand stays HIDDEN during the normal (Deal It) bonus and only appears when the multiplier
+	// actually changes: it slides + fades in with the new value, holds a moment, then slides back
+	// out and hides again. No change → the hand is never shown.
 	let show = $state(false);
 	let multiplier = $state(1);
 	let pendingTarget = $state(1);
-	let swapping = $state(false);
-	let swapResolve = $state<(() => void) | null>(null);
 
+	// Fade is handled by the FadeContainer (via `show`); groupX only slides the hand in/out. Mixing a
+	// second alpha tween here caused a flicker (it re-showed the content during the fade-out).
 	let groupX = new Tween(0);
-	let groupAlpha = new Tween(1);
 
-	const swapTo = async (next: number) => {
-		swapping = true;
-		groupX.set(SLIDE, { duration: 170, easing: cubicIn });
-		groupAlpha.set(0, { duration: 150 });
-		await waitForTimeout(170);
+	// Reveal the hand with the new multiplier, hold, then hide it again.
+	const revealChange = async (next: number) => {
+		if (show) return; // guard against overlapping reveals
 		multiplier = next;
-		groupX.set(-SLIDE, { duration: 0 });
-		groupX.set(0, { duration: 280, easing: backOut });
-		groupAlpha.set(1, { duration: 190 });
-		await waitForTimeout(280);
-		swapping = false;
-		swapResolve?.();
-		swapResolve = null;
+		groupX.set(-SLIDE, { duration: 0 }); // start off to the left
+		show = true; // FadeContainer fades it in
+		groupX.set(0, { duration: 320, easing: backOut }); // slide into place
+		await waitForTimeout(320 + 900); // slide-in + hold on the new value
+		groupX.set(SLIDE, { duration: 240, easing: cubicIn }); // slide out to the right
+		await waitForTimeout(240);
+		show = false; // FadeContainer fades it out
 	};
 
 	context.eventEmitter.subscribeOnMount({
-		// First winning spin reveals the board; it then stays put.
+		// Bonus start — keep the hand hidden; it only appears on a multiplier change.
 		dealItMultiplierStart: () => {
-			show = true;
+			show = false;
+			multiplier = 1;
+			pendingTarget = 1;
 		},
 		// The multiplier for this spin (only broadcast when a multiplier applies).
 		dealItMultiplierSetTarget: ({ multiplier: m }: { multiplier: number }) => {
 			pendingTarget = m;
 		},
-		// Commit point (after the win resolves): the hand always spins to reveal this spin's
-		// multiplier (even when the value is unchanged) for excitement, then lands on it.
+		// Commit point (after the win resolves): reveal the hand ONLY when the multiplier changed.
 		dealItMultiplierAwaitCycle: async () => {
+			if (pendingTarget === multiplier) return; // no change → stay hidden
 			context.eventEmitter.broadcast({
 				type: 'soundOnce',
 				name: pendingTarget > multiplier ? 'sfx_multiplier_update' : 'sfx_multiplier_reset',
 			});
-			await swapTo(pendingTarget);
+			await revealChange(pendingTarget);
 		},
 		// Bonus end (or switch to All In): clear and hide.
 		dealItMultiplierHide: () => {
 			show = false;
-			swapping = false;
 			multiplier = 1;
 			pendingTarget = 1;
 			groupX.set(0, { duration: 0 });
-			groupAlpha.set(1, { duration: 0 });
-			swapResolve?.();
-			swapResolve = null;
 		},
 	});
 </script>
@@ -112,7 +107,7 @@
 <FadeContainer {show}>
 	<BoardContainer>
 		<!-- The hand+board+number group slides + fades only when the multiplier changes -->
-		<Container x={position.x + groupX.current} y={position.y} alpha={groupAlpha.current} {scale}>
+		<Container x={position.x + groupX.current} y={position.y} {scale}>
 			<!-- Bear-hand board: panel centre (0.39/0.458) at the container origin, paw extends right -->
 			<Sprite key="multiplierHand" anchor={{ x: 0.39, y: 0.458 }} width={HAND_W} height={HAND_H} />
 

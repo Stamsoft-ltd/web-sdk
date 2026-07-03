@@ -97,6 +97,11 @@ const assets = {
 		src: './assets/components/ui/multiplier_hand.png?v=20260624',
 		preload: true,
 	},
+	multiplierXRed: {
+		type: 'sprite',
+		src: './assets/components/ui/multiplier_x_red.png?v=20260703',
+		preload: true,
+	},
 	forestGangLogo: {
 		type: 'sprite',
 		src: './assets/components/ui/forest_gang_logo.png?v=20260611',

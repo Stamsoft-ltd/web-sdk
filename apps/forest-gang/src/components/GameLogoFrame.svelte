@@ -27,9 +27,17 @@
 	const P_LOGO_W = $derived(main.width * 0.42);
 	const P_LOGO_H = $derived(P_LOGO_W / LOGO_ASPECT);
 	const P_LOGO_CX = $derived(main.width * 0.5);
-	const P_LOGO_CY = $derived(main.height * 0.085);
 	const P_PP_W = $derived(main.width * 0.16);
 	const P_PP_H = $derived(P_PP_W / BRAND_ASPECT);
+	// The Press Play sprite stacks above the logo; on very short screens 8.5%·height puts the whole
+	// stack partly off the top, so floor the logo centre to keep Press Play below a top margin.
+	const P_LOGO_TOP_MARGIN = $derived(main.height * 0.03);
+	const P_LOGO_CY = $derived(
+		Math.max(
+			main.height * 0.085,
+			P_LOGO_TOP_MARGIN + P_PP_H + main.height * 0.006 + P_LOGO_H * 0.5,
+		),
+	);
 
 	// Portrait top-bar counters flanking the logo (Figma 2792-4133). Same data/logic as
 	// desktop: free-spins current/total via events, bonus symbol + global multiplier from state.

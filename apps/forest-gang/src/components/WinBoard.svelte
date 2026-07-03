@@ -29,7 +29,7 @@
 		{ key: 'wildWinBoard',      min: 50,   max: 100 },
 		{ key: 'epicWinBoard',      min: 100,  max: 200 },
 		{ key: 'mythicWinBoard',    min: 200,  max: 500 },
-		{ key: 'legendaryWinBoard', min: 500,  max: 5000 },
+		{ key: 'legendaryWinBoard', min: 500,  max: 25000 },
 	];
 
 	// Transition tweens — a gentle centred cross-dissolve: the incoming board eases up from a
