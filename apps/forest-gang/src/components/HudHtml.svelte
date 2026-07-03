@@ -85,7 +85,18 @@
 	const biggestBet = $derived(
 		stateConfig.betAmountOptions[stateConfig.betAmountOptions.length - 1],
 	);
-	const currentBetIndex = $derived(Math.max(0, betOptions.indexOf(stateBet.betAmount)));
+	const currentBetIndex = $derived.by(() => {
+		const exact = betOptions.indexOf(stateBet.betAmount);
+		if (exact >= 0) return exact;
+		// Not an exact option (e.g. balance-clamped bet) → step from the nearest option at or below
+		// the current bet, so − / + don't jump back to the first value.
+		let idx = 0;
+		for (let i = 0; i < betOptions.length; i += 1) {
+			if (betOptions[i] <= stateBet.betAmount) idx = i;
+			else break;
+		}
+		return idx;
+	});
 	const formattedBalance = $derived(
 		forestStakeDerived.formatCurrencyAmount(stateBet.balanceAmount),
 	);
@@ -396,10 +407,6 @@
 					<span
 						class="pt-bet__value"
 						class:value--feature={isAnyModeActive}
-						role="button"
-						tabindex="0"
-						onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
-						onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
 						use:fitText={formattedBet}
 					>{formattedBet}</span>
 					<button
@@ -459,10 +466,6 @@
 				<span
 					class="ls-bet__value"
 					class:value--feature={isAnyModeActive}
-					role="button"
-					tabindex="0"
-					onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
-					onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
 					use:fitText={formattedBet}
 				>{formattedBet}</span>
 				<button
@@ -569,10 +572,6 @@
 
 			<div
 				class="value-pill value-pill--bet bet-pill"
-				role="button"
-				tabindex="0"
-				onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
-				onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
 			>
 				<span class="bet-coin" aria-hidden="true">
 					<img src={iconCoins} alt="" />
@@ -957,10 +956,6 @@
 		height: 100%;
 		object-fit: contain;
 		display: block;
-	}
-
-	.bet-pill {
-		cursor: pointer;
 	}
 
 	.label {
@@ -1540,12 +1535,16 @@
 		gap: 8px;
 	}
 	.ls-balance__label {
-		font-size: 0.62rem;
-		letter-spacing: 0.04em;
-		color: transparent;
-		background: linear-gradient(184deg, #e2d981 8.6%, #fbc503 60%, #d98503 129%);
+		font-family: 'Poppins', sans-serif;
+		font-size: 12px;
+		font-style: normal;
+		font-weight: 500;
+		line-height: normal;
+		letter-spacing: 0.36px;
+		background: var(--golden-gradient, linear-gradient(184deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%));
 		background-clip: text;
 		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
 	}
 	.ls-balance__value {
 		font-family: 'Poppins', sans-serif;
@@ -1558,36 +1557,42 @@
 	.ls-bet {
 		position: absolute;
 		left: 50%;
-		bottom: 12px;
+		bottom: 0px;
 		transform: translateX(-50%);
 		display: flex;
 		align-items: center;
-		gap: 10px;
-		padding: 4px 14px;
+		/* Bigger pad; buttons sit just inside the rounded ends (small inset) via the value's auto margins. */
+		height: clamp(70px, 10.5vh, 88px);
+		width: clamp(205px, 39vh, 310px);
+		padding: 0 1.0%;
+		box-sizing: border-box;
 		border: 0;
 		background: var(--ls-betpad) center / 100% 100% no-repeat;
-		min-width: 210px;
-		justify-content: center;
 	}
 	.ls-bet__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 700;
-		font-size: 1rem;
+		font-size: 1.1rem;
 		color: #fff;
-		min-width: 68px;
+		/* Auto side margins centre the value and push the two buttons to the pill ends. */
+		margin: 0 auto;
+		flex: 0 0 auto;
+		white-space: nowrap;
 		text-align: center;
-		cursor: pointer;
 	}
+	/* Same technique as .ls-round (which renders as a proper circle): normal-flow square button.
+	   The absolute-positioning version was rendering as an oval. */
 	.ls-step {
-		width: clamp(38px, 4.8vh, 48px);
-		height: clamp(38px, 4.8vh, 48px);
+		width: clamp(48px, 8vh, 66px);
+		height: clamp(48px, 8vh, 66px);
+		flex: 0 0 auto;
 		border: 0;
 		background: var(--btn-round-bg) center / contain no-repeat;
 		padding: 0;
 		cursor: pointer;
 		display: grid;
 		place-items: center;
-		transition: filter 0.12s ease, transform 0.12s ease;
+		transition: filter 0.12s ease;
 	}
 	.ls-step:not(:disabled):hover { filter: brightness(1.1); }
 	.ls-step:disabled { opacity: 0.45; cursor: default; }
@@ -1756,11 +1761,15 @@
 	.pt-controls {
 		position: relative;
 		width: min(412px, 97vw);
-		height: 78px;
+		/* Scale the bar height with the buttons (spin is 24vw) so the spin keeps protruding above/below
+		   the wood with its leaves on small screens instead of shrinking to sit flat inside the bar. */
+		height: clamp(64px, 20vw, 78px);
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 0 20px;
+		/* Vertical padding matches the wood ::before insets (8px top / 2px bottom) so the buttons
+		   centre on the wood bar itself, not the full box (which left them sitting above centre). */
+		padding: 8px clamp(10px, 4vw, 20px) 2px;
 		box-sizing: border-box;
 	}
 	.pt-controls::before {
@@ -1770,17 +1779,19 @@
 		background: var(--pt-navpad) center / 100% 100% no-repeat;
 		z-index: -1;
 	}
-	.pt-grp { display: flex; align-items: center; gap: 16px; }
+	/* Buttons scale down on narrow screens so the whole row keeps fitting inside the bar —
+	   otherwise the fixed-width set overflows and space-between packs everything to the left. */
+	.pt-grp { display: flex; align-items: center; gap: clamp(8px, 3vw, 16px); }
 
 	.pt-round {
-		width: 46px; height: 46px;
+		width: clamp(38px, 12vw, 46px); height: clamp(38px, 12vw, 46px);
 		border: 0; padding: 0; cursor: pointer;
 		background: var(--btn-round-bg) center / contain no-repeat;
 		display: grid; place-items: center;
 		flex: 0 0 auto;
 		transition: transform 0.12s ease, filter 0.12s ease;
 	}
-	.pt-round--sm { width: 42px; height: 42px; }
+	.pt-round--sm { width: clamp(34px, 11vw, 42px); height: clamp(34px, 11vw, 42px); }
 	.pt-round:not(:disabled):hover { filter: brightness(1.12); }
 	.pt-round:not(:disabled):active { transform: translateY(1px) scale(0.94); }
 	.pt-round:disabled { opacity: 0.45; cursor: default; }
@@ -1791,8 +1802,8 @@
 	.pt-round--turbo.turbo-super { filter: drop-shadow(0 0 7px rgba(120,220,90,0.95)); }
 
 	.pt-spin {
-		width: 94px; height: 94px;
-		margin-top: -22px;
+		width: clamp(76px, 24vw, 94px); height: clamp(76px, 24vw, 94px);
+		margin-top: 0; /* vertically centred on the control bar */
 		border: 0; padding: 0; cursor: pointer;
 		background: var(--pt-spin) center / contain no-repeat;
 		display: grid; place-items: center;
@@ -1826,16 +1837,12 @@
 	.pt-balance__label {
 		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 11px;
 		letter-spacing: 0.04em; white-space: nowrap;
-		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
-		-webkit-background-clip: text; background-clip: text;
-		-webkit-text-fill-color: transparent; color: transparent;
+		color: #fff;
 	}
 	.pt-balance__value {
 		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px;
 		white-space: nowrap; transform-origin: left center;
-		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
-		-webkit-background-clip: text; background-clip: text;
-		-webkit-text-fill-color: transparent; color: transparent;
+		color: #fff;
 	}
 
 	/* Bet pill: dark rounded pad with − value + (no BET label, per Figma) */
@@ -1843,7 +1850,7 @@
 		flex: 0 0 auto;
 		display: flex; align-items: center; justify-content: space-between;
 		gap: 4px;
-		width: 164px; height: 56px;
+		width: clamp(140px, 45vw, 164px); height: clamp(48px, 15vw, 56px);
 		padding: 0 7px;
 		box-sizing: border-box;
 		background: var(--pt-betpad) center / 100% 100% no-repeat;
@@ -1858,7 +1865,7 @@
 	/* Buy bonus: round green badge with 2-line label inside */
 	.pt-buy {
 		flex: 0 0 auto;
-		width: 62px; height: 58px;
+		width: clamp(54px, 17vw, 62px); height: clamp(50px, 16vw, 58px);
 		border: 0; padding: 0; cursor: pointer;
 		background: var(--pt-buybonus) center / contain no-repeat;
 		display: grid; place-items: center;

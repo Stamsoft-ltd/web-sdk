@@ -94,9 +94,9 @@
 				</Container>
 
 				<Container zIndex={20}>
-				{#if hasBoardAnimation && bookEventAmountToBetAmountMultiplier(countUpAmount) >= 1000}
-					<!-- MAX WIN: only once the LIVE count-up crosses 1000×, so a max win still climbs
-					     through the tier boards (Sweet→…→Legendary) before switching to this screen. -->
+				{#if hasBoardAnimation && bookEventAmountToBetAmountMultiplier(countUpAmount) >= 25000}
+					<!-- MAX WIN: only at the game's true max (25000×). 500×–24999× stays LEGENDARY. The
+					     live count-up still climbs through the tier boards before reaching this screen. -->
 					<MaxWinScreen countUpText={bookEventAmountToCurrencyString(countUpAmount)} {breatheScale} />
 				{:else}
 				<MainContainer>

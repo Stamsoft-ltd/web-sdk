@@ -15,6 +15,7 @@
 	const iconMinus    = ap('/assets/hud/icon-minus.png');
 	const iconPlus     = ap('/assets/hud/icon-plus.png');
 	const btnRoundBg   = ap('/assets/components/navbar/btn_bg_round.png');
+	const betBoxMobile = ap('/assets/components/navbar/bet_box_mobile.png'); // wooden bet-box bg (portrait)
 	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.png?v=20260624');
 
 	type Props = {
@@ -27,6 +28,11 @@
 
 	const props: Props = $props();
 	const context = getContext();
+	const layoutType = $derived(context.stateLayoutDerived.layoutType());
+	const isPortrait = $derived(layoutType === 'portrait');
+	// Short-height row layouts (mobile landscape / tablet) need tighter card packing so the longest
+	// descriptions fit; desktop has room to spare and keeps the roomier original spacing.
+	const isCompactRow = $derived(layoutType === 'landscape' || layoutType === 'tablet');
 
 	// Cost multipliers match config.betModes: CHANCE 2×, FEATURE 20×, BONUS 100×, SUPER 400×.
 	// Per Figma 2349-2074: "ALL IN" is the 100× (BONUS) mode, "DEAL IT" the 400× (SUPER) mode.
@@ -35,8 +41,16 @@
 	const featureCost = $derived(forestStakeDerived.formatCurrencyAmount(betAmount * 20));
 	const allInCost   = $derived(forestStakeDerived.formatCurrencyAmount(betAmount * 100));
 	const dealItCost  = $derived(forestStakeDerived.formatCurrencyAmount(betAmount * 400));
-	const canBuy      = $derived(stateBetDerived.isBetCostAvailable());
 	const formattedBet = $derived(forestStakeDerived.formatCurrencyAmount(betAmount));
+
+	// Per-mode affordability: each button must check ITS OWN cost (bet × mode multiplier) against the
+	// balance, and re-check whenever the bet changes — a single base-cost check let unaffordable
+	// higher-cost buys/activations stay enabled after raising the bet.
+	const canAfford = (multiplier: number) => stateBet.balanceAmount >= betAmount * multiplier;
+	const canChance  = $derived(canAfford(2));
+	const canFeature = $derived(canAfford(20));
+	const canAllIn   = $derived(canAfford(100)); // BONUS
+	const canDealIt  = $derived(canAfford(400)); // SUPER
 
 	// Bet stepper (mirrors the HUD): changing the bet rescales the bonus costs.
 	const betOptions = $derived(stateConfig.betAmountOptions);
@@ -75,13 +89,13 @@
 <button class="backdrop" type="button" aria-label="Close" tabindex="-1" onclick={props.onclose}></button>
 
 <!-- Panel -->
-<div class="panel" role="dialog" aria-modal="true">
+<div class="panel" class:panel--portrait={isPortrait} role="dialog" aria-modal="true">
 
 	<button class="close-btn" type="button" onclick={props.onclose}>✕</button>
 
 	<h2 class="title">BUY BONUS</h2>
 
-	<div class="grid">
+	<div class="grid" class:grid--portrait={isPortrait} class:grid--compact={isCompactRow}>
 
 		<!-- EXTRA CHANCE — CHANCE mode (2×), toggle -->
 		<div class="card" style="--frame:url('{cardBg}')">
@@ -94,6 +108,7 @@
 					class="card-btn card-btn--activate"
 					class:card-btn--active={props.isChanceActive}
 					type="button"
+					disabled={!props.isChanceActive && !canChance}
 					onclick={() => toggleActivateMode(props.onToggleChance)}
 				><span class="btn-label">{props.isChanceActive ? 'DEACTIVATE' : 'ACTIVATE'}</span></button>
 			</div>
@@ -110,6 +125,7 @@
 					class="card-btn card-btn--activate"
 					class:card-btn--active={props.isFeatureActive}
 					type="button"
+					disabled={!props.isFeatureActive && !canFeature}
 					onclick={() => toggleActivateMode(props.onToggleFeature)}
 				><span class="btn-label">{props.isFeatureActive ? 'DEACTIVATE' : 'ACTIVATE'}</span></button>
 			</div>
@@ -122,7 +138,7 @@
 				<span class="card-desc">10 Free Spins with random expanding symbol and multiplier start at 2x and doubles on every connection.</span>
 				<div class="card-icon-wrap"><img class="card-icon" src={allInIcon} alt="" /></div>
 				<span class="card-price">{allInCost}</span>
-				<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('BONUS')}><span class="btn-label">BUY</span></button>
+				<button class="card-btn card-btn--buy" type="button" disabled={!canAllIn} onclick={() => openConfirm('BONUS')}><span class="btn-label">BUY</span></button>
 			</div>
 		</div>
 
@@ -133,26 +149,48 @@
 				<span class="card-desc">10 Free Spins with random expanding simbol and a random multiplier up to 1024x</span>
 				<div class="card-icon-wrap"><img class="card-icon" src={dealItIcon} alt="" /></div>
 				<span class="card-price">{dealItCost}</span>
-				<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('SUPER')}><span class="btn-label">BUY</span></button>
+				<button class="card-btn card-btn--buy" type="button" disabled={!canDealIt} onclick={() => openConfirm('SUPER')}><span class="btn-label">BUY</span></button>
 			</div>
 		</div>
 
 	</div>
 
-	<!-- Bet readout + steppers (coins · amount · − · +) -->
-	<div class="bet-bar">
-		<img class="bet-coin" src={iconCoins} alt="" />
-		<div class="bet-cell">
-			<span class="bet-label">BET</span>
-			<span class="bet-amount">{formattedBet}</span>
+	<!-- Bet readout + steppers -->
+	{#if isPortrait}
+		<!-- Portrait: fixed footer — a wooden bet box holding [−] [coins · BET · amount] [+] -->
+		<div class="bet-bar bet-bar--portrait">
+			<div class="bet-box" style="--betbox:url('{betBoxMobile}')">
+				<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canDec} onclick={() => stepBet(-1)} aria-label="Decrease bet">
+					<img src={iconMinus} alt="" />
+				</button>
+				<div class="bet-pill">
+					<img class="bet-coin" src={iconCoins} alt="" />
+					<div class="bet-cell">
+						<span class="bet-label">BET</span>
+						<span class="bet-amount">{formattedBet}</span>
+					</div>
+				</div>
+				<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canInc} onclick={() => stepBet(1)} aria-label="Increase bet">
+					<img src={iconPlus} alt="" />
+				</button>
+			</div>
 		</div>
-		<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canDec} onclick={() => stepBet(-1)} aria-label="Decrease bet">
-			<img src={iconMinus} alt="" />
-		</button>
-		<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canInc} onclick={() => stepBet(1)} aria-label="Increase bet">
-			<img src={iconPlus} alt="" />
-		</button>
-	</div>
+	{:else}
+		<!-- Desktop: coins · amount · − · + -->
+		<div class="bet-bar">
+			<img class="bet-coin" src={iconCoins} alt="" />
+			<div class="bet-cell">
+				<span class="bet-label">BET</span>
+				<span class="bet-amount">{formattedBet}</span>
+			</div>
+			<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canDec} onclick={() => stepBet(-1)} aria-label="Decrease bet">
+				<img src={iconMinus} alt="" />
+			</button>
+			<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canInc} onclick={() => stepBet(1)} aria-label="Increase bet">
+				<img src={iconPlus} alt="" />
+			</button>
+		</div>
+	{/if}
 </div>
 
 <!-- Confirm -->
@@ -219,13 +257,16 @@
 		width: 100%;
 	}
 
-	/* Card — wooden+leaf frame as a full background image (keeps the leaves intact) */
+	/* Card — wooden+leaf frame as a full background image (keeps the leaves intact).
+	   container-type makes card width the sizing basis for its content (cqw units below),
+	   so text/icon/price scale down on small landscape-mobile cards instead of overflowing. */
 	.card {
 		flex: 1 1 0; min-width: 0;
 		aspect-ratio: 1 / 1;
 		background: var(--frame) center / 100% 100% no-repeat;
 		box-sizing: border-box;
 		display: flex; align-items: center; justify-content: center;
+		container-type: inline-size;
 	}
 
 	/* Content sits inside the wooden interior, clear of the leaf corners */
@@ -236,11 +277,15 @@
 		box-sizing: border-box;
 		display: flex; flex-direction: column; align-items: center;
 		text-align: center;
-		gap: 5px;
+		gap: clamp(2px, 1.6cqw, 5px);
 	}
 
+	/* Compact row (mobile landscape / tablet): wider content, tighter gap so long text fits */
+	.grid--compact { gap: 10px; }
+	.grid--compact .card-inner { width: 76%; padding: 13% 0 15%; }
+
 	.card-title {
-		font-family: 'Cinzel', serif; font-size: 17px; line-height: 1.05;
+		font-family: 'Cinzel', serif; font-size: clamp(11px, 6.5cqw, 18px); line-height: 1.05;
 		letter-spacing: 0.03em; display: block;
 	}
 	.card-title--chance {
@@ -260,7 +305,7 @@
 	}
 
 	.card-desc {
-		font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 400;
+		font-family: 'Poppins', sans-serif; font-size: clamp(8px, 4.6cqw, 12px); font-weight: 400;
 		color: #d7d7d7; letter-spacing: 0.03em;
 		/* Figma spec: line-height 100% with leading-trim NONE → the font's
 		   natural leading is kept (≈1.5 for Poppins), not a trimmed 12px box. */
@@ -271,7 +316,7 @@
 	}
 
 	.card-icon-wrap {
-		height: 38px;
+		height: clamp(22px, 15cqw, 40px);
 		display: flex; align-items: center; justify-content: center;
 		flex-shrink: 0;
 	}
@@ -283,7 +328,7 @@
 	}
 
 	.card-price {
-		font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+		font-family: 'Cinzel', serif; font-size: clamp(9px, 5cqw, 14px); font-weight: 700;
 		color: #fff; letter-spacing: 0.03em;
 		display: block;
 		flex-shrink: 0;
@@ -291,11 +336,11 @@
 
 	/* Card buttons */
 	.card-btn {
-		width: 82%; padding: 4px 0;
-		font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700;
+		width: 82%; padding: clamp(3px, 1.4cqw, 5px) 0;
+		font-family: 'Cinzel', serif; font-size: clamp(7px, 3.9cqw, 11px); font-weight: 700;
 		letter-spacing: 0.04em; cursor: pointer;
 		transition: filter 0.15s ease;
-		margin-top: 4px;
+		margin-top: clamp(2px, 1.4cqw, 5px);
 	}
 	.card-btn:hover:not(:disabled) { filter: brightness(1.12); }
 	.card-btn:disabled { opacity: 0.45; cursor: default; }
@@ -423,5 +468,69 @@
 		background: linear-gradient(180deg, #ffa90e 15%, #ee960b 70%, #d18005 93%);
 		color: #452b01;
 		box-shadow: 0 0 4px #d98503;
+	}
+
+	/* ==================== Portrait: full-screen scrollable card list (Figma 2483-2681) ==================== */
+	/* Fixed header (title + ×), vertically scrollable stack of the 4 cards, fixed bottom bet bar. */
+	.panel--portrait {
+		position: fixed; inset: 0;
+		transform: none;
+		width: 100%; height: 100dvh; max-width: none;
+		padding: 0;
+		display: flex; flex-direction: column;
+		background: rgba(4, 7, 4, 0.3);
+	}
+	.panel--portrait .title {
+		margin: 0;
+		padding: 16px 0 8px;
+		flex: 0 0 auto;
+		font-size: 1.2rem;
+	}
+	.panel--portrait .close-btn { top: 12px; right: 14px; z-index: 2; }
+
+	.grid--portrait {
+		flex: 1 1 auto; min-height: 0;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start; /* override base center — else first card overflows above, unreachable */
+		gap: 0;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+		width: 100%;
+		padding: 2px 18px 10px;
+		box-sizing: border-box;
+	}
+	.grid--portrait .card {
+		flex: 0 0 auto;
+		width: 100%;
+		max-width: 340px;
+	}
+	.grid--portrait .card:not(:first-child) { margin-top: -3%; } /* slight leaf overlap (Figma) */
+
+	.bet-bar--portrait {
+		flex: 0 0 auto;
+		margin: 0;
+		width: 100%;
+		box-sizing: border-box;
+		display: flex; align-items: center; justify-content: center;
+		padding: 10px 18px calc(14px + env(safe-area-inset-bottom, 0px));
+		background: linear-gradient(to top, rgba(6, 9, 5, 0.98), rgba(6, 9, 5, 0.92) 60%, rgba(6, 9, 5, 0));
+	}
+	/* Wooden bet box holding the − / + buttons + coins·BET·amount inside */
+	.bet-box {
+		width: min(324px, 90vw);
+		aspect-ratio: 252 / 51;
+		background: var(--betbox) center / 100% 100% no-repeat;
+		display: flex; align-items: center; justify-content: space-between;
+		padding: 0 3.5%;
+		box-sizing: border-box;
+	}
+	.bet-box .step-btn {
+		width: 44px; height: 44px;
+		flex: 0 0 auto;
+	}
+	.bet-box .bet-pill {
+		flex: 1 1 0; min-width: 0;
+		display: flex; align-items: center; justify-content: center; gap: 8px;
 	}
 </style>

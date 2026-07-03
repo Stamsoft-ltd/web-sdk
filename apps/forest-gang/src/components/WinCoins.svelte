@@ -42,7 +42,7 @@
 	// (not every frame of the count-up).
 	const tierKey = $derived.by(() => {
 		const m = props.winMult ?? 0;
-		if (m >= 1000) return 'max';
+		if (m >= 25000) return 'max';
 		if (m >= 500) return 'legendary';
 		if (m >= 200) return 'mythic';
 		if (m >= 100) return 'epic';

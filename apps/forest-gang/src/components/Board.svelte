@@ -32,6 +32,7 @@
 
 	// Mobile-landscape uses dedicated framed symbol art; desktop/portrait keep the standard maps.
 	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 	const activeMap = $derived(
 		isLandscape
 			? spriteKeyByNameLandscape
@@ -63,6 +64,9 @@
 	// wild/scatter emblems up so all symbol types appear a similar size on the reels.
 	const HIGH_SYMBOLS_SET = new Set<SymbolName>(['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL']);
 	const symScale = (name: SymbolName) => {
+		// Portrait relies on the tuned per-symbol PNG padding (yesterday's mobile assets) for even
+		// gaps, so it draws every symbol at cell size — no per-type rescaling.
+		if (isPortrait) return 1;
 		if (LOW_SYMBOLS_SET.has(name)) return 0.86;
 		if (name === 'WILD' || name === 'SCATTER') return 1.1;
 		// Premium animals: desktop art has built-in margin (reads small) so enlarge it; the

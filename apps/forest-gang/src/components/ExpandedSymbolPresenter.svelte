@@ -55,7 +55,7 @@
 
 	// Symbols the board rolls through before landing on the chosen one.
 	const ALL_SYMBOLS: SymbolName[] = ['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL', 'A', 'K', 'Q', 'J', 'T'];
-	const ROLL_MS = 1700;
+	const ROLL_MS = 1300;
 
 	let show = $state(false);
 	// displaySymbol cycles during the roll, then settles on the real symbol.
@@ -81,6 +81,15 @@
 	let skipped = false;
 	let closeResolve: (() => void) | null = null;
 	let holdTimer = 0;
+	// The roll must LAND on the chosen symbol before the presenter closes — otherwise the deer was
+	// hidden mid-roll on a random symbol (mismatching the reels / bonus panel).
+	let rollSettled = false;
+	let rollResolve: (() => void) | null = null;
+	const markRollSettled = () => {
+		rollSettled = true;
+		rollResolve?.();
+		rollResolve = null;
+	};
 
 	const skip = () => {
 		if (!show || skipped) return;
@@ -88,6 +97,7 @@
 		clearTimeout(rollTimer);
 		wiggling = false;
 		if (finalSymbol) displaySymbol = finalSymbol;
+		markRollSettled();
 		sc.set(1, { duration: 120, easing: backOut });
 		rot.set(0, { duration: 120 });
 		clearTimeout(holdTimer);
@@ -116,6 +126,7 @@
 			const progress = elapsed / ROLL_MS;
 			if (progress >= 1) {
 				displaySymbol = finalSymbol;
+				markRollSettled();
 				sc.set(1.18, { duration: 0 });
 				sc.set(1, { duration: 320, easing: backOut });
 				startWiggle();
@@ -123,7 +134,7 @@
 			}
 			idx = (idx + 1) % ALL_SYMBOLS.length;
 			displaySymbol = ALL_SYMBOLS[idx];
-			const interval = 55 + progress * progress * 320;
+			const interval = 48 + progress * progress * 200;
 			rollTimer = setTimeout(step, interval) as unknown as number;
 		};
 		rollTimer = setTimeout(step, 55) as unknown as number;
@@ -133,6 +144,8 @@
 		expandedPresenterShow: (emitterEvent) => {
 			show = true;
 			skipped = false;
+			rollSettled = false;
+			rollResolve = null;
 			finalSymbol = emitterEvent.symbol;
 			wiggling = false;
 			rot.set(0, { duration: 0 });
@@ -151,15 +164,20 @@
 			// roll through symbols, then land on the chosen one
 			startRoll(emitterEvent.symbol);
 		},
-		// The book awaits this before hiding — resolve after a short hold, or instantly if skipped.
+		// The book awaits this before hiding. First wait for the roll to LAND on the chosen symbol,
+		// then hold briefly on it — so the deer never closes on a mid-roll (wrong) symbol.
 		expandedPresenterAwaitClose: async () => {
+			if (skipped) return;
+			if (!rollSettled) {
+				await new Promise<void>((resolve) => (rollResolve = resolve));
+			}
 			if (skipped) return;
 			await new Promise<void>((resolve) => {
 				closeResolve = resolve;
 				holdTimer = setTimeout(() => {
 					closeResolve?.();
 					closeResolve = null;
-				}, 1100) as unknown as number;
+				}, 700) as unknown as number;
 			});
 		},
 		// Space / tap (broadcast as stopButtonClick) lands the roll and ends the hold.

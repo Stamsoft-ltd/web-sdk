@@ -25,6 +25,8 @@
 	const HAND_W = BOARD_W * (944 / 592);
 	const HAND_H = HAND_W * (708 / 944);
 	const NUM_FONT = BOARD_W * 0.215;
+	// Red X emblem (872×776 after crop) shown at 1x — sized to sit on the wood board.
+	const X_RED_W = BOARD_W * 0.34;
 	// Vertical centre nudge so the Cinzel caps sit in the middle of the wood board.
 	const NUM_Y = BOARD_W * 0.012;
 	const SLIDE = BOARD_W * 0.55;
@@ -97,20 +99,30 @@
 			<!-- Bear-hand board: panel centre (0.39/0.458) at the container origin, paw extends right -->
 			<Sprite key="multiplierHand" anchor={{ x: 0.39, y: 0.458 }} width={HAND_W} height={HAND_H} />
 
-			<!-- Global multiplier number — Cinzel 900 gold, centred on the board (static) -->
-			<Text
-				anchor={0.5}
-				y={NUM_Y}
-				text={`${multiplier}X`}
-				style={{
-					fontFamily: 'Cinzel',
-					fontWeight: '900',
-					fontSize: NUM_FONT,
-					fill: GOLD_GRADIENT,
-					align: 'center',
-					letterSpacing: NUM_FONT * 0.03,
-				}}
-			/>
+			<!-- At 1x, show the red X emblem; otherwise the Cinzel 900 gold number -->
+			{#if multiplier === 1}
+				<Sprite
+					key="multiplierXRed"
+					anchor={0.5}
+					y={NUM_Y}
+					width={X_RED_W}
+					height={X_RED_W * (776 / 872)}
+				/>
+			{:else}
+				<Text
+					anchor={0.5}
+					y={NUM_Y}
+					text={`${multiplier}X`}
+					style={{
+						fontFamily: 'Cinzel',
+						fontWeight: '900',
+						fontSize: NUM_FONT,
+						fill: GOLD_GRADIENT,
+						align: 'center',
+						letterSpacing: NUM_FONT * 0.03,
+					}}
+				/>
+			{/if}
 		</Container>
 	</BoardContainer>
 </FadeContainer>

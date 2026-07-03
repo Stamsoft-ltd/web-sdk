@@ -97,10 +97,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	bonusSymbolSelected: async (bookEvent: BookEventOfType<'bonusSymbolSelected'>, { bookEvents }: BookEventContext) => {
 		// The deer must reveal the symbol that ACTUALLY expands on the reels. In some modes
 		// (e.g. feature spins) the book's bonusSymbolSelected.symbol can differ from the reel's
-		// expandedSymbolReveal.symbol, so prefer the upcoming reveal symbol when present.
-		const reveal = bookEvents.find(
+		// expandedSymbolReveal.symbol, so use the reveal symbol. Prefer the next reveal after this
+		// event, but fall back to any reveal in the round if the ordering differs (feature spins can
+		// have the reveal before the selection) — otherwise the deer showed the wrong symbol.
+		const reveal = (bookEvents.find(
 			(e) => e.type === 'expandedSymbolReveal' && e.index > bookEvent.index,
-		) as BookEventOfType<'expandedSymbolReveal'> | undefined;
+		) ?? bookEvents.find((e) => e.type === 'expandedSymbolReveal')) as
+			| BookEventOfType<'expandedSymbolReveal'>
+			| undefined;
 		const symbol = reveal?.symbol ?? bookEvent.symbol;
 		stateGame.selectedBonusSymbol = symbol;
 		stateGame.bonusMode = bookEvent.mode;
@@ -226,6 +230,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_superfreespin' });
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
 			await eventEmitter.broadcastAsync({ type: 'transition' });
+			// Switch to the bonus background NOW — while the transition veil still covers the screen —
+			// so the CONGRATULATIONS intro appears already on the bonus background, not the base one.
+			stateGame.gameType = bonusMode;
+			stateGame.bonusMode = bonusMode;
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'jng_intro_fs' });
 			eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
@@ -317,7 +325,15 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// It is hidden at bonus end (freeSpinEnd) and when switching to the All In bonus.
 	},
 	finalWin: async () => {
-		if (stateGame.gameType === 'basegame' && stateGame.bonusMode !== 'feature') stateGameDerived.resetBonusState();
+		// Reset after the base game OR a completed single feature spin. A feature spin sets
+		// gameType='feature' / bonusMode='feature'; without resetting it here, bonusMode stayed
+		// non-null after the spin, so isInBonus kept the Buy Bonus button disabled once you
+		// deactivated the feature. (A multi-spin bonus keeps gameType 'freegame'/'superspin', so it
+		// is not reset mid-bonus.)
+		if (stateGame.gameType === 'basegame' || stateGame.gameType === 'feature') {
+			stateGame.gameType = 'basegame';
+			stateGameDerived.resetBonusState();
+		}
 	},
 	createBonusSnapshot: async (bookEvent: BookEventOfType<'createBonusSnapshot'>) => {
 		const { bookEvents } = bookEvent;

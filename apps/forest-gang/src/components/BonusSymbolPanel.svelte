@@ -19,9 +19,6 @@
 	const PANEL_H = PANEL_W / PAD_ASPECT;
 	const SYM_SIZE = PANEL_W * 0.52;
 
-	const ALL_SYMBOLS: SymbolName[] = ['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL', 'A', 'K', 'Q', 'J', 'T'];
-	const ROLL_DURATION_MS = 2000;
-
 	const context = getContext();
 	const selectedSymbol = $derived(context.stateGame.selectedBonusSymbol);
 	const mode = $derived(context.stateGame.bonusMode);
@@ -40,51 +37,23 @@
 	const modeLabel = $derived(mode === 'superspin' ? 'ALL IN' : mode === 'feature' ? 'FEATURE' : 'DEAL IT');
 
 	let displaySymbol = $state<SymbolName | null>(null);
-	let rollTimer = 0;
 	let rollDone = $state(false);
 	let rollAwaitResolve: (() => void) | null = null;
 
+	// No roll animation on the panel — the deer presenter already reveals the symbol, so the panel
+	// simply shows the final symbol (a second slot-roll here read as an unwanted extra animation).
 	$effect(() => {
 		const sym = selectedSymbol;
 		const currentMode = mode;
-		clearTimeout(rollTimer);
-		rollDone = false;
-
 		if (!sym || !currentMode) {
 			displaySymbol = null;
+			rollDone = false;
 			return;
 		}
-
-		if (currentMode === 'feature') {
-			displaySymbol = sym;
-			rollDone = true;
-			rollAwaitResolve?.();
-			rollAwaitResolve = null;
-			return;
-		}
-
-		// freegame (Deal It) / superspin: roll then land
-		let elapsed = 0;
-		let idx = 0;
-		displaySymbol = ALL_SYMBOLS[0];
-
-		const step = () => {
-			elapsed += 80;
-			const progress = elapsed / ROLL_DURATION_MS;
-			if (progress >= 1) {
-				displaySymbol = sym;
-				rollDone = true;
-				rollAwaitResolve?.();
-				rollAwaitResolve = null;
-				return;
-			}
-			const interval = 60 + progress * progress * 320;
-			idx = (idx + 1) % ALL_SYMBOLS.length;
-			displaySymbol = ALL_SYMBOLS[idx];
-			rollTimer = setTimeout(step, interval) as unknown as number;
-		};
-		rollTimer = setTimeout(step, 80) as unknown as number;
-		return () => clearTimeout(rollTimer);
+		displaySymbol = sym;
+		rollDone = true;
+		rollAwaitResolve?.();
+		rollAwaitResolve = null;
 	});
 
 	context.eventEmitter.subscribeOnMount({
@@ -93,9 +62,7 @@
 			await new Promise<void>((resolve) => { rollAwaitResolve = resolve; });
 		},
 		stopButtonClick: () => {
-			// Space/stop during symbol roll: land on the final symbol immediately and
-			// halt the rolling loop (otherwise the frame keeps cycling behind the presenter).
-			clearTimeout(rollTimer);
+			// Skip: land on the final symbol immediately and release any pending roll-await.
 			if (selectedSymbol) displaySymbol = selectedSymbol;
 			rollDone = true;
 			rollAwaitResolve?.();
