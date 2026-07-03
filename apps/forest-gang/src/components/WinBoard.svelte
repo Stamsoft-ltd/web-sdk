@@ -117,16 +117,19 @@
 	const amountMaxW = $derived(boardSize * 0.62);
 	const amountScale = $derived(amountNatW > 0 ? Math.min(1, amountMaxW / amountNatW) : 1);
 
-	// Each board art has its amount plaque at a slightly different height. mega_win
-	// (mythic) has more bottom padding, so its text needs to sit a bit higher.
+	// Vertical centre of each board art's amount plaque, as a fraction of boardSize measured
+	// DOWN from the board centre (= plaque-centre image-fraction − 0.5). Measured per art from
+	// its gold plaque frame, so the amount sits dead-centre in the plaque at ANY size. Do NOT
+	// add a fixed px offset here — a non-scaling offset un-centres the text when the board is
+	// enlarged (which is exactly what a previous `- 8` did once the popups were boosted).
 	const TIER_TEXT_Y: Record<string, number> = {
-		sweetWinBoard: 0.36,
-		wildWinBoard: 0.36,
-		epicWinBoard: 0.36,
-		mythicWinBoard: 0.345,
-		legendaryWinBoard: 0.36,
+		sweetWinBoard: 0.329,
+		wildWinBoard: 0.323,
+		epicWinBoard: 0.332,
+		mythicWinBoard: 0.308,
+		legendaryWinBoard: 0.328,
 	};
-	const textYFrac = $derived(TIER_TEXT_Y[boardKey] ?? 0.36);
+	const textYFrac = $derived(TIER_TEXT_Y[boardKey] ?? 0.328);
 </script>
 
 {#if showPrev && outgoingKey && outgoingKey !== boardKey}
@@ -147,7 +150,7 @@
 	alpha={currAlphaTween.current}
 />
 
-<Container y={boardSize * textYFrac - 8} scale={amountScale}>
+<Container y={boardSize * textYFrac} scale={amountScale}>
 	<Text
 		anchor={0.5}
 		text={countUpText}

@@ -32,9 +32,13 @@
 	let animationName = $state<AnimationName>('intro');
 
 	// Size the intro popup relative to the screen, not the board — otherwise it
-	// shrinks whenever the board scale is reduced.
+	// shrinks whenever the board scale is reduced. Enlarged for portrait phones only
+	// (board + all text scale together through this); other layouts keep the original size.
 	const main = $derived(context.stateLayoutDerived.mainLayout());
-	const bs = $derived((Math.min(main.width, main.height) * 0.72) / LAYOUT_WIDTH);
+	const introSizeFactor = $derived(
+		context.stateLayoutDerived.layoutType() === 'portrait' ? 1.3 : 0.72,
+	);
+	const bs = $derived((Math.min(main.width, main.height) * introSizeFactor) / LAYOUT_WIDTH);
 	const scaledBackground = $derived({ width: LAYOUT_WIDTH * bs, height: (LAYOUT_WIDTH / BACKGROUND_RATIO) * bs });
 	const scaledPanel = $derived({ width: PANEL_WIDTH * bs, height: LAYOUT_WIDTH * bs });
 </script>

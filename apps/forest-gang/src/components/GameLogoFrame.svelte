@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Sprite, Container, Text } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
+	import { stateBet } from 'state-shared';
+	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import { getContext } from '../game/context';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
@@ -42,14 +44,26 @@
 	// Portrait top-bar counters flanking the logo (Figma 2792-4133). Same data/logic as
 	// desktop: free-spins current/total via events, bonus symbol + global multiplier from state.
 	const BADGE_ASPECT = 1431 / 1099; // badge_frame.png
-	const badgeW = $derived(main.width * 0.19);
+	// Both columns stack TWO badges (left: symbol+multiplier, right: FREE SPINS+EARNED), aligned
+	// at a shared top. The board frame sprite top is at 236 (800×1422 main-layout) but its top
+	// ~5% is transparent padding, so the visible wood sits lower — leaving room for this size.
+	const badgeW = $derived(main.width * 0.22);
 	const badgeH = $derived(badgeW / BADGE_ASPECT);
 	// Left column: bonus symbol badge on top, multiplier badge underneath (like the FS counter).
-	const symBadgeCY = $derived(main.height * 0.058);
+	const symBadgeCY = $derived(main.height * 0.05);
 	const multBadgeCY = $derived(symBadgeCY + badgeH * 0.9);
-	const fsBadgeCY = $derived(main.height * 0.085);
+	const fsBadgeCY = $derived(main.height * 0.05);
 	const leftBadgeX = $derived(main.width * 0.145);
 	const rightBadgeX = $derived(main.width * 0.855);
+	// Right column: EARNED badge under the FREE SPINS badge (mirrors the left column's stack).
+	// Running total won in the current bonus — winBookEventAmount is a book-event amount
+	// (100 = 1× bet), converted the same way as Win.svelte / BonusEarnedPanel.
+	const earnedBadgeCY = $derived(fsBadgeCY + badgeH * 0.9);
+	const earnedText = $derived(bookEventAmountToCurrencyString(stateBet.winBookEventAmount));
+	let earnedLabelW = $state(0);
+	const earnedCoinSize = $derived(badgeH * 0.22);
+	const earnedGap = $derived(badgeW * 0.025);
+	const earnedRowW = $derived(earnedCoinSize + earnedGap + earnedLabelW);
 
 	// Free-spins counter state (mirrors FreeSpinCounter.svelte).
 	let fsShow = $state(false);
@@ -127,12 +141,36 @@
 			</Container>
 		{/if}
 
-		<!-- Right badge: FREE SPINS current / total -->
+		<!-- Right column top: FREE SPINS current / total -->
 		{#if showFsBadge}
 			<Container x={rightBadgeX} y={fsBadgeCY}>
 				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />
 				<Text anchor={0.5} y={-badgeH * 0.15} text="FREE SPINS" style={titleStyle(badgeH * 0.13)} />
 				<Text anchor={0.5} y={badgeH * 0.08} text={`${fsCurrent}/${fsTotal}`} style={titleStyle(badgeH * 0.26)} />
+			</Container>
+
+			<!-- Right column bottom: EARNED running total (coin + label, amount below) -->
+			<Container x={rightBadgeX} y={earnedBadgeCY}>
+				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />
+				<Container x={-earnedRowW / 2} y={-badgeH * 0.16}>
+					<Sprite
+						key="earnedCoin"
+						anchor={{ x: 0, y: 0.5 }}
+						x={0}
+						y={0}
+						width={earnedCoinSize}
+						height={earnedCoinSize}
+					/>
+					<Text
+						anchor={{ x: 0, y: 0.5 }}
+						x={earnedCoinSize + earnedGap}
+						y={0}
+						text="EARNED"
+						onresize={(sizes) => (earnedLabelW = sizes.width)}
+						style={titleStyle(badgeH * 0.13)}
+					/>
+				</Container>
+				<Text anchor={0.5} y={badgeH * 0.13} text={earnedText} style={titleStyle(badgeH * 0.2)} />
 			</Container>
 		{/if}
 	{:else}
