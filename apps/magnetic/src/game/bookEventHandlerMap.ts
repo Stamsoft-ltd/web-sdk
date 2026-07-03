@@ -202,7 +202,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			bonusMode: stateGame.bonusMode,
 			magnetTarget: stateGame.magnetTargetSymbol,
 		});
-		if (stateGame.gameType === 'basegame' && stateGame.bonusMode !== 'feature') stateGameDerived.resetBonusState();
 	},
 	createBonusSnapshot: async (bookEvent: BookEventOfType<'createBonusSnapshot'>) => {
 		const { bookEvents } = bookEvent;

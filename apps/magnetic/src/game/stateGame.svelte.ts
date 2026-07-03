@@ -1,4 +1,4 @@
-import { backOut, cubicOut } from 'svelte/easing';
+import { backOut, cubicIn, linear } from 'svelte/easing';
 import { Tween } from 'svelte/motion';
 
 import { stateBet } from 'state-shared';
@@ -33,6 +33,7 @@ const getCellKey = (reel: number, row: number) => `${reel}:${row}`;
 const getTargetY = (row: number) => SYMBOL_H * (row + 0.5);
 
 const cloneRawSymbol = (rawSymbol: RawSymbol): RawSymbol => ({ ...rawSymbol });
+const SPIN_SYMBOL_POOL = INITIAL_BOARD.flat().map(cloneRawSymbol);
 
 const createBoardCell = (rawSymbol: RawSymbol, reel: number, row: number): BoardCell => ({
 	...cloneRawSymbol(rawSymbol),
@@ -62,6 +63,19 @@ const setRawSymbol = (cell: BoardCell, rawSymbol: RawSymbol) => {
 		delete cell[key];
 	}
 	Object.assign(cell, cloneRawSymbol(rawSymbol));
+};
+
+const setReelRawSymbols = (reelIndex: number, rawSymbols: RawSymbol[]) => {
+	for (let rowIndex = 0; rowIndex < BOARD_DIMENSIONS.y; rowIndex += 1) {
+		setRawSymbol(stateGame.board[reelIndex][rowIndex], rawSymbols[rowIndex]);
+	}
+};
+
+const setReelRawSymbolsFromPool = (reelIndex: number, cursor: number) => {
+	const nextSymbols = Array.from({ length: BOARD_DIMENSIONS.y }, (_, rowIndex) =>
+		cloneRawSymbol(SPIN_SYMBOL_POOL[(cursor + rowIndex) % SPIN_SYMBOL_POOL.length]),
+	);
+	setReelRawSymbols(reelIndex, nextSymbols);
 };
 
 const setNeutralCellState = (cell: BoardCell) => {
@@ -244,9 +258,99 @@ const settleBoardInstant = ({
 			cell.displayScale.set(1, { duration: 0 });
 			setNeutralCellState(cell);
 		}
+		stateGame.reelSpinOffsets[reelIndex].set(0, { duration: 0 });
 	}
 	applySeriesDecorations({ board: stateGame.board, series, magnetTargetSymbol });
 	stateGame.boardSpinning = false;
+};
+
+const animateSpinReel = async ({
+	reelIndex,
+	finalReel,
+	motion,
+}: {
+	reelIndex: number;
+	finalReel: RawSymbol[];
+	motion: (typeof BOARD_MOTION_DEFAULT)['spin'];
+}) => {
+	const reelOffset = stateGame.reelSpinOffsets[reelIndex];
+	const isFast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
+	const cycleDuration = isFast ? 42 : 58;
+	const cycleCount = isFast ? 2 + reelIndex : 4 + reelIndex;
+	let cursor = (reelIndex * BOARD_DIMENSIONS.y) % SPIN_SYMBOL_POOL.length;
+
+	const reel = stateGame.board[reelIndex];
+
+	// Circular buffer: fill with pool symbols, track displayY manually to avoid
+	// reading Tween.current between animation frames
+	setReelRawSymbolsFromPool(reelIndex, cursor);
+	cursor = (cursor + 1) % SPIN_SYMBOL_POOL.length;
+	const displayYs = Array.from({ length: BOARD_DIMENSIONS.y }, (_, rowIndex) => getTargetY(rowIndex));
+	for (let rowIndex = 0; rowIndex < BOARD_DIMENSIONS.y; rowIndex += 1) {
+		const cell = reel[rowIndex];
+		cell.displayY.set(displayYs[rowIndex], { duration: 0 });
+		cell.displayAlpha.set(1, { duration: 0 });
+		cell.displayScale.set(1, { duration: 0 });
+		cell.symbolState = cell.name === 'MAGNET' ? 'magnet' : 'spin';
+	}
+	reelOffset.set(0, { duration: 0 });
+
+	for (let cycle = 0; cycle < cycleCount; cycle += 1) {
+		// Scroll all symbols downward by one row — continuous, no snap
+		await reelOffset.set(SYMBOL_H, { duration: cycleDuration, easing: linear });
+
+		// Find the cell that scrolled off-screen at the bottom (highest displayY)
+		let exitIdx = 0;
+		for (let i = 1; i < BOARD_DIMENSIONS.y; i += 1) {
+			if (displayYs[i] > displayYs[exitIdx]) exitIdx = i;
+		}
+
+		// Teleport the exiting cell to just above the mask (invisible transition)
+		displayYs[exitIdx] = getTargetY(-1);
+		reel[exitIdx].displayY.set(getTargetY(-1), { duration: 0 });
+		setRawSymbol(reel[exitIdx], cloneRawSymbol(SPIN_SYMBOL_POOL[cursor % SPIN_SYMBOL_POOL.length]));
+		reel[exitIdx].symbolState = reel[exitIdx].name === 'MAGNET' ? 'magnet' : 'spin';
+		cursor = (cursor + 1) % SPIN_SYMBOL_POOL.length;
+
+		// Shift all remaining cells' displayY down by one row to compensate for reelOffset reset
+		for (let i = 0; i < BOARD_DIMENSIONS.y; i += 1) {
+			if (i === exitIdx) continue;
+			displayYs[i] += SYMBOL_H;
+			reel[i].displayY.set(displayYs[i], { duration: 0 });
+		}
+
+		// Reset reelOffset — invisible because exiting cell is above mask, rest are shifted
+		reelOffset.set(0, { duration: 0 });
+	}
+
+	// Landing: reset all cells to natural row positions with final symbols
+	setReelRawSymbols(reelIndex, finalReel);
+	for (let rowIndex = 0; rowIndex < BOARD_DIMENSIONS.y; rowIndex += 1) {
+		const cell = reel[rowIndex];
+		cell.displayY.set(getTargetY(rowIndex), { duration: 0 });
+		cell.symbolState = cell.name === 'MAGNET' ? 'magnet' : 'spin';
+	}
+	reelOffset.set(-SYMBOL_H * 1.1, { duration: 0 });
+	await reelOffset.set(SYMBOL_H * motion.overshootRows, {
+		duration: motion.durationMs,
+		easing: cubicIn,
+	});
+
+	for (let rowIndex = BOARD_DIMENSIONS.y - 1; rowIndex >= 0; rowIndex -= 1) {
+		const cell = reel[rowIndex];
+		cell.symbolState = cell.name === 'MAGNET' ? 'magnet' : 'land';
+		playLandSound(cell);
+	}
+	eventEmitter.broadcast({
+		type: 'soundOnce',
+		name: 'sfx_reel_stop_1',
+		forcePlay: !(stateBet.isTurbo || stateBet.isSuperTurbo),
+	});
+
+	await reelOffset.set(0, { duration: motion.bounceMs, easing: backOut });
+	for (let rowIndex = 0; rowIndex < BOARD_DIMENSIONS.y; rowIndex += 1) {
+		applyCellVisualState(stateGame.board[reelIndex][rowIndex]);
+	}
 };
 
 const animateReveal = async ({
@@ -263,6 +367,55 @@ const animateReveal = async ({
 	const mode = stateGame.nextRevealMode;
 	const motion = preset[mode];
 	const lockedKeys = getCurrentLockedKeys();
+	const isSpinMode = mode === 'spin';
+	const isRespinMode = mode === 'respin';
+
+	if (isSpinMode) {
+		const reelAnimations = Array.from({ length: BOARD_DIMENSIONS.x }, (_, reelIndex) =>
+			animateSpinReel({
+				reelIndex,
+				finalReel: rawBoard[reelIndex],
+				motion,
+			}),
+		);
+
+		await Promise.all(reelAnimations);
+		stateGame.boardSpinning = false;
+		stateGame.nextRevealMode = 'respin';
+		return;
+	}
+
+	if (isRespinMode) {
+		await Promise.all(
+			stateGame.board.flatMap((reel, reelIndex) =>
+				reel.flatMap(async (cell, rowIndex) => {
+					const targetKey = getCellKey(reelIndex, rowIndex);
+					const keepLocked = lockedKeys.has(targetKey) && cell.locked;
+					const nextRaw = rawBoard[reelIndex][rowIndex];
+
+					if (keepLocked) {
+						setRawSymbol(cell, nextRaw);
+						cell.displayY.set(getTargetY(rowIndex), { duration: 0 });
+						cell.displayAlpha.set(1, { duration: 0 });
+						cell.displayScale.set(1.04, { duration: 0 });
+						applyCellVisualState(cell);
+						if (motion.lockPulseMs > 0) {
+							await cell.displayScale.set(1, { duration: motion.lockPulseMs, easing: backOut });
+						}
+						return;
+					}
+
+					setNeutralCellState(cell);
+					await Promise.all([
+						cell.displayAlpha.set(0, { duration: motion.fadeOutMs }),
+						cell.displayScale.set(0.82, { duration: motion.fadeOutMs }),
+					]);
+				}),
+			),
+		);
+
+		if (motion.clearGapMs > 0) await waitForTimeout(motion.clearGapMs);
+	}
 
 	const animations = stateGame.board.flatMap((reel, reelIndex) =>
 		reel.map(async (cell, rowIndex) => {
@@ -279,34 +432,43 @@ const animateReveal = async ({
 				return;
 			}
 
-			setNeutralCellState(cell);
-
-			if (motion.fadeOutMs > 0) {
-				await Promise.all([
-					cell.displayAlpha.set(0, { duration: motion.fadeOutMs }),
-					cell.displayScale.set(0.92, { duration: motion.fadeOutMs }),
-				]);
-			} else {
+			if (!isRespinMode) {
+				setNeutralCellState(cell);
 				cell.displayAlpha.set(0, { duration: 0 });
+				cell.displayScale.set(1, { duration: 0 });
 			}
 
 			setRawSymbol(cell, nextRaw);
 			cell.symbolState = nextRaw.name === 'MAGNET' ? 'magnet' : 'spin';
-			cell.displayY.set(getTargetY(rowIndex) - SYMBOL_H * (motion.dropRows + rowIndex * 0.08), { duration: 0 });
-			cell.displayAlpha.set(0.12, { duration: 0 });
+			const distanceRows = isSpinMode
+				? motion.dropRows + reelIndex * 0.35
+				: motion.dropRows + rowIndex * 0.22 + reelIndex * 0.18;
+			const startY = isRespinMode
+				? -SYMBOL_H * (distanceRows + 1.4)
+				: getTargetY(rowIndex) - SYMBOL_H * distanceRows;
+			const overshootY = getTargetY(rowIndex) - SYMBOL_H * motion.overshootRows;
+			const fallDuration = isSpinMode
+				? motion.durationMs
+				: Math.round(motion.durationMs * (0.82 + rowIndex * 0.06));
+
+			cell.displayY.set(startY, { duration: 0 });
+			cell.displayAlpha.set(isSpinMode ? 0.32 : 0.08, { duration: 0 });
 			cell.displayScale.set(motion.scaleFrom, { duration: 0 });
 
-			const delay = motion.reelDelayMs * reelIndex + motion.rowDelayMs * (BOARD_DIMENSIONS.y - rowIndex - 1);
+			const delay = motion.reelDelayMs * reelIndex + motion.rowDelayMs * rowIndex;
 			if (delay > 0) await waitForTimeout(delay);
 
 			await Promise.all([
-				cell.displayY.set(getTargetY(rowIndex), { duration: motion.durationMs, easing: cubicOut }),
-				cell.displayAlpha.set(1, { duration: Math.max(80, Math.round(motion.durationMs * 0.75)) }),
-				cell.displayScale.set(1.04, { duration: Math.max(90, Math.round(motion.durationMs * 0.82)), easing: cubicOut }),
+				cell.displayY.set(overshootY, { duration: fallDuration, easing: cubicIn }),
+				cell.displayAlpha.set(1, { duration: Math.max(90, Math.round(fallDuration * 0.72)) }),
+				cell.displayScale.set(1.03, { duration: Math.max(100, Math.round(fallDuration * 0.82)), easing: cubicIn }),
 			]);
 			cell.symbolState = nextRaw.name === 'MAGNET' ? 'magnet' : 'land';
 			playLandSound(nextRaw);
-			await cell.displayScale.set(1, { duration: motion.bounceMs, easing: backOut });
+			await Promise.all([
+				cell.displayY.set(getTargetY(rowIndex), { duration: motion.bounceMs, easing: backOut }),
+				cell.displayScale.set(1, { duration: motion.bounceMs, easing: backOut }),
+			]);
 			applyCellVisualState(cell);
 		}),
 	);
@@ -318,6 +480,7 @@ const animateReveal = async ({
 
 export const stateGame = $state({
 	board: createBoardCells(INITIAL_BOARD),
+	reelSpinOffsets: Array.from({ length: BOARD_DIMENSIONS.x }, () => new Tween(0)),
 	gameType: 'basegame' as GameType,
 	bonusMode: null as 'freegame' | 'superspin' | 'feature' | null,
 	globalMultiplier: 1,
@@ -347,6 +510,9 @@ const resetBoardVisuals = () => {
 			cell.displayScale.set(1, { duration: 0 });
 			cell.displayAlpha.set(cell.locked ? 1 : cell.target ? 0.96 : 0.92, { duration: 0 });
 		}
+	}
+	for (const reelOffset of stateGame.reelSpinOffsets) {
+		reelOffset.set(0, { duration: 0 });
 	}
 	stateGame.clusterWinBadges = [];
 	stateGame.magnetPulseKeys = [];
@@ -425,6 +591,7 @@ const applyReveal = async ({ rawBoard, gameType }: { rawBoard: RawSymbol[][]; ga
 };
 
 const beginSpin = () => {
+	resetBonusState();
 	stateGame.boardSpinning = true;
 	stateGame.nextRevealMode = 'spin';
 	stateGame.forceFastAnimations = false;

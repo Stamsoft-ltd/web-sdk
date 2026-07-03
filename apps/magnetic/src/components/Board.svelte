@@ -19,9 +19,16 @@
 	const board = $derived(context.stateGame.board);
 	const layout = $derived(context.stateGameDerived.boardLayout());
 	const magnetPulseKeys = $derived(new Set(context.stateGame.magnetPulseKeys));
+	const reelSpinOffsets = $derived(context.stateGame.reelSpinOffsets);
+	const flatCells = $derived(board.flatMap((reel) => reel));
+	const orderedCells = $derived([
+		...flatCells.filter((cell) => !cell.locked),
+		...flatCells.filter((cell) => cell.locked),
+	]);
 	let show = $state(true);
 
 	const getX = (reelIndex: number) => SYMBOL_W * (reelIndex + 0.5);
+	const getY = (reelIndex: number, baseY: number) => baseY + reelSpinOffsets[reelIndex].current;
 
 	context.eventEmitter.subscribeOnMount({
 		stopButtonClick: () => {
@@ -42,26 +49,41 @@
 			isMask
 			draw={(graphics) => {
 				graphics.beginFill(0xffffff);
-				graphics.rect(0, 0, SYMBOL_W * BOARD_DIMENSIONS.x, SYMBOL_H * BOARD_DIMENSIONS.y);
+				graphics.rect(0, -SYMBOL_H * 2.5, SYMBOL_W * BOARD_DIMENSIONS.x, SYMBOL_H * (BOARD_DIMENSIONS.y + 2.5));
 				graphics.endFill();
 			}}
 		/>
 		{#each board as reel, reelIndex (reelIndex)}
 			{#each reel as cell (cell.key)}
 				{@const x = getX(reelIndex)}
-				{@const y = cell.displayY.current}
-				{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState })}
-				{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
-				{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
+				{@const y = getY(reelIndex, cell.displayY.current)}
 				<Rectangle
 					x={x - SYMBOL_W * 0.5}
 					y={y - SYMBOL_H * 0.5}
 					width={SYMBOL_W}
 					height={SYMBOL_H}
 					backgroundColor={cell.locked ? 0x102433 : 0x0b0f18}
-					alpha={context.stateGame.boardSpinning && !cell.locked ? 0.24 : 0.12}
+					alpha={cell.locked ? 0.3 : context.stateGame.boardSpinning ? 0.18 : 0.1}
 				/>
+			{/each}
+		{/each}
 
+		{#each orderedCells as cell (cell.key)}
+			{@const x = getX(cell.position.reel)}
+			{@const y = getY(cell.position.reel, cell.displayY.current)}
+			{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState })}
+			{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
+			{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
+			{#if cell.locked}
+				<Graphics
+					draw={(graphics) => {
+						graphics.clear();
+						graphics.beginFill(0xffd76a, 0.16);
+						graphics.drawRoundedRect(x - SYMBOL_W * 0.43, y - SYMBOL_H * 0.43, SYMBOL_W * 0.86, SYMBOL_H * 0.86, 16);
+						graphics.endFill();
+					}}
+				/>
+			{/if}
 				{#if cell.target || cell.locked || cell.persistent || cell.highlighted || cell.fresh}
 					<Graphics
 						draw={(graphics) => {
@@ -82,47 +104,56 @@
 					/>
 				{/if}
 
-				{#if magnetPulseKeys.has(cell.key)}
-					<Graphics
-						draw={(graphics) => {
-							graphics.clear();
-							graphics.lineStyle({ width: 8, color: 0xbff8ff, alpha: 0.8 });
-							graphics.drawRoundedRect(x - SYMBOL_W * 0.48, y - SYMBOL_H * 0.48, SYMBOL_W * 0.96, SYMBOL_H * 0.96, 18);
-						}}
-					/>
-				{/if}
-
-				<Sprite
-					key={symbolInfo.assetKey}
-					x={x}
-					y={y}
-					anchor={{ x: 0.5, y: 0.5 }}
-					width={width}
-					height={height}
-					alpha={cell.displayAlpha.current}
-					tint={cell.locked ? 0xfff6d5 : 0xffffff}
+			{#if magnetPulseKeys.has(cell.key)}
+				<Graphics
+					draw={(graphics) => {
+						graphics.clear();
+						graphics.lineStyle({ width: 8, color: 0xbff8ff, alpha: 0.8 });
+						graphics.drawRoundedRect(x - SYMBOL_W * 0.48, y - SYMBOL_H * 0.48, SYMBOL_W * 0.96, SYMBOL_H * 0.96, 18);
+					}}
 				/>
+			{/if}
 
-				{#if shouldShowMultiplierText(cell)}
-					<BitmapText
-						anchor={0.5}
-						x={x}
-						y={y + SYMBOL_H * 0.26}
-						text={`${cell.multiplier}X`}
-						style={{ fontFamily: 'gold', fontSize: 20 }}
-					/>
-				{/if}
+			<Sprite
+				key={symbolInfo.assetKey}
+				x={x}
+				y={y}
+				anchor={{ x: 0.5, y: 0.5 }}
+				width={width}
+				height={height}
+				alpha={cell.displayAlpha.current}
+				tint={cell.locked ? 0xfff6d5 : 0xffffff}
+			/>
 
-				{#if cell.name === 'MAGNET'}
-					<BitmapText
-						anchor={0.5}
-						x={x}
-						y={y - SYMBOL_H * 0.3}
-						text="MAG"
-						style={{ fontFamily: 'gold', fontSize: 16 }}
-					/>
-				{/if}
-			{/each}
+			{#if shouldShowMultiplierText(cell)}
+				<BitmapText
+					anchor={0.5}
+					x={x}
+					y={y + SYMBOL_H * 0.26}
+					text={`${cell.multiplier}X`}
+					style={{ fontFamily: 'gold', fontSize: 20 }}
+				/>
+			{/if}
+
+			{#if cell.name === 'MAGNET'}
+				<BitmapText
+					anchor={0.5}
+					x={x}
+					y={y - SYMBOL_H * 0.3}
+					text="MAG"
+					style={{ fontFamily: 'gold', fontSize: 16 }}
+				/>
+			{/if}
+
+			{#if cell.locked}
+				<BitmapText
+					anchor={0.5}
+					x={x}
+					y={y + SYMBOL_H * 0.38}
+					text="LOCK"
+					style={{ fontFamily: 'gold', fontSize: 12 }}
+				/>
+			{/if}
 		{/each}
 
 		{#each context.stateGame.clusterWinBadges as badge (badge.id)}
