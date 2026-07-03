@@ -1821,28 +1821,36 @@
 		text-shadow: 0 2px 4px rgba(0,0,0,0.7);
 	}
 
-	/* --- stats row: BALANCE · (− bet +) · BUY BONUS --- */
+	/* --- stats row: BALANCE · (− bet +) · BUY BONUS ---
+	   Centred as a group with equal gaps (not pinned to the edges). */
 	.pt-stats {
 		width: min(400px, 96vw);
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 6px;
+		justify-content: center;
+		gap: clamp(8px, 3.5vw, 18px);
 	}
+	/* Balance: transparent (no pad), centred label + gold value. */
 	.pt-balance {
-		display: flex; flex-direction: column; align-items: flex-start;
-		min-width: 0; flex: 1 1 0;
+		flex: 0 0 auto;
+		max-width: clamp(104px, 34vw, 140px);
+		display: flex; flex-direction: column;
+		align-items: center; justify-content: center;
+		gap: 1px;
+		min-width: 0;
 		overflow: hidden;
 	}
 	.pt-balance__label {
-		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 11px;
+		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 10px;
 		letter-spacing: 0.04em; white-space: nowrap;
-		color: #fff;
+		color: #f3e7cf;
 	}
 	.pt-balance__value {
-		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px;
-		white-space: nowrap; transform-origin: left center;
-		color: #fff;
+		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px;
+		white-space: nowrap; transform-origin: center;
+		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
+		-webkit-background-clip: text; background-clip: text;
+		-webkit-text-fill-color: transparent; color: transparent;
 	}
 
 	/* Bet pill: dark rounded pad with − value + (no BET label, per Figma) */

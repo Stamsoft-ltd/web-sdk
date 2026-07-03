@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'FEATURES',
 	'INFO EXPANDING TITLE': 'EXPANDING SYMBOL',
 	'INFO EXPANDING TEXT':
-		"During qualifying feature spins and bonus rounds, one random symbol is selected as the expanding symbol. When it lands on the reels, it expands vertically to cover the full reel. Expanded symbols can create multiple payline wins on the same spin. A random multiplier can appear on any spin and applies to that spin's win.",
+		'During qualifying feature spins and bonus rounds, one random symbol is selected as the expanding symbol. When the selected expanding symbol lands on the reels, it expands vertically to cover the full reel. Expanded symbols can create multiple payline wins on the same spin. Random multiplier can appear on any spin and apply to the winning amount of that spin.\n\nThe random multiplier can be from 2x to 1024x.',
 	'INFO DEAL IT TITLE': 'DEAL IT BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'WAYS TO WIN',
 	'INFO WAYS NOTE':
-		'Forest Gang is played on 20 fixed paylines. Wins are awarded from left to right on consecutive reels, starting from reel 1. Only the highest win per active payline is paid.',
+		'Forest Gang is played on 20 fixed paylines. A winning combination is formed when matching symbols land on consecutive reels from left to right on any active payline. Only the highest win per symbol per payline is paid, unless stated otherwise in the final game rules.',
 	// Feature buy page
 	'INFO BUY TITLE': 'FEATURE BUY',
 	'INFO BUY CHANCE TITLE': 'EXTRA BONUS CHANCE',

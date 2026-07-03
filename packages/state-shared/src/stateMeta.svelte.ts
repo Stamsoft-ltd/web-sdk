@@ -118,6 +118,8 @@ export type GameInfoAssets = {
 	statCard: string;
 	featureCard: string;
 	specialFrame: string;
+	/** Optional portrait-orientation frame; enables the dedicated portrait tutorial layout. */
+	framePortrait?: string;
 };
 
 type GameRuleMeta = {

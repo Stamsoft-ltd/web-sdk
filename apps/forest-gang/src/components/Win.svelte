@@ -39,6 +39,11 @@
 
 	const boardLayout = $derived(context.stateGameDerived.boardLayout());
 	const mainLayout = $derived(context.stateLayoutDerived.mainLayout());
+	// Enlarge the win-tier popups (SWEET/WILD/EPIC/MYTHIC/LEGENDARY) for more impact — a bit
+	// more on portrait phones where the celebration should dominate the screen. Board + amount
+	// text both scale by this so their proportions are preserved.
+	const layoutType = $derived(context.stateLayoutDerived.layoutType());
+	const winBoardBoost = $derived(layoutType === 'portrait' ? 1.9 : 1.6);
 
 	context.eventEmitter.subscribeOnMount({
 		winShow: () => (show = true),
@@ -114,14 +119,14 @@
 							     (1000×+ MAX WIN is a separate special screen.) A board only shows from 20× via the
 							     winLevel gate, so <50× maps to SWEET. -->
 							{@const boardKey = mult >= 500 ? 'legendaryWinBoard' : mult >= 200 ? 'mythicWinBoard' : mult >= 100 ? 'epicWinBoard' : mult >= 50 ? 'wildWinBoard' : 'sweetWinBoard'}
-							{@const maxBoardSize = Math.min(boardLayout.width * bs * 0.55, boardLayout.height * bs * 0.85)}
+							{@const maxBoardSize = Math.min(boardLayout.width * bs * 0.55, boardLayout.height * bs * 0.85) * winBoardBoost}
 							<WinBoard
 								{boardKey}
 								{maxBoardSize}
 								{breatheScale}
 								{mult}
 								countUpText={bookEventAmountToCurrencyString(countUpAmount)}
-								fontSize={SYMBOL_SIZE * bs * 0.21}
+								fontSize={SYMBOL_SIZE * bs * 0.21 * winBoardBoost}
 							/>
 						{:else}
 							<!-- Win amount — Cinzel 900 gold gradient with a black outline; scales to fit the board -->

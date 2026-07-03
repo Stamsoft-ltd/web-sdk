@@ -17,6 +17,9 @@
 	type Props = {
 		children: Snippet<[{ sizes: Sizes }]>;
 		xOffset?: number;
+		// Portrait size factor (fraction of the screen's short side). Per-instance so the intro
+		// can be enlarged without also scaling the outro, whose content is sized off `sizes`.
+		portraitScale?: number;
 	};
 
 	const props: Props = $props();
@@ -32,9 +35,13 @@
 	let animationName = $state<AnimationName>('intro');
 
 	// Size the intro popup relative to the screen, not the board — otherwise it
-	// shrinks whenever the board scale is reduced.
+	// shrinks whenever the board scale is reduced. Enlarged for portrait phones only
+	// (board + all text scale together through this); other layouts keep the original size.
 	const main = $derived(context.stateLayoutDerived.mainLayout());
-	const bs = $derived((Math.min(main.width, main.height) * 0.72) / LAYOUT_WIDTH);
+	const introSizeFactor = $derived(
+		context.stateLayoutDerived.layoutType() === 'portrait' ? (props.portraitScale ?? 0.72) : 0.72,
+	);
+	const bs = $derived((Math.min(main.width, main.height) * introSizeFactor) / LAYOUT_WIDTH);
 	const scaledBackground = $derived({ width: LAYOUT_WIDTH * bs, height: (LAYOUT_WIDTH / BACKGROUND_RATIO) * bs });
 	const scaledPanel = $derived({ width: PANEL_WIDTH * bs, height: LAYOUT_WIDTH * bs });
 </script>
