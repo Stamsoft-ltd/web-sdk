@@ -179,13 +179,18 @@
 		filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.7));
 	}
 
-	/* Mobile logo sizing/placement (wider % since the stage is narrow). */
+	/* Mobile logo sizing/placement (wider % since the stage is narrow).
+	   The portrait stage is a tall fixed-aspect box (1080×2400) centred in the viewport, so on
+	   short / squat phones it overflows and is cropped top+bottom — which pushes the logo stack
+	   up against the top edge. Anchor the stack a fixed distance below the *viewport* top once the
+	   crop exceeds the artwork-relative %: `crop-per-side + margin`, where crop-per-side =
+	   (stageHeight − viewportHeight) / 2. Tall phones (little/no crop) keep the original %. */
 	.brand--m {
-		top: 8.5%;
+		top: max(8.5%, calc((100vw * 2400 / 1080 - 100vh) / 2 + 7.5vh));
 		width: 30%;
 	}
 	.logo--m {
-		top: 13%;
+		top: max(13%, calc((100vw * 2400 / 1080 - 100vh) / 2 + 12vh));
 		width: 52%;
 	}
 

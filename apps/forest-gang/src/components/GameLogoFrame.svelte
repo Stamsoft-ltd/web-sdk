@@ -30,7 +30,7 @@
 	const P_LOGO_W = $derived(main.width * 0.42);
 	const P_LOGO_H = $derived(P_LOGO_W / LOGO_ASPECT);
 	const P_LOGO_CX = $derived(main.width * 0.5);
-	const P_PP_W = $derived(main.width * 0.16);
+	const P_PP_W = $derived(main.width * 0.21);
 	const P_PP_H = $derived(P_PP_W / BRAND_ASPECT);
 	// The Press Play sprite stacks above the logo; on very short screens the floor keeps the whole
 	// stack below a small top margin. Sits near the top of the screen (above the board).
