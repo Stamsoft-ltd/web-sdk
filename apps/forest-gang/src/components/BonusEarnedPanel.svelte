@@ -10,6 +10,7 @@
 	import { getContext } from '../game/context';
 	import { SYMBOL_SIZE, SYMBOL_W } from '../game/constants';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
+	import { i18nDerived } from '../i18n/i18nDerived';
 
 	const context = getContext();
 
@@ -108,7 +109,7 @@
 					x={COIN_SIZE + COIN_GAP}
 					y={0}
 					anchor={{ x: 0, y: 0.5 }}
-					text="EARNED"
+					text={i18nDerived.translate('EARNED')}
 					onresize={(sizes) => (labelSizes = sizes)}
 					style={{
 						fontFamily: 'Cinzel',

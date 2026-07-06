@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { stateI18nDerived } from 'state-shared';
+	import { fitLabel } from '../lib/fitLabel';
 
 	type Props = { onpress: () => void };
 	const props: Props = $props();
@@ -59,20 +60,20 @@
 			<div class="feat feat-m">
 				{#if slide === 0}
 					<!-- EPIC WIN -->
-					<div class="f-title f-purple">{t('SPLASH EPIC TITLE')}</div>
+					<div class="f-title f-purple" use:fitLabel={{ dep: t('SPLASH EPIC TITLE'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH EPIC TITLE')}</div>
 					<div class="f-sub f-sub--fit f-pre">{t('SPLASH EPIC TOP')}</div>
 					<div class="f-value-num f-gold">25'000x</div>
-					<div class="f-hl f-gold">{t('SPLASH EPIC BOTTOM')}</div>
+					<div class="f-hl f-gold" use:fitLabel={{ dep: t('SPLASH EPIC BOTTOM'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH EPIC BOTTOM')}</div>
 				{:else if slide === 1}
 					<!-- BONUS GAME -->
-					<div class="f-title f-gold">{t('SPLASH BONUS TITLE')}</div>
+					<div class="f-title f-gold" use:fitLabel={{ dep: t('SPLASH BONUS TITLE'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH BONUS TITLE')}</div>
 					<div class="f-sub f-pre"><span class="f-num f-gold">{bonusTop[0]}</span>{bonusTop[1]}</div>
 					<div class="f-divider"></div>
 					<div class="f-sub"><span class="f-num f-gold">{bonusMid[0]}</span>{bonusMid[1]}</div>
-					<div class="f-hl f-gold">{t('SPLASH BONUS HL')}</div>
+					<div class="f-hl f-gold" use:fitLabel={{ dep: t('SPLASH BONUS HL'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH BONUS HL')}</div>
 				{:else}
 					<!-- EXPANDING REELS -->
-					<div class="f-title f-green">{t('SPLASH EXP TITLE')}</div>
+					<div class="f-title f-green" use:fitLabel={{ dep: t('SPLASH EXP TITLE'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH EXP TITLE')}</div>
 					<div class="f-sub">{t('SPLASH EXP TOP')}</div>
 					<div class="f-value-num f-gold">1024x</div>
 					<div class="f-sub">{t('SPLASH EXP BOTTOM')}</div>
@@ -95,7 +96,7 @@
 
 			<!-- EXPANDING REELS -->
 			<div class="feat feat-left">
-				<div class="f-title f-green">{t('SPLASH EXP TITLE')}</div>
+				<div class="f-title f-green" use:fitLabel={{ dep: t('SPLASH EXP TITLE'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH EXP TITLE')}</div>
 				<div class="f-sub">{t('SPLASH EXP TOP')}</div>
 				<div class="f-value-num f-gold">1024x</div>
 				<div class="f-sub">{t('SPLASH EXP BOTTOM')}</div>
@@ -103,19 +104,19 @@
 
 			<!-- BONUS GAME -->
 			<div class="feat feat-center">
-				<div class="f-title f-gold">{t('SPLASH BONUS TITLE')}</div>
+				<div class="f-title f-gold" use:fitLabel={{ dep: t('SPLASH BONUS TITLE'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH BONUS TITLE')}</div>
 				<div class="f-sub f-pre"><span class="f-num f-gold">{bonusTop[0]}</span>{bonusTop[1]}</div>
 				<div class="f-divider"></div>
 				<div class="f-sub"><span class="f-num f-gold">{bonusMid[0]}</span>{bonusMid[1]}</div>
-				<div class="f-hl f-gold">{t('SPLASH BONUS HL')}</div>
+				<div class="f-hl f-gold" use:fitLabel={{ dep: t('SPLASH BONUS HL'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH BONUS HL')}</div>
 			</div>
 
 			<!-- EPIC WIN -->
 			<div class="feat feat-right">
-				<div class="f-title f-purple">{t('SPLASH EPIC TITLE')}</div>
+				<div class="f-title f-purple" use:fitLabel={{ dep: t('SPLASH EPIC TITLE'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH EPIC TITLE')}</div>
 				<div class="f-sub f-sub--fit f-pre">{t('SPLASH EPIC TOP')}</div>
 				<div class="f-value-num f-gold">25'000x</div>
-				<div class="f-hl f-gold f-hl-sm">{t('SPLASH EPIC BOTTOM')}</div>
+				<div class="f-hl f-gold f-hl-sm" use:fitLabel={{ dep: t('SPLASH EPIC BOTTOM'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH EPIC BOTTOM')}</div>
 			</div>
 
 			<p class="press-label">{t('SPLASH PRESS')} →</p>

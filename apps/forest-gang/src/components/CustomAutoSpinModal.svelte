@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { stateBet } from 'state-shared';
 	import { getContext } from '../game/context';
+	import { i18nDerived } from '../i18n/i18nDerived';
 
 	type Props = { onclose: () => void };
 	const props: Props = $props();
@@ -60,30 +61,30 @@
 <div class="ap-root" role="dialog" aria-modal="true">
 	<div class="ap-panel" style={`background-image:url('${panelBg}')`}>
 		<div class="ap-content">
-			<p class="ap-title">AUTO SPIN</p>
+			<p class="ap-title">{i18nDerived.translate('AUTO SPIN')}</p>
 
 			<div class="ap-toggles">
 				<div class="ap-row">
-					<span class="ap-row__label">TURBO SPIN</span>
+					<span class="ap-row__label">{i18nDerived.translate('TURBO SPIN')}</span>
 					<button class="ap-switch" class:on={isTurbo} type="button" onclick={toggleTurbo} aria-pressed={isTurbo}>
 						<span class="ap-switch__thumb"></span>
 					</button>
 				</div>
 				<div class="ap-row">
-					<span class="ap-row__label">SUPER TURBO SPIN</span>
+					<span class="ap-row__label">{i18nDerived.translate('SUPER TURBO SPIN')}</span>
 					<button class="ap-switch" class:on={isSuperTurbo} type="button" onclick={toggleSuperTurbo} aria-pressed={isSuperTurbo}>
 						<span class="ap-switch__thumb"></span>
 					</button>
 				</div>
 				<div class="ap-row">
-					<span class="ap-row__label">100 X BONUS FEATURE</span>
+					<span class="ap-row__label">{i18nDerived.translate('BONUS FEATURE 100X')}</span>
 					<button class="ap-switch" class:on={isFeature} type="button" onclick={toggleFeature} aria-pressed={isFeature}>
 						<span class="ap-switch__thumb"></span>
 					</button>
 				</div>
 			</div>
 
-			<p class="ap-spins-label">NUMBER OF SPINS</p>
+			<p class="ap-spins-label">{i18nDerived.translate('NUMBER OF SPINS')}</p>
 
 			<div class="ap-slider">
 				<input
@@ -100,7 +101,7 @@
 			</div>
 
 			<button class="ap-start" type="button" onclick={start}>
-				START AUTOPLAY ({countLabel})
+				{i18nDerived.translate('START AUTOPLAY')} ({countLabel})
 			</button>
 		</div>
 	</div>

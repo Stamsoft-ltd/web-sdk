@@ -5,6 +5,7 @@
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import { fitLabel } from '../lib/fitLabel';
 	import { forestStakeDerived } from '../state/forestStake.svelte';
 	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
 	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
@@ -426,7 +427,7 @@
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
-					<span class="pt-buy__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
+					<span class="pt-buy__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.58 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
 				</button>
 			</div>
 		</div>
@@ -451,7 +452,7 @@
 				onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 				aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 			>
-				<span class="ls-buy__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
+				<span class="ls-buy__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.6 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
 			</button>
 
 			<!-- Bottom-centre bet pad: − value + -->
@@ -557,7 +558,7 @@
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
-					<span class="buy-btn__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
+					<span class="buy-btn__label" use:fitLabel={isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
 				</button>
 			</div>
 		</div>
@@ -1932,7 +1933,7 @@
 	.pt-buy__label {
 		font-family: 'Cinzel', serif; font-weight: 900; font-size: 8.5px; line-height: 1.05;
 		letter-spacing: 0.01em; text-align: center;
-		max-width: 74%;
+		max-width: 66%;
 		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
 		-webkit-background-clip: text; background-clip: text;
 		-webkit-text-fill-color: transparent; color: transparent;

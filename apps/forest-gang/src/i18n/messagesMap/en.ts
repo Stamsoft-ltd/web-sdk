@@ -189,4 +189,35 @@ export default {
 	'FS CONGRATS': 'CONGRATULATIONS!',
 	'FS YOU WON': 'YOU WON',
 	'FS FREE SPINS': 'FREE SPINS',
+
+	// Top-bar bonus counters
+	EARNED: 'EARNED',
+
+	// Buy bonus modal — card titles/descriptions, buttons, confirm dialog
+	ACTIVATE: 'ACTIVATE',
+	DEACTIVATE: 'DEACTIVATE',
+	BUY: 'BUY',
+	CONFIRM: 'CONFIRM',
+	CANCEL: 'CANCEL',
+	'CONFIRM TEXT': 'Buy %mode% for %cost%?',
+	'CARD CHANCE TITLE': 'Extra Chance',
+	'CARD CHANCE DESC': 'Activate to increase 3 times the chance of trigger a bonus round',
+	'CARD FEATURE TITLE': 'Feature Spins',
+	'CARD FEATURE DESC': 'Guarantees a special expanding symbol for the spin picked at random',
+	'CARD ALLIN DESC': '10 Free Spins with random expanding symbol and multiplier start at 2x and doubles on every connection.',
+	'CARD DEALIT DESC': '10 Free Spins with random expanding symbol and a random multiplier up to 1024x',
+
+	// Auto spin modal
+	'AUTO SPIN': 'AUTO SPIN',
+	'TURBO SPIN': 'TURBO SPIN',
+	'SUPER TURBO SPIN': 'SUPER TURBO SPIN',
+	'BONUS FEATURE 100X': '100 X BONUS FEATURE',
+	'NUMBER OF SPINS': 'NUMBER OF SPINS',
+	'START AUTOPLAY': 'START AUTOPLAY',
+
+	// Bonus resume modal (unfinished bonus round)
+	'RESUME TITLE': 'UNFINISHED ROUND',
+	'RESUME BODY': 'You have an active %mode% bonus in progress.',
+	'END ROUND': 'END ROUND',
+	'PLAY ROUND': 'PLAY ROUND',
 };

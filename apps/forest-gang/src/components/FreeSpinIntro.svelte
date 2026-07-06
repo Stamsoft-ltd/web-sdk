@@ -53,12 +53,11 @@
 	// Which bonus was played (superspin = ALL IN, freegame = DEAL IT) + its description from the buy
 	// bonus screen. bonusMode is set before this intro shows (see freeSpinTrigger).
 	const isAllIn = $derived(context.stateGame.bonusMode === 'superspin');
-	const bonusName = $derived(isAllIn ? 'ALL IN BONUS' : 'DEAL IT BONUS');
-	const bonusDesc = $derived(
-		isAllIn
-			? '10 Free Spins with random expanding symbol and multiplier start at 2x and doubles on every connection.'
-			: '10 Free Spins with random expanding symbol and a random multiplier up to 1024x.',
-	);
+	// Route the heading + description through i18n. These reuse the existing localized keys
+	// (INFO *  TITLE = "<feature> BONUS"; CARD * DESC = the same blurb as the buy-bonus cards)
+	// so the feature name matches everywhere and English output is unchanged.
+	const bonusName = $derived(t(isAllIn ? 'INFO ALL IN TITLE' : 'INFO DEAL IT TITLE'));
+	const bonusDesc = $derived(t(isAllIn ? 'CARD ALLIN DESC' : 'CARD DEALIT DESC'));
 
 	// Paragraph style for the bonus description (wrapped, lighter than the Cinzel headings).
 	const descStyle = (fontSize: number) => ({

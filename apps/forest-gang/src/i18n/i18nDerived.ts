@@ -7,7 +7,20 @@ export const i18nDerived = {
 	...i18nDerivedUiPixi,
 	...i18nDerivedUiHtml,
 	translate: (key: string) => stateI18nDerived.translate(key),
+	// Interpolation helper — the shared translate() has no var support, so we use %name%
+	// placeholders (which Lingui leaves intact) and substitute here.
+	translateVars: (key: string, vars: Record<string, string | number>) =>
+		stateI18nDerived
+			.translate(key)
+			.replace(/%(\w+)%/g, (_m, name: string) => String(vars[name] ?? '')),
 	home: () => stateI18nDerived.translate('HOME'),
+	earned: () => stateI18nDerived.translate('EARNED'),
+	freeSpins: () => stateI18nDerived.translate('FS FREE SPINS'),
+	activate: () => stateI18nDerived.translate('ACTIVATE'),
+	deactivate: () => stateI18nDerived.translate('DEACTIVATE'),
+	buy: () => stateI18nDerived.translate('BUY'),
+	confirm: () => stateI18nDerived.translate('CONFIRM'),
+	cancel: () => stateI18nDerived.translate('CANCEL'),
 	notTranslated: () => stateI18nDerived.translate('NOT TRANSLATED'),
 	gameTitle: () => stateI18nDerived.translate('GAME TITLE'),
 	balance: () => stateI18nDerived.translate('BALANCE'),

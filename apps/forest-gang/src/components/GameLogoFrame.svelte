@@ -7,6 +7,7 @@
 	import { getContext } from '../game/context';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
 	import { spriteKeyByName } from '../game/utils';
+	import { i18nDerived } from '../i18n/i18nDerived';
 
 	const context = getContext();
 	const main = $derived(context.stateLayoutDerived.mainLayout());
@@ -106,6 +107,13 @@
 		letterSpacing: fontSize * 0.03,
 		wordWrap: false,
 	});
+	// Wrapping variant for the FREE SPINS / EARNED labels — long translations wrap inside
+	// the badge instead of spilling past its wooden edges.
+	const titleWrap = (fontSize: number) => ({
+		...titleStyle(fontSize),
+		wordWrap: true,
+		wordWrapWidth: badgeW * 0.86,
+	});
 </script>
 
 <MainContainer zIndex={20}>
@@ -145,7 +153,7 @@
 		{#if showFsBadge}
 			<Container x={rightBadgeX} y={fsBadgeCY}>
 				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />
-				<Text anchor={0.5} y={-badgeH * 0.15} text="FREE SPINS" style={titleStyle(badgeH * 0.13)} />
+				<Text anchor={0.5} y={-badgeH * 0.15} text={i18nDerived.freeSpins()} style={titleWrap(badgeH * 0.13)} />
 				<Text anchor={0.5} y={badgeH * 0.08} text={`${fsCurrent}/${fsTotal}`} style={titleStyle(badgeH * 0.26)} />
 			</Container>
 
@@ -165,9 +173,9 @@
 						anchor={{ x: 0, y: 0.5 }}
 						x={earnedCoinSize + earnedGap}
 						y={0}
-						text="EARNED"
+						text={i18nDerived.earned()}
 						onresize={(sizes) => (earnedLabelW = sizes.width)}
-						style={titleStyle(badgeH * 0.13)}
+						style={titleWrap(badgeH * 0.13)}
 					/>
 				</Container>
 				<Text anchor={0.5} y={badgeH * 0.13} text={earnedText} style={titleStyle(badgeH * 0.2)} />
