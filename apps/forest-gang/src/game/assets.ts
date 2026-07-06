@@ -29,7 +29,7 @@ const assets = {
 		type: 'sprite',
 		// 1920×1080 — the 4800×2680 PNG exceeded the WebGL max texture size on some GPUs
 		// and rendered black. Matches the bonus backgrounds' resolution.
-		src: './assets/components/backgrounds/visual_v2.jpg?v=20260706light',
+		src: './assets/components/backgrounds/visual_v2.jpg?v=20260706light2',
 		preload: true,
 	},
 	// Dedicated portrait forest scene (360×800) — used in the base game on portrait phones
