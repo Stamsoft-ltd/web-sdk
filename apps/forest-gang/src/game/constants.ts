@@ -80,8 +80,8 @@ const SPIN_OPTIONS_SHARED = {
 
 export const SPIN_OPTIONS_DEFAULT = {
 	...SPIN_OPTIONS_SHARED,
-	reelPreSpinSpeed: 1.8,
-	reelSpinSpeed: 2.7,
+	reelPreSpinSpeed: 1.5,
+	reelSpinSpeed: 2.3,
 	reelBounceSizeMulti: 0.3,
 };
 
