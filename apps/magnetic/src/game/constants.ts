@@ -53,6 +53,41 @@ export const SYMBOL_SIZE_RATIOS = {
 	multiplierWild: { width: 0.98, height: 0.98 },
 } as const;
 
+// createReelForSpinning needs (BOARD_DIMENSIONS.y + 2) symbols per reel:
+// one hidden above the mask and one hidden below.
+export const SPIN_REEL_LENGTH = BOARD_DIMENSIONS.y + 2; // 9
+
+const SPIN_OPTIONS_SHARED = {
+	reelBounceBackSpeed: 0.15,
+	reelSpinSpeedBeforeBounce: 4,
+	// Smaller multiplier than forest-gang's 1.2 so 7 reels don't run too long
+	reelPaddingMultiplierNormal: 0.4,
+	reelPaddingMultiplierAnticipated: 3,
+	reelSpinDelay: 90,
+};
+
+export const SPIN_OPTIONS_DEFAULT = {
+	...SPIN_OPTIONS_SHARED,
+	reelPreSpinSpeed: 2,
+	reelSpinSpeed: 3,
+	reelBounceSizeMulti: 0.3,
+};
+
+export const SPIN_OPTIONS_FAST = {
+	...SPIN_OPTIONS_SHARED,
+	reelPreSpinSpeed: 3,
+	reelSpinSpeed: 4,
+	reelBounceSizeMulti: 0.15,
+};
+
+export const SPIN_OPTIONS_TURBO = {
+	...SPIN_OPTIONS_SHARED,
+	reelPreSpinSpeed: 6,
+	reelSpinSpeed: 7,
+	reelBounceSizeMulti: 0.1,
+	reelSpinDelay: 40,
+};
+
 export const BOARD_MOTION_DEFAULT = {
 	spin: {
 		dropRows: 12,

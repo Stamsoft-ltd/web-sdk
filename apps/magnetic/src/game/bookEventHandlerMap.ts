@@ -44,13 +44,17 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if (isBonusGame || hasAnticipation) eventEmitter.broadcast({ type: 'stopButtonEnable' });
 		if (isBonusGame) recordBookEvent({ bookEvent });
 
-		if (bookEvent.gameType === 'basegame') {
+		if (bookEvent.gameType === 'basegame' && revealMode !== 'respin') {
+			// Only reset on a fresh basegame spin — NOT on cluster respins where
+			// we need activeSeries (locked positions) and nextRevealMode='respin' intact.
 			stateGameDerived.resetBonusState();
-		} else if (!stateBet.isSuperTurbo) {
+		} else if (bookEvent.gameType !== 'basegame' && !stateBet.isSuperTurbo) {
 			await waitForTimeout(220);
 		}
 		if (revealMode === 'respin' && !stateBet.isSuperTurbo) {
-			await waitForTimeout(stateBet.isTurbo ? 140 : 280);
+			// Bonus respins get a longer pause so the player can appreciate the growing cluster.
+			const isBonus = bookEvent.gameType !== 'basegame';
+			await waitForTimeout(stateBet.isTurbo ? 160 : isBonus ? 480 : 300);
 		}
 
 		stateGame.awaitingFirstReveal = false;
@@ -157,6 +161,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			eventEmitter.broadcast({ type: 'freeSpinCounterHide' });
 			return;
 		}
+		stateGameDerived.markNextRevealAsSpin();
 		eventEmitter.broadcast({ type: 'freeSpinCounterShow' });
 		stateUi.freeSpinCounterShow = true;
 		eventEmitter.broadcast({ type: 'freeSpinCounterUpdate', current: bookEvent.amount + 1, total: bookEvent.total });

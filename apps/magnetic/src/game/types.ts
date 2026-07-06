@@ -37,6 +37,7 @@ export type BoardCell = RawSymbol & {
 	key: string;
 	position: Position;
 	symbolState: SymbolState;
+	displayX: Tween<number>;
 	displayY: Tween<number>;
 	displayAlpha: Tween<number>;
 	displayScale: Tween<number>;
