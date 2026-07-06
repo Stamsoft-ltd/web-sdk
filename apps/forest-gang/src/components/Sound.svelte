@@ -25,13 +25,13 @@
 	// bonus → free-spin loop, otherwise the base-game loop.
 	const currentMusic = (): MusicName => {
 		const gameType = context.stateGame.gameType;
-		if (gameType === 'superspin') return 'bgm_superspin';
-		if (gameType === 'freegame' || gameType === 'feature') return 'bgm_freespin';
-		return 'bgm_main';
+		if (gameType === 'superspin') return 'bgm_allin_bonus';
+		if (gameType === 'freegame' || gameType === 'feature') return 'bgm_dealit_bonus';
+		return 'bgm_base_game';
 	};
 
 	// The three long-form background loops — only one should ever be audible at a time.
-	const BGM_LOOPS: MusicName[] = ['bgm_main', 'bgm_freespin', 'bgm_superspin'];
+	const BGM_LOOPS: MusicName[] = ['bgm_base_game', 'bgm_dealit_bonus', 'bgm_allin_bonus'];
 
 	// All music plays through the sprite player (single track). Stop the other loops before starting
 	// the requested one so a bonus loop never lingers after switching back to the base game.
@@ -49,13 +49,13 @@
 		soundBetMode: ({ betModeKey }) => {
 			// Music preview when switching bet mode; the actual bonus track is set by freeSpinTrigger.
 			if (betModeKey === 'SUPER') {
-				sound.players.music.play({ name: 'bgm_freespin' });
+				sound.players.music.play({ name: 'bgm_dealit_bonus' });
 			} else {
-				sound.players.music.play({ name: 'bgm_main' });
+				sound.players.music.play({ name: 'bgm_base_game' });
 			}
 		},
-		soundPressGeneral: () => sound.players.once.play({ name: 'sfx_btn_general' }),
-		soundPressBet: () => sound.players.once.play({ name: 'sfx_btn_spin' }),
+		soundPressGeneral: () => sound.players.once.play({ name: 'sfx_button_click' }),
+		soundPressBet: () => sound.players.once.play({ name: 'sfx_spin_button' }),
 		// scatterCounter
 		soundScatterCounterIncrease: () => (context.stateGame.scatterCounter = context.stateGame.scatterCounter + 1), // prettier-ignore
 		soundScatterCounterClear: () => (context.stateGame.scatterCounter = 0),

@@ -248,11 +248,11 @@ export const SYMBOL_INFO_MAP = {
 } as const;
 
 export const SCATTER_LAND_SOUND_MAP = {
-	1: 'sfx_scatter_stop_1',
-	2: 'sfx_scatter_stop_2',
-	3: 'sfx_scatter_stop_3',
-	4: 'sfx_scatter_stop_4',
-	5: 'sfx_scatter_stop_5',
+	1: 'sfx_scatter_land_1',
+	2: 'sfx_scatter_land_2',
+	3: 'sfx_scatter_land_3',
+	4: 'sfx_scatter_land_4',
+	5: 'sfx_scatter_land_5',
 } as const;
 
 export const winPositionToExpandedReels = (positions: { reel: number; row: number }[]) =>

@@ -29,7 +29,7 @@ const assets = {
 		type: 'sprite',
 		// 1920×1080 — the 4800×2680 PNG exceeded the WebGL max texture size on some GPUs
 		// and rendered black. Matches the bonus backgrounds' resolution.
-		src: './assets/components/backgrounds/visual_v2.jpg?v=20260701',
+		src: './assets/components/backgrounds/visual_v2.jpg?v=20260706light',
 		preload: true,
 	},
 	// Dedicated portrait forest scene (360×800) — used in the base game on portrait phones
@@ -136,6 +136,7 @@ const assets = {
 		src: './assets/components/ui/scatter-panel-image.png?v=20260611',
 		preload: true,
 	},
+	reelDivider: { type: 'sprite', src: './assets/components/frames/reel_divider.png?v=20260706', preload: true },
 	aTile: { type: 'sprite', src: './assets/components/symbols/card_a.png?v=20260701c', preload: true },
 	aWinTile: { type: 'sprite', src: './assets/components/symbols/card_a_win.png?v=20260701c', preload: true },
 	kTile: { type: 'sprite', src: './assets/components/symbols/card_k.png?v=20260701c', preload: true },
@@ -332,7 +333,7 @@ const assets = {
 	},
 	sound: {
 		type: 'audio',
-		src: './assets/audio/sounds.json?v=20260703n',
+		src: './assets/audio/sounds.json?v=20260706n',
 		preload: true,
 	},
 } as const;

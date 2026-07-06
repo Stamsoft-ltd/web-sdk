@@ -41,8 +41,8 @@
 
 	// Scatter "tease" loop while the anticipation glow is on screen; stops when this reel resolves.
 	onMount(() => {
-		context.eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_anticipation' });
-		return () => context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_anticipation' });
+		context.eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_scatter_anticipation_loop' });
+		return () => context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_scatter_anticipation_loop' });
 	});
 </script>
 

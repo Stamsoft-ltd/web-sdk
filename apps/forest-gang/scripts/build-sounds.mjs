@@ -38,7 +38,10 @@ const durationMs = (file) =>
 // 1. Every sound name declared in sound.ts (quoted snake_case literals in the type unions).
 const tsContent = readFileSync(soundTs, 'utf8');
 const names = [...new Set([...tsContent.matchAll(/'([a-z][a-z0-9_]+)'/g)].map((m) => m[1]))];
-const isLoop = (n) => n.startsWith('bgm_');
+// bgm_* tracks loop, plus these SFX that are played through the looping player (soundLoop) and must
+// have the sprite loop flag set — Howler only loops a sprite whose [offset,duration,loop] flag is true.
+const LOOP_SFX = new Set(['sfx_scatter_anticipation_loop', 'sfx_win_coins_loop', 'sfx_deer_reveal']);
+const isLoop = (n) => n.startsWith('bgm_') || LOOP_SFX.has(n);
 
 // 2. Locate an optional source file per name.
 const EXTS = ['wav', 'flac', 'aiff', 'mp3', 'ogg', 'm4a', 'aac'];

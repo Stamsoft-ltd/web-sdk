@@ -62,53 +62,55 @@
 				: desktopPosition,
 	);
 
+	// All In (bought superspin): the hand is HIDDEN during spins and only appears when the global
+	// multiplier CHANGES — it slides in with the new value, holds, then slides out and hides again.
+	// `multiplier` is the last shown value, kept across spins for the change comparison.
 	let show = $state(false);
 	let multiplier = $state(1);
-	// Swap animation: the whole hand+board+number group slides out to the right
-	// (fading), the number is swapped while hidden, then it slides back in from
-	// the left. The number itself never animates independently — it rides the group.
 	let groupX = new Tween(0);
-	let groupAlpha = new Tween(1);
 
-	const swapTo = async (next: number) => {
-		// pull the sign out to the right
-		groupX.set(SLIDE, { duration: 170, easing: cubicIn });
-		groupAlpha.set(0, { duration: 150 });
-		await waitForTimeout(170);
-		// swap while hidden, jump to the left
+	// Reveal the hand with the new value, hold, then hide it again.
+	const revealChange = async (next: number) => {
+		if (show) return; // guard against overlapping reveals
 		multiplier = next;
-		groupX.set(-SLIDE, { duration: 0 });
-		// bring the sign back in from the left with a slight overshoot
-		groupX.set(0, { duration: 280, easing: backOut });
-		groupAlpha.set(1, { duration: 190 });
-		await waitForTimeout(280);
+		groupX.set(-SLIDE, { duration: 0 }); // start off to the left
+		show = true; // FadeContainer fades it in
+		groupX.set(0, { duration: 320, easing: backOut }); // slide into place
+		await waitForTimeout(320 + 900); // slide-in + hold on the new value
+		groupX.set(SLIDE, { duration: 240, easing: cubicIn }); // slide out to the right
+		await waitForTimeout(240);
+		show = false; // FadeContainer fades it out
 	};
 
 	context.eventEmitter.subscribeOnMount({
+		// Bonus start — keep the hand hidden; reset the last-shown value. It only appears on a change.
 		globalMultiplierShow: () => {
-			show = true;
+			show = false;
 			multiplier = 1;
 			groupX.set(0, { duration: 0 });
-			groupAlpha.set(1, { duration: 0 });
 		},
-		globalMultiplierHide: () => (show = false),
+		globalMultiplierHide: () => {
+			show = false;
+			multiplier = 1;
+			groupX.set(0, { duration: 0 });
+		},
 		globalMultiplierUpdate: async (emitterEvent) => {
 			const next = emitterEvent.multiplier;
-			if (next === multiplier) return;
+			if (next === multiplier) return; // no change → keep the hand hidden
 
 			context.eventEmitter.broadcast({
 				type: 'soundOnce',
-				name: next === 1 ? 'sfx_multiplier_reset' : 'sfx_multiplier_update',
+				name: next < multiplier ? 'sfx_multiplier_hand_reset' : 'sfx_multiplier_hand_up',
 			});
 
-			await swapTo(next);
+			await revealChange(next);
 		},
 	});
 </script>
 
 {#snippet panel()}
-	<!-- The whole hand+board+number group slides + fades on a multiplier change -->
-	<Container x={position.x + groupX.current} y={position.y} alpha={groupAlpha.current} {scale}>
+	<!-- The hand+board+number group slides in/out on a multiplier change (fade via FadeContainer) -->
+	<Container x={position.x + groupX.current} y={position.y} {scale}>
 			<!-- Bear-hand board: panel centre (0.39/0.458) at the container origin, paw extends right -->
 			<Sprite key="multiplierHand" anchor={{ x: 0.39, y: 0.458 }} width={HAND_W} height={HAND_H} />
 

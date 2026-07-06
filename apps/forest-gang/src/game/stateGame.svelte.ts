@@ -30,7 +30,7 @@ const onSymbolLand = ({ rawSymbol }: { rawSymbol: RawSymbol }) => {
 	}
 
 	if (rawSymbol.name === 'WILD') {
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_landing' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_wild_land' });
 	}
 };
 
@@ -43,7 +43,7 @@ const board = _.range(BOARD_DIMENSIONS.x).map((reelIndex) => {
 		onReelStopping: () => {
 			eventEmitter.broadcast({
 				type: 'soundOnce',
-				name: 'sfx_reel_stop_1',
+				name: 'sfx_reel_stop',
 				forcePlay: !(stateBet.isTurbo || stateBet.isSuperTurbo),
 			});
 		},
