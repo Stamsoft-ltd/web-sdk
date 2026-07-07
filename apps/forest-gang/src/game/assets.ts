@@ -333,7 +333,7 @@ const assets = {
 	},
 	sound: {
 		type: 'audio',
-		src: './assets/audio/sounds.json?v=20260706n',
+		src: './assets/audio/sounds.json?v=20260706o',
 		preload: true,
 	},
 } as const;

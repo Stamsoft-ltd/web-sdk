@@ -66,9 +66,10 @@
 				: desktopPosition,
 	);
 
-	// The hand is HIDDEN during spins and only appears when the multiplier CHANGES: it slides in with
-	// the new value, holds, then slides out and hides again. `multiplier` is the last shown value, kept
-	// across spins so a drop back to 1x still reads as a change (negative sting + red X).
+	// This is the "ALL IN" bonus board (internally `freegame`/`feature` — the UI labels are the reverse
+	// of the mode names). Its hand is HIDDEN during spins and only appears when the multiplier CHANGES:
+	// it slides in with the new value, holds, then slides out and hides again. `multiplier` is the last
+	// shown value, kept across spins so a drop back to 1x still reads as a change (negative sting).
 	let show = $state(false);
 	let multiplier = $state(1);
 	let pendingTarget = $state(1);
@@ -89,8 +90,6 @@
 
 	context.eventEmitter.subscribeOnMount({
 		// Bonus start / each winning spin — the hand stays hidden; only the per-spin target resets to 1x.
-		// `multiplier` (last shown value) is NOT reset, so a spin that lands on 1x after a higher one is
-		// treated as a change and reveals the red X with the negative sting.
 		dealItMultiplierStart: () => {
 			pendingTarget = 1;
 		},
@@ -98,8 +97,7 @@
 		dealItMultiplierSetTarget: ({ multiplier: m }: { multiplier: number }) => {
 			pendingTarget = m;
 		},
-		// Commit point (after the win resolves): reveal the hand ONLY when the value changed — positive
-		// sting when it lands on a multiplier, negative when it drops back to 1x.
+		// Commit point (after the win resolves): reveal the hand ONLY when the value changed.
 		dealItMultiplierAwaitCycle: async () => {
 			if (pendingTarget === multiplier) return; // no change → keep the hand hidden
 			context.eventEmitter.broadcast({
@@ -108,7 +106,7 @@
 			});
 			await revealChange(pendingTarget);
 		},
-		// Bonus end (or switch to All In): clear and hide.
+		// Bonus end (or switch to the other bonus): clear and hide.
 		dealItMultiplierHide: () => {
 			show = false;
 			multiplier = 1;
@@ -119,7 +117,7 @@
 </script>
 
 {#snippet panel()}
-	<!-- The hand+board+number group slides in/out when the multiplier changes (fade via FadeContainer) -->
+	<!-- Hand slides in/out when the multiplier changes (fade via FadeContainer) -->
 	<Container x={position.x + groupX.current} y={position.y} {scale}>
 			<!-- Bear-hand board: panel centre (0.39/0.458) at the container origin, paw extends right -->
 			<Sprite key="multiplierHand" anchor={{ x: 0.39, y: 0.458 }} width={HAND_W} height={HAND_H} />

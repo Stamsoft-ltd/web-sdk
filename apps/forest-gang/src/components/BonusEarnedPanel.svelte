@@ -72,6 +72,9 @@
 	);
 
 	let show = $state(false);
+	// Hidden for single feature spins (no running total → it would just read $0.00), matching the
+	// FreeSpinCounter which also hides in feature mode.
+	const visible = $derived(show && context.stateGame.bonusMode !== 'feature');
 	// Running total earned in the current bonus. winBookEventAmount is a book-event amount
 	// (100 = 1× bet), so convert with bookEventAmountToCurrencyString — same as Win.svelte.
 	const amountText = $derived(bookEventAmountToCurrencyString(stateBet.winBookEventAmount));
@@ -142,11 +145,11 @@
 {/snippet}
 
 {#if isLandscape}
-	<FadeContainer {show}>
+	<FadeContainer show={visible}>
 		<MainContainer>{@render panel()}</MainContainer>
 	</FadeContainer>
 {:else}
-	<FadeContainer {show}>
+	<FadeContainer show={visible}>
 		<BoardContainer>{@render panel()}</BoardContainer>
 	</FadeContainer>
 {/if}

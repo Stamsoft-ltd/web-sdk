@@ -27,7 +27,11 @@ const winLevelSoundsPlay = ({
 	const sfx = sfxOverride ?? winLevelData?.sound?.sfx;
 	if (sfx) eventEmitter.broadcast({ type: 'soundOnce', name: sfx });
 	if (winLevelData?.sound?.bgm) eventEmitter.broadcast({ type: 'soundMusic', name: winLevelData.sound.bgm });
-	if (winLevelData?.type === 'big') eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_win_coins_loop' });
+	if (winLevelData?.type === 'big') {
+		// Big-win screen takes over — hand off from the payline loop to the coins loop.
+		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
+		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_win_coins_loop' });
+	}
 };
 
 // Bonus background track: All In (superspin) has its own loop; Deal It / feature use the free-spin loop.
@@ -52,6 +56,8 @@ const getBonusModeFromScatters = (positions: Position[]) => (positions.length >=
 
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
+		// A new spin begins — stop the previous win's payline loop if it's still playing.
+		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
 		const hasAnticipation = bookEvent.anticipation?.some(Boolean);
 		if (isBonusGame || hasAnticipation) {
@@ -158,7 +164,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// Reveal one by one in distance order (origin first, then outward) — slower for drama.
 		for (let i = 0; i < reelsByDistance.length; i++) {
 			if (i > 0) await waitForTimeout(190);
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_symbol_expand' });
+			// forcePlay so every expanding column retriggers the sound (the effect is longer than the
+			// 190ms step, so without it the once-player would only sound on the first column).
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_symbol_expand', forcePlay: true });
 			const reel = reelsByDistance[i];
 			stateGame.expandedSymbol = {
 				...stateGame.expandedSymbol!,
@@ -190,8 +198,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		console.info('[forest-gang] ALL IN global multiplier update', bookEvent.multiplier);
 	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>) => {
-		// Coins jingle shown with the payline win animation.
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_payline_win' });
+		// Loop the payline-win jingle for the whole win sequence; stopped after the animation below.
+		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_payline_win' });
 		// Start Deal It multiplier cycling for every winning bonus spin — always spins, lands on 1x unless multiplier fires
 		if ((stateGame.bonusMode === 'freegame' || stateGame.bonusMode === 'feature')) {
 			eventEmitter.broadcast({ type: 'dealItMultiplierStart' });
@@ -228,6 +236,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			return true;
 		});
 		await animateSymbols({ positions: allPositions });
+		// NOTE: the loop is NOT stopped here — boardWithAnimateSymbols returns instantly (the win pulse
+		// isn't awaited), so stopping now cuts the sound before it's audible. It's stopped when the next
+		// spin starts (reveal), when a big-win screen takes over (winLevelSoundsPlay), or at round end.
 	},
 	setTotalWin: async (bookEvent: BookEventOfType<'setTotalWin'>) => {
 		stateBet.winBookEventAmount = bookEvent.amount;
@@ -356,6 +367,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// It is hidden at bonus end (freeSpinEnd) and when switching to the All In bonus.
 	},
 	finalWin: async () => {
+		// Round over — make sure the payline loop isn't left ringing.
+		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
 		// Reset after the base game OR a completed single feature spin. A feature spin sets
 		// gameType='feature' / bonusMode='feature'; without resetting it here, bonusMode stayed
 		// non-null after the spin, so isInBonus kept the Buy Bonus button disabled once you

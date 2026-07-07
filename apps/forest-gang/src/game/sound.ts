@@ -54,7 +54,7 @@ export type SoundEffectName =
 	// --- deer presenter ---
 	| 'sfx_deer_reveal' //      deer presenter reveals the chosen expanding symbol (looped while on screen)
 	// --- wins ---
-	| 'sfx_payline_win' //      a winning payline animates
+	| 'sfx_payline_win' //      winning payline animation (looped while the animation runs)
 	| 'sfx_win_coins_loop' //   coins counting up on the win screen (looped)
 	| 'sfx_win_popup_small' //  SWEET / WILD / EPIC win popup
 	| 'sfx_win_popup_big' //    MYTHIC / LEGENDARY win popup
