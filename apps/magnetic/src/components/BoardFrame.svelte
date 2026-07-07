@@ -6,27 +6,14 @@
 	const context = getContext();
 	const board = $derived(context.stateGameDerived.boardLayout());
 
-	// slot_pad.png is 3616×2528. Measured geometry of the inner brown panel
-	// (where the reels sit): centred at ~(0.50, 0.46) of the image, ~57% of the
-	// image width. We scale the whole frame so the inner panel ≈ board + margin,
-	// then anchor it at the inner-panel centre over the board centre.
-	const FRAME_ASPECT = 3616 / 2528;
-	const INNER_W_FRAC = 0.64; // inner brown panel ≈ 64% of the image width
-	const ANCHOR_X = 0.5;
-	const ANCHOR_Y = 0.45; // inner panel centre sits slightly above image centre
-	const MARGIN = 1.04; // inner panel a touch larger than the board grid
-	// Frame scales to 130% while grid scales to 115% — extra factor covers the difference
-	const FRAME_EXTRA_SCALE = 1.30 / 1.15;
-
-	const frameW = $derived((board.width * board.boardScale * MARGIN * FRAME_EXTRA_SCALE) / INNER_W_FRAC);
-	const frameH = $derived(frameW / FRAME_ASPECT);
+	// board_pad.png (2492×2056) is a thin blue-tech HUD frame: glowing border + corner brackets
+	// around a dark interior. The interior (where the grid sits) is ≈93% of the image (border ~3.5%
+	// per side). Fit width + height independently to the grid so the border stays a thin, even margin
+	// around the 7×7 cells, centred on the grid centre (layout.x / layout.y).
+	const INNER_FRAC = 0.95;
+	const MARGIN = 1.0; // grid fills the interior — border hugs the cells (minimal padding)
+	const frameW = $derived((board.width * board.boardScale * MARGIN) / INNER_FRAC);
+	const frameH = $derived((board.height * board.boardScale * MARGIN) / INNER_FRAC);
 </script>
 
-<Sprite
-	key="slotPad"
-	anchor={{ x: ANCHOR_X, y: 0 }}
-	x={board.x}
-	y={0}
-	width={frameW}
-	height={frameH}
-/>
+<Sprite key="boardPad" anchor={0.5} x={board.x} y={board.y} width={frameW} height={frameH} />

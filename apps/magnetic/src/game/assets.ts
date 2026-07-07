@@ -11,9 +11,9 @@ export default {
 
 
 
-	visualV2: {
+	bgBase: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/visual_v2.png?v=20260625',
+		src: './assets/components/backgrounds/bg_base.jpg?v=20260707',
 		preload: true,
 	},
 	reelsFrame: {
@@ -31,9 +31,9 @@ export default {
 		src: './assets/components/frames/logo_frame.png?v=20260611',
 		preload: true,
 	},
-	slotPad: {
+	boardPad: {
 		type: 'sprite',
-		src: './assets/components/frames/slot_pad.png?v=20260625',
+		src: './assets/components/frames/board_pad.png?v=20260707',
 		preload: true,
 	},
 	symbolPad: {
@@ -56,9 +56,9 @@ export default {
 		src: './assets/components/ui/multiplier_hand.png?v=20260624',
 		preload: true,
 	},
-	forestGangLogo: {
+	magneticLogo: {
 		type: 'sprite',
-		src: './assets/components/ui/forest_gang_logo.png?v=20260611',
+		src: './assets/components/ui/magnetic_logo.png?v=20260707',
 		preload: true,
 	},
 	scatterPanelImage: {

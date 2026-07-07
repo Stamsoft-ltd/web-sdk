@@ -1,6 +1,8 @@
 import type { RawSymbol, SymbolState, SymbolName } from './types';
 
-export const SYMBOL_W = 94;
+// Cells are WIDER than tall so the 7×7 grid matches the blue board-pad's ~1.21 aspect and the
+// magnetic symbol art (328×264 ≈ 1.24) reads bigger. Positions/magnet math all derive from these.
+export const SYMBOL_W = 114;
 export const SYMBOL_H = 94;
 export const SYMBOL_SIZE = SYMBOL_H;
 export const BOARD_GRID_OFFSET_Y = 0;

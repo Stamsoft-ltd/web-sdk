@@ -20,7 +20,7 @@
 </script>
 
 <Sprite
-	key="visualV2"
+	key="bgBase"
 	x={canvas.width * 0.5}
 	y={canvas.height * 0.5}
 	anchor={0.5}

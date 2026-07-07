@@ -188,11 +188,14 @@ const getBoardOffset = () => {
 
 const boardLayout = () => {
 	const boardScale = getBoardScale() * 0.92;
-	const frameW = (BOARD_SIZES.width * boardScale * 1.04 * (1.3 / 1.15)) / 0.64;
-	const frameH = frameW * (2528 / 3616);
+	const mainLayout = stateLayoutDerived.mainLayout();
+	// Grid centre Y = a small margin below the top of the game area + half the grid height, so the
+	// board sits near the top (just under the logo) instead of the old wooden-frame-derived Y that
+	// sank/clipped it once the cells were widened.
+	const TOP_MARGIN = mainLayout.height * 0.03;
 	return {
-		x: stateLayoutDerived.mainLayout().width * 0.5 + getBoardOffset().x,
-		y: frameH * 0.45,
+		x: mainLayout.width * 0.5 + getBoardOffset().x,
+		y: TOP_MARGIN + (BOARD_SIZES.height * boardScale) / 2,
 		boardScale,
 		anchor: { x: 0.5, y: 0.5 },
 		pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },

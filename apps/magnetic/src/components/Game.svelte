@@ -18,6 +18,7 @@
 	import LoadingScreen from './LoadingScreen.svelte';
 	import BoardFrame from './BoardFrame.svelte';
 	import Board from './Board.svelte';
+	import GameLogoFrame from './GameLogoFrame.svelte';
 	import Win from './Win.svelte';
 	import FreeSpinIntro from './FreeSpinIntro.svelte';
 	import FreeSpinCounter from './FreeSpinCounter.svelte';
@@ -124,6 +125,8 @@
 				<MainContainer>
 					<Board />
 				</MainContainer>
+
+				<GameLogoFrame />
 
 				<GlobalMultiplier />
 				<TempMultiplierBanner />

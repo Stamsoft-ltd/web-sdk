@@ -21,23 +21,29 @@
 	// Frame backgrounds — passed as CSS vars because url() in style blocks can't use runtime paths
 	const menuBtnFrame = ap('/assets/components/frames/top_menu-button_frame.png');
 	const soundBtnFrame = ap('/assets/components/frames/top_sound_button_frame.png');
-	const menuBarFrame = ap('/assets/components/navbar/bar.png');
+	const menuBarFrame = ap('/assets/components/navbar/nav_bar.png'); // blue-tech bottom bar
 
 	// Button backgrounds (icon-less frames) — icons are layered on top in markup
-	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.png'); // wooden round — utility buttons
-	const btnSpinBg = ap('/assets/components/navbar/btn_bg_spin.png'); // green round — spin
-	const btnWideBg = ap('/assets/components/navbar/btn_bg_wide.png'); // wide green — buy bonus
+	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.png'); // (unused; utility buttons are CSS circles)
+	const btnSpinBg = ap('/assets/components/navbar/btn_spin.png'); // blue round — spin
+	const btnSpinEmpty = ap('/assets/components/navbar/btn_spin_empty.png'); // no-arrow disabled state (during a spin)
+	const btnWideBg = ap('/assets/components/navbar/btn_buy_bonus.png'); // blue pill — buy bonus
 
-	// Gold icons layered over the button backgrounds
-	const iconMenu = ap('/assets/hud/icon-menu.png');
-	const iconSound = ap('/assets/hud/icon-volume.png');
-	const iconMinus = ap('/assets/hud/icon-minus.png');
-	const iconPlus = ap('/assets/hud/icon-plus.png');
-	const iconAuto = ap('/assets/hud/icon-autoplay.png');
+	// Round icon-buttons — each PNG is a COMPLETE button (dark disc + cyan ring + icon baked in),
+	// with default + disabled/mute states from the "Icon Buttons" set. Used as the whole button.
+	const iconMenu = ap('/assets/components/navbar/icons/menu.png');
+	const iconSound = ap('/assets/components/navbar/icons/sound.png');
+	const iconMute = ap('/assets/components/navbar/icons/mute.png');
+	const iconMinus = ap('/assets/components/navbar/icons/minus.png');
+	const iconMinusDisabled = ap('/assets/components/navbar/icons/minus_disabled.png');
+	const iconPlus = ap('/assets/components/navbar/icons/plus.png');
+	const iconPlusDisabled = ap('/assets/components/navbar/icons/plus_disabled.png');
+	const iconAuto = ap('/assets/components/navbar/icons/auto.png');
+	const iconAutoDisabled = ap('/assets/components/navbar/icons/auto_disabled.png');
 	const iconSpin = ap('/assets/hud/icon-spin.png');
-	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.png');
-	const iconTurbo2 = ap('/assets/hud/icon-lightning-2.png');
-	const iconTurbo3 = ap('/assets/hud/icon-lightning-3.png');
+	const iconTurbo = ap('/assets/components/navbar/icons/turbo.png');
+	const iconTurbo1 = ap('/assets/components/navbar/icons/turbo1.png');
+	const iconTurbo3 = ap('/assets/components/navbar/icons/turbo3.png');
 	const iconCoins = ap('/assets/hud/icon-coins.png');
 
 	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
@@ -54,6 +60,9 @@
 	const hasAuto = $derived(stateBetDerived.hasAutoBetCounter());
 	const isSpinStop = $derived(!context.stateXstateDerived.isIdle() || hasAuto);
 	const canAffordBet = $derived(stateBetDerived.isBetCostAvailable());
+	// An active manual spin is in progress (not idle, and not an auto-spin sequence) — the spin
+	// button shows its no-arrow "empty" disabled state and is not clickable.
+	const isBusy = $derived(!context.stateXstateDerived.isIdle() && !hasAuto);
 
 	// Stop autoplay and disable spin when balance drops below bet cost
 	$effect(() => {
@@ -65,7 +74,7 @@
 	const isChanceActive = $derived(stateBet.activeBetModeKey === 'CHANCE');
 	const isAnyModeActive = $derived(isFeatureActive || isChanceActive);
 	const turboIcon = $derived(
-		stateBet.isSuperTurbo ? iconTurbo3 : stateBet.isTurbo ? iconTurbo2 : iconTurbo1,
+		stateBet.isSuperTurbo ? iconTurbo3 : stateBet.isTurbo ? iconTurbo1 : iconTurbo,
 	);
 	const isMuted = $derived(stateSound.volumeValueMaster === 0);
 	const betOptions = $derived(stateConfig.betAmountOptions);
@@ -272,7 +281,7 @@
 <div
 	class="hud-shell"
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}')`}
+	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-empty-bg:url('${btnSpinEmpty}')`}
 >
 	<div class="hud-bottom">
 		<div class="hud-left">
@@ -291,7 +300,7 @@
 					onclick={toggleSound}
 					aria-label="Sound"
 				>
-					<img class="nav-icon" src={iconSound} alt="sound" class:is-muted={isMuted} />
+					<img class="nav-icon" src={isMuted ? iconMute : iconSound} alt="sound" />
 				</button>
 			</div>
 
@@ -364,7 +373,7 @@
 					disabled={disableDecrease}
 					aria-label="Decrease bet"
 				>
-					<img class="nav-icon" src={iconMinus} alt="minus" />
+					<img class="nav-icon" src={disableDecrease ? iconMinusDisabled : iconMinus} alt="minus" />
 				</button>
 				<button
 					class="nav-btn nav-btn--framed"
@@ -378,27 +387,27 @@
 					disabled={disableIncrease}
 					aria-label="Increase bet"
 				>
-					<img class="nav-icon" src={iconPlus} alt="plus" />
+					<img class="nav-icon" src={disableIncrease ? iconPlusDisabled : iconPlus} alt="plus" />
 				</button>
 			</div>
 
 			<div class="play-cluster">
 				<button
 					class="spin-btn"
+					class:spin-btn--busy={isBusy}
 					type="button"
 					onclick={onSpinButton}
 					aria-label="Spin"
-					disabled={canInteract && !hasAuto && !canAffordBet}
+					disabled={isBusy || (canInteract && !hasAuto && !canAffordBet)}
 				>
-					<img src={iconSpin} alt="" class="spin-btn__icon" />
 					{#if hasAuto}
 						<span
 							class="spin-btn__count"
 							aria-label={`Remaining auto spins ${autoSpinsRemainingText}`}
 							>{autoSpinsRemainingText}</span
 						>
-					{:else if isSpinStop}
-						<span class="spin-btn__glyph" aria-hidden="true">■</span>
+					{:else if isBusy}
+						<span class="spin-btn__square" aria-hidden="true"></span>
 					{/if}
 				</button>
 			</div>
@@ -422,7 +431,7 @@
 					disabled={disableAuto}
 					aria-label={i18nDerived.autoplayLabel()}
 				>
-					<img class="nav-icon" src={iconAuto} alt="auto" />
+					<img class="nav-icon" src={disableAuto ? iconAutoDisabled : iconAuto} alt="auto" />
 				</button>
 			</div>
 		</div>
@@ -537,35 +546,28 @@
 		z-index: 6;
 		align-self: center;
 		margin-top: auto;
-		width: min(calc(100% - 16px), 1180px);
+		width: min(calc(100% - 16px), 1120px);
 		height: auto;
 		box-sizing: border-box;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 16px;
-		padding: 8px 74px;
-		/* Dark stadium base fills the whole box so no white bleeds through
-		   the transparent areas around the 9-sliced wooden pill on top. */
-		background: #0f0b06;
-		border-radius: 999px;
+		gap: 10px;
+		padding: 8px 24px;
+		/* Lift enough that the vertically-centred spin's lower protrusion clears the canvas edge. */
+		margin-bottom: 32px;
+		background: transparent;
+		border-radius: 22px;
 		box-shadow: none;
 	}
 
-	/* Wooden bar background, 9-sliced so the rounded caps stay crisp */
+	/* Blue-tech bottom bar (thin border + corner brackets), stretched to fill the box */
 	.hud-bottom::before {
 		content: '';
 		position: absolute;
 		inset: 0;
 		z-index: 0;
-		box-sizing: border-box;
-		border-style: solid;
-		border-color: transparent;
-		border-width: 26px 70px;
-		border-image-source: var(--menu-bar-bg);
-		border-image-slice: 120 380 fill;
-		border-image-width: 26px 70px;
-		border-image-repeat: stretch;
+		background: var(--menu-bar-bg) center / 100% 100% no-repeat;
 		pointer-events: none;
 	}
 
@@ -621,9 +623,9 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		padding: 0 16px;
+		padding: 0 10px;
 		flex: 0 0 auto;
-		min-width: 150px;
+		min-width: 96px;
 		border-left: none;
 	}
 
@@ -641,7 +643,7 @@
 		flex-direction: row;
 		align-items: center;
 		gap: 6px;
-		padding: 0 16px;
+		padding: 0 10px;
 		border-left: 1px solid rgba(255, 255, 255, 0.3);
 		flex: 0 0 auto;
 	}
@@ -663,8 +665,8 @@
 
 	.bet-coin {
 		pointer-events: none;
-		width: 44px;
-		height: 44px;
+		width: 32px;
+		height: 32px;
 		display: grid;
 		place-items: center;
 		flex: 0 0 auto;
@@ -675,6 +677,9 @@
 		height: 100%;
 		object-fit: contain;
 		display: block;
+		/* Only a gold coins asset was supplied — tint it blue to match the UI
+		   (temporary; a dedicated blue coins PNG would be cleaner). */
+		filter: hue-rotate(175deg) saturate(1.3) brightness(1.05);
 	}
 
 	.bet-pill {
@@ -682,10 +687,13 @@
 	}
 
 	.label {
-		font-family: 'Cinzel', serif;
-		font-size: 0.7rem;
+		font-family: 'Inter', sans-serif;
+		font-size: 10px;
 		font-weight: 700;
-		color: #d6ea57;
+		line-height: 15px;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+		color: #60a5facc;
 		display: flex;
 		align-items: center;
 		gap: 4px;
@@ -703,8 +711,8 @@
 	}
 
 	.value {
-		font-family: 'Cinzel', serif;
-		font-size: 1.25rem;
+		font-family: 'Inter', sans-serif;
+		font-size: 1.05rem;
 		font-weight: 700;
 		color: #fff;
 	}
@@ -744,13 +752,12 @@
 
 	.circle-btn:not(:disabled):hover,
 	.buy-btn:hover {
-		transform: translateY(-1px);
 		filter: brightness(1.1);
 	}
 
 	.circle-btn:not(:disabled):active,
 	.buy-btn:active {
-		transform: translateY(1px) scale(0.95);
+		filter: brightness(0.92);
 	}
 
 	.buy-btn {
@@ -774,8 +781,8 @@
 
 	/* Image buttons — icon-less frame background + gold icon layered on top */
 	.nav-btn {
-		width: 60px;
-		height: 60px;
+		width: 46px;
+		height: 46px;
 		border: none;
 		background: none;
 		padding: 0;
@@ -797,28 +804,27 @@
 		pointer-events: none;
 	}
 
-	/* Round wooden frame behind utility buttons */
+	/* Utility buttons: the icon-button PNG IS the whole button (disc + ring + icon), so no CSS
+	   frame — the image fills the button box. */
 	.nav-btn--framed {
-		background: var(--btn-round-bg) center / contain no-repeat;
+		background: none;
 	}
 
-	/* Gold icon sized to sit inside the frame */
 	.nav-btn--framed .nav-icon {
-		width: 46%;
-		height: 46%;
+		width: 100%;
+		height: 100%;
 	}
 
 	.nav-btn:not(:disabled):hover {
-		transform: translateY(-1px);
 		filter: brightness(1.12);
 	}
 
 	.nav-btn:not(:disabled):active {
-		transform: translateY(1px) scale(0.94);
+		filter: brightness(0.9);
 	}
 
 	.nav-btn:disabled {
-		opacity: 0.45;
+		/* The disabled ICON asset already conveys the state — don't double-dim it. */
 		cursor: default;
 	}
 
@@ -966,11 +972,11 @@
 	}
 
 	.spin-btn {
-		width: 122px;
-		height: 122px;
+		width: 128px;
+		height: 128px;
 		/* Negative margins keep the big button from inflating the bar height;
-		   it protrudes above the wooden bar as the focal control. */
-		margin: -22px 0;
+		   it protrudes above/below the bar as the focal control. */
+		margin: -32px 0;
 		border: none;
 		background: var(--btn-spin-bg) center / contain no-repeat;
 		padding: 0;
@@ -978,12 +984,9 @@
 		cursor: pointer;
 		display: grid;
 		place-items: center;
-		transform: translateY(-10px);
 		position: relative;
 		z-index: 3;
-		transition:
-			transform 0.12s ease,
-			filter 0.12s ease;
+		transition: filter 0.12s ease;
 	}
 
 	.spin-btn__icon {
@@ -998,17 +1001,36 @@
 	}
 
 	.spin-btn:not(:disabled):hover {
-		transform: translateY(-12px);
 		filter: brightness(1.08);
 	}
 
 	.spin-btn:not(:disabled):active {
-		transform: translateY(-8px) scale(0.96);
+		filter: brightness(0.92);
 	}
 
 	.spin-btn:disabled {
 		opacity: 0.5;
 		cursor: default;
+	}
+
+	/* While a spin is running: the no-arrow "empty" frame, slightly dimmed, not clickable. */
+	.spin-btn.spin-btn--busy {
+		background-image: var(--btn-spin-empty-bg);
+		opacity: 0.82;
+	}
+
+	/* Stop-square in the centre of the disabled/spinning button. */
+	.spin-btn__square {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 26px;
+		height: 26px;
+		border-radius: 6px;
+		background: #eaf2ff;
+		box-shadow: 0 0 12px rgba(96, 165, 250, 0.85);
+		pointer-events: none;
 	}
 
 	/* Stop / autospin-count overlays sit on the green disc, over the spin icon */
@@ -1041,12 +1063,12 @@
 	}
 
 	.buy-btn {
-		width: 130px;
+		width: 152px;
 		height: auto;
-		aspect-ratio: 730 / 267;
+		aspect-ratio: 636 / 192;
 		border: 0;
 		background: var(--buy-btn-bg) center / 100% 100% no-repeat;
-		padding: 0 14px;
+		padding: 0 26px;
 		outline: none;
 		cursor: pointer;
 		position: relative;
@@ -1062,13 +1084,15 @@
 	}
 
 	.buy-btn__label {
-		font-family: 'Cinzel', serif;
-		font-size: 0.82rem;
-		font-weight: 900;
-		color: #ffd84a;
-		letter-spacing: 0.08em;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
-		line-height: 1;
+		font-family: 'Inter', sans-serif;
+		font-size: 12px;
+		font-weight: 700;
+		color: #fff;
+		letter-spacing: 1.4px;
+		line-height: 20px;
+		text-transform: uppercase;
+		text-align: center;
+		white-space: nowrap;
 		pointer-events: none;
 	}
 
