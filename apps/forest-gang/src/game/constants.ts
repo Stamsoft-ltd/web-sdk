@@ -102,10 +102,10 @@ export const SPIN_OPTIONS_TURBO = {
 
 export const SPIN_OPTIONS_ANTICIPATED = {
 	...SPIN_OPTIONS_SHARED,
-	reelPreSpinSpeed: 3.4,
-	reelSpinSpeed: 4.1,
+	reelPreSpinSpeed: 2.6,
+	reelSpinSpeed: 3.0,
 	reelBounceSizeMulti: 0.2,
-	reelPaddingMultiplierAnticipated: 6,
+	reelPaddingMultiplierAnticipated: 16,
 };
 
 export const MOTION_BLUR_VELOCITY = 31;
