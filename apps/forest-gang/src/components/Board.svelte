@@ -58,6 +58,9 @@
 	const SIZE_BOOST = $derived(isDesktop ? 1.1 : 1);
 	const symbolW = $derived(SYMBOL_W * (layout.boardScale / scaleX) * SIZE_BOOST);
 	const symbolH = $derived(SYMBOL_H * (layout.boardScale / scaleY) * SIZE_BOOST);
+	// Column divider width in LOCAL units, chosen so it renders ~2.5px wide after the container's
+	// scaleX (the line stays thin at any board size).
+	const DIVIDER_W = $derived(2.5 / scaleX);
 
 	// Per-type visual balance: card (low) letters fill their tile much more than the framed
 	// animal / wild / scatter art, so they read bigger. Shrink the low cards and nudge the
@@ -137,6 +140,18 @@
 				graphics.endFill();
 			}}
 		/>
+		<!-- Thin vertical divider lines between the reel columns (behind the symbols). -->
+		{#each Array.from({ length: BOARD_DIMENSIONS.x - 1 }) as _, i (i)}
+			<Sprite
+				key="reelDivider"
+				x={SYMBOL_W * (i + 1)}
+				y={0}
+				anchor={{ x: 0.5, y: 0 }}
+				width={DIVIDER_W}
+				height={SYMBOL_H * BOARD_DIMENSIONS.y}
+				alpha={0.55}
+			/>
+		{/each}
 		{#each board as reel, reelIndex (reelIndex)}
 			{#if !hiddenReels.has(reelIndex)}
 			{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}

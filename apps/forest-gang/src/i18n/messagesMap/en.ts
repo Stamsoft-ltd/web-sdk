@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'FEATURES',
 	'INFO EXPANDING TITLE': 'EXPANDING SYMBOL',
 	'INFO EXPANDING TEXT':
-		"During qualifying feature spins and bonus rounds, one random symbol is selected as the expanding symbol. When it lands on the reels, it expands vertically to cover the full reel. Expanded symbols can create multiple payline wins on the same spin. A random multiplier can appear on any spin and applies to that spin's win.",
+		'During qualifying feature spins and bonus rounds, one random symbol is selected as the expanding symbol. When the selected expanding symbol lands on the reels, it expands vertically to cover the full reel. Expanded symbols can create multiple payline wins on the same spin. Random multiplier can appear on any spin and apply to the winning amount of that spin.\n\nThe random multiplier can be from 2x to 1024x.',
 	'INFO DEAL IT TITLE': 'DEAL IT BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'WAYS TO WIN',
 	'INFO WAYS NOTE':
-		'Forest Gang is played on 20 fixed paylines. Wins are awarded from left to right on consecutive reels, starting from reel 1. Only the highest win per active payline is paid.',
+		'Forest Gang is played on 20 fixed paylines. A winning combination is formed when matching symbols land on consecutive reels from left to right on any active payline. Only the highest win per symbol per payline is paid, unless stated otherwise in the final game rules.',
 	// Feature buy page
 	'INFO BUY TITLE': 'FEATURE BUY',
 	'INFO BUY CHANCE TITLE': 'EXTRA BONUS CHANCE',
@@ -189,4 +189,35 @@ export default {
 	'FS CONGRATS': 'CONGRATULATIONS!',
 	'FS YOU WON': 'YOU WON',
 	'FS FREE SPINS': 'FREE SPINS',
+
+	// Top-bar bonus counters
+	EARNED: 'EARNED',
+
+	// Buy bonus modal — card titles/descriptions, buttons, confirm dialog
+	ACTIVATE: 'ACTIVATE',
+	DEACTIVATE: 'DEACTIVATE',
+	BUY: 'BUY',
+	CONFIRM: 'CONFIRM',
+	CANCEL: 'CANCEL',
+	'CONFIRM TEXT': 'Buy %mode% for %cost%?',
+	'CARD CHANCE TITLE': 'Extra Chance',
+	'CARD CHANCE DESC': 'Activate to increase 3 times the chance of trigger a bonus round',
+	'CARD FEATURE TITLE': 'Feature Spins',
+	'CARD FEATURE DESC': 'Guarantees a special expanding symbol for the spin picked at random',
+	'CARD ALLIN DESC': '10 Free Spins with random expanding symbol and multiplier start at 2x and doubles on every connection.',
+	'CARD DEALIT DESC': '10 Free Spins with random expanding symbol and a random multiplier up to 1024x',
+
+	// Auto spin modal
+	'AUTO SPIN': 'AUTO SPIN',
+	'TURBO SPIN': 'TURBO SPIN',
+	'SUPER TURBO SPIN': 'SUPER TURBO SPIN',
+	'BONUS FEATURE 100X': '100 X BONUS FEATURE',
+	'NUMBER OF SPINS': 'NUMBER OF SPINS',
+	'START AUTOPLAY': 'START AUTOPLAY',
+
+	// Bonus resume modal (unfinished bonus round)
+	'RESUME TITLE': 'UNFINISHED ROUND',
+	'RESUME BODY': 'You have an active %mode% bonus in progress.',
+	'END ROUND': 'END ROUND',
+	'PLAY ROUND': 'PLAY ROUND',
 };

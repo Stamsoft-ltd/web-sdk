@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { stateBet } from 'state-shared';
 	import { SYMBOL_W, SYMBOL_H } from '../game/constants';
 	import VineRope from './VineRope.svelte';
 
@@ -11,8 +12,9 @@
 	const cy = (row: number) => SYMBOL_H * (row + 0.5);
 
 	const VINE_H = 20;
-	const DRAW_MS = 250;
-	const HOLD_MS = 400; // pause at full before restarting loop
+	const isFast = $derived(stateBet.isTurbo || stateBet.isSuperTurbo);
+	const DRAW_MS = $derived(isFast ? 250 : 600);
+	const HOLD_MS = $derived(isFast ? 400 : 700); // pause at full before restarting loop
 	// Bright gold (dominant tone of the win gradient) for the winning-payline lines.
 	const GOLD = 0xfbc503;
 

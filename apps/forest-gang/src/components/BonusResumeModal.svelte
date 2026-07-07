@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { stateBet } from 'state-shared';
+	import { i18nDerived } from '../i18n/i18nDerived';
 
 	type Props = { onPlay: () => void; onEnd: () => void };
 	const props: Props = $props();
@@ -18,11 +19,11 @@
 <div class="confirm" role="dialog" aria-modal="true">
 	<div class="confirm-panel" style={`background-image:url('${confirmPanelBg}')`}>
 		<div class="confirm-content">
-			<div class="confirm-title">UNFINISHED ROUND</div>
-			<div class="confirm-text">You have an active <strong>{modeLabel}</strong> bonus in progress.</div>
+			<div class="confirm-title">{i18nDerived.translate('RESUME TITLE')}</div>
+			<div class="confirm-text">{i18nDerived.translateVars('RESUME BODY', { mode: modeLabel })}</div>
 			<div class="confirm-row">
-				<button class="confirm-btn confirm-btn--cancel" type="button" onclick={props.onEnd}>✕ END ROUND</button>
-				<button class="confirm-btn confirm-btn--ok" type="button" onclick={props.onPlay}>▶ PLAY ROUND</button>
+				<button class="confirm-btn confirm-btn--cancel" type="button" onclick={props.onEnd}>✕ {i18nDerived.translate('END ROUND')}</button>
+				<button class="confirm-btn confirm-btn--ok" type="button" onclick={props.onPlay}>▶ {i18nDerived.translate('PLAY ROUND')}</button>
 			</div>
 		</div>
 	</div>

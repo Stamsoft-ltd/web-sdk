@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { Sprite, Container, Text } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
+	import { stateBet } from 'state-shared';
+	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import { getContext } from '../game/context';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
 	import { spriteKeyByName } from '../game/utils';
+	import { i18nDerived } from '../i18n/i18nDerived';
 
 	const context = getContext();
 	const main = $derived(context.stateLayoutDerived.mainLayout());
@@ -27,14 +30,14 @@
 	const P_LOGO_W = $derived(main.width * 0.42);
 	const P_LOGO_H = $derived(P_LOGO_W / LOGO_ASPECT);
 	const P_LOGO_CX = $derived(main.width * 0.5);
-	const P_PP_W = $derived(main.width * 0.16);
+	const P_PP_W = $derived(main.width * 0.21);
 	const P_PP_H = $derived(P_PP_W / BRAND_ASPECT);
-	// The Press Play sprite stacks above the logo; on very short screens 8.5%·height puts the whole
-	// stack partly off the top, so floor the logo centre to keep Press Play below a top margin.
-	const P_LOGO_TOP_MARGIN = $derived(main.height * 0.03);
+	// The Press Play sprite stacks above the logo; on very short screens the floor keeps the whole
+	// stack below a small top margin. Sits near the top of the screen (above the board).
+	const P_LOGO_TOP_MARGIN = $derived(main.height * 0.008);
 	const P_LOGO_CY = $derived(
 		Math.max(
-			main.height * 0.085,
+			main.height * 0.055,
 			P_LOGO_TOP_MARGIN + P_PP_H + main.height * 0.006 + P_LOGO_H * 0.5,
 		),
 	);
@@ -42,14 +45,26 @@
 	// Portrait top-bar counters flanking the logo (Figma 2792-4133). Same data/logic as
 	// desktop: free-spins current/total via events, bonus symbol + global multiplier from state.
 	const BADGE_ASPECT = 1431 / 1099; // badge_frame.png
-	const badgeW = $derived(main.width * 0.15);
+	// Both columns stack TWO badges (left: symbol+multiplier, right: FREE SPINS+EARNED), aligned
+	// at a shared top. The board frame sprite top is at 236 (800×1422 main-layout) but its top
+	// ~5% is transparent padding, so the visible wood sits lower — leaving room for this size.
+	const badgeW = $derived(main.width * 0.22);
 	const badgeH = $derived(badgeW / BADGE_ASPECT);
 	// Left column: bonus symbol badge on top, multiplier badge underneath (like the FS counter).
-	const symBadgeCY = $derived(main.height * 0.072);
-	const multBadgeCY = $derived(symBadgeCY + badgeH * 0.92);
-	const fsBadgeCY = $derived(main.height * 0.098);
-	const leftBadgeX = $derived(main.width * 0.135);
-	const rightBadgeX = $derived(main.width * 0.865);
+	const symBadgeCY = $derived(main.height * 0.05);
+	const multBadgeCY = $derived(symBadgeCY + badgeH * 0.9);
+	const fsBadgeCY = $derived(main.height * 0.05);
+	const leftBadgeX = $derived(main.width * 0.145);
+	const rightBadgeX = $derived(main.width * 0.855);
+	// Right column: EARNED badge under the FREE SPINS badge (mirrors the left column's stack).
+	// Running total won in the current bonus — winBookEventAmount is a book-event amount
+	// (100 = 1× bet), converted the same way as Win.svelte / BonusEarnedPanel.
+	const earnedBadgeCY = $derived(fsBadgeCY + badgeH * 0.9);
+	const earnedText = $derived(bookEventAmountToCurrencyString(stateBet.winBookEventAmount));
+	let earnedLabelW = $state(0);
+	const earnedCoinSize = $derived(badgeH * 0.22);
+	const earnedGap = $derived(badgeW * 0.025);
+	const earnedRowW = $derived(earnedCoinSize + earnedGap + earnedLabelW);
 
 	// Free-spins counter state (mirrors FreeSpinCounter.svelte).
 	let fsShow = $state(false);
@@ -92,6 +107,13 @@
 		letterSpacing: fontSize * 0.03,
 		wordWrap: false,
 	});
+	// Wrapping variant for the FREE SPINS / EARNED labels — long translations wrap inside
+	// the badge instead of spilling past its wooden edges.
+	const titleWrap = (fontSize: number) => ({
+		...titleStyle(fontSize),
+		wordWrap: true,
+		wordWrapWidth: badgeW * 0.86,
+	});
 </script>
 
 <MainContainer zIndex={20}>
@@ -119,20 +141,44 @@
 		{#if showBonusBadge && bonusSymbolKey}
 			<Container x={leftBadgeX} y={symBadgeCY}>
 				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />
-				<Sprite key={bonusSymbolKey} anchor={0.5} width={badgeH * 0.6} height={badgeH * 0.6} />
+				<Sprite key={bonusSymbolKey} anchor={0.5} y={-badgeH * 0.02} width={badgeH * 0.56} height={badgeH * 0.42} />
 			</Container>
 			<Container x={leftBadgeX} y={multBadgeCY}>
 				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />
-				<Text anchor={0.5} text={`x${globalMultiplier}`} style={titleStyle(badgeH * 0.34)} />
+				<Text anchor={0.5} y={-badgeH * 0.02} text={`x${globalMultiplier}`} style={titleStyle(badgeH * 0.3)} />
 			</Container>
 		{/if}
 
-		<!-- Right badge: FREE SPINS current / total -->
+		<!-- Right column top: FREE SPINS current / total -->
 		{#if showFsBadge}
 			<Container x={rightBadgeX} y={fsBadgeCY}>
 				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />
-				<Text anchor={0.5} y={-badgeH * 0.22} text="FREE SPINS" style={titleStyle(badgeH * 0.14)} />
-				<Text anchor={0.5} y={badgeH * 0.15} text={`${fsCurrent}/${fsTotal}`} style={titleStyle(badgeH * 0.32)} />
+				<Text anchor={0.5} y={-badgeH * 0.15} text={i18nDerived.freeSpins()} style={titleWrap(badgeH * 0.13)} />
+				<Text anchor={0.5} y={badgeH * 0.08} text={`${fsCurrent}/${fsTotal}`} style={titleStyle(badgeH * 0.26)} />
+			</Container>
+
+			<!-- Right column bottom: EARNED running total (coin + label, amount below) -->
+			<Container x={rightBadgeX} y={earnedBadgeCY}>
+				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />
+				<Container x={-earnedRowW / 2} y={-badgeH * 0.16}>
+					<Sprite
+						key="earnedCoin"
+						anchor={{ x: 0, y: 0.5 }}
+						x={0}
+						y={0}
+						width={earnedCoinSize}
+						height={earnedCoinSize}
+					/>
+					<Text
+						anchor={{ x: 0, y: 0.5 }}
+						x={earnedCoinSize + earnedGap}
+						y={0}
+						text={i18nDerived.earned()}
+						onresize={(sizes) => (earnedLabelW = sizes.width)}
+						style={titleWrap(badgeH * 0.13)}
+					/>
+				</Container>
+				<Text anchor={0.5} y={badgeH * 0.13} text={earnedText} style={titleStyle(badgeH * 0.2)} />
 			</Container>
 		{/if}
 	{:else}

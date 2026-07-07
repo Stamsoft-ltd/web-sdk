@@ -4,29 +4,45 @@ import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap 
 import { stateBet, stateUi } from 'state-shared';
 import { sequence } from 'utils-shared/sequence';
 import { waitForTimeout } from 'utils-shared/wait';
+import { bookEventAmountToBetAmountMultiplier } from 'utils-shared/amount';
 
 import { eventEmitter } from './eventEmitter';
 import { playBookEvent } from './utils';
 import { winLevelMap, type WinLevel, type WinLevelData } from './winLevelMap';
+import type { SoundEffectName } from './sound';
 import { stateGame, stateGameDerived } from './stateGame.svelte';
 import type { BookEvent, BookEventOfType, BookEventContext } from './typesBookEvent';
 import type { Position } from './types';
 import config from './config';
 import { logForestDiagnostic } from '../utils/forestDiagnostics';
 
-const winLevelSoundsPlay = ({ winLevelData }: { winLevelData: WinLevelData }) => {
+const winLevelSoundsPlay = ({
+	winLevelData,
+	sfxOverride,
+}: {
+	winLevelData: WinLevelData;
+	sfxOverride?: SoundEffectName;
+}) => {
 	if (winLevelData?.alias === 'max') eventEmitter.broadcastAsync({ type: 'uiHide' });
-	if (winLevelData?.sound?.sfx) eventEmitter.broadcast({ type: 'soundOnce', name: winLevelData.sound.sfx });
+	const sfx = sfxOverride ?? winLevelData?.sound?.sfx;
+	if (sfx) eventEmitter.broadcast({ type: 'soundOnce', name: sfx });
 	if (winLevelData?.sound?.bgm) eventEmitter.broadcast({ type: 'soundMusic', name: winLevelData.sound.bgm });
-	if (winLevelData?.type === 'big') eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_bigwin_coinloop' });
+	if (winLevelData?.type === 'big') {
+		// Big-win screen takes over — hand off from the payline loop to the coins loop.
+		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
+		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_win_coins_loop' });
+	}
 };
 
+// Bonus background track: All In (superspin) has its own loop; Deal It / feature use the free-spin loop.
+const bonusBgm = () => (stateGame.bonusMode === 'superspin' ? 'bgm_allin_bonus' : 'bgm_dealit_bonus');
+
 const winLevelSoundsStop = () => {
-	eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_bigwin_coinloop' });
+	eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_win_coins_loop' });
 	if (stateBet.activeBetModeKey === 'SUPER' || stateGame.gameType !== 'basegame') {
-		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
+		eventEmitter.broadcast({ type: 'soundMusic', name: bonusBgm() });
 	} else {
-		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_main' });
+		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_base_game' });
 	}
 	eventEmitter.broadcastAsync({ type: 'uiShow' });
 };
@@ -40,6 +56,8 @@ const getBonusModeFromScatters = (positions: Position[]) => (positions.length >=
 
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
+		// A new spin begins — stop the previous win's payline loop if it's still playing.
+		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
 		const hasAnticipation = bookEvent.anticipation?.some(Boolean);
 		if (isBonusGame || hasAnticipation) {
@@ -110,13 +128,16 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.selectedBonusSymbol = symbol;
 		stateGame.bonusMode = bookEvent.mode;
 		if (stateBet.isSuperTurbo) return;
-		// Deer presenter reveals the chosen expanding symbol at the start of the round
+		// Deer presenter reveals the chosen expanding symbol at the start of the round. The reveal
+		// sound loops for as long as the deer is on screen, then stops when it hides.
 		eventEmitter.broadcast({ type: 'expandedPresenterShow', symbol });
+		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_deer_reveal' });
 		await eventEmitter.broadcastAsync({ type: 'bonusSymbolRollAwait' });
 		// Hold the presenter on screen — resolves after ~1.1s, or immediately if the player skips
 		// (space / tap, broadcast as stopButtonClick).
 		await eventEmitter.broadcastAsync({ type: 'expandedPresenterAwaitClose' });
 		eventEmitter.broadcast({ type: 'expandedPresenterHide' });
+		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_deer_reveal' });
 	},
 	expandedSymbolReveal: async (bookEvent: BookEventOfType<'expandedSymbolReveal'>) => {
 		// Clear any win states from the previous spin before expanding starts
@@ -144,7 +165,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// Reveal one by one in distance order (origin first, then outward) — slower for drama.
 		for (let i = 0; i < reelsByDistance.length; i++) {
 			if (i > 0) await waitForTimeout(190);
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_reel_stop_1' });
+			// forcePlay so every expanding column retriggers the sound (the effect is longer than the
+			// 190ms step, so without it the once-player would only sound on the first column).
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_symbol_expand', forcePlay: true });
 			const reel = reelsByDistance[i];
 			stateGame.expandedSymbol = {
 				...stateGame.expandedSymbol!,
@@ -160,7 +183,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		eventEmitter.broadcast({ type: 'dealItMultiplierSetTarget', multiplier: bookEvent.multiplier });
 	},
 	retriggerFreeSpins: async (bookEvent: BookEventOfType<'retriggerFreeSpins'>) => {
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_win_v2' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_trigger' });
 		await animateSymbols({ positions: bookEvent.positions });
 		const newTotal = stateUi.freeSpinCounterTotal + bookEvent.amount;
 		stateUi.freeSpinCounterTotal = newTotal;
@@ -176,7 +199,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		console.info('[forest-gang] ALL IN global multiplier update', bookEvent.multiplier);
 	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>) => {
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_winlevel_small' });
+		// Loop the payline-win jingle for the whole win sequence; stopped after the animation below.
+		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_payline_win' });
 		// Start Deal It multiplier cycling for every winning bonus spin — always spins, lands on 1x unless multiplier fires
 		if ((stateGame.bonusMode === 'freegame' || stateGame.bonusMode === 'feature')) {
 			eventEmitter.broadcast({ type: 'dealItMultiplierStart' });
@@ -213,6 +237,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			return true;
 		});
 		await animateSymbols({ positions: allPositions });
+		// NOTE: the loop is NOT stopped here — boardWithAnimateSymbols returns instantly (the win pulse
+		// isn't awaited), so stopping now cuts the sound before it's audible. It's stopped when the next
+		// spin starts (reveal), when a big-win screen takes over (winLevelSoundsPlay), or at round end.
 	},
 	setTotalWin: async (bookEvent: BookEventOfType<'setTotalWin'>) => {
 		stateBet.winBookEventAmount = bookEvent.amount;
@@ -226,9 +253,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 		if (!isFeatureSpin) {
 			// Full bonus intro sequence — only for Deal It / All In (multi-spin)
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_win_v2' });
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_trigger' });
 			await animateSymbols({ positions: bookEvent.positions });
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_superfreespin' });
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_intro' });
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
 			await eventEmitter.broadcastAsync({ type: 'transition' });
 			// Switch to the bonus background NOW — while the transition veil still covers the screen —
@@ -236,8 +263,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateGame.gameType = bonusMode;
 			stateGame.bonusMode = bonusMode;
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'jng_intro_fs' });
-			eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
+			// Same "congratulations" sting the bonus-end (outro) congratulations uses.
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_congratulations' });
+			eventEmitter.broadcast({ type: 'soundMusic', name: bonusMode === 'superspin' ? 'bgm_allin_bonus' : 'bgm_dealit_bonus' });
 			await eventEmitter.broadcastAsync({ type: 'freeSpinIntroUpdate', totalFreeSpins: bookEvent.totalFs });
 		}
 		stateGame.gameType = bonusMode;
@@ -255,6 +283,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if (bonusMode === 'superspin') {
 			eventEmitter.broadcast({ type: 'dealItMultiplierHide' });
 			eventEmitter.broadcast({ type: 'globalMultiplierShow' });
+		} else if (bonusMode === 'freegame') {
+			// Show the Deal It multiplier board (persistent, 1x red X) and the EARNED board from the
+			// start of the bonus — not just after the first winning spin.
+			eventEmitter.broadcast({ type: 'dealItMultiplierStart' });
 		}
 		if (!isFeatureSpin) {
 			await eventEmitter.broadcastAsync({ type: 'uiShow' });
@@ -291,10 +323,15 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		} else {
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
 			eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_youwon_panel' });
+			// Bonus is over: stop the bonus music loop, then play the finish sting over the outro.
+			eventEmitter.broadcast({ type: 'soundStop', name: 'bgm_dealit_bonus' });
+			eventEmitter.broadcast({ type: 'soundStop', name: 'bgm_allin_bonus' });
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_congratulations' });
 			winLevelSoundsPlay({ winLevelData });
 			await eventEmitter.broadcastAsync({ type: 'freeSpinOutroCountUp', amount: bookEvent.amount, winLevelData });
-			winLevelSoundsStop();
+			// Back to the base-game music once the bonus summary finishes (not the bonus loop).
+			eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_win_coins_loop' });
+			eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_base_game' });
 			eventEmitter.broadcast({ type: 'freeSpinOutroHide' });
 			eventEmitter.broadcast({ type: 'freeSpinCounterHide' });
 			stateUi.freeSpinCounterShow = false;
@@ -317,7 +354,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
 		eventEmitter.broadcast({ type: 'winShow' });
-		winLevelSoundsPlay({ winLevelData });
+		// True MAX WIN (25000×) shows the dedicated MaxWinScreen (see Win.svelte) — give it its own
+		// sting instead of the LEGENDARY sfx it otherwise shares (both are win level 10).
+		const isMaxWin =
+			winLevelData?.type === 'big' &&
+			bookEventAmountToBetAmountMultiplier(bookEvent.amount) >= 25000;
+		winLevelSoundsPlay({ winLevelData, sfxOverride: isMaxWin ? 'sfx_win_popup_max' : undefined });
 		await eventEmitter.broadcastAsync({ type: 'winUpdate', amount: bookEvent.amount, winLevelData });
 		winLevelSoundsStop();
 		eventEmitter.broadcast({ type: 'winHide' });
@@ -326,6 +368,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// It is hidden at bonus end (freeSpinEnd) and when switching to the All In bonus.
 	},
 	finalWin: async () => {
+		// Round over — make sure the payline loop isn't left ringing.
+		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
 		// Reset after the base game OR a completed single feature spin. A feature spin sets
 		// gameType='feature' / bonusMode='feature'; without resetting it here, bonusMode stayed
 		// non-null after the spin, so isInBonus kept the Buy Bonus button disabled once you

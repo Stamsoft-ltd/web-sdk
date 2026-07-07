@@ -3,6 +3,8 @@
 	import { stateBet, stateBetDerived, stateConfig } from 'state-shared';
 	import { getContext } from '../game/context';
 	import { forestStakeDerived } from '../state/forestStake.svelte';
+	import { i18nDerived } from '../i18n/i18nDerived';
+	import { fitLabel } from '../lib/fitLabel';
 
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
 	const cardBg       = ap('/assets/components/ui/bonus_card_bg.png');
@@ -72,7 +74,7 @@
 	const toggleActivateMode = (toggle: () => void) => { toggle(); props.onclose(); };
 
 	// BONUS → ALL IN (100×), SUPER → DEAL IT (400×)
-	const confirmLabel = $derived(confirmMode === 'SUPER' ? 'DEAL IT' : 'ALL IN');
+	const confirmLabel = $derived(confirmMode === 'SUPER' ? i18nDerived.dealIt() : i18nDerived.allIn());
 	const confirmCost  = $derived(confirmMode === 'SUPER' ? dealItCost : allInCost);
 
 	onMount(() => {
@@ -93,15 +95,15 @@
 
 	<button class="close-btn" type="button" onclick={props.onclose}>✕</button>
 
-	<h2 class="title">BUY BONUS</h2>
+	<h2 class="title">{i18nDerived.buyBonus()}</h2>
 
 	<div class="grid" class:grid--portrait={isPortrait} class:grid--compact={isCompactRow}>
 
 		<!-- EXTRA CHANCE — CHANCE mode (2×), toggle -->
 		<div class="card" style="--frame:url('{cardBg}')">
 			<div class="card-inner">
-				<span class="card-title card-title--chance">Extra Chance</span>
-				<span class="card-desc">Activate to increase 3 times the chance of trigger a bonus round</span>
+				<span class="card-title card-title--chance">{i18nDerived.translate('CARD CHANCE TITLE')}</span>
+				<span class="card-desc">{i18nDerived.translate('CARD CHANCE DESC')}</span>
 				<div class="card-icon-wrap"><img class="card-icon" src={chanceIcon} alt="" /></div>
 				<span class="card-price">{chanceCost}</span>
 				<button
@@ -110,15 +112,15 @@
 					type="button"
 					disabled={!props.isChanceActive && !canChance}
 					onclick={() => toggleActivateMode(props.onToggleChance)}
-				><span class="btn-label">{props.isChanceActive ? 'DEACTIVATE' : 'ACTIVATE'}</span></button>
+				><span class="btn-label" use:fitLabel={props.isChanceActive ? i18nDerived.deactivate() : i18nDerived.activate()}>{props.isChanceActive ? i18nDerived.deactivate() : i18nDerived.activate()}</span></button>
 			</div>
 		</div>
 
 		<!-- FEATURE SPINS — FEATURE mode (20×), toggle -->
 		<div class="card" style="--frame:url('{cardBg}')">
 			<div class="card-inner">
-				<span class="card-title card-title--feature">Feature Spins</span>
-				<span class="card-desc">Guarantees a special expanding simbol for the spin picked at random</span>
+				<span class="card-title card-title--feature">{i18nDerived.translate('CARD FEATURE TITLE')}</span>
+				<span class="card-desc">{i18nDerived.translate('CARD FEATURE DESC')}</span>
 				<div class="card-icon-wrap"><img class="card-icon" src={featureIcon} alt="" /></div>
 				<span class="card-price">{featureCost}</span>
 				<button
@@ -127,29 +129,29 @@
 					type="button"
 					disabled={!props.isFeatureActive && !canFeature}
 					onclick={() => toggleActivateMode(props.onToggleFeature)}
-				><span class="btn-label">{props.isFeatureActive ? 'DEACTIVATE' : 'ACTIVATE'}</span></button>
+				><span class="btn-label" use:fitLabel={props.isFeatureActive ? i18nDerived.deactivate() : i18nDerived.activate()}>{props.isFeatureActive ? i18nDerived.deactivate() : i18nDerived.activate()}</span></button>
 			</div>
 		</div>
 
 		<!-- ALL IN — BONUS mode (100×) -->
 		<div class="card" style="--frame:url('{cardBg}')">
 			<div class="card-inner">
-				<span class="card-title card-title--gold">ALL IN</span>
-				<span class="card-desc">10 Free Spins with random expanding symbol and multiplier start at 2x and doubles on every connection.</span>
+				<span class="card-title card-title--gold">{i18nDerived.allIn()}</span>
+				<span class="card-desc">{i18nDerived.translate('CARD ALLIN DESC')}</span>
 				<div class="card-icon-wrap"><img class="card-icon" src={allInIcon} alt="" /></div>
 				<span class="card-price">{allInCost}</span>
-				<button class="card-btn card-btn--buy" type="button" disabled={!canAllIn} onclick={() => openConfirm('BONUS')}><span class="btn-label">BUY</span></button>
+				<button class="card-btn card-btn--buy" type="button" disabled={!canAllIn} onclick={() => openConfirm('BONUS')}><span class="btn-label" use:fitLabel={i18nDerived.buy()}>{i18nDerived.buy()}</span></button>
 			</div>
 		</div>
 
 		<!-- DEAL IT — SUPER mode (400×) -->
 		<div class="card" style="--frame:url('{cardBg}')">
 			<div class="card-inner">
-				<span class="card-title card-title--gold">DEAL IT</span>
-				<span class="card-desc">10 Free Spins with random expanding simbol and a random multiplier up to 1024x</span>
+				<span class="card-title card-title--gold">{i18nDerived.dealIt()}</span>
+				<span class="card-desc">{i18nDerived.translate('CARD DEALIT DESC')}</span>
 				<div class="card-icon-wrap"><img class="card-icon" src={dealItIcon} alt="" /></div>
 				<span class="card-price">{dealItCost}</span>
-				<button class="card-btn card-btn--buy" type="button" disabled={!canDealIt} onclick={() => openConfirm('SUPER')}><span class="btn-label">BUY</span></button>
+				<button class="card-btn card-btn--buy" type="button" disabled={!canDealIt} onclick={() => openConfirm('SUPER')}><span class="btn-label" use:fitLabel={i18nDerived.buy()}>{i18nDerived.buy()}</span></button>
 			</div>
 		</div>
 
@@ -166,7 +168,7 @@
 				<div class="bet-pill">
 					<img class="bet-coin" src={iconCoins} alt="" />
 					<div class="bet-cell">
-						<span class="bet-label">BET</span>
+						<span class="bet-label">{i18nDerived.betLabel()}</span>
 						<span class="bet-amount">{formattedBet}</span>
 					</div>
 				</div>
@@ -180,7 +182,7 @@
 		<div class="bet-bar">
 			<img class="bet-coin" src={iconCoins} alt="" />
 			<div class="bet-cell">
-				<span class="bet-label">BET</span>
+				<span class="bet-label">{i18nDerived.betLabel()}</span>
 				<span class="bet-amount">{formattedBet}</span>
 			</div>
 			<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canDec} onclick={() => stepBet(-1)} aria-label="Decrease bet">
@@ -200,11 +202,11 @@
 	<div class="confirm" role="dialog" aria-modal="true">
 		<div class="confirm-panel" style={`background-image:url('${confirmPanelBg}')`}>
 			<div class="confirm-content">
-				<div class="confirm-title">CONFIRM {confirmLabel}</div>
-				<div class="confirm-text">Buy {confirmLabel} for {confirmCost}?</div>
+				<div class="confirm-title">{i18nDerived.confirm()} {confirmLabel}</div>
+				<div class="confirm-text">{i18nDerived.translateVars('CONFIRM TEXT', { mode: confirmLabel, cost: confirmCost })}</div>
 				<div class="confirm-row">
-					<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}>CANCEL</button>
-					<button class="confirm-btn confirm-btn--ok" type="button" onclick={() => buyMode(confirmMode!)}>CONFIRM</button>
+					<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}>{i18nDerived.cancel()}</button>
+					<button class="confirm-btn confirm-btn--ok" type="button" onclick={() => buyMode(confirmMode!)}>{i18nDerived.confirm()}</button>
 				</div>
 			</div>
 		</div>

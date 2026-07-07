@@ -30,7 +30,7 @@ const onSymbolLand = ({ rawSymbol }: { rawSymbol: RawSymbol }) => {
 	}
 
 	if (rawSymbol.name === 'WILD') {
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_landing' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_wild_land' });
 	}
 };
 
@@ -43,7 +43,7 @@ const board = _.range(BOARD_DIMENSIONS.x).map((reelIndex) => {
 		onReelStopping: () => {
 			eventEmitter.broadcast({
 				type: 'soundOnce',
-				name: 'sfx_reel_stop_1',
+				name: 'sfx_reel_stop',
 				forcePlay: !(stateBet.isTurbo || stateBet.isSuperTurbo),
 			});
 		},
@@ -108,7 +108,11 @@ const getBoardViewportPadding = () => {
 	if (layoutType === 'portrait') return { top: 8, right: 2, bottom: 146, left: 2 };
 	if (layoutType === 'landscape') return { top: 4, right: 16, bottom: 22, left: 8 };
 	if (layoutType === 'tablet') return { top: 10, right: 20, bottom: 86, left: 20 };
-	return { top: 108, right: 220, bottom: 172, left: 208 };
+	// Desktop: trim the bottom on short laptop canvases (e.g. 1024×576) so the board grows to fill the
+	// gap above the HUD; normal desktops keep 172. The bonus rail is re-anchored to the right edge in
+	// `bonusRailAdjust` so the enlarged board doesn't push it off-screen.
+	const shortCanvas = stateLayoutDerived.canvasSizes().height < 640;
+	return { top: 108, right: 220, bottom: shortCanvas ? 128 : 172, left: 208 };
 };
 
 const getBoardViewportMetrics = () => {
@@ -186,7 +190,7 @@ const LS_FRAME_INNER_H = 0.70;
 const LS_FRAME_INNER_CX = 0.5;
 const LS_FRAME_INNER_CY = 0.59;
 const LS_PANEL_FILL = 0.98;  // reel pitch fills ~98% of the inner panel (both axes)
-const LS_SYMBOL_FILL = 0.86; // symbol size vs its cell (smaller → even gaps, as in the design)
+const LS_SYMBOL_FILL = 0.97; // symbol size vs its cell (smaller → even gaps, as in the design)
 const LS_FRAME_WIDTH = 0.9;  // slight narrowing of the frame/background (forest margin on sides)
 
 const boardLayout = () => {
@@ -209,12 +213,15 @@ const boardLayout = () => {
 		// Inner wood panel (where the reels sit).
 		const innerW = frameW * LS_FRAME_INNER_W;
 		const innerH = frameH * LS_FRAME_INNER_H;
-		// Reel PITCH fills the panel on each axis; symbol SIZE is the smaller of the two, scaled
-		// down a touch so cells have even gaps (as in the design). Board.svelte compensates each
-		// sprite's width/height so symbols keep their proportions despite the non-uniform pitch.
-		const boardScaleX = (innerW / BOARD_SIZES.width) * LS_PANEL_FILL;
-		const boardScaleY = (innerH / BOARD_SIZES.height) * LS_PANEL_FILL;
-		const boardScale = Math.min(boardScaleX, boardScaleY) * LS_SYMBOL_FILL;
+		// UNIFORM reel pitch: both axes use the tighter of the two fill scales so the columns aren't
+		// spread out across a wide panel (which left big horizontal gaps). Gaps are then even on both
+		// axes and controlled purely by LS_SYMBOL_FILL. The board centres in the panel.
+		const pitchX = (innerW / BOARD_SIZES.width) * LS_PANEL_FILL;
+		const pitchY = (innerH / BOARD_SIZES.height) * LS_PANEL_FILL;
+		const pitch = Math.min(pitchX, pitchY);
+		const boardScaleX = pitch;
+		const boardScaleY = pitch;
+		const boardScale = pitch * LS_SYMBOL_FILL;
 		return {
 			x: frameCx + (LS_FRAME_INNER_CX - 0.5) * frameW,
 			y: frameCy + (LS_FRAME_INNER_CY - 0.5) * frameH - BOARD_GRID_OFFSET_Y,
@@ -305,6 +312,50 @@ const resetBonusState = () => {
 	stateGame.paylineWins = [];
 };
 
+// On short/narrow desktop laptop canvases the board is enlarged (see getBoardViewportPadding), which
+// pushes the bonus side-rail (bonus symbol / multiplier / earned / FS counter) off the right edge.
+// This gives those panels a shrink factor + a leftward pull (board-local px) so they fit alongside the
+// bigger board. Returns identity everywhere else (normal desktop / portrait / landscape / tablet).
+const bonusRailAdjust = () => {
+	const cs = stateLayoutDerived.canvasSizes();
+	const isShortDesktop = stateLayoutDerived.layoutType() === 'desktop' && cs.height < 640;
+	if (!isShortDesktop) return { scale: 1, x: 0 };
+	// The rail panels are mounted OUTSIDE MainContainer, so BoardContainer positions them in raw
+	// canvas pixels: canvasX = bl.x + (localX - pivot.x) * boardScale. bl.x is a main-layout value
+	// (~half of 1422), which fits a wide 1920 canvas but lands off the right of a 1024 one. Re-anchor
+	// so the panel centre sits a fixed margin in from the canvas RIGHT edge. Returns the board-local x
+	// offset added to (boardW + 40) by the components.
+	const bl = boardLayout();
+	const scale = 0.65;
+	const RIGHT_MARGIN = 100; // canvas px from the right edge to the panel centre
+	const targetCanvasX = cs.width - RIGHT_MARGIN;
+	const targetLocalX = bl.pivot.x + (targetCanvasX - bl.x) / (bl.boardScale || 1);
+	return { scale, x: targetLocalX - (bl.width + 40) };
+};
+
+// Mobile-landscape bonus rail: a full-height column on the LEFT (symbol → multiplier → FS counter →
+// earned) stacked under the FOREST GANG logo, matching the Figma design. The panels render inside a
+// MainContainer in landscape, so these coordinates are in main-layout units. Tune the Y fractions and
+// column centre here.
+const landscapeRail = () => {
+	const main = stateLayoutDerived.mainLayout();
+	// Left edge — mirror the FreeSpinCounter card CSS (left: max(18px, calc(50% - 702px))).
+	const leftX = Math.max(18 / main.scale, main.width / 2 - 702 / main.scale);
+	// FS counter card width (SYMBOL_SIZE*2.0*0.96) — every rail panel scales its own frame to this so
+	// the symbol / multiplier / FS / earned boxes all render the same width.
+	const refWidth = SYMBOL_SIZE * 2.0 * 0.96;
+	const x = leftX + refWidth * 0.5; // column centre aligned to the FS card centre
+	const H = main.height;
+	return {
+		x,
+		refWidth,
+		symbolY: H * 0.22,
+		multiplierY: H * 0.39,
+		fsY: H * 0.56,
+		earnedY: H * 0.73,
+	};
+};
+
 const { enhanceBoard } = createEnhanceBoard();
 const enhancedBoard = enhanceBoard({ board: stateGame.board });
 
@@ -320,4 +371,6 @@ export const stateGameDerived = {
 	enhancedBoard,
 	getWinLevelDataByWinLevelAlias,
 	resetBonusState,
+	bonusRailAdjust,
+	landscapeRail,
 };

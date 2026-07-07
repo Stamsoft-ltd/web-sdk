@@ -11,6 +11,7 @@
 
 	import { Container, Sprite, Text } from 'pixi-svelte';
 	import { FadeContainer } from 'components-pixi';
+	import { MainContainer } from 'components-layout';
 	import { waitForTimeout } from 'utils-shared/wait';
 
 	import BoardContainer from './BoardContainer.svelte';
@@ -31,13 +32,22 @@
 	const NUM_Y = BOARD_W * 0.012;
 	const SLIDE = BOARD_W * 0.55;
 	const context = getContext();
-	const scale = $derived(context.stateLayoutDerived.isStacked() ? 1.28 : 1);
+	// Shrink + pull-in on short desktop laptop canvases so the rail fits alongside the enlarged board.
+	const railAdj = $derived(context.stateGameDerived.bonusRailAdjust());
+	// Mobile-landscape: the rail becomes a full-height LEFT column (rendered in MainContainer).
+	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+	const lsRail = $derived(context.stateGameDerived.landscapeRail());
+	const scale = $derived(
+		isLandscape
+			? lsRail.refWidth / BOARD_W
+			: (context.stateLayoutDerived.isStacked() ? 1.28 : 1) * railAdj.scale,
+	);
 	// Mirror BonusSymbolPanel geometry to place multiplier directly below it
 	const _symPadW = SYMBOL_W * 1.1;
 	const _symPadH = _symPadW * (420 / 624);
 	// Desktop: symbol pad center is at boardW + 40
 	const desktopPosition = $derived({
-		x: context.stateGameDerived.boardLayout().width + 40,
+		x: context.stateGameDerived.boardLayout().width + 40 + railAdj.x,
 		y: SYMBOL_SIZE * 0.3 + _symPadH * 0.5 + 18 + 30,
 	});
 	const portraitPosition = $derived({
@@ -45,46 +55,54 @@
 		y: -SYMBOL_SIZE * 0.6 + _symPadH * 0.5 + 18 + 30,
 	});
 	const position = $derived(
-		context.stateLayoutDerived.isStacked() ? portraitPosition : desktopPosition,
+		isLandscape
+			? { x: lsRail.x, y: lsRail.multiplierY }
+			: context.stateLayoutDerived.isStacked()
+				? portraitPosition
+				: desktopPosition,
 	);
 
+	// This is the "DEAL IT" bonus board (internally `superspin` — the UI labels are the reverse of the
+	// mode names). Its hand is PERSISTENT: it stays on screen for the whole bonus (red X at 1x) and
+	// animates (slide out, swap value, slide in) only when the global multiplier CHANGES.
 	let show = $state(false);
 	let multiplier = $state(1);
-	// Swap animation: the whole hand+board+number group slides out to the right
-	// (fading), the number is swapped while hidden, then it slides back in from
-	// the left. The number itself never animates independently — it rides the group.
 	let groupX = new Tween(0);
 	let groupAlpha = new Tween(1);
 
+	// Swap the displayed value with a slide-out / swap / slide-in — the board never hides.
 	const swapTo = async (next: number) => {
-		// pull the sign out to the right
 		groupX.set(SLIDE, { duration: 170, easing: cubicIn });
 		groupAlpha.set(0, { duration: 150 });
 		await waitForTimeout(170);
-		// swap while hidden, jump to the left
 		multiplier = next;
 		groupX.set(-SLIDE, { duration: 0 });
-		// bring the sign back in from the left with a slight overshoot
 		groupX.set(0, { duration: 280, easing: backOut });
 		groupAlpha.set(1, { duration: 190 });
 		await waitForTimeout(280);
 	};
 
 	context.eventEmitter.subscribeOnMount({
+		// Bonus start — show the board at 1x (red X) and keep it visible for the whole bonus.
 		globalMultiplierShow: () => {
 			show = true;
 			multiplier = 1;
 			groupX.set(0, { duration: 0 });
 			groupAlpha.set(1, { duration: 0 });
 		},
-		globalMultiplierHide: () => (show = false),
+		globalMultiplierHide: () => {
+			show = false;
+			multiplier = 1;
+			groupX.set(0, { duration: 0 });
+			groupAlpha.set(1, { duration: 0 });
+		},
 		globalMultiplierUpdate: async (emitterEvent) => {
 			const next = emitterEvent.multiplier;
-			if (next === multiplier) return;
+			if (next === multiplier) return; // no change → stay on the current value
 
 			context.eventEmitter.broadcast({
 				type: 'soundOnce',
-				name: next === 1 ? 'sfx_multiplier_reset' : 'sfx_multiplier_update',
+				name: next < multiplier ? 'sfx_multiplier_hand_reset' : 'sfx_multiplier_hand_up',
 			});
 
 			await swapTo(next);
@@ -92,10 +110,9 @@
 	});
 </script>
 
-<FadeContainer {show}>
-	<BoardContainer>
-		<!-- The whole hand+board+number group slides + fades on a multiplier change -->
-		<Container x={position.x + groupX.current} y={position.y} alpha={groupAlpha.current} {scale}>
+{#snippet panel()}
+	<!-- Persistent board; the group slides + fades when the multiplier value changes -->
+	<Container x={position.x + groupX.current} y={position.y} alpha={groupAlpha.current} {scale}>
 			<!-- Bear-hand board: panel centre (0.39/0.458) at the container origin, paw extends right -->
 			<Sprite key="multiplierHand" anchor={{ x: 0.39, y: 0.458 }} width={HAND_W} height={HAND_H} />
 
@@ -124,5 +141,14 @@
 				/>
 			{/if}
 		</Container>
-	</BoardContainer>
-</FadeContainer>
+{/snippet}
+
+{#if isLandscape}
+	<FadeContainer {show}>
+		<MainContainer>{@render panel()}</MainContainer>
+	</FadeContainer>
+{:else}
+	<FadeContainer {show}>
+		<BoardContainer>{@render panel()}</BoardContainer>
+	</FadeContainer>
+{/if}

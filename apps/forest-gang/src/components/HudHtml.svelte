@@ -5,6 +5,7 @@
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import { fitLabel } from '../lib/fitLabel';
 	import { forestStakeDerived } from '../state/forestStake.svelte';
 	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
 	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
@@ -426,7 +427,7 @@
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
-					<span class="pt-buy__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
+					<span class="pt-buy__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.58 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
 				</button>
 			</div>
 		</div>
@@ -435,22 +436,24 @@
 		<!-- Dedicated mobile-landscape HUD (Figma 2682-3639). Desktop markup below is untouched
 		     and hidden via CSS in landscape. -->
 		<div class="ls-hud">
-			<!-- Left rail: BUY BONUS + BALANCE (logo is drawn separately by GameLogoFrame) -->
+			<!-- Left rail: BALANCE only (logo is drawn separately by GameLogoFrame) -->
 			<div class="ls-left">
-				<button
-					class="ls-buy"
-					type="button"
-					disabled={isInBonus && !isAnyModeActive}
-					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
-					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
-				>
-					<span class="ls-buy__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
-				</button>
 				<div class="ls-balance">
 					<span class="ls-balance__label">{i18nDerived.balance()}</span>
 					<span class="ls-balance__value" use:fitText={formattedBalance}>{formattedBalance}</span>
 				</div>
 			</div>
+
+			<!-- BUY BONUS: bottom-centre, just left of the bet pad (Figma design) -->
+			<button
+				class="ls-buy"
+				type="button"
+				disabled={isInBonus && !isAnyModeActive}
+				onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
+				aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
+			>
+				<span class="ls-buy__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.6 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
+			</button>
 
 			<!-- Bottom-centre bet pad: − value + -->
 			<div class="ls-bet">
@@ -555,7 +558,7 @@
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
-					<span class="buy-btn__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
+					<span class="buy-btn__label" use:fitLabel={isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
 				</button>
 			</div>
 		</div>
@@ -1389,8 +1392,37 @@
 			display: none;
 		}
 
+		/* Laptop widths (e.g. 1024px): tighten padding/gaps only (keep the button/bar height) so the
+		   spin + turbo buttons don't overflow the right end of the bar. */
 		.hud-bottom {
 			width: min(calc(100% - 16px), 1120px);
+			/* Extra right padding nudges the spin/turbo/autoplay cluster in from the right end; taller
+			   top/bottom padding gives the wooden bar a bit more height. */
+			padding: 14px 48px 14px 16px;
+			gap: 8px;
+		}
+
+		.hud-controls {
+			gap: 12px;
+		}
+
+		/* Tighten the balance→bet gap: hug the balance value and trim the bet pill's side padding. */
+		.value-pill--balance {
+			width: 116px;
+			padding: 0 12px;
+		}
+		.value-fit {
+			max-width: 116px;
+		}
+		.value-pill--bet {
+			padding: 0 12px;
+		}
+
+		/* Shrink the focal spin button so it protrudes less above/below the bar (its negative margins
+		   mean this doesn't change the bar height). */
+		.spin-btn {
+			width: 100px;
+			height: 100px;
 		}
 	}
 
@@ -1484,6 +1516,9 @@
 		pointer-events: none;
 		z-index: 20;
 		font-family: 'Cinzel', serif;
+		/* How far the bottom controls (bet pad + BUY BONUS) drop toward the bottom edge. Both use
+		   this so they stay vertically centre-aligned with each other. */
+		--ls-drop: 4px;
 	}
 	.ls-hud button,
 	.ls-hud .ls-bet__value {
@@ -1501,33 +1536,46 @@
 		gap: 8px;
 	}
 	.ls-buy {
-		/* Round green leaf-corner disc (buy_bonus.png, 247×212) */
-		width: clamp(84px, 9vw, 124px);
-		aspect-ratio: 247 / 212;
+		/* Wide green desktop-style button (btn_bg_wide.png, 730×267), scaled down for landscape.
+		   Sits at the bottom centre, just left of the bet pad. */
+		position: absolute;
+		/* Anchor the button's bottom edge to the bet pad's vertical centre (pad: bottom 0, height
+		   clamp(70px,10.5vh,88px)), then translateY(50%) drops it by half its own height so the two
+		   centres line up regardless of the button's rendered height. */
+		bottom: calc(clamp(70px, 10.5vh, 88px) / 2 - var(--ls-drop));
+		left: 37%;
+		transform: translate(-50%, 50%);
+		box-sizing: border-box;
+		width: clamp(120px, 15vw, 168px);
+		height: auto;
+		aspect-ratio: 730 / 267;
 		border: 0;
-		padding: 0 0 6%;
+		padding: 0;
 		cursor: pointer;
-		background: var(--ls-buybonus) center / 100% 100% no-repeat;
-		display: grid;
-		place-items: center;
+		background: var(--buy-btn-bg) center / 100% 100% no-repeat;
 		transition: filter 0.12s ease, transform 0.12s ease;
 	}
-	.ls-buy:not(:disabled):hover { filter: brightness(1.1); transform: translateY(-1px); }
+	.ls-buy:not(:disabled):hover { filter: brightness(1.1); transform: translate(-50%, calc(50% - 1px)); }
 	.ls-buy:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
 	.ls-buy__label {
+		/* Centred on the green body: the button art has leaves along the bottom, so the body centre is
+		   above the element centre. Absolute % is relative to the button height → stable at any size. */
+		position: absolute;
+		left: 50%;
+		top: 43%;
+		transform: translate(-50%, -50%);
 		font-family: 'Poppins', sans-serif;
-		font-size: 0.62rem;
-		font-weight: 700;
-		line-height: 1.05;
-		letter-spacing: 0.02em;
-		max-width: 62%;
+		font-size: 0.82rem;
+		font-weight: 600;
+		line-height: 1;
+		letter-spacing: 0.03em;
+		white-space: nowrap;
 		text-align: center;
-		/* "BUY BONUS" wraps to two lines to fit the round disc */
 		background: linear-gradient(184deg, #ffd84a 10%, #ffa90e 60%, #d18005 95%);
 		background-clip: text;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+		filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.75));
 	}
 	.ls-balance {
 		display: flex;
@@ -1556,8 +1604,9 @@
 	/* Bottom-centre bet pad: − value + */
 	.ls-bet {
 		position: absolute;
-		left: 50%;
-		bottom: 0px;
+		/* Shifted right of centre; BUY BONUS sits to its left (Figma design). */
+		left: 61%;
+		bottom: calc(-1 * var(--ls-drop));
 		transform: translateX(-50%);
 		display: flex;
 		align-items: center;
@@ -1821,28 +1870,36 @@
 		text-shadow: 0 2px 4px rgba(0,0,0,0.7);
 	}
 
-	/* --- stats row: BALANCE · (− bet +) · BUY BONUS --- */
+	/* --- stats row: BALANCE · (− bet +) · BUY BONUS ---
+	   Centred as a group with equal gaps (not pinned to the edges). */
 	.pt-stats {
 		width: min(400px, 96vw);
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 6px;
+		justify-content: center;
+		gap: clamp(8px, 3.5vw, 18px);
 	}
+	/* Balance: transparent (no pad), centred label + gold value. */
 	.pt-balance {
-		display: flex; flex-direction: column; align-items: flex-start;
-		min-width: 0; flex: 1 1 0;
+		flex: 0 0 auto;
+		max-width: clamp(104px, 34vw, 140px);
+		display: flex; flex-direction: column;
+		align-items: center; justify-content: center;
+		gap: 1px;
+		min-width: 0;
 		overflow: hidden;
 	}
 	.pt-balance__label {
-		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 11px;
+		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 10px;
 		letter-spacing: 0.04em; white-space: nowrap;
-		color: #fff;
+		color: #f3e7cf;
 	}
 	.pt-balance__value {
-		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px;
-		white-space: nowrap; transform-origin: left center;
-		color: #fff;
+		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px;
+		white-space: nowrap; transform-origin: center;
+		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
+		-webkit-background-clip: text; background-clip: text;
+		-webkit-text-fill-color: transparent; color: transparent;
 	}
 
 	/* Bet pill: dark rounded pad with − value + (no BET label, per Figma) */
@@ -1876,7 +1933,7 @@
 	.pt-buy__label {
 		font-family: 'Cinzel', serif; font-weight: 900; font-size: 8.5px; line-height: 1.05;
 		letter-spacing: 0.01em; text-align: center;
-		max-width: 74%;
+		max-width: 66%;
 		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
 		-webkit-background-clip: text; background-clip: text;
 		-webkit-text-fill-color: transparent; color: transparent;

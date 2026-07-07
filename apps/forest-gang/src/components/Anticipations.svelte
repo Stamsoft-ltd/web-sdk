@@ -14,17 +14,17 @@
 {#if hasAnticipation}
 	<OnMount
 		onmount={() => {
-			context.eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_anticipation' });
+			context.eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_scatter_anticipation_loop' });
 			context.eventEmitter.broadcast({
 				type: 'soundFade',
-				name: 'sfx_anticipation',
+				name: 'sfx_scatter_anticipation_loop',
 				from: 0,
 				to: 1,
 				duration: SECOND,
 			});
 
 			return () => {
-				context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_anticipation' });
+				context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_scatter_anticipation_loop' });
 			};
 		}}
 	/>

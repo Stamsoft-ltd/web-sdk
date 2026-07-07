@@ -6,6 +6,7 @@
 <script lang="ts">
 	import { BitmapText, Container, Sprite } from 'pixi-svelte';
 	import { FadeContainer } from 'components-pixi';
+	import { MainContainer } from 'components-layout';
 
 	import BoardContainer from './BoardContainer.svelte';
 	import { getContext } from '../game/context';
@@ -25,13 +26,24 @@
 	// Hidden while the deer presenter is on screen; revealed once it finishes.
 	let presenterActive = $state(false);
 	const show = $derived(!!selectedSymbol && !!mode && !presenterActive);
-	const scale = $derived(context.stateLayoutDerived.isStacked() ? 1.28 : 1);
+	// Shrink + pull-in on short desktop laptop canvases so the rail fits alongside the enlarged board.
+	const railAdj = $derived(context.stateGameDerived.bonusRailAdjust());
+	// Mobile-landscape: the rail becomes a full-height LEFT column (rendered in MainContainer).
+	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+	const lsRail = $derived(context.stateGameDerived.landscapeRail());
+	const scale = $derived(
+		isLandscape
+			? lsRail.refWidth / PANEL_W
+			: (context.stateLayoutDerived.isStacked() ? 1.28 : 1) * railAdj.scale,
+	);
 
 	const boardW = $derived(context.stateGameDerived.boardLayout().width);
 	const position = $derived(
-		context.stateLayoutDerived.isStacked()
-			? { x: boardW - PANEL_W * 0.5 - 10, y: -SYMBOL_SIZE * 0.6 }
-			: { x: boardW + 40, y: SYMBOL_SIZE * 0.3 },
+		isLandscape
+			? { x: lsRail.x, y: lsRail.symbolY }
+			: context.stateLayoutDerived.isStacked()
+				? { x: boardW - PANEL_W * 0.5 - 10, y: -SYMBOL_SIZE * 0.6 }
+				: { x: boardW + 40 + railAdj.x, y: SYMBOL_SIZE * 0.3 },
 	);
 
 	const modeLabel = $derived(mode === 'superspin' ? 'ALL IN' : mode === 'feature' ? 'FEATURE' : 'DEAL IT');
@@ -75,7 +87,7 @@
 	const spriteKey = $derived(displaySymbol ? (spriteKeyByName[displaySymbol] ?? 'aTile') : 'aTile');
 </script>
 
-<BoardContainer>
+{#snippet panel()}
 	<FadeContainer {show}>
 		<Container
 			x={position.x}
@@ -99,4 +111,10 @@
 			{/if}
 		</Container>
 	</FadeContainer>
-</BoardContainer>
+{/snippet}
+
+{#if isLandscape}
+	<MainContainer>{@render panel()}</MainContainer>
+{:else}
+	<BoardContainer>{@render panel()}</BoardContainer>
+{/if}

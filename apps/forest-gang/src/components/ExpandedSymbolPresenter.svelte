@@ -30,7 +30,7 @@
 	const DEER_RATIO = $derived(isPortrait ? MOBILE_RATIO : 1087 / 1447);
 	// Empty-board interior centre + height as a fraction of the deer image.
 	const PLACEHOLDER = $derived(
-		isPortrait ? { cx: 0.486, cy: 0.585, h: 0.17 } : { cx: 0.488, cy: 0.622, h: 0.18 },
+		isPortrait ? { cx: 0.486, cy: 0.575, h: 0.1 } : { cx: 0.488, cy: 0.622, h: 0.18 },
 	);
 	const LETTER_ASPECT = $derived(isPortrait ? 1.34 : 1.17); // symbol sprites ~cell aspect
 
