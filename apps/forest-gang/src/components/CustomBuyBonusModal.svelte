@@ -19,6 +19,8 @@
 	const btnRoundBg   = ap('/assets/components/navbar/btn_bg_round.png');
 	const betBoxMobile = ap('/assets/components/navbar/bet_box_mobile.png'); // wooden bet-box bg (portrait)
 	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.png?v=20260624');
+	// Reuse the game-rules ("tutorials") round nav-button ring for the close button so they match.
+	const closeBtnBg = ap('/assets/components/info/nav_btn_bg.webp');
 
 	type Props = {
 		onclose: () => void;
@@ -93,7 +95,7 @@
 <!-- Panel -->
 <div class="panel" class:panel--portrait={isPortrait} role="dialog" aria-modal="true">
 
-	<button class="close-btn" type="button" onclick={props.onclose}>✕</button>
+	<button class="close-btn" type="button" style={`background-image:url('${closeBtnBg}')`} aria-label="Close" onclick={props.onclose}><span class="close-btn__x">✕</span></button>
 
 	<h2 class="title">{i18nDerived.buyBonus()}</h2>
 
@@ -241,16 +243,23 @@
 
 	.close-btn {
 		position: absolute; top: 6px; right: 10px;
-		width: 46px; height: 46px; border-radius: 50%;
-		background: rgba(12,8,3,0.93);
-		border: 2px solid #d98503;
-		box-shadow: 0 0 0 1px rgba(210,175,55,0.25), 0 4px 14px rgba(0,0,0,0.75);
-		color: rgba(255,255,255,0.85); font-size: 1rem;
+		/* Same round ring asset + gold ✕ as the game-rules ("tutorials") close button, at the same
+		   footprint (~40px) — the old CSS disc read too big/heavy. */
+		width: 40px; height: 40px;
+		border: none; padding: 0;
+		background-color: transparent;
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
 		display: flex; align-items: center; justify-content: center;
-		cursor: pointer; padding: 0;
-		transition: background 0.2s;
+		cursor: pointer;
+		transition: transform 0.12s ease;
 	}
-	.close-btn:hover { background: rgba(30,20,8,0.97); color: #fff; }
+	.close-btn:hover { transform: scale(1.06); }
+	.close-btn__x {
+		font-family: 'Cinzel', serif; font-weight: 900; font-size: 1rem; line-height: 1;
+		background-image: linear-gradient(180deg, #ffa90e 15%, #ee960b 70%, #d18005 93%);
+		background-clip: text; -webkit-background-clip: text; color: transparent;
+	}
 
 	/* One row of 4 cards with gaps between them (Figma node 2349-2074) */
 	.grid {
