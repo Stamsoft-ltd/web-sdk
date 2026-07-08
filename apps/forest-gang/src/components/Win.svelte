@@ -83,7 +83,7 @@
 		{@const hasBoardAnimation = !!winLevelData?.animation}
 		{@const duration = (stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation ? Math.min(winLevelData.presentDuration, 400) : winLevelData.presentDuration}
 		{#key oncomplete}
-		<WinCountUpProvider {amount} {duration} oncomplete={() => { if (!hasBoardAnimation && !boardClickHandled) { boardClickHandled = true; oncomplete(); } }}>
+		<WinCountUpProvider {amount} {duration} oncomplete={() => { context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' }); if (!hasBoardAnimation && !boardClickHandled) { boardClickHandled = true; oncomplete(); } }}>
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
 
 				{#if isBigWin}

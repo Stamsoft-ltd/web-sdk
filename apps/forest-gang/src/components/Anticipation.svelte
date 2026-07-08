@@ -68,7 +68,7 @@
 		trackIndex={0}
 		{animationName}
 		loop={animationName === 'anticipation_loop'}
-		timeScale={speedUp ? 4 : 1}
+		timeScale={speedUp ? 4 : 0.5}
 		listener={{
 			complete: () => {
 				if (animationName === 'anticipation_intro') {

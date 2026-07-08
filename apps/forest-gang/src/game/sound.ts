@@ -56,6 +56,7 @@ export type SoundEffectName =
 	// --- wins ---
 	| 'sfx_payline_win' //      winning payline animation (looped while the animation runs)
 	| 'sfx_win_coins_loop' //   coins counting up on the win screen (looped)
+	| 'sfx_win_count_end' //    win amount count-up finishes
 	| 'sfx_win_popup_small' //  SWEET / WILD / EPIC win popup
 	| 'sfx_win_popup_big' //    MYTHIC / LEGENDARY win popup
 	| 'sfx_win_popup_max' //    MAX WIN popup (25000x)
