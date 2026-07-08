@@ -1,8 +1,15 @@
 <script lang="ts">
 	import { stateBet, stateUi } from 'state-shared';
 
-	type Props = { onPlay: () => void; onEnd: () => void };
+	type Props = { onPlay: () => void; onEnd: () => Promise<void> };
 	const props: Props = $props();
+
+	let ending = $state(false);
+	const handleEnd = async () => {
+		ending = true;
+		await props.onEnd();
+		ending = false;
+	};
 
 	const mode = $derived(stateBet.betToResume?.mode ?? '');
 	const modeLabel = $derived(mode === 'SUPER' ? 'All In' : mode === 'BONUS' ? 'Deal It' : 'Bonus');
@@ -16,8 +23,8 @@
 			<button class="btn btn-play" onclick={props.onPlay}>
 				▶ Play Round
 			</button>
-			<button class="btn btn-end" onclick={props.onEnd}>
-				✕ End Round
+			<button class="btn btn-end" onclick={handleEnd} disabled={ending}>
+				{ending ? '…' : '✕ End Round'}
 			</button>
 		</div>
 	</div>

@@ -30,8 +30,8 @@
 	import HudHtml from './HudHtml.svelte';
 	import StakeSync from './StakeSync.svelte';
 	import ReplayHud from './replay/ReplayHud.svelte';
-	import MagnetStatus from './MagnetStatus.svelte';
 	import SplashIntro from './SplashIntro.svelte';
+	import Anticipations from './Anticipations.svelte';
 
 	const context = getContext();
 
@@ -138,6 +138,7 @@
 
 				<MainContainer>
 					<Board />
+					<Anticipations />
 				</MainContainer>
 
 				<GameLogoFrame />
@@ -166,7 +167,6 @@
 		{/if}
 
 		{#if !context.stateLayout.showLoadingScreen}
-			<MagnetStatus />
 			<HudHtml />
 			<ReplayHud />
 			<PendingRoundRecovery />

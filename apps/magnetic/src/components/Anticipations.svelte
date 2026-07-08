@@ -6,8 +6,9 @@
 	import Anticipation from './Anticipation.svelte';
 
 	const context = getContext();
+	// Anticipation overlays track the spinBoard reels (active during boardMode === 'spin')
 	const hasAnticipation = $derived(
-		context.stateGame.board.some((reel) => reel.reelState.anticipating),
+		context.stateGame.spinBoard.some((reel) => reel.reelState.anticipating),
 	);
 </script>
 
@@ -30,7 +31,7 @@
 	/>
 {/if}
 
-{#each context.stateGame.board as reel}
+{#each context.stateGame.spinBoard as reel}
 	{#if reel.reelState.anticipating}
 		<Anticipation {reel} oncomplete={() => (reel.reelState.anticipating = false)} />
 	{/if}

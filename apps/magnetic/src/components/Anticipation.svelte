@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { Container, SpineProvider, SpineTrack } from 'pixi-svelte';
-	import type { Reel } from '../game/stateGame.svelte';
+	import type { SpinBoardReel } from '../game/stateGame.svelte';
 	import { SYMBOL_W, SYMBOL_SIZE, BOARD_SIZES, BOARD_GRID_OFFSET_Y } from '../game/constants';
 	import { getContext } from '../game/context';
 
 	type Props = {
-		reel: Reel;
+		reel: SpinBoardReel;
 		oncomplete: () => void;
 	};
 
@@ -15,7 +16,14 @@
 	type AnimationName = 'anticipation_intro' | 'anticipation_loop' | 'anticipation_out';
 
 	let animationName = $state<AnimationName>('anticipation_intro');
-	let speedUp = $state(false);
+
+	// If skip was already pressed for a previous reel's anticipation, self-terminate immediately
+	onMount(() => {
+		if (context.stateGame.anticipationSkipped) {
+			props.reel.stop();
+			props.oncomplete();
+		}
+	});
 
 	$effect(() => {
 		if (props.reel.reelState.motion === 'stopped') {
@@ -24,8 +32,9 @@
 	});
 
 	context.eventEmitter.subscribeOnMount({
-		// Press during anticipation: stop reel and skip out animation entirely
+		// Press during anticipation: stop reel, flag so subsequent overlays self-skip
 		stopButtonClick: () => {
+			context.stateGame.anticipationSkipped = true;
 			props.reel.stop();
 			props.oncomplete();
 		},
@@ -45,7 +54,7 @@
 		trackIndex={0}
 		{animationName}
 		loop={animationName === 'anticipation_loop'}
-		timeScale={speedUp ? 4 : 1}
+		timeScale={1}
 		listener={{
 			complete: () => {
 				if (animationName === 'anticipation_intro') {

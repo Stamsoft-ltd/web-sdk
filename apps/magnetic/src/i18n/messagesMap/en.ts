@@ -69,7 +69,7 @@ export default {
 	'RULE SECTION DISCLAIMER': 'GENERAL DISCLAIMER',
 	'RULE GAME TITLE': 'MAGNETIC',
 	'RULE GAME TEXT': 'Magnetic is a 7x7 cluster-pay slot. Wins form when 5 or more matching symbols touch horizontally or vertically. Diagonal connections do not count.',
-	'RULE WILD TITLE': 'MAGNET',
+	'RULE WILD TITLE': 'WILD',
 	'RULE WILD TEXT': 'When a magnet lands it picks one visible symbol. Only that symbol can keep growing during the active magnet series.',
 	'RULE SCATTER TITLE': 'SCATTER',
 	'RULE SCATTER TEXT': '3 scatters trigger Drop-O-Magnet. 4 scatters trigger Mega Chain. Scatter does not pay by itself.',

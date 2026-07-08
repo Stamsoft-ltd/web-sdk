@@ -21,7 +21,6 @@ const DESKTOP_STATIC_KEYS: Record<SymbolName, string> = {
 	L3: 'kTile',
 	L4: 'qTile',
 	WILD: 'wildTile',
-	MAGNET: 'magnetTile',
 	SCATTER: 'scatterCustom',
 };
 
@@ -44,7 +43,6 @@ const DESKTOP_WIN_KEYS: Record<SymbolName, string> = {
 	L3: 'kWinTile',
 	L4: 'qWinTile',
 	WILD: 'wildWinTile',
-	MAGNET: 'magnetWinTile',
 	SCATTER: 'scatterWin',
 };
 
@@ -62,6 +60,8 @@ const MULTIPLIER_WILD_KEYS: Record<number, string> = {
 	3: 'wild3xTile',
 	4: 'wild4xTile',
 	5: 'wild5xTile',
+	7: 'wild7xTile',
+	9: 'wild9xTile',
 	10: 'wild10xTile',
 };
 
@@ -70,6 +70,8 @@ const MULTIPLIER_WILD_KEYS_MOBILE: Record<number, string> = {
 	3: 'wild3xTileMobile',
 	4: 'wild4xTileMobile',
 	5: 'wild5xTileMobile',
+	7: 'wild7xTileMobile',
+	9: 'wild9xTileMobile',
 	10: 'wild10xTileMobile',
 };
 
@@ -88,8 +90,9 @@ export const getSpriteKeyByName = ({
 	const mobile = useMobileVariant(name);
 
 	if (name === 'WILD' && multiplier && multiplier > 1) {
-		const normalizedMultiplier = multiplier > 10 ? 10 : multiplier;
-		return (mobile ? MULTIPLIER_WILD_KEYS_MOBILE : MULTIPLIER_WILD_KEYS)[normalizedMultiplier]
+		const keys = Object.keys(MULTIPLIER_WILD_KEYS).map(Number).sort((a, b) => a - b);
+		const snapped = keys.reduce((prev, cur) => (Math.abs(cur - multiplier) < Math.abs(prev - multiplier) ? cur : prev));
+		return (mobile ? MULTIPLIER_WILD_KEYS_MOBILE : MULTIPLIER_WILD_KEYS)[snapped]
 			?? (mobile ? 'wild10xTileMobile' : 'wild10xTile');
 	}
 
@@ -145,8 +148,7 @@ export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; stat
 };
 
 export const shouldShowMultiplierText = (rawSymbol: RawSymbol) =>
-	(rawSymbol.name === 'WILD' && !!rawSymbol.multiplier && rawSymbol.multiplier > 10)
-	|| (rawSymbol.name === 'MAGNET' && !!rawSymbol.multiplier && rawSymbol.multiplier > 1);
+	rawSymbol.wild && !!rawSymbol.multiplier && rawSymbol.multiplier > 1;
 
 export const { playBookEvent, playBookEvents } = createPlayBookUtils({ bookEventHandlerMap });
 

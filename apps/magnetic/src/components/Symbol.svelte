@@ -5,7 +5,6 @@
 	import { getSymbolInfo } from '../game/utils';
 	import type { SymbolState, RawSymbol } from '../game/types';
 	import { getContext } from '../game/context';
-	import { BitmapText } from 'pixi-svelte';
 
 	type Props = {
 		x?: number;
@@ -49,19 +48,6 @@
 					context.eventEmitter?.broadcast({ type: 'soundOnce', name: 'sfx_wild_explode' });
 				}
 			},
-		}}
-	/>
-{/if}
-
-{#if props.rawSymbol.multiplier}
-	<BitmapText
-		anchor={0.5}
-		x={props.x}
-		y={props.y}
-		text={`${props.rawSymbol.multiplier}X`}
-		style={{
-			fontFamily: 'gold',
-			fontSize: 50,
 		}}
 	/>
 {/if}

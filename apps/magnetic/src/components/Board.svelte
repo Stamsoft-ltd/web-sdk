@@ -72,6 +72,35 @@
 					/>
 				{/each}
 			{/each}
+
+			<!-- Locked cluster cells float above spinning reels (superspin carry) -->
+			{#each flatCells.filter((c) => c.locked) as cell (cell.key)}
+				{@const x = getX(cell.position.reel)}
+				{@const y = cell.displayY.current}
+				{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: 'static' })}
+				{@const width = SYMBOL_W * symbolInfo.sizeRatios.width}
+				{@const height = SYMBOL_H * symbolInfo.sizeRatios.height}
+				<Graphics
+					draw={(graphics) => {
+						graphics.clear();
+						graphics.beginFill(0xffd76a, 0.16);
+						graphics.drawRoundedRect(x - SYMBOL_W * 0.43, y - SYMBOL_H * 0.43, SYMBOL_W * 0.86, SYMBOL_H * 0.86, 16);
+						graphics.endFill();
+						graphics.lineStyle({ width: 4, color: 0xf6cb52, alpha: 0.95 });
+						graphics.drawRoundedRect(x - SYMBOL_W * 0.44, y - SYMBOL_H * 0.44, SYMBOL_W * 0.88, SYMBOL_H * 0.88, 14);
+					}}
+				/>
+				<Sprite
+					key={symbolInfo.assetKey}
+					{x}
+					{y}
+					anchor={{ x: 0.5, y: 0.5 }}
+					{width}
+					{height}
+					alpha={1}
+					tint={0xfff6d5}
+				/>
+			{/each}
 		{:else}
 			<!-- ── Settle/respin mode: render per-cell board with decorations ── -->
 

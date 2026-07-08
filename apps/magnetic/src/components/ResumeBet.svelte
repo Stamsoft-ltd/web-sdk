@@ -1,14 +1,16 @@
 <script lang="ts">
-	import { stateBet, stateUi } from 'state-shared';
+	import { stateBet, stateUi, stateUrlDerived } from 'state-shared';
+	import { requestEndRound } from 'rgs-requests';
+	import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 	import { getContext } from '../game/context';
 	import { onMount } from 'svelte';
 	import { logMagneticDiagnostic } from '../utils/magneticDiagnostics';
 	import BonusResumeModal from './BonusResumeModal.svelte';
-	import { stateGame } from '../game/stateGame.svelte';
 
 	const context = getContext();
 
 	let showModal = $state(false);
+	let endingRound = $state(false);
 
 	const isBonusMode = (mode?: string) => mode === 'SUPER' || mode === 'BONUS';
 
@@ -21,15 +23,24 @@
 		context.eventEmitter.broadcast({ type: 'resumeBet' });
 	};
 
-	const doEnd = () => {
-		showModal = false;
-		logMagneticDiagnostic('info', 'pending_round_ended');
-		if (stateBet.betToResume?.mode) {
-			stateBet.activeBetModeKey = stateBet.betToResume.mode;
+	const doEnd = async () => {
+		if (endingRound) return;
+		endingRound = true;
+		logMagneticDiagnostic('info', 'pending_round_ended', { mode: stateBet.betToResume?.mode });
+		try {
+			const data = await requestEndRound({
+				sessionID: stateUrlDerived.sessionID(),
+				rgsUrl: stateUrlDerived.rgsUrl(),
+			});
+			if (data?.balance?.amount !== undefined) {
+				stateBet.balanceAmount = data.balance.amount / API_AMOUNT_MULTIPLIER;
+			}
+		} catch (err) {
+			console.error('[ResumeBet] end round failed', err);
 		}
-		// Signal onPlayGame to skip animation — xstate still flows to endGame which credits balance
-		stateGame.endRoundOnly = true;
-		context.eventEmitter.broadcast({ type: 'resumeBet' });
+		stateBet.betToResume = null;
+		showModal = false;
+		endingRound = false;
 	};
 
 	onMount(() => {

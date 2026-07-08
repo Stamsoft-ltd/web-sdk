@@ -3526,8 +3526,9 @@ export default [
               "name": "Q"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 2
             },
             {
@@ -4801,8 +4802,9 @@ export default [
               "name": "J"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 3
             },
             {
@@ -5243,8 +5245,9 @@ export default [
               "name": "J"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 2
             },
             {
@@ -5683,8 +5686,9 @@ export default [
               "name": "J"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 2
             },
             {
@@ -5792,7 +5796,7 @@ export default [
               "name": "J"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             }
           ]
@@ -6193,7 +6197,7 @@ export default [
               "name": "J"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -7427,8 +7431,9 @@ export default [
               "name": "J"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 3
             },
             {
@@ -9745,7 +9750,7 @@ export default [
           ],
           [
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -10160,7 +10165,7 @@ export default [
               "name": "K"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -11017,8 +11022,9 @@ export default [
               "name": "K"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 2
             },
             {
@@ -11481,7 +11487,7 @@ export default [
               "name": "K"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -16714,8 +16720,9 @@ export default [
               "name": "Q"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 3
             },
             {
@@ -17087,7 +17094,7 @@ export default [
               "name": "A"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -17352,7 +17359,7 @@ export default [
               "name": "A"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -18972,7 +18979,7 @@ export default [
               "name": "BEAR"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -20143,8 +20150,9 @@ export default [
           ],
           [
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 2
             },
             {
@@ -21633,7 +21641,7 @@ export default [
               "name": "BEAR"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -21703,8 +21711,9 @@ export default [
               "name": "T"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 3
             },
             {
@@ -22401,8 +22410,9 @@ export default [
               "name": "FOX"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 3
             },
             {
@@ -22837,8 +22847,9 @@ export default [
               "name": "BEAR"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 2
             },
             {
@@ -23721,7 +23732,7 @@ export default [
           ],
           [
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -24456,8 +24467,9 @@ export default [
               "name": "BEAR"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 3
             }
           ],
@@ -27466,7 +27478,7 @@ export default [
               "name": "WOLF"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -27513,7 +27525,7 @@ export default [
               "name": "J"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -27862,7 +27874,7 @@ export default [
               "name": "T"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -31795,7 +31807,7 @@ export default [
               "name": "T"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -32137,7 +32149,7 @@ export default [
               "name": "RABBIT"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -36757,8 +36769,9 @@ export default [
           ],
           [
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 3
             },
             {
@@ -38470,7 +38483,7 @@ export default [
               "name": "RABBIT"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             },
             {
@@ -38502,8 +38515,9 @@ export default [
           ],
           [
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 2
             },
             {
@@ -38940,8 +38954,9 @@ export default [
           ],
           [
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 4
             },
             {
@@ -41122,8 +41137,9 @@ export default [
               "name": "RABBIT"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 2
             },
             {
@@ -41265,7 +41281,7 @@ export default [
               "name": "RABBIT"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             }
           ]
@@ -41710,8 +41726,9 @@ export default [
               "name": "RABBIT"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 2
             }
           ]
@@ -42152,7 +42169,7 @@ export default [
               "name": "RABBIT"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             }
           ]
@@ -45809,7 +45826,7 @@ export default [
               "name": "RABBIT"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             }
           ]
@@ -47624,8 +47641,9 @@ export default [
               "name": "RABBIT"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 2
             }
           ]
@@ -51282,7 +51300,7 @@ export default [
               "name": "RABBIT"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true
             }
           ]
@@ -53097,8 +53115,9 @@ export default [
               "name": "RABBIT"
             },
             {
-              "name": "MAGNET",
+              "name": "WILD",
               "magnet": true,
+              "wild": true,
               "multiplier": 4
             }
           ]

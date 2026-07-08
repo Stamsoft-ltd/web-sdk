@@ -60,7 +60,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.awaitingFirstReveal = false;
 		stateGame.pendingStop = false;
 		stateGame.tempMultiplier = null;
-		await stateGameDerived.applyReveal({ rawBoard: bookEvent.board, gameType: bookEvent.gameType });
+		stateGame.hasAnticipationPending = !!hasAnticipation;
+		stateGame.anticipationSkipped = false;
+		await stateGameDerived.applyReveal({ rawBoard: bookEvent.board, gameType: bookEvent.gameType, anticipation: bookEvent.anticipation });
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
 	},
 	magnetActivated: async (bookEvent: BookEventOfType<'magnetActivated'>) => {
@@ -77,6 +79,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 	},
 	clusterSeriesUpdate: async (bookEvent: BookEventOfType<'clusterSeriesUpdate'>) => {
+		// Fly pulled symbols to their exact final cluster positions (initial pull only).
+		await stateGameDerived.animateClusterFormation({
+			series: bookEvent.series,
+			magnetTargetSymbol: bookEvent.magnetTargetSymbol,
+		});
 		stateGameDerived.setSeriesSnapshots({
 			series: bookEvent.series,
 			magnetTargetSymbol: bookEvent.magnetTargetSymbol,

@@ -35,12 +35,12 @@ const baseRows: RawSymbol[][] = [
 	['L2', 'L3', 'L4', 'H1', 'H2', 'H3', 'H4'],
 	['L1', 'L2', 'L3', 'L4', 'H1', 'H2', 'H3'],
 	['H4', 'L1', 'L2', 'L3', 'L4', 'WILD', 'H1'],
-	['H3', 'H4', 'L1', 'L2', 'L3', 'L4', 'MAGNET'],
+	['H3', 'H4', 'L1', 'L2', 'L3', 'L4', 'L4'],
 ].map((row) =>
 	row.map((name) => ({
 		name: name as SymbolName,
 		wild: name === 'WILD',
-		magnet: name === 'MAGNET',
+		magnet: false,
 		scatter: name === 'SCATTER',
 	})),
 );
@@ -88,6 +88,15 @@ export const SPIN_OPTIONS_TURBO = {
 	reelSpinSpeed: 7,
 	reelBounceSizeMulti: 0.1,
 	reelSpinDelay: 40,
+};
+
+// Anticipation: same speed as DEFAULT but spins much longer (higher padding multiplier)
+export const SPIN_OPTIONS_ANTICIPATED = {
+	...SPIN_OPTIONS_SHARED,
+	reelPreSpinSpeed: 2,
+	reelSpinSpeed: 3,
+	reelBounceSizeMulti: 0.3,
+	reelPaddingMultiplierAnticipated: 16,
 };
 
 export const BOARD_MOTION_DEFAULT = {
