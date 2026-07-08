@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 
 	import { EnablePixiExtension } from 'components-pixi';
 	import { EnableHotkey } from 'components-shared';
@@ -30,8 +31,15 @@
 	import StakeSync from './StakeSync.svelte';
 	import ReplayHud from './replay/ReplayHud.svelte';
 	import MagnetStatus from './MagnetStatus.svelte';
+	import SplashIntro from './SplashIntro.svelte';
 
 	const context = getContext();
+
+	// Splash intro overlay: shown once assets have loaded, dismissed on first press. The loading
+	// screen defers its `proceed` callback to us via `oncanproceed` so nothing starts until pressed.
+	let splashIntroVisible = $state(false);
+	let splashPressHandler = $state<(() => void) | undefined>(undefined);
+
 	const heroArt = './assets/components/backgrounds/visual_v2.png';
 	const bonusArt = './assets/components/backgrounds/splash.jpg';
 	const scatterArt = './assets/components/symbols/scatter.png';
@@ -113,7 +121,13 @@
 			<Background />
 
 			{#if context.stateLayout.showLoadingScreen}
-				<LoadingScreen onloaded={() => (context.stateLayout.showLoadingScreen = false)} />
+				<LoadingScreen
+					onloaded={() => (context.stateLayout.showLoadingScreen = false)}
+					oncanproceed={(handler) => {
+						splashPressHandler = handler;
+						splashIntroVisible = true;
+					}}
+				/>
 			{:else}
 				<ResumeBet />
 				<Sound />
@@ -139,6 +153,17 @@
 				<Transition />
 			{/if}
 		</App>
+
+		{#if splashIntroVisible}
+			<div transition:fade={{ duration: 350 }} style="position:absolute;inset:0;z-index:10;">
+				<SplashIntro
+					onpress={() => {
+						splashIntroVisible = false;
+						splashPressHandler?.();
+					}}
+				/>
+			</div>
+		{/if}
 
 		{#if !context.stateLayout.showLoadingScreen}
 			<MagnetStatus />

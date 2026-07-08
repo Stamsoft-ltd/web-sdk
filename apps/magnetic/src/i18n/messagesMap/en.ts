@@ -2,6 +2,15 @@ export default {
 	HOME: 'HOME',
 	'NOT TRANSLATED': 'NOT TRANSLATED',
 	'GAME TITLE': 'MAGNETIC',
+
+	// Splash intro feature boards (see SplashIntro.svelte). The big multiplier values are
+	// set as constants in the component; only the surrounding copy is translated here.
+	'SPLASH EXP TITLE': 'EXPANDING\nREELS',
+	'SPLASH MEGA TITLE': 'MEGA CHAIN',
+	'SPLASH EPIC TITLE': 'EPIC WINS',
+	'SPLASH WITH UP TO': 'with up to',
+	'SPLASH MULTIPLIER': 'multiplier',
+	'SPLASH PRESS': 'PRESS TO CONTINUE',
 	BALANCE: 'BALANCE',
 	BET: 'BET',
 	'TOTAL COST': 'TOTAL COST',
