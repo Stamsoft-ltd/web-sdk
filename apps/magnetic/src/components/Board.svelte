@@ -9,7 +9,7 @@
 </script>
 
 <script lang="ts">
-	import { BitmapText, Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
+	import { BitmapText, Container, Graphics, Sprite } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
 	import { BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, SYMBOL_H, SYMBOL_W } from '../game/constants';
@@ -54,6 +54,21 @@
 				graphics.endFill();
 			}}
 		/>
+
+		<!-- Stationary box grid — the cell boxes never move; only the symbols roll inside them.
+		     Winning cells (settle mode) swap to the win-state box. -->
+		{#each board as reel, reelIndex (reelIndex)}
+			{#each reel as cell, rowIndex (cell.key)}
+				<Sprite
+					key={boardMode !== 'spin' && (cell.highlighted || cell.locked) ? 'cellBoxWin' : 'cellBox'}
+					x={getX(reelIndex)}
+					y={getStaticY(rowIndex)}
+					anchor={0.5}
+					width={SYMBOL_W}
+					height={SYMBOL_H}
+				/>
+			{/each}
+		{/each}
 
 		{#if boardMode === 'spin'}
 			<!-- ── Spin mode: render from createReelForSpinning reels ── -->
@@ -103,20 +118,6 @@
 			{/each}
 		{:else}
 			<!-- ── Settle/respin mode: render per-cell board with decorations ── -->
-
-			<!-- Static background grid cells -->
-			{#each board as reel, reelIndex (reelIndex)}
-				{#each reel as cell, rowIndex (cell.key)}
-					<Rectangle
-						x={getX(reelIndex) - SYMBOL_W * 0.5}
-						y={getStaticY(rowIndex) - SYMBOL_H * 0.5}
-						width={SYMBOL_W}
-						height={SYMBOL_H}
-						backgroundColor={cell.locked ? 0x102433 : 0x0b0f18}
-						alpha={cell.locked ? 0.3 : context.stateGame.boardSpinning ? 0.18 : 0.1}
-					/>
-				{/each}
-			{/each}
 
 			<!-- Symbols — locked cells render last so they appear on top -->
 			{#each orderedCells as cell (cell.key)}

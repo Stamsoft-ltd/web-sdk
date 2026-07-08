@@ -202,6 +202,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			eventEmitter.broadcast({ type: 'freeSpinOutroHide' });
 			eventEmitter.broadcast({ type: 'freeSpinCounterHide' });
 			stateUi.freeSpinCounterShow = false;
+			// The win screen has ended — drop the bonus immediately so the magnetic capsule column and
+			// bonus background disappear now (returning to the default game) instead of lingering until
+			// the next base spin. The wipe below then reveals the base game.
+			stateGameDerived.resetBonusState();
 			await eventEmitter.broadcastAsync({ type: 'transition' });
 			await eventEmitter.broadcastAsync({ type: 'uiShow' });
 			await eventEmitter.broadcastAsync({ type: 'drawerUnfold' });

@@ -5,6 +5,15 @@
 
 	const context = getContext();
 	const BACKGROUND_ASPECT = 1920 / 1080;
+	// Only the two special bonuses swap the background: 4th bonus (SUPER = superspin) -> bgSuper,
+	// 3rd bonus (BONUS = freegame) -> bgBonus. Everything else (base / chance / feature) -> default.
+	const bgKey = $derived(
+		context.stateGame.bonusMode === 'superspin'
+			? 'bgSuper'
+			: context.stateGame.bonusMode === 'freegame'
+				? 'bgBonus'
+				: 'bgBase',
+	);
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 	const cover = $derived.by(() => {
 		const width = canvas.width;
@@ -20,7 +29,7 @@
 </script>
 
 <Sprite
-	key="bgBase"
+	key={bgKey}
 	x={canvas.width * 0.5}
 	y={canvas.height * 0.5}
 	anchor={0.5}

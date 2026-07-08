@@ -26,7 +26,7 @@
 	// Button backgrounds (icon-less frames) — icons are layered on top in markup
 	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.png'); // (unused; utility buttons are CSS circles)
 	const btnSpinBg = ap('/assets/components/navbar/btn_spin.png'); // blue round — spin
-	const btnSpinEmpty = ap('/assets/components/navbar/btn_spin_empty.png'); // no-arrow disabled state (during a spin)
+	const btnSpinStop = ap('/assets/components/navbar/btn_spin_stop.png'); // stop/disabled state (during a spin) — square baked in
 	const btnWideBg = ap('/assets/components/navbar/btn_buy_bonus.png'); // blue pill — buy bonus
 
 	// Round icon-buttons — each PNG is a COMPLETE button (dark disc + cyan ring + icon baked in),
@@ -44,7 +44,7 @@
 	const iconTurbo = ap('/assets/components/navbar/icons/turbo.png');
 	const iconTurbo1 = ap('/assets/components/navbar/icons/turbo1.png');
 	const iconTurbo3 = ap('/assets/components/navbar/icons/turbo3.png');
-	const iconCoins = ap('/assets/hud/icon-coins.png');
+	const iconCoins = ap('/assets/components/navbar/coins.png');
 
 	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
 	const hudFrame = ap('/assets/components/frames/hud_frame.png');
@@ -281,7 +281,7 @@
 <div
 	class="hud-shell"
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-empty-bg:url('${btnSpinEmpty}')`}
+	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-stop-bg:url('${btnSpinStop}')`}
 >
 	<div class="hud-bottom">
 		<div class="hud-left">
@@ -314,16 +314,18 @@
 					<span class="buy-btn__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
 				</button>
 			</div>
-		</div>
 
-		<div class="hud-stats">
 			<div class="value-pill value-pill--balance">
 				<div class="label label--balance">
 					<span class="label-text">{i18nDerived.balance()}</span>
 				</div>
 				<span class="value">{formattedBalance}</span>
 			</div>
+		</div>
 
+		<div class="hud-divider" aria-hidden="true"></div>
+
+		<div class="hud-controls">
 			<div
 				class="value-pill value-pill--bet bet-pill"
 				role="button"
@@ -339,26 +341,14 @@
 					<span class="value" class:value--feature={isAnyModeActive}>{formattedBet}</span>
 				</div>
 			</div>
-		</div>
 
-		<div class="hud-controls">
 			<div class="stepper">
 				{#if isLandscapeMobile}
-					<button
-						class="nav-btn nav-btn--framed"
-						type="button"
-						onclick={openRules}
-						aria-label="Game rules"
-					>
+					<button class="nav-btn nav-btn--framed" type="button" onclick={openRules} aria-label="Game rules">
 						<img class="nav-icon" src={iconMenu} alt="menu" />
 					</button>
-					<button
-						class="nav-btn nav-btn--framed"
-						type="button"
-						onclick={toggleSound}
-						aria-label="Sound"
-					>
-						<img class="nav-icon" src={iconSound} alt="sound" class:is-muted={isMuted} />
+					<button class="nav-btn nav-btn--framed" type="button" onclick={toggleSound} aria-label="Sound">
+						<img class="nav-icon" src={isMuted ? iconMute : iconSound} alt="sound" />
 					</button>
 				{/if}
 				<button
@@ -406,8 +396,6 @@
 							aria-label={`Remaining auto spins ${autoSpinsRemainingText}`}
 							>{autoSpinsRemainingText}</span
 						>
-					{:else if isBusy}
-						<span class="spin-btn__square" aria-hidden="true"></span>
 					{/if}
 				</button>
 			</div>
@@ -552,10 +540,10 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 10px;
+		gap: 14px;
 		padding: 8px 24px;
-		/* Lift enough that the vertically-centred spin's lower protrusion clears the canvas edge. */
-		margin-bottom: 32px;
+		/* Sit low; just enough lift that the centred spin's lower edge clears the canvas edge. */
+		margin-bottom: 20px;
 		background: transparent;
 		border-radius: 22px;
 		box-shadow: none;
@@ -595,16 +583,23 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0;
+		gap: 12px;
 		flex: 0 0 auto;
 		min-width: 0;
+	}
+
+	.stepper {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		flex: 0 0 auto;
 	}
 
 	.hud-controls {
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
-		gap: 22px;
+		gap: 15px;
 		flex: 0 0 auto;
 		padding-top: 0;
 	}
@@ -643,9 +638,19 @@
 		flex-direction: row;
 		align-items: center;
 		gap: 6px;
-		padding: 0 10px;
-		border-left: 1px solid rgba(255, 255, 255, 0.3);
+		padding: 0 12px;
+		border-left: none;
 		flex: 0 0 auto;
+	}
+
+	/* Central "pipe" divider sitting in the big middle gap between the two control groups. */
+	.hud-divider {
+		flex: 0 0 auto;
+		align-self: center;
+		width: 2px;
+		height: 30px;
+		border-radius: 2px;
+		background: #1e3a8a80;
 	}
 
 	.bet-values {
@@ -677,9 +682,6 @@
 		height: 100%;
 		object-fit: contain;
 		display: block;
-		/* Only a gold coins asset was supplied — tint it blue to match the UI
-		   (temporary; a dedicated blue coins PNG would be cleaner). */
-		filter: hue-rotate(175deg) saturate(1.3) brightness(1.05);
 	}
 
 	.bet-pill {
@@ -1013,24 +1015,13 @@
 		cursor: default;
 	}
 
-	/* While a spin is running: the no-arrow "empty" frame, slightly dimmed, not clickable. */
+	/* While a spin is running: swap to the dedicated stop-state button asset (square baked in). */
 	.spin-btn.spin-btn--busy {
-		background-image: var(--btn-spin-empty-bg);
-		opacity: 0.82;
+		background-image: var(--btn-spin-stop-bg);
 	}
 
-	/* Stop-square in the centre of the disabled/spinning button. */
-	.spin-btn__square {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: 26px;
-		height: 26px;
-		border-radius: 6px;
-		background: #eaf2ff;
-		box-shadow: 0 0 12px rgba(96, 165, 250, 0.85);
-		pointer-events: none;
+	.spin-btn.spin-btn--busy:disabled {
+		opacity: 1;
 	}
 
 	/* Stop / autospin-count overlays sit on the green disc, over the spin icon */
