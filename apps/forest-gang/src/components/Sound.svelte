@@ -30,8 +30,9 @@
 		return 'bgm_base_game';
 	};
 
-	// The three long-form background loops — only one should ever be audible at a time.
-	const BGM_LOOPS: MusicName[] = ['bgm_base_game', 'bgm_dealit_bonus', 'bgm_allin_bonus'];
+	// Long-form background loops — only one should ever be audible at a time. `bgm_win_animation`
+	// is included so switching back to the base/bonus track (at win end) stops the win-celebration loop.
+	const BGM_LOOPS: MusicName[] = ['bgm_base_game', 'bgm_dealit_bonus', 'bgm_allin_bonus', 'bgm_win_animation'];
 
 	// All music plays through the sprite player (single track). Stop the other loops before starting
 	// the requested one so a bonus loop never lingers after switching back to the base game.

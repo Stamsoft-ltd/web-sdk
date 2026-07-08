@@ -5,6 +5,7 @@ export type MusicName =
 	| 'bgm_base_game' //        base game
 	| 'bgm_dealit_bonus' //     Deal It free spins (and feature spins)
 	| 'bgm_allin_bonus' //      All In free spins
+	| 'bgm_win_animation' //    looping background music while a win celebration animation plays
 	// Big-win celebration music, per win tier (currently silent placeholders):
 	| 'bgm_win_sweet' //        SWEET WIN     (20x–<50x)
 	| 'bgm_win_wild' //         WILD WIN      (50x–<100x)

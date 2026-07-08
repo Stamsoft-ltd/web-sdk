@@ -19,17 +19,23 @@ import { logForestDiagnostic } from '../utils/forestDiagnostics';
 const winLevelSoundsPlay = ({
 	winLevelData,
 	sfxOverride,
+	winBgm = true,
 }: {
 	winLevelData: WinLevelData;
 	sfxOverride?: SoundEffectName;
+	// Whether to play the looping win-celebration music. Off for the bonus-end congratulations screen.
+	winBgm?: boolean;
 }) => {
 	if (winLevelData?.alias === 'max') eventEmitter.broadcastAsync({ type: 'uiHide' });
 	const sfx = sfxOverride ?? winLevelData?.sound?.sfx;
 	if (sfx) eventEmitter.broadcast({ type: 'soundOnce', name: sfx });
-	if (winLevelData?.sound?.bgm) eventEmitter.broadcast({ type: 'soundMusic', name: winLevelData.sound.bgm });
 	if (winLevelData?.type === 'big') {
-		// Big-win screen takes over — hand off from the payline loop to the coins loop.
-		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
+		// Win celebration: looping background music (bgm_win_animation) UNDER the coin-counting loop and
+		// the win stings — all three layer (music / loop / once players are independent). The music is
+		// stopped when the win ends and the base/bonus track resumes (see winLevelSoundsStop / freeSpinEnd).
+		if (winBgm) eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_win_animation' });
+		// Layer the coins loop ON TOP of the payline-win jingle so both the win animation sound and the
+		// coin-counting sound play together. Both are stopped when the count-up completes (Win.svelte).
 		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_win_coins_loop' });
 	}
 };
@@ -326,7 +332,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			eventEmitter.broadcast({ type: 'soundStop', name: 'bgm_dealit_bonus' });
 			eventEmitter.broadcast({ type: 'soundStop', name: 'bgm_allin_bonus' });
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_congratulations' });
-			winLevelSoundsPlay({ winLevelData });
+			// Congratulations screen: coins loop + stings only — NO bgm_win_animation here.
+			winLevelSoundsPlay({ winLevelData, winBgm: false });
 			await eventEmitter.broadcastAsync({ type: 'freeSpinOutroCountUp', amount: bookEvent.amount, winLevelData });
 			// Back to the base-game music once the bonus summary finishes (not the bonus loop).
 			eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_win_coins_loop' });

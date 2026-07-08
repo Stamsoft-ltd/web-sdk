@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
 	import { Container, SpineProvider, SpineTrack } from 'pixi-svelte';
 	import type { Reel } from '../game/stateGame.svelte';
 	import { SYMBOL_W, SYMBOL_SIZE, BOARD_SIZES, BOARD_GRID_OFFSET_Y } from '../game/constants';
@@ -39,11 +37,10 @@
 		},
 	});
 
-	// Scatter "tease" loop while the anticipation glow is on screen; stops when this reel resolves.
-	onMount(() => {
-		context.eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_scatter_anticipation_loop' });
-		return () => context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_scatter_anticipation_loop' });
-	});
+	// NOTE: the scatter "tease" loop (sfx_scatter_anticipation_loop) is NOT controlled here per-reel.
+	// It's started/stopped ONCE for the whole anticipation phase by Anticipations.svelte. Managing it
+	// per reel meant one reel resolving stopped the loop while other reels were still anticipating,
+	// so the heartbeat cut out and restarted between reels.
 </script>
 
 <Container
