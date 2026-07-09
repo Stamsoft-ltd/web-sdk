@@ -370,12 +370,16 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 
 	const stop = () => {
 		interruptible.interrupt();
+		// Snap to defaultY during pre-spin so readyToSpin fires immediately instead of
+		// waiting for the current slideY loop to complete naturally.
+		if (isPreSpinning) placeY(defaultY);
 	};
 
 	// Interrupts even noStop (anticipated) reels. Use when the player explicitly skips.
 	const forceStop = () => {
 		interruptible.interrupt();
 		forceStopResolve?.();
+		if (isPreSpinning) placeY(defaultY);
 	};
 
 	const readyToSpinEffect = () => {
