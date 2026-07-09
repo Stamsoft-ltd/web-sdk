@@ -5,8 +5,6 @@
 	export let backgroundSrc = '';
 	export let logoSrc = '';
 	export let partnerLogoSrc = '';
-	export let centerLandscapeSrc = '';
-	export let centerPortraitSrc = '';
 	export let alt = 'Enter game';
 	export let hintLabel = 'CLICK TO CONTINUE';
 	export let overlayOnly = false;
@@ -20,9 +18,6 @@
 	let loading = false;
 	let viewW = 0;
 	let viewH = 0;
-	const imgCenterLandscape = new Image();
-	const imgCenterPortrait = new Image();
-
 	const imgBg = new Image();
 	const imgSlide = new Image();
 	const imgLogo = new Image();
@@ -71,12 +66,6 @@
 		}
 
 		const landscape = w > h;
-		const centerImg = landscape ? imgCenterLandscape : imgCenterPortrait;
-		if (centerImg.naturalWidth) {
-			const r = fitCover(centerImg.naturalWidth, centerImg.naturalHeight, w, h);
-			ctx.drawImage(centerImg, r.offX, r.offY, r.drawW, r.drawH);
-			return;
-		}
 		const penguinScale = landscape ? Math.max(0.72, Math.min(1, h / 520)) : Math.max(0.8, Math.min(1, w / 720));
 
 		if (imgSlide.naturalWidth) {
@@ -145,8 +134,6 @@
 				img.src = src;
 			});
 		if (backgroundSrc) jobs.push(load(imgBg, backgroundSrc));
-		if (centerLandscapeSrc) jobs.push(load(imgCenterLandscape, centerLandscapeSrc));
-		if (centerPortraitSrc) jobs.push(load(imgCenterPortrait, centerPortraitSrc));
 		jobs.push(load(imgSlide, '/assets/spine/slide/slide.png'));
 		if (logoSrc) jobs.push(load(imgLogo, logoSrc));
 		if (partnerLogoSrc) jobs.push(load(imgPartner, partnerLogoSrc));

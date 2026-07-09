@@ -9,28 +9,22 @@
 </script>
 
 <script lang="ts">
-	import { BitmapText, Container, Graphics, Sprite } from 'pixi-svelte';
+	import { BitmapText, Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
 	import { BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, SYMBOL_H, SYMBOL_W } from '../game/constants';
-	import { getSymbolInfo, shouldShowMultiplierText } from '../game/utils';
+	import { getSymbolInfo } from '../game/utils';
 
 	const context = getContext();
 	const board = $derived(context.stateGame.board);
 	const spinBoard = $derived(context.stateGame.spinBoard);
 	const boardMode = $derived(context.stateGame.boardMode);
 	const layout = $derived(context.stateGameDerived.boardLayout());
-	const magnetPulseKeys = $derived(new Set(context.stateGame.magnetPulseKeys));
 	const flatCells = $derived(board.flatMap((reel) => reel));
-	const orderedCells = $derived([
-		...flatCells.filter((cell) => !cell.locked),
-		...flatCells.filter((cell) => cell.locked),
-	]);
 	let show = $state(true);
 
 	const getX = (reelIndex: number) => SYMBOL_W * (reelIndex + 0.5);
 	const getStaticY = (rowIndex: number) => SYMBOL_H * (rowIndex + 0.5);
-
 	context.eventEmitter.subscribeOnMount({
 		stopButtonClick: () => {
 			context.stateGameDerived.speedUpMotion();
@@ -49,9 +43,8 @@
 		<Graphics
 			isMask
 			draw={(graphics) => {
-				graphics.beginFill(0xffffff);
 				graphics.rect(0, 0, SYMBOL_W * BOARD_DIMENSIONS.x, SYMBOL_H * BOARD_DIMENSIONS.y);
-				graphics.endFill();
+				graphics.fill(0xffffff);
 			}}
 		/>
 
@@ -60,7 +53,7 @@
 		{#each board as reel, reelIndex (reelIndex)}
 			{#each reel as cell, rowIndex (cell.key)}
 				<Sprite
-					key={boardMode !== 'spin' && (cell.highlighted || cell.locked) ? 'cellBoxWin' : 'cellBox'}
+					key={cell.highlighted || cell.locked ? 'cellBoxWin' : 'cellBox'}
 					x={getX(reelIndex)}
 					y={getStaticY(rowIndex)}
 					anchor={0.5}
@@ -71,39 +64,63 @@
 		{/each}
 
 		{#if boardMode === 'spin'}
-			<!-- ── Spin mode: render from createReelForSpinning reels ── -->
-			{#each spinBoard as reel, reelIndex (reelIndex)}
-				{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
-					{@const y = reelSymbol.symbolY()}
-					{@const symbolInfo = getSymbolInfo({ rawSymbol: reelSymbol.rawSymbol, state: reelSymbol.symbolState })}
-					<Sprite
-						key={symbolInfo.assetKey}
-						x={getX(reelIndex)}
-						y={y}
-						anchor={{ x: 0.5, y: 0.5 }}
-						width={SYMBOL_W * symbolInfo.sizeRatios.width}
-						height={SYMBOL_H * symbolInfo.sizeRatios.height}
-						alpha={1}
-					/>
+			<!-- ── Spin mode: clip reel symbols per unlocked cell. Locked cells get no reel window. ── -->
+			{#each board as reelCells, reelIndex (reelIndex)}
+				{#each reelCells.filter((cell) => !cell.locked) as clipCell (`${clipCell.key}:spin-window`)}
+					<Container>
+						<Graphics
+							isMask
+							draw={(graphics) => {
+								graphics.rect(
+									getX(reelIndex) - SYMBOL_W * 0.5,
+									getStaticY(clipCell.position.row) - SYMBOL_H * 0.5,
+									SYMBOL_W,
+									SYMBOL_H,
+								);
+								graphics.fill(0xffffff);
+							}}
+						/>
+						{#each spinBoard[reelIndex].reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
+							{@const y = reelSymbol.symbolY()}
+							{@const symbolInfo = getSymbolInfo({ rawSymbol: reelSymbol.rawSymbol, state: reelSymbol.symbolState })}
+							<Sprite
+								key={symbolInfo.assetKey}
+								x={getX(reelIndex)}
+								y={y}
+								anchor={{ x: 0.5, y: 0.5 }}
+								width={SYMBOL_W * symbolInfo.sizeRatios.width}
+								height={SYMBOL_H * symbolInfo.sizeRatios.height}
+								alpha={1}
+							/>
+						{/each}
+					</Container>
 				{/each}
 			{/each}
 
-			<!-- Locked cluster cells float above spinning reels (superspin carry) -->
+			<!-- Locked cluster cells cover the closed reel windows, then render lock symbol above. -->
 			{#each flatCells.filter((c) => c.locked) as cell (cell.key)}
 				{@const x = getX(cell.position.reel)}
-				{@const y = cell.displayY.current}
-				{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: 'static' })}
+				{@const y = getStaticY(cell.position.row)}
+				{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: 'locked' })}
 				{@const width = SYMBOL_W * symbolInfo.sizeRatios.width}
 				{@const height = SYMBOL_H * symbolInfo.sizeRatios.height}
-				<Graphics
-					draw={(graphics) => {
-						graphics.clear();
-						graphics.beginFill(0xffd76a, 0.16);
-						graphics.drawRoundedRect(x - SYMBOL_W * 0.43, y - SYMBOL_H * 0.43, SYMBOL_W * 0.86, SYMBOL_H * 0.86, 16);
-						graphics.endFill();
-						graphics.lineStyle({ width: 4, color: 0xf6cb52, alpha: 0.95 });
-						graphics.drawRoundedRect(x - SYMBOL_W * 0.44, y - SYMBOL_H * 0.44, SYMBOL_W * 0.88, SYMBOL_H * 0.88, 14);
-					}}
+				<!-- Opaque full outer cell cover sits ABOVE spinning reels. -->
+				<Rectangle
+					{x}
+					{y}
+					anchor={0.5}
+					width={SYMBOL_W}
+					height={SYMBOL_H}
+					backgroundColor={0x05070b}
+					backgroundAlpha={1}
+				/>
+				<Sprite
+					key="cellBoxWin"
+					{x}
+					{y}
+					anchor={0.5}
+					width={SYMBOL_W}
+					height={SYMBOL_H}
 				/>
 				<Sprite
 					key={symbolInfo.assetKey}
@@ -113,60 +130,35 @@
 					{width}
 					{height}
 					alpha={1}
-					tint={0xfff6d5}
+					tint={0xffffff}
 				/>
 			{/each}
 		{:else}
 			<!-- ── Settle/respin mode: render per-cell board with decorations ── -->
 
-			<!-- Symbols — locked cells render last so they appear on top -->
-			{#each orderedCells as cell (cell.key)}
-				{@const x = getX(cell.position.reel) + cell.displayX.current}
-				{@const y = cell.displayY.current}
-				{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState })}
+			<!-- Static background grid cells -->
+			{#each board as reel, reelIndex (reelIndex)}
+				{#each reel as cell, rowIndex (cell.key)}
+					<Rectangle
+						x={getX(reelIndex)}
+						y={getStaticY(rowIndex)}
+						anchor={0.5}
+						width={SYMBOL_W}
+						height={SYMBOL_H}
+						backgroundColor={cell.locked ? 0x05070b : 0x0b0f18}
+						backgroundAlpha={cell.locked ? 1 : context.stateGame.boardSpinning ? 0.18 : 0.1}
+					/>
+				{/each}
+			{/each}
+
+			<!-- Base symbols stay mounted even when a cell becomes locked; locked overlay covers them. -->
+			{#each flatCells as cell (cell.key)}
+				{@const x = cell.locked ? getX(cell.position.reel) : getX(cell.position.reel) + cell.displayX.current}
+				{@const y = cell.locked ? getStaticY(cell.position.row) : cell.displayY.current}
+				{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: cell.locked ? 'locked' : cell.symbolState })}
 				{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
 				{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
 
-				{#if cell.locked}
-					<Graphics
-						draw={(graphics) => {
-							graphics.clear();
-							graphics.beginFill(0xffd76a, 0.16);
-							graphics.drawRoundedRect(x - SYMBOL_W * 0.43, y - SYMBOL_H * 0.43, SYMBOL_W * 0.86, SYMBOL_H * 0.86, 16);
-							graphics.endFill();
-						}}
-					/>
-				{/if}
-
-				{#if cell.target || cell.locked || cell.persistent || cell.highlighted || cell.fresh}
-					<Graphics
-						draw={(graphics) => {
-							graphics.clear();
-							const color = cell.highlighted
-								? 0xfff2a8
-								: cell.fresh
-									? 0x8ef3ff
-									: cell.persistent
-										? 0x84d6ff
-										: cell.target
-											? 0x4bd9ff
-											: 0xf6cb52;
-							const lineWidth = cell.highlighted ? 6 : cell.fresh ? 5 : cell.persistent ? 5 : 4;
-							graphics.lineStyle({ width: lineWidth, color, alpha: 0.95 });
-							graphics.drawRoundedRect(x - SYMBOL_W * 0.44, y - SYMBOL_H * 0.44, SYMBOL_W * 0.88, SYMBOL_H * 0.88, 14);
-						}}
-					/>
-				{/if}
-
-				{#if magnetPulseKeys.has(cell.key)}
-					<Graphics
-						draw={(graphics) => {
-							graphics.clear();
-							graphics.lineStyle({ width: 8, color: 0xbff8ff, alpha: 0.8 });
-							graphics.drawRoundedRect(x - SYMBOL_W * 0.48, y - SYMBOL_H * 0.48, SYMBOL_W * 0.96, SYMBOL_H * 0.96, 18);
-						}}
-					/>
-				{/if}
 
 				<Sprite
 					key={symbolInfo.assetKey}
@@ -175,19 +167,45 @@
 					anchor={{ x: 0.5, y: 0.5 }}
 					{width}
 					{height}
-					alpha={cell.displayAlpha.current}
-					tint={cell.locked ? 0xfff6d5 : 0xffffff}
+					alpha={cell.locked ? 1 : cell.displayAlpha.current}
+					tint={0xffffff}
 				/>
+			{/each}
 
-				{#if shouldShowMultiplierText(cell)}
-					<BitmapText
-						anchor={0.5}
-						x={x}
-						y={y + SYMBOL_H * 0.26}
-						text={`${cell.multiplier}X`}
-						style={{ fontFamily: 'gold', fontSize: 20 }}
-					/>
-				{/if}
+			<!-- Locked overlay: full outer cover + highlighted rectangle + top symbol. -->
+			{#each flatCells.filter((c) => c.locked) as cell (`${cell.key}:locked`)}
+				{@const x = getX(cell.position.reel)}
+				{@const y = getStaticY(cell.position.row)}
+				{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState === 'win' ? 'win' : 'locked' })}
+				{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
+				{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
+				<Rectangle
+					{x}
+					{y}
+					anchor={0.5}
+					width={SYMBOL_W}
+					height={SYMBOL_H}
+					backgroundColor={0x05070b}
+					backgroundAlpha={1}
+				/>
+				<Sprite
+					key="cellBoxWin"
+					{x}
+					{y}
+					anchor={0.5}
+					width={SYMBOL_W}
+					height={SYMBOL_H}
+				/>
+				<Sprite
+					key={symbolInfo.assetKey}
+					{x}
+					{y}
+					anchor={{ x: 0.5, y: 0.5 }}
+					{width}
+					{height}
+					alpha={1}
+					tint={0xffffff}
+				/>
 			{/each}
 
 			{#each context.stateGame.clusterWinBadges as badge (badge.id)}

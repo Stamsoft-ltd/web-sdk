@@ -452,8 +452,6 @@ let speedFactor = $state(2);
 	const splashBackgroundSrc = assetPath('/assets/splash/custom/background.png');
 	const splashLogoSrc = assetPath('/assets/splash/custom/logo.png');
 	const splashPartnerLogoSrc = assetPath('/assets/splash/custom/easy-games-white.png');
-	const splashCenterLandscapeSrc = assetPath('/assets/splash/penguin_1280x675.png');
-	const splashCenterPortraitSrc = assetPath('/assets/splash/penguin_1080x1920.png');
 	const SOUND_SRC: Record<SoundKey, string> = buildSoundSrc(assetPath);
 	let soundEnabled = false;
 	const audioEngine = createAudioEngine<SoundKey>({
@@ -5153,8 +5151,6 @@ function stepDebugGuides(): StepDebugGuide[] {
 		backgroundSrc={splashBackgroundSrc}
 		logoSrc={splashLogoSrc}
 		partnerLogoSrc={splashPartnerLogoSrc}
-		centerLandscapeSrc={splashCenterLandscapeSrc}
-		centerPortraitSrc={splashCenterPortraitSrc}
 		alt="Enter Penguin Slide"
 		onEnter={enterGameFromSplash}
 	/>

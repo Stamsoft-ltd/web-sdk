@@ -102,7 +102,7 @@ type BookEventClusterSeriesResolved = {
 type BookEventSuperSeriesCarry = {
 	index: number;
 	type: 'superSeriesCarry';
-	series: ClusterSeriesSnapshot | null;
+	series: ClusterSeriesSnapshot[];
 	magnetTargetSymbol: PaySymbolName | null;
 	totalMultiplier: number;
 };

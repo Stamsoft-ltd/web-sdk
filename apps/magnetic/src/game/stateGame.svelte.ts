@@ -36,9 +36,6 @@ import { eventEmitter } from './eventEmitter';
 const posKey = ({ reel, row }: Position) => `${reel}:${row}`;
 const getTargetY = (row: number) => SYMBOL_H * (row + 0.5);
 
-// Pool for flicker animation during respin
-const SPIN_SYMBOL_POOL: RawSymbol[] = INITIAL_BOARD.flat().map((r) => ({ ...r }));
-
 // ── motion presets ────────────────────────────────────────────────────────────
 
 const MOTION_NORMAL = {
@@ -102,9 +99,11 @@ const updateCellRaw = (cell: BoardCell, raw: RawSymbol) => {
 };
 
 const applyCellVisualState = (cell: BoardCell) => {
-	cell.symbolState = cell.highlighted
-		? 'win'
-		: cell.magnet
+	cell.symbolState = cell.locked
+		? 'locked'
+		: cell.highlighted
+			? 'win'
+			: cell.magnet
 			? 'magnet'
 			: 'static';
 };
@@ -264,12 +263,35 @@ const pulseFreshPositions = async (freshKeys: Set<string>) => {
 	}
 };
 
+const restoreBoardAlpha = () => {
+	for (const reel of stateGame.board) {
+		for (const cell of reel) {
+			cell.displayAlpha.set(1, { duration: 0 });
+		}
+	}
+};
+
 const pulseMagnetActivation = async (positions: Position[]) => {
 	stateGame.magnetPulseKeys = positions.map(posKey);
 	const isFast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
 	const dimMs = isFast ? 100 : 280;
-	const pullMs = isFast ? 180 : 400;
 	const pulseMs = isFast ? 120 : 360;
+
+	// Super regular spins must not flash/dim the whole non-locked board after landing.
+	// The carry cluster is persistent; just pop the magnet cells.
+	if (stateGame.bonusMode === 'superspin') {
+		await Promise.all(
+			positions.map(async (position) => {
+				const cell = stateGame.board[position.reel]?.[position.row];
+				if (!cell) return;
+				cell.displayScale.set(1.18, { duration: 0 });
+				await cell.displayScale.set(1, { duration: pulseMs, easing: backOut });
+			}),
+		);
+		restoreBoardAlpha();
+		stateGame.magnetPulseKeys = [];
+		return;
+	}
 
 	const targetSymbol = stateGame.magnetTargetSymbol;
 	const magnetKeys = new Set(positions.map(posKey));
@@ -298,8 +320,9 @@ const pulseMagnetActivation = async (positions: Position[]) => {
 		}),
 	]);
 
-	// Phase 2 (fly-to-exact-position) runs in animateClusterFormation after clusterSeriesUpdate
-	// fires — at that point we have the final lockedPositions. Leave target cells visible here.
+	// Do not leave the board dimmed. Cluster locking/flight runs from the next
+	// clusterSeriesUpdate event, and sub-threshold magnets may not emit that event at all.
+	restoreBoardAlpha();
 	stateGame.magnetPulseKeys = [];
 };
 
@@ -313,7 +336,10 @@ const animateClusterFormation = async ({
 	magnetTargetSymbol: PaySymbolName | null;
 }) => {
 	// Only run for the initial pull — subsequent respins join the cluster by landing in-place.
-	if (!magnetTargetSymbol || !series.length || stateGame.activeSeries.length > 0) return;
+	if (!magnetTargetSymbol || !series.length || stateGame.activeSeries.length > 0) {
+		restoreBoardAlpha();
+		return;
+	}
 
 	const isFast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
 	const flyMs = isFast ? 220 : 600;
@@ -343,24 +369,47 @@ const animateClusterFormation = async ({
 		.flat()
 		.filter((cell) => cell.name === magnetTargetSymbol && !cell.locked && !cell.magnet);
 
-	// Pair sources to destinations by proximity to magnet (closest source → closest dest).
-	const sortedSources = [...sourceCells].sort(
-		(a, b) => distToMagnet(a.position.reel, a.position.row) - distToMagnet(b.position.reel, b.position.row),
-	);
-	const sortedDests = [...nonMagnetDests].sort(
-		(a, b) => distToMagnet(a.reel, a.row) - distToMagnet(b.reel, b.row),
-	);
-	const pairCount = Math.min(sortedSources.length, sortedDests.length);
+	// Pair exact in-place destinations first.  Never fly a target out of a cell that is
+	// already part of the final cluster — that caused a one-frame empty locked square when
+	// another source later landed on the same BoardCell and the old source hide won the race.
+	const destByKey = new Map(nonMagnetDests.map((dest) => [posKey(dest), dest]));
+	const usedSourceKeys = new Set<string>();
+	const usedDestKeys = new Set<string>();
+	const sameCellPairs = sourceCells.flatMap((source) => {
+		const key = posKey(source.position);
+		const dest = destByKey.get(key);
+		if (!dest) return [];
+		usedSourceKeys.add(key);
+		usedDestKeys.add(key);
+		return [{ source, dest }];
+	});
+
+	// Pair remaining sources to remaining destinations by proximity to magnet.
+	const sortedSources = sourceCells
+		.filter((source) => !usedSourceKeys.has(posKey(source.position)))
+		.sort((a, b) => distToMagnet(a.position.reel, a.position.row) - distToMagnet(b.position.reel, b.position.row));
+	const sortedDests = nonMagnetDests
+		.filter((dest) => !usedDestKeys.has(posKey(dest)))
+		.sort((a, b) => distToMagnet(a.reel, a.row) - distToMagnet(b.reel, b.row));
+	const movePairs = Array.from({ length: Math.min(sortedSources.length, sortedDests.length) }, (_, i) => ({
+		source: sortedSources[i],
+		dest: sortedDests[i],
+	}));
+	const pairs = [...sameCellPairs, ...movePairs];
+	const lockedDestKeys = new Set(nonMagnetDests.map(posKey));
 
 	await Promise.all(
-		Array.from({ length: pairCount }, (_, i) => {
-			const source = sortedSources[i];
-			const dest = sortedDests[i];
+		pairs.map(({ source, dest }) => {
 			return (async () => {
 				// Cell is already at its grid position (visible, from Phase 1 of pulseMagnetActivation).
 				const sameCell = source.position.reel === dest.reel && source.position.row === dest.row;
 				if (sameCell) {
-					// Target symbol already at its cluster position — just pulse.
+					// Target symbol already at its cluster position — keep it visible, just pulse.
+					source.name = magnetTargetSymbol;
+					source.scatter = false;
+					source.wild = false;
+					source.magnet = false;
+					source.displayAlpha.set(1, { duration: 0 });
 					source.displayScale.set(1.18, { duration: 0 });
 					void source.displayScale.set(1, { duration: landMs, easing: backOut });
 					return;
@@ -383,18 +432,31 @@ const animateClusterFormation = async ({
 				// Destination cell lands with a pop; source cell hides at grid position.
 				const destCell = stateGame.board[dest.reel]?.[dest.row];
 				if (destCell) {
-					destCell.name = magnetTargetSymbol;
-					destCell.scatter = false;
-					destCell.wild = false;
-					destCell.magnet = false;
+					if (destCell.wild || destCell.name === 'WILD') {
+						destCell.name = 'WILD';
+						destCell.scatter = false;
+						destCell.wild = true;
+						destCell.magnet = false;
+					} else {
+						destCell.name = magnetTargetSymbol;
+						destCell.scatter = false;
+						destCell.wild = false;
+						destCell.magnet = false;
+					}
 					destCell.symbolState = 'static';
 					destCell.displayAlpha.set(1, { duration: 0 });
 					destCell.displayScale.set(1.14, { duration: 0 });
 					void destCell.displayScale.set(1, { duration: landMs, easing: backOut });
 				}
 
-				// Hide source at its original grid position (respin will reuse it).
-				void source.displayAlpha.set(0, { duration: 60 });
+				// Hide source at its original grid position only when that original cell is not
+				// a final locked destination.  If it is, keep it visible until lock decoration lands.
+				const sourceKey = posKey(source.position);
+				if (lockedDestKeys.has(sourceKey)) {
+					source.displayAlpha.set(1, { duration: 0 });
+				} else {
+					void source.displayAlpha.set(0, { duration: 60 });
+				}
 				source.displayX.set(0, { duration: 0 });
 				source.displayY.set(getTargetY(source.position.row), { duration: 0 });
 				source.displayScale.set(1, { duration: 0 });
@@ -402,13 +464,10 @@ const animateClusterFormation = async ({
 		}),
 	);
 
-	// Magnet cell transforms to cluster symbol in-place.
+	// Magnet cell stays as WILD — just animate the pop.
 	for (const magnetCell of magnetCells) {
-		magnetCell.name = magnetTargetSymbol;
 		magnetCell.magnet = false;
-		magnetCell.scatter = false;
-		magnetCell.wild = false;
-		magnetCell.symbolState = 'static';
+		magnetCell.symbolState = 'locked';
 		magnetCell.displayScale.set(1.2, { duration: 0 });
 		void magnetCell.displayScale.set(1, { duration: landMs, easing: backOut });
 	}
@@ -579,140 +638,6 @@ const animateSpinReels = async ({
 	stateGame.boardMode = 'settle';
 };
 
-// ── respin animation ──────────────────────────────────────────────────────────
-//
-// Flow:
-//   1. Fade: whole grid dims (alpha→0.15 over dimDurationMs) EXCEPT locked/cluster cells
-//      (stay at alpha=1, pulse scale). Await full fade before spins start so user sees dark grid.
-//   2. Per cell (staggered with random jitter): flash through N symbols using alpha pulses.
-//      No Y movement during spin → no row-overlap bleed. The cluster symbol is injected
-//      into each cell's spin sequence (~30% probability) so it pops up visibly, making
-//      the player feel like any cell might join the cluster. Cluster flashes are brighter.
-//   3. Final symbol lands: slides in from above starting invisible, fades to alpha=1 on arrival.
-//      Scale bounce. Locked cells skip animation entirely.
-
-const animateRespinCells = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
-	const rm = getMotion().respin;
-
-	// Cluster symbol to inject into spin sequences — makes non-locked cells feel like
-	// candidates for locking in.
-	const clusterRaw: RawSymbol | null = stateGame.activeSeries[0]
-		? { name: stateGame.activeSeries[0].symbol }
-		: null;
-
-	// ── Phase 1: reset positions, fade non-locked to dark, pulse locked ──────
-	for (const reel of stateGame.board) {
-		for (const cell of reel) {
-			cell.displayX.set(0, { duration: 0 });
-			cell.displayY.set(getTargetY(cell.position.row), { duration: 0 });
-			cell.displayScale.set(cell.locked ? 1.06 : 1, { duration: 0 });
-		}
-	}
-
-	// Await the full dim fade so the dark grid is rendered before spins start.
-	await Promise.all(
-		stateGame.board.flat().map((cell) => {
-			if (cell.locked) {
-				cell.displayAlpha.set(1, { duration: 0 });
-				return cell.displayScale.set(1, { duration: rm.lockPulseMs, easing: backOut });
-			}
-			return cell.displayAlpha.set(0.15, { duration: rm.dimDurationMs });
-		}),
-	);
-
-	await waitForTimeout(rm.clearGapMs);
-
-	// ── Pre-compute stop groups: shuffle non-locked cells, split into groups of 1–5 ──
-	const cellList: Array<{ ri: number; rowi: number }> = [];
-	for (let ri = 0; ri < stateGame.board.length; ri++) {
-		for (let rowi = 0; rowi < stateGame.board[ri].length; rowi++) {
-			if (!stateGame.board[ri][rowi].locked) cellList.push({ ri, rowi });
-		}
-	}
-	for (let i = cellList.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[cellList[i], cellList[j]] = [cellList[j], cellList[i]];
-	}
-	const stopStagger = new Map<string, number>();
-	let pos = 0;
-	let groupIdx = 0;
-	while (pos < cellList.length) {
-		const groupSize = Math.floor(Math.random() * 5) + 1;
-		const delay = groupIdx * rm.groupDelayMs;
-		for (let i = pos; i < Math.min(pos + groupSize, cellList.length); i++) {
-			stopStagger.set(`${cellList[i].ri}:${cellList[i].rowi}`, delay);
-		}
-		pos += groupSize;
-		groupIdx++;
-	}
-
-	// ── Phase 2 + 3: grouped stop spin (alpha flash) → slide-in land ─────────
-	await Promise.all(
-		stateGame.board.flatMap((reel, ri) =>
-			reel.map(async (cell, rowi) => {
-				if (cell.locked) {
-					// Keep the cluster symbol — do NOT overwrite with rawBoard which may contain
-					// the original MAGNET or a different symbol at this grid position.
-					cell.symbolState = 'static';
-					return;
-				}
-
-				const stagger = stopStagger.get(`${ri}:${rowi}`) ?? 0;
-				if (stagger > 0) await waitForTimeout(stagger);
-
-				// Show cluster symbol once at most, 25% chance, in the middle of the spin
-				const clusterFrameIdx =
-					clusterRaw !== null && rm.spinCount > 2 && Math.random() < 0.25
-						? Math.floor(rm.spinCount / 2)
-						: -1;
-
-				let cursor = (ri * BOARD_DIMENSIONS.y + rowi + 3) % SPIN_SYMBOL_POOL.length;
-				for (let f = 0; f < rm.spinCount; f++) {
-					if (f === clusterFrameIdx) {
-						updateCellRaw(cell, clusterRaw!);
-						cell.symbolState = 'static';
-						await cell.displayAlpha.set(0.9, { duration: Math.round(rm.spinFrameMs * 0.28) });
-						await waitForTimeout(Math.round(rm.spinFrameMs * 0.44));
-						await cell.displayAlpha.set(0.15, { duration: Math.round(rm.spinFrameMs * 0.28) });
-					} else {
-						updateCellRaw(cell, SPIN_SYMBOL_POOL[cursor++ % SPIN_SYMBOL_POOL.length]);
-						cell.symbolState = 'spin';
-						await cell.displayAlpha.set(0.32, { duration: Math.round(rm.spinFrameMs * 0.35) });
-						await cell.displayAlpha.set(0.15, { duration: Math.round(rm.spinFrameMs * 0.65) });
-					}
-				}
-
-				const targetY = getTargetY(rowi);
-				updateCellRaw(cell, rawBoard[ri][rowi]);
-				cell.symbolState = 'spin';
-				cell.displayY.set(targetY - SYMBOL_H, { duration: 0 });
-				cell.displayAlpha.set(0, { duration: 0 });
-
-				await Promise.all([
-					cell.displayY.set(targetY, { duration: rm.durationMs, easing: cubicOut }),
-					cell.displayAlpha.set(1, { duration: Math.round(rm.durationMs * 0.65) }),
-					cell.displayScale.set(1.08, { duration: Math.round(rm.durationMs * 0.75), easing: cubicOut }),
-				]);
-
-				cell.symbolState = 'land';
-				playLandSound(rawBoard[ri][rowi]);
-				await cell.displayScale.set(1, { duration: rm.bounceMs, easing: backOut });
-				applyCellVisualState(cell);
-				// Pulse cells that land on the target symbol adjacent to the cluster — they will join next respin.
-				const neighborLocked =
-					stateGame.board[ri - 1]?.[rowi]?.locked ||
-					stateGame.board[ri + 1]?.[rowi]?.locked ||
-					stateGame.board[ri]?.[rowi - 1]?.locked ||
-					stateGame.board[ri]?.[rowi + 1]?.locked;
-				if (stateGame.magnetTargetSymbol && rawBoard[ri][rowi].name === stateGame.magnetTargetSymbol && neighborLocked) {
-					cell.displayScale.set(1.18, { duration: 0 });
-					void cell.displayScale.set(1, { duration: 220, easing: backOut });
-				}
-			}),
-		),
-	);
-};
-
 // ── combined reveal animation ─────────────────────────────────────────────────
 
 const animateReveal = async ({
@@ -737,7 +662,7 @@ const animateReveal = async ({
 		return;
 	}
 
-	await animateRespinCells({ rawBoard });
+	await animateSpinReels({ rawBoard, anticipation });
 
 	stateGame.boardSpinning = false;
 	stateGame.nextRevealMode = 'respin';
@@ -790,23 +715,30 @@ const setSeriesSnapshots = ({
 	stateGame.selectedBonusSymbol = magnetTargetSymbol;
 	stateGame.persistentSeries = series.find((e) => e.persistent) ?? null;
 
-	applySeriesDecorations({ board: stateGame.board, series, magnetTargetSymbol, freshKeys });
-
-	// Stamp the cluster symbol onto every locked cell.  Required when the math physically
+	// Stamp the cluster symbol onto locked non-wild cells.  Required when the math physically
 	// relocates symbols near the magnet — those grid cells may still show their original symbol
-	// until the next reveal event overwrites them.
+	// until the next reveal event overwrites them.  Wilds that land into a cluster stay wild.
 	for (const entry of series) {
 		for (const position of entry.lockedPositions) {
 			const cell = stateGame.board[position.reel]?.[position.row];
 			if (!cell) continue;
-			cell.name = entry.symbol as PaySymbolName;
-			cell.scatter = false;
-			cell.wild = false;
-			cell.magnet = false;
+			if (cell.wild || cell.name === 'WILD') {
+				cell.name = 'WILD';
+				cell.scatter = false;
+				cell.wild = true;
+				cell.magnet = false;
+			} else {
+				cell.name = entry.symbol as PaySymbolName;
+				cell.scatter = false;
+				cell.wild = false;
+				cell.magnet = false;
+			}
 			applyCellVisualState(cell);
 			cell.displayAlpha.set(1, { duration: 0 });
 		}
 	}
+
+	applySeriesDecorations({ board: stateGame.board, series, magnetTargetSymbol, freshKeys });
 
 	void pulseFreshPositions(freshKeys);
 };
@@ -876,6 +808,19 @@ const activateMagnetPulse = async (positions: Position[]) => {
 	await pulseMagnetActivation(positions);
 };
 
+const clearSeriesState = () => {
+	stateGame.activeSeries = [];
+	stateGame.persistentSeries = null;
+	stateGame.magnetTargetSymbol = null;
+	stateGame.selectedBonusSymbol = null;
+	stateGame.seriesTotalMultiplier = 1;
+	stateGame.globalMultiplier = 1;
+	stateGame.clusterWinBadges = [];
+	stateGame.magnetPulseKeys = [];
+	applySeriesDecorations({ board: stateGame.board, series: [], magnetTargetSymbol: null });
+	restoreBoardAlpha();
+};
+
 const resetBonusState = () => {
 	stateGame.bonusMode = null;
 	stateGame.globalMultiplier = 1;
@@ -889,6 +834,7 @@ const resetBonusState = () => {
 	stateGame.magnetPulseKeys = [];
 	stateGame.nextRevealMode = 'spin';
 	applySeriesDecorations({ board: stateGame.board, series: [], magnetTargetSymbol: null });
+	restoreBoardAlpha();
 };
 
 export const { getWinLevelDataByWinLevelAlias } = createGetWinLevelDataByWinLevelAlias({
@@ -910,6 +856,7 @@ export const stateGameDerived = {
 	markNextRevealAsSpin,
 	speedUpMotion,
 	activateMagnetPulse,
+	clearSeriesState,
 	resetBonusState,
 	getWinLevelDataByWinLevelAlias,
 };

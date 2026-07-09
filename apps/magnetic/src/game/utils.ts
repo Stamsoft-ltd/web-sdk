@@ -134,7 +134,7 @@ export const getReelCenterX = (reelIndex: number): number => SYMBOL_W * (reelInd
 export const getSymbolX = (reelIndex: number): number => SYMBOL_W * (reelIndex + 0.5);
 
 export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; state: SymbolState }) => {
-	const assetState = ['win', 'locked', 'magnet'].includes(state) ? 'win' : 'static';
+	const assetState = ['win', 'magnet'].includes(state) ? 'win' : 'static';
 	const assetKey = getSpriteKeyByName({
 		name: rawSymbol.name,
 		state: assetState as 'static' | 'win',

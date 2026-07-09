@@ -12,8 +12,9 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, rmSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const appDir = join(__dirname, '..');
@@ -22,14 +23,25 @@ const outDir = join(appDir, 'static/assets/audio');
 const soundTs = join(appDir, 'src/game/sound.ts');
 const tmpDir = join(appDir, '.audio-tmp');
 
+// Resolve ffmpeg/ffprobe: prefer bundled npm packages, fall back to system PATH.
+const _require = createRequire(import.meta.url);
+let FFMPEG_BIN = 'ffmpeg';
+let FFPROBE_BIN = 'ffprobe';
+try {
+	FFMPEG_BIN = _require('ffmpeg-static');
+} catch { /* not installed — use system ffmpeg */ }
+try {
+	FFPROBE_BIN = _require('ffprobe-static').path;
+} catch { /* not installed — use system ffprobe */ }
+
 const SR = 44100; // sample rate
 const CH = 2; // channels
 const GAP_MS = 300; // silence padding between segments
-const ffmpeg = (args) => execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args]);
+const ffmpeg = (args) => execFileSync(FFMPEG_BIN, ['-hide_banner', '-loglevel', 'error', '-y', ...args]);
 const durationMs = (file) =>
 	Math.round(
 		parseFloat(
-			execFileSync('ffprobe', [
+			execFileSync(FFPROBE_BIN, [
 				'-v', 'error', '-show_entries', 'format=duration', '-of', 'default=nw=1:nk=1', file,
 			]).toString().trim(),
 		) * 1000,

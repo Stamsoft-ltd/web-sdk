@@ -34,6 +34,7 @@
 	import Anticipations from './Anticipations.svelte';
 	import CapsulePanel from './CapsulePanel.svelte';
 	import PortraitTopBar from './PortraitTopBar.svelte';
+	import MagnetTargetPanel from './MagnetTargetPanel.svelte';
 
 	const context = getContext();
 	// True only for the two SPECIAL (bought) bonuses — 3rd bonus (BONUS = freegame) and 4th bonus
@@ -165,6 +166,7 @@
 				<Win />
 				<FreeSpinIntro />
 				<CapsulePanel />
+				<MagnetTargetPanel />
 				<PortraitTopBar />
 				<FreeSpinOutro />
 				<Transition />

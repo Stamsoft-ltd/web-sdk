@@ -467,6 +467,106 @@
 		height: auto;
 		margin: 0 auto;
 	}
+
+	.autoplay-backdrop {
+		display: block;
+		pointer-events: auto;
+		z-index: 11;
+	}
+
+	.autoplay-close {
+		width: 34px;
+		height: 34px;
+		border: 0;
+		box-shadow: none;
+		background: transparent;
+	}
+
+	.autoplay-close::after {
+		content: '×';
+		width: auto;
+		height: auto;
+		background-image: none;
+		font-family: var(--font-poppins);
+		font-size: 28px;
+		font-weight: 600;
+		line-height: 1;
+		color: #ffffffd9;
+	}
+
+	.autoplay-icon-btn.autoplay-menu-open::after {
+		content: '×';
+		width: auto;
+		height: auto;
+		background-image: none;
+		font-family: var(--font-poppins);
+		font-size: 32px;
+		font-weight: 600;
+		line-height: 1;
+		color: #fff;
+		filter: none;
+		-webkit-filter: none;
+	}
+
+	@media (min-width: 701px) and (hover: hover) and (pointer: fine) {
+		.autoplay-menu {
+			height: auto;
+			max-height: min(74vh, 440px);
+			padding: 22px 24px 24px;
+			overflow: visible;
+		}
+
+		.autoplay-menu-content {
+			gap: 10px;
+		}
+
+		.autoplay-header {
+			margin-bottom: 8px;
+		}
+
+		.autoplay-title + .autoplay-row,
+		.autoplay-title + .autoplay-speed {
+			margin-top: 4px;
+		}
+
+		.autoplay-menu .autoplay-row {
+			margin-bottom: 14px;
+		}
+
+		.autoplay-speed {
+			margin-top: 4px;
+			margin-bottom: 12px;
+		}
+
+		.autoplay-start {
+			height: 64px;
+			margin-top: 4px;
+		}
+
+		.menu-info-modal {
+			place-items: stretch;
+			padding: 0;
+		}
+
+		.menu-info-content {
+			width: 100%;
+			height: 100%;
+			max-height: none;
+			border-radius: 0;
+			box-sizing: border-box;
+			padding: 38px 56px 44px;
+		}
+
+		.hud-panel {
+			min-height: min(76vh, 430px);
+			align-content: center;
+		}
+
+		.hud-panel-content {
+			align-content: center;
+			gap: 14px;
+		}
+	}
 </style>
 
 {#if menuOpen}
@@ -726,6 +826,7 @@
 				<button
 					class="bet-control autoplay-icon-btn hud-btn-autoplay hud-btn-autoplay-mobile"
 					class:autoplay-active={autoplayButtonActive}
+					class:autoplay-menu-open={autoplayOpen}
 					onclick={toggleAutoplayOpen}
 					aria-label={autoplayOpen ? t('close_autoplay_options') : t('open_autoplay_options')}
 					disabled={hudInputBlocked || autoplayButtonDisabled}
@@ -761,6 +862,7 @@
 				<button
 					class="bet-control autoplay-icon-btn hud-btn-autoplay"
 					class:autoplay-active={autoplayButtonActive}
+					class:autoplay-menu-open={autoplayOpen}
 					onclick={toggleAutoplayOpen}
 					aria-label={autoplayOpen ? t('close_autoplay_options') : t('open_autoplay_options')}
 					disabled={hudInputBlocked || autoplayButtonDisabled}
@@ -788,14 +890,12 @@
 			</div>
 		</div>
 		{#if autoplayOpen}
-			{#if isMobileLandscapeUi}
-				<button
-					type="button"
-					class="autoplay-backdrop"
-					aria-label={t('close_autoplay_options')}
-					onclick={toggleAutoplayOpen}
-				></button>
-			{/if}
+			<button
+				type="button"
+				class="autoplay-backdrop"
+				aria-label={t('close_autoplay_options')}
+				onclick={toggleAutoplayOpen}
+			></button>
 			<div
 				class={`autoplay-menu ${autoplayMenuClass()}`.trim()}
 				onpointerdown={stopMenuEvent}
@@ -804,14 +904,12 @@
 				<div class="autoplay-menu-content">
 					<div class="autoplay-header">
 						<div class={`autoplay-main-title ${autoplayTitleClass(t('autoplay'))}`.trim()}>{t('autoplay')}</div>
-						{#if isMobilePortraitUi}
-							<button
-								type="button"
-								class="autoplay-close hud-btn-close"
-								onclick={toggleAutoplayOpen}
-								aria-label={t('close')}
-							></button>
-						{/if}
+						<button
+							type="button"
+							class="autoplay-close hud-btn-close"
+							onclick={toggleAutoplayOpen}
+							aria-label={t('close')}
+						></button>
 					</div>
 					<div class="autoplay-title autoplay-spins-title">{t('spins')}</div>
 					<div class="autoplay-row">
