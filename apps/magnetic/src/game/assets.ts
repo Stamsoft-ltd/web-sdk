@@ -65,7 +65,7 @@ export default {
 	},
 	capsuleTube: {
 		type: 'sprite',
-		src: './assets/components/ui/capsule_tube.png?v=20260708',
+		src: './assets/components/ui/capsule_tube.png?v=20260709b',
 		preload: true,
 	},
 	capsuleMagnet: {
@@ -76,6 +76,13 @@ export default {
 	capsuleLightning: {
 		type: 'sprite',
 		src: './assets/components/ui/capsule_lightning.png?v=20260708',
+		preload: true,
+	},
+	// Fine branching filaments extracted from the tube's original baked art — drawn additively
+	// inside the glass and flickered for a live crackle web around the central bolt.
+	capsuleCrackle: {
+		type: 'sprite',
+		src: './assets/components/ui/capsule_crackle.png?v=20260709b',
 		preload: true,
 	},
 	// Frameless premium elements designed to sit INSIDE the capsule tube (no square symbol frame).
@@ -297,11 +304,13 @@ export default {
 	squirrelExpTile: { type: 'sprite', src: './assets/components/symbols/squirrel_expand.png?v=20260625', preload: true },
 	squirrelExpWinTile: { type: 'sprite', src: './assets/new_assets/slots_replacement/premium_expanded/squirrel_exp_w.png?v=20260629', preload: true },
 	// Win boards — preloaded so board escalation during count-up doesn't stall
-	sweetWinBoard:     { type: 'sprite', src: './assets/components/win_boards/sweet_win.png?v=20260625', preload: true },
-	wildWinBoard:      { type: 'sprite', src: './assets/components/win_boards/big_win.png?v=20260625', preload: true },
-	epicWinBoard:      { type: 'sprite', src: './assets/components/win_boards/epic_win.png?v=20260625', preload: true },
-	mythicWinBoard:    { type: 'sprite', src: './assets/components/win_boards/mega_win.png?v=20260625', preload: true },
-	legendaryWinBoard: { type: 'sprite', src: './assets/components/win_boards/max_win.png?v=20260625', preload: true },
+	sweetWinBoard:     { type: 'sprite', src: './assets/components/win_boards/sweet_win.png?v=20260709', preload: true },
+	wildWinBoard:      { type: 'sprite', src: './assets/components/win_boards/big_win.png?v=20260709', preload: true },
+	epicWinBoard:      { type: 'sprite', src: './assets/components/win_boards/epic_win.png?v=20260709', preload: true },
+	mythicWinBoard:    { type: 'sprite', src: './assets/components/win_boards/mega_win.png?v=20260709', preload: true },
+	legendaryWinBoard: { type: 'sprite', src: './assets/components/win_boards/max_win.png?v=20260709', preload: true },
+	// Special wide board for the 20000x max-win cap (Figma 4143-16513), 1535×1025
+	maxWinBoard:       { type: 'sprite', src: './assets/components/win_boards/max_win_screen.png?v=20260709', preload: true },
 	pressToContinueText: {
 		type: 'sprites',
 		src: './assets/sprites/pressToContinueText/MM_pressanywhere.json?v=20260611',

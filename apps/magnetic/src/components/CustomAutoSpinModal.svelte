@@ -7,14 +7,20 @@
 	const context = getContext();
 
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	const panelBg = ap('/assets/components/ui/autoplay_panel.png');
+	// Blue bracketed board panel (Figma 4036-2458 uses board_panel_623x514 = fs_panel art).
+	const panelBg = ap('/assets/components/ui/fs_panel.png?v=20260708');
 
-	// Spin-count slider stops (last = unlimited)
-	const STOPS: Array<number> = [10, 25, 50, 100, 250, 500, Infinity];
-	let stopIndex = $state(3); // default 100
+	// Spin-count stops (last = unlimited), stepped with − / + per the Figma design.
+	const STOPS: Array<number> = [5, 10, 25, 50, 100, 250, 500, Infinity];
+	let stopIndex = $state(4); // default 100
 	const count = $derived(STOPS[stopIndex]);
 	const countLabel = $derived(count === Infinity ? '∞' : `${count}`);
-	const fillPct = $derived((stopIndex / (STOPS.length - 1)) * 100);
+	const disableDec = $derived(stopIndex <= 0);
+	const disableInc = $derived(stopIndex >= STOPS.length - 1);
+	const step = (dir: -1 | 1) => {
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		stopIndex = Math.min(STOPS.length - 1, Math.max(0, stopIndex + dir));
+	};
 
 	// Live game-state toggles (mirror the HUD)
 	const isTurbo = $derived(stateBet.isTurbo && !stateBet.isSuperTurbo);
@@ -60,8 +66,6 @@
 <div class="ap-root" role="dialog" aria-modal="true">
 	<div class="ap-panel" style={`background-image:url('${panelBg}')`}>
 		<div class="ap-content">
-			<p class="ap-title">AUTO SPIN</p>
-
 			<div class="ap-toggles">
 				<div class="ap-row">
 					<span class="ap-row__label">TURBO SPIN</span>
@@ -76,7 +80,7 @@
 					</button>
 				</div>
 				<div class="ap-row">
-					<span class="ap-row__label">50 X FEATURE SPIN</span>
+					<span class="ap-row__label">50 X BONUS FEATURE</span>
 					<button class="ap-switch" class:on={isFeature} type="button" onclick={toggleFeature} aria-pressed={isFeature}>
 						<span class="ap-switch__thumb"></span>
 					</button>
@@ -85,18 +89,10 @@
 
 			<p class="ap-spins-label">NUMBER OF SPINS</p>
 
-			<div class="ap-slider">
-				<input
-					class="ap-range"
-					type="range"
-					min="0"
-					max={STOPS.length - 1}
-					step="1"
-					bind:value={stopIndex}
-					style={`--fill:${fillPct}%`}
-					aria-label="Number of spins"
-				/>
-				<span class="ap-slider__value">{countLabel}</span>
+			<div class="ap-stepper">
+				<button class="ap-step" type="button" disabled={disableDec} onclick={() => step(-1)} aria-label="Fewer spins">−</button>
+				<span class="ap-count">{countLabel}</span>
+				<button class="ap-step" type="button" disabled={disableInc} onclick={() => step(1)} aria-label="More spins">+</button>
 			</div>
 
 			<button class="ap-start" type="button" onclick={start}>
@@ -111,208 +107,192 @@
 		position: fixed;
 		inset: 0;
 		z-index: 58;
-		background: rgba(0, 0, 0, 0.64);
+		background: rgba(0, 0, 0, 0.7);
 		backdrop-filter: blur(4px);
 	}
 
+	/* Everything inside the panel is sized in em off this width-derived font-size, so the whole
+	   dialog scales proportionally with the panel (Figma design width = 623px → 1em = 16px). */
 	.ap-root {
 		position: fixed;
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 59;
-		width: min(620px, 94vw);
-		font-family: 'Cinzel', serif;
+		width: min(623px, 94vw, 104vh);
+		font-size: calc(min(623px, 94vw, 104vh) / 38.9375);
+		font-family: 'Inter', sans-serif;
 	}
 
-	/* Round wood close button, pinned to the top-right end of the screen */
+	/* Blue circular close button, pinned to the top-right of the screen (matches the buy-bonus one) */
 	.ap-close {
 		position: fixed;
 		top: 22px;
 		right: 22px;
 		z-index: 60;
-		width: 52px;
-		height: 52px;
+		width: 48px;
+		height: 48px;
 		border-radius: 50%;
-		border: 2px solid rgba(217, 133, 3, 0.7);
-		background: radial-gradient(circle at 50% 35%, #3a2a16, #140d06);
-		color: #e8c878;
-		font-size: 1.1rem;
+		border: 1.5px solid #00fcff;
+		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
+		color: #cfe6ff;
+		font-size: 1rem;
 		font-weight: 700;
 		cursor: pointer;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 		display: grid;
 		place-items: center;
+		box-shadow: 0 0 12px rgba(0, 140, 255, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5);
 		transition: filter 0.12s ease;
 	}
-	.ap-close:hover { filter: brightness(1.2); }
+	.ap-close:hover { filter: brightness(1.25); }
 
-	/* Wooden panel background (Figma art), fixed aspect */
+	/* Blue bracketed tech panel (fs_panel.png, 623×514 design size) */
 	.ap-panel {
-		aspect-ratio: 1402 / 1122;
+		aspect-ratio: 623 / 514;
 		background-size: 100% 100%;
 		background-repeat: no-repeat;
 		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 17% 19%;
 		box-sizing: border-box;
+		/* Figma: content column is 494 wide inside 623 (~10.3% side padding), rows start ~15% down. */
+		padding: 15% 10.3% 9%;
 	}
 
 	.ap-content {
 		width: 100%;
 		display: flex;
 		flex-direction: column;
-		gap: clamp(8px, 1.6vw, 16px);
-	}
-
-	.ap-title {
-		margin: 0 0 clamp(2px, 0.6vw, 6px);
-		text-align: center;
-		font-weight: 900;
-		font-size: clamp(1.1rem, 2.4vw, 1.5rem);
-		letter-spacing: 0.08em;
-		background: linear-gradient(180deg, #ffd84a 10%, #ffa90e 60%, #d18005 95%);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 	}
 
 	.ap-toggles {
 		display: flex;
 		flex-direction: column;
-		gap: clamp(6px, 1.3vw, 14px);
+		gap: 1em;
 	}
 
 	.ap-row {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 10px;
+		gap: 0.6em;
 	}
 
+	/* Figma: IBM Plex Sans Condensed Bold 20px, white, 0.6px tracking */
 	.ap-row__label {
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: 1.25em;
+		letter-spacing: 0.03em;
 		color: #fff;
-		font-weight: 900;
-		font-size: clamp(0.72rem, 1.5vw, 0.95rem);
-		letter-spacing: 0.04em;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
 	}
 
-	/* Green toggle switch */
+	/* Cyan toggle switch (62×33 design size) */
 	.ap-switch {
 		flex: 0 0 auto;
 		position: relative;
-		width: 52px;
-		height: 27px;
+		width: 3.875em;
+		height: 2.075em;
 		border-radius: 999px;
 		border: 1px solid rgba(0, 0, 0, 0.4);
-		background: linear-gradient(180deg, #2c2c2c, #1a1a1a);
+		background: linear-gradient(180deg, #3c4654, #232a35);
 		cursor: pointer;
 		padding: 0;
 		transition: background 0.2s ease;
 	}
 	.ap-switch.on {
-		background: linear-gradient(180deg, #7ec23a, #4e8f1d);
+		background: linear-gradient(180deg, #00c2ff, #0075d9);
+		border-color: rgba(0, 252, 255, 0.6);
+		box-shadow: 0 0 10px rgba(0, 194, 255, 0.45);
 	}
 	.ap-switch__thumb {
 		position: absolute;
 		top: 50%;
-		left: 3px;
+		left: 8%;
 		transform: translateY(-50%);
-		width: 21px;
-		height: 21px;
+		width: 1.55em;
+		height: 1.55em;
 		border-radius: 50%;
 		background: #fff;
 		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 		transition: left 0.2s ease;
 	}
-	.ap-switch.on .ap-switch__thumb { left: calc(100% - 24px); }
+	.ap-switch.on .ap-switch__thumb { left: calc(92% - 1.55em); }
 
+	/* Figma: IBM Plex Sans Condensed Bold 20px, cyan→blue gradient, centered */
 	.ap-spins-label {
-		margin: 0;
+		margin: auto 0 0;
 		text-align: center;
-		font-weight: 900;
-		font-size: clamp(0.8rem, 1.7vw, 1.05rem);
-		letter-spacing: 0.06em;
-		background: linear-gradient(180deg, #ffa90e 15%, #ee960b 70%, #d18005 93%);
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: 1.25em;
+		letter-spacing: 0.03em;
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
+		color: transparent;
 	}
 
-	/* Slider */
-	.ap-slider {
+	/* − [count] + stepper row */
+	.ap-stepper {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		justify-content: center;
+		gap: 2.7em;
+		margin-top: 0.9em;
 	}
 
-	.ap-range {
-		flex: 1 1 auto;
-		-webkit-appearance: none;
-		appearance: none;
-		height: 12px;
-		border-radius: 6px;
-		background: linear-gradient(
-			to right,
-			#6fb22f 0%,
-			#6fb22f var(--fill, 50%),
-			rgba(0, 0, 0, 0.55) var(--fill, 50%),
-			rgba(0, 0, 0, 0.55) 100%
-		);
-		border: 1px solid rgba(0, 0, 0, 0.5);
-		outline: none;
+	.ap-step {
+		/* own font-size is 1.4em, so box dims are divided by 1.4 to stay 48.7px at design size */
+		width: 2.17em;
+		height: 2.17em;
+		flex-shrink: 0;
+		border-radius: 50%;
+		border: 1.5px solid #00fcff;
+		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
+		color: #cfe6ff;
+		font-size: 1.4em;
+		font-weight: 400;
+		line-height: 1;
+		display: grid;
+		place-items: center;
 		cursor: pointer;
-	}
-	.ap-range::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 26px;
-		height: 26px;
-		border-radius: 6px;
-		background: radial-gradient(circle at 50% 35%, #6b4a25, #3a2611);
-		border: 2px solid #d98503;
-		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-		cursor: pointer;
-	}
-	.ap-range::-moz-range-thumb {
-		width: 26px;
-		height: 26px;
-		border-radius: 6px;
-		background: radial-gradient(circle at 50% 35%, #6b4a25, #3a2611);
-		border: 2px solid #d98503;
-		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-		cursor: pointer;
-	}
-
-	.ap-slider__value {
-		flex: 0 0 auto;
-		min-width: 42px;
-		text-align: center;
-		color: #fff;
-		font-weight: 900;
-		font-size: clamp(0.85rem, 1.7vw, 1.05rem);
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
-	}
-
-	/* Gold start button */
-	.ap-start {
-		width: 100%;
-		padding: clamp(8px, 1.6vw, 13px);
-		border: none;
-		border-radius: 9px;
-		background: linear-gradient(180deg, #ffa90e 15%, #ee960b 70%, #d18005 93%);
-		color: #452b01;
-		font-family: 'Cinzel', serif;
-		font-weight: 900;
-		font-size: clamp(0.78rem, 1.6vw, 1rem);
-		letter-spacing: 0.04em;
-		cursor: pointer;
-		box-shadow: 0 0 4px #d98503, 0 4px 10px rgba(0, 0, 0, 0.5);
+		box-shadow: 0 0 10px rgba(0, 200, 255, 0.3);
 		transition: filter 0.12s ease;
 	}
-	.ap-start:hover { filter: brightness(1.06); }
+	.ap-step:hover:not(:disabled) { filter: brightness(1.3); }
+	.ap-step:disabled { opacity: 0.4; cursor: default; }
+
+	/* Figma: Inter Bold 32px white */
+	.ap-count {
+		min-width: 2.6em;
+		text-align: center;
+		color: #fff;
+		font-weight: 700;
+		font-size: 2em;
+		letter-spacing: 0.03em;
+		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+	}
+
+	/* Figma: full-width cyan button, 44px tall, radius 12, Inter Bold 14 / 1.4px tracking */
+	.ap-start {
+		/* own font-size is 0.875em → design px ÷ 0.875 (44px height, 12px radius, 24px top gap) */
+		width: 100%;
+		height: 3.14em;
+		margin-top: 1.7em;
+		border: 1px solid #60a5fa;
+		border-radius: 0.857em;
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+		color: #fff;
+		font-family: 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: 0.875em;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		cursor: pointer;
+		filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
+		transition: filter 0.12s ease;
+	}
+	.ap-start:hover { filter: brightness(1.12) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25)); }
 	.ap-start:active { filter: brightness(0.95); }
 </style>

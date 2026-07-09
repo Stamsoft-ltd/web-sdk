@@ -8,8 +8,8 @@
 </script>
 
 <script lang="ts">
-	import { Container } from 'pixi-svelte';
-	import { FadeContainer, WinCountUpProvider, ResponsiveBitmapText } from 'components-pixi';
+	import { Container, Graphics, Text, type Sizes } from 'pixi-svelte';
+	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
@@ -21,6 +21,7 @@
 	import { SYMBOL_SIZE } from '../game/constants';
 	import { getContext } from '../game/context';
 	import { winBoardByAlias } from '../game/utils';
+	import { WIN_GRADIENT } from '../game/goldGradient';
 	import { stateBet } from 'state-shared';
 
 	const context = getContext();
@@ -33,6 +34,9 @@
 	let isCountingUp = $state(false);
 	let shakeX = $state(0);
 	let shakeY = $state(0);
+	// Measured text sizes for scale-to-fit (board plaque / full-screen win).
+	let boardSizes = $state<Sizes>({ width: 0, height: 0 });
+	let winSizes = $state<Sizes>({ width: 0, height: 0 });
 
 	const boardLayout = $derived(context.stateGameDerived.boardLayout());
 	const mainLayout = $derived(context.stateLayoutDerived.mainLayout());
@@ -101,42 +105,84 @@
 						{#if hasBoardAnimation}
 							{@const bs = boardLayout.boardScale}
 							{@const mult = stateBet.betAmount > 0 ? countUpAmount / stateBet.betAmount : 0}
-							{@const boardKey = mult >= 1000 ? winBoardByAlias.max : mult >= 250 ? winBoardByAlias.epic : mult >= 100 ? winBoardByAlias.mega : mult >= 50 ? winBoardByAlias.superwin : winBoardByAlias.big}
+							<!-- MAX WIN board is reserved for the 20000x win cap; LEGENDARY covers 250x up to the cap. -->
+							{@const boardKey = mult >= 20000 ? 'maxWinBoard' : mult >= 250 ? winBoardByAlias.epic : mult >= 100 ? winBoardByAlias.mega : mult >= 50 ? winBoardByAlias.superwin : winBoardByAlias.big}
 							{@const boardSize = Math.min(boardLayout.width * bs * 0.55, boardLayout.height * bs * 0.85)}
+							<!-- The MAX WIN art is wide (1535×1025), not square; its amount plaque sits lower/narrower. -->
+							{@const isMaxBoard = boardKey === 'maxWinBoard'}
+							{@const boardW = isMaxBoard ? boardSize * 1.35 : boardSize}
+							{@const boardH = isMaxBoard ? boardW * (1025 / 1535) : boardSize}
+							<!-- Soft ambient glow behind the board, tinted to the tier (matches the Figma ellipse
+							     and the forest-gang treatment). Additive concentric circles = cheap radial glow. -->
+							{@const glowColor =
+								boardKey === 'sweetWinBoard' ? 0x2fb4ff
+								: boardKey === 'wildWinBoard' ? 0x46e04b
+								: boardKey === 'epicWinBoard' ? 0xff4032
+								: boardKey === 'mythicWinBoard' ? 0xa64dff
+								: 0xffb428 /* legendary + max win: gold */}
+							<Graphics
+								blendMode="add"
+								draw={(g) => {
+									g.clear();
+									const R = boardW * 0.78;
+									const steps = 14;
+									for (let i = steps; i >= 1; i--) {
+										const t = i / steps;
+										g.beginFill(glowColor, 0.05 * (1 - t) * (1 - t) + 0.004);
+										g.drawCircle(0, 0, R * t);
+										g.endFill();
+									}
+								}}
+							/>
 							{#if boardKey}
 								<Sprite
 									key={boardKey}
 									anchor={0.5}
-									width={boardSize}
-									height={boardSize}
+									width={boardW}
+									height={boardH}
 								/>
 							{/if}
-							<ResponsiveBitmapText
-								anchor={0.5}
-								y={boardSize * 0.36 - 8}
-								maxWidth={boardSize * 0.62}
-								text={bookEventAmountToCurrencyString(countUpAmount)}
-								style={{
-									fontFamily: 'gold',
-									fontSize: SYMBOL_SIZE * bs * 0.295,
-									align: 'center',
-									fontWeight: 'bold',
-									letterSpacing: 0,
-								}}
-							/>
+							<!-- Win amount — Cinzel 900 gold gradient with a black outline; scales to fit the board -->
+							{@const boardFont = SYMBOL_SIZE * bs * 0.295}
+							{@const boardMaxW = isMaxBoard ? boardW * 0.4 : boardSize * 0.62}
+							{@const boardScale = boardSizes.width > boardMaxW ? boardMaxW / boardSizes.width : 1}
+							<!-- 0.37: digits sit visually centred in the plaque (Cinzel's ascender space pushes them up) -->
+							<Container y={isMaxBoard ? boardH * 0.31 : boardSize * 0.37} scale={boardScale}>
+								<Text
+									anchor={0.5}
+									onresize={(s) => (boardSizes = s)}
+									text={bookEventAmountToCurrencyString(countUpAmount)}
+									style={{
+										fontFamily: 'Cinzel',
+										fontWeight: '900',
+										fontSize: boardFont,
+										fill: WIN_GRADIENT,
+										align: 'center',
+										letterSpacing: boardFont * 0.03,
+										stroke: { color: 0x000000, width: Math.max(2, Math.round(boardFont * 0.04)) },
+									}}
+								/>
+							</Container>
 						{:else}
-							<ResponsiveBitmapText
-								anchor={0.5}
-								maxWidth={context.stateLayoutDerived.canvasSizes().width / context.stateLayoutDerived.mainLayout().scale}
-								text={bookEventAmountToCurrencyString(countUpAmount)}
-								style={{
-									fontFamily: 'gold',
-									fontSize: SYMBOL_SIZE,
-									align: 'center',
-									fontWeight: 'bold',
-									letterSpacing: 0,
-								}}
-							/>
+							{@const winMaxW = context.stateLayoutDerived.canvasSizes().width / context.stateLayoutDerived.mainLayout().scale}
+							{@const winScale = winSizes.width > winMaxW ? winMaxW / winSizes.width : 1}
+							<!-- Line-win amount (no board animation) — white, per design feedback -->
+							<Container scale={winScale}>
+								<Text
+									anchor={0.5}
+									onresize={(s) => (winSizes = s)}
+									text={bookEventAmountToCurrencyString(countUpAmount)}
+									style={{
+										fontFamily: 'Cinzel',
+										fontWeight: '900',
+										fontSize: SYMBOL_SIZE,
+										fill: 0xffffff,
+										align: 'center',
+										letterSpacing: SYMBOL_SIZE * 0.03,
+										stroke: { color: 0x000000, width: Math.max(2, Math.round(SYMBOL_SIZE * 0.04)) },
+									}}
+								/>
+							</Container>
 						{/if}
 					</Container>
 				</MainContainer>

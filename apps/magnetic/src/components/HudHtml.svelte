@@ -81,8 +81,9 @@
 	const isFeatureActive = $derived(stateBet.activeBetModeKey === 'FEATURE');
 	const isChanceActive = $derived(stateBet.activeBetModeKey === 'CHANCE');
 	const isAnyModeActive = $derived(isFeatureActive || isChanceActive);
+	// Bolder icon = faster: normal = outline bolt (turbo3), turbo = solid bolt (turbo), super = double (turbo1)
 	const turboIcon = $derived(
-		stateBet.isSuperTurbo ? iconTurbo3 : stateBet.isTurbo ? iconTurbo1 : iconTurbo,
+		stateBet.isSuperTurbo ? iconTurbo1 : stateBet.isTurbo ? iconTurbo : iconTurbo3,
 	);
 	const isMuted = $derived(stateSound.volumeValueMaster === 0);
 	const betOptions = $derived(stateConfig.betAmountOptions);
@@ -334,13 +335,8 @@
 		<div class="hud-divider" aria-hidden="true"></div>
 
 		<div class="hud-controls">
-			<div
-				class="value-pill value-pill--bet bet-pill"
-				role="button"
-				tabindex="0"
-				onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
-				onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
-			>
+			<!-- Display-only: bet changes go through the − / + steppers (bet menu on click disabled). -->
+			<div class="value-pill value-pill--bet bet-pill">
 				<span class="bet-coin" aria-hidden="true">
 					<img src={iconCoins} alt="" />
 				</span>
@@ -801,10 +797,6 @@
 		height: 100%;
 		object-fit: contain;
 		display: block;
-	}
-
-	.bet-pill {
-		cursor: pointer;
 	}
 
 	.label {
