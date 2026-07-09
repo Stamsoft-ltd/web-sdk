@@ -105,14 +105,15 @@
 		background: #05070f;
 	}
 
-	/* Height-fit 16:9 stage (full artwork height always visible; width follows). */
+	/* Height-fit 16:9 stage, sized to the splash CONTAINER (not the viewport) so overlays stay locked
+	   to the artwork even when the game area is smaller than the browser window. */
 	.stage {
 		position: absolute;
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-		height: 100vh;
-		width: calc(100vh * 16 / 9);
+		height: 100%;
+		aspect-ratio: 16 / 9;
 		background-size: 100% 100%;
 		background-position: center;
 		background-repeat: no-repeat;
@@ -131,20 +132,21 @@
 	.brand {
 		position: absolute;
 		left: 50%;
-		top: 3%;
+		top: 2%;
 		transform: translateX(-50%);
 		width: 9.4%;
 		object-fit: contain;
 		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.7));
 	}
 
-	/* Game logo, centred below the studio logo. */
+	/* Game logo, centred below the studio logo. Anchored by its CENTRE (translate -50%,-50%) so the
+	   logo art sits at `top` regardless of the transparent glow padding baked into the PNG. */
 	.logo {
 		position: absolute;
 		left: 50%;
-		top: 15%;
-		transform: translateX(-50%);
-		width: 27%;
+		top: 26%;
+		transform: translate(-50%, -50%);
+		width: 52%;
 		object-fit: contain;
 		filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.75));
 	}

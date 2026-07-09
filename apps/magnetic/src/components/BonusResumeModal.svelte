@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { stateBet, stateUi } from 'state-shared';
+	import { stateBet } from 'state-shared';
 
 	type Props = { onPlay: () => void; onEnd: () => Promise<void> };
 	const props: Props = $props();
+
+	const panelBg = './assets/components/ui/confirm_panel.png?v=20260708b';
 
 	let ending = $state(false);
 	const handleEnd = async () => {
@@ -12,20 +14,20 @@
 	};
 
 	const mode = $derived(stateBet.betToResume?.mode ?? '');
-	const modeLabel = $derived(mode === 'SUPER' ? 'All In' : mode === 'BONUS' ? 'Deal It' : 'Bonus');
+	const modeLabel = $derived(mode === 'SUPER' ? 'Mega Chain' : mode === 'BONUS' ? 'Drop-O-Magnet' : 'Bonus');
 </script>
 
 <div class="modal-overlay">
-	<div class="modal">
-		<h2 class="title">Unfinished Round</h2>
-		<p class="subtitle">You have an active <strong>{modeLabel}</strong> bonus in progress.</p>
-		<div class="buttons">
-			<button class="btn btn-play" onclick={props.onPlay}>
-				▶ Play Round
-			</button>
-			<button class="btn btn-end" onclick={handleEnd} disabled={ending}>
-				{ending ? '…' : '✕ End Round'}
-			</button>
+	<div class="resume" role="dialog" aria-modal="true">
+		<div class="resume-panel" style={`background-image:url('${panelBg}')`}>
+			<div class="resume-content">
+				<div class="resume-title">UNFINISHED ROUND</div>
+				<div class="resume-text">You have an active <strong>{modeLabel}</strong> bonus in progress.</div>
+				<div class="resume-row">
+					<button class="resume-btn resume-btn--ok" type="button" onclick={props.onPlay}>PLAY ROUND</button>
+					<button class="resume-btn resume-btn--cancel" type="button" onclick={handleEnd} disabled={ending}>{ending ? '…' : 'END ROUND'}</button>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
@@ -34,53 +36,104 @@
 	.modal-overlay {
 		position: fixed;
 		inset: 0;
-		background: rgba(0, 0, 0, 0.75);
+		background: rgba(0, 0, 0, 0.72);
+		backdrop-filter: blur(5px);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		z-index: 9999;
 	}
-	.modal {
-		background: #0d1a0e;
-		border: 2px solid #d4a017;
-		border-radius: 16px;
-		padding: 2rem 2.5rem;
-		text-align: center;
-		max-width: 380px;
-		width: 90%;
+
+	.resume {
+		/* Figma panel is 500px wide; cqw units below resolve to the spec px at this width. */
+		width: min(500px, 92vw);
+		container-type: inline-size;
+		font-family: 'Inter', sans-serif;
 	}
-	.title {
-		color: #ffd84d;
-		font-size: 1.4rem;
-		margin: 0 0 0.5rem;
-		font-family: serif;
-	}
-	.subtitle {
-		color: #ccc;
-		font-size: 0.95rem;
-		margin: 0 0 1.5rem;
-	}
-	.buttons {
+
+	/* Blue bracketed panel background (shared with the buy-bonus confirm dialog) */
+	.resume-panel {
+		aspect-ratio: 500 / 300;
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
 		display: flex;
-		gap: 1rem;
+		align-items: center;
+		justify-content: center;
+		padding: 13% 13% 14%;
+		box-sizing: border-box;
+	}
+
+	.resume-content {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: space-between;
+		text-align: center;
+	}
+
+	/* Cinzel Black, cyan→blue gradient (Figma #00fcff → #0046a9) */
+	.resume-title {
+		font-family: 'Cinzel', serif;
+		font-weight: 900;
+		font-size: 4.8cqw;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		line-height: 1;
+		white-space: nowrap;
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+		filter: drop-shadow(0 2px 8px rgba(0, 60, 140, 0.55));
+	}
+
+	/* Inter, white (Figma 20px / 0.6px) */
+	.resume-text {
+		font-family: 'Inter', sans-serif;
+		font-size: 3.8cqw;
+		font-weight: 500;
+		letter-spacing: 0.03em;
+		color: #fff;
+		line-height: 1.35;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+	}
+	.resume-text strong {
+		font-weight: 700;
+		color: #7fdcff;
+	}
+
+	.resume-row {
+		display: flex;
+		gap: 3.2cqw;
 		justify-content: center;
 	}
-	.btn {
-		padding: 0.65rem 1.4rem;
-		border-radius: 8px;
-		font-size: 0.95rem;
-		font-weight: bold;
-		cursor: pointer;
-		border: none;
-	}
-	.btn-play {
-		background: #2e7d32;
+	.resume-btn {
+		border: 1px solid #60a5fa;
+		border-radius: 2.4cqw;
+		padding: 2.4cqw 4.8cqw;
+		min-width: 28cqw;
+		font-family: 'Inter', sans-serif;
+		font-size: 2.8cqw;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
 		color: #fff;
+		cursor: pointer;
+		filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
+		transition: filter 0.12s ease;
 	}
-	.btn-play:hover { background: #388e3c; }
-	.btn-end {
-		background: #5a1a1a;
-		color: #ccc;
+	.resume-btn:hover {
+		filter: brightness(1.12) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
 	}
-	.btn-end:hover { background: #7b2020; }
+	/* Play Round — bright cyan (primary) */
+	.resume-btn--ok {
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+	}
+	/* End Round — dark navy (secondary) */
+	.resume-btn--cancel {
+		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
+	}
 </style>

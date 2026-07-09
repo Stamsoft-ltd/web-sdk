@@ -1,16 +1,19 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { stateBet, stateBetDerived } from 'state-shared';
+	import { stateBet, stateBetDerived, stateConfig } from 'state-shared';
 	import { getContext } from '../game/context';
 	import { magneticStakeDerived } from '../state/magneticStake.svelte';
 
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	const cardFrame      = ap('/assets/components/frames/bonus_menu_frame.webp');
-	const dealItIcon     = ap('/assets/components/ui/bonus_deal_it_icon.webp');
-	const allInIcon      = ap('/assets/components/ui/bonus_all_in_icon.webp');
-	const featureIcon    = ap('/assets/components/ui/bonus_feature_spin_icon.webp');
-	const iconPlay       = ap('/assets/hud/icon-play.svg');
-	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.png?v=20260624');
+	const cardPanel      = ap('/assets/components/ui/bb_card_panel.png?v=20260708c');
+	const betPanel       = ap('/assets/components/ui/bb_bet_panel.png?v=20260708c');
+	const confirmPanelBg = ap('/assets/components/ui/confirm_panel.png?v=20260708b');
+	const coinIcon       = ap('/assets/components/ui/bb_coin.svg?v=20260708c');
+
+	// Icons — exact Figma art (node 4040-4075): glowing magnet, purple M cube, red M briefcase.
+	const iconChance  = ap('/assets/components/ui/bb_icon_extra_chance.png?v=20260708c');
+	const iconFeature = ap('/assets/components/ui/bb_icon_feature_spins.png?v=20260708c');
+	const iconBrief   = ap('/assets/components/ui/bb_icon_briefcase.png?v=20260708c');
 
 	type Props = {
 		onclose: () => void;
@@ -23,12 +26,73 @@
 	const props: Props = $props();
 	const context = getContext();
 
+	// Portrait (mobile) uses a single vertical scrollable column of cards (Figma 4137-16084);
+	// landscape/desktop keeps the 4-in-a-row layout.
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+
+	// Landscape/desktop card sizing. The modal is rendered inside the (often CSS-scaled) game
+	// container, NOT the browser window — so vw/vh don't map to the real box and cards ended up
+	// clipped/oversized. Instead we MEASURE the panel and size each card as the largest square
+	// that fits both the row width and the leftover height, then feed everything to CSS as px vars.
+	const clampNum = (min: number, val: number, max: number) => Math.max(min, Math.min(val, max));
+	let panelEl = $state<HTMLDivElement>();
+	let landscapeVars = $state('');
+	$effect(() => {
+		if (isPortrait || !panelEl) return;
+		const el = panelEl;
+		const measure = () => {
+			const w = el.clientWidth;
+			const h = el.clientHeight;
+			if (!w || !h) return;
+			// Chrome (title / close button) scales down on small containers so it doesn't dominate.
+			const uiScale = clampNum(0.6, Math.min(w, h) / 520, 1);
+			const closePx = 48 * uiScale;
+			const titlePx = 18 * uiScale;
+			const gap = clampNum(8, w * 0.011, 22);
+			const padX = clampNum(8, w * 0.008, 32);
+			const padTop = clampNum(46, closePx * 1.4, 132);
+			const padBot = clampNum(10, h * 0.04, 40);
+			const vGap = clampNum(8, h * 0.024, 28);
+			// Bet bar shrinks with the container; its − / + and text derive from its width.
+			const betW = clampNum(120, w * 0.24, 380);
+			const betH = (betW * 107) / 298;
+			const betStep = clampNum(24, betW * 0.17, 52);
+			const widthBudget = (Math.min(w, 1860) - 2 * padX - 3 * gap) / 4;
+			const heightBudget = h - padTop - padBot - vGap - betH;
+			// Cards are a touch taller than wide (--bb-card drives width + content scaling; the extra
+			// height gives breathing room so the button isn't flush to the bottom edge).
+			const cardHRatio = 1.1;
+			const card = Math.min(widthBudget, Math.max(56, heightBudget) / cardHRatio, 420);
+			const cardH = card * cardHRatio;
+			landscapeVars =
+				`--bb-card:${card}px;--bb-card-h:${cardH}px;--bb-gap:${gap}px;--bb-pad-x:${padX}px;` +
+				`--bb-pad-top:${padTop}px;--bb-pad-bot:${padBot}px;--bb-vgap:${vGap}px;` +
+				`--bb-bet-w:${betW}px;--bb-bet-step:${betStep}px;--bb-close:${closePx}px;--bb-title:${titlePx}px`;
+		};
+		measure();
+		const ro = new ResizeObserver(measure);
+		ro.observe(el);
+		return () => ro.disconnect();
+	});
+
 	const betAmount   = $derived(stateBet.betAmount);
 	const chanceCost  = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 2));
 	const bonusCost   = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 100));
 	const superCost   = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 500));
 	const featureCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 50));
+	const betDisplay  = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount));
 	const canBuy      = $derived(stateBetDerived.isBetCostAvailable());
+
+	// Bet selector (mirrors the HUD bet stepper).
+	const betOptions      = $derived(stateConfig.betAmountOptions);
+	const currentBetIndex = $derived(Math.max(0, betOptions.indexOf(betAmount)));
+	const disableDec      = $derived(currentBetIndex <= 0);
+	const disableInc      = $derived(currentBetIndex >= betOptions.length - 1);
+	const stepBet = (dir: -1 | 1) => {
+		const i = Math.min(betOptions.length - 1, Math.max(0, currentBetIndex + dir));
+		const next = betOptions[i];
+		if (typeof next === 'number' && next !== betAmount) stateBetDerived.setBetAmount(next);
+	};
 
 	let confirmMode = $state<null | 'BONUS' | 'SUPER'>(null);
 
@@ -37,7 +101,7 @@
 	const closeConfirm = () => { confirmMode = null; };
 	const toggleActivateMode = (toggle: () => void) => { toggle(); props.onclose(); };
 
-	const confirmLabel = $derived(confirmMode === 'SUPER' ? 'MEGA CHAIN' : 'DROP-O-MAGNET');
+	const confirmLabel = $derived(confirmMode === 'SUPER' ? 'ALL IN' : 'DEAL IT');
 	const confirmCost  = $derived(confirmMode === 'SUPER' ? superCost : bonusCost);
 
 	onMount(() => {
@@ -54,51 +118,37 @@
 <button class="backdrop" type="button" aria-label="Close" tabindex="-1" onclick={props.onclose}></button>
 
 <!-- Panel -->
-<div class="panel" role="dialog" aria-modal="true">
-
-	<button class="close-btn" type="button" onclick={props.onclose}>✕</button>
-
+<div class="panel" class:portrait={isPortrait} bind:this={panelEl} style={isPortrait ? '' : landscapeVars} role="dialog" aria-modal="true">
 	<h2 class="title">BUY BONUS</h2>
+	<button class="close-btn" type="button" onclick={props.onclose} aria-label="Close">✕</button>
 
 	<div class="grid">
-
-		<!-- DEAL IT -->
-		<div class="card" style="--frame:url('{cardFrame}')">
-			<span class="card-title">DROP-O-MAGNET</span>
-			<span class="card-desc">10 FREE SPINS · BOOSTED MAGNET CHANCE · TARGET LOCKS ONLY WHEN MAGNET HITS</span>
-			<img class="card-icon" src={dealItIcon} alt="" />
-			<span class="card-price">{bonusCost}</span>
-			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('BONUS')}>BUY</button>
-		</div>
-
-		<!-- CHANCE SPIN -->
-		<div class="card" style="--frame:url('{cardFrame}')">
-			<span class="card-title">CHANCE SPIN</span>
-			<span class="card-desc">2× BET · 3× BONUS TRIGGER CHANCE · {chanceCost} / SPIN</span>
-			<div class="card-icon-wrap">
-				<img class="card-icon" src={featureIcon} alt="" />
-				<img class="card-icon-overlay" src={iconPlay} alt="" />
+		<!-- Extra Chance -->
+		<div class="card" style={`background-image:url('${cardPanel}')`}>
+			<span class="card-title">Extra Chance</span>
+			<span class="card-desc">Activate to increase 3 times the chance of trigger a bonus round</span>
+			<div class="card-icon-slot">
+				<img class="card-icon" src={iconChance} alt="" />
 			</div>
 			<span class="card-price">{chanceCost} / spin</span>
 			<button
-				class="card-btn"
+				class="card-btn card-btn--activate"
 				class:card-btn--active={props.isChanceActive}
 				type="button"
 				onclick={() => toggleActivateMode(props.onToggleChance)}
 			>{props.isChanceActive ? 'DEACTIVATE' : 'ACTIVATE'}</button>
 		</div>
 
-		<!-- FEATURE SPIN -->
-		<div class="card" style="--frame:url('{cardFrame}')">
-			<span class="card-title">FEATURE SPIN</span>
-			<span class="card-desc">1 PAID SPIN · GUARANTEED MAGNET · {featureCost} / SPIN</span>
-			<div class="card-icon-wrap">
-				<img class="card-icon" src={featureIcon} alt="" />
-				<img class="card-icon-overlay" src={iconPlay} alt="" />
+		<!-- Feature Spins -->
+		<div class="card" style={`background-image:url('${cardPanel}')`}>
+			<span class="card-title">Feature Spins</span>
+			<span class="card-desc">Guarantees a special expanding simbol for the spin picked at random</span>
+			<div class="card-icon-slot">
+				<img class="card-icon" src={iconFeature} alt="" />
 			</div>
 			<span class="card-price">{featureCost} / spin</span>
 			<button
-				class="card-btn"
+				class="card-btn card-btn--activate"
 				class:card-btn--active={props.isFeatureActive}
 				type="button"
 				onclick={() => toggleActivateMode(props.onToggleFeature)}
@@ -106,14 +156,41 @@
 		</div>
 
 		<!-- ALL IN -->
-		<div class="card" style="--frame:url('{cardFrame}')">
-			<span class="card-title">MEGA CHAIN</span>
-			<span class="card-desc">10 FREE SPINS · FIRST SPIN GUARANTEED MAGNET · TARGET + CLUSTER + MULTIPLIER PERSIST</span>
-			<img class="card-icon" src={allInIcon} alt="" />
+		<div class="card" style={`background-image:url('${cardPanel}')`}>
+			<span class="card-title">ALL IN</span>
+			<span class="card-desc">10 Free Spins with random expanding symbol and multiplier start at 2x and doubles on every</span>
+			<div class="card-icon-slot">
+				<span class="card-mult">3x</span>
+				<img class="card-icon card-icon--brief" src={iconBrief} alt="" />
+			</div>
 			<span class="card-price">{superCost}</span>
 			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('SUPER')}>BUY</button>
 		</div>
 
+		<!-- DEAL IT -->
+		<div class="card" style={`background-image:url('${cardPanel}')`}>
+			<span class="card-title">DEAL IT</span>
+			<span class="card-desc">10 Free Spins with random expanding simbol and a random multiplier up to 1024x</span>
+			<div class="card-icon-slot">
+				<span class="card-mult">4x</span>
+				<img class="card-icon card-icon--brief" src={iconBrief} alt="" />
+			</div>
+			<span class="card-price">{bonusCost}</span>
+			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('BONUS')}>BUY</button>
+		</div>
+	</div>
+
+	<!-- Bet selector -->
+	<div class="bet" style={`background-image:url('${betPanel}')`}>
+		<button class="bet-step" type="button" disabled={disableDec} onclick={() => stepBet(-1)} aria-label="Decrease bet">−</button>
+		<div class="bet-center">
+			<img class="bet-coin" src={coinIcon} alt="" />
+			<div class="bet-value">
+				<span class="bet-label">BET</span>
+				<span class="bet-amount">{betDisplay}</span>
+			</div>
+		</div>
+		<button class="bet-step" type="button" disabled={disableInc} onclick={() => stepBet(1)} aria-label="Increase bet">+</button>
 	</div>
 </div>
 
@@ -125,7 +202,7 @@
 		<div class="confirm-panel" style={`background-image:url('${confirmPanelBg}')`}>
 			<div class="confirm-content">
 				<div class="confirm-title">CONFIRM {confirmLabel}</div>
-				<div class="confirm-text">Buy {confirmLabel} for {confirmCost}?</div>
+				<div class="confirm-text">BUY {confirmLabel} FOR {confirmCost}?</div>
 				<div class="confirm-row">
 					<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}>CANCEL</button>
 					<button class="confirm-btn confirm-btn--ok" type="button" onclick={() => buyMode(confirmMode!)}>CONFIRM</button>
@@ -139,203 +216,469 @@
 	/* Backdrops */
 	.backdrop {
 		position: fixed; inset: 0; z-index: 60;
-		background: rgba(0,0,0,0.72);
+		background: rgba(0, 0, 0, 0.72);
 		backdrop-filter: blur(5px);
 		border: 0; padding: 0; cursor: pointer;
 	}
 	.backdrop--z2 { z-index: 70; }
 
-	/* Panel */
+	/* Full-screen panel container */
 	.panel {
-		position: fixed; left: 50%; top: 50%;
-		transform: translate(-50%, -50%);
+		position: fixed; inset: 0;
 		z-index: 61;
-		width: min(680px, 96vw);
-		padding: 28px 24px 28px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 3vh;
+		/* top-heavy padding nudges the centred cards + bet selector down from the title */
+		padding: 12vh 1vw 4vh;
+		box-sizing: border-box;
+		font-family: 'Inter', sans-serif;
+		pointer-events: none;
 	}
+	.panel > * { pointer-events: auto; }
 
+	/* Figma: IBM Plex Sans Condensed Bold, #FFF, 18px / 0.54px, centered on the close-button's
+	   vertical centre (close-btn = top:22px, 48px tall → centre at 46px). */
 	.title {
-		margin: 0 0 20px;
-		font-family: 'Cinzel', serif; font-size: 1.35rem; font-weight: 900; letter-spacing: 0.12em;
-		text-align: center;
-		background: linear-gradient(180deg, #e2d981 8.6%, #fbc503 60.4%, #d98503 129.3%);
-		-webkit-background-clip: text; background-clip: text;
-		-webkit-text-fill-color: transparent; color: transparent;
-	}
-
-	.close-btn {
-		position: absolute; top: 10px; right: 14px;
-		width: 44px; height: 44px; border-radius: 50%;
-		background: rgba(12,8,3,0.93);
-		border: 2px solid #9a7018;
-		box-shadow: 0 0 0 1px rgba(210,175,55,0.25), 0 4px 14px rgba(0,0,0,0.75);
-		color: rgba(255,255,255,0.85); font-size: 1rem;
-		display: flex; align-items: center; justify-content: center;
-		cursor: pointer; padding: 0;
-		transition: background 0.2s;
-	}
-	.close-btn:hover { background: rgba(30,20,8,0.97); color: #fff; }
-
-	/* 2×2 grid */
-	.grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 16px;
-	}
-
-	/* Card */
-	.card {
-		display: flex; flex-direction: column; align-items: center;
-		text-align: center;
-		padding: 22px 18px 18px;
-		background-image: var(--frame);
-		background-size: 100% 100%;
-		border-radius: 4px;
-		gap: 8px;
-	}
-
-	.card-title {
-		font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 900;
-		letter-spacing: 0.06em;
-		background: linear-gradient(180deg, #e2d981 8.6%, #fbc503 60.4%, #d98503 129.3%);
-		-webkit-background-clip: text; background-clip: text;
-		-webkit-text-fill-color: transparent; color: transparent;
-		display: block;
-	}
-
-	.card-desc {
-		font-family: 'Cinzel', serif; font-size: 0.52rem;
-		color: rgba(255,255,255,0.75); letter-spacing: 0.02em;
-		line-height: 1.45; display: block;
-		min-height: 2.9em;
-	}
-
-	.card-icon-wrap {
-		position: relative;
-		width: 80px; height: 80px;
-		margin: 4px 0;
-		flex-shrink: 0;
-	}
-	.card-icon {
-		width: 80px; height: 80px;
-		object-fit: contain;
-	}
-	.card-icon-overlay {
 		position: absolute;
-		inset: 0;
-		margin: auto;
-		width: 30px; height: 30px;
-		filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8));
+		top: 46px;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		margin: 0;
+		font-family: 'Cinzel', serif;
+		font-weight: 900;
+		font-size: 18px;
+		line-height: normal;
+		letter-spacing: 0.54px;
+		text-align: center;
+		text-transform: uppercase;
+		color: #ffffff;
+		text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
 	}
 
-	.card-price {
-		font-family: 'Cinzel', serif; font-size: 0.88rem; font-weight: 700;
-		color: rgba(255,255,255,0.9); letter-spacing: 0.04em;
-		display: block;
-	}
-
-	/* Buttons */
-	.card-btn {
-		width: 100%; padding: 9px 0;
-		border-radius: 8px;
-		font-family: 'Cinzel', serif; font-size: 0.78rem; font-weight: 900;
-		letter-spacing: 0.1em; cursor: pointer;
-		border: 2px solid rgba(200,158,80,0.6);
-		background: transparent;
-		color: rgba(210,170,60,0.9);
-		transition: background 0.2s, border-color 0.2s, color 0.2s;
-		margin-top: 4px;
-	}
-	.card-btn:hover:not(:disabled) {
-		border-color: rgba(220,175,90,0.9);
-		color: #ffd84a;
-	}
-	.card-btn--buy {
-		background: linear-gradient(180deg, #4ecb2e 0%, #2a8a10 100%);
-		border-color: rgba(80,200,50,0.5);
-		color: #fff;
-		box-shadow: 0 0 12px rgba(60,180,30,0.35);
-	}
-	.card-btn--buy:hover:not(:disabled) {
-		background: linear-gradient(180deg, #5fd93e 0%, #348f18 100%);
-		color: #fff;
-	}
-	.card-btn--buy:disabled { opacity: 0.4; cursor: default; }
-	.card-btn--active {
-		background: linear-gradient(180deg, #4ecb2e 0%, #2a8a10 100%);
-		border-color: rgba(80,200,50,0.5);
-		color: #fff;
-		box-shadow: 0 0 12px rgba(60,180,30,0.35);
-	}
-
-	/* Confirm */
-	/* Round wood close button, pinned to the top-right end of the screen */
-	.confirm-close {
-		position: fixed; top: 22px; right: 22px; z-index: 73;
-		width: 52px; height: 52px; border-radius: 50%;
-		border: 2px solid rgba(217, 133, 3, 0.7);
-		background: radial-gradient(circle at 50% 35%, #3a2a16, #140d06);
-		color: #e8c878; font-size: 1.1rem; font-weight: 700;
+	/* Blue circular close button, pinned to the top-right of the screen */
+	.close-btn {
+		position: fixed; top: 22px; right: 22px; z-index: 63;
+		width: 48px; height: 48px; border-radius: 50%;
+		border: 1.5px solid #60a5fa;
+		background: linear-gradient(180deg, #0f2053 0%, #05070f 100%);
+		color: #cfe6ff; font-size: 1rem; font-weight: 700;
 		cursor: pointer; display: grid; place-items: center;
-		box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+		box-shadow: 0 0 12px rgba(0, 140, 255, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5);
 		transition: filter 0.12s ease;
 	}
-	.confirm-close:hover { filter: brightness(1.2); }
+	.close-btn:hover { filter: brightness(1.25); }
+
+	/* Four cards in a row — square, kept compact so they don't dominate the screen. */
+	.grid {
+		display: flex;
+		gap: clamp(10px, 1.2vw, 24px);
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		max-width: 1860px;
+	}
+
+	/* Card = blue bracketed panel, SQUARE to match the 550×550 (Figma 265×265) panel art.
+	   Sized with clamp()/vw (reliable in the scaled game env, unlike cqw). Big Figma-scale fonts +
+	   compact gaps keep the content filling the square without overflowing it. */
+	.card {
+		flex: 1 1 0;
+		min-width: 0;
+		max-width: 400px;
+		aspect-ratio: 1 / 1;
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(2px, 0.35vh, 6px);
+		text-align: center;
+		padding: 2% 3% 2%;
+		box-sizing: border-box;
+	}
+
+	/* Children never shrink (keeps the icon full-size); the desc reserves a fixed height so the
+	   icon / price / button line up across all four cards regardless of description length. */
+	/* Figma: IBM Plex Sans Condensed Bold, cyan→blue gradient (#00fcff → #0046a9), 18px / 0.54px. */
+	.card-title {
+		flex-shrink: 0;
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: clamp(17px, 1.6vw, 28px);
+		letter-spacing: 0.03em;
+		white-space: nowrap;
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+		-webkit-background-clip: text; background-clip: text;
+		-webkit-text-fill-color: transparent; color: transparent;
+		filter: drop-shadow(0 1px 4px rgba(0, 40, 100, 0.55));
+	}
+
+	/* Figma: Inter Regular, #d7d7d7 — big & readable. `width: 100%` is essential: without it the span
+	   shrink-to-fits under `align-items: center` and wraps into a narrow column (tall cards). Full width
+	   lets the description use the whole card, wrapping to fewer/wider lines so the card stays square. */
+	.card-desc {
+		flex-shrink: 0;
+		width: 100%;
+		/* Reserve the SAME height on every card (enough for the longest 4-line description) and centre
+		   the text in it, so all four cards are the same height regardless of description length.
+		   `grid` (not flex) is used so the wrapping text still fills the width instead of overflowing. */
+		min-height: 5.2em;
+		display: flex;
+		flex-direction: column;
+		justify-content: center; /* vertical centre; align-items:stretch (default) lets text wrap to full width */
+		font-family: 'Inter', sans-serif;
+		font-weight: 400;
+		font-size: clamp(13px, 1.25vw, 20px);
+		line-height: 1.28;
+		letter-spacing: 0.02em;
+		color: #d7d7d7;
+	}
+
+	/* Fixed-height icon row so the magnet / cube / (badge + briefcase) all line up. */
+	.card-icon-slot {
+		flex-shrink: 0;
+		height: clamp(54px, 5.2vw, 94px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.15em;
+	}
+	.card-icon {
+		height: 100%;
+		width: auto;
+		object-fit: contain;
+		filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.6));
+	}
+	/* Briefcase art (ALL IN / DEAL IT) — make it bigger to match the reference; it overflows the slot
+	   a touch, which is fine since the icon row is centred. */
+	.card-icon--brief { height: 128%; }
+
+	/* Multiplier badge (ALL IN = 3x, DEAL IT = 4x) — IBM Plex Condensed Bold white. */
+	.card-mult {
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: clamp(22px, 2.1vw, 36px);
+		letter-spacing: 0.03em;
+		color: #ffffff;
+		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
+		line-height: 1;
+	}
+
+	/* Figma: Cinzel Bold, white, "X.XX $". */
+	.card-price {
+		flex-shrink: 0;
+		font-family: 'Cinzel', serif;
+		font-weight: 700;
+		font-size: clamp(14px, 1.3vw, 21px);
+		letter-spacing: 0.02em;
+		white-space: nowrap;
+		color: #ffffff;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+	}
+
+	/* Buttons — uniform WIDE width (BUY matches ACTIVATE), Figma padding/rounding. */
+	.card-btn {
+		flex-shrink: 0;
+		min-width: 74%;
+		/* Taller = rectangular (not pill). Moderate radius keeps rounded corners with straight sides. */
+		padding: clamp(11px, 1.15vw, 18px) clamp(22px, 2.2vw, 40px);
+		margin-top: clamp(3px, 0.7vh, 11px); /* nudge the button down, away from the price */
+		border: 1px solid #60a5fa;
+		border-radius: 14px;
+		font-family: 'Inter', sans-serif;
+		font-size: clamp(14px, 1.3vw, 21px);
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #fff;
+		cursor: pointer;
+		filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
+		transition: filter 0.12s ease;
+	}
+	.card-btn:hover:not(:disabled) { filter: brightness(1.12) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25)); }
+	.card-btn:disabled { opacity: 0.45; cursor: default; }
+	/* Buy — bright cyan */
+	.card-btn--buy {
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+	}
+	/* Activate — dark navy */
+	.card-btn--activate {
+		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
+	}
+	/* Active state — cyan to signal it's on */
+	.card-btn--active {
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+	}
+
+	/* Bet selector — Figma: cyan-bordered steppers, coin + BET label + big value. */
+	.bet {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: clamp(280px, 27vw, 440px);
+		aspect-ratio: 298 / 107;
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
+		padding: 0 3.5%; /* small side padding so − / + sit near the panel ends */
+		margin-top: clamp(10px, 2.2vh, 34px); /* nudge the whole bet board down from the cards */
+		box-sizing: border-box;
+	}
+	/* Dark glossy disc with a faint rim (matches the reference — no bright cyan glow ring). */
+	.bet-step {
+		width: clamp(38px, 3.4vw, 54px);
+		height: clamp(38px, 3.4vw, 54px);
+		flex-shrink: 0;
+		border-radius: 50%;
+		border: 1px solid rgba(150, 180, 220, 0.35);
+		background: radial-gradient(circle at 50% 32%, #1a2b4d 0%, #0b1428 68%, #060b18 100%);
+		color: #d6e0f0;
+		font-size: clamp(20px, 1.9vw, 30px); font-weight: 400; line-height: 1;
+		display: grid; place-items: center;
+		cursor: pointer;
+		box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12), inset 0 -2px 5px rgba(0, 0, 0, 0.55), 0 2px 5px rgba(0, 0, 0, 0.45);
+		transition: filter 0.12s ease;
+	}
+	.bet-step:hover:not(:disabled) { filter: brightness(1.25); }
+	.bet-step:disabled { opacity: 0.4; cursor: default; }
+	.bet-center {
+		display: flex;
+		align-items: center;
+		gap: clamp(6px, 0.7vw, 12px);
+	}
+	.bet-coin {
+		width: clamp(20px, 1.9vw, 30px);
+		height: clamp(20px, 1.9vw, 30px);
+		object-fit: contain;
+	}
+	.bet-value {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		line-height: 1;
+	}
+	.bet-label {
+		font-family: 'Inter', sans-serif;
+		font-size: clamp(8px, 0.72vw, 11px); font-weight: 700;
+		letter-spacing: 0.2em; text-transform: uppercase;
+		color: rgba(96, 165, 250, 0.85);
+	}
+	.bet-amount {
+		font-family: 'Inter', sans-serif;
+		font-size: clamp(17px, 1.7vw, 26px); font-weight: 700;
+		color: #ffffff;
+		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+	}
+
+	/* ---- Landscape / desktop: size every card as ONE square that fits both the row width and the
+	   screen height, then scale the card's contents to that square so 4-in-a-row never overflows
+	   (fixes tall cards on mobile-landscape and the total breakdown on very small screens). All
+	   dimensions derive from --bb-card, so shrinking the square shrinks the text/icons with it. ---- */
+	.panel:not(.portrait) {
+		/* All --bb-* vars are measured in JS from the panel's real box (see the $effect) and set
+		   inline; the values here are only fallbacks for the first frame / no-JS. */
+		--bb-card: 300px;
+		--bb-gap: 16px;
+		--bb-pad-x: 12px;
+		--bb-pad-top: 90px;
+		--bb-pad-bot: 24px;
+		--bb-vgap: 20px;
+		--bb-bet-w: 300px;
+		gap: var(--bb-vgap);
+		padding: var(--bb-pad-top) var(--bb-pad-x) var(--bb-pad-bot);
+	}
+	.panel:not(.portrait) .grid {
+		gap: var(--bb-gap);
+		max-width: none;
+		overflow: auto; /* scroll rather than overlap if a tiny screen can't fit the floored squares */
+	}
+	.panel:not(.portrait) .card {
+		flex: 0 0 auto;
+		width: var(--bb-card);
+		height: var(--bb-card-h, var(--bb-card));
+		aspect-ratio: auto;
+		max-width: none;
+		gap: calc(var(--bb-card) * 0.015);
+		padding: calc(var(--bb-card) * 0.05) calc(var(--bb-card) * 0.06);
+	}
+	.panel:not(.portrait) .card-title  { font-size: calc(var(--bb-card) * 0.076); }
+	.panel:not(.portrait) .card-desc   { font-size: calc(var(--bb-card) * 0.052); min-height: calc(var(--bb-card) * 0.315); }
+	.panel:not(.portrait) .card-icon-slot { height: calc(var(--bb-card) * 0.235); }
+	.panel:not(.portrait) .card-mult   { font-size: calc(var(--bb-card) * 0.09); }
+	.panel:not(.portrait) .card-price  { font-size: calc(var(--bb-card) * 0.055); }
+	.panel:not(.portrait) .card-btn {
+		font-size: calc(var(--bb-card) * 0.053);
+		padding: calc(var(--bb-card) * 0.045) calc(var(--bb-card) * 0.1);
+		margin-top: calc(var(--bb-card) * 0.02);
+		border-radius: calc(var(--bb-card) * 0.035);
+	}
+	.panel:not(.portrait) .bet {
+		width: var(--bb-bet-w);
+		margin-top: var(--bb-vgap);
+		padding: 0 calc(var(--bb-bet-w) * 0.09); /* keep − / + inside the frame's side brackets */
+	}
+	/* Bet controls scale with the bar width so they shrink on small containers. */
+	.panel:not(.portrait) .bet-step {
+		width: var(--bb-bet-step);
+		height: var(--bb-bet-step);
+		font-size: calc(var(--bb-bet-step) * 0.52);
+	}
+	.panel:not(.portrait) .bet-center { gap: calc(var(--bb-bet-w) * 0.03); }
+	.panel:not(.portrait) .bet-coin {
+		width: calc(var(--bb-bet-w) * 0.075);
+		height: calc(var(--bb-bet-w) * 0.075);
+	}
+	.panel:not(.portrait) .bet-label { font-size: calc(var(--bb-bet-w) * 0.033); }
+	.panel:not(.portrait) .bet-amount { font-size: calc(var(--bb-bet-w) * 0.075); }
+	/* Title + close button scale with the container (X was way too big on small screens). */
+	.panel:not(.portrait) .title {
+		font-size: var(--bb-title);
+		top: calc(var(--bb-close) * 0.92);
+	}
+	.panel:not(.portrait) .close-btn {
+		width: var(--bb-close);
+		height: var(--bb-close);
+		top: calc(var(--bb-close) * 0.42);
+		right: calc(var(--bb-close) * 0.42);
+		font-size: calc(var(--bb-close) * 0.34);
+	}
+
+	/* ---- Mobile portrait (Figma 4137-16084): BUY BONUS title fixed at top, the four cards in a
+	   vertical scrollable column starting at the FIRST card, and the bet selector as a compact pill
+	   pinned floating at the bottom. Landscape/desktop keeps the 4-in-a-row layout above.
+	   The grid + bet are absolutely positioned (not flex children) so the scroll region has a
+	   DEFINITE height and reliably starts at the top card — flex sizing was hiding the first card. */
+	.panel.portrait {
+		padding: 0;
+	}
+	.panel.portrait .grid {
+		position: absolute;
+		top: 84px;    /* clear the BUY BONUS title */
+		bottom: 150px; /* clear the floating bet pill */
+		left: 4vw;
+		right: 4vw;
+		width: auto;
+		max-width: none;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start; /* always start at the first card */
+		overflow-y: auto;
+		overflow-x: hidden;
+		gap: clamp(12px, 2.2vh, 26px);
+		padding-bottom: 1vh;
+	}
+	/* The card needs a DEFINITE (px) width in this scrolling column — vw/% widths didn't let the
+	   description wrap. Fixed widths + a couple of breakpoints keep it fitting on narrow phones. */
+	.panel.portrait .card {
+		flex: 0 0 auto;
+		width: 336px;
+		aspect-ratio: auto; /* height follows content in portrait */
+		height: auto;
+		padding: 18px 16px; /* px (not %): % padding mis-resolved and let the description overflow */
+	}
+	/* Bet selector: floating pill pinned to the bottom, centred (matches Figma). */
+	.panel.portrait .bet {
+		position: absolute;
+		bottom: 18px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 260px; /* smaller frame than the cards */
+		margin: 0;
+		padding: 0 7%; /* − / + sit near the frame ends */
+	}
+	.panel.portrait .bet-step {
+		width: 50px;
+		height: 50px;
+		font-size: 28px;
+	}
+	/* Plain block + explicit px max-width so the description reliably wraps in portrait. (The landscape
+	   flex-column centring didn't wrap here; a block always wraps at its max-width.) */
+	.panel.portrait .card-desc {
+		display: block;
+		max-width: 300px;
+		margin-inline: auto;
+	}
+	@media (max-width: 372px) {
+		.panel.portrait .card,
+		.panel.portrait .bet { width: 300px; }
+		.panel.portrait .card-desc { max-width: 264px; }
+	}
+	@media (max-width: 332px) {
+		.panel.portrait .card,
+		.panel.portrait .bet { width: 270px; }
+		.panel.portrait .card-desc { max-width: 234px; }
+	}
+
+	/* ---- Confirm dialog (blue) ---- */
+	.confirm-close {
+		position: fixed; top: 22px; right: 22px; z-index: 73;
+		width: 48px; height: 48px; border-radius: 50%;
+		border: 1.5px solid #60a5fa;
+		background: linear-gradient(180deg, #0f2053 0%, #05070f 100%);
+		color: #cfe6ff; font-size: 1rem; font-weight: 700;
+		cursor: pointer; display: grid; place-items: center;
+		box-shadow: 0 0 12px rgba(0, 140, 255, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5);
+		transition: filter 0.12s ease;
+	}
+	.confirm-close:hover { filter: brightness(1.25); }
 
 	.confirm {
 		position: fixed; left: 50%; top: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 71;
-		width: min(680px, 94vw);
-		font-family: 'Cinzel', serif;
+		width: min(500px, 92vw);
+		container-type: inline-size;
+		font-family: 'Inter', sans-serif;
 	}
-
-	/* Wooden panel background (shared with the autoplay dialog) */
 	.confirm-panel {
-		aspect-ratio: 505 / 301;
+		aspect-ratio: 500 / 300;
 		background-size: 100% 100%;
 		background-repeat: no-repeat;
 		display: flex; align-items: center; justify-content: center;
-		padding: 15% 13%;
+		padding: 13% 13% 14%;
 		box-sizing: border-box;
 	}
-
 	.confirm-content {
-		width: 100%;
+		width: 100%; height: 100%;
 		display: flex; flex-direction: column; align-items: center;
-		gap: clamp(14px, 2.6vw, 26px);
-		text-align: center;
+		justify-content: space-between; text-align: center;
 	}
-
 	.confirm-title {
-		font-weight: 900; font-size: clamp(1.4rem, 3.2vw, 2.1rem);
-		letter-spacing: 0.06em;
-		background: linear-gradient(180deg, #ffd84a 10%, #ffa90e 60%, #d18005 95%);
+		font-family: 'Cinzel', serif;
+		font-weight: 900; font-size: 4.8cqw;
+		letter-spacing: 0.03em; text-transform: uppercase;
+		line-height: 1; white-space: nowrap;
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
 		-webkit-background-clip: text; background-clip: text;
 		-webkit-text-fill-color: transparent; color: transparent;
-		text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+		filter: drop-shadow(0 2px 8px rgba(0, 60, 140, 0.55));
 	}
 	.confirm-text {
-		font-size: clamp(0.95rem, 2vw, 1.25rem); font-weight: 700;
-		color: #fff; line-height: 1.45;
-		text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+		font-family: 'Inter', sans-serif;
+		font-size: 4cqw; font-weight: 500;
+		letter-spacing: 0.03em; text-transform: uppercase;
+		color: #fff; line-height: 1.3;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
 	}
-	.confirm-row { display: flex; gap: 16px; justify-content: center; width: 100%; }
+	.confirm-row { display: flex; gap: 3.2cqw; justify-content: center; }
 	.confirm-btn {
-		flex: 1 1 0; border-radius: 11px; padding: clamp(11px, 2vw, 16px);
-		font-family: 'Cinzel', serif; font-size: clamp(0.85rem, 1.7vw, 1.05rem); font-weight: 900;
-		letter-spacing: 0.06em; cursor: pointer;
+		border: 1px solid #60a5fa;
+		border-radius: 2.4cqw;
+		padding: 2.4cqw 4.8cqw; min-width: 28cqw;
+		font-family: 'Inter', sans-serif; font-size: 2.8cqw; font-weight: 700;
+		letter-spacing: 0.1em; text-transform: uppercase; color: #fff;
+		cursor: pointer;
+		filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
 		transition: filter 0.12s ease;
 	}
-	.confirm-btn:hover { filter: brightness(1.08); }
+	.confirm-btn:hover { filter: brightness(1.12) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25)); }
 	.confirm-btn--cancel {
-		border: 1px solid rgba(217,133,3,0.5);
-		background: rgba(20, 14, 6, 0.6); color: #e8c878;
+		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
 	}
 	.confirm-btn--ok {
-		border: 0;
-		background: linear-gradient(180deg, #ffa90e 15%, #ee960b 70%, #d18005 93%);
-		color: #452b01;
-		box-shadow: 0 0 4px #d98503;
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
 	}
 </style>
