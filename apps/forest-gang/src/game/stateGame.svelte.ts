@@ -41,11 +41,16 @@ const board = _.range(BOARD_DIMENSIONS.x).map((reelIndex) => {
 		initialSymbols: INITIAL_BOARD[reelIndex],
 		initialSymbolState: INITIAL_SYMBOL_STATE,
 		onReelStopping: () => {
-			eventEmitter.broadcast({
-				type: 'soundOnce',
-				name: 'sfx_reel_stop',
-				forcePlay: !(stateBet.isTurbo || stateBet.isSuperTurbo),
-			});
+			const turbo = stateBet.isTurbo || stateBet.isSuperTurbo;
+			// In turbo/super-turbo the reels stop almost simultaneously, so per-reel stops overlap and
+			// — with a play state lingering from the previous fast spin — end up inaudible. Play ONE
+			// guaranteed reel-stop when the last reel lands instead (forcePlay ignores the lingering state).
+			if (turbo) {
+				if (reelIndex === BOARD_DIMENSIONS.x - 1)
+					eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_reel_stop', forcePlay: true });
+			} else {
+				eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_reel_stop', forcePlay: true });
+			}
 		},
 		onSymbolLand,
 	});
