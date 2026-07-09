@@ -386,7 +386,7 @@
 				<MainContainer>
 					{@const bl = context.stateGameDerived.boardLayout()}
 					<Container x={bl.x} y={bl.y + BOARD_GRID_OFFSET_Y} pivot={bl.pivot} scale={bl.boardScale}>
-						<PaylineVine wins={context.stateGame.paylineWins} />
+						<PaylineVine wins={context.stateGame.paylineWins} snap={context.stateGame.paylineSnap} />
 					</Container>
 				</MainContainer>
 				{/if}

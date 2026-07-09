@@ -85,6 +85,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 		stateGame.expandedSymbolWon = false;
 		stateGame.paylineWins = [];
+		stateGame.paylineSnap = false;
 		stateGame.hasAnticipationPending = !!hasAnticipation;
 
 		// Add a brief pause between bonus spins so players can read the result
@@ -260,6 +261,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			// Full bonus intro sequence — only for Deal It / All In (multi-spin)
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_trigger' });
 			await animateSymbols({ positions: bookEvent.positions });
+			// Hold on the highlighted scatters so the player can read the count before transition.
+			if (!stateBet.isSuperTurbo) await waitForTimeout(stateBet.isTurbo ? 300 : 800);
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_intro' });
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
 			await eventEmitter.broadcastAsync({ type: 'transition' });
@@ -355,8 +358,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// Let the multiplier hand appear, spin and land on its value first…
 		if ((stateGame.bonusMode === 'freegame' || stateGame.bonusMode === 'feature')) {
 			await eventEmitter.broadcastAsync({ type: 'dealItMultiplierAwaitCycle' });
-			// …then a beat before the coins start flying, so the two moments read separately.
-			await waitForTimeout(550);
+			// Brief beat before coins start flying so the two moments read separately.
+			await waitForTimeout(150);
 		}
 		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
 		eventEmitter.broadcast({ type: 'winShow' });

@@ -220,6 +220,7 @@
 		}
 
 		if (context.stateXstateDerived.isIdle()) {
+			if (!canAffordBet) return;
 			// Always reset to BASE before a new spin (unless feature toggle is on)
 			stateBet.activeBetModeKey = isFeatureActive ? 'FEATURE' : isChanceActive ? 'CHANCE' : 'BASE';
 			context.eventEmitter.broadcast({ type: 'bet' });
@@ -261,6 +262,7 @@
 		context.eventEmitter.broadcast({ type: 'soundPressBet' });
 
 		if (context.stateXstateDerived.isIdle()) {
+			if (!canAffordBet) return;
 			stateBet.activeBetModeKey = isFeatureActive ? 'FEATURE' : isChanceActive ? 'CHANCE' : 'BASE';
 			context.eventEmitter.broadcast({ type: 'bet' });
 			return;

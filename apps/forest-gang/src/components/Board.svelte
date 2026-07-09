@@ -11,6 +11,7 @@
 
 <script lang="ts">
 	import { Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
+	import { OnPressFullScreen } from 'components-layout';
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
@@ -28,6 +29,7 @@
 	const context = getContext();
 	const board = $derived(context.stateGame.board);
 	const layout = $derived(context.stateGameDerived.boardLayout());
+	const isAnyReelSpinning = $derived(board.some((r) => r.reelState.motion !== 'stopped'));
 	let show = $state(true);
 
 	// Mobile-landscape uses dedicated framed symbol art; desktop/portrait keep the standard maps.
@@ -106,12 +108,10 @@
 
 	context.eventEmitter.subscribeOnMount({
 		stopButtonClick: () => {
-			context.stateGameDerived.enhancedBoard.stop();
+			context.stateGameDerived.enhancedBoard.forceStop();
 		},
 		skipToAnticipation: () => {
-			context.stateGame.board.forEach((reel) => {
-				if (reel.reelState.spinType !== 'anticipated') reel.stop();
-			});
+			context.stateGame.board.forEach((reel) => reel.stop());
 		},
 		boardSettle: ({ board }) => context.stateGameDerived.enhancedBoard.settle(board),
 		boardShow: () => (show = true),
@@ -126,6 +126,16 @@
 
 	context.stateGameDerived.enhancedBoard.readyToSpinEffect();
 </script>
+
+{#if isAnyReelSpinning}
+	<OnPressFullScreen onpress={() => {
+		if (context.stateGame.awaitingFirstReveal) {
+			context.stateGame.pendingStop = true;
+		} else {
+			context.eventEmitter.broadcast({ type: 'stopButtonClick' });
+		}
+	}} />
+{/if}
 
 {#if show}
 	<Container x={layout.x + (isDesktop ? 3 : 0)} y={layout.y + BOARD_GRID_OFFSET_Y} pivot={layout.pivot} scale={{ x: scaleX, y: scaleY }}>

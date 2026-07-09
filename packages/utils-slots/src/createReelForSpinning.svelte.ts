@@ -59,6 +59,8 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 
 	// interruptible
 	const interruptible = createInterruptible();
+	// Separate escape hatch for noStop reels (anticipated spins) — resolved by forceStop().
+	let forceStopResolve: (() => void) | null = null;
 
 	// reactive states
 	const reelY = new Tween(defaultY);
@@ -231,14 +233,29 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 
 		// Q: When to skip the slideDown?
 		// A: When it's preSpinning(isSpinning) and stop button is clicked(isTurbo) and is noStop is false
+		let wasForced = false;
 		if (stateBet.isSuperTurbo) {
 			await slideDown();
 		} else if (noStop) {
-			await slideDown();
+			// noStop reels are normally un-interruptible but can be force-stopped via forceStop().
+			const forcePromise = new Promise<void>((resolve) => {
+				forceStopResolve = () => { wasForced = true; resolve(); };
+			});
+			await Promise.race([slideDown(), forcePromise]);
+			forceStopResolve = null;
 		} else if ((stateBet.isTurbo || stateBet.isSuperTurbo) && isSpinning) {
 			// skip
 		} else {
 			await interruptible.add(slideDown);
+		}
+
+		if (wasForced) {
+			// Snapped by forceStop — settle symbols immediately without bounce.
+			reelState.symbols = [...targetSymbols];
+			placeY(defaultY);
+			reelState.motion = 'stopped';
+			updateAllReelSymbolState('land');
+			return;
 		}
 
 		reelState.motion = 'bouncing';
@@ -355,6 +372,12 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 		interruptible.interrupt();
 	};
 
+	// Interrupts even noStop (anticipated) reels. Use when the player explicitly skips.
+	const forceStop = () => {
+		interruptible.interrupt();
+		forceStopResolve?.();
+	};
+
 	const readyToSpinEffect = () => {
 		$effect(() => {
 			if (reelY.current === defaultY) {
@@ -376,6 +399,7 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 		prepareToSpin,
 		spin,
 		stop,
+		forceStop,
 		setSymbolsWithRawSymbols,
 		readyToSpinEffect,
 	};

@@ -69,18 +69,35 @@
 	let multiplier = $state(1);
 	let groupX = new Tween(0);
 	let groupAlpha = new Tween(1);
+	let swapTarget: number | null = null;
+	let swapped = false;
 
 	// Swap the displayed value with a slide-out / swap / slide-in — the board never hides.
 	const swapTo = async (next: number) => {
+		swapTarget = next;
+		swapped = false;
 		groupX.set(SLIDE, { duration: 170, easing: cubicIn });
 		groupAlpha.set(0, { duration: 150 });
 		await waitForTimeout(170);
+		if (swapped) return;
+		swapTarget = null;
 		multiplier = next;
 		groupX.set(-SLIDE, { duration: 0 });
 		groupX.set(0, { duration: 280, easing: backOut });
 		groupAlpha.set(1, { duration: 190 });
 		await waitForTimeout(280);
 	};
+
+	$effect(() => {
+		if (!context.stateGame.paylineSnap) return;
+		swapped = true;
+		if (swapTarget !== null) {
+			multiplier = swapTarget;
+			swapTarget = null;
+		}
+		groupX.set(0, { duration: 0 });
+		groupAlpha.set(1, { duration: 0 });
+	});
 
 	context.eventEmitter.subscribeOnMount({
 		// Bonus start — show the board at 1x (red X) and keep it visible for the whole bonus.

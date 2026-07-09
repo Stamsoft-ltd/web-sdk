@@ -4,7 +4,7 @@
 	import VineRope from './VineRope.svelte';
 
 	type WinEntry = { lineIndex: number; path: Array<{ reel: number; row: number }> };
-	type Props = { wins: WinEntry[] };
+	type Props = { wins: WinEntry[]; snap?: boolean };
 
 	const props: Props = $props();
 
@@ -48,6 +48,13 @@
 		if (count === 0) return;
 		startDraw();
 		return () => { clearTimeout(holdTimeout); cancelAnimationFrame(raf); };
+	});
+
+	$effect(() => {
+		if (!props.snap) return;
+		clearTimeout(holdTimeout);
+		cancelAnimationFrame(raf);
+		drawProgress = 1;
 	});
 </script>
 

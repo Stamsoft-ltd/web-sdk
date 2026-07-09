@@ -74,19 +74,50 @@
 	let multiplier = $state(1);
 	let pendingTarget = $state(1);
 	let groupX = new Tween(0);
+	let revealed = false;
+	let skipReveal: (() => void) | null = null;
+	// True only during the hold phase (after slide-in completes). Prevents the stopButtonClick that
+	// triggered forceStop from also immediately skipping the multiplier hand on the same key press.
+	let readyToSkip = false;
+
+	const skipNow = (fromStopClick = false) => {
+		if (!show) return;
+		if (fromStopClick && !readyToSkip) return;
+		revealed = true;
+		show = false;
+		groupX.set(0, { duration: 0 });
+		skipReveal?.();
+	};
 
 	// Reveal the hand with the new value, hold, then hide it again.
 	const revealChange = async (next: number) => {
 		if (show) return; // guard against overlapping reveals
+		revealed = false;
+		readyToSkip = false;
 		multiplier = next;
 		groupX.set(-SLIDE, { duration: 0 }); // start off to the left
 		show = true; // FadeContainer fades it in
 		groupX.set(0, { duration: 320, easing: backOut }); // slide into place
-		await waitForTimeout(320 + 900); // slide-in + hold on the new value
+		// Wait for slide-in to complete before accepting stop-button skips (prevents the same press
+		// that triggered forceStop from hiding the hand before the player can see it).
+		await waitForTimeout(320);
+		if (revealed) { readyToSkip = false; return; }
+		readyToSkip = true;
+		await Promise.race([waitForTimeout(900), new Promise<void>((r) => { skipReveal = r; })]);
+		skipReveal = null;
+		readyToSkip = false;
+		if (revealed) return;
 		groupX.set(SLIDE, { duration: 240, easing: cubicIn }); // slide out to the right
-		await waitForTimeout(240);
+		await Promise.race([waitForTimeout(240), new Promise<void>((r) => { skipReveal = r; })]);
+		skipReveal = null;
+		if (revealed) return;
 		show = false; // FadeContainer fades it out
 	};
+
+	$effect(() => {
+		if (!context.stateGame.paylineSnap) return;
+		skipNow();
+	});
 
 	context.eventEmitter.subscribeOnMount({
 		// Bonus start / each winning spin — the hand stays hidden; only the per-spin target resets to 1x.
@@ -106,6 +137,8 @@
 			});
 			await revealChange(pendingTarget);
 		},
+		// Player press during the multiplier hold — skip to win immediately (ignored during slide-in).
+		stopButtonClick: () => skipNow(true),
 		// Bonus end (or switch to the other bonus): clear and hide.
 		dealItMultiplierHide: () => {
 			show = false;

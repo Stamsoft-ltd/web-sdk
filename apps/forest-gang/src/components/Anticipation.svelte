@@ -30,9 +30,9 @@
 	});
 
 	context.eventEmitter.subscribeOnMount({
-		// Press during anticipation: stop reel and skip out animation entirely
+		// Press during anticipation: force-stop the reel (works even for noStop/anticipated reels)
 		stopButtonClick: () => {
-			props.reel.stop();
+			props.reel.forceStop();
 			props.oncomplete();
 		},
 	});

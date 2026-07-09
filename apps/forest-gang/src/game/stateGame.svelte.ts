@@ -97,6 +97,7 @@ export const stateGame = $state({
 	expandedSymbol: null as null | { symbol: SymbolName; reels: number[]; positions: Position[] },
 	expandedSymbolWon: false,
 	paylineWins: [] as Array<{ lineIndex: number; path: Array<{ reel: number; row: number }> }>,
+	paylineSnap: false,
 	tempMultiplier: null as number | null,
 	endRoundOnly: false,
 	pendingStop: false,
@@ -314,6 +315,7 @@ const resetBonusState = () => {
 	stateGame.expandedSymbolWon = false;
 	stateGame.tempMultiplier = null;
 	stateGame.paylineWins = [];
+	stateGame.paylineSnap = false;
 };
 
 // On short/narrow desktop laptop canvases the board is enlarged (see getBoardViewportPadding), which
