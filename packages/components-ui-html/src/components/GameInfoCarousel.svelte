@@ -183,7 +183,7 @@
 					</div>
 				{:else}
 					<!-- General info: icon + inline title sections with centred copy, divided (Figma 7/7) -->
-					<div class="pfeat">
+					<div class="pfeat pfeat--info">
 						{#each page.cards ?? [] as card, ci}
 							<section class="pfeat-sec" class:pfeat-sec--divided={ci > 0}>
 								<div class="pfeat-headrow">
@@ -1244,6 +1244,16 @@
 		white-space: pre-line;
 		text-align: center;
 	}
+	/* GENERAL INFO page carries the most copy (interrupted rounds + legal notice + copyright) —
+	   tighter type/spacing so the full text stays visible on small phones instead of half-clipping
+	   at the scroll edge. */
+	.pfeat--info { gap: 2cqw; padding-bottom: 1cqw; }
+	.pfeat--info .pfeat-sec { gap: 1.2cqw; }
+	.pfeat--info .pfeat-sec--divided { padding-top: 2cqw; }
+	.pfeat--info .pfeat-headrow { gap: 1.4cqw; }
+	.pfeat--info .pfeat-icon { width: 4.4cqw; height: 4.4cqw; }
+	.pfeat--info .pfeat-title { font-size: 3cqw; }
+	.pfeat--info .pfeat-text { font-size: 2.2cqw; line-height: 1.45; }
 
 	/* ---- portrait feature buy: 2×2 grid of bordered cards, icon on the top border (Figma 6/7) ---- */
 	.pbuy-grid {

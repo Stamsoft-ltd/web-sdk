@@ -80,7 +80,7 @@ export const socialOverridesEn: Record<string, string> = {
 		'If a game round is interrupted, it will continue when the game is reloaded, where possible.\n\nAll valid plays and potential winnings remain active until the round is fully completed.',
 
 	'INFO LEGAL TEXT':
-		'Malfunction voids all wins and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.\n\nThe expected return is calculated over a large number of plays. The game display is for visual and entertainment purposes only and does not represent any physical gaming device.\n\nAll winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.',
+		'Malfunction voids all wins and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.\n\nThe expected return is calculated over a large number of plays. The game display is for visual and entertainment purposes only and does not represent any physical gaming device.\n\nAll winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.\n\nTM and © 2026 Stake Engine.',
 
 	// ── Shared package keys (components-ui-html / components-ui-pixi) ────────────
 	'BET MENU': 'PLAY MENU',
