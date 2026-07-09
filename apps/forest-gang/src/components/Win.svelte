@@ -62,7 +62,14 @@
 
 	context.eventEmitter.subscribeOnMount({
 		winShow: () => (show = true),
-		winHide: () => (show = false),
+		winHide: () => {
+			show = false;
+			// Win-screen audio (coins loop, payline loop, celebration music) runs until the screen
+			// CLOSES — not until the count-up finishes (space/click only snaps the counter).
+			context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_win_coins_loop' });
+			context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
+			context.eventEmitter.broadcast({ type: 'soundStop', name: 'bgm_win_animation' });
+		},
 		winUpdate: async (emitterEvent) => {
 			boardClickHandled = false;
 			snappedToFinal = false;
@@ -100,7 +107,7 @@
 		{@const hasBoardAnimation = !!winLevelData?.animation}
 		{@const duration = (stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation ? Math.min(winLevelData.presentDuration, 400) : winLevelData.presentDuration}
 		{#key oncomplete}
-		<WinCountUpProvider {amount} {duration} oncomplete={() => { if (isBigWin) { context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_win_coins_loop' }); context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' }); context.eventEmitter.broadcast({ type: 'soundStop', name: 'bgm_win_animation' }); } context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' }); if (!hasBoardAnimation && !boardClickHandled) { snappedToFinal = true; context.stateGame.paylineSnap = true; boardClickHandled = true; oncomplete(); } }}>
+		<WinCountUpProvider {amount} {duration} oncomplete={() => { context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' }); if (!hasBoardAnimation && !boardClickHandled) { snappedToFinal = true; context.stateGame.paylineSnap = true; boardClickHandled = true; oncomplete(); } }}>
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
 
 				{#if isBigWin}
