@@ -26,6 +26,38 @@ export default {
 		src: './assets/components/backgrounds/bg_super.jpg?v=20260708',
 		preload: true,
 	},
+	// Portrait (mobile) backgrounds — tall corridor art, swapped in when layoutType is 'portrait'.
+	bgMobileBase: {
+		type: 'sprite',
+		src: './assets/components/backgrounds/bg_mobile_base.jpg?v=20260709',
+		preload: true,
+	},
+	bgMobileBonus: {
+		type: 'sprite',
+		src: './assets/components/backgrounds/bg_mobile_bonus.png?v=20260709',
+		preload: true,
+	},
+	bgMobileSuper: {
+		type: 'sprite',
+		src: './assets/components/backgrounds/bg_mobile_super.png?v=20260709',
+		preload: true,
+	},
+	// Portrait board frame + horizontal capsule tube + small pad (ALL WINS / FREE SPINS boxes).
+	boardPadMobile: {
+		type: 'sprite',
+		src: './assets/components/frames/board_pad_mobile.png?v=20260709',
+		preload: true,
+	},
+	capsuleTubeMobile: {
+		type: 'sprite',
+		src: './assets/components/ui/capsule_tube_mobile.png?v=20260709',
+		preload: true,
+	},
+	smallPadMobile: {
+		type: 'sprite',
+		src: './assets/components/ui/small_pad_mobile.png?v=20260709',
+		preload: true,
+	},
 	panelBorder: {
 		type: 'sprite',
 		src: './assets/components/ui/panel_border.png?v=20260708',
@@ -146,6 +178,11 @@ export default {
 		src: './assets/components/ui/magnetic_logo.png?v=20260707',
 		preload: true,
 	},
+	pressPlayLogo: {
+		type: 'sprite',
+		src: './assets/components/ui/press_play_logo.png?v=20260709',
+		preload: true,
+	},
 	scatterPanelImage: {
 		type: 'sprite',
 		src: './assets/components/ui/scatter-panel-image.png?v=20260611',
@@ -219,6 +256,15 @@ export default {
 	magnetTile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnet_forest_gang.png?v=20260709', preload: true },
 	squirrelTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt.png?v=20260709', preload: true },
 	squirrelTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt_mobile.png?v=20260709', preload: true },
+	// Premium mobile (portrait) symbol art.
+	foxTileMobile:       { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe_mobile.png?v=20260709', preload: true },
+	foxWinTileMobile:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe_mobile_win.png?v=20260709', preload: true },
+	wolfTileMobile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/plasma_drill_mobile.png?v=20260709', preload: true },
+	wolfWinTileMobile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/plasma_drill_mobile_win.png?v=20260709', preload: true },
+	bearTileMobile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube_mobile.png?v=20260709', preload: true },
+	bearWinTileMobile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube_mobile_win.png?v=20260709', preload: true },
+	rabbitTileMobile:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device_mobile.png?v=20260709', preload: true },
+	rabbitWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device_mobile_win.png?v=20260709', preload: true },
 	foxBonusTile: { type: 'sprite', src: './assets/new_assets/slots_replacement/premium/fox_n.png?v=20260629', preload: true },
 	foxWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe_win.png?v=20260709', preload: true },
 	wolfBonusTile: { type: 'sprite', src: './assets/new_assets/slots_replacement/premium/wolf_n.png?v=20260629', preload: true },

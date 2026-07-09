@@ -46,6 +46,14 @@
 	const iconTurbo3 = ap('/assets/components/navbar/icons/turbo3.png');
 	const iconCoins = ap('/assets/components/navbar/coins.png');
 
+	// Portrait-only pad art (passed to CSS as vars): nav bar behind the controls, round buy-bonus
+	// badge, and the bordered value box for balance / bet.
+	const navBarMobile = ap('/assets/components/navbar/nav_bar_mobile.png');
+	const buyBonusMobile = ap('/assets/components/navbar/buy_bonus_mobile.png');
+	const valueBoxMobile = ap('/assets/components/navbar/value_box_mobile.png');
+	const balanceContainer = ap('/assets/components/navbar/balance_container.png');
+	const betContainer = ap('/assets/components/navbar/bet_container.png');
+
 	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
 	const hudFrame = ap('/assets/components/frames/hud_frame.png');
 	const smallBtnFrame = ap('/assets/components/frames/lower_hud_button_frame.png');
@@ -281,7 +289,7 @@
 <div
 	class="hud-shell"
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-stop-bg:url('${btnSpinStop}')`}
+	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-stop-bg:url('${btnSpinStop}');--pt-navbar:url('${navBarMobile}');--pt-buy:url('${buyBonusMobile}');--pt-value:url('${valueBoxMobile}');--pt-balance-bg:url('${balanceContainer}');--pt-bet-bg:url('${betContainer}')`}
 >
 	<div class="hud-bottom">
 		<div class="hud-left">
@@ -424,6 +432,117 @@
 			</div>
 		</div>
 	</div>
+
+	{#if isPortrait}
+		<!-- ── Portrait HUD: spin-centred control row + balance / bet / buy row ── -->
+		<div class="pt-hud">
+			<div class="pt-controls">
+				<div class="pt-grp">
+					<button class="nav-btn nav-btn--framed" type="button" onclick={openRules} aria-label="Game rules">
+						<img class="nav-icon" src={iconMenu} alt="menu" />
+					</button>
+					<button class="nav-btn nav-btn--framed" type="button" onclick={toggleSound} aria-label="Sound">
+						<img class="nav-icon" src={isMuted ? iconMute : iconSound} alt="sound" />
+					</button>
+				</div>
+
+				<button
+					class="spin-btn pt-spin"
+					class:spin-btn--busy={isBusy}
+					type="button"
+					onclick={onSpinButton}
+					aria-label="Spin"
+					disabled={isBusy || (canInteract && !hasAuto && !canAffordBet)}
+				>
+					{#if hasAuto}
+						<span class="spin-btn__count">{autoSpinsRemainingText}</span>
+					{/if}
+				</button>
+
+				<div class="pt-grp">
+					<button
+						class="nav-btn nav-btn--framed nav-btn--turbo"
+						class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
+						class:turbo-super={stateBet.isSuperTurbo}
+						type="button"
+						onclick={onTurbo}
+						aria-label={i18nDerived.turboLabel()}
+					>
+						<img class="nav-icon" src={turboIcon} alt="turbo" />
+					</button>
+					<button
+						class="nav-btn nav-btn--framed"
+						class:active={hasAuto}
+						type="button"
+						onclick={onAuto}
+						disabled={disableAuto}
+						aria-label={i18nDerived.autoplayLabel()}
+					>
+						<img class="nav-icon" src={disableAuto ? iconAutoDisabled : iconAuto} alt="auto" />
+					</button>
+				</div>
+			</div>
+
+			<div class="pt-stats">
+				<div class="value-pill value-pill--balance pt-balance">
+					<div class="label label--balance">
+						<span class="label-text">{i18nDerived.balance()}</span>
+					</div>
+					<span class="value">{formattedBalance}</span>
+				</div>
+
+				<!-- Bet stepper: round −/+ (desktop-style) flanking the value inside the bet container. -->
+				<div class="pt-bet">
+					<button
+						class="nav-btn nav-btn--framed pt-step"
+						type="button"
+						onpointerdown={(event) => startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
+						onpointerup={clearHoldRepeat}
+						onpointercancel={clearHoldRepeat}
+						onpointerleave={clearHoldRepeat}
+						onclick={(event) => maybeRunClickAction(event, onDecrease)}
+						disabled={disableDecrease}
+						aria-label="Decrease bet"
+					>
+						<img class="nav-icon" src={disableDecrease ? iconMinusDisabled : iconMinus} alt="minus" />
+					</button>
+					<div
+						class="pt-bet-val"
+						role="button"
+						tabindex="0"
+						onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
+						onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
+					>
+						<span class="value" class:value--feature={isAnyModeActive}>{formattedBet}</span>
+					</div>
+					<button
+						class="nav-btn nav-btn--framed pt-step"
+						type="button"
+						onpointerdown={(event) => startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
+						onpointerup={clearHoldRepeat}
+						onpointercancel={clearHoldRepeat}
+						onpointerleave={clearHoldRepeat}
+						onclick={(event) => maybeRunClickAction(event, onIncrease)}
+						disabled={disableIncrease}
+						aria-label="Increase bet"
+					>
+						<img class="nav-icon" src={disableIncrease ? iconPlusDisabled : iconPlus} alt="plus" />
+					</button>
+				</div>
+
+				<div class="pt-buy">
+					<button
+						class="buy-btn"
+						type="button"
+						onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
+						aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
+					>
+						<span class="buy-btn__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>
 
 {#if showBuyModal}
@@ -1272,5 +1391,155 @@
 	.hud-shell[data-layout='landscape'] .action-cluster .nav-btn {
 		width: clamp(42px, 6vh, 50px);
 		height: clamp(42px, 6vh, 50px);
+	}
+	/* ══ Portrait (mobile) HUD ══ */
+	.hud-shell[data-layout='portrait'] {
+		padding: 0;
+	}
+	/* Hide the desktop single-row bar; the portrait two-row HUD replaces it. */
+	.hud-shell[data-layout='portrait'] .hud-bottom {
+		display: none;
+	}
+	.hud-shell[data-layout='portrait']::after {
+		display: none;
+	}
+
+	.pt-hud {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 6;
+		pointer-events: auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
+		padding: 10px 8px calc(14px + env(safe-area-inset-bottom, 0px));
+	}
+	/* Control row sits on the mobile nav bar (the bg-border) — narrower than the screen. */
+	.pt-controls {
+		position: relative;
+		width: min(82%, 332px);
+		height: clamp(54px, 15.5vw, 66px);
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0 clamp(12px, 4.5vw, 22px);
+	}
+	.pt-controls::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: var(--pt-navbar) center / 100% 100% no-repeat;
+		z-index: -1;
+	}
+	/* Balance pinned left, buy-bonus pinned right, and the bet box absolutely centred on the
+	   screen — so the differing balance / buy widths never pull it off-centre. */
+	.pt-stats {
+		position: relative;
+		width: 100%;
+		max-width: 410px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.pt-stats .pt-bet {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+	}
+	.pt-grp {
+		display: flex;
+		align-items: center;
+		gap: clamp(6px, 2.4vw, 12px);
+	}
+	.pt-hud .nav-btn {
+		width: clamp(34px, 9.8vw, 42px);
+		height: clamp(34px, 9.8vw, 42px);
+	}
+	/* Focal spin button — larger, vertically centred within the nav bar. */
+	.pt-spin {
+		width: clamp(98px, 30vw, 118px);
+		height: clamp(98px, 30vw, 118px);
+		margin: 0;
+	}
+	.pt-spin .spin-btn__count {
+		font-size: 1.25rem;
+	}
+
+	/* Balance in its own container asset — left-aligned white label + value, sized to fit content. */
+	.pt-balance {
+		flex: 0 0 auto;
+		background: var(--pt-balance-bg) center / 100% 100% no-repeat;
+		align-items: flex-start;
+		justify-content: center;
+		gap: clamp(1px, 0.6vw, 3px);
+		width: fit-content;
+		min-width: 0;
+		padding: clamp(10px, 2.8vw, 14px) clamp(18px, 5vw, 26px);
+		text-align: left;
+	}
+	.pt-balance .label--balance {
+		justify-content: flex-start;
+	}
+	.pt-balance .value {
+		font-size: clamp(0.66rem, 3.2vw, 0.84rem);
+		white-space: nowrap;
+		color: #fff;
+	}
+	.pt-balance .label-text {
+		font-size: clamp(0.46rem, 2.2vw, 0.56rem);
+		color: #fff;
+	}
+	/* Bet stepper: small round −/+ (desktop icon buttons) flanking the value, centred
+	   inside the neon bet container. */
+	.pt-bet {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(4px, 1.6vw, 9px);
+		flex: 0 0 auto;
+		background: var(--pt-bet-bg) center / 100% 100% no-repeat;
+		padding: clamp(8px, 2.4vw, 12px) clamp(8px, 2.4vw, 12px);
+	}
+	.pt-bet .pt-step {
+		width: clamp(24px, 7vw, 30px);
+		height: clamp(24px, 7vw, 30px);
+	}
+	.pt-bet-val {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-width: clamp(42px, 12.5vw, 54px);
+		padding: 0 clamp(1px, 0.6vw, 3px);
+		cursor: pointer;
+	}
+	.pt-bet-val .value {
+		font-size: clamp(0.76rem, 3.7vw, 0.96rem);
+		font-weight: 700;
+		color: #fff;
+		white-space: nowrap;
+		line-height: 1.1;
+		text-shadow: 0 0 6px rgba(80, 190, 255, 0.35);
+	}
+	/* Round buy-bonus badge — larger focal action. */
+	.pt-buy {
+		flex: 0 0 auto;
+	}
+	.pt-buy .buy-btn {
+		width: clamp(58px, 17.5vw, 74px);
+		height: clamp(58px, 17.5vw, 74px);
+		aspect-ratio: 1;
+		background: var(--pt-buy) center / contain no-repeat;
+		padding: 0;
+	}
+	.pt-buy .buy-btn__label {
+		white-space: normal;
+		line-height: 1.05;
+		text-align: center;
+		font-size: clamp(0.54rem, 2.7vw, 0.68rem);
+		max-width: 82%;
 	}
 </style>

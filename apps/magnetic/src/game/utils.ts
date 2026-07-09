@@ -9,7 +9,9 @@ import type { RawSymbol, SymbolName, SymbolState } from './types';
 import { LOW_SYMBOLS, PREMIUM_SYMBOLS, SYMBOL_SIZE_RATIOS, SYMBOL_W } from './constants';
 
 const MOBILE_LAYOUT_TYPES = new Set(['portrait']);
-const MOBILE_ELIGIBLE_SYMBOLS = new Set<SymbolName>(['L1', 'L2', 'L3', 'L4', 'WILD', 'SCATTER']);
+const MOBILE_ELIGIBLE_SYMBOLS = new Set<SymbolName>([
+	'H1', 'H2', 'H3', 'H4', 'L1', 'L2', 'L3', 'L4', 'WILD', 'SCATTER',
+]);
 
 const DESKTOP_STATIC_KEYS: Record<SymbolName, string> = {
 	H1: 'foxTile',
@@ -25,6 +27,10 @@ const DESKTOP_STATIC_KEYS: Record<SymbolName, string> = {
 };
 
 const MOBILE_STATIC_KEYS: Partial<Record<SymbolName, string>> = {
+	H1: 'foxTileMobile',
+	H2: 'wolfTileMobile',
+	H3: 'bearTileMobile',
+	H4: 'rabbitTileMobile',
 	L1: 'squirrelTileMobile',
 	L2: 'aTileMobile',
 	L3: 'kTileMobile',
@@ -47,6 +53,10 @@ const DESKTOP_WIN_KEYS: Record<SymbolName, string> = {
 };
 
 const MOBILE_WIN_KEYS: Partial<Record<SymbolName, string>> = {
+	H1: 'foxWinTileMobile',
+	H2: 'wolfWinTileMobile',
+	H3: 'bearWinTileMobile',
+	H4: 'rabbitWinTileMobile',
 	L1: 'squirrelWinTileMobile',
 	L2: 'aWinTileMobile',
 	L3: 'kWinTileMobile',

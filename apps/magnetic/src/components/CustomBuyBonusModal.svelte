@@ -557,7 +557,7 @@
 	.panel.portrait .grid {
 		position: absolute;
 		top: 84px;    /* clear the BUY BONUS title */
-		bottom: 150px; /* clear the floating bet pill */
+		bottom: 20px; /* extend the scroll area almost to the bottom (bet pill floats over it — OK) */
 		left: 4vw;
 		right: 4vw;
 		width: auto;
@@ -568,7 +568,8 @@
 		overflow-y: auto;
 		overflow-x: hidden;
 		gap: clamp(12px, 2.2vh, 26px);
-		padding-bottom: 1vh;
+		/* room at the end so the last card can scroll fully clear of the floating bet pill */
+		padding-bottom: 110px;
 	}
 	/* The card needs a DEFINITE (px) width in this scrolling column — vw/% widths didn't let the
 	   description wrap. Fixed widths + a couple of breakpoints keep it fitting on narrow phones. */
@@ -593,6 +594,18 @@
 		width: 50px;
 		height: 50px;
 		font-size: 28px;
+	}
+	/* Coin and BET / value need clear separation in the compact portrait pill. */
+	.panel.portrait .bet-center {
+		gap: 12px;
+	}
+	.panel.portrait .bet-coin {
+		width: 24px;
+		height: 24px;
+	}
+	/* Space the BET label off the value so they don't sit on top of each other. */
+	.panel.portrait .bet-value {
+		gap: 4px;
 	}
 	/* Plain block + explicit px max-width so the description reliably wraps in portrait. (The landscape
 	   flex-column centring didn't wrap here; a block always wraps at its max-width.) */

@@ -4,27 +4,36 @@
 	import { getContext } from '../game/context';
 
 	const context = getContext();
-	const BACKGROUND_ASPECT = 1920 / 1080;
-	// Only the two special bonuses swap the background: 4th bonus (SUPER = superspin) -> bgSuper,
-	// 3rd bonus (BONUS = freegame) -> bgBonus. Everything else (base / chance / feature) -> default.
+	const DESKTOP_ASPECT = 1920 / 1080;
+	const MOBILE_ASPECT = 1440 / 3200; // tall portrait corridor art
+	// Portrait uses the mobile (tall) backgrounds; the two special bonuses still swap:
+	// SUPER (superspin), BONUS (freegame), else base.
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 	const bgKey = $derived(
 		context.stateGame.bonusMode === 'superspin'
-			? 'bgSuper'
+			? isPortrait
+				? 'bgMobileSuper'
+				: 'bgSuper'
 			: context.stateGame.bonusMode === 'freegame'
-				? 'bgBonus'
-				: 'bgBase',
+				? isPortrait
+					? 'bgMobileBonus'
+					: 'bgBonus'
+				: isPortrait
+					? 'bgMobileBase'
+					: 'bgBase',
 	);
+	const aspect = $derived(isPortrait ? MOBILE_ASPECT : DESKTOP_ASPECT);
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 	const cover = $derived.by(() => {
 		const width = canvas.width;
 		const height = canvas.height;
 		const canvasAspect = width / height;
 
-		if (canvasAspect > BACKGROUND_ASPECT) {
-			return { width, height: width / BACKGROUND_ASPECT };
+		if (canvasAspect > aspect) {
+			return { width, height: width / aspect };
 		}
 
-		return { width: height * BACKGROUND_ASPECT, height };
+		return { width: height * aspect, height };
 	});
 </script>
 

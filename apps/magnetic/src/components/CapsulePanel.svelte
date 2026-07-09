@@ -25,7 +25,8 @@
 	// (SUPER = superspin). Not shown for base / chance / feature. Removed automatically when the
 	// round ends (bonusMode -> null).
 	const isBonus = $derived(
-		context.stateGame.bonusMode === 'freegame' || context.stateGame.bonusMode === 'superspin',
+		(context.stateGame.bonusMode === 'freegame' || context.stateGame.bonusMode === 'superspin') &&
+			context.stateLayoutDerived.layoutType() !== 'portrait',
 	);
 	// Running total win across the bonus. Some bonuses only send the cumulative `setTotalWin` at the
 	// very end (0 each spin), so we also accumulate every spin's win (winUpdate) and show whichever is

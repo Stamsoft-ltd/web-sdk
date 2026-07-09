@@ -183,9 +183,28 @@ const getBoardOffset = () => {
 	};
 };
 
+// Portrait: the board fills most of the width and sits below the logo + ALL WINS/capsule/FREE SPINS
+// top bar; the HTML HUD occupies the space below it.
+const PORTRAIT_FRAME_FILL = 0.94;
+const PORTRAIT_TOP_OFFSET = 372;
+
 const boardLayout = () => {
-	const boardScale = getBoardScale() * 0.92;
 	const mainLayout = stateLayoutDerived.mainLayout();
+	const layoutType = stateLayoutDerived.layoutType();
+
+	if (layoutType === 'portrait') {
+		const boardScale = (mainLayout.width * PORTRAIT_FRAME_FILL) / BOARD_SIZES.width;
+		return {
+			x: mainLayout.width * 0.5,
+			y: PORTRAIT_TOP_OFFSET + (BOARD_SIZES.height * boardScale) / 2,
+			boardScale,
+			anchor: { x: 0.5, y: 0.5 },
+			pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
+			...BOARD_SIZES,
+		};
+	}
+
+	const boardScale = getBoardScale() * 0.92;
 	// Grid centre Y = a small margin below the top of the game area + half the grid height, so the
 	// board sits near the top (just under the logo) instead of the old wooden-frame-derived Y that
 	// sank/clipped it once the cells were widened.
