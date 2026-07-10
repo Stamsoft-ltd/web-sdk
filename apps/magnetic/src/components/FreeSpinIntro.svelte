@@ -42,11 +42,6 @@
 	// before this intro shows: superspin = MAGNETIC MEGA CHAIN, freegame = DROP-O-MAGNET.
 	const isMegaChain = $derived(context.stateGame.bonusMode === 'superspin');
 	const bonusName = $derived(isMegaChain ? 'MAGNETIC MEGA CHAIN' : 'DROP-O-MAGNET');
-	const bonusDesc = $derived(
-		isMegaChain
-			? '10 free spins awarded. One random symbol becomes magnetic and remains connected between spins. The magnetic cluster persists and grows throughout the feature while multipliers continue stacking.'
-			: '10 free spins awarded. One random symbol becomes magnetic every spin. Matching symbols connect together automatically. Multiplier Wilds increase the bonus multiplier permanently.',
-	);
 
 	// Number-frame reuses the capsule/HUD panel border; box height drives the number size.
 	const numBoxW = $derived(PW * 0.32);
@@ -141,18 +136,6 @@
 		align: 'center' as const,
 		stroke: { color: 0x000000, width: Math.max(2, Math.round(fontSize * 0.12)) },
 	});
-	// Wrapped paragraph for the bonus description (lighter than the headings).
-	const descStyle = (fontSize: number) => ({
-		fontFamily: 'Inter',
-		fontWeight: '400' as const,
-		fontSize,
-		fill: 0xd7d7d7,
-		align: 'center' as const,
-		letterSpacing: fontSize * 0.02,
-		wordWrap: true,
-		wordWrapWidth: PW * 0.82,
-		lineHeight: fontSize * 1.3,
-	});
 </script>
 
 <FadeContainer {show}>
@@ -239,7 +222,6 @@
 				<!-- YOU WON / bonus name + description -->
 				<Text anchor={0.5} y={-PH * 0.3} text="YOU WON" style={blueStyle(PH * 0.036)} />
 				<Text anchor={0.5} y={-PH * 0.235} text={bonusName} style={congratsStyle(PH * 0.046)} />
-				<Text anchor={{ x: 0.5, y: 0 }} y={-PH * 0.19} text={bonusDesc} style={descStyle(PH * 0.032)} />
 
 				<!-- Full magnet element (magnet + base + blue/orange energy baked in) -->
 				<Container y={PH * 0.04}>
