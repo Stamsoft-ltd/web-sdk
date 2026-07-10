@@ -45,7 +45,7 @@ const MOTION_NORMAL = {
 		spinFrameMs: 270,
 		durationMs: 220,
 		bounceMs: 80,
-		groupDelayMs: 200,     // ms between each stop-group of 1–5 cells
+		groupDelayMs: 200, // ms between each stop-group of 1–5 cells
 		lockPulseMs: 130,
 	},
 };
@@ -67,6 +67,20 @@ const getMotion = () =>
 	stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations
 		? MOTION_FAST
 		: MOTION_NORMAL;
+
+const SKIP_REEL_DELAY_MS = 70;
+const SKIP_MIN_SPIN_MS_NORMAL = 220;
+const SKIP_MIN_SPIN_MS_FAST = 140;
+const SKIP_MIN_SPIN_MS_TURBO = 60;
+let skipCascadeStartedAt = 0;
+let reelSpinStartedAt: number[] = [];
+const skipStopScheduledReels = new Set<number>();
+
+const getSkipMinSpinMs = () => {
+	if (stateBet.isSuperTurbo) return SKIP_MIN_SPIN_MS_TURBO;
+	if (stateBet.isTurbo) return SKIP_MIN_SPIN_MS_FAST;
+	return SKIP_MIN_SPIN_MS_NORMAL;
+};
 
 // ── cell helpers ──────────────────────────────────────────────────────────────
 
@@ -98,7 +112,7 @@ const updateCellRaw = (cell: BoardCell, raw: RawSymbol) => {
 };
 
 const shouldKeepWildInCluster = (cell: RawSymbol) =>
-	(cell.wild || cell.name === 'WILD') && !cell.magnet;
+	cell.wild || cell.magnet || cell.name === 'WILD' || cell.name === 'MAGNET';
 
 const applyCellVisualState = (cell: BoardCell) => {
 	cell.symbolState = cell.locked
@@ -106,8 +120,8 @@ const applyCellVisualState = (cell: BoardCell) => {
 		: cell.highlighted
 			? 'win'
 			: cell.magnet
-			? 'magnet'
-			: 'static';
+				? 'magnet'
+				: 'static';
 };
 
 // ── series decorations ────────────────────────────────────────────────────────
@@ -156,8 +170,14 @@ const getBoardViewportMetrics = () => {
 	const mainLayout = stateLayoutDerived.mainLayout();
 	const canvasSizes = stateLayoutDerived.canvasSizes();
 	const padding = getBoardViewportPadding();
-	const availableCanvasWidth = Math.max(BOARD_SIZES.width * mainLayout.scale, canvasSizes.width - padding.left - padding.right);
-	const availableCanvasHeight = Math.max(BOARD_SIZES.height * mainLayout.scale, canvasSizes.height - padding.top - padding.bottom);
+	const availableCanvasWidth = Math.max(
+		BOARD_SIZES.width * mainLayout.scale,
+		canvasSizes.width - padding.left - padding.right,
+	);
+	const availableCanvasHeight = Math.max(
+		BOARD_SIZES.height * mainLayout.scale,
+		canvasSizes.height - padding.top - padding.bottom,
+	);
 	return { mainLayout, canvasSizes, padding, availableCanvasWidth, availableCanvasHeight };
 };
 
@@ -173,7 +193,8 @@ const getBoardScale = () => {
 };
 
 const getBoardOffset = () => {
-	const { mainLayout, canvasSizes, padding, availableCanvasHeight, availableCanvasWidth } = getBoardViewportMetrics();
+	const { mainLayout, canvasSizes, padding, availableCanvasHeight, availableCanvasWidth } =
+		getBoardViewportMetrics();
 	const layoutType = stateLayoutDerived.layoutType();
 	const extraLeftShiftPx = layoutType === 'desktop' ? 50 : layoutType === 'landscape' ? 30 : 0;
 	const centeredCanvasX = padding.left + availableCanvasWidth * 0.5 - canvasSizes.width * 0.5;
@@ -230,7 +251,24 @@ const scatterLandIndex = () => {
 
 const boardRaw = () =>
 	stateGame.board.map((reel) =>
-		reel.map(({ key, position, symbolState, displayX, displayY, displayAlpha, displayScale, locked, highlighted, anchor, target, persistent, fresh, ...raw }) => raw as RawSymbol),
+		reel.map(
+			({
+				key,
+				position,
+				symbolState,
+				displayX,
+				displayY,
+				displayAlpha,
+				displayScale,
+				locked,
+				highlighted,
+				anchor,
+				target,
+				persistent,
+				fresh,
+				...raw
+			}) => raw as RawSymbol,
+		),
 	);
 
 const playLandSound = (raw: RawSymbol) => {
@@ -255,7 +293,9 @@ const pulseFreshPositions = async (freshKeys: Set<string>) => {
 	const pulseMs = getMotion().respin.lockPulseMs;
 	await Promise.all(
 		stateGame.board.flatMap((reel) =>
-			reel.flatMap((cell) => (freshKeys.has(posKey(cell.position)) ? [pulseScale(cell, 1.12, pulseMs)] : [])),
+			reel.flatMap((cell) =>
+				freshKeys.has(posKey(cell.position)) ? [pulseScale(cell, 1.12, pulseMs)] : [],
+			),
 		),
 	);
 	for (const reel of stateGame.board) {
@@ -318,8 +358,7 @@ const pulseMagnetActivation = async (positions: Position[]) => {
 
 	const magnetCenterReel =
 		positions.reduce((s, p) => s + p.reel, 0) / Math.max(1, positions.length);
-	const magnetCenterRow =
-		positions.reduce((s, p) => s + p.row, 0) / Math.max(1, positions.length);
+	const magnetCenterRow = positions.reduce((s, p) => s + p.row, 0) / Math.max(1, positions.length);
 
 	// Phase 1: hide all non-target cells; magnet cell pulses; target cells stay bright
 	await Promise.all([
@@ -347,13 +386,26 @@ const pulseMagnetActivation = async (positions: Position[]) => {
 const animateClusterFormation = async ({
 	series,
 	magnetTargetSymbol,
+	activatedPositions = [],
 }: {
 	series: ClusterSeriesSnapshot[];
 	magnetTargetSymbol: PaySymbolName | null;
+	activatedPositions?: Position[];
 }) => {
-	// Only run for the initial pull — subsequent respins join the cluster by landing in-place.
-	if (!magnetTargetSymbol || !series.length || stateGame.activeSeries.length > 0) {
+	// Initial magnet pulls all selected symbols. Later plain respins land in-place, but a
+	// secondary magnet should still run a pull pass for newly added locked positions.
+	if (!magnetTargetSymbol || !series.length) {
 		restoreBoardAlpha();
+		stateGame.forceFastAnimations = false;
+		return;
+	}
+
+	const previousLockedKeys = getCurrentLockedKeys();
+	const isInitialPull = stateGame.activeSeries.length === 0;
+	const isSecondaryMagnetPull = activatedPositions.length > 0;
+	if (!isInitialPull && !isSecondaryMagnetPull) {
+		restoreBoardAlpha();
+		stateGame.forceFastAnimations = false;
 		return;
 	}
 
@@ -361,21 +413,28 @@ const animateClusterFormation = async ({
 	const flyMs = isFast ? 220 : 600;
 	const landMs = isFast ? 100 : 220;
 
-	const entry = series[0];
-	const lockedPositions = entry.lockedPositions;
+	const lockedPositions = isInitialPull
+		? series.flatMap((entry) => entry.lockedPositions)
+		: series
+				.flatMap((entry) => entry.lockedPositions)
+				.filter((position) => !previousLockedKeys.has(posKey(position)));
 
-	const magnetCells = stateGame.board.flat().filter((cell) => cell.magnet);
+	const activatedKeys = new Set(activatedPositions.map(posKey));
+	const magnetCells = stateGame.board
+		.flat()
+		.filter((cell) => cell.magnet || activatedKeys.has(posKey(cell.position)));
 	const magnetPosKeys = new Set(magnetCells.map((cell) => posKey(cell.position)));
 
 	// Destination positions (non-magnet cluster spots — magnet transforms in-place).
 	const nonMagnetDests = lockedPositions.filter((p) => !magnetPosKeys.has(posKey(p)));
 
-	const magnetCenter = magnetCells.length > 0
-		? {
-			reel: magnetCells.reduce((s, c) => s + c.position.reel, 0) / magnetCells.length,
-			row: magnetCells.reduce((s, c) => s + c.position.row, 0) / magnetCells.length,
-		}
-		: { reel: Math.floor(BOARD_DIMENSIONS.x / 2), row: Math.floor(BOARD_DIMENSIONS.y / 2) };
+	const magnetCenter =
+		magnetCells.length > 0
+			? {
+					reel: magnetCells.reduce((s, c) => s + c.position.reel, 0) / magnetCells.length,
+					row: magnetCells.reduce((s, c) => s + c.position.row, 0) / magnetCells.length,
+				}
+			: { reel: Math.floor(BOARD_DIMENSIONS.x / 2), row: Math.floor(BOARD_DIMENSIONS.y / 2) };
 
 	const distToMagnet = (reel: number, row: number) =>
 		Math.abs(reel - magnetCenter.reel) + Math.abs(row - magnetCenter.row);
@@ -403,14 +462,21 @@ const animateClusterFormation = async ({
 	// Pair remaining sources to remaining destinations by proximity to magnet.
 	const sortedSources = sourceCells
 		.filter((source) => !usedSourceKeys.has(posKey(source.position)))
-		.sort((a, b) => distToMagnet(a.position.reel, a.position.row) - distToMagnet(b.position.reel, b.position.row));
+		.sort(
+			(a, b) =>
+				distToMagnet(a.position.reel, a.position.row) -
+				distToMagnet(b.position.reel, b.position.row),
+		);
 	const sortedDests = nonMagnetDests
 		.filter((dest) => !usedDestKeys.has(posKey(dest)))
 		.sort((a, b) => distToMagnet(a.reel, a.row) - distToMagnet(b.reel, b.row));
-	const movePairs = Array.from({ length: Math.min(sortedSources.length, sortedDests.length) }, (_, i) => ({
-		source: sortedSources[i],
-		dest: sortedDests[i],
-	}));
+	const movePairs = Array.from(
+		{ length: Math.min(sortedSources.length, sortedDests.length) },
+		(_, i) => ({
+			source: sortedSources[i],
+			dest: sortedDests[i],
+		}),
+	);
 	const pairs = [...sameCellPairs, ...movePairs];
 	const lockedDestKeys = new Set(nonMagnetDests.map(posKey));
 
@@ -493,19 +559,28 @@ const animateClusterFormation = async ({
 		magnetCell.displayScale.set(1.2, { duration: 0 });
 		void magnetCell.displayScale.set(1, { duration: landMs, easing: backOut });
 	}
+	stateGame.forceFastAnimations = false;
 };
 
 const getCurrentLockedKeys = () =>
 	new Set(stateGame.activeSeries.flatMap((e) => e.lockedPositions.map(posKey)));
 
-
 // When an active cluster is cleared for the next paid/free spin, remove lock-only wild/magnet
 // visuals from cluster cells before the reel strip snapshots them as previous symbols.
 const normalizeSeriesCellsToPaySymbols = (series: ClusterSeriesSnapshot[]) => {
+	const anchorKeys = new Set(series.flatMap((entry) => entry.anchorPositions.map(posKey)));
 	for (const entry of series) {
 		for (const position of entry.lockedPositions) {
 			const cell = stateGame.board[position.reel]?.[position.row];
 			if (!cell) continue;
+			if (anchorKeys.has(posKey(position)) && shouldKeepWildInCluster(cell)) {
+				cell.name = 'WILD';
+				cell.scatter = false;
+				cell.wild = true;
+				cell.magnet = false;
+				cell.displayAlpha.set(1, { duration: 0 });
+				continue;
+			}
 			cell.name = entry.symbol;
 			cell.multiplier = undefined;
 			cell.scatter = false;
@@ -521,6 +596,19 @@ const syncSpinBoardFromSettledBoard = () => {
 	for (let ri = 0; ri < BOARD_DIMENSIONS.x; ri++) {
 		stateGame.spinBoard[ri].setSymbolsWithRawSymbols(makeSpinSymbols(rawBoard[ri]));
 	}
+};
+
+const stopReelAfterSkipWindow = async (reel: SpinBoardReel, reelIndex: number) => {
+	if (skipStopScheduledReels.has(reelIndex)) return;
+	skipStopScheduledReels.add(reelIndex);
+
+	const spinStartedAt = reelSpinStartedAt[reelIndex] ?? performance.now();
+	const cascadeStopAt = skipCascadeStartedAt + SKIP_REEL_DELAY_MS * reelIndex;
+	const minSpinStopAt = spinStartedAt + getSkipMinSpinMs();
+	const stopAt = Math.max(cascadeStopAt, minSpinStopAt);
+	const remainingMs = Math.max(0, stopAt - performance.now());
+	if (remainingMs > 0) await waitForTimeout(remainingMs);
+	if (stateGame.boardMode === 'spin' && reel.reelState.motion !== 'stopped') reel.stop();
 };
 
 // ── spin board (createReelForSpinning) ────────────────────────────────────────
@@ -549,11 +637,8 @@ const createSpinBoardReel = (reelIndex: number) => {
 	});
 
 	reel.reelState.spinOptions = () => {
-		// Bonus spins always use base speed — no turbo/fast
-		if (!stateGame.bonusMode) {
-			if (stateBet.isSuperTurbo || stateGame.forceFastAnimations) return SPIN_OPTIONS_TURBO;
-			if (stateBet.isTurbo) return SPIN_OPTIONS_FAST;
-		}
+		if (stateBet.isSuperTurbo || stateGame.forceFastAnimations) return SPIN_OPTIONS_TURBO;
+		if (stateBet.isTurbo) return SPIN_OPTIONS_FAST;
 		return SPIN_OPTIONS_DEFAULT;
 	};
 
@@ -629,21 +714,31 @@ const settleBoardInstant = ({
 
 // ── spin animation (createReelForSpinning) ────────────────────────────────────
 
-const animateSpinReels = async ({
-	rawBoard,
-}: {
-	rawBoard: RawSymbol[][];
-}) => {
+const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
 	stateGame.boardMode = 'spin';
+	reelSpinStartedAt = [];
+	skipStopScheduledReels.clear();
 
-	const inBonus = !!stateGame.bonusMode;
-	const isTurbo = !inBonus && (stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations);
+	const isFastMode = stateBet.isTurbo || stateBet.isSuperTurbo;
+	const isSuperTurbo = stateBet.isSuperTurbo;
+	const waitForReelDelay = async (durationMs: number, reelIndex: number) => {
+		const stepMs = 20;
+		for (let elapsed = 0; elapsed < durationMs; elapsed += stepMs) {
+			if (stateGame.forceFastAnimations) {
+				const targetTime = skipCascadeStartedAt + SKIP_REEL_DELAY_MS * reelIndex;
+				const remainingMs = Math.max(0, targetTime - performance.now());
+				if (remainingMs > 0) await waitForTimeout(remainingMs);
+				return;
+			}
+			await waitForTimeout(Math.min(stepMs, durationMs - elapsed));
+		}
+	};
 
 	// Prepare all reels — accumulate paddingSize across reels (forest-gang pattern)
 	stateGame.spinBoard.reduce((prevPaddingSize, reel, ri) => {
 		const symbols = makeSpinSymbols(rawBoard[ri]);
 		const paddingReel = makeSpinSymbols(INITIAL_BOARD[ri]);
-		const spinType = isTurbo ? 'fast' : 'normal';
+		const spinType = isFastMode ? 'fast' : 'normal';
 		const paddingSize = reel.prepareToSpin({
 			noStop: false,
 			spinType,
@@ -660,8 +755,11 @@ const animateSpinReels = async ({
 	const opts = stateGame.spinBoard[0].reelState.spinOptions();
 	await Promise.all(
 		stateGame.spinBoard.map(async (reel, ri) => {
-			if (!isTurbo && ri > 0) await waitForTimeout(opts.reelSpinDelay * ri);
-			await reel.spin();
+			if (!isSuperTurbo && ri > 0) await waitForReelDelay(opts.reelSpinDelay * ri, ri);
+			const spinPromise = reel.spin();
+			reelSpinStartedAt[ri] = performance.now();
+			if (stateGame.forceFastAnimations) void stopReelAfterSkipWindow(reel, ri);
+			await spinPromise;
 		}),
 	);
 
@@ -680,6 +778,10 @@ const animateSpinReels = async ({
 		}
 	}
 	stateGame.boardMode = 'settle';
+	stateGame.forceFastAnimations = false;
+	skipCascadeStartedAt = 0;
+	reelSpinStartedAt = [];
+	skipStopScheduledReels.clear();
 };
 
 // ── combined reveal animation ─────────────────────────────────────────────────
@@ -836,7 +938,12 @@ const markNextRevealAsSpin = () => {
 };
 
 const speedUpMotion = () => {
+	if (stateGame.boardMode !== 'spin') return;
 	stateGame.forceFastAnimations = true;
+	if (!skipCascadeStartedAt) skipCascadeStartedAt = performance.now();
+	for (const [reelIndex, reel] of stateGame.spinBoard.entries()) {
+		if (reel.reelState.motion !== 'stopped') void stopReelAfterSkipWindow(reel, reelIndex);
+	}
 };
 
 const activateMagnetPulse = async (positions: Position[]) => {

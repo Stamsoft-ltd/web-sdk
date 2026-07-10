@@ -62,7 +62,16 @@
 		}
 
 		const alias = winLevelData.alias;
-		const amp = alias === 'max' ? 14 : alias === 'epic' ? 10 : alias === 'mega' ? 7 : alias === 'superwin' ? 5 : 3;
+		const amp =
+			alias === 'max'
+				? 14
+				: alias === 'epic'
+					? 10
+					: alias === 'mega'
+						? 7
+						: alias === 'superwin'
+							? 5
+							: 3;
 
 		let raf = 0;
 		const tick = (now: number) => {
@@ -91,83 +100,98 @@
 			shakeY = 0;
 		};
 	});
-
 </script>
 
 <FadeContainer {show}>
 	{#if winLevelData}
 		{@const isBigWin = winLevelData.type === 'big'}
 		{@const hasBoardAnimation = !!winLevelData?.animation}
-		{@const duration = (stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation ? Math.min(winLevelData.presentDuration, 400) : winLevelData.presentDuration}
+		{@const duration =
+			(stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation
+				? Math.min(winLevelData.presentDuration, 400)
+				: winLevelData.presentDuration}
 		{#key oncomplete}
-		<WinCountUpProvider {amount} {duration} oncomplete={() => { context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_bigwin_coinloop' }); if (!hasBoardAnimation) oncomplete(); }}>
-			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
-				{#if isBigWin}
-					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
-				{/if}
+			<WinCountUpProvider
+				{amount}
+				{duration}
+				oncomplete={() => {
+					context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_bigwin_coinloop' });
+					if (!hasBoardAnimation) oncomplete();
+				}}
+			>
+				{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
+					{#if isBigWin}
+						<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
+					{/if}
 
-				<OnMount onmount={() => startCountUp()} />
+					<OnMount onmount={() => startCountUp()} />
 
-				<!-- Coins BEHIND the win popup (template order = z-order) -->
-				<WinCoins emit={true} levelAlias={winLevelData?.alias} boardMode={hasBoardAnimation} />
+					<!-- Coins BEHIND the win popup (template order = z-order) -->
+					<WinCoins emit={true} levelAlias={winLevelData?.alias} boardMode={hasBoardAnimation} />
 
-				<MainContainer>
-					<Container
-						x={boardLayout.x + shakeX}
-						y={boardLayout.y + shakeY}
-					>
-						{#if hasBoardAnimation}
-							{@const bs = boardLayout.boardScale}
-							{@const boardSize = Math.min(boardLayout.width * bs * 0.55, boardLayout.height * bs * 0.85)}
-							{@const screenW = context.stateLayoutDerived.canvasSizes().width / (mainLayout.scale || 1)}
-							{@const screenH = context.stateLayoutDerived.canvasSizes().height / (mainLayout.scale || 1)}
-							<!-- Tiered board with zoom-to-centre transitions between tiers (see WinBoard). -->
-							<WinBoard
-								amount={countUpAmount}
-								{boardSize}
-								{screenW}
-								{screenH}
-								maxOffX={mainLayout.width * 0.5 - boardLayout.x}
-								maxOffY={mainLayout.height * 0.5 - boardLayout.y}
-							/>
-						{:else}
-							{@const winMaxW = context.stateLayoutDerived.canvasSizes().width / context.stateLayoutDerived.mainLayout().scale}
-							{@const winScale = winSizes.width > winMaxW ? winMaxW / winSizes.width : 1}
-							<!-- Line-win amount (no board animation) — white, per design feedback -->
-							<Container scale={winScale}>
-								<Text
-									anchor={0.5}
-									onresize={(s) => (winSizes = s)}
-									text={bookEventAmountToCurrencyString(countUpAmount)}
-									style={{
-										fontFamily: 'Cinzel',
-										fontWeight: '900',
-										fontSize: SYMBOL_SIZE,
-										fill: 0xffffff,
-										align: 'center',
-										letterSpacing: SYMBOL_SIZE * 0.03,
-										stroke: { color: 0x000000, width: Math.max(2, Math.round(SYMBOL_SIZE * 0.04)) },
-									}}
+					<MainContainer>
+						<Container x={boardLayout.x + shakeX} y={boardLayout.y + shakeY}>
+							{#if hasBoardAnimation}
+								{@const bs = boardLayout.boardScale}
+								{@const boardSize = Math.min(
+									boardLayout.width * bs * 0.55,
+									boardLayout.height * bs * 0.85,
+								)}
+								{@const screenW =
+									context.stateLayoutDerived.canvasSizes().width / (mainLayout.scale || 1)}
+								{@const screenH =
+									context.stateLayoutDerived.canvasSizes().height / (mainLayout.scale || 1)}
+								<!-- Tiered board with zoom-to-centre transitions between tiers (see WinBoard). -->
+								<WinBoard
+									amount={countUpAmount}
+									{boardSize}
+									{screenW}
+									{screenH}
+									maxOffX={mainLayout.width * 0.5 - boardLayout.x}
+									maxOffY={mainLayout.height * 0.5 - boardLayout.y}
 								/>
-							</Container>
-						{/if}
-					</Container>
-				</MainContainer>
+							{:else}
+								{@const winMaxW =
+									context.stateLayoutDerived.canvasSizes().width /
+									context.stateLayoutDerived.mainLayout().scale}
+								{@const winScale = winSizes.width > winMaxW ? winMaxW / winSizes.width : 1}
+								<!-- Line-win amount (no board animation) — white, per design feedback -->
+								<Container scale={winScale}>
+									<Text
+										anchor={0.5}
+										onresize={(s) => (winSizes = s)}
+										text={bookEventAmountToCurrencyString(countUpAmount)}
+										style={{
+											fontFamily: 'Cinzel',
+											fontWeight: '900',
+											fontSize: SYMBOL_SIZE,
+											fill: 0xffffff,
+											align: 'center',
+											letterSpacing: SYMBOL_SIZE * 0.03,
+											stroke: {
+												color: 0x000000,
+												width: Math.max(2, Math.round(SYMBOL_SIZE * 0.04)),
+											},
+										}}
+									/>
+								</Container>
+							{/if}
+						</Container>
+					</MainContainer>
 
-
-				{#if hasBoardAnimation}
-					<PressToContinue onpress={() => {
-						if (!countUpCompleted) {
-							finishCountUp();
-						} else {
-							if (boardClickHandled) return;
-							boardClickHandled = true;
-							oncomplete();
-						}
-					}} />
-				{/if}
-			{/snippet}
-		</WinCountUpProvider>
+					<PressToContinue
+						onpress={() => {
+							if (!countUpCompleted) {
+								finishCountUp();
+							} else {
+								if (boardClickHandled) return;
+								boardClickHandled = true;
+								oncomplete();
+							}
+						}}
+					/>
+				{/snippet}
+			</WinCountUpProvider>
 		{/key}
 	{/if}
 </FadeContainer>

@@ -14,9 +14,12 @@ import { logMagneticDiagnostic } from '../utils/magneticDiagnostics';
 
 const winLevelSoundsPlay = ({ winLevelData }: { winLevelData: WinLevelData }) => {
 	if (winLevelData?.alias === 'max') eventEmitter.broadcastAsync({ type: 'uiHide' });
-	if (winLevelData?.sound?.sfx) eventEmitter.broadcast({ type: 'soundOnce', name: winLevelData.sound.sfx });
-	if (winLevelData?.sound?.bgm) eventEmitter.broadcast({ type: 'soundMusic', name: winLevelData.sound.bgm });
-	if (winLevelData?.type === 'big') eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_bigwin_coinloop' });
+	if (winLevelData?.sound?.sfx)
+		eventEmitter.broadcast({ type: 'soundOnce', name: winLevelData.sound.sfx });
+	if (winLevelData?.sound?.bgm)
+		eventEmitter.broadcast({ type: 'soundMusic', name: winLevelData.sound.bgm });
+	if (winLevelData?.type === 'big')
+		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_bigwin_coinloop' });
 };
 
 const winLevelSoundsStop = () => {
@@ -31,7 +34,29 @@ const winLevelSoundsStop = () => {
 
 const animateSymbols = async ({ positions }: { positions: Position[] }) => {
 	eventEmitter.broadcast({ type: 'boardShow' });
-	await eventEmitter.broadcastAsync({ type: 'boardWithAnimateSymbols', symbolPositions: positions });
+	await eventEmitter.broadcastAsync({
+		type: 'boardWithAnimateSymbols',
+		symbolPositions: positions,
+	});
+};
+
+const positionKey = (position: Position) => `${position.reel}:${position.row}`;
+
+const getVisibleWinPositions = (bookEvent: BookEventOfType<'winInfo'>) => {
+	const activeSeriesIds = new Set(stateGame.activeSeries.map((entry) => entry.id));
+	const activeLockedPositions = new Set(
+		stateGame.activeSeries.flatMap((entry) => entry.lockedPositions.map(positionKey)),
+	);
+	const wins = activeSeriesIds.size
+		? bookEvent.wins.filter((win) => activeSeriesIds.has(win.seriesId))
+		: bookEvent.wins;
+	const positions = _.uniqBy(
+		wins.flatMap((win) => win.positions),
+		positionKey,
+	);
+
+	if (!activeLockedPositions.size) return positions;
+	return positions.filter((position) => activeLockedPositions.has(positionKey(position)));
 };
 
 const didSeriesGrow = (previous: ClusterSeriesSnapshot[], next: ClusterSeriesSnapshot[]) => {
@@ -87,7 +112,12 @@ const shouldSkipNoGrowthNormalSuperRespin = (bookEvent: BookEvent, bookEvents: B
 		for (let i = previousRevealIndex + 1; i < currentIndex; i += 1) {
 			const event = bookEvents[i];
 			if (event.type === 'clusterSeriesUpdate') return event.series;
-			if (event.type === 'reveal' || event.type === 'updateFreeSpin' || event.type === 'freeSpinEnd') return null;
+			if (
+				event.type === 'reveal' ||
+				event.type === 'updateFreeSpin' ||
+				event.type === 'freeSpinEnd'
+			)
+				return null;
 		}
 		return null;
 	})();
@@ -95,7 +125,15 @@ const shouldSkipNoGrowthNormalSuperRespin = (bookEvent: BookEvent, bookEvents: B
 	return !!normalUpdate && !didSeriesGrow(carry, normalUpdate);
 };
 
-const getBonusModeFromScatters = (positions: Position[]) => (positions.length >= 4 ? 'superspin' : 'freegame');
+const getBonusModeFromScatters = (positions: Position[]) =>
+	positions.length >= 4 ? 'superspin' : 'freegame';
+
+let pendingMagnetActivationPositions: Position[] = [];
+
+const nextBookEventAfter = (bookEvent: BookEvent, bookEvents: BookEvent[]) => {
+	const currentIndex = bookEvents.findIndex((event) => event.index === bookEvent.index);
+	return currentIndex < 0 ? null : bookEvents[currentIndex + 1];
+};
 
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
@@ -117,9 +155,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			await waitForTimeout(stateBet.isTurbo ? 160 : isBonus ? 480 : 300);
 		}
 
+		const hadPendingStop = stateGame.pendingStop && stateGame.awaitingFirstReveal;
 		stateGame.awaitingFirstReveal = false;
 		stateGame.pendingStop = false;
 		stateGame.tempMultiplier = null;
+		pendingMagnetActivationPositions = [];
 
 		// Super bonus: if the normal spin did not grow the persistent cluster, old books may still
 		// contain a respin reveal. Ignore it so the board does not flash/re-spin with no cluster add.
@@ -131,27 +171,51 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			}
 		}
 
-		await stateGameDerived.applyReveal({ rawBoard: bookEvent.board, gameType: bookEvent.gameType });
+		const revealPromise = stateGameDerived.applyReveal({
+			rawBoard: bookEvent.board,
+			gameType: bookEvent.gameType,
+		});
+		if (hadPendingStop) stateGameDerived.speedUpMotion();
+		await revealPromise;
+		const nextEvent = nextBookEventAfter(bookEvent, bookEvents);
+		if (nextEvent?.type !== 'magnetActivated' && nextEvent?.type !== 'clusterSeriesUpdate') {
+			stateGame.forceFastAnimations = false;
+		}
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
 	},
-	magnetActivated: async (bookEvent: BookEventOfType<'magnetActivated'>) => {
+	magnetActivated: async (
+		bookEvent: BookEventOfType<'magnetActivated'>,
+		{ bookEvents }: BookEventContext,
+	) => {
+		pendingMagnetActivationPositions = bookEvent.positions;
 		stateGame.selectedBonusSymbol = bookEvent.symbol;
 		stateGame.magnetTargetSymbol = bookEvent.symbol;
 		stateGame.globalMultiplier = bookEvent.totalMultiplier;
 		stateGame.seriesTotalMultiplier = bookEvent.totalMultiplier;
 		stateGame.tempMultiplier = bookEvent.multiplier > 1 ? bookEvent.multiplier : null;
-		if (bookEvent.multiplier > 1) eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_landing' });
+		if (bookEvent.multiplier > 1)
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_landing' });
 		await stateGameDerived.activateMagnetPulse(bookEvent.positions);
+		if (nextBookEventAfter(bookEvent, bookEvents)?.type !== 'clusterSeriesUpdate') {
+			stateGame.forceFastAnimations = false;
+			pendingMagnetActivationPositions = [];
+		}
 		if (bookEvent.persistent) {
 			eventEmitter.broadcast({ type: 'globalMultiplierShow' });
-			eventEmitter.broadcast({ type: 'globalMultiplierUpdate', multiplier: bookEvent.totalMultiplier });
+			eventEmitter.broadcast({
+				type: 'globalMultiplierUpdate',
+				multiplier: bookEvent.totalMultiplier,
+			});
 		}
 	},
 	clusterSeriesUpdate: async (bookEvent: BookEventOfType<'clusterSeriesUpdate'>) => {
-		// Fly pulled symbols to their exact final cluster positions (initial pull only).
+		const activatedPositions = pendingMagnetActivationPositions;
+		pendingMagnetActivationPositions = [];
+		// Fly pulled symbols to their exact final cluster positions.
 		await stateGameDerived.animateClusterFormation({
 			series: bookEvent.series,
 			magnetTargetSymbol: bookEvent.magnetTargetSymbol,
+			activatedPositions,
 		});
 		stateGameDerived.setSeriesSnapshots({
 			series: bookEvent.series,
@@ -160,7 +224,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		});
 		if (stateGame.bonusMode === 'superspin') {
 			eventEmitter.broadcast({ type: 'globalMultiplierShow' });
-			eventEmitter.broadcast({ type: 'globalMultiplierUpdate', multiplier: bookEvent.totalMultiplier });
+			eventEmitter.broadcast({
+				type: 'globalMultiplierUpdate',
+				multiplier: bookEvent.totalMultiplier,
+			});
 		}
 	},
 	clusterSeriesResolved: async () => {
@@ -173,16 +240,20 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			totalMultiplier: bookEvent.totalMultiplier,
 		});
 		eventEmitter.broadcast({ type: 'globalMultiplierShow' });
-		eventEmitter.broadcast({ type: 'globalMultiplierUpdate', multiplier: bookEvent.totalMultiplier });
+		eventEmitter.broadcast({
+			type: 'globalMultiplierUpdate',
+			multiplier: bookEvent.totalMultiplier,
+		});
 	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>, { bookEvents }: BookEventContext) => {
-		const isSuperFinal = stateGame.bonusMode === 'superspin' && isFinalSuperWinInfo(bookEvent, bookEvents);
+		const isSuperFinal =
+			stateGame.bonusMode === 'superspin' && isFinalSuperWinInfo(bookEvent, bookEvents);
 		// Super bonus pays at outro; per-spin winInfo badges/anim cause green number overlays and
 		// whole-board flash on no-growth spins. Keep only the final cluster win-state pass.
 		if (stateGame.bonusMode === 'superspin' && !isSuperFinal) return;
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_winlevel_small' });
-		const allPositions = _.uniqBy(bookEvent.wins.flatMap((win) => win.positions), (position) => `${position.reel}:${position.row}`);
-		await animateSymbols({ positions: allPositions });
+		const positions = getVisibleWinPositions(bookEvent);
+		if (positions.length) await animateSymbols({ positions });
 	},
 	setTotalWin: async (bookEvent: BookEventOfType<'setTotalWin'>) => {
 		stateBet.winBookEventAmount = bookEvent.amount;
@@ -202,7 +273,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'jng_intro_fs' });
 			eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
-			await eventEmitter.broadcastAsync({ type: 'freeSpinIntroUpdate', totalFreeSpins: bookEvent.totalFs });
+			await eventEmitter.broadcastAsync({
+				type: 'freeSpinIntroUpdate',
+				totalFreeSpins: bookEvent.totalFs,
+			});
 		}
 		stateGame.gameType = bonusMode;
 		stateGame.bonusMode = bonusMode;
@@ -210,7 +284,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if (!isFeatureSpin) {
 			eventEmitter.broadcast({ type: 'freeSpinCounterShow' });
 			stateUi.freeSpinCounterShow = true;
-			eventEmitter.broadcast({ type: 'freeSpinCounterUpdate', current: undefined, total: bookEvent.totalFs });
+			eventEmitter.broadcast({
+				type: 'freeSpinCounterUpdate',
+				current: undefined,
+				total: bookEvent.totalFs,
+			});
 			stateUi.freeSpinCounterTotal = bookEvent.totalFs;
 		}
 		if (bonusMode === 'superspin') eventEmitter.broadcast({ type: 'globalMultiplierShow' });
@@ -230,7 +308,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 		eventEmitter.broadcast({ type: 'freeSpinCounterShow' });
 		stateUi.freeSpinCounterShow = true;
-		eventEmitter.broadcast({ type: 'freeSpinCounterUpdate', current: bookEvent.amount + 1, total: bookEvent.total });
+		eventEmitter.broadcast({
+			type: 'freeSpinCounterUpdate',
+			current: bookEvent.amount + 1,
+			total: bookEvent.total,
+		});
 		stateUi.freeSpinCounterCurrent = bookEvent.amount + 1;
 		stateUi.freeSpinCounterTotal = bookEvent.total;
 	},
@@ -238,7 +320,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
 		eventEmitter.broadcast({ type: 'winShow' });
 		winLevelSoundsPlay({ winLevelData });
-		await eventEmitter.broadcastAsync({ type: 'winUpdate', amount: bookEvent.amount, winLevelData });
+		await eventEmitter.broadcastAsync({
+			type: 'winUpdate',
+			amount: bookEvent.amount,
+			winLevelData,
+		});
 		winLevelSoundsStop();
 		eventEmitter.broadcast({ type: 'winHide' });
 	},
@@ -255,7 +341,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_youwon_panel' });
 			winLevelSoundsPlay({ winLevelData });
-			await eventEmitter.broadcastAsync({ type: 'freeSpinOutroCountUp', amount: bookEvent.amount, winLevelData });
+			await eventEmitter.broadcastAsync({
+				type: 'freeSpinOutroCountUp',
+				amount: bookEvent.amount,
+				winLevelData,
+			});
 			winLevelSoundsStop();
 			eventEmitter.broadcast({ type: 'freeSpinOutroHide' });
 			eventEmitter.broadcast({ type: 'freeSpinCounterHide' });

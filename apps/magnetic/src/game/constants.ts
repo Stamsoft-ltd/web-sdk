@@ -21,8 +21,14 @@ const DESKTOP_HEIGHT = 800;
 const LANDSCAPE_HEIGHT = 900;
 const PORTRAIT_HEIGHT = 1422;
 export const DESKTOP_MAIN_SIZES = { width: DESKTOP_HEIGHT * DESKTOP_RATIO, height: DESKTOP_HEIGHT };
-export const LANDSCAPE_MAIN_SIZES = { width: LANDSCAPE_HEIGHT * LANDSCAPE_RATIO, height: LANDSCAPE_HEIGHT };
-export const PORTRAIT_MAIN_SIZES = { width: PORTRAIT_HEIGHT * PORTRAIT_RATIO, height: PORTRAIT_HEIGHT };
+export const LANDSCAPE_MAIN_SIZES = {
+	width: LANDSCAPE_HEIGHT * LANDSCAPE_RATIO,
+	height: LANDSCAPE_HEIGHT,
+};
+export const PORTRAIT_MAIN_SIZES = {
+	width: PORTRAIT_HEIGHT * PORTRAIT_RATIO,
+	height: PORTRAIT_HEIGHT,
+};
 
 export const PAY_SYMBOLS: SymbolName[] = ['H1', 'H2', 'H3', 'H4', 'L1', 'L2', 'L3', 'L4'];
 export const PREMIUM_SYMBOLS: SymbolName[] = ['H1', 'H2', 'H3', 'H4'];
@@ -62,16 +68,15 @@ export const SPIN_REEL_LENGTH = BOARD_DIMENSIONS.y + 2; // 9
 const SPIN_OPTIONS_SHARED = {
 	reelBounceBackSpeed: 0.15,
 	reelSpinSpeedBeforeBounce: 4,
-	// Smaller multiplier than forest-gang's 1.2 so 7 reels don't run too long
-	reelPaddingMultiplierNormal: 0.4,
+	reelPaddingMultiplierNormal: 1.2,
 	reelPaddingMultiplierAnticipated: 3,
-	reelSpinDelay: 90,
+	reelSpinDelay: 145,
 };
 
 export const SPIN_OPTIONS_DEFAULT = {
 	...SPIN_OPTIONS_SHARED,
-	reelPreSpinSpeed: 2,
-	reelSpinSpeed: 3,
+	reelPreSpinSpeed: 1.5,
+	reelSpinSpeed: 2.3,
 	reelBounceSizeMulti: 0.3,
 };
 
@@ -87,7 +92,7 @@ export const SPIN_OPTIONS_TURBO = {
 	reelPreSpinSpeed: 6,
 	reelSpinSpeed: 7,
 	reelBounceSizeMulti: 0.1,
-	reelSpinDelay: 40,
+	reelSpinDelay: 60,
 };
 
 export const BOARD_MOTION_DEFAULT = {

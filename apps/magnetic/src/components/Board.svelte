@@ -22,6 +22,15 @@
 	const layout = $derived(context.stateGameDerived.boardLayout());
 	const flatCells = $derived(board.flatMap((reel) => reel));
 	const lockedCells = $derived(flatCells.filter((cell) => cell.locked));
+	const Z = {
+		grid: 0,
+		background: 5,
+		reel: 10,
+		symbol: 20,
+		lockedCover: 30,
+		lockedFrame: 31,
+		lockedSymbol: 32,
+	} as const;
 	let show = $state(true);
 
 	const getX = (reelIndex: number) => SYMBOL_W * (reelIndex + 0.5);
@@ -99,7 +108,13 @@
 			g.lineTo(cx + hw, cy + hh);
 			g.lineTo(cx - hw, cy + hh);
 			g.lineTo(cx - hw, cy - hh);
-			g.stroke({ width: SYMBOL_W * 0.05, color: 0x2fa8ff, alpha: 0.18 * flick + 0.08, cap: 'round', join: 'round' });
+			g.stroke({
+				width: SYMBOL_W * 0.05,
+				color: 0x2fa8ff,
+				alpha: 0.18 * flick + 0.08,
+				cap: 'round',
+				join: 'round',
+			});
 			// Two crawling arc runners with layered glow + hot white core + head spark.
 			const baseT = t * 0.45 + phase;
 			for (const off of [0, 0.5]) {
@@ -108,18 +123,39 @@
 				const pts: { x: number; y: number }[] = [];
 				for (let i = 0; i <= N; i++) {
 					const p = pointAt(baseT + off - (i / N) * SEG);
-					pts.push({ x: p.x + (Math.random() - 0.5) * 2 * jit, y: p.y + (Math.random() - 0.5) * 2 * jit });
+					pts.push({
+						x: p.x + (Math.random() - 0.5) * 2 * jit,
+						y: p.y + (Math.random() - 0.5) * 2 * jit,
+					});
 				}
 				const trace = () => {
 					g.moveTo(pts[0].x, pts[0].y);
 					for (let i = 1; i <= N; i++) g.lineTo(pts[i].x, pts[i].y);
 				};
 				trace();
-				g.stroke({ width: SYMBOL_W * 0.12, color: 0x1e8fff, alpha: 0.5, cap: 'round', join: 'round' });
+				g.stroke({
+					width: SYMBOL_W * 0.12,
+					color: 0x1e8fff,
+					alpha: 0.5,
+					cap: 'round',
+					join: 'round',
+				});
 				trace();
-				g.stroke({ width: SYMBOL_W * 0.05, color: 0x66d4ff, alpha: 0.85, cap: 'round', join: 'round' });
+				g.stroke({
+					width: SYMBOL_W * 0.05,
+					color: 0x66d4ff,
+					alpha: 0.85,
+					cap: 'round',
+					join: 'round',
+				});
 				trace();
-				g.stroke({ width: SYMBOL_W * 0.022, color: 0xffffff, alpha: 1, cap: 'round', join: 'round' });
+				g.stroke({
+					width: SYMBOL_W * 0.022,
+					color: 0xffffff,
+					alpha: 1,
+					cap: 'round',
+					join: 'round',
+				});
 				// Head spark
 				g.circle(pts[0].x, pts[0].y, SYMBOL_W * 0.09);
 				g.fill({ color: 0x2fa8ff, alpha: 0.4 });
@@ -178,7 +214,13 @@
 </script>
 
 {#if show}
-	<Container x={layout.x} y={layout.y + BOARD_GRID_OFFSET_Y} pivot={layout.pivot} scale={layout.boardScale}>
+	<Container
+		x={layout.x}
+		y={layout.y + BOARD_GRID_OFFSET_Y}
+		pivot={layout.pivot}
+		scale={layout.boardScale}
+		sortableChildren={true}
+	>
 		<Graphics
 			isMask
 			draw={(graphics) => {
@@ -198,6 +240,7 @@
 					anchor={0.5}
 					width={SYMBOL_W}
 					height={SYMBOL_H}
+					zIndex={Z.grid}
 				/>
 			{/each}
 		{/each}
@@ -207,15 +250,19 @@
 			{#each spinBoard as reel, reelIndex (reelIndex)}
 				{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
 					{@const y = reelSymbol.symbolY()}
-					{@const symbolInfo = getSymbolInfo({ rawSymbol: reelSymbol.rawSymbol, state: reelSymbol.symbolState })}
+					{@const symbolInfo = getSymbolInfo({
+						rawSymbol: reelSymbol.rawSymbol,
+						state: reelSymbol.symbolState,
+					})}
 					<Sprite
 						key={symbolInfo.assetKey}
 						x={getX(reelIndex)}
-						y={y}
+						{y}
 						anchor={{ x: 0.5, y: 0.5 }}
 						width={SYMBOL_W * symbolInfo.sizeRatios.width}
 						height={SYMBOL_H * symbolInfo.sizeRatios.height}
 						alpha={1}
+						zIndex={Z.reel}
 					/>
 				{/each}
 			{/each}
@@ -236,6 +283,7 @@
 					height={SYMBOL_H}
 					backgroundColor={0x05070b}
 					backgroundAlpha={1}
+					zIndex={Z.lockedCover}
 				/>
 				<Sprite
 					key="cellBoxWin"
@@ -244,6 +292,7 @@
 					anchor={0.5}
 					width={SYMBOL_W}
 					height={SYMBOL_H}
+					zIndex={Z.lockedFrame}
 				/>
 				{#if cell.name === 'L3'}
 					<!-- Washer: true axial rotation via the 16-frame flipbook (designer frames). -->
@@ -257,6 +306,7 @@
 						anchor={0.5}
 						{width}
 						{height}
+						zIndex={Z.lockedSymbol}
 					/>
 				{:else}
 					<!-- Twist pivots on the bolt HEAD (top-left of the art), not the image centre, so the
@@ -266,6 +316,7 @@
 						x={x - width * (0.5 - LOCK_PIVOT)}
 						y={y - height * (0.5 - LOCK_PIVOT)}
 						rotation={lockSpin(cell.key)}
+						zIndex={Z.lockedSymbol}
 					>
 						<Sprite
 							key={symbolInfo.assetKey}
@@ -294,28 +345,34 @@
 						height={SYMBOL_H}
 						backgroundColor={cell.locked ? 0x05070b : 0x0b0f18}
 						backgroundAlpha={cell.locked ? 1 : context.stateGame.boardSpinning ? 0.18 : 0.1}
+						zIndex={Z.background}
 					/>
 				{/each}
 			{/each}
 
 			<!-- Base symbols stay mounted even when a cell becomes locked; locked overlay covers them. -->
 			{#each flatCells as cell (cell.key)}
-				{@const x = cell.locked ? getX(cell.position.reel) : getX(cell.position.reel) + cell.displayX.current}
+				{@const x = cell.locked
+					? getX(cell.position.reel)
+					: getX(cell.position.reel) + cell.displayX.current}
 				{@const y = cell.locked ? getStaticY(cell.position.row) : cell.displayY.current}
-				{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: cell.locked ? 'locked' : cell.symbolState })}
+				{@const symbolInfo = getSymbolInfo({
+					rawSymbol: cell,
+					state: cell.locked ? 'locked' : cell.symbolState,
+				})}
 				{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
 				{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
 
-
 				<Sprite
 					key={symbolInfo.assetKey}
-					x={x}
-					y={y}
+					{x}
+					{y}
 					anchor={{ x: 0.5, y: 0.5 }}
 					{width}
 					{height}
 					alpha={cell.locked ? 1 : cell.displayAlpha.current}
 					tint={0xffffff}
+					zIndex={cell.locked ? Z.lockedSymbol : Z.symbol}
 				/>
 			{/each}
 
@@ -323,7 +380,10 @@
 			{#each lockedCells as cell (`${cell.key}:locked`)}
 				{@const x = getX(cell.position.reel)}
 				{@const y = getStaticY(cell.position.row)}
-				{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState === 'win' ? 'win' : 'locked' })}
+				{@const symbolInfo = getSymbolInfo({
+					rawSymbol: cell,
+					state: cell.symbolState === 'win' ? 'win' : 'locked',
+				})}
 				{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
 				{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
 				<Rectangle
@@ -334,6 +394,7 @@
 					height={SYMBOL_H}
 					backgroundColor={0x05070b}
 					backgroundAlpha={1}
+					zIndex={Z.lockedCover}
 				/>
 				<Sprite
 					key="cellBoxWin"
@@ -342,6 +403,7 @@
 					anchor={0.5}
 					width={SYMBOL_W}
 					height={SYMBOL_H}
+					zIndex={Z.lockedFrame}
 				/>
 				{#if cell.name === 'L3'}
 					<!-- Washer: true axial rotation via the 16-frame flipbook (designer frames). -->
@@ -355,6 +417,7 @@
 						anchor={0.5}
 						{width}
 						{height}
+						zIndex={Z.lockedSymbol}
 					/>
 				{:else}
 					<!-- Twist pivots on the bolt HEAD (top-left of the art), not the image centre, so the
@@ -364,6 +427,7 @@
 						x={x - width * (0.5 - LOCK_PIVOT)}
 						y={y - height * (0.5 - LOCK_PIVOT)}
 						rotation={lockSpin(cell.key)}
+						zIndex={Z.lockedSymbol}
 					>
 						<Sprite
 							key={symbolInfo.assetKey}
