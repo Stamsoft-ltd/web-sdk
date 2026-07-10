@@ -84,22 +84,28 @@
 	const PANEL_ASPECT = 200 / 98;
 	const gridHalfW = $derived(board.width * 0.5 * scale);
 	const gridHalfH = $derived(board.height * 0.5 * scale);
-	const PANEL_W = $derived(board.width * 0.29 * scale);
+	const PANEL_W = $derived(board.width * 0.32 * scale);
 	const PANEL_H = $derived(PANEL_W / PANEL_ASPECT);
-	const MARGIN = $derived(board.width * 0.05 * scale);
-
-	const colX = $derived(board.x + gridHalfW + MARGIN + PANEL_W * 0.5);
-	const topY = $derived(board.y - gridHalfH);
 	const botY = $derived(board.y + gridHalfH);
-	// TOTAL WIN sits a bit below the logo on the left — fully on-screen, never clipped.
-	// FREE SPINS stays at the board's bottom edge.
-	const totalWinY = $derived(topY + PANEL_H * 1.15);
+	// True screen edges in main-layout coordinates (the layout is centred on the canvas), so the
+	// capsule's top pipe touches the top edge of the SCREEN, per Figma.
+	const main = $derived(context.stateLayoutDerived.mainLayout());
+	const canvasTopY = $derived(
+		main.height * 0.5 - context.stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1)),
+	);
+	const canvasRightX = $derived(
+		main.width * 0.5 + context.stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1)),
+	);
+	// Column centred horizontally in the space between the board's right edge and the screen edge.
+	const colX = $derived((board.x + gridHalfW + canvasRightX) * 0.5);
+	// FREE SPINS stays at the board's bottom edge; the capsule runs from the screen top down past
+	// it (FREE SPINS sits on top of and covers a bit of the capsule's base).
 	const fsY = $derived(botY - PANEL_H * 0.5);
-	// Capsule runs from just under TOTAL WIN down well past FREE SPINS, which sits on top of and
-	// covers a bit of the capsule's base.
-	const tubeTop = $derived(totalWinY + PANEL_H * 0.24);
+	const tubeTop = $derived(canvasTopY);
 	const tubeBot = $derived(fsY + PANEL_H * 0.1);
 	const tubeH = $derived(Math.max(1, tubeBot - tubeTop));
+	// TOTAL WIN overlays the capsule's top pipe (Figma: plaque ~15% down the column).
+	const totalWinY = $derived(tubeTop + tubeH * 0.155);
 	// Wider tube so the symbol sits comfortably inside the glass instead of overflowing its walls.
 	const tubeW = $derived(PANEL_W * 1.08);
 	const tubeY = $derived((tubeTop + tubeBot) * 0.5);

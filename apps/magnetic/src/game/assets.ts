@@ -209,6 +209,9 @@ export default {
 		src: './assets/components/ui/scatter-panel-image.png?v=20260611',
 		preload: true,
 	},
+	// 16-frame rotation flipbook for the washer — played while the washer is locked in a cluster
+	// (the "being screwed in" animation). Packed 4x4, 420px frames, pivot centred.
+	washerLockSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/washer_lock_sheet.json', preload: true },
 	aTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.png?v=20260709', preload: true },
 	aWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_win.png?v=20260709', preload: true },
 	aTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_mobile.png?v=20260709', preload: true },

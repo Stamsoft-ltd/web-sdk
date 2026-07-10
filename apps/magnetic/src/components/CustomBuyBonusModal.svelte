@@ -101,7 +101,7 @@
 	const closeConfirm = () => { confirmMode = null; };
 	const toggleActivateMode = (toggle: () => void) => { toggle(); props.onclose(); };
 
-	const confirmLabel = $derived(confirmMode === 'SUPER' ? 'ALL IN' : 'DEAL IT');
+	const confirmLabel = $derived(confirmMode === 'SUPER' ? 'MAGNETIC MEGA CHAIN' : 'DROP-O-MAGNET');
 	const confirmCost  = $derived(confirmMode === 'SUPER' ? superCost : bonusCost);
 
 	onMount(() => {
@@ -155,28 +155,28 @@
 			>{props.isFeatureActive ? 'DEACTIVATE' : 'ACTIVATE'}</button>
 		</div>
 
-		<!-- ALL IN -->
+		<!-- DROP-O-MAGNET (freegame / BONUS mode) -->
 		<div class="card" style={`background-image:url('${cardPanel}')`}>
-			<span class="card-title">ALL IN</span>
-			<span class="card-desc">10 Free Spins with random expanding symbol and multiplier start at 2x and doubles on every</span>
+			<span class="card-title">Drop-O-Magnet</span>
+			<span class="card-desc">10 free spins awarded. One random symbol becomes magnetic every spin. Matching symbols connect together automatically. Multiplier Wilds increase the bonus multiplier permanently.</span>
 			<div class="card-icon-slot">
 				<span class="card-mult">3x</span>
 				<img class="card-icon card-icon--brief" src={iconBrief} alt="" />
 			</div>
-			<span class="card-price">{superCost}</span>
-			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('SUPER')}>BUY</button>
+			<span class="card-price">{bonusCost}</span>
+			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('BONUS')}>BUY</button>
 		</div>
 
-		<!-- DEAL IT -->
+		<!-- MAGNETIC MEGA CHAIN (superspin / SUPER mode) -->
 		<div class="card" style={`background-image:url('${cardPanel}')`}>
-			<span class="card-title">DEAL IT</span>
-			<span class="card-desc">10 Free Spins with random expanding simbol and a random multiplier up to 1024x</span>
+			<span class="card-title">Magnetic Mega Chain</span>
+			<span class="card-desc">10 free spins awarded. One random symbol becomes magnetic and remains connected between spins. The magnetic cluster persists and grows throughout the feature while multipliers continue stacking.</span>
 			<div class="card-icon-slot">
 				<span class="card-mult">4x</span>
 				<img class="card-icon card-icon--brief" src={iconBrief} alt="" />
 			</div>
-			<span class="card-price">{bonusCost}</span>
-			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('BONUS')}>BUY</button>
+			<span class="card-price">{superCost}</span>
+			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('SUPER')}>BUY</button>
 		</div>
 	</div>
 
@@ -332,7 +332,7 @@
 		justify-content: center; /* vertical centre; align-items:stretch (default) lets text wrap to full width */
 		font-family: 'Inter', sans-serif;
 		font-weight: 400;
-		font-size: clamp(13px, 1.25vw, 20px);
+		font-size: clamp(12px, 1.1vw, 18px);
 		line-height: 1.28;
 		letter-spacing: 0.02em;
 		color: #d7d7d7;
@@ -341,7 +341,9 @@
 	/* Fixed-height icon row so the magnet / cube / (badge + briefcase) all line up. */
 	.card-icon-slot {
 		flex-shrink: 0;
+		position: relative;
 		height: clamp(54px, 5.2vw, 94px);
+		margin-top: clamp(4px, 0.9vh, 12px); /* breathe below the description */
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -357,11 +359,14 @@
 	   a touch, which is fine since the icon row is centred. */
 	.card-icon--brief { height: 128%; }
 
-	/* Multiplier badge (ALL IN = 3x, DEAL IT = 4x) — IBM Plex Condensed Bold white. */
+	/* Multiplier badge — sits to the LEFT of the briefcase, vertically aligned with the case's
+	   "M" plate (which sits at ~47% of the case art, slightly above the slot centre). */
 	.card-mult {
+		position: relative;
+		top: -0.12em; /* nudge up so the badge centre matches the M plate centre */
 		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(22px, 2.1vw, 36px);
+		font-size: clamp(18px, 1.7vw, 30px);
 		letter-spacing: 0.03em;
 		color: #ffffff;
 		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
@@ -386,7 +391,9 @@
 		min-width: 74%;
 		/* Taller = rectangular (not pill). Moderate radius keeps rounded corners with straight sides. */
 		padding: clamp(11px, 1.15vw, 18px) clamp(22px, 2.2vw, 40px);
-		margin-top: clamp(3px, 0.7vh, 11px); /* nudge the button down, away from the price */
+		/* Pin the button to the card bottom so ALL cards' buttons share one baseline (the auto
+		   margin absorbs whatever free space each card's content leaves). */
+		margin-top: auto;
 		border: 1px solid #60a5fa;
 		border-radius: 14px;
 		font-family: 'Inter', sans-serif;
@@ -505,14 +512,14 @@
 		padding: calc(var(--bb-card) * 0.05) calc(var(--bb-card) * 0.06);
 	}
 	.panel:not(.portrait) .card-title  { font-size: calc(var(--bb-card) * 0.076); }
-	.panel:not(.portrait) .card-desc   { font-size: calc(var(--bb-card) * 0.052); min-height: calc(var(--bb-card) * 0.315); }
-	.panel:not(.portrait) .card-icon-slot { height: calc(var(--bb-card) * 0.235); }
-	.panel:not(.portrait) .card-mult   { font-size: calc(var(--bb-card) * 0.09); }
+	.panel:not(.portrait) .card-desc   { font-size: calc(var(--bb-card) * 0.046); min-height: calc(var(--bb-card) * 0.315); }
+	.panel:not(.portrait) .card-icon-slot { height: calc(var(--bb-card) * 0.235); margin-top: calc(var(--bb-card) * 0.025); }
+	.panel:not(.portrait) .card-mult   { font-size: calc(var(--bb-card) * 0.075); }
 	.panel:not(.portrait) .card-price  { font-size: calc(var(--bb-card) * 0.055); }
 	.panel:not(.portrait) .card-btn {
 		font-size: calc(var(--bb-card) * 0.053);
 		padding: calc(var(--bb-card) * 0.045) calc(var(--bb-card) * 0.1);
-		margin-top: calc(var(--bb-card) * 0.02);
+		margin-top: auto; /* keep the shared bottom baseline in landscape too */
 		border-radius: calc(var(--bb-card) * 0.035);
 	}
 	.panel:not(.portrait) .bet {

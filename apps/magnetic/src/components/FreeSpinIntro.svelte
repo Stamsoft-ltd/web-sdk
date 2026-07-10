@@ -11,6 +11,8 @@
 	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
 	import { Container, Graphics, Sprite, Text } from 'pixi-svelte';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 
 	import { getContext } from '../game/context';
 	import LightningStorm from './LightningStorm.svelte';
@@ -37,19 +39,74 @@
 	const PH = $derived(PW * 1.05);
 
 	// Which bonus was won + its blurb (same wording as the buy-bonus cards). bonusMode is set
-	// before this intro shows: superspin = ALL IN, freegame = DEAL IT.
-	const isAllIn = $derived(context.stateGame.bonusMode === 'superspin');
-	const bonusName = $derived(isAllIn ? 'ALL IN BONUS' : 'DEAL IT BONUS');
+	// before this intro shows: superspin = MAGNETIC MEGA CHAIN, freegame = DROP-O-MAGNET.
+	const isMegaChain = $derived(context.stateGame.bonusMode === 'superspin');
+	const bonusName = $derived(isMegaChain ? 'MAGNETIC MEGA CHAIN' : 'DROP-O-MAGNET');
 	const bonusDesc = $derived(
-		isAllIn
-			? '10 Free Spins with random expanding symbol and multiplier start at 2x and doubles on every'
-			: '10 Free Spins with random expanding simbol and a random multiplier up to 1024x',
+		isMegaChain
+			? '10 free spins awarded. One random symbol becomes magnetic and remains connected between spins. The magnetic cluster persists and grows throughout the feature while multipliers continue stacking.'
+			: '10 free spins awarded. One random symbol becomes magnetic every spin. Matching symbols connect together automatically. Multiplier Wilds increase the bonus multiplier permanently.',
 	);
 
 	// Number-frame reuses the capsule/HUD panel border; box height drives the number size.
 	const numBoxW = $derived(PW * 0.32);
 	const numBoxH = $derived(numBoxW * (98 / 200));
 	const magnetW = $derived(PW * 0.34);
+
+	// ── Entry animation: the panel + content slide UP from below the screen while the
+	//    CONGRATULATIONS heading drops in from the top. ──
+	const slideUp = new Tween(0, { duration: 700, easing: cubicOut });
+	const slideDown = new Tween(0, { duration: 700, easing: cubicOut });
+	$effect(() => {
+		if (!show) return;
+		slideUp.set(main.height * 0.75, { duration: 0 });
+		slideDown.set(-main.height * 0.6, { duration: 0 });
+		slideUp.set(0, { duration: 700, easing: cubicOut });
+		slideDown.set(0, { duration: 700, easing: cubicOut });
+	});
+
+	// ── Live animation clock (border runners, count pulse, press-hint pulse). ──
+	let animT = $state(0);
+	$effect(() => {
+		if (!show) return;
+		let raf = 0;
+		const t0 = performance.now();
+		const tick = (now: number) => {
+			animT = (now - t0) / 1000;
+			raf = requestAnimationFrame(tick);
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	});
+	// Border runners: fast loop, top-middle -> (left/right) -> bottom-middle.
+	const runT = $derived((animT / 1.3) % 1);
+	// "10" pulses in scale + flickers slightly to draw the eye.
+	const countScale = $derived(1 + 0.06 * Math.sin(animT * 5.2));
+	const countAlpha = $derived(0.86 + 0.14 * Math.sin(animT * 9.3));
+	// Press hint breathes so it reads as interactive.
+	const pressAlpha = $derived(0.75 + 0.25 * Math.sin(animT * 3.2));
+	// CONGRATULATIONS is "electrified" with a pulsing cyan GLOW layer under the crisp text —
+	// aggressive: deep fast surges with a high-frequency shimmer riding on top, and the whole
+	// heading breathes ±10% in scale.
+	const glowPulse = $derived(0.25 + 0.9 * (0.5 + 0.5 * Math.sin(animT * 9.4) * Math.sin(animT * 3.7)) + 0.2 * Math.sin(animT * 47));
+	const congratsScale = $derived(1 + 0.1 * Math.sin(animT * 3.4));
+	const congratsGlowStyle = (fontSize: number) => ({
+		fontFamily: 'Cinzel',
+		fontWeight: '700' as const,
+		fontSize,
+		fill: 0x8fd8ff,
+		letterSpacing: fontSize * 0.03,
+		align: 'center' as const,
+		dropShadow: { color: 0x2fa8ff, alpha: 1, blur: fontSize * 0.35, distance: 0, angle: 0 },
+	});
+	// Point along the half-perimeter path (top-mid -> corner -> side -> bottom-mid); dir = ±1.
+	const runnerPoint = (t: number, dir: number, W2: number, H2: number) => {
+		const total = W2 + 2 * H2 + W2;
+		const d = t * total;
+		if (d < W2) return { x: dir * d, y: -H2 };
+		if (d < W2 + 2 * H2) return { x: dir * W2, y: -H2 + (d - W2) };
+		return { x: dir * (W2 - (d - W2 - 2 * H2)), y: H2 };
+	};
 
 	const congratsStyle = (fontSize: number) => ({
 		fontFamily: 'Cinzel',
@@ -74,13 +131,15 @@
 		fill: 0xffffff,
 		align: 'center' as const,
 	});
+	// Figma: white Cinzel bold, modest tracking; black outline so it stays readable on any bg.
 	const pressStyle = (fontSize: number) => ({
-		fontFamily: 'Inter',
-		fontWeight: '700' as const,
+		fontFamily: 'Cinzel',
+		fontWeight: '900' as const,
 		fontSize,
-		fill: 0xbcd6f2,
-		letterSpacing: fontSize * 0.16,
+		fill: 0xffffff,
+		letterSpacing: fontSize * 0.04,
 		align: 'center' as const,
+		stroke: { color: 0x000000, width: Math.max(2, Math.round(fontSize * 0.12)) },
 	});
 	// Wrapped paragraph for the bonus description (lighter than the headings).
 	const descStyle = (fontSize: number) => ({
@@ -104,64 +163,140 @@
 			<!-- Lightning storm UNDER the card: full-height random strikes behind the panel. -->
 			<LightningStorm active={show} panelWidth={PW} screenHeight={main.height} count={18} />
 
-			<!-- Opaque backing: the panel art is semi-transparent, so without this the additive
-			     bolts shine THROUGH the dialog instead of staying behind it. -->
-			<Graphics
-				draw={(g) => {
-					g.clear();
-					g.rect(-PW * 0.48, -PH * 0.48, PW * 0.96, PH * 0.96);
-					g.fill(0x08122b);
-				}}
-			/>
-
-			<!-- Dark-blue tech panel -->
-			<Sprite key="fsPanel" anchor={0.5} width={PW} height={PH} />
-
-			<!-- CONGRATULATIONS / YOU WON / bonus name + description -->
-			<Text anchor={0.5} y={-PH * 0.38} text="CONGRATULATIONS" style={congratsStyle(PH * 0.066)} />
-			<Text anchor={0.5} y={-PH * 0.3} text="YOU WON" style={blueStyle(PH * 0.036)} />
-			<Text anchor={0.5} y={-PH * 0.235} text={bonusName} style={congratsStyle(PH * 0.046)} />
-			<Text anchor={{ x: 0.5, y: 0 }} y={-PH * 0.19} text={bonusDesc} style={descStyle(PH * 0.032)} />
-
-			<!-- Full magnet element (magnet + base + blue/orange energy baked in) -->
-			<Container y={PH * 0.04}>
-				<Sprite
-					key="popupMagnet"
-					anchor={0.5}
-					width={magnetW * 0.9}
-					height={magnetW * 0.9 * (103 / 114)}
+			<!-- Everything except CONGRATULATIONS slides UP from below the screen -->
+			<Container y={slideUp.current}>
+				<!-- Opaque backing: the panel art is semi-transparent, so without this the additive
+				     bolts shine THROUGH the dialog instead of staying behind it. -->
+				<Graphics
+					draw={(g) => {
+						g.clear();
+						g.rect(-PW * 0.48, -PH * 0.48, PW * 0.96, PH * 0.96);
+						g.fill(0x08122b);
+					}}
 				/>
+
+				<!-- Dark-blue tech panel -->
+				<Sprite key="fsPanel" anchor={0.5} width={PW} height={PH} />
+
+				<!-- Border electricity: crawling ARCS, not dots. Each runner is a jagged polyline that
+				     hugs the border and re-jitters EVERY FRAME (that per-frame randomness is what makes
+				     it shimmer like a live arc): a wide soft glow pass under a thin white-hot core, plus
+				     random offshoot branches. Two pairs, top-middle -> around -> bottom-middle. -->
+				<Graphics
+					blendMode="add"
+					draw={(g) => {
+						g.clear();
+						const W2 = PW * 0.485;
+						const H2 = PH * 0.485;
+						const SEG = 0.11; // trailing arc length (fraction of the half-perimeter)
+						const N = 14;
+						for (const off of [0, 0.5]) {
+							const tt = (runT + off) % 1;
+							for (const dir of [-1, 1]) {
+								// jittered points from the head backwards along the border
+								const pts: { x: number; y: number }[] = [];
+								for (let i = 0; i <= N; i++) {
+									const tp = tt - (i / N) * SEG;
+									if (tp < 0) break;
+									const p = runnerPoint(tp, dir, W2, H2);
+									const env = i === 0 ? 0.25 : 0.5 + 0.8 * (i / N); // head stays on the rail
+									const amp = PH * 0.011 * env;
+									pts.push({
+										x: p.x + (Math.random() - 0.5) * 2 * amp,
+										y: p.y + (Math.random() - 0.5) * 2 * amp,
+									});
+								}
+								if (pts.length < 2) continue;
+								// soft glow pass
+								g.moveTo(pts[0].x, pts[0].y);
+								for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);
+								g.stroke({ width: PH * 0.016, color: 0x2fa8ff, alpha: 0.4, cap: 'round', join: 'round' });
+								// white-hot core
+								g.moveTo(pts[0].x, pts[0].y);
+								for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);
+								g.stroke({ width: PH * 0.005, color: 0xeffaff, alpha: 0.95, cap: 'round', join: 'round' });
+								// occasional offshoot branch forking away from the arc
+								if (Math.random() < 0.45) {
+									const b = pts[1 + Math.floor(Math.random() * (pts.length - 1))];
+									const a1 = Math.random() * Math.PI * 2;
+									const len = PH * (0.02 + Math.random() * 0.03);
+									const mx = b.x + Math.cos(a1) * len * 0.6 + (Math.random() - 0.5) * PH * 0.01;
+									const my = b.y + Math.sin(a1) * len * 0.6 + (Math.random() - 0.5) * PH * 0.01;
+									g.moveTo(b.x, b.y);
+									g.lineTo(mx, my);
+									g.lineTo(b.x + Math.cos(a1) * len, b.y + Math.sin(a1) * len);
+									g.stroke({ width: PH * 0.004, color: 0x9fdcff, alpha: 0.7, cap: 'round' });
+								}
+								// flickering head spark
+								const head = pts[0];
+								g.circle(head.x, head.y, PH * 0.011 * (0.8 + 0.4 * Math.random()));
+								g.fill({ color: 0xffffff, alpha: 0.95 });
+							}
+						}
+					}}
+				/>
+
+				<!-- YOU WON / bonus name + description -->
+				<Text anchor={0.5} y={-PH * 0.3} text="YOU WON" style={blueStyle(PH * 0.036)} />
+				<Text anchor={0.5} y={-PH * 0.235} text={bonusName} style={congratsStyle(PH * 0.046)} />
+				<Text anchor={{ x: 0.5, y: 0 }} y={-PH * 0.19} text={bonusDesc} style={descStyle(PH * 0.032)} />
+
+				<!-- Full magnet element (magnet + base + blue/orange energy baked in) -->
+				<Container y={PH * 0.04}>
+					<Sprite
+						key="popupMagnet"
+						anchor={0.5}
+						width={magnetW * 0.9}
+						height={magnetW * 0.9 * (103 / 114)}
+					/>
+				</Container>
+
+				<!-- Free-spins count in its frame — the number pulses/flickers to draw attention -->
+				<Container y={PH * 0.27}>
+					<Sprite key="panelBorder" anchor={0.5} width={numBoxW} height={numBoxH} />
+					<Container y={-numBoxH * 0.04} scale={countScale}>
+						<Text
+							anchor={0.5}
+							alpha={countAlpha}
+							text={`${freeSpinsFromEvent}`}
+							style={numberStyle(numBoxH * 0.62)}
+						/>
+					</Container>
+				</Container>
+
+				<!-- FREE SPINS -->
+				<Text anchor={0.5} y={PH * 0.395} text="FREE SPINS" style={blueStyle(PH * 0.036)} />
+
+				<!-- Press-anywhere-to-continue hint (below the card) with the arrow — breathing alpha -->
+				<Container y={PH * 0.55} alpha={pressAlpha}>
+					<Text
+						anchor={0.5}
+						x={-PW * 0.03}
+						text="PRESS ANYWHERE TO CONTINUE"
+						style={pressStyle(PH * 0.034)}
+					/>
+					<Sprite
+						key="pressArrow"
+						anchor={0.5}
+						x={PW * 0.32}
+						width={PH * 0.038 * (18 / 15)}
+						height={PH * 0.038}
+					/>
+				</Container>
 			</Container>
 
-			<!-- Free-spins count in its frame -->
-			<Container y={PH * 0.27}>
-				<Sprite key="panelBorder" anchor={0.5} width={numBoxW} height={numBoxH} />
-				<Text
-					anchor={0.5}
-					y={-numBoxH * 0.04}
-					text={`${freeSpinsFromEvent}`}
-					style={numberStyle(numBoxH * 0.62)}
-				/>
-			</Container>
-
-			<!-- FREE SPINS -->
-			<Text anchor={0.5} y={PH * 0.395} text="FREE SPINS" style={blueStyle(PH * 0.036)} />
-
-			<!-- Press-anywhere-to-continue hint (below the card) with the arrow -->
-			<Container y={PH * 0.55}>
-				<Text
-					anchor={0.5}
-					x={-PW * 0.03}
-					text="PRESS ANYWHERE TO CONTINUE"
-					style={pressStyle(PH * 0.028)}
-				/>
-				<Sprite
-					key="pressArrow"
-					anchor={0.5}
-					x={PW * 0.32}
-					width={PH * 0.038 * (18 / 15)}
-					height={PH * 0.038}
-				/>
+			<!-- CONGRATULATIONS drops in from the TOP, over the rising panel — a pulsing electric-blue
+			     glow layer breathes under the crisp white text. -->
+			<Container y={slideDown.current}>
+				<Container y={-PH * 0.38} scale={congratsScale}>
+					<Text
+						anchor={0.5}
+						alpha={Math.min(1, Math.max(0, glowPulse))}
+						text="CONGRATULATIONS"
+						style={congratsGlowStyle(PH * 0.066)}
+					/>
+					<Text anchor={0.5} text="CONGRATULATIONS" style={congratsStyle(PH * 0.066)} />
+				</Container>
 			</Container>
 		</Container>
 	</MainContainer>
