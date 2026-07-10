@@ -26,6 +26,10 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		stateGame.boardSpinning = false;
 	},
 	onPlayGame: async (bet) => {
+		if (stateGame.endRoundOnly) {
+			stateGame.endRoundOnly = false;
+			return; // skip animation — the machine still flows to endGame, which ends the round + credits balance
+		}
 		await playBet(bet);
 	},
 	checkIsBonusGame: (bet) => checkIsMultipleRevealEvents({ bookEvents: bet.state }),

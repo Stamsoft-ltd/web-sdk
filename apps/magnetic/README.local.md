@@ -18,8 +18,20 @@ From repo root:
 pnpm run dev --filter=magnetic
 ```
 
-Open:
-- http://localhost:3001
+Start the mock RGS (separate terminal, from repo root):
+
+```bash
+node mock-rgs/server.mjs
+```
+
+Open (the dev server runs on port **3011**):
+- http://localhost:3011/?sessionID=test&rgs_url=localhost:8787/magnetic&lang=en&device=desktop
+
+> ⚠️ The `rgs_url` MUST include the `/magnetic` path. The mock RGS routes any non-`/magnetic`
+> request to forest-gang, whose books use a **5-reel** board — the magnetic frontend expects
+> **7 reels**, so the first spin / buy-bonus crashes in `makeSpinSymbols` (the game appears
+> "stuck", free spins never start). With `rgs_url=localhost:8787/magnetic` it serves the correct
+> 7×7 books.
 
 ## Run Storybook
 From repo root:

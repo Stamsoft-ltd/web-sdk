@@ -1521,8 +1521,8 @@
 		flex: 0 0 auto;
 	}
 	.pt-buy .buy-btn {
-		width: clamp(58px, 17.5vw, 74px);
-		height: clamp(58px, 17.5vw, 74px);
+		width: clamp(68px, 20.5vw, 88px);
+		height: clamp(68px, 20.5vw, 88px);
 		aspect-ratio: 1;
 		background: var(--pt-buy) center / contain no-repeat;
 		padding: 0;
@@ -1531,7 +1531,7 @@
 		white-space: normal;
 		line-height: 1.05;
 		text-align: center;
-		font-size: clamp(0.54rem, 2.7vw, 0.68rem);
-		max-width: 82%;
+		font-size: clamp(0.52rem, 2.6vw, 0.66rem);
+		max-width: 74%;
 	}
 </style>

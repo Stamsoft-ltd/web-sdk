@@ -1,16 +1,14 @@
 <script lang="ts">
-	import { stateBet, stateUi, stateUrlDerived } from 'state-shared';
-	import { requestEndRound } from 'rgs-requests';
-	import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
+	import { stateBet, stateUi } from 'state-shared';
 	import { getContext } from '../game/context';
 	import { onMount } from 'svelte';
 	import { logMagneticDiagnostic } from '../utils/magneticDiagnostics';
+	import { stateGame } from '../game/stateGame.svelte';
 	import BonusResumeModal from './BonusResumeModal.svelte';
 
 	const context = getContext();
 
 	let showModal = $state(false);
-	let endingRound = $state(false);
 
 	const isBonusMode = (mode?: string) => mode === 'SUPER' || mode === 'BONUS';
 
@@ -23,24 +21,18 @@
 		context.eventEmitter.broadcast({ type: 'resumeBet' });
 	};
 
-	const doEnd = async () => {
-		if (endingRound) return;
-		endingRound = true;
-		logMagneticDiagnostic('info', 'pending_round_ended', { mode: stateBet.betToResume?.mode });
-		try {
-			const data = await requestEndRound({
-				sessionID: stateUrlDerived.sessionID(),
-				rgsUrl: stateUrlDerived.rgsUrl(),
-			});
-			if (data?.balance?.amount !== undefined) {
-				stateBet.balanceAmount = data.balance.amount / API_AMOUNT_MULTIPLIER;
-			}
-		} catch (err) {
-			console.error('[ResumeBet] end round failed', err);
-		}
-		stateBet.betToResume = null;
+	const doEnd = () => {
 		showModal = false;
-		endingRound = false;
+		if (stateBet.betToResume?.mode) {
+			stateBet.activeBetModeKey = stateBet.betToResume.mode;
+		}
+		logMagneticDiagnostic('info', 'pending_round_ended', { mode: stateBet.betToResume?.mode });
+		// Route the end THROUGH the xstate machine: RESUME_BET → play (skipped via endRoundOnly) →
+		// endGame, which calls requestEndRound and credits the balance. Ending the round outside the
+		// machine (a direct requestEndRound) leaves the machine holding the round, so the next play
+		// errors with "play has active round".
+		stateGame.endRoundOnly = true;
+		context.eventEmitter.broadcast({ type: 'resumeBet' });
 	};
 
 	onMount(() => {

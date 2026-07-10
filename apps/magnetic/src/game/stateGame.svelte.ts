@@ -587,6 +587,10 @@ export const stateGame = $state({
 	magnetPulseKeys: [] as string[],
 	nextRevealMode: 'spin' as 'spin' | 'respin',
 	forceFastAnimations: false,
+	// Set true when the player chooses "End" on the unfinished-round dialog: the end flows through the
+	// xstate machine (RESUME_BET) but onPlayGame skips the animation so endGame just ends the round +
+	// credits balance. Ending the round outside the machine leaves it active on the RGS.
+	endRoundOnly: false,
 });
 
 // ── instant board settle ──────────────────────────────────────────────────────

@@ -85,6 +85,20 @@ export default {
 		src: './assets/components/ui/capsule_crackle.png?v=20260709b',
 		preload: true,
 	},
+	// Transparent horizontal capsule tube (black/empty inside) — framed around the win amount on the
+	// win-tier screens, with custom animated lightning added on top (like the desktop CapsulePanel).
+	winTube: {
+		type: 'sprite',
+		src: './assets/components/ui/tube_black.png?v=20260710',
+		preload: true,
+	},
+	// Fully transparent horizontal tube (metal caps + blue rails, see-through interior) — the always-on
+	// portrait capsule bar; live lightning is drawn inside the clear window.
+	capsuleTubeGlass: {
+		type: 'sprite',
+		src: './assets/components/ui/magnetic_tube.png?v=20260710',
+		preload: true,
+	},
 	// Frameless premium elements designed to sit INSIDE the capsule tube (no square symbol frame).
 	tubeMagnet: {
 		type: 'sprite',
