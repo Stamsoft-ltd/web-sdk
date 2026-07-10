@@ -100,9 +100,8 @@ const getBonusModeFromScatters = (positions: Position[]) => (positions.length >=
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
-		const hasAnticipation = bookEvent.anticipation?.some(Boolean);
 		const revealMode = stateGame.nextRevealMode;
-		if (isBonusGame || hasAnticipation) eventEmitter.broadcast({ type: 'stopButtonEnable' });
+		if (isBonusGame) eventEmitter.broadcast({ type: 'stopButtonEnable' });
 		if (isBonusGame) recordBookEvent({ bookEvent });
 
 		if (bookEvent.gameType === 'basegame' && revealMode !== 'respin') {
@@ -121,8 +120,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.awaitingFirstReveal = false;
 		stateGame.pendingStop = false;
 		stateGame.tempMultiplier = null;
-		stateGame.hasAnticipationPending = !!hasAnticipation;
-		stateGame.anticipationSkipped = false;
 
 		// Super bonus: if the normal spin did not grow the persistent cluster, old books may still
 		// contain a respin reveal. Ignore it so the board does not flash/re-spin with no cluster add.
@@ -134,7 +131,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			}
 		}
 
-		await stateGameDerived.applyReveal({ rawBoard: bookEvent.board, gameType: bookEvent.gameType, anticipation: bookEvent.anticipation });
+		await stateGameDerived.applyReveal({ rawBoard: bookEvent.board, gameType: bookEvent.gameType });
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
 	},
 	magnetActivated: async (bookEvent: BookEventOfType<'magnetActivated'>) => {
@@ -185,18 +182,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if (stateGame.bonusMode === 'superspin' && !isSuperFinal) return;
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_winlevel_small' });
 		const allPositions = _.uniqBy(bookEvent.wins.flatMap((win) => win.positions), (position) => `${position.reel}:${position.row}`);
-		if (stateGame.bonusMode !== 'superspin') {
-			stateGameDerived.setClusterBadgesFromWinInfo(
-				bookEvent.wins.map((win) => ({
-					id: win.seriesId,
-					reel: win.positions[0]?.reel ?? 0,
-					row: win.positions[0]?.row ?? 0,
-					text: `${win.amount / 100}x`,
-				})),
-			);
-		} else {
-			stateGame.clusterWinBadges = [];
-		}
 		await animateSymbols({ positions: allPositions });
 	},
 	setTotalWin: async (bookEvent: BookEventOfType<'setTotalWin'>) => {
@@ -256,7 +241,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		await eventEmitter.broadcastAsync({ type: 'winUpdate', amount: bookEvent.amount, winLevelData });
 		winLevelSoundsStop();
 		eventEmitter.broadcast({ type: 'winHide' });
-		stateGame.clusterWinBadges = [];
 	},
 	freeSpinEnd: async (bookEvent: BookEventOfType<'freeSpinEnd'>) => {
 		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];

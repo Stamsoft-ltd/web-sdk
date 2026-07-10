@@ -40,19 +40,18 @@
 	});
 
 	context.eventEmitter.subscribeOnMount({
-		// Press during anticipation: stop reel, flag so any next reel's overlay self-skips, and skip out animation
+		// Press during anticipation: force-stop reel, flag so cascaded anticipation overlays self-skip.
 		stopButtonClick: () => {
 			context.stateGame.anticipationSkipped = true;
-			props.reel.stop();
+			props.reel.forceStop();
 			props.oncomplete();
 		},
 	});
 
-	// Scatter "tease" loop while the anticipation glow is on screen; stops when this reel resolves.
-	onMount(() => {
-		context.eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_scatter_anticipation_loop' });
-		return () => context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_scatter_anticipation_loop' });
-	});
+	// NOTE: the scatter "tease" loop (sfx_scatter_anticipation_loop) is NOT controlled here per-reel.
+	// It's started/stopped ONCE for the whole anticipation phase by Anticipations.svelte. Managing it
+	// per reel meant one reel resolving stopped the loop while other reels were still anticipating,
+	// so the heartbeat cut out and restarted between reels.
 </script>
 
 <Container

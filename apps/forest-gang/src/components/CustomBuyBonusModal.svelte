@@ -39,7 +39,7 @@
 	const isCompactRow = $derived(layoutType === 'landscape' || layoutType === 'tablet');
 
 	// Cost multipliers match config.betModes: CHANCE 2×, FEATURE 20×, BONUS 100×, SUPER 400×.
-	// Per Figma 2349-2074: "ALL IN" is the 100× (BONUS) mode, "DEAL IT" the 400× (SUPER) mode.
+	// "DEAL IT" is the 100× (BONUS) mode, "ALL IN" the 400× (SUPER) mode.
 	const betAmount   = $derived(stateBet.betAmount);
 	const chanceCost  = $derived(forestStakeDerived.formatCurrencyAmount(betAmount * 2));
 	const featureCost = $derived(forestStakeDerived.formatCurrencyAmount(betAmount * 20));
@@ -75,8 +75,8 @@
 	const closeConfirm = () => { confirmMode = null; };
 	const toggleActivateMode = (toggle: () => void) => { toggle(); props.onclose(); };
 
-	// BONUS → ALL IN (100×), SUPER → DEAL IT (400×)
-	const confirmLabel = $derived(confirmMode === 'SUPER' ? i18nDerived.dealIt() : i18nDerived.allIn());
+	// BONUS → DEAL IT (100×), SUPER → ALL IN (400×)
+	const confirmLabel = $derived(confirmMode === 'SUPER' ? i18nDerived.allIn() : i18nDerived.dealIt());
 	const confirmCost  = $derived(confirmMode === 'SUPER' ? dealItCost : allInCost);
 
 	onMount(() => {
@@ -135,22 +135,23 @@
 			</div>
 		</div>
 
-		<!-- ALL IN — BONUS mode (100×) -->
+		<!-- DEAL IT — BONUS mode (100×). Titles/descs are swapped vs the old layout: DEAL IT is the
+		     cheaper 100× bonus, ALL IN the 400× one. Prices/icons/modes stay put. -->
 		<div class="card" style="--frame:url('{cardBg}')">
 			<div class="card-inner">
-				<span class="card-title card-title--gold">{i18nDerived.allIn()}</span>
-				<span class="card-desc">{i18nDerived.translate('CARD ALLIN DESC')}</span>
+				<span class="card-title card-title--gold">{i18nDerived.dealIt()}</span>
+				<span class="card-desc">{i18nDerived.translate('CARD DEALIT DESC')}</span>
 				<div class="card-icon-wrap"><img class="card-icon" src={allInIcon} alt="" /></div>
 				<span class="card-price">{allInCost}</span>
 				<button class="card-btn card-btn--buy" type="button" disabled={!canAllIn} onclick={() => openConfirm('BONUS')}><span class="btn-label" use:fitLabel={i18nDerived.buy()}>{i18nDerived.buy()}</span></button>
 			</div>
 		</div>
 
-		<!-- DEAL IT — SUPER mode (400×) -->
+		<!-- ALL IN — SUPER mode (400×) -->
 		<div class="card" style="--frame:url('{cardBg}')">
 			<div class="card-inner">
-				<span class="card-title card-title--gold">{i18nDerived.dealIt()}</span>
-				<span class="card-desc">{i18nDerived.translate('CARD DEALIT DESC')}</span>
+				<span class="card-title card-title--gold">{i18nDerived.allIn()}</span>
+				<span class="card-desc">{i18nDerived.translate('CARD ALLIN DESC')}</span>
 				<div class="card-icon-wrap"><img class="card-icon" src={dealItIcon} alt="" /></div>
 				<span class="card-price">{dealItCost}</span>
 				<button class="card-btn card-btn--buy" type="button" disabled={!canDealIt} onclick={() => openConfirm('SUPER')}><span class="btn-label" use:fitLabel={i18nDerived.buy()}>{i18nDerived.buy()}</span></button>

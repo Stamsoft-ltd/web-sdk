@@ -62,7 +62,7 @@
 <FadeContainer {show}>
 	{#if winLevelData}
 		{@const duration = winLevelData.presentDuration}
-		<WinCountUpProvider {amount} {duration} oncomplete={() => {}}>
+		<WinCountUpProvider {amount} {duration} oncomplete={() => { context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_win_coins_loop' }); context.eventEmitter.broadcast({ type: 'soundStop', name: 'bgm_win_animation' }); context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' }); }}>
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
 				<OnMount onmount={() => startCountUp()} />
 

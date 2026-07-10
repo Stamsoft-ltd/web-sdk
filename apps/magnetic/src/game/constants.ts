@@ -90,15 +90,6 @@ export const SPIN_OPTIONS_TURBO = {
 	reelSpinDelay: 40,
 };
 
-// Anticipation: same speed as DEFAULT but spins much longer (higher padding multiplier)
-export const SPIN_OPTIONS_ANTICIPATED = {
-	...SPIN_OPTIONS_SHARED,
-	reelPreSpinSpeed: 2,
-	reelSpinSpeed: 3,
-	reelBounceSizeMulti: 0.3,
-	reelPaddingMultiplierAnticipated: 16,
-};
-
 export const BOARD_MOTION_DEFAULT = {
 	spin: {
 		dropRows: 12,

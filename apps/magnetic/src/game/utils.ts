@@ -10,7 +10,7 @@ import { LOW_SYMBOLS, PREMIUM_SYMBOLS, SYMBOL_SIZE_RATIOS, SYMBOL_W } from './co
 
 const MOBILE_LAYOUT_TYPES = new Set(['portrait']);
 const MOBILE_ELIGIBLE_SYMBOLS = new Set<SymbolName>([
-	'H1', 'H2', 'H3', 'H4', 'L1', 'L2', 'L3', 'L4', 'WILD', 'SCATTER',
+	'H1', 'H2', 'H3', 'H4', 'L1', 'L2', 'L3', 'L4', 'WILD', 'MAGNET', 'SCATTER',
 ]);
 
 const DESKTOP_STATIC_KEYS: Record<SymbolName, string> = {
@@ -23,6 +23,7 @@ const DESKTOP_STATIC_KEYS: Record<SymbolName, string> = {
 	L3: 'kTile',
 	L4: 'qTile',
 	WILD: 'wildTile',
+	MAGNET: 'magnetTile',
 	SCATTER: 'scatterCustom',
 };
 
@@ -36,6 +37,7 @@ const MOBILE_STATIC_KEYS: Partial<Record<SymbolName, string>> = {
 	L3: 'kTileMobile',
 	L4: 'qTileMobile',
 	WILD: 'wildTileMobile',
+	MAGNET: 'magnetTile',
 	SCATTER: 'scatterCustomMobile',
 };
 
@@ -49,6 +51,7 @@ const DESKTOP_WIN_KEYS: Record<SymbolName, string> = {
 	L3: 'kWinTile',
 	L4: 'qWinTile',
 	WILD: 'wildWinTile',
+	MAGNET: 'magnetWinTile',
 	SCATTER: 'scatterWin',
 };
 
@@ -62,6 +65,7 @@ const MOBILE_WIN_KEYS: Partial<Record<SymbolName, string>> = {
 	L3: 'kWinTileMobile',
 	L4: 'qWinTileMobile',
 	WILD: 'wildWinTileMobile',
+	MAGNET: 'magnetWinTile',
 	SCATTER: 'scatterWinMobile',
 };
 
@@ -92,14 +96,17 @@ export const getSpriteKeyByName = ({
 	name,
 	state = 'static',
 	multiplier,
+	magnet,
 }: {
 	name: SymbolName;
 	state?: 'static' | 'win';
 	multiplier?: number;
+	magnet?: boolean;
 }) => {
-	const mobile = useMobileVariant(name);
+	const visualName: SymbolName = magnet && name !== 'WILD' ? 'MAGNET' : name;
+	const mobile = useMobileVariant(visualName);
 
-	if (name === 'WILD' && multiplier && multiplier > 1) {
+	if (visualName === 'WILD' && multiplier && multiplier > 1) {
 		const keys = Object.keys(MULTIPLIER_WILD_KEYS).map(Number).sort((a, b) => a - b);
 		const snapped = keys.reduce((prev, cur) => (Math.abs(cur - multiplier) < Math.abs(prev - multiplier) ? cur : prev));
 		return (mobile ? MULTIPLIER_WILD_KEYS_MOBILE : MULTIPLIER_WILD_KEYS)[snapped]
@@ -107,14 +114,14 @@ export const getSpriteKeyByName = ({
 	}
 
 	if (state === 'win') {
-		return (mobile ? MOBILE_WIN_KEYS[name] : undefined)
-			?? DESKTOP_WIN_KEYS[name]
-			?? DESKTOP_STATIC_KEYS[name];
+		return (mobile ? MOBILE_WIN_KEYS[visualName] : undefined)
+			?? DESKTOP_WIN_KEYS[visualName]
+			?? DESKTOP_STATIC_KEYS[visualName];
 	}
 
-	return (mobile ? MOBILE_STATIC_KEYS[name] : undefined)
-		?? DESKTOP_STATIC_KEYS[name]
-		?? DESKTOP_WIN_KEYS[name];
+	return (mobile ? MOBILE_STATIC_KEYS[visualName] : undefined)
+		?? DESKTOP_STATIC_KEYS[visualName]
+		?? DESKTOP_WIN_KEYS[visualName];
 };
 
 export const winBoardByAlias: Record<string, string> = {
@@ -139,6 +146,7 @@ export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; stat
 		name: rawSymbol.name,
 		state: assetState as 'static' | 'win',
 		multiplier: rawSymbol.multiplier,
+		magnet: rawSymbol.magnet || rawSymbol.name === 'MAGNET',
 	});
 
 	const sizeRatios =

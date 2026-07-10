@@ -105,7 +105,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'El Wild sustituye a todos los símbolos de pago regulares. El Scatter no paga por sí solo y solo activa las funciones de bono.',
 	'PAYTABLE BUY_TEXT': 'Reparte: 100x apuesta.\nTodo o Nada: 400x apuesta.\nGiro Chance: 2x apuesta por ronda.\nGiro de Función: 20x apuesta por ronda.\nReparte y Todo o Nada requieren confirmación antes de que empiece la ronda.',
 	'PAYTABLE MAX_TEXT': 'La ganancia máxima anunciada es 25,000x la apuesta seleccionada.',
-	'DISCLAIMER TEXT': 'Un mal funcionamiento anula todas las ganancias y jugadas. Se requiere una conexión a internet estable. En caso de desconexión, recarga el juego para finalizar cualquier ronda incompleta. El retorno esperado se calcula sobre muchas jugadas. La pantalla del juego no representa ningún dispositivo físico y es solo con fines ilustrativos. Las ganancias se liquidan según el importe recibido del Remote Game Server y no según los eventos dentro del navegador web. TM y © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'Un mal funcionamiento anula todas las ganancias y jugadas. Se requiere una conexión a internet estable. En caso de desconexión, recarga el juego para finalizar cualquier ronda incompleta. El retorno esperado se calcula sobre muchas jugadas. La pantalla del juego no representa ningún dispositivo físico y es solo con fines ilustrativos. Las ganancias se liquidan según el importe recibido del Remote Game Server y no según los eventos dentro del navegador web. TM y © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'RESUMEN',
@@ -170,7 +170,7 @@ export default {
 		'Si una ronda de juego se interrumpe, continuará cuando se recargue el juego, siempre que sea posible.\n\nTodas las apuestas válidas y las posibles ganancias permanecen activas hasta que la ronda se complete por completo.',
 	'INFO LEGAL TITLE': 'AVISO LEGAL',
 	'INFO LEGAL TEXT':
-		'Un mal funcionamiento anula todos los pagos y jugadas. Se requiere una conexión a internet estable. Si se pierde la conexión, recarga el juego para completar cualquier ronda sin finalizar.\n\nEl retorno esperado se calcula sobre un gran número de jugadas. La pantalla del juego es solo con fines visuales y de entretenimiento y no representa ningún dispositivo de juego físico.\n\nTodas las ganancias se liquidan según el resultado recibido del Remote Game Server, no según animaciones o eventos mostrados dentro del navegador web.',
+		'Un mal funcionamiento anula todos los pagos y jugadas. Se requiere una conexión a internet estable. Si se pierde la conexión, recarga el juego para completar cualquier ronda sin finalizar.\n\nEl retorno esperado se calcula sobre un gran número de jugadas. La pantalla del juego es solo con fines visuales y de entretenimiento y no representa ningún dispositivo de juego físico.\n\nTodas las ganancias se liquidan según el resultado recibido del Remote Game Server, no según animaciones o eventos mostrados dentro del navegador web.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'RODILLOS\nEXPANSIVOS',

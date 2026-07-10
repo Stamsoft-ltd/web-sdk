@@ -22,7 +22,6 @@ import {
 	INITIAL_BOARD,
 	INITIAL_SYMBOL_STATE,
 	SCATTER_LAND_SOUND_MAP,
-	SPIN_OPTIONS_ANTICIPATED,
 	SPIN_OPTIONS_DEFAULT,
 	SPIN_OPTIONS_FAST,
 	SPIN_OPTIONS_TURBO,
@@ -94,9 +93,12 @@ const updateCellRaw = (cell: BoardCell, raw: RawSymbol) => {
 	cell.name = raw.name;
 	cell.multiplier = raw.multiplier;
 	cell.scatter = raw.scatter;
-	cell.magnet = raw.magnet;
-	cell.wild = raw.wild;
+	cell.magnet = raw.magnet || raw.name === 'MAGNET';
+	cell.wild = raw.wild && !cell.magnet;
 };
+
+const shouldKeepWildInCluster = (cell: RawSymbol) =>
+	(cell.wild || cell.name === 'WILD') && !cell.magnet;
 
 const applyCellVisualState = (cell: BoardCell) => {
 	cell.symbolState = cell.locked
@@ -271,8 +273,22 @@ const restoreBoardAlpha = () => {
 	}
 };
 
+const markMagnetPositions = (positions: Position[]) => {
+	for (const position of positions) {
+		const cell = stateGame.board[position.reel]?.[position.row];
+		if (!cell) continue;
+		cell.name = 'WILD';
+		cell.scatter = false;
+		cell.wild = true;
+		cell.magnet = true;
+		cell.symbolState = 'magnet';
+		cell.displayAlpha.set(1, { duration: 0 });
+	}
+};
+
 const pulseMagnetActivation = async (positions: Position[]) => {
 	stateGame.magnetPulseKeys = positions.map(posKey);
+	markMagnetPositions(positions);
 	const isFast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
 	const dimMs = isFast ? 100 : 280;
 	const pulseMs = isFast ? 120 : 360;
@@ -406,6 +422,7 @@ const animateClusterFormation = async ({
 				if (sameCell) {
 					// Target symbol already at its cluster position — keep it visible, just pulse.
 					source.name = magnetTargetSymbol;
+					source.multiplier = undefined;
 					source.scatter = false;
 					source.wild = false;
 					source.magnet = false;
@@ -432,13 +449,14 @@ const animateClusterFormation = async ({
 				// Destination cell lands with a pop; source cell hides at grid position.
 				const destCell = stateGame.board[dest.reel]?.[dest.row];
 				if (destCell) {
-					if (destCell.wild || destCell.name === 'WILD') {
+					if (shouldKeepWildInCluster(destCell)) {
 						destCell.name = 'WILD';
 						destCell.scatter = false;
 						destCell.wild = true;
 						destCell.magnet = false;
 					} else {
 						destCell.name = magnetTargetSymbol;
+						destCell.multiplier = undefined;
 						destCell.scatter = false;
 						destCell.wild = false;
 						destCell.magnet = false;
@@ -464,10 +482,14 @@ const animateClusterFormation = async ({
 		}),
 	);
 
-	// Magnet cell stays as WILD — just animate the pop.
+	// Magnet trigger is a WILD symbol (optionally multiplier wild); keep the anchor visible as WILD.
 	for (const magnetCell of magnetCells) {
+		magnetCell.name = 'WILD';
+		magnetCell.scatter = false;
+		magnetCell.wild = true;
 		magnetCell.magnet = false;
 		magnetCell.symbolState = 'locked';
+		magnetCell.displayAlpha.set(1, { duration: 0 });
 		magnetCell.displayScale.set(1.2, { duration: 0 });
 		void magnetCell.displayScale.set(1, { duration: landMs, easing: backOut });
 	}
@@ -475,6 +497,31 @@ const animateClusterFormation = async ({
 
 const getCurrentLockedKeys = () =>
 	new Set(stateGame.activeSeries.flatMap((e) => e.lockedPositions.map(posKey)));
+
+
+// When an active cluster is cleared for the next paid/free spin, remove lock-only wild/magnet
+// visuals from cluster cells before the reel strip snapshots them as previous symbols.
+const normalizeSeriesCellsToPaySymbols = (series: ClusterSeriesSnapshot[]) => {
+	for (const entry of series) {
+		for (const position of entry.lockedPositions) {
+			const cell = stateGame.board[position.reel]?.[position.row];
+			if (!cell) continue;
+			cell.name = entry.symbol;
+			cell.multiplier = undefined;
+			cell.scatter = false;
+			cell.magnet = false;
+			cell.wild = false;
+			cell.displayAlpha.set(1, { duration: 0 });
+		}
+	}
+};
+
+const syncSpinBoardFromSettledBoard = () => {
+	const rawBoard = boardRaw();
+	for (let ri = 0; ri < BOARD_DIMENSIONS.x; ri++) {
+		stateGame.spinBoard[ri].setSymbolsWithRawSymbols(makeSpinSymbols(rawBoard[ri]));
+	}
+};
 
 // ── spin board (createReelForSpinning) ────────────────────────────────────────
 
@@ -507,7 +554,6 @@ const createSpinBoardReel = (reelIndex: number) => {
 			if (stateBet.isSuperTurbo || stateGame.forceFastAnimations) return SPIN_OPTIONS_TURBO;
 			if (stateBet.isTurbo) return SPIN_OPTIONS_FAST;
 		}
-		if (reel.reelState.spinType === 'anticipated') return SPIN_OPTIONS_ANTICIPATED;
 		return SPIN_OPTIONS_DEFAULT;
 	};
 
@@ -531,7 +577,6 @@ export const stateGame = $state({
 	magnetTargetSymbol: null as PaySymbolName | null,
 	activeSeries: [] as ClusterSeriesSnapshot[],
 	persistentSeries: null as ClusterSeriesSnapshot | null,
-	clusterWinBadges: [] as Array<{ id: string; reel: number; row: number; text: string }>,
 	boardSpinning: false,
 	scatterCounter: 0,
 	pendingStop: false,
@@ -542,8 +587,6 @@ export const stateGame = $state({
 	magnetPulseKeys: [] as string[],
 	nextRevealMode: 'spin' as 'spin' | 'respin',
 	forceFastAnimations: false,
-	hasAnticipationPending: false,
-	anticipationSkipped: false,
 });
 
 // ── instant board settle ──────────────────────────────────────────────────────
@@ -584,10 +627,8 @@ const settleBoardInstant = ({
 
 const animateSpinReels = async ({
 	rawBoard,
-	anticipation,
 }: {
 	rawBoard: RawSymbol[][];
-	anticipation?: number[];
 }) => {
 	stateGame.boardMode = 'spin';
 
@@ -598,8 +639,7 @@ const animateSpinReels = async ({
 	stateGame.spinBoard.reduce((prevPaddingSize, reel, ri) => {
 		const symbols = makeSpinSymbols(rawBoard[ri]);
 		const paddingReel = makeSpinSymbols(INITIAL_BOARD[ri]);
-		const isAnticipated = !isTurbo && (anticipation?.[ri] ?? false);
-		const spinType = isTurbo ? 'fast' : isAnticipated ? 'anticipated' : 'normal';
+		const spinType = isTurbo ? 'fast' : 'normal';
 		const paddingSize = reel.prepareToSpin({
 			noStop: false,
 			spinType,
@@ -643,11 +683,9 @@ const animateSpinReels = async ({
 const animateReveal = async ({
 	rawBoard,
 	gameType,
-	anticipation,
 }: {
 	rawBoard: RawSymbol[][];
 	gameType: GameType;
-	anticipation?: number[];
 }) => {
 	stateGame.gameType = gameType;
 	stateGame.boardSpinning = true;
@@ -655,14 +693,13 @@ const animateReveal = async ({
 	const isRespin = stateGame.nextRevealMode === 'respin';
 
 	if (!isRespin) {
-		await animateSpinReels({ rawBoard, anticipation });
-		stateGame.hasAnticipationPending = false;
+		await animateSpinReels({ rawBoard });
 		stateGame.boardSpinning = false;
 		stateGame.nextRevealMode = 'respin';
 		return;
 	}
 
-	await animateSpinReels({ rawBoard, anticipation });
+	await animateSpinReels({ rawBoard });
 
 	stateGame.boardSpinning = false;
 	stateGame.nextRevealMode = 'respin';
@@ -681,7 +718,6 @@ const resetBoardVisuals = () => {
 			cell.displayAlpha.set(1, { duration: 0 });
 		}
 	}
-	stateGame.clusterWinBadges = [];
 	stateGame.magnetPulseKeys = [];
 };
 
@@ -722,13 +758,14 @@ const setSeriesSnapshots = ({
 		for (const position of entry.lockedPositions) {
 			const cell = stateGame.board[position.reel]?.[position.row];
 			if (!cell) continue;
-			if (cell.wild || cell.name === 'WILD') {
+			if (shouldKeepWildInCluster(cell)) {
 				cell.name = 'WILD';
 				cell.scatter = false;
 				cell.wild = true;
 				cell.magnet = false;
 			} else {
 				cell.name = entry.symbol as PaySymbolName;
+				cell.multiplier = undefined;
 				cell.scatter = false;
 				cell.wild = false;
 				cell.magnet = false;
@@ -741,10 +778,6 @@ const setSeriesSnapshots = ({
 	applySeriesDecorations({ board: stateGame.board, series, magnetTargetSymbol, freshKeys });
 
 	void pulseFreshPositions(freshKeys);
-};
-
-const setClusterBadgesFromWinInfo = (wins: Array<{ id: string; reel: number; row: number; text: string }>) => {
-	stateGame.clusterWinBadges = wins;
 };
 
 const animateWinningPositions = async (positions: Position[]) => {
@@ -774,13 +807,11 @@ const animateWinningPositions = async (positions: Position[]) => {
 const applyReveal = async ({
 	rawBoard,
 	gameType,
-	anticipation,
 }: {
 	rawBoard: RawSymbol[][];
 	gameType: GameType;
-	anticipation?: number[];
 }) => {
-	await animateReveal({ rawBoard, gameType, anticipation });
+	await animateReveal({ rawBoard, gameType });
 	applySeriesDecorations({
 		board: stateGame.board,
 		series: stateGame.activeSeries,
@@ -809,26 +840,32 @@ const activateMagnetPulse = async (positions: Position[]) => {
 };
 
 const clearSeriesState = () => {
+	if (stateGame.activeSeries.length) {
+		normalizeSeriesCellsToPaySymbols(stateGame.activeSeries);
+		syncSpinBoardFromSettledBoard();
+	}
 	stateGame.activeSeries = [];
 	stateGame.persistentSeries = null;
 	stateGame.magnetTargetSymbol = null;
 	stateGame.selectedBonusSymbol = null;
 	stateGame.seriesTotalMultiplier = 1;
 	stateGame.globalMultiplier = 1;
-	stateGame.clusterWinBadges = [];
 	stateGame.magnetPulseKeys = [];
 	applySeriesDecorations({ board: stateGame.board, series: [], magnetTargetSymbol: null });
 	restoreBoardAlpha();
 };
 
 const resetBonusState = () => {
+	if (stateGame.activeSeries.length) {
+		normalizeSeriesCellsToPaySymbols(stateGame.activeSeries);
+		syncSpinBoardFromSettledBoard();
+	}
 	stateGame.bonusMode = null;
 	stateGame.globalMultiplier = 1;
 	stateGame.seriesTotalMultiplier = 1;
 	stateGame.magnetTargetSymbol = null;
 	stateGame.activeSeries = [];
 	stateGame.persistentSeries = null;
-	stateGame.clusterWinBadges = [];
 	stateGame.selectedBonusSymbol = null;
 	stateGame.tempMultiplier = null;
 	stateGame.magnetPulseKeys = [];
@@ -849,7 +886,6 @@ export const stateGameDerived = {
 	setBoardFromRaw,
 	setSeriesSnapshots,
 	animateClusterFormation,
-	setClusterBadgesFromWinInfo,
 	animateWinningPositions,
 	applyReveal,
 	beginSpin,

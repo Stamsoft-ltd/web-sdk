@@ -260,7 +260,7 @@ export default {
 	wolfTile:     { type: 'sprite', src: './assets/components/symbols/magnetic/premium/plasma_drill.png?v=20260709', preload: true },
 	bearTile:     { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube.png?v=20260709', preload: true },
 	rabbitTile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.png?v=20260709', preload: true },
-	magnetTile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnet_forest_gang.png?v=20260709', preload: true },
+	magnetTile:   { type: 'sprite', src: './assets/components/ui/magnet_win.png?v=20260709', preload: true },
 	squirrelTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt.png?v=20260709', preload: true },
 	squirrelTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt_mobile.png?v=20260709', preload: true },
 	// Premium mobile (portrait) symbol art.
@@ -280,7 +280,7 @@ export default {
 	bearWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube_win.png?v=20260709', preload: true },
 	rabbitBonusTile: { type: 'sprite', src: './assets/new_assets/slots_replacement/premium/rabbit_n.png?v=20260629', preload: true },
 	rabbitWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device_win.png?v=20260709', preload: true },
-	magnetWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnet_forest_gang_win.png?v=20260709', preload: true },
+	magnetWinTile: { type: 'sprite', src: './assets/components/ui/magnet_win.png?v=20260709', preload: true },
 	squirrelBonusTile: { type: 'sprite', src: './assets/new_assets/slots_replacement/premium/squirrel_n.png?v=20260629', preload: true },
 	squirrelWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt_win.png?v=20260709', preload: true },
 	aExpTile: { type: 'sprite', src: './assets/components/symbols/card_a.png?v=20260626', preload: true },
@@ -321,14 +321,6 @@ export default {
 		src: {
 			atlas: './assets/spines/symbols3/symbols3.atlas',
 			skeleton: './assets/spines/symbols3/explosion.json',
-			scale: 2,
-		},
-	},
-	anticipation: {
-		type: 'spine',
-		src: {
-			atlas: './assets/spines/anticipation/anticipation.atlas',
-			skeleton: './assets/spines/anticipation/anticipation.json',
 			scale: 2,
 		},
 	},

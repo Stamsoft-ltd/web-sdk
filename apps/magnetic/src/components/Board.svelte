@@ -9,7 +9,7 @@
 </script>
 
 <script lang="ts">
-	import { BitmapText, Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
+	import { Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
 	import { BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, SYMBOL_H, SYMBOL_W } from '../game/constants';
@@ -21,6 +21,7 @@
 	const boardMode = $derived(context.stateGame.boardMode);
 	const layout = $derived(context.stateGameDerived.boardLayout());
 	const flatCells = $derived(board.flatMap((reel) => reel));
+	const lockedCells = $derived(flatCells.filter((cell) => cell.locked));
 	let show = $state(true);
 
 	const getX = (reelIndex: number) => SYMBOL_W * (reelIndex + 0.5);
@@ -64,41 +65,25 @@
 		{/each}
 
 		{#if boardMode === 'spin'}
-			<!-- ── Spin mode: clip reel symbols per unlocked cell. Locked cells get no reel window. ── -->
-			{#each board as reelCells, reelIndex (reelIndex)}
-				{#each reelCells.filter((cell) => !cell.locked) as clipCell (`${clipCell.key}:spin-window`)}
-					<Container>
-						<Graphics
-							isMask
-							draw={(graphics) => {
-								graphics.rect(
-									getX(reelIndex) - SYMBOL_W * 0.5,
-									getStaticY(clipCell.position.row) - SYMBOL_H * 0.5,
-									SYMBOL_W,
-									SYMBOL_H,
-								);
-								graphics.fill(0xffffff);
-							}}
-						/>
-						{#each spinBoard[reelIndex].reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
-							{@const y = reelSymbol.symbolY()}
-							{@const symbolInfo = getSymbolInfo({ rawSymbol: reelSymbol.rawSymbol, state: reelSymbol.symbolState })}
-							<Sprite
-								key={symbolInfo.assetKey}
-								x={getX(reelIndex)}
-								y={y}
-								anchor={{ x: 0.5, y: 0.5 }}
-								width={SYMBOL_W * symbolInfo.sizeRatios.width}
-								height={SYMBOL_H * symbolInfo.sizeRatios.height}
-								alpha={1}
-							/>
-						{/each}
-					</Container>
+			<!-- ── Spin mode: one rolling strip per reel. Locked cells are opaque covers above it. ── -->
+			{#each spinBoard as reel, reelIndex (reelIndex)}
+				{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
+					{@const y = reelSymbol.symbolY()}
+					{@const symbolInfo = getSymbolInfo({ rawSymbol: reelSymbol.rawSymbol, state: reelSymbol.symbolState })}
+					<Sprite
+						key={symbolInfo.assetKey}
+						x={getX(reelIndex)}
+						y={y}
+						anchor={{ x: 0.5, y: 0.5 }}
+						width={SYMBOL_W * symbolInfo.sizeRatios.width}
+						height={SYMBOL_H * symbolInfo.sizeRatios.height}
+						alpha={1}
+					/>
 				{/each}
 			{/each}
 
 			<!-- Locked cluster cells cover the closed reel windows, then render lock symbol above. -->
-			{#each flatCells.filter((c) => c.locked) as cell (cell.key)}
+			{#each lockedCells as cell (cell.key)}
 				{@const x = getX(cell.position.reel)}
 				{@const y = getStaticY(cell.position.row)}
 				{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: 'locked' })}
@@ -173,7 +158,7 @@
 			{/each}
 
 			<!-- Locked overlay: full outer cover + highlighted rectangle + top symbol. -->
-			{#each flatCells.filter((c) => c.locked) as cell (`${cell.key}:locked`)}
+			{#each lockedCells as cell (`${cell.key}:locked`)}
 				{@const x = getX(cell.position.reel)}
 				{@const y = getStaticY(cell.position.row)}
 				{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState === 'win' ? 'win' : 'locked' })}
@@ -205,16 +190,6 @@
 					{height}
 					alpha={1}
 					tint={0xffffff}
-				/>
-			{/each}
-
-			{#each context.stateGame.clusterWinBadges as badge (badge.id)}
-				<BitmapText
-					anchor={0.5}
-					x={getX(badge.reel)}
-					y={(badge.row + 0.08) * SYMBOL_H - SYMBOL_H * 0.34}
-					text={badge.text}
-					style={{ fontFamily: 'gold', fontSize: 18 }}
 				/>
 			{/each}
 		{/if}

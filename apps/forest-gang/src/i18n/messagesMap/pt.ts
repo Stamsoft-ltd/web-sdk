@@ -105,7 +105,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'O Wild substitui todos os símbolos pagantes regulares. O Scatter não paga sozinho e apenas aciona os recursos de bônus.',
 	'PAYTABLE BUY_TEXT': 'Distribui: 100x a aposta.\nTudo ou Nada: 400x a aposta.\nGiro Chance: 2x a aposta por rodada.\nGiro Recurso: 20x a aposta por rodada.\nDistribui e Tudo ou Nada exigem confirmação antes do início da rodada.',
 	'PAYTABLE MAX_TEXT': 'O ganho máximo anunciado é 25,000x a aposta selecionada.',
-	'DISCLAIMER TEXT': 'Mau funcionamento anula todos os ganhos e jogadas. É necessária uma conexão de internet estável. Em caso de desconexão, recarregue o jogo para concluir quaisquer rodadas não finalizadas. O retorno esperado é calculado ao longo de muitas jogadas. A exibição do jogo não representa nenhum dispositivo físico e é apenas para fins ilustrativos. Os ganhos são liquidados de acordo com o valor recebido do Servidor de Jogo Remoto e não a partir de eventos dentro do navegador web. TM e © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'Mau funcionamento anula todos os ganhos e jogadas. É necessária uma conexão de internet estável. Em caso de desconexão, recarregue o jogo para concluir quaisquer rodadas não finalizadas. O retorno esperado é calculado ao longo de muitas jogadas. A exibição do jogo não representa nenhum dispositivo físico e é apenas para fins ilustrativos. Os ganhos são liquidados de acordo com o valor recebido do Servidor de Jogo Remoto e não a partir de eventos dentro do navegador web. TM e © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'VISÃO GERAL',
@@ -170,7 +170,7 @@ export default {
 		'Se uma rodada do jogo for interrompida, ela continuará quando o jogo for recarregado, sempre que possível.\n\nTodas as apostas válidas e ganhos potenciais permanecem ativos até que a rodada seja totalmente concluída.',
 	'INFO LEGAL TITLE': 'AVISO LEGAL',
 	'INFO LEGAL TEXT':
-		'Mau funcionamento anula todos os pagamentos e jogadas. É necessária uma conexão de internet estável. Se a conexão for perdida, recarregue o jogo para concluir quaisquer rodadas não finalizadas.\n\nO retorno esperado é calculado ao longo de um grande número de jogadas. A exibição do jogo é apenas para fins visuais e de entretenimento e não representa nenhum dispositivo físico de jogo.\n\nTodos os ganhos são liquidados de acordo com o resultado recebido do Servidor de Jogo Remoto, e não a partir de animações ou eventos exibidos dentro do navegador web.',
+		'Mau funcionamento anula todos os pagamentos e jogadas. É necessária uma conexão de internet estável. Se a conexão for perdida, recarregue o jogo para concluir quaisquer rodadas não finalizadas.\n\nO retorno esperado é calculado ao longo de um grande número de jogadas. A exibição do jogo é apenas para fins visuais e de entretenimento e não representa nenhum dispositivo físico de jogo.\n\nTodos os ganhos são liquidados de acordo com o resultado recebido do Servidor de Jogo Remoto, e não a partir de animações ou eventos exibidos dentro do navegador web.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'ROLOS\nEXPANSÍVEIS',

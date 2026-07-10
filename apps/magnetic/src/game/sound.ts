@@ -11,8 +11,6 @@ export type MusicName =
 
 export type SoundEffectName =
 	| 'jng_intro_fs'
-	| 'sfx_anticipation'
-	| 'sfx_anticipation_start'
 	| 'sfx_bigwin_coinloop'
 	| 'sfx_btn_general'
 	| 'sfx_btn_spin'

@@ -27,7 +27,7 @@
 	);
 	const title = $derived(persistent ? 'SUPER SERIES' : target ? 'MAGNET SERIES' : 'CLUSTER SERIES');
 	const visible = $derived(Boolean(target || series.length));
-	const icon = ap('/assets/components/symbols/magnetic/premium/magnet_forest_gang.png?v=20260701');
+	const icon = ap('/assets/components/ui/magnet_win.png?v=20260709');
 </script>
 
 {#if visible}

@@ -77,8 +77,9 @@
 	const isAnyModeActive = $derived(isFeatureActive || isChanceActive);
 	// Buying a bonus is not allowed while a bonus round is in progress.
 	const isInBonus = $derived(context.stateGame.bonusMode !== null);
+	// Bolder icon = faster: Normal shows the outline bolt, Turbo the solid bolt, Super turbo the double.
 	const turboIcon = $derived(
-		stateBet.isSuperTurbo ? iconTurbo3 : stateBet.isTurbo ? iconTurbo2 : iconTurbo1,
+		stateBet.isSuperTurbo ? iconTurbo3 : stateBet.isTurbo ? iconTurbo1 : iconTurbo2,
 	);
 	const isMuted = $derived(stateSound.volumeValueMaster === 0);
 	const betOptions = $derived(stateConfig.betAmountOptions);
@@ -219,6 +220,7 @@
 		}
 
 		if (context.stateXstateDerived.isIdle()) {
+			if (!canAffordBet) return;
 			// Always reset to BASE before a new spin (unless feature toggle is on)
 			stateBet.activeBetModeKey = isFeatureActive ? 'FEATURE' : isChanceActive ? 'CHANCE' : 'BASE';
 			context.eventEmitter.broadcast({ type: 'bet' });
@@ -260,6 +262,7 @@
 		context.eventEmitter.broadcast({ type: 'soundPressBet' });
 
 		if (context.stateXstateDerived.isIdle()) {
+			if (!canAffordBet) return;
 			stateBet.activeBetModeKey = isFeatureActive ? 'FEATURE' : isChanceActive ? 'CHANCE' : 'BASE';
 			context.eventEmitter.broadcast({ type: 'bet' });
 			return;

@@ -31,6 +31,8 @@
 	let winLevelData = $state<WinLevelData>();
 	let oncomplete = $state(() => {});
 	let boardClickHandled = false;
+	let snappedToFinal = false;
+	let dismissTimer = 0;
 	let isCountingUp = $state(false);
 	let winSizes = $state({ width: 0, height: 0 });
 
@@ -45,11 +47,33 @@
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const winBoardBoost = $derived(layoutType === 'portrait' ? 1.58 : 1.6);
 
+	const snapToFinal = (finishCountUp: () => void) => {
+		if (snappedToFinal) return;
+		snappedToFinal = true;
+		finishCountUp();
+		context.stateGame.paylineSnap = true;
+	};
+
+	const scheduleDismiss = () => {
+		if (boardClickHandled) return;
+		boardClickHandled = true;
+		dismissTimer = setTimeout(() => oncomplete(), 500) as unknown as number;
+	};
+
 	context.eventEmitter.subscribeOnMount({
 		winShow: () => (show = true),
-		winHide: () => (show = false),
+		winHide: () => {
+			show = false;
+			// Win-screen audio (coins loop, payline loop, celebration music) runs until the screen
+			// CLOSES — not until the count-up finishes (space/click only snaps the counter).
+			context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_win_coins_loop' });
+			context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
+			context.eventEmitter.broadcast({ type: 'soundStop', name: 'bgm_win_animation' });
+		},
 		winUpdate: async (emitterEvent) => {
 			boardClickHandled = false;
+			snappedToFinal = false;
+			clearTimeout(dismissTimer);
 			amount = emitterEvent.amount;
 			winLevelData = emitterEvent.winLevelData;
 			breatheScale = 1;
@@ -83,7 +107,7 @@
 		{@const hasBoardAnimation = !!winLevelData?.animation}
 		{@const duration = (stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation ? Math.min(winLevelData.presentDuration, 400) : winLevelData.presentDuration}
 		{#key oncomplete}
-		<WinCountUpProvider {amount} {duration} oncomplete={() => { context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' }); if (!hasBoardAnimation && !boardClickHandled) { boardClickHandled = true; oncomplete(); } }}>
+		<WinCountUpProvider {amount} {duration} oncomplete={() => { context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' }); if (!hasBoardAnimation && !boardClickHandled) { snappedToFinal = true; context.stateGame.paylineSnap = true; boardClickHandled = true; oncomplete(); } }}>
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
 
 				{#if isBigWin}
@@ -155,12 +179,10 @@
 				</Container>
 
 				<PressToContinue onpress={() => {
-					if (!countUpCompleted) {
-						finishCountUp();
+					if (!snappedToFinal) {
+						snapToFinal(finishCountUp);
 					} else {
-						if (boardClickHandled) return;
-						boardClickHandled = true;
-						oncomplete();
+						scheduleDismiss();
 					}
 				}} />
 			{/snippet}

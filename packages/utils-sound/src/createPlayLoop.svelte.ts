@@ -12,6 +12,10 @@ export function createPlayLoop<TSoundName extends string>(options: {
 
 	const playLoop = (sound: Sound) => {
 		const soundId = options.howl.play(sound.soundName);
+		// Force this instance to loop. Relying on the sprite's loop flag alone is unreliable in Howler —
+		// it isn't always reapplied on replays (after a stop), so the sound would play once and not
+		// repeat on the 2nd/3rd trigger. Setting loop explicitly per soundId guarantees it repeats.
+		options.howl.loop(true, soundId);
 		options.getSoundMap()[sound.soundName] = {
 			...sound,
 			soundId,

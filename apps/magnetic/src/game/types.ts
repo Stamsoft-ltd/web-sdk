@@ -1,8 +1,8 @@
 import type config from './config';
 import type { Tween } from 'svelte/motion';
 
-export type SymbolName = keyof typeof config.symbols;
-export type PaySymbolName = Exclude<SymbolName, 'SCATTER' | 'WILD'>;
+export type SymbolName = keyof typeof config.symbols | 'MAGNET';
+export type PaySymbolName = Exclude<SymbolName, 'SCATTER' | 'WILD' | 'MAGNET'>;
 export type BetMode = keyof typeof config.betModes;
 export type GameType = 'basegame' | 'freegame' | 'superspin' | 'feature';
 export type SeriesKind = 'natural' | 'magnet' | 'super';
