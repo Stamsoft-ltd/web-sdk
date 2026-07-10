@@ -35,7 +35,7 @@
 		return () => cancelAnimationFrame(id);
 	});
 
-	// Bar design units. Source sprites are 492×87 (bg) and 100×111 (listo.png leaf).
+	// Bar design units. Source sprites are 492×87 (bar) and 100×111 (energy-orb cursor).
 	const BAR_W = 1967 * 0.2;   // 393.4
 	const BAR_H = 346  * 0.2;   // 69.2
 	const LEAF_H = BAR_H * 1.1;                   // ~76px — slight overhang above/below bar
@@ -93,9 +93,9 @@
 				y={context.stateLayoutDerived.mainLayout().height - 220}
 			>
 				<Container pivot={{ x: BAR_W / 2, y: 0 }}>
-					<!-- Game-art dark wood bar with leaf corners (hud_frame resized) -->
+					<!-- Dark metal slot with a glowing cyan border (magnetic loading bar) -->
 					<Sprite key="progressBarBackground.png" width={BAR_W} height={BAR_H} />
-					<!-- Leaf cursor bobs and slides left→right as assets load -->
+					<!-- Energy-orb cursor bobs and slides left→right as assets load -->
 					<Sprite
 						key="progressBarLeaf.png"
 						width={LEAF_W}

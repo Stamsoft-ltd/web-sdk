@@ -81,6 +81,15 @@
 	const isFeatureActive = $derived(stateBet.activeBetModeKey === 'FEATURE');
 	const isChanceActive = $derived(stateBet.activeBetModeKey === 'CHANCE');
 	const isAnyModeActive = $derived(isFeatureActive || isChanceActive);
+	// Buying a bonus makes no sense while one is running — disable the button during free spins,
+	// and keep it disabled while the final congratulations (outro) screen is still up (gameType
+	// may already be back to basegame at that point).
+	let outroShowing = $state(false);
+	context.eventEmitter.subscribeOnMount({
+		freeSpinOutroShow: () => (outroShowing = true),
+		freeSpinOutroHide: () => (outroShowing = false),
+	});
+	const isInBonus = $derived(context.stateGame.gameType !== 'basegame' || outroShowing);
 	// Bolder icon = faster: normal = outline bolt (turbo3), turbo = solid bolt (turbo), super = double (turbo1)
 	const turboIcon = $derived(
 		stateBet.isSuperTurbo ? iconTurbo1 : stateBet.isTurbo ? iconTurbo : iconTurbo3,
@@ -317,6 +326,7 @@
 				<button
 					class="buy-btn"
 					type="button"
+					disabled={isInBonus}
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
@@ -530,6 +540,7 @@
 					<button
 						class="buy-btn"
 						type="button"
+						disabled={isInBonus}
 						onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 						aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 					>
@@ -877,6 +888,11 @@
 		transition:
 			transform 0.12s ease,
 			filter 0.12s ease;
+	}
+	.buy-btn:disabled {
+		filter: grayscale(0.7) brightness(0.55);
+		cursor: default;
+		pointer-events: none;
 	}
 
 	.circle-btn,

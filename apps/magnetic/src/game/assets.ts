@@ -149,7 +149,7 @@ export default {
 	},
 	splash: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/splash.jpg?v=20260622',
+		src: './assets/components/backgrounds/splash_intro.jpg?v=20260710',
 		preload: true,
 	},
 	logoFrame: {
@@ -209,9 +209,12 @@ export default {
 		src: './assets/components/ui/scatter-panel-image.png?v=20260611',
 		preload: true,
 	},
-	// 16-frame rotation flipbook for the washer — played while the washer is locked in a cluster
-	// (the "being screwed in" animation). Packed 4x4, 420px frames, pivot centred.
-	washerLockSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/washer_lock_sheet.json', preload: true },
+	// 10-frame rotation flipbook for the washer — played while the washer is locked in a cluster
+	// (the "being screwed in" animation). Packed 4x3, 420px frames, pivot centred; alpha recovered
+	// from the designer's checkerboard-background exports.
+	washerLockSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/washer_lock_sheet.json?v=20260710b', preload: true },
+	// 20-frame rotation flipbook for the green bolt (real-alpha designer frames), same treatment.
+	boltLockSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/bolt_lock_sheet.json?v=20260710', preload: true },
 	aTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.png?v=20260709', preload: true },
 	aWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_win.png?v=20260709', preload: true },
 	aTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_mobile.png?v=20260709', preload: true },
@@ -388,7 +391,7 @@ export default {
 	},
 	progressBar: {
 		type: 'sprites',
-		src: './assets/sprites/progressBar/progressBar.json?v=20260611',
+		src: './assets/sprites/progressBar/progressBar.json?v=20260710',
 		preload: true,
 	},
 	freeSpins: {

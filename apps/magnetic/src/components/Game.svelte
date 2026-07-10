@@ -59,7 +59,7 @@
 	const uiRefArt = './assets/components/ui/scatter-panel-image.png';
 	const paytableArt = './assets/components/backgrounds/visual_v2.png';
 	const heroArtBackdrop = new URL(
-		'../../static/assets/components/backgrounds/visual_v2.png',
+		'../../static/assets/components/backgrounds/splash_intro.jpg',
 		import.meta.url,
 	).href;
 
@@ -378,7 +378,7 @@
 		position: relative;
 		width: 100%;
 		height: 100dvh;
-		background: #081008;
+		background: #060b16;
 		overflow: hidden;
 	}
 	.magnetic-shell::before,

@@ -57,6 +57,19 @@
 			lockStartByKey = next;
 		}
 	});
+	// Rotation flipbooks for locked (stacked) symbols, keyed by the RESOLVED sprite asset key —
+	// NOT the symbol name (the art file names don't match their contents: nut.png is the gold
+	// washer, bolt.png the green bolt). Add entries here as more frame sets arrive.
+	const LOCK_SHEETS: Record<string, string> = {
+		aTile: 'washerLockSheet',
+		aWinTile: 'washerLockSheet',
+		aTileMobile: 'washerLockSheet',
+		aWinTileMobile: 'washerLockSheet',
+		squirrelTile: 'boltLockSheet',
+		squirrelWinTile: 'boltLockSheet',
+		squirrelTileMobile: 'boltLockSheet',
+		squirrelWinTileMobile: 'boltLockSheet',
+	};
 	const keyPhase = (key: string) => {
 		let h = 0;
 		for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0;
@@ -294,18 +307,21 @@
 					height={SYMBOL_H}
 					zIndex={Z.lockedFrame}
 				/>
-				{#if cell.name === 'L3'}
-					<!-- Washer: true axial rotation via the 16-frame flipbook (designer frames). -->
+				{@const lockSheet = LOCK_SHEETS[symbolInfo.assetKey]}
+				{@const lockSheetSize = height * 0.8}
+				{#if lockSheet}
+					<!-- True axial rotation via the symbol's flipbook. Sized down because the flipbook
+					     frames are tightly cropped while the static art has large transparent padding. -->
 					<SpriteSheet
-						key="washerLockSheet"
+						key={lockSheet}
 						play
 						loop
 						animationSpeed={0.35}
 						{x}
 						{y}
 						anchor={0.5}
-						{width}
-						{height}
+						width={lockSheetSize}
+						height={lockSheetSize}
 						zIndex={Z.lockedSymbol}
 					/>
 				{:else}
@@ -372,7 +388,7 @@
 					{height}
 					alpha={cell.locked ? 1 : cell.displayAlpha.current}
 					tint={0xffffff}
-					zIndex={cell.locked ? Z.lockedSymbol : Z.symbol}
+					zIndex={Z.symbol}
 				/>
 			{/each}
 
@@ -405,18 +421,21 @@
 					height={SYMBOL_H}
 					zIndex={Z.lockedFrame}
 				/>
-				{#if cell.name === 'L3'}
-					<!-- Washer: true axial rotation via the 16-frame flipbook (designer frames). -->
+				{@const lockSheet = LOCK_SHEETS[symbolInfo.assetKey]}
+				{@const lockSheetSize = height * 0.8}
+				{#if lockSheet}
+					<!-- True axial rotation via the symbol's flipbook. Sized down because the flipbook
+					     frames are tightly cropped while the static art has large transparent padding. -->
 					<SpriteSheet
-						key="washerLockSheet"
+						key={lockSheet}
 						play
 						loop
 						animationSpeed={0.35}
 						{x}
 						{y}
 						anchor={0.5}
-						{width}
-						{height}
+						width={lockSheetSize}
+						height={lockSheetSize}
 						zIndex={Z.lockedSymbol}
 					/>
 				{:else}
