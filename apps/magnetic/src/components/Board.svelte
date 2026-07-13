@@ -69,6 +69,49 @@
 		squirrelWinTile: 'boltLockSheet',
 		squirrelTileMobile: 'boltLockSheet',
 		squirrelWinTileMobile: 'boltLockSheet',
+		kTile: 'purpleScrewLockSheet',
+		kWinTile: 'purpleScrewLockSheet',
+		kTileMobile: 'purpleScrewLockSheet',
+		kWinTileMobile: 'purpleScrewLockSheet',
+		qTile: 'blueNutLockSheet',
+		qWinTile: 'blueNutLockSheet',
+		qTileMobile: 'blueNutLockSheet',
+		qWinTileMobile: 'blueNutLockSheet',
+		wolfTile: 'drillLockSheet',
+		wolfWinTile: 'drillLockSheet',
+		wolfTileMobile: 'drillLockSheet',
+		wolfWinTileMobile: 'drillLockSheet',
+		bearTile: 'cubeLockSheet',
+		bearWinTile: 'cubeLockSheet',
+		bearTileMobile: 'cubeLockSheet',
+		bearWinTileMobile: 'cubeLockSheet',
+		rabbitTile: 'generatorLockSheet',
+		rabbitWinTile: 'generatorLockSheet',
+		rabbitTileMobile: 'generatorLockSheet',
+		rabbitWinTileMobile: 'generatorLockSheet',
+	};
+	// Per-sheet size tweaks (fraction of cell height; default 0.8) — art-specific corrections.
+	const LOCK_SHEET_SIZE: Record<string, number> = {
+		blueNutLockSheet: 0.76, // 5% smaller: matches the static nut's footprint
+		// Win flipbooks include the electric aura around the symbol, so they render larger for
+		// the symbol core to match the static art's footprint.
+		boltWinSheet: 1.1,
+		washerWinSheet: 1.1,
+		purpleScrewWinSheet: 1.1,
+		blueNutWinSheet: 1.2, // aura is feathered in the sheet; nut core sized to match static art
+	};
+	// WIN-state flipbooks (symbol + baked electric arcs), played while a cell presents a win.
+	const WIN_SHEETS: Record<string, string> = {
+		squirrelWinTile: 'boltWinSheet',
+		squirrelWinTileMobile: 'boltWinSheet',
+		aWinTile: 'washerWinSheet',
+		aWinTileMobile: 'washerWinSheet',
+		kWinTile: 'purpleScrewWinSheet',
+		kWinTileMobile: 'purpleScrewWinSheet',
+		qWinTile: 'blueNutWinSheet',
+		qWinTileMobile: 'blueNutWinSheet',
+		rabbitWinTile: 'generatorWinSheet',
+		rabbitWinTileMobile: 'generatorWinSheet',
 	};
 	const keyPhase = (key: string) => {
 		let h = 0;
@@ -198,6 +241,29 @@
 		return () => cancelAnimationFrame(raf);
 	});
 
+	// Zoom pulse for stacked MAGNET cells — the magnet breathes in/out (±8%) instead of getting
+	// the wrench twist (rotating a horseshoe magnet reads wrong).
+	const lockZoom = (key: string) => {
+		const start = lockStartByKey[key];
+		if (start === undefined) return 1;
+		const t = (animNow - start) / 1000;
+		if (t <= 0) return 1;
+		// Heartbeat-style pulse: quick swell, slower release — clearly "pulsing", not twisting.
+		const p = (t * 1.1 + keyPhase(key)) % 1;
+		const beat = Math.exp(-((p - 0.18) * (p - 0.18)) / 0.012) + 0.55 * Math.exp(-((p - 0.42) * (p - 0.42)) / 0.02);
+		return 1 + 0.14 * beat;
+	};
+
+	// Continuous centre rotation for stacked WILD cells — the medallion is round, so true
+	// image rotation reads correctly (unlike the fasteners).
+	const lockRotate = (key: string) => {
+		const start = lockStartByKey[key];
+		if (start === undefined) return 0;
+		const t = (animNow - start) / 1000;
+		if (t <= 0) return 0;
+		return t * 6.5 + keyPhase(key) * Math.PI * 2;
+	};
+
 	// Ratchet stroke: 0-30% fast twist to +A (ease-out), 30-45% quick return, 45-100% rest.
 	const lockSpin = (key: string) => {
 		const start = lockStartByKey[key];
@@ -307,8 +373,10 @@
 					height={SYMBOL_H}
 					zIndex={Z.lockedFrame}
 				/>
-				{@const lockSheet = LOCK_SHEETS[symbolInfo.assetKey]}
-				{@const lockSheetSize = height * 0.8}
+				<!-- Win flipbook takes priority when the cell presents a win (assetKey is then the
+				     win-art variant); otherwise the stacked rotation flipbook. -->
+				{@const lockSheet = WIN_SHEETS[symbolInfo.assetKey] ?? LOCK_SHEETS[symbolInfo.assetKey]}
+				{@const lockSheetSize = height * (LOCK_SHEET_SIZE[lockSheet ?? ''] ?? 0.8)}
 				{#if lockSheet}
 					<!-- True axial rotation via the symbol's flipbook. Sized down because the flipbook
 					     frames are tightly cropped while the static art has large transparent padding. -->
@@ -322,6 +390,47 @@
 						anchor={0.5}
 						width={lockSheetSize}
 						height={lockSheetSize}
+						zIndex={Z.lockedSymbol}
+					/>
+				{:else if /wild\d/i.test(symbolInfo.assetKey)}
+					<!-- Multiplier wild (medallion + Nx plaque, not round): heartbeat pulse, no rotation. -->
+					<Sprite
+						key={symbolInfo.assetKey}
+						{x}
+						{y}
+						anchor={0.5}
+						width={width * lockZoom(cell.key)}
+						height={height * lockZoom(cell.key)}
+						alpha={1}
+						tint={0xffffff}
+						zIndex={Z.lockedSymbol}
+					/>
+				{:else if symbolInfo.assetKey.toLowerCase().includes('wild')}
+					<!-- Plain wild medallion (round): continuous centre rotation while stacked. -->
+					<Sprite
+						key={symbolInfo.assetKey}
+						{x}
+						{y}
+						anchor={0.5}
+						rotation={lockRotate(cell.key)}
+						{width}
+						{height}
+						alpha={1}
+						tint={0xffffff}
+						zIndex={Z.lockedSymbol}
+					/>
+				{:else if symbolInfo.assetKey.toLowerCase().includes('magnet') || symbolInfo.assetKey.startsWith('fox')}
+					<!-- Magnet special symbol AND the H1 horseshoe-magnet premium (foxTile family — the
+					     clean red/blue horseshoe art): heartbeat pulse while stacked, no rotation. -->
+					<Sprite
+						key={symbolInfo.assetKey}
+						{x}
+						{y}
+						anchor={0.5}
+						width={width * lockZoom(cell.key)}
+						height={height * lockZoom(cell.key)}
+						alpha={1}
+						tint={0xffffff}
 						zIndex={Z.lockedSymbol}
 					/>
 				{:else}
@@ -378,18 +487,36 @@
 				})}
 				{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
 				{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
+				{@const winSheet = !cell.locked && cell.symbolState === 'win' ? WIN_SHEETS[symbolInfo.assetKey] : undefined}
 
-				<Sprite
-					key={symbolInfo.assetKey}
-					{x}
-					{y}
-					anchor={{ x: 0.5, y: 0.5 }}
-					{width}
-					{height}
-					alpha={cell.locked ? 1 : cell.displayAlpha.current}
-					tint={0xffffff}
-					zIndex={Z.symbol}
-				/>
+				{#if winSheet}
+					<!-- Winning symbol with a dedicated win flipbook (symbol + electric arcs). -->
+					<SpriteSheet
+						key={winSheet}
+						play
+						loop
+						animationSpeed={0.35}
+						{x}
+						{y}
+						anchor={0.5}
+						{width}
+						{height}
+						alpha={cell.displayAlpha.current}
+						zIndex={Z.symbol}
+					/>
+				{:else}
+					<Sprite
+						key={symbolInfo.assetKey}
+						{x}
+						{y}
+						anchor={{ x: 0.5, y: 0.5 }}
+						{width}
+						{height}
+						alpha={cell.locked ? 1 : cell.displayAlpha.current}
+						tint={0xffffff}
+						zIndex={Z.symbol}
+					/>
+				{/if}
 			{/each}
 
 			<!-- Locked overlay: full outer cover + highlighted rectangle + top symbol. -->
@@ -421,8 +548,10 @@
 					height={SYMBOL_H}
 					zIndex={Z.lockedFrame}
 				/>
-				{@const lockSheet = LOCK_SHEETS[symbolInfo.assetKey]}
-				{@const lockSheetSize = height * 0.8}
+				<!-- Win flipbook takes priority when the cell presents a win (assetKey is then the
+				     win-art variant); otherwise the stacked rotation flipbook. -->
+				{@const lockSheet = WIN_SHEETS[symbolInfo.assetKey] ?? LOCK_SHEETS[symbolInfo.assetKey]}
+				{@const lockSheetSize = height * (LOCK_SHEET_SIZE[lockSheet ?? ''] ?? 0.8)}
 				{#if lockSheet}
 					<!-- True axial rotation via the symbol's flipbook. Sized down because the flipbook
 					     frames are tightly cropped while the static art has large transparent padding. -->
@@ -436,6 +565,47 @@
 						anchor={0.5}
 						width={lockSheetSize}
 						height={lockSheetSize}
+						zIndex={Z.lockedSymbol}
+					/>
+				{:else if /wild\d/i.test(symbolInfo.assetKey)}
+					<!-- Multiplier wild (medallion + Nx plaque, not round): heartbeat pulse, no rotation. -->
+					<Sprite
+						key={symbolInfo.assetKey}
+						{x}
+						{y}
+						anchor={0.5}
+						width={width * lockZoom(cell.key)}
+						height={height * lockZoom(cell.key)}
+						alpha={1}
+						tint={0xffffff}
+						zIndex={Z.lockedSymbol}
+					/>
+				{:else if symbolInfo.assetKey.toLowerCase().includes('wild')}
+					<!-- Plain wild medallion (round): continuous centre rotation while stacked. -->
+					<Sprite
+						key={symbolInfo.assetKey}
+						{x}
+						{y}
+						anchor={0.5}
+						rotation={lockRotate(cell.key)}
+						{width}
+						{height}
+						alpha={1}
+						tint={0xffffff}
+						zIndex={Z.lockedSymbol}
+					/>
+				{:else if symbolInfo.assetKey.toLowerCase().includes('magnet') || symbolInfo.assetKey.startsWith('fox')}
+					<!-- Magnet special symbol AND the H1 horseshoe-magnet premium (foxTile family — the
+					     clean red/blue horseshoe art): heartbeat pulse while stacked, no rotation. -->
+					<Sprite
+						key={symbolInfo.assetKey}
+						{x}
+						{y}
+						anchor={0.5}
+						width={width * lockZoom(cell.key)}
+						height={height * lockZoom(cell.key)}
+						alpha={1}
+						tint={0xffffff}
 						zIndex={Z.lockedSymbol}
 					/>
 				{:else}

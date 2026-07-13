@@ -31,6 +31,8 @@
 	import ReplayHud from './replay/ReplayHud.svelte';
 	import SplashIntro from './SplashIntro.svelte';
 	import CapsulePanel from './CapsulePanel.svelte';
+	import RespinPanel from './RespinPanel.svelte';
+	import PressPlayMark from './PressPlayMark.svelte';
 	import PortraitTopBar from './PortraitTopBar.svelte';
 
 	const context = getContext();
@@ -341,6 +343,8 @@
 				<Win />
 				<FreeSpinIntro />
 				<CapsulePanel />
+				<RespinPanel />
+				<PressPlayMark />
 				<PortraitTopBar />
 				<FreeSpinOutro />
 				<Transition />

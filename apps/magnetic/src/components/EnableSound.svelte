@@ -19,6 +19,21 @@
 		Howler.mute(stateSound.volumeValueMaster === 0);
 	});
 
+	// Per-channel volumes, wired DIRECTLY like the master above — $state changes don't track
+	// through the utils-sound package boundary, so sound.volumeEffect() never re-fires there.
+	// MUSIC drives the background-music player; SOUND drives both effect players (loops + once).
+	$effect(() => {
+		const vol = stateSound.volumeValueMusic / 100;
+		if (sound.players) sound.players.music.volume(vol);
+	});
+	$effect(() => {
+		const vol = stateSound.volumeValueSoundEffect / 100;
+		if (sound.players) {
+			sound.players.loop.volume(vol);
+			sound.players.once.volume(vol);
+		}
+	});
+
 	onMount(() => {
 		const loadedAudio = $state.snapshot(
 			context.stateApp.loadedAssets['sound'],

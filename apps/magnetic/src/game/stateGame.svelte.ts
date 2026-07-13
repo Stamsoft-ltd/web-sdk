@@ -671,6 +671,9 @@ export const stateGame = $state({
 	tempMultiplier: null as number | null,
 	magnetPulseKeys: [] as string[],
 	nextRevealMode: 'spin' as 'spin' | 'respin',
+	// True while the current bonus reveal is a cluster-growth respin (a free spin awarded to the
+	// player) — drives the RESPIN indicator panel. Cleared on normal reveals / spin start / reset.
+	respinIndicator: false,
 	forceFastAnimations: false,
 	// Set true when the player chooses "End" on the unfinished-round dialog: the end flows through the
 	// xstate machine (RESUME_BET) but onPlayGame skips the animation so endGame just ends the round +
@@ -929,6 +932,7 @@ const beginSpin = () => {
 	resetBonusState();
 	stateGame.boardSpinning = true;
 	stateGame.nextRevealMode = 'spin';
+	stateGame.respinIndicator = false;
 	stateGame.forceFastAnimations = false;
 	resetBoardVisuals();
 };
@@ -981,6 +985,7 @@ const resetBonusState = () => {
 	stateGame.tempMultiplier = null;
 	stateGame.magnetPulseKeys = [];
 	stateGame.nextRevealMode = 'spin';
+	stateGame.respinIndicator = false;
 	applySeriesDecorations({ board: stateGame.board, series: [], magnetTargetSymbol: null });
 	restoreBoardAlpha();
 };

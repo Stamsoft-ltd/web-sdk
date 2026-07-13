@@ -139,6 +139,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
 		const revealMode = stateGame.nextRevealMode;
+		// Clear the RESPIN indicator on normal reveals only — during a chain of consecutive
+		// cluster respins it stays lit steadily instead of blinking at each reveal boundary.
+		if (revealMode !== 'respin') stateGame.respinIndicator = false;
 		if (isBonusGame) eventEmitter.broadcast({ type: 'stopButtonEnable' });
 		if (isBonusGame) recordBookEvent({ bookEvent });
 
@@ -170,6 +173,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 				return;
 			}
 		}
+
+		// RESPIN indicator: this reveal is a free re-spin awarded by cluster growth (the player
+		// effectively gains an extra spin) — base game and bonus alike.
+		stateGame.respinIndicator = revealMode === 'respin' && stateGame.activeSeries.length > 0;
 
 		const revealPromise = stateGameDerived.applyReveal({
 			rawBoard: bookEvent.board,

@@ -32,6 +32,14 @@
 	// Round icon-buttons — each PNG is a COMPLETE button (dark disc + cyan ring + icon baked in),
 	// with default + disabled/mute states from the "Icon Buttons" set. Used as the whole button.
 	const iconMenu = ap('/assets/components/navbar/icons/menu.png');
+	// Menu popover (Figma 4498-8432): panel above the menu button with SOUND / MUSIC / INFO rows.
+	const menuPopupBg = ap('/assets/components/navbar/menu_popup_bg.png');
+	const iconMenuSound = ap('/assets/components/navbar/icons/menu_sound.svg');
+	const iconMenuMusic = ap('/assets/components/navbar/icons/menu_music.svg');
+	const iconMenuInfo = ap('/assets/components/navbar/icons/menu_info.svg');
+	// Disabled-state icons (Figma 4553-9279): slashed speaker / slashed note.
+	const iconMenuSoundOff = ap('/assets/components/navbar/icons/menu_sound_off.png');
+	const iconMenuMusicOff = ap('/assets/components/navbar/icons/menu_music_off.png');
 	const iconSound = ap('/assets/components/navbar/icons/sound.png');
 	const iconMute = ap('/assets/components/navbar/icons/mute.png');
 	const iconMinus = ap('/assets/components/navbar/icons/minus.png');
@@ -163,7 +171,49 @@
 
 	const toggleSound = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
-		stateSound.volumeValueMaster = stateSound.volumeValueMaster === 0 ? 50 : 0;
+		const unmuting = stateSound.volumeValueMaster === 0;
+		stateSound.volumeValueMaster = unmuting ? 50 : 0;
+		// Unmuting the master while BOTH channels are individually off would stay silent —
+		// restore the channels so the button audibly unmutes everything.
+		if (unmuting && stateSound.volumeValueMusic === 0 && stateSound.volumeValueSoundEffect === 0) {
+			stateSound.volumeValueMusic = 75;
+			stateSound.volumeValueSoundEffect = 75;
+		}
+	};
+
+	let showMenuPopup = $state(false);
+	const toggleMenuPopup = () => {
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		showMenuPopup = !showMenuPopup;
+	};
+	// Menu rows reflect the MASTER mute too — the outside speaker button silences everything,
+	// so both rows read as off while it's engaged.
+	const sfxOff = $derived(stateSound.volumeValueSoundEffect === 0 || stateSound.volumeValueMaster === 0);
+	const musicOff = $derived(stateSound.volumeValueMusic === 0 || stateSound.volumeValueMaster === 0);
+	// Muting BOTH channels from the menu = everything silent, so the master button reflects it.
+	const syncMasterWithChannels = () => {
+		if (stateSound.volumeValueMusic === 0 && stateSound.volumeValueSoundEffect === 0) {
+			stateSound.volumeValueMaster = 0;
+		}
+	};
+	const toggleSfx = () => {
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		const turningOn = sfxOff;
+		stateSound.volumeValueSoundEffect = turningOn ? 75 : 0;
+		// Turning a channel back on while master-muted must actually be audible.
+		if (turningOn && stateSound.volumeValueMaster === 0) stateSound.volumeValueMaster = 50;
+		syncMasterWithChannels();
+	};
+	const toggleMusic = () => {
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		const turningOn = musicOff;
+		stateSound.volumeValueMusic = turningOn ? 75 : 0;
+		if (turningOn && stateSound.volumeValueMaster === 0) stateSound.volumeValueMaster = 50;
+		syncMasterWithChannels();
+	};
+	const openInfoFromMenu = () => {
+		showMenuPopup = false;
+		openRules();
 	};
 
 	const openRules = () => {
@@ -307,11 +357,41 @@
 				<button
 					class="nav-btn nav-btn--framed"
 					type="button"
-					onclick={openRules}
-					aria-label="Game rules"
+					onclick={toggleMenuPopup}
+					aria-label="Menu"
 				>
 					<img class="nav-icon" src={iconMenu} alt="menu" />
 				</button>
+				{#if showMenuPopup}
+					<button
+						class="menu-popup-backdrop"
+						type="button"
+						aria-label="Close menu"
+						onclick={() => (showMenuPopup = false)}
+					></button>
+					<div class="menu-popup" style={`background-image:url('${menuPopupBg}')`}>
+						<button class="menu-row" type="button" onclick={toggleSfx}>
+							<span class="menu-row__icon">
+								<span class="menu-row__glyph" style={`--icon:url('${sfxOff ? iconMenuSoundOff : iconMenuSound}')`}></span>
+							</span>
+							<span class="menu-row__label">SOUND</span>
+						</button>
+						<div class="menu-divider"></div>
+						<button class="menu-row" type="button" onclick={toggleMusic}>
+							<span class="menu-row__icon">
+								<span class="menu-row__glyph" style={`--icon:url('${musicOff ? iconMenuMusicOff : iconMenuMusic}')`}></span>
+							</span>
+							<span class="menu-row__label">MUSIC</span>
+						</button>
+						<div class="menu-divider"></div>
+						<button class="menu-row" type="button" onclick={openInfoFromMenu}>
+							<span class="menu-row__icon">
+								<span class="menu-row__glyph" style={`--icon:url('${iconMenuInfo}')`}></span>
+							</span>
+							<span class="menu-row__label">INFO</span>
+						</button>
+					</div>
+				{/if}
 				<button
 					class="nav-btn nav-btn--framed"
 					type="button"
@@ -874,9 +954,12 @@
 			filter 0.12s ease;
 	}
 
-	.circle-btn:not(:disabled):hover,
-	.buy-btn:hover {
-		filter: brightness(1.1);
+	.circle-btn:not(:disabled):hover {
+		filter: brightness(1.12) drop-shadow(0 0 3px #0d89c6);
+	}
+	/* BUY BONUS hover (Figma): indigo glow around the pill */
+	.buy-btn:not(:disabled):hover {
+		filter: brightness(1.08) drop-shadow(0 0 6.5px #4f5bff);
 	}
 
 	.circle-btn:not(:disabled):active,
@@ -945,7 +1028,7 @@
 	}
 
 	.nav-btn:not(:disabled):hover {
-		filter: brightness(1.12);
+		filter: brightness(1.12) drop-shadow(0 0 3px #0d89c6);
 	}
 
 	.nav-btn:not(:disabled):active {
@@ -979,6 +1062,80 @@
 		align-items: center;
 		gap: 8px;
 		flex: 0 0 auto;
+		position: relative; /* anchor for the menu popover */
+	}
+
+	/* ---- Menu popover (SOUND / MUSIC / INFO) — blue tech panel above the menu button ---- */
+	.menu-popup-backdrop {
+		position: fixed;
+		inset: 0;
+		background: transparent;
+		border: none;
+		padding: 0;
+		z-index: 59;
+		cursor: default;
+	}
+	.menu-popup {
+		position: absolute;
+		left: -24px; /* align with the bottom bar's left frame edge (.hud-bottom padding) */
+		bottom: calc(100% + 14px);
+		width: 200px;
+		height: 200px;
+		box-sizing: border-box;
+		padding: 22px 22px 24px;
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		z-index: 60;
+	}
+	.menu-row {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+	}
+	.menu-row__icon {
+		flex: 0 0 auto;
+		width: 39px;
+		height: 39px;
+		border-radius: 50%;
+		border: 1px solid #00fcff;
+		background: linear-gradient(to top, #0f2053, #000000);
+		display: grid;
+		place-items: center;
+		transition: opacity 0.12s ease, filter 0.12s ease;
+	}
+	.menu-row__glyph {
+		width: 20px;
+		height: 20px;
+		background: #ffffff;
+		mask: var(--icon) center / contain no-repeat;
+		-webkit-mask: var(--icon) center / contain no-repeat;
+		transition: background 0.12s ease;
+	}
+	.menu-row__label {
+		font-family: 'Inter', sans-serif;
+		font-weight: 600;
+		font-size: 15px;
+		letter-spacing: 0.04em;
+		color: #ffffff;
+	}
+	/* Hover (Figma 4553-9528): icon turns cyan, button ring gets a soft cyan glow. */
+	.menu-row:hover .menu-row__glyph {
+		background: #00fcff;
+	}
+	.menu-row:hover .menu-row__icon {
+		box-shadow: 0 0 6px 1px rgba(13, 137, 198, 0.9);
+	}
+	.menu-divider {
+		height: 1px;
+		background: rgba(0, 252, 255, 0.28);
+		margin: 0 4px;
 	}
 
 	.btn-icon {
@@ -1130,7 +1287,7 @@
 	}
 
 	.spin-btn:not(:disabled):hover {
-		filter: brightness(1.08);
+		filter: brightness(1.08) drop-shadow(0 0 5px #0d89c6);
 	}
 
 	.spin-btn:not(:disabled):active {

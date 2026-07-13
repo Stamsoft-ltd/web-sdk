@@ -25,10 +25,14 @@
 	const ambientTrackUrl = './assets/audio/audio-idea.wav';
 	let ambientAudio: HTMLAudioElement | null = null;
 	let ambientUnlocked = false;
+	// Which ambient flavour is current — remembered so muting (master OR music channel) can
+	// resume the right track when sound comes back.
+	let ambientMode: 'base' | 'bonus' = 'base';
 
 	const playAmbient = async (mode: 'base' | 'bonus') => {
+		ambientMode = mode;
 		if (!browser || !ambientAudio) return;
-		if (stateSound.volumeValueMaster === 0) {
+		if (stateSound.volumeValueMaster === 0 || stateSound.volumeValueMusic === 0) {
 			stopAmbient();
 			return;
 		}
@@ -95,8 +99,14 @@
 		soundFade: async ({ name, duration, from, to }) => await sound.fade({ name, duration, from, to }), // prettier-ignore
 	});
 
+	// Background music follows BOTH the master mute and the menu's MUSIC channel: silenced when
+	// either is off, and RESUMED (same flavour) when both come back on.
 	$effect(() => {
-		if (stateSound.volumeValueMaster === 0) {
+		const musicAudible =
+			stateSound.volumeValueMaster !== 0 && stateSound.volumeValueMusic !== 0;
+		if (musicAudible) {
+			if (ambientUnlocked) void playAmbient(ambientMode);
+		} else {
 			stopAmbient();
 			sound.stop({ name: 'bgm_main' });
 			sound.stop({ name: 'bgm_freespin' });

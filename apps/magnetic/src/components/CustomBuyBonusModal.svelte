@@ -269,7 +269,7 @@
 		box-shadow: 0 0 12px rgba(0, 140, 255, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5);
 		transition: filter 0.12s ease;
 	}
-	.close-btn:hover { filter: brightness(1.25); }
+	.close-btn:hover { filter: brightness(1.25) drop-shadow(0 0 2.5px #0d89c6); }
 
 	/* Four cards in a row — square, kept compact so they don't dominate the screen. */
 	.grid {
@@ -406,7 +406,10 @@
 		filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
 		transition: filter 0.12s ease;
 	}
-	.card-btn:hover:not(:disabled) { filter: brightness(1.12) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25)); }
+	.card-btn:hover:not(:disabled) {
+		filter: brightness(1.12) drop-shadow(0 0 6px #4a94ff);
+		border-color: #60a5fa;
+	}
 	.card-btn:disabled { opacity: 0.45; cursor: default; }
 	/* Buy — bright cyan */
 	.card-btn--buy {
@@ -449,7 +452,7 @@
 		box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12), inset 0 -2px 5px rgba(0, 0, 0, 0.55), 0 2px 5px rgba(0, 0, 0, 0.45);
 		transition: filter 0.12s ease;
 	}
-	.bet-step:hover:not(:disabled) { filter: brightness(1.25); }
+	.bet-step:hover:not(:disabled) { filter: brightness(1.25) drop-shadow(0 0 2.5px #0d89c6); }
 	.bet-step:disabled { opacity: 0.4; cursor: default; }
 	.bet-center {
 		display: flex;
@@ -643,7 +646,7 @@
 		box-shadow: 0 0 12px rgba(0, 140, 255, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5);
 		transition: filter 0.12s ease;
 	}
-	.confirm-close:hover { filter: brightness(1.25); }
+	.confirm-close:hover { filter: brightness(1.25) drop-shadow(0 0 2.5px #0d89c6); }
 
 	.confirm {
 		position: fixed; left: 50%; top: 50%;
@@ -694,7 +697,7 @@
 		filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
 		transition: filter 0.12s ease;
 	}
-	.confirm-btn:hover { filter: brightness(1.12) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25)); }
+	.confirm-btn:hover { filter: brightness(1.12) drop-shadow(0 0 6px #4a94ff); }
 	.confirm-btn--cancel {
 		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
 	}
