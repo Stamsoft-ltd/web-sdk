@@ -30,9 +30,6 @@
 		main.width * 0.5 + context.stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1)),
 	);
 	const logoCX = $derived((canvasLeftX + boardLeftX) * 0.5);
-	const canvasRightX = $derived(
-		main.width * 0.5 + context.stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1)),
-	);
 	// The art has a baked glow halo, so the visible mark sits slightly above the box centre.
 	const logoCY = $derived(canvasTopY + LOGO_H * 0.4);
 	// Landscape Press Play studio mark — centred above the right-hand nav bar.
