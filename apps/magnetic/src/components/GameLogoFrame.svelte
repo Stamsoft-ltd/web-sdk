@@ -7,6 +7,7 @@
 	const context = getContext();
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
 
 	// magnetic_logo.png is 1400×1098 INCLUDING a wide soft glow halo; the visible logo plate is
 	// ~half the box width, so the box is sized bigger than the visible mark and the baked-in glow
@@ -25,12 +26,18 @@
 	const canvasTopY = $derived(
 		main.height * 0.5 - context.stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1)),
 	);
+	const canvasRightX = $derived(
+		main.width * 0.5 + context.stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1)),
+	);
 	const logoCX = $derived((canvasLeftX + boardLeftX) * 0.5);
 	const canvasRightX = $derived(
 		main.width * 0.5 + context.stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1)),
 	);
 	// The art has a baked glow halo, so the visible mark sits slightly above the box centre.
 	const logoCY = $derived(canvasTopY + LOGO_H * 0.4);
+	// Landscape Press Play studio mark — centred above the right-hand nav bar.
+	const LS_PP_W = $derived(main.width * 0.11);
+	const LS_PP_H = $derived(LS_PP_W / (548 / 228));
 
 	// Portrait: the logo is centred near the top of the screen and larger.
 	const PT_W = $derived(main.width * 0.68);
@@ -69,6 +76,17 @@
 			width={LOGO_W}
 			height={LOGO_H}
 		/>
+		{#if isLandscape}
+			<!-- Press Play studio mark, top-right corner -->
+			<Sprite
+				key="pressPlayLogo"
+				anchor={{ x: 0.5, y: 0 }}
+				x={canvasRightX - main.width * 0.072}
+				y={canvasTopY + main.height * 0.025}
+				width={LS_PP_W}
+				height={LS_PP_H}
+			/>
+		{/if}
 	{/if}
 </MainContainer>
 

@@ -34,6 +34,7 @@
 	import RespinPanel from './RespinPanel.svelte';
 	import PressPlayMark from './PressPlayMark.svelte';
 	import PortraitTopBar from './PortraitTopBar.svelte';
+	import LandscapeCapsule from './LandscapeCapsule.svelte';
 
 	const context = getContext();
 	// True only for the two SPECIAL (bought) bonuses — 3rd bonus (BONUS = freegame) and 4th bonus
@@ -346,6 +347,7 @@
 				<RespinPanel />
 				<PressPlayMark />
 				<PortraitTopBar />
+				<LandscapeCapsule />
 				<FreeSpinOutro />
 				<Transition />
 			{/if}

@@ -209,6 +209,45 @@ const getBoardOffset = () => {
 // top bar; the HTML HUD occupies the space below it.
 const PORTRAIT_FRAME_FILL = 0.94;
 const PORTRAIT_TOP_OFFSET = 372;
+const LANDSCAPE_FRAME_FILL = 0.72;
+// On small landscape screens the HTML HUD sits at its min pixel sizes (proportionally larger), so the
+// board fills LESS of the frame there to keep the gutters (balance/bet left, capsule/nav right) clear.
+// Lerp the fill from FILL_MIN at short-side ≤ 250px up to FILL at short-side ≥ 430px.
+const LANDSCAPE_FRAME_FILL_MIN = 0.64;
+const LANDSCAPE_FILL_SHORT_MIN = 240;
+const LANDSCAPE_FILL_SHORT_MAX = 410;
+// 0 at the smallest landscape screens → 1 at normal-size ones; drives both the board fill and the
+// capsule column bias so small screens get a smaller board and a capsule pulled toward it (nav room).
+const landscapeSizeT = () => {
+	const c = stateLayoutDerived.canvasSizes();
+	const shortSidePx = Math.min(c.width, c.height);
+	return Math.max(
+		0,
+		Math.min(1, (shortSidePx - LANDSCAPE_FILL_SHORT_MIN) / (LANDSCAPE_FILL_SHORT_MAX - LANDSCAPE_FILL_SHORT_MIN)),
+	);
+};
+const landscapeFrameFill = () =>
+	LANDSCAPE_FRAME_FILL_MIN + landscapeSizeT() * (LANDSCAPE_FRAME_FILL - LANDSCAPE_FRAME_FILL_MIN);
+// Landscape vertical capsule column (shared by the pixi capsule and the HTML buy-bonus button so
+// they always align across device aspect ratios). Bias = fraction from the board's right edge toward
+// the visible right edge — snug to the nav on normal screens, pulled toward the board on small ones so
+// the (now bigger) capsule keeps clearance from the nav.
+const LANDSCAPE_CAPSULE_BIAS_MIN = 0.24;
+const LANDSCAPE_CAPSULE_BIAS_MAX = 0.33;
+const landscapeCapsuleBias = () =>
+	LANDSCAPE_CAPSULE_BIAS_MIN + landscapeSizeT() * (LANDSCAPE_CAPSULE_BIAS_MAX - LANDSCAPE_CAPSULE_BIAS_MIN);
+// The landscape capsule is the portrait glass tube (magnetic_tube.png, 1002×668) rotated to vertical.
+// The art has ~29% transparent margins top/bottom (→ left/right after the 90° rotation): the opaque
+// tube is only ~42.5% of the sprite's width and ~94% of its height, so the *visible* tube is a slim
+// vertical cylinder. RATIO scales the whole sprite (bigger = bigger visible tube); STRETCH keeps the
+// native aspect (1.0 = undistorted — higher just makes the visible tube thinner, which reads as small).
+const LANDSCAPE_CAPSULE_TUBE_RATIO = 1.5;
+const LANDSCAPE_CAPSULE_TUBE_ASPECT = 668 / 1002;
+const LANDSCAPE_CAPSULE_TUBE_STRETCH = 1.0;
+// Opaque tube extents within the sprite (measured), used to place things against the VISIBLE tube
+// rather than the padded sprite box.
+const LANDSCAPE_CAPSULE_VISIBLE_W = 0.425; // opaque width as a fraction of the sprite width (tubeW)
+const LANDSCAPE_CAPSULE_VISIBLE_H = 0.94; // opaque height as a fraction of the sprite height (tubeH)
 
 const boardLayout = () => {
 	const mainLayout = stateLayoutDerived.mainLayout();
@@ -219,6 +258,21 @@ const boardLayout = () => {
 		return {
 			x: mainLayout.width * 0.5,
 			y: PORTRAIT_TOP_OFFSET + (BOARD_SIZES.height * boardScale) / 2,
+			boardScale,
+			anchor: { x: 0.5, y: 0.5 },
+			pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
+			...BOARD_SIZES,
+		};
+	}
+
+	if (layoutType === 'landscape') {
+		// Mobile landscape: board fills most of the height and sits slightly LEFT of centre, leaving a
+		// wider right gutter for the vertical capsule + buy bonus + nav bar (left gutter holds the
+		// logo / ALL WINS / FREE SPINS / balance / bet).
+		const boardScale = (mainLayout.height * landscapeFrameFill()) / BOARD_SIZES.height;
+		return {
+			x: mainLayout.width * 0.475,
+			y: mainLayout.height * 0.5,
 			boardScale,
 			anchor: { x: 0.5, y: 0.5 },
 			pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
@@ -239,6 +293,32 @@ const boardLayout = () => {
 		pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
 		...BOARD_SIZES,
 	};
+};
+
+// Landscape vertical-capsule column geometry, in virtual (main) coordinates. Single source of truth
+// shared by the pixi LandscapeCapsule and the HTML buy-bonus button (which converts it to device px)
+// so the capsule and the buy badge beneath it stay aligned at every device aspect ratio.
+const landscapeCapsuleLayout = () => {
+	const board = boardLayout();
+	const main = stateLayoutDerived.mainLayout();
+	const scale = board.boardScale;
+	const gridHalfW = (board.width * 0.5) * scale;
+	const gridHalfH = (board.height * 0.5) * scale;
+	// Right edge of the visible viewport, expressed in virtual units.
+	const canvasRightX = main.width * 0.5 + stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1));
+	const boardRightX = board.x + gridHalfW;
+	const colX = boardRightX + (canvasRightX - boardRightX) * landscapeCapsuleBias();
+	const baseH = gridHalfH * LANDSCAPE_CAPSULE_TUBE_RATIO;
+	const tubeW = baseH * LANDSCAPE_CAPSULE_TUBE_ASPECT;
+	const tubeH = baseH * LANDSCAPE_CAPSULE_TUBE_STRETCH;
+	const tubeY = board.y;
+	// Visible (opaque) tube extents — the sprite box is padded, so size the symbol against these and
+	// place the buy-bonus just below the visible tube bottom (not the padded sprite bottom).
+	const visibleW = tubeW * LANDSCAPE_CAPSULE_VISIBLE_W;
+	const visibleH = tubeH * LANDSCAPE_CAPSULE_VISIBLE_H;
+	const symSize = visibleW * 0.66;
+	const visibleBottom = tubeY + visibleH * 0.5;
+	return { colX, tubeY, tubeW, tubeH, visibleW, visibleH, visibleBottom, symSize, gridHalfW, gridHalfH };
 };
 
 // ── sound helpers ─────────────────────────────────────────────────────────────
@@ -996,6 +1076,7 @@ export const { getWinLevelDataByWinLevelAlias } = createGetWinLevelDataByWinLeve
 
 export const stateGameDerived = {
 	boardLayout,
+	landscapeCapsuleLayout,
 	boardRaw,
 	scatterLandIndex,
 	resetBoardVisuals,

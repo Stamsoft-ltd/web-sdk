@@ -61,6 +61,9 @@
 	const valueBoxMobile = ap('/assets/components/navbar/value_box_mobile.png');
 	const balanceContainer = ap('/assets/components/navbar/balance_container.png');
 	const betContainer = ap('/assets/components/navbar/bet_container.png');
+	// Landscape: tall vertical nav-bar panel behind the right-hand control column + the bet box.
+	const navBarLand = ap('/assets/components/navbar/nav_bar_land.png');
+	const betBoxLand = ap('/assets/components/navbar/bet_box_land.png');
 
 	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
 	const hudFrame = ap('/assets/components/frames/hud_frame.png');
@@ -72,6 +75,21 @@
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isPortrait = $derived(layoutType === 'portrait');
 	const isLandscapeMobile = $derived(layoutType === 'landscape');
+
+	// Landscape: the buy-bonus button is an HTML element but must sit centred directly beneath the
+	// pixi capsule. The capsule lives in virtual (main) coordinates; convert its column centre + bottom
+	// to device pixels using the same virtual→screen transform pixi uses, so they track at every ratio.
+	const lsMain = $derived(context.stateLayoutDerived.mainLayout());
+	const lsCapsule = $derived(context.stateGameDerived.landscapeCapsuleLayout());
+	const lsBuyX = $derived(lsMain.x + (lsCapsule.colX - lsMain.width / 2) * lsMain.scale);
+	// Buy TOP hangs a gap below the VISIBLE tube bottom (the sprite box is padded). Anchoring by the top
+	// (not the centre) keeps the gap independent of the button's size, so the big min-sized button on
+	// small screens can't creep up against the capsule.
+	const lsBuyY = $derived(
+		lsMain.y +
+			(lsCapsule.visibleBottom - lsMain.height / 2) * lsMain.scale +
+			lsCapsule.visibleW * 0.45 * lsMain.scale,
+	);
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
 	const hasAuto = $derived(stateBetDerived.hasAutoBetCounter());
 	const isSpinStop = $derived(!context.stateXstateDerived.isIdle() || hasAuto);
@@ -352,7 +370,7 @@
 <div
 	class="hud-shell"
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-stop-bg:url('${btnSpinStop}');--pt-navbar:url('${navBarMobile}');--pt-buy:url('${buyBonusMobile}');--pt-value:url('${valueBoxMobile}');--pt-balance-bg:url('${balanceContainer}');--pt-bet-bg:url('${betContainer}')`}
+	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-stop-bg:url('${btnSpinStop}');--pt-navbar:url('${navBarMobile}');--pt-buy:url('${buyBonusMobile}');--pt-value:url('${valueBoxMobile}');--pt-balance-bg:url('${balanceContainer}');--pt-bet-bg:url('${betContainer}');--ls-navbar:url('${navBarLand}');--ls-betbox:url('${betBoxLand}');--ls-buy-x:${lsBuyX}px;--ls-buy-y:${lsBuyY}px`}
 >
 	<div class="hud-bottom">
 		<div class="hud-left">
@@ -630,6 +648,110 @@
 						<span class="buy-btn__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
 					</button>
 				</div>
+			</div>
+		</div>
+	{/if}
+
+	{#if isLandscapeMobile}
+		<!-- ── Landscape HUD: vertical nav bar (right), balance/bet (bottom-left), buy bonus ── -->
+		<div class="ls-hud">
+			<div class="ls-stats">
+				<div class="value-pill value-pill--balance ls-balance">
+					<div class="label label--balance">
+						<span class="label-text">{i18nDerived.balance()}</span>
+					</div>
+					<span class="value">{formattedBalance}</span>
+				</div>
+				<div class="ls-bet">
+					<button
+						class="nav-btn nav-btn--framed ls-step"
+						type="button"
+						onpointerdown={(event) => startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
+						onpointerup={clearHoldRepeat}
+						onpointercancel={clearHoldRepeat}
+						onpointerleave={clearHoldRepeat}
+						onclick={(event) => maybeRunClickAction(event, onDecrease)}
+						disabled={disableDecrease}
+						aria-label="Decrease bet"
+					>
+						<img class="nav-icon" src={disableDecrease ? iconMinusDisabled : iconMinus} alt="minus" />
+					</button>
+					<div
+						class="ls-bet-val"
+						role="button"
+						tabindex="0"
+						onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
+						onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
+					>
+						<span class="value" class:value--feature={isAnyModeActive}>{formattedBet}</span>
+					</div>
+					<button
+						class="nav-btn nav-btn--framed ls-step"
+						type="button"
+						onpointerdown={(event) => startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
+						onpointerup={clearHoldRepeat}
+						onpointercancel={clearHoldRepeat}
+						onpointerleave={clearHoldRepeat}
+						onclick={(event) => maybeRunClickAction(event, onIncrease)}
+						disabled={disableIncrease}
+						aria-label="Increase bet"
+					>
+						<img class="nav-icon" src={disableIncrease ? iconPlusDisabled : iconPlus} alt="plus" />
+					</button>
+				</div>
+			</div>
+
+			<div class="ls-buy">
+				<button
+					class="buy-btn"
+					type="button"
+					disabled={isInBonus}
+					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
+					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
+				>
+					<span class="buy-btn__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
+				</button>
+			</div>
+
+			<div class="ls-nav">
+				<button class="nav-btn nav-btn--framed" type="button" onclick={openRules} aria-label="Game rules">
+					<img class="nav-icon" src={iconMenu} alt="menu" />
+				</button>
+				<button class="nav-btn nav-btn--framed" type="button" onclick={toggleSound} aria-label="Sound">
+					<img class="nav-icon" src={isMuted ? iconMute : iconSound} alt="sound" />
+				</button>
+				<button
+					class="spin-btn ls-spin"
+					class:spin-btn--busy={isBusy}
+					type="button"
+					onclick={onSpinButton}
+					aria-label="Spin"
+					disabled={isBusy || (canInteract && !hasAuto && !canAffordBet)}
+				>
+					{#if hasAuto}
+						<span class="spin-btn__count">{autoSpinsRemainingText}</span>
+					{/if}
+				</button>
+				<button
+					class="nav-btn nav-btn--framed nav-btn--turbo"
+					class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
+					class:turbo-super={stateBet.isSuperTurbo}
+					type="button"
+					onclick={onTurbo}
+					aria-label={i18nDerived.turboLabel()}
+				>
+					<img class="nav-icon" src={turboIcon} alt="turbo" />
+				</button>
+				<button
+					class="nav-btn nav-btn--framed"
+					class:active={hasAuto}
+					type="button"
+					onclick={onAuto}
+					disabled={disableAuto}
+					aria-label={i18nDerived.autoplayLabel()}
+				>
+					<img class="nav-icon" src={disableAuto ? iconAutoDisabled : iconAuto} alt="auto" />
+				</button>
 			</div>
 		</div>
 	{/if}
@@ -1709,5 +1831,169 @@
 		text-align: center;
 		font-size: clamp(0.52rem, 2.6vw, 0.66rem);
 		max-width: 74%;
+	}
+
+	/* ── Landscape (mobile horizontal) HUD: vertical nav bar (right) + balance/bet (bottom-left) ── */
+	.hud-shell[data-layout='landscape'] .hud-bottom {
+		display: none;
+	}
+	.hud-shell[data-layout='landscape']::after {
+		display: none;
+	}
+	.ls-hud {
+		position: absolute;
+		inset: 0;
+		z-index: 6;
+		pointer-events: none;
+	}
+	.ls-hud > * {
+		pointer-events: auto;
+	}
+	/* Right vertical nav column on the tall nav-bar panel. */
+	.ls-nav {
+		position: absolute;
+		right: clamp(12px, 2.6vw, 32px);
+		top: 54%;
+		transform: translateY(-50%);
+		/* Slim panel, tall enough to space the buttons out. Width is decoupled from height (the art is a
+		   plain rounded panel, so the mild horizontal stretch is invisible) so it can be narrow AND tall.
+		   The big spin disc overflows its sides as the focal control (mirrors the desktop spin button,
+		   which protrudes past the bar via negative margins). */
+		width: clamp(40px, 7vw, 68px);
+		height: clamp(158px, 78vh, 348px);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0;
+		padding: clamp(5px, 3.2vh, 22px) 0;
+		background: var(--ls-navbar) center / 100% 100% no-repeat;
+		box-sizing: border-box;
+		overflow: visible;
+	}
+	.ls-nav .nav-btn {
+		width: clamp(17px, 7.4vh, 42px);
+		height: clamp(17px, 7.4vh, 42px);
+	}
+	/* Focal spin — big disc that overflows the slim nav panel on both sides (negative side margins so
+	   it protrudes past the panel edges without widening the flex column), centred. */
+	.ls-nav .ls-spin {
+		width: clamp(54px, 24vh, 126px);
+		height: clamp(54px, 24vh, 126px);
+		margin: clamp(1px, 0.4vh, 4px) calc(-1 * clamp(20px, 6vh, 36px));
+		flex: 0 0 auto;
+	}
+	.ls-nav .ls-spin .spin-btn__count {
+		font-size: 0.9rem;
+	}
+	/* Balance + bet, bottom-left. */
+	.ls-stats {
+		position: absolute;
+		left: clamp(8px, 2vw, 26px);
+		bottom: clamp(8px, 4vh, 30px);
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: clamp(6px, 2vh, 12px);
+	}
+	/* Balance: label + value on one line in a dark rounded box with generous padding. Scoped under the
+	   layout attribute so it outranks the generic `[data-layout='landscape'] .value-pill` rule (which
+	   otherwise forces padding:1px 5px + a brown fill onto this pill). */
+	.hud-shell[data-layout='landscape'] .ls-balance {
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-start;
+		gap: clamp(2px, 1vw, 14px);
+		width: fit-content;
+		min-width: 0;
+		padding: clamp(1px, 1.7vh, 11px) clamp(4px, 2.1vw, 26px);
+		border-left: none;
+		background: #000616c7;
+		border: 1.5px solid rgba(96, 165, 250, 0.5);
+		border-radius: clamp(12px, 2.4vh, 20px);
+		text-align: left;
+	}
+	.ls-balance .label--balance {
+		justify-content: flex-start;
+	}
+	.ls-balance .value {
+		font-size: clamp(0.3rem, 3.4vh, 0.98rem);
+		white-space: nowrap;
+		color: #fff;
+	}
+	.ls-balance .label-text {
+		font-size: clamp(0.26rem, 2.4vh, 0.66rem);
+		letter-spacing: 0.04em;
+		color: #cfe0f5;
+	}
+	/* Bet: the bet-box art with round − / + steppers inside. */
+	.ls-bet {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(1px, 0.4vw, 4px);
+		background: var(--ls-betbox) center / 100% 100% no-repeat;
+		padding: clamp(2px, 2vh, 13px) clamp(4px, 2.2vw, 26px);
+	}
+	.ls-bet .ls-step {
+		width: clamp(14px, 6vh, 38px);
+		height: clamp(14px, 6vh, 38px);
+	}
+	.ls-bet-val {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-width: clamp(24px, 6vw, 62px);
+		cursor: pointer;
+	}
+	.ls-bet-val .value {
+		font-size: clamp(0.3rem, 3.4vh, 0.96rem);
+		font-weight: 700;
+		color: #fff;
+		white-space: nowrap;
+	}
+	/* Buy bonus round badge — locked to the pixi capsule column (device px, computed from the shared
+	   capsule geometry) so it stays centred beneath the capsule at every device aspect ratio. */
+	.ls-buy {
+		position: absolute;
+		left: var(--ls-buy-x, 79.5%);
+		top: var(--ls-buy-y, auto);
+		right: auto;
+		bottom: auto;
+		transform: translate(-50%, 0);
+	}
+	.ls-buy .buy-btn {
+		width: clamp(44px, 15.5vh, 94px);
+		height: clamp(44px, 15.5vh, 94px);
+		aspect-ratio: 1;
+		background: var(--pt-buy) center / contain no-repeat;
+		padding: 0;
+	}
+	.ls-buy .buy-btn__label {
+		white-space: normal;
+		line-height: 1.02;
+		text-align: center;
+		font-size: clamp(0.19rem, 2vh, 0.6rem);
+		max-width: 82%;
+	}
+
+	/* Very small landscape screens (e.g. 400×225): the balance / bet / buy text is set by its vh term
+	   (above the pixel mins), so shrink those vh sizes here to make the text-heavy HUD a lot smaller
+	   without touching normal-size landscape screens. */
+	@media (max-height: 300px) {
+		.hud-shell[data-layout='landscape'] .ls-balance .value {
+			font-size: clamp(0.24rem, 2vh, 0.42rem);
+		}
+		.hud-shell[data-layout='landscape'] .ls-balance .label-text {
+			font-size: clamp(0.2rem, 1.5vh, 0.32rem);
+		}
+		.hud-shell[data-layout='landscape'] .ls-bet-val .value {
+			font-size: clamp(0.24rem, 2vh, 0.42rem);
+		}
+		/* Bigger buy-bonus text, forced onto two rows (BUY / BONUS) by the narrow max-width. */
+		.hud-shell[data-layout='landscape'] .ls-buy .buy-btn__label {
+			font-size: clamp(0.26rem, 2.8vh, 0.46rem);
+			max-width: 58%;
+		}
 	}
 </style>

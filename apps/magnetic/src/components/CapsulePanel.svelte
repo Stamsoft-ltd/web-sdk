@@ -19,11 +19,15 @@
 	const board = $derived(context.stateGameDerived.boardLayout());
 	const scale = $derived(board.boardScale);
 
-	// The capsule tube is ALWAYS shown — clusters (and their magnet series) can happen in the base
-	// game too. The TOTAL WIN / FREE SPINS boxes only appear during the bought bonuses.
+	// This tall vertical capsule is the DESKTOP/tablet column only. Portrait and mobile-landscape use
+	// their own compact HUDs, so the whole panel is hidden in both of those.
+	const layoutType = $derived(context.stateLayoutDerived.layoutType());
+	const isPortrait = $derived(layoutType === 'portrait' || layoutType === 'landscape');
+	// The capsule tube is ALWAYS shown (outside portrait) — clusters (and their magnet series) can
+	// happen in the base game too. The TOTAL WIN / FREE SPINS boxes only appear during bought bonuses.
 	const isBonus = $derived(
 		(context.stateGame.bonusMode === 'freegame' || context.stateGame.bonusMode === 'superspin') &&
-			context.stateLayoutDerived.layoutType() !== 'portrait',
+			!isPortrait,
 	);
 	// Running total win across the round. Some bonuses only send the cumulative `setTotalWin` at the
 	// very end (0 each spin), so we also accumulate every spin's win (winUpdate) and show whichever is
@@ -174,7 +178,7 @@
 </script>
 
 <MainContainer zIndex={25}>
-	<FadeContainer show={true}>
+	<FadeContainer show={!isPortrait}>
 		<!-- Capsule: one tall piece drawn first, BEHIND the panels so its metal caps connect under
 		     TOTAL WIN (top) and FREE SPINS (bottom). Tube (back) -> symbol -> lightning ON TOP so the
 		     electricity arcs over the element. -->

@@ -5,8 +5,11 @@
 
 	const context = getContext();
 	const board = $derived(context.stateGameDerived.boardLayout());
-	// Portrait uses the mobile board panel; both frames are thin borders hugging the 7×7 grid.
-	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	// Portrait / landscape use their own mobile board panels; all frames are thin borders hugging the grid.
+	const layoutType = $derived(context.stateLayoutDerived.layoutType());
+	const frameKey = $derived(
+		layoutType === 'portrait' ? 'boardPadMobile' : layoutType === 'landscape' ? 'boardPadLand' : 'boardPad',
+	);
 
 	// board_pad.png (2492×2056) is a thin blue-tech HUD frame: glowing border + corner brackets
 	// around a dark interior. The interior (where the grid sits) is ≈93% of the image (border ~3.5%
@@ -19,7 +22,7 @@
 </script>
 
 <Sprite
-	key={isPortrait ? 'boardPadMobile' : 'boardPad'}
+	key={frameKey}
 	anchor={0.5}
 	x={board.x}
 	y={board.y}
