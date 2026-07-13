@@ -60,13 +60,21 @@
 			return;
 		}
 
+		// Win-level tracks are loop-flagged; when the game returns to ambient music they must be
+		// stopped explicitly or they keep playing under the ambience forever.
+		const stopWinLevelMusic = () =>
+			(['bgm_winlevel_big', 'bgm_winlevel_epic', 'bgm_winlevel_mega', 'bgm_winlevel_superwin', 'bgm_winlevel_max'] as const)
+				.forEach((n) => sound.stop({ name: n }));
+
 		if (name === 'bgm_main') {
 			sound.stop({ name: 'bgm_freespin' });
+			stopWinLevelMusic();
 			return playAmbient('base');
 		}
 
 		if (name === 'bgm_freespin') {
 			sound.stop({ name: 'bgm_main' });
+			stopWinLevelMusic();
 			return playAmbient('bonus');
 		}
 

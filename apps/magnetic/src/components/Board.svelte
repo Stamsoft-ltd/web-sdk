@@ -384,7 +384,7 @@
 						key={lockSheet}
 						play
 						loop
-						animationSpeed={0.35}
+						animationSpeed={0.23}
 						{x}
 						{y}
 						anchor={0.5}
@@ -495,7 +495,7 @@
 						key={winSheet}
 						play
 						loop
-						animationSpeed={0.35}
+						animationSpeed={0.23}
 						{x}
 						{y}
 						anchor={0.5}
@@ -559,7 +559,7 @@
 						key={lockSheet}
 						play
 						loop
-						animationSpeed={0.35}
+						animationSpeed={0.23}
 						{x}
 						{y}
 						anchor={0.5}

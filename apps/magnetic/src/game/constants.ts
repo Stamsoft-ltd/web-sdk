@@ -95,35 +95,37 @@ export const SPIN_OPTIONS_TURBO = {
 	reelSpinDelay: 60,
 };
 
+// Normal-speed timings run ~69% slower than the original tuning (x1.3 applied twice) — the
+// game felt too rushed at normal speed. Turbo (BOARD_MOTION_FAST) is unchanged.
 export const BOARD_MOTION_DEFAULT = {
 	spin: {
 		dropRows: 12,
 		fadeOutMs: 0,
 		clearGapMs: 0,
-		durationMs: 260,
+		durationMs: 439,
 		scaleFrom: 0.98,
-		reelDelayMs: 72,
+		reelDelayMs: 122,
 		rowDelayMs: 0,
-		bounceMs: 96,
+		bounceMs: 163,
 		overshootRows: 0.26,
 		lockPulseMs: 0,
 	},
 	respin: {
 		dropRows: 4.8,
-		fadeOutMs: 120,
-		clearGapMs: 70,
-		durationMs: 380,
+		fadeOutMs: 203,
+		clearGapMs: 118,
+		durationMs: 642,
 		scaleFrom: 0.9,
-		reelDelayMs: 18,
-		rowDelayMs: 18,
-		bounceMs: 160,
+		reelDelayMs: 30,
+		rowDelayMs: 30,
+		bounceMs: 270,
 		overshootRows: 0.18,
-		lockPulseMs: 180,
+		lockPulseMs: 304,
 	},
 	pulse: {
-		magnetMs: 300,
-		freshMs: 340,
-		winMs: 560,
+		magnetMs: 507,
+		freshMs: 575,
+		winMs: 946,
 	},
 } as const;
 

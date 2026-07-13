@@ -411,7 +411,7 @@ const pulseMagnetActivation = async (positions: Position[]) => {
 	markMagnetPositions(positions);
 	const isFast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
 	const dimMs = isFast ? 100 : 280;
-	const pulseMs = isFast ? 120 : 360;
+	const pulseMs = isFast ? 120 : 650;
 
 	// Super regular spins must not flash/dim the whole non-locked board after landing.
 	// The carry cluster is persistent; just pop the magnet cells.
@@ -490,8 +490,8 @@ const animateClusterFormation = async ({
 	}
 
 	const isFast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
-	const flyMs = isFast ? 220 : 600;
-	const landMs = isFast ? 100 : 220;
+	const flyMs = isFast ? 220 : 1092;
+	const landMs = isFast ? 100 : 403;
 
 	const lockedPositions = isInitialPull
 		? series.flatMap((entry) => entry.lockedPositions)
@@ -979,8 +979,8 @@ const animateWinningPositions = async (positions: Position[]) => {
 			cell.displayScale.set(1.12, { duration: 0 });
 		}
 	}
-	await waitForTimeout(stateBet.isTurbo || stateBet.isSuperTurbo ? 120 : 480);
-	const scaleMs = stateBet.isTurbo || stateBet.isSuperTurbo ? 60 : 200;
+	await waitForTimeout(stateBet.isTurbo || stateBet.isSuperTurbo ? 120 : 871);
+	const scaleMs = stateBet.isTurbo || stateBet.isSuperTurbo ? 60 : 364;
 	await Promise.all(
 		stateGame.board.flatMap((reel) =>
 			reel.flatMap((cell) => {

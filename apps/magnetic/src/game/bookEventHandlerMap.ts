@@ -24,7 +24,9 @@ const winLevelSoundsPlay = ({ winLevelData }: { winLevelData: WinLevelData }) =>
 
 const winLevelSoundsStop = () => {
 	eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_bigwin_coinloop' });
-	if (stateBet.activeBetModeKey === 'SUPER' || stateGame.gameType !== 'basegame') {
+	// gameType is the truth here — activeBetModeKey can still be SUPER right after a bought
+	// bonus ended, which used to restart the bonus music instead of the base track.
+	if (stateGame.gameType !== 'basegame') {
 		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
 	} else {
 		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_main' });
