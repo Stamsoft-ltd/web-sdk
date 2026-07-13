@@ -98,6 +98,9 @@
 		freeSpinOutroHide: () => (outroShowing = false),
 	});
 	const isInBonus = $derived(context.stateGame.gameType !== 'basegame' || outroShowing);
+	// Also no buying mid-round: while reels spin, clusters stack/respin or a win presents
+	// (anything non-idle), the button stays disabled.
+	const disableBuy = $derived(isInBonus || !context.stateXstateDerived.isIdle());
 	// Bolder icon = faster: normal = outline bolt (turbo3), turbo = solid bolt (turbo), super = double (turbo1)
 	const turboIcon = $derived(
 		stateBet.isSuperTurbo ? iconTurbo1 : stateBet.isTurbo ? iconTurbo : iconTurbo3,
@@ -406,7 +409,7 @@
 				<button
 					class="buy-btn"
 					type="button"
-					disabled={isInBonus}
+					disabled={disableBuy}
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
@@ -620,7 +623,7 @@
 					<button
 						class="buy-btn"
 						type="button"
-						disabled={isInBonus}
+						disabled={disableBuy}
 						onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 						aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 					>

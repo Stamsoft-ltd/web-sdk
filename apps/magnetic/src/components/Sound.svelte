@@ -22,7 +22,7 @@
 	import { getContext } from '../game/context';
 
 	const context = getContext();
-	const ambientTrackUrl = './assets/audio/audio-idea.wav';
+	const ambientTrackUrl = './assets/audio/background_music.mp3?v=20260713b';
 	let ambientAudio: HTMLAudioElement | null = null;
 	let ambientUnlocked = false;
 	// Which ambient flavour is current — remembered so muting (master OR music channel) can

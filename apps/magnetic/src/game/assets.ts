@@ -439,7 +439,7 @@ export default {
 	},
 	sound: {
 		type: 'audio',
-		src: './assets/audio/sounds.json?v=20260611',
+		src: './assets/audio/sounds.json?v=20260713',
 		preload: true,
 	},
 } as const;
