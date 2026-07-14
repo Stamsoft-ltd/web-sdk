@@ -8,6 +8,7 @@
 	import { magneticStakeDerived } from '../state/magneticStake.svelte';
 	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
 	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
+	import CustomInfoModal from './CustomInfoModal.svelte';
 
 	const context = getContext();
 
@@ -239,7 +240,7 @@
 
 	const openRules = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
-		stateModal.modal = { name: 'gameRules' };
+		showInfoModal = true;
 	};
 
 	const openPaytable = () => {
@@ -249,6 +250,7 @@
 
 	let showBuyModal = $state(false);
 	let showAutoModal = $state(false);
+	let showInfoModal = $state(false);
 
 	const openBuyBonus = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
@@ -769,6 +771,10 @@
 
 {#if showAutoModal}
 	<CustomAutoSpinModal onclose={() => (showAutoModal = false)} />
+{/if}
+
+{#if showInfoModal}
+	<CustomInfoModal onclose={() => (showInfoModal = false)} />
 {/if}
 
 <style>
