@@ -160,6 +160,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			await waitForTimeout(stateBet.isTurbo ? 160 : isBonus ? 480 : 300);
 		}
 
+		// A new reveal always ends any lingering win presentation on the board (bonus spins
+		// present wins via winInfo with no setWin, so nothing else clears them).
+		stateGameDerived.clearWinCellStates();
+
 		const hadPendingStop = stateGame.pendingStop && stateGame.awaitingFirstReveal;
 		stateGame.awaitingFirstReveal = false;
 		stateGame.pendingStop = false;
@@ -279,6 +283,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_superfreespin' });
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
 			await eventEmitter.broadcastAsync({ type: 'transition' });
+			stateGameDerived.clearWinCellStates();
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'jng_intro_fs' });
 			eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
@@ -336,6 +341,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		});
 		winLevelSoundsStop();
 		eventEmitter.broadcast({ type: 'winHide' });
+		// Win presentation over — stop the looping win flipbooks on the board.
+		stateGameDerived.clearWinCellStates();
 	},
 	freeSpinEnd: async (bookEvent: BookEventOfType<'freeSpinEnd'>) => {
 		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
@@ -375,6 +382,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			bonusMode: stateGame.bonusMode,
 			magnetTarget: stateGame.magnetTargetSymbol,
 		});
+		// Round is fully over — unlock the stacked cluster and drop all win/lock decorations so
+		// the board returns to its normal resting state instead of staying stacked until the
+		// next spin.
+		stateGameDerived.clearWinCellStates();
+		stateGameDerived.clearSeriesState();
 	},
 	createBonusSnapshot: async (bookEvent: BookEventOfType<'createBonusSnapshot'>) => {
 		const { bookEvents } = bookEvent;

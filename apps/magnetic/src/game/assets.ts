@@ -234,14 +234,14 @@ export default {
 	// 20-frame rotation flipbook for the green bolt (real-alpha designer frames), same treatment.
 	boltLockSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/bolt_lock_sheet.json?v=20260710', preload: true },
 	// 20-frame rotation flipbook for the purple screw (real-alpha designer frames), same treatment.
-	purpleScrewLockSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/purple_screw_lock_sheet.json?v=20260713', preload: true },
+	purpleScrewLockSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/purple_screw_lock_sheet.json?v=20260714b', preload: true },
 	// 10-frame WIN-state flipbook for the green bolt (bolt + electric arcs) — played when the
 	// bolt is part of a winning cluster presentation.
-	boltWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/bolt_win_sheet.json?v=20260713', preload: true },
+	boltWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/bolt_win_sheet.json?v=20260714', preload: true },
 	// 9-frame WIN-state flipbook for the gold washer (washer + electric aura), same treatment.
 	washerWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/washer_win_sheet.json?v=20260713b', preload: true },
 	// 10-frame WIN-state flipbook for the purple screw, same treatment.
-	purpleScrewWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/purple_screw_win_sheet.json?v=20260713', preload: true },
+	purpleScrewWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/purple_screw_win_sheet.json?v=20260714', preload: true },
 	// 10-frame WIN-state flipbook for the blue nut, same treatment.
 	blueNutWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/blue_nut_win_sheet.json?v=20260713b', preload: true },
 	// 10-frame stacked-state flipbook for the plasma drill premium (drill-bit spinning).
@@ -252,8 +252,14 @@ export default {
 	generatorLockSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/premium/generator_lock_sheet.json?v=20260713', preload: true },
 	// 10-frame WIN-state flipbook for the electromagnetic generator premium.
 	generatorWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/premium/generator_win_sheet.json?v=20260713', preload: true },
+	// 10-frame WIN-state flipbook for the plasma drill premium.
+	drillWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/premium/drill_win_sheet.json?v=20260714', preload: true },
+	// 10-frame WIN-state flipbook for the horseshoe magnet (H1 premium AND the MAGNET special).
+	magnetWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/premium/magnet_win_sheet.json?v=20260714', preload: true },
+	// 10-frame WIN-state flipbook for the M core cube premium.
+	cubeWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/premium/cube_win_sheet.json?v=20260714', preload: true },
 	// 10-frame rotation flipbook for the blue nut (real-alpha designer frames), same treatment.
-	blueNutLockSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/blue_nut_lock_sheet.json?v=20260713c', preload: true },
+	blueNutLockSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/blue_nut_lock_sheet.json?v=20260714b', preload: true },
 	aTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.png?v=20260709', preload: true },
 	aWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_win.png?v=20260709', preload: true },
 	aTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_mobile.png?v=20260709', preload: true },

@@ -4,20 +4,20 @@
    "frame": {
     "x": 0,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "sourceSize": {
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "pivot": {
     "x": 0.5,
@@ -26,22 +26,22 @@
   },
   "frame01.png": {
    "frame": {
-    "x": 420,
+    "x": 224,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "sourceSize": {
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "pivot": {
     "x": 0.5,
@@ -50,22 +50,22 @@
   },
   "frame02.png": {
    "frame": {
-    "x": 840,
+    "x": 448,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "sourceSize": {
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "pivot": {
     "x": 0.5,
@@ -74,22 +74,22 @@
   },
   "frame03.png": {
    "frame": {
-    "x": 1260,
+    "x": 672,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "sourceSize": {
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "pivot": {
     "x": 0.5,
@@ -99,21 +99,21 @@
   "frame04.png": {
    "frame": {
     "x": 0,
-    "y": 420,
-    "w": 420,
-    "h": 420
+    "y": 224,
+    "w": 224,
+    "h": 224
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "sourceSize": {
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "pivot": {
     "x": 0.5,
@@ -122,22 +122,22 @@
   },
   "frame05.png": {
    "frame": {
-    "x": 420,
-    "y": 420,
-    "w": 420,
-    "h": 420
+    "x": 224,
+    "y": 224,
+    "w": 224,
+    "h": 224
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "sourceSize": {
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "pivot": {
     "x": 0.5,
@@ -146,22 +146,22 @@
   },
   "frame06.png": {
    "frame": {
-    "x": 840,
-    "y": 420,
-    "w": 420,
-    "h": 420
+    "x": 448,
+    "y": 224,
+    "w": 224,
+    "h": 224
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "sourceSize": {
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "pivot": {
     "x": 0.5,
@@ -170,22 +170,22 @@
   },
   "frame07.png": {
    "frame": {
-    "x": 1260,
-    "y": 420,
-    "w": 420,
-    "h": 420
+    "x": 672,
+    "y": 224,
+    "w": 224,
+    "h": 224
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "sourceSize": {
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "pivot": {
     "x": 0.5,
@@ -195,21 +195,21 @@
   "frame08.png": {
    "frame": {
     "x": 0,
-    "y": 840,
-    "w": 420,
-    "h": 420
+    "y": 448,
+    "w": 224,
+    "h": 224
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "sourceSize": {
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "pivot": {
     "x": 0.5,
@@ -218,22 +218,22 @@
   },
   "frame09.png": {
    "frame": {
-    "x": 420,
-    "y": 840,
-    "w": 420,
-    "h": 420
+    "x": 224,
+    "y": 448,
+    "w": 224,
+    "h": 224
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "sourceSize": {
-    "w": 420,
-    "h": 420
+    "w": 224,
+    "h": 224
    },
    "pivot": {
     "x": 0.5,
@@ -258,11 +258,11 @@
  "meta": {
   "app": "claude",
   "version": "1.0",
-  "image": "purple_screw_win_sheet.png?v=20260714",
+  "image": "magnet_win_sheet.png?v=20260714",
   "format": "RGBA8888",
   "size": {
-   "w": 1680,
-   "h": 1260
+   "w": 896,
+   "h": 672
   },
   "scale": "1"
  }

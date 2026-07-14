@@ -92,10 +92,14 @@
 	};
 	// Per-sheet size tweaks (fraction of cell height; default 0.8) — art-specific corrections.
 	const LOCK_SHEET_SIZE: Record<string, number> = {
-		blueNutLockSheet: 0.76, // 5% smaller: matches the static nut's footprint
+		blueNutLockSheet: 1.21, // new frames: content ~63% of canvas; matches the static nut footprint
+		purpleScrewLockSheet: 1.49, // frames have big registered padding (content ~54% of canvas)
+		cubeWinSheet: 0.92, // 15% bigger than the default win size
+		magnetWinSheet: 1.32, // horseshoe + magnet special win size (tuned up per design feedback)
+		drillWinSheet: 1.0, // +25% over the default win size
 		// Win flipbooks include the electric aura around the symbol, so they render larger for
 		// the symbol core to match the static art's footprint.
-		boltWinSheet: 1.1,
+		boltWinSheet: 1.17, // +6% per design feedback
 		washerWinSheet: 1.1,
 		purpleScrewWinSheet: 1.1,
 		blueNutWinSheet: 1.2, // aura is feathered in the sheet; nut core sized to match static art
@@ -112,6 +116,13 @@
 		qWinTileMobile: 'blueNutWinSheet',
 		rabbitWinTile: 'generatorWinSheet',
 		rabbitWinTileMobile: 'generatorWinSheet',
+		wolfWinTile: 'drillWinSheet',
+		wolfWinTileMobile: 'drillWinSheet',
+		foxWinTile: 'magnetWinSheet',
+		foxWinTileMobile: 'magnetWinSheet',
+		magnetWinTile: 'magnetWinSheet',
+		bearWinTile: 'cubeWinSheet',
+		bearWinTileMobile: 'cubeWinSheet',
 	};
 	const keyPhase = (key: string) => {
 		let h = 0;
@@ -157,31 +168,35 @@
 				return { x: cx - hw, y: cy + hh - d };
 			};
 			const phase = keyPhase(cell.key);
-			// Constant flickering outline so the whole cell always reads electrified.
-			const flick = 0.5 + 0.35 * Math.sin(t * 23 + phase * 12) * Math.sin(t * 7.7 + phase * 5);
+			// Constant flickering outline so the whole cell always reads electrified — with random
+			// hard surges for aggression.
+			const surge = Math.random() < 0.06 ? 1 : 0;
+			const flick =
+				0.55 + 0.4 * Math.sin(t * 29 + phase * 12) * Math.sin(t * 9.3 + phase * 5) + surge * 0.5;
 			g.moveTo(cx - hw, cy - hh);
 			g.lineTo(cx + hw, cy - hh);
 			g.lineTo(cx + hw, cy + hh);
 			g.lineTo(cx - hw, cy + hh);
 			g.lineTo(cx - hw, cy - hh);
 			g.stroke({
-				width: SYMBOL_W * 0.05,
+				width: SYMBOL_W * 0.06,
 				color: 0x2fa8ff,
-				alpha: 0.18 * flick + 0.08,
+				alpha: 0.22 * flick + 0.1,
 				cap: 'round',
 				join: 'round',
 			});
-			// Two crawling arc runners with layered glow + hot white core + head spark.
-			const baseT = t * 0.45 + phase;
-			for (const off of [0, 0.5]) {
+			// Three fast crawling arc runners with layered glow, hot white core, forked branches
+			// and head sparks.
+			const baseT = t * 0.75 + phase;
+			for (const off of [0, 0.33, 0.66]) {
 				const N = 10;
-				const SEG = 0.22;
+				const SEG = 0.26;
 				const pts: { x: number; y: number }[] = [];
 				for (let i = 0; i <= N; i++) {
 					const p = pointAt(baseT + off - (i / N) * SEG);
 					pts.push({
-						x: p.x + (Math.random() - 0.5) * 2 * jit,
-						y: p.y + (Math.random() - 0.5) * 2 * jit,
+						x: p.x + (Math.random() - 0.5) * 3 * jit,
+						y: p.y + (Math.random() - 0.5) * 3 * jit,
 					});
 				}
 				const trace = () => {
@@ -190,28 +205,42 @@
 				};
 				trace();
 				g.stroke({
-					width: SYMBOL_W * 0.12,
+					width: SYMBOL_W * 0.14,
 					color: 0x1e8fff,
-					alpha: 0.5,
+					alpha: 0.6 + surge * 0.3,
 					cap: 'round',
 					join: 'round',
 				});
 				trace();
 				g.stroke({
-					width: SYMBOL_W * 0.05,
+					width: SYMBOL_W * 0.06,
 					color: 0x66d4ff,
-					alpha: 0.85,
+					alpha: 0.95,
 					cap: 'round',
 					join: 'round',
 				});
 				trace();
 				g.stroke({
-					width: SYMBOL_W * 0.022,
+					width: SYMBOL_W * 0.025,
 					color: 0xffffff,
 					alpha: 1,
 					cap: 'round',
 					join: 'round',
 				});
+				// Forked branches shooting off the runner body
+				for (const bi of [2, 5, 8]) {
+					if (Math.random() < 0.55) {
+						const b = pts[bi];
+						const ang = Math.random() * Math.PI * 2;
+						const len = SYMBOL_W * (0.1 + Math.random() * 0.16);
+						const mx = b.x + Math.cos(ang) * len * 0.55 + (Math.random() - 0.5) * jit * 2;
+						const my = b.y + Math.sin(ang) * len * 0.55 + (Math.random() - 0.5) * jit * 2;
+						g.moveTo(b.x, b.y);
+						g.lineTo(mx, my);
+						g.lineTo(b.x + Math.cos(ang) * len, b.y + Math.sin(ang) * len);
+						g.stroke({ width: SYMBOL_W * 0.018, color: 0x9fdcff, alpha: 0.85, cap: 'round', join: 'round' });
+					}
+				}
 				// Head spark
 				g.circle(pts[0].x, pts[0].y, SYMBOL_W * 0.09);
 				g.fill({ color: 0x2fa8ff, alpha: 0.4 });
@@ -406,15 +435,14 @@
 						zIndex={Z.lockedSymbol}
 					/>
 				{:else if symbolInfo.assetKey.toLowerCase().includes('wild')}
-					<!-- Plain wild medallion (round): continuous centre rotation while stacked. -->
+					<!-- Plain wild medallion: heartbeat pulse while stacked (rotation retired). -->
 					<Sprite
 						key={symbolInfo.assetKey}
 						{x}
 						{y}
 						anchor={0.5}
-						rotation={lockRotate(cell.key)}
-						{width}
-						{height}
+						width={width * lockZoom(cell.key)}
+						height={height * lockZoom(cell.key)}
 						alpha={1}
 						tint={0xffffff}
 						zIndex={Z.lockedSymbol}
@@ -581,15 +609,14 @@
 						zIndex={Z.lockedSymbol}
 					/>
 				{:else if symbolInfo.assetKey.toLowerCase().includes('wild')}
-					<!-- Plain wild medallion (round): continuous centre rotation while stacked. -->
+					<!-- Plain wild medallion: heartbeat pulse while stacked (rotation retired). -->
 					<Sprite
 						key={symbolInfo.assetKey}
 						{x}
 						{y}
 						anchor={0.5}
-						rotation={lockRotate(cell.key)}
-						{width}
-						{height}
+						width={width * lockZoom(cell.key)}
+						height={height * lockZoom(cell.key)}
 						alpha={1}
 						tint={0xffffff}
 						zIndex={Z.lockedSymbol}

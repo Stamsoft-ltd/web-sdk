@@ -184,7 +184,7 @@ export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; stat
 		magnet: rawSymbol.magnet || rawSymbol.name === 'MAGNET',
 	});
 
-	const sizeRatios =
+	const baseRatios =
 		rawSymbol.name === 'WILD' && rawSymbol.multiplier && rawSymbol.multiplier > 1
 			? SYMBOL_SIZE_RATIOS.multiplierWild
 			: PREMIUM_SYMBOLS.includes(rawSymbol.name)
@@ -192,6 +192,12 @@ export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; stat
 				: LOW_SYMBOLS.includes(rawSymbol.name)
 					? SYMBOL_SIZE_RATIOS.low
 					: SYMBOL_SIZE_RATIOS.special;
+	// H1 (horseshoe magnet) art has almost no padding and reads oversized next to the other
+	// premiums — render it smaller (0.84 = 20% reduction, then nudged 5% back up).
+	const sizeRatios =
+		rawSymbol.name === 'H1'
+			? { width: baseRatios.width * 0.84, height: baseRatios.height * 0.84 }
+			: baseRatios;
 
 	return {
 		type: 'sprite' as const,

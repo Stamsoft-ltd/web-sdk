@@ -385,6 +385,20 @@ const pulseFreshPositions = async (freshKeys: Set<string>) => {
 	}
 };
 
+// Scatters get a multi-beat heartbeat when they show — three decaying pops instead of the
+// single landing bounce.
+const pulseScatters = async () => {
+	const cells = stateGame.board.flat().filter((c) => c.name === 'SCATTER' && !c.locked);
+	if (!cells.length) return;
+	const fast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
+	const beats = fast ? 1 : 3;
+	const peaks = [1.28, 1.2, 1.13];
+	for (let b = 0; b < beats; b++) {
+		await Promise.all(cells.map((c) => pulseScale(c, peaks[b] ?? 1.12, fast ? 120 : 300)));
+		if (b < beats - 1) await waitForTimeout(fast ? 40 : 130);
+	}
+};
+
 const restoreBoardAlpha = () => {
 	for (const reel of stateGame.board) {
 		for (const cell of reel) {
@@ -981,16 +995,29 @@ const animateWinningPositions = async (positions: Position[]) => {
 	}
 	await waitForTimeout(stateBet.isTurbo || stateBet.isSuperTurbo ? 120 : 871);
 	const scaleMs = stateBet.isTurbo || stateBet.isSuperTurbo ? 60 : 364;
+	// Scale back down but KEEP the win state (highlight box + looping win flipbook) — it stays
+	// live for the whole win presentation and is cleared via clearWinCellStates() when the
+	// round moves on.
 	await Promise.all(
 		stateGame.board.flatMap((reel) =>
 			reel.flatMap((cell) => {
 				if (!keys.has(posKey(cell.position))) return [];
-				cell.highlighted = false;
-				applyCellVisualState(cell);
 				return [cell.displayScale.set(1, { duration: scaleMs, easing: backOut })];
 			}),
 		),
 	);
+};
+
+// Revert all win-state cells to their normal visual state (locked/static/magnet).
+const clearWinCellStates = () => {
+	for (const reel of stateGame.board) {
+		for (const cell of reel) {
+			if (cell.highlighted || cell.symbolState === 'win') {
+				cell.highlighted = false;
+				applyCellVisualState(cell);
+			}
+		}
+	}
 };
 
 const applyReveal = async ({
@@ -1001,6 +1028,7 @@ const applyReveal = async ({
 	gameType: GameType;
 }) => {
 	await animateReveal({ rawBoard, gameType });
+	void pulseScatters();
 	applySeriesDecorations({
 		board: stateGame.board,
 		series: stateGame.activeSeries,
@@ -1084,6 +1112,7 @@ export const stateGameDerived = {
 	setSeriesSnapshots,
 	animateClusterFormation,
 	animateWinningPositions,
+	clearWinCellStates,
 	applyReveal,
 	beginSpin,
 	markNextRevealAsSpin,
