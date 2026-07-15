@@ -94,9 +94,10 @@
 	const LOCK_SHEET_SIZE: Record<string, number> = {
 		blueNutLockSheet: 1.21, // new frames: content ~63% of canvas; matches the static nut footprint
 		purpleScrewLockSheet: 1.49, // frames have big registered padding (content ~54% of canvas)
-		cubeWinSheet: 0.92, // 15% bigger than the default win size
+		cubeWinSheet: 1.2, // enlarged again per design feedback
 		magnetWinSheet: 1.32, // horseshoe + magnet special win size (tuned up per design feedback)
 		drillWinSheet: 1.0, // +25% over the default win size
+		generatorWinSheet: 1.0, // +25% over the default win size
 		// Win flipbooks include the electric aura around the symbol, so they render larger for
 		// the symbol core to match the static art's footprint.
 		boltWinSheet: 1.17, // +6% per design feedback
@@ -422,7 +423,21 @@
 						zIndex={Z.lockedSymbol}
 					/>
 				{:else if /wild\d/i.test(symbolInfo.assetKey)}
-					<!-- Multiplier wild (medallion + Nx plaque, not round): heartbeat pulse, no rotation. -->
+					<!-- Multiplier wild (medallion + Nx plaque): heartbeat pulse over the same looping
+					     lightning burst as the plain wild. -->
+					<SpriteSheet
+						key="wildLightningSheet"
+						play
+						loop
+						animationSpeed={0.23}
+						blendMode="add"
+						{x}
+						{y}
+						anchor={0.5}
+						width={height * 1.35}
+						height={height * 1.35}
+						zIndex={Z.lockedSymbol}
+					/>
 					<Sprite
 						key={symbolInfo.assetKey}
 						{x}
@@ -435,14 +450,29 @@
 						zIndex={Z.lockedSymbol}
 					/>
 				{:else if symbolInfo.assetKey.toLowerCase().includes('wild')}
-					<!-- Plain wild medallion: heartbeat pulse while stacked (rotation retired). -->
+					<!-- Plain wild medallion: heartbeat pulse while stacked, over a looping radial
+					     lightning burst (additive, slightly larger than the cell). Same zIndex as the
+					     symbol — insertion order keeps the burst behind the medallion. -->
+					<SpriteSheet
+						key="wildLightningSheet"
+						play
+						loop
+						animationSpeed={0.23}
+						blendMode="add"
+						{x}
+						{y}
+						anchor={0.5}
+						width={height * 1.35}
+						height={height * 1.35}
+						zIndex={Z.lockedSymbol}
+					/>
 					<Sprite
 						key={symbolInfo.assetKey}
 						{x}
 						{y}
 						anchor={0.5}
-						width={width * lockZoom(cell.key)}
-						height={height * lockZoom(cell.key)}
+						width={width * 0.8 * lockZoom(cell.key)}
+						height={height * 0.8 * lockZoom(cell.key)}
 						alpha={1}
 						tint={0xffffff}
 						zIndex={Z.lockedSymbol}
@@ -596,7 +626,21 @@
 						zIndex={Z.lockedSymbol}
 					/>
 				{:else if /wild\d/i.test(symbolInfo.assetKey)}
-					<!-- Multiplier wild (medallion + Nx plaque, not round): heartbeat pulse, no rotation. -->
+					<!-- Multiplier wild (medallion + Nx plaque): heartbeat pulse over the same looping
+					     lightning burst as the plain wild. -->
+					<SpriteSheet
+						key="wildLightningSheet"
+						play
+						loop
+						animationSpeed={0.23}
+						blendMode="add"
+						{x}
+						{y}
+						anchor={0.5}
+						width={height * 1.35}
+						height={height * 1.35}
+						zIndex={Z.lockedSymbol}
+					/>
 					<Sprite
 						key={symbolInfo.assetKey}
 						{x}
@@ -609,14 +653,29 @@
 						zIndex={Z.lockedSymbol}
 					/>
 				{:else if symbolInfo.assetKey.toLowerCase().includes('wild')}
-					<!-- Plain wild medallion: heartbeat pulse while stacked (rotation retired). -->
+					<!-- Plain wild medallion: heartbeat pulse while stacked, over a looping radial
+					     lightning burst (additive, slightly larger than the cell). Same zIndex as the
+					     symbol — insertion order keeps the burst behind the medallion. -->
+					<SpriteSheet
+						key="wildLightningSheet"
+						play
+						loop
+						animationSpeed={0.23}
+						blendMode="add"
+						{x}
+						{y}
+						anchor={0.5}
+						width={height * 1.35}
+						height={height * 1.35}
+						zIndex={Z.lockedSymbol}
+					/>
 					<Sprite
 						key={symbolInfo.assetKey}
 						{x}
 						{y}
 						anchor={0.5}
-						width={width * lockZoom(cell.key)}
-						height={height * lockZoom(cell.key)}
+						width={width * 0.8 * lockZoom(cell.key)}
+						height={height * 0.8 * lockZoom(cell.key)}
 						alpha={1}
 						tint={0xffffff}
 						zIndex={Z.lockedSymbol}

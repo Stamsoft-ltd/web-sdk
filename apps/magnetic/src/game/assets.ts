@@ -185,6 +185,8 @@ export default {
 	magnetWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/premium/magnet_win_sheet.json?v=20260714', preload: true },
 	// 10-frame WIN-state flipbook for the M core cube premium.
 	cubeWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/premium/cube_win_sheet.json?v=20260714', preload: true },
+	// 10-frame radial lightning burst — looping backdrop BEHIND the wild while stacked.
+	wildLightningSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/special/wild_lightning_sheet.json?v=20260714', preload: true },
 	// 10-frame rotation flipbook for the blue nut (real-alpha designer frames), same treatment.
 	blueNutLockSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/blue_nut_lock_sheet.json?v=20260714b', preload: true },
 	aTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.png?v=20260709', preload: true },
