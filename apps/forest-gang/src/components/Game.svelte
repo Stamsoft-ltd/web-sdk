@@ -6,7 +6,7 @@
 	import { EnableHotkey } from 'components-shared';
 	import { MainContainer } from 'components-layout';
 	import { App, Container } from 'pixi-svelte';
-	import { stateMeta } from 'state-shared';
+	import { stateMeta, stateUi } from 'state-shared';
 
 	import { Modals } from 'components-ui-html';
 
@@ -175,7 +175,7 @@
 				},
 				{
 					title: forestStakeTitle('RULE SECTION HOW TO PLAY'),
-					rows: 6,
+					rows: 7,
 					columns: 1,
 					containers: [
 						{ title: forestStakeTitle('HOWTO SPIN TITLE'), text: forestStakeTitle('HOWTO SPIN TEXT'), image: uiRefArt, row: 0, column: 0, imagePosition: 'left' },
@@ -184,6 +184,7 @@
 						{ title: forestStakeTitle('HOWTO TURBO TITLE'), text: forestStakeTitle('HOWTO TURBO TEXT'), image: uiRefArt, row: 3, column: 0, imagePosition: 'left' },
 						{ title: forestStakeTitle('HOWTO AUTOPLAY TITLE'), text: forestStakeTitle('HOWTO AUTOPLAY TEXT'), image: uiRefArt, row: 4, column: 0, imagePosition: 'left' },
 						{ title: forestStakeTitle('HOWTO REPLAY TITLE'), text: forestStakeTitle('HOWTO REPLAY TEXT'), image: heroArt, row: 5, column: 0, imagePosition: 'left' },
+						{ title: forestStakeTitle('HOWTO USER INTERACTION TITLE'), text: forestStakeTitle('HOWTO USER INTERACTION TEXT'), image: uiRefArt, row: 6, column: 0, imagePosition: 'left' },
 					],
 				},
 				{
@@ -336,6 +337,18 @@
 						{ icon: `${infoDir}/icon_legal.webp`, title: forestStakeTitle('INFO LEGAL TITLE'), text: forestStakeTitle('INFO LEGAL TEXT') },
 					],
 				},
+				{
+					kind: 'cards',
+					frame: infoFrame,
+					background: infoPanelBg,
+					title: forestStakeTitle('INFO USER TITLE'),
+					cards: [
+						{ icon: `${infoDir}/icon_reels.webp`, title: forestStakeTitle('INFO USER SPIN TITLE'), text: forestStakeTitle('INFO USER SPIN TEXT') },
+						{ icon: `${infoDir}/icon_rtp.webp`, title: forestStakeTitle('INFO USER BET TITLE'), text: forestStakeTitle('INFO USER BET TEXT') },
+						{ icon: `${infoDir}/icon_maxwin.webp`, title: forestStakeTitle('INFO USER AUTO TITLE'), text: forestStakeTitle('INFO USER AUTO TEXT') },
+						{ icon: `${infoDir}/icon_scatter.webp`, title: forestStakeTitle('INFO USER REPLAY TITLE'), text: forestStakeTitle('INFO USER REPLAY TEXT') },
+					],
+				},
 			],
 		};
 	});
@@ -412,7 +425,9 @@
 		{/if}
 
 		{#if !context.stateLayout.showLoadingScreen}
-			<HudHtml />
+			{#if stateUi.config.mode !== 'replay'}
+				<HudHtml />
+			{/if}
 			<ReplayHud />
 			<PendingRoundRecovery />
 		{/if}

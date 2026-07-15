@@ -11,6 +11,13 @@ export const socialOverridesEn: Record<string, string> = {
 	'BUY BONUS': 'GET BONUS',
 	BUY: 'PLAY',
 	PAYOUT: 'WIN',
+	'BET REPLAY': 'Play Replay',
+	'BASE BET': 'Base Play',
+	'COST MULTIPLIER': 'Feature Multiplier',
+	'TOTAL BET COST': 'Total Play',
+	'PAYOUT MULTIPLIER': 'Final Multiplier',
+	'TOTAL WIN': 'Total Win',
+	'REPLAY DISCLAIMER': 'This is a replay of a previous play round. No plays will be placed.',
 
 	// ── Bet-mode UI ──────────────────────────────────────────────────────────────
 	'BET MODE BONUS TICKER IDLE': 'COME AND PLAY',
@@ -53,6 +60,8 @@ export const socialOverridesEn: Record<string, string> = {
 
 	'HOWTO REPLAY TEXT':
 		'Replay loads a previously completed Stake event and displays the original play amount, total play, and win information.',
+	'HOWTO USER INTERACTION TEXT':
+		'Use the main Spin button to start a round. Use + and - to change play amount, open Get Bonus to select feature modes, use Turbo to speed up supported animations, use Autoplay to repeat rounds automatically, and use the sound/settings buttons to adjust the game experience. In replay mode, use Start Replay to begin the recorded sequence and Replay Event at the end to watch it again.',
 
 	// ── Paytable pages ───────────────────────────────────────────────────────────
 	'PAYTABLE SPECIAL_TEXT':
@@ -72,6 +81,11 @@ export const socialOverridesEn: Record<string, string> = {
 		'The Wild substitutes for all regular winning symbols. The Wild does not substitute for the Scatter. Wild win: 5 in a line only 250x.',
 
 	'INFO BUY TITLE': 'FEATURE PLAY',
+	'INFO USER BET TITLE': 'PLAY AMOUNT AND MODES',
+	'INFO USER BET TEXT':
+		'Use + and - or the play menu to choose an available play level. Get Bonus opens Deal It, All In, Chance Spin and Feature Spin options.',
+	'INFO USER REPLAY TEXT':
+		'Replay mode shows the recorded round details before playback. Press Start Replay to watch it, then Replay Event to watch the same event again.',
 
 	'INFO WAYS NOTE':
 		'Forest Gang is played on 20 fixed paylines. A winning combination is formed when matching symbols land on consecutive reels from left to right on any active payline. Only the highest win per symbol per payline is won, unless stated otherwise in the final game rules.',

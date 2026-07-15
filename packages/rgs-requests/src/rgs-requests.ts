@@ -79,11 +79,12 @@ export const requestReplay = async (options: {
 	mode: string;
 	event: string;
 	rgsUrl: string;
+	language?: string;
 }) => {
 	const data = await rgsFetcher.get({
 		rgsUrl: options.rgsUrl,
 		// @ts-ignore TODO: update the schema.ts
-		url: `/bet/replay/${options.game}/${options.version}/${options.mode}/${options.event}`,
+		url: `/bet/replay/${options.game}/${options.version}/${options.mode}/${options.event}${options.language ? `?language=${encodeURIComponent(options.language)}` : ''}`,
 	});
 
 	return data;
