@@ -250,7 +250,7 @@
 
 	let showBuyModal = $state(false);
 	let showAutoModal = $state(false);
-	let showInfoModal = $state(false);
+	let showInfoModal = $state(true);
 
 	const openBuyBonus = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });

@@ -38,24 +38,12 @@
 	const wildX10 = sym('special/wild_x10.png');
 	const scatter = sym('special/scatter.png');
 
-	// Cluster-win illustration (page 4): 6×6 grids. WIN = one orthogonally-connected blob; NO WIN =
-	// only isolated / diagonal touches (no group of 5).
-	const WIN_CELLS = [
-		0, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-		1, 1, 1, 1, 0, 0,
-		0, 1, 1, 0, 0, 0,
-		0, 1, 1, 0, 0, 0,
-		0, 1, 0, 0, 0, 0,
-	];
-	const NOWIN_CELLS = [
-		1, 0, 0, 0, 0, 0,
-		0, 0, 1, 0, 0, 0,
-		0, 0, 0, 1, 0, 0,
-		0, 0, 1, 0, 0, 0,
-		0, 0, 0, 0, 1, 0,
-		0, 0, 0, 0, 0, 1,
-	];
+	// Cluster-win illustration (page 4): finished WIN / NO WIN grid art (label baked in).
+	const winImg = ap('/assets/components/ui/info_win.png');
+	const noWinImg = ap('/assets/components/ui/info_nowin.png');
+	// General-info icons (page 6).
+	const icRotate = ap('/assets/components/ui/info_ic_rotate.png');
+	const icLegal = ap('/assets/components/ui/info_ic_legal.png');
 
 	type Props = { onclose: () => void };
 	const props: Props = $props();
@@ -84,10 +72,9 @@
 
 <div class="info-overlay" style={`--panel-img:url(${panelImg})`}>
 	<div class="info-panel" role="dialog" aria-modal="true">
-		<button class="info-close" type="button" onclick={props.onclose} aria-label="Close">
-			<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
-		</button>
-
+		<!-- Stage wrapper: transparent (display:contents) at normal sizes; on small landscape it becomes a
+		     fixed-size, scaled-to-fit canvas so the whole layout zooms down as one unit. -->
+		<div class="info-stage">
 		<div class="info-body">
 			{#if page === 1}
 				<div class="ov">
@@ -211,18 +198,8 @@
 							<p>Bigger clusters award bigger wins.</p>
 						</div>
 						<div class="cw-grids">
-							<div class="cw-block">
-								<span class="cw-label win">WIN</span>
-								<div class="cw-grid win">
-									{#each WIN_CELLS as on}<span class="cw-cell" class:on={on}></span>{/each}
-								</div>
-							</div>
-							<div class="cw-block">
-								<span class="cw-label no">NO WIN</span>
-								<div class="cw-grid no">
-									{#each NOWIN_CELLS as on}<span class="cw-cell" class:on={on}></span>{/each}
-								</div>
-							</div>
+							<img class="cw-img" src={winImg} alt="Winning cluster example" />
+							<img class="cw-img" src={noWinImg} alt="No-win example" />
 						</div>
 					</div>
 				</div>
@@ -265,12 +242,7 @@
 					<h2 class="page-title">GENERAL INFO</h2>
 					<div class="gi-grid">
 						<div class="card gi-card">
-							<span class="gi-ic">
-								<svg viewBox="0 0 24 24" aria-hidden="true">
-									<path d="M20 12a8 8 0 1 1-2.3-5.6" />
-									<path d="M20 4v4h-4" fill="none" />
-								</svg>
-							</span>
+							<span class="gi-ic"><img src={icRotate} alt="" /></span>
 							<h3 class="feat-h">Interrupted Rounds</h3>
 							<p class="feat-p">
 								If a game round is interrupted, it will continue when the game is reloaded, where possible.
@@ -280,11 +252,7 @@
 							</p>
 						</div>
 						<div class="card gi-card gi-wide">
-							<span class="gi-ic">
-								<svg viewBox="0 0 24 24" aria-hidden="true">
-									<path d="M12 3v16M7 21h10M4 8h16M8 6.5 4 8l-2 5a3 3 0 0 0 6 0L6 8M16 6.5 20 8l2 5a3 3 0 0 1-6 0l2-5" />
-								</svg>
-							</span>
+							<span class="gi-ic gi-ic--legal"><img src={icLegal} alt="" /></span>
 							<h3 class="feat-h">Legal Notice</h3>
 							<p class="feat-p">
 								Malfunction voids all pays and plays. A stable internet connection is required. If the
@@ -313,7 +281,13 @@
 			</button>
 			<span class="pg-num">Page {page}/{TOTAL}</span>
 		</div>
+		</div>
 	</div>
+
+	<!-- Close button pinned to the screen's top-right corner (outside the panel). -->
+	<button class="info-close" type="button" onclick={props.onclose} aria-label="Close">
+		<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+	</button>
 </div>
 
 <style>
@@ -339,11 +313,12 @@
 	.info-panel {
 		pointer-events: auto;
 		position: relative;
-		width: min(1180px, 92cqw);
+		/* A touch narrower than the viewport so the screen-corner close button clears the panel. */
+		width: min(1120px, 87cqw);
 		height: min(660px, 90cqh);
 		box-sizing: border-box;
 		/* Content inset = border-image width + this padding, keeping text/art clear of the frame art. */
-		padding: clamp(6px, 1.4cqmin, 18px) clamp(10px, 2.2cqmin, 30px);
+		padding: clamp(12px, 2.8cqmin, 38px) clamp(16px, 3.4cqmin, 48px);
 		background:
 			radial-gradient(120% 90% at 70% 15%, rgba(30, 64, 120, 0.4), transparent 60%),
 			linear-gradient(160deg, #0b1830 0%, #081326 60%, #050d1c 100%);
@@ -359,12 +334,13 @@
 		flex-direction: column;
 	}
 
+	/* Pinned to the screen's top-right corner (positioned against the full-viewport overlay). */
 	.info-close {
 		position: absolute;
-		top: clamp(-14px, -2.4cqmin, -10px);
-		right: clamp(-14px, -2.4cqmin, -10px);
-		width: clamp(34px, 6cqmin, 52px);
-		height: clamp(34px, 6cqmin, 52px);
+		top: clamp(8px, 2cqmin, 26px);
+		right: clamp(8px, 2cqmin, 26px);
+		width: clamp(34px, 5.6cqmin, 52px);
+		height: clamp(34px, 5.6cqmin, 52px);
 		border-radius: 50%;
 		border: 1.5px solid rgba(96, 165, 250, 0.8);
 		background: radial-gradient(circle at 50% 35%, #143059, #0a1830);
@@ -372,19 +348,31 @@
 		display: grid;
 		place-items: center;
 		cursor: pointer;
-		z-index: 3;
+		pointer-events: auto;
+		z-index: 62;
 		transition: filter 0.12s ease;
 	}
 	.info-close:hover {
 		filter: brightness(1.2);
 	}
 	.info-close svg {
-		width: 42%;
-		height: 42%;
+		/* Absolute-centred so the square %-sizing is reliable. A grid/flex %-sized SVG collapsed
+		   non-square (its width shrank to a few px on the small landscape button), making the X tiny. */
+		position: absolute;
+		inset: 0;
+		margin: auto;
+		width: 78%;
+		height: 78%;
 		fill: none;
 		stroke: currentColor;
 		stroke-width: 2.4;
 		stroke-linecap: round;
+	}
+
+	/* Transparent at normal sizes — its children (body + pager) act as the panel's flex items. On small
+	   landscape it turns into a fixed-size, transform-scaled canvas (see the small-landscape query). */
+	.info-stage {
+		display: contents;
 	}
 
 	.info-body {
@@ -485,16 +473,19 @@
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
 		/* Tight but always-positive gap → boxes read as one row yet never touch. */
-		gap: clamp(3px, 0.8cqmin, 10px);
+		gap: clamp(2px, 0.6cqmin, 7px);
+		/* Break the row out into the panel's side padding (and a touch into the frame) so each box is
+		   as long as possible — the panel is now narrower, so reclaim that width. */
+		margin-inline: clamp(-36px, -4.4cqmin, -8px);
 	}
 	.stat {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: clamp(5px, 1.4cqmin, 15px);
+		gap: clamp(4px, 1cqmin, 11px);
 		/* Elongated (matches the horizontal value-box art) so the icon + text fit on one line. */
-		min-height: clamp(56px, 12.6cqmin, 122px);
-		padding: clamp(6px, 1.5cqmin, 16px) clamp(8px, 1.9cqmin, 21px);
+		min-height: clamp(62px, 14.4cqmin, 138px);
+		padding: clamp(8px, 1.9cqmin, 20px) clamp(6px, 1.5cqmin, 15px);
 		/* Real sci-fi value box art behind each stat (value_box_mobile.png). */
 		background-image: var(--box-img);
 		background-size: 100% 100%;
@@ -502,8 +493,8 @@
 	}
 	.stat-ic {
 		flex: 0 0 auto;
-		width: clamp(38px, 8.6cqmin, 84px);
-		height: clamp(38px, 8.6cqmin, 84px);
+		width: clamp(32px, 7.4cqmin, 74px);
+		height: clamp(32px, 7.4cqmin, 74px);
 		display: grid;
 		place-items: center;
 		color: #8ec7ff;
@@ -607,6 +598,20 @@
 		display: block;
 		color: #4ea6f0;
 	}
+	/* Page 3 (Features) headings use the cyan→blue title gradient. */
+	.feat-grid .feat-h {
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+	}
+	.feat-grid .feat-h .w,
+	.feat-grid .feat-h .c {
+		color: transparent;
+		-webkit-text-fill-color: transparent;
+		background: none;
+	}
 	.feat-p {
 		margin: 0;
 		font-size: clamp(11px, 2.1cqmin, 19px);
@@ -705,8 +710,17 @@
 		gap: clamp(10px, 2cqmin, 22px);
 		min-height: 0;
 	}
-	.feat-col-small .feat-card {
-		flex: 1;
+	/* The two stacked cards split the column into two exactly-equal halves (min-height:0 removes the
+	   content floor). Their spacing + icon are sized so the content fits inside each half. */
+	.feat-grid .feat-col-small .feat-card {
+		flex: 1 1 0;
+		min-height: 0;
+		gap: clamp(3px, 0.9cqmin, 9px);
+		padding: clamp(8px, 1.8cqmin, 16px);
+	}
+	.feat-grid .feat-col-small .feat-ic {
+		width: clamp(50px, 13cqmin, 100px);
+		margin: 0;
 	}
 	.feat-card {
 		display: flex;
@@ -780,63 +794,19 @@
 		line-height: 1.4;
 		color: #d7e6f7;
 	}
+	/* Finished WIN / NO WIN grid art (label baked in) — side by side, matched height. */
 	.cw-grids {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: clamp(10px, 2.4cqmin, 28px);
-	}
-	.cw-block {
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		gap: clamp(5px, 1.2cqmin, 12px);
+		justify-content: center;
+		gap: clamp(8px, 2cqmin, 26px);
 	}
-	.cw-label {
-		font-size: clamp(12px, 2.4cqmin, 22px);
-		font-weight: 800;
-		letter-spacing: 0.08em;
-	}
-	.cw-label.win {
-		color: #46e08a;
-	}
-	.cw-label.no {
-		color: #f0575e;
-	}
-	.cw-grid {
-		width: 100%;
-		aspect-ratio: 1;
-		display: grid;
-		grid-template-columns: repeat(6, 1fr);
-		grid-template-rows: repeat(6, 1fr);
-		gap: clamp(2px, 0.5cqmin, 5px);
-		padding: clamp(3px, 0.8cqmin, 8px);
-		border-radius: clamp(6px, 1.2cqmin, 12px);
-		box-sizing: border-box;
-	}
-	.cw-grid.win {
-		background: rgba(14, 46, 34, 0.5);
-		border: 1.5px solid rgba(70, 224, 138, 0.6);
-		box-shadow: inset 0 0 18px rgba(40, 200, 120, 0.22);
-	}
-	.cw-grid.no {
-		background: rgba(48, 16, 20, 0.5);
-		border: 1.5px solid rgba(240, 87, 94, 0.55);
-		box-shadow: inset 0 0 18px rgba(200, 50, 60, 0.2);
-	}
-	.cw-cell {
-		border-radius: 22%;
-		background: rgba(255, 255, 255, 0.04);
-		border: 1px solid rgba(255, 255, 255, 0.06);
-	}
-	.cw-grid.win .cw-cell.on {
-		background: radial-gradient(circle at 50% 40%, #8dffc0, #22c46e 70%);
-		border-color: rgba(150, 255, 200, 0.9);
-		box-shadow: 0 0 8px rgba(60, 230, 140, 0.7);
-	}
-	.cw-grid.no .cw-cell.on {
-		background: radial-gradient(circle at 50% 40%, #ff9aa0, #d83840 70%);
-		border-color: rgba(255, 160, 165, 0.9);
-		box-shadow: 0 0 8px rgba(230, 70, 80, 0.6);
+	.cw-img {
+		max-height: clamp(170px, 46cqmin, 330px);
+		max-width: 49%;
+		height: auto;
+		display: block;
+		filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4));
 	}
 
 	/* ── Page 5: Feature buy ── */
@@ -855,7 +825,28 @@
 		gap: clamp(10px, 2cqmin, 24px);
 	}
 	.fb-grid .feat-card {
-		gap: clamp(5px, 1.2cqmin, 12px);
+		gap: clamp(6px, 1.5cqmin, 15px);
+	}
+	/* Page 5 (Feature Buy): larger heading / body / symbols than the base cards. */
+	.fb-grid .feat-h {
+		font-size: clamp(16px, 3.6cqmin, 34px);
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+	}
+	.fb-grid .feat-p {
+		font-size: clamp(12px, 2.5cqmin, 23px);
+	}
+	.fb-grid .feat-ic {
+		width: clamp(66px, 14cqmin, 138px);
+	}
+	.fb-grid .feat-trigger img {
+		width: clamp(58px, 12cqmin, 118px);
+	}
+	.fb-grid .feat-x {
+		font-size: clamp(26px, 5.8cqmin, 58px);
 	}
 	.fb-meta {
 		display: flex;
@@ -867,13 +858,17 @@
 		margin-top: auto;
 	}
 	.fb-k {
-		font-size: clamp(9px, 1.7cqmin, 15px);
+		font-size: clamp(11px, 2.1cqmin, 19px);
 		font-weight: 700;
 		letter-spacing: 0.08em;
-		color: #6fb6f6;
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
 	}
 	.fb-v {
-		font-size: clamp(12px, 2.2cqmin, 20px);
+		font-size: clamp(14px, 2.8cqmin, 26px);
 		font-weight: 800;
 		color: #eaf3ff;
 	}
@@ -895,20 +890,31 @@
 		gap: clamp(8px, 1.6cqmin, 16px);
 	}
 	.gi-ic {
-		width: clamp(34px, 7cqmin, 62px);
-		height: clamp(34px, 7cqmin, 62px);
+		width: clamp(56px, 12cqmin, 120px);
+		height: clamp(56px, 12cqmin, 120px);
 		display: grid;
 		place-items: center;
 		color: #6fb6f6;
 	}
-	.gi-ic svg {
+	/* The scales-of-justice art reads better a little larger than the rotate arrow. */
+	.gi-ic--legal {
+		width: clamp(70px, 14.5cqmin, 146px);
+		height: clamp(70px, 14.5cqmin, 146px);
+	}
+	.gi-ic img {
 		width: 100%;
 		height: 100%;
-		fill: none;
-		stroke: currentColor;
-		stroke-width: 1.7;
-		stroke-linecap: round;
-		stroke-linejoin: round;
+		object-fit: contain;
+		display: block;
+		filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.4));
+	}
+	/* Page 6 titles use the cyan→blue title gradient. */
+	.gi-grid .feat-h {
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
 	}
 	.gi-card .feat-p {
 		font-size: clamp(10px, 1.85cqmin, 16px);
@@ -954,15 +960,76 @@
 		letter-spacing: 0.03em;
 	}
 
-	/* Portrait / narrow containers: stack the overview so the text and the hero each get full width. */
+	/* Small landscape (short viewports, e.g. landscape phones ~490px tall and down): the fluid content
+	   hits its px floors and overflows (cards collide with the pager). Instead, lay it out at a fixed
+	   design size and uniformly scale it to fit — the whole popup zooms down as one unit, keeping the
+	   good large-screen proportions. (Base layout stays clean from ~500px tall up.) */
+	@container (aspect-ratio >= 0.95) and (max-height: 490px) {
+		.info-panel {
+			/* Establish a container so the stage can measure the panel's content box (100cqw/100cqh). */
+			container-type: size;
+			overflow: hidden;
+			/* Thinner frame + tighter inset so the scaled canvas gets as much room as possible. */
+			border-width: clamp(8px, 2.6cqmin, 40px);
+			padding: clamp(4px, 1.4cqmin, 20px) clamp(6px, 1.8cqmin, 24px);
+		}
+		/* The close button sits outside the (scaled-down) panel, so shrink it to match the small screen. */
+		.info-close {
+			width: clamp(22px, 4.4cqmin, 34px);
+			height: clamp(22px, 4.4cqmin, 34px);
+			top: clamp(6px, 1.6cqmin, 16px);
+			right: clamp(6px, 1.6cqmin, 16px);
+		}
+		.info-stage {
+			display: flex;
+			flex-direction: column;
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			/* Fixed design canvas (aspect ~1.8 ≈ the panel's content box in landscape). Content inside is
+			   sized against THIS box (container-type below), so it is pixel-stable regardless of viewport. */
+			width: 850px;
+			height: 472px;
+			container-type: size;
+			/* Centre the (oversized) canvas on the panel, then uniformly scale it to fit. Denominators carry
+			   px so each ratio is unitless (length / length) for scale(). */
+			transform: translate(-50%, -50%) scale(min(100cqw / 850px, 100cqh / 472px));
+			transform-origin: center;
+		}
+	}
+
+	/* Portrait / narrow containers: everything collapses to a single column and the body scrolls when the
+	   content is taller than the panel. */
 	@container (aspect-ratio < 0.95) {
 		.info-panel {
 			width: min(540px, 94cqw);
 			height: min(880px, 92cqh);
 		}
+		/* The body is the scroll viewport; the pager stays pinned below it. */
+		.info-body {
+			overflow-y: auto;
+			overflow-x: hidden;
+			/* Room so content never sits under the scrollbar. */
+			padding-right: clamp(2px, 1cqmin, 8px);
+		}
+		/* Let each section take its natural height (so it overflows → scrolls) instead of shrinking to fit,
+		   and flow top-down (no vertical centring — scrolling handles overflow). */
+		.ov,
+		.page,
+		.pt,
+		.feat-grid,
+		.feat-col-small,
+		.cw,
+		.fb-grid,
+		.gi-grid {
+			flex: 0 0 auto;
+			min-height: auto;
+			align-content: start;
+		}
+
+		/* ── Overview ── */
 		.ov {
 			grid-template-columns: 1fr;
-			align-content: start;
 			gap: clamp(8px, 2cqh, 18px);
 		}
 		.ov-title {
@@ -980,14 +1047,19 @@
 		.ov-logo {
 			width: clamp(104px, 34cqmin, 200px);
 		}
+		/* Stat boxes stack into one column (each a full-width horizontal box). */
+		.ov-stats {
+			grid-template-columns: 1fr;
+			margin-inline: 0;
+			gap: clamp(6px, 1.4cqh, 12px);
+		}
 		.stat {
-			flex-direction: column;
-			align-items: center;
-			text-align: center;
-			gap: clamp(3px, 0.8cqh, 8px);
+			flex-direction: row;
+			justify-content: center;
+			gap: clamp(8px, 2.4cqmin, 18px);
 		}
 		.stat-txt {
-			align-items: center;
+			align-items: flex-start;
 		}
 		.stat-txt b {
 			font-size: clamp(15px, 4.8cqmin, 27px);
@@ -996,26 +1068,48 @@
 			font-size: clamp(10px, 2.7cqmin, 17px);
 		}
 
-		/* Pages 2–6 reflow for a tall/narrow panel. */
+		/* ── Pages 2–6: one column each ── */
 		.pt {
 			grid-template-columns: 1fr;
 			grid-template-rows: auto auto;
-			align-content: start;
+			gap: clamp(12px, 3cqh, 24px);
 		}
 		.pt-side {
 			order: 2;
-			align-self: start;
+			align-self: stretch;
+		}
+		/* "SYMBOL RANK" is wide for a 1/13 column in portrait — shrink it so it clears the "5" header. */
+		.pt-table th.pt-rank {
+			font-size: 0.6em;
 		}
 		.feat-grid {
 			grid-template-columns: 1fr;
 		}
+		/* Stack the two small feature cards vertically (full single column). Cancel the equal-height
+		   flex (flex:1 1 0 / min-height:0) that collapses them to nothing in a natural-height column. */
 		.feat-col-small {
-			flex-direction: row;
+			flex-direction: column;
+		}
+		.feat-grid .feat-col-small .feat-card {
+			flex: 0 0 auto;
+			min-height: auto;
+		}
+		/* Stack the three buy cards vertically. */
+		.fb-grid {
+			grid-template-columns: 1fr;
 		}
 		.cw {
 			grid-template-columns: 1fr;
-			align-content: start;
+			gap: clamp(14px, 3.5cqh, 34px);
+		}
+		/* Stack the WIN / NO WIN art too, each large. */
+		.cw-grids {
+			flex-direction: column;
 			gap: clamp(12px, 3cqh, 26px);
+		}
+		.cw-img {
+			max-height: clamp(200px, 42cqh, 320px);
+			max-width: 82%;
 		}
 		.gi-grid {
 			grid-template-columns: 1fr;
