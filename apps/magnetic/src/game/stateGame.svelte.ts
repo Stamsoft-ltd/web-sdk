@@ -101,6 +101,7 @@ const initBoardCell = (raw: RawSymbol, reel: number, row: number): BoardCell => 
 	target: false,
 	persistent: false,
 	fresh: false,
+	pulling: false,
 });
 
 const updateCellRaw = (cell: BoardCell, raw: RawSymbol) => {
@@ -597,14 +598,19 @@ const animateClusterFormation = async ({
 				const destX = (dest.reel - source.position.reel) * SYMBOL_W;
 				const destY = getTargetY(dest.row);
 
+				source.pulling = true; // pulled symbol renders above normal board symbols during flight
 				source.displayAlpha.set(1, { duration: 0 });
 				source.displayScale.set(1.05, { duration: 0 });
 
-				await Promise.all([
-					source.displayX.set(destX, { duration: flyMs, easing: cubicOut }),
-					source.displayY.set(destY, { duration: flyMs, easing: cubicOut }),
-					source.displayScale.set(0.88, { duration: flyMs }),
-				]);
+				try {
+					await Promise.all([
+						source.displayX.set(destX, { duration: flyMs, easing: cubicOut }),
+						source.displayY.set(destY, { duration: flyMs, easing: cubicOut }),
+						source.displayScale.set(0.88, { duration: flyMs }),
+					]);
+				} finally {
+					source.pulling = false;
+				}
 
 				// Destination cell lands with a pop; source cell hides at grid position.
 				const destCell = stateGame.board[dest.reel]?.[dest.row];
@@ -800,6 +806,7 @@ const settleBoardInstant = ({
 			cell.target = false;
 			cell.persistent = false;
 			cell.fresh = false;
+			cell.pulling = false;
 			applyCellVisualState(cell);
 		}
 		stateGame.spinBoard[ri].setSymbolsWithRawSymbols(makeSpinSymbols(rawBoard[ri]));
@@ -871,6 +878,7 @@ const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
 			cell.displayAlpha.set(1, { duration: 0 });
 			cell.displayScale.set(1, { duration: 0 });
 			cell.displayX.set(0, { duration: 0 });
+			cell.pulling = false;
 			cell.symbolState = 'land';
 		}
 	}
@@ -915,6 +923,7 @@ const resetBoardVisuals = () => {
 		for (const cell of reel) {
 			cell.highlighted = false;
 			cell.fresh = false;
+			cell.pulling = false;
 			applyCellVisualState(cell);
 			cell.displayX.set(0, { duration: 0 });
 			cell.displayScale.set(1, { duration: 0 });

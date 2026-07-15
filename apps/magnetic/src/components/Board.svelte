@@ -29,6 +29,7 @@
 		symbol: 20,
 		lockedCover: 30,
 		lockedFrame: 31,
+		pulledSymbol: 26,
 		lockedSymbol: 32,
 	} as const;
 	let show = $state(true);
@@ -560,7 +561,7 @@
 						{width}
 						{height}
 						alpha={cell.displayAlpha.current}
-						zIndex={Z.symbol}
+						zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
 					/>
 				{:else}
 					<Sprite
@@ -572,7 +573,7 @@
 						{height}
 						alpha={cell.locked ? 1 : cell.displayAlpha.current}
 						tint={0xffffff}
-						zIndex={Z.symbol}
+						zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
 					/>
 				{/if}
 			{/each}

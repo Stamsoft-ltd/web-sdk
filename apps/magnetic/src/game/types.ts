@@ -47,4 +47,5 @@ export type BoardCell = RawSymbol & {
 	target: boolean;
 	persistent: boolean;
 	fresh: boolean;
+	pulling: boolean;
 };
