@@ -192,12 +192,13 @@
 			height={LOGO_H}
 		/>
 
-		<!-- Studio logo, anchored to the top-right corner of the game area -->
+		<!-- Studio logo, anchored to the top-right corner of the game area. Landscape hugs the very
+		     top edge so it clears the right button rail on short screens. -->
 		<Sprite
 			key="pressPlayLogo"
 			anchor={{ x: 1, y: 0 }}
 			x={main.width - MARGIN_X}
-			y={MARGIN_Y + BRAND_H * 0.2}
+			y={isLandscape ? main.height * 0.012 : MARGIN_Y + BRAND_H * 0.2}
 			width={BRAND_W}
 			height={BRAND_H}
 		/>

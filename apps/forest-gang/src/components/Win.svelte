@@ -178,7 +178,9 @@
 				{/if}
 				</Container>
 
-				<PressToContinue onpress={() => {
+				<!-- Text only during the big-win board show — on plain line-win count-ups there is
+				     no dark overlay and it sat unreadable on the bright floor (press still skips). -->
+				<PressToContinue showText={hasBoardAnimation} onpress={() => {
 					if (!snappedToFinal) {
 						snapToFinal(finishCountUp);
 					} else {

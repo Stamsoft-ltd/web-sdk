@@ -156,10 +156,10 @@
 				slideY.set(deerH, { duration: 0 });
 				slideY.set(0, { duration: 520, easing: backOut });
 			} else {
-				// deer zooms in
+				// deer zooms in from SMALL to full size with a springy settle
 				slideY.set(0, { duration: 0 });
-				deerScale.set(0.82, { duration: 0 });
-				deerScale.set(1, { duration: 420, easing: backOut });
+				deerScale.set(0.08, { duration: 0 });
+				deerScale.set(1, { duration: 560, easing: backOut });
 			}
 			// roll through symbols, then land on the chosen one
 			startRoll(emitterEvent.symbol);

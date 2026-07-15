@@ -9,6 +9,8 @@
 
 <script lang="ts">
 	import { Container, Sprite, Text } from 'pixi-svelte';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 	import { waitForResolve } from 'utils-shared/wait';
@@ -19,6 +21,7 @@
 	import { getContext } from '../game/context';
 	import { WIN_GRADIENT } from '../game/goldGradient';
 	import PressToContinue from './PressToContinue.svelte';
+	import PressAnywhereText from './PressAnywhereText.svelte';
 	import FreeSpinAnimation from './FreeSpinAnimation.svelte';
 
 	const context = getContext();
@@ -48,6 +51,33 @@
 	let oncomplete = $state(() => {});
 	let amountSizes = $state({ width: 0, height: 0 });
 
+	// ── Entry choreography (same as the intro): CONGRATULATIONS drops from the TOP while the
+	//    rest of the layout rises from the BOTTOM. ──
+	const slideIn = new Tween(0, { duration: 750, easing: cubicOut });
+	$effect(() => {
+		if (show) {
+			slideIn.set(0, { duration: 0 });
+			slideIn.set(1, { duration: 750, easing: cubicOut });
+		}
+	});
+
+	// Live clock for the pulses while the popup is up.
+	let animT = $state(0);
+	$effect(() => {
+		if (!show) return;
+		let raf = 0;
+		const t0 = performance.now();
+		const tick = (now: number) => {
+			animT = (now - t0) / 1000;
+			raf = requestAnimationFrame(tick);
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	});
+	const congratsPulse = $derived(slideIn.current >= 0.99 ? 1 + 0.07 * Math.sin(animT * 3.7) : 1);
+	// Medallion zoom in/out breathe.
+	const medallionPulse = $derived(1 + 0.06 * Math.sin(animT * 2.6));
+
 	context.eventEmitter.subscribeOnMount({
 		freeSpinOutroShow: () => (show = true),
 		freeSpinOutroHide: async () => (show = false),
@@ -74,16 +104,13 @@
 						     portrait factor — deriving it from `sizes` (which already scales with the
 						     factor) compounded to factor² and overflowed. Other layouts unchanged. -->
 						{@const BW = isPortrait ? 1100 : sizes.width * 1.8}
+						{@const fromBottom = (1 - slideIn.current) * BW * 0.55}
+						{@const fromTop = (1 - slideIn.current) * -BW * 0.7}
 
+						<Container y={fromBottom}>
 						<Sprite key="fsBoardBg" anchor={{ x: 0.5, y: 0.5 }} width={BW} height={BW} />
 
-						<!-- CONGRATULATIONS! (gold) + YOU WON (green) — live translatable Cinzel text -->
-						<Text
-							anchor={{ x: 0.5, y: 0.5 }}
-							text={t('FS CONGRATS')}
-							style={textStyle(Math.round(BW * 0.044), 0xf1c14a)}
-							y={Math.round(-BW * 0.31)}
-						/>
+						<!-- YOU WON (green) — live translatable Cinzel text -->
 						<Text
 							anchor={{ x: 0.5, y: 0.5 }}
 							text={t('FS YOU WON')}
@@ -91,14 +118,15 @@
 							y={Math.round(-BW * 0.238)}
 						/>
 
-						<!-- Scatter medallion -->
-						<Sprite
-							key="fsMedallion"
-							anchor={{ x: 0.5, y: 0.5 }}
-							width={Math.round(BW * 0.28)}
-							height={Math.round(BW * 0.28 * (273 / 300))}
-							y={Math.round(-BW * 0.051)}
-						/>
+						<!-- Scatter medallion — zooms in/out gently -->
+						<Container y={Math.round(-BW * 0.051)} scale={medallionPulse}>
+							<Sprite
+								key="fsMedallion"
+								anchor={{ x: 0.5, y: 0.5 }}
+								width={Math.round(BW * 0.28)}
+								height={Math.round(BW * 0.28 * (273 / 300))}
+							/>
+						</Container>
 
 						<!-- Win amount — Cinzel 900 gold with black outline; scales down to fit the board width -->
 						{@const winFont = Math.round(BW * 0.072)}
@@ -120,10 +148,31 @@
 								}}
 							/>
 						</Container>
+						</Container>
+
+						<!-- CONGRATULATIONS! drops in from the top, then pulses in place -->
+						<Container y={fromTop}>
+							<Container y={Math.round(-BW * 0.31)} scale={congratsPulse}>
+								<Text
+									anchor={{ x: 0.5, y: 0.5 }}
+									text={t('FS CONGRATS')}
+									style={textStyle(Math.round(BW * 0.044), 0xf1c14a)}
+								/>
+							</Container>
+						</Container>
+
+						<!-- Anchored to the board so it always sits just below its bottom edge, clear
+						     of the leaves and the HTML HUD regardless of window shape. -->
+						{#if !isPortrait}
+							<PressAnywhereText y={Math.round(BW * 0.465)} fontSize={Math.round(BW * 0.042)} />
+						{/if}
 					{/snippet}
 				</FreeSpinAnimation>
 
-				<PressToContinue onpress={() => (countUpCompleted ? oncomplete() : finishCountUp())} />
+				<PressToContinue
+					showText={isPortrait}
+					onpress={() => (countUpCompleted ? oncomplete() : finishCountUp())}
+				/>
 			{/snippet}
 		</WinCountUpProvider>
 	{/if}

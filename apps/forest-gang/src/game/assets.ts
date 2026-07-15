@@ -244,11 +244,6 @@ const assets = {
 	mythicWinBoard:    { type: 'sprite', src: './assets/components/win_boards/mega_win.png?v=20260625', preload: true },
 	legendaryWinBoard: { type: 'sprite', src: './assets/components/win_boards/max_win.png?v=20260629', preload: true },
 	maxWinScreen:      { type: 'sprite', src: './assets/components/win_boards/max_win_screen.png?v=20260701', preload: true },
-	pressToContinueText: {
-		type: 'sprites',
-		src: './assets/sprites/pressToContinueText/MM_pressanywhere.json?v=20260611',
-		preload: true,
-	},
 	explosion: {
 		type: 'spine',
 		src: {

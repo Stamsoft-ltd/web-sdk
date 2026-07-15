@@ -30,7 +30,7 @@
 	const btnWideBg = ap('/assets/components/navbar/btn_bg_wide.png'); // wide green — buy bonus
 	// Portrait/mobile pads (Figma 2792-4133)
 	// Mobile-landscape HUD art (Figma 2682-3639)
-	const lsRightBar = ap('/assets/components/symbols/landscape/right_bar.png'); // vertical control bar
+	const lsRightBar = ap('/assets/components/symbols/landscape/right_bar.png?v=20260715'); // vertical control bar
 	const lsBetPad = ap('/assets/components/symbols/landscape/stepper_pad.png'); // − value + bottom pad
 	const lsBuyBonus = ap('/assets/components/symbols/landscape/buy_bonus.png'); // round green badge
 	const navPadMobile = ap('/assets/components/navbar/nav_pad_mobile.png'); // control-bar pill
@@ -39,8 +39,9 @@
 	const spinMobile = ap('/assets/components/navbar/spin_mobile.png'); // green spin w/ leaves
 
 	// Gold icons layered over the button backgrounds
-	const iconMenu = ap('/assets/hud/icon-menu.png');
+	const iconMenu = ap('/assets/hud/icon-info.png');
 	const iconSound = ap('/assets/hud/icon-volume.png');
+	const iconSoundMuted = ap('/assets/hud/icon-volume-muted.png');
 	const iconMinus = ap('/assets/hud/icon-minus.png');
 	const iconPlus = ap('/assets/hud/icon-plus.png');
 	const iconAuto = ap('/assets/hud/icon-autoplay.png');
@@ -310,7 +311,11 @@
 			if (!slot) return;
 			node.style.transformOrigin = 'left center';
 			node.style.transform = 'none';
-			const avail = slot.clientWidth;
+			// Space actually left for the value: the slot minus what the preceding sibling
+			// (label / minus-button) already occupies.
+			const prev = node.previousElementSibling as HTMLElement | null;
+			const used = prev ? prev.getBoundingClientRect().width + 8 : 0;
+			const avail = slot.clientWidth - used;
 			const full = node.scrollWidth;
 			const scale = full > avail && avail > 0 ? avail / full : 1;
 			node.style.transform = scale < 1 ? `scale(${scale})` : 'none';
@@ -347,7 +352,7 @@
 						<img class="pt-icon" src={iconMenu} alt="menu" />
 					</button>
 					<button class="pt-round" type="button" onclick={toggleSound} aria-label="Sound">
-						<img class="pt-icon" src={iconSound} alt="sound" class:is-muted={isMuted} />
+						<img class="pt-icon" src={isMuted ? iconSoundMuted : iconSound} alt="sound" class:is-muted={isMuted} />
 					</button>
 				</div>
 
@@ -455,7 +460,7 @@
 				onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 				aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 			>
-				<span class="ls-buy__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.6 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
+				<span class="ls-buy__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.82 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
 			</button>
 
 			<!-- Bottom-centre bet pad: − value + -->
@@ -491,7 +496,7 @@
 					<img class="ls-icon" src={iconMenu} alt="menu" />
 				</button>
 				<button class="ls-round" type="button" onclick={toggleSound} aria-label="Sound">
-					<img class="ls-icon" src={iconSound} alt="sound" class:is-muted={isMuted} />
+					<img class="ls-icon" src={isMuted ? iconSoundMuted : iconSound} alt="sound" class:is-muted={isMuted} />
 				</button>
 				<button
 					class="ls-spin"
@@ -549,7 +554,7 @@
 					onclick={toggleSound}
 					aria-label="Sound"
 				>
-					<img class="nav-icon" src={iconSound} alt="sound" class:is-muted={isMuted} />
+					<img class="nav-icon" src={isMuted ? iconSoundMuted : iconSound} alt="sound" class:is-muted={isMuted} />
 				</button>
 			</div>
 
@@ -608,7 +613,7 @@
 						onclick={toggleSound}
 						aria-label="Sound"
 					>
-						<img class="nav-icon" src={iconSound} alt="sound" class:is-muted={isMuted} />
+						<img class="nav-icon" src={isMuted ? iconSoundMuted : iconSound} alt="sound" class:is-muted={isMuted} />
 					</button>
 				{/if}
 				<button
@@ -1113,7 +1118,7 @@
 	}
 
 	.nav-btn img.is-muted {
-		opacity: 0.4;
+		opacity: 1;
 	}
 
 	.nav-btn.active {
@@ -1521,7 +1526,7 @@
 		font-family: 'Cinzel', serif;
 		/* How far the bottom controls (bet pad + BUY BONUS) drop toward the bottom edge. Both use
 		   this so they stay vertically centre-aligned with each other. */
-		--ls-drop: 4px;
+		--ls-drop: -1px;
 	}
 	.ls-hud button,
 	.ls-hud .ls-bet__value {
@@ -1531,8 +1536,10 @@
 	/* Left rail: BUY BONUS + BALANCE, bottom-left */
 	.ls-left {
 		position: absolute;
-		left: 4px;
-		bottom: 14px;
+		left: 16px;
+		bottom: 3px;
+		/* Stop before the BUY BONUS button (centred at 37%, half-width subtracted). */
+		max-width: calc(37% - clamp(48px, 9vh, 84px) - 12px);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -1545,11 +1552,11 @@
 		/* Anchor the button's bottom edge to the bet pad's vertical centre (pad: bottom 0, height
 		   clamp(70px,10.5vh,88px)), then translateY(50%) drops it by half its own height so the two
 		   centres line up regardless of the button's rendered height. */
-		bottom: calc(clamp(70px, 10.5vh, 88px) / 2 - var(--ls-drop));
+		bottom: calc(clamp(26px, 12vh, 104px) / 2 - var(--ls-drop));
 		left: 37%;
 		transform: translate(-50%, 50%);
 		box-sizing: border-box;
-		width: clamp(120px, 15vw, 168px);
+		width: clamp(64px, 24vh, 235px);
 		height: auto;
 		aspect-ratio: 730 / 267;
 		border: 0;
@@ -1562,13 +1569,15 @@
 	.ls-buy:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
 	.ls-buy__label {
 		/* Centred on the green body: the button art has leaves along the bottom, so the body centre is
-		   above the element centre. Absolute % is relative to the button height → stable at any size. */
+		   above the element centre. NO transform-based centering here — the fitLabel action overwrites
+		   `transform` with its down-scale, which silently removed a translate(-50%,-50%) and shoved the
+		   label off the button. Block-level + text-align centers horizontally; em offset vertically. */
 		position: absolute;
-		left: 50%;
-		top: 43%;
-		transform: translate(-50%, -50%);
+		left: 0;
+		right: 0;
+		top: calc(43% - 0.55em);
 		font-family: 'Poppins', sans-serif;
-		font-size: 0.82rem;
+		font-size: clamp(9px, 2.7vh, 15px);
 		font-weight: 600;
 		line-height: 1;
 		letter-spacing: 0.03em;
@@ -1587,7 +1596,7 @@
 	}
 	.ls-balance__label {
 		font-family: 'Poppins', sans-serif;
-		font-size: 12px;
+		font-size: clamp(8px, 3vh, 12px);
 		font-style: normal;
 		font-weight: 500;
 		line-height: normal;
@@ -1600,7 +1609,7 @@
 	.ls-balance__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 600;
-		font-size: 0.8rem;
+		font-size: clamp(9px, 3.2vh, 13px);
 		color: #fff;
 	}
 
@@ -1614,8 +1623,8 @@
 		display: flex;
 		align-items: center;
 		/* Bigger pad; buttons sit just inside the rounded ends (small inset) via the value's auto margins. */
-		height: clamp(70px, 10.5vh, 88px);
-		width: clamp(205px, 39vh, 310px);
+		height: clamp(26px, 12vh, 104px);
+		width: clamp(84px, 43vh, 360px);
 		padding: 0 1.0%;
 		box-sizing: border-box;
 		border: 0;
@@ -1624,7 +1633,7 @@
 	.ls-bet__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 700;
-		font-size: 1.1rem;
+		font-size: clamp(11px, 3.9vh, 23px);
 		color: #fff;
 		/* Auto side margins centre the value and push the two buttons to the pill ends. */
 		margin: 0 auto;
@@ -1635,8 +1644,8 @@
 	/* Same technique as .ls-round (which renders as a proper circle): normal-flow square button.
 	   The absolute-positioning version was rendering as an oval. */
 	.ls-step {
-		width: clamp(48px, 8vh, 66px);
-		height: clamp(48px, 8vh, 66px);
+		width: clamp(19px, 9vh, 76px);
+		height: clamp(19px, 9vh, 76px);
 		flex: 0 0 auto;
 		border: 0;
 		background: var(--btn-round-bg) center / contain no-repeat;
@@ -1653,20 +1662,24 @@
 	/* Right rail: menu, sound, spin, turbo, autospin (vertical bar) */
 	.ls-right {
 		position: absolute;
-		right: 10px;
+		right: 3px;
 		top: 50%;
 		transform: translateY(-50%);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: clamp(6px, 1.4vh, 12px);
-		padding: 18px 8px;
-		background: var(--ls-rightbar) center / 100% 100% no-repeat;
+		gap: clamp(4px, 1.5vh, 13px);
+		/* Slim: the bar art is trimmed to its visible wood, so horizontal padding directly
+		   widens the rendered bar — keep it minimal. */
+		padding: 14px 4px;
+		/* Bar art drawn narrower than the button stack (like the original design: the spin
+		   button overflows the wooden bar's sides) — scales cleanly for small AND large sizes. */
+		background: var(--ls-rightbar) center / 66% 100% no-repeat;
 	}
 	.ls-round {
-		width: clamp(40px, 5vh, 52px);
-		height: clamp(40px, 5vh, 52px);
+		width: clamp(20px, 5.6vh, 56px);
+		height: clamp(20px, 5.6vh, 56px);
 		border: 0;
 		background: var(--btn-round-bg) center / contain no-repeat;
 		padding: 0;
@@ -1678,11 +1691,11 @@
 	.ls-round:not(:disabled):hover { filter: brightness(1.1); }
 	.ls-round:disabled { opacity: 0.5; cursor: default; }
 	.ls-round .ls-icon { width: 46%; height: 46%; object-fit: contain; }
-	.ls-round .ls-icon.is-muted { opacity: 0.55; }
+	.ls-round .ls-icon.is-muted { opacity: 1; }
 
 	.ls-spin {
-		width: clamp(72px, 11vh, 104px);
-		height: clamp(72px, 11vh, 104px);
+		width: clamp(36px, 11.5vh, 108px);
+		height: clamp(36px, 11.5vh, 108px);
 		border: 0;
 		background: var(--ls-spin) center / contain no-repeat;
 		padding: 0;

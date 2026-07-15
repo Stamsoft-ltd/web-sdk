@@ -9,6 +9,8 @@
 	import { MainContainer } from 'components-layout';
 	import { FadeContainer } from 'components-pixi';
 	import { stateI18nDerived } from 'state-shared';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_SIZE } from '../game/constants';
@@ -64,7 +66,16 @@
 	let current = $state(0);
 	let total = $state(0);
 	let titleSizes: Sizes = $state({ width: 0, height: 0 });
-	let counterSizes: Sizes = $state({ width: 0, height: 0 });
+	// The counter is split so only the current-spin number pops on change ("6" in "6/10").
+	let curSizes: Sizes = $state({ width: 0, height: 0 });
+	let restSizes: Sizes = $state({ width: 0, height: 0 });
+	const counterSizes = $derived({
+		width: curSizes.width + restSizes.width,
+		height: Math.max(curSizes.height, restSizes.height),
+	});
+
+	// Pop: the new number appears enlarged and settles back to normal size.
+	const popScale = new Tween(1, { duration: 450, easing: cubicOut });
 
 	// Stack the two lines and centre the group on the board's wood centre.
 	const groupSizes = $derived({
@@ -84,8 +95,13 @@
 		},
 		freeSpinCounterUpdate: (emitterEvent) => {
 			if (emitterEvent.current !== undefined) {
+				const changed = emitterEvent.current !== current;
 				current = emitterEvent.current;
 				show = true;
+				if (changed) {
+					popScale.set(1.8, { duration: 0 });
+					popScale.set(1, { duration: 450, easing: cubicOut });
+				}
 			}
 			if (emitterEvent.total !== undefined) total = emitterEvent.total;
 		},
@@ -119,21 +135,38 @@
 				}}
 			/>
 
-			<!-- current / total counter — Cinzel 700, gold gradient, large -->
+			<!-- current / total counter — Cinzel 700, gold gradient, large. The current number is a
+			     separate Text so it can pop (appear enlarged, settle to normal) on every change;
+			     it is anchored at its right edge so the growth never pushes into the "/total". -->
+			{@const counterY = titleSizes.height + GAP}
+			{@const counterX = groupSizes.width / 2 - counterSizes.width / 2}
+			{@const counterStyle = {
+				fontFamily: 'Cinzel',
+				fontWeight: '700',
+				fontSize: counterFont,
+				fill: GOLD_GRADIENT,
+				align: 'center',
+				letterSpacing: counterFont * 0.03,
+			}}
+			<Container
+				x={counterX + curSizes.width}
+				y={counterY + counterSizes.height / 2}
+				scale={popScale.current}
+			>
+				<Text
+					anchor={{ x: 1, y: 0.5 }}
+					text={`${current}`}
+					onresize={(sizes) => (curSizes = sizes)}
+					style={counterStyle}
+				/>
+			</Container>
 			<Text
-				x={groupSizes.width / 2}
-				y={titleSizes.height + GAP}
-				anchor={{ x: 0.5, y: 0 }}
-				text={`${current}/${total}`}
-				onresize={(sizes) => (counterSizes = sizes)}
-				style={{
-					fontFamily: 'Cinzel',
-					fontWeight: '700',
-					fontSize: counterFont,
-					fill: GOLD_GRADIENT,
-					align: 'center',
-					letterSpacing: counterFont * 0.03,
-				}}
+				x={counterX + curSizes.width}
+				y={counterY}
+				anchor={{ x: 0, y: 0 }}
+				text={`/${total}`}
+				onresize={(sizes) => (restSizes = sizes)}
+				style={counterStyle}
 			/>
 		</Container>
 	</FadeContainer>

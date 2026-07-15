@@ -10,10 +10,13 @@
 	import { stateI18nDerived } from 'state-shared';
 	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
-	import { Sprite, Text } from 'pixi-svelte';
+	import { Container, Sprite, Text } from 'pixi-svelte';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 
 	import { getContext } from '../game/context';
 	import PressToContinue from './PressToContinue.svelte';
+	import PressAnywhereText from './PressAnywhereText.svelte';
 	import FreeSpinAnimation from './FreeSpinAnimation.svelte';
 
 	const context = getContext();
@@ -90,6 +93,41 @@
 		},
 	});
 
+	// ── Entry choreography: CONGRATULATIONS drops in from the TOP while the rest of the layout
+	//    rises from the BOTTOM. slideIn goes 0 -> 1 each time the popup shows. ──
+	const slideIn = new Tween(0, { duration: 750, easing: cubicOut });
+	$effect(() => {
+		if (show) {
+			slideIn.set(0, { duration: 0 });
+			slideIn.set(1, { duration: 750, easing: cubicOut });
+		}
+	});
+
+	// ── Live clock for the flicker + pulses, running only while the popup is up. ──
+	let animT = $state(0);
+	$effect(() => {
+		if (!show) return;
+		let raf = 0;
+		const t0 = performance.now();
+		const tick = (now: number) => {
+			animT = (now - t0) / 1000;
+			raf = requestAnimationFrame(tick);
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	});
+	// CONGRATULATIONS pulses once it has settled inside; the 10 counter pulses continuously.
+	const congratsPulse = $derived(
+		slideIn.current >= 0.99 ? 1 + 0.07 * Math.sin(animT * 3.7) : 1,
+	);
+	// Aggressive heartbeat on the count: fast double-beat (big swell + echo) instead of a soft sine.
+	const numPulse = $derived.by(() => {
+		const p = (animT * 1.4) % 1;
+		const beat =
+			Math.exp(-((p - 0.14) * (p - 0.14)) / 0.008) + 0.6 * Math.exp(-((p - 0.38) * (p - 0.38)) / 0.014);
+		return 1 + 0.22 * beat;
+	});
+
 	context.eventEmitter.subscribeOnMount({
 		freeSpinIntroShow: () => (show = true),
 		freeSpinIntroHide: () => (show = false),
@@ -106,17 +144,15 @@
 	<FreeSpinAnimation xOffset={120} portraitScale={1.3}>
 		{#snippet children(_)}
 			{@const BW = 1100}
+			{@const fromBottom = (1 - slideIn.current) * BW * 0.55}
+			{@const fromTop = (1 - slideIn.current) * -BW * 0.7}
 
+			<Container>
+			<!-- Everything except CONGRATULATIONS rises from the bottom -->
+			<Container y={fromBottom}>
 			<!-- Square wooden board centred on slot pivot -->
 			<Sprite key="fsBoardBg" anchor={{ x: 0.5, y: 0.5 }} width={BW} height={BW} />
 
-			<!-- CONGRATULATIONS! (gold) — live translatable text -->
-			<Text
-				anchor={{ x: 0.5, y: 0.5 }}
-				text={t('FS CONGRATS')}
-				style={textStyle(Math.round(BW * L.congratsF), 0xf1c14a)}
-				y={Math.round(BW * L.congratsY)}
-			/>
 			<!-- YOU WON (green) -->
 			<Text
 				anchor={{ x: 0.5, y: 0.5 }}
@@ -142,13 +178,15 @@
 			<!-- Scatter medallion — shrunk to make room for the name + description.
 			     Hidden in portrait (per request) so the text reads bigger/clearer. -->
 			{#if !isPortrait}
-				<Sprite
-					key="fsMedallion"
-					anchor={{ x: 0.5, y: 0.5 }}
-					width={Math.round(BW * 0.15)}
-					height={Math.round(BW * 0.15 * (273 / 300))}
-					y={Math.round(-BW * 0.035)}
-				/>
+				<!-- Gentle breathing zoom, same feel as the outro medallion. -->
+				<Container y={Math.round(-BW * 0.035)} scale={1 + 0.06 * Math.sin(animT * 2.6)}>
+					<Sprite
+						key="fsMedallion"
+						anchor={{ x: 0.5, y: 0.5 }}
+						width={Math.round(BW * 0.15)}
+						height={Math.round(BW * 0.15 * (273 / 300))}
+					/>
+				</Container>
 			{/if}
 
 			<!-- Number frame (no baked-in number) -->
@@ -159,12 +197,13 @@
 				height={Math.round(BW * L.frameW * (1084 / 3065))}
 				y={Math.round(BW * L.frameY)}
 			/>
-			<Text
-				anchor={{ x: 0.5, y: 0.5 }}
-				text={freeSpinsFromEvent}
-				style={textStyle(Math.round(BW * L.numF), 0xf1c14a)}
-				y={Math.round(BW * L.numY)}
-			/>
+			<Container y={Math.round(BW * L.numY)} scale={numPulse}>
+				<Text
+					anchor={{ x: 0.5, y: 0.5 }}
+					text={freeSpinsFromEvent}
+					style={textStyle(Math.round(BW * L.numF), 0xf1c14a)}
+				/>
+			</Container>
 
 			<!-- FREE SPINS (green) — live translatable text -->
 			<Text
@@ -173,8 +212,27 @@
 				style={textStyle(Math.round(BW * L.fsF), 0x7cc23f)}
 				y={Math.round(BW * L.fsY)}
 			/>
+			</Container>
+
+			<!-- CONGRATULATIONS! (gold) drops in from the top, then pulses in place -->
+			<Container y={fromTop}>
+				<Container y={Math.round(BW * L.congratsY)} scale={congratsPulse}>
+					<Text
+						anchor={{ x: 0.5, y: 0.5 }}
+						text={t('FS CONGRATS')}
+						style={textStyle(Math.round(BW * L.congratsF), 0xf1c14a)}
+					/>
+				</Container>
+			</Container>
+
+			<!-- Anchored to the board so it always sits just below its bottom edge, clear of
+			     the leaves and the HTML HUD regardless of window shape. -->
+			{#if !isPortrait}
+				<PressAnywhereText y={Math.round(BW * 0.465)} fontSize={Math.round(BW * 0.042)} />
+			{/if}
+			</Container>
 		{/snippet}
 	</FreeSpinAnimation>
 
-	<PressToContinue onpress={() => oncomplete()} />
+	<PressToContinue showText={isPortrait} onpress={() => oncomplete()} />
 </FadeContainer>

@@ -87,7 +87,7 @@ export type GameInfoPayout = {
 };
 
 export type GameInfoPage = {
-	kind: 'overview' | 'features' | 'cards' | 'paytable' | 'paylines' | 'placeholder';
+	kind: 'overview' | 'features' | 'cards' | 'paytable' | 'paylines' | 'uiguide' | 'placeholder';
 	/** Decorative forest frame border drawn over the whole page. */
 	frame: string;
 	/** Inner background image shown inside the frame. */

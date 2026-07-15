@@ -68,16 +68,35 @@
 		stateBetDerived.setBetAmount(next);
 	};
 
-	let confirmMode = $state<null | 'BONUS' | 'SUPER'>(null);
+	let confirmMode = $state<null | 'BONUS' | 'SUPER' | 'FEATURE'>(null);
 
 	const buyMode      = (mode: 'BONUS' | 'SUPER') => { stateBet.activeBetModeKey = mode; props.onclose(); context.eventEmitter.broadcast({ type: 'bet' }); };
-	const openConfirm  = (mode: 'BONUS' | 'SUPER') => { confirmMode = mode; };
+	const openConfirm  = (mode: 'BONUS' | 'SUPER' | 'FEATURE') => { confirmMode = mode; };
 	const closeConfirm = () => { confirmMode = null; };
 	const toggleActivateMode = (toggle: () => void) => { toggle(); props.onclose(); };
 
 	// BONUS → DEAL IT (100×), SUPER → ALL IN (400×)
-	const confirmLabel = $derived(confirmMode === 'SUPER' ? i18nDerived.allIn() : i18nDerived.dealIt());
-	const confirmCost  = $derived(confirmMode === 'SUPER' ? dealItCost : allInCost);
+	const confirmLabel = $derived(
+		confirmMode === 'SUPER'
+			? i18nDerived.allIn()
+			: confirmMode === 'FEATURE'
+				? i18nDerived.translate('CARD FEATURE TITLE')
+				: i18nDerived.dealIt(),
+	);
+	const confirmCost  = $derived(
+		confirmMode === 'SUPER' ? dealItCost : confirmMode === 'FEATURE' ? featureCost : allInCost,
+	);
+	// Compliance: any mode costing more than 2x base must be confirmed before activation —
+	// Feature Spins (20x) goes through the same confirm dialog as the buy bonuses. Confirming
+	// FEATURE toggles the mode on; deactivation stays single-click (it costs nothing).
+	const confirmAccept = () => {
+		if (confirmMode === 'FEATURE') {
+			confirmMode = null;
+			toggleActivateMode(props.onToggleFeature);
+			return;
+		}
+		buyMode(confirmMode!);
+	};
 
 	onMount(() => {
 		const onKeyDown = (e: KeyboardEvent) => {
@@ -130,7 +149,10 @@
 					class:card-btn--active={props.isFeatureActive}
 					type="button"
 					disabled={!props.isFeatureActive && !canFeature}
-					onclick={() => toggleActivateMode(props.onToggleFeature)}
+					onclick={() =>
+						props.isFeatureActive
+							? toggleActivateMode(props.onToggleFeature)
+							: openConfirm('FEATURE')}
 				><span class="btn-label" use:fitLabel={props.isFeatureActive ? i18nDerived.deactivate() : i18nDerived.activate()}>{props.isFeatureActive ? i18nDerived.deactivate() : i18nDerived.activate()}</span></button>
 			</div>
 		</div>
@@ -209,7 +231,7 @@
 				<div class="confirm-text">{i18nDerived.translateVars('CONFIRM TEXT', { mode: confirmLabel, cost: confirmCost })}</div>
 				<div class="confirm-row">
 					<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}>{i18nDerived.cancel()}</button>
-					<button class="confirm-btn confirm-btn--ok" type="button" onclick={() => buyMode(confirmMode!)}>{i18nDerived.confirm()}</button>
+					<button class="confirm-btn confirm-btn--ok" type="button" onclick={confirmAccept}>{i18nDerived.confirm()}</button>
 				</div>
 			</div>
 		</div>
@@ -337,6 +359,21 @@
 		width: auto; height: auto;
 		object-fit: contain;
 		filter: drop-shadow(0 2px 5px rgba(0,0,0,0.55));
+		/* Hanging-ornament swing: pinned at the TOP edge, rocking side to side while the buy
+		   bonus screen is open. */
+		transform-origin: top center;
+		animation: card-icon-swing 1.7s ease-in-out infinite;
+	}
+	/* Stagger the cards so the coins don't swing in unison. */
+	.card:nth-child(2) .card-icon { animation-delay: -0.4s; }
+	.card:nth-child(3) .card-icon { animation-delay: -0.9s; }
+	.card:nth-child(4) .card-icon { animation-delay: -1.3s; }
+	@keyframes card-icon-swing {
+		0% { transform: rotate(0deg); }
+		25% { transform: rotate(6deg); }
+		50% { transform: rotate(0deg); }
+		75% { transform: rotate(-6deg); }
+		100% { transform: rotate(0deg); }
 	}
 
 	.card-price {

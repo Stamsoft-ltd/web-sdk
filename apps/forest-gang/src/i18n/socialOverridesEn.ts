@@ -49,7 +49,7 @@ export const socialOverridesEn: Record<string, string> = {
 	'RULE WILD TEXT': 'Wild substitutes for all regular winning symbols and does not substitute for Scatter.',
 	'RULE BUY TITLE': 'PLAY / ACTIVATE MODES',
 	'RULE BUY TEXT':
-		'Deal It play cost is 100x play amount. All In play cost is 400x play amount. Chance Spin costs 2x play amount per round. Feature Spin costs 20x play amount per round. Max win is 25,000x. Target RTP is 96.1%.',
+		'Deal It play cost is 100x play amount. All In play cost is 400x play amount. Chance Spin costs 2x play amount per round. Feature Spin costs 20x play amount per round. Max win is 25,000x. Target RTP is 96.11%.',
 
 	'FEATURE SELECTED SYMBOL TEXT':
 		'Any regular winning symbol can be the expanding symbol. When it lands, all affected reels expand to fill that symbol, and 3 or more reels win even without adjacent connections.',
@@ -74,8 +74,8 @@ export const socialOverridesEn: Record<string, string> = {
 	'PAYTABLE MAX_TEXT': 'Advertised max win is 25,000x the selected play amount.',
 
 	// ── Info / game-rules pages ──────────────────────────────────────────────────
-	'INFO GAME BODY':
-		'Forest Gang is a 5x4 video slot played on 20 paylines.\nWins are awarded from left to right on consecutive reels, starting from reel 1, when matching symbols land on an active payline.\nThe game includes 5 premium symbols, 5 low symbols, a Wild symbol, and a Scatter symbol.\n\nMaximum win potential is 25,000x the total play.\n\nTheoretical RTP: 96.1%',
+	'INFO OVERVIEW BODY':
+		'Forest Gang is a 5x4 video slot played on 20 paylines.\nWins are awarded from left to right on consecutive reels, starting from reel 1, when matching symbols land on an active payline.\nThe game includes 5 premium symbols, 5 low symbols, a Wild symbol, and a Scatter symbol.\n\nMaximum win potential is 25,000x the total play.\n\nTheoretical RTP: 96.11%',
 
 	'INFO WILD TEXT':
 		'The Wild substitutes for all regular winning symbols. The Wild does not substitute for the Scatter. Wild win: 5 in a line only 250x.',
@@ -95,6 +95,20 @@ export const socialOverridesEn: Record<string, string> = {
 
 	'INFO LEGAL TEXT':
 		'Malfunction voids all wins and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.\n\nThe expected return is calculated over a large number of plays. The game display is for visual and entertainment purposes only and does not represent any physical gaming device.\n\nAll winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.\n\nTM and © 2026 Stake Engine.',
+
+	// ── UI guide page (bet -> play wording) ─────────────────────────────────────
+	'INFO UI BETPLUS TITLE': 'PLAY +',
+	'INFO UI BETPLUS TEXT': 'Increases your total play amount.',
+	'INFO UI BETMINUS TITLE': 'PLAY -',
+	'INFO UI BETMINUS TEXT': 'Decreases your total play amount.',
+
+	// ── Stake.us required terminology (bet-details / fairness panel wording) ─────
+	'BASE BET': 'BASE PLAY',
+	'Base Bet': 'Base Play',
+	'COST MULTIPLIER': 'FEATURE MULTIPLIER',
+	'Cost Multiplier': 'Feature Multiplier',
+	'PAYOUT MULTIPLIER': 'FINAL MULTIPLIER',
+	'Payout Multiplier': 'Final Multiplier',
 
 	// ── Shared package keys (components-ui-html / components-ui-pixi) ────────────
 	'BET MENU': 'PLAY MENU',

@@ -26,6 +26,23 @@
 	// Hidden while the deer presenter is on screen; revealed once it finishes.
 	let presenterActive = $state(false);
 	const show = $derived(!!selectedSymbol && !!mode && !presenterActive);
+
+	// Gentle idle motion on the selected symbol while the panel is up — a slow float with a
+	// hint of breathing, no flicker.
+	let animT = $state(0);
+	$effect(() => {
+		if (!show) return;
+		let raf = 0;
+		const t0 = performance.now();
+		const tick = (now: number) => {
+			animT = (now - t0) / 1000;
+			raf = requestAnimationFrame(tick);
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	});
+	const symBobY = $derived(Math.sin(animT * 2.1) * PANEL_H * 0.022);
+	const symBreath = $derived(1 + 0.018 * Math.sin(animT * 2.1 + 1.2));
 	// Shrink + pull-in on short desktop laptop canvases so the rail fits alongside the enlarged board.
 	const railAdj = $derived(context.stateGameDerived.bonusRailAdjust());
 	// Mobile-landscape: the rail becomes a full-height LEFT column (rendered in MainContainer).
@@ -104,9 +121,9 @@
 					key={spriteKey}
 					anchor={{ x: 0.5, y: 0.5 }}
 					x={PANEL_W * 0.5}
-					y={PANEL_H * 0.5}
-					width={SYM_SIZE}
-					height={SYM_SIZE * (SYMBOL_H / SYMBOL_W)}
+					y={PANEL_H * 0.5 + symBobY}
+					width={SYM_SIZE * symBreath}
+					height={SYM_SIZE * (SYMBOL_H / SYMBOL_W) * symBreath}
 				/>
 			{/if}
 		</Container>

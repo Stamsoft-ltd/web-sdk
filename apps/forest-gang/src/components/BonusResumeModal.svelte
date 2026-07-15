@@ -40,8 +40,12 @@
 		position: fixed; left: 50%; top: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 9999;
-		width: min(680px, 94vw);
+		/* Cap by height too (panel is 505:301) — on short landscape screens the width cap alone
+		   let the panel outgrow the viewport and the text spilled onto the wooden border. */
+		width: min(680px, 94vw, 150vh);
 		font-family: 'Cinzel', serif;
+		/* All inner sizing is in cqw so the content scales with the panel, not the viewport. */
+		container-type: inline-size;
 	}
 
 	.confirm-panel {
@@ -56,12 +60,13 @@
 	.confirm-content {
 		width: 100%;
 		display: flex; flex-direction: column; align-items: center;
-		gap: clamp(14px, 2.6vw, 26px);
+		gap: 3.4cqw;
 		text-align: center;
 	}
 
 	.confirm-title {
-		font-weight: 900; font-size: clamp(1.4rem, 3.2vw, 2.1rem);
+		font-weight: 900; font-size: 4.7cqw;
+		white-space: nowrap;
 		letter-spacing: 0.06em;
 		background: linear-gradient(180deg, #ffd84a 10%, #ffa90e 60%, #d18005 95%);
 		-webkit-background-clip: text; background-clip: text;
@@ -69,16 +74,16 @@
 		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 	}
 	.confirm-text {
-		font-size: clamp(0.95rem, 2vw, 1.25rem); font-weight: 700;
+		font-size: 2.9cqw; font-weight: 700;
 		color: #fff; line-height: 1.45;
 		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
 	}
 	.confirm-text strong { color: #ffd84a; }
 
-	.confirm-row { display: flex; gap: 16px; justify-content: center; width: 100%; }
+	.confirm-row { display: flex; gap: 2.4cqw; justify-content: center; width: 100%; }
 	.confirm-btn {
-		flex: 1 1 0; border-radius: 11px; padding: clamp(11px, 2vw, 16px);
-		font-family: 'Cinzel', serif; font-size: clamp(0.85rem, 1.7vw, 1.05rem); font-weight: 900;
+		flex: 1 1 0; border-radius: 1.6cqw; padding: 2.2cqw;
+		font-family: 'Cinzel', serif; font-size: 2.4cqw; font-weight: 900;
 		letter-spacing: 0.06em; cursor: pointer;
 		transition: filter 0.12s ease;
 		white-space: nowrap;

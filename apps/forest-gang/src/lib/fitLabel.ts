@@ -22,7 +22,11 @@ export function fitLabel(node: HTMLElement, param?: FitParam) {
 		const cs = getComputedStyle(slot);
 		const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
 		const avail = (slot.clientWidth - pad) * (cfg().maxFraction ?? 1);
-		const full = node.scrollWidth;
+		// Measure the real text width with a Range — scrollWidth misses the LEFT overflow of
+		// centred nowrap text, which under-measured and left labels clipped ("BUY BONU").
+		const range = document.createRange();
+		range.selectNodeContents(node);
+		const full = Math.max(node.scrollWidth, range.getBoundingClientRect().width);
 		const scale = full > avail && avail > 0 ? avail / full : 1;
 		node.style.transform = scale < 1 ? `scale(${scale})` : 'none';
 	};

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
-	import { cubicOut, cubicInOut, linear } from 'svelte/easing';
+	import { cubicIn, backOut } from 'svelte/easing';
 
 	import { FillGradient } from 'pixi.js';
-	import { Sprite, Container, Text } from 'pixi-svelte';
+	import { Graphics, Sprite, Container, Text } from 'pixi-svelte';
 
 	type Props = {
 		boardKey: string;
@@ -32,72 +32,36 @@
 		{ key: 'legendaryWinBoard', min: 500,  max: 25000 },
 	];
 
-	// Transition tweens — a gentle centred cross-dissolve: the incoming board eases up from a
-	// slightly smaller size (cubicOut, no overshoot) while the outgoing one eases down and fades.
-	const currScaleTween = new Tween(1, { duration: 520, easing: cubicOut });
-	const currAlphaTween = new Tween(1, { duration: 360, easing: linear });
-	const prevScaleTween = new Tween(1, { duration: 460, easing: cubicInOut });
-	const prevAlphaTween = new Tween(0, { duration: 420, easing: linear });
-
-	let prevKey = $state<string | null>(null);
-	let outgoingKey = $state<string | null>(null);
-	let showPrev = $state(false);
-
-	// Gentle "start size" for the cross-dissolve — close to full so the scale change is subtle.
-	const FROM = 0.82;
+	// Tier transition, magnetic-style: the current board collapses INTO the centre, then the new
+	// tier's board pops back out with a springy overshoot. First appearance pops in the same way.
+	const pop = new Tween(0, { duration: 340, easing: backOut });
+	let displayedKey = $state<string | null>(null);
+	let animating = $state(false);
 
 	$effect(() => {
-		const key = boardKey;
-		if (prevKey === null) {
-			// First appearance: soft zoom-in from the centre (no bounce).
-			prevKey = key;
-			currScaleTween.set(0.7, { duration: 0 });
-			currAlphaTween.set(0, { duration: 0 });
-			currScaleTween.set(1, { duration: 520, easing: cubicOut });
-			currAlphaTween.set(1, { duration: 360, easing: linear });
-			return;
-		}
-		if (key === prevKey) return;
-
-		// Keep the outgoing board on screen (as its own key) so it cross-dissolves with the new one.
-		outgoingKey = prevKey;
-		prevKey = key;
-		showPrev = true;
-
-		// Outgoing: ease down from its CURRENT on-screen size and fade out.
-		prevScaleTween.set(1, { duration: 0 });
-		prevAlphaTween.set(1, { duration: 0 });
-		prevScaleTween.set(FROM, { duration: 460, easing: cubicInOut });
-		prevAlphaTween.set(0, { duration: 420, easing: linear });
-
-		// Incoming: ease up from a slightly smaller size and fade in (smooth, no overshoot).
-		currScaleTween.set(FROM, { duration: 0 });
-		currAlphaTween.set(0, { duration: 0 });
-		currScaleTween.set(1, { duration: 520, easing: cubicOut });
-		currAlphaTween.set(1, { duration: 360, easing: linear });
-
-		// Hide the outgoing sprite once it has fully faded.
-		setTimeout(() => { showPrev = false; }, 440);
+		const next = boardKey;
+		if (animating || next === displayedKey) return;
+		animating = true;
+		(async () => {
+			if (displayedKey) await pop.set(0, { duration: 180, easing: cubicIn });
+			displayedKey = next;
+			await pop.set(1, { duration: 340, easing: backOut });
+			// Flipping `animating` re-runs the effect, catching up if the tier advanced mid-pop.
+			animating = false;
+		})();
 	});
 
-	const tierRange = $derived(TIER_RANGES.find((t) => t.key === boardKey) ?? TIER_RANGES[0]);
+	const shownKey = $derived(displayedKey ?? boardKey);
+	const tierRange = $derived(TIER_RANGES.find((t) => t.key === shownKey) ?? TIER_RANGES[0]);
 	const tierIdx = $derived(TIER_RANGES.indexOf(tierRange));
 	const nextTierBaseScale = $derived(TIER_BASE_SCALE[TIER_RANGES[Math.min(tierIdx + 1, TIER_RANGES.length - 1)].key]);
 	const tierProgress = $derived(Math.min((mult - tierRange.min) / (tierRange.max - tierRange.min), 1));
 	// Board grows within tier: from tierBase toward next tier's base (capped at 80% of the gap)
 	const accumulationScale = $derived(
-		TIER_BASE_SCALE[boardKey] + (nextTierBaseScale - TIER_BASE_SCALE[boardKey]) * tierProgress * 0.8,
+		(TIER_BASE_SCALE[shownKey] ?? 1) +
+			(nextTierBaseScale - (TIER_BASE_SCALE[shownKey] ?? 1)) * tierProgress * 0.8,
 	);
-	const boardSize = $derived(maxBoardSize * accumulationScale * breatheScale * currScaleTween.current);
-	// The outgoing tier was on-screen near its GROWN size (base + 80% toward the next tier), so start
-	// its zoom-out from there — using the bare base caused a visible snap-smaller at the swap.
-	const maxAccumFor = (key: string | null) => {
-		const idx = TIER_RANGES.findIndex((t) => t.key === key);
-		const base = TIER_BASE_SCALE[key ?? ''] ?? 1;
-		const nextBase = TIER_BASE_SCALE[TIER_RANGES[Math.min(idx + 1, TIER_RANGES.length - 1)]?.key] ?? base;
-		return idx < 0 ? base : base + (nextBase - base) * 0.8;
-	};
-	const prevBoardSize = $derived(maxBoardSize * maxAccumFor(outgoingKey) * breatheScale * prevScaleTween.current);
+	const boardSize = $derived(maxBoardSize * accumulationScale * breatheScale);
 
 	// Win-amount text style: Cinzel 900 with the gold gradient (Figma spec).
 	const goldFill = new FillGradient({
@@ -129,39 +93,51 @@
 		mythicWinBoard: 0.308,
 		legendaryWinBoard: 0.328,
 	};
-	const textYFrac = $derived(TIER_TEXT_Y[boardKey] ?? 0.328);
+	const textYFrac = $derived(TIER_TEXT_Y[shownKey] ?? 0.328);
+
+	// Soft ambient glow behind the board, tinted per tier (additive concentric circles).
+	const GLOW_COLOR: Record<string, number> = {
+		sweetWinBoard: 0x4a9bff,
+		wildWinBoard: 0x5fd44a,
+		epicWinBoard: 0xff5a3c,
+		mythicWinBoard: 0xb45cff,
+		legendaryWinBoard: 0xffc242,
+	};
+	const glowColor = $derived(GLOW_COLOR[shownKey] ?? 0xffc242);
 </script>
 
-{#if showPrev && outgoingKey && outgoingKey !== boardKey}
-	<Sprite
-		key={outgoingKey}
-		anchor={0.5}
-		width={prevBoardSize}
-		height={prevBoardSize}
-		alpha={prevAlphaTween.current}
-	/>
+{#if shownKey}
+	<!-- The whole unit (glow + board + amount) collapses/pops as one via the transition scale. -->
+	<Container scale={pop.current}>
+		<Graphics
+			blendMode="add"
+			draw={(g) => {
+				g.clear();
+				const R = boardSize * 0.85;
+				const steps = 14;
+				for (let i = steps; i >= 1; i--) {
+					const t = i / steps;
+					g.circle(0, 0, R * t);
+					g.fill({ color: glowColor, alpha: 0.055 * (1 - t) * (1 - t) + 0.005 });
+				}
+			}}
+		/>
+		<Sprite key={shownKey} anchor={0.5} width={boardSize} height={boardSize} />
+
+		<Container y={boardSize * textYFrac} scale={amountScale}>
+			<Text
+				anchor={0.5}
+				text={countUpText}
+				style={{
+					fontFamily: 'Cinzel',
+					fontWeight: '900',
+					fontSize,
+					align: 'center',
+					letterSpacing: fontSize * 0.03,
+					fill: goldFill,
+				}}
+				onresize={({ width }) => (amountNatW = width)}
+			/>
+		</Container>
+	</Container>
 {/if}
-
-<Sprite
-	key={boardKey}
-	anchor={0.5}
-	width={boardSize}
-	height={boardSize}
-	alpha={currAlphaTween.current}
-/>
-
-<Container y={boardSize * textYFrac} scale={amountScale}>
-	<Text
-		anchor={0.5}
-		text={countUpText}
-		style={{
-			fontFamily: 'Cinzel',
-			fontWeight: '900',
-			fontSize,
-			align: 'center',
-			letterSpacing: fontSize * 0.03,
-			fill: goldFill,
-		}}
-		onresize={({ width }) => (amountNatW = width)}
-	/>
-</Container>

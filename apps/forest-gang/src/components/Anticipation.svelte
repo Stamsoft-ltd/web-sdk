@@ -45,7 +45,7 @@
 
 <Container
 	x={bl.x + ((props.reel.reelIndex + 0.5) * SYMBOL_W - BOARD_SIZES.width * 0.5) * scaleX}
-	y={bl.y + BOARD_GRID_OFFSET_Y}
+	y={bl.y + BOARD_GRID_OFFSET_Y - SYMBOL_SIZE * 0.12 * scaleY}
 >
 <SpineProvider
 	key="anticipation"

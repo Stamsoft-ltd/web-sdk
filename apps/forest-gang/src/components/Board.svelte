@@ -12,6 +12,7 @@
 <script lang="ts">
 	import { Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
 	import { OnPressFullScreen } from 'components-layout';
+	import { stateBet } from 'state-shared';
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
@@ -79,6 +80,25 @@
 		if (HIGH_SYMBOLS_SET.has(name)) return isLandscape ? 1.0 : 1.18;
 		return 1;
 	};
+
+	// ── Scatter swing: the medallion rocks like a hanging ornament, pinned at its top edge.
+	//    Active in every non-base mode (CHANCE/FEATURE activations, bought BONUS/SUPER spins)
+	//    and during the bonus rounds themselves. ──
+	const swingOn = $derived(
+		stateBet.activeBetModeKey !== 'BASE' || !!context.stateGame.bonusMode,
+	);
+	let swingT = $state(0);
+	$effect(() => {
+		if (!swingOn) return;
+		let raf = 0;
+		const t0 = performance.now();
+		const tick = (now: number) => {
+			swingT = (now - t0) / 1000;
+			raf = requestAnimationFrame(tick);
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	});
 
 	// True while any symbol is in 'win' state — used to dim non-winning symbols
 	const hasWinState = $derived(
@@ -176,16 +196,31 @@
 				/>
 				{@const isWin = reelSymbol.symbolState === 'win'}
 				{@const s = symScale(reelSymbol.rawSymbol.name)}
-				<Sprite
-					key={getSpriteKey(reelSymbol.rawSymbol.name, reelSymbol.symbolState)}
-					x={getX(reelIndex)}
-					y={y}
-					anchor={{ x: 0.5, y: 0.5 }}
-					width={symbolW * s}
-					height={symbolH * s}
-					alpha={hasWinState && !isWin ? 0.35 : 1}
-					tint={isWin ? 0xffffff : 0xffffff}
-				/>
+				{#if reelSymbol.rawSymbol.name === 'SCATTER' && swingOn}
+					<!-- Swinging medallion: anchored at its top-centre so it rocks like a hanging
+					     ornament; per-cell phase so the scatters don't swing in lockstep. -->
+					<Sprite
+						key={getSpriteKey(reelSymbol.rawSymbol.name, reelSymbol.symbolState)}
+						x={getX(reelIndex)}
+						y={y - symbolH * s * 0.5}
+						anchor={{ x: 0.5, y: 0 }}
+						rotation={Math.sin(swingT * 7.8 + reelIndex * 1.9 + symbolIndex * 0.7) * 0.1}
+						width={symbolW * s}
+						height={symbolH * s}
+						alpha={hasWinState && !isWin ? 0.35 : 1}
+					/>
+				{:else}
+					<Sprite
+						key={getSpriteKey(reelSymbol.rawSymbol.name, reelSymbol.symbolState)}
+						x={getX(reelIndex)}
+						y={y}
+						anchor={{ x: 0.5, y: 0.5 }}
+						width={symbolW * s}
+						height={symbolH * s}
+						alpha={hasWinState && !isWin ? 0.35 : 1}
+						tint={isWin ? 0xffffff : 0xffffff}
+					/>
+				{/if}
 			{/each}
 			{/if}
 		{/each}
