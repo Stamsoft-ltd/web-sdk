@@ -361,6 +361,17 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			// Brief beat before coins start flying so the two moments read separately.
 			await waitForTimeout(150);
 		}
+		// Hold a beat when the win contains animated premium symbols so their board win
+		// animation is visible before the win presentation covers it. Skipped on turbo.
+		const PREMIUM_WIN_ANIMS = new Set(['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL']);
+		const hasAnimatedWinSymbol = stateGame.board.some((reel) =>
+			reel.reelState.symbols.some(
+				(s) => s.symbolState === 'win' && PREMIUM_WIN_ANIMS.has(s.rawSymbol.name),
+			),
+		);
+		if (hasAnimatedWinSymbol && !stateBet.isTurbo && !stateBet.isSuperTurbo) {
+			await waitForTimeout(1000);
+		}
 		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
 		eventEmitter.broadcast({ type: 'winShow' });
 		// True MAX WIN (25000×) shows the dedicated MaxWinScreen (see Win.svelte) — give it its own

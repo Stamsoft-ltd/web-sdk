@@ -238,12 +238,14 @@ const assets = {
 	navBarLs:      { type: 'sprite', src: './assets/components/symbols/landscape/right_bar.png?v=20260701', preload: true },
 	buyBonusLs:    { type: 'sprite', src: './assets/components/symbols/landscape/buy_bonus.png?v=20260701', preload: true },
 	// Win boards — preloaded so board escalation during count-up doesn't stall
-	sweetWinBoard:     { type: 'sprite', src: './assets/components/win_boards/sweet_win.png?v=20260625', preload: true },
-	wildWinBoard:      { type: 'sprite', src: './assets/components/win_boards/big_win.png?v=20260625', preload: true },
-	epicWinBoard:      { type: 'sprite', src: './assets/components/win_boards/epic_win.png?v=20260625', preload: true },
-	mythicWinBoard:    { type: 'sprite', src: './assets/components/win_boards/mega_win.png?v=20260625', preload: true },
-	legendaryWinBoard: { type: 'sprite', src: './assets/components/win_boards/max_win.png?v=20260629', preload: true },
+	sweetWinBoard:     { type: 'sprite', src: './assets/components/win_boards/sweet_win_fig.png?v=20260716d', preload: true },
+	wildWinBoard:      { type: 'sprite', src: './assets/components/win_boards/big_win_fig.png?v=20260716d', preload: true },
+	epicWinBoard:      { type: 'sprite', src: './assets/components/win_boards/epic_win_fig.png?v=20260716d', preload: true },
+	mythicWinBoard:    { type: 'sprite', src: './assets/components/win_boards/mega_win_fig.png?v=20260716d', preload: true },
+	legendaryWinBoard: { type: 'sprite', src: './assets/components/win_boards/max_win_fig.png?v=20260716d', preload: true },
 	maxWinScreen:      { type: 'sprite', src: './assets/components/win_boards/max_win_screen.png?v=20260701', preload: true },
+	// Golden P mark pulsing on the win boards' gem medallion (Figma 3205-2090).
+	winEmblemP:        { type: 'sprite', src: './assets/components/win_boards/win_emblem_p.png?v=20260716', preload: true },
 	explosion: {
 		type: 'spine',
 		src: {
@@ -292,6 +294,15 @@ const assets = {
 			scale: 2,
 		},
 	},
+	// The fsIntro glow layers only (frame stripped) — reused behind the big-win boards.
+	winGlow: {
+		type: 'spine',
+		src: {
+			atlas: './assets/spines/fsIntro/fs_screen.atlas',
+			skeleton: './assets/spines/fsIntro/fs_glow.json',
+			scale: 2,
+		},
+	},
 	bonusBuyButtonFrame: {
 		type: 'sprite',
 		src: './assets/components/frames/bonus_buy_button_frame.png?v=20260623',
@@ -326,6 +337,40 @@ const assets = {
 		type: 'spriteSheet',
 		src: './assets/sprites/coin/SD2_Coin.json?v=20260701d',
 	},
+	// Single tumbling P-coin cycle (12 angles cut out of the coin-rain video) — the particle
+	// fountain's per-coin animation, so density can scale with the win tier again.
+	pCoins: {
+		type: 'spriteSheet',
+		src: './assets/sprites/coinRain/p_coin.json',
+	},
+	// 40-frame rabbit "raising money" animation, built from the Magnific video (5s source;
+	// does NOT loop seamlessly — play once or ping-pong). Frames: rabbit_money_1..40.
+	rabbitMoney: {
+		type: 'spriteSheet',
+		src: './assets/sprites/rabbitMoney/rabbit_money.json?v=20260716b',
+	},
+	bearMoney: {
+		type: 'spriteSheet',
+		src: './assets/sprites/bearMoney/bear_money.json',
+	},
+	foxMoney: {
+		type: 'spriteSheet',
+		src: './assets/sprites/foxMoney/fox_money.json',
+	},
+	wolfMoney: {
+		type: 'spriteSheet',
+		src: './assets/sprites/wolfMoney/wolf_money.json',
+	},
+	squirrelMoney: {
+		type: 'spriteSheet',
+		src: './assets/sprites/squirrelMoney/squirrel_money.json',
+	},
+	// Board win-state card animations (upper-body window of the same videos, card border baked).
+	rabbitWinAnim:   { type: 'spriteSheet', src: './assets/sprites/rabbitMoney/rabbit_win_anim.json?v=20260716c' },
+	bearWinAnim:     { type: 'spriteSheet', src: './assets/sprites/bearMoney/bear_win_anim.json?v=20260716c' },
+	foxWinAnim:      { type: 'spriteSheet', src: './assets/sprites/foxMoney/fox_win_anim.json?v=20260716c' },
+	wolfWinAnim:     { type: 'spriteSheet', src: './assets/sprites/wolfMoney/wolf_win_anim.json?v=20260716c' },
+	squirrelWinAnim: { type: 'spriteSheet', src: './assets/sprites/squirrelMoney/squirrel_win_anim.json?v=20260716c' },
 	sound: {
 		type: 'audio',
 		src: './assets/audio/sounds.json?v=20260707a',

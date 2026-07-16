@@ -53,23 +53,25 @@
 	});
 	const intensity = $derived(TIERS[tierKey]);
 
-	// Gold-coin FOUNTAIN: coins erupt from a focused point at the bottom-centre, spray upward in a
-	// fanned plume (varied speeds → varied heights → fountain shape), tumble, and cascade back down
-	// under gravity. Because it erupts from one point it reads as an intentional fountain, not a
-	// scattered storm. The base/level configs are spread first; the V1 keys below are overridden
-	// last so they always win (upgradeConfig reads them).
+	// Gold P-coin FOUNTAIN (coin cutouts from the Magnific rain video, tumbling through 12 angles):
+	// coins erupt from a focused point at the bottom-centre, spray upward in a fanned plume (varied
+	// speeds → varied heights → fountain shape), tumble, and cascade back down under gravity.
+	// Because it erupts from one point it reads as an intentional fountain, not a scattered storm.
+	// The base/level configs are spread first; the V1 keys below are overridden last so they always
+	// win (upgradeConfig reads them).
 	const config = $derived({
 		...baseConfig,
 		...extraConfig,
 		alpha: { start: 1, end: 1 },
-		scale: { start: 0.44, end: 0.38, minimumScaleMultiplier: 1 },
+		// p_coin frames are 176px (the old SD2 coin was ~228) — scaled up to render the same size
+		scale: { start: 0.57, end: 0.49, minimumScaleMultiplier: 1 },
 		// strong upward burst with a wide speed range so the plume has depth (near + far coins)
 		speed: { start: 1000, end: 1500, minimumSpeedMultiplier: 0.7 },
 		// strong gravity pulls the plume back down into a fountain arc
 		acceleration: { x: 0, y: 1250 },
 		// emit around straight-up (270°) with a fan so coins spray outward as they rise
 		startRotation: { min: 242, max: 298 },
-		// gentle tumble — the spritesheet already spins the coin face
+		// gentle tumble — the frame cycle already flips the coin face
 		noRotation: false,
 		rotationSpeed: { min: -35, max: 35 },
 		lifetime: { min: 2.2, max: 3.0 },
@@ -85,6 +87,6 @@
 <MainContainer>
 	<!-- Emitter pinned to the centre of the slot board; coins spring up from the middle. -->
 	<Container x={board.x} y={board.y}>
-		<ParticleEmitter {config} key="coins" emit={props.emit} />
+		<ParticleEmitter {config} key="pCoins" emit={props.emit} />
 	</Container>
 </MainContainer>

@@ -10,9 +10,10 @@
 </script>
 
 <script lang="ts">
-	import { Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
+	import { AnimatedSprite, Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
 	import { OnPressFullScreen } from 'components-layout';
 	import { stateBet } from 'state-shared';
+	import type { Texture } from 'pixi.js';
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
@@ -48,6 +49,24 @@
 		if (state === 'win') return activeWinMap[name] ?? activeMap[name] ?? activeMap.A;
 		return activeMap[name] ?? activeMap.A;
 	};
+
+	// Premium win-state cards play the animated "win state" frames (from the Magnific videos,
+	// card border baked in — generate_win_anim.py). Ping-ponged since the clips don't loop.
+	const WIN_ANIM_KEY: Partial<Record<SymbolName, string>> = {
+		RABBIT: 'rabbitWinAnim',
+		BEAR: 'bearWinAnim',
+		FOX: 'foxWinAnim',
+		WOLF: 'wolfWinAnim',
+		SQUIRREL: 'squirrelWinAnim',
+	};
+	const winAnimTextures = $derived.by(() => {
+		const map: Partial<Record<SymbolName, Texture[]>> = {};
+		for (const [sym, key] of Object.entries(WIN_ANIM_KEY)) {
+			const t = (context.stateApp.loadedAssets?.[key] ?? []) as Texture[];
+			if (t.length) map[sym as SymbolName] = [...t, ...t.slice(1, -1).reverse()];
+		}
+		return map;
+	});
 
 	const getX = (reelIndex: number) => SYMBOL_W * (reelIndex + 0.5);
 
@@ -208,6 +227,18 @@
 						width={symbolW * s}
 						height={symbolH * s}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
+					/>
+				{:else if isWin && winAnimTextures[reelSymbol.rawSymbol.name]}
+					<AnimatedSprite
+						textures={winAnimTextures[reelSymbol.rawSymbol.name]}
+						x={getX(reelIndex)}
+						y={y}
+						anchor={0.5}
+						width={symbolW * s}
+						height={symbolH * s}
+						animationSpeed={0.25}
+						loop={true}
+						play={true}
 					/>
 				{:else}
 					<Sprite

@@ -1,0 +1,859 @@
+{
+ "frames": {
+  "rabbit_money_1.png": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_2.png": {
+   "frame": {
+    "x": 232,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_3.png": {
+   "frame": {
+    "x": 464,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_4.png": {
+   "frame": {
+    "x": 696,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_5.png": {
+   "frame": {
+    "x": 928,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_6.png": {
+   "frame": {
+    "x": 1160,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_7.png": {
+   "frame": {
+    "x": 1392,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_8.png": {
+   "frame": {
+    "x": 1624,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_9.png": {
+   "frame": {
+    "x": 0,
+    "y": 750,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_10.png": {
+   "frame": {
+    "x": 232,
+    "y": 750,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_11.png": {
+   "frame": {
+    "x": 464,
+    "y": 750,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_12.png": {
+   "frame": {
+    "x": 696,
+    "y": 750,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_13.png": {
+   "frame": {
+    "x": 928,
+    "y": 750,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_14.png": {
+   "frame": {
+    "x": 1160,
+    "y": 750,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_15.png": {
+   "frame": {
+    "x": 1392,
+    "y": 750,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_16.png": {
+   "frame": {
+    "x": 1624,
+    "y": 750,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_17.png": {
+   "frame": {
+    "x": 0,
+    "y": 1500,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_18.png": {
+   "frame": {
+    "x": 232,
+    "y": 1500,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_19.png": {
+   "frame": {
+    "x": 464,
+    "y": 1500,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_20.png": {
+   "frame": {
+    "x": 696,
+    "y": 1500,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_21.png": {
+   "frame": {
+    "x": 928,
+    "y": 1500,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_22.png": {
+   "frame": {
+    "x": 1160,
+    "y": 1500,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_23.png": {
+   "frame": {
+    "x": 1392,
+    "y": 1500,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_24.png": {
+   "frame": {
+    "x": 1624,
+    "y": 1500,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_25.png": {
+   "frame": {
+    "x": 0,
+    "y": 2250,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_26.png": {
+   "frame": {
+    "x": 232,
+    "y": 2250,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_27.png": {
+   "frame": {
+    "x": 464,
+    "y": 2250,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_28.png": {
+   "frame": {
+    "x": 696,
+    "y": 2250,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_29.png": {
+   "frame": {
+    "x": 928,
+    "y": 2250,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_30.png": {
+   "frame": {
+    "x": 1160,
+    "y": 2250,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_31.png": {
+   "frame": {
+    "x": 1392,
+    "y": 2250,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_32.png": {
+   "frame": {
+    "x": 1624,
+    "y": 2250,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_33.png": {
+   "frame": {
+    "x": 0,
+    "y": 3000,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_34.png": {
+   "frame": {
+    "x": 232,
+    "y": 3000,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_35.png": {
+   "frame": {
+    "x": 464,
+    "y": 3000,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_36.png": {
+   "frame": {
+    "x": 696,
+    "y": 3000,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_37.png": {
+   "frame": {
+    "x": 928,
+    "y": 3000,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_38.png": {
+   "frame": {
+    "x": 1160,
+    "y": 3000,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_39.png": {
+   "frame": {
+    "x": 1392,
+    "y": 3000,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  },
+  "rabbit_money_40.png": {
+   "frame": {
+    "x": 1624,
+    "y": 3000,
+    "w": 232,
+    "h": 750
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 232,
+    "h": 750
+   },
+   "sourceSize": {
+    "w": 232,
+    "h": 750
+   }
+  }
+ },
+ "animations": {
+  "rabbitMoney": [
+   "rabbit_money_1.png",
+   "rabbit_money_2.png",
+   "rabbit_money_3.png",
+   "rabbit_money_4.png",
+   "rabbit_money_5.png",
+   "rabbit_money_6.png",
+   "rabbit_money_7.png",
+   "rabbit_money_8.png",
+   "rabbit_money_9.png",
+   "rabbit_money_10.png",
+   "rabbit_money_11.png",
+   "rabbit_money_12.png",
+   "rabbit_money_13.png",
+   "rabbit_money_14.png",
+   "rabbit_money_15.png",
+   "rabbit_money_16.png",
+   "rabbit_money_17.png",
+   "rabbit_money_18.png",
+   "rabbit_money_19.png",
+   "rabbit_money_20.png",
+   "rabbit_money_21.png",
+   "rabbit_money_22.png",
+   "rabbit_money_23.png",
+   "rabbit_money_24.png",
+   "rabbit_money_25.png",
+   "rabbit_money_26.png",
+   "rabbit_money_27.png",
+   "rabbit_money_28.png",
+   "rabbit_money_29.png",
+   "rabbit_money_30.png",
+   "rabbit_money_31.png",
+   "rabbit_money_32.png",
+   "rabbit_money_33.png",
+   "rabbit_money_34.png",
+   "rabbit_money_35.png",
+   "rabbit_money_36.png",
+   "rabbit_money_37.png",
+   "rabbit_money_38.png",
+   "rabbit_money_39.png",
+   "rabbit_money_40.png"
+  ]
+ },
+ "meta": {
+  "app": "custom",
+  "version": "1.0",
+  "image": "rabbit_money.webp",
+  "format": "RGBA8888",
+  "size": {
+   "w": 1856,
+   "h": 3750
+  },
+  "scale": "2"
+ }
+}

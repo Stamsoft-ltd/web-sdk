@@ -20,6 +20,10 @@
 
 	type AnimationName = 'anticipation_intro' | 'anticipation_loop' | 'anticipation_out';
 
+	// Stretches the frame's bottom edge down to the board's bottom (the plain centred sizing
+	// left it a few units short); the container y compensates by half so the TOP edge stays put.
+	const EXTEND_B = SYMBOL_SIZE * 0.26;
+
 	let animationName = $state<AnimationName>('anticipation_intro');
 	let speedUp = $state(false);
 
@@ -45,12 +49,12 @@
 
 <Container
 	x={bl.x + ((props.reel.reelIndex + 0.5) * SYMBOL_W - BOARD_SIZES.width * 0.5) * scaleX}
-	y={bl.y + BOARD_GRID_OFFSET_Y - SYMBOL_SIZE * 0.12 * scaleY}
+	y={bl.y + BOARD_GRID_OFFSET_Y + (EXTEND_B * 0.5 - SYMBOL_SIZE * 0.12) * scaleY}
 >
 <SpineProvider
 	key="anticipation"
 	width={SYMBOL_W * scaleX / 2}
-	height={SYMBOL_SIZE * 4 * scaleY / 2}
+	height={(SYMBOL_SIZE * 4 + EXTEND_B) * scaleY / 2}
 >
 	<SpineTrack
 		trackIndex={0}

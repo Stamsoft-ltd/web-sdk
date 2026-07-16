@@ -5,6 +5,8 @@
 	import { FillGradient } from 'pixi.js';
 	import { Graphics, Sprite, Container, Text } from 'pixi-svelte';
 
+	import ForestBugs from './ForestBugs.svelte';
+
 	type Props = {
 		boardKey: string;
 		maxBoardSize: number;
@@ -81,19 +83,44 @@
 	const amountMaxW = $derived(boardSize * 0.62);
 	const amountScale = $derived(amountNatW > 0 ? Math.min(1, amountMaxW / amountNatW) : 1);
 
-	// Vertical centre of each board art's amount plaque, as a fraction of boardSize measured
-	// DOWN from the board centre (= plaque-centre image-fraction − 0.5). Measured per art from
-	// its gold plaque frame, so the amount sits dead-centre in the plaque at ANY size. Do NOT
-	// add a fixed px offset here — a non-scaling offset un-centres the text when the board is
-	// enlarged (which is exactly what a previous `- 8` did once the popups were boosted).
+	// Amount-text centre as a fraction of boardSize DOWN from the board centre — the centre of
+	// each Figma board's bottom plaque (plaque sits at 0.8433 of the ART height; arts are
+	// width-normalised then centred on the square canvas, so the square fraction differs per
+	// art). Do NOT add a fixed px offset here — a non-scaling offset un-centres the text when
+	// the popups are enlarged.
 	const TIER_TEXT_Y: Record<string, number> = {
-		sweetWinBoard: 0.329,
-		wildWinBoard: 0.323,
-		epicWinBoard: 0.332,
-		mythicWinBoard: 0.308,
+		sweetWinBoard: 0.343,
+		wildWinBoard: 0.331,
+		epicWinBoard: 0.33,
+		mythicWinBoard: 0.335,
 		legendaryWinBoard: 0.328,
 	};
-	const textYFrac = $derived(TIER_TEXT_Y[shownKey] ?? 0.328);
+	const textYFrac = $derived(TIER_TEXT_Y[shownKey] ?? 0.343);
+
+	// Golden P emblem on the gem medallion — per-tier centre/size measured from the Figma page
+	// (second-row boards with the emblem placed; fractions of the square canvas). Pulses gently.
+	const TIER_EMBLEM: Record<string, { y: number; w: number }> = {
+		sweetWinBoard: { y: 0.0635, w: 0.197 },
+		wildWinBoard: { y: 0.0725, w: 0.192 },
+		epicWinBoard: { y: 0.0773, w: 0.195 },
+		mythicWinBoard: { y: 0.0616, w: 0.191 },
+		legendaryWinBoard: { y: 0.0767, w: 0.194 },
+	};
+	const emblem = $derived(TIER_EMBLEM[shownKey] ?? TIER_EMBLEM.sweetWinBoard);
+	const EMBLEM_ASPECT = 340 / 292; // win_emblem_p.png
+
+	let emblemT = $state(0);
+	$effect(() => {
+		let raf = 0;
+		const t0 = performance.now();
+		const tick = (now: number) => {
+			emblemT = (now - t0) / 1000;
+			raf = requestAnimationFrame(tick);
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	});
+	const emblemPulse = $derived(1 + 0.15 * Math.sin(emblemT * 2.6));
 
 	// Soft ambient glow behind the board, tinted per tier (additive concentric circles).
 	const GLOW_COLOR: Record<string, number> = {
@@ -124,6 +151,24 @@
 		/>
 		<Sprite key={shownKey} anchor={0.5} width={boardSize} height={boardSize} />
 
+		<!-- Golden P mark breathing on the gem medallion -->
+		<Container y={boardSize * emblem.y} scale={emblemPulse}>
+			<Sprite
+				key="winEmblemP"
+				anchor={0.5}
+				width={boardSize * emblem.w}
+				height={boardSize * emblem.w * EMBLEM_ASPECT}
+			/>
+		</Container>
+
+		<!-- Little ladybugs strolling around the wooden border. The Figma boards are near-square
+		     (full width, ~96-100% height centred), so the path hugs a slightly tighter rectangle. -->
+		<ForestBugs
+			{boardSize}
+			halfW={boardSize * 0.447}
+			halfH={boardSize * 0.452}
+		/>
+
 		<Container y={boardSize * textYFrac} scale={amountScale}>
 			<Text
 				anchor={0.5}
@@ -135,6 +180,8 @@
 					align: 'center',
 					letterSpacing: fontSize * 0.03,
 					fill: goldFill,
+					// The amount sits on the glow (no plaque on the acorn boards) — outline for contrast.
+					stroke: { color: 0x2a1505, width: Math.max(2, Math.round(fontSize * 0.07)) },
 				}}
 				onresize={({ width }) => (amountNatW = width)}
 			/>

@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
 	import { MainContainer } from 'components-layout';
-	import { Container, Graphics, Sprite } from 'pixi-svelte';
+	import { AnimatedSprite, Container, Graphics, Sprite } from 'pixi-svelte';
 	import { cubicOut } from 'svelte/easing';
+	import type { Texture } from 'pixi.js';
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_H, SYMBOL_W, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
@@ -46,6 +47,23 @@
 
 	const colHeight = SYMBOL_H * BOARD_DIMENSIONS.y;
 	const halfH = colHeight * 0.5;
+
+	// Animated expanded animals (frames from the "win state" videos, tile border baked in —
+	// see generate_expand_anim.py). The clips don't loop, so they play as a ping-pong
+	// (forward → reverse) for a seamless idle.
+	const EXPAND_ANIM_KEY: Partial<Record<SymbolName, string>> = {
+		RABBIT: 'rabbitMoney',
+		BEAR: 'bearMoney',
+		FOX: 'foxMoney',
+		WOLF: 'wolfMoney',
+		SQUIRREL: 'squirrelMoney',
+	};
+	const animFrames = $derived.by(() => {
+		const animKey = expanded ? EXPAND_ANIM_KEY[expanded.symbol] : undefined;
+		if (!animKey) return [];
+		const t = (context.stateApp.loadedAssets?.[animKey] ?? []) as Texture[];
+		return t.length ? [...t, ...t.slice(1, -1).reverse()] : [];
+	});
 
 	type ReelAnim = { h: Tween<number>; y: Tween<number>; pop: Tween<number>; looping: boolean };
 	const reelAnims: Record<number, ReelAnim> = {};
@@ -139,7 +157,19 @@
 				{:else}
 					<Container x={cx} y={cy} scale={{ x: px, y: 1 }}>
 						<!-- Premium expanded animal fills the whole reel (cell width), not the symbol width. -->
-						<Sprite anchor={0.5} key={assetKey} width={SYMBOL_W} height={h} />
+						{#if animFrames.length > 0}
+							<AnimatedSprite
+								textures={animFrames}
+								anchor={0.5}
+								width={SYMBOL_W}
+								height={h}
+								animationSpeed={0.25}
+								loop={true}
+								play={true}
+							/>
+						{:else}
+							<Sprite anchor={0.5} key={assetKey} width={SYMBOL_W} height={h} />
+						{/if}
 					</Container>
 				{/if}
 			{/each}

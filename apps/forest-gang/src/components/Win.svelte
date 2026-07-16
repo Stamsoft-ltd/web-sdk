@@ -8,7 +8,7 @@
 </script>
 
 <script lang="ts">
-	import { Container, Text } from 'pixi-svelte';
+	import { Container, Text, SpineProvider, SpineTrack } from 'pixi-svelte';
 	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
 	import { bookEventAmountToCurrencyString, bookEventAmountToBetAmountMultiplier } from 'utils-shared/amount';
@@ -144,6 +144,11 @@
 							     winLevel gate, so <50× maps to SWEET. -->
 							{@const boardKey = mult >= 500 ? 'legendaryWinBoard' : mult >= 200 ? 'mythicWinBoard' : mult >= 100 ? 'epicWinBoard' : mult >= 50 ? 'wildWinBoard' : 'sweetWinBoard'}
 							{@const maxBoardSize = Math.min(boardLayout.width * bs * 0.55, boardLayout.height * bs * 0.85) * winBoardBoost}
+							<!-- Golden radial glow behind the board — the fsIntro spine's glow layers with the
+							     frame stripped (fs_glow.json), slightly smaller than on the congratulations screen. -->
+							<SpineProvider key="winGlow" width={maxBoardSize * 1.3}>
+								<SpineTrack trackIndex={0} animationName="idle" loop />
+							</SpineProvider>
 							<WinBoard
 								{boardKey}
 								{maxBoardSize}
@@ -178,9 +183,8 @@
 				{/if}
 				</Container>
 
-				<!-- Text only during the big-win board show — on plain line-win count-ups there is
-				     no dark overlay and it sat unreadable on the bright floor (press still skips). -->
-				<PressToContinue showText={hasBoardAnimation} onpress={() => {
+				<!-- No text on the win screen (press still snaps/skips). -->
+				<PressToContinue showText={false} onpress={() => {
 					if (!snappedToFinal) {
 						snapToFinal(finishCountUp);
 					} else {
