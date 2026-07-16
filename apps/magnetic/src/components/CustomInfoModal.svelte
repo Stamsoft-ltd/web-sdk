@@ -45,10 +45,26 @@
 	const icRotate = ap('/assets/components/ui/info_ic_rotate.png');
 	const icLegal = ap('/assets/components/ui/info_ic_legal.png');
 
+	// Game controls (page 7) — the finished round-button icon set (designer export), in file order.
+	const controls = [
+		{ img: ap('/assets/components/ui/ctrl_spin.png'), name: 'Spin', desc: 'Start a game round with your selected bet.', big: true },
+		{ img: ap('/assets/components/ui/ctrl_auto.png'), name: 'Autoplay', desc: 'Play a set number of rounds automatically.' },
+		{ img: ap('/assets/components/ui/ctrl_turbo.png'), name: 'Turbo', desc: 'Speed up every game round.' },
+		{ img: ap('/assets/components/ui/ctrl_plus.png'), name: 'Increase Bet', desc: 'Raise your total bet.' },
+		{ img: ap('/assets/components/ui/ctrl_minus.png'), name: 'Decrease Bet', desc: 'Lower your total bet.' },
+		{ img: ap('/assets/components/ui/ctrl_info.png'), name: 'Info', desc: 'View the game rules and paytable.' },
+		{ img: ap('/assets/components/ui/ctrl_sound.png'), name: 'Sound', desc: 'Turn the sound effects on or off.' },
+		{ img: ap('/assets/components/ui/ctrl_arrow_left.png'), name: 'Previous', desc: 'Go to the previous page.' },
+		{ img: ap('/assets/components/ui/ctrl_arrow_right.png'), name: 'Next', desc: 'Go to the next page.' },
+		{ img: ap('/assets/components/ui/ctrl_close.png'), name: 'Close', desc: 'Close this window.' },
+		{ img: ap('/assets/components/ui/ctrl_menu.png'), name: 'Menu', desc: 'Open settings and game options.' },
+		{ img: ap('/assets/components/ui/ctrl_music.png'), name: 'Music', desc: 'Turn the background music on or off.' },
+	];
+
 	type Props = { onclose: () => void };
 	const props: Props = $props();
 
-	const TOTAL = 6;
+	const TOTAL = 7;
 	let page = $state(1);
 	const next = () => (page = Math.min(TOTAL, page + 1));
 	const prev = () => (page = Math.max(1, page - 1));
@@ -237,7 +253,7 @@
 						</div>
 					</div>
 				</div>
-			{:else}
+			{:else if page === 6}
 				<div class="page">
 					<h2 class="page-title">GENERAL INFO</h2>
 					<div class="gi-grid">
@@ -267,6 +283,19 @@
 								from animations or events shown inside the web browser.
 							</p>
 						</div>
+					</div>
+				</div>
+			{:else}
+				<div class="page">
+					<h2 class="page-title">USER INTERFACE GUIDE</h2>
+					<div class="ctrl-grid">
+						{#each controls as c}
+							<div class="ctrl">
+								<img class="ctrl-ic" class:ctrl-ic--lg={c.big} src={c.img} alt={c.name} />
+								<h3 class="ctrl-name">{c.name}</h3>
+								<p class="ctrl-desc">{c.desc}</p>
+							</div>
+						{/each}
 					</div>
 				</div>
 			{/if}
@@ -435,18 +464,20 @@
 	}
 	.ov-logo {
 		position: absolute;
-		top: 0;
-		right: 0;
-		width: clamp(120px, 27cqmin, 250px);
+		/* Tucked into the very top-right corner and a touch smaller so it clears the hero art below. */
+		top: clamp(-14px, -2cqmin, -4px);
+		right: clamp(-8px, -1cqmin, 0px);
+		width: clamp(96px, 21cqmin, 190px);
 		height: auto;
 		z-index: 2;
 	}
 	.ov-hero {
 		position: absolute;
-		left: 50%;
-		top: 54%;
+		/* Nudged down and slightly left so the ring sits clear of the top-right logo. */
+		left: 47%;
+		top: 60%;
 		transform: translate(-50%, -50%);
-		width: min(112%, clamp(280px, 60cqmin, 600px));
+		width: min(104%, clamp(260px, 55cqmin, 540px));
 		display: grid;
 		place-items: center;
 	}
@@ -525,31 +556,31 @@
 		color: transparent;
 	}
 	.stat-txt b {
-		font-size: clamp(18px, 4.4cqmin, 44px);
+		font-size: clamp(16px, 3.9cqmin, 39px);
 		font-weight: 900;
 		letter-spacing: 0.01em;
 	}
 	.stat-txt i {
 		font-style: normal;
-		font-size: clamp(11px, 2.4cqmin, 21px);
+		font-size: clamp(10px, 2.1cqmin, 19px);
 		font-weight: 700;
 		letter-spacing: 0.06em;
 	}
 	/* The CLUSTER box's value word is longer, so keep it clearly smaller than the other boxes. */
 	.stat--sm .stat-txt b {
-		font-size: clamp(12px, 2.8cqmin, 26px);
+		font-size: clamp(11px, 2.5cqmin, 23px);
 	}
 	.stat--sm .stat-txt i {
-		font-size: clamp(10px, 2.1cqmin, 18px);
+		font-size: clamp(9px, 1.9cqmin, 16px);
 	}
 	/* The first box ("7X7 / REELS") has the shortest value, so scale it up and track it out
 	   so the text fills the box like the longer-labelled ones. */
 	.ov-stats .stat:first-child .stat-txt b {
-		font-size: clamp(21px, 5.2cqmin, 53px);
+		font-size: clamp(18px, 4.6cqmin, 47px);
 		letter-spacing: 0.05em;
 	}
 	.ov-stats .stat:first-child .stat-txt i {
-		font-size: clamp(12px, 2.9cqmin, 24px);
+		font-size: clamp(11px, 2.6cqmin, 21px);
 		letter-spacing: 0.22em;
 	}
 
@@ -920,6 +951,60 @@
 		font-size: clamp(10px, 1.85cqmin, 16px);
 	}
 
+	/* Page 7: Controls — plain icon grid of the game's buttons (no card frame). Centred flex-wrap so it
+	   reflows to fewer-per-row as width shrinks and any incomplete last row stays centred. */
+	.ctrl-grid {
+		flex: 1;
+		min-height: 0;
+		display: grid;
+		/* Always five per row (→ 5 + 4 for the nine controls); cells shrink to fit on smaller screens.
+		   Left-aligned by nature — the incomplete last row fills columns from the left. Portrait → two. */
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		/* Row gap kept modest so the three rows (twelve controls) fit without crowding the title. */
+		gap: clamp(5px, 1.5cqmin, 18px) clamp(4px, 1.2cqmin, 14px);
+		align-content: center;
+	}
+	.ctrl {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		gap: clamp(2px, 0.7cqmin, 8px);
+		padding: clamp(2px, 0.7cqmin, 8px);
+	}
+	.ctrl-ic {
+		width: clamp(36px, 7.8cqmin, 70px);
+		height: clamp(36px, 7.8cqmin, 70px);
+		object-fit: contain;
+		filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.45));
+	}
+	/* The 3D spin button reads a touch smaller than the flat round icons — nudge it up to match. */
+	.ctrl-ic--lg {
+		width: clamp(42px, 9cqmin, 80px);
+		height: clamp(42px, 9cqmin, 80px);
+	}
+	.ctrl-name {
+		/* Extra breathing room between the icon and its title (on top of the cell's base gap). */
+		margin: clamp(4px, 1.1cqmin, 12px) 0 0;
+		font-family: 'Cinzel', serif;
+		font-weight: 900;
+		text-transform: uppercase;
+		font-size: clamp(11px, 2.3cqmin, 21px);
+		letter-spacing: 0.02em;
+		line-height: 1.1;
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+	}
+	.ctrl-desc {
+		margin: 0;
+		font-size: clamp(8px, 1.6cqmin, 14px);
+		line-height: 1.3;
+		color: #dfeaf8;
+	}
+
 	/* ── Pager ── */
 	.info-pager {
 		position: relative;
@@ -1021,6 +1106,7 @@
 		.feat-col-small,
 		.cw,
 		.fb-grid,
+		.ctrl-grid,
 		.gi-grid {
 			flex: 0 0 auto;
 			min-height: auto;
@@ -1110,6 +1196,10 @@
 		.cw-img {
 			max-height: clamp(200px, 42cqh, 320px);
 			max-width: 82%;
+		}
+		/* Controls: two per row in portrait (five is only for wide/landscape screens). */
+		.ctrl-grid {
+			grid-template-columns: repeat(2, 1fr);
 		}
 		.gi-grid {
 			grid-template-columns: 1fr;
