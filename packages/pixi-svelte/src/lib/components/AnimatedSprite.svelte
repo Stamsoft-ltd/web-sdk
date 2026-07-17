@@ -17,7 +17,11 @@
 	const props: Props = $props();
 
 	const parentContext = getContextParent();
-	const animatedSprite = new PIXI.AnimatedSprite(props.textures ?? []);
+	// Pixi's constructor reads textures[0].texture, so an empty array (asset failed to
+	// load / bad key) is a hard crash during mount — degrade to an empty texture instead.
+	const animatedSprite = new PIXI.AnimatedSprite(
+		props.textures?.length ? props.textures : [PIXI.Texture.EMPTY],
+	);
 
 	// `textures` must NOT go through propsSyncEffect: that effect re-assigns every prop whenever
 	// ANY prop changes (e.g. width/height driven by a tween), and pixi's textures setter resets

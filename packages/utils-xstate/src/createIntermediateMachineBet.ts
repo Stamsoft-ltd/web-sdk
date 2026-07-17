@@ -73,6 +73,18 @@ export const createIntermediateMachineBet = ({
 								target: 'ending',
 							},
 						],
+						// A throwing book-event handler must not strand the machine in 'play'
+						// (dead spin button, round left open on the RGS). Still run 'ending' so
+						// the round is settled server-side and the balance updates.
+						onError: [
+							{
+								actions: ({ event }) => {
+									console.error('playGame failed', event.error);
+									stateBet.autoSpinsCounter = 0;
+								},
+								target: 'ending',
+							},
+						],
 					},
 				},
 				ending: {
@@ -86,6 +98,12 @@ export const createIntermediateMachineBet = ({
 						onDone: [
 							{
 								target: 'checkSpaceHold',
+							},
+						],
+						onError: [
+							{
+								actions: ({ event }) => console.error('endGame failed', event.error),
+								target: 'end',
 							},
 						],
 					},

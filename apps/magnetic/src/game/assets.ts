@@ -66,6 +66,15 @@ export default {
 		src: './assets/components/ui/capsule_tube.png?v=20260709b',
 		preload: true,
 	},
+	// Animated tesla capsule (Magnific webm with real alpha, lightning baked in) — replaces the
+	// static tube + procedural lightning overlays. Looping 30-frame flipbook.
+	capsuleTubeAnim: {
+		type: 'spriteSheet',
+		src: './assets/sprites/capsuleTube/capsule_tube_anim.json',
+		// Board-facing sheets must preload: the loader swallows fetch errors and still
+		// reports loaded, and mounting a SpriteSheet whose key is missing crashes pixi.
+		preload: true,
+	},
 	capsuleLightning: {
 		type: 'sprite',
 		src: './assets/components/ui/capsule_lightning.png?v=20260708',
@@ -95,6 +104,13 @@ export default {
 	popupMagnet: {
 		type: 'sprite',
 		src: './assets/components/ui/popup_magnet.png?v=20260708',
+		preload: true,
+	},
+	// Animated medallion for both congratulations popups (Magnific "lightning flicker" video,
+	// black keyed to alpha). 30-frame near-seamless loop.
+	popupMagnetAnim: {
+		type: 'spriteSheet',
+		src: './assets/sprites/popupMagnet/popup_magnet_anim.json',
 		preload: true,
 	},
 	pressArrow: {
@@ -188,7 +204,9 @@ export default {
 	// 10-frame radial lightning burst — looping backdrop BEHIND the wild while stacked.
 	wildLightningSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/special/wild_lightning_sheet.json?v=20260714', preload: true },
 	// 10-frame rotation flipbook for the blue nut (real-alpha designer frames), same treatment.
-	blueNutLockSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/blue_nut_lock_sheet.json?v=20260714b', preload: true },
+	// 40-frame roll from the Magnific "nut roll" video (black keyed to alpha, framed to keep the
+	// nut at ~63% of the canvas so the tuned 1.21 size factor still applies).
+	blueNutLockSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/blue_nut_lock_sheet2.json?v=20260717', preload: true },
 	aTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.png?v=20260709', preload: true },
 	aWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_win.png?v=20260709', preload: true },
 	aTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_mobile.png?v=20260709', preload: true },
@@ -219,6 +237,13 @@ export default {
 	wild7xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x7_mobile.png?v=20260709', preload: true },
 	wild9xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x9_mobile.png?v=20260709', preload: true },
 	wild10xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x10_mobile.png?v=20260709', preload: true },
+	// Animated scatter win state (Magnific video: electric arcs around the toolbox, black keyed
+	// to alpha with the static tile as opacity floor). Near-seamless 40-frame loop.
+	scatterWinAnim: {
+		type: 'spriteSheet',
+		src: './assets/sprites/scatterAnim/scatter_win_anim.json',
+		preload: true,
+	},
 	scatterCustom: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.png?v=20260709', preload: true },
 	scatterWin: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.png?v=20260709', preload: true },
 	scatterCustomMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_mobile.png?v=20260709', preload: true },

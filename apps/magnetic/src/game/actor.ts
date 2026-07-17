@@ -16,7 +16,13 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		if (lastRevealEvent) stateGameDerived.setBoardFromRaw({ rawBoard: lastRevealEvent.board });
 	},
 	onNewGameStart: async () => {
-		if ((stateBet.isSuperTurbo && stateXstateDerived.isAutoBetting()) || stateBet.isSpaceHold) return;
+		if ((stateBet.isSuperTurbo && stateXstateDerived.isAutoBetting()) || stateBet.isSpaceHold) {
+			// Fast paths skip the spin presentation, but round state must still reset —
+			// otherwise nextRevealMode stays 'respin' (first reveal misclassified as a
+			// respin, fresh-spin reset skipped) and bonusMode leaks across rounds.
+			stateGameDerived.resetBonusState();
+			return;
+		}
 		stateBet.winBookEventAmount = 0;
 		stateGame.pendingStop = false;
 		stateGame.awaitingFirstReveal = true;

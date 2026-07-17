@@ -8,7 +8,7 @@
 </script>
 
 <script lang="ts">
-	import { Container, Graphics, Sprite, Text } from 'pixi-svelte';
+	import { AnimatedSprite, Container, Graphics, Sprite, Text, type LoadedSpriteSheet } from 'pixi-svelte';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
@@ -21,11 +21,16 @@
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import LightningStorm from './LightningStorm.svelte';
 	import PressToContinue from './PressToContinue.svelte';
-	import WinCoins from './WinCoins.svelte';
 
 	const context = getContext();
+	// Animated medallion (lightning flipbook; falls back to the static sprite until loaded).
+	const magnetFrames = $derived(
+		(context.stateApp.loadedAssets?.popupMagnetAnim ?? []) as LoadedSpriteSheet,
+	);
 
-	let show = $state(true);
+	// Hidden until freeSpinOutroShow — starting true meant the slide-in $effect never
+	// fired on the session's FIRST outro (show never changed), so the panel just popped.
+	let show = $state(false);
 	let amount = $state(0);
 	let winLevelData = $state<WinLevelData>();
 	let oncomplete = $state(() => {});
@@ -145,9 +150,6 @@
 
 				<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.6} />
 
-				<!-- Coins BEHIND the dialog (template order = z-order) -->
-				<WinCoins emit={!countUpCompleted} levelAlias={winLevelData?.alias} />
-
 				<MainContainer>
 					<Container x={main.width / 2} y={main.height / 2}>
 						<!-- Random lightning storm behind the panel (same as the intro) -->
@@ -222,14 +224,26 @@
 							<!-- YOU WON -->
 							<Text anchor={0.5} y={-PH * 0.27} text={i18nDerived.translate('YOU WON')} style={blueStyle(PH * 0.04)} />
 
-							<!-- Full magnet element (magnet + base + energy baked in) -->
+							<!-- Full magnet element (magnet + energy) — animated lightning flipbook -->
 							<Container y={-PH * 0.06}>
-								<Sprite
-									key="popupMagnet"
-									anchor={0.5}
-									width={magnetW * 1.28}
-									height={magnetW * 1.28 * (103 / 114)}
-								/>
+								{#if magnetFrames.length > 0}
+									<AnimatedSprite
+										textures={magnetFrames}
+										anchor={0.5}
+										width={magnetW * 1.28}
+										height={magnetW * 1.28 * (425 / 465)}
+										animationSpeed={0.16}
+										loop={true}
+										play={true}
+									/>
+								{:else}
+									<Sprite
+										key="popupMagnet"
+										anchor={0.5}
+										width={magnetW * 1.28}
+										height={magnetW * 1.28 * (103 / 114)}
+									/>
+								{/if}
 							</Container>
 
 							<!-- Win amount counting up in its frame — pulses/flickers to draw the eye -->

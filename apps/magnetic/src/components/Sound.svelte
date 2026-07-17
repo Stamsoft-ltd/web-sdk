@@ -22,7 +22,10 @@
 	import { getContext } from '../game/context';
 
 	const context = getContext();
+	// Bonus keeps the full-energy track; the base game plays a processed CALM copy of it
+	// (low-passed, 8% slower, slightly quieter) so the base loop is easier on the ears.
 	const ambientTrackUrl = './assets/audio/background_music.mp3?v=20260713b';
+	const ambientCalmTrackUrl = './assets/audio/background_music_calm.mp3?v=20260717';
 	let ambientAudio: HTMLAudioElement | null = null;
 	let ambientUnlocked = false;
 	// Which ambient flavour is current — remembered so muting (master OR music channel) can
@@ -35,6 +38,12 @@
 		if (stateSound.volumeValueMaster === 0 || stateSound.volumeValueMusic === 0) {
 			stopAmbient();
 			return;
+		}
+		// Swap the source when the mode's track differs from what is loaded.
+		const wantedUrl = mode === 'bonus' ? ambientTrackUrl : ambientCalmTrackUrl;
+		if (!ambientAudio.src.includes(wantedUrl.replace('./', '/'))) {
+			ambientAudio.src = wantedUrl;
+			ambientAudio.load();
 		}
 		ambientAudio.loop = true;
 		ambientAudio.volume = mode === 'bonus' ? 0.32 : 0.22;
@@ -52,6 +61,12 @@
 		ambientAudio.currentTime = 0;
 	};
 
+	// Win-level tracks are loop-flagged; when the game returns to ambient music (or music is
+	// muted) they must be stopped explicitly or they keep playing under the ambience forever.
+	const stopWinLevelMusic = () =>
+		(['bgm_winlevel_big', 'bgm_winlevel_epic', 'bgm_winlevel_mega', 'bgm_winlevel_superwin', 'bgm_winlevel_max'] as const)
+			.forEach((n) => sound.stop({ name: n }));
+
 	const playMusic = ({ name }: { name: MusicName }) => {
 		if (stateSound.volumeValueMaster === 0) {
 			stopAmbient();
@@ -59,12 +74,6 @@
 			sound.stop({ name: 'bgm_freespin' });
 			return;
 		}
-
-		// Win-level tracks are loop-flagged; when the game returns to ambient music they must be
-		// stopped explicitly or they keep playing under the ambience forever.
-		const stopWinLevelMusic = () =>
-			(['bgm_winlevel_big', 'bgm_winlevel_epic', 'bgm_winlevel_mega', 'bgm_winlevel_superwin', 'bgm_winlevel_max'] as const)
-				.forEach((n) => sound.stop({ name: n }));
 
 		if (name === 'bgm_main') {
 			sound.stop({ name: 'bgm_freespin' });
@@ -118,8 +127,28 @@
 			stopAmbient();
 			sound.stop({ name: 'bgm_main' });
 			sound.stop({ name: 'bgm_freespin' });
+			// Also stop any looping win-level track — otherwise it keeps "playing" muted
+			// and becomes audible on top of the resumed ambience after unmute.
+			stopWinLevelMusic();
 		}
 	});
+
+	// The ambient loop is a raw HTMLAudioElement outside Howler, so the framework's
+	// hidden-tab mute (Howler.mute on visibilitychange) never reaches it — pause and
+	// resume it here ourselves.
+	let ambientPausedByVisibility = false;
+	const onVisibilityChange = () => {
+		if (!ambientAudio) return;
+		if (document.visibilityState !== 'visible') {
+			ambientPausedByVisibility = !ambientAudio.paused;
+			ambientAudio.pause();
+		} else if (ambientPausedByVisibility) {
+			ambientPausedByVisibility = false;
+			const musicAudible =
+				stateSound.volumeValueMaster !== 0 && stateSound.volumeValueMusic !== 0;
+			if (musicAudible) void ambientAudio.play().catch(() => {});
+		}
+	};
 
 	onMount(() => {
 		ambientAudio = browser ? new Audio(ambientTrackUrl) : null;
@@ -130,6 +159,7 @@
 
 		window.addEventListener('pointerdown', unlockAmbient, { once: true });
 		window.addEventListener('keydown', unlockAmbient, { once: true });
+		document.addEventListener('visibilitychange', onVisibilityChange);
 
 		if (stateSound.volumeValueMaster !== 0 && stateBet.activeBetModeKey === 'SUPER') {
 			playAmbient('bonus');
@@ -140,6 +170,7 @@
 		return () => {
 			window.removeEventListener('pointerdown', unlockAmbient);
 			window.removeEventListener('keydown', unlockAmbient);
+			document.removeEventListener('visibilitychange', onVisibilityChange);
 			stopAmbient();
 		};
 	});

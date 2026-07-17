@@ -309,14 +309,19 @@ const landscapeCapsuleLayout = () => {
 	const canvasRightX = main.width * 0.5 + stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1));
 	const boardRightX = board.x + gridHalfW;
 	const colX = boardRightX + (canvasRightX - boardRightX) * landscapeCapsuleBias();
-	const baseH = gridHalfH * LANDSCAPE_CAPSULE_TUBE_RATIO;
+	// 10% larger than the board-derived base size, anchored near the SCREEN TOP (not centred on
+	// the board) so the capsule column starts almost at the top edge.
+	const baseH = gridHalfH * LANDSCAPE_CAPSULE_TUBE_RATIO * 1.1;
 	const tubeW = baseH * LANDSCAPE_CAPSULE_TUBE_ASPECT;
 	const tubeH = baseH * LANDSCAPE_CAPSULE_TUBE_STRETCH;
-	const tubeY = board.y;
 	// Visible (opaque) tube extents — the sprite box is padded, so size the symbol against these and
 	// place the buy-bonus just below the visible tube bottom (not the padded sprite bottom).
 	const visibleW = tubeW * LANDSCAPE_CAPSULE_VISIBLE_W;
 	const visibleH = tubeH * LANDSCAPE_CAPSULE_VISIBLE_H;
+	const canvasTopY = main.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1));
+	// Anchor the FULL sprite box (not just the visible glass) below the screen top, so the tube's
+	// top cap art is never clipped — the capsule starts near the top but stays fully on screen.
+	const tubeY = canvasTopY + main.height * 0.02 + tubeH * 0.5;
 	const symSize = visibleW * 0.66;
 	const visibleBottom = tubeY + visibleH * 0.5;
 	return { colX, tubeY, tubeW, tubeH, visibleW, visibleH, visibleBottom, symSize, gridHalfW, gridHalfH };
@@ -505,8 +510,8 @@ const animateClusterFormation = async ({
 	}
 
 	const isFast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
-	const flyMs = isFast ? 220 : 1092;
-	const landMs = isFast ? 100 : 403;
+	const flyMs = isFast ? 220 : 820;
+	const landMs = isFast ? 100 : 300;
 
 	const lockedPositions = isInitialPull
 		? series.flatMap((entry) => entry.lockedPositions)
@@ -574,6 +579,16 @@ const animateClusterFormation = async ({
 	);
 	const pairs = [...sameCellPairs, ...movePairs];
 	const lockedDestKeys = new Set(nonMagnetDests.map(posKey));
+
+	// Fade each destination cell's CURRENT occupant as the pull begins, so the flying symbols
+	// don't overlap it mid-flight — the cell pops back in as the new cluster symbol on landing.
+	for (const { source, dest } of pairs) {
+		if (source.position.reel === dest.reel && source.position.row === dest.row) continue;
+		const destCell = stateGame.board[dest.reel]?.[dest.row];
+		if (destCell && !destCell.magnet) {
+			void destCell.displayAlpha.set(0, { duration: Math.min(250, flyMs * 0.35) });
+		}
+	}
 
 	await Promise.all(
 		pairs.map(({ source, dest }) => {
@@ -944,14 +959,17 @@ const setBoardFromRaw = ({
 }) => settleBoardInstant({ rawBoard, series, magnetTargetSymbol });
 
 const setSeriesSnapshots = ({
-	series,
+	series: seriesInput,
 	magnetTargetSymbol,
 	totalMultiplier,
 }: {
-	series: ClusterSeriesSnapshot[];
+	series: ClusterSeriesSnapshot[] | null;
 	magnetTargetSymbol: PaySymbolName | null;
 	totalMultiplier: number;
 }) => {
+	// The math emits superSeriesCarry/clusterSeriesUpdate with series: null when a super
+	// spin has no cluster to carry — treat it as "no active series", not a crash.
+	const series = seriesInput ?? [];
 	const prevLocked = getCurrentLockedKeys();
 	const nextLocked = new Set(series.flatMap((e) => e.lockedPositions.map(posKey)));
 	const freshKeys = new Set([...nextLocked].filter((key) => !prevLocked.has(key)));

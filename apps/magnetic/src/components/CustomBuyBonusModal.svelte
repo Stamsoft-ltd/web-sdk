@@ -100,7 +100,12 @@
 
 	let confirmMode = $state<null | 'BONUS' | 'SUPER'>(null);
 
-	const buyMode      = (mode: 'BONUS' | 'SUPER') => { stateBet.activeBetModeKey = mode; props.onclose(); context.eventEmitter.broadcast({ type: 'bet' }); };
+	const buyMode      = (mode: 'BONUS' | 'SUPER') => {
+		// If the machine isn't idle the 'bet' event would be dropped but the mode
+		// assignment would stick — every later (auto-)spin would then bet at buy cost.
+		if (!context.stateXstateDerived.isIdle()) { props.onclose(); return; }
+		stateBet.activeBetModeKey = mode; props.onclose(); context.eventEmitter.broadcast({ type: 'bet' });
+	};
 	const openConfirm  = (mode: 'BONUS' | 'SUPER') => { confirmMode = mode; };
 	const closeConfirm = () => { confirmMode = null; };
 	const toggleActivateMode = (toggle: () => void) => { toggle(); props.onclose(); };

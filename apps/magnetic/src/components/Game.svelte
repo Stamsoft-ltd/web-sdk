@@ -25,7 +25,6 @@
 	import FreeSpinCounter from './FreeSpinCounter.svelte';
 	import FreeSpinOutro from './FreeSpinOutro.svelte';
 	import Transition from './Transition.svelte';
-	import GlobalMultiplier from './GlobalMultiplier.svelte';
 	import HudHtml from './HudHtml.svelte';
 	import StakeSync from './StakeSync.svelte';
 	import ReplayHud from './replay/ReplayHud.svelte';
@@ -37,12 +36,6 @@
 	import LandscapeCapsule from './LandscapeCapsule.svelte';
 
 	const context = getContext();
-	// True only for the two SPECIAL (bought) bonuses — 3rd bonus (BONUS = freegame) and 4th bonus
-	// (SUPER = superspin) — which swap the base-game panels for the magnetic capsule column and the
-	// bonus background. Base / chance / feature keep the default bg and no capsule.
-	const isBonus = $derived(
-		context.stateGame.bonusMode === 'freegame' || context.stateGame.bonusMode === 'superspin',
-	);
 
 	// The free-spins intro popup lives in the canvas, so its dark backdrop can't reach the HTML
 	// navigation (which sits above the canvas). Mirror the intro's show/hide here to dim the nav too.
@@ -338,9 +331,9 @@
 
 				<GameLogoFrame />
 
-				{#if !isBonus}
-					<GlobalMultiplier />
-				{/if}
+				<!-- No GlobalMultiplier here: the hand-sign display is forest-theme art with no
+				     magnetic redesign — the series multiplier reads from the multiplier wilds
+				     on the board instead. The globalMultiplier* events still fire unheard. -->
 				<Win />
 				<FreeSpinIntro />
 				<CapsulePanel />

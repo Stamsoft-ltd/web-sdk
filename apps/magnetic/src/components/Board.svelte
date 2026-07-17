@@ -31,6 +31,9 @@
 		lockedFrame: 31,
 		pulledSymbol: 26,
 		lockedSymbol: 32,
+		// Above everything in the cell stack — the electric border arcs ride the seams
+		// BETWEEN locked cells, so anything higher (opaque covers) would overdraw them.
+		lockBorder: 40,
 	} as const;
 	let show = $state(true);
 
@@ -66,30 +69,44 @@
 		aWinTile: 'washerLockSheet',
 		aTileMobile: 'washerLockSheet',
 		aWinTileMobile: 'washerLockSheet',
+		aTileLand: 'washerLockSheet',
+		aWinTileLand: 'washerLockSheet',
 		squirrelTile: 'boltLockSheet',
 		squirrelWinTile: 'boltLockSheet',
 		squirrelTileMobile: 'boltLockSheet',
 		squirrelWinTileMobile: 'boltLockSheet',
+		squirrelTileLand: 'boltLockSheet',
+		squirrelWinTileLand: 'boltLockSheet',
 		kTile: 'purpleScrewLockSheet',
 		kWinTile: 'purpleScrewLockSheet',
 		kTileMobile: 'purpleScrewLockSheet',
 		kWinTileMobile: 'purpleScrewLockSheet',
+		kTileLand: 'purpleScrewLockSheet',
+		kWinTileLand: 'purpleScrewLockSheet',
 		qTile: 'blueNutLockSheet',
 		qWinTile: 'blueNutLockSheet',
 		qTileMobile: 'blueNutLockSheet',
 		qWinTileMobile: 'blueNutLockSheet',
+		qTileLand: 'blueNutLockSheet',
+		qWinTileLand: 'blueNutLockSheet',
 		wolfTile: 'drillLockSheet',
 		wolfWinTile: 'drillLockSheet',
 		wolfTileMobile: 'drillLockSheet',
 		wolfWinTileMobile: 'drillLockSheet',
+		wolfTileLand: 'drillLockSheet',
+		wolfWinTileLand: 'drillLockSheet',
 		bearTile: 'cubeLockSheet',
 		bearWinTile: 'cubeLockSheet',
 		bearTileMobile: 'cubeLockSheet',
 		bearWinTileMobile: 'cubeLockSheet',
+		bearTileLand: 'cubeLockSheet',
+		bearWinTileLand: 'cubeLockSheet',
 		rabbitTile: 'generatorLockSheet',
 		rabbitWinTile: 'generatorLockSheet',
 		rabbitTileMobile: 'generatorLockSheet',
 		rabbitWinTileMobile: 'generatorLockSheet',
+		rabbitTileLand: 'generatorLockSheet',
+		rabbitWinTileLand: 'generatorLockSheet',
 	};
 	// Per-sheet size tweaks (fraction of cell height; default 0.8) — art-specific corrections.
 	const LOCK_SHEET_SIZE: Record<string, number> = {
@@ -108,23 +125,35 @@
 	};
 	// WIN-state flipbooks (symbol + baked electric arcs), played while a cell presents a win.
 	const WIN_SHEETS: Record<string, string> = {
+		// Scatter frames are framed exactly like the static tile (Magnific video, black keyed),
+		// so they render at the standard win-sprite box with no size correction.
+		scatterWin: 'scatterWinAnim',
+		scatterWinMobile: 'scatterWinAnim',
 		squirrelWinTile: 'boltWinSheet',
 		squirrelWinTileMobile: 'boltWinSheet',
+		squirrelWinTileLand: 'boltWinSheet',
 		aWinTile: 'washerWinSheet',
 		aWinTileMobile: 'washerWinSheet',
+		aWinTileLand: 'washerWinSheet',
 		kWinTile: 'purpleScrewWinSheet',
 		kWinTileMobile: 'purpleScrewWinSheet',
+		kWinTileLand: 'purpleScrewWinSheet',
 		qWinTile: 'blueNutWinSheet',
 		qWinTileMobile: 'blueNutWinSheet',
+		qWinTileLand: 'blueNutWinSheet',
 		rabbitWinTile: 'generatorWinSheet',
 		rabbitWinTileMobile: 'generatorWinSheet',
+		rabbitWinTileLand: 'generatorWinSheet',
 		wolfWinTile: 'drillWinSheet',
 		wolfWinTileMobile: 'drillWinSheet',
+		wolfWinTileLand: 'drillWinSheet',
 		foxWinTile: 'magnetWinSheet',
 		foxWinTileMobile: 'magnetWinSheet',
+		foxWinTileLand: 'magnetWinSheet',
 		magnetWinTile: 'magnetWinSheet',
 		bearWinTile: 'cubeWinSheet',
 		bearWinTileMobile: 'cubeWinSheet',
+		bearWinTileLand: 'cubeWinSheet',
 	};
 	const keyPhase = (key: string) => {
 		let h = 0;
@@ -138,6 +167,7 @@
 	//    signal settles — they run for as long as any cell is locked, every cluster.
 	//    (lockedCells itself is declared near the top of the script.) ──
 	type LockG = {
+		destroyed: boolean;
 		clear: () => void;
 		moveTo: (x: number, y: number) => void;
 		lineTo: (x: number, y: number) => void;
@@ -256,6 +286,12 @@
 		let raf = 0;
 		const tick = (now: number) => {
 			raf = requestAnimationFrame(tick);
+			// The {#if show} teardown destroys the captured Graphics; drawing into it then
+			// throws every frame. Drop the stale capture — a remount recaptures via draw.
+			if (lockG?.destroyed) {
+				lockG = null;
+				lockGDrawn = false;
+			}
 			const cells = lockedCells; // untracked read inside rAF — always the current value
 			if (cells.length) {
 				animNow = now; // drives lockSpin() in the template
@@ -382,6 +418,9 @@
 				{@const x = getX(cell.position.reel)}
 				{@const y = getStaticY(cell.position.row)}
 				{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: 'locked' })}
+				<!-- assetKey can be undefined for unmapped names (corrupt series data) — the
+				     string tests below must not crash the whole board over one bad cell. -->
+				{@const safeAssetKey = symbolInfo.assetKey ?? ''}
 				{@const width = SYMBOL_W * symbolInfo.sizeRatios.width}
 				{@const height = SYMBOL_H * symbolInfo.sizeRatios.height}
 				<!-- Opaque full outer cell cover sits ABOVE spinning reels. -->
@@ -423,7 +462,7 @@
 						height={lockSheetSize}
 						zIndex={Z.lockedSymbol}
 					/>
-				{:else if /wild\d/i.test(symbolInfo.assetKey)}
+				{:else if /wild\d/i.test(safeAssetKey)}
 					<!-- Multiplier wild (medallion + Nx plaque): heartbeat pulse over the same looping
 					     lightning burst as the plain wild. -->
 					<SpriteSheet
@@ -450,7 +489,7 @@
 						tint={0xffffff}
 						zIndex={Z.lockedSymbol}
 					/>
-				{:else if symbolInfo.assetKey.toLowerCase().includes('wild')}
+				{:else if safeAssetKey.toLowerCase().includes('wild')}
 					<!-- Plain wild medallion: heartbeat pulse while stacked, over a looping radial
 					     lightning burst (additive, slightly larger than the cell). Same zIndex as the
 					     symbol — insertion order keeps the burst behind the medallion. -->
@@ -478,7 +517,7 @@
 						tint={0xffffff}
 						zIndex={Z.lockedSymbol}
 					/>
-				{:else if symbolInfo.assetKey.toLowerCase().includes('magnet') || symbolInfo.assetKey.startsWith('fox')}
+				{:else if safeAssetKey.toLowerCase().includes('magnet') || safeAssetKey.startsWith('fox')}
 					<!-- Magnet special symbol AND the H1 horseshoe-magnet premium (foxTile family — the
 					     clean red/blue horseshoe art): heartbeat pulse while stacked, no rotation. -->
 					<Sprite
@@ -549,7 +588,9 @@
 				{@const winSheet = !cell.locked && cell.symbolState === 'win' ? WIN_SHEETS[symbolInfo.assetKey] : undefined}
 
 				{#if winSheet}
-					<!-- Winning symbol with a dedicated win flipbook (symbol + electric arcs). -->
+					<!-- Winning symbol with a dedicated win flipbook (symbol + electric arcs).
+					     Scatter reads a touch small next to the arcs, so it gets a size boost. -->
+					{@const winBoost = winSheet === 'scatterWinAnim' ? 1.15 : 1}
 					<SpriteSheet
 						key={winSheet}
 						play
@@ -558,8 +599,8 @@
 						{x}
 						{y}
 						anchor={0.5}
-						{width}
-						{height}
+						width={width * winBoost}
+						height={height * winBoost}
 						alpha={cell.displayAlpha.current}
 						zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
 					/>
@@ -586,6 +627,7 @@
 					rawSymbol: cell,
 					state: cell.symbolState === 'win' ? 'win' : 'locked',
 				})}
+				{@const safeAssetKey = symbolInfo.assetKey ?? ''}
 				{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
 				{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
 				<Rectangle
@@ -626,7 +668,7 @@
 						height={lockSheetSize}
 						zIndex={Z.lockedSymbol}
 					/>
-				{:else if /wild\d/i.test(symbolInfo.assetKey)}
+				{:else if /wild\d/i.test(safeAssetKey)}
 					<!-- Multiplier wild (medallion + Nx plaque): heartbeat pulse over the same looping
 					     lightning burst as the plain wild. -->
 					<SpriteSheet
@@ -653,7 +695,7 @@
 						tint={0xffffff}
 						zIndex={Z.lockedSymbol}
 					/>
-				{:else if symbolInfo.assetKey.toLowerCase().includes('wild')}
+				{:else if safeAssetKey.toLowerCase().includes('wild')}
 					<!-- Plain wild medallion: heartbeat pulse while stacked, over a looping radial
 					     lightning burst (additive, slightly larger than the cell). Same zIndex as the
 					     symbol — insertion order keeps the burst behind the medallion. -->
@@ -681,7 +723,7 @@
 						tint={0xffffff}
 						zIndex={Z.lockedSymbol}
 					/>
-				{:else if symbolInfo.assetKey.toLowerCase().includes('magnet') || symbolInfo.assetKey.startsWith('fox')}
+				{:else if safeAssetKey.toLowerCase().includes('magnet') || safeAssetKey.startsWith('fox')}
 					<!-- Magnet special symbol AND the H1 horseshoe-magnet premium (foxTile family — the
 					     clean red/blue horseshoe art): heartbeat pulse while stacked, no rotation. -->
 					<Sprite
@@ -724,6 +766,6 @@
 		     cell circle its edge (re-jittered every frame -> live-arc shimmer). Always mounted; the
 		     draw prop only CAPTURES the Graphics instance — the persistent rAF in the script redraws
 		     it imperatively every frame (and clears it when nothing is locked). -->
-		<Graphics blendMode="add" draw={(gr) => (lockG = gr as unknown as LockG)} />
+		<Graphics blendMode="add" zIndex={Z.lockBorder} draw={(gr) => (lockG = gr as unknown as LockG)} />
 	</Container>
 {/if}

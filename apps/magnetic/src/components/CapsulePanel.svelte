@@ -7,7 +7,7 @@
 	import { backOut, cubicOut } from 'svelte/easing';
 	import { MainContainer } from 'components-layout';
 	import { FadeContainer } from 'components-pixi';
-	import { Container, Graphics, Sprite, Text } from 'pixi-svelte';
+	import { AnimatedSprite, Container, Sprite, Text, type LoadedSpriteSheet } from 'pixi-svelte';
 	import { stateBet } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
@@ -116,12 +116,12 @@
 	const tubeY = $derived((tubeTop + tubeBot) * 0.5);
 	const symSize = $derived(tubeW * 0.50);
 
-	// Tube electricity: ONE central bolt that flickers, surrounded by a fine crackle web (the thin
-	// branching filaments extracted from the tube's original baked art). The web is drawn twice —
-	// once as-is and once mirrored — with out-of-phase shimmer so the filaments feel alive.
-	let arcFlicker = $state(0.8);
-	let crackleA = $state(0.6);
-	let crackleB = $state(0.3);
+	// Animated tesla tube (video flipbook, lightning baked in). Falls back to the static art
+	// until the sheet is loaded.
+	const tubeFrames = $derived(
+		(context.stateApp.loadedAssets?.capsuleTubeAnim ?? []) as LoadedSpriteSheet,
+	);
+
 	// Electric agitation of the tube symbol: tiny jitter + scale pulse + brightness flicker,
 	// all amplified while a surge is arcing.
 	let symFx = $state({ dx: 0, dy: 0, s: 1, a: 1 });
@@ -143,10 +143,6 @@
 					nextSurge = now + 900 + Math.random() * 2200;
 				}
 			}
-			// layered sines = cheap organic flicker (deeper + faster than before), surge on top
-			arcFlicker = Math.min(1, 0.6 + 0.24 * Math.sin(t * 19) * Math.sin(t * 6.3) + 0.12 * Math.sin(t * 47) + surge * 0.5);
-			crackleA = Math.min(1, 0.42 + 0.5 * (0.5 + 0.5 * Math.sin(t * 13.7)) * (0.5 + 0.5 * Math.sin(t * 4.4)) + surge);
-			crackleB = Math.min(1, 0.6 * (0.5 + 0.5 * Math.sin(t * 11.2 + 2.4)) * (0.5 + 0.5 * Math.sin(t * 3.3 + 1.1)) + surge * 0.8);
 			// the electricity "grips" the symbol: faster/larger shake during surges
 			const grip = 1 + surge * 3;
 			symFx = {
@@ -184,7 +180,19 @@
 		     TOTAL WIN (top) and FREE SPINS (bottom). Tube (back) -> symbol -> lightning ON TOP so the
 		     electricity arcs over the element. -->
 		<Container x={colX} y={tubeY}>
-			<Sprite key="capsuleTube" anchor={0.5} width={tubeW} height={tubeH} />
+			{#if tubeFrames.length > 0}
+				<AnimatedSprite
+					textures={tubeFrames}
+					anchor={0.5}
+					width={tubeW}
+					height={tubeH}
+					animationSpeed={0.14}
+					loop={true}
+					play={true}
+				/>
+			{:else}
+				<Sprite key="capsuleTube" anchor={0.5} width={tubeW} height={tubeH} />
+			{/if}
 			{#if symbolKey}
 				<Container
 					x={symSize * symFx.dx}
@@ -200,68 +208,29 @@
 					/>
 				</Container>
 			{/if}
-			<!-- Central bolt + crackle web, clipped to the GLASS interior only. In the tube art
-			     (324×640) the glass runs x 98..238, y 200..495, so in sprite-centred fractions the
-			     window is x -0.198..+0.235 of tubeW and y -0.187..+0.273 of tubeH — starting BELOW
-			     the top metal cap. Crackle drawn twice (one mirrored) with offset shimmer. -->
-			{@const glassY = tubeH * 0.043}
-			{@const glassX = tubeW * 0.0185 /* glass centre sits +6px of 324 right of the sprite centre */}
-			<Container>
-				<Graphics
-					isMask
-					draw={(g) => {
-						g.clear();
-						g.beginFill(0xffffff);
-						g.rect(-tubeW * 0.198, -tubeH * 0.165, tubeW * 0.433, tubeH * 0.433);
-						g.endFill();
-					}}
-				/>
-				<Sprite
-					key="capsuleCrackle"
-					anchor={0.5}
-					x={glassX}
-					y={glassY}
-					width={tubeW * 0.42}
-					height={tubeH * 0.43}
-					alpha={crackleA}
-					blendMode="add"
-				/>
-				<Sprite
-					key="capsuleCrackle"
-					anchor={0.5}
-					x={glassX}
-					y={glassY}
-					width={-tubeW * 0.42}
-					height={tubeH * 0.43}
-					alpha={crackleB}
-					blendMode="add"
-				/>
-				<Sprite
-					key="capsuleLightning"
-					anchor={0.5}
-					x={glassX}
-					y={glassY}
-					width={tubeW * 0.44}
-					height={tubeH * 0.47}
-					alpha={arcFlicker}
-				/>
-			</Container>
+			<!-- Lightning is baked into the animated tube frames — no procedural overlay needed. -->
 		</Container>
 
 		<!-- TOTAL WIN / FREE SPINS boxes only during a bonus — in base game the capsule stands alone -->
 		{#if isBonus}
-			<!-- TOTAL WIN caps the top of the capsule -->
+			<!-- TOTAL WIN caps the top of the capsule. The panel art's visible box is offset from the
+			     sprite centre (glow padding is asymmetric: core centre −1.25% W, −4.6% H), so the text
+			     block is shifted to the box's TRUE centre. -->
 			<Container x={colX} y={totalWinY}>
 				<Sprite key="panelBorder" anchor={0.5} width={PANEL_W} height={PANEL_H} />
-				<Text anchor={0.5} y={-PANEL_H * 0.11} text={i18nDerived.translate('TOTAL WIN')} style={labelStyle(PANEL_H * 0.14)} />
-				<Text anchor={0.5} y={PANEL_H * 0.11} text={totalWin} style={valueStyle(PANEL_H * 0.24)} />
+				<Container x={-PANEL_W * 0.0125} y={-PANEL_H * 0.046}>
+					<Text anchor={0.5} y={-PANEL_H * 0.11} text={i18nDerived.translate('TOTAL WIN')} style={labelStyle(PANEL_H * 0.14)} />
+					<Text anchor={0.5} y={PANEL_H * 0.11} text={totalWin} style={valueStyle(PANEL_H * 0.24)} />
+				</Container>
 			</Container>
 
-			<!-- FREE SPINS caps the bottom of the capsule -->
+			<!-- FREE SPINS caps the bottom of the capsule (same visible-box centring as TOTAL WIN) -->
 			<Container x={colX} y={fsY}>
 				<Sprite key="panelBorder" anchor={0.5} width={PANEL_W} height={PANEL_H} />
-				<Text anchor={0.5} y={-PANEL_H * 0.11} text={i18nDerived.translate('FREE SPINS')} style={labelStyle(PANEL_H * 0.14)} />
-				<Text anchor={0.5} y={PANEL_H * 0.11} text={`${fsRemaining}`} style={valueStyle(PANEL_H * 0.24)} />
+				<Container x={-PANEL_W * 0.0125} y={-PANEL_H * 0.046}>
+					<Text anchor={0.5} y={-PANEL_H * 0.11} text={i18nDerived.translate('FREE SPINS')} style={labelStyle(PANEL_H * 0.14)} />
+					<Text anchor={0.5} y={PANEL_H * 0.11} text={`${fsRemaining}`} style={valueStyle(PANEL_H * 0.24)} />
+				</Container>
 			</Container>
 		{/if}
 	</FadeContainer>

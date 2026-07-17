@@ -40,6 +40,14 @@
 		) as LoadedAudio<SoundName>;
 		const { destroy } = sound.load(loadedAudio);
 
+		// The volume $effects above first ran BEFORE this load created the players, and
+		// `sound.players` is not reactive so they never re-run on creation — apply the
+		// initial channel volumes here or everything plays at the Howl default (100%)
+		// until the user first touches a slider.
+		sound.players.music.volume(stateSound.volumeValueMusic / 100);
+		sound.players.loop.volume(stateSound.volumeValueSoundEffect / 100);
+		sound.players.once.volume(stateSound.volumeValueSoundEffect / 100);
+
 		return () => {
 			// Equivalent to onDestroy(); Leave this comment for searching.
 			destroy();

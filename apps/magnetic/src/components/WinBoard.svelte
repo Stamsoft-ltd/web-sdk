@@ -9,6 +9,7 @@
 
 	import WinBoardFx from './WinBoardFx.svelte';
 	import { WIN_GRADIENT } from '../game/goldGradient';
+	import { WIN_BOARD_LOGO_PATHS } from '../game/winBoardLogoPaths';
 
 	// The tiered win board with a zoom-to-centre transition between tiers: when the counting
 	// amount crosses into a higher tier, the current board collapses into the centre, then the
@@ -38,6 +39,42 @@
 		epicWinBoard: 0.353,
 		mythicWinBoard: 0.377,
 		legendaryWinBoard: 0.37,
+	};
+
+	// The 4 hex gems on the medallion ring of each board art (fractions of the sprite box,
+	// relative to the sprite centre, +y down) — measured per art; each gets a small pulsing
+	// halo from WinBoardFx. The MAX WIN screen art has a different composition, so no entry.
+	const MEDALLION_GEMS: Record<string, { x: number; y: number }[]> = {
+		sweetWinBoard: [
+			{ x: -0.004, y: -0.132 },
+			{ x: -0.165, y: 0.033 },
+			{ x: 0.156, y: 0.033 },
+			{ x: -0.004, y: 0.195 },
+		],
+		wildWinBoard: [
+			{ x: -0.004, y: -0.127 },
+			{ x: -0.156, y: 0.022 },
+			{ x: 0.148, y: 0.022 },
+			{ x: -0.004, y: 0.178 },
+		],
+		epicWinBoard: [
+			{ x: 0, y: -0.051 },
+			{ x: -0.161, y: 0.114 },
+			{ x: 0.167, y: 0.114 },
+			{ x: 0, y: 0.255 },
+		],
+		mythicWinBoard: [
+			{ x: -0.004, y: -0.104 },
+			{ x: -0.173, y: 0.062 },
+			{ x: 0.167, y: 0.062 },
+			{ x: -0.004, y: 0.246 },
+		],
+		legendaryWinBoard: [
+			{ x: 0.001, y: -0.077 },
+			{ x: -0.157, y: 0.08 },
+			{ x: 0.156, y: 0.08 },
+			{ x: 0.001, y: 0.24 },
+		],
 	};
 
 	// Frame half-extents of each board art (fraction of the sprite box), measured from the solid
@@ -89,12 +126,13 @@
 
 {#if displayedKey}
 	{@const isMax = displayedKey === 'maxWinBoard'}
-	<!-- MAX WIN dominates the SCREEN like the Figma (4143-16513): ~72% of the screen width
-	     (height-capped), centred on the screen rather than sized like a tier board. -->
-	{@const boardW = isMax ? Math.min(screenW * 0.72, screenH * 0.88 * (1535 / 1025)) : boardSize}
+	<!-- MAX WIN dominates the SCREEN like the Figma (4143-16513): ~62% of the screen width
+	     (height-capped) — sized so the full art fits without clipping the top edge. -->
+	{@const boardW = isMax ? Math.min(screenW * 0.62, screenH * 0.78 * (1535 / 1025)) : boardSize}
 	{@const boardH = isMax ? boardW * (1025 / 1535) : boardSize}
 	{@const offX = isMax ? maxOffX : 0}
-	{@const offY = isMax ? maxOffY : 0}
+	<!-- MAX WIN board rides a bit high of screen-centre so it clears the HUD comfortably. -->
+	{@const offY = isMax ? maxOffY - boardH * 0.05 : 0}
 	{@const glowColor =
 		displayedKey === 'sweetWinBoard' ? 0x2fb4ff
 		: displayedKey === 'wildWinBoard' ? 0x46e04b
@@ -122,11 +160,53 @@
 		/>
 		<Sprite key={displayedKey} anchor={0.5} width={boardW} height={boardH} />
 		<!-- Energized frame: breathing glow band, pulsing edge light bars + corner gems and
-		     electric runners crawling the frame, tinted to the tier. -->
-		<WinBoardFx y={boardH * fx.cy} {boardW} {boardH} hx={fx.hx} hy={fx.hy} color={glowColor} />
+		     electric runners crawling the frame, tinted to the tier — plus small halos on the
+		     medallion ring's 4 hex gems (positions compensated for the overlay's cy offset). -->
+		{@const gemPts = (MEDALLION_GEMS[displayedKey] ?? []).map((p) => ({
+			x: p.x * boardW,
+			y: p.y * boardH - boardH * fx.cy,
+		}))}
+		{@const logoPts = (WIN_BOARD_LOGO_PATHS[displayedKey] ?? []).map((path) =>
+			path.map(([px, py]) => ({ x: px * boardW, y: py * boardH - boardH * fx.cy })),
+		)}
+		<!-- MAX WIN screen: extra light on the baked lettering — a warm glow over "MAX" and an
+		     electric one over "WIN" (regions measured from the art), each with glitter sparks. -->
+		{@const textGlows = isMax
+			? [
+					{ x: 0.021 * boardW, y: -0.139 * boardH - boardH * fx.cy, rx: 0.235 * boardW, ry: 0.093 * boardH, color: 0xffb340 },
+					{ x: 0.015 * boardW, y: 0.056 * boardH - boardH * fx.cy, rx: 0.208 * boardW, ry: 0.112 * boardH, color: 0x4fd8ff },
+				]
+			: []}
+		<!-- The two plasma faces crackle with a small contained electric glow (positions/radii
+		     measured from the art via its needle/star pivot points): the compass medallion at the
+		     plaque's bottom centre, and the blue sphere at the upper left. -->
+		{@const plasma = isMax
+			? [
+					{ x: 0.015 * boardW, y: 0.400 * boardH - boardH * fx.cy, r: boardW * 0.045, color: 0x7fd0ff },
+					{ x: -0.408 * boardW, y: -0.188 * boardH - boardH * fx.cy, r: boardW * 0.05, color: 0x7fd0ff },
+				]
+			: []}
+		<WinBoardFx
+			y={boardH * fx.cy}
+			{boardW}
+			{boardH}
+			hx={fx.hx}
+			hy={fx.hy}
+			color={glowColor}
+			gems={gemPts}
+			logoPaths={logoPts}
+			showFrame={!isMax}
+			{textGlows}
+			{plasma}
+		/>
 		<!-- Win amount — Cinzel 900 gold gradient with a black outline; scales to fit the plaque. -->
+		<!-- The MAX art's plaque reads as centred on its compass medallion (its bottom-centre
+		     ornament), which sits at +0.015 of boardW — so the amount is aligned to that axis, not
+		     the raw sprite centre. Vertically it sits at +0.29 of boardH — the centre of the visible
+		     bay between the top rail and the compass (the compass eats the bottom-centre). -->
 		<Container
-			y={isMax ? boardH * 0.31 : boardSize * (TIER_TEXT_Y[displayedKey] ?? 0.37)}
+			x={isMax ? boardW * 0.015 : 0}
+			y={isMax ? boardH * 0.29 : boardSize * (TIER_TEXT_Y[displayedKey] ?? 0.37)}
 			scale={fitScale}
 		>
 			<Text

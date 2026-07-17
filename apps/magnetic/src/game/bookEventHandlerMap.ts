@@ -12,6 +12,12 @@ import type { BookEvent, BookEventContext, BookEventOfType } from './typesBookEv
 import type { ClusterSeriesSnapshot, Position } from './types';
 import { logMagneticDiagnostic } from '../utils/magneticDiagnostics';
 
+// An out-of-range server winLevel must not yield undefined winLevelData — Win.svelte only
+// wires its winUpdate oncomplete when winLevelData is set, so undefined hangs the awaited
+// broadcastAsync and strands the machine. Fall back to the standard small-win level.
+const getWinLevelData = (winLevel: number): WinLevelData =>
+	winLevelMap[winLevel as WinLevel] ?? winLevelMap[2];
+
 const winLevelSoundsPlay = ({ winLevelData }: { winLevelData: WinLevelData }) => {
 	if (winLevelData?.alias === 'max') eventEmitter.broadcastAsync({ type: 'uiHide' });
 	if (winLevelData?.sound?.sfx)
@@ -26,7 +32,8 @@ const winLevelSoundsStop = () => {
 	eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_bigwin_coinloop' });
 	// gameType is the truth here — activeBetModeKey can still be SUPER right after a bought
 	// bonus ended, which used to restart the bonus music instead of the base track.
-	if (stateGame.gameType !== 'basegame') {
+	// FEATURE rounds never start the free-spin music, so only real bonuses count.
+	if (stateGame.gameType === 'freegame' || stateGame.gameType === 'superspin') {
 		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
 	} else {
 		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_main' });
@@ -104,7 +111,8 @@ const shouldSkipNoGrowthNormalSuperRespin = (bookEvent: BookEvent, bookEvents: B
 	const carry = (() => {
 		for (let i = previousRevealIndex - 1; i >= 0; i -= 1) {
 			const event = bookEvents[i];
-			if (event.type === 'superSeriesCarry') return event.series;
+			// A carry with no cluster arrives as series: null — same as "no carry".
+			if (event.type === 'superSeriesCarry') return event.series ?? [];
 			if (event.type === 'updateFreeSpin' || event.type === 'reveal') return [];
 		}
 		return [];
@@ -284,6 +292,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
 			await eventEmitter.broadcastAsync({ type: 'transition' });
 			stateGameDerived.clearWinCellStates();
+			// Set the mode before the intro mounts its content — it reads bonusMode to
+			// pick the bonus title (DROP-O-MAGNET vs MAGNETIC MEGA CHAIN).
+			stateGame.gameType = bonusMode;
+			stateGame.bonusMode = bonusMode;
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'jng_intro_fs' });
 			eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
@@ -291,9 +303,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 				type: 'freeSpinIntroUpdate',
 				totalFreeSpins: bookEvent.totalFs,
 			});
+		} else {
+			stateGame.gameType = bonusMode;
+			stateGame.bonusMode = bonusMode;
 		}
-		stateGame.gameType = bonusMode;
-		stateGame.bonusMode = bonusMode;
 		if (!isFeatureSpin) eventEmitter.broadcast({ type: 'freeSpinIntroHide' });
 		if (!isFeatureSpin) {
 			eventEmitter.broadcast({ type: 'freeSpinCounterShow' });
@@ -331,7 +344,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateUi.freeSpinCounterTotal = bookEvent.total;
 	},
 	setWin: async (bookEvent: BookEventOfType<'setWin'>) => {
-		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
+		const winLevelData = getWinLevelData(bookEvent.winLevel);
 		eventEmitter.broadcast({ type: 'winShow' });
 		winLevelSoundsPlay({ winLevelData });
 		await eventEmitter.broadcastAsync({
@@ -345,11 +358,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGameDerived.clearWinCellStates();
 	},
 	freeSpinEnd: async (bookEvent: BookEventOfType<'freeSpinEnd'>) => {
-		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
+		const winLevelData = getWinLevelData(bookEvent.winLevel);
 		const isFeatureSpin = stateGame.bonusMode === 'feature';
-		stateGame.gameType = isFeatureSpin ? 'feature' : 'basegame';
+		// The bonus/feature is over — back to basegame so the HUD re-enables Buy Bonus
+		// while idle and win music resolves to the base track.
+		stateGame.gameType = 'basegame';
 		eventEmitter.broadcast({ type: 'globalMultiplierHide' });
 		if (isFeatureSpin) {
+			stateGame.bonusMode = null;
 			stateUi.freeSpinCounterShow = false;
 			await eventEmitter.broadcastAsync({ type: 'uiShow' });
 		} else {

@@ -295,8 +295,9 @@
 		}
 
 		if (context.stateXstateDerived.isIdle()) {
-			// Always reset to BASE before a new spin (unless feature toggle is on)
-			stateBet.activeBetModeKey = isFeatureActive ? 'FEATURE' : 'BASE';
+			// Clear stale buy modes (BONUS/SUPER) before a new spin; FEATURE and CHANCE
+			// are player toggles that persist until deactivated.
+			if (!isAnyModeActive) stateBet.activeBetModeKey = 'BASE';
 			context.eventEmitter.broadcast({ type: 'bet' });
 			return;
 		}
@@ -310,6 +311,9 @@
 	};
 
 	const onSpinHotkey = () => {
+		// Space must not start a spin behind an open modal (buy/auto/info or any shared modal).
+		if (showBuyModal || showAutoModal || showInfoModal || stateModal.modal !== null) return;
+
 		if (hasAuto) {
 			if (context.stateXstateDerived.isIdle()) return;
 			context.eventEmitter.broadcast({ type: 'soundPressBet' });
@@ -320,7 +324,7 @@
 		context.eventEmitter.broadcast({ type: 'soundPressBet' });
 
 		if (context.stateXstateDerived.isIdle()) {
-			stateBet.activeBetModeKey = isFeatureActive ? 'FEATURE' : 'BASE';
+			if (!isAnyModeActive) stateBet.activeBetModeKey = 'BASE';
 			context.eventEmitter.broadcast({ type: 'bet' });
 			return;
 		}
@@ -619,8 +623,8 @@
 						class="pt-bet-val"
 						role="button"
 						tabindex="0"
-						onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
-						onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
+						onkeydown={(e) => e.key === 'Enter' && canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
+						onclick={() => canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
 					>
 						<span class="value" class:value--feature={isAnyModeActive}>{formattedBet}</span>
 					</div>
@@ -682,8 +686,8 @@
 						class="ls-bet-val"
 						role="button"
 						tabindex="0"
-						onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
-						onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
+						onkeydown={(e) => e.key === 'Enter' && canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
+						onclick={() => canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
 					>
 						<span class="value" class:value--feature={isAnyModeActive}>{formattedBet}</span>
 					</div>
@@ -707,7 +711,7 @@
 				<button
 					class="buy-btn"
 					type="button"
-					disabled={isInBonus}
+					disabled={disableBuy}
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>

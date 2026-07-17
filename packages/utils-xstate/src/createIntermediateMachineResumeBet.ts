@@ -49,6 +49,15 @@ export const createIntermediateMachineResumeBet = (actors: {
 								target: 'ending',
 							},
 						],
+						// A throwing handler on the resume path is unrecoverable without this:
+						// betToResume is already nulled, so strand-in-'play' forces a reload.
+						// Still run 'ending' so the resumed round settles server-side.
+						onError: [
+							{
+								actions: ({ event }) => console.error('playGame failed on resume', event.error),
+								target: 'ending',
+							},
+						],
 					},
 				},
 				ending: {
@@ -61,6 +70,12 @@ export const createIntermediateMachineResumeBet = (actors: {
 						}),
 						onDone: [
 							{
+								target: 'end',
+							},
+						],
+						onError: [
+							{
+								actions: ({ event }) => console.error('endGame failed on resume', event.error),
 								target: 'end',
 							},
 						],

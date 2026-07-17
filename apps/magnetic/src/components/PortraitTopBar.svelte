@@ -27,6 +27,8 @@
 
 	// TOTAL WIN — mirrors the desktop CapsulePanel: the running win counts up smoothly to the total on
 	// every spin. A new bet resets winBookEventAmount to 0, which clears the running total.
+	// (globalMultiplier is the wrong value here: it resets to 1 before every freegame spin, so the
+	// box would read "x1" for the whole bonus.)
 	let runningWin = $state(0);
 	const winTarget = $derived(Math.max(runningWin, stateBet.winBookEventAmount));
 	$effect(() => {
@@ -57,6 +59,8 @@
 			if (e.current !== undefined) fsCurrent = e.current;
 			if (e.total !== undefined) fsTotal = e.total;
 		},
+		freeSpinIntroShow: () => (runningWin = 0),
+		winUpdate: (e) => (runningWin += e.amount),
 	});
 
 	// Live electricity inside the (transparent, black-inside) tube — mirrors the desktop CapsulePanel:

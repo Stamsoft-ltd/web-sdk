@@ -27,6 +27,8 @@
 		context.stateGame.bonusMode === 'freegame' || context.stateGame.bonusMode === 'superspin',
 	);
 	// TOTAL WIN — mirrors the desktop CapsulePanel: the running win counts up to the total each spin.
+	// (globalMultiplier is the wrong value here: it resets to 1 before every freegame spin, so the
+	// box would read "x1" for the whole bonus.)
 	let runningWin = $state(0);
 	const winTarget = $derived(Math.max(runningWin, stateBet.winBookEventAmount));
 	$effect(() => {
@@ -107,6 +109,8 @@
 			if (e.current !== undefined) fsCurrent = e.current;
 			if (e.total !== undefined) fsTotal = e.total;
 		},
+		freeSpinIntroShow: () => (runningWin = 0),
+		winUpdate: (e) => (runningWin += e.amount),
 	});
 
 	// ── geometry ──

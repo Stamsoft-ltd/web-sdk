@@ -20,12 +20,20 @@ export function createPlayOnce<TSoundName extends string>(options: {
 
 		options.initSoundVolume(sound.soundName);
 
-		options.howl.on('end', (soundIdOnEnd) => {
-			if (soundIdOnEnd === soundId) {
+		// Scope the handler to this soundId and let Howler drop it after firing — a plain
+		// on('end') accumulates one closure per play on the shared Howl forever.
+		options.howl.once(
+			'end',
+			() => {
 				options.howl.stop(soundId);
-				delete options.getSoundMap()[sound.soundName];
-			}
-		});
+				// A forcePlay replay may have re-pointed the map entry at a newer,
+				// still-playing instance — only clear the entry if it is still ours,
+				// or that instance escapes volume/stop control.
+				const entry = options.getSoundMap()[sound.soundName];
+				if (entry?.soundId === soundId) delete options.getSoundMap()[sound.soundName];
+			},
+			soundId,
+		);
 	};
 
 	const soundPlayMap = {

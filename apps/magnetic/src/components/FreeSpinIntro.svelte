@@ -10,7 +10,7 @@
 	import { OnHotkey } from 'components-shared';
 	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
-	import { Container, Graphics, Sprite, Text } from 'pixi-svelte';
+	import { AnimatedSprite, Container, Graphics, Sprite, Text, type LoadedSpriteSheet } from 'pixi-svelte';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 
@@ -19,6 +19,10 @@
 	import LightningStorm from './LightningStorm.svelte';
 
 	const context = getContext();
+	// Animated medallion (lightning flipbook; falls back to the static sprite until loaded).
+	const magnetFrames = $derived(
+		(context.stateApp.loadedAssets?.popupMagnetAnim ?? []) as LoadedSpriteSheet,
+	);
 
 	let show = $state(false);
 	let freeSpinsFromEvent = $state(0);
@@ -47,6 +51,9 @@
 	// Number-frame reuses the capsule/HUD panel border; box height drives the number size.
 	const numBoxW = $derived(PW * 0.32);
 	const numBoxH = $derived(numBoxW * (98 / 200));
+	// Medallion centred VERTICALLY between the bonus-name text (bottom edge: centre −0.235·PH +
+	// half the 0.046·PH font) and the free-spins frame's top edge (centre 0.27·PH − numBoxH/2).
+	const magnetY = $derived(((-0.235 + 0.023) * PH + (0.27 * PH - numBoxH / 2)) / 2);
 	const magnetW = $derived(PW * 0.34);
 
 	// ── Entry animation: the panel + content slide UP from below the screen while the
@@ -225,13 +232,25 @@
 				<Text anchor={0.5} y={-PH * 0.235} text={bonusName} style={congratsStyle(PH * 0.046)} />
 
 				<!-- Full magnet element (magnet + base + blue/orange energy baked in) -->
-				<Container y={PH * 0.04}>
-					<Sprite
+				<Container y={magnetY}>
+					{#if magnetFrames.length > 0}
+						<AnimatedSprite
+							textures={magnetFrames}
+							anchor={0.5}
+							width={magnetW * 0.9}
+							height={magnetW * 0.9 * (425 / 465)}
+							animationSpeed={0.16}
+							loop={true}
+							play={true}
+						/>
+					{:else}
+						<Sprite
 						key="popupMagnet"
 						anchor={0.5}
 						width={magnetW * 0.9}
 						height={magnetW * 0.9 * (103 / 114)}
 					/>
+					{/if}
 				</Container>
 
 				<!-- Free-spins count in its frame — the number pulses/flickers to draw attention -->
