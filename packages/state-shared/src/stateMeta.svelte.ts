@@ -93,6 +93,8 @@ export type GameInfoPage = {
 	/** Inner background image shown inside the frame. */
 	background?: string;
 	title: string;
+	/** Small line rendered directly below the title (e.g. "Base RTP 96.11%"). */
+	subtitle?: string;
 	/** Body paragraph (overview pages). Supports `\n` line breaks. */
 	body?: string;
 	/** Substring within `body` to render emphasised (gold, larger), e.g. the max-win value. */

@@ -10,7 +10,8 @@
 	import { stateI18nDerived } from 'state-shared';
 	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
-	import { Container, Sprite, Text } from 'pixi-svelte';
+	import { AnimatedSprite, Container, Sprite, Text } from 'pixi-svelte';
+	import type { Texture } from 'pixi.js';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 
@@ -22,6 +23,10 @@
 	const context = getContext();
 	const t = (key: string) => stateI18nDerived.translate(key);
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	// Animated scatter medallion (seamless loop; falls back to the static sprite until loaded).
+	const medallionFrames = $derived(
+		(context.stateApp.loadedAssets?.fsMedallionAnim ?? []) as Texture[],
+	);
 
 	// Per-element layout (fractions of BW): y = offset from board centre, f = font size,
 	// w = number-frame width. Portrait enlarges every line and spreads them further apart —
@@ -180,12 +185,24 @@
 			{#if !isPortrait}
 				<!-- Gentle breathing zoom, same feel as the outro medallion. -->
 				<Container y={Math.round(-BW * 0.035)} scale={1 + 0.06 * Math.sin(animT * 2.6)}>
-					<Sprite
-						key="fsMedallion"
-						anchor={{ x: 0.5, y: 0.5 }}
-						width={Math.round(BW * 0.15)}
-						height={Math.round(BW * 0.15 * (273 / 300))}
-					/>
+					{#if medallionFrames.length > 0}
+						<AnimatedSprite
+							textures={medallionFrames}
+							anchor={0.5}
+							width={Math.round(BW * 0.15)}
+							height={Math.round(BW * 0.15 * (443 / 485))}
+							animationSpeed={0.14}
+							loop={true}
+							play={true}
+						/>
+					{:else}
+						<Sprite
+							key="fsMedallion"
+							anchor={{ x: 0.5, y: 0.5 }}
+							width={Math.round(BW * 0.15)}
+							height={Math.round(BW * 0.15 * (273 / 300))}
+						/>
+					{/if}
 				</Container>
 			{/if}
 

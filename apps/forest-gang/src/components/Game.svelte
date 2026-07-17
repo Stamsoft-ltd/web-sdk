@@ -289,6 +289,7 @@
 					frame: infoFrame,
 					background: infoPanelBg,
 					title: forestStakeTitle('INFO BUY TITLE'),
+					subtitle: forestStakeTitle('INFO BUY BASE RTP'),
 					cards: [
 						{
 							title: forestStakeTitle('INFO BUY CHANCE TITLE'),
@@ -298,7 +299,7 @@
 							metric: { label: forestStakeTitle('INFO BUY CHANCE_LABEL'), value: forestStakeTitle('INFO BUY CHANCE_VALUE') },
 							footer: [
 								{ label: forestStakeTitle('INFO BUY COST'), value: '2x BET' },
-								{ label: forestStakeTitle('INFO BUY RTP'), value: forestStakeTitle('INFO BUY RTP_VALUE') },
+								{ label: forestStakeTitle('INFO BUY RTP'), value: '96.12%' },
 							],
 						},
 						{
@@ -307,7 +308,7 @@
 							theme: 'purple',
 							icon: `${infoDir}/buy_feature.webp`,
 							metric: { label: forestStakeTitle('INFO BUY COST'), value: '20x BET' },
-							footer: [{ label: forestStakeTitle('INFO BUY RTP'), value: forestStakeTitle('INFO BUY RTP_VALUE') }],
+							footer: [{ label: forestStakeTitle('INFO BUY RTP'), value: '96.09%' }],
 						},
 						{
 							title: forestStakeTitle('INFO BUY DEALIT TITLE'),
@@ -315,7 +316,7 @@
 							theme: 'gold',
 							icon: `${infoDir}/buy_dealit.webp`,
 							metric: { label: forestStakeTitle('INFO BUY COST'), value: '100x BET' },
-							footer: [{ label: forestStakeTitle('INFO BUY RTP'), value: forestStakeTitle('INFO BUY RTP_VALUE') }],
+							footer: [{ label: forestStakeTitle('INFO BUY RTP'), value: '96.10%' }],
 						},
 						{
 							title: forestStakeTitle('INFO BUY ALLIN TITLE'),
@@ -323,7 +324,7 @@
 							theme: 'gold',
 							icon: `${infoDir}/buy_allin.webp`,
 							metric: { label: forestStakeTitle('INFO BUY COST'), value: '400x BET' },
-							footer: [{ label: forestStakeTitle('INFO BUY RTP'), value: forestStakeTitle('INFO BUY RTP_VALUE') }],
+							footer: [{ label: forestStakeTitle('INFO BUY RTP'), value: '96.10%' }],
 						},
 					],
 				},

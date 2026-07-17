@@ -8,7 +8,8 @@
 </script>
 
 <script lang="ts">
-	import { Container, Sprite, Text } from 'pixi-svelte';
+	import { AnimatedSprite, Container, Sprite, Text } from 'pixi-svelte';
+	import type { Texture } from 'pixi.js';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
@@ -27,6 +28,10 @@
 	const context = getContext();
 	const t = (key: string) => stateI18nDerived.translate(key);
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	// Animated scatter medallion (seamless loop; falls back to the static sprite until loaded).
+	const medallionFrames = $derived(
+		(context.stateApp.loadedAssets?.fsMedallionAnim ?? []) as Texture[],
+	);
 
 	// Same Cinzel styling as the free-spins intro (Figma: Cinzel 900, soft drop shadow, proportional spacing).
 	const textStyle = (fontSize: number, fill: number) => ({
@@ -120,12 +125,24 @@
 
 						<!-- Scatter medallion — zooms in/out gently -->
 						<Container y={Math.round(-BW * 0.051)} scale={medallionPulse}>
-							<Sprite
-								key="fsMedallion"
-								anchor={{ x: 0.5, y: 0.5 }}
-								width={Math.round(BW * 0.28)}
-								height={Math.round(BW * 0.28 * (273 / 300))}
-							/>
+							{#if medallionFrames.length > 0}
+								<AnimatedSprite
+									textures={medallionFrames}
+									anchor={0.5}
+									width={Math.round(BW * 0.322)}
+									height={Math.round(BW * 0.322 * (443 / 485))}
+									animationSpeed={0.14}
+									loop={true}
+									play={true}
+								/>
+							{:else}
+								<Sprite
+									key="fsMedallion"
+									anchor={{ x: 0.5, y: 0.5 }}
+									width={Math.round(BW * 0.322)}
+									height={Math.round(BW * 0.322 * (273 / 300))}
+								/>
+							{/if}
 						</Container>
 
 						<!-- Win amount — Cinzel 900 gold with black outline; scales down to fit the board width -->

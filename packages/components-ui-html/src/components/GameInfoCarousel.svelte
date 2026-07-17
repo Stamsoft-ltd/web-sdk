@@ -169,6 +169,7 @@
 			{:else if page.kind === 'cards'}
 				{@const buyCards = (page.cards ?? []).some((c) => c.metric || c.footer)}
 				<h2 class="pinfo-title gold">{page.title}</h2>
+				{#if page.subtitle}<p class="pinfo-subtitle">{page.subtitle}</p>{/if}
 				{#if buyCards}
 					<!-- Feature buy: 2×2 grid of gold-bordered cards, icon/badges on the top border (Figma 6/7) -->
 					<div class="pbuy-grid">
@@ -347,6 +348,7 @@
 			{:else if page.kind === 'features' || page.kind === 'cards'}
 				<div class="features">
 					<h2 class="info-title info-title--center gold">{page.title}</h2>
+					{#if page.subtitle}<p class="info-subtitle">{page.subtitle}</p>{/if}
 					<div class="cards" class:cards--center={page.kind === 'cards'}>
 						{#each page.cards ?? [] as card}
 							<article class="card" class:card--split={card.images?.length} class:card--buy={card.metric || card.footer}>
@@ -591,6 +593,17 @@
 	.info-title--center {
 		text-align: center;
 		width: 100%;
+	}
+
+	.info-subtitle {
+		margin: 0.4cqw 0 0;
+		width: 100%;
+		text-align: center;
+		color: #ffd89c;
+		font-family: 'Poppins', sans-serif;
+		font-weight: 500;
+		font-size: 1.5cqw;
+		letter-spacing: 0.03em;
 	}
 
 	/* ---- overview ---- */
@@ -1288,6 +1301,17 @@
 		letter-spacing: 0.03em;
 		line-height: 1.1;
 		text-transform: uppercase;
+	}
+
+	.pinfo-subtitle {
+		margin: 0.6cqw 0 0;
+		flex-shrink: 0;
+		text-align: center;
+		color: #ffd89c;
+		font-family: 'Poppins', sans-serif;
+		font-weight: 500;
+		font-size: 2.4cqw;
+		letter-spacing: 0.03em;
 	}
 
 	.pinfo-body {

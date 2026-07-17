@@ -161,6 +161,7 @@ export default {
 	'INFO BUY COST': '비용',
 	'INFO BUY RTP': 'RTP',
 	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "기본 RTP 96.11%",
 	'INFO BUY CHANCE_LABEL': '보너스 찬스',
 	'INFO BUY CHANCE_VALUE': '3x 찬스',
 	// General info page
@@ -212,7 +213,7 @@ export default {
 	'AUTO SPIN': '자동 스핀',
 	'TURBO SPIN': '터보 스핀',
 	'SUPER TURBO SPIN': '슈퍼 터보 스핀',
-	'BONUS FEATURE 100X': '100 X 보너스 기능',
+	'BONUS FEATURE 100X': '20 X 보너스 기능',
 	'NUMBER OF SPINS': '스핀 횟수',
 	'START AUTOPLAY': '자동 플레이 시작',
 

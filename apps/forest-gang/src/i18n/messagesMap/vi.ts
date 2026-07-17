@@ -161,6 +161,7 @@ export default {
 	'INFO BUY COST': 'CHI PHÍ',
 	'INFO BUY RTP': 'RTP',
 	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "RTP cơ bản 96.11%",
 	'INFO BUY CHANCE_LABEL': 'CƠ HỘI THƯỞNG',
 	'INFO BUY CHANCE_VALUE': 'CƠ HỘI 3x',
 	// General info page
@@ -212,7 +213,7 @@ export default {
 	'AUTO SPIN': 'QUAY TỰ ĐỘNG',
 	'TURBO SPIN': 'QUAY TURBO',
 	'SUPER TURBO SPIN': 'QUAY SIÊU TURBO',
-	'BONUS FEATURE 100X': 'TÍNH NĂNG THƯỞNG 100 X',
+	'BONUS FEATURE 100X': 'TÍNH NĂNG THƯỞNG 20 X',
 	'NUMBER OF SPINS': 'SỐ LƯỢT QUAY',
 	'START AUTOPLAY': 'BẮT ĐẦU TỰ ĐỘNG',
 

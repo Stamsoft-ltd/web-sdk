@@ -161,6 +161,7 @@ export default {
 	'INFO BUY COST': 'लागत',
 	'INFO BUY RTP': 'RTP',
 	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "बेस RTP 96.11%",
 	'INFO BUY CHANCE_LABEL': 'बोनस चांस',
 	'INFO BUY CHANCE_VALUE': '3x चांस',
 	// General info page
@@ -212,7 +213,7 @@ export default {
 	'AUTO SPIN': 'ऑटो स्पिन',
 	'TURBO SPIN': 'टर्बो स्पिन',
 	'SUPER TURBO SPIN': 'सुपर टर्बो स्पिन',
-	'BONUS FEATURE 100X': '100 X बोनस फीचर',
+	'BONUS FEATURE 100X': '20 X बोनस फीचर',
 	'NUMBER OF SPINS': 'स्पिन की संख्या',
 	'START AUTOPLAY': 'ऑटोप्ले शुरू करें',
 

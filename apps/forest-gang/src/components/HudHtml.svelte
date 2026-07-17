@@ -79,6 +79,9 @@
 	// Buying a bonus is not allowed while a multi-spin bonus round is in progress.
 	// Feature mode keeps its selected-symbol badge after the round, but should not lock the HUD.
 	const isInBonus = $derived(context.stateGame.bonusMode !== null && context.stateGame.bonusMode !== 'feature');
+	// BUY BONUS availability: blocked while a spin is running (incl. the bought bonus's own
+	// trigger-spin reel animation, when bonusMode isn't set yet) and inside the bonus.
+	const disableBuy = $derived((!canInteract || isInBonus) && !isAnyModeActive);
 	// Bolder icon = faster: Normal shows the outline bolt, Turbo the solid bolt, Super turbo the double.
 	const turboIcon = $derived(
 		stateBet.isSuperTurbo ? iconTurbo3 : stateBet.isTurbo ? iconTurbo1 : iconTurbo2,
@@ -180,6 +183,7 @@
 	let showAutoModal = $state(false);
 
 	const openBuyBonus = () => {
+		if (disableBuy) return;
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		showBuyModal = true;
 	};
@@ -440,6 +444,7 @@
 				<button
 					class="pt-buy"
 					type="button"
+					disabled={disableBuy}
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
@@ -464,7 +469,7 @@
 			<button
 				class="ls-buy"
 				type="button"
-				disabled={isInBonus && !isAnyModeActive}
+				disabled={disableBuy}
 				onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 				aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 			>
@@ -570,7 +575,7 @@
 				<button
 					class="buy-btn"
 					type="button"
-					disabled={isInBonus && !isAnyModeActive}
+					disabled={disableBuy}
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
@@ -1575,6 +1580,7 @@
 	}
 	.ls-buy:not(:disabled):hover { filter: brightness(1.1); transform: translate(-50%, calc(50% - 1px)); }
 	.ls-buy:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
+	.pt-buy:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
 	.ls-buy__label {
 		/* Centred on the green body: the button art has leaves along the bottom, so the body centre is
 		   above the element centre. NO transform-based centering here — the fitLabel action overwrites

@@ -161,6 +161,7 @@ export default {
 	'INFO BUY COST': '费用',
 	'INFO BUY RTP': 'RTP',
 	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "基础RTP 96.11%",
 	'INFO BUY CHANCE_LABEL': '奖励机会',
 	'INFO BUY CHANCE_VALUE': '3x 机会',
 	// General info page
@@ -212,7 +213,7 @@ export default {
 	'AUTO SPIN': '自动旋转',
 	'TURBO SPIN': '加速旋转',
 	'SUPER TURBO SPIN': '超级加速旋转',
-	'BONUS FEATURE 100X': '100 X 奖励功能',
+	'BONUS FEATURE 100X': '20 X 奖励功能',
 	'NUMBER OF SPINS': '旋转次数',
 	'START AUTOPLAY': '开始自动游戏',
 

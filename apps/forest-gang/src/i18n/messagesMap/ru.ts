@@ -161,6 +161,7 @@ export default {
 	'INFO BUY COST': 'СТОИМОСТЬ',
 	'INFO BUY RTP': 'RTP',
 	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "Базовый RTP 96.11%",
 	'INFO BUY CHANCE_LABEL': 'ШАНС БОНУСА',
 	'INFO BUY CHANCE_VALUE': '3x ШАНС',
 	// General info page
@@ -212,7 +213,7 @@ export default {
 	'AUTO SPIN': 'АВТОВРАЩЕНИЕ',
 	'TURBO SPIN': 'ТУРБО ВРАЩЕНИЕ',
 	'SUPER TURBO SPIN': 'СУПЕР ТУРБО ВРАЩЕНИЕ',
-	'BONUS FEATURE 100X': '100 X БОНУСНАЯ ФУНКЦИЯ',
+	'BONUS FEATURE 100X': '20 X БОНУСНАЯ ФУНКЦИЯ',
 	'NUMBER OF SPINS': 'КОЛИЧЕСТВО ВРАЩЕНИЙ',
 	'START AUTOPLAY': 'ЗАПУСК АВТОИГРЫ',
 

@@ -1,0 +1,859 @@
+{
+ "frames": {
+  "medallion_1.png": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_2.png": {
+   "frame": {
+    "x": 485,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_3.png": {
+   "frame": {
+    "x": 970,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_4.png": {
+   "frame": {
+    "x": 1455,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_5.png": {
+   "frame": {
+    "x": 1940,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_6.png": {
+   "frame": {
+    "x": 2425,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_7.png": {
+   "frame": {
+    "x": 2910,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_8.png": {
+   "frame": {
+    "x": 3395,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_9.png": {
+   "frame": {
+    "x": 0,
+    "y": 443,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_10.png": {
+   "frame": {
+    "x": 485,
+    "y": 443,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_11.png": {
+   "frame": {
+    "x": 970,
+    "y": 443,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_12.png": {
+   "frame": {
+    "x": 1455,
+    "y": 443,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_13.png": {
+   "frame": {
+    "x": 1940,
+    "y": 443,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_14.png": {
+   "frame": {
+    "x": 2425,
+    "y": 443,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_15.png": {
+   "frame": {
+    "x": 2910,
+    "y": 443,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_16.png": {
+   "frame": {
+    "x": 3395,
+    "y": 443,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_17.png": {
+   "frame": {
+    "x": 0,
+    "y": 886,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_18.png": {
+   "frame": {
+    "x": 485,
+    "y": 886,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_19.png": {
+   "frame": {
+    "x": 970,
+    "y": 886,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_20.png": {
+   "frame": {
+    "x": 1455,
+    "y": 886,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_21.png": {
+   "frame": {
+    "x": 1940,
+    "y": 886,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_22.png": {
+   "frame": {
+    "x": 2425,
+    "y": 886,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_23.png": {
+   "frame": {
+    "x": 2910,
+    "y": 886,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_24.png": {
+   "frame": {
+    "x": 3395,
+    "y": 886,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_25.png": {
+   "frame": {
+    "x": 0,
+    "y": 1329,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_26.png": {
+   "frame": {
+    "x": 485,
+    "y": 1329,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_27.png": {
+   "frame": {
+    "x": 970,
+    "y": 1329,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_28.png": {
+   "frame": {
+    "x": 1455,
+    "y": 1329,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_29.png": {
+   "frame": {
+    "x": 1940,
+    "y": 1329,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_30.png": {
+   "frame": {
+    "x": 2425,
+    "y": 1329,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_31.png": {
+   "frame": {
+    "x": 2910,
+    "y": 1329,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_32.png": {
+   "frame": {
+    "x": 3395,
+    "y": 1329,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_33.png": {
+   "frame": {
+    "x": 0,
+    "y": 1772,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_34.png": {
+   "frame": {
+    "x": 485,
+    "y": 1772,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_35.png": {
+   "frame": {
+    "x": 970,
+    "y": 1772,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_36.png": {
+   "frame": {
+    "x": 1455,
+    "y": 1772,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_37.png": {
+   "frame": {
+    "x": 1940,
+    "y": 1772,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_38.png": {
+   "frame": {
+    "x": 2425,
+    "y": 1772,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_39.png": {
+   "frame": {
+    "x": 2910,
+    "y": 1772,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  },
+  "medallion_40.png": {
+   "frame": {
+    "x": 3395,
+    "y": 1772,
+    "w": 485,
+    "h": 443
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 485,
+    "h": 443
+   },
+   "sourceSize": {
+    "w": 485,
+    "h": 443
+   }
+  }
+ },
+ "animations": {
+  "medallion": [
+   "medallion_1.png",
+   "medallion_2.png",
+   "medallion_3.png",
+   "medallion_4.png",
+   "medallion_5.png",
+   "medallion_6.png",
+   "medallion_7.png",
+   "medallion_8.png",
+   "medallion_9.png",
+   "medallion_10.png",
+   "medallion_11.png",
+   "medallion_12.png",
+   "medallion_13.png",
+   "medallion_14.png",
+   "medallion_15.png",
+   "medallion_16.png",
+   "medallion_17.png",
+   "medallion_18.png",
+   "medallion_19.png",
+   "medallion_20.png",
+   "medallion_21.png",
+   "medallion_22.png",
+   "medallion_23.png",
+   "medallion_24.png",
+   "medallion_25.png",
+   "medallion_26.png",
+   "medallion_27.png",
+   "medallion_28.png",
+   "medallion_29.png",
+   "medallion_30.png",
+   "medallion_31.png",
+   "medallion_32.png",
+   "medallion_33.png",
+   "medallion_34.png",
+   "medallion_35.png",
+   "medallion_36.png",
+   "medallion_37.png",
+   "medallion_38.png",
+   "medallion_39.png",
+   "medallion_40.png"
+  ]
+ },
+ "meta": {
+  "app": "custom",
+  "version": "1.0",
+  "image": "medallion_anim.webp",
+  "format": "RGBA8888",
+  "size": {
+   "w": 3880,
+   "h": 2215
+  },
+  "scale": "1"
+ }
+}

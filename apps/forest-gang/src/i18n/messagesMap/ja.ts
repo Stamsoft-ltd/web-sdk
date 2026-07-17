@@ -161,6 +161,7 @@ export default {
 	'INFO BUY COST': 'コスト',
 	'INFO BUY RTP': 'RTP',
 	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "ベースRTP 96.11%",
 	'INFO BUY CHANCE_LABEL': 'ボーナスチャンス',
 	'INFO BUY CHANCE_VALUE': '3x チャンス',
 	// General info page
@@ -212,7 +213,7 @@ export default {
 	'AUTO SPIN': 'オートスピン',
 	'TURBO SPIN': 'ターボスピン',
 	'SUPER TURBO SPIN': 'スーパーターボスピン',
-	'BONUS FEATURE 100X': '100 X ボーナス機能',
+	'BONUS FEATURE 100X': '20 X ボーナス機能',
 	'NUMBER OF SPINS': 'スピン回数',
 	'START AUTOPLAY': 'オートプレイ開始',
 

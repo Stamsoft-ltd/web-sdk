@@ -161,6 +161,7 @@ export default {
 	'INFO BUY COST': 'التكلفة',
 	'INFO BUY RTP': 'RTP',
 	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "RTP الأساسي 96.11%",
 	'INFO BUY CHANCE_LABEL': 'فرصة المكافأة',
 	'INFO BUY CHANCE_VALUE': '3x فرصة',
 	// General info page
@@ -212,7 +213,7 @@ export default {
 	'AUTO SPIN': 'لف تلقائي',
 	'TURBO SPIN': 'لف توربو',
 	'SUPER TURBO SPIN': 'لف سوبر توربو',
-	'BONUS FEATURE 100X': 'ميزة مكافأة 100 X',
+	'BONUS FEATURE 100X': 'ميزة مكافأة 20 X',
 	'NUMBER OF SPINS': 'عدد اللفات',
 	'START AUTOPLAY': 'بدء اللعب التلقائي',
 

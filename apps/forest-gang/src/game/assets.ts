@@ -316,6 +316,12 @@ const assets = {
 		type: 'sprite',
 		src: './assets/sprites/fsMedallion/fsMedallion.png',
 	},
+	// Animated scatter medallion (Magnific webm with real alpha; seamless 40-frame loop) —
+	// replaces the static fsMedallion on the free-spin intro/outro popups.
+	fsMedallionAnim: {
+		type: 'spriteSheet',
+		src: './assets/sprites/fsMedallion/medallion_anim.json',
+	},
 	progressBar: {
 		type: 'sprites',
 		src: './assets/sprites/progressBar/progressBar.json?v=20260611',
@@ -373,7 +379,7 @@ const assets = {
 	squirrelWinAnim: { type: 'spriteSheet', src: './assets/sprites/squirrelMoney/squirrel_win_anim.json?v=20260716c' },
 	sound: {
 		type: 'audio',
-		src: './assets/audio/sounds.json?v=20260707a',
+		src: './assets/audio/sounds.json?v=20260717d',
 		preload: true,
 	},
 } as const;
