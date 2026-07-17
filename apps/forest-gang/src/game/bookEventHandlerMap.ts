@@ -59,6 +59,18 @@ const animateSymbols = async ({ positions }: { positions: Position[] }) => {
 };
 
 const getBonusModeFromScatters = (positions: Position[]) => (positions.length >= 4 ? 'superspin' : 'freegame');
+const isFeatureSpinBook = (bookEvents: BookEvent[]) =>
+	bookEvents.some((event) => event.type === 'freeSpinTrigger' && event.totalFs === 1) ||
+	bookEvents.some((event) => event.type === 'bonusSymbolSelected' && event.mode === 'feature');
+const resetRoundVisualState = () => {
+	stateGame.globalMultiplier = 1;
+	stateGame.expandedSymbol = null;
+	stateGame.expandedSymbolWon = false;
+	stateGame.tempMultiplier = null;
+	stateGame.paylineWins = [];
+	stateGame.paylineSnap = false;
+};
+const isBuyMode = (mode: string) => mode === 'BONUS' || mode === 'SUPER';
 
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
@@ -75,7 +87,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 		stateGame.gameType = bookEvent.gameType;
 		stateGame.tempMultiplier = null;
-		if (bookEvent.gameType === 'basegame') {
+		// Feature-spin books can contain a basegame reveal before/around the 1-spin feature events.
+		// Keep the previous selected symbol visible through the new selection animation.
+		// Non-feature base rounds clear bonus presentation normally.
+		if (bookEvent.gameType === 'basegame' && !isFeatureSpinBook(bookEvents)) {
 			stateGameDerived.resetBonusState();
 		}
 
@@ -131,17 +146,24 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			| BookEventOfType<'expandedSymbolReveal'>
 			| undefined;
 		const symbol = reveal?.symbol ?? bookEvent.symbol;
-		stateGame.selectedBonusSymbol = symbol;
 		stateGame.bonusMode = bookEvent.mode;
-		if (stateBet.isSuperTurbo) return;
+		if (stateBet.isSuperTurbo) {
+			stateGame.selectedBonusSymbol = symbol;
+			return;
+		}
+		// Feature spins keep the previous selected-symbol badge until the deer selection
+		// animation has landed. Then swap to the new symbol as the presenter closes.
+		const delayBadgeSwap = bookEvent.mode === 'feature';
+		if (!delayBadgeSwap) stateGame.selectedBonusSymbol = symbol;
 		// Deer presenter reveals the chosen expanding symbol at the start of the round. The reveal
 		// sound loops for as long as the deer is on screen, then stops when it hides.
 		eventEmitter.broadcast({ type: 'expandedPresenterShow', symbol });
 		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_deer_reveal' });
-		await eventEmitter.broadcastAsync({ type: 'bonusSymbolRollAwait' });
+		if (!delayBadgeSwap) await eventEmitter.broadcastAsync({ type: 'bonusSymbolRollAwait' });
 		// Hold the presenter on screen — resolves after ~1.1s, or immediately if the player skips
 		// (space / tap, broadcast as stopButtonClick).
 		await eventEmitter.broadcastAsync({ type: 'expandedPresenterAwaitClose' });
+		if (delayBadgeSwap) stateGame.selectedBonusSymbol = symbol;
 		eventEmitter.broadcast({ type: 'expandedPresenterHide' });
 		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_deer_reveal' });
 	},
@@ -349,6 +371,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			await eventEmitter.broadcastAsync({ type: 'drawerUnfold' });
 			eventEmitter.broadcast({ type: 'drawerButtonHide' });
 		}
+
+		// Bought Deal It / All In is one-shot. After it ends, return to BASE so a later
+		// autospin session cannot keep buying the previous bonus mode.
+		if (!isFeatureSpin && isBuyMode(String(stateBet.activeBetModeKey))) {
+			stateBet.activeBetModeKey = 'BASE';
+		}
 	},
 	setWin: async (bookEvent: BookEventOfType<'setWin'>) => {
 		// Trigger win-state animation on the expanded symbol overlay if active
@@ -390,14 +418,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	finalWin: async () => {
 		// Round over — make sure the payline loop isn't left ringing.
 		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
-		// Reset after the base game OR a completed single feature spin. A feature spin sets
-		// gameType='feature' / bonusMode='feature'; without resetting it here, bonusMode stayed
-		// non-null after the spin, so isInBonus kept the Buy Bonus button disabled once you
-		// deactivated the feature. (A multi-spin bonus keeps gameType 'freegame'/'superspin', so it
-		// is not reset mid-bonus.)
-		if (stateGame.gameType === 'basegame' || stateGame.gameType === 'feature') {
-			stateGame.gameType = 'basegame';
+		// Base round: clear all bonus presentation.
+		// Feature round: return gameplay to base, but keep the selected symbol visible until
+		// the next round starts. Skip-all-animation used to hit this event and hide it too early.
+		if (stateGame.gameType === 'basegame') {
 			stateGameDerived.resetBonusState();
+		} else if (stateGame.gameType === 'feature') {
+			stateGame.gameType = 'basegame';
+			resetRoundVisualState();
 		}
 	},
 	createBonusSnapshot: async (bookEvent: BookEventOfType<'createBonusSnapshot'>) => {

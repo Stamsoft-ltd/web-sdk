@@ -56,6 +56,14 @@ const board = _.range(BOARD_DIMENSIONS.x).map((reelIndex) => {
 	});
 
 	reel.reelState.spinOptions = () => {
+		// Autospin has two speed toggles: fast (isTurbo) < turbo (isSuperTurbo).
+		// Outside autospin keep the existing behavior untouched.
+		const isAutoSpinning = stateBet.autoSpinsCounter !== 0;
+		if (isAutoSpinning && stateBet.isSuperTurbo && !stateGame.bonusMode)
+			return SPIN_OPTIONS_TURBO;
+		if (isAutoSpinning && stateBet.isTurbo && !stateGame.bonusMode)
+			return SPIN_OPTIONS_FAST;
+
 		if ((stateBet.isTurbo || stateBet.isSuperTurbo) && !stateGame.bonusMode)
 			return SPIN_OPTIONS_TURBO;
 

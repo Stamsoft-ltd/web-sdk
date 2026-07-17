@@ -47,6 +47,10 @@
 
 	const start = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressBet' });
+		// Buy modes are one-shot. Autospin must never inherit a previous BONUS/SUPER purchase.
+		if (stateBet.activeBetModeKey === 'BONUS' || stateBet.activeBetModeKey === 'SUPER') {
+			stateBet.activeBetModeKey = 'BASE';
+		}
 		stateBet.autoSpinsCounter = count;
 		props.onclose();
 		context.eventEmitter.broadcast({ type: 'autoBet' });

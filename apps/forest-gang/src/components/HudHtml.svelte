@@ -76,8 +76,9 @@
 	const isFeatureActive = $derived(stateBet.activeBetModeKey === 'FEATURE');
 	const isChanceActive = $derived(stateBet.activeBetModeKey === 'CHANCE');
 	const isAnyModeActive = $derived(isFeatureActive || isChanceActive);
-	// Buying a bonus is not allowed while a bonus round is in progress.
-	const isInBonus = $derived(context.stateGame.bonusMode !== null);
+	// Buying a bonus is not allowed while a multi-spin bonus round is in progress.
+	// Feature mode keeps its selected-symbol badge after the round, but should not lock the HUD.
+	const isInBonus = $derived(context.stateGame.bonusMode !== null && context.stateGame.bonusMode !== 'feature');
 	// Bolder icon = faster: Normal shows the outline bolt, Turbo the solid bolt, Super turbo the double.
 	const turboIcon = $derived(
 		stateBet.isSuperTurbo ? iconTurbo3 : stateBet.isTurbo ? iconTurbo1 : iconTurbo2,
@@ -256,7 +257,14 @@
 		if (hasAuto) {
 			if (context.stateXstateDerived.isIdle()) return;
 			context.eventEmitter.broadcast({ type: 'soundPressBet' });
-			broadcastStop();
+			// Match manual-spin skip behavior. During autoplay the first Space can arrive while
+			// the next bet is still in the pre-spin/loading window; broadcasting stop here
+			// interrupts pre-spin directly and looks different. Buffer it until reveal starts.
+			if (context.stateGame.awaitingFirstReveal) {
+				context.stateGame.pendingStop = true;
+			} else {
+				broadcastStop();
+			}
 			return;
 		}
 

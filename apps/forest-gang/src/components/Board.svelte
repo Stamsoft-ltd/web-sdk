@@ -145,10 +145,35 @@
 		return () => clearTimeout(t);
 	});
 
-	context.eventEmitter.subscribeOnMount({
-		stopButtonClick: () => {
+	const hasActiveAnticipation = () =>
+		context.stateGame.board.some((reel) => reel.reelState.anticipating);
+
+	const stopReelsForSkip = () => {
+		// Normal/autoplay skip should still resolve through the reel landing path (bounce + final
+		// symbol position).  Only anticipation/noStop reels need forceStop, otherwise they keep
+		// waiting and the round can feel stuck.
+		if (hasActiveAnticipation()) {
 			context.stateGameDerived.enhancedBoard.forceStop();
-		},
+			return;
+		}
+		context.stateGameDerived.enhancedBoard.stop();
+	};
+
+	const requestSpinSkip = () => {
+		if (context.stateGame.awaitingFirstReveal) {
+			context.stateGame.pendingStop = true;
+			return;
+		}
+		if (context.stateGame.hasAnticipationPending && !hasActiveAnticipation()) {
+			context.stateGame.hasAnticipationPending = false;
+			context.eventEmitter.broadcast({ type: 'skipToAnticipation' });
+			return;
+		}
+		context.eventEmitter.broadcast({ type: 'stopButtonClick' });
+	};
+
+	context.eventEmitter.subscribeOnMount({
+		stopButtonClick: () => stopReelsForSkip(),
 		skipToAnticipation: () => {
 			context.stateGame.board.forEach((reel) => reel.stop());
 		},
@@ -167,13 +192,7 @@
 </script>
 
 {#if isAnyReelSpinning}
-	<OnPressFullScreen onpress={() => {
-		if (context.stateGame.awaitingFirstReveal) {
-			context.stateGame.pendingStop = true;
-		} else {
-			context.eventEmitter.broadcast({ type: 'stopButtonClick' });
-		}
-	}} />
+	<OnPressFullScreen onpress={requestSpinSkip} />
 {/if}
 
 {#if show}
