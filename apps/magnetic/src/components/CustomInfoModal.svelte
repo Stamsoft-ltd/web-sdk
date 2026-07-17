@@ -1,8 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	// Game description / rules popup — Magnetic Megachain. Multi-page (arrows below). Page 1 = OVERVIEW
-	// (matches the provided design); pages 2–6 are placeholders until their content is provided.
+	import { i18nDerived } from '../i18n/i18nDerived';
+
+	// Shorthand: reactive translate + interpolating translate (re-runs on locale change).
+	const t = (key: string) => i18nDerived.translate(key);
+
+	// Game description / rules popup — Magnetic Megachain. Multi-page (arrows below). All copy is
+	// localized via the i18n keys ('INFO …'); numeric values stay as constants here.
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
 	const logo = ap('/assets/components/ui/magnetic_logo.png');
 	// Finished art (designer exports): overview hero composite, popup frame, reels-grid box element,
@@ -46,19 +51,20 @@
 	const icLegal = ap('/assets/components/ui/info_ic_legal.png');
 
 	// Game controls (page 7) — the finished round-button icon set (designer export), in file order.
+	// name/desc are i18n keys, translated reactively in the template.
 	const controls = [
-		{ img: ap('/assets/components/ui/ctrl_spin.png'), name: 'Spin', desc: 'Start a game round with your selected bet.', big: true },
-		{ img: ap('/assets/components/ui/ctrl_auto.png'), name: 'Autoplay', desc: 'Play a set number of rounds automatically.' },
-		{ img: ap('/assets/components/ui/ctrl_turbo.png'), name: 'Turbo', desc: 'Speed up every game round.' },
-		{ img: ap('/assets/components/ui/ctrl_plus.png'), name: 'Increase Bet', desc: 'Raise your total bet.' },
-		{ img: ap('/assets/components/ui/ctrl_minus.png'), name: 'Decrease Bet', desc: 'Lower your total bet.' },
-		{ img: ap('/assets/components/ui/ctrl_info.png'), name: 'Info', desc: 'View the game rules and paytable.' },
-		{ img: ap('/assets/components/ui/ctrl_sound.png'), name: 'Sound', desc: 'Turn the sound effects on or off.' },
-		{ img: ap('/assets/components/ui/ctrl_arrow_left.png'), name: 'Previous', desc: 'Go to the previous page.' },
-		{ img: ap('/assets/components/ui/ctrl_arrow_right.png'), name: 'Next', desc: 'Go to the next page.' },
-		{ img: ap('/assets/components/ui/ctrl_close.png'), name: 'Close', desc: 'Close this window.' },
-		{ img: ap('/assets/components/ui/ctrl_menu.png'), name: 'Menu', desc: 'Open settings and game options.' },
-		{ img: ap('/assets/components/ui/ctrl_music.png'), name: 'Music', desc: 'Turn the background music on or off.' },
+		{ img: ap('/assets/components/ui/ctrl_spin.png'), nameKey: 'INFO CTRL SPIN', descKey: 'INFO CTRL SPIN DESC', big: true },
+		{ img: ap('/assets/components/ui/ctrl_auto.png'), nameKey: 'INFO CTRL AUTO', descKey: 'INFO CTRL AUTO DESC' },
+		{ img: ap('/assets/components/ui/ctrl_turbo.png'), nameKey: 'INFO CTRL TURBO', descKey: 'INFO CTRL TURBO DESC' },
+		{ img: ap('/assets/components/ui/ctrl_plus.png'), nameKey: 'INFO CTRL PLUS', descKey: 'INFO CTRL PLUS DESC' },
+		{ img: ap('/assets/components/ui/ctrl_minus.png'), nameKey: 'INFO CTRL MINUS', descKey: 'INFO CTRL MINUS DESC' },
+		{ img: ap('/assets/components/ui/ctrl_info.png'), nameKey: 'INFO CTRL INFO', descKey: 'INFO CTRL INFO DESC' },
+		{ img: ap('/assets/components/ui/ctrl_sound.png'), nameKey: 'INFO CTRL SOUND', descKey: 'INFO CTRL SOUND DESC' },
+		{ img: ap('/assets/components/ui/ctrl_arrow_left.png'), nameKey: 'INFO CTRL PREV', descKey: 'INFO CTRL PREV DESC' },
+		{ img: ap('/assets/components/ui/ctrl_arrow_right.png'), nameKey: 'INFO CTRL NEXT', descKey: 'INFO CTRL NEXT DESC' },
+		{ img: ap('/assets/components/ui/ctrl_close.png'), nameKey: 'INFO CTRL CLOSE', descKey: 'INFO CTRL CLOSE DESC' },
+		{ img: ap('/assets/components/ui/ctrl_menu.png'), nameKey: 'INFO CTRL MENU', descKey: 'INFO CTRL MENU DESC' },
+		{ img: ap('/assets/components/ui/ctrl_music.png'), nameKey: 'INFO CTRL MUSIC', descKey: 'INFO CTRL MUSIC DESC' },
 	];
 
 	type Props = { onclose: () => void };
@@ -71,6 +77,9 @@
 
 	const RTP = '96.10%';
 	const RTP_SHORT = '96.1%';
+	const MAX_WIN = '20,000x';
+	// "Maximum win: %value% bet." split around the (bold) value so it stays highlighted in any language.
+	const maxWinParts = $derived(t('INFO OV MAXWIN').split('%value%'));
 
 	onMount(() => {
 		const onKey = (e: KeyboardEvent) => {
@@ -95,16 +104,10 @@
 			{#if page === 1}
 				<div class="ov">
 					<div class="ov-left">
-						<h2 class="ov-title">OVERVIEW</h2>
-						<p class="ov-text">
-							Magnetic is a 7x7 cluster-pay slot where wins are created by groups of matching symbols.
-							Land 5 or more matching symbols connected horizontally or vertically to win.
-						</p>
-						<p class="ov-text">
-							Magnetic features can pull matching symbols together, helping create bigger clusters and
-							stronger wins.
-						</p>
-						<p class="ov-maxwin">Maximum win: <span>20,000x</span> bet.</p>
+						<h2 class="ov-title">{t('INFO OVERVIEW')}</h2>
+						<p class="ov-text">{t('INFO OV TEXT 1')}</p>
+						<p class="ov-text">{t('INFO OV TEXT 2')}</p>
+						<p class="ov-maxwin">{maxWinParts[0]}<span>{MAX_WIN}</span>{maxWinParts[1] ?? ''}</p>
 					</div>
 
 					<div class="ov-right">
@@ -119,30 +122,30 @@
 				<div class="ov-stats" style={`--box-img:url(${valueBox})`}>
 					<div class="stat">
 						<span class="stat-ic"><img src={boxGrid} alt="" /></span>
-						<span class="stat-txt"><b>7X7</b><i>REELS</i></span>
+						<span class="stat-txt"><b>7X7</b><i>{t('INFO STAT REELS')}</i></span>
 					</div>
 					<div class="stat stat--sm">
 						<span class="stat-ic"><img src={icCluster} alt="" /></span>
-						<span class="stat-txt"><b>CLUSTER</b><i>PAYS</i></span>
+						<span class="stat-txt"><b>{t('INFO STAT CLUSTER')}</b><i>{t('INFO STAT PAYS')}</i></span>
 					</div>
 					<div class="stat">
 						<span class="stat-ic"><img src={icTrophy} alt="" /></span>
-						<span class="stat-txt"><b>20,000</b><i>MAX WIN</i></span>
+						<span class="stat-txt"><b>20,000</b><i>{t('INFO STAT MAXWIN')}</i></span>
 					</div>
 					<div class="stat">
 						<span class="stat-ic"><img src={icRtp} alt="" /></span>
-						<span class="stat-txt"><b>{RTP}</b><i>RTP</i></span>
+						<span class="stat-txt"><b>{RTP}</b><i>{t('INFO STAT RTP')}</i></span>
 					</div>
 				</div>
 			{:else if page === 2}
 				<div class="page pt-page">
-					<h2 class="page-title">PAYTABLE</h2>
+					<h2 class="page-title">{t('INFO PAYTABLE')}</h2>
 					<div class="pt">
 						<div class="pt-table-wrap">
 							<table class="pt-table">
 								<thead>
 									<tr>
-										<th class="pt-rank">SYMBOL<br />RANK</th>
+										<th class="pt-rank">{t('INFO SYMBOL RANK')}</th>
 										{#each PAY_COLS as c}<th>{c}</th>{/each}
 									</tr>
 								</thead>
@@ -157,61 +160,52 @@
 							</table>
 						</div>
 						<aside class="pt-side card">
-							<h3 class="pt-side-title">Multiplier Wild Values</h3>
-							<p class="pt-side-h">Standard multiplier wild values:</p>
+							<h3 class="pt-side-title">{t('INFO WILD VALUES')}</h3>
+							<p class="pt-side-h">{t('INFO WILD STANDARD')}</p>
 							<p class="pt-side-v">2x, 3x, 4x, 5x, 10x, 25x</p>
-							<p class="pt-side-h">Rare multiplier wild values (mainly in Magnetic Mega Chain):</p>
+							<p class="pt-side-h">{t('INFO WILD RARE')}</p>
 							<p class="pt-side-v">50x, 100x</p>
 						</aside>
 					</div>
 				</div>
 			{:else if page === 3}
 				<div class="page">
-					<h2 class="page-title">FEATURES</h2>
+					<h2 class="page-title">{t('INFO FEATURES')}</h2>
 					<div class="feat-grid">
 						<div class="feat-col-small">
 							<div class="card feat-card">
-								<h3 class="feat-h">Wild Symbol</h3>
-								<p class="feat-p">Substitutes for all pay symbols except Scatter.</p>
+								<h3 class="feat-h">{t('INFO FEAT WILD TITLE')}</h3>
+								<p class="feat-p">{t('INFO FEAT WILD TEXT')}</p>
 								<img class="feat-ic" src={wild} alt="Wild" />
 							</div>
 							<div class="card feat-card">
-								<h3 class="feat-h">Multiplier Wild</h3>
-								<p class="feat-p">
-									Substitutes like a Wild and increases the active bonus multiplier for the rest of the
-									feature.
-								</p>
+								<h3 class="feat-h">{t('INFO FEAT MWILD TITLE')}</h3>
+								<p class="feat-p">{t('INFO FEAT MWILD TEXT')}</p>
 								<img class="feat-ic" src={wildX10} alt="Multiplier Wild" />
 							</div>
 						</div>
 						<div class="card feat-card feat-tall">
-							<h3 class="feat-h"><span class="w">Drop-O-Magnet</span><span class="c">Free Spins</span></h3>
-							<p class="feat-p">
-								Triggered by 3 Scatters. Awards 10 Free Spins. On each Free Spin, one random symbol
-								becomes magnetic and matching symbols are pulled together.
-							</p>
+							<h3 class="feat-h">{t('INFO FEAT DROP TITLE')}</h3>
+							<p class="feat-p">{t('INFO FEAT DROP TEXT')}</p>
 							<div class="feat-trigger"><span class="feat-x">3x</span><img src={scatter} alt="Scatter" /></div>
 						</div>
 						<div class="card feat-card feat-tall">
-							<h3 class="feat-h"><span class="w">Magnetic Mega</span><span class="c">Chain Free Spins</span></h3>
-							<p class="feat-p">
-								Triggered by 4 Scatters. Awards 10 Free Spins. Magnetic clusters can remain locked and
-								grow across the feature.
-							</p>
+							<h3 class="feat-h">{t('INFO FEAT MEGA TITLE')}</h3>
+							<p class="feat-p">{t('INFO FEAT MEGA TEXT')}</p>
 							<div class="feat-trigger"><span class="feat-x">4x</span><img src={scatter} alt="Scatter" /></div>
 						</div>
 					</div>
 				</div>
 			{:else if page === 4}
 				<div class="page">
-					<h2 class="page-title">CLUSTER WIN</h2>
+					<h2 class="page-title">{t('INFO CLUSTER WIN')}</h2>
 					<div class="cw">
 						<div class="cw-text">
-							<p>Magnetic uses cluster wins instead of paylines.</p>
-							<p>A win is created when 5 or more matching symbols touch each other horizontally or vertically.</p>
-							<p>Diagonal connections do not count.</p>
-							<p>Winning symbols do not need to form a straight line. They only need to be connected as one group.</p>
-							<p>Bigger clusters award bigger wins.</p>
+							<p>{t('INFO CW 1')}</p>
+							<p>{t('INFO CW 2')}</p>
+							<p>{t('INFO CW 3')}</p>
+							<p>{t('INFO CW 4')}</p>
+							<p>{t('INFO CW 5')}</p>
 						</div>
 						<div class="cw-grids">
 							<img class="cw-img" src={winImg} alt="Winning cluster example" />
@@ -221,79 +215,60 @@
 				</div>
 			{:else if page === 5}
 				<div class="page">
-					<h2 class="page-title">FEATURE BUY</h2>
-					<p class="fb-sub">
-						Feature Buy options are available only where allowed.<br />
-						All Feature Buy and Bonus Buy options are paid as a multiple of the selected bet.
-					</p>
+					<h2 class="page-title">{t('INFO FEATURE BUY')}</h2>
+					<p class="fb-sub">{t('INFO FB SUB')}</p>
 					<div class="fb-grid">
 						<div class="card feat-card">
-							<h3 class="feat-h">Extra Feature</h3>
-							<p class="feat-p">
-								Buys a special spin with a guaranteed magnetic connection and a chance to land Multiplier
-								Wilds.
-							</p>
+							<h3 class="feat-h">{t('INFO FB EXTRA TITLE')}</h3>
+							<p class="feat-p">{t('INFO FB EXTRA TEXT')}</p>
 							<img class="feat-ic" src={wild} alt="Wild" />
-							<div class="fb-meta"><span class="fb-k">COST</span><span class="fb-v">100x BET</span></div>
-							<div class="fb-meta"><span class="fb-k">RTP</span><span class="fb-v">{RTP_SHORT}</span></div>
+							<div class="fb-meta"><span class="fb-k">{t('INFO COST')}</span><span class="fb-v">100x {t('BET')}</span></div>
+							<div class="fb-meta"><span class="fb-k">{t('INFO RTP')}</span><span class="fb-v">{RTP_SHORT}</span></div>
 						</div>
 						<div class="card feat-card">
-							<h3 class="feat-h">Feature Buy</h3>
-							<p class="feat-p">Buys direct access to the Drop-O-Magnet Free Spins feature.</p>
+							<h3 class="feat-h">{t('INFO FB FEATURE TITLE')}</h3>
+							<p class="feat-p">{t('INFO FB FEATURE TEXT')}</p>
 							<div class="feat-trigger"><span class="feat-x">3x</span><img src={scatter} alt="Scatter" /></div>
-							<div class="fb-meta"><span class="fb-k">COST</span><span class="fb-v">100x BET</span></div>
-							<div class="fb-meta"><span class="fb-k">RTP</span><span class="fb-v">{RTP_SHORT}</span></div>
+							<div class="fb-meta"><span class="fb-k">{t('INFO COST')}</span><span class="fb-v">100x {t('BET')}</span></div>
+							<div class="fb-meta"><span class="fb-k">{t('INFO RTP')}</span><span class="fb-v">{RTP_SHORT}</span></div>
 						</div>
 						<div class="card feat-card">
-							<h3 class="feat-h">Bonus Buy</h3>
-							<p class="feat-p">Buys direct access to the stronger Magnetic Mega Chain Free Spins feature.</p>
+							<h3 class="feat-h">{t('INFO FB BONUS TITLE')}</h3>
+							<p class="feat-p">{t('INFO FB BONUS TEXT')}</p>
 							<div class="feat-trigger"><span class="feat-x">4x</span><img src={scatter} alt="Scatter" /></div>
-							<div class="fb-meta"><span class="fb-k">COST</span><span class="fb-v">100x BET</span></div>
-							<div class="fb-meta"><span class="fb-k">RTP</span><span class="fb-v">{RTP_SHORT}</span></div>
+							<div class="fb-meta"><span class="fb-k">{t('INFO COST')}</span><span class="fb-v">100x {t('BET')}</span></div>
+							<div class="fb-meta"><span class="fb-k">{t('INFO RTP')}</span><span class="fb-v">{RTP_SHORT}</span></div>
 						</div>
 					</div>
 				</div>
 			{:else if page === 6}
 				<div class="page">
-					<h2 class="page-title">GENERAL INFO</h2>
+					<h2 class="page-title">{t('INFO GENERAL INFO')}</h2>
 					<div class="gi-grid">
 						<div class="card gi-card">
 							<span class="gi-ic"><img src={icRotate} alt="" /></span>
-							<h3 class="feat-h">Interrupted Rounds</h3>
-							<p class="feat-p">
-								If a game round is interrupted, it will continue when the game is reloaded, where possible.
-							</p>
-							<p class="feat-p">
-								All valid wagers and potential winnings remain active until the round is fully completed.
-							</p>
+							<h3 class="feat-h">{t('INFO GI INTERRUPTED TITLE')}</h3>
+							<p class="feat-p">{t('INFO GI INTERRUPTED 1')}</p>
+							<p class="feat-p">{t('INFO GI INTERRUPTED 2')}</p>
 						</div>
 						<div class="card gi-card gi-wide">
 							<span class="gi-ic gi-ic--legal"><img src={icLegal} alt="" /></span>
-							<h3 class="feat-h">Legal Notice</h3>
-							<p class="feat-p">
-								Malfunction voids all pays and plays. A stable internet connection is required. If the
-								connection is lost, reload the game to complete any unfinished rounds.
-							</p>
-							<p class="feat-p">
-								The expected return is calculated over a large number of plays. The game display is for
-								visual and entertainment purposes only and does not represent any physical gaming device.
-							</p>
-							<p class="feat-p">
-								All winnings are settled according to the result received from the Remote Game Server, not
-								from animations or events shown inside the web browser.
-							</p>
+							<h3 class="feat-h">{t('INFO GI LEGAL TITLE')}</h3>
+							<p class="feat-p">{t('INFO GI LEGAL 1')}</p>
+							<p class="feat-p">{t('INFO GI LEGAL 2')}</p>
+							<p class="feat-p">{t('INFO GI LEGAL 3')}</p>
 						</div>
 					</div>
 				</div>
 			{:else}
 				<div class="page">
-					<h2 class="page-title">USER INTERFACE GUIDE</h2>
+					<h2 class="page-title">{t('INFO UI GUIDE')}</h2>
 					<div class="ctrl-grid">
 						{#each controls as c}
 							<div class="ctrl">
-								<img class="ctrl-ic" class:ctrl-ic--lg={c.big} src={c.img} alt={c.name} />
-								<h3 class="ctrl-name">{c.name}</h3>
-								<p class="ctrl-desc">{c.desc}</p>
+								<img class="ctrl-ic" class:ctrl-ic--lg={c.big} src={c.img} alt={t(c.nameKey)} />
+								<h3 class="ctrl-name">{t(c.nameKey)}</h3>
+								<p class="ctrl-desc">{t(c.descKey)}</p>
 							</div>
 						{/each}
 					</div>
@@ -308,7 +283,7 @@
 			<button class="pg-arrow" type="button" onclick={next} disabled={page === TOTAL} aria-label="Next">
 				<img class="pg-ic" src={page === TOTAL ? arrowRightOff : arrowRight} alt="" />
 			</button>
-			<span class="pg-num">Page {page}/{TOTAL}</span>
+			<span class="pg-num">{t('INFO PAGE')} {page}/{TOTAL}</span>
 		</div>
 		</div>
 	</div>
@@ -433,6 +408,8 @@
 		font-weight: 900;
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
+		overflow-wrap: break-word;
+		word-break: break-word;
 		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
 		-webkit-background-clip: text;
 		background-clip: text;
@@ -600,6 +577,11 @@
 		font-weight: 900;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
+		/* Long single-word titles in other languages (e.g. German "BEDIENUNGSANLEITUNG") must break to a
+		   new line instead of clipping past the panel edge. */
+		overflow-wrap: break-word;
+		word-break: break-word;
+		max-width: 100%;
 		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
 		-webkit-background-clip: text;
 		background-clip: text;
@@ -621,14 +603,6 @@
 		letter-spacing: 0.01em;
 		color: #4ea6f0;
 	}
-	.feat-h .w {
-		display: block;
-		color: #eaf3ff;
-	}
-	.feat-h .c {
-		display: block;
-		color: #4ea6f0;
-	}
 	/* Page 3 (Features) headings use the cyan→blue title gradient. */
 	.feat-grid .feat-h {
 		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
@@ -636,12 +610,6 @@
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		color: transparent;
-	}
-	.feat-grid .feat-h .w,
-	.feat-grid .feat-h .c {
-		color: transparent;
-		-webkit-text-fill-color: transparent;
-		background: none;
 	}
 	.feat-p {
 		margin: 0;
@@ -844,8 +812,8 @@
 	.fb-sub {
 		margin: 0;
 		text-align: center;
-		font-size: clamp(10px, 1.9cqmin, 17px);
-		line-height: 1.4;
+		font-size: clamp(10px, 1.7cqmin, 15px);
+		line-height: 1.35;
 		color: #cddcf0;
 	}
 	.fb-grid {
@@ -853,14 +821,16 @@
 		min-height: 0;
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		gap: clamp(10px, 2cqmin, 24px);
+		gap: clamp(8px, 1.7cqmin, 20px);
 	}
 	.fb-grid .feat-card {
-		gap: clamp(6px, 1.5cqmin, 15px);
+		gap: clamp(4px, 1.1cqmin, 11px);
+		/* Longer translations must not push the card content past the pager. */
+		overflow: hidden;
 	}
-	/* Page 5 (Feature Buy): larger heading / body / symbols than the base cards. */
+	/* Page 5 (Feature Buy): a touch larger than the base cards, but compact enough for long languages. */
 	.fb-grid .feat-h {
-		font-size: clamp(16px, 3.6cqmin, 34px);
+		font-size: clamp(15px, 3cqmin, 28px);
 		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
 		-webkit-background-clip: text;
 		background-clip: text;
@@ -868,28 +838,28 @@
 		color: transparent;
 	}
 	.fb-grid .feat-p {
-		font-size: clamp(12px, 2.5cqmin, 23px);
+		font-size: clamp(11px, 2.1cqmin, 18px);
 	}
 	.fb-grid .feat-ic {
-		width: clamp(66px, 14cqmin, 138px);
+		width: clamp(54px, 10.5cqmin, 104px);
 	}
 	.fb-grid .feat-trigger img {
-		width: clamp(58px, 12cqmin, 118px);
+		width: clamp(48px, 9cqmin, 90px);
 	}
 	.fb-grid .feat-x {
-		font-size: clamp(26px, 5.8cqmin, 58px);
+		font-size: clamp(22px, 4.6cqmin, 46px);
 	}
 	.fb-meta {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		line-height: 1.15;
+		line-height: 1.12;
 	}
 	.fb-meta:first-of-type {
 		margin-top: auto;
 	}
 	.fb-k {
-		font-size: clamp(11px, 2.1cqmin, 19px);
+		font-size: clamp(10px, 1.8cqmin, 16px);
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
@@ -899,7 +869,7 @@
 		color: transparent;
 	}
 	.fb-v {
-		font-size: clamp(14px, 2.8cqmin, 26px);
+		font-size: clamp(12px, 2.4cqmin, 21px);
 		font-weight: 800;
 		color: #eaf3ff;
 	}

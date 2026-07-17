@@ -4,12 +4,15 @@
 
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
-	import { backOut } from 'svelte/easing';
+	import { backOut, cubicOut } from 'svelte/easing';
 	import { FillGradient } from 'pixi.js';
 	import { MainContainer } from 'components-layout';
 	import { Container, Graphics, Sprite, Text } from 'pixi-svelte';
+	import { stateBet } from 'state-shared';
+	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import { getContext } from '../game/context';
+	import { i18nDerived } from '../i18n/i18nDerived';
 	import { getSpriteKeyByName } from '../game/utils';
 	import type { SymbolName } from '../game/types';
 
@@ -23,7 +26,17 @@
 	const isBonus = $derived(
 		context.stateGame.bonusMode === 'freegame' || context.stateGame.bonusMode === 'superspin',
 	);
-	const globalMultiplier = $derived(context.stateGame.globalMultiplier || 1);
+	// TOTAL WIN — mirrors the desktop CapsulePanel: the running win counts up to the total each spin.
+	let runningWin = $state(0);
+	const winTarget = $derived(Math.max(runningWin, stateBet.winBookEventAmount));
+	$effect(() => {
+		if (stateBet.winBookEventAmount === 0) runningWin = 0;
+	});
+	const winDisplay = new Tween(0, { duration: 500, easing: cubicOut });
+	$effect(() => {
+		winDisplay.set(winTarget);
+	});
+	const totalWin = $derived(bookEventAmountToCurrencyString(Math.round(winDisplay.current)));
 
 	// Element inside the capsule = the symbol currently being combined (magnet target, else the active
 	// cluster's symbol); empty tube otherwise — mirrors the desktop CapsulePanel.
@@ -209,12 +222,17 @@
 		{#if isBonus}
 			<Container x={boxX} y={board.y - boxH * 0.5 - boxGap * 0.5}>
 				<Sprite key="smallPadMobile" anchor={0.5} width={boxW} height={boxH} />
-				<Text anchor={0.5} y={-boxH * 0.17} text="ALL WINS" style={labelStyle(boxH * 0.16)} />
-				<Text anchor={0.5} y={boxH * 0.15} text={`x${globalMultiplier}`} style={valueStyle(boxH * 0.28)} />
+				<Text anchor={0.5} y={-boxH * 0.17} text={i18nDerived.translate('TOTAL WIN')} style={labelStyle(boxH * 0.16)} />
+				<Text
+					anchor={0.5}
+					y={boxH * 0.15}
+					text={totalWin}
+					style={valueStyle(boxH * (totalWin.length >= 8 ? 0.19 : totalWin.length >= 6 ? 0.23 : 0.28))}
+				/>
 			</Container>
 			<Container x={boxX} y={board.y + boxH * 0.5 + boxGap * 0.5}>
 				<Sprite key="smallPadMobile" anchor={0.5} width={boxW} height={boxH} />
-				<Text anchor={0.5} y={-boxH * 0.17} text="FREE SPINS" style={labelStyle(boxH * 0.15)} />
+				<Text anchor={0.5} y={-boxH * 0.17} text={i18nDerived.translate('FREE SPINS')} style={labelStyle(boxH * 0.15)} />
 				<Text anchor={0.5} y={boxH * 0.15} text={`${fsRemaining}`} style={valueStyle(boxH * 0.28)} />
 			</Container>
 		{/if}

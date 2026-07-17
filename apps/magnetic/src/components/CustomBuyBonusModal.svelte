@@ -3,6 +3,10 @@
 	import { stateBet, stateBetDerived, stateConfig } from 'state-shared';
 	import { getContext } from '../game/context';
 	import { magneticStakeDerived } from '../state/magneticStake.svelte';
+	import { i18nDerived } from '../i18n/i18nDerived';
+
+	const t = (k: string) => i18nDerived.translate(k);
+	const tv = (k: string, vars: Record<string, string | number>) => i18nDerived.translateVars(k, vars);
 
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
 	const cardPanel      = ap('/assets/components/ui/bb_card_panel.png?v=20260708c');
@@ -119,64 +123,64 @@
 
 <!-- Panel -->
 <div class="panel" class:portrait={isPortrait} bind:this={panelEl} style={isPortrait ? '' : landscapeVars} role="dialog" aria-modal="true">
-	<h2 class="title">BUY BONUS</h2>
+	<h2 class="title">{t('BUY BONUS')}</h2>
 	<button class="close-btn" type="button" onclick={props.onclose} aria-label="Close">✕</button>
 
 	<div class="grid">
 		<!-- Extra Chance -->
 		<div class="card" style={`background-image:url('${cardPanel}')`}>
-			<span class="card-title">Extra Chance</span>
-			<span class="card-desc">Activate to increase 3 times the chance of trigger a bonus round</span>
+			<span class="card-title">{t('BUY EXTRA CHANCE TITLE')}</span>
+			<span class="card-desc">{t('BUY EXTRA CHANCE DESC')}</span>
 			<div class="card-icon-slot">
 				<img class="card-icon" src={iconChance} alt="" />
 			</div>
-			<span class="card-price">{chanceCost} / spin</span>
+			<span class="card-price">{chanceCost} {t('PER SPIN')}</span>
 			<button
 				class="card-btn card-btn--activate"
 				class:card-btn--active={props.isChanceActive}
 				type="button"
 				onclick={() => toggleActivateMode(props.onToggleChance)}
-			>{props.isChanceActive ? 'DEACTIVATE' : 'ACTIVATE'}</button>
+			>{props.isChanceActive ? t('DEACTIVATE') : t('ACTIVATE')}</button>
 		</div>
 
 		<!-- Feature Spins -->
 		<div class="card" style={`background-image:url('${cardPanel}')`}>
-			<span class="card-title">Feature Spins</span>
-			<span class="card-desc">Guarantees a special expanding simbol for the spin picked at random</span>
+			<span class="card-title">{t('BUY FEATURE SPINS TITLE')}</span>
+			<span class="card-desc">{t('BUY FEATURE SPINS DESC')}</span>
 			<div class="card-icon-slot">
 				<img class="card-icon" src={iconFeature} alt="" />
 			</div>
-			<span class="card-price">{featureCost} / spin</span>
+			<span class="card-price">{featureCost} {t('PER SPIN')}</span>
 			<button
 				class="card-btn card-btn--activate"
 				class:card-btn--active={props.isFeatureActive}
 				type="button"
 				onclick={() => toggleActivateMode(props.onToggleFeature)}
-			>{props.isFeatureActive ? 'DEACTIVATE' : 'ACTIVATE'}</button>
+			>{props.isFeatureActive ? t('DEACTIVATE') : t('ACTIVATE')}</button>
 		</div>
 
 		<!-- DROP-O-MAGNET (freegame / BONUS mode) -->
 		<div class="card" style={`background-image:url('${cardPanel}')`}>
-			<span class="card-title">Drop-O-Magnet</span>
-			<span class="card-desc">10 free spins awarded. One random symbol becomes magnetic every spin. Matching symbols connect together automatically. Multiplier Wilds increase the bonus multiplier permanently.</span>
+			<span class="card-title">{t('BUY DROP TITLE')}</span>
+			<span class="card-desc">{t('BUY DROP DESC')}</span>
 			<div class="card-icon-slot">
 				<span class="card-mult">3x</span>
 				<img class="card-icon card-icon--brief" src={iconBrief} alt="" />
 			</div>
 			<span class="card-price">{bonusCost}</span>
-			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('BONUS')}>BUY</button>
+			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('BONUS')}>{t('BUY')}</button>
 		</div>
 
 		<!-- MAGNETIC MEGA CHAIN (superspin / SUPER mode) -->
 		<div class="card" style={`background-image:url('${cardPanel}')`}>
-			<span class="card-title">Magnetic Mega Chain</span>
-			<span class="card-desc">10 free spins awarded. One random symbol becomes magnetic and remains connected between spins. The magnetic cluster persists and grows throughout the feature while multipliers continue stacking.</span>
+			<span class="card-title">{t('BUY MEGA TITLE')}</span>
+			<span class="card-desc">{t('BUY MEGA DESC')}</span>
 			<div class="card-icon-slot">
 				<span class="card-mult">4x</span>
 				<img class="card-icon card-icon--brief" src={iconBrief} alt="" />
 			</div>
 			<span class="card-price">{superCost}</span>
-			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('SUPER')}>BUY</button>
+			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('SUPER')}>{t('BUY')}</button>
 		</div>
 	</div>
 
@@ -186,7 +190,7 @@
 		<div class="bet-center">
 			<img class="bet-coin" src={coinIcon} alt="" />
 			<div class="bet-value">
-				<span class="bet-label">BET</span>
+				<span class="bet-label">{t('BET')}</span>
 				<span class="bet-amount">{betDisplay}</span>
 			</div>
 		</div>
@@ -201,11 +205,11 @@
 	<div class="confirm" role="dialog" aria-modal="true">
 		<div class="confirm-panel" style={`background-image:url('${confirmPanelBg}')`}>
 			<div class="confirm-content">
-				<div class="confirm-title">CONFIRM {confirmLabel}</div>
-				<div class="confirm-text">BUY {confirmLabel} FOR {confirmCost}?</div>
+				<div class="confirm-title">{tv('CONFIRM TITLE', { name: confirmLabel })}</div>
+				<div class="confirm-text">{tv('BUY CONFIRM', { name: confirmLabel, cost: confirmCost })}</div>
 				<div class="confirm-row">
-					<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}>CANCEL</button>
-					<button class="confirm-btn confirm-btn--ok" type="button" onclick={() => buyMode(confirmMode!)}>CONFIRM</button>
+					<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}>{t('CANCEL')}</button>
+					<button class="confirm-btn confirm-btn--ok" type="button" onclick={() => buyMode(confirmMode!)}>{t('CONFIRM')}</button>
 				</div>
 			</div>
 		</div>

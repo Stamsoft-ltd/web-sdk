@@ -5,6 +5,7 @@
 	import { FillGradient } from 'pixi.js';
 
 	import { getContext } from '../game/context';
+	import { i18nDerived } from '../i18n/i18nDerived';
 
 	// RESPIN indicator (Figma 4504-3586): a blue tech panel in the LEFT rail under the logo with a
 	// spinning circular-arrow icon and a cyan-gradient RESPIN label. Shown only while a BONUS
@@ -83,7 +84,7 @@
 					width={PANEL_H * 0.3}
 					height={PANEL_H * 0.3}
 				/>
-				<Text anchor={0.5} y={PANEL_H * 0.16} text="RESPIN" style={labelStyle(PANEL_H * 0.2)} />
+				<Text anchor={0.5} y={PANEL_H * 0.16} text={i18nDerived.translate('RESPIN')} style={labelStyle(PANEL_H * 0.2)} />
 			</Container>
 		</FadeContainer>
 	</MainContainer>

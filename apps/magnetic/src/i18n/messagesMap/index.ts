@@ -4,12 +4,45 @@ import { messagesMap as messagesMapUiHtml } from 'components-ui-html';
 import { locales } from 'config-lingui';
 
 import en from './en';
+import ar from './ar';
+import de from './de';
+import es from './es';
+import fi from './fi';
+import fr from './fr';
+import hi from './hi';
+import id from './id';
+import ja from './ja';
+import ko from './ko';
+import pl from './pl';
+import pt from './pt';
+import ru from './ru';
+import tr from './tr';
+import vi from './vi';
 import zh from './zh';
 
+// English is the source/fallback: each locale is spread over `en`, so any key a translation is
+// missing (e.g. the non-modal game strings, which are localized app-side later) still resolves to
+// English instead of showing a raw key.
+const localeMaps: Record<string, Record<string, string>> = {
+	ar, de, en, es, fi, fr, hi, id, ja, ko, pl, pt, ru, tr, vi, zh,
+};
+
 const messagesMapGame = Object.fromEntries(
-	locales.map((locale) => [locale, locale === 'zh' ? { ...en, ...zh } : en]),
+	locales.map((locale) => [locale, { ...en, ...(localeMaps[locale] ?? {}) }]),
 );
 
-const messagesMap = mergeMessagesMaps([messagesMapGame, messagesMapUiPixi, messagesMapUiHtml]);
+const merged = mergeMessagesMaps([messagesMapGame, messagesMapUiPixi, messagesMapUiHtml]) as Record<
+	string,
+	typeof en
+>;
+
+// Any locale the launcher requests that we don't ship (e.g. `sv`, `no`) must fall back to full
+// English — otherwise Lingui returns the raw message KEY, leaving the modal showing identifiers.
+const messagesMap = new Proxy(merged, {
+	get: (target, prop) =>
+		typeof prop === 'string' && !(prop in target) && /^[a-z]{2}([-_][A-Za-z]+)?$/.test(prop)
+			? target.en
+			: target[prop as keyof typeof target],
+});
 
 export default messagesMap;

@@ -397,21 +397,21 @@
 							<span class="menu-row__icon">
 								<span class="menu-row__glyph" style={`--icon:url('${sfxOff ? iconMenuSoundOff : iconMenuSound}')`}></span>
 							</span>
-							<span class="menu-row__label">SOUND</span>
+							<span class="menu-row__label">{i18nDerived.translate('SOUND')}</span>
 						</button>
 						<div class="menu-divider"></div>
 						<button class="menu-row" type="button" onclick={toggleMusic}>
 							<span class="menu-row__icon">
 								<span class="menu-row__glyph" style={`--icon:url('${musicOff ? iconMenuMusicOff : iconMenuMusic}')`}></span>
 							</span>
-							<span class="menu-row__label">MUSIC</span>
+							<span class="menu-row__label">{i18nDerived.translate('MUSIC')}</span>
 						</button>
 						<div class="menu-divider"></div>
 						<button class="menu-row" type="button" onclick={openInfoFromMenu}>
 							<span class="menu-row__icon">
 								<span class="menu-row__glyph" style={`--icon:url('${iconMenuInfo}')`}></span>
 							</span>
-							<span class="menu-row__label">INFO</span>
+							<span class="menu-row__label">{i18nDerived.translate('INFO')}</span>
 						</button>
 					</div>
 				{/if}
@@ -433,7 +433,7 @@
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
-					<span class="buy-btn__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
+					<span class="buy-btn__label">{isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.buyBonus()}</span>
 				</button>
 			</div>
 
@@ -647,7 +647,7 @@
 						onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 						aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 					>
-						<span class="buy-btn__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
+						<span class="buy-btn__label">{isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.buyBonus()}</span>
 					</button>
 				</div>
 			</div>
@@ -711,7 +711,7 @@
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
-					<span class="buy-btn__label">{isAnyModeActive ? 'DEACTIVATE' : 'BUY BONUS'}</span>
+					<span class="buy-btn__label">{isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.buyBonus()}</span>
 				</button>
 			</div>
 

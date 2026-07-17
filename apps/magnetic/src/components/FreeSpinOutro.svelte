@@ -18,6 +18,7 @@
 	import { OnMount } from 'components-shared';
 
 	import { getContext } from '../game/context';
+	import { i18nDerived } from '../i18n/i18nDerived';
 	import LightningStorm from './LightningStorm.svelte';
 	import PressToContinue from './PressToContinue.svelte';
 	import WinCoins from './WinCoins.svelte';
@@ -219,7 +220,7 @@
 							/>
 
 							<!-- YOU WON -->
-							<Text anchor={0.5} y={-PH * 0.27} text="YOU WON" style={blueStyle(PH * 0.04)} />
+							<Text anchor={0.5} y={-PH * 0.27} text={i18nDerived.translate('YOU WON')} style={blueStyle(PH * 0.04)} />
 
 							<!-- Full magnet element (magnet + base + energy baked in) -->
 							<Container y={-PH * 0.06}>
@@ -249,7 +250,7 @@
 								<Text
 									anchor={0.5}
 									x={-PW * 0.03}
-									text="PRESS ANYWHERE TO CONTINUE"
+									text={i18nDerived.translate('PRESS ANYWHERE')}
 									style={pressStyle(PH * 0.034)}
 								/>
 								<Sprite
@@ -268,10 +269,10 @@
 								<Text
 									anchor={0.5}
 									alpha={Math.min(1, Math.max(0, glowPulse))}
-									text="CONGRATULATIONS"
+									text={i18nDerived.translate('CONGRATULATIONS')}
 									style={congratsGlowStyle(PH * 0.072)}
 								/>
-								<Text anchor={0.5} text="CONGRATULATIONS" style={congratsStyle(PH * 0.072)} />
+								<Text anchor={0.5} text={i18nDerived.translate('CONGRATULATIONS')} style={congratsStyle(PH * 0.072)} />
 							</Container>
 						</Container>
 					</Container>

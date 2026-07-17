@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { stateBet } from 'state-shared';
+	import { i18nDerived } from '../i18n/i18nDerived';
+
+	const t = (k: string) => i18nDerived.translate(k);
 
 	type Props = { onPlay: () => void; onEnd: () => Promise<void> };
 	const props: Props = $props();
@@ -15,17 +18,19 @@
 
 	const mode = $derived(stateBet.betToResume?.mode ?? '');
 	const modeLabel = $derived(mode === 'SUPER' ? 'Mega Chain' : mode === 'BONUS' ? 'Drop-O-Magnet' : 'Bonus');
+	// Split the localized body around %mode% so the mode name stays bold in any language.
+	const bodyParts = $derived(t('RESUME BODY').split('%mode%'));
 </script>
 
 <div class="modal-overlay">
 	<div class="resume" role="dialog" aria-modal="true">
 		<div class="resume-panel" style={`background-image:url('${panelBg}')`}>
 			<div class="resume-content">
-				<div class="resume-title">UNFINISHED ROUND</div>
-				<div class="resume-text">You have an active <strong>{modeLabel}</strong> bonus in progress.</div>
+				<div class="resume-title">{t('UNFINISHED ROUND')}</div>
+				<div class="resume-text">{bodyParts[0]}<strong>{modeLabel}</strong>{bodyParts[1] ?? ''}</div>
 				<div class="resume-row">
-					<button class="resume-btn resume-btn--ok" type="button" onclick={props.onPlay}>PLAY ROUND</button>
-					<button class="resume-btn resume-btn--cancel" type="button" onclick={handleEnd} disabled={ending}>{ending ? '…' : 'END ROUND'}</button>
+					<button class="resume-btn resume-btn--ok" type="button" onclick={props.onPlay}>{t('PLAY ROUND')}</button>
+					<button class="resume-btn resume-btn--cancel" type="button" onclick={handleEnd} disabled={ending}>{ending ? '…' : t('END ROUND')}</button>
 				</div>
 			</div>
 		</div>

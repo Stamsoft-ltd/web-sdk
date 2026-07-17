@@ -7,6 +7,27 @@
 
 	const t = (key: string) => stateI18nDerived.translate(key);
 
+	// Titles are fixed-size with `white-space: pre` (no wrapping), so long words in some languages
+	// (e.g. Russian "РАСШИРЯЮЩИЕСЯ") overflow the card. Shrink the font to fit the card width.
+	function fitTitle(node: HTMLElement, _dep?: unknown) {
+		const apply = () => {
+			const parent = node.parentElement;
+			if (!parent) return;
+			node.style.fontSize = '';
+			const avail = parent.clientWidth;
+			const natural = node.scrollWidth;
+			if (avail > 0 && natural > avail) {
+				const base = parseFloat(getComputedStyle(node).fontSize);
+				node.style.fontSize = `${Math.max(6, (base * avail) / natural * 0.99)}px`;
+			}
+		};
+		const ro = new ResizeObserver(apply);
+		if (node.parentElement) ro.observe(node.parentElement);
+		requestAnimationFrame(apply);
+		(document as Document).fonts?.ready.then(apply);
+		return { update: apply, destroy: () => ro.disconnect() };
+	}
+
 	// splash_intro.jpg = industrial magnet room with three empty metal frames (no logo, no text).
 	const bgSrc = './assets/components/backgrounds/splash_intro.jpg?v=20260708';
 	// Portrait artwork: a single central metal frame baked in (for the mobile carousel).
@@ -59,7 +80,7 @@
 			<img class="logo logo--m" src={logoSrc} alt="Magnetic" draggable="false" />
 
 			<div class="feat feat-m">
-				<div class="f-title {currentBoard.cls}">{currentBoard.title}</div>
+				<div class="f-title {currentBoard.cls}" use:fitTitle={currentBoard.title}>{currentBoard.title}</div>
 				<div class="f-sub">{t('SPLASH WITH UP TO')}</div>
 				<div class="f-value f-gold">{currentBoard.value}<span class="f-x">x</span></div>
 				<div class="f-sub">{t('SPLASH MULTIPLIER')}</div>
@@ -81,7 +102,7 @@
 
 			{#each boards as b, i}
 				<div class="feat feat-{i}">
-					<div class="f-title {b.cls}">{b.title}</div>
+					<div class="f-title {b.cls}" use:fitTitle={b.title}>{b.title}</div>
 					<div class="f-sub">{t('SPLASH WITH UP TO')}</div>
 					<div class="f-value f-gold">{b.value}<span class="f-x">x</span></div>
 					<div class="f-sub">{t('SPLASH MULTIPLIER')}</div>

@@ -14,6 +14,7 @@
 	import { getContext } from '../game/context';
 	import { getSpriteKeyByName } from '../game/utils';
 	import type { SymbolName } from '../game/types';
+	import { i18nDerived } from '../i18n/i18nDerived';
 
 	const context = getContext();
 	const board = $derived(context.stateGameDerived.boardLayout());
@@ -252,14 +253,14 @@
 			<!-- TOTAL WIN caps the top of the capsule -->
 			<Container x={colX} y={totalWinY}>
 				<Sprite key="panelBorder" anchor={0.5} width={PANEL_W} height={PANEL_H} />
-				<Text anchor={0.5} y={-PANEL_H * 0.11} text="TOTAL WIN" style={labelStyle(PANEL_H * 0.14)} />
+				<Text anchor={0.5} y={-PANEL_H * 0.11} text={i18nDerived.translate('TOTAL WIN')} style={labelStyle(PANEL_H * 0.14)} />
 				<Text anchor={0.5} y={PANEL_H * 0.11} text={totalWin} style={valueStyle(PANEL_H * 0.24)} />
 			</Container>
 
 			<!-- FREE SPINS caps the bottom of the capsule -->
 			<Container x={colX} y={fsY}>
 				<Sprite key="panelBorder" anchor={0.5} width={PANEL_W} height={PANEL_H} />
-				<Text anchor={0.5} y={-PANEL_H * 0.11} text="FREE SPINS" style={labelStyle(PANEL_H * 0.14)} />
+				<Text anchor={0.5} y={-PANEL_H * 0.11} text={i18nDerived.translate('FREE SPINS')} style={labelStyle(PANEL_H * 0.14)} />
 				<Text anchor={0.5} y={PANEL_H * 0.11} text={`${fsRemaining}`} style={valueStyle(PANEL_H * 0.24)} />
 			</Container>
 		{/if}

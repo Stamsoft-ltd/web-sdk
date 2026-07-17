@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { stateBet } from 'state-shared';
 	import { getContext } from '../game/context';
+	import { i18nDerived } from '../i18n/i18nDerived';
+
+	const t = (k: string) => i18nDerived.translate(k);
 
 	type Props = { onclose: () => void };
 	const props: Props = $props();
@@ -68,26 +71,26 @@
 		<div class="ap-content">
 			<div class="ap-toggles">
 				<div class="ap-row">
-					<span class="ap-row__label">TURBO SPIN</span>
+					<span class="ap-row__label">{t('AUTO TURBO')}</span>
 					<button class="ap-switch" class:on={isTurbo} type="button" onclick={toggleTurbo} aria-pressed={isTurbo}>
 						<span class="ap-switch__thumb"></span>
 					</button>
 				</div>
 				<div class="ap-row">
-					<span class="ap-row__label">SUPER TURBO SPIN</span>
+					<span class="ap-row__label">{t('AUTO SUPER TURBO')}</span>
 					<button class="ap-switch" class:on={isSuperTurbo} type="button" onclick={toggleSuperTurbo} aria-pressed={isSuperTurbo}>
 						<span class="ap-switch__thumb"></span>
 					</button>
 				</div>
 				<div class="ap-row">
-					<span class="ap-row__label">50 X BONUS FEATURE</span>
+					<span class="ap-row__label">{t('AUTO FEATURE')}</span>
 					<button class="ap-switch" class:on={isFeature} type="button" onclick={toggleFeature} aria-pressed={isFeature}>
 						<span class="ap-switch__thumb"></span>
 					</button>
 				</div>
 			</div>
 
-			<p class="ap-spins-label">NUMBER OF SPINS</p>
+			<p class="ap-spins-label">{t('AUTO NUM SPINS')}</p>
 
 			<div class="ap-stepper">
 				<button class="ap-step" type="button" disabled={disableDec} onclick={() => step(-1)} aria-label="Fewer spins">−</button>
@@ -96,7 +99,7 @@
 			</div>
 
 			<button class="ap-start" type="button" onclick={start}>
-				START AUTOPLAY ({countLabel})
+				{t('AUTO START')} ({countLabel})
 			</button>
 		</div>
 	</div>

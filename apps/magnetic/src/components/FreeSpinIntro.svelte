@@ -15,6 +15,7 @@
 	import { cubicOut } from 'svelte/easing';
 
 	import { getContext } from '../game/context';
+	import { i18nDerived } from '../i18n/i18nDerived';
 	import LightningStorm from './LightningStorm.svelte';
 
 	const context = getContext();
@@ -220,7 +221,7 @@
 				/>
 
 				<!-- YOU WON / bonus name + description -->
-				<Text anchor={0.5} y={-PH * 0.3} text="YOU WON" style={blueStyle(PH * 0.036)} />
+				<Text anchor={0.5} y={-PH * 0.3} text={i18nDerived.translate('YOU WON')} style={blueStyle(PH * 0.036)} />
 				<Text anchor={0.5} y={-PH * 0.235} text={bonusName} style={congratsStyle(PH * 0.046)} />
 
 				<!-- Full magnet element (magnet + base + blue/orange energy baked in) -->
@@ -247,14 +248,14 @@
 				</Container>
 
 				<!-- FREE SPINS -->
-				<Text anchor={0.5} y={PH * 0.395} text="FREE SPINS" style={blueStyle(PH * 0.036)} />
+				<Text anchor={0.5} y={PH * 0.395} text={i18nDerived.translate('FREE SPINS')} style={blueStyle(PH * 0.036)} />
 
 				<!-- Press-anywhere-to-continue hint (below the card) with the arrow — breathing alpha -->
 				<Container y={PH * 0.55} alpha={pressAlpha}>
 					<Text
 						anchor={0.5}
 						x={-PW * 0.03}
-						text="PRESS ANYWHERE TO CONTINUE"
+						text={i18nDerived.translate('PRESS ANYWHERE')}
 						style={pressStyle(PH * 0.034)}
 					/>
 					<Sprite
@@ -274,10 +275,10 @@
 					<Text
 						anchor={0.5}
 						alpha={Math.min(1, Math.max(0, glowPulse))}
-						text="CONGRATULATIONS"
+						text={i18nDerived.translate('CONGRATULATIONS')}
 						style={congratsGlowStyle(PH * 0.066)}
 					/>
-					<Text anchor={0.5} text="CONGRATULATIONS" style={congratsStyle(PH * 0.066)} />
+					<Text anchor={0.5} text={i18nDerived.translate('CONGRATULATIONS')} style={congratsStyle(PH * 0.066)} />
 				</Container>
 			</Container>
 		</Container>
