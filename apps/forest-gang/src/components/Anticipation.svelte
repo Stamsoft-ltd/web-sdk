@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { Container, SpineProvider, SpineTrack } from 'pixi-svelte';
+	import { Container, Sprite } from 'pixi-svelte';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
+
 	import type { Reel } from '../game/stateGame.svelte';
 	import { SYMBOL_W, SYMBOL_SIZE, BOARD_SIZES, BOARD_GRID_OFFSET_Y } from '../game/constants';
 	import { getContext } from '../game/context';
@@ -12,24 +15,40 @@
 	const props: Props = $props();
 	const context = getContext();
 
-	// Match the reel's per-axis scaling (boardScaleX/Y) so the glow lines up with the reel column
+	// Match the reel's per-axis scaling (boardScaleX/Y) so the vine lines up with the reel column
 	// width/height — the reels are NOT scaled by the uniform boardScale in landscape/desktop.
 	const bl = $derived(context.stateGameDerived.boardLayout());
 	const scaleX = $derived(bl.boardScaleX ?? bl.boardScale);
 	const scaleY = $derived(bl.boardScaleY ?? bl.boardScale);
 
-	type AnimationName = 'anticipation_intro' | 'anticipation_loop' | 'anticipation_out';
+	// Stretches the frame's bottom edge down to the board's bottom; the container y compensates by
+	// half so the TOP edge stays put.
+	const EXTEND_B = SYMBOL_SIZE * 0.17;
 
-	// Stretches the frame's bottom edge down to the board's bottom (the plain centred sizing
-	// left it a few units short); the container y compensates by half so the TOP edge stays put.
-	const EXTEND_B = SYMBOL_SIZE * 0.26;
+	// Show / hide like the old spine: fade IN on appear, fade OUT when the reel stops → oncomplete.
+	const fade = new Tween(0, { duration: 220, easing: cubicOut });
+	fade.set(1);
 
-	let animationName = $state<AnimationName>('anticipation_intro');
-	let speedUp = $state(false);
-
+	// Gentle pulse while the reel anticipates.
+	let clock = $state(0);
 	$effect(() => {
-		if (props.reel.reelState.motion === 'stopped') {
-			animationName = 'anticipation_out';
+		let raf = 0;
+		const t0 = performance.now();
+		const tick = (now: number) => {
+			clock = (now - t0) / 1000;
+			raf = requestAnimationFrame(tick);
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	});
+	const pulse = $derived(1 + 0.012 * Math.sin(clock * 5));
+	const glow = $derived(0.85 + 0.15 * Math.abs(Math.sin(clock * 5)));
+
+	let stopped = $state(false);
+	$effect(() => {
+		if (props.reel.reelState.motion === 'stopped' && !stopped) {
+			stopped = true;
+			fade.set(0, { duration: 240 }).then(() => props.oncomplete());
 		}
 	});
 
@@ -40,39 +59,18 @@
 			props.oncomplete();
 		},
 	});
-
-	// NOTE: the scatter "tease" loop (sfx_scatter_anticipation_loop) is NOT controlled here per-reel.
-	// It's started/stopped ONCE for the whole anticipation phase by Anticipations.svelte. Managing it
-	// per reel meant one reel resolving stopped the loop while other reels were still anticipating,
-	// so the heartbeat cut out and restarted between reels.
 </script>
 
 <Container
 	x={bl.x + ((props.reel.reelIndex + 0.5) * SYMBOL_W - BOARD_SIZES.width * 0.5) * scaleX}
 	y={bl.y + BOARD_GRID_OFFSET_Y + (EXTEND_B * 0.5 - SYMBOL_SIZE * 0.12) * scaleY}
 >
-<SpineProvider
-	key="anticipation"
-	width={SYMBOL_W * scaleX / 2}
-	height={(SYMBOL_SIZE * 4 + EXTEND_B) * scaleY / 2}
->
-	<SpineTrack
-		trackIndex={0}
-		{animationName}
-		loop={animationName === 'anticipation_loop'}
-		timeScale={speedUp ? 4 : 0.5}
-		listener={{
-			complete: () => {
-				if (animationName === 'anticipation_intro') {
-					animationName = 'anticipation_loop';
-					return;
-				}
-
-				if (animationName === 'anticipation_out') {
-					props.oncomplete();
-				}
-			},
-		}}
+	<!-- Bamboo/vine column frame (Figma 2145-328) replaces the old spine anticipation glow. -->
+	<Sprite
+		key="expandedFrame"
+		anchor={0.5}
+		width={SYMBOL_W * scaleX * 1.2 * pulse}
+		height={(BOARD_SIZES.height * 1.12 + EXTEND_B) * scaleY * pulse}
+		alpha={fade.current * glow}
 	/>
-</SpineProvider>
 </Container>

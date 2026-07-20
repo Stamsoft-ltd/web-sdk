@@ -21,7 +21,7 @@
 	// intrudes deep into it — desktop therefore sits highest.
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const bottomFrac = $derived(
-		layoutType === 'desktop' ? 0.75 : layoutType === 'landscape' ? 0.84 : 0.9,
+		layoutType === 'desktop' ? 0.75 : layoutType === 'landscape' ? 0.84 : 0.95,
 	);
 	const fontSize = $derived(
 		layoutType === 'portrait'

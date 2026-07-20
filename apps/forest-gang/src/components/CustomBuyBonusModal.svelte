@@ -359,15 +359,8 @@
 		width: auto; height: auto;
 		object-fit: contain;
 		filter: drop-shadow(0 2px 5px rgba(0,0,0,0.55));
-		/* Hanging-ornament swing: pinned at the TOP edge, rocking side to side while the buy
-		   bonus screen is open. */
-		transform-origin: top center;
-		animation: card-icon-swing 1.7s ease-in-out infinite;
+		/* Static — no swing (per design). */
 	}
-	/* Stagger the cards so the coins don't swing in unison. */
-	.card:nth-child(2) .card-icon { animation-delay: -0.4s; }
-	.card:nth-child(3) .card-icon { animation-delay: -0.9s; }
-	.card:nth-child(4) .card-icon { animation-delay: -1.3s; }
 	@keyframes card-icon-swing {
 		0% { transform: rotate(0deg); }
 		25% { transform: rotate(6deg); }

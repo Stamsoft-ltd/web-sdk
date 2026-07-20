@@ -85,6 +85,47 @@
 	{template}
 />
 
+<!-- Win state + SWEET WIN big-win presentation, to verify winning symbols keep animating there. -->
+<Story
+	name="sweet win (animals)"
+	args={templateArgs({
+		skipLoadingScreen: true,
+		data: events.setWin,
+		action: async () => {
+			await playBookEvent(events.revealAnimals as any, { bookEvents: [events.revealAnimals] as any });
+			await playBookEvent(events.winInfoAnimals as any, { bookEvents: [] });
+			await playBookEvent(events.setWin as any, { bookEvents: [] });
+		},
+	})}
+	{template}
+/>
+
+<!-- Expanded WOLF symbol (new win video + bamboo/vine column frame from Figma). -->
+<Story
+	name="expand (WOLF)"
+	args={templateArgs({
+		skipLoadingScreen: true,
+		data: events.expandedWolf,
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
+	})}
+	{template}
+/>
+
+<!-- All 5 animals on the board, every visible cell driven into its win animation, so the new
+	 win videos can be reviewed side by side. -->
+<Story
+	name="win animals (all)"
+	args={templateArgs({
+		skipLoadingScreen: true,
+		data: events.winInfoAnimals,
+		action: async () => {
+			await playBookEvent(events.revealAnimals as any, { bookEvents: [events.revealAnimals] as any });
+			await playBookEvent(events.winInfoAnimals as any, { bookEvents: [] });
+		},
+	})}
+	{template}
+/>
+
 <Story
 	name="setWin"
 	args={templateArgs({

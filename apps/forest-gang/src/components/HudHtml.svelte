@@ -26,8 +26,10 @@
 
 	// Button backgrounds (icon-less frames) — icons are layered on top in markup
 	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.png'); // wooden round — utility buttons
-	const btnSpinBg = ap('/assets/components/navbar/btn_bg_spin.png'); // green round — spin
-	const btnWideBg = ap('/assets/components/navbar/btn_bg_wide.png'); // wide green — buy bonus
+	const btnSpinBg = ap('/assets/components/navbar/btn_bg_spin.png?v=20260720'); // green round — spin
+	const btnSpinHoverBg = ap('/assets/components/navbar/btn_bg_spin_hover.png?v=20260720'); // spin hover
+	const btnWideBg = ap('/assets/components/navbar/btn_bg_wide.png?v=20260720'); // wide green — buy bonus
+	const btnWideHoverBg = ap('/assets/components/navbar/btn_bg_wide_hover.png?v=20260720'); // buy hover
 	// Portrait/mobile pads (Figma 2792-4133)
 	// Mobile-landscape HUD art (Figma 2682-3639)
 	const lsRightBar = ap('/assets/components/symbols/landscape/right_bar.png?v=20260715'); // vertical control bar
@@ -181,6 +183,11 @@
 
 	let showBuyModal = $state(false);
 	let showAutoModal = $state(false);
+	// Mirror the Buy Bonus modal state to shared game state so the board can freeze its animations
+	// behind the blurred backdrop while the dialog is open.
+	$effect(() => {
+		context.stateGame.buyModalOpen = showBuyModal;
+	});
 
 	const openBuyBonus = () => {
 		if (disableBuy) return;
@@ -324,9 +331,12 @@
 			node.style.transformOrigin = 'left center';
 			node.style.transform = 'none';
 			// Space actually left for the value: the slot minus what the preceding sibling
-			// (label / minus-button) already occupies.
+			// (label / minus-button) already occupies — but ONLY when that sibling sits on the
+			// same row. In a column layout (portrait BALANCE: label ABOVE value) the value has the
+			// full slot width, so subtracting the label there wrongly shrank it to nothing.
 			const prev = node.previousElementSibling as HTMLElement | null;
-			const used = prev ? prev.getBoundingClientRect().width + 8 : 0;
+			const sameRow = prev ? Math.abs(prev.offsetTop - node.offsetTop) < node.offsetHeight * 0.6 : false;
+			const used = prev && sameRow ? prev.getBoundingClientRect().width + 8 : 0;
 			const avail = slot.clientWidth - used;
 			const full = node.scrollWidth;
 			const scale = full > avail && avail > 0 ? avail / full : 1;
@@ -353,7 +363,7 @@
 <div
 	class="hud-shell"
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}')`}
+	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}')`}
 >
 	{#if isPortrait}
 		<!-- Dedicated portrait HUD (Figma mobile 2792-4133). Desktop/landscape markup below is untouched. -->
@@ -1274,11 +1284,11 @@
 	}
 
 	.spin-btn {
-		width: 122px;
-		height: 122px;
+		width: 150px;
+		height: 150px;
 		/* Negative margins keep the big button from inflating the bar height;
 		   it protrudes above the wooden bar as the focal control. */
-		margin: -22px 0;
+		margin: -30px 0;
 		border: none;
 		background: var(--btn-spin-bg) center / contain no-repeat;
 		padding: 0;
@@ -1301,14 +1311,13 @@
 		object-fit: contain;
 		display: block;
 		pointer-events: none;
-		/* The green disc sits slightly below the asset's box center, so nudge the icon
-		   down to center it on the disc. */
-		transform: translateY(7%);
+		/* Centre the icon on the green disc of btn_bg_spin.png (disc centre ≈ 53% of the box). */
+		transform: translateY(4%);
 	}
 
 	.spin-btn:not(:disabled):hover {
 		transform: translateY(-2px);
-		filter: brightness(1.08);
+		background-image: var(--btn-spin-hover-bg);
 	}
 
 	.spin-btn:not(:disabled):active {
@@ -1348,11 +1357,10 @@
 	/* Gold stop tile shown over the green disc while spinning (replaces the ■ glyph). */
 	.spin-btn__stop {
 		position: absolute;
-		/* Anchor to the green disc's visual center in btn_bg_spin.png (slightly right of
-		   and above the button box center) so the square sits centered on the disc. */
-		top: 48.5%;
-		left: 51.2%;
-		width: 30%;
+		/* Anchor to the green disc's visual center in btn_bg_spin.png. */
+		top: 50%;
+		left: 51%;
+		width: 22%;
 		aspect-ratio: 1;
 		transform: translate(-50%, -50%);
 		object-fit: contain;
@@ -1367,10 +1375,12 @@
 	.buy-btn {
 		width: 130px;
 		height: auto;
-		aspect-ratio: 730 / 267;
+		aspect-ratio: 300 / 126;
 		border: 0;
-		background: var(--buy-btn-bg) center / 100% 100% no-repeat;
-		padding: 0 14px;
+		background: var(--buy-btn-bg) center / contain no-repeat;
+		/* Leaves sit along the bottom of the new art, so the green body centre is above the element
+		   centre — pad the bottom to lift the flex-centred label onto the body (scales with the button). */
+		padding: 0 14px 7% 14px;
 		outline: none;
 		cursor: pointer;
 		position: relative;
@@ -1385,6 +1395,10 @@
 			filter 0.12s ease;
 	}
 
+	.buy-btn:not(:disabled):hover {
+		background-image: var(--buy-btn-hover-bg);
+	}
+
 	.buy-btn:disabled {
 		opacity: 0.45;
 		cursor: default;
@@ -1393,7 +1407,7 @@
 
 	.buy-btn__label {
 		font-family: 'Poppins', sans-serif;
-		font-size: 0.95rem;
+		font-size: 0.8rem;
 		font-weight: 600;
 		letter-spacing: 0.03em;
 		white-space: nowrap;
@@ -1571,14 +1585,14 @@
 		box-sizing: border-box;
 		width: clamp(64px, 24vh, 235px);
 		height: auto;
-		aspect-ratio: 730 / 267;
+		aspect-ratio: 300 / 126;
 		border: 0;
 		padding: 0;
 		cursor: pointer;
-		background: var(--buy-btn-bg) center / 100% 100% no-repeat;
+		background: var(--buy-btn-bg) center / contain no-repeat;
 		transition: filter 0.12s ease, transform 0.12s ease;
 	}
-	.ls-buy:not(:disabled):hover { filter: brightness(1.1); transform: translate(-50%, calc(50% - 1px)); }
+	.ls-buy:not(:disabled):hover { background-image: var(--buy-btn-hover-bg); transform: translate(-50%, calc(50% - 1px)); }
 	.ls-buy:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
 	.pt-buy:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
 	.ls-buy__label {
@@ -1687,9 +1701,9 @@
 		/* Slim: the bar art is trimmed to its visible wood, so horizontal padding directly
 		   widens the rendered bar — keep it minimal. */
 		padding: 14px 4px;
-		/* Bar art drawn narrower than the button stack (like the original design: the spin
-		   button overflows the wooden bar's sides) — scales cleanly for small AND large sizes. */
-		background: var(--ls-rightbar) center / 66% 100% no-repeat;
+		/* Bar art drawn much narrower than the (now larger) spin button so the wooden bar keeps its
+		   original slim width and the big spin overflows its sides, as in the original design. */
+		background: var(--ls-rightbar) center / 40% 100% no-repeat;
 	}
 	.ls-round {
 		width: clamp(20px, 5.6vh, 56px);
@@ -1708,8 +1722,8 @@
 	.ls-round .ls-icon.is-muted { opacity: 1; }
 
 	.ls-spin {
-		width: clamp(36px, 11.5vh, 108px);
-		height: clamp(36px, 11.5vh, 108px);
+		width: clamp(54px, 24vh, 214px);
+		height: clamp(54px, 24vh, 214px);
 		border: 0;
 		background: var(--ls-spin) center / contain no-repeat;
 		padding: 0;
@@ -1719,14 +1733,14 @@
 		place-items: center;
 		transition: filter 0.12s ease, transform 0.12s ease;
 	}
-	.ls-spin:not(:disabled):hover { filter: brightness(1.08); }
+	.ls-spin:not(:disabled):hover { background-image: var(--ls-spin-hover); }
 	.ls-spin:disabled { opacity: 0.5; cursor: default; }
-	.ls-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translateY(7%); }
+	.ls-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(1.5%, 3%); }
 	.ls-spin__stop {
 		position: absolute;
-		top: 48.5%;
+		top: 53%;
 		left: 51.2%;
-		width: 30%;
+		width: 22%;
 		aspect-ratio: 1;
 		transform: translate(-50%, -50%);
 		object-fit: contain;
@@ -1893,8 +1907,10 @@
 	.pt-spin:not(:disabled):hover { filter: brightness(1.1); }
 	.pt-spin:not(:disabled):active { transform: scale(0.96); }
 	.pt-spin:disabled { opacity: 0.5; cursor: default; }
-	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; } /* arrow overlay (base has none) */
-	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; }
+	/* The green disc in spin_mobile.png sits ~1% right / ~3% above the art centre (leaf border is
+	   heavier at the bottom), so nudge the icons onto the disc's optical centre. */
+	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(2%, 2%); } /* arrow overlay (base has none) */
+	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; transform: translate(2%, 2%); }
 	.pt-spin__count {
 		font-family: 'Cinzel', serif; font-weight: 900; font-size: 1.3rem; color: #fff;
 		text-shadow: 0 2px 4px rgba(0,0,0,0.7);

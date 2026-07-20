@@ -4,7 +4,8 @@
 </script>
 
 <script lang="ts">
-	import { BitmapText, Container, Sprite } from 'pixi-svelte';
+	import { BitmapText, Container, Sprite, AnimatedSprite } from 'pixi-svelte';
+	import type { Texture } from 'pixi.js';
 	import { FadeContainer } from 'components-pixi';
 	import { MainContainer } from 'components-layout';
 
@@ -27,8 +28,8 @@
 	let presenterActive = $state(false);
 	const show = $derived(!!selectedSymbol && !!mode && !presenterActive);
 
-	// Gentle idle motion on the selected symbol while the panel is up — a slow float with a
-	// hint of breathing, no flicker.
+	// Gentle idle motion on the selected symbol while the panel is up — a slow tilt left/right
+	// (a scale "breath" distorted the framed animal art, so we rock it instead).
 	let animT = $state(0);
 	$effect(() => {
 		if (!show) return;
@@ -41,8 +42,8 @@
 		raf = requestAnimationFrame(tick);
 		return () => cancelAnimationFrame(raf);
 	});
-	const symBobY = $derived(Math.sin(animT * 2.1) * PANEL_H * 0.022);
-	const symBreath = $derived(1 + 0.018 * Math.sin(animT * 2.1 + 1.2));
+	// ±0.045 rad ≈ ±2.6° — a brisk rock, no scale/position change so the image never distorts.
+	const symTilt = $derived(Math.sin(animT * 5.5) * 0.045);
 	// Shrink + pull-in on short desktop laptop canvases so the rail fits alongside the enlarged board.
 	const railAdj = $derived(context.stateGameDerived.bonusRailAdjust());
 	// Mobile-landscape: the rail becomes a full-height LEFT column (rendered in MainContainer).
@@ -102,6 +103,26 @@
 	});
 
 	const spriteKey = $derived(displaySymbol ? (spriteKeyByName[displaySymbol] ?? 'aTile') : 'aTile');
+	// Animals use the new animated idle art (same as the reels) instead of the old crowned tile.
+	const IDLE_ANIM_KEY: Partial<Record<SymbolName, string>> = {
+		WOLF: 'wolfIdleAnim',
+		FOX: 'foxIdleAnim',
+		SQUIRREL: 'squirrelIdleAnim',
+		BEAR: 'bearIdleAnim',
+		RABBIT: 'rabbitIdleAnim',
+	};
+	const IDLE_ASPECT: Partial<Record<SymbolName, number>> = {
+		WOLF: 337 / 360,
+		FOX: 249 / 360,
+		SQUIRREL: 282 / 360,
+		BEAR: 360 / 327,
+		RABBIT: 284 / 360,
+	};
+	const displayIdle = $derived(
+		displaySymbol && IDLE_ANIM_KEY[displaySymbol]
+			? ((context.stateApp.loadedAssets?.[IDLE_ANIM_KEY[displaySymbol]!] ?? []) as Texture[])
+			: [],
+	);
 </script>
 
 {#snippet panel()}
@@ -115,16 +136,28 @@
 			<!-- Frame background -->
 			<Sprite key="symbolPad" anchor={{ x: 0.5, y: 0.5 }} x={PANEL_W * 0.5} y={PANEL_H * 0.5} width={PANEL_W} height={PANEL_H} />
 
-			<!-- Symbol sprite, centred (no mode label) -->
+			<!-- Symbol sprite, centred — rocks gently left/right around its centre (no scale/bob). -->
 			{#if displaySymbol}
-				<Sprite
-					key={spriteKey}
-					anchor={{ x: 0.5, y: 0.5 }}
-					x={PANEL_W * 0.5}
-					y={PANEL_H * 0.5 + symBobY}
-					width={SYM_SIZE * symBreath}
-					height={SYM_SIZE * (SYMBOL_H / SYMBOL_W) * symBreath}
-				/>
+				<Container x={PANEL_W * 0.5} y={PANEL_H * 0.5} rotation={symTilt}>
+					{#if displayIdle.length}
+						<AnimatedSprite
+							textures={displayIdle}
+							anchor={{ x: 0.5, y: 0.5 }}
+							height={SYM_SIZE}
+							width={SYM_SIZE * (IDLE_ASPECT[displaySymbol!] ?? 1)}
+							animationSpeed={0.28}
+							loop={true}
+							play={true}
+						/>
+					{:else}
+						<Sprite
+							key={spriteKey}
+							anchor={{ x: 0.5, y: 0.5 }}
+							width={SYM_SIZE}
+							height={SYM_SIZE * (SYMBOL_H / SYMBOL_W)}
+						/>
+					{/if}
+				</Container>
 			{/if}
 		</Container>
 	</FadeContainer>

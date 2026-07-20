@@ -65,6 +65,22 @@
 		return t.length ? [...t, ...t.slice(1, -1).reverse()] : [];
 	});
 
+	// Low (card) symbols now expand with their WIN animation too — the same gold-sparkle sheets the
+	// reels use — instead of the old static cracked win tile. Ping-ponged (clips don't loop).
+	const LOW_WIN_ANIM_KEY: Partial<Record<SymbolName, string>> = {
+		T: 'tenWinAnim',
+		A: 'aWinAnim',
+		J: 'jWinAnim',
+		K: 'kWinAnim',
+		Q: 'qWinAnim',
+	};
+	const lowAnimFrames = $derived.by(() => {
+		const animKey = expanded && LOW_SYMBOLS.has(expanded.symbol) ? LOW_WIN_ANIM_KEY[expanded.symbol] : undefined;
+		if (!animKey) return [];
+		const t = (context.stateApp.loadedAssets?.[animKey] ?? []) as Texture[];
+		return t.length ? [...t, ...t.slice(1, -1).reverse()] : [];
+	});
+
 	type ReelAnim = { h: Tween<number>; y: Tween<number>; pop: Tween<number>; looping: boolean };
 	const reelAnims: Record<number, ReelAnim> = {};
 	const revealedReels = new Set<number>();
@@ -144,14 +160,28 @@
 							}}
 						/>
 						{#each Array.from({ length: BOARD_DIMENSIONS.y }, (_, rowIndex) => rowIndex) as rowIndex (rowIndex)}
-							<Sprite
-								key={lowAssetKey}
-								x={SYMBOL_W * 0.5}
-								y={(rowIndex + 0.5) * SYMBOL_H}
-								anchor={0.5}
-								width={tileW}
-								height={SYMBOL_H}
-							/>
+							{#if lowAnimFrames.length > 0}
+								<AnimatedSprite
+									textures={lowAnimFrames}
+									x={SYMBOL_W * 0.5}
+									y={(rowIndex + 0.5) * SYMBOL_H}
+									anchor={0.5}
+									width={tileW}
+									height={SYMBOL_H}
+									animationSpeed={0.25}
+									loop={true}
+									play={true}
+								/>
+							{:else}
+								<Sprite
+									key={lowAssetKey}
+									x={SYMBOL_W * 0.5}
+									y={(rowIndex + 0.5) * SYMBOL_H}
+									anchor={0.5}
+									width={tileW}
+									height={SYMBOL_H}
+								/>
+							{/if}
 						{/each}
 					</Container>
 				{:else}

@@ -13,6 +13,7 @@
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import EnableSound from './EnableSound.svelte';
+	import EnableSharedTicker from './EnableSharedTicker.svelte';
 	import EnableGameActor from './EnableGameActor.svelte';
 	import PendingRoundRecovery from './PendingRoundRecovery.svelte';
 	import ResumeBet from './ResumeBet.svelte';
@@ -385,6 +386,7 @@
 >
 	<div class="forest-stage">
 		<App>
+			<EnableSharedTicker />
 			<EnableSound />
 			<EnableHotkey />
 			<EnableGameActor />

@@ -24,6 +24,7 @@
 	import PressToContinue from './PressToContinue.svelte';
 	import PressAnywhereText from './PressAnywhereText.svelte';
 	import FreeSpinAnimation from './FreeSpinAnimation.svelte';
+	import CurvedCinzelText from './CurvedCinzelText.svelte';
 
 	const context = getContext();
 	const t = (key: string) => stateI18nDerived.translate(key);
@@ -79,7 +80,7 @@
 		raf = requestAnimationFrame(tick);
 		return () => cancelAnimationFrame(raf);
 	});
-	const congratsPulse = $derived(slideIn.current >= 0.99 ? 1 + 0.07 * Math.sin(animT * 3.7) : 1);
+	const congratsPulse = $derived(slideIn.current >= 0.99 ? 1 + 0.035 * Math.sin(animT * 3.7) : 1);
 	// Medallion zoom in/out breathe.
 	const medallionPulse = $derived(1 + 0.06 * Math.sin(animT * 2.6));
 
@@ -113,18 +114,19 @@
 						{@const fromTop = (1 - slideIn.current) * -BW * 0.7}
 
 						<Container y={fromBottom}>
-						<Sprite key="fsBoardBg" anchor={{ x: 0.5, y: 0.5 }} width={BW} height={BW} />
+						<!-- Board a touch larger than the BW layout reference so the enlarged heading fits with margin. -->
+						<Sprite key="fsBoardBg" anchor={{ x: 0.5, y: 0.5 }} width={Math.round(BW * 1.12)} height={Math.round(BW * 1.12)} />
 
 						<!-- YOU WON (green) — live translatable Cinzel text -->
 						<Text
 							anchor={{ x: 0.5, y: 0.5 }}
 							text={t('FS YOU WON')}
-							style={textStyle(Math.round(BW * 0.031), 0x7cc23f)}
-							y={Math.round(-BW * 0.238)}
+							style={textStyle(Math.round(BW * 0.045), 0x7cc23f)}
+							y={Math.round(-BW * 0.205)}
 						/>
 
 						<!-- Scatter medallion — zooms in/out gently -->
-						<Container y={Math.round(-BW * 0.051)} scale={medallionPulse}>
+						<Container y={Math.round(BW * 0.02)} scale={medallionPulse}>
 							{#if medallionFrames.length > 0}
 								<AnimatedSprite
 									textures={medallionFrames}
@@ -149,7 +151,7 @@
 						{@const winFont = Math.round(BW * 0.072)}
 						{@const winMaxW = BW * 0.6}
 						{@const winScale = amountSizes.width > winMaxW ? winMaxW / amountSizes.width : 1}
-						<Container y={Math.round(BW * 0.22)} scale={winScale}>
+						<Container y={Math.round(BW * 0.26)} scale={winScale}>
 							<Text
 								anchor={0.5}
 								onresize={(s) => (amountSizes = s)}
@@ -170,10 +172,11 @@
 						<!-- CONGRATULATIONS! drops in from the top, then pulses in place -->
 						<Container y={fromTop}>
 							<Container y={Math.round(-BW * 0.31)} scale={congratsPulse}>
-								<Text
-									anchor={{ x: 0.5, y: 0.5 }}
+								<CurvedCinzelText
 									text={t('FS CONGRATS')}
-									style={textStyle(Math.round(BW * 0.044), 0xf1c14a)}
+									radius={BW * 1.1}
+									gap={Math.round(BW * 0.05) * 0.03}
+									style={textStyle(Math.round(BW * 0.05), 0xf1c14a)}
 								/>
 							</Container>
 						</Container>
@@ -181,7 +184,7 @@
 						<!-- Anchored to the board so it always sits just below its bottom edge, clear
 						     of the leaves and the HTML HUD regardless of window shape. -->
 						{#if !isPortrait}
-							<PressAnywhereText y={Math.round(BW * 0.465)} fontSize={Math.round(BW * 0.042)} />
+							<PressAnywhereText y={Math.round(BW * 0.585)} fontSize={Math.round(BW * 0.042)} />
 						{/if}
 					{/snippet}
 				</FreeSpinAnimation>

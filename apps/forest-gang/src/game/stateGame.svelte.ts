@@ -113,6 +113,7 @@ export const stateGame = $state({
 	stopAutoOnBonus: false,     // autoplay stops when a bonus triggers
 	hasAnticipationPending: false,  // true when current spin has unskipped anticipation reels
 	resumeModalOpen: false,     // the "Unfinished Round" resume dialog is on screen
+	buyModalOpen: false,        // the Buy Bonus dialog is on screen (board animations freeze behind it)
 });
 
 const getBoardViewportPadding = () => {
@@ -198,12 +199,12 @@ const LS_RIGHT_RAIL = 120;
 // reel_frame.png cropped to opaque bounds (2121×1638). The rope hangs from the top ~25% of the
 // image; the inner wood panel (where the reels sit) is measured below it.
 const LS_FRAME_ASPECT = 2121 / 1638;
-const LS_FRAME_INNER_W = 0.78;
-const LS_FRAME_INNER_H = 0.70;
+const LS_FRAME_INNER_W = 0.83; // wider inner panel → bigger cells
+const LS_FRAME_INNER_H = 0.75; // taller inner panel → bigger cells
 const LS_FRAME_INNER_CX = 0.5;
-const LS_FRAME_INNER_CY = 0.59;
+const LS_FRAME_INNER_CY = 0.6; // grid vertical centre in the frame (even top/bottom gap)
 const LS_PANEL_FILL = 0.98;  // reel pitch fills ~98% of the inner panel (both axes)
-const LS_SYMBOL_FILL = 0.97; // symbol size vs its cell (smaller → even gaps, as in the design)
+const LS_SYMBOL_FILL = 1.12; // symbol size vs its cell (bigger → fills the cell, tighter gaps)
 const LS_FRAME_WIDTH = 0.9;  // slight narrowing of the frame/background (forest margin on sides)
 
 const boardLayout = () => {

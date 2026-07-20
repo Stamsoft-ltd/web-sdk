@@ -91,9 +91,9 @@
 	const TIER_TEXT_Y: Record<string, number> = {
 		sweetWinBoard: 0.343,
 		wildWinBoard: 0.331,
-		epicWinBoard: 0.33,
+		epicWinBoard: 0.340,
 		mythicWinBoard: 0.335,
-		legendaryWinBoard: 0.328,
+		legendaryWinBoard: 0.345,
 	};
 	const textYFrac = $derived(TIER_TEXT_Y[shownKey] ?? 0.343);
 

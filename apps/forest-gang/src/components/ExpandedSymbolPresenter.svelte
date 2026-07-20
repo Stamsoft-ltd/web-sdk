@@ -14,7 +14,8 @@
 	import { MainContainer, CanvasSizeRectangle, OnPressFullScreen } from 'components-layout';
 	import { OnHotkey } from 'components-shared';
 	import { FadeContainer } from 'components-pixi';
-	import { anchorToPivot, Container, Sprite } from 'pixi-svelte';
+	import { anchorToPivot, AnimatedSprite, Container, Sprite } from 'pixi-svelte';
+	import type { Texture } from 'pixi.js';
 
 	import { getContext } from '../game/context';
 	import { spriteKeyByName } from '../game/utils';
@@ -26,11 +27,19 @@
 	// previous art had a baked cream halo that read as a cut glow) and zooms in centred.
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 	const deerKey = $derived(isPortrait ? 'deerPresenterMobile' : 'deerPresenter');
+	// Animated desktop deer (background-removed video frames). Portrait keeps the full-body mobile art.
+	const deerFrames = $derived((context.stateApp.loadedAssets?.deerPresenterAnim ?? []) as Texture[]);
+	const useAnimDeer = $derived(!isPortrait && deerFrames.length > 0);
 	const MOBILE_RATIO = 360 / 730;
-	const DEER_RATIO = $derived(isPortrait ? MOBILE_RATIO : 1087 / 1447);
-	// Empty-board interior centre + height as a fraction of the deer image.
+	const ANIM_RATIO = 273 / 444; // animated frame aspect (measured)
+	const DEER_RATIO = $derived(isPortrait ? MOBILE_RATIO : useAnimDeer ? ANIM_RATIO : 1087 / 1447);
+	// Empty-board interior centre + height as a fraction of the deer image (per art).
 	const PLACEHOLDER = $derived(
-		isPortrait ? { cx: 0.486, cy: 0.575, h: 0.1 } : { cx: 0.488, cy: 0.622, h: 0.18 },
+		isPortrait
+			? { cx: 0.486, cy: 0.575, h: 0.1 }
+			: useAnimDeer
+				? { cx: 0.496, cy: 0.612, h: 0.185 }
+				: { cx: 0.488, cy: 0.622, h: 0.18 },
 	);
 	const LETTER_ASPECT = $derived(isPortrait ? 1.34 : 1.17); // symbol sprites ~cell aspect
 
@@ -49,7 +58,9 @@
 	const deerH = $derived(
 		isPortrait
 			? Math.min(main.height * 0.92, (main.width / MOBILE_RATIO) * 0.98)
-			: Math.min(main.height * 0.92, main.width * 0.62),
+			: useAnimDeer
+				? Math.min(main.height * 0.82, main.width * 0.9)
+				: Math.min(main.height * 0.92, main.width * 0.62),
 	);
 	const deerW = $derived(deerH * DEER_RATIO);
 
@@ -61,6 +72,26 @@
 	// displaySymbol cycles during the roll, then settles on the real symbol.
 	let displaySymbol = $state<SymbolName | null>(null);
 	const letterKey = $derived(displaySymbol ? (spriteKeyByName[displaySymbol] ?? null) : null);
+	// Animals use the new animated idle art (same cutouts as the reels) instead of the old tile.
+	const IDLE_ANIM_KEY: Partial<Record<SymbolName, string>> = {
+		WOLF: 'wolfIdleAnim',
+		FOX: 'foxIdleAnim',
+		SQUIRREL: 'squirrelIdleAnim',
+		BEAR: 'bearIdleAnim',
+		RABBIT: 'rabbitIdleAnim',
+	};
+	const IDLE_ASPECT: Partial<Record<SymbolName, number>> = {
+		WOLF: 337 / 360,
+		FOX: 249 / 360,
+		SQUIRREL: 282 / 360,
+		BEAR: 360 / 327,
+		RABBIT: 284 / 360,
+	};
+	const displayIdle = $derived(
+		displaySymbol && IDLE_ANIM_KEY[displaySymbol]
+			? ((context.stateApp.loadedAssets?.[IDLE_ANIM_KEY[displaySymbol]!] ?? []) as Texture[])
+			: [],
+	);
 	// All symbols centre on the board (no per-symbol vertical nudge).
 	const symbolCy = $derived(PLACEHOLDER.cy);
 
@@ -206,7 +237,18 @@
 				sizes: { width: deerW, height: deerH },
 			})}
 		>
-			<Sprite key={deerKey} width={deerW} height={deerH} />
+			{#if useAnimDeer}
+				<AnimatedSprite
+					textures={deerFrames}
+					width={deerW}
+					height={deerH}
+					animationSpeed={0.12}
+					loop={true}
+					play={true}
+				/>
+			{:else}
+				<Sprite key={deerKey} width={deerW} height={deerH} />
+			{/if}
 			{#if letterKey}
 				<Container
 					x={deerW * PLACEHOLDER.cx}
@@ -214,7 +256,19 @@
 					scale={sc.current}
 					rotation={rot.current}
 				>
-					<Sprite key={letterKey} anchor={0.5} width={letterW} height={letterH} />
+					{#if displayIdle.length}
+						<AnimatedSprite
+							textures={displayIdle}
+							anchor={0.5}
+							height={letterH}
+							width={letterH * (IDLE_ASPECT[displaySymbol!] ?? 1)}
+							animationSpeed={0.28}
+							loop={true}
+							play={true}
+						/>
+					{:else}
+						<Sprite key={letterKey} anchor={0.5} width={letterW} height={letterH} />
+					{/if}
 				</Container>
 			{/if}
 		</Container>

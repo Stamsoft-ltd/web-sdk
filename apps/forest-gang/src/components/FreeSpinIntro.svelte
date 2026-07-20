@@ -19,6 +19,7 @@
 	import PressToContinue from './PressToContinue.svelte';
 	import PressAnywhereText from './PressAnywhereText.svelte';
 	import FreeSpinAnimation from './FreeSpinAnimation.svelte';
+	import CurvedCinzelText from './CurvedCinzelText.svelte';
 
 	const context = getContext();
 	const t = (key: string) => stateI18nDerived.translate(key);
@@ -35,22 +36,22 @@
 	const L = $derived(
 		isPortrait
 			? {
-					congratsY: -0.33, congratsF: 0.048,
-					wonY: -0.275, wonF: 0.034,
-					nameY: -0.225, nameF: 0.032,
-					descY: -0.145, descF: 0.023,
-					frameY: 0.12, frameW: 0.37,
-					numY: 0.112, numF: 0.082,
-					fsY: 0.30, fsF: 0.051,
+					congratsY: -0.36, congratsF: 0.056,
+					wonY: -0.28, wonF: 0.04,
+					nameY: -0.20, nameF: 0.032,
+					descY: -0.12, descF: 0.023,
+					frameY: 0.20, frameW: 0.42,
+					numY: 0.112, numF: 0.092,
+					fsY: 0.37, fsF: 0.051,
 				}
 			: {
-					congratsY: -0.318, congratsF: 0.042,
-					wonY: -0.268, wonF: 0.029,
-					nameY: -0.226, nameF: 0.028,
-					descY: -0.168, descF: 0.023,
-					frameY: 0.135, frameW: 0.32,
-					numY: 0.13, numF: 0.07,
-					fsY: 0.275, fsF: 0.044,
+					congratsY: -0.35, congratsF: 0.05,
+					wonY: -0.27, wonF: 0.034,
+					nameY: -0.20, nameF: 0.028,
+					descY: -0.14, descF: 0.023,
+					frameY: 0.20, frameW: 0.36,
+					numY: 0.13, numF: 0.078,
+					fsY: 0.35, fsF: 0.044,
 				},
 	);
 
@@ -121,17 +122,10 @@
 		raf = requestAnimationFrame(tick);
 		return () => cancelAnimationFrame(raf);
 	});
-	// CONGRATULATIONS pulses once it has settled inside; the 10 counter pulses continuously.
+	// CONGRATULATIONS pulses once it has settled inside. (The 10 counter no longer pulses.)
 	const congratsPulse = $derived(
-		slideIn.current >= 0.99 ? 1 + 0.07 * Math.sin(animT * 3.7) : 1,
+		slideIn.current >= 0.99 ? 1 + 0.035 * Math.sin(animT * 3.7) : 1,
 	);
-	// Aggressive heartbeat on the count: fast double-beat (big swell + echo) instead of a soft sine.
-	const numPulse = $derived.by(() => {
-		const p = (animT * 1.4) % 1;
-		const beat =
-			Math.exp(-((p - 0.14) * (p - 0.14)) / 0.008) + 0.6 * Math.exp(-((p - 0.38) * (p - 0.38)) / 0.014);
-		return 1 + 0.22 * beat;
-	});
 
 	context.eventEmitter.subscribeOnMount({
 		freeSpinIntroShow: () => (show = true),
@@ -152,11 +146,13 @@
 			{@const fromBottom = (1 - slideIn.current) * BW * 0.55}
 			{@const fromTop = (1 - slideIn.current) * -BW * 0.7}
 
-			<Container>
+			<!-- Whole popup nudged up so the "press anywhere" line clears the bottom HUD. -->
+			<Container y={-Math.round(BW * 0.06)}>
 			<!-- Everything except CONGRATULATIONS rises from the bottom -->
 			<Container y={fromBottom}>
-			<!-- Square wooden board centred on slot pivot -->
-			<Sprite key="fsBoardBg" anchor={{ x: 0.5, y: 0.5 }} width={BW} height={BW} />
+			<!-- Square wooden board centred on slot pivot. Sized a touch larger than the BW layout
+			     reference so the (enlarged) heading, panel and medallion sit inside with margin. -->
+			<Sprite key="fsBoardBg" anchor={{ x: 0.5, y: 0.5 }} width={Math.round(BW * 1.12)} height={Math.round(BW * 1.12)} />
 
 			<!-- YOU WON (green) -->
 			<Text
@@ -184,13 +180,13 @@
 			     Hidden in portrait (per request) so the text reads bigger/clearer. -->
 			{#if !isPortrait}
 				<!-- Gentle breathing zoom, same feel as the outro medallion. -->
-				<Container y={Math.round(-BW * 0.035)} scale={1 + 0.06 * Math.sin(animT * 2.6)}>
+				<Container y={Math.round(BW * 0.01)} scale={1 + 0.06 * Math.sin(animT * 2.6)}>
 					{#if medallionFrames.length > 0}
 						<AnimatedSprite
 							textures={medallionFrames}
 							anchor={0.5}
-							width={Math.round(BW * 0.15)}
-							height={Math.round(BW * 0.15 * (443 / 485))}
+							width={Math.round(BW * 0.20)}
+							height={Math.round(BW * 0.20 * (443 / 485))}
 							animationSpeed={0.14}
 							loop={true}
 							play={true}
@@ -199,8 +195,8 @@
 						<Sprite
 							key="fsMedallion"
 							anchor={{ x: 0.5, y: 0.5 }}
-							width={Math.round(BW * 0.15)}
-							height={Math.round(BW * 0.15 * (273 / 300))}
+							width={Math.round(BW * 0.20)}
+							height={Math.round(BW * 0.20 * (273 / 300))}
 						/>
 					{/if}
 				</Container>
@@ -214,7 +210,9 @@
 				height={Math.round(BW * L.frameW * (1084 / 3065))}
 				y={Math.round(BW * L.frameY)}
 			/>
-			<Container y={Math.round(BW * L.numY)} scale={numPulse}>
+			<!-- Number sits at the green box's visual centre (the box sits ~5% of its height above the
+			     sprite centre; leaves extend below). No pulse — it stays static and centred. -->
+			<Container y={Math.round(BW * L.frameY - BW * L.frameW * (1084 / 3065) * 0.05)}>
 				<Text
 					anchor={{ x: 0.5, y: 0.5 }}
 					text={freeSpinsFromEvent}
@@ -231,12 +229,13 @@
 			/>
 			</Container>
 
-			<!-- CONGRATULATIONS! (gold) drops in from the top, then pulses in place -->
+			<!-- CONGRATULATIONS! (gold) drops in from the top, then pulses in place — on a gentle arc. -->
 			<Container y={fromTop}>
 				<Container y={Math.round(BW * L.congratsY)} scale={congratsPulse}>
-					<Text
-						anchor={{ x: 0.5, y: 0.5 }}
+					<CurvedCinzelText
 						text={t('FS CONGRATS')}
+						radius={BW * 1.1}
+						gap={Math.round(BW * L.congratsF) * 0.03}
 						style={textStyle(Math.round(BW * L.congratsF), 0xf1c14a)}
 					/>
 				</Container>
@@ -245,7 +244,7 @@
 			<!-- Anchored to the board so it always sits just below its bottom edge, clear of
 			     the leaves and the HTML HUD regardless of window shape. -->
 			{#if !isPortrait}
-				<PressAnywhereText y={Math.round(BW * 0.465)} fontSize={Math.round(BW * 0.042)} />
+				<PressAnywhereText y={Math.round(BW * 0.585)} fontSize={Math.round(BW * 0.042)} />
 			{/if}
 			</Container>
 		{/snippet}

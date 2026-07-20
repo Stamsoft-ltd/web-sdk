@@ -17,13 +17,56 @@
 	const backgroundKey = $derived.by(() => {
 		switch (context.stateGame.bonusMode) {
 			case 'freegame':
-				return 'bonusNormalBackground';
+				return 'bonusNormalBgVideo';
 			case 'superspin':
-				return 'bonusSuperBackground';
+				return 'bonusSuperBgVideo';
 			default:
-				return isPortrait ? 'visualPortrait' : 'visualV2';
+				return isPortrait ? 'visualPortrait' : 'baseBgVideo';
 		}
 	});
+	// Chrome blocks muted autoplay until the first user gesture. The base video is active from
+	// mount (before any interaction) and a base-game spin doesn't change bonusMode, so without
+	// this the initial play() stays rejected and the base background freezes on frame 0. Flip a
+	// flag on the first gesture so the video-control effect below re-runs and retries play().
+	let interacted = $state(false);
+	$effect(() => {
+		if (interacted) return;
+		const onGesture = () => {
+			interacted = true;
+		};
+		window.addEventListener('pointerdown', onGesture, { once: true });
+		window.addEventListener('keydown', onGesture, { once: true });
+		window.addEventListener('touchstart', onGesture, { once: true });
+		return () => {
+			window.removeEventListener('pointerdown', onGesture);
+			window.removeEventListener('keydown', onGesture);
+			window.removeEventListener('touchstart', onGesture);
+		};
+	});
+
+	// Drive the animated bonus background videos: each loops + is muted, and plays only while its
+	// bonus mode is active (paused otherwise so they don't decode in the background).
+	$effect(() => {
+		const mode = context.stateGame.bonusMode;
+		interacted; // re-run after the first user gesture so a blocked play() gets retried
+		const videoOf = (k: string) =>
+			(context.stateApp.loadedAssets?.[k] as { source?: { resource?: HTMLVideoElement } } | undefined)
+				?.source?.resource;
+		for (const [key, active] of [
+			['bonusSuperBgVideo', mode === 'superspin'],
+			['bonusNormalBgVideo', mode === 'freegame'],
+			['baseBgVideo', mode === null && !isPortrait],
+		] as const) {
+			const video = videoOf(key);
+			if (!video || typeof video.play !== 'function') continue;
+			video.loop = true;
+			video.muted = true;
+			video.playsInline = true;
+			if (active) void video.play().catch(() => {});
+			else video.pause();
+		}
+	});
+
 	const aspect = $derived(isPortraitBase ? PORTRAIT_ASPECT : BACKGROUND_ASPECT);
 	const cover = $derived.by(() => {
 		const width = canvas.width;

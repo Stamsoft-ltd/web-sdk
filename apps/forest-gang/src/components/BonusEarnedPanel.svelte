@@ -3,6 +3,8 @@
 	import { FadeContainer } from 'components-pixi';
 	import { MainContainer } from 'components-layout';
 	import { stateBet } from 'state-shared';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
@@ -79,6 +81,18 @@
 	// (100 = 1× bet), so convert with bookEventAmountToCurrencyString — same as Win.svelte.
 	const amountText = $derived(bookEventAmountToCurrencyString(stateBet.winBookEventAmount));
 
+	// Pop the amount on every change (same feel as the FreeSpinCounter): jump enlarged, settle to 1.
+	const popScale = new Tween(1, { duration: 450, easing: cubicOut });
+	let lastAmount = amountText;
+	$effect(() => {
+		const a = amountText;
+		if (a !== lastAmount) {
+			lastAmount = a;
+			popScale.set(1.45, { duration: 0 });
+			popScale.set(1, { duration: 450, easing: cubicOut });
+		}
+	});
+
 	let labelSizes: Sizes = $state({ width: 0, height: 0 });
 
 	// Coin + EARNED sit on one centered row.
@@ -126,21 +140,23 @@
 				/>
 			</Container>
 
-			<!-- Row 2: earned amount -->
-			<Text
-				x={0}
-				y={ROW_GAP + AMOUNT_FONT * 0.5}
-				anchor={0.5}
-				text={amountText}
-				style={{
-					fontFamily: 'Cinzel',
-					fontWeight: '700',
-					fontSize: AMOUNT_FONT,
-					fill: GOLD_GRADIENT,
-					align: 'center',
-					letterSpacing: AMOUNT_FONT * 0.03,
-				}}
-			/>
+			<!-- Row 2: earned amount — pops (enlarges then settles) whenever the value changes -->
+			<Container x={0} y={ROW_GAP + AMOUNT_FONT * 0.5} scale={popScale.current}>
+				<Text
+					x={0}
+					y={0}
+					anchor={0.5}
+					text={amountText}
+					style={{
+						fontFamily: 'Cinzel',
+						fontWeight: '700',
+						fontSize: AMOUNT_FONT,
+						fill: GOLD_GRADIENT,
+						align: 'center',
+						letterSpacing: AMOUNT_FONT * 0.03,
+					}}
+				/>
+			</Container>
 		</Container>
 {/snippet}
 
