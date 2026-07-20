@@ -21,7 +21,7 @@
 	const HAND_W = BOARD_W * (944 / 592);
 	const HAND_H = HAND_W * (708 / 944);
 
-	// EARNED board uses the leaf-corner wooden frame (confirm_frame.png, 505×301). Its wood
+	// EARNED board uses the leaf-corner wooden frame (confirm_frame.webp, 505×301). Its wood
 	// interior is ~92.5% of the width, so size it so that interior matches the "100" board's
 	// wood width (BOARD_W) — the reference shows the two boards at nearly equal width.
 	const EARN_W = BOARD_W * 1.02;

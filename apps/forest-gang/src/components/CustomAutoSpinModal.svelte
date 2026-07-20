@@ -8,7 +8,7 @@
 	const context = getContext();
 
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	const panelBg = ap('/assets/components/ui/autoplay_panel.png');
+	const panelBg = ap('/assets/components/ui/autoplay_panel.webp');
 
 	// Spin-count slider stops (last = unlimited)
 	const STOPS: Array<number> = [10, 25, 50, 100, 250, 500, Infinity];

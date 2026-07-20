@@ -1,17 +1,3 @@
-// Portrait phones load a dedicated mobile symbol set (same aliases, different art).
-// Decided once at boot from the viewport ratio (mirrors layoutType 'portrait' = ratio ≤ 0.8).
-const _isPortraitViewport =
-	typeof window !== 'undefined' && window.innerWidth / Math.max(1, window.innerHeight) <= 0.8;
-const MOBILE_SYMBOLS = new Set([
-	'card_a.png', 'card_a_win.png', 'card_k.png', 'card_k_win.png',
-	'card_q.png', 'card_q_win.png', 'card_j.png', 'card_j_win.png',
-	'card_t.png', 'card_t_win.png',
-	'fox.png', 'wolf.png', 'bear.png', 'rabbit.png', 'squirrel.png',
-	'wild.png', 'scatter.png',
-	'card_a_bonus.png', 'card_k_bonus.png', 'card_q_bonus.png',
-	'card_j_bonus.png', 'card_t_bonus.png',
-]);
-
 const assets = {
 	loader: {
 		type: 'spine',
@@ -438,18 +424,5 @@ const assets = {
 		preload: true,
 	},
 } as const;
-
-// Portrait-only: redirect the reel symbol sprites to the mobile art at boot.
-// Desktop/landscape keep the original './symbols/...' paths untouched.
-if (_isPortraitViewport) {
-	for (const entry of Object.values(assets as Record<string, { type?: string; src?: unknown }>)) {
-		if (entry && entry.type === 'sprite' && typeof entry.src === 'string') {
-			entry.src = entry.src.replace(
-				/\/symbols\/([^?]+)/,
-				(match: string, file: string) => (MOBILE_SYMBOLS.has(file) ? `/symbols_mobile/${file}` : match),
-			);
-		}
-	}
-}
 
 export default assets;

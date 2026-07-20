@@ -6,7 +6,7 @@
 	const props: Props = $props();
 
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.png?v=20260624');
+	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.webp?v=20260624');
 
 	const mode = $derived(stateBet.betToResume?.mode ?? '');
 	const modeLabel = $derived(mode === 'SUPER' ? 'All In' : mode === 'BONUS' ? 'Deal It' : 'Bonus');

@@ -140,7 +140,7 @@
 <FadeContainer {show}>
 	<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
 
-	<FreeSpinAnimation xOffset={120} portraitScale={1.3}>
+	<FreeSpinAnimation xOffset={120} portraitScale={1.04}>
 		{#snippet children(_)}
 			{@const BW = 1100}
 			{@const fromBottom = (1 - slideIn.current) * BW * 0.55}

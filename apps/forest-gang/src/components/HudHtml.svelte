@@ -16,29 +16,27 @@
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
 
 	const heroCardBg = ap('/assets/components/backgrounds/visual_v2.jpg');
-	const controlsBg = ap('/assets/components/reference/controls_reference.png');
-	const buyBonusBg = ap('/assets/components/reference/buy_bonus_reference.png');
 
 	// Frame backgrounds — passed as CSS vars because url() in style blocks can't use runtime paths
-	const menuBtnFrame = ap('/assets/components/frames/top_menu-button_frame.png');
-	const soundBtnFrame = ap('/assets/components/frames/top_sound_button_frame.png');
-	const menuBarFrame = ap('/assets/components/navbar/bar.png');
+	const menuBtnFrame = ap('/assets/components/frames/top_menu-button_frame.webp');
+	const soundBtnFrame = ap('/assets/components/frames/top_sound_button_frame.webp');
+	const menuBarFrame = ap('/assets/components/navbar/bar.webp');
 
 	// Button backgrounds (icon-less frames) — icons are layered on top in markup
 	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.png'); // wooden round — utility buttons
-	const btnSpinBg = ap('/assets/components/navbar/btn_bg_spin.png?v=20260720'); // green round — spin
-	const btnSpinHoverBg = ap('/assets/components/navbar/btn_bg_spin_hover.png?v=20260720'); // spin hover
+	const btnSpinBg = ap('/assets/components/navbar/btn_bg_spin.webp?v=20260720'); // green round — spin
+	const btnSpinHoverBg = ap('/assets/components/navbar/btn_bg_spin_hover.webp?v=20260720'); // spin hover
 	const btnWideBg = ap('/assets/components/navbar/btn_bg_wide.png?v=20260720'); // wide green — buy bonus
 	const btnWideHoverBg = ap('/assets/components/navbar/btn_bg_wide_hover.png?v=20260720'); // buy hover
 	// Portrait/mobile pads (Figma 2792-4133)
 	// Mobile-landscape HUD art (Figma 2682-3639)
-	const lsRightBar = ap('/assets/components/symbols/landscape/right_bar.png?v=20260715'); // vertical control bar
+	const lsRightBar = ap('/assets/components/symbols/landscape/right_bar.webp?v=20260715'); // vertical control bar
 	const lsBetPad = ap('/assets/components/symbols/landscape/stepper_pad.png'); // − value + bottom pad
 	const lsBuyBonus = ap('/assets/components/symbols/landscape/buy_bonus.png'); // round green badge
-	const navPadMobile = ap('/assets/components/navbar/nav_pad_mobile.png'); // control-bar pill
+	const navPadMobile = ap('/assets/components/navbar/nav_pad_mobile.webp'); // control-bar pill
 	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.png'); // − value + pill
 	const buyBonusMobile = ap('/assets/components/navbar/buy_bonus_mobile.png'); // round green badge
-	const spinMobile = ap('/assets/components/navbar/spin_mobile.png'); // green spin w/ leaves
+	const spinMobile = ap('/assets/components/navbar/spin_mobile.webp'); // green spin w/ leaves
 
 	// Gold icons layered over the button backgrounds
 	const iconMenu = ap('/assets/hud/icon-info.png');
@@ -55,11 +53,11 @@
 	const iconCoins = ap('/assets/hud/icon-coins.png');
 
 	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
-	const hudFrame = ap('/assets/components/frames/hud_frame.png');
-	const smallBtnFrame = ap('/assets/components/frames/lower_hud_button_frame.png');
-	const playBtnFrame = ap('/assets/components/frames/play_button-frame.png');
+	const hudFrame = ap('/assets/components/frames/hud_frame.webp');
+	const smallBtnFrame = ap('/assets/components/frames/lower_hud_button_frame.webp');
+	const playBtnFrame = ap('/assets/components/frames/play_button-frame.webp');
 
-	const scatterImg = ap('/assets/components/ui/scatter-panel-image.png');
+	const scatterImg = ap('/assets/components/ui/scatter-panel-image.webp');
 
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isPortrait = $derived(layoutType === 'portrait');
@@ -363,7 +361,7 @@
 <div
 	class="hud-shell"
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}')`}
+	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}')`}
 >
 	{#if isPortrait}
 		<!-- Dedicated portrait HUD (Figma mobile 2792-4133). Desktop/landscape markup below is untouched. -->

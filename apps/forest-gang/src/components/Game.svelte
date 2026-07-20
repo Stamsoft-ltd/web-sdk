@@ -46,11 +46,13 @@
 
 	let splashIntroVisible = $state(false);
 	let splashPressHandler = $state<(() => void) | undefined>(undefined);
-	const heroArt = './assets/components/backgrounds/visual_v2.png';
+	const heroArt = './assets/components/backgrounds/visual_v2.webp';
 	const bonusArt = './assets/components/backgrounds/visual_v1.jpg';
 	const scatterArt = './assets/components/symbols/scatter.png';
-	const uiRefArt = './assets/components/reference/ui-reference-1.png';
-	const paylinesArt = './assets/components/reference/paylines_reference.png';
+	// (the old reference/*.png screenshots were removed in an earlier asset cleanup; point the
+	// rule/dialog illustrations at existing art so nothing renders a broken image)
+	const uiRefArt = './assets/components/backgrounds/visual_v2.webp';
+	const paylinesArt = './assets/components/info/paylines.webp';
 
 	// Game info modal (paginated framed pages) — assets exported from Figma
 	const infoDir = './assets/components/info';
@@ -59,7 +61,7 @@
 	const infoPanelBg = `${infoDir}/panel_wood_bg.webp`;
 	const infoPaylines = `${infoDir}/paylines.webp`;
 	const symDir = './assets/components/symbols';
-	const heroArtBackdrop = new URL('../../static/assets/components/backgrounds/visual_v2.png', import.meta.url).href;
+	const heroArtBackdrop = new URL('../../static/assets/components/backgrounds/visual_v2.webp', import.meta.url).href;
 
 	$effect(() => {
 		stateMeta.betModeMeta = {

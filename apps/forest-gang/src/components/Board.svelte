@@ -126,6 +126,10 @@
 	// Portrait cells are narrow and the idle busts (fit by height) read too thin — widen them a touch
 	// so they fill the frame better (a small deliberate stretch, only in portrait).
 	const IDLE_W_STRETCH = $derived(isPortrait ? 1.18 : 1.0);
+	// Winning card letters use the win-anim art, which fills its frame more than the base tile — so at
+	// the same draw size a winning letter reads BIGGER than its neighbours. Trim it a little (more on
+	// portrait, where cells are tighter) so a winning letter matches the surrounding symbols.
+	const LOW_WIN_FIT = $derived(isPortrait ? 0.86 : 0.94);
 	// Animal WIN animations (new videos): kept full-frame (no crop) so nothing is clipped.
 	const WIN_ASPECT: Partial<Record<SymbolName, number>> = {
 		WOLF: 1128 / 816,
@@ -428,8 +432,8 @@
 							x={getX(reelIndex)}
 							y={y}
 							anchor={0.5}
-							width={symbolW * s}
-							height={symbolH * s}
+							width={symbolW * s * LOW_WIN_FIT}
+							height={symbolH * s * LOW_WIN_FIT}
 							animationSpeed={0.25}
 							loop={true}
 							play={boardAnimate}

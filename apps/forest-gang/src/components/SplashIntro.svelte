@@ -20,7 +20,7 @@
 	const bgSrc = './assets/components/backgrounds/splash.jpg?v=20260630';
 	// Portrait artwork: the gang holding a single central board (for the mobile carousel).
 	const bgMobileSrc = './assets/components/backgrounds/splash_mobile.jpg?v=20260630';
-	const logoSrc = './assets/components/ui/forest_gang_logo.png';
+	const logoSrc = './assets/components/ui/forest_gang_logo.webp';
 	const brandSrc = './assets/components/ui/press_play_logo.png?v=20260630';
 
 	// Mobile = portrait viewport: show the three feature blocks one at a time, 3s each.

@@ -1,5 +1,5 @@
 <script lang="ts">
-	const heroUrl = './assets/components/backgrounds/visual_v2.png';
+	const heroUrl = './assets/components/backgrounds/visual_v2.webp';
 	const scatterUrl = './assets/components/symbols/scatter.png';
 </script>
 

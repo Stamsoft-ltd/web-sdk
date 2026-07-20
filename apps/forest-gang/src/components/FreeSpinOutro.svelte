@@ -104,7 +104,7 @@
 
 				<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
 
-				<FreeSpinAnimation portraitScale={1.3}>
+				<FreeSpinAnimation portraitScale={1.04}>
 					{#snippet children({ sizes })}
 						<!-- Portrait: fixed BW (like the intro) so the board scales LINEARLY with the
 						     portrait factor — deriving it from `sizes` (which already scales with the

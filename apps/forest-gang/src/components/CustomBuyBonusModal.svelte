@@ -18,7 +18,7 @@
 	const iconPlus     = ap('/assets/hud/icon-plus.png');
 	const btnRoundBg   = ap('/assets/components/navbar/btn_bg_round.png');
 	const betBoxMobile = ap('/assets/components/navbar/bet_box_mobile.png'); // wooden bet-box bg (portrait)
-	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.png?v=20260624');
+	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.webp?v=20260624');
 	// Reuse the game-rules ("tutorials") round nav-button ring for the close button so they match.
 	const closeBtnBg = ap('/assets/components/info/nav_btn_bg.webp');
 
