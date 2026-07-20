@@ -89,7 +89,7 @@
 	const lsBuyY = $derived(
 		lsMain.y +
 			(lsCapsule.visibleBottom - lsMain.height / 2) * lsMain.scale +
-			lsCapsule.visibleW * 0.45 * lsMain.scale,
+			lsCapsule.visibleW * 0.15 * lsMain.scale,
 	);
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
 	const hasAuto = $derived(stateBetDerived.hasAutoBetCounter());
@@ -1913,26 +1913,26 @@
 		flex-direction: row;
 		align-items: center;
 		justify-content: flex-start;
-		gap: clamp(2px, 1vw, 14px);
+		gap: clamp(2px, 0.6vw, 9px);
 		width: fit-content;
 		min-width: 0;
-		padding: clamp(1px, 1.7vh, 11px) clamp(4px, 2.1vw, 26px);
+		padding: clamp(1px, 1vh, 5px) clamp(2px, 1.2vw, 14px);
 		border-left: none;
 		background: #000616c7;
 		border: 1.5px solid rgba(96, 165, 250, 0.5);
-		border-radius: clamp(12px, 2.4vh, 20px);
+		border-radius: clamp(8px, 1.6vh, 13px);
 		text-align: left;
 	}
 	.ls-balance .label--balance {
 		justify-content: flex-start;
 	}
 	.ls-balance .value {
-		font-size: clamp(0.3rem, 3.4vh, 0.98rem);
+		font-size: clamp(0.26rem, 2.1vh, 0.6rem);
 		white-space: nowrap;
 		color: #fff;
 	}
 	.ls-balance .label-text {
-		font-size: clamp(0.26rem, 2.4vh, 0.66rem);
+		font-size: clamp(0.2rem, 1.5vh, 0.42rem);
 		letter-spacing: 0.04em;
 		color: #cfe0f5;
 	}
@@ -1943,21 +1943,21 @@
 		justify-content: center;
 		gap: clamp(1px, 0.4vw, 4px);
 		background: var(--ls-betbox) center / 100% 100% no-repeat;
-		padding: clamp(2px, 2vh, 13px) clamp(4px, 2.2vw, 26px);
+		padding: clamp(2px, 1.4vh, 9px) clamp(3px, 1.6vw, 18px);
 	}
 	.ls-bet .ls-step {
-		width: clamp(14px, 6vh, 38px);
-		height: clamp(14px, 6vh, 38px);
+		width: clamp(12px, 4.4vh, 28px);
+		height: clamp(12px, 4.4vh, 28px);
 	}
 	.ls-bet-val {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		min-width: clamp(24px, 6vw, 62px);
+		min-width: clamp(20px, 5vw, 50px);
 		cursor: pointer;
 	}
 	.ls-bet-val .value {
-		font-size: clamp(0.3rem, 3.4vh, 0.96rem);
+		font-size: clamp(0.28rem, 2.5vh, 0.72rem);
 		font-weight: 700;
 		color: #fff;
 		white-space: nowrap;

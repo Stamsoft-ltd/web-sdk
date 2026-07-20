@@ -210,7 +210,7 @@ const getBoardOffset = () => {
 // top bar; the HTML HUD occupies the space below it.
 const PORTRAIT_FRAME_FILL = 0.94;
 const PORTRAIT_TOP_OFFSET = 372;
-const LANDSCAPE_FRAME_FILL = 0.72;
+const LANDSCAPE_FRAME_FILL = 0.82;
 // On small landscape screens the HTML HUD sits at its min pixel sizes (proportionally larger), so the
 // board fills LESS of the frame there to keep the gutters (balance/bet left, capsule/nav right) clear.
 // Lerp the fill from FILL_MIN at short-side ≤ 250px up to FILL at short-side ≥ 430px.

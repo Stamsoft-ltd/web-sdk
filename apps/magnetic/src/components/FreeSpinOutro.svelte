@@ -96,6 +96,9 @@
 		if (d < W2 + 2 * H2) return { x: dir * W2, y: -H2 + (d - W2) };
 		return { x: dir * (W2 - (d - W2 - 2 * H2)), y: H2 };
 	};
+	// Electric-cyan glow behind the crisp CONGRATULATIONS. Built from offset copies of the text
+	// (a manual bloom) rather than a pixi `dropShadow` filter — that filter renders as a large dark
+	// quad over the panel on some GPUs/drivers, which is the "black shadow on top of the popup".
 	const congratsGlowStyle = (fontSize: number) => ({
 		fontFamily: 'Cinzel',
 		fontWeight: '700' as const,
@@ -103,8 +106,16 @@
 		fill: 0x8fd8ff,
 		letterSpacing: fontSize * 0.03,
 		align: 'center' as const,
-		dropShadow: { color: 0x2fa8ff, alpha: 1, blur: fontSize * 0.35, distance: 0, angle: 0 },
 	});
+	// 8 directions × 2 rings → a soft halo without any filter.
+	const glowOffsets = [
+		{ x: 1, y: 0, r: 1, a: 0.85 }, { x: -1, y: 0, r: 1, a: 0.85 },
+		{ x: 0, y: 1, r: 1, a: 0.85 }, { x: 0, y: -1, r: 1, a: 0.85 },
+		{ x: 0.7, y: 0.7, r: 1, a: 0.7 }, { x: -0.7, y: 0.7, r: 1, a: 0.7 },
+		{ x: 0.7, y: -0.7, r: 1, a: 0.7 }, { x: -0.7, y: -0.7, r: 1, a: 0.7 },
+		{ x: 1, y: 0, r: 2, a: 0.4 }, { x: -1, y: 0, r: 2, a: 0.4 },
+		{ x: 0, y: 1, r: 2, a: 0.4 }, { x: 0, y: -1, r: 2, a: 0.4 },
+	];
 
 	const congratsStyle = (fontSize: number) => ({
 		fontFamily: 'Cinzel',
@@ -158,11 +169,12 @@
 						<!-- Everything except CONGRATULATIONS slides UP from below the screen -->
 						<Container y={slideUp.current}>
 							<!-- Opaque backing: the panel art is semi-transparent, so without this the additive
-							     bolts shine THROUGH the dialog instead of staying behind it. -->
+							     bolts shine THROUGH the dialog instead of staying behind it. Kept inside the
+							     frame's inner edge so it never pokes out as a dark rectangle beyond the border. -->
 							<Graphics
 								draw={(g) => {
 									g.clear();
-									g.rect(-PW * 0.48, -PH * 0.48, PW * 0.96, PH * 0.96);
+									g.rect(-PW * 0.435, -PH * 0.44, PW * 0.87, PH * 0.88);
 									g.fill(0x08122b);
 								}}
 							/>
@@ -280,12 +292,16 @@
 						<!-- CONGRATULATIONS drops in from the TOP — glowing/zooming like the intro -->
 						<Container y={slideDown.current}>
 							<Container y={-PH * 0.36} scale={congratsScale}>
-								<Text
-									anchor={0.5}
-									alpha={Math.min(1, Math.max(0, glowPulse))}
-									text={i18nDerived.translate('CONGRATULATIONS')}
-									style={congratsGlowStyle(PH * 0.072)}
-								/>
+								{#each glowOffsets as o}
+									<Text
+										anchor={0.5}
+										x={o.x * PH * 0.008 * o.r}
+										y={o.y * PH * 0.008 * o.r}
+										alpha={Math.min(1, Math.max(0, glowPulse)) * o.a}
+										text={i18nDerived.translate('CONGRATULATIONS')}
+										style={congratsGlowStyle(PH * 0.072)}
+									/>
+								{/each}
 								<Text anchor={0.5} text={i18nDerived.translate('CONGRATULATIONS')} style={congratsStyle(PH * 0.072)} />
 							</Container>
 						</Container>

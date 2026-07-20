@@ -552,6 +552,8 @@
 	}
 	.panel:not(.portrait) .bet-label { font-size: calc(var(--bb-bet-w) * 0.033); }
 	.panel:not(.portrait) .bet-amount { font-size: calc(var(--bb-bet-w) * 0.075); }
+	/* Space the BET label off the value so they don't sit on top of each other. */
+	.panel:not(.portrait) .bet-value { gap: calc(var(--bb-bet-w) * 0.025); }
 	/* Title + close button scale with the container (X was way too big on small screens). */
 	.panel:not(.portrait) .title {
 		font-size: var(--bb-title);
