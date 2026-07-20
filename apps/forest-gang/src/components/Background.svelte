@@ -55,7 +55,10 @@
 		for (const [key, active] of [
 			['bonusSuperBgVideo', mode === 'superspin'],
 			['bonusNormalBgVideo', mode === 'freegame'],
-			['baseBgVideo', mode === null && !isPortrait],
+			// A single-spin FEATURE round keeps the base background (backgroundKey's default case), but
+			// bonusMode is 'feature' throughout it and lingers until the next spin — so without 'feature'
+			// here the base forest video would sit PAUSED (frozen) during the feature and the idle after.
+			['baseBgVideo', (mode === null || mode === 'feature') && !isPortrait],
 		] as const) {
 			const video = videoOf(key);
 			if (!video || typeof video.play !== 'function') continue;
@@ -90,17 +93,9 @@
 	height={cover.height}
 	alpha={0.96}
 />
-<!-- Portrait: Figma top+bottom shadow drawn on top of the bg here (before the board/logo in
-	 Game.svelte), so it darkens the scene but never the board, symbols, or HUD icons. -->
-{#if isPortraitBase}
-	<Sprite
-		key="portraitShadow"
-		x={canvas.width * 0.5}
-		y={canvas.height * 0.5}
-		anchor={0.5}
-		width={canvas.width}
-		height={canvas.height}
-	/>
-{/if}
+<!-- Portrait top/bottom vignette REMOVED: it dimmed the bg's bright golden sunbeam behind the logo,
+	 which read as a dark top (especially returning from the brighter bonus background). The sunbeam
+	 itself frames the logo, and the logo art has its own outline, so no vignette is needed. -->
+
 <Rectangle {...canvas} backgroundColor={0x050407} alpha={0.2} zIndex={-2} />
 <Rectangle {...canvas} backgroundColor={0x000000} alpha={0.18} zIndex={-1} />

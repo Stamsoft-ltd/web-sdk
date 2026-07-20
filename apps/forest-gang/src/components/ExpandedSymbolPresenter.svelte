@@ -27,18 +27,22 @@
 	// previous art had a baked cream halo that read as a cut glow) and zooms in centred.
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 	const deerKey = $derived(isPortrait ? 'deerPresenterMobile' : 'deerPresenter');
-	// Animated desktop deer (background-removed video frames). Portrait keeps the full-body mobile art.
+	// Animated deer (background-removed video frames) — now used in BOTH orientations when loaded;
+	// only falls back to the static full-body sprite if the frames aren't ready.
 	const deerFrames = $derived((context.stateApp.loadedAssets?.deerPresenterAnim ?? []) as Texture[]);
-	const useAnimDeer = $derived(!isPortrait && deerFrames.length > 0);
+	const useAnimDeer = $derived(deerFrames.length > 0);
 	const MOBILE_RATIO = 360 / 730;
 	const ANIM_RATIO = 273 / 444; // animated frame aspect (measured)
-	const DEER_RATIO = $derived(isPortrait ? MOBILE_RATIO : useAnimDeer ? ANIM_RATIO : 1087 / 1447);
+	// Portrait: rest the deer's bottom at this fraction of screen height (above the HUD) instead of the
+	// screen edge, so the smaller animated deer + the board/symbol it holds stay fully visible.
+	const PORTRAIT_DEER_BOTTOM = 0.82;
+	const DEER_RATIO = $derived(useAnimDeer ? ANIM_RATIO : isPortrait ? MOBILE_RATIO : 1087 / 1447);
 	// Empty-board interior centre + height as a fraction of the deer image (per art).
 	const PLACEHOLDER = $derived(
-		isPortrait
-			? { cx: 0.486, cy: 0.575, h: 0.1 }
-			: useAnimDeer
-				? { cx: 0.496, cy: 0.612, h: 0.185 }
+		useAnimDeer
+			? { cx: 0.496, cy: 0.612, h: 0.185 }
+			: isPortrait
+				? { cx: 0.486, cy: 0.575, h: 0.1 }
 				: { cx: 0.488, cy: 0.622, h: 0.18 },
 	);
 	const LETTER_ASPECT = $derived(isPortrait ? 1.34 : 1.17); // symbol sprites ~cell aspect
@@ -56,10 +60,14 @@
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	// Portrait: much bigger (height-capped full body). Desktop: fit both ways.
 	const deerH = $derived(
-		isPortrait
-			? Math.min(main.height * 0.92, (main.width / MOBILE_RATIO) * 0.98)
-			: useAnimDeer
-				? Math.min(main.height * 0.82, main.width * 0.9)
+		useAnimDeer
+			? isPortrait
+				// Portrait animated deer: sized to fill, then scaled to 70% (30% smaller per request);
+				// rises from the bottom like the static mobile deer did.
+				? Math.min(main.height * 0.9, (main.width * 0.98) / ANIM_RATIO) * 0.7
+				: Math.min(main.height * 0.82, main.width * 0.9)
+			: isPortrait
+				? Math.min(main.height * 0.92, (main.width / MOBILE_RATIO) * 0.98)
 				: Math.min(main.height * 0.92, main.width * 0.62),
 	);
 	const deerW = $derived(deerH * DEER_RATIO);
@@ -230,7 +238,7 @@
 	<MainContainer>
 		<Container
 			x={main.width / 2}
-			y={isPortrait ? main.height + slideY.current : main.height / 2}
+			y={isPortrait ? main.height * PORTRAIT_DEER_BOTTOM + slideY.current : main.height / 2}
 			scale={isPortrait ? 1 : deerScale.current}
 			pivot={anchorToPivot({
 				anchor: isPortrait ? { x: 0.5, y: 1 } : 0.5,

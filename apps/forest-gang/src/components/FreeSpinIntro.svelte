@@ -7,7 +7,7 @@
 
 <script lang="ts">
 	import { CanvasSizeRectangle } from 'components-layout';
-	import { stateI18nDerived } from 'state-shared';
+	import { stateI18nDerived, stateBet } from 'state-shared';
 	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
 	import { AnimatedSprite, Container, Sprite, Text } from 'pixi-svelte';
@@ -40,6 +40,7 @@
 					wonY: -0.28, wonF: 0.04,
 					nameY: -0.20, nameF: 0.032,
 					descY: -0.12, descF: 0.023,
+					medY: 0.02, medW: 0.16,
 					frameY: 0.20, frameW: 0.42,
 					numY: 0.112, numF: 0.092,
 					fsY: 0.37, fsF: 0.051,
@@ -49,11 +50,15 @@
 					wonY: -0.27, wonF: 0.034,
 					nameY: -0.20, nameF: 0.028,
 					descY: -0.14, descF: 0.023,
+					medY: 0.01, medW: 0.20,
 					frameY: 0.20, frameW: 0.36,
 					numY: 0.13, numF: 0.078,
 					fsY: 0.35, fsF: 0.044,
 				},
 	);
+
+	// Autoplay: how long the intro holds on screen before auto-advancing (readable, then continues).
+	const AUTO_ADVANCE_MS = 1800;
 
 	let show = $state(false);
 	let freeSpinsFromEvent = $state(0);
@@ -132,7 +137,13 @@
 		freeSpinIntroHide: () => (show = false),
 		freeSpinIntroUpdate: async (emitterEvent) => {
 			freeSpinsFromEvent = emitterEvent.totalFreeSpins;
-			await waitForResolve((resolve) => (oncomplete = resolve));
+			// Autoplay: auto-advance after a readable hold instead of stalling on a manual press.
+			let autoTimer = 0;
+			await waitForResolve((resolve) => {
+				oncomplete = resolve;
+				if (stateBet.autoSpinsCounter !== 0) autoTimer = setTimeout(resolve, AUTO_ADVANCE_MS) as unknown as number;
+			});
+			clearTimeout(autoTimer);
 		},
 	});
 </script>
@@ -176,31 +187,29 @@
 				y={Math.round(BW * L.descY)}
 			/>
 
-			<!-- Scatter medallion — shrunk to make room for the name + description.
-			     Hidden in portrait (per request) so the text reads bigger/clearer. -->
-			{#if !isPortrait}
-				<!-- Gentle breathing zoom, same feel as the outro medallion. -->
-				<Container y={Math.round(BW * 0.01)} scale={1 + 0.06 * Math.sin(animT * 2.6)}>
-					{#if medallionFrames.length > 0}
-						<AnimatedSprite
-							textures={medallionFrames}
-							anchor={0.5}
-							width={Math.round(BW * 0.20)}
-							height={Math.round(BW * 0.20 * (443 / 485))}
-							animationSpeed={0.14}
-							loop={true}
-							play={true}
-						/>
-					{:else}
-						<Sprite
-							key="fsMedallion"
-							anchor={{ x: 0.5, y: 0.5 }}
-							width={Math.round(BW * 0.20)}
-							height={Math.round(BW * 0.20 * (273 / 300))}
-						/>
-					{/if}
-				</Container>
-			{/if}
+			<!-- Scatter medallion (animated) — gentle breathing zoom, same feel as the outro medallion.
+			     Sits in the gap between the description and the counter. Shown in every layout; its
+			     size/position per-layout comes from L.medW / L.medY. -->
+			<Container y={Math.round(BW * L.medY)} scale={1 + 0.06 * Math.sin(animT * 2.6)}>
+				{#if medallionFrames.length > 0}
+					<AnimatedSprite
+						textures={medallionFrames}
+						anchor={0.5}
+						width={Math.round(BW * L.medW)}
+						height={Math.round(BW * L.medW * (443 / 485))}
+						animationSpeed={0.14}
+						loop={true}
+						play={true}
+					/>
+				{:else}
+					<Sprite
+						key="fsMedallion"
+						anchor={{ x: 0.5, y: 0.5 }}
+						width={Math.round(BW * L.medW)}
+						height={Math.round(BW * L.medW * (273 / 300))}
+					/>
+				{/if}
+			</Container>
 
 			<!-- Number frame (no baked-in number) -->
 			<Sprite

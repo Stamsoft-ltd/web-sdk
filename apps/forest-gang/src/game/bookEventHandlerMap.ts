@@ -367,6 +367,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			eventEmitter.broadcast({ type: 'freeSpinCounterHide' });
 			stateUi.freeSpinCounterShow = false;
 			await eventEmitter.broadcastAsync({ type: 'transition' });
+			// Return to the base background NOW — while the transition veil still covers the screen —
+			// so the darker bonus background (and the disabled portrait top/bottom shadow) don't linger
+			// after the bonus. Without this, bonusMode only cleared on the NEXT spin's reveal, leaving
+			// the logo area dimmed. Mirrors the entry, which swaps INTO the bonus bg under the veil.
+			stateGameDerived.resetBonusState();
 			await eventEmitter.broadcastAsync({ type: 'uiShow' });
 			await eventEmitter.broadcastAsync({ type: 'drawerUnfold' });
 			eventEmitter.broadcast({ type: 'drawerButtonHide' });
@@ -418,14 +423,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	finalWin: async () => {
 		// Round over — make sure the payline loop isn't left ringing.
 		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
-		// Base round: clear all bonus presentation.
-		// Feature round: return gameplay to base, but keep the selected symbol visible until
-		// the next round starts. Skip-all-animation used to hit this event and hide it too early.
-		if (stateGame.gameType === 'basegame') {
-			stateGameDerived.resetBonusState();
-		} else if (stateGame.gameType === 'feature') {
+		// Round over — clear all bonus presentation (base AND feature). Feature previously kept the
+		// selected-symbol panel visible until the next spin, but that left the "FEATURE" rail/badge
+		// lingering in the idle base game, so we now clear it here at the true end of the round.
+		if (stateGame.gameType === 'basegame' || stateGame.gameType === 'feature') {
 			stateGame.gameType = 'basegame';
-			resetRoundVisualState();
+			stateGameDerived.resetBonusState();
 		}
 	},
 	createBonusSnapshot: async (bookEvent: BookEventOfType<'createBonusSnapshot'>) => {

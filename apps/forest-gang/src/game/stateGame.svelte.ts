@@ -97,7 +97,6 @@ export type MultiplierSymbol = {
 export const stateGame = $state({
 	board,
 	gameType: 'basegame' as GameType,
-	multiplierBoard: [] as (MultiplierSymbol | undefined)[][],
 	scatterCounter: 0,
 	selectedBonusSymbol: null as SymbolName | null,
 	bonusMode: null as 'freegame' | 'superspin' | 'feature' | null,
@@ -181,7 +180,9 @@ const getBoardOffset = () => {
 const _FRAME_MARGIN = 1.04;
 const _FRAME_INNER_W_FRAC = 0.762;
 const _FRAME_ASPECT_H_W = 2364 / 3220;
-const _FRAME_ANCHOR_Y = 0.515; // = slot_pad window centre y (grid centred vertically)
+const _FRAME_ANCHOR_Y = 0.502; // grid centre y as a fraction of frameH (tuned so the top gap to the
+// top log equals the bottom gap to the bottom log — the drawn frame's V_SQUASH raised the bottom log,
+// so the grid needed to move up to stay centred between the two logs)
 const _FRAME_EXTRA_SCALE = 1.30 / 1.27;
 const PORTRAIT_FRAME_FILL = 1.0; // portrait: mobile frame fills the full canvas width
 const PORTRAIT_TOP_OFFSET = 236; // portrait: push frame down from the top (main-layout units)

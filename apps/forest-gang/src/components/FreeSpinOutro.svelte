@@ -17,7 +17,7 @@
 	import { waitForResolve } from 'utils-shared/wait';
 	import { CanvasSizeRectangle } from 'components-layout';
 	import { OnMount } from 'components-shared';
-	import { stateI18nDerived } from 'state-shared';
+	import { stateI18nDerived, stateBet } from 'state-shared';
 
 	import { getContext } from '../game/context';
 	import { WIN_GRADIENT } from '../game/goldGradient';
@@ -90,7 +90,16 @@
 		freeSpinOutroCountUp: async (emitterEvent) => {
 			amount = emitterEvent.amount;
 			winLevelData = emitterEvent.winLevelData;
-			await waitForResolve((resolve) => (oncomplete = resolve));
+			// Autoplay: let the count-up finish, hold briefly, then auto-advance (no manual press needed).
+			let autoTimer = 0;
+			await waitForResolve((resolve) => {
+				oncomplete = resolve;
+				if (stateBet.autoSpinsCounter !== 0) {
+					const dur = (emitterEvent.winLevelData?.presentDuration ?? 0) + 1800;
+					autoTimer = setTimeout(resolve, dur) as unknown as number;
+				}
+			});
+			clearTimeout(autoTimer);
 		},
 	});
 </script>

@@ -78,7 +78,19 @@
 			winLevelData = emitterEvent.winLevelData;
 			breatheScale = 1;
 			isCountingUp = true;
+			// Autoplay: board-animation (big) wins otherwise wait for a manual press. Auto-dismiss after
+			// the count-up finishes + a readable hold so autoplay keeps flowing. (Non-board wins already
+			// self-resolve via the WinCountUpProvider oncomplete below.)
+			let autoTimer = 0;
+			if (stateBet.autoSpinsCounter !== 0 && emitterEvent.winLevelData?.animation) {
+				const dur = (emitterEvent.winLevelData.presentDuration ?? 0) + 1800;
+				autoTimer = setTimeout(() => {
+					context.stateGame.paylineSnap = true;
+					oncomplete();
+				}, dur) as unknown as number;
+			}
 			await waitForResolve((resolve) => (oncomplete = resolve));
+			clearTimeout(autoTimer);
 			isCountingUp = false;
 		},
 	});
