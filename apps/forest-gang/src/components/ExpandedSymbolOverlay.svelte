@@ -77,7 +77,10 @@
 	const lowAnimFrames = $derived.by(() => {
 		const animKey = expanded && LOW_SYMBOLS.has(expanded.symbol) ? LOW_WIN_ANIM_KEY[expanded.symbol] : undefined;
 		if (!animKey) return [];
-		const t = (context.stateApp.loadedAssets?.[animKey] ?? []) as Texture[];
+		let t = (context.stateApp.loadedAssets?.[animKey] ?? []) as Texture[];
+		// Drop the fade-in/out edge frames that show the letter's enclosed counter as a black hole
+		// (matches Board.svelte's LETTER_WIN_TRIM_*). Keeps the ping-pong loop clean.
+		if (t.length > 14) t = t.slice(7, t.length - 3);
 		return t.length ? [...t, ...t.slice(1, -1).reverse()] : [];
 	});
 

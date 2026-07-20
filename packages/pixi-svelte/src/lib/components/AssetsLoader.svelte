@@ -12,11 +12,17 @@
 	const context = getContextApp();
 
 	let preLoaded = $state(false);
+	let deferLoaded = $state(false);
 
+	// Main gating pass: everything that is neither preloaded nor deferred. `context.stateApp.loaded`
+	// (and the loading screen) waits only on THIS set, so the game becomes playable without waiting
+	// on the deferred (bonus / win / free-spin) assets.
 	const assetNameList = $derived(
 		context.stateApp.assets
 			? Object.keys(context.stateApp.assets).filter(
-					(key) => Boolean(context.stateApp.assets?.[key].preload) === false,
+					(key) =>
+						Boolean(context.stateApp.assets?.[key].preload) === false &&
+						Boolean(context.stateApp.assets?.[key].defer) === false,
 				)
 			: [],
 	);
@@ -25,6 +31,15 @@
 		context.stateApp.assets
 			? Object.keys(context.stateApp.assets).filter(
 					(key) => context.stateApp.assets?.[key].preload === true,
+				)
+			: [],
+	);
+
+	// Deferred pass: streamed in the background AFTER the game is interactive (see effect below).
+	const deferredNameList = $derived(
+		context.stateApp.assets
+			? Object.keys(context.stateApp.assets).filter(
+					(key) => context.stateApp.assets?.[key].defer === true,
 				)
 			: [],
 	);
@@ -88,6 +103,24 @@
 						};
 				}
 				context.stateApp.loaded = true;
+			})();
+		}
+	});
+
+	// Deferred assets: load in the background once the game is interactive (`loaded` is set), merging
+	// each into loadedAssets as it arrives. Never gates playability — render paths fall back until then.
+	$effect(() => {
+		if (context.stateApp.loaded && !deferLoaded) {
+			deferLoaded = true;
+			(async () => {
+				if (deferredNameList.length > 0) {
+					const deferredAssets = await loadAssets(deferredNameList);
+					if (deferredAssets)
+						context.stateApp.loadedAssets = {
+							...context.stateApp.loadedAssets,
+							...deferredAssets,
+						};
+				}
 			})();
 		}
 	});

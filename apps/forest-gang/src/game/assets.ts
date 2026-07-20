@@ -1,12 +1,4 @@
 const assets = {
-	loader: {
-		type: 'spine',
-		src: {
-			atlas: './assets/spines/loader/loader.atlas',
-			skeleton: './assets/spines/loader/loader.json',
-			scale: 2,
-		},
-	},
 
 
 
@@ -48,10 +40,6 @@ const assets = {
 	baseBgVideo: {
 		type: 'sprite',
 		src: './assets/components/backgrounds/basegame_background.mp4',
-	},
-	reelsFrame: {
-		type: 'sprite',
-		src: './assets/components/frames/reels_frame.webp?v=20260623',
 	},
 	splash: {
 		type: 'sprite',
@@ -411,7 +399,7 @@ const assets = {
 	// Cache-busted (?v=…) like the animal win anims — a stale/broken cached copy silently fails to
 	// load (AssetsLoader swallows the error), dropping the key so winning letters fall back to the
 	// old cracked static win tile instead of animating. The version query forces a fresh fetch.
-	tenWinAnim:      { type: 'spriteSheet', src: './assets/sprites/tenWinAnim/ten_win_anim.json?v=20260720c' },
+	tenWinAnim:      { type: 'spriteSheet', src: './assets/sprites/tenWinAnim/ten_win_anim.json?v=20260721' },
 	aWinAnim:        { type: 'spriteSheet', src: './assets/sprites/aWinAnim/a_win_anim.json?v=20260720c' },
 	jWinAnim:        { type: 'spriteSheet', src: './assets/sprites/jWinAnim/j_win_anim.json?v=20260720c' },
 	kWinAnim:        { type: 'spriteSheet', src: './assets/sprites/kWinAnim/k_win_anim.json?v=20260720c' },
@@ -424,5 +412,33 @@ const assets = {
 		preload: true,
 	},
 } as const;
+
+// Bonus / win / free-spin assets — none are needed for the first spins, so stream them in the
+// BACKGROUND after the game is interactive (AssetsLoader's deferred pass) instead of blocking first
+// playability on them. Render paths fall back to static art until each arrives, and the whole set
+// finishes within a couple seconds of the game becoming playable — long before a bonus can trigger.
+// This roughly halves the initial load. Keep base-game essentials (symbols, base bg, board frame,
+// HUD, idle animal blinks, sounds) OUT of this list.
+const DEFERRED_KEYS: readonly string[] = [
+	// Bonus backgrounds + entry/exit spine
+	'bonusSuperBgVideo', 'bonusNormalBgVideo', 'transition',
+	// Deer reveal (bonus symbol picker)
+	'deerPresenter', 'deerPresenterMobile', 'deerPresenterAnim',
+	// Win-tier boards + emblem + big-win/global-multiplier spines
+	'sweetWinBoard', 'wildWinBoard', 'epicWinBoard', 'mythicWinBoard', 'legendaryWinBoard',
+	'maxWinScreen', 'winEmblemP', 'bigwin', 'globalMultiplier',
+	// Free-spin intro/outro popup + scatter medallion
+	'fsIntro', 'fsMedallion', 'fsMedallionAnim',
+	// Win coins
+	'coins', 'pCoins',
+	// Expanded-symbol animations (animals) + board win animations (animals + letters)
+	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
+	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
+	'tenWinAnim', 'aWinAnim', 'jWinAnim', 'kWinAnim', 'qWinAnim',
+];
+for (const key of DEFERRED_KEYS) {
+	const entry = (assets as Record<string, { defer?: boolean } | undefined>)[key];
+	if (entry) entry.defer = true;
+}
 
 export default assets;

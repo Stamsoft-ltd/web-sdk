@@ -66,10 +66,19 @@
 		K: 'kWinAnim',
 		Q: 'qWinAnim',
 	};
+	// The card-letter win videos fade IN and OUT through black, so the first ~7 and last ~3 frames show
+	// the enclosed counter of 0 / A / Q as a solid black hole (before the sparkle glow fills it). Drop
+	// those edge frames so the ping-pong loop stays clean. Animal win videos are full-frame (no counter),
+	// so they're left untrimmed.
+	const LETTER_WIN_TRIM_START = 7;
+	const LETTER_WIN_TRIM_END = 3;
 	const winAnimTextures = $derived.by(() => {
 		const map: Partial<Record<SymbolName, Texture[]>> = {};
 		for (const [sym, key] of Object.entries(WIN_ANIM_KEY)) {
-			const t = (context.stateApp.loadedAssets?.[key] ?? []) as Texture[];
+			let t = (context.stateApp.loadedAssets?.[key] ?? []) as Texture[];
+			if (LOW_SYMBOLS_SET.has(sym as SymbolName) && t.length > LETTER_WIN_TRIM_START + LETTER_WIN_TRIM_END + 4) {
+				t = t.slice(LETTER_WIN_TRIM_START, t.length - LETTER_WIN_TRIM_END);
+			}
 			if (t.length) map[sym as SymbolName] = [...t, ...t.slice(1, -1).reverse()];
 		}
 		return map;

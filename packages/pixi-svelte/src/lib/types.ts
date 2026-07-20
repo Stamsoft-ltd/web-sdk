@@ -31,7 +31,10 @@ export type RawAsset = RawSpine | RawSprite | RawSprites | RawSpriteSheet | RawA
 export type RawType = 'spine' | 'sprite' | 'sprites' | 'spriteSheet' | 'font' | 'audio';
 
 export type SpineSrc = { skeleton: string; atlas: string; scale?: number };
-export type Asset = { type: RawType; src: string | SpineSrc; preload?: boolean };
+// preload: loaded BEFORE the loading screen paints (must be ready immediately).
+// defer:   loaded AFTER the game is interactive (`loaded` is set), streamed in the background so it
+//          doesn't delay first playability. Assets with neither flag load in the main gating pass.
+export type Asset = { type: RawType; src: string | SpineSrc; preload?: boolean; defer?: boolean };
 export type Assets = PIXI.Dict<Asset>;
 
 export type ParticleSpawnOption =
