@@ -25,8 +25,8 @@
 		<Sprite
 			key="pressPlayLogo"
 			anchor={{ x: 1, y: 0 }}
-			x={canvasRightX}
-			y={canvasTopY + main.height * 0.002}
+			x={canvasRightX - main.width * 0.016}
+			y={canvasTopY + main.height * 0.025}
 			width={main.width * 0.072}
 			height={(main.width * 0.072) / PP_ASPECT}
 		/>

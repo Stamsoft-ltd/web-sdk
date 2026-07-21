@@ -321,9 +321,21 @@ const landscapeCapsuleLayout = () => {
 	const canvasTopY = main.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1));
 	// Anchor the FULL sprite box (not just the visible glass) below the screen top, so the tube's
 	// top cap art is never clipped — the capsule starts near the top but stays fully on screen.
-	const tubeY = canvasTopY + main.height * 0.02 + tubeH * 0.5;
+	let tubeY = canvasTopY + main.height * 0.02 + tubeH * 0.5;
 	const symSize = visibleW * 0.66;
-	const visibleBottom = tubeY + visibleH * 0.5;
+	let visibleBottom = tubeY + visibleH * 0.5;
+	// On very short landscape screens (e.g. 400×225) the board — and this board-derived tube — shrinks,
+	// so the top-anchored capsule + buy-bonus float near the top with dead space below. There, slide the
+	// whole group down so it sits near the bottom. Taller landscape screens keep the top anchor (the
+	// tube already fills the gutter), so this doesn't disturb them.
+	const canvasPxH = stateLayoutDerived.canvasSizes().height;
+	if (canvasPxH <= 320) {
+		const canvasBottomY = main.height * 0.5 + canvasPxH / (2 * (main.scale || 1));
+		const buyReserve = visibleW * 1.2; // gap + buy-bonus button + bottom margin (virtual units)
+		const shift = Math.max(0, canvasBottomY - visibleBottom - buyReserve);
+		tubeY += shift;
+		visibleBottom += shift;
+	}
 	return { colX, tubeY, tubeW, tubeH, visibleW, visibleH, visibleBottom, symSize, gridHalfW, gridHalfH };
 };
 

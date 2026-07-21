@@ -2000,10 +2000,10 @@
 		.hud-shell[data-layout='landscape'] .ls-bet-val .value {
 			font-size: clamp(0.24rem, 2vh, 0.42rem);
 		}
-		/* Bigger buy-bonus text, forced onto two rows (BUY / BONUS) by the narrow max-width. */
+		/* Small buy-bonus text on two rows (BUY / BONUS) — the tiny button can't take a large label. */
 		.hud-shell[data-layout='landscape'] .ls-buy .buy-btn__label {
-			font-size: clamp(0.26rem, 2.8vh, 0.46rem);
-			max-width: 58%;
+			font-size: clamp(0.17rem, 1.9vh, 0.3rem);
+			max-width: 62%;
 		}
 	}
 </style>
