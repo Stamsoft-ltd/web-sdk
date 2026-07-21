@@ -7,7 +7,7 @@
 	import { backOut, cubicOut } from 'svelte/easing';
 	import { FillGradient } from 'pixi.js';
 	import { MainContainer } from 'components-layout';
-	import { AnimatedSprite, Container, Graphics, Sprite, Text, type LoadedSpriteSheet } from 'pixi-svelte';
+	import { Container, Graphics, Sprite, Text } from 'pixi-svelte';
 	import { stateBet } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
@@ -120,11 +120,6 @@
 	const colX = $derived(cap.colX);
 	const tubeH = $derived(cap.tubeH);
 	const tubeW = $derived(cap.tubeW);
-	// New animated tesla tube (video flipbook, lightning baked in) — same as desktop CapsulePanel.
-	// Falls back to the static glass + procedural crackle until the sheet is loaded.
-	const tubeFrames = $derived(
-		(context.stateApp.loadedAssets?.capsuleTubeAnim ?? []) as LoadedSpriteSheet,
-	);
 	const tubeY = $derived(cap.tubeY);
 	const symSize = $derived(cap.symSize);
 	const gridHalfW = $derived(cap.gridHalfW);
@@ -177,22 +172,8 @@
 		     runs top-to-bottom, with live electricity arcing INSIDE the clear window (masked) — inherits
 		     the portrait/desktop animation. Tube (transparent) -> symbol -> lightning on top. -->
 		<Container x={colX} y={tubeY}>
-			{#if tubeFrames.length > 0}
-				<!-- New animated tesla tube (lightning baked into the frames). Already vertical, so it is
-				     NOT rotated — no procedural crackle needed. -->
-				<AnimatedSprite
-					textures={tubeFrames}
-					anchor={0.5}
-					width={tubeW}
-					height={tubeH}
-					animationSpeed={0.14}
-					loop={true}
-					play={true}
-				/>
-			{:else}
-				<!-- Fallback: rotated static glass tube (width becomes on-screen HEIGHT and vice-versa). -->
-				<Sprite key="capsuleTubeGlass" anchor={0.5} rotation={Math.PI / 2} width={tubeH} height={tubeW} />
-			{/if}
+			<!-- Rotated tube: the sprite's width becomes the on-screen HEIGHT and its height the WIDTH. -->
+			<Sprite key="capsuleTubeGlass" anchor={0.5} rotation={Math.PI / 2} width={tubeH} height={tubeW} />
 			{#if symbolKey}
 				<Container
 					x={symSize * symFx.dx}
@@ -208,39 +189,37 @@
 					/>
 				</Container>
 			{/if}
-			{#if tubeFrames.length === 0}
-				<!-- Fallback procedural electricity in the clear window, clipped to the glass interior. The
-				     bolt art is naturally vertical, so (unlike the horizontal portrait bar) it is NOT rotated. -->
-				<Container>
-					<Graphics
-						isMask
-						draw={(g) => {
-							g.clear();
-							g.beginFill(0xffffff);
-							g.rect(-tubeW * 0.2, -tubeH * 0.24, tubeW * 0.4, tubeH * 0.48);
+			<!-- Live electricity in the clear window, clipped to the glass interior. The bolt art is
+			     naturally vertical, so (unlike the horizontal portrait bar) it is NOT rotated here. -->
+			<Container>
+				<Graphics
+					isMask
+					draw={(g) => {
+						g.clear();
+						g.beginFill(0xffffff);
+						g.rect(-tubeW * 0.2, -tubeH * 0.24, tubeW * 0.4, tubeH * 0.48);
+						g.endFill();
+					}}
+				/>
+				<!-- Pulsing core glow (tall ellipse) so the charge reads between bolt flickers. -->
+				<Graphics
+					blendMode="add"
+					draw={(g) => {
+						g.clear();
+						const steps = 8;
+						for (let s = steps; s >= 1; s--) {
+							const t = s / steps;
+							g.beginFill(0x59b7ff, 0.06 * (1 - t) + 0.015);
+							g.drawEllipse(0, 0, tubeW * 0.15 * t, tubeH * 0.24 * t);
 							g.endFill();
-						}}
-					/>
-					<!-- Pulsing core glow (tall ellipse) so the charge reads between bolt flickers. -->
-					<Graphics
-						blendMode="add"
-						draw={(g) => {
-							g.clear();
-							const steps = 8;
-							for (let s = steps; s >= 1; s--) {
-								const t = s / steps;
-								g.beginFill(0x59b7ff, 0.06 * (1 - t) + 0.015);
-								g.drawEllipse(0, 0, tubeW * 0.15 * t, tubeH * 0.24 * t);
-								g.endFill();
-							}
-						}}
-					/>
-					<Sprite key="capsuleCrackle" anchor={0.5} width={tubeW * 0.42} height={tubeH * 0.5} alpha={crackleA} blendMode="add" />
-					<Sprite key="capsuleCrackle" anchor={0.5} width={-tubeW * 0.42} height={tubeH * 0.5} alpha={crackleB} blendMode="add" />
-					<Sprite key="capsuleLightning" anchor={0.5} width={tubeW * 0.46} height={tubeH * 0.56} alpha={arcFlicker} blendMode="add" />
-					<Sprite key="capsuleLightning" anchor={0.5} width={tubeW * 0.34} height={tubeH * 0.46} alpha={arcFlicker} />
-				</Container>
-			{/if}
+						}
+					}}
+				/>
+				<Sprite key="capsuleCrackle" anchor={0.5} width={tubeW * 0.42} height={tubeH * 0.5} alpha={crackleA} blendMode="add" />
+				<Sprite key="capsuleCrackle" anchor={0.5} width={-tubeW * 0.42} height={tubeH * 0.5} alpha={crackleB} blendMode="add" />
+				<Sprite key="capsuleLightning" anchor={0.5} width={tubeW * 0.46} height={tubeH * 0.56} alpha={arcFlicker} blendMode="add" />
+				<Sprite key="capsuleLightning" anchor={0.5} width={tubeW * 0.34} height={tubeH * 0.46} alpha={arcFlicker} />
+			</Container>
 		</Container>
 
 		<!-- ALL WINS (reward) + FREE SPINS boxes, left gutter — only during a bonus. -->
