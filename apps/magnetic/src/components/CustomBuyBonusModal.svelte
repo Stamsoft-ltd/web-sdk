@@ -317,8 +317,8 @@
 		flex-shrink: 0;
 		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(17px, 1.6vw, 28px);
-		letter-spacing: 0.03em;
+		font-size: clamp(14px, 1.32vw, 23px);
+		letter-spacing: 0.02em;
 		white-space: nowrap;
 		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
 		-webkit-background-clip: text; background-clip: text;
@@ -341,8 +341,8 @@
 		justify-content: center; /* vertical centre; align-items:stretch (default) lets text wrap to full width */
 		font-family: 'Inter', sans-serif;
 		font-weight: 400;
-		font-size: clamp(12px, 1.1vw, 18px);
-		line-height: 1.28;
+		font-size: clamp(11px, 0.98vw, 16px);
+		line-height: 1.26;
 		letter-spacing: 0.02em;
 		color: #d7d7d7;
 	}
@@ -523,8 +523,8 @@
 		gap: calc(var(--bb-card) * 0.015);
 		padding: calc(var(--bb-card) * 0.05) calc(var(--bb-card) * 0.06);
 	}
-	.panel:not(.portrait) .card-title  { font-size: calc(var(--bb-card) * 0.076); }
-	.panel:not(.portrait) .card-desc   { font-size: calc(var(--bb-card) * 0.046); min-height: calc(var(--bb-card) * 0.315); }
+	.panel:not(.portrait) .card-title  { font-size: calc(var(--bb-card) * 0.064); }
+	.panel:not(.portrait) .card-desc   { font-size: calc(var(--bb-card) * 0.042); min-height: calc(var(--bb-card) * 0.315); }
 	.panel:not(.portrait) .card-icon-slot { height: calc(var(--bb-card) * 0.235); margin-top: calc(var(--bb-card) * 0.025); }
 	.panel:not(.portrait) .card-mult   { font-size: calc(var(--bb-card) * 0.075); }
 	.panel:not(.portrait) .card-price  { font-size: calc(var(--bb-card) * 0.055); }

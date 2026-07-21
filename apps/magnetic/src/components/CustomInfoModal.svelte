@@ -539,15 +539,15 @@
 		color: transparent;
 	}
 	.stat-txt b {
-		font-size: clamp(16px, 3.9cqmin, 39px);
+		font-size: clamp(13px, 3.1cqmin, 30px);
 		font-weight: 900;
 		letter-spacing: 0.01em;
 	}
 	.stat-txt i {
 		font-style: normal;
-		font-size: clamp(10px, 2.1cqmin, 19px);
+		font-size: clamp(9px, 1.8cqmin, 16px);
 		font-weight: 700;
-		letter-spacing: 0.06em;
+		letter-spacing: 0.05em;
 	}
 	/* The CLUSTER box's value word is longer, so keep it clearly smaller than the other boxes. */
 	.stat--sm .stat-txt b {
@@ -559,12 +559,12 @@
 	/* The first box ("7X7 / REELS") has the shortest value, so scale it up and track it out
 	   so the text fills the box like the longer-labelled ones. */
 	.ov-stats .stat:first-child .stat-txt b {
-		font-size: clamp(18px, 4.6cqmin, 47px);
-		letter-spacing: 0.05em;
+		font-size: clamp(14px, 3.5cqmin, 36px);
+		letter-spacing: 0.04em;
 	}
 	.ov-stats .stat:first-child .stat-txt i {
-		font-size: clamp(11px, 2.6cqmin, 21px);
-		letter-spacing: 0.22em;
+		font-size: clamp(9px, 2.2cqmin, 18px);
+		letter-spacing: 0.16em;
 	}
 
 	/* ── Shared page scaffold (pages 2–6) ── */
@@ -1129,10 +1129,10 @@
 			align-items: flex-start;
 		}
 		.stat-txt b {
-			font-size: clamp(15px, 4.8cqmin, 27px);
+			font-size: clamp(13px, 4.0cqmin, 22px);
 		}
 		.stat-txt i {
-			font-size: clamp(10px, 2.7cqmin, 17px);
+			font-size: clamp(9px, 2.3cqmin, 15px);
 		}
 
 		/* ── Pages 2–6: one column each ── */
