@@ -189,11 +189,13 @@
 							<Sprite key="fsPanel" anchor={0.5} width={PW} height={PH} />
 
 							<!-- Opaque navy interior painted over the panel art (inside the frame) so the popup face is
-							     uniformly lit and the art's near-black lower gradient stays hidden behind it. -->
+							     uniformly lit and the art's near-black lower gradient stays hidden behind it. A PLAIN
+							     rect (not roundRect) is used: roundRect's fill only rendered its top half on some GPUs,
+							     leaving the lower panel dark. A rect is two triangles and always fills fully. -->
 							<Graphics
 								draw={(g) => {
 									g.clear();
-									g.roundRect(-PW * 0.41, -PH * 0.43, PW * 0.82, PH * 0.86, PW * 0.02);
+									g.rect(-PW * 0.435, -PH * 0.44, PW * 0.87, PH * 0.88);
 									g.fill(PANEL_FILL);
 								}}
 							/>
