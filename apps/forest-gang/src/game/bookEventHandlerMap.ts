@@ -76,6 +76,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
 		// A new spin begins — stop the previous win's payline loop if it's still playing.
 		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
+		// Clear the HUD's per-round WIN readout at the start of every spin (base + each free spin),
+		// so it shows THIS spin's win rather than lingering from the previous one.
+		stateGame.roundWin = 0;
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
 		const hasAnticipation = bookEvent.anticipation?.some(Boolean);
 		if (isBonusGame || hasAnticipation) {
@@ -227,6 +230,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		console.info('[forest-gang] ALL IN global multiplier update', bookEvent.multiplier);
 	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>) => {
+		// HUD WIN readout: this spin's win only (per round) — the cumulative bonus total lives in
+		// winBookEventAmount / EARNED.
+		stateGame.roundWin = bookEvent.totalWin;
 		// Loop the payline-win jingle for the whole win sequence; stopped after the animation below.
 		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_payline_win' });
 		// Start Deal It multiplier cycling for every winning bonus spin — always spins, lands on 1x unless multiplier fires
@@ -339,6 +345,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	freeSpinEnd: async (bookEvent: BookEventOfType<'freeSpinEnd'>) => {
 		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
 		const isFeatureSpin = stateGame.bonusMode === 'feature';
+		// Bonus is over → the HUD WIN readout now shows the GRAND TOTAL for the bonus (until the next
+		// spin's reveal clears it). During the bonus it was per-round (see winInfo).
+		stateGame.roundWin = bookEvent.amount;
 		// Clear expanding symbol overlay before total board shows
 		stateGame.expandedSymbol = null;
 		stateGame.paylineWins = [];

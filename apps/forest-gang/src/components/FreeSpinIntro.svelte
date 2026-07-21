@@ -7,7 +7,7 @@
 
 <script lang="ts">
 	import { CanvasSizeRectangle } from 'components-layout';
-	import { stateI18nDerived, stateBet } from 'state-shared';
+	import { stateI18nDerived } from 'state-shared';
 	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
 	import { AnimatedSprite, Container, Sprite, Text } from 'pixi-svelte';
@@ -57,8 +57,8 @@
 				},
 	);
 
-	// Autoplay: how long the intro holds on screen before auto-advancing (readable, then continues).
-	const AUTO_ADVANCE_MS = 1800;
+	// How long the intro holds on screen before auto-advancing on its own (readable, then continues).
+	const AUTO_ADVANCE_MS = 3000;
 
 	let show = $state(false);
 	let freeSpinsFromEvent = $state(0);
@@ -137,11 +137,12 @@
 		freeSpinIntroHide: () => (show = false),
 		freeSpinIntroUpdate: async (emitterEvent) => {
 			freeSpinsFromEvent = emitterEvent.totalFreeSpins;
-			// Autoplay: auto-advance after a readable hold instead of stalling on a manual press.
+			// Auto-advance after a readable hold instead of waiting for a manual press. A press still
+			// continues sooner.
 			let autoTimer = 0;
 			await waitForResolve((resolve) => {
 				oncomplete = resolve;
-				if (stateBet.autoSpinsCounter !== 0) autoTimer = setTimeout(resolve, AUTO_ADVANCE_MS) as unknown as number;
+				autoTimer = setTimeout(resolve, AUTO_ADVANCE_MS) as unknown as number;
 			});
 			clearTimeout(autoTimer);
 		},

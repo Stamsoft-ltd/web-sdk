@@ -14,7 +14,9 @@
 	// Fractions mirror stateGame.svelte.ts MOBILE_FRAME_INNER_*.
 	const MOBILE_INNER_W = 0.965;
 	const MOBILE_INNER_H = 0.78;
-	const mFrameW = $derived((board.width * board.boardScale) / MOBILE_INNER_W);
+	// +1% width: the exact-fit frame left a ~1px sliver of bright background visible at the left/right
+	// screen edges (subpixel rounding of the board scale) — slight overscan guarantees full bleed.
+	const mFrameW = $derived(((board.width * board.boardScale) / MOBILE_INNER_W) * 1.01);
 	const mFrameH = $derived((board.height * board.boardScale) / MOBILE_INNER_H);
 
 	// --- Desktop / portrait: rope-framed slot_pad (top-anchored) ---

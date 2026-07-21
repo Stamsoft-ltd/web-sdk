@@ -83,6 +83,14 @@ export default {
 			{ reel: 0, row: 1 }, { reel: 1, row: 1 }, { reel: 2, row: 1 }, { reel: 3, row: 1 }, { reel: 4, row: 1 },
 		],
 	},
+	expandedSquirrel: {
+		type: 'expandedSymbolReveal',
+		symbol: 'SQUIRREL',
+		reels: [0, 1, 2, 3, 4],
+		positions: [
+			{ reel: 0, row: 1 }, { reel: 1, row: 1 }, { reel: 2, row: 1 }, { reel: 3, row: 1 }, { reel: 4, row: 1 },
+		],
+	},
 	// TEMP-DEBUG: rabbit expand animation for user testing (was setWin: { type: 'setWin', amount: 300, winLevel: 3 })
 	setWin: { type: 'setWin', amount: 2500, winLevel: 6 }, // TEMP-DEBUG: no-P board check
 	freeSpinEnd: { type: 'freeSpinEnd', amount: 2300, winLevel: 6 },

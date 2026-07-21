@@ -33,9 +33,19 @@
 	const useAnimDeer = $derived(deerFrames.length > 0);
 	const MOBILE_RATIO = 360 / 730;
 	const ANIM_RATIO = 273 / 444; // animated frame aspect (measured)
-	// Portrait: rest the deer's bottom at this fraction of screen height (above the HUD) instead of the
-	// screen edge, so the smaller animated deer + the board/symbol it holds stay fully visible.
-	const PORTRAIT_DEER_BOTTOM = 0.82;
+	// Portrait: the deer's bottom rests ON the HTML HUD bar (rising from behind it), not floating in
+	// mid-air. The bar's top is computed from the canvas bottom minus the HUD block (bar 0.15u +
+	// gap 6 + stats ≈0.132u + 10px padding, u = the HUD unit), then converted into main-layout
+	// coordinates (the MainContainer maps mainY → screen via the centred scale transform).
+	const portraitDeerBottomY = $derived.by(() => {
+		const canvas = context.stateLayoutDerived.canvasSizes();
+		const ml = context.stateLayoutDerived.mainLayout();
+		const u = Math.min(412, canvas.width * 0.97);
+		const hudH = u * 0.282 + 16; // bar + gap + stats + bottom padding (matches HudHtml --u CSS)
+		const screenY = canvas.height - hudH + 10; // slight overlap so the dress meets the wood
+		const offset = (canvas.height - ml.height * ml.scale) / 2;
+		return (screenY - offset) / (ml.scale || 1);
+	});
 	const DEER_RATIO = $derived(useAnimDeer ? ANIM_RATIO : isPortrait ? MOBILE_RATIO : 1087 / 1447);
 	// Empty-board interior centre + height as a fraction of the deer image (per art).
 	const PLACEHOLDER = $derived(
@@ -238,7 +248,7 @@
 	<MainContainer>
 		<Container
 			x={main.width / 2}
-			y={isPortrait ? main.height * PORTRAIT_DEER_BOTTOM + slideY.current : main.height / 2}
+			y={isPortrait ? portraitDeerBottomY + slideY.current : main.height / 2}
 			scale={isPortrait ? 1 : deerScale.current}
 			pivot={anchorToPivot({
 				anchor: isPortrait ? { x: 0.5, y: 1 } : 0.5,

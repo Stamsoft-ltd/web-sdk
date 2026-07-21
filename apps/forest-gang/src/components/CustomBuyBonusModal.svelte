@@ -38,6 +38,18 @@
 	// descriptions fit; desktop has room to spare and keeps the roomier original spacing.
 	const isCompactRow = $derived(layoutType === 'landscape' || layoutType === 'tablet');
 
+	// Compact one-row mode (Stake popup S, landscape phones): instead of guessing device sizes with
+	// media-query breakpoints, measure whether the REGULAR layout fits. A regular card is a square
+	// sized by the panel width ((panel − padding − 3 gaps) / 4); the title, bet bar and card text
+	// need ~200px on top of that. Shorter than that → compact (4:5 cards, slim title/bet bar).
+	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
+	const isCompactShort = $derived.by(() => {
+		if (isPortrait) return false;
+		const panelWidth = Math.min(1120, canvas.width * 0.97);
+		const cardSize = (panelWidth - 32 - 48) / 4;
+		return canvas.height < cardSize + 210;
+	});
+
 	// Cost multipliers match config.betModes: CHANCE 2×, FEATURE 20×, BONUS 100×, SUPER 400×.
 	// "DEAL IT" is the 100× (BONUS) mode, "ALL IN" the 400× (SUPER) mode.
 	const betAmount   = $derived(stateBet.betAmount);
@@ -112,7 +124,7 @@
 <button class="backdrop" type="button" aria-label="Close" tabindex="-1" onclick={props.onclose}></button>
 
 <!-- Panel -->
-<div class="panel" class:panel--portrait={isPortrait} role="dialog" aria-modal="true">
+<div class="panel" class:panel--portrait={isPortrait} class:panel--compact={isCompactShort} role="dialog" aria-modal="true">
 
 	<button class="close-btn" type="button" style={`background-image:url('${closeBtnBg}')`} aria-label="Close" onclick={props.onclose}><span class="close-btn__x">✕</span></button>
 
@@ -284,9 +296,11 @@
 		background-clip: text; -webkit-background-clip: text; color: transparent;
 	}
 
-	/* One row of 4 cards with gaps between them (Figma node 2349-2074) */
+	/* One row of 4 cards with gaps between them (Figma node 2349-2074).
+	   align-items: center, NOT stretch — stretch overrides the cards' square aspect-ratio when the
+	   host constrains the row height (seen in the Stake popup) and squashes the frames flat. */
 	.grid {
-		display: flex; justify-content: center; align-items: stretch;
+		display: flex; justify-content: center; align-items: center;
 		gap: 16px;
 		width: 100%;
 	}
@@ -510,6 +524,122 @@
 		background: linear-gradient(180deg, #ffa90e 15%, #ee960b 70%, #d18005 93%);
 		color: #452b01;
 		box-shadow: 0 0 4px #d98503;
+	}
+
+	/* Compact one-row mode — applied via the MEASURED isCompactShort flag (Stake popup S, landscape
+	   phones), never a guessed media breakpoint: all four cards stay visible in one row with a slim
+	   title and bet bar. Viewports where the regular layout fits (Stake popup L, desktop) never get
+	   this class. */
+	.panel--compact {
+		height: 96dvh;
+		max-height: 96dvh;
+		/* Nearly the full viewport width so the four cards get as wide as possible. */
+		width: calc(100vw - 8px);
+		display: flex;
+		flex-direction: column;
+		padding: 4px 8px 6px;
+		box-sizing: border-box;
+	}
+	/* Slim header/footer so the cards get as much height as possible. */
+	.panel--compact .title {
+		flex: 0 0 auto;
+		margin-bottom: 3px;
+		font-size: 0.6rem;
+	}
+	.panel--compact .close-btn {
+		width: 32px;
+		height: 32px;
+		top: 5px;
+		right: 8px;
+	}
+	.panel--compact .grid {
+		flex: 1 1 auto;
+		min-height: 0;
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		grid-template-rows: minmax(0, 1fr);
+		align-items: center;
+		justify-items: center;
+		gap: 6px;
+	}
+	.panel--compact .grid .card {
+		/* Figma popup-S spec (2712-9693): cards slightly taller than wide, filling the row.
+		   Width-driven with a max-height cap: when the cap bites, the width follows the
+		   aspect-ratio back down, so the frame art never stretches. */
+		width: 100%;
+		height: auto;
+		max-height: 100%;
+		aspect-ratio: 4 / 5;
+	}
+	/* A too-long description clips inside its slot instead of piling onto the price/button. */
+	.panel--compact .grid .card-desc {
+		overflow: hidden;
+	}
+	/* Tiny popups (Stake popup S ≈ 434×294): the cards are only ~95px wide but there is spare
+	   vertical room — stretch them taller (2:3) and drop the decorative icon so the FULL
+	   description text fits (it's the informative part). Fixed small font sizes: the cqw clamps
+	   were tuned for larger cards. Wider compact viewports (landscape phones ≥ 640px) keep the
+	   Figma 4:5 cards with icons. */
+	@media (max-width: 640px) {
+		.panel--compact .grid .card {
+			aspect-ratio: 3 / 5;
+		}
+		.panel--compact .grid .card-inner {
+			width: 75%;
+			/* Bigger bottom padding lifts the ACTIVATE/BUY buttons off the corner leaves. */
+			padding: 16% 0 14%;
+			gap: 5px;
+		}
+		.panel--compact .grid .card-icon-wrap {
+			height: 14px;
+		}
+		.panel--compact .grid .card-title {
+			font-size: 8px;
+			padding: 2px;
+		}
+		.panel--compact .grid .card-desc {
+			font-size: 6px;
+			line-height: 1.2;
+			padding: 1px;
+		}
+		.panel--compact .grid .card-price {
+			font-size: 8px;
+		}
+		.panel--compact .grid .card-btn {
+			width: 65%;
+			font-size: 7px;
+			padding: 1px 0;
+			margin-bottom: 4px;
+		}
+		.panel--compact .close-btn {
+			width: 28px;
+			height: 28px;
+			top: 4px;
+			right: 6px;
+		}
+		.panel--compact .close-btn__x {
+			font-size: 0.8rem;
+		}
+	}
+	/* Compact bet row: smaller coin, labels and − / + buttons (they were HUD-sized). */
+	.panel--compact .bet-bar {
+		flex: 0 0 auto;
+		margin-top: 3px;
+		gap: 8px;
+	}
+	.panel--compact .bet-bar .step-btn {
+		width: 26px;
+		height: 26px;
+	}
+	.panel--compact .bet-bar .bet-coin {
+		width: 18px;
+		height: 23px;
+	}
+	.panel--compact .bet-bar .bet-label {
+		font-size: 8px;
+	}
+	.panel--compact .bet-bar .bet-amount {
+		font-size: 9px;
 	}
 
 	/* ==================== Portrait: full-screen scrollable card list (Figma 2483-2681) ==================== */

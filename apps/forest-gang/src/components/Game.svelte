@@ -73,11 +73,11 @@
 				children: '',
 				assets: { icon: '', volatility: '', button: '', dialogImage: bonusArt, dialogVolatility: uiRefArt },
 				text: {
-					title: i18nDerived.translate?.('BET MODE BASE TITLE') ?? i18nDerived.gameTitle(),
-					dialog: i18nDerived.translate?.('BET MODE BASE DIALOG') ?? '',
-					button: i18nDerived.translate?.('BET MODE BASE BUTTON') ?? 'PLAY',
-					tickerIdle: i18nDerived.translate?.('BET MODE BASE TICKER IDLE') ?? '',
-					tickerSpin: i18nDerived.translate?.('BET MODE BASE TICKER SPIN') ?? '',
+					title: forestStakeTitle('BET MODE BASE TITLE'),
+					dialog: forestStakeTitle('BET MODE BASE DIALOG'),
+					button: forestStakeTitle('BET MODE BASE BUTTON'),
+					tickerIdle: forestStakeTitle('BET MODE BASE TICKER IDLE'),
+					tickerSpin: forestStakeTitle('BET MODE BASE TICKER SPIN'),
 				},
 				maxWin: 25000,
 			},
@@ -342,18 +342,6 @@
 					],
 				},
 				{
-					kind: 'cards',
-					frame: infoFrame,
-					background: infoPanelBg,
-					title: forestStakeTitle('INFO USER TITLE'),
-					cards: [
-						{ icon: `${infoDir}/icon_reels.webp`, title: forestStakeTitle('INFO USER SPIN TITLE'), text: forestStakeTitle('INFO USER SPIN TEXT') },
-						{ icon: `${infoDir}/icon_rtp.webp`, title: forestStakeTitle('INFO USER BET TITLE'), text: forestStakeTitle('INFO USER BET TEXT') },
-						{ icon: `${infoDir}/icon_maxwin.webp`, title: forestStakeTitle('INFO USER AUTO TITLE'), text: forestStakeTitle('INFO USER AUTO TEXT') },
-						{ icon: `${infoDir}/icon_scatter.webp`, title: forestStakeTitle('INFO USER REPLAY TITLE'), text: forestStakeTitle('INFO USER REPLAY TEXT') },
-					],
-				},
-				{
 					kind: 'uiguide',
 					frame: infoFrame,
 					background: infoPanelBg,
@@ -375,7 +363,16 @@
 		};
 	});
 
-	const forestStakeTitle = (key: string) => i18nDerived.translate?.(key) ?? key;
+	// try/catch: Lingui THROWS (not undefined) when translate is called before the locale is
+	// activated — a mount race that killed the whole component tree in storybook ("Initialising...").
+	// The meta-building $effect re-runs once the locale lands, replacing the raw-key fallbacks.
+	const forestStakeTitle = (key: string) => {
+		try {
+			return i18nDerived.translate?.(key) ?? key;
+		} catch {
+			return key;
+		}
+	};
 
 	onMount(() => (context.stateLayout.showLoadingScreen = true));
 
@@ -413,8 +410,10 @@
 				</MainContainer>
 
 				<MainContainer>
-					<Board />
+					<!-- Anticipations render BEFORE Board so the additive golden glow sits BEHIND the reel
+					     symbols (glows around them) instead of brightening them / their borders on top. -->
 					<Anticipations />
+					<Board />
 				</MainContainer>
 
 				<ExpandedSymbolOverlay />

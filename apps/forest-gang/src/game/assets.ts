@@ -12,7 +12,12 @@ const assets = {
 	// instead of the cropped landscape visualV2.
 	visualPortrait: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bg_mobile_portrait.jpg?v=20260703',
+		src: './assets/components/backgrounds/bg_mobile_portrait.webp?v=20260721',
+	},
+	// Mobile-landscape base background (static forest art; desktop keeps the animated baseBgVideo).
+	baseBgLandscape: {
+		type: 'sprite',
+		src: './assets/components/backgrounds/bg_mobile_landscape.webp?v=20260721',
 	},
 	// Figma top+bottom shadow (node 2792-4133) layered on top of the portrait bg ONLY —
 	// rendered below the board/symbols/logo so it darkens the scene, never the UI.
@@ -31,15 +36,17 @@ const assets = {
 	// Animated bonus backgrounds (video textures; looped/played on demand in Background.svelte).
 	bonusSuperBgVideo: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/superbonus_background.mp4',
+		src: './assets/components/backgrounds/superbonus_background_v2.mp4',
 	},
 	bonusNormalBgVideo: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/normalbonus_background.mp4',
+		src: './assets/components/backgrounds/normalbonus_background_v2.mp4',
 	},
 	baseBgVideo: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/basegame_background.mp4',
+		// NOTE: videos are cache-busted by RENAMING (not ?v= query) — a query string after .mp4 breaks
+		// PIXI's loader-parser match, the load rejects, and the main gate never opens (stuck at 100%).
+		src: './assets/components/backgrounds/basegame_background_v2.mp4',
 	},
 	splash: {
 		type: 'sprite',
@@ -299,6 +306,12 @@ const assets = {
 		type: 'sprite',
 		src: './assets/components/symbols/animal_border.webp?v=20260720b',
 	},
+	// Golden light column glow (2 KB) for the reel anticipation — smooth vertical plateau, feathered
+	// ends, thin god-ray streaks. Rendered additive. Small enough to keep in the main load tier.
+	anticipationGlow: {
+		type: 'sprite',
+		src: './assets/components/frames/anticipation_glow.webp?v=20260721',
+	},
 	// Bamboo/vine column frame (Figma 2145-328) drawn around the expanded symbol reel.
 	expandedFrame: {
 		type: 'sprite',
@@ -372,7 +385,7 @@ const assets = {
 	// does NOT loop seamlessly — play once or ping-pong). Frames: rabbit_money_1..40.
 	rabbitMoney: {
 		type: 'spriteSheet',
-		src: './assets/sprites/rabbitMoney/rabbit_money.json?v=20260716b',
+		src: './assets/sprites/rabbitMoney/rabbit_money.json?v=20260721',
 	},
 	bearMoney: {
 		type: 'spriteSheet',
@@ -380,15 +393,15 @@ const assets = {
 	},
 	foxMoney: {
 		type: 'spriteSheet',
-		src: './assets/sprites/foxMoney/fox_money.json',
+		src: './assets/sprites/foxMoney/fox_money.json?v=20260721',
 	},
 	wolfMoney: {
 		type: 'spriteSheet',
-		src: './assets/sprites/wolfMoney/wolf_money.json',
+		src: './assets/sprites/wolfMoney/wolf_money.json?v=20260721',
 	},
 	squirrelMoney: {
 		type: 'spriteSheet',
-		src: './assets/sprites/squirrelMoney/squirrel_money.json',
+		src: './assets/sprites/squirrelMoney/squirrel_money.json?v=20260721b',
 	},
 	// Board win-state card animations (upper-body window of the same videos, card border baked).
 	rabbitWinAnim:   { type: 'spriteSheet', src: './assets/sprites/rabbitWinNew/rabbit_win.json?v=20260720b' },

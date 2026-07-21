@@ -4,7 +4,7 @@
 	import { cubicOut } from 'svelte/easing';
 
 	import type { Reel } from '../game/stateGame.svelte';
-	import { SYMBOL_W, SYMBOL_SIZE, BOARD_SIZES, BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { SYMBOL_W, BOARD_SIZES, BOARD_GRID_OFFSET_Y } from '../game/constants';
 	import { getContext } from '../game/context';
 
 	type Props = {
@@ -21,15 +21,11 @@
 	const scaleX = $derived(bl.boardScaleX ?? bl.boardScale);
 	const scaleY = $derived(bl.boardScaleY ?? bl.boardScale);
 
-	// Stretches the frame's bottom edge down to the board's bottom; the container y compensates by
-	// half so the TOP edge stays put.
-	const EXTEND_B = SYMBOL_SIZE * 0.17;
-
 	// Show / hide like the old spine: fade IN on appear, fade OUT when the reel stops → oncomplete.
 	const fade = new Tween(0, { duration: 220, easing: cubicOut });
 	fade.set(1);
 
-	// Gentle pulse while the reel anticipates.
+	// Live clock driving the glow flicker + streak shimmer while the reel anticipates.
 	let clock = $state(0);
 	$effect(() => {
 		let raf = 0;
@@ -41,8 +37,9 @@
 		raf = requestAnimationFrame(tick);
 		return () => cancelAnimationFrame(raf);
 	});
-	const pulse = $derived(1 + 0.012 * Math.sin(clock * 5));
-	const glow = $derived(0.85 + 0.15 * Math.abs(Math.sin(clock * 5)));
+	// Two fast, out-of-phase flickers so the layered glow shimmers like fire rather than pulsing evenly.
+	const flickA = $derived(0.7 + 0.5 * Math.abs(Math.sin(clock * 12)));
+	const flickB = $derived(0.55 + 0.6 * Math.abs(Math.sin(clock * 17.3 + 1.3)));
 
 	let stopped = $state(false);
 	$effect(() => {
@@ -63,14 +60,25 @@
 
 <Container
 	x={bl.x + ((props.reel.reelIndex + 0.5) * SYMBOL_W - BOARD_SIZES.width * 0.5) * scaleX}
-	y={bl.y + BOARD_GRID_OFFSET_Y + (EXTEND_B * 0.5 - SYMBOL_SIZE * 0.12) * scaleY}
+	y={bl.y + BOARD_GRID_OFFSET_Y}
 >
-	<!-- Bamboo/vine column frame (Figma 2145-328) replaces the old spine anticipation glow. -->
+	<!-- Golden light column glow (anticipation_glow.webp) — additive, contained to the reel height so
+	     it ends softly at the wooden borders. Two out-of-phase flickering layers for a fire shimmer. -->
+	{@const GH = BOARD_SIZES.height * 1.03 * scaleY}
 	<Sprite
-		key="expandedFrame"
+		key="anticipationGlow"
 		anchor={0.5}
-		width={SYMBOL_W * scaleX * 1.2 * pulse}
-		height={(BOARD_SIZES.height * 1.12 + EXTEND_B) * scaleY * pulse}
-		alpha={fade.current * glow}
+		width={SYMBOL_W * scaleX * 1.62}
+		height={GH}
+		alpha={fade.current * flickA}
+		blendMode="add"
+	/>
+	<Sprite
+		key="anticipationGlow"
+		anchor={0.5}
+		width={SYMBOL_W * scaleX * 1.15}
+		height={GH}
+		alpha={fade.current * flickB}
+		blendMode="add"
 	/>
 </Container>

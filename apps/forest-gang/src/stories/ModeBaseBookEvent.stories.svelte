@@ -111,6 +111,17 @@
 	{template}
 />
 
+<!-- Expanded SQUIRREL symbol (new video animation + thin brown frame). -->
+<Story
+	name="expand (SQUIRREL)"
+	args={templateArgs({
+		skipLoadingScreen: true,
+		data: events.expandedSquirrel,
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
+	})}
+	{template}
+/>
+
 <!-- All 5 animals on the board, every visible cell driven into its win animation, so the new
 	 win videos can be reviewed side by side. -->
 <Story

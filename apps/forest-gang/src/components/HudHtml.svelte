@@ -2,6 +2,8 @@
 	import { OnHotkey } from 'components-shared';
 	import { stateBet, stateBetDerived, stateConfig, stateModal, stateSound } from 'state-shared';
 	import { onDestroy } from 'svelte';
+	import { Tween } from 'svelte/motion';
+	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
@@ -21,6 +23,7 @@
 	const menuBtnFrame = ap('/assets/components/frames/top_menu-button_frame.webp');
 	const soundBtnFrame = ap('/assets/components/frames/top_sound_button_frame.webp');
 	const menuBarFrame = ap('/assets/components/navbar/bar.webp');
+	const menuPopupBg = ap('/assets/components/frames/menu_popup.webp'); // wooden plaque (Figma 3311-2924)
 
 	// Button backgrounds (icon-less frames) — icons are layered on top in markup
 	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.png'); // wooden round — utility buttons
@@ -40,6 +43,7 @@
 
 	// Gold icons layered over the button backgrounds
 	const iconMenu = ap('/assets/hud/icon-info.png');
+	const iconMenuBars = ap('/assets/hud/icon-menu.png'); // hamburger — opens the portrait sound/info menu
 	const iconSound = ap('/assets/hud/icon-volume.png');
 	const iconSoundMuted = ap('/assets/hud/icon-volume-muted.png');
 	const iconMinus = ap('/assets/hud/icon-minus.png');
@@ -169,10 +173,43 @@
 		stateSound.volumeValueMaster = stateSound.volumeValueMaster === 0 ? 50 : 0;
 	};
 
+	// Portrait: the menu (☰) button opens a small popup holding Sound + Info instead of those
+	// living on the bottom bar. Toggles to an ✕ while open.
+	let menuOpen = $state(false);
+	let menuPopEl = $state<HTMLElement | undefined>();
+	let menuBtnEl = $state<HTMLElement | undefined>();
+	const toggleMenu = () => {
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		menuOpen = !menuOpen;
+	};
+	// Close the popup on any interaction outside it (including pressing Spin — which then also spins).
+	$effect(() => {
+		if (!menuOpen) return;
+		const onDown = (event: PointerEvent) => {
+			const t = event.target as Node | null;
+			if ((t && menuPopEl?.contains(t)) || (t && menuBtnEl?.contains(t))) return;
+			menuOpen = false;
+		};
+		window.addEventListener('pointerdown', onDown, true);
+		return () => window.removeEventListener('pointerdown', onDown, true);
+	});
+
 	const openRules = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		menuOpen = false;
 		stateModal.modal = { name: 'gameRules' };
 	};
+
+	// Portrait WIN readout: this spin's win (per round) — during a bonus it shows each round's win,
+	// NOT the cumulative total (that's EARNED). Set to the grand total at bonus end, cleared each
+	// spin. Count-up on a win, snap on the spin-start clear.
+	const winTween = new Tween(0);
+	$effect(() => {
+		const target = context.stateGame.roundWin;
+		winTween.set(target, { duration: target === 0 ? 0 : 650 });
+	});
+	const winValue = $derived(bookEventAmountToCurrencyString(winTween.current));
+	const hasWin = $derived(context.stateGame.roundWin > 0);
 
 	const openPaytable = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
@@ -361,18 +398,45 @@
 <div
 	class="hud-shell"
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}')`}
+	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}')`}
 >
 	{#if isPortrait}
 		<!-- Dedicated portrait HUD (Figma mobile 2792-4133). Desktop/landscape markup below is untouched. -->
 		<div class="pt-hud">
 			<div class="pt-controls">
 				<div class="pt-grp">
-					<button class="pt-round" type="button" onclick={openRules} aria-label="Game rules">
-						<img class="pt-icon" src={iconMenu} alt="menu" />
-					</button>
-					<button class="pt-round" type="button" onclick={toggleSound} aria-label="Sound">
-						<img class="pt-icon" src={isMuted ? iconSoundMuted : iconSound} alt="sound" class:is-muted={isMuted} />
+					<div class="pt-menu-wrap">
+						<!-- Sound / Info popup — anchored directly above the ☰ menu button. -->
+						{#if menuOpen}
+							<div class="pt-menu-pop" role="menu" bind:this={menuPopEl}>
+								<button class="pt-menu-item" type="button" role="menuitem" onclick={toggleSound}>
+									<span class="pt-menu-item__ic">
+										<img src={isMuted ? iconSoundMuted : iconSound} alt="" class:is-muted={isMuted} />
+									</span>
+									<span class="pt-menu-item__label">SOUND</span>
+								</button>
+								<button class="pt-menu-item" type="button" role="menuitem" onclick={openRules}>
+									<span class="pt-menu-item__ic"><img src={iconMenu} alt="" /></span>
+									<span class="pt-menu-item__label">INFO</span>
+								</button>
+							</div>
+						{/if}
+						<button class="pt-round" type="button" onclick={toggleMenu} aria-label="Menu" aria-expanded={menuOpen} bind:this={menuBtnEl}>
+							{#if menuOpen}
+								<span class="pt-round__x">✕</span>
+							{:else}
+								<img class="pt-icon" src={iconMenuBars} alt="menu" />
+							{/if}
+						</button>
+					</div>
+					<button
+						class="pt-buy pt-buy--controls"
+						type="button"
+						disabled={disableBuy}
+						onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
+						aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
+					>
+						<span class="pt-buy__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.58 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
 					</button>
 				</div>
 
@@ -449,15 +513,12 @@
 					</button>
 				</div>
 
-				<button
-					class="pt-buy"
-					type="button"
-					disabled={disableBuy}
-					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
-					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
-				>
-					<span class="pt-buy__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.58 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
-				</button>
+				<!-- WIN readout: shows the current spin win / running bonus total; cleared on next spin.
+				     Hidden (but keeps its slot, so the bet stays centred) until there is a win. -->
+				<div class="pt-win" class:pt-win--hidden={!hasWin}>
+					<span class="pt-win__label">{i18nDerived.win()}</span>
+					<span class="pt-win__value" use:fitText={winValue}>{hasWin ? winValue : ''}</span>
+				</div>
 			</div>
 		</div>
 	{/if}
@@ -556,6 +617,14 @@
 					<img class="ls-icon" src={iconAuto} alt="auto" />
 				</button>
 			</div>
+
+			<!-- WIN readout, bottom-right — mirrors the BALANCE block bottom-left. Same behavior as
+			     portrait: current spin win / running bonus total, cleared on the next spin; keeps its
+			     slot while hidden so nothing shifts. -->
+			<div class="ls-win" class:ls-win--hidden={!hasWin}>
+				<span class="ls-win__label">{i18nDerived.win()}</span>
+				<span class="ls-win__value" use:fitText={winValue}>{hasWin ? winValue : ''}</span>
+			</div>
 		</div>
 	{/if}
 	<div class="hud-bottom">
@@ -602,6 +671,17 @@
 				</div>
 			</div>
 
+			<!-- WIN readout next to BALANCE (same behavior as portrait): current spin win / running
+			     bonus total, cleared on the next spin. Keeps its slot while hidden so nothing shifts. -->
+			<div class="value-pill value-pill--win" class:value-pill--win-hidden={!hasWin}>
+				<div class="label label--balance">
+					<span class="label-text">{i18nDerived.win()}</span>
+				</div>
+				<div class="value-fit">
+					<span class="value" use:fitText={winValue}>{hasWin ? winValue : ''}</span>
+				</div>
+			</div>
+
 			<div
 				class="value-pill value-pill--bet bet-pill"
 			>
@@ -615,9 +695,8 @@
 					</div>
 				</div>
 			</div>
-		</div>
 
-		<div class="hud-controls">
+			<!-- − / + live right beside the BET value they change. -->
 			<div class="stepper">
 				{#if isLandscapeMobile}
 					<button
@@ -666,30 +745,32 @@
 					<img class="nav-icon" src={iconPlus} alt="plus" />
 				</button>
 			</div>
+		</div>
 
-			<div class="play-cluster">
-				<button
-					class="spin-btn"
-					type="button"
-					onclick={onSpinButton}
-					aria-label="Spin"
-					disabled={canInteract && !hasAuto && !canAffordBet}
+		<!-- The focal SPIN floats CENTERED in the free bar space between the + stepper (left)
+		     and the turbo/auto pair (right) via its auto side margins. -->
+		<button
+			class="spin-btn"
+			type="button"
+			onclick={onSpinButton}
+			aria-label="Spin"
+			disabled={canInteract && !hasAuto && !canAffordBet}
+		>
+			{#if !isSpinStop}
+				<img src={iconSpin} alt="" class="spin-btn__icon" />
+			{/if}
+			{#if hasAuto}
+				<span
+					class="spin-btn__count"
+					aria-label={`Remaining auto spins ${autoSpinsRemainingText}`}
+					>{autoSpinsRemainingText}</span
 				>
-					{#if !isSpinStop}
-						<img src={iconSpin} alt="" class="spin-btn__icon" />
-					{/if}
-					{#if hasAuto}
-						<span
-							class="spin-btn__count"
-							aria-label={`Remaining auto spins ${autoSpinsRemainingText}`}
-							>{autoSpinsRemainingText}</span
-						>
-					{:else if isSpinStop}
-						<img src={iconStop} alt="" class="spin-btn__stop" aria-hidden="true" />
-					{/if}
-				</button>
-			</div>
+			{:else if isSpinStop}
+				<img src={iconStop} alt="" class="spin-btn__stop" aria-hidden="true" />
+			{/if}
+		</button>
 
+		<div class="hud-controls">
 			<div class="action-cluster">
 				<button
 					class="nav-btn nav-btn--framed nav-btn--turbo"
@@ -758,9 +839,10 @@
 		background: linear-gradient(to top, #070b06 0%, #070b06 78%, rgba(7, 11, 6, 0) 100%);
 	}
 
-	/* Landscape has no wooden bottom bar — drop the dark shelf so the forest shows behind
-	   the bottom controls (Figma 2682-3639) instead of a black band. */
-	.hud-shell[data-layout='landscape']::after {
+	/* Landscape and portrait draw their controls straight on the forest — drop the dark shelf so
+	   the background shows behind the bottom bar/stats instead of a black band. */
+	.hud-shell[data-layout='landscape']::after,
+	.hud-shell[data-layout='portrait']::after {
 		display: none;
 	}
 
@@ -839,7 +921,7 @@
 		gap: 12px;
 		/* Tighter side padding so the icon clusters sit nearer the bar ends,
 		   leaving more room in the middle for long balance/bet values. */
-		padding: 8px 48px;
+		padding: 8px 40px;
 		/* Dark stadium base fills the whole box so no white bleeds through
 		   the transparent areas around the 9-sliced wooden pill on top. */
 		background: #0f0b06;
@@ -916,11 +998,12 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		padding: 0 16px;
-		/* Fixed footprint: a long balance scales to fit the slot (see fitText)
-		   instead of widening the pill, so it can never push the navigation. */
+		padding: 0 12px;
+		/* Hug the actual balance text so the WIN readout sits right beside it; .value-fit's
+		   max-width still caps very long balances (fitText scales them into that slot), so the
+		   pill can never push the navigation. */
 		flex: 0 0 auto;
-		width: 150px;
+		width: fit-content;
 		border-left: none;
 	}
 
@@ -949,12 +1032,39 @@
 		white-space: nowrap;
 	}
 
+	/* WIN mirrors the balance pill, sitting tight against it behind a thin divider. Hugs its
+	   text (like balance) so BET stays close; the min-width keeps a small slot while hidden. */
+	.value-pill--win {
+		align-items: flex-start;
+		padding: 0 12px;
+		flex: 0 0 auto;
+		width: fit-content;
+		min-width: 96px;
+		border-left: 1px solid rgba(255, 255, 255, 0.3);
+	}
+
+	.value-pill--win .label--balance {
+		line-height: 1;
+		justify-content: flex-start;
+	}
+
+	.value-pill--win .value {
+		line-height: 1;
+		/* Reserve the value's line even while empty so the bar height never jumps. */
+		min-height: 1em;
+	}
+
+	/* No win yet → keep the slot (nothing shifts) but show nothing. */
+	.value-pill--win-hidden {
+		visibility: hidden;
+	}
+
 	.value-pill--bet {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		gap: 6px;
-		padding: 0 16px;
+		padding: 0 12px;
 		border-left: 1px solid rgba(255, 255, 255, 0.3);
 		flex: 0 0 auto;
 	}
@@ -1037,6 +1147,25 @@
 		gap: 15px;
 		padding-top: 0;
 	}
+
+	/* The whole BET block (coin + value + steppers) sits shifted toward the central spin as one
+	   unit — the internal spacing between them stays fixed. */
+	.hud-stats .value-pill--bet {
+		margin-left: 36px;
+	}
+
+	/* The − / + pair (kept snug together, matching the turbo↔auto spacing) sits shifted a bit
+	   right of the BET value, toward the central spin. */
+	.hud-stats .stepper {
+		margin-left: 34px;
+	}
+
+	/* Frame the central spin: the turbo button drifts left toward it — autoplay and the bar-end
+	   gaps stay put. */
+	.action-cluster .nav-btn--turbo {
+		margin-right: 24px;
+	}
+
 
 	.circle-btn,
 	.spin-btn {
@@ -1282,11 +1411,12 @@
 	}
 
 	.spin-btn {
-		width: 150px;
-		height: 150px;
-		/* Negative margins keep the big button from inflating the bar height;
-		   it protrudes above the wooden bar as the focal control. */
-		margin: -30px 0;
+		width: 216px;
+		height: 216px;
+		/* Negative vertical margins keep the big button from inflating the bar height (it protrudes
+		   above the wooden bar as the focal control); the auto side margins split the free bar
+		   space equally, centering the disc between the + stepper and the turbo button. */
+		margin: -63px auto;
 		border: none;
 		background: var(--btn-spin-bg) center / contain no-repeat;
 		padding: 0;
@@ -1420,18 +1550,19 @@
 		pointer-events: none;
 	}
 
-	@media (max-width: 1100px) {
+	/* Laptop widths (≈1000–1200px viewports, incl. the Stake iframe): everything ~10% smaller so
+	   the full bar — through the autoplay button — always fits without clipping. Desktop (>1200px)
+	   keeps the full-size layout. */
+	@media (max-width: 1200px) {
 		.scatter-card {
 			display: none;
 		}
 
-		/* Laptop widths (e.g. 1024px): tighten padding/gaps only (keep the button/bar height) so the
-		   spin + turbo buttons don't overflow the right end of the bar. */
 		.hud-bottom {
 			width: min(calc(100% - 16px), 1120px);
-			/* Extra right padding nudges the spin/turbo/autoplay cluster in from the right end; taller
-			   top/bottom padding gives the wooden bar a bit more height. */
-			padding: 14px 48px 14px 16px;
+			/* Equal side padding: the first (info) and last (autoplay) buttons sit the same
+			   distance from their bar ends. */
+			padding: 14px 24px;
 			gap: 8px;
 		}
 
@@ -1439,9 +1570,39 @@
 			gap: 12px;
 		}
 
-		/* Tighten the balance→bet gap: hug the balance value and trim the bet pill's side padding. */
+		.stepper,
+		.action-cluster {
+			gap: 10px;
+		}
+
+		.nav-btn {
+			width: 52px;
+			height: 52px;
+		}
+
+		.buy-btn {
+			width: 112px;
+		}
+
+		.bet-coin {
+			width: 38px;
+			height: 38px;
+		}
+
+		.label {
+			font-size: 0.72rem;
+		}
+
+		.value {
+			font-size: 1rem;
+		}
+
+		/* Tighten the balance→win gap: hug the values and trim the pills' side padding. */
 		.value-pill--balance {
-			width: 116px;
+			padding: 0 12px;
+		}
+		.value-pill--win {
+			min-width: 80px;
 			padding: 0 12px;
 		}
 		.value-fit {
@@ -1454,8 +1615,9 @@
 		/* Shrink the focal spin button so it protrudes less above/below the bar (its negative margins
 		   mean this doesn't change the bar height). */
 		.spin-btn {
-			width: 100px;
-			height: 100px;
+			width: 144px;
+			height: 144px;
+			margin: -42px auto;
 		}
 	}
 
@@ -1576,8 +1738,9 @@
 		position: absolute;
 		/* Anchor the button's bottom edge to the bet pad's vertical centre (pad: bottom 0, height
 		   clamp(70px,10.5vh,88px)), then translateY(50%) drops it by half its own height so the two
-		   centres line up regardless of the button's rendered height. */
-		bottom: calc(clamp(26px, 12vh, 104px) / 2 - var(--ls-drop));
+		   centres line up regardless of the button's rendered height. The extra -5px drops it a
+		   touch lower so its leaves clear the board frame on short popup viewports. */
+		bottom: calc(clamp(26px, 12vh, 104px) / 2 - var(--ls-drop) - 5px);
 		left: 37%;
 		transform: translate(-50%, 50%);
 		box-sizing: border-box;
@@ -1619,6 +1782,51 @@
 		display: flex;
 		align-items: baseline;
 		gap: 8px;
+		/* Same dark translucent pill as the WIN readout — keeps the text readable over the forest. */
+		padding: 4px 12px;
+		border-radius: 12px;
+		background: rgba(17, 12, 10, 0.72);
+		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
+		backdrop-filter: blur(4px);
+	}
+	/* WIN readout — bottom-right corner, mirroring the BALANCE block bottom-left. The right rail
+	   is vertically centred so the corner below it stays free. Dark translucent pill keeps the
+	   text readable over the bright forest art. */
+	.ls-win {
+		position: absolute;
+		right: 16px;
+		bottom: 6px;
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+		padding: 4px 12px;
+		border-radius: 12px;
+		background: rgba(17, 12, 10, 0.72);
+		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
+		backdrop-filter: blur(4px);
+	}
+	/* No win yet → keep the slot but show nothing (matches the portrait WIN behavior). */
+	.ls-win--hidden {
+		visibility: hidden;
+	}
+	.ls-win__label {
+		font-family: 'Poppins', sans-serif;
+		font-size: clamp(8px, 3vh, 12px);
+		font-style: normal;
+		font-weight: 500;
+		line-height: normal;
+		letter-spacing: 0.36px;
+		background: var(--golden-gradient, linear-gradient(184deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%));
+		background-clip: text;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+	.ls-win__value {
+		font-family: 'Poppins', sans-serif;
+		font-weight: 600;
+		font-size: clamp(9px, 3.2vh, 13px);
+		color: #fff;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
 	}
 	.ls-balance__label {
 		font-family: 'Poppins', sans-serif;
@@ -1736,8 +1944,10 @@
 	.ls-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(1.5%, 3%); }
 	.ls-spin__stop {
 		position: absolute;
-		top: 53%;
-		left: 51.2%;
+		/* Same disc-centre anchor as the desktop .spin-btn__stop — the art is identical
+		   (btn_bg_spin.webp), and the old 53%/51.2% sat visibly low-right of the disc. */
+		top: 50%;
+		left: 51%;
 		width: 22%;
 		aspect-ratio: 1;
 		transform: translate(-50%, -50%);
@@ -1845,44 +2055,53 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 6px;
-		padding: 0 12px calc(10px + env(safe-area-inset-bottom, 0px));
+		/* 18px floor: keeps the bet row comfortably off the screen bottom (was 10px — "too bottomed"). */
+		padding: 0 12px calc(18px + env(safe-area-inset-bottom, 0px));
+		/* THE portrait HUD unit: the bar width. EVERYTHING below is sized as a fraction of this one
+		   value, so the layout keeps the design's exact proportions at every viewport width (mixed
+		   px/vw clamps previously saturated into different proportions on different screens). */
+		--u: min(412px, 97vw);
 	}
+	/* No browser focus ring / tap highlight on the game buttons (the blue box after a tap). */
+	.pt-hud button { outline: none; -webkit-tap-highlight-color: transparent; }
+	.pt-hud button:focus, .pt-hud button:focus-visible { outline: none; }
 
-	/* --- control row: menu·sound · SPIN · turbo·auto --- */
+	/* --- control row: ☰·BUY · SPIN · turbo·auto --- */
 	.pt-controls {
 		position: relative;
-		width: min(412px, 97vw);
-		/* Scale the bar height with the buttons (spin is 24vw) so the spin keeps protruding above/below
-		   the wood with its leaves on small screens instead of shrinking to sit flat inside the bar. */
-		height: clamp(64px, 20vw, 78px);
-		display: flex;
+		width: var(--u);
+		/* Slightly squashed vs the art's native 1372×256 — matches the design's slimmer bar. */
+		height: calc(var(--u) * 0.15);
+		/* 3-column grid (1fr | auto | 1fr): the SPIN sits at the exact centre — matching the bet pad
+		   below — regardless of the (unequal) side groups. align-items centres buttons on the wood
+		   (the art's visible wood is centred in its box). */
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		/* Row locked to the bar height — otherwise the taller spin stretches the implicit row past
+		   the bar's bottom and every button centres 10px low (halfway out of the wood). With the row
+		   fixed, buttons centre ON the wood and the spin's leaves overflow evenly above/below. */
+		grid-template-rows: 100%;
 		align-items: center;
-		justify-content: space-between;
-		/* Vertical padding matches the wood ::before insets (8px top / 2px bottom) so the buttons
-		   centre on the wood bar itself, not the full box (which left them sitting above centre). */
-		padding: 8px clamp(10px, 4vw, 20px) 2px;
+		/* Slight top padding: the wood art's visible surface centre sits a touch below the box centre
+		   (thicker bottom rail), so the buttons need a small downward nudge to look centred ON it. */
+		padding: calc(var(--u) * 0.012) calc(var(--u) * 0.04) 0;
 		box-sizing: border-box;
-	}
-	.pt-controls::before {
-		content: '';
-		position: absolute;
-		left: 0; right: 0; top: 8px; bottom: 2px;
 		background: var(--pt-navpad) center / 100% 100% no-repeat;
-		z-index: -1;
 	}
-	/* Buttons scale down on narrow screens so the whole row keeps fitting inside the bar —
-	   otherwise the fixed-width set overflows and space-between packs everything to the left. */
-	.pt-grp { display: flex; align-items: center; gap: clamp(8px, 3vw, 16px); }
+	/* Side groups fill their halves and spread evenly — balanced like the design, clear of the
+	   rounded bar ends and of the spin. */
+	.pt-controls > .pt-grp { width: 100%; justify-content: space-evenly; }
+	.pt-grp { display: flex; align-items: center; }
 
 	.pt-round {
-		width: clamp(38px, 12vw, 46px); height: clamp(38px, 12vw, 46px);
+		width: calc(var(--u) * 0.108); height: calc(var(--u) * 0.108);
 		border: 0; padding: 0; cursor: pointer;
 		background: var(--btn-round-bg) center / contain no-repeat;
 		display: grid; place-items: center;
 		flex: 0 0 auto;
 		transition: transform 0.12s ease, filter 0.12s ease;
 	}
-	.pt-round--sm { width: clamp(34px, 11vw, 42px); height: clamp(34px, 11vw, 42px); }
+	.pt-round--sm { width: calc(var(--u) * 0.095); height: calc(var(--u) * 0.095); }
 	.pt-round:not(:disabled):hover { filter: brightness(1.12); }
 	.pt-round:not(:disabled):active { transform: translateY(1px) scale(0.94); }
 	.pt-round:disabled { opacity: 0.45; cursor: default; }
@@ -1893,8 +2112,8 @@
 	.pt-round--turbo.turbo-super { filter: drop-shadow(0 0 7px rgba(120,220,90,0.95)); }
 
 	.pt-spin {
-		width: clamp(76px, 24vw, 94px); height: clamp(76px, 24vw, 94px);
-		margin-top: 0; /* vertically centred on the control bar */
+		width: calc(var(--u) * 0.215); height: calc(var(--u) * 0.215);
+		margin-top: 0; /* vertically centred on the bar; the leaves overflow above/below by design */
 		border: 0; padding: 0; cursor: pointer;
 		background: var(--pt-spin) center / contain no-repeat;
 		display: grid; place-items: center;
@@ -1914,19 +2133,22 @@
 		text-shadow: 0 2px 4px rgba(0,0,0,0.7);
 	}
 
-	/* --- stats row: BALANCE · (− bet +) · BUY BONUS ---
-	   Centred as a group with equal gaps (not pinned to the edges). */
+	/* --- stats row: BALANCE · (− bet +) · WIN ---
+	   3-column grid (1fr | auto | 1fr) so the bet pad is always perfectly centred on screen
+	   regardless of the balance/win widths; balance + win are pulled ~12px in toward the centre. */
 	.pt-stats {
-		width: min(400px, 96vw);
-		display: flex;
+		width: var(--u);
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
-		justify-content: center;
-		gap: clamp(8px, 3.5vw, 18px);
+		gap: calc(var(--u) * 0.02);
 	}
+	.pt-stats .pt-balance { justify-self: start; margin-left: calc(var(--u) * 0.03); }
+	.pt-stats .pt-win { justify-self: end; margin-right: calc(var(--u) * 0.03); }
 	/* Balance: transparent (no pad), centred label + gold value. */
 	.pt-balance {
 		flex: 0 0 auto;
-		max-width: clamp(104px, 34vw, 140px);
+		max-width: calc(var(--u) * 0.32);
 		display: flex; flex-direction: column;
 		align-items: center; justify-content: center;
 		gap: 1px;
@@ -1934,16 +2156,17 @@
 		overflow: hidden;
 	}
 	.pt-balance__label {
-		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 10px;
+		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 10px;
 		letter-spacing: 0.04em; white-space: nowrap;
-		color: #f3e7cf;
-	}
-	.pt-balance__value {
-		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px;
-		white-space: nowrap; transform-origin: center;
 		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
 		-webkit-background-clip: text; background-clip: text;
 		-webkit-text-fill-color: transparent; color: transparent;
+	}
+	.pt-balance__value {
+		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
+		font-style: normal; line-height: normal; letter-spacing: 0.36px;
+		white-space: nowrap; transform-origin: center;
+		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);
 	}
 
 	/* Bet pill: dark rounded pad with − value + (no BET label, per Figma) */
@@ -1951,13 +2174,15 @@
 		flex: 0 0 auto;
 		display: flex; align-items: center; justify-content: space-between;
 		gap: 4px;
-		width: clamp(140px, 45vw, 164px); height: clamp(48px, 15vw, 56px);
-		padding: 0 7px;
+		width: calc(var(--u) * 0.46); height: calc(var(--u) * 0.132);
+		padding: 0 calc(var(--u) * 0.018);
 		box-sizing: border-box;
 		background: var(--pt-betpad) center / 100% 100% no-repeat;
 	}
 	.pt-bet__value {
-		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 16px; color: #fff;
+		flex: 1 1 auto; text-align: center;
+		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 18px;
+		font-style: normal; line-height: normal; letter-spacing: 0.54px; color: #fff;
 		white-space: nowrap; cursor: pointer; transform-origin: center;
 		text-shadow: 0 1px 2px rgba(0,0,0,0.6);
 	}
@@ -1966,7 +2191,7 @@
 	/* Buy bonus: round green badge with 2-line label inside */
 	.pt-buy {
 		flex: 0 0 auto;
-		width: clamp(54px, 17vw, 62px); height: clamp(50px, 16vw, 58px);
+		width: calc(var(--u) * 0.145); height: calc(var(--u) * 0.138);
 		border: 0; padding: 0; cursor: pointer;
 		background: var(--pt-buybonus) center / contain no-repeat;
 		display: grid; place-items: center;
@@ -1982,5 +2207,83 @@
 		-webkit-background-clip: text; background-clip: text;
 		-webkit-text-fill-color: transparent; color: transparent;
 		filter: drop-shadow(0 1px 1px rgba(0,0,0,0.7));
+	}
+	/* Buy bonus placed IN the control row (left of spin). */
+	.pt-buy--controls { width: calc(var(--u) * 0.15); height: calc(var(--u) * 0.142); }
+
+	/* WIN readout — mirrors the balance block, pinned to the right of the stats row. */
+	.pt-win {
+		flex: 0 0 auto;
+		max-width: calc(var(--u) * 0.3);
+		display: flex; flex-direction: column;
+		align-items: center; justify-content: center;
+		gap: 1px;
+		min-width: 0;
+		overflow: hidden;
+	}
+	/* No win yet → keep the slot (bet stays centred) but show nothing. */
+	.pt-win--hidden { visibility: hidden; }
+	.pt-win__label {
+		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 10px;
+		letter-spacing: 0.04em; white-space: nowrap;
+		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
+		-webkit-background-clip: text; background-clip: text;
+		-webkit-text-fill-color: transparent; color: transparent;
+	}
+	.pt-win__value {
+		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
+		font-style: normal; line-height: normal; letter-spacing: 0.36px;
+		white-space: nowrap; transform-origin: center; min-height: 12px;
+		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);
+	}
+
+	/* ☰ menu button open state: gold ✕ glyph in place of the hamburger icon. */
+	.pt-round__x {
+		font-family: 'Cinzel', serif; font-weight: 900; font-size: calc(var(--u) * 0.048);
+		line-height: 1; color: #f1c14a; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.7));
+	}
+
+	/* The ☰ button wrapper is NOT a positioning context — the popup anchors to the BAR
+	   (.pt-controls, position:relative), giving it a stable containing block whose width is --u,
+	   so both its position AND its %-paddings resolve against the bar. */
+	.pt-menu-wrap { display: inline-flex; flex: 0 0 auto; }
+
+	/* Sound / Info popup — the wooden plaque from Figma (border baked into the art). Sits just above
+	   the bar, aligned to its left edge (like the design). All insets are fractions of the bar width
+	   (% padding resolves against the containing block = the bar = --u). */
+	.pt-menu-pop {
+		position: absolute;
+		left: calc(var(--u) * -0.04);
+		bottom: calc(100% - 25px); /* almost touching the bar */
+		z-index: 8;
+		width: calc(var(--u) * 0.5);
+		aspect-ratio: 1431 / 1099;
+		box-sizing: border-box;
+		display: flex; flex-direction: column;
+		align-items: flex-start; justify-content: center;
+		gap: calc(var(--u) * 0.035);
+		padding: 5.5% 4% 6.5% 9%;
+		background: var(--menu-popup-bg) center / 100% 100% no-repeat;
+	}
+	.pt-menu-item {
+		display: flex; align-items: center; gap: calc(var(--u) * 0.03);
+		border: 0; padding: 0; cursor: pointer;
+		background: transparent;
+		transition: filter 0.12s ease, transform 0.12s ease;
+	}
+	.pt-menu-item:hover { filter: brightness(1.12); }
+	.pt-menu-item:active { transform: scale(0.97); }
+	.pt-menu-item__ic {
+		width: calc(var(--u) * 0.095); height: calc(var(--u) * 0.095);
+		flex: 0 0 auto;
+		display: grid; place-items: center;
+		border-radius: 50%;
+		background: var(--btn-round-bg) center / contain no-repeat;
+	}
+	.pt-menu-item__ic img { width: 52%; height: 52%; object-fit: contain; }
+	.pt-menu-item__ic img.is-muted { opacity: 0.4; }
+	.pt-menu-item__label {
+		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 12px;
+		font-style: normal; line-height: normal; color: #fff;
 	}
 </style>

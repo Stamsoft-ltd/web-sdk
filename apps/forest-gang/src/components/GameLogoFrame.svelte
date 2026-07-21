@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Sprite, Container, Text } from 'pixi-svelte';
+	import { Sprite, Container, Text, AnimatedSprite } from 'pixi-svelte';
+	import type { Texture } from 'pixi.js';
 	import { MainContainer } from 'components-layout';
 	import { stateBet } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
@@ -7,6 +8,7 @@
 	import { getContext } from '../game/context';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
 	import { spriteKeyByName } from '../game/utils';
+	import type { SymbolName } from '../game/types';
 	import { i18nDerived } from '../i18n/i18nDerived';
 
 	const context = getContext();
@@ -95,6 +97,29 @@
 	const bonusSymbolKey = $derived(bonusSymbol ? (spriteKeyByName[bonusSymbol] ?? null) : null);
 	const globalMultiplier = $derived(context.stateGame.globalMultiplier);
 
+	// Animated idle art for the portrait bonus-symbol badge — the same background-removed cutouts the
+	// reels use. Without this the badge fell back to the OLD crowned `spriteKeyByName` tile (read as
+	// "old art" on mobile). Animals animate; any non-animal bonus symbol keeps its static tile.
+	const IDLE_ANIM_KEY: Partial<Record<SymbolName, string>> = {
+		WOLF: 'wolfIdleAnim',
+		FOX: 'foxIdleAnim',
+		SQUIRREL: 'squirrelIdleAnim',
+		BEAR: 'bearIdleAnim',
+		RABBIT: 'rabbitIdleAnim',
+	};
+	const IDLE_ASPECT: Partial<Record<SymbolName, number>> = {
+		WOLF: 337 / 360,
+		FOX: 249 / 360,
+		SQUIRREL: 282 / 360,
+		BEAR: 360 / 327,
+		RABBIT: 284 / 360,
+	};
+	const bonusIdle = $derived(
+		bonusSymbol && IDLE_ANIM_KEY[bonusSymbol]
+			? ((context.stateApp.loadedAssets?.[IDLE_ANIM_KEY[bonusSymbol]!] ?? []) as Texture[])
+			: [],
+	);
+
 	const showFsBadge = $derived(isPortrait && fsShow && bonusMode !== 'feature' && !presenterActive);
 	const showBonusBadge = $derived(isPortrait && !!bonusSymbolKey && !!bonusMode && !presenterActive);
 
@@ -141,7 +166,20 @@
 		{#if showBonusBadge && bonusSymbolKey}
 			<Container x={leftBadgeX} y={symBadgeCY}>
 				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />
-				<Sprite key={bonusSymbolKey} anchor={0.5} y={-badgeH * 0.02} width={badgeH * 0.56} height={badgeH * 0.42} />
+				{#if bonusIdle.length}
+					<AnimatedSprite
+						textures={bonusIdle}
+						anchor={0.5}
+						y={-badgeH * 0.02}
+						height={badgeH * 0.52}
+						width={badgeH * 0.52 * (IDLE_ASPECT[bonusSymbol!] ?? 1)}
+						animationSpeed={0.28}
+						loop={true}
+						play={true}
+					/>
+				{:else}
+					<Sprite key={bonusSymbolKey} anchor={0.5} y={-badgeH * 0.02} width={badgeH * 0.56} height={badgeH * 0.42} />
+				{/if}
 			</Container>
 			<Container x={leftBadgeX} y={multBadgeCY}>
 				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />

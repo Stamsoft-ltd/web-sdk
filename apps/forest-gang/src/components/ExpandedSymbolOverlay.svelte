@@ -205,6 +205,23 @@
 						{/if}
 					</Container>
 				{/if}
+				<!-- Thin wood frame (same brown as the animal borders) around the expanded reel column,
+				     grows with the expansion. ONLY for expanding ANIMALS — low (card) expands get none. -->
+				{#if !isLowExpanded}
+					<Graphics
+						x={cx}
+						y={cy}
+						scale={{ x: px, y: 1 }}
+						draw={(g) => {
+							g.clear();
+							const w = SYMBOL_W * 0.99;
+							const hh = Math.max(0, h - 3);
+							const r = Math.min(w, hh) * 0.05;
+							g.roundRect(-w / 2, -hh / 2, w, hh, r);
+							g.stroke({ width: 3, color: 0x92673a, alpha: 1 });
+						}}
+					/>
+				{/if}
 			{/each}
 		</Container>
 	</MainContainer>

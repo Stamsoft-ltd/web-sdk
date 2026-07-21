@@ -360,6 +360,7 @@
 			/>
 		{/each}
 		{#each board as reel, reelIndex (reelIndex)}
+			{@const reelAnticipating = reel.reelState.anticipating}
 			{#if !hiddenReels.has(reelIndex)}
 			{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
 				{@const y = reelSymbol.symbolY()}
@@ -415,15 +416,18 @@
 					/>
 				{:else if isWin && winAnimTextures[reelSymbol.rawSymbol.name]}
 					{#if HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
-						<!-- Animal win: same brown frame + the full (uncropped) win animation on top. -->
-						<Sprite
-							key="animalBorder"
-							x={getX(reelIndex)}
-							y={y}
-							anchor={{ x: 0.5, y: 0.5 }}
-							width={symbolW * s * BORDER_SIZE}
-							height={symbolH * s * BORDER_SIZE * BORDER_H_MULT}
-						/>
+						<!-- Animal win: same brown frame + the full (uncropped) win animation on top.
+						     Hidden while the reel is anticipating (the brown frame clashes with the glow). -->
+						{#if !reelAnticipating}
+							<Sprite
+								key="animalBorder"
+								x={getX(reelIndex)}
+								y={y}
+								anchor={{ x: 0.5, y: 0.5 }}
+								width={symbolW * s * BORDER_SIZE}
+								height={symbolH * s * BORDER_SIZE * BORDER_H_MULT}
+							/>
+						{/if}
 						<AnimatedSprite
 							textures={winAnimTextures[reelSymbol.rawSymbol.name]}
 							x={getX(reelIndex)}
@@ -450,16 +454,18 @@
 					{/if}
 				{:else if HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
 					<!-- Base-state animal: shared brown frame + animated idle blink (or static tile for
-					     the animals without an idle sheet yet). -->
-					<Sprite
-						key="animalBorder"
-						x={getX(reelIndex)}
-						y={y}
-						anchor={{ x: 0.5, y: 0.5 }}
-						width={symbolW * s * BORDER_SIZE}
-						height={symbolH * s * BORDER_SIZE * BORDER_H_MULT}
-						alpha={hasWinState && !isWin ? 0.35 : 1}
-					/>
+					     the animals without an idle sheet yet). Frame hidden while the reel anticipates. -->
+					{#if !reelAnticipating}
+						<Sprite
+							key="animalBorder"
+							x={getX(reelIndex)}
+							y={y}
+							anchor={{ x: 0.5, y: 0.5 }}
+							width={symbolW * s * BORDER_SIZE}
+							height={symbolH * s * BORDER_SIZE * BORDER_H_MULT}
+							alpha={hasWinState && !isWin ? 0.35 : 1}
+						/>
+					{/if}
 					{#if idleAnimTextures[reelSymbol.rawSymbol.name]}
 						<AnimatedSprite
 							textures={idleAnimTextures[reelSymbol.rawSymbol.name]}

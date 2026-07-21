@@ -17,7 +17,7 @@
 	import { waitForResolve } from 'utils-shared/wait';
 	import { CanvasSizeRectangle } from 'components-layout';
 	import { OnMount } from 'components-shared';
-	import { stateI18nDerived, stateBet } from 'state-shared';
+	import { stateI18nDerived } from 'state-shared';
 
 	import { getContext } from '../game/context';
 	import { WIN_GRADIENT } from '../game/goldGradient';
@@ -50,6 +50,9 @@
 			distance: fontSize * 0.116,
 		},
 	});
+
+	// How long the outro holds on screen before auto-advancing on its own (readable, then continues).
+	const OUTRO_AUTO_ADVANCE_MS = 3000;
 
 	let show = $state(true);
 	let amount = $state(0);
@@ -90,14 +93,13 @@
 		freeSpinOutroCountUp: async (emitterEvent) => {
 			amount = emitterEvent.amount;
 			winLevelData = emitterEvent.winLevelData;
-			// Autoplay: let the count-up finish, hold briefly, then auto-advance (no manual press needed).
+			// Auto-advance on its own a few seconds after showing (no manual press needed). The count-up
+			// is capped (see `duration` below) so the total is fully shown before this fires. A press
+			// still continues sooner.
 			let autoTimer = 0;
 			await waitForResolve((resolve) => {
 				oncomplete = resolve;
-				if (stateBet.autoSpinsCounter !== 0) {
-					const dur = (emitterEvent.winLevelData?.presentDuration ?? 0) + 1800;
-					autoTimer = setTimeout(resolve, dur) as unknown as number;
-				}
+				autoTimer = setTimeout(resolve, OUTRO_AUTO_ADVANCE_MS) as unknown as number;
 			});
 			clearTimeout(autoTimer);
 		},
@@ -106,7 +108,8 @@
 
 <FadeContainer {show}>
 	{#if winLevelData}
-		{@const duration = winLevelData.presentDuration}
+		<!-- Count-up capped so the total is fully shown before the 3s auto-advance fires. -->
+		{@const duration = Math.min(winLevelData.presentDuration, 2000)}
 		<WinCountUpProvider {amount} {duration} oncomplete={() => { context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_win_coins_loop' }); context.eventEmitter.broadcast({ type: 'soundStop', name: 'bgm_win_animation' }); context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' }); }}>
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
 				<OnMount onmount={() => startCountUp()} />

@@ -113,6 +113,10 @@ export const stateGame = $state({
 	hasAnticipationPending: false,  // true when current spin has unskipped anticipation reels
 	resumeModalOpen: false,     // the "Unfinished Round" resume dialog is on screen
 	buyModalOpen: false,        // the Buy Bonus dialog is on screen (board animations freeze behind it)
+	// Per-round win (book-event units) for the HUD WIN readout: this spin's win — NOT the cumulative
+	// bonus total (that's EARNED / winBookEventAmount). Cleared each spin, set to the grand total at
+	// bonus end. Distinct from winBookEventAmount so WIN shows per-round during a bonus.
+	roundWin: 0,
 });
 
 const getBoardViewportPadding = () => {

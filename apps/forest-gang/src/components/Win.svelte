@@ -33,6 +33,8 @@
 	let boardClickHandled = false;
 	let snappedToFinal = false;
 	let dismissTimer = 0;
+	// Board-animation (big) wins auto-close this long after the count-up finishes (no press needed).
+	let autoCloseTimer = 0;
 	let isCountingUp = $state(false);
 	let winSizes = $state({ width: 0, height: 0 });
 
@@ -57,7 +59,8 @@
 	const scheduleDismiss = () => {
 		if (boardClickHandled) return;
 		boardClickHandled = true;
-		dismissTimer = setTimeout(() => oncomplete(), 500) as unknown as number;
+		clearTimeout(autoCloseTimer);
+		dismissTimer = setTimeout(() => oncomplete(), 300) as unknown as number;
 	};
 
 	context.eventEmitter.subscribeOnMount({
@@ -74,23 +77,17 @@
 			boardClickHandled = false;
 			snappedToFinal = false;
 			clearTimeout(dismissTimer);
+			dismissTimer = 0;
+			clearTimeout(autoCloseTimer);
+			autoCloseTimer = 0;
 			amount = emitterEvent.amount;
 			winLevelData = emitterEvent.winLevelData;
 			breatheScale = 1;
 			isCountingUp = true;
-			// Autoplay: board-animation (big) wins otherwise wait for a manual press. Auto-dismiss after
-			// the count-up finishes + a readable hold so autoplay keeps flowing. (Non-board wins already
-			// self-resolve via the WinCountUpProvider oncomplete below.)
-			let autoTimer = 0;
-			if (stateBet.autoSpinsCounter !== 0 && emitterEvent.winLevelData?.animation) {
-				const dur = (emitterEvent.winLevelData.presentDuration ?? 0) + 1800;
-				autoTimer = setTimeout(() => {
-					context.stateGame.paylineSnap = true;
-					oncomplete();
-				}, dur) as unknown as number;
-			}
+			// Board-animation (big) wins auto-close a short hold after the count-up finishes — no manual
+			// press required (see the WinCountUpProvider oncomplete below). Non-board wins self-resolve
+			// on count-up completion there too. A manual press can still snap/close earlier.
 			await waitForResolve((resolve) => (oncomplete = resolve));
-			clearTimeout(autoTimer);
 			isCountingUp = false;
 		},
 	});
@@ -117,9 +114,20 @@
 	{#if winLevelData}
 		{@const isBigWin = winLevelData.type === 'big'}
 		{@const hasBoardAnimation = !!winLevelData?.animation}
-		{@const duration = (stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation ? Math.min(winLevelData.presentDuration, 400) : winLevelData.presentDuration}
+		{@const duration = (stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation ? Math.min(winLevelData.presentDuration, 400) : winLevelData.presentDuration * 0.25}
 		{#key oncomplete}
-		<WinCountUpProvider {amount} {duration} oncomplete={() => { context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' }); if (!hasBoardAnimation && !boardClickHandled) { snappedToFinal = true; context.stateGame.paylineSnap = true; boardClickHandled = true; oncomplete(); } }}>
+		<WinCountUpProvider {amount} {duration} oncomplete={() => {
+			context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' });
+			if (!hasBoardAnimation) {
+				if (!boardClickHandled) { snappedToFinal = true; context.stateGame.paylineSnap = true; boardClickHandled = true; oncomplete(); }
+			} else if (!boardClickHandled) {
+				// Board-animation (big) win finished counting (naturally or via a press-snap) → auto-close
+				// after a 3s hold instead of waiting for a manual press. A further press still closes sooner.
+				context.stateGame.paylineSnap = true;
+				clearTimeout(autoCloseTimer);
+				autoCloseTimer = setTimeout(() => oncomplete(), 3000) as unknown as number;
+			}
+		}}>
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
 
 				{#if isBigWin}
@@ -195,9 +203,10 @@
 				{/if}
 				</Container>
 
-				<!-- No text on the win screen (press still snaps/skips). -->
+				<!-- No text on the win screen. First press snaps the count-up to the final amount; once the
+				     count is done (snapped or naturally finished) the next press closes it immediately. -->
 				<PressToContinue showText={false} onpress={() => {
-					if (!snappedToFinal) {
+					if (!countUpCompleted && !snappedToFinal) {
 						snapToFinal(finishCountUp);
 					} else {
 						scheduleDismiss();
