@@ -6,7 +6,7 @@
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { MainContainer } from 'components-layout';
-	import { Container, Graphics, Sprite, Text } from 'pixi-svelte';
+	import { AnimatedSprite, Container, Graphics, Sprite, Text, type LoadedSpriteSheet } from 'pixi-svelte';
 	import { stateBet } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
@@ -100,6 +100,12 @@
 	const CY = $derived(main.height * 0.186);
 	// magnetic_tube.png is 2004×1336 (fully transparent, see-through interior).
 	const TUBE_ASPECT = 2004 / 1336;
+	// New animated tesla tube (mp4 → keyed flipbook, lightning baked in). The old glass sprite was only
+	// ~94% wide × ~43% tall opaque within its box, so draw the (trimmed) animation at those fractions to
+	// land in the exact same on-screen tube. Falls back to the static glass + crackle until it loads.
+	const tubeFrames = $derived(
+		(context.stateApp.loadedAssets?.capsuleTubeAnimMobile ?? []) as LoadedSpriteSheet,
+	);
 	const BOX_ASPECT = 323 / 228;
 	const capsuleW = $derived(main.width * 0.56);
 	const capsuleH = $derived(capsuleW / TUBE_ASPECT);
@@ -148,10 +154,25 @@
 		<!-- Capsule — ALWAYS shown. Fully transparent tube; the combining symbol (when any) and a live
 		     crackle/bolt web arc INSIDE the clear window (masked to the interior), like the desktop. -->
 		<Container x={capsuleX} y={CY}>
-			<Sprite key="capsuleTubeGlass" anchor={0.5} width={capsuleW} height={capsuleH} />
+			{#if tubeFrames.length > 0}
+				<!-- Animated tesla tube (horizontal). Sized to the old glass's visible extent so it drops
+				     into the same footprint; lightning is baked in, so no procedural crackle. -->
+				<AnimatedSprite
+					textures={tubeFrames}
+					anchor={0.5}
+					width={capsuleW * 0.941}
+					height={capsuleH * 0.427}
+					animationSpeed={0.14}
+					loop={true}
+					play={true}
+				/>
+			{:else}
+				<Sprite key="capsuleTubeGlass" anchor={0.5} width={capsuleW} height={capsuleH} />
+			{/if}
 			{#if symbolKey}
 				<Sprite key={symbolKey} anchor={0.5} width={symSize} height={symSize * (152 / 184)} />
 			{/if}
+			{#if tubeFrames.length === 0}
 			<Container>
 				<Graphics
 					isMask
@@ -183,6 +204,7 @@
 				<Sprite key="capsuleLightning" anchor={0.5} rotation={Math.PI / 2} width={capsuleH * 0.42} height={capsuleW * 0.56} alpha={arcFlicker} blendMode="add" />
 				<Sprite key="capsuleLightning" anchor={0.5} rotation={Math.PI / 2} width={capsuleH * 0.32} height={capsuleW * 0.46} alpha={arcFlicker} />
 			</Container>
+			{/if}
 		</Container>
 
 		<!-- FREE SPINS count (remaining) — only during a bonus -->

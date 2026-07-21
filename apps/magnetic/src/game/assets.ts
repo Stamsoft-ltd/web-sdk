@@ -75,6 +75,14 @@ export default {
 		// reports loaded, and mounting a SpriteSheet whose key is missing crashes pixi.
 		preload: true,
 	},
+	// Mobile/portrait+landscape tube: the same tesla animation exported HORIZONTALLY (mp4 → keyed,
+	// trimmed 30-frame flipbook, visible-tube aspect ~3.23). Portrait uses it as-is; mobile-landscape
+	// rotates it 90° to run vertically.
+	capsuleTubeAnimMobile: {
+		type: 'spriteSheet',
+		src: './assets/sprites/capsuleTube/capsule_tube_mobile_anim.json',
+		preload: true,
+	},
 	capsuleLightning: {
 		type: 'sprite',
 		src: './assets/components/ui/capsule_lightning.png?v=20260708',

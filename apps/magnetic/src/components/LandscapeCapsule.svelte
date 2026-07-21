@@ -7,7 +7,7 @@
 	import { backOut, cubicOut } from 'svelte/easing';
 	import { FillGradient } from 'pixi.js';
 	import { MainContainer } from 'components-layout';
-	import { Container, Graphics, Sprite, Text } from 'pixi-svelte';
+	import { AnimatedSprite, Container, Graphics, Sprite, Text, type LoadedSpriteSheet } from 'pixi-svelte';
 	import { stateBet } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
@@ -120,6 +120,12 @@
 	const colX = $derived(cap.colX);
 	const tubeH = $derived(cap.tubeH);
 	const tubeW = $derived(cap.tubeW);
+	// New animated tesla tube (mp4 → keyed flipbook), rotated 90° to run vertically. The old glass was
+	// only ~94% wide × ~43% tall opaque within its box, so draw the (trimmed) animation at those
+	// fractions to land in the same on-screen tube. Falls back to the static glass + crackle.
+	const tubeFrames = $derived(
+		(context.stateApp.loadedAssets?.capsuleTubeAnimMobile ?? []) as LoadedSpriteSheet,
+	);
 	const tubeY = $derived(cap.tubeY);
 	const symSize = $derived(cap.symSize);
 	const gridHalfW = $derived(cap.gridHalfW);
@@ -172,8 +178,23 @@
 		     runs top-to-bottom, with live electricity arcing INSIDE the clear window (masked) — inherits
 		     the portrait/desktop animation. Tube (transparent) -> symbol -> lightning on top. -->
 		<Container x={colX} y={tubeY}>
-			<!-- Rotated tube: the sprite's width becomes the on-screen HEIGHT and its height the WIDTH. -->
-			<Sprite key="capsuleTubeGlass" anchor={0.5} rotation={Math.PI / 2} width={tubeH} height={tubeW} />
+			{#if tubeFrames.length > 0}
+				<!-- Animated tesla tube, rotated 90° to run vertically. Sized to the old glass's visible
+				     extent so it lands in the same footprint; lightning is baked in (no procedural crackle). -->
+				<AnimatedSprite
+					textures={tubeFrames}
+					anchor={0.5}
+					rotation={Math.PI / 2}
+					width={tubeH * 0.941}
+					height={tubeW * 0.427}
+					animationSpeed={0.14}
+					loop={true}
+					play={true}
+				/>
+			{:else}
+				<!-- Rotated tube: the sprite's width becomes the on-screen HEIGHT and its height the WIDTH. -->
+				<Sprite key="capsuleTubeGlass" anchor={0.5} rotation={Math.PI / 2} width={tubeH} height={tubeW} />
+			{/if}
 			{#if symbolKey}
 				<Container
 					x={symSize * symFx.dx}
@@ -189,8 +210,9 @@
 					/>
 				</Container>
 			{/if}
-			<!-- Live electricity in the clear window, clipped to the glass interior. The bolt art is
-			     naturally vertical, so (unlike the horizontal portrait bar) it is NOT rotated here. -->
+			{#if tubeFrames.length === 0}
+			<!-- Fallback: procedural electricity in the clear window, clipped to the glass interior. The
+			     bolt art is naturally vertical, so (unlike the horizontal portrait bar) it is NOT rotated. -->
 			<Container>
 				<Graphics
 					isMask
@@ -220,6 +242,7 @@
 				<Sprite key="capsuleLightning" anchor={0.5} width={tubeW * 0.46} height={tubeH * 0.56} alpha={arcFlicker} blendMode="add" />
 				<Sprite key="capsuleLightning" anchor={0.5} width={tubeW * 0.34} height={tubeH * 0.46} alpha={arcFlicker} />
 			</Container>
+			{/if}
 		</Container>
 
 		<!-- ALL WINS (reward) + FREE SPINS boxes, left gutter — only during a bonus. -->
