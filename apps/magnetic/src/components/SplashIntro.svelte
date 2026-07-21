@@ -14,11 +14,13 @@
 			const parent = node.parentElement;
 			if (!parent) return;
 			node.style.fontSize = '';
-			const avail = parent.clientWidth;
+			// Target ~90% of the card width so long titles (e.g. Russian "РАСШИРЯЮЩИЕСЯ") shrink to leave
+			// a side margin instead of pressing right up against the frame edges.
+			const target = parent.clientWidth * 0.9;
 			const natural = node.scrollWidth;
-			if (avail > 0 && natural > avail) {
+			if (target > 0 && natural > target) {
 				const base = parseFloat(getComputedStyle(node).fontSize);
-				node.style.fontSize = `${Math.max(6, (base * avail) / natural * 0.99)}px`;
+				node.style.fontSize = `${Math.max(6, (base * target) / natural)}px`;
 			}
 		};
 		const ro = new ResizeObserver(apply);
