@@ -6,7 +6,7 @@
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { MainContainer } from 'components-layout';
-	import { Container, Graphics, Sprite, Text } from 'pixi-svelte';
+	import { AnimatedSprite, Container, Graphics, Sprite, Text, type LoadedSpriteSheet } from 'pixi-svelte';
 	import { stateBet } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
@@ -100,6 +100,11 @@
 	const CY = $derived(main.height * 0.186);
 	// magnetic_tube.png is 2004×1336 (fully transparent, see-through interior).
 	const TUBE_ASPECT = 2004 / 1336;
+	// New animated tesla tube (video flipbook, lightning baked in) — same as desktop CapsulePanel.
+	// Falls back to the static glass + procedural crackle until the sheet is loaded.
+	const tubeFrames = $derived(
+		(context.stateApp.loadedAssets?.capsuleTubeAnim ?? []) as LoadedSpriteSheet,
+	);
 	const BOX_ASPECT = 323 / 228;
 	const capsuleW = $derived(main.width * 0.56);
 	const capsuleH = $derived(capsuleW / TUBE_ASPECT);
@@ -148,41 +153,58 @@
 		<!-- Capsule — ALWAYS shown. Fully transparent tube; the combining symbol (when any) and a live
 		     crackle/bolt web arc INSIDE the clear window (masked to the interior), like the desktop. -->
 		<Container x={capsuleX} y={CY}>
-			<Sprite key="capsuleTubeGlass" anchor={0.5} width={capsuleW} height={capsuleH} />
+			{#if tubeFrames.length > 0}
+				<!-- New animated tesla tube (lightning baked in). The frames are vertical, so rotate 90° to
+				     lie horizontally: pre-rotation width→on-screen height, height→on-screen width. -->
+				<AnimatedSprite
+					textures={tubeFrames}
+					anchor={0.5}
+					rotation={Math.PI / 2}
+					width={capsuleH}
+					height={capsuleW}
+					animationSpeed={0.14}
+					loop={true}
+					play={true}
+				/>
+			{:else}
+				<Sprite key="capsuleTubeGlass" anchor={0.5} width={capsuleW} height={capsuleH} />
+			{/if}
 			{#if symbolKey}
 				<Sprite key={symbolKey} anchor={0.5} width={symSize} height={symSize * (152 / 184)} />
 			{/if}
-			<Container>
-				<Graphics
-					isMask
-					draw={(g) => {
-						g.clear();
-						g.beginFill(0xffffff);
-						g.rect(-capsuleW * 0.23, -capsuleH * 0.18, capsuleW * 0.46, capsuleH * 0.36);
-						g.endFill();
-					}}
-				/>
-				<!-- Pulsing core glow (wide ellipse) so the charge reads even between bolt flickers. -->
-				<Graphics
-					blendMode="add"
-					draw={(g) => {
-						g.clear();
-						const steps = 8;
-						for (let s = steps; s >= 1; s--) {
-							const t = s / steps;
-							g.beginFill(0x59b7ff, 0.06 * (1 - t) + 0.015);
-							g.drawEllipse(0, 0, capsuleW * 0.26 * t, capsuleH * 0.14 * t);
+			{#if tubeFrames.length === 0}
+				<Container>
+					<Graphics
+						isMask
+						draw={(g) => {
+							g.clear();
+							g.beginFill(0xffffff);
+							g.rect(-capsuleW * 0.23, -capsuleH * 0.18, capsuleW * 0.46, capsuleH * 0.36);
 							g.endFill();
-						}
-					}}
-				/>
-				<!-- Lightning runs HORIZONTALLY along the tube: the (vertical) bolt art is rotated 90°, so
-				     its length maps to the sprite HEIGHT (tube width) and its thickness to the WIDTH. -->
-				<Sprite key="capsuleCrackle" anchor={0.5} rotation={Math.PI / 2} width={capsuleH * 0.4} height={capsuleW * 0.5} alpha={crackleA} blendMode="add" />
-				<Sprite key="capsuleCrackle" anchor={0.5} rotation={Math.PI / 2} width={-capsuleH * 0.4} height={capsuleW * 0.5} alpha={crackleB} blendMode="add" />
-				<Sprite key="capsuleLightning" anchor={0.5} rotation={Math.PI / 2} width={capsuleH * 0.42} height={capsuleW * 0.56} alpha={arcFlicker} blendMode="add" />
-				<Sprite key="capsuleLightning" anchor={0.5} rotation={Math.PI / 2} width={capsuleH * 0.32} height={capsuleW * 0.46} alpha={arcFlicker} />
-			</Container>
+						}}
+					/>
+					<!-- Pulsing core glow (wide ellipse) so the charge reads even between bolt flickers. -->
+					<Graphics
+						blendMode="add"
+						draw={(g) => {
+							g.clear();
+							const steps = 8;
+							for (let s = steps; s >= 1; s--) {
+								const t = s / steps;
+								g.beginFill(0x59b7ff, 0.06 * (1 - t) + 0.015);
+								g.drawEllipse(0, 0, capsuleW * 0.26 * t, capsuleH * 0.14 * t);
+								g.endFill();
+							}
+						}}
+					/>
+					<!-- Lightning runs HORIZONTALLY along the tube: the (vertical) bolt art is rotated 90°, so
+					     its length maps to the sprite HEIGHT (tube width) and its thickness to the WIDTH. -->
+					<Sprite key="capsuleCrackle" anchor={0.5} rotation={Math.PI / 2} width={capsuleH * 0.4} height={capsuleW * 0.5} alpha={crackleA} blendMode="add" />
+					<Sprite key="capsuleCrackle" anchor={0.5} rotation={Math.PI / 2} width={-capsuleH * 0.4} height={capsuleW * 0.5} alpha={crackleB} blendMode="add" />
+					<Sprite key="capsuleLightning" anchor={0.5} rotation={Math.PI / 2} width={capsuleH * 0.42} height={capsuleW * 0.56} alpha={arcFlicker} blendMode="add" />
+					<Sprite key="capsuleLightning" anchor={0.5} rotation={Math.PI / 2} width={capsuleH * 0.32} height={capsuleW * 0.46} alpha={arcFlicker} />
+				</Container>
+			{/if}
 		</Container>
 
 		<!-- FREE SPINS count (remaining) — only during a bonus -->
