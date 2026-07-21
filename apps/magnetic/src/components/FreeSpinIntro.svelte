@@ -58,18 +58,18 @@
 	const magnetY = $derived(((-0.235 + 0.023) * PH + (0.27 * PH - numBoxH / 2)) / 2);
 	const magnetW = $derived(PW * 0.34);
 
-	// The panel art fades to near-black across its lower half; overlaid ADDITIVELY (black adds
-	// nothing, so the good upper area is untouched) this lifts the dark lower half back to a
-	// readable navy so the popup interior no longer looks like a black shadow from centre to bottom.
-	const PANEL_LIFT = new FillGradient({
+	// The panel art fades to near-black across its lower half, which reads as a dark "shadow" over
+	// the popup. Paint an OPAQUE navy interior over the art (behind the content, inside the frame)
+	// so the popup face is uniformly lit and the art's dark lower gradient stays hidden behind it.
+	// Opaque normal-blend is used rather than an additive lift so it renders the same on every GPU.
+	const PANEL_FILL = new FillGradient({
 		type: 'linear',
 		start: { x: 0.5, y: 0 },
 		end: { x: 0.5, y: 1 },
 		colorStops: [
-			{ offset: 0.0, color: 0x000000 },
-			{ offset: 0.14, color: 0x000000 },
-			{ offset: 0.5, color: 0x081f38 },
-			{ offset: 1.0, color: 0x0a2842 },
+			{ offset: 0.0, color: 0x11386e },
+			{ offset: 0.5, color: 0x0d2c57 },
+			{ offset: 1.0, color: 0x0a2445 },
 		],
 		textureSpace: 'local',
 	});
@@ -199,14 +199,13 @@
 				<!-- Dark-blue tech panel -->
 				<Sprite key="fsPanel" anchor={0.5} width={PW} height={PH} />
 
-				<!-- Lift the panel art's near-black lower half back to navy (additive gradient inside the
-				     frame) so the interior doesn't read as a black shadow from centre to bottom. -->
+				<!-- Opaque navy interior painted over the panel art (inside the frame) so the popup face is
+				     uniformly lit and the art's near-black lower gradient stays hidden behind it. -->
 				<Graphics
-					blendMode="add"
 					draw={(g) => {
 						g.clear();
-						g.rect(-PW * 0.4, -PH * 0.42, PW * 0.8, PH * 0.84);
-						g.fill(PANEL_LIFT);
+						g.roundRect(-PW * 0.41, -PH * 0.43, PW * 0.82, PH * 0.86, PW * 0.02);
+						g.fill(PANEL_FILL);
 					}}
 				/>
 
