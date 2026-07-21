@@ -397,9 +397,15 @@
 		align-items: center;
 	}
 	.ov-left {
+		/* Fill the grid cell and clip: long overview copy (e.g. German/Russian) must never overflow
+		   downward onto the stat boxes. Content is top-aligned, so the title/paragraphs stay visible
+		   and only the trailing (redundant) max-win line is ever affected. */
+		align-self: stretch;
+		min-height: 0;
+		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		gap: clamp(10px, 2cqmin, 22px);
+		gap: clamp(8px, 1.7cqmin, 20px);
 	}
 	.ov-title {
 		margin: 0;
@@ -418,17 +424,17 @@
 	}
 	.ov-text {
 		margin: 0;
-		font-size: clamp(12px, 2.15cqmin, 20px);
-		line-height: 1.5;
+		font-size: clamp(11px, 1.95cqmin, 18px);
+		line-height: 1.42;
 		color: #d7e6f7;
 	}
 	.ov-maxwin {
 		margin: clamp(2px, 0.6cqmin, 8px) 0 0;
-		font-size: clamp(13px, 2.4cqmin, 22px);
+		font-size: clamp(11px, 2.0cqmin, 18px);
 		color: #d7e6f7;
 	}
 	.ov-maxwin span {
-		font-size: clamp(22px, 5cqmin, 48px);
+		font-size: clamp(16px, 3.4cqmin, 32px);
 		font-weight: 800;
 		color: #fff;
 		letter-spacing: 0.01em;
@@ -883,24 +889,28 @@
 		gap: clamp(12px, 2.6cqmin, 30px);
 	}
 	.gi-card {
+		/* Long legal copy (e.g. Russian, 3 paragraphs) must stay inside the card and never spill onto
+		   the pager below — clip as a safety net; sizes below are tuned so it fits without clipping. */
+		min-height: 0;
+		overflow: hidden;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
-		padding: clamp(12px, 2.6cqmin, 30px) clamp(12px, 2.6cqmin, 32px);
-		gap: clamp(8px, 1.6cqmin, 16px);
+		padding: clamp(10px, 2cqmin, 22px) clamp(12px, 2.6cqmin, 32px);
+		gap: clamp(6px, 1.2cqmin, 12px);
 	}
 	.gi-ic {
-		width: clamp(56px, 12cqmin, 120px);
-		height: clamp(56px, 12cqmin, 120px);
+		width: clamp(48px, 9.5cqmin, 96px);
+		height: clamp(48px, 9.5cqmin, 96px);
 		display: grid;
 		place-items: center;
 		color: #6fb6f6;
 	}
 	/* The scales-of-justice art reads better a little larger than the rotate arrow. */
 	.gi-ic--legal {
-		width: clamp(70px, 14.5cqmin, 146px);
-		height: clamp(70px, 14.5cqmin, 146px);
+		width: clamp(52px, 10.5cqmin, 106px);
+		height: clamp(52px, 10.5cqmin, 106px);
 	}
 	.gi-ic img {
 		width: 100%;
@@ -918,7 +928,8 @@
 		color: transparent;
 	}
 	.gi-card .feat-p {
-		font-size: clamp(10px, 1.85cqmin, 16px);
+		font-size: clamp(9px, 1.6cqmin, 14px);
+		line-height: 1.38;
 	}
 
 	/* Page 7: Controls — plain icon grid of the game's buttons (no card frame). Centred flex-wrap so it
@@ -1095,7 +1106,7 @@
 			font-size: clamp(13px, 3.4cqmin, 18px);
 		}
 		.ov-maxwin span {
-			font-size: clamp(24px, 6.8cqmin, 42px);
+			font-size: clamp(18px, 4.6cqmin, 30px);
 		}
 		.ov-right {
 			min-height: clamp(170px, 38cqh, 340px);
