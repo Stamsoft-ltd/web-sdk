@@ -9,8 +9,6 @@
 
 <script lang="ts">
 	import { AnimatedSprite, Container, Graphics, Sprite, Text, type LoadedSpriteSheet } from 'pixi-svelte';
-	// @ts-expect-error - 'pixi.js' is resolved at build time via the vite alias (transitive dep).
-	import { FillGradient } from 'pixi.js';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
@@ -60,20 +58,10 @@
 	const magnetW = $derived(PW * 0.34);
 
 	// The panel art fades to near-black across its lower half, which reads as a dark "shadow" over
-	// the popup. Paint an OPAQUE navy interior over the art (behind the content, inside the frame)
-	// so the popup face is uniformly lit and the art's dark lower gradient stays hidden behind it.
-	// Opaque normal-blend is used rather than an additive lift so it renders the same on every GPU.
-	const PANEL_FILL = new FillGradient({
-		type: 'linear',
-		start: { x: 0.5, y: 0 },
-		end: { x: 0.5, y: 1 },
-		colorStops: [
-			{ offset: 0.0, color: 0x11386e },
-			{ offset: 0.5, color: 0x0d2c57 },
-			{ offset: 1.0, color: 0x0a2445 },
-		],
-		textureSpace: 'local',
-	});
+	// the popup. Paint a flat OPAQUE navy interior over the art (behind the content, inside the
+	// frame) so the popup face is uniformly lit and the art's dark lower gradient stays hidden
+	// behind it. A solid colour (no gradient/filter) is used so it renders the same on every GPU.
+	const PANEL_FILL = 0x0f3260;
 
 	// ── Entry animation (mirrors the intro): panel + content slide UP from below while the
 	//    CONGRATULATIONS heading drops in from the top. ──
