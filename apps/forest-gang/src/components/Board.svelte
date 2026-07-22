@@ -12,7 +12,7 @@
 <script lang="ts">
 	import { AnimatedSprite, Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
 	import { OnPressFullScreen } from 'components-layout';
-	import type { Texture } from 'pixi.js';
+	import type { Texture } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
@@ -74,7 +74,7 @@
 	const LETTER_WIN_TRIM_END = 3;
 	const winAnimTextures = $derived.by(() => {
 		const map: Partial<Record<SymbolName, Texture[]>> = {};
-		for (const [sym, key] of Object.entries(WIN_ANIM_KEY)) {
+		for (const [sym, key] of Object.entries(WIN_ANIM_KEY) as [SymbolName, string][]) {
 			let t = (context.stateApp.loadedAssets?.[key] ?? []) as Texture[];
 			if (LOW_SYMBOLS_SET.has(sym as SymbolName) && t.length > LETTER_WIN_TRIM_START + LETTER_WIN_TRIM_END + 4) {
 				t = t.slice(LETTER_WIN_TRIM_START, t.length - LETTER_WIN_TRIM_END);
@@ -110,7 +110,7 @@
 	};
 	const idleAnimTextures = $derived.by(() => {
 		const map: Partial<Record<SymbolName, Texture[]>> = {};
-		for (const [sym, key] of Object.entries(IDLE_ANIM_KEY)) {
+		for (const [sym, key] of Object.entries(IDLE_ANIM_KEY) as [SymbolName, string][]) {
 			const t = (context.stateApp.loadedAssets?.[key] ?? []) as Texture[];
 			if (t.length) map[sym as SymbolName] = t;
 		}
@@ -128,8 +128,10 @@
 	// filled the frame like the idle. Keep them a bit smaller so the brown frame stays visible on a win.
 	const WIN_INNER_FRAC = 0.84;
 	// Framed animals read a touch low (the idle blink's union bbox includes the highest ear position),
-	// so lift them slightly so the top/bottom border gap is even.
-	const ANIMAL_Y_NUDGE = $derived(symbolH * BORDER_SIZE * BORDER_H_MULT * -0.05);
+	// so lift them slightly so the top/bottom border gap is even. Reads SYMBOL_H directly (rather
+	// than the symbolH derived declared further down) so declaration order stays valid — the two
+	// differ only by the board-scale factor, which cancels out in this small relative nudge.
+	const ANIMAL_Y_NUDGE = $derived(SYMBOL_H * BORDER_SIZE * BORDER_H_MULT * -0.05);
 	const idleFit = $derived(BORDER_SIZE * BORDER_H_MULT * INNER_FRAC);
 	const winFit = $derived(BORDER_SIZE * WIN_INNER_FRAC);
 	// Portrait cells are narrow and the idle busts (fit by height) read too thin — widen them a touch

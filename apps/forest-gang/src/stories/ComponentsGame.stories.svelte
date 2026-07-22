@@ -53,7 +53,7 @@
 			});
 		},
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -65,5 +65,5 @@
 			eventEmitter.broadcast({ type: 'boardHide' });
 		},
 	})}
-	{template}
+	template={template as any}
 />

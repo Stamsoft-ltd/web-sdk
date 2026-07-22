@@ -309,7 +309,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if (!isFeatureSpin) {
 			eventEmitter.broadcast({ type: 'freeSpinIntroHide' });
 		}
-		eventEmitter.broadcast({ type: 'boardFrameGlowShow' });
 		if (!isFeatureSpin) {
 			eventEmitter.broadcast({ type: 'freeSpinCounterShow' });
 			stateUi.freeSpinCounterShow = true;
@@ -352,7 +351,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.expandedSymbol = null;
 		stateGame.paylineWins = [];
 		stateGame.gameType = isFeatureSpin ? 'feature' : 'basegame';
-		eventEmitter.broadcast({ type: 'boardFrameGlowHide' });
 		eventEmitter.broadcast({ type: 'globalMultiplierHide' });
 		eventEmitter.broadcast({ type: 'dealItMultiplierHide' });
 		if (isFeatureSpin) {

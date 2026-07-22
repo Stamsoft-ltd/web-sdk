@@ -126,10 +126,10 @@
 				onresize={(sizes) => (titleSizes = sizes)}
 				style={{
 					fontFamily: 'Cinzel',
-					fontWeight: '700',
+					fontWeight: '700' as const,
 					fontSize: titleFont,
 					fill: GOLD_GRADIENT,
-					align: 'center',
+					align: 'center' as const,
 					letterSpacing: titleFont * 0.03,
 					wordWrap: false,
 				}}
@@ -142,10 +142,10 @@
 			{@const counterX = groupSizes.width / 2 - counterSizes.width / 2}
 			{@const counterStyle = {
 				fontFamily: 'Cinzel',
-				fontWeight: '700',
+				fontWeight: '700' as const,
 				fontSize: counterFont,
 				fill: GOLD_GRADIENT,
-				align: 'center',
+				align: 'center' as const,
 				letterSpacing: counterFont * 0.03,
 			}}
 			<Container

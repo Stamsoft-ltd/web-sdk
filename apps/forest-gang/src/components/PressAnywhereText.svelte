@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Text } from 'pixi-svelte';
-	// @ts-expect-error - 'pixi.js' is resolved at build time via the vite alias (transitive dep).
-	import { FillGradient } from 'pixi.js';
+	import { FillGradient } from 'pixi-svelte';
 
 	import { i18nDerived } from '../i18n/i18nDerived';
 

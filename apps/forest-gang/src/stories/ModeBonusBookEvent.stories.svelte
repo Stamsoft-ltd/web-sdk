@@ -41,7 +41,7 @@
 {#each eventStories as eventStory}
 	<Story
 		name={eventStory.name}
-		args={templateArgs({ skipLoadingScreen: true, data: eventStory.data, action: async (data) => await playBookEvent(data, { bookEvents: [] }) })}
-		{template}
+		args={templateArgs({ skipLoadingScreen: true, data: eventStory.data, action: async (data) => await playBookEvent(data as any, { bookEvents: [] }) })}
+		template={template as any}
 	/>
 {/each}

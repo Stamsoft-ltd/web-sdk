@@ -11,7 +11,7 @@
 	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
 	import { AnimatedSprite, Container, Sprite, Text } from 'pixi-svelte';
-	import type { Texture } from 'pixi.js';
+	import type { Texture } from 'pixi-svelte';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 

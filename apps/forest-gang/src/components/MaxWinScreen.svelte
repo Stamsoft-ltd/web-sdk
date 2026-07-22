@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { FillGradient } from 'pixi.js';
+	import { FillGradient } from 'pixi-svelte';
 	import { Sprite, Container, Text } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
 

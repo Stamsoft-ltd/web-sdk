@@ -29,10 +29,12 @@ export const rgsFetcher = {
 		const data = await response.json();
 		return data as TResponse;
 	},
-	get: async function get<
-		T extends keyof paths,
-		TResponse = paths[T]['get']['responses'][200]['content']['application/json'],
-	>(options: { url: T; rgsUrl: string }): Promise<TResponse> {
+	// The generated schema contains no GET operations (replay is the only GET consumer and isn't
+	// in schema.ts yet), so this takes a plain string URL and an explicit response type.
+	get: async function get<TResponse = unknown>(options: {
+		url: string;
+		rgsUrl: string;
+	}): Promise<TResponse> {
 		const response = await fetcher({
 			method: 'GET',
 			endpoint: `${rgsProtocol(options.rgsUrl)}://${options.rgsUrl}${options.url}`,

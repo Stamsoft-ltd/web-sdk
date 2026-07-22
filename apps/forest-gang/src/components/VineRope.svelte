@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { Graphics, Container } from 'pixi.js';
-	import { getContextParent } from 'pixi-svelte';
+	import { PIXI, getContextParent } from 'pixi-svelte';
 	import { onDestroy } from 'svelte';
 	import { GlowFilter } from 'pixi-filters';
 
@@ -14,9 +13,9 @@
 	const props: Props = $props();
 	const parentContext = getContextParent();
 
-	const line = new Graphics();
-	const maskGraphics = new Graphics();
-	const container = new Container();
+	const line = new PIXI.Graphics();
+	const maskGraphics = new PIXI.Graphics();
+	const container = new PIXI.Container();
 	container.addChild(line);
 	line.mask = maskGraphics;
 	container.addChild(maskGraphics);
@@ -47,13 +46,8 @@
 		line.stroke();
 
 		maskGraphics.clear();
-		maskGraphics.beginFill(0xffffff);
-		maskGraphics.rect(
-			minX - pad,
-			minY - pad,
-			(maxX - minX + pad * 2) * props.progress,
-			maxY - minY + pad * 2,
-		);
-		maskGraphics.endFill();
+		maskGraphics
+			.rect(minX - pad, minY - pad, (maxX - minX + pad * 2) * props.progress, maxY - minY + pad * 2)
+			.fill(0xffffff);
 	});
 </script>

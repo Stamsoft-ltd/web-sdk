@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-nocheck — dev-only asset pipeline script, not part of the app build.
 /**
  * Rebuilds the Howler audio sprite (static/assets/audio/sounds.{mp3,ogg,json}) from individual
  * source files in `audio-src/`.

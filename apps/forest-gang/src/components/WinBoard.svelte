@@ -2,7 +2,7 @@
 	import { Tween } from 'svelte/motion';
 	import { cubicIn, backOut } from 'svelte/easing';
 
-	import { FillGradient } from 'pixi.js';
+	import { FillGradient } from 'pixi-svelte';
 	import { Graphics, Sprite, Container, Text } from 'pixi-svelte';
 
 	import ForestBugs from './ForestBugs.svelte';

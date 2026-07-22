@@ -15,7 +15,7 @@
 	import { OnHotkey } from 'components-shared';
 	import { FadeContainer } from 'components-pixi';
 	import { anchorToPivot, AnimatedSprite, Container, Sprite } from 'pixi-svelte';
-	import type { Texture } from 'pixi.js';
+	import type { Texture } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
 	import { spriteKeyByName } from '../game/utils';

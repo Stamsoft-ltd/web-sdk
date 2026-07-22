@@ -1,3 +1,4 @@
+/// <reference path="./ambient.d.ts" />
 import * as envStaticPublic from '$env/static/public';
 
 export let PUBLIC_SITE_MODE = envStaticPublic.PUBLIC_SITE_MODE || '';

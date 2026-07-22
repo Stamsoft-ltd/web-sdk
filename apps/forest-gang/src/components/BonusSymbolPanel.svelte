@@ -5,7 +5,7 @@
 
 <script lang="ts">
 	import { BitmapText, Container, Sprite, AnimatedSprite } from 'pixi-svelte';
-	import type { Texture } from 'pixi.js';
+	import type { Texture } from 'pixi-svelte';
 	import { FadeContainer } from 'components-pixi';
 	import { MainContainer } from 'components-layout';
 

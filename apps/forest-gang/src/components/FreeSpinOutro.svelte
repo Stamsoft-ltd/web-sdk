@@ -9,7 +9,7 @@
 
 <script lang="ts">
 	import { AnimatedSprite, Container, Sprite, Text } from 'pixi-svelte';
-	import type { Texture } from 'pixi.js';
+	import type { Texture } from 'pixi-svelte';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { FadeContainer, WinCountUpProvider } from 'components-pixi';

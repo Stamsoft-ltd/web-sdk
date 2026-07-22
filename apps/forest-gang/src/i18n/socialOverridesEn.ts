@@ -12,10 +12,9 @@ export const socialOverridesEn: Record<string, string> = {
 	BUY: 'PLAY',
 	PAYOUT: 'WIN',
 	'BET REPLAY': 'Play Replay',
-	'BASE BET': 'Base Play',
-	'COST MULTIPLIER': 'Feature Multiplier',
+	// BASE BET / COST MULTIPLIER / PAYOUT MULTIPLIER live in the Stake.us block below —
+	// duplicating them here silently shadowed those values.
 	'TOTAL BET COST': 'Total Play',
-	'PAYOUT MULTIPLIER': 'Final Multiplier',
 	'TOTAL WIN': 'Total Win',
 	'REPLAY DISCLAIMER': 'This is a replay of a previous play round. No plays will be placed.',
 

@@ -87,5 +87,12 @@ export const requestReplay = async (options: {
 		url: `/bet/replay/${options.game}/${options.version}/${options.mode}/${options.event}${options.language ? `?language=${encodeURIComponent(options.language)}` : ''}`,
 	});
 
-	return data;
+	// The replay endpoint isn't in schema.ts yet (see @ts-ignore above), so type the shape by hand.
+	return data as {
+		balance?: { amount: number; currency?: string };
+		currency?: string;
+		amount?: number;
+		payout?: number;
+		state?: unknown[];
+	} & Record<string, unknown>;
 }

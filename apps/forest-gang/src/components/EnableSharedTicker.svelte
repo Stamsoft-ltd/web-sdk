@@ -1,5 +1,5 @@
 <script lang="ts">
-	import * as PIXI from 'pixi.js';
+	import { PIXI } from 'pixi-svelte';
 	import { onMount } from 'svelte';
 
 	import { getContext } from '../game/context';

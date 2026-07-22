@@ -3,7 +3,7 @@
 	import { MainContainer } from 'components-layout';
 	import { AnimatedSprite, Container, Graphics, Sprite } from 'pixi-svelte';
 	import { cubicOut } from 'svelte/easing';
-	import type { Texture } from 'pixi.js';
+	import type { Texture } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_H, SYMBOL_W, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';

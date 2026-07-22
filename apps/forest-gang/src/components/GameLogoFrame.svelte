@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Sprite, Container, Text, AnimatedSprite } from 'pixi-svelte';
-	import type { Texture } from 'pixi.js';
+	import type { Texture } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
 	import { stateBet } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
@@ -125,7 +125,7 @@
 
 	const titleStyle = (fontSize: number) => ({
 		fontFamily: 'Cinzel',
-		fontWeight: '700',
+		fontWeight: '700' as const,
 		fontSize,
 		fill: GOLD_GRADIENT,
 		align: 'center' as const,

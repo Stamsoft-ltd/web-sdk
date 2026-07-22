@@ -40,9 +40,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.reveal,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -50,9 +50,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.setTotalWin,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -60,9 +60,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.freeSpinTrigger,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -70,9 +70,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.updateFreeSpin,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -80,9 +80,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.winInfo,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <!-- Win state + SWEET WIN big-win presentation, to verify winning symbols keep animating there. -->
@@ -97,7 +97,7 @@
 			await playBookEvent(events.setWin as any, { bookEvents: [] });
 		},
 	})}
-	{template}
+	template={template as any}
 />
 
 <!-- Expanded WOLF symbol (new win video + bamboo/vine column frame from Figma). -->
@@ -108,7 +108,7 @@
 		data: events.expandedWolf,
 		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <!-- Expanded SQUIRREL symbol (new video animation + thin brown frame). -->
@@ -119,7 +119,7 @@
 		data: events.expandedSquirrel,
 		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <!-- All 5 animals on the board, every visible cell driven into its win animation, so the new
@@ -134,7 +134,7 @@
 			await playBookEvent(events.winInfoAnimals as any, { bookEvents: [] });
 		},
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -142,9 +142,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.setWin,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -152,9 +152,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.freeSpinEnd,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -162,7 +162,7 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.finalWin,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
