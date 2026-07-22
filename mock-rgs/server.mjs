@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getRoundForMode as getForestRoundForMode, getReplayRound as getForestReplayRound } from './math/forest-gang.mjs';
 import { getRoundForMode as getMagneticRoundForMode, getReplayRound as getMagneticReplayRound } from './math/magnetic.mjs';
+import { getRoundForMode as getThemeParkRoundForMode, getReplayRound as getThemeParkReplayRound } from './math/theme-park.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8787);
@@ -80,6 +81,33 @@ const GAME_REGISTRY = {
       jurisdiction: buildJurisdiction(),
     }),
   },
+  themePark: {
+    slug: 'theme-park',
+    gameID: '0_0_theme_park',
+    modeCostMultipliers: { BASE: 1, ANTE: 3, FSPIN1: 20, FSPIN2: 60, DUCK: 100, ROLLER: 200, COASTER: 500 },
+    getRoundForMode: getThemeParkRoundForMode,
+    getReplayRound: getThemeParkReplayRound,
+    booksDir: process.env.THEME_PARK_MATH_SDK_BOOKS_DIR || path.resolve(__dirname, '../apps/theme-park/library/books'),
+    lookupDir: process.env.THEME_PARK_MATH_SDK_LOOKUPS_DIR || path.resolve(__dirname, '../apps/theme-park/library/publish_files'),
+    buildConfig: () => ({
+      gameID: '0_0_theme_park',
+      minBet: 1 * API_AMOUNT_MULTIPLIER,
+      maxBet: 100 * API_AMOUNT_MULTIPLIER,
+      stepBet: 1 * API_AMOUNT_MULTIPLIER,
+      defaultBetLevel: 1 * API_AMOUNT_MULTIPLIER,
+      betLevels: [1, 2, 5, 10, 20, 50, 100].map((value) => value * API_AMOUNT_MULTIPLIER),
+      betModes: {
+        BASE: { type: 'default' },
+        ANTE: { type: 'activate' },
+        FSPIN1: { type: 'activate' },
+        FSPIN2: { type: 'activate' },
+        DUCK: { type: 'buy' },
+        ROLLER: { type: 'buy' },
+        COASTER: { type: 'buy' },
+      },
+      jurisdiction: buildJurisdiction(),
+    }),
+  },
 };
 
 const send = (res, code, body) => {
@@ -107,6 +135,10 @@ const readJson = (req) =>
   });
 
 const getRouteContext = (pathname) => {
+  if (pathname === '/theme-park' || pathname.startsWith('/theme-park/')) {
+    const stripped = pathname.replace(/^\/theme-park/, '') || '/';
+    return { game: GAME_REGISTRY.themePark, pathname: stripped.startsWith('/') ? stripped : `/${stripped}` };
+  }
   if (pathname === '/magnetic' || pathname.startsWith('/magnetic/')) {
     const stripped = pathname.replace(/^\/magnetic/, '') || '/';
     return { game: GAME_REGISTRY.magnetic, pathname: stripped.startsWith('/') ? stripped : `/${stripped}` };
@@ -274,7 +306,7 @@ const server = https.createServer(
 
     if (req.method === 'GET' && pathname.startsWith('/bet/replay/')) {
       const [, , , routeGame, version, mode, event] = pathname.split('/');
-      const replayGame = routeGame === '0_0_magnetic' ? GAME_REGISTRY.magnetic : game;
+      const replayGame = Object.values(GAME_REGISTRY).find((candidate) => candidate.gameID === routeGame) || game;
       const stored = replayStore.get(`${replayGame.slug}:${event}`);
       const replaySeed = Number(url.searchParams.get('seed') || Date.now());
       const fallback = getRoundFromGeneratedBooks(replayGame, mode, replaySeed) || replayGame.getReplayRound({ mode, seed: replaySeed });
@@ -303,5 +335,6 @@ server.listen(PORT, HOST, () => {
   console.log(`mock-rgs https://localhost:${PORT}`);
   console.log(`health     https://localhost:${PORT}/health`);
   console.log(`magnetic   https://localhost:${PORT}/magnetic/health`);
+  console.log(`theme park https://localhost:${PORT}/theme-park/health`);
   console.log('accept self-signed cert in browser first');
 });

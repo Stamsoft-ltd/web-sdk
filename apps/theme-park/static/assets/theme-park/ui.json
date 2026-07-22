@@ -1,0 +1,6 @@
+{
+  "frames": {
+    "theme-park-logo.png": { "frame": { "x": 350, "y": 5, "w": 720, "h": 145 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 720, "h": 145 }, "sourceSize": { "w": 720, "h": 145 } }
+  },
+  "meta": { "image": "main-concept.png", "format": "RGBA8888", "size": { "w": 1536, "h": 1024 }, "scale": "1" }
+}

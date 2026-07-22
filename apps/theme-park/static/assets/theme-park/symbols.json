@@ -1,0 +1,20 @@
+{
+  "frames": {
+    "tp_h1.png": { "frame": { "x": 925, "y": 80, "w": 315, "h": 245 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 315, "h": 245 }, "sourceSize": { "w": 315, "h": 245 } },
+    "tp_h2.png": { "frame": { "x": 1250, "y": 75, "w": 280, "h": 250 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 280, "h": 250 }, "sourceSize": { "w": 280, "h": 250 } },
+    "tp_h3.png": { "frame": { "x": 745, "y": 375, "w": 235, "h": 245 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 235, "h": 245 }, "sourceSize": { "w": 235, "h": 245 } },
+    "tp_h4.png": { "frame": { "x": 990, "y": 375, "w": 250, "h": 245 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 250, "h": 245 }, "sourceSize": { "w": 250, "h": 245 } },
+    "tp_h5.png": { "frame": { "x": 1245, "y": 375, "w": 285, "h": 245 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 285, "h": 245 }, "sourceSize": { "w": 285, "h": 245 } },
+    "tp_l1.png": { "frame": { "x": 45, "y": 95, "w": 145, "h": 210 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 145, "h": 210 }, "sourceSize": { "w": 145, "h": 210 } },
+    "tp_l2.png": { "frame": { "x": 180, "y": 95, "w": 150, "h": 210 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 150, "h": 210 }, "sourceSize": { "w": 150, "h": 210 } },
+    "tp_l3.png": { "frame": { "x": 305, "y": 95, "w": 145, "h": 210 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 145, "h": 210 }, "sourceSize": { "w": 145, "h": 210 } },
+    "tp_l4.png": { "frame": { "x": 85, "y": 280, "w": 145, "h": 200 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 145, "h": 200 }, "sourceSize": { "w": 145, "h": 200 } },
+    "tp_l5.png": { "frame": { "x": 215, "y": 280, "w": 195, "h": 200 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 195, "h": 200 }, "sourceSize": { "w": 195, "h": 200 } },
+    "tp_wild.png": { "frame": { "x": 25, "y": 525, "w": 460, "h": 390 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 460, "h": 390 }, "sourceSize": { "w": 460, "h": 390 } },
+    "tp_duck_collect.png": { "frame": { "x": 1250, "y": 75, "w": 280, "h": 250 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 280, "h": 250 }, "sourceSize": { "w": 280, "h": 250 } },
+    "tp_scatter_duck.png": { "frame": { "x": 500, "y": 695, "w": 220, "h": 245 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 220, "h": 245 }, "sourceSize": { "w": 220, "h": 245 } },
+    "tp_scatter_roller.png": { "frame": { "x": 730, "y": 695, "w": 230, "h": 245 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 230, "h": 245 }, "sourceSize": { "w": 230, "h": 245 } },
+    "tp_scatter_coaster.png": { "frame": { "x": 975, "y": 695, "w": 235, "h": 245 }, "rotated": false, "trimmed": false, "spriteSourceSize": { "x": 0, "y": 0, "w": 235, "h": 245 }, "sourceSize": { "w": 235, "h": 245 } }
+  },
+  "meta": { "image": "symbols-concept.png", "format": "RGBA8888", "size": { "w": 1536, "h": 1024 }, "scale": "1" }
+}
