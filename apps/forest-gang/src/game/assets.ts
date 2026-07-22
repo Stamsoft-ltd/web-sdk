@@ -392,6 +392,14 @@ const DEFERRED_KEYS: readonly string[] = [
 	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
 	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
 	'tenWinAnim', 'aWinAnim', 'jWinAnim', 'kWinAnim', 'qWinAnim',
+	// Animated WILD (static wildTile renders until it arrives — same pattern as the idle blinks)
+	'wildAnim',
+	// Bonus-only art: expanded-symbol reveal tiles/frame, free-spin popup sprites, big-win glow,
+	// and the static bonus backgrounds (posters under the deferred bonus videos)
+	'foxExpTile', 'foxExpWinTile', 'wolfExpTile', 'wolfExpWinTile', 'bearExpTile', 'bearExpWinTile',
+	'rabbitExpTile', 'rabbitExpWinTile', 'squirrelExpTile', 'squirrelExpWinTile', 'expandedFrame',
+	'freeSpins', 'winGlow',
+	'bonusNormalBackground', 'bonusSuperBackground',
 ];
 for (const key of DEFERRED_KEYS) {
 	const entry = (assets as Record<string, { defer?: boolean } | undefined>)[key];
@@ -403,14 +411,16 @@ for (const key of DEFERRED_KEYS) {
 // first (wave 0). Bonus-gated art (a bonus can't trigger for at least a few spins) goes last
 // (wave 2); the rest — big-win boards, free-spin popup art — takes the default wave 1.
 const DEFER_WAVE_0: readonly string[] = [
-	// Idle blinks first — visible from the first settled board.
+	// Idle blinks + the animated WILD first — visible from the first settled board.
 	'wolfIdleAnim', 'foxIdleAnim', 'squirrelIdleAnim', 'bearIdleAnim', 'rabbitIdleAnim',
+	'wildAnim',
 	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
 	'tenWinAnim', 'aWinAnim', 'jWinAnim', 'kWinAnim', 'qWinAnim',
 	'coins', 'pCoins',
 ];
 const DEFER_WAVE_2: readonly string[] = [
 	'bonusSuperBgVideo', 'bonusNormalBgVideo', 'transition',
+	'bonusNormalBackground', 'bonusSuperBackground',
 	'deerPresenter', 'deerPresenterMobile', 'deerPresenterAnim',
 	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
 ];
