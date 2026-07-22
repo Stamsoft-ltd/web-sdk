@@ -103,14 +103,6 @@ const assets = {
 	qWinTile: { type: 'sprite', src: './assets/components/symbols/card_q_win.webp?v=20260722' },
 	jTile: { type: 'sprite', src: './assets/components/symbols/card_j.webp?v=20260722' },
 	jWinTile: { type: 'sprite', src: './assets/components/symbols/card_j_win.webp?v=20260722' },
-	squirrelJAnim: {
-		type: 'spine',
-		src: {
-			atlas: './assets/new_assets/slots_replacement/standard/squirrel_J_anim.atlas',
-			skeleton: './assets/new_assets/slots_replacement/standard/squirrel_J_anim.json',
-			scale: 1,
-		},
-	},
 	tTile: { type: 'sprite', src: './assets/components/symbols/card_t.webp?v=20260722' },
 	tWinTile: { type: 'sprite', src: './assets/components/symbols/card_t_win.webp?v=20260722' },
 	wildTile: { type: 'sprite', src: './assets/components/symbols/wild.webp?v=20260722' },
@@ -189,22 +181,6 @@ const assets = {
 	maxWinScreen:      { type: 'sprite', src: './assets/components/win_boards/max_win_screen.webp?v=20260722' },
 	// Golden P mark pulsing on the win boards' gem medallion (Figma 3205-2090).
 	winEmblemP:        { type: 'sprite', src: './assets/components/win_boards/win_emblem_p.webp?v=20260722' },
-	explosion: {
-		type: 'spine',
-		src: {
-			atlas: './assets/spines/symbols3/symbols3.atlas',
-			skeleton: './assets/spines/symbols3/explosion.json',
-			scale: 2,
-		},
-	},
-	anticipation: {
-		type: 'spine',
-		src: {
-			atlas: './assets/spines/anticipation/anticipation.atlas',
-			skeleton: './assets/spines/anticipation/anticipation.json',
-			scale: 2,
-		},
-	},
 	goldFont: {
 		type: 'font',
 		src: './assets/fonts/goldFont/mm_gold.xml?v=20260722',
