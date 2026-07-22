@@ -1,4 +1,5 @@
 import { stateBet, stateI18nDerived, stateModal, stateUi, stateUrlDerived } from 'state-shared';
+import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import type { BaseBet } from 'utils-bet';
 import { formatCurrencyAmountForCurrency, normalizeCurrency } from '../lib/utils/currency';
 import { logForestDiagnostic } from '../utils/forestDiagnostics';
@@ -128,8 +129,13 @@ const requestReplayStart = () => {
 	return true;
 };
 
-const replayBetAmount = () =>
-	safeAmount((forestStakeState.replaySnapshot as { amount?: number })?.amount ?? stateBet.betAmount);
+// The replay snapshot keeps the RGS round untouched (the resume flow consumes it as-is), so its
+// amount/payout are in API micro-units (1e6 = $1) and must be scaled down for display — without
+// this the replay HUD shows a $1 bet as $1,000,000.
+const replayBetAmount = () => {
+	const raw = (forestStakeState.replaySnapshot as { amount?: number })?.amount;
+	return raw != null ? safeAmount(raw / API_AMOUNT_MULTIPLIER) : safeAmount(stateBet.betAmount);
+};
 
 const replayCostAmount = () => {
 	return replayBetAmount() * modeCostMultiplier(replayModeKey());
@@ -137,8 +143,10 @@ const replayCostAmount = () => {
 
 const replayCostMultiplier = () => modeCostMultiplier(replayModeKey());
 
-const replayPayoutAmount = () =>
-	safeAmount((forestStakeState.replaySnapshot as { payout?: number })?.payout);
+const replayPayoutAmount = () => {
+	const raw = (forestStakeState.replaySnapshot as { payout?: number })?.payout;
+	return raw != null ? safeAmount(raw / API_AMOUNT_MULTIPLIER) : 0;
+};
 
 const replayWinAmount = () => {
 	const payout = replayPayoutAmount();
