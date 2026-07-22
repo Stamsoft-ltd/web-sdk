@@ -384,7 +384,7 @@
 	style={`--forest-shell-bg:url('${heroArtBackdrop}')`}
 >
 	<div class="forest-stage">
-		<App>
+		<App preloadWebFont={false}>
 			<EnableSharedTicker />
 			<EnableSound />
 			<EnableHotkey />

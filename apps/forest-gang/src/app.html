@@ -4,9 +4,45 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
 		<style>
-			/* External fonts — @import is non-blocking and fails silently when the host blocks external requests */
-			@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=EB+Garamond:wght@500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
-			@import url('https://use.typekit.net/aba0ebl.css');
+			/* Fonts are SELF-HOSTED (static/fonts/web) — Stake Engine requires all assets to load
+			   from the game's own CDN paths with no external runtime requests; the previous Google
+			   Fonts / Typekit imports rendered system-font fallbacks wherever external hosts are
+			   blocked. Cinzel is one variable file covering weights 400–900. */
+			@font-face {
+				font-family: 'Cinzel';
+				font-style: normal;
+				font-weight: 400 900;
+				font-display: swap;
+				src: url('%sveltekit.assets%/fonts/web/cinzel.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Poppins';
+				font-style: normal;
+				font-weight: 400;
+				font-display: swap;
+				src: url('%sveltekit.assets%/fonts/web/poppins-400.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Poppins';
+				font-style: normal;
+				font-weight: 500;
+				font-display: swap;
+				src: url('%sveltekit.assets%/fonts/web/poppins-500.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Poppins';
+				font-style: normal;
+				font-weight: 600;
+				font-display: swap;
+				src: url('%sveltekit.assets%/fonts/web/poppins-600.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Poppins';
+				font-style: normal;
+				font-weight: 700;
+				font-display: swap;
+				src: url('%sveltekit.assets%/fonts/web/poppins-700.woff2') format('woff2');
+			}
 			/* Fill the FULL dynamic viewport so the canvas (and its background) always reaches the
 			   bottom edge on mobile — 100% chains break when the browser URL bar shows/hides, leaving
 			   the black body visible below the game. 100dvh tracks the visible viewport. */

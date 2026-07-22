@@ -7,7 +7,7 @@
 	import InitialiseParent from './InitialiseParent.svelte';
 	import AssetsLoader from './AssetsLoader.svelte';
 
-	type Props = { children: Snippet };
+	type Props = { children: Snippet; preloadWebFont?: boolean };
 
 	const props: Props = $props();
 	const context = getContextApp();
@@ -16,7 +16,7 @@
 	onDestroy(() => context.stateApp.reset());
 </script>
 
-<InitialiseApplication>
+<InitialiseApplication preloadWebFont={props.preloadWebFont}>
 	{#if context.stateApp.pixiApplication}
 		<InitialiseParent>
 			<AssetsLoader>
