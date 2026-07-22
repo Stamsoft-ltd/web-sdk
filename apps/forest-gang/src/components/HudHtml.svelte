@@ -1166,6 +1166,11 @@
 		margin-right: 24px;
 	}
 
+	/* Match the − / + spacing to the turbo↔autoplay spacing (cluster gap 15px + turbo drift 24px). */
+	.stepper {
+		gap: 39px;
+	}
+
 
 	.circle-btn,
 	.spin-btn {
@@ -1413,6 +1418,9 @@
 	.spin-btn {
 		width: 216px;
 		height: 216px;
+		/* The bar is a space-between flex row: without shrink protection the button is the only
+		   child that gives way, collapsing the leafy disc to a sliver on laptop widths. */
+		flex: 0 0 auto;
 		/* Negative vertical margins keep the big button from inflating the bar height (it protrudes
 		   above the wooden bar as the focal control); the auto side margins split the free bar
 		   space equally, centering the disc between the + stepper and the turbo button. */
@@ -1570,9 +1578,13 @@
 			gap: 12px;
 		}
 
-		.stepper,
 		.action-cluster {
 			gap: 10px;
+		}
+
+		/* Keep −/+ matched to turbo↔autoplay (cluster gap 10px + turbo drift 24px). */
+		.stepper {
+			gap: 34px;
 		}
 
 		.nav-btn {
@@ -1618,6 +1630,50 @@
 			width: 144px;
 			height: 144px;
 			margin: -42px auto;
+		}
+	}
+
+	/* Small laptops / narrow iframes (≈900–1040px): one more shrink step so the full control row
+	   (info → refresh) always fits WITH the focal spin disc — without this the disc's space runs
+	   out and the turbo/refresh pair clips past the bar end. */
+	@media (max-width: 1040px) {
+		.hud-bottom {
+			padding: 12px 18px;
+			gap: 6px;
+		}
+
+		.nav-btn {
+			width: 48px;
+			height: 48px;
+		}
+
+		.buy-btn {
+			width: 100px;
+		}
+
+		/* Reclaim the decorative drift gaps — space is too tight for them here. */
+		.hud-stats .value-pill--bet {
+			margin-left: 12px;
+		}
+		.action-cluster .nav-btn--turbo {
+			margin-right: 8px;
+		}
+		/* Keep −/+ matched to turbo↔autoplay (cluster gap 10px + turbo drift 8px). */
+		.stepper {
+			gap: 18px;
+		}
+
+		.value {
+			font-size: 0.95rem;
+		}
+		.value-fit {
+			max-width: 100px;
+		}
+
+		.spin-btn {
+			width: 104px;
+			height: 104px;
+			margin: -26px auto;
 		}
 	}
 
