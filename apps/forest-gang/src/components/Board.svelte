@@ -261,9 +261,10 @@
 	});
 	const shakeDecay = $derived(shakeT < 0 ? 0 : Math.max(0, 1 - shakeT / SHAKE_DUR));
 	// Per-cell wobble angle (phased so letters wiggle organically rather than in lockstep).
-	// Very subtle — a faint quiver, not a visible shake.
+	// Subtle but perceptible (~1.9° peak, decaying) — at the previous 0.014 rad the quiver
+	// didn't register at all and no-win settles read as completely static.
 	const shakeAngle = (reelIndex: number, symbolIndex: number) =>
-		shakeDecay <= 0 ? 0 : Math.sin(shakeT * 55 + reelIndex * 2.1 + symbolIndex * 1.3) * 0.014 * shakeDecay;
+		shakeDecay <= 0 ? 0 : Math.sin(shakeT * 55 + reelIndex * 2.1 + symbolIndex * 1.3) * 0.033 * shakeDecay;
 
 	// Reels whose symbols should be hidden behind the low-symbol expanded overlay.
 	// Added one-by-one with a small delay so the overlay sprite starts drawing first.
