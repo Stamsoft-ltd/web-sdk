@@ -68,11 +68,15 @@
 	});
 </script>
 
+<!-- While cycling, the non-active lines stay as faint fully-drawn ghosts (instead of vanishing)
+     so a multi-line win keeps its full picture without reading as a wall of bright lines. -->
 {#each props.wins as win, index (win.lineIndex)}
+	{@const isActive = activeLine === -1 || activeLine === index}
 	<VineRope
 		waypoints={win.path.map((p) => ({ x: cx(p.reel), y: cy(p.row) }))}
 		color={GOLD}
-		progress={props.snap ? 1 : activeLine === -1 || activeLine === index ? drawProgress : 0}
+		progress={props.snap ? 1 : isActive ? drawProgress : 1}
+		alpha={props.snap ? 0.75 : isActive ? 0.85 : 0.16}
 		vineH={VINE_H}
 	/>
 {/each}

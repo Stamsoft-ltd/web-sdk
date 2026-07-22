@@ -245,20 +245,26 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		const wins = isExpandedOverlayShowing
 			? bookEvent.wins.filter((w) => w.symbol === stateGame.expandedSymbol!.symbol)
 			: bookEvent.wins;
-		// Store full 5-reel payline paths for vine animation using lineIndex lookup
+		// Payline paths for the vine animation, trimmed to the MATCHED reels only — drawing the
+		// full 5-reel line definition dragged the vine across non-winning symbols on the tail reels.
 		const paylines = config.paylines as Record<string, number[]>;
 		if (isExpandedOverlayShowing && wins.length > 0) {
-			// Expanding symbol wins all 20 paylines — show all
-			stateGame.paylineWins = Object.entries(paylines).map(([key, rows]) => ({
-				lineIndex: Number(key),
-				path: rows.map((row, reel) => ({ reel, row })),
-			}));
+			// Expanded-symbol wins pay on every line at once; the full-reel expanded presenter IS the
+			// win display there — 20 full-width vines under it just covered the board in lines.
+			stateGame.paylineWins = [];
 		} else {
 			stateGame.paylineWins = wins
 				.map((w) => {
 					const rows = paylines[String(w.meta.lineIndex)];
 					if (!rows) return null;
-					return { lineIndex: w.meta.lineIndex, path: rows.map((row, reel) => ({ reel, row })) };
+					// Wins run left-to-right from reel 0; the matched positions tell us how far.
+					const matchedReels = w.positions.length
+						? Math.max(...w.positions.map((p) => p.reel)) + 1
+						: rows.length;
+					return {
+						lineIndex: w.meta.lineIndex,
+						path: rows.slice(0, matchedReels).map((row, reel) => ({ reel, row })),
+					};
 				})
 				.filter((p): p is { lineIndex: number; path: Array<{ reel: number; row: number }> } => p !== null);
 		}
