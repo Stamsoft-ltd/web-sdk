@@ -230,43 +230,6 @@
 		),
 	);
 
-	// ── No-win shake: when the reels settle in the base game without a win landing, the symbols
-	//    give a brief decaying wobble ("so close" feedback). shakeT = seconds into the shake, -1 idle. ──
-	const SHAKE_DUR = 0.5;
-	let shakeT = $state(-1);
-	let shakeRaf = 0;
-	let wasSpinning = false;
-	const startShake = () => {
-		cancelAnimationFrame(shakeRaf);
-		const t0 = performance.now();
-		const tick = (now: number) => {
-			const e = (now - t0) / 1000;
-			if (e >= SHAKE_DUR) {
-				shakeT = -1;
-				return;
-			}
-			shakeT = e;
-			shakeRaf = requestAnimationFrame(tick);
-		};
-		shakeRaf = requestAnimationFrame(tick);
-	};
-	$effect(() => {
-		const spinning = isAnyReelSpinning;
-		const justSettled = wasSpinning && !spinning;
-		wasSpinning = spinning;
-		if (!justSettled) return;
-		// Wait a beat past win evaluation, then wobble only if nothing won (base game only).
-		const id = setTimeout(() => {
-			if (!hasWinState && !context.stateGame.bonusMode) startShake();
-		}, 280);
-		return () => clearTimeout(id);
-	});
-	const shakeDecay = $derived(shakeT < 0 ? 0 : Math.max(0, 1 - shakeT / SHAKE_DUR));
-	// Per-cell wobble angle (phased so letters wiggle organically rather than in lockstep).
-	// Subtle but perceptible (~1.9° peak, decaying) — at the previous 0.014 rad the quiver
-	// didn't register at all and no-win settles read as completely static.
-	const shakeAngle = (reelIndex: number, symbolIndex: number) =>
-		shakeDecay <= 0 ? 0 : Math.sin(shakeT * 55 + reelIndex * 2.1 + symbolIndex * 1.3) * 0.033 * shakeDecay;
 
 	// Reels whose symbols should be hidden behind the low-symbol expanded overlay.
 	// Added one-by-one with a small delay so the overlay sprite starts drawing first.
@@ -505,7 +468,6 @@
 						x={getX(reelIndex)}
 						y={y}
 						anchor={{ x: 0.5, y: 0.5 }}
-						rotation={LOW_SYMBOLS_SET.has(reelSymbol.rawSymbol.name) ? shakeAngle(reelIndex, symbolIndex) : 0}
 						width={symbolW * s}
 						height={symbolH * s}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
