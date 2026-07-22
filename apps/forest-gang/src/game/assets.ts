@@ -2,36 +2,30 @@ const assets = {
 
 
 
-	visualV2: {
-		type: 'sprite',
-		// 1920×1080 — the 4800×2680 PNG exceeded the WebGL max texture size on some GPUs
-		// and rendered black. Matches the bonus backgrounds' resolution.
-		src: './assets/components/backgrounds/visual_v2.jpg?v=20260706light2',
-	},
 	// Dedicated portrait forest scene (360×800) — used in the base game on portrait phones
 	// instead of the cropped landscape visualV2.
 	visualPortrait: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bg_mobile_portrait.webp?v=20260721',
+		src: './assets/components/backgrounds/bg_mobile_portrait.webp?v=20260722',
 	},
 	// Mobile-landscape base background (static forest art; desktop keeps the animated baseBgVideo).
 	baseBgLandscape: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bg_mobile_landscape.webp?v=20260721',
+		src: './assets/components/backgrounds/bg_mobile_landscape.webp?v=20260722',
 	},
 	// Figma top+bottom shadow (node 2792-4133) layered on top of the portrait bg ONLY —
 	// rendered below the board/symbols/logo so it darkens the scene, never the UI.
 	portraitShadow: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/portrait_shadow.webp?v=20260703',
+		src: './assets/components/backgrounds/portrait_shadow.webp?v=20260722',
 	},
 	bonusNormalBackground: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bonus_normal_bg.webp?v=20260630',
+		src: './assets/components/backgrounds/bonus_normal_bg.webp?v=20260722',
 	},
 	bonusSuperBackground: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bonus_super_bg.webp?v=20260630',
+		src: './assets/components/backgrounds/bonus_super_bg.webp?v=20260722',
 	},
 	// Animated bonus backgrounds (video textures; looped/played on demand in Background.svelte).
 	bonusSuperBgVideo: {
@@ -48,75 +42,67 @@ const assets = {
 		// PIXI's loader-parser match, the load rejects, and the main gate never opens (stuck at 100%).
 		src: './assets/components/backgrounds/basegame_background_v2.mp4',
 	},
-	splash: {
-		type: 'sprite',
-		src: './assets/components/backgrounds/splash.jpg?v=20260622',
-	},
 	logoFrame: {
 		type: 'sprite',
-		src: './assets/components/frames/logo_frame.webp?v=20260611',
+		src: './assets/components/frames/logo_frame.webp?v=20260722',
 	},
 	slotPad: {
 		type: 'sprite',
-		src: './assets/components/frames/slot_pad.webp?v=20260629',
+		src: './assets/components/frames/slot_pad.webp?v=20260722',
 	},
 	slotPadMobile: {
 		type: 'sprite',
-		src: './assets/components/frames/board_frame_mobile.webp?v=20260703',
+		src: './assets/components/frames/board_frame_mobile.webp?v=20260722',
 	},
 	badgeFrame: {
 		type: 'sprite',
-		src: './assets/components/frames/badge_frame.webp?v=20260701',
+		src: './assets/components/frames/badge_frame.webp?v=20260722',
 	},
 	symbolPad: {
 		type: 'sprite',
-		src: './assets/components/frames/symbol_pad.webp?v=20260625',
+		src: './assets/components/frames/symbol_pad.webp?v=20260722',
 	},
 	counterFrame: {
 		type: 'sprite',
-		src: './assets/components/ui/confirm_frame.webp?v=20260625',
+		src: './assets/components/ui/confirm_frame.webp?v=20260722',
 	},
 	deerPresenter: {
 		type: 'sprite',
-		src: './assets/components/characters/deer_presenter.webp?v=20260701b',
+		src: './assets/components/characters/deer_presenter.webp?v=20260722',
 	},
 	deerPresenterMobile: {
 		type: 'sprite',
-		src: './assets/components/characters/deer_presenter_mobile.webp?v=20260701',
+		src: './assets/components/characters/deer_presenter_mobile.webp?v=20260722',
 	},
 	multiplierHand: {
 		type: 'sprite',
-		src: './assets/components/ui/multiplier_hand.webp?v=20260624',
+		src: './assets/components/ui/multiplier_hand.webp?v=20260722',
 	},
 	multiplierXRed: {
 		type: 'sprite',
-		src: './assets/components/ui/multiplier_x_red.webp?v=20260703',
+		src: './assets/components/ui/multiplier_x_red.webp?v=20260722',
 	},
 	forestGangLogo: {
 		type: 'sprite',
-		src: './assets/components/ui/forest_gang_logo.webp?v=20260611',
-	},
-	pressPlayLogo: {
-		type: 'sprite',
-		src: './assets/components/ui/press_play_logo.webp?v=20260630',
+		src: './assets/components/ui/forest_gang_logo.webp?v=20260722',
 	},
 	earnedCoin: {
 		type: 'sprite',
-		src: './assets/components/ui/earned_coin.webp?v=20260701b',
+		src: './assets/components/ui/earned_coin.webp?v=20260722',
 	},
 	scatterPanelImage: {
 		type: 'sprite',
-		src: './assets/components/ui/scatter-panel-image.webp?v=20260611',
+		src: './assets/components/ui/scatter-panel-image.webp?v=20260722',
 	},
-	reelDivider: { type: 'sprite', src: './assets/components/frames/reel_divider.webp?v=20260706' },
-	aTile: { type: 'sprite', src: './assets/components/symbols/card_a.webp?v=20260701c' },
-	aWinTile: { type: 'sprite', src: './assets/components/symbols/card_a_win.webp?v=20260701c' },
-	kTile: { type: 'sprite', src: './assets/components/symbols/card_k.webp?v=20260701c' },
-	kWinTile: { type: 'sprite', src: './assets/components/symbols/card_k_win.webp?v=20260701c' },
-	qTile: { type: 'sprite', src: './assets/components/symbols/card_q.webp?v=20260701c' },
-	qWinTile: { type: 'sprite', src: './assets/components/symbols/card_q_win.webp?v=20260701c' },
-	jTile: { type: 'sprite', src: './assets/components/symbols/card_j.webp?v=20260701c' },
-	jWinTile: { type: 'sprite', src: './assets/components/symbols/card_j_win.webp?v=20260701c' },
+	reelDivider: { type: 'sprite', src: './assets/components/frames/reel_divider.webp?v=20260722' },
+	aTile: { type: 'sprite', src: './assets/components/symbols/card_a.webp?v=20260722' },
+	aWinTile: { type: 'sprite', src: './assets/components/symbols/card_a_win.webp?v=20260722' },
+	kTile: { type: 'sprite', src: './assets/components/symbols/card_k.webp?v=20260722' },
+	kWinTile: { type: 'sprite', src: './assets/components/symbols/card_k_win.webp?v=20260722' },
+	qTile: { type: 'sprite', src: './assets/components/symbols/card_q.webp?v=20260722' },
+	qWinTile: { type: 'sprite', src: './assets/components/symbols/card_q_win.webp?v=20260722' },
+	jTile: { type: 'sprite', src: './assets/components/symbols/card_j.webp?v=20260722' },
+	jWinTile: { type: 'sprite', src: './assets/components/symbols/card_j_win.webp?v=20260722' },
 	squirrelJAnim: {
 		type: 'spine',
 		src: {
@@ -125,96 +111,84 @@ const assets = {
 			scale: 1,
 		},
 	},
-	rabbitExpAnimTest: {
-		type: 'spine',
-		src: {
-			atlas: './assets/new_assets/slots_replacement/standard_expanded/rabbit_10_anim/rabbit_10_anim.atlas',
-			skeleton: './assets/new_assets/slots_replacement/standard_expanded/rabbit_10_anim/rabbit_10_anim.json',
-			scale: 1,
-		},
-	},
-	rabbitExpAnimTestSheet: {
-		type: 'spriteSheet',
-		src: './assets/new_assets/slots_replacement/standard_expanded/rabbit_10_anim/rabbit_10_anim_sheet.json',
-	},
-	tTile: { type: 'sprite', src: './assets/components/symbols/card_t.webp?v=20260701c' },
-	tWinTile: { type: 'sprite', src: './assets/components/symbols/card_t_win.webp?v=20260701c' },
-	wildTile: { type: 'sprite', src: './assets/components/symbols/wild.webp?v=20260630c' },
-	wildWinTile: { type: 'sprite', src: './assets/components/symbols/wild.webp?v=20260630c' },
-	scatterCustom: { type: 'sprite', src: './assets/components/symbols/scatter.webp?v=20260630c' },
-	scatterWin: { type: 'sprite', src: './assets/components/symbols/scatter.webp?v=20260630c' },
-	foxTile:      { type: 'sprite', src: './assets/components/symbols/fox.webp?v=20260630b' },
-	wolfTile:     { type: 'sprite', src: './assets/components/symbols/wolf.webp?v=20260630b' },
-	bearTile:     { type: 'sprite', src: './assets/components/symbols/bear.webp?v=20260630b' },
-	rabbitTile:   { type: 'sprite', src: './assets/components/symbols/rabbit.webp?v=20260630b' },
-	squirrelTile: { type: 'sprite', src: './assets/components/symbols/squirrel.webp?v=20260630b' },
-	foxBonusTile: { type: 'sprite', src: './assets/components/symbols/fox.webp?v=20260625' },
-	foxWinTile: { type: 'sprite', src: './assets/components/symbols/fox.webp?v=20260626' },
-	wolfBonusTile: { type: 'sprite', src: './assets/components/symbols/wolf.webp?v=20260625' },
-	wolfWinTile: { type: 'sprite', src: './assets/components/symbols/wolf.webp?v=20260626' },
-	bearBonusTile: { type: 'sprite', src: './assets/components/symbols/bear.webp?v=20260625' },
-	bearWinTile: { type: 'sprite', src: './assets/components/symbols/bear.webp?v=20260626' },
-	rabbitBonusTile: { type: 'sprite', src: './assets/components/symbols/rabbit.webp?v=20260625' },
-	rabbitWinTile: { type: 'sprite', src: './assets/components/symbols/rabbit.webp?v=20260626' },
-	squirrelBonusTile: { type: 'sprite', src: './assets/components/symbols/squirrel.webp?v=20260625' },
-	squirrelWinTile: { type: 'sprite', src: './assets/components/symbols/squirrel.webp?v=20260626' },
-	aExpTile: { type: 'sprite', src: './assets/components/symbols/card_a.webp?v=20260625' },
-	aWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_a_win.webp?v=20260625' },
-	kExpTile: { type: 'sprite', src: './assets/components/symbols/card_k.webp?v=20260625' },
-	kWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_k_win.webp?v=20260625' },
-	qExpTile: { type: 'sprite', src: './assets/components/symbols/card_q.webp?v=20260625' },
-	qWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_q_win.webp?v=20260625' },
-	jExpTile: { type: 'sprite', src: './assets/components/symbols/card_j.webp?v=20260625' },
-	jWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_j_win.webp?v=20260625' },
-	tExpTile: { type: 'sprite', src: './assets/components/symbols/card_t.webp?v=20260625' },
-	tWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_t_win.webp?v=20260625' },
-	foxExpTile: { type: 'sprite', src: './assets/components/symbols/fox_expand.webp?v=20260629' },
-	foxExpWinTile: { type: 'sprite', src: './assets/components/symbols/fox_expand.webp?v=20260625' },
-	wolfExpTile: { type: 'sprite', src: './assets/components/symbols/wolf_expand.webp?v=20260629' },
-	wolfExpWinTile: { type: 'sprite', src: './assets/components/symbols/wolf_expand.webp?v=20260625' },
-	bearExpTile: { type: 'sprite', src: './assets/components/symbols/bear_expand.webp?v=20260629' },
-	bearExpWinTile: { type: 'sprite', src: './assets/components/symbols/bear_expand.webp?v=20260625' },
-	rabbitExpTile: { type: 'sprite', src: './assets/components/symbols/rabbit_expand.webp?v=20260629' },
-	rabbitExpWinTile: { type: 'sprite', src: './assets/components/symbols/rabbit_expand.webp?v=20260625' },
-	squirrelExpTile: { type: 'sprite', src: './assets/components/symbols/squirrel_expand.webp?v=20260629' },
-	squirrelExpWinTile: { type: 'sprite', src: './assets/components/symbols/squirrel_expand.webp?v=20260625' },
+	tTile: { type: 'sprite', src: './assets/components/symbols/card_t.webp?v=20260722' },
+	tWinTile: { type: 'sprite', src: './assets/components/symbols/card_t_win.webp?v=20260722' },
+	wildTile: { type: 'sprite', src: './assets/components/symbols/wild.webp?v=20260722' },
+	wildWinTile: { type: 'sprite', src: './assets/components/symbols/wild.webp?v=20260722' },
+	scatterCustom: { type: 'sprite', src: './assets/components/symbols/scatter.webp?v=20260722' },
+	scatterWin: { type: 'sprite', src: './assets/components/symbols/scatter.webp?v=20260722' },
+	foxTile:      { type: 'sprite', src: './assets/components/symbols/fox.webp?v=20260722' },
+	wolfTile:     { type: 'sprite', src: './assets/components/symbols/wolf.webp?v=20260722' },
+	bearTile:     { type: 'sprite', src: './assets/components/symbols/bear.webp?v=20260722' },
+	rabbitTile:   { type: 'sprite', src: './assets/components/symbols/rabbit.webp?v=20260722' },
+	squirrelTile: { type: 'sprite', src: './assets/components/symbols/squirrel.webp?v=20260722' },
+	foxBonusTile: { type: 'sprite', src: './assets/components/symbols/fox.webp?v=20260722' },
+	foxWinTile: { type: 'sprite', src: './assets/components/symbols/fox.webp?v=20260722' },
+	wolfBonusTile: { type: 'sprite', src: './assets/components/symbols/wolf.webp?v=20260722' },
+	wolfWinTile: { type: 'sprite', src: './assets/components/symbols/wolf.webp?v=20260722' },
+	bearBonusTile: { type: 'sprite', src: './assets/components/symbols/bear.webp?v=20260722' },
+	bearWinTile: { type: 'sprite', src: './assets/components/symbols/bear.webp?v=20260722' },
+	rabbitBonusTile: { type: 'sprite', src: './assets/components/symbols/rabbit.webp?v=20260722' },
+	rabbitWinTile: { type: 'sprite', src: './assets/components/symbols/rabbit.webp?v=20260722' },
+	squirrelBonusTile: { type: 'sprite', src: './assets/components/symbols/squirrel.webp?v=20260722' },
+	squirrelWinTile: { type: 'sprite', src: './assets/components/symbols/squirrel.webp?v=20260722' },
+	aExpTile: { type: 'sprite', src: './assets/components/symbols/card_a.webp?v=20260722' },
+	aWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_a_win.webp?v=20260722' },
+	kExpTile: { type: 'sprite', src: './assets/components/symbols/card_k.webp?v=20260722' },
+	kWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_k_win.webp?v=20260722' },
+	qExpTile: { type: 'sprite', src: './assets/components/symbols/card_q.webp?v=20260722' },
+	qWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_q_win.webp?v=20260722' },
+	jExpTile: { type: 'sprite', src: './assets/components/symbols/card_j.webp?v=20260722' },
+	jWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_j_win.webp?v=20260722' },
+	tExpTile: { type: 'sprite', src: './assets/components/symbols/card_t.webp?v=20260722' },
+	tWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_t_win.webp?v=20260722' },
+	foxExpTile: { type: 'sprite', src: './assets/components/symbols/fox_expand.webp?v=20260722' },
+	foxExpWinTile: { type: 'sprite', src: './assets/components/symbols/fox_expand.webp?v=20260722' },
+	wolfExpTile: { type: 'sprite', src: './assets/components/symbols/wolf_expand.webp?v=20260722' },
+	wolfExpWinTile: { type: 'sprite', src: './assets/components/symbols/wolf_expand.webp?v=20260722' },
+	bearExpTile: { type: 'sprite', src: './assets/components/symbols/bear_expand.webp?v=20260722' },
+	bearExpWinTile: { type: 'sprite', src: './assets/components/symbols/bear_expand.webp?v=20260722' },
+	rabbitExpTile: { type: 'sprite', src: './assets/components/symbols/rabbit_expand.webp?v=20260722' },
+	rabbitExpWinTile: { type: 'sprite', src: './assets/components/symbols/rabbit_expand.webp?v=20260722' },
+	squirrelExpTile: { type: 'sprite', src: './assets/components/symbols/squirrel_expand.webp?v=20260722' },
+	squirrelExpWinTile: { type: 'sprite', src: './assets/components/symbols/squirrel_expand.webp?v=20260722' },
 	// --- Mobile-landscape symbol art (used only when layoutType() === 'landscape') ---
-	aTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_a.webp?v=20260701' },
-	kTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_k.webp?v=20260701' },
-	qTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_q.webp?v=20260701' },
-	jTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_j.webp?v=20260701' },
-	tTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_t.webp?v=20260701' },
-	aWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_a_win.webp?v=20260701' },
-	kWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_k_win.webp?v=20260701' },
-	qWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_q_win.webp?v=20260701' },
-	jWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_j_win.webp?v=20260701' },
-	tWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_t_win.webp?v=20260701' },
-	foxTileLs:      { type: 'sprite', src: './assets/components/symbols/landscape/fox.webp?v=20260701' },
-	wolfTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/wolf.webp?v=20260701' },
-	bearTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/bear.webp?v=20260701' },
-	rabbitTileLs:   { type: 'sprite', src: './assets/components/symbols/landscape/rabbit.webp?v=20260701' },
-	squirrelTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/squirrel.webp?v=20260701' },
-	foxWinTileLs:      { type: 'sprite', src: './assets/components/symbols/landscape/fox_win.webp?v=20260701' },
-	wolfWinTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/wolf_win.webp?v=20260701' },
-	bearWinTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/bear_win.webp?v=20260701' },
-	rabbitWinTileLs:   { type: 'sprite', src: './assets/components/symbols/landscape/rabbit_win.webp?v=20260701' },
-	squirrelWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/squirrel_win.webp?v=20260701' },
-	wildTileLs:    { type: 'sprite', src: './assets/components/symbols/landscape/wild.webp?v=20260701' },
-	scatterCustomLs: { type: 'sprite', src: './assets/components/symbols/landscape/scatter.webp?v=20260701' },
-	cardPadLs:     { type: 'sprite', src: './assets/components/symbols/landscape/card_pad.webp?v=20260701' },
-	reelFrameLs:   { type: 'sprite', src: './assets/components/symbols/landscape/reel_frame.webp?v=20260701b' },
-	stepperPadLs:  { type: 'sprite', src: './assets/components/symbols/landscape/stepper_pad.webp?v=20260701' },
-	navBarLs:      { type: 'sprite', src: './assets/components/symbols/landscape/right_bar.webp?v=20260701' },
-	buyBonusLs:    { type: 'sprite', src: './assets/components/symbols/landscape/buy_bonus.webp?v=20260701' },
+	aTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_a.webp?v=20260722' },
+	kTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_k.webp?v=20260722' },
+	qTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_q.webp?v=20260722' },
+	jTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_j.webp?v=20260722' },
+	tTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_t.webp?v=20260722' },
+	aWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_a_win.webp?v=20260722' },
+	kWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_k_win.webp?v=20260722' },
+	qWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_q_win.webp?v=20260722' },
+	jWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_j_win.webp?v=20260722' },
+	tWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_t_win.webp?v=20260722' },
+	foxTileLs:      { type: 'sprite', src: './assets/components/symbols/landscape/fox.webp?v=20260722' },
+	wolfTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/wolf.webp?v=20260722' },
+	bearTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/bear.webp?v=20260722' },
+	rabbitTileLs:   { type: 'sprite', src: './assets/components/symbols/landscape/rabbit.webp?v=20260722' },
+	squirrelTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/squirrel.webp?v=20260722' },
+	foxWinTileLs:      { type: 'sprite', src: './assets/components/symbols/landscape/fox_win.webp?v=20260722' },
+	wolfWinTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/wolf_win.webp?v=20260722' },
+	bearWinTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/bear_win.webp?v=20260722' },
+	rabbitWinTileLs:   { type: 'sprite', src: './assets/components/symbols/landscape/rabbit_win.webp?v=20260722' },
+	squirrelWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/squirrel_win.webp?v=20260722' },
+	wildTileLs:    { type: 'sprite', src: './assets/components/symbols/landscape/wild.webp?v=20260722' },
+	scatterCustomLs: { type: 'sprite', src: './assets/components/symbols/landscape/scatter.webp?v=20260722' },
+	cardPadLs:     { type: 'sprite', src: './assets/components/symbols/landscape/card_pad.webp?v=20260722' },
+	reelFrameLs:   { type: 'sprite', src: './assets/components/symbols/landscape/reel_frame.webp?v=20260722' },
+	stepperPadLs:  { type: 'sprite', src: './assets/components/symbols/landscape/stepper_pad.webp?v=20260722' },
+	navBarLs:      { type: 'sprite', src: './assets/components/symbols/landscape/right_bar.webp?v=20260722' },
+	buyBonusLs:    { type: 'sprite', src: './assets/components/symbols/landscape/buy_bonus.webp?v=20260722' },
 	// Win boards — preloaded so board escalation during count-up doesn't stall
-	sweetWinBoard:     { type: 'sprite', src: './assets/components/win_boards/sweet_win_fig.webp?v=20260716d' },
-	wildWinBoard:      { type: 'sprite', src: './assets/components/win_boards/big_win_fig.webp?v=20260716d' },
-	epicWinBoard:      { type: 'sprite', src: './assets/components/win_boards/epic_win_fig.webp?v=20260716d' },
-	mythicWinBoard:    { type: 'sprite', src: './assets/components/win_boards/mega_win_fig.webp?v=20260716d' },
-	legendaryWinBoard: { type: 'sprite', src: './assets/components/win_boards/max_win_fig.webp?v=20260716d' },
-	maxWinScreen:      { type: 'sprite', src: './assets/components/win_boards/max_win_screen.webp?v=20260701' },
+	sweetWinBoard:     { type: 'sprite', src: './assets/components/win_boards/sweet_win_fig.webp?v=20260722' },
+	wildWinBoard:      { type: 'sprite', src: './assets/components/win_boards/big_win_fig.webp?v=20260722' },
+	epicWinBoard:      { type: 'sprite', src: './assets/components/win_boards/epic_win_fig.webp?v=20260722' },
+	mythicWinBoard:    { type: 'sprite', src: './assets/components/win_boards/mega_win_fig.webp?v=20260722' },
+	legendaryWinBoard: { type: 'sprite', src: './assets/components/win_boards/max_win_fig.webp?v=20260722' },
+	maxWinScreen:      { type: 'sprite', src: './assets/components/win_boards/max_win_screen.webp?v=20260722' },
 	// Golden P mark pulsing on the win boards' gem medallion (Figma 3205-2090).
-	winEmblemP:        { type: 'sprite', src: './assets/components/win_boards/win_emblem_p.webp?v=20260716' },
+	winEmblemP:        { type: 'sprite', src: './assets/components/win_boards/win_emblem_p.webp?v=20260722' },
 	explosion: {
 		type: 'spine',
 		src: {
@@ -233,19 +207,11 @@ const assets = {
 	},
 	goldFont: {
 		type: 'font',
-		src: './assets/fonts/goldFont/mm_gold.xml?v=20260611',
+		src: './assets/fonts/goldFont/mm_gold.xml?v=20260722',
 	},
 	silverFont: {
 		type: 'font',
-		src: './assets/fonts/silverFont/mm_silver.xml?v=20260611',
-	},
-	bigwin: {
-		type: 'spine',
-		src: {
-			atlas: './assets/spines/bigwin/big_wins.atlas',
-			skeleton: './assets/spines/bigwin/mm_bigwin.json',
-			scale: 2,
-		},
+		src: './assets/fonts/silverFont/mm_silver.xml?v=20260722',
 	},
 	globalMultiplier: {
 		type: 'spine',
@@ -274,7 +240,7 @@ const assets = {
 	},
 	bonusBuyButtonFrame: {
 		type: 'sprite',
-		src: './assets/components/frames/bonus_buy_button_frame.webp?v=20260623',
+		src: './assets/components/frames/bonus_buy_button_frame.webp?v=20260722',
 	},
 	fsBoardBg: {
 		type: 'sprite',
@@ -304,39 +270,39 @@ const assets = {
 	// Shared brown frame drawn behind every animal symbol (fox/wolf/bear/rabbit/squirrel).
 	animalBorder: {
 		type: 'sprite',
-		src: './assets/components/symbols/animal_border.webp?v=20260720b',
+		src: './assets/components/symbols/animal_border.webp?v=20260722',
 	},
 	// Golden light column glow (2 KB) for the reel anticipation — smooth vertical plateau, feathered
 	// ends, thin god-ray streaks. Rendered additive. Small enough to keep in the main load tier.
 	anticipationGlow: {
 		type: 'sprite',
-		src: './assets/components/frames/anticipation_glow.webp?v=20260721',
+		src: './assets/components/frames/anticipation_glow.webp?v=20260722',
 	},
 	// Bamboo/vine column frame (Figma 2145-328) drawn around the expanded symbol reel.
 	expandedFrame: {
 		type: 'sprite',
-		src: './assets/components/frames/expanded_frame.webp?v=20260720',
+		src: './assets/components/frames/expanded_frame.webp?v=20260722',
 	},
 	// Animated base-state (idle blink) animals — background-removed video frames, loop on the reels.
 	wolfIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/wolfIdleAnim/wolf_idle.json?v=20260720',
+		src: './assets/sprites/wolfIdleAnim/wolf_idle.json?v=20260722',
 	},
 	foxIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/foxIdleAnim/fox_idle.json?v=20260720',
+		src: './assets/sprites/foxIdleAnim/fox_idle.json?v=20260722',
 	},
 	squirrelIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/squirrelIdleAnim/squirrel_idle.json?v=20260720',
+		src: './assets/sprites/squirrelIdleAnim/squirrel_idle.json?v=20260722',
 	},
 	bearIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/bearIdleAnim/bear_idle.json?v=20260720',
+		src: './assets/sprites/bearIdleAnim/bear_idle.json?v=20260722',
 	},
 	rabbitIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/rabbitIdleAnim/rabbit_idle.json?v=20260720',
+		src: './assets/sprites/rabbitIdleAnim/rabbit_idle.json?v=20260722',
 	},
 	// Animated loading bar (49-frame 0→100% fill, white bar/text on transparency). This is the ONLY
 	// preloaded asset: it must be ready before the loading screen paints so the bar can show first
@@ -344,7 +310,7 @@ const assets = {
 	// the tracked post-load phase and drives the bar's fill via stateApp.loadingProgress.
 	loadingBarAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/loadingBarAnim/loading_bar.json?v=20260720',
+		src: './assets/sprites/loadingBarAnim/loading_bar.json?v=20260722',
 		preload: true,
 	},
 	// Studio "Press Play" branding shown ON the loading screen — preloaded alongside the bar so it
@@ -352,16 +318,16 @@ const assets = {
 	// during loading). White mark on transparency; native 548×228.
 	pressPlayLogo: {
 		type: 'sprite',
-		src: './assets/components/ui/press_play_logo.webp?v=20260720',
+		src: './assets/components/ui/press_play_logo.webp?v=20260722',
 		preload: true,
 	},
 	progressBar: {
 		type: 'sprites',
-		src: './assets/sprites/progressBar/progressBar.json?v=20260611',
+		src: './assets/sprites/progressBar/progressBar.json?v=20260722',
 	},
 	freeSpins: {
 		type: 'sprites',
-		src: './assets/sprites/freeSpins/freeSpins.json?v=20260624',
+		src: './assets/sprites/freeSpins/freeSpins.json?v=20260722',
 	},
 	transition: {
 		type: 'spine',
@@ -373,7 +339,7 @@ const assets = {
 	},
 	coins: {
 		type: 'spriteSheet',
-		src: './assets/sprites/coin/SD2_Coin.json?v=20260701d',
+		src: './assets/sprites/coin/SD2_Coin.json?v=20260722',
 	},
 	// Single tumbling P-coin cycle (12 angles cut out of the coin-rain video) — the particle
 	// fountain's per-coin animation, so density can scale with the win tier again.
@@ -385,7 +351,7 @@ const assets = {
 	// does NOT loop seamlessly — play once or ping-pong). Frames: rabbit_money_1..40.
 	rabbitMoney: {
 		type: 'spriteSheet',
-		src: './assets/sprites/rabbitMoney/rabbit_money.json?v=20260721',
+		src: './assets/sprites/rabbitMoney/rabbit_money.json?v=20260722',
 	},
 	bearMoney: {
 		type: 'spriteSheet',
@@ -393,35 +359,35 @@ const assets = {
 	},
 	foxMoney: {
 		type: 'spriteSheet',
-		src: './assets/sprites/foxMoney/fox_money.json?v=20260721',
+		src: './assets/sprites/foxMoney/fox_money.json?v=20260722',
 	},
 	wolfMoney: {
 		type: 'spriteSheet',
-		src: './assets/sprites/wolfMoney/wolf_money.json?v=20260721',
+		src: './assets/sprites/wolfMoney/wolf_money.json?v=20260722',
 	},
 	squirrelMoney: {
 		type: 'spriteSheet',
-		src: './assets/sprites/squirrelMoney/squirrel_money.json?v=20260721b',
+		src: './assets/sprites/squirrelMoney/squirrel_money.json?v=20260722',
 	},
 	// Board win-state card animations (upper-body window of the same videos, card border baked).
-	rabbitWinAnim:   { type: 'spriteSheet', src: './assets/sprites/rabbitWinNew/rabbit_win.json?v=20260720b' },
-	bearWinAnim:     { type: 'spriteSheet', src: './assets/sprites/bearWinNew/bear_win.json?v=20260720b' },
-	foxWinAnim:      { type: 'spriteSheet', src: './assets/sprites/foxWinNew/fox_win.json?v=20260720b' },
-	wolfWinAnim:     { type: 'spriteSheet', src: './assets/sprites/wolfWinNew/wolf_win.json?v=20260720b' },
-	squirrelWinAnim: { type: 'spriteSheet', src: './assets/sprites/squirrelWinNew/squirrel_win.json?v=20260720b' },
+	rabbitWinAnim:   { type: 'spriteSheet', src: './assets/sprites/rabbitWinNew/rabbit_win.json?v=20260722' },
+	bearWinAnim:     { type: 'spriteSheet', src: './assets/sprites/bearWinNew/bear_win.json?v=20260722' },
+	foxWinAnim:      { type: 'spriteSheet', src: './assets/sprites/foxWinNew/fox_win.json?v=20260722' },
+	wolfWinAnim:     { type: 'spriteSheet', src: './assets/sprites/wolfWinNew/wolf_win.json?v=20260722' },
+	squirrelWinAnim: { type: 'spriteSheet', src: './assets/sprites/squirrelWinNew/squirrel_win.json?v=20260722' },
 	// Cache-busted (?v=…) like the animal win anims — a stale/broken cached copy silently fails to
 	// load (AssetsLoader swallows the error), dropping the key so winning letters fall back to the
 	// old cracked static win tile instead of animating. The version query forces a fresh fetch.
-	tenWinAnim:      { type: 'spriteSheet', src: './assets/sprites/tenWinAnim/ten_win_anim.json?v=20260721' },
-	aWinAnim:        { type: 'spriteSheet', src: './assets/sprites/aWinAnim/a_win_anim.json?v=20260720c' },
-	jWinAnim:        { type: 'spriteSheet', src: './assets/sprites/jWinAnim/j_win_anim.json?v=20260720c' },
-	kWinAnim:        { type: 'spriteSheet', src: './assets/sprites/kWinAnim/k_win_anim.json?v=20260720c' },
-	qWinAnim:        { type: 'spriteSheet', src: './assets/sprites/qWinAnim/q_win_anim.json?v=20260720c' },
+	tenWinAnim:      { type: 'spriteSheet', src: './assets/sprites/tenWinAnim/ten_win_anim.json?v=20260722' },
+	aWinAnim:        { type: 'spriteSheet', src: './assets/sprites/aWinAnim/a_win_anim.json?v=20260722' },
+	jWinAnim:        { type: 'spriteSheet', src: './assets/sprites/jWinAnim/j_win_anim.json?v=20260722' },
+	kWinAnim:        { type: 'spriteSheet', src: './assets/sprites/kWinAnim/k_win_anim.json?v=20260722' },
+	qWinAnim:        { type: 'spriteSheet', src: './assets/sprites/qWinAnim/q_win_anim.json?v=20260722' },
 	// Must stay preloaded: EnableSound reads loadedAssets['sound'] in onMount (as soon as the tree
 	// mounts) and crashes if it isn't ready yet, which would hang the whole loading screen.
 	sound: {
 		type: 'audio',
-		src: './assets/audio/sounds.json?v=20260717d',
+		src: './assets/audio/sounds.json?v=20260722',
 		preload: true,
 	},
 } as const;
@@ -430,8 +396,7 @@ const assets = {
 // BACKGROUND after the game is interactive (AssetsLoader's deferred pass) instead of blocking first
 // playability on them. Render paths fall back to static art until each arrives, and the whole set
 // finishes within a couple seconds of the game becoming playable — long before a bonus can trigger.
-// This roughly halves the initial load. Keep base-game essentials (symbols, base bg, board frame,
-// HUD, idle animal blinks, sounds) OUT of this list.
+// Keep base-game essentials (symbols, base bg, board frame, HUD, sounds) OUT of this list.
 const DEFERRED_KEYS: readonly string[] = [
 	// Bonus backgrounds + entry/exit spine
 	'bonusSuperBgVideo', 'bonusNormalBgVideo', 'transition',
@@ -439,11 +404,14 @@ const DEFERRED_KEYS: readonly string[] = [
 	'deerPresenter', 'deerPresenterMobile', 'deerPresenterAnim',
 	// Win-tier boards + emblem + big-win/global-multiplier spines
 	'sweetWinBoard', 'wildWinBoard', 'epicWinBoard', 'mythicWinBoard', 'legendaryWinBoard',
-	'maxWinScreen', 'winEmblemP', 'bigwin', 'globalMultiplier',
+	'maxWinScreen', 'winEmblemP', 'globalMultiplier',
 	// Free-spin intro/outro popup + scatter medallion
 	'fsIntro', 'fsMedallion', 'fsMedallionAnim',
 	// Win coins
 	'coins', 'pCoins',
+	// Idle animal blink loops (~8.6MB) — the static animal tiles render until these arrive
+	// (wave 0), so the board is never blank; deferring them cuts the blocking load nearly in half.
+	'wolfIdleAnim', 'foxIdleAnim', 'squirrelIdleAnim', 'bearIdleAnim', 'rabbitIdleAnim',
 	// Expanded-symbol animations (animals) + board win animations (animals + letters)
 	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
 	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
@@ -452,6 +420,64 @@ const DEFERRED_KEYS: readonly string[] = [
 for (const key of DEFERRED_KEYS) {
 	const entry = (assets as Record<string, { defer?: boolean } | undefined>)[key];
 	if (entry) entry.defer = true;
+}
+
+// Order the background stream: a first base-game win can land seconds after the game becomes
+// playable, so everything visible in that moment (symbol win animations + flying coins) downloads
+// first (wave 0). Bonus-gated art (a bonus can't trigger for at least a few spins) goes last
+// (wave 2); the rest — big-win boards, free-spin popup art — takes the default wave 1.
+const DEFER_WAVE_0: readonly string[] = [
+	// Idle blinks first — visible from the first settled board.
+	'wolfIdleAnim', 'foxIdleAnim', 'squirrelIdleAnim', 'bearIdleAnim', 'rabbitIdleAnim',
+	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
+	'tenWinAnim', 'aWinAnim', 'jWinAnim', 'kWinAnim', 'qWinAnim',
+	'coins', 'pCoins',
+];
+const DEFER_WAVE_2: readonly string[] = [
+	'bonusSuperBgVideo', 'bonusNormalBgVideo', 'transition',
+	'deerPresenter', 'deerPresenterMobile', 'deerPresenterAnim',
+	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
+];
+for (const [keys, priority] of [
+	[DEFER_WAVE_0, 0],
+	[DEFER_WAVE_2, 2],
+] as const) {
+	for (const key of keys) {
+		const entry = (assets as Record<string, { deferPriority?: number } | undefined>)[key];
+		if (entry) entry.deferPriority = priority;
+	}
+}
+
+// Layout-specific art: only the set matching the INITIAL viewport blocks playability; the other
+// layout's set is demoted to the deferred (background) pass, so rotating/resizing later still works —
+// worst case the alternate art streams in a moment after the rotate. Mirrors layoutType() in
+// utils-layout/createLayout.svelte.ts (portrait = ratio ≤ 0.8; landscape = short side ≤ 480).
+const MOBILE_ONLY_KEYS: readonly string[] = [
+	// Portrait art
+	'visualPortrait', 'portraitShadow', 'slotPadMobile',
+	// Mobile-landscape art
+	'baseBgLandscape',
+	'aTileLs', 'kTileLs', 'qTileLs', 'jTileLs', 'tTileLs',
+	'aWinTileLs', 'kWinTileLs', 'qWinTileLs', 'jWinTileLs', 'tWinTileLs',
+	'foxTileLs', 'wolfTileLs', 'bearTileLs', 'rabbitTileLs', 'squirrelTileLs',
+	'foxWinTileLs', 'wolfWinTileLs', 'bearWinTileLs', 'rabbitWinTileLs', 'squirrelWinTileLs',
+	'wildTileLs', 'scatterCustomLs', 'cardPadLs', 'reelFrameLs', 'stepperPadLs', 'navBarLs',
+	'buyBonusLs',
+];
+const DESKTOP_ONLY_KEYS: readonly string[] = [
+	// Desktop base background video (mobile portrait/landscape render static art)
+	'baseBgVideo',
+];
+if (typeof window !== 'undefined') {
+	const w = window.innerWidth;
+	const h = window.innerHeight;
+	const ratio = w / (h || 1);
+	const shortSide = Math.min(w, h);
+	const isMobileLayout = ratio <= 0.8 || shortSide <= 480;
+	for (const key of isMobileLayout ? DESKTOP_ONLY_KEYS : MOBILE_ONLY_KEYS) {
+		const entry = (assets as Record<string, { defer?: boolean } | undefined>)[key];
+		if (entry) entry.defer = true;
+	}
 }
 
 export default assets;

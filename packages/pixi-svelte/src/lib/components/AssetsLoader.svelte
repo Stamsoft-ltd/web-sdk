@@ -120,16 +120,21 @@
 
 	// Deferred assets: load in the background once the game is interactive (`loaded` is set), merging
 	// each into loadedAssets as it arrives. Never gates playability — render paths fall back until then.
+	// Loaded in ascending deferPriority waves (default 1): each wave's downloads complete (and merge)
+	// before the next wave starts, so first-win-critical sheets aren't queued behind bonus-only art.
 	$effect(() => {
 		if (context.stateApp.loaded && !deferLoaded) {
 			deferLoaded = true;
 			(async () => {
-				if (deferredNameList.length > 0) {
-					const deferredAssets = await loadAssets(deferredNameList);
-					if (deferredAssets)
+				const priorityOf = (key: string) => context.stateApp.assets?.[key].deferPriority ?? 1;
+				const priorities = [...new Set(deferredNameList.map(priorityOf))].sort((a, b) => a - b);
+				for (const priority of priorities) {
+					const wave = deferredNameList.filter((key) => priorityOf(key) === priority);
+					const waveAssets = await loadAssets(wave);
+					if (waveAssets)
 						context.stateApp.loadedAssets = {
 							...context.stateApp.loadedAssets,
-							...deferredAssets,
+							...waveAssets,
 						};
 				}
 			})();

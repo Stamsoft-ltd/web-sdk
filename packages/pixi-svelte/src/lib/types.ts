@@ -34,7 +34,16 @@ export type SpineSrc = { skeleton: string; atlas: string; scale?: number };
 // preload: loaded BEFORE the loading screen paints (must be ready immediately).
 // defer:   loaded AFTER the game is interactive (`loaded` is set), streamed in the background so it
 //          doesn't delay first playability. Assets with neither flag load in the main gating pass.
-export type Asset = { type: RawType; src: string | SpineSrc; preload?: boolean; defer?: boolean };
+// deferPriority: orders the deferred pass into waves (ascending; default 1). Lower numbers finish
+// downloading before higher ones start, so assets a player can hit early (e.g. first-win symbol
+// animations) aren't stuck behind bonus-only art in the same background stream.
+export type Asset = {
+	type: RawType;
+	src: string | SpineSrc;
+	preload?: boolean;
+	defer?: boolean;
+	deferPriority?: number;
+};
 export type Assets = PIXI.Dict<Asset>;
 
 export type ParticleSpawnOption =
