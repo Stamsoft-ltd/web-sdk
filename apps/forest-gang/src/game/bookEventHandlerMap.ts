@@ -247,27 +247,25 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			: bookEvent.wins;
 		// Payline paths for the vine animation, trimmed to the MATCHED reels only — drawing the
 		// full 5-reel line definition dragged the vine across non-winning symbols on the tail reels.
+		// Expanded-symbol wins use the SAME trimmed mapping (their `wins` are already filtered to the
+		// expanded symbol above): trimmed to the expanded reels + presented by the line-by-line cycle
+		// with faint ghosts, they read as connected columns rather than the old wall of 20 full-width
+		// lines — while dropping them entirely made big expanded hits feel line-less.
 		const paylines = config.paylines as Record<string, number[]>;
-		if (isExpandedOverlayShowing && wins.length > 0) {
-			// Expanded-symbol wins pay on every line at once; the full-reel expanded presenter IS the
-			// win display there — 20 full-width vines under it just covered the board in lines.
-			stateGame.paylineWins = [];
-		} else {
-			stateGame.paylineWins = wins
-				.map((w) => {
-					const rows = paylines[String(w.meta.lineIndex)];
-					if (!rows) return null;
-					// Wins run left-to-right from reel 0; the matched positions tell us how far.
-					const matchedReels = w.positions.length
-						? Math.max(...w.positions.map((p) => p.reel)) + 1
-						: rows.length;
-					return {
-						lineIndex: w.meta.lineIndex,
-						path: rows.slice(0, matchedReels).map((row, reel) => ({ reel, row })),
-					};
-				})
-				.filter((p): p is { lineIndex: number; path: Array<{ reel: number; row: number }> } => p !== null);
-		}
+		stateGame.paylineWins = wins
+			.map((w) => {
+				const rows = paylines[String(w.meta.lineIndex)];
+				if (!rows) return null;
+				// Wins run left-to-right from reel 0; the matched positions tell us how far.
+				const matchedReels = w.positions.length
+					? Math.max(...w.positions.map((p) => p.reel)) + 1
+					: rows.length;
+				return {
+					lineIndex: w.meta.lineIndex,
+					path: rows.slice(0, matchedReels).map((row, reel) => ({ reel, row })),
+				};
+			})
+			.filter((p): p is { lineIndex: number; path: Array<{ reel: number; row: number }> } => p !== null);
 		// Deduplicate positions across all wins and animate once — prevents 5-10s freeze
 		const seen = new Set<string>();
 		const allPositions = wins.flatMap((win) => win.positions).filter((pos) => {
