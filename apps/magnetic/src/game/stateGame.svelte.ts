@@ -375,7 +375,7 @@ const playLandSound = (raw: RawSymbol) => {
 		eventEmitter.broadcast({ type: 'soundOnce', name: SCATTER_LAND_SOUND_MAP[scatterLandIndex()] });
 	}
 	if (raw.multiplier && raw.multiplier > 1) {
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_landing' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_wld_002' });
 	}
 };
 
@@ -756,7 +756,7 @@ const createSpinBoardReel = (reelIndex: number) => {
 		onReelStopping: () => {
 			eventEmitter.broadcast({
 				type: 'soundOnce',
-				name: 'sfx_reel_stop_1',
+				name: 'mag_ui_007',
 				forcePlay: !stateBet.isTurbo && !stateBet.isSuperTurbo,
 			});
 		},

@@ -100,7 +100,7 @@
 				await waitForTimeout(80);
 				const target = landingTarget;
 				if (target > 1) {
-					context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_update' });
+					context.eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_wld_006' });
 					previousMultiplier.set(1, { duration: 0 });
 					multiplier = target;
 					animationName = 'increment';
@@ -132,7 +132,7 @@
 			isCycling = false;
 
 			if (target > 1) {
-				context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_update' });
+				context.eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_wld_006' });
 				previousMultiplier.set(1, { duration: 0 });
 				multiplier = target;
 				animationName = 'increment';

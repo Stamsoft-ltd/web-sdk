@@ -361,7 +361,7 @@ export default {
 	},
 	sound: {
 		type: 'audio',
-		src: './assets/audio/sounds.json?v=20260713',
+		src: './assets/audio/sounds.json?v=20260722',
 		preload: true,
 	},
 } as const;

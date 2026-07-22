@@ -58,7 +58,7 @@ export const winLevelMap = {
 		type: 'big',
 		text: 'SWEET WIN',
 		presentDuration: 10 * SECOND,
-		sound: { sfx: undefined, bgm: 'bgm_winlevel_big' },
+		sound: { sfx: 'mag_win_003', bgm: 'mag_mus_005' },
 		animation: { intro: 'big_win_intro', idle: 'big_win_idle', outro: 'big_win_exit' },
 	},
 	7: {
@@ -67,7 +67,7 @@ export const winLevelMap = {
 		type: 'big',
 		text: 'WILD WIN',
 		presentDuration: 22 * SECOND,
-		sound: { sfx: undefined, bgm: 'bgm_winlevel_superwin' },
+		sound: { sfx: 'mag_win_004', bgm: 'mag_mus_005' },
 		animation: { intro: 'super_win_intro', idle: 'super_win_idle', outro: 'super_win_exit' },
 	},
 	8: {
@@ -76,7 +76,7 @@ export const winLevelMap = {
 		type: 'big',
 		text: 'EPIC WIN',
 		presentDuration: 28 * SECOND,
-		sound: { sfx: undefined, bgm: 'bgm_winlevel_mega' },
+		sound: { sfx: 'mag_win_004', bgm: 'mag_mus_005' },
 		animation: { intro: 'mega_win_intro', idle: 'mega_win_idle', outro: 'mega_win_exit' },
 	},
 	9: {
@@ -85,7 +85,7 @@ export const winLevelMap = {
 		type: 'big',
 		text: 'MYTHIC WIN',
 		presentDuration: 35 * SECOND,
-		sound: { sfx: undefined, bgm: 'bgm_winlevel_epic' },
+		sound: { sfx: 'mag_win_005', bgm: 'mag_mus_005' },
 		animation: { intro: 'epic_win_intro', idle: 'epic_win_idle', outro: 'epic_win_exit' },
 	},
 	10: {
@@ -94,7 +94,7 @@ export const winLevelMap = {
 		type: 'big',
 		text: 'LEGENDARY WIN',
 		presentDuration: 45 * SECOND,
-		sound: { sfx: undefined, bgm: 'bgm_winlevel_max' },
+		sound: { sfx: 'mag_win_006', bgm: 'mag_mus_005' },
 		animation: { intro: 'max_win_intro', idle: 'max_win_idle', outro: 'max_win_exit' },
 	},
 } as const;

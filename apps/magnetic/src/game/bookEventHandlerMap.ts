@@ -25,18 +25,18 @@ const winLevelSoundsPlay = ({ winLevelData }: { winLevelData: WinLevelData }) =>
 	if (winLevelData?.sound?.bgm)
 		eventEmitter.broadcast({ type: 'soundMusic', name: winLevelData.sound.bgm });
 	if (winLevelData?.type === 'big')
-		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_bigwin_coinloop' });
+		eventEmitter.broadcast({ type: 'soundLoop', name: 'mag_win_001' });
 };
 
 const winLevelSoundsStop = () => {
-	eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_bigwin_coinloop' });
+	eventEmitter.broadcast({ type: 'soundStop', name: 'mag_win_001' });
 	// gameType is the truth here — activeBetModeKey can still be SUPER right after a bought
 	// bonus ended, which used to restart the bonus music instead of the base track.
 	// FEATURE rounds never start the free-spin music, so only real bonuses count.
 	if (stateGame.gameType === 'freegame' || stateGame.gameType === 'superspin') {
-		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
+		eventEmitter.broadcast({ type: 'soundMusic', name: 'mag_mus_002' });
 	} else {
-		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_main' });
+		eventEmitter.broadcast({ type: 'soundMusic', name: 'mag_mus_001' });
 	}
 	eventEmitter.broadcastAsync({ type: 'uiShow' });
 };
@@ -215,7 +215,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.seriesTotalMultiplier = bookEvent.totalMultiplier;
 		stateGame.tempMultiplier = bookEvent.multiplier > 1 ? bookEvent.multiplier : null;
 		if (bookEvent.multiplier > 1)
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_landing' });
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_wld_002' });
 		await stateGameDerived.activateMagnetPulse(bookEvent.positions);
 		if (nextBookEventAfter(bookEvent, bookEvents)?.type !== 'clusterSeriesUpdate') {
 			stateGame.forceFastAnimations = false;
@@ -272,7 +272,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// Super bonus pays at outro; per-spin winInfo badges/anim cause green number overlays and
 		// whole-board flash on no-growth spins. Keep only the final cluster win-state pass.
 		if (stateGame.bonusMode === 'superspin' && !isSuperFinal) return;
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_winlevel_small' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_clu_002' });
 		const positions = getVisibleWinPositions(bookEvent);
 		if (positions.length) await animateSymbols({ positions });
 	},
@@ -286,9 +286,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateBet.autoSpinsCounter = 0;
 		}
 		if (!isFeatureSpin) {
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_win_v2' });
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_sct_005' });
 			await animateSymbols({ positions: bookEvent.positions });
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_superfreespin' });
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_sct_006' });
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
 			await eventEmitter.broadcastAsync({ type: 'transition' });
 			stateGameDerived.clearWinCellStates();
@@ -297,8 +297,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateGame.gameType = bonusMode;
 			stateGame.bonusMode = bonusMode;
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'jng_intro_fs' });
-			eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_dom_001' });
+			eventEmitter.broadcast({ type: 'soundMusic', name: 'mag_mus_002' });
 			await eventEmitter.broadcastAsync({
 				type: 'freeSpinIntroUpdate',
 				totalFreeSpins: bookEvent.totalFs,
@@ -371,7 +371,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		} else {
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
 			eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_youwon_panel' });
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_dom_004' });
 			winLevelSoundsPlay({ winLevelData });
 			await eventEmitter.broadcastAsync({
 				type: 'freeSpinOutroCountUp',

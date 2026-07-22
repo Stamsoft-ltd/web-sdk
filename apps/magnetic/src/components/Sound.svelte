@@ -64,25 +64,25 @@
 	// Win-level tracks are loop-flagged; when the game returns to ambient music (or music is
 	// muted) they must be stopped explicitly or they keep playing under the ambience forever.
 	const stopWinLevelMusic = () =>
-		(['bgm_winlevel_big', 'bgm_winlevel_epic', 'bgm_winlevel_mega', 'bgm_winlevel_superwin', 'bgm_winlevel_max'] as const)
+		(['mag_mus_005', 'mag_mus_005', 'mag_mus_005', 'mag_mus_005', 'mag_mus_005'] as const)
 			.forEach((n) => sound.stop({ name: n }));
 
 	const playMusic = ({ name }: { name: MusicName }) => {
 		if (stateSound.volumeValueMaster === 0) {
 			stopAmbient();
-			sound.stop({ name: 'bgm_main' });
-			sound.stop({ name: 'bgm_freespin' });
+			sound.stop({ name: 'mag_mus_001' });
+			sound.stop({ name: 'mag_mus_002' });
 			return;
 		}
 
-		if (name === 'bgm_main') {
-			sound.stop({ name: 'bgm_freespin' });
+		if (name === 'mag_mus_001') {
+			sound.stop({ name: 'mag_mus_002' });
 			stopWinLevelMusic();
 			return playAmbient('base');
 		}
 
-		if (name === 'bgm_freespin') {
-			sound.stop({ name: 'bgm_main' });
+		if (name === 'mag_mus_002') {
+			sound.stop({ name: 'mag_mus_001' });
 			stopWinLevelMusic();
 			return playAmbient('bonus');
 		}
@@ -96,15 +96,15 @@
 		soundBetMode: async ({ betModeKey }) => {
 			if (betModeKey === 'SUPER') {
 				// check if SUPERSPIN, when changing the bet mode.
-				sound.players.once.play({ name: 'sfx_winlevel_end' });
+				sound.players.once.play({ name: 'mag_win_002' });
 				await waitForTimeout(SECOND);
-				sound.players.music.play({ name: 'bgm_freespin' });
+				sound.players.music.play({ name: 'mag_mus_002' });
 			} else {
-				sound.players.music.play({ name: 'bgm_main' });
+				sound.players.music.play({ name: 'mag_mus_001' });
 			}
 		},
-		soundPressGeneral: () => sound.players.once.play({ name: 'sfx_btn_general' }),
-		soundPressBet: () => sound.players.once.play({ name: 'sfx_btn_spin' }),
+		soundPressGeneral: () => sound.players.once.play({ name: 'mag_ui_002' }),
+		soundPressBet: () => sound.players.once.play({ name: 'mag_ui_003' }),
 		// scatterCounter
 		soundScatterCounterIncrease: () => (context.stateGame.scatterCounter = context.stateGame.scatterCounter + 1), // prettier-ignore
 		soundScatterCounterClear: () => (context.stateGame.scatterCounter = 0),
@@ -112,7 +112,7 @@
 		soundMusic: ({ name }) => playMusic({ name }),
 		soundLoop: ({ name }) => sound.players.loop.play({ name }),
 		soundOnce: ({ name, forcePlay }) => sound.players.once.play({ name, forcePlay }),
-		soundStop: ({ name }) => { if (name === 'bgm_main' || name === 'bgm_freespin') stopAmbient(); sound.stop({ name }); },
+		soundStop: ({ name }) => { if (name === 'mag_mus_001' || name === 'mag_mus_002') stopAmbient(); sound.stop({ name }); },
 		soundFade: async ({ name, duration, from, to }) => await sound.fade({ name, duration, from, to }), // prettier-ignore
 	});
 
@@ -125,8 +125,8 @@
 			if (ambientUnlocked) void playAmbient(ambientMode);
 		} else {
 			stopAmbient();
-			sound.stop({ name: 'bgm_main' });
-			sound.stop({ name: 'bgm_freespin' });
+			sound.stop({ name: 'mag_mus_001' });
+			sound.stop({ name: 'mag_mus_002' });
 			// Also stop any looping win-level track — otherwise it keeps "playing" muted
 			// and becomes audible on top of the resumed ambience after unmute.
 			stopWinLevelMusic();

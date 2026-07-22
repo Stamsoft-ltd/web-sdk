@@ -81,7 +81,7 @@
 
 			context.eventEmitter.broadcast({
 				type: 'soundOnce',
-				name: next === 1 ? 'sfx_multiplier_reset' : 'sfx_multiplier_update',
+				name: next === 1 ? 'mag_wld_006' : 'mag_wld_006',
 			});
 
 			await swapTo(next);

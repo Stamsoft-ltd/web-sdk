@@ -115,7 +115,7 @@
 				{amount}
 				{duration}
 				oncomplete={() => {
-					context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_bigwin_coinloop' });
+					context.eventEmitter.broadcast({ type: 'soundStop', name: 'mag_win_001' });
 					if (!hasBoardAnimation) oncomplete();
 				}}
 			>
