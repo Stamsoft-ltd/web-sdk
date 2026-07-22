@@ -12,6 +12,7 @@
 </script>
 
 <script lang="ts">
+	import { Howl } from 'howler';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 
@@ -22,72 +23,79 @@
 	import { getContext } from '../game/context';
 
 	const context = getContext();
-	// Bonus keeps the full-energy track; the base game plays a processed CALM copy of it
-	// (low-passed, 8% slower, slightly quieter) so the base loop is easier on the ears.
-	const ambientTrackUrl = './assets/audio/background_music.mp3?v=20260713b';
-	const ambientCalmTrackUrl = './assets/audio/background_music_calm.mp3?v=20260717';
-	let ambientAudio: HTMLAudioElement | null = null;
-	let ambientUnlocked = false;
-	// Which ambient flavour is current — remembered so muting (master OR music channel) can
-	// resume the right track when sound comes back.
-	let ambientMode: 'base' | 'bonus' = 'base';
 
-	const playAmbient = async (mode: 'base' | 'bonus') => {
-		ambientMode = mode;
-		if (!browser || !ambientAudio) return;
-		if (stateSound.volumeValueMaster === 0 || stateSound.volumeValueMusic === 0) {
-			stopAmbient();
+	// ── Background music ──────────────────────────────────────────────────────────
+	// Looped through dedicated (non-sprite) Howls: Web Audio loops a full decoded buffer
+	// sample-accurately, so the loop is truly seamless. Looping a region inside the SFX sprite (or an
+	// HTMLAudio element) restarts via a JS timer and leaves an audible gap. OGG is listed first so
+	// Chrome/Firefox get the gapless path; MP3 is the Safari fallback.
+	type MusicTrack = 'base' | 'bonus' | 'super';
+	const MUSIC_TRACKS: MusicTrack[] = ['base', 'bonus', 'super'];
+	const MUSIC_SRC: Record<MusicTrack, string[]> = {
+		base: ['./assets/audio/music_base.ogg?v=20260722', './assets/audio/music_base.mp3?v=20260722'],
+		bonus: ['./assets/audio/music_bonus.ogg?v=20260722', './assets/audio/music_bonus.mp3?v=20260722'],
+		super: ['./assets/audio/music_super.ogg?v=20260722', './assets/audio/music_super.mp3?v=20260722'],
+	};
+	// Per-track mix level (tune to taste). Master + music-channel mutes are honoured separately.
+	const MUSIC_VOL: Record<MusicTrack, number> = { base: 0.3, bonus: 0.36, super: 0.36 };
+	let musicHowls: Record<MusicTrack, Howl> | null = null;
+	let currentTrack: MusicTrack = 'base';
+	let musicUnlocked = false;
+
+	const musicAudible = () =>
+		stateSound.volumeValueMaster !== 0 && stateSound.volumeValueMusic !== 0;
+
+	const stopMusicTracks = () => {
+		if (!musicHowls) return;
+		for (const t of MUSIC_TRACKS) musicHowls[t].stop();
+	};
+
+	const playTrack = (track: MusicTrack) => {
+		currentTrack = track;
+		if (!browser || !musicHowls) return;
+		if (!musicAudible()) {
+			stopMusicTracks();
 			return;
 		}
-		// Swap the source when the mode's track differs from what is loaded.
-		const wantedUrl = mode === 'bonus' ? ambientTrackUrl : ambientCalmTrackUrl;
-		if (!ambientAudio.src.includes(wantedUrl.replace('./', '/'))) {
-			ambientAudio.src = wantedUrl;
-			ambientAudio.load();
-		}
-		ambientAudio.loop = true;
-		ambientAudio.volume = mode === 'bonus' ? 0.32 : 0.22;
-		try {
-			await ambientAudio.play();
-			ambientUnlocked = true;
-		} catch {
-			// ignore autoplay block until first gesture
+		for (const t of MUSIC_TRACKS) {
+			const h = musicHowls[t];
+			if (t === track) {
+				h.volume(MUSIC_VOL[t]);
+				if (!h.playing()) {
+					try {
+						h.play();
+						musicUnlocked = true;
+					} catch {
+						/* autoplay-blocked until first gesture */
+					}
+				}
+			} else if (h.playing()) {
+				h.stop();
+			}
 		}
 	};
 
-	const stopAmbient = () => {
-		if (!ambientAudio) return;
-		ambientAudio.pause();
-		ambientAudio.currentTime = 0;
-	};
-
-	// Win-level tracks are loop-flagged; when the game returns to ambient music (or music is
-	// muted) they must be stopped explicitly or they keep playing under the ambience forever.
-	const stopWinLevelMusic = () =>
-		(['mag_mus_005', 'mag_mus_005', 'mag_mus_005', 'mag_mus_005', 'mag_mus_005'] as const)
-			.forEach((n) => sound.stop({ name: n }));
+	// Win-level count music (mag_mus_005) is a short sprite loop; stop it when returning to ambience.
+	const stopWinLevelMusic = () => sound.stop({ name: 'mag_mus_005' });
 
 	const playMusic = ({ name }: { name: MusicName }) => {
-		if (stateSound.volumeValueMaster === 0) {
-			stopAmbient();
-			sound.stop({ name: 'mag_mus_001' });
-			sound.stop({ name: 'mag_mus_002' });
+		if (!musicAudible()) {
+			stopMusicTracks();
 			return;
 		}
-
 		if (name === 'mag_mus_001') {
-			sound.stop({ name: 'mag_mus_002' });
 			stopWinLevelMusic();
-			return playAmbient('base');
+			return playTrack('base');
 		}
-
 		if (name === 'mag_mus_002') {
-			sound.stop({ name: 'mag_mus_001' });
 			stopWinLevelMusic();
-			return playAmbient('bonus');
+			return playTrack('bonus');
 		}
-
-		stopAmbient();
+		if (name === 'mag_mus_003') {
+			stopWinLevelMusic();
+			return playTrack('super');
+		}
+		// mag_mus_004 (scatter tease) / mag_mus_005 (win count) are short layers — sprite loop is fine.
 		sound.players.music.play({ name });
 	};
 
@@ -95,12 +103,11 @@
 		// ui
 		soundBetMode: async ({ betModeKey }) => {
 			if (betModeKey === 'SUPER') {
-				// check if SUPERSPIN, when changing the bet mode.
 				sound.players.once.play({ name: 'mag_win_002' });
 				await waitForTimeout(SECOND);
-				sound.players.music.play({ name: 'mag_mus_002' });
+				playTrack('bonus');
 			} else {
-				sound.players.music.play({ name: 'mag_mus_001' });
+				playTrack('base');
 			}
 		},
 		soundPressGeneral: () => sound.players.once.play({ name: 'mag_ui_002' }),
@@ -112,66 +119,50 @@
 		soundMusic: ({ name }) => playMusic({ name }),
 		soundLoop: ({ name }) => sound.players.loop.play({ name }),
 		soundOnce: ({ name, forcePlay }) => sound.players.once.play({ name, forcePlay }),
-		soundStop: ({ name }) => { if (name === 'mag_mus_001' || name === 'mag_mus_002') stopAmbient(); sound.stop({ name }); },
+		soundStop: ({ name }) => {
+			if (name === 'mag_mus_001' || name === 'mag_mus_002' || name === 'mag_mus_003') stopMusicTracks();
+			sound.stop({ name });
+		},
 		soundFade: async ({ name, duration, from, to }) => await sound.fade({ name, duration, from, to }), // prettier-ignore
 	});
 
-	// Background music follows BOTH the master mute and the menu's MUSIC channel: silenced when
-	// either is off, and RESUMED (same flavour) when both come back on.
+	// Follow BOTH the master mute and the menu's MUSIC channel: silenced when either is off, and
+	// RESUMED (same flavour) when both come back on. Hidden-tab muting is handled by Howler globally.
 	$effect(() => {
-		const musicAudible =
-			stateSound.volumeValueMaster !== 0 && stateSound.volumeValueMusic !== 0;
-		if (musicAudible) {
-			if (ambientUnlocked) void playAmbient(ambientMode);
+		if (musicAudible()) {
+			if (musicUnlocked) playTrack(currentTrack);
 		} else {
-			stopAmbient();
-			sound.stop({ name: 'mag_mus_001' });
-			sound.stop({ name: 'mag_mus_002' });
-			// Also stop any looping win-level track — otherwise it keeps "playing" muted
-			// and becomes audible on top of the resumed ambience after unmute.
+			stopMusicTracks();
+			// Also stop any looping win-level track so it doesn't resume audible on top after unmute.
 			stopWinLevelMusic();
 		}
 	});
 
-	// The ambient loop is a raw HTMLAudioElement outside Howler, so the framework's
-	// hidden-tab mute (Howler.mute on visibilitychange) never reaches it — pause and
-	// resume it here ourselves.
-	let ambientPausedByVisibility = false;
-	const onVisibilityChange = () => {
-		if (!ambientAudio) return;
-		if (document.visibilityState !== 'visible') {
-			ambientPausedByVisibility = !ambientAudio.paused;
-			ambientAudio.pause();
-		} else if (ambientPausedByVisibility) {
-			ambientPausedByVisibility = false;
-			const musicAudible =
-				stateSound.volumeValueMaster !== 0 && stateSound.volumeValueMusic !== 0;
-			if (musicAudible) void ambientAudio.play().catch(() => {});
-		}
-	};
-
 	onMount(() => {
-		ambientAudio = browser ? new Audio(ambientTrackUrl) : null;
-		const unlockAmbient = async () => {
-			if (ambientUnlocked) return;
-			await playAmbient(stateBet.activeBetModeKey === 'SUPER' ? 'bonus' : 'base');
+		if (browser) {
+			musicHowls = {
+				base: new Howl({ src: MUSIC_SRC.base, loop: true, html5: false, preload: true, volume: MUSIC_VOL.base }), // prettier-ignore
+				bonus: new Howl({ src: MUSIC_SRC.bonus, loop: true, html5: false, preload: true, volume: MUSIC_VOL.bonus }), // prettier-ignore
+				super: new Howl({ src: MUSIC_SRC.super, loop: true, html5: false, preload: true, volume: MUSIC_VOL.super }), // prettier-ignore
+			};
+		}
+		// Browsers block audio until the first gesture — start music on the first pointer/key.
+		const unlock = () => {
+			if (musicUnlocked || !musicAudible()) return;
+			playTrack(stateBet.activeBetModeKey === 'SUPER' ? 'bonus' : 'base');
 		};
+		window.addEventListener('pointerdown', unlock, { once: true });
+		window.addEventListener('keydown', unlock, { once: true });
 
-		window.addEventListener('pointerdown', unlockAmbient, { once: true });
-		window.addEventListener('keydown', unlockAmbient, { once: true });
-		document.addEventListener('visibilitychange', onVisibilityChange);
-
-		if (stateSound.volumeValueMaster !== 0 && stateBet.activeBetModeKey === 'SUPER') {
-			playAmbient('bonus');
-		} else if (stateSound.volumeValueMaster !== 0) {
-			playAmbient('base');
+		if (musicAudible()) {
+			playTrack(stateBet.activeBetModeKey === 'SUPER' ? 'bonus' : 'base');
 		}
 
 		return () => {
-			window.removeEventListener('pointerdown', unlockAmbient);
-			window.removeEventListener('keydown', unlockAmbient);
-			document.removeEventListener('visibilitychange', onVisibilityChange);
-			stopAmbient();
+			window.removeEventListener('pointerdown', unlock);
+			window.removeEventListener('keydown', unlock);
+			stopMusicTracks();
+			if (musicHowls) for (const t of MUSIC_TRACKS) musicHowls[t].unload();
 		};
 	});
 </script>
