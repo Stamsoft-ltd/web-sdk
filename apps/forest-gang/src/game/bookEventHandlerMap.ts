@@ -412,7 +412,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			),
 		);
 		if (hasAnimatedWinSymbol && !stateBet.isTurbo && !stateBet.isSuperTurbo) {
-			await waitForTimeout(1000);
+			// Long enough to register the symbols' win animation starting, short enough that the
+			// board doesn't read as stalled before the win presentation.
+			await waitForTimeout(550);
 		}
 		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
 		eventEmitter.broadcast({ type: 'winShow' });

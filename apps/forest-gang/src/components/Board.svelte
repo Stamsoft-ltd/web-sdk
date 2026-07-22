@@ -474,7 +474,8 @@
 							anchor={0.5}
 							height={symbolH * s * idleFit}
 							width={symbolH * s * idleFit * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[reelSymbol.rawSymbol.name] ?? 1) * IDLE_W_STRETCH}
-							animationSpeed={0.28}
+							animationSpeed={0.28 + ((reelIndex * 2 + symbolIndex) % 4) * 0.008}
+							startFrame={reelIndex * 13 + symbolIndex * 7}
 							loop={true}
 							play={boardAnimate}
 							alpha={hasWinState && !isWin ? 0.35 : 1}

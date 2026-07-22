@@ -19,6 +19,9 @@
 	const GOLD = 0xfbc503;
 
 	let drawProgress = $state(0);
+	// Which line is currently drawing: -1 = all lines together (the first pass, so the full win
+	// picture registers at once), then 0..N-1 cycling line-by-line so each payline can be read.
+	let activeLine = $state(-1);
 	let raf = 0;
 	let holdTimeout = 0;
 	let start = 0;
@@ -33,7 +36,13 @@
 			if (drawProgress < 1) {
 				raf = requestAnimationFrame(tick);
 			} else {
-				holdTimeout = setTimeout(startDraw, HOLD_MS) as unknown as number;
+				holdTimeout = setTimeout(() => {
+					const count = props.wins.length;
+					// Multi-line wins advance to per-line cycling after the all-lines pass;
+					// single-line wins just keep redrawing their one line.
+					if (count > 1) activeLine = (activeLine + 1) % count;
+					startDraw();
+				}, HOLD_MS) as unknown as number;
 			}
 		};
 		raf = requestAnimationFrame(tick);
@@ -44,6 +53,7 @@
 		clearTimeout(holdTimeout);
 		cancelAnimationFrame(raf);
 		drawProgress = 0;
+		activeLine = -1;
 		start = 0;
 		if (count === 0) return;
 		startDraw();
@@ -58,11 +68,11 @@
 	});
 </script>
 
-{#each props.wins as win (win.lineIndex)}
+{#each props.wins as win, index (win.lineIndex)}
 	<VineRope
 		waypoints={win.path.map((p) => ({ x: cx(p.reel), y: cy(p.row) }))}
 		color={GOLD}
-		progress={drawProgress}
+		progress={props.snap ? 1 : activeLine === -1 || activeLine === index ? drawProgress : 0}
 		vineH={VINE_H}
 	/>
 {/each}

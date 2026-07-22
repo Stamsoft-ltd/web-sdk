@@ -114,7 +114,10 @@
 	{#if winLevelData}
 		{@const isBigWin = winLevelData.type === 'big'}
 		{@const hasBoardAnimation = !!winLevelData?.animation}
-		{@const duration = (stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation ? Math.min(winLevelData.presentDuration, 400) : winLevelData.presentDuration * 0.25}
+		<!-- Small/medium wins tally at half their present duration (600ms–1.75s) so they read as a
+		     count-up rather than an instant pop; big-win boards keep the quarter scale (2.5s–11s)
+		     since their presentDurations are an order of magnitude longer. -->
+		{@const duration = (stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation ? Math.min(winLevelData.presentDuration, 400) : winLevelData.presentDuration * (winLevelData.type === 'big' ? 0.25 : 0.5)}
 		{#key oncomplete}
 		<WinCountUpProvider {amount} {duration} oncomplete={() => {
 			context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' });

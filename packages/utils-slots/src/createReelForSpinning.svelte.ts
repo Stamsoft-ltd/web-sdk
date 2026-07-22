@@ -289,6 +289,7 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 				await slideY({
 					reelY: defaultY + bounceSize,
 					speed: reelState.spinOptions().reelSpinSpeedBeforeBounce,
+					easing: reelState.spinOptions().reelStopEasing,
 				});
 			},
 		});
@@ -305,6 +306,7 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 				await slideY({
 					reelY: defaultY + bounceSize,
 					speed: reelState.spinOptions().reelSpinSpeedBeforeBounce,
+					easing: reelState.spinOptions().reelStopEasing,
 				});
 			},
 		});

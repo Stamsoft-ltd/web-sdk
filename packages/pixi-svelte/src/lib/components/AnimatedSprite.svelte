@@ -7,6 +7,9 @@
 		animationSpeed?: PIXI.AnimatedSprite['animationSpeed'];
 		loop?: PIXI.AnimatedSprite['loop'];
 		play?: boolean;
+		// Frame to start playback from (wrapped into the frame count). Lets sibling looping sprites
+		// (e.g. a board of idle symbols) start out of phase instead of animating in lockstep.
+		startFrame?: number;
 	};
 </script>
 
@@ -19,13 +22,14 @@
 	const parentContext = getContextParent();
 	const animatedSprite = new PIXI.AnimatedSprite(props.textures ?? []);
 
-	propsSyncEffect({ props, target: animatedSprite, ignore: ['play'] });
+	propsSyncEffect({ props, target: animatedSprite, ignore: ['play', 'startFrame'] });
 
 	$effect(() => {
+		const frame = (props.startFrame ?? 0) % Math.max(1, animatedSprite.totalFrames);
 		if (props.play) {
-			animatedSprite.gotoAndPlay(0);
+			animatedSprite.gotoAndPlay(frame);
 		} else {
-			animatedSprite.gotoAndStop(0);
+			animatedSprite.gotoAndStop(frame);
 		}
 	});
 

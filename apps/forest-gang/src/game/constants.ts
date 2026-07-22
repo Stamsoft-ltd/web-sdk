@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { cubicOut } from 'svelte/easing';
 
 import type { RawSymbol, SymbolState } from './types';
 
@@ -72,7 +73,11 @@ const SPECIAL_SYMBOL_SIZE = 1;
 
 const SPIN_OPTIONS_SHARED = {
 	reelBounceBackSpeed: 0.15,
-	reelSpinSpeedBeforeBounce: 4,
+	// Slower than reelSpinSpeed + cubicOut so the reel DECELERATES into the bounce point — at the
+	// old value (4, faster than the 2.3 spin speed) reels accelerated into the stop and the settle
+	// read as a hard cut.
+	reelSpinSpeedBeforeBounce: 2.8,
+	reelStopEasing: cubicOut,
 	reelPaddingMultiplierNormal: 1.2,
 	reelPaddingMultiplierAnticipated: 10,
 	reelSpinDelay: 145,

@@ -11,6 +11,9 @@ export type SpinningReelSpinOptions = {
 	reelBounceBackSpeed: number;
 	reelSpinSpeed: number;
 	reelSpinSpeedBeforeBounce: number;
+	// Easing for the final approach into the bounce point (normal/anticipated spins). Without it the
+	// landing segment runs at constant speed, which reads as a hard cut rather than a weighted settle.
+	reelStopEasing?: (t: number) => number;
 	// size
 	reelBounceSizeMulti: number;
 	// extra padding

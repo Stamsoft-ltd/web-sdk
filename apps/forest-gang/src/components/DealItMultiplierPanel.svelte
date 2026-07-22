@@ -74,6 +74,9 @@
 	let multiplier = $state(1);
 	let pendingTarget = $state(1);
 	let groupX = new Tween(0);
+	// Two-beat reveal: the hand slides in EMPTY, then the value pops onto the board (backOut scale).
+	// Without this the number rides in already resolved and the reveal has no landing moment.
+	let numReveal = new Tween(1);
 	let revealed = false;
 	let skipReveal: (() => void) | null = null;
 	// True only during the hold phase (after slide-in completes). Prevents the stopButtonClick that
@@ -96,11 +99,17 @@
 		readyToSkip = false;
 		multiplier = next;
 		groupX.set(-SLIDE, { duration: 0 }); // start off to the left
+		numReveal.set(0, { duration: 0 }); // value hidden until the hand has landed
 		show = true; // FadeContainer fades it in
 		groupX.set(0, { duration: 320, easing: backOut }); // slide into place
 		// Wait for slide-in to complete before accepting stop-button skips (prevents the same press
 		// that triggered forceStop from hiding the hand before the player can see it).
 		await waitForTimeout(320);
+		if (revealed) { readyToSkip = false; return; }
+		// Beat, then pop the value onto the empty board.
+		await waitForTimeout(120);
+		numReveal.set(1, { duration: 260, easing: backOut });
+		await waitForTimeout(200);
 		if (revealed) { readyToSkip = false; return; }
 		readyToSkip = true;
 		await Promise.race([waitForTimeout(900), new Promise<void>((r) => { skipReveal = r; })]);
@@ -155,30 +164,31 @@
 			<!-- Bear-hand board: panel centre (0.39/0.458) at the container origin, paw extends right -->
 			<Sprite key="multiplierHand" anchor={{ x: 0.39, y: 0.458 }} width={HAND_W} height={HAND_H} />
 
-			<!-- At 1x, show the red X emblem; otherwise the Cinzel 900 gold number -->
-			{#if multiplier === 1}
-				<Sprite
-					key="multiplierXRed"
-					anchor={0.5}
-					y={NUM_Y}
-					width={X_RED_W}
-					height={X_RED_W * (776 / 872)}
-				/>
-			{:else}
-				<Text
-					anchor={0.5}
-					y={NUM_Y}
-					text={`${multiplier}X`}
-					style={{
-						fontFamily: 'Cinzel',
-						fontWeight: '900',
-						fontSize: NUM_FONT,
-						fill: GOLD_GRADIENT,
-						align: 'center',
-						letterSpacing: NUM_FONT * 0.03,
-					}}
-				/>
-			{/if}
+			<!-- At 1x, show the red X emblem; otherwise the Cinzel 900 gold number.
+			     Wrapped in a scaling container for the pop-in reveal (numReveal). -->
+			<Container y={NUM_Y} scale={numReveal.current}>
+				{#if multiplier === 1}
+					<Sprite
+						key="multiplierXRed"
+						anchor={0.5}
+						width={X_RED_W}
+						height={X_RED_W * (776 / 872)}
+					/>
+				{:else}
+					<Text
+						anchor={0.5}
+						text={`${multiplier}X`}
+						style={{
+							fontFamily: 'Cinzel',
+							fontWeight: '900',
+							fontSize: NUM_FONT,
+							fill: GOLD_GRADIENT,
+							align: 'center',
+							letterSpacing: NUM_FONT * 0.03,
+						}}
+					/>
+				{/if}
+			</Container>
 		</Container>
 {/snippet}
 
