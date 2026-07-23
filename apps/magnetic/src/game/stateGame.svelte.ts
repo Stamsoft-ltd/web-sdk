@@ -352,7 +352,11 @@ const landscapeCapsuleLayout = () => {
 	if (canvasPxH <= 320) {
 		const canvasBottomY = main.height * 0.5 + canvasPxH / (2 * (main.scale || 1));
 		const buyReserve = visibleW * 1.2; // gap + buy-bonus button + bottom margin (virtual units)
-		const shift = Math.max(0, canvasBottomY - visibleBottom - buyReserve);
+		const fullShift = Math.max(0, canvasBottomY - visibleBottom - buyReserve);
+		// Don't pin the group all the way to the bottom — nudge the capsule (and, tracking it, the
+		// buy-bonus) UP by a fraction of the viewport so it sits a bit higher with balanced margin.
+		const upNudge = (canvasPxH / (main.scale || 1)) * 0.14;
+		const shift = Math.max(0, fullShift - upNudge);
 		tubeY += shift;
 		visibleBottom += shift;
 	}

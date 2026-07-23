@@ -37,14 +37,6 @@
 
 	const context = getContext();
 
-	// The free-spins intro popup lives in the canvas, so its dark backdrop can't reach the HTML
-	// navigation (which sits above the canvas). Mirror the intro's show/hide here to dim the nav too.
-	let fsIntroActive = $state(false);
-	context.eventEmitter.subscribeOnMount({
-		freeSpinIntroShow: () => (fsIntroActive = true),
-		freeSpinIntroHide: () => (fsIntroActive = false),
-	});
-
 	// Splash intro overlay: shown once assets have loaded, dismissed on first press. The loading
 	// screen defers its `proceed` callback to us via `oncanproceed` so nothing starts until pressed.
 	let splashIntroVisible = $state(false);
@@ -359,9 +351,6 @@
 
 		{#if !context.stateLayout.showLoadingScreen}
 			<HudHtml />
-			{#if fsIntroActive}
-				<div class="fs-nav-shadow" transition:fade={{ duration: 250 }} aria-hidden="true"></div>
-			{/if}
 			<ReplayHud />
 			<PendingRoundRecovery />
 		{/if}
@@ -409,17 +398,5 @@
 		width: 100%;
 		height: 100%;
 		z-index: 1;
-	}
-	/* Dark shelf over the HTML navigation while the free-spins intro popup is up, so the popup's
-	   backdrop appears to cover the nav too. Sits above the HUD (z-index 20); visual only. */
-	.fs-nav-shadow {
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		height: 160px;
-		background: rgba(0, 0, 0, 0.6);
-		z-index: 21;
-		pointer-events: none;
 	}
 </style>

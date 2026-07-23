@@ -10,7 +10,7 @@
 <script lang="ts">
 	import { AnimatedSprite, Container, Graphics, Sprite, Text, type LoadedSpriteSheet } from 'pixi-svelte';
 	import { Tween } from 'svelte/motion';
-	import { cubicOut } from 'svelte/easing';
+	import { cubicOut, backOut } from 'svelte/easing';
 	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 	import { waitForResolve } from 'utils-shared/wait';
@@ -21,6 +21,7 @@
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import LightningStorm from './LightningStorm.svelte';
 	import PressToContinue from './PressToContinue.svelte';
+	import SparkBurst from './SparkBurst.svelte';
 
 	const context = getContext();
 	// Animated medallion (lightning flipbook; falls back to the static sprite until loaded).
@@ -57,22 +58,31 @@
 	const amountBoxH = $derived(amountBoxW * (98 / 200) * 0.72);
 	const magnetW = $derived(PW * 0.34);
 
-	// The panel art fades to near-black across its lower half, which reads as a dark "shadow" over
-	// the popup. Paint a flat OPAQUE navy interior over the art (behind the content, inside the
-	// frame) so the popup face is uniformly lit and the art's dark lower gradient stays hidden
-	// behind it. A solid colour (no gradient/filter) is used so it renders the same on every GPU.
-	const PANEL_FILL = 0x0f3260;
-
-	// ── Entry animation (mirrors the intro): panel + content slide UP from below while the
-	//    CONGRATULATIONS heading drops in from the top. ──
-	const slideUp = new Tween(0, { duration: 700, easing: cubicOut });
-	const slideDown = new Tween(0, { duration: 700, easing: cubicOut });
+	// ── Entry animation (mirrors the intro): panel + content slide UP from below (settling with a
+	//    slight overshoot) while the CONGRATULATIONS heading drops in from the top with a scale
+	//    punch, a one-shot white flash and a spark burst. ──
+	const slideUp = new Tween(0, { duration: 720, easing: backOut });
+	const slideDown = new Tween(0, { duration: 720, easing: backOut });
+	const popScale = new Tween(1, { duration: 760, easing: backOut });
+	const headingPop = new Tween(1, { duration: 820, easing: backOut });
+	const flash = new Tween(0, { duration: 420, easing: cubicOut });
+	let burst = $state(false);
 	$effect(() => {
-		if (!show) return;
+		if (!show) {
+			burst = false;
+			return;
+		}
 		slideUp.set(main.height * 0.75, { duration: 0 });
 		slideDown.set(-main.height * 0.6, { duration: 0 });
-		slideUp.set(0, { duration: 700, easing: cubicOut });
-		slideDown.set(0, { duration: 700, easing: cubicOut });
+		popScale.set(0.9, { duration: 0 });
+		headingPop.set(1.18, { duration: 0 });
+		flash.set(0.55, { duration: 0 });
+		slideUp.set(0);
+		slideDown.set(0);
+		popScale.set(1);
+		headingPop.set(1);
+		flash.set(0);
+		burst = true;
 	});
 
 	// ── Live animation clock (border arcs, heading glow/zoom, amount pulse, press-hint pulse). ──
@@ -92,6 +102,8 @@
 	const amountScale = $derived(1 + 0.06 * Math.sin(animT * 5.2));
 	const amountAlpha = $derived(0.86 + 0.14 * Math.sin(animT * 9.3));
 	const pressAlpha = $derived(0.75 + 0.25 * Math.sin(animT * 3.2));
+	// Medallion gently floats while the aura/rays sweep behind it.
+	const magnetBob = $derived(Math.sin(animT * 1.5) * PH * 0.012);
 	const glowPulse = $derived(0.25 + 0.9 * (0.5 + 0.5 * Math.sin(animT * 9.4) * Math.sin(animT * 3.7)) + 0.2 * Math.sin(animT * 47));
 	const congratsScale = $derived(1 + 0.1 * Math.sin(animT * 3.4));
 	// Point along the half-perimeter border path (top-mid -> corner -> side -> bottom-mid); dir = ±1.
@@ -173,7 +185,7 @@
 						<LightningStorm active={show} panelWidth={PW} screenHeight={main.height} count={18} />
 
 						<!-- Everything except CONGRATULATIONS slides UP from below the screen -->
-						<Container y={slideUp.current}>
+						<Container y={slideUp.current} scale={popScale.current}>
 							<!-- Opaque backing: the panel art is semi-transparent, so without this the additive
 							     bolts shine THROUGH the dialog instead of staying behind it. Kept inside the
 							     frame's inner edge so it never pokes out as a dark rectangle beyond the border. -->
@@ -185,18 +197,17 @@
 								}}
 							/>
 
-							<!-- Dark-blue tech panel -->
+							<!-- Dark-blue tech panel — shown as-is (no interior fill overlay). -->
 							<Sprite key="fsPanel" anchor={0.5} width={PW} height={PH} />
 
-							<!-- Opaque navy interior painted over the panel art (inside the frame) so the popup face is
-							     uniformly lit and the art's near-black lower gradient stays hidden behind it. A PLAIN
-							     rect (not roundRect) is used: roundRect's fill only rendered its top half on some GPUs,
-							     leaving the lower panel dark. A rect is two triangles and always fills fully. -->
+							<!-- Entry flash: a brief additive brighten across the panel face as the card lands. -->
 							<Graphics
+								blendMode="add"
 								draw={(g) => {
 									g.clear();
+									if (flash.current <= 0.001) return;
 									g.rect(-PW * 0.435, -PH * 0.44, PW * 0.87, PH * 0.88);
-									g.fill(PANEL_FILL);
+									g.fill({ color: 0xffffff, alpha: flash.current });
 								}}
 							/>
 
@@ -254,26 +265,30 @@
 							<!-- YOU WON -->
 							<Text anchor={0.5} y={-PH * 0.27} text={i18nDerived.translate('YOU WON')} style={blueStyle(PH * 0.04)} />
 
-							<!-- Full magnet element (magnet + energy) — animated lightning flipbook -->
+							<!-- Full magnet element (magnet + energy) — animated lightning flipbook, floating over a
+							     rotating energy aura, with a one-shot spark burst on entry. -->
 							<Container y={-PH * 0.06}>
-								{#if magnetFrames.length > 0}
-									<AnimatedSprite
-										textures={magnetFrames}
-										anchor={0.5}
-										width={magnetW * 1.28}
-										height={magnetW * 1.28 * (425 / 465)}
-										animationSpeed={0.16}
-										loop={true}
-										play={true}
-									/>
-								{:else}
-									<Sprite
-										key="popupMagnet"
-										anchor={0.5}
-										width={magnetW * 1.28}
-										height={magnetW * 1.28 * (103 / 114)}
-									/>
-								{/if}
+								<Container y={magnetBob}>
+									{#if magnetFrames.length > 0}
+										<AnimatedSprite
+											textures={magnetFrames}
+											anchor={0.5}
+											width={magnetW * 1.28}
+											height={magnetW * 1.28 * (425 / 465)}
+											animationSpeed={0.16}
+											loop={true}
+											play={true}
+										/>
+									{:else}
+										<Sprite
+											key="popupMagnet"
+											anchor={0.5}
+											width={magnetW * 1.28}
+											height={magnetW * 1.28 * (103 / 114)}
+										/>
+									{/if}
+								</Container>
+								<SparkBurst active={burst} radius={magnetW * 1.6} />
 							</Container>
 
 							<!-- Win amount counting up in its frame — pulses/flickers to draw the eye -->
@@ -309,7 +324,7 @@
 
 						<!-- CONGRATULATIONS drops in from the TOP — glowing/zooming like the intro -->
 						<Container y={slideDown.current}>
-							<Container y={-PH * 0.36} scale={congratsScale}>
+							<Container y={-PH * 0.36} scale={congratsScale * headingPop.current}>
 								{#each glowOffsets as o}
 									<Text
 										anchor={0.5}
