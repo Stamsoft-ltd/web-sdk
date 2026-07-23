@@ -82,6 +82,26 @@ const getSkipMinSpinMs = () => {
 	return SKIP_MIN_SPIN_MS_NORMAL;
 };
 
+// Paid/free-spin reveal: the 7x7 result falls in as one board instead of seven
+// independently rolling reels. Columns/rows are only micro-staggered so the
+// complete board lands within one visual beat.
+const DROP_MOTION_NORMAL = {
+	startRows: 7.5,
+	durationMs: 360,
+	reelDelayMs: 10,
+	rowDelayMs: 4,
+} as const;
+
+const DROP_MOTION_FAST = {
+	startRows: 4,
+	durationMs: 130,
+	reelDelayMs: 4,
+	rowDelayMs: 2,
+} as const;
+
+let activeDropToken = 0;
+let dropInProgress = false;
+
 // ── cell helpers ──────────────────────────────────────────────────────────────
 
 import { Tween } from 'svelte/motion';
@@ -819,6 +839,8 @@ const settleBoardInstant = ({
 	series?: ClusterSeriesSnapshot[];
 	magnetTargetSymbol?: PaySymbolName | null;
 }) => {
+	activeDropToken += 1;
+	dropInProgress = false;
 	for (let ri = 0; ri < BOARD_DIMENSIONS.x; ri++) {
 		for (let rowi = 0; rowi < BOARD_DIMENSIONS.y; rowi++) {
 			const cell = stateGame.board[ri][rowi];
@@ -843,73 +865,65 @@ const settleBoardInstant = ({
 	stateGame.boardMode = 'settle';
 };
 
-// ── spin animation (createReelForSpinning) ────────────────────────────────────
+// ── near-simultaneous board-drop reveal ───────────────────────────────────────
 
 const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
-	stateGame.boardMode = 'spin';
-	reelSpinStartedAt = [];
-	skipStopScheduledReels.clear();
+	const token = ++activeDropToken;
+	dropInProgress = true;
+	stateGame.boardMode = 'settle';
+	const fast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
+	const motion = fast ? DROP_MOTION_FAST : DROP_MOTION_NORMAL;
+	const fallingCells: Array<{ cell: BoardCell; raw: RawSymbol; delayMs: number }> = [];
 
-	const isFastMode = stateBet.isTurbo || stateBet.isSuperTurbo;
-	const isSuperTurbo = stateBet.isSuperTurbo;
-	const waitForReelDelay = async (durationMs: number, reelIndex: number) => {
-		const stepMs = 20;
-		for (let elapsed = 0; elapsed < durationMs; elapsed += stepMs) {
-			if (stateGame.forceFastAnimations) {
-				const targetTime = skipCascadeStartedAt + SKIP_REEL_DELAY_MS * reelIndex;
-				const remainingMs = Math.max(0, targetTime - performance.now());
-				if (remainingMs > 0) await waitForTimeout(remainingMs);
-				return;
-			}
-			await waitForTimeout(Math.min(stepMs, durationMs - elapsed));
-		}
-	};
-
-	// Prepare all reels — accumulate paddingSize across reels (forest-gang pattern)
-	stateGame.spinBoard.reduce((prevPaddingSize, reel, ri) => {
-		const symbols = makeSpinSymbols(rawBoard[ri]);
-		const paddingReel = makeSpinSymbols(INITIAL_BOARD[ri]);
-		const spinType = isFastMode ? 'fast' : 'normal';
-		const paddingSize = reel.prepareToSpin({
-			noStop: false,
-			spinType,
-			symbols,
-			paddingReel,
-			paddingPosition: 0,
-			previousPaddingSize: prevPaddingSize,
-			onSpinFinishing: () => reel.onReelStopping(),
-		});
-		return paddingSize;
-	}, 0);
-
-	// Spin each reel with cascading delay (reels land left-to-right)
-	const opts = stateGame.spinBoard[0].reelState.spinOptions();
-	await Promise.all(
-		stateGame.spinBoard.map(async (reel, ri) => {
-			if (!isSuperTurbo && ri > 0) await waitForReelDelay(opts.reelSpinDelay * ri, ri);
-			const spinPromise = reel.spin();
-			reelSpinStartedAt[ri] = performance.now();
-			if (stateGame.forceFastAnimations) void stopReelAfterSkipWindow(reel, ri);
-			await spinPromise;
-		}),
-	);
-
-	// Copy final symbols into the board cells and switch to settle mode.
-	// Locked cells (superspin carry) keep their cluster symbol — skip them entirely.
+	// Swap to the result above the mask. Persistent super cells remain fixed while
+	// every unlocked result cell enters from the same shallow overhead plane.
 	for (let ri = 0; ri < BOARD_DIMENSIONS.x; ri++) {
 		for (let rowi = 0; rowi < BOARD_DIMENSIONS.y; rowi++) {
 			const cell = stateGame.board[ri][rowi];
 			if (cell.locked) continue;
-			updateCellRaw(cell, rawBoard[ri][rowi]);
-			cell.displayY.set(getTargetY(rowi), { duration: 0 });
+			const raw = rawBoard[ri][rowi];
+			updateCellRaw(cell, raw);
+			cell.displayY.set(getTargetY(rowi) - motion.startRows * SYMBOL_H, { duration: 0 });
 			cell.displayAlpha.set(1, { duration: 0 });
 			cell.displayScale.set(1, { duration: 0 });
 			cell.displayX.set(0, { duration: 0 });
+			cell.highlighted = false;
+			cell.fresh = false;
 			cell.pulling = false;
-			cell.symbolState = 'land';
+			cell.symbolState = 'static';
+			fallingCells.push({
+				cell,
+				raw,
+				delayMs: ri * motion.reelDelayMs + rowi * motion.rowDelayMs,
+			});
 		}
 	}
-	stateGame.boardMode = 'settle';
+
+	await Promise.all(
+		fallingCells.map(async ({ cell, raw, delayMs }) => {
+			if (delayMs > 0) await waitForTimeout(delayMs);
+			if (token !== activeDropToken) return;
+			await cell.displayY.set(getTargetY(cell.position.row), {
+				duration: motion.durationMs,
+				easing: backOut,
+			});
+			if (token !== activeDropToken) return;
+			cell.symbolState = 'land';
+			playLandSound(raw);
+		}),
+	);
+
+	if (token === activeDropToken) {
+		eventEmitter.broadcast({
+			type: 'soundOnce',
+			name: 'sfx_reel_stop_1',
+			forcePlay: !stateBet.isTurbo && !stateBet.isSuperTurbo,
+		});
+	}
+	for (let ri = 0; ri < BOARD_DIMENSIONS.x; ri++) {
+		stateGame.spinBoard[ri].setSymbolsWithRawSymbols(makeSpinSymbols(rawBoard[ri]));
+	}
+	dropInProgress = false;
 	stateGame.forceFastAnimations = false;
 	skipCascadeStartedAt = 0;
 	reelSpinStartedAt = [];
@@ -1089,6 +1103,19 @@ const markNextRevealAsSpin = () => {
 };
 
 const speedUpMotion = () => {
+	if (dropInProgress) {
+		stateGame.forceFastAnimations = true;
+		activeDropToken += 1;
+		for (const reel of stateGame.board) {
+			for (const cell of reel) {
+				if (cell.locked) continue;
+				cell.displayY.set(getTargetY(cell.position.row), { duration: 0 });
+				cell.symbolState = 'land';
+			}
+		}
+		dropInProgress = false;
+		return;
+	}
 	if (stateGame.boardMode !== 'spin') return;
 	stateGame.forceFastAnimations = true;
 	if (!skipCascadeStartedAt) skipCascadeStartedAt = performance.now();
