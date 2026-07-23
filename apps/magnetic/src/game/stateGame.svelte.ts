@@ -86,9 +86,9 @@ const getSkipMinSpinMs = () => {
 // independently rolling reels. Columns/rows are only micro-staggered so the
 // complete board lands within one visual beat.
 const DROP_MOTION_NORMAL = {
-	startRows: 7.5,
-	durationMs: 360,
-	reelDelayMs: 10,
+	startRows: 4.5,
+	durationMs: 520,
+	reelDelayMs: 8,
 	rowDelayMs: 4,
 } as const;
 
@@ -1095,6 +1095,9 @@ const applyReveal = async ({
 
 const beginSpin = () => {
 	resetBonusState();
+	// Magnetic uses the whole-board drop presenter. Never expose the legacy
+	// rolling reel layer, including after HMR/resume left stale view state.
+	stateGame.boardMode = 'settle';
 	stateGame.boardSpinning = true;
 	stateGame.nextRevealMode = 'spin';
 	stateGame.respinIndicator = false;
