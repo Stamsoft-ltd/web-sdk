@@ -322,18 +322,21 @@
 				<!-- FREE SPINS -->
 				<Text anchor={0.5} y={PH * 0.395} text={i18nDerived.translate('FREE SPINS')} style={blueStyle(PH * 0.036)} />
 
-				<!-- Press-anywhere-to-continue hint (below the card) with the arrow — breathing alpha -->
+				<!-- Press-anywhere-to-continue hint (below the card) with the arrow — breathing alpha.
+				     The text is RIGHT-anchored to a seam and the arrow LEFT-anchored just after it, so a
+				     fixed gap is kept no matter how long the translated string is (a fixed-x arrow used to
+				     collide with the end of the text). -->
 				<Container y={PH * 0.55} alpha={pressAlpha}>
 					<Text
-						anchor={0.5}
-						x={-PW * 0.03}
+						anchor={{ x: 1, y: 0.5 }}
+						x={PW * 0.285}
 						text={i18nDerived.translate('PRESS ANYWHERE')}
 						style={pressStyle(PH * 0.034)}
 					/>
 					<Sprite
 						key="pressArrow"
-						anchor={0.5}
-						x={PW * 0.32}
+						anchor={{ x: 0, y: 0.5 }}
+						x={PW * 0.315}
 						width={PH * 0.038 * (18 / 15)}
 						height={PH * 0.038}
 					/>
