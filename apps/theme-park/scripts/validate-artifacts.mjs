@@ -190,13 +190,33 @@ const rollerOverlaySource = fs.readFileSync(
 );
 assert.doesNotMatch(
 	rollerOverlaySource,
-	/key="tp_wild\.png"/,
+	/key="tpCoasterWild"/,
 	'Roller overlay must not redraw settled full-reel Wild symbols',
+);
+assert.doesNotMatch(
+	rollerOverlaySource,
+	/key="magneticWildLightning"/,
+	'Roller landing must not use the Magnetic lightning animation',
 );
 assert.match(
 	rollerOverlaySource,
-	/key="magneticWildLightning"/,
-	'Roller landing must use the Magnetic asset animation',
+	/getSpecialSymbolKey\('megaWild', layoutType\)/,
+	'Roller trigger and expanded reel must use the Mega Wild asset',
+);
+assert.match(
+	rollerOverlaySource,
+	/\{#each \[-0\.38, 0\.38\] as railOffset/,
+	'Roller animation must draw two rails per reel',
+);
+assert.match(
+	rollerOverlaySource,
+	/key="rollerWildCar"/,
+	'Roller animation must use the supplied cart asset',
+);
+assert.match(
+	rollerOverlaySource,
+	/sumExpression\(roller\)/,
+	'Roller animation must visualize the additive multiplier sum',
 );
 
 const persistentWildSource = fs.readFileSync(
@@ -204,7 +224,7 @@ const persistentWildSource = fs.readFileSync(
 	'utf8',
 );
 assert.equal(
-	(persistentWildSource.match(/key="tp_wild\.png"/g) ?? []).length,
+	(persistentWildSource.match(/key="tpCoasterWild"/g) ?? []).length,
 	1,
 	'Only the Coaster spinning cover may redraw a Wild symbol',
 );

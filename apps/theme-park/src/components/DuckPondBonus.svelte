@@ -20,7 +20,7 @@
 	import { onDestroy } from 'svelte';
 	import { cubicOut } from 'svelte/easing';
 	import { Tween } from 'svelte/motion';
-	import { BitmapText, Container, Sprite, SpriteSheet } from 'pixi-svelte';
+	import { BitmapText, Container, Sprite } from 'pixi-svelte';
 	import { Button, FadeContainer } from 'components-pixi';
 	import { MainContainer } from 'components-layout';
 	import { waitForResolve, waitForTimeout } from 'utils-shared/wait';
@@ -60,12 +60,15 @@
 	const pickScale = new Tween(1);
 
 	const emptyPond = () =>
-		Array.from({ length: POND_SIZE }, (): PondDuck => ({
-			prize: null,
-			selected: false,
-			revealed: false,
-			pickIndex: null,
-		}));
+		Array.from(
+			{ length: POND_SIZE },
+			(): PondDuck => ({
+				prize: null,
+				selected: false,
+				revealed: false,
+				pickIndex: null,
+			}),
+		);
 
 	const releasePending = () => {
 		const resolve = resolveSelection;
@@ -133,7 +136,8 @@
 	});
 
 	const chooseDuck = async (pondIndex: number) => {
-		if (!pendingPick || ducks[pondIndex]?.selected || revealingIndex !== null || revealingAll) return;
+		if (!pendingPick || ducks[pondIndex]?.selected || revealingIndex !== null || revealingAll)
+			return;
 		const result = pendingPick;
 		pendingPick = null;
 		revealingIndex = pondIndex;
@@ -196,22 +200,8 @@
 							height={SYMBOL_H * 0.98}
 							tint={hovered && !duck.selected ? 0xc8f6ff : 0xffffff}
 						/>
-						{#if duck.selected}
-							<SpriteSheet
-								key="magneticWildLightning"
-								play
-								loop
-								animationSpeed={0.23}
-								blendMode="add"
-								x={center.x}
-								y={center.y}
-								anchor={0.5}
-								width={SYMBOL_W * 1.2}
-								height={SYMBOL_H * 1.2}
-							/>
-						{/if}
 						<Sprite
-							key="tp_duck_collect.png"
+							key={duck.selected ? 'tpH2Win' : 'tpH2'}
 							x={center.x}
 							y={center.y - SYMBOL_H * 0.13}
 							anchor={0.5}
@@ -241,7 +231,12 @@
 
 			<!-- Status stays attached to the reel frame; no modal/backdrop. -->
 			<Container x={BOARD_SIZES.width * 0.5} y={-SYMBOL_H * 0.46}>
-				<Sprite key="forestBonusBadge" anchor={0.5} width={SYMBOL_W * 3.8} height={SYMBOL_H * 0.68} />
+				<Sprite
+					key="forestBonusBadge"
+					anchor={0.5}
+					width={SYMBOL_W * 3.8}
+					height={SYMBOL_H * 0.68}
+				/>
 				<BitmapText
 					anchor={0.5}
 					y={-SYMBOL_H * 0.08}
@@ -257,7 +252,12 @@
 			</Container>
 
 			<Container x={BOARD_SIZES.width * 0.5} y={BOARD_SIZES.height + SYMBOL_H * 0.42}>
-				<Sprite key="forestBonusBadge" anchor={0.5} width={SYMBOL_W * 3.6} height={SYMBOL_H * 0.64} />
+				<Sprite
+					key="forestBonusBadge"
+					anchor={0.5}
+					width={SYMBOL_W * 3.6}
+					height={SYMBOL_H * 0.64}
+				/>
 				<BitmapText
 					anchor={0.5}
 					y={-SYMBOL_H * 0.08}

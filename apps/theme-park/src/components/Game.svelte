@@ -44,7 +44,7 @@
 	let splashIntroVisible = $state(false);
 	let splashPressHandler = $state<(() => void) | undefined>(undefined);
 
-	const heroArt = './assets/theme-park/main-concept.png';
+	const heroArt = './assets/theme-park/v2/background.png';
 	const bonusArt = './assets/theme-park/coaster-bonus.png';
 	const scatterArt = './assets/theme-park/symbols-concept.png';
 	const uiRefArt = './assets/components/reference/controls_reference.png';

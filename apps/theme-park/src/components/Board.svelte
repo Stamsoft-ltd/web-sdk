@@ -12,39 +12,59 @@
 <script lang="ts">
 	import { Container, Graphics, Sprite } from 'pixi-svelte';
 	import { OnPressFullScreen } from 'components-layout';
+	import { onMount } from 'svelte';
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_W, SYMBOL_H, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
-	import { spriteKeyByName, bonusSpriteKeyByName, winSpriteKeyByName } from '../game/utils';
-	import type { SymbolName } from '../game/types';
+	import {
+		spriteKeyByName,
+		bonusSpriteKeyByName,
+		winSpriteKeyByName,
+		getSpecialSymbolKey,
+	} from '../game/utils';
+	import type { RawSymbol, SymbolName } from '../game/types';
 
 	const LOW_SYMBOLS_SET = new Set<SymbolName>(['L1', 'L2', 'L3', 'L4', 'L5']);
 
 	const context = getContext();
 	const board = $derived(context.stateGame.board);
 	const layout = $derived(context.stateGameDerived.boardLayout());
+	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isAnyReelSpinning = $derived(board.some((reel) => reel.reelState.motion !== 'stopped'));
 	let show = $state(true);
 
 	const activeMap = $derived(context.stateGame.bonusMode ? bonusSpriteKeyByName : spriteKeyByName);
-	const getSpriteKey = (name: SymbolName, state?: string) => {
-		if (state === 'win') return winSpriteKeyByName[name] ?? activeMap[name] ?? 'tp_h1.png';
-		return activeMap[name] ?? 'tp_h1.png';
-	};
-
 	const getX = (reelIndex: number) => SYMBOL_W * (reelIndex + 0.5);
-	const getY = (rowIndex: number) => SYMBOL_H * (rowIndex + 0.5);
-	const rollerReelSet = $derived(new Set(context.stateGame.activeRollerReels.map(({ reel }) => reel)));
+	const rollerReelSet = $derived(
+		new Set(context.stateGame.activeRollerReels.map(({ reel }) => reel)),
+	);
 	const coasterCellSet = $derived(
 		new Set(context.stateGame.coasterTiles.map(({ reel, row }) => `${reel},${row}`)),
 	);
-	const getCellFrame = (reelIndex: number, rowIndex: number) => {
-		const symbol = board[reelIndex]?.reelState.symbols[rowIndex + 1];
-		const highlighted =
-			symbol?.symbolState === 'win' ||
-			rollerReelSet.has(reelIndex) ||
-			coasterCellSet.has(`${reelIndex},${rowIndex}`);
-		return highlighted ? 'cellBoxWin' : 'cellBox';
+	const getSpriteKey = (
+		rawSymbol: RawSymbol,
+		state: string | undefined,
+		reelIndex: number,
+		rowIndex: number,
+	) => {
+		const { name } = rawSymbol;
+		if (name === 'W') {
+			if (rawSymbol.persistent || coasterCellSet.has(`${reelIndex},${rowIndex}`))
+				return 'tpCoasterWild';
+			if (
+				rawSymbol.rollerTrigger ||
+				rawSymbol.reelMultiplier ||
+				rawSymbol.multiplier ||
+				rollerReelSet.has(reelIndex)
+			)
+				return getSpecialSymbolKey('megaWild', layoutType);
+			return getSpecialSymbolKey('wild', layoutType);
+		}
+		if (name === 'S_DUCK') return getSpecialSymbolKey('duckScatter', layoutType);
+		if (name === 'S_ROLLER') return getSpecialSymbolKey('rollerScatter', layoutType);
+		if (name === 'S_COASTER') return getSpecialSymbolKey('coasterScatter', layoutType);
+		if (state === 'win') return winSpriteKeyByName[name] ?? activeMap[name] ?? 'tpH1';
+		return activeMap[name] ?? 'tpH1';
 	};
 
 	// True while any symbol is in 'win' state — used to dim non-winning symbols
@@ -53,6 +73,18 @@
 			reel.reelState.symbols.some((s) => s.symbolState === 'win'),
 		),
 	);
+	let winPulse = $state(1);
+
+	onMount(() => {
+		let frame = 0;
+		const started = performance.now();
+		const tick = (now: number) => {
+			winPulse = hasWinState ? 1.05 + Math.sin((now - started) * 0.012) * 0.06 : 1;
+			frame = requestAnimationFrame(tick);
+		};
+		frame = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(frame);
+	});
 
 	// Reels whose symbols should be hidden behind the low-symbol expanded overlay.
 	// Added one-by-one with a small delay so the overlay sprite starts drawing first.
@@ -134,32 +166,39 @@
 				graphics.endFill();
 			}}
 		/>
-		<!-- Magnetic's stationary cell-board pattern: frames stay fixed while only
-		     symbols move. This replaces translucent per-symbol Pixi rectangles. -->
-		{#each Array.from({ length: BOARD_DIMENSIONS.x }, (_, reel) => reel) as reel (reel)}
-			{#each Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => row) as row (row)}
-				<Sprite
-					key={getCellFrame(reel, row)}
-					x={getX(reel)}
-					y={getY(row)}
-					anchor={0.5}
-					width={SYMBOL_W * 0.98}
-					height={SYMBOL_H * 0.98}
-				/>
-			{/each}
-		{/each}
+		<!-- One clean 5x5 gold grid over the Theme Park board. No per-cell frames. -->
+		<Graphics
+			draw={(graphics) => {
+				for (let reel = 1; reel < BOARD_DIMENSIONS.x; reel += 1) {
+					const x = SYMBOL_W * reel;
+					graphics.moveTo(x, 0);
+					graphics.lineTo(x, SYMBOL_H * BOARD_DIMENSIONS.y);
+				}
+				for (let row = 1; row < BOARD_DIMENSIONS.y; row += 1) {
+					const y = SYMBOL_H * row;
+					graphics.moveTo(0, y);
+					graphics.lineTo(SYMBOL_W * BOARD_DIMENSIONS.x, y);
+				}
+				graphics.stroke({ width: 2.4, color: 0xf2b632, alpha: 0.96 });
+			}}
+		/>
 		{#each board as reel, reelIndex (reelIndex)}
 			{#if !hiddenReels.has(reelIndex)}
 				{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
 					{@const y = reelSymbol.symbolY()}
 					{@const isWin = reelSymbol.symbolState === 'win'}
 					<Sprite
-						key={getSpriteKey(reelSymbol.rawSymbol.name, reelSymbol.symbolState)}
+						key={getSpriteKey(
+							reelSymbol.rawSymbol,
+							reelSymbol.symbolState,
+							reelIndex,
+							symbolIndex - 1,
+						)}
 						x={getX(reelIndex)}
 						{y}
 						anchor={{ x: 0.5, y: 0.5 }}
-						width={SYMBOL_W}
-						height={SYMBOL_H}
+						width={SYMBOL_W * (isWin ? winPulse : 1)}
+						height={SYMBOL_H * (isWin ? winPulse : 1)}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 						tint={isWin ? 0xffffff : 0xffffff}
 					/>

@@ -6,11 +6,12 @@
 
 <script lang="ts">
 	import { onDestroy } from 'svelte';
-	import { BitmapText, Container, Sprite, SpriteSheet } from 'pixi-svelte';
+	import { BitmapText, Container, Sprite } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_W, SYMBOL_H, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import CoasterWildBackground from './CoasterWildBackground.svelte';
 
 	const context = getContext();
 	const layout = $derived(context.stateGameDerived.boardLayout());
@@ -41,18 +42,7 @@
 	const cellY = (row: number) => SYMBOL_H * (row + 0.5);
 	const cellPulse = (reel: number, row: number) =>
 		pulsingKeys.includes(`${reel},${row}`) ? 1.14 : 1;
-	const boardShowsWild = (reel: number, row: number) =>
-		context.stateGame.board[reel]?.reelState.symbols[row + 1]?.rawSymbol.name === 'W';
-	const isAnyReelSpinning = $derived(
-		context.stateGame.board.some((reel) => reel.reelState.motion !== 'stopped'),
-	);
 
-	const badgeW = SYMBOL_W * 0.46;
-	const badgeH = SYMBOL_H * 0.3;
-	const rollerRowMultiplier = (reel: number, row: number) =>
-		rollerReels
-			.find((roller) => roller.reel === reel)
-			?.multipliers.find((entry) => entry.row === row)?.multiplier;
 </script>
 
 {#if coasterTiles.length > 0 || rollerReels.length > 0}
@@ -63,71 +53,44 @@
 			pivot={layout.pivot}
 			scale={layout.boardScale}
 		>
-			<!-- Roller: Board.svelte owns the five Wild symbols. This layer adds only
-			     Magnetic lightning + Forest multiplier plaques, so nothing is drawn twice. -->
+			<!-- Board.svelte owns the five Roller Wild symbols. This layer adds
+			     only multiplier plaques, so nothing is drawn twice. -->
 			{#each rollerReels as roller (roller.reel)}
 				{#each Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => row) as row (row)}
 					<Container x={cellX(roller.reel)} y={cellY(row)}>
-						<SpriteSheet
-							key="magneticWildLightning"
-							play
-							loop
-							animationSpeed={0.23}
-							blendMode="add"
-							anchor={0.5}
-							width={SYMBOL_W * 1.24}
-							height={SYMBOL_H * 1.24}
-						/>
-						{@const multiplier = rollerRowMultiplier(roller.reel, row)}
-						{#if multiplier}
-							<Container x={SYMBOL_W * 0.26} y={-SYMBOL_H * 0.29}>
-								<Sprite key="forestBonusBadge" anchor={0.5} width={badgeW} height={badgeH} />
-								<BitmapText
-									anchor={{ x: 0.5, y: 0.5 }}
-									text={`x${multiplier}`}
-									style={{ fontFamily: 'gold', fontSize: badgeH * 0.66 }}
-								/>
-							</Container>
-						{/if}
+						<Container y={SYMBOL_H * 0.29}>
+							<Sprite
+								key="forestBonusBadge"
+								anchor={0.5}
+								width={SYMBOL_W * 0.68}
+								height={SYMBOL_H * 0.34}
+							/>
+							<BitmapText
+								anchor={{ x: 0.5, y: 0.5 }}
+								text={`${roller.multiplier}X`}
+								style={{ fontFamily: 'gold', fontSize: SYMBOL_H * 0.2 }}
+							/>
+						</Container>
 					</Container>
 				{/each}
 			{/each}
 
-			<!-- Coaster: Magnetic-style opaque asset covers exist only while the board
-			     does not already show that Wild (setup / spinning). Settled Wilds remain
-			     owned by the board, avoiding duplicate static symbols. -->
+			<!-- This layer always owns persistent Coaster Wilds. The exact board
+			     crop masks the reel below; fixed sizing prevents non-paying pops. -->
 			{#each coasterTiles as tile (`${tile.reel}-${tile.row}`)}
 				<Container x={cellX(tile.reel)} y={cellY(tile.row)} scale={cellPulse(tile.reel, tile.row)}>
-					{#if isAnyReelSpinning || !boardShowsWild(tile.reel, tile.row)}
-						<Sprite
-							key="lockedCellWin"
-							anchor={0.5}
-							width={SYMBOL_W * 0.98}
-							height={SYMBOL_H * 0.98}
-						/>
-						<Sprite
-							key="tp_wild.png"
-							anchor={0.5}
-							width={SYMBOL_W * 0.82}
-							height={SYMBOL_H * 0.82}
-						/>
-					{/if}
-					<SpriteSheet
-						key="magneticWildLightning"
-						play
-						loop
-						animationSpeed={0.23}
-						blendMode="add"
+					<CoasterWildBackground reel={tile.reel} row={tile.row} />
+					<Sprite
+						key="tpCoasterWild"
 						anchor={0.5}
-						width={SYMBOL_W * 1.24}
-						height={SYMBOL_H * 1.24}
+						width={SYMBOL_W * 0.82}
+						height={SYMBOL_H * 0.82}
 					/>
-					<Container x={SYMBOL_W * 0.27} y={-SYMBOL_H * 0.3}>
-						<Sprite key="forestBonusBadge" anchor={0.5} width={badgeW} height={badgeH} />
+					<Container y={SYMBOL_H * 0.18}>
 						<BitmapText
 							anchor={{ x: 0.5, y: 0.5 }}
-							text={`x${tile.multiplier}`}
-							style={{ fontFamily: 'gold', fontSize: badgeH * 0.66 }}
+							text={`${tile.multiplier}X`}
+							style={{ fontFamily: 'gold', fontSize: SYMBOL_H * 0.22 }}
 						/>
 					</Container>
 				</Container>

@@ -9,9 +9,10 @@
 	import { CanvasSizeRectangle } from 'components-layout';
 	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
-	import { BitmapText } from 'pixi-svelte';
+	import { BitmapText, Sprite } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
+	import { getSpecialSymbolKey } from '../game/utils';
 	import PressToContinue from './PressToContinue.svelte';
 	import FreeSpinAnimation from './FreeSpinAnimation.svelte';
 
@@ -21,6 +22,10 @@
 	let freeSpinsFromEvent = $state(0);
 	let title = $state('FREE SPINS');
 	let oncomplete = $state(() => {});
+	const layoutType = $derived(context.stateLayoutDerived.layoutType());
+	const badgeKey = $derived(
+		getSpecialSymbolKey(title === 'MEGA COASTER' ? 'coasterScatter' : 'rollerScatter', layoutType),
+	);
 
 	context.eventEmitter.subscribeOnMount({
 		freeSpinIntroShow: () => (show = true),
@@ -39,12 +44,12 @@
 	<FreeSpinAnimation xOffset={0}>
 		{@const BW = 900}
 
-		<!-- Bonus title (FREE SPINS / ROLLER WILDS / MEGA COASTER) -->
-		<BitmapText
-			anchor={{ x: 0.5, y: 0.5 }}
-			text={title}
-			style={{ fontFamily: 'gold', fontSize: Math.round(BW * 0.065) }}
-			y={Math.round(-BW * 0.15)}
+		<Sprite
+			key={badgeKey}
+			anchor={0.5}
+			y={Math.round(-BW * 0.13)}
+			width={Math.round(BW * 0.36)}
+			height={Math.round(BW * 0.29)}
 		/>
 
 		<!-- Spin count -->
@@ -52,7 +57,7 @@
 			anchor={{ x: 0.5, y: 0.5 }}
 			text={`${freeSpinsFromEvent}`}
 			style={{ fontFamily: 'silver', fontSize: Math.round(BW * 0.12) }}
-			y={Math.round(BW * 0.05)}
+			y={Math.round(BW * 0.08)}
 		/>
 
 		<!-- SPINS label -->
@@ -60,7 +65,7 @@
 			anchor={{ x: 0.5, y: 0.5 }}
 			text="SPINS"
 			style={{ fontFamily: 'gold', fontSize: Math.round(BW * 0.045) }}
-			y={Math.round(BW * 0.18)}
+			y={Math.round(BW * 0.2)}
 		/>
 	</FreeSpinAnimation>
 

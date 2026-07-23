@@ -2,10 +2,15 @@
 	type Props = { onpress: () => void };
 	const props: Props = $props();
 
-	const bgSrc = './assets/theme-park/background-v1.png';
+	const bgSrc = './assets/theme-park/v2/background.png';
+	const logoSrc = './assets/theme-park/v2/logo.png';
 
-	function handlePress() { props.onpress(); }
-	function handleKey(e: KeyboardEvent) { if (e.code === 'Space' || e.code === 'Enter') handlePress(); }
+	function handlePress() {
+		props.onpress();
+	}
+	function handleKey(e: KeyboardEvent) {
+		if (e.code === 'Space' || e.code === 'Enter') handlePress();
+	}
 </script>
 
 <svelte:window onkeydown={handleKey} />
@@ -13,7 +18,7 @@
 <div class="splash-intro" role="button" tabindex="0" onclick={handlePress} onkeydown={handleKey}>
 	<!-- 16:9 stage that cover-scales the artwork; overlays are positioned within it -->
 	<div class="stage" style={`background-image: url('${bgSrc}')`}>
-		<h1 class="logo" aria-label="Theme Park">THEME PARK</h1>
+		<img class="logo" src={logoSrc} alt="Theme Park" />
 
 		<p class="press-label">PRESS TO CONTINUE</p>
 	</div>
@@ -47,17 +52,13 @@
 	.logo {
 		position: absolute;
 		left: 50%;
-		top: 8%;
+		top: 7%;
 		transform: translateX(-50%);
-		width: 70%;
+		width: min(48%, 720px);
+		height: auto;
 		margin: 0;
-		font-family: 'Cinzel', serif;
-		font-size: clamp(38px, 6vw, 92px);
-		line-height: 1;
-		text-align: center;
-		color: #ffd84a;
-		-webkit-text-stroke: 2px #8e1e80;
 		filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.7));
+		animation: logo-float 3.2s ease-in-out infinite;
 	}
 
 	.press-label {
@@ -80,7 +81,24 @@
 	}
 
 	@keyframes blink {
-		0%, 100% { opacity: 1; }
-		50%       { opacity: 0.5; }
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.5;
+		}
+	}
+
+	@keyframes logo-float {
+		0%,
+		100% {
+			transform: translate(-50%, 0) scale(1);
+			filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.7));
+		}
+		50% {
+			transform: translate(-50%, -5px) scale(1.025);
+			filter: drop-shadow(0 4px 20px rgba(255, 67, 220, 0.58));
+		}
 	}
 </style>

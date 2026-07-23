@@ -17,17 +17,24 @@
 	// Shared vector controls, rethemed in CSS for Theme Park.
 	const navMenu = ap('/assets/hud/icon-menu.svg');
 	const navSound = ap('/assets/hud/icon-volume.svg');
-	const navMinus = ap('/assets/hud/icon-minus.svg');
-	const navPlus = ap('/assets/hud/icon-plus.svg');
+	const navArrowLeft = ap('/assets/theme-park/v2/controls/arrow-left.png');
+	const navArrowLeftDisabled = ap('/assets/theme-park/v2/controls/arrow-left-disabled.png');
+	const navArrowRight = ap('/assets/theme-park/v2/controls/arrow-right.png');
+	const navArrowRightDisabled = ap('/assets/theme-park/v2/controls/arrow-right-disabled.png');
 	const navAuto = ap('/assets/hud/icon-autoplay.svg');
 	const navTurbo1 = ap('/assets/hud/icon-lightning-1.png');
 	const navTurbo2 = ap('/assets/hud/icon-lightning-2.png');
 	const navTurbo3 = ap('/assets/hud/icon-lightning-3.png');
-	const navSpin = ap('/assets/hud/icon-play.svg');
+	const navSpinDefault = ap('/assets/theme-park/v2/controls/spin-default.png');
+	const navSpinDefaultMobile = ap('/assets/theme-park/v2/controls/spin-default-mobile.png');
+	const navSpinActive = ap('/assets/theme-park/v2/controls/spin-active.png');
+	const navSpinStop = ap('/assets/theme-park/v2/controls/spin-stop.png');
 	const navCoins = ap('/assets/hud/icon-coins.svg');
+	const gameLogo = ap('/assets/theme-park/v2/logo.png');
 
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isLandscapeMobile = $derived(layoutType === 'landscape');
+	const isMobileLayout = $derived(layoutType === 'portrait' || layoutType === 'landscape');
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
 	const hasAuto = $derived(stateBetDerived.hasAutoBetCounter());
 	const isSpinStop = $derived(!context.stateXstateDerived.isIdle() || hasAuto);
@@ -240,6 +247,7 @@
 />
 
 <div class="hud-shell" data-layout={layoutType}>
+	<img class="game-logo" src={gameLogo} alt="Theme Park" />
 	<div class="hud-bottom">
 		<div class="hud-left">
 			<div class="hud-system">
@@ -299,7 +307,7 @@
 					</button>
 				{/if}
 				<button
-					class="nav-btn"
+					class="nav-btn nav-btn--step"
 					type="button"
 					onpointerdown={(event) =>
 						startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
@@ -310,10 +318,10 @@
 					disabled={disableDecrease}
 					aria-label="Decrease bet"
 				>
-					<img src={navMinus} alt="minus" />
+					<img src={disableDecrease ? navArrowLeftDisabled : navArrowLeft} alt="decrease bet" />
 				</button>
 				<button
-					class="nav-btn"
+					class="nav-btn nav-btn--step"
 					type="button"
 					onpointerdown={(event) =>
 						startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
@@ -324,7 +332,7 @@
 					disabled={disableIncrease}
 					aria-label="Increase bet"
 				>
-					<img src={navPlus} alt="plus" />
+					<img src={disableIncrease ? navArrowRightDisabled : navArrowRight} alt="increase bet" />
 				</button>
 			</div>
 
@@ -336,15 +344,22 @@
 					aria-label="Spin"
 					disabled={canInteract && !hasAuto && !canAffordBet}
 				>
-					<img src={navSpin} alt="" class="spin-btn__img" />
+					{#if isSpinStop}
+						<img src={navSpinStop} alt="" class="spin-btn__img spin-btn__img--stop" />
+					{:else}
+						<img
+							src={isMobileLayout ? navSpinDefaultMobile : navSpinDefault}
+							alt=""
+							class="spin-btn__img spin-btn__img--default"
+						/>
+						<img src={navSpinActive} alt="" class="spin-btn__img spin-btn__img--active" />
+					{/if}
 					{#if hasAuto}
 						<span
 							class="spin-btn__count"
 							aria-label={`Remaining auto spins ${autoSpinsRemainingText}`}
 							>{autoSpinsRemainingText}</span
 						>
-					{:else if isSpinStop}
-						<span class="spin-btn__glyph" aria-hidden="true">■</span>
 					{/if}
 				</button>
 			</div>
@@ -410,6 +425,28 @@
 		z-index: 5;
 		pointer-events: none;
 		background: linear-gradient(to top, #08041d 0%, #08041d 78%, rgba(8, 4, 29, 0) 100%);
+	}
+
+	.game-logo {
+		position: absolute;
+		left: 50%;
+		top: 10px;
+		width: clamp(190px, 22vw, 330px);
+		height: auto;
+		transform: translateX(-50%);
+		filter: drop-shadow(0 6px 11px rgba(0, 0, 0, 0.7));
+		animation: game-logo-idle 3.4s ease-in-out infinite;
+		z-index: 4;
+	}
+
+	@keyframes game-logo-idle {
+		0%,
+		100% {
+			transform: translate(-50%, 0) scale(1);
+		}
+		50% {
+			transform: translate(-50%, -3px) scale(1.02);
+		}
 	}
 
 	.hud-bottom {
@@ -649,13 +686,13 @@
 	}
 
 	.spin-btn {
-		width: 122px;
-		height: 122px;
+		width: 132px;
+		height: 132px;
 		margin: -22px 0;
-		border: 4px solid #ffc12f;
+		border: 0;
 		border-radius: 50%;
-		background: radial-gradient(circle, #7a2cb9 0%, #2b0751 68%, #0b0526 100%);
-		box-shadow: 0 0 22px rgba(255, 79, 216, 0.65);
+		background: transparent;
+		box-shadow: none;
 		padding: 0;
 		outline: none;
 		cursor: pointer;
@@ -671,11 +708,41 @@
 	}
 
 	.spin-btn__img {
-		width: 52%;
-		height: 52%;
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
 		object-fit: contain;
 		display: block;
 		pointer-events: none;
+		transition: opacity 0.12s ease;
+		filter: drop-shadow(0 0 12px rgba(255, 79, 216, 0.35));
+	}
+
+	.spin-btn__img--active {
+		opacity: 0;
+	}
+
+	.spin-btn:not(:disabled):hover .spin-btn__img--default,
+	.spin-btn:not(:disabled):active .spin-btn__img--default {
+		opacity: 0;
+	}
+
+	.spin-btn:not(:disabled):hover .spin-btn__img--active,
+	.spin-btn:not(:disabled):active .spin-btn__img--active {
+		opacity: 1;
+	}
+
+	.nav-btn--step {
+		border: 0;
+		background: transparent;
+		box-shadow: none;
+		overflow: visible;
+	}
+
+	.nav-btn--step img {
+		width: 112%;
+		height: 112%;
 	}
 
 	.spin-btn:not(:disabled):hover {
@@ -692,7 +759,6 @@
 		cursor: default;
 	}
 
-	.spin-btn__glyph,
 	.spin-btn__count {
 		position: absolute;
 		top: 50%;
@@ -709,10 +775,6 @@
 		font-weight: 900;
 		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
 		pointer-events: none;
-	}
-
-	.spin-btn__glyph {
-		font-size: 2rem;
 	}
 
 	.spin-btn__count {

@@ -36,10 +36,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.gameType = bookEvent.gameType;
 		if (bookEvent.gameType === 'basegame') stateGameDerived.resetBonusState();
 
-		// Per-spin state: roller reels apply to one spin only; duck collect is per spin
-		stateGame.activeRollerReels = [];
+		// Per-spin state: duck collect is per spin. Prior Roller Wilds stay
+		// visible through the result beat and are released when the next spin starts.
 		stateGame.duckCollect = null;
-		stateGame.paylineWins = [];
 		stateGame.hasAnticipationPending = !!hasAnticipation;
 		stateGame.anticipationSkipped = false;
 
@@ -47,10 +46,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if (isBonusGame && bookEvent.gameType === 'freegame' && !stateBet.isSuperTurbo) {
 			await waitForTimeout(500);
 		}
+		// Keep the prior free-spin payline visible during the result beat. Clearing
+		// before the delay made only the final 500x spin readable.
+		stateGame.paylineWins = [];
 
 		const hadPendingStop = stateGame.pendingStop && stateGame.awaitingFirstReveal;
 		stateGame.awaitingFirstReveal = false;
 		stateGame.pendingStop = false;
+		stateGame.activeRollerReels = [];
 
 		const spinPromise = stateGameDerived.enhancedBoard.spin({
 			revealEvent: bookEvent,
@@ -103,7 +106,13 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateBet.winBookEventAmount = bookEvent.amount;
 		eventEmitter.broadcast({ type: 'winHide' });
 		stateGame.paylineWins = [];
-		if (stateGame.gameType === 'basegame') stateGameDerived.resetBonusState();
+		if (stateGame.gameType === 'basegame') {
+			const settledRollerReels = stateGame.activeRollerReels;
+			stateGameDerived.resetBonusState();
+			// Keep the completed Mega Wild reel and total plaque while idle.
+			// The following reveal releases it as the next spin starts.
+			stateGame.activeRollerReels = settledRollerReels;
+		}
 	},
 
 	// Only Roller Wilds / Mega Coaster emit freeSpinTrigger (Duck Your Luck has none)
@@ -273,20 +282,19 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	// ── Roller Wilds: trigger lands, animation plays, then reel transforms ─────
 	rollerWildsApply: async (bookEvent: BookEventOfType<'rollerWildsApply'>) => {
 		const reels: RollerReel[] = bookEvent.reels.map((entry) => {
-			const boardMultipliers = Array.from({ length: 5 }, (_, row) => {
-				const raw = stateGame.board[entry.reel]?.reelState.symbols[row + 1]?.rawSymbol;
-				return raw?.multiplier ? { row, multiplier: raw.multiplier } : null;
-			}).filter((value): value is { row: number; multiplier: number } => value !== null);
-			const multipliers = Array.isArray(entry.multipliers)
-				? entry.multipliers.map((value) => ({ ...value }))
-				: boardMultipliers;
+			const triggerRow = entry.triggerRow ?? 2;
+			// Legacy books repeat the final reel multiplier on all five W cells.
+			// That is one reel value, not five values to add. New books may supply
+			// sparse row multipliers explicitly for the apply → sum presentation.
+			const multipliers =
+				Array.isArray(entry.multipliers) && entry.multipliers.length > 0
+					? entry.multipliers.map((value) => ({ ...value }))
+					: [{ row: triggerRow, multiplier: entry.multiplier }];
+			const summedMultiplier = multipliers.reduce((sum, value) => sum + value.multiplier, 0);
 			return {
 				reel: entry.reel,
-				triggerRow: entry.triggerRow ?? 2,
-				multiplier: Math.max(
-					1,
-					multipliers.reduce((sum, value) => sum + value.multiplier, 0) || entry.multiplier,
-				),
+				triggerRow,
+				multiplier: Math.max(1, summedMultiplier || entry.multiplier),
 				multipliers,
 			};
 		});
@@ -303,11 +311,16 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 					name: 'W',
 					wild: true,
 					reelMultiplier: roller.multiplier,
+					rollerTrigger: true,
 				};
 				symbol.symbolState = 'static';
 			}
 		}
 		stateGame.activeRollerReels = reels;
+		// Let the settled Mega Wild board render before removing the animation
+		// layer. This prevents a normal-W flash before paylines appear.
+		await waitForTimeout(20);
+		eventEmitter.broadcast({ type: 'rollerWildsHide' });
 	},
 
 	// ── Mega Coaster setup (after freeSpinTrigger, before first freegame reveal) ─

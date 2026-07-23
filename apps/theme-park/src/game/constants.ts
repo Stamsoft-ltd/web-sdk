@@ -57,21 +57,21 @@ const states = (base: string, win: string): Record<SymbolState, SymbolInfo> => (
 });
 
 export const SYMBOL_INFO_MAP: Record<SymbolName, Record<SymbolState, SymbolInfo>> = {
-	H1: states('tp_h1.png', 'tp_h1.png'), // Coaster Car
-	H2: states('tp_h2.png', 'tp_h2.png'), // Rubber Duck
-	H3: states('tp_h3.png', 'tp_h3.png'), // Balloon Bundle
-	H4: states('tp_h4.png', 'tp_h4.png'), // Popcorn
-	H5: states('tp_h5.png', 'tp_h5.png'), // Ferris Wheel
-	L1: states('tp_l1.png', 'tp_l1.png'), // A
-	L2: states('tp_l2.png', 'tp_l2.png'), // K
-	L3: states('tp_l3.png', 'tp_l3.png'), // Q
-	L4: states('tp_l4.png', 'tp_l4.png'), // J
-	L5: states('tp_l5.png', 'tp_l5.png'), // 10
-	W: states('tp_wild.png', 'tp_wild.png'),
-	DC: states('tp_duck_collect.png', 'tp_duck_collect.png'),
-	S_DUCK: states('tp_scatter_duck.png', 'tp_scatter_duck.png'),
-	S_ROLLER: states('tp_scatter_roller.png', 'tp_scatter_roller.png'),
-	S_COASTER: states('tp_scatter_coaster.png', 'tp_scatter_coaster.png'),
+	H1: states('tpH1', 'tpH1Win'), // Coaster Car
+	H2: states('tpH2', 'tpH2Win'), // Rubber Duck
+	H3: states('tpH3', 'tpH3Win'), // Balloon Bundle
+	H4: states('tpH4', 'tpH4Win'), // Popcorn
+	H5: states('tpH5', 'tpH5Win'), // Ferris Wheel
+	L1: states('tpL1', 'tpL1Win'), // A
+	L2: states('tpL2', 'tpL2Win'), // K
+	L3: states('tpL3', 'tpL3Win'), // Q
+	L4: states('tpL4', 'tpL4Win'), // J
+	L5: states('tpL5', 'tpL5Win'), // 10
+	W: states('tpWildDesktop', 'tpWildDesktop'),
+	DC: states('tpH2', 'tpH2Win'),
+	S_DUCK: states('tpDuckScatterDesktop', 'tpDuckScatterDesktop'),
+	S_ROLLER: states('tpRollerScatterDesktop', 'tpRollerScatterDesktop'),
+	S_COASTER: states('tpCoasterScatterDesktop', 'tpCoasterScatterDesktop'),
 };
 
 export const SCATTER_SYMBOLS: SymbolName[] = ['S_DUCK', 'S_ROLLER', 'S_COASTER'];

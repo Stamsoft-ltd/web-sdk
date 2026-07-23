@@ -40,26 +40,38 @@
 		},
 	];
 
-	const BUY_CARDS: { mode: BuyMode; costMultiplier: number; title: string; desc: string }[] = [
+	const BUY_CARDS: {
+		mode: BuyMode;
+		costMultiplier: number;
+		title: string;
+		desc: string;
+		icon: string;
+	}[] = [
 		{
 			mode: 'DUCK',
 			costMultiplier: 100,
 			title: 'DUCK YOUR LUCK',
 			desc: '10 DUCK PICKS · MULTIPLIERS AND MULTIPLY-ALL DUCKS',
+			icon: 'duck-your-luck',
 		},
 		{
 			mode: 'ROLLER',
 			costMultiplier: 200,
 			title: 'ROLLER WILDS',
 			desc: '10 FREE SPINS · REELS TURN INTO MULTIPLIER WILDS',
+			icon: 'roller-wilds',
 		},
 		{
 			mode: 'COASTER',
 			costMultiplier: 500,
 			title: 'MEGA COASTER',
 			desc: 'COASTER SETUP + 10 FREE SPINS WITH PERSISTENT WILDS',
+			icon: 'mega-coaster',
 		},
 	];
+
+	const modeAsset = (icon: string, variant: 'desktop' | 'mobile' | 'mobile-landscape') =>
+		`./assets/theme-park/v2/modes/${icon}-${variant}.png`;
 
 	const cost = (multiplier: number) =>
 		templateStakeDerived.formatCurrencyAmount(betAmount * multiplier);
@@ -138,6 +150,14 @@
 		<!-- One-time bonus buys -->
 		{#each BUY_CARDS as card (card.mode)}
 			<div class="card">
+				<picture class="mode-art">
+					<source
+						media="(max-width: 900px) and (orientation: landscape)"
+						srcset={modeAsset(card.icon, 'mobile-landscape')}
+					/>
+					<source media="(max-width: 900px)" srcset={modeAsset(card.icon, 'mobile')} />
+					<img src={modeAsset(card.icon, 'desktop')} alt="" />
+				</picture>
 				<span class="card-title">{card.title}</span>
 				<span class="card-desc">{card.desc}</span>
 				<span class="card-price">{cost(card.costMultiplier)}</span>
@@ -265,6 +285,41 @@
 			0 10px 26px rgba(0, 0, 0, 0.42);
 		border-radius: 18px;
 		gap: 8px;
+	}
+
+	.mode-art {
+		display: grid;
+		place-items: center;
+		width: 100%;
+		height: 104px;
+	}
+
+	.mode-art img {
+		display: block;
+		width: min(100%, 180px);
+		height: 100%;
+		object-fit: contain;
+		filter: drop-shadow(0 7px 8px rgba(0, 0, 0, 0.62));
+		animation: mode-art-idle 3s ease-in-out infinite;
+	}
+
+	.card:nth-child(2n) .mode-art img {
+		animation-delay: -1.5s;
+	}
+
+	.card:hover .mode-art img {
+		animation-duration: 1.2s;
+		filter: brightness(1.08) drop-shadow(0 0 12px rgba(255, 67, 220, 0.5));
+	}
+
+	@keyframes mode-art-idle {
+		0%,
+		100% {
+			transform: translateY(0) scale(1);
+		}
+		50% {
+			transform: translateY(-4px) scale(1.025);
+		}
 	}
 
 	.card-title {

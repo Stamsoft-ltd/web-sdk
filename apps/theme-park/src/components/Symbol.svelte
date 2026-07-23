@@ -24,7 +24,12 @@
 </script>
 
 {#if isSpineIntroLoop}
-	{@const il = symbolInfo as { assetKey: string; introAnimation: string; loopAnimation: string; sizeRatios: { height: number } }}
+	{@const il = symbolInfo as {
+		assetKey: string;
+		introAnimation: string;
+		loopAnimation: string;
+		sizeRatios: { height: number };
+	}}
 	<SymbolSpineIntroLoop
 		assetKey={il.assetKey}
 		introAnimation={il.introAnimation}
@@ -34,7 +39,13 @@
 		y={props.y}
 	/>
 {:else if isSprite}
-	<SymbolSprite {symbolInfo} x={props.x} y={props.y} oncomplete={props.oncomplete} />
+	<SymbolSprite
+		{symbolInfo}
+		state={props.state}
+		x={props.x}
+		y={props.y}
+		oncomplete={props.oncomplete}
+	/>
 {:else}
 	<SymbolSpine
 		loop={props.loop}
