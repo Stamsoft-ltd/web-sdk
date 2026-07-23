@@ -49,11 +49,11 @@
 	// screen defers its `proceed` callback to us via `oncanproceed` so nothing starts until pressed.
 	let splashIntroVisible = $state(false);
 	let splashPressHandler = $state<(() => void) | undefined>(undefined);
-	const heroArt = './assets/components/backgrounds/visual_v2.png';
+	const heroArt = './assets/components/backgrounds/visual_v2.webp';
 	const bonusArt = './assets/components/backgrounds/splash.jpg';
-	const scatterArt = './assets/components/symbols/scatter.png';
-	const uiRefArt = './assets/components/ui/scatter-panel-image.png';
-	const paytableArt = './assets/components/backgrounds/visual_v2.png';
+	const scatterArt = './assets/components/symbols/scatter.webp';
+	const uiRefArt = './assets/components/ui/scatter-panel-image.webp';
+	const paytableArt = './assets/components/backgrounds/visual_v2.webp';
 	const heroArtBackdrop = new URL(
 		'../../static/assets/components/backgrounds/splash_intro.jpg',
 		import.meta.url,

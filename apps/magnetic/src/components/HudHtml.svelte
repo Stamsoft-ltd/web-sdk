@@ -20,58 +20,58 @@
 	const buyBonusBg = ap('/assets/components/reference/buy_bonus_reference.png');
 
 	// Frame backgrounds — passed as CSS vars because url() in style blocks can't use runtime paths
-	const menuBtnFrame = ap('/assets/components/frames/top_menu-button_frame.png');
-	const soundBtnFrame = ap('/assets/components/frames/top_sound_button_frame.png');
-	const menuBarFrame = ap('/assets/components/navbar/nav_bar.png'); // blue-tech bottom bar
+	const menuBtnFrame = ap('/assets/components/frames/top_menu-button_frame.webp');
+	const soundBtnFrame = ap('/assets/components/frames/top_sound_button_frame.webp');
+	const menuBarFrame = ap('/assets/components/navbar/nav_bar.webp'); // blue-tech bottom bar
 
 	// Button backgrounds (icon-less frames) — icons are layered on top in markup
-	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.png'); // (unused; utility buttons are CSS circles)
-	const btnSpinBg = ap('/assets/components/navbar/btn_spin.png'); // blue round — spin
-	const btnSpinStop = ap('/assets/components/navbar/btn_spin_stop.png'); // stop/disabled state (during a spin) — square baked in
-	const btnWideBg = ap('/assets/components/navbar/btn_buy_bonus.png'); // blue pill — buy bonus
+	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.webp'); // (unused; utility buttons are CSS circles)
+	const btnSpinBg = ap('/assets/components/navbar/btn_spin.webp'); // blue round — spin
+	const btnSpinStop = ap('/assets/components/navbar/btn_spin_stop.webp'); // stop/disabled state (during a spin) — square baked in
+	const btnWideBg = ap('/assets/components/navbar/btn_buy_bonus.webp'); // blue pill — buy bonus
 
 	// Round icon-buttons — each PNG is a COMPLETE button (dark disc + cyan ring + icon baked in),
 	// with default + disabled/mute states from the "Icon Buttons" set. Used as the whole button.
-	const iconMenu = ap('/assets/components/navbar/icons/menu.png');
+	const iconMenu = ap('/assets/components/navbar/icons/menu.webp');
 	// Menu popover (Figma 4498-8432): panel above the menu button with SOUND / MUSIC / INFO rows.
-	const menuPopupBg = ap('/assets/components/navbar/menu_popup_bg.png');
+	const menuPopupBg = ap('/assets/components/navbar/menu_popup_bg.webp');
 	const iconMenuSound = ap('/assets/components/navbar/icons/menu_sound.svg');
 	const iconMenuMusic = ap('/assets/components/navbar/icons/menu_music.svg');
 	const iconMenuInfo = ap('/assets/components/navbar/icons/menu_info.svg');
 	// Disabled-state icons (Figma 4553-9279): slashed speaker / slashed note.
-	const iconMenuSoundOff = ap('/assets/components/navbar/icons/menu_sound_off.png');
-	const iconMenuMusicOff = ap('/assets/components/navbar/icons/menu_music_off.png');
-	const iconSound = ap('/assets/components/navbar/icons/sound.png');
-	const iconMute = ap('/assets/components/navbar/icons/mute.png');
-	const iconMinus = ap('/assets/components/navbar/icons/minus.png');
-	const iconMinusDisabled = ap('/assets/components/navbar/icons/minus_disabled.png');
-	const iconPlus = ap('/assets/components/navbar/icons/plus.png');
-	const iconPlusDisabled = ap('/assets/components/navbar/icons/plus_disabled.png');
-	const iconAuto = ap('/assets/components/navbar/icons/auto.png');
-	const iconAutoDisabled = ap('/assets/components/navbar/icons/auto_disabled.png');
-	const iconSpin = ap('/assets/hud/icon-spin.png');
-	const iconTurbo = ap('/assets/components/navbar/icons/turbo.png');
-	const iconTurbo1 = ap('/assets/components/navbar/icons/turbo1.png');
-	const iconTurbo3 = ap('/assets/components/navbar/icons/turbo3.png');
-	const iconCoins = ap('/assets/components/navbar/coins.png');
+	const iconMenuSoundOff = ap('/assets/components/navbar/icons/menu_sound_off.webp');
+	const iconMenuMusicOff = ap('/assets/components/navbar/icons/menu_music_off.webp');
+	const iconSound = ap('/assets/components/navbar/icons/sound.webp');
+	const iconMute = ap('/assets/components/navbar/icons/mute.webp');
+	const iconMinus = ap('/assets/components/navbar/icons/minus.webp');
+	const iconMinusDisabled = ap('/assets/components/navbar/icons/minus_disabled.webp');
+	const iconPlus = ap('/assets/components/navbar/icons/plus.webp');
+	const iconPlusDisabled = ap('/assets/components/navbar/icons/plus_disabled.webp');
+	const iconAuto = ap('/assets/components/navbar/icons/auto.webp');
+	const iconAutoDisabled = ap('/assets/components/navbar/icons/auto_disabled.webp');
+	const iconSpin = ap('/assets/hud/icon-spin.webp');
+	const iconTurbo = ap('/assets/components/navbar/icons/turbo.webp');
+	const iconTurbo1 = ap('/assets/components/navbar/icons/turbo1.webp');
+	const iconTurbo3 = ap('/assets/components/navbar/icons/turbo3.webp');
+	const iconCoins = ap('/assets/components/navbar/coins.webp');
 
 	// Portrait-only pad art (passed to CSS as vars): nav bar behind the controls, round buy-bonus
 	// badge, and the bordered value box for balance / bet.
-	const navBarMobile = ap('/assets/components/navbar/nav_bar_mobile.png');
-	const buyBonusMobile = ap('/assets/components/navbar/buy_bonus_mobile.png');
-	const valueBoxMobile = ap('/assets/components/navbar/value_box_mobile.png');
-	const balanceContainer = ap('/assets/components/navbar/balance_container.png');
-	const betContainer = ap('/assets/components/navbar/bet_container.png');
+	const navBarMobile = ap('/assets/components/navbar/nav_bar_mobile.webp');
+	const buyBonusMobile = ap('/assets/components/navbar/buy_bonus_mobile.webp');
+	const valueBoxMobile = ap('/assets/components/navbar/value_box_mobile.webp');
+	const balanceContainer = ap('/assets/components/navbar/balance_container.webp');
+	const betContainer = ap('/assets/components/navbar/bet_container.webp');
 	// Landscape: tall vertical nav-bar panel behind the right-hand control column + the bet box.
-	const navBarLand = ap('/assets/components/navbar/nav_bar_land.png');
-	const betBoxLand = ap('/assets/components/navbar/bet_box_land.png');
+	const navBarLand = ap('/assets/components/navbar/nav_bar_land.webp');
+	const betBoxLand = ap('/assets/components/navbar/bet_box_land.webp');
 
-	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
-	const hudFrame = ap('/assets/components/frames/hud_frame.png');
-	const smallBtnFrame = ap('/assets/components/frames/lower_hud_button_frame.png');
-	const playBtnFrame = ap('/assets/components/frames/play_button-frame.png');
+	const scatterFrame = ap('/assets/components/frames/scatter_frame.webp');
+	const hudFrame = ap('/assets/components/frames/hud_frame.webp');
+	const smallBtnFrame = ap('/assets/components/frames/lower_hud_button_frame.webp');
+	const playBtnFrame = ap('/assets/components/frames/play_button-frame.webp');
 
-	const scatterImg = ap('/assets/components/ui/scatter-panel-image.png');
+	const scatterImg = ap('/assets/components/ui/scatter-panel-image.webp');
 
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isPortrait = $derived(layoutType === 'portrait');

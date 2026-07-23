@@ -260,7 +260,7 @@
   "meta": {
     "app": "custom-coin-generator",
     "version": "1.0",
-    "image": "SD2_Coin.png",
+    "image": "SD2_Coin.webp",
     "format": "RGBA8888",
     "size": {
       "w": 2736,

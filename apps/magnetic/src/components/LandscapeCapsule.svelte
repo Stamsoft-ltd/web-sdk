@@ -174,7 +174,7 @@
 
 {#if isLandscape}
 	<MainContainer zIndex={25}>
-		<!-- Vertical capsule (right gutter): the portrait glass tube (magnetic_tube.png) ROTATED 90° so it
+		<!-- Vertical capsule (right gutter): the portrait glass tube (magnetic_tube.webp) ROTATED 90° so it
 		     runs top-to-bottom, with live electricity arcing INSIDE the clear window (masked) — inherits
 		     the portrait/desktop animation. Tube (transparent) -> symbol -> lightning on top. -->
 		<Container x={colX} y={tubeY}>

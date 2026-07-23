@@ -8,7 +8,7 @@
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 
-	// magnetic_logo.png is 1400×1098 INCLUDING a wide soft glow halo; the visible logo plate is
+	// magnetic_logo.webp is 1400×1098 INCLUDING a wide soft glow halo; the visible logo plate is
 	// ~half the box width, so the box is sized bigger than the visible mark and the baked-in glow
 	// acts as the top-left margin (hence the small offsets).
 	const LOGO_ASPECT = 1400 / 1098;

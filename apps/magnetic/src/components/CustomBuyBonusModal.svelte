@@ -9,15 +9,15 @@
 	const tv = (k: string, vars: Record<string, string | number>) => i18nDerived.translateVars(k, vars);
 
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	const cardPanel      = ap('/assets/components/ui/bb_card_panel.png?v=20260708c');
-	const betPanel       = ap('/assets/components/ui/bb_bet_panel.png?v=20260708c');
-	const confirmPanelBg = ap('/assets/components/ui/confirm_panel.png?v=20260708b');
+	const cardPanel      = ap('/assets/components/ui/bb_card_panel.webp?v=20260708c');
+	const betPanel       = ap('/assets/components/ui/bb_bet_panel.webp?v=20260708c');
+	const confirmPanelBg = ap('/assets/components/ui/confirm_panel.webp?v=20260708b');
 	const coinIcon       = ap('/assets/components/ui/bb_coin.svg?v=20260708c');
 
 	// Icons — exact Figma art (node 4040-4075): glowing magnet, purple M cube, red M briefcase.
-	const iconChance  = ap('/assets/components/ui/bb_icon_extra_chance.png?v=20260708c');
-	const iconFeature = ap('/assets/components/ui/bb_icon_feature_spins.png?v=20260708c');
-	const iconBrief   = ap('/assets/components/ui/bb_icon_briefcase.png?v=20260708c');
+	const iconChance  = ap('/assets/components/ui/bb_icon_extra_chance.webp?v=20260708c');
+	const iconFeature = ap('/assets/components/ui/bb_icon_feature_spins.webp?v=20260708c');
+	const iconBrief   = ap('/assets/components/ui/bb_icon_briefcase.webp?v=20260708c');
 
 	type Props = {
 		onclose: () => void;

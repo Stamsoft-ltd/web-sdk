@@ -9,62 +9,62 @@
 	// Game description / rules popup — Magnetic Megachain. Multi-page (arrows below). All copy is
 	// localized via the i18n keys ('INFO …'); numeric values stay as constants here.
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	const logo = ap('/assets/components/ui/magnetic_logo.png');
+	const logo = ap('/assets/components/ui/magnetic_logo.webp');
 	// Finished art (designer exports): overview hero composite, popup frame, reels-grid box element,
 	// and the sci-fi value box used behind the small stat cards.
-	const heroImg = ap('/assets/components/ui/info_hero.png');
-	const panelImg = ap('/assets/components/ui/info_panel.png');
-	const boxGrid = ap('/assets/components/ui/info_box_grid.png');
-	const icCluster = ap('/assets/components/ui/info_ic_cluster.png');
-	const icTrophy = ap('/assets/components/ui/info_ic_trophy.png');
-	const icRtp = ap('/assets/components/ui/info_ic_rtp.png');
-	const valueBox = ap('/assets/components/navbar/value_box_mobile.png');
+	const heroImg = ap('/assets/components/ui/info_hero.webp');
+	const panelImg = ap('/assets/components/ui/info_panel.webp');
+	const boxGrid = ap('/assets/components/ui/info_box_grid.webp');
+	const icCluster = ap('/assets/components/ui/info_ic_cluster.webp');
+	const icTrophy = ap('/assets/components/ui/info_ic_trophy.webp');
+	const icRtp = ap('/assets/components/ui/info_ic_rtp.webp');
+	const valueBox = ap('/assets/components/navbar/value_box_mobile.webp');
 	// Real pager arrow buttons (circle + arrow, cyan→blue ring) with disabled variants.
-	const arrowLeft = ap('/assets/components/ui/info_arrow_left.png');
-	const arrowLeftOff = ap('/assets/components/ui/info_arrow_left_off.png');
-	const arrowRight = ap('/assets/components/ui/info_arrow_right.png');
-	const arrowRightOff = ap('/assets/components/ui/info_arrow_right_off.png');
+	const arrowLeft = ap('/assets/components/ui/info_arrow_left.webp');
+	const arrowLeftOff = ap('/assets/components/ui/info_arrow_left_off.webp');
+	const arrowRight = ap('/assets/components/ui/info_arrow_right.webp');
+	const arrowRightOff = ap('/assets/components/ui/info_arrow_right_off.webp');
 
 	// ── Paytable (page 2) — symbol art in rank order (highest → lowest) with the pay bands from
 	// config.ts (H1→L4). Column headers are the connected-cluster sizes. ──
 	const sym = (p: string) => ap(`/assets/components/symbols/magnetic/${p}`);
 	const PAY_COLS = ['5', '6', '7', '8', '9', '10+', '12+', '15+', '20+', '25+', '30+', '33+'];
 	const payRows = [
-		{ img: sym('premium/horseshoe.png'), v: ['0.5x', '1x', '2x', '4x', '8x', '15x', '30x', '75x', '200x', '500x', '1000x', '2000x'] },
-		{ img: sym('premium/plasma_drill.png'), v: ['0.4x', '0.8x', '1.5x', '3x', '6x', '12x', '25x', '60x', '150x', '350x', '750x', '1500x'] },
-		{ img: sym('premium/magnetic_core_cube.png'), v: ['0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '20x', '45x', '120x', '275x', '600x', '1200x'] },
-		{ img: sym('premium/electromagnetic_device.png'), v: ['0.2x', '0.5x', '1x', '2x', '4x', '8x', '15x', '35x', '90x', '200x', '450x', '900x'] },
-		{ img: sym('low/bolt.png'), v: ['0.15x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '25x', '60x', '125x', '250x', '500x'] },
-		{ img: sym('low/nut.png'), v: ['0.12x', '0.25x', '0.5x', '1x', '2x', '4x', '8x', '20x', '50x', '100x', '200x', '400x'] },
-		{ img: sym('low/washer.png'), v: ['0.1x', '0.2x', '0.4x', '0.8x', '1.6x', '3x', '6x', '15x', '40x', '80x', '150x', '300x'] },
-		{ img: sym('low/energy_screw.png'), v: ['0.08x', '0.1x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '12x', '30x', '60x', '120x', '250x'] },
+		{ img: sym('premium/horseshoe.webp'), v: ['0.5x', '1x', '2x', '4x', '8x', '15x', '30x', '75x', '200x', '500x', '1000x', '2000x'] },
+		{ img: sym('premium/plasma_drill.webp'), v: ['0.4x', '0.8x', '1.5x', '3x', '6x', '12x', '25x', '60x', '150x', '350x', '750x', '1500x'] },
+		{ img: sym('premium/magnetic_core_cube.webp'), v: ['0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '20x', '45x', '120x', '275x', '600x', '1200x'] },
+		{ img: sym('premium/electromagnetic_device.webp'), v: ['0.2x', '0.5x', '1x', '2x', '4x', '8x', '15x', '35x', '90x', '200x', '450x', '900x'] },
+		{ img: sym('low/bolt.webp'), v: ['0.15x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '25x', '60x', '125x', '250x', '500x'] },
+		{ img: sym('low/nut.webp'), v: ['0.12x', '0.25x', '0.5x', '1x', '2x', '4x', '8x', '20x', '50x', '100x', '200x', '400x'] },
+		{ img: sym('low/washer.webp'), v: ['0.1x', '0.2x', '0.4x', '0.8x', '1.6x', '3x', '6x', '15x', '40x', '80x', '150x', '300x'] },
+		{ img: sym('low/energy_screw.webp'), v: ['0.08x', '0.1x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '12x', '30x', '60x', '120x', '250x'] },
 	];
-	const wild = sym('special/wild.png');
-	const wildX10 = sym('special/wild_x10.png');
-	const scatter = sym('special/scatter.png');
+	const wild = sym('special/wild.webp');
+	const wildX10 = sym('special/wild_x10.webp');
+	const scatter = sym('special/scatter.webp');
 
 	// Cluster-win illustration (page 4): finished WIN / NO WIN grid art (label baked in).
-	const winImg = ap('/assets/components/ui/info_win.png');
-	const noWinImg = ap('/assets/components/ui/info_nowin.png');
+	const winImg = ap('/assets/components/ui/info_win.webp');
+	const noWinImg = ap('/assets/components/ui/info_nowin.webp');
 	// General-info icons (page 6).
-	const icRotate = ap('/assets/components/ui/info_ic_rotate.png');
-	const icLegal = ap('/assets/components/ui/info_ic_legal.png');
+	const icRotate = ap('/assets/components/ui/info_ic_rotate.webp');
+	const icLegal = ap('/assets/components/ui/info_ic_legal.webp');
 
 	// Game controls (page 7) — the finished round-button icon set (designer export), in file order.
 	// name/desc are i18n keys, translated reactively in the template.
 	const controls = [
-		{ img: ap('/assets/components/ui/ctrl_spin.png'), nameKey: 'INFO CTRL SPIN', descKey: 'INFO CTRL SPIN DESC', big: true },
-		{ img: ap('/assets/components/ui/ctrl_auto.png'), nameKey: 'INFO CTRL AUTO', descKey: 'INFO CTRL AUTO DESC' },
-		{ img: ap('/assets/components/ui/ctrl_turbo.png'), nameKey: 'INFO CTRL TURBO', descKey: 'INFO CTRL TURBO DESC' },
-		{ img: ap('/assets/components/ui/ctrl_plus.png'), nameKey: 'INFO CTRL PLUS', descKey: 'INFO CTRL PLUS DESC' },
-		{ img: ap('/assets/components/ui/ctrl_minus.png'), nameKey: 'INFO CTRL MINUS', descKey: 'INFO CTRL MINUS DESC' },
-		{ img: ap('/assets/components/ui/ctrl_info.png'), nameKey: 'INFO CTRL INFO', descKey: 'INFO CTRL INFO DESC' },
-		{ img: ap('/assets/components/ui/ctrl_sound.png'), nameKey: 'INFO CTRL SOUND', descKey: 'INFO CTRL SOUND DESC' },
-		{ img: ap('/assets/components/ui/ctrl_arrow_left.png'), nameKey: 'INFO CTRL PREV', descKey: 'INFO CTRL PREV DESC' },
-		{ img: ap('/assets/components/ui/ctrl_arrow_right.png'), nameKey: 'INFO CTRL NEXT', descKey: 'INFO CTRL NEXT DESC' },
-		{ img: ap('/assets/components/ui/ctrl_close.png'), nameKey: 'INFO CTRL CLOSE', descKey: 'INFO CTRL CLOSE DESC' },
-		{ img: ap('/assets/components/ui/ctrl_menu.png'), nameKey: 'INFO CTRL MENU', descKey: 'INFO CTRL MENU DESC' },
-		{ img: ap('/assets/components/ui/ctrl_music.png'), nameKey: 'INFO CTRL MUSIC', descKey: 'INFO CTRL MUSIC DESC' },
+		{ img: ap('/assets/components/ui/ctrl_spin.webp'), nameKey: 'INFO CTRL SPIN', descKey: 'INFO CTRL SPIN DESC', big: true },
+		{ img: ap('/assets/components/ui/ctrl_auto.webp'), nameKey: 'INFO CTRL AUTO', descKey: 'INFO CTRL AUTO DESC' },
+		{ img: ap('/assets/components/ui/ctrl_turbo.webp'), nameKey: 'INFO CTRL TURBO', descKey: 'INFO CTRL TURBO DESC' },
+		{ img: ap('/assets/components/ui/ctrl_plus.webp'), nameKey: 'INFO CTRL PLUS', descKey: 'INFO CTRL PLUS DESC' },
+		{ img: ap('/assets/components/ui/ctrl_minus.webp'), nameKey: 'INFO CTRL MINUS', descKey: 'INFO CTRL MINUS DESC' },
+		{ img: ap('/assets/components/ui/ctrl_info.webp'), nameKey: 'INFO CTRL INFO', descKey: 'INFO CTRL INFO DESC' },
+		{ img: ap('/assets/components/ui/ctrl_sound.webp'), nameKey: 'INFO CTRL SOUND', descKey: 'INFO CTRL SOUND DESC' },
+		{ img: ap('/assets/components/ui/ctrl_arrow_left.webp'), nameKey: 'INFO CTRL PREV', descKey: 'INFO CTRL PREV DESC' },
+		{ img: ap('/assets/components/ui/ctrl_arrow_right.webp'), nameKey: 'INFO CTRL NEXT', descKey: 'INFO CTRL NEXT DESC' },
+		{ img: ap('/assets/components/ui/ctrl_close.webp'), nameKey: 'INFO CTRL CLOSE', descKey: 'INFO CTRL CLOSE DESC' },
+		{ img: ap('/assets/components/ui/ctrl_menu.webp'), nameKey: 'INFO CTRL MENU', descKey: 'INFO CTRL MENU DESC' },
+		{ img: ap('/assets/components/ui/ctrl_music.webp'), nameKey: 'INFO CTRL MUSIC', descKey: 'INFO CTRL MUSIC DESC' },
 	];
 
 	type Props = { onclose: () => void };
@@ -500,7 +500,7 @@
 		/* Elongated (matches the horizontal value-box art) so the icon + text fit on one line. */
 		min-height: clamp(62px, 14.4cqmin, 138px);
 		padding: clamp(8px, 1.9cqmin, 20px) clamp(6px, 1.5cqmin, 15px);
-		/* Real sci-fi value box art behind each stat (value_box_mobile.png). */
+		/* Real sci-fi value box art behind each stat (value_box_mobile.webp). */
 		background-image: var(--box-img);
 		background-size: 100% 100%;
 		background-repeat: no-repeat;

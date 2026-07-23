@@ -11,7 +11,7 @@
 		layoutType === 'portrait' ? 'boardPadMobile' : layoutType === 'landscape' ? 'boardPadLand' : 'boardPad',
 	);
 
-	// board_pad.png (2492×2056) is a thin blue-tech HUD frame: glowing border + corner brackets
+	// board_pad.webp (2492×2056) is a thin blue-tech HUD frame: glowing border + corner brackets
 	// around a dark interior. The interior (where the grid sits) is ≈93% of the image (border ~3.5%
 	// per side). Fit width + height independently to the grid so the border stays a thin, even margin
 	// around the 7×7 cells, centred on the grid centre (layout.x / layout.y).

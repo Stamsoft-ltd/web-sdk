@@ -14,7 +14,7 @@
 	import { anchorToPivot, BitmapText, Container, Sprite, type Sizes } from 'pixi-svelte';
 
 	const context = getContext();
-	// Leaf-corner wooden board (confirm_frame.png is 505×301; wood centre ≈ 0.507).
+	// Leaf-corner wooden board (confirm_frame.webp is 505×301; wood centre ≈ 0.507).
 	const PANEL_RATIO = 505 / 301;
 	const WOOD_CENTER_Y = 0.46;
 	const panelWidth = $derived(SYMBOL_SIZE * 2.0);

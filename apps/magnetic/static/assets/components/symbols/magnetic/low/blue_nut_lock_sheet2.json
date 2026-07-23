@@ -848,7 +848,7 @@
  "meta": {
   "app": "custom",
   "version": "1.0",
-  "image": "blue_nut_lock_sheet2.png",
+  "image": "blue_nut_lock_sheet2.webp",
   "format": "RGBA8888",
   "size": {
    "w": 1920,

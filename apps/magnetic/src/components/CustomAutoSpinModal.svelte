@@ -11,7 +11,7 @@
 
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
 	// Blue bracketed board panel (Figma 4036-2458 uses board_panel_623x514 = fs_panel art).
-	const panelBg = ap('/assets/components/ui/fs_panel.png?v=20260708');
+	const panelBg = ap('/assets/components/ui/fs_panel.webp?v=20260708');
 
 	// Spin-count stops (last = unlimited), stepped with − / + per the Figma design.
 	const STOPS: Array<number> = [5, 10, 25, 50, 100, 250, 500, Infinity];
@@ -149,7 +149,7 @@
 	}
 	.ap-close:hover { filter: brightness(1.25); }
 
-	/* Blue bracketed tech panel (fs_panel.png, 623×514 design size) */
+	/* Blue bracketed tech panel (fs_panel.webp, 623×514 design size) */
 	.ap-panel {
 		aspect-ratio: 623 / 514;
 		background-size: 100% 100%;

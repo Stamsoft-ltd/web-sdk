@@ -23,7 +23,7 @@
 
 	type AnimationName = 'static' | 'win' | 'reset' | 'increment';
 
-	// Bear-hand board sizing — multiplier_hand.png is 944×708 with the board panel
+	// Bear-hand board sizing — multiplier_hand.webp is 944×708 with the board panel
 	// (centre 0.368/0.458) ≈ 58% of the width; render so the board ≈ BOARD_W.
 	// Match the top symbol board (BonusSymbolPanel uses SYMBOL_W * 1.1).
 	// The hand image is 944×708; its board region is 592px wide, centred at (368,324).

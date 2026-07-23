@@ -7,7 +7,7 @@
 	type Props = { onPlay: () => void; onEnd: () => Promise<void> };
 	const props: Props = $props();
 
-	const panelBg = './assets/components/ui/confirm_panel.png?v=20260708b';
+	const panelBg = './assets/components/ui/confirm_panel.webp?v=20260708b';
 
 	let ending = $state(false);
 	const handleEnd = async () => {

@@ -34,8 +34,8 @@
 	const bgSrc = './assets/components/backgrounds/splash_intro.jpg?v=20260708';
 	// Portrait artwork: a single central metal frame baked in (for the mobile carousel).
 	const bgMobileSrc = './assets/components/backgrounds/splash_intro_mobile.jpg?v=20260708b';
-	const logoSrc = './assets/components/ui/magnetic_logo.png?v=20260708';
-	const brandSrc = './assets/components/ui/press_play_logo.png?v=20260708';
+	const logoSrc = './assets/components/ui/magnetic_logo.webp?v=20260708';
+	const brandSrc = './assets/components/ui/press_play_logo.webp?v=20260708';
 
 	// The three feature boards, in left→right (and carousel) order. `cls` picks the title gradient.
 	// NOTE: the headline multiplier values below are placeholders matching the current (in-progress)

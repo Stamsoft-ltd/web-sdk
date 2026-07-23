@@ -237,7 +237,7 @@ const LANDSCAPE_CAPSULE_BIAS_MIN = 0.24;
 const LANDSCAPE_CAPSULE_BIAS_MAX = 0.33;
 const landscapeCapsuleBias = () =>
 	LANDSCAPE_CAPSULE_BIAS_MIN + landscapeSizeT() * (LANDSCAPE_CAPSULE_BIAS_MAX - LANDSCAPE_CAPSULE_BIAS_MIN);
-// The landscape capsule is the portrait glass tube (magnetic_tube.png, 1002×668) rotated to vertical.
+// The landscape capsule is the portrait glass tube (magnetic_tube.webp, 1002×668) rotated to vertical.
 // The art has ~29% transparent margins top/bottom (→ left/right after the 90° rotation): the opaque
 // tube is only ~42.5% of the sprite's width and ~94% of its height, so the *visible* tube is a slim
 // vertical cylinder. RATIO scales the whole sprite (bigger = bigger visible tube); STRETCH keeps the
