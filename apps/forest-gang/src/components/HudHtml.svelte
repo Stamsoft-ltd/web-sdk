@@ -380,6 +380,9 @@
 		const raf = () => requestAnimationFrame(fit);
 		const ro = new ResizeObserver(raf);
 		if (node.parentElement) ro.observe(node.parentElement);
+		// Re-fit once the webfont arrives: the first fit measures fallback-font metrics, and a
+		// fixed-width slot never resizes afterwards (so the observer alone can't catch it).
+		document.fonts?.ready.then(raf);
 		raf();
 		return { update: raf, destroy: () => ro.disconnect() };
 	}
@@ -783,7 +786,7 @@
 					<img class="nav-icon" src={turboIcon} alt="turbo" />
 				</button>
 				<button
-					class="nav-btn nav-btn--framed"
+					class="nav-btn nav-btn--framed nav-btn--auto"
 					class:active={hasAuto}
 					type="button"
 					onclick={onAuto}
@@ -822,29 +825,16 @@
 		padding: 8px;
 		z-index: 20;
 		font-family: 'Cinzel', serif;
+		/* Fluid desktop-bar sizing: the bar and everything on it scale with viewport width
+		   (growing until ~1900px, then capped) so wide screens get the chunky redesign bar
+		   instead of sizes frozen at the 1200px breakpoint. Min sizes stay near the old
+		   desktop sizes; the ~30% growth happens on wide screens where there's room. */
+		--nav-s: clamp(53px, 5.3vw, 100px);
+		--spin-s: clamp(121px, 13.2vw, 251px);
 	}
 
-	/* Dark shelf behind the bottom bar — masks the gray full-width element that
-	   sits below the HUD (proven by diagnostic that a z5 layer fully covers it),
-	   blending up into the forest. The bar (z6) renders on top. */
-	.hud-shell::after {
-		content: '';
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		height: 120px;
-		z-index: 5;
-		pointer-events: none;
-		background: linear-gradient(to top, #070b06 0%, #070b06 78%, rgba(7, 11, 6, 0) 100%);
-	}
-
-	/* Landscape and portrait draw their controls straight on the forest — drop the dark shelf so
-	   the background shows behind the bottom bar/stats instead of a black band. */
-	.hud-shell[data-layout='landscape']::after,
-	.hud-shell[data-layout='portrait']::after {
-		display: none;
-	}
+	/* No dark shelf behind the bottom bar: the redesign forest background paints all
+	   the way to the bottom edge and the wooden bar floats directly on it. */
 
 	.hud-bottom,
 	.scatter-card {
@@ -912,37 +902,44 @@
 		z-index: 6;
 		align-self: center;
 		margin-top: auto;
-		width: min(calc(100% - 16px), 1180px);
+		/* The bar is one fixed 1860px-wide design scaled uniformly: --u is the design-px
+		   unit (1px at ≥1917px viewports, proportionally smaller below). Every size inside
+		   the bar is a design px × --u, so laptops and the Stake iframe render the exact
+		   desktop bar, just scaled — no per-breakpoint reflow, matching the Figma reference
+		   (node 3406-4596) where the whole bar scales as one unit. */
+		--u: calc(min(97vw, 1860px) / 1860);
+		--nav-s: calc(var(--u) * 104);
+		--spin-s: calc(var(--u) * 259);
+		width: calc(var(--u) * 1860);
 		height: auto;
 		box-sizing: border-box;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 12px;
-		/* Tighter side padding so the icon clusters sit nearer the bar ends,
-		   leaving more room in the middle for long balance/bet values. */
-		padding: 8px 40px;
-		/* Dark stadium base fills the whole box so no white bleeds through
-		   the transparent areas around the 9-sliced wooden pill on top. */
-		background: #0f0b06;
-		border-radius: 999px;
+		gap: calc(var(--u) * 12);
+		/* Vertical padding gives the bar its height (Figma: 125-tall bar on a 1150 span,
+		   ×1.617 → 200 design px); side padding (74) is the row inset from the bar ends —
+		   wider than the 70px end-cap art, so edge buttons clear the caps by construction. */
+		padding: calc(var(--u) * 36) calc(var(--u) * 74);
+		/* The wooden pill art (bar.webp) is fully opaque with its own dark-wood body, so no
+		   background base is needed — a dark base used to peek past the art's silhouette and
+		   read as a black halo around the bar. */
+		background: none;
+		border-radius: 0;
 		box-shadow: none;
 	}
 
-	/* Wooden bar background, 9-sliced so the rounded caps stay crisp */
+	/* Wooden bar background. The bar's box is a fixed 1860×200 design (aspect 9.3),
+	   essentially bar.webp's native 4600×500 (9.2) — so the art paints whole, un-sliced,
+	   and the caps/vines keep exactly the original artwork proportions at every scale.
+	   (The old 9-slice existed only because bar width used to vary independently of
+	   height; with uniform --u scaling it distorted the cap art instead.) */
 	.hud-bottom::before {
 		content: '';
 		position: absolute;
 		inset: 0;
 		z-index: 0;
-		box-sizing: border-box;
-		border-style: solid;
-		border-color: transparent;
-		border-width: 26px 70px;
-		border-image-source: var(--menu-bar-bg);
-		border-image-slice: 120 380 fill;
-		border-image-width: 26px 70px;
-		border-image-repeat: stretch;
+		background: var(--menu-bar-bg) center / 100% 100% no-repeat;
 		pointer-events: none;
 	}
 
@@ -954,7 +951,7 @@
 	.hud-left {
 		display: flex;
 		align-items: center;
-		gap: 18px;
+		gap: calc(var(--u) * 10);
 		flex: 0 0 auto;
 	}
 
@@ -979,14 +976,14 @@
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
-		gap: 22px;
+		gap: calc(var(--u) * 22);
 		flex: 0 0 auto;
 		padding-top: 0;
 	}
 
 	.value-pill {
 		min-width: 0;
-		padding: 0 5px;
+		padding: 0 calc(var(--u) * 5);
 		border-left: 1px solid rgba(255, 255, 255, 0.15);
 		display: flex;
 		flex-direction: column;
@@ -998,7 +995,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		padding: 0 12px;
+		padding: 0 calc(var(--u) * 12);
 		/* Hug the actual balance text so the WIN readout sits right beside it; .value-fit's
 		   max-width still caps very long balances (fitText scales them into that slot), so the
 		   pill can never push the navigation. */
@@ -1017,14 +1014,25 @@
 	}
 
 	/* Fixed slots that the balance/bet are scaled to fit (see fitText) so a long
-	   value can never widen the bar and push the navigation. */
+	   value can never widen the bar and push the navigation. The balance/bet slots are
+	   pinned (px clamps tracking the vw-fluid value font ≈1.45vw): the pill can't hug
+	   the text, so a changing amount ($1,000.00 → $999.40) never shifts the items to
+	   its right — fitText scales longer values down into the slot instead. Sized with
+	   ~8% headroom over the common values ($992.40 / $1.00) at every viewport — a
+	   snugger slot clipped the balance, an oversized one left a gap before the
+	   steppers and pushed the bar past its max width. */
 	.value-fit {
-		max-width: 150px;
+		max-width: calc(var(--u) * 150);
 		overflow: hidden;
 	}
 
+	.value-pill--balance .value-fit {
+		width: calc(var(--u) * 126);
+	}
+
 	.value-fit--bet {
-		max-width: 132px;
+		width: calc(var(--u) * 90);
+		max-width: none;
 	}
 
 	.value-fit .value {
@@ -1036,10 +1044,10 @@
 	   text (like balance) so BET stays close; the min-width keeps a small slot while hidden. */
 	.value-pill--win {
 		align-items: flex-start;
-		padding: 0 12px;
+		padding: 0 calc(var(--u) * 12);
 		flex: 0 0 auto;
 		width: fit-content;
-		min-width: 96px;
+		min-width: calc(var(--u) * 96);
 		border-left: 1px solid rgba(255, 255, 255, 0.3);
 	}
 
@@ -1063,8 +1071,10 @@
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		gap: 6px;
-		padding: 0 12px;
+		gap: calc(var(--u) * 6);
+		padding: 0 calc(var(--u) * 12);
+		/* Nudge the BET block right off the WIN slot (design ask). */
+		margin-left: calc(var(--u) * 10);
 		border-left: 1px solid rgba(255, 255, 255, 0.3);
 		flex: 0 0 auto;
 	}
@@ -1086,8 +1096,8 @@
 
 	.bet-coin {
 		pointer-events: none;
-		width: 44px;
-		height: 44px;
+		width: calc(var(--u) * 52);
+		height: calc(var(--u) * 52);
 		display: grid;
 		place-items: center;
 		flex: 0 0 auto;
@@ -1102,7 +1112,7 @@
 
 	.label {
 		font-family: 'Poppins', sans-serif;
-		font-size: 0.8125rem; /* 13px */
+		font-size: calc(var(--u) * 18);
 		font-weight: 500;
 		letter-spacing: 0.03em;
 		/* Golden gradient clipped to the BALANCE / BET label text */
@@ -1129,9 +1139,12 @@
 
 	.value {
 		font-family: 'Poppins', sans-serif;
-		font-size: 1.125rem; /* 18px */
+		font-size: calc(var(--u) * 26);
 		font-weight: 500;
 		letter-spacing: 0.03em; /* 0.54px @ 18px */
+		/* Uniform digit widths so the fixed ch-sized balance/bet slots line up exactly
+		   and single-digit changes can't jog the text inside the slot. */
+		font-variant-numeric: tabular-nums;
 		color: #fff;
 	}
 
@@ -1144,31 +1157,27 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 15px;
+		gap: calc(var(--u) * 15);
 		padding-top: 0;
 	}
 
 	/* The whole BET block (coin + value + steppers) sits shifted toward the central spin as one
 	   unit — the internal spacing between them stays fixed. */
 	.hud-stats .value-pill--bet {
-		margin-left: 36px;
+		margin-left: calc(var(--u) * 6);
 	}
 
 	/* The − / + pair (kept snug together, matching the turbo↔auto spacing) sits shifted a bit
 	   right of the BET value, toward the central spin. */
 	.hud-stats .stepper {
-		margin-left: 34px;
+		margin-left: calc(var(--u) * 8);
 	}
 
-	/* Frame the central spin: the turbo button drifts left toward it — autoplay and the bar-end
-	   gaps stay put. */
-	.action-cluster .nav-btn--turbo {
-		margin-right: 24px;
-	}
+	/* Figma keeps turbo↔autoplay at the plain cluster gap — no extra drift. */
 
-	/* Match the − / + spacing to the turbo↔autoplay spacing (cluster gap 15px + turbo drift 24px). */
+	/* Match the − / + spacing to the turbo↔autoplay spacing. */
 	.stepper {
-		gap: 39px;
+		gap: calc(var(--u) * 20);
 	}
 
 
@@ -1224,8 +1233,8 @@
 
 	/* Image buttons — icon-less frame background + gold icon layered on top */
 	.nav-btn {
-		width: 60px;
-		height: 60px;
+		width: var(--nav-s);
+		height: var(--nav-s);
 		border: none;
 		background: none;
 		padding: 0;
@@ -1292,7 +1301,7 @@
 	.hud-system {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: calc(var(--u) * 10);
 		flex: 0 0 auto;
 	}
 
@@ -1416,15 +1425,15 @@
 	}
 
 	.spin-btn {
-		width: 216px;
-		height: 216px;
+		width: var(--spin-s);
+		height: var(--spin-s);
 		/* The bar is a space-between flex row: without shrink protection the button is the only
 		   child that gives way, collapsing the leafy disc to a sliver on laptop widths. */
 		flex: 0 0 auto;
-		/* Negative vertical margins keep the big button from inflating the bar height (it protrudes
-		   above the wooden bar as the focal control); the auto side margins split the free bar
-		   space equally, centering the disc between the + stepper and the turbo button. */
-		margin: -63px auto;
+		/* Negative vertical margins make the disc contribute exactly one nav-button height to the
+		   bar (it protrudes above/below as the focal control); the auto side margins split the
+		   free bar space equally, centering the disc between the + stepper and the turbo button. */
+		margin: calc((var(--nav-s) - var(--spin-s)) / 2) auto;
 		border: none;
 		background: var(--btn-spin-bg) center / contain no-repeat;
 		padding: 0;
@@ -1487,7 +1496,7 @@
 	}
 
 	.spin-btn__glyph {
-		font-size: 2rem;
+		font-size: calc(var(--u) * 32);
 	}
 
 	/* Gold stop tile shown over the green disc while spinning (replaces the ■ glyph). */
@@ -1505,18 +1514,23 @@
 	}
 
 	.spin-btn__count {
-		font-size: 1.5rem;
+		font-size: calc(var(--u) * 24);
 	}
 
 	.buy-btn {
-		width: 130px;
-		height: auto;
+		/* Just a touch taller than the round nav buttons (Figma), so the bar stays slim and
+		   the button doesn't stretch the background. Aspect keeps the 300/126 art. */
+		height: calc(var(--u) * 100);
+		width: auto;
 		aspect-ratio: 300 / 126;
 		border: 0;
 		background: var(--buy-btn-bg) center / contain no-repeat;
 		/* Leaves sit along the bottom of the new art, so the green body centre is above the element
 		   centre — pad the bottom to lift the flex-centred label onto the body (scales with the button). */
 		padding: 0 14px 7% 14px;
+		/* Optical vertical centring: the art's leafy bottom makes the element read high on the
+		   bar, so nudge the whole button down a touch (position-relative, layout unaffected). */
+		top: clamp(2px, 0.45vw, 7px);
 		outline: none;
 		cursor: pointer;
 		position: relative;
@@ -1543,7 +1557,9 @@
 
 	.buy-btn__label {
 		font-family: 'Poppins', sans-serif;
-		font-size: 0.8rem;
+		/* Scales with the bar's design unit; fitLabel shrinks it further only when a
+		   translation runs long. */
+		font-size: calc(var(--u) * 24);
 		font-weight: 600;
 		letter-spacing: 0.03em;
 		white-space: nowrap;
@@ -1558,196 +1574,10 @@
 		pointer-events: none;
 	}
 
-	/* Laptop widths (≈1000–1200px viewports, incl. the Stake iframe): everything ~10% smaller so
-	   the full bar — through the autoplay button — always fits without clipping. Desktop (>1200px)
-	   keeps the full-size layout. */
+	/* Scatter card keeps its original (tighter) hide breakpoint. */
 	@media (max-width: 1200px) {
 		.scatter-card {
 			display: none;
-		}
-
-		.hud-bottom {
-			width: min(calc(100% - 16px), 1120px);
-			/* Equal side padding: the first (info) and last (autoplay) buttons sit the same
-			   distance from their bar ends. */
-			padding: 14px 24px;
-			gap: 8px;
-		}
-
-		.hud-controls {
-			gap: 12px;
-		}
-
-		.action-cluster {
-			gap: 10px;
-		}
-
-		/* Keep −/+ matched to turbo↔autoplay (cluster gap 10px + turbo drift 24px). */
-		.stepper {
-			gap: 34px;
-		}
-
-		.nav-btn {
-			width: 52px;
-			height: 52px;
-		}
-
-		.buy-btn {
-			width: 112px;
-		}
-
-		.bet-coin {
-			width: 38px;
-			height: 38px;
-		}
-
-		.label {
-			font-size: 0.72rem;
-		}
-
-		.value {
-			font-size: 1rem;
-		}
-
-		/* Tighten the balance→win gap: hug the values and trim the pills' side padding. */
-		.value-pill--balance {
-			padding: 0 12px;
-		}
-		.value-pill--win {
-			min-width: 80px;
-			padding: 0 12px;
-		}
-		.value-fit {
-			max-width: 116px;
-		}
-		.value-pill--bet {
-			padding: 0 12px;
-		}
-
-		/* Shrink the focal spin button so it protrudes less above/below the bar (its negative margins
-		   mean this doesn't change the bar height). */
-		.spin-btn {
-			width: 144px;
-			height: 144px;
-			margin: -42px auto;
-		}
-	}
-
-	/* Small laptops / narrow iframes (≈900–1040px): one more shrink step so the full control row
-	   (info → refresh) always fits WITH the focal spin disc — without this the disc's space runs
-	   out and the turbo/refresh pair clips past the bar end. */
-	@media (max-width: 1040px) {
-		.hud-bottom {
-			padding: 12px 18px;
-			gap: 6px;
-		}
-
-		.nav-btn {
-			width: 48px;
-			height: 48px;
-		}
-
-		.buy-btn {
-			width: 100px;
-		}
-
-		/* Reclaim the decorative drift gaps — space is too tight for them here. */
-		.hud-stats .value-pill--bet {
-			margin-left: 12px;
-		}
-		.action-cluster .nav-btn--turbo {
-			margin-right: 8px;
-		}
-		/* Keep −/+ matched to turbo↔autoplay (cluster gap 10px + turbo drift 8px). */
-		.stepper {
-			gap: 18px;
-		}
-
-		.value {
-			font-size: 0.95rem;
-		}
-		.value-fit {
-			max-width: 100px;
-		}
-
-		.spin-btn {
-			width: 104px;
-			height: 104px;
-			margin: -26px auto;
-		}
-	}
-
-	@media (max-width: 900px) {
-		.hud-bottom {
-			grid-template-columns: minmax(150px, 210px) 1fr 1fr 1.1fr auto auto;
-			gap: 12px;
-			padding: 12px 14px;
-		}
-
-		.circle-btn {
-			width: 54px;
-			height: 54px;
-		}
-
-		.circle-btn--small {
-			width: 48px;
-			height: 48px;
-		}
-
-		.spin-btn {
-			width: 78px;
-			height: 78px;
-			font-size: 2rem;
-		}
-	}
-
-	@media (max-width: 700px) {
-		.hud-shell {
-			padding: 12px;
-		}
-
-		.hud-bottom {
-			grid-template-columns: 1fr 1fr;
-			grid-template-areas:
-				'buy buy'
-				'balance bet'
-				'mode mode'
-				'stepper actions';
-			gap: 10px;
-			padding: 12px;
-		}
-
-		.stepper {
-			grid-area: stepper;
-		}
-		.action-cluster {
-			grid-area: actions;
-			justify-content: flex-end;
-		}
-
-		.label {
-			font-size: 0.72rem;
-		}
-
-		.value {
-			font-size: 0.92rem;
-		}
-
-		.circle-btn {
-			width: 50px;
-			height: 50px;
-		}
-
-		.circle-btn--small {
-			width: 46px;
-			height: 46px;
-			font-size: 1.35rem;
-		}
-
-		.spin-btn {
-			width: 82px;
-			height: 82px;
-			font-size: 2rem;
 		}
 	}
 
@@ -1780,7 +1610,7 @@
 	.ls-left {
 		position: absolute;
 		left: 16px;
-		bottom: 3px;
+		bottom: 0;
 		/* Stop before the BUY BONUS button (centred at 37%, half-width subtracted). */
 		max-width: calc(37% - clamp(48px, 9vh, 84px) - 12px);
 		display: flex;
@@ -1796,11 +1626,11 @@
 		   clamp(70px,10.5vh,88px)), then translateY(50%) drops it by half its own height so the two
 		   centres line up regardless of the button's rendered height. The extra -5px drops it a
 		   touch lower so its leaves clear the board frame on short popup viewports. */
-		bottom: calc(clamp(26px, 12vh, 104px) / 2 - var(--ls-drop) - 5px);
+		bottom: calc(clamp(28px, 13.5vh, 116px) / 2 - var(--ls-drop) - 7px);
 		left: 37%;
 		transform: translate(-50%, 50%);
 		box-sizing: border-box;
-		width: clamp(64px, 24vh, 235px);
+		width: clamp(72px, 27.5vh, 265px);
 		height: auto;
 		aspect-ratio: 300 / 126;
 		border: 0;
@@ -1839,8 +1669,8 @@
 		align-items: baseline;
 		gap: 8px;
 		/* Same dark translucent pill as the WIN readout — keeps the text readable over the forest. */
-		padding: 4px 12px;
-		border-radius: 12px;
+		padding: 3px 10px;
+		border-radius: 10px;
 		background: rgba(17, 12, 10, 0.72);
 		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
 		backdrop-filter: blur(4px);
@@ -1851,12 +1681,12 @@
 	.ls-win {
 		position: absolute;
 		right: 16px;
-		bottom: 6px;
+		bottom: 1px;
 		display: flex;
 		align-items: baseline;
 		gap: 8px;
-		padding: 4px 12px;
-		border-radius: 12px;
+		padding: 3px 10px;
+		border-radius: 10px;
 		background: rgba(17, 12, 10, 0.72);
 		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
 		backdrop-filter: blur(4px);
@@ -1867,7 +1697,7 @@
 	}
 	.ls-win__label {
 		font-family: 'Poppins', sans-serif;
-		font-size: clamp(8px, 3vh, 12px);
+		font-size: clamp(7px, 2.4vh, 11px);
 		font-style: normal;
 		font-weight: 500;
 		line-height: normal;
@@ -1880,13 +1710,13 @@
 	.ls-win__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 600;
-		font-size: clamp(9px, 3.2vh, 13px);
+		font-size: clamp(8px, 2.6vh, 12px);
 		color: #fff;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
 	}
 	.ls-balance__label {
 		font-family: 'Poppins', sans-serif;
-		font-size: clamp(8px, 3vh, 12px);
+		font-size: clamp(7px, 2.4vh, 11px);
 		font-style: normal;
 		font-weight: 500;
 		line-height: normal;
@@ -1899,8 +1729,37 @@
 	.ls-balance__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 600;
-		font-size: clamp(9px, 3.2vh, 13px);
+		font-size: clamp(8px, 2.6vh, 12px);
 		color: #fff;
+	}
+
+	/* Popout L ONLY (landscape layout with a taller window than popout S's ≤375px short side):
+	   the BALANCE / WIN readouts sit higher and render bigger there (design ask). The ls-*
+	   classes exist only in the landscape layout, so desktop windows never match. */
+	@media (min-height: 376px) {
+		.ls-left { bottom: 10px; }
+		.ls-win { bottom: 11px; }
+		.ls-balance,
+		.ls-win { padding: 5px 14px; border-radius: 12px; }
+		.ls-balance__label,
+		.ls-win__label { font-size: clamp(9px, 3.1vh, 15px); }
+		.ls-balance__value,
+		.ls-win__value { font-size: clamp(10px, 3.4vh, 17px); }
+
+		/* Right rail runs ~20% bigger in the roomier popout L window. */
+		.ls-right {
+			gap: clamp(4px, 1.6vh, 14px);
+			padding: clamp(5px, 1.6vh, 14px) 0;
+			background-size: clamp(37px, 12.7vh, 114px) 100%;
+		}
+		.ls-round {
+			width: clamp(26px, 8.6vh, 78px);
+			height: clamp(26px, 8.6vh, 78px);
+		}
+		.ls-spin {
+			width: clamp(67px, 26vh, 235px);
+			height: clamp(67px, 26vh, 235px);
+		}
 	}
 
 	/* Bottom-centre bet pad: − value + */
@@ -1908,13 +1767,13 @@
 		position: absolute;
 		/* Shifted right of centre; BUY BONUS sits to its left (Figma design). */
 		left: 61%;
-		bottom: calc(-1 * var(--ls-drop));
+		bottom: calc(-1 * var(--ls-drop) - 4px);
 		transform: translateX(-50%);
 		display: flex;
 		align-items: center;
-		/* Bigger pad; buttons sit just inside the rounded ends (small inset) via the value's auto margins. */
-		height: clamp(26px, 12vh, 104px);
-		width: clamp(84px, 43vh, 360px);
+		/* Pad wraps the (bigger) − / + buttons with clear wood margin around them. */
+		height: clamp(28px, 13.5vh, 116px);
+		width: clamp(90px, 46vh, 390px);
 		padding: 0 1.0%;
 		box-sizing: border-box;
 		border: 0;
@@ -1934,8 +1793,8 @@
 	/* Same technique as .ls-round (which renders as a proper circle): normal-flow square button.
 	   The absolute-positioning version was rendering as an oval. */
 	.ls-step {
-		width: clamp(19px, 9vh, 76px);
-		height: clamp(19px, 9vh, 76px);
+		width: clamp(21px, 10.5vh, 84px);
+		height: clamp(21px, 10.5vh, 84px);
 		flex: 0 0 auto;
 		border: 0;
 		background: var(--btn-round-bg) center / contain no-repeat;
@@ -1949,27 +1808,30 @@
 	.ls-step:disabled { opacity: 0.45; cursor: default; }
 	.ls-step .ls-icon { width: 44%; height: 44%; object-fit: contain; }
 
-	/* Right rail: menu, sound, spin, turbo, autospin (vertical bar) */
+	/* Right rail: menu, sound, spin, turbo, autospin (vertical bar).
+	   Figma 3451-2143: the dark pill hugs the buttons (pill ≈ 1.25× button width), the buttons
+	   are large (≈8.3% of viewport height), and the leafy spin disc is ~2.2× the buttons,
+	   overflowing the pill's sides. */
 	.ls-right {
 		position: absolute;
-		right: 3px;
+		right: 6px;
 		top: 50%;
 		transform: translateY(-50%);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: clamp(4px, 1.5vh, 13px);
-		/* Slim: the bar art is trimmed to its visible wood, so horizontal padding directly
-		   widens the rendered bar — keep it minimal. */
-		padding: 14px 4px;
-		/* Bar art drawn much narrower than the (now larger) spin button so the wooden bar keeps its
-		   original slim width and the big spin overflows its sides, as in the original design. */
-		background: var(--ls-rightbar) center / 40% 100% no-repeat;
+		gap: clamp(3px, 1.2vh, 11px);
+		padding: clamp(4px, 1.2vh, 11px) 0;
+		/* The pill art is painted at a FIXED width (~2.1× the round buttons, per Figma) instead of
+		   the element box — the element is as wide as the spin disc, and sizing the art to it made
+		   the pill swallow the spin. This way the buttons nearly fill the pill and the bigger spin
+		   overflows its sides. */
+		background: var(--ls-rightbar) center / clamp(31px, 10.6vh, 95px) 100% no-repeat;
 	}
 	.ls-round {
-		width: clamp(20px, 5.6vh, 56px);
-		height: clamp(20px, 5.6vh, 56px);
+		width: clamp(22px, 7.2vh, 65px);
+		height: clamp(22px, 7.2vh, 65px);
 		border: 0;
 		background: var(--btn-round-bg) center / contain no-repeat;
 		padding: 0;
@@ -1984,8 +1846,8 @@
 	.ls-round .ls-icon.is-muted { opacity: 1; }
 
 	.ls-spin {
-		width: clamp(54px, 24vh, 214px);
-		height: clamp(54px, 24vh, 214px);
+		width: clamp(62px, 23vh, 210px);
+		height: clamp(62px, 23vh, 210px);
 		border: 0;
 		background: var(--ls-spin) center / contain no-repeat;
 		padding: 0;
@@ -2127,7 +1989,7 @@
 		position: relative;
 		width: var(--u);
 		/* Slightly squashed vs the art's native 1372×256 — matches the design's slimmer bar. */
-		height: calc(var(--u) * 0.15);
+		height: calc(var(--u) * 0.138);
 		/* 3-column grid (1fr | auto | 1fr): the SPIN sits at the exact centre — matching the bet pad
 		   below — regardless of the (unequal) side groups. align-items centres buttons on the wood
 		   (the art's visible wood is centred in its box). */
@@ -2150,7 +2012,7 @@
 	.pt-grp { display: flex; align-items: center; }
 
 	.pt-round {
-		width: calc(var(--u) * 0.108); height: calc(var(--u) * 0.108);
+		width: calc(var(--u) * 0.085); height: calc(var(--u) * 0.085);
 		border: 0; padding: 0; cursor: pointer;
 		background: var(--btn-round-bg) center / contain no-repeat;
 		display: grid; place-items: center;
@@ -2168,7 +2030,7 @@
 	.pt-round--turbo.turbo-super { filter: drop-shadow(0 0 7px rgba(120,220,90,0.95)); }
 
 	.pt-spin {
-		width: calc(var(--u) * 0.215); height: calc(var(--u) * 0.215);
+		width: calc(var(--u) * 0.21); height: calc(var(--u) * 0.21);
 		margin-top: 0; /* vertically centred on the bar; the leaves overflow above/below by design */
 		border: 0; padding: 0; cursor: pointer;
 		background: var(--pt-spin) center / contain no-repeat;
@@ -2198,6 +2060,8 @@
 		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
 		gap: calc(var(--u) * 0.02);
+		/* Nudge the whole BALANCE · bet · WIN row down a touch off the control bar (design ask). */
+		margin-top: calc(var(--u) * 0.022);
 	}
 	.pt-stats .pt-balance { justify-self: start; margin-left: calc(var(--u) * 0.03); }
 	.pt-stats .pt-win { justify-self: end; margin-right: calc(var(--u) * 0.03); }
@@ -2265,7 +2129,7 @@
 		filter: drop-shadow(0 1px 1px rgba(0,0,0,0.7));
 	}
 	/* Buy bonus placed IN the control row (left of spin). */
-	.pt-buy--controls { width: calc(var(--u) * 0.15); height: calc(var(--u) * 0.142); }
+	.pt-buy--controls { width: calc(var(--u) * 0.14); height: calc(var(--u) * 0.132); }
 
 	/* WIN readout — mirrors the balance block, pinned to the right of the stats row. */
 	.pt-win {

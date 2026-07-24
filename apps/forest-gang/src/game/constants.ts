@@ -113,6 +113,13 @@ export const SPIN_OPTIONS_ANTICIPATED = {
 	reelPaddingMultiplierAnticipated: 16,
 };
 
+// Bought-bonus trigger spins: the player already knows the bonus is coming, so the scatter
+// anticipation runs at HALF the padding — identical motion, half the wall-clock time.
+export const SPIN_OPTIONS_ANTICIPATED_BOUGHT = {
+	...SPIN_OPTIONS_ANTICIPATED,
+	reelPaddingMultiplierAnticipated: 8,
+};
+
 export const MOTION_BLUR_VELOCITY = 31;
 
 export const zIndexes = {

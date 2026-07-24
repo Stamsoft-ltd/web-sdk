@@ -5,7 +5,6 @@
 	import { FillGradient } from 'pixi-svelte';
 	import { Graphics, Sprite, Container, Text } from 'pixi-svelte';
 
-	import ForestBugs from './ForestBugs.svelte';
 
 	type Props = {
 		boardKey: string;
@@ -18,12 +17,14 @@
 
 	const { boardKey, maxBoardSize, breatheScale, mult, countUpText, fontSize }: Props = $props();
 
+	// Reduced ~20% from the original tuning (two -10% design passes; the second one
+	// included the legendary/max-win board as well).
 	const TIER_BASE_SCALE: Record<string, number> = {
-		sweetWinBoard:     0.72,
-		wildWinBoard:      0.80,
-		epicWinBoard:      0.87,
-		mythicWinBoard:    0.93,
-		legendaryWinBoard: 1.00,
+		sweetWinBoard:     0.59,
+		wildWinBoard:      0.65,
+		epicWinBoard:      0.70,
+		mythicWinBoard:    0.76,
+		legendaryWinBoard: 0.90,
 	};
 
 	const TIER_RANGES = [
@@ -88,23 +89,27 @@
 	// width-normalised then centred on the square canvas, so the square fraction differs per
 	// art). Do NOT add a fixed px offset here — a non-scaling offset un-centres the text when
 	// the popups are enlarged.
+	// New win boards (all the same template, fit to width + centred on the square canvas): banner
+	// plaque centre measured at 0.373 down from the board centre. Same value for every tier.
 	const TIER_TEXT_Y: Record<string, number> = {
-		sweetWinBoard: 0.343,
-		wildWinBoard: 0.331,
-		epicWinBoard: 0.340,
-		mythicWinBoard: 0.335,
-		legendaryWinBoard: 0.345,
+		sweetWinBoard: 0.364,
+		wildWinBoard: 0.362,
+		epicWinBoard: 0.344,
+		mythicWinBoard: 0.364,
+		legendaryWinBoard: 0.372,
 	};
 	const textYFrac = $derived(TIER_TEXT_Y[shownKey] ?? 0.343);
 
 	// Golden P emblem on the gem medallion — per-tier centre/size measured from the Figma page
 	// (second-row boards with the emblem placed; fractions of the square canvas). Pulses gently.
+	// Gem medallion centre measured at ~0.125 down from the board centre on the new boards (same
+	// template for every tier). The P mark sits on it.
 	const TIER_EMBLEM: Record<string, { y: number; w: number }> = {
-		sweetWinBoard: { y: 0.0635, w: 0.197 },
-		wildWinBoard: { y: 0.0725, w: 0.192 },
-		epicWinBoard: { y: 0.0773, w: 0.195 },
-		mythicWinBoard: { y: 0.0616, w: 0.191 },
-		legendaryWinBoard: { y: 0.0767, w: 0.194 },
+		sweetWinBoard: { y: 0.142, w: 0.19 },
+		wildWinBoard: { y: 0.142, w: 0.19 },
+		epicWinBoard: { y: 0.142, w: 0.19 },
+		mythicWinBoard: { y: 0.142, w: 0.19 },
+		legendaryWinBoard: { y: 0.142, w: 0.19 },
 	};
 	const emblem = $derived(TIER_EMBLEM[shownKey] ?? TIER_EMBLEM.sweetWinBoard);
 	const EMBLEM_ASPECT = 340 / 292; // win_emblem_p.png
@@ -161,15 +166,7 @@
 			/>
 		</Container>
 
-		<!-- Little ladybugs strolling around the wooden border. The Figma boards are near-square
-		     (full width, ~96-100% height centred), so the path hugs a slightly tighter rectangle. -->
-		<ForestBugs
-			{boardSize}
-			halfW={boardSize * 0.447}
-			halfH={boardSize * 0.452}
-		/>
-
-		<Container y={boardSize * textYFrac} scale={amountScale}>
+<Container y={boardSize * textYFrac} scale={amountScale}>
 			<Text
 				anchor={0.5}
 				text={countUpText}

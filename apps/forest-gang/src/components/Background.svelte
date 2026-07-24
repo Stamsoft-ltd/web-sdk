@@ -10,74 +10,26 @@
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
-	// Portrait/landscape base game uses dedicated static forest art; bonus rounds keep their themed
-	// (animated) art, and desktop base keeps the animated baseBgVideo.
+	// Portrait/landscape base game uses dedicated static forest art; desktop and the bonus rounds
+	// use the new-design static backgrounds.
 	const isPortraitBase = $derived(isPortrait && context.stateGame.bonusMode === null);
 	const isLandscapeBase = $derived(
 		isLandscape && (context.stateGame.bonusMode === null || context.stateGame.bonusMode === 'feature'),
 	);
 
-	// Themed bonus backgrounds: green forest for the normal bonus (Deal It / freegame),
-	// golden forest for the super bonus (All In / superspin); everything else keeps the default.
+	// Themed bonus backgrounds (new-design static art): golden forest for Deal It (freegame),
+	// sunset forest for All In (superspin); everything else keeps the base forest.
 	// The swap is instant here and masked by the alpha Transition overlay (TransitionAnimation).
 	const backgroundKey = $derived.by(() => {
 		switch (context.stateGame.bonusMode) {
 			case 'freegame':
-				return 'bonusNormalBgVideo';
+				return 'bonusNormalBackground';
 			case 'superspin':
-				return 'bonusSuperBgVideo';
+				return 'bonusSuperBackground';
 			default:
-				// Mobile portrait/landscape use static art; desktop keeps the animated video.
-				return isPortrait ? 'visualPortrait' : isLandscape ? 'baseBgLandscape' : 'baseBgVideo';
+				return isPortrait ? 'visualPortrait' : isLandscape ? 'baseBgLandscape' : 'baseBackground';
 		}
 	});
-	// Chrome blocks muted autoplay until the first user gesture. The base video is active from
-	// mount (before any interaction) and a base-game spin doesn't change bonusMode, so without
-	// this the initial play() stays rejected and the base background freezes on frame 0. Flip a
-	// flag on the first gesture so the video-control effect below re-runs and retries play().
-	let interacted = $state(false);
-	$effect(() => {
-		if (interacted) return;
-		const onGesture = () => {
-			interacted = true;
-		};
-		window.addEventListener('pointerdown', onGesture, { once: true });
-		window.addEventListener('keydown', onGesture, { once: true });
-		window.addEventListener('touchstart', onGesture, { once: true });
-		return () => {
-			window.removeEventListener('pointerdown', onGesture);
-			window.removeEventListener('keydown', onGesture);
-			window.removeEventListener('touchstart', onGesture);
-		};
-	});
-
-	// Drive the animated bonus background videos: each loops + is muted, and plays only while its
-	// bonus mode is active (paused otherwise so they don't decode in the background).
-	$effect(() => {
-		const mode = context.stateGame.bonusMode;
-		interacted; // re-run after the first user gesture so a blocked play() gets retried
-		const videoOf = (k: string) =>
-			(context.stateApp.loadedAssets?.[k] as { source?: { resource?: HTMLVideoElement } } | undefined)
-				?.source?.resource;
-		for (const [key, active] of [
-			['bonusSuperBgVideo', mode === 'superspin'],
-			['bonusNormalBgVideo', mode === 'freegame'],
-			// A single-spin FEATURE round keeps the base background (backgroundKey's default case), but
-			// bonusMode is 'feature' throughout it and lingers until the next spin — so without 'feature'
-			// here the base forest video would sit PAUSED (frozen) during the feature and the idle after.
-			// Desktop only — mobile portrait/landscape now render static art, so the base video needn't decode.
-			['baseBgVideo', (mode === null || mode === 'feature') && !isPortrait && !isLandscape],
-		] as const) {
-			const video = videoOf(key);
-			if (!video || typeof video.play !== 'function') continue;
-			video.loop = true;
-			video.muted = true;
-			video.playsInline = true;
-			if (active) void video.play().catch(() => {});
-			else video.pause();
-		}
-	});
-
 	const aspect = $derived(
 		isPortraitBase ? PORTRAIT_ASPECT : isLandscapeBase ? LANDSCAPE_ASPECT : BACKGROUND_ASPECT,
 	);
@@ -120,5 +72,6 @@
 	 which read as a dark top (especially returning from the brighter bonus background). The sunbeam
 	 itself frames the logo, and the logo art has its own outline, so no vignette is needed. -->
 
-<Rectangle {...stage} backgroundColor={0x050407} alpha={0.2} zIndex={-2} />
-<Rectangle {...stage} backgroundColor={0x000000} alpha={0.18} zIndex={-1} />
+<!-- Single light veil: the redesign backgrounds are bright by design; the old 0.2+0.18
+     double overlay muddied them and read as a dark band over the lower vignette. -->
+<Rectangle {...stage} backgroundColor={0x050407} alpha={0.08} zIndex={-2} />

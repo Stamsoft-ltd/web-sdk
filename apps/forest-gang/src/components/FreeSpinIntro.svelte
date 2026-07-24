@@ -23,7 +23,13 @@
 
 	const context = getContext();
 	const t = (key: string) => stateI18nDerived.translate(key);
-	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	const layoutType = $derived(context.stateLayoutDerived.layoutType());
+	const isPortrait = $derived(layoutType === 'portrait');
+	// Everything except mobile landscape draws the press line BELOW the board (in the glow ledge),
+	// like portrait — the wooden panel is fully opaque planks with the spine leaf-frame overlaying
+	// the bottom band, so any in-panel press line reads as sitting "on the background". Only mobile
+	// landscape keeps the in-panel copy (below-board placement collides with its side rails).
+	const isLandscape = $derived(layoutType === 'landscape');
 	// Animated scatter medallion (seamless loop; falls back to the static sprite until loaded).
 	const medallionFrames = $derived(
 		(context.stateApp.loadedAssets?.fsMedallionAnim ?? []) as Texture[],
@@ -237,6 +243,12 @@
 				style={textStyle(Math.round(BW * L.fsF), 0x7cc23f)}
 				y={Math.round(BW * L.fsY)}
 			/>
+			{#if isLandscape}
+				<!-- Mobile landscape only: press text in PANEL space so it tracks the board and clears
+				     the side rails. All other layouts draw it BELOW the board instead (see
+				     PressToContinue), so it sits in the glow ledge rather than over the wooden planks. -->
+				<PressAnywhereText y={Math.round(BW * 0.45)} fontSize={Math.round(BW * 0.032)} />
+			{/if}
 			</Container>
 
 			<!-- CONGRATULATIONS! (gold) drops in from the top, then pulses in place — on a gentle arc. -->
@@ -251,14 +263,11 @@
 				</Container>
 			</Container>
 
-			<!-- Anchored to the board so it always sits just below its bottom edge, clear of
-			     the leaves and the HTML HUD regardless of window shape. -->
-			{#if !isPortrait}
-				<PressAnywhereText y={Math.round(BW * 0.585)} fontSize={Math.round(BW * 0.042)} />
-			{/if}
 			</Container>
 		{/snippet}
 	</FreeSpinAnimation>
 
-	<PressToContinue showText={isPortrait} onpress={() => oncomplete()} />
+	<!-- Every layout except mobile landscape draws the canvas-anchored press text below the board
+	     (in the glow ledge); landscape draws it in panel space (above) to clear its side rails. -->
+	<PressToContinue onpress={() => oncomplete()} showText={!isLandscape} />
 </FadeContainer>

@@ -19,6 +19,7 @@ import {
 	SPIN_OPTIONS_FAST,
 	SPIN_OPTIONS_TURBO,
 	SPIN_OPTIONS_ANTICIPATED,
+	SPIN_OPTIONS_ANTICIPATED_BOUGHT,
 	INITIAL_SYMBOL_STATE,
 	SCATTER_LAND_SOUND_MAP,
 } from './constants';
@@ -72,7 +73,11 @@ const board = _.range(BOARD_DIMENSIONS.x).map((reelIndex) => {
 		}
 
 		if (reel.reelState.spinType === 'anticipated') {
-			return stateGame.bonusMode ? SPIN_OPTIONS_DEFAULT : SPIN_OPTIONS_ANTICIPATED;
+			if (stateGame.bonusMode) return SPIN_OPTIONS_DEFAULT;
+			// Bought rounds (Deal It / All In): the outcome is known, so run the anticipation at
+			// half length — activeBetModeKey stays BONUS/SUPER for the whole bought round.
+			const isBoughtRound = ['BONUS', 'SUPER'].includes(String(stateBet.activeBetModeKey));
+			return isBoughtRound ? SPIN_OPTIONS_ANTICIPATED_BOUGHT : SPIN_OPTIONS_ANTICIPATED;
 		}
 
 		return SPIN_OPTIONS_DEFAULT;
@@ -129,7 +134,7 @@ const getBoardViewportPadding = () => {
 	// gap above the HUD; normal desktops keep 172. The bonus rail is re-anchored to the right edge in
 	// `bonusRailAdjust` so the enlarged board doesn't push it off-screen.
 	const shortCanvas = stateLayoutDerived.canvasSizes().height < 640;
-	return { top: 108, right: 220, bottom: shortCanvas ? 128 : 172, left: 208 };
+	return { top: 76, right: 220, bottom: shortCanvas ? 118 : 150, left: 208 };
 };
 
 const getBoardViewportMetrics = () => {
@@ -163,13 +168,14 @@ const getBoardOffset = () => {
 	const { mainLayout, canvasSizes, padding, availableCanvasHeight, availableCanvasWidth } =
 		getBoardViewportMetrics();
 	const layoutType = stateLayoutDerived.layoutType();
-	const extraLeftShiftPx = layoutType === 'desktop' ? 75 : layoutType === 'landscape' ? 55 : 0;
+	// Desktop shifts zeroed: the legacy ±px pair biased the frame off true centre.
+	const extraLeftShiftPx = layoutType === 'landscape' ? 55 : 0;
 	const centeredCanvasX = padding.left + availableCanvasWidth * 0.5 - canvasSizes.width * 0.5;
 	const centeredCanvasY = padding.top + availableCanvasHeight * 0.5 - canvasSizes.height * 0.5;
 	// extraLeftShiftPx (75) and shiftRightPx cancel → board sits centred in the
 	// padded area. Lower shiftRightPx to nudge the whole board left.
 	// Portrait has no left-shift to cancel, so it must not shift right either.
-	const shiftRightPx = layoutType === 'portrait' ? 0 : 90;
+	const shiftRightPx = layoutType === 'landscape' ? 90 : 0;
 	const shiftDownPx = layoutType === 'portrait' ? 0 : 10;
 
 	return {
@@ -188,7 +194,7 @@ const _FRAME_ANCHOR_Y = 0.502; // grid centre y as a fraction of frameH (tuned s
 // top log equals the bottom gap to the bottom log — the drawn frame's V_SQUASH raised the bottom log,
 // so the grid needed to move up to stay centred between the two logs)
 const _FRAME_EXTRA_SCALE = 1.30 / 1.27;
-const PORTRAIT_FRAME_FILL = 1.0; // portrait: mobile frame fills the full canvas width
+const PORTRAIT_FRAME_FILL = 1.048; // portrait: board slightly overfills width so the frame's side rails bleed off-screen (no forest margin)
 const PORTRAIT_TOP_OFFSET = 236; // portrait: push frame down from the top (main-layout units)
 // Mobile board frame (board_frame_mobile.png) — full width, top/bottom borders only.
 // Fractions of the drawn frame the reel grid occupies. Mirrored in BoardFrame.svelte.
@@ -197,8 +203,8 @@ const MOBILE_FRAME_INNER_H = 0.78;
 
 // Mobile-landscape reserves a bottom control strip + side rails (Figma 2682-3639) and
 // centres the reel grid in the remaining play area. Desktop/portrait are unaffected.
-const LS_PANEL_TOP = 88;   // where the inner wood panel (reel area) begins — near the top
-const LS_BOTTOM_BAR = 66;  // gap below the frame for the bet pad
+const LS_PANEL_TOP = 22;   // where the inner wood panel (reel area) begins — near the top
+const LS_BOTTOM_BAR = 62;  // gap below the frame for the bet pad
 const LS_LEFT_RAIL = 150;
 const LS_RIGHT_RAIL = 120;
 // reel_frame.png cropped to opaque bounds (2121×1638). The rope hangs from the top ~25% of the
@@ -283,21 +289,26 @@ const boardLayout = () => {
 		};
 	}
 
-	const boardScale = getBoardScale() * 0.81 * 1.27;
-	// Spread the columns a touch wider than the symbol size so the outer reels sit closer to the
-	// frame edges (less L/R padding, matching Figma). Board.svelte compensates symbol width so the
-	// symbols themselves stay undistorted — only the reel pitch widens.
-	const H_SPREAD = 1.06;
-	// Tighten the vertical reel pitch so the rows sit closer together (less dead space between
-	// rows). Symbols keep their size — only the row-to-row spacing shrinks.
-	const V_TIGHTEN = 0.93;
-	// Frame top is pinned to canvas y=0; inner panel centre is at ANCHOR_Y × frameH
-	const frameW =
-		(BOARD_SIZES.width * boardScale * _FRAME_MARGIN * _FRAME_EXTRA_SCALE) / _FRAME_INNER_W_FRAC;
-	const frameH = frameW * _FRAME_ASPECT_H_W;
+	// Redesign: the board reads much larger — roughly from the BUY BONUS button to the spin
+	// button (see Figma 3449-1334). Wider reel pitch (H_SPREAD, symbols stay undistorted) plus a
+	// bigger overall scale; the frame is sized/centred from the new-frame interior fractions
+	// (kept in sync with BoardFrame.svelte). The ×1.1 is the "whole board 10% bigger" ask —
+	// BoardFrame derives its size from these scale values, so grid + frame grow together.
+	const boardScale = getBoardScale() * 1.05;
+	const H_SPREAD = 1.12;
+	const V_TIGHTEN = 0.95;
+	// Panel fractions measured from board_frame_desktop.webp (mirrors BoardFrame.svelte):
+	// y 0.040..0.947 — the old 0.03..0.95 box sat high, leaving extra space at the bottom rail.
+	const NEW_INNER_W = 0.961 - 0.034;
+	const NEW_INNER_H = 0.947 - 0.04;
+	const NEW_INNER_CY = (0.947 + 0.04) / 2;
+	// Margins 1.004 / 1.004 mirror BoardFrame.svelte — outer columns/rows sit ~1px from the rails.
+	const frameW = (BOARD_SIZES.width * boardScale * H_SPREAD * 1.004) / NEW_INNER_W;
+	const frameH = (BOARD_SIZES.height * boardScale * V_TIGHTEN * 1.004) / NEW_INNER_H;
+	const DESKTOP_TOP_GAP = 54;
 	return {
 		x: stateLayoutDerived.mainLayout().width * 0.5 + getBoardOffset().x,
-		y: frameH * _FRAME_ANCHOR_Y,
+		y: DESKTOP_TOP_GAP + frameH * NEW_INNER_CY,
 		frameTopY: 0,
 		frameCx: 0,
 		frameCy: 0,
@@ -332,24 +343,36 @@ const resetBonusState = () => {
 	stateGame.paylineSnap = false;
 };
 
-// On short/narrow desktop laptop canvases the board is enlarged (see getBoardViewportPadding), which
-// pushes the bonus side-rail (bonus symbol / multiplier / earned / FS counter) off the right edge.
-// This gives those panels a shrink factor + a leftward pull (board-local px) so they fit alongside the
-// bigger board. Returns identity everywhere else (normal desktop / portrait / landscape / tablet).
-const bonusRailAdjust = () => {
+// Desktop bonus side-rail (bonus symbol / multiplier / earned / global-multiplier / FS counter):
+// fit each panel into the strip between the board's right grid edge and the canvas right edge —
+// shrunk when the strip is narrow (laptop canvases used to push the rail off the right edge) and
+// horizontally centred in the strip. The components anchor their panel CENTRE at
+// (boardW + 40 + railAdj.x) inside BoardContainer, so railAdj.x re-targets that anchor to the
+// strip centre. Non-desktop layouts keep the identity transform (they have their own branches).
+const bonusRailAdjust = (panelW: number) => {
+	if (stateLayoutDerived.layoutType() !== 'desktop') return { scale: 1, x: 0 };
 	const cs = stateLayoutDerived.canvasSizes();
-	const isShortDesktop = stateLayoutDerived.layoutType() === 'desktop' && cs.height < 640;
-	if (!isShortDesktop) return { scale: 1, x: 0 };
-	// The rail panels are mounted OUTSIDE MainContainer, so BoardContainer positions them in raw
-	// canvas pixels: canvasX = bl.x + (localX - pivot.x) * boardScale. bl.x is a main-layout value
-	// (~half of 1422), which fits a wide 1920 canvas but lands off the right of a 1024 one. Re-anchor
-	// so the panel centre sits a fixed margin in from the canvas RIGHT edge. Returns the board-local x
-	// offset added to (boardW + 40) by the components.
+	const main = stateLayoutDerived.mainLayout();
 	const bl = boardLayout();
-	const scale = 0.65;
-	const RIGHT_MARGIN = 100; // canvas px from the right edge to the panel centre
-	const targetCanvasX = cs.width - RIGHT_MARGIN;
-	const targetLocalX = bl.pivot.x + (targetCanvasX - bl.x) / (bl.boardScale || 1);
+	const mScale = main.scale || 1;
+	const scl = bl.boardScale || 1;
+	// The reel grid renders inside MainContainer (design units → canvas via the centred,
+	// mScale'd container), while the panels' BoardContainer is mounted at the pixi ROOT and
+	// positions in raw canvas px. The two spaces differ, so map each side with its own transform.
+	const gridRightCanvas =
+		cs.width / 2 +
+		(bl.x + (bl.width - bl.pivot.x) * (bl.boardScaleX ?? scl) - main.width / 2) * mScale;
+	const stripW = Math.max(cs.width - gridRightCanvas, 0);
+	// Panel canvas width = panelW * componentScale * scl (BoardContainer's scale — no mScale).
+	// Fit the strip (0.86 fill keeps a margin) AND never exceed the desktop FS-counter card
+	// width (SYMBOL_SIZE*2*0.72 design px — FreeSpinCounter.svelte SIZE) so the whole rail
+	// reads as one matched set; floored at 0.5 so panels never vanish.
+	const fsCardCanvasW = SYMBOL_SIZE * 2.0 * 0.72 * mScale;
+	const fitScale = Math.min((stripW * 0.86) / Math.max(panelW * scl, 1), fsCardCanvasW / Math.max(panelW * scl, 1));
+	const scale = Math.min(1, Math.max(fitScale, 0.5));
+	// The strip centre, expressed as a BoardContainer-local x (raw canvas px space).
+	const stripCenterCanvasX = gridRightCanvas + stripW / 2;
+	const targetLocalX = bl.pivot.x + (stripCenterCanvasX - bl.x) / scl;
 	return { scale, x: targetLocalX - (bl.width + 40) };
 };
 
@@ -359,12 +382,15 @@ const bonusRailAdjust = () => {
 // column centre here.
 const landscapeRail = () => {
 	const main = stateLayoutDerived.mainLayout();
-	// Left edge — mirror the FreeSpinCounter card CSS (left: max(18px, calc(50% - 702px))).
-	const leftX = Math.max(18 / main.scale, main.width / 2 - 702 / main.scale);
 	// FS counter card width (SYMBOL_SIZE*2.0*0.96) — every rail panel scales its own frame to this so
 	// the symbol / multiplier / FS / earned boxes all render the same width.
 	const refWidth = SYMBOL_SIZE * 2.0 * 0.96;
-	const x = leftX + refWidth * 0.5; // column centre aligned to the FS card centre
+	// Column centred in the strip between the screen's left edge and the board frame's left
+	// edge (grid left + the desktop frame's ~8% side-rail overhang).
+	const bl = boardLayout();
+	const gridW = bl.width * (bl.boardScaleX ?? bl.boardScale);
+	const boardLeft = bl.x - (gridW / 2) * 1.08;
+	const x = boardLeft / 2;
 	const H = main.height;
 	return {
 		x,

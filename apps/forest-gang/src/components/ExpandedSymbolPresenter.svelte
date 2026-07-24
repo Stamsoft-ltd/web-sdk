@@ -14,7 +14,7 @@
 	import { MainContainer, CanvasSizeRectangle, OnPressFullScreen } from 'components-layout';
 	import { OnHotkey } from 'components-shared';
 	import { FadeContainer } from 'components-pixi';
-	import { anchorToPivot, AnimatedSprite, Container, Sprite } from 'pixi-svelte';
+	import { anchorToPivot, AnimatedSprite, Container, Graphics, Sprite } from 'pixi-svelte';
 	import type { Texture } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
@@ -26,13 +26,14 @@
 	// from the bottom; desktop uses deer_presenter.png (1087×1447, clean transparent bg — the
 	// previous art had a baked cream halo that read as a cut glow) and zooms in centred.
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
 	const deerKey = $derived(isPortrait ? 'deerPresenterMobile' : 'deerPresenter');
 	// Animated deer (background-removed video frames) — now used in BOTH orientations when loaded;
 	// only falls back to the static full-body sprite if the frames aren't ready.
 	const deerFrames = $derived((context.stateApp.loadedAssets?.deerPresenterAnim ?? []) as Texture[]);
 	const useAnimDeer = $derived(deerFrames.length > 0);
 	const MOBILE_RATIO = 360 / 730;
-	const ANIM_RATIO = 273 / 444; // animated frame aspect (measured)
+	const ANIM_RATIO = 300 / 500; // animated frame aspect (measured — new deer sheet)
 	// Portrait: the deer's bottom rests ON the HTML HUD bar (rising from behind it), not floating in
 	// mid-air. The bar's top is computed from the canvas bottom minus the HUD block (bar 0.15u +
 	// gap 6 + stats ≈0.132u + 10px padding, u = the HUD unit), then converted into main-layout
@@ -42,8 +43,25 @@
 		const ml = context.stateLayoutDerived.mainLayout();
 		const u = Math.min(412, canvas.width * 0.97);
 		const hudH = u * 0.282 + 16; // bar + gap + stats + bottom padding (matches HudHtml --u CSS)
-		const screenY = canvas.height - hudH + 10; // slight overlap so the dress meets the wood
+		// Anchor to the GAME-AREA bottom, not the full canvas: when the canvas is letterboxed the
+		// HTML HUD sits at the game-area bottom (above the bottom letterbox), so using canvas.height
+		// dropped the deer's feet past the bar into the letterbox. gameBottom = top offset + game height.
 		const offset = (canvas.height - ml.height * ml.scale) / 2;
+		const gameBottom = offset + ml.height * ml.scale;
+		const screenY = gameBottom - hudH + 10; // slight overlap so the dress meets the wood
+		return (screenY - offset) / (ml.scale || 1);
+	});
+	// Desktop: rest the deer's feet on the TOP of the wooden HUD bar (not the game-area bottom, which
+	// let her dress sink below/behind the bar). Bar height = 176·u (36 top pad + 104 nav + 36 bottom
+	// pad, matching HudHtml's --u), placed relative to the game-area bottom so letterbox is handled.
+	const desktopDeerBottomY = $derived.by(() => {
+		const canvas = context.stateLayoutDerived.canvasSizes();
+		const ml = context.stateLayoutDerived.mainLayout();
+		const u = Math.min(1860, canvas.width * 0.97) / 1860;
+		const hudH = u * 176 + 8; // bar body + hud-shell bottom padding
+		const offset = (canvas.height - ml.height * ml.scale) / 2;
+		const gameBottom = offset + ml.height * ml.scale;
+		const screenY = gameBottom - hudH + 10; // slight overlap so the feet tuck behind the bar top
 		return (screenY - offset) / (ml.scale || 1);
 	});
 	const DEER_RATIO = $derived(useAnimDeer ? ANIM_RATIO : isPortrait ? MOBILE_RATIO : 1087 / 1447);
@@ -75,16 +93,18 @@
 				// Portrait animated deer: sized to fill, then scaled to 70% (30% smaller per request);
 				// rises from the bottom like the static mobile deer did.
 				? Math.min(main.height * 0.9, (main.width * 0.98) / ANIM_RATIO) * 0.7
-				: Math.min(main.height * 0.82, main.width * 0.9)
+				// Desktop: 75% of the fill size (smaller per request — the full-size deer
+				// dominated the screen; board + symbol scale down with it).
+				: Math.min(main.height * 0.82, main.width * 0.9) * 0.75
 			: isPortrait
 				? Math.min(main.height * 0.92, (main.width / MOBILE_RATIO) * 0.98)
-				: Math.min(main.height * 0.92, main.width * 0.62),
+				: Math.min(main.height * 0.92, main.width * 0.62) * 0.75,
 	);
 	const deerW = $derived(deerH * DEER_RATIO);
 
 	// Symbols the board rolls through before landing on the chosen one.
 	const ALL_SYMBOLS: SymbolName[] = ['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL', 'A', 'K', 'Q', 'J', 'T'];
-	const ROLL_MS = 1300;
+	const ROLL_MS = 600;
 
 	let show = $state(false);
 	// displaySymbol cycles during the roll, then settles on the real symbol.
@@ -105,6 +125,21 @@
 		BEAR: 360 / 327,
 		RABBIT: 284 / 360,
 	};
+	// Bust framing (mirrors BonusSymbolPanel / Board IDLE_BUST): zoom the full-body idle cutout
+	// onto the face so the deer's board shows the same close-up portrait as the side panel card,
+	// masked to the board interior (top opens up so ears can poke above the rail).
+	const IDLE_BUST: Partial<Record<SymbolName, { zoom: number; yOff: number; xOff: number }>> = {
+		WOLF: { zoom: 1.45, yOff: 0.097, xOff: 0 },
+		FOX: { zoom: 1.5, yOff: 0.11, xOff: 0 },
+		SQUIRREL: { zoom: 1.65, yOff: 0.157, xOff: -0.03 },
+		BEAR: { zoom: 1.35, yOff: 0.098, xOff: 0 },
+		RABBIT: { zoom: 1.65, yOff: 0.102, xOff: 0 },
+	};
+	// Board-interior mask geometry, derived from the BonusSymbolPanel ratios (inner panel is
+	// ~1.5:1, the bust sprite is ~1.08× the interior height before its per-animal zoom).
+	const BUST_INNER_ASPECT = 1.5;
+	const BUST_TOP_OVERFLOW = 0.3;
+	const BUST_SYM_FRAC = 1.08;
 	const displayIdle = $derived(
 		displaySymbol && IDLE_ANIM_KEY[displaySymbol]
 			? ((context.stateApp.loadedAssets?.[IDLE_ANIM_KEY[displaySymbol]!] ?? []) as Texture[])
@@ -116,9 +151,8 @@
 	const letterH = $derived(deerH * PLACEHOLDER.h * symScale(displaySymbol));
 	const letterW = $derived(letterH * LETTER_ASPECT);
 
-	// Deer zooms + fades in (desktop) or rises from the bottom (portrait).
+	// Deer zoom-out entrance (both orientations).
 	let deerScale = new Tween(1);
-	let slideY = new Tween(0);
 	// Letter rotation (jiggle, after landing) and scale (settle pop on landing).
 	let rot = new Tween(0);
 	let sc = new Tween(1);
@@ -199,17 +233,11 @@
 			wiggling = false;
 			rot.set(0, { duration: 0 });
 			sc.set(1, { duration: 0 });
-			if (isPortrait) {
-				// deer rises up from the bottom
-				deerScale.set(1, { duration: 0 });
-				slideY.set(deerH, { duration: 0 });
-				slideY.set(0, { duration: 520, easing: backOut });
-			} else {
-				// deer zooms in from SMALL to full size with a springy settle
-				slideY.set(0, { duration: 0 });
-				deerScale.set(0.08, { duration: 0 });
-				deerScale.set(1, { duration: 560, easing: backOut });
-			}
+			// deer ZOOMS OUT in both orientations: appears oversized (close-up) and settles back to
+			// its resting size. Portrait keeps its bottom-centre anchor, so it scales down onto the
+			// HUD bar instead of floating.
+			deerScale.set(1.55, { duration: 0 });
+			deerScale.set(1, { duration: 520, easing: backOut });
 			// roll through symbols, then land on the chosen one
 			startRoll(emitterEvent.symbol);
 		},
@@ -226,7 +254,7 @@
 				holdTimer = setTimeout(() => {
 					closeResolve?.();
 					closeResolve = null;
-				}, 700) as unknown as number;
+				}, 400) as unknown as number;
 			});
 		},
 		// Space / tap (broadcast as stopButtonClick) lands the roll and ends the hold.
@@ -248,10 +276,21 @@
 	<MainContainer>
 		<Container
 			x={main.width / 2}
-			y={isPortrait ? portraitDeerBottomY + slideY.current : main.height / 2}
-			scale={isPortrait ? 1 : deerScale.current}
+			y={isPortrait
+				? portraitDeerBottomY
+				: context.stateLayoutDerived.layoutType() === 'desktop'
+					? desktopDeerBottomY
+					: (() => {
+							// No bottom bar in mobile landscape / tablet — the deer rises from behind the
+							// board's bottom rail: anchored at the GRID bottom (the rail's top edge), so
+							// her feet tuck behind the rail instead of dangling past the frame.
+							const bl = context.stateGameDerived.boardLayout();
+							const gridH = bl.height * (bl.boardScaleY ?? bl.boardScale);
+							return bl.y + gridH / 2;
+						})()}
+			scale={deerScale.current}
 			pivot={anchorToPivot({
-				anchor: isPortrait ? { x: 0.5, y: 1 } : 0.5,
+				anchor: { x: 0.5, y: 1 },
 				sizes: { width: deerW, height: deerH },
 			})}
 		>
@@ -274,17 +313,45 @@
 					scale={sc.current}
 					rotation={rot.current}
 				>
-					{#if displayIdle.length}
-						<AnimatedSprite
-							textures={displayIdle}
-							anchor={0.5}
-							height={letterH}
-							width={letterH * (IDLE_ASPECT[displaySymbol!] ?? 1)}
-							animationSpeed={0.28}
-							loop={true}
-							play={true}
+					{@const innerH = deerH * PLACEHOLDER.h}
+					{@const innerW = innerH * BUST_INNER_ASPECT}
+					<!-- The mask wrapper (and its Graphics) stay MOUNTED for the whole roll — the roll
+					     flips displaySymbol between animals and letters every few frames, and tearing the
+					     mask down with the branch left the wrapper pointing at a destroyed Graphics for a
+					     frame (PIXI: null context .uid crash in StencilMaskPipe). Only the sprites toggle. -->
+					<Container>
+						<Graphics
+							isMask
+							draw={(graphics) => {
+								graphics.clear();
+								graphics.beginFill(0xffffff);
+								graphics.rect(
+									-innerW / 2,
+									-innerH / 2 - innerH * BUST_TOP_OVERFLOW,
+									innerW,
+									innerH * (1 + BUST_TOP_OVERFLOW),
+								);
+								graphics.endFill();
+							}}
 						/>
-					{:else}
+						{#if displayIdle.length}
+							{@const bust = IDLE_BUST[displaySymbol!] ?? { zoom: 1, yOff: 0, xOff: 0 }}
+							{@const bustH = innerH * BUST_SYM_FRAC * bust.zoom}
+							<!-- Zoomed bust masked to the board interior — same close-up as the side panel card. -->
+							<AnimatedSprite
+								textures={displayIdle}
+								x={bust.xOff * innerW}
+								y={bustH * bust.yOff}
+								anchor={0.5}
+								height={bustH}
+								width={bustH * (IDLE_ASPECT[displaySymbol!] ?? 1)}
+								animationSpeed={0.28}
+								loop={true}
+								play={true}
+							/>
+						{/if}
+					</Container>
+					{#if !displayIdle.length}
 						<Sprite key={letterKey} anchor={0.5} width={letterW} height={letterH} />
 					{/if}
 				</Container>

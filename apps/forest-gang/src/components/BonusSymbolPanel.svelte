@@ -4,7 +4,7 @@
 </script>
 
 <script lang="ts">
-	import { BitmapText, Container, Sprite, AnimatedSprite } from 'pixi-svelte';
+	import { BitmapText, Container, Sprite, AnimatedSprite, Graphics } from 'pixi-svelte';
 	import type { Texture } from 'pixi-svelte';
 	import { FadeContainer } from 'components-pixi';
 	import { MainContainer } from 'components-layout';
@@ -44,24 +44,45 @@
 	});
 	// ±0.045 rad ≈ ±2.6° — a brisk rock, no scale/position change so the image never distorts.
 	const symTilt = $derived(Math.sin(animT * 5.5) * 0.045);
-	// Shrink + pull-in on short desktop laptop canvases so the rail fits alongside the enlarged board.
-	const railAdj = $derived(context.stateGameDerived.bonusRailAdjust());
 	// Mobile-landscape: the rail becomes a full-height LEFT column (rendered in MainContainer).
 	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+	// Desktop: SYMBOL sits in the RIGHT strip beside the board, aligned with the FREE SPINS card on the
+	// left (both render in MainContainer / main-layout units — see the two-margin design reference).
+	const isDesktop = $derived(context.stateLayoutDerived.layoutType() === 'desktop');
 	const lsRail = $derived(context.stateGameDerived.landscapeRail());
+
+	// FS card geometry (mirror FreeSpinCounter.svelte) so SYMBOL lines up with it across the board.
+	const FS_SIZE = 0.72;
+	const fsPanelW = SYMBOL_SIZE * 2.0 * FS_SIZE;
+	const fsPanelH = fsPanelW / (372 / 248);
+	const desktopMainPosition = $derived.by(() => {
+		const bl = context.stateGameDerived.boardLayout();
+		const main = context.stateLayoutDerived.mainLayout();
+		// Right strip centre between the board's right grid edge and the canvas right edge (mirror of
+		// the FreeSpinCounter / EARNED left strip).
+		// Right column inset from the strip centre. The multiplier board (below) renders ~0.4·SYMBOL_SIZE
+		// to the RIGHT of this same inset because its bear-hand sprite offsets the board; match that here
+		// so the SYMBOL board lines up vertically with the multiplier board.
+		const rightStripCenterX = (bl.x + bl.width * 0.522 * bl.boardScaleX + main.width) / 2 - SYMBOL_SIZE * 0.1;
+		// Align the SYMBOL panel centre with the FREE SPINS card centre.
+		const fsTopY = main.height * 0.03 + (main.width * 0.12) / (1176 / 572) + SYMBOL_SIZE * 0.15;
+		return { x: rightStripCenterX, y: fsTopY + fsPanelH * 0.5 };
+	});
 	const scale = $derived(
 		isLandscape
 			? lsRail.refWidth / PANEL_W
-			: (context.stateLayoutDerived.isStacked() ? 1.28 : 1) * railAdj.scale,
+			: isDesktop
+				? fsPanelW / PANEL_W // match the FREE SPINS / EARNED card width
+				: 1.28, // portrait / tablet stacked
 	);
 
 	const boardW = $derived(context.stateGameDerived.boardLayout().width);
 	const position = $derived(
 		isLandscape
 			? { x: lsRail.x, y: lsRail.symbolY }
-			: context.stateLayoutDerived.isStacked()
-				? { x: boardW - PANEL_W * 0.5 - 10, y: -SYMBOL_SIZE * 0.6 }
-				: { x: boardW + 40 + railAdj.x, y: SYMBOL_SIZE * 0.3 },
+			: isDesktop
+				? desktopMainPosition
+				: { x: boardW - PANEL_W * 0.5 - 10, y: -SYMBOL_SIZE * 0.6 },
 	);
 
 	const modeLabel = $derived(mode === 'superspin' ? 'ALL IN' : mode === 'feature' ? 'FEATURE' : 'DEAL IT');
@@ -118,6 +139,20 @@
 		BEAR: 360 / 327,
 		RABBIT: 284 / 360,
 	};
+	// Bust framing (mirrors Board.svelte IDLE_BUST) — zoom the full-body idle cutout onto the face so
+	// the panel shows the same close-up portrait as the main board, masked to the inner wood panel.
+	const IDLE_BUST: Partial<Record<SymbolName, { zoom: number; yOff: number; xOff: number }>> = {
+		WOLF: { zoom: 1.45, yOff: 0.097, xOff: 0 },
+		FOX: { zoom: 1.5, yOff: 0.11, xOff: 0 },
+		SQUIRREL: { zoom: 1.65, yOff: 0.157, xOff: -0.03 },
+		BEAR: { zoom: 1.35, yOff: 0.098, xOff: 0 },
+		RABBIT: { zoom: 1.65, yOff: 0.102, xOff: 0 },
+	};
+	// symbolPad inner wood panel (excludes the leaf corners / wood rails) — the zoomed bust is masked
+	// to this rect so it can't paint over the frame; the top opens up so ears can poke above the rail.
+	const PANEL_INNER_W = PANEL_W * 0.72;
+	const PANEL_INNER_H = PANEL_H * 0.70;
+	const PANEL_TOP_OVERFLOW = 0.3;
 	const displayIdle = $derived(
 		displaySymbol && IDLE_ANIM_KEY[displaySymbol]
 			? ((context.stateApp.loadedAssets?.[IDLE_ANIM_KEY[displaySymbol]!] ?? []) as Texture[])
@@ -140,11 +175,29 @@
 			{#if displaySymbol}
 				<Container x={PANEL_W * 0.5} y={PANEL_H * 0.5} rotation={symTilt}>
 					{#if displayIdle.length}
+						{@const bust = IDLE_BUST[displaySymbol!] ?? { zoom: 1, yOff: 0, xOff: 0 }}
+						{@const idleH = SYM_SIZE * bust.zoom}
+						<!-- Zoomed bust masked to the inner wood panel (top opens up for ears), same as the board. -->
+						<Graphics
+							isMask
+							draw={(graphics) => {
+								graphics.beginFill(0xffffff);
+								graphics.rect(
+									-PANEL_INNER_W / 2,
+									-PANEL_INNER_H / 2 - PANEL_INNER_H * PANEL_TOP_OVERFLOW,
+									PANEL_INNER_W,
+									PANEL_INNER_H * (1 + PANEL_TOP_OVERFLOW),
+								);
+								graphics.endFill();
+							}}
+						/>
 						<AnimatedSprite
 							textures={displayIdle}
+							x={bust.xOff * PANEL_INNER_W}
+							y={idleH * bust.yOff}
 							anchor={{ x: 0.5, y: 0.5 }}
-							height={SYM_SIZE}
-							width={SYM_SIZE * (IDLE_ASPECT[displaySymbol!] ?? 1)}
+							height={idleH}
+							width={idleH * (IDLE_ASPECT[displaySymbol!] ?? 1)}
 							animationSpeed={0.28}
 							loop={true}
 							play={true}
@@ -163,7 +216,7 @@
 	</FadeContainer>
 {/snippet}
 
-{#if isLandscape}
+{#if isLandscape || isDesktop}
 	<MainContainer>{@render panel()}</MainContainer>
 {:else}
 	<BoardContainer>{@render panel()}</BoardContainer>

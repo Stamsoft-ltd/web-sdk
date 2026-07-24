@@ -8,7 +8,12 @@ const assets = {
 		type: 'sprite',
 		src: './assets/components/backgrounds/bg_mobile_portrait.webp?v=20260722',
 	},
-	// Mobile-landscape base background (static forest art; desktop keeps the animated baseBgVideo).
+	// New-design desktop base background (static forest; replaced the looping video).
+	baseBackground: {
+		type: 'sprite',
+		src: './assets/components/backgrounds/base_bg.webp?v=20260723c',
+	},
+	// Mobile-landscape base background (static forest art).
 	baseBgLandscape: {
 		type: 'sprite',
 		src: './assets/components/backgrounds/bg_mobile_landscape.webp?v=20260722',
@@ -19,36 +24,23 @@ const assets = {
 		type: 'sprite',
 		src: './assets/components/backgrounds/portrait_shadow.webp?v=20260722',
 	},
+	// New-design bonus backgrounds (static art replaced the looping videos in the redesign).
 	bonusNormalBackground: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bonus_normal_bg.webp?v=20260722',
+		src: './assets/components/backgrounds/dealit_bg.webp?v=20260723c',
 	},
 	bonusSuperBackground: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bonus_super_bg.webp?v=20260722',
-	},
-	// Animated bonus backgrounds (video textures; looped/played on demand in Background.svelte).
-	bonusSuperBgVideo: {
-		type: 'sprite',
-		src: './assets/components/backgrounds/superbonus_background_v2.mp4',
-	},
-	bonusNormalBgVideo: {
-		type: 'sprite',
-		src: './assets/components/backgrounds/normalbonus_background_v2.mp4',
-	},
-	baseBgVideo: {
-		type: 'sprite',
-		// NOTE: videos are cache-busted by RENAMING (not ?v= query) — a query string after .mp4 breaks
-		// PIXI's loader-parser match, the load rejects, and the main gate never opens (stuck at 100%).
-		src: './assets/components/backgrounds/basegame_background_v2.mp4',
+		src: './assets/components/backgrounds/allin_bg.webp?v=20260723c',
 	},
 	logoFrame: {
 		type: 'sprite',
 		src: './assets/components/frames/logo_frame.webp?v=20260722',
 	},
-	slotPad: {
+	// New-design desktop board frame (rounded log frame + dark wood interior).
+	boardFrameDesktop: {
 		type: 'sprite',
-		src: './assets/components/frames/slot_pad.webp?v=20260722',
+		src: './assets/components/frames/board_frame_desktop.webp?v=20260723',
 	},
 	slotPadMobile: {
 		type: 'sprite',
@@ -95,20 +87,20 @@ const assets = {
 		src: './assets/components/ui/scatter-panel-image.webp?v=20260722',
 	},
 	reelDivider: { type: 'sprite', src: './assets/components/frames/reel_divider.webp?v=20260722' },
-	aTile: { type: 'sprite', src: './assets/components/symbols/card_a.webp?v=20260722' },
+	aTile: { type: 'sprite', src: './assets/components/symbols/card_a.webp?v=20260723' },
 	aWinTile: { type: 'sprite', src: './assets/components/symbols/card_a_win.webp?v=20260722' },
-	kTile: { type: 'sprite', src: './assets/components/symbols/card_k.webp?v=20260722' },
+	kTile: { type: 'sprite', src: './assets/components/symbols/card_k.webp?v=20260723' },
 	kWinTile: { type: 'sprite', src: './assets/components/symbols/card_k_win.webp?v=20260722' },
-	qTile: { type: 'sprite', src: './assets/components/symbols/card_q.webp?v=20260722' },
+	qTile: { type: 'sprite', src: './assets/components/symbols/card_q.webp?v=20260723' },
 	qWinTile: { type: 'sprite', src: './assets/components/symbols/card_q_win.webp?v=20260722' },
-	jTile: { type: 'sprite', src: './assets/components/symbols/card_j.webp?v=20260722' },
+	jTile: { type: 'sprite', src: './assets/components/symbols/card_j.webp?v=20260723' },
 	jWinTile: { type: 'sprite', src: './assets/components/symbols/card_j_win.webp?v=20260722' },
-	tTile: { type: 'sprite', src: './assets/components/symbols/card_t.webp?v=20260722' },
+	tTile: { type: 'sprite', src: './assets/components/symbols/card_t.webp?v=20260723' },
 	tWinTile: { type: 'sprite', src: './assets/components/symbols/card_t_win.webp?v=20260722' },
-	wildTile: { type: 'sprite', src: './assets/components/symbols/wild.webp?v=20260722' },
-	wildWinTile: { type: 'sprite', src: './assets/components/symbols/wild.webp?v=20260722' },
-	scatterCustom: { type: 'sprite', src: './assets/components/symbols/scatter.webp?v=20260722' },
-	scatterWin: { type: 'sprite', src: './assets/components/symbols/scatter.webp?v=20260722' },
+	wildTile: { type: 'sprite', src: './assets/components/symbols/wild_v2.webp?v=20260723' },
+	wildWinTile: { type: 'sprite', src: './assets/components/symbols/wild_v2.webp?v=20260723' },
+	scatterCustom: { type: 'sprite', src: './assets/components/symbols/scatter_v2.webp?v=20260723' },
+	scatterWin: { type: 'sprite', src: './assets/components/symbols/scatter_v2.webp?v=20260723' },
 	foxTile:      { type: 'sprite', src: './assets/components/symbols/fox.webp?v=20260722' },
 	wolfTile:     { type: 'sprite', src: './assets/components/symbols/wolf.webp?v=20260722' },
 	bearTile:     { type: 'sprite', src: './assets/components/symbols/bear.webp?v=20260722' },
@@ -124,15 +116,15 @@ const assets = {
 	rabbitWinTile: { type: 'sprite', src: './assets/components/symbols/rabbit.webp?v=20260722' },
 	squirrelBonusTile: { type: 'sprite', src: './assets/components/symbols/squirrel.webp?v=20260722' },
 	squirrelWinTile: { type: 'sprite', src: './assets/components/symbols/squirrel.webp?v=20260722' },
-	aExpTile: { type: 'sprite', src: './assets/components/symbols/card_a.webp?v=20260722' },
+	aExpTile: { type: 'sprite', src: './assets/components/symbols/card_a.webp?v=20260723' },
 	aWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_a_win.webp?v=20260722' },
-	kExpTile: { type: 'sprite', src: './assets/components/symbols/card_k.webp?v=20260722' },
+	kExpTile: { type: 'sprite', src: './assets/components/symbols/card_k.webp?v=20260723' },
 	kWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_k_win.webp?v=20260722' },
-	qExpTile: { type: 'sprite', src: './assets/components/symbols/card_q.webp?v=20260722' },
+	qExpTile: { type: 'sprite', src: './assets/components/symbols/card_q.webp?v=20260723' },
 	qWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_q_win.webp?v=20260722' },
-	jExpTile: { type: 'sprite', src: './assets/components/symbols/card_j.webp?v=20260722' },
+	jExpTile: { type: 'sprite', src: './assets/components/symbols/card_j.webp?v=20260723' },
 	jWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_j_win.webp?v=20260722' },
-	tExpTile: { type: 'sprite', src: './assets/components/symbols/card_t.webp?v=20260722' },
+	tExpTile: { type: 'sprite', src: './assets/components/symbols/card_t.webp?v=20260723' },
 	tWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_t_win.webp?v=20260722' },
 	foxExpTile: { type: 'sprite', src: './assets/components/symbols/fox_expand.webp?v=20260722' },
 	foxExpWinTile: { type: 'sprite', src: './assets/components/symbols/fox_expand.webp?v=20260722' },
@@ -145,11 +137,11 @@ const assets = {
 	squirrelExpTile: { type: 'sprite', src: './assets/components/symbols/squirrel_expand.webp?v=20260722' },
 	squirrelExpWinTile: { type: 'sprite', src: './assets/components/symbols/squirrel_expand.webp?v=20260722' },
 	// --- Mobile-landscape symbol art (used only when layoutType() === 'landscape') ---
-	aTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_a.webp?v=20260722' },
-	kTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_k.webp?v=20260722' },
-	qTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_q.webp?v=20260722' },
-	jTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_j.webp?v=20260722' },
-	tTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_t.webp?v=20260722' },
+	aTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_a.webp?v=20260723' },
+	kTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_k.webp?v=20260723' },
+	qTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_q.webp?v=20260723' },
+	jTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_j.webp?v=20260723' },
+	tTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_t.webp?v=20260723' },
 	aWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_a_win.webp?v=20260722' },
 	kWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_k_win.webp?v=20260722' },
 	qWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_q_win.webp?v=20260722' },
@@ -173,11 +165,11 @@ const assets = {
 	navBarLs:      { type: 'sprite', src: './assets/components/symbols/landscape/right_bar.webp?v=20260722' },
 	buyBonusLs:    { type: 'sprite', src: './assets/components/symbols/landscape/buy_bonus.webp?v=20260722' },
 	// Win boards — preloaded so board escalation during count-up doesn't stall
-	sweetWinBoard:     { type: 'sprite', src: './assets/components/win_boards/sweet_win_fig.webp?v=20260722' },
-	wildWinBoard:      { type: 'sprite', src: './assets/components/win_boards/big_win_fig.webp?v=20260722' },
-	epicWinBoard:      { type: 'sprite', src: './assets/components/win_boards/epic_win_fig.webp?v=20260722' },
-	mythicWinBoard:    { type: 'sprite', src: './assets/components/win_boards/mega_win_fig.webp?v=20260722' },
-	legendaryWinBoard: { type: 'sprite', src: './assets/components/win_boards/max_win_fig.webp?v=20260722' },
+	sweetWinBoard:     { type: 'sprite', src: './assets/components/win_boards/sweet_win_fig.webp?v=20260724' },
+	wildWinBoard:      { type: 'sprite', src: './assets/components/win_boards/big_win_fig.webp?v=20260724' },
+	epicWinBoard:      { type: 'sprite', src: './assets/components/win_boards/epic_win_fig.webp?v=20260724' },
+	mythicWinBoard:    { type: 'sprite', src: './assets/components/win_boards/mega_win_fig.webp?v=20260724' },
+	legendaryWinBoard: { type: 'sprite', src: './assets/components/win_boards/max_win_fig.webp?v=20260724' },
 	maxWinScreen:      { type: 'sprite', src: './assets/components/win_boards/max_win_screen.webp?v=20260722' },
 	// Golden P mark pulsing on the win boards' gem medallion (Figma 3205-2090).
 	winEmblemP:        { type: 'sprite', src: './assets/components/win_boards/win_emblem_p.webp?v=20260722' },
@@ -230,23 +222,30 @@ const assets = {
 	// replaces the static fsMedallion on the free-spin intro/outro popups.
 	fsMedallionAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/fsMedallion/medallion_anim.json',
+		src: './assets/sprites/fsMedallion/medallion_anim_v2.json',
 	},
 	// Animated deer presenter (background-removed video frames; 41-frame loop) — replaces the
 	// static desktop deer on the expanded-symbol reveal.
 	deerPresenterAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/deerPresenterAnim/deer_anim.json',
+		src: './assets/sprites/deerPresenterAnim/deer_anim_v2.json',
 	},
-	// Animated WILD symbol (background-removed video frames; 40-frame loop) — plays on the reels.
+	// Animated WILD symbol (black-background video, luma-keyed + un-premultiplied; 40-frame
+	// clip, ping-ponged at runtime — generate_emblem_anim.py) — plays on the reels.
 	wildAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/wildAnim/wild_anim.json',
+		src: './assets/sprites/wildAnim/wild_anim_v3.json',
 	},
-	// Shared brown frame drawn behind every animal symbol (fox/wolf/bear/rabbit/squirrel).
+	// Animated SCATTER emblem (same pipeline as the WILD; 40-frame clip, ping-ponged). The
+	// free-spin popups keep their own fsMedallionAnim loop — this sheet is only for the reels.
+	scatterAnim: {
+		type: 'spriteSheet',
+		src: './assets/sprites/scatterAnim/scatter_anim.json',
+	},
+	// Shared wooden frame w/ forest scene, drawn behind every animal symbol (fox/wolf/bear/rabbit/squirrel).
 	animalBorder: {
 		type: 'sprite',
-		src: './assets/components/symbols/animal_border.webp?v=20260722',
+		src: './assets/components/symbols/animal_border.webp?v=20260723',
 	},
 	// Golden light column glow (2 KB) for the reel anticipation — smooth vertical plateau, feathered
 	// ends, thin god-ray streaks. Rendered additive. Small enough to keep in the main load tier.
@@ -346,11 +345,11 @@ const assets = {
 		src: './assets/sprites/squirrelMoney/squirrel_money.json?v=20260722',
 	},
 	// Board win-state card animations (upper-body window of the same videos, card border baked).
-	rabbitWinAnim:   { type: 'spriteSheet', src: './assets/sprites/rabbitWinNew/rabbit_win.json?v=20260722' },
-	bearWinAnim:     { type: 'spriteSheet', src: './assets/sprites/bearWinNew/bear_win.json?v=20260722' },
-	foxWinAnim:      { type: 'spriteSheet', src: './assets/sprites/foxWinNew/fox_win.json?v=20260722' },
-	wolfWinAnim:     { type: 'spriteSheet', src: './assets/sprites/wolfWinNew/wolf_win.json?v=20260722' },
-	squirrelWinAnim: { type: 'spriteSheet', src: './assets/sprites/squirrelWinNew/squirrel_win.json?v=20260722' },
+	rabbitWinAnim:   { type: 'spriteSheet', src: './assets/sprites/rabbitWinNew/rabbit_win_v2.json' },
+	bearWinAnim:     { type: 'spriteSheet', src: './assets/sprites/bearWinNew/bear_win_v2.json' },
+	foxWinAnim:      { type: 'spriteSheet', src: './assets/sprites/foxWinNew/fox_win_v2.json' },
+	wolfWinAnim:     { type: 'spriteSheet', src: './assets/sprites/wolfWinNew/wolf_win_v2.json' },
+	squirrelWinAnim: { type: 'spriteSheet', src: './assets/sprites/squirrelWinNew/squirrel_win_v2.json' },
 	// Cache-busted (?v=…) like the animal win anims — a stale/broken cached copy silently fails to
 	// load (AssetsLoader swallows the error), dropping the key so winning letters fall back to the
 	// old cracked static win tile instead of animating. The version query forces a fresh fetch.
@@ -375,7 +374,7 @@ const assets = {
 // Keep base-game essentials (symbols, base bg, board frame, HUD, sounds) OUT of this list.
 const DEFERRED_KEYS: readonly string[] = [
 	// Bonus backgrounds + entry/exit spine
-	'bonusSuperBgVideo', 'bonusNormalBgVideo', 'transition',
+	'transition',
 	// Deer reveal (bonus symbol picker)
 	'deerPresenter', 'deerPresenterMobile', 'deerPresenterAnim',
 	// Win-tier boards + emblem + big-win/global-multiplier spines
@@ -392,8 +391,8 @@ const DEFERRED_KEYS: readonly string[] = [
 	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
 	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
 	'tenWinAnim', 'aWinAnim', 'jWinAnim', 'kWinAnim', 'qWinAnim',
-	// Animated WILD (static wildTile renders until it arrives — same pattern as the idle blinks)
-	'wildAnim',
+	// Animated WILD + SCATTER (static tiles render until they arrive — same pattern as the idle blinks)
+	'wildAnim', 'scatterAnim',
 	// Bonus-only art: expanded-symbol reveal tiles/frame, free-spin popup sprites, big-win glow,
 	// and the static bonus backgrounds (posters under the deferred bonus videos)
 	'foxExpTile', 'foxExpWinTile', 'wolfExpTile', 'wolfExpWinTile', 'bearExpTile', 'bearExpWinTile',
@@ -411,15 +410,15 @@ for (const key of DEFERRED_KEYS) {
 // first (wave 0). Bonus-gated art (a bonus can't trigger for at least a few spins) goes last
 // (wave 2); the rest — big-win boards, free-spin popup art — takes the default wave 1.
 const DEFER_WAVE_0: readonly string[] = [
-	// Idle blinks + the animated WILD first — visible from the first settled board.
+	// Idle blinks + the animated WILD / SCATTER first — visible from the first settled board.
 	'wolfIdleAnim', 'foxIdleAnim', 'squirrelIdleAnim', 'bearIdleAnim', 'rabbitIdleAnim',
-	'wildAnim',
+	'wildAnim', 'scatterAnim',
 	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
 	'tenWinAnim', 'aWinAnim', 'jWinAnim', 'kWinAnim', 'qWinAnim',
 	'coins', 'pCoins',
 ];
 const DEFER_WAVE_2: readonly string[] = [
-	'bonusSuperBgVideo', 'bonusNormalBgVideo', 'transition',
+	'transition',
 	'bonusNormalBackground', 'bonusSuperBackground',
 	'deerPresenter', 'deerPresenterMobile', 'deerPresenterAnim',
 	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
@@ -451,8 +450,8 @@ const MOBILE_ONLY_KEYS: readonly string[] = [
 	'buyBonusLs',
 ];
 const DESKTOP_ONLY_KEYS: readonly string[] = [
-	// Desktop base background video (mobile portrait/landscape render static art)
-	'baseBgVideo',
+	// Desktop base background + board frame (mobile portrait/landscape have their own art)
+	'baseBackground', 'boardFrameDesktop',
 ];
 if (typeof window !== 'undefined') {
 	const w = window.innerWidth;

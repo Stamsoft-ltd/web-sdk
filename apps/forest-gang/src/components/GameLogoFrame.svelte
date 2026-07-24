@@ -18,10 +18,18 @@
 
 	const LOGO_ASPECT = 1176 / 572;
 	// Landscape uses a smaller logo than desktop.
-	const LOGO_W = $derived(main.width * (isLandscape ? 0.10 : 0.15));
+	const LOGO_W = $derived(main.width * (isLandscape ? 0.10 : 0.12));
 	const LOGO_H = $derived(LOGO_W / LOGO_ASPECT);
 	const MARGIN_X = $derived(main.width * 0.02);
 	const MARGIN_Y = $derived(main.height * 0.03);
+	// Desktop: centre the logo in the gap between the screen's left edge and the board frame's
+	// left edge (frame anchor x mirrors BoardFrame's INNER_CX).
+	const FRAME_INNER_CX = 0.4975;
+	const logoCx = $derived.by(() => {
+		const bl = context.stateGameDerived.boardLayout();
+		const frameLeft = bl.x - (bl.frameW || 0) * FRAME_INNER_CX;
+		return frameLeft > LOGO_W ? frameLeft / 2 : MARGIN_X + LOGO_W / 2;
+	});
 
 	// Studio logo, top-right corner.
 	const BRAND_ASPECT = 548 / 228;
@@ -220,11 +228,11 @@
 			</Container>
 		{/if}
 	{:else}
-		<!-- Text logo, anchored to the top-left corner of the game area -->
+		<!-- Text logo — centred between the left screen edge and the board frame (desktop) -->
 		<Sprite
 			key="forestGangLogo"
-			anchor={{ x: 0, y: 0 }}
-			x={MARGIN_X}
+			anchor={{ x: 0.5, y: 0 }}
+			x={isLandscape ? MARGIN_X + LOGO_W / 2 : logoCx}
 			y={MARGIN_Y}
 			width={LOGO_W}
 			height={LOGO_H}

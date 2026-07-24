@@ -35,25 +35,49 @@
 	const SLIDE = BOARD_W * 0.55;
 
 	const context = getContext();
-	// Shrink + pull-in on short desktop laptop canvases so the rail fits alongside the enlarged board.
-	const railAdj = $derived(context.stateGameDerived.bonusRailAdjust());
 	// Mobile-landscape: the rail becomes a full-height LEFT column (rendered in MainContainer).
 	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+	// Desktop: MULTIPLIER sits in the RIGHT strip beside the board, aligned with the EARNED card on the
+	// left (both render in MainContainer / main-layout units — see the two-margin design reference).
+	const isDesktop = $derived(context.stateLayoutDerived.layoutType() === 'desktop');
 	const lsRail = $derived(context.stateGameDerived.landscapeRail());
+
+	// FS + EARNED card geometry (mirror FreeSpinCounter / BonusEarnedPanel) so MULTIPLIER lines up with
+	// the EARNED card on the left.
+	const FS_SIZE = 0.72;
+	const fsPanelW = SYMBOL_SIZE * 2.0 * FS_SIZE;
+	const fsPanelH = fsPanelW / (372 / 248);
+	const EARN_H = BOARD_W * 0.76;
+	const desktopMainPosition = $derived.by(() => {
+		const bl = context.stateGameDerived.boardLayout();
+		const main = context.stateLayoutDerived.mainLayout();
+		// Same centre X as the symbol panel above (both boards' wood is fsPanelW wide and centred
+		// on the container origin, so equal centres give equal left edges — mirror its formula).
+		const rightStripCenterX = (bl.x + bl.width * 0.522 * bl.boardScaleX + main.width) / 2 - SYMBOL_SIZE * 0.1;
+		const fsTopY = main.height * 0.03 + (main.width * 0.12) / (1176 / 572) + SYMBOL_SIZE * 0.15;
+		const gap = SYMBOL_SIZE * 0.12;
+		// Mirror the LEFT column's spacing (design ask): the gap between the symbol panel above and
+		// this board's wood top equals the FREE SPINS → EARNED gap (gap + 0.35·SYMBOL_SIZE, see
+		// BonusEarnedPanel.desktopMainPosition). The symbol panel's box matches the FS card box
+		// (fsTopY + fsPanelH bottom), and the board wood is ~0.65·BOARD_W tall rendered at
+		// fsPanelW/BOARD_W scale — so its half-height in main units is 0.325·fsPanelW.
+		return {
+			x: rightStripCenterX,
+			y: fsTopY + fsPanelH + gap + SYMBOL_SIZE * 0.35 + fsPanelW * 0.325,
+		};
+	});
 	const scale = $derived(
 		isLandscape
 			? lsRail.refWidth / BOARD_W
-			: (context.stateLayoutDerived.isStacked() ? 1.28 : 1) * railAdj.scale,
+			: isDesktop
+				? fsPanelW / BOARD_W // match the FREE SPINS / EARNED card width
+				: 1.28, // portrait / tablet stacked
 	);
 
-	// Mirror BonusSymbolPanel geometry so the DealIt panel sits directly below it.
+	// Mirror BonusSymbolPanel geometry so the DealIt panel sits directly below it (portrait stacked).
 	const _symPadW = SYMBOL_W * 1.1;
 	const _symPadH = _symPadW * (420 / 624);
 	const boardW = $derived(context.stateGameDerived.boardLayout().width);
-	const desktopPosition = $derived({
-		x: boardW + 40 + railAdj.x,
-		y: SYMBOL_SIZE * 0.3 + _symPadH * 0.5 + 18 + 30,
-	});
 	const portraitPosition = $derived({
 		x: boardW - _symPadW * 0.5 - 10,
 		y: -SYMBOL_SIZE * 0.6 + _symPadH * 0.5 + 18 + 30,
@@ -61,9 +85,9 @@
 	const position = $derived(
 		isLandscape
 			? { x: lsRail.x, y: lsRail.multiplierY }
-			: context.stateLayoutDerived.isStacked()
-				? portraitPosition
-				: desktopPosition,
+			: isDesktop
+				? desktopMainPosition
+				: portraitPosition,
 	);
 
 	// This is the "ALL IN" bonus board (internally `freegame`/`feature` — the UI labels are the reverse
@@ -101,10 +125,10 @@
 		groupX.set(-SLIDE, { duration: 0 }); // start off to the left
 		numReveal.set(0, { duration: 0 }); // value hidden until the hand has landed
 		show = true; // FadeContainer fades it in
-		groupX.set(0, { duration: 320, easing: backOut }); // slide into place
+		groupX.set(0, { duration: 500, easing: backOut }); // slide into place (slower hand)
 		// Wait for slide-in to complete before accepting stop-button skips (prevents the same press
 		// that triggered forceStop from hiding the hand before the player can see it).
-		await waitForTimeout(320);
+		await waitForTimeout(500);
 		if (revealed) { readyToSkip = false; return; }
 		// Beat, then pop the value onto the empty board.
 		await waitForTimeout(120);
@@ -116,8 +140,8 @@
 		skipReveal = null;
 		readyToSkip = false;
 		if (revealed) return;
-		groupX.set(SLIDE, { duration: 240, easing: cubicIn }); // slide out to the right
-		await Promise.race([waitForTimeout(240), new Promise<void>((r) => { skipReveal = r; })]);
+		groupX.set(SLIDE, { duration: 380, easing: cubicIn }); // slide out to the right (slower hand)
+		await Promise.race([waitForTimeout(380), new Promise<void>((r) => { skipReveal = r; })]);
 		skipReveal = null;
 		if (revealed) return;
 		show = false; // FadeContainer fades it out
@@ -192,7 +216,7 @@
 		</Container>
 {/snippet}
 
-{#if isLandscape}
+{#if isLandscape || isDesktop}
 	<FadeContainer {show}>
 		<MainContainer>{@render panel()}</MainContainer>
 	</FadeContainer>

@@ -10,8 +10,8 @@
 	const cardBg       = ap('/assets/components/ui/bonus_card_bg.png');
 	const chanceIcon   = ap('/assets/components/ui/bonus_icon_chance.png');
 	const featureIcon  = ap('/assets/components/ui/bonus_icon_feature.png');
-	const allInIcon    = ap('/assets/components/ui/bonus_icon_allin.png');   // 3 coins
-	const dealItIcon   = ap('/assets/components/ui/bonus_icon_dealit.png');  // 4 coins
+	const allInIcon    = ap('/assets/components/ui/bonus_icon_allin.png?v=20260724');   // 3 emblems (DEAL IT card)
+	const dealItIcon   = ap('/assets/components/ui/bonus_icon_dealit.png?v=20260724');  // 4 emblems (ALL IN card)
 	// Bet readout + steppers reuse the navigation icons / round frame
 	const iconCoins    = ap('/assets/hud/icon-coins.png');
 	const iconMinus    = ap('/assets/hud/icon-minus.png');
@@ -235,8 +235,8 @@
 <!-- Confirm -->
 {#if confirmMode}
 	<button class="backdrop backdrop--z2" type="button" aria-label="Close" tabindex="-1" onclick={closeConfirm}></button>
-	<button class="confirm-close" type="button" onclick={closeConfirm} aria-label="Close">✕</button>
 	<div class="confirm" role="dialog" aria-modal="true">
+		<button class="confirm-close" type="button" onclick={closeConfirm} aria-label="Close">✕</button>
 		<div class="confirm-panel" style={`background-image:url('${confirmPanelBg}')`}>
 			<div class="confirm-content">
 				<div class="confirm-title">{i18nDerived.confirm()} {confirmLabel}</div>
@@ -364,7 +364,7 @@
 	}
 
 	.card-icon-wrap {
-		height: clamp(22px, 15cqw, 40px);
+		height: clamp(17px, 11cqw, 30px);
 		display: flex; align-items: center; justify-content: center;
 		flex-shrink: 0;
 	}
@@ -457,13 +457,15 @@
 	.step-btn:disabled { opacity: 0.45; cursor: default; }
 	.step-btn img { width: 44%; height: 44%; object-fit: contain; }
 
-	/* Confirm */
+	/* Confirm — mirrors BonusResumeModal: cqw-based inner sizing so the content scales with the
+	   panel (not the viewport), which keeps the 505:301 art aspect intact at every window size. */
 	.confirm-close {
-		position: fixed; top: 22px; right: 22px; z-index: 73;
-		width: 52px; height: 52px; border-radius: 50%;
-		border: 2px solid rgba(217, 133, 3, 0.7);
+		/* Sit just off the top-right corner — clear of the leaves but still attached to the panel. */
+		position: absolute; top: -6cqw; right: -6cqw; z-index: 73;
+		width: 11cqw; height: 11cqw; border-radius: 50%;
+		border: 0.45cqw solid rgba(217, 133, 3, 0.7);
 		background: radial-gradient(circle at 50% 35%, #3a2a16, #140d06);
-		color: #e8c878; font-size: 1.1rem; font-weight: 700;
+		color: #e8c878; font-size: 3.4cqw; font-weight: 700;
 		cursor: pointer; display: grid; place-items: center;
 		box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 		transition: filter 0.12s ease;
@@ -474,8 +476,23 @@
 		position: fixed; left: 50%; top: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 71;
-		width: min(680px, 94vw);
+		/* Desktop confirm was capped tiny (333px) — reads small on a wide canvas. Bigger cap so it
+		   matches the presence of the parent BUY BONUS modal; 46vw/74vh still bound it on small screens. */
+		width: min(560px, 46vw, 74vh);
 		font-family: 'Cinzel', serif;
+		/* All inner sizing is in cqw so the content scales with the panel, not the viewport. */
+		container-type: inline-size;
+	}
+	/* Portrait windows are narrow — 46vw reads tiny there; let the panel take most of the width. */
+	@media (orientation: portrait) {
+		.confirm { width: min(420px, 88vw); }
+		/* On the wide portrait panel (88vw) the desktop -10cqw pushed the close button off the right
+		   screen edge (clipped in half). Shrink it and pull it inward so it stays fully visible. */
+		.confirm-close {
+			top: -2cqw; right: -2cqw;
+			width: 8cqw; height: 8cqw;
+			border-width: 0.35cqw; font-size: 2.6cqw;
+		}
 	}
 
 	.confirm-panel {
@@ -490,12 +507,13 @@
 	.confirm-content {
 		width: 100%;
 		display: flex; flex-direction: column; align-items: center;
-		gap: clamp(14px, 2.6vw, 26px);
+		gap: 3.4cqw;
 		text-align: center;
 	}
 
 	.confirm-title {
-		font-weight: 900; font-size: clamp(1.4rem, 3.2vw, 2.1rem);
+		font-weight: 900; font-size: 4.7cqw;
+		white-space: nowrap;
 		letter-spacing: 0.06em;
 		background: linear-gradient(180deg, #ffd84a 10%, #ffa90e 60%, #d18005 95%);
 		-webkit-background-clip: text; background-clip: text;
@@ -503,16 +521,17 @@
 		text-shadow: 0 2px 6px rgba(0,0,0,0.5);
 	}
 	.confirm-text {
-		font-size: clamp(0.95rem, 2vw, 1.25rem); font-weight: 700;
+		font-size: 2.9cqw; font-weight: 700;
 		color: #fff; line-height: 1.45;
 		text-shadow: 0 2px 4px rgba(0,0,0,0.7);
 	}
-	.confirm-row { display: flex; gap: 16px; justify-content: center; width: 100%; }
+	.confirm-row { display: flex; gap: 2.4cqw; justify-content: center; width: 100%; }
 	.confirm-btn {
-		flex: 1 1 0; border-radius: 11px; padding: clamp(11px, 2vw, 16px);
-		font-family: 'Cinzel', serif; font-size: clamp(0.85rem, 1.7vw, 1.05rem); font-weight: 900;
+		flex: 1 1 0; border-radius: 1.6cqw; padding: 2.2cqw;
+		font-family: 'Cinzel', serif; font-size: 2.4cqw; font-weight: 900;
 		letter-spacing: 0.06em; cursor: pointer;
 		transition: filter 0.12s ease;
+		white-space: nowrap;
 	}
 	.confirm-btn:hover { filter: brightness(1.08); }
 	.confirm-btn--cancel {

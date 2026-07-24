@@ -32,23 +32,43 @@
 	const NUM_Y = BOARD_W * 0.012;
 	const SLIDE = BOARD_W * 0.55;
 	const context = getContext();
-	// Shrink + pull-in on short desktop laptop canvases so the rail fits alongside the enlarged board.
-	const railAdj = $derived(context.stateGameDerived.bonusRailAdjust());
+	// Shrink-to-fit + centred in the strip right of the board on desktop (see bonusRailAdjust).
+	const railAdj = $derived(context.stateGameDerived.bonusRailAdjust(BOARD_W));
 	// Mobile-landscape: the rail becomes a full-height LEFT column (rendered in MainContainer).
 	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+	// Desktop: the board sits in the RIGHT strip in MainContainer / main-layout units, mirroring
+	// BonusSymbolPanel / DealItMultiplierPanel — NOT BoardContainer, whose origin/scale drift
+	// with the viewport and pushed this board away from the symbol card on laptop windows.
+	const isDesktop = $derived(context.stateLayoutDerived.layoutType() === 'desktop');
 	const lsRail = $derived(context.stateGameDerived.landscapeRail());
+	// FS-card geometry (mirror FreeSpinCounter / BonusEarnedPanel) — shared width unit for the
+	// right-strip cards so this board matches the symbol panel above it.
+	const FS_SIZE = 0.72;
+	const fsPanelW = SYMBOL_SIZE * 2.0 * FS_SIZE;
+	const fsPanelH = fsPanelW / (372 / 248);
 	const scale = $derived(
 		isLandscape
-			? lsRail.refWidth / BOARD_W
-			: (context.stateLayoutDerived.isStacked() ? 1.28 : 1) * railAdj.scale,
+			? lsRail.refWidth / (BOARD_W * 1.02) // flat board wood spans its full sprite — normalise to the rail card width
+			: isDesktop
+				? fsPanelW / BOARD_W // match the FREE SPINS / EARNED / SYMBOL card width
+				: 1.28 * railAdj.scale,
 	);
 	// Mirror BonusSymbolPanel geometry to place multiplier directly below it
 	const _symPadW = SYMBOL_W * 1.1;
 	const _symPadH = _symPadW * (420 / 624);
-	// Desktop: symbol pad center is at boardW + 40
-	const desktopPosition = $derived({
-		x: context.stateGameDerived.boardLayout().width + 40 + railAdj.x,
-		y: SYMBOL_SIZE * 0.3 + _symPadH * 0.5 + 18 + 30,
+	const desktopMainPosition = $derived.by(() => {
+		const bl = context.stateGameDerived.boardLayout();
+		const main = context.stateLayoutDerived.mainLayout();
+		// Same centre X as the symbol panel above (equal wood widths → equal left edges).
+		const rightStripCenterX = (bl.x + bl.width * 0.522 * bl.boardScaleX + main.width) / 2 - SYMBOL_SIZE * 0.1;
+		const fsTopY = main.height * 0.03 + (main.width * 0.12) / (1176 / 572) + SYMBOL_SIZE * 0.15;
+		const gap = SYMBOL_SIZE * 0.12;
+		// Mirror the LEFT column's FREE SPINS → EARNED spacing: symbol-panel bottom (fsTopY +
+		// fsPanelH) + the same gap, then down by the board wood's half-height (0.325·fsPanelW).
+		return {
+			x: rightStripCenterX,
+			y: fsTopY + fsPanelH + gap + SYMBOL_SIZE * 0.35 + fsPanelW * 0.325,
+		};
 	});
 	const portraitPosition = $derived({
 		x: context.stateGameDerived.boardLayout().width - _symPadW * 0.5 - 10,
@@ -57,9 +77,9 @@
 	const position = $derived(
 		isLandscape
 			? { x: lsRail.x, y: lsRail.multiplierY }
-			: context.stateLayoutDerived.isStacked()
-				? portraitPosition
-				: desktopPosition,
+			: isDesktop
+				? desktopMainPosition
+				: portraitPosition,
 	);
 
 	// This is the "DEAL IT" bonus board (internally `superspin` — the UI labels are the reverse of the
@@ -69,21 +89,33 @@
 	let multiplier = $state(1);
 	let groupX = new Tween(0);
 	let groupAlpha = new Tween(1);
+	let groupScale = new Tween(1);
 	let swapTarget: number | null = null;
 	let swapped = false;
 
-	// Swap the displayed value with a slide-out / swap / slide-in — the board never hides.
+	// Portrait AND mobile-landscape show a hand-less board, so the hand slide reads wrong
+	// there — value changes zoom out onto the board instead (fade + oversized → settle).
+	const isStacked = $derived(context.stateLayoutDerived.isStacked());
+	const useFlatBoard = $derived(isStacked || context.stateLayoutDerived.layoutType() === 'landscape');
+
+	// Swap the displayed value — desktop/landscape: slide-out / swap / slide-in (the hand moves);
+	// portrait: fade, then the new value zooms out onto the static board.
 	const swapTo = async (next: number) => {
 		swapTarget = next;
 		swapped = false;
-		groupX.set(SLIDE, { duration: 170, easing: cubicIn });
+		if (!useFlatBoard) groupX.set(SLIDE, { duration: 170, easing: cubicIn });
 		groupAlpha.set(0, { duration: 150 });
 		await waitForTimeout(170);
 		if (swapped) return;
 		swapTarget = null;
 		multiplier = next;
-		groupX.set(-SLIDE, { duration: 0 });
-		groupX.set(0, { duration: 280, easing: backOut });
+		if (useFlatBoard) {
+			groupScale.set(1.45, { duration: 0 });
+			groupScale.set(1, { duration: 280, easing: backOut });
+		} else {
+			groupX.set(-SLIDE, { duration: 0 });
+			groupX.set(0, { duration: 280, easing: backOut });
+		}
 		groupAlpha.set(1, { duration: 190 });
 		await waitForTimeout(280);
 	};
@@ -96,6 +128,7 @@
 			swapTarget = null;
 		}
 		groupX.set(0, { duration: 0 });
+		groupScale.set(1, { duration: 0 });
 		groupAlpha.set(1, { duration: 0 });
 	});
 
@@ -129,9 +162,20 @@
 
 {#snippet panel()}
 	<!-- Persistent board; the group slides + fades when the multiplier value changes -->
-	<Container x={position.x + groupX.current} y={position.y} alpha={groupAlpha.current} {scale}>
-			<!-- Bear-hand board: panel centre (0.39/0.458) at the container origin, paw extends right -->
-			<Sprite key="multiplierHand" anchor={{ x: 0.39, y: 0.458 }} width={HAND_W} height={HAND_H} />
+	<Container
+		x={position.x + groupX.current}
+		y={position.y}
+		alpha={groupAlpha.current}
+		scale={scale * groupScale.current}
+	>
+			{#if useFlatBoard}
+				<!-- Portrait: hand-less leaf-corner board (same art as the EARNED card) — the bear
+				     paw crowded the stacked column (design ask). -->
+				<Sprite key="counterFrame" anchor={0.5} width={BOARD_W * 1.02} height={BOARD_W * 0.76} />
+			{:else}
+				<!-- Bear-hand board: panel centre (0.39/0.458) at the container origin, paw extends right -->
+				<Sprite key="multiplierHand" anchor={{ x: 0.39, y: 0.458 }} width={HAND_W} height={HAND_H} />
+			{/if}
 
 			<!-- At 1x, show the red X emblem; otherwise the Cinzel 900 gold number -->
 			{#if multiplier === 1}
@@ -160,7 +204,7 @@
 		</Container>
 {/snippet}
 
-{#if isLandscape}
+{#if isLandscape || isDesktop}
 	<FadeContainer {show}>
 		<MainContainer>{@render panel()}</MainContainer>
 	</FadeContainer>

@@ -42,7 +42,7 @@
 		z-index: 9999;
 		/* Cap by height too (panel is 505:301) — on short landscape screens the width cap alone
 		   let the panel outgrow the viewport and the text spilled onto the wooden border. */
-		width: min(680px, 94vw, 150vh);
+		width: min(476px, 66vw, 105vh);
 		font-family: 'Cinzel', serif;
 		/* All inner sizing is in cqw so the content scales with the panel, not the viewport. */
 		container-type: inline-size;

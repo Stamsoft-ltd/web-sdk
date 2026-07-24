@@ -10,7 +10,7 @@
 </script>
 
 <script lang="ts">
-	import { AnimatedSprite, Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
+	import { AnimatedSprite, BaseSprite, Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
 	import { OnPressFullScreen } from 'components-layout';
 	import type { Texture } from 'pixi-svelte';
 
@@ -84,11 +84,14 @@
 		return map;
 	});
 
-	// The scatter shimmers with the same animated medallion used on the free-spin popups
-	// (seamless 40-frame loop). Falls back to the static scatter sprite until it loads.
-	const scatterFrames = $derived((context.stateApp.loadedAssets?.fsMedallionAnim ?? []) as Texture[]);
-	// Animated WILD symbol (background-removed video frames; 40-frame loop). Falls back to static.
-	const wildFrames = $derived((context.stateApp.loadedAssets?.wildAnim ?? []) as Texture[]);
+	// The clips don't loop seamlessly (the glint sweep is one-directional), so the textures are
+	// ping-ponged — same treatment as the win anims above.
+	const pingPong = (t: Texture[]) => (t.length > 2 ? [...t, ...t.slice(1, -1).reverse()] : t);
+	// The scatter plays its own emblem clip now (luma-keyed video frames — generate_emblem_anim.py).
+	// Falls back to the static scatter sprite until it loads.
+	const scatterFrames = $derived(pingPong((context.stateApp.loadedAssets?.scatterAnim ?? []) as Texture[]));
+	// Animated WILD emblem (same pipeline). Falls back to static.
+	const wildFrames = $derived(pingPong((context.stateApp.loadedAssets?.wildAnim ?? []) as Texture[]));
 
 	// Animated base-state (idle blink) animals. Each cutout is trimmed to its subject so it keeps a
 	// native (non-cell) aspect — width is derived from height with the same board non-uniform-scale
@@ -117,23 +120,53 @@
 		return map;
 	});
 	const BORDER_SIZE = 0.8; // brown frame footprint relative to the cell — tune THIS one
-	// Portrait reel cells are much taller than wide, so the frame there must be SHORTER — otherwise the
-	// stacked frames overlap and the top/bottom ones get clipped. Landscape/desktop keep full height.
-	const BORDER_H_MULT = $derived(isPortrait ? 1.05 : 0.90);
+	// Frame art (516×388) native aspect — width follows height so the wooden rails never squish.
+	const FRAME_ASPECT = 516 / 388;
+	// Desktop/landscape: fit the frame INSIDE the cell by height (~98% of it) and derive the width
+	// at the art's native aspect. The old draw made frames ~7% taller than the cell, so each row's
+	// opaque frame painted over the neighbouring row's top/bottom rails (they read as "cut" — only
+	// the side rails survived). Portrait cells are tall/narrow — keep the old stretched fit there.
+	// Portrait: 0.88 keeps the NATIVE-aspect frame within the narrow cell width (the old
+	// cell-aspect stretch squashed the art into a near-square and distorted the animals).
+	const FRAME_H_MULT = $derived(isPortrait ? 0.88 : 0.826);
+	// Portrait animal frames read too short (native 516×388 is wide) inside the tall/narrow cell:
+	// stretch only the HEIGHT of the frame + its mask panel + the bust so the card fills the cell
+	// vertically without getting any wider (width already looks right). Desktop/landscape untouched.
+	const ANIMAL_H_STRETCH = $derived(isPortrait ? 1.16 : 1.0);
+	// Landscape cells use a uniform pitch (no X spread like desktop), so the native-aspect frame
+	// spans the whole column and hides the dividers — trim its width there (design ask).
+	const FRAME_W_MULT = $derived(
+		FRAME_H_MULT * (SYMBOL_H / SYMBOL_W) * FRAME_ASPECT * (isLandscape ? 0.93 : 1),
+	);
 	// Animals sit INSIDE the frame's inner panel so the brown border stays visible on every side.
 	// Idle busts are tall/narrow → fit by HEIGHT (uses the shorter portrait height); win busts are
 	// full-frame/wide → fit by WIDTH. Both derive from BORDER_SIZE so the border margin is automatic.
-	const INNER_FRAC = 0.83; // fraction of the frame the idle animal fills (the rest shows the border)
+	const INNER_FRAC = 0.86; // fraction of the frame the idle animal fills (the rest shows the forest scene)
 	// The win videos are full-frame and (for the squirrel) opaque, so they'd cover the border if they
-	// filled the frame like the idle. Keep them a bit smaller so the brown frame stays visible on a win.
-	const WIN_INNER_FRAC = 0.84;
-	// Framed animals read a touch low (the idle blink's union bbox includes the highest ear position),
-	// so lift them slightly so the top/bottom border gap is even. Reads SYMBOL_H directly (rather
-	// than the symbolH derived declared further down) so declaration order stays valid — the two
-	// differ only by the board-scale factor, which cancels out in this small relative nudge.
-	const ANIMAL_Y_NUDGE = $derived(SYMBOL_H * BORDER_SIZE * BORDER_H_MULT * -0.05);
-	const idleFit = $derived(BORDER_SIZE * BORDER_H_MULT * INNER_FRAC);
-	const winFit = $derived(BORDER_SIZE * WIN_INNER_FRAC);
+	// filled the frame like the idle. Keep them a bit smaller so the wooden frame stays visible on a win.
+	const WIN_INNER_FRAC = 0.76;
+	// Bust framing: the idle cutouts are full-body, so each one is zoomed onto the face and
+	// re-centred (mockup target: portrait-style close-up inside the frame). zoom multiplies
+	// the old full-body fit; yOff drops the sprite centre by this fraction of its own height
+	// so the face sits in the panel centre; xOff nudges sideways as a fraction of the panel
+	// width. Tuned per animal against offline composites — by design the ears poke out above
+	// the frame's top rail (the mask's top edge extends past the panel to allow it).
+	const IDLE_BUST: Partial<Record<SymbolName, { zoom: number; yOff: number; xOff: number }>> = {
+		WOLF: { zoom: 1.45, yOff: 0.097, xOff: 0 },
+		FOX: { zoom: 1.5, yOff: 0.11, xOff: 0 },
+		SQUIRREL: { zoom: 1.65, yOff: 0.157, xOff: -0.03 },
+		BEAR: { zoom: 1.35, yOff: 0.098, xOff: 0 },
+		RABBIT: { zoom: 1.65, yOff: 0.102, xOff: 0 },
+	};
+	// Inner panel of the frame art (516×388): side rails ≈26px, top/bottom rails ≈22–24px,
+	// panel centred. The zoomed bust is masked to this rect so it can't paint over the side
+	// rails or past the bottom rail — but the mask's top edge is raised by PANEL_TOP_OVERFLOW
+	// so ears may stick out over the top rail (per the design mockup).
+	const PANEL_W_FRAC = 464 / 516;
+	const PANEL_H_FRAC = 342 / 388;
+	const PANEL_TOP_OVERFLOW = 0.35; // fraction of the panel height the mask opens above it
+	const idleFit = $derived(BORDER_SIZE * FRAME_H_MULT * INNER_FRAC);
+	const winFit = $derived(BORDER_SIZE * FRAME_W_MULT * WIN_INNER_FRAC);
 	// Portrait cells are narrow and the idle busts (fit by height) read too thin — widen them a touch
 	// so they fill the frame better (a small deliberate stretch, only in portrait).
 	const IDLE_W_STRETCH = $derived(isPortrait ? 1.18 : 1.0);
@@ -142,12 +175,13 @@
 	// portrait, where cells are tighter) so a winning letter matches the surrounding symbols.
 	const LOW_WIN_FIT = $derived(isPortrait ? 0.86 : 0.94);
 	// Animal WIN animations (new videos): kept full-frame (no crop) so nothing is clipped.
+	// Aspect (w/h) of each animal's WIN sheet frame — measured from the new keyed win videos.
 	const WIN_ASPECT: Partial<Record<SymbolName, number>> = {
-		WOLF: 1128 / 816,
-		FOX: 1128 / 816,
-		BEAR: 1128 / 816,
-		RABBIT: 1128 / 816,
-		SQUIRREL: 1108 / 832,
+		WOLF: 373 / 320,
+		FOX: 313 / 320,
+		BEAR: 419 / 320,
+		RABBIT: 283 / 320,
+		SQUIRREL: 367 / 320,
 	};
 
 	const getX = (reelIndex: number) => SYMBOL_W * (reelIndex + 0.5);
@@ -171,14 +205,28 @@
 	// wild/scatter emblems up so all symbol types appear a similar size on the reels.
 	const HIGH_SYMBOLS_SET = new Set<SymbolName>(['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL']);
 	const symScale = (name: SymbolName) => {
-		// Portrait: draw symbols a bit larger than the cell so they fill the width/height better
-		// (the mobile PNGs carry padding that otherwise leaves gaps). Same scale for every type.
-		if (isPortrait) return 1.15;
-		if (LOW_SYMBOLS_SET.has(name)) return 0.86;
-		if (name === 'WILD' || name === 'SCATTER') return 1.1;
-		// Premium animals: desktop art has built-in margin (reads small) so enlarge it; the
-		// landscape art already fills its tile, so keep it at reference size there.
-		if (HIGH_SYMBOLS_SET.has(name)) return isLandscape ? 1.0 : 1.18;
+		// Portrait: the 1.15 overdraw (tuned for the old padded mobile PNGs) crams the redesigned
+		// art — letters touched across cells and clipped at the frame. Draw at the cell size.
+		// Premium animals carry built-in margin (read small), so draw them bigger than the
+		// letters. WILD / SCATTER emblems also read small in portrait — draw them larger (design ask).
+		if (isPortrait) {
+			if (HIGH_SYMBOLS_SET.has(name)) return 1.18;
+			if (name === 'WILD') return 1.4;
+			if (name === 'SCATTER') return 1.3;
+			return 1.02;
+		}
+		// Desktop lows: the redesigned letter art is cropped tight (glyph ≈92% of the tile), so the
+		// draw scale must come DOWN to keep the glyph at its old visual size (~0.7 of the cell —
+		// the previous padded art reached the same size at 0.86). Landscape keeps the old fit.
+		if (LOW_SYMBOLS_SET.has(name)) return isDesktop ? 0.72 : 0.86;
+		// WILD reads small on mobile — enlarge it in landscape too (design ask, "wild bigger on all
+		// mobile"). Desktop keeps the tuned 1.1; SCATTER is unchanged outside portrait.
+		if (name === 'WILD') return isLandscape ? 1.25 : 1.0;
+		if (name === 'SCATTER') return 1.1;
+		// Premium animals: the art has built-in margin (reads small) so enlarge it — landscape
+		// uses the same busts/frame as desktop now (Figma 3451-2143), drawn a touch bigger
+		// there so the card fills its cell (design ask).
+		if (HIGH_SYMBOLS_SET.has(name)) return isLandscape ? 1.26 : 1.32;
 		return 1;
 	};
 
@@ -187,40 +235,111 @@
 	// once). Without postWinStatic here the symbols freeze to static art during that presentation.
 	const isWinState = (state?: string) => state === 'win' || state === 'postWinStatic';
 
-	// ── Win zoom: a small zoom in/out on the special symbols (scatter / wild) while one is in its
-	//    WIN state (idle frame shimmer comes from the AnimatedSprite itself). Clock runs only then. ──
-	const hasSpecialWin = $derived(
-		board.some((reel) =>
-			reel.reelState.symbols.some(
-				(sym) =>
-					(sym.rawSymbol.name === 'SCATTER' || sym.rawSymbol.name === 'WILD') &&
-					isWinState(sym.symbolState),
-			),
-		),
-	);
-	let specialT = $state(0);
+	// ── Win pop: a special symbol (scatter / wild) entering its WIN state does ONE pop — a fast
+	//    scale-up with a slight overshoot and settle (damped spring) — on top of the looping
+	//    emblem animation. The clock runs only while a pop is mid-flight. ──
+	const POP_T = 0.8; // seconds until fully settled
+	const POP_DECAY = 6; // spring damping — higher snuffs the bounce faster
+	const POP_FREQ = 10; // spring rate — first peak lands ~0.1s in
+	// Letters (not listed) use the default amplitude — a gentler pop than the wild/scatter emblems.
+	const POP_AMP: Partial<Record<SymbolName, number>> = { WILD: 0.65, SCATTER: 0.45 };
+	const POP_AMP_DEFAULT = 0.35;
+	let popNow = $state(0);
+	const popStarts = new Map<string, number>(); // "reel:row" -> win-entry timestamp (ms)
 	$effect(() => {
-		if (!hasSpecialWin) return;
+		// Track win entries/exits for the special symbols.
+		const winning = new Set<string>();
+		board.forEach((reel, r) =>
+			reel.reelState.symbols.forEach((sym, i) => {
+				if (
+					(sym.rawSymbol.name === 'WILD' || sym.rawSymbol.name === 'SCATTER') &&
+					isWinState(sym.symbolState)
+				)
+					winning.add(`${r}:${i}`);
+			}),
+		);
+		for (const key of [...popStarts.keys()]) if (!winning.has(key)) popStarts.delete(key);
+		const now = performance.now();
+		for (const key of winning) if (!popStarts.has(key)) popStarts.set(key, now);
+		if (popStarts.size === 0) return;
+		let raf = 0;
+		const tick = (t: number) => {
+			popNow = t;
+			// Keep the clock only while at least one pop is still animating. Settled entries stay
+			// (a held win state must not re-pop); they're dropped when the symbol leaves the win.
+			for (const t0 of popStarts.values()) {
+				if (t - t0 < POP_T * 1000) {
+					raf = requestAnimationFrame(tick);
+					return;
+				}
+			}
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	});
+	// Damped spring: 1 → +A peak (~0.1s in) → small undershoot → 1 by POP_T.
+	const popScale = (name: SymbolName, key: string) => {
+		const t0 = popStarts.get(key);
+		if (t0 === undefined) return 1;
+		const t = (popNow - t0) / 1000;
+		if (t < 0 || t >= POP_T) return 1;
+		return 1 + (POP_AMP[name] ?? POP_AMP_DEFAULT) * Math.exp(-POP_DECAY * t) * Math.sin(POP_FREQ * t);
+	};
+
+	// ── Anticipation pulse: while a reel anticipates (bonus-trigger suspense, e.g. the bought
+	//    bonus reveal), the landed scatters bob with excitement and shimmer faster. ──
+	const anticipating = $derived(board.some((reel) => reel.reelState.anticipating));
+	let anticT = $state(0);
+	$effect(() => {
+		if (!anticipating) return;
 		let raf = 0;
 		const t0 = performance.now();
 		const tick = (now: number) => {
-			specialT = (now - t0) / 1000;
+			anticT = (now - t0) / 1000;
 			raf = requestAnimationFrame(tick);
 		};
 		raf = requestAnimationFrame(tick);
 		return () => cancelAnimationFrame(raf);
 	});
-	const specialZoom = $derived(1 + 0.05 * Math.sin(specialT * 2.6));
-	// The wild pulses more aggressively than the scatter on a win.
-	const wildZoom = $derived(1 + 0.1 * Math.sin(specialT * 4.6));
+	// Brisk bob (~2.4Hz, ±7%) — reads as a tremble, distinct from the slower win pop.
+	const anticZoom = $derived(1 + 0.07 * Math.sin(anticT * 15));
+
+	// ── Winning card letters pulse continuously (normal ↔ +10%) while their win is shown — a gentle,
+	//    repeating "pop", not a one-shot. A single rAF clock runs while any letter is winning. ──
+	const anyLetterWin = $derived(
+		board.some((reel) =>
+			reel.reelState.symbols.some(
+				(sym) =>
+					!HIGH_SYMBOLS_SET.has(sym.rawSymbol.name) &&
+					sym.rawSymbol.name !== 'WILD' &&
+					sym.rawSymbol.name !== 'SCATTER' &&
+					isWinState(sym.symbolState),
+			),
+		),
+	);
+	let letterPulseT = $state(0);
+	$effect(() => {
+		if (!anyLetterWin) return;
+		let raf = 0;
+		const t0 = performance.now();
+		const tick = (now: number) => {
+			letterPulseT = (now - t0) / 1000;
+			raf = requestAnimationFrame(tick);
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	});
+	// 1.0 → 1.1 → 1.0, ~1.15 Hz — a clear, repeating breathe.
+	const letterPulse = $derived(1 + 0.1 * (0.5 - 0.5 * Math.cos(letterPulseT * 7.2)));
 	// Scatter draws a bit smaller than a full cell so the medallion + leaves sit clear of neighbours.
 	const SCATTER_SIZE = 0.72;
-	// The animated medallion frames are 485×443 (nearly square). Height derives from width via this
-	// ratio (with the board's per-axis scale compensation) so the emblem stays round, not stretched.
-	const SCATTER_ASPECT = 443 / 485;
-	// WILD animated frames are 210×225 (w×h). Sized by cell HEIGHT so the near-square emblem fits the
-	// cell; width derives from height at the frame's native aspect (with per-axis scale compensation).
-	const WILD_ASPECT = 210 / 225; // w/h
+	// The animated scatter frames are 336×306 (Scatter.mp4, luma-keyed + trimmed — see
+	// generate_emblem_anim.py). Height derives from width via this ratio (with the board's
+	// per-axis scale compensation) so the emblem stays undistorted.
+	const SCATTER_ASPECT = 306 / 336;
+	// WILD animated frames are 224×223 (WILD.mp4, same pipeline) — effectively square. Sized by
+	// cell HEIGHT; width derives from height at the frame's native aspect (square → 1).
+	const WILD_ASPECT = 1; // w/h
 	const WILD_SIZE = 0.78;
 
 	// True while any symbol is in 'win' state — used to dim non-winning symbols
@@ -301,7 +420,7 @@
 {/if}
 
 {#if show}
-	<Container x={layout.x + (isDesktop ? 3 : 0)} y={layout.y + BOARD_GRID_OFFSET_Y} pivot={layout.pivot} scale={{ x: scaleX, y: scaleY }}>
+	<Container x={layout.x} y={layout.y + BOARD_GRID_OFFSET_Y} pivot={layout.pivot} scale={{ x: scaleX, y: scaleY }}>
 		<Graphics
 			isMask
 			draw={(graphics) => {
@@ -340,30 +459,35 @@
 				/>
 				{@const isWin = isWinState(reelSymbol.symbolState)}
 				{@const s = symScale(reelSymbol.rawSymbol.name)}
+				<!-- Winning wild/scatter pulse continuously like the winning letters (design ask),
+				     replacing the old one-shot spring pop. -->
+				{@const specialPop = isWin ? letterPulse : 1}
 				{#if reelSymbol.rawSymbol.name === 'SCATTER' && scatterFrames.length > 0}
-					<!-- Scatter shimmers with the animated medallion (same loop as the free-spin
-					     popups) plus a small idle zoom in/out. Drawn a bit smaller than a cell. -->
+					<!-- Scatter shimmers with its animated emblem clip; does one pop when it
+					     enters the win state. Drawn a bit smaller than a cell. -->
 					<AnimatedSprite
 						textures={scatterFrames}
 						x={getX(reelIndex)}
 						y={y}
 						anchor={0.5}
-						width={symbolW * s * SCATTER_SIZE * (isWin ? specialZoom : 1)}
-						height={symbolH * s * SCATTER_SIZE * (isWin ? specialZoom : 1) * (SYMBOL_W / SYMBOL_H) * SCATTER_ASPECT}
+						width={symbolW * s * SCATTER_SIZE * specialPop}
+						height={symbolH * s * SCATTER_SIZE * specialPop * (SYMBOL_W / SYMBOL_H) * SCATTER_ASPECT}
 						animationSpeed={0.14}
 						loop={true}
 						play={boardAnimate}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
 				{:else if reelSymbol.rawSymbol.name === 'WILD' && wildFrames.length > 0}
-					<!-- Animated WILD: plays its loop briskly on every spin; zooms in/out on a win. -->
+					<!-- Animated WILD: plays its loop briskly on every spin; one pop on a win.
+					     Multiplied by symScale (s) like the scatter so per-layout sizing applies —
+					     desktop s=1.0 keeps the tuned size; mobile draws it larger (design ask). -->
 					<AnimatedSprite
 						textures={wildFrames}
 						x={getX(reelIndex)}
 						y={y}
 						anchor={0.5}
-						height={symbolH * WILD_SIZE * 0.9 * (isWin ? wildZoom : 1)}
-						width={symbolW * WILD_SIZE * (isWin ? wildZoom : 1) * (SYMBOL_H / SYMBOL_W) * WILD_ASPECT}
+						height={symbolH * s * WILD_SIZE * 0.9 * specialPop}
+						width={symbolW * s * WILD_SIZE * specialPop * (SYMBOL_H / SYMBOL_W) * WILD_ASPECT}
 						animationSpeed={0.26}
 						loop={true}
 						play={boardAnimate}
@@ -390,15 +514,19 @@
 								x={getX(reelIndex)}
 								y={y}
 								anchor={{ x: 0.5, y: 0.5 }}
-								width={symbolW * s * BORDER_SIZE}
-								height={symbolH * s * BORDER_SIZE * BORDER_H_MULT}
+								width={symbolW * s * BORDER_SIZE * FRAME_W_MULT}
+								height={symbolH * s * BORDER_SIZE * FRAME_H_MULT}
 							/>
 						{/if}
+						<!-- Bottom-anchored to the frame: the win art's feet sit on the card's bottom rail,
+						     so taller clips grow upward out of the card instead of spilling below it. -->
+						<!-- Desktop: lift the win art ~2-3px so its feet clear the frame's bottom rail
+						     (the enlarged desktop animals pushed it onto the border). -->
 						<AnimatedSprite
 							textures={winAnimTextures[reelSymbol.rawSymbol.name]}
 							x={getX(reelIndex)}
-							y={y}
-							anchor={0.5}
+							y={y + (symbolH * s * BORDER_SIZE * FRAME_H_MULT) / 2 - (isDesktop ? symbolH * 0.02 : 0)}
+							anchor={{ x: 0.5, y: 1 }}
 							width={symbolW * s * winFit}
 							height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[reelSymbol.rawSymbol.name] ?? 1)}
 							animationSpeed={0.3}
@@ -406,16 +534,15 @@
 							play={boardAnimate}
 						/>
 					{:else}
-						<AnimatedSprite
-							textures={winAnimTextures[reelSymbol.rawSymbol.name]}
+						<!-- Low symbol (letter) win: no win-animation sheet — the clean tile pulses
+						     continuously (normal ↔ +10%) while the win is shown. -->
+						<Sprite
+							key={getSpriteKey(reelSymbol.rawSymbol.name, undefined)}
 							x={getX(reelIndex)}
 							y={y}
-							anchor={0.5}
-							width={symbolW * s * LOW_WIN_FIT}
-							height={symbolH * s * LOW_WIN_FIT}
-							animationSpeed={0.25}
-							loop={true}
-							play={boardAnimate}
+							anchor={{ x: 0.5, y: 0.5 }}
+							width={symbolW * s * letterPulse}
+							height={symbolH * s * letterPulse}
 						/>
 					{/if}
 				{:else if HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
@@ -427,25 +554,62 @@
 							x={getX(reelIndex)}
 							y={y}
 							anchor={{ x: 0.5, y: 0.5 }}
-							width={symbolW * s * BORDER_SIZE}
-							height={symbolH * s * BORDER_SIZE * BORDER_H_MULT}
+							width={symbolW * s * BORDER_SIZE * FRAME_W_MULT}
+							height={symbolH * s * BORDER_SIZE * FRAME_H_MULT * ANIMAL_H_STRETCH}
 							alpha={hasWinState && !isWin ? 0.35 : 1}
 						/>
 					{/if}
 					{#if idleAnimTextures[reelSymbol.rawSymbol.name]}
-						<AnimatedSprite
-							textures={idleAnimTextures[reelSymbol.rawSymbol.name]}
-							x={getX(reelIndex)}
-							y={y - ANIMAL_Y_NUDGE}
-							anchor={0.5}
-							height={symbolH * s * idleFit}
-							width={symbolH * s * idleFit * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[reelSymbol.rawSymbol.name] ?? 1) * IDLE_W_STRETCH}
-							animationSpeed={0.28 + ((reelIndex * 2 + symbolIndex) % 4) * 0.008}
-							startFrame={reelIndex * 13 + symbolIndex * 7}
-							loop={true}
-							play={boardAnimate}
-							alpha={hasWinState && !isWin ? 0.35 : 1}
-						/>
+						{@const bust = IDLE_BUST[reelSymbol.rawSymbol.name] ?? { zoom: 1, yOff: 0, xOff: 0 }}
+						{@const idleH = symbolH * s * idleFit * bust.zoom * ANIMAL_H_STRETCH}
+						{@const panelW = symbolW * s * BORDER_SIZE * FRAME_W_MULT * PANEL_W_FRAC}
+						{@const panelH = symbolH * s * BORDER_SIZE * FRAME_H_MULT * PANEL_H_FRAC * ANIMAL_H_STRETCH}
+						<!-- Bust framing: zoom the full-body cutout onto the face, masked to the
+						     frame's inner panel so the zoomed animal can't paint over the rails. -->
+						<Container x={getX(reelIndex)} y={y}>
+							<Graphics
+								isMask
+								draw={(graphics) => {
+									graphics.beginFill(0xffffff);
+									graphics.rect(
+										-panelW / 2,
+										-panelH / 2 - panelH * PANEL_TOP_OVERFLOW,
+										panelW,
+										panelH * (1 + PANEL_TOP_OVERFLOW),
+									);
+									graphics.endFill();
+								}}
+							/>
+							<!-- Static frame-0 underlay: guarantees the animal is NEVER a blank frame even
+							     when the AnimatedSprite fails to paint a frame (shared-ticker freeze / a
+							     race the moment the idle sheet streams in). Same geometry + mask as the
+							     animation, so the blink plays on top with identical content (no ghosting);
+							     if the animation ever goes blank, this rest pose still shows. -->
+							<BaseSprite
+								texture={idleAnimTextures[reelSymbol.rawSymbol.name]?.[0]}
+								x={bust.xOff * panelW}
+								y={idleH * bust.yOff - (isPortrait ? symbolH * 0.015 : 0)}
+								anchor={0.5}
+								height={idleH}
+								width={idleH * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[reelSymbol.rawSymbol.name] ?? 1) * IDLE_W_STRETCH}
+								alpha={hasWinState && !isWin ? 0.35 : 1}
+							/>
+							<!-- Portrait: lift the bust ~2px so its bottom clears the frame's bottom rail
+							     (the ANIMAL_H_STRETCH pushed it down onto the wood). -->
+							<AnimatedSprite
+								textures={idleAnimTextures[reelSymbol.rawSymbol.name]}
+								x={bust.xOff * panelW}
+								y={idleH * bust.yOff - (isPortrait ? symbolH * 0.015 : 0)}
+								anchor={0.5}
+								height={idleH}
+								width={idleH * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[reelSymbol.rawSymbol.name] ?? 1) * IDLE_W_STRETCH}
+								animationSpeed={0.28 + ((reelIndex * 2 + symbolIndex) % 4) * 0.008}
+								startFrame={(reelIndex * 13 + symbolIndex * 7) % (idleAnimTextures[reelSymbol.rawSymbol.name]?.length ?? 1)}
+								loop={true}
+								play={boardAnimate}
+								alpha={hasWinState && !isWin ? 0.35 : 1}
+							/>
+						</Container>
 					{:else}
 						<Sprite
 							key={getSpriteKey(reelSymbol.rawSymbol.name, reelSymbol.symbolState)}

@@ -84,6 +84,29 @@
 		return t.length ? [...t, ...t.slice(1, -1).reverse()] : [];
 	});
 
+	// Low (card) expands now show the CLEAN base tile with a continuous ±10% pulse (matching the reel
+	// letter win) instead of the old win-animation sheet.
+	const LOW_EXP_TILE: Partial<Record<SymbolName, string>> = {
+		A: 'aExpTile',
+		K: 'kExpTile',
+		Q: 'qExpTile',
+		J: 'jExpTile',
+		T: 'tExpTile',
+	};
+	let expPulseT = $state(0);
+	$effect(() => {
+		if (!expanded) return;
+		let raf = 0;
+		const t0 = performance.now();
+		const tick = (now: number) => {
+			expPulseT = (now - t0) / 1000;
+			raf = requestAnimationFrame(tick);
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	});
+	const lowPulse = $derived(1 + 0.1 * (0.5 - 0.5 * Math.cos(expPulseT * 7.2)));
+
 	type ReelAnim = { h: Tween<number>; y: Tween<number>; pop: Tween<number>; looping: boolean };
 	const reelAnims: Record<number, ReelAnim> = {};
 	const revealedReels = new Set<number>();
@@ -162,29 +185,16 @@
 								graphics.endFill();
 							}}
 						/>
+						{@const lowTileKey = LOW_EXP_TILE[expanded.symbol] ?? 'aExpTile'}
 						{#each Array.from({ length: BOARD_DIMENSIONS.y }, (_, rowIndex) => rowIndex) as rowIndex (rowIndex)}
-							{#if lowAnimFrames.length > 0}
-								<AnimatedSprite
-									textures={lowAnimFrames}
-									x={SYMBOL_W * 0.5}
-									y={(rowIndex + 0.5) * SYMBOL_H}
-									anchor={0.5}
-									width={tileW}
-									height={SYMBOL_H}
-									animationSpeed={0.25}
-									loop={true}
-									play={true}
-								/>
-							{:else}
-								<Sprite
-									key={lowAssetKey}
-									x={SYMBOL_W * 0.5}
-									y={(rowIndex + 0.5) * SYMBOL_H}
-									anchor={0.5}
-									width={tileW}
-									height={SYMBOL_H}
-								/>
-							{/if}
+							<Sprite
+								key={lowTileKey}
+								x={SYMBOL_W * 0.5}
+								y={(rowIndex + 0.5) * SYMBOL_H}
+								anchor={0.5}
+								width={tileW * lowPulse}
+								height={SYMBOL_H * lowPulse}
+							/>
 						{/each}
 					</Container>
 				{:else}

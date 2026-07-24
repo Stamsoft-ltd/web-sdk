@@ -24,18 +24,20 @@
 	// Figma design. The old confirm_frame had a plank seam that cut through the text.
 	const PANEL_RATIO = 372 / 248;
 	const WOOD_CENTER_Y = 0.5;
-	// Scale of the whole board (and its text). Widened so the board matches the FOREST GANG
-	// logo width above it (Figma) — the logo frame mirrors this factor.
-	const SIZE = 0.96;
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	// Mobile-landscape: the FS card is the 3rd box of the LEFT bonus column (see landscapeRail).
+	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+	const isDesktop = $derived(context.stateLayoutDerived.layoutType() === 'desktop');
+	// Scale of the whole board (and its text). Landscape/portrait keep 0.96 (widened to match the
+	// FOREST GANG logo width — and landscapeRail.refWidth mirrors it); desktop shrinks the card so
+	// it fits the free strip left of the board.
+	const SIZE = $derived(isDesktop ? 0.72 : 0.96);
 	const panelWidth = $derived(SYMBOL_SIZE * 2.0 * SIZE);
 	const panelSizes = $derived({
 		width: panelWidth,
 		height: panelWidth / PANEL_RATIO,
 	});
 	const scale = 1;
-	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
-	// Mobile-landscape: the FS card is the 3rd box of the LEFT bonus column (see landscapeRail).
-	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
 	const lsRail = $derived(context.stateGameDerived.landscapeRail());
 	const position = $derived(
 		isLandscape
@@ -44,18 +46,35 @@
 					x: lsRail.x - panelSizes.width * 0.5,
 					y: lsRail.fsY - panelSizes.height * 0.5,
 				}
-			: {
-					// Mirror the scatter card CSS: left: max(18px, calc(50% - 702px)); nudge right in portrait.
-					x:
-						Math.max(
-							18 / context.stateLayoutDerived.mainLayout().scale,
-							context.stateLayoutDerived.mainLayout().width / 2 - 702 / context.stateLayoutDerived.mainLayout().scale,
-						) + (isPortrait ? SYMBOL_SIZE * 0.7 : 0),
-					y:
-						context.stateGameDerived.boardLayout().y -
-						context.stateGameDerived.boardLayout().height * 0.5 * context.stateGameDerived.boardLayout().boardScale +
-						SYMBOL_SIZE * 0.15,
-				},
+			: isDesktop
+				? {
+						// Centre the card in the strip between the canvas left edge and the board's
+						// left grid edge; parked high, just below the FOREST GANG logo (mirrors
+						// GameLogoFrame: MARGIN_Y 3% + logo height at 12% width / 1176×572 aspect).
+						x:
+							(context.stateGameDerived.boardLayout().x -
+								context.stateGameDerived.boardLayout().width *
+									0.54 *
+									context.stateGameDerived.boardLayout().boardScaleX -
+								panelSizes.width) /
+							2,
+						y:
+							context.stateLayoutDerived.mainLayout().height * 0.03 +
+							(context.stateLayoutDerived.mainLayout().width * 0.12) / (1176 / 572) +
+							SYMBOL_SIZE * 0.15,
+					}
+				: {
+						// Mirror the scatter card CSS: left: max(18px, calc(50% - 702px)); nudge right in portrait.
+						x:
+							Math.max(
+								18 / context.stateLayoutDerived.mainLayout().scale,
+								context.stateLayoutDerived.mainLayout().width / 2 - 702 / context.stateLayoutDerived.mainLayout().scale,
+							) + (isPortrait ? SYMBOL_SIZE * 0.7 : 0),
+						y:
+							context.stateGameDerived.boardLayout().y -
+							context.stateGameDerived.boardLayout().height * 0.5 * context.stateGameDerived.boardLayout().boardScale +
+							SYMBOL_SIZE * 0.15,
+					},
 	);
 
 	const titleFont = $derived(SYMBOL_SIZE * 0.14 * SIZE);

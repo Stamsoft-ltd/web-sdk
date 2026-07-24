@@ -28,7 +28,13 @@
 
 	const context = getContext();
 	const t = (key: string) => stateI18nDerived.translate(key);
-	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	const layoutType = $derived(context.stateLayoutDerived.layoutType());
+	const isPortrait = $derived(layoutType === 'portrait');
+	// Every layout except mobile landscape draws the press line BELOW the board (glow ledge) like
+	// portrait — the wooden panel is opaque planks with the spine leaf-frame over the bottom band,
+	// so any in-panel press reads as "on the background". Only landscape keeps the in-panel copy
+	// (below-board placement collides with its side rails).
+	const isLandscape = $derived(layoutType === 'landscape');
 	// Animated scatter medallion (seamless loop; falls back to the static sprite until loaded).
 	const medallionFrames = $derived(
 		(context.stateApp.loadedAssets?.fsMedallionAnim ?? []) as Texture[],
@@ -118,10 +124,11 @@
 
 				<FreeSpinAnimation portraitScale={1.04}>
 					{#snippet children({ sizes })}
-						<!-- Portrait: fixed BW (like the intro) so the board scales LINEARLY with the
-						     portrait factor — deriving it from `sizes` (which already scales with the
-						     factor) compounded to factor² and overflowed. Other layouts unchanged. -->
-						{@const BW = isPortrait ? 1100 : sizes.width * 1.8}
+						<!-- Fixed BW on EVERY layout (like the intro): deriving it from `sizes` (which
+						     already scales with the popup factor) compounded to factor² and overflowed —
+						     on desktop that overflow made the wooden board fail to render (text floated over
+						     the reels). Pinning 1100 keeps the popup proportional and the board visible. -->
+						{@const BW = 1100}
 						{@const fromBottom = (1 - slideIn.current) * BW * 0.55}
 						{@const fromTop = (1 - slideIn.current) * -BW * 0.7}
 
@@ -179,11 +186,19 @@
 								}}
 							/>
 						</Container>
+						{#if isLandscape}
+							<!-- Mobile landscape only: press text in PANEL space so it tracks the board and
+							     clears the side rails. All other layouts draw it BELOW the board instead
+							     (see PressToContinue), so it sits in the glow ledge, not over the planks. -->
+							<PressAnywhereText y={Math.round(BW * 0.42)} fontSize={Math.round(BW * 0.032)} />
+						{/if}
 						</Container>
 
-						<!-- CONGRATULATIONS! drops in from the top, then pulses in place -->
+						<!-- CONGRATULATIONS! drops in from the top, then pulses in place. With BW pinned to
+						     1100 the popup proportions are consistent across layouts, so −0.34·BW lifts it
+						     closer to the top rail (closing the empty-wood gap above) without touching it. -->
 						<Container y={fromTop}>
-							<Container y={Math.round(-BW * 0.31)} scale={congratsPulse}>
+							<Container y={Math.round(-BW * 0.34)} scale={congratsPulse}>
 								<CurvedCinzelText
 									text={t('FS CONGRATS')}
 									radius={BW * 1.1}
@@ -193,17 +208,15 @@
 							</Container>
 						</Container>
 
-						<!-- Anchored to the board so it always sits just below its bottom edge, clear
-						     of the leaves and the HTML HUD regardless of window shape. -->
-						{#if !isPortrait}
-							<PressAnywhereText y={Math.round(BW * 0.585)} fontSize={Math.round(BW * 0.042)} />
-						{/if}
 					{/snippet}
 				</FreeSpinAnimation>
 
+				<!-- Every layout except mobile landscape draws the canvas-anchored press text below the
+				     board (glow ledge); landscape draws it in panel space (above) to clear its side rails. -->
 				<PressToContinue
-					showText={isPortrait}
 					onpress={() => (countUpCompleted ? oncomplete() : finishCountUp())}
+					showText={!isLandscape}
+					hudClearFactor={0.2}
 				/>
 			{/snippet}
 		</WinCountUpProvider>
