@@ -90,12 +90,12 @@
 	const deerH = $derived(
 		useAnimDeer
 			? isPortrait
-				// Portrait animated deer: sized to fill, then scaled to 70% (30% smaller per request);
-				// rises from the bottom like the static mobile deer did.
-				? Math.min(main.height * 0.9, (main.width * 0.98) / ANIM_RATIO) * 0.7
-				// Desktop: 75% of the fill size (smaller per request — the full-size deer
-				// dominated the screen; board + symbol scale down with it).
-				: Math.min(main.height * 0.82, main.width * 0.9) * 0.75
+				// Portrait animated deer: sized to fill, then scaled to 77% (was 0.7 — bumped ~10%
+				// per request "increase the deer a bit"); rises from the bottom like the static one.
+				? Math.min(main.height * 0.9, (main.width * 0.98) / ANIM_RATIO) * 0.77
+				// Desktop: 82% of the fill size (was 0.75 — bumped ~10% per request; board + symbol
+				// scale down with it).
+				: Math.min(main.height * 0.82, main.width * 0.9) * 0.82
 			: isPortrait
 				? Math.min(main.height * 0.92, (main.width / MOBILE_RATIO) * 0.98)
 				: Math.min(main.height * 0.92, main.width * 0.62) * 0.75,
@@ -299,7 +299,7 @@
 					textures={deerFrames}
 					width={deerW}
 					height={deerH}
-					animationSpeed={0.12}
+					animationSpeed={0.2}
 					loop={true}
 					play={true}
 				/>
@@ -337,6 +337,19 @@
 						{#if displayIdle.length}
 							{@const bust = IDLE_BUST[displaySymbol!] ?? { zoom: 1, yOff: 0, xOff: 0 }}
 							{@const bustH = innerH * BUST_SYM_FRAC * bust.zoom}
+							<!-- Opaque wood backing behind the bust. The deer's held card is transparent in the
+							     luma-keyed animation frames, so without this the reels show through the bust
+							     cutout's transparent areas. Fills the true card interior only (NO top overflow —
+							     the strip above holds the ears poking over the rail, which must still show the
+							     deer, not a block). Colour matches the static deer card's dark wood interior. -->
+							<Graphics
+								draw={(graphics) => {
+									graphics.clear();
+									graphics.beginFill(0x3d1c0a);
+									graphics.rect(-innerW / 2, -innerH / 2, innerW, innerH);
+									graphics.endFill();
+								}}
+							/>
 							<!-- Zoomed bust masked to the board interior — same close-up as the side panel card. -->
 							<AnimatedSprite
 								textures={displayIdle}

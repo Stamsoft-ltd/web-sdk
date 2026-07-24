@@ -63,9 +63,6 @@
 				},
 	);
 
-	// How long the intro holds on screen before auto-advancing on its own (readable, then continues).
-	const AUTO_ADVANCE_MS = 3000;
-
 	let show = $state(false);
 	let freeSpinsFromEvent = $state(0);
 	let oncomplete = $state(() => {});
@@ -143,14 +140,11 @@
 		freeSpinIntroHide: () => (show = false),
 		freeSpinIntroUpdate: async (emitterEvent) => {
 			freeSpinsFromEvent = emitterEvent.totalFreeSpins;
-			// Auto-advance after a readable hold instead of waiting for a manual press. A press still
-			// continues sooner.
-			let autoTimer = 0;
+			// Wait for a manual press/tap to continue — no auto-advance (design ask: the congrats
+			// screen stays up until the player acknowledges it).
 			await waitForResolve((resolve) => {
 				oncomplete = resolve;
-				autoTimer = setTimeout(resolve, AUTO_ADVANCE_MS) as unknown as number;
 			});
-			clearTimeout(autoTimer);
 		},
 	});
 </script>
@@ -204,7 +198,7 @@
 						anchor={0.5}
 						width={Math.round(BW * L.medW)}
 						height={Math.round(BW * L.medW * (443 / 485))}
-						animationSpeed={0.14}
+						animationSpeed={0.3}
 						loop={true}
 						play={true}
 					/>

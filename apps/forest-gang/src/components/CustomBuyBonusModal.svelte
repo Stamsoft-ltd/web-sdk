@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { stateBet, stateBetDerived, stateConfig } from 'state-shared';
+	import { stateBet, stateBetDerived, stateConfig, stateUrlDerived } from 'state-shared';
 	import { getContext } from '../game/context';
 	import { forestStakeDerived } from '../state/forestStake.svelte';
 	import { i18nDerived } from '../i18n/i18nDerived';
@@ -67,6 +67,12 @@
 	const canFeature = $derived(canAfford(20));
 	const canAllIn   = $derived(canAfford(100)); // BONUS
 	const canDealIt  = $derived(canAfford(400)); // SUPER
+
+	// Social-casino jurisdictions can't surface "bet" wording — swap the +/- screen-reader
+	// labels to "play amount" so assistive tech matches the on-screen social terminology.
+	const isSocial = $derived(stateConfig.jurisdiction.socialCasino || stateUrlDerived.social());
+	const decBetLabel = $derived(isSocial ? 'Decrease play amount' : 'Decrease bet');
+	const incBetLabel = $derived(isSocial ? 'Increase play amount' : 'Increase bet');
 
 	// Bet stepper (mirrors the HUD): changing the bet rescales the bonus costs.
 	const betOptions = $derived(stateConfig.betAmountOptions);
@@ -199,7 +205,7 @@
 		<!-- Portrait: fixed footer — a wooden bet box holding [−] [coins · BET · amount] [+] -->
 		<div class="bet-bar bet-bar--portrait">
 			<div class="bet-box" style="--betbox:url('{betBoxMobile}')">
-				<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canDec} onclick={() => stepBet(-1)} aria-label="Decrease bet">
+				<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canDec} onclick={() => stepBet(-1)} aria-label={decBetLabel}>
 					<img src={iconMinus} alt="" />
 				</button>
 				<div class="bet-pill">
@@ -209,7 +215,7 @@
 						<span class="bet-amount">{formattedBet}</span>
 					</div>
 				</div>
-				<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canInc} onclick={() => stepBet(1)} aria-label="Increase bet">
+				<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canInc} onclick={() => stepBet(1)} aria-label={incBetLabel}>
 					<img src={iconPlus} alt="" />
 				</button>
 			</div>
@@ -222,10 +228,10 @@
 				<span class="bet-label">{i18nDerived.betLabel()}</span>
 				<span class="bet-amount">{formattedBet}</span>
 			</div>
-			<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canDec} onclick={() => stepBet(-1)} aria-label="Decrease bet">
+			<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canDec} onclick={() => stepBet(-1)} aria-label={decBetLabel}>
 				<img src={iconMinus} alt="" />
 			</button>
-			<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canInc} onclick={() => stepBet(1)} aria-label="Increase bet">
+			<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canInc} onclick={() => stepBet(1)} aria-label={incBetLabel}>
 				<img src={iconPlus} alt="" />
 			</button>
 		</div>

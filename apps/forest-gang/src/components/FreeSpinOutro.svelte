@@ -57,9 +57,6 @@
 		},
 	});
 
-	// How long the outro holds on screen before auto-advancing on its own (readable, then continues).
-	const OUTRO_AUTO_ADVANCE_MS = 3000;
-
 	let show = $state(true);
 	let amount = $state(0);
 	let winLevelData = $state<WinLevelData>();
@@ -99,15 +96,12 @@
 		freeSpinOutroCountUp: async (emitterEvent) => {
 			amount = emitterEvent.amount;
 			winLevelData = emitterEvent.winLevelData;
-			// Auto-advance on its own a few seconds after showing (no manual press needed). The count-up
-			// is capped (see `duration` below) so the total is fully shown before this fires. A press
-			// still continues sooner.
-			let autoTimer = 0;
+			// Wait for a manual press/tap to continue — no auto-advance (design ask: the congrats
+			// screen stays up until the player acknowledges it). The count-up still caps its duration
+			// (see `duration` below) so the total is fully shown while the player reads it.
 			await waitForResolve((resolve) => {
 				oncomplete = resolve;
-				autoTimer = setTimeout(resolve, OUTRO_AUTO_ADVANCE_MS) as unknown as number;
 			});
-			clearTimeout(autoTimer);
 		},
 	});
 </script>
@@ -152,7 +146,7 @@
 									anchor={0.5}
 									width={Math.round(BW * 0.322)}
 									height={Math.round(BW * 0.322 * (443 / 485))}
-									animationSpeed={0.14}
+									animationSpeed={0.3}
 									loop={true}
 									play={true}
 								/>

@@ -384,7 +384,11 @@
 	style={`--forest-shell-bg:url('${heroArtBackdrop}')`}
 >
 	<div class="forest-stage">
-		<App preloadWebFont={false}>
+		<!-- Safari/low-end perf: cap the render DPR at 2 (retina Safari is 2–3× → uncapped renders
+		     up to ~9× the pixels), disable MSAA (expensive on Safari; the art is sprite-based so
+		     edges stay smooth via texture filtering), and force the stable WebGL renderer instead of
+		     Pixi's less-mature WebGPU path (buggy on Safari 18). -->
+		<App preloadWebFont={false} maxResolution={2} antialias={false} rendererPreference="webgl">
 			<EnableSharedTicker />
 			<EnableSound />
 			<EnableHotkey />

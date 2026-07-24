@@ -57,6 +57,10 @@ export const socialOverridesEn: Record<string, string> = {
 	'HOWTO BET TEXT':
 		'Use the + and - buttons or open the play menu to change the displayed play amount before a round starts.',
 
+	'HOWTO BUY TITLE': 'GET BONUS',
+	'HOWTO BUY TEXT':
+		'Open Get Bonus to choose Deal It, All In, Chance Spin or Feature Spin. Deal It and All In require confirmation. Chance Spin and Feature Spin activate immediately and can be turned off with the DEACTIVATE button.',
+
 	'HOWTO REPLAY TEXT':
 		'Replay loads a previously completed Stake event and displays the original play amount, total play, and win information.',
 	'HOWTO USER INTERACTION TEXT':

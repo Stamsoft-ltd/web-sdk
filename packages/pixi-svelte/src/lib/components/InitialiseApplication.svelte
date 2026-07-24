@@ -13,6 +13,15 @@
 		// EXTERNAL runtime request (blocked on hosts like Stake Engine), and awaiting it here
 		// stalls app startup until the web-font loader times out.
 		preloadWebFont?: boolean;
+		// Renderer tuning — all optional and defaulting to the historical values, so existing games
+		// are unaffected. Games target Safari/low-end devices by opting in:
+		//  - maxResolution: cap the render-target DPR (Safari retina is 2–3×; uncapped renders up to
+		//    9× the pixels → the dominant fragment-shader cost). e.g. 2.
+		//  - antialias: MSAA is expensive on Safari; sprite-based games can disable it safely.
+		//  - rendererPreference: 'webgl' avoids Pixi's less-mature WebGPU path (buggy on Safari 18).
+		maxResolution?: number;
+		antialias?: boolean;
+		rendererPreference?: 'webgpu' | 'webgl';
 	};
 
 	const props: Props = $props();
@@ -34,11 +43,11 @@
 			backgroundAlpha: 0,
 			hello: true,
 			multiView: false,
-			antialias: true,
+			antialias: props.antialias ?? true,
 			clearBeforeRender: true,
-			preference: 'webgpu',
+			preference: props.rendererPreference ?? 'webgpu',
 			powerPreference: 'high-performance',
-			resolution: devicePixelRatio.current,
+			resolution: Math.min(devicePixelRatio.current, props.maxResolution ?? Infinity),
 			resizeTo: wrap,
 		});
 

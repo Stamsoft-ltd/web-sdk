@@ -445,7 +445,6 @@
 			/>
 		{/each}
 		{#each board as reel, reelIndex (reelIndex)}
-			{@const reelAnticipating = reel.reelState.anticipating}
 			{#if !hiddenReels.has(reelIndex)}
 			{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
 				{@const y = reelSymbol.symbolY()}
@@ -463,8 +462,10 @@
 				     replacing the old one-shot spring pop. -->
 				{@const specialPop = isWin ? letterPulse : 1}
 				{#if reelSymbol.rawSymbol.name === 'SCATTER' && scatterFrames.length > 0}
-					<!-- Scatter shimmers with its animated emblem clip; does one pop when it
-					     enters the win state. Drawn a bit smaller than a cell. -->
+					<!-- Scatter shimmers with its animated emblem clip; does one pop when it enters the
+					     win state. Drawn a bit smaller than a cell. animationSpeed 0.14 (~8fps) stepped
+					     visibly and read as "laggy"; 0.36 (~22fps) plays smoothly and stays under the
+					     30fps idle render cap so no frames drop. -->
 					<AnimatedSprite
 						textures={scatterFrames}
 						x={getX(reelIndex)}
@@ -472,7 +473,7 @@
 						anchor={0.5}
 						width={symbolW * s * SCATTER_SIZE * specialPop}
 						height={symbolH * s * SCATTER_SIZE * specialPop * (SYMBOL_W / SYMBOL_H) * SCATTER_ASPECT}
-						animationSpeed={0.14}
+						animationSpeed={0.36}
 						loop={true}
 						play={boardAnimate}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
@@ -488,7 +489,7 @@
 						anchor={0.5}
 						height={symbolH * s * WILD_SIZE * 0.9 * specialPop}
 						width={symbolW * s * WILD_SIZE * specialPop * (SYMBOL_H / SYMBOL_W) * WILD_ASPECT}
-						animationSpeed={0.26}
+						animationSpeed={0.4}
 						loop={true}
 						play={boardAnimate}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
@@ -506,18 +507,20 @@
 					/>
 				{:else if isWin && winAnimTextures[reelSymbol.rawSymbol.name]}
 					{#if HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
-						<!-- Animal win: same brown frame + the full (uncropped) win animation on top.
-						     Hidden while the reel is anticipating (the brown frame clashes with the glow). -->
-						{#if !reelAnticipating}
-							<Sprite
-								key="animalBorder"
-								x={getX(reelIndex)}
-								y={y}
-								anchor={{ x: 0.5, y: 0.5 }}
-								width={symbolW * s * BORDER_SIZE * FRAME_W_MULT}
-								height={symbolH * s * BORDER_SIZE * FRAME_H_MULT}
-							/>
-						{/if}
+						<!-- Animal win: same brown frame + the full (uncropped) win animation on top. The
+						     frame carries the OPAQUE forest panel the bust sits on, so it must always draw —
+						     hiding it during anticipation left the transparent bust floating on the bare
+						     board background (the "empty forest cell" seen while waiting for the 3rd scatter).
+						     The additive glow column is wider/taller than the cell, so it still reads around
+						     the framed symbols. -->
+						<Sprite
+							key="animalBorder"
+							x={getX(reelIndex)}
+							y={y}
+							anchor={{ x: 0.5, y: 0.5 }}
+							width={symbolW * s * BORDER_SIZE * FRAME_W_MULT}
+							height={symbolH * s * BORDER_SIZE * FRAME_H_MULT}
+						/>
 						<!-- Bottom-anchored to the frame: the win art's feet sit on the card's bottom rail,
 						     so taller clips grow upward out of the card instead of spilling below it. -->
 						<!-- Desktop: lift the win art ~2-3px so its feet clear the frame's bottom rail
@@ -529,7 +532,7 @@
 							anchor={{ x: 0.5, y: 1 }}
 							width={symbolW * s * winFit}
 							height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[reelSymbol.rawSymbol.name] ?? 1)}
-							animationSpeed={0.3}
+							animationSpeed={0.36}
 							loop={true}
 							play={boardAnimate}
 						/>
@@ -547,18 +550,20 @@
 					{/if}
 				{:else if HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
 					<!-- Base-state animal: shared brown frame + animated idle blink (or static tile for
-					     the animals without an idle sheet yet). Frame hidden while the reel anticipates. -->
-					{#if !reelAnticipating}
-						<Sprite
-							key="animalBorder"
-							x={getX(reelIndex)}
-							y={y}
-							anchor={{ x: 0.5, y: 0.5 }}
-							width={symbolW * s * BORDER_SIZE * FRAME_W_MULT}
-							height={symbolH * s * BORDER_SIZE * FRAME_H_MULT * ANIMAL_H_STRETCH}
-							alpha={hasWinState && !isWin ? 0.35 : 1}
-						/>
-					{/if}
+					     the animals without an idle sheet yet). The frame carries the OPAQUE forest panel
+					     the bust sits on, so it must ALWAYS draw: hiding it during anticipation left the
+					     transparent bust cutout floating on the bare board background — the "empty forest
+					     cell" the user hit while the board waits for the 3rd scatter. The additive glow
+					     column is wider/taller than the cell, so it still reads around the framed symbol. -->
+					<Sprite
+						key="animalBorder"
+						x={getX(reelIndex)}
+						y={y}
+						anchor={{ x: 0.5, y: 0.5 }}
+						width={symbolW * s * BORDER_SIZE * FRAME_W_MULT}
+						height={symbolH * s * BORDER_SIZE * FRAME_H_MULT * ANIMAL_H_STRETCH}
+						alpha={hasWinState && !isWin ? 0.35 : 1}
+					/>
 					{#if idleAnimTextures[reelSymbol.rawSymbol.name]}
 						{@const bust = IDLE_BUST[reelSymbol.rawSymbol.name] ?? { zoom: 1, yOff: 0, xOff: 0 }}
 						{@const idleH = symbolH * s * idleFit * bust.zoom * ANIMAL_H_STRETCH}

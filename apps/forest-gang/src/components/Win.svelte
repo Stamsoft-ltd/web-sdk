@@ -48,9 +48,10 @@
 	// text both scale by this so their proportions are preserved.
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	// Mobile (portrait + landscape) win boards run 20% smaller than desktop (design ask).
-	// Portrait gets an extra +10% on top (design ask) so the celebration reads bigger on phones.
+	// Portrait gets +10%, then another +10% (design ask "win animations a bit bigger, all") so the
+	// celebration reads bigger on phones — applies to every win tier.
 	const winBoardBoost = $derived(
-		layoutType === 'portrait' ? 1.58 * 0.8 * 1.1 : layoutType === 'landscape' ? 1.6 * 0.8 : 1.6,
+		layoutType === 'portrait' ? 1.58 * 0.8 * 1.1 * 1.1 : layoutType === 'landscape' ? 1.6 * 0.8 : 1.6,
 	);
 
 	const snapToFinal = (finishCountUp: () => void) => {

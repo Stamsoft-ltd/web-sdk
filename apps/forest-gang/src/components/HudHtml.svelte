@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { OnHotkey } from 'components-shared';
-	import { stateBet, stateBetDerived, stateConfig, stateModal, stateSound } from 'state-shared';
+	import { stateBet, stateBetDerived, stateConfig, stateModal, stateSound, stateUrlDerived } from 'state-shared';
 	import { onDestroy } from 'svelte';
 	import { Tween } from 'svelte/motion';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
@@ -91,6 +91,11 @@
 		stateBet.isSuperTurbo ? iconTurbo3 : stateBet.isTurbo ? iconTurbo1 : iconTurbo2,
 	);
 	const isMuted = $derived(stateSound.volumeValueMaster === 0);
+	// Social-casino jurisdictions can't surface "bet" wording — swap the +/- screen-reader
+	// labels to "play amount" so assistive tech matches the on-screen social terminology.
+	const isSocial = $derived(stateConfig.jurisdiction.socialCasino || stateUrlDerived.social());
+	const decBetLabel = $derived(isSocial ? 'Decrease play amount' : 'Decrease bet');
+	const incBetLabel = $derived(isSocial ? 'Increase play amount' : 'Increase bet');
 	const betOptions = $derived(stateConfig.betAmountOptions);
 	const smallestBet = $derived(stateConfig.betAmountOptions[0]);
 	const biggestBet = $derived(
@@ -360,10 +365,13 @@
 	// widen the HUD and push the navigation off the bar. Only ever shrinks; all
 	// digits stay visible. Re-runs when the text changes and when the slot resizes.
 	function fitText(node: HTMLElement, _value: unknown) {
+		// transform:scale is IGNORED on inline elements, so force inline-block here (independent of
+		// CSS specificity/media) — otherwise the shrink silently no-ops and a long value renders
+		// full-size and gets clipped by the slot's overflow:hidden.
+		node.style.display = 'inline-block';
 		const fit = () => {
 			const slot = node.parentElement;
 			if (!slot) return;
-			node.style.transformOrigin = 'left center';
 			node.style.transform = 'none';
 			// Space actually left for the value: the slot minus what the preceding sibling
 			// (label / minus-button) already occupies — but ONLY when that sibling sits on the
@@ -372,8 +380,23 @@
 			const prev = node.previousElementSibling as HTMLElement | null;
 			const sameRow = prev ? Math.abs(prev.offsetTop - node.offsetTop) < node.offsetHeight * 0.6 : false;
 			const used = prev && sameRow ? prev.getBoundingClientRect().width + 8 : 0;
+			// getBoundingClientRect() (with transform reset to none above) reports the true unscaled
+			// text width reliably for both inline and inline-block — scrollWidth returned 0/garbage
+			// on the inline span, so the scale computed to 1 and never shrank.
 			const avail = slot.clientWidth - used;
-			const full = node.scrollWidth;
+			const nodeRect = node.getBoundingClientRect();
+			const full = nodeRect.width;
+			// Adaptive shrink origin: portrait centres the value in its slot (align-items:center) —
+			// there a left origin keeps clipping the "$" prefix, so shrink from the CENTRE. Desktop
+			// (.value-fit, left-aligned text) and landscape (label-beside-value row) are left-aligned
+			// — there a centre origin shifts/clips the value, so shrink from the LEFT. Detect which
+			// by comparing the value's centre to the slot's centre.
+			const slotRect = slot.getBoundingClientRect();
+			const centered =
+				!sameRow &&
+				Math.abs(nodeRect.left + full / 2 - (slotRect.left + slotRect.width / 2)) <
+					slotRect.width * 0.15;
+			node.style.transformOrigin = centered ? 'center center' : 'left center';
 			const scale = full > avail && avail > 0 ? avail / full : 1;
 			node.style.transform = scale < 1 ? `scale(${scale})` : 'none';
 		};
@@ -496,7 +519,7 @@
 						type="button"
 						onclick={onDecrease}
 						disabled={disableDecrease}
-						aria-label="Decrease bet"
+						aria-label={decBetLabel}
 					>
 						<img class="pt-icon" src={iconMinus} alt="minus" />
 					</button>
@@ -510,7 +533,7 @@
 						type="button"
 						onclick={onIncrease}
 						disabled={disableIncrease}
-						aria-label="Increase bet"
+						aria-label={incBetLabel}
 					>
 						<img class="pt-icon" src={iconPlus} alt="plus" />
 					</button>
@@ -555,7 +578,7 @@
 					type="button"
 					onclick={onDecrease}
 					disabled={disableDecrease}
-					aria-label="Decrease bet"
+					aria-label={decBetLabel}
 				>
 					<img class="ls-icon" src={iconMinus} alt="minus" />
 				</button>
@@ -569,7 +592,7 @@
 					type="button"
 					onclick={onIncrease}
 					disabled={disableIncrease}
-					aria-label="Increase bet"
+					aria-label={incBetLabel}
 				>
 					<img class="ls-icon" src={iconPlus} alt="plus" />
 				</button>
@@ -729,7 +752,7 @@
 					onpointerleave={clearHoldRepeat}
 					onclick={(event) => maybeRunClickAction(event, onDecrease)}
 					disabled={disableDecrease}
-					aria-label="Decrease bet"
+					aria-label={decBetLabel}
 				>
 					<img class="nav-icon" src={iconMinus} alt="minus" />
 				</button>
@@ -743,7 +766,7 @@
 					onpointerleave={clearHoldRepeat}
 					onclick={(event) => maybeRunClickAction(event, onIncrease)}
 					disabled={disableIncrease}
-					aria-label="Increase bet"
+					aria-label={incBetLabel}
 				>
 					<img class="nav-icon" src={iconPlus} alt="plus" />
 				</button>
@@ -1668,6 +1691,10 @@
 		display: flex;
 		align-items: baseline;
 		gap: 8px;
+		/* Bound the pill so a very large balance can't grow past it into the BUY BONUS button;
+		   fitText shrinks the value to fit, overflow:hidden is the safety clip. */
+		max-width: min(40vw, 280px);
+		overflow: hidden;
 		/* Same dark translucent pill as the WIN readout — keeps the text readable over the forest. */
 		padding: 3px 10px;
 		border-radius: 10px;
@@ -2068,7 +2095,9 @@
 	/* Balance: transparent (no pad), centred label + gold value. */
 	.pt-balance {
 		flex: 0 0 auto;
-		max-width: calc(var(--u) * 0.32);
+		/* Cap to the balance's actual grid column (~0.25·u in the 1fr auto 1fr row, less the
+		   0.03·u margin) so a long balance can't overflow the column into the centre bet pill. */
+		max-width: calc(var(--u) * 0.22);
 		display: flex; flex-direction: column;
 		align-items: center; justify-content: center;
 		gap: 1px;
@@ -2083,6 +2112,10 @@
 		-webkit-text-fill-color: transparent; color: transparent;
 	}
 	.pt-balance__value {
+		/* inline-block so fitText's transform:scale actually applies (CSS transforms are ignored on
+		   inline elements) and scrollWidth measures the true text width — otherwise a long balance
+		   renders full-size and gets clipped by the parent's overflow:hidden. */
+		display: inline-block;
 		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
 		font-style: normal; line-height: normal; letter-spacing: 0.36px;
 		white-space: nowrap; transform-origin: center;
@@ -2134,7 +2167,8 @@
 	/* WIN readout — mirrors the balance block, pinned to the right of the stats row. */
 	.pt-win {
 		flex: 0 0 auto;
-		max-width: calc(var(--u) * 0.3);
+		/* Match .pt-balance: cap to the win column so a big win can't overflow into the bet pill. */
+		max-width: calc(var(--u) * 0.22);
 		display: flex; flex-direction: column;
 		align-items: center; justify-content: center;
 		gap: 1px;
@@ -2151,6 +2185,8 @@
 		-webkit-text-fill-color: transparent; color: transparent;
 	}
 	.pt-win__value {
+		/* inline-block so fitText's transform:scale applies (see .pt-balance__value). */
+		display: inline-block;
 		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
 		font-style: normal; line-height: normal; letter-spacing: 0.36px;
 		white-space: nowrap; transform-origin: center; min-height: 12px;

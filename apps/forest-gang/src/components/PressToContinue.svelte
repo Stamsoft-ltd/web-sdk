@@ -29,8 +29,9 @@
 		const scale = ml.scale || 1;
 		// Portrait: sit in the glow gap below the popup panel but clear of the bottom HTML HUD bar,
 		// which occupies roughly the bottom ~17% of the screen. 0.95/0.85 both landed on/behind the
-		// bar (read as "no press text"); 0.73 puts it in the visible gap under FREE SPINS.
-		if (layoutType === 'portrait') return ml.height * 0.73;
+		// bar (read as "no press text"); 0.78 sits lower in the visible glow gap under the board
+		// (design ask "move it down") while still clearing the HUD bar.
+		if (layoutType === 'portrait') return ml.height * 0.78;
 		// Non-portrait (desktop/tablet — mobile landscape draws its own in-panel copy): sit in the
 		// glow ledge just ABOVE the HTML HUD bar. Estimating the board bottom from a minDim fraction
 		// kept landing the line back on the wooden planks (the free-spin board is much larger than
