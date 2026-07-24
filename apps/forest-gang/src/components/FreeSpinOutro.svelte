@@ -91,8 +91,14 @@
 	const medallionPulse = $derived(1 + 0.06 * Math.sin(animT * 2.6));
 
 	context.eventEmitter.subscribeOnMount({
-		freeSpinOutroShow: () => (show = true),
-		freeSpinOutroHide: async () => (show = false),
+		freeSpinOutroShow: () => {
+			show = true;
+			context.stateGame.freeSpinPopupShowing = true; // block the HUD (fullscreen-modal feel)
+		},
+		freeSpinOutroHide: async () => {
+			show = false;
+			context.stateGame.freeSpinPopupShowing = false;
+		},
 		freeSpinOutroCountUp: async (emitterEvent) => {
 			amount = emitterEvent.amount;
 			winLevelData = emitterEvent.winLevelData;
@@ -125,7 +131,12 @@
 						{@const BW = 1100}
 						{@const fromBottom = (1 - slideIn.current) * BW * 0.55}
 						{@const fromTop = (1 - slideIn.current) * -BW * 0.7}
+						<!-- Portrait: lift the WHOLE board (heading + win + amount) up a touch. The press line
+						     is canvas-anchored (PressToContinue at 0.78·height) and stays put, so this just
+						     opens up padding between the board's bottom leaves and "PRESS ANYWHERE". -->
+						{@const boardLift = isPortrait ? Math.round(BW * 0.08) : 0}
 
+						<Container y={-boardLift}>
 						<Container y={fromBottom}>
 						<!-- Board a touch larger than the BW layout reference so the enlarged heading fits with margin. -->
 						<Sprite key="fsBoardBg" anchor={{ x: 0.5, y: 0.5 }} width={Math.round(BW * 1.12)} height={Math.round(BW * 1.12)} />
@@ -138,8 +149,9 @@
 							y={Math.round(-BW * 0.205)}
 						/>
 
-						<!-- Scatter medallion — zooms in/out gently -->
-						<Container y={Math.round(BW * 0.02)} scale={medallionPulse}>
+						<!-- Scatter medallion — zooms in/out gently. Pulled up (was 0.02) so the medallion +
+						     amount group sits higher and the amount no longer hugs the bottom rail. -->
+						<Container y={Math.round(-BW * 0.03)} scale={medallionPulse}>
 							{#if medallionFrames.length > 0}
 								<AnimatedSprite
 									textures={medallionFrames}
@@ -164,7 +176,7 @@
 						{@const winFont = Math.round(BW * 0.072)}
 						{@const winMaxW = BW * 0.6}
 						{@const winScale = amountSizes.width > winMaxW ? winMaxW / amountSizes.width : 1}
-						<Container y={Math.round(BW * 0.26)} scale={winScale}>
+						<Container y={Math.round(BW * 0.17)} scale={winScale}>
 							<Text
 								anchor={0.5}
 								onresize={(s) => (amountSizes = s)}
@@ -184,7 +196,7 @@
 							<!-- Mobile landscape only: press text in PANEL space so it tracks the board and
 							     clears the side rails. All other layouts draw it BELOW the board instead
 							     (see PressToContinue), so it sits in the glow ledge, not over the planks. -->
-							<PressAnywhereText y={Math.round(BW * 0.42)} fontSize={Math.round(BW * 0.032)} />
+							<PressAnywhereText y={Math.round(BW * 0.47)} fontSize={Math.round(BW * 0.032)} />
 						{/if}
 						</Container>
 
@@ -200,6 +212,7 @@
 									style={textStyle(Math.round(BW * 0.05), 0xf1c14a)}
 								/>
 							</Container>
+						</Container>
 						</Container>
 
 					{/snippet}

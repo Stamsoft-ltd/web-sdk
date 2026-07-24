@@ -528,7 +528,7 @@
 						<AnimatedSprite
 							textures={winAnimTextures[reelSymbol.rawSymbol.name]}
 							x={getX(reelIndex)}
-							y={y + (symbolH * s * BORDER_SIZE * FRAME_H_MULT) / 2 - (isDesktop ? symbolH * 0.02 : 0)}
+							y={y + (symbolH * s * BORDER_SIZE * FRAME_H_MULT) / 2 - (isDesktop ? symbolH * 0.02 : isLandscape ? symbolH * 0.05 : 0)}
 							anchor={{ x: 0.5, y: 1 }}
 							width={symbolW * s * winFit}
 							height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[reelSymbol.rawSymbol.name] ?? 1)}

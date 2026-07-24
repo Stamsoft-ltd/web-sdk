@@ -115,7 +115,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild substitutes for all regular paying symbols. Scatter does not pay by itself and only triggers the bonus features.',
 	'PAYTABLE BUY_TEXT': 'Deal It: 100x bet.\nAll In: 400x bet.\nChance Spin: 2x bet per round.\nFeature Spin: 20x bet per round.\nDeal It and All In require confirmation before the round starts.',
 	'PAYTABLE MAX_TEXT': 'Advertised max win is 25,000x the selected bet.',
-	'DISCLAIMER TEXT': 'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
+	'DISCLAIMER TEXT': 'Malfunction voids all pays and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted bets. The expected return is calculated over many spins. Animations are not representative of any physical device, and are for illustrative purposes only. Winnings are settled according to the result received from the Remote Game Server and not from events within the web browser. TM and © 2025 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'OVERVIEW',
@@ -190,7 +190,7 @@ export default {
 		'If a game round is interrupted, it will continue when the game is reloaded, where possible.\n\nAll valid wagers and potential winnings remain active until the round is fully completed.',
 	'INFO LEGAL TITLE': 'LEGAL NOTICE',
 	'INFO LEGAL TEXT':
-		'Malfunction voids all pays and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.\n\nThe expected return is calculated over a large number of plays. The game display is for visual and entertainment purposes only and does not represent any physical gaming device.\n\nAll winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.\n\nTM and © 2026 Stake Engine.',
+		'Malfunction voids all pays and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted bets.\n\nThe expected return is calculated over many spins. Animations are not representative of any physical device, and are for illustrative purposes only.\n\nAll winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.\n\nTM and © 2025 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'EXPANDING\nREELS',

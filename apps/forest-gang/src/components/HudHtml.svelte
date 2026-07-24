@@ -67,6 +67,9 @@
 	const isPortrait = $derived(layoutType === 'portrait');
 	const isLandscapeMobile = $derived(layoutType === 'landscape');
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
+	// While a free-spin congrats screen (intro/outro) is up, make the whole HUD non-interactive so
+	// the popup reads as a fullscreen modal; taps then fall through to the press-anywhere handler.
+	const congratsBlocking = $derived(context.stateGame.freeSpinPopupShowing);
 	const hasAuto = $derived(stateBetDerived.hasAutoBetCounter());
 	const isSpinStop = $derived(!context.stateXstateDerived.isIdle() || hasAuto);
 	const canAffordBet = $derived(stateBetDerived.isBetCostAvailable());
@@ -383,7 +386,13 @@
 			// getBoundingClientRect() (with transform reset to none above) reports the true unscaled
 			// text width reliably for both inline and inline-block — scrollWidth returned 0/garbage
 			// on the inline span, so the scale computed to 1 and never shrank.
-			const avail = slot.clientWidth - used;
+			// The HUD sits inside a CSS-transform-scaled game container, so getBoundingClientRect()
+			// (used for `used`/`full`) returns RENDERED px while clientWidth returns LAYOUT px. Mixing
+			// the two made `avail` wrong under scale, so a long value never shrank — it clipped
+			// (landscape) or overflowed the pill (portrait). Scale the slot's content width into
+			// rendered px so `avail`, `used` and `full` share one unit.
+			const slotScale = slot.offsetWidth ? slot.getBoundingClientRect().width / slot.offsetWidth : 1;
+			const avail = slot.clientWidth * slotScale - used;
 			const nodeRect = node.getBoundingClientRect();
 			const full = nodeRect.width;
 			// Adaptive shrink origin: portrait centres the value in its slot (align-items:center) —
@@ -423,6 +432,7 @@
 
 <div
 	class="hud-shell"
+	class:hud-shell--blocked={congratsBlocking}
 	data-layout={layoutType}
 	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}')`}
 >
@@ -838,6 +848,14 @@
 {/if}
 
 <style>
+	/* Free-spin congrats (intro/outro) up: force every HUD control non-interactive so the popup
+	   reads as a fullscreen modal. The shell is already pointer-events:none but its buttons opt
+	   back in, so override all descendants; taps then fall through to the press-anywhere handler. */
+	.hud-shell--blocked,
+	.hud-shell--blocked * {
+		pointer-events: none !important;
+	}
+
 	.hud-shell {
 		position: absolute;
 		inset: 0;
@@ -1634,12 +1652,18 @@
 		position: absolute;
 		left: 16px;
 		bottom: 0;
-		/* Stop before the BUY BONUS button (centred at 37%, half-width subtracted). */
-		max-width: calc(37% - clamp(48px, 9vh, 84px) - 12px);
+		/* Definite rail width that stops WELL before the BUY BONUS button (centred at 37%). It must
+		   be a real width, not just max-width: the balance pill's max-width:100% resolves against
+		   it, so a giant balance ($10,000,000,000.00) shrinks to fit the rail via fitText instead
+		   of crowding the button. 32% (button centre 37% minus a ~5% clear gap) minus the button's
+		   own half-width leaves visible air before BUY BONUS. overflow:hidden is the safety clip;
+		   flex-start keeps the pill left-anchored (it used to hug its content). */
+		width: calc(32% - clamp(48px, 9vh, 84px));
 		display: flex;
 		flex-direction: column;
-		align-items: center;
+		align-items: flex-start;
 		gap: 8px;
+		overflow: hidden;
 	}
 	.ls-buy {
 		/* Wide green desktop-style button (btn_bg_wide.png, 730×267), scaled down for landscape.
@@ -1691,9 +1715,12 @@
 		display: flex;
 		align-items: baseline;
 		gap: 8px;
-		/* Bound the pill so a very large balance can't grow past it into the BUY BONUS button;
-		   fitText shrinks the value to fit, overflow:hidden is the safety clip. */
-		max-width: min(40vw, 280px);
+		/* Fill the .ls-left rail (definite width) instead of hugging content: a row pill that hugs
+		   its text makes fitText's slot = the full value width, so it never shrinks and the value
+		   clips. width:100% + min-width:0 pins the pill to the rail so fitText measures the rail and
+		   scales a giant balance down to fit. overflow:hidden is the safety clip. */
+		width: 100%;
+		min-width: 0;
 		overflow: hidden;
 		/* Same dark translucent pill as the WIN readout — keeps the text readable over the forest. */
 		padding: 3px 10px;
@@ -2090,7 +2117,7 @@
 		/* Nudge the whole BALANCE · bet · WIN row down a touch off the control bar (design ask). */
 		margin-top: calc(var(--u) * 0.022);
 	}
-	.pt-stats .pt-balance { justify-self: start; margin-left: calc(var(--u) * 0.03); }
+	.pt-stats .pt-balance { justify-self: start; margin-left: calc(var(--u) * 0.008); }
 	.pt-stats .pt-win { justify-self: end; margin-right: calc(var(--u) * 0.03); }
 	/* Balance: transparent (no pad), centred label + gold value. */
 	.pt-balance {
@@ -2103,6 +2130,12 @@
 		gap: 1px;
 		min-width: 0;
 		overflow: hidden;
+		/* Same dark translucent pill as landscape (.ls-balance) so BALANCE reads over the forest. */
+		padding: 3px 10px;
+		border-radius: 10px;
+		background: rgba(17, 12, 10, 0.72);
+		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
+		backdrop-filter: blur(4px);
 	}
 	.pt-balance__label {
 		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 10px;
@@ -2174,6 +2207,12 @@
 		gap: 1px;
 		min-width: 0;
 		overflow: hidden;
+		/* Same dark translucent pill as landscape (.ls-win) — matches .pt-balance. */
+		padding: 3px 10px;
+		border-radius: 10px;
+		background: rgba(17, 12, 10, 0.72);
+		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
+		backdrop-filter: blur(4px);
 	}
 	/* No win yet → keep the slot (bet stays centred) but show nothing. */
 	.pt-win--hidden { visibility: hidden; }

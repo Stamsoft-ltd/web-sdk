@@ -93,10 +93,10 @@
 	let swapTarget: number | null = null;
 	let swapped = false;
 
-	// Portrait AND mobile-landscape show a hand-less board, so the hand slide reads wrong
-	// there — value changes zoom out onto the board instead (fade + oversized → settle).
-	const isStacked = $derived(context.stateLayoutDerived.isStacked());
-	const useFlatBoard = $derived(isStacked || context.stateLayoutDerived.layoutType() === 'landscape');
+	// ALL layouts now show a hand-less leaf-corner board; the multiplier value zooms out onto it
+	// (fade + oversized → settle) rather than the bear paw sliding in (design ask — apply the
+	// zoom pad everywhere the multiplier appears: Deal It, All In, and every other situation).
+	const useFlatBoard = true;
 
 	// Swap the displayed value — desktop/landscape: slide-out / swap / slide-in (the hand moves);
 	// portrait: fade, then the new value zooms out onto the static board.

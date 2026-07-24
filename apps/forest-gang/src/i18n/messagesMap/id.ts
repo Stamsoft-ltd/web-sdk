@@ -105,7 +105,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild menggantikan semua simbol bayaran reguler. Scatter tidak membayar dengan sendirinya dan hanya memicu fitur bonus.',
 	'PAYTABLE BUY_TEXT': 'Bagikan: 100x taruhan.\nPasang Semua: 400x taruhan.\nPutaran Peluang: 2x taruhan per ronde.\nPutaran Fitur: 20x taruhan per ronde.\nBagikan dan Pasang Semua memerlukan konfirmasi sebelum ronde dimulai.',
 	'PAYTABLE MAX_TEXT': 'Kemenangan maks yang diiklankan adalah 25,000x taruhan yang dipilih.',
-	'DISCLAIMER TEXT': 'Kerusakan membatalkan semua kemenangan dan permainan. Koneksi internet yang stabil diperlukan. Jika terjadi pemutusan koneksi, muat ulang permainan untuk menyelesaikan ronde yang belum selesai. Pengembalian yang diharapkan dihitung dari banyak permainan. Tampilan permainan tidak mewakili perangkat fisik apa pun dan hanya untuk tujuan ilustrasi. Kemenangan diselesaikan sesuai jumlah yang diterima dari Remote Game Server dan bukan dari event di dalam peramban web. TM dan © 2026 Stake Engine.',
+	'DISCLAIMER TEXT': 'Kerusakan membatalkan semua kemenangan dan permainan. Koneksi internet yang stabil diperlukan. Jika terjadi pemutusan koneksi, muat ulang permainan untuk menyelesaikan ronde yang belum selesai. Pengembalian yang diharapkan dihitung dari banyak permainan. Tampilan permainan tidak mewakili perangkat fisik apa pun dan hanya untuk tujuan ilustrasi. Kemenangan diselesaikan sesuai jumlah yang diterima dari Remote Game Server dan bukan dari event di dalam peramban web. TM dan © 2025 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'IKHTISAR',
@@ -171,7 +171,7 @@ export default {
 		'Jika ronde permainan terganggu, ia akan dilanjutkan saat permainan dimuat ulang, jika memungkinkan.\n\nSemua taruhan yang sah dan potensi kemenangan tetap aktif hingga ronde sepenuhnya selesai.',
 	'INFO LEGAL TITLE': 'PEMBERITAHUAN HUKUM',
 	'INFO LEGAL TEXT':
-		'Kerusakan membatalkan semua pembayaran dan permainan. Koneksi internet yang stabil diperlukan. Jika koneksi terputus, muat ulang permainan untuk menyelesaikan ronde yang belum selesai.\n\nPengembalian yang diharapkan dihitung dari sejumlah besar permainan. Tampilan permainan hanya untuk tujuan visual dan hiburan dan tidak mewakili perangkat permainan fisik apa pun.\n\nSemua kemenangan diselesaikan sesuai hasil yang diterima dari Remote Game Server, bukan dari animasi atau event yang ditampilkan di dalam peramban web.\n\nTM and © 2026 Stake Engine.',
+		'Kerusakan membatalkan semua pembayaran dan permainan. Koneksi internet yang stabil diperlukan. Jika koneksi terputus, muat ulang permainan untuk menyelesaikan ronde yang belum selesai.\n\nPengembalian yang diharapkan dihitung dari sejumlah besar permainan. Tampilan permainan hanya untuk tujuan visual dan hiburan dan tidak mewakili perangkat permainan fisik apa pun.\n\nSemua kemenangan diselesaikan sesuai hasil yang diterima dari Remote Game Server, bukan dari animasi atau event yang ditampilkan di dalam peramban web.\n\nTM and © 2025 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'GULUNGAN\nMENGEMBANG',

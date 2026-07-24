@@ -61,8 +61,20 @@
 			});
 		};
 
-		window.addEventListener('error', handleAssetError, true);
+		// Surface otherwise-silent promise rejections (e.g. the fire-and-forget end-event/end-round
+		// RGS calls) to diagnostics instead of letting them vanish as unhandled rejections.
+		const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+			logForestDiagnostic('error', 'unhandled_rejection', {
+				reason: String((event.reason as { message?: string })?.message ?? event.reason),
+			});
+		};
 
-		return () => window.removeEventListener('error', handleAssetError, true);
+		window.addEventListener('error', handleAssetError, true);
+		window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+		return () => {
+			window.removeEventListener('error', handleAssetError, true);
+			window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+		};
 	});
 </script>

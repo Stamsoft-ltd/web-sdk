@@ -105,7 +105,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild korvaa kaikki tavalliset maksavat symbolit. Scatter ei maksa itsestään ja laukaisee vain bonusominaisuudet.',
 	'PAYTABLE BUY_TEXT': 'Jaa Kortit: 100x panos.\nKaikki Peliin: 400x panos.\nMahdollisuuskierros: 2x panos kierrosta kohti.\nOminaisuuskierros: 20x panos kierrosta kohti.\nJaa Kortit ja Kaikki Peliin vaativat vahvistuksen ennen kierroksen alkua.',
 	'PAYTABLE MAX_TEXT': 'Ilmoitettu maksimivoitto on 25,000x valittu panos.',
-	'DISCLAIMER TEXT': 'Toimintahäiriö mitätöi kaikki voitot ja pelit. Vakaa internetyhteys vaaditaan. Yhteyden katketessa lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset. Odotettu palautus lasketaan monien pelien yli. Pelinäyttö ei edusta mitään fyysistä laitetta ja on tarkoitettu vain havainnollistaviin tarkoituksiin. Voitot maksetaan etäpelipalvelimelta saadun summan mukaan, ei verkkoselaimen sisäisten tapahtumien perusteella. TM ja © 2026 Stake Engine.',
+	'DISCLAIMER TEXT': 'Toimintahäiriö mitätöi kaikki voitot ja pelit. Vakaa internetyhteys vaaditaan. Yhteyden katketessa lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset. Odotettu palautus lasketaan monien pelien yli. Pelinäyttö ei edusta mitään fyysistä laitetta ja on tarkoitettu vain havainnollistaviin tarkoituksiin. Voitot maksetaan etäpelipalvelimelta saadun summan mukaan, ei verkkoselaimen sisäisten tapahtumien perusteella. TM ja © 2025 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'YLEISKATSAUS',
@@ -171,7 +171,7 @@ export default {
 		'Jos pelikierros keskeytyy, se jatkuu pelin uudelleenlatauksen yhteydessä, mikäli mahdollista.\n\nKaikki voimassa olevat panokset ja mahdolliset voitot pysyvät aktiivisina kunnes kierros on täysin suoritettu.',
 	'INFO LEGAL TITLE': 'OIKEUDELLINEN HUOMAUTUS',
 	'INFO LEGAL TEXT':
-		'Toimintahäiriö mitätöi kaikki maksut ja pelit. Vakaa internetyhteys vaaditaan. Jos yhteys katkeaa, lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset.\n\nOdotettu palautus lasketaan suuren pelimäärän yli. Pelinäyttö on tarkoitettu vain visuaalisiin ja viihdetarkoituksiin eikä edusta mitään fyysistä pelilaitetta.\n\nKaikki voitot maksetaan etäpelipalvelimelta saadun tuloksen mukaan, ei verkkoselaimen sisällä näytettyjen animaatioiden tai tapahtumien perusteella.\n\nTM and © 2026 Stake Engine.',
+		'Toimintahäiriö mitätöi kaikki maksut ja pelit. Vakaa internetyhteys vaaditaan. Jos yhteys katkeaa, lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset.\n\nOdotettu palautus lasketaan suuren pelimäärän yli. Pelinäyttö on tarkoitettu vain visuaalisiin ja viihdetarkoituksiin eikä edusta mitään fyysistä pelilaitetta.\n\nKaikki voitot maksetaan etäpelipalvelimelta saadun tuloksen mukaan, ei verkkoselaimen sisällä näytettyjen animaatioiden tai tapahtumien perusteella.\n\nTM and © 2025 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'LAAJENEVAT\nRULLAT',

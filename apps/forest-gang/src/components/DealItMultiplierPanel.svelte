@@ -22,17 +22,15 @@
 	import { SYMBOL_SIZE, SYMBOL_W } from '../game/constants';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
 
-	// Bear-hand board sizing — multiplier_hand.png is 944×708; its board region is 592px wide,
-	// centred at (368,324). Match the top symbol board (BonusSymbolPanel uses SYMBOL_W * 1.1).
+	// Flat leaf-corner board (counterFrame — same art as the FREE SPINS / EARNED card). Match the
+	// top symbol board width (BonusSymbolPanel uses SYMBOL_W * 1.1). The bear paw is retired; the
+	// value zooms onto this board instead (design ask — same reveal as GlobalMultiplier).
 	const BOARD_W = SYMBOL_W * 1.1;
-	const HAND_W = BOARD_W * (944 / 592);
-	const HAND_H = HAND_W * (708 / 944);
 	const NUM_FONT = BOARD_W * 0.215;
 	// Red X emblem (872×776 after crop) shown at 1x — matches GlobalMultiplier (All In board).
 	const X_RED_W = BOARD_W * 0.34;
 	// Vertical centre nudge so the Cinzel caps sit in the middle of the wood board.
 	const NUM_Y = BOARD_W * 0.012;
-	const SLIDE = BOARD_W * 0.55;
 
 	const context = getContext();
 	// Mobile-landscape: the rail becomes a full-height LEFT column (rendered in MainContainer).
@@ -97,14 +95,16 @@
 	let show = $state(false);
 	let multiplier = $state(1);
 	let pendingTarget = $state(1);
-	let groupX = new Tween(0);
-	// Two-beat reveal: the hand slides in EMPTY, then the value pops onto the board (backOut scale).
-	// Without this the number rides in already resolved and the reveal has no landing moment.
+	// Zoom reveal (matches GlobalMultiplier): the board fades in oversized then settles to 1x
+	// (backOut), holds, then fades out — no bear paw sliding across.
+	let groupScale = new Tween(1);
+	let groupAlpha = new Tween(1);
+	// Value pops onto the board once it has landed (backOut scale) for a distinct landing moment.
 	let numReveal = new Tween(1);
 	let revealed = false;
 	let skipReveal: (() => void) | null = null;
-	// True only during the hold phase (after slide-in completes). Prevents the stopButtonClick that
-	// triggered forceStop from also immediately skipping the multiplier hand on the same key press.
+	// True only during the hold phase (after the zoom-in settles). Prevents the stopButtonClick that
+	// triggered forceStop from also immediately skipping the reveal on the same key press.
 	let readyToSkip = false;
 
 	const skipNow = (fromStopClick = false) => {
@@ -112,36 +112,40 @@
 		if (fromStopClick && !readyToSkip) return;
 		revealed = true;
 		show = false;
-		groupX.set(0, { duration: 0 });
+		groupScale.set(1, { duration: 0 });
+		groupAlpha.set(1, { duration: 0 });
 		skipReveal?.();
 	};
 
-	// Reveal the hand with the new value, hold, then hide it again.
+	// Reveal the board with the new value (zoom out onto the board), hold, then fade it out.
 	const revealChange = async (next: number) => {
 		if (show) return; // guard against overlapping reveals
 		revealed = false;
 		readyToSkip = false;
 		multiplier = next;
-		groupX.set(-SLIDE, { duration: 0 }); // start off to the left
-		numReveal.set(0, { duration: 0 }); // value hidden until the hand has landed
+		groupScale.set(1.45, { duration: 0 }); // oversized start
+		groupAlpha.set(0, { duration: 0 });
+		numReveal.set(0, { duration: 0 }); // value hidden until the board has landed
 		show = true; // FadeContainer fades it in
-		groupX.set(0, { duration: 500, easing: backOut }); // slide into place (slower hand)
-		// Wait for slide-in to complete before accepting stop-button skips (prevents the same press
-		// that triggered forceStop from hiding the hand before the player can see it).
-		await waitForTimeout(500);
+		groupScale.set(1, { duration: 300, easing: backOut }); // zoom out to settle
+		groupAlpha.set(1, { duration: 200 });
+		// Wait for the zoom-in to settle before accepting stop-button skips (prevents the same press
+		// that triggered forceStop from hiding the board before the player can see it).
+		await waitForTimeout(300);
 		if (revealed) { readyToSkip = false; return; }
-		// Beat, then pop the value onto the empty board.
-		await waitForTimeout(120);
-		numReveal.set(1, { duration: 260, easing: backOut });
-		await waitForTimeout(200);
+		// Beat, then pop the value onto the board.
+		await waitForTimeout(80);
+		numReveal.set(1, { duration: 240, easing: backOut });
+		await waitForTimeout(180);
 		if (revealed) { readyToSkip = false; return; }
 		readyToSkip = true;
 		await Promise.race([waitForTimeout(900), new Promise<void>((r) => { skipReveal = r; })]);
 		skipReveal = null;
 		readyToSkip = false;
 		if (revealed) return;
-		groupX.set(SLIDE, { duration: 380, easing: cubicIn }); // slide out to the right (slower hand)
-		await Promise.race([waitForTimeout(380), new Promise<void>((r) => { skipReveal = r; })]);
+		groupAlpha.set(0, { duration: 260 }); // fade the board out (slight zoom for a soft exit)
+		groupScale.set(1.12, { duration: 260, easing: cubicIn });
+		await Promise.race([waitForTimeout(260), new Promise<void>((r) => { skipReveal = r; })]);
 		skipReveal = null;
 		if (revealed) return;
 		show = false; // FadeContainer fades it out
@@ -177,16 +181,18 @@
 			show = false;
 			multiplier = 1;
 			pendingTarget = 1;
-			groupX.set(0, { duration: 0 });
+			groupScale.set(1, { duration: 0 });
+			groupAlpha.set(1, { duration: 0 });
 		},
 	});
 </script>
 
 {#snippet panel()}
-	<!-- Hand slides in/out when the multiplier changes (fade via FadeContainer) -->
-	<Container x={position.x + groupX.current} y={position.y} {scale}>
-			<!-- Bear-hand board: panel centre (0.39/0.458) at the container origin, paw extends right -->
-			<Sprite key="multiplierHand" anchor={{ x: 0.39, y: 0.458 }} width={HAND_W} height={HAND_H} />
+	<!-- Flat leaf-corner board; the value zooms out onto it when the multiplier changes (fade via
+	     FadeContainer + groupAlpha, scale settle via groupScale). No bear paw. -->
+	<Container x={position.x} y={position.y} scale={scale * groupScale.current} alpha={groupAlpha.current}>
+			<!-- Hand-less board (same art as the FREE SPINS / EARNED card), centred on the origin. -->
+			<Sprite key="counterFrame" anchor={0.5} width={BOARD_W * 1.02} height={BOARD_W * 0.76} />
 
 			<!-- At 1x, show the red X emblem; otherwise the Cinzel 900 gold number.
 			     Wrapped in a scaling container for the pop-in reveal (numReveal). -->

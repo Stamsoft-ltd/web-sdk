@@ -294,6 +294,26 @@
 				sizes: { width: deerW, height: deerH },
 			})}
 		>
+			{#if letterKey}
+				{@const cardInnerH = deerH * PLACEHOLDER.h}
+				{@const cardInnerW = cardInnerH * BUST_INNER_ASPECT}
+				<!-- Opaque wood backing for the deer's HELD CARD. The luma-keyed deer animation washed the
+				     card's dark wood to semi-transparent (the source video is fully opaque), so the reels
+				     showed through it — worst at the bottom rail band. Drawn BEHIND the deer sprite and sized
+				     to the card's full interior (wider + taller than the symbol window) so the card's own wood
+				     grain still renders on top; this only fills the see-through. Applies to BOTH letters and
+				     animals. Colour matches the static deer card's dark wood. -->
+				<Container x={deerW * PLACEHOLDER.cx} y={deerH * PLACEHOLDER.cy + cardInnerH * 0.12}>
+					<Graphics
+						draw={(graphics) => {
+							graphics.clear();
+							graphics.beginFill(0x3d1c0a);
+							graphics.rect(-cardInnerW * 0.85, -cardInnerH * 0.85, cardInnerW * 1.7, cardInnerH * 1.7);
+							graphics.endFill();
+						}}
+					/>
+				</Container>
+			{/if}
 			{#if useAnimDeer}
 				<AnimatedSprite
 					textures={deerFrames}
@@ -337,20 +357,9 @@
 						{#if displayIdle.length}
 							{@const bust = IDLE_BUST[displaySymbol!] ?? { zoom: 1, yOff: 0, xOff: 0 }}
 							{@const bustH = innerH * BUST_SYM_FRAC * bust.zoom}
-							<!-- Opaque wood backing behind the bust. The deer's held card is transparent in the
-							     luma-keyed animation frames, so without this the reels show through the bust
-							     cutout's transparent areas. Fills the true card interior only (NO top overflow —
-							     the strip above holds the ears poking over the rail, which must still show the
-							     deer, not a block). Colour matches the static deer card's dark wood interior. -->
-							<Graphics
-								draw={(graphics) => {
-									graphics.clear();
-									graphics.beginFill(0x3d1c0a);
-									graphics.rect(-innerW / 2, -innerH / 2, innerW, innerH);
-									graphics.endFill();
-								}}
-							/>
-							<!-- Zoomed bust masked to the board interior — same close-up as the side panel card. -->
+							<!-- Zoomed bust masked to the board interior — same close-up as the side panel card.
+							     (The opaque card backing is drawn behind the deer sprite above, so nothing shows
+							     through the card here.) -->
 							<AnimatedSprite
 								textures={displayIdle}
 								x={bust.xOff * innerW}

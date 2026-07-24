@@ -84,6 +84,9 @@ export const socialOverridesEn: Record<string, string> = {
 		'The Wild substitutes for all regular winning symbols. The Wild does not substitute for the Scatter. Wild win: 5 in a line only 250x.',
 
 	'INFO BUY TITLE': 'FEATURE PLAY',
+	// Feature-buy card cost label — scrub "COST" to match the other COST->PLAY overrides;
+	// the paired value ("2x PLAY" etc.) is built in Game.svelte from the overridden BET key.
+	'INFO BUY COST': 'PLAY FOR',
 	'INFO USER BET TITLE': 'PLAY AMOUNT AND MODES',
 	'INFO USER BET TEXT':
 		'Use + and - or the play menu to choose an available play level. Get Bonus opens Deal It, All In, Chance Spin and Feature Spin options.',
@@ -97,7 +100,7 @@ export const socialOverridesEn: Record<string, string> = {
 		'If a game round is interrupted, it will continue when the game is reloaded, where possible.\n\nAll valid plays and potential winnings remain active until the round is fully completed.',
 
 	'INFO LEGAL TEXT':
-		'Malfunction voids all wins and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.\n\nThe expected return is calculated over a large number of plays. The game display is for visual and entertainment purposes only and does not represent any physical gaming device.\n\nAll winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.\n\nTM and © 2026 Stake Engine.',
+		'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted plays.\n\nThe expected return is calculated over many spins. Animations are not representative of any physical device, and are for illustrative purposes only.\n\nAll winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.\n\nTM and © 2025 Stake Engine.',
 
 	// ── UI guide page (bet -> play wording) ─────────────────────────────────────
 	'INFO UI BETPLUS TITLE': 'PLAY +',

@@ -105,7 +105,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Le Wild remplace tous les symboles de paiement réguliers. Le Scatter ne paie pas de lui-même et déclenche uniquement les fonctions bonus.',
 	'PAYTABLE BUY_TEXT': 'Distribue : 100x mise.\nVa-Banque : 400x mise.\nTour Chance : 2x mise par tour.\nTour Fonction : 20x mise par tour.\nDistribue et Va-Banque nécessitent une confirmation avant le début du tour.',
 	'PAYTABLE MAX_TEXT': 'Le gain max annoncé est de 25,000x la mise sélectionnée.',
-	'DISCLAIMER TEXT': 'Un dysfonctionnement annule tous les gains et jeux. Une connexion Internet stable est requise. En cas de déconnexion, rechargez le jeu pour terminer les tours inachevés. Le retour attendu est calculé sur de nombreuses parties. L\'affichage du jeu ne représente aucun appareil physique et n\'est fourni qu\'à titre illustratif. Les gains sont réglés selon le montant reçu du Remote Game Server et non selon les événements du navigateur web. TM et © 2026 Stake Engine.',
+	'DISCLAIMER TEXT': 'Un dysfonctionnement annule tous les gains et jeux. Une connexion Internet stable est requise. En cas de déconnexion, rechargez le jeu pour terminer les tours inachevés. Le retour attendu est calculé sur de nombreuses parties. L\'affichage du jeu ne représente aucun appareil physique et n\'est fourni qu\'à titre illustratif. Les gains sont réglés selon le montant reçu du Remote Game Server et non selon les événements du navigateur web. TM et © 2025 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'APERÇU',
@@ -171,7 +171,7 @@ export default {
 		'Si un tour de jeu est interrompu, il continuera au rechargement du jeu, lorsque cela est possible.\n\nToutes les mises valides et les gains potentiels restent actifs jusqu\'à ce que le tour soit entièrement terminé.',
 	'INFO LEGAL TITLE': 'MENTIONS LÉGALES',
 	'INFO LEGAL TEXT':
-		'Un dysfonctionnement annule tous les paiements et jeux. Une connexion Internet stable est requise. Si la connexion est perdue, rechargez le jeu pour terminer les tours inachevés.\n\nLe retour attendu est calculé sur un grand nombre de parties. L\'affichage du jeu est fourni uniquement à des fins visuelles et de divertissement et ne représente aucun appareil de jeu physique.\n\nTous les gains sont réglés selon le résultat reçu du Remote Game Server, et non selon les animations ou événements affichés dans le navigateur web.\n\nTM and © 2026 Stake Engine.',
+		'Un dysfonctionnement annule tous les paiements et jeux. Une connexion Internet stable est requise. Si la connexion est perdue, rechargez le jeu pour terminer les tours inachevés.\n\nLe retour attendu est calculé sur un grand nombre de parties. L\'affichage du jeu est fourni uniquement à des fins visuelles et de divertissement et ne représente aucun appareil de jeu physique.\n\nTous les gains sont réglés selon le résultat reçu du Remote Game Server, et non selon les animations ou événements affichés dans le navigateur web.\n\nTM and © 2025 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'ROULEAUX\nEXTENSIBLES',

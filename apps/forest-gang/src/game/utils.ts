@@ -6,14 +6,32 @@ import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, REEL_PADDING, BOARD_DIMENSIONS } from 
 import { eventEmitter } from './eventEmitter';
 import type { Bet, BookEventOfType } from './typesBookEvent';
 import { bookEventHandlerMap } from './bookEventHandlerMap';
+import { stateGameDerived } from './stateGame.svelte';
 import type { RawSymbol, SymbolState } from './types';
 
 export const { getEmptyBoard } = createGetEmptyPaddedBoard({ reelsDimensions: BOARD_DIMENSIONS });
 export const { playBookEvent, playBookEvents } = createPlayBookUtils({ bookEventHandlerMap });
 export const playBet = async (bet: Bet) => {
 	stateBet.winBookEventAmount = 0;
-	await playBookEvents(bet.state);
-	eventEmitter.broadcast({ type: 'stopButtonEnable' });
+	try {
+		await playBookEvents(bet.state);
+	} catch (error) {
+		// A book-event handler that throws (e.g. a malformed/partial event with a missing
+		// field) must NOT reject the game actor: the xstate `play`/`ending` states have no
+		// onError, so a rejection would strand the machine in `bet` with frozen reels and no
+		// error modal. Contain it here — log, settle the board to a safe state, and resolve
+		// normally so the machine still flows play.onDone -> endGame and the round is credited
+		// from the authoritative RGS result rather than the (aborted) local presentation.
+		console.error('[forest-gang] playBet aborted — book-event playback threw:', error);
+		try {
+			stateGameDerived.enhancedBoard.settle();
+		} catch {
+			// settle is best-effort recovery; never let it re-throw out of the catch.
+		}
+	} finally {
+		// Always hand controls back to the player, even on the abort path.
+		eventEmitter.broadcast({ type: 'stopButtonEnable' });
+	}
 };
 
 // Keep ALL event types so createBonusSnapshot can replay the full bonus from scratch

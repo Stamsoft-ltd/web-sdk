@@ -105,7 +105,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild, tüm normal ödeme yapan sembollerin yerine geçer. Scatter tek başına ödeme yapmaz ve yalnızca bonus özelliklerini tetikler.',
 	'PAYTABLE BUY_TEXT': 'Dağıt: 100x bahis.\nYa Hep Ya Hiç: 400x bahis.\nŞans Dönüşü: tur başına 2x bahis.\nÖzellik Dönüşü: tur başına 20x bahis.\nDağıt ve Ya Hep Ya Hiç tur başlamadan önce onay gerektirir.',
 	'PAYTABLE MAX_TEXT': 'Reklam edilen maksimum kazanç seçilen bahsin 25,000x katıdır.',
-	'DISCLAIMER TEXT': 'Arıza tüm kazançları ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilmesi durumunda, tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı herhangi bir fiziksel cihazı temsil etmez ve yalnızca gösterim amaçlıdır. Kazançlar web tarayıcısındaki olaylara göre değil, Uzak Oyun Sunucusundan alınan tutara göre ödenir. TM ve © 2026 Stake Engine.',
+	'DISCLAIMER TEXT': 'Arıza tüm kazançları ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilmesi durumunda, tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı herhangi bir fiziksel cihazı temsil etmez ve yalnızca gösterim amaçlıdır. Kazançlar web tarayıcısındaki olaylara göre değil, Uzak Oyun Sunucusundan alınan tutara göre ödenir. TM ve © 2025 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'GENEL BAKIŞ',
@@ -171,7 +171,7 @@ export default {
 		'Bir oyun turu kesintiye uğrarsa, mümkün olduğunda oyun yeniden yüklendiğinde devam eder.\n\nTur tamamen tamamlanana kadar tüm geçerli bahisler ve olası kazançlar etkin kalır.',
 	'INFO LEGAL TITLE': 'YASAL BİLDİRİM',
 	'INFO LEGAL TEXT':
-		'Arıza tüm ödemeleri ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilirse, tamamlanmamış turları tamamlamak için oyunu yeniden yükleyin.\n\nBeklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı yalnızca görsel ve eğlence amaçlıdır ve herhangi bir fiziksel oyun cihazını temsil etmez.\n\nTüm kazançlar, web tarayıcısında gösterilen animasyonlara veya olaylara göre değil, Uzak Oyun Sunucusundan alınan sonuca göre ödenir.\n\nTM and © 2026 Stake Engine.',
+		'Arıza tüm ödemeleri ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilirse, tamamlanmamış turları tamamlamak için oyunu yeniden yükleyin.\n\nBeklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı yalnızca görsel ve eğlence amaçlıdır ve herhangi bir fiziksel oyun cihazını temsil etmez.\n\nTüm kazançlar, web tarayıcısında gösterilen animasyonlara veya olaylara göre değil, Uzak Oyun Sunucusundan alınan sonuca göre ödenir.\n\nTM and © 2025 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'GENİŞLEYEN\nMAKARALAR',

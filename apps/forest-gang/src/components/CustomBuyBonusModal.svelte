@@ -704,6 +704,28 @@
 	}
 	.grid--portrait .card:not(:first-child) { margin-top: -3%; } /* slight leaf overlap (Figma) */
 
+	/* Portrait M (375) and L (425): the cards read a touch small at base — bump the title and
+	   description, drop the content down so the title clears the top leaf corners, and add a
+	   title↔description gap. Mobile S (320) is narrower and OVERRIDES these smaller below (its long
+	   "ALL IN" blurb needs less to avoid overlapping the icon). */
+	.grid--portrait .card-title {
+		font-size: clamp(13px, 7cqw, 20px);
+		margin-bottom: clamp(3px, 2cqw, 8px);
+	}
+	.grid--portrait .card-desc { font-size: clamp(9px, 5cqw, 13px); }
+	.grid--portrait .card-inner { padding-top: 16%; }
+
+	/* Mobile S (320px wide) ONLY — the 360px cutoff sits between S(320) and M(375) so only the
+	   smallest popout matches; M/L keep the larger sizes above. */
+	@media (max-width: 360px) {
+		.grid--portrait .card-title {
+			font-size: clamp(11px, 6.2cqw, 17px);
+			margin-bottom: clamp(2px, 1.6cqw, 6px);
+		}
+		.grid--portrait .card-desc { font-size: clamp(8px, 4cqw, 11px); }
+		.grid--portrait .card-inner { padding-top: 15%; }
+	}
+
 	.bet-bar--portrait {
 		flex: 0 0 auto;
 		margin: 0;

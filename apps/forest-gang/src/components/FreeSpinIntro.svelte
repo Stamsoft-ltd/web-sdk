@@ -136,8 +136,14 @@
 	);
 
 	context.eventEmitter.subscribeOnMount({
-		freeSpinIntroShow: () => (show = true),
-		freeSpinIntroHide: () => (show = false),
+		freeSpinIntroShow: () => {
+			show = true;
+			context.stateGame.freeSpinPopupShowing = true; // block the HUD (fullscreen-modal feel)
+		},
+		freeSpinIntroHide: () => {
+			show = false;
+			context.stateGame.freeSpinPopupShowing = false;
+		},
 		freeSpinIntroUpdate: async (emitterEvent) => {
 			freeSpinsFromEvent = emitterEvent.totalFreeSpins;
 			// Wait for a manual press/tap to continue — no auto-advance (design ask: the congrats
@@ -241,7 +247,7 @@
 				<!-- Mobile landscape only: press text in PANEL space so it tracks the board and clears
 				     the side rails. All other layouts draw it BELOW the board instead (see
 				     PressToContinue), so it sits in the glow ledge rather than over the wooden planks. -->
-				<PressAnywhereText y={Math.round(BW * 0.45)} fontSize={Math.round(BW * 0.032)} />
+				<PressAnywhereText y={Math.round(BW * 0.5)} fontSize={Math.round(BW * 0.032)} />
 			{/if}
 			</Container>
 
