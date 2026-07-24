@@ -12,6 +12,10 @@
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
 	// Blue bracketed board panel (Figma 4036-2458 uses board_panel_623x514 = fs_panel art).
 	const panelBg = ap('/assets/components/ui/fs_panel.webp?v=20260708');
+	// Our control icons for the +, − and × (close) buttons (matches the buy-bonus / info modals).
+	const iconClose = ap('/assets/components/ui/ctrl_close.webp');
+	const iconMinus = ap('/assets/components/ui/ctrl_minus.webp');
+	const iconPlus = ap('/assets/components/ui/ctrl_plus.webp');
 
 	// Spin-count stops (last = unlimited), stepped with − / + per the Figma design.
 	const STOPS: Array<number> = [5, 10, 25, 50, 100, 250, 500, Infinity];
@@ -64,7 +68,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div class="ap-backdrop" onclick={props.onclose}></div>
 
-<button class="ap-close" type="button" onclick={props.onclose} aria-label="Close">✕</button>
+<button class="ap-close" type="button" onclick={props.onclose} aria-label="Close"><img class="ctrl-glyph" src={iconClose} alt="" /></button>
 
 <div class="ap-root" role="dialog" aria-modal="true">
 	<div class="ap-panel" style={`background-image:url('${panelBg}')`}>
@@ -93,9 +97,9 @@
 			<p class="ap-spins-label">{t('AUTO NUM SPINS')}</p>
 
 			<div class="ap-stepper">
-				<button class="ap-step" type="button" disabled={disableDec} onclick={() => step(-1)} aria-label="Fewer spins">−</button>
+				<button class="ap-step" type="button" disabled={disableDec} onclick={() => step(-1)} aria-label="Fewer spins"><img class="ctrl-glyph" src={iconMinus} alt="" /></button>
 				<span class="ap-count">{countLabel}</span>
-				<button class="ap-step" type="button" disabled={disableInc} onclick={() => step(1)} aria-label="More spins">+</button>
+				<button class="ap-step" type="button" disabled={disableInc} onclick={() => step(1)} aria-label="More spins"><img class="ctrl-glyph" src={iconPlus} alt="" /></button>
 			</div>
 
 			<button class="ap-start" type="button" onclick={start}>
@@ -148,6 +152,15 @@
 		transition: filter 0.12s ease;
 	}
 	.ap-close:hover { filter: brightness(1.25); }
+	/* The ctrl icons are full round buttons — fill the wrapper and strip its own frame. */
+	.ap-close:has(.ctrl-glyph),
+	.ap-step:has(.ctrl-glyph) {
+		border: none;
+		background: none;
+		box-shadow: none;
+		padding: 0;
+	}
+	.ctrl-glyph { width: 100%; height: 100%; object-fit: contain; display: block; }
 
 	/* Blue bracketed tech panel (fs_panel.webp, 623×514 design size) */
 	.ap-panel {

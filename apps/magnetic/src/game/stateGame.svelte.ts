@@ -184,7 +184,7 @@ const getBoardViewportPadding = () => {
 	if (layoutType === 'portrait') return { top: 10, right: 10, bottom: 170, left: 10 };
 	if (layoutType === 'landscape') return { top: 10, right: 20, bottom: 34, left: 12 };
 	if (layoutType === 'tablet') return { top: 24, right: 28, bottom: 100, left: 28 };
-	return { top: 110, right: 230, bottom: 170, left: 210 };
+	return { top: 110, right: 230, bottom: 245, left: 210 };
 };
 
 const getBoardViewportMetrics = () => {
@@ -205,7 +205,7 @@ const getBoardViewportMetrics = () => {
 const getBoardScale = () => {
 	const { mainLayout, availableCanvasHeight, availableCanvasWidth } = getBoardViewportMetrics();
 	return Math.max(
-		0.74,
+		0.53,
 		Math.min(
 			availableCanvasHeight / (BOARD_SIZES.height * (mainLayout.scale || 1)),
 			availableCanvasWidth / (BOARD_SIZES.width * (mainLayout.scale || 1)),
@@ -301,14 +301,18 @@ const boardLayout = () => {
 		};
 	}
 
-	const boardScale = getBoardScale() * 0.92;
-	// Grid centre Y = a small margin below the top of the game area + half the grid height, so the
-	// board sits near the top (just under the logo) instead of the old wooden-frame-derived Y that
-	// sank/clipped it once the cells were widened.
-	const TOP_MARGIN = mainLayout.height * 0.03;
+	// Very slightly smaller than before (was 0.92) so its bottom-right corner clears the nav on short
+	// screens; combined with centring below.
+	const boardScale = getBoardScale() * 0.9;
+	// Centre the grid in the padded region (top padding sits below the logo, bottom padding above the
+	// HUD) instead of top-anchoring it, then ease it slightly DOWN — the full bottom reserve pulled it
+	// too close to the top on short laptops (e.g. 1024×576).
+	const pad = getBoardViewportPadding();
+	const mainScale = mainLayout.scale || 1;
+	const boardY = mainLayout.height * 0.5 + (pad.top - pad.bottom + 25) / (2 * mainScale);
 	return {
 		x: mainLayout.width * 0.5 + getBoardOffset().x,
-		y: TOP_MARGIN + (BOARD_SIZES.height * boardScale) / 2,
+		y: boardY,
 		boardScale,
 		anchor: { x: 0.5, y: 0.5 },
 		pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
@@ -341,7 +345,8 @@ const landscapeCapsuleLayout = () => {
 	const canvasTopY = main.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1));
 	// Anchor the FULL sprite box (not just the visible glass) below the screen top, so the tube's
 	// top cap art is never clipped — the capsule starts near the top but stays fully on screen.
-	let tubeY = canvasTopY + main.height * 0.02 + tubeH * 0.5;
+	// The 0.07 top-gap sits the capsule (and the WIN pill tracking its visible bottom) a bit lower.
+	let tubeY = canvasTopY + main.height * 0.07 + tubeH * 0.5;
 	const symSize = visibleW * 0.66;
 	let visibleBottom = tubeY + visibleH * 0.5;
 	// On very short landscape screens (e.g. 400×225) the board — and this board-derived tube — shrinks,

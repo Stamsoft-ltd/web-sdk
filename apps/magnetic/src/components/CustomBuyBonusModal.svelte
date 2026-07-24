@@ -13,6 +13,10 @@
 	const betPanel       = ap('/assets/components/ui/bb_bet_panel.webp?v=20260708c');
 	const confirmPanelBg = ap('/assets/components/ui/confirm_panel.webp?v=20260708b');
 	const coinIcon       = ap('/assets/components/ui/bb_coin.svg?v=20260708c');
+	// Our control icons (same set the info modal documents) for the +, − and × (close) buttons.
+	const iconClose      = ap('/assets/components/ui/ctrl_close.webp');
+	const iconMinus      = ap('/assets/components/ui/ctrl_minus.webp');
+	const iconPlus       = ap('/assets/components/ui/ctrl_plus.webp');
 
 	// Icons — exact Figma art (node 4040-4075): glowing magnet, purple M cube, red M briefcase.
 	const iconChance  = ap('/assets/components/ui/bb_icon_extra_chance.webp?v=20260708c');
@@ -129,7 +133,7 @@
 <!-- Panel -->
 <div class="panel" class:portrait={isPortrait} bind:this={panelEl} style={isPortrait ? '' : landscapeVars} role="dialog" aria-modal="true">
 	<h2 class="title">{t('BUY BONUS')}</h2>
-	<button class="close-btn" type="button" onclick={props.onclose} aria-label="Close">✕</button>
+	<button class="close-btn" type="button" onclick={props.onclose} aria-label="Close"><img class="ctrl-glyph" src={iconClose} alt="" /></button>
 
 	<div class="grid">
 		<!-- Extra Chance -->
@@ -191,7 +195,7 @@
 
 	<!-- Bet selector -->
 	<div class="bet" style={`background-image:url('${betPanel}')`}>
-		<button class="bet-step" type="button" disabled={disableDec} onclick={() => stepBet(-1)} aria-label="Decrease bet">−</button>
+		<button class="bet-step" type="button" disabled={disableDec} onclick={() => stepBet(-1)} aria-label="Decrease bet"><img class="ctrl-glyph" src={iconMinus} alt="" /></button>
 		<div class="bet-center">
 			<img class="bet-coin" src={coinIcon} alt="" />
 			<div class="bet-value">
@@ -199,14 +203,14 @@
 				<span class="bet-amount">{betDisplay}</span>
 			</div>
 		</div>
-		<button class="bet-step" type="button" disabled={disableInc} onclick={() => stepBet(1)} aria-label="Increase bet">+</button>
+		<button class="bet-step" type="button" disabled={disableInc} onclick={() => stepBet(1)} aria-label="Increase bet"><img class="ctrl-glyph" src={iconPlus} alt="" /></button>
 	</div>
 </div>
 
 <!-- Confirm -->
 {#if confirmMode}
 	<button class="backdrop backdrop--z2" type="button" aria-label="Close" tabindex="-1" onclick={closeConfirm}></button>
-	<button class="confirm-close" type="button" onclick={closeConfirm} aria-label="Close">✕</button>
+	<button class="confirm-close" type="button" onclick={closeConfirm} aria-label="Close"><img class="ctrl-glyph" src={iconClose} alt="" /></button>
 	<div class="confirm" role="dialog" aria-modal="true">
 		<div class="confirm-panel" style={`background-image:url('${confirmPanelBg}')`}>
 			<div class="confirm-content">
@@ -279,6 +283,17 @@
 		transition: filter 0.12s ease;
 	}
 	.close-btn:hover { filter: brightness(1.25) drop-shadow(0 0 2.5px #0d89c6); }
+	/* The ctrl icons are full round buttons (cyan ring + glyph) — let them fill the wrapper and
+	   strip the wrapper's own frame so it isn't a button-inside-a-button. */
+	.close-btn:has(.ctrl-glyph),
+	.confirm-close:has(.ctrl-glyph),
+	.bet-step:has(.ctrl-glyph) {
+		border: none;
+		background: none;
+		box-shadow: none;
+		padding: 0;
+	}
+	.ctrl-glyph { width: 100%; height: 100%; object-fit: contain; display: block; }
 
 	/* Four cards in a row — square, kept compact so they don't dominate the screen. */
 	.grid {

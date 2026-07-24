@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { OnHotkey } from 'components-shared';
 	import { stateBet, stateBetDerived, stateConfig, stateModal, stateSound } from 'state-shared';
+	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 	import { onDestroy } from 'svelte';
 
 	import { getContext } from '../game/context';
@@ -134,6 +135,11 @@
 	const formattedBalance = $derived(
 		magneticStakeDerived.formatCurrencyAmount(stateBet.balanceAmount),
 	);
+	// Last round's win — shown persistently in the HUD (desktop between balance/bet; portrait in the
+	// stats row where the buy-bonus button used to sit). Holds the round total until the next spin.
+	// winBookEventAmount is in BOOK units (like the capsule's TOTAL WIN), so format it the same way —
+	// NOT formatCurrencyAmount, which is for the currency-unit balance/bet and over-reads it 100×.
+	const formattedWin = $derived(bookEventAmountToCurrencyString(stateBet.winBookEventAmount));
 	const formattedBet = $derived(
 		isFeatureActive
 			? magneticStakeDerived.formatCurrencyAmount(stateBet.betAmount * 50)
@@ -378,6 +384,39 @@
 	data-layout={layoutType}
 	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-stop-bg:url('${btnSpinStop}');--pt-navbar:url('${navBarMobile}');--pt-buy:url('${buyBonusMobile}');--pt-value:url('${valueBoxMobile}');--pt-balance-bg:url('${balanceContainer}');--pt-bet-bg:url('${betContainer}');--ls-navbar:url('${navBarLand}');--ls-betbox:url('${betBoxLand}');--ls-buy-x:${lsBuyX}px;--ls-buy-y:${lsBuyY}px`}
 >
+	<!-- Menu popover (SOUND / MUSIC / INFO) — shared by desktop and portrait; rendered inside a
+	     position:relative nav container so it floats above the menu button. -->
+	{#snippet menuPopup()}
+		<button
+			class="menu-popup-backdrop"
+			type="button"
+			aria-label="Close menu"
+			onclick={() => (showMenuPopup = false)}
+		></button>
+		<div class="menu-popup" style={`background-image:url('${menuPopupBg}')`}>
+			<button class="menu-row" type="button" onclick={toggleSfx}>
+				<span class="menu-row__icon">
+					<span class="menu-row__glyph" style={`--icon:url('${sfxOff ? iconMenuSoundOff : iconMenuSound}')`}></span>
+				</span>
+				<span class="menu-row__label">{i18nDerived.translate('SOUND')}</span>
+			</button>
+			<div class="menu-divider"></div>
+			<button class="menu-row" type="button" onclick={toggleMusic}>
+				<span class="menu-row__icon">
+					<span class="menu-row__glyph" style={`--icon:url('${musicOff ? iconMenuMusicOff : iconMenuMusic}')`}></span>
+				</span>
+				<span class="menu-row__label">{i18nDerived.translate('MUSIC')}</span>
+			</button>
+			<div class="menu-divider"></div>
+			<button class="menu-row" type="button" onclick={openInfoFromMenu}>
+				<span class="menu-row__icon">
+					<span class="menu-row__glyph" style={`--icon:url('${iconMenuInfo}')`}></span>
+				</span>
+				<span class="menu-row__label">{i18nDerived.translate('INFO')}</span>
+			</button>
+		</div>
+	{/snippet}
+
 	<div class="hud-bottom">
 		<div class="hud-left">
 			<div class="hud-system">
@@ -389,36 +428,7 @@
 				>
 					<img class="nav-icon" src={iconMenu} alt="menu" />
 				</button>
-				{#if showMenuPopup}
-					<button
-						class="menu-popup-backdrop"
-						type="button"
-						aria-label="Close menu"
-						onclick={() => (showMenuPopup = false)}
-					></button>
-					<div class="menu-popup" style={`background-image:url('${menuPopupBg}')`}>
-						<button class="menu-row" type="button" onclick={toggleSfx}>
-							<span class="menu-row__icon">
-								<span class="menu-row__glyph" style={`--icon:url('${sfxOff ? iconMenuSoundOff : iconMenuSound}')`}></span>
-							</span>
-							<span class="menu-row__label">{i18nDerived.translate('SOUND')}</span>
-						</button>
-						<div class="menu-divider"></div>
-						<button class="menu-row" type="button" onclick={toggleMusic}>
-							<span class="menu-row__icon">
-								<span class="menu-row__glyph" style={`--icon:url('${musicOff ? iconMenuMusicOff : iconMenuMusic}')`}></span>
-							</span>
-							<span class="menu-row__label">{i18nDerived.translate('MUSIC')}</span>
-						</button>
-						<div class="menu-divider"></div>
-						<button class="menu-row" type="button" onclick={openInfoFromMenu}>
-							<span class="menu-row__icon">
-								<span class="menu-row__glyph" style={`--icon:url('${iconMenuInfo}')`}></span>
-							</span>
-							<span class="menu-row__label">{i18nDerived.translate('INFO')}</span>
-						</button>
-					</div>
-				{/if}
+				{#if showMenuPopup}{@render menuPopup()}{/if}
 				<button
 					class="nav-btn nav-btn--framed"
 					type="button"
@@ -452,6 +462,14 @@
 		<div class="hud-divider" aria-hidden="true"></div>
 
 		<div class="hud-controls">
+			<!-- Last round win — sits between balance and bet. -->
+			<div class="value-pill value-pill--balance value-pill--win">
+				<div class="label label--balance">
+					<span class="label-text">{i18nDerived.win()}</span>
+				</div>
+				<span class="value">{formattedWin}</span>
+			</div>
+
 			<!-- Display-only: bet changes go through the − / + steppers (bet menu on click disabled). -->
 			<div class="value-pill value-pill--bet bet-pill">
 				<span class="bet-coin" aria-hidden="true">
@@ -550,13 +568,22 @@
 		<!-- ── Portrait HUD: spin-centred control row + balance / bet / buy row ── -->
 		<div class="pt-hud">
 			<div class="pt-controls">
-				<div class="pt-grp">
-					<button class="nav-btn nav-btn--framed" type="button" onclick={openRules} aria-label="Game rules">
+				<div class="pt-grp pt-grp--left">
+					<button class="nav-btn nav-btn--framed" type="button" onclick={toggleMenuPopup} aria-label="Menu">
 						<img class="nav-icon" src={iconMenu} alt="menu" />
 					</button>
-					<button class="nav-btn nav-btn--framed" type="button" onclick={toggleSound} aria-label="Sound">
-						<img class="nav-icon" src={isMuted ? iconMute : iconSound} alt="sound" />
-					</button>
+					{#if showMenuPopup}{@render menuPopup()}{/if}
+					<div class="pt-buy pt-buy--nav">
+						<button
+							class="buy-btn"
+							type="button"
+							disabled={disableBuy}
+							onclick={openBuyBonus}
+							aria-label={i18nDerived.buyBonus()}
+						>
+							<span class="buy-btn__label">{i18nDerived.buyBonus()}</span>
+						</button>
+					</div>
 				</div>
 
 				<button
@@ -643,16 +670,12 @@
 					</button>
 				</div>
 
-				<div class="pt-buy">
-					<button
-						class="buy-btn"
-						type="button"
-						disabled={disableBuy}
-						onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
-						aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
-					>
-						<span class="buy-btn__label">{isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.buyBonus()}</span>
-					</button>
+				<!-- Where the buy-bonus used to be: the last round's win, always shown. -->
+				<div class="value-pill value-pill--balance pt-balance pt-win">
+					<div class="label label--balance">
+						<span class="label-text">{i18nDerived.win()}</span>
+					</div>
+					<span class="value">{formattedWin}</span>
 				</div>
 			</div>
 		</div>
@@ -707,25 +730,32 @@
 				</div>
 			</div>
 
-			<div class="ls-buy">
-				<button
-					class="buy-btn"
-					type="button"
-					disabled={disableBuy}
-					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
-					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
-				>
-					<span class="buy-btn__label">{isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.buyBonus()}</span>
-				</button>
+			<!-- Where the buy-bonus used to sit (under the capsule): the last round's win, always shown. -->
+			<div class="ls-buy ls-win">
+				<div class="value-pill value-pill--balance ls-win-pill">
+					<div class="label label--balance">
+						<span class="label-text">{i18nDerived.win()}</span>
+					</div>
+					<span class="value">{formattedWin}</span>
+				</div>
 			</div>
 
 			<div class="ls-nav">
-				<button class="nav-btn nav-btn--framed" type="button" onclick={openRules} aria-label="Game rules">
+				<button class="nav-btn nav-btn--framed" type="button" onclick={toggleMenuPopup} aria-label="Menu">
 					<img class="nav-icon" src={iconMenu} alt="menu" />
 				</button>
-				<button class="nav-btn nav-btn--framed" type="button" onclick={toggleSound} aria-label="Sound">
-					<img class="nav-icon" src={isMuted ? iconMute : iconSound} alt="sound" />
-				</button>
+				{#if showMenuPopup}{@render menuPopup()}{/if}
+				<div class="ls-nav-buy">
+					<button
+						class="buy-btn"
+						type="button"
+						disabled={disableBuy}
+						onclick={openBuyBonus}
+						aria-label={i18nDerived.buyBonus()}
+					>
+						<span class="buy-btn__label">{i18nDerived.buyBonus()}</span>
+					</button>
+				</div>
 				<button
 					class="spin-btn ls-spin"
 					class:spin-btn--busy={isBusy}
@@ -875,14 +905,16 @@
 		z-index: 6;
 		align-self: center;
 		margin-top: auto;
-		width: min(calc(100% - 16px), 1120px);
+		/* Hug the (now compact) content so the bar frame has no empty ends, capped on narrow screens. */
+		width: fit-content;
+		max-width: calc(100% - 16px);
 		height: auto;
 		box-sizing: border-box;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 14px;
-		padding: 8px 24px;
+		justify-content: center;
+		gap: 8px;
+		padding: 8px 16px;
 		/* Sit low; just enough lift that the centred spin's lower edge clears the canvas edge. */
 		margin-bottom: 20px;
 		background: transparent;
@@ -908,7 +940,7 @@
 	.hud-left {
 		display: flex;
 		align-items: center;
-		gap: 18px;
+		gap: 10px;
 		flex: 0 0 auto;
 	}
 
@@ -918,6 +950,15 @@
 		justify-content: flex-start;
 		flex: 0 0 auto;
 		padding-top: 0;
+	}
+	/* Compact buy-bonus so the whole bar (now with the WIN pill) fits on narrow laptops. */
+	.hud-buy .buy-btn {
+		width: 126px;
+		padding: 0 12px;
+	}
+	.hud-bottom .nav-btn {
+		width: 42px;
+		height: 42px;
 	}
 
 	.hud-stats {
@@ -932,7 +973,7 @@
 	.stepper {
 		display: flex;
 		align-items: center;
-		gap: 10px;
+		gap: 7px;
 		flex: 0 0 auto;
 	}
 
@@ -940,9 +981,18 @@
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
-		gap: 15px;
+		gap: 9px;
 		flex: 0 0 auto;
 		padding-top: 0;
+	}
+
+	/* Screens 1200px and wider: lengthen the bar so it isn't a tiny centred cluster; the two groups
+	   spread toward the ends to fill it. Narrower screens keep the compact, content-hugging bar. */
+	@media (min-width: 1200px) {
+		.hud-shell[data-layout='desktop'] .hud-bottom {
+			width: min(1060px, calc(100% - 64px));
+			justify-content: space-between;
+		}
 	}
 
 	.value-pill {
@@ -972,6 +1022,11 @@
 
 	.value-pill--balance .value {
 		line-height: 1;
+	}
+
+	/* WIN pill (between balance and bet) — same look as balance, a touch narrower. */
+	.value-pill--win {
+		min-width: 60px;
 	}
 
 	.value-pill--bet {
@@ -1195,7 +1250,7 @@
 	.hud-system {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: 6px;
 		flex: 0 0 auto;
 		position: relative; /* anchor for the menu popover */
 	}
@@ -1259,10 +1314,15 @@
 		font-size: 15px;
 		letter-spacing: 0.04em;
 		color: #ffffff;
+		transition: color 0.12s ease;
 	}
-	/* Hover (Figma 4553-9528): icon turns cyan, button ring gets a soft cyan glow. */
+	/* Hover (Figma 4553-9528): icon turns cyan, button ring gets a soft cyan glow — and the label
+	   turns the same cyan so the whole row highlights together. */
 	.menu-row:hover .menu-row__glyph {
 		background: #00fcff;
+	}
+	.menu-row:hover .menu-row__label {
+		color: #00fcff;
 	}
 	.menu-row:hover .menu-row__icon {
 		box-shadow: 0 0 6px 1px rgba(13, 137, 198, 0.9);
@@ -1843,6 +1903,30 @@
 		max-width: 74%;
 	}
 
+	/* Buy-bonus moved INTO the nav bar (left group), sized to ~100% of the nav height. */
+	.pt-buy--nav {
+		flex: 0 0 auto;
+	}
+	.pt-buy--nav .buy-btn {
+		width: clamp(50px, 15vw, 64px);
+		height: clamp(50px, 15vw, 64px);
+		aspect-ratio: 1;
+		background: var(--pt-buy) center / contain no-repeat;
+		padding: 0;
+	}
+	.pt-buy--nav .buy-btn__label {
+		font-size: clamp(0.4rem, 2vw, 0.52rem);
+		max-width: 78%;
+	}
+	/* WIN takes the buy-bonus slot in the stats row — mirror the balance pill but right-aligned. */
+	.pt-win {
+		align-items: flex-end;
+		text-align: right;
+	}
+	.pt-win .label--balance {
+		justify-content: flex-end;
+	}
+
 	/* ── Landscape (mobile horizontal) HUD: vertical nav bar (right) + balance/bet (bottom-left) ── */
 	.hud-shell[data-layout='landscape'] .hud-bottom {
 		display: none;
@@ -1987,6 +2071,56 @@
 		max-width: 82%;
 	}
 
+	/* ── Landscape (mirrors portrait): menu opens the SOUND/MUSIC/INFO popover (sound lives there now),
+	   the buy-bonus moves into the vertical nav where sound was, and the last-round WIN takes the buy's
+	   old slot under the capsule. ── */
+	.hud-shell[data-layout='landscape'] .menu-popup {
+		right: calc(100% + 10px);
+		left: auto;
+		top: 0;
+		bottom: auto;
+	}
+	.ls-nav-buy {
+		flex: 0 0 auto;
+		display: flex;
+	}
+	.ls-nav-buy .buy-btn {
+		width: clamp(34px, 15vh, 62px);
+		height: clamp(34px, 15vh, 62px);
+		aspect-ratio: 1;
+		background: var(--pt-buy) center / contain no-repeat;
+		padding: 0;
+	}
+	.ls-nav-buy .buy-btn__label {
+		white-space: normal;
+		line-height: 1.02;
+		text-align: center;
+		font-size: clamp(0.28rem, 1.5vh, 0.48rem);
+		max-width: 80%;
+	}
+	.ls-win .ls-win-pill {
+		align-items: center;
+		text-align: center;
+		background: none;
+		border: none;
+		box-shadow: none;
+		min-width: 0;
+		padding: 0;
+		gap: 1px;
+	}
+	.ls-win .label--balance {
+		justify-content: center;
+	}
+	.ls-win .ls-win-pill .value {
+		font-size: clamp(0.5rem, 3.6vh, 1.2rem);
+		white-space: nowrap;
+		color: #fff;
+	}
+	.ls-win .ls-win-pill .label-text {
+		font-size: clamp(0.34rem, 2.05vh, 0.66rem);
+		color: #fff;
+	}
+
 	/* Very small landscape screens (e.g. 400×225): the balance / bet / buy text is set by its vh term
 	   (above the pixel mins), so shrink those vh sizes here to make the text-heavy HUD a lot smaller
 	   without touching normal-size landscape screens. */
@@ -2000,10 +2134,37 @@
 		.hud-shell[data-layout='landscape'] .ls-bet-val .value {
 			font-size: clamp(0.24rem, 2vh, 0.42rem);
 		}
-		/* Small buy-bonus text on two rows (BUY / BONUS) — the tiny button can't take a large label. */
-		.hud-shell[data-layout='landscape'] .ls-buy .buy-btn__label {
-			font-size: clamp(0.17rem, 1.9vh, 0.3rem);
-			max-width: 62%;
+		/* Buy-bonus badge lives in the nav now — the tiny button can't take a large BUY / BONUS label. */
+		.hud-shell[data-layout='landscape'] .ls-nav-buy .buy-btn__label {
+			font-size: clamp(0.15rem, 1.6vh, 0.28rem);
+			max-width: 68%;
+		}
+		/* WIN under the capsule: shrink so it clears the board's right edge and the capsule above it. */
+		.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .value {
+			font-size: clamp(0.34rem, 2.4vh, 0.5rem);
+		}
+		.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .label-text {
+			font-size: clamp(0.24rem, 1.5vh, 0.34rem);
+		}
+		/* Menu popup: the fixed 200px box nearly fills a 225px screen — scale the box and its rows down. */
+		.hud-shell[data-layout='landscape'] .menu-popup {
+			width: clamp(120px, 62vh, 190px);
+			height: clamp(120px, 62vh, 190px);
+			padding: clamp(10px, 5vh, 20px) clamp(10px, 5vh, 20px) clamp(12px, 5.5vh, 22px);
+		}
+		.hud-shell[data-layout='landscape'] .menu-row {
+			gap: clamp(7px, 3.6vh, 14px);
+		}
+		.hud-shell[data-layout='landscape'] .menu-row__icon {
+			width: clamp(24px, 12vh, 38px);
+			height: clamp(24px, 12vh, 38px);
+		}
+		.hud-shell[data-layout='landscape'] .menu-row__glyph {
+			width: clamp(12px, 6vh, 20px);
+			height: clamp(12px, 6vh, 20px);
+		}
+		.hud-shell[data-layout='landscape'] .menu-row__label {
+			font-size: clamp(9px, 4.5vh, 14px);
 		}
 	}
 </style>

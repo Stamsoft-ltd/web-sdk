@@ -313,11 +313,6 @@ export default {
 	legendaryWinBoard: { type: 'sprite', src: './assets/components/win_boards/max_win.webp?v=20260709', preload: true },
 	// Special wide board for the 20000x max-win cap (Figma 4143-16513), 1535×1025
 	maxWinBoard:       { type: 'sprite', src: './assets/components/win_boards/max_win_screen.webp?v=20260709', preload: true },
-	pressToContinueText: {
-		type: 'sprites',
-		src: './assets/sprites/pressToContinueText/MM_pressanywhere.json?v=20260611',
-		preload: true,
-	},
 	goldFont: {
 		type: 'font',
 		src: './assets/fonts/goldFont/mm_gold.xml?v=20260611',
