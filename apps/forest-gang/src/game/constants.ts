@@ -75,15 +75,17 @@ const SPIN_OPTIONS_SHARED = {
 	// The stop leg is DERIVED from the spin speed, not tuned beside it. createReelForSpinning turns
 	// this exponent p into easing `1 − (1 − t)^p` and duration `p × distance / reelSpinSpeed`, so the
 	// leg starts at exactly the speed the reel was already travelling — on all four paths that reach
-	// it (2.3 default, 3.0 anticipated, 4 autospin-turbo, 7 turbo), not just one.
-	// p = 2 is constant deceleration. Raising p gives a gentler curve at a proportionally longer
-	// stop; the two cannot be chosen independently. This is the only knob — do not add a speed here.
+	// it (2.3 default, 3.0 anticipated, 4 autospin-turbo, 7 turbo), not just one. The old pairing
+	// (reelSpinSpeedBeforeBounce 2.8 + cubicOut, f'(0) = 3) entered the "deceleration" at 8.4 px/ms
+	// against 2.3 coming in: a 130 px first frame against a 38 px cruise, wider than a 103 px cell.
+	//
+	// p = 2 is constant deceleration. p is the ONLY knob and it moves duration and curve together —
+	// raising it brakes harder at the junction and trails off longer, over a proportionally longer
+	// leg; p = 1 is the short end (linear, continuous, no deceleration). Do not add a speed here.
+	// Budget at p = 2, board slideDown (reel 0 -> reel 4): 589->932 ms and 1856->2199 ms. A continuous
+	// stop cannot be as short as the old one, which was only short because it accelerated.
+	// Re-measure with apps/forest-gang/scripts/verify-reel-stop.mjs after changing p.
 	reelStopEasingPower: 2,
-	// Unused while reelStopEasingPower is set (the shared type still requires it). Paired with
-	// cubicOut it WAS the bug: f'(0) = 3 made the "deceleration" start at 3 × 2.8 = 8.4 px/ms against
-	// the 2.3 px/ms coming in, so its first frame moved 130 px against 38 px cruising — more than a
-	// whole 103 px symbol cell, and an acceleration rather than a stop.
-	reelSpinSpeedBeforeBounce: 2.8,
 	reelPaddingMultiplierNormal: 1.2,
 	reelPaddingMultiplierAnticipated: 10,
 	reelSpinDelay: 145,

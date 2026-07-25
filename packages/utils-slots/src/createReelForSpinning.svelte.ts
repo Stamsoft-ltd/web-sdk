@@ -288,26 +288,45 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 	//
 	// `reelStopEasingPower` (p) fixes that by deriving the leg instead: `f(t) = 1 − (1 − t)^p` has
 	// `f'(0) = p`, so passing `speed = spinSpeed / p` yields `duration = p × distance / spinSpeed`
-	// and an initial velocity of exactly `spinSpeed` — whatever `spinSpeed` the active path supplied.
-	// Duration and curve are coupled by that constraint: a gentler curve (larger p) is necessarily a
-	// longer leg. Left unset, the legacy speed/easing pair is used unchanged.
+	// and an initial velocity of exactly `spinSpeed` — whatever speed the active path supplied.
+	// Duration and curve are one knob, not two: p sets the junction deceleration
+	// (`spinSpeed² × (p − 1) / (p × distance)`, rising with p) and the leg length together. Note that
+	// any velocity-continuous decelerating leg is necessarily longer than `distance / spinSpeed`,
+	// because a curve that decelerates from `f'(0)` to 0 averages less than `f'(0)`.
+	//
+	// The whole stop config is read once, before leg 1, so the speed carried into the junction and
+	// the strategy used to match it can never come from different options objects (turbo can be
+	// toggled mid-spin).
 	const slideDownToBounce = async () => {
-		const spinSpeed = reelState.spinOptions().reelSpinSpeed;
-		const bounceSize = reelOptions.symbolHeight * reelState.spinOptions().reelBounceSizeMulti;
+		const spinOptions = reelState.spinOptions();
+		const spinSpeed = spinOptions.reelSpinSpeed;
+		const bounceSize = reelOptions.symbolHeight * spinOptions.reelBounceSizeMulti;
 
 		await slideY({
 			reelY: defaultY * basePaddingSize(),
 			speed: spinSpeed,
 		});
 
-		// Re-read: turbo can be toggled mid-spin. `spinSpeed` stays the leg-1 value on purpose — it is
-		// the velocity the reel is actually carrying into the junction.
-		const spinOptions = reelState.spinOptions();
-		const power = spinOptions.reelStopEasingPower;
+		const bounceY = defaultY + bounceSize;
+		const configuredPower = spinOptions.reelStopEasingPower;
+
+		if (configuredPower === undefined) {
+			await slideY({
+				reelY: bounceY,
+				speed: spinOptions.reelSpinSpeedBeforeBounce,
+				easing: spinOptions.reelStopEasing,
+			});
+			return;
+		}
+
+		// p < 1 would accelerate into the stop and a non-finite p would stall the reel on an infinite
+		// duration. Both are config errors; degrade to p = 1 — linear, still velocity-continuous.
+		const power = Number.isFinite(configuredPower) && configuredPower >= 1 ? configuredPower : 1;
+
 		await slideY({
-			reelY: defaultY + bounceSize,
-			speed: power ? spinSpeed / power : spinOptions.reelSpinSpeedBeforeBounce,
-			easing: power ? (t: number) => 1 - (1 - t) ** power : spinOptions.reelStopEasing,
+			reelY: bounceY,
+			speed: spinSpeed / power,
+			easing: (t: number) => 1 - (1 - t) ** power,
 		});
 	};
 
