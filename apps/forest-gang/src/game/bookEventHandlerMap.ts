@@ -6,7 +6,7 @@ import { sequence } from 'utils-shared/sequence';
 import { bookEventAmountToBetAmountMultiplier } from 'utils-shared/amount';
 
 import { eventEmitter } from './eventEmitter';
-import { hold } from './sequenceHold';
+import { hold, interruptHolds } from './sequenceHold';
 import { playBookEvent } from './utils';
 import { winLevelMap, type WinLevel, type WinLevelData } from './winLevelMap';
 import type { SoundEffectName } from './sound';
@@ -120,8 +120,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			revealEvent: bookEvent,
 			paddingBoard: config.paddingReels[bookEvent.gameType],
 		});
-		// Apply buffered stop immediately after spin starts
-		if (hadPendingStop) stateGameDerived.enhancedBoard.stop();
+		// Apply buffered stop immediately after spin starts. A stop pressed inside the pre-reveal
+		// buffer window is recorded as `pendingStop` instead of being broadcast (HudHtml), so it has
+		// to arm the round's hold interrupt here — otherwise the same press behaves differently
+		// depending on whether it landed a frame before or after the first reveal.
+		if (hadPendingStop) {
+			stateGameDerived.enhancedBoard.stop();
+			interruptHolds();
+		}
 		await spinPromise;
 		stateGame.hasAnticipationPending = false;
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });

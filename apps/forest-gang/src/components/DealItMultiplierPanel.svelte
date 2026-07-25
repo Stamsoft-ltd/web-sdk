@@ -19,7 +19,7 @@
 
 	import BoardContainer from './BoardContainer.svelte';
 	import { getContext } from '../game/context';
-	import { hold } from '../game/sequenceHold';
+	import { hold, holdScale } from '../game/sequenceHold';
 	import { SYMBOL_SIZE, SYMBOL_W } from '../game/constants';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
 
@@ -150,11 +150,17 @@
 		skipReveal = null;
 		readyToSkip = false;
 		if (revealed) return;
-		groupAlpha.set(0, { duration: 260 }); // fade the board out (slight zoom for a soft exit)
-		groupScale.set(1.12, { duration: 260, easing: cubicIn });
+		const exit = 260 * holdScale();
+		groupAlpha.set(0, { duration: exit }); // fade the board out (slight zoom for a soft exit)
+		groupScale.set(1.12, { duration: exit, easing: cubicIn });
 		await Promise.race([hold(260), new Promise<void>((r) => { skipReveal = r; })]);
 		skipReveal = null;
 		if (revealed) return;
+		// Land the exit tweens on their end state before hiding. A cut hold (stop press earlier in
+		// the round) returns before the fade has run, and FadeContainer would otherwise cross-fade a
+		// half-faded board. A no-op on the normal path, where the tween has already finished.
+		groupAlpha.set(0, { duration: 0 });
+		groupScale.set(1.12, { duration: 0 });
 		show = false; // FadeContainer fades it out
 	};
 

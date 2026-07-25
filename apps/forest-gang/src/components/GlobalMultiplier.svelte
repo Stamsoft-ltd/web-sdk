@@ -12,11 +12,10 @@
 	import { Container, Sprite, Text } from 'pixi-svelte';
 	import { FadeContainer } from 'components-pixi';
 	import { MainContainer } from 'components-layout';
-	import { waitForTimeout } from 'utils-shared/wait';
 
 	import BoardContainer from './BoardContainer.svelte';
 	import { getContext } from '../game/context';
-	import { holdScale } from '../game/sequenceHold';
+	import { hold, holdScale } from '../game/sequenceHold';
 	import { SYMBOL_SIZE, SYMBOL_W } from '../game/constants';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
 
@@ -103,30 +102,33 @@
 	// portrait: fade, then the new value zooms out onto the static board.
 	//
 	// The two waits here MIRROR the tween durations either side of the value swap; they are not
-	// free "let the player read it" beats, so they are scaled with the tweens by one shared factor
-	// rather than routed through the interruptible hold (cutting a wait without cutting its tween
-	// would swap the value mid-fade). Nothing in the book awaits this — `updateGlobalMultiplier`
-	// broadcasts rather than broadcastAsync — so it costs the sequence no wall-clock either way,
-	// and the `paylineSnap` effect below already snaps it to its end state.
+	// free "let the player read it" beats. So the tweens are scaled by the SAME speed factor the
+	// holds use, and when a hold is cut short (stop press / super-turbo) the swap-in snaps with
+	// duration 0 — cutting a wait while its tween kept running would swap the value mid-fade.
+	// Nothing in the book awaits this (`updateGlobalMultiplier` broadcasts rather than
+	// broadcastAsync), so this buys no sequence wall-clock; it stops the board lagging the round.
 	const swapTo = async (next: number) => {
 		const speed = holdScale();
 		swapTarget = next;
 		swapped = false;
 		if (!useFlatBoard) groupX.set(SLIDE, { duration: 170 * speed, easing: cubicIn });
 		groupAlpha.set(0, { duration: 150 * speed });
-		await waitForTimeout(170 * speed);
-		if (swapped) return;
+		const cut = await hold(170);
+		// `show` guard: the bonus can end (globalMultiplierHide) while this swap is still in flight,
+		// and the continuation below would otherwise rewrite the value and tweens of a hidden board.
+		if (swapped || !show) return;
 		swapTarget = null;
 		multiplier = next;
+		const swapIn = cut ? 0 : 280 * speed;
 		if (useFlatBoard) {
 			groupScale.set(1.45, { duration: 0 });
-			groupScale.set(1, { duration: 280 * speed, easing: backOut });
+			groupScale.set(1, { duration: swapIn, easing: backOut });
 		} else {
 			groupX.set(-SLIDE, { duration: 0 });
-			groupX.set(0, { duration: 280 * speed, easing: backOut });
+			groupX.set(0, { duration: swapIn, easing: backOut });
 		}
-		groupAlpha.set(1, { duration: 190 * speed });
-		await waitForTimeout(280 * speed);
+		groupAlpha.set(1, { duration: cut ? 0 : 190 * speed });
+		await hold(280);
 	};
 
 	$effect(() => {
