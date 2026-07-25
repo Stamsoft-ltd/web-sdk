@@ -26,7 +26,7 @@
 	const menuPopupBg = ap('/assets/components/frames/menu_popup.webp'); // wooden plaque (Figma 3311-2924)
 
 	// Button backgrounds (icon-less frames) — icons are layered on top in markup
-	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.png'); // wooden round — utility buttons
+	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.webp'); // wooden round — utility buttons
 	const btnSpinBg = ap('/assets/components/navbar/btn_bg_spin.webp?v=20260720'); // green round — spin
 	const btnSpinHoverBg = ap('/assets/components/navbar/btn_bg_spin_hover.webp?v=20260720'); // spin hover
 	const btnWideBg = ap('/assets/components/navbar/btn_bg_wide.png?v=20260720'); // wide green — buy bonus
@@ -46,15 +46,15 @@
 	const iconMenuBars = ap('/assets/hud/icon-menu.png'); // hamburger — opens the portrait sound/info menu
 	const iconSound = ap('/assets/hud/icon-volume.png');
 	const iconSoundMuted = ap('/assets/hud/icon-volume-muted.png');
-	const iconMinus = ap('/assets/hud/icon-minus.png');
-	const iconPlus = ap('/assets/hud/icon-plus.png');
+	const iconMinus = ap('/assets/hud/icon-minus.webp');
+	const iconPlus = ap('/assets/hud/icon-plus.webp');
 	const iconAuto = ap('/assets/hud/icon-autoplay.png');
 	const iconSpin = ap('/assets/hud/icon-spin.png');
 	const iconStop = ap('/assets/hud/icon-stop.png');
 	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.png');
 	const iconTurbo2 = ap('/assets/hud/icon-lightning-2.png');
 	const iconTurbo3 = ap('/assets/hud/icon-lightning-3.png');
-	const iconCoins = ap('/assets/hud/icon-coins.png');
+	const iconCoins = ap('/assets/hud/icon-coins.webp');
 
 	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
 	const hudFrame = ap('/assets/components/frames/hud_frame.webp');
