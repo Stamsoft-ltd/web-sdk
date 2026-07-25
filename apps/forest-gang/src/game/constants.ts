@@ -41,8 +41,8 @@ export const INITIAL_BOARD: RawSymbol[][] = [
 
 export const BOARD_DIMENSIONS = { x: INITIAL_BOARD.length, y: INITIAL_BOARD[0].length - 2 };
 export const BOARD_SIZES = {
-	width: SYMBOL_W * BOARD_DIMENSIONS.x,   // 150 × 5 = 750
-	height: SYMBOL_H * BOARD_DIMENSIONS.y,  // 105 × 4 = 420
+	width: SYMBOL_W * BOARD_DIMENSIONS.x,   // 121 × 5 = 605
+	height: SYMBOL_H * BOARD_DIMENSIONS.y,  // 103 × 4 = 412
 };
 
 export const BACKGROUND_RATIO = 2039 / 1000;
