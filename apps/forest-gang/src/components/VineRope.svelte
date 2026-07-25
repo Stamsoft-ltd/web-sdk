@@ -46,12 +46,12 @@
 
 	// Layered strokes: wide soft halo → tighter glow → gold rope → bright core. Rebuilt only when
 	// the colour changes; `stroke()` copies the style object, so reusing these is safe.
-	const layers: PIXI.StrokeStyle[] = $derived([
+	const layers = $derived([
 		{ width: 14, color: props.color, alpha: 0.14, cap: 'round', join: 'round' },
 		{ width: 8.5, color: props.color, alpha: 0.32, cap: 'round', join: 'round' },
 		{ width: 4.5, color: props.color, alpha: 0.85, cap: 'round', join: 'round' },
 		{ width: 1.8, color: 0xfff3b8, alpha: 1, cap: 'round', join: 'round' },
-	]);
+	] as const);
 
 	// Paylines run strictly left→right, so the reveal edge is an x-coordinate and the travelled
 	// sub-path is every waypoint left of it plus one interpolated point on the current segment.
