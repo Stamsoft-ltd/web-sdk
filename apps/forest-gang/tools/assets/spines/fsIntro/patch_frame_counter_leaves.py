@@ -7,7 +7,11 @@ import os, math, io
 import cairosvg
 from PIL import Image
 
-BASE  = os.path.dirname(__file__)
+# This script lives in the mirrored apps/forest-gang/tools/ tree; the assets it reads and
+# writes stay under static/. Hop back across so the paths below resolve as before.
+BASE = os.path.dirname(os.path.abspath(__file__)).replace(
+    os.sep + 'tools' + os.sep, os.sep + 'static' + os.sep, 1
+)
 ATLAS = os.path.join(BASE, 'fs_screen.png')
 WEBP  = os.path.join(BASE, 'fs_screen.webp')
 ORIG  = '/tmp/fs_screen_orig.png'   # clean git HEAD version

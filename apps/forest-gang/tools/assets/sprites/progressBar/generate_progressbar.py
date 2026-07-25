@@ -16,7 +16,11 @@ import os, json
 import numpy as np
 from PIL import Image, ImageFilter
 
-DIR = os.path.dirname(os.path.abspath(__file__))
+# This script lives in the mirrored apps/forest-gang/tools/ tree; the assets it reads and
+# writes stay under static/. Hop back across so the paths below resolve as before.
+DIR = os.path.dirname(os.path.abspath(__file__)).replace(
+    os.sep + 'tools' + os.sep, os.sep + 'static' + os.sep, 1
+)
 HUD = os.path.join(DIR, '..', '..', 'components', 'frames', 'hud_frame.png')
 OUT_PNG  = os.path.join(DIR, 'progressBar.png')
 OUT_WEBP = os.path.join(DIR, 'progressBar.webp')

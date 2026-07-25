@@ -5,7 +5,11 @@ with scatter_frame-style wood board using 9-slice scaling.
 import os
 from PIL import Image, ImageFilter
 
-DIR       = os.path.dirname(os.path.abspath(__file__))
+# This script lives in the mirrored apps/forest-gang/tools/ tree; the assets it reads and
+# writes stay under static/. Hop back across so the paths below resolve as before.
+DIR = os.path.dirname(os.path.abspath(__file__)).replace(
+    os.sep + 'tools' + os.sep, os.sep + 'static' + os.sep, 1
+)
 SRC_FRAME = "/Users/stanislavmilev/Development/stake/forestSlot/apps/forest-gang/static/assets/components/frames/scatter_frame.png"
 ATLAS_F   = os.path.join(DIR, "multiframe.png")
 OUT_WEBP  = os.path.join(DIR, "multiframe.webp")

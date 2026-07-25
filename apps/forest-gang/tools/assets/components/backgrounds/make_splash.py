@@ -11,7 +11,11 @@ import json
 import numpy as np
 from PIL import Image, ImageFilter, ImageEnhance
 
-BASE = os.path.dirname(__file__)
+# This script lives in the mirrored apps/forest-gang/tools/ tree; the assets it reads and
+# writes stay under static/. Hop back across so the paths below resolve as before.
+BASE = os.path.dirname(os.path.abspath(__file__)).replace(
+    os.sep + 'tools' + os.sep, os.sep + 'static' + os.sep, 1
+)
 ROOT = os.path.join(BASE, '..', '..', '..', '..')
 
 BG_SRC   = os.path.expanduser('~/Downloads/design.png')
