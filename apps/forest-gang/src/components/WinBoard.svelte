@@ -141,19 +141,27 @@
 {#if shownKey}
 	<!-- The whole unit (glow + board + amount) collapses/pops as one via the transition scale. -->
 	<Container scale={pop.current}>
-		<Graphics
-			blendMode="add"
-			draw={(g) => {
-				g.clear();
-				const R = boardSize * 0.85;
-				const steps = 14;
-				for (let i = steps; i >= 1; i--) {
-					const t = i / steps;
-					g.circle(0, 0, R * t);
-					g.fill({ color: glowColor, alpha: 0.055 * (1 - t) * (1 - t) + 0.005 });
-				}
-			}}
-		/>
+		<!-- The 14 glow circles are tessellated once, at the layout's reference radius, and animated
+		     by scaling this wrapper — `boardSize / maxBoardSize` is exactly the live part of the
+		     size (accumulation × breathe), so the rendered radius is unchanged. The scale MUST stay
+		     on a glow-only wrapper: putting it on the outer Container would also scale the board
+		     Sprite, which already sizes itself from `boardSize`, and it would grow quadratically.
+		     The draw callback now reads only layout-rate values, so it stops re-tessellating on
+		     every breathe frame and every count-up tick. -->
+		<Container scale={accumulationScale * breatheScale}>
+			<Graphics
+				blendMode="add"
+				draw={(g) => {
+					const R = maxBoardSize * 0.85;
+					const steps = 14;
+					for (let i = steps; i >= 1; i--) {
+						const t = i / steps;
+						g.circle(0, 0, R * t);
+						g.fill({ color: glowColor, alpha: 0.055 * (1 - t) * (1 - t) + 0.005 });
+					}
+				}}
+			/>
+		</Container>
 		<Sprite key={shownKey} anchor={0.5} width={boardSize} height={boardSize} />
 
 		<!-- Golden P mark breathing on the gem medallion -->

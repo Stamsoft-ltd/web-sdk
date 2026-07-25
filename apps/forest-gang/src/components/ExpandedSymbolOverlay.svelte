@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
 	import { MainContainer } from 'components-layout';
-	import { AnimatedSprite, Container, Graphics, Sprite } from 'pixi-svelte';
+	import { AnimatedSprite, Container, Graphics, PIXI, Sprite } from 'pixi-svelte';
 	import { cubicOut } from 'svelte/easing';
 	import type { Texture } from 'pixi-svelte';
 
@@ -47,6 +47,22 @@
 
 	const colHeight = SYMBOL_H * BOARD_DIMENSIONS.y;
 	const halfH = colHeight * 0.5;
+
+	// Reveal mask for low (card) expands. Drawn ONCE at full column height and centred on zero; the
+	// expansion is then a transform on the Graphics itself (y = cy, y-scale = h / colHeight) instead
+	// of a re-tessellated rect every frame. A filled rect survives non-uniform scale exactly, so the
+	// mask is pixel-identical to the old per-frame version.
+	const drawRevealMask = (graphics: PIXI.Graphics) => {
+		graphics.rect(0, -halfH, SYMBOL_W, colHeight).fill(0xffffff);
+	};
+
+	// Wood frame around an expanding animal column. Deliberately still redrawn while `h` tweens:
+	// it is a 3px STROKE, and a y-scale would squash the horizontal edges to 3 × h/colHeight px
+	// (~0.6px at the start of the 460 ms expansion) while leaving the verticals at 3px, and would
+	// turn the corner radius elliptical. Only the invariants are hoisted; the redraw ends with the
+	// tween, so there is no steady-state per-frame cost.
+	const FRAME_W = SYMBOL_W * 0.99;
+	const FRAME_STROKE: PIXI.StrokeStyle = { width: 3, color: 0x92673a, alpha: 1 };
 
 	// Animated expanded animals (frames from the "win state" videos, tile border baked in —
 	// see generate_expand_anim.py). The clips don't loop, so they play as a ping-pong
@@ -178,12 +194,9 @@
 					<Container x={leftX} y={0} scale={{ x: px, y: 1 }}>
 						<Graphics
 							isMask
-							draw={(graphics) => {
-								graphics.clear();
-								graphics.beginFill(0xffffff);
-								graphics.rect(0, cy - h * 0.5, SYMBOL_W, h);
-								graphics.endFill();
-							}}
+							y={cy}
+							scale={{ x: 1, y: h / colHeight }}
+							draw={drawRevealMask}
 						/>
 						{@const lowTileKey = LOW_EXP_TILE[expanded.symbol] ?? 'aExpTile'}
 						{#each Array.from({ length: BOARD_DIMENSIONS.y }, (_, rowIndex) => rowIndex) as rowIndex (rowIndex)}
@@ -223,12 +236,10 @@
 						y={cy}
 						scale={{ x: px, y: 1 }}
 						draw={(g) => {
-							g.clear();
-							const w = SYMBOL_W * 0.99;
 							const hh = Math.max(0, h - 3);
-							const r = Math.min(w, hh) * 0.05;
-							g.roundRect(-w / 2, -hh / 2, w, hh, r);
-							g.stroke({ width: 3, color: 0x92673a, alpha: 1 });
+							const r = Math.min(FRAME_W, hh) * 0.05;
+							g.roundRect(-FRAME_W / 2, -hh / 2, FRAME_W, hh, r);
+							g.stroke(FRAME_STROKE);
 						}}
 					/>
 				{/if}
