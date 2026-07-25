@@ -159,10 +159,6 @@
 	// Portrait cells are narrow and the idle busts (fit by height) read too thin — widen them a touch
 	// so they fill the frame better (a small deliberate stretch, only in portrait).
 	const IDLE_W_STRETCH = $derived(isPortrait ? 1.18 : 1.0);
-	// Winning card letters use the win-anim art, which fills its frame more than the base tile — so at
-	// the same draw size a winning letter reads BIGGER than its neighbours. Trim it a little (more on
-	// portrait, where cells are tighter) so a winning letter matches the surrounding symbols.
-	const LOW_WIN_FIT = $derived(isPortrait ? 0.86 : 0.94);
 	// Animal WIN animations (new videos): kept full-frame (no crop) so nothing is clipped.
 	// Aspect (w/h) of each animal's WIN sheet frame — measured from the new keyed win videos.
 	const WIN_ASPECT: Partial<Record<SymbolName, number>> = {
@@ -428,10 +424,8 @@
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
 				{:else if isWin && HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name) && winAnimTextures[reelSymbol.rawSymbol.name]}
-					<!-- The HIGH_SYMBOLS_SET guard is explicit rather than implied by WIN_ANIM_KEY's contents, so
-					     nothing but an animal can ever reach the animalBorder + win-sheet pair. A winning LETTER
-					     has no win sheet at all and lands in the final {:else}, which draws the clean base tile
-					     scaled by the same letterPulse the old inner branch applied.
+					<!-- The HIGH_SYMBOLS_SET guard is explicit rather than implied by WIN_ANIM_KEY's contents,
+					     so nothing but an animal can ever reach the animalBorder + win-sheet pair.
 					     Animal win: same brown frame + the full (uncropped) win animation on top. The
 					     frame carries the OPAQUE forest panel the bust sits on, so it must always draw —
 					     hiding it during anticipation left the transparent bust floating on the bare
@@ -460,6 +454,21 @@
 						animationSpeed={0.36}
 						loop={true}
 						play={boardAnimate}
+					/>
+				{:else if isWin && LOW_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
+					<!-- Letter (low) win: there is no letter win sheet - the CLEAN base tile pulses
+					     continuously (normal <-> +10%) for as long as the win is shown. Gated on
+					     LOW_SYMBOLS_SET rather than a bare `isWin`: a bare catch-all would also swallow a
+					     winning ANIMAL whose win sheet has not streamed in yet and draw it with no frame,
+					     leaving the transparent bust cutout floating on the bare board background. Animals
+					     must keep falling through to the animalBorder branch below. -->
+					<Sprite
+						key={getSpriteKey(reelSymbol.rawSymbol.name, undefined)}
+						x={getX(reelIndex)}
+						y={y}
+						anchor={{ x: 0.5, y: 0.5 }}
+						width={symbolW * s * letterPulse}
+						height={symbolH * s * letterPulse}
 					/>
 				{:else if HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
 					<!-- Base-state animal: shared brown frame + animated idle blink (or static tile for
@@ -540,17 +549,15 @@
 						/>
 					{/if}
 				{:else}
-					<!-- THE LETTER-WIN BRANCH. A winning T/A/J/K/Q always lands here (there is no letter
-					     win sheet — see WIN_ANIM_KEY) and renders the CLEAN base tile scaled by specialPop
-					     (= letterPulse while winning): a continuous normal ↔ +10% breath. Never the old
-					     cracked, undersized `*WinTile` art (getSpriteKey(name,'win')), which read as a
-					     smaller "old win state" with an ugly size jump. Non-winning symbols keep their
-					     normal state art.
-					     Also the fallback for a winning WILD whose animated sheet hasn't loaded — WIN_ANIM_KEY
-					     has no WILD/SCATTER entry, so it falls past every branch above; it pulses too.
-					     Every symbol reaching this branch is non-HIGH: winning animals take the win-anim
-					     branch, and animals without a loaded sheet take the animalBorder branch above, so an
-					     animal can never lose its opaque forest panel here. -->
+					<!-- Non-winning symbols (their normal state art) plus a winning WILD whose animated
+					     sheet hasn't loaded yet — WIN_ANIM_KEY has no WILD/SCATTER entry, so it falls past
+					     every branch above; specialPop keeps it pulsing.
+					     A win reaching this branch shows the CLEAN base tile, never the old cracked,
+					     undersized `*WinTile` art (getSpriteKey(name,'win')), which read as a smaller "old
+					     win state" with an ugly size jump.
+					     No ANIMAL can reach here: a winning animal takes the win-anim branch, one whose sheet
+					     hasn't loaded takes the animalBorder branch, so the opaque forest panel always draws
+					     and the transparent bust cutout is never left floating on the bare board. -->
 					<Sprite
 						key={getSpriteKey(reelSymbol.rawSymbol.name, isWin ? undefined : reelSymbol.symbolState)}
 						x={getX(reelIndex)}
