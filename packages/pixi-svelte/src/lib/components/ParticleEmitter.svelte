@@ -35,17 +35,23 @@
 		if (props.emit) emitter.init(updatedConfig);
 	});
 
+	// Named so onDestroy can remove it. An anonymous callback here leaked one ticker listener per
+	// mount: the emitter was destroyed but its closure stayed on the app ticker for the session, and
+	// a component that remounts per win (the coin fountain) grows that list without bound.
+	const update = () => {
+		if (context.stateApp.pixiApplication) {
+			const deltaUpdate =
+				context.stateApp.pixiApplication.ticker.deltaMS * (props.emitSpeed || 0.00234);
+			emitter.update(deltaUpdate);
+		}
+	};
+
 	if (context.stateApp.pixiApplication) {
-		context.stateApp.pixiApplication.ticker.add(() => {
-			if (context.stateApp.pixiApplication) {
-				const deltaUpdate =
-					context.stateApp.pixiApplication.ticker.deltaMS * (props.emitSpeed || 0.00234);
-				emitter.update(deltaUpdate);
-			}
-		});
+		context.stateApp.pixiApplication.ticker.add(update);
 	}
 
 	onDestroy(() => {
+		context.stateApp.pixiApplication?.ticker.remove(update);
 		emitter.emit = false;
 		emitter.destroy();
 	});

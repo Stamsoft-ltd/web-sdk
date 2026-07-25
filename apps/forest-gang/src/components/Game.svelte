@@ -13,7 +13,7 @@
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import EnableSound from './EnableSound.svelte';
-	import EnableSharedTicker from './EnableSharedTicker.svelte';
+	import SceneAnimationDriver from './SceneAnimationDriver.svelte';
 	import EnableGameActor from './EnableGameActor.svelte';
 	import PendingRoundRecovery from './PendingRoundRecovery.svelte';
 	import ResumeBet from './ResumeBet.svelte';
@@ -389,7 +389,7 @@
 		     edges stay smooth via texture filtering), and force the stable WebGL renderer instead of
 		     Pixi's less-mature WebGPU path (buggy on Safari 18). -->
 		<App preloadWebFont={false} maxResolution={2} antialias={false} rendererPreference="webgl">
-			<EnableSharedTicker />
+			<SceneAnimationDriver />
 			<EnableSound />
 			<EnableHotkey />
 			<EnableGameActor />
