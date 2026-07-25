@@ -57,7 +57,7 @@
 		},
 	});
 
-	let show = $state(true);
+	let show = $state(false);
 	let amount = $state(0);
 	let winLevelData = $state<WinLevelData>();
 	let oncomplete = $state(() => {});
