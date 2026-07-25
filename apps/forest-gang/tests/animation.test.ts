@@ -272,6 +272,35 @@ const rafEffects = (source: string) => {
 	return bodies;
 };
 
+/**
+ * Every reason `source`'s rAF effects could run on a cold load, as human-readable strings.
+ * Two rules, both the shape R13 had:
+ *   1. the effect must early-return before it schedules anything;
+ *   2. any component-local `$state` the guard reads must initialise falsy.
+ */
+const rafGateViolations = (source: string): string[] => {
+	const violations: string[] = [];
+	for (const body of rafEffects(source)) {
+		// `if (!gate) return;` / `if (!a || !b?.c) { ...; return; }`
+		const guard = /if\s*\(([^)]*)\)\s*(?:\{[^}]*)?return/.exec(body);
+		if (!guard) {
+			violations.push('rAF effect runs unconditionally');
+			continue;
+		}
+		if (guard.index > body.indexOf('requestAnimationFrame')) {
+			violations.push('rAF is scheduled before the guard');
+			continue;
+		}
+		for (const ident of guard[1].match(/[A-Za-z_$][\w$]*/g) ?? []) {
+			const decl = new RegExp(`let\\s+${ident}\\s*=\\s*\\$state\\(([^)]*)\\)`).exec(source);
+			if (!decl) continue; // a $derived or a prop — gated by game state, which starts idle
+			if (!['', 'false', '0', 'null', 'undefined'].includes(decl[1].trim()))
+				violations.push(`rAF gate \`${ident}\` initialises truthy ($state(${decl[1]}))`);
+		}
+	}
+	return violations;
+};
+
 // Components that are mounted for the whole session — a popup whose visibility is an internal
 // `$state`, or a board that is always on screen. For these, mounting is NOT a gate: the rAF effect
 // must gate itself, and the gate must start closed. R13 was exactly this — `show` shipped as
@@ -308,29 +337,38 @@ describe('idle rAF loops (plan 14 §2, R13 partial guard)', () => {
 	it.each(ALWAYS_MOUNTED_RAF_OWNERS)('%s gates its rAF effect and starts closed', (file) => {
 		const source = sources.get(file);
 		expect(source, `${file} is listed as an rAF owner but does not exist`).toBeDefined();
-		const effects = rafEffects(source!);
-		expect(effects.length, `${file} no longer owns an rAF effect — update the list`).toBeGreaterThan(0);
+		expect(
+			rafEffects(source!).length,
+			`${file} no longer owns an rAF effect — update ALWAYS_MOUNTED_RAF_OWNERS`,
+		).toBeGreaterThan(0);
+		expect(rafGateViolations(source!), file).toEqual([]);
+	});
 
-		for (const body of effects) {
-			// `if (!gate) return;` / `if (!a || !b?.c) { ...; return; }` — the guard must precede the
-			// first requestAnimationFrame call in the effect.
-			const guard = /if\s*\(([^)]*)\)\s*(?:\{[^}]*)?return/.exec(body);
-			expect(guard, `${file}: rAF effect runs unconditionally\n${body}`).not.toBeNull();
-			expect(
-				guard!.index,
-				`${file}: rAF is scheduled before the guard\n${body}`,
-			).toBeLessThan(body.indexOf('requestAnimationFrame'));
+	// The scanner is a heuristic over source text, so it gets its own teeth checked: a refactor that
+	// stopped it matching would otherwise turn the six assertions above into six green no-ops.
+	it('flags an ungated rAF effect', () => {
+		expect(rafGateViolations('$effect(() => { raf = requestAnimationFrame(tick); });')).toEqual([
+			'rAF effect runs unconditionally',
+		]);
+	});
 
-			// Any component-local $state read by the guard must initialise falsy, or the loop starts
-			// on mount. This is the one-character defect R13 was.
-			for (const ident of guard![1].match(/[A-Za-z_$][\w$]*/g) ?? []) {
-				const decl = new RegExp(`let\\s+${ident}\\s*=\\s*\\$state\\(([^)]*)\\)`).exec(source!);
-				if (!decl) continue;
-				expect(
-					['', 'false', '0', 'null', 'undefined'].includes(decl[1].trim()),
-					`${file}: rAF gate \`${ident}\` initialises truthy ($state(${decl[1]})), so the loop runs from cold load`,
-				).toBe(true);
-			}
-		}
+	it('flags a gate that initialises truthy (R13 verbatim)', () => {
+		const source = `let show = $state(true);
+			$effect(() => {
+				if (!show) return;
+				let raf = requestAnimationFrame(tick);
+			});`;
+		expect(rafGateViolations(source)).toEqual([
+			'rAF gate `show` initialises truthy ($state(true))',
+		]);
+	});
+
+	it('accepts a gate that initialises falsy', () => {
+		const source = `let show = $state(false);
+			$effect(() => {
+				if (!show) return;
+				let raf = requestAnimationFrame(tick);
+			});`;
+		expect(rafGateViolations(source)).toEqual([]);
 	});
 });
