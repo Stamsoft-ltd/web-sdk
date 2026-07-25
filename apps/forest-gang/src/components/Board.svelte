@@ -220,7 +220,8 @@
 		// the previous padded art reached the same size at 0.86). Landscape keeps the old fit.
 		if (LOW_SYMBOLS_SET.has(name)) return isDesktop ? 0.72 : 0.86;
 		// WILD reads small on mobile — enlarge it in landscape (design ask, "wild bigger on all
-		// mobile"); desktop draws it at the cell size. SCATTER keeps the tuned 1.1 outside portrait.
+		// mobile"). Everything else (desktop included) takes no WILD-specific bump; desktop still
+		// gets the shared SIZE_BOOST above. SCATTER keeps the tuned 1.1 outside portrait.
 		if (name === 'WILD') return isLandscape ? 1.25 : 1.0;
 		if (name === 'SCATTER') return 1.1;
 		// Premium animals: the art has built-in margin (reads small) so enlarge it — landscape

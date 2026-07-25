@@ -79,7 +79,7 @@
 
 	// This is the "DEAL IT" bonus board (internally `superspin` — the UI labels are the reverse of the
 	// mode names). The board is PERSISTENT: it stays on screen for the whole bonus (red X at 1x) and
-	// animates (fade out, swap value, zoom in) only when the global multiplier CHANGES.
+	// animates (fade out, swap value, settle from 1.45x down to 1x) only when the multiplier CHANGES.
 	let show = $state(false);
 	let multiplier = $state(1);
 	let groupAlpha = new Tween(1);
@@ -87,9 +87,10 @@
 	let swapTarget: number | null = null;
 	let swapped = false;
 
-	// Swap the displayed value — every layout fades the old value out, then the new value zooms
-	// out onto the static leaf-corner board (design ask: the same zoom pad wherever the multiplier
-	// appears — Deal It, All In and everything else — instead of a bear paw sliding in).
+	// Swap the displayed value — every layout fades the old value out, then the new value lands
+	// oversized (1.45x) and settles back to 1x under backOut on the static leaf-corner board
+	// (design ask: the same zoom pad wherever the multiplier appears — Deal It, All In and
+	// everything else — instead of a bear paw sliding in).
 	const swapTo = async (next: number) => {
 		swapTarget = next;
 		swapped = false;
@@ -142,7 +143,7 @@
 </script>
 
 {#snippet panel()}
-	<!-- Persistent board; the group fades + zooms when the multiplier value changes -->
+	<!-- Persistent board; the group fades and scale-settles when the multiplier value changes -->
 	<Container
 		x={position.x}
 		y={position.y}

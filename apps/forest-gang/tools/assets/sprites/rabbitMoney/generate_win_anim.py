@@ -7,8 +7,12 @@ NO border ring is drawn (the static cards' colored borders are intentionally abs
 Frames are sampled evenly across the clip (source lengths vary, 55–79 frames).
 Playback is ping-ponged at runtime (clips don't loop).
 
-Usage:
-  python3 generate_win_anim.py <video.mp4> <card_tile.png> <out_dir> <name>
+Usage (out_dir is taken verbatim — this script lives under tools/, the sheets live under
+static/, so always pass an explicit static/ path). Run from apps/forest-gang:
+  python3 tools/assets/sprites/rabbitMoney/generate_win_anim.py <video.mp4> <card_tile.png> \
+    <out_dir> <name>
+  e.g. python3 tools/assets/sprites/rabbitMoney/generate_win_anim.py bear.mp4 bear_tile.png \
+         static/assets/sprites/bearWinAnim bear_win_anim
 """
 import json
 import os

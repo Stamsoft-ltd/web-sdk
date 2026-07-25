@@ -9,10 +9,13 @@ the content bbox, resized to a target frame width, and packed 8 columns wide.
 The clip does NOT loop seamlessly — ping-pong the textures at runtime (same as
 the animal win anims in Board.svelte).
 
-Usage:
-  python3 generate_emblem_anim.py <video.mp4> <out_dir> <name> <frame_w>
-  e.g. python3 generate_emblem_anim.py ~/Downloads/WILD.mp4 wildAnim wild_anim_v3 224
-       python3 generate_emblem_anim.py ~/Downloads/Scatter.mp4 scatterAnim scatter_anim 336
+Usage (out_dir is taken verbatim — this script lives under tools/, the sheets live under
+static/, so always pass an explicit static/ path). Run from apps/forest-gang:
+  python3 tools/assets/sprites/generate_emblem_anim.py <video.mp4> <out_dir> <name> <frame_w>
+  e.g. python3 tools/assets/sprites/generate_emblem_anim.py ~/Downloads/WILD.mp4 \
+         static/assets/sprites/wildAnim wild_anim_v3 224
+       python3 tools/assets/sprites/generate_emblem_anim.py ~/Downloads/Scatter.mp4 \
+         static/assets/sprites/scatterAnim scatter_anim 336
 """
 import json
 import math

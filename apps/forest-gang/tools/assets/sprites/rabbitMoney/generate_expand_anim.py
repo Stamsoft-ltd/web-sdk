@@ -5,9 +5,12 @@ Center-crops each video frame to the expand tile's inner-rect aspect, composites
 inside the tile's baked border (keeping the rounded corners), and packs a pixi
 spritesheet JSON + webp. The clip does not loop — playback is ping-ponged at runtime.
 
-Usage:
-  python3 generate_expand_anim.py <video.mp4> <tile.png> <out_dir> <name>
-  e.g. python3 generate_expand_anim.py bear.mp4 bear_expand.png ../bearMoney bear_money
+Usage (out_dir is taken verbatim — this script lives under tools/, the sheets live under
+static/, so always pass an explicit static/ path). Run from apps/forest-gang:
+  python3 tools/assets/sprites/rabbitMoney/generate_expand_anim.py <video.mp4> <tile.png> \
+    <out_dir> <name>
+  e.g. python3 tools/assets/sprites/rabbitMoney/generate_expand_anim.py bear.mp4 \
+         bear_expand.png static/assets/sprites/bearMoney bear_money
 """
 import json
 import os

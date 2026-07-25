@@ -7,7 +7,11 @@ INSIDE coins survive. 40 frames at native 864x496 don't fit one <=4096px texture
 they're packed into TWO sheets (coin_rain_a/b, 20 frames each) that the component
 concatenates at runtime.
 
-Usage: python3 generate_coin_rain.py <video.mp4> <out_dir>
+Usage (out_dir is taken verbatim — this script lives under tools/, the sheets live under
+static/, so always pass an explicit static/ path). Run from apps/forest-gang:
+  python3 tools/assets/sprites/coinRain/generate_coin_rain.py <video.mp4> <out_dir>
+  e.g. python3 tools/assets/sprites/coinRain/generate_coin_rain.py rain.mp4 \
+         static/assets/sprites/coinRain
 """
 import json
 import os

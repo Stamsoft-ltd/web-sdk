@@ -4,8 +4,8 @@ patch_scatter_leaves.py
 Replaces the corner decorations on scatter_frame.png with large, lush leaf
 clusters inspired by the FOREST GANG logo banner style.
 
-Run from the frames directory:
-    python3 patch_scatter_leaves.py
+Reads and writes static/assets/components/frames/ regardless of cwd (see DIR below):
+    python3 apps/forest-gang/tools/assets/components/frames/patch_scatter_leaves.py
 """
 
 import io

@@ -60,9 +60,9 @@
 		const main = context.stateLayoutDerived.mainLayout();
 		// Right strip centre between the board's right grid edge and the canvas right edge (mirror of
 		// the FreeSpinCounter / EARNED left strip).
-		// Right column inset from the strip centre. The multiplier board (below) renders ~0.4·SYMBOL_SIZE
-		// to the RIGHT of this same inset because its bear-hand sprite offsets the board; match that here
-		// so the SYMBOL board lines up vertically with the multiplier board.
+		// Right column inset from the strip centre. GlobalMultiplier derives its own X from the same
+		// expression (minus the same 0.1·SYMBOL_SIZE), so keeping this inset identical is what makes
+		// the SYMBOL board line up vertically with the multiplier board below it.
 		const rightStripCenterX = (bl.x + bl.width * 0.522 * bl.boardScaleX + main.width) / 2 - SYMBOL_SIZE * 0.1;
 		// Align the SYMBOL panel centre with the FREE SPINS card centre.
 		const fsTopY = main.height * 0.03 + (main.width * 0.12) / (1176 / 572) + SYMBOL_SIZE * 0.15;
