@@ -14,6 +14,10 @@
 
 	let preLoaded = $state(false);
 	let deferLoaded = $state(false);
+	// A load that outlived the component must not write back: stateApp is created once per game
+	// module and survives a remount, so a late merge would republish assets whose textures the
+	// destroyed renderer already took with it.
+	let destroyed = false;
 
 	// Main gating pass: everything that is neither preloaded nor deferred. `context.stateApp.loaded`
 	// (and the loading screen) waits only on THIS set, so the game becomes playable without waiting
@@ -78,8 +82,9 @@
 	// Without this a texture's first upload happens on its first DRAW, which for streamed art is
 	// mid-spin or mid-presentation — a stall exactly when a new animation appears. Uploading at load
 	// time moves that cost off the animation's first frame. It is not free: it deliberately brings
-	// the pages into GPU residency ahead of use, so the decoded pool and the GPU pool now hold the
-	// same set. See docs/plans/11-asset-residency-and-prewarm.md.
+	// each pass's pages into GPU residency at load rather than at first use, so the GPU now holds
+	// roughly what the CPU-side decode holds instead of trailing it.
+	// See docs/plans/11-asset-residency-and-prewarm.md.
 	const collectTextureSources = ({
 		out,
 		processed,
@@ -113,23 +118,39 @@
 		}
 	};
 
-	const prewarm = (sources: PIXI.TextureSource[]) => {
-		const prepare = context.stateApp.pixiApplication?.renderer?.prepare;
-		if (!prepare || sources.length === 0) return;
-		// Fire and forget: prepare drains its queue over Ticker.system a few items per frame, so it
-		// must never gate a load, and a failed upload must never reject one. upload() dedupes the
-		// queue by TextureSource uid, so pages shared by several keys are uploaded once.
-		// Known ceiling: pixi's PrepareSystem.destroy() nulls its queue but leaves any already-armed
-		// Ticker.system callback in place, so destroying the Application mid-drain throws once from
-		// that stray tick. In this app destroy only happens on page teardown / dev HMR, and pixi
-		// exposes no way to cancel the queue, so it is left alone rather than reimplemented.
-		prepare
-			.upload(sources)
-			.catch((error) => console.error('[pixi-svelte] texture prewarm failed', error));
+	// Uploaded in small batches rather than one upload() call: pixi's prepare drains four items per
+	// frame from a queue it exposes no way to cancel, and PrepareSystem.destroy() nulls that queue
+	// while leaving an armed Ticker.system callback behind. Re-checking the renderer between batches
+	// keeps the window in which destroying the Application can hit that stray tick down to one batch.
+	const PREWARM_BATCH = 8;
+	// A pass must never hang on the prewarm — Ticker.system drives the drain, so anything that stops
+	// it would otherwise strand the loading screen. Same reasoning as LOAD_TIMEOUT_MS above.
+	const PREWARM_TIMEOUT_MS = 5000;
+
+	const prewarm = async (sources: PIXI.TextureSource[]) => {
+		for (let index = 0; index < sources.length; index += PREWARM_BATCH) {
+			const prepare = context.stateApp.pixiApplication?.renderer?.prepare;
+			if (!prepare || destroyed) return; // application gone mid-warm; the rest is moot
+			try {
+				// upload() dedupes its queue by TextureSource uid, so a page shared by several keys is
+				// uploaded once. A failed upload must never fail the load that triggered it.
+				await prepare.upload(sources.slice(index, index + PREWARM_BATCH));
+			} catch (error) {
+				console.error('[pixi-svelte] texture prewarm failed', error);
+				return;
+			}
+		}
 	};
 
+	/**
+	 * Loads `nameList` and uploads its textures to the GPU before resolving, so a caller that
+	 * publishes the result is publishing art that is ready to draw, not art that will stall on its
+	 * first frame. `failed` lists keys that produced nothing — the caller decides whether a partial
+	 * result is acceptable (it is for the background passes, it is not for a demand load).
+	 */
 	const loadAssets = async (nameList: string[]) => {
 		const prewarmSources: PIXI.TextureSource[] = [];
+		const failed: string[] = [];
 		const loadedAssetsArray = await Promise.all(
 			nameList.map(async (key) => {
 				try {
@@ -146,29 +167,39 @@
 					collectTextureSources({ out: prewarmSources, processed, rawAsset, type, src });
 					return processed;
 				} catch (error) {
+					failed.push(key);
 					console.error(error);
 				}
 			}),
 		);
 
-		prewarm(prewarmSources);
+		await Promise.race([
+			prewarm(prewarmSources),
+			new Promise<void>((resolve) => setTimeout(resolve, PREWARM_TIMEOUT_MS)),
+		]);
 
-		return loadedAssetsArray.reduce(
+		const loadedAssets = loadedAssetsArray.reduce(
 			(acc, cur) => ({
 				...acc,
 				...cur,
 			}),
 			{} as LoadedAssets,
 		);
+		return { loadedAssets, failed };
 	};
+
+	const merge = (loadedAssets: LoadedAssets) => {
+		if (destroyed) return;
+		context.stateApp.loadedAssets = { ...context.stateApp.loadedAssets, ...loadedAssets };
+	};
+	$effect(() => () => {
+		destroyed = true;
+	});
 
 	$effect(() => {
 		if (!preLoaded) {
 			(async () => {
-				if (preAssetNameList.length > 0) {
-					const preLoadedAssets = await loadAssets(preAssetNameList);
-					if (preLoadedAssets) context.stateApp.loadedAssets = preLoadedAssets;
-				}
+				if (preAssetNameList.length > 0) merge((await loadAssets(preAssetNameList)).loadedAssets);
 				preLoaded = true;
 			})();
 		}
@@ -177,14 +208,7 @@
 	$effect(() => {
 		if (!context.stateApp.loaded && preLoaded) {
 			(async () => {
-				if (assetNameList.length > 0) {
-					const postLoadedAssets = await loadAssets(assetNameList);
-					if (postLoadedAssets)
-						context.stateApp.loadedAssets = {
-							...context.stateApp.loadedAssets,
-							...postLoadedAssets,
-						};
-				}
+				if (assetNameList.length > 0) merge((await loadAssets(assetNameList)).loadedAssets);
 				context.stateApp.loaded = true;
 			})();
 		}
@@ -202,12 +226,7 @@
 				const priorities = [...new Set(deferredNameList.map(priorityOf))].sort((a, b) => a - b);
 				for (const priority of priorities) {
 					const wave = deferredNameList.filter((key) => priorityOf(key) === priority);
-					const waveAssets = await loadAssets(wave);
-					if (waveAssets)
-						context.stateApp.loadedAssets = {
-							...context.stateApp.loadedAssets,
-							...waveAssets,
-						};
+					merge((await loadAssets(wave)).loadedAssets);
 				}
 			})();
 		}
@@ -223,12 +242,12 @@
 		setDemandLoader(async () => {
 			const wave = demandNameList;
 			if (wave.length === 0) return;
-			const demandAssets = await loadAssets(wave);
-			if (demandAssets)
-				context.stateApp.loadedAssets = {
-					...context.stateApp.loadedAssets,
-					...demandAssets,
-				};
+			const { loadedAssets, failed } = await loadAssets(wave);
+			merge(loadedAssets);
+			// Throw on a partial result so the caller's latch is not left claiming success: a demand
+			// load exists because something is about to DRAW this art, and silently resolving after a
+			// timeout would ship the fallback for the rest of the session with no retry.
+			if (failed.length > 0) throw new Error(`Demand assets failed to load: ${failed.join(', ')}`);
 		});
 		return () => setDemandLoader(undefined);
 	});

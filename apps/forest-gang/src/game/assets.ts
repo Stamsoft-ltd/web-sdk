@@ -419,10 +419,11 @@ for (const key of DEFER_WAVE_0) {
 }
 
 // Bonus-only art: withheld from the background stream entirely and loaded on demand, because a
-// session that never triggers a bonus never draws any of it — 75.5 MiB decoded / 4.8 MiB of
-// transfer that used to be paid by every player. game/utils.ts requests it from the book (see
-// BONUS_ART_EVENTS there), which covers all four entry paths: natural scatter, bought BONUS/SUPER,
-// a one-spin FEATURE book, and a resumed round replayed through createBonusSnapshot.
+// session that never triggers a bonus never draws any of it — a sizeable share of the art pool
+// that used to be paid by every player (run scripts/check-residency.py for the current figure).
+// game/utils.ts requests it from the book (see BONUS_ART_EVENTS there), which covers all four
+// entry paths: natural scatter, bought BONUS/SUPER, a one-spin FEATURE book, and a resumed round
+// replayed through createBonusSnapshot.
 const DEMAND_BONUS_ART: readonly string[] = [
 	'transition',
 	'bonusNormalBackground', 'bonusSuperBackground',

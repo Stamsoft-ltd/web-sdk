@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Asset residency by load pass — run from the repo root:
+"""Asset residency by load pass — run from anywhere:
 
-    python3 apps/forest-gang/scripts/check-residency.py
+    python3 apps/forest-gang/scripts/check-residency.py [desktop|portrait|landscape]
 
 Plan 11 (docs/plans/11-asset-residency-and-prewarm.md) Verify #4 asks for a residency figure
 WITH ITS SCOPE STATED, because the audit's key-summed totals double-counted assets whose keys
@@ -9,13 +9,20 @@ share a source URL (PIXI caches by URL, so a page shared by three keys is reside
 
 SCOPE, explicitly:
   * counted: every distinct image URL reachable from src/game/assets.ts — single sprites, the
-    atlas page of each sprite sheet, and every page of each Spine atlas — deduplicated by URL.
-  * decoded = width x height x 4 bytes. That is the CPU-side decode; since plan 11 the prewarm
-    uploads the same set to the GPU at load time, so treat it as the GPU figure too.
+    atlas page of each sprite sheet, and every page of each Spine atlas. Deduplicated by the URL
+    PIXI caches under, i.e. INCLUDING the ?v= query, and including the query pixi copies from a
+    sheet's json onto its image (see pixi copySearchParams in spritesheetAsset).
+  * "decoded" = width x height x 4 bytes: the CPU-side RGBA decode. It is also a reasonable
+    ESTIMATE of the GPU footprint of the same set, since these upload as RGBA8 with mipmaps off —
+    but it is an estimate derived from image headers, NOT a reading from the GPU. A real GPU
+    number needs a browser (WEBGL_debug_renderer / a memory profile) and is not what this prints.
   * NOT counted: fonts, audio, render targets, framebuffers, and pixi's own internal textures.
     This is the art pool, not total process memory.
 
-The pass split mirrors the loader:
+The pass split mirrors the loader. The layout argument matters: only the art for the layout that
+does NOT match the initial viewport is demoted to the deferred stream, so the blocking/deferred
+split differs per device (the totals do not).
+
   preload   Asset.preload  — before the loading screen paints
   blocking  neither flag   — gates `loaded`, i.e. first playability
   defer wN  Asset.defer    — background stream, ascending Asset.deferPriority
@@ -91,29 +98,40 @@ def dims(url):
 
 
 def urls_for(entry):
-    """Every image URL whose pixels end up resident for this asset key."""
+    """Every image URL whose pixels end up resident for this asset key, keyed the way PIXI caches
+    them: with the query string kept, and with a sheet json's query copied onto its image."""
     out = []
     for s in entry['src']:
-        base, folder = s.split('?')[0], os.path.dirname(s.split('?')[0])
+        base = s.split('?')[0]
+        query = s[len(base):]
+        folder = os.path.dirname(base)
         path = os.path.join(APP, 'static', base.lstrip('./'))
         if base.endswith('.json') and entry['type'] in ('sprites', 'spriteSheet'):
             if os.path.exists(path):
-                out.append(folder + '/' + json.load(open(path))['meta']['image'])
+                out.append(folder + '/' + json.load(open(path))['meta']['image'] + query)
         elif base.endswith('.atlas'):  # Spine: one line per page
             if os.path.exists(path):
-                out += [folder + '/' + ln.strip() for ln in open(path)
+                out += [folder + '/' + ln.strip() + query for ln in open(path)
                         if ln.strip().endswith(('.png', '.webp'))]
         elif base.endswith(('.png', '.webp', '.jpg', '.avif')):
-            out.append(base)
+            out.append(s)
     return out
 
 
 def main():
+    layout = (sys.argv[1] if len(sys.argv) > 1 else 'desktop').lower()
+    if layout not in ('desktop', 'portrait', 'landscape'):
+        print(f'unknown layout {layout!r}; expected desktop | portrait | landscape')
+        return 2
+
     entries = parse_entries()
     demand = set(key_list('DEMAND_BONUS_ART'))
     wave0 = set(key_list('DEFER_WAVE_0'))
-    deferred = set(key_list('DEFERRED_KEYS')) | set(key_list('MOBILE_ONLY_KEYS')) | set(
-        key_list('DESKTOP_ONLY_KEYS'))
+    # assets.ts demotes ONLY the non-matching layout's art to the deferred stream; the matching
+    # set stays in the blocking pass. Mirror that instead of deferring both.
+    other_layout = ('DESKTOP_ONLY_KEYS' if layout in ('portrait', 'landscape')
+                    else 'MOBILE_ONLY_KEYS')
+    deferred = set(key_list('DEFERRED_KEYS')) | set(key_list(other_layout))
 
     def pass_of(key, e):
         if key in demand:
@@ -146,6 +164,7 @@ def main():
         seen.update(uniq)
 
     mib = lambda n: n / 1048576
+    print(f'layout: {layout}  (only the OTHER layout\'s art is demoted to the deferred stream)\n')
     print(f"{'pass':<10}{'keys':>6}{'urls':>6}{'decoded MiB':>14}{'transfer MiB':>14}")
     for name, (nk, nu, dec, disk) in report.items():
         print(f'{name:<10}{nk:>6}{nu:>6}{mib(dec):>14.1f}{mib(disk):>14.1f}')
