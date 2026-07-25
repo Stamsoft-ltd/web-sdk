@@ -16,7 +16,7 @@
 	import { OnMount } from 'components-shared';
 
 	import WinCoins from './WinCoins.svelte';
-	import WinBoard from './WinBoard.svelte';
+	import WinBoard, { boardKeyForMult } from './WinBoard.svelte';
 	import MaxWinScreen from './MaxWinScreen.svelte';
 	import PressToContinue from './PressToContinue.svelte';
 	import { SYMBOL_SIZE } from '../game/constants';
@@ -37,6 +37,39 @@
 	let autoCloseTimer = 0;
 	let isCountingUp = $state(false);
 	let winSizes = $state({ width: 0, height: 0 });
+
+	// ── Count curve (R8) ──────────────────────────────────────────────────────────────────────
+	// Linear for the first 80% of the time, then a quadratic ease-out over the last 20%. A plain
+	// cubicOut would bunch every tier crossing into the first second (each crossing is an amount
+	// threshold, so front-loading the amount front-loads all of them); staying linear through the
+	// tier range keeps them spread and still lets the number settle instead of stopping dead.
+	// EASE_V = 2T/(1+T) makes the two segments share a slope at the join, so there is no kink.
+	const EASE_T = 0.8;
+	const EASE_V = (2 * EASE_T) / (1 + EASE_T); // 0.888…
+	const countCurve = (t: number) => {
+		if (t < EASE_T) return (EASE_V / EASE_T) * t;
+		const u = (t - EASE_T) / (1 - EASE_T);
+		return EASE_V + (1 - EASE_V) * u * (2 - u);
+	};
+
+	// ── Big-win count-up length (R8) ──────────────────────────────────────────────────────────
+	// Explicit per-tier lengths in ms, replacing `presentDuration × 0.25` — that formula gave
+	// LEGENDARY an 11.25 s climb (45 s presentDuration) on top of a 3 s hold.
+	const BIG_COUNT_MS: Record<string, number> = {
+		big: 2500, // SWEET
+		superwin: 3500, // WILD
+		mega: 4500, // EPIC
+		epic: 5250, // MYTHIC
+		max: 6000, // LEGENDARY / MAX WIN
+	};
+	// Turbo now shortens big wins too (it never did), but never to a flash: each tier cross-fade
+	// needs ~400 ms and MAX WIN needs its entrance, so the floor keeps the choreography readable.
+	const BIG_COUNT_MIN_MS = 1500;
+	const turboFactor = () => (stateBet.isSuperTurbo ? 0.4 : stateBet.isTurbo ? 0.6 : 1);
+	const bigCountDuration = (alias: string) =>
+		Math.max(BIG_COUNT_MIN_MS, (BIG_COUNT_MS[alias] ?? 3000) * turboFactor());
+	// Hold after the count finishes before the board auto-closes. Follows turbo for the same reason.
+	const bigHoldMs = () => (stateBet.isSuperTurbo ? 1200 : stateBet.isTurbo ? 2000 : 2500);
 
 	// Breathing: gentle ±2% scale oscillation while counting up
 	let breatheScale = $state(1);
@@ -120,20 +153,24 @@
 		{@const isBigWin = winLevelData.type === 'big'}
 		{@const hasBoardAnimation = !!winLevelData?.animation}
 		<!-- Small/medium wins tally at half their present duration (600ms–1.75s) so they read as a
-		     count-up rather than an instant pop; big-win boards keep the quarter scale (2.5s–11s)
-		     since their presentDurations are an order of magnitude longer. -->
-		{@const duration = (stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation ? Math.min(winLevelData.presentDuration, 400) : winLevelData.presentDuration * (winLevelData.type === 'big' ? 0.25 : 0.5)}
+		     count-up rather than an instant pop; big-win boards use explicit per-tier lengths
+		     (BIG_COUNT_MS above) instead of a fraction of their 10–45s presentDuration. -->
+		{@const duration = hasBoardAnimation
+			? bigCountDuration(winLevelData.alias)
+			: (stateBet.isTurbo || stateBet.isSuperTurbo)
+				? Math.min(winLevelData.presentDuration, 400)
+				: winLevelData.presentDuration * 0.5}
 		{#key oncomplete}
-		<WinCountUpProvider {amount} {duration} oncomplete={() => {
+		<WinCountUpProvider {amount} {duration} easing={countCurve} oncomplete={() => {
 			context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' });
 			if (!hasBoardAnimation) {
 				if (!boardClickHandled) { snappedToFinal = true; context.stateGame.paylineSnap = true; boardClickHandled = true; oncomplete(); }
 			} else if (!boardClickHandled) {
 				// Board-animation (big) win finished counting (naturally or via a press-snap) → auto-close
-				// after a 3s hold instead of waiting for a manual press. A further press still closes sooner.
+				// after a short hold instead of waiting for a manual press. A further press closes sooner.
 				context.stateGame.paylineSnap = true;
 				clearTimeout(autoCloseTimer);
-				autoCloseTimer = setTimeout(() => oncomplete(), 3000) as unknown as number;
+				autoCloseTimer = setTimeout(() => oncomplete(), bigHoldMs()) as unknown as number;
 			}
 		}}>
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
@@ -167,10 +204,10 @@
 							     betAmount — the book amount is already bet-relative, and doing so inflated the
 							     tier ~100× (a 25× win showed LEGENDARY instead of SWEET). -->
 							{@const mult = bookEventAmountToBetAmountMultiplier(countUpAmount)}
-							<!-- Win-tier thresholds (× bet): 20 SWEET · 50 WILD · 100 EPIC · 200 MYTHIC · 500 LEGENDARY.
-							     (1000×+ MAX WIN is a separate special screen.) A board only shows from 20× via the
-							     winLevel gate, so <50× maps to SWEET. -->
-							{@const boardKey = mult >= 500 ? 'legendaryWinBoard' : mult >= 200 ? 'mythicWinBoard' : mult >= 100 ? 'epicWinBoard' : mult >= 50 ? 'wildWinBoard' : 'sweetWinBoard'}
+							<!-- Live board vs. the board this win ends on (thresholds live in WinBoard). The final
+							     one is the only crossing that still pops — the rest cross-fade. -->
+							{@const boardKey = boardKeyForMult(mult)}
+							{@const finalKey = boardKeyForMult(bookEventAmountToBetAmountMultiplier(amount))}
 							{@const maxBoardSize = Math.min(boardLayout.width * bs * 0.55, boardLayout.height * bs * 0.85) * winBoardBoost}
 							<!-- Golden radial glow behind the board — the fsIntro spine's glow layers with the
 							     frame stripped (fs_glow.json), slightly smaller than on the congratulations screen. -->
@@ -179,6 +216,7 @@
 							</SpineProvider>
 							<WinBoard
 								{boardKey}
+								{finalKey}
 								{maxBoardSize}
 								{breatheScale}
 								{mult}

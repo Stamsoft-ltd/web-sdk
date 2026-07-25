@@ -1,12 +1,17 @@
 <script lang="ts">
-	import { Tween } from 'svelte/motion';
 	import { type Snippet } from 'svelte';
+	import { Tween } from 'svelte/motion';
 
 	import { createInterruptible } from 'utils-shared/interruptible';
 
 	type Props = {
 		amount: number;
 		duration: number;
+		/**
+		 * Optional count curve. Defaults to Svelte's linear easing — games that already ship a
+		 * linear count-up must not change behaviour, so never give this a default here.
+		 */
+		easing?: (t: number) => number;
 		oncomplete: () => void;
 		children: Snippet<
 			[
@@ -26,7 +31,8 @@
 
 	let countUpCompleted = $state(false);
 
-	const countUp = () => countUpAmount.set(props.amount, { duration: props.duration });
+	const countUp = () =>
+		countUpAmount.set(props.amount, { duration: props.duration, easing: props.easing });
 	const resetCountUp = () => countUpAmount.set(props.amount, { duration: 0 });
 	const finishCountUp = () => interruptible.interrupt();
 	const startCountUp = async () => {
