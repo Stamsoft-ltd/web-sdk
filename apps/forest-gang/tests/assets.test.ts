@@ -1,4 +1,7 @@
-// Plan 14 section 3 — atlas validation. Pure filesystem work: no renderer, no network, no clock.
+// @vitest-environment node
+//
+// Plan 14 section 3 — atlas validation. Pure filesystem work: no renderer, no network, no clock,
+// and (per the docblock above) no jsdom — assets.ts guards its only `window` read.
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 
@@ -63,6 +66,13 @@ const imageSize = (buf: Buffer): Size | null => {
 	return null;
 };
 
+// Headers only, read once per file: the suite asks four different questions about the same images.
+const sizeCache = new Map<string, Size | null>();
+const sizeOf = (file: string): Size | null => {
+	if (!sizeCache.has(file)) sizeCache.set(file, imageSize(readFileSync(file)));
+	return sizeCache.get(file)!;
+};
+
 const walk = (dir: string): string[] =>
 	readdirSync(dir).flatMap((entry) => {
 		const p = join(dir, entry);
@@ -94,15 +104,14 @@ const imagesBehind = (src: string): string[] => {
 	if (IMAGE_RE.test(p)) return [p];
 
 	if (p.endsWith('.json')) {
-		let sheet: { meta?: { image?: string } };
-		try {
-			sheet = JSON.parse(readFileSync(p, 'utf8'));
-		} catch {
-			return [];
-		}
+		// THROWS rather than skipping. A sheet that stops parsing, or whose page image goes missing,
+		// used to drop silently out of every downstream check (memory, dimensions, frame bounds) — a
+		// corrupt atlas would have made the suite quieter, not louder.
+		const sheet = JSON.parse(readFileSync(p, 'utf8')) as { meta?: { image?: string } };
 		if (!sheet?.meta?.image) return []; // sounds.json and spine skeletons have no page image
 		const img = join(dirname(p), sheet.meta.image.split('?')[0]);
-		return existsSync(img) ? [img] : [];
+		if (!existsSync(img)) throw new Error(`${relative(STATIC, p)} references a missing page image: ${sheet.meta.image}`);
+		return [img];
 	}
 	if (p.endsWith('.atlas')) {
 		return readFileSync(p, 'utf8')
@@ -120,11 +129,19 @@ const imagesBehind = (src: string): string[] => {
 
 const loadedImages = [...new Set(assetEntries.flatMap((e) => e.srcs.flatMap(imagesBehind)))];
 
+// Load-bearing keys the game cannot run without, one per asset TYPE, so the anti-vacuity check
+// below proves the import worked without pinning a head-count that plan 03's deletions would break.
+const REQUIRED_KEYS = ['sound', 'wildAnim', 'fsIntro', 'goldFont', 'baseBackground'];
+
 describe('assets.ts (plan 14 §3)', () => {
-	it('declares at least the asset set this suite was written against', () => {
+	it('resolves a real asset set of every type', () => {
 		// Without this, every assertion below passes vacuously if the import ever yields {}.
-		expect(assetEntries.length).toBeGreaterThanOrEqual(140);
-		expect(loadedImages.length).toBeGreaterThanOrEqual(110);
+		const keys = new Set(assetEntries.map((e) => e.key));
+		expect(REQUIRED_KEYS.filter((k) => !keys.has(k))).toEqual([]);
+		expect(new Set(assetEntries.map((e) => e.type))).toEqual(
+			new Set(['sprite', 'sprites', 'spriteSheet', 'spine', 'font', 'audio']),
+		);
+		expect(loadedImages.length).toBeGreaterThan(0);
 	});
 
 	it('every src path exists on disk', () => {
@@ -135,7 +152,7 @@ describe('assets.ts (plan 14 §3)', () => {
 	});
 
 	it('every loaded image has a readable header', () => {
-		const unreadable = loadedImages.filter((f) => imageSize(readFileSync(f)) === null);
+		const unreadable = loadedImages.filter((f) => sizeOf(f) === null);
 		expect(unreadable.map((f) => relative(STATIC, f))).toEqual([]);
 	});
 
@@ -144,7 +161,7 @@ describe('assets.ts (plan 14 §3)', () => {
 		// frames/hud_frame.webp are 4600x500 but are <img>/CSS backgrounds in HudHtml.svelte, where
 		// the GPU limit does not apply.
 		const oversize = loadedImages
-			.map((f) => ({ f, size: imageSize(readFileSync(f))! }))
+			.map((f) => ({ f, size: sizeOf(f)! }))
 			.filter(({ size }) => size.w > MAX_TEXTURE_DIMENSION || size.h > MAX_TEXTURE_DIMENSION)
 			.map(({ f, size }) => `${relative(STATIC, f)} ${size.w}x${size.h}`);
 		expect(oversize).toEqual([]);
@@ -152,7 +169,7 @@ describe('assets.ts (plan 14 §3)', () => {
 
 	it(`decoded memory stays under ${DECODED_BUDGET_MIB} MiB`, () => {
 		const bytes = loadedImages.reduce((total, f) => {
-			const size = imageSize(readFileSync(f))!;
+			const size = sizeOf(f)!;
 			return total + size.w * size.h * 4;
 		}, 0);
 		const mib = bytes / 1024 / 1024;
@@ -181,11 +198,11 @@ describe('sprite sheets (plan 14 §3)', () => {
 		expect(sheets.length).toBeGreaterThanOrEqual(30);
 	});
 
-	it('declared meta.size matches the actual image', () => {
+	it('adds no new meta.size mismatch beyond the recorded baseline', () => {
 		const mismatched: Record<string, string> = {};
 		for (const { f, data } of sheets) {
 			const img = join(dirname(f), data.meta.image.split('?')[0]);
-			const size = imageSize(readFileSync(img));
+			const size = sizeOf(img);
 			if (!size) throw new Error(`unreadable sheet image ${img}`);
 			if (size.w !== data.meta.size.w || size.h !== data.meta.size.h)
 				mismatched[relative(STATIC, f)] =
@@ -202,13 +219,13 @@ describe('sprite sheets (plan 14 §3)', () => {
 		expect(mismatched).toEqual(known);
 	});
 
-	it('frame rects stay inside the actual image', () => {
+	it('adds no new out-of-bounds frame rect beyond the recorded baseline', () => {
 		// The assertion that makes editing meta.size the WRONG fix for the three known sheets: their
 		// frames genuinely sample past the image edge, so only a re-pack clears both checks.
 		const outOfBounds: string[] = [];
 		for (const { f, data } of sheets) {
 			const img = join(dirname(f), data.meta.image.split('?')[0]);
-			const size = imageSize(readFileSync(img))!;
+			const size = sizeOf(img)!;
 			for (const [name, frame] of Object.entries(data.frames ?? {})) {
 				const r = frame.frame;
 				if (r.x + r.w > size.w || r.y + r.h > size.h)
@@ -224,25 +241,45 @@ describe('sprite sheets (plan 14 §3)', () => {
 });
 
 describe('unreferenced asset keys (plan 14 §3)', () => {
-	// What this buys, precisely: it catches a key NO source file names. It does NOT catch a key that
-	// is named but whose textures never reach a rendered branch — the five letter win sheets are
-	// mapped in Board.svelte and ExpandedSymbolOverlay.svelte, so they pass this check while being
-	// just as dead. That needs the render-usage assertion section 3 describes and this plan defers.
+	// What this buys, precisely — and the plan is explicit that it must not be oversold:
+	//
+	//  * it catches a key NO source file names (`coins`, `progressBar`, the landscape tiles);
+	//  * it does NOT catch a key that is named but whose textures never reach a rendered branch. The
+	//    five letter win sheets are mapped in Board.svelte and ExpandedSymbolOverlay.svelte, so they
+	//    pass while being just as dead — a control-flow property needing the render-usage assertion
+	//    section 3 describes and this plan defers;
+	//  * it does NOT catch a key whose name collides with an unrelated identifier. `freeSpins` is
+	//    the live example: `i18nDerived.freeSpins()` is a translation helper, nothing to do with the
+	//    atlas, yet it keeps the key looking referenced. Narrowing further (excluding `.`-prefixed
+	//    matches) would break real `loadedAssets?.someKey` reads, so this stays a known false
+	//    negative rather than a false positive.
+	//
+	// Comments are stripped and path-ish matches (`icon-coins.png`, `/sprites/coins/`) are excluded,
+	// because both used to keep genuinely dead keys alive.
+	// Block, line and Svelte-template comments. `[^:]` before `//` keeps `https://` intact.
+	const stripComments = (src: string) =>
+		src
+			.replace(/<!--[\s\S]*?-->/g, ' ')
+			.replace(/\/\*[\s\S]*?\*\//g, ' ')
+			.replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+
 	const sourceBlob = walk(SRC)
 		.filter((f) => /\.(svelte|ts)$/.test(f) && !f.endsWith(join('game', 'assets.ts')))
-		.map((f) => readFileSync(f, 'utf8'))
+		.map((f) => stripComments(readFileSync(f, 'utf8')))
 		.join('\n');
 
 	const unreferenced = assetEntries
-		.filter((e) => !new RegExp(`\\b${e.key}\\b`).test(sourceBlob))
+		.filter((e) => !new RegExp(`(?<![\\w$\\-/])${e.key}(?![\\w$\\-])`).test(sourceBlob))
 		.map((e) => e.key)
 		.sort();
 
 	it('scans a source tree that actually has content', () => {
 		expect(sourceBlob.length).toBeGreaterThan(100_000);
+		// The stripper must not eat the code: a key that IS referenced has to survive it.
+		expect(new RegExp(`(?<![\\w$\\-/])pCoins(?![\\w$\\-])`).test(sourceBlob)).toBe(true);
 	});
 
-	it('matches the recorded baseline exactly', () => {
+	it('adds no new unreferenced key beyond the recorded baseline', () => {
 		// Equality in both directions: adding a key nothing references fails; deleting one of the
 		// recorded dead keys (what plan 03 does) also fails until the baseline is updated.
 		expect(unreferenced).toEqual([...UNREFERENCED_ASSET_KEYS].sort());

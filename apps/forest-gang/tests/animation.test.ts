@@ -5,7 +5,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import * as PIXI from 'pixi.js';
 import { flushSync, mount, unmount } from 'svelte';
 
@@ -22,6 +22,28 @@ const COMPONENTS_DIR = join(import.meta.dirname, '../src/components');
 // Section 2 — sprite liveness
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Mirrors SceneAnimationDriver: pixi-svelte's <AnimatedSprite> is constructed with PIXI's default
+// `autoUpdate: true`, so `gotoAndPlay()` registers it on `Ticker.shared` — whose `autoStart` is
+// true, and jsdom does provide requestAnimationFrame. Leaving it running would mean a second,
+// wall-clock driver racing `advanceFrames()`. Production stops it; so does this suite.
+let sharedTickerWasStarted = false;
+beforeAll(() => {
+	sharedTickerWasStarted = PIXI.Ticker.shared.started;
+	PIXI.Ticker.shared.autoStart = false;
+	PIXI.Ticker.shared.stop();
+});
+afterAll(() => {
+	PIXI.Ticker.shared.autoStart = sharedTickerWasStarted;
+	if (sharedTickerWasStarted) PIXI.Ticker.shared.start();
+});
+
+// Unmount every mounted sprite even when an assertion throws — a leaked playing sprite stays
+// registered on the shared ticker for the rest of the file.
+const mounted: (() => void)[] = [];
+afterEach(() => {
+	while (mounted.length) mounted.pop()!();
+});
+
 const mountSprite = (props: Record<string, unknown>) => {
 	const stage = new PIXI.Container();
 	const live = reactiveProps(props);
@@ -31,13 +53,32 @@ const mountSprite = (props: Record<string, unknown>) => {
 		props: live,
 	});
 	flushSync();
+	mounted.push(() => unmount(component, { outro: false }));
 	const sprite = stage.children[0] as unknown as PIXI.AnimatedSprite;
-	return { stage, sprite, props: live, dispose: () => unmount(component, { outro: false }) };
+	return { stage, sprite, props: live };
 };
 
 describe('AnimatedSprite liveness (plan 14 §2)', () => {
+	// If this ever fails, every exact-frame assertion below is racing a wall clock and the numbers
+	// mean nothing.
+	it('runs with the shared ticker stopped, so advanceFrames is the only clock', () => {
+		const { stage, sprite } = mountSprite({
+			textures: fakeTextures(8),
+			play: true,
+			loop: true,
+			animationSpeed: 1,
+		});
+		expect(PIXI.Ticker.shared.started).toBe(false);
+		// The sprite IS registered on the shared ticker (autoUpdate defaults to true) — that is
+		// exactly why the ticker has to be stopped rather than merely ignored.
+		expect(PIXI.Ticker.shared.count).toBeGreaterThan(0);
+		expect(sprite.currentFrame).toBe(0);
+		advanceFrames(stage, 2);
+		expect(sprite.currentFrame).toBe(2);
+	});
+
 	it('advances currentFrame under the deterministic clock', () => {
-		const { stage, sprite, dispose } = mountSprite({
+		const { stage, sprite } = mountSprite({
 			textures: fakeTextures(8),
 			play: true,
 			loop: true,
@@ -49,7 +90,6 @@ describe('AnimatedSprite liveness (plan 14 §2)', () => {
 		advanceFrames(stage, 4);
 
 		expect(sprite.currentFrame).toBe(4);
-		dispose();
 	});
 
 	// R1, directly. `set textures` calls gotoAndStop(0) internally, so when propsSyncEffect owned
@@ -58,7 +98,7 @@ describe('AnimatedSprite liveness (plan 14 §2)', () => {
 	it.each(['y', 'alpha', 'width'] as const)(
 		'keeps advancing after an unrelated `%s` write',
 		(prop) => {
-			const { stage, sprite, props, dispose } = mountSprite({
+			const { stage, sprite, props } = mountSprite({
 				textures: fakeTextures(8),
 				play: true,
 				loop: true,
@@ -76,14 +116,13 @@ describe('AnimatedSprite liveness (plan 14 §2)', () => {
 			// ...and still ticking afterwards.
 			advanceFrames(stage, 2);
 			expect(sprite.currentFrame).toBe(5);
-			dispose();
 		},
 	);
 
 	// The other half of R1: a genuine textures swap (deferred assets merging into loadedAssets hands
 	// the parent a brand-new array) used to leave the sprite stopped with nothing to restart it.
 	it('restarts after a textures swap', () => {
-		const { stage, sprite, props, dispose } = mountSprite({
+		const { stage, sprite, props } = mountSprite({
 			textures: fakeTextures(8),
 			play: true,
 			loop: true,
@@ -98,11 +137,10 @@ describe('AnimatedSprite liveness (plan 14 §2)', () => {
 		expect(sprite.playing).toBe(true);
 		advanceFrames(stage, 2);
 		expect(sprite.currentFrame).toBe(2);
-		dispose();
 	});
 
 	it('stays parked on its start frame when play is false', () => {
-		const { stage, sprite, dispose } = mountSprite({
+		const { stage, sprite } = mountSprite({
 			textures: fakeTextures(8),
 			play: false,
 			loop: true,
@@ -113,7 +151,6 @@ describe('AnimatedSprite liveness (plan 14 §2)', () => {
 		advanceFrames(stage, 10);
 		// The walk must skip non-playing sprites — otherwise `play={false}` means nothing.
 		expect(sprite.currentFrame).toBe(2);
-		dispose();
 	});
 });
 
@@ -274,9 +311,11 @@ const rafEffects = (source: string) => {
 
 /**
  * Every reason `source`'s rAF effects could run on a cold load, as human-readable strings.
- * Two rules, both the shape R13 had:
+ * Three rules, all the shape R13 had:
  *   1. the effect must early-return before it schedules anything;
- *   2. any component-local `$state` the guard reads must initialise falsy.
+ *   2. the guard must return on the CLOSED side — `if (!gate) return`, never `if (gate) return`,
+ *      which runs the loop precisely when the gate is shut;
+ *   3. any component-local `$state` the guard reads must initialise falsy.
  */
 const rafGateViolations = (source: string): string[] => {
 	const violations: string[] = [];
@@ -294,6 +333,10 @@ const rafGateViolations = (source: string): string[] => {
 		for (const ident of guard[1].match(/[A-Za-z_$][\w$]*/g) ?? []) {
 			const decl = new RegExp(`let\\s+${ident}\\s*=\\s*\\$state\\(([^)]*)\\)`).exec(source);
 			if (!decl) continue; // a $derived or a prop — gated by game state, which starts idle
+			if (!new RegExp(`!\\s*${ident}\\b`).test(guard[1])) {
+				violations.push(`rAF gate \`${ident}\` is not negated — the loop runs while it is closed`);
+				continue;
+			}
 			if (!['', 'false', '0', 'null', 'undefined'].includes(decl[1].trim()))
 				violations.push(`rAF gate \`${ident}\` initialises truthy ($state(${decl[1]}))`);
 		}
@@ -301,45 +344,59 @@ const rafGateViolations = (source: string): string[] => {
 	return violations;
 };
 
-// Components that are mounted for the whole session — a popup whose visibility is an internal
-// `$state`, or a board that is always on screen. For these, mounting is NOT a gate: the rAF effect
-// must gate itself, and the gate must start closed. R13 was exactly this — `show` shipped as
-// `$state(true)` in FreeSpinOutro, so its clock ran from cold load and the first bonus outro
-// hard-popped instead of animating.
-const ALWAYS_MOUNTED_RAF_OWNERS = [
-	'Board.svelte',
-	'BonusSymbolPanel.svelte',
-	'ExpandedSymbolOverlay.svelte',
-	'FreeSpinIntro.svelte',
-	'FreeSpinOutro.svelte',
-	'Win.svelte',
-];
+// Every component that mentions requestAnimationFrame, classified. The map is asserted to be
+// EXHAUSTIVE below, so a new rAF owner fails this suite until someone classifies it — otherwise a
+// fresh ungated loop in a fresh always-mounted popup would slip past unexamined.
+const RAF_COMPONENTS: Record<string, 'self-gated' | 'mount-gated' | 'not-a-loop'> = {
+	// Mounted for the whole session — a popup whose visibility is an internal `$state`, or a board
+	// that is always on screen. Mounting is NOT a gate here: the effect must gate itself, and the
+	// gate must start closed. R13 was exactly this — `show` shipped as `$state(true)` in
+	// FreeSpinOutro, so its clock ran from cold load and the first bonus outro hard-popped.
+	'Board.svelte': 'self-gated',
+	'BonusSymbolPanel.svelte': 'self-gated',
+	'ExpandedSymbolOverlay.svelte': 'self-gated',
+	'FreeSpinIntro.svelte': 'self-gated',
+	'FreeSpinOutro.svelte': 'self-gated',
+	'Win.svelte': 'self-gated',
+	// Rendered behind an {#if} that is false at idle, so the mount itself is the gate and the
+	// effect body is legitimately unconditional.
+	'Anticipation.svelte': 'mount-gated',
+	'WinBoard.svelte': 'mount-gated',
+	// requestAnimationFrame outside any $effect: one-shot layout work (measure/fit), or a loop
+	// started explicitly by a call site rather than by mounting. Not an idle animation clock.
+	'HudHtml.svelte': 'not-a-loop',
+	'PaylineVine.svelte': 'not-a-loop',
+	'SceneAnimationDriver.svelte': 'not-a-loop', // mentions it only in a comment
+};
+
+const SELF_GATED = Object.keys(RAF_COMPONENTS).filter((f) => RAF_COMPONENTS[f] === 'self-gated');
 
 describe('idle rAF loops (plan 14 §2, R13 partial guard)', () => {
 	// Honest scope: this is a SOURCE-level guard, not a runtime one. Proving "no rAF is scheduled"
 	// at runtime needs the whole game tree mounted against a GPU, which is deferred section 4. What
-	// it does prove is that every always-mounted rAF owner still has a gate and that the gate still
-	// starts closed — which is the shape both R13 and N5 had.
+	// it does prove is that every always-mounted rAF owner still has a gate, that the gate is on the
+	// closed side, and that it still starts closed — which is the shape both R13 and N5 had.
 	const sources = new Map(
 		readdirSync(COMPONENTS_DIR)
 			.filter((f) => f.endsWith('.svelte'))
 			.map((f) => [f, readFileSync(join(COMPONENTS_DIR, f), 'utf8')] as const),
 	);
 
-	it('finds the rAF owners it claims to check (guards against a silently empty scan)', () => {
-		const owners = [...sources]
-			.filter(([, src]) => rafEffects(src).length > 0)
+	it('classifies every component that touches requestAnimationFrame', () => {
+		// Exhaustive, not `arrayContaining`: a NEW rAF owner must be triaged, not ignored.
+		const withRaf = [...sources]
+			.filter(([, src]) => src.includes('requestAnimationFrame'))
 			.map(([file]) => file)
 			.sort();
-		expect(owners).toEqual(expect.arrayContaining(ALWAYS_MOUNTED_RAF_OWNERS));
+		expect(withRaf).toEqual(Object.keys(RAF_COMPONENTS).sort());
 	});
 
-	it.each(ALWAYS_MOUNTED_RAF_OWNERS)('%s gates its rAF effect and starts closed', (file) => {
+	it.each(SELF_GATED)('%s gates its rAF effect and starts closed', (file) => {
 		const source = sources.get(file);
 		expect(source, `${file} is listed as an rAF owner but does not exist`).toBeDefined();
 		expect(
 			rafEffects(source!).length,
-			`${file} no longer owns an rAF effect — update ALWAYS_MOUNTED_RAF_OWNERS`,
+			`${file} no longer owns an rAF effect inside an $effect — reclassify it in RAF_COMPONENTS`,
 		).toBeGreaterThan(0);
 		expect(rafGateViolations(source!), file).toEqual([]);
 	});
@@ -360,6 +417,17 @@ describe('idle rAF loops (plan 14 §2, R13 partial guard)', () => {
 			});`;
 		expect(rafGateViolations(source)).toEqual([
 			'rAF gate `show` initialises truthy ($state(true))',
+		]);
+	});
+
+	it('flags a gate returning on the OPEN side (loop runs while the gate is shut)', () => {
+		const source = `let show = $state(false);
+			$effect(() => {
+				if (show) return;
+				let raf = requestAnimationFrame(tick);
+			});`;
+		expect(rafGateViolations(source)).toEqual([
+			'rAF gate `show` is not negated — the loop runs while it is closed',
 		]);
 	});
 

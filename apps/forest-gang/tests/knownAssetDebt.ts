@@ -23,6 +23,7 @@ export const UNREFERENCED_ASSET_KEYS = [
 	'bearBonusTile', // 1.013 MiB
 	'bearWinTile', // 1.013 MiB
 	'buyBonusLs', // 0.200 MiB
+	'coins', // 5.354 MiB — only `pCoins` reaches <ParticleEmitter>; this one is named nowhere
 	'expandedFrame', // 6.000 MiB
 	'foxBonusTile', // 1.003 MiB
 	'foxWinTile', // 1.003 MiB
