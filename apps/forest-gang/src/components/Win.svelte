@@ -13,7 +13,6 @@
 	import { waitForResolve } from 'utils-shared/wait';
 	import { bookEventAmountToCurrencyString, bookEventAmountToBetAmountMultiplier } from 'utils-shared/amount';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
-	import { OnMount } from 'components-shared';
 
 	import WinCoins from './WinCoins.svelte';
 	import WinBoard, { boardKeyForMult } from './WinBoard.svelte';
@@ -37,6 +36,9 @@
 	let autoCloseTimer = 0;
 	let isCountingUp = $state(false);
 	let winSizes = $state({ width: 0, height: 0 });
+	// Bumped once per win. The win subtree used to be wrapped in `{#key oncomplete}`, so every win
+	// tore down and rebuilt it just to reset the count-up; now the provider resets itself on this.
+	let winId = $state(0);
 
 	// ── Count curve (R8) ──────────────────────────────────────────────────────────────────────
 	// Linear for the first 80% of the time, then a quadratic ease-out over the last 20%. A plain
@@ -122,6 +124,9 @@
 			winLevelData = emitterEvent.winLevelData;
 			breatheScale = 1;
 			isCountingUp = true;
+			// Tell the (now persistent) WinCountUpProvider a new win started: it resets to 0 and
+			// starts counting. Must come after `amount` so it counts up to the right total.
+			winId += 1;
 			// Board-animation (big) wins auto-close a short hold after the count-up finishes — no manual
 			// press required (see the WinCountUpProvider oncomplete below). Non-board wins self-resolve
 			// on count-up completion there too. A manual press can still snap/close earlier.
@@ -160,8 +165,7 @@
 			: (stateBet.isTurbo || stateBet.isSuperTurbo)
 				? Math.min(winLevelData.presentDuration, 400)
 				: winLevelData.presentDuration * 0.5}
-		{#key oncomplete}
-		<WinCountUpProvider {amount} {duration} easing={countCurve} oncomplete={() => {
+		<WinCountUpProvider {amount} {duration} easing={countCurve} restartKey={winId} oncomplete={() => {
 			context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' });
 			if (!hasBoardAnimation) {
 				if (!boardClickHandled) { snappedToFinal = true; context.stateGame.paylineSnap = true; boardClickHandled = true; oncomplete(); }
@@ -173,13 +177,11 @@
 				autoCloseTimer = setTimeout(() => oncomplete(), bigHoldMs()) as unknown as number;
 			}
 		}}>
-			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
+			{#snippet children({ countUpAmount, finishCountUp, countUpCompleted })}
 
 				{#if isBigWin}
 					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.3} />
 				{/if}
-
-				<OnMount onmount={() => startCountUp()} />
 
 				<!-- Coins on a low zIndex so the win panel (zIndex 20 below) always stays the hero
 				     on top of them — sibling MainContainers don't sort reliably by template order. -->
@@ -260,6 +262,5 @@
 				}} />
 			{/snippet}
 		</WinCountUpProvider>
-		{/key}
 	{/if}
 </FadeContainer>
