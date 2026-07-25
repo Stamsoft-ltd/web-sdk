@@ -234,13 +234,13 @@ const assets = {
 	// clip, ping-ponged at runtime — generate_emblem_anim.py) — plays on the reels.
 	wildAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/wildAnim/wild_anim_v3.json',
+		src: './assets/sprites/wildAnim/wild_anim_v3.json?v=20260726',
 	},
 	// Animated SCATTER emblem (same pipeline as the WILD; 40-frame clip, ping-ponged). The
 	// free-spin popups keep their own fsMedallionAnim loop — this sheet is only for the reels.
 	scatterAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/scatterAnim/scatter_anim.json',
+		src: './assets/sprites/scatterAnim/scatter_anim.json?v=20260726',
 	},
 	// Shared wooden frame w/ forest scene, drawn behind every animal symbol (fox/wolf/bear/rabbit/squirrel).
 	animalBorder: {
@@ -261,23 +261,23 @@ const assets = {
 	// Animated base-state (idle blink) animals — background-removed video frames, loop on the reels.
 	wolfIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/wolfIdleAnim/wolf_idle.json?v=20260722',
+		src: './assets/sprites/wolfIdleAnim/wolf_idle.json?v=20260726',
 	},
 	foxIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/foxIdleAnim/fox_idle.json?v=20260722',
+		src: './assets/sprites/foxIdleAnim/fox_idle.json?v=20260726',
 	},
 	squirrelIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/squirrelIdleAnim/squirrel_idle.json?v=20260722',
+		src: './assets/sprites/squirrelIdleAnim/squirrel_idle.json?v=20260726',
 	},
 	bearIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/bearIdleAnim/bear_idle.json?v=20260722',
+		src: './assets/sprites/bearIdleAnim/bear_idle.json?v=20260726',
 	},
 	rabbitIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/rabbitIdleAnim/rabbit_idle.json?v=20260722',
+		src: './assets/sprites/rabbitIdleAnim/rabbit_idle.json?v=20260726',
 	},
 	// Animated loading bar (49-frame 0→100% fill, white bar/text on transparency). This is the ONLY
 	// preloaded asset: it must be ready before the loading screen paints so the bar can show first
@@ -333,11 +333,11 @@ const assets = {
 		src: './assets/sprites/squirrelMoney/squirrel_money.json?v=20260722',
 	},
 	// Board win-state card animations (upper-body window of the same videos, card border baked).
-	rabbitWinAnim:   { type: 'spriteSheet', src: './assets/sprites/rabbitWinNew/rabbit_win_v2.json' },
-	bearWinAnim:     { type: 'spriteSheet', src: './assets/sprites/bearWinNew/bear_win_v2.json' },
-	foxWinAnim:      { type: 'spriteSheet', src: './assets/sprites/foxWinNew/fox_win_v2.json' },
-	wolfWinAnim:     { type: 'spriteSheet', src: './assets/sprites/wolfWinNew/wolf_win_v2.json' },
-	squirrelWinAnim: { type: 'spriteSheet', src: './assets/sprites/squirrelWinNew/squirrel_win_v2.json' },
+	rabbitWinAnim:   { type: 'spriteSheet', src: './assets/sprites/rabbitWinNew/rabbit_win_v2.json?v=20260726' },
+	bearWinAnim:     { type: 'spriteSheet', src: './assets/sprites/bearWinNew/bear_win_v2.json?v=20260726' },
+	foxWinAnim:      { type: 'spriteSheet', src: './assets/sprites/foxWinNew/fox_win_v2.json?v=20260726' },
+	wolfWinAnim:     { type: 'spriteSheet', src: './assets/sprites/wolfWinNew/wolf_win_v2.json?v=20260726' },
+	squirrelWinAnim: { type: 'spriteSheet', src: './assets/sprites/squirrelWinNew/squirrel_win_v2.json?v=20260726' },
 	// NOTE: there are deliberately no letter (T/A/J/K/Q) win-animation sheets. A winning letter
 	// renders its CLEAN base tile with a continuous ±10% pulse (Board.svelte) — the sheets existed,
 	// were loaded, trimmed and ping-ponged, and were drawn by nothing. Don't re-add them.
