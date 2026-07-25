@@ -24,6 +24,7 @@
 		winSpriteKeyByNameLandscape,
 	} from '../game/utils';
 	import type { SymbolName } from '../game/types';
+	import { HIGH_SYMBOLS_SET, isWinState, anyPulsingWin } from '../game/boardPulse';
 
 	const LOW_SYMBOLS_SET = new Set<SymbolName>(['T', 'J', 'Q', 'K', 'A']);
 
@@ -203,7 +204,7 @@
 	// Per-type visual balance: card (low) letters fill their tile much more than the framed
 	// animal / wild / scatter art, so they read bigger. Shrink the low cards and nudge the
 	// wild/scatter emblems up so all symbol types appear a similar size on the reels.
-	const HIGH_SYMBOLS_SET = new Set<SymbolName>(['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL']);
+	// (HIGH_SYMBOLS_SET is imported from ../game/boardPulse — the pulse predicate is its complement.)
 	const symScale = (name: SymbolName) => {
 		// Portrait: the 1.15 overdraw (tuned for the old padded mobile PNGs) crams the redesigned
 		// art — letters touched across cells and clipped at the frame. Draw at the cell size.
@@ -230,25 +231,14 @@
 		return 1;
 	};
 
-	// A winning symbol keeps its win animation through BOTH the per-line 'win' state AND the
-	// 'postWinStatic' state used during the total-win / SWEET WIN presentation (all lines shown at
-	// once). Without postWinStatic here the symbols freeze to static art during that presentation.
-	const isWinState = (state?: string) => state === 'win' || state === 'postWinStatic';
-
 	// ── Winning letters, wilds and scatters pulse continuously (normal ↔ +10%) while their win is
 	//    shown — a gentle, repeating "pop", not a one-shot. A single rAF clock runs for all of them.
-	//    The predicate is the complement of HIGH_SYMBOLS_SET, i.e. exactly the symbols that read
-	//    `letterPulse`; excluding WILD/SCATTER here left them frozen at a stale scale. ──
-	const anyPulsingWin = $derived(
-		board.some((reel) =>
-			reel.reelState.symbols.some(
-				(sym) => !HIGH_SYMBOLS_SET.has(sym.rawSymbol.name) && isWinState(sym.symbolState),
-			),
-		),
-	);
+	//    The predicate lives in ../game/boardPulse as a pure function so it is directly testable
+	//    (N4: excluding WILD/SCATTER there left them frozen at a stale scale). ──
+	const pulsingWin = $derived(anyPulsingWin(board));
 	let letterPulseT = $state(0);
 	$effect(() => {
-		if (!anyPulsingWin) {
+		if (!pulsingWin) {
 			letterPulseT = 0; // never let the next win read a stale phase
 			return;
 		}

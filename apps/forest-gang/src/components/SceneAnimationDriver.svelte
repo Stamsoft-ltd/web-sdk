@@ -2,6 +2,7 @@
 	import { PIXI } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
+	import { advance } from '../game/sceneAnimation';
 
 	const context = getContext();
 
@@ -36,34 +37,8 @@
 	// plan 13 picks it once each clip's frame time is measured.
 	const MAX_FPS = 60;
 
-	// Advance every playing AnimatedSprite (delta in PIXI frames) and every Spine (delta in SECONDS)
-	// in the subtree. Both deltas are INJECTED rather than read from the ticker inside here, so a
-	// deterministic clock can drive this with a fixed step for animation regression tests.
-	// Every node is guarded individually: one bad frame must not take down the ticker.
-	const advance = (node: any, deltaFrames: number, deltaSeconds: number) => {
-		// AnimatedSprite: has gotoAndStop + a textures array + update(). Advance only while playing.
-		if (
-			typeof node.gotoAndStop === 'function' &&
-			typeof node.update === 'function' &&
-			node.playing &&
-			node.textures?.length
-		) {
-			try {
-				node.update({ deltaTime: deltaFrames });
-			} catch {
-				/* ignore a bad frame */
-			}
-		} else if (node.skeleton && node.state && typeof node.update === 'function') {
-			// Spine (spine-pixi v8): advance its AnimationState/skeleton. update() takes SECONDS.
-			try {
-				node.update(deltaSeconds);
-			} catch {
-				/* ignore a bad frame */
-			}
-		}
-		const kids = node.children;
-		if (kids) for (let i = 0; i < kids.length; i++) advance(kids[i], deltaFrames, deltaSeconds);
-	};
+	// The walk itself lives in ../game/sceneAnimation.ts: same code, but importable by a test that
+	// drives it with a fixed delta instead of the ticker's (plan 14's deterministic clock).
 
 	$effect(() => {
 		const app = context.stateApp.pixiApplication;
