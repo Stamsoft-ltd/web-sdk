@@ -65,26 +65,7 @@
 		return t.length ? [...t, ...t.slice(1, -1).reverse()] : [];
 	});
 
-	// Low (card) symbols now expand with their WIN animation too — the same gold-sparkle sheets the
-	// reels use — instead of the old static cracked win tile. Ping-ponged (clips don't loop).
-	const LOW_WIN_ANIM_KEY: Partial<Record<SymbolName, string>> = {
-		T: 'tenWinAnim',
-		A: 'aWinAnim',
-		J: 'jWinAnim',
-		K: 'kWinAnim',
-		Q: 'qWinAnim',
-	};
-	const lowAnimFrames = $derived.by(() => {
-		const animKey = expanded && LOW_SYMBOLS.has(expanded.symbol) ? LOW_WIN_ANIM_KEY[expanded.symbol] : undefined;
-		if (!animKey) return [];
-		let t = (context.stateApp.loadedAssets?.[animKey] ?? []) as Texture[];
-		// Drop the fade-in/out edge frames that show the letter's enclosed counter as a black hole
-		// (matches Board.svelte's LETTER_WIN_TRIM_*). Keeps the ping-pong loop clean.
-		if (t.length > 14) t = t.slice(7, t.length - 3);
-		return t.length ? [...t, ...t.slice(1, -1).reverse()] : [];
-	});
-
-	// Low (card) expands now show the CLEAN base tile with a continuous ±10% pulse (matching the reel
+	// Low (card) expands show the CLEAN base tile with a continuous ±10% pulse (matching the reel
 	// letter win) instead of the old win-animation sheet.
 	const LOW_EXP_TILE: Partial<Record<SymbolName, string>> = {
 		A: 'aExpTile',

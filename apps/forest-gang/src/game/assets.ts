@@ -296,14 +296,6 @@ const assets = {
 		src: './assets/components/ui/press_play_logo.webp?v=20260722',
 		preload: true,
 	},
-	progressBar: {
-		type: 'sprites',
-		src: './assets/sprites/progressBar/progressBar.json?v=20260722',
-	},
-	freeSpins: {
-		type: 'sprites',
-		src: './assets/sprites/freeSpins/freeSpins.json?v=20260722',
-	},
 	transition: {
 		type: 'spine',
 		src: {
@@ -311,10 +303,6 @@ const assets = {
 			skeleton: './assets/spines/transition/transition.json',
 			scale: 2,
 		},
-	},
-	coins: {
-		type: 'spriteSheet',
-		src: './assets/sprites/coin/SD2_Coin.json?v=20260722',
 	},
 	// Single tumbling P-coin cycle (12 angles cut out of the coin-rain video) — the particle
 	// fountain's per-coin animation, so density can scale with the win tier again.
@@ -350,14 +338,9 @@ const assets = {
 	foxWinAnim:      { type: 'spriteSheet', src: './assets/sprites/foxWinNew/fox_win_v2.json' },
 	wolfWinAnim:     { type: 'spriteSheet', src: './assets/sprites/wolfWinNew/wolf_win_v2.json' },
 	squirrelWinAnim: { type: 'spriteSheet', src: './assets/sprites/squirrelWinNew/squirrel_win_v2.json' },
-	// Cache-busted (?v=…) like the animal win anims — a stale/broken cached copy silently fails to
-	// load (AssetsLoader swallows the error), dropping the key so winning letters fall back to the
-	// old cracked static win tile instead of animating. The version query forces a fresh fetch.
-	tenWinAnim:      { type: 'spriteSheet', src: './assets/sprites/tenWinAnim/ten_win_anim.json?v=20260722' },
-	aWinAnim:        { type: 'spriteSheet', src: './assets/sprites/aWinAnim/a_win_anim.json?v=20260722' },
-	jWinAnim:        { type: 'spriteSheet', src: './assets/sprites/jWinAnim/j_win_anim.json?v=20260722' },
-	kWinAnim:        { type: 'spriteSheet', src: './assets/sprites/kWinAnim/k_win_anim.json?v=20260722' },
-	qWinAnim:        { type: 'spriteSheet', src: './assets/sprites/qWinAnim/q_win_anim.json?v=20260722' },
+	// NOTE: there are deliberately no letter (T/A/J/K/Q) win-animation sheets. A winning letter
+	// renders its CLEAN base tile with a continuous ±10% pulse (Board.svelte) — the sheets existed,
+	// were loaded, trimmed and ping-ponged, and were drawn by nothing. Don't re-add them.
 	// Must stay preloaded: EnableSound reads loadedAssets['sound'] in onMount (as soon as the tree
 	// mounts) and crashes if it isn't ready yet, which would hang the whole loading screen.
 	sound: {
@@ -383,21 +366,21 @@ const DEFERRED_KEYS: readonly string[] = [
 	// Free-spin intro/outro popup + scatter medallion
 	'fsIntro', 'fsMedallion', 'fsMedallionAnim',
 	// Win coins
-	'coins', 'pCoins',
+	'pCoins',
 	// Idle animal blink loops (~8.6MB) — the static animal tiles render until these arrive
 	// (wave 0), so the board is never blank; deferring them cuts the blocking load nearly in half.
 	'wolfIdleAnim', 'foxIdleAnim', 'squirrelIdleAnim', 'bearIdleAnim', 'rabbitIdleAnim',
-	// Expanded-symbol animations (animals) + board win animations (animals + letters)
+	// Expanded-symbol animations (animals) + board win animations (animals only — letters win with
+	// a pulsing static tile, no sheet)
 	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
 	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
-	'tenWinAnim', 'aWinAnim', 'jWinAnim', 'kWinAnim', 'qWinAnim',
 	// Animated WILD + SCATTER (static tiles render until they arrive — same pattern as the idle blinks)
 	'wildAnim', 'scatterAnim',
 	// Bonus-only art: expanded-symbol reveal tiles/frame, free-spin popup sprites, big-win glow,
 	// and the static bonus backgrounds (posters under the deferred bonus videos)
 	'foxExpTile', 'foxExpWinTile', 'wolfExpTile', 'wolfExpWinTile', 'bearExpTile', 'bearExpWinTile',
 	'rabbitExpTile', 'rabbitExpWinTile', 'squirrelExpTile', 'squirrelExpWinTile', 'expandedFrame',
-	'freeSpins', 'winGlow',
+	'winGlow',
 	'bonusNormalBackground', 'bonusSuperBackground',
 ];
 for (const key of DEFERRED_KEYS) {
@@ -414,8 +397,7 @@ const DEFER_WAVE_0: readonly string[] = [
 	'wolfIdleAnim', 'foxIdleAnim', 'squirrelIdleAnim', 'bearIdleAnim', 'rabbitIdleAnim',
 	'wildAnim', 'scatterAnim',
 	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
-	'tenWinAnim', 'aWinAnim', 'jWinAnim', 'kWinAnim', 'qWinAnim',
-	'coins', 'pCoins',
+	'pCoins',
 ];
 const DEFER_WAVE_2: readonly string[] = [
 	'transition',

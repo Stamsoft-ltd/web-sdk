@@ -52,33 +52,22 @@
 		return activeMap[name] ?? activeMap.A;
 	};
 
-	// Premium win-state cards play the animated "win state" frames (from the Magnific videos,
-	// card border baked in — generate_win_anim.py). Ping-ponged since the clips don't loop.
+	// Premium (animal) win-state cards play the animated "win state" frames (from the Magnific
+	// videos, card border baked in — generate_win_anim.py). Ping-ponged since the clips don't loop.
+	// ANIMALS ONLY: the letters (T/A/J/K/Q) have no win sheet — a winning letter renders its clean
+	// base tile with the continuous letterPulse in the final {:else} below. Letter win sheets used
+	// to be listed here, loaded, trimmed and ping-ponged into arrays nothing ever drew.
 	const WIN_ANIM_KEY: Partial<Record<SymbolName, string>> = {
 		RABBIT: 'rabbitWinAnim',
 		BEAR: 'bearWinAnim',
 		FOX: 'foxWinAnim',
 		WOLF: 'wolfWinAnim',
 		SQUIRREL: 'squirrelWinAnim',
-		T: 'tenWinAnim',
-		A: 'aWinAnim',
-		J: 'jWinAnim',
-		K: 'kWinAnim',
-		Q: 'qWinAnim',
 	};
-	// The card-letter win videos fade IN and OUT through black, so the first ~7 and last ~3 frames show
-	// the enclosed counter of 0 / A / Q as a solid black hole (before the sparkle glow fills it). Drop
-	// those edge frames so the ping-pong loop stays clean. Animal win videos are full-frame (no counter),
-	// so they're left untrimmed.
-	const LETTER_WIN_TRIM_START = 7;
-	const LETTER_WIN_TRIM_END = 3;
 	const winAnimTextures = $derived.by(() => {
 		const map: Partial<Record<SymbolName, Texture[]>> = {};
 		for (const [sym, key] of Object.entries(WIN_ANIM_KEY) as [SymbolName, string][]) {
-			let t = (context.stateApp.loadedAssets?.[key] ?? []) as Texture[];
-			if (LOW_SYMBOLS_SET.has(sym as SymbolName) && t.length > LETTER_WIN_TRIM_START + LETTER_WIN_TRIM_END + 4) {
-				t = t.slice(LETTER_WIN_TRIM_START, t.length - LETTER_WIN_TRIM_END);
-			}
+			const t = (context.stateApp.loadedAssets?.[key] ?? []) as Texture[];
 			if (t.length) map[sym as SymbolName] = [...t, ...t.slice(1, -1).reverse()];
 		}
 		return map;
@@ -438,49 +427,40 @@
 						height={symbolH * s * SCATTER_SIZE * specialPop}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
-				{:else if isWin && winAnimTextures[reelSymbol.rawSymbol.name]}
-					{#if HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
-						<!-- Animal win: same brown frame + the full (uncropped) win animation on top. The
-						     frame carries the OPAQUE forest panel the bust sits on, so it must always draw —
-						     hiding it during anticipation left the transparent bust floating on the bare
-						     board background (the "empty forest cell" seen while waiting for the 3rd scatter).
-						     The additive glow column is wider/taller than the cell, so it still reads around
-						     the framed symbols. -->
-						<Sprite
-							key="animalBorder"
-							x={getX(reelIndex)}
-							y={y}
-							anchor={{ x: 0.5, y: 0.5 }}
-							width={symbolW * s * BORDER_SIZE * FRAME_W_MULT}
-							height={symbolH * s * BORDER_SIZE * FRAME_H_MULT}
-						/>
-						<!-- Bottom-anchored to the frame: the win art's feet sit on the card's bottom rail,
-						     so taller clips grow upward out of the card instead of spilling below it. -->
-						<!-- Desktop: lift the win art ~2-3px so its feet clear the frame's bottom rail
-						     (the enlarged desktop animals pushed it onto the border). -->
-						<AnimatedSprite
-							textures={winAnimTextures[reelSymbol.rawSymbol.name]}
-							x={getX(reelIndex)}
-							y={y + (symbolH * s * BORDER_SIZE * FRAME_H_MULT) / 2 - (isDesktop ? symbolH * 0.02 : isLandscape ? symbolH * 0.05 : 0)}
-							anchor={{ x: 0.5, y: 1 }}
-							width={symbolW * s * winFit}
-							height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[reelSymbol.rawSymbol.name] ?? 1)}
-							animationSpeed={0.36}
-							loop={true}
-							play={boardAnimate}
-						/>
-					{:else}
-						<!-- Low symbol (letter) win: no win-animation sheet — the clean tile pulses
-						     continuously (normal ↔ +10%) while the win is shown. -->
-						<Sprite
-							key={getSpriteKey(reelSymbol.rawSymbol.name, undefined)}
-							x={getX(reelIndex)}
-							y={y}
-							anchor={{ x: 0.5, y: 0.5 }}
-							width={symbolW * s * letterPulse}
-							height={symbolH * s * letterPulse}
-						/>
-					{/if}
+				{:else if isWin && HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name) && winAnimTextures[reelSymbol.rawSymbol.name]}
+					<!-- The HIGH_SYMBOLS_SET guard is explicit rather than implied by WIN_ANIM_KEY's contents, so
+					     nothing but an animal can ever reach the animalBorder + win-sheet pair. A winning LETTER
+					     has no win sheet at all and lands in the final {:else}, which draws the clean base tile
+					     scaled by the same letterPulse the old inner branch applied.
+					     Animal win: same brown frame + the full (uncropped) win animation on top. The
+					     frame carries the OPAQUE forest panel the bust sits on, so it must always draw —
+					     hiding it during anticipation left the transparent bust floating on the bare
+					     board background (the "empty forest cell" seen while waiting for the 3rd scatter).
+					     The additive glow column is wider/taller than the cell, so it still reads around
+					     the framed symbols. -->
+					<Sprite
+						key="animalBorder"
+						x={getX(reelIndex)}
+						y={y}
+						anchor={{ x: 0.5, y: 0.5 }}
+						width={symbolW * s * BORDER_SIZE * FRAME_W_MULT}
+						height={symbolH * s * BORDER_SIZE * FRAME_H_MULT}
+					/>
+					<!-- Bottom-anchored to the frame: the win art's feet sit on the card's bottom rail,
+					     so taller clips grow upward out of the card instead of spilling below it. -->
+					<!-- Desktop: lift the win art ~2-3px so its feet clear the frame's bottom rail
+					     (the enlarged desktop animals pushed it onto the border). -->
+					<AnimatedSprite
+						textures={winAnimTextures[reelSymbol.rawSymbol.name]}
+						x={getX(reelIndex)}
+						y={y + (symbolH * s * BORDER_SIZE * FRAME_H_MULT) / 2 - (isDesktop ? symbolH * 0.02 : isLandscape ? symbolH * 0.05 : 0)}
+						anchor={{ x: 0.5, y: 1 }}
+						width={symbolW * s * winFit}
+						height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[reelSymbol.rawSymbol.name] ?? 1)}
+						animationSpeed={0.36}
+						loop={true}
+						play={boardAnimate}
+					/>
 				{:else if HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
 					<!-- Base-state animal: shared brown frame + animated idle blink (or static tile for
 					     the animals without an idle sheet yet). The frame carries the OPAQUE forest panel
@@ -560,14 +540,17 @@
 						/>
 					{/if}
 				{:else}
-					<!-- A WINNING symbol only reaches this fallback if its win animation failed to load
-					     (missing/stale-cached sheet). Show the CLEAN base tile then — never the old
+					<!-- THE LETTER-WIN BRANCH. A winning T/A/J/K/Q always lands here (there is no letter
+					     win sheet — see WIN_ANIM_KEY) and renders the CLEAN base tile scaled by specialPop
+					     (= letterPulse while winning): a continuous normal ↔ +10% breath. Never the old
 					     cracked, undersized `*WinTile` art (getSpriteKey(name,'win')), which read as a
 					     smaller "old win state" with an ugly size jump. Non-winning symbols keep their
 					     normal state art.
-					     Every symbol reaching this branch is non-HIGH (animals are caught above), i.e.
-					     exactly the pulsing set — so a win here still pulses. A frameless WILD lands here:
-					     WIN_ANIM_KEY has no WILD/SCATTER entry, so it falls past every branch above. -->
+					     Also the fallback for a winning WILD whose animated sheet hasn't loaded — WIN_ANIM_KEY
+					     has no WILD/SCATTER entry, so it falls past every branch above; it pulses too.
+					     Every symbol reaching this branch is non-HIGH: winning animals take the win-anim
+					     branch, and animals without a loaded sheet take the animalBorder branch above, so an
+					     animal can never lose its opaque forest panel here. -->
 					<Sprite
 						key={getSpriteKey(reelSymbol.rawSymbol.name, isWin ? undefined : reelSymbol.symbolState)}
 						x={getX(reelIndex)}
