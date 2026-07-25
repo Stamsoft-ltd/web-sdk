@@ -1,8 +1,5 @@
-import _ from 'lodash';
-
 import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap } from 'utils-book';
 import { stateBet, stateUi } from 'state-shared';
-import { sequence } from 'utils-shared/sequence';
 import { waitForTimeout } from 'utils-shared/wait';
 import { bookEventAmountToBetAmountMultiplier } from 'utils-shared/amount';
 
@@ -134,7 +131,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 				freeSpinCurrent: stateUi.freeSpinCounterCurrent,
 				freeSpinTotal: stateUi.freeSpinCounterTotal,
 			});
-			console.info('[forest-gang] ALL IN global multiplier after spin', stateGame.globalMultiplier);
 		}
 	},
 	bonusSymbolSelected: async (bookEvent: BookEventOfType<'bonusSymbolSelected'>, { bookEvents }: BookEventContext) => {
@@ -227,7 +223,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	updateGlobalMultiplier: async (bookEvent: BookEventOfType<'updateGlobalMultiplier'>) => {
 		stateGame.globalMultiplier = bookEvent.multiplier;
 		eventEmitter.broadcast({ type: 'globalMultiplierUpdate', multiplier: bookEvent.multiplier });
-		console.info('[forest-gang] ALL IN global multiplier update', bookEvent.multiplier);
 	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>) => {
 		// HUD WIN readout: this spin's win only (per round) — the cumulative bonus total lives in

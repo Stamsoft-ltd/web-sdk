@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
 	import { Tween } from 'svelte/motion';
 	import { MainContainer } from 'components-layout';
 	import { AnimatedSprite, Container, Graphics, Sprite } from 'pixi-svelte';
@@ -7,7 +8,7 @@
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_H, SYMBOL_W, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
-	import { getReelCenterX, winSpriteKeyByName } from '../game/utils';
+	import { getReelCenterX } from '../game/utils';
 	import type { SymbolName } from '../game/types';
 
 	const EXPANDED_ASSET: Partial<Record<SymbolName, string>> = {
@@ -65,26 +66,7 @@
 		return t.length ? [...t, ...t.slice(1, -1).reverse()] : [];
 	});
 
-	// Low (card) symbols now expand with their WIN animation too — the same gold-sparkle sheets the
-	// reels use — instead of the old static cracked win tile. Ping-ponged (clips don't loop).
-	const LOW_WIN_ANIM_KEY: Partial<Record<SymbolName, string>> = {
-		T: 'tenWinAnim',
-		A: 'aWinAnim',
-		J: 'jWinAnim',
-		K: 'kWinAnim',
-		Q: 'qWinAnim',
-	};
-	const lowAnimFrames = $derived.by(() => {
-		const animKey = expanded && LOW_SYMBOLS.has(expanded.symbol) ? LOW_WIN_ANIM_KEY[expanded.symbol] : undefined;
-		if (!animKey) return [];
-		let t = (context.stateApp.loadedAssets?.[animKey] ?? []) as Texture[];
-		// Drop the fade-in/out edge frames that show the letter's enclosed counter as a black hole
-		// (matches Board.svelte's LETTER_WIN_TRIM_*). Keeps the ping-pong loop clean.
-		if (t.length > 14) t = t.slice(7, t.length - 3);
-		return t.length ? [...t, ...t.slice(1, -1).reverse()] : [];
-	});
-
-	// Low (card) expands now show the CLEAN base tile with a continuous ±10% pulse (matching the reel
+	// Low (card) expands show the CLEAN base tile with a continuous ±10% pulse (matching the reel
 	// letter win) instead of the old win-animation sheet.
 	const LOW_EXP_TILE: Partial<Record<SymbolName, string>> = {
 		A: 'aExpTile',
@@ -110,6 +92,8 @@
 	type ReelAnim = { h: Tween<number>; y: Tween<number>; pop: Tween<number>; looping: boolean };
 	const reelAnims: Record<number, ReelAnim> = {};
 	const revealedReels = new Set<number>();
+	const popTimers = new Set<ReturnType<typeof setTimeout>>();
+	onDestroy(() => popTimers.forEach(clearTimeout));
 
 	const getAnim = (reelIndex: number, originY: number): ReelAnim => {
 		if (!reelAnims[reelIndex]) {
@@ -152,14 +136,19 @@
 		anim.y.set(halfH, { duration: 460, easing: cubicOut });
 
 		anim.pop.set(1.08, { duration: 0 });
-		setTimeout(() => anim.pop.set(1, { duration: 220, easing: (t) => 1 - (1 - t) ** 3 }), 460);
+		// NOT cleared when this effect re-runs — a later reel's reveal must not cancel an earlier
+		// reel's settle. Only unmount clears them (see popTimers / onDestroy).
+		const popTimer = setTimeout(() => {
+			popTimers.delete(popTimer);
+			anim.pop.set(1, { duration: 220, easing: (t) => 1 - (1 - t) ** 3 });
+		}, 460);
+		popTimers.add(popTimer);
 	});
 </script>
 
 {#if expanded}
 	{@const assetKey = EXPANDED_ASSET[expanded.symbol] ?? 'foxExpTile'}
 	{@const isLowExpanded = LOW_SYMBOLS.has(expanded.symbol)}
-	{@const lowAssetKey = winSpriteKeyByName[expanded.symbol] ?? 'aWinTile'}
 	<MainContainer>
 		<Container
 			x={bl.x}
@@ -179,10 +168,8 @@
 						<Graphics
 							isMask
 							draw={(graphics) => {
-								graphics.clear();
-								graphics.beginFill(0xffffff);
 								graphics.rect(0, cy - h * 0.5, SYMBOL_W, h);
-								graphics.endFill();
+								graphics.fill({ color: 0xffffff });
 							}}
 						/>
 						{@const lowTileKey = LOW_EXP_TILE[expanded.symbol] ?? 'aExpTile'}
@@ -223,7 +210,6 @@
 						y={cy}
 						scale={{ x: px, y: 1 }}
 						draw={(g) => {
-							g.clear();
 							const w = SYMBOL_W * 0.99;
 							const hh = Math.max(0, h - 3);
 							const r = Math.min(w, hh) * 0.05;

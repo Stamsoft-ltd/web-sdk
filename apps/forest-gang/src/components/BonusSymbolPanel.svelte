@@ -181,14 +181,13 @@
 						<Graphics
 							isMask
 							draw={(graphics) => {
-								graphics.beginFill(0xffffff);
 								graphics.rect(
 									-PANEL_INNER_W / 2,
 									-PANEL_INNER_H / 2 - PANEL_INNER_H * PANEL_TOP_OVERFLOW,
 									PANEL_INNER_W,
 									PANEL_INNER_H * (1 + PANEL_TOP_OVERFLOW),
 								);
-								graphics.endFill();
+								graphics.fill({ color: 0xffffff });
 							}}
 						/>
 						<AnimatedSprite

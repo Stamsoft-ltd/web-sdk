@@ -381,13 +381,6 @@
 		filter: drop-shadow(0 2px 5px rgba(0,0,0,0.55));
 		/* Static — no swing (per design). */
 	}
-	@keyframes card-icon-swing {
-		0% { transform: rotate(0deg); }
-		25% { transform: rotate(6deg); }
-		50% { transform: rotate(0deg); }
-		75% { transform: rotate(-6deg); }
-		100% { transform: rotate(0deg); }
-	}
 
 	.card-price {
 		font-family: 'Cinzel', serif; font-size: clamp(9px, 5cqw, 14px); font-weight: 700;
