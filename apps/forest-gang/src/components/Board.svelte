@@ -235,91 +235,23 @@
 	// once). Without postWinStatic here the symbols freeze to static art during that presentation.
 	const isWinState = (state?: string) => state === 'win' || state === 'postWinStatic';
 
-	// ── Win pop: a special symbol (scatter / wild) entering its WIN state does ONE pop — a fast
-	//    scale-up with a slight overshoot and settle (damped spring) — on top of the looping
-	//    emblem animation. The clock runs only while a pop is mid-flight. ──
-	const POP_T = 0.8; // seconds until fully settled
-	const POP_DECAY = 6; // spring damping — higher snuffs the bounce faster
-	const POP_FREQ = 10; // spring rate — first peak lands ~0.1s in
-	// Letters (not listed) use the default amplitude — a gentler pop than the wild/scatter emblems.
-	const POP_AMP: Partial<Record<SymbolName, number>> = { WILD: 0.65, SCATTER: 0.45 };
-	const POP_AMP_DEFAULT = 0.35;
-	let popNow = $state(0);
-	const popStarts = new Map<string, number>(); // "reel:row" -> win-entry timestamp (ms)
-	$effect(() => {
-		// Track win entries/exits for the special symbols.
-		const winning = new Set<string>();
-		board.forEach((reel, r) =>
-			reel.reelState.symbols.forEach((sym, i) => {
-				if (
-					(sym.rawSymbol.name === 'WILD' || sym.rawSymbol.name === 'SCATTER') &&
-					isWinState(sym.symbolState)
-				)
-					winning.add(`${r}:${i}`);
-			}),
-		);
-		for (const key of [...popStarts.keys()]) if (!winning.has(key)) popStarts.delete(key);
-		const now = performance.now();
-		for (const key of winning) if (!popStarts.has(key)) popStarts.set(key, now);
-		if (popStarts.size === 0) return;
-		let raf = 0;
-		const tick = (t: number) => {
-			popNow = t;
-			// Keep the clock only while at least one pop is still animating. Settled entries stay
-			// (a held win state must not re-pop); they're dropped when the symbol leaves the win.
-			for (const t0 of popStarts.values()) {
-				if (t - t0 < POP_T * 1000) {
-					raf = requestAnimationFrame(tick);
-					return;
-				}
-			}
-		};
-		raf = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(raf);
-	});
-	// Damped spring: 1 → +A peak (~0.1s in) → small undershoot → 1 by POP_T.
-	const popScale = (name: SymbolName, key: string) => {
-		const t0 = popStarts.get(key);
-		if (t0 === undefined) return 1;
-		const t = (popNow - t0) / 1000;
-		if (t < 0 || t >= POP_T) return 1;
-		return 1 + (POP_AMP[name] ?? POP_AMP_DEFAULT) * Math.exp(-POP_DECAY * t) * Math.sin(POP_FREQ * t);
-	};
-
-	// ── Anticipation pulse: while a reel anticipates (bonus-trigger suspense, e.g. the bought
-	//    bonus reveal), the landed scatters bob with excitement and shimmer faster. ──
-	const anticipating = $derived(board.some((reel) => reel.reelState.anticipating));
-	let anticT = $state(0);
-	$effect(() => {
-		if (!anticipating) return;
-		let raf = 0;
-		const t0 = performance.now();
-		const tick = (now: number) => {
-			anticT = (now - t0) / 1000;
-			raf = requestAnimationFrame(tick);
-		};
-		raf = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(raf);
-	});
-	// Brisk bob (~2.4Hz, ±7%) — reads as a tremble, distinct from the slower win pop.
-	const anticZoom = $derived(1 + 0.07 * Math.sin(anticT * 15));
-
-	// ── Winning card letters pulse continuously (normal ↔ +10%) while their win is shown — a gentle,
-	//    repeating "pop", not a one-shot. A single rAF clock runs while any letter is winning. ──
-	const anyLetterWin = $derived(
+	// ── Winning letters, wilds and scatters pulse continuously (normal ↔ +10%) while their win is
+	//    shown — a gentle, repeating "pop", not a one-shot. A single rAF clock runs for all of them.
+	//    The predicate is the complement of HIGH_SYMBOLS_SET, i.e. exactly the symbols that read
+	//    `letterPulse`; excluding WILD/SCATTER here left them frozen at a stale scale. ──
+	const anyPulsingWin = $derived(
 		board.some((reel) =>
 			reel.reelState.symbols.some(
-				(sym) =>
-					!HIGH_SYMBOLS_SET.has(sym.rawSymbol.name) &&
-					sym.rawSymbol.name !== 'WILD' &&
-					sym.rawSymbol.name !== 'SCATTER' &&
-					isWinState(sym.symbolState),
+				(sym) => !HIGH_SYMBOLS_SET.has(sym.rawSymbol.name) && isWinState(sym.symbolState),
 			),
 		),
 	);
 	let letterPulseT = $state(0);
 	$effect(() => {
-		if (!anyLetterWin) return;
+		if (!anyPulsingWin) {
+			letterPulseT = 0; // never let the next win read a stale phase
+			return;
+		}
 		let raf = 0;
 		const t0 = performance.now();
 		const tick = (now: number) => {
