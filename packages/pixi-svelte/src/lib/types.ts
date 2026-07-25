@@ -37,12 +37,16 @@ export type SpineSrc = { skeleton: string; atlas: string; scale?: number };
 // deferPriority: orders the deferred pass into waves (ascending; default 1). Lower numbers finish
 // downloading before higher ones start, so assets a player can hit early (e.g. first-win symbol
 // animations) aren't stuck behind bonus-only art in the same background stream.
+// deferDemand: deferred AND withheld from the automatic stream — loaded only when the game calls
+//          loadDemandAssets() (see assetDemand.ts). For feature-gated art a session may never
+//          reach; implies `defer`, so the key never falls into the blocking pass by accident.
 export type Asset = {
 	type: RawType;
 	src: string | SpineSrc;
 	preload?: boolean;
 	defer?: boolean;
 	deferPriority?: number;
+	deferDemand?: boolean;
 };
 export type Assets = PIXI.Dict<Asset>;
 

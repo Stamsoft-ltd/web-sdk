@@ -405,8 +405,7 @@ for (const key of DEFERRED_KEYS) {
 
 // Order the background stream: a first base-game win can land seconds after the game becomes
 // playable, so everything visible in that moment (symbol win animations + flying coins) downloads
-// first (wave 0). Bonus-gated art (a bonus can't trigger for at least a few spins) goes last
-// (wave 2); the rest — big-win boards, free-spin popup art — takes the default wave 1.
+// first (wave 0). The rest — big-win boards, free-spin popup art — takes the default wave 1.
 const DEFER_WAVE_0: readonly string[] = [
 	// Idle blinks + the animated WILD / SCATTER first — visible from the first settled board.
 	'wolfIdleAnim', 'foxIdleAnim', 'squirrelIdleAnim', 'bearIdleAnim', 'rabbitIdleAnim',
@@ -414,20 +413,25 @@ const DEFER_WAVE_0: readonly string[] = [
 	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
 	'pCoins',
 ];
-const DEFER_WAVE_2: readonly string[] = [
+for (const key of DEFER_WAVE_0) {
+	const entry = (assets as Record<string, { deferPriority?: number } | undefined>)[key];
+	if (entry) entry.deferPriority = 0;
+}
+
+// Bonus-only art: withheld from the background stream entirely and loaded on demand, because a
+// session that never triggers a bonus never draws any of it — 75.5 MiB decoded / 4.8 MiB of
+// transfer that used to be paid by every player. game/utils.ts requests it from the book (see
+// BONUS_ART_EVENTS there), which covers all four entry paths: natural scatter, bought BONUS/SUPER,
+// a one-spin FEATURE book, and a resumed round replayed through createBonusSnapshot.
+const DEMAND_BONUS_ART: readonly string[] = [
 	'transition',
 	'bonusNormalBackground', 'bonusSuperBackground',
 	'deerPresenter', 'deerPresenterMobile', 'deerPresenterAnim',
 	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
 ];
-for (const [keys, priority] of [
-	[DEFER_WAVE_0, 0],
-	[DEFER_WAVE_2, 2],
-] as const) {
-	for (const key of keys) {
-		const entry = (assets as Record<string, { deferPriority?: number } | undefined>)[key];
-		if (entry) entry.deferPriority = priority;
-	}
+for (const key of DEMAND_BONUS_ART) {
+	const entry = (assets as Record<string, { deferDemand?: boolean } | undefined>)[key];
+	if (entry) entry.deferDemand = true;
 }
 
 // Layout-specific art: only the set matching the INITIAL viewport blocks playability; the other
