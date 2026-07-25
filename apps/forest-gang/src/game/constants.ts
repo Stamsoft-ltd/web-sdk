@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import { cubicOut } from 'svelte/easing';
 
 import type { RawSymbol, SymbolState } from './types';
 
@@ -73,11 +72,18 @@ const SPECIAL_SYMBOL_SIZE = 1;
 
 const SPIN_OPTIONS_SHARED = {
 	reelBounceBackSpeed: 0.15,
-	// Slower than reelSpinSpeed + cubicOut so the reel DECELERATES into the bounce point — at the
-	// old value (4, faster than the 2.3 spin speed) reels accelerated into the stop and the settle
-	// read as a hard cut.
+	// The stop leg is DERIVED from the spin speed, not tuned beside it. createReelForSpinning turns
+	// this exponent p into easing `1 − (1 − t)^p` and duration `p × distance / reelSpinSpeed`, so the
+	// leg starts at exactly the speed the reel was already travelling — on all four paths that reach
+	// it (2.3 default, 3.0 anticipated, 4 autospin-turbo, 7 turbo), not just one.
+	// p = 2 is constant deceleration. Raising p gives a gentler curve at a proportionally longer
+	// stop; the two cannot be chosen independently. This is the only knob — do not add a speed here.
+	reelStopEasingPower: 2,
+	// Unused while reelStopEasingPower is set (the shared type still requires it). Paired with
+	// cubicOut it WAS the bug: f'(0) = 3 made the "deceleration" start at 3 × 2.8 = 8.4 px/ms against
+	// the 2.3 px/ms coming in, so its first frame moved 130 px against 38 px cruising — more than a
+	// whole 103 px symbol cell, and an acceleration rather than a stop.
 	reelSpinSpeedBeforeBounce: 2.8,
-	reelStopEasing: cubicOut,
 	reelPaddingMultiplierNormal: 1.2,
 	reelPaddingMultiplierAnticipated: 10,
 	reelSpinDelay: 145,

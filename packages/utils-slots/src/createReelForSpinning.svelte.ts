@@ -277,39 +277,43 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 			},
 		});
 
-	const normalSpin = () =>
-		generalSpinWith({
-			slideDown: async () => {
-				const bounceSize = reelOptions.symbolHeight * reelState.spinOptions().reelBounceSizeMulti;
+	// A linear leg down to the padding position, then an eased leg into the bounce point.
+	//
+	// `slideY` derives duration from speed (`duration = distance / speed`), so for an easing `f` the
+	// leg's *initial* velocity is `f'(0) × speed`, not `speed`. Feeding it a hand-picked
+	// `reelSpinSpeedBeforeBounce` therefore steps the velocity by `f'(0) × reelSpinSpeedBeforeBounce
+	// / reelSpinSpeed` at the junction — and since the incoming speed varies per options object
+	// (default / anticipated / fast / turbo, all of which can reach this leg), one constant cannot
+	// match them all.
+	//
+	// `reelStopEasingPower` (p) fixes that by deriving the leg instead: `f(t) = 1 − (1 − t)^p` has
+	// `f'(0) = p`, so passing `speed = spinSpeed / p` yields `duration = p × distance / spinSpeed`
+	// and an initial velocity of exactly `spinSpeed` — whatever `spinSpeed` the active path supplied.
+	// Duration and curve are coupled by that constraint: a gentler curve (larger p) is necessarily a
+	// longer leg. Left unset, the legacy speed/easing pair is used unchanged.
+	const slideDownToBounce = async () => {
+		const spinSpeed = reelState.spinOptions().reelSpinSpeed;
+		const bounceSize = reelOptions.symbolHeight * reelState.spinOptions().reelBounceSizeMulti;
 
-				await slideY({
-					reelY: defaultY * basePaddingSize(),
-					speed: reelState.spinOptions().reelSpinSpeed,
-				});
-				await slideY({
-					reelY: defaultY + bounceSize,
-					speed: reelState.spinOptions().reelSpinSpeedBeforeBounce,
-					easing: reelState.spinOptions().reelStopEasing,
-				});
-			},
+		await slideY({
+			reelY: defaultY * basePaddingSize(),
+			speed: spinSpeed,
 		});
 
-	const anticipatedSpin = () =>
-		generalSpinWith({
-			slideDown: async () => {
-				const bounceSize = reelOptions.symbolHeight * reelState.spinOptions().reelBounceSizeMulti;
-
-				await slideY({
-					reelY: defaultY * basePaddingSize(),
-					speed: reelState.spinOptions().reelSpinSpeed,
-				});
-				await slideY({
-					reelY: defaultY + bounceSize,
-					speed: reelState.spinOptions().reelSpinSpeedBeforeBounce,
-					easing: reelState.spinOptions().reelStopEasing,
-				});
-			},
+		// Re-read: turbo can be toggled mid-spin. `spinSpeed` stays the leg-1 value on purpose — it is
+		// the velocity the reel is actually carrying into the junction.
+		const spinOptions = reelState.spinOptions();
+		const power = spinOptions.reelStopEasingPower;
+		await slideY({
+			reelY: defaultY + bounceSize,
+			speed: power ? spinSpeed / power : spinOptions.reelSpinSpeedBeforeBounce,
+			easing: power ? (t: number) => 1 - (1 - t) ** power : spinOptions.reelStopEasing,
 		});
+	};
+
+	const normalSpin = () => generalSpinWith({ slideDown: slideDownToBounce });
+
+	const anticipatedSpin = () => generalSpinWith({ slideDown: slideDownToBounce });
 
 	const SPIN_MAP = {
 		fast: fastSpin,

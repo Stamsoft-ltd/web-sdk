@@ -10,10 +10,18 @@ export type SpinningReelSpinOptions = {
 	reelPreSpinSpeed: number;
 	reelBounceBackSpeed: number;
 	reelSpinSpeed: number;
+	// Legacy hand-tuned stop leg, used only when `reelStopEasingPower` is unset. Because slideY
+	// derives duration from speed, an eased leg actually *starts* at `easing'(0) × this`, so this
+	// number cannot be continuous with `reelSpinSpeed` for more than one options object at a time.
 	reelSpinSpeedBeforeBounce: number;
 	// Easing for the final approach into the bounce point (normal/anticipated spins). Without it the
 	// landing segment runs at constant speed, which reads as a hard cut rather than a weighted settle.
 	reelStopEasing?: (t: number) => number;
+	// Preferred over the two above: exponent p of the stop easing `1 − (1 − t)^p`. Setting it makes
+	// createReelForSpinning derive the stop leg from the spin speed actually in force, so the leg
+	// begins at exactly `reelSpinSpeed` — velocity-continuous on every path that reaches it.
+	// p = 1 linear, p = 2 constant deceleration, p = 3 cubicOut; duration scales with p.
+	reelStopEasingPower?: number;
 	// size
 	reelBounceSizeMulti: number;
 	// extra padding
