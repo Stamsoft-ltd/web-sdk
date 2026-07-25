@@ -27,6 +27,8 @@
 		boardKey: string;
 		/** The tier this win finishes on — it gets the pop; every crossing before it cross-fades. */
 		finalKey: string;
+		/** Changes once per win. This component no longer remounts per win, so it needs telling. */
+		winId: number;
 		maxBoardSize: number;
 		breatheScale: number;
 		mult: number;
@@ -34,8 +36,16 @@
 		fontSize: number;
 	};
 
-	const { boardKey, finalKey, maxBoardSize, breatheScale, mult, countUpText, fontSize }: Props =
-		$props();
+	const {
+		boardKey,
+		finalKey,
+		winId,
+		maxBoardSize,
+		breatheScale,
+		mult,
+		countUpText,
+		fontSize,
+	}: Props = $props();
 
 	// Reduced ~20% from the original tuning (two -10% design passes; the second one
 	// included the legendary/max-win board as well).
@@ -72,15 +82,23 @@
 	let displayedKey = $state<string | null>(null);
 	let outgoingKey = $state<string | null>(null);
 	let animating = $state(false);
+	// Plain `let`, deliberately not `$state`: writing it must not re-trigger the effect below.
+	let seenWinId = -1;
 
 	$effect(() => {
 		const next = boardKey;
-		if (animating || next === displayedKey) return;
+		// A new win always restarts from a first appearance. Two wins can finish in the SAME tier,
+		// so the tier alone cannot tell them apart — hence `winId`. By the time this user effect
+		// runs, WinCountUpProvider's restart effect (an ancestor, so it runs first) has already
+		// snapped the count back to 0, which means `boardKey` is the bottom tier again here.
+		const isNewWin = winId !== seenWinId;
+		if (animating || (!isNewWin && next === displayedKey)) return;
+		seenWinId = winId;
 		animating = true;
 		(async () => {
-			// A tier can only climb within one win, so a DOWNWARD change means a new win started
-			// (this component no longer remounts per win) — restart from a first appearance.
-			const isFirstAppearance = !displayedKey || tierIndex(next) < tierIndex(displayedKey);
+			// Also treat a DOWNWARD tier change as a new win — a tier can only climb within one.
+			const isFirstAppearance =
+				isNewWin || !displayedKey || tierIndex(next) < tierIndex(displayedKey);
 			const isFinal = next === finalKey;
 			if (isFirstAppearance) {
 				outgoingKey = null;

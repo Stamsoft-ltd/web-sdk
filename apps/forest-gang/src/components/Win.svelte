@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { WinLevelData } from '../game/winLevelMap';
+	import type { WinLevelAlias, WinLevelData } from '../game/winLevelMap';
 
 	export type EmitterEventWin =
 		| { type: 'winShow' }
@@ -46,6 +46,11 @@
 	// threshold, so front-loading the amount front-loads all of them); staying linear through the
 	// tier range keeps them spread and still lets the number settle instead of stopping dead.
 	// EASE_V = 2T/(1+T) makes the two segments share a slope at the join, so there is no kink.
+	// NOTE on tier spacing: for a huge win the raw crossings are unavoidably bunched (500× is 2% of
+	// a 25,000× win, so it is passed in ~110 ms under ANY monotone amount-driven curve). What the
+	// player sees is spaced by WinBoard's `animating` guard, which both floors the cadence at one
+	// transition (400 ms) and SKIPS tiers the count has already outrun — a 25,000× win therefore
+	// renders SWEET → LEGENDARY at t≈420 ms and nothing more until the MAX WIN flash.
 	const EASE_T = 0.8;
 	const EASE_V = (2 * EASE_T) / (1 + EASE_T); // 0.888…
 	const countCurve = (t: number) => {
@@ -57,7 +62,7 @@
 	// ── Big-win count-up length (R8) ──────────────────────────────────────────────────────────
 	// Explicit per-tier lengths in ms, replacing `presentDuration × 0.25` — that formula gave
 	// LEGENDARY an 11.25 s climb (45 s presentDuration) on top of a 3 s hold.
-	const BIG_COUNT_MS: Record<string, number> = {
+	const BIG_COUNT_MS: Partial<Record<WinLevelAlias, number>> = {
 		big: 2500, // SWEET
 		superwin: 3500, // WILD
 		mega: 4500, // EPIC
@@ -68,10 +73,19 @@
 	// needs ~400 ms and MAX WIN needs its entrance, so the floor keeps the choreography readable.
 	const BIG_COUNT_MIN_MS = 1500;
 	const turboFactor = () => (stateBet.isSuperTurbo ? 0.4 : stateBet.isTurbo ? 0.6 : 1);
-	const bigCountDuration = (alias: string) =>
+	const bigCountDuration = (alias: WinLevelAlias) =>
 		Math.max(BIG_COUNT_MIN_MS, (BIG_COUNT_MS[alias] ?? 3000) * turboFactor());
-	// Hold after the count finishes before the board auto-closes. Follows turbo for the same reason.
-	const bigHoldMs = () => (stateBet.isSuperTurbo ? 1200 : stateBet.isTurbo ? 2000 : 2500);
+	// Hold after the count finishes before the board auto-closes. Follows turbo, EXCEPT for MAX WIN:
+	// its screen only appears on the final value, so the hold is all the time it gets, and ~520 ms
+	// of that is its entrance. Turbo does not get to cut the game's biggest moment to half a second.
+	const bigHoldMs = () =>
+		bookEventAmountToBetAmountMultiplier(amount) >= 25000
+			? 3500
+			: stateBet.isSuperTurbo
+				? 1200
+				: stateBet.isTurbo
+					? 2000
+					: 2500;
 
 	// Breathing: gentle ±2% scale oscillation while counting up
 	let breatheScale = $state(1);
@@ -219,6 +233,7 @@
 							<WinBoard
 								{boardKey}
 								{finalKey}
+								{winId}
 								{maxBoardSize}
 								{breatheScale}
 								{mult}
