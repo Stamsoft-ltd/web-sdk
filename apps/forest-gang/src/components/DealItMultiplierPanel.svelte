@@ -19,6 +19,7 @@
 
 	import BoardContainer from './BoardContainer.svelte';
 	import { getContext } from '../game/context';
+	import { hold } from '../game/sequenceHold';
 	import { SYMBOL_SIZE, SYMBOL_W } from '../game/constants';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
 
@@ -129,8 +130,11 @@
 		show = true; // FadeContainer fades it in
 		groupScale.set(1, { duration: 300, easing: backOut }); // zoom out to settle
 		groupAlpha.set(1, { duration: 200 });
-		// Wait for the zoom-in to settle before accepting stop-button skips (prevents the same press
-		// that triggered forceStop from hiding the board before the player can see it).
+		// DELIBERATELY RAW, in all speed modes: this 300/80/180 window is the reveal itself, and
+		// `readyToSkip` exists precisely so the press that triggered forceStop cannot also hide the
+		// board before the player has seen it. It is also lock-stepped with the 300 ms / 240 ms
+		// tweens above and below — scaling the waits without scaling those would hide the board
+		// mid-zoom. Only the HOLD after it (below) is scaled and skippable.
 		await waitForTimeout(300);
 		if (revealed) { readyToSkip = false; return; }
 		// Beat, then pop the value onto the board.
@@ -139,13 +143,16 @@
 		await waitForTimeout(180);
 		if (revealed) { readyToSkip = false; return; }
 		readyToSkip = true;
-		await Promise.race([waitForTimeout(900), new Promise<void>((r) => { skipReveal = r; })]);
+		// The read-the-value hold and the fade-out: scaled by speed mode, and cut short by a stop
+		// press either directly (skipReveal, when the press lands during this phase) or via the
+		// round's sticky interrupt (when it landed earlier — e.g. the press that stopped the reels).
+		await Promise.race([hold(900), new Promise<void>((r) => { skipReveal = r; })]);
 		skipReveal = null;
 		readyToSkip = false;
 		if (revealed) return;
 		groupAlpha.set(0, { duration: 260 }); // fade the board out (slight zoom for a soft exit)
 		groupScale.set(1.12, { duration: 260, easing: cubicIn });
-		await Promise.race([waitForTimeout(260), new Promise<void>((r) => { skipReveal = r; })]);
+		await Promise.race([hold(260), new Promise<void>((r) => { skipReveal = r; })]);
 		skipReveal = null;
 		if (revealed) return;
 		show = false; // FadeContainer fades it out

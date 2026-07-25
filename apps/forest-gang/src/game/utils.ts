@@ -6,6 +6,7 @@ import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, REEL_PADDING, BOARD_DIMENSIONS } from 
 import { eventEmitter } from './eventEmitter';
 import type { Bet, BookEventOfType } from './typesBookEvent';
 import { bookEventHandlerMap } from './bookEventHandlerMap';
+import { resetHolds } from './sequenceHold';
 import { stateGameDerived } from './stateGame.svelte';
 import type { RawSymbol, SymbolState } from './types';
 
@@ -13,6 +14,11 @@ export const { getEmptyBoard } = createGetEmptyPaddedBoard({ reelsDimensions: BO
 export const { playBookEvent, playBookEvents } = createPlayBookUtils({ bookEventHandlerMap });
 export const playBet = async (bet: Bet) => {
 	stateBet.winBookEventAmount = 0;
+	// Sequence boundary. One book = one hold sequence, so a stop press skips the remaining beats
+	// across every handler in it — but `pendingInterrupt` is sticky, so it MUST be cleared here
+	// (and in the `finally` below, incl. the throw path) or the next round's holds all resolve
+	// instantly and the game sits in an invisible permanent turbo.
+	resetHolds();
 	try {
 		await playBookEvents(bet.state);
 	} catch (error) {
@@ -29,6 +35,7 @@ export const playBet = async (bet: Bet) => {
 			// settle is best-effort recovery; never let it re-throw out of the catch.
 		}
 	} finally {
+		resetHolds();
 		// Always hand controls back to the player, even on the abort path.
 		eventEmitter.broadcast({ type: 'stopButtonEnable' });
 	}

@@ -16,6 +16,7 @@
 
 	import BoardContainer from './BoardContainer.svelte';
 	import { getContext } from '../game/context';
+	import { holdScale } from '../game/sequenceHold';
 	import { SYMBOL_SIZE, SYMBOL_W } from '../game/constants';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
 
@@ -100,24 +101,32 @@
 
 	// Swap the displayed value — desktop/landscape: slide-out / swap / slide-in (the hand moves);
 	// portrait: fade, then the new value zooms out onto the static board.
+	//
+	// The two waits here MIRROR the tween durations either side of the value swap; they are not
+	// free "let the player read it" beats, so they are scaled with the tweens by one shared factor
+	// rather than routed through the interruptible hold (cutting a wait without cutting its tween
+	// would swap the value mid-fade). Nothing in the book awaits this — `updateGlobalMultiplier`
+	// broadcasts rather than broadcastAsync — so it costs the sequence no wall-clock either way,
+	// and the `paylineSnap` effect below already snaps it to its end state.
 	const swapTo = async (next: number) => {
+		const speed = holdScale();
 		swapTarget = next;
 		swapped = false;
-		if (!useFlatBoard) groupX.set(SLIDE, { duration: 170, easing: cubicIn });
-		groupAlpha.set(0, { duration: 150 });
-		await waitForTimeout(170);
+		if (!useFlatBoard) groupX.set(SLIDE, { duration: 170 * speed, easing: cubicIn });
+		groupAlpha.set(0, { duration: 150 * speed });
+		await waitForTimeout(170 * speed);
 		if (swapped) return;
 		swapTarget = null;
 		multiplier = next;
 		if (useFlatBoard) {
 			groupScale.set(1.45, { duration: 0 });
-			groupScale.set(1, { duration: 280, easing: backOut });
+			groupScale.set(1, { duration: 280 * speed, easing: backOut });
 		} else {
 			groupX.set(-SLIDE, { duration: 0 });
-			groupX.set(0, { duration: 280, easing: backOut });
+			groupX.set(0, { duration: 280 * speed, easing: backOut });
 		}
-		groupAlpha.set(1, { duration: 190 });
-		await waitForTimeout(280);
+		groupAlpha.set(1, { duration: 190 * speed });
+		await waitForTimeout(280 * speed);
 	};
 
 	$effect(() => {
