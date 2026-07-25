@@ -230,6 +230,21 @@ const assets = {
 		type: 'spriteSheet',
 		src: './assets/sprites/deerPresenterAnim/deer_anim_v2.json',
 	},
+	// ── Board-symbol sheets ship at SOURCE resolution. Do NOT rescale them by a flat factor. ──
+	// The twelve reel sheets (wildAnim, scatterAnim, the 5 *IdleAnim and the 5 *WinAnim below) are
+	// sized from the device pixels each sprite is actually drawn at — 1920×1080 at DPR 2, the
+	// largest layout we support well — not from a fraction of whatever the source happened to be.
+	// A uniform ×0.5 was applied to every sheet once before and left board symbols drawn 2.3–3.4×
+	// magnified; that is what this sizing replaced.
+	// Every one of those targets is LARGER than the best art that exists (the generators consume
+	// source videos that aren't in the repo — see generate_emblem_anim.py's usage line), so each
+	// sheet is capped at source and a 1.03–1.72× shortfall remains. Upsampling past source would
+	// spend bytes for no detail. `static/assets/sprites/check_sheet_sizes.py` re-derives the whole
+	// chain, prints the per-sheet ratios and asserts every atlas stays ≤ 4096 — run it after any
+	// change to the sheets or to the Board/stateGame sizing constants it mirrors.
+	// NB: bump ?v= whenever a sheet is regenerated. pixi copies the JSON's search params onto
+	// meta.image (spritesheetAsset.js), so the .json's ?v= is what busts the .webp as well; without
+	// it a client pairs a cached old atlas with new frame rects and draws garbage.
 	// Animated WILD symbol (black-background video, luma-keyed + un-premultiplied; 40-frame
 	// clip, ping-ponged at runtime — generate_emblem_anim.py) — plays on the reels.
 	wildAnim: {
