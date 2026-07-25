@@ -394,8 +394,8 @@
 				     replacing the old one-shot spring pop. -->
 				{@const specialPop = isWin ? letterPulse : 1}
 				{#if reelSymbol.rawSymbol.name === 'SCATTER' && scatterFrames.length > 0}
-					<!-- Scatter shimmers with its animated emblem clip; does one pop when it enters the
-					     win state. Drawn a bit smaller than a cell. animationSpeed 0.14 (~8fps) stepped
+					<!-- Scatter shimmers with its animated emblem clip and pulses continuously while it
+					     wins. Drawn a bit smaller than a cell. animationSpeed 0.14 (~8fps) stepped
 					     visibly and read as "laggy"; 0.36 (~22fps) plays smoothly and stays under the
 					     30fps idle render cap so no frames drop. -->
 					<AnimatedSprite
@@ -411,7 +411,7 @@
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
 				{:else if reelSymbol.rawSymbol.name === 'WILD' && wildFrames.length > 0}
-					<!-- Animated WILD: plays its loop briskly on every spin; one pop on a win.
+					<!-- Animated WILD: plays its loop briskly on every spin; pulses continuously on a win.
 					     Multiplied by symScale (s) like the scatter so per-layout sizing applies —
 					     desktop s=1.0 keeps the tuned size; mobile draws it larger (design ask). -->
 					<AnimatedSprite
@@ -427,14 +427,15 @@
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
 				{:else if reelSymbol.rawSymbol.name === 'SCATTER'}
-					<!-- Fallback until the animation frames load: static medallion (no tilt). -->
+					<!-- Fallback until the animation frames load: static medallion (no tilt). Still takes
+					     specialPop — a bonus trigger inside the load window must not show a dead scatter. -->
 					<Sprite
 						key={getSpriteKey(reelSymbol.rawSymbol.name, reelSymbol.symbolState)}
 						x={getX(reelIndex)}
 						y={y}
 						anchor={{ x: 0.5, y: 0.5 }}
-						width={symbolW * s * SCATTER_SIZE}
-						height={symbolH * s * SCATTER_SIZE}
+						width={symbolW * s * SCATTER_SIZE * specialPop}
+						height={symbolH * s * SCATTER_SIZE * specialPop}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
 				{:else if isWin && winAnimTextures[reelSymbol.rawSymbol.name]}
@@ -563,14 +564,17 @@
 					     (missing/stale-cached sheet). Show the CLEAN base tile then — never the old
 					     cracked, undersized `*WinTile` art (getSpriteKey(name,'win')), which read as a
 					     smaller "old win state" with an ugly size jump. Non-winning symbols keep their
-					     normal state art. -->
+					     normal state art.
+					     Every symbol reaching this branch is non-HIGH (animals are caught above), i.e.
+					     exactly the pulsing set — so a win here still pulses. A frameless WILD lands here:
+					     WIN_ANIM_KEY has no WILD/SCATTER entry, so it falls past every branch above. -->
 					<Sprite
 						key={getSpriteKey(reelSymbol.rawSymbol.name, isWin ? undefined : reelSymbol.symbolState)}
 						x={getX(reelIndex)}
 						y={y}
 						anchor={{ x: 0.5, y: 0.5 }}
-						width={symbolW * s}
-						height={symbolH * s}
+						width={symbolW * s * specialPop}
+						height={symbolH * s * specialPop}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
 				{/if}
