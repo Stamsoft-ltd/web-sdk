@@ -197,7 +197,13 @@ const _FRAME_ANCHOR_Y = 0.502; // grid centre y as a fraction of frameH (tuned s
 // top log equals the bottom gap to the bottom log — the drawn frame's V_SQUASH raised the bottom log,
 // so the grid needed to move up to stay centred between the two logs)
 const _FRAME_EXTRA_SCALE = 1.30 / 1.27;
-const PORTRAIT_FRAME_FILL = 1.048; // portrait: board slightly overfills width so the frame's side rails bleed off-screen (no forest margin)
+// Portrait: the wood FRAME bleeds off-screen (its side rails carry no art the player needs), but
+// the reel GRID must fit the canvas with an inset — at the old 1.048 the grid itself came out to
+// 1.048 x 0.965 = 101.1% of the available width, so the outer columns' symbols were clipped at
+// the screen edges (worse for animals, whose border frame draws wider than the cell). At 1.0 the
+// grid is 96.5% of the width (~7pt inset per side on a 430pt phone) and the frame still bleeds
+// 1/0.965 = 3.6% past the edges, keeping the no-forest-margin look.
+const PORTRAIT_FRAME_FILL = 1.0;
 const PORTRAIT_TOP_OFFSET = 236; // portrait: push frame down from the top (main-layout units)
 // Mobile board frame (board_frame_mobile.png) — full width, top/bottom borders only.
 // Fractions of the drawn frame the reel grid occupies. Mirrored in BoardFrame.svelte.
