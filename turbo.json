@@ -27,6 +27,13 @@
 		"lint": {
 			"outputs": []
 		},
+		// cache:false — forest-gang's suite reads OUTSIDE its own package (packages/pixi-svelte/src and
+		// every app's static/ tree). Turbo hashes only the package, so a cached pass could replay over
+		// an AnimatedSprite.svelte regression the suite exists to catch.
+		"test": {
+			"outputs": [],
+			"cache": false
+		},
 		"format": {
 			"outputs": []
 		},
