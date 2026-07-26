@@ -29,10 +29,33 @@
 		container.destroy({ children: true });
 	});
 
+	// Everything that is fixed for the life of the win is hoisted out of the per-frame effect.
+	// `props.waypoints` is a fresh `.map()` array on every read in PaylineVine, and the x-extent
+	// used to be `Math.min(...pts.map(p => p.x))` — two arrays plus two spread applications every
+	// frame, per win line, for values that cannot change while the win is on screen.
+	const geometry = $derived.by(() => {
+		const pts = props.waypoints;
+		let minX = Infinity;
+		let maxX = -Infinity;
+		for (const p of pts) {
+			if (p.x < minX) minX = p.x;
+			if (p.x > maxX) maxX = p.x;
+		}
+		return { pts, minX, maxX };
+	});
+
+	// Layered strokes: wide soft halo → tighter glow → gold rope → bright core. Rebuilt only when
+	// the colour changes; `stroke()` copies the style object, so reusing these is safe.
+	const layers = $derived([
+		{ width: 14, color: props.color, alpha: 0.14, cap: 'round', join: 'round' },
+		{ width: 8.5, color: props.color, alpha: 0.32, cap: 'round', join: 'round' },
+		{ width: 4.5, color: props.color, alpha: 0.85, cap: 'round', join: 'round' },
+		{ width: 1.8, color: 0xfff3b8, alpha: 1, cap: 'round', join: 'round' },
+	] as const);
+
 	// Paylines run strictly left→right, so the reveal edge is an x-coordinate and the travelled
 	// sub-path is every waypoint left of it plus one interpolated point on the current segment.
-	const clippedPath = (revealX: number) => {
-		const pts = props.waypoints;
+	const clippedPath = (pts: Props['waypoints'], revealX: number) => {
 		const out = [pts[0]];
 		for (let i = 1; i < pts.length; i++) {
 			if (revealX >= pts[i].x) {
@@ -51,25 +74,18 @@
 	});
 
 	$effect(() => {
-		const pts = props.waypoints;
-		const minX = Math.min(...pts.map((p) => p.x));
-		const maxX = Math.max(...pts.map((p) => p.x));
-		const revealX = minX + (maxX - minX) * props.progress;
-		const path = clippedPath(revealX);
-
+		const { pts, minX, maxX } = geometry;
 		line.clear();
+		if (pts.length === 0) return;
+
+		const revealX = minX + (maxX - minX) * props.progress;
+		const path = clippedPath(pts, revealX);
+
 		if (path.length >= 2) {
-			// Layered strokes: wide soft halo → tighter glow → gold rope → bright core.
-			const layers: Array<{ width: number; color: number; alpha: number }> = [
-				{ width: 14, color: props.color, alpha: 0.14 },
-				{ width: 8.5, color: props.color, alpha: 0.32 },
-				{ width: 4.5, color: props.color, alpha: 0.85 },
-				{ width: 1.8, color: 0xfff3b8, alpha: 1 },
-			];
 			for (const layer of layers) {
 				line.moveTo(path[0].x, path[0].y);
 				for (let i = 1; i < path.length; i++) line.lineTo(path[i].x, path[i].y);
-				line.stroke({ ...layer, cap: 'round', join: 'round' });
+				line.stroke(layer);
 			}
 		}
 
