@@ -1,6 +1,23 @@
+<script lang="ts" module>
+	// Win-tier thresholds (× bet): 20 SWEET · 50 WILD · 100 EPIC · 200 MYTHIC · 500 LEGENDARY.
+	// (25000× MAX WIN is a separate screen — see Win.svelte.) A board only shows from 20× via the
+	// winLevel gate, so <50× maps to SWEET. Exported so Win.svelte derives the live board and the
+	// final board from one place.
+	export const boardKeyForMult = (mult: number) =>
+		mult >= 500
+			? 'legendaryWinBoard'
+			: mult >= 200
+				? 'mythicWinBoard'
+				: mult >= 100
+					? 'epicWinBoard'
+					: mult >= 50
+						? 'wildWinBoard'
+						: 'sweetWinBoard';
+</script>
+
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
-	import { cubicIn, backOut } from 'svelte/easing';
+	import { backOut, cubicInOut } from 'svelte/easing';
 
 	import { FillGradient } from 'pixi-svelte';
 	import { Graphics, Sprite, Container, Text } from 'pixi-svelte';
@@ -8,6 +25,10 @@
 
 	type Props = {
 		boardKey: string;
+		/** The tier this win finishes on — it gets the pop; every crossing before it cross-fades. */
+		finalKey: string;
+		/** Changes once per win. This component no longer remounts per win, so it needs telling. */
+		winId: number;
 		maxBoardSize: number;
 		breatheScale: number;
 		mult: number;
@@ -15,7 +36,16 @@
 		fontSize: number;
 	};
 
-	const { boardKey, maxBoardSize, breatheScale, mult, countUpText, fontSize }: Props = $props();
+	const {
+		boardKey,
+		finalKey,
+		winId,
+		maxBoardSize,
+		breatheScale,
+		mult,
+		countUpText,
+		fontSize,
+	}: Props = $props();
 
 	// Reduced ~20% from the original tuning (two -10% design passes; the second one
 	// included the legendary/max-win board as well).
@@ -34,37 +64,77 @@
 		{ key: 'mythicWinBoard',    min: 200,  max: 500 },
 		{ key: 'legendaryWinBoard', min: 500,  max: 25000 },
 	];
+	const tierIndex = (key: string | null) => TIER_RANGES.findIndex((t) => t.key === key);
 
-	// Tier transition, magnetic-style: the current board collapses INTO the centre, then the new
-	// tier's board pops back out with a springy overshoot. First appearance pops in the same way.
-	const pop = new Tween(0, { duration: 340, easing: backOut });
+	// Tier transition: the outgoing board stays fully drawn while the incoming one fades up over
+	// it, so the hero board is never absent from the screen. (It used to collapse to scale 0 and
+	// re-pop, vanishing up to four times during its own climax.) The pop is kept for the first
+	// appearance and for the tier the win actually ends on.
+	// FADE_MS/POP_MS also set the floor on the tier cadence: with the `animating` guard below, two
+	// tier changes can never render closer together than one transition, which is what keeps a huge
+	// win (whose raw crossings all land inside ~100 ms) from strobing through five boards.
+	const FADE_MS = 400;
+	const POP_MS = 420;
+	const FINAL_POP_FROM = 0.86;
+
+	const pop = new Tween(0, { duration: POP_MS, easing: backOut });
+	const fade = new Tween(1, { duration: FADE_MS, easing: cubicInOut });
 	let displayedKey = $state<string | null>(null);
+	let outgoingKey = $state<string | null>(null);
 	let animating = $state(false);
+	// Plain `let`, deliberately not `$state`: writing it must not re-trigger the effect below.
+	let seenWinId = -1;
 
 	$effect(() => {
 		const next = boardKey;
-		if (animating || next === displayedKey) return;
+		// A new win always restarts from a first appearance. Two wins can finish in the SAME tier,
+		// so the tier alone cannot tell them apart — hence `winId`. By the time this user effect
+		// runs, WinCountUpProvider's restart effect (an ancestor, so it runs first) has already
+		// snapped the count back to 0, which means `boardKey` is the bottom tier again here.
+		const isNewWin = winId !== seenWinId;
+		if (animating || (!isNewWin && next === displayedKey)) return;
+		seenWinId = winId;
 		animating = true;
 		(async () => {
-			if (displayedKey) await pop.set(0, { duration: 180, easing: cubicIn });
-			displayedKey = next;
-			await pop.set(1, { duration: 340, easing: backOut });
-			// Flipping `animating` re-runs the effect, catching up if the tier advanced mid-pop.
+			// Also treat a DOWNWARD tier change as a new win — a tier can only climb within one.
+			const isFirstAppearance =
+				isNewWin || !displayedKey || tierIndex(next) < tierIndex(displayedKey);
+			const isFinal = next === finalKey;
+			if (isFirstAppearance) {
+				outgoingKey = null;
+				displayedKey = next;
+				fade.set(1, { duration: 0 });
+				pop.set(0, { duration: 0 });
+				await pop.set(1, { duration: POP_MS, easing: backOut });
+			} else {
+				outgoingKey = displayedKey;
+				displayedKey = next;
+				fade.set(0, { duration: 0 });
+				if (isFinal) pop.set(FINAL_POP_FROM, { duration: 0 });
+				await Promise.all([
+					fade.set(1, { duration: FADE_MS, easing: cubicInOut }),
+					isFinal ? pop.set(1, { duration: POP_MS, easing: backOut }) : Promise.resolve(),
+				]);
+				outgoingKey = null;
+			}
+			// Flipping `animating` re-runs the effect, catching up if the tier advanced mid-transition.
 			animating = false;
 		})();
 	});
 
 	const shownKey = $derived(displayedKey ?? boardKey);
-	const tierRange = $derived(TIER_RANGES.find((t) => t.key === shownKey) ?? TIER_RANGES[0]);
-	const tierIdx = $derived(TIER_RANGES.indexOf(tierRange));
-	const nextTierBaseScale = $derived(TIER_BASE_SCALE[TIER_RANGES[Math.min(tierIdx + 1, TIER_RANGES.length - 1)].key]);
-	const tierProgress = $derived(Math.min((mult - tierRange.min) / (tierRange.max - tierRange.min), 1));
-	// Board grows within tier: from tierBase toward next tier's base (capped at 80% of the gap)
-	const accumulationScale = $derived(
-		(TIER_BASE_SCALE[shownKey] ?? 1) +
-			(nextTierBaseScale - (TIER_BASE_SCALE[shownKey] ?? 1)) * tierProgress * 0.8,
-	);
-	const boardSize = $derived(maxBoardSize * accumulationScale * breatheScale);
+
+	// Board grows within its tier: from that tier's base toward the next tier's base (capped at 80%
+	// of the gap). Written as a function of the key so the outgoing board can be drawn at its own
+	// size during a cross-fade — for it `mult` is already past the tier max, so the size is stable.
+	const sizeFor = (key: string) => {
+		const i = Math.max(tierIndex(key), 0);
+		const range = TIER_RANGES[i];
+		const base = TIER_BASE_SCALE[range.key] ?? 1;
+		const nextBase = TIER_BASE_SCALE[TIER_RANGES[Math.min(i + 1, TIER_RANGES.length - 1)].key];
+		const progress = Math.min(Math.max((mult - range.min) / (range.max - range.min), 0), 1);
+		return maxBoardSize * (base + (nextBase - base) * progress * 0.8) * breatheScale;
+	};
 
 	// Win-amount text style: Cinzel 900 with the gold gradient (Figma spec).
 	const goldFill = new FillGradient({
@@ -81,8 +151,6 @@
 
 	// Scale the amount to fit inside the board (keeps long wins readable).
 	let amountNatW = $state(0);
-	const amountMaxW = $derived(boardSize * 0.62);
-	const amountScale = $derived(amountNatW > 0 ? Math.min(1, amountMaxW / amountNatW) : 1);
 
 	// Amount-text centre as a fraction of boardSize DOWN from the board centre — the centre of
 	// each Figma board's bottom plaque (plaque sits at 0.8433 of the ART height; arts are
@@ -98,7 +166,6 @@
 		mythicWinBoard: 0.364,
 		legendaryWinBoard: 0.372,
 	};
-	const textYFrac = $derived(TIER_TEXT_Y[shownKey] ?? 0.343);
 
 	// Golden P emblem on the gem medallion — per-tier centre/size measured from the Figma page
 	// (second-row boards with the emblem placed; fractions of the square canvas). Pulses gently.
@@ -111,7 +178,6 @@
 		mythicWinBoard: { y: 0.142, w: 0.19 },
 		legendaryWinBoard: { y: 0.142, w: 0.19 },
 	};
-	const emblem = $derived(TIER_EMBLEM[shownKey] ?? TIER_EMBLEM.sweetWinBoard);
 	const EMBLEM_ASPECT = 340 / 292; // win_emblem_p.png
 
 	let emblemT = $state(0);
@@ -135,20 +201,19 @@
 		mythicWinBoard: 0xb45cff,
 		legendaryWinBoard: 0xffc242,
 	};
-	const glowColor = $derived(GLOW_COLOR[shownKey] ?? 0xffc242);
 </script>
 
-{#if shownKey}
-	<!-- The whole unit (glow + board + amount) collapses/pops as one via the transition scale. -->
-	<Container scale={pop.current}>
-		<!-- The 14 glow circles are tessellated once, at the layout's reference radius, and animated
-		     by scaling this wrapper — `boardSize / maxBoardSize` is exactly the live part of the
-		     size (accumulation × breathe), so the rendered radius is unchanged. The scale MUST stay
-		     on a glow-only wrapper: putting it on the outer Container would also scale the board
-		     Sprite, which already sizes itself from `boardSize`, and it would grow quadratically.
-		     The draw callback now reads only layout-rate values, so it stops re-tessellating on
-		     every breathe frame and every count-up tick. -->
-		<Container scale={accumulationScale * breatheScale}>
+{#snippet tierArt(key: string, size: number, alpha: number)}
+	{@const emblem = TIER_EMBLEM[key] ?? TIER_EMBLEM.sweetWinBoard}
+	<Container {alpha}>
+		<!-- Plan 10 merge: the 14 glow circles are tessellated once at the layout's reference radius;
+		     the live part of the size (tier accumulation × breathe, all inside `size`) animates this
+		     glow-only wrapper's scale instead. Rendered radius is identical (maxBoardSize·0.85 ×
+		     size/maxBoardSize = size·0.85). The draw body deliberately does NOT read `size`, so the
+		     Graphics effect re-runs only when the tier `key` (colour) changes — not per frame. The
+		     scale stays on a wrapper around the glow alone: the Sprite below already sizes itself
+		     from `size` and would grow quadratically under a shared scale. -->
+		<Container scale={size / maxBoardSize}>
 			<Graphics
 				blendMode="add"
 				draw={(g) => {
@@ -157,24 +222,44 @@
 					for (let i = steps; i >= 1; i--) {
 						const t = i / steps;
 						g.circle(0, 0, R * t);
-						g.fill({ color: glowColor, alpha: 0.055 * (1 - t) * (1 - t) + 0.005 });
+						g.fill({ color: GLOW_COLOR[key] ?? 0xffc242, alpha: 0.055 * (1 - t) * (1 - t) + 0.005 });
 					}
 				}}
 			/>
 		</Container>
-		<Sprite key={shownKey} anchor={0.5} width={boardSize} height={boardSize} />
+		<Sprite {key} anchor={0.5} width={size} height={size} />
 
 		<!-- Golden P mark breathing on the gem medallion -->
-		<Container y={boardSize * emblem.y} scale={emblemPulse}>
+		<Container y={size * emblem.y} scale={emblemPulse}>
 			<Sprite
 				key="winEmblemP"
 				anchor={0.5}
-				width={boardSize * emblem.w}
-				height={boardSize * emblem.w * EMBLEM_ASPECT}
+				width={size * emblem.w}
+				height={size * emblem.w * EMBLEM_ASPECT}
 			/>
 		</Container>
+	</Container>
+{/snippet}
 
-<Container y={boardSize * textYFrac} scale={amountScale}>
+{#if shownKey}
+	{@const f = fade.current}
+	{@const inSize = sizeFor(shownKey)}
+	{@const outSize = outgoingKey ? sizeFor(outgoingKey) : inSize}
+	{@const inTextY = inSize * (TIER_TEXT_Y[shownKey] ?? 0.343)}
+	{@const outTextY = outSize * (TIER_TEXT_Y[outgoingKey ?? shownKey] ?? 0.343)}
+	<!-- Outgoing tier stays at full size and opacity 1-f: the board never leaves the screen. -->
+	{#if outgoingKey}
+		{@render tierArt(outgoingKey, outSize, 1 - f)}
+	{/if}
+	<Container scale={pop.current}>
+		{@render tierArt(shownKey, inSize, outgoingKey ? f : 1)}
+
+		<!-- One amount text, not two: cross-fading a second copy of the same digits at a slightly
+		     different size reads as ghosting. Its plaque position glides between the two tiers. -->
+		{@const textSize = outSize + (inSize - outSize) * f}
+		{@const amountMaxW = textSize * 0.62}
+		{@const amountScale = amountNatW > 0 ? Math.min(1, amountMaxW / amountNatW) : 1}
+		<Container y={outTextY + (inTextY - outTextY) * f} scale={amountScale}>
 			<Text
 				anchor={0.5}
 				text={countUpText}
