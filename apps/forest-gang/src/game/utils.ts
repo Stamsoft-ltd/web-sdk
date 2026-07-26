@@ -7,6 +7,7 @@ import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, REEL_PADDING, BOARD_DIMENSIONS } from 
 import { eventEmitter } from './eventEmitter';
 import type { Bet, BookEventOfType } from './typesBookEvent';
 import { bookEventHandlerMap } from './bookEventHandlerMap';
+import { resetHolds } from './sequenceHold';
 import { stateGameDerived } from './stateGame.svelte';
 import type { RawSymbol, SymbolState } from './types';
 
@@ -55,6 +56,11 @@ export const playBet = async (bet: Bet) => {
 	// presentation must not wait on it here. loadDemandAssets() is idempotent and returns the one
 	// shared promise, so the handler gate above awaits this very load.
 	if (bet.state.some((bookEvent) => BONUS_ART_EVENTS.has(bookEvent.type))) void loadDemandAssets();
+	// Sequence boundary. One book = one hold sequence, so a stop press skips the remaining beats
+	// across every handler in it — but `pendingInterrupt` is sticky, so it MUST be cleared here
+	// (and in the `finally` below, incl. the throw path) or the next round's holds all resolve
+	// instantly and the game sits in an invisible permanent turbo.
+	resetHolds();
 	try {
 		await playBookEvents(bet.state);
 	} catch (error) {
@@ -71,6 +77,7 @@ export const playBet = async (bet: Bet) => {
 			// settle is best-effort recovery; never let it re-throw out of the catch.
 		}
 	} finally {
+		resetHolds();
 		// Always hand controls back to the player, even on the abort path.
 		eventEmitter.broadcast({ type: 'stopButtonEnable' });
 	}

@@ -14,6 +14,7 @@
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import EnableSound from './EnableSound.svelte';
 	import SceneAnimationDriver from './SceneAnimationDriver.svelte';
+	import SequenceHoldController from './SequenceHoldController.svelte';
 	import EnableGameActor from './EnableGameActor.svelte';
 	import PendingRoundRecovery from './PendingRoundRecovery.svelte';
 	import ResumeBet from './ResumeBet.svelte';
@@ -390,6 +391,7 @@
 		     Pixi's less-mature WebGPU path (buggy on Safari 18). -->
 		<App preloadWebFont={false} maxResolution={2} antialias={false} rendererPreference="webgl">
 			<SceneAnimationDriver />
+			<SequenceHoldController />
 			<EnableSound />
 			<EnableHotkey />
 			<EnableGameActor />

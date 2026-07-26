@@ -3,10 +3,10 @@ import _ from 'lodash';
 import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap } from 'utils-book';
 import { stateBet, stateUi } from 'state-shared';
 import { sequence } from 'utils-shared/sequence';
-import { waitForTimeout } from 'utils-shared/wait';
 import { bookEventAmountToBetAmountMultiplier } from 'utils-shared/amount';
 
 import { eventEmitter } from './eventEmitter';
+import { hold, interruptHolds } from './sequenceHold';
 import { playBookEvent } from './utils';
 import { winLevelMap, type WinLevel, type WinLevelData } from './winLevelMap';
 import type { SoundEffectName } from './sound';
@@ -107,8 +107,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.hasAnticipationPending = !!hasAnticipation;
 
 		// Add a brief pause between bonus spins so players can read the result
-		if (isBonusGame && bookEvent.gameType !== 'basegame' && !stateBet.isSuperTurbo) {
-			await waitForTimeout(600);
+		if (isBonusGame && bookEvent.gameType !== 'basegame') {
+			await hold(600);
 		}
 
 		const hadPendingStop = stateGame.pendingStop && stateGame.awaitingFirstReveal;
@@ -120,8 +120,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			revealEvent: bookEvent,
 			paddingBoard: config.paddingReels[bookEvent.gameType],
 		});
-		// Apply buffered stop immediately after spin starts
-		if (hadPendingStop) stateGameDerived.enhancedBoard.stop();
+		// Apply buffered stop immediately after spin starts. A stop pressed inside the pre-reveal
+		// buffer window is recorded as `pendingStop` instead of being broadcast (HudHtml), so it has
+		// to arm the round's hold interrupt here — otherwise the same press behaves differently
+		// depending on whether it landed a frame before or after the first reveal.
+		if (hadPendingStop) {
+			stateGameDerived.enhancedBoard.stop();
+			interruptHolds();
+		}
 		await spinPromise;
 		stateGame.hasAnticipationPending = false;
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
@@ -134,7 +140,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 				freeSpinCurrent: stateUi.freeSpinCounterCurrent,
 				freeSpinTotal: stateUi.freeSpinCounterTotal,
 			});
-			console.info('[forest-gang] ALL IN global multiplier after spin', stateGame.globalMultiplier);
 		}
 	},
 	bonusSymbolSelected: async (bookEvent: BookEventOfType<'bonusSymbolSelected'>, { bookEvents }: BookEventContext) => {
@@ -195,10 +200,16 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 		// Reveal one by one in distance order (origin first, then outward) — slower for drama.
 		for (let i = 0; i < reelsByDistance.length; i++) {
-			if (i > 0) await waitForTimeout(190);
+			const cut = i > 0 && (await hold(190));
 			// forcePlay so every expanding column retriggers the sound (the effect is longer than the
 			// 190ms step, so without it the once-player would only sound on the first column).
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_symbol_expand', forcePlay: true });
+			if (cut) {
+				// Stop press (or super-turbo): land every remaining column at once. Walking the rest at
+				// zero delay would retrigger the expand sound once per reel inside a single frame.
+				stateGame.expandedSymbol = { ...stateGame.expandedSymbol!, reels: [...bookEvent.reels] };
+				break;
+			}
 			const reel = reelsByDistance[i];
 			stateGame.expandedSymbol = {
 				...stateGame.expandedSymbol!,
@@ -206,7 +217,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			};
 		}
 		// Hold on the fully-expanded board before the win/multiplier sequence begins.
-		await waitForTimeout(650);
+		await hold(650);
 	},
 	applyTempMultiplier: async (bookEvent: BookEventOfType<'applyTempMultiplier'>) => {
 		stateGame.tempMultiplier = bookEvent.multiplier;
@@ -227,7 +238,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	updateGlobalMultiplier: async (bookEvent: BookEventOfType<'updateGlobalMultiplier'>) => {
 		stateGame.globalMultiplier = bookEvent.multiplier;
 		eventEmitter.broadcast({ type: 'globalMultiplierUpdate', multiplier: bookEvent.multiplier });
-		console.info('[forest-gang] ALL IN global multiplier update', bookEvent.multiplier);
 	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>) => {
 		// HUD WIN readout: this spin's win only (per round) — the cumulative bonus total lives in
@@ -294,7 +304,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_trigger' });
 			await animateSymbols({ positions: bookEvent.positions });
 			// Hold on the highlighted scatters so the player can read the count before transition.
-			if (!stateBet.isSuperTurbo) await waitForTimeout(stateBet.isTurbo ? 300 : 800);
+			// (holdScale keeps this at its tuned 800 / 300 / 0 ms per speed mode — now skippable.)
+			await hold(800);
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_intro' });
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
 			await eventEmitter.broadcastAsync({ type: 'transition' });
@@ -403,7 +414,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if ((stateGame.bonusMode === 'freegame' || stateGame.bonusMode === 'feature')) {
 			await eventEmitter.broadcastAsync({ type: 'dealItMultiplierAwaitCycle' });
 			// Brief beat before coins start flying so the two moments read separately.
-			await waitForTimeout(150);
+			await hold(150);
 		}
 		// Hold a beat when the win contains animated premium symbols so their board win
 		// animation is visible before the win presentation covers it. Skipped on turbo.
@@ -413,10 +424,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 				(s) => s.symbolState === 'win' && PREMIUM_WIN_ANIMS.has(s.rawSymbol.name),
 			),
 		);
+		// The turbo guard stays: this beat exists only to make the un-hurried presentation readable,
+		// so turbo drops it outright rather than keeping a scaled ~200 ms of it.
 		if (hasAnimatedWinSymbol && !stateBet.isTurbo && !stateBet.isSuperTurbo) {
 			// Long enough to register the symbols' win animation starting, short enough that the
 			// board doesn't read as stalled before the win presentation.
-			await waitForTimeout(550);
+			await hold(550);
 		}
 		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
 		eventEmitter.broadcast({ type: 'winShow' });
