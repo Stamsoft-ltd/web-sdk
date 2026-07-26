@@ -23,7 +23,11 @@ const SRC = join(APP, 'src');
 // spine/font pages are deduped, as the GPU does). Measured 344.095 MiB at the time of
 // writing; the headroom is deliberately thin so a single new full-screen background (a 4K webp is
 // ~33 MiB decoded) trips it rather than sliding in unnoticed.
-const DECODED_BUDGET_MIB = 360;
+// Re-based from 360 after plan 07 restored the twelve board-symbol sheets at 2x source
+// resolution (+139.7 MiB decoded, documented in its PR — the sources for anything sharper do
+// not exist). 75.5 MiB of the total is demand-gated behind the first bonus by plan 11, but this
+// scan is static and counts it regardless. Current measured total: ~451.8 MiB.
+const DECODED_BUDGET_MIB = 470;
 
 // The GPU texture limit this game targets. Anything larger silently fails to upload on devices
 // whose MAX_TEXTURE_SIZE is 4096 — which is most mid-range phones.
@@ -139,7 +143,8 @@ describe('assets.ts (plan 14 §3)', () => {
 		const keys = new Set(assetEntries.map((e) => e.key));
 		expect(REQUIRED_KEYS.filter((k) => !keys.has(k))).toEqual([]);
 		expect(new Set(assetEntries.map((e) => e.type))).toEqual(
-			new Set(['sprite', 'sprites', 'spriteSheet', 'spine', 'font', 'audio']),
+			// 'sprites' left this set when plan 03 deleted freeSpins/ and progressBar/ — its only two users.
+			new Set(['sprite', 'spriteSheet', 'spine', 'font', 'audio']),
 		);
 		expect(loadedImages.length).toBeGreaterThan(0);
 	});
@@ -195,7 +200,8 @@ describe('sprite sheets (plan 14 §3)', () => {
 		);
 
 	it('finds the sheets it claims to check', () => {
-		expect(sheets.length).toBeGreaterThanOrEqual(30);
+		// Floor re-based 30 → 25: plan 03 deleted 8 dead sheets (34 → 26 on this tree).
+		expect(sheets.length).toBeGreaterThanOrEqual(25);
 	});
 
 	it('adds no new meta.size mismatch beyond the recorded baseline', () => {

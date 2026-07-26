@@ -13,7 +13,7 @@
 //     them touches three apps outside this branch's scope.
 
 export const SHEET_META_MISMATCH: Record<string, { declared: [number, number]; actual: [number, number] }> = {
-	'assets/sprites/freeSpins/freeSpins.json': { declared: [932, 981], actual: [928, 979] },
+	// freeSpins.json was deleted by plan 03 (dead sheet) — its entry ratcheted out with it.
 	'assets/sprites/pressToContinueText/MM_pressanywhere.json': { declared: [1748, 960], actual: [1744, 918] },
 	'assets/sprites/winSmall/MM_Localisation_winsmall.json': { declared: [512, 520], actual: [510, 516] },
 };
@@ -23,7 +23,7 @@ export const UNREFERENCED_ASSET_KEYS = [
 	'bearBonusTile', // 1.013 MiB
 	'bearWinTile', // 1.013 MiB
 	'buyBonusLs', // 0.200 MiB
-	'coins', // 5.354 MiB — only `pCoins` reaches <ParticleEmitter>; this one is named nowhere
+	// 'coins' and 'progressBar' were deleted by plan 03 — ratcheted out.
 	'expandedFrame', // 6.000 MiB
 	'foxBonusTile', // 1.003 MiB
 	'foxWinTile', // 1.003 MiB
@@ -31,7 +31,6 @@ export const UNREFERENCED_ASSET_KEYS = [
 	'logoFrame', // 0.534 MiB
 	'navBarLs', // 0.951 MiB
 	'portraitShadow', // 0.125 MiB
-	'progressBar', // 0.257 MiB
 	'rabbitBonusTile', // 1.003 MiB
 	'rabbitWinTile', // 1.003 MiB
 	'reelFrameLs', // 13.253 MiB
@@ -45,21 +44,10 @@ export const UNREFERENCED_ASSET_KEYS = [
 	'wolfWinTile', // 1.003 MiB
 ];
 
-// Repo-relative. 40 files across four apps.
+// Repo-relative. 27 files across three sibling apps — forest-gang's 13 were moved to tools/
+// (plan 12) or deleted with their dead sheets (plan 03). The siblings are outside this
+// branch's scope; plan 12 records them for a repo-wide follow-up.
 export const STATIC_SOURCE_FILES = [
-	'apps/forest-gang/static/assets/components/backgrounds/make_splash.py',
-	'apps/forest-gang/static/assets/components/frames/patch_scatter_leaves.py',
-	'apps/forest-gang/static/assets/spines/fsIntro/generate_board.py',
-	'apps/forest-gang/static/assets/spines/fsIntro/patch_frame_counter_leaves.py',
-	'apps/forest-gang/static/assets/spines/globalMultiplier/patch_multiplier.py',
-	'apps/forest-gang/static/assets/spines/transition/generate_coin.py',
-	'apps/forest-gang/static/assets/sprites/coin/generate_coin.py',
-	'apps/forest-gang/static/assets/sprites/coinRain/generate_coin_rain.py',
-	'apps/forest-gang/static/assets/sprites/generate_emblem_anim.py',
-	'apps/forest-gang/static/assets/sprites/pressToContinueText/make_gold.py',
-	'apps/forest-gang/static/assets/sprites/progressBar/generate_progressbar.py',
-	'apps/forest-gang/static/assets/sprites/rabbitMoney/generate_expand_anim.py',
-	'apps/forest-gang/static/assets/sprites/rabbitMoney/generate_win_anim.py',
 	'apps/magnetic-megachain/static/assets/components/backgrounds/make_splash.py',
 	'apps/magnetic-megachain/static/assets/components/frames/patch_scatter_leaves.py',
 	'apps/magnetic-megachain/static/assets/spines/fsIntro/generate_board.py',

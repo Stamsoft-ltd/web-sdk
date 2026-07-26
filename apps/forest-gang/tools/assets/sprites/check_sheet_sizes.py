@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Verification for plan 07 — run from the repo root:
 
-    python3 apps/forest-gang/static/assets/sprites/check_sheet_sizes.py
+    python3 apps/forest-gang/tools/assets/sprites/check_sheet_sizes.py
 
 Two checks, both scripted across EVERY sheet (plan 07 Verify #1 and #3):
 
@@ -47,7 +47,11 @@ from PIL import Image
 LIMIT = 4096
 DPR = 2
 CANVAS = (1920, 1080)
-ROOT = os.path.dirname(os.path.abspath(__file__))
+# This file lives in tools/ (source must not ship from static/ — plan 12), but everything it
+# checks lives in the static sprites tree, so ROOT points there.
+ROOT = os.path.normpath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../static/assets/sprites')
+)
 
 # ── layout chain ────────────────────────────────────────────────────────────────
 SYMBOL_W, SYMBOL_H = 121, 103
