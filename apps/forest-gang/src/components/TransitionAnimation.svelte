@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { Tween } from 'svelte/motion';
 	import { cubicInOut } from 'svelte/easing';
 
@@ -31,17 +31,20 @@
 		if (spineDone && veilDone) props.ondone();
 	});
 
+	// Failsafe: the wipe is ~1.7s — if its complete listener never fires, don't leave the overlay
+	// mounted (and the game stuck in `transitioning`) forever. It is deliberately NOT cleared when
+	// the veil finishes — the veil ends before the spine, so the failsafe must outlive it; a late
+	// fire after normal completion is a harmless duplicate state write. Unmount does clear it.
+	let failsafe: ReturnType<typeof setTimeout>;
+	onDestroy(() => clearTimeout(failsafe));
+
 	onMount(async () => {
-		// Failsafe: the wipe is ~1.7s — if its complete listener never fires, don't leave the
-		// overlay mounted (and the game stuck in `transitioning`) forever.
-		const failsafe = setTimeout(() => (spineDone = true), 2500);
+		failsafe = setTimeout(() => (spineDone = true), 2500);
 		await veil.set(1, { duration: 550 }); // cover under the wipe's build-up
 		props.oncover(); // swap bg / bonus state while fully covered
 		await new Promise((resolve) => setTimeout(resolve, 140)); // brief hold
 		await veil.set(0, { duration: 640 }); // reveal
 		veilDone = true;
-		// The failsafe isn't cleared here on purpose — the veil ends before the spine, and a late
-		// fire after normal completion (or unmount) is a harmless duplicate state write.
 	});
 </script>
 

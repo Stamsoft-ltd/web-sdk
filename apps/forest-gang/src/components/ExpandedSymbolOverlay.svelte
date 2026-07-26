@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
 	import { Tween } from 'svelte/motion';
 	import { MainContainer } from 'components-layout';
 	import { AnimatedSprite, Container, Graphics, Sprite } from 'pixi-svelte';
@@ -7,7 +8,7 @@
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_H, SYMBOL_W, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
-	import { getReelCenterX, winSpriteKeyByName } from '../game/utils';
+	import { getReelCenterX } from '../game/utils';
 	import type { SymbolName } from '../game/types';
 
 	const EXPANDED_ASSET: Partial<Record<SymbolName, string>> = {
@@ -99,6 +100,8 @@
 	type ReelAnim = { h: Tween<number>; y: Tween<number>; pop: Tween<number>; looping: boolean };
 	const reelAnims: Record<number, ReelAnim> = {};
 	const revealedReels = new Set<number>();
+	const popTimers = new Set<ReturnType<typeof setTimeout>>();
+	onDestroy(() => popTimers.forEach(clearTimeout));
 
 	const getAnim = (reelIndex: number, originY: number): ReelAnim => {
 		if (!reelAnims[reelIndex]) {
@@ -141,14 +144,19 @@
 		anim.y.set(halfH, { duration: 460, easing: cubicOut });
 
 		anim.pop.set(1.08, { duration: 0 });
-		setTimeout(() => anim.pop.set(1, { duration: 220, easing: (t) => 1 - (1 - t) ** 3 }), 460);
+		// NOT cleared when this effect re-runs — a later reel's reveal must not cancel an earlier
+		// reel's settle. Only unmount clears them (see popTimers / onDestroy).
+		const popTimer = setTimeout(() => {
+			popTimers.delete(popTimer);
+			anim.pop.set(1, { duration: 220, easing: (t) => 1 - (1 - t) ** 3 });
+		}, 460);
+		popTimers.add(popTimer);
 	});
 </script>
 
 {#if expanded}
 	{@const assetKey = EXPANDED_ASSET[expanded.symbol] ?? 'foxExpTile'}
 	{@const isLowExpanded = LOW_SYMBOLS.has(expanded.symbol)}
-	{@const lowAssetKey = winSpriteKeyByName[expanded.symbol] ?? 'aWinTile'}
 	<MainContainer>
 		<Container
 			x={bl.x}

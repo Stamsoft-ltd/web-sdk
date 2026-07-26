@@ -205,8 +205,9 @@
 		// draw scale must come DOWN to keep the glyph at its old visual size (~0.7 of the cell —
 		// the previous padded art reached the same size at 0.86). Landscape keeps the old fit.
 		if (LOW_SYMBOLS_SET.has(name)) return isDesktop ? 0.72 : 0.86;
-		// WILD reads small on mobile — enlarge it in landscape too (design ask, "wild bigger on all
-		// mobile"). Desktop keeps the tuned 1.1; SCATTER is unchanged outside portrait.
+		// WILD reads small on mobile — enlarge it in landscape (design ask, "wild bigger on all
+		// mobile"). Everything else (desktop included) takes no WILD-specific bump; desktop still
+		// gets the shared SIZE_BOOST above. SCATTER keeps the tuned 1.1 outside portrait.
 		if (name === 'WILD') return isLandscape ? 1.25 : 1.0;
 		if (name === 'SCATTER') return 1.1;
 		// Premium animals: the art has built-in margin (reads small) so enlarge it — landscape
@@ -334,9 +335,8 @@
 				// Inset the mask a few units top & bottom so the top slivers of the buffer symbols
 				// (just outside the visible rows) don't bleed in as thin lines at the grid edge.
 				const inset = isDesktop ? 2 : 0;
-				graphics.beginFill(0xffffff);
 				graphics.rect(0, inset, SYMBOL_W * BOARD_DIMENSIONS.x, SYMBOL_H * BOARD_DIMENSIONS.y - inset * 2);
-				graphics.endFill();
+				graphics.fill({ color: 0xffffff });
 			}}
 		/>
 		<!-- Thin vertical divider lines between the reel columns (behind the symbols). -->
@@ -487,14 +487,13 @@
 							<Graphics
 								isMask
 								draw={(graphics) => {
-									graphics.beginFill(0xffffff);
 									graphics.rect(
 										-panelW / 2,
 										-panelH / 2 - panelH * PANEL_TOP_OVERFLOW,
 										panelW,
 										panelH * (1 + PANEL_TOP_OVERFLOW),
 									);
-									graphics.endFill();
+									graphics.fill({ color: 0xffffff });
 								}}
 							/>
 							<!-- Static frame-0 underlay: guarantees the animal is NEVER a blank frame even

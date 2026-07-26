@@ -66,10 +66,6 @@ const assets = {
 		type: 'sprite',
 		src: './assets/components/characters/deer_presenter_mobile.webp?v=20260722',
 	},
-	multiplierHand: {
-		type: 'sprite',
-		src: './assets/components/ui/multiplier_hand.webp?v=20260722',
-	},
 	multiplierXRed: {
 		type: 'sprite',
 		src: './assets/components/ui/multiplier_x_red.webp?v=20260722',

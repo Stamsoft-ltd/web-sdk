@@ -114,7 +114,8 @@
 
 <FadeContainer {show}>
 	{#if winLevelData}
-		<!-- Count-up capped so the total is fully shown before the 3s auto-advance fires. -->
+		<!-- Count-up capped at 2s so the total is fully shown while the player reads it; the popup
+		     itself waits for a press (no auto-advance — see freeSpinOutroCountUp above). -->
 		{@const duration = Math.min(winLevelData.presentDuration, 2000)}
 		<WinCountUpProvider {amount} {duration} oncomplete={() => { context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_win_coins_loop' }); context.eventEmitter.broadcast({ type: 'soundStop', name: 'bgm_win_animation' }); context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' }); }}>
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}

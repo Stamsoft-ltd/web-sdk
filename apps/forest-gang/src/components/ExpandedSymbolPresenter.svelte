@@ -306,10 +306,8 @@
 				<Container x={deerW * PLACEHOLDER.cx} y={deerH * PLACEHOLDER.cy + cardInnerH * 0.12}>
 					<Graphics
 						draw={(graphics) => {
-							graphics.clear();
-							graphics.beginFill(0x3d1c0a);
 							graphics.rect(-cardInnerW * 0.85, -cardInnerH * 0.85, cardInnerW * 1.7, cardInnerH * 1.7);
-							graphics.endFill();
+							graphics.fill({ color: 0x3d1c0a });
 						}}
 					/>
 				</Container>
@@ -343,15 +341,13 @@
 						<Graphics
 							isMask
 							draw={(graphics) => {
-								graphics.clear();
-								graphics.beginFill(0xffffff);
 								graphics.rect(
 									-innerW / 2,
 									-innerH / 2 - innerH * BUST_TOP_OVERFLOW,
 									innerW,
 									innerH * (1 + BUST_TOP_OVERFLOW),
 								);
-								graphics.endFill();
+								graphics.fill({ color: 0xffffff });
 							}}
 						/>
 						{#if displayIdle.length}
