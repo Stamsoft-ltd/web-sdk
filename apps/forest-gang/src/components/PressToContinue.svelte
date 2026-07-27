@@ -27,11 +27,22 @@
 	const y = $derived.by(() => {
 		const ml = context.stateLayoutDerived.mainLayout();
 		const scale = ml.scale || 1;
-		// Portrait: sit in the glow gap below the popup panel but clear of the bottom HTML HUD bar,
-		// which occupies roughly the bottom ~17% of the screen. 0.95/0.85 both landed on/behind the
-		// bar (read as "no press text"); 0.82 sits lower in the visible glow gap under the board
-		// (design ask "move it further down") while still clearing the HUD bar.
-		if (layoutType === 'portrait') return ml.height * 0.82;
+		// Portrait: anchor to the REAL portrait HUD top (same approach as the non-portrait branch
+		// below) instead of a magic screen fraction — a fixed fraction (0.82) drifted onto/behind
+		// the bottom HTML HUD bar as the bar's proportion changes across S/M/L, so the press line
+		// vanished. The portrait HUD block height = u·0.282 + 16 (bar + gap + stats + bottom
+		// padding, u = min(412, canvas.width·0.97)), measured up from the game-area bottom with
+		// letterbox handled via `offset`, then converted back into main-layout coordinates. The
+		// press line then sits a couple of line-heights above that, in the visible glow gap.
+		if (layoutType === 'portrait') {
+			const canvas = context.stateLayoutDerived.canvasSizes();
+			const u = Math.min(412, canvas.width * 0.97);
+			const hudH = u * 0.282 + 16;
+			const offset = (canvas.height - ml.height * scale) / 2;
+			const gameBottom = offset + ml.height * scale;
+			const hudTopMain = (gameBottom - hudH - offset) / scale;
+			return hudTopMain - fontSize * 2.4;
+		}
 		// Non-portrait (desktop/tablet — mobile landscape draws its own in-panel copy): sit in the
 		// glow ledge just ABOVE the HTML HUD bar. Estimating the board bottom from a minDim fraction
 		// kept landing the line back on the wooden planks (the free-spin board is much larger than

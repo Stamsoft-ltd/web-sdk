@@ -81,7 +81,7 @@ export default {
 	'HOWTO BET TITLE': 'WYBÓR ZAKŁADU',
 	'HOWTO BET TEXT': 'Użyj przycisków + i - lub otwórz menu zakładu, aby zmienić wyświetlaną kwotę zakładu przed rozpoczęciem rundy.',
 	'HOWTO BUY TITLE': 'KUP BONUS',
-	'HOWTO BUY TEXT': 'Otwórz Kup Bonus, aby wybrać Rozdaj, Va Banque, Spin Szansy lub Spin Funkcji. Rozdaj i Va Banque wymagają potwierdzenia. Spin Szansy i Spin Funkcji aktywują się natychmiast i można je wyłączyć przyciskiem DEZAKTYWUJ.',
+	'HOWTO BUY TEXT': 'Otwórz Kup Bonus, aby wybrać Rozdaj, Va Banque, Spin Szansy lub Spin Funkcji. Rozdaj i Va Banque wymagają potwierdzenia. Spin Szansy i Spin Funkcji aktywują się natychmiast i można je wyłączyć przyciskiem WYŁĄCZ.',
 	'HOWTO TURBO TITLE': 'TURBO',
 	'HOWTO TURBO TEXT': 'Turbo skraca niektóre czasy rundy dla szybszej gry.',
 	'HOWTO AUTOPLAY TITLE': 'AUTOGRA',
@@ -197,7 +197,7 @@ export default {
 
 	// Buy bonus modal — card titles/descriptions, buttons, confirm dialog
 	ACTIVATE: 'AKTYWUJ',
-	DEACTIVATE: 'DEZAKTYWUJ',
+	DEACTIVATE: 'WYŁĄCZ',
 	BUY: 'KUP',
 	CONFIRM: 'POTWIERDŹ',
 	CANCEL: 'ANULUJ',

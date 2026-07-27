@@ -81,7 +81,7 @@ export default {
 	'HOWTO BET TITLE': '베팅 선택기',
 	'HOWTO BET TEXT': '+ 및 - 버튼을 사용하거나 베팅 메뉴를 열어 라운드 시작 전에 표시된 베팅 금액을 변경하세요.',
 	'HOWTO BUY TITLE': '보너스 구매',
-	'HOWTO BUY TEXT': '보너스 구매를 열어 딜 잇, 올인, 찬스 스핀 또는 피처 스핀을 선택하세요. 딜 잇과 올인은 확인이 필요합니다. 찬스 스핀과 피처 스핀은 즉시 활성화되며 DEACTIVATE 버튼으로 끌 수 있습니다.',
+	'HOWTO BUY TEXT': '보너스 구매를 열어 딜 잇, 올인, 찬스 스핀 또는 피처 스핀을 선택하세요. 딜 잇과 올인은 확인이 필요합니다. 찬스 스핀과 피처 스핀은 즉시 활성화되며 비활성화 버튼으로 끌 수 있습니다.',
 	'HOWTO TURBO TITLE': '터보',
 	'HOWTO TURBO TEXT': '터보는 특정 라운드 타이밍을 단축하여 더 빠른 플레이를 제공합니다.',
 	'HOWTO AUTOPLAY TITLE': '자동 플레이',

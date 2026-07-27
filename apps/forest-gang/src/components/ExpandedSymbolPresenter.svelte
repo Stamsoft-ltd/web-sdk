@@ -42,7 +42,11 @@
 		const canvas = context.stateLayoutDerived.canvasSizes();
 		const ml = context.stateLayoutDerived.mainLayout();
 		const u = Math.min(412, canvas.width * 0.97);
-		const hudH = u * 0.282 + 16; // bar + gap + stats + bottom padding (matches HudHtml --u CSS)
+		// Subtract only the NAV bar band (not the full bar+stats block) so the deer's feet drop
+		// LOWER — tucking behind the top of the wooden nav bar instead of floating in the glow gap
+		// above it. (0.282+16 landed her feet at the top of the whole HUD block, ~a bar-height too
+		// high, so she read as hovering.)
+		const hudH = u * 0.22 + 6;
 		// Anchor to the GAME-AREA bottom, not the full canvas: when the canvas is letterboxed the
 		// HTML HUD sits at the game-area bottom (above the bottom letterbox), so using canvas.height
 		// dropped the deer's feet past the bar into the letterbox. gameBottom = top offset + game height.
@@ -92,7 +96,7 @@
 			? isPortrait
 				// Portrait animated deer: sized to fill, then scaled to 77% (was 0.7 — bumped ~10%
 				// per request "increase the deer a bit"); rises from the bottom like the static one.
-				? Math.min(main.height * 0.9, (main.width * 0.98) / ANIM_RATIO) * 0.77
+				? Math.min(main.height * 0.9, (main.width * 0.98) / ANIM_RATIO) * 0.62
 				// Desktop: 82% of the fill size (was 0.75 — bumped ~10% per request; board + symbol
 				// scale down with it).
 				: Math.min(main.height * 0.82, main.width * 0.9) * 0.82
@@ -303,11 +307,17 @@
 				     to the card's full interior (wider + taller than the symbol window) so the card's own wood
 				     grain still renders on top; this only fills the see-through. Applies to BOTH letters and
 				     animals. Colour matches the static deer card's dark wood. -->
-				<Container x={deerW * PLACEHOLDER.cx} y={deerH * PLACEHOLDER.cy + cardInnerH * 0.12}>
+				<Container x={deerW * PLACEHOLDER.cx} y={deerH * PLACEHOLDER.cy}>
 					<Graphics
 						draw={(graphics) => {
-							graphics.rect(-cardInnerW * 0.85, -cardInnerH * 0.85, cardInnerW * 1.7, cardInnerH * 1.7);
-							graphics.fill({ color: 0x3d1c0a });
+							// Sized to sit INSIDE the sign's wood (measured span ~0.48–0.73 of the deer
+							// height): the +0.12 downward offset was dropped so it no longer bled a strip
+							// below the sign, and the TOP now reaches up to the sign's top rail (0.70 vs
+							// the earlier 0.65) so the see-through band just under the top border is
+							// covered too. Bottom stays put (0.65) to avoid poking past the bottom rail;
+							// the top edge hides behind the deer's opaque arms/collar that grip the sign.
+							graphics.rect(-cardInnerW * 0.85, -cardInnerH * 0.7, cardInnerW * 1.7, cardInnerH * 1.35);
+							graphics.fill({ color: 0x2e1608 });
 						}}
 					/>
 				</Container>

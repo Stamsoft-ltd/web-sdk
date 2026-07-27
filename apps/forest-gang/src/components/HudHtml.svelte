@@ -222,6 +222,29 @@
 	const winValue = $derived(bookEventAmountToCurrencyString(winTween.current));
 	const hasWin = $derived(context.stateGame.roundWin > 0);
 
+	// Deterministic text-fit for the FIXED-width desktop BALANCE / WIN slots. The transform-based
+	// fitText scaler never applied on these elements (a long value rendered full-size and clipped),
+	// so instead we compute the font size straight from the value's characters — tabular figures are
+	// uniform width, so the estimate is reliable — and set it inline. This keeps the slot fixed (the
+	// steppers / spin never move off the wooden bar) while long values shrink to stay inside it.
+	const DESKTOP_VALUE_BASE_U = 26; // matches .value font-size: calc(var(--u) * 26)
+	// Every value that shrinks renders at ~BASE·CAP px, so the safety factor (not the per-glyph
+	// weights) sets the final width. 0.88 targets ~111u inside the 126u slot — ~12% headroom for
+	// glyph-estimate error so a big balance/win ($5,000,000.00, $10,000,000,000.00) never clips.
+	const DESKTOP_VALUE_CAP_EM = (126 / DESKTOP_VALUE_BASE_U) * 0.88;
+	const glyphEm = (c: string) => {
+		if (c >= '0' && c <= '9') return 0.6; // tabular figure
+		if (c === ',' || c === '.' || c === ' ') return 0.32;
+		if (c === '$') return 0.6;
+		return 0.66; // letters / other currency glyphs (conservative)
+	};
+	const desktopValueFontStyle = (s: string) => {
+		let em = 0;
+		for (const c of s) em += glyphEm(c);
+		const scale = Math.min(1, DESKTOP_VALUE_CAP_EM / Math.max(em, 0.01));
+		return `font-size: calc(var(--u) * ${(DESKTOP_VALUE_BASE_U * scale).toFixed(2)});`;
+	};
+
 	const openPaytable = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		stateModal.modal = { name: 'payTable' };
@@ -385,28 +408,28 @@
 			// full slot width, so subtracting the label there wrongly shrank it to nothing.
 			const prev = node.previousElementSibling as HTMLElement | null;
 			const sameRow = prev ? Math.abs(prev.offsetTop - node.offsetTop) < node.offsetHeight * 0.6 : false;
-			const used = prev && sameRow ? prev.getBoundingClientRect().width + 8 : 0;
-			// getBoundingClientRect() (with transform reset to none above) reports the true unscaled
-			// text width reliably for both inline and inline-block — scrollWidth returned 0/garbage
-			// on the inline span, so the scale computed to 1 and never shrank.
-			// The HUD sits inside a CSS-transform-scaled game container, so getBoundingClientRect()
-			// (used for `used`/`full`) returns RENDERED px while clientWidth returns LAYOUT px. Mixing
-			// the two made `avail` wrong under scale, so a long value never shrank — it clipped
-			// (landscape) or overflowed the pill (portrait). Scale the slot's content width into
-			// rendered px so `avail`, `used` and `full` share one unit.
-			const slotScale = slot.offsetWidth ? slot.getBoundingClientRect().width / slot.offsetWidth : 1;
-			const avail = slot.clientWidth * slotScale - used;
-			const nodeRect = node.getBoundingClientRect();
-			const full = nodeRect.width;
+			// Measure the fit entirely in LAYOUT px (offsetWidth / clientWidth) so the CSS-transform
+			// scale of the game container cancels out on its own. The earlier version mixed layout px
+			// (clientWidth) with rendered px (getBoundingClientRect) through a `slotScale` factor; any
+			// drift in that factor left `avail >= full`, so a long value (e.g. $100,000.00 on desktop,
+			// or a big landscape balance) never shrank and clipped under the slot's overflow:hidden.
+			// offsetWidth is the inline-block's unscaled border-box width = the full text width, and
+			// clientWidth is the slot's unscaled content+padding width — both immune to the transform.
+			const used = prev && sameRow ? prev.offsetWidth + 8 : 0;
+			const cs = getComputedStyle(slot);
+			const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+			const avail = slot.clientWidth - pad - used;
+			const full = node.offsetWidth;
 			// Adaptive shrink origin: portrait centres the value in its slot (align-items:center) —
 			// there a left origin keeps clipping the "$" prefix, so shrink from the CENTRE. Desktop
 			// (.value-fit, left-aligned text) and landscape (label-beside-value row) are left-aligned
-			// — there a centre origin shifts/clips the value, so shrink from the LEFT. Detect which
-			// by comparing the value's centre to the slot's centre.
+			// — there a centre origin shifts/clips the value, so shrink from the LEFT. Detect which by
+			// comparing the value's centre to the slot's centre (rendered px ratios, scale cancels).
+			const nodeRect = node.getBoundingClientRect();
 			const slotRect = slot.getBoundingClientRect();
 			const centered =
 				!sameRow &&
-				Math.abs(nodeRect.left + full / 2 - (slotRect.left + slotRect.width / 2)) <
+				Math.abs(nodeRect.left + nodeRect.width / 2 - (slotRect.left + slotRect.width / 2)) <
 					slotRect.width * 0.15;
 			node.style.transformOrigin = centered ? 'center center' : 'left center';
 			const scale = full > avail && avail > 0 ? avail / full : 1;
@@ -414,12 +437,65 @@
 		};
 		const raf = () => requestAnimationFrame(fit);
 		const ro = new ResizeObserver(raf);
+		// Observe the NODE itself, not just the slot: the balance/bet slots are fixed-width so they
+		// never resize when the value changes — observing only the parent meant a longer value that
+		// arrived AFTER load (e.g. balance grows past the slot once the player wins/loses into a big
+		// number) never re-fit and clipped. The value span's own width DOES change with the text, so
+		// this fires the re-fit reliably (transform:scale doesn't alter its layout box, so no loop).
+		// The action `update` callback proved unreliable as the sole trigger, hence the observer.
+		ro.observe(node);
 		if (node.parentElement) ro.observe(node.parentElement);
 		// Re-fit once the webfont arrives: the first fit measures fallback-font metrics, and a
 		// fixed-width slot never resizes afterwards (so the observer alone can't catch it).
 		document.fonts?.ready.then(raf);
 		raf();
 		return { update: raf, destroy: () => ro.disconnect() };
+	}
+
+	// Landscape BALANCE pill: scale the WHOLE pill (label + value + padding, measured at max-content
+	// width) down to its rail, instead of fitText's shrink-only-the-value. On small landscape windows
+	// the rail is ~0.32·viewport minus the BUY BONUS clearance — down to ~80px — and a full-size
+	// "BALANCE" label claims most of that, so fitting only the value crushed the number to a few px
+	// while the label stayed large. Scaling the pill as a unit keeps the label/value proportions the
+	// design specifies and leaves the number several times bigger at the same rail width.
+	function fitPill(node: HTMLElement, params: { dep: unknown; align: 'left' | 'right' }) {
+		let align = params.align;
+		const fit = () => {
+			const rail = node.parentElement;
+			if (!rail) return;
+			node.style.transform = 'none';
+			const cs = getComputedStyle(rail);
+			const avail = rail.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+			// Layout px on both sides: the pill is width:max-content, so offsetWidth is its true
+			// unwrapped width however narrow the rail gets (a shrink-to-fit width would clamp to the
+			// rail, and the overflow this needs to see would never appear).
+			const full = node.offsetWidth;
+			const scale = full > avail && avail > 0 ? avail / full : 1;
+			// Origin at the rail's own bottom corner: both rails are bottom-anchored, so the pill has
+			// to shrink toward the corner it sits in — a centre origin would lift it off the bottom as
+			// it scales. Stacking the label above the value was tried here to buy the number more
+			// width; it works, but the resulting two-line block stands far taller than the WIN pill
+			// opposite it and reads as floating up toward the board, so both readouts stay one row.
+			node.style.transformOrigin = `${align} bottom`;
+			node.style.transform = scale < 1 ? `scale(${scale})` : 'none';
+			// Publish the pill's RENDERED height so the rail can drop itself by half of it and land
+			// the pill's centre on the BUY BONUS centre line. Must be the post-scale height — the
+			// layout height would over-drop a scaled-down pill.
+			rail.style.setProperty('--ls-pill-h', `${node.offsetHeight * scale}px`);
+		};
+		const raf = () => requestAnimationFrame(fit);
+		const ro = new ResizeObserver(raf);
+		ro.observe(node);
+		if (node.parentElement) ro.observe(node.parentElement);
+		document.fonts?.ready.then(raf);
+		raf();
+		return {
+			update: (p: { dep: unknown; align: 'left' | 'right' }) => {
+				align = p.align;
+				raf();
+			},
+			destroy: () => ro.disconnect(),
+		};
 	}
 
 	onDestroy(() => {
@@ -473,7 +549,7 @@
 						type="button"
 						disabled={disableBuy}
 						onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
-						aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
+						aria-label={isAnyModeActive ? 'Disable' : i18nDerived.buyBonus()}
 					>
 						<span class="pt-buy__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.58 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
 					</button>
@@ -567,9 +643,9 @@
 		<div class="ls-hud">
 			<!-- Left rail: BALANCE only (logo is drawn separately by GameLogoFrame) -->
 			<div class="ls-left">
-				<div class="ls-balance">
+				<div class="ls-balance" use:fitPill={{ dep: formattedBalance, align: 'left' }}>
 					<span class="ls-balance__label">{i18nDerived.balance()}</span>
-					<span class="ls-balance__value" use:fitText={formattedBalance}>{formattedBalance}</span>
+					<span class="ls-balance__value">{formattedBalance}</span>
 				</div>
 			</div>
 
@@ -579,7 +655,7 @@
 				type="button"
 				disabled={disableBuy}
 				onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
-				aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
+				aria-label={isAnyModeActive ? 'Disable' : i18nDerived.buyBonus()}
 			>
 				<span class="ls-buy__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.82 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
 			</button>
@@ -660,9 +736,15 @@
 			<!-- WIN readout, bottom-right — mirrors the BALANCE block bottom-left. Same behavior as
 			     portrait: current spin win / running bonus total, cleared on the next spin; keeps its
 			     slot while hidden so nothing shifts. -->
-			<div class="ls-win" class:ls-win--hidden={!hasWin}>
-				<span class="ls-win__label">{i18nDerived.win()}</span>
-				<span class="ls-win__value" use:fitText={winValue}>{hasWin ? winValue : ''}</span>
+			<div class="ls-right-bottom">
+				<div
+					class="ls-win"
+					class:ls-win--hidden={!hasWin}
+					use:fitPill={{ dep: winValue, align: 'right' }}
+				>
+					<span class="ls-win__label">{i18nDerived.win()}</span>
+					<span class="ls-win__value">{hasWin ? winValue : ''}</span>
+				</div>
 			</div>
 		</div>
 	{/if}
@@ -693,7 +775,7 @@
 					type="button"
 					disabled={disableBuy}
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
-					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
+					aria-label={isAnyModeActive ? 'Disable' : i18nDerived.buyBonus()}
 				>
 					<span class="buy-btn__label" use:fitLabel={isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
 				</button>
@@ -706,7 +788,7 @@
 					<span class="label-text">{i18nDerived.balance()}</span>
 				</div>
 				<div class="value-fit">
-					<span class="value" use:fitText={formattedBalance}>{formattedBalance}</span>
+					<span class="value" style={desktopValueFontStyle(formattedBalance)}>{formattedBalance}</span>
 				</div>
 			</div>
 
@@ -717,7 +799,7 @@
 					<span class="label-text">{i18nDerived.win()}</span>
 				</div>
 				<div class="value-fit">
-					<span class="value" use:fitText={winValue}>{hasWin ? winValue : ''}</span>
+					<span class="value" style={desktopValueFontStyle(winValue)}>{hasWin ? winValue : ''}</span>
 				</div>
 			</div>
 
@@ -1061,15 +1143,22 @@
 	   value can never widen the bar and push the navigation. The balance/bet slots are
 	   pinned (px clamps tracking the vw-fluid value font ≈1.45vw): the pill can't hug
 	   the text, so a changing amount ($1,000.00 → $999.40) never shifts the items to
-	   its right — fitText scales longer values down into the slot instead. Sized with
-	   ~8% headroom over the common values ($992.40 / $1.00) at every viewport — a
-	   snugger slot clipped the balance, an oversized one left a gap before the
-	   steppers and pushed the bar past its max width. */
+	   its right — fitText scales longer values down into the slot instead. The balance
+	   slot is sized to hold a realistic high balance ($999,999.99, ~11 glyphs) at full
+	   size — the old 126u slot was tuned for only $992.40/$1.00 and hard-clipped six-
+	   figure balances when fitText didn't scale; fitText remains the backstop for
+	   millions. There is ample dead space between BALANCE and the WIN divider, so the
+	   wider slot doesn't push the navigation. */
 	.value-fit {
 		max-width: calc(var(--u) * 150);
 		overflow: hidden;
 	}
 
+	/* FIXED slot. The value's font size is shrunk deterministically to fit (see desktopValueFontU in
+	   the script) so a long balance/win never clips AND the slot never widens — the steppers / spin /
+	   turbo stay on the wooden bar. (A hugging slot grew the pill and pushed those buttons off the
+	   background; the transform-based fitText scaler never applied on this element, so the font is
+	   sized from the value's own characters instead.) */
 	.value-pill--balance .value-fit {
 		width: calc(var(--u) * 126);
 	}
@@ -1093,6 +1182,13 @@
 		width: fit-content;
 		min-width: calc(var(--u) * 96);
 		border-left: 1px solid rgba(255, 255, 255, 0.3);
+	}
+
+	/* FIXED slot (same width as balance): the win font is shrunk to fit via desktopValueFontU so a
+	   big win (e.g. a bonus payout in the millions) never clips and never pushes BET / the buttons
+	   off the wooden bar. */
+	.value-pill--win .value-fit {
+		width: calc(var(--u) * 126);
 	}
 
 	.value-pill--win .label--balance {
@@ -1644,6 +1740,15 @@
 		/* How far the bottom controls (bet pad + BUY BONUS) drop toward the bottom edge. Both use
 		   this so they stay vertically centre-aligned with each other. */
 		--ls-drop: -1px;
+		/* The bottom controls' shared centre line, measured up from the bottom edge. BUY BONUS puts
+		   its own centre here (bottom + translateY(50%)), and the BALANCE rail centres its pill on it
+		   too, so the two read as one row. Single source of truth — they cannot drift apart. */
+		--ls-controls-center: calc(clamp(28px, 13.5vh, 116px) / 2 - var(--ls-drop) - 7px);
+		/* Floor on how close the BALANCE / WIN pills may come to the bottom edge. On short windows
+		   the controls centre line itself sits only ~14px up, so centring the pills on it left them
+		   almost touching the edge; this lifts them just enough to breathe, and only when the centred
+		   position would be tighter than this (see the max() in the rails' bottom). */
+		--ls-readout-bottom-min: clamp(5px, 1.8vh, 12px);
 	}
 	.ls-hud button,
 	.ls-hud .ls-bet__value {
@@ -1654,13 +1759,25 @@
 	.ls-left {
 		position: absolute;
 		left: 16px;
-		bottom: 0;
+		/* Centre the pill on the BUY BONUS centre line rather than parking it in the bottom corner.
+		   The rail is bottom-anchored and the pill sits on the rail's bottom edge, so dropping the
+		   rail by half the pill's RENDERED height puts the pill's centre exactly on the line.
+		   --ls-pill-h is that rendered height (layout height × fitPill's scale), published by fitPill;
+		   before it runs the fallback 0px just leaves the pill a half-height high for one frame.
+		   Doing it this way, rather than translating the pill, keeps the pill inside the rail's box
+		   so overflow:hidden stays a usable horizontal backstop. The max() is the bottom-edge floor:
+		   on short windows the centred position would leave the pill a few px off the edge, so it
+		   gives up exact centring only as far as it must to keep that clearance. */
+		bottom: max(
+			var(--ls-readout-bottom-min),
+			calc(var(--ls-controls-center) - var(--ls-pill-h, 0px) / 2)
+		);
 		/* Definite rail width that stops WELL before the BUY BONUS button (centred at 37%). It must
-		   be a real width, not just max-width: the balance pill's max-width:100% resolves against
-		   it, so a giant balance ($10,000,000,000.00) shrinks to fit the rail via fitText instead
+		   be a real width, not just max-width: the balance pill is width:max-content and fitPill
+		   scales it down against THIS width, so a giant balance ($10,000,000,000.00) shrinks instead
 		   of crowding the button. 32% (button centre 37% minus a ~5% clear gap) minus the button's
 		   own half-width leaves visible air before BUY BONUS. overflow:hidden is the safety clip;
-		   flex-start keeps the pill left-anchored (it used to hug its content). */
+		   flex-start keeps the pill left-anchored. */
 		width: calc(32% - clamp(48px, 9vh, 84px));
 		display: flex;
 		flex-direction: column;
@@ -1676,7 +1793,7 @@
 		   clamp(70px,10.5vh,88px)), then translateY(50%) drops it by half its own height so the two
 		   centres line up regardless of the button's rendered height. The extra -5px drops it a
 		   touch lower so its leaves clear the board frame on short popup viewports. */
-		bottom: calc(clamp(28px, 13.5vh, 116px) / 2 - var(--ls-drop) - 7px);
+		bottom: var(--ls-controls-center);
 		left: 37%;
 		transform: translate(-50%, 50%);
 		box-sizing: border-box;
@@ -1718,13 +1835,14 @@
 		display: flex;
 		align-items: baseline;
 		gap: 8px;
-		/* Fill the .ls-left rail (definite width) instead of hugging content: a row pill that hugs
-		   its text makes fitText's slot = the full value width, so it never shrinks and the value
-		   clips. width:100% + min-width:0 pins the pill to the rail so fitText measures the rail and
-		   scales a giant balance down to fit. overflow:hidden is the safety clip. */
-		width: 100%;
-		min-width: 0;
-		overflow: hidden;
+		/* max-content, NOT 100% and NOT shrink-to-fit: the pill hugs its own single-line width even
+		   when that is wider than the rail, which is exactly what fitPill measures to compute the
+		   down-scale. A shrink-to-fit width (the flex default) would clamp to the rail instead, and
+		   the overflow fitPill needs to see would never appear. .ls-left's overflow:hidden is the
+		   safety clip if a fit is ever missed. */
+		width: max-content;
+		max-width: none;
+		box-sizing: border-box;
 		/* Same dark translucent pill as the WIN readout — keeps the text readable over the forest. */
 		padding: 3px 10px;
 		border-radius: 10px;
@@ -1732,16 +1850,40 @@
 		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
 		backdrop-filter: blur(4px);
 	}
-	/* WIN readout — bottom-right corner, mirroring the BALANCE block bottom-left. The right rail
-	   is vertically centred so the corner below it stays free. Dark translucent pill keeps the
-	   text readable over the bright forest art. */
-	.ls-win {
+	/* Bottom-right rail — the mirror of .ls-left, holding the WIN readout. It exists so WIN has a
+	   DEFINITE slot to be fitted against: as a bare right:16px pill it just grew leftward with the
+	   amount and drew straight over the bet pad on small landscape windows (a $5,000,592.00 win
+	   overlapped the pad by ~20px at 407×300, ~17px at 640×420), while its use:fitText could never
+	   help — a pill that hugs its own text makes the measured slot equal to the text.
+	   Width runs from the bet pad's right edge to the viewport edge: the pad is centred on 61% and
+	   is clamp(90px,46vh,390px) wide, so 39% minus half the pad minus the margins is the free band.
+	   It may extend under .ls-right because that rail is vertically CENTRED — the bottom corner it
+	   occupies is clear of the buttons. */
+	.ls-right-bottom {
 		position: absolute;
-		right: 16px;
-		bottom: 1px;
+		right: 6px;
+		/* Same centre line + bottom-edge floor as .ls-left, so the two readouts stay level. */
+		bottom: max(
+			var(--ls-readout-bottom-min),
+			calc(var(--ls-controls-center) - var(--ls-pill-h, 0px) / 2)
+		);
+		width: calc(39% - clamp(90px, 46vh, 390px) / 2 - 14px);
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		overflow: hidden;
+	}
+	/* WIN readout — mirrors the BALANCE block bottom-left, same pill and same fitPill scaling.
+	   Dark translucent pill keeps the text readable over the bright forest art. */
+	.ls-win {
 		display: flex;
 		align-items: baseline;
 		gap: 8px;
+		/* Same reasoning as .ls-balance: max-content so fitPill can see the true unwrapped width,
+		   border-box so the padding is inside it. */
+		width: max-content;
+		max-width: none;
+		box-sizing: border-box;
 		padding: 3px 10px;
 		border-radius: 10px;
 		background: rgba(17, 12, 10, 0.72);
@@ -1773,6 +1915,10 @@
 	}
 	.ls-balance__label {
 		font-family: 'Poppins', sans-serif;
+		/* nowrap on both halves: the rail gets narrow on small landscape windows, and locales that
+		   format with spaces ("5 000 592,00 kr") would otherwise wrap to a second line inside the
+		   fixed-height pill instead of letting fitText scale them down. */
+		white-space: nowrap;
 		font-size: clamp(7px, 2.4vh, 11px);
 		font-style: normal;
 		font-weight: 500;
@@ -1786,6 +1932,7 @@
 	.ls-balance__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 600;
+		white-space: nowrap;
 		font-size: clamp(8px, 2.6vh, 12px);
 		color: #fff;
 	}
@@ -1794,8 +1941,9 @@
 	   the BALANCE / WIN readouts sit higher and render bigger there (design ask). The ls-*
 	   classes exist only in the landscape layout, so desktop windows never match. */
 	@media (min-height: 376px) {
-		.ls-left { bottom: 10px; }
-		.ls-win { bottom: 11px; }
+		/* .ls-left / .ls-right-bottom are NOT nudged here any more: both ride --ls-controls-center,
+		   which is already viewport-driven, so a fixed bottom would pull them back off the BUY BONUS
+		   centre line. */
 		.ls-balance,
 		.ls-win { padding: 5px 14px; border-radius: 12px; }
 		.ls-balance__label,
@@ -2191,7 +2339,12 @@
 	.pt-buy__label {
 		font-family: 'Cinzel', serif; font-weight: 900; font-size: 8.5px; line-height: 1.05;
 		letter-spacing: 0.01em; text-align: center;
-		max-width: 66%;
+		/* Keep the (unbreakable) word on ONE line and let the box span the full button so
+		   text-align:center actually centres it — a narrow max-width box left a single long
+		   word ("DEACTIVATE"/"DISABLE") starting at the box's left edge, reading off-centre and
+		   clipped. fitLabel then scales the line down about its centre to fit the round badge. */
+		white-space: nowrap;
+		max-width: 100%;
 		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
 		-webkit-background-clip: text; background-clip: text;
 		-webkit-text-fill-color: transparent; color: transparent;

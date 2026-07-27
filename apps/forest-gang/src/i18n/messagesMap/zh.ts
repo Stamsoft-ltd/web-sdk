@@ -81,7 +81,7 @@ export default {
 	'HOWTO BET TITLE': '投注选择器',
 	'HOWTO BET TEXT': '使用 + 和 - 按钮或打开投注菜单，在回合开始前更改显示的投注金额。',
 	'HOWTO BUY TITLE': '购买奖励',
-	'HOWTO BUY TEXT': '打开购买奖励以选择发牌、全押、机会旋转或功能旋转。发牌和全押需要确认。机会旋转和功能旋转立即激活，可用DEACTIVATE按钮关闭。',
+	'HOWTO BUY TEXT': '打开购买奖励以选择发牌、全押、机会旋转或功能旋转。发牌和全押需要确认。机会旋转和功能旋转立即激活，可用停用按钮关闭。',
 	'HOWTO TURBO TITLE': '加速',
 	'HOWTO TURBO TEXT': '加速缩短某些回合时长，让游戏更快。',
 	'HOWTO AUTOPLAY TITLE': '自动游戏',

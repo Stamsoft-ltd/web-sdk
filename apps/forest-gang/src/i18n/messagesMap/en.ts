@@ -89,7 +89,7 @@ export default {
 	'HOWTO BET TITLE': 'BET SELECTOR',
 	'HOWTO BET TEXT': 'Use the + and - buttons or open the bet menu to change the displayed bet amount before a round starts.',
 	'HOWTO BUY TITLE': 'BUY BONUS',
-	'HOWTO BUY TEXT': 'Open Buy Bonus to choose Deal It, All In, Chance Spin or Feature Spin. Deal It and All In require confirmation. Chance Spin and Feature Spin activate immediately and can be turned off with the DEACTIVATE button.',
+	'HOWTO BUY TEXT': 'Open Buy Bonus to choose Deal It, All In, Chance Spin or Feature Spin. Deal It and All In require confirmation. Chance Spin and Feature Spin activate immediately and can be turned off with the DISABLE button.',
 	'HOWTO TURBO TITLE': 'TURBO',
 	'HOWTO TURBO TEXT': 'Turbo shortens certain round timings for faster play.',
 	'HOWTO AUTOPLAY TITLE': 'AUTOPLAY',
@@ -216,7 +216,7 @@ export default {
 
 	// Buy bonus modal — card titles/descriptions, buttons, confirm dialog
 	ACTIVATE: 'ACTIVATE',
-	DEACTIVATE: 'DEACTIVATE',
+	DEACTIVATE: 'DISABLE',
 	BUY: 'BUY',
 	CONFIRM: 'CONFIRM',
 	CANCEL: 'CANCEL',

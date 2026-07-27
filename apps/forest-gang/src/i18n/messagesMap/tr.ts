@@ -81,7 +81,7 @@ export default {
 	'HOWTO BET TITLE': 'BAHİS SEÇİCİ',
 	'HOWTO BET TEXT': 'Bir tur başlamadan önce görüntülenen bahis miktarını değiştirmek için + ve - düğmelerini kullanın veya bahis menüsünü açın.',
 	'HOWTO BUY TITLE': 'BONUS AL',
-	'HOWTO BUY TEXT': 'Dağıt, Ya Hep Ya Hiç, Şans Dönüşü veya Özellik Dönüşü seçmek için Bonus Al\'ı açın. Dağıt ve Ya Hep Ya Hiç onay gerektirir. Şans Dönüşü ve Özellik Dönüşü hemen etkinleşir ve DEVRE DIŞI BIRAK düğmesiyle kapatılabilir.',
+	'HOWTO BUY TEXT': 'Dağıt, Ya Hep Ya Hiç, Şans Dönüşü veya Özellik Dönüşü seçmek için Bonus Al\'ı açın. Dağıt ve Ya Hep Ya Hiç onay gerektirir. Şans Dönüşü ve Özellik Dönüşü hemen etkinleşir ve KAPAT düğmesiyle kapatılabilir.',
 	'HOWTO TURBO TITLE': 'TURBO',
 	'HOWTO TURBO TEXT': 'Turbo, daha hızlı oyun için belirli tur zamanlamalarını kısaltır.',
 	'HOWTO AUTOPLAY TITLE': 'OTOMATİK OYUN',
@@ -197,7 +197,7 @@ export default {
 
 	// Buy bonus modal — card titles/descriptions, buttons, confirm dialog
 	ACTIVATE: 'ETKİNLEŞTİR',
-	DEACTIVATE: 'DEVRE DIŞI BIRAK',
+	DEACTIVATE: 'KAPAT',
 	BUY: 'AL',
 	CONFIRM: 'ONAYLA',
 	CANCEL: 'İPTAL',

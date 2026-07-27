@@ -81,7 +81,7 @@ export default {
 	'HOWTO BET TITLE': 'CHỌN MỨC CƯỢC',
 	'HOWTO BET TEXT': 'Dùng nút + và - hoặc mở menu cược để thay đổi mức cược hiển thị trước khi ván bắt đầu.',
 	'HOWTO BUY TITLE': 'MUA THƯỞNG',
-	'HOWTO BUY TEXT': 'Mở Mua Thưởng để chọn Chia Bài, Tất Tay, Quay Cơ Hội hoặc Quay Tính Năng. Chia Bài và Tất Tay cần xác nhận. Quay Cơ Hội và Quay Tính Năng kích hoạt ngay lập tức và có thể tắt bằng nút HỦY KÍCH HOẠT.',
+	'HOWTO BUY TEXT': 'Mở Mua Thưởng để chọn Chia Bài, Tất Tay, Quay Cơ Hội hoặc Quay Tính Năng. Chia Bài và Tất Tay cần xác nhận. Quay Cơ Hội và Quay Tính Năng kích hoạt ngay lập tức và có thể tắt bằng nút TẮT.',
 	'HOWTO TURBO TITLE': 'TURBO',
 	'HOWTO TURBO TEXT': 'Turbo rút ngắn một số thời gian ván để chơi nhanh hơn.',
 	'HOWTO AUTOPLAY TITLE': 'TỰ ĐỘNG',
@@ -197,7 +197,7 @@ export default {
 
 	// Buy bonus modal — card titles/descriptions, buttons, confirm dialog
 	ACTIVATE: 'KÍCH HOẠT',
-	DEACTIVATE: 'HỦY KÍCH HOẠT',
+	DEACTIVATE: 'TẮT',
 	BUY: 'MUA',
 	CONFIRM: 'XÁC NHẬN',
 	CANCEL: 'HỦY',

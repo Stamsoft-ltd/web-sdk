@@ -81,7 +81,7 @@ export default {
 	'HOWTO BET TITLE': 'PANOKSEN VALITSIN',
 	'HOWTO BET TEXT': 'Käytä + ja - painikkeita tai avaa panosvalikko muuttaaksesi näytettyä panosmäärää ennen kierroksen alkua.',
 	'HOWTO BUY TITLE': 'OSTA BONUS',
-	'HOWTO BUY TEXT': 'Avaa Osta bonus valitaksesi Jaa Kortit, Kaikki Peliin, mahdollisuuskierros tai ominaisuuskierros. Jaa Kortit ja Kaikki Peliin vaativat vahvistuksen. Mahdollisuuskierros ja ominaisuuskierros aktivoituvat välittömästi ja voidaan poistaa käytöstä DEACTIVATE-painikkeella.',
+	'HOWTO BUY TEXT': 'Avaa Osta bonus valitaksesi Jaa Kortit, Kaikki Peliin, mahdollisuuskierros tai ominaisuuskierros. Jaa Kortit ja Kaikki Peliin vaativat vahvistuksen. Mahdollisuuskierros ja ominaisuuskierros aktivoituvat välittömästi ja voidaan poistaa käytöstä POISTA KÄYTÖSTÄ -painikkeella.',
 	'HOWTO TURBO TITLE': 'TURBO',
 	'HOWTO TURBO TEXT': 'Turbo lyhentää tiettyjä kierrosaikoja nopeampaa peliä varten.',
 	'HOWTO AUTOPLAY TITLE': 'AUTOMAATTIPELI',
