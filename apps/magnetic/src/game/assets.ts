@@ -337,11 +337,6 @@ export default {
 			scale: 2,
 		},
 	},
-	progressBar: {
-		type: 'sprites',
-		src: './assets/sprites/progressBar/progressBar.json?v=20260710',
-		preload: true,
-	},
 	transition: {
 		type: 'spine',
 		src: {

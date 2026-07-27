@@ -11,7 +11,9 @@
 		<meta name="viewport" content="width=device-width" />
 		%sveltekit.head%
 	</head>
-	<body style="margin: 0; padding: 0; overflow: hidden; background-color: black">
+	<!-- Branded dark background (matches the stake-engine loader) so the first paint — before the JS
+	     bundle hydrates and the loader renders — is never a jarring pitch-black screen. -->
+	<body style="margin: 0; padding: 0; overflow: hidden; background-color: #041721">
 		<div>%sveltekit.body%</div>
 	</body>
 </html>

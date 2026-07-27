@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
+	import { onMount } from 'svelte';
 
 	import { waitForTimeout } from 'utils-shared/wait';
 
@@ -10,12 +11,32 @@
 		backgroundColor: string;
 		timeout: number;
 		src: string;
+		/** Optional readiness gate: when provided, the loader stays up until this is true (on top of the
+		 *  branding minimum), so it never hides onto a not-yet-rendered (black) game. Omit to keep the
+		 *  original fixed-timer behaviour. */
+		ready?: boolean;
 		oncomplete?: () => void;
 	};
 
 	const props: Props = $props();
 
 	let loading = $state(true);
+	let minElapsed = $state(false);
+	let forceHide = $state(false);
+
+	// Safety cap: never hold the loader longer than this even if `ready` never arrives (e.g. a failed
+	// asset load) — better to surface the game than to hang on the loader forever.
+	onMount(() => {
+		const id = setTimeout(() => (forceHide = true), 20000);
+		return () => clearTimeout(id);
+	});
+
+	$effect(() => {
+		if (loading && (forceHide || (minElapsed && (props.ready ?? true)))) {
+			loading = false;
+			props.oncomplete?.();
+		}
+	});
 </script>
 
 {#if loading}
@@ -26,8 +47,7 @@
 				src={props.src}
 				onload={async () => {
 					await waitForTimeout(props.timeout);
-					loading = false;
-					props.oncomplete?.();
+					minElapsed = true;
 				}}
 			/>
 		</div>

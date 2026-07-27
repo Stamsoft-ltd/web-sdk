@@ -1767,7 +1767,9 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 10px;
+		/* The big spin disc overflows the nav bar downward (~26px), so the gap to the bet row must clear
+		   it — 10px left the disc touching/overlapping the − / + and bet box on short portrait screens. */
+		gap: clamp(20px, 7vw, 30px);
 		padding: 10px 8px calc(14px + env(safe-area-inset-bottom, 0px));
 	}
 	/* Control row sits on the mobile nav bar (the bg-border) — narrower than the screen. */
@@ -2068,10 +2070,69 @@
 	   the buy-bonus moves into the vertical nav where sound was, and the last-round WIN takes the buy's
 	   old slot under the capsule. ── */
 	.hud-shell[data-layout='landscape'] .menu-popup {
-		right: calc(100% + 10px);
+		right: calc(100% + 4px);
 		left: auto;
 		top: 0;
 		bottom: auto;
+	}
+	/* Compact SOUND/MUSIC/INFO popup on mobile (portrait + landscape) — the desktop 200px box is oversized
+	   on phones. (Very small landscape shrinks it further in the max-height media query below.) */
+	.hud-shell[data-layout='portrait'] .menu-popup,
+	.hud-shell[data-layout='landscape'] .menu-popup {
+		width: 152px;
+		height: 152px;
+		padding: 15px 15px 17px;
+	}
+	.hud-shell[data-layout='portrait'] .menu-row,
+	.hud-shell[data-layout='landscape'] .menu-row {
+		gap: 10px;
+	}
+	.hud-shell[data-layout='portrait'] .menu-row__icon,
+	.hud-shell[data-layout='landscape'] .menu-row__icon {
+		width: 30px;
+		height: 30px;
+	}
+	.hud-shell[data-layout='portrait'] .menu-row__glyph,
+	.hud-shell[data-layout='landscape'] .menu-row__glyph {
+		width: 15px;
+		height: 15px;
+	}
+	.hud-shell[data-layout='portrait'] .menu-row__label,
+	.hud-shell[data-layout='landscape'] .menu-row__label {
+		font-size: 12px;
+	}
+	/* Portrait: anchor the popup to the START (left frame edge) of the nav bar instead of overhanging
+	   left of it (the base -24px is tuned for the desktop bottom bar, not the centred portrait nav). */
+	.hud-shell[data-layout='portrait'] .menu-popup {
+		left: 0;
+		bottom: calc(100% + 4px);
+	}
+	/* Desktop: anchor the popup to the far-left edge of the nav bar. hud-system (the popup's positioned
+	   ancestor) sits ~16px inside hud-bottom's left frame edge, so pull the popup left by that much. */
+	.hud-shell[data-layout='desktop'] .menu-popup {
+		left: -16px;
+	}
+	/* Smallest portrait phones (e.g. 375×667): shrink the popup + rows further. */
+	@media (max-height: 680px) {
+		.hud-shell[data-layout='portrait'] .menu-popup {
+			width: 120px;
+			height: 120px;
+			padding: 12px 12px 13px;
+		}
+		.hud-shell[data-layout='portrait'] .menu-row {
+			gap: 8px;
+		}
+		.hud-shell[data-layout='portrait'] .menu-row__icon {
+			width: 24px;
+			height: 24px;
+		}
+		.hud-shell[data-layout='portrait'] .menu-row__glyph {
+			width: 12px;
+			height: 12px;
+		}
+		.hud-shell[data-layout='portrait'] .menu-row__label {
+			font-size: 10px;
+		}
 	}
 	.ls-nav-buy {
 		flex: 0 0 auto;
@@ -2139,25 +2200,33 @@
 		.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .label-text {
 			font-size: clamp(0.24rem, 1.5vh, 0.34rem);
 		}
-		/* Menu popup: the fixed 200px box nearly fills a 225px screen — scale the box and its rows down. */
+		/* Drop the pill's box (min-width / dark fill / blur) here — centred on the capsule, the boxed pill
+		   grew LEFT into the board with a real win value. As plain centred text it stays clear of the board. */
+		.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill {
+			min-width: 0;
+			background: none;
+			box-shadow: none;
+			backdrop-filter: none;
+		}
+		/* Menu popup: shrink further on this tiny screen (it otherwise nearly fills a 225px height). */
 		.hud-shell[data-layout='landscape'] .menu-popup {
-			width: clamp(120px, 62vh, 190px);
-			height: clamp(120px, 62vh, 190px);
-			padding: clamp(10px, 5vh, 20px) clamp(10px, 5vh, 20px) clamp(12px, 5.5vh, 22px);
+			width: clamp(80px, 42vh, 115px);
+			height: clamp(80px, 42vh, 115px);
+			padding: clamp(7px, 3.4vh, 14px) clamp(7px, 3.4vh, 14px) clamp(8px, 3.8vh, 16px);
 		}
 		.hud-shell[data-layout='landscape'] .menu-row {
-			gap: clamp(7px, 3.6vh, 14px);
+			gap: clamp(4px, 2.5vh, 9px);
 		}
 		.hud-shell[data-layout='landscape'] .menu-row__icon {
-			width: clamp(24px, 12vh, 38px);
-			height: clamp(24px, 12vh, 38px);
+			width: clamp(17px, 8.5vh, 26px);
+			height: clamp(17px, 8.5vh, 26px);
 		}
 		.hud-shell[data-layout='landscape'] .menu-row__glyph {
-			width: clamp(12px, 6vh, 20px);
-			height: clamp(12px, 6vh, 20px);
+			width: clamp(9px, 4.2vh, 14px);
+			height: clamp(9px, 4.2vh, 14px);
 		}
 		.hud-shell[data-layout='landscape'] .menu-row__label {
-			font-size: clamp(9px, 4.5vh, 14px);
+			font-size: clamp(7px, 3.2vh, 11px);
 		}
 	}
 </style>

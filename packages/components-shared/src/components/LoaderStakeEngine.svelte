@@ -3,6 +3,7 @@
 
 	type Props = {
 		src: string;
+		ready?: boolean;
 		oncomplete?: () => void;
 	};
 
@@ -18,5 +19,6 @@
 	maxWidth={MAX_WIDTH}
 	backgroundColor={BACKGROUND_COLOR}
 	timeout={FINISH_ONCE_TIMEOUT}
+	ready={props.ready}
 	oncomplete={props.oncomplete}
 />
