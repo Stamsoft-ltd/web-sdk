@@ -1,3 +1,10 @@
+<script lang="ts" module>
+	// Module scope so the art preloads during the loading screen (the modal mounts on demand).
+	import { ap } from '../lib/preloadArt';
+
+	const panelBg = ap('/assets/components/ui/autoplay_panel.webp');
+</script>
+
 <script lang="ts">
 	import { stateBet } from 'state-shared';
 	import { getContext } from '../game/context';
@@ -6,9 +13,6 @@
 	type Props = { onclose: () => void };
 	const props: Props = $props();
 	const context = getContext();
-
-	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	const panelBg = ap('/assets/components/ui/autoplay_panel.webp');
 
 	// Spin-count slider stops (last = unlimited)
 	const STOPS: Array<number> = [10, 25, 50, 100, 250, 500, Infinity];

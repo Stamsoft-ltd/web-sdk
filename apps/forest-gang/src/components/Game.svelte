@@ -41,6 +41,7 @@
 	import ReplayHud from './replay/ReplayHud.svelte';
 	import SplashIntro from './SplashIntro.svelte';
 	import { BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { registerArtDeep, warmArt } from '../lib/preloadArt';
 
 	const context = getContext();
 
@@ -361,6 +362,11 @@
 				},
 			],
 		};
+
+		// The info/rules pages are plain HTML <img>s that only fetch when the modal opens —
+		// register every image in the meta so warmArt() pulls them during the loading screen.
+		registerArtDeep(stateMeta.betModeMeta);
+		registerArtDeep(stateMeta.gameRuleMeta);
 	});
 
 	// try/catch: Lingui THROWS (not undefined) when translate is called before the locale is
@@ -374,7 +380,12 @@
 		}
 	};
 
-	onMount(() => (context.stateLayout.showLoadingScreen = true));
+	onMount(() => {
+		context.stateLayout.showLoadingScreen = true;
+		// Fetch all registered HTML-side art while the loading screen is up (low priority, so
+		// the pixi atlases still win the bandwidth race).
+		warmArt();
+	});
 
 </script>
 

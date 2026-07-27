@@ -1,21 +1,7 @@
-<script lang="ts">
-	import { OnHotkey } from 'components-shared';
-	import { stateBet, stateBetDerived, stateConfig, stateModal, stateSound, stateUrlDerived } from 'state-shared';
-	import { onDestroy } from 'svelte';
-	import { Tween } from 'svelte/motion';
-	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
-
-	import { getContext } from '../game/context';
-	import { i18nDerived } from '../i18n/i18nDerived';
-	import { fitLabel } from '../lib/fitLabel';
-	import { forestStakeDerived } from '../state/forestStake.svelte';
-	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
-	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
-
-	const context = getContext();
-
-	// Converts absolute /path to ./path so it resolves relative to the page URL at any deploy sub-path
-	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
+<script lang="ts" module>
+	// Module scope so ap() registers every URL at app bootstrap — warmArt() then fetches them
+	// during the loading screen, before the HUD (or the modals it opens) first renders.
+	import { ap } from '../lib/preloadArt';
 
 	const heroCardBg = ap('/assets/components/backgrounds/visual_v2.jpg');
 
@@ -62,6 +48,23 @@
 	const playBtnFrame = ap('/assets/components/frames/play_button-frame.webp');
 
 	const scatterImg = ap('/assets/components/ui/scatter-panel-image.webp');
+</script>
+
+<script lang="ts">
+	import { OnHotkey } from 'components-shared';
+	import { stateBet, stateBetDerived, stateConfig, stateModal, stateSound, stateUrlDerived } from 'state-shared';
+	import { onDestroy } from 'svelte';
+	import { Tween } from 'svelte/motion';
+	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
+
+	import { getContext } from '../game/context';
+	import { i18nDerived } from '../i18n/i18nDerived';
+	import { fitLabel } from '../lib/fitLabel';
+	import { forestStakeDerived } from '../state/forestStake.svelte';
+	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
+	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
+
+	const context = getContext();
 
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isPortrait = $derived(layoutType === 'portrait');
