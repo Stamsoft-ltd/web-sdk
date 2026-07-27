@@ -9,7 +9,7 @@
 </script>
 
 <script lang="ts">
-	import { Container, Graphics, Rectangle, Sprite, SpriteSheet } from 'pixi-svelte';
+	import { Container, Graphics, Sprite, SpriteSheet } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
 	import { BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, SYMBOL_H, SYMBOL_W } from '../game/constants';
@@ -22,13 +22,11 @@
 	const layout = $derived(context.stateGameDerived.boardLayout());
 	const flatCells = $derived(board.flatMap((reel) => reel));
 	const lockedCells = $derived(flatCells.filter((cell) => cell.locked));
+	const unlockedCells = $derived(flatCells.filter((cell) => !cell.locked));
 	const Z = {
 		grid: 0,
-		background: 5,
 		reel: 10,
 		symbol: 20,
-		lockedCover: 30,
-		lockedFrame: 31,
 		pulledSymbol: 26,
 		lockedSymbol: 32,
 		// Above everything in the cell stack — the electric border arcs ride the seams
@@ -40,78 +38,8 @@
 	const getX = (reelIndex: number) => SYMBOL_W * (reelIndex + 0.5);
 	const getStaticY = (rowIndex: number) => SYMBOL_H * (rowIndex + 0.5);
 
-	// ── "Being screwed in" lock animation: while a cell is locked in the cluster, its symbol keeps
-	//    getting wrenched — repeating ratchet strokes (fast clockwise twist, quick return, brief
-	//    pause), like a screwdriver driving it. Per-cell phase offsets so they don't twist in sync. ──
-	// Twist pivot as a fraction of the sprite box: the bolt/screw HEADS sit toward the top-left of
-	// the art (~36%), so pivoting there makes the twist read as torque on the fastener itself.
-	const LOCK_PIVOT = 0.36;
-	let lockStartByKey = $state<Record<string, number>>({});
-	let animNow = $state(0);
-	$effect(() => {
-		const locked = flatCells.filter((c) => c.locked);
-		const next: Record<string, number> = {};
-		let changed = false;
-		for (const c of locked) {
-			const prev = lockStartByKey[c.key];
-			next[c.key] = prev ?? performance.now();
-			if (prev === undefined) changed = true;
-		}
-		if (changed || Object.keys(next).length !== Object.keys(lockStartByKey).length) {
-			lockStartByKey = next;
-		}
-	});
-	// Rotation flipbooks for locked (stacked) symbols, keyed by the RESOLVED sprite asset key —
-	// NOT the symbol name (the art file names don't match their contents: nut.webp is the gold
-	// washer, bolt.webp the green bolt). Add entries here as more frame sets arrive.
-	const LOCK_SHEETS: Record<string, string> = {
-		aTile: 'washerLockSheet',
-		aWinTile: 'washerLockSheet',
-		aTileMobile: 'washerLockSheet',
-		aWinTileMobile: 'washerLockSheet',
-		aTileLand: 'washerLockSheet',
-		aWinTileLand: 'washerLockSheet',
-		squirrelTile: 'boltLockSheet',
-		squirrelWinTile: 'boltLockSheet',
-		squirrelTileMobile: 'boltLockSheet',
-		squirrelWinTileMobile: 'boltLockSheet',
-		squirrelTileLand: 'boltLockSheet',
-		squirrelWinTileLand: 'boltLockSheet',
-		kTile: 'purpleScrewLockSheet',
-		kWinTile: 'purpleScrewLockSheet',
-		kTileMobile: 'purpleScrewLockSheet',
-		kWinTileMobile: 'purpleScrewLockSheet',
-		kTileLand: 'purpleScrewLockSheet',
-		kWinTileLand: 'purpleScrewLockSheet',
-		qTile: 'blueNutLockSheet',
-		qWinTile: 'blueNutLockSheet',
-		qTileMobile: 'blueNutLockSheet',
-		qWinTileMobile: 'blueNutLockSheet',
-		qTileLand: 'blueNutLockSheet',
-		qWinTileLand: 'blueNutLockSheet',
-		wolfTile: 'drillLockSheet',
-		wolfWinTile: 'drillLockSheet',
-		wolfTileMobile: 'drillLockSheet',
-		wolfWinTileMobile: 'drillLockSheet',
-		wolfTileLand: 'drillLockSheet',
-		wolfWinTileLand: 'drillLockSheet',
-		bearTile: 'cubeLockSheet',
-		bearWinTile: 'cubeLockSheet',
-		bearTileMobile: 'cubeLockSheet',
-		bearWinTileMobile: 'cubeLockSheet',
-		bearTileLand: 'cubeLockSheet',
-		bearWinTileLand: 'cubeLockSheet',
-		rabbitTile: 'generatorLockSheet',
-		rabbitWinTile: 'generatorLockSheet',
-		rabbitTileMobile: 'generatorLockSheet',
-		rabbitWinTileMobile: 'generatorLockSheet',
-		rabbitTileLand: 'generatorLockSheet',
-		rabbitWinTileLand: 'generatorLockSheet',
-	};
 	// Per-sheet size tweaks (fraction of cell height; default 0.8) — art-specific corrections.
-	const LOCK_SHEET_SIZE: Record<string, number> = {
-		blueNutLockSheet: 1.21, // new frames: content ~63% of canvas; matches the static nut footprint
-		purpleScrewLockSheet: 1.49, // frames have big registered padding (content ~54% of canvas)
+	const WIN_SHEET_SIZE: Record<string, number> = {
 		cubeWinSheet: 1.2, // enlarged again per design feedback
 		magnetWinSheet: 1.32, // horseshoe + magnet special win size (tuned up per design feedback)
 		drillWinSheet: 1.0, // +25% over the default win size
@@ -160,12 +88,10 @@
 		for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0;
 		return Math.abs(h % 100) / 100;
 	};
-	// ── Cell electricity + wrench clock. ONE persistent rAF (started on mount, never stopped)
-	//    drives both: it writes animNow (the wrench rotation reads it from the template) and
+	// ── Cell electricity clock. ONE persistent rAF (started on mount, never stopped)
 	//    redraws the electric borders IMPERATIVELY into a captured Graphics instance. Nothing
 	//    reactive sits in the border render path, so the arcs cannot freeze when an upstream
-	//    signal settles — they run for as long as any cell is locked, every cluster.
-	//    (lockedCells itself is declared near the top of the script.) ──
+	//    signal settles — they run for as long as any cell is locked, every cluster. ──
 	type LockG = {
 		destroyed: boolean;
 		clear: () => void;
@@ -270,7 +196,13 @@
 						g.moveTo(b.x, b.y);
 						g.lineTo(mx, my);
 						g.lineTo(b.x + Math.cos(ang) * len, b.y + Math.sin(ang) * len);
-						g.stroke({ width: SYMBOL_W * 0.018, color: 0x9fdcff, alpha: 0.85, cap: 'round', join: 'round' });
+						g.stroke({
+							width: SYMBOL_W * 0.018,
+							color: 0x9fdcff,
+							alpha: 0.85,
+							cap: 'round',
+							join: 'round',
+						});
 					}
 				}
 				// Head spark
@@ -294,7 +226,6 @@
 			}
 			const cells = lockedCells; // untracked read inside rAF — always the current value
 			if (cells.length) {
-				animNow = now; // drives lockSpin() in the template
 				if (lockG) {
 					drawLockBorders(lockG, now, cells);
 					lockGDrawn = true;
@@ -307,45 +238,6 @@
 		raf = requestAnimationFrame(tick);
 		return () => cancelAnimationFrame(raf);
 	});
-
-	// Zoom pulse for stacked MAGNET cells — the magnet breathes in/out (±8%) instead of getting
-	// the wrench twist (rotating a horseshoe magnet reads wrong).
-	const lockZoom = (key: string) => {
-		const start = lockStartByKey[key];
-		if (start === undefined) return 1;
-		const t = (animNow - start) / 1000;
-		if (t <= 0) return 1;
-		// Heartbeat-style pulse: quick swell, slower release — clearly "pulsing", not twisting.
-		const p = (t * 1.1 + keyPhase(key)) % 1;
-		const beat = Math.exp(-((p - 0.18) * (p - 0.18)) / 0.012) + 0.55 * Math.exp(-((p - 0.42) * (p - 0.42)) / 0.02);
-		return 1 + 0.14 * beat;
-	};
-
-	// Continuous centre rotation for stacked WILD cells — the medallion is round, so true
-	// image rotation reads correctly (unlike the fasteners).
-	const lockRotate = (key: string) => {
-		const start = lockStartByKey[key];
-		if (start === undefined) return 0;
-		const t = (animNow - start) / 1000;
-		if (t <= 0) return 0;
-		return t * 6.5 + keyPhase(key) * Math.PI * 2;
-	};
-
-	// Ratchet stroke: 0-30% fast twist to +A (ease-out), 30-45% quick return, 45-100% rest.
-	const lockSpin = (key: string) => {
-		const start = lockStartByKey[key];
-		if (start === undefined) return 0;
-		const t = (animNow - start) / 1000;
-		if (t <= 0) return 0;
-		const A = 0.3; // ~17° stroke
-		const p = (t * 1.6 + keyPhase(key)) % 1;
-		if (p < 0.3) {
-			const q = p / 0.3;
-			return A * (1 - Math.pow(1 - q, 3));
-		}
-		if (p < 0.45) return A * (1 - (p - 0.3) / 0.15);
-		return 0;
-	};
 	context.eventEmitter.subscribeOnMount({
 		stopButtonClick: () => {
 			context.stateGameDerived.speedUpMotion();
@@ -376,396 +268,152 @@
 		/>
 
 		<!-- Stationary box grid — the cell boxes never move; only the symbols roll inside them.
-		     Winning cells (settle mode) swap to the win-state box. -->
+		     Cluster cells leave the board art fully visible: no gray locked-cell background. -->
 		{#each board as reel, reelIndex (reelIndex)}
 			{#each reel as cell, rowIndex (cell.key)}
-				<Sprite
-					key={cell.highlighted || cell.locked ? 'cellBoxWin' : 'cellBox'}
-					x={getX(reelIndex)}
-					y={getStaticY(rowIndex)}
-					anchor={0.5}
-					width={SYMBOL_W}
-					height={SYMBOL_H}
-					zIndex={Z.grid}
-				/>
-			{/each}
-		{/each}
-
-		{#if boardMode === 'spin'}
-			<!-- ── Spin mode: one rolling strip per reel. Locked cells are opaque covers above it. ── -->
-			{#each spinBoard as reel, reelIndex (reelIndex)}
-				{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
-					{@const y = reelSymbol.symbolY()}
-					{@const symbolInfo = getSymbolInfo({
-						rawSymbol: reelSymbol.rawSymbol,
-						state: reelSymbol.symbolState,
-					})}
+				{#if !cell.locked}
 					<Sprite
-						key={symbolInfo.assetKey}
-						x={getX(reelIndex)}
-						{y}
-						anchor={{ x: 0.5, y: 0.5 }}
-						width={SYMBOL_W * symbolInfo.sizeRatios.width}
-						height={SYMBOL_H * symbolInfo.sizeRatios.height}
-						alpha={1}
-						zIndex={Z.reel}
-					/>
-				{/each}
-			{/each}
-
-			<!-- Locked cluster cells cover the closed reel windows, then render lock symbol above. -->
-			{#each lockedCells as cell (cell.key)}
-				{@const x = getX(cell.position.reel)}
-				{@const y = getStaticY(cell.position.row)}
-				{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: 'locked' })}
-				<!-- assetKey can be undefined for unmapped names (corrupt series data) — the
-				     string tests below must not crash the whole board over one bad cell. -->
-				{@const safeAssetKey = symbolInfo.assetKey ?? ''}
-				{@const width = SYMBOL_W * symbolInfo.sizeRatios.width}
-				{@const height = SYMBOL_H * symbolInfo.sizeRatios.height}
-				<!-- Opaque full outer cell cover sits ABOVE spinning reels. -->
-				<Rectangle
-					{x}
-					{y}
-					anchor={0.5}
-					width={SYMBOL_W}
-					height={SYMBOL_H}
-					backgroundColor={0x05070b}
-					backgroundAlpha={1}
-					zIndex={Z.lockedCover}
-				/>
-				<Sprite
-					key="cellBoxWin"
-					{x}
-					{y}
-					anchor={0.5}
-					width={SYMBOL_W}
-					height={SYMBOL_H}
-					zIndex={Z.lockedFrame}
-				/>
-				<!-- Win flipbook takes priority when the cell presents a win (assetKey is then the
-				     win-art variant); otherwise the stacked rotation flipbook. -->
-				{@const lockSheet = WIN_SHEETS[symbolInfo.assetKey] ?? LOCK_SHEETS[symbolInfo.assetKey]}
-				{@const lockSheetSize = height * (LOCK_SHEET_SIZE[lockSheet ?? ''] ?? 0.8)}
-				{#if lockSheet}
-					<!-- True axial rotation via the symbol's flipbook. Sized down because the flipbook
-					     frames are tightly cropped while the static art has large transparent padding. -->
-					<SpriteSheet
-						key={lockSheet}
-						play
-						loop
-						animationSpeed={0.23}
-						{x}
-						{y}
-						anchor={0.5}
-						width={lockSheetSize}
-						height={lockSheetSize}
-						zIndex={Z.lockedSymbol}
-					/>
-				{:else if /wild\d/i.test(safeAssetKey)}
-					<!-- Multiplier wild (medallion + Nx plaque): heartbeat pulse over the same looping
-					     lightning burst as the plain wild. -->
-					<SpriteSheet
-						key="wildLightningSheet"
-						play
-						loop
-						animationSpeed={0.23}
-						blendMode="add"
-						{x}
-						{y}
-						anchor={0.5}
-						width={height * 1.35}
-						height={height * 1.35}
-						zIndex={Z.lockedSymbol}
-					/>
-					<Sprite
-						key={symbolInfo.assetKey}
-						{x}
-						{y}
-						anchor={0.5}
-						width={width * lockZoom(cell.key)}
-						height={height * lockZoom(cell.key)}
-						alpha={1}
-						tint={0xffffff}
-						zIndex={Z.lockedSymbol}
-					/>
-				{:else if safeAssetKey.toLowerCase().includes('wild')}
-					<!-- Plain wild medallion: heartbeat pulse while stacked, over a looping radial
-					     lightning burst (additive, slightly larger than the cell). Same zIndex as the
-					     symbol — insertion order keeps the burst behind the medallion. -->
-					<SpriteSheet
-						key="wildLightningSheet"
-						play
-						loop
-						animationSpeed={0.23}
-						blendMode="add"
-						{x}
-						{y}
-						anchor={0.5}
-						width={height * 1.35}
-						height={height * 1.35}
-						zIndex={Z.lockedSymbol}
-					/>
-					<Sprite
-						key={symbolInfo.assetKey}
-						{x}
-						{y}
-						anchor={0.5}
-						width={width * 0.8 * lockZoom(cell.key)}
-						height={height * 0.8 * lockZoom(cell.key)}
-						alpha={1}
-						tint={0xffffff}
-						zIndex={Z.lockedSymbol}
-					/>
-				{:else if safeAssetKey.toLowerCase().includes('magnet') || safeAssetKey.startsWith('fox')}
-					<!-- Magnet special symbol AND the H1 horseshoe-magnet premium (foxTile family — the
-					     clean red/blue horseshoe art): heartbeat pulse while stacked, no rotation. -->
-					<Sprite
-						key={symbolInfo.assetKey}
-						{x}
-						{y}
-						anchor={0.5}
-						width={width * lockZoom(cell.key)}
-						height={height * lockZoom(cell.key)}
-						alpha={1}
-						tint={0xffffff}
-						zIndex={Z.lockedSymbol}
-					/>
-				{:else}
-					<!-- Twist pivots on the bolt HEAD (top-left of the art), not the image centre, so the
-					     ratchet reads as torque on the bolt itself. Container sits at the pivot point and
-					     the sprite is offset so its head lands on the pivot. -->
-					<Container
-						x={x - width * (0.5 - LOCK_PIVOT)}
-						y={y - height * (0.5 - LOCK_PIVOT)}
-						rotation={lockSpin(cell.key)}
-						zIndex={Z.lockedSymbol}
-					>
-						<Sprite
-							key={symbolInfo.assetKey}
-							x={width * (0.5 - LOCK_PIVOT)}
-							y={height * (0.5 - LOCK_PIVOT)}
-							anchor={{ x: 0.5, y: 0.5 }}
-							{width}
-							{height}
-							alpha={1}
-							tint={0xffffff}
-						/>
-					</Container>
-				{/if}
-			{/each}
-		{:else}
-			<!-- ── Settle/respin mode: render per-cell board with decorations ── -->
-
-			<!-- Static background grid cells -->
-			{#each board as reel, reelIndex (reelIndex)}
-				{#each reel as cell, rowIndex (cell.key)}
-					<Rectangle
+						key={cell.highlighted ? 'cellBoxWin' : 'cellBox'}
 						x={getX(reelIndex)}
 						y={getStaticY(rowIndex)}
 						anchor={0.5}
 						width={SYMBOL_W}
 						height={SYMBOL_H}
-						backgroundColor={cell.locked ? 0x05070b : 0x0b0f18}
-						backgroundAlpha={cell.locked ? 1 : context.stateGame.boardSpinning ? 0.18 : 0.1}
-						zIndex={Z.background}
-					/>
-				{/each}
-			{/each}
-
-			<!-- Base symbols stay mounted even when a cell becomes locked; locked overlay covers them. -->
-			{#each flatCells as cell (cell.key)}
-				{@const x = cell.locked
-					? getX(cell.position.reel)
-					: getX(cell.position.reel) + cell.displayX.current}
-				{@const y = cell.locked ? getStaticY(cell.position.row) : cell.displayY.current}
-				{@const symbolInfo = getSymbolInfo({
-					rawSymbol: cell,
-					state: cell.locked ? 'locked' : cell.symbolState,
-				})}
-				{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
-				{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
-				{@const winSheet = !cell.locked && cell.symbolState === 'win' ? WIN_SHEETS[symbolInfo.assetKey] : undefined}
-
-				{#if winSheet}
-					<!-- Winning symbol with a dedicated win flipbook (symbol + electric arcs).
-					     Scatter reads a touch small next to the arcs, so it gets a size boost. -->
-					{@const winBoost = winSheet === 'scatterWinAnim' ? 1.15 : 1}
-					<SpriteSheet
-						key={winSheet}
-						play
-						loop
-						animationSpeed={0.23}
-						{x}
-						{y}
-						anchor={0.5}
-						width={width * winBoost}
-						height={height * winBoost}
-						alpha={cell.displayAlpha.current}
-						zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
-					/>
-				{:else}
-					<Sprite
-						key={symbolInfo.assetKey}
-						{x}
-						{y}
-						anchor={{ x: 0.5, y: 0.5 }}
-						{width}
-						{height}
-						alpha={cell.locked ? 1 : cell.displayAlpha.current}
-						tint={0xffffff}
-						zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
+						zIndex={Z.grid}
 					/>
 				{/if}
 			{/each}
+		{/each}
 
-			<!-- Locked overlay: full outer cover + highlighted rectangle + top symbol. -->
-			{#each lockedCells as cell (`${cell.key}:locked`)}
-				{@const x = getX(cell.position.reel)}
-				{@const y = getStaticY(cell.position.row)}
-				{@const symbolInfo = getSymbolInfo({
-					rawSymbol: cell,
-					state: cell.symbolState === 'win' ? 'win' : 'locked',
-				})}
-				{@const safeAssetKey = symbolInfo.assetKey ?? ''}
-				{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
-				{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
-				<Rectangle
-					{x}
-					{y}
-					anchor={0.5}
-					width={SYMBOL_W}
-					height={SYMBOL_H}
-					backgroundColor={0x05070b}
-					backgroundAlpha={1}
-					zIndex={Z.lockedCover}
-				/>
-				<Sprite
-					key="cellBoxWin"
-					{x}
-					{y}
-					anchor={0.5}
-					width={SYMBOL_W}
-					height={SYMBOL_H}
-					zIndex={Z.lockedFrame}
-				/>
-				<!-- Win flipbook takes priority when the cell presents a win (assetKey is then the
-				     win-art variant); otherwise the stacked rotation flipbook. -->
-				{@const lockSheet = WIN_SHEETS[symbolInfo.assetKey] ?? LOCK_SHEETS[symbolInfo.assetKey]}
-				{@const lockSheetSize = height * (LOCK_SHEET_SIZE[lockSheet ?? ''] ?? 0.8)}
-				{#if lockSheet}
-					<!-- True axial rotation via the symbol's flipbook. Sized down because the flipbook
-					     frames are tightly cropped while the static art has large transparent padding. -->
-					<SpriteSheet
-						key={lockSheet}
-						play
-						loop
-						animationSpeed={0.23}
-						{x}
-						{y}
-						anchor={0.5}
-						width={lockSheetSize}
-						height={lockSheetSize}
-						zIndex={Z.lockedSymbol}
-					/>
-				{:else if /wild\d/i.test(safeAssetKey)}
-					<!-- Multiplier wild (medallion + Nx plaque): heartbeat pulse over the same looping
-					     lightning burst as the plain wild. -->
-					<SpriteSheet
-						key="wildLightningSheet"
-						play
-						loop
-						animationSpeed={0.23}
-						blendMode="add"
-						{x}
-						{y}
-						anchor={0.5}
-						width={height * 1.35}
-						height={height * 1.35}
-						zIndex={Z.lockedSymbol}
-					/>
-					<Sprite
-						key={symbolInfo.assetKey}
-						{x}
-						{y}
-						anchor={0.5}
-						width={width * lockZoom(cell.key)}
-						height={height * lockZoom(cell.key)}
-						alpha={1}
-						tint={0xffffff}
-						zIndex={Z.lockedSymbol}
-					/>
-				{:else if safeAssetKey.toLowerCase().includes('wild')}
-					<!-- Plain wild medallion: heartbeat pulse while stacked, over a looping radial
-					     lightning burst (additive, slightly larger than the cell). Same zIndex as the
-					     symbol — insertion order keeps the burst behind the medallion. -->
-					<SpriteSheet
-						key="wildLightningSheet"
-						play
-						loop
-						animationSpeed={0.23}
-						blendMode="add"
-						{x}
-						{y}
-						anchor={0.5}
-						width={height * 1.35}
-						height={height * 1.35}
-						zIndex={Z.lockedSymbol}
-					/>
-					<Sprite
-						key={symbolInfo.assetKey}
-						{x}
-						{y}
-						anchor={0.5}
-						width={width * 0.8 * lockZoom(cell.key)}
-						height={height * 0.8 * lockZoom(cell.key)}
-						alpha={1}
-						tint={0xffffff}
-						zIndex={Z.lockedSymbol}
-					/>
-				{:else if safeAssetKey.toLowerCase().includes('magnet') || safeAssetKey.startsWith('fox')}
-					<!-- Magnet special symbol AND the H1 horseshoe-magnet premium (foxTile family — the
-					     clean red/blue horseshoe art): heartbeat pulse while stacked, no rotation. -->
-					<Sprite
-						key={symbolInfo.assetKey}
-						{x}
-						{y}
-						anchor={0.5}
-						width={width * lockZoom(cell.key)}
-						height={height * lockZoom(cell.key)}
-						alpha={1}
-						tint={0xffffff}
-						zIndex={Z.lockedSymbol}
-					/>
-				{:else}
-					<!-- Twist pivots on the bolt HEAD (top-left of the art), not the image centre, so the
-					     ratchet reads as torque on the bolt itself. Container sits at the pivot point and
-					     the sprite is offset so its head lands on the pivot. -->
-					<Container
-						x={x - width * (0.5 - LOCK_PIVOT)}
-						y={y - height * (0.5 - LOCK_PIVOT)}
-						rotation={lockSpin(cell.key)}
-						zIndex={Z.lockedSymbol}
-					>
+		<!-- Moving symbols use a grid mask with cluster-cell holes. The board/background stays
+		     transparent there, while falling respin symbols disappear fully behind the cluster. -->
+		<Container zIndex={Z.reel} sortableChildren={true}>
+			<Graphics
+				isMask
+				draw={(graphics) => {
+					for (const cell of unlockedCells) {
+						graphics.rect(
+							cell.position.reel * SYMBOL_W,
+							cell.position.row * SYMBOL_H,
+							SYMBOL_W,
+							SYMBOL_H,
+						);
+					}
+					graphics.fill(0xffffff);
+				}}
+			/>
+
+			{#if boardMode === 'spin'}
+				<!-- Legacy reel mode retained for stale HMR/resume state. -->
+				{#each spinBoard as reel, reelIndex (reelIndex)}
+					{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
+						{@const y = reelSymbol.symbolY()}
+						{@const symbolInfo = getSymbolInfo({
+							rawSymbol: reelSymbol.rawSymbol,
+							state: reelSymbol.symbolState,
+						})}
 						<Sprite
 							key={symbolInfo.assetKey}
-							x={width * (0.5 - LOCK_PIVOT)}
-							y={height * (0.5 - LOCK_PIVOT)}
+							x={getX(reelIndex)}
+							{y}
+							anchor={{ x: 0.5, y: 0.5 }}
+							width={SYMBOL_W * symbolInfo.sizeRatios.width}
+							height={SYMBOL_H * symbolInfo.sizeRatios.height}
+							alpha={1}
+							zIndex={Z.reel}
+						/>
+					{/each}
+				{/each}
+			{:else}
+				<!-- Base state: only unlocked symbols render here. Cluster symbols use the win state below. -->
+				{#each unlockedCells as cell (cell.key)}
+					{@const x = getX(cell.position.reel) + cell.displayX.current}
+					{@const y = cell.displayY.current}
+					{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState })}
+					{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
+					{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
+					{@const winSheet = cell.symbolState === 'win'
+						? WIN_SHEETS[symbolInfo.assetKey]
+						: undefined}
+
+					{#if winSheet}
+						{@const winBoost = winSheet === 'scatterWinAnim' ? 1.15 : 1}
+						<SpriteSheet
+							key={winSheet}
+							play
+							loop
+							animationSpeed={0.23}
+							{x}
+							{y}
+							anchor={0.5}
+							width={width * winBoost}
+							height={height * winBoost}
+							alpha={cell.displayAlpha.current}
+							zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
+						/>
+					{:else}
+						<Sprite
+							key={symbolInfo.assetKey}
+							{x}
+							{y}
 							anchor={{ x: 0.5, y: 0.5 }}
 							{width}
 							{height}
-							alpha={1}
+							alpha={cell.displayAlpha.current}
 							tint={0xffffff}
+							zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
 						/>
-					</Container>
-				{/if}
-			{/each}
-		{/if}
+					{/if}
+				{/each}
+			{/if}
+		</Container>
+
+		<!-- Upgraded/cluster state: switch directly to the win art and keep it from lock onward. -->
+		{#each lockedCells as cell (`${cell.key}:locked`)}
+			{@const x = getX(cell.position.reel)}
+			{@const y = getStaticY(cell.position.row)}
+			{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: 'win' })}
+			{@const safeAssetKey = symbolInfo.assetKey ?? ''}
+			{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
+			{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
+			{@const winSheet = WIN_SHEETS[safeAssetKey]}
+			{@const winSheetSize = height * (WIN_SHEET_SIZE[winSheet ?? ''] ?? 0.8)}
+			{#if winSheet}
+				<SpriteSheet
+					key={winSheet}
+					play
+					loop
+					animationSpeed={0.23}
+					{x}
+					{y}
+					anchor={0.5}
+					width={winSheetSize}
+					height={winSheetSize}
+					zIndex={Z.lockedSymbol}
+				/>
+			{:else}
+				<Sprite
+					key={safeAssetKey}
+					{x}
+					{y}
+					anchor={{ x: 0.5, y: 0.5 }}
+					{width}
+					{height}
+					alpha={1}
+					tint={0xffffff}
+					zIndex={Z.lockedSymbol}
+				/>
+			{/if}
+		{/each}
 
 		<!-- Electric borders around every STACKED (locked) cell: two crawling jagged arc runners per
 		     cell circle its edge (re-jittered every frame -> live-arc shimmer). Always mounted; the
 		     draw prop only CAPTURES the Graphics instance — the persistent rAF in the script redraws
 		     it imperatively every frame (and clears it when nothing is locked). -->
-		<Graphics blendMode="add" zIndex={Z.lockBorder} draw={(gr) => (lockG = gr as unknown as LockG)} />
+		<Graphics
+			blendMode="add"
+			zIndex={Z.lockBorder}
+			draw={(gr) => (lockG = gr as unknown as LockG)}
+		/>
 	</Container>
 {/if}

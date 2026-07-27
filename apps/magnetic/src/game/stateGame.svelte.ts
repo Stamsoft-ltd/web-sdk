@@ -85,22 +85,40 @@ const getSkipMinSpinMs = () => {
 // Paid/free-spin reveal: the 7x7 result falls in as one board instead of seven
 // independently rolling reels. Columns/rows are only micro-staggered so the
 // complete board lands within one visual beat.
+const DROP_START_ROWS = BOARD_DIMENSIONS.y + 3;
+
 const DROP_MOTION_NORMAL = {
-	startRows: 4.5,
-	durationMs: 520,
+	startRows: DROP_START_ROWS,
+	durationMs: 792,
 	reelDelayMs: 8,
 	rowDelayMs: 4,
 } as const;
 
 const DROP_MOTION_FAST = {
-	startRows: 4,
-	durationMs: 130,
+	startRows: DROP_START_ROWS,
+	durationMs: 480,
 	reelDelayMs: 4,
 	rowDelayMs: 2,
 } as const;
 
+type ActiveDrop = {
+	skipped: boolean;
+	cancelled: boolean;
+	skipPromise: Promise<void>;
+	resolveSkip: () => void;
+};
+
 let activeDropToken = 0;
 let dropInProgress = false;
+let activeDrop: ActiveDrop | null = null;
+
+const cancelActiveDrop = () => {
+	if (!activeDrop) return;
+	activeDrop.cancelled = true;
+	activeDrop.resolveSkip();
+	activeDrop = null;
+	dropInProgress = false;
+};
 
 // ── cell helpers ──────────────────────────────────────────────────────────────
 
@@ -849,7 +867,7 @@ const settleBoardInstant = ({
 	magnetTargetSymbol?: PaySymbolName | null;
 }) => {
 	activeDropToken += 1;
-	dropInProgress = false;
+	cancelActiveDrop();
 	for (let ri = 0; ri < BOARD_DIMENSIONS.x; ri++) {
 		for (let rowi = 0; rowi < BOARD_DIMENSIONS.y; rowi++) {
 			const cell = stateGame.board[ri][rowi];
@@ -877,7 +895,19 @@ const settleBoardInstant = ({
 // ── near-simultaneous board-drop reveal ───────────────────────────────────────
 
 const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
+	cancelActiveDrop();
 	const token = ++activeDropToken;
+	let resolveSkip = () => {};
+	const skipPromise = new Promise<void>((resolve) => {
+		resolveSkip = resolve;
+	});
+	const drop: ActiveDrop = {
+		skipped: false,
+		cancelled: false,
+		skipPromise,
+		resolveSkip,
+	};
+	activeDrop = drop;
 	dropInProgress = true;
 	stateGame.boardMode = 'settle';
 	const fast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
@@ -910,19 +940,30 @@ const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
 
 	await Promise.all(
 		fallingCells.map(async ({ cell, raw, delayMs }) => {
-			if (delayMs > 0) await waitForTimeout(delayMs);
-			if (token !== activeDropToken) return;
-			await cell.displayY.set(getTargetY(cell.position.row), {
+			if (delayMs > 0) {
+				await Promise.race([waitForTimeout(delayMs), drop.skipPromise]);
+			}
+			if (drop.cancelled || token !== activeDropToken) return;
+			if (drop.skipped) {
+				cell.symbolState = 'land';
+				return;
+			}
+			const tweenPromise = cell.displayY.set(getTargetY(cell.position.row), {
 				duration: motion.durationMs,
-				easing: backOut,
+				easing: cubicOut,
 			});
-			if (token !== activeDropToken) return;
+			// Tween.set({ duration: 0 }) aborts the active Svelte tween without resolving its
+			// promise. Race it against the skip signal so repeated stop presses cannot strand
+			// playBook/xstate forever.
+			await Promise.race([tweenPromise, drop.skipPromise]);
+			if (drop.cancelled || token !== activeDropToken) return;
 			cell.symbolState = 'land';
-			playLandSound(raw);
+			if (!drop.skipped) playLandSound(raw);
 		}),
 	);
 
-	if (token === activeDropToken) {
+	if (drop.cancelled || token !== activeDropToken) return;
+	if (!drop.skipped) {
 		eventEmitter.broadcast({
 			type: 'soundOnce',
 			name: 'mag_ui_007',
@@ -932,6 +973,7 @@ const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
 	for (let ri = 0; ri < BOARD_DIMENSIONS.x; ri++) {
 		stateGame.spinBoard[ri].setSymbolsWithRawSymbols(makeSpinSymbols(rawBoard[ri]));
 	}
+	if (activeDrop === drop) activeDrop = null;
 	dropInProgress = false;
 	stateGame.forceFastAnimations = false;
 	skipCascadeStartedAt = 0;
@@ -1115,9 +1157,11 @@ const markNextRevealAsSpin = () => {
 };
 
 const speedUpMotion = () => {
-	if (dropInProgress) {
+	if (dropInProgress && activeDrop) {
+		if (activeDrop.skipped) return;
 		stateGame.forceFastAnimations = true;
-		activeDropToken += 1;
+		activeDrop.skipped = true;
+		activeDrop.resolveSkip();
 		for (const reel of stateGame.board) {
 			for (const cell of reel) {
 				if (cell.locked) continue;
@@ -1125,7 +1169,6 @@ const speedUpMotion = () => {
 				cell.symbolState = 'land';
 			}
 		}
-		dropInProgress = false;
 		return;
 	}
 	if (stateGame.boardMode !== 'spin') return;
