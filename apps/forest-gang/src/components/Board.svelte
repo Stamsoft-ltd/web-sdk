@@ -55,7 +55,13 @@
 	};
 
 	// Premium (animal) win-state cards play the animated "win state" frames (from the Magnific
-	// videos, card border baked in — generate_win_anim.py). Ping-ponged since the clips don't loop.
+	// videos, card border baked in — generate_win_anim.py). Played FORWARD ONCE and held on the
+	// final frame (`loop={false}` at the sprite below), not ping-ponged. All five sheets measure
+	// strongly directional — wrap seam over median adjacent-frame delta is 2.8 (wolf) to 5.6 (fox) —
+	// so the old ping-pong rewound a one-shot: the wolf howled, then un-howled. A win is transient,
+	// so there is nothing to loop for. Using the raw texture list also keeps the array identity
+	// stable across `loadedAssets` recomputes, which is what forced gotoAndStop(0) in the expanded
+	// overlay before fd75e79.
 	// ANIMALS ONLY: the letters (T/A/J/K/Q) have no win sheet — a winning letter renders its clean
 	// base tile with the continuous letterPulse in the final {:else} below. Letter win sheets used
 	// to be listed here, loaded, trimmed and ping-ponged into arrays nothing ever drew.
@@ -70,19 +76,21 @@
 		const map: Partial<Record<SymbolName, Texture[]>> = {};
 		for (const [sym, key] of Object.entries(WIN_ANIM_KEY) as [SymbolName, string][]) {
 			const t = (context.stateApp.loadedAssets?.[key] ?? []) as Texture[];
-			if (t.length) map[sym as SymbolName] = [...t, ...t.slice(1, -1).reverse()];
+			if (t.length) map[sym as SymbolName] = t;
 		}
 		return map;
 	});
 
-	// The clips don't loop seamlessly (the glint sweep is one-directional), so the textures are
-	// ping-ponged — same treatment as the win anims above.
-	const pingPong = (t: Texture[]) => (t.length > 2 ? [...t, ...t.slice(1, -1).reverse()] : t);
+	// These two were ping-ponged on the assumption the glint sweep was one-directional. Measured, it
+	// isn't: both sheets were authored as clean loops. Wrap seam (last frame vs first) over the
+	// median adjacent-frame delta is 0.8 for scatter and 1.5 for wild — scatter's wrap is a SMALLER
+	// step than its own average frame-to-frame motion. The ping-pong bought nothing and cost double
+	// the textures plus a sweep that ran backwards for half of every cycle. Raw list; `loop` does it.
 	// The scatter plays its own emblem clip now (luma-keyed video frames — generate_emblem_anim.py).
 	// Falls back to the static scatter sprite until it loads.
-	const scatterFrames = $derived(pingPong((context.stateApp.loadedAssets?.scatterAnim ?? []) as Texture[]));
+	const scatterFrames = $derived((context.stateApp.loadedAssets?.scatterAnim ?? []) as Texture[]);
 	// Animated WILD emblem (same pipeline). Falls back to static.
-	const wildFrames = $derived(pingPong((context.stateApp.loadedAssets?.wildAnim ?? []) as Texture[]));
+	const wildFrames = $derived((context.stateApp.loadedAssets?.wildAnim ?? []) as Texture[]);
 
 	// Animated base-state (idle blink) animals. Each cutout is trimmed to its subject so it keeps a
 	// native (non-cell) aspect — width is derived from height with the same board non-uniform-scale
@@ -480,7 +488,7 @@
 						width={symbolW * s * winFit}
 						height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[symName] ?? 1)}
 						animationSpeed={1 / 3}
-						loop={true}
+						loop={false}
 						play={boardAnimate}
 					/>
 				{:else if isWin && LOW_SYMBOLS_SET.has(symName)}
