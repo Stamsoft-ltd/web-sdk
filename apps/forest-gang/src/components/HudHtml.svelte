@@ -15,34 +15,34 @@
 	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.webp'); // wooden round — utility buttons
 	const btnSpinBg = ap('/assets/components/navbar/btn_bg_spin.webp?v=20260720'); // green round — spin
 	const btnSpinHoverBg = ap('/assets/components/navbar/btn_bg_spin_hover.webp?v=20260720'); // spin hover
-	const btnWideBg = ap('/assets/components/navbar/btn_bg_wide.png?v=20260720'); // wide green — buy bonus
-	const btnWideHoverBg = ap('/assets/components/navbar/btn_bg_wide_hover.png?v=20260720'); // buy hover
+	const btnWideBg = ap('/assets/components/navbar/btn_bg_wide.webp?v=20260720'); // wide green — buy bonus
+	const btnWideHoverBg = ap('/assets/components/navbar/btn_bg_wide_hover.webp?v=20260720'); // buy hover
 	// Portrait/mobile pads (Figma 2792-4133)
 	// Mobile-landscape HUD art (Figma 2682-3639)
 	const lsRightBar = ap('/assets/components/symbols/landscape/right_bar.webp?v=20260715'); // vertical control bar
-	const lsBetPad = ap('/assets/components/symbols/landscape/stepper_pad.png'); // − value + bottom pad
-	const lsBuyBonus = ap('/assets/components/symbols/landscape/buy_bonus.png'); // round green badge
+	const lsBetPad = ap('/assets/components/symbols/landscape/stepper_pad.webp'); // − value + bottom pad
+	const lsBuyBonus = ap('/assets/components/symbols/landscape/buy_bonus.webp'); // round green badge
 	const navPadMobile = ap('/assets/components/navbar/nav_pad_mobile.webp'); // control-bar pill
-	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.png'); // − value + pill
-	const buyBonusMobile = ap('/assets/components/navbar/buy_bonus_mobile.png'); // round green badge
+	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.webp'); // − value + pill
+	const buyBonusMobile = ap('/assets/components/navbar/buy_bonus_mobile.webp'); // round green badge
 	const spinMobile = ap('/assets/components/navbar/spin_mobile.webp'); // green spin w/ leaves
 
 	// Gold icons layered over the button backgrounds
-	const iconMenu = ap('/assets/hud/icon-info.png');
-	const iconMenuBars = ap('/assets/hud/icon-menu.png'); // hamburger — opens the portrait sound/info menu
-	const iconSound = ap('/assets/hud/icon-volume.png');
-	const iconSoundMuted = ap('/assets/hud/icon-volume-muted.png');
+	const iconMenu = ap('/assets/hud/icon-info.webp');
+	const iconMenuBars = ap('/assets/hud/icon-menu.webp'); // hamburger — opens the portrait sound/info menu
+	const iconSound = ap('/assets/hud/icon-volume.webp');
+	const iconSoundMuted = ap('/assets/hud/icon-volume-muted.webp');
 	const iconMinus = ap('/assets/hud/icon-minus.webp');
 	const iconPlus = ap('/assets/hud/icon-plus.webp');
-	const iconAuto = ap('/assets/hud/icon-autoplay.png');
-	const iconSpin = ap('/assets/hud/icon-spin.png');
-	const iconStop = ap('/assets/hud/icon-stop.png');
-	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.png');
-	const iconTurbo2 = ap('/assets/hud/icon-lightning-2.png');
-	const iconTurbo3 = ap('/assets/hud/icon-lightning-3.png');
+	const iconAuto = ap('/assets/hud/icon-autoplay.webp');
+	const iconSpin = ap('/assets/hud/icon-spin.webp');
+	const iconStop = ap('/assets/hud/icon-stop.webp');
+	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.webp');
+	const iconTurbo2 = ap('/assets/hud/icon-lightning-2.webp');
+	const iconTurbo3 = ap('/assets/hud/icon-lightning-3.webp');
 	const iconCoins = ap('/assets/hud/icon-coins.webp');
 
-	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
+	const scatterFrame = ap('/assets/components/frames/scatter_frame.webp');
 	const hudFrame = ap('/assets/components/frames/hud_frame.webp');
 	const smallBtnFrame = ap('/assets/components/frames/lower_hud_button_frame.webp');
 	const playBtnFrame = ap('/assets/components/frames/play_button-frame.webp');
