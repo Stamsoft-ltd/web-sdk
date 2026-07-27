@@ -361,58 +361,12 @@ const assets = {
 	},
 } as const;
 
-// Bonus / win / free-spin assets — none are needed for the first spins, so stream them in the
-// BACKGROUND after the game is interactive (AssetsLoader's deferred pass) instead of blocking first
-// playability on them. Render paths fall back to static art until each arrives, and the whole set
-// finishes within a couple seconds of the game becoming playable — long before a bonus can trigger.
-// Keep base-game essentials (symbols, base bg, board frame, HUD, sounds) OUT of this list.
-const DEFERRED_KEYS: readonly string[] = [
-	// Bonus backgrounds + entry/exit spine
-	'transition',
-	// Deer reveal (bonus symbol picker)
-	'deerPresenter', 'deerPresenterMobile', 'deerPresenterAnim',
-	// Win-tier boards + emblem + big-win/global-multiplier spines
-	'sweetWinBoard', 'wildWinBoard', 'epicWinBoard', 'mythicWinBoard', 'legendaryWinBoard',
-	'maxWinScreen', 'winEmblemP', 'globalMultiplier',
-	// Free-spin intro/outro popup + scatter medallion
-	'fsIntro', 'fsMedallion', 'fsMedallionAnim',
-	// Win coins
-	'pCoins',
-	// Idle animal blink loops (~8.6MB) — the static animal tiles render until these arrive
-	// (wave 0), so the board is never blank; deferring them cuts the blocking load nearly in half.
-	'wolfIdleAnim', 'foxIdleAnim', 'squirrelIdleAnim', 'bearIdleAnim', 'rabbitIdleAnim',
-	// Expanded-symbol animations (animals) + board win animations (animals only — letters win with
-	// a pulsing static tile, no sheet)
-	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
-	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
-	// Animated WILD + SCATTER (static tiles render until they arrive — same pattern as the idle blinks)
-	'wildAnim', 'scatterAnim',
-	// Bonus-only art: expanded-symbol reveal tiles/frame, free-spin popup sprites, big-win glow,
-	// and the static bonus backgrounds (posters under the deferred bonus videos)
-	'foxExpTile', 'foxExpWinTile', 'wolfExpTile', 'wolfExpWinTile', 'bearExpTile', 'bearExpWinTile',
-	'rabbitExpTile', 'rabbitExpWinTile', 'squirrelExpTile', 'squirrelExpWinTile', 'expandedFrame',
-	'winGlow',
-	'bonusNormalBackground', 'bonusSuperBackground',
-];
-for (const key of DEFERRED_KEYS) {
-	const entry = (assets as Record<string, { defer?: boolean } | undefined>)[key];
-	if (entry) entry.defer = true;
-}
-
-// Order the background stream: a first base-game win can land seconds after the game becomes
-// playable, so everything visible in that moment (symbol win animations + flying coins) downloads
-// first (wave 0). The rest — big-win boards, free-spin popup art — takes the default wave 1.
-const DEFER_WAVE_0: readonly string[] = [
-	// Idle blinks + the animated WILD / SCATTER first — visible from the first settled board.
-	'wolfIdleAnim', 'foxIdleAnim', 'squirrelIdleAnim', 'bearIdleAnim', 'rabbitIdleAnim',
-	'wildAnim', 'scatterAnim',
-	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
-	'pCoins',
-];
-for (const key of DEFER_WAVE_0) {
-	const entry = (assets as Record<string, { deferPriority?: number } | undefined>)[key];
-	if (entry) entry.deferPriority = 0;
-}
+// Everything the base game can DRAW now loads up front, on the loading screen (no deferred
+// stream): deferred streaming caused visible pop-in (static tiles until the anim sheets arrived,
+// win boards appearing late) and a stalled deferred pass took the art hostage for the whole
+// session. The loading bar is the honest place to pay for it. Only the deferDemand bonus set
+// below stays out of the gating pass: it is invisible until a bonus triggers, and that trigger
+// awaits (and retries) its load.
 
 // Bonus-only art: withheld from the background stream entirely and loaded on demand, because a
 // session that never triggers a bonus never draws any of it — a sizeable share of the art pool
@@ -448,8 +402,10 @@ const MOBILE_ONLY_KEYS: readonly string[] = [
 	'buyBonusLs',
 ];
 const DESKTOP_ONLY_KEYS: readonly string[] = [
-	// Desktop base background + board frame (mobile portrait/landscape have their own art)
-	'baseBackground', 'boardFrameDesktop',
+	// Desktop base background (mobile portrait/landscape have their own). NOTE: boardFrameDesktop
+	// is NOT here — since the redesign, BoardFrame draws it in every layout, so deferring it on
+	// mobile shipped phones a frameless board when the deferred stream stalled.
+	'baseBackground',
 ];
 if (typeof window !== 'undefined') {
 	const w = window.innerWidth;
