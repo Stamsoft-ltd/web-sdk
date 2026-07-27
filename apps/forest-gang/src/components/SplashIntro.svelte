@@ -1,3 +1,16 @@
+<script lang="ts" module>
+	// Module scope so the splash art preloads during the loading screen — the splash is the
+	// very next thing on screen, so it must not pop in image-by-image.
+	import { ap } from '../lib/preloadArt';
+
+	// splash.jpg = forest + 5 characters holding 3 empty wooden boards (no logo, no text).
+	const bgSrc = ap('/assets/components/backgrounds/splash.jpg?v=20260630');
+	// Portrait artwork: the gang holding a single central board (for the mobile carousel).
+	const bgMobileSrc = ap('/assets/components/backgrounds/splash_mobile.jpg?v=20260630');
+	const logoSrc = ap('/assets/components/ui/forest_gang_logo.webp');
+	const brandSrc = ap('/assets/components/ui/press_play_logo.png?v=20260630');
+</script>
+
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { stateI18nDerived } from 'state-shared';
@@ -15,13 +28,6 @@
 	};
 	const bonusTop = $derived(splitNum(t('SPLASH BONUS TOP')));
 	const bonusMid = $derived(splitNum(t('SPLASH BONUS MID')));
-
-	// splash.jpg = forest + 5 characters holding 3 empty wooden boards (no logo, no text).
-	const bgSrc = './assets/components/backgrounds/splash.jpg?v=20260630';
-	// Portrait artwork: the gang holding a single central board (for the mobile carousel).
-	const bgMobileSrc = './assets/components/backgrounds/splash_mobile.jpg?v=20260630';
-	const logoSrc = './assets/components/ui/forest_gang_logo.webp';
-	const brandSrc = './assets/components/ui/press_play_logo.png?v=20260630';
 
 	// Mobile = portrait viewport: show the three feature blocks one at a time, 3s each.
 	let isPortrait = $state(false);

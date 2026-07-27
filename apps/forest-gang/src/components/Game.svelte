@@ -42,6 +42,7 @@
 	import ReplayHud from './replay/ReplayHud.svelte';
 	import SplashIntro from './SplashIntro.svelte';
 	import { BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { registerArtDeep, warmArt } from '../lib/preloadArt';
 
 	const context = getContext();
 
@@ -258,11 +259,11 @@
 						{ icon: `${infoDir}/pt_fox.webp?v=20260724`, name: 'FOX', premium: true, x3: '2x', x4: '12x', x5: '150x' },
 						{ icon: `${infoDir}/pt_rabbit.webp?v=20260724`, name: 'RABBIT', premium: true, x3: '1.5x', x4: '10x', x5: '100x' },
 						{ icon: `${infoDir}/pt_squirrel.webp?v=20260724`, name: 'SQUIRREL', premium: true, x3: '1x', x4: '8x', x5: '75x' },
-						{ icon: `${infoDir}/pt_card_a.png`, name: 'A', x3: '0.8x', x4: '5x', x5: '40x' },
-						{ icon: `${infoDir}/pt_card_k.png`, name: 'K', x3: '0.7x', x4: '4x', x5: '35x' },
-						{ icon: `${infoDir}/pt_card_q.png`, name: 'Q', x3: '0.6x', x4: '3.5x', x5: '30x' },
-						{ icon: `${infoDir}/pt_card_j.png`, name: 'J', x3: '0.5x', x4: '3x', x5: '25x' },
-						{ icon: `${infoDir}/pt_card_t.png`, name: '10', x3: '0.4x', x4: '4x', x5: '20x' },
+						{ icon: `${infoDir}/pt_card_a.webp`, name: 'A', x3: '0.8x', x4: '5x', x5: '40x' },
+						{ icon: `${infoDir}/pt_card_k.webp`, name: 'K', x3: '0.7x', x4: '4x', x5: '35x' },
+						{ icon: `${infoDir}/pt_card_q.webp`, name: 'Q', x3: '0.6x', x4: '3.5x', x5: '30x' },
+						{ icon: `${infoDir}/pt_card_j.webp`, name: 'J', x3: '0.5x', x4: '3x', x5: '25x' },
+						{ icon: `${infoDir}/pt_card_t.webp`, name: '10', x3: '0.4x', x4: '4x', x5: '20x' },
 					],
 					cards: [
 						{ icon: `${infoDir}/icon_wild.webp?v=20260724d`, title: forestStakeTitle('INFO WILD TITLE'), text: forestStakeTitle('INFO WILD TEXT') },
@@ -348,20 +349,25 @@
 					background: infoPanelBg,
 					title: forestStakeTitle('INFO UI TITLE'),
 					cards: [
-						{ icon: `${infoDir}/ui_spin.png`, title: forestStakeTitle('INFO UI SPIN TITLE'), text: forestStakeTitle('INFO UI SPIN TEXT') },
-						{ icon: `${infoDir}/ui_auto.png`, title: forestStakeTitle('INFO UI AUTO TITLE'), text: forestStakeTitle('INFO UI AUTO TEXT') },
-						{ icon: `${infoDir}/ui_turbo.png`, title: forestStakeTitle('INFO UI TURBO TITLE'), text: forestStakeTitle('INFO UI TURBO TEXT') },
-						{ icon: `${infoDir}/ui_plus.png`, title: forestStakeTitle('INFO UI BETPLUS TITLE'), text: forestStakeTitle('INFO UI BETPLUS TEXT') },
-						{ icon: `${infoDir}/ui_minus.png`, title: forestStakeTitle('INFO UI BETMINUS TITLE'), text: forestStakeTitle('INFO UI BETMINUS TEXT') },
-						{ icon: `${infoDir}/ui_info.png`, title: forestStakeTitle('INFO UI INFO TITLE'), text: forestStakeTitle('INFO UI INFO TEXT') },
-						{ icon: `${infoDir}/ui_sound.png`, title: forestStakeTitle('INFO UI SOUND TITLE'), text: forestStakeTitle('INFO UI SOUND TEXT') },
-						{ icon: `${infoDir}/ui_prev.png`, title: forestStakeTitle('INFO UI PREV TITLE'), text: forestStakeTitle('INFO UI PREV TEXT') },
-						{ icon: `${infoDir}/ui_next.png`, title: forestStakeTitle('INFO UI NEXT TITLE'), text: forestStakeTitle('INFO UI NEXT TEXT') },
-						{ icon: `${infoDir}/ui_close.png`, title: forestStakeTitle('INFO UI CLOSE TITLE'), text: forestStakeTitle('INFO UI CLOSE TEXT') },
+						{ icon: `${infoDir}/ui_spin.webp`, title: forestStakeTitle('INFO UI SPIN TITLE'), text: forestStakeTitle('INFO UI SPIN TEXT') },
+						{ icon: `${infoDir}/ui_auto.webp`, title: forestStakeTitle('INFO UI AUTO TITLE'), text: forestStakeTitle('INFO UI AUTO TEXT') },
+						{ icon: `${infoDir}/ui_turbo.webp`, title: forestStakeTitle('INFO UI TURBO TITLE'), text: forestStakeTitle('INFO UI TURBO TEXT') },
+						{ icon: `${infoDir}/ui_plus.webp`, title: forestStakeTitle('INFO UI BETPLUS TITLE'), text: forestStakeTitle('INFO UI BETPLUS TEXT') },
+						{ icon: `${infoDir}/ui_minus.webp`, title: forestStakeTitle('INFO UI BETMINUS TITLE'), text: forestStakeTitle('INFO UI BETMINUS TEXT') },
+						{ icon: `${infoDir}/ui_info.webp`, title: forestStakeTitle('INFO UI INFO TITLE'), text: forestStakeTitle('INFO UI INFO TEXT') },
+						{ icon: `${infoDir}/ui_sound.webp`, title: forestStakeTitle('INFO UI SOUND TITLE'), text: forestStakeTitle('INFO UI SOUND TEXT') },
+						{ icon: `${infoDir}/ui_prev.webp`, title: forestStakeTitle('INFO UI PREV TITLE'), text: forestStakeTitle('INFO UI PREV TEXT') },
+						{ icon: `${infoDir}/ui_next.webp`, title: forestStakeTitle('INFO UI NEXT TITLE'), text: forestStakeTitle('INFO UI NEXT TEXT') },
+						{ icon: `${infoDir}/ui_close.webp`, title: forestStakeTitle('INFO UI CLOSE TITLE'), text: forestStakeTitle('INFO UI CLOSE TEXT') },
 					],
 				},
 			],
 		};
+
+		// The info/rules pages are plain HTML <img>s that only fetch when the modal opens —
+		// register every image in the meta so warmArt() pulls them during the loading screen.
+		registerArtDeep(stateMeta.betModeMeta);
+		registerArtDeep(stateMeta.gameRuleMeta);
 	});
 
 	// try/catch: Lingui THROWS (not undefined) when translate is called before the locale is
@@ -375,7 +381,12 @@
 		}
 	};
 
-	onMount(() => (context.stateLayout.showLoadingScreen = true));
+	onMount(() => {
+		context.stateLayout.showLoadingScreen = true;
+		// Fetch all registered HTML-side art while the loading screen is up (low priority, so
+		// the pixi atlases still win the bandwidth race).
+		warmArt();
+	});
 
 </script>
 

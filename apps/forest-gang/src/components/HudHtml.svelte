@@ -1,21 +1,7 @@
-<script lang="ts">
-	import { OnHotkey } from 'components-shared';
-	import { stateBet, stateBetDerived, stateConfig, stateModal, stateSound, stateUrlDerived } from 'state-shared';
-	import { onDestroy } from 'svelte';
-	import { Tween } from 'svelte/motion';
-	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
-
-	import { getContext } from '../game/context';
-	import { i18nDerived } from '../i18n/i18nDerived';
-	import { fitLabel } from '../lib/fitLabel';
-	import { forestStakeDerived } from '../state/forestStake.svelte';
-	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
-	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
-
-	const context = getContext();
-
-	// Converts absolute /path to ./path so it resolves relative to the page URL at any deploy sub-path
-	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
+<script lang="ts" module>
+	// Module scope so ap() registers every URL at app bootstrap — warmArt() then fetches them
+	// during the loading screen, before the HUD (or the modals it opens) first renders.
+	import { ap } from '../lib/preloadArt';
 
 	const heroCardBg = ap('/assets/components/backgrounds/visual_v2.jpg');
 
@@ -26,7 +12,7 @@
 	const menuPopupBg = ap('/assets/components/frames/menu_popup.webp'); // wooden plaque (Figma 3311-2924)
 
 	// Button backgrounds (icon-less frames) — icons are layered on top in markup
-	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.png'); // wooden round — utility buttons
+	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.webp'); // wooden round — utility buttons
 	const btnSpinBg = ap('/assets/components/navbar/btn_bg_spin.webp?v=20260720'); // green round — spin
 	const btnSpinHoverBg = ap('/assets/components/navbar/btn_bg_spin_hover.webp?v=20260720'); // spin hover
 	const btnWideBg = ap('/assets/components/navbar/btn_bg_wide.png?v=20260720'); // wide green — buy bonus
@@ -46,15 +32,15 @@
 	const iconMenuBars = ap('/assets/hud/icon-menu.png'); // hamburger — opens the portrait sound/info menu
 	const iconSound = ap('/assets/hud/icon-volume.png');
 	const iconSoundMuted = ap('/assets/hud/icon-volume-muted.png');
-	const iconMinus = ap('/assets/hud/icon-minus.png');
-	const iconPlus = ap('/assets/hud/icon-plus.png');
+	const iconMinus = ap('/assets/hud/icon-minus.webp');
+	const iconPlus = ap('/assets/hud/icon-plus.webp');
 	const iconAuto = ap('/assets/hud/icon-autoplay.png');
 	const iconSpin = ap('/assets/hud/icon-spin.png');
 	const iconStop = ap('/assets/hud/icon-stop.png');
 	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.png');
 	const iconTurbo2 = ap('/assets/hud/icon-lightning-2.png');
 	const iconTurbo3 = ap('/assets/hud/icon-lightning-3.png');
-	const iconCoins = ap('/assets/hud/icon-coins.png');
+	const iconCoins = ap('/assets/hud/icon-coins.webp');
 
 	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
 	const hudFrame = ap('/assets/components/frames/hud_frame.webp');
@@ -62,6 +48,23 @@
 	const playBtnFrame = ap('/assets/components/frames/play_button-frame.webp');
 
 	const scatterImg = ap('/assets/components/ui/scatter-panel-image.webp');
+</script>
+
+<script lang="ts">
+	import { OnHotkey } from 'components-shared';
+	import { stateBet, stateBetDerived, stateConfig, stateModal, stateSound, stateUrlDerived } from 'state-shared';
+	import { onDestroy } from 'svelte';
+	import { Tween } from 'svelte/motion';
+	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
+
+	import { getContext } from '../game/context';
+	import { i18nDerived } from '../i18n/i18nDerived';
+	import { fitLabel } from '../lib/fitLabel';
+	import { forestStakeDerived } from '../state/forestStake.svelte';
+	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
+	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
+
+	const context = getContext();
 
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isPortrait = $derived(layoutType === 'portrait');
