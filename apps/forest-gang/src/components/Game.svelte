@@ -50,7 +50,7 @@
 	let splashPressHandler = $state<(() => void) | undefined>(undefined);
 	const heroArt = './assets/components/backgrounds/visual_v2.webp';
 	const bonusArt = './assets/components/backgrounds/visual_v1.jpg';
-	const scatterArt = './assets/components/symbols/scatter.png';
+	const scatterArt = './assets/components/symbols/scatter.webp';
 	// (the old reference/*.png screenshots were removed in an earlier asset cleanup; point the
 	// rule/dialog illustrations at existing art so nothing renders a broken image)
 	const uiRefArt = './assets/components/backgrounds/visual_v2.webp';

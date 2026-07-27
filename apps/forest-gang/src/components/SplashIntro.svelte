@@ -8,7 +8,7 @@
 	// Portrait artwork: the gang holding a single central board (for the mobile carousel).
 	const bgMobileSrc = ap('/assets/components/backgrounds/splash_mobile.jpg?v=20260630');
 	const logoSrc = ap('/assets/components/ui/forest_gang_logo.webp');
-	const brandSrc = ap('/assets/components/ui/press_play_logo.png?v=20260630');
+	const brandSrc = ap('/assets/components/ui/press_play_logo.webp?v=20260630');
 </script>
 
 <script lang="ts">
