@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	import { EnablePixiExtension } from 'components-pixi';
@@ -365,8 +365,12 @@
 
 		// The info/rules pages are plain HTML <img>s that only fetch when the modal opens —
 		// register every image in the meta so warmArt() pulls them during the loading screen.
-		registerArtDeep(stateMeta.betModeMeta);
-		registerArtDeep(stateMeta.gameRuleMeta);
+		// untrack: the deep read of the just-written $state must not become a dependency of
+		// this effect, or the write→read cycle loops it forever (effect_update_depth_exceeded).
+		untrack(() => {
+			registerArtDeep(stateMeta.betModeMeta);
+			registerArtDeep(stateMeta.gameRuleMeta);
+		});
 	});
 
 	// try/catch: Lingui THROWS (not undefined) when translate is called before the locale is
