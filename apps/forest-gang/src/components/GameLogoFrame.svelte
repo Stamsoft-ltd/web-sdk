@@ -181,7 +181,7 @@
 						y={-badgeH * 0.02}
 						height={badgeH * 0.52}
 						width={badgeH * 0.52 * (IDLE_ASPECT[bonusSymbol!] ?? 1)}
-						animationSpeed={0.28}
+						animationSpeed={0.25}
 						loop={true}
 						play={true}
 					/>
