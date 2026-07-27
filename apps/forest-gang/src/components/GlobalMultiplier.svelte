@@ -7,30 +7,25 @@
 
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
-	import { cubicIn, backOut } from 'svelte/easing';
+	import { backOut } from 'svelte/easing';
 
 	import { Container, Sprite, Text } from 'pixi-svelte';
 	import { FadeContainer } from 'components-pixi';
 	import { MainContainer } from 'components-layout';
-	import { waitForTimeout } from 'utils-shared/wait';
 
 	import BoardContainer from './BoardContainer.svelte';
 	import { getContext } from '../game/context';
+	import { hold, holdScale } from '../game/sequenceHold';
 	import { SYMBOL_SIZE, SYMBOL_W } from '../game/constants';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
 
-	// Bear-hand board sizing (board panel ≈ 58% of the 944×708 image width)
-	// Match the top symbol board (BonusSymbolPanel uses SYMBOL_W * 1.1).
-	// The hand image is 944×708; its board region is 592px wide, centred at (368,324).
+	// Board sizing — match the top symbol board (BonusSymbolPanel uses SYMBOL_W * 1.1).
 	const BOARD_W = SYMBOL_W * 1.1;
-	const HAND_W = BOARD_W * (944 / 592);
-	const HAND_H = HAND_W * (708 / 944);
 	const NUM_FONT = BOARD_W * 0.215;
 	// Red X emblem (872×776 after crop) shown at 1x — sized to sit on the wood board.
 	const X_RED_W = BOARD_W * 0.34;
 	// Vertical centre nudge so the Cinzel caps sit in the middle of the wood board.
 	const NUM_Y = BOARD_W * 0.012;
-	const SLIDE = BOARD_W * 0.55;
 	const context = getContext();
 	// Shrink-to-fit + centred in the strip right of the board on desktop (see bonusRailAdjust).
 	const railAdj = $derived(context.stateGameDerived.bonusRailAdjust(BOARD_W));
@@ -83,41 +78,42 @@
 	);
 
 	// This is the "DEAL IT" bonus board (internally `superspin` — the UI labels are the reverse of the
-	// mode names). Its hand is PERSISTENT: it stays on screen for the whole bonus (red X at 1x) and
-	// animates (slide out, swap value, slide in) only when the global multiplier CHANGES.
+	// mode names). The board is PERSISTENT: it stays on screen for the whole bonus (red X at 1x) and
+	// animates (fade out, swap value, settle from 1.45x down to 1x) only when the multiplier CHANGES.
 	let show = $state(false);
 	let multiplier = $state(1);
-	let groupX = new Tween(0);
 	let groupAlpha = new Tween(1);
 	let groupScale = new Tween(1);
 	let swapTarget: number | null = null;
 	let swapped = false;
 
-	// ALL layouts now show a hand-less leaf-corner board; the multiplier value zooms out onto it
-	// (fade + oversized → settle) rather than the bear paw sliding in (design ask — apply the
-	// zoom pad everywhere the multiplier appears: Deal It, All In, and every other situation).
-	const useFlatBoard = true;
-
-	// Swap the displayed value — desktop/landscape: slide-out / swap / slide-in (the hand moves);
-	// portrait: fade, then the new value zooms out onto the static board.
+	// Swap the displayed value — every layout fades the old value out, then the new value lands
+	// oversized (1.45x) and settles back to 1x under backOut on the static leaf-corner board
+	// (design ask: the same zoom pad wherever the multiplier appears — Deal It, All In and
+	// everything else — instead of a bear paw sliding in).
+	//
+	// The two waits here MIRROR the tween durations either side of the value swap; they are not
+	// free "let the player read it" beats. So the tweens are scaled by the SAME speed factor the
+	// holds use, and when a hold is cut short (stop press / super-turbo) the swap-in snaps with
+	// duration 0 — cutting a wait while its tween kept running would swap the value mid-fade.
+	// Nothing in the book awaits this (`updateGlobalMultiplier` broadcasts rather than
+	// broadcastAsync), so this buys no sequence wall-clock; it stops the board lagging the round.
 	const swapTo = async (next: number) => {
+		const speed = holdScale();
 		swapTarget = next;
 		swapped = false;
-		if (!useFlatBoard) groupX.set(SLIDE, { duration: 170, easing: cubicIn });
-		groupAlpha.set(0, { duration: 150 });
-		await waitForTimeout(170);
-		if (swapped) return;
+		groupAlpha.set(0, { duration: 150 * speed });
+		const cut = await hold(170);
+		// `show` guard: the bonus can end (globalMultiplierHide) while this swap is still in flight,
+		// and the continuation below would otherwise rewrite the value and tweens of a hidden board.
+		if (swapped || !show) return;
 		swapTarget = null;
 		multiplier = next;
-		if (useFlatBoard) {
-			groupScale.set(1.45, { duration: 0 });
-			groupScale.set(1, { duration: 280, easing: backOut });
-		} else {
-			groupX.set(-SLIDE, { duration: 0 });
-			groupX.set(0, { duration: 280, easing: backOut });
-		}
-		groupAlpha.set(1, { duration: 190 });
-		await waitForTimeout(280);
+		const swapIn = cut ? 0 : 280 * speed;
+		groupScale.set(1.45, { duration: 0 });
+		groupScale.set(1, { duration: swapIn, easing: backOut });
+		groupAlpha.set(1, { duration: cut ? 0 : 190 * speed });
+		await hold(280);
 	};
 
 	$effect(() => {
@@ -127,7 +123,6 @@
 			multiplier = swapTarget;
 			swapTarget = null;
 		}
-		groupX.set(0, { duration: 0 });
 		groupScale.set(1, { duration: 0 });
 		groupAlpha.set(1, { duration: 0 });
 	});
@@ -137,13 +132,11 @@
 		globalMultiplierShow: () => {
 			show = true;
 			multiplier = 1;
-			groupX.set(0, { duration: 0 });
 			groupAlpha.set(1, { duration: 0 });
 		},
 		globalMultiplierHide: () => {
 			show = false;
 			multiplier = 1;
-			groupX.set(0, { duration: 0 });
 			groupAlpha.set(1, { duration: 0 });
 		},
 		globalMultiplierUpdate: async (emitterEvent) => {
@@ -161,21 +154,16 @@
 </script>
 
 {#snippet panel()}
-	<!-- Persistent board; the group slides + fades when the multiplier value changes -->
+	<!-- Persistent board; the group fades and scale-settles when the multiplier value changes -->
 	<Container
-		x={position.x + groupX.current}
+		x={position.x}
 		y={position.y}
 		alpha={groupAlpha.current}
 		scale={scale * groupScale.current}
 	>
-			{#if useFlatBoard}
-				<!-- Portrait: hand-less leaf-corner board (same art as the EARNED card) — the bear
-				     paw crowded the stacked column (design ask). -->
-				<Sprite key="counterFrame" anchor={0.5} width={BOARD_W * 1.02} height={BOARD_W * 0.76} />
-			{:else}
-				<!-- Bear-hand board: panel centre (0.39/0.458) at the container origin, paw extends right -->
-				<Sprite key="multiplierHand" anchor={{ x: 0.39, y: 0.458 }} width={HAND_W} height={HAND_H} />
-			{/if}
+			<!-- Hand-less leaf-corner board (same art as the EARNED card) — the bear paw crowded the
+			     stacked column (design ask). -->
+			<Sprite key="counterFrame" anchor={0.5} width={BOARD_W * 1.02} height={BOARD_W * 0.76} />
 
 			<!-- At 1x, show the red X emblem; otherwise the Cinzel 900 gold number -->
 			{#if multiplier === 1}

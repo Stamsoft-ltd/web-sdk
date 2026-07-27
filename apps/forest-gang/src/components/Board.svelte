@@ -24,6 +24,7 @@
 		winSpriteKeyByNameLandscape,
 	} from '../game/utils';
 	import type { SymbolName } from '../game/types';
+	import { HIGH_SYMBOLS_SET, isWinState, anyPulsingWin } from '../game/boardPulse';
 
 	const LOW_SYMBOLS_SET = new Set<SymbolName>(['T', 'J', 'Q', 'K', 'A']);
 
@@ -52,33 +53,22 @@
 		return activeMap[name] ?? activeMap.A;
 	};
 
-	// Premium win-state cards play the animated "win state" frames (from the Magnific videos,
-	// card border baked in — generate_win_anim.py). Ping-ponged since the clips don't loop.
+	// Premium (animal) win-state cards play the animated "win state" frames (from the Magnific
+	// videos, card border baked in — generate_win_anim.py). Ping-ponged since the clips don't loop.
+	// ANIMALS ONLY: the letters (T/A/J/K/Q) have no win sheet — a winning letter renders its clean
+	// base tile with the continuous letterPulse in the final {:else} below. Letter win sheets used
+	// to be listed here, loaded, trimmed and ping-ponged into arrays nothing ever drew.
 	const WIN_ANIM_KEY: Partial<Record<SymbolName, string>> = {
 		RABBIT: 'rabbitWinAnim',
 		BEAR: 'bearWinAnim',
 		FOX: 'foxWinAnim',
 		WOLF: 'wolfWinAnim',
 		SQUIRREL: 'squirrelWinAnim',
-		T: 'tenWinAnim',
-		A: 'aWinAnim',
-		J: 'jWinAnim',
-		K: 'kWinAnim',
-		Q: 'qWinAnim',
 	};
-	// The card-letter win videos fade IN and OUT through black, so the first ~7 and last ~3 frames show
-	// the enclosed counter of 0 / A / Q as a solid black hole (before the sparkle glow fills it). Drop
-	// those edge frames so the ping-pong loop stays clean. Animal win videos are full-frame (no counter),
-	// so they're left untrimmed.
-	const LETTER_WIN_TRIM_START = 7;
-	const LETTER_WIN_TRIM_END = 3;
 	const winAnimTextures = $derived.by(() => {
 		const map: Partial<Record<SymbolName, Texture[]>> = {};
 		for (const [sym, key] of Object.entries(WIN_ANIM_KEY) as [SymbolName, string][]) {
-			let t = (context.stateApp.loadedAssets?.[key] ?? []) as Texture[];
-			if (LOW_SYMBOLS_SET.has(sym as SymbolName) && t.length > LETTER_WIN_TRIM_START + LETTER_WIN_TRIM_END + 4) {
-				t = t.slice(LETTER_WIN_TRIM_START, t.length - LETTER_WIN_TRIM_END);
-			}
+			const t = (context.stateApp.loadedAssets?.[key] ?? []) as Texture[];
 			if (t.length) map[sym as SymbolName] = [...t, ...t.slice(1, -1).reverse()];
 		}
 		return map;
@@ -170,10 +160,6 @@
 	// Portrait cells are narrow and the idle busts (fit by height) read too thin — widen them a touch
 	// so they fill the frame better (a small deliberate stretch, only in portrait).
 	const IDLE_W_STRETCH = $derived(isPortrait ? 1.18 : 1.0);
-	// Winning card letters use the win-anim art, which fills its frame more than the base tile — so at
-	// the same draw size a winning letter reads BIGGER than its neighbours. Trim it a little (more on
-	// portrait, where cells are tighter) so a winning letter matches the surrounding symbols.
-	const LOW_WIN_FIT = $derived(isPortrait ? 0.86 : 0.94);
 	// Animal WIN animations (new videos): kept full-frame (no crop) so nothing is clipped.
 	// Aspect (w/h) of each animal's WIN sheet frame — measured from the new keyed win videos.
 	const WIN_ASPECT: Partial<Record<SymbolName, number>> = {
@@ -203,7 +189,7 @@
 	// Per-type visual balance: card (low) letters fill their tile much more than the framed
 	// animal / wild / scatter art, so they read bigger. Shrink the low cards and nudge the
 	// wild/scatter emblems up so all symbol types appear a similar size on the reels.
-	const HIGH_SYMBOLS_SET = new Set<SymbolName>(['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL']);
+	// (HIGH_SYMBOLS_SET is imported from ../game/boardPulse — the pulse predicate is its complement.)
 	const symScale = (name: SymbolName) => {
 		// Portrait: the 1.15 overdraw (tuned for the old padded mobile PNGs) crams the redesigned
 		// art — letters touched across cells and clipped at the frame. Draw at the cell size.
@@ -219,8 +205,9 @@
 		// draw scale must come DOWN to keep the glyph at its old visual size (~0.7 of the cell —
 		// the previous padded art reached the same size at 0.86). Landscape keeps the old fit.
 		if (LOW_SYMBOLS_SET.has(name)) return isDesktop ? 0.72 : 0.86;
-		// WILD reads small on mobile — enlarge it in landscape too (design ask, "wild bigger on all
-		// mobile"). Desktop keeps the tuned 1.1; SCATTER is unchanged outside portrait.
+		// WILD reads small on mobile — enlarge it in landscape (design ask, "wild bigger on all
+		// mobile"). Everything else (desktop included) takes no WILD-specific bump; desktop still
+		// gets the shared SIZE_BOOST above. SCATTER keeps the tuned 1.1 outside portrait.
 		if (name === 'WILD') return isLandscape ? 1.25 : 1.0;
 		if (name === 'SCATTER') return 1.1;
 		// Premium animals: the art has built-in margin (reads small) so enlarge it — landscape
@@ -230,96 +217,17 @@
 		return 1;
 	};
 
-	// A winning symbol keeps its win animation through BOTH the per-line 'win' state AND the
-	// 'postWinStatic' state used during the total-win / SWEET WIN presentation (all lines shown at
-	// once). Without postWinStatic here the symbols freeze to static art during that presentation.
-	const isWinState = (state?: string) => state === 'win' || state === 'postWinStatic';
-
-	// ── Win pop: a special symbol (scatter / wild) entering its WIN state does ONE pop — a fast
-	//    scale-up with a slight overshoot and settle (damped spring) — on top of the looping
-	//    emblem animation. The clock runs only while a pop is mid-flight. ──
-	const POP_T = 0.8; // seconds until fully settled
-	const POP_DECAY = 6; // spring damping — higher snuffs the bounce faster
-	const POP_FREQ = 10; // spring rate — first peak lands ~0.1s in
-	// Letters (not listed) use the default amplitude — a gentler pop than the wild/scatter emblems.
-	const POP_AMP: Partial<Record<SymbolName, number>> = { WILD: 0.65, SCATTER: 0.45 };
-	const POP_AMP_DEFAULT = 0.35;
-	let popNow = $state(0);
-	const popStarts = new Map<string, number>(); // "reel:row" -> win-entry timestamp (ms)
-	$effect(() => {
-		// Track win entries/exits for the special symbols.
-		const winning = new Set<string>();
-		board.forEach((reel, r) =>
-			reel.reelState.symbols.forEach((sym, i) => {
-				if (
-					(sym.rawSymbol.name === 'WILD' || sym.rawSymbol.name === 'SCATTER') &&
-					isWinState(sym.symbolState)
-				)
-					winning.add(`${r}:${i}`);
-			}),
-		);
-		for (const key of [...popStarts.keys()]) if (!winning.has(key)) popStarts.delete(key);
-		const now = performance.now();
-		for (const key of winning) if (!popStarts.has(key)) popStarts.set(key, now);
-		if (popStarts.size === 0) return;
-		let raf = 0;
-		const tick = (t: number) => {
-			popNow = t;
-			// Keep the clock only while at least one pop is still animating. Settled entries stay
-			// (a held win state must not re-pop); they're dropped when the symbol leaves the win.
-			for (const t0 of popStarts.values()) {
-				if (t - t0 < POP_T * 1000) {
-					raf = requestAnimationFrame(tick);
-					return;
-				}
-			}
-		};
-		raf = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(raf);
-	});
-	// Damped spring: 1 → +A peak (~0.1s in) → small undershoot → 1 by POP_T.
-	const popScale = (name: SymbolName, key: string) => {
-		const t0 = popStarts.get(key);
-		if (t0 === undefined) return 1;
-		const t = (popNow - t0) / 1000;
-		if (t < 0 || t >= POP_T) return 1;
-		return 1 + (POP_AMP[name] ?? POP_AMP_DEFAULT) * Math.exp(-POP_DECAY * t) * Math.sin(POP_FREQ * t);
-	};
-
-	// ── Anticipation pulse: while a reel anticipates (bonus-trigger suspense, e.g. the bought
-	//    bonus reveal), the landed scatters bob with excitement and shimmer faster. ──
-	const anticipating = $derived(board.some((reel) => reel.reelState.anticipating));
-	let anticT = $state(0);
-	$effect(() => {
-		if (!anticipating) return;
-		let raf = 0;
-		const t0 = performance.now();
-		const tick = (now: number) => {
-			anticT = (now - t0) / 1000;
-			raf = requestAnimationFrame(tick);
-		};
-		raf = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(raf);
-	});
-	// Brisk bob (~2.4Hz, ±7%) — reads as a tremble, distinct from the slower win pop.
-	const anticZoom = $derived(1 + 0.07 * Math.sin(anticT * 15));
-
-	// ── Winning card letters pulse continuously (normal ↔ +10%) while their win is shown — a gentle,
-	//    repeating "pop", not a one-shot. A single rAF clock runs while any letter is winning. ──
-	const anyLetterWin = $derived(
-		board.some((reel) =>
-			reel.reelState.symbols.some(
-				(sym) =>
-					!HIGH_SYMBOLS_SET.has(sym.rawSymbol.name) &&
-					sym.rawSymbol.name !== 'WILD' &&
-					sym.rawSymbol.name !== 'SCATTER' &&
-					isWinState(sym.symbolState),
-			),
-		),
-	);
+	// ── Winning letters, wilds and scatters pulse continuously (normal ↔ +10%) while their win is
+	//    shown — a gentle, repeating "pop", not a one-shot. A single rAF clock runs for all of them.
+	//    The predicate lives in ../game/boardPulse as a pure function so it is directly testable
+	//    (N4: excluding WILD/SCATTER there left them frozen at a stale scale). ──
+	const pulsingWin = $derived(anyPulsingWin(board));
 	let letterPulseT = $state(0);
 	$effect(() => {
-		if (!anyLetterWin) return;
+		if (!pulsingWin) {
+			letterPulseT = 0; // never let the next win read a stale phase
+			return;
+		}
 		let raf = 0;
 		const t0 = performance.now();
 		const tick = (now: number) => {
@@ -427,9 +335,8 @@
 				// Inset the mask a few units top & bottom so the top slivers of the buffer symbols
 				// (just outside the visible rows) don't bleed in as thin lines at the grid edge.
 				const inset = isDesktop ? 2 : 0;
-				graphics.beginFill(0xffffff);
 				graphics.rect(0, inset, SYMBOL_W * BOARD_DIMENSIONS.x, SYMBOL_H * BOARD_DIMENSIONS.y - inset * 2);
-				graphics.endFill();
+				graphics.fill({ color: 0xffffff });
 			}}
 		/>
 		<!-- Thin vertical divider lines between the reel columns (behind the symbols). -->
@@ -462,8 +369,8 @@
 				     replacing the old one-shot spring pop. -->
 				{@const specialPop = isWin ? letterPulse : 1}
 				{#if reelSymbol.rawSymbol.name === 'SCATTER' && scatterFrames.length > 0}
-					<!-- Scatter shimmers with its animated emblem clip; does one pop when it enters the
-					     win state. Drawn a bit smaller than a cell. animationSpeed 0.14 (~8fps) stepped
+					<!-- Scatter shimmers with its animated emblem clip and pulses continuously while it
+					     wins. Drawn a bit smaller than a cell. animationSpeed 0.14 (~8fps) stepped
 					     visibly and read as "laggy"; 0.36 (~22fps) plays smoothly and stays under the
 					     30fps idle render cap so no frames drop. -->
 					<AnimatedSprite
@@ -479,7 +386,7 @@
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
 				{:else if reelSymbol.rawSymbol.name === 'WILD' && wildFrames.length > 0}
-					<!-- Animated WILD: plays its loop briskly on every spin; one pop on a win.
+					<!-- Animated WILD: plays its loop briskly on every spin; pulses continuously on a win.
 					     Multiplied by symScale (s) like the scatter so per-layout sizing applies —
 					     desktop s=1.0 keeps the tuned size; mobile draws it larger (design ask). -->
 					<AnimatedSprite
@@ -495,59 +402,64 @@
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
 				{:else if reelSymbol.rawSymbol.name === 'SCATTER'}
-					<!-- Fallback until the animation frames load: static medallion (no tilt). -->
+					<!-- Fallback until the animation frames load: static medallion (no tilt). Still takes
+					     specialPop — a bonus trigger inside the load window must not show a dead scatter. -->
 					<Sprite
 						key={getSpriteKey(reelSymbol.rawSymbol.name, reelSymbol.symbolState)}
 						x={getX(reelIndex)}
 						y={y}
 						anchor={{ x: 0.5, y: 0.5 }}
-						width={symbolW * s * SCATTER_SIZE}
-						height={symbolH * s * SCATTER_SIZE}
+						width={symbolW * s * SCATTER_SIZE * specialPop}
+						height={symbolH * s * SCATTER_SIZE * specialPop}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
-				{:else if isWin && winAnimTextures[reelSymbol.rawSymbol.name]}
-					{#if HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
-						<!-- Animal win: same brown frame + the full (uncropped) win animation on top. The
-						     frame carries the OPAQUE forest panel the bust sits on, so it must always draw —
-						     hiding it during anticipation left the transparent bust floating on the bare
-						     board background (the "empty forest cell" seen while waiting for the 3rd scatter).
-						     The additive glow column is wider/taller than the cell, so it still reads around
-						     the framed symbols. -->
-						<Sprite
-							key="animalBorder"
-							x={getX(reelIndex)}
-							y={y}
-							anchor={{ x: 0.5, y: 0.5 }}
-							width={symbolW * s * BORDER_SIZE * FRAME_W_MULT}
-							height={symbolH * s * BORDER_SIZE * FRAME_H_MULT}
-						/>
-						<!-- Bottom-anchored to the frame: the win art's feet sit on the card's bottom rail,
-						     so taller clips grow upward out of the card instead of spilling below it. -->
-						<!-- Desktop: lift the win art ~2-3px so its feet clear the frame's bottom rail
-						     (the enlarged desktop animals pushed it onto the border). -->
-						<AnimatedSprite
-							textures={winAnimTextures[reelSymbol.rawSymbol.name]}
-							x={getX(reelIndex)}
-							y={y + (symbolH * s * BORDER_SIZE * FRAME_H_MULT) / 2 - (isDesktop ? symbolH * 0.02 : isLandscape ? symbolH * 0.05 : 0)}
-							anchor={{ x: 0.5, y: 1 }}
-							width={symbolW * s * winFit}
-							height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[reelSymbol.rawSymbol.name] ?? 1)}
-							animationSpeed={0.36}
-							loop={true}
-							play={boardAnimate}
-						/>
-					{:else}
-						<!-- Low symbol (letter) win: no win-animation sheet — the clean tile pulses
-						     continuously (normal ↔ +10%) while the win is shown. -->
-						<Sprite
-							key={getSpriteKey(reelSymbol.rawSymbol.name, undefined)}
-							x={getX(reelIndex)}
-							y={y}
-							anchor={{ x: 0.5, y: 0.5 }}
-							width={symbolW * s * letterPulse}
-							height={symbolH * s * letterPulse}
-						/>
-					{/if}
+				{:else if isWin && HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name) && winAnimTextures[reelSymbol.rawSymbol.name]}
+					<!-- The HIGH_SYMBOLS_SET guard is explicit rather than implied by WIN_ANIM_KEY's contents,
+					     so nothing but an animal can ever reach the animalBorder + win-sheet pair.
+					     Animal win: same brown frame + the full (uncropped) win animation on top. The
+					     frame carries the OPAQUE forest panel the bust sits on, so it must always draw —
+					     hiding it during anticipation left the transparent bust floating on the bare
+					     board background (the "empty forest cell" seen while waiting for the 3rd scatter).
+					     The additive glow column is wider/taller than the cell, so it still reads around
+					     the framed symbols. -->
+					<Sprite
+						key="animalBorder"
+						x={getX(reelIndex)}
+						y={y}
+						anchor={{ x: 0.5, y: 0.5 }}
+						width={symbolW * s * BORDER_SIZE * FRAME_W_MULT}
+						height={symbolH * s * BORDER_SIZE * FRAME_H_MULT}
+					/>
+					<!-- Bottom-anchored to the frame: the win art's feet sit on the card's bottom rail,
+					     so taller clips grow upward out of the card instead of spilling below it. -->
+					<!-- Desktop: lift the win art ~2-3px so its feet clear the frame's bottom rail
+					     (the enlarged desktop animals pushed it onto the border). -->
+					<AnimatedSprite
+						textures={winAnimTextures[reelSymbol.rawSymbol.name]}
+						x={getX(reelIndex)}
+						y={y + (symbolH * s * BORDER_SIZE * FRAME_H_MULT) / 2 - (isDesktop ? symbolH * 0.02 : isLandscape ? symbolH * 0.05 : 0)}
+						anchor={{ x: 0.5, y: 1 }}
+						width={symbolW * s * winFit}
+						height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[reelSymbol.rawSymbol.name] ?? 1)}
+						animationSpeed={0.36}
+						loop={true}
+						play={boardAnimate}
+					/>
+				{:else if isWin && LOW_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
+					<!-- Letter (low) win: there is no letter win sheet - the CLEAN base tile pulses
+					     continuously (normal <-> +10%) for as long as the win is shown. Gated on
+					     LOW_SYMBOLS_SET rather than a bare `isWin`: a bare catch-all would also swallow a
+					     winning ANIMAL whose win sheet has not streamed in yet and draw it with no frame,
+					     leaving the transparent bust cutout floating on the bare board background. Animals
+					     must keep falling through to the animalBorder branch below. -->
+					<Sprite
+						key={getSpriteKey(reelSymbol.rawSymbol.name, undefined)}
+						x={getX(reelIndex)}
+						y={y}
+						anchor={{ x: 0.5, y: 0.5 }}
+						width={symbolW * s * letterPulse}
+						height={symbolH * s * letterPulse}
+					/>
 				{:else if HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
 					<!-- Base-state animal: shared brown frame + animated idle blink (or static tile for
 					     the animals without an idle sheet yet). The frame carries the OPAQUE forest panel
@@ -575,14 +487,13 @@
 							<Graphics
 								isMask
 								draw={(graphics) => {
-									graphics.beginFill(0xffffff);
 									graphics.rect(
 										-panelW / 2,
 										-panelH / 2 - panelH * PANEL_TOP_OVERFLOW,
 										panelW,
 										panelH * (1 + PANEL_TOP_OVERFLOW),
 									);
-									graphics.endFill();
+									graphics.fill({ color: 0xffffff });
 								}}
 							/>
 							<!-- Static frame-0 underlay: guarantees the animal is NEVER a blank frame even
@@ -627,18 +538,22 @@
 						/>
 					{/if}
 				{:else}
-					<!-- A WINNING symbol only reaches this fallback if its win animation failed to load
-					     (missing/stale-cached sheet). Show the CLEAN base tile then — never the old
-					     cracked, undersized `*WinTile` art (getSpriteKey(name,'win')), which read as a
-					     smaller "old win state" with an ugly size jump. Non-winning symbols keep their
-					     normal state art. -->
+					<!-- Non-winning symbols (their normal state art) plus a winning WILD whose animated
+					     sheet hasn't loaded yet — WIN_ANIM_KEY has no WILD/SCATTER entry, so it falls past
+					     every branch above; specialPop keeps it pulsing.
+					     A win reaching this branch shows the CLEAN base tile, never the old cracked,
+					     undersized `*WinTile` art (getSpriteKey(name,'win')), which read as a smaller "old
+					     win state" with an ugly size jump.
+					     No ANIMAL can reach here: a winning animal takes the win-anim branch, one whose sheet
+					     hasn't loaded takes the animalBorder branch, so the opaque forest panel always draws
+					     and the transparent bust cutout is never left floating on the bare board. -->
 					<Sprite
 						key={getSpriteKey(reelSymbol.rawSymbol.name, isWin ? undefined : reelSymbol.symbolState)}
 						x={getX(reelIndex)}
 						y={y}
 						anchor={{ x: 0.5, y: 0.5 }}
-						width={symbolW * s}
-						height={symbolH * s}
+						width={symbolW * s * specialPop}
+						height={symbolH * s * specialPop}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
 				{/if}

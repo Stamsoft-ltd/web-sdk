@@ -1,12 +1,8 @@
-<script lang="ts">
-	import { onMount } from 'svelte';
-	import { stateBet, stateBetDerived, stateConfig, stateUrlDerived } from 'state-shared';
-	import { getContext } from '../game/context';
-	import { forestStakeDerived } from '../state/forestStake.svelte';
-	import { i18nDerived } from '../i18n/i18nDerived';
-	import { fitLabel } from '../lib/fitLabel';
+<script lang="ts" module>
+	// Module scope so the art registers at bootstrap and preloads during the loading screen —
+	// this modal only mounts when opened, which used to be when its images first fetched.
+	import { ap } from '../lib/preloadArt';
 
-	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
 	const cardBg       = ap('/assets/components/ui/bonus_card_bg.webp');
 	const chanceIcon   = ap('/assets/components/ui/bonus_icon_chance.webp');
 	const featureIcon  = ap('/assets/components/ui/bonus_icon_feature.webp');
@@ -21,6 +17,15 @@
 	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.webp?v=20260624');
 	// Reuse the game-rules ("tutorials") round nav-button ring for the close button so they match.
 	const closeBtnBg = ap('/assets/components/info/nav_btn_bg.webp');
+</script>
+
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { stateBet, stateBetDerived, stateConfig, stateUrlDerived } from 'state-shared';
+	import { getContext } from '../game/context';
+	import { forestStakeDerived } from '../state/forestStake.svelte';
+	import { i18nDerived } from '../i18n/i18nDerived';
+	import { fitLabel } from '../lib/fitLabel';
 
 	type Props = {
 		onclose: () => void;
@@ -380,13 +385,6 @@
 		object-fit: contain;
 		filter: drop-shadow(0 2px 5px rgba(0,0,0,0.55));
 		/* Static — no swing (per design). */
-	}
-	@keyframes card-icon-swing {
-		0% { transform: rotate(0deg); }
-		25% { transform: rotate(6deg); }
-		50% { transform: rotate(0deg); }
-		75% { transform: rotate(-6deg); }
-		100% { transform: rotate(0deg); }
 	}
 
 	.card-price {

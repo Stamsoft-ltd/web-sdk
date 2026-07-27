@@ -66,10 +66,6 @@ const assets = {
 		type: 'sprite',
 		src: './assets/components/characters/deer_presenter_mobile.webp?v=20260722',
 	},
-	multiplierHand: {
-		type: 'sprite',
-		src: './assets/components/ui/multiplier_hand.webp?v=20260722',
-	},
 	multiplierXRed: {
 		type: 'sprite',
 		src: './assets/components/ui/multiplier_x_red.webp?v=20260722',
@@ -230,17 +226,32 @@ const assets = {
 		type: 'spriteSheet',
 		src: './assets/sprites/deerPresenterAnim/deer_anim_v2.json',
 	},
+	// ── Board-symbol sheets ship at SOURCE resolution. Do NOT rescale them by a flat factor. ──
+	// The twelve reel sheets (wildAnim, scatterAnim, the 5 *IdleAnim and the 5 *WinAnim below) are
+	// sized from the device pixels each sprite is actually drawn at — 1920×1080 at DPR 2, the
+	// largest layout we support well — not from a fraction of whatever the source happened to be.
+	// A uniform ×0.5 was applied to every sheet once before and left board symbols drawn 2.3–3.4×
+	// magnified; that is what this sizing replaced.
+	// Every one of those targets is LARGER than the best art that exists (the generators consume
+	// source videos that aren't in the repo — see generate_emblem_anim.py's usage line), so each
+	// sheet is capped at source and a 1.03–1.72× shortfall remains. Upsampling past source would
+	// spend bytes for no detail. `static/assets/sprites/check_sheet_sizes.py` re-derives the whole
+	// chain, prints the per-sheet ratios and asserts every atlas stays ≤ 4096 — run it after any
+	// change to the sheets or to the Board/stateGame sizing constants it mirrors.
+	// NB: bump ?v= whenever a sheet is regenerated. pixi copies the JSON's search params onto
+	// meta.image (spritesheetAsset.js), so the .json's ?v= is what busts the .webp as well; without
+	// it a client pairs a cached old atlas with new frame rects and draws garbage.
 	// Animated WILD symbol (black-background video, luma-keyed + un-premultiplied; 40-frame
 	// clip, ping-ponged at runtime — generate_emblem_anim.py) — plays on the reels.
 	wildAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/wildAnim/wild_anim_v3.json',
+		src: './assets/sprites/wildAnim/wild_anim_v3.json?v=20260726',
 	},
 	// Animated SCATTER emblem (same pipeline as the WILD; 40-frame clip, ping-ponged). The
 	// free-spin popups keep their own fsMedallionAnim loop — this sheet is only for the reels.
 	scatterAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/scatterAnim/scatter_anim.json',
+		src: './assets/sprites/scatterAnim/scatter_anim.json?v=20260726',
 	},
 	// Shared wooden frame w/ forest scene, drawn behind every animal symbol (fox/wolf/bear/rabbit/squirrel).
 	animalBorder: {
@@ -261,23 +272,23 @@ const assets = {
 	// Animated base-state (idle blink) animals — background-removed video frames, loop on the reels.
 	wolfIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/wolfIdleAnim/wolf_idle.json?v=20260722',
+		src: './assets/sprites/wolfIdleAnim/wolf_idle.json?v=20260726',
 	},
 	foxIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/foxIdleAnim/fox_idle.json?v=20260722',
+		src: './assets/sprites/foxIdleAnim/fox_idle.json?v=20260726',
 	},
 	squirrelIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/squirrelIdleAnim/squirrel_idle.json?v=20260722',
+		src: './assets/sprites/squirrelIdleAnim/squirrel_idle.json?v=20260726',
 	},
 	bearIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/bearIdleAnim/bear_idle.json?v=20260722',
+		src: './assets/sprites/bearIdleAnim/bear_idle.json?v=20260726',
 	},
 	rabbitIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/rabbitIdleAnim/rabbit_idle.json?v=20260722',
+		src: './assets/sprites/rabbitIdleAnim/rabbit_idle.json?v=20260726',
 	},
 	// Animated loading bar (49-frame 0→100% fill, white bar/text on transparency). This is the ONLY
 	// preloaded asset: it must be ready before the loading screen paints so the bar can show first
@@ -296,14 +307,6 @@ const assets = {
 		src: './assets/components/ui/press_play_logo.webp?v=20260722',
 		preload: true,
 	},
-	progressBar: {
-		type: 'sprites',
-		src: './assets/sprites/progressBar/progressBar.json?v=20260722',
-	},
-	freeSpins: {
-		type: 'sprites',
-		src: './assets/sprites/freeSpins/freeSpins.json?v=20260722',
-	},
 	transition: {
 		type: 'spine',
 		src: {
@@ -311,10 +314,6 @@ const assets = {
 			skeleton: './assets/spines/transition/transition.json',
 			scale: 2,
 		},
-	},
-	coins: {
-		type: 'spriteSheet',
-		src: './assets/sprites/coin/SD2_Coin.json?v=20260722',
 	},
 	// Single tumbling P-coin cycle (12 angles cut out of the coin-rain video) — the particle
 	// fountain's per-coin animation, so density can scale with the win tier again.
@@ -345,19 +344,14 @@ const assets = {
 		src: './assets/sprites/squirrelMoney/squirrel_money.json?v=20260722',
 	},
 	// Board win-state card animations (upper-body window of the same videos, card border baked).
-	rabbitWinAnim:   { type: 'spriteSheet', src: './assets/sprites/rabbitWinNew/rabbit_win_v2.json' },
-	bearWinAnim:     { type: 'spriteSheet', src: './assets/sprites/bearWinNew/bear_win_v2.json' },
-	foxWinAnim:      { type: 'spriteSheet', src: './assets/sprites/foxWinNew/fox_win_v2.json' },
-	wolfWinAnim:     { type: 'spriteSheet', src: './assets/sprites/wolfWinNew/wolf_win_v2.json' },
-	squirrelWinAnim: { type: 'spriteSheet', src: './assets/sprites/squirrelWinNew/squirrel_win_v2.json' },
-	// Cache-busted (?v=…) like the animal win anims — a stale/broken cached copy silently fails to
-	// load (AssetsLoader swallows the error), dropping the key so winning letters fall back to the
-	// old cracked static win tile instead of animating. The version query forces a fresh fetch.
-	tenWinAnim:      { type: 'spriteSheet', src: './assets/sprites/tenWinAnim/ten_win_anim.json?v=20260722' },
-	aWinAnim:        { type: 'spriteSheet', src: './assets/sprites/aWinAnim/a_win_anim.json?v=20260722' },
-	jWinAnim:        { type: 'spriteSheet', src: './assets/sprites/jWinAnim/j_win_anim.json?v=20260722' },
-	kWinAnim:        { type: 'spriteSheet', src: './assets/sprites/kWinAnim/k_win_anim.json?v=20260722' },
-	qWinAnim:        { type: 'spriteSheet', src: './assets/sprites/qWinAnim/q_win_anim.json?v=20260722' },
+	rabbitWinAnim:   { type: 'spriteSheet', src: './assets/sprites/rabbitWinNew/rabbit_win_v2.json?v=20260726' },
+	bearWinAnim:     { type: 'spriteSheet', src: './assets/sprites/bearWinNew/bear_win_v2.json?v=20260726' },
+	foxWinAnim:      { type: 'spriteSheet', src: './assets/sprites/foxWinNew/fox_win_v2.json?v=20260726' },
+	wolfWinAnim:     { type: 'spriteSheet', src: './assets/sprites/wolfWinNew/wolf_win_v2.json?v=20260726' },
+	squirrelWinAnim: { type: 'spriteSheet', src: './assets/sprites/squirrelWinNew/squirrel_win_v2.json?v=20260726' },
+	// NOTE: there are deliberately no letter (T/A/J/K/Q) win-animation sheets. A winning letter
+	// renders its CLEAN base tile with a continuous ±10% pulse (Board.svelte) — the sheets existed,
+	// were loaded, trimmed and ping-ponged, and were drawn by nothing. Don't re-add them.
 	// Must stay preloaded: EnableSound reads loadedAssets['sound'] in onMount (as soon as the tree
 	// mounts) and crashes if it isn't ready yet, which would hang the whole loading screen.
 	sound: {
@@ -383,21 +377,21 @@ const DEFERRED_KEYS: readonly string[] = [
 	// Free-spin intro/outro popup + scatter medallion
 	'fsIntro', 'fsMedallion', 'fsMedallionAnim',
 	// Win coins
-	'coins', 'pCoins',
+	'pCoins',
 	// Idle animal blink loops (~8.6MB) — the static animal tiles render until these arrive
 	// (wave 0), so the board is never blank; deferring them cuts the blocking load nearly in half.
 	'wolfIdleAnim', 'foxIdleAnim', 'squirrelIdleAnim', 'bearIdleAnim', 'rabbitIdleAnim',
-	// Expanded-symbol animations (animals) + board win animations (animals + letters)
+	// Expanded-symbol animations (animals) + board win animations (animals only — letters win with
+	// a pulsing static tile, no sheet)
 	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
 	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
-	'tenWinAnim', 'aWinAnim', 'jWinAnim', 'kWinAnim', 'qWinAnim',
 	// Animated WILD + SCATTER (static tiles render until they arrive — same pattern as the idle blinks)
 	'wildAnim', 'scatterAnim',
 	// Bonus-only art: expanded-symbol reveal tiles/frame, free-spin popup sprites, big-win glow,
 	// and the static bonus backgrounds (posters under the deferred bonus videos)
 	'foxExpTile', 'foxExpWinTile', 'wolfExpTile', 'wolfExpWinTile', 'bearExpTile', 'bearExpWinTile',
 	'rabbitExpTile', 'rabbitExpWinTile', 'squirrelExpTile', 'squirrelExpWinTile', 'expandedFrame',
-	'freeSpins', 'winGlow',
+	'winGlow',
 	'bonusNormalBackground', 'bonusSuperBackground',
 ];
 for (const key of DEFERRED_KEYS) {
@@ -407,30 +401,34 @@ for (const key of DEFERRED_KEYS) {
 
 // Order the background stream: a first base-game win can land seconds after the game becomes
 // playable, so everything visible in that moment (symbol win animations + flying coins) downloads
-// first (wave 0). Bonus-gated art (a bonus can't trigger for at least a few spins) goes last
-// (wave 2); the rest — big-win boards, free-spin popup art — takes the default wave 1.
+// first (wave 0). The rest — big-win boards, free-spin popup art — takes the default wave 1.
 const DEFER_WAVE_0: readonly string[] = [
 	// Idle blinks + the animated WILD / SCATTER first — visible from the first settled board.
 	'wolfIdleAnim', 'foxIdleAnim', 'squirrelIdleAnim', 'bearIdleAnim', 'rabbitIdleAnim',
 	'wildAnim', 'scatterAnim',
 	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
-	'tenWinAnim', 'aWinAnim', 'jWinAnim', 'kWinAnim', 'qWinAnim',
-	'coins', 'pCoins',
+	'pCoins',
 ];
-const DEFER_WAVE_2: readonly string[] = [
+for (const key of DEFER_WAVE_0) {
+	const entry = (assets as Record<string, { deferPriority?: number } | undefined>)[key];
+	if (entry) entry.deferPriority = 0;
+}
+
+// Bonus-only art: withheld from the background stream entirely and loaded on demand, because a
+// session that never triggers a bonus never draws any of it — a sizeable share of the art pool
+// that used to be paid by every player (run scripts/check-residency.py for the current figure).
+// game/utils.ts requests it from the book (see BONUS_ART_EVENTS there), which covers all four
+// entry paths: natural scatter, bought BONUS/SUPER, a one-spin FEATURE book, and a resumed round
+// replayed through createBonusSnapshot.
+const DEMAND_BONUS_ART: readonly string[] = [
 	'transition',
 	'bonusNormalBackground', 'bonusSuperBackground',
 	'deerPresenter', 'deerPresenterMobile', 'deerPresenterAnim',
 	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
 ];
-for (const [keys, priority] of [
-	[DEFER_WAVE_0, 0],
-	[DEFER_WAVE_2, 2],
-] as const) {
-	for (const key of keys) {
-		const entry = (assets as Record<string, { deferPriority?: number } | undefined>)[key];
-		if (entry) entry.deferPriority = priority;
-	}
+for (const key of DEMAND_BONUS_ART) {
+	const entry = (assets as Record<string, { deferDemand?: boolean } | undefined>)[key];
+	if (entry) entry.deferDemand = true;
 }
 
 // Layout-specific art: only the set matching the INITIAL viewport blocks playability; the other

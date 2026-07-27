@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	import { EnablePixiExtension } from 'components-pixi';
@@ -13,7 +13,8 @@
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import EnableSound from './EnableSound.svelte';
-	import EnableSharedTicker from './EnableSharedTicker.svelte';
+	import SceneAnimationDriver from './SceneAnimationDriver.svelte';
+	import SequenceHoldController from './SequenceHoldController.svelte';
 	import EnableGameActor from './EnableGameActor.svelte';
 	import PendingRoundRecovery from './PendingRoundRecovery.svelte';
 	import ResumeBet from './ResumeBet.svelte';
@@ -41,6 +42,7 @@
 	import ReplayHud from './replay/ReplayHud.svelte';
 	import SplashIntro from './SplashIntro.svelte';
 	import { BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { registerArtDeep, warmArt } from '../lib/preloadArt';
 
 	const context = getContext();
 
@@ -361,6 +363,15 @@
 				},
 			],
 		};
+
+		// The info/rules pages are plain HTML <img>s that only fetch when the modal opens —
+		// register every image in the meta so warmArt() pulls them during the loading screen.
+		// untrack: the deep read of the just-written $state must not become a dependency of
+		// this effect, or the write→read cycle loops it forever (effect_update_depth_exceeded).
+		untrack(() => {
+			registerArtDeep(stateMeta.betModeMeta);
+			registerArtDeep(stateMeta.gameRuleMeta);
+		});
 	});
 
 	// try/catch: Lingui THROWS (not undefined) when translate is called before the locale is
@@ -374,7 +385,12 @@
 		}
 	};
 
-	onMount(() => (context.stateLayout.showLoadingScreen = true));
+	onMount(() => {
+		context.stateLayout.showLoadingScreen = true;
+		// Fetch all registered HTML-side art while the loading screen is up (low priority, so
+		// the pixi atlases still win the bandwidth race).
+		warmArt();
+	});
 
 </script>
 
@@ -389,7 +405,8 @@
 		     edges stay smooth via texture filtering), and force the stable WebGL renderer instead of
 		     Pixi's less-mature WebGPU path (buggy on Safari 18). -->
 		<App preloadWebFont={false} maxResolution={2} antialias={false} rendererPreference="webgl">
-			<EnableSharedTicker />
+			<SceneAnimationDriver />
+			<SequenceHoldController />
 			<EnableSound />
 			<EnableHotkey />
 			<EnableGameActor />

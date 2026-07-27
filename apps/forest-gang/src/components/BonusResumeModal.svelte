@@ -1,12 +1,16 @@
+<script lang="ts" module>
+	// Module scope so the art preloads during the loading screen (the modal mounts on demand).
+	import { ap } from '../lib/preloadArt';
+
+	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.webp?v=20260624');
+</script>
+
 <script lang="ts">
 	import { stateBet } from 'state-shared';
 	import { i18nDerived } from '../i18n/i18nDerived';
 
 	type Props = { onPlay: () => void; onEnd: () => void };
 	const props: Props = $props();
-
-	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.webp?v=20260624');
 
 	const mode = $derived(stateBet.betToResume?.mode ?? '');
 	const modeLabel = $derived(mode === 'SUPER' ? 'All In' : mode === 'BONUS' ? 'Deal It' : 'Bonus');

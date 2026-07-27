@@ -3,6 +3,7 @@ export * from './utils.svelte';
 export * from './types';
 export * from './createApp.svelte';
 export * from './context.svelte';
+export { loadDemandAssets } from './assetDemand';
 
 // Namespace re-export so apps never import 'pixi.js' directly: with pnpm's strict node_modules
 // only packages that DECLARE pixi.js can type-resolve it, so direct app imports fail svelte-check

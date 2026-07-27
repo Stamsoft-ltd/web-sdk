@@ -10,6 +10,8 @@
 </script>
 
 <script lang="ts">
+	import { onDestroy } from 'svelte';
+
 	import type { LoadedSprite } from '../types';
 	import { getContextApp, getContextParticleParent } from '../context.svelte';
 
@@ -27,12 +29,20 @@
 	particleContainer.addParticle(...particles);
 	props.init(particles);
 
+	// Named + removed on destroy — same leak as ParticleEmitter had: an anonymous callback the
+	// component could never take back off the app ticker.
+	const tick = () => {
+		props.update(particles);
+		particleContainer.update();
+	};
+
 	if (context.stateApp.pixiApplication) {
-		context.stateApp.pixiApplication.ticker.add(() => {
-			props.update(particles);
-			particleContainer.update();
-		});
+		context.stateApp.pixiApplication.ticker.add(tick);
 	}
+
+	onDestroy(() => {
+		context.stateApp.pixiApplication?.ticker.remove(tick);
+	});
 </script>
 
 {#if texture === PIXI.Texture.EMPTY}

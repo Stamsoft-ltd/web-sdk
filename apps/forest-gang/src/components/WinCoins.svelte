@@ -37,9 +37,8 @@
 		medium: { max: 4, freq: 0.06 },
 		small: { max: 2, freq: 0.08 },
 	};
-	// winMult is the LIVE count-up multiplier, so the fountain grows as the win climbs tiers. Reduce
-	// it to a discrete tier key first so the emitter only re-inits when the tier actually changes
-	// (not every frame of the count-up).
+	// winMult is the LIVE count-up multiplier, so the fountain grows as the win climbs tiers.
+	// Reduced to a discrete tier key so intensity only changes at a tier boundary.
 	const tierKey = $derived.by(() => {
 		const m = props.winMult ?? 0;
 		if (m >= 25000) return 'max';
@@ -75,9 +74,15 @@
 		noRotation: false,
 		rotationSpeed: { min: -35, max: 35 },
 		lifetime: { min: 2.2, max: 3.0 },
-		// count/density scale with the win level (see INTENSITY above)
-		frequency: intensity.freq,
-		maxParticles: intensity.max,
+		// Density is NOT taken from the live tier here on purpose. `ParticleEmitter` calls
+		// `emitter.init(config)` whenever the config object changes, and `init()` starts with
+		// `cleanup()` — every live coin was destroyed at each tier crossing, so the fountain popped
+		// out exactly when the board changed. Keeping the config identity stable for the whole win
+		// and pushing `frequency`/`maxParticles` in as emitter props (they are plain settable
+		// members, synced by `propsSyncEffect`) grows the fountain live and never re-inits it.
+		// These two seed values must match the lowest tier, since that is what `winMult` is at mount.
+		frequency: TIERS.small.freq,
+		maxParticles: TIERS.small.max,
 		spawnType: 'rect',
 		// narrow origin at the bottom-centre → the coins all launch from one spot
 		spawnRect: { x: -70, y: 0, w: 140, h: 8 },
@@ -87,6 +92,12 @@
 <MainContainer>
 	<!-- Emitter pinned to the centre of the slot board; coins spring up from the middle. -->
 	<Container x={board.x} y={board.y}>
-		<ParticleEmitter {config} key="pCoins" emit={props.emit} />
+		<ParticleEmitter
+			{config}
+			key="pCoins"
+			emit={props.emit}
+			frequency={intensity.freq}
+			maxParticles={intensity.max}
+		/>
 	</Container>
 </MainContainer>

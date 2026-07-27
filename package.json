@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "lint": "PATH=\"$(dirname \"$(node -p 'process.execPath')\"):$PATH\" turbo run lint",
+    "test": "PATH=\"$(dirname \"$(node -p 'process.execPath')\"):$PATH\" turbo run test",
     "format": "PATH=\"$(dirname \"$(node -p 'process.execPath')\"):$PATH\" turbo run format",
     "dev": "PATH=\"$(dirname \"$(node -p 'process.execPath')\"):$PATH\" turbo run dev",
     "build": "PATH=\"$(dirname \"$(node -p 'process.execPath')\"):$PATH\" turbo run build",
