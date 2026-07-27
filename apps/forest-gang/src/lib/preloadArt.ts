@@ -5,23 +5,39 @@
 // fetches them all into the browser cache.
 const IMG_RE = /\.(webp|png|jpe?g|svg)(\?|$)/i;
 const queued = new Set<string>();
+const backlog: string[] = [];
 let warmed = false;
+let inflight = 0;
+// Drain the warm queue a trickle at a time, never all at once: ~90 simultaneous fetches
+// saturate every socket on a slow connection for minutes after the loading screen, and any
+// <img> the user opens meanwhile (info/paytable pages) dedupes into its queued low-priority
+// fetch and starves with it. With a trickle, an opened modal's images are fresh high-priority
+// requests that jump straight past the backlog.
+const MAX_INFLIGHT = 2;
 
-const fetchOne = (src: string) => {
-	const img = new Image();
-	// Stay behind the pixi atlas downloads in the request queue.
-	img.setAttribute('fetchpriority', 'low');
-	img.decoding = 'async';
-	img.src = src;
+const pump = () => {
+	while (inflight < MAX_INFLIGHT && backlog.length) {
+		const img = new Image();
+		// Stay behind the pixi atlas downloads in the request queue.
+		img.setAttribute('fetchpriority', 'low');
+		img.decoding = 'async';
+		inflight++;
+		img.onload = img.onerror = () => {
+			inflight--;
+			pump();
+		};
+		img.src = backlog.shift()!;
+	}
 };
 
 export const registerArt = (...urls: string[]) => {
 	for (const url of urls) {
 		if (!IMG_RE.test(url) || queued.has(url)) continue;
 		queued.add(url);
-		// Registered after warm-up (e.g. the locale-driven meta rebuild) → fetch right away.
-		if (warmed) fetchOne(url);
+		backlog.push(url);
 	}
+	// Registered after warm-up (e.g. the locale-driven meta rebuild) → keep draining.
+	if (warmed) pump();
 };
 
 /** Register every image-path string found anywhere inside a meta object. */
@@ -41,8 +57,8 @@ export const ap = (p: string) => {
 	return url;
 };
 
-/** Fetch everything registered so far. Browser-only — call it from onMount. */
+/** Start fetching everything registered so far. Browser-only — call it from onMount. */
 export const warmArt = () => {
 	warmed = true;
-	queued.forEach(fetchOne);
+	pump();
 };
