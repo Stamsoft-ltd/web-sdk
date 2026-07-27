@@ -105,6 +105,12 @@ export const stateGame = $state({
 	scatterCounter: 0,
 	selectedBonusSymbol: null as SymbolName | null,
 	bonusMode: null as 'freegame' | 'superspin' | 'feature' | null,
+	// What the BACKGROUND should show. Mirrors bonusMode, but is only ever assigned at the points
+	// where the transition veil covers the screen (see bookEventHandlerMap's freeSpinTrigger).
+	// bonusMode itself is also set by `bonusSymbolSelected`, which runs with the deer presenter on
+	// screen and nothing covering it — driving the background from that flipped the forest art
+	// mid-animation, in full view.
+	bonusBackgroundMode: null as 'freegame' | 'superspin' | 'feature' | null,
 	globalMultiplier: 1,
 	expandedSymbol: null as null | { symbol: SymbolName; reels: number[]; positions: Position[] },
 	expandedSymbolWon: false,
@@ -351,6 +357,7 @@ const scatterLandIndex = () => {
 const resetBonusState = () => {
 	stateGame.selectedBonusSymbol = null;
 	stateGame.bonusMode = null;
+	stateGame.bonusBackgroundMode = null;
 	stateGame.globalMultiplier = 1;
 	stateGame.expandedSymbol = null;
 	stateGame.expandedSymbolWon = false;

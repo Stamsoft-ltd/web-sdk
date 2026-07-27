@@ -337,6 +337,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			// so the CONGRATULATIONS intro appears already on the bonus background, not the base one.
 			stateGame.gameType = bonusMode;
 			stateGame.bonusMode = bonusMode;
+			stateGame.bonusBackgroundMode = bonusMode;
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
 			// Same "congratulations" sting the bonus-end (outro) congratulations uses.
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_congratulations' });
@@ -345,6 +346,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 		stateGame.gameType = bonusMode;
 		stateGame.bonusMode = bonusMode;
+		stateGame.bonusBackgroundMode = bonusMode;
 		if (!isFeatureSpin) {
 			eventEmitter.broadcast({ type: 'freeSpinIntroHide' });
 		}

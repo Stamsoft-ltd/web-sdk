@@ -20,11 +20,17 @@
 	};
 
 	const context = getContext();
-	// Drops out once the reveal has settled — from then on Board draws those columns as normal win
-	// symbols (see `expandedSwap` there), so the overlay must stop or the two would double-draw.
-	const expanded = $derived(
-		context.stateGame.expandedSettled ? null : context.stateGame.expandedSymbol,
-	);
+	// LOW (card) expands drop out once the reveal has settled — from then on Board draws those
+	// columns as normal win symbols (see `expandedSwap` there), so the overlay must stop or the two
+	// would double-draw. ANIMAL expands STAY UP for the whole round: the big animated animal filling
+	// the column IS the presentation, and handing it back to the reels replaced that hero art with
+	// four separate symbols the moment the reveal finished.
+	const expanded = $derived.by(() => {
+		const current = context.stateGame.expandedSymbol;
+		if (!current) return null;
+		if (context.stateGame.expandedSettled && LOW_SYMBOLS.has(current.symbol)) return null;
+		return current;
+	});
 	const bl = $derived(context.stateGameDerived.boardLayout());
 
 	const LOW_SYMBOLS = new Set<SymbolName>(['T', 'J', 'Q', 'K', 'A']);

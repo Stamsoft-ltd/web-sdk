@@ -265,6 +265,10 @@
 	const expandedSwap = $derived.by(() => {
 		const expanded = context.stateGame.expandedSymbol;
 		if (!expanded || !context.stateGame.expandedSettled || expanded.reels.length === 0) return null;
+		// LOW (card) expands ONLY. An animal's expanded column is one big animated animal — that is
+		// the feature's hero art, and it stays on screen for the whole round; swapping it for four
+		// separate symbols the moment the reveal landed threw the whole animation away.
+		if (!LOW_SYMBOLS_SET.has(expanded.symbol)) return null;
 		return { symbol: expanded.symbol, reels: new Set(expanded.reels) };
 	});
 
@@ -274,10 +278,11 @@
 	// those 80ms the reel's own symbol drew UNDER the half-transparent expanded tile and the two
 	// glyphs merged into one garbled shape, and once it fired every row the reveal had not reached
 	// yet went bare. It also removes the timer's restart race entirely. Null once the reveal has
-	// settled — from there `expandedSwap` below renders those reels as normal win symbols.
-	const expandedCoverage = $derived(
-		context.stateGame.expandedSettled ? null : context.stateGame.expandedCoverage,
-	);
+	// settled — from there `expandedSwap` below renders those reels as normal win symbols. Read
+	// straight from state rather than gating on `expandedSettled`: the overlay publishes {} exactly
+	// when it stops drawing, so coverage always tracks what is actually painted. An ANIMAL expand
+	// keeps drawing after it settles, and keeps its rows covered with it.
+	const expandedCoverage = $derived(context.stateGame.expandedCoverage);
 
 	const hasActiveAnticipation = () =>
 		context.stateGame.board.some((reel) => reel.reelState.anticipating);

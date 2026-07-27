@@ -2336,7 +2336,11 @@
 		margin-top: calc(var(--u) * 0.022);
 	}
 	.pt-stats .pt-balance { justify-self: start; margin-left: calc(var(--u) * 0.008); }
-	.pt-stats .pt-win { justify-self: end; margin-right: calc(var(--u) * 0.03); }
+	/* 0.012, not 0.03: the WIN pill is end-aligned, so its right margin is what pushes it LEFT —
+	   at 0.03·u it sat hard against the bet pill's + button. Trimming the margin slides it right,
+	   opening the gap. It still clears the screen edge: .pt-stats is only --u wide (≤97% of the
+	   canvas), so there is ~1.5% of viewport either side before this margin is counted. */
+	.pt-stats .pt-win { justify-self: end; margin-right: calc(var(--u) * 0.012); }
 	/* Balance: transparent (no pad), centred label + gold value. */
 	.pt-balance {
 		flex: 0 0 auto;
@@ -2398,7 +2402,13 @@
 		width: calc(var(--u) * 0.145); height: calc(var(--u) * 0.138);
 		border: 0; padding: 0; cursor: pointer;
 		background: var(--pt-buybonus) center / contain no-repeat;
-		display: grid; place-items: center;
+		/* minmax(0, 1fr), not the implicit auto track: the label's lines are `white-space: nowrap`,
+		   so an auto track sizes itself to their max-content and OVERFLOWS this fixed-width button
+		   (58px of track in a 51.2px button at 320px wide). `place-items: center` then centres the
+		   label in that oversized track, which starts at the button's left edge — so the label's
+		   centre landed 3.4px right of the disc, ~9% of it. Capping the track at the button's width
+		   puts the centre back on the disc; the nowrap line overflows it symmetrically instead. */
+		display: grid; grid-template-columns: minmax(0, 1fr); place-items: center;
 		transition: filter 0.12s ease, transform 0.12s ease;
 	}
 	.pt-buy:hover { filter: brightness(1.1); }
@@ -2413,6 +2423,15 @@
 		/* Each word is its own block line (.pt-buy__line), so nothing has to wrap: the box spans
 		   the full button and text-align:center centres every line. The previous single nowrap
 		   line is what forced the shrink-to-illegible on small phones. */
+		/* width, not max-width. The lines are `white-space: nowrap`, so a long single word (DISABLE)
+		   gives this box a min-content width WIDER than the button — 58px inside a 51.2px button at
+		   320px wide. An over-sized grid item can't be centred without overflowing the start edge,
+		   so `place-items: center` degrades to start alignment: the box sat flush against the
+		   button's left edge and overflowed 6.8px to the right, putting the label's centre 3.4px
+		   right of the disc (~9% of it — clearly visible). Pinning the box to the button's width
+		   keeps it centred, and `text-align: center` then overflows the nowrap line symmetrically,
+		   which is what fitLabel scales back inside the disc anyway. */
+		width: 100%;
 		max-width: 100%;
 		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
 		-webkit-background-clip: text; background-clip: text;

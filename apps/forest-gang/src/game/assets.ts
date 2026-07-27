@@ -2,21 +2,29 @@ const assets = {
 
 
 
-	// Dedicated portrait forest scene (360×800) — used in the base game on portrait phones
-	// instead of the cropped landscape visualV2.
-	visualPortrait: {
-		type: 'sprite',
-		src: './assets/components/backgrounds/bg_mobile_portrait.webp?v=20260722',
-	},
-	// New-design desktop base background (static forest; replaced the looping video).
+	// Base background for EVERY layout (static forest; replaced the looping video). The dedicated
+	// portrait / mobile-landscape scenes are gone: bg_mobile_portrait still had the old FOREST
+	// CASINO house in it, and both were ~546KB of art for scenes this one already covers. The
+	// static files are still on disk if either is ever wanted back.
 	baseBackground: {
 		type: 'sprite',
 		src: './assets/components/backgrounds/base_bg.webp?v=20260723c',
 	},
-	// Mobile-landscape base background (static forest art).
-	baseBgLandscape: {
+	// Portrait-only scenes. The 16:9 art above is `cover`-cropped to ~26% of its width on a phone,
+	// so portrait gets its own tall paintings of the same three scenes (base / Deal It / All In).
+	// Sources were RGBA with a feathered transparent border — cropped to the opaque region before
+	// conversion, or the see-through edge would have shown as a black rim on a full-bleed sprite.
+	portraitBase: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bg_mobile_landscape.webp?v=20260722',
+		src: './assets/components/backgrounds/bg_portrait_base.webp?v=20260727',
+	},
+	portraitDealIt: {
+		type: 'sprite',
+		src: './assets/components/backgrounds/bg_portrait_dealit.webp?v=20260727',
+	},
+	portraitAllIn: {
+		type: 'sprite',
+		src: './assets/components/backgrounds/bg_portrait_allin.webp?v=20260727',
 	},
 	// Figma top+bottom shadow (node 2792-4133) layered on top of the portrait bg ONLY —
 	// rendered below the board/symbols/logo so it darkens the scene, never the UI.
@@ -414,9 +422,9 @@ for (const key of DEMAND_BONUS_ART) {
 // utils-layout/createLayout.svelte.ts (portrait = ratio ≤ 0.8; landscape = short side ≤ 480).
 const MOBILE_ONLY_KEYS: readonly string[] = [
 	// Portrait art
-	'visualPortrait', 'portraitShadow', 'slotPadMobile',
+	'portraitBase', 'portraitDealIt', 'portraitAllIn',
+	'portraitShadow', 'slotPadMobile',
 	// Mobile-landscape art
-	'baseBgLandscape',
 	'aTileLs', 'kTileLs', 'qTileLs', 'jTileLs', 'tTileLs',
 	'aWinTileLs', 'kWinTileLs', 'qWinTileLs', 'jWinTileLs', 'tWinTileLs',
 	'foxTileLs', 'wolfTileLs', 'bearTileLs', 'rabbitTileLs', 'squirrelTileLs',
@@ -424,12 +432,12 @@ const MOBILE_ONLY_KEYS: readonly string[] = [
 	'wildTileLs', 'scatterCustomLs', 'cardPadLs', 'reelFrameLs', 'stepperPadLs', 'navBarLs',
 	'buyBonusLs',
 ];
-const DESKTOP_ONLY_KEYS: readonly string[] = [
-	// Desktop base background (mobile portrait/landscape have their own). NOTE: boardFrameDesktop
-	// is NOT here — since the redesign, BoardFrame draws it in every layout, so deferring it on
-	// mobile shipped phones a frameless board when the deferred stream stalled.
-	'baseBackground',
-];
+// Empty since the layouts were unified on one base background: `baseBackground` used to live here,
+// but it is now the base art on phones too, so deferring it would ship them a bare stage until the
+// background pass finished. NOTE: boardFrameDesktop was never here either — since the redesign
+// BoardFrame draws it in every layout, so deferring it on mobile shipped a frameless board when the
+// deferred stream stalled.
+const DESKTOP_ONLY_KEYS: readonly string[] = [];
 if (typeof window !== 'undefined') {
 	const w = window.innerWidth;
 	const h = window.innerHeight;
