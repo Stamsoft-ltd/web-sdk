@@ -301,9 +301,9 @@ const boardLayout = () => {
 		};
 	}
 
-	// Very slightly smaller than before (was 0.92) so its bottom-right corner clears the nav on short
-	// screens; combined with centring below.
-	const boardScale = getBoardScale() * 0.9;
+	// Very slightly smaller (was 0.92 → 0.9) so its bottom-right corner clears the nav on short screens
+	// like 1024×576; shrinking (rather than moving down) also eases the top, which is already tight there.
+	const boardScale = getBoardScale() * 0.88;
 	// Centre the grid in the padded region (top padding sits below the logo, bottom padding above the
 	// HUD) instead of top-anchoring it, then ease it slightly DOWN — the full bottom reserve pulled it
 	// too close to the top on short laptops (e.g. 1024×576).

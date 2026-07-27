@@ -1997,9 +1997,9 @@
 		min-width: 0;
 		padding: clamp(1px, 1vh, 5px) clamp(2px, 1.2vw, 14px);
 		border-left: none;
-		background: #000616c7;
-		border: 1.5px solid rgba(96, 165, 250, 0.5);
-		border-radius: clamp(8px, 1.6vh, 13px);
+		/* Match the portrait balance — the designed black-box container art (was a plain CSS dark box). */
+		background: var(--pt-balance-bg) center / 100% 100% no-repeat;
+		border: none;
 		text-align: left;
 	}
 	.ls-balance .label--balance {
