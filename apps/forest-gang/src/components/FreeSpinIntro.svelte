@@ -199,6 +199,15 @@
 			     size/position per-layout comes from L.medW / L.medY. -->
 			<Container y={Math.round(BW * L.medY)} scale={1 + 0.06 * Math.sin(animT * 2.6)}>
 				{#if medallionFrames.length > 0}
+					<!-- Black silhouette behind the animated emblem — see the outro popup and the
+					     fsMedallionShadow asset note: the sheet is luma-keyed, so without this the
+					     panel's wood reads through the medallion. -->
+					<Sprite
+						key="fsMedallionShadow"
+						anchor={{ x: 0.5, y: 0.5 }}
+						width={Math.round(BW * L.medW)}
+						height={Math.round(BW * L.medW * (443 / 485))}
+					/>
 					<AnimatedSprite
 						textures={medallionFrames}
 						anchor={0.5}

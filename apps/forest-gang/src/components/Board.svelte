@@ -269,10 +269,14 @@
 			if (hiddenReels.size > 0) hiddenReels = new Set<number>();
 			return;
 		}
-		const lastReel = expanded.reels[expanded.reels.length - 1];
-		if (hiddenReels.has(lastReel)) return;
+		// Hide EVERY reel the overlay currently covers, not just the newest one. Only the last reel
+		// used to be added, which held up while the reveal appended one reel at a time — but a stop
+		// press (and super-turbo) lands all remaining columns in a SINGLE assignment, so every column
+		// except the last stayed visible and its original symbols showed through the expanded symbol.
+		const pending = expanded.reels.filter((reel) => !hiddenReels.has(reel));
+		if (pending.length === 0) return;
 		const t = setTimeout(() => {
-			hiddenReels = new Set([...hiddenReels, lastReel]);
+			hiddenReels = new Set([...hiddenReels, ...pending]);
 		}, 80);
 		return () => clearTimeout(t);
 	});

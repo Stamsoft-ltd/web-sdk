@@ -66,6 +66,14 @@ const assets = {
 		type: 'sprite',
 		src: './assets/components/characters/deer_presenter_mobile.webp?v=20260722',
 	},
+	// Bear paw holding the global-multiplier board (944×708; the board region is 592px wide,
+	// centred at 368,324). DESKTOP ONLY — the paw needs the horizontal room of the right strip;
+	// on portrait/landscape it crowded the stacked column, which is why every layout was switched
+	// to the flat leaf-corner board. Desktop keeps the paw and its slide (see GlobalMultiplier).
+	multiplierHand: {
+		type: 'sprite',
+		src: './assets/components/ui/multiplier_hand.webp?v=20260722',
+	},
 	multiplierXRed: {
 		type: 'sprite',
 		src: './assets/components/ui/multiplier_x_red.webp?v=20260722',
@@ -219,6 +227,21 @@ const assets = {
 	fsMedallionAnim: {
 		type: 'spriteSheet',
 		src: './assets/sprites/fsMedallion/medallion_anim_v2.json',
+	},
+	// Opaque black silhouette of the medallion, drawn BEHIND fsMedallionAnim.
+	//
+	// That sheet is luma-keyed: its alpha channel is a greyscale copy of the artwork, so the
+	// emblem's dark interior is not dark paint, it is LOW ALPHA. Over black it composites into
+	// exactly the intended design; over the popup's brown wood the grain reads straight through it
+	// and the emblem looks washed out. This silhouette restores the black it was authored against.
+	//
+	// Generated FROM medallion_anim_v2 itself (per-pixel median alpha over the 40 frames,
+	// thresholded, holes filled, eroded 1px so it can never poke past the art, 0.8px soft edge) —
+	// so it tracks that sheet's shape exactly and shares no lineage with the older static
+	// fsMedallion.webp. Regenerate it if the animation is ever re-exported.
+	fsMedallionShadow: {
+		type: 'sprite',
+		src: './assets/sprites/fsMedallion/medallion_shadow.webp',
 	},
 	// Animated deer presenter (background-removed video frames; 41-frame loop) — replaces the
 	// static desktop deer on the expanded-symbol reveal.

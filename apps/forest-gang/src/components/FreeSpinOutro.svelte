@@ -132,10 +132,15 @@
 						{@const BW = 1100}
 						{@const fromBottom = (1 - slideIn.current) * BW * 0.55}
 						{@const fromTop = (1 - slideIn.current) * -BW * 0.7}
-						<!-- Portrait: lift the WHOLE board (heading + win + amount) up a touch. The press line
-						     is canvas-anchored (PressToContinue at 0.78·height) and stays put, so this just
-						     opens up padding between the board's bottom leaves and "PRESS ANYWHERE". -->
-						{@const boardLift = isPortrait ? Math.round(BW * 0.08) : 0}
+						<!-- Lift the WHOLE board (frame, heading, medallion, amount) so its bottom leaves
+						     clear "PRESS ANYWHERE TO CONTINUE". That line is drawn by PressToContinue,
+						     anchored to the HUD rather than to this board, so the board is the piece that
+						     has to move. Applies to EVERY layout that draws the line underneath — it was
+						     portrait-only, which left tablet/almost-square windows (where the popup is
+						     tallest relative to the screen) with the text against the leaves. Mobile
+						     landscape is excluded because it draws its press line INSIDE the panel
+						     (PressAnywhereText), so it travels with the board and gains nothing. -->
+						{@const boardLift = isLandscape ? 0 : Math.round(BW * 0.07)}
 
 						<Container y={-boardLift}>
 						<Container y={fromBottom}>
@@ -154,6 +159,16 @@
 						     amount group sits higher and the amount no longer hugs the bottom rail. -->
 						<Container y={Math.round(-BW * 0.03)} scale={medallionPulse}>
 							{#if medallionFrames.length > 0}
+								<!-- Black silhouette behind the animated emblem: its frames are luma-keyed, so
+								     the dark interior is low alpha and the wood grain shows through. This is
+								     the background it was authored against. Same box as the sprite so the two
+								     always align. -->
+								<Sprite
+									key="fsMedallionShadow"
+									anchor={{ x: 0.5, y: 0.5 }}
+									width={Math.round(BW * 0.322)}
+									height={Math.round(BW * 0.322 * (443 / 485))}
+								/>
 								<AnimatedSprite
 									textures={medallionFrames}
 									anchor={0.5}
@@ -177,7 +192,7 @@
 						{@const winFont = Math.round(BW * 0.072)}
 						{@const winMaxW = BW * 0.6}
 						{@const winScale = amountSizes.width > winMaxW ? winMaxW / amountSizes.width : 1}
-						<Container y={Math.round(BW * 0.17)} scale={winScale}>
+						<Container y={Math.round(BW * 0.21)} scale={winScale}>
 							<Text
 								anchor={0.5}
 								onresize={(s) => (amountSizes = s)}
@@ -196,8 +211,11 @@
 						{#if isLandscape}
 							<!-- Mobile landscape only: press text in PANEL space so it tracks the board and
 							     clears the side rails. All other layouts draw it BELOW the board instead
-							     (see PressToContinue), so it sits in the glow ledge, not over the planks. -->
-							<PressAnywhereText y={Math.round(BW * 0.47)} fontSize={Math.round(BW * 0.032)} />
+							     (see PressToContinue), so it sits in the glow ledge, not over the planks.
+							     0.51 (was 0.47): on a real phone the line crowded the wooden bottom rail —
+							     this drops it into the glow ledge just under the frame. The board's bottom
+							     edge is 0.56·BW, so it still travels with the panel. -->
+							<PressAnywhereText y={Math.round(BW * 0.51)} fontSize={Math.round(BW * 0.032)} />
 						{/if}
 						</Container>
 

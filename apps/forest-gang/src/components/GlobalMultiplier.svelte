@@ -7,7 +7,7 @@
 
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
-	import { backOut } from 'svelte/easing';
+	import { backOut, cubicIn } from 'svelte/easing';
 
 	import { Container, Sprite, Text } from 'pixi-svelte';
 	import { FadeContainer } from 'components-pixi';
@@ -26,6 +26,13 @@
 	const X_RED_W = BOARD_W * 0.34;
 	// Vertical centre nudge so the Cinzel caps sit in the middle of the wood board.
 	const NUM_Y = BOARD_W * 0.012;
+	// Bear-paw board sizing (DESKTOP only). The art is 944×708 and the board it carries is 592px
+	// wide, centred at (368,324) — so scaling by 944/592 renders that board at exactly BOARD_W,
+	// and the sprite anchor below puts it over the container origin with the paw reaching in.
+	const HAND_W = BOARD_W * (944 / 592);
+	const HAND_H = HAND_W * (708 / 944);
+	// How far the paw carries the board off-screen and back when the value changes.
+	const SLIDE = BOARD_W * 0.55;
 	const context = getContext();
 	// Shrink-to-fit + centred in the strip right of the board on desktop (see bonusRailAdjust).
 	const railAdj = $derived(context.stateGameDerived.bonusRailAdjust(BOARD_W));
@@ -82,15 +89,21 @@
 	// animates (fade out, swap value, settle from 1.45x down to 1x) only when the multiplier CHANGES.
 	let show = $state(false);
 	let multiplier = $state(1);
+	let groupX = new Tween(0);
 	let groupAlpha = new Tween(1);
 	let groupScale = new Tween(1);
 	let swapTarget: number | null = null;
 	let swapped = false;
 
-	// Swap the displayed value — every layout fades the old value out, then the new value lands
-	// oversized (1.45x) and settles back to 1x under backOut on the static leaf-corner board
-	// (design ask: the same zoom pad wherever the multiplier appears — Deal It, All In and
-	// everything else — instead of a bear paw sliding in).
+	// DESKTOP carries the board on the bear paw, which SLIDES out and back when the value changes.
+	// Every other layout keeps the flat leaf-corner board and zoom-settles the value instead: the
+	// paw needs horizontal room that the stacked portrait/landscape columns don't have, which is
+	// what got it pulled everywhere — only the desktop right strip is wide enough for it.
+	const useFlatBoard = $derived(!isDesktop);
+
+	// Swap the displayed value — the old value fades out, then the new one arrives: on the flat
+	// board it lands oversized (1.45x) and settles under backOut, on the paw it rides back in from
+	// off-strip under the same easing.
 	//
 	// The two waits here MIRROR the tween durations either side of the value swap; they are not
 	// free "let the player read it" beats. So the tweens are scaled by the SAME speed factor the
@@ -102,6 +115,8 @@
 		const speed = holdScale();
 		swapTarget = next;
 		swapped = false;
+		// Paw leaves first, carrying the old value out with it.
+		if (!useFlatBoard) groupX.set(SLIDE, { duration: 170 * speed, easing: cubicIn });
 		groupAlpha.set(0, { duration: 150 * speed });
 		const cut = await hold(170);
 		// `show` guard: the bonus can end (globalMultiplierHide) while this swap is still in flight,
@@ -110,8 +125,15 @@
 		swapTarget = null;
 		multiplier = next;
 		const swapIn = cut ? 0 : 280 * speed;
-		groupScale.set(1.45, { duration: 0 });
-		groupScale.set(1, { duration: swapIn, easing: backOut });
+		if (useFlatBoard) {
+			groupScale.set(1.45, { duration: 0 });
+			groupScale.set(1, { duration: swapIn, easing: backOut });
+		} else {
+			// Snap to the far side, then ride back to centre — `cut` collapses it to an instant
+			// placement so a stop press can't leave the paw parked off-strip.
+			groupX.set(-SLIDE, { duration: 0 });
+			groupX.set(0, { duration: swapIn, easing: backOut });
+		}
 		groupAlpha.set(1, { duration: cut ? 0 : 190 * speed });
 		await hold(280);
 	};
@@ -123,6 +145,7 @@
 			multiplier = swapTarget;
 			swapTarget = null;
 		}
+		groupX.set(0, { duration: 0 });
 		groupScale.set(1, { duration: 0 });
 		groupAlpha.set(1, { duration: 0 });
 	});
@@ -132,11 +155,13 @@
 		globalMultiplierShow: () => {
 			show = true;
 			multiplier = 1;
+			groupX.set(0, { duration: 0 });
 			groupAlpha.set(1, { duration: 0 });
 		},
 		globalMultiplierHide: () => {
 			show = false;
 			multiplier = 1;
+			groupX.set(0, { duration: 0 });
 			groupAlpha.set(1, { duration: 0 });
 		},
 		globalMultiplierUpdate: async (emitterEvent) => {
@@ -156,14 +181,20 @@
 {#snippet panel()}
 	<!-- Persistent board; the group fades and scale-settles when the multiplier value changes -->
 	<Container
-		x={position.x}
+		x={position.x + (useFlatBoard ? 0 : groupX.current)}
 		y={position.y}
 		alpha={groupAlpha.current}
 		scale={scale * groupScale.current}
 	>
-			<!-- Hand-less leaf-corner board (same art as the EARNED card) — the bear paw crowded the
-			     stacked column (design ask). -->
-			<Sprite key="counterFrame" anchor={0.5} width={BOARD_W * 1.02} height={BOARD_W * 0.76} />
+			{#if useFlatBoard}
+				<!-- Leaf-corner board (same art as the EARNED card) — the paw crowded the stacked
+				     portrait/landscape columns, so those layouts keep this flat board. -->
+				<Sprite key="counterFrame" anchor={0.5} width={BOARD_W * 1.02} height={BOARD_W * 0.76} />
+			{:else}
+				<!-- Desktop: bear paw carrying the board. The anchor (0.39/0.458) is the art's board
+				     region, so it lands on the container origin and the paw extends to the right. -->
+				<Sprite key="multiplierHand" anchor={{ x: 0.39, y: 0.458 }} width={HAND_W} height={HAND_H} />
+			{/if}
 
 			<!-- At 1x, show the red X emblem; otherwise the Cinzel 900 gold number -->
 			{#if multiplier === 1}

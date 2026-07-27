@@ -370,19 +370,36 @@
 		}
 	};
 
-	// Tap-anywhere-to-spin on touch layouts: on a phone the player shouldn't have to hit the spin
-	// button, so a tap on the game does exactly what the Space hotkey does — spin when idle, skip /
-	// stop while a round plays — by calling the SAME handler, so those rules live in one place.
+	// Tap-anywhere on touch layouts SKIPS the presentation — it hurries the current round along, the
+	// same as pressing stop. It must NEVER place a bet: the whole screen is a tap target, so betting
+	// from here would let a stray touch spend the player's money with no button press. When the game
+	// is idle there is nothing to skip and the tap does nothing; starting a round stays deliberate,
+	// via the spin button (or Space, which keeps its own bet-when-idle behaviour).
 	//
 	// A tap only counts when it lands on the Pixi CANVAS, and that single test is what keeps this
 	// off the UI: controls, modals, the menu and the splash overlay all take pointer events, so a
 	// tap on them targets that element instead. Meanwhile .hud-shell / .ls-hud are pointer-events:
 	// none, so taps over empty HUD space fall through and DO target the canvas — "anywhere" really
 	// is anywhere, with no selector blacklist to keep in sync as the HUD changes.
+	const onTapSkip = () => {
+		// The "Unfinished Round" dialog owns the screen — the player must choose there.
+		if (context.stateGame.resumeModalOpen) return;
+		// Idle = nothing to skip. This is the guard that keeps a tap from ever costing a bet.
+		if (context.stateXstateDerived.isIdle()) return;
+		context.eventEmitter.broadcast({ type: 'soundPressBet' });
+		// Same skip path as the stop button: buffer during the initial bet-loading window (so the
+		// press isn't swallowed before any event has drawn), otherwise stop right now.
+		if (context.stateGame.awaitingFirstReveal) {
+			context.stateGame.pendingStop = true;
+			return;
+		}
+		broadcastStop();
+	};
+
 	const TAP_SLOP_PX = 12;
 	let tapStart: { x: number; y: number } | null = null;
 	$effect(() => {
-		// Touch layouts only — on desktop the pointer is a mouse and a stray click shouldn't bet.
+		// Touch layouts only — desktop keeps mouse + Space.
 		if (layoutType === 'desktop') return;
 		const onPointerDown = (event: PointerEvent) => {
 			tapStart = event.isPrimary ? { x: event.clientX, y: event.clientY } : null;
@@ -394,9 +411,9 @@
 			// A drag or swipe across the board is not a tap.
 			if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_SLOP_PX) return;
 			if (!(event.target instanceof HTMLCanvasElement)) return;
-			// Dialogs don't always cover the whole screen — never bet on canvas showing beside one.
+			// Dialogs don't always cover the whole screen — ignore canvas showing beside one.
 			if (stateModal.modal || menuOpen || showAutoModal || showBuyModal) return;
-			onSpinHotkey();
+			onTapSkip();
 		};
 		// Capture phase so this still sees the tap if something downstream stops propagation.
 		document.addEventListener('pointerdown', onPointerDown, true);
