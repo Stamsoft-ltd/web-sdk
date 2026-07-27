@@ -18,15 +18,16 @@
 		PIXI.Assets.reset();
 
 		await preloadFont();
-		// Cap the render resolution at 2× the CSS pixel grid. Many phones report a devicePixelRatio of 3,
-		// which makes the GPU shade ~9× the pixels of a 1× canvas (vs 4× at 2×) — the single biggest cause
-		// of mobile heat/lag here. 2× is still visually retina-sharp for this art.
-		const renderResolution = Math.min(devicePixelRatio.current || 1, 2);
-		// Antialiasing (MSAA) off on TOUCH / MOBILE devices only — it is a real GPU cost on phones and
-		// near-invisible once we supersample at the capped 2× resolution. Desktops/laptops (fine pointer)
-		// keep AA on, exactly as before. AA does NOT affect frame rate, so this cannot cause any stutter.
+		// Detect touch / mobile once — drives the phone-only heat optimizations below.
 		const isTouchDevice =
 			typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches === true;
+		// Cap render resolution. Phones report devicePixelRatio up to 3 (→ ~9× the pixels of a 1× canvas),
+		// so shading fewer pixels every frame is the BROADEST GPU-heat reduction — it helps every phone
+		// regardless of refresh rate (unlike the fps cap, which only helps 120Hz panels). Phones get a
+		// tighter 1.8× cap (still crisp on a dense screen); desktops/laptops keep the retina-sharp 2× cap.
+		const renderResolution = Math.min(devicePixelRatio.current || 1, isTouchDevice ? 1.8 : 2);
+		// Antialiasing (MSAA) off on TOUCH / MOBILE devices only — a real GPU cost on phones, near-invisible
+		// once we supersample. Desktops/laptops (fine pointer) keep AA on. AA does not affect frame rate.
 		context.stateApp.pixiApplication = new PIXI.Application<PIXI.Renderer<HTMLCanvasElement>>();
 		await context.stateApp.pixiApplication.init({
 			autoDensity: true,
@@ -41,10 +42,6 @@
 			resizeTo: wrap,
 		});
 
-		// NOTE: intentionally NOT capping ticker.maxFPS. Pixi throttles by skipping ticker frames, and when
-		// the cap sits at/near the display refresh, rAF jitter makes it skip unevenly — the reactive scene
-		// (Svelte tweens) then gets sampled at irregular intervals and the spin visibly judders. The DPR cap
-		// + AA-off already cut per-frame cost a lot, so we let the loop run at the native refresh (smooth).
 		context.stateApp.pixiApplication.stage.sortableChildren = true;
 
 		wrap.appendChild(context.stateApp.pixiApplication.canvas);
@@ -55,6 +52,31 @@
 		// to prevent that you can't scroll the page with touch on the canvas. https://github.com/pixijs/pixijs/issues/4824
 		context.stateApp.pixiApplication.renderer.events.autoPreventDefault = false;
 		context.stateApp.pixiApplication.renderer.canvas.style.touchAction = 'auto';
+
+		// Sustained-heat guard for high-refresh phones: rendering the full scene every frame at 120Hz is
+		// ~2× the GPU work (and heat) of 60fps, with no visible benefit for slot content. On TOUCH devices
+		// whose panel is genuinely ≥~105Hz, cap the loop to 60fps — a stable 120Hz panel divides 2:1 to an
+		// even, smooth 60. Desktops (fine pointer) and 60/90Hz screens stay at native refresh, so this can
+		// NOT reintroduce the beat-judder seen on 60Hz displays. Refresh is measured from rAF (median of a
+		// short burst) so we only engage on genuine high-refresh hardware.
+		if (isTouchDevice) {
+			const app = context.stateApp.pixiApplication;
+			const gaps: number[] = [];
+			let prev = performance.now();
+			const sample = () => {
+				const now = performance.now();
+				gaps.push(now - prev);
+				prev = now;
+				if (gaps.length < 32) {
+					requestAnimationFrame(sample);
+					return;
+				}
+				const sorted = gaps.slice(2).sort((a, b) => a - b);
+				const medianGap = sorted[sorted.length >> 1] ?? 16.7;
+				if (medianGap < 9.5) app.ticker.maxFPS = 60;
+			};
+			requestAnimationFrame(sample);
+		}
 	};
 
 	onMount(async () => {

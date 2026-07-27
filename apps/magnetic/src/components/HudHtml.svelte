@@ -429,14 +429,7 @@
 					<img class="nav-icon" src={iconMenu} alt="menu" />
 				</button>
 				{#if showMenuPopup}{@render menuPopup()}{/if}
-				<button
-					class="nav-btn nav-btn--framed"
-					type="button"
-					onclick={toggleSound}
-					aria-label="Sound"
-				>
-					<img class="nav-icon" src={isMuted ? iconMute : iconSound} alt="sound" />
-				</button>
+				<!-- Standalone sound button removed: sound (SFX + Music) is controlled from the menu popup. -->
 			</div>
 
 			<div class="hud-buy">
