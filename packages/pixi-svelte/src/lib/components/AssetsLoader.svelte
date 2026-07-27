@@ -148,6 +148,12 @@
 	 * first frame. `failed` lists keys that produced nothing — the caller decides whether a partial
 	 * result is acceptable (it is for the background passes, it is not for a demand load).
 	 */
+	// A failed or timed-out load must never cost the session that asset: retry before giving up.
+	// A slow-but-healthy download that misses one timeout window usually finishes inside the next —
+	// PIXI.Assets dedupes in-flight loads by URL, so the re-await joins the same request rather
+	// than restarting it — while a hard network error gets a fresh request.
+	const LOAD_ATTEMPTS = 3;
+
 	const loadAssets = async (nameList: string[]) => {
 		const prewarmSources: PIXI.TextureSource[] = [];
 		const failed: string[] = [];
@@ -157,12 +163,21 @@
 					const { type, src } = context.stateApp.assets![key];
 					const loadSrc =
 						type === 'spine' ? Object.values(src).filter((item) => typeof item === 'string') : src;
-					const rawAsset = await Promise.race([
-						PIXI.Assets.load<RawAsset>(loadSrc, onProgress),
-						new Promise<never>((_, reject) => {
-							setTimeout(() => reject(new Error(`Asset load timeout (${LOAD_TIMEOUT_MS}ms): ${key}`)), LOAD_TIMEOUT_MS);
-						}),
-					]);
+					let rawAsset: RawAsset | undefined;
+					for (let attempt = 1; ; attempt++) {
+						try {
+							rawAsset = await Promise.race([
+								PIXI.Assets.load<RawAsset>(loadSrc, onProgress),
+								new Promise<never>((_, reject) => {
+									setTimeout(() => reject(new Error(`Asset load timeout (${LOAD_TIMEOUT_MS}ms): ${key}`)), LOAD_TIMEOUT_MS);
+								}),
+							]);
+							break;
+						} catch (error) {
+							if (attempt >= LOAD_ATTEMPTS) throw error;
+							console.warn(`[pixi-svelte] asset load attempt ${attempt}/${LOAD_ATTEMPTS} failed, retrying: ${key}`, error);
+						}
+					}
 					const processed = getProcessed({ key, rawAsset, type, src });
 					collectTextureSources({ out: prewarmSources, processed, rawAsset, type, src });
 					return processed;

@@ -8,27 +8,52 @@ const queued = new Set<string>();
 const backlog: string[] = [];
 let warmed = false;
 let inflight = 0;
-// Drain the warm queue a trickle at a time, never all at once: ~90 simultaneous fetches
-// saturate every socket on a slow connection for minutes after the loading screen, and any
-// <img> the user opens meanwhile (info/paytable pages) dedupes into its queued low-priority
-// fetch and starves with it. With a trickle, an opened modal's images are fresh high-priority
-// requests that jump straight past the backlog.
-const MAX_INFLIGHT = 2;
+// Drain the warm queue a few at a time, never all at once: ~90 simultaneous fetches saturate
+// every socket on a slow connection, and any <img> the user opens meanwhile dedupes into its
+// queued low-priority fetch and starves with it. The loading screen now gates on whenArtWarm(),
+// so the queue is empty before anything is interactive — the cap only matters for late
+// (locale-driven) registrations trickling in behind a live game.
+const MAX_INFLIGHT = 6;
+const RETRIES = 2;
+let waiters: (() => void)[] = [];
 
 const pump = () => {
 	while (inflight < MAX_INFLIGHT && backlog.length) {
-		const img = new Image();
-		// Stay behind the pixi atlas downloads in the request queue.
-		img.setAttribute('fetchpriority', 'low');
-		img.decoding = 'async';
-		inflight++;
-		img.onload = img.onerror = () => {
-			inflight--;
-			pump();
+		const url = backlog.shift()!;
+		const attempt = (triesLeft: number) => {
+			const img = new Image();
+			// Stay behind the pixi atlas downloads in the request queue.
+			img.setAttribute('fetchpriority', 'low');
+			img.decoding = 'async';
+			img.onload = () => {
+				inflight--;
+				pump();
+			};
+			img.onerror = () => {
+				if (triesLeft > 0) {
+					attempt(triesLeft - 1);
+				} else {
+					console.error(`[preloadArt] failed after retries: ${url}`);
+					inflight--;
+					pump();
+				}
+			};
+			img.src = url;
 		};
-		img.src = backlog.shift()!;
+		inflight++;
+		attempt(RETRIES);
+	}
+	if (inflight === 0 && backlog.length === 0 && waiters.length) {
+		waiters.forEach((resolve) => resolve());
+		waiters = [];
 	}
 };
+
+/** Resolves when everything registered so far has been fetched (or given up after retries). */
+export const whenArtWarm = () =>
+	inflight === 0 && backlog.length === 0
+		? Promise.resolve()
+		: new Promise<void>((resolve) => waiters.push(resolve));
 
 export const registerArt = (...urls: string[]) => {
 	for (const url of urls) {
