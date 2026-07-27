@@ -109,6 +109,15 @@ export const stateGame = $state({
 	hasAnticipationPending: false,
 	anticipationSkipped: false,
 	stopAutoOnBonus: false,
+	resumeModalOpen: false,
+	buyModalOpen: false,
+	freeSpinPopupShowing: false,
+	// Current spin's win for the HUD. Bonus cumulative win stays in winBookEventAmount.
+	// At bonus/round end this becomes the final total until the next reveal clears it.
+	roundWin: 0,
+	// freeSpinEnd already presented the dedicated bonus-total board. The following
+	// final setWin is settlement data, not another per-spin win presentation.
+	bonusSummaryShown: false,
 });
 
 const getBoardViewportPadding = () => {

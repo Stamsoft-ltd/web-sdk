@@ -1,17 +1,12 @@
 import type { Assets } from 'pixi-svelte';
 
-// Theme Park asset manifest. Board symbols use atlas regions from the approved
-// concept sheet, keeping source art intact while avoiding template-game assets.
+// Theme Park runtime asset manifest.
 
 const assets: Assets = {
-	// === THEME PARK UI ATLAS ===
-	themeUi: { type: 'sprites', src: './assets/theme-park/ui.json', preload: true },
-
 	// === BACKGROUND ===
-	background: { type: 'sprite', src: './assets/theme-park/v2/background.png', preload: true },
-	splash: { type: 'sprite', src: './assets/theme-park/v2/background.png', preload: true },
+	background: { type: 'sprite', src: './assets/theme-park/v2/background.webp', preload: true },
+	splash: { type: 'sprite', src: './assets/theme-park/v2/background.webp', preload: true },
 	themeBoard: { type: 'sprite', src: './assets/theme-park/v2/board.png', preload: true },
-	themeLogo: { type: 'sprite', src: './assets/theme-park/v2/logo.png', preload: true },
 
 	// === FINAL HIGH SYMBOL ART ===
 	tpH1: { type: 'sprite', src: './assets/theme-park/v2/symbols/h1-coaster.png', preload: true },
@@ -188,35 +183,19 @@ const assets: Assets = {
 	},
 
 	// === WIN BOARDS ===
-	winSweet: { type: 'sprite', src: './assets/theme-park/v2/wins/sweet.png', preload: true },
-	winWild: { type: 'sprite', src: './assets/theme-park/v2/wins/wild.png', preload: true },
-	winEpic: { type: 'sprite', src: './assets/theme-park/v2/wins/epic.png', preload: true },
+	winSweet: { type: 'sprite', src: './assets/theme-park/v2/wins/sweet.webp', preload: true },
+	winWild: { type: 'sprite', src: './assets/theme-park/v2/wins/wild.webp', preload: true },
+	winEpic: { type: 'sprite', src: './assets/theme-park/v2/wins/epic.webp', preload: true },
 	winLegendary: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/legendary.png',
+		src: './assets/theme-park/v2/wins/legendary.webp',
 		preload: true,
 	},
-	winMythic: { type: 'sprite', src: './assets/theme-park/v2/wins/mythic.png', preload: true },
+	winMythic: { type: 'sprite', src: './assets/theme-park/v2/wins/mythic.webp', preload: true },
+	winMax: { type: 'sprite', src: './assets/theme-park/v2/wins/max.webp', preload: true },
 
 	// === FRAMES / UI ===
 	symbolPad: { type: 'sprite', src: './assets/components/frames/symbol_pad.png', preload: false },
-	// Temporary production boards: Forest desktop frame + Magnetic mobile frames.
-	// Asset-backed frames replace the old procedural rounded rectangles.
-	forestBoardPad: {
-		type: 'sprite',
-		src: './assets/components/frames/slot_pad.png',
-		preload: true,
-	},
-	magneticBoardPadMobile: {
-		type: 'sprite',
-		src: './assets/components/frames/magnetic/board_pad_mobile.png',
-		preload: true,
-	},
-	magneticBoardPadLand: {
-		type: 'sprite',
-		src: './assets/components/frames/magnetic/board_pad_land.png',
-		preload: true,
-	},
 	forestBonusBadge: {
 		type: 'sprite',
 		src: './assets/components/frames/forest/badge_frame.png',

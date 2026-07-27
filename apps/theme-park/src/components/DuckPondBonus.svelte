@@ -25,8 +25,10 @@
 	import { MainContainer } from 'components-layout';
 	import { waitForResolve, waitForTimeout } from 'utils-shared/wait';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
+	import { stateI18nDerived } from 'state-shared';
 
 	import { getContext } from '../game/context';
+	import { i18nDerived } from '../i18n/i18nDerived';
 	import type { DuckKind } from '../game/types';
 	import {
 		BOARD_DIMENSIONS,
@@ -240,13 +242,13 @@
 				<BitmapText
 					anchor={0.5}
 					y={-SYMBOL_H * 0.08}
-					text="DUCK YOUR LUCK"
+					text={stateI18nDerived.translate('DUCK YOUR LUCK')}
 					style={{ fontFamily: 'gold', fontSize: SYMBOL_H * 0.2 }}
 				/>
 				<BitmapText
 					anchor={0.5}
 					y={SYMBOL_H * 0.12}
-					text={`${pickedCount} / ${totalPicks} SELECTED`}
+					text={`${pickedCount} / ${totalPicks} ${stateI18nDerived.translate('SELECTED')}`}
 					style={{ fontFamily: 'silver', fontSize: SYMBOL_H * 0.11 }}
 				/>
 			</Container>
@@ -262,12 +264,14 @@
 					anchor={0.5}
 					y={-SYMBOL_H * 0.08}
 					text={finalAmount !== null
-						? 'BONUS COMPLETE'
+						? stateI18nDerived.translate('BONUS COMPLETE')
 						: revealingAll
-							? 'REVEALING ALL DUCKS'
+							? stateI18nDerived.translate('REVEALING ALL DUCKS')
 							: pendingPick
-								? `PICK ${totalPicks - pickedCount} MORE`
-								: 'REVEALING'}
+								? i18nDerived.translateVars('PICK MORE', {
+										count: totalPicks - pickedCount,
+									})
+								: stateI18nDerived.translate('REVEALING')}
 					style={{ fontFamily: 'silver', fontSize: SYMBOL_H * 0.1 }}
 				/>
 				<BitmapText

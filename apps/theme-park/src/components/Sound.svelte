@@ -21,8 +21,8 @@
 
 	const context = getContext();
 	const ambientTrackUrls = {
-		base: './assets/audio/audio-idea.wav',
-		bonus: './assets/audio/audio-bonus.wav',
+		base: './assets/audio/audio-idea.mp3',
+		bonus: './assets/audio/audio-bonus.mp3',
 	} as const;
 	let ambientAudio: Record<'base' | 'bonus', HTMLAudioElement> | null = null;
 	let activeAmbient: 'base' | 'bonus' = 'base';

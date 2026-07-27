@@ -10,6 +10,7 @@
 	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
 	import { BitmapText, Sprite } from 'pixi-svelte';
+	import { stateI18nDerived } from 'state-shared';
 
 	import { getContext } from '../game/context';
 	import { getSpecialSymbolKey } from '../game/utils';
@@ -28,8 +29,14 @@
 	);
 
 	context.eventEmitter.subscribeOnMount({
-		freeSpinIntroShow: () => (show = true),
-		freeSpinIntroHide: () => (show = false),
+		freeSpinIntroShow: () => {
+			show = true;
+			context.stateGame.freeSpinPopupShowing = true;
+		},
+		freeSpinIntroHide: () => {
+			show = false;
+			context.stateGame.freeSpinPopupShowing = false;
+		},
 		freeSpinIntroUpdate: async (emitterEvent) => {
 			freeSpinsFromEvent = emitterEvent.totalFreeSpins;
 			title = emitterEvent.title ?? 'FREE SPINS';
@@ -63,7 +70,7 @@
 		<!-- SPINS label -->
 		<BitmapText
 			anchor={{ x: 0.5, y: 0.5 }}
-			text="SPINS"
+			text={stateI18nDerived.translate('SPINS')}
 			style={{ fontFamily: 'gold', fontSize: Math.round(BW * 0.045) }}
 			y={Math.round(BW * 0.2)}
 		/>

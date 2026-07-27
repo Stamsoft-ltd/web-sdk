@@ -1,12 +1,25 @@
+<script lang="ts" module>
+	import { ap } from '../lib/preloadArt';
+
+	const modeAsset = (icon: string, variant: 'desktop' | 'mobile' | 'mobile-landscape') =>
+		ap(`/assets/theme-park/v2/modes/${icon}-${variant}.png`);
+
+	for (const icon of ['duck-your-luck', 'roller-wilds', 'mega-coaster']) {
+		for (const variant of ['desktop', 'mobile', 'mobile-landscape'] as const) modeAsset(icon, variant);
+	}
+</script>
+
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { stateBet, stateBetDerived } from 'state-shared';
+	import { stateBet } from 'state-shared';
 	import { getContext } from '../game/context';
+	import { i18nDerived } from '../i18n/i18nDerived';
 	import { templateStakeDerived } from '../state/templateStake.svelte';
 	import type { BetMode } from '../game/types';
 
 	type ToggleMode = Extract<BetMode, 'ANTE' | 'FSPIN1' | 'FSPIN2'>;
 	type BuyMode = Extract<BetMode, 'DUCK' | 'ROLLER' | 'COASTER'>;
+	type ConfirmMode = ToggleMode | BuyMode;
 
 	type Props = {
 		onclose: () => void;
@@ -16,9 +29,10 @@
 
 	const props: Props = $props();
 	const context = getContext();
+	const t = (key: string) => i18nDerived.translate(key);
 
 	const betAmount = $derived(stateBet.betAmount);
-	const canBuy = $derived(stateBetDerived.isBetCostAvailable());
+	const canAfford = (multiplier: number) => stateBet.balanceAmount >= betAmount * multiplier;
 
 	const FEATURE_CARDS: {
 		mode: Exclude<ToggleMode, 'ANTE'>;
@@ -29,14 +43,14 @@
 		{
 			mode: 'FSPIN1',
 			costMultiplier: 20,
-			title: 'DUCK COLLECT SPIN',
-			desc: 'ONE DUCK GUARANTEED — UP TO 25 POSSIBLE',
+			title: 'BET MODE FSPIN1 TITLE',
+			desc: 'BET MODE FSPIN1 DIALOG',
 		},
 		{
 			mode: 'FSPIN2',
 			costMultiplier: 60,
-			title: 'ROLLER WILDS SPIN',
-			desc: 'ONE SPIN WITH GUARANTEED WILD REELS + MULTIPLIERS',
+			title: 'BET MODE FSPIN2 TITLE',
+			desc: 'BET MODE FSPIN2 DIALOG',
 		},
 	];
 
@@ -50,41 +64,49 @@
 		{
 			mode: 'DUCK',
 			costMultiplier: 100,
-			title: 'DUCK YOUR LUCK',
-			desc: '10 DUCK PICKS · MULTIPLIERS AND MULTIPLY-ALL DUCKS',
+			title: 'BET MODE DUCK TITLE',
+			desc: 'BET MODE DUCK DIALOG',
 			icon: 'duck-your-luck',
 		},
 		{
 			mode: 'ROLLER',
 			costMultiplier: 200,
-			title: 'ROLLER WILDS',
-			desc: '10 FREE SPINS · REELS TURN INTO MULTIPLIER WILDS',
+			title: 'BET MODE ROLLER TITLE',
+			desc: 'BET MODE ROLLER DIALOG',
 			icon: 'roller-wilds',
 		},
 		{
 			mode: 'COASTER',
 			costMultiplier: 500,
-			title: 'MEGA COASTER',
-			desc: 'COASTER SETUP + 10 FREE SPINS WITH PERSISTENT WILDS',
+			title: 'BET MODE COASTER TITLE',
+			desc: 'BET MODE COASTER DIALOG',
 			icon: 'mega-coaster',
 		},
 	];
 
-	const modeAsset = (icon: string, variant: 'desktop' | 'mobile' | 'mobile-landscape') =>
-		`./assets/theme-park/v2/modes/${icon}-${variant}.png`;
-
 	const cost = (multiplier: number) =>
 		templateStakeDerived.formatCurrencyAmount(betAmount * multiplier);
 
-	let confirmMode = $state<null | BuyMode>(null);
-	const confirmCard = $derived(BUY_CARDS.find((card) => card.mode === confirmMode) ?? null);
+	let confirmMode = $state<null | ConfirmMode>(null);
+	const confirmCard = $derived(
+		confirmMode === 'ANTE'
+			? { mode: 'ANTE' as const, costMultiplier: 3, title: 'BET MODE ANTE TITLE' }
+			: FEATURE_CARDS.find((card) => card.mode === confirmMode) ??
+				BUY_CARDS.find((card) => card.mode === confirmMode) ??
+				null,
+	);
 
 	const buyMode = (mode: BuyMode) => {
+		const card = BUY_CARDS.find((item) => item.mode === mode);
+		if (!card || !canAfford(card.costMultiplier) || !context.stateXstateDerived.isIdle()) {
+			props.onclose();
+			return;
+		}
 		stateBet.activeBetModeKey = mode;
 		props.onclose();
 		context.eventEmitter.broadcast({ type: 'bet' });
 	};
-	const openConfirm = (mode: BuyMode) => {
+	const openConfirm = (mode: ConfirmMode) => {
 		confirmMode = mode;
 	};
 	const closeConfirm = () => {
@@ -93,6 +115,23 @@
 	const toggleMode = (mode: ToggleMode) => {
 		props.onToggleMode(mode);
 		props.onclose();
+	};
+	const requestToggle = (mode: ToggleMode, multiplier: number) => {
+		if (props.activeToggleMode === mode) {
+			toggleMode(mode);
+			return;
+		}
+		if (!canAfford(multiplier)) return;
+		openConfirm(mode);
+	};
+	const confirmAccept = () => {
+		const mode = confirmMode;
+		if (!mode) return;
+		if (mode === 'ANTE' || mode === 'FSPIN1' || mode === 'FSPIN2') {
+			toggleMode(mode);
+			return;
+		}
+		buyMode(mode);
 	};
 
 	onMount(() => {
@@ -107,42 +146,43 @@
 </script>
 
 <!-- Backdrop -->
-<button class="backdrop" type="button" aria-label="Close" tabindex="-1" onclick={props.onclose}
+<button class="backdrop" type="button" aria-label={t('CLOSE')} tabindex="-1" onclick={props.onclose}
 ></button>
 
 <!-- Panel -->
 <div class="panel" role="dialog" aria-modal="true">
 	<button class="close-btn" type="button" onclick={props.onclose}>✕</button>
 
-	<h2 class="title">BUY BONUS</h2>
+	<h2 class="title">{t('BUY BONUS')}</h2>
 
 	<div class="grid">
 		<!-- Persistent per-spin toggles -->
 		<div class="card">
-			<span class="card-title">EXTRA FEATURE</span>
-			<span class="card-desc">5X BONUS CHANCE ON EVERY SPIN · 3X COST</span>
-			<span class="card-price">{cost(3)} / SPIN</span>
+			<span class="card-title">{t('BET MODE ANTE TITLE')}</span>
+			<span class="card-desc">{t('BET MODE ANTE DIALOG')}</span>
+			<span class="card-price">{cost(3)} {t('PER SPIN')}</span>
 			<button
 				class="card-btn"
 				class:card-btn--active={props.activeToggleMode === 'ANTE'}
 				type="button"
-				onclick={() => toggleMode('ANTE')}
-				>{props.activeToggleMode === 'ANTE' ? 'DEACTIVATE' : 'ACTIVATE'}</button
+				disabled={props.activeToggleMode !== 'ANTE' && !canAfford(3)}
+				onclick={() => requestToggle('ANTE', 3)}
+				>{t(props.activeToggleMode === 'ANTE' ? 'DEACTIVATE' : 'ACTIVATE')}</button
 			>
 		</div>
 
 		{#each FEATURE_CARDS as card (card.mode)}
 			<div class="card">
-				<span class="card-title">{card.title}</span>
-				<span class="card-desc">{card.desc}</span>
-				<span class="card-price">{cost(card.costMultiplier)} / SPIN</span>
+				<span class="card-title">{t(card.title)}</span>
+				<span class="card-desc">{t(card.desc)}</span>
+				<span class="card-price">{cost(card.costMultiplier)} {t('PER SPIN')}</span>
 				<button
 					class="card-btn"
 					class:card-btn--active={props.activeToggleMode === card.mode}
 					type="button"
-					disabled={!canBuy}
-					onclick={() => toggleMode(card.mode)}
-					>{props.activeToggleMode === card.mode ? 'DEACTIVATE' : 'ACTIVATE'}</button
+					disabled={props.activeToggleMode !== card.mode && !canAfford(card.costMultiplier)}
+					onclick={() => requestToggle(card.mode, card.costMultiplier)}
+					>{t(props.activeToggleMode === card.mode ? 'DEACTIVATE' : 'ACTIVATE')}</button
 				>
 			</div>
 		{/each}
@@ -158,14 +198,14 @@
 					<source media="(max-width: 900px)" srcset={modeAsset(card.icon, 'mobile')} />
 					<img src={modeAsset(card.icon, 'desktop')} alt="" />
 				</picture>
-				<span class="card-title">{card.title}</span>
-				<span class="card-desc">{card.desc}</span>
+				<span class="card-title">{t(card.title)}</span>
+				<span class="card-desc">{t(card.desc)}</span>
 				<span class="card-price">{cost(card.costMultiplier)}</span>
 				<button
 					class="card-btn card-btn--buy"
 					type="button"
-					disabled={!canBuy}
-					onclick={() => openConfirm(card.mode)}>BUY</button
+					disabled={!canAfford(card.costMultiplier)}
+					onclick={() => openConfirm(card.mode)}>{t('BUY')}</button
 				>
 			</div>
 		{/each}
@@ -177,21 +217,26 @@
 	<button
 		class="backdrop backdrop--z2"
 		type="button"
-		aria-label="Close"
+		aria-label={t('CLOSE')}
 		tabindex="-1"
 		onclick={closeConfirm}
 	></button>
 	<div class="confirm" role="dialog" aria-modal="true">
-		<div class="confirm-title">CONFIRM {confirmCard.title}</div>
-		<div class="confirm-text">Buy {confirmCard.title} for {cost(confirmCard.costMultiplier)}?</div>
+		<div class="confirm-title">{t('CONFIRM')} {t(confirmCard.title)}</div>
+		<div class="confirm-text">
+			{i18nDerived.translateVars('CONFIRM TEXT', {
+				mode: t(confirmCard.title),
+				cost: cost(confirmCard.costMultiplier),
+			})}
+		</div>
 		<div class="confirm-row">
 			<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}
-				>CANCEL</button
+				>{t('CANCEL')}</button
 			>
 			<button
 				class="confirm-btn confirm-btn--ok"
 				type="button"
-				onclick={() => buyMode(confirmMode!)}>CONFIRM</button
+				onclick={confirmAccept}>{t('CONFIRM')}</button
 			>
 		</div>
 	</div>

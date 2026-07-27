@@ -87,7 +87,7 @@ const getSkipMinSpinMs = () => {
 // complete board lands within one visual beat.
 const DROP_MOTION_NORMAL = {
 	startRows: 4.5,
-	durationMs: 520,
+	durationMs: 650,
 	reelDelayMs: 8,
 	rowDelayMs: 4,
 } as const;

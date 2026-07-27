@@ -6,7 +6,7 @@
 	"scripts": {
 		"format": "prettier --write --ignore-path=../../.prettierignore .",
 		"lint": "eslint \"src\"",
-		"test": "node scripts/validate-artifacts.mjs",
+		"test": "node scripts/validate-artifacts.mjs && vitest run",
 		"storybook": "PUBLIC_CHROMATIC=true storybook dev -p 6009 public",
 		"dev": "vite dev --host --port 3009",
 		"build": "vite build",
@@ -22,7 +22,9 @@
 		"config-lingui": "workspace:*",
 		"config-storybook": "workspace:*",
 		"@storybook/addon-svelte-csf": "5.0.5",
-		"@sveltejs/vite-plugin-svelte": "5.0.3"
+		"@sveltejs/vite-plugin-svelte": "5.0.3",
+		"jsdom": "26.1.0",
+		"vitest": "3.2.4"
 	},
 	"dependencies": {
 		"lodash": "4.17.16",

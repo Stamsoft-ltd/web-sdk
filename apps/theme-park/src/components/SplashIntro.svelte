@@ -1,9 +1,15 @@
+<script lang="ts" module>
+	import { ap } from '../lib/preloadArt';
+
+	const bgSrc = ap('/assets/theme-park/v2/background.webp');
+	const logoSrc = ap('/assets/theme-park/v2/logo.png');
+</script>
+
 <script lang="ts">
+	import { stateI18nDerived } from 'state-shared';
+
 	type Props = { onpress: () => void };
 	const props: Props = $props();
-
-	const bgSrc = './assets/theme-park/v2/background.png';
-	const logoSrc = './assets/theme-park/v2/logo.png';
 
 	function handlePress() {
 		props.onpress();
@@ -18,9 +24,9 @@
 <div class="splash-intro" role="button" tabindex="0" onclick={handlePress} onkeydown={handleKey}>
 	<!-- 16:9 stage that cover-scales the artwork; overlays are positioned within it -->
 	<div class="stage" style={`background-image: url('${bgSrc}')`}>
-		<img class="logo" src={logoSrc} alt="Theme Park" />
+		<img class="logo" src={logoSrc} alt={stateI18nDerived.translate('GAME TITLE')} />
 
-		<p class="press-label">PRESS TO CONTINUE</p>
+		<p class="press-label">{stateI18nDerived.translate('PRESS TO CONTINUE')}</p>
 	</div>
 </div>
 

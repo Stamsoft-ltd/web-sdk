@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { WinLevelData } from '../game/winLevelMap';
+	import type { WinLevelAlias, WinLevelData } from '../game/winLevelMap';
 
 	export type EmitterEventWin =
 		| { type: 'winShow' }
@@ -10,17 +10,19 @@
 <script lang="ts">
 	import { Container, Sprite, Text } from 'pixi-svelte';
 	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
-	import { waitForResolve } from 'utils-shared/wait';
-	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
-	import { OnMount } from 'components-shared';
+	import { stateBet } from 'state-shared';
+	import {
+		bookEventAmountToBetAmountMultiplier,
+		bookEventAmountToCurrencyString,
+	} from 'utils-shared/amount';
+	import { waitForResolve } from 'utils-shared/wait';
 
-	import PressToContinue from './PressToContinue.svelte';
 	import { SYMBOL_SIZE } from '../game/constants';
 	import { getContext } from '../game/context';
-	import { stateBet } from 'state-shared';
-	import { Tween } from 'svelte/motion';
-	import { backOut, cubicOut } from 'svelte/easing';
+	import { boardKeyForMultiplier } from '../game/winPresentation';
+	import PressToContinue from './PressToContinue.svelte';
+	import ThemeWinBoard from './ThemeWinBoard.svelte';
 
 	const context = getContext();
 
@@ -28,45 +30,80 @@
 	let amount = $state(0);
 	let winLevelData = $state<WinLevelData>();
 	let oncomplete = $state(() => {});
+	let winId = $state(0);
 	let boardClickHandled = false;
+	let snappedToFinal = false;
+	let autoCloseTimer: ReturnType<typeof setTimeout> | null = null;
+	let dismissTimer: ReturnType<typeof setTimeout> | null = null;
 	let isCountingUp = $state(false);
-	let shakeX = $state(0);
-	let shakeY = $state(0);
-	let floatScale = $state(1);
-	const boardIntroScale = new Tween(1);
-	const boardRotation = new Tween(0);
+	let breatheScale = $state(1);
+	let smallWinSize = $state({ width: 0, height: 0 });
 
 	const boardLayout = $derived(context.stateGameDerived.boardLayout());
-	const winBoardKey = (level: number) => {
-		if (level >= 10) return 'winMythic';
-		if (level >= 9) return 'winLegendary';
-		if (level >= 8) return 'winEpic';
-		if (level >= 7) return 'winWild';
-		return 'winSweet';
+
+	// Keep the amount moving linearly through most tier thresholds, then settle smoothly.
+	const EASE_T = 0.8;
+	const EASE_V = (2 * EASE_T) / (1 + EASE_T);
+	const countCurve = (t: number) => {
+		if (t < EASE_T) return (EASE_V / EASE_T) * t;
+		const u = (t - EASE_T) / (1 - EASE_T);
+		return EASE_V + (1 - EASE_V) * u * (2 - u);
 	};
 
-	const playBoardIntro = async () => {
-		boardIntroScale.set(0.35, { duration: 0 });
-		boardRotation.set(-0.055, { duration: 0 });
-		await Promise.all([
-			boardIntroScale.set(1.08, { duration: 520, easing: backOut }),
-			boardRotation.set(0.018, { duration: 420, easing: cubicOut }),
-		]);
-		await Promise.all([
-			boardIntroScale.set(1, { duration: 220, easing: cubicOut }),
-			boardRotation.set(0, { duration: 220, easing: cubicOut }),
-		]);
+	const BIG_COUNT_MS: Partial<Record<WinLevelAlias, number>> = {
+		big: 2500,
+		superwin: 3500,
+		mega: 4500,
+		epic: 5250,
+		max: 6000,
+	};
+	const turboFactor = () => (stateBet.isSuperTurbo ? 0.4 : stateBet.isTurbo ? 0.6 : 1);
+	const bigCountDuration = (alias: WinLevelAlias) =>
+		Math.max(1500, (BIG_COUNT_MS[alias] ?? 3000) * turboFactor());
+	const bigHoldDuration = () =>
+		bookEventAmountToBetAmountMultiplier(amount) >= 25000
+			? 3500
+			: stateBet.isSuperTurbo
+				? 1200
+				: stateBet.isTurbo
+					? 1800
+					: 2500;
+
+	const clearTimers = () => {
+		if (autoCloseTimer) clearTimeout(autoCloseTimer);
+		if (dismissTimer) clearTimeout(dismissTimer);
+		autoCloseTimer = null;
+		dismissTimer = null;
+	};
+
+	const snapToFinal = (finishCountUp: () => void) => {
+		if (snappedToFinal) return;
+		snappedToFinal = true;
+		finishCountUp();
+	};
+
+	const dismiss = () => {
+		if (boardClickHandled) return;
+		boardClickHandled = true;
+		clearTimers();
+		dismissTimer = setTimeout(() => oncomplete(), 220);
 	};
 
 	context.eventEmitter.subscribeOnMount({
 		winShow: () => (show = true),
-		winHide: () => (show = false),
-		winUpdate: async (emitterEvent) => {
+		winHide: () => {
+			show = false;
+			clearTimers();
+		},
+		winUpdate: async (event) => {
+			clearTimers();
 			boardClickHandled = false;
-			amount = emitterEvent.amount;
-			winLevelData = emitterEvent.winLevelData;
+			snappedToFinal = false;
+			amount = event.amount;
+			winLevelData = event.winLevelData;
 			isCountingUp = true;
-			if (emitterEvent.winLevelData.animation) void playBoardIntro();
+			breatheScale = 1;
+			winId += 1;
 			await waitForResolve((resolve) => (oncomplete = resolve));
 			isCountingUp = false;
 		},
@@ -74,131 +111,137 @@
 
 	$effect(() => {
 		if (!isCountingUp || !winLevelData?.animation) {
-			shakeX = 0;
-			shakeY = 0;
-			floatScale = 1;
+			breatheScale = 1;
 			return;
 		}
-
-		const alias = winLevelData.alias;
-		const amp =
-			alias === 'max'
-				? 14
-				: alias === 'epic'
-					? 10
-					: alias === 'mega'
-						? 7
-						: alias === 'superwin'
-							? 5
-							: 3;
-		const duration = winLevelData.presentDuration;
-
-		let raf = 0;
-		let startTime = 0;
-
-		const tick = (t: number) => {
-			if (!startTime) startTime = t;
-			const elapsed = t - startTime;
-			const progress = Math.min(elapsed / duration, 1);
-			const decay = 1 - progress * progress;
-			const angle = elapsed * 0.016; // ~15Hz shake
-			shakeX = Math.round(Math.sin(angle) * amp * decay);
-			shakeY = Math.round(Math.cos(angle * 0.73) * amp * 0.45 * decay);
-			floatScale = 1 + Math.sin(elapsed * 0.0045) * 0.012;
-			if (progress < 1) raf = requestAnimationFrame(tick);
+		let frame = 0;
+		const start = performance.now();
+		const tick = (now: number) => {
+			breatheScale = 1 + Math.sin((now - start) * 0.0025) * 0.02;
+			frame = requestAnimationFrame(tick);
 		};
-		raf = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(raf);
+		frame = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(frame);
 	});
 </script>
 
 <FadeContainer {show}>
 	{#if winLevelData}
 		{@const isBigWin = winLevelData.type === 'big'}
-		{@const hasBoardAnimation = !!winLevelData?.animation}
-		{@const duration =
-			(stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation
+		{@const hasBoardAnimation = !!winLevelData.animation}
+		{@const duration = hasBoardAnimation
+			? bigCountDuration(winLevelData.alias)
+			: stateBet.isTurbo || stateBet.isSuperTurbo
 				? Math.min(winLevelData.presentDuration, 400)
-				: winLevelData.presentDuration}
-		{#key oncomplete}
-			<WinCountUpProvider
-				{amount}
-				{duration}
-				oncomplete={() => {
-					if (!hasBoardAnimation) oncomplete();
-				}}
-			>
-				{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
-					{#if isBigWin}
-						<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
-					{/if}
+				: winLevelData.presentDuration * 0.5}
 
-					<OnMount onmount={() => startCountUp()} />
+		<WinCountUpProvider
+			{amount}
+			{duration}
+			easing={countCurve}
+			restartKey={winId}
+			oncomplete={() => {
+				if (!hasBoardAnimation) {
+					if (!boardClickHandled) {
+						snappedToFinal = true;
+						boardClickHandled = true;
+						oncomplete();
+					}
+					return;
+				}
+				if (!boardClickHandled) {
+					if (autoCloseTimer) clearTimeout(autoCloseTimer);
+					autoCloseTimer = setTimeout(() => oncomplete(), bigHoldDuration());
+				}
+			}}
+		>
+			{#snippet children({ countUpAmount, finishCountUp, countUpCompleted })}
+				{#if isBigWin}
+					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.42} />
+				{/if}
 
-					<MainContainer>
-						<Container x={boardLayout.x + shakeX} y={boardLayout.y + shakeY}>
-							{#if hasBoardAnimation}
-								{@const bs = boardLayout.boardScale}
-								{@const boardSize = Math.min(
-									boardLayout.width * bs * 0.68,
-									boardLayout.height * bs * 0.72,
-								)}
-								<Container
-									scale={boardIntroScale.current * floatScale}
-									rotation={boardRotation.current}
-								>
+				<MainContainer>
+					<Container x={boardLayout.x} y={boardLayout.y}>
+						{#if hasBoardAnimation}
+							{@const boardScale = boardLayout.boardScale}
+							{@const boardSize = Math.min(
+								boardLayout.width * boardScale * 0.72,
+								boardLayout.height * boardScale * 0.82,
+							)}
+							{@const currentMultiplier =
+								bookEventAmountToBetAmountMultiplier(countUpAmount)}
+							{@const finalMultiplier = bookEventAmountToBetAmountMultiplier(amount)}
+							{#if currentMultiplier >= 25000}
+								<Container scale={breatheScale}>
 									<Sprite
-										key={winBoardKey(winLevelData.level)}
+										key="winMax"
 										anchor={0.5}
-										width={boardSize}
+										width={boardSize * 1.5}
 										height={boardSize}
 									/>
 									<Text
 										anchor={0.5}
-										y={boardSize * 0.405}
+										y={boardSize * 0.29}
 										text={bookEventAmountToCurrencyString(countUpAmount)}
 										style={{
-											fontFamily: 'Arial Black, sans-serif',
-											fontSize: SYMBOL_SIZE * bs * 0.22,
+											fontFamily: 'Cinzel',
+											fontWeight: '900',
+											fontSize: SYMBOL_SIZE * boardScale * 0.22,
 											align: 'center',
-											fontWeight: 'bold',
 											fill: 0xffffff,
 											stroke: { color: 0x2b082f, width: 5 },
 										}}
 									/>
 								</Container>
 							{:else}
+								<ThemeWinBoard
+									boardKey={boardKeyForMultiplier(currentMultiplier)}
+									finalKey={boardKeyForMultiplier(finalMultiplier)}
+									{winId}
+									{boardSize}
+									amountText={bookEventAmountToCurrencyString(countUpAmount)}
+									fontSize={SYMBOL_SIZE * boardScale * 0.22}
+									{breatheScale}
+								/>
+							{/if}
+						{:else}
+							{@const maxWidth =
+								context.stateLayoutDerived.canvasSizes().width /
+								context.stateLayoutDerived.mainLayout().scale}
+							{@const scale =
+								smallWinSize.width > maxWidth ? maxWidth / smallWinSize.width : 1}
+							<Container {scale}>
 								<Text
 									anchor={0.5}
+									onresize={(size) => (smallWinSize = size)}
 									text={bookEventAmountToCurrencyString(countUpAmount)}
 									style={{
-										fontFamily: 'Arial Black, sans-serif',
+										fontFamily: 'Cinzel',
+										fontWeight: '900',
 										fontSize: SYMBOL_SIZE * 0.7,
 										align: 'center',
-										fontWeight: 'bold',
 										fill: 0xffe36b,
 										stroke: { color: 0x5c116f, width: 8 },
 									}}
 								/>
-							{/if}
-						</Container>
-					</MainContainer>
+							</Container>
+						{/if}
+					</Container>
+				</MainContainer>
 
-					{#if hasBoardAnimation}
-						<PressToContinue
-							onpress={() => {
-								if (!countUpCompleted) {
-									finishCountUp();
-								} else {
-									if (boardClickHandled) return;
-									boardClickHandled = true;
-									oncomplete();
-								}
-							}}
-						/>
-					{/if}
-				{/snippet}
-			</WinCountUpProvider>
-		{/key}
+				{#if hasBoardAnimation}
+					<PressToContinue
+						showText={false}
+						onpress={() => {
+							if (!countUpCompleted && !snappedToFinal) {
+								snapToFinal(finishCountUp);
+							} else {
+								dismiss();
+							}
+						}}
+					/>
+				{/if}
+			{/snippet}
+		</WinCountUpProvider>
 	{/if}
 </FadeContainer>

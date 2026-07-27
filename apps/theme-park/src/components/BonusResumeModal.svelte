@@ -1,25 +1,33 @@
 <script lang="ts">
 	import { stateBet } from 'state-shared';
+	import { i18nDerived } from '../i18n/i18nDerived';
 
 	type Props = { onPlay: () => void; onEnd: () => void };
 	const props: Props = $props();
 
 	const mode = $derived(stateBet.betToResume?.mode ?? '');
 	const modeLabel = $derived(
-		({ ANTE: 'Bonus Chance', FSPIN1: 'Duck Collect', FSPIN2: 'Roller Wild Spin', DUCK: 'Duck Your Luck', ROLLER: 'Roller Wilds', COASTER: 'Mega Coaster' } as Record<string, string>)[mode] ?? 'Theme Park',
+		({
+			ANTE: i18nDerived.translate('BET MODE ANTE TITLE'),
+			FSPIN1: i18nDerived.translate('BET MODE FSPIN1 TITLE'),
+			FSPIN2: i18nDerived.translate('BET MODE FSPIN2 TITLE'),
+			DUCK: i18nDerived.translate('BET MODE DUCK TITLE'),
+			ROLLER: i18nDerived.translate('BET MODE ROLLER TITLE'),
+			COASTER: i18nDerived.translate('BET MODE COASTER TITLE'),
+		} as Record<string, string>)[mode] ?? i18nDerived.gameTitle(),
 	);
 </script>
 
 <div class="modal-overlay">
-	<div class="modal">
-		<h2 class="title">Unfinished Round</h2>
-		<p class="subtitle">You have an active <strong>{modeLabel}</strong> bonus in progress.</p>
+	<div class="modal" role="dialog" aria-modal="true">
+		<h2 class="title">{i18nDerived.translate('RECOVERY TITLE')}</h2>
+		<p class="subtitle">{i18nDerived.translateVars('RESUME BODY', { mode: modeLabel })}</p>
 		<div class="buttons">
 			<button class="btn btn-play" onclick={props.onPlay}>
-				▶ Play Round
+				▶ {i18nDerived.translate('PLAY ROUND')}
 			</button>
 			<button class="btn btn-end" onclick={props.onEnd}>
-				✕ End Round
+				✕ {i18nDerived.translate('END ROUND')}
 			</button>
 		</div>
 	</div>

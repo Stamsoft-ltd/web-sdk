@@ -22,6 +22,7 @@
 	import { FadeContainer } from 'components-pixi';
 	import { waitForTimeout } from 'utils-shared/wait';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
+	import { stateI18nDerived } from 'state-shared';
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_W, SYMBOL_H, BOARD_GRID_OFFSET_Y } from '../game/constants';
@@ -116,7 +117,9 @@
 					/>
 					<BitmapText
 						anchor={{ x: 0.5, y: 0.5 }}
-						text={chip.kind === 'multmult' ? `×${chip.value} ALL` : `+${chip.value}x`}
+						text={chip.kind === 'multmult'
+							? `×${chip.value} ${stateI18nDerived.translate('ALL')}`
+							: `+${chip.value}x`}
 						style={{ fontFamily: 'gold', fontSize: chipH * 0.52 }}
 					/>
 				</Container>

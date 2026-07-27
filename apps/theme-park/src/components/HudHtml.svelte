@@ -1,20 +1,6 @@
-<script lang="ts">
-	import { OnHotkey } from 'components-shared';
-	import { stateBet, stateBetDerived, stateConfig, stateModal, stateSound } from 'state-shared';
-	import { onDestroy } from 'svelte';
+<script lang="ts" module>
+	import { ap } from '../lib/preloadArt';
 
-	import { getContext } from '../game/context';
-	import { i18nDerived } from '../i18n/i18nDerived';
-	import { templateStakeDerived } from '../state/templateStake.svelte';
-	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
-	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
-
-	const context = getContext();
-
-	// Converts absolute /path to ./path so it resolves relative to the page URL at any deploy sub-path
-	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-
-	// Shared vector controls, rethemed in CSS for Theme Park.
 	const navMenu = ap('/assets/hud/icon-menu.svg');
 	const navSound = ap('/assets/hud/icon-volume.svg');
 	const navArrowLeft = ap('/assets/theme-park/v2/controls/arrow-left.png');
@@ -29,13 +15,30 @@
 	const navSpinDefaultMobile = ap('/assets/theme-park/v2/controls/spin-default-mobile.png');
 	const navSpinActive = ap('/assets/theme-park/v2/controls/spin-active.png');
 	const navSpinStop = ap('/assets/theme-park/v2/controls/spin-stop.png');
-	const navCoins = ap('/assets/hud/icon-coins.svg');
+	const navCoins = ap('/assets/hud/icon-coins.png');
 	const gameLogo = ap('/assets/theme-park/v2/logo.png');
+</script>
+
+<script lang="ts">
+	import { OnHotkey } from 'components-shared';
+	import { stateBet, stateBetDerived, stateConfig, stateModal, stateSound } from 'state-shared';
+	import { onDestroy } from 'svelte';
+	import { Tween } from 'svelte/motion';
+	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
+
+	import { getContext } from '../game/context';
+	import { i18nDerived } from '../i18n/i18nDerived';
+	import { templateStakeDerived } from '../state/templateStake.svelte';
+	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
+	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
+
+	const context = getContext();
 
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isLandscapeMobile = $derived(layoutType === 'landscape');
 	const isMobileLayout = $derived(layoutType === 'portrait' || layoutType === 'landscape');
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
+	const congratsBlocking = $derived(context.stateGame.freeSpinPopupShowing);
 	const hasAuto = $derived(stateBetDerived.hasAutoBetCounter());
 	const isSpinStop = $derived(!context.stateXstateDerived.isIdle() || hasAuto);
 	const canAffordBet = $derived(stateBetDerived.isBetCostAvailable());
@@ -48,7 +51,11 @@
 	});
 
 	const turboImg = $derived(
-		stateBet.isSuperTurbo ? navTurbo3 : stateBet.isTurbo ? navTurbo2 : navTurbo1,
+		// Match Forest Gang: outline = normal, solid = fast, double = super.
+		stateBet.isSuperTurbo ? navTurbo3 : stateBet.isTurbo ? navTurbo1 : navTurbo2,
+	);
+	const speedMode = $derived(
+		stateBet.isSuperTurbo ? 'super' : stateBet.isTurbo ? 'fast' : 'normal',
 	);
 	const isMuted = $derived(stateSound.volumeValueMaster === 0);
 	const betOptions = $derived(stateConfig.betAmountOptions);
@@ -56,11 +63,31 @@
 	const biggestBet = $derived(
 		stateConfig.betAmountOptions[stateConfig.betAmountOptions.length - 1],
 	);
-	const currentBetIndex = $derived(Math.max(0, betOptions.indexOf(stateBet.betAmount)));
+	const currentBetIndex = $derived.by(() => {
+		const exact = betOptions.indexOf(stateBet.betAmount);
+		if (exact >= 0) return exact;
+		let idx = 0;
+		for (let i = 0; i < betOptions.length; i += 1) {
+			if (betOptions[i] <= stateBet.betAmount) idx = i;
+			else break;
+		}
+		return idx;
+	});
+	const activeCostMultiplier = $derived(
+		({ ANTE: 3, FSPIN1: 20, FSPIN2: 60 } as Record<string, number>)[stateBet.activeBetModeKey] ?? 1,
+	);
 	const formattedBalance = $derived(
 		templateStakeDerived.formatCurrencyAmount(stateBet.balanceAmount),
 	);
-	const formattedBet = $derived(templateStakeDerived.formatCurrencyAmount(stateBet.betAmount));
+	const formattedBet = $derived(
+		templateStakeDerived.formatCurrencyAmount(stateBet.betAmount * activeCostMultiplier),
+	);
+	const winTween = new Tween(0);
+	$effect(() => {
+		const target = context.stateGame.roundWin;
+		winTween.set(target, { duration: target === 0 ? 0 : 650 });
+	});
+	const formattedWin = $derived(bookEventAmountToCurrencyString(winTween.current));
 	const autoSpinsRemainingText = $derived(
 		stateBet.autoSpinsCounter === Infinity ? '∞' : `${stateBet.autoSpinsCounter}`,
 	);
@@ -81,9 +108,21 @@
 			? (stateBet.activeBetModeKey as ToggleMode)
 			: null,
 	);
+	const isAnyModeActive = $derived(activeToggleMode !== null);
+	const buyLabel = $derived(isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.buyBonus());
+	const isInBonus = $derived(
+		context.stateGame.bonusMode !== null ||
+			context.stateGame.bonusType !== null ||
+			context.stateGame.duckPicks !== null,
+	);
+	const disableBuy = $derived((!canInteract || isInBonus) && !isAnyModeActive);
 	const spinModeKey = () => activeToggleMode ?? 'BASE';
 	const toggleMode = (mode: ToggleMode) => {
 		stateBet.activeBetModeKey = activeToggleMode === mode ? 'BASE' : mode;
+	};
+	const deactivateMode = () => {
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		stateBet.activeBetModeKey = 'BASE';
 	};
 
 	let holdTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -136,8 +175,12 @@
 
 	let showBuyModal = $state(false);
 	let showAutoModal = $state(false);
+	$effect(() => {
+		context.stateGame.buyModalOpen = showBuyModal;
+	});
 
 	const openBuyBonus = () => {
+		if (disableBuy) return;
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		showBuyModal = true;
 	};
@@ -165,6 +208,7 @@
 	};
 
 	const onSpinButton = () => {
+		if (congratsBlocking || context.stateGame.resumeModalOpen) return;
 		context.eventEmitter.broadcast({ type: 'soundPressBet' });
 
 		if (hasAuto) {
@@ -187,6 +231,13 @@
 	};
 
 	const onSpinHotkey = () => {
+		if (
+			showBuyModal ||
+			showAutoModal ||
+			stateModal.modal !== null ||
+			context.stateGame.resumeModalOpen ||
+			congratsBlocking
+		) return;
 		if (hasAuto) {
 			if (context.stateXstateDerived.isIdle()) return;
 			context.eventEmitter.broadcast({ type: 'soundPressBet' });
@@ -238,6 +289,30 @@
 	onDestroy(() => {
 		clearHoldRepeat();
 	});
+
+	function fitText(node: HTMLElement, _value: unknown) {
+		void _value;
+		node.style.display = 'inline-block';
+		const fit = () => {
+			const slot = node.parentElement;
+			if (!slot) return;
+			node.style.transform = 'none';
+			node.style.transformOrigin = 'left center';
+			const style = getComputedStyle(slot);
+			const available =
+				slot.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+			const full = node.offsetWidth;
+			const scale = full > available && available > 0 ? available / full : 1;
+			node.style.transform = scale < 1 ? `scale(${scale})` : 'none';
+		};
+		const schedule = () => requestAnimationFrame(fit);
+		const observer = new ResizeObserver(schedule);
+		observer.observe(node);
+		if (node.parentElement) observer.observe(node.parentElement);
+		document.fonts?.ready.then(schedule);
+		schedule();
+		return { update: schedule, destroy: () => observer.disconnect() };
+	}
 </script>
 
 <OnHotkey
@@ -246,16 +321,16 @@
 	onpress={onSpinHotkey}
 />
 
-<div class="hud-shell" data-layout={layoutType}>
-	<img class="game-logo" src={gameLogo} alt="Theme Park" />
+<div class="hud-shell" class:hud-shell--blocked={congratsBlocking} data-layout={layoutType}>
+	<img class="game-logo" src={gameLogo} alt={i18nDerived.gameTitle()} />
 	<div class="hud-bottom">
 		<div class="hud-left">
 			<div class="hud-system">
-				<button class="nav-btn" type="button" onclick={openRules} aria-label="Game rules">
-					<img src={navMenu} alt="menu" />
+				<button class="nav-btn" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
+					<img src={navMenu} alt="" />
 				</button>
-				<button class="nav-btn" type="button" onclick={toggleSound} aria-label="Sound">
-					<img src={navSound} alt="sound" class:is-muted={isMuted} />
+				<button class="nav-btn" type="button" onclick={toggleSound} aria-label={i18nDerived.translate('SOUND')}>
+					<img src={navSound} alt="" class:is-muted={isMuted} />
 				</button>
 			</div>
 
@@ -263,10 +338,11 @@
 				<button
 					class="buy-btn"
 					type="button"
-					onclick={openBuyBonus}
-					aria-label={i18nDerived.buyBonus()}
+					disabled={disableBuy}
+					onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
+					aria-label={buyLabel}
 				>
-					<span class="buy-btn__label">BUY BONUS</span>
+					<span class="buy-btn__label">{buyLabel}</span>
 				</button>
 			</div>
 		</div>
@@ -276,7 +352,14 @@
 				<div class="label label--balance">
 					<span class="label-text">{i18nDerived.balance()}</span>
 				</div>
-				<span class="value">{formattedBalance}</span>
+				<span class="value" use:fitText={formattedBalance}>{formattedBalance}</span>
+			</div>
+
+			<div class="value-pill value-pill--win">
+				<div class="label">
+					<span class="label-text">{i18nDerived.win()}</span>
+				</div>
+				<span class="value" use:fitText={formattedWin}>{formattedWin}</span>
 			</div>
 
 			<div
@@ -291,7 +374,7 @@
 				</span>
 				<div class="bet-values">
 					<span class="label">{i18nDerived.betLabel()}</span>
-					<span class="value">{formattedBet}</span>
+					<span class="value" use:fitText={formattedBet}>{formattedBet}</span>
 				</div>
 			</div>
 		</div>
@@ -299,11 +382,11 @@
 		<div class="hud-controls">
 			<div class="stepper">
 				{#if isLandscapeMobile}
-					<button class="nav-btn" type="button" onclick={openRules} aria-label="Game rules">
-						<img src={navMenu} alt="menu" />
+					<button class="nav-btn" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
+						<img src={navMenu} alt="" />
 					</button>
-					<button class="nav-btn" type="button" onclick={toggleSound} aria-label="Sound">
-						<img src={navSound} alt="sound" class:is-muted={isMuted} />
+					<button class="nav-btn" type="button" onclick={toggleSound} aria-label={i18nDerived.translate('SOUND')}>
+						<img src={navSound} alt="" class:is-muted={isMuted} />
 					</button>
 				{/if}
 				<button
@@ -316,9 +399,9 @@
 					onpointerleave={clearHoldRepeat}
 					onclick={(event) => maybeRunClickAction(event, onDecrease)}
 					disabled={disableDecrease}
-					aria-label="Decrease bet"
+					aria-label={i18nDerived.translate('DECREASE BET')}
 				>
-					<img src={disableDecrease ? navArrowLeftDisabled : navArrowLeft} alt="decrease bet" />
+					<img src={disableDecrease ? navArrowLeftDisabled : navArrowLeft} alt="" />
 				</button>
 				<button
 					class="nav-btn nav-btn--step"
@@ -330,9 +413,9 @@
 					onpointerleave={clearHoldRepeat}
 					onclick={(event) => maybeRunClickAction(event, onIncrease)}
 					disabled={disableIncrease}
-					aria-label="Increase bet"
+					aria-label={i18nDerived.translate('INCREASE BET')}
 				>
-					<img src={disableIncrease ? navArrowRightDisabled : navArrowRight} alt="increase bet" />
+					<img src={disableIncrease ? navArrowRightDisabled : navArrowRight} alt="" />
 				</button>
 			</div>
 
@@ -341,7 +424,7 @@
 					class="spin-btn"
 					type="button"
 					onclick={onSpinButton}
-					aria-label="Spin"
+					aria-label={i18nDerived.translate('SPIN')}
 					disabled={canInteract && !hasAuto && !canAffordBet}
 				>
 					{#if isSpinStop}
@@ -357,7 +440,9 @@
 					{#if hasAuto}
 						<span
 							class="spin-btn__count"
-							aria-label={`Remaining auto spins ${autoSpinsRemainingText}`}
+							aria-label={i18nDerived.translateVars('REMAINING AUTO SPINS', {
+								count: autoSpinsRemainingText,
+							})}
 							>{autoSpinsRemainingText}</span
 						>
 					{/if}
@@ -369,11 +454,13 @@
 					class="nav-btn nav-btn--turbo"
 					class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
 					class:turbo-super={stateBet.isSuperTurbo}
+					data-speed={speedMode}
 					type="button"
 					onclick={onTurbo}
 					aria-label={i18nDerived.turboLabel()}
+					title={`${i18nDerived.turboLabel()}: ${speedMode}`}
 				>
-					<img src={turboImg} alt="turbo" />
+					<img src={turboImg} alt="" />
 				</button>
 				<button
 					class="nav-btn"
@@ -383,7 +470,7 @@
 					disabled={disableAuto}
 					aria-label={i18nDerived.autoplayLabel()}
 				>
-					<img src={navAuto} alt="auto" />
+					<img src={navAuto} alt="" />
 				</button>
 			</div>
 		</div>
@@ -413,6 +500,14 @@
 		padding: 8px;
 		z-index: 20;
 		font-family: 'Cinzel', serif;
+		/* Forest Gang HUD rule: one design unit scales the complete control
+		   cluster uniformly. No right-side clipping on laptop/popout widths. */
+		--hud-u: calc(min(97vw, 1380px) / 1380);
+	}
+
+	.hud-shell--blocked,
+	.hud-shell--blocked * {
+		pointer-events: none !important;
 	}
 
 	.hud-shell::after {
@@ -458,14 +553,14 @@
 		z-index: 6;
 		align-self: center;
 		margin-top: auto;
-		width: min(calc(100% - 16px), 1180px);
+		width: calc(var(--hud-u) * 1380);
 		height: auto;
 		box-sizing: border-box;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 16px;
-		padding: 8px 74px;
+		gap: calc(var(--hud-u) * 16);
+		padding: calc(var(--hud-u) * 8) calc(var(--hud-u) * 24);
 		background: linear-gradient(180deg, rgba(28, 8, 57, 0.98), rgba(7, 5, 29, 0.98));
 		border: 2px solid rgba(255, 193, 47, 0.72);
 		border-radius: 999px;
@@ -482,7 +577,7 @@
 	.hud-left {
 		display: flex;
 		align-items: center;
-		gap: 18px;
+		gap: calc(var(--hud-u) * 18);
 		flex: 0 0 auto;
 	}
 
@@ -507,14 +602,14 @@
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
-		gap: 22px;
+		gap: calc(var(--hud-u) * 22);
 		flex: 0 0 auto;
 		padding-top: 0;
 	}
 
 	.value-pill {
 		min-width: 0;
-		padding: 0 5px;
+		padding: 0 calc(var(--hud-u) * 5);
 		border-left: 1px solid rgba(255, 255, 255, 0.15);
 		display: flex;
 		flex-direction: column;
@@ -526,10 +621,18 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		padding: 0 16px;
+		padding: 0 calc(var(--hud-u) * 16);
 		flex: 0 0 auto;
-		min-width: 150px;
+		min-width: calc(var(--hud-u) * 150);
 		border-left: none;
+	}
+
+	.value-pill--win {
+		align-items: flex-start;
+		padding: 0 calc(var(--hud-u) * 16);
+		flex: 0 1 calc(var(--hud-u) * 150);
+		width: calc(var(--hud-u) * 150);
+		overflow: hidden;
 	}
 
 	.value-pill--balance .label--balance {
@@ -545,8 +648,8 @@
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		gap: 6px;
-		padding: 0 16px;
+		gap: calc(var(--hud-u) * 6);
+		padding: 0 calc(var(--hud-u) * 16);
 		border-left: 1px solid rgba(255, 255, 255, 0.3);
 		flex: 0 0 auto;
 	}
@@ -555,7 +658,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: 2px;
+		gap: calc(var(--hud-u) * 2);
 	}
 
 	.value-pill--bet .label {
@@ -568,8 +671,8 @@
 
 	.bet-coin {
 		pointer-events: none;
-		width: 44px;
-		height: 44px;
+		width: calc(var(--hud-u) * 44);
+		height: calc(var(--hud-u) * 44);
 		display: grid;
 		place-items: center;
 		flex: 0 0 auto;
@@ -588,7 +691,7 @@
 
 	.label {
 		font-family: 'Cinzel', serif;
-		font-size: 0.7rem;
+		font-size: calc(var(--hud-u) * 0.7rem);
 		font-weight: 700;
 		color: #ff7de3;
 		display: flex;
@@ -609,9 +712,10 @@
 
 	.value {
 		font-family: 'Cinzel', serif;
-		font-size: 1.25rem;
+		font-size: calc(var(--hud-u) * 1.25rem);
 		font-weight: 700;
 		color: #fff;
+		white-space: nowrap;
 	}
 
 	.stepper,
@@ -619,13 +723,13 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 15px;
+		gap: calc(var(--hud-u) * 15);
 		padding-top: 0;
 	}
 
 	.nav-btn {
-		width: 60px;
-		height: 60px;
+		width: calc(var(--hud-u) * 60);
+		height: calc(var(--hud-u) * 60);
 		border: 2px solid rgba(255, 193, 47, 0.68);
 		border-radius: 50%;
 		background: radial-gradient(circle, #52238a 0%, #17062f 72%);
@@ -678,17 +782,23 @@
 		filter: drop-shadow(0 0 6px #ffd84a) drop-shadow(0 0 12px rgba(255, 216, 74, 0.5));
 	}
 
+	.nav-btn--turbo {
+		position: relative;
+		z-index: 2;
+		flex: 0 0 auto;
+	}
+
 	.hud-system {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: calc(var(--hud-u) * 8);
 		flex: 0 0 auto;
 	}
 
 	.spin-btn {
-		width: 132px;
-		height: 132px;
-		margin: -22px 0;
+		width: calc(var(--hud-u) * 132);
+		height: calc(var(--hud-u) * 132);
+		margin: calc(var(--hud-u) * -22) 0;
 		border: 0;
 		border-radius: 50%;
 		background: transparent;
@@ -698,7 +808,7 @@
 		cursor: pointer;
 		display: grid;
 		place-items: center;
-		transform: translateY(-10px);
+		transform: translateY(calc(var(--hud-u) * -10));
 		position: relative;
 		z-index: 3;
 		transition:
@@ -782,14 +892,14 @@
 	}
 
 	.buy-btn {
-		width: 130px;
+		width: calc(var(--hud-u) * 130);
 		height: auto;
 		aspect-ratio: 3065 / 1084;
 		border: 2px solid rgba(255, 193, 47, 0.8);
 		border-radius: 14px;
 		background: linear-gradient(180deg, #7426a8, #2a084b);
 		box-shadow: 0 0 14px rgba(255, 79, 216, 0.3);
-		padding: 0 14px;
+		padding: 0 calc(var(--hud-u) * 14);
 		outline: none;
 		cursor: pointer;
 		position: relative;
@@ -804,24 +914,30 @@
 			filter 0.12s ease;
 	}
 
-	.buy-btn:hover {
+	.buy-btn:not(:disabled):hover {
 		transform: translateY(-1px);
 		filter: brightness(1.1);
 	}
 
-	.buy-btn:active {
+	.buy-btn:not(:disabled):active {
 		transform: translateY(1px) scale(0.95);
 	}
 
 	.buy-btn__label {
 		font-family: 'Cinzel', serif;
-		font-size: 0.82rem;
+		font-size: calc(var(--hud-u) * 0.82rem);
 		font-weight: 900;
 		color: #ffd84a;
 		letter-spacing: 0.08em;
 		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 		line-height: 1;
 		pointer-events: none;
+	}
+
+	.buy-btn:disabled {
+		opacity: 0.45;
+		cursor: default;
+		filter: grayscale(0.35);
 	}
 
 	.hud-shell[data-layout='landscape'] {
@@ -920,5 +1036,106 @@
 	.hud-shell[data-layout='landscape'] .action-cluster .nav-btn {
 		width: clamp(42px, 6vh, 50px);
 		height: clamp(42px, 6vh, 50px);
+	}
+
+	/* Forest Gang mobile principle: controls keep readable fixed proportions;
+	   only the complete group reflows. The old desktop row was uniformly
+	   shrunk to ~27% on portrait, making turbo effectively disappear. */
+	.hud-shell[data-layout='portrait'] {
+		--hud-u: 1;
+		padding: 0 4px calc(8px + env(safe-area-inset-bottom, 0px));
+	}
+
+	.hud-shell[data-layout='portrait']::after {
+		height: 205px;
+	}
+
+	.hud-shell[data-layout='portrait'] .hud-bottom {
+		width: min(97vw, 440px);
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		padding: 6px 10px;
+		border-radius: 30px;
+	}
+
+	.hud-shell[data-layout='portrait'] .hud-controls {
+		order: 0;
+		width: 100%;
+		justify-content: center;
+		gap: 8px;
+	}
+
+	.hud-shell[data-layout='portrait'] .stepper,
+	.hud-shell[data-layout='portrait'] .action-cluster {
+		gap: 5px;
+	}
+
+	.hud-shell[data-layout='portrait'] .nav-btn {
+		width: 38px;
+		height: 38px;
+	}
+
+	.hud-shell[data-layout='portrait'] .spin-btn {
+		width: 78px;
+		height: 78px;
+		margin: -7px 0;
+		transform: none;
+	}
+
+	.hud-shell[data-layout='portrait'] .hud-stats {
+		order: 1;
+		width: 100%;
+		justify-content: center;
+	}
+
+	.hud-shell[data-layout='portrait'] .value-pill--balance,
+	.hud-shell[data-layout='portrait'] .value-pill--win {
+		flex: 1 1 0;
+		width: auto;
+		min-width: 0;
+		padding: 0 6px;
+	}
+
+	.hud-shell[data-layout='portrait'] .value-pill--bet {
+		flex: 1.3 1 0;
+		padding: 0 6px;
+	}
+
+	.hud-shell[data-layout='portrait'] .bet-coin {
+		width: 30px;
+		height: 30px;
+	}
+
+	.hud-shell[data-layout='portrait'] .label {
+		font-size: 0.58rem;
+	}
+
+	.hud-shell[data-layout='portrait'] .value {
+		font-size: 0.9rem;
+	}
+
+	.hud-shell[data-layout='portrait'] .hud-left {
+		order: 2;
+		width: 100%;
+		justify-content: center;
+		gap: 10px;
+	}
+
+	.hud-shell[data-layout='portrait'] .hud-system {
+		gap: 6px;
+	}
+
+	.hud-shell[data-layout='portrait'] .hud-system .nav-btn {
+		width: 34px;
+		height: 34px;
+	}
+
+	.hud-shell[data-layout='portrait'] .buy-btn {
+		width: 104px;
+	}
+
+	.hud-shell[data-layout='portrait'] .buy-btn__label {
+		font-size: 0.67rem;
 	}
 </style>

@@ -61,8 +61,18 @@
 			});
 		};
 
-		window.addEventListener('error', handleAssetError, true);
+		const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+			logDiagnostic('error', 'unhandled_rejection', {
+				reason: String((event.reason as { message?: string })?.message ?? event.reason),
+			});
+		};
 
-		return () => window.removeEventListener('error', handleAssetError, true);
+		window.addEventListener('error', handleAssetError, true);
+		window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+		return () => {
+			window.removeEventListener('error', handleAssetError, true);
+			window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+		};
 	});
 </script>

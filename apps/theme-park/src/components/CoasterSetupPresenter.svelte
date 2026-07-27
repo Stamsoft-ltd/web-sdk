@@ -59,8 +59,6 @@
 	const railY = (row: number) => cellY(row) - SYMBOL_H * RAIL_OFFSET_CELLS;
 	const rowDirection = (row: number): -1 | 1 => (row % 2 === 0 ? 1 : -1);
 	const entryX = -SYMBOL_W * 0.72;
-	const curveX = (direction: -1 | 1) =>
-		direction === -1 ? -SYMBOL_W * 0.18 : BOARD_SIZES.width + SYMBOL_W * 0.18;
 	const trackY = BOARD_SIZES.height * 0.5 - SYMBOL_H * 0.44;
 	const TRACK_SOURCE_WIDTH = 795;
 	const TRACK_FIRST_RAIL_X = 60;
@@ -199,14 +197,14 @@
 		const firstTargetIndex = Math.min(...impactsByTrackIndex.keys());
 		const firstImpact = impactsByTrackIndex.get(firstTargetIndex);
 		if (!firstImpact || firstTargetIndex < 0) return false;
-		const greenTriggerIndexes = new Set<number>();
+		const greenTriggerIndexes: number[] = [];
 		let previousTargetIndex = -Infinity;
 		for (const [targetIndex, impact] of impactsByTrackIndex) {
 			const desiredLead = 2 + ((impact.reel + impact.row + cart.id + targetIndex) % 4);
 			const availableLead = Number.isFinite(previousTargetIndex)
 				? Math.max(2, targetIndex - previousTargetIndex - 2)
 				: desiredLead;
-			greenTriggerIndexes.add(targetIndex - Math.min(desiredLead, availableLead));
+			greenTriggerIndexes.push(targetIndex - Math.min(desiredLead, availableLead));
 			previousTargetIndex = targetIndex;
 		}
 		const firstGreenIndex = Math.min(...greenTriggerIndexes);
@@ -229,7 +227,7 @@
 
 			cart.direction = rowDirection(cell.row);
 			if (index === returnYellowAtIndex) cart.state = 'happy';
-			if (greenTriggerIndexes.has(index)) cart.state = 'sick';
+			if (greenTriggerIndexes.includes(index)) cart.state = 'sick';
 
 			const impact = impactsByTrackIndex.get(index);
 			const movement = drive({

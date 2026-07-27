@@ -8,6 +8,7 @@
 <script lang="ts">
 	import { MainContainer } from 'components-layout';
 	import { FadeContainer } from 'components-pixi';
+	import { stateI18nDerived } from 'state-shared';
 
 	import { getContext } from '../game/context';
 	import { SYMBOL_SIZE } from '../game/constants';
@@ -78,7 +79,7 @@
 			})}
 		>
 			<BitmapText
-				text="FREE SPINS"
+				text={stateI18nDerived.translate('FREE SPINS')}
 				style={{
 					fontFamily: 'gold',
 					fontSize: fontSize * 1.1,
@@ -87,7 +88,7 @@
 				onresize={(sizes) => (titleSizes = sizes)}
 			/>
 			<BitmapText
-				text={`${current} OF ${total}`}
+				text={`${current} ${stateI18nDerived.translate('OF')} ${total}`}
 				{...counterPosition}
 				anchor={{ x: 0.5, y: 0 }}
 				style={{

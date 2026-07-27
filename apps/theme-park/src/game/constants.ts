@@ -94,7 +94,10 @@ export const HIGH_SYMBOLS: SymbolName[] = PAYING_SYMBOLS;
 export const INITIAL_SYMBOL_STATE = 'static' as const;
 
 export const INITIAL_BOARD: RawSymbol[][] = _.range(BOARD_DIMENSIONS.x).map(() =>
-	_.range(BOARD_DIMENSIONS.y + 4).map(() => {
+	// Reel contract: one padding symbol above + below the five visible rows.
+	// Keeping nine symbols here while every reveal supplies seven changes the
+	// reel's fixed length after the first settle and makes the next spin snap.
+	_.range(BOARD_DIMENSIONS.y + 2).map(() => {
 		const all: SymbolName[] = PAYING_SYMBOLS;
 		return { name: all[Math.floor(Math.random() * all.length)] };
 	}),

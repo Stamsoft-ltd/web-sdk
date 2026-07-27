@@ -16,6 +16,31 @@ const getWinLevelData = (winLevel: number): WinLevelData => {
 	return winLevelMap[clamped];
 };
 
+const getWinLevelDataForAmount = (amount: number): WinLevelData => {
+	const multiplier = amount / 100;
+	const level =
+		multiplier <= 0
+			? 1
+			: multiplier < 2
+				? 2
+				: multiplier < 5
+					? 3
+					: multiplier < 10
+						? 4
+						: multiplier < 20
+							? 5
+							: multiplier < 50
+								? 6
+								: multiplier < 100
+									? 7
+									: multiplier < 250
+										? 8
+										: multiplier < 1000
+											? 9
+											: 10;
+	return getWinLevelData(level);
+};
+
 const dedupePositions = (positions: { reel: number; row: number }[]) => {
 	const seen = new Set<string>();
 	return positions.filter((pos) => {
@@ -28,13 +53,18 @@ const dedupePositions = (positions: { reel: number; row: number }[]) => {
 
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
+		// WIN is per spin, not the cumulative bonus total.
+		stateGame.roundWin = 0;
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
 		const hasAnticipation = bookEvent.anticipation?.some(Boolean);
 		if (isBonusGame || hasAnticipation) eventEmitter.broadcast({ type: 'stopButtonEnable' });
 		if (isBonusGame) recordBookEvent({ bookEvent });
 
 		stateGame.gameType = bookEvent.gameType;
-		if (bookEvent.gameType === 'basegame') stateGameDerived.resetBonusState();
+		if (bookEvent.gameType === 'basegame') {
+			stateGameDerived.resetBonusState();
+			stateGame.bonusSummaryShown = false;
+		}
 
 		// Per-spin state: duck collect is per spin. Prior Roller Wilds stay
 		// visible through the result beat and are released when the next spin starts.
@@ -67,6 +97,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>) => {
 		if (bookEvent.wins.length === 0) return;
+		stateGame.roundWin = bookEvent.totalWin;
 
 		const animatePositions = dedupePositions(bookEvent.wins.flatMap((w) => w.positions));
 		await eventEmitter.broadcastAsync({
@@ -84,6 +115,20 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			.filter(
 				(p): p is { lineIndex: number; path: Array<{ reel: number; row: number }> } => p !== null,
 			);
+
+		// Theme Park math emits setWin only once, after the complete bonus.
+		// Present each free-spin win here so it behaves like Forest Gang:
+		// current-spin amount, current-spin tier, then continue to the next spin.
+		if (stateGame.gameType === 'freegame') {
+			const winLevelData = getWinLevelDataForAmount(bookEvent.totalWin);
+			eventEmitter.broadcast({ type: 'winShow' });
+			await eventEmitter.broadcastAsync({
+				type: 'winUpdate',
+				amount: bookEvent.totalWin,
+				winLevelData,
+			});
+			eventEmitter.broadcast({ type: 'winHide' });
+		}
 	},
 
 	setTotalWin: async (bookEvent: BookEventOfType<'setTotalWin'>) => {
@@ -92,6 +137,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 	setWin: async (bookEvent: BookEventOfType<'setWin'>) => {
 		if (!bookEvent.amount) return;
+		// freeSpinEnd already showed the dedicated bonus-total board. Do not
+		// incorrectly reuse the per-round tier board for the same grand total.
+		if (stateGame.bonusSummaryShown) return;
+		// Pick bonuses can settle without a normal winInfo event.
+		if (stateGame.roundWin === 0) stateGame.roundWin = bookEvent.amount;
 		const winLevelData = getWinLevelData(bookEvent.winLevel);
 		eventEmitter.broadcast({ type: 'winShow' });
 		await eventEmitter.broadcastAsync({
@@ -104,8 +154,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 	finalWin: async (bookEvent: BookEventOfType<'finalWin'>) => {
 		stateBet.winBookEventAmount = bookEvent.amount;
+		stateGame.roundWin = bookEvent.amount;
 		eventEmitter.broadcast({ type: 'winHide' });
 		stateGame.paylineWins = [];
+		stateGame.bonusSummaryShown = false;
 		if (stateGame.gameType === 'basegame') {
 			const settledRollerReels = stateGame.activeRollerReels;
 			stateGameDerived.resetBonusState();
@@ -160,6 +212,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	},
 
 	freeSpinEnd: async (bookEvent: BookEventOfType<'freeSpinEnd'>) => {
+		stateGame.roundWin = bookEvent.amount;
+		stateGame.bonusSummaryShown = true;
 		eventEmitter.broadcast({ type: 'boardFrameGlowHide' });
 		eventEmitter.broadcast({ type: 'freeSpinCounterHide' });
 		await waitForTimeout(SECOND * 0.5);
@@ -274,6 +328,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateGame.duckPicks = { ...stateGame.duckPicks, finalAmount: bookEvent.amount };
 		}
 		await eventEmitter.broadcastAsync({ type: 'duckPondFinish', amount: bookEvent.amount });
+		// The pond's BONUS COMPLETE panel is this bonus's total board. Suppress
+		// the settlement setWin tier board that follows it.
+		stateGame.bonusSummaryShown = true;
 		eventEmitter.broadcast({ type: 'duckPondHide' });
 		stateGame.duckPicks = null;
 		stateGame.duckRunningTotal = 0;

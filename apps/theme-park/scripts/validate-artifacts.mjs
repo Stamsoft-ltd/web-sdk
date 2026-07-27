@@ -134,14 +134,10 @@ for (const mode of modes) {
 for (const relativePath of [
 	'assets/spines/anticipation/anticipation.atlas',
 	'assets/spines/anticipation/anticipation.json',
-	'assets/spines/anticipation/anticipation.png',
+	'assets/spines/anticipation/anticipation.webp',
 	'assets/components/frames/magnetic/cell_box.png',
 	'assets/components/frames/magnetic/cell_box_win.png',
-	'assets/components/frames/magnetic/board_pad_mobile.png',
-	'assets/components/frames/magnetic/board_pad_land.png',
 	'assets/components/frames/forest/badge_frame.png',
-	'assets/components/symbols/magnetic/special/wild_lightning_sheet.json',
-	'assets/components/symbols/magnetic/special/wild_lightning_sheet.png',
 ]) {
 	assert.ok(
 		fs.existsSync(path.join(root, 'static', relativePath)),

@@ -6,13 +6,14 @@
 	import { EnableHotkey } from 'components-shared';
 	import { MainContainer } from 'components-layout';
 	import { App, Container } from 'pixi-svelte';
-	import { stateMeta } from 'state-shared';
+	import { stateMeta, stateUi } from 'state-shared';
 
 	import { Modals } from 'components-ui-html';
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import EnableSound from './EnableSound.svelte';
+	import SceneAnimationDriver from './SceneAnimationDriver.svelte';
 	import EnableGameActor from './EnableGameActor.svelte';
 	import PendingRoundRecovery from './PendingRoundRecovery.svelte';
 	import ResumeBet from './ResumeBet.svelte';
@@ -38,15 +39,16 @@
 	import ReplayHud from './replay/ReplayHud.svelte';
 	import SplashIntro from './SplashIntro.svelte';
 	import { BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { registerArtDeep, warmArt } from '../lib/preloadArt';
 
 	const context = getContext();
 
 	let splashIntroVisible = $state(false);
 	let splashPressHandler = $state<(() => void) | undefined>(undefined);
 
-	const heroArt = './assets/theme-park/v2/background.png';
-	const bonusArt = './assets/theme-park/coaster-bonus.png';
-	const scatterArt = './assets/theme-park/symbols-concept.png';
+	const heroArt = './assets/theme-park/v2/background.webp';
+	const bonusArt = './assets/theme-park/coaster-bonus.webp';
+	const scatterArt = './assets/theme-park/symbols-concept.webp';
 	const uiRefArt = './assets/components/reference/controls_reference.png';
 	const paylinesArt = './assets/components/reference/paylines_reference.png';
 	const heroArtBackdrop = heroArt;
@@ -67,7 +69,7 @@
 	// BASE 1x (default) · ANTE/FSPIN1/FSPIN2 are persistent per-spin toggles ·
 	// DUCK/ROLLER/COASTER are one-time bonus buys.
 	$effect(() => {
-		stateMeta.betModeMeta = {
+		const betModeMeta: typeof stateMeta.betModeMeta = {
 			BASE: {
 				mode: 'BASE',
 				costMultiplier: 1,
@@ -188,7 +190,7 @@
 			},
 		};
 
-		stateMeta.gameRuleMeta = {
+		const gameRuleMeta: typeof stateMeta.gameRuleMeta = {
 			gameRules: [
 				{
 					title: t('RULE SECTION GAME INFO'),
@@ -374,9 +376,16 @@
 			],
 			splashScreen: [],
 		};
+		registerArtDeep(betModeMeta);
+		registerArtDeep(gameRuleMeta);
+		stateMeta.betModeMeta = betModeMeta;
+		stateMeta.gameRuleMeta = gameRuleMeta;
 	});
 
-	onMount(() => (context.stateLayout.showLoadingScreen = true));
+	onMount(() => {
+		context.stateLayout.showLoadingScreen = true;
+		warmArt();
+	});
 </script>
 
 <div
@@ -385,7 +394,8 @@
 	style={`--game-shell-bg:url('${heroArtBackdrop}')`}
 >
 	<div class="game-stage">
-		<App>
+		<App preloadWebFont={false} maxResolution={2} antialias={false} rendererPreference="webgl">
+			<SceneAnimationDriver />
 			<EnableSound />
 			<EnableHotkey />
 			<EnableGameActor />
@@ -457,7 +467,9 @@
 		{/if}
 
 		{#if !context.stateLayout.showLoadingScreen}
-			<HudHtml />
+			{#if stateUi.config.mode !== 'replay'}
+				<HudHtml />
+			{/if}
 			<ReplayHud />
 			<PendingRoundRecovery />
 		{/if}

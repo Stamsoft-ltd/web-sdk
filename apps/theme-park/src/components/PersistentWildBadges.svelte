@@ -6,6 +6,7 @@
 
 <script lang="ts">
 	import { onDestroy } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { BitmapText, Container, Sprite } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
 
@@ -19,7 +20,7 @@
 	const rollerReels = $derived(context.stateGame.activeRollerReels);
 
 	let pulsingKeys = $state<string[]>([]);
-	const pulseTimers = new Set<ReturnType<typeof setTimeout>>();
+	const pulseTimers = new SvelteSet<ReturnType<typeof setTimeout>>();
 
 	onDestroy(() => {
 		pulseTimers.forEach(clearTimeout);

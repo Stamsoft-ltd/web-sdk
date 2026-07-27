@@ -1125,6 +1125,12 @@ importers:
       eslint-config-custom:
         specifier: workspace:*
         version: link:../../packages/eslint-config-custom
+      jsdom:
+        specifier: 26.1.0
+        version: 26.1.0
+      vitest:
+        specifier: 3.2.4
+        version: 3.2.4(@types/node@24.0.13)(jiti@1.21.7)(jsdom@26.1.0)(sass-embedded@1.89.2)
 
   apps/ways:
     dependencies:

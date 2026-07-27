@@ -10,10 +10,11 @@
 
 	let showModal = $state(false);
 
-	const isBonusMode = (mode?: string) => mode === 'BONUS';
+	const isBonusMode = (mode?: string) => mode === 'DUCK' || mode === 'ROLLER' || mode === 'COASTER';
 
 	const doResume = () => {
 		showModal = false;
+		stateGame.resumeModalOpen = false;
 		if (stateBet.betToResume?.mode) {
 			stateBet.activeBetModeKey = stateBet.betToResume.mode;
 		}
@@ -23,6 +24,7 @@
 
 	const doEnd = () => {
 		showModal = false;
+		stateGame.resumeModalOpen = false;
 		logDiagnostic('info', 'pending_round_ended');
 		if (stateBet.betToResume?.mode) {
 			stateBet.activeBetModeKey = stateBet.betToResume.mode;
@@ -42,6 +44,7 @@
 		if (isBonusMode(stateBet.betToResume?.mode)) {
 			// Show modal so player can choose to replay or end
 			showModal = true;
+			stateGame.resumeModalOpen = true;
 		} else {
 			// Non-bonus: auto-resume as before
 			doResume();

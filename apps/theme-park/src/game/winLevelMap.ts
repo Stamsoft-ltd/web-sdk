@@ -1,8 +1,8 @@
 import { SECOND } from 'constants-shared/time';
 
 // Win level tiers 1-10 shared with the server contract.
-// Thresholds (x bet) decided server-side: <2:1, <5:2, <10:3, <20:4, <35:5,
-// <50:6, <100:7, <500:8, <2500:9, >=2500:10.
+// Thresholds (x bet) decided server-side: <=0:1, <2:2, <5:3, <10:4,
+// <20:5, <50:6, <100:7, <250:8, <1000:9, >=1000:10.
 export const winLevelMap = {
 	1: {
 		level: 1,
