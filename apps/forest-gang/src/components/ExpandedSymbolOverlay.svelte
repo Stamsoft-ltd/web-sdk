@@ -77,11 +77,22 @@
 		WOLF: 'wolfMoney',
 		SQUIRREL: 'squirrelMoney',
 	};
+	// Memoized per animKey: this MUST return the same array identity while one expansion plays.
+	// A fresh array per recompute (every reel append, every background loadedAssets merge) defeats
+	// AnimatedSprite's identity guard — each reassignment is a gotoAndStop(0), so the clip restarts
+	// over and over and reads as frozen on its start pose.
+	let framesKey: string | undefined;
+	let frames: Texture[] = [];
 	const animFrames = $derived.by(() => {
 		const animKey = expanded ? EXPAND_ANIM_KEY[expanded.symbol] : undefined;
 		if (!animKey) return [];
 		const t = (context.stateApp.loadedAssets?.[animKey] ?? []) as Texture[];
-		return t.length ? [...t, ...t.slice(1, -1).reverse()] : [];
+		if (!t.length) return [];
+		if (framesKey !== animKey) {
+			framesKey = animKey;
+			frames = [...t, ...t.slice(1, -1).reverse()];
+		}
+		return frames;
 	});
 
 	// Low (card) expands show the CLEAN base tile with a continuous ±10% pulse (matching the reel
