@@ -22,9 +22,25 @@
 	// Which line is currently drawing: -1 = all lines together (the first pass, so the full win
 	// picture registers at once), then 0..N-1 cycling line-by-line so each payline can be read.
 	let activeLine = $state(-1);
+	// Set once the opening pass has finished. After that the vines STAY grown: the cycle only moves
+	// the highlight from line to line. The previous version restarted the draw from 0 on every
+	// cycle, which on a single-line win (no other lines left on screen as ghosts) wiped the vine
+	// off the board and regrew it — it read as the win being taken away and put back.
+	let hasGrown = $state(false);
 	let raf = 0;
 	let holdTimeout = 0;
 	let start = 0;
+
+	const scheduleCycle = () => {
+		holdTimeout = setTimeout(() => {
+			const count = props.wins.length;
+			// Only multi-line wins have anything to cycle through; a single line just stays drawn.
+			if (count > 1) {
+				activeLine = (activeLine + 1) % count;
+				scheduleCycle();
+			}
+		}, HOLD_MS + DRAW_MS) as unknown as number;
+	};
 
 	const startDraw = () => {
 		cancelAnimationFrame(raf);
@@ -36,13 +52,8 @@
 			if (drawProgress < 1) {
 				raf = requestAnimationFrame(tick);
 			} else {
-				holdTimeout = setTimeout(() => {
-					const count = props.wins.length;
-					// Multi-line wins advance to per-line cycling after the all-lines pass;
-					// single-line wins just keep redrawing their one line.
-					if (count > 1) activeLine = (activeLine + 1) % count;
-					startDraw();
-				}, HOLD_MS) as unknown as number;
+				hasGrown = true;
+				scheduleCycle();
 			}
 		};
 		raf = requestAnimationFrame(tick);
@@ -54,6 +65,7 @@
 		cancelAnimationFrame(raf);
 		drawProgress = 0;
 		activeLine = -1;
+		hasGrown = false;
 		start = 0;
 		if (count === 0) return;
 		startDraw();
@@ -68,14 +80,14 @@
 	});
 </script>
 
-<!-- While cycling, the non-active lines stay as faint fully-drawn ghosts (instead of vanishing)
-     so a multi-line win keeps its full picture without reading as a wall of bright lines. -->
+<!-- Every vine stays fully grown once the opening pass is done; the cycle then only shifts which
+     one is bright, so the win's full picture is on the board the whole time it's on screen. -->
 {#each props.wins as win, index (win.lineIndex)}
 	{@const isActive = activeLine === -1 || activeLine === index}
 	<VineRope
 		waypoints={win.path.map((p) => ({ x: cx(p.reel), y: cy(p.row) }))}
 		color={GOLD}
-		progress={props.snap ? 1 : isActive ? drawProgress : 1}
+		progress={props.snap || hasGrown || !isActive ? 1 : drawProgress}
 		alpha={props.snap ? 0.75 : isActive ? 0.85 : 0.16}
 		vineH={VINE_H}
 	/>

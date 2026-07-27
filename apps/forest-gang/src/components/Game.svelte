@@ -385,6 +385,25 @@
 		}
 	};
 
+	// Drop the previous round's payline vines the instant a NEW round is requested. They used to
+	// hang on until the book's `reveal` handler cleared them, which is only after the bet request
+	// has come back from the RGS — so on the player's screen the old win's vines lingered over the
+	// start of the next spin.
+	//
+	// The signal has to be the idle → busy TRANSITION, not `!isIdle()`: the machine is also busy
+	// all through the win presentation, so clearing on that would wipe the vines the moment they
+	// were drawn. Tracking the edge fires exactly once per round start, and covers autoplay and
+	// buy-bonus spins too, since they leave idle the same way a button press does.
+	let wasIdle = true;
+	$effect(() => {
+		const idle = context.stateXstateDerived.isIdle();
+		if (wasIdle && !idle) {
+			context.stateGame.paylineWins = [];
+			context.stateGame.paylineSnap = false;
+		}
+		wasIdle = idle;
+	});
+
 	onMount(() => {
 		context.stateLayout.showLoadingScreen = true;
 		// Fetch all registered HTML-side art while the loading screen is up (low priority, so

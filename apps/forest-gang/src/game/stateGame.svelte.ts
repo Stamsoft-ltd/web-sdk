@@ -348,8 +348,11 @@ const resetBonusState = () => {
 	stateGame.expandedSymbol = null;
 	stateGame.expandedSymbolWon = false;
 	stateGame.tempMultiplier = null;
-	stateGame.paylineWins = [];
-	stateGame.paylineSnap = false;
+	// paylineWins is deliberately NOT cleared here. This resets BONUS presentation, and finalWin
+	// calls it at the end of every round — which wiped the payline vines a moment after they were
+	// drawn, while the player was still looking at the winning line. The vines belong to the WIN
+	// presentation and are meant to stay until the result is replaced: the two places that legitimately
+	// end them (the next spin's `reveal`, and `freeSpinEnd`) clear them explicitly already.
 };
 
 // Desktop bonus side-rail (bonus symbol / multiplier / earned / global-multiplier / FS counter):
