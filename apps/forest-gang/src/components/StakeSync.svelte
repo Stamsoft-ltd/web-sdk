@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { stateBet, stateConfig, stateModal, stateUi } from 'state-shared';
+	import { stateBet, stateModal, stateUi } from 'state-shared';
 	import { onMount } from 'svelte';
 
 	import { getContext } from '../game/context';
@@ -8,14 +8,6 @@
 
 	const context = getContext();
 	let lastPendingRoundMode = '';
-
-	// Forest Gang bet ladder (currency units) — overrides the shared default for this game only.
-	const FOREST_BET_OPTIONS = [
-		0.1, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18,
-		20, 30, 40, 50, 75, 100, 150, 200, 250, 300, 350, 400, 450, 500, 750, 1000,
-	];
-	stateConfig.betAmountOptions = FOREST_BET_OPTIONS;
-	stateConfig.betMenuOptions = FOREST_BET_OPTIONS;
 
 	$effect(() => {
 		if (stateUi.config.mode === 'replay' && stateBet.betToResume && !forestStakeState.replaySnapshot) {
@@ -69,8 +61,20 @@
 			});
 		};
 
-		window.addEventListener('error', handleAssetError, true);
+		// Surface otherwise-silent promise rejections (e.g. the fire-and-forget end-event/end-round
+		// RGS calls) to diagnostics instead of letting them vanish as unhandled rejections.
+		const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+			logForestDiagnostic('error', 'unhandled_rejection', {
+				reason: String((event.reason as { message?: string })?.message ?? event.reason),
+			});
+		};
 
-		return () => window.removeEventListener('error', handleAssetError, true);
+		window.addEventListener('error', handleAssetError, true);
+		window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+		return () => {
+			window.removeEventListener('error', handleAssetError, true);
+			window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+		};
 	});
 </script>

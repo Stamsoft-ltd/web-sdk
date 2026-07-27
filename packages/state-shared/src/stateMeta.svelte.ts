@@ -87,12 +87,14 @@ export type GameInfoPayout = {
 };
 
 export type GameInfoPage = {
-	kind: 'overview' | 'features' | 'cards' | 'paytable' | 'paylines' | 'placeholder';
+	kind: 'overview' | 'features' | 'cards' | 'paytable' | 'paylines' | 'uiguide' | 'placeholder';
 	/** Decorative forest frame border drawn over the whole page. */
 	frame: string;
 	/** Inner background image shown inside the frame. */
 	background?: string;
 	title: string;
+	/** Small line rendered directly below the title (e.g. "Base RTP 96.11%"). */
+	subtitle?: string;
 	/** Body paragraph (overview pages). Supports `\n` line breaks. */
 	body?: string;
 	/** Substring within `body` to render emphasised (gold, larger), e.g. the max-win value. */

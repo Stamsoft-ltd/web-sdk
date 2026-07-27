@@ -14,13 +14,11 @@
 	const replayReady = $derived(Boolean(forestStakeState.replaySnapshot));
 	const replayRunning = $derived(forestStakeState.replayRunning);
 	const replayHasPlayed = $derived(forestStakeState.replayHasPlayed);
-	const replayNeedsStart = $derived(replayReady && !replayRunning && !forestStakeState.replayStartRequested);
 	const replayError = $derived(forestStakeState.bootStatus === 'error' ? forestStakeState.bootError : '');
 	const replayBetText = $derived(forestStakeDerived.formatCurrencyAmount(forestStakeDerived.replayBetAmount()));
 	const replayCostText = $derived(forestStakeDerived.formatCurrencyAmount(forestStakeDerived.replayCostAmount()));
-	const replayPayoutText = $derived(
-		forestStakeDerived.formatCurrencyAmount(forestStakeDerived.replayPayoutAmount()),
-	);
+	const replayCostMultiplierText = $derived(`${forestStakeDerived.replayCostMultiplier()}x`);
+	const replayPayoutMultiplierText = $derived(`${forestStakeDerived.replayPayoutMultiplier().toFixed(2).replace(/\.?0+$/, '')}x`);
 	const replayWinText = $derived(
 		forestStakeDerived.formatCurrencyAmount(forestStakeDerived.replayWinAmount()),
 	);
@@ -46,15 +44,21 @@
 		return `--replay-value-scale:${scale};--replay-value-letter-spacing:${letterSpacing}em;`;
 	};
 
+	const setReplayBetToResume = () => {
+		if (!forestStakeState.replaySnapshot) return false;
+		const snapshot = forestStakeDerived.cloneReplayBet(forestStakeState.replaySnapshot);
+		if (!snapshot) return false;
+		stateBet.betToResume = snapshot;
+		return true;
+	};
+
 	const startReplay = () => {
-		if (!forestStakeDerived.requestReplayStart() || !forestStakeState.replaySnapshot) return;
-		stateBet.betToResume = structuredClone(forestStakeState.replaySnapshot);
+		if (!forestStakeDerived.requestReplayStart() || !setReplayBetToResume()) return;
 		context.eventEmitter.broadcast({ type: 'resumeBet' });
 	};
 
 	const replayAgain = () => {
-		if (!forestStakeDerived.requestReplayStart() || !forestStakeState.replaySnapshot) return;
-		stateBet.betToResume = structuredClone(forestStakeState.replaySnapshot);
+		if (!forestStakeDerived.requestReplayStart() || !setReplayBetToResume()) return;
 		logForestDiagnostic('info', 'replay_again_pressed', {
 			eventId: forestStakeState.replayEventId,
 		});
@@ -65,12 +69,11 @@
 {#if isReplayMode}
 	<div class="replay-hud">
 		<div class="replay-topbar">
-			<div class="replay-brand">
-				<span class="replay-title">{forestStakeDerived.t('GAME TITLE')}</span>
-				<span class="replay-badge">{forestStakeDerived.t('REPLAY')}</span>
-			</div>
 			<div class="replay-meta">
-				<span class="replay-chip">{selectedMode}</span>
+				<span class="replay-badge">{forestStakeDerived.t('REPLAY')}</span>
+				{#if selectedMode}
+					<span class="replay-chip">{selectedMode}</span>
+				{/if}
 				{#if forestStakeState.replayEventId}
 					<span class="replay-chip">{forestStakeDerived.t('EVENT')} {forestStakeState.replayEventId}</span>
 				{/if}
@@ -78,85 +81,85 @@
 		</div>
 
 		<div class="replay-panel">
-			<div class="replay-stats">
-				<div class="replay-stat">
-					<span>{forestStakeDerived.t('BET SIZE')}</span>
-					<strong style={replayValueStyle(replayBetText)}>{replayBetText}</strong>
+			<div class="replay-body">
+				<div class="replay-stats">
+					<div class="replay-stat">
+						<span>{forestStakeDerived.t('BASE BET')}</span>
+						<strong style={replayValueStyle(replayBetText)}>{replayBetText}</strong>
+					</div>
+					<div class="replay-stat">
+						<span>{forestStakeDerived.t('TOTAL BET COST')}</span>
+						<strong style={replayValueStyle(replayCostText)}>{replayCostText}</strong>
+					</div>
+					<div class="replay-stat">
+						<span>{forestStakeDerived.t('COST MULTIPLIER')}</span>
+						<strong>{replayCostMultiplierText}</strong>
+					</div>
+					<div class="replay-stat">
+						<span>{forestStakeDerived.t('PAYOUT MULTIPLIER')}</span>
+						<strong class="replay-win">{replayPayoutMultiplierText}</strong>
+					</div>
+					<div class="replay-stat">
+						<span>{forestStakeDerived.t('TOTAL WIN')}</span>
+						<strong class="replay-win" style={replayValueStyle(replayWinText)}>{replayWinText}</strong>
+					</div>
 				</div>
-				<div class="replay-stat">
-					<span>{forestStakeDerived.t('TOTAL COST')}</span>
-					<strong style={replayValueStyle(replayCostText)}>{replayCostText}</strong>
-				</div>
-				<div class="replay-stat">
-					<span>{forestStakeDerived.t('PAYOUT')}</span>
-					<strong style={replayValueStyle(replayPayoutText)}>{replayPayoutText}</strong>
-				</div>
-				<div class="replay-stat">
-					<span>{forestStakeDerived.t('WIN')}</span>
-					<strong style={replayValueStyle(replayWinText)}>{replayWinText}</strong>
+
+				<div class="replay-action">
+					{#if replayError}
+						<div class="replay-error-block">
+							<p>{replayError}</p>
+						</div>
+					{:else if replayReady && !replayRunning}
+						<button class="replay-primary" type="button" onclick={replayHasPlayed ? replayAgain : startReplay}>
+							<span class="replay-play-icon">▶</span>
+							<span>{replayHasPlayed ? forestStakeDerived.t('REPLAY EVENT') : forestStakeDerived.t('START REPLAY')}</span>
+						</button>
+					{/if}
 				</div>
 			</div>
-
-			{#if replayError}
-				<div class="replay-error-block">
-					<p>{replayError}</p>
-				</div>
-			{:else if replayNeedsStart}
-				<button class="replay-primary" type="button" onclick={startReplay}>
-					{forestStakeDerived.t('START REPLAY')}
-				</button>
-			{:else if replayReady && !replayRunning && replayHasPlayed}
-				<button class="replay-primary" type="button" onclick={replayAgain}>
-					{forestStakeDerived.t('PLAY AGAIN')}
-				</button>
-			{/if}
 		</div>
 	</div>
 {/if}
+
 
 <style>
 	.replay-hud {
 		position: fixed;
 		inset: 0;
 		pointer-events: none;
-		z-index: 50;
+		z-index: 80;
 		color: #f9f1d2;
 		font-family: 'Poppins', sans-serif;
 	}
 
 	.replay-topbar {
 		position: absolute;
-		inset: calc(12px + env(safe-area-inset-top, 0px)) 12px auto 12px;
+		top: calc(12px + env(safe-area-inset-top, 0px));
+		right: 12px;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
+		justify-content: flex-end;
 		gap: 10px;
+		pointer-events: none;
 	}
 
-	.replay-brand,
 	.replay-meta {
 		display: flex;
 		align-items: center;
+		justify-content: flex-end;
 		gap: 8px;
 		flex-wrap: wrap;
-	}
-
-	.replay-title {
-		font-size: 18px;
-		font-weight: 900;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 	}
 
 	.replay-badge,
 	.replay-chip {
 		border-radius: 999px;
 		border: 1px solid rgba(231, 196, 112, 0.34);
-		background: rgba(18, 23, 12, 0.8);
+		background: rgba(18, 23, 12, 0.82);
 		padding: 6px 10px;
 		font-size: 10px;
-		font-weight: 800;
+		font-weight: 900;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 	}
@@ -167,22 +170,36 @@
 
 	.replay-panel {
 		position: absolute;
-		right: 12px;
-		bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-		width: min(324px, calc(100vw - 24px));
+		left: auto;
+		right: 18px;
+		top: auto;
+		bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+		width: min(860px, calc(100vw - 36px));
+		max-height: min(32vh, 180px);
 		border-radius: 18px;
-		border: 1px solid rgba(231, 196, 112, 0.24);
-		background: rgba(18, 23, 12, 0.82);
-		backdrop-filter: blur(10px);
+		border: 1px solid rgba(231, 196, 112, 0.32);
+		background:
+			linear-gradient(180deg, rgba(57, 42, 16, 0.94), rgba(18, 23, 12, 0.94)),
+			rgba(18, 23, 12, 0.96);
+		backdrop-filter: blur(12px);
 		padding: 10px;
 		pointer-events: auto;
-		box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32);
+		box-shadow: 0 14px 34px rgba(0, 0, 0, 0.36), inset 0 0 0 1px rgba(255, 235, 170, 0.06);
+		overflow: auto;
+	}
+
+	.replay-body {
+		display: flex;
+		align-items: stretch;
+		gap: 10px;
 	}
 
 	.replay-stats {
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: repeat(5, minmax(0, 1fr));
 		gap: 8px;
+		flex: 1 1 auto;
+		min-width: 0;
 	}
 
 	.replay-stat {
@@ -195,25 +212,37 @@
 
 	.replay-stat span {
 		font-size: 9px;
-		font-weight: 700;
+		font-weight: 900;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		color: rgba(249, 241, 210, 0.72);
 	}
 
 	.replay-stat strong {
-		font-size: calc(17px * var(--replay-value-scale, 1));
+		--replay-value-base-size: 17px;
+		font-size: calc(var(--replay-value-base-size) * var(--replay-value-scale, 1));
 		line-height: 1.1;
 		letter-spacing: var(--replay-value-letter-spacing, 0);
 		color: #fff8df;
 		white-space: nowrap;
+		min-width: 0;
+	}
+
+	.replay-win {
+		color: #20d878 !important;
+	}
+
+	.replay-action {
+		display: flex;
+		align-items: stretch;
+		justify-content: center;
+		flex: 0 0 160px;
 	}
 
 	.replay-primary {
-		margin-top: 8px;
 		width: 100%;
 		border: none;
-		border-radius: 999px;
+		border-radius: 14px;
 		padding: 10px 12px;
 		background: linear-gradient(180deg, #f0d068 0%, #c09224 100%);
 		color: #17200f;
@@ -222,10 +251,22 @@
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		min-height: 62px;
+	}
+
+	.replay-play-icon {
+		font-size: 16px;
+		line-height: 1;
 	}
 
 	.replay-error-block {
 		margin-top: 8px;
+		display: grid;
+		gap: 8px;
 	}
 
 	.replay-error-block p {
@@ -234,5 +275,91 @@
 		font-size: 12px;
 		line-height: 1.45;
 		word-break: break-word;
+	}
+
+	@media (max-width: 720px) {
+		.replay-topbar {
+			top: calc(10px + env(safe-area-inset-top, 0px));
+			right: 10px;
+			gap: 8px;
+		}
+
+		.replay-panel {
+			left: auto;
+			right: 10px;
+			top: auto;
+			bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+			width: min(760px, calc(100vw - 20px));
+			padding: 9px;
+			max-height: min(34vh, 180px);
+		}
+
+		.replay-stats {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+
+		.replay-action {
+			flex-basis: 142px;
+		}
+
+		.replay-meta {
+			max-width: 68%;
+			justify-content: flex-end;
+		}
+	}
+
+	@media (max-width: 540px), (orientation: portrait) and (max-width: 768px) {
+		.replay-topbar {
+			align-items: flex-start;
+		}
+
+		.replay-panel {
+			left: 8px;
+			right: 8px;
+			top: auto;
+			bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+			width: auto;
+			max-height: min(28vh, 170px);
+			padding: 7px 7px 6px;
+		}
+
+		.replay-body {
+			gap: 6px;
+		}
+
+		.replay-stats {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 6px;
+		}
+
+		.replay-action {
+			flex-basis: 112px;
+		}
+
+		.replay-stat {
+			padding: 6px 7px;
+		}
+
+		.replay-stat span {
+			font-size: 8px;
+		}
+
+		.replay-stat strong {
+			--replay-value-base-size: 16px;
+		}
+
+		.replay-primary {
+			padding: 8px 8px;
+			font-size: 10px;
+			min-height: 58px;
+			flex-direction: column;
+			gap: 4px;
+		}
+
+		.replay-badge,
+		.replay-chip {
+			padding: 5px 9px;
+			font-size: 9px;
+		}
 	}
 </style>

@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': 'ALLES REIN',
 	'RULE ALL IN TEXT': 'Alles Rein vergibt 10 Freispiele mit 1 zufällig gewählten expandierenden Symbol. Der Multiplikator startet bei 2x und verdoppelt sich nur bei Gewinnspielen, was kleine frühe Gewinne und eine späte Jagd auf den Maximalgewinn erzeugt.',
 	'RULE BUY TITLE': 'KAUF- / AKTIVIERUNGSMODI',
-	'RULE BUY TEXT': 'Zock Los Kaufkosten betragen den 100-fachen Einsatz. Alles Rein Kaufkosten betragen den 400-fachen Einsatz. Chance-Spin kostet den 2-fachen Einsatz pro Runde. Funktions-Spin kostet den 20-fachen Einsatz pro Runde. Der Maximalgewinn beträgt 25,000x. Ziel-RTP ist 96.1%.',
+	'RULE BUY TEXT': 'Zock Los Kaufkosten betragen den 100-fachen Einsatz. Alles Rein Kaufkosten betragen den 400-fachen Einsatz. Chance-Spin kostet den 2-fachen Einsatz pro Runde. Funktions-Spin kostet den 20-fachen Einsatz pro Runde. Der Maximalgewinn beträgt 25,000x. Ziel-RTP ist 96.11%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'GEWÄHLTES PREMIUM-SYMBOL',
 	'FEATURE SELECTED SYMBOL TEXT': 'Jedes reguläre auszahlende Symbol kann das expandierende Symbol sein. Wenn es landet, expandieren alle betroffenen Walzen, um dieses Symbol zu füllen, und 3 oder mehr Walzen zahlen auch ohne benachbarte Verbindungen aus.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'ZOCK LOS MULTIPLIKATOREN',
@@ -105,19 +105,19 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild ersetzt alle regulären auszahlenden Symbole. Scatter zahlt nicht selbst aus und löst nur die Bonus-Features aus.',
 	'PAYTABLE BUY_TEXT': 'Zock Los: 100x Einsatz.\nAlles Rein: 400x Einsatz.\nChance-Spin: 2x Einsatz pro Runde.\nFunktions-Spin: 20x Einsatz pro Runde.\nZock Los und Alles Rein erfordern eine Bestätigung vor Rundenbeginn.',
 	'PAYTABLE MAX_TEXT': 'Der angegebene Maximalgewinn beträgt das 25,000x-fache des gewählten Einsatzes.',
-	'DISCLAIMER TEXT': 'Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Im Falle einer Verbindungsunterbrechung lade das Spiel neu, um unvollständige Runden abzuschließen. Die erwartete Rendite wird über viele Spiele berechnet. Die Spielanzeige ist nicht repräsentativ für ein physisches Gerät und dient nur zur Veranschaulichung. Gewinne werden gemäß dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht anhand von Ereignissen im Webbrowser. TM und © 2026 Stake Engine.',
+	'DISCLAIMER TEXT': 'Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Im Falle einer Verbindungsunterbrechung lade das Spiel neu, um unvollständige Runden abzuschließen. Die erwartete Rendite wird über viele Spiele berechnet. Die Spielanzeige ist nicht repräsentativ für ein physisches Gerät und dient nur zur Veranschaulichung. Gewinne werden gemäß dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht anhand von Ereignissen im Webbrowser. TM und © 2025 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'ÜBERSICHT',
 	'INFO OVERVIEW BODY':
-		'Forest Gang ist ein 5x4 Video-Slot mit 20 Gewinnlinien.\nGewinne werden von links nach rechts auf aufeinanderfolgenden Walzen ab Walze 1 vergeben, wenn passende Symbole auf einer aktiven Gewinnlinie landen.\nDas Spiel enthält 5 Premium-Symbole, 5 niedrige Symbole, ein Wild-Symbol und ein Scatter-Symbol.\n\nDas maximale Gewinnpotenzial beträgt das 25,000x-fache des Gesamteinsatzes.\n\nTheoretischer RTP: 96.1%',
+		'Forest Gang ist ein 5x4 Video-Slot mit 20 Gewinnlinien.\nGewinne werden von links nach rechts auf aufeinanderfolgenden Walzen ab Walze 1 vergeben, wenn passende Symbole auf einer aktiven Gewinnlinie landen.\nDas Spiel enthält 5 Premium-Symbole, 5 niedrige Symbole, ein Wild-Symbol und ein Scatter-Symbol.\n\nDas maximale Gewinnpotenzial beträgt das 25,000x-fache des Gesamteinsatzes.\n\nTheoretischer RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'WALZEN',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': 'GEWINNLINIEN',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': 'MAX. GEWINN',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': 'FUNKTIONEN',
 	'INFO EXPANDING TITLE': 'EXPANDIERENDES SYMBOL',
@@ -126,11 +126,11 @@ export default {
 	'INFO DEAL IT TITLE': 'ZOCK LOS BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
-		'Ausgelöst durch 3 Scatter-Symbole.\n\nVergibt 10 Freispiele. Bevor der Bonus beginnt, wird ein zufälliges expandierendes Symbol gewählt. Während des Bonus kann das gewählte Symbol expandieren, um die gesamte Walze zu bedecken.\n\nEin zufälliger Multiplikator kann auf jedes Gewinnspiel angewendet werden, bis zu 100x.',
+		'Ausgelöst durch 3 Scatter-Symbole.\n\nVergibt 10 Freispiele. Bevor der Bonus beginnt, wird ein zufälliges expandierendes Symbol gewählt. Während des Bonus kann das gewählte Symbol expandieren, um die gesamte Walze zu bedecken.\n\nEin zufälliger Multiplikator kann auf jedes Gewinnspiel angewendet werden, bis zu 100x.\n\nDie Bonusrunde kann wie folgt erneut ausgelöst werden:\n[[3 Scatter]] +3 Freispiele\n[[4 Scatter]] +5 Freispiele\n[[5 Scatter]] +8 Freispiele',
 	'INFO ALL IN TITLE': 'ALLES REIN BONUS',
 	'INFO ALL IN HL': '4 Scatter',
 	'INFO ALL IN TEXT':
-		'Ausgelöst durch 4 Scatter-Symbole und vergibt 10 Freispiele.\n\nBevor der Bonus beginnt, wird ein zufälliges expandierendes Symbol gewählt. Während des Bonus kann das gewählte Symbol expandieren, um die gesamte Walze zu bedecken. Walzen-Multiplikatoren bleiben für den gesamten Bonus aktiv und verdoppeln sich bei jedem qualifizierenden Gewinn, beginnend bei 2x.',
+		'Ausgelöst durch 4 Scatter-Symbole und vergibt 10 Freispiele.\n\nBevor der Bonus beginnt, wird ein zufälliges expandierendes Symbol gewählt. Während des Bonus kann das gewählte Symbol expandieren, um die gesamte Walze zu bedecken. Walzen-Multiplikatoren bleiben für den gesamten Bonus aktiv und verdoppeln sich bei jedem qualifizierenden Gewinn, beginnend bei 2x.\n\nDie Bonusrunde kann wie folgt erneut ausgelöst werden:\n[[3 Scatter]] +3 Freispiele\n[[4 Scatter]] +5 Freispiele\n[[5 Scatter]] +8 Freispiele',
 	'INFO PLACEHOLDER BODY': 'Design folgt in Kürze.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': 'GEWINNTABELLE',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': 'Vergibt sofort den Alles Rein Bonus.',
 	'INFO BUY COST': 'KOSTEN',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "Basis-RTP 96.11%",
 	'INFO BUY CHANCE_LABEL': 'BONUS-CHANCE',
 	'INFO BUY CHANCE_VALUE': '3x CHANCE',
 	// General info page
@@ -170,7 +171,7 @@ export default {
 		'Wenn eine Spielrunde unterbrochen wird, wird sie beim Neuladen des Spiels fortgesetzt, sofern möglich.\n\nAlle gültigen Einsätze und potenziellen Gewinne bleiben aktiv, bis die Runde vollständig abgeschlossen ist.',
 	'INFO LEGAL TITLE': 'RECHTLICHER HINWEIS',
 	'INFO LEGAL TEXT':
-		'Eine Fehlfunktion macht alle Auszahlungen und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Bei Verbindungsverlust lade das Spiel neu, um unvollständige Runden abzuschließen.\n\nDie erwartete Rendite wird über eine große Anzahl von Spielen berechnet. Die Spielanzeige dient nur visuellen und Unterhaltungszwecken und stellt kein physisches Spielgerät dar.\n\nAlle Gewinne werden gemäß dem vom Remote Game Server erhaltenen Ergebnis abgerechnet, nicht anhand von Animationen oder Ereignissen im Webbrowser.\n\nTM and © 2026 Stake Engine.',
+		'Eine Fehlfunktion macht alle Auszahlungen und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Bei Verbindungsverlust lade das Spiel neu, um unvollständige Runden abzuschließen.\n\nDie erwartete Rendite wird über eine große Anzahl von Spielen berechnet. Die Spielanzeige dient nur visuellen und Unterhaltungszwecken und stellt kein physisches Spielgerät dar.\n\nAlle Gewinne werden gemäß dem vom Remote Game Server erhaltenen Ergebnis abgerechnet, nicht anhand von Animationen oder Ereignissen im Webbrowser.\n\nTM and © 2025 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'EXPANDIERENDE\nWALZEN',
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': 'werde der König des\nWaldes mit',
 	'SPLASH EPIC BOTTOM': 'MAX. GEWINN',
 	'SPLASH PRESS': 'DRÜCKEN ZUM FORTFAHREN',
+	'PRESS ANYWHERE': 'BELIEBIGE STELLE DRÜCKEN, UM FORTZUFAHREN',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': 'GLÜCKWUNSCH!',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': 'AUTOMATIK-SPIN',
 	'TURBO SPIN': 'TURBO-SPIN',
 	'SUPER TURBO SPIN': 'SUPER-TURBO-SPIN',
-	'BONUS FEATURE 100X': '100 X BONUS-FEATURE',
+	'BONUS FEATURE 100X': '20 X BONUS-FEATURE',
 	'NUMBER OF SPINS': 'ANZAHL DER SPINS',
 	'START AUTOPLAY': 'AUTOPLAY STARTEN',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': 'Du hast einen aktiven %mode% Bonus in Bearbeitung.',
 	'END ROUND': 'RUNDE BEENDEN',
 	'PLAY ROUND': 'RUNDE SPIELEN',
+	'INFO UI TITLE': 'BENUTZEROBERFLÄCHE',
+	'INFO UI SPIN TITLE': 'DREHEN',
+	'INFO UI SPIN TEXT': 'Startet eine neue Spielrunde.',
+	'INFO UI AUTO TITLE': 'AUTO-SPINS',
+	'INFO UI AUTO TEXT': 'Öffnet das Auto-Spins-Menü.',
+	'INFO UI TURBO TITLE': 'TURBO',
+	'INFO UI TURBO TEXT': 'Aktiviert schnellere Drehungen.',
+	'INFO UI BETPLUS TITLE': 'EINSATZ +',
+	'INFO UI BETPLUS TEXT': 'Erhöht deinen Gesamteinsatz.',
+	'INFO UI BETMINUS TITLE': 'EINSATZ -',
+	'INFO UI BETMINUS TEXT': 'Verringert deinen Gesamteinsatz.',
+	'INFO UI INFO TITLE': 'INFO',
+	'INFO UI INFO TEXT': 'Öffnet die Spielinformationen.',
+	'INFO UI SOUND TITLE': 'TON',
+	'INFO UI SOUND TEXT': 'Schaltet den Spielton ein oder aus.',
+	'INFO UI PREV TITLE': 'ZURÜCK',
+	'INFO UI PREV TEXT': 'Geht zur vorherigen Seite.',
+	'INFO UI NEXT TITLE': 'WEITER',
+	'INFO UI NEXT TEXT': 'Geht zur nächsten Seite.',
+	'INFO UI CLOSE TITLE': 'SCHLIESSEN',
+	'INFO UI CLOSE TEXT': 'Schließt das aktuelle Fenster.',
 };

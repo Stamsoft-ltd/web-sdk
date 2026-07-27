@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': 'TẤT TAY',
 	'RULE ALL IN TEXT': 'Tất Tay trao 10 lượt quay miễn phí với 1 biểu tượng mở rộng được chọn ngẫu nhiên. Hệ số nhân bắt đầu từ 2x và chỉ nhân đôi ở các lượt quay thắng, tạo ra các thắng nhỏ ban đầu và cuộc săn thắng tối đa ở các lượt quay cuối.',
 	'RULE BUY TITLE': 'CHẾ ĐỘ MUA / KÍCH HOẠT',
-	'RULE BUY TEXT': 'Chi phí mua Chia Bài là 100x cược. Chi phí mua Tất Tay là 400x cược. Quay Cơ Hội tốn 2x cược mỗi ván. Quay Tính Năng tốn 20x cược mỗi ván. Thắng tối đa là 25,000x. RTP mục tiêu là 96.1%.',
+	'RULE BUY TEXT': 'Chi phí mua Chia Bài là 100x cược. Chi phí mua Tất Tay là 400x cược. Quay Cơ Hội tốn 2x cược mỗi ván. Quay Tính Năng tốn 20x cược mỗi ván. Thắng tối đa là 25,000x. RTP mục tiêu là 96.11%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'BIỂU TƯỢNG PREMIUM ĐÃ CHỌN',
 	'FEATURE SELECTED SYMBOL TEXT': 'Bất kỳ biểu tượng trả thưởng thông thường nào cũng có thể là biểu tượng mở rộng. Khi nó xuất hiện, tất cả cuộn bị ảnh hưởng sẽ mở rộng để lấp đầy biểu tượng đó, và 3 cuộn trở lên trả thưởng ngay cả khi không có kết nối liền kề.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'HỆ SỐ NHÂN CHIA BÀI',
@@ -81,7 +81,7 @@ export default {
 	'HOWTO BET TITLE': 'CHỌN MỨC CƯỢC',
 	'HOWTO BET TEXT': 'Dùng nút + và - hoặc mở menu cược để thay đổi mức cược hiển thị trước khi ván bắt đầu.',
 	'HOWTO BUY TITLE': 'MUA THƯỞNG',
-	'HOWTO BUY TEXT': 'Mở Mua Thưởng để chọn Chia Bài, Tất Tay, Quay Cơ Hội hoặc Quay Tính Năng. Chia Bài và Tất Tay cần xác nhận. Quay Cơ Hội và Quay Tính Năng kích hoạt ngay lập tức và có thể tắt bằng nút HỦY KÍCH HOẠT.',
+	'HOWTO BUY TEXT': 'Mở Mua Thưởng để chọn Chia Bài, Tất Tay, Quay Cơ Hội hoặc Quay Tính Năng. Chia Bài và Tất Tay cần xác nhận. Quay Cơ Hội và Quay Tính Năng kích hoạt ngay lập tức và có thể tắt bằng nút TẮT.',
 	'HOWTO TURBO TITLE': 'TURBO',
 	'HOWTO TURBO TEXT': 'Turbo rút ngắn một số thời gian ván để chơi nhanh hơn.',
 	'HOWTO AUTOPLAY TITLE': 'TỰ ĐỘNG',
@@ -105,19 +105,19 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild thay thế cho tất cả biểu tượng trả thưởng thông thường. Scatter không tự trả thưởng và chỉ kích hoạt các tính năng thưởng.',
 	'PAYTABLE BUY_TEXT': 'Chia Bài: 100x cược.\nTất Tay: 400x cược.\nQuay Cơ Hội: 2x cược mỗi ván.\nQuay Tính Năng: 20x cược mỗi ván.\nChia Bài và Tất Tay cần xác nhận trước khi ván bắt đầu.',
 	'PAYTABLE MAX_TEXT': 'Thắng tối đa được quảng cáo là 25,000x mức cược đã chọn.',
-	'DISCLAIMER TEXT': 'Sự cố sẽ làm vô hiệu tất cả tiền thắng và lượt chơi. Cần có kết nối internet ổn định. Trong trường hợp mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành. Lợi nhuận kỳ vọng được tính trên nhiều lượt chơi. Màn hình trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ nhằm mục đích minh họa. Tiền thắng được thanh toán theo số tiền nhận từ Remote Game Server chứ không phải từ các sự kiện trong trình duyệt web. TM và © 2026 Stake Engine.',
+	'DISCLAIMER TEXT': 'Sự cố sẽ làm vô hiệu tất cả tiền thắng và lượt chơi. Cần có kết nối internet ổn định. Trong trường hợp mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành. Lợi nhuận kỳ vọng được tính trên nhiều lượt chơi. Màn hình trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ nhằm mục đích minh họa. Tiền thắng được thanh toán theo số tiền nhận từ Remote Game Server chứ không phải từ các sự kiện trong trình duyệt web. TM và © 2025 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'TỔNG QUAN',
 	'INFO OVERVIEW BODY':
-		'Forest Gang là video slot 5x4 chơi trên 20 dòng trả thưởng.\nThắng được trao từ trái sang phải trên các cuộn liên tiếp, bắt đầu từ cuộn 1, khi các biểu tượng khớp xuất hiện trên một dòng trả thưởng đang hoạt động.\nTrò chơi gồm 5 biểu tượng premium, 5 biểu tượng thấp, một biểu tượng Wild và một biểu tượng Scatter.\n\nTiềm năng thắng tối đa là 25,000x tổng cược.\n\nRTP lý thuyết: 96.1%',
+		'Forest Gang là video slot 5x4 chơi trên 20 dòng trả thưởng.\nThắng được trao từ trái sang phải trên các cuộn liên tiếp, bắt đầu từ cuộn 1, khi các biểu tượng khớp xuất hiện trên một dòng trả thưởng đang hoạt động.\nTrò chơi gồm 5 biểu tượng premium, 5 biểu tượng thấp, một biểu tượng Wild và một biểu tượng Scatter.\n\nTiềm năng thắng tối đa là 25,000x tổng cược.\n\nRTP lý thuyết: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'CUỘN',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': 'DÒNG THƯỞNG',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': 'THẮNG TỐI ĐA',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': 'TÍNH NĂNG',
 	'INFO EXPANDING TITLE': 'BIỂU TƯỢNG MỞ RỘNG',
@@ -126,11 +126,11 @@ export default {
 	'INFO DEAL IT TITLE': 'THƯỞNG CHIA BÀI',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
-		'Kích hoạt bởi 3 biểu tượng Scatter.\n\nTrao 10 lượt quay miễn phí. Trước khi thưởng bắt đầu, một biểu tượng mở rộng ngẫu nhiên được chọn. Trong quá trình thưởng, biểu tượng đã chọn có thể mở rộng để phủ kín cả cuộn.\n\nHệ số nhân ngẫu nhiên có thể áp dụng cho bất kỳ lượt quay thắng nào, lên đến 100x.',
+		'Kích hoạt bởi 3 biểu tượng Scatter.\n\nTrao 10 lượt quay miễn phí. Trước khi thưởng bắt đầu, một biểu tượng mở rộng ngẫu nhiên được chọn. Trong quá trình thưởng, biểu tượng đã chọn có thể mở rộng để phủ kín cả cuộn.\n\nHệ số nhân ngẫu nhiên có thể áp dụng cho bất kỳ lượt quay thắng nào, lên đến 100x.\n\nVòng thưởng có thể được kích hoạt lại như sau:\n[[3 Scatter]] +3 lượt quay\n[[4 Scatter]] +5 lượt quay\n[[5 Scatter]] +8 lượt quay',
 	'INFO ALL IN TITLE': 'THƯỞNG TẤT TAY',
 	'INFO ALL IN HL': '4 Scatter',
 	'INFO ALL IN TEXT':
-		'Kích hoạt bởi 4 biểu tượng Scatter và trao 10 lượt quay miễn phí.\n\nTrước khi thưởng bắt đầu, một biểu tượng mở rộng ngẫu nhiên được chọn. Trong quá trình thưởng, biểu tượng đã chọn có thể mở rộng để phủ kín cả cuộn. Hệ số nhân cuộn luôn hoạt động trong suốt thưởng và nhân đôi mỗi thắng đủ điều kiện, bắt đầu từ 2x.',
+		'Kích hoạt bởi 4 biểu tượng Scatter và trao 10 lượt quay miễn phí.\n\nTrước khi thưởng bắt đầu, một biểu tượng mở rộng ngẫu nhiên được chọn. Trong quá trình thưởng, biểu tượng đã chọn có thể mở rộng để phủ kín cả cuộn. Hệ số nhân cuộn luôn hoạt động trong suốt thưởng và nhân đôi mỗi thắng đủ điều kiện, bắt đầu từ 2x.\n\nVòng thưởng có thể được kích hoạt lại như sau:\n[[3 Scatter]] +3 lượt quay\n[[4 Scatter]] +5 lượt quay\n[[5 Scatter]] +8 lượt quay',
 	'INFO PLACEHOLDER BODY': 'Thiết kế sắp ra mắt.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': 'BẢNG TRẢ THƯỞNG',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': 'Trao ngay Thưởng Tất Tay.',
 	'INFO BUY COST': 'CHI PHÍ',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "RTP cơ bản 96.11%",
 	'INFO BUY CHANCE_LABEL': 'CƠ HỘI THƯỞNG',
 	'INFO BUY CHANCE_VALUE': 'CƠ HỘI 3x',
 	// General info page
@@ -170,7 +171,7 @@ export default {
 		'Nếu một ván chơi bị gián đoạn, nó sẽ tiếp tục khi trò chơi được tải lại, nếu có thể.\n\nTất cả tiền cược hợp lệ và tiền thắng tiềm năng vẫn hoạt động cho đến khi ván hoàn thành đầy đủ.',
 	'INFO LEGAL TITLE': 'THÔNG BÁO PHÁP LÝ',
 	'INFO LEGAL TEXT':
-		'Sự cố làm vô hiệu tất cả chi trả và lượt chơi. Cần có kết nối internet ổn định. Nếu mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành.\n\nLợi nhuận kỳ vọng được tính trên số lượng lớn lượt chơi. Màn hình trò chơi chỉ nhằm mục đích hình ảnh và giải trí và không đại diện cho bất kỳ thiết bị chơi vật lý nào.\n\nTất cả tiền thắng được thanh toán theo kết quả nhận từ Remote Game Server, không phải từ hoạt ảnh hay sự kiện hiển thị trong trình duyệt web.\n\nTM and © 2026 Stake Engine.',
+		'Sự cố làm vô hiệu tất cả chi trả và lượt chơi. Cần có kết nối internet ổn định. Nếu mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành.\n\nLợi nhuận kỳ vọng được tính trên số lượng lớn lượt chơi. Màn hình trò chơi chỉ nhằm mục đích hình ảnh và giải trí và không đại diện cho bất kỳ thiết bị chơi vật lý nào.\n\nTất cả tiền thắng được thanh toán theo kết quả nhận từ Remote Game Server, không phải từ hoạt ảnh hay sự kiện hiển thị trong trình duyệt web.\n\nTM and © 2025 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'CUỘN\nMỞ RỘNG',
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': 'trở thành vua của\nkhu rừng với',
 	'SPLASH EPIC BOTTOM': 'THẮNG TỐI ĐA',
 	'SPLASH PRESS': 'NHẤN ĐỂ TIẾP TỤC',
+	'PRESS ANYWHERE': 'NHẤN VÀO BẤT KỲ ĐÂU ĐỂ TIẾP TỤC',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': 'CHÚC MỪNG!',
@@ -195,7 +197,7 @@ export default {
 
 	// Buy bonus modal — card titles/descriptions, buttons, confirm dialog
 	ACTIVATE: 'KÍCH HOẠT',
-	DEACTIVATE: 'HỦY KÍCH HOẠT',
+	DEACTIVATE: 'TẮT',
 	BUY: 'MUA',
 	CONFIRM: 'XÁC NHẬN',
 	CANCEL: 'HỦY',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': 'QUAY TỰ ĐỘNG',
 	'TURBO SPIN': 'QUAY TURBO',
 	'SUPER TURBO SPIN': 'QUAY SIÊU TURBO',
-	'BONUS FEATURE 100X': 'TÍNH NĂNG THƯỞNG 100 X',
+	'BONUS FEATURE 100X': 'TÍNH NĂNG THƯỞNG 20 X',
 	'NUMBER OF SPINS': 'SỐ LƯỢT QUAY',
 	'START AUTOPLAY': 'BẮT ĐẦU TỰ ĐỘNG',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': 'Bạn có một phần thưởng %mode% đang hoạt động.',
 	'END ROUND': 'KẾT THÚC VÒNG',
 	'PLAY ROUND': 'CHƠI VÒNG',
+	'INFO UI TITLE': 'HƯỚNG DẪN GIAO DIỆN',
+	'INFO UI SPIN TITLE': 'QUAY',
+	'INFO UI SPIN TEXT': 'Bắt đầu một vòng chơi mới.',
+	'INFO UI AUTO TITLE': 'QUAY TỰ ĐỘNG',
+	'INFO UI AUTO TEXT': 'Mở menu quay tự động.',
+	'INFO UI TURBO TITLE': 'TURBO',
+	'INFO UI TURBO TEXT': 'Bật chế độ quay nhanh hơn.',
+	'INFO UI BETPLUS TITLE': 'CƯỢC +',
+	'INFO UI BETPLUS TEXT': 'Tăng tổng tiền cược của bạn.',
+	'INFO UI BETMINUS TITLE': 'CƯỢC -',
+	'INFO UI BETMINUS TEXT': 'Giảm tổng tiền cược của bạn.',
+	'INFO UI INFO TITLE': 'THÔNG TIN',
+	'INFO UI INFO TEXT': 'Mở thông tin trò chơi.',
+	'INFO UI SOUND TITLE': 'ÂM THANH',
+	'INFO UI SOUND TEXT': 'Bật hoặc tắt âm thanh trò chơi.',
+	'INFO UI PREV TITLE': 'TRƯỚC',
+	'INFO UI PREV TEXT': 'Chuyển đến trang trước.',
+	'INFO UI NEXT TITLE': 'TIẾP',
+	'INFO UI NEXT TEXT': 'Chuyển đến trang tiếp theo.',
+	'INFO UI CLOSE TITLE': 'ĐÓNG',
+	'INFO UI CLOSE TEXT': 'Đóng cửa sổ hiện tại.',
 };

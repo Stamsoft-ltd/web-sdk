@@ -1,18 +1,20 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	import { EnablePixiExtension } from 'components-pixi';
 	import { EnableHotkey } from 'components-shared';
 	import { MainContainer } from 'components-layout';
 	import { App, Container } from 'pixi-svelte';
-	import { stateMeta } from 'state-shared';
+	import { stateMeta, stateUi } from 'state-shared';
 
 	import { Modals } from 'components-ui-html';
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import EnableSound from './EnableSound.svelte';
+	import SceneAnimationDriver from './SceneAnimationDriver.svelte';
+	import SequenceHoldController from './SequenceHoldController.svelte';
 	import EnableGameActor from './EnableGameActor.svelte';
 	import PendingRoundRecovery from './PendingRoundRecovery.svelte';
 	import ResumeBet from './ResumeBet.svelte';
@@ -40,16 +42,19 @@
 	import ReplayHud from './replay/ReplayHud.svelte';
 	import SplashIntro from './SplashIntro.svelte';
 	import { BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { registerArtDeep, warmArt } from '../lib/preloadArt';
 
 	const context = getContext();
 
 	let splashIntroVisible = $state(false);
 	let splashPressHandler = $state<(() => void) | undefined>(undefined);
-	const heroArt = './assets/components/backgrounds/visual_v2.png';
+	const heroArt = './assets/components/backgrounds/visual_v2.webp';
 	const bonusArt = './assets/components/backgrounds/visual_v1.jpg';
 	const scatterArt = './assets/components/symbols/scatter.png';
-	const uiRefArt = './assets/components/reference/ui-reference-1.png';
-	const paylinesArt = './assets/components/reference/paylines_reference.png';
+	// (the old reference/*.png screenshots were removed in an earlier asset cleanup; point the
+	// rule/dialog illustrations at existing art so nothing renders a broken image)
+	const uiRefArt = './assets/components/backgrounds/visual_v2.webp';
+	const paylinesArt = './assets/components/info/paylines.webp';
 
 	// Game info modal (paginated framed pages) — assets exported from Figma
 	const infoDir = './assets/components/info';
@@ -58,7 +63,7 @@
 	const infoPanelBg = `${infoDir}/panel_wood_bg.webp`;
 	const infoPaylines = `${infoDir}/paylines.webp`;
 	const symDir = './assets/components/symbols';
-	const heroArtBackdrop = new URL('../../static/assets/components/backgrounds/visual_v2.png', import.meta.url).href;
+	const heroArtBackdrop = new URL('../../static/assets/components/backgrounds/visual_v2.webp', import.meta.url).href;
 
 	$effect(() => {
 		stateMeta.betModeMeta = {
@@ -70,11 +75,11 @@
 				children: '',
 				assets: { icon: '', volatility: '', button: '', dialogImage: bonusArt, dialogVolatility: uiRefArt },
 				text: {
-					title: i18nDerived.translate?.('BET MODE BASE TITLE') ?? i18nDerived.gameTitle(),
-					dialog: i18nDerived.translate?.('BET MODE BASE DIALOG') ?? '',
-					button: i18nDerived.translate?.('BET MODE BASE BUTTON') ?? 'PLAY',
-					tickerIdle: i18nDerived.translate?.('BET MODE BASE TICKER IDLE') ?? '',
-					tickerSpin: i18nDerived.translate?.('BET MODE BASE TICKER SPIN') ?? '',
+					title: forestStakeTitle('BET MODE BASE TITLE'),
+					dialog: forestStakeTitle('BET MODE BASE DIALOG'),
+					button: forestStakeTitle('BET MODE BASE BUTTON'),
+					tickerIdle: forestStakeTitle('BET MODE BASE TICKER IDLE'),
+					tickerSpin: forestStakeTitle('BET MODE BASE TICKER SPIN'),
 				},
 				maxWin: 25000,
 			},
@@ -175,7 +180,7 @@
 				},
 				{
 					title: forestStakeTitle('RULE SECTION HOW TO PLAY'),
-					rows: 6,
+					rows: 7,
 					columns: 1,
 					containers: [
 						{ title: forestStakeTitle('HOWTO SPIN TITLE'), text: forestStakeTitle('HOWTO SPIN TEXT'), image: uiRefArt, row: 0, column: 0, imagePosition: 'left' },
@@ -184,6 +189,7 @@
 						{ title: forestStakeTitle('HOWTO TURBO TITLE'), text: forestStakeTitle('HOWTO TURBO TEXT'), image: uiRefArt, row: 3, column: 0, imagePosition: 'left' },
 						{ title: forestStakeTitle('HOWTO AUTOPLAY TITLE'), text: forestStakeTitle('HOWTO AUTOPLAY TEXT'), image: uiRefArt, row: 4, column: 0, imagePosition: 'left' },
 						{ title: forestStakeTitle('HOWTO REPLAY TITLE'), text: forestStakeTitle('HOWTO REPLAY TEXT'), image: heroArt, row: 5, column: 0, imagePosition: 'left' },
+						{ title: forestStakeTitle('HOWTO USER INTERACTION TITLE'), text: forestStakeTitle('HOWTO USER INTERACTION TEXT'), image: uiRefArt, row: 6, column: 0, imagePosition: 'left' },
 					],
 				},
 				{
@@ -248,20 +254,20 @@
 						cols: [forestStakeTitle('INFO PT COL3'), forestStakeTitle('INFO PT COL4'), forestStakeTitle('INFO PT COL5')],
 					},
 					payouts: [
-						{ icon: `${symDir}/bear.png`, name: 'BEAR', premium: true, x3: '3x', x4: '20x', x5: '250x' },
-						{ icon: `${symDir}/wolf.png`, name: 'WOLF', premium: true, x3: '2.5x', x4: '15x', x5: '175x' },
-						{ icon: `${symDir}/fox.png`, name: 'FOX', premium: true, x3: '2x', x4: '12x', x5: '150x' },
-						{ icon: `${symDir}/rabbit.png`, name: 'RABBIT', premium: true, x3: '1.5x', x4: '10x', x5: '100x' },
-						{ icon: `${symDir}/squirrel.png`, name: 'SQUIRREL', premium: true, x3: '1x', x4: '8x', x5: '75x' },
-						{ icon: `${symDir}/card_a.png`, name: 'A', x3: '0.8x', x4: '5x', x5: '40x' },
-						{ icon: `${symDir}/card_k.png`, name: 'K', x3: '0.7x', x4: '4x', x5: '35x' },
-						{ icon: `${symDir}/card_q.png`, name: 'Q', x3: '0.6x', x4: '3.5x', x5: '30x' },
-						{ icon: `${symDir}/card_j.png`, name: 'J', x3: '0.5x', x4: '3x', x5: '25x' },
-						{ icon: `${symDir}/card_t.png`, name: '10', x3: '0.4x', x4: '4x', x5: '20x' },
+						{ icon: `${infoDir}/pt_bear.webp?v=20260724`, name: 'BEAR', premium: true, x3: '3x', x4: '20x', x5: '250x' },
+						{ icon: `${infoDir}/pt_wolf.webp?v=20260724`, name: 'WOLF', premium: true, x3: '2.5x', x4: '15x', x5: '175x' },
+						{ icon: `${infoDir}/pt_fox.webp?v=20260724`, name: 'FOX', premium: true, x3: '2x', x4: '12x', x5: '150x' },
+						{ icon: `${infoDir}/pt_rabbit.webp?v=20260724`, name: 'RABBIT', premium: true, x3: '1.5x', x4: '10x', x5: '100x' },
+						{ icon: `${infoDir}/pt_squirrel.webp?v=20260724`, name: 'SQUIRREL', premium: true, x3: '1x', x4: '8x', x5: '75x' },
+						{ icon: `${infoDir}/pt_card_a.webp`, name: 'A', x3: '0.8x', x4: '5x', x5: '40x' },
+						{ icon: `${infoDir}/pt_card_k.webp`, name: 'K', x3: '0.7x', x4: '4x', x5: '35x' },
+						{ icon: `${infoDir}/pt_card_q.webp`, name: 'Q', x3: '0.6x', x4: '3.5x', x5: '30x' },
+						{ icon: `${infoDir}/pt_card_j.webp`, name: 'J', x3: '0.5x', x4: '3x', x5: '25x' },
+						{ icon: `${infoDir}/pt_card_t.webp`, name: '10', x3: '0.4x', x4: '4x', x5: '20x' },
 					],
 					cards: [
-						{ icon: `${infoDir}/icon_wild.webp`, title: forestStakeTitle('INFO WILD TITLE'), text: forestStakeTitle('INFO WILD TEXT') },
-						{ icon: `${infoDir}/icon_scatter_coin.webp`, title: forestStakeTitle('INFO SCATTER PT TITLE'), text: forestStakeTitle('INFO SCATTER PT TEXT') },
+						{ icon: `${infoDir}/icon_wild.webp?v=20260724d`, title: forestStakeTitle('INFO WILD TITLE'), text: forestStakeTitle('INFO WILD TEXT') },
+						{ icon: `${infoDir}/icon_scatter_coin.webp?v=20260724`, title: forestStakeTitle('INFO SCATTER PT TITLE'), text: forestStakeTitle('INFO SCATTER PT TEXT') },
 					],
 				},
 				{
@@ -270,9 +276,9 @@
 					background: infoPanelBg,
 					title: forestStakeTitle('INFO FEATURES TITLE'),
 					cards: [
-						{ title: forestStakeTitle('INFO EXPANDING TITLE'), text: forestStakeTitle('INFO EXPANDING TEXT'), images: [`${infoDir}/feat_expanding.webp`, `${infoDir}/feat_expanding_2.webp`] },
-						{ title: forestStakeTitle('INFO DEAL IT TITLE'), text: forestStakeTitle('INFO DEAL IT TEXT'), highlight: forestStakeTitle('INFO DEAL IT HL'), badge: `${infoDir}/icon_scatter.webp`, badgeCount: 3 },
-						{ title: forestStakeTitle('INFO ALL IN TITLE'), text: forestStakeTitle('INFO ALL IN TEXT'), highlight: forestStakeTitle('INFO ALL IN HL'), badge: `${infoDir}/icon_scatter.webp`, badgeCount: 4 },
+						{ title: forestStakeTitle('INFO EXPANDING TITLE'), text: forestStakeTitle('INFO EXPANDING TEXT'), images: [`${infoDir}/feat_expanding.webp?v=20260724`, `${infoDir}/feat_expanding_2.webp?v=20260724`] },
+						{ title: forestStakeTitle('INFO DEAL IT TITLE'), text: forestStakeTitle('INFO DEAL IT TEXT'), highlight: forestStakeTitle('INFO DEAL IT HL'), badge: `${infoDir}/icon_scatter.webp?v=20260724`, badgeCount: 3 },
+						{ title: forestStakeTitle('INFO ALL IN TITLE'), text: forestStakeTitle('INFO ALL IN TEXT'), highlight: forestStakeTitle('INFO ALL IN HL'), badge: `${infoDir}/icon_scatter.webp?v=20260724`, badgeCount: 4 },
 					],
 				},
 				{
@@ -288,41 +294,42 @@
 					frame: infoFrame,
 					background: infoPanelBg,
 					title: forestStakeTitle('INFO BUY TITLE'),
+					subtitle: forestStakeTitle('INFO BUY BASE RTP'),
 					cards: [
 						{
 							title: forestStakeTitle('INFO BUY CHANCE TITLE'),
 							text: forestStakeTitle('INFO BUY CHANCE TEXT'),
 							theme: 'green',
-							icon: `${infoDir}/buy_chance.webp`,
+							icon: `${infoDir}/buy_chance.webp?v=20260724`,
 							metric: { label: forestStakeTitle('INFO BUY CHANCE_LABEL'), value: forestStakeTitle('INFO BUY CHANCE_VALUE') },
 							footer: [
-								{ label: forestStakeTitle('INFO BUY COST'), value: '2x BET' },
-								{ label: forestStakeTitle('INFO BUY RTP'), value: forestStakeTitle('INFO BUY RTP_VALUE') },
+								{ label: forestStakeTitle('INFO BUY COST'), value: `2x ${forestStakeTitle('BET')}` },
+								{ label: forestStakeTitle('INFO BUY RTP'), value: '96.12%' },
 							],
 						},
 						{
 							title: forestStakeTitle('INFO BUY FEATURE TITLE'),
 							text: forestStakeTitle('INFO BUY FEATURE TEXT'),
 							theme: 'purple',
-							icon: `${infoDir}/buy_feature.webp`,
-							metric: { label: forestStakeTitle('INFO BUY COST'), value: '20x BET' },
-							footer: [{ label: forestStakeTitle('INFO BUY RTP'), value: forestStakeTitle('INFO BUY RTP_VALUE') }],
+							icon: `${infoDir}/buy_feature.webp?v=20260724`,
+							metric: { label: forestStakeTitle('INFO BUY COST'), value: `20x ${forestStakeTitle('BET')}` },
+							footer: [{ label: forestStakeTitle('INFO BUY RTP'), value: '96.09%' }],
 						},
 						{
 							title: forestStakeTitle('INFO BUY DEALIT TITLE'),
 							text: forestStakeTitle('INFO BUY DEALIT TEXT'),
 							theme: 'gold',
-							icon: `${infoDir}/buy_dealit.webp`,
-							metric: { label: forestStakeTitle('INFO BUY COST'), value: '100x BET' },
-							footer: [{ label: forestStakeTitle('INFO BUY RTP'), value: forestStakeTitle('INFO BUY RTP_VALUE') }],
+							icon: `${infoDir}/buy_dealit.webp?v=20260724c`,
+							metric: { label: forestStakeTitle('INFO BUY COST'), value: `100x ${forestStakeTitle('BET')}` },
+							footer: [{ label: forestStakeTitle('INFO BUY RTP'), value: '96.10%' }],
 						},
 						{
 							title: forestStakeTitle('INFO BUY ALLIN TITLE'),
 							text: forestStakeTitle('INFO BUY ALLIN TEXT'),
 							theme: 'gold',
-							icon: `${infoDir}/buy_allin.webp`,
-							metric: { label: forestStakeTitle('INFO BUY COST'), value: '400x BET' },
-							footer: [{ label: forestStakeTitle('INFO BUY RTP'), value: forestStakeTitle('INFO BUY RTP_VALUE') }],
+							icon: `${infoDir}/buy_allin.webp?v=20260724c`,
+							metric: { label: forestStakeTitle('INFO BUY COST'), value: `400x ${forestStakeTitle('BET')}` },
+							footer: [{ label: forestStakeTitle('INFO BUY RTP'), value: '96.10%' }],
 						},
 					],
 				},
@@ -336,13 +343,73 @@
 						{ icon: `${infoDir}/icon_legal.webp`, title: forestStakeTitle('INFO LEGAL TITLE'), text: forestStakeTitle('INFO LEGAL TEXT') },
 					],
 				},
+				{
+					kind: 'uiguide',
+					frame: infoFrame,
+					background: infoPanelBg,
+					title: forestStakeTitle('INFO UI TITLE'),
+					cards: [
+						{ icon: `${infoDir}/ui_spin.webp`, title: forestStakeTitle('INFO UI SPIN TITLE'), text: forestStakeTitle('INFO UI SPIN TEXT') },
+						{ icon: `${infoDir}/ui_auto.webp`, title: forestStakeTitle('INFO UI AUTO TITLE'), text: forestStakeTitle('INFO UI AUTO TEXT') },
+						{ icon: `${infoDir}/ui_turbo.webp`, title: forestStakeTitle('INFO UI TURBO TITLE'), text: forestStakeTitle('INFO UI TURBO TEXT') },
+						{ icon: `${infoDir}/ui_plus.webp`, title: forestStakeTitle('INFO UI BETPLUS TITLE'), text: forestStakeTitle('INFO UI BETPLUS TEXT') },
+						{ icon: `${infoDir}/ui_minus.webp`, title: forestStakeTitle('INFO UI BETMINUS TITLE'), text: forestStakeTitle('INFO UI BETMINUS TEXT') },
+						{ icon: `${infoDir}/ui_info.webp`, title: forestStakeTitle('INFO UI INFO TITLE'), text: forestStakeTitle('INFO UI INFO TEXT') },
+						{ icon: `${infoDir}/ui_sound.webp`, title: forestStakeTitle('INFO UI SOUND TITLE'), text: forestStakeTitle('INFO UI SOUND TEXT') },
+						{ icon: `${infoDir}/ui_prev.webp`, title: forestStakeTitle('INFO UI PREV TITLE'), text: forestStakeTitle('INFO UI PREV TEXT') },
+						{ icon: `${infoDir}/ui_next.webp`, title: forestStakeTitle('INFO UI NEXT TITLE'), text: forestStakeTitle('INFO UI NEXT TEXT') },
+						{ icon: `${infoDir}/ui_close.webp`, title: forestStakeTitle('INFO UI CLOSE TITLE'), text: forestStakeTitle('INFO UI CLOSE TEXT') },
+					],
+				},
 			],
 		};
+
+		// The info/rules pages are plain HTML <img>s that only fetch when the modal opens —
+		// register every image in the meta so warmArt() pulls them during the loading screen.
+		// untrack: the deep read of the just-written $state must not become a dependency of
+		// this effect, or the write→read cycle loops it forever (effect_update_depth_exceeded).
+		untrack(() => {
+			registerArtDeep(stateMeta.betModeMeta);
+			registerArtDeep(stateMeta.gameRuleMeta);
+		});
 	});
 
-	const forestStakeTitle = (key: string) => i18nDerived.translate?.(key) ?? key;
+	// try/catch: Lingui THROWS (not undefined) when translate is called before the locale is
+	// activated — a mount race that killed the whole component tree in storybook ("Initialising...").
+	// The meta-building $effect re-runs once the locale lands, replacing the raw-key fallbacks.
+	const forestStakeTitle = (key: string) => {
+		try {
+			return i18nDerived.translate?.(key) ?? key;
+		} catch {
+			return key;
+		}
+	};
 
-	onMount(() => (context.stateLayout.showLoadingScreen = true));
+	// Drop the previous round's payline vines the instant a NEW round is requested. They used to
+	// hang on until the book's `reveal` handler cleared them, which is only after the bet request
+	// has come back from the RGS — so on the player's screen the old win's vines lingered over the
+	// start of the next spin.
+	//
+	// The signal has to be the idle → busy TRANSITION, not `!isIdle()`: the machine is also busy
+	// all through the win presentation, so clearing on that would wipe the vines the moment they
+	// were drawn. Tracking the edge fires exactly once per round start, and covers autoplay and
+	// buy-bonus spins too, since they leave idle the same way a button press does.
+	let wasIdle = true;
+	$effect(() => {
+		const idle = context.stateXstateDerived.isIdle();
+		if (wasIdle && !idle) {
+			context.stateGame.paylineWins = [];
+			context.stateGame.paylineSnap = false;
+		}
+		wasIdle = idle;
+	});
+
+	onMount(() => {
+		context.stateLayout.showLoadingScreen = true;
+		// Fetch all registered HTML-side art while the loading screen is up (low priority, so
+		// the pixi atlases still win the bandwidth race).
+		warmArt();
+	});
 
 </script>
 
@@ -352,7 +419,13 @@
 	style={`--forest-shell-bg:url('${heroArtBackdrop}')`}
 >
 	<div class="forest-stage">
-		<App>
+		<!-- Safari/low-end perf: cap the render DPR at 2 (retina Safari is 2–3× → uncapped renders
+		     up to ~9× the pixels), disable MSAA (expensive on Safari; the art is sprite-based so
+		     edges stay smooth via texture filtering), and force the stable WebGL renderer instead of
+		     Pixi's less-mature WebGPU path (buggy on Safari 18). -->
+		<App preloadWebFont={false} maxResolution={2} antialias={false} rendererPreference="webgl">
+			<SceneAnimationDriver />
+			<SequenceHoldController />
 			<EnableSound />
 			<EnableHotkey />
 			<EnableGameActor />
@@ -377,15 +450,17 @@
 				</MainContainer>
 
 				<MainContainer>
-					<Board />
+					<!-- Anticipations render BEFORE Board so the additive golden glow sits BEHIND the reel
+					     symbols (glows around them) instead of brightening them / their borders on top. -->
 					<Anticipations />
+					<Board />
 				</MainContainer>
 
 				<ExpandedSymbolOverlay />
 				{#if context.stateGame.paylineWins.length > 0}
 				<MainContainer>
 					{@const bl = context.stateGameDerived.boardLayout()}
-					<Container x={bl.x} y={bl.y + BOARD_GRID_OFFSET_Y} pivot={bl.pivot} scale={bl.boardScale}>
+					<Container x={bl.x} y={bl.y + BOARD_GRID_OFFSET_Y} pivot={bl.pivot} scale={{ x: bl.boardScaleX ?? bl.boardScale, y: bl.boardScaleY ?? bl.boardScale }}>
 						<PaylineVine wins={context.stateGame.paylineWins} snap={context.stateGame.paylineSnap} />
 					</Container>
 				</MainContainer>
@@ -412,7 +487,9 @@
 		{/if}
 
 		{#if !context.stateLayout.showLoadingScreen}
-			<HudHtml />
+			{#if stateUi.config.mode !== 'replay'}
+				<HudHtml />
+			{/if}
 			<ReplayHud />
 			<PendingRoundRecovery />
 		{/if}

@@ -1,19 +1,86 @@
 import { stateBet } from 'state-shared';
+import { loadDemandAssets } from 'pixi-svelte';
 import { createPlayBookUtils } from 'utils-book';
 import { createGetEmptyPaddedBoard } from 'utils-slots';
 
-import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, REEL_PADDING, SYMBOL_INFO_MAP, BOARD_DIMENSIONS } from './constants';
+import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, REEL_PADDING, BOARD_DIMENSIONS } from './constants';
 import { eventEmitter } from './eventEmitter';
 import type { Bet, BookEventOfType } from './typesBookEvent';
 import { bookEventHandlerMap } from './bookEventHandlerMap';
+import { resetHolds } from './sequenceHold';
+import { stateGameDerived } from './stateGame.svelte';
 import type { RawSymbol, SymbolState } from './types';
 
 export const { getEmptyBoard } = createGetEmptyPaddedBoard({ reelsDimensions: BOARD_DIMENSIONS });
-export const { playBookEvent, playBookEvents } = createPlayBookUtils({ bookEventHandlerMap });
+
+// Bonus art is demand-loaded (assets.ts DEMAND_BONUS_ART), so every book event that DRAWS it has to
+// wait for it. This is the complete consumer list: the transition spine and bonus backgrounds
+// (freeSpinTrigger / freeSpinEnd), the deer presenter (bonusSymbolSelected), the expanded money
+// sheets (expandedSymbolReveal), and a resumed round, which replays all of those inside itself
+// (createBonusSnapshot). Between them they cover every entry path into the bonus — natural scatter,
+// a bought BONUS/SUPER round, a one-spin FEATURE book, and resume — because the gate is on the
+// event that draws, not on how the round was entered.
+const BONUS_ART_EVENTS: ReadonlySet<string> = new Set([
+	'freeSpinTrigger',
+	'freeSpinEnd',
+	'bonusSymbolSelected',
+	'expandedSymbolReveal',
+	'createBonusSnapshot',
+]);
+
+// Gating the handlers rather than playBet itself keeps the spin start instant: playBet kicks the
+// download off as soon as the book arrives, the reels spin through it, and only the first event
+// that actually draws bonus art waits — by which point it is normally already in.
+type AnyBookEventHandler = (bookEvent: never, context: never) => Promise<void>;
+const bonusArtGatedHandlerMap = Object.fromEntries(
+	Object.entries(bookEventHandlerMap as Record<string, AnyBookEventHandler>).map(
+		([type, handler]) =>
+			BONUS_ART_EVENTS.has(type)
+				? ([
+						type,
+						(async (bookEvent, context) => {
+							await loadDemandAssets();
+							await handler(bookEvent, context);
+						}) as AnyBookEventHandler,
+					] as const)
+				: ([type, handler] as const),
+	),
+) as typeof bookEventHandlerMap;
+
+export const { playBookEvent, playBookEvents } = createPlayBookUtils({
+	bookEventHandlerMap: bonusArtGatedHandlerMap,
+});
 export const playBet = async (bet: Bet) => {
 	stateBet.winBookEventAmount = 0;
-	await playBookEvents(bet.state);
-	eventEmitter.broadcast({ type: 'stopButtonEnable' });
+	// Start the bonus-art download the moment the book is known — deliberately NOT awaited, the
+	// presentation must not wait on it here. loadDemandAssets() is idempotent and returns the one
+	// shared promise, so the handler gate above awaits this very load.
+	if (bet.state.some((bookEvent) => BONUS_ART_EVENTS.has(bookEvent.type))) void loadDemandAssets();
+	// Sequence boundary. One book = one hold sequence, so a stop press skips the remaining beats
+	// across every handler in it — but `pendingInterrupt` is sticky, so it MUST be cleared here
+	// (and in the `finally` below, incl. the throw path) or the next round's holds all resolve
+	// instantly and the game sits in an invisible permanent turbo.
+	resetHolds();
+	try {
+		await playBookEvents(bet.state);
+	} catch (error) {
+		// A book-event handler that throws (e.g. a malformed/partial event with a missing
+		// field) must NOT reject the game actor: the xstate `play`/`ending` states have no
+		// onError, so a rejection would strand the machine in `bet` with frozen reels and no
+		// error modal. Contain it here — log, settle the board to a safe state, and resolve
+		// normally so the machine still flows play.onDone -> endGame and the round is credited
+		// from the authoritative RGS result rather than the (aborted) local presentation.
+		console.error('[forest-gang] playBet aborted — book-event playback threw:', error);
+		try {
+			stateGameDerived.enhancedBoard.settle();
+		} catch {
+			// settle is best-effort recovery; never let it re-throw out of the catch.
+		}
+	} finally {
+		resetHolds();
+		// Always hand controls back to the player, even on the abort path.
+		eventEmitter.broadcast({ type: 'stopButtonEnable' });
+	}
 };
 
 // Keep ALL event types so createBonusSnapshot can replay the full bonus from scratch
@@ -167,6 +234,3 @@ export const winAliasByBoard: Record<string, string> = {
 	legendaryWinBoard: 'max',
 };
 
-export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; state: SymbolState }) => {
-	return SYMBOL_INFO_MAP[rawSymbol.name][state];
-};

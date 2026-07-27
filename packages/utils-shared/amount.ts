@@ -29,14 +29,30 @@ export const bookEventAmountToNormalisedAmount = (bookEventAmount: number) => {
 
 export const numberToFloat = (value: number) => Number.parseFloat(`${value}`);
 
+// Sub-cent payouts: a genuine non-zero win must never render as a flat "0.00" (Stake
+// pre-submission requirement). Normal amounts keep 2 decimals; only values that would
+// round to zero at 2 places get extra precision, grown until the shown figure is
+// non-zero and capped so we never spill trailing noise digits.
+const MAX_FRACTION_DIGITS = 8;
+export const fractionDigitsForAmount = (value: number, min = 2) => {
+	const abs = Math.abs(value);
+	if (abs === 0) return min;
+	let digits = min;
+	while (digits < MAX_FRACTION_DIGITS && Number(abs.toFixed(digits)) === 0) {
+		digits += 1;
+	}
+	return digits;
+};
+
 export const numberToCurrencyString = (value: number) => {
+	const fractionDigits = fractionDigitsForAmount(value);
 	if (stateBet.currency in NO_LOCALISATION_CURRENCY_MAP) {
-		return `${NO_LOCALISATION_CURRENCY_MAP[stateBet.currency]} ${numberToFloat(value).toFixed(2)}`;
+		return `${NO_LOCALISATION_CURRENCY_MAP[stateBet.currency]} ${numberToFloat(value).toFixed(fractionDigits)}`;
 	}
 
 	return stateI18n.i18n.number(value, {
 		minimumFractionDigits: 2,
-		maximumFractionDigits: 2,
+		maximumFractionDigits: fractionDigits,
 		style: 'currency',
 		currency: stateBet.currency,
 		// numberingSystem: 'latn',

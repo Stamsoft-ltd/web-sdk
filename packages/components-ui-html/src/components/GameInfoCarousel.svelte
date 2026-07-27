@@ -65,20 +65,39 @@
 		index = Math.min(Math.max(index + dir, 0), count - 1);
 	};
 
-	/** Split `body` into plain/highlighted runs around every occurrence of `hl`. */
+	/** Split `body` into plain/highlighted runs around every occurrence of `hl`.
+	 * Inline `[[...]]` tokens in the text also highlight their content — used where the
+	 * plain substring match would only cover part of a word (e.g. "3 Scatters"). */
 	const highlightParts = (body: string, hl?: string) => {
-		if (!hl) return [{ text: body, hl: false }];
 		const parts: { text: string; hl: boolean }[] = [];
+		const pushPlain = (seg: string) => {
+			if (!seg) return;
+			if (!hl) {
+				parts.push({ text: seg, hl: false });
+				return;
+			}
+			let i = 0;
+			let idx = seg.indexOf(hl, i);
+			while (idx !== -1) {
+				if (idx > i) parts.push({ text: seg.slice(i, idx), hl: false });
+				parts.push({ text: hl, hl: true });
+				i = idx + hl.length;
+				idx = seg.indexOf(hl, i);
+			}
+			if (i < seg.length) parts.push({ text: seg.slice(i), hl: false });
+		};
 		let i = 0;
-		let idx = body.indexOf(hl, i);
-		while (idx !== -1) {
-			if (idx > i) parts.push({ text: body.slice(i, idx), hl: false });
-			parts.push({ text: hl, hl: true });
-			i = idx + hl.length;
-			idx = body.indexOf(hl, i);
+		let open = body.indexOf('[[', i);
+		while (open !== -1) {
+			const close = body.indexOf(']]', open + 2);
+			if (close === -1) break;
+			pushPlain(body.slice(i, open));
+			parts.push({ text: body.slice(open + 2, close), hl: true });
+			i = close + 2;
+			open = body.indexOf('[[', i);
 		}
-		if (i < body.length) parts.push({ text: body.slice(i), hl: false });
-		return parts;
+		pushPlain(body.slice(i));
+		return parts.length ? parts : [{ text: body, hl: false }];
 	};
 </script>
 
@@ -108,6 +127,17 @@
 				{#if page.image}
 					<img class="pinfo-hero" src={page.image} alt="" />
 				{/if}
+			{:else if page.kind === 'uiguide'}
+				<h2 class="pinfo-title gold">{page.title}</h2>
+				<div class="uig__grid uig__grid--portrait">
+					{#each page.cards ?? [] as item}
+						<div class="uig__item">
+							{#if item.icon}<img class="uig__icon uig__icon--portrait" src={item.icon} alt="" />{/if}
+							<h3 class="uig__name uig__name--portrait gold">{item.title}</h3>
+							<p class="uig__desc uig__desc--portrait">{item.text}</p>
+						</div>
+					{/each}
+				</div>
 			{:else if page.kind === 'features'}
 				<h2 class="pinfo-title gold">{page.title}</h2>
 				<div class="pfeat">
@@ -139,6 +169,7 @@
 			{:else if page.kind === 'cards'}
 				{@const buyCards = (page.cards ?? []).some((c) => c.metric || c.footer)}
 				<h2 class="pinfo-title gold">{page.title}</h2>
+				{#if page.subtitle}<p class="pinfo-subtitle">{page.subtitle}</p>{/if}
 				{#if buyCards}
 					<!-- Feature buy: 2×2 grid of gold-bordered cards, icon/badges on the top border (Figma 6/7) -->
 					<div class="pbuy-grid">
@@ -301,9 +332,23 @@
 						</div>
 					{/if}
 				</div>
+			{:else if page.kind === 'uiguide'}
+				<div class="uig">
+					<h2 class="info-title info-title--center gold">{page.title}</h2>
+					<div class="uig__grid">
+						{#each page.cards ?? [] as item}
+							<div class="uig__item">
+								{#if item.icon}<img class="uig__icon" src={item.icon} alt="" />{/if}
+								<h3 class="uig__name gold">{item.title}</h3>
+								<p class="uig__desc">{item.text}</p>
+							</div>
+						{/each}
+					</div>
+				</div>
 			{:else if page.kind === 'features' || page.kind === 'cards'}
 				<div class="features">
 					<h2 class="info-title info-title--center gold">{page.title}</h2>
+					{#if page.subtitle}<p class="info-subtitle">{page.subtitle}</p>{/if}
 					<div class="cards" class:cards--center={page.kind === 'cards'}>
 						{#each page.cards ?? [] as card}
 							<article class="card" class:card--split={card.images?.length} class:card--buy={card.metric || card.footer}>
@@ -548,6 +593,17 @@
 	.info-title--center {
 		text-align: center;
 		width: 100%;
+	}
+
+	.info-subtitle {
+		margin: 0.4cqw 0 0;
+		width: 100%;
+		text-align: center;
+		color: #ffd89c;
+		font-family: 'Poppins', sans-serif;
+		font-weight: 500;
+		font-size: 1.5cqw;
+		letter-spacing: 0.03em;
 	}
 
 	/* ---- overview ---- */
@@ -874,15 +930,17 @@
 		overflow: hidden;
 	}
 
+	/* Figma: body cells are Poppins 500 16px (1.33cqw), #FFD89C, 0.03em tracking, centered. */
 	.pay-row {
 		display: grid;
-		grid-template-columns: 2.4fr 1fr 1fr 1fr;
+		grid-template-columns: 1.7fr 1fr 1fr 1fr;
 		align-items: center;
 		flex: 1 1 0;
 		min-height: 0;
-		color: #f3e4c4;
-		font-size: 1.05cqw;
-		font-weight: 600;
+		color: #ffd89c;
+		font-size: 1.33cqw;
+		font-weight: 500;
+		letter-spacing: 0.03em;
 		border-bottom: 1px solid rgba(255, 216, 156, 0.16);
 	}
 
@@ -902,35 +960,66 @@
 		text-align: left !important;
 	}
 
+	/* Figma: Cinzel 700 16px (1.33cqw of the 1200px frame), 0.03em tracking, centered, golden
+	   gradient (via .gold on the spans). */
 	.pay-row--head {
-		font-weight: 900;
-		font-size: 0.9cqw;
+		font-family: 'Cinzel', serif;
+		font-weight: 700;
+		font-size: 1.33cqw;
 		letter-spacing: 0.03em;
 		border-bottom: 1px solid rgba(255, 216, 156, 0.35);
 	}
+	.pay-row--head .pay-row__symhead {
+		text-align: center !important;
+	}
+	.pay-row--head > span {
+		white-space: nowrap;
+		padding-inline: 0.2cqw;
+	}
 
+	/* The cell stretches to the full row (align-self overrides the row's centring) and the
+	   icon is absolutely positioned inside it: absolute children resolve % heights against the
+	   USED row height, so icons scale with the row and can never overlap neighbouring rows. */
 	.pay-row__sym {
 		display: flex;
 		align-items: center;
 		gap: 0.8cqw;
+		position: relative;
+		align-self: stretch;
 	}
 
 	.pay-row__sym img {
-		width: 2.2cqw;
-		height: 2.2cqw;
+		position: absolute;
+		left: 0.7cqw;
+		top: 50%;
+		transform: translateY(-50%);
+		height: 65%;
+		width: auto;
+		max-width: 3.95cqw;
 		object-fit: contain;
-		flex: none;
 	}
 
-	.pay-row__icon--round {
-		object-fit: cover;
-		border-radius: 50%;
-		border: 0.12cqw solid rgba(214, 167, 74, 0.65);
+	/* Premium rows use the landscape framed card art (324x248, colored frame baked in) as a
+	   wide thumbnail — per the Figma paytable. Class name kept for template compatibility. */
+	.pay-row__sym img.pay-row__icon--round {
+		height: 87%;
+		width: auto;
+		max-width: 7.85cqw;
+		border-radius: 0.3cqw;
 	}
 
+	/* Clear the widest (premium) icon so names line up in a column. */
 	.pay-row__name {
+		margin-left: 8.6cqw;
+	}
+
+	/* Figma: symbol names are Cinzel 700 12px (1cqw of the 1200px frame), #FFD89C, 0.03em. */
+	.pay-row__name {
+		font-family: 'Cinzel', serif;
 		font-weight: 700;
+		font-size: 1cqw;
 		letter-spacing: 0.03em;
+		color: #ffd89c;
 	}
 
 	.paytable__specials {
@@ -1015,6 +1104,62 @@
 		max-height: 100%;
 		object-fit: contain;
 	}
+
+	/* ---- uiguide (HUD button reference grid) ---- */
+	.uig {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2.4cqw;
+		width: 100%;
+	}
+	.uig__grid {
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		gap: 3.2cqw 2cqw;
+		width: 88%;
+	}
+	.uig__item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		gap: 0.9cqw;
+	}
+	.uig__icon {
+		width: 6.4cqw;
+		height: 6.4cqw;
+		object-fit: contain;
+		filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+	}
+	.uig__name {
+		font-family: 'Cinzel', serif;
+		font-weight: 700;
+		font-size: 1.7cqw;
+		letter-spacing: 0.06em;
+		margin: 0;
+	}
+	.uig__desc {
+		font-family: 'Poppins', sans-serif;
+		font-size: 1.35cqw;
+		font-weight: 500;
+		font-style: normal;
+		line-height: normal;
+		letter-spacing: 0.03em;
+		text-align: center;
+		color: #ffd89c;
+		margin: 0;
+	}
+	/* Portrait tutorial layout: 2-column grid with larger touch-friendly items. */
+	.uig__grid--portrait {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 4cqw 3cqw;
+		width: 92%;
+		margin-inline: auto;
+	}
+	.uig__icon--portrait { width: 12cqw; height: 12cqw; }
+	.uig__name--portrait { font-size: 3.2cqw; }
+	.uig__desc--portrait { font-size: 2.6cqw; }
 
 	/* ---- placeholder ---- */
 	.placeholder {
@@ -1156,6 +1301,17 @@
 		letter-spacing: 0.03em;
 		line-height: 1.1;
 		text-transform: uppercase;
+	}
+
+	.pinfo-subtitle {
+		margin: 0.6cqw 0 0;
+		flex-shrink: 0;
+		text-align: center;
+		color: #ffd89c;
+		font-family: 'Poppins', sans-serif;
+		font-weight: 500;
+		font-size: 2.4cqw;
+		letter-spacing: 0.03em;
 	}
 
 	.pinfo-body {
@@ -1303,22 +1459,25 @@
 	}
 	.ptable__row {
 		display: grid;
-		grid-template-columns: 2.3fr 1fr 1fr 1fr;
+		grid-template-columns: 1.7fr 1fr 1fr 1fr;
 		align-items: center;
-		color: #f3e4c4;
+		color: #ffd89c;
 		font-size: 2.2cqw;
-		font-weight: 600;
+		font-weight: 500;
+		letter-spacing: 0.03em;
 		border-bottom: 1px solid rgba(255, 216, 156, 0.16);
 	}
 	.ptable__row:last-child { border-bottom: none; }
 	.ptable__row > span { padding: 0.3cqw 1cqw; text-align: center; border-left: 1px solid rgba(255, 216, 156, 0.16); }
 	.ptable__sym, .ptable__symhead { border-left: none !important; text-align: left !important; }
-	.ptable__row--head { font-family: 'Cinzel', serif; font-weight: 900; font-size: 1.95cqw; border-bottom: 1px solid rgba(255, 216, 156, 0.35); }
+	.ptable__row--head { font-family: 'Cinzel', serif; font-weight: 700; font-size: 2.1cqw; letter-spacing: 0.03em; border-bottom: 1px solid rgba(255, 216, 156, 0.35); }
+	.ptable__row--head .ptable__symhead { text-align: center !important; }
 	.ptable__row--head span { white-space: nowrap; }
 	.ptable__sym { display: flex; align-items: center; gap: 1.6cqw; }
 	.ptable__sym img { width: 4cqw; height: 4cqw; object-fit: contain; flex: none; }
-	.ptable__icon--round { object-fit: cover; border-radius: 50%; border: 0.3cqw solid rgba(214, 167, 74, 0.65); }
-	.ptable__name { font-weight: 700; letter-spacing: 0.03em; }
+	/* Premium rows: landscape framed card art as a wide thumbnail (see .pay-row__icon--round). */
+	.ptable__sym img.ptable__icon--round { width: 7cqw; height: 5.4cqw; object-fit: contain; border-radius: 0.6cqw; }
+	.ptable__name { font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.7cqw; letter-spacing: 0.03em; color: #ffd89c; }
 
 	/* Two special cards side by side (WILD | SCATTER), each on the leaf-decorated frame. */
 	.pinfo-specials { display: flex; flex-direction: row; gap: 3.5cqw; width: 100%; margin-top: 3cqw; flex-shrink: 0; }

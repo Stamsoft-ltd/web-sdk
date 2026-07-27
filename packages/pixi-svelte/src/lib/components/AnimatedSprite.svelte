@@ -7,6 +7,9 @@
 		animationSpeed?: PIXI.AnimatedSprite['animationSpeed'];
 		loop?: PIXI.AnimatedSprite['loop'];
 		play?: boolean;
+		// Frame to start playback from (wrapped into the frame count). Lets sibling looping sprites
+		// (e.g. a board of idle symbols) start out of phase instead of animating in lockstep.
+		startFrame?: number;
 	};
 </script>
 
@@ -23,26 +26,25 @@
 		props.textures?.length ? props.textures : [PIXI.Texture.EMPTY],
 	);
 
-	// `textures` must NOT go through propsSyncEffect: that effect re-assigns every prop whenever
-	// ANY prop changes (e.g. width/height driven by a tween), and pixi's textures setter resets
-	// playback — freezing the animation on the first frame. Handle textures in a dedicated
-	// effect that only re-runs when the textures value itself changes.
-	propsSyncEffect({ props, target: animatedSprite, ignore: ['play', 'textures'] });
+	// `textures` is handled in the effect below (NOT via propsSyncEffect) so the play state can be
+	// restored in the SAME effect run. PIXI's AnimatedSprite `set textures()` calls gotoAndStop(0)
+	// internally, so any textures reassignment freezes the sprite on frame 0. Letting propsSyncEffect
+	// own it meant every unrelated prop change (e.g. width/height during a win pop) re-ran the setter
+	// and froze a looping sprite, and a genuine textures swap (deferred assets merging into
+	// loadedAssets hands the parent a fresh array) left it stopped with nothing to restart it.
+	propsSyncEffect({ props, target: animatedSprite, ignore: ['play', 'startFrame', 'textures'] });
 
 	$effect(() => {
+		// Only reassign when the array reference actually changed — avoids a redundant gotoAndStop(0).
 		const textures = props.textures;
-		if (textures && textures.length) {
+		if (textures?.length && textures !== animatedSprite.textures) {
 			animatedSprite.textures = textures;
-			if (props.play) animatedSprite.gotoAndPlay(0);
-			else animatedSprite.gotoAndStop(0);
 		}
-	});
-
-	$effect(() => {
+		const frame = (props.startFrame ?? 0) % Math.max(1, animatedSprite.totalFrames);
 		if (props.play) {
-			animatedSprite.gotoAndPlay(0);
+			animatedSprite.gotoAndPlay(frame);
 		} else {
-			animatedSprite.gotoAndStop(0);
+			animatedSprite.gotoAndStop(frame);
 		}
 	});
 

@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': 'ALT IND',
 	'RULE ALL IN TEXT': 'Alt Ind giver 10 gratis spins med 1 tilfældigt valgt udvidende symbol. Multiplikatoren starter ved 2x og fordobles kun ved vindende spins, hvilket skaber små tidlige gevinster og en jagt på den maksimale gevinst i de sene spins.',
 	'RULE BUY TITLE': 'KØB- / AKTIVERINGSTILSTANDE',
-	'RULE BUY TEXT': 'Del Ud koster 100x indsats at købe. Alt Ind koster 400x indsats at købe. Chancespin koster 2x indsats pr. runde. Funktionsspin koster 20x indsats pr. runde. Maksimal gevinst er 25,000x. Mål-RTP er 96.1%.',
+	'RULE BUY TEXT': 'Del Ud koster 100x indsats at købe. Alt Ind koster 400x indsats at købe. Chancespin koster 2x indsats pr. runde. Funktionsspin koster 20x indsats pr. runde. Maksimal gevinst er 25,000x. Mål-RTP er 96.11%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'VALGT PREMIUM-SYMBOL',
 	'FEATURE SELECTED SYMBOL TEXT': 'Ethvert almindeligt udbetalende symbol kan være det udvidende symbol. Når det lander, udvider alle berørte hjul sig for at fylde med det symbol, og 3 eller flere hjul udbetaler selv uden tilstødende forbindelser.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'DEL UD MULTIPLIKATORER',
@@ -105,19 +105,19 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild erstatter alle almindelige udbetalende symboler. Scatter udbetaler ikke i sig selv og udløser kun bonusfunktionerne.',
 	'PAYTABLE BUY_TEXT': 'Del Ud: 100x indsats.\nAlt Ind: 400x indsats.\nChancespin: 2x indsats pr. runde.\nFunktionsspin: 20x indsats pr. runde.\nDel Ud og Alt Ind kræver bekræftelse, før runden starter.',
 	'PAYTABLE MAX_TEXT': 'Den annoncerede maksimale gevinst er 25,000x den valgte indsats.',
-	'DISCLAIMER TEXT': 'En fejlfunktion annullerer alle gevinster og spil. En stabil internetforbindelse er påkrævet. I tilfælde af afbrydelse skal du genindlæse spillet for at afslutte uafsluttede runder. Det forventede afkast beregnes over mange spil. Spilvisningen er ikke repræsentativ for nogen fysisk enhed og er kun til illustrative formål. Gevinster afregnes i henhold til det beløb, der modtages fra Remote Game Server, og ikke fra begivenheder i webbrowseren. TM og © 2026 Stake Engine.',
+	'DISCLAIMER TEXT': 'En fejlfunktion annullerer alle gevinster og spil. En stabil internetforbindelse er påkrævet. I tilfælde af afbrydelse skal du genindlæse spillet for at afslutte uafsluttede runder. Det forventede afkast beregnes over mange spil. Spilvisningen er ikke repræsentativ for nogen fysisk enhed og er kun til illustrative formål. Gevinster afregnes i henhold til det beløb, der modtages fra Remote Game Server, og ikke fra begivenheder i webbrowseren. TM og © 2025 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'OVERSIGT',
 	'INFO OVERVIEW BODY':
-		'Forest Gang er en 5x4-videoslot, der spilles på 20 gevinstlinjer.\nGevinster tildeles fra venstre mod højre på fortløbende hjul, startende fra hjul 1, når matchende symboler lander på en aktiv gevinstlinje.\nSpillet indeholder 5 premium-symboler, 5 lave symboler, et Wild-symbol og et Scatter-symbol.\n\nDet maksimale gevinstpotentiale er 25,000x den samlede indsats.\n\nTeoretisk RTP: 96.1%',
+		'Forest Gang er en 5x4-videoslot, der spilles på 20 gevinstlinjer.\nGevinster tildeles fra venstre mod højre på fortløbende hjul, startende fra hjul 1, når matchende symboler lander på en aktiv gevinstlinje.\nSpillet indeholder 5 premium-symboler, 5 lave symboler, et Wild-symbol og et Scatter-symbol.\n\nDet maksimale gevinstpotentiale er 25,000x den samlede indsats.\n\nTeoretisk RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'HJUL',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': 'GEVINSTLINJER',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': 'MAKS. GEVINST',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': 'FUNKTIONER',
 	'INFO EXPANDING TITLE': 'UDVIDENDE SYMBOL',
@@ -126,11 +126,11 @@ export default {
 	'INFO DEAL IT TITLE': 'DEL UD BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
-		'Udløses af 3 Scatter-symboler.\n\nGiver 10 gratis spins. Før bonussen begynder, vælges ét tilfældigt udvidende symbol. Under bonussen kan det valgte symbol udvide sig for at dække hele hjulet.\n\nEn tilfældig multiplikator kan anvendes på ethvert vindende spin, op til 100x.',
+		'Udløses af 3 Scatter-symboler.\n\nGiver 10 gratis spins. Før bonussen begynder, vælges ét tilfældigt udvidende symbol. Under bonussen kan det valgte symbol udvide sig for at dække hele hjulet.\n\nEn tilfældig multiplikator kan anvendes på ethvert vindende spin, op til 100x.\n\nBonusrunden kan genudløses som følger:\n[[3 Scatters]] +3 spins\n[[4 Scatters]] +5 spins\n[[5 Scatters]] +8 spins',
 	'INFO ALL IN TITLE': 'ALT IND BONUS',
 	'INFO ALL IN HL': '4 Scatter',
 	'INFO ALL IN TEXT':
-		'Udløses af 4 Scatter-symboler og giver 10 gratis spins.\n\nFør bonussen begynder, vælges ét tilfældigt udvidende symbol. Under bonussen kan det valgte symbol udvide sig for at dække hele hjulet. Hjulmultiplikatorer forbliver aktive under hele bonussen og fordobles ved hver kvalificerende gevinst, startende ved 2x.',
+		'Udløses af 4 Scatter-symboler og giver 10 gratis spins.\n\nFør bonussen begynder, vælges ét tilfældigt udvidende symbol. Under bonussen kan det valgte symbol udvide sig for at dække hele hjulet. Hjulmultiplikatorer forbliver aktive under hele bonussen og fordobles ved hver kvalificerende gevinst, startende ved 2x.\n\nBonusrunden kan genudløses som følger:\n[[3 Scatters]] +3 spins\n[[4 Scatters]] +5 spins\n[[5 Scatters]] +8 spins',
 	'INFO PLACEHOLDER BODY': 'Design kommer snart.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': 'GEVINSTTABEL',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': 'Giver øjeblikkeligt Alt Ind Bonus.',
 	'INFO BUY COST': 'PRIS',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "Basis-RTP 96.11%",
 	'INFO BUY CHANCE_LABEL': 'BONUSCHANCE',
 	'INFO BUY CHANCE_VALUE': '3x CHANCE',
 	// General info page
@@ -170,7 +171,7 @@ export default {
 		'Hvis en spilrunde afbrydes, fortsætter den, når spillet genindlæses, hvor det er muligt.\n\nAlle gyldige indsatser og potentielle gevinster forbliver aktive, indtil runden er fuldstændigt afsluttet.',
 	'INFO LEGAL TITLE': 'JURIDISK MEDDELELSE',
 	'INFO LEGAL TEXT':
-		'En fejlfunktion annullerer alle udbetalinger og spil. En stabil internetforbindelse er påkrævet. Hvis forbindelsen mistes, skal du genindlæse spillet for at afslutte uafsluttede runder.\n\nDet forventede afkast beregnes over et stort antal spil. Spilvisningen er kun til visuelle formål og underholdning og repræsenterer ikke nogen fysisk spilleenhed.\n\nAlle gevinster afregnes i henhold til resultatet modtaget fra Remote Game Server, ikke fra animationer eller begivenheder vist i webbrowseren.\n\nTM and © 2026 Stake Engine.',
+		'En fejlfunktion annullerer alle udbetalinger og spil. En stabil internetforbindelse er påkrævet. Hvis forbindelsen mistes, skal du genindlæse spillet for at afslutte uafsluttede runder.\n\nDet forventede afkast beregnes over et stort antal spil. Spilvisningen er kun til visuelle formål og underholdning og repræsenterer ikke nogen fysisk spilleenhed.\n\nAlle gevinster afregnes i henhold til resultatet modtaget fra Remote Game Server, ikke fra animationer eller begivenheder vist i webbrowseren.\n\nTM and © 2025 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'UDVIDENDE\nHJUL',
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': 'bliv skovens\nkonge med',
 	'SPLASH EPIC BOTTOM': 'MAKS. GEVINST',
 	'SPLASH PRESS': 'TRYK FOR AT FORTSÆTTE',
+	'PRESS ANYWHERE': 'TRYK HVOR SOM HELST FOR AT FORTSÆTTE',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': 'TILLYKKE!',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': 'AUTOSPIN',
 	'TURBO SPIN': 'TURBOSPIN',
 	'SUPER TURBO SPIN': 'SUPER TURBOSPIN',
-	'BONUS FEATURE 100X': '100 X BONUSFUNKTION',
+	'BONUS FEATURE 100X': '20 X BONUSFUNKTION',
 	'NUMBER OF SPINS': 'ANTAL SPINS',
 	'START AUTOPLAY': 'START AUTOSPIL',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': 'Du har en aktiv %mode%-bonus i gang.',
 	'END ROUND': 'AFSLUT RUNDE',
 	'PLAY ROUND': 'SPIL RUNDE',
+	'INFO UI TITLE': 'BRUGERGRÆNSEFLADE',
+	'INFO UI SPIN TITLE': 'SPIN',
+	'INFO UI SPIN TEXT': 'Starter en ny spillerunde.',
+	'INFO UI AUTO TITLE': 'AUTO-SPINS',
+	'INFO UI AUTO TEXT': 'Åbner menuen for auto-spins.',
+	'INFO UI TURBO TITLE': 'TURBO',
+	'INFO UI TURBO TEXT': 'Aktiverer hurtigere spins.',
+	'INFO UI BETPLUS TITLE': 'INDSATS +',
+	'INFO UI BETPLUS TEXT': 'Øger din samlede indsats.',
+	'INFO UI BETMINUS TITLE': 'INDSATS -',
+	'INFO UI BETMINUS TEXT': 'Sænker din samlede indsats.',
+	'INFO UI INFO TITLE': 'INFO',
+	'INFO UI INFO TEXT': 'Åbner spilinformationen.',
+	'INFO UI SOUND TITLE': 'LYD',
+	'INFO UI SOUND TEXT': 'Slår spillets lyd til eller fra.',
+	'INFO UI PREV TITLE': 'FORRIGE',
+	'INFO UI PREV TEXT': 'Går til forrige side.',
+	'INFO UI NEXT TITLE': 'NÆSTE',
+	'INFO UI NEXT TEXT': 'Går til næste side.',
+	'INFO UI CLOSE TITLE': 'LUK',
+	'INFO UI CLOSE TEXT': 'Lukker det aktuelle vindue.',
 };

@@ -13,9 +13,6 @@ export default () =>
 		build: {
 			assetsInlineLimit: Infinity,
 			sourcemap: dev ? true : false,
-			output: {
-				sourcemap: dev ? true : false,
-			},
 		},
 		css: {
 			preprocessorOptions: {

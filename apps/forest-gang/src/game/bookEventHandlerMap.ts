@@ -1,12 +1,9 @@
-import _ from 'lodash';
-
 import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap } from 'utils-book';
 import { stateBet, stateUi } from 'state-shared';
-import { sequence } from 'utils-shared/sequence';
-import { waitForTimeout } from 'utils-shared/wait';
 import { bookEventAmountToBetAmountMultiplier } from 'utils-shared/amount';
 
 import { eventEmitter } from './eventEmitter';
+import { hold, interruptHolds } from './sequenceHold';
 import { playBookEvent } from './utils';
 import { winLevelMap, type WinLevel, type WinLevelData } from './winLevelMap';
 import type { SoundEffectName } from './sound';
@@ -59,11 +56,26 @@ const animateSymbols = async ({ positions }: { positions: Position[] }) => {
 };
 
 const getBonusModeFromScatters = (positions: Position[]) => (positions.length >= 4 ? 'superspin' : 'freegame');
+const isFeatureSpinBook = (bookEvents: BookEvent[]) =>
+	bookEvents.some((event) => event.type === 'freeSpinTrigger' && event.totalFs === 1) ||
+	bookEvents.some((event) => event.type === 'bonusSymbolSelected' && event.mode === 'feature');
+const resetRoundVisualState = () => {
+	stateGame.globalMultiplier = 1;
+	stateGame.expandedSymbol = null;
+	stateGame.expandedSymbolWon = false;
+	stateGame.tempMultiplier = null;
+	stateGame.paylineWins = [];
+	stateGame.paylineSnap = false;
+};
+const isBuyMode = (mode: string) => mode === 'BONUS' || mode === 'SUPER';
 
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
 		// A new spin begins — stop the previous win's payline loop if it's still playing.
 		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
+		// Clear the HUD's per-round WIN readout at the start of every spin (base + each free spin),
+		// so it shows THIS spin's win rather than lingering from the previous one.
+		stateGame.roundWin = 0;
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
 		const hasAnticipation = bookEvent.anticipation?.some(Boolean);
 		if (isBonusGame || hasAnticipation) {
@@ -75,7 +87,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 		stateGame.gameType = bookEvent.gameType;
 		stateGame.tempMultiplier = null;
-		if (bookEvent.gameType === 'basegame') {
+		// Feature-spin books can contain a basegame reveal before/around the 1-spin feature events.
+		// Keep the previous selected symbol visible through the new selection animation.
+		// Non-feature base rounds clear bonus presentation normally.
+		if (bookEvent.gameType === 'basegame' && !isFeatureSpinBook(bookEvents)) {
 			stateGameDerived.resetBonusState();
 		}
 
@@ -90,8 +105,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.anticipationSkipped = false;
 
 		// Add a brief pause between bonus spins so players can read the result
-		if (isBonusGame && bookEvent.gameType !== 'basegame' && !stateBet.isSuperTurbo) {
-			await waitForTimeout(600);
+		if (isBonusGame && bookEvent.gameType !== 'basegame') {
+			await hold(600);
 		}
 
 		const hadPendingStop = stateGame.pendingStop && stateGame.awaitingFirstReveal;
@@ -103,8 +118,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			revealEvent: bookEvent,
 			paddingBoard: config.paddingReels[bookEvent.gameType],
 		});
-		// Apply buffered stop immediately after spin starts
-		if (hadPendingStop) stateGameDerived.enhancedBoard.stop();
+		// Apply buffered stop immediately after spin starts. A stop pressed inside the pre-reveal
+		// buffer window is recorded as `pendingStop` instead of being broadcast (HudHtml), so it has
+		// to arm the round's hold interrupt here — otherwise the same press behaves differently
+		// depending on whether it landed a frame before or after the first reveal.
+		if (hadPendingStop) {
+			stateGameDerived.enhancedBoard.stop();
+			interruptHolds();
+		}
 		await spinPromise;
 		stateGame.hasAnticipationPending = false;
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
@@ -117,7 +138,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 				freeSpinCurrent: stateUi.freeSpinCounterCurrent,
 				freeSpinTotal: stateUi.freeSpinCounterTotal,
 			});
-			console.info('[forest-gang] ALL IN global multiplier after spin', stateGame.globalMultiplier);
 		}
 	},
 	bonusSymbolSelected: async (bookEvent: BookEventOfType<'bonusSymbolSelected'>, { bookEvents }: BookEventContext) => {
@@ -132,17 +152,24 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			| BookEventOfType<'expandedSymbolReveal'>
 			| undefined;
 		const symbol = reveal?.symbol ?? bookEvent.symbol;
-		stateGame.selectedBonusSymbol = symbol;
 		stateGame.bonusMode = bookEvent.mode;
-		if (stateBet.isSuperTurbo) return;
+		if (stateBet.isSuperTurbo) {
+			stateGame.selectedBonusSymbol = symbol;
+			return;
+		}
+		// Feature spins keep the previous selected-symbol badge until the deer selection
+		// animation has landed. Then swap to the new symbol as the presenter closes.
+		const delayBadgeSwap = bookEvent.mode === 'feature';
+		if (!delayBadgeSwap) stateGame.selectedBonusSymbol = symbol;
 		// Deer presenter reveals the chosen expanding symbol at the start of the round. The reveal
 		// sound loops for as long as the deer is on screen, then stops when it hides.
 		eventEmitter.broadcast({ type: 'expandedPresenterShow', symbol });
 		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_deer_reveal' });
-		await eventEmitter.broadcastAsync({ type: 'bonusSymbolRollAwait' });
+		if (!delayBadgeSwap) await eventEmitter.broadcastAsync({ type: 'bonusSymbolRollAwait' });
 		// Hold the presenter on screen — resolves after ~1.1s, or immediately if the player skips
 		// (space / tap, broadcast as stopButtonClick).
 		await eventEmitter.broadcastAsync({ type: 'expandedPresenterAwaitClose' });
+		if (delayBadgeSwap) stateGame.selectedBonusSymbol = symbol;
 		eventEmitter.broadcast({ type: 'expandedPresenterHide' });
 		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_deer_reveal' });
 	},
@@ -171,10 +198,16 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 		// Reveal one by one in distance order (origin first, then outward) — slower for drama.
 		for (let i = 0; i < reelsByDistance.length; i++) {
-			if (i > 0) await waitForTimeout(190);
+			const cut = i > 0 && (await hold(190));
 			// forcePlay so every expanding column retriggers the sound (the effect is longer than the
 			// 190ms step, so without it the once-player would only sound on the first column).
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_symbol_expand', forcePlay: true });
+			if (cut) {
+				// Stop press (or super-turbo): land every remaining column at once. Walking the rest at
+				// zero delay would retrigger the expand sound once per reel inside a single frame.
+				stateGame.expandedSymbol = { ...stateGame.expandedSymbol!, reels: [...bookEvent.reels] };
+				break;
+			}
 			const reel = reelsByDistance[i];
 			stateGame.expandedSymbol = {
 				...stateGame.expandedSymbol!,
@@ -182,7 +215,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			};
 		}
 		// Hold on the fully-expanded board before the win/multiplier sequence begins.
-		await waitForTimeout(650);
+		await hold(650);
 	},
 	applyTempMultiplier: async (bookEvent: BookEventOfType<'applyTempMultiplier'>) => {
 		stateGame.tempMultiplier = bookEvent.multiplier;
@@ -203,9 +236,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	updateGlobalMultiplier: async (bookEvent: BookEventOfType<'updateGlobalMultiplier'>) => {
 		stateGame.globalMultiplier = bookEvent.multiplier;
 		eventEmitter.broadcast({ type: 'globalMultiplierUpdate', multiplier: bookEvent.multiplier });
-		console.info('[forest-gang] ALL IN global multiplier update', bookEvent.multiplier);
 	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>) => {
+		// HUD WIN readout: this spin's win only (per round) — the cumulative bonus total lives in
+		// winBookEventAmount / EARNED.
+		stateGame.roundWin = bookEvent.totalWin;
 		// Loop the payline-win jingle for the whole win sequence; stopped after the animation below.
 		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_payline_win' });
 		// Start Deal It multiplier cycling for every winning bonus spin — always spins, lands on 1x unless multiplier fires
@@ -218,23 +253,27 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		const wins = isExpandedOverlayShowing
 			? bookEvent.wins.filter((w) => w.symbol === stateGame.expandedSymbol!.symbol)
 			: bookEvent.wins;
-		// Store full 5-reel payline paths for vine animation using lineIndex lookup
+		// Payline paths for the vine animation, trimmed to the MATCHED reels only — drawing the
+		// full 5-reel line definition dragged the vine across non-winning symbols on the tail reels.
+		// Expanded-symbol wins use the SAME trimmed mapping (their `wins` are already filtered to the
+		// expanded symbol above): trimmed to the expanded reels + presented by the line-by-line cycle
+		// with faint ghosts, they read as connected columns rather than the old wall of 20 full-width
+		// lines — while dropping them entirely made big expanded hits feel line-less.
 		const paylines = config.paylines as Record<string, number[]>;
-		if (isExpandedOverlayShowing && wins.length > 0) {
-			// Expanding symbol wins all 20 paylines — show all
-			stateGame.paylineWins = Object.entries(paylines).map(([key, rows]) => ({
-				lineIndex: Number(key),
-				path: rows.map((row, reel) => ({ reel, row })),
-			}));
-		} else {
-			stateGame.paylineWins = wins
-				.map((w) => {
-					const rows = paylines[String(w.meta.lineIndex)];
-					if (!rows) return null;
-					return { lineIndex: w.meta.lineIndex, path: rows.map((row, reel) => ({ reel, row })) };
-				})
-				.filter((p): p is { lineIndex: number; path: Array<{ reel: number; row: number }> } => p !== null);
-		}
+		stateGame.paylineWins = wins
+			.map((w) => {
+				const rows = paylines[String(w.meta.lineIndex)];
+				if (!rows) return null;
+				// Wins run left-to-right from reel 0; the matched positions tell us how far.
+				const matchedReels = w.positions.length
+					? Math.max(...w.positions.map((p) => p.reel)) + 1
+					: rows.length;
+				return {
+					lineIndex: w.meta.lineIndex,
+					path: rows.slice(0, matchedReels).map((row, reel) => ({ reel, row })),
+				};
+			})
+			.filter((p): p is { lineIndex: number; path: Array<{ reel: number; row: number }> } => p !== null);
 		// Deduplicate positions across all wins and animate once — prevents 5-10s freeze
 		const seen = new Set<string>();
 		const allPositions = wins.flatMap((win) => win.positions).filter((pos) => {
@@ -263,7 +302,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_trigger' });
 			await animateSymbols({ positions: bookEvent.positions });
 			// Hold on the highlighted scatters so the player can read the count before transition.
-			if (!stateBet.isSuperTurbo) await waitForTimeout(stateBet.isTurbo ? 300 : 800);
+			// (holdScale keeps this at its tuned 800 / 300 / 0 ms per speed mode — now skippable.)
+			await hold(800);
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_intro' });
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
 			await eventEmitter.broadcastAsync({ type: 'transition' });
@@ -282,7 +322,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if (!isFeatureSpin) {
 			eventEmitter.broadcast({ type: 'freeSpinIntroHide' });
 		}
-		eventEmitter.broadcast({ type: 'boardFrameGlowShow' });
 		if (!isFeatureSpin) {
 			eventEmitter.broadcast({ type: 'freeSpinCounterShow' });
 			stateUi.freeSpinCounterShow = true;
@@ -318,11 +357,13 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	freeSpinEnd: async (bookEvent: BookEventOfType<'freeSpinEnd'>) => {
 		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
 		const isFeatureSpin = stateGame.bonusMode === 'feature';
+		// Bonus is over → the HUD WIN readout now shows the GRAND TOTAL for the bonus (until the next
+		// spin's reveal clears it). During the bonus it was per-round (see winInfo).
+		stateGame.roundWin = bookEvent.amount;
 		// Clear expanding symbol overlay before total board shows
 		stateGame.expandedSymbol = null;
 		stateGame.paylineWins = [];
 		stateGame.gameType = isFeatureSpin ? 'feature' : 'basegame';
-		eventEmitter.broadcast({ type: 'boardFrameGlowHide' });
 		eventEmitter.broadcast({ type: 'globalMultiplierHide' });
 		eventEmitter.broadcast({ type: 'dealItMultiplierHide' });
 		if (isFeatureSpin) {
@@ -346,9 +387,20 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			eventEmitter.broadcast({ type: 'freeSpinCounterHide' });
 			stateUi.freeSpinCounterShow = false;
 			await eventEmitter.broadcastAsync({ type: 'transition' });
+			// Return to the base background NOW — while the transition veil still covers the screen —
+			// so the darker bonus background (and the disabled portrait top/bottom shadow) don't linger
+			// after the bonus. Without this, bonusMode only cleared on the NEXT spin's reveal, leaving
+			// the logo area dimmed. Mirrors the entry, which swaps INTO the bonus bg under the veil.
+			stateGameDerived.resetBonusState();
 			await eventEmitter.broadcastAsync({ type: 'uiShow' });
 			await eventEmitter.broadcastAsync({ type: 'drawerUnfold' });
 			eventEmitter.broadcast({ type: 'drawerButtonHide' });
+		}
+
+		// Bought Deal It / All In is one-shot. After it ends, return to BASE so a later
+		// autospin session cannot keep buying the previous bonus mode.
+		if (!isFeatureSpin && isBuyMode(String(stateBet.activeBetModeKey))) {
+			stateBet.activeBetModeKey = 'BASE';
 		}
 	},
 	setWin: async (bookEvent: BookEventOfType<'setWin'>) => {
@@ -360,7 +412,22 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if ((stateGame.bonusMode === 'freegame' || stateGame.bonusMode === 'feature')) {
 			await eventEmitter.broadcastAsync({ type: 'dealItMultiplierAwaitCycle' });
 			// Brief beat before coins start flying so the two moments read separately.
-			await waitForTimeout(150);
+			await hold(150);
+		}
+		// Hold a beat when the win contains animated premium symbols so their board win
+		// animation is visible before the win presentation covers it. Skipped on turbo.
+		const PREMIUM_WIN_ANIMS = new Set(['FOX', 'WOLF', 'BEAR', 'RABBIT', 'SQUIRREL']);
+		const hasAnimatedWinSymbol = stateGame.board.some((reel) =>
+			reel.reelState.symbols.some(
+				(s) => s.symbolState === 'win' && PREMIUM_WIN_ANIMS.has(s.rawSymbol.name),
+			),
+		);
+		// The turbo guard stays: this beat exists only to make the un-hurried presentation readable,
+		// so turbo drops it outright rather than keeping a scaled ~200 ms of it.
+		if (hasAnimatedWinSymbol && !stateBet.isTurbo && !stateBet.isSuperTurbo) {
+			// Long enough to register the symbols' win animation starting, short enough that the
+			// board doesn't read as stalled before the win presentation.
+			await hold(550);
 		}
 		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
 		eventEmitter.broadcast({ type: 'winShow' });
@@ -380,11 +447,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	finalWin: async () => {
 		// Round over — make sure the payline loop isn't left ringing.
 		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_payline_win' });
-		// Reset after the base game OR a completed single feature spin. A feature spin sets
-		// gameType='feature' / bonusMode='feature'; without resetting it here, bonusMode stayed
-		// non-null after the spin, so isInBonus kept the Buy Bonus button disabled once you
-		// deactivated the feature. (A multi-spin bonus keeps gameType 'freegame'/'superspin', so it
-		// is not reset mid-bonus.)
+		// Round over — clear all bonus presentation (base AND feature). Feature previously kept the
+		// selected-symbol panel visible until the next spin, but that left the "FEATURE" rail/badge
+		// lingering in the idle base game, so we now clear it here at the true end of the round.
 		if (stateGame.gameType === 'basegame' || stateGame.gameType === 'feature') {
 			stateGame.gameType = 'basegame';
 			stateGameDerived.resetBonusState();

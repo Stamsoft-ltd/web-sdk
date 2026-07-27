@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': 'YA HEP YA HIÇ',
 	'RULE ALL IN TEXT': 'Ya Hep Ya Hiç, rastgele seçilen 1 genişleyen sembol ile 10 bedava dönüş verir. Çarpan 2x\'ten başlar ve yalnızca kazanan dönüşlerde iki katına çıkar; küçük erken kazançlar ve son dönüşlerde maksimum kazanç kovalamacası yaratır.',
 	'RULE BUY TITLE': 'SATIN ALMA / ETKİNLEŞTİRME MODLARI',
-	'RULE BUY TEXT': 'Dağıt satın alma maliyeti 100x bahistir. Ya Hep Ya Hiç satın alma maliyeti 400x bahistir. Şans Dönüşü tur başına 2x bahistir. Özellik Dönüşü tur başına 20x bahistir. Maksimum kazanç 25,000x\'tir. Hedef RTP %96.1\'dir.',
+	'RULE BUY TEXT': 'Dağıt satın alma maliyeti 100x bahistir. Ya Hep Ya Hiç satın alma maliyeti 400x bahistir. Şans Dönüşü tur başına 2x bahistir. Özellik Dönüşü tur başına 20x bahistir. Maksimum kazanç 25,000x\'tir. Hedef RTP %96.11\'dir.',
 	'FEATURE SELECTED SYMBOL TITLE': 'SEÇİLEN PREMIUM SEMBOL',
 	'FEATURE SELECTED SYMBOL TEXT': 'Herhangi bir normal ödeme yapan sembol genişleyen sembol olabilir. İndiğinde etkilenen tüm makaralar o sembolü dolduracak şekilde genişler ve 3 veya daha fazla makara bitişik bağlantı olmadan bile ödeme yapar.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'DAĞIT ÇARPANLARI',
@@ -81,7 +81,7 @@ export default {
 	'HOWTO BET TITLE': 'BAHİS SEÇİCİ',
 	'HOWTO BET TEXT': 'Bir tur başlamadan önce görüntülenen bahis miktarını değiştirmek için + ve - düğmelerini kullanın veya bahis menüsünü açın.',
 	'HOWTO BUY TITLE': 'BONUS AL',
-	'HOWTO BUY TEXT': 'Dağıt, Ya Hep Ya Hiç, Şans Dönüşü veya Özellik Dönüşü seçmek için Bonus Al\'ı açın. Dağıt ve Ya Hep Ya Hiç onay gerektirir. Şans Dönüşü ve Özellik Dönüşü hemen etkinleşir ve DEVRE DIŞI BIRAK düğmesiyle kapatılabilir.',
+	'HOWTO BUY TEXT': 'Dağıt, Ya Hep Ya Hiç, Şans Dönüşü veya Özellik Dönüşü seçmek için Bonus Al\'ı açın. Dağıt ve Ya Hep Ya Hiç onay gerektirir. Şans Dönüşü ve Özellik Dönüşü hemen etkinleşir ve KAPAT düğmesiyle kapatılabilir.',
 	'HOWTO TURBO TITLE': 'TURBO',
 	'HOWTO TURBO TEXT': 'Turbo, daha hızlı oyun için belirli tur zamanlamalarını kısaltır.',
 	'HOWTO AUTOPLAY TITLE': 'OTOMATİK OYUN',
@@ -105,19 +105,19 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild, tüm normal ödeme yapan sembollerin yerine geçer. Scatter tek başına ödeme yapmaz ve yalnızca bonus özelliklerini tetikler.',
 	'PAYTABLE BUY_TEXT': 'Dağıt: 100x bahis.\nYa Hep Ya Hiç: 400x bahis.\nŞans Dönüşü: tur başına 2x bahis.\nÖzellik Dönüşü: tur başına 20x bahis.\nDağıt ve Ya Hep Ya Hiç tur başlamadan önce onay gerektirir.',
 	'PAYTABLE MAX_TEXT': 'Reklam edilen maksimum kazanç seçilen bahsin 25,000x katıdır.',
-	'DISCLAIMER TEXT': 'Arıza tüm kazançları ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilmesi durumunda, tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı herhangi bir fiziksel cihazı temsil etmez ve yalnızca gösterim amaçlıdır. Kazançlar web tarayıcısındaki olaylara göre değil, Uzak Oyun Sunucusundan alınan tutara göre ödenir. TM ve © 2026 Stake Engine.',
+	'DISCLAIMER TEXT': 'Arıza tüm kazançları ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilmesi durumunda, tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı herhangi bir fiziksel cihazı temsil etmez ve yalnızca gösterim amaçlıdır. Kazançlar web tarayıcısındaki olaylara göre değil, Uzak Oyun Sunucusundan alınan tutara göre ödenir. TM ve © 2025 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'GENEL BAKIŞ',
 	'INFO OVERVIEW BODY':
-		'Forest Gang, 20 ödeme çizgisinde oynanan bir 5x4 video slottur.\nKazançlar, eşleşen semboller etkin bir ödeme çizgisine indiğinde, makara 1\'den başlayarak ardışık makaralarda soldan sağa verilir.\nOyun 5 premium sembol, 5 düşük sembol, bir Wild sembolü ve bir Scatter sembolü içerir.\n\nMaksimum kazanç potansiyeli toplam bahsin 25,000x katıdır.\n\nTeorik RTP: %96.1',
+		'Forest Gang, 20 ödeme çizgisinde oynanan bir 5x4 video slottur.\nKazançlar, eşleşen semboller etkin bir ödeme çizgisine indiğinde, makara 1\'den başlayarak ardışık makaralarda soldan sağa verilir.\nOyun 5 premium sembol, 5 düşük sembol, bir Wild sembolü ve bir Scatter sembolü içerir.\n\nMaksimum kazanç potansiyeli toplam bahsin 25,000x katıdır.\n\nTeorik RTP: %96.11',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'MAKARALAR',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': 'ÇİZGİLER',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': 'MAKS. KAZANÇ',
-	'INFO STAT RTP': '%96.1',
+	'INFO STAT RTP': '%96.11',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': 'ÖZELLİKLER',
 	'INFO EXPANDING TITLE': 'GENİŞLEYEN SEMBOL',
@@ -126,11 +126,11 @@ export default {
 	'INFO DEAL IT TITLE': 'DAĞIT BONUSU',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
-		'3 Scatter sembolüyle tetiklenir.\n\n10 bedava dönüş verir. Bonus başlamadan önce, rastgele bir genişleyen sembol seçilir. Bonus sırasında, seçilen sembol tüm makarayı kaplayacak şekilde genişleyebilir.\n\nRastgele bir çarpan herhangi bir kazanan dönüşe 100x\'e kadar uygulanabilir.',
+		'3 Scatter sembolüyle tetiklenir.\n\n10 bedava dönüş verir. Bonus başlamadan önce, rastgele bir genişleyen sembol seçilir. Bonus sırasında, seçilen sembol tüm makarayı kaplayacak şekilde genişleyebilir.\n\nRastgele bir çarpan herhangi bir kazanan dönüşe 100x\'e kadar uygulanabilir.\n\nBonus turu aşağıdaki şekilde yeniden tetiklenebilir:\n[[3 Scatter]] +3 dönüş\n[[4 Scatter]] +5 dönüş\n[[5 Scatter]] +8 dönüş',
 	'INFO ALL IN TITLE': 'YA HEP YA HIÇ BONUSU',
 	'INFO ALL IN HL': '4 Scatter',
 	'INFO ALL IN TEXT':
-		'4 Scatter sembolüyle tetiklenir ve 10 bedava dönüş verir.\n\nBonus başlamadan önce, rastgele bir genişleyen sembol seçilir. Bonus sırasında, seçilen sembol tüm makarayı kaplayacak şekilde genişleyebilir. Makara çarpanları bonus boyunca etkin kalır ve 2x\'ten başlayarak her uygun kazançta iki katına çıkar.',
+		'4 Scatter sembolüyle tetiklenir ve 10 bedava dönüş verir.\n\nBonus başlamadan önce, rastgele bir genişleyen sembol seçilir. Bonus sırasında, seçilen sembol tüm makarayı kaplayacak şekilde genişleyebilir. Makara çarpanları bonus boyunca etkin kalır ve 2x\'ten başlayarak her uygun kazançta iki katına çıkar.\n\nBonus turu aşağıdaki şekilde yeniden tetiklenebilir:\n[[3 Scatter]] +3 dönüş\n[[4 Scatter]] +5 dönüş\n[[5 Scatter]] +8 dönüş',
 	'INFO PLACEHOLDER BODY': 'Tasarım yakında.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': 'ÖDEME TABLOSU',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': 'Anında Ya Hep Ya Hiç Bonusunu verir.',
 	'INFO BUY COST': 'MALİYET',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '%96.1',
+	'INFO BUY RTP_VALUE': '%96.11',
+	'INFO BUY BASE RTP': "Temel RTP %96.11",
 	'INFO BUY CHANCE_LABEL': 'BONUS ŞANSI',
 	'INFO BUY CHANCE_VALUE': '3x ŞANS',
 	// General info page
@@ -170,7 +171,7 @@ export default {
 		'Bir oyun turu kesintiye uğrarsa, mümkün olduğunda oyun yeniden yüklendiğinde devam eder.\n\nTur tamamen tamamlanana kadar tüm geçerli bahisler ve olası kazançlar etkin kalır.',
 	'INFO LEGAL TITLE': 'YASAL BİLDİRİM',
 	'INFO LEGAL TEXT':
-		'Arıza tüm ödemeleri ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilirse, tamamlanmamış turları tamamlamak için oyunu yeniden yükleyin.\n\nBeklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı yalnızca görsel ve eğlence amaçlıdır ve herhangi bir fiziksel oyun cihazını temsil etmez.\n\nTüm kazançlar, web tarayıcısında gösterilen animasyonlara veya olaylara göre değil, Uzak Oyun Sunucusundan alınan sonuca göre ödenir.\n\nTM and © 2026 Stake Engine.',
+		'Arıza tüm ödemeleri ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilirse, tamamlanmamış turları tamamlamak için oyunu yeniden yükleyin.\n\nBeklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı yalnızca görsel ve eğlence amaçlıdır ve herhangi bir fiziksel oyun cihazını temsil etmez.\n\nTüm kazançlar, web tarayıcısında gösterilen animasyonlara veya olaylara göre değil, Uzak Oyun Sunucusundan alınan sonuca göre ödenir.\n\nTM and © 2025 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'GENİŞLEYEN\nMAKARALAR',
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': 'ormanın kralı ol\nşununla',
 	'SPLASH EPIC BOTTOM': 'MAKS. KAZANÇ',
 	'SPLASH PRESS': 'DEVAM ETMEK İÇİN BASIN',
+	'PRESS ANYWHERE': 'DEVAM ETMEK İÇİN HERHANGİ BİR YERE BASIN',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': 'TEBRİKLER!',
@@ -195,7 +197,7 @@ export default {
 
 	// Buy bonus modal — card titles/descriptions, buttons, confirm dialog
 	ACTIVATE: 'ETKİNLEŞTİR',
-	DEACTIVATE: 'DEVRE DIŞI BIRAK',
+	DEACTIVATE: 'KAPAT',
 	BUY: 'AL',
 	CONFIRM: 'ONAYLA',
 	CANCEL: 'İPTAL',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': 'OTOMATİK DÖNÜŞ',
 	'TURBO SPIN': 'TURBO DÖNÜŞ',
 	'SUPER TURBO SPIN': 'SÜPER TURBO DÖNÜŞ',
-	'BONUS FEATURE 100X': '100 X BONUS ÖZELLİĞİ',
+	'BONUS FEATURE 100X': '20 X BONUS ÖZELLİĞİ',
 	'NUMBER OF SPINS': 'DÖNÜŞ SAYISI',
 	'START AUTOPLAY': 'OTOMATİK OYUNU BAŞLAT',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': 'Devam eden aktif bir %mode% bonusunuz var.',
 	'END ROUND': 'TURU BİTİR',
 	'PLAY ROUND': 'TURU OYNA',
+	'INFO UI TITLE': 'ARAYÜZ REHBERİ',
+	'INFO UI SPIN TITLE': 'ÇEVİR',
+	'INFO UI SPIN TEXT': 'Yeni bir oyun turu başlatır.',
+	'INFO UI AUTO TITLE': 'OTOMATİK',
+	'INFO UI AUTO TEXT': 'Otomatik çevirme menüsünü açar.',
+	'INFO UI TURBO TITLE': 'TURBO',
+	'INFO UI TURBO TEXT': 'Daha hızlı makara dönüşü sağlar.',
+	'INFO UI BETPLUS TITLE': 'BAHİS +',
+	'INFO UI BETPLUS TEXT': 'Toplam bahsinizi artırır.',
+	'INFO UI BETMINUS TITLE': 'BAHİS -',
+	'INFO UI BETMINUS TEXT': 'Toplam bahsinizi azaltır.',
+	'INFO UI INFO TITLE': 'BİLGİ',
+	'INFO UI INFO TEXT': 'Oyun bilgilerini açar.',
+	'INFO UI SOUND TITLE': 'SES',
+	'INFO UI SOUND TEXT': 'Oyun sesini açar veya kapatır.',
+	'INFO UI PREV TITLE': 'ÖNCEKİ',
+	'INFO UI PREV TEXT': 'Önceki sayfaya gider.',
+	'INFO UI NEXT TITLE': 'SONRAKİ',
+	'INFO UI NEXT TEXT': 'Sonraki sayfaya gider.',
+	'INFO UI CLOSE TITLE': 'KAPAT',
+	'INFO UI CLOSE TEXT': 'Geçerli pencereyi kapatır.',
 };

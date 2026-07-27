@@ -1,7 +1,22 @@
 import { type SpinningReelSymbolState } from 'utils-slots';
 import type config from './config';
 
-export type SymbolName = keyof typeof config.symbols;
+// Written out explicitly (matches config.symbols) instead of `keyof typeof config.symbols`:
+// config.ts itself imports SymbolName to type its reels, so deriving the type from config was a
+// circular reference that degraded SymbolName (and everything typed with it) to `any`.
+export type SymbolName =
+	| 'FOX'
+	| 'WOLF'
+	| 'BEAR'
+	| 'RABBIT'
+	| 'SQUIRREL'
+	| 'A'
+	| 'K'
+	| 'Q'
+	| 'J'
+	| 'T'
+	| 'WILD'
+	| 'SCATTER';
 export type RawSymbol = {
 	name: SymbolName;
 	multiplier?: number;

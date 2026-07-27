@@ -1,4 +1,5 @@
 import { stateBet, stateI18nDerived, stateModal, stateUi, stateUrlDerived } from 'state-shared';
+import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import type { BaseBet } from 'utils-bet';
 import { formatCurrencyAmountForCurrency, normalizeCurrency } from '../lib/utils/currency';
 import { logForestDiagnostic } from '../utils/forestDiagnostics';
@@ -21,9 +22,49 @@ const safeAmount = (value: unknown) => {
 	return Number.isFinite(amount) ? amount : 0;
 };
 
+const cloneReplayBet = <T>(value: T): T | null => {
+	const seen = new WeakSet<object>();
+	try {
+		return JSON.parse(
+			JSON.stringify(value, (_key, item) => {
+				if (typeof item === 'function' || typeof item === 'symbol' || typeof item === 'bigint') return undefined;
+				if (!item || typeof item !== 'object') return item;
+				if (typeof window !== 'undefined' && item === window) return undefined;
+				if (seen.has(item)) return undefined;
+				seen.add(item);
+				const ctor = (item as { constructor?: { name?: string } }).constructor?.name;
+				if (!Array.isArray(item) && ctor && ctor !== 'Object') return undefined;
+				return item;
+			}),
+		) as T;
+	} catch (error) {
+		logForestDiagnostic('error', 'replay_clone_failed', { message: String(error) });
+		return null;
+	}
+};
+
 const isReplayMode = () => stateUi.config.mode === 'replay' || stateUrlDerived.replay();
 
-const selectedModeLabel = () => String(stateBet.activeBetModeKey || stateUrlDerived.mode() || 'BASE').toUpperCase();
+const replayModeKey = () =>
+	String(
+		(forestStakeState.replaySnapshot as { mode?: string })?.mode ||
+			stateBet.activeBetModeKey ||
+			stateUrlDerived.mode() ||
+			'BASE',
+	).toUpperCase();
+
+const modeTitleKey = (mode: string) => {
+	if (mode === 'CHANCE') return 'BET MODE CHANCE TITLE';
+	if (mode === 'FEATURE') return 'BET MODE FEATURE TITLE';
+	if (mode === 'BONUS') return 'BET MODE BONUS TITLE';
+	if (mode === 'SUPER') return 'BET MODE SUPER TITLE';
+	return 'BET MODE BASE TITLE';
+};
+
+const modeCostMultiplier = (mode: string) =>
+	mode === 'CHANCE' ? 2 : mode === 'FEATURE' ? 20 : mode === 'BONUS' ? 100 : mode === 'SUPER' ? 400 : 1;
+
+const selectedModeLabel = () => t(modeTitleKey(replayModeKey()));
 
 const bootReady = () => {
 	forestStakeState.bootStatus = 'ready';
@@ -44,7 +85,12 @@ const setBootError = (message: string) => {
 
 const captureReplaySnapshot = (bet: BaseBet | null) => {
 	if (!bet) return;
-	forestStakeState.replaySnapshot = structuredClone(bet);
+	const snapshot = cloneReplayBet(bet);
+	if (!snapshot) {
+		setBootError(t('REPLAY ERROR GENERIC'));
+		return;
+	}
+	forestStakeState.replaySnapshot = snapshot;
 	forestStakeState.replayEventId = stateUrlDerived.event() || String((bet as { event?: string | number })?.event ?? '');
 	logForestDiagnostic('info', 'replay_snapshot_captured', {
 		eventId: forestStakeState.replayEventId,
@@ -83,26 +129,34 @@ const requestReplayStart = () => {
 	return true;
 };
 
-const replayBetAmount = () =>
-	safeAmount((forestStakeState.replaySnapshot as { amount?: number })?.amount ?? stateBet.betAmount);
-
-const replayCostAmount = () => {
-	const replayMode = String(
-		(forestStakeState.replaySnapshot as { mode?: string })?.mode ||
-			stateBet.activeBetModeKey ||
-			stateUrlDerived.mode() ||
-			'BASE',
-	).toUpperCase();
-	const multiplier = replayMode === 'CHANCE' ? 2 : replayMode === 'FEATURE' ? 20 : replayMode === 'BONUS' ? 100 : replayMode === 'SUPER' ? 400 : 1;
-	return replayBetAmount() * multiplier;
+// The replay snapshot keeps the RGS round untouched (the resume flow consumes it as-is), so its
+// amount/payout are in API micro-units (1e6 = $1) and must be scaled down for display — without
+// this the replay HUD shows a $1 bet as $1,000,000.
+const replayBetAmount = () => {
+	const raw = (forestStakeState.replaySnapshot as { amount?: number })?.amount;
+	return raw != null ? safeAmount(raw / API_AMOUNT_MULTIPLIER) : safeAmount(stateBet.betAmount);
 };
 
-const replayPayoutAmount = () =>
-	safeAmount((forestStakeState.replaySnapshot as { payout?: number })?.payout);
+const replayCostAmount = () => {
+	return replayBetAmount() * modeCostMultiplier(replayModeKey());
+};
+
+const replayCostMultiplier = () => modeCostMultiplier(replayModeKey());
+
+const replayPayoutAmount = () => {
+	const raw = (forestStakeState.replaySnapshot as { payout?: number })?.payout;
+	return raw != null ? safeAmount(raw / API_AMOUNT_MULTIPLIER) : 0;
+};
 
 const replayWinAmount = () => {
 	const payout = replayPayoutAmount();
 	return payout > 0 ? payout : safeAmount(stateBet.winBookEventAmount);
+};
+
+const replayPayoutMultiplier = () => {
+	const cost = replayCostAmount();
+	if (cost <= 0) return 0;
+	return replayWinAmount() / cost;
 };
 
 const formatCurrencyAmount = (amount: number, fractionDigits = 2) =>
@@ -125,12 +179,15 @@ export const forestStakeDerived = {
 	bootReady,
 	setBootError,
 	captureReplaySnapshot,
+	cloneReplayBet,
 	syncReplayStatus,
 	requestReplayStart,
 	syncModalError,
 	replayBetAmount,
 	replayCostAmount,
+	replayCostMultiplier,
 	replayPayoutAmount,
+	replayPayoutMultiplier,
 	replayWinAmount,
 	formatCurrencyAmount,
 	t,

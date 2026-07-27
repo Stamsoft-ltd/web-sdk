@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': 'VA BANQUE',
 	'RULE ALL IN TEXT': 'Va Banque przyznaje 10 darmowych spinów z 1 losowo wybranym symbolem rozszerzającym. Mnożnik zaczyna się od 2x i podwaja się tylko przy wygrywających spinach, tworząc małe wczesne wygrane i pościg za maksymalną wygraną w późnych spinach.',
 	'RULE BUY TITLE': 'TRYBY KUPNA / AKTYWACJI',
-	'RULE BUY TEXT': 'Koszt kupna Rozdaj to 100x zakład. Koszt kupna Va Banque to 400x zakład. Spin Szansy kosztuje 2x zakład za rundę. Spin Funkcji kosztuje 20x zakład za rundę. Maksymalna wygrana to 25,000x. Docelowy RTP to 96.1%.',
+	'RULE BUY TEXT': 'Koszt kupna Rozdaj to 100x zakład. Koszt kupna Va Banque to 400x zakład. Spin Szansy kosztuje 2x zakład za rundę. Spin Funkcji kosztuje 20x zakład za rundę. Maksymalna wygrana to 25,000x. Docelowy RTP to 96.11%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'WYBRANY SYMBOL PREMIUM',
 	'FEATURE SELECTED SYMBOL TEXT': 'Każdy zwykły płacący symbol może być symbolem rozszerzającym. Gdy wyląduje, wszystkie objęte bębny rozszerzają się, wypełniając ten symbol, a 3 lub więcej bębnów płaci nawet bez sąsiednich połączeń.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'MNOŻNIKI ROZDAJ',
@@ -81,7 +81,7 @@ export default {
 	'HOWTO BET TITLE': 'WYBÓR ZAKŁADU',
 	'HOWTO BET TEXT': 'Użyj przycisków + i - lub otwórz menu zakładu, aby zmienić wyświetlaną kwotę zakładu przed rozpoczęciem rundy.',
 	'HOWTO BUY TITLE': 'KUP BONUS',
-	'HOWTO BUY TEXT': 'Otwórz Kup Bonus, aby wybrać Rozdaj, Va Banque, Spin Szansy lub Spin Funkcji. Rozdaj i Va Banque wymagają potwierdzenia. Spin Szansy i Spin Funkcji aktywują się natychmiast i można je wyłączyć przyciskiem DEZAKTYWUJ.',
+	'HOWTO BUY TEXT': 'Otwórz Kup Bonus, aby wybrać Rozdaj, Va Banque, Spin Szansy lub Spin Funkcji. Rozdaj i Va Banque wymagają potwierdzenia. Spin Szansy i Spin Funkcji aktywują się natychmiast i można je wyłączyć przyciskiem WYŁĄCZ.',
 	'HOWTO TURBO TITLE': 'TURBO',
 	'HOWTO TURBO TEXT': 'Turbo skraca niektóre czasy rundy dla szybszej gry.',
 	'HOWTO AUTOPLAY TITLE': 'AUTOGRA',
@@ -105,19 +105,19 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild zastępuje wszystkie zwykłe płacące symbole. Scatter nie płaci samodzielnie i tylko uruchamia funkcje bonusowe.',
 	'PAYTABLE BUY_TEXT': 'Rozdaj: 100x zakład.\nVa Banque: 400x zakład.\nSpin Szansy: 2x zakład za rundę.\nSpin Funkcji: 20x zakład za rundę.\nRozdaj i Va Banque wymagają potwierdzenia przed rozpoczęciem rundy.',
 	'PAYTABLE MAX_TEXT': 'Reklamowana maksymalna wygrana to 25,000x wybranego zakładu.',
-	'DISCLAIMER TEXT': 'Awaria unieważnia wszystkie wygrane i gry. Wymagane jest stabilne połączenie internetowe. W przypadku utraty połączenia przeładuj grę, aby dokończyć niezakończone rundy. Oczekiwany zwrot obliczany jest na podstawie wielu gier. Wyświetlanie gry nie odpowiada żadnemu fizycznemu urządzeniu i służy wyłącznie celom ilustracyjnym. Wygrane rozliczane są zgodnie z kwotą otrzymaną z Zdalnego Serwera Gry, a nie ze zdarzeń w przeglądarce internetowej. TM oraz © 2026 Stake Engine.',
+	'DISCLAIMER TEXT': 'Awaria unieważnia wszystkie wygrane i gry. Wymagane jest stabilne połączenie internetowe. W przypadku utraty połączenia przeładuj grę, aby dokończyć niezakończone rundy. Oczekiwany zwrot obliczany jest na podstawie wielu gier. Wyświetlanie gry nie odpowiada żadnemu fizycznemu urządzeniu i służy wyłącznie celom ilustracyjnym. Wygrane rozliczane są zgodnie z kwotą otrzymaną z Zdalnego Serwera Gry, a nie ze zdarzeń w przeglądarce internetowej. TM oraz © 2025 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'PRZEGLĄD',
 	'INFO OVERVIEW BODY':
-		'Forest Gang to wideoslot 5x4 grany na 20 liniach wypłat.\nWygrane przyznawane są od lewej do prawej na kolejnych bębnach, począwszy od bębna 1, gdy pasujące symbole wylądują na aktywnej linii wypłat.\nGra zawiera 5 symboli premium, 5 niskich symboli, symbol Wild oraz symbol Scatter.\n\nMaksymalny potencjał wygranej to 25,000x całkowitego zakładu.\n\nTeoretyczny RTP: 96.1%',
+		'Forest Gang to wideoslot 5x4 grany na 20 liniach wypłat.\nWygrane przyznawane są od lewej do prawej na kolejnych bębnach, począwszy od bębna 1, gdy pasujące symbole wylądują na aktywnej linii wypłat.\nGra zawiera 5 symboli premium, 5 niskich symboli, symbol Wild oraz symbol Scatter.\n\nMaksymalny potencjał wygranej to 25,000x całkowitego zakładu.\n\nTeoretyczny RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'BĘBNY',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': 'LINIE',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': 'MAKS. WYGRANA',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': 'FUNKCJE',
 	'INFO EXPANDING TITLE': 'SYMBOL ROZSZERZAJĄCY',
@@ -126,11 +126,11 @@ export default {
 	'INFO DEAL IT TITLE': 'BONUS ROZDAJ',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
-		'Uruchamiany przez 3 symbole Scatter.\n\nPrzyznaje 10 darmowych spinów. Przed rozpoczęciem bonusu wybierany jest jeden losowy symbol rozszerzający. Podczas bonusu wybrany symbol może się rozszerzyć, aby pokryć cały bęben.\n\nLosowy mnożnik może stosować się do każdego wygrywającego spinu, do 100x.',
+		'Uruchamiany przez 3 symbole Scatter.\n\nPrzyznaje 10 darmowych spinów. Przed rozpoczęciem bonusu wybierany jest jeden losowy symbol rozszerzający. Podczas bonusu wybrany symbol może się rozszerzyć, aby pokryć cały bęben.\n\nLosowy mnożnik może stosować się do każdego wygrywającego spinu, do 100x.\n\nRunda bonusowa może zostać ponownie aktywowana w następujący sposób:\n[[3 Scattery]] +3 spiny\n[[4 Scattery]] +5 spinów\n[[5 Scatterów]] +8 spinów',
 	'INFO ALL IN TITLE': 'BONUS VA BANQUE',
 	'INFO ALL IN HL': '4 Scatter',
 	'INFO ALL IN TEXT':
-		'Uruchamiany przez 4 symbole Scatter i przyznaje 10 darmowych spinów.\n\nPrzed rozpoczęciem bonusu wybierany jest jeden losowy symbol rozszerzający. Podczas bonusu wybrany symbol może się rozszerzyć, aby pokryć cały bęben. Mnożniki bębnów pozostają aktywne przez cały bonus i podwajają się przy każdej kwalifikującej się wygranej, zaczynając od 2x.',
+		'Uruchamiany przez 4 symbole Scatter i przyznaje 10 darmowych spinów.\n\nPrzed rozpoczęciem bonusu wybierany jest jeden losowy symbol rozszerzający. Podczas bonusu wybrany symbol może się rozszerzyć, aby pokryć cały bęben. Mnożniki bębnów pozostają aktywne przez cały bonus i podwajają się przy każdej kwalifikującej się wygranej, zaczynając od 2x.\n\nRunda bonusowa może zostać ponownie aktywowana w następujący sposób:\n[[3 Scattery]] +3 spiny\n[[4 Scattery]] +5 spinów\n[[5 Scatterów]] +8 spinów',
 	'INFO PLACEHOLDER BODY': 'Projekt wkrótce.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': 'TABELA WYPŁAT',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': 'Natychmiast przyznaje Bonus Va Banque.',
 	'INFO BUY COST': 'KOSZT',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "Podstawowe RTP 96.11%",
 	'INFO BUY CHANCE_LABEL': 'SZANSA BONUSU',
 	'INFO BUY CHANCE_VALUE': '3x SZANSA',
 	// General info page
@@ -170,7 +171,7 @@ export default {
 		'Jeśli runda gry zostanie przerwana, będzie kontynuowana po przeładowaniu gry, tam gdzie to możliwe.\n\nWszystkie ważne zakłady i potencjalne wygrane pozostają aktywne do pełnego zakończenia rundy.',
 	'INFO LEGAL TITLE': 'INFORMACJA PRAWNA',
 	'INFO LEGAL TEXT':
-		'Awaria unieważnia wszystkie wypłaty i gry. Wymagane jest stabilne połączenie internetowe. Jeśli połączenie zostanie utracone, przeładuj grę, aby dokończyć niezakończone rundy.\n\nOczekiwany zwrot obliczany jest na podstawie dużej liczby gier. Wyświetlanie gry służy wyłącznie celom wizualnym i rozrywkowym i nie reprezentuje żadnego fizycznego urządzenia do gier.\n\nWszystkie wygrane rozliczane są zgodnie z wynikiem otrzymanym z Zdalnego Serwera Gry, a nie z animacji lub zdarzeń pokazanych wewnątrz przeglądarki internetowej.\n\nTM and © 2026 Stake Engine.',
+		'Awaria unieważnia wszystkie wypłaty i gry. Wymagane jest stabilne połączenie internetowe. Jeśli połączenie zostanie utracone, przeładuj grę, aby dokończyć niezakończone rundy.\n\nOczekiwany zwrot obliczany jest na podstawie dużej liczby gier. Wyświetlanie gry służy wyłącznie celom wizualnym i rozrywkowym i nie reprezentuje żadnego fizycznego urządzenia do gier.\n\nWszystkie wygrane rozliczane są zgodnie z wynikiem otrzymanym z Zdalnego Serwera Gry, a nie z animacji lub zdarzeń pokazanych wewnątrz przeglądarki internetowej.\n\nTM and © 2025 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'ROZSZERZAJĄCE\nBĘBNY',
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': 'zostań królem\nlasu z',
 	'SPLASH EPIC BOTTOM': 'MAKS. WYGRANA',
 	'SPLASH PRESS': 'NACIŚNIJ, ABY KONTYNUOWAĆ',
+	'PRESS ANYWHERE': 'NACIŚNIJ W DOWOLNYM MIEJSCU, ABY KONTYNUOWAĆ',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': 'GRATULACJE!',
@@ -195,7 +197,7 @@ export default {
 
 	// Buy bonus modal — card titles/descriptions, buttons, confirm dialog
 	ACTIVATE: 'AKTYWUJ',
-	DEACTIVATE: 'DEZAKTYWUJ',
+	DEACTIVATE: 'WYŁĄCZ',
 	BUY: 'KUP',
 	CONFIRM: 'POTWIERDŹ',
 	CANCEL: 'ANULUJ',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': 'SPIN AUTOMATYCZNY',
 	'TURBO SPIN': 'SPIN TURBO',
 	'SUPER TURBO SPIN': 'SUPER SPIN TURBO',
-	'BONUS FEATURE 100X': '100 X FUNKCJA BONUSOWA',
+	'BONUS FEATURE 100X': '20 X FUNKCJA BONUSOWA',
 	'NUMBER OF SPINS': 'LICZBA SPINÓW',
 	'START AUTOPLAY': 'ROZPOCZNIJ AUTOGRĘ',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': 'Masz aktywny bonus %mode% w toku.',
 	'END ROUND': 'ZAKOŃCZ RUNDĘ',
 	'PLAY ROUND': 'ZAGRAJ RUNDĘ',
+	'INFO UI TITLE': 'PRZEWODNIK PO INTERFEJSIE',
+	'INFO UI SPIN TITLE': 'OBRÓT',
+	'INFO UI SPIN TEXT': 'Rozpoczyna nową rundę gry.',
+	'INFO UI AUTO TITLE': 'AUTO-OBROTY',
+	'INFO UI AUTO TEXT': 'Otwiera menu auto-obrotów.',
+	'INFO UI TURBO TITLE': 'TURBO',
+	'INFO UI TURBO TEXT': 'Włącza szybsze obroty bębnów.',
+	'INFO UI BETPLUS TITLE': 'ZAKŁAD +',
+	'INFO UI BETPLUS TEXT': 'Zwiększa łączny zakład.',
+	'INFO UI BETMINUS TITLE': 'ZAKŁAD -',
+	'INFO UI BETMINUS TEXT': 'Zmniejsza łączny zakład.',
+	'INFO UI INFO TITLE': 'INFO',
+	'INFO UI INFO TEXT': 'Otwiera informacje o grze.',
+	'INFO UI SOUND TITLE': 'DŹWIĘK',
+	'INFO UI SOUND TEXT': 'Włącza lub wyłącza dźwięk gry.',
+	'INFO UI PREV TITLE': 'POPRZEDNIA',
+	'INFO UI PREV TEXT': 'Przechodzi do poprzedniej strony.',
+	'INFO UI NEXT TITLE': 'NASTĘPNA',
+	'INFO UI NEXT TEXT': 'Przechodzi do następnej strony.',
+	'INFO UI CLOSE TITLE': 'ZAMKNIJ',
+	'INFO UI CLOSE TEXT': 'Zamyka bieżące okno.',
 };

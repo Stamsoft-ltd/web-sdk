@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': 'TUDO OU NADA',
 	'RULE ALL IN TEXT': 'O Tudo ou Nada concede 10 giros grátis com 1 símbolo expansível selecionado aleatoriamente. O multiplicador começa em 2x e dobra apenas nos giros vencedores, criando pequenos ganhos iniciais e uma caça ao ganho máximo nos giros finais.',
 	'RULE BUY TITLE': 'MODOS COMPRAR / ATIVAR',
-	'RULE BUY TEXT': 'O custo de compra do Distribui é 100x a aposta. O custo de compra do Tudo ou Nada é 400x a aposta. O Giro Chance custa 2x a aposta por rodada. O Giro Recurso custa 20x a aposta por rodada. O ganho máximo é 25,000x. O RTP alvo é 96.1%.',
+	'RULE BUY TEXT': 'O custo de compra do Distribui é 100x a aposta. O custo de compra do Tudo ou Nada é 400x a aposta. O Giro Chance custa 2x a aposta por rodada. O Giro Recurso custa 20x a aposta por rodada. O ganho máximo é 25,000x. O RTP alvo é 96.11%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'SÍMBOLO PREMIUM SELECIONADO',
 	'FEATURE SELECTED SYMBOL TEXT': 'Qualquer símbolo pagante regular pode ser o símbolo expansível. Quando ele aparece, todos os rolos afetados se expandem para preencher aquele símbolo, e 3 ou mais rolos pagam mesmo sem conexões adjacentes.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'MULTIPLICADORES DISTRIBUI',
@@ -105,19 +105,19 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'O Wild substitui todos os símbolos pagantes regulares. O Scatter não paga sozinho e apenas aciona os recursos de bônus.',
 	'PAYTABLE BUY_TEXT': 'Distribui: 100x a aposta.\nTudo ou Nada: 400x a aposta.\nGiro Chance: 2x a aposta por rodada.\nGiro Recurso: 20x a aposta por rodada.\nDistribui e Tudo ou Nada exigem confirmação antes do início da rodada.',
 	'PAYTABLE MAX_TEXT': 'O ganho máximo anunciado é 25,000x a aposta selecionada.',
-	'DISCLAIMER TEXT': 'Mau funcionamento anula todos os ganhos e jogadas. É necessária uma conexão de internet estável. Em caso de desconexão, recarregue o jogo para concluir quaisquer rodadas não finalizadas. O retorno esperado é calculado ao longo de muitas jogadas. A exibição do jogo não representa nenhum dispositivo físico e é apenas para fins ilustrativos. Os ganhos são liquidados de acordo com o valor recebido do Servidor de Jogo Remoto e não a partir de eventos dentro do navegador web. TM e © 2026 Stake Engine.',
+	'DISCLAIMER TEXT': 'Mau funcionamento anula todos os ganhos e jogadas. É necessária uma conexão de internet estável. Em caso de desconexão, recarregue o jogo para concluir quaisquer rodadas não finalizadas. O retorno esperado é calculado ao longo de muitas jogadas. A exibição do jogo não representa nenhum dispositivo físico e é apenas para fins ilustrativos. Os ganhos são liquidados de acordo com o valor recebido do Servidor de Jogo Remoto e não a partir de eventos dentro do navegador web. TM e © 2025 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'VISÃO GERAL',
 	'INFO OVERVIEW BODY':
-		'Forest Gang é um vídeo slot 5x4 jogado em 20 linhas de pagamento.\nOs ganhos são concedidos da esquerda para a direita em rolos consecutivos, começando pelo rolo 1, quando símbolos correspondentes aparecem em uma linha de pagamento ativa.\nO jogo inclui 5 símbolos premium, 5 símbolos baixos, um símbolo Wild e um símbolo Scatter.\n\nO potencial de ganho máximo é 25,000x a aposta total.\n\nRTP teórico: 96.1%',
+		'Forest Gang é um vídeo slot 5x4 jogado em 20 linhas de pagamento.\nOs ganhos são concedidos da esquerda para a direita em rolos consecutivos, começando pelo rolo 1, quando símbolos correspondentes aparecem em uma linha de pagamento ativa.\nO jogo inclui 5 símbolos premium, 5 símbolos baixos, um símbolo Wild e um símbolo Scatter.\n\nO potencial de ganho máximo é 25,000x a aposta total.\n\nRTP teórico: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'ROLOS',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': 'LINHAS',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': 'GANHO MÁX',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': 'RECURSOS',
 	'INFO EXPANDING TITLE': 'SÍMBOLO EXPANSÍVEL',
@@ -126,11 +126,11 @@ export default {
 	'INFO DEAL IT TITLE': 'BÔNUS DISTRIBUI',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
-		'Acionado por 3 símbolos Scatter.\n\nConcede 10 giros grátis. Antes do início do bônus, um símbolo expansível aleatório é selecionado. Durante o bônus, o símbolo selecionado pode se expandir para cobrir o rolo inteiro.\n\nUm multiplicador aleatório pode ser aplicado a qualquer giro vencedor, até 100x.',
+		'Acionado por 3 símbolos Scatter.\n\nConcede 10 giros grátis. Antes do início do bônus, um símbolo expansível aleatório é selecionado. Durante o bônus, o símbolo selecionado pode se expandir para cobrir o rolo inteiro.\n\nUm multiplicador aleatório pode ser aplicado a qualquer giro vencedor, até 100x.\n\nA rodada bônus pode ser reativada da seguinte forma:\n[[3 Scatters]] +3 rodadas\n[[4 Scatters]] +5 rodadas\n[[5 Scatters]] +8 rodadas',
 	'INFO ALL IN TITLE': 'BÔNUS TUDO OU NADA',
 	'INFO ALL IN HL': '4 Scatter',
 	'INFO ALL IN TEXT':
-		'Acionado por 4 símbolos Scatter e concede 10 giros grátis.\n\nAntes do início do bônus, um símbolo expansível aleatório é selecionado. Durante o bônus, o símbolo selecionado pode se expandir para cobrir o rolo inteiro. Os multiplicadores de rolo permanecem ativos durante todo o bônus e dobram a cada ganho qualificado, começando em 2x.',
+		'Acionado por 4 símbolos Scatter e concede 10 giros grátis.\n\nAntes do início do bônus, um símbolo expansível aleatório é selecionado. Durante o bônus, o símbolo selecionado pode se expandir para cobrir o rolo inteiro. Os multiplicadores de rolo permanecem ativos durante todo o bônus e dobram a cada ganho qualificado, começando em 2x.\n\nA rodada bônus pode ser reativada da seguinte forma:\n[[3 Scatters]] +3 rodadas\n[[4 Scatters]] +5 rodadas\n[[5 Scatters]] +8 rodadas',
 	'INFO PLACEHOLDER BODY': 'Design em breve.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': 'TABELA DE PAGAMENTOS',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': 'Concede o Bônus Tudo ou Nada instantaneamente.',
 	'INFO BUY COST': 'CUSTO',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "RTP base 96.11%",
 	'INFO BUY CHANCE_LABEL': 'CHANCE DE BÔNUS',
 	'INFO BUY CHANCE_VALUE': '3x CHANCE',
 	// General info page
@@ -170,7 +171,7 @@ export default {
 		'Se uma rodada do jogo for interrompida, ela continuará quando o jogo for recarregado, sempre que possível.\n\nTodas as apostas válidas e ganhos potenciais permanecem ativos até que a rodada seja totalmente concluída.',
 	'INFO LEGAL TITLE': 'AVISO LEGAL',
 	'INFO LEGAL TEXT':
-		'Mau funcionamento anula todos os pagamentos e jogadas. É necessária uma conexão de internet estável. Se a conexão for perdida, recarregue o jogo para concluir quaisquer rodadas não finalizadas.\n\nO retorno esperado é calculado ao longo de um grande número de jogadas. A exibição do jogo é apenas para fins visuais e de entretenimento e não representa nenhum dispositivo físico de jogo.\n\nTodos os ganhos são liquidados de acordo com o resultado recebido do Servidor de Jogo Remoto, e não a partir de animações ou eventos exibidos dentro do navegador web.\n\nTM and © 2026 Stake Engine.',
+		'Mau funcionamento anula todos os pagamentos e jogadas. É necessária uma conexão de internet estável. Se a conexão for perdida, recarregue o jogo para concluir quaisquer rodadas não finalizadas.\n\nO retorno esperado é calculado ao longo de um grande número de jogadas. A exibição do jogo é apenas para fins visuais e de entretenimento e não representa nenhum dispositivo físico de jogo.\n\nTodos os ganhos são liquidados de acordo com o resultado recebido do Servidor de Jogo Remoto, e não a partir de animações ou eventos exibidos dentro do navegador web.\n\nTM and © 2025 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'ROLOS\nEXPANSÍVEIS',
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': 'torne-se o rei da\nfloresta com',
 	'SPLASH EPIC BOTTOM': 'GANHO MÁXIMO',
 	'SPLASH PRESS': 'PRESSIONE PARA CONTINUAR',
+	'PRESS ANYWHERE': 'TOQUE EM QUALQUER LUGAR PARA CONTINUAR',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': 'PARABÉNS!',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': 'GIRO AUTO',
 	'TURBO SPIN': 'GIRO TURBO',
 	'SUPER TURBO SPIN': 'GIRO SUPER TURBO',
-	'BONUS FEATURE 100X': 'RECURSO BÔNUS 100 X',
+	'BONUS FEATURE 100X': 'RECURSO BÔNUS 20 X',
 	'NUMBER OF SPINS': 'NÚMERO DE GIROS',
 	'START AUTOPLAY': 'INICIAR AUTOMÁTICO',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': 'Você tem um bônus %mode% ativo em andamento.',
 	'END ROUND': 'TERMINAR RODADA',
 	'PLAY ROUND': 'JOGAR RODADA',
+	'INFO UI TITLE': 'GUIA DA INTERFACE',
+	'INFO UI SPIN TITLE': 'GIRAR',
+	'INFO UI SPIN TEXT': 'Inicia uma nova rodada.',
+	'INFO UI AUTO TITLE': 'GIROS AUTO',
+	'INFO UI AUTO TEXT': 'Abre o menu de giros automáticos.',
+	'INFO UI TURBO TITLE': 'TURBO',
+	'INFO UI TURBO TEXT': 'Ativa giros mais rápidos.',
+	'INFO UI BETPLUS TITLE': 'APOSTA +',
+	'INFO UI BETPLUS TEXT': 'Aumenta sua aposta total.',
+	'INFO UI BETMINUS TITLE': 'APOSTA -',
+	'INFO UI BETMINUS TEXT': 'Diminui sua aposta total.',
+	'INFO UI INFO TITLE': 'INFO',
+	'INFO UI INFO TEXT': 'Abre as informações do jogo.',
+	'INFO UI SOUND TITLE': 'SOM',
+	'INFO UI SOUND TEXT': 'Liga ou desliga o som do jogo.',
+	'INFO UI PREV TITLE': 'ANTERIOR',
+	'INFO UI PREV TEXT': 'Vai para a página anterior.',
+	'INFO UI NEXT TITLE': 'PRÓXIMA',
+	'INFO UI NEXT TEXT': 'Vai para a próxima página.',
+	'INFO UI CLOSE TITLE': 'FECHAR',
+	'INFO UI CLOSE TEXT': 'Fecha a janela atual.',
 };

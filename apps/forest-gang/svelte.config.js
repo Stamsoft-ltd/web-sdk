@@ -1,4 +1,3 @@
-// @ts-ignore
 import config from 'config-svelte';
 
 const base = config();
@@ -6,9 +5,11 @@ const base = config();
 // Wrap the adapter to force-exit after writing completes.
 // PixiJS/Spine import browser globals that keep the Node.js event loop
 // alive indefinitely after the SSR build — process.exit is the only fix.
-const baseAdapter = base.kit.adapter;
+const baseAdapter = base.kit?.adapter;
+if (!baseAdapter) throw new Error('config-svelte must provide kit.adapter');
 const exitAdapter = {
 	name: baseAdapter.name,
+	/** @param {import('@sveltejs/kit').Builder} builder */
 	async adapt(builder) {
 		await baseAdapter.adapt(builder);
 		process.exit(0);

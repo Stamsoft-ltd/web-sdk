@@ -1,7 +1,11 @@
 <script lang="ts">
-	import { FillGradient } from 'pixi.js';
+	import { onMount } from 'svelte';
+	import { Tween } from 'svelte/motion';
+	import { backOut, cubicOut } from 'svelte/easing';
+
+	import { FillGradient } from 'pixi-svelte';
 	import { Sprite, Container, Text } from 'pixi-svelte';
-	import { MainContainer } from 'components-layout';
+	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
 
 	import { getContext } from '../game/context';
 
@@ -40,10 +44,30 @@
 	let amountNatW = $state(0);
 	const amountMaxW = $derived(imgW * 0.3);
 	const amountScale = $derived(amountNatW > 0 ? Math.min(1, amountMaxW / amountNatW) : 1);
+
+	// ── Entrance (R14) ────────────────────────────────────────────────────────────────────────
+	// Crossing 25,000× used to swap this component in for the LEGENDARY board inside an already
+	// visible container — a hard cut with no choreography at all. This component only ever mounts
+	// on that crossing, so its mount IS the transition: a one-shot white flash covers the swap and
+	// the art overshoots up to size behind it as the flash decays.
+	const enter = new Tween(0);
+	const flash = new Tween(1);
+	onMount(() => {
+		enter.set(1, { duration: 520, easing: backOut });
+		flash.set(0, { duration: 420, easing: cubicOut });
+	});
+	// backOut takes `enter` slightly past 1, so the art settles back from a small overshoot.
+	const enterScale = $derived(0.72 + 0.28 * enter.current);
+	const enterAlpha = $derived(Math.min(1, enter.current * 2.5));
 </script>
 
 <MainContainer>
-	<Container x={main.width / 2} y={main.height * 0.46} scale={breatheScale}>
+	<Container
+		x={main.width / 2}
+		y={main.height * 0.46}
+		scale={breatheScale * enterScale}
+		alpha={enterAlpha}
+	>
 		<Sprite key="maxWinScreen" anchor={0.5} width={imgW} height={imgH} />
 
 		<Container x={(BOX_CX - 0.5) * imgW} y={(BOX_CY - 0.5) * imgH} scale={amountScale}>
@@ -63,3 +87,9 @@
 		</Container>
 	</Container>
 </MainContainer>
+
+<!-- Drawn last so it sits over the art (and, for its first frame, over the LEGENDARY board being
+     removed) — the swap happens behind the flash instead of in plain sight. -->
+{#if flash.current > 0.01}
+	<CanvasSizeRectangle backgroundColor={0xffffff} backgroundAlpha={flash.current * 0.85} />
+{/if}

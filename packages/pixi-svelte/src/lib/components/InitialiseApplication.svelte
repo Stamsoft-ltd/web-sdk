@@ -6,7 +6,23 @@
 	import { getContextApp } from '../context.svelte';
 	import { preloadFont } from '../utils.svelte';
 
-	type Props = { children: Snippet };
+	type Props = {
+		children: Snippet;
+		// Loads the shared Typekit kit before the app initialises. Defaults ON for backwards
+		// compatibility, but games that self-host their fonts should pass false: the kit is an
+		// EXTERNAL runtime request (blocked on hosts like Stake Engine), and awaiting it here
+		// stalls app startup until the web-font loader times out.
+		preloadWebFont?: boolean;
+		// Renderer tuning — all optional and defaulting to the historical values, so existing games
+		// are unaffected. Games target Safari/low-end devices by opting in:
+		//  - maxResolution: cap the render-target DPR (Safari retina is 2–3×; uncapped renders up to
+		//    9× the pixels → the dominant fragment-shader cost). e.g. 2.
+		//  - antialias: MSAA is expensive on Safari; sprite-based games can disable it safely.
+		//  - rendererPreference: 'webgl' avoids Pixi's less-mature WebGPU path (buggy on Safari 18).
+		maxResolution?: number;
+		antialias?: boolean;
+		rendererPreference?: 'webgpu' | 'webgl';
+	};
 
 	const props: Props = $props();
 	const context = getContextApp();
@@ -17,31 +33,36 @@
 	const initialiseApplication = async () => {
 		PIXI.Assets.reset();
 
-		await preloadFont();
-		context.stateApp.pixiApplication = new PIXI.Application<PIXI.Renderer<HTMLCanvasElement>>();
-		await context.stateApp.pixiApplication.init({
+		if (props.preloadWebFont ?? true) await preloadFont();
+		// Work on a LOCAL reference and publish to state only when fully initialised: the parent
+		// App component's onMount calls stateApp.reset() AFTER this child onMount starts (Svelte
+		// mounts children first), so a state-held reference can be nulled mid-`init()` await.
+		const app = new PIXI.Application<PIXI.Renderer<HTMLCanvasElement>>();
+		await app.init({
 			autoDensity: true,
 			backgroundAlpha: 0,
 			hello: true,
 			multiView: false,
-			antialias: true,
+			antialias: props.antialias ?? true,
 			clearBeforeRender: true,
-			preference: 'webgpu',
+			preference: props.rendererPreference ?? 'webgpu',
 			powerPreference: 'high-performance',
-			resolution: devicePixelRatio.current,
+			resolution: Math.min(devicePixelRatio.current, props.maxResolution ?? Infinity),
 			resizeTo: wrap,
 		});
 
-		context.stateApp.pixiApplication.stage.sortableChildren = true;
+		app.stage.sortableChildren = true;
 
-		wrap.appendChild(context.stateApp.pixiApplication.canvas);
-		context.stateApp.pixiApplication.canvas.style.display = 'block';
-		context.stateApp.pixiApplication.canvas.style.width = '100%';
-		context.stateApp.pixiApplication.canvas.style.height = '100%';
+		wrap.appendChild(app.canvas);
+		app.canvas.style.display = 'block';
+		app.canvas.style.width = '100%';
+		app.canvas.style.height = '100%';
 
 		// to prevent that you can't scroll the page with touch on the canvas. https://github.com/pixijs/pixijs/issues/4824
-		context.stateApp.pixiApplication.renderer.events.autoPreventDefault = false;
-		context.stateApp.pixiApplication.renderer.canvas.style.touchAction = 'auto';
+		app.renderer.events.autoPreventDefault = false;
+		app.renderer.canvas.style.touchAction = 'auto';
+
+		context.stateApp.pixiApplication = app;
 	};
 
 	onMount(async () => {
