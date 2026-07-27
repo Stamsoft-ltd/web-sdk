@@ -22,7 +22,8 @@
 		"config-storybook": "workspace:*",
 		"chromatic": "11.26.1",
 		"@storybook/addon-svelte-csf": "5.0.5",
-		"@sveltejs/vite-plugin-svelte": "5.0.3"
+		"@sveltejs/vite-plugin-svelte": "5.0.3",
+		"@types/howler": "2.2.12"
 	},
 	"dependencies": {
 		"lodash": "4.17.16",
@@ -50,6 +51,7 @@
 		"utils-bet": "workspace:*",
 		"utils-layout": "workspace:*",
 		"utils-sound": "workspace:*",
-		"pixi-filters": "6.1.0"
+		"pixi-filters": "6.1.0",
+		"howler": "2.2.4"
 	}
 }

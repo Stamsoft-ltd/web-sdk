@@ -98,7 +98,7 @@
 
 	// Horizontal bar centred at the top of the portrait area, above the board.
 	const CY = $derived(main.height * 0.186);
-	// magnetic_tube.png is 2004×1336 (fully transparent, see-through interior).
+	// magnetic_tube.webp is 2004×1336 (fully transparent, see-through interior).
 	const TUBE_ASPECT = 2004 / 1336;
 	// New animated tesla tube (mp4 → keyed flipbook, lightning baked in). The old glass sprite was only
 	// ~94% wide × ~43% tall opaque within its box, so draw the (trimmed) animation at those fractions to

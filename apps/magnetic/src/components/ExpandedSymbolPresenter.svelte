@@ -20,7 +20,7 @@
 
 	const context = getContext();
 
-	// deer_presenter.png is 792×670; the empty board the deer holds has its
+	// deer_presenter.webp is 792×670; the empty board the deer holds has its
 	// interior centred at (0.494, 0.654) of the image, roughly 0.34×0.20 in size.
 	const DEER_RATIO = 792 / 670;
 	const PLACEHOLDER = { cx: 0.494, cy: 0.654, h: 0.18 };

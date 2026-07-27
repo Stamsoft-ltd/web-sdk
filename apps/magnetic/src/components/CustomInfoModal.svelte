@@ -9,62 +9,66 @@
 	// Game description / rules popup — Magnetic Megachain. Multi-page (arrows below). All copy is
 	// localized via the i18n keys ('INFO …'); numeric values stay as constants here.
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	const logo = ap('/assets/components/ui/magnetic_logo.png');
+	const logo = ap('/assets/components/ui/magnetic_logo.webp');
 	// Finished art (designer exports): overview hero composite, popup frame, reels-grid box element,
 	// and the sci-fi value box used behind the small stat cards.
-	const heroImg = ap('/assets/components/ui/info_hero.png');
-	const panelImg = ap('/assets/components/ui/info_panel.png');
-	const boxGrid = ap('/assets/components/ui/info_box_grid.png');
-	const icCluster = ap('/assets/components/ui/info_ic_cluster.png');
-	const icTrophy = ap('/assets/components/ui/info_ic_trophy.png');
-	const icRtp = ap('/assets/components/ui/info_ic_rtp.png');
-	const valueBox = ap('/assets/components/navbar/value_box_mobile.png');
+	const heroImg = ap('/assets/components/ui/info_hero.webp');
+	const panelImg = ap('/assets/components/ui/info_panel.webp');
+	const boxGrid = ap('/assets/components/ui/info_box_grid.webp');
+	const icCluster = ap('/assets/components/ui/info_ic_cluster.webp');
+	const icTrophy = ap('/assets/components/ui/info_ic_trophy.webp');
+	const icRtp = ap('/assets/components/ui/info_ic_rtp.webp');
+	const valueBox = ap('/assets/components/navbar/value_box_mobile.webp');
 	// Real pager arrow buttons (circle + arrow, cyan→blue ring) with disabled variants.
-	const arrowLeft = ap('/assets/components/ui/info_arrow_left.png');
-	const arrowLeftOff = ap('/assets/components/ui/info_arrow_left_off.png');
-	const arrowRight = ap('/assets/components/ui/info_arrow_right.png');
-	const arrowRightOff = ap('/assets/components/ui/info_arrow_right_off.png');
+	const arrowLeft = ap('/assets/components/ui/info_arrow_left.webp');
+	const arrowLeftOff = ap('/assets/components/ui/info_arrow_left_off.webp');
+	const arrowRight = ap('/assets/components/ui/info_arrow_right.webp');
+	const arrowRightOff = ap('/assets/components/ui/info_arrow_right_off.webp');
 
 	// ── Paytable (page 2) — symbol art in rank order (highest → lowest) with the pay bands from
 	// config.ts (H1→L4). Column headers are the connected-cluster sizes. ──
 	const sym = (p: string) => ap(`/assets/components/symbols/magnetic/${p}`);
 	const PAY_COLS = ['5', '6', '7', '8', '9', '10+', '12+', '15+', '20+', '25+', '30+', '33+'];
 	const payRows = [
-		{ img: sym('premium/horseshoe.png'), v: ['0.5x', '1x', '2x', '4x', '8x', '15x', '30x', '75x', '200x', '500x', '1000x', '2000x'] },
-		{ img: sym('premium/plasma_drill.png'), v: ['0.4x', '0.8x', '1.5x', '3x', '6x', '12x', '25x', '60x', '150x', '350x', '750x', '1500x'] },
-		{ img: sym('premium/magnetic_core_cube.png'), v: ['0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '20x', '45x', '120x', '275x', '600x', '1200x'] },
-		{ img: sym('premium/electromagnetic_device.png'), v: ['0.2x', '0.5x', '1x', '2x', '4x', '8x', '15x', '35x', '90x', '200x', '450x', '900x'] },
-		{ img: sym('low/bolt.png'), v: ['0.15x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '25x', '60x', '125x', '250x', '500x'] },
-		{ img: sym('low/nut.png'), v: ['0.12x', '0.25x', '0.5x', '1x', '2x', '4x', '8x', '20x', '50x', '100x', '200x', '400x'] },
-		{ img: sym('low/washer.png'), v: ['0.1x', '0.2x', '0.4x', '0.8x', '1.6x', '3x', '6x', '15x', '40x', '80x', '150x', '300x'] },
-		{ img: sym('low/energy_screw.png'), v: ['0.08x', '0.1x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '12x', '30x', '60x', '120x', '250x'] },
+		{ img: sym('premium/horseshoe.webp'), v: ['0.5x', '1x', '2x', '4x', '8x', '15x', '30x', '75x', '200x', '500x', '1000x', '2000x'] },
+		{ img: sym('premium/plasma_drill.webp'), v: ['0.4x', '0.8x', '1.5x', '3x', '6x', '12x', '25x', '60x', '150x', '350x', '750x', '1500x'] },
+		{ img: sym('premium/magnetic_core_cube.webp'), v: ['0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '20x', '45x', '120x', '275x', '600x', '1200x'] },
+		{ img: sym('premium/electromagnetic_device.webp'), v: ['0.2x', '0.5x', '1x', '2x', '4x', '8x', '15x', '35x', '90x', '200x', '450x', '900x'] },
+		{ img: sym('low/bolt.webp'), v: ['0.15x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '25x', '60x', '125x', '250x', '500x'] },
+		{ img: sym('low/nut.webp'), v: ['0.12x', '0.25x', '0.5x', '1x', '2x', '4x', '8x', '20x', '50x', '100x', '200x', '400x'] },
+		{ img: sym('low/washer.webp'), v: ['0.1x', '0.2x', '0.4x', '0.8x', '1.6x', '3x', '6x', '15x', '40x', '80x', '150x', '300x'] },
+		{ img: sym('low/energy_screw.webp'), v: ['0.08x', '0.1x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '12x', '30x', '60x', '120x', '250x'] },
 	];
-	const wild = sym('special/wild.png');
-	const wildX10 = sym('special/wild_x10.png');
-	const scatter = sym('special/scatter.png');
+	const wild = sym('special/wild.webp');
+	const wildX10 = sym('special/wild_x10.webp');
+	const scatter = sym('special/scatter.webp');
 
 	// Cluster-win illustration (page 4): finished WIN / NO WIN grid art (label baked in).
-	const winImg = ap('/assets/components/ui/info_win.png');
-	const noWinImg = ap('/assets/components/ui/info_nowin.png');
+	const winImg = ap('/assets/components/ui/info_win.webp');
+	const noWinImg = ap('/assets/components/ui/info_nowin.webp');
 	// General-info icons (page 6).
-	const icRotate = ap('/assets/components/ui/info_ic_rotate.png');
-	const icLegal = ap('/assets/components/ui/info_ic_legal.png');
+	const icRotate = ap('/assets/components/ui/info_ic_rotate.webp');
+	const icLegal = ap('/assets/components/ui/info_ic_legal.webp');
+	// Page 6 card frames (designer boxes): narrow one behind the interrupted-rounds card, wide one
+	// behind the (larger) legal-notice card.
+	const giBoxInterrupted = ap('/assets/components/ui/info_box_interrupted.webp');
+	const giBoxLegal = ap('/assets/components/ui/info_box_legal.webp');
 
 	// Game controls (page 7) — the finished round-button icon set (designer export), in file order.
 	// name/desc are i18n keys, translated reactively in the template.
 	const controls = [
-		{ img: ap('/assets/components/ui/ctrl_spin.png'), nameKey: 'INFO CTRL SPIN', descKey: 'INFO CTRL SPIN DESC', big: true },
-		{ img: ap('/assets/components/ui/ctrl_auto.png'), nameKey: 'INFO CTRL AUTO', descKey: 'INFO CTRL AUTO DESC' },
-		{ img: ap('/assets/components/ui/ctrl_turbo.png'), nameKey: 'INFO CTRL TURBO', descKey: 'INFO CTRL TURBO DESC' },
-		{ img: ap('/assets/components/ui/ctrl_plus.png'), nameKey: 'INFO CTRL PLUS', descKey: 'INFO CTRL PLUS DESC' },
-		{ img: ap('/assets/components/ui/ctrl_minus.png'), nameKey: 'INFO CTRL MINUS', descKey: 'INFO CTRL MINUS DESC' },
-		{ img: ap('/assets/components/ui/ctrl_info.png'), nameKey: 'INFO CTRL INFO', descKey: 'INFO CTRL INFO DESC' },
-		{ img: ap('/assets/components/ui/ctrl_sound.png'), nameKey: 'INFO CTRL SOUND', descKey: 'INFO CTRL SOUND DESC' },
-		{ img: ap('/assets/components/ui/ctrl_arrow_left.png'), nameKey: 'INFO CTRL PREV', descKey: 'INFO CTRL PREV DESC' },
-		{ img: ap('/assets/components/ui/ctrl_arrow_right.png'), nameKey: 'INFO CTRL NEXT', descKey: 'INFO CTRL NEXT DESC' },
-		{ img: ap('/assets/components/ui/ctrl_close.png'), nameKey: 'INFO CTRL CLOSE', descKey: 'INFO CTRL CLOSE DESC' },
-		{ img: ap('/assets/components/ui/ctrl_menu.png'), nameKey: 'INFO CTRL MENU', descKey: 'INFO CTRL MENU DESC' },
-		{ img: ap('/assets/components/ui/ctrl_music.png'), nameKey: 'INFO CTRL MUSIC', descKey: 'INFO CTRL MUSIC DESC' },
+		{ img: ap('/assets/components/ui/ctrl_spin.webp'), nameKey: 'INFO CTRL SPIN', descKey: 'INFO CTRL SPIN DESC', big: true },
+		{ img: ap('/assets/components/ui/ctrl_auto.webp'), nameKey: 'INFO CTRL AUTO', descKey: 'INFO CTRL AUTO DESC' },
+		{ img: ap('/assets/components/ui/ctrl_turbo.webp'), nameKey: 'INFO CTRL TURBO', descKey: 'INFO CTRL TURBO DESC' },
+		{ img: ap('/assets/components/ui/ctrl_plus.webp'), nameKey: 'INFO CTRL PLUS', descKey: 'INFO CTRL PLUS DESC' },
+		{ img: ap('/assets/components/ui/ctrl_minus.webp'), nameKey: 'INFO CTRL MINUS', descKey: 'INFO CTRL MINUS DESC' },
+		{ img: ap('/assets/components/ui/ctrl_info.webp'), nameKey: 'INFO CTRL INFO', descKey: 'INFO CTRL INFO DESC' },
+		{ img: ap('/assets/components/ui/ctrl_sound.webp'), nameKey: 'INFO CTRL SOUND', descKey: 'INFO CTRL SOUND DESC' },
+		{ img: ap('/assets/components/ui/ctrl_arrow_left.webp'), nameKey: 'INFO CTRL PREV', descKey: 'INFO CTRL PREV DESC' },
+		{ img: ap('/assets/components/ui/ctrl_arrow_right.webp'), nameKey: 'INFO CTRL NEXT', descKey: 'INFO CTRL NEXT DESC' },
+		{ img: ap('/assets/components/ui/ctrl_close.webp'), nameKey: 'INFO CTRL CLOSE', descKey: 'INFO CTRL CLOSE DESC' },
+		{ img: ap('/assets/components/ui/ctrl_menu.webp'), nameKey: 'INFO CTRL MENU', descKey: 'INFO CTRL MENU DESC' },
+		{ img: ap('/assets/components/ui/ctrl_music.webp'), nameKey: 'INFO CTRL MUSIC', descKey: 'INFO CTRL MUSIC DESC' },
 	];
 
 	type Props = { onclose: () => void };
@@ -95,7 +99,7 @@
 <button class="info-backdrop" type="button" aria-label="Close" tabindex="-1" onclick={props.onclose}
 ></button>
 
-<div class="info-overlay" style={`--panel-img:url(${panelImg})`}>
+<div class="info-overlay" style={`--panel-img:url(${panelImg});--gi-box-sm:url(${giBoxInterrupted});--gi-box-lg:url(${giBoxLegal})`}>
 	<div class="info-panel" role="dialog" aria-modal="true">
 		<!-- Stage wrapper: transparent (display:contents) at normal sizes; on small landscape it becomes a
 		     fixed-size, scaled-to-fit canvas so the whole layout zooms down as one unit. -->
@@ -246,14 +250,18 @@
 					<h2 class="page-title">{t('INFO GENERAL INFO')}</h2>
 					<div class="gi-grid">
 						<div class="card gi-card">
-							<span class="gi-ic"><img src={icRotate} alt="" /></span>
-							<h3 class="feat-h">{t('INFO GI INTERRUPTED TITLE')}</h3>
+							<div class="gi-head">
+								<span class="gi-ic"><img src={icRotate} alt="" /></span>
+								<h3 class="feat-h">{t('INFO GI INTERRUPTED TITLE')}</h3>
+							</div>
 							<p class="feat-p">{t('INFO GI INTERRUPTED 1')}</p>
 							<p class="feat-p">{t('INFO GI INTERRUPTED 2')}</p>
 						</div>
 						<div class="card gi-card gi-wide">
-							<span class="gi-ic gi-ic--legal"><img src={icLegal} alt="" /></span>
-							<h3 class="feat-h">{t('INFO GI LEGAL TITLE')}</h3>
+							<div class="gi-head">
+								<span class="gi-ic gi-ic--legal"><img src={icLegal} alt="" /></span>
+								<h3 class="feat-h">{t('INFO GI LEGAL TITLE')}</h3>
+							</div>
 							<p class="feat-p">{t('INFO GI LEGAL 1')}</p>
 							<p class="feat-p">{t('INFO GI LEGAL 2')}</p>
 							<p class="feat-p">{t('INFO GI LEGAL 3')}</p>
@@ -500,7 +508,7 @@
 		/* Elongated (matches the horizontal value-box art) so the icon + text fit on one line. */
 		min-height: clamp(62px, 14.4cqmin, 138px);
 		padding: clamp(8px, 1.9cqmin, 20px) clamp(6px, 1.5cqmin, 15px);
-		/* Real sci-fi value box art behind each stat (value_box_mobile.png). */
+		/* Real sci-fi value box art behind each stat (value_box_mobile.webp). */
 		background-image: var(--box-img);
 		background-size: 100% 100%;
 		background-repeat: no-repeat;
@@ -830,13 +838,21 @@
 		gap: clamp(8px, 1.7cqmin, 20px);
 	}
 	.fb-grid .feat-card {
-		gap: clamp(4px, 1.1cqmin, 11px);
-		/* Longer translations must not push the card content past the pager. */
+		/* Centre the whole group with even gaps (the base card spreads it with margin-top:auto, which
+		   left a huge void in the middle and pushed the RTP off the bottom). */
+		justify-content: center;
+		gap: clamp(6px, 1.4cqmin, 13px);
 		overflow: hidden;
 	}
-	/* Page 5 (Feature Buy): a touch larger than the base cards, but compact enough for long languages. */
+	.fb-grid .feat-ic,
+	.fb-grid .feat-trigger,
+	.fb-grid .fb-meta:first-of-type {
+		margin-top: 0;
+	}
+	/* Page 5 (Feature Buy): a bit larger than before, but the group must still fit (the card height is
+	   fixed), so keep it modest and centred. */
 	.fb-grid .feat-h {
-		font-size: clamp(15px, 3cqmin, 28px);
+		font-size: clamp(15px, 3cqmin, 29px);
 		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
 		-webkit-background-clip: text;
 		background-clip: text;
@@ -844,16 +860,16 @@
 		color: transparent;
 	}
 	.fb-grid .feat-p {
-		font-size: clamp(11px, 2.1cqmin, 18px);
+		font-size: clamp(11px, 2.2cqmin, 19px);
 	}
 	.fb-grid .feat-ic {
-		width: clamp(54px, 10.5cqmin, 104px);
+		width: clamp(54px, 10.5cqmin, 102px);
 	}
 	.fb-grid .feat-trigger img {
-		width: clamp(48px, 9cqmin, 90px);
+		width: clamp(50px, 9.2cqmin, 90px);
 	}
 	.fb-grid .feat-x {
-		font-size: clamp(22px, 4.6cqmin, 46px);
+		font-size: clamp(24px, 5cqmin, 50px);
 	}
 	.fb-meta {
 		display: flex;
@@ -865,7 +881,7 @@
 		margin-top: auto;
 	}
 	.fb-k {
-		font-size: clamp(10px, 1.8cqmin, 16px);
+		font-size: clamp(11px, 2cqmin, 18px);
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
@@ -875,7 +891,7 @@
 		color: transparent;
 	}
 	.fb-v {
-		font-size: clamp(12px, 2.4cqmin, 21px);
+		font-size: clamp(13px, 2.7cqmin, 24px);
 		font-weight: 800;
 		color: #eaf3ff;
 	}
@@ -896,9 +912,27 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		justify-content: center;
 		text-align: center;
-		padding: clamp(10px, 2cqmin, 22px) clamp(12px, 2.6cqmin, 32px);
+		/* Designer frame box as the card background (narrow one here, wide one for .gi-wide). Replaces
+		   the default .card gradient/border; extra inset keeps the content off the frame's edge. */
+		background: var(--gi-box-sm) center / 100% 100% no-repeat;
+		border: none;
+		box-shadow: none;
+		border-radius: 0;
+		padding: clamp(18px, 3.4cqmin, 40px) clamp(20px, 3.8cqmin, 44px);
 		gap: clamp(6px, 1.2cqmin, 12px);
+	}
+	.gi-wide {
+		background: var(--gi-box-lg) center / 100% 100% no-repeat;
+	}
+	/* Icon + title header — a centred column on desktop (icon above title); becomes an inline row on
+	   mobile (see the portrait query). */
+	.gi-head {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: clamp(4px, 1cqmin, 10px);
 	}
 	.gi-ic {
 		width: clamp(48px, 9.5cqmin, 96px);
@@ -1035,10 +1069,102 @@
 			/* Establish a container so the stage can measure the panel's content box (100cqw/100cqh). */
 			container-type: size;
 			overflow: hidden;
-			/* Thinner frame + tighter inset so the scaled canvas gets as much room as possible. */
-			border-width: clamp(8px, 2.6cqmin, 40px);
-			padding: clamp(4px, 1.4cqmin, 20px) clamp(6px, 1.8cqmin, 24px);
+			/* Rounded cyan-glow border to match the mobile design (not the metallic corner-bracket frame). */
+			border-image: none;
+			border: clamp(2px, 0.6cqmin, 3px) solid rgba(74, 198, 255, 0.9);
+			border-radius: clamp(12px, 3cqmin, 22px);
+			box-shadow:
+				0 0 16px rgba(0, 178, 255, 0.5),
+				0 0 3px rgba(120, 220, 255, 0.9),
+				inset 0 0 22px rgba(20, 90, 190, 0.22);
+			filter: none;
+			padding: clamp(8px, 2.2cqmin, 26px) clamp(10px, 2.6cqmin, 30px);
 		}
+		/* Page 1: drop the logo + stat banner boxes (design shows a clean overview). */
+		.ov-logo,
+		.ov-stats {
+			display: none;
+		}
+		/* Pages 3 & 5: frame-box image as the card border (matches the design + the portrait cards). */
+		.feat-card {
+			background: var(--gi-box-lg) center / 100% 100% no-repeat;
+			border: none;
+			box-shadow: none;
+			border-radius: 0;
+		}
+
+		/* ── Landscape readability boosts ── the fixed 850×472 canvas leaves the fluid content sitting near
+		   its px floors, so enlarge each page's text/art (and rebalance spacing) per the design review. */
+		/* Bigger section title on every landscape page (pages 2–7 use .page-title; page 1 uses .ov-title). */
+		.page-title { font-size: 36px; }
+		/* Page 1 — Overview: larger title, copy and hero ring. */
+		.ov-left { gap: 14px; }
+		.ov-title { font-size: 46px; }
+		.ov-text { font-size: 19px; line-height: 1.45; }
+		.ov-maxwin { font-size: 19px; }
+		.ov-maxwin span { font-size: 30px; }
+		.ov-hero { width: min(106%, 360px); top: 54%; }
+
+		/* Page 2 — Paytable: enlarge the right-hand Multiplier-Wild panel text. Widen the aside and keep the
+		   sizes moderate so its content stays shorter than the table (else the grid row grows and clips). */
+		.pt { grid-template-columns: 1fr 185px; }
+		.pt-side { gap: 7px; padding: 16px 14px; }
+		.pt-side-title { font-size: 18px; }
+		.pt-side-h { font-size: 13px; }
+		.pt-side-v { font-size: 14px; }
+
+		/* Page 3 — Features: slightly larger text/art with roomier gaps. */
+		.feat-grid { gap: 16px; }
+		.feat-grid .feat-card { gap: 16px; padding: 16px; }
+		.feat-grid .feat-col-small .feat-card { gap: 5px; padding: 12px 14px; }
+		.feat-grid .feat-h { font-size: 20px; }
+		.feat-grid .feat-p { font-size: 15px; }
+		/* The Multiplier Wild card (small left column) has the most copy — a touch smaller so it sits easy. */
+		.feat-grid .feat-col-small .feat-p { font-size: 13px; }
+		.feat-grid .feat-ic { width: 96px; }
+		.feat-grid .feat-col-small .feat-ic { width: 70px; }
+		.feat-grid .feat-trigger img { width: 86px; }
+		.feat-grid .feat-x { font-size: 42px; }
+
+		/* Page 4 — Cluster win: much larger copy; stack the WIN / NO-WIN grids in a column. Extra left inset
+		   on the copy; tighter gap between the stacked grids so each image can grow taller. */
+		.cw { grid-template-columns: 1.05fr 1fr; }
+		.cw-text { gap: 13px; padding-left: 24px; }
+		.cw-text p { font-size: 20px; line-height: 1.45; }
+		.cw-grids { flex-direction: column; gap: 8px; }
+		.cw-img { max-width: 96%; max-height: 182px; }
+
+		/* Page 5 — Feature buy: everything bigger (the cards have spare height). */
+		.fb-sub { font-size: 15px; }
+		.fb-grid { gap: 16px; }
+		/* Spread each card's rows top-to-bottom (title → text → icon → COST → RTP) to fill the card height.
+		   Padding/gap kept tight and the Extra-Feature wild icon modest so the longest card's RTP still fits. */
+		.fb-grid .feat-card { gap: 8px; padding: 14px; justify-content: space-between; }
+		.fb-grid .feat-h { font-size: 22px; }
+		.fb-grid .feat-p { font-size: 15px; }
+		.fb-grid .feat-ic { width: 62px; }
+		.fb-grid .feat-trigger img { width: 66px; }
+		.fb-grid .feat-x { font-size: 34px; }
+		.fb-k { font-size: 16px; }
+		.fb-v { font-size: 20px; }
+
+		/* Page 6 — General info: bigger icons, more card padding, larger gaps between stacked elements. */
+		.gi-card { padding: 30px 34px; gap: 18px; }
+		.gi-head { gap: 12px; }
+		.gi-ic { width: 74px; height: 74px; }
+		.gi-ic--legal { width: 82px; height: 82px; }
+		.gi-grid .feat-h { font-size: 19px; }
+		.gi-card .feat-p { font-size: 12.5px; line-height: 1.4; }
+
+		/* Page 7 — UI guide: larger icons and labels. Anchor the grid to the TOP (start) so the taller
+		   title can never overlap the first row; a small padding-top keeps a clean gap below the title. */
+		.ctrl-grid { gap: 11px 12px; align-content: start; padding-top: 6px; }
+		.ctrl { gap: 4px; padding: 3px; }
+		.ctrl-ic { width: 47px; height: 47px; }
+		.ctrl-ic--lg { width: 55px; height: 55px; }
+		.ctrl-name { font-size: 15px; margin-top: 6px; }
+		.ctrl-desc { font-size: 11.5px; }
+
 		/* The close button sits outside the (scaled-down) panel, so shrink it to match the small screen. */
 		.info-close {
 			width: clamp(22px, 4.4cqmin, 34px);
@@ -1069,7 +1195,32 @@
 	@container (aspect-ratio < 0.95) {
 		.info-panel {
 			width: min(540px, 94cqw);
-			height: min(880px, 92cqh);
+			/* A touch shorter so the screen-corner close button sits ABOVE the panel, not over the cards. */
+			height: min(820px, 84cqh);
+			/* Mobile design: a clean rounded cyan-glow border instead of the metallic corner-bracket
+			   frame. */
+			border-image: none;
+			border: clamp(2px, 0.55cqmin, 3px) solid rgba(74, 198, 255, 0.9);
+			border-radius: clamp(16px, 4cqmin, 26px);
+			padding: clamp(18px, 4.4cqmin, 34px) clamp(16px, 4cqmin, 30px) clamp(60px, 12cqmin, 78px);
+			box-shadow:
+				0 0 18px rgba(0, 178, 255, 0.5),
+				0 0 3px rgba(120, 220, 255, 0.9),
+				inset 0 0 26px rgba(20, 90, 190, 0.25);
+			filter: none;
+		}
+		/* Pager fixed to the panel bottom (design shows the arrows + page counter pinned, not scrolling
+		   with the content). The panel reserves bottom padding above for it. */
+		.info-pager {
+			position: absolute;
+			left: clamp(16px, 4cqmin, 30px);
+			right: clamp(16px, 4cqmin, 30px);
+			bottom: clamp(16px, 3.6cqmin, 26px);
+			padding-top: 0;
+			margin: 0;
+		}
+		.pg-num {
+			right: 0;
 		}
 		/* The body is the scroll viewport; the pager stays pinned below it. */
 		.info-body {
@@ -1111,14 +1262,12 @@
 		.ov-right {
 			min-height: clamp(170px, 38cqh, 340px);
 		}
+		/* Mobile design: drop the logo and the metallic stat banner boxes for a cleaner page. */
 		.ov-logo {
-			width: clamp(104px, 34cqmin, 200px);
+			display: none;
 		}
-		/* Stat boxes stack into one column (each a full-width horizontal box). */
 		.ov-stats {
-			grid-template-columns: 1fr;
-			margin-inline: 0;
-			gap: clamp(6px, 1.4cqh, 12px);
+			display: none;
 		}
 		.stat {
 			flex-direction: row;
@@ -1169,21 +1318,146 @@
 			grid-template-columns: 1fr;
 			gap: clamp(14px, 3.5cqh, 34px);
 		}
-		/* Stack the WIN / NO WIN art too, each large. */
+		/* WIN / NO WIN art side by side in one row. */
 		.cw-grids {
-			flex-direction: column;
-			gap: clamp(12px, 3cqh, 26px);
+			flex-direction: row;
+			justify-content: center;
+			align-items: flex-start;
+			gap: clamp(8px, 2.2cqmin, 18px);
 		}
 		.cw-img {
-			max-height: clamp(200px, 42cqh, 320px);
-			max-width: 82%;
+			max-height: clamp(150px, 34cqh, 300px);
+			max-width: 48%;
 		}
-		/* Controls: two per row in portrait (five is only for wide/landscape screens). */
+		/* Page 7 (UI guide): single-column left-aligned list — icon on the left, name + description on
+		   the right. */
 		.ctrl-grid {
-			grid-template-columns: repeat(2, 1fr);
+			grid-template-columns: 1fr;
+			gap: clamp(12px, 2.8cqh, 22px);
 		}
+		.ctrl {
+			display: grid;
+			grid-template-columns: auto 1fr;
+			grid-template-rows: auto auto;
+			column-gap: clamp(12px, 3.4cqmin, 20px);
+			row-gap: 2px;
+			align-items: center;
+			text-align: left;
+		}
+		.ctrl-ic {
+			grid-column: 1;
+			grid-row: 1 / 3;
+			align-self: center;
+			width: clamp(50px, 13cqmin, 68px);
+		}
+		.ctrl-ic--lg {
+			width: clamp(54px, 14cqmin, 72px);
+		}
+		.ctrl-name {
+			grid-column: 2;
+			grid-row: 1;
+			text-align: left;
+			font-size: clamp(16px, 4.2cqmin, 25px);
+		}
+		.ctrl-desc {
+			grid-column: 2;
+			grid-row: 2;
+			text-align: left;
+			font-size: clamp(13px, 3.3cqmin, 19px);
+		}
+
+		/* Page 6 (general info): inline icon + title headers, no box frames, stacked. */
 		.gi-grid {
 			grid-template-columns: 1fr;
+			gap: clamp(14px, 3.4cqh, 28px);
+		}
+		.gi-card {
+			background: none;
+			border: none;
+			box-shadow: none;
+			border-radius: 0;
+			padding: clamp(2px, 1cqmin, 10px) 0;
+			gap: clamp(6px, 1.6cqmin, 12px);
+		}
+		.gi-head {
+			flex-direction: row;
+			justify-content: center;
+			align-items: center;
+			gap: clamp(8px, 2.4cqmin, 14px);
+		}
+		.gi-head .gi-ic,
+		.gi-head .gi-ic--legal {
+			width: clamp(36px, 9cqmin, 54px);
+			height: clamp(36px, 9cqmin, 54px);
+		}
+		.gi-grid .feat-h {
+			font-size: clamp(20px, 5cqmin, 30px);
+		}
+		.gi-card .feat-p {
+			font-size: clamp(14px, 3.4cqmin, 20px);
+		}
+
+		/* Pages 3 & 5: use the frame-box image as the card border, with bigger icons + text. */
+		.feat-card {
+			background: var(--gi-box-lg) center / 100% 100% no-repeat;
+			border: none;
+			box-shadow: none;
+			border-radius: 0;
+			padding: clamp(16px, 4cqmin, 30px) clamp(18px, 4.4cqmin, 34px);
+		}
+		.feat-grid .feat-h,
+		.fb-grid .feat-h {
+			font-size: clamp(19px, 4.7cqmin, 30px);
+		}
+		.feat-grid .feat-p,
+		.fb-grid .feat-p {
+			font-size: clamp(14px, 3.5cqmin, 21px);
+		}
+		.feat-grid .feat-ic,
+		.fb-grid .feat-ic {
+			width: clamp(84px, 21cqmin, 138px);
+		}
+		.feat-grid .feat-trigger img,
+		.fb-grid .feat-trigger img {
+			width: clamp(74px, 18cqmin, 120px);
+		}
+		.feat-grid .feat-x,
+		.fb-grid .feat-x {
+			font-size: clamp(34px, 8.4cqmin, 62px);
+		}
+		.fb-grid .fb-k {
+			font-size: clamp(13px, 3.1cqmin, 20px);
+		}
+		.fb-grid .fb-v {
+			font-size: clamp(16px, 3.9cqmin, 26px);
+		}
+		.fb-sub {
+			font-size: clamp(13px, 3.1cqmin, 18px);
+		}
+
+		/* Page 2 paytable: bigger table + bigger 'Multiplier Wild Values' card text. Give the value
+		   boxes more room — tighten the spacing between cells, narrow the symbol column, and make each
+		   cell taller so the value fits comfortably. */
+		.pt-table {
+			font-size: clamp(9px, 2.1cqmin, 15px);
+			border-spacing: clamp(1px, 0.35cqmin, 3px);
+		}
+		.pt-table th,
+		.pt-table td {
+			padding: clamp(4px, 1.3cqmin, 9px) 1px;
+		}
+		.pt-table td.pt-sym,
+		.pt-table th.pt-rank {
+			width: clamp(28px, 8%, 42px);
+		}
+		.pt-side-title {
+			font-size: clamp(17px, 4.4cqmin, 26px);
+		}
+		.pt-side-h {
+			font-size: clamp(13px, 3.3cqmin, 19px);
+		}
+		.pt-side-v {
+			font-size: clamp(14px, 3.7cqmin, 22px);
 		}
 	}
 </style>

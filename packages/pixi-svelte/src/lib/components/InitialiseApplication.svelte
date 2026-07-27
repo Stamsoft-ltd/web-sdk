@@ -47,7 +47,7 @@
 			clearBeforeRender: true,
 			preference: props.rendererPreference ?? 'webgpu',
 			powerPreference: 'high-performance',
-			resolution: Math.min(devicePixelRatio.current, props.maxResolution ?? Infinity),
+			resolution: Math.min(devicePixelRatio.current || 1, props.maxResolution ?? Infinity),
 			resizeTo: wrap,
 		});
 

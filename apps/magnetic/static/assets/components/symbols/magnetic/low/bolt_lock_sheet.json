@@ -508,7 +508,7 @@
  "meta": {
   "app": "claude",
   "version": "1.0",
-  "image": "bolt_lock_sheet.png?v=20260710",
+  "image": "bolt_lock_sheet.webp?v=20260710",
   "format": "RGBA8888",
   "size": {
    "w": 1680,

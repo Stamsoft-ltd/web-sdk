@@ -62,8 +62,8 @@
 		}
 	});
 	// Rotation flipbooks for locked (stacked) symbols, keyed by the RESOLVED sprite asset key —
-	// NOT the symbol name (the art file names don't match their contents: nut.png is the gold
-	// washer, bolt.png the green bolt). Add entries here as more frame sets arrive.
+	// NOT the symbol name (the art file names don't match their contents: nut.webp is the gold
+	// washer, bolt.webp the green bolt). Add entries here as more frame sets arrive.
 	const LOCK_SHEETS: Record<string, string> = {
 		aTile: 'washerLockSheet',
 		aWinTile: 'washerLockSheet',

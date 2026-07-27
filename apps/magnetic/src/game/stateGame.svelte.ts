@@ -82,6 +82,26 @@ const getSkipMinSpinMs = () => {
 	return SKIP_MIN_SPIN_MS_NORMAL;
 };
 
+// Paid/free-spin reveal: the 7x7 result falls in as one board instead of seven
+// independently rolling reels. Columns/rows are only micro-staggered so the
+// complete board lands within one visual beat.
+const DROP_MOTION_NORMAL = {
+	startRows: 4.5,
+	durationMs: 520,
+	reelDelayMs: 8,
+	rowDelayMs: 4,
+} as const;
+
+const DROP_MOTION_FAST = {
+	startRows: 4,
+	durationMs: 130,
+	reelDelayMs: 4,
+	rowDelayMs: 2,
+} as const;
+
+let activeDropToken = 0;
+let dropInProgress = false;
+
 // ── cell helpers ──────────────────────────────────────────────────────────────
 
 import { Tween } from 'svelte/motion';
@@ -164,7 +184,7 @@ const getBoardViewportPadding = () => {
 	if (layoutType === 'portrait') return { top: 10, right: 10, bottom: 170, left: 10 };
 	if (layoutType === 'landscape') return { top: 10, right: 20, bottom: 34, left: 12 };
 	if (layoutType === 'tablet') return { top: 24, right: 28, bottom: 100, left: 28 };
-	return { top: 110, right: 230, bottom: 170, left: 210 };
+	return { top: 110, right: 230, bottom: 245, left: 210 };
 };
 
 const getBoardViewportMetrics = () => {
@@ -185,7 +205,7 @@ const getBoardViewportMetrics = () => {
 const getBoardScale = () => {
 	const { mainLayout, availableCanvasHeight, availableCanvasWidth } = getBoardViewportMetrics();
 	return Math.max(
-		0.74,
+		0.53,
 		Math.min(
 			availableCanvasHeight / (BOARD_SIZES.height * (mainLayout.scale || 1)),
 			availableCanvasWidth / (BOARD_SIZES.width * (mainLayout.scale || 1)),
@@ -237,7 +257,7 @@ const LANDSCAPE_CAPSULE_BIAS_MIN = 0.24;
 const LANDSCAPE_CAPSULE_BIAS_MAX = 0.33;
 const landscapeCapsuleBias = () =>
 	LANDSCAPE_CAPSULE_BIAS_MIN + landscapeSizeT() * (LANDSCAPE_CAPSULE_BIAS_MAX - LANDSCAPE_CAPSULE_BIAS_MIN);
-// The landscape capsule is the portrait glass tube (magnetic_tube.png, 1002×668) rotated to vertical.
+// The landscape capsule is the portrait glass tube (magnetic_tube.webp, 1002×668) rotated to vertical.
 // The art has ~29% transparent margins top/bottom (→ left/right after the 90° rotation): the opaque
 // tube is only ~42.5% of the sprite's width and ~94% of its height, so the *visible* tube is a slim
 // vertical cylinder. RATIO scales the whole sprite (bigger = bigger visible tube); STRETCH keeps the
@@ -281,14 +301,18 @@ const boardLayout = () => {
 		};
 	}
 
-	const boardScale = getBoardScale() * 0.92;
-	// Grid centre Y = a small margin below the top of the game area + half the grid height, so the
-	// board sits near the top (just under the logo) instead of the old wooden-frame-derived Y that
-	// sank/clipped it once the cells were widened.
-	const TOP_MARGIN = mainLayout.height * 0.03;
+	// Very slightly smaller than before (was 0.92) so its bottom-right corner clears the nav on short
+	// screens; combined with centring below.
+	const boardScale = getBoardScale() * 0.9;
+	// Centre the grid in the padded region (top padding sits below the logo, bottom padding above the
+	// HUD) instead of top-anchoring it, then ease it slightly DOWN — the full bottom reserve pulled it
+	// too close to the top on short laptops (e.g. 1024×576).
+	const pad = getBoardViewportPadding();
+	const mainScale = mainLayout.scale || 1;
+	const boardY = mainLayout.height * 0.5 + (pad.top - pad.bottom + 25) / (2 * mainScale);
 	return {
 		x: mainLayout.width * 0.5 + getBoardOffset().x,
-		y: TOP_MARGIN + (BOARD_SIZES.height * boardScale) / 2,
+		y: boardY,
 		boardScale,
 		anchor: { x: 0.5, y: 0.5 },
 		pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
@@ -321,7 +345,8 @@ const landscapeCapsuleLayout = () => {
 	const canvasTopY = main.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1));
 	// Anchor the FULL sprite box (not just the visible glass) below the screen top, so the tube's
 	// top cap art is never clipped — the capsule starts near the top but stays fully on screen.
-	let tubeY = canvasTopY + main.height * 0.02 + tubeH * 0.5;
+	// The 0.07 top-gap sits the capsule (and the WIN pill tracking its visible bottom) a bit lower.
+	let tubeY = canvasTopY + main.height * 0.07 + tubeH * 0.5;
 	const symSize = visibleW * 0.66;
 	let visibleBottom = tubeY + visibleH * 0.5;
 	// On very short landscape screens (e.g. 400×225) the board — and this board-derived tube — shrinks,
@@ -332,7 +357,11 @@ const landscapeCapsuleLayout = () => {
 	if (canvasPxH <= 320) {
 		const canvasBottomY = main.height * 0.5 + canvasPxH / (2 * (main.scale || 1));
 		const buyReserve = visibleW * 1.2; // gap + buy-bonus button + bottom margin (virtual units)
-		const shift = Math.max(0, canvasBottomY - visibleBottom - buyReserve);
+		const fullShift = Math.max(0, canvasBottomY - visibleBottom - buyReserve);
+		// Don't pin the group all the way to the bottom — nudge the capsule (and, tracking it, the
+		// buy-bonus) UP by a fraction of the viewport so it sits a bit higher with balanced margin.
+		const upNudge = (canvasPxH / (main.scale || 1)) * 0.14;
+		const shift = Math.max(0, fullShift - upNudge);
 		tubeY += shift;
 		visibleBottom += shift;
 	}
@@ -819,6 +848,8 @@ const settleBoardInstant = ({
 	series?: ClusterSeriesSnapshot[];
 	magnetTargetSymbol?: PaySymbolName | null;
 }) => {
+	activeDropToken += 1;
+	dropInProgress = false;
 	for (let ri = 0; ri < BOARD_DIMENSIONS.x; ri++) {
 		for (let rowi = 0; rowi < BOARD_DIMENSIONS.y; rowi++) {
 			const cell = stateGame.board[ri][rowi];
@@ -843,73 +874,65 @@ const settleBoardInstant = ({
 	stateGame.boardMode = 'settle';
 };
 
-// ── spin animation (createReelForSpinning) ────────────────────────────────────
+// ── near-simultaneous board-drop reveal ───────────────────────────────────────
 
 const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
-	stateGame.boardMode = 'spin';
-	reelSpinStartedAt = [];
-	skipStopScheduledReels.clear();
+	const token = ++activeDropToken;
+	dropInProgress = true;
+	stateGame.boardMode = 'settle';
+	const fast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
+	const motion = fast ? DROP_MOTION_FAST : DROP_MOTION_NORMAL;
+	const fallingCells: Array<{ cell: BoardCell; raw: RawSymbol; delayMs: number }> = [];
 
-	const isFastMode = stateBet.isTurbo || stateBet.isSuperTurbo;
-	const isSuperTurbo = stateBet.isSuperTurbo;
-	const waitForReelDelay = async (durationMs: number, reelIndex: number) => {
-		const stepMs = 20;
-		for (let elapsed = 0; elapsed < durationMs; elapsed += stepMs) {
-			if (stateGame.forceFastAnimations) {
-				const targetTime = skipCascadeStartedAt + SKIP_REEL_DELAY_MS * reelIndex;
-				const remainingMs = Math.max(0, targetTime - performance.now());
-				if (remainingMs > 0) await waitForTimeout(remainingMs);
-				return;
-			}
-			await waitForTimeout(Math.min(stepMs, durationMs - elapsed));
-		}
-	};
-
-	// Prepare all reels — accumulate paddingSize across reels (forest-gang pattern)
-	stateGame.spinBoard.reduce((prevPaddingSize, reel, ri) => {
-		const symbols = makeSpinSymbols(rawBoard[ri]);
-		const paddingReel = makeSpinSymbols(INITIAL_BOARD[ri]);
-		const spinType = isFastMode ? 'fast' : 'normal';
-		const paddingSize = reel.prepareToSpin({
-			noStop: false,
-			spinType,
-			symbols,
-			paddingReel,
-			paddingPosition: 0,
-			previousPaddingSize: prevPaddingSize,
-			onSpinFinishing: () => reel.onReelStopping(),
-		});
-		return paddingSize;
-	}, 0);
-
-	// Spin each reel with cascading delay (reels land left-to-right)
-	const opts = stateGame.spinBoard[0].reelState.spinOptions();
-	await Promise.all(
-		stateGame.spinBoard.map(async (reel, ri) => {
-			if (!isSuperTurbo && ri > 0) await waitForReelDelay(opts.reelSpinDelay * ri, ri);
-			const spinPromise = reel.spin();
-			reelSpinStartedAt[ri] = performance.now();
-			if (stateGame.forceFastAnimations) void stopReelAfterSkipWindow(reel, ri);
-			await spinPromise;
-		}),
-	);
-
-	// Copy final symbols into the board cells and switch to settle mode.
-	// Locked cells (superspin carry) keep their cluster symbol — skip them entirely.
+	// Swap to the result above the mask. Persistent super cells remain fixed while
+	// every unlocked result cell enters from the same shallow overhead plane.
 	for (let ri = 0; ri < BOARD_DIMENSIONS.x; ri++) {
 		for (let rowi = 0; rowi < BOARD_DIMENSIONS.y; rowi++) {
 			const cell = stateGame.board[ri][rowi];
 			if (cell.locked) continue;
-			updateCellRaw(cell, rawBoard[ri][rowi]);
-			cell.displayY.set(getTargetY(rowi), { duration: 0 });
+			const raw = rawBoard[ri][rowi];
+			updateCellRaw(cell, raw);
+			cell.displayY.set(getTargetY(rowi) - motion.startRows * SYMBOL_H, { duration: 0 });
 			cell.displayAlpha.set(1, { duration: 0 });
 			cell.displayScale.set(1, { duration: 0 });
 			cell.displayX.set(0, { duration: 0 });
+			cell.highlighted = false;
+			cell.fresh = false;
 			cell.pulling = false;
-			cell.symbolState = 'land';
+			cell.symbolState = 'static';
+			fallingCells.push({
+				cell,
+				raw,
+				delayMs: ri * motion.reelDelayMs + rowi * motion.rowDelayMs,
+			});
 		}
 	}
-	stateGame.boardMode = 'settle';
+
+	await Promise.all(
+		fallingCells.map(async ({ cell, raw, delayMs }) => {
+			if (delayMs > 0) await waitForTimeout(delayMs);
+			if (token !== activeDropToken) return;
+			await cell.displayY.set(getTargetY(cell.position.row), {
+				duration: motion.durationMs,
+				easing: backOut,
+			});
+			if (token !== activeDropToken) return;
+			cell.symbolState = 'land';
+			playLandSound(raw);
+		}),
+	);
+
+	if (token === activeDropToken) {
+		eventEmitter.broadcast({
+			type: 'soundOnce',
+			name: 'sfx_reel_stop_1',
+			forcePlay: !stateBet.isTurbo && !stateBet.isSuperTurbo,
+		});
+	}
+	for (let ri = 0; ri < BOARD_DIMENSIONS.x; ri++) {
+		stateGame.spinBoard[ri].setSymbolsWithRawSymbols(makeSpinSymbols(rawBoard[ri]));
+	}
+	dropInProgress = false;
 	stateGame.forceFastAnimations = false;
 	skipCascadeStartedAt = 0;
 	reelSpinStartedAt = [];
@@ -1077,6 +1100,9 @@ const applyReveal = async ({
 
 const beginSpin = () => {
 	resetBonusState();
+	// Magnetic uses the whole-board drop presenter. Never expose the legacy
+	// rolling reel layer, including after HMR/resume left stale view state.
+	stateGame.boardMode = 'settle';
 	stateGame.boardSpinning = true;
 	stateGame.nextRevealMode = 'spin';
 	stateGame.respinIndicator = false;
@@ -1089,6 +1115,19 @@ const markNextRevealAsSpin = () => {
 };
 
 const speedUpMotion = () => {
+	if (dropInProgress) {
+		stateGame.forceFastAnimations = true;
+		activeDropToken += 1;
+		for (const reel of stateGame.board) {
+			for (const cell of reel) {
+				if (cell.locked) continue;
+				cell.displayY.set(getTargetY(cell.position.row), { duration: 0 });
+				cell.symbolState = 'land';
+			}
+		}
+		dropInProgress = false;
+		return;
+	}
 	if (stateGame.boardMode !== 'spin') return;
 	stateGame.forceFastAnimations = true;
 	if (!skipCascadeStartedAt) skipCascadeStartedAt = performance.now();

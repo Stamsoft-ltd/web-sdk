@@ -37,23 +37,17 @@
 
 	const context = getContext();
 
-	// The free-spins intro popup lives in the canvas, so its dark backdrop can't reach the HTML
-	// navigation (which sits above the canvas). Mirror the intro's show/hide here to dim the nav too.
-	let fsIntroActive = $state(false);
-	context.eventEmitter.subscribeOnMount({
-		freeSpinIntroShow: () => (fsIntroActive = true),
-		freeSpinIntroHide: () => (fsIntroActive = false),
-	});
-
 	// Splash intro overlay: shown once assets have loaded, dismissed on first press. The loading
 	// screen defers its `proceed` callback to us via `oncanproceed` so nothing starts until pressed.
 	let splashIntroVisible = $state(false);
 	let splashPressHandler = $state<(() => void) | undefined>(undefined);
-	const heroArt = './assets/components/backgrounds/visual_v2.png';
+	const heroArt = './assets/components/backgrounds/visual_v2.webp';
 	const bonusArt = './assets/components/backgrounds/splash.jpg';
-	const scatterArt = './assets/components/symbols/scatter.png';
-	const uiRefArt = './assets/components/ui/scatter-panel-image.png';
-	const paytableArt = './assets/components/backgrounds/visual_v2.png';
+	const scatterArt = './assets/components/symbols/scatter.webp';
+	const uiRefArt = './assets/components/ui/scatter-panel-image.webp';
+	const paytableArt = './assets/components/backgrounds/visual_v2.webp';
+	const isTouchDevice =
+		typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches === true;
 	const heroArtBackdrop = new URL(
 		'../../static/assets/components/backgrounds/splash_intro.jpg',
 		import.meta.url,
@@ -300,7 +294,7 @@
 	style={`--magnetic-shell-bg:url('${heroArtBackdrop}')`}
 >
 	<div class="magnetic-stage">
-		<App>
+		<App maxResolution={2} antialias={!isTouchDevice}>
 			<EnableSound />
 			<EnableHotkey />
 			<EnableGameActor />
@@ -359,9 +353,6 @@
 
 		{#if !context.stateLayout.showLoadingScreen}
 			<HudHtml />
-			{#if fsIntroActive}
-				<div class="fs-nav-shadow" transition:fade={{ duration: 250 }} aria-hidden="true"></div>
-			{/if}
 			<ReplayHud />
 			<PendingRoundRecovery />
 		{/if}
@@ -409,17 +400,5 @@
 		width: 100%;
 		height: 100%;
 		z-index: 1;
-	}
-	/* Dark shelf over the HTML navigation while the free-spins intro popup is up, so the popup's
-	   backdrop appears to cover the nav too. Sits above the HUD (z-index 20); visual only. */
-	.fs-nav-shadow {
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		height: 160px;
-		background: rgba(0, 0, 0, 0.6);
-		z-index: 21;
-		pointer-events: none;
 	}
 </style>
