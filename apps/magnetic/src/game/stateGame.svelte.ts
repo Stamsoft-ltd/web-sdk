@@ -925,7 +925,7 @@ const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
 	if (token === activeDropToken) {
 		eventEmitter.broadcast({
 			type: 'soundOnce',
-			name: 'sfx_reel_stop_1',
+			name: 'mag_ui_007',
 			forcePlay: !stateBet.isTurbo && !stateBet.isSuperTurbo,
 		});
 	}

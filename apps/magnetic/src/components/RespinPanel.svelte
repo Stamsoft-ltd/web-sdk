@@ -2,7 +2,7 @@
 	import { Container, Sprite, Text } from 'pixi-svelte';
 	import { FadeContainer } from 'components-pixi';
 	import { MainContainer } from 'components-layout';
-	import { FillGradient } from 'pixi.js';
+	import { FillGradient } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';

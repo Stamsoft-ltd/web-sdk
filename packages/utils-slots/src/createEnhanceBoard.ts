@@ -14,7 +14,12 @@ export function createEnhanceBoard() {
 				reel.setSymbolsWithRawSymbols(rawSymbols);
 			});
 		const stop = () => board.forEach((reel) => reel.stop());
-		const forceStop = () => board.forEach((reel) => reel.forceStop?.() ?? reel.stop());
+		const forceStop = () =>
+			board.forEach((reel) => {
+				const force = (reel as { forceStop?: () => void }).forceStop;
+				if (force) force();
+				else reel.stop();
+			});
 		const readyToSpinEffect = () => {
 			board.forEach((reel) => reel.readyToSpinEffect());
 		};

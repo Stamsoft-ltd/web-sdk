@@ -221,13 +221,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateGame.forceFastAnimations = false;
 			pendingMagnetActivationPositions = [];
 		}
-		if (bookEvent.persistent) {
-			eventEmitter.broadcast({ type: 'globalMultiplierShow' });
-			eventEmitter.broadcast({
-				type: 'globalMultiplierUpdate',
-				multiplier: bookEvent.totalMultiplier,
-			});
-		}
 	},
 	clusterSeriesUpdate: async (bookEvent: BookEventOfType<'clusterSeriesUpdate'>) => {
 		const activatedPositions = pendingMagnetActivationPositions;
@@ -243,13 +236,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			magnetTargetSymbol: bookEvent.magnetTargetSymbol,
 			totalMultiplier: bookEvent.totalMultiplier,
 		});
-		if (stateGame.bonusMode === 'superspin') {
-			eventEmitter.broadcast({ type: 'globalMultiplierShow' });
-			eventEmitter.broadcast({
-				type: 'globalMultiplierUpdate',
-				multiplier: bookEvent.totalMultiplier,
-			});
-		}
 	},
 	clusterSeriesResolved: async () => {
 		// marker event for replay readability; no extra UI step in proto build.
@@ -259,11 +245,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			series: bookEvent.series,
 			magnetTargetSymbol: bookEvent.magnetTargetSymbol,
 			totalMultiplier: bookEvent.totalMultiplier,
-		});
-		eventEmitter.broadcast({ type: 'globalMultiplierShow' });
-		eventEmitter.broadcast({
-			type: 'globalMultiplierUpdate',
-			multiplier: bookEvent.totalMultiplier,
 		});
 	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>, { bookEvents }: BookEventContext) => {
@@ -318,7 +299,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			});
 			stateUi.freeSpinCounterTotal = bookEvent.totalFs;
 		}
-		if (bonusMode === 'superspin') eventEmitter.broadcast({ type: 'globalMultiplierShow' });
 		if (!isFeatureSpin) {
 			await eventEmitter.broadcastAsync({ type: 'uiShow' });
 			await eventEmitter.broadcastAsync({ type: 'drawerButtonShow' });
@@ -363,7 +343,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// The bonus/feature is over — back to basegame so the HUD re-enables Buy Bonus
 		// while idle and win music resolves to the base track.
 		stateGame.gameType = 'basegame';
-		eventEmitter.broadcast({ type: 'globalMultiplierHide' });
 		if (isFeatureSpin) {
 			stateGame.bonusMode = null;
 			stateUi.freeSpinCounterShow = false;

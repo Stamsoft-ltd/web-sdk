@@ -5,7 +5,7 @@
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
 	import { backOut, cubicOut } from 'svelte/easing';
-	import { FillGradient } from 'pixi.js';
+	import { FillGradient } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
 	import { AnimatedSprite, Container, Graphics, Sprite, Text, type LoadedSpriteSheet } from 'pixi-svelte';
 	import { stateBet } from 'state-shared';

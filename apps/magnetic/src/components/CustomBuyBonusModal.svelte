@@ -102,7 +102,11 @@
 		if (typeof next === 'number' && next !== betAmount) stateBetDerived.setBetAmount(next);
 	};
 
-	let confirmMode = $state<null | 'BONUS' | 'SUPER'>(null);
+	// FEATURE is here because Stake's checklist requires a confirmation step for any mode costing
+	// more than 2x a normal round, and Feature Spin costs 50x PER ROUND — it was previously a
+	// one-click toggle. Chance Spin is exactly 2x, which the rule does not cover, so it stays
+	// one-click. Deactivating never costs anything and never asks.
+	let confirmMode = $state<null | 'BONUS' | 'SUPER' | 'FEATURE'>(null);
 
 	const buyMode      = (mode: 'BONUS' | 'SUPER') => {
 		// If the machine isn't idle the 'bet' event would be dropped but the mode
@@ -110,12 +114,23 @@
 		if (!context.stateXstateDerived.isIdle()) { props.onclose(); return; }
 		stateBet.activeBetModeKey = mode; props.onclose(); context.eventEmitter.broadcast({ type: 'bet' });
 	};
-	const openConfirm  = (mode: 'BONUS' | 'SUPER') => { confirmMode = mode; };
+	const openConfirm  = (mode: 'BONUS' | 'SUPER' | 'FEATURE') => { confirmMode = mode; };
 	const closeConfirm = () => { confirmMode = null; };
 	const toggleActivateMode = (toggle: () => void) => { toggle(); props.onclose(); };
 
-	const confirmLabel = $derived(confirmMode === 'SUPER' ? 'MAGNETIC MEGA CHAIN' : 'DROP-O-MAGNET');
-	const confirmCost  = $derived(confirmMode === 'SUPER' ? superCost : bonusCost);
+	const confirmLabel = $derived(
+		confirmMode === 'SUPER' ? 'MAGNETIC MEGA CHAIN'
+		: confirmMode === 'FEATURE' ? t('BUY FEATURE SPINS TITLE')
+		: 'DROP-O-MAGNET',
+	);
+	const confirmCost = $derived(
+		confirmMode === 'SUPER' ? superCost : confirmMode === 'FEATURE' ? featureCost : bonusCost,
+	);
+	// FEATURE is an activation toggle, not a one-shot purchase, so its confirm runs the toggle.
+	const acceptConfirm = () => {
+		if (confirmMode === 'FEATURE') { closeConfirm(); toggleActivateMode(props.onToggleFeature); return; }
+		buyMode(confirmMode as 'BONUS' | 'SUPER');
+	};
 
 	onMount(() => {
 		const onKeyDown = (e: KeyboardEvent) => {
@@ -164,7 +179,7 @@
 				class="card-btn card-btn--activate"
 				class:card-btn--active={props.isFeatureActive}
 				type="button"
-				onclick={() => toggleActivateMode(props.onToggleFeature)}
+				onclick={() => (props.isFeatureActive ? toggleActivateMode(props.onToggleFeature) : openConfirm('FEATURE'))}
 			>{props.isFeatureActive ? t('DEACTIVATE') : t('ACTIVATE')}</button>
 		</div>
 
@@ -218,7 +233,7 @@
 				<div class="confirm-text">{tv('BUY CONFIRM', { name: confirmLabel, cost: confirmCost })}</div>
 				<div class="confirm-row">
 					<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}>{t('CANCEL')}</button>
-					<button class="confirm-btn confirm-btn--ok" type="button" onclick={() => buyMode(confirmMode!)}>{t('CONFIRM')}</button>
+					<button class="confirm-btn confirm-btn--ok" type="button" onclick={acceptConfirm}>{t('CONFIRM')}</button>
 				</div>
 			</div>
 		</div>

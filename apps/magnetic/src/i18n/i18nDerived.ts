@@ -12,7 +12,7 @@ export const i18nDerived = {
 	translateVars: (key: string, vars: Record<string, string | number>) =>
 		stateI18nDerived
 			.translate(key)
-			.replace(/%(\w+)%/g, (_m, name: string) => String(vars[name] ?? '')),
+			.replace(/%(\w+)%/g, (_m: string, name: string) => String(vars[name] ?? '')),
 	home: () => stateI18nDerived.translate('HOME'),
 	notTranslated: () => stateI18nDerived.translate('NOT TRANSLATED'),
 	gameTitle: () => stateI18nDerived.translate('GAME TITLE'),

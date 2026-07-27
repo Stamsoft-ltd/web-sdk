@@ -3,6 +3,7 @@
 	import { GlobalStyle } from 'components-ui-html';
 	import { Authenticate, LoaderStakeEngine, LoadI18n } from 'components-shared';
 	import Game from '../components/Game.svelte';
+	import SocialI18nSync from '../components/SocialI18nSync.svelte';
 	import { setContext } from '../game/context';
 	import { stateApp } from '../game/stateApp';
 
@@ -20,6 +21,9 @@
 <GlobalStyle>
 	<Authenticate>
 		<LoadI18n {messagesMap}>
+			<!-- Must sit INSIDE LoadI18n: it re-inits the catalogue with the social-casino overrides
+			     once the jurisdiction arrives, so it has to run after LoadI18n's own init. -->
+			<SocialI18nSync />
 			<Game />
 		</LoadI18n>
 	</Authenticate>

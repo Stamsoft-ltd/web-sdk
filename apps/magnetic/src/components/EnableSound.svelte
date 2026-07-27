@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
 	import type { LoadedAudio } from 'pixi-svelte';
 	import { stateSound } from 'state-shared';
 	import { Howler } from 'utils-sound';
@@ -34,10 +32,17 @@
 		}
 	});
 
-	onMount(() => {
-		const loadedAudio = $state.snapshot(
-			context.stateApp.loadedAssets['sound'],
-		) as LoadedAudio<SoundName>;
+	// The audio sprite is in the gating (counted) asset tier rather than `preload`, so it is NOT in
+	// loadedAssets at mount — reading it there produced `new Howl({ src: undefined })` and left
+	// `sound.players` undefined, which every soundPress*/soundOnce handler then threw on. Wait for
+	// the key instead, and load exactly once.
+	let audioLoaded = false;
+	$effect(() => {
+		const raw = context.stateApp.loadedAssets?.['sound'];
+		if (!raw || audioLoaded) return;
+		audioLoaded = true;
+
+		const loadedAudio = $state.snapshot(raw) as LoadedAudio<SoundName>;
 		const { destroy } = sound.load(loadedAudio);
 
 		// The volume $effects above first ran BEFORE this load created the players, and

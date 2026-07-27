@@ -1,4 +1,4 @@
-import { mergeMessagesMaps } from 'utils-shared/i18n';
+import { mergeMessagesMaps, type MessagesMap } from 'utils-shared/i18n';
 import { messagesMap as messagesMapUiPixi } from 'components-ui-pixi';
 import { messagesMap as messagesMapUiHtml } from 'components-ui-html';
 import { locales } from 'config-lingui';
@@ -31,10 +31,11 @@ const messagesMapGame = Object.fromEntries(
 	locales.map((locale) => [locale, { ...en, ...(localeMaps[locale] ?? {}) }]),
 );
 
-const merged = mergeMessagesMaps([messagesMapGame, messagesMapUiPixi, messagesMapUiHtml]) as Record<
-	string,
-	typeof en
->;
+const merged = mergeMessagesMaps([
+	messagesMapGame,
+	messagesMapUiPixi,
+	messagesMapUiHtml,
+]) as unknown as Record<string, typeof en>;
 
 // Any locale the launcher requests that we don't ship (e.g. `sv`, `no`) must fall back to full
 // English — otherwise Lingui returns the raw message KEY, leaving the modal showing identifiers.
@@ -43,6 +44,6 @@ const messagesMap = new Proxy(merged, {
 		typeof prop === 'string' && !(prop in target) && /^[a-z]{2}([-_][A-Za-z]+)?$/.test(prop)
 			? target.en
 			: target[prop as keyof typeof target],
-});
+}) as unknown as MessagesMap & Record<string, typeof en>;
 
 export default messagesMap;

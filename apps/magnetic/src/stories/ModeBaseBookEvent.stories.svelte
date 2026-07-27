@@ -40,9 +40,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.reveal,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -50,9 +50,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.setTotalWin,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -60,9 +60,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.freeSpinTrigger,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -70,9 +70,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.updateFreeSpin,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -80,9 +80,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.winInfo,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -90,9 +90,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.setWin,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -100,9 +100,9 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.freeSpinEnd,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />
 
 <Story
@@ -110,7 +110,7 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: events.finalWin,
-		action: async (data) => await playBookEvent(data, { bookEvents: [] }),
+		action: async (data) => await playBookEvent(data as any, { bookEvents: [] }),
 	})}
-	{template}
+	template={template as any}
 />

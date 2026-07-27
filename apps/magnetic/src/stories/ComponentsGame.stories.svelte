@@ -14,11 +14,9 @@
 		templateArgs,
 	} from 'components-storybook';
 
-	import { stateGame, stateGameDerived } from '../game/stateGame.svelte';
 	import Game from '../components/Game.svelte';
 	import { setContext } from '../game/context';
 	import { eventEmitter } from '../game/eventEmitter';
-	import config from '../game/config';
 
 	setContext();
 </script>
@@ -43,20 +41,6 @@
 </Story>
 
 <Story
-	name="preSpin"
-	args={templateArgs({
-		skipLoadingScreen: true,
-		data: {},
-		action: async () => {
-			await stateGameDerived.enhancedBoard.preSpin({
-				paddingBoard: config.paddingReels[stateGame.gameType],
-			});
-		},
-	})}
-	{template}
-/>
-
-<Story
 	name="emitterEvent: boardHide"
 	args={templateArgs({
 		skipLoadingScreen: true,
@@ -65,5 +49,5 @@
 			eventEmitter.broadcast({ type: 'boardHide' });
 		},
 	})}
-	{template}
+	template={template as any}
 />

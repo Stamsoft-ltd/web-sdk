@@ -1,4 +1,5 @@
 import https from 'node:https';
+import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -298,6 +299,14 @@ const server = https.createServer(
     send(res, 404, { error: 'not_found', path: url.pathname, game: game.slug });
   },
 );
+
+// Plain-HTTP twin on PORT+1 for automated/local testing — same handler, no cert dance.
+// Pair with rgs_url=localhost:8788 when the UI itself runs on insecure http (rgsFetcher then
+// talks http to localhost automatically).
+const HTTP_PORT = Number(process.env.HTTP_PORT || PORT + 1);
+http.createServer(server.listeners('request')[0]).listen(HTTP_PORT, HOST, () => {
+  console.log(`mock-rgs (no-TLS) http://localhost:${HTTP_PORT}`);
+});
 
 server.listen(PORT, HOST, () => {
   console.log(`mock-rgs https://localhost:${PORT}`);

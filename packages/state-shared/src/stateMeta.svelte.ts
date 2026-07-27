@@ -126,8 +126,8 @@ type GameRuleMeta = {
 	gameRules: GameRuleData[];
 	payTable: GameRuleData[];
 	splashScreen: GameRuleData[];
-	infoPages: GameInfoPage[];
-	infoAssets: GameInfoAssets;
+	infoPages?: GameInfoPage[];
+	infoAssets?: GameInfoAssets;
 };
 
 export const stateMeta = $state({

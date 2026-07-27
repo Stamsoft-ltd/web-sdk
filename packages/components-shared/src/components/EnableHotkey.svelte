@@ -10,7 +10,7 @@
 	const EXCLUDED_TAGS = ['input', 'textarea', 'select'];
 
 	const getValidElement = (e: KeyboardEvent) =>
-		!EXCLUDED_TAGS.includes(e?.target?.tagName?.toLowerCase());
+		!EXCLUDED_TAGS.includes((e?.target as HTMLElement | null)?.tagName?.toLowerCase() ?? '');
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (getValidElement(e)) {

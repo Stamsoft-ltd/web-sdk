@@ -23,6 +23,12 @@
 					: 'bgBase',
 	);
 	const aspect = $derived(isPortrait ? MOBILE_ASPECT : DESKTOP_ASPECT);
+	// This component mounts before the gating asset pass finishes (it sits outside the loading-screen
+	// branch in Game.svelte), and the portrait/landscape backgrounds are additionally deferred on the
+	// layout the session did not start in. Drawing a key that isn't in loadedAssets yet logs an error
+	// and paints an empty texture, so wait for it — the loading screen covers the stage meanwhile,
+	// and after a rotate the previous background simply holds until the deferred one lands.
+	const hasBg = $derived(!!context.stateApp.loadedAssets?.[bgKey]);
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 	const cover = $derived.by(() => {
 		const width = canvas.width;
@@ -37,14 +43,16 @@
 	});
 </script>
 
-<Sprite
-	key={bgKey}
-	x={canvas.width * 0.5}
-	y={canvas.height * 0.5}
-	anchor={0.5}
-	width={cover.width}
-	height={cover.height}
-	alpha={0.96}
-/>
+{#if hasBg}
+	<Sprite
+		key={bgKey}
+		x={canvas.width * 0.5}
+		y={canvas.height * 0.5}
+		anchor={0.5}
+		width={cover.width}
+		height={cover.height}
+		alpha={0.96}
+	/>
+{/if}
 <Rectangle {...canvas} backgroundColor={0x050407} alpha={0.2} zIndex={-2} />
 <Rectangle {...canvas} backgroundColor={0x000000} alpha={0.18} zIndex={-1} />

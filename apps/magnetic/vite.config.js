@@ -4,9 +4,10 @@ import { createRequire } from 'module';
 
 const base = config();
 
-// pixi.js and pixi-filters live in the workspace root's pnpm store (deps of pixi-svelte),
-// not directly in this app's node_modules — resolve them from the workspace root.
-const rootRequire = createRequire(new URL('../../package.json', import.meta.url));
+// pixi.js and pixi-filters are dependencies of pixi-svelte, not of this app or the workspace root
+// — resolve them from pixi-svelte itself. Resolving from the root only worked while pnpm happened
+// to hoist them there, and broke as soon as a clean install pruned them.
+const rootRequire = createRequire(new URL('../../packages/pixi-svelte/package.json', import.meta.url));
 
 export default {
 	...base,

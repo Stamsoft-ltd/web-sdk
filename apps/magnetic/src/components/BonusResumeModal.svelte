@@ -4,7 +4,7 @@
 
 	const t = (k: string) => i18nDerived.translate(k);
 
-	type Props = { onPlay: () => void; onEnd: () => Promise<void> };
+	type Props = { onPlay: () => void; onEnd: () => void | Promise<void> };
 	const props: Props = $props();
 
 	const panelBg = './assets/components/ui/confirm_panel.webp?v=20260708b';

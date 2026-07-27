@@ -3,12 +3,29 @@
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+		<!-- Fonts are SELF-HOSTED (static/fonts/web) — Stake Engine requires all assets to load from
+		     the game's own CDN paths with no external runtime requests. The previous Google Fonts and
+		     Typekit @imports rendered system-font fallbacks wherever external hosts are blocked, and
+		     the Typekit one was additionally awaited by pixi's InitialiseApplication, stalling app
+		     boot on a request that can never succeed there. See <App preloadWebFont={false}>. -->
+		<link rel="stylesheet" href="%sveltekit.assets%/fonts/web/fonts.css" />
 		<style>
-			/* External fonts — @import is non-blocking and fails silently when the host blocks external requests */
-			@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@400;600;700&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:ital,wght@0,600;0,700;1,600;1,700&display=swap');
-			@import url('https://use.typekit.net/aba0ebl.css');
+			/* Fill the FULL dynamic viewport so the canvas (and its background) always reaches the
+			   bottom edge on mobile — 100% chains break when the browser URL bar shows/hides, leaving
+			   the black body visible below the game. 100dvh tracks the visible viewport. */
+			html,
+			body {
+				height: 100%;
+			}
+			body > div {
+				width: 100%;
+				height: 100dvh;
+			}
 		</style>
-		<meta name="viewport" content="width=device-width" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, shrink-to-fit=no"
+		/>
 		%sveltekit.head%
 	</head>
 	<!-- Branded dark background (matches the stake-engine loader) so the first paint — before the JS

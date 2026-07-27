@@ -6,7 +6,23 @@
 	import { getContextApp } from '../context.svelte';
 	import { preloadFont } from '../utils.svelte';
 
-	type Props = { children: Snippet };
+	type Props = {
+		children: Snippet;
+		// Loads the shared Typekit kit before the app initialises. Defaults ON for backwards
+		// compatibility, but games that self-host their fonts should pass false: the kit is an
+		// EXTERNAL runtime request (blocked on hosts like Stake Engine), and awaiting it here
+		// stalls app startup until the web-font loader times out.
+		preloadWebFont?: boolean;
+		// Renderer tuning — all optional and defaulting to the historical values, so existing games
+		// are unaffected. Games target Safari/low-end devices by opting in:
+		//  - maxResolution: cap the render-target DPR (Safari retina is 2–3×; uncapped renders up to
+		//    9× the pixels → the dominant fragment-shader cost). e.g. 2.
+		//  - antialias: MSAA is expensive on Safari; sprite-based games can disable it safely.
+		//  - rendererPreference: 'webgl' avoids Pixi's less-mature WebGPU path (buggy on Safari 18).
+		maxResolution?: number;
+		antialias?: boolean;
+		rendererPreference?: 'webgpu' | 'webgl';
+	};
 
 	const props: Props = $props();
 	const context = getContextApp();
@@ -17,66 +33,36 @@
 	const initialiseApplication = async () => {
 		PIXI.Assets.reset();
 
-		await preloadFont();
-		// Detect touch / mobile once — drives the phone-only heat optimizations below.
-		const isTouchDevice =
-			typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches === true;
-		// Cap render resolution. Phones report devicePixelRatio up to 3 (→ ~9× the pixels of a 1× canvas),
-		// so shading fewer pixels every frame is the BROADEST GPU-heat reduction — it helps every phone
-		// regardless of refresh rate (unlike the fps cap, which only helps 120Hz panels). Phones get a
-		// tighter 1.8× cap (still crisp on a dense screen); desktops/laptops keep the retina-sharp 2× cap.
-		const renderResolution = Math.min(devicePixelRatio.current || 1, isTouchDevice ? 1.8 : 2);
-		// Antialiasing (MSAA) off on TOUCH / MOBILE devices only — a real GPU cost on phones, near-invisible
-		// once we supersample. Desktops/laptops (fine pointer) keep AA on. AA does not affect frame rate.
-		context.stateApp.pixiApplication = new PIXI.Application<PIXI.Renderer<HTMLCanvasElement>>();
-		await context.stateApp.pixiApplication.init({
+		if (props.preloadWebFont ?? true) await preloadFont();
+		// Work on a LOCAL reference and publish to state only when fully initialised: the parent
+		// App component's onMount calls stateApp.reset() AFTER this child onMount starts (Svelte
+		// mounts children first), so a state-held reference can be nulled mid-`init()` await.
+		const app = new PIXI.Application<PIXI.Renderer<HTMLCanvasElement>>();
+		await app.init({
 			autoDensity: true,
 			backgroundAlpha: 0,
 			hello: true,
 			multiView: false,
-			antialias: !isTouchDevice,
+			antialias: props.antialias ?? true,
 			clearBeforeRender: true,
-			preference: 'webgpu',
+			preference: props.rendererPreference ?? 'webgpu',
 			powerPreference: 'high-performance',
-			resolution: renderResolution,
+			resolution: Math.min(devicePixelRatio.current, props.maxResolution ?? Infinity),
 			resizeTo: wrap,
 		});
 
-		context.stateApp.pixiApplication.stage.sortableChildren = true;
+		app.stage.sortableChildren = true;
 
-		wrap.appendChild(context.stateApp.pixiApplication.canvas);
-		context.stateApp.pixiApplication.canvas.style.display = 'block';
-		context.stateApp.pixiApplication.canvas.style.width = '100%';
-		context.stateApp.pixiApplication.canvas.style.height = '100%';
+		wrap.appendChild(app.canvas);
+		app.canvas.style.display = 'block';
+		app.canvas.style.width = '100%';
+		app.canvas.style.height = '100%';
 
 		// to prevent that you can't scroll the page with touch on the canvas. https://github.com/pixijs/pixijs/issues/4824
-		context.stateApp.pixiApplication.renderer.events.autoPreventDefault = false;
-		context.stateApp.pixiApplication.renderer.canvas.style.touchAction = 'auto';
+		app.renderer.events.autoPreventDefault = false;
+		app.renderer.canvas.style.touchAction = 'auto';
 
-		// Sustained-heat guard for high-refresh phones: rendering the full scene every frame at 120Hz is
-		// ~2× the GPU work (and heat) of 60fps, with no visible benefit for slot content. On TOUCH devices
-		// whose panel is genuinely ≥~105Hz, cap the loop to 60fps — a stable 120Hz panel divides 2:1 to an
-		// even, smooth 60. Desktops (fine pointer) and 60/90Hz screens stay at native refresh, so this can
-		// NOT reintroduce the beat-judder seen on 60Hz displays. Refresh is measured from rAF (median of a
-		// short burst) so we only engage on genuine high-refresh hardware.
-		if (isTouchDevice) {
-			const app = context.stateApp.pixiApplication;
-			const gaps: number[] = [];
-			let prev = performance.now();
-			const sample = () => {
-				const now = performance.now();
-				gaps.push(now - prev);
-				prev = now;
-				if (gaps.length < 32) {
-					requestAnimationFrame(sample);
-					return;
-				}
-				const sorted = gaps.slice(2).sort((a, b) => a - b);
-				const medianGap = sorted[sorted.length >> 1] ?? 16.7;
-				if (medianGap < 9.5) app.ticker.maxFPS = 60;
-			};
-			requestAnimationFrame(sample);
-		}
+		context.stateApp.pixiApplication = app;
 	};
 
 	onMount(async () => {

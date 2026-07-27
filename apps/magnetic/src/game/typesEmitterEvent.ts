@@ -1,5 +1,4 @@
 import type { EmitterEventBoard } from '../components/Board.svelte';
-import type { EmitterEventBoardFrame } from '../components/BoardFrame.svelte';
 import type { EmitterEventBonusSymbolPanel } from '../components/BonusSymbolPanel.svelte';
 import type { EmitterEventFreeSpinIntro } from '../components/FreeSpinIntro.svelte';
 import type { EmitterEventFreeSpinCounter } from '../components/FreeSpinCounter.svelte';
@@ -11,7 +10,6 @@ import type { EmitterEventTransition } from '../components/Transition.svelte';
 
 export type EmitterEventGame =
 	| EmitterEventBoard
-	| EmitterEventBoardFrame
 	| EmitterEventBonusSymbolPanel
 	| EmitterEventWin
 	| EmitterEventFreeSpinIntro

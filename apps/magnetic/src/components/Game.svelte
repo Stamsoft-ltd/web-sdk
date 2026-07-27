@@ -292,7 +292,11 @@
 	style={`--magnetic-shell-bg:url('${heroArtBackdrop}')`}
 >
 	<div class="magnetic-stage">
-		<App>
+		<!-- preloadWebFont={false}: fonts are self-hosted in app.html, so pixi must NOT await the
+		     Typekit webfontloader before initialising (it can never resolve on Stake's CDN).
+		     maxResolution=2 / antialias=false: uncapped devicePixelRatio meant up to 9x fill on
+		     high-DPR phones, and MSAA on top of that; both were the Safari lag. -->
+		<App preloadWebFont={false} maxResolution={2} antialias={false} rendererPreference="webgl">
 			<EnableSound />
 			<EnableHotkey />
 			<EnableGameActor />

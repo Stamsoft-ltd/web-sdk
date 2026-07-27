@@ -17,6 +17,7 @@
 	const props: Props = $props();
 
 	const infoPages = $derived(stateMeta.gameRuleMeta.infoPages ?? []);
+	const infoAssets = $derived(stateMeta.gameRuleMeta.infoAssets);
 </script>
 
 {#if stateModal.modal?.name === 'gameRules'}
@@ -26,10 +27,10 @@
 		onclose={() => (stateModal.modal = null)}
 	>
 		<BaseContent maxWidth="100%">
-			{#if infoPages.length}
+			{#if infoPages.length && infoAssets}
 				<GameInfoCarousel
 					pages={infoPages}
-					assets={stateMeta.gameRuleMeta.infoAssets}
+					assets={infoAssets}
 					onClose={() => (stateModal.modal = null)}
 				/>
 				{@render props.children()}
