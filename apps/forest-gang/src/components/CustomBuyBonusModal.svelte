@@ -7,17 +7,17 @@
 	import { fitLabel } from '../lib/fitLabel';
 
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	const cardBg       = ap('/assets/components/ui/bonus_card_bg.png');
-	const chanceIcon   = ap('/assets/components/ui/bonus_icon_chance.png');
-	const featureIcon  = ap('/assets/components/ui/bonus_icon_feature.png');
-	const allInIcon    = ap('/assets/components/ui/bonus_icon_allin.png?v=20260724');   // 3 emblems (DEAL IT card)
-	const dealItIcon   = ap('/assets/components/ui/bonus_icon_dealit.png?v=20260724');  // 4 emblems (ALL IN card)
+	const cardBg       = ap('/assets/components/ui/bonus_card_bg.webp');
+	const chanceIcon   = ap('/assets/components/ui/bonus_icon_chance.webp');
+	const featureIcon  = ap('/assets/components/ui/bonus_icon_feature.webp');
+	const allInIcon    = ap('/assets/components/ui/bonus_icon_allin.webp?v=20260724');   // 3 emblems (DEAL IT card)
+	const dealItIcon   = ap('/assets/components/ui/bonus_icon_dealit.webp?v=20260724');  // 4 emblems (ALL IN card)
 	// Bet readout + steppers reuse the navigation icons / round frame
-	const iconCoins    = ap('/assets/hud/icon-coins.png');
-	const iconMinus    = ap('/assets/hud/icon-minus.png');
-	const iconPlus     = ap('/assets/hud/icon-plus.png');
-	const btnRoundBg   = ap('/assets/components/navbar/btn_bg_round.png');
-	const betBoxMobile = ap('/assets/components/navbar/bet_box_mobile.png'); // wooden bet-box bg (portrait)
+	const iconCoins    = ap('/assets/hud/icon-coins.webp');
+	const iconMinus    = ap('/assets/hud/icon-minus.webp');
+	const iconPlus     = ap('/assets/hud/icon-plus.webp');
+	const btnRoundBg   = ap('/assets/components/navbar/btn_bg_round.webp');
+	const betBoxMobile = ap('/assets/components/navbar/bet_box_mobile.webp'); // wooden bet-box bg (portrait)
 	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.webp?v=20260624');
 	// Reuse the game-rules ("tutorials") round nav-button ring for the close button so they match.
 	const closeBtnBg = ap('/assets/components/info/nav_btn_bg.webp');
