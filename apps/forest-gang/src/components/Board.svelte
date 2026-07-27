@@ -25,6 +25,7 @@
 	} from '../game/utils';
 	import type { SymbolName } from '../game/types';
 	import { HIGH_SYMBOLS_SET, isWinState, anyPulsingWin } from '../game/boardPulse';
+	import PaylineVine from './PaylineVine.svelte';
 
 	const LOW_SYMBOLS_SET = new Set<SymbolName>(['T', 'J', 'Q', 'K', 'A']);
 
@@ -258,28 +259,25 @@
 	);
 
 
-	// Reels whose symbols should be hidden behind the low-symbol expanded overlay.
-	// Added one-by-one with a small delay so the overlay sprite starts drawing first.
-	let hiddenReels = $state(new Set<number>());
-
-	$effect(() => {
+	// After the expanded-column reveal has finished playing, the overlay stops drawing and the reels
+	// it covered render the expanded symbol themselves (see `swapName` in the markup). Null while the
+	// expansion is still animating — the overlay owns those columns until then.
+	const expandedSwap = $derived.by(() => {
 		const expanded = context.stateGame.expandedSymbol;
-		// Reset when no expansion, non-low symbol, OR reels cleared for next spin
-		if (!expanded || !LOW_SYMBOLS_SET.has(expanded.symbol) || expanded.reels.length === 0) {
-			if (hiddenReels.size > 0) hiddenReels = new Set<number>();
-			return;
-		}
-		// Hide EVERY reel the overlay currently covers, not just the newest one. Only the last reel
-		// used to be added, which held up while the reveal appended one reel at a time — but a stop
-		// press (and super-turbo) lands all remaining columns in a SINGLE assignment, so every column
-		// except the last stayed visible and its original symbols showed through the expanded symbol.
-		const pending = expanded.reels.filter((reel) => !hiddenReels.has(reel));
-		if (pending.length === 0) return;
-		const t = setTimeout(() => {
-			hiddenReels = new Set([...hiddenReels, ...pending]);
-		}, 80);
-		return () => clearTimeout(t);
+		if (!expanded || !context.stateGame.expandedSettled || expanded.reels.length === 0) return null;
+		return { symbol: expanded.symbol, reels: new Set(expanded.reels) };
 	});
+
+	// Cells the expanded-column overlay is currently painting over, published per reel by
+	// ExpandedSymbolOverlay as [firstRow, endRow). Hiding exactly these cells replaces the old
+	// "hide the whole reel 80ms after it starts expanding" timer, which caused two artefacts: for
+	// those 80ms the reel's own symbol drew UNDER the half-transparent expanded tile and the two
+	// glyphs merged into one garbled shape, and once it fired every row the reveal had not reached
+	// yet went bare. It also removes the timer's restart race entirely. Null once the reveal has
+	// settled — from there `expandedSwap` below renders those reels as normal win symbols.
+	const expandedCoverage = $derived(
+		context.stateGame.expandedSettled ? null : context.stateGame.expandedCoverage,
+	);
 
 	const hasActiveAnticipation = () =>
 		context.stateGame.board.some((reel) => reel.reelState.anticipating);
@@ -332,7 +330,12 @@
 {/if}
 
 {#if show}
-	<Container x={layout.x} y={layout.y + BOARD_GRID_OFFSET_Y} pivot={layout.pivot} scale={{ x: scaleX, y: scaleY }}>
+	<!-- sortableChildren: the payline vine is drawn as a SIBLING of the symbols (below) so it can sit
+	     at a depth BETWEEN them — above the losing symbols it connects across, but under the winning
+	     ones it links, whose animations must never be crossed by a leaf. Draw order is therefore
+	     zIndex, not markup order: 0 = board furniture + non-winning symbols, 1 = vine, 2 = winning
+	     symbols. Children that share a zIndex keep their insertion order (Array#sort is stable). -->
+	<Container sortableChildren x={layout.x} y={layout.y + BOARD_GRID_OFFSET_Y} pivot={layout.pivot} scale={{ x: scaleX, y: scaleY }}>
 		<Graphics
 			isMask
 			draw={(graphics) => {
@@ -356,9 +359,32 @@
 			/>
 		{/each}
 		{#each board as reel, reelIndex (reelIndex)}
-			{#if !hiddenReels.has(reelIndex)}
+			{@const swapName = expandedSwap?.reels.has(reelIndex) ? expandedSwap.symbol : null}
+			{@const covered = swapName ? null : expandedCoverage?.[reelIndex]}
 			{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
 				{@const y = reelSymbol.symbolY()}
+				<!-- Row this symbol currently occupies. Buffer symbols sit outside 0..rows-1 and so are
+				     never "covered"; the board mask clips them as before. -->
+				{@const row = Math.round(y / SYMBOL_H - 0.5)}
+				{#if !covered || row < covered[0] || row >= covered[1]}
+				<!-- Once the expanded column's reveal has played out the overlay hands the reel back to
+				     the board: every row draws the EXPANDED symbol in its win state (normal frames and
+				     win animations) instead of the reel's own landed symbols. Without the swap the reel
+				     stays hidden behind an overlay that is no longer drawing and the column reads as an
+				     empty forest cell. `swapName` is null on every other reel, so nothing else changes. -->
+				{@const symName = swapName ?? reelSymbol.rawSymbol.name}
+				{@const symState = swapName ? 'win' : reelSymbol.symbolState}
+				{@const isWin = swapName ? true : isWinState(reelSymbol.symbolState)}
+				<!-- One wrapper per symbol so the whole cell (frame + art) moves as a unit relative to
+				     the vine at zIndex 1. The wrapper has no transform of its own, so every child keeps
+				     its absolute grid x/y.
+				     ONLY the animal win ANIMATIONS rise above the vine — they are the art a leaf must
+				     never cross. Everything else, winning letters included, stays below it, because the
+				     vine is meant to read as growing OVER the board (lifting every winning cell put the
+				     vine behind the J's it was threading through). Gated on the animal being a winner
+				     rather than on its win sheet having loaded, so a cell can't pop between layers the
+				     moment the sheet streams in. -->
+				<Container zIndex={isWin && HIGH_SYMBOLS_SET.has(symName) ? 2 : 0}>
 				<Rectangle
 					x={getX(reelIndex) - SYMBOL_W * 0.5}
 					y={y - SYMBOL_H * 0.5}
@@ -367,12 +393,11 @@
 					backgroundColor={0x000000}
 					alpha={0.02}
 				/>
-				{@const isWin = isWinState(reelSymbol.symbolState)}
-				{@const s = symScale(reelSymbol.rawSymbol.name)}
+				{@const s = symScale(symName)}
 				<!-- Winning wild/scatter pulse continuously like the winning letters (design ask),
 				     replacing the old one-shot spring pop. -->
 				{@const specialPop = isWin ? letterPulse : 1}
-				{#if reelSymbol.rawSymbol.name === 'SCATTER' && scatterFrames.length > 0}
+				{#if symName === 'SCATTER' && scatterFrames.length > 0}
 					<!-- Scatter shimmers with its animated emblem clip and pulses continuously while it
 					     wins. Drawn a bit smaller than a cell. animationSpeed 0.14 (~8fps) stepped
 					     visibly and read as "laggy"; 0.36 (~22fps) plays smoothly and stays under the
@@ -389,7 +414,7 @@
 						play={boardAnimate}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
-				{:else if reelSymbol.rawSymbol.name === 'WILD' && wildFrames.length > 0}
+				{:else if symName === 'WILD' && wildFrames.length > 0}
 					<!-- Animated WILD: plays its loop briskly on every spin; pulses continuously on a win.
 					     Multiplied by symScale (s) like the scatter so per-layout sizing applies —
 					     desktop s=1.0 keeps the tuned size; mobile draws it larger (design ask). -->
@@ -405,11 +430,11 @@
 						play={boardAnimate}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
-				{:else if reelSymbol.rawSymbol.name === 'SCATTER'}
+				{:else if symName === 'SCATTER'}
 					<!-- Fallback until the animation frames load: static medallion (no tilt). Still takes
 					     specialPop — a bonus trigger inside the load window must not show a dead scatter. -->
 					<Sprite
-						key={getSpriteKey(reelSymbol.rawSymbol.name, reelSymbol.symbolState)}
+						key={getSpriteKey(symName, symState)}
 						x={getX(reelIndex)}
 						y={y}
 						anchor={{ x: 0.5, y: 0.5 }}
@@ -417,7 +442,7 @@
 						height={symbolH * s * SCATTER_SIZE * specialPop}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
-				{:else if isWin && HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name) && winAnimTextures[reelSymbol.rawSymbol.name]}
+				{:else if isWin && HIGH_SYMBOLS_SET.has(symName) && winAnimTextures[symName]}
 					<!-- The HIGH_SYMBOLS_SET guard is explicit rather than implied by WIN_ANIM_KEY's contents,
 					     so nothing but an animal can ever reach the animalBorder + win-sheet pair.
 					     Animal win: same brown frame + the full (uncropped) win animation on top. The
@@ -439,17 +464,17 @@
 					<!-- Desktop: lift the win art ~2-3px so its feet clear the frame's bottom rail
 					     (the enlarged desktop animals pushed it onto the border). -->
 					<AnimatedSprite
-						textures={winAnimTextures[reelSymbol.rawSymbol.name]}
+						textures={winAnimTextures[symName]}
 						x={getX(reelIndex)}
 						y={y + (symbolH * s * BORDER_SIZE * FRAME_H_MULT) / 2 - (isDesktop ? symbolH * 0.02 : isLandscape ? symbolH * 0.05 : 0)}
 						anchor={{ x: 0.5, y: 1 }}
 						width={symbolW * s * winFit}
-						height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[reelSymbol.rawSymbol.name] ?? 1)}
+						height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[symName] ?? 1)}
 						animationSpeed={0.36}
 						loop={true}
 						play={boardAnimate}
 					/>
-				{:else if isWin && LOW_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
+				{:else if isWin && LOW_SYMBOLS_SET.has(symName)}
 					<!-- Letter (low) win: there is no letter win sheet - the CLEAN base tile pulses
 					     continuously (normal <-> +10%) for as long as the win is shown. Gated on
 					     LOW_SYMBOLS_SET rather than a bare `isWin`: a bare catch-all would also swallow a
@@ -457,14 +482,14 @@
 					     leaving the transparent bust cutout floating on the bare board background. Animals
 					     must keep falling through to the animalBorder branch below. -->
 					<Sprite
-						key={getSpriteKey(reelSymbol.rawSymbol.name, undefined)}
+						key={getSpriteKey(symName, undefined)}
 						x={getX(reelIndex)}
 						y={y}
 						anchor={{ x: 0.5, y: 0.5 }}
 						width={symbolW * s * letterPulse}
 						height={symbolH * s * letterPulse}
 					/>
-				{:else if HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
+				{:else if HIGH_SYMBOLS_SET.has(symName)}
 					<!-- Base-state animal: shared brown frame + animated idle blink (or static tile for
 					     the animals without an idle sheet yet). The frame carries the OPAQUE forest panel
 					     the bust sits on, so it must ALWAYS draw: hiding it during anticipation left the
@@ -480,8 +505,8 @@
 						height={symbolH * s * BORDER_SIZE * FRAME_H_MULT * ANIMAL_H_STRETCH}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
-					{#if idleAnimTextures[reelSymbol.rawSymbol.name]}
-						{@const bust = IDLE_BUST[reelSymbol.rawSymbol.name] ?? { zoom: 1, yOff: 0, xOff: 0 }}
+					{#if idleAnimTextures[symName]}
+						{@const bust = IDLE_BUST[symName] ?? { zoom: 1, yOff: 0, xOff: 0 }}
 						{@const idleH = symbolH * s * idleFit * bust.zoom * ANIMAL_H_STRETCH}
 						{@const panelW = symbolW * s * BORDER_SIZE * FRAME_W_MULT * PANEL_W_FRAC}
 						{@const panelH = symbolH * s * BORDER_SIZE * FRAME_H_MULT * PANEL_H_FRAC * ANIMAL_H_STRETCH}
@@ -506,25 +531,25 @@
 							     animation, so the blink plays on top with identical content (no ghosting);
 							     if the animation ever goes blank, this rest pose still shows. -->
 							<BaseSprite
-								texture={idleAnimTextures[reelSymbol.rawSymbol.name]?.[0]}
+								texture={idleAnimTextures[symName]?.[0]}
 								x={bust.xOff * panelW}
 								y={idleH * bust.yOff - (isPortrait ? symbolH * 0.015 : 0)}
 								anchor={0.5}
 								height={idleH}
-								width={idleH * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[reelSymbol.rawSymbol.name] ?? 1) * IDLE_W_STRETCH}
+								width={idleH * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[symName] ?? 1) * IDLE_W_STRETCH}
 								alpha={hasWinState && !isWin ? 0.35 : 1}
 							/>
 							<!-- Portrait: lift the bust ~2px so its bottom clears the frame's bottom rail
 							     (the ANIMAL_H_STRETCH pushed it down onto the wood). -->
 							<AnimatedSprite
-								textures={idleAnimTextures[reelSymbol.rawSymbol.name]}
+								textures={idleAnimTextures[symName]}
 								x={bust.xOff * panelW}
 								y={idleH * bust.yOff - (isPortrait ? symbolH * 0.015 : 0)}
 								anchor={0.5}
 								height={idleH}
-								width={idleH * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[reelSymbol.rawSymbol.name] ?? 1) * IDLE_W_STRETCH}
+								width={idleH * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[symName] ?? 1) * IDLE_W_STRETCH}
 								animationSpeed={0.28 + ((reelIndex * 2 + symbolIndex) % 4) * 0.008}
-								startFrame={(reelIndex * 13 + symbolIndex * 7) % (idleAnimTextures[reelSymbol.rawSymbol.name]?.length ?? 1)}
+								startFrame={(reelIndex * 13 + symbolIndex * 7) % (idleAnimTextures[symName]?.length ?? 1)}
 								loop={true}
 								play={boardAnimate}
 								alpha={hasWinState && !isWin ? 0.35 : 1}
@@ -532,7 +557,7 @@
 						</Container>
 					{:else}
 						<Sprite
-							key={getSpriteKey(reelSymbol.rawSymbol.name, reelSymbol.symbolState)}
+							key={getSpriteKey(symName, symState)}
 							x={getX(reelIndex)}
 							y={y}
 							anchor={{ x: 0.5, y: 0.5 }}
@@ -552,7 +577,7 @@
 					     hasn't loaded takes the animalBorder branch, so the opaque forest panel always draws
 					     and the transparent bust cutout is never left floating on the bare board. -->
 					<Sprite
-						key={getSpriteKey(reelSymbol.rawSymbol.name, isWin ? undefined : reelSymbol.symbolState)}
+						key={getSpriteKey(symName, isWin ? undefined : symState)}
 						x={getX(reelIndex)}
 						y={y}
 						anchor={{ x: 0.5, y: 0.5 }}
@@ -561,8 +586,19 @@
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
 				{/if}
+				</Container>
+				{/if}
 			{/each}
-			{/if}
 		{/each}
+		{#if context.stateGame.paylineWins.length > 0}
+			<!-- Payline vines live INSIDE the board container (was a separate MainContainer in
+			     Game.svelte, which forced them entirely above the reels — leaves kept crossing the
+			     winning animals' win animations). Same transform as before, so the geometry is
+			     unchanged; only the depth moved. They now also hide with `boardHide` during the
+			     free-spin transitions, which is what we want. -->
+			<Container zIndex={1}>
+				<PaylineVine wins={context.stateGame.paylineWins} snap={context.stateGame.paylineSnap} />
+			</Container>
+		{/if}
 	</Container>
 {/if}

@@ -5,7 +5,7 @@
 	import { EnablePixiExtension } from 'components-pixi';
 	import { EnableHotkey } from 'components-shared';
 	import { MainContainer } from 'components-layout';
-	import { App, Container } from 'pixi-svelte';
+	import { App } from 'pixi-svelte';
 	import { stateMeta, stateUi } from 'state-shared';
 
 	import { Modals } from 'components-ui-html';
@@ -36,12 +36,10 @@
 	import ExpandedSymbolPresenter from './ExpandedSymbolPresenter.svelte';
 	import DealItMultiplierPanel from './DealItMultiplierPanel.svelte';
 	import GameLogoFrame from './GameLogoFrame.svelte';
-	import PaylineVine from './PaylineVine.svelte';
 	import HudHtml from './HudHtml.svelte';
 	import StakeSync from './StakeSync.svelte';
 	import ReplayHud from './replay/ReplayHud.svelte';
 	import SplashIntro from './SplashIntro.svelte';
-	import { BOARD_GRID_OFFSET_Y } from '../game/constants';
 	import { registerArtDeep, warmArt } from '../lib/preloadArt';
 
 	const context = getContext();
@@ -457,14 +455,10 @@
 				</MainContainer>
 
 				<ExpandedSymbolOverlay />
-				{#if context.stateGame.paylineWins.length > 0}
-				<MainContainer>
-					{@const bl = context.stateGameDerived.boardLayout()}
-					<Container x={bl.x} y={bl.y + BOARD_GRID_OFFSET_Y} pivot={bl.pivot} scale={{ x: bl.boardScaleX ?? bl.boardScale, y: bl.boardScaleY ?? bl.boardScale }}>
-						<PaylineVine wins={context.stateGame.paylineWins} snap={context.stateGame.paylineSnap} />
-					</Container>
-				</MainContainer>
-				{/if}
+				<!-- The payline vines used to render here, in their own MainContainer above the board.
+				     That put every leaf on top of the winning symbols' win animations, so they now
+				     draw INSIDE Board (same transform) at a zIndex between the losing and winning
+				     symbols. See the sortableChildren note in Board.svelte. -->
 				<BonusSymbolPanel />
 				<GlobalMultiplier />
 				<DealItMultiplierPanel />

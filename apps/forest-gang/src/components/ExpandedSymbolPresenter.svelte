@@ -152,7 +152,13 @@
 	// All symbols centre on the board (no per-symbol vertical nudge).
 	const symbolCy = $derived(PLACEHOLDER.cy);
 
-	const letterH = $derived(deerH * PLACEHOLDER.h * symScale(displaySymbol));
+	// Landing pop (sc 1.18) + wiggle (±0.07 rad) headroom. The ANIMAL bust is masked to the sign's
+	// interior so it can never spill, but the letter sprite is drawn OUTSIDE that mask — at the pop
+	// it grew 18% and rode off the top/bottom of the wooden board the deer holds. 1/1.18 puts the
+	// PEAK of the pop at the size the letter used to rest at; the extra /1.04 covers the vertical
+	// extent the wiggle's rotation adds (halfW·sin θ) for a wider-than-tall glyph.
+	const LETTER_POP_HEADROOM = 1 / (1.18 * 1.04);
+	const letterH = $derived(deerH * PLACEHOLDER.h * symScale(displaySymbol) * LETTER_POP_HEADROOM);
 	const letterW = $derived(letterH * LETTER_ASPECT);
 
 	// Deer zoom-out entrance (both orientations).
