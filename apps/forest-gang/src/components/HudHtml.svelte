@@ -86,6 +86,11 @@
 	const isFeatureActive = $derived(stateBet.activeBetModeKey === 'FEATURE');
 	const isChanceActive = $derived(stateBet.activeBetModeKey === 'CHANCE');
 	const isAnyModeActive = $derived(isFeatureActive || isChanceActive);
+	// The buy button's caption, in one place: the portrait badge splits it per word for its
+	// two-line layout, so it needs the string itself rather than the inline ternary.
+	const buyLabelText = $derived(
+		isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(),
+	);
 	// Buying a bonus is not allowed while a multi-spin bonus round is in progress.
 	// Feature mode keeps its selected-symbol badge after the round, but should not lock the HUD.
 	const isInBonus = $derived(context.stateGame.bonusMode !== null && context.stateGame.bonusMode !== 'feature');
@@ -365,6 +370,43 @@
 		}
 	};
 
+	// Tap-anywhere-to-spin on touch layouts: on a phone the player shouldn't have to hit the spin
+	// button, so a tap on the game does exactly what the Space hotkey does — spin when idle, skip /
+	// stop while a round plays — by calling the SAME handler, so those rules live in one place.
+	//
+	// A tap only counts when it lands on the Pixi CANVAS, and that single test is what keeps this
+	// off the UI: controls, modals, the menu and the splash overlay all take pointer events, so a
+	// tap on them targets that element instead. Meanwhile .hud-shell / .ls-hud are pointer-events:
+	// none, so taps over empty HUD space fall through and DO target the canvas — "anywhere" really
+	// is anywhere, with no selector blacklist to keep in sync as the HUD changes.
+	const TAP_SLOP_PX = 12;
+	let tapStart: { x: number; y: number } | null = null;
+	$effect(() => {
+		// Touch layouts only — on desktop the pointer is a mouse and a stray click shouldn't bet.
+		if (layoutType === 'desktop') return;
+		const onPointerDown = (event: PointerEvent) => {
+			tapStart = event.isPrimary ? { x: event.clientX, y: event.clientY } : null;
+		};
+		const onPointerUp = (event: PointerEvent) => {
+			const start = tapStart;
+			tapStart = null;
+			if (!start || !event.isPrimary) return;
+			// A drag or swipe across the board is not a tap.
+			if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_SLOP_PX) return;
+			if (!(event.target instanceof HTMLCanvasElement)) return;
+			// Dialogs don't always cover the whole screen — never bet on canvas showing beside one.
+			if (stateModal.modal || menuOpen || showAutoModal || showBuyModal) return;
+			onSpinHotkey();
+		};
+		// Capture phase so this still sees the tap if something downstream stops propagation.
+		document.addEventListener('pointerdown', onPointerDown, true);
+		document.addEventListener('pointerup', onPointerUp, true);
+		return () => {
+			document.removeEventListener('pointerdown', onPointerDown, true);
+			document.removeEventListener('pointerup', onPointerUp, true);
+		};
+	});
+
 	const onTurbo = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		if (!stateBet.isTurbo && !stateBet.isSuperTurbo) {
@@ -551,7 +593,15 @@
 						onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 						aria-label={isAnyModeActive ? 'Disable' : i18nDerived.buyBonus()}
 					>
-						<span class="pt-buy__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.58 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
+						<!-- One word per LINE ("BUY" over "BONUS", per the badge design): a single line had to
+					     shrink to ~58% of the button to fit the round disc, which left it unreadably
+					     small on a real phone. Splitting on spaces is layout-only and translation-safe —
+					     a one-word label (DEACTIVATE) simply renders as one line, as before. -->
+					<span class="pt-buy__label" use:fitLabel={{ dep: buyLabelText, maxFraction: 0.45 }}>
+						{#each buyLabelText.split(' ') as word}
+							<span class="pt-buy__line">{word}</span>
+						{/each}
+					</span>
 					</button>
 				</div>
 
@@ -2337,21 +2387,29 @@
 	.pt-buy:hover { filter: brightness(1.1); }
 	.pt-buy:active { transform: scale(0.95); }
 	.pt-buy__label {
-		font-family: 'Cinzel', serif; font-weight: 900; font-size: 8.5px; line-height: 1.05;
+		/* Deliberately larger than the disc can take: fitLabel only ever scales DOWN, so an
+		   oversized start means the 0.45 cap always binds and the caption renders at exactly the
+		   badge proportion from the design instead of at whatever the font's metrics happen to
+		   give. Do not "correct" this to the rendered size. */
+		font-family: 'Cinzel', serif; font-weight: 900; font-size: 13px; line-height: 1.05;
 		letter-spacing: 0.01em; text-align: center;
-		/* Keep the (unbreakable) word on ONE line and let the box span the full button so
-		   text-align:center actually centres it — a narrow max-width box left a single long
-		   word ("DEACTIVATE"/"DISABLE") starting at the box's left edge, reading off-centre and
-		   clipped. fitLabel then scales the line down about its centre to fit the round badge. */
-		white-space: nowrap;
+		/* Each word is its own block line (.pt-buy__line), so nothing has to wrap: the box spans
+		   the full button and text-align:center centres every line. The previous single nowrap
+		   line is what forced the shrink-to-illegible on small phones. */
 		max-width: 100%;
 		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
 		-webkit-background-clip: text; background-clip: text;
 		-webkit-text-fill-color: transparent; color: transparent;
 		filter: drop-shadow(0 1px 1px rgba(0,0,0,0.7));
 	}
-	/* Buy bonus placed IN the control row (left of spin). */
-	.pt-buy--controls { width: calc(var(--u) * 0.14); height: calc(var(--u) * 0.132); }
+	.pt-buy__line {
+		display: block;
+		white-space: nowrap;
+	}
+	/* Buy bonus placed IN the control row (left of spin). Bumped ~18% (0.14 → 0.165) so the
+	   two-line caption has room to render legibly on a phone — the badge art is round, so the
+	   caption can only ever be ~45% of the button's width (see fitLabel's maxFraction). */
+	.pt-buy--controls { width: calc(var(--u) * 0.165); height: calc(var(--u) * 0.156); }
 
 	/* WIN readout — mirrors the balance block, pinned to the right of the stats row. */
 	.pt-win {

@@ -41,7 +41,10 @@
 			const offset = (canvas.height - ml.height * scale) / 2;
 			const gameBottom = offset + ml.height * scale;
 			const hudTopMain = (gameBottom - hudH - offset) / scale;
-			return hudTopMain - fontSize * 2.4;
+			// 3.6 line-heights of clearance, not 2.4: on a real phone the line sat lower in the glow
+			// gap than the design wants. Purely a vertical nudge — the anchor is still the real HUD
+			// top, so it keeps tracking the bar across the S/M/L portrait sizes.
+			return hudTopMain - fontSize * 3.6;
 		}
 		// Non-portrait (desktop/tablet — mobile landscape draws its own in-panel copy): sit in the
 		// glow ledge just ABOVE the HTML HUD bar. Estimating the board bottom from a minDim fraction
