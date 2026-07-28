@@ -105,7 +105,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild thay thế cho tất cả biểu tượng trả thưởng thông thường. Scatter không tự trả thưởng và chỉ kích hoạt các tính năng thưởng.',
 	'PAYTABLE BUY_TEXT': 'Chia Bài: 100x cược.\nTất Tay: 400x cược.\nQuay Cơ Hội: 2x cược mỗi ván.\nQuay Tính Năng: 20x cược mỗi ván.\nChia Bài và Tất Tay cần xác nhận trước khi ván bắt đầu.',
 	'PAYTABLE MAX_TEXT': 'Thắng tối đa được quảng cáo là 25,000x mức cược đã chọn.',
-	'DISCLAIMER TEXT': 'Sự cố sẽ làm vô hiệu tất cả tiền thắng và lượt chơi. Cần có kết nối internet ổn định. Trong trường hợp mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành. Lợi nhuận kỳ vọng được tính trên nhiều lượt chơi. Màn hình trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ nhằm mục đích minh họa. Tiền thắng được thanh toán theo số tiền nhận từ Remote Game Server chứ không phải từ các sự kiện trong trình duyệt web. TM và © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'Sự cố sẽ làm vô hiệu tất cả tiền thắng và lượt chơi. Cần có kết nối internet ổn định. Trong trường hợp mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành. Lợi nhuận kỳ vọng được tính trên nhiều lượt chơi. Màn hình trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ nhằm mục đích minh họa. Tiền thắng được thanh toán theo số tiền nhận từ Remote Game Server chứ không phải từ các sự kiện trong trình duyệt web. TM và © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'TỔNG QUAN',
@@ -171,7 +171,7 @@ export default {
 		'Nếu một ván chơi bị gián đoạn, nó sẽ tiếp tục khi trò chơi được tải lại, nếu có thể.\n\nTất cả tiền cược hợp lệ và tiền thắng tiềm năng vẫn hoạt động cho đến khi ván hoàn thành đầy đủ.',
 	'INFO LEGAL TITLE': 'THÔNG BÁO PHÁP LÝ',
 	'INFO LEGAL TEXT':
-		'Sự cố làm vô hiệu tất cả chi trả và lượt chơi. Cần có kết nối internet ổn định. Nếu mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành.\n\nLợi nhuận kỳ vọng được tính trên số lượng lớn lượt chơi. Màn hình trò chơi chỉ nhằm mục đích hình ảnh và giải trí và không đại diện cho bất kỳ thiết bị chơi vật lý nào.\n\nTất cả tiền thắng được thanh toán theo kết quả nhận từ Remote Game Server, không phải từ hoạt ảnh hay sự kiện hiển thị trong trình duyệt web.\n\nTM and © 2025 Stake Engine.',
+		'Sự cố làm vô hiệu tất cả chi trả và lượt chơi. Cần có kết nối internet ổn định. Nếu mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành.\n\nLợi nhuận kỳ vọng được tính trên số lượng lớn lượt chơi. Màn hình trò chơi chỉ nhằm mục đích hình ảnh và giải trí và không đại diện cho bất kỳ thiết bị chơi vật lý nào.\n\nTất cả tiền thắng được thanh toán theo kết quả nhận từ Remote Game Server, không phải từ hoạt ảnh hay sự kiện hiển thị trong trình duyệt web.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'CUỘN\nMỞ RỘNG',

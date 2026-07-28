@@ -243,11 +243,31 @@
 		if (c === '$') return 0.6;
 		return 0.66; // letters / other currency glyphs (conservative)
 	};
-	const desktopValueFontStyle = (s: string) => {
+	const valueFontStyle = (s: string, capEm: number) => {
 		let em = 0;
 		for (const c of s) em += glyphEm(c);
-		const scale = Math.min(1, DESKTOP_VALUE_CAP_EM / Math.max(em, 0.01));
+		const scale = Math.min(1, capEm / Math.max(em, 0.01));
 		return `font-size: calc(var(--u) * ${(DESKTOP_VALUE_BASE_U * scale).toFixed(2)});`;
+	};
+	const desktopValueFontStyle = (s: string) => valueFontStyle(s, DESKTOP_VALUE_CAP_EM);
+	// The BET slot is narrower than BALANCE/WIN (90u vs 126u — see .value-fit--bet). It used the
+	// action-based fitText, which never applied here: Svelte 5 doesn't call an action's `update`,
+	// and neither a ResizeObserver nor a MutationObserver fired for the value swap, so the fit stayed
+	// frozen at the string present on mount ("$1.00") and a longer amount ("€750.00") overflowed the
+	// slot and pushed the +/- steppers off the pad. Sizing from the characters is reactive by
+	// construction — the style attribute is recomputed whenever the value changes.
+	const DESKTOP_BET_CAP_EM = (90 / DESKTOP_VALUE_BASE_U) * 0.88;
+	const desktopBetFontStyle = (s: string) => valueFontStyle(s, DESKTOP_BET_CAP_EM);
+
+	// Landscape / portrait size the pad in vh and `--u`, not in the desktop `u` grid, so the cap is
+	// expressed in CSS instead: each pad publishes the width left for the value, and the value's
+	// font-size becomes min(designSize, avail / --bet-em). Publishing the string's em width as a
+	// custom property keeps it reactive — Svelte rewrites the style attribute on every change.
+	const betEmStyle = (s: string) => {
+		let em = 0;
+		for (const c of s) em += glyphEm(c);
+		// /0.9 leaves ~10% headroom for letter-spacing and glyph-estimate error.
+		return `--bet-em:${(Math.max(em, 0.01) / 0.9).toFixed(3)};`;
 	};
 
 	const openPaytable = () => {
@@ -452,64 +472,10 @@
 	// Scale the balance text down to fit its slot so a very long balance can't
 	// widen the HUD and push the navigation off the bar. Only ever shrinks; all
 	// digits stay visible. Re-runs when the text changes and when the slot resizes.
-	function fitText(node: HTMLElement, _value: unknown) {
-		// transform:scale is IGNORED on inline elements, so force inline-block here (independent of
-		// CSS specificity/media) — otherwise the shrink silently no-ops and a long value renders
-		// full-size and gets clipped by the slot's overflow:hidden.
-		node.style.display = 'inline-block';
-		const fit = () => {
-			const slot = node.parentElement;
-			if (!slot) return;
-			node.style.transform = 'none';
-			// Space actually left for the value: the slot minus what the preceding sibling
-			// (label / minus-button) already occupies — but ONLY when that sibling sits on the
-			// same row. In a column layout (portrait BALANCE: label ABOVE value) the value has the
-			// full slot width, so subtracting the label there wrongly shrank it to nothing.
-			const prev = node.previousElementSibling as HTMLElement | null;
-			const sameRow = prev ? Math.abs(prev.offsetTop - node.offsetTop) < node.offsetHeight * 0.6 : false;
-			// Measure the fit entirely in LAYOUT px (offsetWidth / clientWidth) so the CSS-transform
-			// scale of the game container cancels out on its own. The earlier version mixed layout px
-			// (clientWidth) with rendered px (getBoundingClientRect) through a `slotScale` factor; any
-			// drift in that factor left `avail >= full`, so a long value (e.g. $100,000.00 on desktop,
-			// or a big landscape balance) never shrank and clipped under the slot's overflow:hidden.
-			// offsetWidth is the inline-block's unscaled border-box width = the full text width, and
-			// clientWidth is the slot's unscaled content+padding width — both immune to the transform.
-			const used = prev && sameRow ? prev.offsetWidth + 8 : 0;
-			const cs = getComputedStyle(slot);
-			const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
-			const avail = slot.clientWidth - pad - used;
-			const full = node.offsetWidth;
-			// Adaptive shrink origin: portrait centres the value in its slot (align-items:center) —
-			// there a left origin keeps clipping the "$" prefix, so shrink from the CENTRE. Desktop
-			// (.value-fit, left-aligned text) and landscape (label-beside-value row) are left-aligned
-			// — there a centre origin shifts/clips the value, so shrink from the LEFT. Detect which by
-			// comparing the value's centre to the slot's centre (rendered px ratios, scale cancels).
-			const nodeRect = node.getBoundingClientRect();
-			const slotRect = slot.getBoundingClientRect();
-			const centered =
-				!sameRow &&
-				Math.abs(nodeRect.left + nodeRect.width / 2 - (slotRect.left + slotRect.width / 2)) <
-					slotRect.width * 0.15;
-			node.style.transformOrigin = centered ? 'center center' : 'left center';
-			const scale = full > avail && avail > 0 ? avail / full : 1;
-			node.style.transform = scale < 1 ? `scale(${scale})` : 'none';
-		};
-		const raf = () => requestAnimationFrame(fit);
-		const ro = new ResizeObserver(raf);
-		// Observe the NODE itself, not just the slot: the balance/bet slots are fixed-width so they
-		// never resize when the value changes — observing only the parent meant a longer value that
-		// arrived AFTER load (e.g. balance grows past the slot once the player wins/loses into a big
-		// number) never re-fit and clipped. The value span's own width DOES change with the text, so
-		// this fires the re-fit reliably (transform:scale doesn't alter its layout box, so no loop).
-		// The action `update` callback proved unreliable as the sole trigger, hence the observer.
-		ro.observe(node);
-		if (node.parentElement) ro.observe(node.parentElement);
-		// Re-fit once the webfont arrives: the first fit measures fallback-font metrics, and a
-		// fixed-width slot never resizes afterwards (so the observer alone can't catch it).
-		document.fonts?.ready.then(raf);
-		raf();
-		return { update: raf, destroy: () => ro.disconnect() };
-	}
+	// (A transform-based `fitText` action used to live here. It shrank glyphs without changing the
+	// layout box and never re-ran on value change — Svelte 5 does not call an action's `update`, and
+	// neither a ResizeObserver nor a MutationObserver fired for the text swap. Every value is now
+	// sized from its own characters via a style binding, which Svelte recomputes reactively.)
 
 	// Landscape BALANCE pill: scale the WHOLE pill (label + value + padding, measured at max-content
 	// width) down to its rail, instead of fitText's shrink-only-the-value. On small landscape windows
@@ -666,7 +632,7 @@
 			<div class="pt-stats">
 				<div class="pt-balance">
 					<span class="pt-balance__label">{i18nDerived.balance()}</span>
-					<span class="pt-balance__value" use:fitText={formattedBalance}>{formattedBalance}</span>
+					<span class="pt-balance__value" style={betEmStyle(formattedBalance)}>{formattedBalance}</span>
 				</div>
 
 				<div class="pt-bet">
@@ -682,7 +648,7 @@
 					<span
 						class="pt-bet__value"
 						class:value--feature={isAnyModeActive}
-						use:fitText={formattedBet}
+						style={betEmStyle(formattedBet)}
 					>{formattedBet}</span>
 					<button
 						class="pt-round pt-round--sm"
@@ -699,7 +665,7 @@
 				     Hidden (but keeps its slot, so the bet stays centred) until there is a win. -->
 				<div class="pt-win" class:pt-win--hidden={!hasWin}>
 					<span class="pt-win__label">{i18nDerived.win()}</span>
-					<span class="pt-win__value" use:fitText={winValue}>{hasWin ? winValue : ''}</span>
+					<span class="pt-win__value" style={betEmStyle(winValue)}>{hasWin ? winValue : ''}</span>
 				</div>
 			</div>
 		</div>
@@ -741,7 +707,7 @@
 				<span
 					class="ls-bet__value"
 					class:value--feature={isAnyModeActive}
-					use:fitText={formattedBet}
+					style={betEmStyle(formattedBet)}
 				>{formattedBet}</span>
 				<button
 					class="ls-step"
@@ -844,7 +810,10 @@
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Disable' : i18nDerived.buyBonus()}
 				>
-					<span class="buy-btn__label" use:fitLabel={isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
+					<!-- maxFraction: the plate art's flat green body is ~84% of the button box — the rest is
+					     the rounded/leafed ends. Without the cap, fitLabel happily fills the whole box and
+					     long translations ("ACHETER BONUS") run onto the decoration. -->
+					<span class="buy-btn__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.84 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
 				</button>
 			</div>
 		</div>
@@ -879,7 +848,7 @@
 				<div class="bet-values">
 					<span class="label">{i18nDerived.betLabel()}</span>
 					<div class="value-fit value-fit--bet">
-						<span class="value" class:value--feature={isAnyModeActive} use:fitText={formattedBet}>{formattedBet}</span>
+						<span class="value" class:value--feature={isAnyModeActive} style={desktopBetFontStyle(formattedBet)}>{formattedBet}</span>
 					</div>
 				</div>
 			</div>
@@ -2036,6 +2005,8 @@
 
 	/* Bottom-centre bet pad: − value + */
 	.ls-bet {
+		/* Pad width (0.96 allows for the 1% side padding) minus both .ls-step buttons. */
+		--ls-bet-avail: calc(clamp(90px, 46vh, 390px) * 0.96 - 2 * clamp(21px, 10.5vh, 84px));
 		position: absolute;
 		/* Shifted right of centre; BUY BONUS sits to its left (Figma design). */
 		left: 61%;
@@ -2054,7 +2025,8 @@
 	.ls-bet__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 700;
-		font-size: clamp(11px, 3.9vh, 23px);
+		/* Capped to the room between the two steppers — see --ls-bet-avail. */
+		font-size: min(clamp(11px, 3.9vh, 23px), calc(var(--ls-bet-avail) / var(--bet-em, 5)));
 		color: #fff;
 		/* Auto side margins centre the value and push the two buttons to the pill ends. */
 		margin: 0 auto;
@@ -2344,6 +2316,8 @@
 	/* Balance: transparent (no pad), centred label + gold value. */
 	.pt-balance {
 		flex: 0 0 auto;
+		/* max-width minus the 10px side padding — the value's font-size is capped to this. */
+		--pt-value-avail: calc(var(--u) * 0.22 - 20px);
 		/* Cap to the balance's actual grid column (~0.25·u in the 1fr auto 1fr row, less the
 		   0.03·u margin) so a long balance can't overflow the column into the centre bet pill. */
 		max-width: calc(var(--u) * 0.22);
@@ -2367,11 +2341,11 @@
 		-webkit-text-fill-color: transparent; color: transparent;
 	}
 	.pt-balance__value {
-		/* inline-block so fitText's transform:scale actually applies (CSS transforms are ignored on
-		   inline elements) and scrollWidth measures the true text width — otherwise a long balance
-		   renders full-size and gets clipped by the parent's overflow:hidden. */
 		display: inline-block;
-		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
+		font-family: 'Poppins', sans-serif; font-weight: 500;
+		/* Capped to the pill's usable width so a long balance shrinks instead of being clipped by
+		   the parent's overflow:hidden. --bet-em comes from the value string (see betEmStyle). */
+		font-size: min(12px, calc(var(--pt-value-avail) / var(--bet-em, 8)));
 		font-style: normal; line-height: normal; letter-spacing: 0.36px;
 		white-space: nowrap; transform-origin: center;
 		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);
@@ -2386,10 +2360,15 @@
 		padding: 0 calc(var(--u) * 0.018);
 		box-sizing: border-box;
 		background: var(--pt-betpad) center / 100% 100% no-repeat;
+		/* width - 2*padding - 2*.pt-round--sm - 2*gap. The value's font-size is capped to this so a
+		   long amount shrinks instead of shoving the +/- buttons off the pad. */
+		--pt-bet-avail: calc(var(--u) * 0.234 - 8px);
 	}
 	.pt-bet__value {
-		flex: 1 1 auto; text-align: center;
-		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 18px;
+		flex: 1 1 auto; text-align: center; min-width: 0;
+		font-family: 'Poppins', sans-serif; font-weight: 500;
+		/* Pad width minus its padding, both steppers and both gaps — see --pt-bet-avail. */
+		font-size: min(18px, calc(var(--pt-bet-avail) / var(--bet-em, 5)));
 		font-style: normal; line-height: normal; letter-spacing: 0.54px; color: #fff;
 		white-space: nowrap; cursor: pointer; transform-origin: center;
 		text-shadow: 0 1px 2px rgba(0,0,0,0.6);
@@ -2450,6 +2429,7 @@
 	/* WIN readout — mirrors the balance block, pinned to the right of the stats row. */
 	.pt-win {
 		flex: 0 0 auto;
+		--pt-value-avail: calc(var(--u) * 0.22 - 20px);
 		/* Match .pt-balance: cap to the win column so a big win can't overflow into the bet pill. */
 		max-width: calc(var(--u) * 0.22);
 		display: flex; flex-direction: column;
@@ -2474,9 +2454,9 @@
 		-webkit-text-fill-color: transparent; color: transparent;
 	}
 	.pt-win__value {
-		/* inline-block so fitText's transform:scale applies (see .pt-balance__value). */
 		display: inline-block;
-		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
+		font-family: 'Poppins', sans-serif; font-weight: 500;
+		font-size: min(12px, calc(var(--pt-value-avail) / var(--bet-em, 8)));
 		font-style: normal; line-height: normal; letter-spacing: 0.36px;
 		white-space: nowrap; transform-origin: center; min-height: 12px;
 		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);
