@@ -113,6 +113,34 @@ const assets = {
 	bearTile:     { type: 'sprite', src: './assets/components/symbols/bear.webp?v=20260722' },
 	rabbitTile:   { type: 'sprite', src: './assets/components/symbols/rabbit.webp?v=20260722' },
 	squirrelTile: { type: 'sprite', src: './assets/components/symbols/squirrel.webp?v=20260722' },
+	// Vertically motion-blurred spin variants of the board tiles (R7), generated from the statics
+	// above by tools/assets/sprites/generate_spin_blur.py. Drawn instead of the normal symbol art
+	// while a reel moves faster than MOTION_BLUR_VELOCITY (see Board.svelte).
+	aSpinTile:        { type: 'sprite', src: './assets/components/symbols/card_a_spin.webp' },
+	kSpinTile:        { type: 'sprite', src: './assets/components/symbols/card_k_spin.webp' },
+	qSpinTile:        { type: 'sprite', src: './assets/components/symbols/card_q_spin.webp' },
+	jSpinTile:        { type: 'sprite', src: './assets/components/symbols/card_j_spin.webp' },
+	tSpinTile:        { type: 'sprite', src: './assets/components/symbols/card_t_spin.webp' },
+	foxSpinTile:      { type: 'sprite', src: './assets/components/symbols/fox_spin.webp' },
+	wolfSpinTile:     { type: 'sprite', src: './assets/components/symbols/wolf_spin.webp' },
+	bearSpinTile:     { type: 'sprite', src: './assets/components/symbols/bear_spin.webp' },
+	rabbitSpinTile:   { type: 'sprite', src: './assets/components/symbols/rabbit_spin.webp' },
+	squirrelSpinTile: { type: 'sprite', src: './assets/components/symbols/squirrel_spin.webp' },
+	wildSpinTile:     { type: 'sprite', src: './assets/components/symbols/wild_v2_spin.webp' },
+	scatterSpinTile:  { type: 'sprite', src: './assets/components/symbols/scatter_v2_spin.webp' },
+	// Mobile-landscape spins blur the landscape tile set, not the desktop art.
+	aSpinTileLs:        { type: 'sprite', src: './assets/components/symbols/landscape/card_a_spin.webp' },
+	kSpinTileLs:        { type: 'sprite', src: './assets/components/symbols/landscape/card_k_spin.webp' },
+	qSpinTileLs:        { type: 'sprite', src: './assets/components/symbols/landscape/card_q_spin.webp' },
+	jSpinTileLs:        { type: 'sprite', src: './assets/components/symbols/landscape/card_j_spin.webp' },
+	tSpinTileLs:        { type: 'sprite', src: './assets/components/symbols/landscape/card_t_spin.webp' },
+	foxSpinTileLs:      { type: 'sprite', src: './assets/components/symbols/landscape/fox_spin.webp' },
+	wolfSpinTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/wolf_spin.webp' },
+	bearSpinTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/bear_spin.webp' },
+	rabbitSpinTileLs:   { type: 'sprite', src: './assets/components/symbols/landscape/rabbit_spin.webp' },
+	squirrelSpinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/squirrel_spin.webp' },
+	wildSpinTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/wild_spin.webp' },
+	scatterSpinTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/scatter_spin.webp' },
 	// Win-state stills for the animals: the held final frame of each *WinNew clip, so a win whose
 	// sheets have not loaded shows the celebration pose instead of the idle bust. Landscape has had
 	// its own set all along (*WinTileLs below); these are the desktop/portrait counterparts.
