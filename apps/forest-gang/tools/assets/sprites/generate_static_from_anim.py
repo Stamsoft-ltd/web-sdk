@@ -8,9 +8,12 @@ The shipped statics were the OLD pre-redesign art with a per-animal coloured fra
 (squirrel red, fox purple, wolf blue, ...), so a fallback painted that frame on top of the shared
 brown `animal_border.webp` the reels draw underneath — two mismatched frames.
 
-Frame 0 of each sheet IS the animation's rest pose, so it is the correct still. The busts stay
-FRAMELESS and transparent: Board draws animalBorder underneath (Board.svelte:504) and the static
-on top (:564), so a baked frame would double up.
+Which frame substitutes for a clip depends on how the clip plays. The idle and money sheets start
+from their rest pose, so frame 0 is the seamless still for them. The WIN sheets are the opposite:
+the clip starts neutral, builds to the celebration and HOLDS on its final frame (loop=false), so
+frame 0 of a win sheet looks exactly like the idle bust — the correct win still is the LAST frame,
+the pose players see persist. The busts stay FRAMELESS and transparent: Board draws animalBorder
+underneath (Board.svelte:504) and the static on top (:564), so a baked frame would double up.
 
 Geometry: the static Sprite is drawn at symbol{W,H} * idleFit, which lands inside the frame's
 inner panel (PANEL_W_FRAC/PANEL_H_FRAC of the border), so a bust filling FILL of a cell-aspect
@@ -42,15 +45,15 @@ Y_BIAS = -0.02
 QUALITY = 82  # matches the repo-wide lossy re-encode (58598f1)
 
 
-def sheet_frame0(folder: str) -> Image.Image:
-    """First frame of a sprite sheet — the pose the animation rests on."""
+def sheet_frame(folder: str, index: int = 0) -> Image.Image:
+    """A frame of a sprite sheet by position — 0 is the rest pose, -1 the held final pose."""
     d = SPRITES / folder
     meta_path = next(d.glob("*.json"))
     data = json.loads(meta_path.read_text())
     anims = data.get("animations") or {}
     # animations[] is ordered; fall back to the frames dict for sheets that declare no animation
-    name = list(anims.values())[0][0] if anims else next(iter(data["frames"]))
-    box = data["frames"][name]["frame"]
+    names = list(anims.values())[0] if anims else list(data["frames"])
+    box = data["frames"][names[index]]["frame"]
     # meta.image can carry a ?v= cache-buster that is not part of the filename on disk
     src = Image.open(d / data["meta"]["image"].split("?")[0]).convert("RGBA")
     return src.crop((box["x"], box["y"], box["x"] + box["w"], box["y"] + box["h"]))
@@ -73,29 +76,38 @@ def main() -> None:
     jobs = []
     for a in ANIMALS:
         # <animal>.webp and landscape/<animal>.webp — the base-state reel fallback (idle sheet)
-        jobs.append((SYMBOLS / f"{a}.webp", f"{a}IdleAnim", True))
-        jobs.append((SYMBOLS / "landscape" / f"{a}.webp", f"{a}IdleAnim", True))
-        # landscape/<animal>_win.webp — the win-state fallback (win sheet)
-        jobs.append((SYMBOLS / "landscape" / f"{a}_win.webp", f"{a}WinNew", True))
-        # <animal>_expand.webp — the expanded column (money sheet). Already the right aspect and
-        # NOT a cutout: the money frame is the whole column, so it is written at native size
-        # rather than fitted, which also drops it from ~150KB to a few KB.
-        jobs.append((SYMBOLS / f"{a}_expand.webp", f"{a}Money", False))
+        jobs.append((SYMBOLS / f"{a}.webp", f"{a}IdleAnim", True, 0, None))
+        jobs.append((SYMBOLS / "landscape" / f"{a}.webp", f"{a}IdleAnim", True, 0, None))
+        # <animal>_win.webp — the win-state fallback: the win clip's HELD final frame (frame 0 is
+        # the neutral wind-up and reads as the plain idle bust). Landscape always had its own win
+        # tiles; desktop/portrait used to reuse the base tile, so a winning animal whose sheets had
+        # not loaded showed its idle pose. Sized off the animal's base tile (same cell aspect).
+        jobs.append((SYMBOLS / f"{a}_win.webp", f"{a}WinNew", True, -1, SYMBOLS / f"{a}.webp"))
+        jobs.append((SYMBOLS / "landscape" / f"{a}_win.webp", f"{a}WinNew", True, -1, None))
+        # <animal>_expand.webp — the expanded column (money sheet). Frame 0 on purpose: the overlay
+        # shows this only until the clip streams in, and the clip starts at frame 0, so the rest
+        # pose hands off seamlessly. Already the right aspect and NOT a cutout: the money frame is
+        # the whole column, so it is written at native size rather than fitted, which also drops it
+        # from ~150KB to a few KB.
+        jobs.append((SYMBOLS / f"{a}_expand.webp", f"{a}Money", False, 0, None))
 
-    for dst, folder, fit in jobs:
-        if not dst.exists():
-            print(f"  skip (no such file) {dst.relative_to(ROOT)}")
+    for dst, folder, fit, index, size_from in jobs:
+        # A tile that does not exist yet borrows its canvas from `size_from` (same cell aspect).
+        ref = dst if dst.exists() else size_from
+        if ref is None or not ref.exists():
+            print(f"  skip (no canvas reference) {dst.relative_to(ROOT)}")
             continue
-        before = dst.stat().st_size
-        old_size = Image.open(dst).size
-        bust = sheet_frame0(folder)
-        out = fit_into(bust, old_size) if fit else bust
+        before = dst.stat().st_size if dst.exists() else 0
+        canvas = Image.open(ref).size
+        bust = sheet_frame(folder, index)
+        out = fit_into(bust, canvas) if fit else bust
         if dry:
-            print(f"  {dst.relative_to(ROOT)}  {old_size} <- {folder} frame0 {bust.size}")
+            print(f"  {dst.relative_to(ROOT)}  {canvas} <- {folder}[{index}] {bust.size}")
             continue
         out.save(dst, "WEBP", quality=QUALITY, method=6)
         after = dst.stat().st_size
-        print(f"  {str(dst.relative_to(ROOT)):46s} {before/1024:7.1f}K -> {after/1024:6.1f}K  ({folder})")
+        was = f"{before/1024:7.1f}K" if before else "    new"
+        print(f"  {str(dst.relative_to(ROOT)):46s} {was} -> {after/1024:6.1f}K  ({folder}[{index}])")
 
 
 if __name__ == "__main__":

@@ -113,6 +113,14 @@ const assets = {
 	bearTile:     { type: 'sprite', src: './assets/components/symbols/bear.webp?v=20260722' },
 	rabbitTile:   { type: 'sprite', src: './assets/components/symbols/rabbit.webp?v=20260722' },
 	squirrelTile: { type: 'sprite', src: './assets/components/symbols/squirrel.webp?v=20260722' },
+	// Win-state stills for the animals: the held final frame of each *WinNew clip, so a win whose
+	// sheets have not loaded shows the celebration pose instead of the idle bust. Landscape has had
+	// its own set all along (*WinTileLs below); these are the desktop/portrait counterparts.
+	foxWinTile:      { type: 'sprite', src: './assets/components/symbols/fox_win.webp?v=20260728' },
+	wolfWinTile:     { type: 'sprite', src: './assets/components/symbols/wolf_win.webp?v=20260728' },
+	bearWinTile:     { type: 'sprite', src: './assets/components/symbols/bear_win.webp?v=20260728' },
+	rabbitWinTile:   { type: 'sprite', src: './assets/components/symbols/rabbit_win.webp?v=20260728' },
+	squirrelWinTile: { type: 'sprite', src: './assets/components/symbols/squirrel_win.webp?v=20260728' },
 	aExpTile: { type: 'sprite', src: './assets/components/symbols/card_a.webp?v=20260723' },
 	kExpTile: { type: 'sprite', src: './assets/components/symbols/card_k.webp?v=20260723' },
 	qExpTile: { type: 'sprite', src: './assets/components/symbols/card_q.webp?v=20260723' },

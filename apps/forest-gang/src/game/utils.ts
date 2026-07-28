@@ -165,15 +165,18 @@ export const winSpriteKeyByNameLandscape: Record<string, string> = {
 	SCATTER: 'scatterCustomLs',
 };
 
-// Win-state board sprites on reel. Letters are absent on purpose: Board draws a winning letter
-// from this map's fallback (its CLEAN base tile) with a continuous pulse, so the old dedicated
-// card_*_win art was never reached and has been deleted along with its keys.
+// Win-state board sprites on reel. Animals point at their own win still (the held final frame of
+// the win clip) rather than the base tile, so a win that falls back to a static shows the
+// celebration pose, not the idle one — matching what the landscape map has always done.
+// Letters are absent on purpose: Board draws a winning letter from this map's fallback (its CLEAN
+// base tile) with a continuous pulse, so the old dedicated card_*_win art was never reached and
+// has been deleted along with its keys.
 export const winSpriteKeyByName: Record<string, string> = {
-	FOX: 'foxTile',
-	WOLF: 'wolfTile',
-	BEAR: 'bearTile',
-	RABBIT: 'rabbitTile',
-	SQUIRREL: 'squirrelTile',
+	FOX: 'foxWinTile',
+	WOLF: 'wolfWinTile',
+	BEAR: 'bearWinTile',
+	RABBIT: 'rabbitWinTile',
+	SQUIRREL: 'squirrelWinTile',
 	WILD: 'wildWinTile',
 	SCATTER: 'scatterWin',
 };
