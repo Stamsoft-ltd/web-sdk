@@ -13,6 +13,7 @@ import AnimatedSprite from '../../../packages/pixi-svelte/src/lib/components/Ani
 import Particles from '../../../packages/pixi-svelte/src/lib/components/Particles.svelte';
 import ParticleEmitter from '../../../packages/pixi-svelte/src/lib/components/ParticleEmitter.svelte';
 import { anyPulsingWin, type PulseBoard } from '../src/game/boardPulse';
+import { blurAlpha, MOTION_BLUR_VELOCITY, SPIN_OPTIONS_DEFAULT, SPIN_OPTIONS_TURBO } from '../src/game/constants';
 import type { SymbolName } from '../src/game/types';
 import { advanceFrames, fakeTextures, parentContext, reactiveProps } from './helpers.svelte';
 
@@ -234,6 +235,40 @@ const boardOf = (...rows: [SymbolName, string | undefined][][]): PulseBoard =>
 			symbols: symbols.map(([name, symbolState]) => ({ rawSymbol: { name }, symbolState })),
 		},
 	}));
+
+describe('blurAlpha (R7 follow-up — the smear cross-fades instead of hard-cutting)', () => {
+	// Board.svelte measures reel velocity in board-px per 60 Hz tick, so the spin speeds convert the
+	// same way. The ordering that actually matters is FLOOR < MOTION_BLUR_VELOCITY < cruise: pick a
+	// fade band that reaches up past the cruise and the body of every spin under-blurs.
+	const perTick = (pxPerMs: number) => pxPerMs * (1000 / 60);
+
+	it('is fully opaque through the whole cruise, at every spin speed', () => {
+		expect(blurAlpha(perTick(SPIN_OPTIONS_DEFAULT.reelSpinSpeed))).toBe(1);
+		expect(blurAlpha(perTick(SPIN_OPTIONS_TURBO.reelSpinSpeed))).toBe(1);
+		expect(blurAlpha(MOTION_BLUR_VELOCITY)).toBe(1);
+	});
+
+	it('is fully transparent at rest', () => {
+		expect(blurAlpha(0)).toBe(0);
+	});
+
+	it('fades, rather than cuts, below the full-blur point', () => {
+		const mid = blurAlpha(MOTION_BLUR_VELOCITY * 0.65);
+		expect(mid).toBeGreaterThan(0);
+		expect(mid).toBeLessThan(1);
+	});
+
+	it('never increases as the reel slows, on either direction of travel', () => {
+		let previous = 1;
+		for (let v = MOTION_BLUR_VELOCITY; v >= 0; v -= 0.5) {
+			const alpha = blurAlpha(v);
+			expect(alpha).toBeLessThanOrEqual(previous);
+			expect(blurAlpha(-v)).toBe(alpha); // the bounce-back travels the other way
+			previous = alpha;
+		}
+		expect(previous).toBe(0);
+	});
+});
 
 describe('anyPulsingWin (plan 14 §2, N4)', () => {
 	// The defect was two explicit exclusions — 'WILD' and 'SCATTER' — in the predicate, so a scatter
