@@ -161,59 +161,21 @@ export const winSpriteKeyByNameLandscape: Record<string, string> = {
 	BEAR: 'bearWinTileLs',
 	RABBIT: 'rabbitWinTileLs',
 	SQUIRREL: 'squirrelWinTileLs',
-	A: 'aWinTileLs',
-	K: 'kWinTileLs',
-	Q: 'qWinTileLs',
-	J: 'jWinTileLs',
-	T: 'tWinTileLs',
 	WILD: 'wildTileLs',
 	SCATTER: 'scatterCustomLs',
 };
 
-// Expanded symbol overlay — premiums use expand art, cards use win art
-export const expandedSpriteKeyByName: Record<string, string> = {
-	FOX: 'foxExpTile',
-	WOLF: 'wolfExpTile',
-	BEAR: 'bearExpTile',
-	RABBIT: 'rabbitExpTile',
-	SQUIRREL: 'squirrelExpTile',
-	A: 'aWinTile',
-	K: 'kWinTile',
-	Q: 'qWinTile',
-	J: 'jWinTile',
-	T: 'tWinTile',
-	WILD: 'wildTile',
-	SCATTER: 'scatterCustom',
-};
-
-// Win-state board sprites on reel — premiums use base art, cards use dedicated win art
+// Win-state board sprites on reel. Letters are absent on purpose: Board draws a winning letter
+// from this map's fallback (its CLEAN base tile) with a continuous pulse, so the old dedicated
+// card_*_win art was never reached and has been deleted along with its keys.
 export const winSpriteKeyByName: Record<string, string> = {
 	FOX: 'foxTile',
 	WOLF: 'wolfTile',
 	BEAR: 'bearTile',
 	RABBIT: 'rabbitTile',
 	SQUIRREL: 'squirrelTile',
-	A: 'aWinTile',
-	K: 'kWinTile',
-	Q: 'qWinTile',
-	J: 'jWinTile',
-	T: 'tWinTile',
 	WILD: 'wildWinTile',
 	SCATTER: 'scatterWin',
-};
-
-// Win-state expanded sprites — shown when the expanding symbol pays
-export const expandedWinSpriteKeyByName: Record<string, string> = {
-	FOX: 'foxExpWinTile',
-	WOLF: 'wolfExpWinTile',
-	BEAR: 'bearExpWinTile',
-	RABBIT: 'rabbitExpWinTile',
-	SQUIRREL: 'squirrelExpWinTile',
-	A: 'aWinExpTile',
-	K: 'kWinExpTile',
-	Q: 'qWinExpTile',
-	J: 'jWinExpTile',
-	T: 'tWinExpTile',
 };
 
 // Win board asset key by win level alias
