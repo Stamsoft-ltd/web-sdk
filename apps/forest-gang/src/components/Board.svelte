@@ -15,7 +15,7 @@
 	import type { Texture } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
-	import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, MOTION_BLUR_VELOCITY } from '../game/constants';
+	import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, blurAlpha } from '../game/constants';
 	import {
 		spriteKeyByName,
 		bonusSpriteKeyByName,
@@ -286,15 +286,20 @@
 
 	// ── Per-reel spin velocity, measured off the reel's own Y tween (R7 blur gate) ───────────────
 	// Signed board-px per tick. The effect re-runs on every tween update while a reel moves (the
-	// tween's `.current` is reactive) and pins 0 the moment the reel reports stopped, so the blur
-	// gate can never stick on. Teleports (padding re-anchor at spin start jumps reelY in one tick)
-	// are ignored — a real frame never moves more than two cells.
+	// tween's `.current` is reactive) and pins 0 for anything that is not a spin, so the blur gate
+	// can never stick on. Teleports (padding re-anchor at spin start jumps reelY in one tick) are
+	// ignored — a real frame never moves more than two cells.
+	// Pinned on 'bouncing' as well as 'stopped': `removePaddingAndBounceBack` swaps in the LANDED
+	// symbols and teleports Y in the same tick, and the teleport guard below skips that tick's
+	// velocity write. On the paths that reach the bounce at full speed (turbo, and fastSpin's
+	// un-eased slide) that left the final board drawing smeared+ghosted for a frame. The bounce-back
+	// itself is 0.15 px/ms — never fast enough to blur — so nothing is lost by pinning it.
 	const prevReelY: number[] = [];
 	const reelVelocity = $state<number[]>([]);
 	$effect(() => {
 		board.forEach((reel, i) => {
 			const y = reel.reelState.symbols[0]?.symbolY() ?? 0;
-			if (reel.reelState.motion === 'stopped') {
+			if (reel.reelState.motion !== 'spinning') {
 				prevReelY[i] = y;
 				if (reelVelocity[i] !== 0) reelVelocity[i] = 0;
 				return;
@@ -309,8 +314,8 @@
 	// over one 60 Hz frame. Velocity beyond this renders as echo ghosts in the template.
 	const BASE_SPIN_V = 2.3 * (1000 / 60);
 
-	// Pre-blurred spin tiles (R7, generate_spin_blur.py) drawn instead of the normal symbol
-	// branches while the reel travels faster than MOTION_BLUR_VELOCITY. Landscape has its own
+	// Pre-blurred spin tiles (R7, generate_spin_blur.py) cross-faded over the normal symbol
+	// branches at `blurAlpha(velocity)`. Landscape has its own
 	// framed tile art, so it blurs its own set — a desktop smear at speed would flash the wrong
 	// card design.
 	const SPIN_BLUR_KEY: Partial<Record<SymbolName, string>> = {
@@ -450,45 +455,13 @@
 				<!-- Winning wild/scatter pulse continuously like the winning letters (design ask),
 				     replacing the old one-shot spring pop. -->
 				{@const specialPop = isWin ? letterPulse : 1}
-				{@const spinningFast = Math.abs(reelVelocity[reelIndex] ?? 0) > MOTION_BLUR_VELOCITY}
-				{#if spinningFast && activeSpinMap[symName]}
-					<!-- Reel motion treatment (R7) — the pre-blurred spin tile is the base look (its smear is baked
-					     for BASE spin speed). Whatever velocity the reel carries ABOVE base speed is
-					     rendered as echo ghosts of the same blurred tile, so turbo extends the smear
-					     instead of under-reading, base spin is the pure baked art (excess 0), and the
-					     eased stop collapses the ghosts before the tile snaps sharp at the gate. Ghosts
-					     of already-blurred art melt together — no double-vision banding. -->
-					{@const vy = reelVelocity[reelIndex] ?? 0}
-					{@const excess = Math.abs(vy) > BASE_SPIN_V ? vy - Math.sign(vy) * BASE_SPIN_V : 0}
-					{#if Math.abs(excess) > 2}
-						<Sprite
-							key={activeSpinMap[symName]}
-							x={getX(reelIndex)}
-							y={y - excess * 0.66}
-							anchor={{ x: 0.5, y: 0.5 }}
-							width={symbolW * s}
-							height={symbolH * s}
-							alpha={0.22}
-						/>
-						<Sprite
-							key={activeSpinMap[symName]}
-							x={getX(reelIndex)}
-							y={y - excess * 0.33}
-							anchor={{ x: 0.5, y: 0.5 }}
-							width={symbolW * s}
-							height={symbolH * s}
-							alpha={0.4}
-						/>
-					{/if}
-					<Sprite
-						key={activeSpinMap[symName]}
-						x={getX(reelIndex)}
-						y={y}
-						anchor={{ x: 0.5, y: 0.5 }}
-						width={symbolW * s}
-						height={symbolH * s}
-					/>
-				{:else if symName === 'SCATTER' && scatterFrames.length > 0}
+				{@const blurA = activeSpinMap[symName] ? blurAlpha(reelVelocity[reelIndex] ?? 0) : 0}
+				<!-- The sharp art is the layer UNDERNEATH the smear, not a sibling branch of it: the
+				     smear cross-dissolves over it (see the overlay after this chain) instead of the two
+				     hard-swapping. Only skipped once the smear is fully opaque, so the animated cells
+				     (idle blinks, wild/scatter clips) still cost nothing through the body of a spin. -->
+				{#if blurA < 1}
+				{#if symName === 'SCATTER' && scatterFrames.length > 0}
 					<!-- Scatter shimmers with its animated emblem clip and pulses continuously while it
 					     wins. Drawn a bit smaller than a cell. animationSpeed 0.14 (~8fps) stepped
 					     visibly and read as "laggy"; 0.36 (~22fps) plays smoothly and stays under the
@@ -675,6 +648,52 @@
 						width={symbolW * s * specialPop}
 						height={symbolH * s * specialPop}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
+					/>
+				{/if}
+				{/if}
+				{#if blurA > 0}
+					<!-- Reel motion treatment (R7) — the pre-blurred spin tile is the base look (its smear is baked
+					     for BASE spin speed). Whatever velocity the reel carries ABOVE base speed is
+					     rendered as echo ghosts of the same blurred tile, so turbo extends the smear
+					     instead of under-reading, base spin is the pure baked art (excess 0), and the
+					     eased stop collapses the ghosts before the smear itself fades out. Ghosts of
+					     already-blurred art melt together — no double-vision banding.
+					     Drawn LAST so it dissolves over the sharp art below it rather than replacing it. -->
+					{@const vy = reelVelocity[reelIndex] ?? 0}
+					{@const excess = Math.abs(vy) > BASE_SPIN_V ? vy - Math.sign(vy) * BASE_SPIN_V : 0}
+					<!-- The smear is baked from the STATIC tile, so it must be drawn at the size that tile
+					     is drawn at when it is sharp. Everything is a full cell except the scatter, whose
+					     medallion draws at SCATTER_SIZE in both of its sharp branches — without this it
+					     spun ~39% oversized and snapped down at the stop. -->
+					{@const blurFit = symName === 'SCATTER' ? SCATTER_SIZE : 1}
+					{#if Math.abs(excess) > 2}
+						<Sprite
+							key={activeSpinMap[symName]}
+							x={getX(reelIndex)}
+							y={y - excess * 0.66}
+							anchor={{ x: 0.5, y: 0.5 }}
+							width={symbolW * s * blurFit}
+							height={symbolH * s * blurFit}
+							alpha={0.22 * blurA}
+						/>
+						<Sprite
+							key={activeSpinMap[symName]}
+							x={getX(reelIndex)}
+							y={y - excess * 0.33}
+							anchor={{ x: 0.5, y: 0.5 }}
+							width={symbolW * s * blurFit}
+							height={symbolH * s * blurFit}
+							alpha={0.4 * blurA}
+						/>
+					{/if}
+					<Sprite
+						key={activeSpinMap[symName]}
+						x={getX(reelIndex)}
+						y={y}
+						anchor={{ x: 0.5, y: 0.5 }}
+						width={symbolW * s * blurFit}
+						height={symbolH * s * blurFit}
+						alpha={blurA}
 					/>
 				{/if}
 				</Container>

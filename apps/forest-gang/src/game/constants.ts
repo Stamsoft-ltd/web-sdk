@@ -130,6 +130,20 @@ export const SPIN_OPTIONS_ANTICIPATED_BOUGHT = {
 
 export const MOTION_BLUR_VELOCITY = 31;
 
+// Opacity of the baked spin smear at a given reel velocity (signed board-px per 60 Hz tick, as
+// measured in Board.svelte). MOTION_BLUR_VELOCITY is the FULL-blur point and sits below the base
+// cruise (reelSpinSpeed 2.3 px/ms = ~38 px/tick), so the body of every spin draws the pure baked
+// art; the smear only dissolves once the reel is slower than that, over the band down to
+// BLUR_FADE_FLOOR. Replaces a bare `velocity > MOTION_BLUR_VELOCITY` branch swap, which changed
+// sharpness AND per-symbol geometry in a single frame at each end of the spin (worst on the eased
+// stop, where the reel is nearly readable when it flipped) and could chatter frame-to-frame while
+// velocity sat on the threshold. Smoothstep, so the band's own ends don't pop either.
+const BLUR_FADE_FLOOR = MOTION_BLUR_VELOCITY * 0.35;
+export const blurAlpha = (velocity: number) => {
+	const t = (Math.abs(velocity) - BLUR_FADE_FLOOR) / (MOTION_BLUR_VELOCITY - BLUR_FADE_FLOOR);
+	return t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
+};
+
 export const zIndexes = {
 	background: {
 		backdrop: -3,
