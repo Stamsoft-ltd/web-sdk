@@ -18,6 +18,19 @@ export const GOLD_GRADIENT = new FillGradient({
 	textureSpace: 'local',
 });
 
+// Figma --Icon-stroke: linear-gradient(180deg, #00FCFF 0%, #0046A9 100%). Used for the "YOU WON"
+// label on both congratulations panels (bonus intro + outro).
+export const ICON_STROKE_GRADIENT = new FillGradient({
+	type: 'linear',
+	start: { x: 0.5, y: 0 },
+	end: { x: 0.5, y: 1 },
+	colorStops: [
+		{ offset: 0, color: 0x00fcff },
+		{ offset: 1, color: 0x0046a9 },
+	],
+	textureSpace: 'local',
+});
+
 // Brighter win gradient: linear-gradient(182deg, #E2D981 17.62%, #FBC503 60.04%, #D98503 102.47%).
 export const WIN_GRADIENT = new FillGradient({
 	type: 'linear',

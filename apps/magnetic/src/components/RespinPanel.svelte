@@ -37,18 +37,8 @@
 	const LOGO_H = $derived(main.width * 0.3 / (1400 / 1098));
 	const panelY = $derived(canvasTopY + LOGO_H * 0.78 + PANEL_H * 0.5);
 
-	// Continuous icon spin while the panel is up.
-	let iconRot = $state(0);
-	$effect(() => {
-		if (!show) return;
-		let raf = 0;
-		const tick = (now: number) => {
-			iconRot = (now / 1000) * 2.4;
-			raf = requestAnimationFrame(tick);
-		};
-		raf = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(raf);
-	});
+	// The refresh icon is STATIC — it used to spin continuously off its own rAF, which pulled the
+	// eye away from the board during respins.
 
 	// Figma: Inter Bold, uppercase, vertical gradient #00FCFF -> #0046A9.
 	const RESPIN_GRADIENT = new FillGradient({
@@ -80,7 +70,6 @@
 					key="respinIcon"
 					anchor={0.5}
 					y={-PANEL_H * 0.16}
-					rotation={iconRot}
 					width={PANEL_H * 0.3}
 					height={PANEL_H * 0.3}
 				/>

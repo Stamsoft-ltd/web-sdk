@@ -33,12 +33,17 @@
 
 	// Vertical centre of each board art's amount plaque, as a fraction of boardSize measured DOWN
 	// from the board centre — measured per art (the plaques sit at slightly different heights).
+	// Offset of the amount from the sprite centre, as a fraction of the sprite height. Each value is
+	// the MEASURED vertical centre of that art's dark plaque bay (the flat region between the top
+	// rail and the bottom ornament), not a hand-tuned guess — the bays do not sit at the same height
+	// across the six boards, so a single shared value leaves the amount high on some and low on
+	// others. Re-measure with scratchpad/bay.py if the art changes.
 	const TIER_TEXT_Y: Record<string, number> = {
-		sweetWinBoard: 0.318,
-		wildWinBoard: 0.318,
-		epicWinBoard: 0.353,
-		mythicWinBoard: 0.377,
-		legendaryWinBoard: 0.37,
+		sweetWinBoard: 0.324,
+		wildWinBoard: 0.313,
+		epicWinBoard: 0.379,
+		mythicWinBoard: 0.362,
+		legendaryWinBoard: 0.364,
 	};
 
 	// The 4 hex gems on the medallion ring of each board art (fractions of the sprite box,
@@ -206,7 +211,7 @@
 		     bay between the top rail and the compass (the compass eats the bottom-centre). -->
 		<Container
 			x={isMax ? boardW * 0.015 : 0}
-			y={isMax ? boardH * 0.29 : boardSize * (TIER_TEXT_Y[displayedKey] ?? 0.37)}
+			y={isMax ? boardH * 0.3005 : boardSize * (TIER_TEXT_Y[displayedKey] ?? 0.37)}
 			scale={fitScale}
 		>
 			<Text

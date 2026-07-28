@@ -9,6 +9,12 @@
 		     the Typekit one was additionally awaited by pixi's InitialiseApplication, stalling app
 		     boot on a request that can never succeed there. See <App preloadWebFont={false}>. -->
 		<link rel="stylesheet" href="%sveltekit.assets%/fonts/web/fonts.css" />
+		<!-- PIXI rasterises Text to canvas once and does NOT redraw when a webfont arrives later, so a
+		     face that is only ever used from canvas can miss its first paint and fall back. @font-face
+		     alone does not fetch — the browser needs a consumer. Warm the win-amount face explicitly. -->
+		<script>
+			document.fonts?.load('900 128px Orbitron');
+		</script>
 		<style>
 			/* Fill the FULL dynamic viewport so the canvas (and its background) always reaches the
 			   bottom edge on mobile — 100% chains break when the browser URL bar shows/hides, leaving

@@ -19,6 +19,7 @@
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import { ICON_STROKE_GRADIENT } from '../game/goldGradient';
 	import LightningStorm from './LightningStorm.svelte';
 	import PressToContinue from './PressToContinue.svelte';
 	import SparkBurst from './SparkBurst.svelte';
@@ -143,13 +144,24 @@
 		letterSpacing: fontSize * 0.03,
 		align: 'center' as const,
 	});
+	// Figma "YOU WON": IBM Plex Sans Condensed 700, letter-spacing 0.72px and a 0/2.78/2.78 black
+	// 25% shadow at a 24px design size, filled with --Icon-stroke. Sizes here stay panel-relative
+	// (fontSize is derived from PH), so the design's px values are applied as ratios of 24 —
+	// hardcoding 24 would render tiny on desktop and oversized in portrait.
 	const blueStyle = (fontSize: number) => ({
-		fontFamily: 'Inter',
+		fontFamily: 'IBM Plex Sans Condensed',
 		fontWeight: '700' as const,
 		fontSize,
-		fill: 0x4c9be0,
-		letterSpacing: fontSize * 0.18,
+		fill: ICON_STROKE_GRADIENT,
+		letterSpacing: fontSize * 0.03,
 		align: 'center' as const,
+		dropShadow: {
+			color: 0x000000,
+			alpha: 0.25,
+			angle: Math.PI / 2,
+			distance: fontSize * 0.1158,
+			blur: fontSize * 0.1158,
+		},
 	});
 	const amountStyle = (fontSize: number) => ({
 		fontFamily: 'Inter',
@@ -172,7 +184,12 @@
 
 <FadeContainer {show}>
 	{#if winLevelData}
-		{@const duration = winLevelData.presentDuration}
+		<!-- The bonus total lands almost immediately rather than rolling up over the win level's
+		     presentDuration (10s at mythic, 45s at the top tier). That long roll-up belongs to the
+		     in-round win presentation, which has already played by the time this summary appears;
+		     repeating it here just makes the player wait to read a number. The panel itself still
+		     waits for PressToContinue, so nothing is cut short. -->
+		{@const duration = 400}
 		<WinCountUpProvider {amount} {duration} oncomplete={() => {}}>
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
 				<OnMount onmount={() => startCountUp()} />

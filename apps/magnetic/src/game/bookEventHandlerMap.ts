@@ -1,4 +1,3 @@
-import _ from 'lodash';
 
 import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap } from 'utils-book';
 import { stateBet, stateUi } from 'state-shared';
@@ -49,24 +48,6 @@ const animateSymbols = async ({ positions }: { positions: Position[] }) => {
 	});
 };
 
-const positionKey = (position: Position) => `${position.reel}:${position.row}`;
-
-const getVisibleWinPositions = (bookEvent: BookEventOfType<'winInfo'>) => {
-	const activeSeriesIds = new Set(stateGame.activeSeries.map((entry) => entry.id));
-	const activeLockedPositions = new Set(
-		stateGame.activeSeries.flatMap((entry) => entry.lockedPositions.map(positionKey)),
-	);
-	const wins = activeSeriesIds.size
-		? bookEvent.wins.filter((win) => activeSeriesIds.has(win.seriesId))
-		: bookEvent.wins;
-	const positions = _.uniqBy(
-		wins.flatMap((win) => win.positions),
-		positionKey,
-	);
-
-	if (!activeLockedPositions.size) return positions;
-	return positions.filter((position) => activeLockedPositions.has(positionKey(position)));
-};
 
 const didSeriesGrow = (previous: ClusterSeriesSnapshot[], next: ClusterSeriesSnapshot[]) => {
 	if (previous.length !== next.length) return true;
@@ -254,8 +235,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// whole-board flash on no-growth spins. Keep only the final cluster win-state pass.
 		if (stateGame.bonusMode === 'superspin' && !isSuperFinal) return;
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_clu_002' });
-		const positions = getVisibleWinPositions(bookEvent);
-		if (positions.length) await animateSymbols({ positions });
+		// No per-symbol win pass. This used to await animateSymbols(), which scaled every winning
+		// cell to 1.12, swapped it to the looping win flipbook and held for ~1.2s before the total
+		// win could show. The win screen now comes up immediately instead.
+		eventEmitter.broadcast({ type: 'boardShow' });
 	},
 	setTotalWin: async (bookEvent: BookEventOfType<'setTotalWin'>) => {
 		stateBet.winBookEventAmount = bookEvent.amount;

@@ -18,7 +18,6 @@
 	import WinCoins from './WinCoins.svelte';
 	import WinBoard from './WinBoard.svelte';
 	import PressToContinue from './PressToContinue.svelte';
-	import { SYMBOL_SIZE } from '../game/constants';
 	import { getContext } from '../game/context';
 	import { stateBet } from 'state-shared';
 
@@ -162,16 +161,13 @@
 										onresize={(s) => (winSizes = s)}
 										text={bookEventAmountToCurrencyString(countUpAmount)}
 										style={{
-											fontFamily: 'Cinzel',
+											fontFamily: 'Orbitron',
 											fontWeight: '900',
-											fontSize: SYMBOL_SIZE,
+											fontSize: 128,
 											fill: 0xffffff,
 											align: 'center',
-											letterSpacing: SYMBOL_SIZE * 0.03,
-											stroke: {
-												color: 0x000000,
-												width: Math.max(2, Math.round(SYMBOL_SIZE * 0.04)),
-											},
+											letterSpacing: 3.84,
+											stroke: { color: 0x000000, width: 2 },
 										}}
 									/>
 								</Container>

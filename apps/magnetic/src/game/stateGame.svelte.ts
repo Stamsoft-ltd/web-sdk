@@ -238,19 +238,6 @@ const getBoardScale = () => {
 	);
 };
 
-const getBoardOffset = () => {
-	const { mainLayout, canvasSizes, padding, availableCanvasHeight, availableCanvasWidth } =
-		getBoardViewportMetrics();
-	const layoutType = stateLayoutDerived.layoutType();
-	const extraLeftShiftPx = layoutType === 'desktop' ? 50 : layoutType === 'landscape' ? 30 : 0;
-	const centeredCanvasX = padding.left + availableCanvasWidth * 0.5 - canvasSizes.width * 0.5;
-	const centeredCanvasY = padding.top + availableCanvasHeight * 0.5 - canvasSizes.height * 0.5;
-	return {
-		x: (centeredCanvasX - extraLeftShiftPx + 80) / (mainLayout.scale || 1),
-		y: (centeredCanvasY + 18) / (mainLayout.scale || 1),
-	};
-};
-
 // Portrait: the board fills most of the width and sits below the logo + ALL WINS/capsule/FREE SPINS
 // top bar; the HTML HUD occupies the space below it.
 const PORTRAIT_FRAME_FILL = 0.94;
@@ -341,7 +328,11 @@ const boardLayout = () => {
 	const mainScale = mainLayout.scale || 1;
 	const boardY = mainLayout.height * 0.5 + (pad.top - pad.bottom + 25) / (2 * mainScale);
 	return {
-		x: mainLayout.width * 0.5 + getBoardOffset().x,
+		// MainContainer is anchored 0.5 at canvasSizes().width * 0.5, so local x = width * 0.5 IS the
+		// viewport centre. This used to add getBoardOffset().x, which centred the board in the padded
+		// region instead — and since desktop padding is asymmetric (210 left / 230 right) plus a
+		// hand-tuned +30, the grid sat 20px right of centre.
+		x: mainLayout.width * 0.5,
 		y: boardY,
 		boardScale,
 		anchor: { x: 0.5, y: 0.5 },

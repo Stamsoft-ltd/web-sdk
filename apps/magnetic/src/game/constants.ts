@@ -73,10 +73,12 @@ const SPIN_OPTIONS_SHARED = {
 	reelSpinDelay: 145,
 };
 
+// Normal mode only (turbo/super-turbo use FAST/TURBO below). Speeds are 10% lower than the
+// previous tuning (1.5 / 2.3 divided by 1.1), so the reels scroll 10% slower.
 export const SPIN_OPTIONS_DEFAULT = {
 	...SPIN_OPTIONS_SHARED,
-	reelPreSpinSpeed: 1.5,
-	reelSpinSpeed: 2.3,
+	reelPreSpinSpeed: 1.36,
+	reelSpinSpeed: 2.09,
 	reelBounceSizeMulti: 0.3,
 };
 
