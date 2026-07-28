@@ -1,4 +1,4 @@
-import { backOut, cubicOut } from 'svelte/easing';
+import { backOut, cubicIn, cubicOut, linear } from 'svelte/easing';
 
 import { stateBet } from 'state-shared';
 import { createReelForSpinning } from 'utils-slots';
@@ -43,7 +43,7 @@ const MOTION_NORMAL = {
 		clearGapMs: 50,
 		spinCount: 5,
 		spinFrameMs: 270,
-		durationMs: 220,
+		durationMs: 250,
 		bounceMs: 80,
 		groupDelayMs: 200, // ms between each stop-group of 1–5 cells
 		lockPulseMs: 130,
@@ -82,23 +82,29 @@ const getSkipMinSpinMs = () => {
 	return SKIP_MIN_SPIN_MS_NORMAL;
 };
 
-// Paid/free-spin reveal: the 7x7 result falls in as one board instead of seven
-// independently rolling reels. Columns/rows are only micro-staggered so the
-// complete board lands within one visual beat.
+// Paid/free-spin reveal: each complete column lands before the next one starts.
 const DROP_START_ROWS = BOARD_DIMENSIONS.y + 3;
+const DROP_DURATION_NORMAL_MS = 220;
+const DROP_DURATION_FAST_MS = 90;
+const DROP_THUMP_MS = 45;
+const DROP_BOUNCE_UP_MS = 35;
+const DROP_BOUNCE_SETTLE_MS = 40;
+const DROP_BOUNCE_HEIGHT = SYMBOL_H * 0.08;
+const DROP_REEL_DELAY_MS = 30;
+const DROP_EXIT_ROWS = BOARD_DIMENSIONS.y + 1;
 
 const DROP_MOTION_NORMAL = {
 	startRows: DROP_START_ROWS,
-	durationMs: 792,
-	reelDelayMs: 8,
-	rowDelayMs: 4,
+	durationMs: DROP_DURATION_NORMAL_MS,
+	reelDelayMs: DROP_REEL_DELAY_MS,
+	rowDelayMs: 0,
 } as const;
 
 const DROP_MOTION_FAST = {
 	startRows: DROP_START_ROWS,
-	durationMs: 480,
-	reelDelayMs: 4,
-	rowDelayMs: 2,
+	durationMs: DROP_DURATION_FAST_MS,
+	reelDelayMs: DROP_REEL_DELAY_MS,
+	rowDelayMs: 0,
 } as const;
 
 type ActiveDrop = {
@@ -111,6 +117,7 @@ type ActiveDrop = {
 let activeDropToken = 0;
 let dropInProgress = false;
 let activeDrop: ActiveDrop | null = null;
+let boardExitPromise: Promise<void> | null = null;
 
 const cancelActiveDrop = () => {
 	if (!activeDrop) return;
@@ -262,7 +269,11 @@ const landscapeSizeT = () => {
 	const shortSidePx = Math.min(c.width, c.height);
 	return Math.max(
 		0,
-		Math.min(1, (shortSidePx - LANDSCAPE_FILL_SHORT_MIN) / (LANDSCAPE_FILL_SHORT_MAX - LANDSCAPE_FILL_SHORT_MIN)),
+		Math.min(
+			1,
+			(shortSidePx - LANDSCAPE_FILL_SHORT_MIN) /
+				(LANDSCAPE_FILL_SHORT_MAX - LANDSCAPE_FILL_SHORT_MIN),
+		),
 	);
 };
 const landscapeFrameFill = () =>
@@ -274,7 +285,8 @@ const landscapeFrameFill = () =>
 const LANDSCAPE_CAPSULE_BIAS_MIN = 0.24;
 const LANDSCAPE_CAPSULE_BIAS_MAX = 0.33;
 const landscapeCapsuleBias = () =>
-	LANDSCAPE_CAPSULE_BIAS_MIN + landscapeSizeT() * (LANDSCAPE_CAPSULE_BIAS_MAX - LANDSCAPE_CAPSULE_BIAS_MIN);
+	LANDSCAPE_CAPSULE_BIAS_MIN +
+	landscapeSizeT() * (LANDSCAPE_CAPSULE_BIAS_MAX - LANDSCAPE_CAPSULE_BIAS_MIN);
 // The landscape capsule is the portrait glass tube (magnetic_tube.webp, 1002×668) rotated to vertical.
 // The art has ~29% transparent margins top/bottom (→ left/right after the 90° rotation): the opaque
 // tube is only ~42.5% of the sprite's width and ~94% of its height, so the *visible* tube is a slim
@@ -345,10 +357,11 @@ const landscapeCapsuleLayout = () => {
 	const board = boardLayout();
 	const main = stateLayoutDerived.mainLayout();
 	const scale = board.boardScale;
-	const gridHalfW = (board.width * 0.5) * scale;
-	const gridHalfH = (board.height * 0.5) * scale;
+	const gridHalfW = board.width * 0.5 * scale;
+	const gridHalfH = board.height * 0.5 * scale;
 	// Right edge of the visible viewport, expressed in virtual units.
-	const canvasRightX = main.width * 0.5 + stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1));
+	const canvasRightX =
+		main.width * 0.5 + stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1));
 	const boardRightX = board.x + gridHalfW;
 	const colX = boardRightX + (canvasRightX - boardRightX) * landscapeCapsuleBias();
 	// 10% larger than the board-derived base size, anchored near the SCREEN TOP (not centred on
@@ -360,7 +373,8 @@ const landscapeCapsuleLayout = () => {
 	// place the buy-bonus just below the visible tube bottom (not the padded sprite bottom).
 	const visibleW = tubeW * LANDSCAPE_CAPSULE_VISIBLE_W;
 	const visibleH = tubeH * LANDSCAPE_CAPSULE_VISIBLE_H;
-	const canvasTopY = main.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1));
+	const canvasTopY =
+		main.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1));
 	// Anchor the FULL sprite box (not just the visible glass) below the screen top, so the tube's
 	// top cap art is never clipped — the capsule starts near the top but stays fully on screen.
 	// The 0.07 top-gap sits the capsule (and the WIN pill tracking its visible bottom) a bit lower.
@@ -383,7 +397,18 @@ const landscapeCapsuleLayout = () => {
 		tubeY += shift;
 		visibleBottom += shift;
 	}
-	return { colX, tubeY, tubeW, tubeH, visibleW, visibleH, visibleBottom, symSize, gridHalfW, gridHalfH };
+	return {
+		colX,
+		tubeY,
+		tubeW,
+		tubeH,
+		visibleW,
+		visibleH,
+		visibleBottom,
+		symSize,
+		gridHalfW,
+		gridHalfH,
+	};
 };
 
 // ── sound helpers ─────────────────────────────────────────────────────────────
@@ -892,6 +917,24 @@ const settleBoardInstant = ({
 	stateGame.boardMode = 'settle';
 };
 
+// Trap-door exit: old unlocked symbols clear below the grid before the next result enters.
+// Locked cluster cells stay in place during respins; a fresh spin unlocks them before this runs.
+const animateBoardExit = async () => {
+	const fast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
+	const motion = fast ? DROP_MOTION_FAST : DROP_MOTION_NORMAL;
+	const exitingCells = stateGame.board.flat().filter((cell) => !cell.locked);
+	await Promise.all(
+		exitingCells.map(async (cell) => {
+			const delayMs = cell.position.reel * motion.reelDelayMs;
+			if (delayMs > 0) await waitForTimeout(delayMs);
+			await cell.displayY.set(getTargetY(cell.position.row) + DROP_EXIT_ROWS * SYMBOL_H, {
+				duration: motion.durationMs,
+				easing: linear,
+			});
+		}),
+	);
+};
+
 // ── near-simultaneous board-drop reveal ───────────────────────────────────────
 
 const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
@@ -950,7 +993,8 @@ const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
 			}
 			const tweenPromise = cell.displayY.set(getTargetY(cell.position.row), {
 				duration: motion.durationMs,
-				easing: cubicOut,
+				// Hard constant-speed slam; the scale squash below supplies the impact.
+				easing: linear,
 			});
 			// Tween.set({ duration: 0 }) aborts the active Svelte tween without resolving its
 			// promise. Race it against the skip signal so repeated stop presses cannot strand
@@ -958,7 +1002,28 @@ const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
 			await Promise.race([tweenPromise, drop.skipPromise]);
 			if (drop.cancelled || token !== activeDropToken) return;
 			cell.symbolState = 'land';
-			if (!drop.skipped) playLandSound(raw);
+			if (!drop.skipped) {
+				playLandSound(raw);
+				cell.displayScale.set(0.9, { duration: 0 });
+				await Promise.race([
+					Promise.all([
+						cell.displayScale.set(1, { duration: DROP_THUMP_MS, easing: cubicOut }),
+						cell.displayY.set(getTargetY(cell.position.row) - DROP_BOUNCE_HEIGHT, {
+							duration: DROP_BOUNCE_UP_MS,
+							easing: cubicOut,
+						}),
+					]),
+					drop.skipPromise,
+				]);
+				if (drop.cancelled || drop.skipped || token !== activeDropToken) return;
+				await Promise.race([
+					cell.displayY.set(getTargetY(cell.position.row), {
+						duration: DROP_BOUNCE_SETTLE_MS,
+						easing: cubicIn,
+					}),
+					drop.skipPromise,
+				]);
+			}
 		}),
 	);
 
@@ -994,6 +1059,9 @@ const animateReveal = async ({
 	stateGame.boardSpinning = true;
 
 	const isRespin = stateGame.nextRevealMode === 'respin';
+	const exitPromise = boardExitPromise ?? animateBoardExit();
+	await exitPromise;
+	if (boardExitPromise === exitPromise) boardExitPromise = null;
 
 	if (!isRespin) {
 		await animateSpinReels({ rawBoard });
@@ -1150,6 +1218,7 @@ const beginSpin = () => {
 	stateGame.respinIndicator = false;
 	stateGame.forceFastAnimations = false;
 	resetBoardVisuals();
+	boardExitPromise = animateBoardExit();
 };
 
 const markNextRevealAsSpin = () => {
@@ -1166,6 +1235,7 @@ const speedUpMotion = () => {
 			for (const cell of reel) {
 				if (cell.locked) continue;
 				cell.displayY.set(getTargetY(cell.position.row), { duration: 0 });
+				cell.displayScale.set(1, { duration: 0 });
 				cell.symbolState = 'land';
 			}
 		}
