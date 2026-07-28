@@ -105,7 +105,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild ersetzt alle regulären auszahlenden Symbole. Scatter zahlt nicht selbst aus und löst nur die Bonus-Features aus.',
 	'PAYTABLE BUY_TEXT': 'Zock Los: 100x Einsatz.\nAlles Rein: 400x Einsatz.\nChance-Spin: 2x Einsatz pro Runde.\nFunktions-Spin: 20x Einsatz pro Runde.\nZock Los und Alles Rein erfordern eine Bestätigung vor Rundenbeginn.',
 	'PAYTABLE MAX_TEXT': 'Der angegebene Maximalgewinn beträgt das 25,000x-fache des gewählten Einsatzes.',
-	'DISCLAIMER TEXT': 'Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Im Falle einer Verbindungsunterbrechung lade das Spiel neu, um unvollständige Runden abzuschließen. Die erwartete Rendite wird über viele Spiele berechnet. Die Spielanzeige ist nicht repräsentativ für ein physisches Gerät und dient nur zur Veranschaulichung. Gewinne werden gemäß dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht anhand von Ereignissen im Webbrowser. TM und © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Im Falle einer Verbindungsunterbrechung lade das Spiel neu, um unvollständige Runden abzuschließen. Die erwartete Rendite wird über viele Spiele berechnet. Die Spielanzeige ist nicht repräsentativ für ein physisches Gerät und dient nur zur Veranschaulichung. Gewinne werden gemäß dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht anhand von Ereignissen im Webbrowser. TM und © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'ÜBERSICHT',
@@ -171,7 +171,7 @@ export default {
 		'Wenn eine Spielrunde unterbrochen wird, wird sie beim Neuladen des Spiels fortgesetzt, sofern möglich.\n\nAlle gültigen Einsätze und potenziellen Gewinne bleiben aktiv, bis die Runde vollständig abgeschlossen ist.',
 	'INFO LEGAL TITLE': 'RECHTLICHER HINWEIS',
 	'INFO LEGAL TEXT':
-		'Eine Fehlfunktion macht alle Auszahlungen und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Bei Verbindungsverlust lade das Spiel neu, um unvollständige Runden abzuschließen.\n\nDie erwartete Rendite wird über eine große Anzahl von Spielen berechnet. Die Spielanzeige dient nur visuellen und Unterhaltungszwecken und stellt kein physisches Spielgerät dar.\n\nAlle Gewinne werden gemäß dem vom Remote Game Server erhaltenen Ergebnis abgerechnet, nicht anhand von Animationen oder Ereignissen im Webbrowser.\n\nTM and © 2025 Stake Engine.',
+		'Eine Fehlfunktion macht alle Auszahlungen und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Bei Verbindungsverlust lade das Spiel neu, um unvollständige Runden abzuschließen.\n\nDie erwartete Rendite wird über eine große Anzahl von Spielen berechnet. Die Spielanzeige dient nur visuellen und Unterhaltungszwecken und stellt kein physisches Spielgerät dar.\n\nAlle Gewinne werden gemäß dem vom Remote Game Server erhaltenen Ergebnis abgerechnet, nicht anhand von Animationen oder Ereignissen im Webbrowser.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'EXPANDIERENDE\nWALZEN',

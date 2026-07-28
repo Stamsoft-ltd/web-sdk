@@ -14,6 +14,7 @@ export const forestStakeState = $state({
 	replayHasPlayed: false,
 	replayRunning: false,
 	replayStartRequested: false,
+	replayObservedRunning: false,
 	pendingRoundDetected: false,
 });
 
@@ -102,13 +103,24 @@ const syncReplayStatus = ({ idle }: { idle: boolean }) => {
 	if (!isReplayMode()) {
 		forestStakeState.replayRunning = false;
 		forestStakeState.replayStartRequested = false;
+		forestStakeState.replayObservedRunning = false;
 		return;
 	}
 
 	forestStakeState.replayRunning = !idle;
 
-	if (idle && forestStakeState.replaySnapshot) {
+	if (!idle) {
+		forestStakeState.replayStartRequested = false;
+		forestStakeState.replayObservedRunning = true;
+		return;
+	}
+
+	// Only a round we actually watched leave idle counts as played. This used to key off the
+	// snapshot alone, which is present from boot — so the flag flipped on the first idle tick and
+	// the button read "Replay Event" before the player had started anything.
+	if (forestStakeState.replayObservedRunning) {
 		forestStakeState.replayHasPlayed = true;
+		forestStakeState.replayObservedRunning = false;
 	}
 };
 
@@ -159,7 +171,9 @@ const replayPayoutMultiplier = () => {
 	return replayWinAmount() / cost;
 };
 
-const formatCurrencyAmount = (amount: number, fractionDigits = 2) =>
+// No default of 2 here: each currency carries its own decimal count in the RGS table (JPY/KRW/IDR
+// are 0, the Gulf dinars are 3). Passing 2 unconditionally overrode all of them.
+const formatCurrencyAmount = (amount: number, fractionDigits?: number) =>
 	formatCurrencyAmountForCurrency(normalizeCurrency(stateBet.currency), safeAmount(amount), fractionDigits);
 
 const t = (key: string) => stateI18nDerived.translate(key);

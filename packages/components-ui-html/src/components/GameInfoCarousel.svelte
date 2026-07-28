@@ -27,6 +27,69 @@
 
 	let index = $state(0);
 
+	// Card copy is sized in `cqw`, so it tracks the container's WIDTH but knows nothing about how
+	// long the string is. Translations run much longer than the English source (Russian and German
+	// especially) and simply grew past the card's bottom border. This shrinks the type on a card
+	// until its content fits its own height — English is untouched because it already fits.
+	const FIT_FLOOR = 0.62;
+	function fitCardText(node: HTMLElement, dep?: unknown) {
+		void dep;
+		let raf = 0;
+		const measure = () => {
+			node.style.setProperty('--fit', '1');
+			// A definite height is required for the comparison to mean anything; cards are stretched
+			// flex items, so clientHeight is the row height and scrollHeight is the content height.
+			if (node.clientHeight <= 0 || node.scrollHeight <= node.clientHeight + 1) return;
+			let lo = FIT_FLOOR;
+			let hi = 1;
+			for (let i = 0; i < 7; i++) {
+				const mid = (lo + hi) / 2;
+				node.style.setProperty('--fit', String(mid));
+				if (node.scrollHeight <= node.clientHeight + 1) lo = mid;
+				else hi = mid;
+			}
+			node.style.setProperty('--fit', lo.toFixed(3));
+		};
+		// Coalesce with a "already queued" flag rather than cancel-and-reschedule. The card sits over
+		// a live canvas whose layout ticks every frame, so the ResizeObserver fires every frame — and
+		// cancelling the pending callback each time starved `measure`, which then never ran at all.
+		let queued = false;
+		let timer = 0;
+		const run = () => {
+			if (!queued) return;
+			queued = false;
+			measure();
+		};
+		const schedule = () => {
+			if (queued) return;
+			queued = true;
+			// Belt and braces: rAF alone did not fire for these nodes (the modal mounts over a
+			// canvas whose frame loop the browser can throttle), so back it with a timer. Whichever
+			// lands first runs the measure; `queued` makes the other a no-op.
+			raf = requestAnimationFrame(run);
+			clearTimeout(timer);
+			timer = setTimeout(run, 60) as unknown as number;
+		};
+		// Observe the card's box only — the font-size writes change children, not this element's
+		// own size, so this cannot feed back into itself.
+		const ro = new ResizeObserver(schedule);
+		ro.observe(node);
+		// Fallback metrics under-measure before the webfont lands, which would leave a card looking
+		// fitted and then overflowing a moment later.
+		if (typeof document !== 'undefined' && document.fonts?.ready) {
+			document.fonts.ready.then(schedule).catch(() => {});
+		}
+		schedule();
+		return {
+			update: schedule,
+			destroy: () => {
+				cancelAnimationFrame(raf);
+				clearTimeout(timer);
+				ro.disconnect();
+			},
+		};
+	}
+
 	// Portrait tutorial layout: only when the game supplies a portrait frame and the viewport is
 	// actually portrait. Desktop/landscape keep the existing wide carousel untouched.
 	let isPortraitViewport = $state(false);
@@ -335,7 +398,7 @@
 			{:else if page.kind === 'uiguide'}
 				<div class="uig">
 					<h2 class="info-title info-title--center gold">{page.title}</h2>
-					<div class="uig__grid">
+					<div class="uig__grid" use:fitCardText={page.cards}>
 						{#each page.cards ?? [] as item}
 							<div class="uig__item">
 								{#if item.icon}<img class="uig__icon" src={item.icon} alt="" />{/if}
@@ -351,7 +414,7 @@
 					{#if page.subtitle}<p class="info-subtitle">{page.subtitle}</p>{/if}
 					<div class="cards" class:cards--center={page.kind === 'cards'}>
 						{#each page.cards ?? [] as card}
-							<article class="card" class:card--split={card.images?.length} class:card--buy={card.metric || card.footer}>
+							<article class="card" class:card--split={card.images?.length} class:card--buy={card.metric || card.footer} use:fitCardText={card.text}>
 								{#if card.images?.length}
 									<div class="card__main">
 										<h3 class="card__title card__title--left gold">{card.title}</h3>
@@ -728,7 +791,9 @@
 	.card__title {
 		margin: 0;
 		font-weight: 700;
-		font-size: 1.7cqw;
+		/* var(--fit) is driven by fitCardText: 1 for English, lower when a translation would
+		   otherwise push the card's content past its bottom border. */
+		font-size: calc(1.7cqw * var(--fit, 1));
 		text-align: center;
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
@@ -749,7 +814,7 @@
 		margin: 0;
 		color: #f3e4c4;
 		font-family: 'Poppins', sans-serif;
-		font-size: 1.15cqw;
+		font-size: calc(1.15cqw * var(--fit, 1));
 		line-height: 1.35;
 		white-space: pre-line;
 	}
@@ -803,7 +868,7 @@
 
 	.card__price {
 		font-weight: 900;
-		font-size: 1.9cqw;
+		font-size: calc(1.9cqw * var(--fit, 1));
 		line-height: 1;
 	}
 
@@ -818,8 +883,8 @@
 	}
 
 	.buy__title {
-		font-size: 1.45cqw;
-		min-height: 3.4cqw;
+		font-size: calc(1.45cqw * var(--fit, 1));
+		min-height: calc(3.4cqw * var(--fit, 1));
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -844,9 +909,9 @@
 	/* Fixed-height title + description zones so the icon, metric and footer rows line up
 	   horizontally across all four cards regardless of how many lines each description wraps to. */
 	.buy__desc {
-		font-size: 1cqw;
+		font-size: calc(1cqw * var(--fit, 1));
 		line-height: 1.35;
-		min-height: 4.3cqw;
+		min-height: calc(4.3cqw * var(--fit, 1));
 	}
 
 	.buy__art {
@@ -1116,15 +1181,20 @@
 	.uig__grid {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
-		gap: 3.2cqw 2cqw;
+		/* Gaps shrink with the type: in Finnish the labels wrap to more lines and the grid grew
+		   past the frame even after the font came down. */
+		gap: calc(3.2cqw * var(--fit, 1)) 2cqw;
 		width: 88%;
+		/* Bound the grid so fitCardText has a definite height to fit into. */
+		min-height: 0;
+		flex: 1 1 auto;
 	}
 	.uig__item {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
-		gap: 0.9cqw;
+		gap: calc(0.9cqw * var(--fit, 1));
 	}
 	.uig__icon {
 		width: 6.4cqw;
@@ -1135,13 +1205,13 @@
 	.uig__name {
 		font-family: 'Cinzel', serif;
 		font-weight: 700;
-		font-size: 1.7cqw;
+		font-size: calc(1.7cqw * var(--fit, 1));
 		letter-spacing: 0.06em;
 		margin: 0;
 	}
 	.uig__desc {
 		font-family: 'Poppins', sans-serif;
-		font-size: 1.35cqw;
+		font-size: calc(1.35cqw * var(--fit, 1));
 		font-weight: 500;
 		font-style: normal;
 		line-height: normal;

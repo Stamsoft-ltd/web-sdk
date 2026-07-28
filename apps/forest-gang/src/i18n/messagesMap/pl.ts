@@ -105,7 +105,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild zastępuje wszystkie zwykłe płacące symbole. Scatter nie płaci samodzielnie i tylko uruchamia funkcje bonusowe.',
 	'PAYTABLE BUY_TEXT': 'Rozdaj: 100x zakład.\nVa Banque: 400x zakład.\nSpin Szansy: 2x zakład za rundę.\nSpin Funkcji: 20x zakład za rundę.\nRozdaj i Va Banque wymagają potwierdzenia przed rozpoczęciem rundy.',
 	'PAYTABLE MAX_TEXT': 'Reklamowana maksymalna wygrana to 25,000x wybranego zakładu.',
-	'DISCLAIMER TEXT': 'Awaria unieważnia wszystkie wygrane i gry. Wymagane jest stabilne połączenie internetowe. W przypadku utraty połączenia przeładuj grę, aby dokończyć niezakończone rundy. Oczekiwany zwrot obliczany jest na podstawie wielu gier. Wyświetlanie gry nie odpowiada żadnemu fizycznemu urządzeniu i służy wyłącznie celom ilustracyjnym. Wygrane rozliczane są zgodnie z kwotą otrzymaną z Zdalnego Serwera Gry, a nie ze zdarzeń w przeglądarce internetowej. TM oraz © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'Awaria unieważnia wszystkie wygrane i gry. Wymagane jest stabilne połączenie internetowe. W przypadku utraty połączenia przeładuj grę, aby dokończyć niezakończone rundy. Oczekiwany zwrot obliczany jest na podstawie wielu gier. Wyświetlanie gry nie odpowiada żadnemu fizycznemu urządzeniu i służy wyłącznie celom ilustracyjnym. Wygrane rozliczane są zgodnie z kwotą otrzymaną z Zdalnego Serwera Gry, a nie ze zdarzeń w przeglądarce internetowej. TM oraz © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'PRZEGLĄD',
@@ -171,7 +171,7 @@ export default {
 		'Jeśli runda gry zostanie przerwana, będzie kontynuowana po przeładowaniu gry, tam gdzie to możliwe.\n\nWszystkie ważne zakłady i potencjalne wygrane pozostają aktywne do pełnego zakończenia rundy.',
 	'INFO LEGAL TITLE': 'INFORMACJA PRAWNA',
 	'INFO LEGAL TEXT':
-		'Awaria unieważnia wszystkie wypłaty i gry. Wymagane jest stabilne połączenie internetowe. Jeśli połączenie zostanie utracone, przeładuj grę, aby dokończyć niezakończone rundy.\n\nOczekiwany zwrot obliczany jest na podstawie dużej liczby gier. Wyświetlanie gry służy wyłącznie celom wizualnym i rozrywkowym i nie reprezentuje żadnego fizycznego urządzenia do gier.\n\nWszystkie wygrane rozliczane są zgodnie z wynikiem otrzymanym z Zdalnego Serwera Gry, a nie z animacji lub zdarzeń pokazanych wewnątrz przeglądarki internetowej.\n\nTM and © 2025 Stake Engine.',
+		'Awaria unieważnia wszystkie wypłaty i gry. Wymagane jest stabilne połączenie internetowe. Jeśli połączenie zostanie utracone, przeładuj grę, aby dokończyć niezakończone rundy.\n\nOczekiwany zwrot obliczany jest na podstawie dużej liczby gier. Wyświetlanie gry służy wyłącznie celom wizualnym i rozrywkowym i nie reprezentuje żadnego fizycznego urządzenia do gier.\n\nWszystkie wygrane rozliczane są zgodnie z wynikiem otrzymanym z Zdalnego Serwera Gry, a nie z animacji lub zdarzeń pokazanych wewnątrz przeglądarki internetowej.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'ROZSZERZAJĄCE\nBĘBNY',
