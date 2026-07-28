@@ -435,7 +435,13 @@
 			{#if context.stateLayout.showLoadingScreen}
 				<LoadingScreen
 					onloaded={() => (context.stateLayout.showLoadingScreen = false)}
-					oncanproceed={(handler) => { splashPressHandler = handler; splashIntroVisible = true; }}
+					oncanproceed={(handler) => {
+						// Replay links go straight to the round summary — the feature splash is marketing
+						// for a player about to bet, and here it just buries the replay details.
+						if (stateUi.config.mode === 'replay') { handler(); return; }
+						splashPressHandler = handler;
+						splashIntroVisible = true;
+					}}
 				/>
 			{:else}
 				<ResumeBet />

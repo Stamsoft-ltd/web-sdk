@@ -15,7 +15,7 @@
 	import type { Texture } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
-	import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, MOTION_BLUR_VELOCITY } from '../game/constants';
 	import {
 		spriteKeyByName,
 		bonusSpriteKeyByName,
@@ -292,6 +292,54 @@
 	// keeps drawing after it settles, and keeps its rows covered with it.
 	const expandedCoverage = $derived(context.stateGame.expandedCoverage);
 
+	// ── Per-reel spin velocity, measured off the reel's own Y tween (R7 blur gate) ───────────────
+	// Signed board-px per tick. The effect re-runs on every tween update while a reel moves (the
+	// tween's `.current` is reactive) and pins 0 the moment the reel reports stopped, so the blur
+	// gate can never stick on. Teleports (padding re-anchor at spin start jumps reelY in one tick)
+	// are ignored — a real frame never moves more than two cells.
+	const prevReelY: number[] = [];
+	const reelVelocity = $state<number[]>([]);
+	$effect(() => {
+		board.forEach((reel, i) => {
+			const y = reel.reelState.symbols[0]?.symbolY() ?? 0;
+			if (reel.reelState.motion === 'stopped') {
+				prevReelY[i] = y;
+				if (reelVelocity[i] !== 0) reelVelocity[i] = 0;
+				return;
+			}
+			const dy = y - (prevReelY[i] ?? y);
+			prevReelY[i] = y;
+			if (Math.abs(dy) < SYMBOL_H * 2) reelVelocity[i] = dy;
+		});
+	});
+
+	// The velocity the baked smear was generated for: SPIN_OPTIONS_DEFAULT.reelSpinSpeed (px/ms)
+	// over one 60 Hz frame. Velocity beyond this renders as echo ghosts in the template.
+	const BASE_SPIN_V = 2.3 * (1000 / 60);
+
+	// Pre-blurred spin tiles (R7, generate_spin_blur.py) drawn instead of the normal symbol
+	// branches while the reel travels faster than MOTION_BLUR_VELOCITY. Landscape has its own
+	// framed tile art, so it blurs its own set — a desktop smear at speed would flash the wrong
+	// card design.
+	const SPIN_BLUR_KEY: Partial<Record<SymbolName, string>> = {
+		A: 'aSpinTile',
+		K: 'kSpinTile',
+		Q: 'qSpinTile',
+		J: 'jSpinTile',
+		T: 'tSpinTile',
+		FOX: 'foxSpinTile',
+		WOLF: 'wolfSpinTile',
+		BEAR: 'bearSpinTile',
+		RABBIT: 'rabbitSpinTile',
+		SQUIRREL: 'squirrelSpinTile',
+		WILD: 'wildSpinTile',
+		SCATTER: 'scatterSpinTile',
+	};
+	const SPIN_BLUR_KEY_LS: Partial<Record<SymbolName, string>> = Object.fromEntries(
+		Object.entries(SPIN_BLUR_KEY).map(([sym, key]) => [sym, `${key}Ls`]),
+	);
+	const activeSpinMap = $derived(isLandscape ? SPIN_BLUR_KEY_LS : SPIN_BLUR_KEY);
+
 	const hasActiveAnticipation = () =>
 		context.stateGame.board.some((reel) => reel.reelState.anticipating);
 
@@ -410,7 +458,45 @@
 				<!-- Winning wild/scatter pulse continuously like the winning letters (design ask),
 				     replacing the old one-shot spring pop. -->
 				{@const specialPop = isWin ? letterPulse : 1}
-				{#if symName === 'SCATTER' && scatterFrames.length > 0}
+				{@const spinningFast = Math.abs(reelVelocity[reelIndex] ?? 0) > MOTION_BLUR_VELOCITY}
+				{#if spinningFast && activeSpinMap[symName]}
+					<!-- Reel motion treatment (R7) — the pre-blurred spin tile is the base look (its smear is baked
+					     for BASE spin speed). Whatever velocity the reel carries ABOVE base speed is
+					     rendered as echo ghosts of the same blurred tile, so turbo extends the smear
+					     instead of under-reading, base spin is the pure baked art (excess 0), and the
+					     eased stop collapses the ghosts before the tile snaps sharp at the gate. Ghosts
+					     of already-blurred art melt together — no double-vision banding. -->
+					{@const vy = reelVelocity[reelIndex] ?? 0}
+					{@const excess = Math.abs(vy) > BASE_SPIN_V ? vy - Math.sign(vy) * BASE_SPIN_V : 0}
+					{#if Math.abs(excess) > 2}
+						<Sprite
+							key={activeSpinMap[symName]}
+							x={getX(reelIndex)}
+							y={y - excess * 0.66}
+							anchor={{ x: 0.5, y: 0.5 }}
+							width={symbolW * s}
+							height={symbolH * s}
+							alpha={0.22}
+						/>
+						<Sprite
+							key={activeSpinMap[symName]}
+							x={getX(reelIndex)}
+							y={y - excess * 0.33}
+							anchor={{ x: 0.5, y: 0.5 }}
+							width={symbolW * s}
+							height={symbolH * s}
+							alpha={0.4}
+						/>
+					{/if}
+					<Sprite
+						key={activeSpinMap[symName]}
+						x={getX(reelIndex)}
+						y={y}
+						anchor={{ x: 0.5, y: 0.5 }}
+						width={symbolW * s}
+						height={symbolH * s}
+					/>
+				{:else if symName === 'SCATTER' && scatterFrames.length > 0}
 					<!-- Scatter shimmers with its animated emblem clip and pulses continuously while it
 					     wins. Drawn a bit smaller than a cell. animationSpeed 0.14 (~8fps) stepped
 					     visibly and read as "laggy"; 0.36 (~22fps) plays smoothly. (The "30fps idle render

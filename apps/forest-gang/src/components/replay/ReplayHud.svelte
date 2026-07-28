@@ -68,7 +68,10 @@
 
 {#if isReplayMode}
 	<div class="replay-hud">
-		<div class="replay-topbar">
+		<!-- Nothing may sit over the board while the round plays: in small popout windows the reels
+		     fill the viewport, so any persistent chrome covers symbols. Mode and event are on the
+		     summary card, which is up whenever the replay is not running. -->
+		<div class="replay-topbar" class:replay-topbar--hidden={replayRunning}>
 			<div class="replay-meta">
 				<span class="replay-badge">{forestStakeDerived.t('REPLAY')}</span>
 				{#if selectedMode}
@@ -80,45 +83,65 @@
 			</div>
 		</div>
 
-		<div class="replay-panel">
-			<div class="replay-body">
-				<div class="replay-stats">
-					<div class="replay-stat">
+		<!-- Full round summary while the replay is idle (before the first play and again after it
+		     finishes). Hidden during playback so the board stays visible. -->
+		{#if !replayRunning && (replayReady || replayError)}
+			<div class="replay-card" role="dialog" aria-label={forestStakeDerived.t('BET REPLAY')}>
+				<h2 class="replay-title">{forestStakeDerived.t('BET REPLAY')}</h2>
+
+				<div class="replay-rows">
+					<div class="replay-row">
+						<span>{forestStakeDerived.t('MODE')}</span>
+						<strong>{selectedMode}</strong>
+					</div>
+					{#if forestStakeState.replayEventId}
+						<div class="replay-row">
+							<span>{forestStakeDerived.t('EVENT')}</span>
+							<strong>{forestStakeState.replayEventId}</strong>
+						</div>
+					{/if}
+
+					<hr class="replay-rule" />
+
+					<div class="replay-row">
 						<span>{forestStakeDerived.t('BASE BET')}</span>
-						<strong style={replayValueStyle(replayBetText)}>{replayBetText}</strong>
+						<strong class="replay-amount" style={replayValueStyle(replayBetText)}>{replayBetText}</strong>
 					</div>
-					<div class="replay-stat">
-						<span>{forestStakeDerived.t('TOTAL BET COST')}</span>
-						<strong style={replayValueStyle(replayCostText)}>{replayCostText}</strong>
-					</div>
-					<div class="replay-stat">
+					<div class="replay-row">
 						<span>{forestStakeDerived.t('COST MULTIPLIER')}</span>
 						<strong>{replayCostMultiplierText}</strong>
 					</div>
-					<div class="replay-stat">
+					<div class="replay-row replay-row--total">
+						<span>{forestStakeDerived.t('TOTAL BET COST')}</span>
+						<strong class="replay-amount" style={replayValueStyle(replayCostText)}>{replayCostText}</strong>
+					</div>
+
+					<hr class="replay-rule" />
+
+					<div class="replay-row">
 						<span>{forestStakeDerived.t('PAYOUT MULTIPLIER')}</span>
 						<strong class="replay-win">{replayPayoutMultiplierText}</strong>
 					</div>
-					<div class="replay-stat">
+					<div class="replay-row replay-row--total">
 						<span>{forestStakeDerived.t('TOTAL WIN')}</span>
-						<strong class="replay-win" style={replayValueStyle(replayWinText)}>{replayWinText}</strong>
+						<strong class="replay-amount" style={replayValueStyle(replayWinText)}>{replayWinText}</strong>
 					</div>
 				</div>
 
-				<div class="replay-action">
-					{#if replayError}
-						<div class="replay-error-block">
-							<p>{replayError}</p>
-						</div>
-					{:else if replayReady && !replayRunning}
-						<button class="replay-primary" type="button" onclick={replayHasPlayed ? replayAgain : startReplay}>
-							<span class="replay-play-icon">▶</span>
-							<span>{replayHasPlayed ? forestStakeDerived.t('REPLAY EVENT') : forestStakeDerived.t('START REPLAY')}</span>
-						</button>
-					{/if}
-				</div>
+				{#if replayError}
+					<div class="replay-error-block">
+						<p>{replayError}</p>
+					</div>
+				{:else if replayReady}
+					<button class="replay-primary" type="button" onclick={replayHasPlayed ? replayAgain : startReplay}>
+						<span class="replay-play-icon">▶</span>
+						<span>{replayHasPlayed ? forestStakeDerived.t('REPLAY EVENT') : forestStakeDerived.t('START REPLAY')}</span>
+					</button>
+				{/if}
+
+				<p class="replay-disclaimer">{forestStakeDerived.t('REPLAY DISCLAIMER')}</p>
 			</div>
-		</div>
+		{/if}
 	</div>
 {/if}
 
@@ -142,6 +165,10 @@
 		justify-content: flex-end;
 		gap: 10px;
 		pointer-events: none;
+	}
+
+	.replay-topbar--hidden {
+		display: none;
 	}
 
 	.replay-meta {
@@ -168,85 +195,102 @@
 		background: rgba(80, 48, 16, 0.88);
 	}
 
-	.replay-panel {
+	/* Percentages, not vw/vh: the HUD renders inside the CSS-scaled game container, so viewport
+	   units do not map to what the player actually sees. */
+	.replay-card {
 		position: absolute;
-		left: auto;
-		right: 18px;
-		top: auto;
-		bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-		width: min(860px, calc(100vw - 36px));
-		max-height: min(32vh, 180px);
-		border-radius: 18px;
-		border: 1px solid rgba(231, 196, 112, 0.32);
-		background:
-			linear-gradient(180deg, rgba(57, 42, 16, 0.94), rgba(18, 23, 12, 0.94)),
-			rgba(18, 23, 12, 0.96);
-		backdrop-filter: blur(12px);
-		padding: 10px;
-		pointer-events: auto;
-		box-shadow: 0 14px 34px rgba(0, 0, 0, 0.36), inset 0 0 0 1px rgba(255, 235, 170, 0.06);
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		width: min(430px, 92%);
+		max-height: 94%;
 		overflow: auto;
+		border-radius: 20px;
+		border: 1px solid rgba(231, 196, 112, 0.34);
+		background:
+			linear-gradient(180deg, rgba(57, 42, 16, 0.96), rgba(18, 23, 12, 0.97)),
+			rgba(18, 23, 12, 0.98);
+		backdrop-filter: blur(14px);
+		padding: 22px 22px 18px;
+		pointer-events: auto;
+		box-shadow: 0 18px 44px rgba(0, 0, 0, 0.48), inset 0 0 0 1px rgba(255, 235, 170, 0.07);
 	}
 
-	.replay-body {
-		display: flex;
-		align-items: stretch;
-		gap: 10px;
+	.replay-title {
+		margin: 0 0 18px;
+		text-align: center;
+		font-size: 24px;
+		font-weight: 900;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: #f0d068;
 	}
 
-	.replay-stats {
+	.replay-rows {
 		display: grid;
-		grid-template-columns: repeat(5, minmax(0, 1fr));
-		gap: 8px;
-		flex: 1 1 auto;
+		gap: 2px;
+	}
+
+	.replay-row {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 7px 10px;
+		border-radius: 10px;
 		min-width: 0;
 	}
 
-	.replay-stat {
-		display: grid;
-		gap: 4px;
-		border-radius: 12px;
-		background: rgba(255, 255, 255, 0.05);
-		padding: 8px 9px;
+	.replay-row--total {
+		background: rgba(255, 255, 255, 0.07);
 	}
 
-	.replay-stat span {
-		font-size: 9px;
-		font-weight: 900;
-		letter-spacing: 0.08em;
+	/* The shared keys mix conventions (MODE is uppercase, 'Base Bet' is title case) — normalise
+	   here so the card reads consistently without forking the i18n strings. */
+	.replay-row span {
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.05em;
 		text-transform: uppercase;
-		color: rgba(249, 241, 210, 0.72);
+		color: rgba(249, 241, 210, 0.78);
 	}
 
-	.replay-stat strong {
-		--replay-value-base-size: 17px;
+	.replay-row strong {
+		--replay-value-base-size: 16px;
 		font-size: calc(var(--replay-value-base-size) * var(--replay-value-scale, 1));
-		line-height: 1.1;
+		line-height: 1.15;
 		letter-spacing: var(--replay-value-letter-spacing, 0);
+		font-weight: 900;
 		color: #fff8df;
 		white-space: nowrap;
+		text-align: right;
 		min-width: 0;
+	}
+
+	.replay-amount {
+		color: #f0d068 !important;
+	}
+
+	.replay-rule {
+		height: 1px;
+		margin: 8px 10px;
+		border: none;
+		background: rgba(231, 196, 112, 0.2);
 	}
 
 	.replay-win {
 		color: #20d878 !important;
 	}
 
-	.replay-action {
-		display: flex;
-		align-items: stretch;
-		justify-content: center;
-		flex: 0 0 160px;
-	}
-
 	.replay-primary {
 		width: 100%;
+		margin-top: 20px;
 		border: none;
-		border-radius: 14px;
-		padding: 10px 12px;
+		border-radius: 999px;
+		padding: 14px 16px;
 		background: linear-gradient(180deg, #f0d068 0%, #c09224 100%);
 		color: #17200f;
-		font-size: 13px;
+		font-size: 15px;
 		font-weight: 900;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
@@ -255,16 +299,23 @@
 		align-items: center;
 		justify-content: center;
 		gap: 8px;
-		min-height: 62px;
 	}
 
 	.replay-play-icon {
-		font-size: 16px;
+		font-size: 15px;
 		line-height: 1;
 	}
 
+	.replay-disclaimer {
+		margin: 14px 0 0;
+		text-align: center;
+		font-size: 11px;
+		line-height: 1.45;
+		color: rgba(249, 241, 210, 0.6);
+	}
+
 	.replay-error-block {
-		margin-top: 8px;
+		margin-top: 16px;
 		display: grid;
 		gap: 8px;
 	}
@@ -284,24 +335,6 @@
 			gap: 8px;
 		}
 
-		.replay-panel {
-			left: auto;
-			right: 10px;
-			top: auto;
-			bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-			width: min(760px, calc(100vw - 20px));
-			padding: 9px;
-			max-height: min(34vh, 180px);
-		}
-
-		.replay-stats {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-		}
-
-		.replay-action {
-			flex-basis: 142px;
-		}
-
 		.replay-meta {
 			max-width: 68%;
 			justify-content: flex-end;
@@ -313,53 +346,120 @@
 			align-items: flex-start;
 		}
 
-		.replay-panel {
-			left: 8px;
-			right: 8px;
-			top: auto;
-			bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-			width: auto;
-			max-height: min(28vh, 170px);
-			padding: 7px 7px 6px;
+		.replay-card {
+			width: min(430px, 94%);
+			padding: 18px 16px 14px;
 		}
 
-		.replay-body {
-			gap: 6px;
+		.replay-title {
+			font-size: 20px;
+			margin-bottom: 14px;
 		}
 
-		.replay-stats {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: 6px;
+		.replay-row {
+			padding: 6px 8px;
 		}
 
-		.replay-action {
-			flex-basis: 112px;
+		.replay-row span {
+			font-size: 12px;
 		}
 
-		.replay-stat {
-			padding: 6px 7px;
-		}
-
-		.replay-stat span {
-			font-size: 8px;
-		}
-
-		.replay-stat strong {
-			--replay-value-base-size: 16px;
+		.replay-row strong {
+			--replay-value-base-size: 15px;
 		}
 
 		.replay-primary {
-			padding: 8px 8px;
-			font-size: 10px;
-			min-height: 58px;
-			flex-direction: column;
-			gap: 4px;
+			margin-top: 16px;
+			padding: 12px 14px;
+			font-size: 13px;
 		}
 
 		.replay-badge,
 		.replay-chip {
 			padding: 5px 9px;
 			font-size: 9px;
+		}
+	}
+
+	/* Short popout windows (Stake's "Popout S" and similar). The card must fit without an inner
+	   scrollbar — a summary you have to scroll is what made the old bottom bar unreadable. */
+	@media (max-height: 620px) {
+		.replay-card {
+			padding: 14px 16px 12px;
+		}
+
+		.replay-title {
+			font-size: 18px;
+			margin-bottom: 10px;
+		}
+
+		.replay-row {
+			padding: 4px 8px;
+		}
+
+		.replay-row span {
+			font-size: 11px;
+		}
+
+		.replay-row strong {
+			--replay-value-base-size: 14px;
+		}
+
+		.replay-rule {
+			margin: 5px 8px;
+		}
+
+		.replay-primary {
+			margin-top: 12px;
+			padding: 10px 14px;
+			font-size: 13px;
+		}
+
+		.replay-disclaimer {
+			margin-top: 9px;
+			font-size: 10px;
+		}
+	}
+
+	@media (max-height: 440px) {
+		.replay-card {
+			width: min(430px, 96%);
+			padding: 10px 12px 9px;
+			border-radius: 14px;
+		}
+
+		.replay-title {
+			font-size: 15px;
+			margin-bottom: 7px;
+		}
+
+		.replay-row {
+			padding: 2px 7px;
+		}
+
+		.replay-row span {
+			font-size: 10px;
+			letter-spacing: 0.03em;
+		}
+
+		.replay-row strong {
+			--replay-value-base-size: 12px;
+		}
+
+		.replay-rule {
+			margin: 3px 7px;
+		}
+
+		.replay-primary {
+			margin-top: 8px;
+			padding: 8px 12px;
+			font-size: 11px;
+		}
+
+		.replay-disclaimer {
+			margin-top: 6px;
+			font-size: 9px;
+			line-height: 1.35;
 		}
 	}
 </style>
