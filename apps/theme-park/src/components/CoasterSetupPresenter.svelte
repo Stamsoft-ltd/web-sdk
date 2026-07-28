@@ -25,6 +25,7 @@
 		BOARD_GRID_OFFSET_Y,
 	} from '../game/constants';
 	import CoasterWildBackground from './CoasterWildBackground.svelte';
+	import LoopingAssetSprite from './LoopingAssetSprite.svelte';
 
 	type CoasterImpact = { reel: number; row: number; multiplier: number };
 	type CoasterRoute = { impacts: CoasterImpact[]; lastTrackIndex: number };
@@ -64,14 +65,12 @@
 	const TRACK_FIRST_RAIL_X = 60;
 	const TRACK_LAST_RAIL_X = 688;
 	const TRACK_HORIZONTAL_OVERSCAN = 1.1;
-	const trackScaleX =
-		BOARD_SIZES.width / (TRACK_LAST_RAIL_X - TRACK_FIRST_RAIL_X);
+	const trackScaleX = BOARD_SIZES.width / (TRACK_LAST_RAIL_X - TRACK_FIRST_RAIL_X);
 	const baseTrackWidth = TRACK_SOURCE_WIDTH * trackScaleX;
 	const baseTrackX = baseTrackWidth * 0.5 - TRACK_FIRST_RAIL_X * trackScaleX;
 	const trackWidth = baseTrackWidth * TRACK_HORIZONTAL_OVERSCAN;
 	const trackX =
-		BOARD_SIZES.width * 0.5 +
-		(baseTrackX - BOARD_SIZES.width * 0.5) * TRACK_HORIZONTAL_OVERSCAN;
+		BOARD_SIZES.width * 0.5 + (baseTrackX - BOARD_SIZES.width * 0.5) * TRACK_HORIZONTAL_OVERSCAN;
 	const trackOverscanX = (trackWidth - baseTrackWidth) * 0.5;
 	const trackCells = Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => {
 		const reels = Array.from({ length: BOARD_DIMENSIONS.x }, (_, reel) => reel);
@@ -142,8 +141,7 @@
 		const direction = rowDirection(row);
 		const centerX = direction === 1 ? BOARD_SIZES.width : 0;
 		const centerY = railY(row) + SYMBOL_H * 0.5;
-		const radiusX =
-			SYMBOL_W * (direction === 1 ? 0.28 : 0.12) + trackOverscanX;
+		const radiusX = SYMBOL_W * (direction === 1 ? 0.28 : 0.12) + trackOverscanX;
 		if (
 			!(await drive({
 				cart,
@@ -161,8 +159,7 @@
 			const previousProgress = (step - 1) / CURVE_STEPS;
 			const x = centerX + direction * Math.sin(Math.PI * progress) * radiusX;
 			const y = railY(row) + SYMBOL_H * progress;
-			const previousX =
-				centerX + direction * Math.sin(Math.PI * previousProgress) * radiusX;
+			const previousX = centerX + direction * Math.sin(Math.PI * previousProgress) * radiusX;
 			const previousY = railY(row) + SYMBOL_H * previousProgress;
 			const dx = x - previousX;
 			const dy = y - previousY;
@@ -319,11 +316,9 @@
 		return { reel, row };
 	};
 	const carAsset = (state: CartState) =>
-		state === 'vomit'
-			? 'coasterCarVomit'
-			: state === 'sick'
-				? 'coasterCarSick'
-				: 'coasterCarHappy';
+		state === 'vomit' ? 'coasterCarVomit' : state === 'sick' ? 'coasterCarSick' : 'coasterCarHappy';
+	const carAnimationAsset = (state: CartState) =>
+		state === 'vomit' ? 'coasterCarVomitAnim' : state === 'sick' ? 'coasterCarSickAnim' : null;
 </script>
 
 <FadeContainer {show}>
@@ -380,12 +375,24 @@
 						scale={{ x: cart.direction, y: 1 }}
 						zIndex={30 + cart.id}
 					>
-						<Sprite
-							key={carAsset(cart.state)}
-							anchor={0.5}
-							width={SYMBOL_W * 1.08}
-							height={SYMBOL_H * 1.27}
-						/>
+						{@const animationKey = carAnimationAsset(cart.state)}
+						{#if animationKey}
+							<LoopingAssetSprite
+								{animationKey}
+								fallbackKey={carAsset(cart.state)}
+								restartKey={`${cart.id}:${cart.state}`}
+								anchor={0.5}
+								width={SYMBOL_W * 1.08}
+								height={SYMBOL_H * 1.27}
+							/>
+						{:else}
+							<Sprite
+								key={carAsset(cart.state)}
+								anchor={0.5}
+								width={SYMBOL_W * 1.08}
+								height={SYMBOL_H * 1.27}
+							/>
+						{/if}
 					</Container>
 				{/if}
 			{/each}

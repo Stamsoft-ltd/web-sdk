@@ -5,6 +5,11 @@ import type { Assets } from 'pixi-svelte';
 const assets: Assets = {
 	// === BACKGROUND ===
 	background: { type: 'sprite', src: './assets/theme-park/v2/background.webp', preload: true },
+	backgroundAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/background/base.mp4',
+		defer: true,
+	},
 	splash: { type: 'sprite', src: './assets/theme-park/v2/background.webp', preload: true },
 	themeBoard: { type: 'sprite', src: './assets/theme-park/v2/board.png', preload: true },
 
@@ -69,6 +74,56 @@ const assets: Assets = {
 		src: './assets/theme-park/v2/symbols/l5-10-win.png',
 		preload: true,
 	},
+	tpH1WinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/h1-coaster-win.webm',
+		defer: true,
+	},
+	tpH2WinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/h2-duck-win.webm',
+		defer: true,
+	},
+	tpH3WinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/h3-balloons-win.webm',
+		defer: true,
+	},
+	tpH4WinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/h4-popcorn-win.webm',
+		defer: true,
+	},
+	tpH5WinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/h5-ferris-win.webm',
+		defer: true,
+	},
+	tpL1WinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/l1-a-win.webm',
+		defer: true,
+	},
+	tpL2WinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/l2-k-win.webm',
+		defer: true,
+	},
+	tpL3WinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/l3-q-win.webm',
+		defer: true,
+	},
+	tpL4WinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/l4-j-win.webm',
+		defer: true,
+	},
+	tpL5WinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/l5-10-win.webm',
+		defer: true,
+	},
 	tpWildDesktop: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/wild-desktop.png',
@@ -98,6 +153,21 @@ const assets: Assets = {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/mega-wild-mobile-landscape.png',
 		preload: true,
+	},
+	tpWildAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/wild.webm',
+		defer: true,
+	},
+	tpMegaWildAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/mega-wild.webm',
+		defer: true,
+	},
+	tpMegaWildWinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/mega-wild-win.webm',
+		defer: true,
 	},
 	tpCoasterWild: {
 		type: 'sprite',
@@ -130,6 +200,21 @@ const assets: Assets = {
 		type: 'sprite',
 		src: './assets/theme-park/v2/features/roller-wild-car.png',
 		preload: true,
+	},
+	rollerWildCarAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/features/roller-wild-car.webm',
+		defer: true,
+	},
+	coasterCarSickAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/features/coaster-car-sick.webm',
+		defer: true,
+	},
+	coasterCarVomitAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/features/coaster-car-vomit.webm',
+		defer: true,
 	},
 	rollerWildRail: {
 		type: 'sprite',
@@ -181,6 +266,36 @@ const assets: Assets = {
 		src: './assets/theme-park/v2/modes/mega-coaster-mobile-landscape.png',
 		preload: true,
 	},
+	tpDuckScatterAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/duck-your-luck.webm',
+		defer: true,
+	},
+	tpDuckScatterWinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/duck-your-luck-win.webm',
+		defer: true,
+	},
+	tpRollerScatterAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/roller-wilds.webm',
+		defer: true,
+	},
+	tpRollerScatterWinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/roller-wilds-win.webm',
+		defer: true,
+	},
+	tpCoasterScatterAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/mega-coaster.webm',
+		defer: true,
+	},
+	tpCoasterScatterWinAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/symbols/mega-coaster-win.webm',
+		defer: true,
+	},
 
 	// === WIN BOARDS ===
 	winSweet: { type: 'sprite', src: './assets/theme-park/v2/wins/sweet.webp', preload: true },
@@ -193,6 +308,31 @@ const assets: Assets = {
 	},
 	winMythic: { type: 'sprite', src: './assets/theme-park/v2/wins/mythic.webp', preload: true },
 	winMax: { type: 'sprite', src: './assets/theme-park/v2/wins/max.webp', preload: true },
+	winSweetAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/wins/sweet.webm',
+		defer: true,
+	},
+	winWildAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/wins/wild.webm',
+		defer: true,
+	},
+	winEpicAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/wins/epic.webm',
+		defer: true,
+	},
+	winLegendaryAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/wins/legendary.webm',
+		defer: true,
+	},
+	winMythicAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/wins/mythic.webm',
+		defer: true,
+	},
 
 	// === FRAMES / UI ===
 	symbolPad: { type: 'sprite', src: './assets/components/frames/symbol_pad.png', preload: false },

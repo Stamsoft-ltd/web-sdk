@@ -13,6 +13,7 @@
 	import { getContext } from '../game/context';
 	import { SYMBOL_W, SYMBOL_H, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
 	import CoasterWildBackground from './CoasterWildBackground.svelte';
+	import RollerMultiplierText from './RollerMultiplierText.svelte';
 
 	const context = getContext();
 	const layout = $derived(context.stateGameDerived.boardLayout());
@@ -43,7 +44,6 @@
 	const cellY = (row: number) => SYMBOL_H * (row + 0.5);
 	const cellPulse = (reel: number, row: number) =>
 		pulsingKeys.includes(`${reel},${row}`) ? 1.14 : 1;
-
 </script>
 
 {#if coasterTiles.length > 0 || rollerReels.length > 0}
@@ -54,24 +54,12 @@
 			pivot={layout.pivot}
 			scale={layout.boardScale}
 		>
-			<!-- Board.svelte owns the five Roller Wild symbols. This layer adds
-			     only multiplier plaques, so nothing is drawn twice. -->
+			<!-- Roller reels persist as clean multiplier text only. -->
 			{#each rollerReels as roller (roller.reel)}
 				{#each Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => row) as row (row)}
 					<Container x={cellX(roller.reel)} y={cellY(row)}>
-						<Container y={SYMBOL_H * 0.29}>
-							<Sprite
-								key="forestBonusBadge"
-								anchor={0.5}
-								width={SYMBOL_W * 0.68}
-								height={SYMBOL_H * 0.34}
-							/>
-							<BitmapText
-								anchor={{ x: 0.5, y: 0.5 }}
-								text={`${roller.multiplier}X`}
-								style={{ fontFamily: 'gold', fontSize: SYMBOL_H * 0.2 }}
-							/>
-						</Container>
+						<CoasterWildBackground reel={roller.reel} {row} />
+						<RollerMultiplierText text={`${roller.multiplier}X`} />
 					</Container>
 				{/each}
 			{/each}

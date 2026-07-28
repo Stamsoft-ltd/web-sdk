@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { Rectangle, Sprite } from 'pixi-svelte';
+	import { Rectangle } from 'pixi-svelte';
 	import { onMount } from 'svelte';
 
 	import { getContext } from '../game/context';
+	import LoopingAssetSprite from './LoopingAssetSprite.svelte';
 
 	const context = getContext();
 	const BACKGROUND_ASPECT = 4800 / 2656;
@@ -36,8 +37,9 @@
 	});
 </script>
 
-<Sprite
-	key="background"
+<LoopingAssetSprite
+	animationKey="backgroundAnim"
+	fallbackKey="background"
 	x={canvas.width * 0.5 + driftX}
 	y={canvas.height * 0.5 + driftY}
 	anchor={0.5}

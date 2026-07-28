@@ -197,7 +197,12 @@ assert.doesNotMatch(
 assert.match(
 	rollerOverlaySource,
 	/getSpecialSymbolKey\('megaWild', layoutType\)/,
-	'Roller trigger and expanded reel must use the Mega Wild asset',
+	'Initial Roller trigger must stay Mega Wild until the cart reaches it',
+);
+assert.doesNotMatch(
+	rollerOverlaySource,
+	/forestBonusBadge/,
+	'Cart-filled Roller cells must use multiplier text without plaques',
 );
 assert.match(
 	rollerOverlaySource,
@@ -206,13 +211,18 @@ assert.match(
 );
 assert.match(
 	rollerOverlaySource,
-	/key="rollerWildCar"/,
+	/fallbackKey="rollerWildCar"/,
 	'Roller animation must use the supplied cart asset',
 );
 assert.match(
 	rollerOverlaySource,
-	/sumExpression\(roller\)/,
-	'Roller animation must visualize the additive multiplier sum',
+	/displayedMultipliers = \{ \.\.\.displayedMultipliers, \[reel\.reel\]: 1 \}/,
+	'Roller multiplier animation must start from 1X',
+);
+assert.match(
+	rollerOverlaySource,
+	/multiplierFrames\(reel\)\.slice\(1\)/,
+	'Roller animation must count to the final reel multiplier',
 );
 
 const persistentWildSource = fs.readFileSync(
@@ -223,6 +233,26 @@ assert.equal(
 	(persistentWildSource.match(/key="tpCoasterWild"/g) ?? []).length,
 	1,
 	'Only the Coaster spinning cover may redraw a Wild symbol',
+);
+assert.doesNotMatch(
+	persistentWildSource,
+	/forestBonusBadge/,
+	'Persistent Roller reels must use simple multiplier text without plaques',
+);
+
+const rollerMultiplierTextSource = fs.readFileSync(
+	path.join(root, 'src', 'components', 'RollerMultiplierText.svelte'),
+	'utf8',
+);
+assert.match(
+	rollerMultiplierTextSource,
+	/fontFamily: 'Helvetica'/,
+	'Roller multipliers must use the supplied Helvetica style',
+);
+assert.match(
+	rollerMultiplierTextSource,
+	/\{ offset: 0\.2342, color: 0xfcb707 \}/,
+	'Roller multipliers must use the supplied gold gradient',
 );
 
 for (const component of [

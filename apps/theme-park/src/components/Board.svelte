@@ -23,8 +23,21 @@
 		getSpecialSymbolKey,
 	} from '../game/utils';
 	import type { RawSymbol, SymbolName } from '../game/types';
+	import LoopingAssetSprite from './LoopingAssetSprite.svelte';
 
 	const LOW_SYMBOLS_SET = new Set<SymbolName>(['L1', 'L2', 'L3', 'L4', 'L5']);
+	const WIN_ANIMATION_KEY_BY_NAME: Partial<Record<SymbolName, string>> = {
+		H1: 'tpH1WinAnim',
+		H2: 'tpH2WinAnim',
+		H3: 'tpH3WinAnim',
+		H4: 'tpH4WinAnim',
+		H5: 'tpH5WinAnim',
+		L1: 'tpL1WinAnim',
+		L2: 'tpL2WinAnim',
+		L3: 'tpL3WinAnim',
+		L4: 'tpL4WinAnim',
+		L5: 'tpL5WinAnim',
+	};
 
 	const context = getContext();
 	const board = $derived(context.stateGame.board);
@@ -41,6 +54,29 @@
 	const coasterCellSet = $derived(
 		new Set(context.stateGame.coasterTiles.map(({ reel, row }) => `${reel},${row}`)),
 	);
+	const isInitialRollerTriggerCell = (
+		rawSymbol: RawSymbol,
+		reelIndex: number,
+		rowIndex: number,
+	) => {
+		if (rawSymbol.name !== 'W' || rollerReelSet.has(reelIndex)) return false;
+		if (rawSymbol.rollerTrigger) return true;
+		return (
+			rowIndex === Math.floor(BOARD_DIMENSIONS.y / 2) &&
+			(Boolean(rawSymbol.reelMultiplier) || Boolean(rawSymbol.multiplier))
+		);
+	};
+	const isRollerMultiplierCell = (rawSymbol: RawSymbol, reelIndex: number, rowIndex: number) =>
+		rawSymbol.name === 'W' &&
+		rowIndex >= 0 &&
+		rowIndex < BOARD_DIMENSIONS.y &&
+		!rawSymbol.persistent &&
+		!coasterCellSet.has(`${reelIndex},${rowIndex}`) &&
+		!isInitialRollerTriggerCell(rawSymbol, reelIndex, rowIndex) &&
+		(Boolean(rawSymbol.rollerTrigger) ||
+			Boolean(rawSymbol.reelMultiplier) ||
+			Boolean(rawSymbol.multiplier) ||
+			rollerReelSet.has(reelIndex));
 	const getSpriteKey = (
 		rawSymbol: RawSymbol,
 		state: string | undefined,
@@ -51,12 +87,7 @@
 		if (name === 'W') {
 			if (rawSymbol.persistent || coasterCellSet.has(`${reelIndex},${rowIndex}`))
 				return 'tpCoasterWild';
-			if (
-				rawSymbol.rollerTrigger ||
-				rawSymbol.reelMultiplier ||
-				rawSymbol.multiplier ||
-				rollerReelSet.has(reelIndex)
-			)
+			if (isInitialRollerTriggerCell(rawSymbol, reelIndex, rowIndex))
 				return getSpecialSymbolKey('megaWild', layoutType);
 			return getSpecialSymbolKey('wild', layoutType);
 		}
@@ -65,6 +96,26 @@
 		if (name === 'S_COASTER') return getSpecialSymbolKey('coasterScatter', layoutType);
 		if (state === 'win') return winSpriteKeyByName[name] ?? activeMap[name] ?? 'tpH1';
 		return activeMap[name] ?? 'tpH1';
+	};
+	const getAnimationKey = (
+		rawSymbol: RawSymbol,
+		state: string | undefined,
+		reelIndex: number,
+		rowIndex: number,
+	) => {
+		if (rawSymbol.persistent || coasterCellSet.has(`${reelIndex},${rowIndex}`)) return undefined;
+		if (rawSymbol.name === 'W') {
+			if (isInitialRollerTriggerCell(rawSymbol, reelIndex, rowIndex))
+				return state === 'win' ? 'tpMegaWildWinAnim' : 'tpMegaWildAnim';
+			return 'tpWildAnim';
+		}
+		if (rawSymbol.name === 'S_DUCK')
+			return state === 'win' ? 'tpDuckScatterWinAnim' : 'tpDuckScatterAnim';
+		if (rawSymbol.name === 'S_ROLLER')
+			return state === 'win' ? 'tpRollerScatterWinAnim' : 'tpRollerScatterAnim';
+		if (rawSymbol.name === 'S_COASTER')
+			return state === 'win' ? 'tpCoasterScatterWinAnim' : 'tpCoasterScatterAnim';
+		return state === 'win' ? WIN_ANIMATION_KEY_BY_NAME[rawSymbol.name] : undefined;
 	};
 
 	// True while any symbol is in 'win' state — used to dim non-winning symbols
@@ -187,21 +238,43 @@
 				{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
 					{@const y = reelSymbol.symbolY()}
 					{@const isWin = reelSymbol.symbolState === 'win'}
-					<Sprite
-						key={getSpriteKey(
+					{#if !isRollerMultiplierCell(reelSymbol.rawSymbol, reelIndex, symbolIndex - 1)}
+						{@const fallbackKey = getSpriteKey(
 							reelSymbol.rawSymbol,
 							reelSymbol.symbolState,
 							reelIndex,
 							symbolIndex - 1,
 						)}
-						x={getX(reelIndex)}
-						{y}
-						anchor={{ x: 0.5, y: 0.5 }}
-						width={SYMBOL_W * (isWin ? winPulse : 1)}
-						height={SYMBOL_H * (isWin ? winPulse : 1)}
-						alpha={hasWinState && !isWin ? 0.35 : 1}
-						tint={isWin ? 0xffffff : 0xffffff}
-					/>
+						{@const animationKey = getAnimationKey(
+							reelSymbol.rawSymbol,
+							reelSymbol.symbolState,
+							reelIndex,
+							symbolIndex - 1,
+						)}
+						{#if animationKey}
+							<LoopingAssetSprite
+								{animationKey}
+								{fallbackKey}
+								restartKey={`${reelSymbol.rawSymbol.name}:${reelSymbol.symbolState}`}
+								x={getX(reelIndex)}
+								{y}
+								anchor={{ x: 0.5, y: 0.5 }}
+								width={SYMBOL_W * (isWin ? winPulse : 1)}
+								height={SYMBOL_H * (isWin ? winPulse : 1)}
+								alpha={hasWinState && !isWin ? 0.35 : 1}
+							/>
+						{:else}
+							<Sprite
+								key={fallbackKey}
+								x={getX(reelIndex)}
+								{y}
+								anchor={{ x: 0.5, y: 0.5 }}
+								width={SYMBOL_W * (isWin ? winPulse : 1)}
+								height={SYMBOL_H * (isWin ? winPulse : 1)}
+								alpha={hasWinState && !isWin ? 0.35 : 1}
+							/>
+						{/if}
+					{/if}
 				{/each}
 			{/if}
 		{/each}

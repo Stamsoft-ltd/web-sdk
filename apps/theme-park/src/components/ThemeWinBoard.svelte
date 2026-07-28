@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { Container, Sprite, Text } from 'pixi-svelte';
+	import { Container, Text } from 'pixi-svelte';
 	import { Tween } from 'svelte/motion';
 	import { backOut, cubicInOut } from 'svelte/easing';
+	import LoopingAssetSprite from './LoopingAssetSprite.svelte';
 
 	type Props = {
 		boardKey: string;
@@ -13,15 +14,8 @@
 		breatheScale: number;
 	};
 
-	const {
-		boardKey,
-		finalKey,
-		winId,
-		boardSize,
-		amountText,
-		fontSize,
-		breatheScale,
-	}: Props = $props();
+	const { boardKey, finalKey, winId, boardSize, amountText, fontSize, breatheScale }: Props =
+		$props();
 
 	const FADE_MS = 360;
 	const POP_MS = 420;
@@ -34,6 +28,7 @@
 
 	const ORDER = ['winSweet', 'winWild', 'winEpic', 'winMythic', 'winLegendary'];
 	const tierIndex = (key: string | null) => ORDER.indexOf(key ?? '');
+	const animationKey = (key: string) => `${key}Anim`;
 
 	$effect(() => {
 		const next = boardKey;
@@ -43,8 +38,7 @@
 		animating = true;
 
 		(async () => {
-			const first =
-				isNewWin || !displayedKey || tierIndex(next) < tierIndex(displayedKey);
+			const first = isNewWin || !displayedKey || tierIndex(next) < tierIndex(displayedKey);
 			if (first) {
 				outgoingKey = null;
 				displayedKey = next;
@@ -58,9 +52,7 @@
 				if (next === finalKey) pop.set(0.88, { duration: 0 });
 				await Promise.all([
 					fade.set(1, { duration: FADE_MS, easing: cubicInOut }),
-					next === finalKey
-						? pop.set(1, { duration: POP_MS, easing: backOut })
-						: Promise.resolve(),
+					next === finalKey ? pop.set(1, { duration: POP_MS, easing: backOut }) : Promise.resolve(),
 				]);
 				outgoingKey = null;
 			}
@@ -70,24 +62,26 @@
 
 	const shownKey = $derived(displayedKey ?? boardKey);
 	let amountWidth = $state(0);
-	const amountScale = $derived(
-		amountWidth > 0 ? Math.min(1, (boardSize * 0.58) / amountWidth) : 1,
-	);
+	const amountScale = $derived(amountWidth > 0 ? Math.min(1, (boardSize * 0.58) / amountWidth) : 1);
 </script>
 
 {#if shownKey}
 	<Container scale={pop.current * breatheScale}>
 		{#if outgoingKey}
-			<Sprite
-				key={outgoingKey}
+			<LoopingAssetSprite
+				animationKey={animationKey(outgoingKey)}
+				fallbackKey={outgoingKey}
+				restartKey={`${winId}:${outgoingKey}`}
 				anchor={0.5}
 				width={boardSize}
 				height={boardSize}
 				alpha={1 - fade.current}
 			/>
 		{/if}
-		<Sprite
-			key={shownKey}
+		<LoopingAssetSprite
+			animationKey={animationKey(shownKey)}
+			fallbackKey={shownKey}
+			restartKey={`${winId}:${shownKey}`}
 			anchor={0.5}
 			width={boardSize}
 			height={boardSize}

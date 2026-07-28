@@ -161,7 +161,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if (stateGame.gameType === 'basegame') {
 			const settledRollerReels = stateGame.activeRollerReels;
 			stateGameDerived.resetBonusState();
-			// Keep the completed Mega Wild reel and total plaque while idle.
+			// Keep the completed multiplier reel while idle.
 			// The following reveal releases it as the next spin starts.
 			stateGame.activeRollerReels = settledRollerReels;
 		}
@@ -374,7 +374,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			}
 		}
 		stateGame.activeRollerReels = reels;
-		// Let the settled Mega Wild board render before removing the animation
+		// Let the settled multiplier reel render before removing the animation
 		// layer. This prevents a normal-W flash before paylines appear.
 		await waitForTimeout(20);
 		eventEmitter.broadcast({ type: 'rollerWildsHide' });
