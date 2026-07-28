@@ -13,9 +13,9 @@
 	// Blue bracketed board panel (Figma 4036-2458 uses board_panel_623x514 = fs_panel art).
 	const panelBg = ap('/assets/components/ui/fs_panel.webp?v=20260708');
 	// Our control icons for the +, − and × (close) buttons (matches the buy-bonus / info modals).
-	const iconClose = ap('/assets/components/ui/ctrl_close.webp');
-	const iconMinus = ap('/assets/components/ui/ctrl_minus.webp');
-	const iconPlus = ap('/assets/components/ui/ctrl_plus.webp');
+	const iconClose = ap('/assets/components/ui/ctrl_close.svg');
+	const iconMinus = ap('/assets/components/ui/ctrl_minus.svg');
+	const iconPlus = ap('/assets/components/ui/ctrl_plus.svg');
 
 	// Spin-count stops (last = unlimited), stepped with − / + per the Figma design.
 	const STOPS: Array<number> = [5, 10, 25, 50, 100, 250, 500, Infinity];

@@ -135,11 +135,25 @@
 
 	// ALL WINS / FREE SPINS boxes — left gutter, stacked, vertically centred on the board.
 	const BOX_ASPECT = 323 / 228;
-	const boxW = $derived(gridHalfW * 0.52);
+	// 0.49 (was 0.52): keep the 3-box column (TOTAL WIN / FREE SPINS / RESPIN, all equal-sized) compact
+	// enough to fit between the logo and the balance/bet control on the LARGEST landscapes (e.g. 932×430),
+	// where the pixi stack scales with the board but the HTML controls scale more slowly.
+	const boxW = $derived(gridHalfW * 0.49);
 	const boxH = $derived(boxW / BOX_ASPECT);
 	const boardLeftX = $derived(board.x - gridHalfW);
 	const boxX = $derived((canvasLeftX + boardLeftX) * 0.5);
-	const boxGap = $derived(boxH * 0.32);
+	const boxGap = $derived(boxH * 0.12);
+	// Stack the bonus boxes from the TOP (just below the logo) instead of centring them on the board, so
+	// the RESPIN box (RespinPanel) can sit BENEATH FREE SPINS instead of being overlapped by it. The
+	// logo/gutter geometry mirrors RespinPanel so the three boxes read as one left-gutter column.
+	const canvasTopY = $derived(
+		main.height * 0.5 - context.stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1)),
+	);
+	const LOGO_H = $derived((main.width * 0.3) / (1400 / 1098));
+	// 0.60 (was 0.85): pull the stack UP toward the logo so (a) TOTAL WIN sits just under it and (b) the
+	// three-box column (incl. RESPIN below, now equal-sized) clears the balance/bet control on the
+	// shortest landscapes. Keep in sync with RespinPanel.stackTopY.
+	const stackTopY = $derived(canvasTopY + LOGO_H * 0.6);
 
 	// Cyan→blue vertical gradient for the ALL WINS / FREE SPINS label text (top #00FCFF → bottom
 	// #0046A9). textureSpace 'local' maps 0..1 to each Text's own bounds, so both labels gradient
@@ -247,7 +261,7 @@
 
 		<!-- ALL WINS (reward) + FREE SPINS boxes, left gutter — only during a bonus. -->
 		{#if isBonus}
-			<Container x={boxX} y={board.y - boxH * 0.5 - boxGap * 0.5}>
+			<Container x={boxX} y={stackTopY + boxH * 0.5}>
 				<Sprite key="smallPadMobile" anchor={0.5} width={boxW} height={boxH} />
 				<Text anchor={0.5} y={-boxH * 0.17} text={i18nDerived.translate('TOTAL WIN')} style={labelStyle(boxH * 0.16)} />
 				<Text
@@ -257,7 +271,7 @@
 					style={valueStyle(boxH * (totalWin.length >= 8 ? 0.19 : totalWin.length >= 6 ? 0.23 : 0.28))}
 				/>
 			</Container>
-			<Container x={boxX} y={board.y + boxH * 0.5 + boxGap * 0.5}>
+			<Container x={boxX} y={stackTopY + boxH * 1.5 + boxGap}>
 				<Sprite key="smallPadMobile" anchor={0.5} width={boxW} height={boxH} />
 				<Text anchor={0.5} y={-boxH * 0.17} text={i18nDerived.translate('FREE SPINS')} style={labelStyle(boxH * 0.15)} />
 				<Text anchor={0.5} y={boxH * 0.15} text={`${fsRemaining}`} style={valueStyle(boxH * 0.28)} />

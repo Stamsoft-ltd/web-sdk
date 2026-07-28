@@ -204,7 +204,7 @@
 			{textGlows}
 			{plasma}
 		/>
-		<!-- Win amount — Cinzel 900 gold gradient with a black outline; scales to fit the plaque. -->
+		<!-- Win amount — IBM Plex Sans Condensed 900 gold gradient with a black outline; scales to fit the plaque. -->
 		<!-- The MAX art's plaque reads as centred on its compass medallion (its bottom-centre
 		     ornament), which sits at +0.015 of boardW — so the amount is aligned to that axis, not
 		     the raw sprite centre. Vertically it sits at +0.29 of boardH — the centre of the visible
@@ -219,7 +219,7 @@
 				onresize={(s) => (textSizes = s)}
 				text={bookEventAmountToCurrencyString(amount)}
 				style={{
-					fontFamily: 'Cinzel',
+					fontFamily: 'IBM Plex Sans Condensed',
 					fontWeight: '900',
 					fontSize: boardFont,
 					fill: WIN_GRADIENT,

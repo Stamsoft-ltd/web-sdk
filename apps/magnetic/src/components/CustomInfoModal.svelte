@@ -47,7 +47,7 @@
 	const winImg = ap('/assets/components/ui/info_win.webp');
 	const noWinImg = ap('/assets/components/ui/info_nowin.webp');
 	// General-info icons (page 6).
-	const icRotate = ap('/assets/components/ui/info_ic_rotate.webp');
+	const icRotate = ap('/assets/components/ui/info_ic_charge_arrow.webp');
 	const icLegal = ap('/assets/components/ui/info_ic_legal.webp');
 	// Page 6 card frames (designer boxes): narrow one behind the interrupted-rounds card, wide one
 	// behind the (larger) legal-notice card.
@@ -57,18 +57,18 @@
 	// Game controls (page 7) — the finished round-button icon set (designer export), in file order.
 	// name/desc are i18n keys, translated reactively in the template.
 	const controls = [
-		{ img: ap('/assets/components/ui/ctrl_spin.webp'), nameKey: 'INFO CTRL SPIN', descKey: 'INFO CTRL SPIN DESC', big: true },
-		{ img: ap('/assets/components/ui/ctrl_auto.webp'), nameKey: 'INFO CTRL AUTO', descKey: 'INFO CTRL AUTO DESC' },
-		{ img: ap('/assets/components/ui/ctrl_turbo.webp'), nameKey: 'INFO CTRL TURBO', descKey: 'INFO CTRL TURBO DESC' },
-		{ img: ap('/assets/components/ui/ctrl_plus.webp'), nameKey: 'INFO CTRL PLUS', descKey: 'INFO CTRL PLUS DESC' },
-		{ img: ap('/assets/components/ui/ctrl_minus.webp'), nameKey: 'INFO CTRL MINUS', descKey: 'INFO CTRL MINUS DESC' },
-		{ img: ap('/assets/components/ui/ctrl_info.webp'), nameKey: 'INFO CTRL INFO', descKey: 'INFO CTRL INFO DESC' },
-		{ img: ap('/assets/components/ui/ctrl_sound.webp'), nameKey: 'INFO CTRL SOUND', descKey: 'INFO CTRL SOUND DESC' },
-		{ img: ap('/assets/components/ui/ctrl_arrow_left.webp'), nameKey: 'INFO CTRL PREV', descKey: 'INFO CTRL PREV DESC' },
-		{ img: ap('/assets/components/ui/ctrl_arrow_right.webp'), nameKey: 'INFO CTRL NEXT', descKey: 'INFO CTRL NEXT DESC' },
-		{ img: ap('/assets/components/ui/ctrl_close.webp'), nameKey: 'INFO CTRL CLOSE', descKey: 'INFO CTRL CLOSE DESC' },
-		{ img: ap('/assets/components/ui/ctrl_menu.webp'), nameKey: 'INFO CTRL MENU', descKey: 'INFO CTRL MENU DESC' },
-		{ img: ap('/assets/components/ui/ctrl_music.webp'), nameKey: 'INFO CTRL MUSIC', descKey: 'INFO CTRL MUSIC DESC' },
+		{ img: ap('/assets/components/navbar/btn_spin.webp'), nameKey: 'INFO CTRL SPIN', descKey: 'INFO CTRL SPIN DESC', big: true },
+		{ img: ap('/assets/components/ui/ctrl_auto.svg'), nameKey: 'INFO CTRL AUTO', descKey: 'INFO CTRL AUTO DESC' },
+		{ img: ap('/assets/components/navbar/icons/turbo3.webp'), nameKey: 'INFO CTRL TURBO', descKey: 'INFO CTRL TURBO DESC' },
+		{ img: ap('/assets/components/ui/ctrl_plus.svg'), nameKey: 'INFO CTRL PLUS', descKey: 'INFO CTRL PLUS DESC' },
+		{ img: ap('/assets/components/ui/ctrl_minus.svg'), nameKey: 'INFO CTRL MINUS', descKey: 'INFO CTRL MINUS DESC' },
+		{ img: ap('/assets/components/ui/ctrl_info.svg'), nameKey: 'INFO CTRL INFO', descKey: 'INFO CTRL INFO DESC' },
+		{ img: ap('/assets/components/ui/ctrl_sound.svg'), nameKey: 'INFO CTRL SOUND', descKey: 'INFO CTRL SOUND DESC' },
+		{ img: ap('/assets/components/ui/ctrl_arrow_left.svg'), nameKey: 'INFO CTRL PREV', descKey: 'INFO CTRL PREV DESC' },
+		{ img: ap('/assets/components/ui/ctrl_arrow_right.svg'), nameKey: 'INFO CTRL NEXT', descKey: 'INFO CTRL NEXT DESC' },
+		{ img: ap('/assets/components/ui/ctrl_close.svg'), nameKey: 'INFO CTRL CLOSE', descKey: 'INFO CTRL CLOSE DESC' },
+		{ img: ap('/assets/components/ui/ctrl_menu.svg'), nameKey: 'INFO CTRL MENU', descKey: 'INFO CTRL MENU DESC' },
+		{ img: ap('/assets/components/ui/ctrl_music.svg'), nameKey: 'INFO CTRL MUSIC', descKey: 'INFO CTRL MUSIC DESC' },
 	];
 
 	type Props = { onclose: () => void };
@@ -254,17 +254,21 @@
 								<span class="gi-ic"><img src={icRotate} alt="" /></span>
 								<h3 class="feat-h">{t('INFO GI INTERRUPTED TITLE')}</h3>
 							</div>
-							<p class="feat-p">{t('INFO GI INTERRUPTED 1')}</p>
-							<p class="feat-p">{t('INFO GI INTERRUPTED 2')}</p>
+							<div class="gi-body">
+								<p class="feat-p">{t('INFO GI INTERRUPTED 1')}</p>
+								<p class="feat-p">{t('INFO GI INTERRUPTED 2')}</p>
+							</div>
 						</div>
 						<div class="card gi-card gi-wide">
 							<div class="gi-head">
 								<span class="gi-ic gi-ic--legal"><img src={icLegal} alt="" /></span>
 								<h3 class="feat-h">{t('INFO GI LEGAL TITLE')}</h3>
 							</div>
-							<p class="feat-p">{t('INFO GI LEGAL 1')}</p>
-							<p class="feat-p">{t('INFO GI LEGAL 2')}</p>
-							<p class="feat-p">{t('INFO GI LEGAL 3')}</p>
+							<div class="gi-body">
+								<p class="feat-p">{t('INFO GI LEGAL 1')}</p>
+								<p class="feat-p">{t('INFO GI LEGAL 2')}</p>
+								<p class="feat-p">{t('INFO GI LEGAL 3')}</p>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -417,7 +421,7 @@
 	}
 	.ov-title {
 		margin: 0;
-		font-family: 'Cinzel', serif;
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-size: clamp(24px, 5.4cqmin, 52px);
 		font-weight: 900;
 		letter-spacing: 0.03em;
@@ -535,10 +539,10 @@
 		min-width: 0;
 		white-space: nowrap;
 	}
-	/* Same treatment as the page titles: Cinzel + cyan→blue gradient. */
+	/* Same treatment as the page titles: IBM Plex Sans Condensed + cyan→blue gradient. */
 	.stat-txt b,
 	.stat-txt i {
-		font-family: 'Cinzel', serif;
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		text-transform: uppercase;
 		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
 		-webkit-background-clip: text;
@@ -586,7 +590,7 @@
 	.page-title {
 		margin: 0;
 		text-align: center;
-		font-family: 'Cinzel', serif;
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-size: clamp(22px, 4.8cqmin, 46px);
 		font-weight: 900;
 		letter-spacing: 0.04em;
@@ -611,6 +615,9 @@
 	}
 	.feat-h {
 		margin: 0;
+		/* Match the page titles (.page-title / .ov-title) — without this the card titles inherit the
+		   modal root's 'Inter' instead of the Magnetic display font. */
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-size: clamp(14px, 3cqmin, 28px);
 		font-weight: 800;
 		line-height: 1.12;
@@ -691,6 +698,7 @@
 	}
 	.pt-side-title {
 		margin: 0 0 clamp(2px, 0.8cqmin, 8px);
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-size: clamp(13px, 2.5cqmin, 23px);
 		font-weight: 800;
 		color: #6fb6f6;
@@ -860,13 +868,17 @@
 		color: transparent;
 	}
 	.fb-grid .feat-p {
-		font-size: clamp(11px, 2.2cqmin, 19px);
+		/* Slightly smaller so the (now larger) icons fit the tight cards on desktop without clipping. */
+		font-size: clamp(11px, 2.05cqmin, 17px);
 	}
 	.fb-grid .feat-ic {
-		width: clamp(54px, 10.5cqmin, 102px);
+		/* Desktop (base) W icon — the Extra-Feature card has the longest copy, so this is the largest that
+		   fits without clipping COST/RTP on the tightest (16:9) desktop panels. cqmin scales it. */
+		width: clamp(58px, 11.3cqmin, 106px);
 	}
 	.fb-grid .feat-trigger img {
-		width: clamp(50px, 9.2cqmin, 90px);
+		/* Scatter cards have shorter copy → the scatter can be a bit bigger. */
+		width: clamp(56px, 12.2cqmin, 116px);
 	}
 	.fb-grid .feat-x {
 		font-size: clamp(24px, 5cqmin, 50px);
@@ -912,6 +924,9 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		/* Centre the whole icon+title+body block (balanced padding top/bottom). The two cards' icons land
+		   on the SAME level because their bodies are given an equal min-height (see .gi-body below), so the
+		   blocks are the same height and centre identically. */
 		justify-content: center;
 		text-align: center;
 		/* Designer frame box as the card background (narrow one here, wide one for .gi-wide). Replaces
@@ -926,6 +941,12 @@
 	.gi-wide {
 		background: var(--gi-box-lg) center / 100% 100% no-repeat;
 	}
+	/* The narrow (Interrupted Rounds) card's copy runs close to its frame edges — extra side padding
+	   insets it so it has clear spacing like the wider Legal card. */
+	.gi-card:not(.gi-wide) {
+		padding-left: clamp(34px, 6.4cqmin, 66px);
+		padding-right: clamp(34px, 6.4cqmin, 66px);
+	}
 	/* Icon + title header — a centred column on desktop (icon above title); becomes an inline row on
 	   mobile (see the portrait query). */
 	.gi-head {
@@ -934,17 +955,17 @@
 		align-items: center;
 		gap: clamp(4px, 1cqmin, 10px);
 	}
+	/* Both icons the SAME size so their centres (and titles) line up across the two cards. */
 	.gi-ic {
-		width: clamp(48px, 9.5cqmin, 96px);
-		height: clamp(48px, 9.5cqmin, 96px);
+		width: clamp(50px, 10cqmin, 100px);
+		height: clamp(50px, 10cqmin, 100px);
 		display: grid;
 		place-items: center;
 		color: #6fb6f6;
 	}
-	/* The scales-of-justice art reads better a little larger than the rotate arrow. */
 	.gi-ic--legal {
-		width: clamp(52px, 10.5cqmin, 106px);
-		height: clamp(52px, 10.5cqmin, 106px);
+		width: clamp(50px, 10cqmin, 100px);
+		height: clamp(50px, 10cqmin, 100px);
 	}
 	.gi-ic img {
 		width: 100%;
@@ -964,6 +985,19 @@
 	.gi-card .feat-p {
 		font-size: clamp(9px, 1.6cqmin, 14px);
 		line-height: 1.38;
+	}
+	/* Body copy centres itself within an EQUAL min-height across both cards (set in the @container), so the
+	   icon+title blocks are the same height and centre to the same level while staying balanced. */
+	.gi-body {
+		/* Equal min-height across both cards → the icon+title blocks match and the icons centre to the same
+		   level. Sized (responsive) to the taller Legal card's 3-paragraph copy so it never clips. */
+		min-height: clamp(84px, 18.3cqmin, 172px);
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: clamp(8px, 1.6cqmin, 16px);
+		width: 100%;
 	}
 
 	/* Page 7: Controls — plain icon grid of the game's buttons (no card frame). Centred flex-wrap so it
@@ -993,15 +1027,16 @@
 		object-fit: contain;
 		filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.45));
 	}
-	/* The 3D spin button reads a touch smaller than the flat round icons — nudge it up to match. */
+	/* The 3D spin button art (btn_spin.webp) is non-square with an outer metallic frame, so object-fit
+	   :contain renders its visible disc smaller than the flat round icons. Keep the SAME layout box as the
+	   others (so the row + labels stay aligned) and scale it up VISUALLY only, from its centre. */
 	.ctrl-ic--lg {
-		width: clamp(42px, 9cqmin, 80px);
-		height: clamp(42px, 9cqmin, 80px);
+		transform: scale(1.32);
 	}
 	.ctrl-name {
 		/* Extra breathing room between the icon and its title (on top of the cell's base gap). */
 		margin: clamp(4px, 1.1cqmin, 12px) 0 0;
-		font-family: 'Cinzel', serif;
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-weight: 900;
 		text-transform: uppercase;
 		font-size: clamp(11px, 2.3cqmin, 21px);
@@ -1142,19 +1177,29 @@
 		.fb-grid .feat-card { gap: 8px; padding: 14px; justify-content: space-between; }
 		.fb-grid .feat-h { font-size: 22px; }
 		.fb-grid .feat-p { font-size: 15px; }
-		.fb-grid .feat-ic { width: 62px; }
-		.fb-grid .feat-trigger img { width: 66px; }
+		/* Short landscape viewports (this @container fires ≤490px tall, e.g. mobile landscape): the panel is
+		   only ~half height, so keep the icons modest or they clip the card's COST/RTP. */
+		.fb-grid .feat-ic { width: 84px; }
+		.fb-grid .feat-trigger img { width: 88px; }
 		.fb-grid .feat-x { font-size: 34px; }
 		.fb-k { font-size: 16px; }
 		.fb-v { font-size: 20px; }
 
 		/* Page 6 — General info: bigger icons, more card padding, larger gaps between stacked elements. */
-		.gi-card { padding: 30px 34px; gap: 18px; }
+		.gi-card { padding: 40px 46px; gap: 16px; }
+		/* The narrow (Interrupted Rounds) card's copy sits closer to its frame edges — extra side padding
+		   insets it to match the wider Legal card. */
+		.gi-card:not(.gi-wide) { padding-left: 64px; padding-right: 64px; }
 		.gi-head { gap: 12px; }
-		.gi-ic { width: 74px; height: 74px; }
-		.gi-ic--legal { width: 82px; height: 82px; }
+		/* Same size for both so the icon centres + titles line up exactly across the two cards. */
+		.gi-ic { width: 80px; height: 80px; }
+		.gi-ic--legal { width: 80px; height: 80px; }
 		.gi-grid .feat-h { font-size: 19px; }
-		.gi-card .feat-p { font-size: 12.5px; line-height: 1.4; }
+		.gi-card .feat-p { font-size: 12px; line-height: 1.42; }
+		/* Equal body height across both cards → the icon+title blocks match, so the icons centre to the
+		   same level. Sized (relative, so it scales with the modal) to the taller Legal card's 3-paragraph
+		   copy so it never clips. */
+		.gi-body { min-height: clamp(126px, 34cqmin, 168px); }
 
 		/* Page 7 — UI guide: larger icons and labels. Anchor the grid to the TOP (start) so the taller
 		   title can never overlap the first row; a small padding-top keeps a clean gap below the title. */
@@ -1396,6 +1441,8 @@
 		.gi-card .feat-p {
 			font-size: clamp(14px, 3.4cqmin, 20px);
 		}
+		/* gi-body is a desktop-only centring wrapper — let its paragraphs flow inline in portrait. */
+		.gi-body { display: contents; }
 
 		/* Pages 3 & 5: use the frame-box image as the card border, with bigger icons + text. */
 		.feat-card {
@@ -1439,16 +1486,20 @@
 		   boxes more room — tighten the spacing between cells, narrow the symbol column, and make each
 		   cell taller so the value fits comfortably. */
 		.pt-table {
-			font-size: clamp(9px, 2.1cqmin, 15px);
+			/* Smaller coefficient (was 2.1cqmin) so the font scales DOWN on the narrowest phones (e.g. 320px),
+			   where 13 columns leave each value cell too small for 5-char values like "2000x". Wider portraits
+			   still get a comfortable size. */
+			font-size: clamp(5px, 1.8cqmin, 15px);
 			border-spacing: clamp(1px, 0.35cqmin, 3px);
+			letter-spacing: -0.02em;
 		}
 		.pt-table th,
 		.pt-table td {
-			padding: clamp(4px, 1.3cqmin, 9px) 1px;
+			padding: clamp(4px, 1.3cqmin, 9px) 0;
 		}
 		.pt-table td.pt-sym,
 		.pt-table th.pt-rank {
-			width: clamp(28px, 8%, 42px);
+			width: clamp(17px, 5.2%, 42px);
 		}
 		.pt-side-title {
 			font-size: clamp(17px, 4.4cqmin, 26px);

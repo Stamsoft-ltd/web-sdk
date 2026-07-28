@@ -14,9 +14,9 @@
 	const confirmPanelBg = ap('/assets/components/ui/confirm_panel.webp?v=20260708b');
 	const coinIcon       = ap('/assets/components/ui/bb_coin.svg?v=20260708c');
 	// Our control icons (same set the info modal documents) for the +, − and × (close) buttons.
-	const iconClose      = ap('/assets/components/ui/ctrl_close.webp');
-	const iconMinus      = ap('/assets/components/ui/ctrl_minus.webp');
-	const iconPlus       = ap('/assets/components/ui/ctrl_plus.webp');
+	const iconClose      = ap('/assets/components/ui/ctrl_close.svg');
+	const iconMinus      = ap('/assets/components/ui/ctrl_minus.svg');
+	const iconPlus       = ap('/assets/components/ui/ctrl_plus.svg');
 
 	// Icons — exact Figma art (node 4040-4075): glowing magnet, purple M cube, red M briefcase.
 	const iconChance  = ap('/assets/components/ui/bb_icon_extra_chance.webp?v=20260708c');
@@ -275,7 +275,7 @@
 		left: 50%;
 		transform: translate(-50%, -50%);
 		margin: 0;
-		font-family: 'Cinzel', serif;
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-weight: 900;
 		font-size: 18px;
 		line-height: normal;
@@ -412,10 +412,10 @@
 		line-height: 1;
 	}
 
-	/* Figma: Cinzel Bold, white, "X.XX $". */
+	/* Figma: IBM Plex Sans Condensed Bold, white, "X.XX $". */
 	.card-price {
 		flex-shrink: 0;
-		font-family: 'Cinzel', serif;
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: clamp(14px, 1.3vw, 21px);
 		letter-spacing: 0.02em;
@@ -711,7 +711,7 @@
 		justify-content: space-between; text-align: center;
 	}
 	.confirm-title {
-		font-family: 'Cinzel', serif;
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-weight: 900; font-size: 4.8cqw;
 		letter-spacing: 0.03em; text-transform: uppercase;
 		line-height: 1; white-space: nowrap;

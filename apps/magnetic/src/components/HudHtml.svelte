@@ -429,7 +429,16 @@
 					<img class="nav-icon" src={iconMenu} alt="menu" />
 				</button>
 				{#if showMenuPopup}{@render menuPopup()}{/if}
-				<!-- Standalone sound button removed: sound (SFX + Music) is controlled from the menu popup. -->
+				<!-- Master mute toggle: one press silences ALL sound + music. The menu popup still lets you
+				     turn SOUND / MUSIC on/off individually. -->
+				<button
+					class="nav-btn nav-btn--framed"
+					type="button"
+					onclick={toggleSound}
+					aria-label="Mute all sound"
+				>
+					<img class="nav-icon" src={isMuted ? iconMute : iconSound} alt="sound" />
+				</button>
 			</div>
 
 			<div class="hud-buy">
@@ -723,8 +732,20 @@
 				</div>
 			</div>
 
-			<!-- Where the buy-bonus used to sit (under the capsule): the last round's win, always shown. -->
-			<div class="ls-buy ls-win">
+			<!-- Buy bonus centred under the capsule (its original spot), with the last-round WIN stretched
+			     beneath it, reaching under the nav. -->
+			<div class="ls-buy">
+				<button
+					class="buy-btn"
+					type="button"
+					disabled={disableBuy}
+					onclick={openBuyBonus}
+					aria-label={i18nDerived.buyBonus()}
+				>
+					<span class="buy-btn__label">{i18nDerived.buyBonus()}</span>
+				</button>
+			</div>
+			<div class="ls-win">
 				<div class="value-pill value-pill--balance ls-win-pill">
 					<div class="label label--balance">
 						<span class="label-text">{i18nDerived.win()}</span>
@@ -738,17 +759,15 @@
 					<img class="nav-icon" src={iconMenu} alt="menu" />
 				</button>
 				{#if showMenuPopup}{@render menuPopup()}{/if}
-				<div class="ls-nav-buy">
-					<button
-						class="buy-btn"
-						type="button"
-						disabled={disableBuy}
-						onclick={openBuyBonus}
-						aria-label={i18nDerived.buyBonus()}
-					>
-						<span class="buy-btn__label">{i18nDerived.buyBonus()}</span>
-					</button>
-				</div>
+				<!-- Sound icon moved here (was buy bonus): master mute for ALL sound + music. -->
+				<button
+					class="nav-btn nav-btn--framed ls-nav-sound"
+					type="button"
+					onclick={toggleSound}
+					aria-label="Mute all sound"
+				>
+					<img class="nav-icon" src={isMuted ? iconMute : iconSound} alt="sound" />
+				</button>
 				<button
 					class="spin-btn ls-spin"
 					class:spin-btn--busy={isBusy}
@@ -814,7 +833,7 @@
 		justify-content: space-between;
 		padding: 8px;
 		z-index: 20;
-		font-family: 'Cinzel', serif;
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 	}
 
 	/* Dark shelf behind the bottom bar — masks the gray full-width element that
@@ -871,14 +890,14 @@
 	}
 
 	.scatter-card__title {
-		font-family: 'Cinzel', serif;
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-size: 1.15rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
 	}
 
 	.scatter-card__text {
-		font-family: 'Cinzel', serif;
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-size: 0.8rem;
 		font-weight: 700;
 		line-height: 1.3;
@@ -1511,7 +1530,7 @@
 		border-radius: 50%;
 		background: radial-gradient(circle, rgba(20, 48, 8, 0.96) 60%, rgba(20, 48, 8, 0) 100%);
 		color: #fff;
-		font-family: Cinzel, serif;
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-weight: 900;
 		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
 		pointer-events: none;
@@ -1949,13 +1968,14 @@
 		   The big spin disc overflows its sides as the focal control (mirrors the desktop spin button,
 		   which protrudes past the bar via negative margins). */
 		width: clamp(40px, 7vw, 68px);
-		height: clamp(158px, 78vh, 348px);
+		/* Slightly shorter (was 78vh / 348) to leave room for the buy-bonus + WIN column under the capsule. */
+		height: clamp(150px, 70vh, 312px);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: space-between;
 		gap: 0;
-		padding: clamp(5px, 3.2vh, 22px) 0;
+		padding: clamp(5px, 2.8vh, 20px) 0;
 		background: var(--ls-navbar) center / 100% 100% no-repeat;
 		box-sizing: border-box;
 		overflow: visible;
@@ -2050,6 +2070,11 @@
 		right: auto;
 		bottom: auto;
 		transform: translate(-50%, 0);
+		/* Buy bonus on top, WIN stacked beneath it — both centred on the capsule column. */
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: clamp(3px, 1.4vh, 10px);
 	}
 	.ls-buy .buy-btn {
 		width: clamp(44px, 15.5vh, 94px);
@@ -2152,15 +2177,34 @@
 		font-size: clamp(0.28rem, 1.5vh, 0.48rem);
 		max-width: 80%;
 	}
+	/* WIN: a bar stretched across the lower-right gutter — starting just right of the board, running under
+	   the buy-bonus/capsule across to under the nav. Bottom-anchored so it sits beneath the buy-bonus. */
+	.ls-win {
+		position: absolute;
+		left: calc(var(--ls-buy-x, 79.5%) - clamp(56px, 12vw, 128px));
+		right: clamp(4px, 1vw, 14px);
+		bottom: clamp(8px, 4.5vh, 30px);
+		display: flex;
+		justify-content: center;
+	}
 	.ls-win .ls-win-pill {
+		width: 100%;
+		box-sizing: border-box;
+		flex-direction: row;
 		align-items: center;
-		text-align: center;
-		background: none;
+		justify-content: center;
+		gap: clamp(4px, 1.2vw, 12px);
+		background: var(--pt-balance-bg) center / 100% 100% no-repeat;
 		border: none;
 		box-shadow: none;
+		backdrop-filter: none;
+		border-radius: 0;
 		min-width: 0;
-		padding: 0;
-		gap: 1px;
+		padding: clamp(3px, 1.4vh, 9px) clamp(10px, 2.4vw, 22px);
+	}
+	.ls-win .label--balance {
+		justify-content: center;
+		width: auto;
 	}
 	.ls-win .label--balance {
 		justify-content: center;
@@ -2173,6 +2217,16 @@
 	.ls-win .ls-win-pill .label-text {
 		font-size: clamp(0.34rem, 2.05vh, 0.66rem);
 		color: #fff;
+	}
+
+	/* Smaller landscape phones (height ≤ 400px, e.g. 812×375 / 568×320): the buy-bonus badge under the
+	   capsule is smaller, so its BUY / BONUS label shrinks too. (The tiniest screens shrink further in the
+	   max-height:300px block below.) */
+	@media (max-height: 400px) {
+		.hud-shell[data-layout='landscape'] .ls-buy .buy-btn__label {
+			font-size: clamp(0.16rem, 1.55vh, 0.42rem);
+			max-width: 78%;
+		}
 	}
 
 	/* Very small landscape screens (e.g. 400×225): the balance / bet / buy text is set by its vh term
@@ -2188,10 +2242,11 @@
 		.hud-shell[data-layout='landscape'] .ls-bet-val .value {
 			font-size: clamp(0.24rem, 2vh, 0.42rem);
 		}
-		/* Buy-bonus badge lives in the nav now — the tiny button can't take a large BUY / BONUS label. */
-		.hud-shell[data-layout='landscape'] .ls-nav-buy .buy-btn__label {
-			font-size: clamp(0.15rem, 1.6vh, 0.28rem);
-			max-width: 68%;
+		/* Buy-bonus badge under the capsule: smaller BUY / BONUS text so it fits the shrunk badge on
+		   these short landscape screens. */
+		.hud-shell[data-layout='landscape'] .ls-buy .buy-btn__label {
+			font-size: clamp(0.14rem, 1.5vh, 0.28rem);
+			max-width: 74%;
 		}
 		/* WIN under the capsule: shrink so it clears the board's right edge and the capsule above it. */
 		.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .value {

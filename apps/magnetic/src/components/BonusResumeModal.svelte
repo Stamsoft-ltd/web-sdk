@@ -78,9 +78,9 @@
 		text-align: center;
 	}
 
-	/* Cinzel Black, cyan→blue gradient (Figma #00fcff → #0046a9) */
+	/* IBM Plex Sans Condensed Black, cyan→blue gradient (Figma #00fcff → #0046a9) */
 	.resume-title {
-		font-family: 'Cinzel', serif;
+		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-weight: 900;
 		font-size: 4.8cqw;
 		letter-spacing: 0.03em;

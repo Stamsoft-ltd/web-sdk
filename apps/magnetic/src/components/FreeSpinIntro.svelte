@@ -124,7 +124,7 @@
 	// (a manual bloom) rather than a pixi `dropShadow` filter — that filter renders as a large dark
 	// quad over the panel on some GPUs/drivers, which is the "black shadow on top of the popup".
 	const congratsGlowStyle = (fontSize: number) => ({
-		fontFamily: 'Cinzel',
+		fontFamily: 'IBM Plex Sans Condensed',
 		fontWeight: '700' as const,
 		fontSize,
 		fill: 0x8fd8ff,
@@ -150,7 +150,7 @@
 	};
 
 	const congratsStyle = (fontSize: number) => ({
-		fontFamily: 'Cinzel',
+		fontFamily: 'IBM Plex Sans Condensed',
 		fontWeight: '700' as const,
 		fontSize,
 		fill: 0xffffff,
@@ -183,9 +183,9 @@
 		fill: 0xffffff,
 		align: 'center' as const,
 	});
-	// Figma: white Cinzel bold, modest tracking; black outline so it stays readable on any bg.
+	// Figma: white IBM Plex Sans Condensed bold, modest tracking; black outline so it stays readable on any bg.
 	const pressStyle = (fontSize: number) => ({
-		fontFamily: 'Cinzel',
+		fontFamily: 'IBM Plex Sans Condensed',
 		fontWeight: '900' as const,
 		fontSize,
 		fill: 0xffffff,
