@@ -50,17 +50,17 @@ const assets = {
 		type: 'sprite',
 		src: './assets/components/ui/panel_border.webp?v=20260708'
 	},
-	capsuleTube: {
+	// Desktop tesla capsule housing. This is the per-pixel MEDIAN of the original 30-frame baked
+	// flipbook: the source video has sub-pixel camera wobble, so playing the whole capsule as a
+	// flipbook drifted the metal ~1px frame to frame, while the median rejects the moving lightning
+	// and leaves the housing perfectly still. The lightning itself is drawn procedurally by
+	// CapsuleBolts.svelte, so no animation sheet ships for desktop at all (804KB -> 29KB).
+	// Regenerate with scripts/split-capsule-shell.py, which needs the original flipbook — deleted
+	// from the tree once the bolts went procedural, but recoverable via
+	// `git show <rev>:apps/magnetic/static/assets/sprites/capsuleTube/capsule_tube_anim.webp`.
+	capsuleTubeShell: {
 		type: 'sprite',
-		src: './assets/components/ui/capsule_tube.webp?v=20260709b'
-	},
-	// Animated tesla capsule (Magnific webm with real alpha, lightning baked in) — replaces the
-	// static tube + procedural lightning overlays. Looping 30-frame flipbook.
-	capsuleTubeAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/capsuleTube/capsule_tube_anim.json',
-		// Board-facing sheets must preload: the loader swallows fetch errors and still
-		// reports loaded, and mounting a SpriteSheet whose key is missing crashes pixi.
+		src: './assets/sprites/capsuleTube/capsule_tube_shell.webp?v=20260729'
 	},
 	// Mobile/portrait+landscape tube: the same tesla animation exported HORIZONTALLY (mp4 → keyed,
 	// trimmed 30-frame flipbook, visible-tube aspect ~3.23). Portrait uses it as-is; mobile-landscape
@@ -372,7 +372,10 @@ const MOBILE_ONLY_KEYS: readonly string[] = [
 ];
 // CapsulePanel renders only when layoutType is neither portrait nor landscape, and BoardFrame
 // picks boardPad only on desktop — so these three are genuinely unreachable on a phone.
-const DESKTOP_ONLY_KEYS: readonly string[] = ['capsuleTube', 'capsuleTubeAnim', 'boardPad'];
+const DESKTOP_ONLY_KEYS: readonly string[] = [
+	'capsuleTubeShell',
+	'boardPad',
+];
 
 if (typeof window !== 'undefined') {
 	const w = window.innerWidth;

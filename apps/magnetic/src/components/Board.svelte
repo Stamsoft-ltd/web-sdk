@@ -89,36 +89,6 @@
 		return Math.abs(h % 100) / 100;
 	};
 
-	// ── Stacked-symbol electricity. Each locked symbol keeps its normal static art but takes a
-	//    short jolt every ZAP_PERIOD seconds: a sub-pixel buzz plus a quick brightness flicker, so
-	//    the stack reads as live-wired without turning into the looping win flipbook it used to be.
-	//    Phases come off the cell key, so cells never zap in unison. Driven by the SAME persistent
-	//    rAF as the borders below — zapClock is only written while something is locked, so an idle
-	//    board does no per-frame work. ──
-	//    Purely POSITIONAL — no alpha or tint change. Brightness flicker reads as a failing lamp,
-	//    not as current passing through something; a fast mechanical buzz does.
-	const JOLT_PERIOD = 1.05; // seconds between a given cell's stronger jolts
-	const JOLT_LEN = 0.16; // seconds a jolt lasts
-	let zapClock = $state(0);
-	const NO_ZAP = { dx: 0, dy: 0 };
-	const zapAt = (key: string, t: number) => {
-		const phase = keyPhase(key);
-		// Constant high-frequency micro-vibration (sub-pixel) so the stack always feels live-wired.
-		// Two incommensurate frequencies per axis keep it from reading as a clean sine wobble.
-		// Amplitudes are board-relative, but note the board itself renders at ~0.6x on desktop, so
-		// these virtual units land at roughly 0.6px / 1.7px peak on screen — tuned there, not here.
-		let dx = Math.sin(t * 61 + phase * 17) * SYMBOL_W * 0.009;
-		let dy = Math.sin(t * 73 + phase * 29) * SYMBOL_H * 0.007;
-		// Periodic stronger jolt on top, phase-offset per cell so they never buzz in unison.
-		const local = ((t / JOLT_PERIOD + phase) % 1) * JOLT_PERIOD;
-		if (local <= JOLT_LEN) {
-			const p = local / JOLT_LEN;
-			const env = Math.sin(Math.PI * p); // ease in and out so it never pops
-			dx += Math.sin(p * Math.PI * 15) * env * SYMBOL_W * 0.015;
-			dy += Math.sin(p * Math.PI * 11 + 1.7) * env * SYMBOL_H * 0.012;
-		}
-		return { dx, dy };
-	};
 	// ── Cell electricity clock. ONE persistent rAF (started on mount, never stopped)
 	//    redraws the electric borders IMPERATIVELY into a captured Graphics instance. Nothing
 	//    reactive sits in the border render path, so the arcs cannot freeze when an upstream
@@ -257,7 +227,6 @@
 			}
 			const cells = lockedCells; // untracked read inside rAF — always the current value
 			if (cells.length) {
-				zapClock = now / 1000;
 				if (lockG) {
 					drawLockBorders(lockG, now, cells);
 					lockGDrawn = true;
@@ -413,8 +382,6 @@
 			{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
 			{@const winSheet = cell.symbolState === 'win' ? WIN_SHEETS[safeAssetKey] : undefined}
 			{@const winSheetSize = height * (WIN_SHEET_SIZE[winSheet ?? ''] ?? 0.8)}
-			<!-- No jolt during the win pass — the win art is already animating there. -->
-			{@const z = winSheet ? NO_ZAP : zapAt(cell.key, zapClock)}
 			{#if winSheet}
 				<SpriteSheet
 					key={winSheet}
@@ -431,8 +398,8 @@
 			{:else}
 				<Sprite
 					key={safeAssetKey}
-					x={x + z.dx}
-					y={y + z.dy}
+					{x}
+					{y}
 					anchor={{ x: 0.5, y: 0.5 }}
 					{width}
 					{height}

@@ -7,7 +7,7 @@
 	import { backOut, cubicOut } from 'svelte/easing';
 	import { MainContainer } from 'components-layout';
 	import { FadeContainer } from 'components-pixi';
-	import { AnimatedSprite, Container, Sprite, Text, type LoadedSpriteSheet } from 'pixi-svelte';
+	import { Container, Sprite, Text } from 'pixi-svelte';
 	import { stateBet } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
@@ -15,6 +15,7 @@
 	import { getSpriteKeyByName } from '../game/utils';
 	import type { SymbolName } from '../game/types';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import CapsuleBolts from './CapsuleBolts.svelte';
 
 	const context = getContext();
 	const board = $derived(context.stateGameDerived.boardLayout());
@@ -116,11 +117,13 @@
 	const tubeY = $derived((tubeTop + tubeBot) * 0.5);
 	const symSize = $derived(tubeW * 0.50);
 
-	// Animated tesla tube (video flipbook, lightning baked in). Falls back to the static art
-	// until the sheet is loaded.
-	const tubeFrames = $derived(
-		(context.stateApp.loadedAssets?.capsuleTubeAnim ?? []) as LoadedSpriteSheet,
-	);
+	// The capsule is a STATIC shell plus an additive lightning layer, not one baked flipbook — the
+	// source video wobbles ~1px, so animating the whole capsule made the housing drift.
+	//
+	// The capsule is a STATIC shell (per-pixel median of the original flipbook — the source video
+	// wobbles ~1px, so animating the whole capsule made the housing drift) plus PROCEDURAL bolts.
+	// The lightning was a baked 25-frame loop; however well the seam was hidden, a fixed cycle
+	// eventually reads as a loop. CapsuleBolts generates fresh geometry per strike instead.
 
 	// Electric agitation of the tube symbol: tiny jitter + scale pulse + brightness flicker,
 	// all amplified while a surge is arcing.
@@ -180,19 +183,8 @@
 		     TOTAL WIN (top) and FREE SPINS (bottom). Tube (back) -> symbol -> lightning ON TOP so the
 		     electricity arcs over the element. -->
 		<Container x={colX} y={tubeY}>
-			{#if tubeFrames.length > 0}
-				<AnimatedSprite
-					textures={tubeFrames}
-					anchor={0.5}
-					width={tubeW}
-					height={tubeH}
-					animationSpeed={0.14}
-					loop={true}
-					play={true}
-				/>
-			{:else}
-				<Sprite key="capsuleTube" anchor={0.5} width={tubeW} height={tubeH} />
-			{/if}
+			<Sprite key="capsuleTubeShell" anchor={0.5} width={tubeW} height={tubeH} />
+			<CapsuleBolts width={tubeW} height={tubeH} />
 			{#if symbolKey}
 				<Container
 					x={symSize * symFx.dx}
