@@ -7,10 +7,11 @@
 	import { backOut, cubicOut } from 'svelte/easing';
 	import { FillGradient } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
-	import { AnimatedSprite, Container, Graphics, Sprite, Text, type LoadedSpriteSheet } from 'pixi-svelte';
+	import { Container, Graphics, Sprite, Text } from 'pixi-svelte';
 	import { stateBet } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
+	import CapsuleBolts from './CapsuleBolts.svelte';
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { getSpriteKeyByName } from '../game/utils';
@@ -123,9 +124,6 @@
 	// New animated tesla tube (mp4 → keyed flipbook), rotated 90° to run vertically. The old glass was
 	// only ~94% wide × ~43% tall opaque within its box, so draw the (trimmed) animation at those
 	// fractions to land in the same on-screen tube. Falls back to the static glass + crackle.
-	const tubeFrames = $derived(
-		(context.stateApp.loadedAssets?.capsuleTubeAnimMobile ?? []) as LoadedSpriteSheet,
-	);
 	const tubeY = $derived(cap.tubeY);
 	const symSize = $derived(cap.symSize);
 	const gridHalfW = $derived(cap.gridHalfW);
@@ -192,29 +190,29 @@
 		     runs top-to-bottom, with live electricity arcing INSIDE the clear window (masked) — inherits
 		     the portrait/desktop animation. Tube (transparent) -> symbol -> lightning on top. -->
 		<Container x={colX} y={tubeY}>
-			{#if tubeFrames.length > 0}
-				<!-- Animated tesla tube, rotated 90° to run vertically. Sized to the old glass's visible
-				     extent so it lands in the same footprint; lightning is baked in (no procedural crackle). -->
-				<AnimatedSprite
-					textures={tubeFrames}
-					anchor={0.5}
-					rotation={Math.PI / 2}
-					width={tubeH * 0.941}
-					height={tubeW * 0.427}
-					animationSpeed={0.14}
-					loop={true}
-					play={true}
-				/>
-			{:else}
-				<!-- Rotated tube: the sprite's width becomes the on-screen HEIGHT and its height the WIDTH. -->
-				<Sprite key="capsuleTubeGlass" anchor={0.5} rotation={Math.PI / 2} width={tubeH} height={tubeW} />
-			{/if}
+			<!-- Same treatment as desktop (CapsulePanel): a STATIC shell plus PROCEDURAL bolts, replacing
+			     the baked capsule_tube_mobile_anim flipbook. The flipbook was a fixed cycle that visibly
+			     looped and carried the source video's ~1px housing wobble; CapsuleBolts generates fresh
+			     geometry per strike. Order is shell -> lightning -> symbol, so the beam passes BEHIND the
+			     held element. focusY is 0 here (not desktop's 0.055) because the landscape symbol sits on
+			     the tube's centre line rather than offset down it. -->
+			<!-- Footprint matches the baked tube this replaced: it was drawn ROTATED as
+			     width={tubeH * 0.941} height={tubeW * 0.427}, so on screen it was only 0.427 of tubeW
+			     across. Sizing the upright shell at the full tubeW x tubeH made it ~2.3x too wide. -->
+			{@const shellW = tubeW * 0.427}
+			{@const shellH = tubeH * 0.941}
+			<Sprite key="capsuleTubeShell" anchor={0.5} width={shellW} height={shellH} />
+			{@const symLiveScale = symbolScale.current * symFx.s}
+			<CapsuleBolts
+				width={shellW}
+				height={shellH}
+				charged={!!symbolKey}
+				focusY={0}
+				symRx={symSize * 0.5 * symLiveScale}
+				symRy={symSize * (264 / 328) * 0.5 * symLiveScale}
+			/>
 			{#if symbolKey}
-				<Container
-					x={symSize * symFx.dx}
-					y={symSize * symFx.dy}
-					scale={symbolScale.current * symFx.s}
-				>
+				<Container x={symSize * symFx.dx} y={symSize * symFx.dy} scale={symLiveScale}>
 					<Sprite
 						key={symbolKey}
 						anchor={0.5}
@@ -223,39 +221,6 @@
 						alpha={symFx.a}
 					/>
 				</Container>
-			{/if}
-			{#if tubeFrames.length === 0}
-			<!-- Fallback: procedural electricity in the clear window, clipped to the glass interior. The
-			     bolt art is naturally vertical, so (unlike the horizontal portrait bar) it is NOT rotated. -->
-			<Container>
-				<Graphics
-					isMask
-					draw={(g) => {
-						g.clear();
-						g.beginFill(0xffffff);
-						g.rect(-tubeW * 0.2, -tubeH * 0.24, tubeW * 0.4, tubeH * 0.48);
-						g.endFill();
-					}}
-				/>
-				<!-- Pulsing core glow (tall ellipse) so the charge reads between bolt flickers. -->
-				<Graphics
-					blendMode="add"
-					draw={(g) => {
-						g.clear();
-						const steps = 8;
-						for (let s = steps; s >= 1; s--) {
-							const t = s / steps;
-							g.beginFill(0x59b7ff, 0.06 * (1 - t) + 0.015);
-							g.drawEllipse(0, 0, tubeW * 0.15 * t, tubeH * 0.24 * t);
-							g.endFill();
-						}
-					}}
-				/>
-				<Sprite key="capsuleCrackle" anchor={0.5} width={tubeW * 0.42} height={tubeH * 0.5} alpha={crackleA} blendMode="add" />
-				<Sprite key="capsuleCrackle" anchor={0.5} width={-tubeW * 0.42} height={tubeH * 0.5} alpha={crackleB} blendMode="add" />
-				<Sprite key="capsuleLightning" anchor={0.5} width={tubeW * 0.46} height={tubeH * 0.56} alpha={arcFlicker} blendMode="add" />
-				<Sprite key="capsuleLightning" anchor={0.5} width={tubeW * 0.34} height={tubeH * 0.46} alpha={arcFlicker} />
-			</Container>
 			{/if}
 		</Container>
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Container, Graphics, Sprite, Text, type Sizes } from 'pixi-svelte';
 	import { Tween } from 'svelte/motion';
-	import { cubicIn, backOut } from 'svelte/easing';
+	import { backOut } from 'svelte/easing';
 	import {
 		bookEventAmountToCurrencyString,
 		bookEventAmountToBetAmountMultiplier,
@@ -11,12 +11,16 @@
 	import { WIN_GRADIENT } from '../game/goldGradient';
 	import { WIN_BOARD_LOGO_PATHS } from '../game/winBoardLogoPaths';
 
-	// The tiered win board with a zoom-to-centre transition between tiers: when the counting
-	// amount crosses into a higher tier, the current board collapses into the centre, then the
-	// new tier's board pops back out to full size (with a backOut overshoot). The first board of
-	// a win presentation pops in from the centre the same way.
+	// The tiered win board. ONE board is shown for the whole presentation — the tier for the final
+	// win — and it pops in from the centre with a backOut overshoot.
+	//
+	// The tier used to be derived from the LIVE counting amount, so a big win climbed through every
+	// intermediate board on its way up (SWEET collapsing into WILD into EPIC...). That read as the
+	// game changing its mind about how much the player had won. `tierAmount` is the settled total
+	// and is fixed for the presentation; `amount` is the counting value and only drives the text.
 	const {
 		amount,
+		tierAmount,
 		boardSize,
 		screenW,
 		screenH,
@@ -24,6 +28,7 @@
 		maxOffY,
 	}: {
 		amount: number;
+		tierAmount: number;
 		boardSize: number;
 		screenW: number;
 		screenH: number;
@@ -97,7 +102,7 @@
 	// Win multiplier = book amount ÷ 100 (100 book units = 1× bet).
 	// Tier thresholds (× bet): <50 SWEET · 50 WILD · 100 EPIC · 200 MYTHIC · 500 LEGENDARY.
 	// MAX WIN is reserved for the TRUE 25000x win cap.
-	const mult = $derived(bookEventAmountToBetAmountMultiplier(amount));
+	const mult = $derived(bookEventAmountToBetAmountMultiplier(tierAmount));
 	const targetKey = $derived(
 		mult >= 25000 ? 'maxWinBoard'
 		: mult >= 500 ? 'legendaryWinBoard'
@@ -107,23 +112,17 @@
 		: 'sweetWinBoard',
 	);
 
+	// The tier is settled before the board mounts and Win.svelte remounts this per win event, so
+	// there is exactly one board per presentation: pick it, pop it in. The previous version also
+	// carried a collapse-then-expand path and an `animating` re-entry guard for crossing tiers
+	// mid-count; with the tier fixed that path was unreachable.
 	let displayedKey = $state('');
-	let animating = $state(false);
 	const pop = new Tween(0, { duration: 340, easing: backOut });
 
 	$effect(() => {
-		const next = targetKey;
-		if (animating || next === displayedKey) return;
-		animating = true;
-		(async () => {
-			// Collapse the current board into the centre (skip on first mount — nothing to collapse).
-			if (displayedKey) await pop.set(0, { duration: 180, easing: cubicIn });
-			displayedKey = next;
-			await pop.set(1, { duration: 340, easing: backOut });
-			// Flipping `animating` re-runs this effect, so a tier crossed DURING the animation is
-			// caught up immediately (intermediate tiers are skipped, which reads as intentional).
-			animating = false;
-		})();
+		if (targetKey === displayedKey) return;
+		displayedKey = targetKey;
+		pop.set(1, { duration: 340, easing: backOut });
 	});
 
 	let textSizes = $state<Sizes>({ width: 0, height: 0 });

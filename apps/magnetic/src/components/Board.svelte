@@ -12,7 +12,14 @@
 	import { Container, Graphics, Sprite, SpriteSheet } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
-	import { BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, SYMBOL_H, SYMBOL_W } from '../game/constants';
+	import {
+		BOARD_DIMENSIONS,
+		BOARD_GRID_OFFSET_Y,
+		SYMBOL_H,
+		SYMBOL_HEAD_OFFSET,
+		SYMBOL_W,
+		SYMBOL_ZAP_OVERRIDE,
+	} from '../game/constants';
 	import { getSymbolInfo } from '../game/utils';
 
 	const context = getContext();
@@ -28,6 +35,9 @@
 		reel: 10,
 		symbol: 20,
 		pulledSymbol: 26,
+		// Electric burst behind a stacked symbol — under lockedSymbol so the symbol art stays fully
+		// readable and the burst only shows as a halo around it.
+		lockedZap: 28,
 		lockedSymbol: 32,
 		// Above everything in the cell stack — the electric border arcs ride the seams
 		// BETWEEN locked cells, so anything higher (opaque covers) would overdraw them.
@@ -104,39 +114,97 @@
 	};
 	let lockG: LockG | null = null;
 	let lockGDrawn = false;
+	// Trace the OUTLINE OF THE WHOLE STACKED PACK, not each locked cell. Outlining every cell drew
+	// the seams BETWEEN adjacent locked cells too, which is what read as lightning "inside" the
+	// stack. An edge is kept only when the neighbour across it is not locked, and the surviving
+	// edges are stitched into closed loops so the runners can crawl the pack's real perimeter.
+	//
+	// Each cell contributes its 4 edges wound CLOCKWISE (screen coords, y down). Consistent winding
+	// is what makes the stitch trivial: the next edge of a loop is simply the one starting where the
+	// current edge ends. Disjoint clusters and holes each come out as their own loop.
+	const buildLockLoops = (cells: typeof lockedCells) => {
+		const k = (r: number, w: number) => `${r},${w}`;
+		const locked = new Set(cells.map((c) => k(c.position.reel, c.position.row)));
+		type E = { ax: number; ay: number; bx: number; by: number };
+		const edges: E[] = [];
+		for (const cell of cells) {
+			const r = cell.position.reel;
+			const w = cell.position.row;
+			if (!locked.has(k(r, w - 1))) edges.push({ ax: r, ay: w, bx: r + 1, by: w });
+			if (!locked.has(k(r + 1, w))) edges.push({ ax: r + 1, ay: w, bx: r + 1, by: w + 1 });
+			if (!locked.has(k(r, w + 1))) edges.push({ ax: r + 1, ay: w + 1, bx: r, by: w + 1 });
+			if (!locked.has(k(r - 1, w))) edges.push({ ax: r, ay: w + 1, bx: r, by: w });
+		}
+		const byStart = new Map<string, E[]>();
+		for (const e of edges) {
+			const key = k(e.ax, e.ay);
+			const list = byStart.get(key);
+			if (list) list.push(e);
+			else byStart.set(key, [e]);
+		}
+		const used = new Set<E>();
+		const loops: { x: number; y: number }[][] = [];
+		for (const seed of edges) {
+			if (used.has(seed)) continue;
+			const loop: { x: number; y: number }[] = [];
+			let cur: E | undefined = seed;
+			// Bounded by the edge count: a malformed stitch must not spin the frame loop forever.
+			for (let guard = 0; cur && !used.has(cur) && guard <= edges.length; guard++) {
+				used.add(cur);
+				loop.push({ x: cur.ax * SYMBOL_W, y: cur.ay * SYMBOL_H });
+				const nexts = byStart.get(k(cur.bx, cur.by));
+				cur = nexts?.find((e) => !used.has(e));
+			}
+			if (loop.length > 2) loops.push(loop);
+		}
+		return loops;
+	};
+
 	const drawLockBorders = (g: LockG, now: number, cells: typeof lockedCells) => {
 		g.clear();
 		const t = now / 1000;
 		const jit = SYMBOL_W * 0.03;
-		for (const cell of cells) {
-			const cx = getX(cell.position.reel);
-			const cy = getStaticY(cell.position.row);
-			// Runners ride the cell SEAM (the dark gap between boxes) — high contrast even though
-			// the locked box art itself is light.
-			const hw = SYMBOL_W * 0.5;
-			const hh = SYMBOL_H * 0.5;
-			const per = 4 * (hw + hh);
+		const loops = buildLockLoops(cells);
+
+		for (let li = 0; li < loops.length; li++) {
+			const loop = loops[li];
+			// Arc-length parametrisation of the loop, so runners move at a constant PIXEL speed and
+			// carry a constant PIXEL-length tail regardless of how big the pack is. Fractions of the
+			// perimeter would make a 2-cell stack whip round while a 12-cell one crawled.
+			const n = loop.length;
+			const segLen: number[] = [];
+			let per = 0;
+			for (let i = 0; i < n; i++) {
+				const a = loop[i];
+				const b = loop[(i + 1) % n];
+				const L = Math.hypot(b.x - a.x, b.y - a.y);
+				segLen.push(L);
+				per += L;
+			}
+			if (per < 1) continue;
 			const pointAt = (p: number) => {
-				let d = (((p % 1) + 1) % 1) * per;
-				if (d < 2 * hw) return { x: cx - hw + d, y: cy - hh };
-				d -= 2 * hw;
-				if (d < 2 * hh) return { x: cx + hw, y: cy - hh + d };
-				d -= 2 * hh;
-				if (d < 2 * hw) return { x: cx + hw - d, y: cy + hh };
-				d -= 2 * hw;
-				return { x: cx - hw, y: cy + hh - d };
+				let d = ((((p % 1) + 1) % 1)) * per;
+				for (let i = 0; i < n; i++) {
+					if (d <= segLen[i]) {
+						const a = loop[i];
+						const b = loop[(i + 1) % n];
+						const f = segLen[i] ? d / segLen[i] : 0;
+						return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
+					}
+					d -= segLen[i];
+				}
+				return loop[0];
 			};
-			const phase = keyPhase(cell.key);
-			// Constant flickering outline so the whole cell always reads electrified — with random
+
+			const phase = keyPhase(`loop${li}:${n}`);
+			// Constant flickering outline so the whole pack always reads electrified — with random
 			// hard surges for aggression.
 			const surge = Math.random() < 0.06 ? 1 : 0;
 			const flick =
 				0.55 + 0.4 * Math.sin(t * 29 + phase * 12) * Math.sin(t * 9.3 + phase * 5) + surge * 0.5;
-			g.moveTo(cx - hw, cy - hh);
-			g.lineTo(cx + hw, cy - hh);
-			g.lineTo(cx + hw, cy + hh);
-			g.lineTo(cx - hw, cy + hh);
-			g.lineTo(cx - hw, cy - hh);
+			g.moveTo(loop[0].x, loop[0].y);
+			for (let i = 1; i < n; i++) g.lineTo(loop[i].x, loop[i].y);
+			g.lineTo(loop[0].x, loop[0].y);
 			g.stroke({
 				width: SYMBOL_W * 0.06,
 				color: 0x2fa8ff,
@@ -144,12 +212,21 @@
 				cap: 'round',
 				join: 'round',
 			});
-			// Three fast crawling arc runners with layered glow, hot white core, forked branches
-			// and head sparks.
-			const baseT = t * 0.75 + phase;
-			for (const off of [0, 0.33, 0.66]) {
+
+			// Crawling arc runners with layered glow, hot white core, forked branches and head sparks.
+			// Runner COUNT is derived from a target coverage rather than picked by feel: each runner
+			// lights TAIL_PX of the outline, so it takes COVERAGE * per / TAIL_PX of them to keep the
+			// perimeter almost continuously lit. The per-cell version ran 3 runners over a single
+			// cell's 416px outline (~78% covered); carrying that count onto a whole pack's outline
+			// left it mostly dark, which is why the lights went sparse.
+			const TAIL_PX = SYMBOL_W * 1.1;
+			const COVERAGE = 0.88;
+			const SEG = Math.min(0.45, TAIL_PX / per);
+			const baseT = (t * SYMBOL_W * 2.2) / per + phase;
+			const runners = Math.max(3, Math.round((COVERAGE * per) / TAIL_PX));
+			for (let ri = 0; ri < runners; ri++) {
+				const off = ri / runners;
 				const N = 10;
-				const SEG = 0.26;
 				const pts: { x: number; y: number }[] = [];
 				for (let i = 0; i <= N; i++) {
 					const p = pointAt(baseT + off - (i / N) * SEG);
@@ -186,12 +263,13 @@
 					cap: 'round',
 					join: 'round',
 				});
-				// Forked branches shooting off the runner body
+				// Forked branches shooting off the runner body. Aimed OUTWARD only — an inward fork
+				// lands inside the pack, which is the look being removed here.
 				for (const bi of [2, 5, 8]) {
-					if (Math.random() < 0.55) {
+					if (Math.random() < 0.45) {
 						const b = pts[bi];
 						const ang = Math.random() * Math.PI * 2;
-						const len = SYMBOL_W * (0.1 + Math.random() * 0.16);
+						const len = SYMBOL_W * (0.08 + Math.random() * 0.12);
 						const mx = b.x + Math.cos(ang) * len * 0.55 + (Math.random() - 0.5) * jit * 2;
 						const my = b.y + Math.sin(ang) * len * 0.55 + (Math.random() - 0.5) * jit * 2;
 						g.moveTo(b.x, b.y);
@@ -269,20 +347,21 @@
 		/>
 
 		<!-- Stationary box grid — the cell boxes never move; only the symbols roll inside them.
-		     Cluster cells leave the board art fully visible: no gray locked-cell background. -->
+		     EVERY cell draws its box, locked included. Locked cells used to skip it, which left a
+		     hole straight through to the dark background and made a stack read as a black patch cut
+		     out of the grid. This is independent of the cluster-hole MASK below: that stops falling
+		     respin symbols showing through, and still does. -->
 		{#each board as reel, reelIndex (reelIndex)}
 			{#each reel as cell, rowIndex (cell.key)}
-				{#if !cell.locked}
-					<Sprite
-						key={cell.highlighted ? 'cellBoxWin' : 'cellBox'}
-						x={getX(reelIndex)}
-						y={getStaticY(rowIndex)}
-						anchor={0.5}
-						width={SYMBOL_W}
-						height={SYMBOL_H}
-						zIndex={Z.grid}
-					/>
-				{/if}
+				<Sprite
+					key={cell.highlighted ? 'cellBoxWin' : 'cellBox'}
+					x={getX(reelIndex)}
+					y={getStaticY(rowIndex)}
+					anchor={0.5}
+					width={SYMBOL_W}
+					height={SYMBOL_H}
+					zIndex={Z.grid}
+				/>
 			{/each}
 		{/each}
 
@@ -368,6 +447,40 @@
 				{/each}
 			{/if}
 		</Container>
+
+		<!-- Electric burst BEHIND every stacked symbol. The 10 sheet frames are independent bursts,
+		     so `startFrame` is de-phased per cell from its board position: without it every stacked
+		     cell would step through the same frame on the same tick and the stack would strobe in
+		     unison. The offset is derived (not random) so a cell keeps its phase across re-renders.
+		     Sized to the cell's SHORT side so the burst's spikes stay inside their own cell — at the
+		     original 1.34 they reached past the box and streaked across neighbours. -->
+		{#each lockedCells as cell (`${cell.key}:zap`)}
+			{@const zapInfo = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState })}
+			{@const zapBoxW = SYMBOL_W * zapInfo.sizeRatios.width * cell.displayScale.current}
+			{@const zapBoxH = SYMBOL_H * zapInfo.sizeRatios.height * cell.displayScale.current}
+			<!-- Only assets listed in SYMBOL_ZAP_OVERRIDE get the small head-anchored burst; the rest
+			     keep the full-size burst centred on the cell. Shrinking every symbol's burst weakened
+			     the effect across the board. -->
+			{@const zapOverride = SYMBOL_ZAP_OVERRIDE[zapInfo.assetKey]}
+			{@const head = zapOverride ? (SYMBOL_HEAD_OFFSET[zapInfo.assetKey] ?? { x: 0, y: 0 }) : { x: 0, y: 0 }}
+			{@const zapSize =
+				Math.min(SYMBOL_W, SYMBOL_H) * (zapOverride ?? 0.98) * cell.displayScale.current}
+			<SpriteSheet
+				key="stackZapAnim"
+				play
+				loop
+				animationSpeed={0.18}
+				startFrame={(cell.position.reel * 3 + cell.position.row * 7) % 10}
+				x={getX(cell.position.reel) + head.x * zapBoxW}
+				y={getStaticY(cell.position.row) + head.y * zapBoxH}
+				anchor={0.5}
+				width={zapSize}
+				height={zapSize}
+				alpha={0.5}
+				blendMode="add"
+				zIndex={Z.lockedZap}
+			/>
+		{/each}
 
 		<!-- Cluster state: stacked cells hold the PLAIN STATIC symbol. This used to hardcode
 		     state: 'win', so every locked cell rendered win art and looped its win flipbook for the

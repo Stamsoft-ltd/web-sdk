@@ -7,7 +7,14 @@ import { eventEmitter } from './eventEmitter';
 import { stateLayoutDerived } from './stateLayout';
 import type { Bet, BookEventOfType } from './typesBookEvent';
 import type { RawSymbol, SymbolName, SymbolState } from './types';
-import { LOW_SYMBOLS, PREMIUM_SYMBOLS, SYMBOL_SIZE_RATIOS, SYMBOL_W } from './constants';
+import {
+	LOW_SYMBOLS,
+	PREMIUM_SYMBOLS,
+	SYMBOL_PAD_SCALE,
+	SYMBOL_SIZE_OVERRIDE,
+	SYMBOL_SIZE_RATIOS,
+	SYMBOL_W,
+} from './constants';
 
 const DESKTOP_STATIC_KEYS: Record<SymbolName, string> = {
 	H1: 'foxTile',
@@ -193,12 +200,19 @@ export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; stat
 				: LOW_SYMBOLS.includes(rawSymbol.name)
 					? SYMBOL_SIZE_RATIOS.low
 					: SYMBOL_SIZE_RATIOS.special;
-	// H1 (horseshoe magnet) art has almost no padding and reads oversized next to the other
-	// premiums — render it smaller (0.84 = 20% reduction, then nudged 5% back up).
+	// Cancel the transparent padding baked into this particular asset so the ARTWORK fills a
+	// consistent share of the cell (see SYMBOL_PAD_SCALE). Keyed by asset key, not symbol name,
+	// because the desktop / mobile / landscape art of one symbol is padded differently.
+	//
+	// This replaces a hand-tuned `H1 -> * 0.84` shrink. That existed because H1's art fills more of
+	// its file vertically than its peers (0.81 vs ~0.71), so at a shared ratio it read oversized —
+	// exactly the imbalance normalising against measured content now removes for every symbol at
+	// once. Keeping both would leave H1 uniquely undersized.
+	const pad = (SYMBOL_PAD_SCALE[assetKey] ?? 1) * (SYMBOL_SIZE_OVERRIDE[assetKey] ?? 1);
 	const sizeRatios =
-		rawSymbol.name === 'H1'
-			? { width: baseRatios.width * 0.84, height: baseRatios.height * 0.84 }
-			: baseRatios;
+		pad === 1
+			? baseRatios
+			: { width: baseRatios.width * pad, height: baseRatios.height * pad };
 
 	return {
 		type: 'sprite' as const,

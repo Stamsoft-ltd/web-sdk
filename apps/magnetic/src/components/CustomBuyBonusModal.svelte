@@ -210,7 +210,7 @@
 
 	<!-- Bet selector -->
 	<div class="bet" style={`background-image:url('${betPanel}')`}>
-		<button class="bet-step" type="button" disabled={disableDec} onclick={() => stepBet(-1)} aria-label="Decrease bet"><img class="ctrl-glyph" src={iconMinus} alt="" /></button>
+		<button class="bet-step" type="button" disabled={disableDec} onclick={() => stepBet(-1)} aria-label={`Decrease ${i18nDerived.betLabel()}`}><img class="ctrl-glyph" src={iconMinus} alt="" /></button>
 		<div class="bet-center">
 			<img class="bet-coin" src={coinIcon} alt="" />
 			<div class="bet-value">
@@ -218,7 +218,7 @@
 				<span class="bet-amount">{betDisplay}</span>
 			</div>
 		</div>
-		<button class="bet-step" type="button" disabled={disableInc} onclick={() => stepBet(1)} aria-label="Increase bet"><img class="ctrl-glyph" src={iconPlus} alt="" /></button>
+		<button class="bet-step" type="button" disabled={disableInc} onclick={() => stepBet(1)} aria-label={`Increase ${i18nDerived.betLabel()}`}><img class="ctrl-glyph" src={iconPlus} alt="" /></button>
 	</div>
 </div>
 

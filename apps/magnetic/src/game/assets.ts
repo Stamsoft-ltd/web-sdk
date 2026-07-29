@@ -196,6 +196,13 @@ const assets = {
 		type: 'spriteSheet',
 		src: './assets/sprites/scatterAnim/scatter_win_anim.json'
 	},
+	// Radial electric burst played BEHIND every stacked (locked) symbol. 10 independent bursts
+	// rather than a rendered animation, so the cycle is a crackle, not motion — order carries no
+	// meaning. Regenerate with scripts/build-stack-zap-sheet.py <src-dir>.
+	stackZapAnim: {
+		type: 'spriteSheet',
+		src: './assets/sprites/stackZap/stack_zap.json'
+	},
 	scatterCustom: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260709' },
 	scatterWin: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260709' },
 	scatterCustomMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_mobile.webp?v=20260709' },
@@ -373,7 +380,8 @@ const MOBILE_ONLY_KEYS: readonly string[] = [
 // CapsulePanel renders only when layoutType is neither portrait nor landscape, and BoardFrame
 // picks boardPad only on desktop — so these three are genuinely unreachable on a phone.
 const DESKTOP_ONLY_KEYS: readonly string[] = [
-	'capsuleTubeShell',
+	// capsuleTubeShell is NOT here any more: LandscapeCapsule now draws the same static shell plus
+	// procedural bolts as the desktop capsule, so deferring it on mobile would leave that tube empty.
 	'boardPad',
 ];
 

@@ -180,11 +180,26 @@
 <MainContainer zIndex={25}>
 	<FadeContainer show={!isPortrait}>
 		<!-- Capsule: one tall piece drawn first, BEHIND the panels so its metal caps connect under
-		     TOTAL WIN (top) and FREE SPINS (bottom). Tube (back) -> symbol -> lightning ON TOP so the
-		     electricity arcs over the element. -->
+		     TOTAL WIN (top) and FREE SPINS (bottom). Order is tube (back) -> lightning -> symbol IN
+		     FRONT, so the beam passes BEHIND the held element instead of cutting across its face.
+		     This still leaves the focus arcs visible: they run from the trunk above/below the symbol
+		     and terminate ON its silhouette, so the whole approach is outside the object and only the
+		     contact point itself is clipped by it. -->
 		<Container x={colX} y={tubeY}>
 			<Sprite key="capsuleTubeShell" anchor={0.5} width={tubeW} height={tubeH} />
-			<CapsuleBolts width={tubeW} height={tubeH} />
+			<!-- focusY mirrors the symbol container's y below (tubeH * 0.055) so the bolts crowd
+			     whatever is held in the tube. Keep the two in sync if the symbol is repositioned.
+			     symRx/symRy are the symbol's live half-extents (its own scale folded in) so arcs land
+			     on its surface and follow the pop-in instead of striking where it will end up. -->
+			{@const symLiveScale = symbolScale.current * symFx.s}
+			<CapsuleBolts
+				width={tubeW}
+				height={tubeH}
+				charged={!!symbolKey}
+				focusY={0.055}
+				symRx={symSize * 0.5 * symLiveScale}
+				symRy={symSize * (264 / 328) * 0.5 * symLiveScale}
+			/>
 			{#if symbolKey}
 				<Container
 					x={symSize * symFx.dx}
@@ -200,7 +215,6 @@
 					/>
 				</Container>
 			{/if}
-			<!-- Lightning is baked into the animated tube frames — no procedural overlay needed. -->
 		</Container>
 
 		<!-- TOTAL WIN / FREE SPINS boxes only during a bonus — in base game the capsule stands alone -->

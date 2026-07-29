@@ -140,9 +140,11 @@
 									context.stateLayoutDerived.canvasSizes().width / (mainLayout.scale || 1)}
 								{@const screenH =
 									context.stateLayoutDerived.canvasSizes().height / (mainLayout.scale || 1)}
-								<!-- Tiered board with zoom-to-centre transitions between tiers (see WinBoard). -->
+								<!-- One board for the whole presentation, chosen from the SETTLED total
+								     (`amount`), while the text counts up (`countUpAmount`). -->
 								<WinBoard
 									amount={countUpAmount}
+									tierAmount={amount}
 									{boardSize}
 									{screenW}
 									{screenH}

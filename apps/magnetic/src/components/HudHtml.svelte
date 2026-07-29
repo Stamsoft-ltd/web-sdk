@@ -502,7 +502,7 @@
 					onpointerleave={clearHoldRepeat}
 					onclick={(event) => maybeRunClickAction(event, onDecrease)}
 					disabled={disableDecrease}
-					aria-label="Decrease bet"
+					aria-label={`Decrease ${i18nDerived.betLabel()}`}
 				>
 					<img class="nav-icon" src={disableDecrease ? iconMinusDisabled : iconMinus} alt="minus" />
 				</button>
@@ -516,7 +516,7 @@
 					onpointerleave={clearHoldRepeat}
 					onclick={(event) => maybeRunClickAction(event, onIncrease)}
 					disabled={disableIncrease}
-					aria-label="Increase bet"
+					aria-label={`Increase ${i18nDerived.betLabel()}`}
 				>
 					<img class="nav-icon" src={disableIncrease ? iconPlusDisabled : iconPlus} alt="plus" />
 				</button>
@@ -644,7 +644,7 @@
 						onpointerleave={clearHoldRepeat}
 						onclick={(event) => maybeRunClickAction(event, onDecrease)}
 						disabled={disableDecrease}
-						aria-label="Decrease bet"
+						aria-label={`Decrease ${i18nDerived.betLabel()}`}
 					>
 						<img class="nav-icon" src={disableDecrease ? iconMinusDisabled : iconMinus} alt="minus" />
 					</button>
@@ -666,7 +666,7 @@
 						onpointerleave={clearHoldRepeat}
 						onclick={(event) => maybeRunClickAction(event, onIncrease)}
 						disabled={disableIncrease}
-						aria-label="Increase bet"
+						aria-label={`Increase ${i18nDerived.betLabel()}`}
 					>
 						<img class="nav-icon" src={disableIncrease ? iconPlusDisabled : iconPlus} alt="plus" />
 					</button>
@@ -703,7 +703,7 @@
 						onpointerleave={clearHoldRepeat}
 						onclick={(event) => maybeRunClickAction(event, onDecrease)}
 						disabled={disableDecrease}
-						aria-label="Decrease bet"
+						aria-label={`Decrease ${i18nDerived.betLabel()}`}
 					>
 						<img class="nav-icon" src={disableDecrease ? iconMinusDisabled : iconMinus} alt="minus" />
 					</button>
@@ -725,7 +725,7 @@
 						onpointerleave={clearHoldRepeat}
 						onclick={(event) => maybeRunClickAction(event, onIncrease)}
 						disabled={disableIncrease}
-						aria-label="Increase bet"
+						aria-label={`Increase ${i18nDerived.betLabel()}`}
 					>
 						<img class="nav-icon" src={disableIncrease ? iconPlusDisabled : iconPlus} alt="plus" />
 					</button>

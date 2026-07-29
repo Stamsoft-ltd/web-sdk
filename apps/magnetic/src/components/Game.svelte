@@ -68,7 +68,7 @@
 				},
 				text: {
 					title: 'BASE',
-					dialog: '7x7 cluster-pay base game with natural clusters and random magnets.',
+					dialog: '7x7 cluster-win base game with natural clusters and random magnets.',
 					button: 'PLAY',
 					tickerIdle: 'MAGNETIC',
 					tickerSpin: 'GOOD LUCK',
@@ -114,8 +114,8 @@
 				text: {
 					title: 'FEATURE SPIN',
 					dialog:
-						'50x cost. One paid spin with a guaranteed magnet series and possible magnet multipliers.',
-					description: 'Guaranteed magnet every paid feature spin.',
+						'Can be played for 50x. One spin with a guaranteed magnet series and possible magnet multipliers.',
+					description: 'Guaranteed magnet every feature spin.',
 					button: 'ACTIVATE',
 					tickerIdle: 'FEATURE ACTIVE',
 					tickerSpin: 'FEATURE SPIN',
@@ -181,7 +181,7 @@
 					containers: [
 						{
 							title: 'MAGNETIC',
-							text: 'Magnetic is a 7x7 cluster-pay slot. Wins form when 5 or more matching symbols touch orthogonally. Diagonal touches do not count.',
+							text: 'Magnetic is a 7x7 cluster-win slot. Wins form when 5 or more matching symbols touch orthogonally. Diagonal touches do not count.',
 							image: heroArt,
 							row: 0,
 							column: 0,
@@ -224,7 +224,7 @@
 			],
 			payTable: [
 				{
-					title: 'PAYTABLE',
+					title: 'WIN TABLE',
 					rows: 3,
 					columns: 2,
 					containers: [
@@ -245,7 +245,7 @@
 							imagePosition: 'left',
 						},
 						{
-							title: 'TOP PAYS',
+							title: 'TOP WINS',
 							text: 'Top premium: 33+ = 2,000x\nSecond premium: 33+ = 1,500x\nThird premium: 33+ = 1,200x\nFourth premium: 33+ = 900x',
 							image: uiRefArt,
 							row: 1,

@@ -48,7 +48,7 @@ export const socialOverridesEn: Record<string, string> = {
 	'HOWTO BUY TEXT':
 		'Open Get Bonus to choose Drop-O-Magnet, Mega Chain, Chance Spin or Feature Spin. Instantly triggered bonuses require confirmation. Activate modes can be toggled on or off.',
 	'HOWTO REPLAY TEXT':
-		'Replay loads a previously completed event and displays the original play amount, total cost and win information.',
+		'Replay loads a previously completed event and displays the original play amount, total play amount and win information.',
 	'PAYTABLE BUY TITLE': 'PLAY MODES',
 	'PAYTABLE BUY_TEXT':
 		'Drop-O-Magnet: 100x play amount.\nMega Chain: 500x play amount.\nChance Spin: 2x play amount per round.\nFeature Spin: 50x play amount per round.',
@@ -58,7 +58,7 @@ export const socialOverridesEn: Record<string, string> = {
 	'INFO FEATURE BUY': 'INSTANT FEATURES',
 	'INFO OV MAXWIN': 'Maximum win: %value% play amount.',
 	'INFO FB SUB':
-		'Instant feature options are available only where allowed. All instant feature and bonus options are paid as a multiple of the selected play amount.',
+		'Instant feature options are available only where allowed. All instant feature and bonus options are won as a multiple of the selected play amount.',
 	'INFO FB FEATURE TITLE': 'Instant Feature',
 	'INFO FB BONUS TITLE': 'Instant Bonus',
 	'INFO CTRL SPIN DESC': 'Start a game round with your selected play amount.',
@@ -71,6 +71,34 @@ export const socialOverridesEn: Record<string, string> = {
 	'BUY CONFIRM': 'PLAY %name% FOR %cost%?',
 	'BUY EXTRA CHANCE TITLE': 'Extra Chance',
 	'BUY FEATURE SPINS TITLE': 'Feature Spins',
+
+	// ── "pay" family ─────────────────────────────────────────────────────────────
+	// Reviewers apply the prohibited-term list as SUBSTRINGS, not whole words, so `pay -> win`
+	// rejects paytable / payline / cluster-pay / "does not pay" even though none of those appear
+	// literally in the table. Likewise `cost -> can be played for` catches COST / TOTAL COST.
+	// (`%cost%` in BUY CONFIRM is a translateVars placeholder and is substituted before render, so
+	// it never reaches the player as the literal word.)
+	PAYTABLE: 'WIN TABLE',
+	'INFO PAYTABLE': 'WIN TABLE',
+	'INFO STAT PAYS': 'WINS',
+	'INFO COST': 'PLAY AMOUNT',
+	'TOTAL COST': 'TOTAL PLAY',
+	'REAL COST': 'REAL PLAY',
+	'INFO CTRL INFO DESC': 'View the game rules and win table.',
+	'INFO CW 1': 'Magnetic uses cluster wins instead of win lines.',
+	'INFO FEAT WILD TEXT': 'Substitutes for all winning symbols except Scatter.',
+	'BET MODE BASE DIALOG':
+		'7x7 cluster-win base game with natural clusters and random magnets.',
+	'RULE GAME TEXT':
+		'Magnetic is a 7x7 cluster-win slot. Wins form when 5 or more matching symbols touch horizontally or vertically. Diagonal connections do not count.',
+	'RULE SCATTER TEXT':
+		'3 scatters trigger Drop-O-Magnet. 4 scatters trigger Mega Chain. Scatter does not win by itself.',
+	'INFO OV TEXT 1':
+		'Magnetic is a 7x7 cluster-win slot where wins are created by groups of matching symbols. Land 5 or more matching symbols connected horizontally or vertically to win.',
+	'INFO GI INTERRUPTED 2':
+		'All valid plays and potential winnings remain active until the round is fully completed.',
+	'INFO GI LEGAL 1':
+		'Malfunction voids all wins and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.',
 
 	// ── Disclaimer ───────────────────────────────────────────────────────────────
 	'DISCLAIMER TEXT':
