@@ -265,9 +265,10 @@
 								<h3 class="feat-h">{t('INFO GI LEGAL TITLE')}</h3>
 							</div>
 							<div class="gi-body">
-								<p class="feat-p">{t('INFO GI LEGAL 1')}</p>
-								<p class="feat-p">{t('INFO GI LEGAL 2')}</p>
-								<p class="feat-p">{t('INFO GI LEGAL 3')}</p>
+								<!-- General Game Disclaimer — shown verbatim (see DISCLAIMER TEXT in the message
+								     catalogue). Also conveys that payouts are settled from the Remote Game Server,
+								     not from anything shown in the browser. -->
+								<p class="feat-p feat-p--legal">{t('DISCLAIMER TEXT')}</p>
 							</div>
 						</div>
 					</div>
@@ -847,9 +848,10 @@
 	}
 	.fb-grid .feat-card {
 		/* Centre the whole group with even gaps (the base card spreads it with margin-top:auto, which
-		   left a huge void in the middle and pushed the RTP off the bottom). */
+		   left a huge void in the middle and pushed the RTP off the bottom). Gaps kept tight so the
+		   longest-copy card (Extra-Feature) still fits COST/RTP in longer locales (e.g. German). */
 		justify-content: center;
-		gap: clamp(6px, 1.4cqmin, 13px);
+		gap: clamp(3px, 0.8cqmin, 8px);
 		overflow: hidden;
 	}
 	.fb-grid .feat-ic,
@@ -868,13 +870,17 @@
 		color: transparent;
 	}
 	.fb-grid .feat-p {
-		/* Slightly smaller so the (now larger) icons fit the tight cards on desktop without clipping. */
-		font-size: clamp(11px, 2.05cqmin, 17px);
+		/* Slightly smaller so the (now larger) icons fit the tight cards on desktop without clipping.
+		   Sized so even the longest-copy locale (Russian Extra-Feature card) keeps COST/RTP inside the
+		   card — the description is the only variable-height element here. */
+		font-size: clamp(9px, 1.6cqmin, 13px);
+		line-height: 1.22;
 	}
 	.fb-grid .feat-ic {
 		/* Desktop (base) W icon — the Extra-Feature card has the longest copy, so this is the largest that
-		   fits without clipping COST/RTP on the tightest (16:9) desktop panels. cqmin scales it. */
-		width: clamp(58px, 11.3cqmin, 106px);
+		   fits without clipping COST/RTP on the tightest (16:9) desktop panels, even in the wordiest
+		   locale (Russian). cqmin scales it. */
+		width: clamp(54px, 10.3cqmin, 96px);
 	}
 	.fb-grid .feat-trigger img {
 		/* Scatter cards have shorter copy → the scatter can be a bit bigger. */

@@ -13,6 +13,36 @@
 
 	const context = getContext();
 
+	// Shrink a button label to fit its (fixed-width) pill so long-locale copy — e.g. de "BONUS KAUFEN",
+	// fr "ACHETER BONUS", pt "COMPRAR BÔNUS", ru "КУПИТЬ БОНУС" — never spills past the frame. Short
+	// labels (en "BUY BONUS", da "KØB BONUS") keep their base size. Re-runs on language change (the text
+	// is passed as the dep), on resize, and once the web font has loaded (text width depends on it).
+	function fitLabel(node: HTMLElement, _dep?: unknown) {
+		const apply = () => {
+			const btn = node.parentElement;
+			if (!btn) return;
+			node.style.fontSize = '';
+			node.style.letterSpacing = '';
+			const cs = getComputedStyle(node);
+			const baseSize = parseFloat(cs.fontSize);
+			const baseLs = parseFloat(cs.letterSpacing) || 0;
+			const bcs = getComputedStyle(btn);
+			const avail =
+				btn.clientWidth - parseFloat(bcs.paddingLeft || '0') - parseFloat(bcs.paddingRight || '0');
+			const needed = node.scrollWidth;
+			if (avail > 0 && needed > avail) {
+				const scale = (avail * 0.96) / needed; // 4% breathing room inside the pill
+				node.style.fontSize = `${baseSize * scale}px`;
+				node.style.letterSpacing = `${baseLs * scale}px`;
+			}
+		};
+		const ro = new ResizeObserver(apply);
+		if (node.parentElement) ro.observe(node.parentElement);
+		requestAnimationFrame(apply);
+		(document as Document).fonts?.ready.then(apply);
+		return { update: apply, destroy: () => ro.disconnect() };
+	}
+
 	// Converts absolute /path to ./path so it resolves relative to the page URL at any deploy sub-path
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
 
@@ -449,7 +479,7 @@
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
-					<span class="buy-btn__label">{isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.buyBonus()}</span>
+					<span class="buy-btn__label" use:fitLabel={isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.buyBonus()}>{isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.buyBonus()}</span>
 				</button>
 			</div>
 
@@ -583,7 +613,7 @@
 							onclick={openBuyBonus}
 							aria-label={i18nDerived.buyBonus()}
 						>
-							<span class="buy-btn__label">{i18nDerived.buyBonus()}</span>
+							<span class="buy-btn__label" use:fitLabel={i18nDerived.buyBonus()}>{i18nDerived.buyBonus()}</span>
 						</button>
 					</div>
 				</div>
@@ -742,7 +772,7 @@
 					onclick={openBuyBonus}
 					aria-label={i18nDerived.buyBonus()}
 				>
-					<span class="buy-btn__label">{i18nDerived.buyBonus()}</span>
+					<span class="buy-btn__label" use:fitLabel={i18nDerived.buyBonus()}>{i18nDerived.buyBonus()}</span>
 				</button>
 			</div>
 			<div class="ls-win">
@@ -2015,7 +2045,8 @@
 		gap: clamp(2px, 0.6vw, 9px);
 		width: fit-content;
 		min-width: 0;
-		padding: clamp(1px, 1vh, 5px) clamp(2px, 1.2vw, 14px);
+		/* Roomier padding so the black container box reads as a proper box (was a thin ~20px sliver). */
+		padding: clamp(4px, 2.7vh, 12px) clamp(8px, 2.2vw, 20px);
 		border-left: none;
 		/* Match the portrait balance — the designed black-box container art (was a plain CSS dark box). */
 		background: var(--pt-balance-bg) center / 100% 100% no-repeat;
@@ -2026,12 +2057,12 @@
 		justify-content: flex-start;
 	}
 	.ls-balance .value {
-		font-size: clamp(0.26rem, 2.1vh, 0.6rem);
+		font-size: clamp(0.24rem, 1.85vh, 0.5rem);
 		white-space: nowrap;
 		color: #fff;
 	}
 	.ls-balance .label-text {
-		font-size: clamp(0.2rem, 1.5vh, 0.42rem);
+		font-size: clamp(0.17rem, 1.3vh, 0.34rem);
 		letter-spacing: 0.04em;
 		color: #cfe0f5;
 	}
@@ -2200,7 +2231,8 @@
 		backdrop-filter: none;
 		border-radius: 0;
 		min-width: 0;
-		padding: clamp(3px, 1.4vh, 9px) clamp(10px, 2.4vw, 22px);
+		/* Roomier vertical padding so the black box reads clearly (matches the balance box). */
+		padding: clamp(5px, 2.7vh, 12px) clamp(10px, 2.4vw, 22px);
 	}
 	.ls-win .label--balance {
 		justify-content: center;
@@ -2210,12 +2242,12 @@
 		justify-content: center;
 	}
 	.ls-win .ls-win-pill .value {
-		font-size: clamp(0.5rem, 3.6vh, 1.2rem);
+		font-size: clamp(0.42rem, 2.9vh, 0.85rem);
 		white-space: nowrap;
 		color: #fff;
 	}
 	.ls-win .ls-win-pill .label-text {
-		font-size: clamp(0.34rem, 2.05vh, 0.66rem);
+		font-size: clamp(0.3rem, 1.75vh, 0.54rem);
 		color: #fff;
 	}
 

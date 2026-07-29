@@ -100,7 +100,7 @@ export const socialOverridesEn: Record<string, string> = {
 	'INFO GI LEGAL 1':
 		'Malfunction voids all wins and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.',
 
-	// ── Disclaimer ───────────────────────────────────────────────────────────────
-	'DISCLAIMER TEXT':
-		'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
+	// Note: the General Game Disclaimer (DISCLAIMER TEXT) is intentionally NOT overridden here — the
+	// base copy is jurisdiction-neutral legal boilerplate, so social mode shows the same verbatim text
+	// (it contains no prohibited terms, so the "pay/win" review passes without a substitution).
 };

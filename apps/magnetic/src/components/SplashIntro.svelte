@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { stateI18nDerived } from 'state-shared';
+	import { i18nDerived } from '../i18n/i18nDerived';
 
 	type Props = { onpress: () => void };
 	const props: Props = $props();
@@ -37,20 +38,13 @@
 	const logoSrc = './assets/components/ui/magnetic_logo.webp?v=20260708';
 	const brandSrc = './assets/components/ui/press_play_logo.webp?v=20260708';
 
-	// The three feature boards, in left→right (and carousel) order. `cls` picks the title gradient.
-	// NOTE: the headline multiplier values below are placeholders matching the current (in-progress)
-	// Figma, which shows "1024x" on all three boards — swap in the final numbers when confirmed.
-	const boards = $derived([
-		{ title: t('SPLASH EXP TITLE'), cls: 'f-blue', value: '1024' },
-		{ title: t('SPLASH MEGA TITLE'), cls: 'f-mega', value: '1024' },
-		{ title: t('SPLASH EPIC TITLE'), cls: 'f-blue', value: '1024' },
-	]);
+	// Three feature panels (BONUS GAMES / MEGA CHAIN / MAX WIN), rendered by index via the `panel`
+	// snippet in the markup below — desktop shows all three, portrait cycles through them one at a time.
 
 	// Mobile = portrait viewport: show the three feature blocks one at a time, 3s each.
 	let isPortrait = $state(false);
 	let slide = $state(0);
 	const SLIDE_COUNT = 3;
-	const currentBoard = $derived(boards[slide]);
 	const updateOrientation = () => (isPortrait = window.innerWidth < window.innerHeight);
 
 	onMount(updateOrientation);
@@ -75,6 +69,27 @@
 <svelte:window onkeydown={handleKey} onresize={updateOrientation} />
 
 <div class="splash-intro" role="button" tabindex="0" onclick={handlePress} onkeydown={handleKey}>
+	<!-- Per-panel content by index (0 = BONUS GAMES, 1 = MEGA CHAIN, 2 = MAX WIN). Coloured feature
+	     keywords sit on their own lines so each is a single translatable string with a colour class. -->
+	{#snippet panel(i: number)}
+		{#if i === 0}
+			<div class="f-title f-blue" use:fitTitle={t('SPLASH BONUS TITLE')}>{t('SPLASH BONUS TITLE')}</div>
+			<div class="f-sub">{i18nDerived.translateVars('SPLASH SCATTERS FOR', { count: 3 })}</div>
+			<div class="f-key f-blue">{t('SPLASH MEGA TITLE')}</div>
+			<div class="f-sub">{i18nDerived.translateVars('SPLASH SCATTERS FOR', { count: 4 })}</div>
+			<div class="f-key f-mega">{t('SPLASH MMC')}</div>
+		{:else if i === 1}
+			<div class="f-title f-mega" use:fitTitle={t('SPLASH MEGA TITLE')}>{t('SPLASH MEGA TITLE')}</div>
+			<div class="f-sub">{t('SPLASH MEGA BUILD')}</div>
+			<div class="f-key f-blue">{t('SPLASH MEGA CHAIN')}</div>
+			<div class="f-sub">{t('SPLASH MEGA REST')}</div>
+		{:else}
+			<div class="f-title f-blue" use:fitTitle={t('SPLASH MAX TITLE')}>{t('SPLASH MAX TITLE')}</div>
+			<div class="f-sub">{t('SPLASH UP TO')}</div>
+			<div class="f-value f-mega">20'000<span class="f-x">X</span></div>
+			<div class="f-sub">{t('SPLASH MULTIPLIER')}</div>
+		{/if}
+	{/snippet}
 	{#if isPortrait}
 		<!-- Mobile / portrait: single central frame, one feature block at a time. -->
 		<div class="stage stage--mobile" style={`background-image: url('${bgMobileSrc}')`}>
@@ -82,10 +97,7 @@
 			<img class="logo logo--m" src={logoSrc} alt="Magnetic" draggable="false" />
 
 			<div class="feat feat-m">
-				<div class="f-title {currentBoard.cls}" use:fitTitle={currentBoard.title}>{currentBoard.title}</div>
-				<div class="f-sub">{t('SPLASH WITH UP TO')}</div>
-				<div class="f-value f-gold">{currentBoard.value}<span class="f-x">x</span></div>
-				<div class="f-sub">{t('SPLASH MULTIPLIER')}</div>
+				{@render panel(slide)}
 			</div>
 
 			<div class="dots">
@@ -102,12 +114,9 @@
 			<img class="brand" src={brandSrc} alt="Press Play" draggable="false" />
 			<img class="logo" src={logoSrc} alt="Magnetic" draggable="false" />
 
-			{#each boards as b, i}
+			{#each [0, 1, 2] as i}
 				<div class="feat feat-{i}">
-					<div class="f-title {b.cls}" use:fitTitle={b.title}>{b.title}</div>
-					<div class="f-sub">{t('SPLASH WITH UP TO')}</div>
-					<div class="f-value f-gold">{b.value}<span class="f-x">x</span></div>
-					<div class="f-sub">{t('SPLASH MULTIPLIER')}</div>
+					{@render panel(i)}
 				</div>
 			{/each}
 
@@ -188,11 +197,13 @@
 		width: 52%;
 	}
 
-	/* Feature text blocks — positioned by their centre over each metal frame. */
+	/* Feature text blocks — positioned by their centre over each metal frame. The width is matched to
+	   the frame's BLACK INTERIOR (~17.5% of the stage), not the outer frame, so long translations wrap
+	   onto multiple rows INSIDE the window instead of spilling across the metal border. */
 	.feat {
 		position: absolute;
 		transform: translate(-50%, -50%);
-		width: 24%;
+		width: 17.5%;
 		height: 34%;
 		display: flex;
 		flex-direction: column;
@@ -217,11 +228,13 @@
 		top: 65%;
 	}
 
-	/* Mobile: single feature block centred on the baked frame (interior centre ≈ 54% of the art). */
+	/* Mobile: single feature block centred on the baked frame (interior centre ≈ 54% of the art). Width
+	   matched to that frame's BLACK INTERIOR (~60% of the stage), so long keyword lines wrap inside the
+	   window instead of spilling over the metal border. */
 	.feat-m {
 		left: 50%;
 		top: 54%;
-		width: 80%;
+		width: 60%;
 		height: 34%;
 		gap: 1.4cqw;
 	}
@@ -249,6 +262,25 @@
 		text-align: center;
 		letter-spacing: 0.03em;
 		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
+		/* Never wider than the frame — long translations wrap onto multiple rows. */
+		max-width: 100%;
+		overflow-wrap: break-word;
+	}
+
+	/* Coloured feature-keyword lines (MEGA CHAIN, MAGNETIC MEGA CHAIN, chain) — bolder/bigger than the
+	   plain description lines; a .f-blue / .f-mega gradient class is applied alongside. */
+	.f-key {
+		font-family: 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
+		font-weight: 700;
+		font-size: 1.75cqw;
+		line-height: 1.08;
+		text-align: center;
+		letter-spacing: 0.02em;
+		filter: drop-shadow(0 0 0.4em rgba(0, 0, 0, 0.85));
+		/* Never wider than the frame — long keywords (e.g. de "MAGNETISCHE MEGA-KETTE") wrap to two rows
+		   instead of spilling past the card edges. */
+		max-width: 100%;
+		overflow-wrap: break-word;
 	}
 
 	/* Big multiplier value — gold gradient, condensed bold, with a trailing smaller "x". */
@@ -306,6 +338,9 @@
 	}
 	.feat-m .f-sub {
 		font-size: 4.44cqw;
+	}
+	.feat-m .f-key {
+		font-size: 5.6cqw;
 	}
 	.feat-m .f-value {
 		font-size: 15cqw;

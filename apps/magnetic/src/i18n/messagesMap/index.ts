@@ -19,16 +19,21 @@ import ru from './ru';
 import tr from './tr';
 import vi from './vi';
 import zh from './zh';
+import da from './da';
 
 // English is the source/fallback: each locale is spread over `en`, so any key a translation is
 // missing (e.g. the non-modal game strings, which are localized app-side later) still resolves to
 // English instead of showing a raw key.
 const localeMaps: Record<string, Record<string, string>> = {
-	ar, de, en, es, fi, fr, hi, id, ja, ko, pl, pt, ru, tr, vi, zh,
+	ar, de, en, es, fi, fr, hi, id, ja, ko, pl, pt, ru, tr, vi, zh, da,
 };
 
+// Danish (`da`) is not one of the shared `config-lingui` locales, but the launcher can still request
+// it, so support it app-locally in addition to the configured set.
+const appLocales = [...locales, 'da'];
+
 const messagesMapGame = Object.fromEntries(
-	locales.map((locale) => [locale, { ...en, ...(localeMaps[locale] ?? {}) }]),
+	appLocales.map((locale) => [locale, { ...en, ...(localeMaps[locale] ?? {}) }]),
 );
 
 const merged = mergeMessagesMaps([
@@ -36,6 +41,10 @@ const merged = mergeMessagesMaps([
 	messagesMapUiPixi,
 	messagesMapUiHtml,
 ]) as unknown as Record<string, typeof en>;
+
+// The shared UI packages (pixi/html) have no `da` catalog, so give Danish the English UI/base strings
+// with the Danish game strings layered on top (game text = Danish, shared chrome = English).
+merged.da = { ...merged.en, ...merged.da };
 
 // Any locale the launcher requests that we don't ship (e.g. `sv`, `no`) must fall back to full
 // English — otherwise Lingui returns the raw message KEY, leaving the modal showing identifiers.

@@ -11,6 +11,14 @@ export default {
 	'SPLASH WITH UP TO': 'with up to',
 	'SPLASH MULTIPLIER': 'multiplier',
 	'SPLASH PRESS': 'PRESS TO CONTINUE',
+	'SPLASH BONUS TITLE': 'BONUS GAMES',
+	'SPLASH SCATTERS FOR': '%count% scatters for',
+	'SPLASH MMC': 'MAGNETIC MEGA CHAIN',
+	'SPLASH MEGA BUILD': 'Build the',
+	'SPLASH MEGA CHAIN': 'chain',
+	'SPLASH MEGA REST': 'with multipliers that multiply each other',
+	'SPLASH MAX TITLE': 'MAX WIN',
+	'SPLASH UP TO': 'up to',
 	BALANCE: 'BALANCE',
 	BET: 'BET',
 	'TOTAL COST': 'TOTAL COST',
@@ -114,7 +122,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Magnet starts magnetic series. Wild substitutes for regular symbols. Multiplier Wilds multiply the active series. Scatter triggers bonuses only.',
 	'PAYTABLE BUY_TEXT': 'Drop-O-Magnet: 100x bet.\nMega Chain: 500x bet.\nChance Spin: 2x bet per round.\nFeature Spin: 50x bet per round.',
 	'PAYTABLE MAX_TEXT': 'Advertised max win is 20,000x the selected bet.',
-	'DISCLAIMER TEXT': 'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
+	'DISCLAIMER TEXT': 'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
 
 	// ── Info / rules popup (CustomInfoModal.svelte). Numeric values (7X7, 20,000, 96.10%, 2x…) stay as
 	//    constants in the component; only the copy below is translated. %value% placeholders are left

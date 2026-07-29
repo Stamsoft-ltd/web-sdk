@@ -7,7 +7,7 @@
 	import { backOut, cubicOut } from 'svelte/easing';
 	import { FadeContainer } from 'components-pixi';
 	import { MainContainer } from 'components-layout';
-	import { Container, FillGradient, Graphics, Sprite, Text } from 'pixi-svelte';
+	import { Container, FillGradient, Sprite, Text } from 'pixi-svelte';
 	import { stateBet } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
@@ -26,7 +26,6 @@
 	const isBonus = $derived(
 		context.stateGame.bonusMode === 'freegame' || context.stateGame.bonusMode === 'superspin',
 	);
-
 	// TOTAL WIN — mirrors the desktop CapsulePanel: the running win counts up smoothly to the total on
 	// every spin. A new bet resets winBookEventAmount to 0, which clears the running total.
 	// (globalMultiplier is the wrong value here: it resets to 1 before every freegame spin, so the

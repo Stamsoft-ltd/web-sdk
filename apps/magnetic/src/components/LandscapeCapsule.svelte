@@ -228,18 +228,18 @@
 		{#if isBonus}
 			<Container x={boxX} y={stackTopY + boxH * 0.5}>
 				<Sprite key="smallPadMobile" anchor={0.5} width={boxW} height={boxH} />
-				<Text anchor={0.5} y={-boxH * 0.17} text={i18nDerived.translate('TOTAL WIN')} style={labelStyle(boxH * 0.16)} />
+				<Text anchor={0.5} y={-boxH * 0.15} text={i18nDerived.translate('TOTAL WIN')} style={labelStyle(boxH * 0.16)} />
 				<Text
 					anchor={0.5}
-					y={boxH * 0.15}
+					y={boxH * 0.165}
 					text={totalWin}
 					style={valueStyle(boxH * (totalWin.length >= 8 ? 0.19 : totalWin.length >= 6 ? 0.23 : 0.28))}
 				/>
 			</Container>
 			<Container x={boxX} y={stackTopY + boxH * 1.5 + boxGap}>
 				<Sprite key="smallPadMobile" anchor={0.5} width={boxW} height={boxH} />
-				<Text anchor={0.5} y={-boxH * 0.17} text={i18nDerived.translate('FREE SPINS')} style={labelStyle(boxH * 0.15)} />
-				<Text anchor={0.5} y={boxH * 0.15} text={`${fsRemaining}`} style={valueStyle(boxH * 0.28)} />
+				<Text anchor={0.5} y={-boxH * 0.15} text={i18nDerived.translate('FREE SPINS')} style={labelStyle(boxH * 0.15)} />
+				<Text anchor={0.5} y={boxH * 0.165} text={`${fsRemaining}`} style={valueStyle(boxH * 0.28)} />
 			</Container>
 		{/if}
 	</MainContainer>

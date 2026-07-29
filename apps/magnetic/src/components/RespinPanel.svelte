@@ -58,10 +58,10 @@
 
 	// Landscape uses the taller (equal-sized) box, so give the icon + label more presence to match the
 	// TOTAL WIN / FREE SPINS boxes; desktop keeps its original wide-short proportions.
-	const iconSize = $derived(PANEL_H * (isLandscape ? 0.44 : 0.3));
-	const iconOffY = $derived(-PANEL_H * (isLandscape ? 0.14 : 0.16));
+	const iconSize = $derived(PANEL_H * (isLandscape ? 0.42 : 0.3));
+	const iconOffY = $derived(-PANEL_H * (isLandscape ? 0.11 : 0.16));
 	const labelSize = $derived(PANEL_H * (isLandscape ? 0.17 : 0.2));
-	const labelOffY = $derived(PANEL_H * (isLandscape ? 0.3 : 0.16));
+	const labelOffY = $derived(PANEL_H * (isLandscape ? 0.22 : 0.16));
 
 	// The refresh icon is STATIC — it used to spin continuously off its own rAF, which pulled the
 	// eye away from the board during respins.
