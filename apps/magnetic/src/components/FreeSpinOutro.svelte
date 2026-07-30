@@ -17,6 +17,8 @@
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
 	import { OnMount } from 'components-shared';
 
+	import { stateBet } from 'state-shared';
+
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { ICON_STROKE_GRADIENT } from '../game/goldGradient';
@@ -37,15 +39,56 @@
 	let winLevelData = $state<WinLevelData>();
 	let oncomplete = $state(() => {});
 
+	// This panel used to wait for a press FOREVER. Nothing downstream of it ran until then — and
+	// that includes freeSpinEnd's audio hand-off, so the win bed kept looping, the congratulations
+	// sting stayed buried and the base music never came back until the player clicked. It also
+	// stalled an unattended autoplay run on every completed bonus. Mirrors Win.svelte: the timer is
+	// armed once the amount has SETTLED so the total is always readable first, a press still
+	// dismisses immediately, and turbo compresses the dwell by the same factor as the win board.
+	// Longer than the win board's 3.5s because this is the round SUMMARY — the number here is the
+	// one the player wants to read, and its roll-up is only 400ms.
+	const AUTO_DISMISS_MS = 4500;
+	const turboSpeed = $derived(stateBet.isSuperTurbo ? 0.3 : stateBet.isTurbo ? 0.5 : 1);
+	let dismissTimer = 0;
+	let dismissed = false;
+
+	const clearDismissTimer = () => {
+		if (!dismissTimer) return;
+		clearTimeout(dismissTimer);
+		dismissTimer = 0;
+	};
+
+	// Single dismissal path for the timer and for press-to-continue, so whichever fires first wins
+	// and the other is a no-op (`dismissed` is reset per panel).
+	const dismiss = () => {
+		clearDismissTimer();
+		if (dismissed) return;
+		dismissed = true;
+		oncomplete();
+	};
+
+	const scheduleAutoDismiss = () => {
+		clearDismissTimer();
+		dismissTimer = setTimeout(dismiss, AUTO_DISMISS_MS * turboSpeed) as unknown as number;
+	};
+
 	context.eventEmitter.subscribeOnMount({
 		freeSpinOutroShow: () => (show = true),
-		freeSpinOutroHide: async () => (show = false),
+		freeSpinOutroHide: async () => {
+			show = false;
+			clearDismissTimer();
+		},
 		freeSpinOutroCountUp: async (emitterEvent) => {
+			clearDismissTimer();
+			dismissed = false;
 			amount = emitterEvent.amount;
 			winLevelData = emitterEvent.winLevelData;
 			await waitForResolve((resolve) => (oncomplete = resolve));
 		},
 	});
+
+	// A pending timer would otherwise resolve a stale `oncomplete` after teardown.
+	$effect(() => clearDismissTimer);
 
 	// Same blue tech popup as FreeSpinIntro (panel, lightning, typography) — the outro simply swaps
 	// the free-spins count for the counted-up win amount.
@@ -190,7 +233,7 @@
 		     repeating it here just makes the player wait to read a number. The panel itself still
 		     waits for PressToContinue, so nothing is cut short. -->
 		{@const duration = 400}
-		<WinCountUpProvider {amount} {duration} oncomplete={() => {}}>
+		<WinCountUpProvider {amount} {duration} oncomplete={() => scheduleAutoDismiss()}>
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
 				<OnMount onmount={() => startCountUp()} />
 
@@ -359,7 +402,7 @@
 				</MainContainer>
 
 
-				<PressToContinue onpress={() => (countUpCompleted ? oncomplete() : finishCountUp())} />
+				<PressToContinue onpress={() => (countUpCompleted ? dismiss() : finishCountUp())} />
 			{/snippet}
 		</WinCountUpProvider>
 	{/if}

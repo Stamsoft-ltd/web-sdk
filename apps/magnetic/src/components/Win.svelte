@@ -156,7 +156,7 @@
 				{amount}
 				{duration}
 				oncomplete={() => {
-					context.eventEmitter.broadcast({ type: 'soundStop', name: 'mag_win_001' });
+					context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_win_countup_loop' });
 					// Fires when the roll-up finishes naturally AND when a press snaps it to the
 					// final value — either way the counting is over, so the dwell starts here.
 					if (hasBoardAnimation) scheduleAutoDismiss();

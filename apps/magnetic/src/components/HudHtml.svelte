@@ -86,16 +86,17 @@
 	// Round icon-buttons — each PNG is a COMPLETE button (dark disc + cyan ring + icon baked in),
 	// with default + disabled/mute states from the "Icon Buttons" set. Used as the whole button.
 	const iconMenu = ap('/assets/components/navbar/icons/menu.webp');
-	// Same button (cyan ring + dark fill) as menu.webp but with a white X — shown while the menu
-	// popover is open so the button reads as "close".
-	const iconMenuClose = ap('/assets/components/navbar/icons/menu_close.webp');
+	// Same button (cyan ring + dark fill) as menu.webp but with a white X (Figma 4036-3577) — shown
+	// while the menu popover is open so the button reads as "close".
+	// ?v= because an earlier cut of this file shipped with an opaque white background (Figma's export
+	// flattens onto white), and browsers that already fetched it would keep serving the white box.
+	const iconMenuClose = ap('/assets/components/navbar/icons/menu_close.webp?v=2');
 	// Menu popover (Figma 4498-8432): panel above the menu button with SOUND / MUSIC / INFO rows.
 	const menuPopupBg = ap('/assets/components/navbar/menu_popup_bg.webp');
-	const iconMenuSound = ap('/assets/components/navbar/icons/menu_sound.svg');
 	const iconMenuMusic = ap('/assets/components/navbar/icons/menu_music.svg');
 	const iconMenuInfo = ap('/assets/components/navbar/icons/menu_info.svg');
-	// Disabled-state icons (Figma 4553-9279): slashed speaker / slashed note.
-	const iconMenuSoundOff = ap('/assets/components/navbar/icons/menu_sound_off.webp');
+	// Disabled state (Figma 4553-9279): slashed note. There is no menu_sound* pair any more — the
+	// SOUND row renders the bottom-bar button art whole (see .menu-row__icon--full).
 	const iconMenuMusicOff = ap('/assets/components/navbar/icons/menu_music_off.webp');
 	const iconSound = ap('/assets/components/navbar/icons/sound.webp');
 	const iconMute = ap('/assets/components/navbar/icons/mute.webp');
@@ -1389,10 +1390,15 @@
 		object-fit: contain;
 		display: block;
 	}
-	/* The "off" (struck-through) icons are .webp exports with little internal padding, so at `contain`
-	   they fill the glyph box more than the padded .svg on-state icons — scale them down to match. */
+	/* The "off" (struck-through) icons are .webp exports with no internal padding, so at `contain`
+	   they fill the glyph box where the padded .svg on-state icons only reach ~80% of theirs.
+	   Scale is set against the NOTE, not the bounding box: the off art's box is squared off by the
+	   diagonal slash, which reaches well past the note it crosses, so equalising boxes (0.78-0.80)
+	   shrank the note itself to 87% of the on-state's. Measured off a 400px render of both masks —
+	   note-head diameter 128px on / 143px off — so 128/143 lands the two notes the same size and
+	   lets the slash overhang, which is what the design does. */
 	.menu-row__glyph.is-off {
-		transform: scale(0.78);
+		transform: scale(0.895);
 	}
 	.menu-row__label {
 		font-family: 'Inter', sans-serif;
@@ -1910,13 +1916,13 @@
 	   stay in the flex flow and spread to the edges; only the spin's transparent art padding grazes
 	   the buy button's glow, never the visible pill. */
 	.pt-spin {
-		width: clamp(98px, 30vw, 118px);
-		height: clamp(98px, 30vw, 118px);
-		margin: 0;
 		position: absolute;
 		left: 50%;
 		top: 50%;
 		transform: translate(-50%, -50%);
+		width: clamp(98px, 30vw, 118px);
+		height: clamp(98px, 30vw, 118px);
+		margin: 0;
 		z-index: 1;
 	}
 	.pt-spin .spin-btn__count {

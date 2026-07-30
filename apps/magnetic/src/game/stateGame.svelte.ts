@@ -160,11 +160,18 @@ const updateCellRaw = (cell: BoardCell, raw: RawSymbol) => {
 const shouldKeepWildInCluster = (cell: RawSymbol) =>
 	cell.wild || cell.magnet || cell.name === 'WILD' || cell.name === 'MAGNET';
 
+// `highlighted` OUTRANKS `locked`. It used to be the other way round, which made a stacked cell
+// unable to ever show its win animation: animateWinningPositions sets symbolState = 'win' directly,
+// but the next applySeriesDecorations — and there is one on essentially every clusterSeriesUpdate —
+// recomputed it straight back to 'locked'. In a bonus the wild and its whole chain ARE the locked
+// cluster, so that is exactly the run of symbols that stayed frozen on its static tile while every
+// unlocked winning symbol animated. Board.svelte already has the branch to draw a win flipbook for
+// a locked cell (`winSheet` inside the lockedCells loop); it was simply unreachable.
 const applyCellVisualState = (cell: BoardCell) => {
-	cell.symbolState = cell.locked
-		? 'locked'
-		: cell.highlighted
-			? 'win'
+	cell.symbolState = cell.highlighted
+		? 'win'
+		: cell.locked
+			? 'locked'
 			: cell.magnet
 				? 'magnet'
 				: 'static';
@@ -344,6 +351,8 @@ const boardLayout = () => {
 // Landscape vertical-capsule column geometry, in virtual (main) coordinates. Single source of truth
 // shared by the pixi LandscapeCapsule and the HTML buy-bonus button (which converts it to device px)
 // so the capsule and the buy badge beneath it stay aligned at every device aspect ratio.
+const LANDSCAPE_CAPSULE_TOP_GAP = 0.01;
+
 const landscapeCapsuleLayout = () => {
 	const board = boardLayout();
 	const main = stateLayoutDerived.mainLayout();
@@ -366,10 +375,12 @@ const landscapeCapsuleLayout = () => {
 	const visibleH = tubeH * LANDSCAPE_CAPSULE_VISIBLE_H;
 	const canvasTopY =
 		main.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1));
-	// Start the tube at the very top of the screen: place the VISIBLE glass top (0.94 of the padded
-	// sprite, so ±0.47·tubeH about the centre) flush with canvasTopY. The remaining transparent top
-	// padding sits just above the visible area (off-screen), so no cap art is clipped.
-	let tubeY = canvasTopY + tubeH * 0.47;
+	// Anchor the VISIBLE glass top — not the padded sprite box, which carries ~3% dead space above
+	// the art and pushed the whole column down by that much on top of the gap. LANDSCAPE_CAPSULE_TOP_GAP
+	// is now literally the clearance between the screen top and the tube's first visible pixel, so it
+	// means what it says. (0.07 sprite-anchored originally, which read as floating.) This is the single
+	// knob for the capsule's height; the buy-bonus badge and WIN pill track its visible bottom and follow.
+	let tubeY = canvasTopY + main.height * LANDSCAPE_CAPSULE_TOP_GAP + visibleH * 0.5;
 	const symSize = visibleW * 0.66;
 	let visibleBottom = tubeY + visibleH * 0.5;
 	// On very short landscape screens (e.g. 400×225) the board — and this board-derived tube — shrinks,
@@ -437,8 +448,14 @@ const playLandSound = (raw: RawSymbol) => {
 		eventEmitter.broadcast({ type: 'soundScatterCounterIncrease' });
 		eventEmitter.broadcast({ type: 'soundOnce', name: SCATTER_LAND_SOUND_MAP[scatterLandIndex()] });
 	}
+	// The wild itself landing, distinct from the pull it goes on to trigger (sfx_magnet_pull) and
+	// from each subsequent addition to the chain (sfx_chain_grow). `magnet` covers pay symbols the
+	// board has turned magnetic; `name` covers a literal WILD/MAGNET drop.
+	if (raw.magnet || raw.name === 'WILD' || raw.name === 'MAGNET') {
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_wild_land' });
+	}
 	if (raw.multiplier && raw.multiplier > 1) {
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_wld_002' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_hit' });
 	}
 };
 
@@ -489,6 +506,7 @@ const restoreBoardAlpha = () => {
 };
 
 const markMagnetPositions = (positions: Position[]) => {
+	let marked = false;
 	for (const position of positions) {
 		const cell = stateGame.board[position.reel]?.[position.row];
 		if (!cell) continue;
@@ -498,7 +516,16 @@ const markMagnetPositions = (positions: Position[]) => {
 		cell.magnet = true;
 		cell.symbolState = 'magnet';
 		cell.displayAlpha.set(1, { duration: 0 });
+		marked = true;
 	}
+	// The magnet ANCHOR turning into a visible wild is the other way a wild reaches the board, and
+	// in a bonus it is by far the common one: playLandSound only runs from the drop path, and cells
+	// already in the persistent cluster are skipped there (`if (cell.locked) continue`), so a
+	// magnet-created wild used to arrive in silence. This is the moment the brief describes —
+	// "a wild landed in the board and items start stacking around it" — so it layers with
+	// sfx_magnet_pull (the pull itself) rather than replacing it. Not forced: if a wild also
+	// dropped moments ago the cue is still ringing, and one hit for the moment is enough.
+	if (marked) eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_wild_land' });
 };
 
 const pulseMagnetActivation = async (positions: Position[]) => {
@@ -819,7 +846,7 @@ const createSpinBoardReel = (reelIndex: number) => {
 		onReelStopping: () => {
 			eventEmitter.broadcast({
 				type: 'soundOnce',
-				name: 'mag_ui_007',
+				name: 'sfx_reel_stop',
 				forcePlay: !stateBet.isTurbo && !stateBet.isSuperTurbo,
 			});
 		},
@@ -1022,7 +1049,7 @@ const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
 	if (!drop.skipped) {
 		eventEmitter.broadcast({
 			type: 'soundOnce',
-			name: 'mag_ui_007',
+			name: 'sfx_reel_stop',
 			forcePlay: !stateBet.isTurbo && !stateBet.isSuperTurbo,
 		});
 	}
@@ -1200,6 +1227,16 @@ const applyReveal = async ({
 };
 
 const beginSpin = () => {
+	// Start-of-spin cue. It lives here rather than in the actor's onNewGameStart so it follows the
+	// PRESENTATION: the super-turbo-autoplay and space-hold fast paths return before beginSpin and
+	// draw no spin at all, so they get no spin sound either. forcePlay matches sfx_reel_stop — a
+	// crisp retrigger at normal speed, but during turbo an already-playing cue is left to ring out
+	// instead of stacking on every rapid spin.
+	eventEmitter.broadcast({
+		type: 'soundOnce',
+		name: 'sfx_spin_start',
+		forcePlay: !stateBet.isTurbo && !stateBet.isSuperTurbo,
+	});
 	resetBonusState();
 	// Magnetic uses the whole-board drop presenter. Never expose the legacy
 	// rolling reel layer, including after HMR/resume left stale view state.

@@ -3,6 +3,7 @@
 
 	export type EmitterEventSound =
 		| { type: 'soundMusic'; name: MusicName }
+		| { type: 'soundMusicDuck' }
 		| { type: 'soundOnce'; name: SoundEffectName; forcePlay?: boolean }
 		| { type: 'soundLoop'; name: SoundEffectName }
 		| { type: 'soundStop'; name: SoundName }
@@ -32,15 +33,29 @@
 	type MusicTrack = 'base' | 'bonus' | 'super';
 	const MUSIC_TRACKS: MusicTrack[] = ['base', 'bonus', 'super'];
 	const MUSIC_SRC: Record<MusicTrack, string[]> = {
-		base: ['./assets/audio/music_base.ogg?v=20260722', './assets/audio/music_base.mp3?v=20260722'],
-		bonus: ['./assets/audio/music_bonus.ogg?v=20260722', './assets/audio/music_bonus.mp3?v=20260722'],
-		super: ['./assets/audio/music_super.ogg?v=20260722', './assets/audio/music_super.mp3?v=20260722'],
+		base: ['./assets/audio/music_base.ogg?v=20260730', './assets/audio/music_base.mp3?v=20260730'],
+		bonus: ['./assets/audio/music_bonus.ogg?v=20260730', './assets/audio/music_bonus.mp3?v=20260730'],
+		super: ['./assets/audio/music_super.ogg?v=20260730', './assets/audio/music_super.mp3?v=20260730'],
 	};
 	// Per-track mix level (tune to taste). Master + music-channel mutes are honoured separately.
-	const MUSIC_VOL: Record<MusicTrack, number> = { base: 0.3, bonus: 0.36, super: 0.36 };
+	// bonus/super deviate from the old shared 0.36 because the new stems are mastered at very
+	// different levels from the ones they replace, so a shared number no longer balances them:
+	//   bonus  -21.7 LUFS (3.4 LU QUIETER than before) -> 0.53
+	//   super  -11.9 LUFS (7.0 LU LOUDER  than before) -> 0.16
+	// Both figures are chosen to reproduce the previously tuned perceived level (effective
+	// -27.2 and -27.8 LUFS), so the balance between tracks is unchanged from the old soundtrack.
+	// Compensating here keeps the delivered stems untouched.
+	const MUSIC_VOL: Record<MusicTrack, number> = { base: 0.3, bonus: 0.53, super: 0.16 };
 	let musicHowls: Record<MusicTrack, Howl> | null = null;
 	let currentTrack: MusicTrack = 'base';
 	let musicUnlocked = false;
+
+	// Which track a fresh page load should open on, from the bet mode restored into state:
+	// SUPER buys Mega Chain, BONUS buys Drop-O-Magnet, anything else is the base game.
+	const trackForBetMode = (): MusicTrack =>
+		stateBet.activeBetModeKey === 'SUPER' ? 'super'
+		: stateBet.activeBetModeKey === 'BONUS' ? 'bonus'
+		: 'base';
 
 	const musicAudible = () =>
 		stateSound.volumeValueMaster !== 0 && stateSound.volumeValueMusic !== 0;
@@ -75,27 +90,41 @@
 		}
 	};
 
-	// Win-level count music (mag_mus_005) is a short sprite loop; stop it when returning to ambience.
-	const stopWinLevelMusic = () => sound.stop({ name: 'mag_mus_005' });
+	// Win-level count music (music_bigwin) is a short sprite loop; stop it when returning to ambience.
+	const stopWinLevelMusic = () => sound.stop({ name: 'music_bigwin' });
+
+	// Duck (not stop) the ambience for the duration of a big-win presentation, so the tier bed and
+	// the count-up own the mix. PAUSE rather than STOP because these are 3-6s loops: stopping would
+	// restart the bar from zero afterwards, which is audible as a stumble. Howler's play() on a
+	// paused sound resumes from its position, and playTrack() already calls play() only when the
+	// track is not playing — so the ordinary `soundMusic` broadcast at the end of the presentation
+	// resumes it with no extra event. Switching to a DIFFERENT track (bonus ending -> base) still
+	// stops the paused one and starts the new one from the top, which is what you want there.
+	const duckMusic = () => {
+		if (!musicHowls) return;
+		for (const track of MUSIC_TRACKS) {
+			if (musicHowls[track].playing()) musicHowls[track].pause();
+		}
+	};
 
 	const playMusic = ({ name }: { name: MusicName }) => {
 		if (!musicAudible()) {
 			stopMusicTracks();
 			return;
 		}
-		if (name === 'mag_mus_001') {
+		if (name === 'music_base') {
 			stopWinLevelMusic();
 			return playTrack('base');
 		}
-		if (name === 'mag_mus_002') {
+		if (name === 'music_bonus') {
 			stopWinLevelMusic();
 			return playTrack('bonus');
 		}
-		if (name === 'mag_mus_003') {
+		if (name === 'music_super') {
 			stopWinLevelMusic();
 			return playTrack('super');
 		}
-		// mag_mus_004 (scatter tease) / mag_mus_005 (win count) are short layers — sprite loop is fine.
+		// music_scatter_tease (scatter tease) / music_bigwin (win count) are short layers — sprite loop is fine.
 		sound.players.music.play({ name });
 	};
 
@@ -103,24 +132,27 @@
 		// ui
 		soundBetMode: async ({ betModeKey }) => {
 			if (betModeKey === 'SUPER') {
-				sound.players.once.play({ name: 'mag_win_002' });
+				sound.players.once.play({ name: 'sfx_bet_mode_super' });
 				await waitForTimeout(SECOND);
-				playTrack('bonus');
+				// SUPER buys Magnetic Mega Chain, so preview THAT theme (this used to start the
+				// Drop-O-Magnet track, which is what BONUS buys).
+				playTrack('super');
 			} else {
 				playTrack('base');
 			}
 		},
-		soundPressGeneral: () => sound.players.once.play({ name: 'mag_ui_002' }),
-		soundPressBet: () => sound.players.once.play({ name: 'mag_ui_003' }),
+		soundPressGeneral: () => sound.players.once.play({ name: 'sfx_ui_button_press' }),
+		soundPressBet: () => sound.players.once.play({ name: 'sfx_spin_press' }),
 		// scatterCounter
 		soundScatterCounterIncrease: () => (context.stateGame.scatterCounter = context.stateGame.scatterCounter + 1), // prettier-ignore
 		soundScatterCounterClear: () => (context.stateGame.scatterCounter = 0),
 		// game
 		soundMusic: ({ name }) => playMusic({ name }),
+		soundMusicDuck: () => duckMusic(),
 		soundLoop: ({ name }) => sound.players.loop.play({ name }),
 		soundOnce: ({ name, forcePlay }) => sound.players.once.play({ name, forcePlay }),
 		soundStop: ({ name }) => {
-			if (name === 'mag_mus_001' || name === 'mag_mus_002' || name === 'mag_mus_003') stopMusicTracks();
+			if (name === 'music_base' || name === 'music_bonus' || name === 'music_super') stopMusicTracks();
 			sound.stop({ name });
 		},
 		soundFade: async ({ name, duration, from, to }) => await sound.fade({ name, duration, from, to }), // prettier-ignore
@@ -149,13 +181,13 @@
 		// Browsers block audio until the first gesture — start music on the first pointer/key.
 		const unlock = () => {
 			if (musicUnlocked || !musicAudible()) return;
-			playTrack(stateBet.activeBetModeKey === 'SUPER' ? 'bonus' : 'base');
+			playTrack(trackForBetMode());
 		};
 		window.addEventListener('pointerdown', unlock, { once: true });
 		window.addEventListener('keydown', unlock, { once: true });
 
 		if (musicAudible()) {
-			playTrack(stateBet.activeBetModeKey === 'SUPER' ? 'bonus' : 'base');
+			playTrack(trackForBetMode());
 		}
 
 		return () => {

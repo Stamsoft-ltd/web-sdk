@@ -17,25 +17,61 @@ import { logMagneticDiagnostic } from '../utils/magneticDiagnostics';
 const getWinLevelData = (winLevel: number): WinLevelData =>
 	winLevelMap[winLevel as WinLevel] ?? winLevelMap[2];
 
+// Each bonus has its own theme: Drop-O-Magnet (freegame, 3 scatters / bought BONUS) runs
+// music_bonus, Magnetic Mega Chain (superspin, 4+ scatters / bought SUPER) runs music_super.
+// music_super had a player branch and files on disk but was never broadcast, so Mega Chain used
+// to play the Drop-O-Magnet theme.
+const bonusMusicFor = (mode: string | null) => (mode === 'superspin' ? 'music_super' : 'music_bonus');
+
 const winLevelSoundsPlay = ({ winLevelData }: { winLevelData: WinLevelData }) => {
 	if (winLevelData?.alias === 'max') eventEmitter.broadcastAsync({ type: 'uiHide' });
+	// Big-win boards (and the bonus congratulations panel, which routes through here too) own the
+	// mix: pause the ambience so the tier bed + count-up are not competing with it, and let
+	// winLevelSoundsStop's `soundMusic` broadcast resume it afterwards. Deliberately NOT done for
+	// levels 2-5 — those roll up in ~1-3s on ordinary spins, and ducking the bed that often would
+	// leave the soundtrack stuttering in and out for most of the session.
+	if (winLevelData?.type === 'big') eventEmitter.broadcast({ type: 'soundMusicDuck' });
 	if (winLevelData?.sound?.sfx)
 		eventEmitter.broadcast({ type: 'soundOnce', name: winLevelData.sound.sfx });
 	if (winLevelData?.sound?.bgm)
 		eventEmitter.broadcast({ type: 'soundMusic', name: winLevelData.sound.bgm });
-	if (winLevelData?.type === 'big')
-		eventEmitter.broadcast({ type: 'soundLoop', name: 'mag_win_001' });
+	// Two LAYERS, on different clocks:
+	//   sfxLoop  - the tier's own bed, stopped by winLevelSoundsStop, so it holds for as long as
+	//              the board is on screen.
+	//   countup  - the ticking under the rolling number, cut by Win.svelte the moment the counter
+	//              settles, so it stops while the board stays up.
+	// These were mutually exclusive until the count-up got its own dedicated cue; layering two
+	// generic beds muddied the mix, but a bed plus a counter reads as intended.
+	if (winLevelData?.sound?.sfxLoop)
+		eventEmitter.broadcast({ type: 'soundLoop', name: winLevelData.sound.sfxLoop });
+	// EVERY win that rolls a number, not just the big-win boards. Gated on `type === 'big'` this
+	// left levels 2-5 — the overwhelming majority of wins — counting up in total silence, since
+	// those tiers carry no sfx/sfxLoop/bgm of their own either. presentDuration is the honest test:
+	// it IS the roll-up duration, and level 1 ('zero') is the only tier without one.
+	if ((winLevelData?.presentDuration ?? 0) > 0)
+		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_win_countup_loop' });
 };
 
+// Stopping is unconditional across every declared bed rather than threaded from the win level:
+// the presentation can end down several paths, and stopping an idle sound is a no-op.
+const WIN_LEVEL_BEDS = [
+	...new Set(
+		Object.values(winLevelMap)
+			.map((level) => level.sound.sfxLoop)
+			.filter((name) => !!name),
+	),
+];
+
 const winLevelSoundsStop = () => {
-	eventEmitter.broadcast({ type: 'soundStop', name: 'mag_win_001' });
+	eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_win_countup_loop' });
+	for (const name of WIN_LEVEL_BEDS) eventEmitter.broadcast({ type: 'soundStop', name });
 	// gameType is the truth here — activeBetModeKey can still be SUPER right after a bought
 	// bonus ended, which used to restart the bonus music instead of the base track.
 	// FEATURE rounds never start the free-spin music, so only real bonuses count.
 	if (stateGame.gameType === 'freegame' || stateGame.gameType === 'superspin') {
-		eventEmitter.broadcast({ type: 'soundMusic', name: 'mag_mus_002' });
+		eventEmitter.broadcast({ type: 'soundMusic', name: bonusMusicFor(stateGame.gameType) });
 	} else {
-		eventEmitter.broadcast({ type: 'soundMusic', name: 'mag_mus_001' });
+		eventEmitter.broadcast({ type: 'soundMusic', name: 'music_base' });
 	}
 	eventEmitter.broadcastAsync({ type: 'uiShow' });
 };
@@ -195,8 +231,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.globalMultiplier = bookEvent.totalMultiplier;
 		stateGame.seriesTotalMultiplier = bookEvent.totalMultiplier;
 		stateGame.tempMultiplier = bookEvent.multiplier > 1 ? bookEvent.multiplier : null;
+		// The magnet engaging and starting to draw symbols in. A multiplier, when there is one,
+		// layers on top rather than replacing it — previously this moment was SILENT unless a
+		// multiplier happened to be attached.
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_magnet_pull' });
 		if (bookEvent.multiplier > 1)
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_wld_002' });
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_hit' });
 		await stateGameDerived.activateMagnetPulse(bookEvent.positions);
 		if (nextBookEventAfter(bookEvent, bookEvents)?.type !== 'clusterSeriesUpdate') {
 			stateGame.forceFastAnimations = false;
@@ -206,6 +246,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	clusterSeriesUpdate: async (bookEvent: BookEventOfType<'clusterSeriesUpdate'>) => {
 		const activatedPositions = pendingMagnetActivationPositions;
 		pendingMagnetActivationPositions = [];
+		// Only when the chain actually GAINS cells. clusterSeriesUpdate also fires on no-growth
+		// respins (see shouldSkipNoGrowthNormalSuperRespin), and firing there would sound a growth
+		// cue over a board that did not change.
+		if (didSeriesGrow(stateGame.activeSeries, bookEvent.series))
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_chain_grow' });
 		// Fly pulled symbols to their exact final cluster positions.
 		await stateGameDerived.animateClusterFormation({
 			series: bookEvent.series,
@@ -234,7 +279,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// Super bonus pays at outro; per-spin winInfo badges/anim cause green number overlays and
 		// whole-board flash on no-growth spins. Keep only the final cluster win-state pass.
 		if (stateGame.bonusMode === 'superspin' && !isSuperFinal) return;
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_clu_002' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_cluster_win' });
 		// No per-symbol win pass. This used to await animateSymbols(), which scaled every winning
 		// cell to 1.12, swapped it to the looping win flipbook and held for ~1.2s before the total
 		// win could show. The win screen now comes up immediately instead.
@@ -250,9 +295,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateBet.autoSpinsCounter = 0;
 		}
 		if (!isFeatureSpin) {
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_sct_005' });
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_trigger' });
 			await animateSymbols({ positions: bookEvent.positions });
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_sct_006' });
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_transition' });
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
 			await eventEmitter.broadcastAsync({ type: 'transition' });
 			stateGameDerived.clearWinCellStates();
@@ -261,8 +306,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateGame.gameType = bonusMode;
 			stateGame.bonusMode = bonusMode;
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_dom_001' });
-			eventEmitter.broadcast({ type: 'soundMusic', name: 'mag_mus_002' });
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_intro' });
+			eventEmitter.broadcast({ type: 'soundMusic', name: bonusMusicFor(bonusMode) });
 			await eventEmitter.broadcastAsync({
 				type: 'freeSpinIntroUpdate',
 				totalFreeSpins: bookEvent.totalFs,
@@ -333,13 +378,22 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		} else {
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
 			eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
-			eventEmitter.broadcast({ type: 'soundOnce', name: 'mag_dom_004' });
-			winLevelSoundsPlay({ winLevelData });
+			// The congratulations panel belongs to sfx_bonus_outro (MAG_BIG_WIN) alone. This used to
+			// call winLevelSoundsPlay() as well, which layered the win-level BED and the count-up
+			// loop straight over it — a 15s sting buried under two loops, so the congrats was never
+			// heard. Its own count is only 400ms here (the roll-up already happened on the win
+			// board), so there is nothing for a count-up loop to track either. Duck the ambience so
+			// the sting sits alone; winLevelSoundsStop() below restores it.
+			eventEmitter.broadcast({ type: 'soundMusicDuck' });
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_outro' });
 			await eventEmitter.broadcastAsync({
 				type: 'freeSpinOutroCountUp',
 				amount: bookEvent.amount,
 				winLevelData,
 			});
+			// Panel dismissed: cut the sting (it runs 15s, far longer than the panel) before the
+			// ambience comes back, so the hand-off is clean instead of overlapping.
+			eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_bonus_outro' });
 			winLevelSoundsStop();
 			eventEmitter.broadcast({ type: 'freeSpinOutroHide' });
 			eventEmitter.broadcast({ type: 'freeSpinCounterHide' });

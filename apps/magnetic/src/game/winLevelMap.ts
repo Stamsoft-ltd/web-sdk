@@ -7,7 +7,7 @@ export const winLevelMap = {
 		type: 'small',
 		text: null,
 		presentDuration: 0,
-		sound: { sfx: undefined, bgm: undefined },
+		sound: { sfx: undefined, sfxLoop: undefined, bgm: undefined },
 		animation: undefined,
 	},
 	2: {
@@ -16,7 +16,7 @@ export const winLevelMap = {
 		type: 'small',
 		text: null,
 		presentDuration: 1.2 * SECOND,
-		sound: { sfx: undefined, bgm: undefined },
+		sound: { sfx: undefined, sfxLoop: undefined, bgm: undefined },
 		animation: undefined,
 	},
 	3: {
@@ -25,7 +25,7 @@ export const winLevelMap = {
 		type: 'small',
 		text: null,
 		presentDuration: 1.8 * SECOND,
-		sound: { sfx: undefined, bgm: undefined },
+		sound: { sfx: undefined, sfxLoop: undefined, bgm: undefined },
 		animation: undefined,
 	},
 	4: {
@@ -34,7 +34,7 @@ export const winLevelMap = {
 		type: 'medium',
 		text: null,
 		presentDuration: 2.5 * SECOND,
-		sound: { sfx: undefined, bgm: undefined },
+		sound: { sfx: undefined, sfxLoop: undefined, bgm: undefined },
 		animation: undefined,
 	},
 	5: {
@@ -43,7 +43,7 @@ export const winLevelMap = {
 		type: 'medium',
 		text: null,
 		presentDuration: 3.5 * SECOND,
-		sound: { sfx: undefined, bgm: undefined },
+		sound: { sfx: undefined, sfxLoop: undefined, bgm: undefined },
 		animation: undefined,
 	},
 	// Big win boards:
@@ -54,6 +54,10 @@ export const winLevelMap = {
 	// tiers the screen stays up until press-to-continue (Win.svelte only auto-completes levels with
 	// no board animation), so a shorter roll-up ends the counting sooner, not the presentation.
 	// The small upward step per tier is what is left of the escalation.
+	//
+	// sound.sfx is a ONE-SHOT sting fired as the board appears; sound.sfxLoop is a looping BED held
+	// for as long as the board is on screen. Both play alongside the shared sfx_win_countup_loop,
+	// which tracks the rolling number and stops when it settles.
 	// 20x-<50x  => SWEET WIN
 	// 50x-<100x => WILD WIN
 	// 100x-<200x => EPIC WIN
@@ -65,7 +69,7 @@ export const winLevelMap = {
 		type: 'big',
 		text: 'SWEET WIN',
 		presentDuration: 4.5 * SECOND,
-		sound: { sfx: 'mag_win_003', bgm: 'mag_mus_005' },
+		sound: { sfx: undefined, sfxLoop: 'sfx_bigwin_sweet', bgm: 'music_bigwin' },
 		animation: { intro: 'big_win_intro', idle: 'big_win_idle', outro: 'big_win_exit' },
 	},
 	7: {
@@ -74,7 +78,7 @@ export const winLevelMap = {
 		type: 'big',
 		text: 'WILD WIN',
 		presentDuration: 4.75 * SECOND,
-		sound: { sfx: 'mag_win_004', bgm: 'mag_mus_005' },
+		sound: { sfx: undefined, sfxLoop: 'sfx_bigwin_wild', bgm: 'music_bigwin' },
 		animation: { intro: 'super_win_intro', idle: 'super_win_idle', outro: 'super_win_exit' },
 	},
 	8: {
@@ -83,7 +87,7 @@ export const winLevelMap = {
 		type: 'big',
 		text: 'EPIC WIN',
 		presentDuration: 5 * SECOND,
-		sound: { sfx: 'mag_win_004', bgm: 'mag_mus_005' },
+		sound: { sfx: undefined, sfxLoop: 'sfx_bigwin_epic', bgm: 'music_bigwin' },
 		animation: { intro: 'mega_win_intro', idle: 'mega_win_idle', outro: 'mega_win_exit' },
 	},
 	9: {
@@ -92,7 +96,7 @@ export const winLevelMap = {
 		type: 'big',
 		text: 'MYTHIC WIN',
 		presentDuration: 5.25 * SECOND,
-		sound: { sfx: 'mag_win_005', bgm: 'mag_mus_005' },
+		sound: { sfx: undefined, sfxLoop: 'sfx_bigwin_mythic', bgm: 'music_bigwin' },
 		animation: { intro: 'epic_win_intro', idle: 'epic_win_idle', outro: 'epic_win_exit' },
 	},
 	10: {
@@ -101,7 +105,7 @@ export const winLevelMap = {
 		type: 'big',
 		text: 'LEGENDARY WIN',
 		presentDuration: 5.5 * SECOND,
-		sound: { sfx: 'mag_win_006', bgm: 'mag_mus_005' },
+		sound: { sfx: undefined, sfxLoop: 'sfx_bigwin_legendary', bgm: 'music_bigwin' },
 		animation: { intro: 'max_win_intro', idle: 'max_win_idle', outro: 'max_win_exit' },
 	},
 } as const;

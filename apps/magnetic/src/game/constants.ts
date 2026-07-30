@@ -335,9 +335,9 @@ export const BOARD_MOTION_FAST = {
 } as const;
 
 export const SCATTER_LAND_SOUND_MAP = {
-	1: 'mag_sct_001',
-	2: 'mag_sct_002',
-	3: 'mag_sct_002',
-	4: 'mag_sct_002',
-	5: 'mag_sct_002',
+	1: 'sfx_scatter_land_first',
+	2: 'sfx_scatter_land_more',
+	3: 'sfx_scatter_land_more',
+	4: 'sfx_scatter_land_more',
+	5: 'sfx_scatter_land_more',
 } as const;

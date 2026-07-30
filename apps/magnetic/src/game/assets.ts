@@ -305,7 +305,7 @@ const assets = {
 	},
 	sound: {
 		type: 'audio',
-		src: './assets/audio/sounds.json?v=20260722',
+		src: './assets/audio/sounds.json?v=20260730n',
 	},
 } as const;
 

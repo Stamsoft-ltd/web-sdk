@@ -17,6 +17,10 @@
 	import { getSpriteKeyByName } from '../game/utils';
 	import type { SymbolName } from '../game/types';
 
+	// Centre of the tube's clear glass, as a fraction of the shell sprite's height measured from
+	// its centre. From the alpha profile of capsule_tube_shell.webp: glass y 0.387..0.794 -> 0.591.
+	const GLASS_CENTRE_OFFSET = 0.091;
+
 	const context = getContext();
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const board = $derived(context.stateGameDerived.boardLayout());
@@ -194,8 +198,8 @@
 			     the baked capsule_tube_mobile_anim flipbook. The flipbook was a fixed cycle that visibly
 			     looped and carried the source video's ~1px housing wobble; CapsuleBolts generates fresh
 			     geometry per strike. Order is shell -> lightning -> symbol, so the beam passes BEHIND the
-			     held element. focusY is 0 here (not desktop's 0.055) because the landscape symbol sits on
-			     the tube's centre line rather than offset down it. -->
+			     held element. focusY tracks GLASS_CENTRE_OFFSET so the bolts converge on exactly the point
+			     the symbol sits at — see the measurement note below. -->
 			<!-- Footprint matches the baked tube this replaced: it was drawn ROTATED as
 			     width={tubeH * 0.941} height={tubeW * 0.427}, so on screen it was only 0.427 of tubeW
 			     across. Sizing the upright shell at the full tubeW x tubeH made it ~2.3x too wide. -->
@@ -203,19 +207,21 @@
 			{@const shellH = tubeH * 0.941}
 			<Sprite key="capsuleTubeShell" anchor={0.5} width={shellW} height={shellH} />
 			{@const symLiveScale = symbolScale.current * symFx.s}
+			<!-- The clear glass is NOT centred in the sprite: measured off capsule_tube_shell.webp, the
+			     see-through band runs y 0.387-0.794 (the top cap assembly is much deeper than the base),
+			     so its centre sits 0.091 of the sprite height BELOW the sprite centre. Drawing the symbol
+			     at y=0 therefore floated it high in the tube. The bolts focus on the same point. -->
+			{@const glassCY = shellH * GLASS_CENTRE_OFFSET}
 			<CapsuleBolts
 				width={shellW}
 				height={shellH}
 				charged={!!symbolKey}
-				focusY={0.055}
+				focusY={GLASS_CENTRE_OFFSET}
 				symRx={symSize * 0.5 * symLiveScale}
 				symRy={symSize * (264 / 328) * 0.5 * symLiveScale}
 			/>
 			{#if symbolKey}
-				<!-- Offset DOWN into the glass window (same as the desktop CapsulePanel): the shell's clear
-				     window sits below the sprite's centre because the top housing is tall, so a symbol at
-				     centre reads as "too high" in the tube. -->
-				<Container x={symSize * symFx.dx} y={shellH * 0.055 + symSize * symFx.dy} scale={symLiveScale}>
+				<Container x={symSize * symFx.dx} y={glassCY + symSize * symFx.dy} scale={symLiveScale}>
 					<Sprite
 						key={symbolKey}
 						anchor={0.5}

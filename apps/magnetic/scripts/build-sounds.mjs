@@ -3,14 +3,15 @@
  * Rebuilds the Howler audio sprite (static/assets/audio/sounds.{mp3,ogg,json}) from individual
  * source files in `audio-src/`.
  *
- * Workflow: drop a file named `<soundName>.<ext>` (e.g. `sfx_btn_spin.wav`) into `audio-src/`,
+ * Workflow: drop a file named `<soundName>.<ext>` (e.g. `sfx_reel_stop.wav`) into `audio-src/`,
  * then run `node scripts/build-sounds.mjs`. Every sound name referenced in `src/game/sound.ts`
  * is included in the sprite; names without a source file map to a short silent segment (so the
- * app stays silent for them, no console warnings). `bgm_*` names are marked looping.
+ * app stays silent for them, no console warnings). Names in LOOPING below are marked looping.
  *
  * Requires ffmpeg + ffprobe on PATH.
  */
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,10 +51,28 @@ const durationMs = (file) =>
 // 1. Every sound name declared in sound.ts (quoted snake_case literals in the type unions).
 const tsContent = readFileSync(soundTs, 'utf8');
 const names = [...new Set([...tsContent.matchAll(/'([a-z][a-z0-9_]+)'/g)].map((m) => m[1]))];
-// bgm_* tracks loop, plus these SFX that are played through the looping player (soundLoop) and must
-// have the sprite loop flag set — Howler only loops a sprite whose [offset,duration,loop] flag is true.
-const LOOP_SFX = new Set(['sfx_bigwin_coinloop']);
-const isLoop = (n) => n.startsWith('bgm_') || LOOP_SFX.has(n);
+// Sprite entries that must carry Howler's loop flag: the music layers, plus every SFX played
+// through the looping player (soundLoop / sound.players.loop). Howler only loops a sprite whose
+// [offset, duration, loop] flag is true, so a name missing here plays once and stops dead.
+// This list is EXPLICIT rather than prefix-matched: the old `bgm_*` test matched nothing at all
+// under either naming scheme, so a rebuild would have silently unlooped all nine of these.
+const LOOPING = new Set([
+	'music_base',
+	'music_bonus',
+	'music_super',
+	'music_scatter_tease',
+	'music_bigwin',
+	'sfx_magnet_roulette_loop',
+	'sfx_scatter_tease_loop',
+	'sfx_megachain_idle_loop',
+	'sfx_bigwin_sweet',
+	'sfx_bigwin_wild',
+	'sfx_bigwin_legendary',
+	'sfx_bigwin_mythic',
+	'sfx_bigwin_epic',
+	'sfx_win_countup_loop',
+]);
+const isLoop = (n) => LOOPING.has(n);
 
 // 2. Locate an optional source file per name.
 const EXTS = ['wav', 'flac', 'aiff', 'mp3', 'ogg', 'm4a', 'aac'];
@@ -64,6 +83,12 @@ const findSrc = (name) => {
 	}
 	return null;
 };
+
+// Per-cue mix volumes are hand-tuned and live ONLY in the generated manifest — nothing in the
+// source wavs encodes them. Carry them across a rebuild; this used to reset all 62 to 1.0, which
+// would have made every UI blip and win sting play at roughly 2.5–4x its intended level.
+const prevJson = join(outDir, 'sounds.json');
+const prevConfig = existsSync(prevJson) ? (JSON.parse(readFileSync(prevJson, 'utf8')).config ?? {}) : {};
 
 rmSync(tmpDir, { recursive: true, force: true });
 mkdirSync(tmpDir, { recursive: true });
@@ -80,7 +105,7 @@ let offset = GAP_MS;
 let provided = 0;
 
 for (const name of names) {
-	config[name] = { volume: 1 };
+	config[name] = prevConfig[name] ?? { volume: 1 };
 	const src = findSrc(name);
 	if (!src) {
 		// Map to the leading silence so the name resolves but plays nothing.
@@ -101,13 +126,26 @@ const listFile = join(tmpDir, 'list.txt');
 writeFileSync(listFile, parts.map((p) => `file '${p.replace(/'/g, "'\\''")}'`).join('\n'));
 const combined = join(tmpDir, 'combined.wav');
 ffmpeg(['-f', 'concat', '-safe', '0', '-i', listFile, '-ar', String(SR), '-ac', String(CH), combined]);
-ffmpeg(['-i', combined, '-b:a', '160k', join(outDir, 'sounds.mp3')]);
-ffmpeg(['-i', combined, '-c:a', 'libvorbis', '-q:a', '5', join(outDir, 'sounds.ogg')]);
+// Bitrates chosen to match the ORIGINALLY shipped sprite (~131k mp3 / ~97k vorbis) rather than
+// the script's old 160k/q5, which inflated the download by ~1MB on the first real rebuild. The
+// source wavs were themselves decoded from that sprite, so extra bitrate re-encodes existing
+// artefacts instead of recovering detail.
+ffmpeg(['-i', combined, '-b:a', '128k', join(outDir, 'sounds.mp3')]);
+ffmpeg(['-i', combined, '-c:a', 'libvorbis', '-q:a', '3', join(outDir, 'sounds.ogg')]);
 
 // 4. Write the Howler sprite manifest.
+// The src URLs carry a CONTENT HASH of the audio they point at. Without it the manifest could be
+// cache-busted (via assets.ts) while the browser kept a stale sounds.ogg — so fresh offsets got
+// applied to old audio and cues played the wrong region, or silence. Every rebuild shifts every
+// offset, so that failure is the default, not an edge case.
+const audioHash = createHash('sha1')
+	.update(readFileSync(join(outDir, 'sounds.ogg')))
+	.update(readFileSync(join(outDir, 'sounds.mp3')))
+	.digest('hex')
+	.slice(0, 8);
 const json = {
 	sprite,
-	src: ['./assets/audio/sounds.ogg', './assets/audio/sounds.mp3'],
+	src: [`./assets/audio/sounds.ogg?v=${audioHash}`, `./assets/audio/sounds.mp3?v=${audioHash}`],
 	config,
 };
 writeFileSync(join(outDir, 'sounds.json'), JSON.stringify(json));

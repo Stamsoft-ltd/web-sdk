@@ -20,6 +20,9 @@
 	const icRtp = ap('/assets/components/ui/info_ic_rtp.webp');
 	const valueBox = ap('/assets/components/navbar/value_box_mobile.webp');
 	// Real pager arrow buttons (circle + arrow, cyan→blue ring) with disabled variants.
+	// Same round close button every other modal uses (ctrl_close.svg is a COMPLETE button — ring,
+	// gradient fill and glyph), rather than a hand-rolled circle + inline <svg> cross.
+	const iconClose = ap('/assets/components/ui/ctrl_close.svg');
 	const arrowLeft = ap('/assets/components/ui/info_arrow_left.webp');
 	const arrowLeftOff = ap('/assets/components/ui/info_arrow_left_off.webp');
 	const arrowRight = ap('/assets/components/ui/info_arrow_right.webp');
@@ -29,15 +32,22 @@
 	// config.ts (H1→L4). Column headers are the connected-cluster sizes. ──
 	const sym = (p: string) => ap(`/assets/components/symbols/magnetic/${p}`);
 	const PAY_COLS = ['5', '6', '7', '8', '9', '10+', '12+', '15+', '20+', '25+', '30+', '33+'];
+	// `fit` compensates the TRANSPARENT PADDING baked into each symbol PNG: the art occupies only
+	// 38-55% of its 328x264 box, so a plain width:100% render leaves the symbol looking half-size in
+	// the paytable cell. Each factor is measured from the art's alpha bounding box (targeting ~100%
+	// 90% of the image box on the art's tighter axis), not hand-picked. 90% rather than 100%:
+	// the live cell is tighter than the image box, so filling it completely overflowed the rounded
+	// rect on the taller symbols. All eight are centred to within 3% of the box, so scaling about the
+	// centre does not shift them. Re-measure if the symbol art is re-exported.
 	const payRows = [
-		{ img: sym('premium/horseshoe.webp'), v: ['0.5x', '1x', '2x', '4x', '8x', '15x', '30x', '75x', '200x', '500x', '1000x', '2000x'] },
-		{ img: sym('premium/plasma_drill.webp'), v: ['0.4x', '0.8x', '1.5x', '3x', '6x', '12x', '25x', '60x', '150x', '350x', '750x', '1500x'] },
-		{ img: sym('premium/magnetic_core_cube.webp'), v: ['0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '20x', '45x', '120x', '275x', '600x', '1200x'] },
-		{ img: sym('premium/electromagnetic_device.webp'), v: ['0.2x', '0.5x', '1x', '2x', '4x', '8x', '15x', '35x', '90x', '200x', '450x', '900x'] },
-		{ img: sym('low/bolt.webp'), v: ['0.15x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '25x', '60x', '125x', '250x', '500x'] },
-		{ img: sym('low/nut.webp'), v: ['0.12x', '0.25x', '0.5x', '1x', '2x', '4x', '8x', '20x', '50x', '100x', '200x', '400x'] },
-		{ img: sym('low/washer.webp'), v: ['0.1x', '0.2x', '0.4x', '0.8x', '1.6x', '3x', '6x', '15x', '40x', '80x', '150x', '300x'] },
-		{ img: sym('low/energy_screw.webp'), v: ['0.08x', '0.1x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '12x', '30x', '60x', '120x', '250x'] },
+		{ img: sym('premium/horseshoe.webp'), fit: 1.11, v: ['0.5x', '1x', '2x', '4x', '8x', '15x', '30x', '75x', '200x', '500x', '1000x', '2000x'] },
+		{ img: sym('premium/plasma_drill.webp'), fit: 1.22, v: ['0.4x', '0.8x', '1.5x', '3x', '6x', '12x', '25x', '60x', '150x', '350x', '750x', '1500x'] },
+		{ img: sym('premium/magnetic_core_cube.webp'), fit: 1.1, v: ['0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '20x', '45x', '120x', '275x', '600x', '1200x'] },
+		{ img: sym('premium/electromagnetic_device.webp'), fit: 1.15, v: ['0.2x', '0.5x', '1x', '2x', '4x', '8x', '15x', '35x', '90x', '200x', '450x', '900x'] },
+		{ img: sym('low/bolt.webp'), fit: 1.33, v: ['0.15x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '25x', '60x', '125x', '250x', '500x'] },
+		{ img: sym('low/nut.webp'), fit: 1.15, v: ['0.12x', '0.25x', '0.5x', '1x', '2x', '4x', '8x', '20x', '50x', '100x', '200x', '400x'] },
+		{ img: sym('low/washer.webp'), fit: 1.24, v: ['0.1x', '0.2x', '0.4x', '0.8x', '1.6x', '3x', '6x', '15x', '40x', '80x', '150x', '300x'] },
+		{ img: sym('low/energy_screw.webp'), fit: 1.19, v: ['0.08x', '0.1x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '12x', '30x', '60x', '120x', '250x'] },
 	];
 	const wild = sym('special/wild.webp');
 	const wildX10 = sym('special/wild_x10.webp');
@@ -49,8 +59,6 @@
 	// General-info icons (page 6).
 	const icRotate = ap('/assets/components/ui/info_ic_charge_arrow.webp');
 	const icLegal = ap('/assets/components/ui/info_ic_legal.webp');
-	// The game's own round close button (same asset the auto-spin / buy-bonus modals use).
-	const iconClose = ap('/assets/components/ui/ctrl_close.svg');
 	// Page 6 card frames (designer boxes): narrow one behind the interrupted-rounds card, wide one
 	// behind the (larger) legal-notice card.
 	const giBoxInterrupted = ap('/assets/components/ui/info_box_interrupted.webp');
@@ -127,19 +135,19 @@
 
 				<div class="ov-stats" style={`--box-img:url(${valueBox})`}>
 					<div class="stat">
-						<span class="stat-ic"><img src={boxGrid} alt="" /></span>
+						<span class="stat-ic" style="--ic:0.505"><img src={boxGrid} alt="" /></span>
 						<span class="stat-txt"><b>7X7</b><i>{t('INFO STAT REELS')}</i></span>
 					</div>
 					<div class="stat stat--sm">
-						<span class="stat-ic"><img src={icCluster} alt="" /></span>
+						<span class="stat-ic" style="--ic:0.626"><img src={icCluster} alt="" /></span>
 						<span class="stat-txt"><b>{t('INFO STAT CLUSTER')}</b><i>{t('INFO STAT PAYS')}</i></span>
 					</div>
 					<div class="stat">
-						<span class="stat-ic"><img src={icTrophy} alt="" /></span>
+						<span class="stat-ic" style="--ic:0.473"><img src={icTrophy} alt="" /></span>
 						<span class="stat-txt"><b>20,000</b><i>{t('INFO STAT MAXWIN')}</i></span>
 					</div>
 					<div class="stat">
-						<span class="stat-ic"><img src={icRtp} alt="" /></span>
+						<span class="stat-ic" style="--ic:0.637"><img src={icRtp} alt="" /></span>
 						<span class="stat-txt"><b>{RTP}</b><i>{t('INFO STAT RTP')}</i></span>
 					</div>
 				</div>
@@ -158,7 +166,7 @@
 								<tbody>
 									{#each payRows as row}
 										<tr>
-											<td class="pt-sym"><img src={row.img} alt="" /></td>
+											<td class="pt-sym"><img src={row.img} alt="" style="--fit:{row.fit}" /></td>
 											{#each row.v as val}<td>{val}</td>{/each}
 										</tr>
 									{/each}
@@ -373,7 +381,7 @@
 		transition: filter 0.12s ease;
 	}
 	.info-close:hover {
-		filter: brightness(1.2);
+		filter: brightness(1.25) drop-shadow(0 0 2.5px #0d89c6);
 	}
 	.info-close img {
 		width: 100%;
@@ -431,22 +439,35 @@
 		-webkit-text-fill-color: transparent;
 		color: transparent;
 	}
+	/* Figma 4504:4325 — Poppins 500 / 13px / 0.39px tracking / #FFF. The body inherited Inter at
+	   #d7e6f7 and the max-win number was 800 weight, neither of which matched the design.
+	   Sizes stay container-relative rather than pinned to 13px/32px: 1.95cqmin and 4.8cqmin
+	   evaluate to exactly those values at the 1200x670 design size and scale from there.
+	   Tracking is expressed in em (0.39/13 and 0.96/32 both = 0.03em) so it tracks the size. */
 	.ov-text {
 		margin: 0;
+		font-family: 'Poppins', 'Inter', sans-serif;
+		font-weight: 500;
 		font-size: clamp(11px, 1.95cqmin, 18px);
+		letter-spacing: 0.03em;
 		line-height: 1.42;
-		color: #d7e6f7;
+		color: #fff;
 	}
 	.ov-maxwin {
 		margin: clamp(2px, 0.6cqmin, 8px) 0 0;
-		font-size: clamp(11px, 2.0cqmin, 18px);
-		color: #d7e6f7;
+		font-family: 'Poppins', 'Inter', sans-serif;
+		font-weight: 500;
+		font-size: clamp(11px, 1.95cqmin, 18px);
+		letter-spacing: 0.03em;
+		color: #fff;
 	}
 	.ov-maxwin span {
-		font-size: clamp(16px, 3.4cqmin, 32px);
-		font-weight: 800;
+		/* Was 3.4cqmin, which resolved to ~23px at design size against the spec's 32px. */
+		font-size: clamp(16px, 4.8cqmin, 32px);
+		font-weight: 500;
 		color: #fff;
-		letter-spacing: 0.01em;
+		/* 0.03em, not 0.01: the design spec is 0.96px at a 32px size. */
+		letter-spacing: 0.03em;
 		/* Breathing room so the big number isn't jammed against the surrounding words. */
 		margin: 0 0.16em;
 	}
@@ -495,6 +516,9 @@
 
 	/* ── Stat boxes ── */
 	.ov-stats {
+		/* One source of truth for the box height so the icons can be expressed as a fraction of it
+		   (Figma sizes each icon separately against a 91px-tall box art). */
+		--stat-h: clamp(62px, 14.4cqmin, 138px);
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
 		/* Tight but always-positive gap → boxes read as one row yet never touch. */
@@ -509,7 +533,7 @@
 		justify-content: center;
 		gap: clamp(4px, 1cqmin, 11px);
 		/* Elongated (matches the horizontal value-box art) so the icon + text fit on one line. */
-		min-height: clamp(62px, 14.4cqmin, 138px);
+		min-height: var(--stat-h);
 		padding: clamp(8px, 1.9cqmin, 20px) clamp(6px, 1.5cqmin, 15px);
 		/* Real sci-fi value box art behind each stat (value_box_mobile.webp). */
 		background-image: var(--box-img);
@@ -518,15 +542,17 @@
 	}
 	.stat-ic {
 		flex: 0 0 auto;
-		width: clamp(32px, 7.4cqmin, 74px);
-		height: clamp(32px, 7.4cqmin, 74px);
 		display: grid;
 		place-items: center;
 		color: #8ec7ff;
 	}
+	/* Height comes from --ic, each icon's own Figma height as a fraction of the 91px box art
+	   (reels 46, cluster 57, max-win 43, RTP 58). The previous shared square forced all four to one
+	   size AND letterboxed the non-square ones via object-fit, so cluster and RTP rendered ~20%
+	   under spec. Width follows the asset's aspect. */
 	.stat-ic img {
-		width: 100%;
-		height: 100%;
+		height: calc(var(--stat-h) * var(--ic, 0.55));
+		width: auto;
 		object-fit: contain;
 		display: block;
 		filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.45));
@@ -659,7 +685,7 @@
 	.pt-table {
 		width: 100%;
 		border-collapse: separate;
-		border-spacing: clamp(2px, 0.5cqmin, 5px);
+		border-spacing: clamp(1px, 0.35cqmin, 3px);
 		table-layout: fixed;
 		font-size: clamp(7px, 1.55cqmin, 15px);
 	}
@@ -684,42 +710,68 @@
 		color: #9fd0ff;
 	}
 	.pt-table td.pt-sym {
-		padding: clamp(1px, 0.4cqmin, 4px);
+		/* No inset — the PNG's own transparent margin already supplies all the breathing room. */
+		padding: 0;
 	}
 	.pt-table td.pt-sym img {
 		display: block;
 		width: 100%;
-		max-height: clamp(20px, 4.6cqmin, 44px);
+		/* The symbol image is what drives ROW HEIGHT, so this doubles as the table's height budget:
+		   at 7cqmin/72px (the first pass at making the symbols legible) 9 rows overflowed the page
+		   and ran into the pager arrows. 6.4cqmin/64px keeps them large but gives the arrows room.
+		   Raising this again means re-checking that the table still clears the pager. */
+		max-height: clamp(24px, 6.4cqmin, 64px);
 		object-fit: contain;
 		margin: 0 auto;
+		/* Layout-neutral, so the row height is unaffected and only the transparent margin spills. */
+		transform: scale(var(--fit, 1));
 	}
+	/* Figma 4570:3598. Colours sampled from the design render: the title is a CYAN GRADIENT
+	   (#00E7F4 -> #0099D0), not the flat #6fb6f6 this used; and the heading and value lines are the
+	   same light grey (#D7D7D7), where this had the values a dimmer, bluer tone than the headings.
+	   The title was also condensed, which the design is not. */
 	.pt-side {
 		padding: clamp(10px, 2cqmin, 22px) clamp(10px, 2cqmin, 20px);
 		display: flex;
 		flex-direction: column;
 		justify-content: center; /* centre the copy vertically in the tall card, not stuck at the top */
-		gap: clamp(4px, 1cqmin, 10px);
+		/* No gap: the Figma aside stacks its lines tight; spacing comes from each line's own
+		   margins, and a flex gap on top of those opened the block up too far. */
+		gap: 0;
 		text-align: center;
+		/* Inter (inherited), NOT Poppins: the design's letterforms have a double-storey 'a', which
+		   Poppins does not — its 'a' is a single-storey geometric bowl. */
 	}
 	.pt-side-title {
-		margin: 0 0 clamp(2px, 0.8cqmin, 8px);
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		margin: 0;
 		font-size: clamp(13px, 2.5cqmin, 23px);
-		font-weight: 800;
-		color: #6fb6f6;
-		line-height: 1.12;
+		font-weight: 700;
+		background: linear-gradient(180deg, #00e7f4 0%, #0099d0 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+		line-height: 1.2;
 	}
+	/* Block rhythm measured off the design: ~1.45em between a heading and its values, ~2.6em
+	   between a value line and the next heading, ~3.7em under the title. Expressed in em so it
+	   tracks the font size; the leading already supplies ~0.3em, hence the smaller margins. */
 	.pt-side-h {
-		margin: clamp(2px, 0.8cqmin, 8px) 0 0;
+		margin: 2.3em 0 0;
 		font-size: clamp(10px, 1.85cqmin, 16px);
 		font-weight: 700;
-		color: #eaf3ff;
-		line-height: 1.25;
+		color: #d7d7d7;
+		line-height: 1.3;
+	}
+	.pt-side-h:first-of-type {
+		margin-top: 3.4em;
 	}
 	.pt-side-v {
-		margin: 0;
+		margin: 1.15em 0 0;
 		font-size: clamp(10px, 1.85cqmin, 16px);
-		color: #c3d6ee;
+		font-weight: 400;
+		color: #d7d7d7;
+		line-height: 1.3;
 	}
 
 	/* ── Page 3: Features ── */
@@ -848,7 +900,13 @@
 		min-height: 0;
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		gap: clamp(8px, 1.7cqmin, 20px);
+		/* Figma 4453:7151: three 200px cards + two 34px gaps = 668 of the 965 inner panel, CENTRED.
+		   Stretching the row edge to edge made each card ~50% wider than the design, which left the
+		   copy floating in an over-wide box. The wider gap is part of the same proportion. */
+		gap: clamp(8px, 3cqmin, 30px);
+		max-width: 72%;
+		margin-inline: auto;
+		width: 100%;
 	}
 	.fb-grid .feat-card {
 		/* Centre the whole group with even gaps (the base card spreads it with margin-top:auto, which
@@ -877,8 +935,11 @@
 		/* Slightly smaller so the (now larger) icons fit the tight cards on desktop without clipping.
 		   Sized so even the longest-copy locale (Russian Extra-Feature card) keeps COST/RTP inside the
 		   card — the description is the only variable-height element here. */
-		font-size: clamp(9px, 1.6cqmin, 13px);
-		line-height: 1.22;
+		/* Figma is 14px in a 176px-wide text column; the cards are now that narrow too, so the same
+		   size wraps the same way. Was 1.6cqmin (~11px), shrunk back when the cards were full-width. */
+		font-size: clamp(9px, 2.05cqmin, 17px);
+		line-height: 1.3;
+		color: #d7d7d7;
 	}
 	.fb-grid .feat-ic {
 		/* Desktop (base) W icon — the Extra-Feature card has the longest copy, so this is the largest that
@@ -913,9 +974,11 @@
 		color: transparent;
 	}
 	.fb-v {
-		font-size: clamp(13px, 2.7cqmin, 24px);
-		font-weight: 800;
-		color: #eaf3ff;
+		/* Same size as .fb-k — the design sets label and value in one size (both 16px-tall nodes),
+		   with only colour and weight separating them. */
+		font-size: clamp(11px, 2cqmin, 18px);
+		font-weight: 700;
+		color: #fff;
 	}
 
 	/* ── Page 6: General info ── */
@@ -985,22 +1048,47 @@
 		filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.4));
 	}
 	/* Page 6 titles use the cyan→blue title gradient. */
+	/* Figma 4214:3232 sets these card titles in CINZEL (a serif) — the base .feat-h is IBM Plex Sans
+	   Condensed, so they were rendering in the wrong typeface entirely. Uppercase, and a cyan ramp
+	   that bottoms out at #0088C7 rather than the much darker #0046a9 the other titles use (measured
+	   off the design: line 1 #00E6F3, line 2 #0088C7). */
 	.gi-grid .feat-h {
-		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+		font-family: 'Cinzel', 'IBM Plex Sans Condensed', serif;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+		background: linear-gradient(180deg, #00e6f3 0%, #0088c7 100%);
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		color: transparent;
 	}
+	/* Body copy is POPPINS here (single-storey 'a' in the design), pure white, ~12px at design size —
+	   1.6cqmin resolved to ~11px. Note this differs from the paytable aside, which the design sets
+	   in Inter; the two pages genuinely use different faces. */
+	/* Figma insets the copy ~60px each side of the card, so it wraps to a narrower measure and runs
+	   taller — filling the card rather than sitting as a short wide slab. Percentage of .gi-body
+	   (already inset by the card padding), so it stays proportional at every size. */
 	.gi-card .feat-p {
-		font-size: clamp(9px, 1.6cqmin, 14px);
-		line-height: 1.38;
+		max-width: 80%;
+		font-family: 'Poppins', 'Inter', sans-serif;
+		font-weight: 500;
+		/* Figma spec: 10px / 0.3px tracking. The container is .info-overlay, so at the design's
+		   1200x670 frame cqmin is 6.7px and 1.45cqmin resolves to ~9.8px; tracking is 0.3/10 = 0.03em
+		   so it follows the size. line-height stays `normal` per the spec — Poppins' own metrics give
+		   the ~15px line pitch the design renders at. */
+		font-size: clamp(8px, 1.45cqmin, 13px);
+		letter-spacing: 0.03em;
+		line-height: normal;
+		color: #fff;
 	}
 	/* Body copy centres itself within an EQUAL min-height across both cards (set in the @container), so the
 	   icon+title blocks are the same height and centre to the same level while staying balanced. */
 	.gi-body {
-		/* Equal min-height across both cards → the icon+title blocks match and the icons centre to the same
-		   level. Sized (responsive) to the taller Legal card's 3-paragraph copy so it never clips. */
+		/* Takes the card's remaining height (Figma auto-layout: flex 1 0 0 / align-self stretch) instead
+		   of hugging its copy — otherwise the block sits under the title with a large void beneath it.
+		   min-height stays as a floor for the portrait/landscape overrides that still set it. */
+		flex: 1 0 0;
+		align-self: stretch;
 		min-height: clamp(84px, 18.3cqmin, 172px);
 		display: flex;
 		flex-direction: column;
@@ -1153,10 +1241,11 @@
 		/* Page 2 — Paytable: enlarge the right-hand Multiplier-Wild panel text. Widen the aside and keep the
 		   sizes moderate so its content stays shorter than the table (else the grid row grows and clips). */
 		.pt { grid-template-columns: 1fr 185px; }
-		.pt-side { gap: 7px; padding: 16px 14px; }
+		.pt-side { gap: 0; padding: 16px 14px; }
 		.pt-side-title { font-size: 18px; }
+		/* Equal sizes — the design does not step the values up over their headings. */
 		.pt-side-h { font-size: 13px; }
-		.pt-side-v { font-size: 14px; }
+		.pt-side-v { font-size: 13px; }
 
 		/* Page 3 — Features: slightly larger text/art with roomier gaps. */
 		.feat-grid { gap: 16px; }
@@ -1193,7 +1282,7 @@
 		.fb-grid .feat-trigger img { width: 88px; }
 		.fb-grid .feat-x { font-size: 34px; }
 		.fb-k { font-size: 16px; }
-		.fb-v { font-size: 20px; }
+		.fb-v { font-size: 16px; }
 
 		/* Page 6 — General info: bigger icons, more card padding, larger gaps between stacked elements. */
 		.gi-card { padding: 40px 46px; gap: 16px; }
@@ -1365,9 +1454,11 @@
 			flex: 0 0 auto;
 			min-height: auto;
 		}
-		/* Stack the three buy cards vertically. */
+		/* Stack the three buy cards vertically — and drop the centred max-width, which only applies
+		   to the three-across desktop row. */
 		.fb-grid {
 			grid-template-columns: 1fr;
+			max-width: none;
 		}
 		.cw {
 			grid-template-columns: 1fr;
@@ -1486,7 +1577,7 @@
 			font-size: clamp(13px, 3.1cqmin, 20px);
 		}
 		.fb-grid .fb-v {
-			font-size: clamp(16px, 3.9cqmin, 26px);
+			font-size: clamp(13px, 3.1cqmin, 20px);
 		}
 		.fb-sub {
 			font-size: clamp(13px, 3.1cqmin, 18px);

@@ -37,13 +37,14 @@
 	// `sound.players` undefined, which every soundPress*/soundOnce handler then threw on. Wait for
 	// the key instead, and load exactly once.
 	let audioLoaded = false;
+	let destroyAudio: (() => void) | undefined;
 	$effect(() => {
 		const raw = context.stateApp.loadedAssets?.['sound'];
 		if (!raw || audioLoaded) return;
 		audioLoaded = true;
 
 		const loadedAudio = $state.snapshot(raw) as LoadedAudio<SoundName>;
-		const { destroy } = sound.load(loadedAudio);
+		destroyAudio = sound.load(loadedAudio).destroy;
 
 		// The volume $effects above first ran BEFORE this load created the players, and
 		// `sound.players` is not reactive so they never re-run on creation — apply the
@@ -52,10 +53,16 @@
 		sound.players.music.volume(stateSound.volumeValueMusic / 100);
 		sound.players.loop.volume(stateSound.volumeValueSoundEffect / 100);
 		sound.players.once.volume(stateSound.volumeValueSoundEffect / 100);
-
-		return () => {
-			// Equivalent to onDestroy(); Leave this comment for searching.
-			destroy();
-		};
 	});
+
+	// Teardown ONLY — deliberately a separate effect with no reactive reads.
+	// `loadedAssets` is REPLACED (not mutated) by every AssetsLoader merge: the preload pass, the
+	// gating pass, each deferred wave, and every demand load. So the effect above re-runs several
+	// times per session. When its cleanup lived inside it, Svelte ran that cleanup before each
+	// re-run — unloading the sprite Howl — while `audioLoaded` made the body early-return, so
+	// nothing ever recreated it. Howl.unload() clears _sprite and sets _state to 'unloaded', and
+	// Howler queues plays on an unloaded Howl instead of throwing, so every SFX went silent with no
+	// error. Background music survived because Sound.svelte loops it through its own standalone
+	// Howls; only the sprite died. Registering the teardown here means it fires on unmount only.
+	$effect(() => () => destroyAudio?.());
 </script>
