@@ -49,6 +49,8 @@
 	// General-info icons (page 6).
 	const icRotate = ap('/assets/components/ui/info_ic_charge_arrow.webp');
 	const icLegal = ap('/assets/components/ui/info_ic_legal.webp');
+	// The game's own round close button (same asset the auto-spin / buy-bonus modals use).
+	const iconClose = ap('/assets/components/ui/ctrl_close.svg');
 	// Page 6 card frames (designer boxes): narrow one behind the interrupted-rounds card, wide one
 	// behind the (larger) legal-notice card.
 	const giBoxInterrupted = ap('/assets/components/ui/info_box_interrupted.webp');
@@ -303,7 +305,7 @@
 
 	<!-- Close button pinned to the screen's top-right corner (outside the panel). -->
 	<button class="info-close" type="button" onclick={props.onclose} aria-label="Close">
-		<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+		<img src={iconClose} alt="" />
 	</button>
 </div>
 
@@ -358,10 +360,11 @@
 		right: clamp(8px, 2cqmin, 26px);
 		width: clamp(34px, 5.6cqmin, 52px);
 		height: clamp(34px, 5.6cqmin, 52px);
-		border-radius: 50%;
-		border: 1.5px solid rgba(96, 165, 250, 0.8);
-		background: radial-gradient(circle at 50% 35%, #143059, #0a1830);
-		color: #cfe4ff;
+		/* ctrl_close.svg is a FULL round button (ring + fill + X), so the wrapper carries no frame of
+		   its own — same treatment as the auto-spin / buy-bonus modal close. */
+		border: none;
+		background: none;
+		padding: 0;
 		display: grid;
 		place-items: center;
 		cursor: pointer;
@@ -372,18 +375,11 @@
 	.info-close:hover {
 		filter: brightness(1.2);
 	}
-	.info-close svg {
-		/* Absolute-centred so the square %-sizing is reliable. A grid/flex %-sized SVG collapsed
-		   non-square (its width shrank to a few px on the small landscape button), making the X tiny. */
-		position: absolute;
-		inset: 0;
-		margin: auto;
-		width: 78%;
-		height: 78%;
-		fill: none;
-		stroke: currentColor;
-		stroke-width: 2.4;
-		stroke-linecap: round;
+	.info-close img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		display: block;
 	}
 
 	/* Transparent at normal sizes — its children (body + pager) act as the panel's flex items. On small
@@ -451,6 +447,8 @@
 		font-weight: 800;
 		color: #fff;
 		letter-spacing: 0.01em;
+		/* Breathing room so the big number isn't jammed against the surrounding words. */
+		margin: 0 0.16em;
 	}
 
 	.ov-right {
@@ -639,6 +637,11 @@
 		line-height: 1.45;
 		color: #dfeaf8;
 	}
+	/* The legal-notice copy is one dense block — more line spacing so it reads less cramped than the
+	   shorter feature paragraphs. */
+	.feat-p--legal {
+		line-height: 1.68;
+	}
 
 	/* ── Page 2: Paytable ── */
 	.pt {
@@ -694,6 +697,7 @@
 		padding: clamp(10px, 2cqmin, 22px) clamp(10px, 2cqmin, 20px);
 		display: flex;
 		flex-direction: column;
+		justify-content: center; /* centre the copy vertically in the tall card, not stuck at the top */
 		gap: clamp(4px, 1cqmin, 10px);
 		text-align: center;
 	}

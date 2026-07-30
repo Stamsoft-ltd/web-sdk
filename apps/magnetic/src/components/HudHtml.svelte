@@ -86,6 +86,9 @@
 	// Round icon-buttons — each PNG is a COMPLETE button (dark disc + cyan ring + icon baked in),
 	// with default + disabled/mute states from the "Icon Buttons" set. Used as the whole button.
 	const iconMenu = ap('/assets/components/navbar/icons/menu.webp');
+	// Same button (cyan ring + dark fill) as menu.webp but with a white X — shown while the menu
+	// popover is open so the button reads as "close".
+	const iconMenuClose = ap('/assets/components/navbar/icons/menu_close.webp');
 	// Menu popover (Figma 4498-8432): panel above the menu button with SOUND / MUSIC / INFO rows.
 	const menuPopupBg = ap('/assets/components/navbar/menu_popup_bg.webp');
 	const iconMenuSound = ap('/assets/components/navbar/icons/menu_sound.svg');
@@ -447,15 +450,16 @@
 		></button>
 		<div class="menu-popup" style={`background-image:url('${menuPopupBg}')`}>
 			<button class="menu-row" type="button" onclick={toggleSfx}>
-				<span class="menu-row__icon">
-					<span class="menu-row__glyph" style={`--icon:url('${sfxOff ? iconMenuSoundOff : iconMenuSound}')`}></span>
+				<!-- SOUND uses the exact bottom-bar sound/mute button art so the two match 1:1. -->
+				<span class="menu-row__icon menu-row__icon--full">
+					<img class="menu-row__fullimg" src={sfxOff ? iconMute : iconSound} alt="" />
 				</span>
 				<span class="menu-row__label">{i18nDerived.translate('SOUND')}</span>
 			</button>
 			<div class="menu-divider"></div>
 			<button class="menu-row" type="button" onclick={toggleMusic}>
 				<span class="menu-row__icon">
-					<span class="menu-row__glyph" style={`--icon:url('${musicOff ? iconMenuMusicOff : iconMenuMusic}')`}></span>
+					<span class="menu-row__glyph" class:is-off={musicOff} style={`--icon:url('${musicOff ? iconMenuMusicOff : iconMenuMusic}')`}></span>
 				</span>
 				<span class="menu-row__label">{i18nDerived.translate('MUSIC')}</span>
 			</button>
@@ -478,7 +482,7 @@
 					onclick={toggleMenuPopup}
 					aria-label="Menu"
 				>
-					<img class="nav-icon" src={iconMenu} alt="menu" />
+					<img class="nav-icon" src={showMenuPopup ? iconMenuClose : iconMenu} alt="menu" />
 				</button>
 				{#if showMenuPopup}{@render menuPopup()}{/if}
 				<!-- Master mute toggle: one press silences ALL sound + music. The menu popup still lets you
@@ -624,7 +628,7 @@
 			<div class="pt-controls">
 				<div class="pt-grp pt-grp--left">
 					<button class="nav-btn nav-btn--framed" type="button" onclick={toggleMenuPopup} aria-label="Menu">
-						<img class="nav-icon" src={iconMenu} alt="menu" />
+						<img class="nav-icon" src={showMenuPopup ? iconMenuClose : iconMenu} alt="menu" />
 					</button>
 					{#if showMenuPopup}{@render menuPopup()}{/if}
 					<div class="pt-buy pt-buy--nav">
@@ -808,7 +812,7 @@
 
 			<div class="ls-nav">
 				<button class="nav-btn nav-btn--framed" type="button" onclick={toggleMenuPopup} aria-label="Menu">
-					<img class="nav-icon" src={iconMenu} alt="menu" />
+					<img class="nav-icon" src={showMenuPopup ? iconMenuClose : iconMenu} alt="menu" />
 				</button>
 				{#if showMenuPopup}{@render menuPopup()}{/if}
 				<!-- Sound icon moved here (was buy bonus): master mute for ALL sound + music. -->
@@ -1302,12 +1306,14 @@
 		filter: drop-shadow(0 0 7px rgba(255, 216, 74, 0.9));
 	}
 
-	.nav-btn--turbo.turbo-fast {
-		filter: drop-shadow(0 0 4px rgba(255, 200, 80, 0.6));
+	/* Turbo active — subtle icon brightness only, no coloured (yellow) glow. The turbo icon asset itself
+	   swaps outline -> solid -> double bolt, which is what conveys the fast/super state. */
+	.nav-btn--turbo.turbo-fast .nav-icon {
+		filter: brightness(1.15);
 	}
 
-	.nav-btn--turbo.turbo-super {
-		filter: drop-shadow(0 0 6px #ffd84a) drop-shadow(0 0 12px rgba(255, 216, 74, 0.5));
+	.nav-btn--turbo.turbo-super .nav-icon {
+		filter: brightness(1.4);
 	}
 
 	/* Menu + sound buttons, docked at the left of the bottom bar */
@@ -1371,6 +1377,22 @@
 		mask: var(--icon) center / contain no-repeat;
 		-webkit-mask: var(--icon) center / contain no-repeat;
 		transition: background 0.12s ease;
+	}
+	/* SOUND row shows the full bottom-bar button art (its own ring), so drop the wrapper ring/fill. */
+	.menu-row__icon--full {
+		border: none;
+		background: none;
+	}
+	.menu-row__fullimg {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		display: block;
+	}
+	/* The "off" (struck-through) icons are .webp exports with little internal padding, so at `contain`
+	   they fill the glyph box more than the padded .svg on-state icons — scale them down to match. */
+	.menu-row__glyph.is-off {
+		transform: scale(0.78);
 	}
 	.menu-row__label {
 		font-family: 'Inter', sans-serif;
@@ -1498,22 +1520,20 @@
 		opacity: 0.65;
 	}
 
-	/* Fast mode: slightly lit, warm hint */
+	/* Fast mode: subtle icon brightness only — no coloured (yellow) glow or gold tint. */
 	.circle-btn--turbo.turbo-fast {
 		opacity: 1;
-		filter: drop-shadow(0 0 3px rgba(255, 200, 80, 0.5));
 	}
 	.circle-btn--turbo.turbo-fast .btn-icon {
-		filter: brightness(1.15) sepia(0.15) saturate(1.5);
+		filter: brightness(1.15);
 	}
 
-	/* Turbo mode: bright gold glow */
+	/* Turbo (super) mode: brighter icon, still no coloured glow. */
 	.circle-btn--turbo.turbo-super {
 		opacity: 1;
-		filter: drop-shadow(0 0 6px #ffd84a) drop-shadow(0 0 12px rgba(255, 216, 74, 0.5));
 	}
 	.circle-btn--turbo.turbo-super .btn-icon {
-		filter: brightness(1.5) sepia(0.3) saturate(2.5) hue-rotate(5deg);
+		filter: brightness(1.4);
 	}
 
 	.spin-btn {
@@ -1885,11 +1905,19 @@
 		width: clamp(34px, 9.8vw, 42px);
 		height: clamp(34px, 9.8vw, 42px);
 	}
-	/* Focal spin button — larger, vertically centred within the nav bar. */
+	/* Focal spin button — absolutely centred on the bar (= screen centre) so the differing left
+	   (menu + buy) vs right (turbo + auto) group widths never pull it off-centre. The side groups
+	   stay in the flex flow and spread to the edges; only the spin's transparent art padding grazes
+	   the buy button's glow, never the visible pill. */
 	.pt-spin {
 		width: clamp(98px, 30vw, 118px);
 		height: clamp(98px, 30vw, 118px);
 		margin: 0;
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		z-index: 1;
 	}
 	.pt-spin .spin-btn__count {
 		font-size: 1.25rem;

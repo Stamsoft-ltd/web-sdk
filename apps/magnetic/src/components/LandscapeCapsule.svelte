@@ -207,12 +207,15 @@
 				width={shellW}
 				height={shellH}
 				charged={!!symbolKey}
-				focusY={0}
+				focusY={0.055}
 				symRx={symSize * 0.5 * symLiveScale}
 				symRy={symSize * (264 / 328) * 0.5 * symLiveScale}
 			/>
 			{#if symbolKey}
-				<Container x={symSize * symFx.dx} y={symSize * symFx.dy} scale={symLiveScale}>
+				<!-- Offset DOWN into the glass window (same as the desktop CapsulePanel): the shell's clear
+				     window sits below the sprite's centre because the top housing is tall, so a symbol at
+				     centre reads as "too high" in the tube. -->
+				<Container x={symSize * symFx.dx} y={shellH * 0.055 + symSize * symFx.dy} scale={symLiveScale}>
 					<Sprite
 						key={symbolKey}
 						anchor={0.5}

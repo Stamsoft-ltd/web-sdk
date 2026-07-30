@@ -42,7 +42,11 @@
 	// Popup sized to the screen (slightly portrait to fit the CONGRATULATIONS -> magnet -> FREE SPINS
 	// vertical stack), centred on the stage.
 	const main = $derived(context.stateLayoutDerived.mainLayout());
-	const PW = $derived(Math.min(main.width, main.height) * 0.5);
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	// Portrait has width to spare on both sides (the popup only used half the narrow dimension), so it
+	// gets a larger share for a more readable CONGRATULATIONS / FREE SPINS stack. Landscape/desktop keep
+	// the original 0.5 of the (smaller) height so the popup still clears the reels there.
+	const PW = $derived(Math.min(main.width, main.height) * (isPortrait ? 0.68 : 0.5));
 	const PH = $derived(PW * 1.05);
 
 	// Which bonus was won + its blurb (same wording as the buy-bonus cards). bonusMode is set
@@ -343,7 +347,7 @@
 						anchor={{ x: 1, y: 0.5 }}
 						x={PW * 0.285}
 						text={i18nDerived.translate('PRESS ANYWHERE')}
-						style={pressStyle(PH * 0.034)}
+						style={pressStyle(PH * (isPortrait ? 0.037 : 0.034))}
 					/>
 					<Sprite
 						key="pressArrow"

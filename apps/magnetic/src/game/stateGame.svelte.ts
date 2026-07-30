@@ -242,11 +242,11 @@ const getBoardScale = () => {
 // top bar; the HTML HUD occupies the space below it.
 const PORTRAIT_FRAME_FILL = 0.94;
 const PORTRAIT_TOP_OFFSET = 372;
-const LANDSCAPE_FRAME_FILL = 0.82;
+const LANDSCAPE_FRAME_FILL = 0.9;
 // On small landscape screens the HTML HUD sits at its min pixel sizes (proportionally larger), so the
 // board fills LESS of the frame there to keep the gutters (balance/bet left, capsule/nav right) clear.
 // Lerp the fill from FILL_MIN at short-side ≤ 250px up to FILL at short-side ≥ 430px.
-const LANDSCAPE_FRAME_FILL_MIN = 0.64;
+const LANDSCAPE_FRAME_FILL_MIN = 0.76;
 const LANDSCAPE_FILL_SHORT_MIN = 240;
 const LANDSCAPE_FILL_SHORT_MAX = 410;
 // 0 at the smallest landscape screens → 1 at normal-size ones; drives both the board fill and the
@@ -366,10 +366,10 @@ const landscapeCapsuleLayout = () => {
 	const visibleH = tubeH * LANDSCAPE_CAPSULE_VISIBLE_H;
 	const canvasTopY =
 		main.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1));
-	// Anchor the FULL sprite box (not just the visible glass) below the screen top, so the tube's
-	// top cap art is never clipped — the capsule starts near the top but stays fully on screen.
-	// The 0.07 top-gap sits the capsule (and the WIN pill tracking its visible bottom) a bit lower.
-	let tubeY = canvasTopY + main.height * 0.07 + tubeH * 0.5;
+	// Start the tube at the very top of the screen: place the VISIBLE glass top (0.94 of the padded
+	// sprite, so ±0.47·tubeH about the centre) flush with canvasTopY. The remaining transparent top
+	// padding sits just above the visible area (off-screen), so no cap art is clipped.
+	let tubeY = canvasTopY + tubeH * 0.47;
 	const symSize = visibleW * 0.66;
 	let visibleBottom = tubeY + visibleH * 0.5;
 	// On very short landscape screens (e.g. 400×225) the board — and this board-derived tube — shrinks,
