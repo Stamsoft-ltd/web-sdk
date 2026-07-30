@@ -23,11 +23,24 @@
 
 	const context = getContext();
 
+	// How long a tiered win board lingers after its amount has finished counting up before it
+	// closes itself. The board used to wait for a press indefinitely, which stalled an unattended
+	// autoplay run on every big win. Armed only once the counting has SETTLED, so the final number
+	// is always fully readable first; a press still dismisses immediately.
+	const AUTO_DISMISS_MS = 3500;
+
+	// Turbo COMPRESSES the big-win presentation rather than skipping it — the board is the payoff
+	// moment, so it still plays, just at the pace turbo implies. Both halves scale by the same
+	// factor so the rhythm holds: the roll-up (presentDuration) and the dwell before auto-dismiss.
+	// A legendary win goes 5.5s + 3.5s = 9s -> 4.5s on turbo -> 2.7s on super turbo.
+	const turboSpeed = $derived(stateBet.isSuperTurbo ? 0.3 : stateBet.isTurbo ? 0.5 : 1);
+
 	let show = $state(false);
 	let amount = $state(0);
 	let winLevelData = $state<WinLevelData>();
 	let oncomplete = $state(() => {});
 	let boardClickHandled = false;
+	let dismissTimer = 0;
 	let isCountingUp = $state(false);
 	let shakeX = $state(0);
 	let shakeY = $state(0);
@@ -37,10 +50,34 @@
 	const boardLayout = $derived(context.stateGameDerived.boardLayout());
 	const mainLayout = $derived(context.stateLayoutDerived.mainLayout());
 
+	const clearDismissTimer = () => {
+		if (!dismissTimer) return;
+		clearTimeout(dismissTimer);
+		dismissTimer = 0;
+	};
+
+	// Single dismissal path for both the auto-dismiss timer and press-to-continue, so whichever
+	// fires first wins and the other is a no-op (`boardClickHandled` is reset per win).
+	const dismiss = () => {
+		clearDismissTimer();
+		if (boardClickHandled) return;
+		boardClickHandled = true;
+		oncomplete();
+	};
+
+	const scheduleAutoDismiss = () => {
+		clearDismissTimer();
+		dismissTimer = setTimeout(dismiss, AUTO_DISMISS_MS * turboSpeed) as unknown as number;
+	};
+
 	context.eventEmitter.subscribeOnMount({
 		winShow: () => (show = true),
-		winHide: () => (show = false),
+		winHide: () => {
+			show = false;
+			clearDismissTimer();
+		},
 		winUpdate: async (emitterEvent) => {
+			clearDismissTimer();
 			boardClickHandled = false;
 			amount = emitterEvent.amount;
 			winLevelData = emitterEvent.winLevelData;
@@ -49,6 +86,9 @@
 			isCountingUp = false;
 		},
 	});
+
+	// A pending timer would otherwise resolve a stale `oncomplete` after teardown.
+	$effect(() => clearDismissTimer);
 
 	// Continuous board shake — the popup never sits still: a low rumble the whole time it's up
 	// plus a sharp "electric jolt" every ~1.35s in a pseudo-random direction. Stronger while the
@@ -105,17 +145,22 @@
 	{#if winLevelData}
 		{@const isBigWin = winLevelData.type === 'big'}
 		{@const hasBoardAnimation = !!winLevelData?.animation}
+		<!-- Line wins (no board) collapse to a near-instant 400ms on turbo as before; board wins
+		     scale by turboSpeed, which is 1 when turbo is off — so the normal pace is unchanged. -->
 		{@const duration =
 			(stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation
 				? Math.min(winLevelData.presentDuration, 400)
-				: winLevelData.presentDuration}
+				: winLevelData.presentDuration * turboSpeed}
 		{#key oncomplete}
 			<WinCountUpProvider
 				{amount}
 				{duration}
 				oncomplete={() => {
 					context.eventEmitter.broadcast({ type: 'soundStop', name: 'mag_win_001' });
-					if (!hasBoardAnimation) oncomplete();
+					// Fires when the roll-up finishes naturally AND when a press snaps it to the
+					// final value — either way the counting is over, so the dwell starts here.
+					if (hasBoardAnimation) scheduleAutoDismiss();
+					else oncomplete();
 				}}
 			>
 				{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
@@ -179,13 +224,8 @@
 
 					<PressToContinue
 						onpress={() => {
-							if (!countUpCompleted) {
-								finishCountUp();
-							} else {
-								if (boardClickHandled) return;
-								boardClickHandled = true;
-								oncomplete();
-							}
+							if (!countUpCompleted) finishCountUp();
+							else dismiss();
 						}}
 					/>
 				{/snippet}

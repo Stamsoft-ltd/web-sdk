@@ -31,7 +31,15 @@ export const ICON_STROKE_GRADIENT = new FillGradient({
 	textureSpace: 'local',
 });
 
-// Brighter win gradient: linear-gradient(182deg, #E2D981 17.62%, #FBC503 60.04%, #D98503 102.47%).
+// Win-amount gradient: linear-gradient(182deg, #E2D981 17.62%, #FBC503 60.04%, #D98503 102.47%).
+// 182deg ≈ vertical (top → bottom); the 2° tilt is sub-pixel across a text run, so it is dropped.
+//
+// The final stop sits at 102.47%, PAST the end of the gradient box — CSS never actually paints
+// #D98503, it stops at whatever the ramp has reached by 100%. Pinning #D98503 to offset 1 (what
+// this used to do) therefore over-darkened the bottom of every glyph. #DB8903 is the interpolated
+// colour at 100%: 94.18% of the way from #FBC503 (60.04%) to #D98503 (102.47%).
+// Offsets below the first stop clamp to its colour in both CSS and FillGradient, so the flat
+// #E2D981 lead-in over 0–17.62% needs no explicit stop.
 export const WIN_GRADIENT = new FillGradient({
 	type: 'linear',
 	start: { x: 0.5, y: 0 },
@@ -39,7 +47,7 @@ export const WIN_GRADIENT = new FillGradient({
 	colorStops: [
 		{ offset: 0.1762, color: 0xe2d981 },
 		{ offset: 0.6004, color: 0xfbc503 },
-		{ offset: 1.0, color: 0xd98503 },
+		{ offset: 1.0, color: 0xdb8903 },
 	],
 	textureSpace: 'local',
 });

@@ -256,11 +256,11 @@ const assets = {
 	magnetWinTile: { type: 'sprite', src: './assets/components/ui/magnet_win.webp?v=20260709' },
 	squirrelWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt_win.webp?v=20260709' },
 	// Win boards — preloaded so board escalation during count-up doesn't stall
-	sweetWinBoard:     { type: 'sprite', src: './assets/components/win_boards/sweet_win.webp?v=20260709' },
-	wildWinBoard:      { type: 'sprite', src: './assets/components/win_boards/big_win.webp?v=20260709' },
-	epicWinBoard:      { type: 'sprite', src: './assets/components/win_boards/epic_win.webp?v=20260728' },
-	mythicWinBoard:    { type: 'sprite', src: './assets/components/win_boards/mega_win.webp?v=20260709' },
-	legendaryWinBoard: { type: 'sprite', src: './assets/components/win_boards/max_win.webp?v=20260709' },
+	sweetWinBoard:     { type: 'sprite', src: './assets/components/win_boards/sweet_win.webp?v=20260730' },
+	wildWinBoard:      { type: 'sprite', src: './assets/components/win_boards/big_win.webp?v=20260730' },
+	epicWinBoard:      { type: 'sprite', src: './assets/components/win_boards/epic_win.webp?v=20260730' },
+	mythicWinBoard:    { type: 'sprite', src: './assets/components/win_boards/mega_win.webp?v=20260730' },
+	legendaryWinBoard: { type: 'sprite', src: './assets/components/win_boards/max_win.webp?v=20260730' },
 	// Special wide board for the 20000x max-win cap (Figma 4143-16513), 1535×1025
 	maxWinBoard:       { type: 'sprite', src: './assets/components/win_boards/max_win_screen.webp?v=20260709' },
 	goldFont: {

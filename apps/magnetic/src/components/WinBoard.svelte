@@ -36,20 +36,29 @@
 		maxOffY: number;
 	} = $props();
 
-	// Vertical centre of each board art's amount plaque, as a fraction of boardSize measured DOWN
-	// from the board centre — measured per art (the plaques sit at slightly different heights).
-	// Offset of the amount from the sprite centre, as a fraction of the sprite height. Each value is
-	// the MEASURED vertical centre of that art's dark plaque bay (the flat region between the top
-	// rail and the bottom ornament), not a hand-tuned guess — the bays do not sit at the same height
-	// across the six boards, so a single shared value leaves the amount high on some and low on
-	// others. Re-measure with scratchpad/bay.py if the art changes.
-	const TIER_TEXT_Y: Record<string, number> = {
-		sweetWinBoard: 0.324,
-		wildWinBoard: 0.313,
-		epicWinBoard: 0.379,
-		mythicWinBoard: 0.362,
-		legendaryWinBoard: 0.364,
+	// The amount plaque BAY of each board art — the flat dark region between the plaque's top rail
+	// and its bottom ornament — as fractions of the sprite box: `cy` is the bay's vertical centre
+	// measured DOWN from the sprite centre, `w`/`h` its extents. All MEASURED off the art (rows and
+	// columns whose 95th-percentile luminance stays low between the two bright rails), not hand
+	// tuned: the bays sit at different heights AND are different sizes across the boards, so a
+	// single shared value leaves the amount off-centre on some and undersized on all of them.
+	//
+	// The amount is sized FROM the bay rather than from a shared fraction of boardSize. The old
+	// shared 0.077 filled barely 60% of the shortest bay and less than half of the tallest, which
+	// left every board looking like it had an empty slot under the medallion.
+	const TIER_BAY: Record<string, { cy: number; w: number; h: number }> = {
+		sweetWinBoard: { cy: 0.324, w: 0.607, h: 0.126 },
+		wildWinBoard: { cy: 0.313, w: 0.608, h: 0.13 },
+		epicWinBoard: { cy: 0.379, w: 0.674, h: 0.104 },
+		mythicWinBoard: { cy: 0.361, w: 0.623, h: 0.108 },
+		legendaryWinBoard: { cy: 0.366, w: 0.631, h: 0.106 },
 	};
+	// Digits of IBM Plex Sans Condensed sit at cap height (~0.70 em), so a font size of ~1.0x the bay
+	// height fills roughly 70% of it — enough presence to read as the headline number with clear air
+	// above and below. The width cap insets slightly from the bay so the outline never touches the rails.
+	const BAY_FONT_K = 1.02;
+	const BAY_WIDTH_K = 0.94;
+	const DEFAULT_BAY = { cy: 0.37, w: 0.62, h: 0.11 };
 
 	// The 4 hex gems on the medallion ring of each board art (fractions of the sprite box,
 	// relative to the sprite centre, +y down) — measured per art; each gets a small pulsing
@@ -144,8 +153,9 @@
 		: displayedKey === 'mythicWinBoard' ? 0xa64dff
 		: 0xffb428 /* legendary + max win: gold */}
 	{@const fx = FRAME_FX[displayedKey] ?? { hx: 0.42, hy: 0.46, cy: 0 }}
-	{@const boardFont = isMax ? boardH * 0.062 : boardSize * 0.077}
-	{@const boardMaxW = isMax ? boardW * 0.4 : boardSize * 0.62}
+	{@const bay = TIER_BAY[displayedKey] ?? DEFAULT_BAY}
+	{@const boardFont = isMax ? boardH * 0.062 : boardSize * bay.h * BAY_FONT_K}
+	{@const boardMaxW = isMax ? boardW * 0.4 : boardSize * bay.w * BAY_WIDTH_K}
 	{@const fitScale = textSizes.width > boardMaxW ? boardMaxW / textSizes.width : 1}
 	<Container x={offX} y={offY} scale={pop.current}>
 		<!-- Soft ambient glow behind the board, tinted to the tier. -->
@@ -210,7 +220,7 @@
 		     bay between the top rail and the compass (the compass eats the bottom-centre). -->
 		<Container
 			x={isMax ? boardW * 0.015 : 0}
-			y={isMax ? boardH * 0.3005 : boardSize * (TIER_TEXT_Y[displayedKey] ?? 0.37)}
+			y={isMax ? boardH * 0.3005 : boardSize * bay.cy}
 			scale={fitScale}
 		>
 			<Text
