@@ -13,10 +13,14 @@
 
 	const context = getContext();
 
-	// Shrink a button label to fit its (fixed-width) pill so long-locale copy — e.g. de "BONUS KAUFEN",
-	// fr "ACHETER BONUS", pt "COMPRAR BÔNUS", ru "КУПИТЬ БОНУС" — never spills past the frame. Short
-	// labels (en "BUY BONUS", da "KØB BONUS") keep their base size. Re-runs on language change (the text
-	// is passed as the dep), on resize, and once the web font has loaded (text width depends on it).
+	// Shrink a button label so long-locale copy fits its button. Two button shapes:
+	//   • Wide pills (landscape / desktop, `white-space: nowrap`) — the single line must fit the inner
+	//     width (e.g. de "BONUS KAUFEN", fr "ACHETER BONUS", pt "COMPRAR BÔNUS", ru "КУПИТЬ БОНУС").
+	//   • The round portrait pad (`white-space: normal`, text wraps) — the wrapped block must sit inside
+	//     the pad's INSCRIBED area, which is smaller than its square box; long copy (ar/es/fr/hi/ja/ko/
+	//     pt/ru/vi) otherwise reaches the ring. Short labels (en "BUY BONUS", da "KØB BONUS") keep base.
+	// Iterative so it also converges when shrinking re-flows a wrapped label onto fewer lines. Re-runs on
+	// language change (text passed as the dep), on resize, and once the web font has loaded.
 	function fitLabel(node: HTMLElement, _dep?: unknown) {
 		const apply = () => {
 			const btn = node.parentElement;
@@ -27,13 +31,31 @@
 			const baseSize = parseFloat(cs.fontSize);
 			const baseLs = parseFloat(cs.letterSpacing) || 0;
 			const bcs = getComputedStyle(btn);
-			const avail =
-				btn.clientWidth - parseFloat(bcs.paddingLeft || '0') - parseFloat(bcs.paddingRight || '0');
-			const needed = node.scrollWidth;
-			if (avail > 0 && needed > avail) {
-				const scale = (avail * 0.96) / needed; // 4% breathing room inside the pill
-				node.style.fontSize = `${baseSize * scale}px`;
-				node.style.letterSpacing = `${baseLs * scale}px`;
+			const bw = btn.clientWidth;
+			const bh = btn.clientHeight;
+			const padX = parseFloat(bcs.paddingLeft || '0') + parseFloat(bcs.paddingRight || '0');
+			const padY = parseFloat(bcs.paddingTop || '0') + parseFloat(bcs.paddingBottom || '0');
+			// Near-square pads are the round buy-bonus button: usable text area is a fraction of the box so
+			// the wrapped copy clears the ring. Wide pills use their full inner width (height never binds).
+			const round = Math.max(bw, bh) > 0 && Math.abs(bw - bh) / Math.max(bw, bh) < 0.35;
+			const availW = round ? bw * 0.62 : Math.max(0, bw - padX) * 0.96;
+			const availH = round ? bh * 0.6 : Math.max(0, bh - padY);
+			if (availW <= 0 || availH <= 0) return;
+			// Measure the ACTUAL rendered text (widest line + total height) via a Range — for a wrapping
+			// label `scrollWidth` reports the max-width box, not the widest line, which would over-shrink.
+			const range = document.createRange();
+			range.selectNodeContents(node);
+			const overflows = () => {
+				const r = range.getBoundingClientRect();
+				return r.width > availW + 0.5 || r.height > availH + 0.5;
+			};
+			let size = baseSize;
+			let guard = 0;
+			while (guard++ < 48 && size > baseSize * 0.4 && overflows()) {
+				size -= 0.5;
+				const k = size / baseSize;
+				node.style.fontSize = `${size}px`;
+				node.style.letterSpacing = `${baseLs * k}px`;
 			}
 		};
 		const ro = new ResizeObserver(apply);
