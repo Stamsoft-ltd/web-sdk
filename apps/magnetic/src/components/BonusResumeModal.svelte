@@ -50,8 +50,15 @@
 	}
 
 	.resume {
-		/* Figma panel is 500px wide; cqw units below resolve to the spec px at this width. */
-		width: min(500px, 92vw);
+		/* Figma panel is 500px wide; the cqw units below resolve to the spec px at that width, so this
+		   single value scales the whole dialog — text, padding and buttons included.
+
+		   Was min(500px, 92vw), i.e. a flat 500px on anything wider than ~545px. That is fine on
+		   desktop but enormous in a popout: popout L is only ~800 CSS px across, so the panel took 62%
+		   of the window, and popout S fell back to 92vw and spanned it almost edge to edge. The 32vw
+		   term halves it in both (≈256px at popout L, floored at 170px for popout S) while the 500px
+		   cap keeps desktop exactly as it was. */
+		width: clamp(170px, 32vw, 500px);
 		container-type: inline-size;
 		font-family: 'Inter', sans-serif;
 	}

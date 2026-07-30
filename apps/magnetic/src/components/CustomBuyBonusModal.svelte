@@ -20,7 +20,10 @@
 
 	// Icons — exact Figma art (node 4040-4075): glowing magnet, purple M cube, red M briefcase.
 	const iconChance  = ap('/assets/components/ui/bb_icon_extra_chance.webp?v=20260708c');
-	const iconFeature = ap('/assets/components/ui/bb_icon_feature_spins.webp?v=20260708c');
+	// FEATURE shows the Multiplier Wild reel symbol rather than the Figma purple M cube: what the
+	// mode actually buys is a shot at Multiplier Wilds, so the card should picture the symbol the
+	// player is being sold, matching the wording in BUY FEATURE SPINS DESC.
+	const iconFeature = ap('/assets/components/symbols/magnetic/special/wild.webp?v=20260709');
 	const iconBrief   = ap('/assets/components/ui/bb_icon_briefcase.webp?v=20260708c');
 
 	type Props = {
@@ -693,7 +696,10 @@
 		position: fixed; left: 50%; top: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 71;
-		width: min(500px, 92vw);
+		/* Same sizing as BonusResumeModal .resume — the two share this bracketed panel art and the cqw
+		   scale, so they must shrink together or the buy confirm would dwarf the resume dialog in a
+		   popout. See the note there: 32vw halves both popout sizes, the 500px cap leaves desktop as-is. */
+		width: clamp(170px, 32vw, 500px);
 		container-type: inline-size;
 		font-family: 'Inter', sans-serif;
 	}

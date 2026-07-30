@@ -287,9 +287,13 @@ const assets = {
 			scale: 2,
 		},
 	},
-	progressBar: {
-		type: 'sprites',
-		src: './assets/sprites/progressBar/progressBar.json?v=20260710'
+	// Animated loading bar (49-frame 0→100% fill, white bar/text on transparency). Replaces the old
+	// two-frame `progressBar` sheet, whose slot was filled by hand-drawn Rectangles. Preloaded with
+	// the studio logo so the loading screen can paint before anything else streams in, and stepped
+	// by real download progress rather than autoplayed — see LoadingScreen.svelte.
+	loadingBarAnim: {
+		type: 'spriteSheet',
+		src: './assets/sprites/loadingBarAnim/loading_bar.json?v=20260730',
 	},
 	transition: {
 		type: 'spine',
@@ -332,7 +336,7 @@ const flag = (keys: readonly string[], prop: keyof AssetFlags) => {
 };
 
 // The loading screen draws exactly these two, so they must exist before it renders.
-flag(['progressBar', 'pressPlayLogo'], 'preload');
+flag(['loadingBarAnim', 'pressPlayLogo'], 'preload');
 
 // Bonus-only art: a session that never enters a bonus never draws any of it, so it is withheld
 // from the gating pass and from the background stream, and loaded when a book that will draw it

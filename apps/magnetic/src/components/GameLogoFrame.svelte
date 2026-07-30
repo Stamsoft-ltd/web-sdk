@@ -12,8 +12,11 @@
 	// ~half the box width, so the box is sized bigger than the visible mark and the baked-in glow
 	// acts as the top-left margin (hence the small offsets).
 	const LOGO_ASPECT = 1400 / 1098;
-	const LOGO_W = $derived(main.width * 0.3);
-	const LOGO_H = $derived(LOGO_W / LOGO_ASPECT);
+	// Size comes from stateGame so the left-gutter box column (LandscapeCapsule / RespinPanel), which
+	// anchors itself just below this mark, can never drift out of sync with what is actually drawn.
+	// It shrinks on popout-S sizes only; popout L and desktop keep the original full size.
+	const LOGO_W = $derived(context.stateGameDerived.landscapeLogoWidth());
+	const LOGO_H = $derived(context.stateGameDerived.landscapeLogoHeight());
 
 	// Centre the logo horizontally in the gap between the screen's LEFT edge and the board's left
 	// edge (mirrors the capsule column on the right), sitting near the true screen top.

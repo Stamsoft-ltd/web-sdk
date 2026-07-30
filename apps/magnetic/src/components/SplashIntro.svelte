@@ -150,6 +150,9 @@
 		background-position: center;
 		background-repeat: no-repeat;
 		container-type: size;
+		/* The ground shake that sells the logo's impact. Delay = the logo's touchdown moment
+		   (46% of its 900ms drop), so the jolt fires on the frame the two make contact. */
+		animation: stage-jolt 320ms ease-out 414ms both;
 	}
 
 	/* Portrait stage: a fixed-aspect box matching the artwork (852×1846) that fills the viewport
@@ -181,6 +184,14 @@
 		width: 52%;
 		object-fit: contain;
 		filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.75));
+		/* Entrance: the logo falls in from above the stage and lands like a dropped stone.
+		   --drop-from is the start offset in stage-height units (the stage is the container), tuned
+		   per layout so the art starts fully clear of the top edge: at width 52% the 1400x1098 logo
+		   is ~0.73 stage-heights tall on desktop and already overhangs the top at rest, so it needs
+		   to travel much further up there than on the tall portrait stage. No fade is needed —
+		   .splash-intro is overflow:hidden, so anything above the stage top is simply clipped. */
+		--drop-from: -68cqh;
+		animation: logo-drop 900ms linear both;
 	}
 
 	/* Mobile logo sizing/placement (wider % since the stage is narrow). The portrait stage is a tall
@@ -195,6 +206,9 @@
 	.logo--m {
 		top: max(15.5%, calc((100vw * 1846 / 852 - 100vh) / 2 + 7.5vh));
 		width: 52%;
+		/* Portrait stage is ~2.17x as tall as it is wide, so the same 52% width is only ~0.19
+		   stage-heights of logo — a much shorter trip to clear the top edge. */
+		--drop-from: -32cqh;
 	}
 
 	/* Feature text blocks — positioned by their centre over each metal frame. The width is matched to
@@ -396,6 +410,64 @@
 		}
 		50% {
 			opacity: 0.55;
+		}
+	}
+
+	/* Every keyframe repeats translate(-50%, -50%) because that is what centres the logo on its
+	   anchor point — dropping it from one frame would snap the logo a full half-size sideways. */
+	@keyframes logo-drop {
+		0% {
+			transform: translate(-50%, -50%) translateY(var(--drop-from)) scale(0.94, 1.09);
+			/* Gravity: barely moves at first, hits the floor at full speed. */
+			animation-timing-function: cubic-bezier(0.55, 0, 0.95, 0.42);
+		}
+		46% {
+			/* Touchdown, still stretched thin from the fall. */
+			transform: translate(-50%, -50%) scale(0.94, 1.09);
+			animation-timing-function: cubic-bezier(0.18, 0.7, 0.35, 1);
+		}
+		57% {
+			/* The impact flattens it hard against the ground. */
+			transform: translate(-50%, -50%) translateY(2.5%) scale(1.13, 0.85);
+			animation-timing-function: ease-out;
+		}
+		72% {
+			/* A stone barely bounces — keep the rebound low, and short. */
+			transform: translate(-50%, -50%) translateY(-5%) scale(0.985, 1.03);
+			animation-timing-function: ease-in;
+		}
+		86% {
+			transform: translate(-50%, -50%) translateY(0.8%) scale(1.02, 0.98);
+		}
+		100% {
+			transform: translate(-50%, -50%) scale(1, 1);
+		}
+	}
+
+	/* Same rule as above: the stage is centred by its own translate(-50%, -50%), so the shake is
+	   written as small deviations around those values rather than as offsets from zero. */
+	@keyframes stage-jolt {
+		0% {
+			transform: translate(-50%, -50%);
+		}
+		22% {
+			transform: translate(-50%, -49.15%);
+		}
+		48% {
+			transform: translate(-50.3%, -50.45%);
+		}
+		74% {
+			transform: translate(-49.85%, -49.85%);
+		}
+		100% {
+			transform: translate(-50%, -50%);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.logo,
+		.stage {
+			animation: none;
 		}
 	}
 </style>

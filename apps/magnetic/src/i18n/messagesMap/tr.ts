@@ -125,7 +125,8 @@ export default {
 	'BUY EXTRA CHANCE TITLE': 'Ekstra Şans',
 	'BUY EXTRA CHANCE DESC': 'Bonus turu tetikleme şansını üç katına çıkarmak için etkinleştirin.',
 	'BUY FEATURE SPINS TITLE': 'Özellik Dönüşleri',
-	'BUY FEATURE SPINS DESC': 'Rastgele seçilen bir dönüş için özel bir genişleyen sembol garanti eder.',
+	'BUY FEATURE SPINS DESC':
+		'Garantili manyetik bağlantı ve Çarpan Wild düşürme şansı içeren özel bir dönüş satın alır.',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
 	'BUY DROP DESC': '10 bedava dönüş verilir. Her dönüşte rastgele bir sembol manyetik hale gelir. Eşleşen semboller otomatik olarak birbirine bağlanır. Multiplier Wild\'lar bonus çarpanını kalıcı olarak artırır.',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',

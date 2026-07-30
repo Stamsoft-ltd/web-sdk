@@ -139,7 +139,13 @@
 	// to device pixels using the same virtual→screen transform pixi uses, so they track at every ratio.
 	const lsMain = $derived(context.stateLayoutDerived.mainLayout());
 	const lsCapsule = $derived(context.stateGameDerived.landscapeCapsuleLayout());
-	const lsBuyX = $derived(lsMain.x + (lsCapsule.colX - lsMain.width / 2) * lsMain.scale);
+	// The badge centres on the capsule COLUMN centre, but the tube art is not perfectly centred inside
+	// its padded sprite box, so it reads a hair left of the glass. A flat 2px nudge (device px, not
+	// scaled) squares it up without disturbing the virtual→screen tracking above.
+	const LS_BUY_X_NUDGE = 2;
+	const lsBuyX = $derived(
+		lsMain.x + (lsCapsule.colX - lsMain.width / 2) * lsMain.scale + LS_BUY_X_NUDGE,
+	);
 	// Buy TOP hangs a gap below the VISIBLE tube bottom (the sprite box is padded). Anchoring by the top
 	// (not the centre) keeps the gap independent of the button's size, so the big min-sized button on
 	// small screens can't creep up against the capsule.
@@ -206,8 +212,18 @@
 	const autoSpinsRemainingText = $derived(
 		stateBet.autoSpinsCounter === Infinity ? '∞' : `${stateBet.autoSpinsCounter}`,
 	);
+	// `setBetAmount` refuses to leave a bet level the balance can't cover, so + would otherwise sit
+	// enabled but do nothing once the next level up is unaffordable. Disable it at that ceiling.
+	const highestAffordableBet = $derived.by(() => {
+		const costMultiplier = stateBetDerived.betCostMultiplier();
+		if (costMultiplier <= 0) return biggestBet;
+		const affordable = betOptions.filter((option) => option * costMultiplier <= stateBet.balanceAmount);
+		return affordable.length ? affordable[affordable.length - 1] : smallestBet;
+	});
 	const disableDecrease = $derived(!canInteract || stateBet.betAmount === smallestBet);
-	const disableIncrease = $derived(!canInteract || stateBet.betAmount === biggestBet);
+	const disableIncrease = $derived(
+		!canInteract || stateBet.betAmount >= Math.min(biggestBet, highestAffordableBet),
+	);
 	const disableAuto = $derived.by(() => {
 		if (stateBet.isSpaceHold) return true;
 		if (!canInteract && !hasAuto) return true;

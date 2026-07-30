@@ -125,7 +125,8 @@ export default {
 	'BUY EXTRA CHANCE TITLE': 'Chance Extra',
 	'BUY EXTRA CHANCE DESC': 'Ative para triplicar a chance de acionar uma rodada de bônus.',
 	'BUY FEATURE SPINS TITLE': 'Giros de Recurso',
-	'BUY FEATURE SPINS DESC': 'Garante um símbolo expansível especial em um giro escolhido aleatoriamente.',
+	'BUY FEATURE SPINS DESC':
+		'Compra uma rodada especial com conexão magnética garantida e chance de acertar Wilds Multiplicadores.',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
 	'BUY DROP DESC': '10 giros grátis concedidos. Um símbolo aleatório torna-se magnético a cada giro. Símbolos iguais conectam-se automaticamente. Os Curingas Multiplicadores aumentam o multiplicador do bônus permanentemente.',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',

@@ -253,7 +253,10 @@ const LANDSCAPE_FRAME_FILL = 0.9;
 // On small landscape screens the HTML HUD sits at its min pixel sizes (proportionally larger), so the
 // board fills LESS of the frame there to keep the gutters (balance/bet left, capsule/nav right) clear.
 // Lerp the fill from FILL_MIN at short-side ≤ 250px up to FILL at short-side ≥ 430px.
-const LANDSCAPE_FRAME_FILL_MIN = 0.76;
+// Raised 0.76 -> 0.84 so the grid reads bigger at popout-S sizes. This is the t=0 end of the lerp,
+// so it moves ONLY the small landscape screens; popout L sits at t=1 on LANDSCAPE_FRAME_FILL and is
+// untouched.
+const LANDSCAPE_FRAME_FILL_MIN = 0.84;
 const LANDSCAPE_FILL_SHORT_MIN = 240;
 const LANDSCAPE_FILL_SHORT_MAX = 410;
 // 0 at the smallest landscape screens → 1 at normal-size ones; drives both the board fill and the
@@ -272,12 +275,48 @@ const landscapeSizeT = () => {
 };
 const landscapeFrameFill = () =>
 	LANDSCAPE_FRAME_FILL_MIN + landscapeSizeT() * (LANDSCAPE_FRAME_FILL - LANDSCAPE_FRAME_FILL_MIN);
+
+// Single source of truth for the game logo's drawn size, in virtual units. GameLogoFrame draws it;
+// LandscapeCapsule and RespinPanel anchor the left-gutter box column (TOTAL WIN / FREE SPINS /
+// RESPIN) just beneath it. All three used to hardcode their own copy of this formula, which desynced
+// the instant the logo gained a per-screen scale — the column stayed pinned to a phantom taller logo
+// and sat too low. LOGO_SMALL_SCALE shrinks the mark on popout-S sizes only (t=0); popout L is t=1
+// and keeps the original full size.
+const LOGO_ART_ASPECT = 1400 / 1098;
+const LOGO_WIDTH_FRACTION = 0.3;
+const LOGO_SMALL_SCALE = 0.72;
+const landscapeLogoWidth = () =>
+	stateLayoutDerived.mainLayout().width *
+	LOGO_WIDTH_FRACTION *
+	(LOGO_SMALL_SCALE + landscapeSizeT() * (1 - LOGO_SMALL_SCALE));
+const landscapeLogoHeight = () => landscapeLogoWidth() / LOGO_ART_ASPECT;
+// How far below the screen top the left-gutter box column starts, as a fraction of the logo height.
+// Lerped so popout S pulls the column (and the RESPIN box at its foot) UP toward the logo, where
+// there is far less vertical room, while popout L keeps the 0.6 it was tuned at.
+const LANDSCAPE_STACK_TOP_MIN = 0.42;
+const LANDSCAPE_STACK_TOP_MAX = 0.6;
+const landscapeStackTopY = () => {
+	const main = stateLayoutDerived.mainLayout();
+	const canvasTopY =
+		main.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1));
+	const factor =
+		LANDSCAPE_STACK_TOP_MIN +
+		landscapeSizeT() * (LANDSCAPE_STACK_TOP_MAX - LANDSCAPE_STACK_TOP_MIN);
+	return canvasTopY + landscapeLogoHeight() * factor;
+};
+// Shrink the landscape grid so the right-hand furniture (capsule tube, BUY BONUS, nav column, spin
+// button) has clearance instead of overlapping the board — see boardLayout() below. 0.912 = the
+// first 5% trim plus a further 4% (0.95 x 0.96) once the first pass still read as too tight.
+const LANDSCAPE_BOARD_TRIM = 0.912;
 // Landscape vertical capsule column (shared by the pixi capsule and the HTML buy-bonus button so
 // they always align across device aspect ratios). Bias = fraction from the board's right edge toward
 // the visible right edge — snug to the nav on normal screens, pulled toward the board on small ones so
 // the (now bigger) capsule keeps clearance from the nav.
-const LANDSCAPE_CAPSULE_BIAS_MIN = 0.24;
-const LANDSCAPE_CAPSULE_BIAS_MAX = 0.33;
+// MAX (popout L, t=1) lowered from 0.33 -> 0.27: the capsule column and the BUY BONUS badge that
+// tracks it sat too far right there, crowding the nav. MIN (popout S, t=0) went the other way,
+// 0.24 -> 0.26, to push the column slightly RIGHT on small screens as requested.
+const LANDSCAPE_CAPSULE_BIAS_MIN = 0.26;
+const LANDSCAPE_CAPSULE_BIAS_MAX = 0.27;
 const landscapeCapsuleBias = () =>
 	LANDSCAPE_CAPSULE_BIAS_MIN +
 	landscapeSizeT() * (LANDSCAPE_CAPSULE_BIAS_MAX - LANDSCAPE_CAPSULE_BIAS_MIN);
@@ -314,7 +353,12 @@ const boardLayout = () => {
 		// Mobile landscape: board fills most of the height and sits slightly LEFT of centre, leaving a
 		// wider right gutter for the vertical capsule + buy bonus + nav bar (left gutter holds the
 		// logo / ALL WINS / FREE SPINS / balance / bet).
-		const boardScale = (mainLayout.height * landscapeFrameFill()) / BOARD_SIZES.height;
+		// LANDSCAPE_BOARD_TRIM: at popout-L sizes the grid grew until the nav column, the spin button
+		// and the BUY BONUS badge sat ON TOP of the board's right edge and the capsule tube. Those are
+		// positioned independently of the board, so the grid has to give the room back. Applied as a
+		// factor on top of the fill lerp so the existing small-screen ramp is preserved.
+		const boardScale =
+			((mainLayout.height * landscapeFrameFill()) / BOARD_SIZES.height) * LANDSCAPE_BOARD_TRIM;
 		return {
 			x: mainLayout.width * 0.475,
 			y: mainLayout.height * 0.5,
@@ -387,18 +431,10 @@ const landscapeCapsuleLayout = () => {
 	// so the top-anchored capsule + buy-bonus float near the top with dead space below. There, slide the
 	// whole group down so it sits near the bottom. Taller landscape screens keep the top anchor (the
 	// tube already fills the gutter), so this doesn't disturb them.
-	const canvasPxH = stateLayoutDerived.canvasSizes().height;
-	if (canvasPxH <= 320) {
-		const canvasBottomY = main.height * 0.5 + canvasPxH / (2 * (main.scale || 1));
-		const buyReserve = visibleW * 1.2; // gap + buy-bonus button + bottom margin (virtual units)
-		const fullShift = Math.max(0, canvasBottomY - visibleBottom - buyReserve);
-		// Don't pin the group all the way to the bottom — nudge the capsule (and, tracking it, the
-		// buy-bonus) UP by a fraction of the viewport so it sits a bit higher with balanced margin.
-		const upNudge = (canvasPxH / (main.scale || 1)) * 0.14;
-		const shift = Math.max(0, fullShift - upNudge);
-		tubeY += shift;
-		visibleBottom += shift;
-	}
+	// NOTE: short landscape screens (popout S, ~400x225) used to slide this whole group DOWN toward the
+	// bottom, on the reasoning that the board-derived tube shrinks there and would otherwise float with
+	// dead space beneath it. That shift is gone by request — the capsule (and the buy-bonus badge and
+	// WIN pill that track its visible bottom) now keeps the same top anchor at every landscape size.
 	return {
 		colX,
 		tubeY,
@@ -1324,6 +1360,12 @@ export const { getWinLevelDataByWinLevelAlias } = createGetWinLevelDataByWinLeve
 export const stateGameDerived = {
 	boardLayout,
 	landscapeCapsuleLayout,
+	// Exposed so components can scope a tweak to ONE end of the landscape range: 0 at popout-S sizes,
+	// 1 at popout-L. GameLogoFrame uses it to shrink the logo on small screens only.
+	landscapeSizeT,
+	landscapeLogoWidth,
+	landscapeLogoHeight,
+	landscapeStackTopY,
 	boardRaw,
 	scatterLandIndex,
 	resetBoardVisuals,

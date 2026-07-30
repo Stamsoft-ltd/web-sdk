@@ -148,14 +148,11 @@
 	// Stack the bonus boxes from the TOP (just below the logo) instead of centring them on the board, so
 	// the RESPIN box (RespinPanel) can sit BENEATH FREE SPINS instead of being overlapped by it. The
 	// logo/gutter geometry mirrors RespinPanel so the three boxes read as one left-gutter column.
-	const canvasTopY = $derived(
-		main.height * 0.5 - context.stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1)),
-	);
-	const LOGO_H = $derived((main.width * 0.3) / (1400 / 1098));
-	// 0.60 (was 0.85): pull the stack UP toward the logo so (a) TOTAL WIN sits just under it and (b) the
-	// three-box column (incl. RESPIN below, now equal-sized) clears the balance/bet control on the
-	// shortest landscapes. Keep in sync with RespinPanel.stackTopY.
-	const stackTopY = $derived(canvasTopY + LOGO_H * 0.6);
+	// Anchored just under the logo so TOTAL WIN sits below it and the three-box column (incl. RESPIN)
+	// clears the balance/bet control on the shortest landscapes. Both the logo height and the offset
+	// now come from stateGame — RespinPanel reads the SAME function, so the two can no longer drift
+	// apart, and the offset tightens on popout S where there is least vertical room.
+	const stackTopY = $derived(context.stateGameDerived.landscapeStackTopY());
 
 	// Cyan→blue vertical gradient for the ALL WINS / FREE SPINS label text (top #00FCFF → bottom
 	// #0046A9). textureSpace 'local' maps 0..1 to each Text's own bounds, so both labels gradient

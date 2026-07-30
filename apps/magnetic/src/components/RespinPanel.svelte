@@ -45,12 +45,12 @@
 		main.height * 0.5 - context.stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1)),
 	);
 	const colX = $derived((canvasLeftX + boardLeftX) * 0.5);
-	const LOGO_H = $derived(main.width * 0.3 / (1400 / 1098));
-	// Landscape: sit BENEATH the TOTAL WIN / FREE SPINS stack (mirrors LandscapeCapsule's top-anchored
-	// geometry). Desktop: the usual spot in the left rail under the logo.
-	// Keep 0.60 in sync with LandscapeCapsule.stackTopY so RESPIN lines up beneath the FREE SPINS box
-	// with the SAME gap between all three boxes (even column).
-	const stackTopY = $derived(canvasTopY + LOGO_H * 0.6);
+	const LOGO_H = $derived(context.stateGameDerived.landscapeLogoHeight());
+	// Landscape: sit BENEATH the TOTAL WIN / FREE SPINS stack. This reads the SAME landscapeStackTopY()
+	// that LandscapeCapsule uses, so RESPIN lines up under FREE SPINS with an even gap by construction
+	// — the two files previously each carried their own copy of the formula and a comment asking future
+	// editors to keep them in sync by hand.
+	const stackTopY = $derived(context.stateGameDerived.landscapeStackTopY());
 	const fsBottomY = $derived(stackTopY + lcBoxH * 2 + lcBoxGap);
 	const panelY = $derived(
 		isLandscape ? fsBottomY + lcBoxGap + PANEL_H * 0.5 : canvasTopY + LOGO_H * 0.78 + PANEL_H * 0.5,

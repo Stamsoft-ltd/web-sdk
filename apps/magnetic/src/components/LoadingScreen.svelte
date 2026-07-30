@@ -1,10 +1,18 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Container, Rectangle, Sprite } from 'pixi-svelte';
-	import { FadeContainer } from 'components-pixi';
+	import { BaseSprite, Container, Rectangle, Sprite, type LoadedSpriteSheet } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
 
 	import { getContext } from '../game/context';
+
+	// Everything here is wrapped in ONE container carrying this zIndex, and the number has to beat
+	// anything else parented to the app root while loading. <Background /> only appends its sprite
+	// once the background image has downloaded — i.e. AFTER this screen mounted — so with both at the
+	// default zIndex 0 pixi's stable sort put the newcomer last and the background drew straight over
+	// the loader. (Its alpha 0.96 is why the logo and bar survived as faint ghosts rather than
+	// disappearing.) The zIndex cannot go on <MainContainer>: that component spreads its props onto
+	// an INNER container, so the outer node that actually gets sorted keeps zIndex 0.
+	const LOADING_SCREEN_Z = 1000;
 
 	type Props = { onloaded: () => void; oncanproceed?: (onpress: () => void) => void };
 	const props: Props = $props();
@@ -29,19 +37,17 @@
 	const barProgress = $derived(context.stateApp.loaded ? 100 : context.stateApp.loadingProgress);
 
 	// Smooth the fill so a wave of assets resolving together doesn't jump the bar, and clamp it to
-	// forward-only so it can never appear to lose progress.
+	// forward-only so it can never appear to lose progress. Driven by rAF rather than the pixi
+	// ticker, which is not running yet while this screen is up.
 	let shownProgress = $state(0);
-	let bobY = $state(0);
 	onMount(() => {
-		const startTime = performance.now();
 		let id: number;
-		let last = startTime;
+		let last = performance.now();
 		const tick = (now: number) => {
 			const dt = Math.min(64, now - last);
 			last = now;
 			const eased = shownProgress + (barProgress - shownProgress) * (1 - Math.exp(-dt / 110));
 			shownProgress = Math.max(shownProgress, eased);
-			bobY = Math.sin((now - startTime) * 0.002) * 3;
 			id = requestAnimationFrame(tick);
 		};
 		id = requestAnimationFrame(tick);
@@ -64,95 +70,70 @@
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 
-	// Bar geometry. Slot art is 492×87 with a glowing cyan rim; the fill sits inside that rim.
-	const BAR_ASPECT = 87 / 492;
+	// Loading bar. The source is a 49-frame 0→100% fill (white bar/text on transparency). We DON'T
+	// autoplay it: while this screen is up the shared pixi ticker isn't running, so an AnimatedSprite's
+	// autoUpdate would never advance. The frame is picked from the smoothed load progress instead, so
+	// the bar tracks the real download, reaches 100%, and holds there. Native frame is 856×80.
+	const BAR_ASPECT = 80 / 856;
+	const barTextures = $derived(
+		(context.stateApp.loadedAssets?.loadingBarAnim ?? []) as LoadedSpriteSheet,
+	);
 	const barW = $derived(Math.min(main.width * 0.6, 720));
 	const barH = $derived(barW * BAR_ASPECT);
-	const INSET = $derived(barH * 0.16); // rim thickness in the source art
-	const trackW = $derived(barW - INSET * 2);
-	const trackH = $derived(barH - INSET * 2);
-	const fillW = $derived(Math.max(0, trackW * (shownProgress / 100)));
-
-	// Orb rides the leading edge of the fill. Native 100×111, so it overhangs the bar slightly.
-	const ORB_H = $derived(barH * 1.28);
-	const ORB_W = $derived(ORB_H * (100 / 111));
+	const barFrame = $derived(
+		barTextures.length
+			? Math.min(
+					barTextures.length - 1,
+					Math.round((shownProgress / 100) * (barTextures.length - 1)),
+				)
+			: 0,
+	);
 
 	// Studio "Press Play" branding above the bar. Native 548×228.
 	const LOGO_ASPECT = 228 / 548;
 	const logoW = $derived(Math.min(main.width * 0.34, 420));
 	const logoH = $derived(logoW * LOGO_ASPECT);
 	const hasLogo = $derived(!!context.stateApp.loadedAssets?.pressPlayLogo);
-	const hasBar = $derived(!!context.stateApp.loadedAssets?.['progressBarBackground.png']);
 </script>
 
 <!-- Plain dark backdrop rather than the splash art: the bar and logo are the only preloaded assets,
      so this screen paints immediately instead of waiting on a full-screen JPEG that is itself part
      of the download being measured. The themed splash/press screen follows once loading completes.
-     Mirrors forest-gang's loader. -->
-<FadeContainer show={loadingType === 'start'}>
-	<Rectangle {...canvas} backgroundColor={0x040711} />
-	<MainContainer>
-		{#if hasLogo}
-			<Sprite
-				key="pressPlayLogo"
-				anchor={{ x: 0.5, y: 0.5 }}
-				x={main.width * 0.5}
-				y={main.height * 0.5 - logoH * 0.9}
-				width={logoW}
-				height={logoH}
-			/>
-		{/if}
+     Mirrors forest-gang's loader.
 
-		{#if hasBar}
-			<Container x={main.width * 0.5} y={main.height * 0.5}>
-				<Container pivot={{ x: barW / 2, y: barH / 2 }}>
-					<!-- Dark metal slot with the glowing cyan rim -->
-					<Sprite key="progressBarBackground.png" width={barW} height={barH} />
+     Deliberately NOT wrapped in a <FadeContainer>. <Background /> in Game.svelte renders
+     unconditionally, so a container that tweens up from alpha 0 shows the live game background
+     straight through this backdrop for the length of the tween — the loader appeared as a ghost
+     over the arena art. The Stake Engine gif used to cover that window (it was held until
+     stateApp.loaded); with it removed the loader has to be opaque from its very first frame.
+     Nothing is lost: the matching fade-OUT was already dead code, because the {#if
+     showLoadingScreen} in Game.svelte destroys this component outright rather than letting it
+     animate away. -->
+{#if loadingType === 'start'}
+	<Container zIndex={LOADING_SCREEN_Z}>
+		<Rectangle {...canvas} backgroundColor={0x040711} />
+		<MainContainer>
+			{#if hasLogo}
+				<Sprite
+					key="pressPlayLogo"
+					anchor={{ x: 0.5, y: 0.5 }}
+					x={main.width * 0.5}
+					y={main.height * 0.5 - logoH * 0.9}
+					width={logoW}
+					height={logoH}
+				/>
+			{/if}
 
-					<!-- Energy fill inside the rim. A dim channel spans the whole track so the empty
-					     part still reads as a slot, then the bright fill grows over it. -->
-					<Rectangle
-						x={INSET}
-						y={INSET}
-						width={trackW}
-						height={trackH}
-						borderRadius={trackH * 0.5}
-						backgroundColor={0x0a1c33}
-						backgroundAlpha={0.85}
-					/>
-					{#if fillW > 1}
-						<Rectangle
-							x={INSET}
-							y={INSET}
-							width={fillW}
-							height={trackH}
-							borderRadius={trackH * 0.5}
-							backgroundColor={0x2fb6ff}
-							backgroundAlpha={0.9}
-						/>
-						<!-- Brighter core line for the charged look -->
-						<Rectangle
-							x={INSET}
-							y={INSET + trackH * 0.28}
-							width={fillW}
-							height={trackH * 0.44}
-							borderRadius={trackH * 0.22}
-							backgroundColor={0x9ce4ff}
-							backgroundAlpha={0.75}
-						/>
-					{/if}
-
-					<!-- Orb cursor at the fill edge -->
-					<Sprite
-						key="progressBarLeaf.png"
-						width={ORB_W}
-						height={ORB_H}
-						anchor={{ x: 0.5, y: 0.5 }}
-						x={INSET + fillW}
-						y={barH / 2 + bobY}
-					/>
-				</Container>
-			</Container>
-		{/if}
-	</MainContainer>
-</FadeContainer>
+			{#if barTextures.length}
+				<BaseSprite
+					texture={barTextures[barFrame]}
+					anchor={{ x: 0.5, y: 0.5 }}
+					x={main.width * 0.5}
+					y={main.height * 0.5}
+					width={barW}
+					height={barH}
+				/>
+			{/if}
+		</MainContainer>
+	</Container>
+{/if}

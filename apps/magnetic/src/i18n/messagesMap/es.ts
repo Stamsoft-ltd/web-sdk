@@ -125,7 +125,8 @@ export default {
 	'BUY EXTRA CHANCE TITLE': 'Oportunidad Extra',
 	'BUY EXTRA CHANCE DESC': 'Actívalo para triplicar la probabilidad de activar una ronda de bonificación.',
 	'BUY FEATURE SPINS TITLE': 'Giros Especiales',
-	'BUY FEATURE SPINS DESC': 'Garantiza un símbolo expandible especial en un giro elegido al azar.',
+	'BUY FEATURE SPINS DESC':
+		'Compra un giro especial con una conexión magnética garantizada y la posibilidad de conseguir Wilds multiplicadores.',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
 	'BUY DROP DESC': '10 giros gratis otorgados. Un símbolo aleatorio se vuelve magnético en cada giro. Los símbolos coincidentes se conectan automáticamente. Los Wilds Multiplicadores aumentan el multiplicador de bonificación de forma permanente.',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',

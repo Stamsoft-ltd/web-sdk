@@ -27,12 +27,12 @@
 	// closes itself. The board used to wait for a press indefinitely, which stalled an unattended
 	// autoplay run on every big win. Armed only once the counting has SETTLED, so the final number
 	// is always fully readable first; a press still dismisses immediately.
-	const AUTO_DISMISS_MS = 3500;
+	const AUTO_DISMISS_MS = 5000;
 
 	// Turbo COMPRESSES the big-win presentation rather than skipping it — the board is the payoff
 	// moment, so it still plays, just at the pace turbo implies. Both halves scale by the same
 	// factor so the rhythm holds: the roll-up (presentDuration) and the dwell before auto-dismiss.
-	// A legendary win goes 5.5s + 3.5s = 9s -> 4.5s on turbo -> 2.7s on super turbo.
+	// A legendary win goes 5.5s + 5s = 10.5s -> 5.25s on turbo -> 3.15s on super turbo.
 	const turboSpeed = $derived(stateBet.isSuperTurbo ? 0.3 : stateBet.isTurbo ? 0.5 : 1);
 
 	let show = $state(false);

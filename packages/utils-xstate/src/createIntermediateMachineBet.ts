@@ -6,14 +6,17 @@ import { context, type Context } from './machineContext';
 import type { PrimaryMachines } from './types';
 
 const checkSpaceHold = fromPromise(async () => {
-	if (stateBet.isSpaceHold) {
-		if (stateBetDerived.activeBetMode()?.type === 'buy') {
-			stateBet.activeBetModeKey = 'BASE';
-			return;
-		}
-
-		return;
+	// A buy is a ONE-SHOT purchase, so the mode must not outlive the round it paid for. This reset
+	// used to sit inside the space-hold branch, which meant an ordinary buy left activeBetModeKey on
+	// BONUS/SUPER after the round: betCost() stayed at 100x/500x the bet, so isBetCostAvailable()
+	// went false the moment the balance could no longer cover ANOTHER buy, and the spin button greyed
+	// out with no way back to BASE. ('activate' modes like CHANCE/FEATURE are deliberately left
+	// alone — those are toggles the player can switch off from the HUD, so they always have an exit.)
+	if (stateBetDerived.activeBetMode()?.type === 'buy') {
+		stateBet.activeBetModeKey = 'BASE';
 	}
+
+	if (stateBet.isSpaceHold) return;
 	throw Error('end bet');
 });
 

@@ -125,7 +125,8 @@ export default {
 	'BUY EXTRA CHANCE TITLE': '额外机会',
 	'BUY EXTRA CHANCE DESC': '启用后，触发奖励回合的几率提高三倍。',
 	'BUY FEATURE SPINS TITLE': '特色旋转',
-	'BUY FEATURE SPINS DESC': '保证在随机选中的一次旋转中出现特殊的扩展符号。',
+	'BUY FEATURE SPINS DESC':
+		'购买一次特别旋转，保证出现磁性连接，并有机会获得倍数百搭。',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
 	'BUY DROP DESC': '赠送10次免费旋转。每次旋转随机一个符号变为磁性符号。相同符号自动连接在一起。乘数百搭永久提升奖励乘数。',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',

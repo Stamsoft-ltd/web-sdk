@@ -125,7 +125,8 @@ export default {
 	'BUY EXTRA CHANCE TITLE': 'Cơ Hội Thêm',
 	'BUY EXTRA CHANCE DESC': 'Kích hoạt để tăng gấp ba cơ hội kích hoạt vòng thưởng.',
 	'BUY FEATURE SPINS TITLE': 'Vòng Quay Tính Năng',
-	'BUY FEATURE SPINS DESC': 'Đảm bảo một biểu tượng mở rộng đặc biệt cho một lượt quay được chọn ngẫu nhiên.',
+	'BUY FEATURE SPINS DESC':
+		'Mua một vòng quay đặc biệt với kết nối từ tính được đảm bảo và cơ hội nhận được Wild Nhân.',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
 	'BUY DROP DESC': '10 lượt quay miễn phí được trao. Một biểu tượng ngẫu nhiên trở nên có từ tính mỗi lượt quay. Các biểu tượng trùng khớp tự động kết nối với nhau. Multiplier Wild tăng hệ số nhân thưởng vĩnh viễn.',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',

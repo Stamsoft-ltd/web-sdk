@@ -125,7 +125,8 @@ export default {
 	'BUY EXTRA CHANCE TITLE': 'Peluang Ekstra',
 	'BUY EXTRA CHANCE DESC': 'Aktifkan untuk melipatgandakan peluang memicu ronde bonus tiga kali lipat.',
 	'BUY FEATURE SPINS TITLE': 'Putaran Fitur',
-	'BUY FEATURE SPINS DESC': 'Menjamin simbol meluas khusus untuk satu putaran yang dipilih secara acak.',
+	'BUY FEATURE SPINS DESC':
+		'Membeli putaran khusus dengan koneksi magnetis terjamin dan peluang mendapatkan Wild Pengganda.',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
 	'BUY DROP DESC': '10 putaran gratis diberikan. Satu simbol acak menjadi magnetis setiap putaran. Simbol yang cocok terhubung secara otomatis. Multiplier Wild meningkatkan pengali bonus secara permanen.',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',

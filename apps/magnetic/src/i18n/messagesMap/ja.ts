@@ -125,7 +125,8 @@ export default {
 	'BUY EXTRA CHANCE TITLE': 'エクストラチャンス',
 	'BUY EXTRA CHANCE DESC': '有効にするとボーナスラウンド発動の確率が3倍になります。',
 	'BUY FEATURE SPINS TITLE': 'フィーチャースピン',
-	'BUY FEATURE SPINS DESC': 'ランダムに選ばれたスピンで特別な拡張シンボルを保証します。',
+	'BUY FEATURE SPINS DESC':
+		'マグネット接続が保証され、マルチプライヤーワイルドが出現するチャンスがある特別なスピンを購入します。',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
 	'BUY DROP DESC': 'フリースピンを10回獲得。毎スピン、ランダムなシンボル1つがマグネットになります。一致するシンボルは自動的に連結します。マルチプライヤーワイルドはボーナス倍率を永続的に上昇させます。',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',

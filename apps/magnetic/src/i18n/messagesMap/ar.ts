@@ -125,7 +125,8 @@ export default {
 	'BUY EXTRA CHANCE TITLE': 'فرصة إضافية',
 	'BUY EXTRA CHANCE DESC': 'فعّل لمضاعفة فرصة تفعيل جولة المكافأة ثلاث مرات.',
 	'BUY FEATURE SPINS TITLE': 'دورات الميزة',
-	'BUY FEATURE SPINS DESC': 'يضمن رمزاً ممتداً خاصاً في دورة يتم اختيارها عشوائياً.',
+	'BUY FEATURE SPINS DESC':
+		'يشتري دورة خاصة باتصال مغناطيسي مضمون وفرصة للحصول على وايلدات مضاعفة.',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
 	'BUY DROP DESC': 'يتم منح 10 دورات مجانية. يصبح رمز عشوائي واحد مغناطيسياً في كل دورة. تتصل الرموز المتطابقة معاً تلقائياً. تزيد رموز Multiplier Wild من مضاعف المكافأة بشكل دائم.',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',

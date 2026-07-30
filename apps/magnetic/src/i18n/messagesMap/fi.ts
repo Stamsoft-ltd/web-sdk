@@ -125,7 +125,8 @@ export default {
 	'BUY EXTRA CHANCE TITLE': 'Lisämahdollisuus',
 	'BUY EXTRA CHANCE DESC': 'Aktivoi kolminkertaistaaksesi bonuskierroksen laukaisemisen mahdollisuuden.',
 	'BUY FEATURE SPINS TITLE': 'Ominaisuuskierrokset',
-	'BUY FEATURE SPINS DESC': 'Takaa erityisen laajenevan symbolin satunnaisesti valitulle kierrokselle.',
+	'BUY FEATURE SPINS DESC':
+		'Ostaa erikoiskierroksen, jossa on taattu magneettinen yhteys ja mahdollisuus saada Kerroin-Wildejä.',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
 	'BUY DROP DESC': '10 ilmaiskierrosta myönnetään. Yksi satunnainen symboli muuttuu magneettiseksi joka kierroksella. Vastaavat symbolit yhdistyvät automaattisesti toisiinsa. Multiplier Wildit kasvattavat bonuskerrointa pysyvästi.',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',

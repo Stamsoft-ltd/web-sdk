@@ -125,7 +125,8 @@ export default {
 	'BUY EXTRA CHANCE TITLE': '엑스트라 찬스',
 	'BUY EXTRA CHANCE DESC': '활성화하면 보너스 라운드 발동 확률이 3배가 됩니다.',
 	'BUY FEATURE SPINS TITLE': '피처 스핀',
-	'BUY FEATURE SPINS DESC': '무작위로 선택된 스핀에서 특별한 확장 심볼을 보장합니다.',
+	'BUY FEATURE SPINS DESC':
+		'자성 연결이 보장되고 멀티플라이어 와일드가 등장할 기회가 있는 특별 스핀을 구매합니다.',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
 	'BUY DROP DESC': '무료 스핀 10회 지급. 매 스핀마다 무작위 심볼 하나가 자석이 됩니다. 일치하는 심볼은 자동으로 서로 연결됩니다. 멀티플라이어 와일드는 보너스 배수를 영구적으로 증가시킵니다.',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',

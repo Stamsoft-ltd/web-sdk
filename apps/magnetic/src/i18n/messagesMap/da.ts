@@ -127,7 +127,8 @@ export default {
 	'BUY EXTRA CHANCE TITLE': 'Ekstra Chance',
 	'BUY EXTRA CHANCE DESC': 'Aktivér for at tredoble chancen for en bonusrunde.',
 	'BUY FEATURE SPINS TITLE': 'Funktionsspins',
-	'BUY FEATURE SPINS DESC': 'Garanterer et særligt udvidende symbol for et tilfældigt valgt spin.',
+	'BUY FEATURE SPINS DESC':
+		'Køber et særligt spin med en garanteret magnetisk forbindelse og en chance for at lande Multiplikator-Wilds.',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
 	'BUY DROP DESC': 'Der gives 10 gratis spins. Ved hvert spin bliver et tilfældigt symbol magnetisk. Matchende symboler forbindes automatisk. Multiplikator-Wilds hæver bonusmultiplikatoren permanent.',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',

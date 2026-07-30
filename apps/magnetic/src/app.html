@@ -34,8 +34,9 @@
 		/>
 		%sveltekit.head%
 	</head>
-	<!-- Branded dark background (matches the stake-engine loader) so the first paint — before the JS
-	     bundle hydrates and the loader renders — is never a jarring pitch-black screen. -->
+	<!-- Branded dark background so the first paint is never a jarring pitch-black screen. This now
+	     covers the whole pre-render window: <Authenticate> renders nothing until the auth round-trip
+	     resolves, and the Stake Engine loader that used to sit over that gap has been removed. -->
 	<body style="margin: 0; padding: 0; overflow: hidden; background-color: #041721">
 		<div>%sveltekit.body%</div>
 	</body>

@@ -125,7 +125,8 @@ export default {
 	'BUY EXTRA CHANCE TITLE': 'Extra-Chance',
 	'BUY EXTRA CHANCE DESC': 'Aktivieren, um die Chance auf eine Bonusrunde zu verdreifachen.',
 	'BUY FEATURE SPINS TITLE': 'Feature-Spins',
-	'BUY FEATURE SPINS DESC': 'Garantiert ein spezielles expandierendes Symbol für einen zufällig ausgewählten Spin.',
+	'BUY FEATURE SPINS DESC':
+		'Kauft einen speziellen Spin mit garantierter magnetischer Verbindung und einer Chance auf Multiplikator-Wilds.',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
 	'BUY DROP DESC': '10 Freispiele werden vergeben. Bei jedem Spin wird ein zufälliges Symbol magnetisch. Übereinstimmende Symbole verbinden sich automatisch. Multiplikator-Wilds erhöhen den Bonus-Multiplikator dauerhaft.',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',
