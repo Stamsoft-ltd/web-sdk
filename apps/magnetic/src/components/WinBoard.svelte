@@ -60,6 +60,14 @@
 	const BAY_WIDTH_K = 0.94;
 	const DEFAULT_BAY = { cy: 0.37, w: 0.62, h: 0.11 };
 
+	// Figma text spec for the win amount, quoted at a 67px reference size:
+	//   -webkit-text-stroke: 1px #000 · letter-spacing: 2.01px · weight 700 · IBM Plex Sans Condensed
+	// Both metrics are kept as RATIOS of the font size so they track the responsive board instead of
+	// pinning to 67px — the bay-derived size lands within a few percent of 67 at desktop scale anyway.
+	// The stroke is floored at 1px so it never thins to nothing on small screens.
+	const STROKE_RATIO = 1 / 67;
+	const LETTER_SPACING_RATIO = 2.01 / 67;
+
 	// The 4 hex gems on the medallion ring of each board art (fractions of the sprite box,
 	// relative to the sprite centre, +y down) — measured per art; each gets a small pulsing
 	// halo from WinBoardFx. The MAX WIN screen art has a different composition, so no entry.
@@ -213,7 +221,8 @@
 			{textGlows}
 			{plasma}
 		/>
-		<!-- Win amount — IBM Plex Sans Condensed 900 gold gradient with a black outline; scales to fit the plaque. -->
+		<!-- Win amount — IBM Plex Sans Condensed 700, gold gradient clipped to the glyphs with a 1px
+	     black outline (Figma spec); scales to fit the plaque. -->
 		<!-- The MAX art's plaque reads as centred on its compass medallion (its bottom-centre
 		     ornament), which sits at +0.015 of boardW — so the amount is aligned to that axis, not
 		     the raw sprite centre. Vertically it sits at +0.29 of boardH — the centre of the visible
@@ -229,12 +238,14 @@
 				text={bookEventAmountToCurrencyString(amount)}
 				style={{
 					fontFamily: 'IBM Plex Sans Condensed',
-					fontWeight: '900',
+					// 700, not 900 — 700 is the heaviest weight self-hosted in static/fonts/web, so 900
+					// only got the browser to synthesise a fake bold over the same face.
+					fontWeight: '700',
 					fontSize: boardFont,
 					fill: WIN_GRADIENT,
 					align: 'center',
-					letterSpacing: boardFont * 0.03,
-					stroke: { color: 0x000000, width: Math.max(2, Math.round(boardFont * 0.04)) },
+					letterSpacing: boardFont * LETTER_SPACING_RATIO,
+					stroke: { color: 0x000000, width: Math.max(1, boardFont * STROKE_RATIO) },
 				}}
 			/>
 		</Container>
