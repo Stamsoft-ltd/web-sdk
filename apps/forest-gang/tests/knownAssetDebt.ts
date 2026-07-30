@@ -18,30 +18,22 @@ export const SHEET_META_MISMATCH: Record<string, { declared: [number, number]; a
 	'assets/sprites/winSmall/MM_Localisation_winsmall.json': { declared: [512, 520], actual: [510, 516] },
 };
 
-// Sorted. Sizes in the comment are decoded (w*h*4) at the time of writing; total 47.802 MiB.
+// Sorted. Sizes in the comment are decoded (w*h*4) at the time of writing; total 24.221 MiB.
 export const UNREFERENCED_ASSET_KEYS = [
-	'bearBonusTile', // 1.013 MiB
-	'bearWinTile', // 1.013 MiB
 	'buyBonusLs', // 0.200 MiB
 	// 'coins' and 'progressBar' were deleted by plan 03 — ratcheted out.
+	// The five '*BonusTile' keys and 'reelFrameLs' are gone from assets.ts entirely, and the five
+	// '*WinTile' keys are now named by src/game/utils.ts — 23.323 MiB ratcheted out in both
+	// directions at once (dead art deleted, live art wired up).
 	'expandedFrame', // 6.000 MiB
-	'foxBonusTile', // 1.003 MiB
-	'foxWinTile', // 1.003 MiB
 	'goldFont', // 1.210 MiB
 	'logoFrame', // 0.534 MiB
 	'navBarLs', // 0.951 MiB
 	'portraitShadow', // 0.125 MiB
-	'rabbitBonusTile', // 1.003 MiB
-	'rabbitWinTile', // 1.003 MiB
-	'reelFrameLs', // 13.253 MiB
 	'scatterPanelImage', // 0.685 MiB
 	'silverFont', // 13.510 MiB
 	'slotPadMobile', // 0.411 MiB
-	'squirrelBonusTile', // 1.013 MiB
-	'squirrelWinTile', // 1.013 MiB
 	'stepperPadLs', // 0.595 MiB
-	'wolfBonusTile', // 1.003 MiB
-	'wolfWinTile', // 1.003 MiB
 ];
 
 // Repo-relative. 27 files across three sibling apps — forest-gang's 13 were moved to tools/

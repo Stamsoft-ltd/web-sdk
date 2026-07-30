@@ -318,7 +318,10 @@
 	// branches at `blurAlpha(velocity)`. Landscape has its own
 	// framed tile art, so it blurs its own set — a desktop smear at speed would flash the wrong
 	// card design.
-	const SPIN_BLUR_KEY: Partial<Record<SymbolName, string>> = {
+	// Both maps are TOTAL over SymbolName — every symbol has a baked smear — so the lookups below
+	// type as `string` and can be handed straight to <Sprite key>. `Partial<>` here only cost us
+	// three `string | undefined` errors on props that can never actually receive undefined.
+	const SPIN_BLUR_KEY: Record<SymbolName, string> = {
 		A: 'aSpinTile',
 		K: 'kSpinTile',
 		Q: 'qSpinTile',
@@ -332,9 +335,23 @@
 		WILD: 'wildSpinTile',
 		SCATTER: 'scatterSpinTile',
 	};
-	const SPIN_BLUR_KEY_LS: Partial<Record<SymbolName, string>> = Object.fromEntries(
-		Object.entries(SPIN_BLUR_KEY).map(([sym, key]) => [sym, `${key}Ls`]),
-	);
+	// Spelled out rather than derived with `${key}Ls`: the dead-asset scan in tests/assets.test.ts
+	// greps the source for each asset key literally, so a computed name makes twelve live keys look
+	// unreferenced and the real dead ones get lost in the noise.
+	const SPIN_BLUR_KEY_LS: Record<SymbolName, string> = {
+		A: 'aSpinTileLs',
+		K: 'kSpinTileLs',
+		Q: 'qSpinTileLs',
+		J: 'jSpinTileLs',
+		T: 'tSpinTileLs',
+		FOX: 'foxSpinTileLs',
+		WOLF: 'wolfSpinTileLs',
+		BEAR: 'bearSpinTileLs',
+		RABBIT: 'rabbitSpinTileLs',
+		SQUIRREL: 'squirrelSpinTileLs',
+		WILD: 'wildSpinTileLs',
+		SCATTER: 'scatterSpinTileLs',
+	};
 	const activeSpinMap = $derived(isLandscape ? SPIN_BLUR_KEY_LS : SPIN_BLUR_KEY);
 
 	const hasActiveAnticipation = () =>

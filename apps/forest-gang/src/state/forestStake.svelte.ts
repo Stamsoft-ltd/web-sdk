@@ -1,5 +1,5 @@
 import { stateBet, stateI18nDerived, stateModal, stateUi, stateUrlDerived } from 'state-shared';
-import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
+import { API_AMOUNT_MULTIPLIER, BOOK_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import type { BaseBet } from 'utils-bet';
 import { formatCurrencyAmountForCurrency, normalizeCurrency } from '../lib/utils/currency';
 import { logForestDiagnostic } from '../utils/forestDiagnostics';
@@ -160,15 +160,50 @@ const replayPayoutAmount = () => {
 	return raw != null ? safeAmount(raw / API_AMOUNT_MULTIPLIER) : 0;
 };
 
-const replayWinAmount = () => {
-	const payout = replayPayoutAmount();
-	return payout > 0 ? payout : safeAmount(stateBet.winBookEventAmount);
+// The round's own book is the one source that is always present in a replay — the endpoint has to
+// return `state` for the replay to run at all, whereas `payout` / `payoutMultiplier` are optional
+// on that response and the live RGS omits them. `finalWin` carries the round total in book units
+// (100 = 1x the base bet), exactly as `setTotalWin` does during playback.
+const replayBookPayoutMultiplier = () => {
+	const state = (forestStakeState.replaySnapshot as { state?: unknown })?.state;
+	if (!Array.isArray(state)) return 0;
+	// Last one wins: a bonus book ends with the grand total, and re-scanning from the back also
+	// skips the per-spin `setTotalWin` events entirely.
+	for (let index = state.length - 1; index >= 0; index -= 1) {
+		const event = state[index] as { type?: string; amount?: number } | null;
+		if (event?.type === 'finalWin' && typeof event.amount === 'number') {
+			return safeAmount(event.amount / BOOK_AMOUNT_MULTIPLIER);
+		}
+	}
+	return 0;
 };
 
+// Stake defines this as payout / amount — both against the BASE bet the round was placed with
+// (`/wallet/play` is sent `betAmount`, not the cost-multiplied total), so a 100x buy that pays
+// back 150x the base bet reports 150x, not 1.5x. Dividing by the total cost, as this used to,
+// under-reported every buy mode.
 const replayPayoutMultiplier = () => {
-	const cost = replayCostAmount();
-	if (cost <= 0) return 0;
-	return replayWinAmount() / cost;
+	const snapshot = forestStakeState.replaySnapshot as
+		| { payoutMultiplier?: number; payout?: number; amount?: number }
+		| null;
+
+	const reported = safeAmount(snapshot?.payoutMultiplier);
+	if (reported > 0) return reported;
+
+	const payout = safeAmount(snapshot?.payout);
+	const wagered = safeAmount(snapshot?.amount);
+	if (payout > 0 && wagered > 0) return payout / wagered;
+
+	return replayBookPayoutMultiplier();
+};
+
+const replayWinAmount = () => {
+	const payout = replayPayoutAmount();
+	if (payout > 0) return payout;
+	// No payout on the response — rebuild it from the multiplier the book gives us. (The old
+	// fallback handed `winBookEventAmount` straight to the currency formatter, but that is a book
+	// amount: a 3x win on a $1 bet would have rendered as $300.)
+	return safeAmount(replayPayoutMultiplier() * replayBetAmount());
 };
 
 // No default of 2 here: each currency carries its own decimal count in the RGS table (JPY/KRW/IDR

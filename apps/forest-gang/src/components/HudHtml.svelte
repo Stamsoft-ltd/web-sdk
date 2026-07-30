@@ -137,8 +137,18 @@
 	const autoSpinsRemainingText = $derived(
 		stateBet.autoSpinsCounter === Infinity ? '∞' : `${stateBet.autoSpinsCounter}`,
 	);
+	// `setBetAmount` refuses to leave a bet level the balance can't cover, so + would otherwise sit
+	// enabled but do nothing once the next level up is unaffordable. Disable it at that ceiling.
+	const highestAffordableBet = $derived.by(() => {
+		const costMultiplier = stateBetDerived.betCostMultiplier();
+		if (costMultiplier <= 0) return biggestBet;
+		const affordable = betOptions.filter((option) => option * costMultiplier <= stateBet.balanceAmount);
+		return affordable.length ? affordable[affordable.length - 1] : smallestBet;
+	});
 	const disableDecrease = $derived(!canInteract || stateBet.betAmount === smallestBet);
-	const disableIncrease = $derived(!canInteract || stateBet.betAmount === biggestBet);
+	const disableIncrease = $derived(
+		!canInteract || stateBet.betAmount >= Math.min(biggestBet, highestAffordableBet),
+	);
 	const disableAuto = $derived.by(() => {
 		if (stateBet.isSpaceHold) return true;
 		if (!canInteract && !hasAuto) return true;
