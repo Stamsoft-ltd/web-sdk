@@ -1,15 +1,29 @@
+<script lang="ts" module>
+	import { ap } from '../lib/preloadArt';
+
+	const iconMinus = ap('/assets/theme-park/v2/hud/icon_minus.svg');
+	const iconPlus = ap('/assets/theme-park/v2/hud/icon_plus.svg');
+</script>
+
 <script lang="ts">
 	import { stateBet } from 'state-shared';
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import PopupFrame from './PopupFrame.svelte';
 
 	type Props = { onclose: () => void };
 	const props: Props = $props();
 	const context = getContext();
 	const t = (key: string) => i18nDerived.translate(key);
 
-	const OPTIONS = [5, 10, 25, 50, 100, 200, 500];
-	let selected = $state(25);
+	// The design replaces the old 7-button grid with a -/+ stepper (nodes 6045:4633-4634). The steps
+	// are the same values the grid offered, with the unlimited option kept as the final step so the
+	// layout change does not quietly drop a feature — the design has no second "unlimited" button.
+	const STEPS: (number | typeof Infinity)[] = [5, 10, 25, 50, 100, 200, 500, Infinity];
+	let stepIndex = $state(2);
+	const selected = $derived(STEPS[stepIndex]);
+	const selectedLabel = $derived(selected === Infinity ? '∞' : `${selected}`);
+
 	let stopOnBonus = $state(context.stateGame.stopAutoOnBonus);
 	const isTurbo = $derived(stateBet.isTurbo && !stateBet.isSuperTurbo);
 	const isSuperTurbo = $derived(stateBet.isSuperTurbo);
@@ -29,261 +43,171 @@
 		}
 	};
 
-	const start = (count: number | typeof Infinity) => {
+	const start = () => {
 		context.stateGame.stopAutoOnBonus = stopOnBonus;
-		if (stateBet.activeBetModeKey === 'DUCK' || stateBet.activeBetModeKey === 'ROLLER' || stateBet.activeBetModeKey === 'COASTER') {
+		if (
+			stateBet.activeBetModeKey === 'DUCK' ||
+			stateBet.activeBetModeKey === 'ROLLER' ||
+			stateBet.activeBetModeKey === 'COASTER'
+		) {
 			stateBet.activeBetModeKey = 'BASE';
 		}
-		stateBet.autoSpinsCounter = count;
+		stateBet.autoSpinsCounter = selected;
 		props.onclose();
 		context.eventEmitter.broadcast({ type: 'autoBet' });
 	};
+
+	const ROWS = $derived([
+		{ label: t('TURBO SPIN'), on: isTurbo, toggle: toggleTurbo },
+		{ label: t('SUPER TURBO SPIN'), on: isSuperTurbo, toggle: toggleSuperTurbo },
+		{ label: t('STOP ON BONUS'), on: stopOnBonus, toggle: () => (stopOnBonus = !stopOnBonus) },
+	]);
 </script>
 
-<button class="backdrop" type="button" aria-label={t('CLOSE AUTOPLAY')} onclick={props.onclose}></button>
-<div class="panel" role="dialog" aria-modal="true">
-	<div class="panel__header">
-		<span class="panel__title">{t('AUTOPLAY')}</span>
-		<button class="panel__close" type="button" onclick={props.onclose} aria-label={t('CLOSE')}>✕</button>
+<PopupFrame variant="wide" ondismiss={props.onclose} dismissLabel={t('CLOSE AUTOPLAY')}>
+	<div class="auto__rows">
+		{#each ROWS as row (row.label)}
+			<div class="auto__row">
+				<span class="auto__row-label tp-popup__label">{row.label}</span>
+				<button
+					class="tp-popup__toggle"
+					type="button"
+					aria-pressed={row.on}
+					aria-label={row.label}
+					onclick={row.toggle}
+				></button>
+			</div>
+		{/each}
 	</div>
 
-	<div class="panel__body">
-		<p class="panel__label">{t('NUMBER OF SPINS')}</p>
-		<div class="options-grid">
-			{#each OPTIONS as n (n)}
-				<button
-					class="option-btn"
-					class:option-btn--selected={selected === n}
-					type="button"
-					onclick={() => (selected = n)}
-				>{n}</button>
-			{/each}
-		</div>
+	<p class="auto__spins-label tp-popup__label">{t('NUMBER OF SPINS')}</p>
 
-		<div class="auto-toggle-list">
-			<div class="stop-on-bonus" class:sob--active={isTurbo}>
-				<span class="sob__label">{t('TURBO SPIN')}</span>
-				<button
-					class="sob__switch"
-					class:sob__switch--on={isTurbo}
-					type="button"
-					onclick={toggleTurbo}
-					aria-pressed={isTurbo}
-					aria-label={t('TURBO SPIN')}
-				><span class="sob__track"><span class="sob__thumb"></span></span></button>
-			</div>
-			<div class="stop-on-bonus" class:sob--active={isSuperTurbo}>
-				<span class="sob__label">{t('SUPER TURBO SPIN')}</span>
-				<button
-					class="sob__switch"
-					class:sob__switch--on={isSuperTurbo}
-					type="button"
-					onclick={toggleSuperTurbo}
-					aria-pressed={isSuperTurbo}
-					aria-label={t('SUPER TURBO SPIN')}
-				><span class="sob__track"><span class="sob__thumb"></span></span></button>
-			</div>
-			<div class="stop-on-bonus" class:sob--active={stopOnBonus}>
-				<span class="sob__label">{t('STOP ON BONUS')}</span>
-				<button
-					class="sob__switch"
-					class:sob__switch--on={stopOnBonus}
-					type="button"
-					onclick={() => (stopOnBonus = !stopOnBonus)}
-					aria-pressed={stopOnBonus}
-					aria-label={t('STOP ON BONUS')}
-				>
-					<span class="sob__track"><span class="sob__thumb"></span></span>
-				</button>
-			</div>
-		</div>
+	<div class="auto__stepper">
+		<button
+			class="auto__step auto__step--minus"
+			type="button"
+			disabled={stepIndex === 0}
+			aria-label={i18nDerived.translate('DECREASE BET')}
+			onclick={() => (stepIndex = Math.max(0, stepIndex - 1))}
+		>
+			<img class="auto__step-glyph auto__step-glyph--minus" src={iconMinus} alt="" />
+		</button>
 
-			<div class="actions">
-			<button class="start-btn" type="button" onclick={() => start(selected)}>
-				{t('START')} {selected} {t('SPINS')}
-			</button>
-			<button class="infinite-btn" type="button" onclick={() => start(Infinity)}>
-				∞ {t('UNLIMITED')}
-			</button>
-		</div>
+		<span class="auto__count">{selectedLabel}</span>
+
+		<button
+			class="auto__step auto__step--plus"
+			type="button"
+			disabled={stepIndex === STEPS.length - 1}
+			aria-label={i18nDerived.translate('INCREASE BET')}
+			onclick={() => (stepIndex = Math.min(STEPS.length - 1, stepIndex + 1))}
+		>
+			<img class="auto__step-glyph auto__step-glyph--plus" src={iconPlus} alt="" />
+		</button>
 	</div>
-</div>
 
-
+	<button class="auto__start tp-popup__btn tp-popup__btn--primary" type="button" onclick={start}>
+		{t('START')} {t('AUTOPLAY')} ({selectedLabel})
+	</button>
+</PopupFrame>
 
 <style>
-	.backdrop {
-		position: fixed;
-		inset: 0;
-		z-index: 58;
-		background: rgba(0, 0, 0, 0.6);
-		backdrop-filter: blur(4px);
-		border: 0;
+	/* Spacing is the Figma frame's own (6365:6210), converted from absolute positions to flow so a
+	   wrapped row label or a long "START AUTOPLAY" caption pushes the layout instead of overlapping
+	   it. PopupFrame supplies the 94 / 95.5 / 83 padding that puts the first row where the design
+	   has it. */
+
+	/* Toggle rows: 494 wide (of 685), 16 apart (node 6045:4619). */
+	.auto__rows {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: calc(16 / var(--pop-w) * 100cqw);
+	}
+
+	.auto__row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: calc(16 / var(--pop-w) * 100cqw);
+		width: 100%;
+	}
+
+	/* 245 of the 494 row — a fixed column so the toggles line up whatever the translation. */
+	.auto__row-label {
+		flex: 0 1 49.595%;
+	}
+
+	/* NUMBER OF SPINS sits 48.36 below the last row (rows end 225.64, label top 274). */
+	.auto__spins-label {
+		margin-top: calc(48.36 / var(--pop-w) * 100cqw);
+		text-align: center;
+	}
+
+	/* Stepper: two 48.696 circles 89.3 apart (left edges 248 and 386), centred, with the count
+	   between them (nodes 6045:4617, 6045:4633-4634). */
+	.auto__stepper {
+		margin-top: calc(24 / var(--pop-w) * 100cqw);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: calc(16.65 / var(--pop-w) * 100cqw);
+	}
+
+	/* Same chrome as the HUD's icon buttons. */
+	.auto__step {
+		flex: 0 0 auto;
+		width: calc(48.696 / var(--pop-w) * 100cqw);
+		height: calc(48.696 / var(--pop-w) * 100cqw);
 		padding: 0;
-	}
-
-	.panel {
-		position: fixed;
-		bottom: 110px;
-		left: 50%;
-		transform: translateX(-50%);
-		z-index: 59;
-		width: min(360px, 90vw);
-		border-radius: 20px;
-		background: linear-gradient(180deg, rgba(28, 32, 18, 0.98), rgba(10, 12, 8, 0.99));
-		border: 1px solid rgba(231, 196, 112, 0.35);
-		box-shadow: 0 20px 44px rgba(0, 0, 0, 0.65);
-		overflow: hidden;
-	}
-
-	.panel__header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 16px 20px 12px;
-		border-bottom: 1px solid rgba(231, 196, 112, 0.18);
-	}
-
-	.panel__title {
-		font-family: 'Cinzel', serif;
-		font-size: 1rem;
-		font-weight: 900;
-		color: #ffd84a;
-		letter-spacing: 0.1em;
-	}
-
-	.panel__close {
-		border: none;
-		background: none;
-		color: rgba(255, 255, 255, 0.4);
-		font-size: 1rem;
-		cursor: pointer;
-		padding: 2px 6px;
-	}
-
-	.panel__body {
-		padding: 16px 18px 18px;
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-	}
-
-	.panel__label {
-		font-family: 'Cinzel', serif;
-		font-size: 0.65rem;
-		font-weight: 700;
-		color: rgba(255, 255, 255, 0.45);
-		letter-spacing: 0.08em;
-		margin: 0;
-	}
-
-	.options-grid {
+		box-sizing: border-box;
+		border: 1px solid #d836fc;
+		border-radius: 9999px;
+		background-image: linear-gradient(0deg, #1a0535 0%, #000 100%);
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 8px;
-	}
-
-	.option-btn {
-		border: 1px solid rgba(188, 141, 39, 0.35);
-		border-radius: 10px;
-		background: rgba(255, 255, 255, 0.03);
-		color: rgba(255, 255, 255, 0.65);
-		font-family: 'Cinzel', serif;
-		font-size: 0.9rem;
-		font-weight: 700;
-		padding: 10px 6px;
+		place-items: center;
 		cursor: pointer;
-		transition: all 0.15s;
+		transition: filter 0.12s ease;
 	}
 
-	.option-btn:hover,
-	.option-btn--selected {
-		border-color: #ffd84a;
-		background: rgba(255, 216, 74, 0.1);
-		color: #ffd84a;
+	.auto__step:not(:disabled):hover {
+		filter: brightness(1.2);
 	}
 
-	.actions {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
+	.auto__step:disabled {
+		opacity: 0.4;
+		cursor: default;
 	}
 
-	.start-btn {
+	.auto__step-glyph--minus {
+		width: calc(13.854 / var(--pop-w) * 100cqw);
+		height: calc(2.13 / var(--pop-w) * 100cqw);
+	}
+
+	.auto__step-glyph--plus {
+		width: calc(13.854 / var(--pop-w) * 100cqw);
+		height: calc(13.854 / var(--pop-w) * 100cqw);
+	}
+
+	/* Inter Bold 32 (node 6045:4617). Fixed width so stepping 5 -> 500 does not shuffle the buttons. */
+	.auto__count {
+		flex: 0 0 auto;
+		min-width: calc(56 / var(--pop-w) * 100cqw);
+		text-align: center;
+		font-family: 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: calc(32 / var(--pop-w) * 100cqw);
+		letter-spacing: 0.03em;
+		line-height: 1;
+		color: #fff;
+		white-space: nowrap;
+	}
+
+	/* Full-width action, 494 of 685 (node 6045:4632). */
+	.auto__start {
+		margin-top: auto;
 		width: 100%;
-		padding: 14px;
-		border: none;
-		border-radius: 14px;
-		background: linear-gradient(180deg, #f0d068 0%, #c09224 100%);
-		color: #17200f;
-		font-family: 'Cinzel', serif;
-		font-size: 0.9rem;
-		font-weight: 900;
-		letter-spacing: 0.06em;
-		cursor: pointer;
-		transition: opacity 0.15s;
+		flex: 0 0 auto;
+		white-space: nowrap;
 	}
-
-	.start-btn:hover { opacity: 0.9; }
-
-	.infinite-btn {
-		width: 100%;
-		padding: 11px;
-		border: 1px solid rgba(188, 141, 39, 0.4);
-		border-radius: 14px;
-		background: rgba(255, 255, 255, 0.03);
-		color: rgba(255, 255, 255, 0.55);
-		font-family: 'Cinzel', serif;
-		font-size: 0.85rem;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		cursor: pointer;
-		transition: all 0.15s;
-	}
-
-	.infinite-btn:hover {
-		border-color: #ffd84a;
-		color: #ffd84a;
-	}
-
-	.stop-on-bonus {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 10px 12px;
-		border: 1px solid rgba(188, 141, 39, 0.25);
-		border-radius: 12px;
-		background: rgba(255,255,255,0.03);
-		transition: border-color 0.2s;
-	}
-	.auto-toggle-list {
-		display: grid;
-		gap: 8px;
-	}
-	.sob--active { border-color: rgba(255, 216, 74, 0.5); }
-
-	.sob__label {
-		font-family: 'Cinzel', serif;
-		font-size: 0.72rem;
-		font-weight: 700;
-		color: rgba(255,255,255,0.6);
-		letter-spacing: 0.06em;
-	}
-	.sob--active .sob__label { color: #ffd84a; }
-
-	.sob__switch { border: none; background: none; padding: 0; cursor: pointer; }
-	.sob__track {
-		display: block; position: relative;
-		width: 38px; height: 20px; border-radius: 20px;
-		background: rgba(80,80,80,0.8); transition: background 0.25s;
-	}
-	.sob__switch--on .sob__track { background: #ffd84a; }
-	.sob__thumb {
-		display: block; position: absolute;
-		top: 3px; left: 3px;
-		width: 14px; height: 14px; border-radius: 50%;
-		background: #fff; transition: transform 0.25s;
-		box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-	}
-	.sob__switch--on .sob__thumb { transform: translateX(18px); }
 </style>

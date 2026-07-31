@@ -15,6 +15,11 @@
 		context.stateApp.loadedAssets?.[animationKey] as Texture | undefined,
 	);
 	const renderedKey = $derived(animationTexture ? animationKey : fallbackKey);
+	// Neither key is guaranteed to exist yet: the background art now downloads in the counted pass
+	// (assets.ts) rather than the preload tier, so this component mounts with <Game> before its
+	// texture lands. <Sprite> logs an error for an unknown key, so draw nothing until one resolves —
+	// the loading screen is opaque over this the whole time anyway.
+	const ready = $derived(!!context.stateApp.loadedAssets?.[renderedKey]);
 
 	$effect(() => {
 		const resource = animationTexture?.source.resource;
@@ -28,4 +33,6 @@
 	});
 </script>
 
-<Sprite key={renderedKey} {...spriteProps} />
+{#if ready}
+	<Sprite key={renderedKey} {...spriteProps} />
+{/if}

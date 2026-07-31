@@ -1,23 +1,27 @@
 <script lang="ts" module>
 	import { ap } from '../lib/preloadArt';
 
-	const navMenu = ap('/assets/hud/icon-menu.svg');
-	const navSound = ap('/assets/hud/icon-volume.svg');
-	const navArrowLeft = ap('/assets/theme-park/v2/controls/arrow-left.png');
-	const navArrowLeftDisabled = ap('/assets/theme-park/v2/controls/arrow-left-disabled.png');
-	const navArrowRight = ap('/assets/theme-park/v2/controls/arrow-right.png');
-	const navArrowRightDisabled = ap('/assets/theme-park/v2/controls/arrow-right-disabled.png');
-	const navAuto = ap('/assets/hud/icon-autoplay.svg');
-	const navTurbo1 = ap('/assets/hud/icon-lightning-1.png');
-	const navTurbo2 = ap('/assets/hud/icon-lightning-2.png');
-	const navTurbo3 = ap('/assets/hud/icon-lightning-3.png');
+	// Bottom-bar chrome and glyphs from Figma 6281-1791. The glyphs replace the old set, which baked
+	// each icon into its own dark badge — those badges doubled up with this design's circular button
+	// chrome. The stepper is -/+ here, not the old left/right arrows.
+	const navMenu = ap('/assets/theme-park/v2/hud/icon_menu.svg');
+	const navSound = ap('/assets/theme-park/v2/hud/icon_sound.svg');
+	const navMinus = ap('/assets/theme-park/v2/hud/icon_minus.svg');
+	const navPlus = ap('/assets/theme-park/v2/hud/icon_plus.svg');
+	const navAuto = ap('/assets/theme-park/v2/hud/icon_auto.svg');
+	const navTurbo = ap('/assets/theme-park/v2/hud/turbo.webp');
+	const barPlate = ap('/assets/theme-park/v2/hud/bar_plate.webp');
+	const buyPlate = ap('/assets/theme-park/v2/hud/buy_plate.webp');
 	const navSpinDefault = ap('/assets/theme-park/v2/controls/spin-default.png');
 	const navSpinDefaultMobile = ap('/assets/theme-park/v2/controls/spin-default-mobile.png');
 	const navSpinActive = ap('/assets/theme-park/v2/controls/spin-active.png');
 	const navSpinStop = ap('/assets/theme-park/v2/controls/spin-stop.png');
-	const navCoins = ap('/assets/hud/icon-coins.png');
+	const navCoins = ap('/assets/theme-park/v2/hud/icon_coin.svg');
 	const gameLogo = ap('/assets/theme-park/v2/logo.png');
 	const pressPlayLogo = ap('/assets/theme-park/v2/press-play.webp');
+	// Same mark the splash uses (Figma 6612:4340 places it at the scene's top right too). Desktop and
+	// landscape only — portrait shows the larger pressPlayLogo inside its own logo stack instead.
+	const pressPlayMark = ap('/assets/theme-park/v2/splash/press_play_mark.svg');
 
 	// Real marquee button art (portrait HUD). Round neon-rim buttons.
 	const ptMenu = ap('/assets/theme-park/v2/controls/btn-menu.png');
@@ -80,10 +84,10 @@
 		}
 	});
 
-	const turboImg = $derived(
-		// Match Forest Gang: outline = normal, solid = fast, double = super.
-		stateBet.isSuperTurbo ? navTurbo3 : stateBet.isTurbo ? navTurbo1 : navTurbo2,
-	);
+	// The design draws a single bolt and says nothing about speed states, so the three modes are
+	// encoded in the count instead of in three differently-styled badges: 1 bolt normal, 1 bolt +
+	// glow fast, 2 bolts super. The glow alone was not enough to read at a glance.
+	const turboBolts = $derived(stateBet.isSuperTurbo ? 2 : 1);
 	const speedMode = $derived(
 		stateBet.isSuperTurbo ? 'super' : stateBet.isTurbo ? 'fast' : 'normal',
 	);
@@ -367,15 +371,20 @@
 		</div>
 	{:else}
 		<img class="game-logo" src={gameLogo} alt={i18nDerived.gameTitle()} />
+		<img class="press-play-mark" src={pressPlayMark} alt="Press Play" />
 	{/if}
 	{#if !isPortrait}
 	<div class="hud-bottom">
+		<!-- The bar itself is art (1126x107 neon pill), not CSS chrome. It is a sibling rather than a
+		     background-image because the spin button overhangs the plate top and bottom, so the plate
+		     has to sit BEHIND the row at its own smaller height while the row keeps the taller box. -->
+		<img class="hud-plate" src={barPlate} alt="" />
 		<div class="hud-left">
 			<div class="hud-system">
-				<button class="nav-btn" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
+				<button class="nav-btn nav-btn--menu" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
 					<img src={navMenu} alt="" />
 				</button>
-				<button class="nav-btn" type="button" onclick={toggleSound} aria-label={i18nDerived.translate('SOUND')}>
+				<button class="nav-btn nav-btn--sound" type="button" onclick={toggleSound} aria-label={i18nDerived.translate('SOUND')}>
 					<img src={navSound} alt="" class:is-muted={isMuted} />
 				</button>
 			</div>
@@ -388,6 +397,7 @@
 					onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
 					aria-label={buyLabel}
 				>
+					<img class="buy-btn__plate" src={buyPlate} alt="" />
 					<span class="buy-btn__label">{buyLabel}</span>
 				</button>
 			</div>
@@ -400,6 +410,9 @@
 				</div>
 				<span class="value" use:fitText={formattedBalance}>{formattedBalance}</span>
 			</div>
+
+			<!-- 1px x 49 rule between BALANCE and WIN (design node 6589:4366). -->
+			<span class="stats-divider" aria-hidden="true"></span>
 
 			<div class="value-pill value-pill--win">
 				<div class="label">
@@ -428,10 +441,10 @@
 		<div class="hud-controls">
 			<div class="stepper">
 				{#if isLandscapeMobile}
-					<button class="nav-btn" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
+					<button class="nav-btn nav-btn--menu" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
 						<img src={navMenu} alt="" />
 					</button>
-					<button class="nav-btn" type="button" onclick={toggleSound} aria-label={i18nDerived.translate('SOUND')}>
+					<button class="nav-btn nav-btn--sound" type="button" onclick={toggleSound} aria-label={i18nDerived.translate('SOUND')}>
 						<img src={navSound} alt="" class:is-muted={isMuted} />
 					</button>
 				{/if}
@@ -447,7 +460,7 @@
 					disabled={disableDecrease}
 					aria-label={i18nDerived.translate('DECREASE BET')}
 				>
-					<img src={disableDecrease ? navArrowLeftDisabled : navArrowLeft} alt="" />
+					<img class="step-glyph step-glyph--minus" src={navMinus} alt="" />
 				</button>
 				<button
 					class="nav-btn nav-btn--step"
@@ -461,7 +474,7 @@
 					disabled={disableIncrease}
 					aria-label={i18nDerived.translate('INCREASE BET')}
 				>
-					<img src={disableIncrease ? navArrowRightDisabled : navArrowRight} alt="" />
+					<img class="step-glyph step-glyph--plus" src={navPlus} alt="" />
 				</button>
 			</div>
 
@@ -480,6 +493,7 @@
 							src={isMobileLayout ? navSpinDefaultMobile : navSpinDefault}
 							alt=""
 							class="spin-btn__img spin-btn__img--default"
+							class:spin-btn__img--mobile={isMobileLayout}
 						/>
 						<img src={navSpinActive} alt="" class="spin-btn__img spin-btn__img--active" />
 					{/if}
@@ -506,17 +520,22 @@
 					aria-label={i18nDerived.turboLabel()}
 					title={`${i18nDerived.turboLabel()}: ${speedMode}`}
 				>
-					<img src={turboImg} alt="" />
+					<span class="turbo-bolts">
+						{#each Array.from({ length: turboBolts }, (_, i) => i) as boltIndex (boltIndex)}
+							<img class="turbo-bolt" src={navTurbo} alt="" />
+						{/each}
+					</span>
 				</button>
 				<button
-					class="nav-btn"
+					class="nav-btn nav-btn--auto"
 					class:active={hasAuto}
 					type="button"
 					onclick={onAuto}
 					disabled={disableAuto}
 					aria-label={i18nDerived.autoplayLabel()}
 				>
-					<img src={navAuto} alt="" />
+					<img class="auto-glyph" src={navAuto} alt="" />
+					<span class="auto-label">{i18nDerived.translate('AUTO')}</span>
 				</button>
 			</div>
 		</div>
@@ -663,9 +682,10 @@
 		padding: 8px;
 		z-index: 20;
 		font-family: 'Cinzel', serif;
-		/* Forest Gang HUD rule: one design unit scales the complete control
-		   cluster uniformly. No right-side clipping on laptop/popout widths. */
-		--hud-u: calc(min(97vw, 1380px) / 1380);
+		/* One design unit = one pixel of Figma 6281-1791, so every size below can be read straight off
+		   the design. The bar plate is 1126 wide in a 1200-wide frame (93.8%); the 1400px cap stops it
+		   from growing past the design's proportions on an ultrawide monitor. */
+		--hud-u: calc(min(93.8vw, 1400px) / 1126);
 	}
 
 	.hud-shell--blocked,
@@ -673,27 +693,37 @@
 		pointer-events: none !important;
 	}
 
-	.hud-shell::after {
-		content: '';
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		height: 120px;
-		z-index: 5;
-		pointer-events: none;
-		background: linear-gradient(to top, #08041d 0%, #08041d 78%, rgba(8, 4, 29, 0) 100%);
-	}
+	/* No bottom scrim. This used to be a 120px band of solid #08041d, opaque for its lower 78%, to
+	   lift the HUD off the old sharp park art — but it cut the background off in a hard line just
+	   above the bar and left a black strip along the bottom of the screen. The background is now
+	   blurred art the reels already read against, and the bar plate carries its own dark fill, so the
+	   scene runs to the bottom edge as it does in Figma 6281-1791. */
 
+	/* Figma 6612:4356 — 456 wide, centred (372 + 228 = the 1200 frame's midpoint), with its art
+	   starting 10 down. --hud-u is one design pixel of that same frame, so this is the design's own
+	   number rather than a viewport guess; it works out ~1.7x the clamp(190px, 22vw, 330px) it
+	   replaced, which is why the logo now overlaps the top of the board the way the design shows. */
 	.game-logo {
 		position: absolute;
 		left: 50%;
-		top: 10px;
-		width: clamp(190px, 22vw, 330px);
+		top: calc(var(--hud-u) * 10);
+		width: calc(var(--hud-u) * 456);
 		height: auto;
 		transform: translateX(-50%);
 		filter: drop-shadow(0 6px 11px rgba(0, 0, 0, 0.7));
 		animation: game-logo-idle 3.4s ease-in-out infinite;
+		z-index: 4;
+	}
+
+	/* Figma 6612:4340 — 112.51 x 36.4 at (1076, 8), i.e. 11.49 in from the frame's right edge. */
+	.press-play-mark {
+		position: absolute;
+		top: calc(var(--hud-u) * 8);
+		right: calc(var(--hud-u) * 11.49);
+		width: calc(var(--hud-u) * 112.51);
+		height: auto;
+		opacity: 0.9;
+		filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.55));
 		z-index: 4;
 	}
 
@@ -716,31 +746,53 @@
 		z-index: 6;
 		align-self: center;
 		margin-top: auto;
-		width: calc(var(--hud-u) * 1380);
-		height: auto;
+		/* Plate width; the row inside it totals 1063.72 in the design, so the ~31 units of slack on
+		   each side come out of centring rather than out of padding. */
+		width: calc(var(--hud-u) * 1126);
+		height: calc(var(--hud-u) * 118.538);
 		box-sizing: border-box;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
+		justify-content: center;
 		gap: calc(var(--hud-u) * 16);
-		padding: calc(var(--hud-u) * 8) calc(var(--hud-u) * 24);
-		background: linear-gradient(180deg, rgba(28, 8, 57, 0.98), rgba(7, 5, 29, 0.98));
-		border: 2px solid rgba(255, 193, 47, 0.72);
-		border-radius: 999px;
-		box-shadow:
-			0 0 22px rgba(255, 79, 216, 0.24),
-			0 14px 30px rgba(0, 0, 0, 0.45);
+		padding: 0;
+		background: none;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+		font-family: 'Inter', sans-serif;
 	}
 
-	.hud-bottom > * {
+	/* The plate is only 107 tall against the row's 118.538 — the spin button is what makes the row
+	   taller — so it sits behind rather than stretched to fit.
+
+	   The +4 is not a fudge: the pill drawn inside this 1126x107 export occupies y 6..92, so its
+	   optical centre is 4 units ABOVE the centre of the image box. Centring the box therefore lands
+	   every control 4 units BELOW the middle of the pill, which is what read as "not centred". The
+	   design does the same correction — it places the plate 3.23 below the row centre rather than on
+	   it. Pushing the image down by 4 puts the pill's centre on the row's centre instead. */
+	.hud-plate {
+		position: absolute;
+		left: 0;
+		top: 50%;
+		transform: translateY(calc(-50% + var(--hud-u) * 4));
+		width: 100%;
+		height: calc(var(--hud-u) * 107);
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	.hud-bottom > *:not(.hud-plate) {
 		position: relative;
 		z-index: 1;
 	}
 
+	/* Every top-level item in the design sits on one uniform 16-unit rhythm, so the wrapper groups
+	   this markup keeps for the mobile layouts all carry the same gap and no extra padding. */
 	.hud-left {
 		display: flex;
 		align-items: center;
-		gap: calc(var(--hud-u) * 18);
+		gap: calc(var(--hud-u) * 16);
 		flex: 0 0 auto;
 	}
 
@@ -752,11 +804,13 @@
 		padding-top: 0;
 	}
 
+	/* Balance | rule | Win are 12 apart in the design (node 6589:4362); the bet group that follows is
+	   a separate top-level item on the 16 rhythm, hence the 4-unit make-up margin. */
 	.hud-stats {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0;
+		gap: calc(var(--hud-u) * 12);
 		flex: 0 0 auto;
 		min-width: 0;
 	}
@@ -765,85 +819,81 @@
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
-		gap: calc(var(--hud-u) * 22);
+		gap: calc(var(--hud-u) * 16);
 		flex: 0 0 auto;
 		padding-top: 0;
 	}
 
 	.value-pill {
 		min-width: 0;
-		padding: 0 calc(var(--hud-u) * 5);
-		border-left: 1px solid rgba(255, 255, 255, 0.15);
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 2px;
-	}
-
-	.value-pill--balance {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		padding: 0 calc(var(--hud-u) * 16);
-		flex: 0 0 auto;
-		min-width: calc(var(--hud-u) * 150);
+		padding: 0;
 		border-left: none;
-	}
-
-	.value-pill--win {
-		align-items: flex-start;
-		padding: 0 calc(var(--hud-u) * 16);
-		flex: 0 1 calc(var(--hud-u) * 150);
-		width: calc(var(--hud-u) * 150);
-		overflow: hidden;
-	}
-
-	.value-pill--balance .label--balance {
-		line-height: 1;
-		justify-content: flex-start;
-	}
-
-	.value-pill--balance .value {
-		line-height: 1;
-	}
-
-	.value-pill--bet {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		gap: calc(var(--hud-u) * 6);
-		padding: 0 calc(var(--hud-u) * 16);
-		border-left: 1px solid rgba(255, 255, 255, 0.3);
-		flex: 0 0 auto;
-	}
-
-	.bet-values {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
 		gap: calc(var(--hud-u) * 2);
 	}
 
-	.value-pill--bet .label {
-		line-height: 1;
+	.stats-divider {
+		flex: 0 0 auto;
+		width: 1px;
+		height: calc(var(--hud-u) * 49);
+		background: rgba(189, 70, 198, 0.8);
 	}
 
-	.value-pill--bet .value {
-		line-height: 1;
+	/* 130.333 x 46.667 with 6.667 side padding (node 6589:4363). */
+	.value-pill--balance {
+		height: calc(var(--hud-u) * 46.667);
+		padding: 0 calc(var(--hud-u) * 6.667);
+		flex: 0 0 auto;
+		min-width: calc(var(--hud-u) * 130.333);
+	}
+
+	/* 66 wide (node 6589:4367) — the value is fitText-shrunk rather than allowed to push the row. */
+	.value-pill--win {
+		flex: 0 0 auto;
+		width: calc(var(--hud-u) * 66);
+		overflow: hidden;
+	}
+
+	.value-pill--balance .label--balance {
+		justify-content: flex-start;
+	}
+
+	/* 116 x 49 with a 10 gap between the coin and the text column (node 6589:4371). */
+	.value-pill--bet {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: calc(var(--hud-u) * 10);
+		height: calc(var(--hud-u) * 49);
+		padding: 0;
+		border-left: none;
+		flex: 0 0 auto;
+		margin-left: calc(var(--hud-u) * 4);
+	}
+
+	.bet-values {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0;
+		width: calc(var(--hud-u) * 66);
 	}
 
 	.bet-coin {
 		pointer-events: none;
-		width: calc(var(--hud-u) * 44);
-		height: calc(var(--hud-u) * 44);
+		width: calc(var(--hud-u) * 40);
+		height: calc(var(--hud-u) * 40);
 		display: grid;
 		place-items: center;
 		flex: 0 0 auto;
 	}
 
+	/* The glyph is 24 inside a 40 box (node I6589:4372;2503:4361) — it does not fill the box. */
 	.bet-coin img {
-		width: 100%;
-		height: 100%;
+		width: calc(var(--hud-u) * 24);
+		height: calc(var(--hud-u) * 24);
 		object-fit: contain;
 		display: block;
 	}
@@ -852,18 +902,22 @@
 		cursor: pointer;
 	}
 
+	/* 10px / 2px tracking / #bd46c6, 15px line box (nodes 6589:4364, :4369, :4375). */
 	.label {
-		font-family: 'Cinzel', serif;
-		font-size: calc(var(--hud-u) * 0.7rem);
+		font-family: 'Inter', sans-serif;
+		font-size: calc(var(--hud-u) * 10);
+		line-height: calc(var(--hud-u) * 15);
+		letter-spacing: calc(var(--hud-u) * 2);
+		text-transform: uppercase;
 		font-weight: 700;
-		color: #ff7de3;
+		color: #bd46c6;
 		display: flex;
 		align-items: center;
-		gap: 4px;
+		gap: calc(var(--hud-u) * 4);
 	}
 
 	.label--balance {
-		gap: 6px;
+		gap: calc(var(--hud-u) * 4);
 		align-items: center;
 		justify-content: flex-start;
 		width: 100%;
@@ -873,9 +927,11 @@
 		display: inline-block;
 	}
 
+	/* 24px white, 32px line box (nodes 6589:4365, :4370, :4377). */
 	.value {
-		font-family: 'Cinzel', serif;
-		font-size: calc(var(--hud-u) * 1.25rem);
+		font-family: 'Inter', sans-serif;
+		font-size: calc(var(--hud-u) * 24);
+		line-height: calc(var(--hud-u) * 32);
 		font-weight: 700;
 		color: #fff;
 		white-space: nowrap;
@@ -886,32 +942,109 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: calc(var(--hud-u) * 15);
+		gap: calc(var(--hud-u) * 16);
 		padding-top: 0;
 	}
 
+	/* 48 circle, 1px #d836fc hairline, near-black fill lifting to #1a0535 at the bottom
+	   (component "Icon buttons"). No gold anywhere in this design. */
 	.nav-btn {
-		width: calc(var(--hud-u) * 60);
-		height: calc(var(--hud-u) * 60);
-		border: 2px solid rgba(255, 193, 47, 0.68);
-		border-radius: 50%;
-		background: radial-gradient(circle, #52238a 0%, #17062f 72%);
+		width: calc(var(--hud-u) * 48);
+		height: calc(var(--hud-u) * 48);
+		border: 1px solid #d836fc;
+		border-radius: 9999px;
+		background: linear-gradient(0deg, #1a0535 0%, #000 100%);
 		padding: 0;
 		outline: none;
 		cursor: pointer;
 		flex: 0 0 auto;
 		display: grid;
 		place-items: center;
+		box-sizing: border-box;
 		transition:
 			transform 0.12s ease,
 			filter 0.12s ease;
 	}
 
+	/* Each glyph carries its own designed size below; this is only the shared reset. */
 	.nav-btn img {
-		width: 58%;
-		height: 58%;
 		object-fit: contain;
 		display: block;
+		pointer-events: none;
+	}
+
+	/* Menu 17.5x15, sound 22.5x16.09 (nodes 2503:4292, 2503:4295). Class-tagged rather than matched
+	   positionally: the landscape layout renders this same pair inside .stepper instead. */
+	.nav-btn--menu img {
+		width: calc(var(--hud-u) * 17.5);
+		height: calc(var(--hud-u) * 15);
+	}
+
+	.nav-btn--sound img {
+		width: calc(var(--hud-u) * 22.5);
+		height: calc(var(--hud-u) * 16.09);
+	}
+
+	/* Stepper: 48.696 circles carrying the -/+ glyphs at their designed sizes
+	   (nodes 2503:4319, 2503:4322). */
+	.nav-btn--step {
+		width: calc(var(--hud-u) * 48.696);
+		height: calc(var(--hud-u) * 48.696);
+	}
+
+	.step-glyph--minus {
+		width: calc(var(--hud-u) * 13.854);
+		height: calc(var(--hud-u) * 2.13);
+	}
+
+	.step-glyph--plus {
+		width: calc(var(--hud-u) * 13.854);
+		height: calc(var(--hud-u) * 13.854);
+	}
+
+	/* Turbo: the design's bolt art is rendered at 38.667 square, of which a 20x28 window is the
+	   visible bolt. Two bolts (super turbo) shrink so the pair still clears the 48 circle. */
+	.turbo-bolts {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: calc(var(--hud-u) * -2);
+		pointer-events: none;
+	}
+
+	.turbo-bolt {
+		width: calc(var(--hud-u) * 38.667);
+		height: calc(var(--hud-u) * 38.667);
+		flex: 0 0 auto;
+	}
+
+	.turbo-bolts:has(.turbo-bolt + .turbo-bolt) .turbo-bolt {
+		width: calc(var(--hud-u) * 31);
+		height: calc(var(--hud-u) * 31);
+	}
+
+	/* Autoplay: arrow glyph over an 8px caption, stacked (nodes 2503:4335, 2503:4339). */
+	.nav-btn--auto {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: calc(var(--hud-u) * 2);
+	}
+
+	.auto-glyph {
+		width: calc(var(--hud-u) * 11.23);
+		height: calc(var(--hud-u) * 10.5);
+	}
+
+	.auto-label {
+		font-family: 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: calc(var(--hud-u) * 8);
+		line-height: calc(var(--hud-u) * 12);
+		letter-spacing: calc(var(--hud-u) * -0.2);
+		text-transform: uppercase;
+		color: #fff;
 		pointer-events: none;
 	}
 
@@ -958,10 +1091,12 @@
 		flex: 0 0 auto;
 	}
 
+	/* 134 x 118.538 (node 4173:27432) — the tallest item in the row, which is why .hud-bottom is
+	   118.538 tall while the plate behind it is only 107. */
 	.spin-btn {
-		width: calc(var(--hud-u) * 132);
-		height: calc(var(--hud-u) * 132);
-		margin: calc(var(--hud-u) * -22) 0;
+		width: calc(var(--hud-u) * 134);
+		height: calc(var(--hud-u) * 118.538);
+		margin: 0;
 		border: 0;
 		border-radius: 50%;
 		background: transparent;
@@ -971,7 +1106,9 @@
 		cursor: pointer;
 		display: grid;
 		place-items: center;
-		transform: translateY(calc(var(--hud-u) * -10));
+		/* The design centres this in the row like everything else; the overhang past the plate comes
+		   from the row being taller than the plate, not from an offset. */
+		transform: none;
 		position: relative;
 		z-index: 3;
 		transition:
@@ -980,16 +1117,56 @@
 		color: #fff;
 	}
 
+	/* The three spin states are three separate exports whose ring is a different size AND a different
+	   distance from the centre of its own frame (default +11.5, active -6.5, stop -6.5/-7.0 px in
+	   source pixels). Letting object-fit letterbox them meant the ring changed size and jumped as the
+	   state changed, and none of them matched the design's 105 ring centred 4.5 below the button
+	   centre. Each variant below is sized and nudged so the RING — not the frame — lands in the same
+	   place every time. All values are percentages so the mobile layouts, which resize .spin-btn,
+	   keep the same relationship. */
 	.spin-btn__img {
 		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
+		left: 50%;
+		top: 50%;
+		/* Height-driven with an auto width so the source aspect is preserved no matter what aspect
+		   .spin-btn itself has — portrait overrides it to a square. --art-h is what makes the ring
+		   88.58% of the button height (105 of 118.538) in every state. */
+		width: auto;
+		height: var(--art-h);
+		transform: translate(calc(-50% + var(--art-dx)), calc(-50% + var(--art-dy)));
 		object-fit: contain;
 		display: block;
 		pointer-events: none;
 		transition: opacity 0.12s ease;
 		filter: drop-shadow(0 0 12px rgba(255, 79, 216, 0.35));
+	}
+
+	/* spin-default.png — 536x475 frame, 379px ring sitting 11.5px low. */
+	.spin-btn__img--default {
+		--art-h: 111.02%;
+		--art-dx: 0%;
+		--art-dy: 0.998%;
+	}
+
+	/* spin-default-mobile.png — 412x356 frame, 310px ring. */
+	.spin-btn__img--default.spin-btn__img--mobile {
+		--art-h: 101.72%;
+		--art-dx: -0.485%;
+		--art-dy: 3.592%;
+	}
+
+	/* spin-active.png — 536x532 frame, 454px ring sitting 6.5px high. */
+	.spin-btn__img--active {
+		--art-h: 103.8%;
+		--art-dx: 0.094%;
+		--art-dy: 4.879%;
+	}
+
+	/* spin-stop.png — 536x475 frame, 379px ring sitting 7.0px left and 6.5px high. */
+	.spin-btn__img--stop {
+		--art-h: 111.02%;
+		--art-dx: 1.306%;
+		--art-dy: 4.788%;
 	}
 
 	.spin-btn__img--active {
@@ -1006,25 +1183,16 @@
 		opacity: 1;
 	}
 
-	.nav-btn--step {
-		border: 0;
-		background: transparent;
-		box-shadow: none;
-		overflow: visible;
-	}
-
-	.nav-btn--step img {
-		width: 112%;
-		height: 112%;
-	}
+	/* The old stepper art carried its own circle, so the button chrome was switched off for it. The
+	   -/+ are bare glyphs now and take the same circle as every other icon button. */
 
 	.spin-btn:not(:disabled):hover {
-		transform: translateY(-12px);
+		transform: translateY(-2px);
 		filter: brightness(1.08);
 	}
 
 	.spin-btn:not(:disabled):active {
-		transform: translateY(-8px) scale(0.96);
+		transform: translateY(1px) scale(0.96);
 	}
 
 	.spin-btn:disabled {
@@ -1054,27 +1222,39 @@
 		font-size: 1.5rem;
 	}
 
+	/* 159 x 48 hit box (node 4169:27091). The marquee plate art is 178 x 59 and is deliberately
+	   BIGGER than the box — the design lets the gold frame and its glow bleed out on all four sides
+	   (inset -5.97% horizontally, -11.46% vertically) rather than fitting it inside. */
 	.buy-btn {
-		width: calc(var(--hud-u) * 130);
+		width: calc(var(--hud-u) * 159);
+		/* aspect-ratio rather than a fixed height: the mobile layouts override only the width, and a
+		   fixed height would squash the marquee plate. */
+		aspect-ratio: 159 / 48;
 		height: auto;
-		aspect-ratio: 3065 / 1084;
-		border: 2px solid rgba(255, 193, 47, 0.8);
-		border-radius: 14px;
-		background: linear-gradient(180deg, #7426a8, #2a084b);
-		box-shadow: 0 0 14px rgba(255, 79, 216, 0.3);
-		padding: 0 calc(var(--hud-u) * 14);
+		border: 0;
+		border-radius: 0;
+		background: none;
+		box-shadow: none;
+		padding: 0;
 		outline: none;
 		cursor: pointer;
 		position: relative;
 		display: flex;
-		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 1px;
 		flex: 0 0 auto;
 		transition:
 			transform 0.12s ease,
 			filter 0.12s ease;
+	}
+
+	.buy-btn__plate {
+		position: absolute;
+		left: -5.97%;
+		top: -11.46%;
+		width: 111.94%;
+		height: 122.92%;
+		pointer-events: none;
 	}
 
 	.buy-btn:not(:disabled):hover {
@@ -1086,14 +1266,17 @@
 		transform: translateY(1px) scale(0.95);
 	}
 
+	/* Inter Bold 12 / 1.4 tracking / 20 line box, white (node 6004:4333). */
 	.buy-btn__label {
-		font-family: 'Cinzel', serif;
-		font-size: calc(var(--hud-u) * 0.82rem);
-		font-weight: 900;
-		color: #ffd84a;
-		letter-spacing: 0.08em;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
-		line-height: 1;
+		position: relative;
+		font-family: 'Inter', sans-serif;
+		font-size: calc(var(--hud-u) * 12);
+		font-weight: 700;
+		color: #fff;
+		letter-spacing: calc(var(--hud-u) * 1.4);
+		text-transform: uppercase;
+		line-height: calc(var(--hud-u) * 20);
+		text-align: center;
 		pointer-events: none;
 	}
 
@@ -1204,12 +1387,45 @@
 	/* Forest Gang mobile principle: controls keep readable fixed proportions;
 	   only the complete group reflows. The old desktop row was uniformly
 	   shrunk to ~27% on portrait, making turbo effectively disappear. */
+	/* ── Mobile layouts ──────────────────────────────────────────────────────────────────────────
+	   Figma 6281-1791 specifies the DESKTOP bar only: one row, 1126 wide, backed by the neon plate
+	   art. Landscape floats the same controls over the board, so it cannot use a 1126x107 pill: it
+	   takes the design's palette, glyphs and type but keeps its own geometry — hence the plate is
+	   dropped and the row height goes back to auto here. Without this the fixed row height and the
+	   stretched plate wrecked it. Portrait no longer renders .hud-bottom at all — it has its own
+	   .pt-hud marquee below — but the rules stay keyed to both so the fallback is safe. */
+	.hud-shell[data-layout='portrait'] .hud-plate,
+	.hud-shell[data-layout='landscape'] .hud-plate {
+		display: none;
+	}
+
+	.hud-shell[data-layout='portrait'] .hud-bottom,
+	.hud-shell[data-layout='landscape'] .hud-bottom {
+		height: auto;
+	}
+
 	/* ===== PORTRAIT HUD — dedicated 2-row marquee layout ===== */
 	.hud-shell[data-layout='portrait'] {
+		/* MUST carry a unit. The desktop value is a length (a vw/px expression over 1126), so every
+		   `calc(var(--hud-u) * N)` below resolves to a length. A bare `1` here made those unitless,
+		   which silently dropped the width/height/font-size declarations and — because a unitless
+		   line-height is legal — turned `line-height: calc(var(--hud-u) * 20)` into "20x font-size",
+		   blowing the bar up to 900px tall. */
+		--hud-u: 1px;
 		padding: 0 4px calc(8px + env(safe-area-inset-bottom, 0px));
 	}
 
+	/* Self-contained: the base .hud-shell::after this used to extend was dropped along with the
+	   desktop scrim, so every property the pseudo-element needs to exist has to be declared here.
+	   Portrait keeps a scrim because the marquee HUD sits over the busiest part of the park art. */
 	.hud-shell[data-layout='portrait']::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 5;
+		pointer-events: none;
 		height: 230px;
 		/* translucent so the park scene shows through behind the HUD (design), still aids legibility */
 		background: linear-gradient(
@@ -1218,6 +1434,29 @@
 			rgba(8, 4, 20, 0.5) 52%,
 			rgba(8, 4, 20, 0) 100%
 		);
+	}
+
+	/* Portrait draws its own pill in CSS since the plate art cannot back a three-row stack. Colours
+	   are the design's: near-black lifting to #1a0535, hairline #d836fc. */
+	.hud-shell[data-layout='portrait'] .hud-bottom {
+		width: min(97vw, 440px);
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		padding: 6px 10px;
+		border-radius: 30px;
+		background: linear-gradient(0deg, #1a0535 0%, #05010c 100%);
+		border: 1px solid #d836fc;
+		box-shadow:
+			0 0 18px rgba(216, 54, 252, 0.25),
+			0 12px 26px rgba(0, 0, 0, 0.45);
+	}
+
+	.hud-shell[data-layout='portrait'] .hud-controls {
+		order: 0;
+		width: 100%;
+		justify-content: center;
+		gap: 8px;
 	}
 
 	/* Portrait logo stack: Press Play mark stacked above the THEME PARK logo; the stack's bottom

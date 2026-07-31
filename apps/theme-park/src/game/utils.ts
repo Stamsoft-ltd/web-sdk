@@ -5,7 +5,7 @@ import { bookEventHandlerMap } from './bookEventHandlerMap';
 import { eventEmitter } from './eventEmitter';
 import type { Bet, BookEventOfType } from './typesBookEvent';
 import type { SymbolName, SymbolState, RawSymbol } from './types';
-import { SYMBOL_INFO_MAP, SYMBOL_W } from './constants';
+import { CELL_W, SYMBOL_INFO_MAP } from './constants';
 
 // Maps from SymbolName → asset key for each state.
 // Used by Board.svelte when NOT in bonus mode (base game).
@@ -87,12 +87,12 @@ export const getSpecialSymbolKey = (visual: SpecialSymbolVisual, layoutType: str
 	return specialSymbolKeys[visual][variant];
 };
 
-export const getReelCenterX = (reelIndex: number): number => SYMBOL_W * (reelIndex + 0.5);
+export const getReelCenterX = (reelIndex: number): number => CELL_W * (reelIndex + 0.5);
 
 export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; state: SymbolState }) =>
 	SYMBOL_INFO_MAP[rawSymbol.name][state];
 
-export const getSymbolX = (reelIndex: number): number => SYMBOL_W * (reelIndex + 0.5);
+export const getSymbolX = (reelIndex: number): number => CELL_W * (reelIndex + 0.5);
 
 export const { playBookEvent, playBookEvents } = createPlayBookUtils({ bookEventHandlerMap });
 

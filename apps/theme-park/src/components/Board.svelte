@@ -15,7 +15,7 @@
 	import { onMount } from 'svelte';
 
 	import { getContext } from '../game/context';
-	import { SYMBOL_W, SYMBOL_H, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { CELL_W, SYMBOL_W, SYMBOL_H, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
 	import {
 		spriteKeyByName,
 		bonusSpriteKeyByName,
@@ -47,7 +47,7 @@
 	let show = $state(true);
 
 	const activeMap = $derived(context.stateGame.bonusMode ? bonusSpriteKeyByName : spriteKeyByName);
-	const getX = (reelIndex: number) => SYMBOL_W * (reelIndex + 0.5);
+	const getX = (reelIndex: number) => CELL_W * (reelIndex + 0.5);
 	const rollerReelSet = $derived(
 		new Set(context.stateGame.activeRollerReels.map(({ reel }) => reel)),
 	);
@@ -213,26 +213,13 @@
 			isMask
 			draw={(graphics) => {
 				graphics.beginFill(0xffffff);
-				graphics.rect(0, 0, SYMBOL_W * BOARD_DIMENSIONS.x, SYMBOL_H * BOARD_DIMENSIONS.y);
+				graphics.rect(0, 0, CELL_W * BOARD_DIMENSIONS.x, SYMBOL_H * BOARD_DIMENSIONS.y);
 				graphics.endFill();
 			}}
 		/>
-		<!-- One clean 5x5 gold grid over the Theme Park board. No per-cell frames. -->
-		<Graphics
-			draw={(graphics) => {
-				for (let reel = 1; reel < BOARD_DIMENSIONS.x; reel += 1) {
-					const x = SYMBOL_W * reel;
-					graphics.moveTo(x, 0);
-					graphics.lineTo(x, SYMBOL_H * BOARD_DIMENSIONS.y);
-				}
-				for (let row = 1; row < BOARD_DIMENSIONS.y; row += 1) {
-					const y = SYMBOL_H * row;
-					graphics.moveTo(0, y);
-					graphics.lineTo(SYMBOL_W * BOARD_DIMENSIONS.x, y);
-				}
-				graphics.stroke({ width: 2.4, color: 0xf2b632, alpha: 0.96 });
-			}}
-		/>
+		<!-- The 5x5 grid is painted into board-lines.webp (see ART_GRID in <BoardFrame>, which sizes
+		     the pad so its lines land on these cell boundaries). Stroking a second grid here only put
+		     a gold line on top of the art's orange one. -->
 		{#each board as reel, reelIndex (reelIndex)}
 			{#if !hiddenReels.has(reelIndex)}
 				{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}

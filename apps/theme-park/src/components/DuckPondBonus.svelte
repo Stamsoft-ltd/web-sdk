@@ -35,6 +35,7 @@
 		BOARD_GRID_OFFSET_Y,
 		BOARD_SIZES,
 		SYMBOL_H,
+		CELL_W,
 		SYMBOL_W,
 	} from '../game/constants';
 
@@ -168,7 +169,7 @@
 	};
 
 	const pickedCount = $derived(ducks.filter((duck) => duck.selected).length);
-	const cellX = (index: number) => SYMBOL_W * ((index % BOARD_DIMENSIONS.x) + 0.5);
+	const cellX = (index: number) => CELL_W * ((index % BOARD_DIMENSIONS.x) + 0.5);
 	const cellY = (index: number) => SYMBOL_H * (Math.floor(index / BOARD_DIMENSIONS.x) + 0.5);
 </script>
 
@@ -236,7 +237,7 @@
 				<Sprite
 					key="forestBonusBadge"
 					anchor={0.5}
-					width={SYMBOL_W * 3.8}
+					width={CELL_W * 3.8}
 					height={SYMBOL_H * 0.68}
 				/>
 				<BitmapText
@@ -257,7 +258,7 @@
 				<Sprite
 					key="forestBonusBadge"
 					anchor={0.5}
-					width={SYMBOL_W * 3.6}
+					width={CELL_W * 3.6}
 					height={SYMBOL_H * 0.64}
 				/>
 				<BitmapText

@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { Rectangle } from 'pixi-svelte';
+	import { Rectangle, Sprite } from 'pixi-svelte';
 	import { onMount } from 'svelte';
 
 	import { getContext } from '../game/context';
-	import LoopingAssetSprite from './LoopingAssetSprite.svelte';
+	import { BACKGROUND_Z, backgroundCover } from '../game/sceneBackground';
 
 	const context = getContext();
-	const BACKGROUND_ASPECT = 4800 / 2656;
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 	let driftX = $state(0);
 	let driftY = $state(0);
@@ -24,28 +23,29 @@
 		return () => cancelAnimationFrame(frame);
 	});
 
-	const cover = $derived.by(() => {
-		const width = canvas.width;
-		const height = canvas.height;
-		const canvasAspect = width / height;
+	// The art is in the counted load pass, not the preload tier, so this component mounts with <Game>
+	// a moment before its texture lands; <Sprite> logs an error for an unknown key. The loading screen
+	// is opaque over this the whole time.
+	const ready = $derived(!!context.stateApp.loadedAssets?.background);
 
-		if (canvasAspect > BACKGROUND_ASPECT) {
-			return { width, height: width / BACKGROUND_ASPECT };
-		}
-
-		return { width: height * BACKGROUND_ASPECT, height };
-	});
+	const cover = $derived(backgroundCover(canvas));
 </script>
 
-<LoopingAssetSprite
-	animationKey="backgroundAnim"
-	fallbackKey="background"
-	x={canvas.width * 0.5 + driftX}
-	y={canvas.height * 0.5 + driftY}
-	anchor={0.5}
-	width={cover.width * 1.025}
-	height={cover.height * 1.025}
-	alpha={0.98}
-/>
-<Rectangle {...canvas} backgroundColor={0x050407} alpha={0.2} zIndex={-2} />
-<Rectangle {...canvas} backgroundColor={0x000000} alpha={0.18} zIndex={-1} />
+<!-- zIndex is explicit because this sprite is gated on its texture: it mounts a beat after <Clouds>
+     and, at an equal zIndex, pixi's stable sort would leave it appended last and painting over the
+     sky. The backdrop stack sits below every MainContainer (all at 0): tints, then art, then clouds
+     at -2. -->
+{#if ready}
+	<Sprite
+		key="background"
+		x={canvas.width * 0.5 + driftX}
+		y={canvas.height * 0.5 + driftY}
+		anchor={0.5}
+		width={cover.width}
+		height={cover.height}
+		alpha={0.98}
+		zIndex={BACKGROUND_Z}
+	/>
+{/if}
+<Rectangle {...canvas} backgroundColor={0x050407} alpha={0.2} zIndex={BACKGROUND_Z - 2} />
+<Rectangle {...canvas} backgroundColor={0x000000} alpha={0.18} zIndex={BACKGROUND_Z - 1} />

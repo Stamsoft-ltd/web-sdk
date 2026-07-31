@@ -4,16 +4,26 @@ import type { SymbolName, RawSymbol, SymbolState } from './types';
 // Theme Park board: 5 reels x 5 rows
 export const BOARD_DIMENSIONS = { x: 5, y: 5 };
 
-// Match Forest Gang's reel pitch. Keeping the same 121x103 cell geometry makes
-// Theme Park's reels, symbols, masks and feature overlays scale as one system;
-// the fifth row is handled by the responsive board fit rather than square cells.
+// Drawn size of a symbol. Inherited from Forest Gang's reel pitch, and left alone: the symbol
+// exports are 448x360 frames, so 121x103 is the shape every piece of art in this game is authored
+// against.
 export const SYMBOL_W = 121;
 export const SYMBOL_H = 103;
 export const SYMBOL_SIZE = SYMBOL_H;
 
+// Reel pitch — how far apart the cell CENTRES sit, which is a separate thing from how big a symbol
+// is drawn. Figma 6612-4311 puts the grid at 691x457 inside a 701x467 board (nodes 6612:4553 and
+// 6612:4357), i.e. a 1.512:1 cell, far wider than the 1.175:1 the old shared-with-art pitch gave.
+// The old pitch was squeezing the frame art by 28% vertically and packing the reels into a tall
+// narrow box. Widening the pitch alone spreads the reels to the design's proportions and leaves
+// every symbol, badge and overlay drawn as before. <BoardFrame> sizes the pad art off this same
+// grid, so the lines painted into it land on these cell boundaries.
+export const CELL_W = SYMBOL_H * (691 / 457);
+export const CELL_H = SYMBOL_H;
+
 export const BOARD_SIZES = {
-	width: SYMBOL_W * BOARD_DIMENSIONS.x,
-	height: SYMBOL_H * BOARD_DIMENSIONS.y,
+	width: CELL_W * BOARD_DIMENSIONS.x,
+	height: CELL_H * BOARD_DIMENSIONS.y,
 };
 
 export const BOARD_GRID_OFFSET_Y = 0;

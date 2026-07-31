@@ -1,0 +1,8 @@
+<!-- Figma 6094:4443 — the close glyph is the HUD's plus vector rotated 45 degrees. The rotation is
+     baked in here (18.483 square about its own centre, which needs a 26.134 box) so the markup can
+     drop the icon in without a CSS transform that would fight the button's :active transform. -->
+<svg width="26.134" height="26.134" viewBox="0 0 26.134 26.134" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g transform="rotate(45 13.067 13.067) translate(4.30685 4.30685)">
+<path d="M10.1079 1.34772C10.1079 0.602263 9.50562 0 8.76017 0C8.01472 0 7.41245 0.602263 7.41245 1.34772V7.41245H1.34772C0.602263 7.41245 0 8.01472 0 8.76017C0 9.50562 0.602263 10.1079 1.34772 10.1079H7.41245V16.1726C7.41245 16.9181 8.01472 17.5203 8.76017 17.5203C9.50562 17.5203 10.1079 16.9181 10.1079 16.1726V10.1079H16.1726C16.9181 10.1079 17.5203 9.50562 17.5203 8.76017C17.5203 8.01472 16.9181 7.41245 16.1726 7.41245H10.1079V1.34772Z" fill="white"/>
+</g>
+</svg>

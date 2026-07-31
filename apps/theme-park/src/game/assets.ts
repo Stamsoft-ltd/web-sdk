@@ -4,75 +4,78 @@ import type { Assets } from 'pixi-svelte';
 
 const assets: Assets = {
 	// === BACKGROUND ===
-	background: { type: 'sprite', src: './assets/theme-park/v2/background.webp', preload: true },
-	backgroundAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/background/base.mp4',
-		defer: true,
-	},
-	splash: { type: 'sprite', src: './assets/theme-park/v2/background.webp', preload: true },
-	themeBoard: { type: 'sprite', src: './assets/theme-park/v2/board.png', preload: true },
+	// Depth-of-field plaza art: the same scene as the old background.webp, blurred so the reels read
+	// against it. It replaces both that still and the animations/background/base.mp4 loop, which was
+	// the sharp cut and would have painted straight over this one once its deferred load landed.
+	background: { type: 'sprite', src: './assets/theme-park/v2/background-blur.webp' },
+	// Drifting sky, drawn by <Clouds>. A random subset renders per page load, so all five have to be
+	// loaded — they total ~23 kB, less than a single symbol.
+	cloud1: { type: 'sprite', src: './assets/theme-park/v2/clouds/cloud1.webp' },
+	cloud2: { type: 'sprite', src: './assets/theme-park/v2/clouds/cloud2.webp' },
+	cloud3: { type: 'sprite', src: './assets/theme-park/v2/clouds/cloud3.webp' },
+	cloud4: { type: 'sprite', src: './assets/theme-park/v2/clouds/cloud4.webp' },
+	cloud5: { type: 'sprite', src: './assets/theme-park/v2/clouds/cloud5.webp' },
+	// The pad carries its own 5x5 grid lines, so <Board> no longer strokes them. New filename rather
+	// than a ?v= on the old one, so a cached board.png cannot survive the swap.
+	themeBoard: { type: 'sprite', src: './assets/theme-park/v2/board-lines.webp' },
+	// The autoplay pad: same rect and same grid lines, but a clean neon outline in place of the
+	// bulbs, so the lights running round that outline are the only thing moving on the border.
+	themeBoardAuto: { type: 'sprite', src: './assets/theme-park/v2/board-auto.webp' },
+	// One white radial glow, tinted per light. Drawing the lights as sprites rather than as a
+	// Graphics rebuilt every frame is what keeps autoplay at 60fps — the geometry rebuild cost 7ms a
+	// frame, moving sprites costs nothing.
+	spark: { type: 'sprite', src: './assets/theme-park/v2/spark.webp' },
 
 	// === FINAL HIGH SYMBOL ART ===
-	tpH1: { type: 'sprite', src: './assets/theme-park/v2/symbols/h1-coaster.png', preload: true },
+	tpH1: { type: 'sprite', src: './assets/theme-park/v2/symbols/h1-coaster.png' },
 	tpH1Win: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/symbols/h1-coaster-win.png',
-		preload: true,
 	},
-	tpH2: { type: 'sprite', src: './assets/theme-park/v2/symbols/h2-duck.png', preload: true },
+	tpH2: { type: 'sprite', src: './assets/theme-park/v2/symbols/h2-duck.png' },
 	tpH2Win: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/symbols/h2-duck-win.png',
-		preload: true,
 	},
-	tpH3: { type: 'sprite', src: './assets/theme-park/v2/symbols/h3-balloons.png', preload: true },
+	tpH3: { type: 'sprite', src: './assets/theme-park/v2/symbols/h3-balloons.png' },
 	tpH3Win: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/symbols/h3-balloons-win.png',
-		preload: true,
 	},
-	tpH4: { type: 'sprite', src: './assets/theme-park/v2/symbols/h4-popcorn.png', preload: true },
+	tpH4: { type: 'sprite', src: './assets/theme-park/v2/symbols/h4-popcorn.png' },
 	tpH4Win: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/symbols/h4-popcorn-win.png',
-		preload: true,
 	},
-	tpH5: { type: 'sprite', src: './assets/theme-park/v2/symbols/h5-ferris.png', preload: true },
+	tpH5: { type: 'sprite', src: './assets/theme-park/v2/symbols/h5-ferris.png' },
 	tpH5Win: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/symbols/h5-ferris-win.png',
-		preload: true,
 	},
-	tpL1: { type: 'sprite', src: './assets/theme-park/v2/symbols/l1-a.png', preload: true },
+	tpL1: { type: 'sprite', src: './assets/theme-park/v2/symbols/l1-a.png' },
 	tpL1Win: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/symbols/l1-a-win.png',
-		preload: true,
 	},
-	tpL2: { type: 'sprite', src: './assets/theme-park/v2/symbols/l2-k.png', preload: true },
+	tpL2: { type: 'sprite', src: './assets/theme-park/v2/symbols/l2-k.png' },
 	tpL2Win: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/symbols/l2-k-win.png',
-		preload: true,
 	},
-	tpL3: { type: 'sprite', src: './assets/theme-park/v2/symbols/l3-q.png', preload: true },
+	tpL3: { type: 'sprite', src: './assets/theme-park/v2/symbols/l3-q.png' },
 	tpL3Win: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/symbols/l3-q-win.png',
-		preload: true,
 	},
-	tpL4: { type: 'sprite', src: './assets/theme-park/v2/symbols/l4-j.png', preload: true },
+	tpL4: { type: 'sprite', src: './assets/theme-park/v2/symbols/l4-j.png' },
 	tpL4Win: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/symbols/l4-j-win.png',
-		preload: true,
 	},
-	tpL5: { type: 'sprite', src: './assets/theme-park/v2/symbols/l5-10.png', preload: true },
+	tpL5: { type: 'sprite', src: './assets/theme-park/v2/symbols/l5-10.png' },
 	tpL5Win: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/symbols/l5-10-win.png',
-		preload: true,
 	},
 	tpH1WinAnim: {
 		type: 'sprite',
@@ -127,32 +130,26 @@ const assets: Assets = {
 	tpWildDesktop: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/wild-desktop.png',
-		preload: true,
 	},
 	tpWildMobile: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/wild-mobile.png',
-		preload: true,
 	},
 	tpWildLandscape: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/wild-mobile-landscape.png',
-		preload: true,
 	},
 	tpMegaWildDesktop: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/mega-wild-desktop.png',
-		preload: true,
 	},
 	tpMegaWildMobile: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/mega-wild-mobile.png',
-		preload: true,
 	},
 	tpMegaWildLandscape: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/mega-wild-mobile-landscape.png',
-		preload: true,
 	},
 	tpWildAnim: {
 		type: 'sprite',
@@ -172,34 +169,28 @@ const assets: Assets = {
 	tpCoasterWild: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/symbols/wild-slime.png',
-		preload: true,
 	},
 
 	// === FEATURE PRESENTERS ===
 	coasterTrack: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/features/coaster-track.png',
-		preload: true,
 	},
 	coasterCarHappy: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/features/coaster-car-happy.png',
-		preload: true,
 	},
 	coasterCarVomit: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/features/coaster-car-vomit.png',
-		preload: true,
 	},
 	coasterCarSick: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/features/coaster-car-sick.png',
-		preload: true,
 	},
 	rollerWildCar: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/features/roller-wild-car.png',
-		preload: true,
 	},
 	rollerWildCarAnim: {
 		type: 'sprite',
@@ -219,52 +210,42 @@ const assets: Assets = {
 	rollerWildRail: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/features/roller-wild-rail.png',
-		preload: true,
 	},
 	tpDuckScatterDesktop: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/duck-your-luck-desktop.png',
-		preload: true,
 	},
 	tpDuckScatterMobile: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/duck-your-luck-mobile.png',
-		preload: true,
 	},
 	tpDuckScatterLandscape: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/duck-your-luck-mobile-landscape.png',
-		preload: true,
 	},
 	tpRollerScatterDesktop: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/roller-wilds-desktop.png',
-		preload: true,
 	},
 	tpRollerScatterMobile: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/roller-wilds-mobile.png',
-		preload: true,
 	},
 	tpRollerScatterLandscape: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/roller-wilds-mobile-landscape.png',
-		preload: true,
 	},
 	tpCoasterScatterDesktop: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/mega-coaster-desktop.png',
-		preload: true,
 	},
 	tpCoasterScatterMobile: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/mega-coaster-mobile.png',
-		preload: true,
 	},
 	tpCoasterScatterLandscape: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/mega-coaster-mobile-landscape.png',
-		preload: true,
 	},
 	tpDuckScatterAnim: {
 		type: 'sprite',
@@ -298,16 +279,18 @@ const assets: Assets = {
 	},
 
 	// === WIN BOARDS ===
-	winSweet: { type: 'sprite', src: './assets/theme-park/v2/wins/sweet.webp', preload: true },
-	winWild: { type: 'sprite', src: './assets/theme-park/v2/wins/wild.webp', preload: true },
-	winEpic: { type: 'sprite', src: './assets/theme-park/v2/wins/epic.webp', preload: true },
+	// Bonus-complete screen (Figma 6094:4022): the square neon panel and the prize pile on it.
+	bonusPanel: { type: 'sprite', src: './assets/theme-park/v2/popup/square_panel_neon.webp' },
+	bonusPrize: { type: 'sprite', src: './assets/theme-park/v2/wins/bonus-prize.webp' },
+	winSweet: { type: 'sprite', src: './assets/theme-park/v2/wins/sweet.webp' },
+	winWild: { type: 'sprite', src: './assets/theme-park/v2/wins/wild.webp' },
+	winEpic: { type: 'sprite', src: './assets/theme-park/v2/wins/epic.webp' },
 	winLegendary: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/wins/legendary.webp',
-		preload: true,
 	},
-	winMythic: { type: 'sprite', src: './assets/theme-park/v2/wins/mythic.webp', preload: true },
-	winMax: { type: 'sprite', src: './assets/theme-park/v2/wins/max.webp', preload: true },
+	winMythic: { type: 'sprite', src: './assets/theme-park/v2/wins/mythic.webp' },
+	winMax: { type: 'sprite', src: './assets/theme-park/v2/wins/max.webp' },
 	winSweetAnim: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/animations/wins/sweet.webm',
@@ -335,23 +318,20 @@ const assets: Assets = {
 	},
 
 	// === FRAMES / UI ===
-	symbolPad: { type: 'sprite', src: './assets/components/frames/symbol_pad.png', preload: false },
+	symbolPad: { type: 'sprite', src: './assets/components/frames/symbol_pad.png' },
 	forestBonusBadge: {
 		type: 'sprite',
 		src: './assets/components/frames/forest/badge_frame.png',
-		preload: true,
 	},
 	// Temporary production placeholders copied from Magnetic. Replace with final
 	// Theme Park lock art without changing the component contract.
 	lockedCell: {
 		type: 'sprite',
 		src: './assets/components/frames/magnetic/cell_box.png',
-		preload: true,
 	},
 	lockedCellWin: {
 		type: 'sprite',
 		src: './assets/components/frames/magnetic/cell_box_win.png',
-		preload: true,
 	},
 	// Temporary anticipation Spine copied from Forest Gang. The intro/loop/out
 	// state machine is shared; only the art will be replaced later.
@@ -362,7 +342,6 @@ const assets: Assets = {
 			skeleton: './assets/spines/anticipation/anticipation.json',
 			scale: 2,
 		},
-		preload: true,
 	},
 	// Forest Gang's production intro/idle panel. Reused for free-spin intro/outro
 	// instead of drawing three rounded Pixi rectangles.
@@ -373,12 +352,39 @@ const assets: Assets = {
 			skeleton: './assets/spines/fsIntro/fs_screen.json',
 			scale: 2,
 		},
-		preload: true,
 	},
 
 	// === FONTS ===
-	goldFont: { type: 'font', src: './assets/fonts/goldFont/mm_gold.xml', preload: true },
-	silverFont: { type: 'font', src: './assets/fonts/silverFont/mm_silver.xml', preload: true },
+	goldFont: { type: 'font', src: './assets/fonts/goldFont/mm_gold.xml' },
+	silverFont: { type: 'font', src: './assets/fonts/silverFont/mm_silver.xml' },
+
+	// === LOADING SCREEN ===
+	// The only two entries in the `preload` tier. Animated loading bar (49-frame 0→100% fill, white
+	// bar/text on transparency) plus the studio mark above it. Stepped by real download progress
+	// rather than autoplayed — the shared pixi ticker isn't running while the loader is up, so an
+	// AnimatedSprite would never advance. See LoadingScreen.svelte.
+	loadingBarAnim: {
+		type: 'spriteSheet',
+		src: './assets/sprites/loadingBarAnim/loading_bar.json?v=20260731',
+		preload: true,
+	},
+	pressPlayLogo: {
+		type: 'sprite',
+		src: './assets/components/ui/press_play_logo.webp',
+		preload: true,
+	},
 };
+
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+// Load tiers. Everything above except the two LOADING SCREEN entries is UNFLAGGED, which puts it
+// in the gating pass: it downloads while the loading screen is up and the progress bar counts it.
+// That default is the point — every entry used to carry `preload: true`, which is a different tier
+// entirely (it blocks before the game tree mounts AND before the progress counter starts), so the
+// bar sat frozen at 0% through the whole download and only moved over the last few files.
+//
+//   preload      – needed to DRAW the loading screen itself. Keep this list tiny.
+//   (unflagged)  – base-game art. Gates `loaded`; the bar reflects it honestly.
+//   defer        – streams in the background after `loaded`; already used for the video/webm art.
+// ─────────────────────────────────────────────────────────────────────────────────────────────
 
 export default assets;

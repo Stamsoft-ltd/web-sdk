@@ -112,6 +112,13 @@ export const stateGame = $state({
 	resumeModalOpen: false,
 	buyModalOpen: false,
 	freeSpinPopupShowing: false,
+	/**
+	 * A "press anywhere to continue" prompt is up. The caption itself is HTML rather than pixi: the
+	 * design puts it across the HUD bar, and the HUD is a DOM layer above the canvas, so nothing
+	 * drawn in the scene can reach it. <PressToContinue> owns the input; this only says whether to
+	 * paint the words.
+	 */
+	pressToContinueShowing: false,
 	// Current spin's win for the HUD. Bonus cumulative win stays in winBookEventAmount.
 	// At bonus/round end this becomes the final total until the next reveal clears it.
 	roundWin: 0,
@@ -143,17 +150,6 @@ const getBoardViewportMetrics = () => {
 	return { mainLayout, canvasSizes, padding, availableCanvasWidth, availableCanvasHeight };
 };
 
-const getBoardScale = () => {
-	const { mainLayout, availableCanvasHeight, availableCanvasWidth } = getBoardViewportMetrics();
-	return Math.max(
-		1,
-		Math.min(
-			availableCanvasHeight / (BOARD_SIZES.height * (mainLayout.scale || 1)),
-			availableCanvasWidth / (BOARD_SIZES.width * (mainLayout.scale || 1)),
-		),
-	);
-};
-
 const getBoardOffset = () => {
 	const { mainLayout, canvasSizes, padding, availableCanvasHeight, availableCanvasWidth } =
 		getBoardViewportMetrics();
@@ -167,11 +163,18 @@ const getBoardOffset = () => {
 	};
 };
 
-const _FRAME_MARGIN = 1.04;
-const _FRAME_INNER_W_FRAC = 0.64;
-const _FRAME_ASPECT_H_W = 2528 / 3616;
-const _FRAME_ANCHOR_Y = 0.45;
-const _FRAME_EXTRA_SCALE = 1.35 / 1.15;
+// The 5x5 grid in Figma 6612-4311 (node 6612:4553): 691x457 at (255, 86) inside the 1200x670 frame.
+// Everything the desktop board does is expressed as one of these four fractions.
+const DESIGN_GRID = {
+	width: 691 / 1200,
+	height: 457 / 670,
+	centreX: (255 + 691 / 2) / 1200,
+	centreY: (86 + 457 / 2) / 670,
+};
+
+// The Forest Gang frame constants that used to drive the desktop board (_FRAME_MARGIN,
+// _FRAME_INNER_W_FRAC, _FRAME_ASPECT_H_W, _FRAME_ANCHOR_Y, _FRAME_EXTRA_SCALE) are gone with it —
+// they described that game's frame art, not this one's, and nothing else read them.
 const PORTRAIT_FRAME_FILL = 1;
 const PORTRAIT_TOP_OFFSET = 236;
 const MOBILE_FRAME_INNER_W = 0.95;
@@ -240,20 +243,35 @@ const boardLayout = () => {
 		};
 	}
 
-	// Forest Gang desktop/tablet scale. Since both games now share the same reel
-	// pitch, viewport fitting produces the same visible board height automatically.
-	const boardScale = getBoardScale() * 0.81 * 1.27;
-	const frameW =
-		(BOARD_SIZES.width * boardScale * _FRAME_MARGIN * _FRAME_EXTRA_SCALE) / _FRAME_INNER_W_FRAC;
-	const frameH = frameW * _FRAME_ASPECT_H_W;
+	// Desktop is now placed straight off the design instead of the inherited Forest Gang chain.
+	// `y: frameH * _FRAME_ANCHOR_Y` derived the board's position from that game's frame art, which
+	// only landed correctly while the grid carried its 1.175:1 cell — with this design's 1.512:1 cell
+	// it dropped the board ~90px and clipped the bottom row behind the bar.
+	const { mainLayout, canvasSizes } = getBoardViewportMetrics();
+	const scale = mainLayout.scale || 1;
+
+	// Fit to whichever design edge runs out first so the proportions survive canvases that are not
+	// the design's 1.79. The two agree exactly at 1200x670, which is where the numbers come from.
+	const boardScale = Math.min(
+		(canvasSizes.width * DESIGN_GRID.width) / (BOARD_SIZES.width * scale),
+		(canvasSizes.height * DESIGN_GRID.height) / (BOARD_SIZES.height * scale),
+	);
+
+	// mainLayout space -> canvas is `canvasCentre + (p - mainSize/2) * scale` (see MainContainer), so
+	// this is the inverse: put the grid's centre on the design's fraction of the canvas.
+	const toMainX = (fraction: number) =>
+		mainLayout.width * 0.5 + (canvasSizes.width * (fraction - 0.5)) / scale;
+	const toMainY = (fraction: number) =>
+		mainLayout.height * 0.5 + (canvasSizes.height * (fraction - 0.5)) / scale;
+
 	return {
-		x: stateLayoutDerived.mainLayout().width * 0.5 + getBoardOffset().x,
-		y: frameH * _FRAME_ANCHOR_Y,
+		x: toMainX(DESIGN_GRID.centreX),
+		y: toMainY(DESIGN_GRID.centreY),
 		frameTopY: 0,
 		frameCx: 0,
 		frameCy: 0,
-		frameW,
-		frameH,
+		frameW: BOARD_SIZES.width * boardScale,
+		frameH: BOARD_SIZES.height * boardScale,
 		boardScale,
 		boardScaleX: boardScale,
 		boardScaleY: boardScale,

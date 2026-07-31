@@ -11,7 +11,7 @@
 	import { MainContainer } from 'components-layout';
 
 	import { getContext } from '../game/context';
-	import { SYMBOL_W, SYMBOL_H, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { CELL_W, SYMBOL_W, SYMBOL_H, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
 	import CoasterWildBackground from './CoasterWildBackground.svelte';
 	import RollerMultiplierText from './RollerMultiplierText.svelte';
 
@@ -40,7 +40,7 @@
 		},
 	});
 
-	const cellX = (reel: number) => SYMBOL_W * (reel + 0.5);
+	const cellX = (reel: number) => CELL_W * (reel + 0.5);
 	const cellY = (row: number) => SYMBOL_H * (row + 0.5);
 	const cellPulse = (reel: number, row: number) =>
 		pulsingKeys.includes(`${reel},${row}`) ? 1.14 : 1;

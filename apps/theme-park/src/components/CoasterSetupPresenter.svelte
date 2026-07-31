@@ -18,6 +18,7 @@
 
 	import { getContext } from '../game/context';
 	import {
+		CELL_W,
 		SYMBOL_W,
 		SYMBOL_H,
 		BOARD_DIMENSIONS,
@@ -49,7 +50,7 @@
 	let tileHitCounts: Record<string, number> = {};
 	let animationRun = 0;
 
-	const cellX = (reel: number) => SYMBOL_W * (reel + 0.5);
+	const cellX = (reel: number) => CELL_W * (reel + 0.5);
 	const cellY = (row: number) => SYMBOL_H * (row + 0.5);
 	const RAIL_OFFSET_CELLS = 0.6;
 	const CELL_TRAVEL_MS = 420;
@@ -59,7 +60,7 @@
 	const CART_STAGGER_MS = 1500;
 	const railY = (row: number) => cellY(row) - SYMBOL_H * RAIL_OFFSET_CELLS;
 	const rowDirection = (row: number): -1 | 1 => (row % 2 === 0 ? 1 : -1);
-	const entryX = -SYMBOL_W * 0.72;
+	const entryX = -CELL_W * 0.72;
 	const trackY = BOARD_SIZES.height * 0.5 - SYMBOL_H * 0.44;
 	const TRACK_SOURCE_WIDTH = 795;
 	const TRACK_FIRST_RAIL_X = 60;

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
 	import { GlobalStyle } from 'components-ui-html';
-	import { Authenticate, LoaderStakeEngine, LoadI18n } from 'components-shared';
+	import { Authenticate, LoadI18n } from 'components-shared';
 	import Game from '../components/Game.svelte';
 	import SocialI18nSync from '../components/SocialI18nSync.svelte';
 	import { setContext } from '../game/context';
@@ -12,8 +12,11 @@
 
 	const props: Props = $props();
 
-	const loaderUrlStakeEngine = './stake-engine-loader.gif';
-
+	// NOTE: the template's <LoaderStakeEngine> boot overlay is deliberately absent — the Stake
+	// review requires the game to ship no Stake Engine branding. It used to hold a Stake Engine gif
+	// over the screen until stateApp.loaded. <Authenticate> gates its children, so nothing paints
+	// until the auth round-trip resolves; that window now shows the branded body background set in
+	// app.html, and our own LoadingScreen takes over the moment <Game> mounts.
 	setContext();
 </script>
 
@@ -25,7 +28,5 @@
 		</LoadI18n>
 	</Authenticate>
 </GlobalStyle>
-
-<LoaderStakeEngine src={loaderUrlStakeEngine} />
 
 {@render props.children()}

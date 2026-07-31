@@ -25,7 +25,7 @@
 	import { stateI18nDerived } from 'state-shared';
 
 	import { getContext } from '../game/context';
-	import { SYMBOL_W, SYMBOL_H, BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { CELL_W, SYMBOL_W, SYMBOL_H, BOARD_GRID_OFFSET_Y } from '../game/constants';
 
 	type RevealChip = { position: Position; kind: DuckKind; value: number };
 
@@ -82,7 +82,7 @@
 		},
 	});
 
-	const cellX = (reel: number) => SYMBOL_W * (reel + 0.5);
+	const cellX = (reel: number) => CELL_W * (reel + 0.5);
 	const cellY = (row: number) => SYMBOL_H * (row + 0.5);
 
 	const bannerY = $derived(layout.y - (layout.height / 2) * layout.boardScale - 46);

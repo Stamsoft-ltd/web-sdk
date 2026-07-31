@@ -8,6 +8,9 @@ export default {
 	PAYTABLE: 'PAYTABLE',
 	'GAME RULES': 'GAME RULES',
 	AUTOPLAY: 'AUTOPLAY',
+	// Short caption printed inside the autoplay button on the HUD bar (Figma 6281-1791). Kept
+	// separate from AUTOPLAY: the button is 48px wide, so the full word does not fit.
+	AUTO: 'AUTO',
 	TURBO: 'TURBO',
 	REPLAY: 'REPLAY',
 	'START REPLAY': 'START REPLAY',
@@ -39,6 +42,9 @@ export default {
 	'FREE SPINS': 'FREE SPINS',
 	OF: 'OF',
 	'BONUS COMPLETE': 'BONUS COMPLETE',
+	// Headings on the bonus-complete screen (Figma 6094:4022).
+	'CONGRATULATIONS!': 'CONGRATULATIONS!',
+	'YOU WON': 'YOU WON',
 	SELECTED: 'SELECTED',
 	'REVEALING ALL DUCKS': 'REVEALING ALL DUCKS',
 	'PICK MORE': 'PICK %count% MORE',
@@ -46,6 +52,16 @@ export default {
 	ALL: 'ALL',
 	UNLIMITED: 'UNLIMITED',
 	'PRESS TO CONTINUE': 'PRESS TO CONTINUE',
+	// Wording and placement from Figma 6094:4022; the arrow is appended by <PressToContinue>.
+	'PRESS ANYWHERE TO CONTINUE': 'PRESS ANYWHERE TO CONTINUE',
+	// ── Splash feature cards (Figma 6102-1129) ───────────────────────────────
+	// The three headline names stay English in every locale, like GAME TITLE — they are feature
+	// brand names, and the design sets them in a stylised gradient face.
+	'SPLASH FEATURE 1': 'EXPANDING REELS',
+	'SPLASH FEATURE 2': 'MEGA CHAIN',
+	'SPLASH FEATURE 3': 'EPIC WINS',
+	'SPLASH WITH UP TO': 'with up to',
+	'SPLASH MULTIPLIER': 'multiplier',
 	SOUND: 'SOUND',
 	'DECREASE BET': 'DECREASE BET',
 	'INCREASE BET': 'INCREASE BET',

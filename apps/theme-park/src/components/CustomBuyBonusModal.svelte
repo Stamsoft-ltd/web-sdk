@@ -15,6 +15,8 @@
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { templateStakeDerived } from '../state/templateStake.svelte';
+	import PopupFrame from './PopupFrame.svelte';
+	import PopupCloseButton from './PopupCloseButton.svelte';
 	import type { BetMode } from '../game/types';
 
 	type ToggleMode = Extract<BetMode, 'ANTE' | 'FSPIN1' | 'FSPIN2'>;
@@ -149,10 +151,14 @@
 <button class="backdrop" type="button" aria-label={t('CLOSE')} tabindex="-1" onclick={props.onclose}
 ></button>
 
+<!-- Screen-corner close, matching every other popup. Hidden while the confirm dialog is up, which
+     brings its own in the same spot. -->
+{#if !confirmMode}
+	<PopupCloseButton onclick={props.onclose} label={t('CLOSE')} />
+{/if}
+
 <!-- Panel -->
 <div class="panel" role="dialog" aria-modal="true">
-	<button class="close-btn" type="button" onclick={props.onclose}>✕</button>
-
 	<h2 class="title">{t('BUY BONUS')}</h2>
 
 	<div class="grid">
@@ -212,34 +218,23 @@
 	</div>
 </div>
 
-<!-- Confirm -->
+<!-- Confirm — Figma 6094-4364. Same frame, type and buttons as BonusResumeModal. -->
 {#if confirmMode && confirmCard}
-	<button
-		class="backdrop backdrop--z2"
-		type="button"
-		aria-label={t('CLOSE')}
-		tabindex="-1"
-		onclick={closeConfirm}
-	></button>
-	<div class="confirm" role="dialog" aria-modal="true">
-		<div class="confirm-title">{t('CONFIRM')} {t(confirmCard.title)}</div>
-		<div class="confirm-text">
+	<PopupFrame variant="confirm" ondismiss={closeConfirm} dismissLabel={t('CLOSE')}>
+		<div class="confirm-title tp-popup__title">{t('CONFIRM')} {t(confirmCard.title)}</div>
+		<div class="confirm-text tp-popup__body">
 			{i18nDerived.translateVars('CONFIRM TEXT', {
 				mode: t(confirmCard.title),
 				cost: cost(confirmCard.costMultiplier),
 			})}
 		</div>
 		<div class="confirm-row">
-			<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}
-				>{t('CANCEL')}</button
-			>
-			<button
-				class="confirm-btn confirm-btn--ok"
-				type="button"
-				onclick={confirmAccept}>{t('CONFIRM')}</button
+			<button class="tp-popup__btn" type="button" onclick={closeConfirm}>{t('CANCEL')}</button>
+			<button class="tp-popup__btn tp-popup__btn--primary" type="button" onclick={confirmAccept}
+				>{t('CONFIRM')}</button
 			>
 		</div>
-	</div>
+	</PopupFrame>
 {/if}
 
 <style>
@@ -248,16 +243,11 @@
 		position: fixed;
 		inset: 0;
 		z-index: 60;
-		background: rgba(0, 0, 0, 0.72);
-		backdrop-filter: blur(5px);
+		background: rgba(0, 0, 0, 0.7);
 		border: 0;
 		padding: 0;
 		cursor: pointer;
 	}
-	.backdrop--z2 {
-		z-index: 70;
-	}
-
 	/* Panel */
 	.panel {
 		position: fixed;
@@ -273,42 +263,17 @@
 
 	.title {
 		margin: 0 0 20px;
-		font-family: 'Cinzel', serif;
+		font-family: Helvetica, Arial, sans-serif;
 		font-size: 1.35rem;
-		font-weight: 900;
-		letter-spacing: 0.12em;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
 		text-align: center;
-		background: linear-gradient(180deg, #e2d981 8.6%, #fbc503 60.4%, #d98503 129.3%);
+		background: linear-gradient(173.06deg, #d836fc 0%, #272fdd 100%);
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		color: transparent;
-	}
-
-	.close-btn {
-		position: absolute;
-		top: 10px;
-		right: 14px;
-		width: 44px;
-		height: 44px;
-		border-radius: 50%;
-		background: rgba(12, 8, 3, 0.93);
-		border: 2px solid #9a7018;
-		box-shadow:
-			0 0 0 1px rgba(210, 175, 55, 0.25),
-			0 4px 14px rgba(0, 0, 0, 0.75);
-		color: rgba(255, 255, 255, 0.85);
-		font-size: 1rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		cursor: pointer;
-		padding: 0;
-		transition: background 0.2s;
-	}
-	.close-btn:hover {
-		background: rgba(30, 20, 8, 0.97);
-		color: #fff;
 	}
 
 	.grid {
@@ -323,11 +288,11 @@
 		align-items: center;
 		text-align: center;
 		padding: 22px 18px 18px;
-		background: linear-gradient(160deg, rgba(37, 9, 68, 0.98), rgba(7, 5, 31, 0.98));
-		border: 2px solid rgba(255, 193, 47, 0.7);
+		background: linear-gradient(0deg, #1a0535 0%, #05010c 100%);
+		border: 1px solid #d836fc;
 		box-shadow:
-			inset 0 0 22px rgba(255, 79, 216, 0.12),
-			0 10px 26px rgba(0, 0, 0, 0.42);
+			inset 0 0 22px rgba(216, 54, 252, 0.1),
+			0 10px 26px rgba(0, 0, 0, 0.45);
 		border-radius: 18px;
 		gap: 8px;
 	}
@@ -368,11 +333,12 @@
 	}
 
 	.card-title {
-		font-family: 'Cinzel', serif;
+		font-family: Helvetica, Arial, sans-serif;
 		font-size: 1rem;
-		font-weight: 900;
-		letter-spacing: 0.06em;
-		background: linear-gradient(180deg, #e2d981 8.6%, #fbc503 60.4%, #d98503 129.3%);
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		background: linear-gradient(173.06deg, #d836fc 0%, #272fdd 100%);
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
@@ -381,7 +347,7 @@
 	}
 
 	.card-desc {
-		font-family: 'Cinzel', serif;
+		font-family: Helvetica, Arial, sans-serif;
 		font-size: 0.52rem;
 		color: rgba(255, 255, 255, 0.75);
 		letter-spacing: 0.02em;
@@ -391,109 +357,64 @@
 	}
 
 	.card-price {
-		font-family: 'Cinzel', serif;
+		font-family: Helvetica, Arial, sans-serif;
 		font-size: 0.88rem;
 		font-weight: 700;
-		color: rgba(255, 255, 255, 0.9);
-		letter-spacing: 0.04em;
+		color: #fff;
+		letter-spacing: 0.03em;
 		display: block;
 	}
 
 	.card-btn {
 		width: 100%;
 		padding: 9px 0;
-		border-radius: 8px;
-		font-family: 'Cinzel', serif;
+		border-radius: 12px;
+		font-family: Helvetica, Arial, sans-serif;
 		font-size: 0.78rem;
-		font-weight: 900;
+		font-weight: 700;
 		letter-spacing: 0.1em;
+		text-transform: uppercase;
 		cursor: pointer;
-		border: 2px solid rgba(200, 158, 80, 0.6);
-		background: transparent;
-		color: rgba(210, 170, 60, 0.9);
+		border: 1px solid #b65df3;
+		background-image: linear-gradient(0deg, #1a0535 0%, #000 100%);
+		color: #fff;
 		transition:
 			background 0.2s,
 			border-color 0.2s,
 			color 0.2s;
 		margin-top: 4px;
 	}
-	.card-btn--active {
-		background: linear-gradient(180deg, #f5cc50 0%, #c08a10 100%);
-		color: #1f1000;
-	}
+	.card-btn--active,
 	.card-btn--buy {
-		background: linear-gradient(180deg, #4ecb2e 0%, #2a8a10 100%);
-		border-color: rgba(80, 200, 50, 0.5);
+		background-image: linear-gradient(167.38deg, #d836fc 0%, #272fdd 100%);
 		color: #fff;
-		box-shadow: 0 0 12px rgba(60, 180, 30, 0.35);
 	}
-	.card-btn--buy:hover:not(:disabled) {
-		background: linear-gradient(180deg, #5fd93e 0%, #348f18 100%);
-		color: #fff;
+	.card-btn:not(:disabled):hover {
+		filter: brightness(1.14);
 	}
 	.card-btn--buy:disabled {
 		opacity: 0.4;
 		cursor: default;
 	}
 
-	/* Confirm */
-	.confirm {
-		position: fixed;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		z-index: 71;
-		width: min(340px, 88vw);
-		border-radius: 18px;
-		background: linear-gradient(160deg, rgba(30, 20, 8, 0.97), rgba(12, 8, 2, 0.98));
-		border: 1px solid rgba(200, 155, 40, 0.5);
-		box-shadow:
-			0 24px 48px rgba(0, 0, 0, 0.7),
-			inset 0 1px 0 rgba(255, 220, 100, 0.1);
-		padding: 22px 22px 18px;
-		text-align: center;
-	}
-	.confirm-title {
-		font-family: 'Cinzel', serif;
-		font-size: 1rem;
-		font-weight: 900;
-		letter-spacing: 0.08em;
-		margin-bottom: 10px;
-		background: linear-gradient(180deg, #e2d981 8.6%, #fbc503 60.4%, #d98503 129.3%);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: transparent;
-	}
+	/* Confirm dialog — the design's own spacing, converted to flow so a long mode name (e.g.
+	   "CONFIRM DUCK YOUR LUCK") wraps and pushes the body down instead of running through it. See
+	   the matching note in BonusResumeModal (Figma 6401:2082-2084). */
+	.confirm-title,
 	.confirm-text {
-		font-family: 'Cinzel', serif;
-		font-size: 0.85rem;
-		color: rgba(255, 255, 255, 0.88);
-		line-height: 1.45;
-		margin-bottom: 18px;
+		width: 74.303%; /* 303.899 of the 409 content box */
 	}
+
+	.confirm-text {
+		margin-top: calc(16 / var(--pop-w) * 100cqw);
+	}
+
 	.confirm-row {
+		margin-top: auto;
+		padding-top: calc(24 / var(--pop-w) * 100cqw);
+		width: 100%; /* the content box is already the 409 row */
 		display: flex;
-		gap: 10px;
-		justify-content: center;
-	}
-	.confirm-btn {
-		border-radius: 12px;
-		padding: 10px 20px;
-		font-family: 'Cinzel', serif;
-		font-size: 0.82rem;
-		font-weight: 900;
-		letter-spacing: 0.08em;
-		cursor: pointer;
-	}
-	.confirm-btn--cancel {
-		border: 1px solid rgba(200, 155, 40, 0.35);
-		background: rgba(255, 255, 255, 0.07);
-		color: rgba(255, 255, 255, 0.82);
-	}
-	.confirm-btn--ok {
-		border: 1px solid rgba(220, 170, 40, 0.6);
-		background: linear-gradient(180deg, #f5cc50, #c08a10);
-		color: #1f1000;
+		align-items: center;
+		gap: calc(16 / var(--pop-w) * 100cqw);
 	}
 </style>

@@ -3,7 +3,7 @@
 	import { Container, SpineProvider, SpineTrack } from 'pixi-svelte';
 
 	import type { Reel } from '../game/stateGame.svelte';
-	import { SYMBOL_W, SYMBOL_H, BOARD_SIZES, BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { CELL_W, SYMBOL_W, SYMBOL_H, BOARD_SIZES, BOARD_GRID_OFFSET_Y } from '../game/constants';
 	import { getContext } from '../game/context';
 
 	type Props = { reel: Reel; oncomplete: () => void };
@@ -45,7 +45,7 @@
 
 <Container
 	x={board.x +
-		((props.reel.reelIndex + 0.5) * SYMBOL_W - BOARD_SIZES.width * 0.5) * board.boardScale}
+		((props.reel.reelIndex + 0.5) * CELL_W - BOARD_SIZES.width * 0.5) * board.boardScale}
 	y={board.y + BOARD_GRID_OFFSET_Y + (extendBottom * 0.5 - SYMBOL_H * 0.12) * board.boardScale}
 >
 	<SpineProvider

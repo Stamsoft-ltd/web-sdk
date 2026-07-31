@@ -11,7 +11,7 @@
 	import { MainContainer } from 'components-layout';
 
 	import { getContext } from '../game/context';
-	import { SYMBOL_SIZE, SYMBOL_W, BOARD_DIMENSIONS } from '../game/constants';
+	import { SYMBOL_SIZE, CELL_W, BOARD_DIMENSIONS } from '../game/constants';
 
 	type Props = {
 		children: Snippet<[{ sizes: Sizes }]>;
@@ -28,7 +28,7 @@
 	// shrinking with the taller 5×5 Theme Park board.
 	const BACKGROUND_RATIO = 920 / 720;
 	const LAYOUT_WIDTH = SYMBOL_SIZE * BOARD_DIMENSIONS.x;
-	const PANEL_WIDTH = SYMBOL_W * BOARD_DIMENSIONS.x;
+	const PANEL_WIDTH = CELL_W * BOARD_DIMENSIONS.x;
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const sizeFactor = $derived(
 		context.stateLayoutDerived.layoutType() === 'portrait'

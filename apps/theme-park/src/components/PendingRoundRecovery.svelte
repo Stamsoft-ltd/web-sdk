@@ -40,6 +40,9 @@
 {/if}
 
 <style>
+	/* Same neon language as the other popups (Figma 6094-4364). This one is a boot-failure notice
+	   rather than a designed screen, so it keeps its own simple card sizing and only adopts the
+	   palette, scrim and button treatment. */
 	.recovery-overlay {
 		position: fixed;
 		inset: 0;
@@ -48,49 +51,61 @@
 		place-items: center;
 		padding: 20px;
 		background: rgba(0, 0, 0, 0.7);
-		backdrop-filter: blur(10px);
 	}
 
 	.recovery-card {
 		width: min(480px, 100%);
 		border-radius: 22px;
-		padding: 22px;
-		background: linear-gradient(180deg, rgba(32, 35, 20, 0.96), rgba(12, 14, 10, 0.98));
-		border: 1px solid rgba(231, 196, 112, 0.35);
-		box-shadow: 0 20px 44px rgba(0, 0, 0, 0.45);
-		color: #fff8df;
+		padding: 26px 24px;
+		background: linear-gradient(0deg, #1a0535 0%, #05010c 100%);
+		border: 1px solid #d836fc;
+		box-shadow: 0 20px 44px rgba(0, 0, 0, 0.55);
+		color: #fff;
+		font-family: Helvetica, Arial, sans-serif;
 		text-align: center;
 	}
 
 	.recovery-card h2 {
 		margin: 0 0 10px;
-		font-size: 1.2rem;
-		font-weight: 900;
-		letter-spacing: 0.06em;
+		font-size: 1.4rem;
+		font-weight: 700;
+		letter-spacing: 0.03em;
 		text-transform: uppercase;
+		background-image: linear-gradient(173.06deg, #d836fc 0%, #272fdd 100%);
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
 	}
 
 	.recovery-card p {
 		margin: 0 0 12px;
-		line-height: 1.5;
+		line-height: 1.35;
+		letter-spacing: 0.03em;
 	}
 
 	.recovery-error {
-		color: #ffd0d0;
+		color: #ff9ab5;
 		word-break: break-word;
 	}
 
 	.recovery-card button {
 		width: 100%;
-		border: none;
-		border-radius: 999px;
-		padding: 12px 14px;
-		background: linear-gradient(180deg, #f0d068 0%, #c09224 100%);
-		color: #17200f;
-		font-size: 0.95rem;
-		font-weight: 900;
-		letter-spacing: 0.06em;
+		border: 1px solid #b65df3;
+		border-radius: 12px;
+		padding: 12px 24px;
+		background-image: linear-gradient(167.38deg, #d836fc 0%, #272fdd 100%);
+		filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
+		color: #fff;
+		font-family: Helvetica, Arial, sans-serif;
+		font-size: 0.875rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		cursor: pointer;
+		transition: filter 0.12s ease;
+	}
+
+	.recovery-card button:hover {
+		filter: brightness(1.12) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
 	}
 </style>

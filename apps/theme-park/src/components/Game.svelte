@@ -19,6 +19,7 @@
 	import ResumeBet from './ResumeBet.svelte';
 	import Sound from './Sound.svelte';
 	import Background from './Background.svelte';
+	import Clouds from './Clouds.svelte';
 	import LoadingScreen from './LoadingScreen.svelte';
 	import BoardFrame from './BoardFrame.svelte';
 	import Board from './Board.svelte';
@@ -28,13 +29,14 @@
 	import FreeSpinCounter from './FreeSpinCounter.svelte';
 	import FreeSpinOutro from './FreeSpinOutro.svelte';
 	import Transition from './Transition.svelte';
-	import PaylineVine from './PaylineVine.svelte';
+	import PaylineRibbon from './PaylineRibbon.svelte';
 	import PersistentWildBadges from './PersistentWildBadges.svelte';
 	import RollerWildsOverlay from './RollerWildsOverlay.svelte';
 	import DuckCollectPresenter from './DuckCollectPresenter.svelte';
 	import CoasterSetupPresenter from './CoasterSetupPresenter.svelte';
 	import DuckPondBonus from './DuckPondBonus.svelte';
 	import HudHtml from './HudHtml.svelte';
+	import PressAnywhereCaption from './PressAnywhereCaption.svelte';
 	import StakeSync from './StakeSync.svelte';
 	import ReplayHud from './replay/ReplayHud.svelte';
 	import SplashIntro from './SplashIntro.svelte';
@@ -46,7 +48,7 @@
 	let splashIntroVisible = $state(false);
 	let splashPressHandler = $state<(() => void) | undefined>(undefined);
 
-	const heroArt = './assets/theme-park/v2/background.webp';
+	const heroArt = './assets/theme-park/v2/background-blur.webp';
 	const bonusArt = './assets/theme-park/coaster-bonus.webp';
 	const scatterArt = './assets/theme-park/symbols-concept.webp';
 	const uiRefArt = './assets/components/reference/controls_reference.png';
@@ -54,6 +56,13 @@
 	const heroArtBackdrop = heroArt;
 
 	const MAX_WIN = 25000;
+
+	// The win presentation sits above everything else on the stage. Without this it sorts at zIndex 0
+	// like the rest, and since pixi's sort is stable that leaves draw order down to MOUNT order — the
+	// payline layer only mounts once there are wins, i.e. after <Win>, so the vines came out on top
+	// of the win box. Board-space layers are deliberately left at 0: the vines are drawn after the
+	// wild badges there and should stay that way, or a wild's cell patch cuts the line in half.
+	const PRESENTATION_Z = 10;
 
 	const t = (key: string) => i18nDerived.translate?.(key) ?? key;
 
@@ -403,6 +412,9 @@
 			<StakeSync />
 
 			<Background />
+			<!-- Straight after the backdrop and before every <MainContainer>: they all sort at zIndex
+			     0, so insertion order is what keeps the sky behind the board. -->
+			<Clouds />
 
 			{#if context.stateLayout.showLoadingScreen}
 				<LoadingScreen
@@ -434,7 +446,7 @@
 							pivot={bl.pivot}
 							scale={bl.boardScale}
 						>
-							<PaylineVine wins={context.stateGame.paylineWins} />
+							<PaylineRibbon wins={context.stateGame.paylineWins} />
 						</Container>
 					</MainContainer>
 				{/if}
@@ -445,13 +457,18 @@
 				<DuckCollectPresenter />
 				<CoasterSetupPresenter />
 				<DuckPondBonus />
-				<Win />
-				<FreeSpinIntro />
-				{#if ['desktop', 'landscape'].includes(context.stateLayoutDerived.layoutType())}
-					<FreeSpinCounter />
-				{/if}
-				<FreeSpinOutro />
-				<Transition />
+				<!-- The wrapper is what carries the layer, not the components inside: MainContainer
+				     spreads its props onto an INNER container, so a zIndex handed to it never reaches
+				     the node the stage actually sorts. -->
+				<Container zIndex={PRESENTATION_Z}>
+					<Win />
+					<FreeSpinIntro />
+					{#if ['desktop', 'landscape'].includes(context.stateLayoutDerived.layoutType())}
+						<FreeSpinCounter />
+					{/if}
+					<FreeSpinOutro />
+					<Transition />
+				</Container>
 			{/if}
 		</App>
 
@@ -470,6 +487,8 @@
 			{#if stateUi.config.mode !== 'replay'}
 				<HudHtml />
 			{/if}
+			<!-- After the HUD so it paints over the bar, which is where the design puts it. -->
+			<PressAnywhereCaption />
 			<ReplayHud />
 			<PendingRoundRecovery />
 		{/if}

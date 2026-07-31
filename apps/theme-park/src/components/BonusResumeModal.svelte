@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { stateBet } from 'state-shared';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import PopupFrame from './PopupFrame.svelte';
 
 	type Props = { onPlay: () => void; onEnd: () => void };
 	const props: Props = $props();
@@ -18,72 +19,42 @@
 	);
 </script>
 
-<div class="modal-overlay">
-	<div class="modal" role="dialog" aria-modal="true">
-		<h2 class="title">{i18nDerived.translate('RECOVERY TITLE')}</h2>
-		<p class="subtitle">{i18nDerived.translateVars('RESUME BODY', { mode: modeLabel })}</p>
-		<div class="buttons">
-			<button class="btn btn-play" onclick={props.onPlay}>
-				▶ {i18nDerived.translate('PLAY ROUND')}
-			</button>
-			<button class="btn btn-end" onclick={props.onEnd}>
-				✕ {i18nDerived.translate('END ROUND')}
-			</button>
-		</div>
+<!-- No `ondismiss`: an unfinished round has to be answered, so the scrim stays inert. -->
+<PopupFrame variant="confirm">
+	<h2 class="resume__title tp-popup__title">{i18nDerived.translate('RECOVERY TITLE')}</h2>
+	<p class="resume__body tp-popup__body">
+		{i18nDerived.translateVars('RESUME BODY', { mode: modeLabel })}
+	</p>
+	<div class="resume__actions">
+		<button class="tp-popup__btn" type="button" onclick={props.onEnd}>
+			{i18nDerived.translate('END ROUND')}
+		</button>
+		<button class="tp-popup__btn tp-popup__btn--primary" type="button" onclick={props.onPlay}>
+			{i18nDerived.translate('PLAY ROUND')}
+		</button>
 	</div>
-</div>
+</PopupFrame>
 
 <style>
-	.modal-overlay {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.75);
+	/* Spacing is the Figma nodes' own, converted to flow: the title box ends at 75 and the body
+	   starts at 91 (a 16 gap); the button row sits at 165.12, which `margin-top: auto` reproduces
+	   against the panel's min-height while letting a wrapped title push it down instead of
+	   overlapping (nodes 6401:2082-2084). Both text blocks are 303.899 of the 459 panel. */
+	.resume__title,
+	.resume__body {
+		width: 74.303%; /* 303.899 of the 409 content box */
+	}
+
+	.resume__body {
+		margin-top: calc(16 / var(--pop-w) * 100cqw);
+	}
+
+	.resume__actions {
+		margin-top: auto;
+		padding-top: calc(24 / var(--pop-w) * 100cqw);
+		width: 100%; /* the content box is already the 409 row */
 		display: flex;
 		align-items: center;
-		justify-content: center;
-		z-index: 9999;
+		gap: calc(16 / var(--pop-w) * 100cqw);
 	}
-	.modal {
-		background: #0d1a0e;
-		border: 2px solid #d4a017;
-		border-radius: 16px;
-		padding: 2rem 2.5rem;
-		text-align: center;
-		max-width: 380px;
-		width: 90%;
-	}
-	.title {
-		color: #ffd84d;
-		font-size: 1.4rem;
-		margin: 0 0 0.5rem;
-		font-family: serif;
-	}
-	.subtitle {
-		color: #ccc;
-		font-size: 0.95rem;
-		margin: 0 0 1.5rem;
-	}
-	.buttons {
-		display: flex;
-		gap: 1rem;
-		justify-content: center;
-	}
-	.btn {
-		padding: 0.65rem 1.4rem;
-		border-radius: 8px;
-		font-size: 0.95rem;
-		font-weight: bold;
-		cursor: pointer;
-		border: none;
-	}
-	.btn-play {
-		background: #2e7d32;
-		color: #fff;
-	}
-	.btn-play:hover { background: #388e3c; }
-	.btn-end {
-		background: #5a1a1a;
-		color: #ccc;
-	}
-	.btn-end:hover { background: #7b2020; }
 </style>
