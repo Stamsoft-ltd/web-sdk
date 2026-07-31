@@ -222,7 +222,9 @@ const boardLayout = () => {
 		const frameHeight = (BOARD_SIZES.height * boardScale) / MOBILE_FRAME_INNER_H;
 
 		return {
-			x: mainLayout.width * 0.5 + getBoardOffset().x,
+			// Centre the board on screen — same as frameCx. (getBoardOffset() carries a desktop-only
+			// +90px left-rail nudge that would otherwise push the portrait board off the right edge.)
+			x: mainLayout.width * 0.5,
 			y: PORTRAIT_TOP_OFFSET + frameHeight * 0.5,
 			frameTopY: PORTRAIT_TOP_OFFSET,
 			frameCx: mainLayout.width * 0.5,

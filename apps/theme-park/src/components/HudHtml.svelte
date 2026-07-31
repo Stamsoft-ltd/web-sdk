@@ -17,6 +17,21 @@
 	const navSpinStop = ap('/assets/theme-park/v2/controls/spin-stop.png');
 	const navCoins = ap('/assets/hud/icon-coins.png');
 	const gameLogo = ap('/assets/theme-park/v2/logo.png');
+	const pressPlayLogo = ap('/assets/theme-park/v2/press-play.webp');
+
+	// Real marquee button art (portrait HUD). Round neon-rim buttons.
+	const ptMenu = ap('/assets/theme-park/v2/controls/btn-menu.png');
+	const ptTurbo = ap('/assets/theme-park/v2/controls/btn-turbo.png');
+	const ptTurboFast = ap('/assets/theme-park/v2/controls/btn-turbo-fast.png');
+	const ptTurboSuper = ap('/assets/theme-park/v2/controls/btn-turbo-super.png');
+	const ptAuto = ap('/assets/theme-park/v2/controls/btn-auto.png');
+	const ptAutoDisabled = ap('/assets/theme-park/v2/controls/btn-auto-disabled.png');
+	const ptPlus = ap('/assets/theme-park/v2/controls/btn-plus.png');
+	const ptPlusDisabled = ap('/assets/theme-park/v2/controls/btn-plus-disabled.png');
+	const ptMinus = ap('/assets/theme-park/v2/controls/btn-minus.png');
+	const ptMinusDisabled = ap('/assets/theme-park/v2/controls/btn-minus-disabled.png');
+	const ptBuy = ap('/assets/theme-park/v2/controls/btn-buy-mobile.png');
+	const ptBetBox = ap('/assets/theme-park/v2/controls/bet-box.png');
 </script>
 
 <script lang="ts">
@@ -36,7 +51,22 @@
 
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isLandscapeMobile = $derived(layoutType === 'landscape');
+	const isPortrait = $derived(layoutType === 'portrait');
 	const isMobileLayout = $derived(layoutType === 'portrait' || layoutType === 'landscape');
+
+	// The THEME PARK logo tracks the board: it sits just above the portrait board frame, whose top is
+	// at logical Y = 236 (PORTRAIT_TOP_OFFSET) in the 1080×1920 portrait space. MainContainer maps a
+	// logical point to CSS px as cssY = canvasH/2 + (logicalY − mainH/2) · scale, scale = min(cssW/1080,
+	// cssH/1920). We anchor the logo's BOTTOM at that Y (via translateY(-100%)), so it never overlaps.
+	const PORTRAIT_BOARD_FRAME_TOP = 236;
+	const portraitLogoTop = $derived.by(() => {
+		if (!isPortrait) return null;
+		const canvas = context.stateLayoutDerived.canvasSizes();
+		const main = context.stateLayoutDerived.mainLayout();
+		const boardTopCss = canvas.height / 2 + (PORTRAIT_BOARD_FRAME_TOP - main.height / 2) * main.scale;
+		// logo BOTTOM anchored just above the board frame — small gap so it nearly touches
+		return Math.max(6, Math.round(boardTopCss + 10));
+	});
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
 	const congratsBlocking = $derived(context.stateGame.freeSpinPopupShowing);
 	const hasAuto = $derived(stateBetDerived.hasAutoBetCounter());
@@ -56,6 +86,9 @@
 	);
 	const speedMode = $derived(
 		stateBet.isSuperTurbo ? 'super' : stateBet.isTurbo ? 'fast' : 'normal',
+	);
+	const ptTurboImg = $derived(
+		stateBet.isSuperTurbo ? ptTurboSuper : stateBet.isTurbo ? ptTurboFast : ptTurbo,
 	);
 	const isMuted = $derived(stateSound.volumeValueMaster === 0);
 	const betOptions = $derived(stateConfig.betAmountOptions);
@@ -322,7 +355,20 @@
 />
 
 <div class="hud-shell" class:hud-shell--blocked={congratsBlocking} data-layout={layoutType}>
-	<img class="game-logo" src={gameLogo} alt={i18nDerived.gameTitle()} />
+	{#if isPortrait}
+		<!-- Portrait logo stack: Press Play mark above the THEME PARK logo, the stack's bottom
+		     (the game logo) anchored just above the board via inline top + translateY(-100%). -->
+		<div
+			class="pt-logo-stack"
+			style={portraitLogoTop != null ? `top:${portraitLogoTop}px` : undefined}
+		>
+			<img class="pt-pressplay" src={pressPlayLogo} alt="Press Play" />
+			<img class="pt-themelogo" src={gameLogo} alt={i18nDerived.gameTitle()} />
+		</div>
+	{:else}
+		<img class="game-logo" src={gameLogo} alt={i18nDerived.gameTitle()} />
+	{/if}
+	{#if !isPortrait}
 	<div class="hud-bottom">
 		<div class="hud-left">
 			<div class="hud-system">
@@ -475,6 +521,123 @@
 			</div>
 		</div>
 	</div>
+	{:else}
+	<!-- PORTRAIT HUD — dedicated 2-row marquee layout. Controls row (menu · buy · spin · turbo ·
+	     auto) on top, balance | bet(-/+) | win strip below. Real neon button art. -->
+	<div class="pt-hud">
+		<div class="pt-controls">
+			<button class="pt-btn" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
+				<img src={ptMenu} alt="" />
+			</button>
+
+			<button
+				class="pt-btn pt-buy"
+				type="button"
+				disabled={disableBuy}
+				onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
+				aria-label={buyLabel}
+			>
+				<img src={ptBuy} alt="" />
+				<span class="pt-buy__label">{buyLabel}</span>
+			</button>
+
+			<button
+				class="pt-spin"
+				type="button"
+				onclick={onSpinButton}
+				aria-label={i18nDerived.translate('SPIN')}
+				disabled={canInteract && !hasAuto && !canAffordBet}
+			>
+				{#if isSpinStop}
+					<img src={navSpinStop} alt="" class="pt-spin__img" />
+				{:else}
+					<img src={navSpinDefaultMobile} alt="" class="pt-spin__img" />
+				{/if}
+				{#if hasAuto}
+					<span class="pt-spin__count">{autoSpinsRemainingText}</span>
+				{/if}
+			</button>
+
+			<button
+				class="pt-btn pt-turbo"
+				data-speed={speedMode}
+				type="button"
+				onclick={onTurbo}
+				aria-label={i18nDerived.turboLabel()}
+				title={`${i18nDerived.turboLabel()}: ${speedMode}`}
+			>
+				<img src={ptTurboImg} alt="" />
+			</button>
+
+			<button
+				class="pt-btn"
+				class:active={hasAuto}
+				type="button"
+				onclick={onAuto}
+				disabled={disableAuto}
+				aria-label={i18nDerived.autoplayLabel()}
+			>
+				<img src={disableAuto && !hasAuto ? ptAutoDisabled : ptAuto} alt="" />
+			</button>
+		</div>
+
+		<div class="pt-stats">
+			<div class="pt-pill">
+				<span class="pt-pill__label">{i18nDerived.balance()}</span>
+				<span class="pt-pill__value" use:fitText={formattedBalance}>{formattedBalance}</span>
+			</div>
+
+			<div class="pt-bet">
+				<img class="pt-bet__bg" src={ptBetBox} alt="" aria-hidden="true" />
+				<button
+					class="pt-step"
+					type="button"
+					onpointerdown={(event) =>
+						startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
+					onpointerup={clearHoldRepeat}
+					onpointercancel={clearHoldRepeat}
+					onpointerleave={clearHoldRepeat}
+					onclick={(event) => maybeRunClickAction(event, onDecrease)}
+					disabled={disableDecrease}
+					aria-label={i18nDerived.translate('DECREASE BET')}
+				>
+					<img src={disableDecrease ? ptMinusDisabled : ptMinus} alt="" />
+				</button>
+
+				<div
+					class="pt-bet__values"
+					role="button"
+					tabindex="0"
+					onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
+					onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
+				>
+					<span class="pt-pill__label">{i18nDerived.betLabel()}</span>
+					<span class="pt-pill__value" use:fitText={formattedBet}>{formattedBet}</span>
+				</div>
+
+				<button
+					class="pt-step"
+					type="button"
+					onpointerdown={(event) =>
+						startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
+					onpointerup={clearHoldRepeat}
+					onpointercancel={clearHoldRepeat}
+					onpointerleave={clearHoldRepeat}
+					onclick={(event) => maybeRunClickAction(event, onIncrease)}
+					disabled={disableIncrease}
+					aria-label={i18nDerived.translate('INCREASE BET')}
+				>
+					<img src={disableIncrease ? ptPlusDisabled : ptPlus} alt="" />
+				</button>
+			</div>
+
+			<div class="pt-pill">
+				<span class="pt-pill__label">{i18nDerived.win()}</span>
+				<span class="pt-pill__value" use:fitText={formattedWin}>{formattedWin}</span>
+			</div>
+		</div>
+	</div>
+	{/if}
 </div>
 
 {#if showBuyModal}
@@ -1041,101 +1204,288 @@
 	/* Forest Gang mobile principle: controls keep readable fixed proportions;
 	   only the complete group reflows. The old desktop row was uniformly
 	   shrunk to ~27% on portrait, making turbo effectively disappear. */
+	/* ===== PORTRAIT HUD — dedicated 2-row marquee layout ===== */
 	.hud-shell[data-layout='portrait'] {
-		--hud-u: 1;
 		padding: 0 4px calc(8px + env(safe-area-inset-bottom, 0px));
 	}
 
 	.hud-shell[data-layout='portrait']::after {
-		height: 205px;
+		height: 230px;
+		/* translucent so the park scene shows through behind the HUD (design), still aids legibility */
+		background: linear-gradient(
+			to top,
+			rgba(8, 4, 20, 0.74) 0%,
+			rgba(8, 4, 20, 0.5) 52%,
+			rgba(8, 4, 20, 0) 100%
+		);
 	}
 
-	.hud-shell[data-layout='portrait'] .hud-bottom {
-		width: min(97vw, 440px);
+	/* Portrait logo stack: Press Play mark stacked above the THEME PARK logo; the stack's bottom
+	   (the game logo) sits just above the board (inline top + translateY(-100%)). */
+	.hud-shell[data-layout='portrait'] .pt-logo-stack {
+		position: absolute;
+		left: 50%;
+		transform: translate(-50%, -100%);
+		z-index: 4;
 		display: flex;
 		flex-direction: column;
-		gap: 5px;
-		padding: 6px 10px;
-		border-radius: 30px;
-	}
-
-	.hud-shell[data-layout='portrait'] .hud-controls {
-		order: 0;
-		width: 100%;
-		justify-content: center;
+		align-items: center;
 		gap: 8px;
+		pointer-events: none;
+	}
+	.hud-shell[data-layout='portrait'] .pt-themelogo {
+		width: clamp(200px, 54vw, 320px);
+		height: auto;
+		filter: drop-shadow(0 6px 11px rgba(0, 0, 0, 0.7));
+	}
+	.hud-shell[data-layout='portrait'] .pt-pressplay {
+		width: clamp(92px, 28vw, 140px);
+		height: auto;
+		filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.55));
 	}
 
-	.hud-shell[data-layout='portrait'] .stepper,
-	.hud-shell[data-layout='portrait'] .action-cluster {
-		gap: 5px;
+	.pt-hud {
+		pointer-events: auto;
+		position: relative;
+		z-index: 6;
+		align-self: center;
+		/* Lifted off the very bottom edge ("move to the top a bit"). */
+		margin-top: auto;
+		margin-bottom: 22px;
+		width: min(97vw, 460px);
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 14px;
+		font-family: 'Cinzel', serif;
 	}
 
-	.hud-shell[data-layout='portrait'] .nav-btn {
-		width: 38px;
-		height: 38px;
-	}
-
-	.hud-shell[data-layout='portrait'] .spin-btn {
-		width: 78px;
-		height: 78px;
-		margin: -7px 0;
-		transform: none;
-	}
-
-	.hud-shell[data-layout='portrait'] .hud-stats {
-		order: 1;
-		width: 100%;
-		justify-content: center;
-	}
-
-	.hud-shell[data-layout='portrait'] .value-pill--balance,
-	.hud-shell[data-layout='portrait'] .value-pill--win {
-		flex: 1 1 0;
-		width: auto;
-		min-width: 0;
-		padding: 0 6px;
-	}
-
-	.hud-shell[data-layout='portrait'] .value-pill--bet {
-		flex: 1.3 1 0;
-		padding: 0 6px;
-	}
-
-	.hud-shell[data-layout='portrait'] .bet-coin {
-		width: 30px;
-		height: 30px;
-	}
-
-	.hud-shell[data-layout='portrait'] .label {
-		font-size: 0.58rem;
-	}
-
-	.hud-shell[data-layout='portrait'] .value {
-		font-size: 0.9rem;
-	}
-
-	.hud-shell[data-layout='portrait'] .hud-left {
-		order: 2;
-		width: 100%;
-		justify-content: center;
-		gap: 10px;
-	}
-
-	.hud-shell[data-layout='portrait'] .hud-system {
+	/* --- Controls row: menu · buy · spin · turbo · auto on a dark rounded bar (the "navigation
+	   board"), narrower than full width, buttons spread. Spin overflows the bar upward. --- */
+	.pt-controls {
+		position: relative;
+		width: 88%;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
 		gap: 6px;
+		padding: 6px 18px;
+		border-radius: 999px;
+		background: linear-gradient(180deg, rgba(22, 12, 40, 0.9), rgba(9, 6, 22, 0.94));
+		border: 1px solid rgba(150, 95, 230, 0.4);
+		box-shadow:
+			0 8px 22px rgba(0, 0, 0, 0.42),
+			inset 0 1px 0 rgba(255, 255, 255, 0.05);
+		overflow: visible;
 	}
 
-	.hud-shell[data-layout='portrait'] .hud-system .nav-btn {
-		width: 34px;
-		height: 34px;
+	.pt-btn {
+		flex: 0 0 auto;
+		width: 46px;
+		height: 46px;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		cursor: pointer;
+		display: grid;
+		place-items: center;
+		transition:
+			transform 0.12s ease,
+			filter 0.12s ease;
+	}
+	.pt-btn img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		display: block;
+	}
+	.pt-btn:active {
+		transform: scale(0.92);
+	}
+	.pt-btn:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+	.pt-btn.active img,
+	.pt-turbo[data-speed='fast'] img,
+	.pt-turbo[data-speed='super'] img {
+		filter: drop-shadow(0 0 7px rgba(120, 200, 255, 0.9));
 	}
 
-	.hud-shell[data-layout='portrait'] .buy-btn {
+	/* Buy bonus — round purple button with a 2-line label overlaid. */
+	.pt-buy {
+		position: relative;
+		width: 66px;
+		height: 66px;
+		/* centered in the bar, negative margins keep it from growing the bar so it overflows
+		   slightly top & bottom (spin overflows more) */
+		margin: -10px 0;
+	}
+	.pt-buy__label {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 800;
+		font-size: 0.5rem;
+		line-height: 1.02;
+		letter-spacing: 0.01em;
+		color: #fff;
+		text-transform: uppercase;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+		text-align: center;
+		overflow-wrap: break-word;
+		pointer-events: none;
+		padding: 0 9px;
+	}
+
+	/* Spin — the large marquee button, overflowing the pill upward. */
+	.pt-spin {
+		flex: 0 0 auto;
+		position: relative;
 		width: 104px;
+		height: 104px;
+		margin: -34px 0 -18px;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		cursor: pointer;
+		display: grid;
+		place-items: center;
+		transition: transform 0.12s ease;
+		z-index: 2;
+	}
+	.pt-spin__img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		display: block;
+		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+	}
+	.pt-spin:active {
+		transform: scale(0.94);
+	}
+	.pt-spin:disabled {
+		opacity: 0.6;
+		cursor: default;
+	}
+	.pt-spin__count {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		font-weight: 800;
+		font-size: 1.15rem;
+		color: #fff;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+		pointer-events: none;
 	}
 
-	.hud-shell[data-layout='portrait'] .buy-btn__label {
-		font-size: 0.67rem;
+	/* --- Stats strip: balance | bet(-/+) | win --- */
+	.pt-stats {
+		width: 100%;
+		display: flex;
+		align-items: stretch;
+		justify-content: center;
+		gap: 7px;
+	}
+	/* balance / win — black, semi-transparent box */
+	.pt-pill {
+		flex: 1 1 0;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1px;
+		padding: 5px 8px;
+		border-radius: 14px;
+		background: rgba(0, 0, 0, 0.42);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+	}
+	.pt-pill__label {
+		font-size: 0.55rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: #8ec7ff;
+		white-space: nowrap;
+		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+	}
+	.pt-pill__value {
+		max-width: 100%;
+		font-size: 0.92rem;
+		font-weight: 700;
+		color: #fff;
+		white-space: nowrap;
+		overflow: hidden;
+		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+	}
+	/* bet — the purple box art (Variant8) fills the cell; −, value and + sit inside it. */
+	.pt-bet {
+		position: relative;
+		flex: 1.5 1 0;
+		min-width: 0;
+		height: 50px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 2px;
+		padding: 0 7px;
+	}
+	.pt-bet__bg {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: fill;
+		z-index: 0;
+		pointer-events: none;
+	}
+	.pt-bet > :not(.pt-bet__bg) {
+		position: relative;
+		z-index: 1;
+	}
+	/* smaller step buttons so they fit inside the purple box */
+	.pt-bet .pt-step {
+		width: 36px;
+		height: 36px;
+	}
+	.pt-bet__values {
+		flex: 1 1 0;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1px;
+		cursor: pointer;
+	}
+	.pt-step {
+		flex: 0 0 auto;
+		width: 40px;
+		height: 40px;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		cursor: pointer;
+		display: grid;
+		place-items: center;
+		transition: transform 0.1s ease;
+	}
+	.pt-step img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		display: block;
+	}
+	.pt-step:active {
+		transform: scale(0.9);
+	}
+	.pt-step:disabled {
+		opacity: 0.5;
+		cursor: default;
 	}
 </style>
