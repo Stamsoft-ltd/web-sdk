@@ -61,6 +61,13 @@ export const socialOverridesEn: Record<string, string> = {
 		'Instant feature options are available only where allowed. All instant feature and bonus options are won as a multiple of the selected play amount.',
 	'INFO FB FEATURE TITLE': 'Instant Feature',
 	'INFO FB BONUS TITLE': 'Instant Bonus',
+	// The three card descriptions all open with "Buys …" in the base map — `buy -> play` on the
+	// prohibited list, and reviewers match it as a SUBSTRING, so "Buys" fails just like payline did.
+	// `bought -> instantly triggered` gives the wording for the two direct-access cards.
+	'INFO FB EXTRA TEXT':
+		'Plays a special spin with a guaranteed magnetic connection and a chance to land Multiplier Wilds.',
+	'INFO FB FEATURE TEXT': 'Instantly triggers the Drop-O-Magnet Free Spins feature.',
+	'INFO FB BONUS TEXT': 'Instantly triggers the stronger Magnetic Mega Chain Free Spins feature.',
 	'INFO CTRL SPIN DESC': 'Start a game round with your selected play amount.',
 	'INFO CTRL PLUS': 'Increase Play Amount',
 	'INFO CTRL PLUS DESC': 'Raise your total play amount.',
@@ -71,6 +78,9 @@ export const socialOverridesEn: Record<string, string> = {
 	'BUY CONFIRM': 'PLAY %name% FOR %cost%?',
 	'BUY EXTRA CHANCE TITLE': 'Extra Chance',
 	'BUY FEATURE SPINS TITLE': 'Feature Spins',
+	// Same "Buys …" sentence as INFO FB EXTRA TEXT, reused by the buy-bonus card — scrub both.
+	'BUY FEATURE SPINS DESC':
+		'Plays a special spin with a guaranteed magnetic connection and a chance to land Multiplier Wilds.',
 
 	// ── "pay" family ─────────────────────────────────────────────────────────────
 	// Reviewers apply the prohibited-term list as SUBSTRINGS, not whole words, so `pay -> win`

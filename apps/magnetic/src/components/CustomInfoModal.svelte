@@ -1,10 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { stateConfig, stateUrlDerived } from 'state-shared';
 
 	import { i18nDerived } from '../i18n/i18nDerived';
 
 	// Shorthand: reactive translate + interpolating translate (re-runs on locale change).
 	const t = (key: string) => i18nDerived.translate(key);
+
+	// Feature-buy cost value. Normally "50x BET"; in social the COST label is already "PLAY AMOUNT"
+	// and BET translates to "PLAY", which stacked up as "PLAY AMOUNT / 50x PLAY" — so drop the unit
+	// there and let the label carry it. Same flag SocialI18nSync switches the message map on.
+	const isSocial = $derived(stateConfig.jurisdiction.socialCasino || stateUrlDerived.social());
+	const cost = (multiplier: string) => (isSocial ? multiplier : `${multiplier} ${t('BET')}`);
 
 	// Game description / rules popup — Magnetic Megachain. Multi-page (arrows below). All copy is
 	// localized via the i18n keys ('INFO …'); numeric values stay as constants here.
@@ -236,21 +243,21 @@
 							<h3 class="feat-h">{t('INFO FB EXTRA TITLE')}</h3>
 							<p class="feat-p">{t('INFO FB EXTRA TEXT')}</p>
 							<img class="feat-ic" src={wild} alt="Wild" />
-							<div class="fb-meta"><span class="fb-k">{t('INFO COST')}</span><span class="fb-v">100x {t('BET')}</span></div>
+							<div class="fb-meta"><span class="fb-k">{t('INFO COST')}</span><span class="fb-v">{cost('50x')}</span></div>
 							<div class="fb-meta"><span class="fb-k">{t('INFO RTP')}</span><span class="fb-v">{RTP_SHORT}</span></div>
 						</div>
 						<div class="card feat-card">
 							<h3 class="feat-h">{t('INFO FB FEATURE TITLE')}</h3>
 							<p class="feat-p">{t('INFO FB FEATURE TEXT')}</p>
 							<div class="feat-trigger"><span class="feat-x">3x</span><img src={scatter} alt="Scatter" /></div>
-							<div class="fb-meta"><span class="fb-k">{t('INFO COST')}</span><span class="fb-v">100x {t('BET')}</span></div>
+							<div class="fb-meta"><span class="fb-k">{t('INFO COST')}</span><span class="fb-v">{cost('100x')}</span></div>
 							<div class="fb-meta"><span class="fb-k">{t('INFO RTP')}</span><span class="fb-v">{RTP_SHORT}</span></div>
 						</div>
 						<div class="card feat-card">
 							<h3 class="feat-h">{t('INFO FB BONUS TITLE')}</h3>
 							<p class="feat-p">{t('INFO FB BONUS TEXT')}</p>
 							<div class="feat-trigger"><span class="feat-x">4x</span><img src={scatter} alt="Scatter" /></div>
-							<div class="fb-meta"><span class="fb-k">{t('INFO COST')}</span><span class="fb-v">100x {t('BET')}</span></div>
+							<div class="fb-meta"><span class="fb-k">{t('INFO COST')}</span><span class="fb-v">{cost('500x')}</span></div>
 							<div class="fb-meta"><span class="fb-k">{t('INFO RTP')}</span><span class="fb-v">{RTP_SHORT}</span></div>
 						</div>
 					</div>
@@ -958,7 +965,13 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		line-height: 1.12;
+		line-height: 1.2;
+	}
+	/* Design (Figma 4453:7151) separates the two stat blocks by noticeably more than the label sits
+	   from its own value — without it COST/50x BET/RTP/96.1% read as one four-line run. ~0.55em of the
+	   stat font size, so it tracks the same cqmin scaling as .fb-k/.fb-v on every breakpoint. */
+	.fb-meta + .fb-meta {
+		margin-top: clamp(5px, 1.1cqmin, 10px);
 	}
 	.fb-meta:first-of-type {
 		margin-top: auto;
@@ -1270,12 +1283,16 @@
 
 		/* Page 5 — Feature buy: everything bigger (the cards have spare height). */
 		.fb-sub { font-size: 15px; }
-		.fb-grid { gap: 16px; }
+		/* Wider than the desktop row's 72%: the landscape canvas is only 850px across, so the same
+		   percentage left the cards narrow enough to wrap the Extra-Feature copy an extra line. */
+		.fb-grid { gap: 16px; max-width: 84%; }
 		/* Spread each card's rows top-to-bottom (title → text → icon → COST → RTP) to fill the card height.
 		   Padding/gap kept tight and the Extra-Feature wild icon modest so the longest card's RTP still fits. */
 		.fb-grid .feat-card { gap: 8px; padding: 14px; justify-content: space-between; }
 		.fb-grid .feat-h { font-size: 22px; }
-		.fb-grid .feat-p { font-size: 15px; }
+		/* 1px under the other landscape body copy: at 15px the longest card (Extra Feature) wrapped to
+		   five lines and pushed COST/RTP past the frame art's bottom edge in both popout sizes. */
+		.fb-grid .feat-p { font-size: 14px; }
 		/* Short landscape viewports (this @container fires ≤490px tall, e.g. mobile landscape): the panel is
 		   only ~half height, so keep the icons modest or they clip the card's COST/RTP. */
 		.fb-grid .feat-ic { width: 84px; }
