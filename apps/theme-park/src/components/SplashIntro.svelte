@@ -8,15 +8,33 @@
 	const logoSrc = ap('/assets/theme-park/v2/splash/logo.webp');
 	const pressPlaySrc = ap('/assets/theme-park/v2/splash/press_play_mark.svg');
 	const arrowSrc = ap('/assets/theme-park/v2/splash/arrow.svg');
+	// One gold marquee frame lifted from the splash art, used as the portrait carousel card.
+	const cardFrameSrc = ap('/assets/theme-park/v2/splash/card-frame.webp');
 </script>
 
 <script lang="ts">
 	import { stateI18nDerived } from 'state-shared';
+	import { innerWidth, innerHeight } from 'svelte/reactivity/window';
 
 	type Props = { onpress: () => void };
 	const props: Props = $props();
 
 	const t = (key: string) => stateI18nDerived.translate(key);
+
+	// The 1200×670 landscape composition can't fill a tall phone (contain-fit leaves it a small band
+	// with big blurred margins). On portrait we render a dedicated vertical layout instead: cover
+	// background, logo up top, the three feature cards stacked, press row at the bottom. Threshold
+	// mirrors the game's own 'portrait' layoutType (canvas ratio ≤ 0.8).
+	const isPortrait = $derived((innerWidth.current ?? 1) / (innerHeight.current ?? 1) <= 0.8);
+
+	// Portrait shows ONE feature card at a time (Expanding Reels → Mega Chain → Epic Wins) in a gold
+	// marquee frame, auto-advancing with pagination dots — a carousel rather than a stack.
+	let slide = $state(0);
+	$effect(() => {
+		if (!isPortrait) return;
+		const id = setInterval(() => (slide = (slide + 1) % 3), 2600);
+		return () => clearInterval(id);
+	});
 
 	// Not translated — a numeral, and it is the same figure on all three cards in the design.
 	const MULTIPLIER = '1024x';
@@ -75,6 +93,7 @@
 	     instead of as dead space. -->
 	<div class="backdrop" style={`background-image:url('${bgSrc}')`}></div>
 
+	{#if !isPortrait}
 	<div class="stage">
 		<!-- The background node is placed at (-19,-6) at 1239x697 in a 1200x670 frame, i.e. it
 		     deliberately bleeds past every edge. Reproduced exactly so the marquee frames land under
@@ -109,6 +128,48 @@
 			<img class="press-arrow" src={arrowSrc} alt="" />
 		</div>
 	</div>
+	{:else}
+	<!-- PORTRAIT splash: dedicated vertical layout that fills the phone screen. -->
+	<div class="splash-pt">
+		<img class="pt-bg" src={bgSrc} alt="" />
+		<div class="pt-scrim"></div>
+		<img class="pt-pp" src={pressPlaySrc} alt="Press Play" />
+
+		<div class="pt-carousel">
+			<div class="pt-frame">
+				<img class="pt-frame-art" src={cardFrameSrc} alt="" />
+				{#each CARDS as card, i (card.key)}
+					<div class="pt-slide" class:is-active={i === slide} aria-hidden={i !== slide}>
+						<p class="pt-feat-title title--{card.tone}">{t(card.key)}</p>
+						<p class="pt-feat-sub">{t('SPLASH WITH UP TO')}</p>
+						<p class="pt-feat-big">{MULTIPLIER}</p>
+						<p class="pt-feat-sub">{t('SPLASH MULTIPLIER')}</p>
+					</div>
+				{/each}
+			</div>
+
+			<div class="pt-dots">
+				{#each CARDS as card, i (card.key)}
+					<button
+						class="pt-dot"
+						class:is-active={i === slide}
+						type="button"
+						aria-label={`Slide ${i + 1}`}
+						onclick={(e) => {
+							e.stopPropagation();
+							slide = i;
+						}}
+					></button>
+				{/each}
+			</div>
+		</div>
+
+		<div class="pt-press">
+			<span class="pt-press-label">{t('PRESS TO CONTINUE')}</span>
+			<img class="pt-press-arrow" src={arrowSrc} alt="" />
+		</div>
+	</div>
+	{/if}
 </div>
 
 <style>
@@ -194,7 +255,7 @@
 		left: 49.125%;
 		top: 40.44776%;
 		transform: translate(-50%, -50%);
-		width: 43.08333%;
+		width: 38.5%;
 		aspect-ratio: 517 / 178;
 		overflow: hidden;
 		/* Falls in from off-screen and lands hard. -210% of its own height clears the stage top from
@@ -389,6 +450,178 @@
 		.press-row,
 		.logo-box,
 		.stage {
+			animation: none;
+		}
+	}
+
+	/* ===== PORTRAIT SPLASH — vertical layout, fills the phone ===== */
+	.splash-pt {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.pt-bg {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center top;
+		/* The splash art bakes the three gold marquee frames into its lower-centre. Zoom into the
+		   upper scene (coaster / fireworks / wheel) anchored at the top so those frames drop below
+		   the fold and don't double up with the CSS cards. */
+		transform: scale(1.7);
+		transform-origin: center top;
+	}
+	.pt-scrim {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			180deg,
+			rgba(20, 0, 30, 0.45) 0%,
+			rgba(20, 0, 30, 0.1) 28%,
+			rgba(20, 0, 30, 0.32) 62%,
+			rgba(20, 0, 30, 0.85) 100%
+		);
+	}
+	.pt-pp {
+		position: relative;
+		z-index: 1;
+		width: 30cqw;
+		height: auto;
+		margin-top: 7cqh;
+		filter: drop-shadow(0 0.5cqh 1cqh rgba(0, 0, 0, 0.5));
+	}
+	/* --- Feature carousel: one gold marquee frame, copy cross-fades, dots below --- */
+	.pt-carousel {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin-top: 4cqh;
+	}
+	.pt-frame {
+		position: relative;
+		width: 80cqw;
+		max-width: 360px;
+		aspect-ratio: 369 / 378;
+	}
+	.pt-frame-art {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: fill;
+		filter: drop-shadow(0 1.4cqh 2cqh rgba(0, 0, 0, 0.55));
+	}
+	/* Each slide's copy sits inside the frame interior; only the active one is visible. */
+	.pt-slide {
+		position: absolute;
+		inset: 13% 12%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		opacity: 0;
+		transform: scale(0.96);
+		transition:
+			opacity 0.45s ease,
+			transform 0.45s ease;
+		pointer-events: none;
+	}
+	.pt-slide.is-active {
+		opacity: 1;
+		transform: scale(1);
+	}
+	.pt-feat-title {
+		margin: 0 0 1cqh;
+		font-family: 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
+		font-weight: 700;
+		font-size: 7cqw;
+		line-height: 1.02;
+		letter-spacing: 0.02em;
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+	}
+	.pt-feat-sub {
+		margin: 0;
+		font-family: 'Poppins', sans-serif;
+		font-weight: 400;
+		font-size: 3.4cqw;
+		line-height: 1.2;
+		color: #fff;
+	}
+	.pt-feat-big {
+		margin: 0.5cqh 0;
+		font-family: 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
+		font-weight: 700;
+		font-size: 12cqw;
+		line-height: 1;
+		background-image: linear-gradient(
+			181.3deg,
+			#f1eea5 7.45%,
+			#e79a17 28.07%,
+			#d7880c 63.58%,
+			#a16202 93.75%
+		);
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+	}
+	.pt-dots {
+		display: flex;
+		align-items: center;
+		gap: 2.6cqw;
+		margin-top: 3.5cqh;
+	}
+	.pt-dot {
+		width: 2.4cqw;
+		height: 2.4cqw;
+		padding: 0;
+		border: 0;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.4);
+		cursor: pointer;
+		transition:
+			width 0.25s ease,
+			background 0.25s ease;
+	}
+	.pt-dot.is-active {
+		width: 6.5cqw;
+		border-radius: 1.2cqw;
+		background: #f0c24a;
+	}
+	.pt-press {
+		position: relative;
+		z-index: 1;
+		margin-top: auto;
+		margin-bottom: calc(4cqh + env(safe-area-inset-bottom, 0px));
+		display: flex;
+		align-items: center;
+		gap: 2cqw;
+		animation: blink 1.6s ease-in-out infinite;
+	}
+	.pt-press-label {
+		font-family: Helvetica, Arial, sans-serif;
+		font-weight: 700;
+		font-size: 4cqw;
+		letter-spacing: 0.03em;
+		color: #fff;
+	}
+	.pt-press-arrow {
+		width: 4cqw;
+		height: auto;
+		display: block;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.pt-press {
 			animation: none;
 		}
 	}

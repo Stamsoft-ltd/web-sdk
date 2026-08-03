@@ -35,7 +35,12 @@
 	const ptMinus = ap('/assets/theme-park/v2/controls/btn-minus.png');
 	const ptMinusDisabled = ap('/assets/theme-park/v2/controls/btn-minus-disabled.png');
 	const ptBuy = ap('/assets/theme-park/v2/controls/btn-buy-mobile.png');
-	const ptBetBox = ap('/assets/theme-park/v2/controls/bet-box.png');
+	// Bet box plate — the dark neon-border box (Variant7), same family as the Navigation bar, smaller.
+	// (bottom ~29px of dead black padding cropped off so the box fills the frame and content centres.)
+	const ptBetBox = ap('/assets/theme-park/v2/controls/bet-plate2.png');
+	// Portrait nav bar — bar_plate cropped tight + vertically symmetric, so the visible bar nearly
+	// fills its box and the (bigger) buttons sit centred inside it.
+	const ptNavBar = ap('/assets/theme-park/v2/controls/nav-bar.png');
 </script>
 
 <script lang="ts">
@@ -50,6 +55,7 @@
 	import { templateStakeDerived } from '../state/templateStake.svelte';
 	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
 	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
+	import CustomInfoModal from './CustomInfoModal.svelte';
 
 	const context = getContext();
 
@@ -207,9 +213,10 @@
 
 	const openRules = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
-		stateModal.modal = { name: 'gameRules' };
+		showInfoModal = true;
 	};
 
+	let showInfoModal = $state(false);
 	let showBuyModal = $state(false);
 	let showAutoModal = $state(false);
 	$effect(() => {
@@ -545,20 +552,23 @@
 	     auto) on top, balance | bet(-/+) | win strip below. Real neon button art. -->
 	<div class="pt-hud">
 		<div class="pt-controls">
-			<button class="pt-btn" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
-				<img src={ptMenu} alt="" />
-			</button>
+			<img class="pt-bar-bg" src={ptNavBar} alt="" aria-hidden="true" />
+			<div class="pt-side pt-side--left">
+				<button class="pt-btn" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
+					<img src={ptMenu} alt="" />
+				</button>
 
-			<button
-				class="pt-btn pt-buy"
-				type="button"
-				disabled={disableBuy}
-				onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
-				aria-label={buyLabel}
-			>
-				<img src={ptBuy} alt="" />
-				<span class="pt-buy__label">{buyLabel}</span>
-			</button>
+				<button
+					class="pt-btn pt-buy"
+					type="button"
+					disabled={disableBuy}
+					onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
+					aria-label={buyLabel}
+				>
+					<img src={ptBuy} alt="" />
+					<span class="pt-buy__label">{buyLabel}</span>
+				</button>
+			</div>
 
 			<button
 				class="pt-spin"
@@ -577,27 +587,29 @@
 				{/if}
 			</button>
 
-			<button
-				class="pt-btn pt-turbo"
-				data-speed={speedMode}
-				type="button"
-				onclick={onTurbo}
-				aria-label={i18nDerived.turboLabel()}
-				title={`${i18nDerived.turboLabel()}: ${speedMode}`}
-			>
-				<img src={ptTurboImg} alt="" />
-			</button>
+			<div class="pt-side pt-side--right">
+				<button
+					class="pt-btn pt-turbo"
+					data-speed={speedMode}
+					type="button"
+					onclick={onTurbo}
+					aria-label={i18nDerived.turboLabel()}
+					title={`${i18nDerived.turboLabel()}: ${speedMode}`}
+				>
+					<img src={ptTurboImg} alt="" />
+				</button>
 
-			<button
-				class="pt-btn"
-				class:active={hasAuto}
-				type="button"
-				onclick={onAuto}
-				disabled={disableAuto}
-				aria-label={i18nDerived.autoplayLabel()}
-			>
-				<img src={disableAuto && !hasAuto ? ptAutoDisabled : ptAuto} alt="" />
-			</button>
+				<button
+					class="pt-btn"
+					class:active={hasAuto}
+					type="button"
+					onclick={onAuto}
+					disabled={disableAuto}
+					aria-label={i18nDerived.autoplayLabel()}
+				>
+					<img src={disableAuto && !hasAuto ? ptAutoDisabled : ptAuto} alt="" />
+				</button>
+			</div>
 		</div>
 
 		<div class="pt-stats">
@@ -630,7 +642,6 @@
 					onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
 					onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
 				>
-					<span class="pt-pill__label">{i18nDerived.betLabel()}</span>
 					<span class="pt-pill__value" use:fitText={formattedBet}>{formattedBet}</span>
 				</div>
 
@@ -671,6 +682,10 @@
 	<CustomAutoSpinModal onclose={() => (showAutoModal = false)} />
 {/if}
 
+{#if showInfoModal}
+	<CustomInfoModal onclose={() => (showInfoModal = false)} />
+{/if}
+
 <style>
 	.hud-shell {
 		position: absolute;
@@ -707,7 +722,7 @@
 		position: absolute;
 		left: 50%;
 		top: calc(var(--hud-u) * 10);
-		width: calc(var(--hud-u) * 456);
+		width: calc(var(--hud-u) * 388);
 		height: auto;
 		transform: translateX(-50%);
 		filter: drop-shadow(0 6px 11px rgba(0, 0, 0, 0.7));
@@ -1473,7 +1488,7 @@
 		pointer-events: none;
 	}
 	.hud-shell[data-layout='portrait'] .pt-themelogo {
-		width: clamp(200px, 54vw, 320px);
+		width: clamp(168px, 46vw, 272px);
 		height: auto;
 		filter: drop-shadow(0 6px 11px rgba(0, 0, 0, 0.7));
 	}
@@ -1496,33 +1511,50 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 14px;
+		gap: 22px;
 		font-family: 'Cinzel', serif;
 	}
 
-	/* --- Controls row: menu · buy · spin · turbo · auto on a dark rounded bar (the "navigation
-	   board"), narrower than full width, buttons spread. Spin overflows the bar upward. --- */
+	/* --- Controls row: the Navigation plate art (bar_plate) is the bar background; the buttons sit
+	   on top. Buy bonus = 100% bar height, spin exceeds it, menu/turbo/auto smaller & inside. --- */
+	/* 3-column grid: [left group | spin | right group]. The 1fr side columns are equal, so the
+	   spin (auto centre column) is always dead-centre; each side spreads its two buttons. */
 	.pt-controls {
 		position: relative;
-		width: 88%;
+		width: 94%;
+		height: 62px;
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		grid-template-rows: 100%;
+		column-gap: 12px;
+		align-items: center;
+		align-content: center;
+		padding: 0 10px;
+		overflow: visible;
+	}
+	.pt-bar-bg {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: fill;
+		z-index: 0;
+		pointer-events: none;
+	}
+	.pt-controls > :not(.pt-bar-bg) {
+		position: relative;
+		z-index: 1;
+	}
+	.pt-side {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 6px;
-		padding: 6px 18px;
-		border-radius: 999px;
-		background: linear-gradient(180deg, rgba(22, 12, 40, 0.9), rgba(9, 6, 22, 0.94));
-		border: 1px solid rgba(150, 95, 230, 0.4);
-		box-shadow:
-			0 8px 22px rgba(0, 0, 0, 0.42),
-			inset 0 1px 0 rgba(255, 255, 255, 0.05);
-		overflow: visible;
 	}
 
 	.pt-btn {
 		flex: 0 0 auto;
-		width: 46px;
-		height: 46px;
+		width: 34px;
+		height: 34px;
 		padding: 0;
 		border: 0;
 		background: transparent;
@@ -1552,14 +1584,12 @@
 		filter: drop-shadow(0 0 7px rgba(120, 200, 255, 0.9));
 	}
 
-	/* Buy bonus — round purple button with a 2-line label overlaid. */
+	/* Buy bonus — round purple button, bigger than the small buttons, centered in the bar. */
 	.pt-buy {
 		position: relative;
-		width: 66px;
-		height: 66px;
-		/* centered in the bar, negative margins keep it from growing the bar so it overflows
-		   slightly top & bottom (spin overflows more) */
-		margin: -10px 0;
+		width: 60px;
+		height: 60px;
+		align-self: center;
 	}
 	.pt-buy__label {
 		position: absolute;
@@ -1568,8 +1598,8 @@
 		align-items: center;
 		justify-content: center;
 		font-weight: 800;
-		font-size: 0.5rem;
-		line-height: 1.02;
+		font-size: 0.48rem;
+		line-height: 1.05;
 		letter-spacing: 0.01em;
 		color: #fff;
 		text-transform: uppercase;
@@ -1577,16 +1607,19 @@
 		text-align: center;
 		overflow-wrap: break-word;
 		pointer-events: none;
-		padding: 0 9px;
+		/* narrow enough that "BUY BONUS" wraps to two lines inside the round button */
+		padding: 0 16px;
 	}
 
-	/* Spin — the large marquee button, overflowing the pill upward. */
+	/* Spin — the largest button of the row, centered and sitting inside the bar. (The art has ~13%
+	   transparent padding, so the visible ring is smaller than the box and stays inside the bar.) */
 	.pt-spin {
 		flex: 0 0 auto;
 		position: relative;
-		width: 104px;
-		height: 104px;
-		margin: -34px 0 -18px;
+		align-self: center;
+		width: 98px;
+		height: 98px;
+		margin: 0;
 		padding: 0;
 		border: 0;
 		background: transparent;
@@ -1649,7 +1682,7 @@
 		font-weight: 700;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
-		color: #8ec7ff;
+		color: #fff;
 		white-space: nowrap;
 		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
 	}
@@ -1670,9 +1703,9 @@
 		height: 50px;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 2px;
-		padding: 0 7px;
+		justify-content: center;
+		gap: 12px;
+		padding: 0 18px;
 	}
 	.pt-bet__bg {
 		position: absolute;
@@ -1687,13 +1720,13 @@
 		position: relative;
 		z-index: 1;
 	}
-	/* smaller step buttons so they fit inside the purple box */
+	/* small step buttons that fit inside the bet box with clear margin */
 	.pt-bet .pt-step {
-		width: 36px;
-		height: 36px;
+		width: 28px;
+		height: 28px;
 	}
 	.pt-bet__values {
-		flex: 1 1 0;
+		flex: 0 1 auto;
 		min-width: 0;
 		display: flex;
 		flex-direction: column;

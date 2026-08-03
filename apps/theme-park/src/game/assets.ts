@@ -197,6 +197,14 @@ const assets: Assets = {
 		src: './assets/theme-park/v2/animations/features/roller-wild-car.webm',
 		defer: true,
 	},
+	// Drop-state car (duck excited, both wings up). Placeholder = the waving clip until the real
+	// "both hands in the air" animation is provided; the overlay switches to this once the car starts
+	// rolling down the reel.
+	rollerWildCarDropAnim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/animations/features/roller-wild-car-drop.webm',
+		defer: true,
+	},
 	coasterCarSickAnim: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/animations/features/coaster-car-sick.webm',

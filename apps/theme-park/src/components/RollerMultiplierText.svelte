@@ -7,6 +7,12 @@
 
 	const props: Props = $props();
 
+	// Shrink wider values ("100X", "1024X") so the text always sits inside the ~156px-wide cell
+	// instead of spilling over the grid line into neighbouring cells.
+	const size = $derived(
+		props.text.length <= 3 ? 35.05 : props.text.length === 4 ? 29 : 24,
+	);
+
 	// Figma: linear-gradient(184.76deg, #FCB707 23.42%, #FCC500 49.25%, #D59800 72.84%).
 	const fill = new FillGradient({
 		type: 'linear',
@@ -27,9 +33,9 @@
 	style={{
 		fontFamily: 'Helvetica',
 		fontWeight: '700',
-		fontSize: 35.05,
-		lineHeight: 35.05,
-		letterSpacing: 35.05 * 0.03,
+		fontSize: size,
+		lineHeight: size,
+		letterSpacing: size * 0.03,
 		align: 'center',
 		fill,
 		stroke: { color: 0x37310a, width: 0.2 },

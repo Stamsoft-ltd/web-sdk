@@ -9,7 +9,7 @@
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
 	import { cubicOut, linear } from 'svelte/easing';
-	import { Container, Sprite } from 'pixi-svelte';
+	import { Container } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
 	import { waitForTimeout } from 'utils-shared/wait';
 
@@ -33,55 +33,52 @@
 	const megaWildKey = $derived(getSpecialSymbolKey('megaWild', layoutType));
 
 	let transformed = $state<RollerReel[]>([]);
-	let totalizedReels = $state<number[]>([]);
+	let combinedReels = $state<number[]>([]);
+	let combineTweens = $state<Record<number, Tween<number>>>({});
+	let totalAlphas = $state<Record<number, Tween<number>>>({});
 	let triggerReels = $state<RollerReel[]>([]);
 	let expandedRows = $state<Record<number, number[]>>({});
 	let displayedMultipliers = $state<Record<number, number>>({});
 	let rowScales = $state<Record<string, Tween<number>>>({});
 	let totalScales = $state<Record<number, Tween<number>>>({});
 	let current = $state<RollerReel | null>(null);
+	// false while the car sits stationary (waving), true once it starts rolling down (excited/both-up)
+	let carDropping = $state(false);
 	const carY = new Tween(-SYMBOL_H);
-	const CAR_DESCENT_MS = 430;
-	const MULTIPLIER_STEP_MS = 140;
+	const CAR_DROP_IN_MS = 260;
+	const STATIONARY_HOLD_MS = 480;
+	const CAR_DESCENT_MS = 760;
 
-	const multiplierFrames = (roller: RollerReel) => {
-		if (roller.multiplier <= 1) return [1];
-		if (roller.multipliers.length > 1) {
-			const cumulative = roller.multipliers.reduce<number[]>((frames, entry) => {
-				frames.push((frames.at(-1) ?? 0) + entry.multiplier);
-				return frames;
-			}, []);
-			return [...new Set([1, ...cumulative, roller.multiplier])].filter(
-				(value) => value <= roller.multiplier,
-			);
-		}
-		const steps = Math.min(8, roller.multiplier - 1);
-		return [
-			1,
-			...Array.from({ length: steps }, (_, index) =>
-				Math.round(1 + ((roller.multiplier - 1) * (index + 1)) / steps),
-			),
-		];
-	};
+	const REEL_CENTER_Y = (SYMBOL_H * BOARD_DIMENSIONS.y) / 2;
 
 	context.eventEmitter.subscribeOnMount({
 		rollerWildsShow: async (event) => {
 			transformed = [];
-			totalizedReels = [];
+			combinedReels = [];
+			combineTweens = {};
+			totalAlphas = {};
 			triggerReels = event.reels;
 			expandedRows = {};
 			displayedMultipliers = {};
 			rowScales = {};
 			totalScales = {};
 			current = null;
+			carDropping = false;
 			for (const reel of event.reels) {
 				current = reel;
+				carDropping = false; // stationary: waving car
 				transformed = [...transformed, reel];
 				expandedRows = { ...expandedRows, [reel.reel]: [] };
 				displayedMultipliers = { ...displayedMultipliers, [reel.reel]: 1 };
 				const startY = -SYMBOL_H * 0.72;
+				const restY = SYMBOL_H * 0.5; // top row — the car sits here (visible) before it rolls down
 				const endY = BOARD_SIZES.height + SYMBOL_H * 0.72;
+				// Drop the car in from above to a visible rest spot and hold, so the duck reads before it
+				// rolls down — it used to start off-screen and shoot straight through too fast to see.
 				carY.set(startY, { duration: 0 });
+				await carY.set(restY, { duration: CAR_DROP_IN_MS, easing: cubicOut });
+				await waitForTimeout(STATIONARY_HOLD_MS);
+				carDropping = true; // the roll begins: switch to the excited / both-wings-up car
 				const descent = carY.set(endY, {
 					duration: CAR_DESCENT_MS,
 					easing: linear,
@@ -90,7 +87,7 @@
 
 				for (let row = 0; row < BOARD_DIMENSIONS.y; row += 1) {
 					const targetY = SYMBOL_H * (row + 0.5);
-					const revealMs = ((targetY - startY) / (endY - startY)) * CAR_DESCENT_MS;
+					const revealMs = ((targetY - restY) / (endY - restY)) * CAR_DESCENT_MS;
 					await waitForTimeout(Math.max(0, revealMs - previousRevealMs));
 					previousRevealMs = revealMs;
 					const rowKey = `${reel.reel},${row}`;
@@ -106,30 +103,39 @@
 						forcePlay: true,
 					});
 					void (async () => {
-						await scale.set(1.1, { duration: 110, easing: cubicOut });
-						await scale.set(1, { duration: 80, easing: cubicOut });
+						await scale.set(1.03, { duration: 120, easing: cubicOut });
+						await scale.set(1, { duration: 90, easing: cubicOut });
 					})();
 				}
 
 				await descent;
 				current = null;
-				// All five cells enter as 1X, then count together to the final
-				// reel multiplier. The math multiplier remains unchanged.
-				await waitForTimeout(110);
-				const totalScale = new Tween(0.9);
+				// The car has left the reel: every cell's multiplier slides to the reel centre and fades
+				// while a single combined total (the reel multiplier) pops in there, then disappears.
+				await waitForTimeout(120);
+				const combineT = new Tween(0);
+				combineTweens = { ...combineTweens, [reel.reel]: combineT };
+				const totalAlpha = new Tween(0);
+				totalAlphas = { ...totalAlphas, [reel.reel]: totalAlpha };
+				const totalScale = new Tween(0.65);
 				totalScales = { ...totalScales, [reel.reel]: totalScale };
-				totalizedReels = [...totalizedReels, reel.reel];
-				for (const value of multiplierFrames(reel).slice(1)) {
-					displayedMultipliers = { ...displayedMultipliers, [reel.reel]: value };
-					context.eventEmitter.broadcast({
-						type: 'soundOnce',
-						name: 'sfx_reel_stop_2',
-						forcePlay: true,
-					});
-					await waitForTimeout(MULTIPLIER_STEP_MS);
-				}
-				await totalScale.set(1.12, { duration: 160, easing: cubicOut });
-				await totalScale.set(1, { duration: 100, easing: cubicOut });
+				combinedReels = [...combinedReels, reel.reel];
+				context.eventEmitter.broadcast({
+					type: 'soundOnce',
+					name: 'sfx_reel_stop_2',
+					forcePlay: true,
+				});
+				void totalAlpha.set(1, { duration: 240, easing: cubicOut });
+				void (async () => {
+					await totalScale.set(1.14, { duration: 260, easing: cubicOut });
+					await totalScale.set(1, { duration: 130, easing: cubicOut });
+				})();
+				await combineT.set(1, { duration: 300, easing: cubicOut });
+				await waitForTimeout(320);
+				await Promise.all([
+					totalAlpha.set(0, { duration: 240, easing: cubicOut }),
+					totalScale.set(1.4, { duration: 240, easing: cubicOut }),
+				]);
 			}
 			// Keep the animation layer intact until the handler commits the
 			// transformed board and explicitly sends rollerWildsHide.
@@ -137,13 +143,16 @@
 		},
 		rollerWildsHide: () => {
 			transformed = [];
-			totalizedReels = [];
+			combinedReels = [];
+			combineTweens = {};
+			totalAlphas = {};
 			triggerReels = [];
 			expandedRows = {};
 			displayedMultipliers = {};
 			rowScales = {};
 			totalScales = {};
 			current = null;
+			carDropping = false;
 		},
 	});
 
@@ -160,20 +169,6 @@
 			scale={layout.boardScale}
 			sortableChildren
 		>
-			<!-- Two parallel rails per reel; only winning reels receive a cart. -->
-			{#each Array.from({ length: BOARD_DIMENSIONS.x }, (_, reel) => reel) as reel (reel)}
-				{#each [-0.38, 0.38] as railOffset (railOffset)}
-					<Sprite
-						key="rollerWildRail"
-						x={cellX(reel) + SYMBOL_W * railOffset}
-						y={BOARD_SIZES.height * 0.5}
-						zIndex={5}
-						anchor={0.5}
-						width={SYMBOL_W * 0.12}
-						height={BOARD_SIZES.height * 1.08}
-					/>
-				{/each}
-			{/each}
 
 			<!-- Initial landed trigger stays Mega Wild until the cart replaces its row. -->
 			{#each triggerReels as roller (`trigger-${roller.reel}`)}
@@ -195,9 +190,9 @@
 			{#if current}
 				<Container x={cellX(current.reel)} y={carY.current} zIndex={30}>
 					<LoopingAssetSprite
-						animationKey="rollerWildCarAnim"
+						animationKey={carDropping ? 'rollerWildCarDropAnim' : 'rollerWildCarAnim'}
 						fallbackKey="rollerWildCar"
-						restartKey={current.reel}
+						restartKey={`${current.reel}-${carDropping ? 'drop' : 'idle'}`}
 						anchor={0.5}
 						width={SYMBOL_W * 1.55}
 						height={SYMBOL_H * 1.65}
@@ -206,22 +201,53 @@
 			{/if}
 
 			{#each transformed as roller (roller.reel)}
+				{@const combining = combinedReels.includes(roller.reel)}
+				{@const ct = combineTweens[roller.reel]?.current ?? 0}
+
+				<!-- Wild boxes: one per revealed row, fixed to the cell (fade in, never scale/spill). -->
 				{#each Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => row) as row (row)}
-					{@const totalized = totalizedReels.includes(roller.reel)}
 					{#if expandedRows[roller.reel]?.includes(row)}
 						<Container
 							x={cellX(roller.reel)}
 							y={cellY(row)}
 							zIndex={10}
-							scale={totalized
-								? (totalScales[roller.reel]?.current ?? 1)
-								: (rowScales[`${roller.reel},${row}`]?.current ?? 1)}
+							alpha={rowScales[`${roller.reel},${row}`]?.current ?? 1}
 						>
 							<CoasterWildBackground reel={roller.reel} {row} />
-							<RollerMultiplierText text={`${displayedMultipliers[roller.reel] ?? 1}X`} />
 						</Container>
 					{/if}
 				{/each}
+
+				<!-- Per-cell multipliers (left behind the car's trail). While combining they slide to the
+				     reel centre and fade out. -->
+				{#if ct < 1}
+					{#each Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => row) as row (row)}
+						{#if expandedRows[roller.reel]?.includes(row)}
+							<Container
+								x={cellX(roller.reel)}
+								y={cellY(row) + (REEL_CENTER_Y - cellY(row)) * ct}
+								zIndex={22}
+								scale={combining ? 1 : (rowScales[`${roller.reel},${row}`]?.current ?? 1)}
+								alpha={1 - ct}
+							>
+								<RollerMultiplierText text={`${displayedMultipliers[roller.reel] ?? 1}X`} />
+							</Container>
+						{/if}
+					{/each}
+				{/if}
+
+				<!-- The combined total at the reel centre. -->
+				{#if combining}
+					<Container
+						x={cellX(roller.reel)}
+						y={REEL_CENTER_Y}
+						zIndex={24}
+						scale={totalScales[roller.reel]?.current ?? 1}
+						alpha={totalAlphas[roller.reel]?.current ?? 0}
+					>
+						<RollerMultiplierText text={`${roller.multiplier}X`} />
+					</Container>
+				{/if}
 			{/each}
 		</Container>
 	</MainContainer>
