@@ -121,7 +121,7 @@ export const socialOverridesEn: Record<string, string> = {
 		'Replay mode shows the recorded round details before playback. Press Start Replay to watch it, then Replay Event to watch the same event again.',
 
 	'INFO WAYS NOTE':
-		'Forest Gang is played on 20 fixed win lines. A winning combination is formed when matching symbols land on consecutive reels from left to right on any active win line. Only the highest win per symbol per win line is awarded, unless stated otherwise in the final game rules.',
+		'Forest Gang is played on 20 fixed win lines. Standard symbol wins are formed when matching symbols land on consecutive reels from left to right on an active win line, starting from reel 1. Expanding Symbol wins follow a special win mechanic and do not require the winning reels to be consecutive. Reels without the selected Expanding Symbol do not interrupt an Expanding Symbol win. See the Expanding Symbol section for full details. Only the highest win per symbol per win line is awarded, unless otherwise stated in the Game Rules.',
 
 	'INFO INTERRUPTED TEXT':
 		'If a game round is interrupted, it will continue when the game is reloaded, where possible.\n\nAll valid plays and potential winnings remain active until the round is fully completed.',

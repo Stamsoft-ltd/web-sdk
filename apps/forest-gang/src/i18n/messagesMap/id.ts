@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'CARA MENANG',
 	'INFO WAYS NOTE':
-		'Forest Gang dimainkan pada 20 garis bayaran tetap. Kombinasi menang terbentuk saat simbol yang cocok muncul pada gulungan berurutan dari kiri ke kanan pada garis bayaran aktif mana pun. Hanya kemenangan tertinggi per simbol per garis yang dibayar, kecuali dinyatakan lain dalam aturan permainan akhir.',
+		'Forest Gang dimainkan pada 20 garis bayaran tetap. Kemenangan simbol standar terbentuk saat simbol yang cocok muncul pada gulungan berurutan dari kiri ke kanan pada garis bayaran aktif, dimulai dari gulungan 1. Kemenangan Simbol Mengembang mengikuti mekanisme kemenangan khusus dan tidak mengharuskan gulungan pemenang berurutan. Gulungan tanpa Simbol Mengembang yang dipilih tidak memutus kemenangan Simbol Mengembang. Lihat bagian Simbol Mengembang untuk detail lengkap. Hanya kemenangan tertinggi per simbol per garis bayaran yang dibayarkan, kecuali dinyatakan lain dalam Aturan Permainan.',
 	// Feature buy page
 	'INFO BUY TITLE': 'BELI FITUR',
 	'INFO BUY CHANCE TITLE': 'PELUANG BONUS EKSTRA',

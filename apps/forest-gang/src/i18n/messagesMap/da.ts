@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'MÅDER AT VINDE PÅ',
 	'INFO WAYS NOTE':
-		'Forest Gang spilles på 20 faste gevinstlinjer. En vindende kombination dannes, når matchende symboler lander på fortløbende hjul fra venstre mod højre på en aktiv gevinstlinje. Kun den højeste gevinst pr. symbol pr. gevinstlinje udbetales, medmindre andet er angivet i de endelige spilleregler.',
+		'Forest Gang spilles på 20 faste gevinstlinjer. Almindelige symbolgevinster dannes, når matchende symboler lander på fortløbende hjul fra venstre mod højre på en aktiv gevinstlinje, startende fra hjul 1. Gevinster fra det udvidende symbol følger en særlig gevinstmekanik og kræver ikke, at de vindende hjul er fortløbende. Hjul uden det valgte udvidende symbol afbryder ikke en gevinst fra det udvidende symbol. Se afsnittet om det udvidende symbol for alle detaljer. Kun den højeste gevinst pr. symbol pr. gevinstlinje udbetales, medmindre andet er angivet i spillereglerne.',
 	// Feature buy page
 	'INFO BUY TITLE': 'FUNKTIONSKØB',
 	'INFO BUY CHANCE TITLE': 'EKSTRA BONUSCHANCE',

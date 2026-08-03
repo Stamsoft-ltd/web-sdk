@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'GEWINNWEGE',
 	'INFO WAYS NOTE':
-		'Forest Gang wird auf 20 festen Gewinnlinien gespielt. Eine Gewinnkombination entsteht, wenn passende Symbole auf aufeinanderfolgenden Walzen von links nach rechts auf einer aktiven Gewinnlinie landen. Nur der höchste Gewinn pro Symbol pro Gewinnlinie wird ausgezahlt, sofern in den endgültigen Spielregeln nicht anders angegeben.',
+		'Forest Gang wird auf 20 festen Gewinnlinien gespielt. Standard-Symbolgewinne entstehen, wenn passende Symbole von links nach rechts auf aufeinanderfolgenden Walzen auf einer aktiven Gewinnlinie landen, beginnend mit Walze 1. Gewinne mit dem expandierenden Symbol folgen einer speziellen Gewinnmechanik und erfordern nicht, dass die gewinnenden Walzen aufeinanderfolgend sind. Walzen ohne das gewählte expandierende Symbol unterbrechen einen Gewinn mit dem expandierenden Symbol nicht. Alle Einzelheiten finden Sie im Abschnitt zum expandierenden Symbol. Nur der höchste Gewinn pro Symbol und Gewinnlinie wird ausgezahlt, sofern in den Spielregeln nicht anders angegeben.',
 	// Feature buy page
 	'INFO BUY TITLE': 'FEATURE-KAUF',
 	'INFO BUY CHANCE TITLE': 'ZUSÄTZLICHE BONUS-CHANCE',

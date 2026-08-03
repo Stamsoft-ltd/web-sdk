@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'SPOSOBY WYGRANEJ',
 	'INFO WAYS NOTE':
-		'Forest Gang grany jest na 20 stałych liniach wypłat. Wygrywająca kombinacja powstaje, gdy pasujące symbole lądują na kolejnych bębnach od lewej do prawej na dowolnej aktywnej linii wypłat. Płacona jest tylko najwyższa wygrana za symbol na linię, chyba że w ostatecznych zasadach gry zaznaczono inaczej.',
+		'Forest Gang jest grany na 20 stałych liniach wypłat. Standardowe wygrane symboli powstają, gdy pasujące symbole wylądują na kolejnych bębnach od lewej do prawej na aktywnej linii wypłat, począwszy od bębna 1. Wygrane z symbolem rozszerzającym działają według specjalnej mechaniki i nie wymagają, aby wygrywające bębny były kolejne. Bębny bez wybranego symbolu rozszerzającego nie przerywają wygranej z symbolem rozszerzającym. Pełne szczegóły znajdziesz w sekcji symbolu rozszerzającego. Wypłacana jest tylko najwyższa wygrana na symbol na linię wypłat, o ile Zasady Gry nie stanowią inaczej.',
 	// Feature buy page
 	'INFO BUY TITLE': 'KUPNO FUNKCJI',
 	'INFO BUY CHANCE TITLE': 'DODATKOWA SZANSA BONUSU',

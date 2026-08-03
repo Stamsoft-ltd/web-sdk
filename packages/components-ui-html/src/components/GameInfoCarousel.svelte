@@ -1590,7 +1590,10 @@
 	/* ---- portrait paylines / placeholder ---- */
 	.pinfo-note { margin: 0; max-width: 80%; color: #ffd89c; font-family: 'Poppins', sans-serif; font-size: 2.8cqw; line-height: 1.4; }
 	/* Side/bottom padding keeps the payline grid clear of the wooden rails and bottom leaves. */
-	.pinfo-img { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; width: 100%; padding: 2cqw 5cqw 5cqw; box-sizing: border-box; }
+	/* The diagram is `flex: 1`, so a long WAYS TO WIN note used to squeeze it — German fell from 203px
+	   to 83px, far too small to read 20 paylines. Floor its height and let `.pinfo-content` (already
+	   `overflow-y: auto`) scroll instead of shrinking the artwork away. */
+	.pinfo-img { flex: 1; min-height: 38cqw; display: flex; align-items: center; justify-content: center; width: 100%; padding: 2cqw 5cqw 5cqw; box-sizing: border-box; }
 	.pinfo-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
 	/* ---- portrait nav ---- */

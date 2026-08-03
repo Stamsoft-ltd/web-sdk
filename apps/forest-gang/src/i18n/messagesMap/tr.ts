@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'KAZANMA YOLLARI',
 	'INFO WAYS NOTE':
-		'Forest Gang 20 sabit ödeme çizgisinde oynanır. Eşleşen semboller herhangi bir etkin ödeme çizgisinde soldan sağa ardışık makaralara indiğinde kazanan bir kombinasyon oluşur. Nihai oyun kurallarında aksi belirtilmedikçe, çizgi başına sembol başına yalnızca en yüksek kazanç ödenir.',
+		'Forest Gang 20 sabit ödeme çizgisinde oynanır. Standart sembol kazançları, eşleşen semboller etkin bir ödeme çizgisinde makara 1\'den başlayarak soldan sağa ardışık makaralara indiğinde oluşur. Genişleyen Sembol kazançları özel bir kazanç mekaniğine tabidir ve kazanan makaraların ardışık olmasını gerektirmez. Seçilen Genişleyen Sembolü içermeyen makaralar Genişleyen Sembol kazancını kesmez. Tüm ayrıntılar için Genişleyen Sembol bölümüne bakın. Oyun Kurallarında aksi belirtilmedikçe, sembol başına ödeme çizgisi başına yalnızca en yüksek kazanç ödenir.',
 	// Feature buy page
 	'INFO BUY TITLE': 'ÖZELLİK SATIN ALMA',
 	'INFO BUY CHANCE TITLE': 'EKSTRA BONUS ŞANSI',

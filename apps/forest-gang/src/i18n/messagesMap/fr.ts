@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'FAÇONS DE GAGNER',
 	'INFO WAYS NOTE':
-		'Forest Gang se joue sur 20 lignes de paiement fixes. Une combinaison gagnante est formée lorsque des symboles correspondants apparaissent sur des rouleaux consécutifs de gauche à droite sur toute ligne de paiement active. Seul le gain le plus élevé par symbole par ligne de paiement est payé, sauf indication contraire dans les règles finales du jeu.',
+		'Forest Gang se joue sur 20 lignes de paiement fixes. Les gains de symboles standard se forment lorsque des symboles correspondants apparaissent sur des rouleaux consécutifs de gauche à droite sur une ligne de paiement active, à partir du rouleau 1. Les gains du symbole extensible suivent une mécanique de gain spéciale et n\'exigent pas que les rouleaux gagnants soient consécutifs. Les rouleaux sans le symbole extensible sélectionné n\'interrompent pas un gain du symbole extensible. Consultez la section du symbole extensible pour tous les détails. Seul le gain le plus élevé par symbole et par ligne de paiement est payé, sauf indication contraire dans les Règles du Jeu.',
 	// Feature buy page
 	'INFO BUY TITLE': 'ACHAT DE FONCTION',
 	'INFO BUY CHANCE TITLE': 'CHANCE BONUS SUPPLÉMENTAIRE',

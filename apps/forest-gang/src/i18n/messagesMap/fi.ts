@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'VOITTOTAVAT',
 	'INFO WAYS NOTE':
-		'Forest Gangia pelataan 20 kiinteällä voittolinjalla. Voittava yhdistelmä muodostuu, kun täsmäävät symbolit osuvat peräkkäisille rullille vasemmalta oikealle millä tahansa aktiivisella voittolinjalla. Vain korkein voitto symbolia ja voittolinjaa kohti maksetaan, ellei lopullisissa pelisäännöissä toisin mainita.',
+		'Forest Gangia pelataan 20 kiinteällä voittolinjalla. Tavalliset symbolivoitot muodostuvat, kun täsmäävät symbolit osuvat peräkkäisille rullille vasemmalta oikealle aktiivisella voittolinjalla, rullasta 1 alkaen. Laajenevan symbolin voitot noudattavat erityistä voittomekaniikkaa eivätkä edellytä, että voittavat rullat ovat peräkkäisiä. Rullat, joilla ei ole valittua laajenevaa symbolia, eivät katkaise laajenevan symbolin voittoa. Katso kaikki tiedot laajenevan symbolin osiosta. Vain korkein voitto symbolia ja voittolinjaa kohden maksetaan, ellei pelisäännöissä toisin mainita.',
 	// Feature buy page
 	'INFO BUY TITLE': 'OMINAISUUDEN OSTO',
 	'INFO BUY CHANCE TITLE': 'YLIMÄÄRÄINEN BONUSMAHDOLLISUUS',

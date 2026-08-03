@@ -159,7 +159,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'WAYS TO WIN',
 	'INFO WAYS NOTE':
-		'Forest Gang is played on 20 fixed paylines. A winning combination is formed when matching symbols land on consecutive reels from left to right on any active payline. Only the highest win per symbol per payline is paid, unless stated otherwise in the final game rules.',
+		'Forest Gang is played on 20 fixed paylines. Standard symbol wins are formed when matching symbols land on consecutive reels from left to right on an active payline, starting from reel 1. Expanding Symbol wins follow a special win mechanic and do not require the winning reels to be consecutive. Reels without the selected Expanding Symbol do not interrupt an Expanding Symbol win. See the Expanding Symbol section for full details. Only the highest win per symbol per payline is paid, unless otherwise stated in the Game Rules.',
 	// Feature buy page
 	'INFO BUY TITLE': 'FEATURE BUY',
 	'INFO BUY CHANCE TITLE': 'EXTRA BONUS CHANCE',

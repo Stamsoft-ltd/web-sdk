@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'CÁCH THẮNG',
 	'INFO WAYS NOTE':
-		'Forest Gang chơi trên 20 dòng trả thưởng cố định. Một tổ hợp thắng được tạo thành khi các biểu tượng khớp xuất hiện trên các cuộn liên tiếp từ trái sang phải trên bất kỳ dòng trả thưởng nào đang hoạt động. Chỉ thắng cao nhất trên mỗi biểu tượng mỗi dòng được trả, trừ khi có quy định khác trong luật chơi cuối cùng.',
+		'Forest Gang được chơi trên 20 dòng trả thưởng cố định. Thắng biểu tượng tiêu chuẩn được tạo thành khi các biểu tượng khớp xuất hiện trên các cuộn liên tiếp từ trái sang phải trên một dòng trả thưởng đang hoạt động, bắt đầu từ cuộn 1. Thắng từ Biểu Tượng Mở Rộng theo một cơ chế thắng đặc biệt và không yêu cầu các cuộn thắng phải liên tiếp. Các cuộn không có Biểu Tượng Mở Rộng đã chọn không làm gián đoạn thắng từ Biểu Tượng Mở Rộng. Xem phần Biểu Tượng Mở Rộng để biết đầy đủ chi tiết. Chỉ thắng cao nhất cho mỗi biểu tượng trên mỗi dòng trả thưởng được trả, trừ khi có quy định khác trong Luật Chơi.',
 	// Feature buy page
 	'INFO BUY TITLE': 'MUA TÍNH NĂNG',
 	'INFO BUY CHANCE TITLE': 'CƠ HỘI THƯỞNG THÊM',
