@@ -110,7 +110,7 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'APERÇU',
 	'INFO OVERVIEW BODY':
-		'Forest Gang est une machine à sous vidéo 5x4 jouée sur 20 lignes de paiement.\nLes gains sont attribués de gauche à droite sur des rouleaux consécutifs, à partir du rouleau 1, lorsque des symboles correspondants apparaissent sur une ligne de paiement active.\nLe jeu comprend 5 symboles premium, 5 symboles bas, un symbole Wild et un symbole Scatter.\n\nLe potentiel de gain maximum est de 25,000x la mise totale.\n\nRTP théorique : 96.11%',
+		'Forest Gang est une machine à sous vidéo 5x4 jouée sur 20 lignes de paiement.\nLes gains standard sont attribués de gauche à droite sur des rouleaux consécutifs, à partir du rouleau 1, lorsque des symboles correspondants apparaissent sur une ligne de paiement active.\nLes gains du symbole extensible suivent une mécanique de gain spéciale et n\'exigent pas que les rouleaux gagnants soient consécutifs. Consultez la section du symbole extensible pour plus de détails.\nLe jeu comprend 5 symboles premium, 5 symboles bas, un symbole Wild et un symbole Scatter.\n\nLe potentiel de gain maximum est de 25,000x la mise totale.\n\nRTP théorique : 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'ROULEAUX',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'FONCTIONS',
 	'INFO EXPANDING TITLE': 'SYMBOLE EXTENSIBLE',
 	'INFO EXPANDING TEXT':
-		'Pendant les tours de fonction qualifiants et les tours bonus, un symbole aléatoire est sélectionné comme symbole extensible. Lorsque le symbole extensible sélectionné apparaît sur les rouleaux, il s\'étend verticalement pour couvrir le rouleau entier. Les symboles étendus peuvent créer plusieurs gains de ligne de paiement sur le même tour. Un multiplicateur aléatoire peut apparaître sur n\'importe quel tour et s\'appliquer au montant gagné de ce tour.\n\nLe multiplicateur aléatoire peut aller de 2x à 1024x.',
+		'Pendant les tours de fonction qualifiants et les tours bonus, un symbole aléatoire est sélectionné comme symbole extensible.\nLorsque le symbole sélectionné apparaît sur un rouleau, il s\'étend verticalement pour couvrir le rouleau entier.\nLes gains du symbole extensible sont évalués différemment des gains de ligne de paiement standard. Les symboles étendus n\'ont pas besoin d\'apparaître sur des rouleaux consécutifs pour accorder un gain. Les rouleaux sans le symbole sélectionné n\'interrompent pas un gain du symbole extensible.\nLe nombre de rouleaux contenant le symbole extensible sélectionné détermine le paiement du symbole applicable. Les symboles étendus peuvent créer plusieurs gains de ligne de paiement sur le même tour.\nUn multiplicateur aléatoire peut s\'appliquer à tout tour gagnant et est appliqué au montant total gagné de ce tour.\n\nLe multiplicateur aléatoire peut aller de 2x à 1024x.',
 	'INFO DEAL IT TITLE': 'BONUS DISTRIBUE',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':

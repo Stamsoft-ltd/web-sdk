@@ -110,7 +110,7 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'ÜBERSICHT',
 	'INFO OVERVIEW BODY':
-		'Forest Gang ist ein 5x4 Video-Slot mit 20 Gewinnlinien.\nGewinne werden von links nach rechts auf aufeinanderfolgenden Walzen ab Walze 1 vergeben, wenn passende Symbole auf einer aktiven Gewinnlinie landen.\nDas Spiel enthält 5 Premium-Symbole, 5 niedrige Symbole, ein Wild-Symbol und ein Scatter-Symbol.\n\nDas maximale Gewinnpotenzial beträgt das 25,000x-fache des Gesamteinsatzes.\n\nTheoretischer RTP: 96.11%',
+		'Forest Gang ist ein 5x4 Video-Slot mit 20 Gewinnlinien.\nStandardgewinne werden von links nach rechts auf aufeinanderfolgenden Walzen ab Walze 1 vergeben, wenn passende Symbole auf einer aktiven Gewinnlinie landen.\nGewinne mit dem expandierenden Symbol folgen einer speziellen Gewinnmechanik und erfordern nicht, dass die gewinnenden Walzen aufeinanderfolgend sind. Einzelheiten finden Sie im Abschnitt zum expandierenden Symbol.\nDas Spiel enthält 5 Premium-Symbole, 5 niedrige Symbole, ein Wild-Symbol und ein Scatter-Symbol.\n\nDas maximale Gewinnpotenzial beträgt das 25,000x-fache des Gesamteinsatzes.\n\nTheoretischer RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'WALZEN',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'FUNKTIONEN',
 	'INFO EXPANDING TITLE': 'EXPANDIERENDES SYMBOL',
 	'INFO EXPANDING TEXT':
-		'Während qualifizierender Feature-Spins und Bonusrunden wird ein zufälliges Symbol als expandierendes Symbol gewählt. Wenn das gewählte expandierende Symbol auf den Walzen landet, expandiert es vertikal, um die gesamte Walze zu bedecken. Expandierte Symbole können mehrere Gewinnlinien im selben Spin erzeugen. Ein zufälliger Multiplikator kann bei jedem Spin erscheinen und wird auf den Gewinnbetrag dieses Spins angewendet.\n\nDer zufällige Multiplikator kann von 2x bis 1024x reichen.',
+		'Während qualifizierender Feature-Spins und Bonusrunden wird ein zufälliges Symbol als expandierendes Symbol gewählt.\nWenn das gewählte Symbol auf einer Walze erscheint, expandiert es vertikal und bedeckt die gesamte Walze.\nGewinne mit dem expandierenden Symbol werden anders bewertet als normale Gewinnlinien-Gewinne. Expandierte Symbole müssen nicht auf aufeinanderfolgenden Walzen erscheinen, um einen Gewinn auszulösen. Walzen ohne das gewählte Symbol unterbrechen einen Gewinn mit dem expandierenden Symbol nicht.\nDie Anzahl der Walzen mit dem gewählten expandierenden Symbol bestimmt die geltende Symbolauszahlung. Expandierte Symbole können mehrere Gewinnlinien-Gewinne im selben Spin erzeugen.\nEin zufälliger Multiplikator kann bei jedem gewinnenden Spin gelten und wird auf den Gesamtgewinnbetrag dieses Spins angewendet.\n\nDer zufällige Multiplikator kann von 2x bis 1024x reichen.',
 	'INFO DEAL IT TITLE': 'ZOCK LOS BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':

@@ -110,7 +110,7 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'VISÃO GERAL',
 	'INFO OVERVIEW BODY':
-		'Forest Gang é um vídeo slot 5x4 jogado em 20 linhas de pagamento.\nOs ganhos são concedidos da esquerda para a direita em rolos consecutivos, começando pelo rolo 1, quando símbolos correspondentes aparecem em uma linha de pagamento ativa.\nO jogo inclui 5 símbolos premium, 5 símbolos baixos, um símbolo Wild e um símbolo Scatter.\n\nO potencial de ganho máximo é 25,000x a aposta total.\n\nRTP teórico: 96.11%',
+		'Forest Gang é um vídeo slot 5x4 jogado em 20 linhas de pagamento.\nOs ganhos padrão são concedidos da esquerda para a direita em rolos consecutivos, começando pelo rolo 1, quando símbolos correspondentes aparecem em uma linha de pagamento ativa.\nOs ganhos do símbolo expansível seguem uma mecânica de ganho especial e não exigem que os rolos vencedores sejam consecutivos. Consulte a seção do símbolo expansível para mais detalhes.\nO jogo inclui 5 símbolos premium, 5 símbolos baixos, um símbolo Wild e um símbolo Scatter.\n\nO potencial de ganho máximo é 25,000x a aposta total.\n\nRTP teórico: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'ROLOS',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'RECURSOS',
 	'INFO EXPANDING TITLE': 'SÍMBOLO EXPANSÍVEL',
 	'INFO EXPANDING TEXT':
-		'Durante giros de recurso qualificados e rodadas de bônus, um símbolo aleatório é selecionado como o símbolo expansível. Quando o símbolo expansível selecionado aparece nos rolos, ele se expande verticalmente para cobrir o rolo inteiro. Símbolos expandidos podem criar vários ganhos de linha de pagamento no mesmo giro. Um multiplicador aleatório pode aparecer em qualquer giro e ser aplicado ao valor ganho desse giro.\n\nO multiplicador aleatório pode variar de 2x a 1024x.',
+		'Durante giros de recurso qualificados e rodadas de bônus, um símbolo aleatório é selecionado como o símbolo expansível.\nQuando o símbolo selecionado aparece em um rolo, ele se expande verticalmente para cobrir o rolo inteiro.\nOs ganhos do símbolo expansível são avaliados de forma diferente dos ganhos de linha de pagamento padrão. Os símbolos expandidos não precisam aparecer em rolos consecutivos para conceder um ganho. Rolos sem o símbolo selecionado não interrompem um ganho do símbolo expansível.\nO número de rolos que contêm o símbolo expansível selecionado determina o pagamento do símbolo aplicável. Símbolos expandidos podem criar vários ganhos de linha de pagamento no mesmo giro.\nUm multiplicador aleatório pode ser aplicado a qualquer giro vencedor e é aplicado ao valor total ganho desse giro.\n\nO multiplicador aleatório pode variar de 2x a 1024x.',
 	'INFO DEAL IT TITLE': 'BÔNUS DISTRIBUI',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':

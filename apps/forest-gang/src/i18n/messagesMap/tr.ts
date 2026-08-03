@@ -110,7 +110,7 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'GENEL BAKIŞ',
 	'INFO OVERVIEW BODY':
-		'Forest Gang, 20 ödeme çizgisinde oynanan bir 5x4 video slottur.\nKazançlar, eşleşen semboller etkin bir ödeme çizgisine indiğinde, makara 1\'den başlayarak ardışık makaralarda soldan sağa verilir.\nOyun 5 premium sembol, 5 düşük sembol, bir Wild sembolü ve bir Scatter sembolü içerir.\n\nMaksimum kazanç potansiyeli toplam bahsin 25,000x katıdır.\n\nTeorik RTP: %96.11',
+		'Forest Gang, 20 ödeme çizgisinde oynanan bir 5x4 video slottur.\nStandart kazançlar, eşleşen semboller etkin bir ödeme çizgisine indiğinde, makara 1\'den başlayarak ardışık makaralarda soldan sağa verilir.\nGenişleyen Sembol kazançları özel bir kazanç mekaniğine tabidir ve kazanan makaraların ardışık olmasını gerektirmez. Ayrıntılar için Genişleyen Sembol bölümüne bakın.\nOyun 5 premium sembol, 5 düşük sembol, bir Wild sembolü ve bir Scatter sembolü içerir.\n\nMaksimum kazanç potansiyeli toplam bahsin 25,000x katıdır.\n\nTeorik RTP: %96.11',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'MAKARALAR',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'ÖZELLİKLER',
 	'INFO EXPANDING TITLE': 'GENİŞLEYEN SEMBOL',
 	'INFO EXPANDING TEXT':
-		'Uygun özellik dönüşleri ve bonus turları sırasında, rastgele bir sembol genişleyen sembol olarak seçilir. Seçilen genişleyen sembol makaralara indiğinde, tüm makarayı kaplayacak şekilde dikey olarak genişler. Genişleyen semboller aynı dönüşte birden fazla ödeme çizgisi kazancı oluşturabilir. Rastgele çarpan herhangi bir dönüşte görünebilir ve o dönüşün kazanç tutarına uygulanır.\n\nRastgele çarpan 2x ile 1024x arasında olabilir.',
+		'Uygun özellik dönüşleri ve bonus turları sırasında, rastgele bir sembol Genişleyen Sembol olarak seçilir.\nSeçilen sembol bir makarada göründüğünde, tüm makarayı kaplayacak şekilde dikey olarak genişler.\nGenişleyen Sembol kazançları standart ödeme çizgisi kazançlarından farklı değerlendirilir. Genişleyen sembollerin kazanç vermesi için ardışık makaralarda görünmesi gerekmez. Seçilen sembolü içermeyen makaralar Genişleyen Sembol kazancını bölmez.\nSeçilen Genişleyen Sembolü içeren makara sayısı, uygulanacak sembol ödemesini belirler. Genişleyen semboller aynı dönüşte birden fazla ödeme çizgisi kazancı oluşturabilir.\nRastgele çarpan kazanan herhangi bir dönüşe uygulanabilir ve o dönüşün toplam kazanç tutarına uygulanır.\n\nRastgele çarpan 2x ile 1024x arasında olabilir.',
 	'INFO DEAL IT TITLE': 'DAĞIT BONUSU',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':

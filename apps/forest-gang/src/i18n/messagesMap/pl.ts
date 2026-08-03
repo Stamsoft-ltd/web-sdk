@@ -110,7 +110,7 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'PRZEGLĄD',
 	'INFO OVERVIEW BODY':
-		'Forest Gang to wideoslot 5x4 grany na 20 liniach wypłat.\nWygrane przyznawane są od lewej do prawej na kolejnych bębnach, począwszy od bębna 1, gdy pasujące symbole wylądują na aktywnej linii wypłat.\nGra zawiera 5 symboli premium, 5 niskich symboli, symbol Wild oraz symbol Scatter.\n\nMaksymalny potencjał wygranej to 25,000x całkowitego zakładu.\n\nTeoretyczny RTP: 96.11%',
+		'Forest Gang to wideoslot 5x4 grany na 20 liniach wypłat.\nStandardowe wygrane przyznawane są od lewej do prawej na kolejnych bębnach, począwszy od bębna 1, gdy pasujące symbole wylądują na aktywnej linii wypłat.\nWygrane z symbolem rozszerzającym działają według specjalnej mechaniki i nie wymagają, aby wygrywające bębny były kolejne. Szczegóły znajdziesz w sekcji symbolu rozszerzającego.\nGra zawiera 5 symboli premium, 5 niskich symboli, symbol Wild oraz symbol Scatter.\n\nMaksymalny potencjał wygranej to 25,000x całkowitego zakładu.\n\nTeoretyczny RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'BĘBNY',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'FUNKCJE',
 	'INFO EXPANDING TITLE': 'SYMBOL ROZSZERZAJĄCY',
 	'INFO EXPANDING TEXT':
-		'Podczas kwalifikujących się spinów funkcji i rund bonusowych jeden losowy symbol jest wybierany jako symbol rozszerzający. Gdy wybrany symbol rozszerzający wyląduje na bębnach, rozszerza się pionowo, aby pokryć cały bęben. Rozszerzone symbole mogą tworzyć wygrane na wielu liniach w tym samym spinie. Losowy mnożnik może pojawić się na dowolnym spinie i stosuje się do kwoty wygranej tego spinu.\n\nLosowy mnożnik może wynosić od 2x do 1024x.',
+		'Podczas kwalifikujących się spinów funkcji i rund bonusowych jeden losowy symbol jest wybierany jako symbol rozszerzający.\nGdy wybrany symbol pojawi się na bębnie, rozszerza się pionowo, aby pokryć cały bęben.\nWygrane z symbolem rozszerzającym są oceniane inaczej niż standardowe wygrane na liniach wypłat. Rozszerzone symbole nie muszą pojawić się na kolejnych bębnach, aby przyznać wygraną. Bębny bez wybranego symbolu nie przerywają wygranej z symbolem rozszerzającym.\nLiczba bębnów zawierających wybrany symbol rozszerzający określa obowiązującą wypłatę za symbol. Rozszerzone symbole mogą tworzyć wiele wygranych na liniach wypłat w tym samym spinie.\nLosowy mnożnik może dotyczyć każdego wygrywającego spinu i jest stosowany do całkowitej kwoty wygranej tego spinu.\n\nLosowy mnożnik może wynosić od 2x do 1024x.',
 	'INFO DEAL IT TITLE': 'BONUS ROZDAJ',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':

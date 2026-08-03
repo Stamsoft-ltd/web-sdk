@@ -122,7 +122,7 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'OVERVIEW',
 	'INFO OVERVIEW BODY':
-		'Forest Gang is a 5x4 video slot played on 20 paylines.\nWins are awarded from left to right on consecutive reels, starting from reel 1, when matching symbols land on an active payline.\nThe game includes 5 premium symbols, 5 low symbols, a Wild symbol, and a Scatter symbol.\n\nMaximum win potential is 25,000x the total bet.\n\nTheoretical RTP: 96.11%',
+		'Forest Gang is a 5x4 video slot played on 20 paylines.\nStandard wins are awarded from left to right on consecutive reels, starting from reel 1, when matching symbols land on an active payline.\nExpanding Symbol wins follow a special win mechanic and do not require the winning reels to be consecutive. See the Expanding Symbol section for details.\nThe game includes 5 premium symbols, 5 low symbols, a Wild symbol, and a Scatter symbol.\n\nMaximum win potential is 25,000x the total bet.\n\nTheoretical RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'REELS',
 	'INFO STAT PAYLINES': '20',
@@ -134,7 +134,7 @@ export default {
 	'INFO FEATURES TITLE': 'FEATURES',
 	'INFO EXPANDING TITLE': 'EXPANDING SYMBOL',
 	'INFO EXPANDING TEXT':
-		'During qualifying feature spins and bonus rounds, one random symbol is selected as the expanding symbol. When the selected expanding symbol lands on the reels, it expands vertically to cover the full reel. Expanded symbols can create multiple payline wins on the same spin. Random multiplier can appear on any spin and apply to the winning amount of that spin.\n\nThe random multiplier can be from 2x to 1024x.',
+		'During qualifying feature spins and bonus rounds, one random symbol is selected as the Expanding Symbol.\nWhen the selected symbol appears on a reel, it expands vertically to cover the full reel.\nExpanding Symbol wins are evaluated differently from standard payline wins. Expanded symbols do not need to appear on consecutive reels to award a win. Reels without the selected symbol do not break an Expanding Symbol win.\nThe number of reels containing the selected Expanding Symbol determines the applicable symbol payout. Expanded symbols can create multiple payline wins on the same spin.\nA random multiplier may apply to any winning spin and is applied to the total winning amount of that spin.\n\nThe random multiplier can range from 2x to 1024x.',
 	'INFO DEAL IT TITLE': 'DEAL IT BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':

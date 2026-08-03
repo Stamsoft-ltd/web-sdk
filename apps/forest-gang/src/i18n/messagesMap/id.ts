@@ -110,7 +110,7 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'IKHTISAR',
 	'INFO OVERVIEW BODY':
-		'Forest Gang adalah video slot 5x4 yang dimainkan pada 20 garis bayaran.\nKemenangan diberikan dari kiri ke kanan pada gulungan berurutan, dimulai dari gulungan 1, saat simbol yang cocok muncul pada garis bayaran aktif.\nPermainan ini mencakup 5 simbol premium, 5 simbol rendah, satu simbol Wild, dan satu simbol Scatter.\n\nPotensi kemenangan maksimum adalah 25,000x total taruhan.\n\nRTP teoretis: 96.11%',
+		'Forest Gang adalah video slot 5x4 yang dimainkan pada 20 garis bayaran.\nKemenangan standar diberikan dari kiri ke kanan pada gulungan berurutan, dimulai dari gulungan 1, saat simbol yang cocok muncul pada garis bayaran aktif.\nKemenangan Simbol Mengembang mengikuti mekanisme kemenangan khusus dan tidak mengharuskan gulungan pemenang berurutan. Lihat bagian Simbol Mengembang untuk detailnya.\nPermainan ini mencakup 5 simbol premium, 5 simbol rendah, satu simbol Wild, dan satu simbol Scatter.\n\nPotensi kemenangan maksimum adalah 25,000x total taruhan.\n\nRTP teoretis: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'GULUNGAN',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'FITUR',
 	'INFO EXPANDING TITLE': 'SIMBOL MENGEMBANG',
 	'INFO EXPANDING TEXT':
-		'Selama putaran fitur yang memenuhi syarat dan ronde bonus, satu simbol acak dipilih sebagai simbol mengembang. Saat simbol mengembang yang dipilih muncul pada gulungan, ia mengembang secara vertikal untuk menutupi seluruh gulungan. Simbol yang mengembang dapat menciptakan beberapa kemenangan garis bayaran pada putaran yang sama. Pengganda acak dapat muncul pada putaran mana pun dan berlaku untuk jumlah kemenangan putaran tersebut.\n\nPengganda acak dapat dari 2x hingga 1024x.',
+		'Selama putaran fitur yang memenuhi syarat dan ronde bonus, satu simbol acak dipilih sebagai Simbol Mengembang.\nSaat simbol yang dipilih muncul pada sebuah gulungan, ia mengembang secara vertikal untuk menutupi seluruh gulungan.\nKemenangan Simbol Mengembang dihitung berbeda dari kemenangan garis bayaran standar. Simbol yang mengembang tidak harus muncul pada gulungan berurutan untuk memberikan kemenangan. Gulungan tanpa simbol yang dipilih tidak memutus kemenangan Simbol Mengembang.\nJumlah gulungan yang berisi Simbol Mengembang yang dipilih menentukan pembayaran simbol yang berlaku. Simbol yang mengembang dapat menciptakan beberapa kemenangan garis bayaran pada putaran yang sama.\nPengganda acak dapat berlaku pada putaran menang mana pun dan diterapkan pada total jumlah kemenangan putaran tersebut.\n\nPengganda acak dapat berkisar dari 2x hingga 1024x.',
 	'INFO DEAL IT TITLE': 'BONUS BAGIKAN',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':

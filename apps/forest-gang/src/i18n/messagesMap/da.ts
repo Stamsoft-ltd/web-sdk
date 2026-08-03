@@ -110,7 +110,7 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'OVERSIGT',
 	'INFO OVERVIEW BODY':
-		'Forest Gang er en 5x4-videoslot, der spilles på 20 gevinstlinjer.\nGevinster tildeles fra venstre mod højre på fortløbende hjul, startende fra hjul 1, når matchende symboler lander på en aktiv gevinstlinje.\nSpillet indeholder 5 premium-symboler, 5 lave symboler, et Wild-symbol og et Scatter-symbol.\n\nDet maksimale gevinstpotentiale er 25,000x den samlede indsats.\n\nTeoretisk RTP: 96.11%',
+		'Forest Gang er en 5x4-videoslot, der spilles på 20 gevinstlinjer.\nStandardgevinster tildeles fra venstre mod højre på fortløbende hjul, startende fra hjul 1, når matchende symboler lander på en aktiv gevinstlinje.\nGevinster fra det udvidende symbol følger en særlig gevinstmekanik og kræver ikke, at de vindende hjul er fortløbende. Se afsnittet om det udvidende symbol for detaljer.\nSpillet indeholder 5 premium-symboler, 5 lave symboler, et Wild-symbol og et Scatter-symbol.\n\nDet maksimale gevinstpotentiale er 25,000x den samlede indsats.\n\nTeoretisk RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'HJUL',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'FUNKTIONER',
 	'INFO EXPANDING TITLE': 'UDVIDENDE SYMBOL',
 	'INFO EXPANDING TEXT':
-		'Under kvalificerende funktionsspins og bonusrunder vælges ét tilfældigt symbol som det udvidende symbol. Når det valgte udvidende symbol lander på hjulene, udvider det sig lodret for at dække hele hjulet. Udvidede symboler kan skabe flere gevinstlinjegevinster i samme spin. En tilfældig multiplikator kan optræde ved ethvert spin og anvendes på gevinstbeløbet for det spin.\n\nDen tilfældige multiplikator kan være fra 2x til 1024x.',
+		'Under kvalificerende funktionsspins og bonusrunder vælges ét tilfældigt symbol som det udvidende symbol.\nNår det valgte symbol vises på et hjul, udvider det sig lodret for at dække hele hjulet.\nGevinster fra det udvidende symbol beregnes anderledes end almindelige gevinstlinjegevinster. Udvidede symboler behøver ikke at optræde på fortløbende hjul for at give gevinst. Hjul uden det valgte symbol afbryder ikke en gevinst fra det udvidende symbol.\nAntallet af hjul, der indeholder det valgte udvidende symbol, bestemmer den gældende symboludbetaling. Udvidede symboler kan skabe flere gevinstlinjegevinster i samme spin.\nEn tilfældig multiplikator kan gælde for ethvert vindende spin og anvendes på det samlede gevinstbeløb for det spin.\n\nDen tilfældige multiplikator kan variere fra 2x til 1024x.',
 	'INFO DEAL IT TITLE': 'DEL UD BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':

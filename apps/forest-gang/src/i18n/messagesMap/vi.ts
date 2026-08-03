@@ -110,7 +110,7 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'TỔNG QUAN',
 	'INFO OVERVIEW BODY':
-		'Forest Gang là video slot 5x4 chơi trên 20 dòng trả thưởng.\nThắng được trao từ trái sang phải trên các cuộn liên tiếp, bắt đầu từ cuộn 1, khi các biểu tượng khớp xuất hiện trên một dòng trả thưởng đang hoạt động.\nTrò chơi gồm 5 biểu tượng premium, 5 biểu tượng thấp, một biểu tượng Wild và một biểu tượng Scatter.\n\nTiềm năng thắng tối đa là 25,000x tổng cược.\n\nRTP lý thuyết: 96.11%',
+		'Forest Gang là video slot 5x4 chơi trên 20 dòng trả thưởng.\nThắng tiêu chuẩn được trao từ trái sang phải trên các cuộn liên tiếp, bắt đầu từ cuộn 1, khi các biểu tượng khớp xuất hiện trên một dòng trả thưởng đang hoạt động.\nThắng từ Biểu Tượng Mở Rộng theo một cơ chế thắng đặc biệt và không yêu cầu các cuộn thắng phải liên tiếp. Xem phần Biểu Tượng Mở Rộng để biết chi tiết.\nTrò chơi gồm 5 biểu tượng premium, 5 biểu tượng thấp, một biểu tượng Wild và một biểu tượng Scatter.\n\nTiềm năng thắng tối đa là 25,000x tổng cược.\n\nRTP lý thuyết: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'CUỘN',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'TÍNH NĂNG',
 	'INFO EXPANDING TITLE': 'BIỂU TƯỢNG MỞ RỘNG',
 	'INFO EXPANDING TEXT':
-		'Trong các lượt quay tính năng đủ điều kiện và các ván thưởng, một biểu tượng ngẫu nhiên được chọn làm biểu tượng mở rộng. Khi biểu tượng mở rộng đã chọn xuất hiện trên các cuộn, nó mở rộng theo chiều dọc để phủ kín cả cuộn. Các biểu tượng mở rộng có thể tạo nhiều thắng dòng trả thưởng trong cùng một lượt quay. Hệ số nhân ngẫu nhiên có thể xuất hiện ở bất kỳ lượt quay nào và áp dụng cho số tiền thắng của lượt quay đó.\n\nHệ số nhân ngẫu nhiên có thể từ 2x đến 1024x.',
+		'Trong các lượt quay tính năng đủ điều kiện và các ván thưởng, một biểu tượng ngẫu nhiên được chọn làm Biểu Tượng Mở Rộng.\nKhi biểu tượng đã chọn xuất hiện trên một cuộn, nó mở rộng theo chiều dọc để phủ kín cả cuộn.\nThắng từ Biểu Tượng Mở Rộng được tính khác với thắng dòng trả thưởng tiêu chuẩn. Các biểu tượng mở rộng không cần xuất hiện trên các cuộn liên tiếp để trao thắng. Các cuộn không có biểu tượng đã chọn không làm gián đoạn thắng từ Biểu Tượng Mở Rộng.\nSố cuộn chứa Biểu Tượng Mở Rộng đã chọn quyết định mức trả thưởng của biểu tượng được áp dụng. Các biểu tượng mở rộng có thể tạo nhiều thắng dòng trả thưởng trong cùng một lượt quay.\nHệ số nhân ngẫu nhiên có thể áp dụng cho bất kỳ lượt quay thắng nào và được áp dụng cho tổng số tiền thắng của lượt quay đó.\n\nHệ số nhân ngẫu nhiên có thể từ 2x đến 1024x.',
 	'INFO DEAL IT TITLE': 'THƯỞNG CHIA BÀI',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':

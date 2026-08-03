@@ -110,7 +110,7 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'YLEISKATSAUS',
 	'INFO OVERVIEW BODY':
-		'Forest Gang on 5x4-videokolikkopeli, jota pelataan 20 voittolinjalla.\nVoitot myönnetään vasemmalta oikealle peräkkäisillä rullilla, rullasta 1 alkaen, kun täsmäävät symbolit osuvat aktiiviselle voittolinjalle.\nPeli sisältää 5 premium-symbolia, 5 matalaa symbolia, Wild-symbolin ja Scatter-symbolin.\n\nSuurin voittopotentiaali on 25,000x kokonaispanos.\n\nTeoreettinen RTP: 96.11%',
+		'Forest Gang on 5x4-videokolikkopeli, jota pelataan 20 voittolinjalla.\nTavalliset voitot myönnetään vasemmalta oikealle peräkkäisillä rullilla, rullasta 1 alkaen, kun täsmäävät symbolit osuvat aktiiviselle voittolinjalle.\nLaajenevan symbolin voitot noudattavat erityistä voittomekaniikkaa eivätkä edellytä, että voittavat rullat ovat peräkkäisiä. Katso tarkemmat tiedot laajenevan symbolin osiosta.\nPeli sisältää 5 premium-symbolia, 5 matalaa symbolia, Wild-symbolin ja Scatter-symbolin.\n\nSuurin voittopotentiaali on 25,000x kokonaispanos.\n\nTeoreettinen RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'RULLAT',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'OMINAISUUDET',
 	'INFO EXPANDING TITLE': 'LAAJENEVA SYMBOLI',
 	'INFO EXPANDING TEXT':
-		'Ehdot täyttävien ominaisuuskierrosten ja bonuskierrosten aikana yksi satunnainen symboli valitaan laajenevaksi symboliksi. Kun valittu laajeneva symboli osuu rullille, se laajenee pystysuunnassa peittäen koko rullan. Laajennetut symbolit voivat luoda useita voittolinjavoittoja samalla kierroksella. Satunnainen kerroin voi ilmestyä millä tahansa kierroksella ja soveltua kyseisen kierroksen voittosummaan.\n\nSatunnainen kerroin voi olla 2x:stä 1024x:ään.',
+		'Ehdot täyttävien ominaisuuskierrosten ja bonuskierrosten aikana yksi satunnainen symboli valitaan laajenevaksi symboliksi.\nKun valittu symboli ilmestyy rullalle, se laajenee pystysuunnassa peittäen koko rullan.\nLaajenevan symbolin voitot lasketaan eri tavalla kuin tavalliset voittolinjavoitot. Laajennettujen symbolien ei tarvitse ilmestyä peräkkäisille rullille voiton saamiseksi. Rullat, joilla ei ole valittua symbolia, eivät katkaise laajenevan symbolin voittoa.\nValitun laajenevan symbolin sisältävien rullien määrä määrää sovellettavan symbolin voiton. Laajennetut symbolit voivat luoda useita voittolinjavoittoja samalla kierroksella.\nSatunnainen kerroin voi koskea mitä tahansa voittavaa kierrosta, ja sitä sovelletaan kyseisen kierroksen kokonaisvoittosummaan.\n\nSatunnainen kerroin voi olla 2x:stä 1024x:ään.',
 	'INFO DEAL IT TITLE': 'JAA KORTIT -BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':

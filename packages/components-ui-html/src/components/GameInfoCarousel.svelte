@@ -48,7 +48,10 @@
 				if (node.scrollHeight <= node.clientHeight + 1) lo = mid;
 				else hi = mid;
 			}
-			node.style.setProperty('--fit', lo.toFixed(3));
+			// Round DOWN, not to nearest: `lo` is the largest scale verified to fit, so a toFixed()
+			// that rounds up (0.9499996 -> "0.950") ships a scale that was never tested and can spill
+			// a couple of pixels back over the border.
+			node.style.setProperty('--fit', (Math.floor(lo * 1000) / 1000).toFixed(3));
 		};
 		// Coalesce with a "already queued" flag rather than cancel-and-reschedule. The card sits over
 		// a live canvas whose layout ticks every frame, so the ResizeObserver fires every frame — and
@@ -74,6 +77,13 @@
 		// own size, so this cannot feed back into itself.
 		const ro = new ResizeObserver(schedule);
 		ro.observe(node);
+		// Svelte 5 never calls an action's `update()`, and paging the carousel swaps the copy inside
+		// a node whose box does not change size — so neither the dep nor the ResizeObserver fires and
+		// the previous page's --fit sticks. Watch the content itself instead. `attributes` is
+		// deliberately excluded: measure() writes --fit to this node's style attribute, which would
+		// otherwise retrigger this observer forever.
+		const mo = new MutationObserver(schedule);
+		mo.observe(node, { childList: true, characterData: true, subtree: true });
 		// Fallback metrics under-measure before the webfont lands, which would leave a card looking
 		// fitted and then overflowing a moment later.
 		if (typeof document !== 'undefined' && document.fonts?.ready) {
@@ -86,6 +96,7 @@
 				cancelAnimationFrame(raf);
 				clearTimeout(timer);
 				ro.disconnect();
+				mo.disconnect();
 			},
 		};
 	}
@@ -203,10 +214,12 @@
 				</div>
 			{:else if page.kind === 'features'}
 				<h2 class="pinfo-title gold">{page.title}</h2>
-				<div class="pfeat">
+				<div class="pfeat" use:fitCardText={page.cards}>
 					{#each page.cards ?? [] as card, ci}
 						{#if card.images?.length}
-							<!-- Expanding symbol: gold-bordered box with subtitle + centred copy (Figma p.3/7) -->
+							<!-- Expanding symbol: gold-bordered box with subtitle + centred copy (Figma p.3/7).
+							     Deliberately NOT its own fit root: the box grows with its content, so it always
+							     measures as "fits" and its own `--fit: 1` would shadow the wrapper's real value. -->
 							<div class="pfeat-box">
 								<h3 class="pfeat-sub gold">{card.title}</h3>
 								<p class="pfeat-text">{#each highlightParts(card.text, card.highlight) as p}{#if p.hl}<span
@@ -277,7 +290,7 @@
 					</div>
 				{:else}
 					<!-- General info: icon + inline title sections with centred copy, divided (Figma 7/7) -->
-					<div class="pfeat pfeat--info">
+					<div class="pfeat pfeat--info" use:fitCardText={page.cards}>
 						{#each page.cards ?? [] as card, ci}
 							<section class="pfeat-sec" class:pfeat-sec--divided={ci > 0}>
 								<div class="pfeat-headrow">
@@ -794,6 +807,9 @@
 		/* var(--fit) is driven by fitCardText: 1 for English, lower when a translation would
 		   otherwise push the card's content past its bottom border. */
 		font-size: calc(1.7cqw * var(--fit, 1));
+		/* Explicit: Cinzel's default leading left a visible band under the caps that read as extra
+		   space between the heading and the copy, on top of the flex gap. */
+		line-height: 1.15;
 		text-align: center;
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
@@ -837,7 +853,7 @@
 		flex: 1 1 auto;
 		display: flex;
 		flex-direction: column;
-		gap: 1cqw;
+		gap: 0.4cqw;
 		min-width: 0;
 	}
 
@@ -1445,28 +1461,31 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: flex-start;
-		gap: 4cqw;
-		padding: 6cqw 5cqw;
+		gap: 0.9cqw;
+		padding: 4cqw 4.5cqw;
 		border: 0.4cqw solid rgba(214, 167, 74, 0.7);
 		border-radius: 2cqw;
 		box-shadow: inset 0 0 4cqw rgba(0, 0, 0, 0.3);
 	}
 	.pfeat-icon { width: 5.5cqw; height: 5.5cqw; object-fit: contain; }
-	.pfeat-sub { margin: 0; font-weight: 700; font-size: 3.6cqw; text-transform: uppercase; letter-spacing: 0.05em; }
+	/* line-height is set explicitly: the inherited default left ~4px of leading under the caps, which
+	   read as extra space between the heading and the copy on top of the flex gap. */
+	.pfeat-sub { margin: 0; font-weight: 700; font-size: calc(3.6cqw * var(--fit, 1)); line-height: 1.15; text-transform: uppercase; letter-spacing: 0.05em; }
 	/* Bonus feature sections stacked with a divider between them. */
-	.pfeat-sec { display: flex; flex-direction: column; align-items: center; gap: 2cqw; width: 100%; }
+	.pfeat-sec { display: flex; flex-direction: column; align-items: center; gap: 1.4cqw; width: 100%; }
 	.pfeat-sec--divided { border-top: 1px solid rgba(255, 216, 156, 0.25); padding-top: 4cqw; }
 	.pfeat-headrow { display: flex; align-items: center; justify-content: center; gap: 2cqw; }
 	.pfeat-badges { display: flex; gap: 0.6cqw; }
 	.pfeat-badges img { width: 5cqw; height: 5cqw; object-fit: contain; }
-	.pfeat-title { margin: 0; font-weight: 700; font-size: 3.4cqw; text-transform: uppercase; letter-spacing: 0.04em; }
+	.pfeat-title { margin: 0; font-weight: 700; font-size: calc(3.4cqw * var(--fit, 1)); text-transform: uppercase; letter-spacing: 0.04em; }
 	.pfeat-text {
 		margin: 0;
 		color: #ffd89c;
 		font-family: 'Poppins', sans-serif;
-		font-size: 2.5cqw;
+		/* var(--fit) is driven by fitCardText — see the landscape .card__title note. */
+		font-size: calc(2.5cqw * var(--fit, 1));
 		font-weight: 500;
-		line-height: 1.7;
+		line-height: 1.5;
 		white-space: pre-line;
 		text-align: center;
 	}
@@ -1478,8 +1497,8 @@
 	.pfeat--info .pfeat-sec--divided { padding-top: 2cqw; }
 	.pfeat--info .pfeat-headrow { gap: 1.4cqw; }
 	.pfeat--info .pfeat-icon { width: 4.4cqw; height: 4.4cqw; }
-	.pfeat--info .pfeat-title { font-size: 3cqw; }
-	.pfeat--info .pfeat-text { font-size: 2.2cqw; line-height: 1.45; }
+	.pfeat--info .pfeat-title { font-size: calc(3cqw * var(--fit, 1)); }
+	.pfeat--info .pfeat-text { font-size: calc(2.2cqw * var(--fit, 1)); line-height: 1.45; }
 
 	/* ---- portrait feature buy: 2×2 grid of bordered cards, icon on the top border (Figma 6/7) ---- */
 	.pbuy-grid {
