@@ -12,8 +12,10 @@
 	import { Container, Graphics, Sprite, Text } from 'pixi-svelte';
 	import { stateI18nDerived } from 'state-shared';
 
+	import { POPUP_SCRIM_ALPHA } from '../game/constants';
 	import { getContext } from '../game/context';
-	import { getSpecialSymbolKey } from '../game/utils';
+	import { getSpecialSymbolKey, popupPanelLimits } from '../game/utils';
+	import PanelBorderLights from './PanelBorderLights.svelte';
 	import PressToContinue from './PressToContinue.svelte';
 
 	const context = getContext();
@@ -40,13 +42,11 @@
 	// ── Bonus won, Figma 6094:4788 ───────────────────────────────────────────────────────────────
 	//
 	// A 486x526 panel centred in the 1200x670 frame. Every offset below is a fraction of the panel
-	// HEIGHT so the block scales as one piece, and the panel itself is sized off the reel grid — see
-	// FreeSpinOutro for why a fraction of the frame does not survive the non-desktop layouts.
+	// HEIGHT so the block scales as one piece. The panel is sized off the reel grid, capped by
+	// popupPanelLimits — see that helper for why a fixed frame share cannot do the capping.
 	const PANEL = {
 		overGridHeight: 486 / 457,
 		aspect: 486 / 526,
-		widthLimit: 0.9,
-		heightLimit: 0.95,
 		// The design sits the panel 20px above the frame's centre, which lifts its bottom edge clear
 		// of the HUD bar; as a fraction of the panel it holds at every size.
 		centreY: -20 / 526,
@@ -77,11 +77,14 @@
 
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const board = $derived(context.stateGameDerived.boardLayout());
+	const limits = $derived(
+		popupPanelLimits(context.stateLayoutDerived.canvasSizes(), main.scale),
+	);
 	const panelWidth = $derived(
 		Math.min(
 			board.height * board.boardScale * PANEL.overGridHeight,
-			main.width * PANEL.widthLimit,
-			main.height * PANEL.heightLimit * PANEL.aspect,
+			limits.maxWidth,
+			limits.maxHeight * PANEL.aspect,
 		),
 	);
 	const size = $derived(panelWidth / PANEL.aspect);
@@ -112,12 +115,17 @@
 	});
 </script>
 
-<FadeContainer {show}>
-	<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
+<!-- Quick fade on dismissal: at the Tween default 400ms the HUD un-dims the moment `show` flips,
+     and the panel text hung readable over the restored UI for the rest of the fade. -->
+<FadeContainer {show} duration={150}>
+	<!-- The design's scrim covers the whole frame, HUD included; this rectangle only reaches the
+	     canvas, so the HUD dims itself to match — see .hud-shell--blocked. -->
+	<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={POPUP_SCRIM_ALPHA} />
 
 	<MainContainer>
 		<Container x={main.width * 0.5} y={main.height * 0.5 + size * PANEL.centreY}>
 			<Sprite key="bonusPanel" anchor={0.5} width={panelWidth} height={size} />
+			<PanelBorderLights width={panelWidth} height={size} />
 
 			<Text
 				anchor={0.5}

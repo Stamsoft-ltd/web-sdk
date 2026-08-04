@@ -135,3 +135,26 @@ export const convertTorResumableBet = (betToResume: Bet) => {
 		state: [bookEventToCreateSnapshot, ...bookEventsAfterResume],
 	};
 };
+
+// ── Congratulations panel sizing (FreeSpinIntro / FreeSpinOutro) ─────────────────────────────────
+//
+// Matched to the design's live render, where the card sits in the band between the logo and the
+// HUD bar: 63% of the frame height, with the logo clear above it and the bar clear below. (The
+// static Figma frame draws the same card at 78.5% of a 670-tall frame, overlapping both — the
+// render is the one that shows how it is meant to sit.) The card is normally sized off the reel
+// grid; these caps are what stop that rule on a squarish window, where the grid itself fills the
+// frame and grid-relative sizing swallowed the screen. A fixed share cannot serve both shapes, so
+// the height share scales with the frame ratio — the render's 63% on a wide frame, easing to half
+// the screen on a square one. The width share is the backstop for narrow frames.
+//
+// Returned in main-layout units, which is what the popups lay out in; the shares themselves are
+// applied to the CANVAS, because mainLayout's width/height are fixed per layout type and do not
+// follow the window's real shape.
+export const popupPanelLimits = (canvas: { width: number; height: number }, mainScale: number) => {
+	const ratio = canvas.width / canvas.height;
+	const heightShare = Math.min(0.63, Math.max(0.5, 0.44 * ratio));
+	return {
+		maxWidth: (canvas.width / mainScale) * 0.66,
+		maxHeight: (canvas.height / mainScale) * heightShare,
+	};
+};

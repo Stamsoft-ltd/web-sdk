@@ -16,7 +16,10 @@
 	import { OnMount } from 'components-shared';
 	import { stateI18nDerived } from 'state-shared';
 
+	import { POPUP_SCRIM_ALPHA } from '../game/constants';
 	import { getContext } from '../game/context';
+	import { popupPanelLimits } from '../game/utils';
+	import PanelBorderLights from './PanelBorderLights.svelte';
 	import PressToContinue from './PressToContinue.svelte';
 
 	const context = getContext();
@@ -32,23 +35,22 @@
 	// The design is a 486x486 panel centred in the 1200x670 frame; every position below is a fraction
 	// of that panel, so the whole thing scales as one piece.
 	//
-	// Sized off the REEL GRID, which is the one thing laid out per layout type. In the design the
-	// panel is 486 against a 457-tall grid, so it is the grid plus 6% — and that holds up everywhere,
-	// because the grid is never allowed to swallow the screen either. Taking a fraction of the frame
-	// instead blew the panel up to 725px on the square tablet frame: 0.725 of a height only reads as
-	// "the design's 486" when the frame is the design's 1.79 shape.
+	// Sized off the REEL GRID (486 against the design's 457-tall grid), capped by popupPanelLimits.
+	// The grid rule is what reproduces the design on its own frame; the caps are what stop it on a
+	// squarish window, where the grid itself fills the frame and grid-relative sizing swallowed the
+	// screen — see the helper for why a fixed frame share cannot do that job.
 	const PANEL = {
 		overGridHeight: 486 / 457,
-		widthLimit: 0.9,
 		title: -175 / 486,
 		subtitle: -135 / 486,
 		amountBox: { y: -49.5 / 486, width: 269 / 486, height: 81 / 486, radius: 12 / 486 },
-		// Width and centre are the design's; the height follows the art's own aspect rather than the
-		// design's box, which is a tighter crop than the exported image and would squash it.
-		prize: { y: 110.5 / 486, width: 342 / 486, aspect: 478 / 293 },
+		// Figma 6682:5285, whose box is the exported 740x392 image at half scale — so the design's
+		// width and centre can be taken as-is and the art still lands at its own aspect.
+		prize: { y: 107 / 486, width: 370 / 486, aspect: 740 / 392 },
 		titleSize: 26 / 486,
 		subtitleSize: 24 / 486,
-		amountSize: 34 / 486,
+		// Figma: 40px Helvetica 700, 1.4px letter-spacing (3.5%), white.
+		amountSize: 40 / 486,
 	};
 	// Sampled from the design render: white heading, violet subheading, near-black amount well with
 	// a magenta hairline.
@@ -59,10 +61,12 @@
 
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const board = $derived(context.stateGameDerived.boardLayout());
+	const limits = $derived(popupPanelLimits(context.stateLayoutDerived.canvasSizes(), main.scale));
 	const panelSize = $derived(
 		Math.min(
 			board.height * board.boardScale * PANEL.overGridHeight,
-			main.width * PANEL.widthLimit,
+			limits.maxWidth,
+			limits.maxHeight,
 		),
 	);
 
@@ -92,7 +96,9 @@
 	});
 </script>
 
-<FadeContainer {show}>
+<!-- Quick fade on dismissal: at the Tween default 400ms the HUD un-dims the moment `show` flips,
+     and the panel text hung readable over the restored UI for the rest of the fade. -->
+<FadeContainer {show} duration={150}>
 	{#if winLevelData}
 		<!-- Forest Gang contract: dedicated bonus-total board, capped count-up,
 		     manual acknowledgement. Per-spin tier boards are handled by Win.svelte. -->
@@ -101,12 +107,15 @@
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
 				<OnMount onmount={() => startCountUp()} />
 
-				<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
+					<!-- The design's scrim covers the whole frame, HUD included; this rectangle only reaches
+					     the canvas, so the HUD dims itself to match — see .hud-shell--blocked. -->
+					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={POPUP_SCRIM_ALPHA} />
 
 				{@const size = panelSize}
 				<MainContainer>
 					<Container x={main.width * 0.5} y={main.height * 0.5}>
 						<Sprite key="bonusPanel" anchor={0.5} width={size} height={size} />
+						<PanelBorderLights width={size} height={size} />
 
 						<Text
 							anchor={0.5}
@@ -138,11 +147,15 @@
 							<!-- Long currency strings are scaled down rather than clipped by the well. -->
 							{@const fit = amountWidth > wellW * 0.86 ? (wellW * 0.86) / amountWidth : 1}
 							<Container scale={fit}>
+								{@const amountFontSize = Math.round(size * PANEL.amountSize)}
 								<Text
 									anchor={0.5}
 									onresize={({ width }) => (amountWidth = width)}
-									text={bookEventAmountToCurrencyString(countUpAmount)}
-									style={headingStyle(Math.round(size * PANEL.amountSize), TITLE_FILL)}
+									text={bookEventAmountToCurrencyString(countUpAmount).toUpperCase()}
+									style={{
+										...headingStyle(amountFontSize, TITLE_FILL),
+										letterSpacing: amountFontSize * 0.035,
+									}}
 								/>
 							</Container>
 						</Container>

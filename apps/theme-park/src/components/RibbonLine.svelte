@@ -1,13 +1,14 @@
 <script lang="ts">
 	// Via pixi-svelte's re-export rather than a direct 'pixi.js' import: the app has no pixi.js
 	// dependency of its own, and adding one breaks svelte-check across the whole project.
-	import { getContextParent, PIXI } from 'pixi-svelte';
+	import { PIXI } from 'pixi-svelte';
 	import { onDestroy } from 'svelte';
-	import { GlowFilter } from 'pixi-filters';
 
 	import { getRibbonTexture } from '../game/ribbonTexture';
 
 	type Pt = { x: number; y: number };
+	// pixi-svelte exports PIXI as a value namespace, so class types are reached via InstanceType.
+	type ContainerInstance = InstanceType<typeof PIXI.Container>;
 
 	type Props = {
 		/** Symbol centres the ribbon has to pass through, reel order. */
@@ -20,10 +21,12 @@
 		time: number;
 		/** Per-line variation, so two ribbons crossing the board never twist in lockstep. */
 		seed: number;
+		/** Shared layers owned by <PaylineRibbon>: every shadow under every ribbon, one glow. */
+		shadowLayer: ContainerInstance;
+		ribbonLayer: ContainerInstance;
 	};
 
 	const props: Props = $props();
-	const parentContext = getContextParent();
 
 	// ── Why a mesh and not stacked strokes ───────────────────────────────────────────────────────
 	//
@@ -79,38 +82,28 @@
 	const positionBuffer = geometry.getBuffer('aPosition');
 	const uvBuffer = geometry.getBuffer('aUV');
 
-	const container = new PIXI.Container();
-
 	// Contact shadow. Shares the geometry with the ribbon and is simply offset — tinted to black the
 	// lookup texture contributes nothing but its silhouette, including the feathered edges. Left
-	// unblurred on purpose: a blur filter here would cost a render target per win line.
+	// unblurred on purpose: a blur filter here would cost a render target per win line. It lives in
+	// the shared shadow layer so it can never fall on another line's ribbon, only on the board.
 	const shadow = new PIXI.Mesh({ geometry, texture });
 	shadow.tint = 0x000000;
-	shadow.alpha = 0.3;
+	shadow.alpha = 0.22;
 
+	// The glow lives on the shared ribbon layer, not here — see <PaylineRibbon>.
 	const ribbon = new PIXI.Mesh({ geometry, texture });
-	// Warm and shallow: enough to lift the ribbon off the reels, well short of neon.
-	const glow = new GlowFilter({
-		distance: 10,
-		outerStrength: 1.3,
-		innerStrength: 0,
-		color: 0xffb648,
-		alpha: 0.55,
-		quality: 0.2,
-	});
-	ribbon.filters = [glow];
 
-	container.addChild(shadow);
-	container.addChild(ribbon);
-	parentContext.addToParent(container);
+	props.shadowLayer.addChild(shadow);
+	props.ribbonLayer.addChild(ribbon);
 
 	onDestroy(() => {
-		container.parent?.removeChild(container);
+		shadow.parent?.removeChild(shadow);
+		ribbon.parent?.removeChild(ribbon);
 		// The lookup texture is shared and cached across every ribbon, so it is deliberately left
-		// alone here — only this instance's geometry and filter are ours to release.
-		container.destroy({ children: true });
+		// alone here — only this instance's meshes and geometry are ours to release.
+		shadow.destroy();
+		ribbon.destroy();
 		geometry.destroy(true);
-		glow.destroy();
 	});
 
 	// ── Centreline ───────────────────────────────────────────────────────────────────────────────
@@ -121,27 +114,17 @@
 	};
 
 	/**
-	 * Symbol centres → a dense, corner-rounded polyline that overshoots both end symbols, with the
-	 * cumulative arc length alongside it. Rounding corners with a quadratic through each waypoint
-	 * (rather than fitting a spline) cannot overshoot, so the ribbon never bulges off a symbol on a
-	 * steep row change.
+	 * Symbol centres → a dense, corner-rounded polyline from the first symbol's centre to the last's,
+	 * with the cumulative arc length alongside it. Rounding corners with a quadratic through each
+	 * waypoint (rather than fitting a spline) cannot overshoot, so the ribbon never bulges off a
+	 * symbol on a steep row change.
 	 */
 	const buildPath = (waypoints: Pt[], width: number) => {
-		const tail = width * 2.6;
-		const radius = width * 1.5;
+		// Generous rounding: at 1.5x the drape could locally tighten a steep corner past the ribbon's
+		// half-width, folding the inner edge over itself into a dark wedge.
+		const radius = width * 1.9;
 
-		const head = waypoints[0];
-		const next = waypoints[1] ?? waypoints[0];
-		const last = waypoints[waypoints.length - 1];
-		const prev = waypoints[waypoints.length - 2] ?? last;
-		const dIn = norm(head.x - next.x, head.y - next.y);
-		const dOut = norm(last.x - prev.x, last.y - prev.y);
-
-		const ctrl: Pt[] = [
-			{ x: head.x + dIn.x * tail, y: head.y + dIn.y * tail },
-			...waypoints,
-			{ x: last.x + dOut.x * tail, y: last.y + dOut.y * tail },
-		];
+		const ctrl: Pt[] = [...waypoints];
 
 		const pts: Pt[] = [ctrl[0]];
 		for (let i = 1; i < ctrl.length - 1; i++) {
@@ -192,12 +175,14 @@
 		const seed = props.seed;
 		const revealed = length * clamp01(props.progress);
 
-		// Nothing meaningful to draw yet — keep the mesh off rather than emitting degenerate tris.
+		// Nothing meaningful to draw yet — keep the meshes off rather than emitting degenerate tris.
 		if (revealed < width * 0.5) {
-			container.visible = false;
+			shadow.visible = false;
+			ribbon.visible = false;
 			return;
 		}
-		container.visible = true;
+		shadow.visible = true;
+		ribbon.visible = true;
 
 		shadow.position.set(width * 0.18, width * 0.4);
 
@@ -222,9 +207,11 @@
 
 			const s = length > 0 ? target / length : 0;
 			cs[i] = s;
-			// Pinned to zero at both ends: the tails hang off the board, they do not flap.
+			// Pinned to zero at both ends: the cut ends sit still on their symbol centres.
+			// Amplitude kept shallow — at 0.22 two lines sharing a run of cells drifted across each
+			// other and braided into a single thick blob.
 			const env = Math.sin(Math.PI * s) ** 0.7;
-			const drape = Math.sin(s * TAU * 1.6 + seed * 2.1 + time * 0.55) * width * 0.22 * env;
+			const drape = Math.sin(s * TAU * 1.6 + seed * 2.1 + time * 0.55) * width * 0.14 * env;
 			cx[i] = px - d.y * drape;
 			cy[i] = py + d.x * drape;
 		}

@@ -394,6 +394,11 @@
 	onMount(() => {
 		context.stateLayout.showLoadingScreen = true;
 		warmArt();
+		// Force-fetch the fonts that only ever render on CANVAS (pixi Text). A @font-face is
+		// downloaded when DOM text first uses it; canvas fillText never triggers the fetch, it
+		// just falls back — the win-card amount rendered in Times because Cinzel was declared
+		// but never loaded (all DOM text is Poppins/Inter).
+		document.fonts?.load('900 64px Cinzel').catch(() => {});
 	});
 </script>
 

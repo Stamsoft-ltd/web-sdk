@@ -289,7 +289,8 @@ const assets: Assets = {
 	// === WIN BOARDS ===
 	// Bonus-complete screen (Figma 6094:4022): the square neon panel and the prize pile on it.
 	bonusPanel: { type: 'sprite', src: './assets/theme-park/v2/popup/square_panel_neon.webp' },
-	bonusPrize: { type: 'sprite', src: './assets/theme-park/v2/wins/bonus-prize.webp' },
+	// Figma 6682:5285 — the gift, popcorn and coin pile, without the coaster car the first pass used.
+	bonusPrize: { type: 'sprite', src: './assets/theme-park/v2/wins/bonus-prize-gift.webp' },
 	winSweet: { type: 'sprite', src: './assets/theme-park/v2/wins/sweet.webp' },
 	winWild: { type: 'sprite', src: './assets/theme-park/v2/wins/wild.webp' },
 	winEpic: { type: 'sprite', src: './assets/theme-park/v2/wins/epic.webp' },
@@ -299,29 +300,34 @@ const assets: Assets = {
 	},
 	winMythic: { type: 'sprite', src: './assets/theme-park/v2/wins/mythic.webp' },
 	winMax: { type: 'sprite', src: './assets/theme-park/v2/wins/max.webp' },
+	// Win-card animations as alpha-keyed sprite sheets (36 frames, 6×6 of 512px), generated from
+	// the yuv420p win-card MP4s — the source videos carry NO alpha, so the old webm route composited
+	// their black background into the scene. The card silhouette is flood-fill masked opaque and
+	// the outside glows are un-premultiplied from black. Regenerate with the pipeline script if the
+	// source videos change, and RENAME the outputs to bust caches.
 	winSweetAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/wins/sweet.webm',
+		type: 'spriteSheet',
+		src: './assets/sprites/winCards/sweet_card.json',
 		defer: true,
 	},
 	winWildAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/wins/wild.webm',
+		type: 'spriteSheet',
+		src: './assets/sprites/winCards/wild_card.json',
 		defer: true,
 	},
 	winEpicAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/wins/epic.webm',
+		type: 'spriteSheet',
+		src: './assets/sprites/winCards/epic_card.json',
 		defer: true,
 	},
 	winLegendaryAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/wins/legendary.webm',
+		type: 'spriteSheet',
+		src: './assets/sprites/winCards/legendary_card.json',
 		defer: true,
 	},
 	winMythicAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/wins/mythic.webm',
+		type: 'spriteSheet',
+		src: './assets/sprites/winCards/mythic_card.json',
 		defer: true,
 	},
 
@@ -341,15 +347,13 @@ const assets: Assets = {
 		type: 'sprite',
 		src: './assets/components/frames/magnetic/cell_box_win.png',
 	},
-	// Temporary anticipation Spine copied from Forest Gang. The intro/loop/out
-	// state machine is shared; only the art will be replaced later.
-	anticipation: {
-		type: 'spine',
-		src: {
-			atlas: './assets/spines/anticipation/anticipation.atlas',
-			skeleton: './assets/spines/anticipation/anticipation.json',
-			scale: 2,
-		},
+	// Marquee bulb strip: a pair of these frames the anticipating reel and blinks (Anticipation).
+	// Built FROM the board pad's own right-hand bulb rail (mirrored about the bulb column to
+	// restore the edge-clipped halos, tiled to 12 bulbs) so the strip matches the frame's bulbs
+	// exactly — the previous light_strip.webp art read as a different fixture.
+	anticipationStrip: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/features/rail_strip.webp',
 	},
 	// Forest Gang's production intro/idle panel. Reused for free-spin intro/outro
 	// instead of drawing three rounded Pixi rectangles.

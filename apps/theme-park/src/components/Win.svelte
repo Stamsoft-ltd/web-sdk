@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { WinLevelAlias, WinLevelData } from '../game/winLevelMap';
+	import type { WinLevelData } from '../game/winLevelMap';
 
 	export type EmitterEventWin =
 		| { type: 'winShow' }
@@ -50,16 +50,12 @@
 		return EASE_V + (1 - EASE_V) * u * (2 - u);
 	};
 
-	const BIG_COUNT_MS: Partial<Record<WinLevelAlias, number>> = {
-		big: 2500,
-		superwin: 3500,
-		mega: 4500,
-		epic: 5250,
-		max: 6000,
-	};
+	// One climb time for EVERY big win (design ask, matching Forest Gang): the count rate scales
+	// with the amount instead of the time, so 50x and 5000x both land in the same beat. Only the
+	// turbo modes shorten it.
+	const BIG_COUNT_MS = 2500;
 	const turboFactor = () => (stateBet.isSuperTurbo ? 0.4 : stateBet.isTurbo ? 0.6 : 1);
-	const bigCountDuration = (alias: WinLevelAlias) =>
-		Math.max(1500, (BIG_COUNT_MS[alias] ?? 3000) * turboFactor());
+	const bigCountDuration = () => Math.max(1500, BIG_COUNT_MS * turboFactor());
 	const bigHoldDuration = () =>
 		bookEventAmountToBetAmountMultiplier(amount) >= 25000
 			? 3500
@@ -130,7 +126,7 @@
 		{@const isBigWin = winLevelData.type === 'big'}
 		{@const hasBoardAnimation = !!winLevelData.animation}
 		{@const duration = hasBoardAnimation
-			? bigCountDuration(winLevelData.alias)
+			? bigCountDuration()
 			: stateBet.isTurbo || stateBet.isSuperTurbo
 				? Math.min(winLevelData.presentDuration, 400)
 				: winLevelData.presentDuration * 0.5}
@@ -168,10 +164,10 @@
 								boardLayout.width * boardScale * 0.72,
 								boardLayout.height * boardScale * 0.82,
 							)}
-							{@const currentMultiplier =
-								bookEventAmountToBetAmountMultiplier(countUpAmount)}
+							<!-- The FINAL tier's card shows from the first frame (design ask, matching
+							     Forest Gang) — no SWEET→…→LEGENDARY ladder while the number climbs. -->
 							{@const finalMultiplier = bookEventAmountToBetAmountMultiplier(amount)}
-							{#if currentMultiplier >= 25000}
+							{#if finalMultiplier >= 25000}
 								<Container scale={breatheScale}>
 									<Sprite
 										key="winMax"
@@ -195,12 +191,12 @@
 								</Container>
 							{:else}
 								<ThemeWinBoard
-									boardKey={boardKeyForMultiplier(currentMultiplier)}
+									boardKey={boardKeyForMultiplier(finalMultiplier)}
 									finalKey={boardKeyForMultiplier(finalMultiplier)}
 									{winId}
 									{boardSize}
 									amountText={bookEventAmountToCurrencyString(countUpAmount)}
-									fontSize={SYMBOL_SIZE * boardScale * 0.22}
+									fontSize={boardSize * 0.105}
 									{breatheScale}
 								/>
 							{/if}

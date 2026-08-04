@@ -691,6 +691,10 @@
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
+		/* From brightness(1), not unset — a transition out of `none` cannot animate, and the bar
+		   popped back to full brightness while the popup was still fading (see --blocked below). */
+		filter: brightness(1);
+		transition: filter 200ms ease;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
@@ -706,6 +710,27 @@
 	.hud-shell--blocked,
 	.hud-shell--blocked * {
 		pointer-events: none !important;
+	}
+
+	/* The design scrims the WHOLE frame behind a congratulations screen, the bottom bar and the logo
+	   included (Figma 6094:4022). Those screens are pixi and this is a DOM layer above the canvas, so
+	   the popup's own full-canvas scrim stops at the canvas — the bar has to dim itself. brightness()
+	   is the same arithmetic: a 70% black scrim over an element is its colour times 0.3.
+	   Dropping the HUD behind the canvas instead would hide it outright, not dim it — the park
+	   backdrop is an opaque full-screen sprite inside that canvas. <PressAnywhereCaption> is a
+	   sibling at z-index 21, so the line the design runs across the bar stays at full strength. */
+	.hud-shell--blocked {
+		filter: brightness(0.3);
+	}
+
+	/* Dimming is not enough for the logo: it hangs low enough to cross the top of the panel, and
+	   being DOM it paints over a pixi popup no matter what the canvas does. The design gets away
+	   with keeping it because its panel clears the logo art; ours does not, so the mark steps aside
+	   for the duration instead of sitting on top of the screen it is meant to be behind. */
+	.hud-shell--blocked .game-logo,
+	.hud-shell--blocked .press-play-mark,
+	.hud-shell--blocked .pt-logo-stack {
+		opacity: 0;
 	}
 
 	/* No bottom scrim. This used to be a 120px band of solid #08041d, opaque for its lower 78%, to
@@ -727,6 +752,7 @@
 		transform: translateX(-50%);
 		filter: drop-shadow(0 6px 11px rgba(0, 0, 0, 0.7));
 		animation: game-logo-idle 3.4s ease-in-out infinite;
+		transition: opacity 220ms ease;
 		z-index: 4;
 	}
 
@@ -739,6 +765,7 @@
 		height: auto;
 		opacity: 0.9;
 		filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.55));
+		transition: opacity 220ms ease;
 		z-index: 4;
 	}
 
@@ -1480,6 +1507,7 @@
 		position: absolute;
 		left: 50%;
 		transform: translate(-50%, -100%);
+		transition: opacity 220ms ease;
 		z-index: 4;
 		display: flex;
 		flex-direction: column;

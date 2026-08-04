@@ -170,3 +170,8 @@ export const zIndexes = {
 	freeSpin: 30,
 	hud: 40,
 };
+
+// The dim behind the congratulations panels (Figma 6094:4339). The design's scrim is a full-frame
+// black rectangle over the scene AND the HUD; measured against the bar plate rendered on its own it
+// leaves 30% of it, so 0.7 black.
+export const POPUP_SCRIM_ALPHA = 0.7;
