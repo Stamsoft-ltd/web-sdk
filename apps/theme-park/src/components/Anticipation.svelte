@@ -23,7 +23,6 @@
 	 * to the grid's height it keeps its own aspect for width, which lands the rendered bulb size
 	 * and spacing on the frame's own. */
 	const STRIP_ASPECT = 29 / 488;
-	const reelCount = Math.round(BOARD_SIZES.width / CELL_W);
 	const stripHeight = BOARD_SIZES.height;
 	const stripWidth = stripHeight * STRIP_ASPECT;
 	/** Whole-strip pulse rate. Fast enough to read as blinking, slow enough not to strobe. */
@@ -103,13 +102,12 @@
 >
 	<!-- One strip either side of the column, INSIDE its borders — the bars frame the symbols with a
 	     small gap to the grid line, per the design mocks, rather than straddling the line itself.
-	     Along the board's outer edge the frame's rounded rail overlaps the grid's outer pixels
-	     (most on the mobile layouts), so an EDGE reel insets deeper — and does so on BOTH sides,
-	     not just the outer one: insetting one side alone shifted the pair off the symbol centre,
-	     and the outer strip sat so close to the frame's own rail that the two merged into one. -->
+	     The SAME inset on every reel: the edge reels used to sink theirs 18px deep so the old thin
+	     strip cleared the frame's rounded rail, which read as the strips hugging the symbols on
+	     reels 1 and 5 while sitting on the grid lines elsewhere. The rail-matched strip art can
+	     sit beside the frame rail, so the special case is gone. -->
 	{#each [-1, 1] as side (side)}
-		{@const onEdgeReel = props.reel.reelIndex === 0 || props.reel.reelIndex === reelCount - 1}
-		{@const offset = CELL_W * 0.5 - stripWidth * 0.5 - (onEdgeReel ? 18 : 6)}
+		{@const offset = CELL_W * 0.5 - stripWidth * 0.5 - 6}
 		<Sprite
 			key="anticipationStrip"
 			anchor={0.5}

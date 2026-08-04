@@ -225,7 +225,12 @@
 				{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
 					{@const y = reelSymbol.symbolY()}
 					{@const isWin = reelSymbol.symbolState === 'win'}
-					{#if !isRollerMultiplierCell(reelSymbol.rawSymbol, reelIndex, symbolIndex - 1)}
+					<!-- The DC duck under an in-flight gift reveal is hidden — the animation replaces
+					     it, and the duck art was showing through underneath. -->
+					{@const underDuckReveal =
+						context.stateGame.duckRevealPosition?.reel === reelIndex &&
+						context.stateGame.duckRevealPosition?.row === symbolIndex - 1}
+					{#if !underDuckReveal && !isRollerMultiplierCell(reelSymbol.rawSymbol, reelIndex, symbolIndex - 1)}
 						{@const fallbackKey = getSpriteKey(
 							reelSymbol.rawSymbol,
 							reelSymbol.symbolState,

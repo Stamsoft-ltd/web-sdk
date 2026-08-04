@@ -92,6 +92,9 @@ export const stateGame = $state({
 	paylineWins: [] as Array<{ lineIndex: number; path: Array<{ reel: number; row: number }> }>,
 	// Duck Collect (base-game DC symbols) presentation state
 	duckCollect: null as null | { positions: Position[]; revealed: DuckRevealed[] },
+	// While a DC duck's gift reveal is playing, <Board> hides the symbol at this position so the
+	// duck art doesn't show under the animation.
+	duckRevealPosition: null as null | Position,
 	duckRunningTotal: 0, // cents — shared by duck collect and duck pond
 	// Duck Your Luck pond bonus state
 	duckPicks: null as null | {

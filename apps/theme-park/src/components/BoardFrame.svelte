@@ -45,7 +45,9 @@
 	// whole session.
 	const MOOD = {
 		basegame: { cycleSeconds: 2, brightness: 0.62, snap: 1.35 },
-		freegame: { cycleSeconds: 1.25, brightness: 1, snap: 2 },
+		// Aggressive on purpose: a bonus chase should read as the fairground going off. Faster than
+		// the old 1.25s, and snapped hard enough that a bulb is either on or off.
+		freegame: { cycleSeconds: 0.85, brightness: 1, snap: 2.6 },
 	};
 	// How far past the painted bulb the glow reaches. Three rings — bright core, mid, wide halo —
 	// which is enough falloff to read as light rather than as a disc, without a blur filter.
@@ -60,7 +62,10 @@
 	/** Seconds to cross from one mood to the other, so entering free spins ramps up instead of popping. */
 	const MOOD_BLEND_SECONDS = 0.9;
 
-	const inBonus = $derived(context.stateGame.gameType === 'freegame');
+	// ANY bonus counts, not just free spins — the Duck Your Luck pond runs its chase at full tilt too.
+	const inBonus = $derived(
+		context.stateGame.gameType === 'freegame' || !!context.stateGame.duckPicks,
+	);
 
 	// ── Autoplay: the running lights ─────────────────────────────────────────────────────────────
 	//

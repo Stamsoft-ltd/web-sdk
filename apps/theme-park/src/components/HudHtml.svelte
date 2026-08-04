@@ -16,7 +16,12 @@
 	const navMinus = ap('/assets/theme-park/v2/hud/icon_minus.svg');
 	const navPlus = ap('/assets/theme-park/v2/hud/icon_plus.svg');
 	const navAuto = ap('/assets/theme-park/v2/hud/icon_auto.svg');
-	const navTurbo = ap('/assets/theme-park/v2/hud/turbo.webp');
+	// The three turbo glyphs from Figma 2503:7493 ("Tunder"/"Thunder1"/"Thunder 3"), extracted onto
+	// full-button-frame canvases so each lands exactly where the design places it in the circle:
+	// OUTLINED bolt = normal (off), one solid bolt = turbo, two bolts = super turbo.
+	const navTurboSolid = ap('/assets/theme-park/v2/hud/turbo-1.webp');
+	const navTurboDouble = ap('/assets/theme-park/v2/hud/turbo-2.webp');
+	const navTurboOutline = ap('/assets/theme-park/v2/hud/turbo-3.webp');
 	const barPlate = ap('/assets/theme-park/v2/hud/bar_plate.webp');
 	const buyPlate = ap('/assets/theme-park/v2/hud/buy_plate.webp');
 	const navSpinDefault = ap('/assets/theme-park/v2/controls/spin-default.png');
@@ -97,10 +102,6 @@
 		}
 	});
 
-	// The design draws a single bolt and says nothing about speed states, so the three modes are
-	// encoded in the count instead of in three differently-styled badges: 1 bolt normal, 1 bolt +
-	// glow fast, 2 bolts super. The glow alone was not enough to read at a glance.
-	const turboBolts = $derived(stateBet.isSuperTurbo ? 2 : 1);
 	const speedMode = $derived(
 		stateBet.isSuperTurbo ? 'super' : stateBet.isTurbo ? 'fast' : 'normal',
 	);
@@ -589,11 +590,15 @@
 					aria-label={i18nDerived.turboLabel()}
 					title={`${i18nDerived.turboLabel()}: ${speedMode}`}
 				>
-					<span class="turbo-bolts">
-						{#each Array.from({ length: turboBolts }, (_, i) => i) as boltIndex (boltIndex)}
-							<img class="turbo-bolt" src={navTurbo} alt="" />
-						{/each}
-					</span>
+					<img
+						class="turbo-glyph"
+						src={stateBet.isSuperTurbo
+							? navTurboDouble
+							: stateBet.isTurbo
+								? navTurboSolid
+								: navTurboOutline}
+						alt=""
+					/>
 				</button>
 				<button
 					class="nav-btn nav-btn--auto"
@@ -1114,23 +1119,13 @@
 
 	/* Turbo: the design's bolt art is rendered at 38.667 square, of which a 20x28 window is the
 	   visible bolt. Two bolts (super turbo) shrink so the pair still clears the 48 circle. */
-	.turbo-bolts {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: calc(var(--hud-u) * -2);
-		pointer-events: none;
-	}
-
-	.turbo-bolt {
-		width: calc(var(--hud-u) * 38.667);
-		height: calc(var(--hud-u) * 38.667);
+	/* Full-button-frame glyph (the bolt is authored in place inside a 48u frame), so it just fills
+	   the circle — no per-state sizing gymnastics. */
+	.turbo-glyph {
+		width: calc(var(--hud-u) * 48);
+		height: calc(var(--hud-u) * 48);
 		flex: 0 0 auto;
-	}
-
-	.turbo-bolts:has(.turbo-bolt + .turbo-bolt) .turbo-bolt {
-		width: calc(var(--hud-u) * 31);
-		height: calc(var(--hud-u) * 31);
+		pointer-events: none;
 	}
 
 	/* Autoplay: arrow glyph over an 8px caption, stacked (nodes 2503:4335, 2503:4339). */

@@ -150,6 +150,10 @@
 
 	const ready = $derived(clouds.every((cloud) => !!context.stateApp.loadedAssets?.[cloud.key]));
 
+	// The duck-pond booth backdrop has no open sky; clouds drifting over its awning read as a glitch.
+	// Kept mounted at alpha 0 (see the note on `placed`) rather than unmounted.
+	const pondActive = $derived(!!context.stateGame.duckPicks);
+
 	const placed = $derived.by(() => {
 		void frame;
 		return clouds.map((cloud) => {
@@ -187,7 +191,7 @@
 				y={cloud.y}
 				width={cloud.width}
 				height={cloud.height}
-				alpha={cloud.alpha}
+				alpha={pondActive ? 0 : cloud.alpha}
 			/>
 		{/each}
 	{/if}

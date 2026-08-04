@@ -347,6 +347,60 @@ const assets: Assets = {
 		type: 'sprite',
 		src: './assets/components/frames/magnetic/cell_box_win.png',
 	},
+	// === DUCK YOUR LUCK POND (Figma 6471:6288 desktop / 6692:4403 portrait / 6449:3212 landscape) ===
+	// The pick screen dresses the reel area as a pool: water fills the grid, the 25 picks are rubber
+	// ducks on swim rings (8 art variants, randomised per pond), and the chrome around the board is
+	// the logo, the pick counter strip and the PICK/TOTAL WIN neon panels. All processed from the
+	// Figma raws into trimmed webps (scratchpad duckpond/process.py).
+	// The pool water is the Figma node EXPORT (6471:6310), not the raw source image — the raw is a
+	// far more saturated blue than the design actually shows. Rounded corners are baked in.
+	duckPondWater: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/pond_water.webp',
+		defer: true,
+	},
+	// Full-scene backdrop while the pond is up: the blurred duck-fishing booth (supplied art).
+	// Drawn by <Background> in place of the plaza art for the duration of the bonus.
+	duckPondBackground: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_booth.webp',
+		defer: true,
+	},
+	// Splash pool disc drawn under every pond duck (the mock's per-cell tile).
+	duckPondSplash: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/splash.webp',
+		defer: true,
+	},
+	// Pick reveal: the duck unwraps a gift box (36-frame 6×6 sheet from 'Duck present.mp4',
+	// black-keyed with the emblem flood pipeline); the prize disc rises out of the opened box.
+	duckPresentAnim: {
+		type: 'spriteSheet',
+		src: './assets/sprites/duckPresent/duck_present.json',
+		defer: true,
+	},
+	duckPondLogo: { type: 'sprite', src: './assets/theme-park/v2/duckpond/logo.webp', defer: true },
+	duckPondMiniYellow: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_mini_yellow.webp',
+		defer: true,
+	},
+	duckPondMiniGray: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_mini_gray.webp',
+		defer: true,
+	},
+	// The PICK / TOTAL WIN plates draw the shared `bonusPanel` art with <PanelBorderLights> instead
+	// of the mock's static panel exports, so the pond chrome animates like the confirm dialogs.
+	duckPondDuck1: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_1.webp', defer: true },
+	duckPondDuck2: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_2.webp', defer: true },
+	duckPondDuck3: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_3.webp', defer: true },
+	duckPondDuck4: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_4.webp', defer: true },
+	duckPondDuck5: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_5.webp', defer: true },
+	duckPondDuck6: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_6.webp', defer: true },
+	duckPondDuck7: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_7.webp', defer: true },
+	duckPondDuck8: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_8.webp', defer: true },
+
 	// Marquee bulb strip: a pair of these frames the anticipating reel and blinks (Anticipation).
 	// Built FROM the board pad's own right-hand bulb rail (mirrored about the bulb column to
 	// restore the edge-clipped halos, tiled to 12 bulbs) so the strip matches the frame's bulbs

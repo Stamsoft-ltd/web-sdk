@@ -23,12 +23,13 @@ export const CLOUDS_Z = -2;
 
 export type CanvasSizes = { width: number; height: number };
 
-/** The drawn rectangle of the backdrop: cover-fit, centred, overscanned. */
-export const backgroundCover = ({ width, height }: CanvasSizes) => {
+/** The drawn rectangle of the backdrop: cover-fit, centred, overscanned. Defaults to the plaza
+ * art's aspect; pass another for the alternate backdrops (the duck-pond booth). */
+export const backgroundCover = ({ width, height }: CanvasSizes, aspect = BACKGROUND_ASPECT) => {
 	const cover =
-		width / height > BACKGROUND_ASPECT
-			? { width, height: width / BACKGROUND_ASPECT }
-			: { width: height * BACKGROUND_ASPECT, height };
+		width / height > aspect
+			? { width, height: width / aspect }
+			: { width: height * aspect, height };
 
 	const drawnWidth = cover.width * BACKGROUND_OVERSCAN;
 	const drawnHeight = cover.height * BACKGROUND_OVERSCAN;

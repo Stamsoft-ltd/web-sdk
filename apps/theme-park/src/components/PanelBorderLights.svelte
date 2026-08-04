@@ -2,7 +2,7 @@
 	import { Sprite, PIXI } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
-	import { POPUP_BORDERS } from '../lib/popupBorder';
+	import { POPUP_BORDERS, type PopupBorder } from '../lib/popupBorder';
 	import { rampColour, roundedRectPoint } from '../lib/roundedRectPath';
 
 	// The confirm dialog's running border lights, for a PIXI panel: <PopupBorderLights> draws this
@@ -17,6 +17,8 @@
 		width: number;
 		height: number;
 		variant?: keyof typeof POPUP_BORDERS;
+		/** Custom geometry+ramp for panels that are not one of the measured arts (<PondPanel>). */
+		border?: PopupBorder;
 	};
 	const props: Props = $props();
 	const context = getContext();
@@ -36,7 +38,7 @@
 	const HALO = 0.052;
 	const CORE = 0.014;
 
-	const border = $derived(POPUP_BORDERS[props.variant ?? 'square']);
+	const border = $derived(props.border ?? POPUP_BORDERS[props.variant ?? 'square']);
 
 	let run = $state(0);
 

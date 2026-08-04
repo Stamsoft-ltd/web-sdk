@@ -399,6 +399,9 @@
 		// just falls back — the win-card amount rendered in Times because Cinzel was declared
 		// but never loaded (all DOM text is Poppins/Inter).
 		document.fonts?.load('900 64px Cinzel').catch(() => {});
+		// Inter Bold is fetched by the HUD's DOM text on most paths, but the duck-pond panels draw
+		// it on canvas — make its load unconditional too.
+		document.fonts?.load('700 38px Inter').catch(() => {});
 	});
 </script>
 
