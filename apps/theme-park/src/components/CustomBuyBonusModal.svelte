@@ -3,6 +3,15 @@
 
 	const modeAsset = (icon: string, variant: 'desktop' | 'mobile' | 'mobile-landscape') =>
 		ap(`/assets/theme-park/v2/modes/${icon}-${variant}.png`);
+	// Neon gradient frame (download "S pad") — the glowing card border from the design.
+	const neonFrame = ap('/assets/theme-park/v2/hud/neon-frame.png');
+	// Circular neon +/- buttons — same art the main HUD bet stepper uses.
+	const betMinus = ap('/assets/theme-park/v2/controls/btn-minus.png');
+	const betMinusDisabled = ap('/assets/theme-park/v2/controls/btn-minus-disabled.png');
+	const betPlus = ap('/assets/theme-park/v2/controls/btn-plus.png');
+	const betPlusDisabled = ap('/assets/theme-park/v2/controls/btn-plus-disabled.png');
+	// Money coin — same glyph the main HUD shows beside the bet amount.
+	const coinIcon = ap('/assets/theme-park/v2/hud/icon_coin.svg');
 
 	for (const icon of ['duck-your-luck', 'roller-wilds', 'mega-coaster']) {
 		for (const variant of ['desktop', 'mobile', 'mobile-landscape'] as const) modeAsset(icon, variant);
@@ -11,7 +20,7 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { stateBet } from 'state-shared';
+	import { stateBet, stateBetDerived, stateConfig } from 'state-shared';
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { templateStakeDerived } from '../state/templateStake.svelte';
@@ -32,9 +41,38 @@
 	const props: Props = $props();
 	const context = getContext();
 	const t = (key: string) => i18nDerived.translate(key);
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 
 	const betAmount = $derived(stateBet.betAmount);
 	const canAfford = (multiplier: number) => stateBet.balanceAmount >= betAmount * multiplier;
+
+	// Bet +/- stepper (mirrors the main HUD) so the player can retune the stake — and every card's
+	// price — without leaving the buy screen.
+	const betOptions = $derived(stateConfig.betAmountOptions);
+	const smallestBet = $derived(betOptions[0]);
+	const biggestBet = $derived(betOptions[betOptions.length - 1]);
+	const currentBetIndex = $derived.by(() => {
+		const exact = betOptions.indexOf(stateBet.betAmount);
+		if (exact >= 0) return exact;
+		let idx = 0;
+		for (let i = 0; i < betOptions.length; i += 1) {
+			if (betOptions[i] <= stateBet.betAmount) idx = i;
+			else break;
+		}
+		return idx;
+	});
+	const disableDecrease = $derived(stateBet.betAmount === smallestBet);
+	const disableIncrease = $derived(stateBet.betAmount === biggestBet);
+	const formattedBet = $derived(templateStakeDerived.formatCurrencyAmount(betAmount));
+	const stepBet = (direction: -1 | 1) => {
+		if (direction < 0 && disableDecrease) return;
+		if (direction > 0 && disableIncrease) return;
+		const nextIndex = Math.min(betOptions.length - 1, Math.max(0, currentBetIndex + direction));
+		const nextBet = betOptions[nextIndex];
+		if (typeof nextBet !== 'number' || nextBet === stateBet.betAmount) return;
+		stateBetDerived.setBetAmount(nextBet);
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+	};
 
 	const FEATURE_CARDS: {
 		mode: Exclude<ToggleMode, 'ANTE'>;
@@ -158,7 +196,13 @@
 {/if}
 
 <!-- Panel -->
-<div class="panel" role="dialog" aria-modal="true">
+<div
+	class="panel"
+	class:is-portrait={isPortrait}
+	role="dialog"
+	aria-modal="true"
+	style={`--neon-frame:url('${neonFrame}')`}
+>
 	<h2 class="title">{t('BUY BONUS')}</h2>
 
 	<div class="grid">
@@ -196,6 +240,8 @@
 		<!-- One-time bonus buys -->
 		{#each BUY_CARDS as card (card.mode)}
 			<div class="card">
+				<span class="card-title">{t(card.title)}</span>
+				<span class="card-desc">{t(card.desc)}</span>
 				<picture class="mode-art">
 					<source
 						media="(max-width: 900px) and (orientation: landscape)"
@@ -204,8 +250,6 @@
 					<source media="(max-width: 900px)" srcset={modeAsset(card.icon, 'mobile')} />
 					<img src={modeAsset(card.icon, 'desktop')} alt="" />
 				</picture>
-				<span class="card-title">{t(card.title)}</span>
-				<span class="card-desc">{t(card.desc)}</span>
 				<span class="card-price">{cost(card.costMultiplier)}</span>
 				<button
 					class="card-btn card-btn--buy"
@@ -215,6 +259,35 @@
 				>
 			</div>
 		{/each}
+	</div>
+
+	<!-- Bet stepper — same neon frame as the cards; retunes the stake that drives every card price. -->
+	<div class="bet-setter">
+		<button
+			class="bet-step"
+			type="button"
+			disabled={disableDecrease}
+			onclick={() => stepBet(-1)}
+			aria-label={t('DECREASE BET')}
+		>
+			<img src={disableDecrease ? betMinusDisabled : betMinus} alt="" />
+		</button>
+		<div class="bet-mid">
+			<img class="bet-coin" src={coinIcon} alt="" />
+			<div class="bet-readout">
+				<span class="bet-readout__label">{i18nDerived.betLabel()}</span>
+				<span class="bet-readout__value">{formattedBet}</span>
+			</div>
+		</div>
+		<button
+			class="bet-step"
+			type="button"
+			disabled={disableIncrease}
+			onclick={() => stepBet(1)}
+			aria-label={t('INCREASE BET')}
+		>
+			<img src={disableIncrease ? betPlusDisabled : betPlus} alt="" />
+		</button>
 	</div>
 </div>
 
@@ -255,10 +328,57 @@
 		top: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 61;
-		width: min(760px, 96vw);
+		width: min(760px, 97vw);
 		max-height: 92dvh;
 		overflow-y: auto;
-		padding: 28px 24px 28px;
+		padding: 20px 12px;
+	}
+
+	/* Mobile portrait: stack the modes in a single scrolling column, with the bet bar pinned near
+	   the screen bottom instead of scrolling away with the cards. */
+	.panel.is-portrait {
+		display: flex;
+		flex-direction: column;
+		height: 92dvh;
+		overflow: hidden;
+	}
+	.panel.is-portrait .title {
+		flex: 0 0 auto;
+		margin-bottom: 12px;
+	}
+	.panel.is-portrait .grid {
+		grid-template-columns: 1fr;
+		gap: 12px;
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow-y: auto;
+		padding: 2px 4px 8px;
+	}
+	.panel.is-portrait .bet-setter {
+		flex: 0 0 auto;
+		margin: 12px auto 0;
+	}
+	/* Full-width column cards can carry bigger type and a bigger icon than the 3-up grid. */
+	.panel.is-portrait .card {
+		padding: 16px 20px 18px;
+	}
+	.panel.is-portrait .card-title {
+		font-size: clamp(1rem, 4.8vw, 1.3rem);
+	}
+	.panel.is-portrait .card-desc {
+		font-size: clamp(0.66rem, 3.3vw, 0.82rem);
+		display: block;
+		overflow: visible;
+	}
+	.panel.is-portrait .card-price {
+		font-size: clamp(0.92rem, 4.2vw, 1.1rem);
+	}
+	.panel.is-portrait .card-btn {
+		font-size: clamp(0.82rem, 3.9vw, 1rem);
+		padding: 11px 0;
+	}
+	.panel.is-portrait .mode-art img {
+		height: clamp(58px, 16vw, 82px);
 	}
 
 	.title {
@@ -278,8 +398,9 @@
 
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-		gap: 16px;
+		/* Fixed 3-up so the six modes lay out as three-per-row on two rows. */
+		grid-template-columns: repeat(3, 1fr);
+		gap: 4px;
 	}
 
 	.card {
@@ -287,29 +408,37 @@
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
-		padding: 22px 18px 18px;
-		background: linear-gradient(0deg, #1a0535 0%, #05010c 100%);
-		border: 1px solid #d836fc;
-		box-shadow:
-			inset 0 0 22px rgba(216, 54, 252, 0.1),
-			0 10px 26px rgba(0, 0, 0, 0.45);
-		border-radius: 18px;
-		gap: 8px;
+		box-sizing: border-box;
+		padding: clamp(6px, 1.4vw, 12px) clamp(6px, 1.4vw, 14px) clamp(4px, 1vw, 10px);
+		gap: clamp(5px, 1.4vw, 10px);
+		/* Neon gradient frame (download "S pad") drawn as a 9-slice border-image, NOT a stretched
+		   background: on a tall narrow card `background-size:100% 100%` distorts the frame and pushes
+		   its border inward, so the button spilled past it. A 9-slice keeps the border a constant
+		   thickness at any aspect ratio; `fill` paints the dark interior. Slices measured off the PNG
+		   (interior starts at 22/20/39/17 px, T/R/B/L of the 615×309 image). */
+		border-style: solid;
+		border-width: 16px 15px 28px 14px;
+		border-image-source: var(--neon-frame);
+		border-image-slice: 22 20 39 17 fill;
+		border-image-repeat: stretch;
 	}
 
 	.mode-art {
 		display: grid;
 		place-items: center;
 		width: 100%;
-		height: 104px;
+		margin: 1px 0;
 	}
 
 	.mode-art img {
 		display: block;
-		width: min(100%, 180px);
-		height: 100%;
+		/* Explicit height (not %) so it resolves against the grid — a % height falls back to the
+		   image's intrinsic size and overflows, colliding with the neighbouring rows. */
+		height: clamp(38px, 10vw, 62px);
+		width: auto;
+		max-width: 100%;
 		object-fit: contain;
-		filter: drop-shadow(0 7px 8px rgba(0, 0, 0, 0.62));
+		filter: drop-shadow(0 5px 6px rgba(0, 0, 0, 0.62));
 		animation: mode-art-idle 3s ease-in-out infinite;
 	}
 
@@ -334,9 +463,10 @@
 
 	.card-title {
 		font-family: Helvetica, Arial, sans-serif;
-		font-size: 1rem;
+		font-size: clamp(0.62rem, 2.9vw, 1.05rem);
+		line-height: 1.1;
 		font-weight: 700;
-		letter-spacing: 0.03em;
+		letter-spacing: 0.02em;
 		text-transform: uppercase;
 		background: linear-gradient(173.06deg, #d836fc 0%, #272fdd 100%);
 		-webkit-background-clip: text;
@@ -348,31 +478,36 @@
 
 	.card-desc {
 		font-family: Helvetica, Arial, sans-serif;
-		font-size: 0.52rem;
+		font-size: clamp(0.42rem, 1.95vw, 0.6rem);
 		color: rgba(255, 255, 255, 0.75);
-		letter-spacing: 0.02em;
-		line-height: 1.45;
-		display: block;
-		min-height: 2.9em;
+		letter-spacing: 0.01em;
+		line-height: 1.32;
+		/* Clamp so long copy can't blow one card's height out relative to its row-mates. */
+		display: -webkit-box;
+		-webkit-line-clamp: 4;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
 
 	.card-price {
 		font-family: Helvetica, Arial, sans-serif;
-		font-size: 0.88rem;
+		font-size: clamp(0.66rem, 2.8vw, 0.95rem);
 		font-weight: 700;
 		color: #fff;
-		letter-spacing: 0.03em;
+		letter-spacing: 0.02em;
 		display: block;
+		/* Push the price+button bet group to the card bottom so bets line up across a row. */
+		margin-top: auto;
 	}
 
 	.card-btn {
 		width: 100%;
-		padding: 9px 0;
-		border-radius: 12px;
+		padding: clamp(7px, 1.8vw, 11px) 0;
+		border-radius: 10px;
 		font-family: Helvetica, Arial, sans-serif;
-		font-size: 0.78rem;
+		font-size: clamp(0.56rem, 2.4vw, 0.85rem);
 		font-weight: 700;
-		letter-spacing: 0.1em;
+		letter-spacing: 0.06em;
 		text-transform: uppercase;
 		cursor: pointer;
 		border: 1px solid #b65df3;
@@ -382,7 +517,6 @@
 			background 0.2s,
 			border-color 0.2s,
 			color 0.2s;
-		margin-top: 4px;
 	}
 	.card-btn--active,
 	.card-btn--buy {
@@ -395,6 +529,89 @@
 	.card-btn--buy:disabled {
 		opacity: 0.4;
 		cursor: default;
+	}
+
+	/* Bet stepper under the cards — wrapped in the same neon gradient frame as the cards. */
+	.bet-setter {
+		margin: 3px auto 0;
+		box-sizing: border-box;
+		width: min(240px, 78%);
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		/* More vertical breathing room; bottom padding stays a touch bigger to clear the frame's
+		   larger bottom-border inset. */
+		padding: 12px 18px 15px;
+		background: var(--neon-frame) center / 100% 100% no-repeat;
+	}
+
+	.bet-mid {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		min-width: 0;
+	}
+
+	.bet-coin {
+		flex: 0 0 auto;
+		width: 26px;
+		height: 26px;
+		object-fit: contain;
+		display: block;
+	}
+
+	.bet-step {
+		flex: 0 0 auto;
+		width: 36px;
+		height: 36px;
+		padding: 0;
+		border: 0;
+		background: none;
+		cursor: pointer;
+		transition: filter 0.15s;
+	}
+	.bet-step img {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+	.bet-step:disabled {
+		cursor: default;
+	}
+	.bet-step:not(:disabled):hover {
+		filter: brightness(1.12);
+	}
+	.bet-step:not(:disabled):active {
+		transform: translateY(1px);
+	}
+
+	.bet-readout {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		min-width: 0;
+	}
+	.bet-readout__label {
+		font-family: Helvetica, Arial, sans-serif;
+		font-size: 0.58rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		/* Pink/purple gradient, matching the card titles. */
+		background: linear-gradient(173.06deg, #d836fc 0%, #272fdd 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+	}
+	.bet-readout__value {
+		font-family: Helvetica, Arial, sans-serif;
+		font-size: 1.1rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		color: #fff;
 	}
 
 	/* Confirm dialog — the design's own spacing, converted to flow so a long mode name (e.g.

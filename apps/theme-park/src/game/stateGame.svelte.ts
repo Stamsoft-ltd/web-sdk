@@ -29,6 +29,7 @@ import {
 	SCATTER_LAND_SOUND_MAP,
 	SCATTER_SYMBOLS,
 } from './constants';
+import { FRAME_OVER_GRID_X } from './boardArt';
 
 const onSymbolLand = ({ rawSymbol }: { rawSymbol: RawSymbol }) => {
 	if (SCATTER_SYMBOLS.includes(rawSymbol.name)) {
@@ -218,10 +219,15 @@ const boardLayout = () => {
 	}
 
 	if (layoutType === 'portrait') {
-		const { availableCanvasWidth, mainLayout } = getBoardViewportMetrics();
-		const availableWidth = availableCanvasWidth / (mainLayout.scale || 1);
-		const boardScale =
-			(availableWidth * PORTRAIT_FRAME_FILL * MOBILE_FRAME_INNER_W) / BOARD_SIZES.width;
+		const { mainLayout, canvasSizes } = getBoardViewportMetrics();
+		// Full-bleed board on mobile portrait: the frame spans the ENTIRE screen width. Use the raw
+		// canvas width (not availableCanvasWidth, which reserves 6px side padding) so frameW resolves
+		// to exactly the canvas width; the reels stay inset by MOBILE_FRAME_INNER_W within it.
+		const availableWidth = canvasSizes.width / (mainLayout.scale || 1);
+		// The visible frame is the grid blown up by FRAME_OVER_GRID_X (the decorative border baked into
+		// the board art). Scale so THAT equals the full canvas width — the reels sit inside it — else
+		// the ~3% border leaves a sky margin and the board reads as not-quite full width.
+		const boardScale = (availableWidth * PORTRAIT_FRAME_FILL) / (BOARD_SIZES.width * FRAME_OVER_GRID_X);
 		const frameHeight = (BOARD_SIZES.height * boardScale) / MOBILE_FRAME_INNER_H;
 
 		return {

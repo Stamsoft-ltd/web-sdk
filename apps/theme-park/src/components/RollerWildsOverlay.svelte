@@ -9,7 +9,7 @@
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
 	import { cubicOut, linear } from 'svelte/easing';
-	import { Container } from 'pixi-svelte';
+	import { Container, Graphics } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
 	import { waitForTimeout } from 'utils-shared/wait';
 
@@ -169,6 +169,22 @@
 			scale={layout.boardScale}
 			sortableChildren
 		>
+			<!-- Clip the overlay to the board's BOTTOM edge so the descending car ends and vanishes the
+			     moment it rolls off the board, instead of staying visible in the empty area below it.
+			     The mask extends well above the board so the car's drop-in from the top is untouched. -->
+			<Graphics
+				isMask
+				draw={(graphics) => {
+					graphics.beginFill(0xffffff);
+					graphics.rect(
+						-SYMBOL_W,
+						-SYMBOL_H * 2,
+						CELL_W * BOARD_DIMENSIONS.x + SYMBOL_W * 2,
+						SYMBOL_H * BOARD_DIMENSIONS.y + SYMBOL_H * 2,
+					);
+					graphics.endFill();
+				}}
+			/>
 
 			<!-- Initial landed trigger stays Mega Wild until the cart replaces its row. -->
 			{#each triggerReels as roller (`trigger-${roller.reel}`)}

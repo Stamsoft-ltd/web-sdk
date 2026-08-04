@@ -5,7 +5,14 @@
 	// each icon into its own dark badge — those badges doubled up with this design's circular button
 	// chrome. The stepper is -/+ here, not the old left/right arrows.
 	const navMenu = ap('/assets/theme-park/v2/hud/icon_menu.svg');
+	const navClose = ap('/assets/theme-park/v2/hud/icon_close.svg');
 	const navSound = ap('/assets/theme-park/v2/hud/icon_sound.svg');
+
+	// Settings-menu glyphs — existing icon assets, used as CSS masks so icon AND label recolour
+	// together on hover (see .hud-menu__glyph { background: currentColor }).
+	const menuIconSound = ap('/assets/theme-park/v2/hud/menu_sound.svg');
+	const menuIconMusic = ap('/assets/theme-park/v2/hud/menu_music.svg');
+	const menuIconInfo = ap('/assets/theme-park/v2/hud/menu_info.svg');
 	const navMinus = ap('/assets/theme-park/v2/hud/icon_minus.svg');
 	const navPlus = ap('/assets/theme-park/v2/hud/icon_plus.svg');
 	const navAuto = ap('/assets/theme-park/v2/hud/icon_auto.svg');
@@ -35,9 +42,9 @@
 	const ptMinus = ap('/assets/theme-park/v2/controls/btn-minus.png');
 	const ptMinusDisabled = ap('/assets/theme-park/v2/controls/btn-minus-disabled.png');
 	const ptBuy = ap('/assets/theme-park/v2/controls/btn-buy-mobile.png');
-	// Bet box plate — the dark neon-border box (Variant7), same family as the Navigation bar, smaller.
-	// (bottom ~29px of dead black padding cropped off so the box fills the frame and content centres.)
-	const ptBetBox = ap('/assets/theme-park/v2/controls/bet-plate2.png');
+	// Bet box plate — the same glowing neon gradient frame ("S pad") used by the buy-bonus popup's
+	// bet setter, stretched to fill this box so the two match.
+	const ptBetBox = ap('/assets/theme-park/v2/hud/neon-frame.png');
 	// Portrait nav bar — bar_plate cropped tight + vertically symmetric, so the visible bar nearly
 	// fills its box and the (bigger) buttons sit centred inside it.
 	const ptNavBar = ap('/assets/theme-park/v2/controls/nav-bar.png');
@@ -210,6 +217,34 @@
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		stateSound.volumeValueMaster = stateSound.volumeValueMaster === 0 ? 50 : 0;
 	};
+
+	// Burger settings menu (SOUND · MUSIC · INFO).
+	let menuOpen = $state(false);
+	const toggleMenu = () => {
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		menuOpen = !menuOpen;
+	};
+	const closeMenu = () => (menuOpen = false);
+	const musicMuted = $derived(stateSound.volumeValueMusic === 0);
+	const toggleMusic = () => {
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		stateSound.volumeValueMusic = musicMuted ? 50 : 0;
+	};
+	const openInfo = () => {
+		closeMenu();
+		openRules();
+	};
+	// Close the menu on any click outside it (and outside its trigger).
+	$effect(() => {
+		if (!menuOpen) return;
+		const onDown = (event: PointerEvent) => {
+			const target = event.target as HTMLElement | null;
+			if (target?.closest('.hud-menu') || target?.closest('.nav-btn--menu')) return;
+			closeMenu();
+		};
+		document.addEventListener('pointerdown', onDown, true);
+		return () => document.removeEventListener('pointerdown', onDown, true);
+	});
 
 	const openRules = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
@@ -388,12 +423,39 @@
 		<img class="hud-plate" src={barPlate} alt="" />
 		<div class="hud-left">
 			<div class="hud-system">
-				<button class="nav-btn nav-btn--menu" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
-					<img src={navMenu} alt="" />
+				<button
+					class="nav-btn nav-btn--menu"
+					class:is-open={menuOpen}
+					type="button"
+					onclick={toggleMenu}
+					aria-haspopup="true"
+					aria-expanded={menuOpen}
+					aria-label={i18nDerived.translate('MENU')}
+				>
+					<img src={menuOpen ? navClose : navMenu} alt="" />
 				</button>
 				<button class="nav-btn nav-btn--sound" type="button" onclick={toggleSound} aria-label={i18nDerived.translate('SOUND')}>
 					<img src={navSound} alt="" class:is-muted={isMuted} />
 				</button>
+
+				{#if menuOpen}
+					<div class="hud-menu" role="menu">
+						<button class="hud-menu__item" class:is-off={isMuted} type="button" role="menuitem" onclick={toggleSound}>
+							<span class="hud-menu__badge"><span class="hud-menu__glyph" style={`--icon:url('${menuIconSound}')`}></span></span>
+							<span class="hud-menu__label">{i18nDerived.translate('SOUND')}</span>
+						</button>
+						<div class="hud-menu__divider"></div>
+						<button class="hud-menu__item" class:is-off={musicMuted} type="button" role="menuitem" onclick={toggleMusic}>
+							<span class="hud-menu__badge"><span class="hud-menu__glyph" style={`--icon:url('${menuIconMusic}')`}></span></span>
+							<span class="hud-menu__label">{i18nDerived.translate('MUSIC')}</span>
+						</button>
+						<div class="hud-menu__divider"></div>
+						<button class="hud-menu__item" type="button" role="menuitem" onclick={openInfo}>
+							<span class="hud-menu__badge"><span class="hud-menu__glyph" style={`--icon:url('${menuIconInfo}')`}></span></span>
+							<span class="hud-menu__label">{i18nDerived.translate('INFO')}</span>
+						</button>
+					</div>
+				{/if}
 			</div>
 
 			<div class="hud-buy">
@@ -1021,6 +1083,12 @@
 		width: calc(var(--hud-u) * 17.5);
 		height: calc(var(--hud-u) * 15);
 	}
+	/* The close (X) glyph is square and reads smaller than the wide burger at the same box — size it
+	   up while open so the two icons look the same weight. */
+	.nav-btn--menu.is-open img {
+		width: calc(var(--hud-u) * 23);
+		height: calc(var(--hud-u) * 23);
+	}
 
 	.nav-btn--sound img {
 		width: calc(var(--hud-u) * 22.5);
@@ -1127,10 +1195,92 @@
 	}
 
 	.hud-system {
+		position: relative;
 		display: flex;
 		align-items: center;
 		gap: calc(var(--hud-u) * 8);
 		flex: 0 0 auto;
+	}
+
+	/* Burger settings menu — pops above the menu button. Fixed pixel sizing (like the Magnetic game)
+	   so it stays the SAME size at every resolution instead of scaling with the bar. */
+	.hud-menu {
+		position: absolute;
+		/* Align the panel's left edge with the nav bar's left frame edge (the menu button is inset
+		   from it), and lift it clear of the bar so the two never overlap. Both offsets track the bar
+		   via --hud-u. */
+		left: calc(var(--hud-u) * -24);
+		bottom: calc(100% + var(--hud-u) * 24);
+		z-index: 30;
+		display: flex;
+		flex-direction: column;
+		min-width: 168px;
+		padding: 10px 15px;
+		border-radius: 16px;
+		background: linear-gradient(180deg, rgba(34, 10, 60, 0.97), rgba(12, 4, 26, 0.98));
+		border: 1px solid rgba(160, 96, 246, 0.55);
+		box-shadow:
+			0 6px 18px rgba(0, 0, 0, 0.5),
+			0 0 16px rgba(130, 66, 224, 0.4),
+			inset 0 0 12px rgba(96, 44, 190, 0.25);
+	}
+	.hud-menu__item {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 8px 2px;
+		border: 0;
+		background: none;
+		cursor: pointer;
+		/* Label inherits this colour; the icon (a mask filled with currentColor) follows it too, so
+		   hover recolours both together. */
+		color: #fff;
+		transition: color 0.14s ease;
+		text-align: left;
+	}
+	.hud-menu__item:hover,
+	.hud-menu__item:focus-visible {
+		color: #e070ff;
+		outline: none;
+	}
+	.hud-menu__item.is-off {
+		color: rgba(255, 255, 255, 0.42);
+	}
+	.hud-menu__item.is-off:hover {
+		color: #e070ff;
+	}
+	.hud-menu__badge {
+		flex: 0 0 auto;
+		width: 32px;
+		height: 32px;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		border: 1px solid rgba(160, 96, 246, 0.6);
+		background: linear-gradient(to top, #1a0a38, #05010c);
+		transition: box-shadow 0.14s ease;
+	}
+	.hud-menu__item:hover .hud-menu__badge {
+		box-shadow: 0 0 6px 1px rgba(160, 96, 246, 0.85);
+	}
+	.hud-menu__glyph {
+		width: 16px;
+		height: 16px;
+		background: currentColor;
+		mask: var(--icon) center / contain no-repeat;
+		-webkit-mask: var(--icon) center / contain no-repeat;
+	}
+	.hud-menu__label {
+		font-family: 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: 14px;
+		letter-spacing: 0.05em;
+		color: inherit;
+	}
+	.hud-menu__divider {
+		height: 1px;
+		background: rgba(160, 96, 246, 0.3);
+		margin: 0 2px;
 	}
 
 	/* 134 x 118.538 (node 4173:27432) — the tallest item in the row, which is why .hud-bottom is
@@ -1215,12 +1365,13 @@
 		opacity: 0;
 	}
 
-	.spin-btn:not(:disabled):hover .spin-btn__img--default,
+	/* Swap to the "active" spin art only on PRESS, not hover: the active frame renders at a slightly
+	   different size, so swapping it in on hover made the button appear to shrink. Hover keeps the
+	   lift + brighten feedback below. */
 	.spin-btn:not(:disabled):active .spin-btn__img--default {
 		opacity: 0;
 	}
 
-	.spin-btn:not(:disabled):hover .spin-btn__img--active,
 	.spin-btn:not(:disabled):active .spin-btn__img--active {
 		opacity: 1;
 	}

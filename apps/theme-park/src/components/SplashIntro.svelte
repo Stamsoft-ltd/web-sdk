@@ -5,6 +5,9 @@
 	// marquee frames the feature copy sits inside are painted into this image, so the text layer
 	// below is positioned against it and the two must scale as one unit.
 	const bgSrc = ap('/assets/theme-park/v2/splash/background.webp');
+	// Mobile portrait uses the bright daytime park scene (the in-game background / basegame video
+	// still from the latest download) rather than the night splash art with its baked-in frames.
+	const portraitBgSrc = ap('/assets/theme-park/v2/background.webp');
 	const logoSrc = ap('/assets/theme-park/v2/splash/logo.webp');
 	const pressPlaySrc = ap('/assets/theme-park/v2/splash/press_play_mark.svg');
 	const arrowSrc = ap('/assets/theme-park/v2/splash/arrow.svg');
@@ -131,7 +134,7 @@
 	{:else}
 	<!-- PORTRAIT splash: dedicated vertical layout that fills the phone screen. -->
 	<div class="splash-pt">
-		<img class="pt-bg" src={bgSrc} alt="" />
+		<img class="pt-bg" src={portraitBgSrc} alt="" />
 		<div class="pt-scrim"></div>
 		<img class="pt-pp" src={pressPlaySrc} alt="Press Play" />
 
@@ -469,12 +472,9 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		object-position: center top;
-		/* The splash art bakes the three gold marquee frames into its lower-centre. Zoom into the
-		   upper scene (coaster / fireworks / wheel) anchored at the top so those frames drop below
-		   the fold and don't double up with the CSS cards. */
-		transform: scale(1.7);
-		transform-origin: center top;
+		/* Daytime park scene is a clean landscape with no baked-in frames, so no zoom is needed —
+		   cover crops to the central path/coaster/wheel. */
+		object-position: center center;
 	}
 	.pt-scrim {
 		position: absolute;
@@ -521,7 +521,10 @@
 	/* Each slide's copy sits inside the frame interior; only the active one is visible. */
 	.pt-slide {
 		position: absolute;
-		inset: 13% 12%;
+		/* The frame art's right rail is thicker (3D side panel), so its dark interior sits ~3% left of
+		   the art's centre. Bigger right inset than left shifts the copy to the interior's true centre
+		   (same text width, just offset). */
+		inset: 13% 15% 13% 9%;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -539,12 +542,14 @@
 		transform: scale(1);
 	}
 	.pt-feat-title {
-		margin: 0 0 1cqh;
+		margin: 0 0 1.2cqh;
 		font-family: 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
 		font-weight: 700;
-		font-size: 7cqw;
-		line-height: 1.02;
+		font-size: 9.6cqw;
+		line-height: 1.04;
 		letter-spacing: 0.02em;
+		/* Bigger title is allowed to wrap onto two lines inside the frame. */
+		max-width: 100%;
 		background-clip: text;
 		-webkit-background-clip: text;
 		color: transparent;
@@ -553,15 +558,15 @@
 		margin: 0;
 		font-family: 'Poppins', sans-serif;
 		font-weight: 400;
-		font-size: 3.4cqw;
+		font-size: 4.6cqw;
 		line-height: 1.2;
 		color: #fff;
 	}
 	.pt-feat-big {
-		margin: 0.5cqh 0;
+		margin: 0.6cqh 0;
 		font-family: 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
 		font-weight: 700;
-		font-size: 12cqw;
+		font-size: 16cqw;
 		line-height: 1;
 		background-image: linear-gradient(
 			181.3deg,
