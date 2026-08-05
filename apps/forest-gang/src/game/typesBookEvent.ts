@@ -99,6 +99,15 @@ type BookEventUpdateGlobalMultiplier = {
 	multiplier: number;
 };
 
+// What the generated books actually emit for the All In progression (updateGlobalMultiplier never
+// appears in any book): the full per-reel multiplier array plus which reels just changed.
+type BookEventUpdateReelMultipliers = {
+	index: number;
+	type: 'updateReelMultipliers';
+	multipliers: number[];
+	changedReels: number[];
+};
+
 type BookEventRetriggerFreeSpins = {
 	index: number;
 	type: 'retriggerFreeSpins';
@@ -126,6 +135,7 @@ export type BookEvent =
 	| BookEventExpandedSymbolReveal
 	| BookEventApplyTempMultiplier
 	| BookEventUpdateGlobalMultiplier
+	| BookEventUpdateReelMultipliers
 	| BookEventRetriggerFreeSpins
 	| BookEventCreateBonusSnapshot;
 
