@@ -15,6 +15,7 @@
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+	const isTablet = $derived(context.stateLayoutDerived.layoutType() === 'tablet');
 
 	const LOGO_ASPECT = 1176 / 572;
 	// Landscape uses a smaller logo than desktop.
@@ -227,8 +228,11 @@
 				<Text anchor={0.5} y={badgeH * 0.13} text={earnedText} style={titleStyle(badgeH * 0.2)} />
 			</Container>
 		{/if}
-	{:else}
-		<!-- Text logo — centred between the left screen edge and the board frame (desktop) -->
+	{:else if !isTablet}
+		<!-- Text logo — centred between the left screen edge and the board frame (desktop).
+		     Almost-square windows (layoutType 'tablet') draw no logos at all: the board fills the
+		     full window width there, so both logos could only render as clipped slivers behind the
+		     frame corners. -->
 		<Sprite
 			key="forestGangLogo"
 			anchor={{ x: 0.5, y: 0 }}
