@@ -11,6 +11,7 @@
 <script lang="ts">
 	import { Container, Graphics, Sprite, SpriteSheet } from 'pixi-svelte';
 
+	import SymbolWinFx from './SymbolWinFx.svelte';
 	import { getContext } from '../game/context';
 	import {
 		BOARD_DIMENSIONS,
@@ -48,51 +49,6 @@
 	const getX = (reelIndex: number) => SYMBOL_W * (reelIndex + 0.5);
 	const getStaticY = (rowIndex: number) => SYMBOL_H * (rowIndex + 0.5);
 
-	// Per-sheet size tweaks (fraction of cell height; default 0.8) — art-specific corrections.
-	const WIN_SHEET_SIZE: Record<string, number> = {
-		cubeWinSheet: 1.2, // enlarged again per design feedback
-		magnetWinSheet: 1.32, // horseshoe + magnet special win size (tuned up per design feedback)
-		drillWinSheet: 1.0, // +25% over the default win size
-		generatorWinSheet: 1.0, // +25% over the default win size
-		// Win flipbooks include the electric aura around the symbol, so they render larger for
-		// the symbol core to match the static art's footprint.
-		boltWinSheet: 1.17, // +6% per design feedback
-		washerWinSheet: 1.1,
-		purpleScrewWinSheet: 1.1,
-		blueNutWinSheet: 1.2, // aura is feathered in the sheet; nut core sized to match static art
-	};
-	// WIN-state flipbooks (symbol + baked electric arcs), played while a cell presents a win.
-	const WIN_SHEETS: Record<string, string> = {
-		// Scatter frames are framed exactly like the static tile (Magnific video, black keyed),
-		// so they render at the standard win-sprite box with no size correction.
-		scatterWin: 'scatterWinAnim',
-		scatterWinMobile: 'scatterWinAnim',
-		squirrelWinTile: 'boltWinSheet',
-		squirrelWinTileMobile: 'boltWinSheet',
-		squirrelWinTileLand: 'boltWinSheet',
-		aWinTile: 'washerWinSheet',
-		aWinTileMobile: 'washerWinSheet',
-		aWinTileLand: 'washerWinSheet',
-		kWinTile: 'purpleScrewWinSheet',
-		kWinTileMobile: 'purpleScrewWinSheet',
-		kWinTileLand: 'purpleScrewWinSheet',
-		qWinTile: 'blueNutWinSheet',
-		qWinTileMobile: 'blueNutWinSheet',
-		qWinTileLand: 'blueNutWinSheet',
-		rabbitWinTile: 'generatorWinSheet',
-		rabbitWinTileMobile: 'generatorWinSheet',
-		rabbitWinTileLand: 'generatorWinSheet',
-		wolfWinTile: 'drillWinSheet',
-		wolfWinTileMobile: 'drillWinSheet',
-		wolfWinTileLand: 'drillWinSheet',
-		foxWinTile: 'magnetWinSheet',
-		foxWinTileMobile: 'magnetWinSheet',
-		foxWinTileLand: 'magnetWinSheet',
-		magnetWinTile: 'magnetWinSheet',
-		bearWinTile: 'cubeWinSheet',
-		bearWinTileMobile: 'cubeWinSheet',
-		bearWinTileLand: 'cubeWinSheet',
-	};
 	const keyPhase = (key: string) => {
 		let h = 0;
 		for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0;
@@ -412,24 +368,50 @@
 					{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState })}
 					{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
 					{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
-					{@const winSheet = cell.symbolState === 'win'
-						? WIN_SHEETS[symbolInfo.assetKey]
-						: undefined}
-
-					{#if winSheet}
-						{@const winBoost = winSheet === 'scatterWinAnim' ? 1.15 : 1}
-						<SpriteSheet
-							key={winSheet}
-							play
-							loop
-							animationSpeed={0.23}
+					{@const targetY = getStaticY(cell.position.row)}
+					{@const fallDist = targetY - y}
+					<!-- Motion-blur trail while a symbol RAINS IN (never on the exit — there the
+					     symbol leaves the board before its trail does, and the leftover sweeping
+					     line was the reported artifact). Drawn BEHIND the sprite and starting
+					     inside its footprint, so it reads as blur coming off the symbol, not a
+					     separate floating line; fades out just before landing. -->
+					{@const falling =
+						context.stateGame.boardSpinning && !cell.pulling && fallDist > SYMBOL_H * 0.5}
+					{@const trailFade = Math.min(1, (fallDist - SYMBOL_H * 0.5) / SYMBOL_H)}
+					{#if falling}
+						<Graphics
+							blendMode="add"
+							zIndex={Z.symbol}
+							draw={(g) => {
+								g.clear();
+								// Stacked segments, widest+brightest at the symbol, dying upward.
+								for (let i = 0; i < 4; i++) {
+									const f = 1 - i / 4;
+									const top = y - SYMBOL_H * (0.25 + 0.28 * (i + 1));
+									g.roundRect(
+										x - SYMBOL_W * 0.055 * f,
+										top,
+										SYMBOL_W * 0.11 * f,
+										SYMBOL_H * 0.34,
+										SYMBOL_W * 0.055 * f,
+									);
+									g.fill({ color: 0xbfe2ff, alpha: 0.16 * f * trailFade });
+								}
+							}}
+						/>
+					{/if}
+					{#if cell.symbolState === 'win'}
+						<!-- Winning cell: hi-res static win art with procedural pop/wobble/burst
+						     choreography — see <SymbolWinFx> for why the flipbooks are gone. -->
+						<SymbolWinFx
+							assetKey={symbolInfo.assetKey}
 							{x}
 							{y}
-							anchor={0.5}
-							width={width * winBoost}
-							height={height * winBoost}
+							{width}
+							{height}
 							alpha={cell.displayAlpha.current}
 							zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
+							phase={keyPhase(cell.key)}
 						/>
 					{:else}
 						<Sprite
@@ -493,20 +475,15 @@
 			{@const safeAssetKey = symbolInfo.assetKey ?? ''}
 			{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
 			{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
-			{@const winSheet = cell.symbolState === 'win' ? WIN_SHEETS[safeAssetKey] : undefined}
-			{@const winSheetSize = height * (WIN_SHEET_SIZE[winSheet ?? ''] ?? 0.8)}
-			{#if winSheet}
-				<SpriteSheet
-					key={winSheet}
-					play
-					loop
-					animationSpeed={0.23}
+			{#if cell.symbolState === 'win'}
+				<SymbolWinFx
+					assetKey={safeAssetKey}
 					{x}
 					{y}
-					anchor={0.5}
-					width={winSheetSize}
-					height={winSheetSize}
+					{width}
+					{height}
 					zIndex={Z.lockedSymbol}
+					phase={keyPhase(cell.key)}
 				/>
 			{:else}
 				<Sprite

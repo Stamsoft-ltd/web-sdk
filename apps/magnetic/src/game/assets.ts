@@ -143,23 +143,9 @@ const assets = {
 		type: 'sprite',
 		src: './assets/components/ui/press_play_logo.webp?v=20260709'
 	},
-	// 10-frame WIN-state flipbook for the green bolt (bolt + electric arcs) — played when the
-	// bolt is part of a winning cluster presentation.
-	boltWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/bolt_win_sheet.json?v=20260714' },
-	// 9-frame WIN-state flipbook for the gold washer (washer + electric aura), same treatment.
-	washerWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/washer_win_sheet.json?v=20260713b' },
-	// 10-frame WIN-state flipbook for the purple screw, same treatment.
-	purpleScrewWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/purple_screw_win_sheet.json?v=20260714' },
-	// 10-frame WIN-state flipbook for the blue nut, same treatment.
-	blueNutWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/low/blue_nut_win_sheet.json?v=20260713b' },
-	// 10-frame WIN-state flipbook for the electromagnetic generator premium.
-	generatorWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/premium/generator_win_sheet.json?v=20260713' },
-	// 10-frame WIN-state flipbook for the plasma drill premium.
-	drillWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/premium/drill_win_sheet.json?v=20260714' },
-	// 10-frame WIN-state flipbook for the horseshoe magnet (H1 premium AND the MAGNET special).
-	magnetWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/premium/magnet_win_sheet.json?v=20260714' },
-	// 10-frame WIN-state flipbook for the M core cube premium.
-	cubeWinSheet: { type: 'spriteSheet', src: './assets/components/symbols/magnetic/premium/cube_win_sheet.json?v=20260714' },
+	// Win-state flipbook sheets are gone: winning cells now play the procedural <SymbolWinFx>
+	// choreography over the hi-res static win art. The 9–10 frame sheets looped at ~14fps with no
+	// real object motion — the Stake review's "poor animations".
 	aTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260709' },
 	aWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_win.webp?v=20260709' },
 	aTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_mobile.webp?v=20260709' },
@@ -190,12 +176,6 @@ const assets = {
 	wild7xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x7_mobile.webp?v=20260709' },
 	wild9xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x9_mobile.webp?v=20260709' },
 	wild10xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x10_mobile.webp?v=20260709' },
-	// Animated scatter win state (Magnific video: electric arcs around the toolbox, black keyed
-	// to alpha with the static tile as opacity floor). Near-seamless 40-frame loop.
-	scatterWinAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/scatterAnim/scatter_win_anim.json'
-	},
 	// Radial electric burst played BEHIND every stacked (locked) symbol. 10 independent bursts
 	// rather than a rendered animation, so the cycle is a crackle, not motion — order carries no
 	// meaning. Regenerate with scripts/build-stack-zap-sheet.py <src-dir>.

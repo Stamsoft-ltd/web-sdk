@@ -41,6 +41,8 @@ export default {
 			},
 		],
 	},
-	setWin: { type: 'setWin', amount: 300, winLevel: 3 },
+	// Board-tier win (alias 'big' -> wild board) so the story exercises the full win-board
+	// presentation: entrance impact, frame FX, title glow, coins.
+	setWin: { type: 'setWin', amount: 6000, winLevel: 6 },
 	freeSpinEnd: { type: 'freeSpinEnd', amount: 2300, winLevel: 6 },
 };

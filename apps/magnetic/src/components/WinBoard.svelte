@@ -7,6 +7,7 @@
 		bookEventAmountToBetAmountMultiplier,
 	} from 'utils-shared/amount';
 
+	import SparkBurst from './SparkBurst.svelte';
 	import WinBoardFx from './WinBoardFx.svelte';
 	import { WIN_GRADIENT } from '../game/goldGradient';
 	import { WIN_BOARD_LOGO_PATHS } from '../game/winBoardLogoPaths';
@@ -136,10 +137,28 @@
 	let displayedKey = $state('');
 	const pop = new Tween(0, { duration: 340, easing: backOut });
 
+	// Seconds since the board popped in (-1 = idle). Drives the one-shot entrance impact — white
+	// flash + expanding shockwave ring — so the board ARRIVES instead of just appearing. The spark
+	// burst re-fires via the {#key displayedKey} remount.
+	let entranceT = $state(-1);
+
 	$effect(() => {
 		if (targetKey === displayedKey) return;
 		displayedKey = targetKey;
 		pop.set(1, { duration: 340, easing: backOut });
+		const t0 = performance.now();
+		let raf = 0;
+		const tick = (now: number) => {
+			const t = (now - t0) / 1000;
+			if (t < 0.8) {
+				entranceT = t;
+				raf = requestAnimationFrame(tick);
+			} else {
+				entranceT = -1;
+			}
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
 	});
 
 	let textSizes = $state<Sizes>({ width: 0, height: 0 });
@@ -191,14 +210,18 @@
 		{@const logoPts = (WIN_BOARD_LOGO_PATHS[displayedKey] ?? []).map((path) =>
 			path.map(([px, py]) => ({ x: px * boardW, y: py * boardH - boardH * fx.cy })),
 		)}
-		<!-- MAX WIN screen: extra light on the baked lettering — a warm glow over "MAX" and an
-		     electric one over "WIN" (regions measured from the art), each with glitter sparks. -->
+		<!-- Extra light on the baked lettering, with glitter sparks. MAX WIN screen: a warm glow
+		     over "MAX" and an electric one over "WIN". Tier boards: one breathing glow over the
+		     title block, tinted to the tier — all five arts put it in the same place (measured:
+		     cy −0.232, rx 0.313, ry 0.14 of the sprite box). -->
 		{@const textGlows = isMax
 			? [
 					{ x: 0.021 * boardW, y: -0.139 * boardH - boardH * fx.cy, rx: 0.235 * boardW, ry: 0.093 * boardH, color: 0xffb340 },
 					{ x: 0.015 * boardW, y: 0.056 * boardH - boardH * fx.cy, rx: 0.208 * boardW, ry: 0.112 * boardH, color: 0x4fd8ff },
 				]
-			: []}
+			: [
+					{ x: 0, y: -0.232 * boardH, rx: 0.313 * boardW, ry: 0.14 * boardH, color: glowColor },
+				]}
 		<!-- The two plasma faces crackle with a small contained electric glow (positions/radii
 		     measured from the art via its needle/star pivot points): the compass medallion at the
 		     plaque's bottom centre, and the blue sphere at the upper left. -->
@@ -221,6 +244,31 @@
 			{textGlows}
 			{plasma}
 		/>
+		<!-- Entrance impact: white flash + expanding shockwave ring + spark burst, fired once as
+		     the board pops in. -->
+		{#if entranceT >= 0}
+			{@const u = Math.min(1, entranceT / 0.55)}
+			{@const ringEase = 1 - (1 - u) ** 3}
+			<Graphics
+				blendMode="add"
+				draw={(g) => {
+					g.clear();
+					const r = boardW * (0.3 + 0.75 * ringEase);
+					const fade = (1 - u) ** 1.5;
+					g.circle(0, 0, r);
+					g.stroke({ width: boardW * 0.05 * (1 - u * 0.5), color: glowColor, alpha: 0.6 * fade });
+					g.circle(0, 0, r);
+					g.stroke({ width: boardW * 0.016, color: 0xffffff, alpha: 0.9 * fade });
+					if (u < 0.3) {
+						g.circle(0, 0, boardW * 0.55);
+						g.fill({ color: 0xffffff, alpha: 0.28 * (1 - u / 0.3) });
+					}
+				}}
+			/>
+		{/if}
+		{#key displayedKey}
+			<SparkBurst active radius={boardW * 0.6} count={26} color={glowColor} duration={0.8} />
+		{/key}
 		<!-- Win amount — IBM Plex Sans Condensed 700, gold gradient clipped to the glyphs with a 1px
 	     black outline (Figma spec); scales to fit the plaque. -->
 		<!-- The MAX art's plaque reads as centred on its compass medallion (its bottom-centre

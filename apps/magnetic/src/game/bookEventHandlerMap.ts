@@ -280,10 +280,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// whole-board flash on no-growth spins. Keep only the final cluster win-state pass.
 		if (stateGame.bonusMode === 'superspin' && !isSuperFinal) return;
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_cluster_win' });
-		// No per-symbol win pass. This used to await animateSymbols(), which scaled every winning
-		// cell to 1.12, swapped it to the looping win flipbook and held for ~1.2s before the total
-		// win could show. The win screen now comes up immediately instead.
+		// Per-symbol celebration runs CONCURRENTLY with the win amount — fired, not awaited, so
+		// the win screen still comes up immediately. (The old AWAITED flipbook pass held the total
+		// back ~1.2s, which is why it was removed; the procedural <SymbolWinFx> choreography this
+		// triggers persists until the next reveal's clearWinCellStates.)
 		eventEmitter.broadcast({ type: 'boardShow' });
+		void stateGameDerived.animateWinningPositions(
+			bookEvent.wins.flatMap((win) => win.positions),
+		);
 	},
 	setTotalWin: async (bookEvent: BookEventOfType<'setTotalWin'>) => {
 		stateBet.winBookEventAmount = bookEvent.amount;

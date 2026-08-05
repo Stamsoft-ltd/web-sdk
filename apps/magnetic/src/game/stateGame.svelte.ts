@@ -1,4 +1,4 @@
-import { backOut, cubicIn, cubicOut, linear } from 'svelte/easing';
+import { backOut, cubicIn, cubicOut, quadIn } from 'svelte/easing';
 
 import { stateBet } from 'state-shared';
 import { createReelForSpinning } from 'utils-slots';
@@ -82,29 +82,33 @@ const getSkipMinSpinMs = () => {
 	return SKIP_MIN_SPIN_MS_NORMAL;
 };
 
-// Paid/free-spin reveal: each complete column lands before the next one starts.
+// Paid/free-spin reveal: a loose gravity RAIN, not rigid column strips (retimed against a
+// reference capture of the target behaviour — 60fps frame strips, scratchpad/refvid). Every
+// symbol falls on its own clock: bottom rows first so each column piles up from the floor
+// (~rowStaggerMs cadence per column), a small random jitter per symbol so nothing lands in
+// lockstep, and an ACCELERATING fall (quadIn) instead of the old constant-speed slam. The
+// per-cell squash + bounce on landing stays — the reference has the same settle.
 const DROP_START_ROWS = BOARD_DIMENSIONS.y + 3;
-const DROP_DURATION_NORMAL_MS = 220;
-const DROP_DURATION_FAST_MS = 90;
 const DROP_THUMP_MS = 45;
 const DROP_BOUNCE_UP_MS = 35;
 const DROP_BOUNCE_SETTLE_MS = 40;
 const DROP_BOUNCE_HEIGHT = SYMBOL_H * 0.08;
-const DROP_REEL_DELAY_MS = 30;
 const DROP_EXIT_ROWS = BOARD_DIMENSIONS.y + 1;
 
 const DROP_MOTION_NORMAL = {
 	startRows: DROP_START_ROWS,
-	durationMs: DROP_DURATION_NORMAL_MS,
-	reelDelayMs: DROP_REEL_DELAY_MS,
-	rowDelayMs: 0,
+	durationMs: 240,
+	reelDelayMs: 12,
+	rowStaggerMs: 62,
+	jitterMs: 70,
 } as const;
 
 const DROP_MOTION_FAST = {
 	startRows: DROP_START_ROWS,
-	durationMs: DROP_DURATION_FAST_MS,
-	reelDelayMs: DROP_REEL_DELAY_MS,
-	rowDelayMs: 0,
+	durationMs: 90,
+	reelDelayMs: 8,
+	rowStaggerMs: 14,
+	jitterMs: 24,
 } as const;
 
 type ActiveDrop = {
@@ -165,8 +169,9 @@ const shouldKeepWildInCluster = (cell: RawSymbol) =>
 // but the next applySeriesDecorations — and there is one on essentially every clusterSeriesUpdate —
 // recomputed it straight back to 'locked'. In a bonus the wild and its whole chain ARE the locked
 // cluster, so that is exactly the run of symbols that stayed frozen on its static tile while every
-// unlocked winning symbol animated. Board.svelte already has the branch to draw a win flipbook for
-// a locked cell (`winSheet` inside the lockedCells loop); it was simply unreachable.
+// unlocked winning symbol animated. Board.svelte already has the branch to draw the win
+// presentation for a locked cell (<SymbolWinFx> inside the lockedCells loop); it was simply
+// unreachable.
 const applyCellVisualState = (cell: BoardCell) => {
 	cell.symbolState = cell.highlighted
 		? 'win'
@@ -979,11 +984,16 @@ const animateBoardExit = async () => {
 	const exitingCells = stateGame.board.flat().filter((cell) => !cell.locked);
 	await Promise.all(
 		exitingCells.map(async (cell) => {
-			const delayMs = cell.position.reel * motion.reelDelayMs;
+			// Loose free-fall out the bottom: small per-symbol jitter instead of a rigid
+			// left-to-right sweep, and gravity acceleration. Lower cells clear the frame
+			// first on their own — every cell travels the same rows, so the bottom row
+			// crosses the edge earliest.
+			const delayMs =
+				cell.position.reel * motion.reelDelayMs + Math.random() * motion.jitterMs * 0.6;
 			if (delayMs > 0) await waitForTimeout(delayMs);
 			await cell.displayY.set(getTargetY(cell.position.row) + DROP_EXIT_ROWS * SYMBOL_H, {
 				duration: motion.durationMs,
-				easing: linear,
+				easing: quadIn,
 			});
 		}),
 	);
@@ -1030,7 +1040,14 @@ const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
 			fallingCells.push({
 				cell,
 				raw,
-				delayMs: ri * motion.reelDelayMs + rowi * motion.rowDelayMs,
+				// Bottom rows first: each column piles up from the floor. A falling cell's path
+				// never goes below its own target row, so a later (higher) symbol cannot pass
+				// through an already-landed one. The random jitter breaks the grid lockstep —
+				// the rain look of the reference.
+				delayMs:
+					ri * motion.reelDelayMs +
+					(BOARD_DIMENSIONS.y - 1 - rowi) * motion.rowStaggerMs +
+					Math.random() * motion.jitterMs,
 			});
 		}
 	}
@@ -1047,8 +1064,9 @@ const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
 			}
 			const tweenPromise = cell.displayY.set(getTargetY(cell.position.row), {
 				duration: motion.durationMs,
-				// Hard constant-speed slam; the scale squash below supplies the impact.
-				easing: linear,
+				// Gravity: slow off the ledge, fast into the floor. The scale squash below
+				// still supplies the impact.
+				easing: quadIn,
 			});
 			// Tween.set({ duration: 0 }) aborts the active Svelte tween without resolving its
 			// promise. Race it against the skip signal so repeated stop presses cannot strand
@@ -1216,7 +1234,9 @@ const animateWinningPositions = async (positions: Position[]) => {
 			if (!keys.has(posKey(cell.position))) continue;
 			cell.highlighted = true;
 			cell.symbolState = 'win';
-			cell.displayScale.set(1.12, { duration: 0 });
+			// Punchier pop than the old 1.12 — <SymbolWinFx>'s burst choreography carries it, and
+			// the settle below still brings it home with the backOut overshoot.
+			cell.displayScale.set(1.22, { duration: 0 });
 		}
 	}
 	await waitForTimeout(stateBet.isTurbo || stateBet.isSuperTurbo ? 120 : 871);
