@@ -421,7 +421,17 @@
 		     up to ~9× the pixels), disable MSAA (expensive on Safari; the art is sprite-based so
 		     edges stay smooth via texture filtering), and force the stable WebGL renderer instead of
 		     Pixi's less-mature WebGPU path (buggy on Safari 18). -->
-		<App preloadWebFont={false} maxResolution={2} antialias={false} rendererPreference="webgl">
+		<!-- textureGCActive false: the whole art set is prewarmed onto the GPU at load (assets.ts loads
+		     everything the base game draws up front); pixi's texture GC would evict any sheet idle
+		     ~60s and re-upload it mid-spin on its next win — the exact stall the prewarm exists to
+		     prevent. -->
+		<App
+			preloadWebFont={false}
+			maxResolution={2}
+			antialias={false}
+			rendererPreference="webgl"
+			textureGCActive={false}
+		>
 			<SceneAnimationDriver />
 			<SequenceHoldController />
 			<EnableSound />

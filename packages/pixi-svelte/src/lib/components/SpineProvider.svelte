@@ -66,7 +66,6 @@
 {/if}
 
 {#if !spineData || debug}
-	{console.log('loadedAssets', $state.snapshot(context.stateApp).loadedAssets)}
 {/if}
 
 {#key spineData}
