@@ -96,8 +96,12 @@ function createSound<TSoundName extends string>() {
 	};
 
 	const enable = () => {
-		Howler.volume(1);
-		Howler.mute(false);
+		// Restore the user's master volume/mute — NOT a hardcoded unmute. Otherwise returning to the
+		// tab (visibilitychange) would re-enable audio even when the player had muted it, leaving the
+		// mute button and the actual audio out of sync.
+		const master = stateSoundDerived.volumeMaster();
+		Howler.volume(master);
+		Howler.mute(master === 0);
 	};
 
 	const enableEffect = () => {
@@ -112,20 +116,23 @@ function createSound<TSoundName extends string>() {
 
 
 	const volumeMusicEffect = () => {
+		const vol = stateSoundDerived.volumeMusic(); // read outside guard so $effect always tracks it
 		if (players) {
-			players.music.volume(stateSoundDerived.volumeMusic());
+			players.music.volume(vol);
 		}
 	};
 
 	const volumeLoopEffect = () => {
+		const vol = stateSoundDerived.volumeSoundEffect(); // read outside guard so $effect always tracks it
 		if (players) {
-			players.loop.volume(stateSoundDerived.volumeSoundEffect());
+			players.loop.volume(vol);
 		}
 	};
 
 	const volumeOnceEffect = () => {
+		const vol = stateSoundDerived.volumeSoundEffect(); // read outside guard so $effect always tracks it
 		if (players) {
-			players.once.volume(stateSoundDerived.volumeSoundEffect());
+			players.once.volume(vol);
 		}
 	};
 

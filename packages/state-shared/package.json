@@ -9,17 +9,18 @@
 	},
 	"type": "module",
 	"devDependencies": {
-		"eslint": "9.21.0",
-		"eslint-config-custom": "workspace:*",
+		"config-lingui": "workspace:*",
+		"config-svelte": "workspace:*",
 		"config-ts": "workspace:*",
 		"config-vite": "workspace:*",
-		"config-svelte": "workspace:*",
-		"config-lingui": "workspace:*"
+		"eslint": "9.21.0",
+		"eslint-config-custom": "workspace:*"
 	},
 	"dependencies": {
-		"svelte": "5.20.5",
+		"@lingui/core": "5.2.0",
+		"@lingui/message-utils": "5.2.0",
 		"@sveltejs/kit": "2.17.3",
-		"utils-bet": "workspace:*",
-		"@lingui/core": "5.2.0"
+		"svelte": "5.20.5",
+		"utils-bet": "workspace:*"
 	}
 }

@@ -1,12 +1,7 @@
-import { stateI18n } from 'state-shared';
-
 import { BOOK_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import { stateBet } from 'state-shared';
 
-const NO_LOCALISATION_CURRENCY_MAP: Record<string, string> = {
-	XGC: 'GC',
-	XSC: 'SC',
-};
+import { formatCurrencyAmount, metaFor } from './currency';
 
 // bookEventAmount: is the amount or win numbers in the events of books, e.g. the amount in setTotalWin bookEvent
 // {
@@ -29,19 +24,17 @@ export const bookEventAmountToNormalisedAmount = (bookEventAmount: number) => {
 
 export const numberToFloat = (value: number) => Number.parseFloat(`${value}`);
 
-export const numberToCurrencyString = (value: number) => {
-	if (stateBet.currency in NO_LOCALISATION_CURRENCY_MAP) {
-		return `${NO_LOCALISATION_CURRENCY_MAP[stateBet.currency]} ${numberToFloat(value).toFixed(2)}`;
-	}
+// Sub-cent payouts: a genuine non-zero win must never render as a flat "0.00" (Stake
+// pre-submission requirement). Re-exported from the currency module so the win readout and the
+// HUD balance/bet agree on precision.
+export { fractionDigitsForAmount } from './currency';
 
-	return stateI18n.i18n.number(value, {
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2,
-		style: 'currency',
-		currency: stateBet.currency,
-		// numberingSystem: 'latn',
-	});
-};
+// Formats via the RGS-documented currency table rather than Intl's own currency rendering, so a
+// win shows the same symbol, decimal count and symbol placement as the balance. Previously only
+// XGC/XSC were special-cased here and every other code went through Intl, which disagreed with the
+// spec for ~20 currencies (e.g. "PLN 10.00" instead of "10.00 zł") and omitted XEC entirely.
+export const numberToCurrencyString = (value: number) =>
+	formatCurrencyAmount(stateBet.currency, value, metaFor(stateBet.currency).decimals);
 
 export const bookEventAmountToCurrencyString = (bookEventAmount: number) => {
 	const normalisedAmount = bookEventAmountToNormalisedAmount(bookEventAmount);

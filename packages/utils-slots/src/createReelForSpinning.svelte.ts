@@ -59,6 +59,8 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 
 	// interruptible
 	const interruptible = createInterruptible();
+	// Separate escape hatch for noStop reels (anticipated spins) — resolved by forceStop().
+	let forceStopResolve: (() => void) | null = null;
 
 	// reactive states
 	const reelY = new Tween(defaultY);
@@ -231,12 +233,29 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 
 		// Q: When to skip the slideDown?
 		// A: When it's preSpinning(isSpinning) and stop button is clicked(isTurbo) and is noStop is false
-		if (noStop) {
+		let wasForced = false;
+		if (stateBet.isSuperTurbo) {
 			await slideDown();
-		} else if (stateBet.isTurbo && isSpinning) {
+		} else if (noStop) {
+			// noStop reels are normally un-interruptible but can be force-stopped via forceStop().
+			const forcePromise = new Promise<void>((resolve) => {
+				forceStopResolve = () => { wasForced = true; resolve(); };
+			});
+			await Promise.race([slideDown(), forcePromise]);
+			forceStopResolve = null;
+		} else if ((stateBet.isTurbo || stateBet.isSuperTurbo) && isSpinning) {
 			// skip
 		} else {
 			await interruptible.add(slideDown);
+		}
+
+		if (wasForced) {
+			// Snapped by forceStop — settle symbols immediately without bounce.
+			reelState.symbols = [...targetSymbols];
+			placeY(defaultY);
+			reelState.motion = 'stopped';
+			updateAllReelSymbolState('land');
+			return;
 		}
 
 		reelState.motion = 'bouncing';
@@ -258,37 +277,62 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 			},
 		});
 
-	const normalSpin = () =>
-		generalSpinWith({
-			slideDown: async () => {
-				const bounceSize = reelOptions.symbolHeight * reelState.spinOptions().reelBounceSizeMulti;
+	// A linear leg down to the padding position, then an eased leg into the bounce point.
+	//
+	// `slideY` derives duration from speed (`duration = distance / speed`), so for an easing `f` the
+	// leg's *initial* velocity is `f'(0) × speed`, not `speed`. Feeding it a hand-picked
+	// `reelSpinSpeedBeforeBounce` therefore steps the velocity by `f'(0) × reelSpinSpeedBeforeBounce
+	// / reelSpinSpeed` at the junction — and since the incoming speed varies per options object
+	// (default / anticipated / fast / turbo, all of which can reach this leg), one constant cannot
+	// match them all.
+	//
+	// `reelStopEasingPower` (p) fixes that by deriving the leg instead: `f(t) = 1 − (1 − t)^p` has
+	// `f'(0) = p`, so passing `speed = spinSpeed / p` yields `duration = p × distance / spinSpeed`
+	// and an initial velocity of exactly `spinSpeed` — whatever speed the active path supplied.
+	// Duration and curve are one knob, not two: p sets the junction deceleration
+	// (`spinSpeed² × (p − 1) / (p × distance)`, rising with p) and the leg length together. Note that
+	// any velocity-continuous decelerating leg is necessarily longer than `distance / spinSpeed`,
+	// because a curve that decelerates from `f'(0)` to 0 averages less than `f'(0)`.
+	//
+	// The whole stop config is read once, before leg 1, so the speed carried into the junction and
+	// the strategy used to match it can never come from different options objects (turbo can be
+	// toggled mid-spin).
+	const slideDownToBounce = async () => {
+		const spinOptions = reelState.spinOptions();
+		const spinSpeed = spinOptions.reelSpinSpeed;
+		const bounceSize = reelOptions.symbolHeight * spinOptions.reelBounceSizeMulti;
 
-				await slideY({
-					reelY: defaultY * basePaddingSize(),
-					speed: reelState.spinOptions().reelSpinSpeed,
-				});
-				await slideY({
-					reelY: defaultY + bounceSize,
-					speed: reelState.spinOptions().reelSpinSpeedBeforeBounce,
-				});
-			},
+		await slideY({
+			reelY: defaultY * basePaddingSize(),
+			speed: spinSpeed,
 		});
 
-	const anticipatedSpin = () =>
-		generalSpinWith({
-			slideDown: async () => {
-				const bounceSize = reelOptions.symbolHeight * reelState.spinOptions().reelBounceSizeMulti;
+		const bounceY = defaultY + bounceSize;
+		const configuredPower = spinOptions.reelStopEasingPower;
 
-				await slideY({
-					reelY: defaultY * basePaddingSize(),
-					speed: reelState.spinOptions().reelSpinSpeed,
-				});
-				await slideY({
-					reelY: defaultY + bounceSize,
-					speed: reelState.spinOptions().reelSpinSpeedBeforeBounce,
-				});
-			},
+		if (configuredPower === undefined) {
+			await slideY({
+				reelY: bounceY,
+				speed: spinOptions.reelSpinSpeedBeforeBounce,
+				easing: spinOptions.reelStopEasing,
+			});
+			return;
+		}
+
+		// p < 1 would accelerate into the stop and a non-finite p would stall the reel on an infinite
+		// duration. Both are config errors; degrade to p = 1 — linear, still velocity-continuous.
+		const power = Number.isFinite(configuredPower) && configuredPower >= 1 ? configuredPower : 1;
+
+		await slideY({
+			reelY: bounceY,
+			speed: spinSpeed / power,
+			easing: (t: number) => 1 - (1 - t) ** power,
 		});
+	};
+
+	const normalSpin = () => generalSpinWith({ slideDown: slideDownToBounce });
+
+	const anticipatedSpin = () => generalSpinWith({ slideDown: slideDownToBounce });
 
 	const SPIN_MAP = {
 		fast: fastSpin,
@@ -351,6 +395,16 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 
 	const stop = () => {
 		interruptible.interrupt();
+		// Snap to defaultY during pre-spin so readyToSpin fires immediately instead of
+		// waiting for the current slideY loop to complete naturally.
+		if (isPreSpinning) placeY(defaultY);
+	};
+
+	// Interrupts even noStop (anticipated) reels. Use when the player explicitly skips.
+	const forceStop = () => {
+		interruptible.interrupt();
+		forceStopResolve?.();
+		if (isPreSpinning) placeY(defaultY);
 	};
 
 	const readyToSpinEffect = () => {
@@ -374,6 +428,7 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 		prepareToSpin,
 		spin,
 		stop,
+		forceStop,
 		setSymbolsWithRawSymbols,
 		readyToSpinEffect,
 	};

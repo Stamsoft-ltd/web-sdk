@@ -36,7 +36,7 @@ export function createEnhanceBoardSpin<TReel extends Reel<any, any>>({
 
 		stateSlots.isPreSpinning = false;
 
-		const globalSpinType = stateBet.isTurbo ? 'fast' : 'normal';
+		const globalSpinType = stateBet.isTurbo || stateBet.isSuperTurbo ? 'fast' : 'normal';
 		const globalHasAnticipation = revealEvent.anticipation.some(Boolean);
 		const firstAnticipatedReelIndex = revealEvent.anticipation.findIndex(Boolean);
 		const getSpinType = ({
@@ -46,6 +46,7 @@ export function createEnhanceBoardSpin<TReel extends Reel<any, any>>({
 			noStop: boolean;
 			isAnticipated: boolean;
 		}) => {
+			if (stateBet.isSuperTurbo) return globalSpinType;
 			if (isAnticipated) return 'anticipated';
 			if (noStop) return 'normal';
 			return globalSpinType;
@@ -72,7 +73,7 @@ export function createEnhanceBoardSpin<TReel extends Reel<any, any>>({
 					reel.onReelStopping();
 					const nextReelIndex = reelIndex + 1;
 					const isNextReelAnticipated = (revealEvent.anticipation?.[nextReelIndex] || 0) > 0;
-					if (isNextReelAnticipated) board[nextReelIndex].reelState.anticipating = true;
+					if (isNextReelAnticipated && !stateBet.isSuperTurbo) board[nextReelIndex].reelState.anticipating = true;
 				},
 			});
 

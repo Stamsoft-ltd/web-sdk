@@ -82,8 +82,14 @@ export const preloadFont = () =>
 
 		try {
 			const loaderModule = await loadWebFontLoader();
-			const WebFont =
-				loaderModule && 'default' in loaderModule ? loaderModule.default : loaderModule;
+			// The interop branch is a runtime necessity — webfontloader is CJS, and bundlers hand it
+			// back either bare or wrapped in `{ default }`. It is invisible to the types, though:
+			// `@types/webfontloader` uses `export =`, so the namespace has no `default`, the `in`
+			// check narrows that arm to `unknown`, and the union collapses to `{}` — losing `load`.
+			// The annotation states the shape the branch actually produces; nothing here changes.
+			const WebFont = (
+				loaderModule && 'default' in loaderModule ? loaderModule.default : loaderModule
+			) as typeof import('webfontloader') | null;
 
 			if (!WebFont) {
 				resolve();
@@ -117,19 +123,46 @@ export function propsSyncEffect<TProps extends object, TTarget>({
 	target?: TTarget | (() => TTarget);
 	ignore?: (keyof TProps)[];
 }) {
-	$effect(() => {
-		// The whole thing is wrapped inside an $effect
-		// and because of ”props[key]“，it will react with every single props updated.
-		let targetInstance = target instanceof Function ? target() : target;
-		if (targetInstance) {
-			(Object.keys(props) as (keyof TProps)[])
-				.filter((key) => (ignore ? !ignore.includes(key) : true))
-				.forEach((key) => {
-					if (props[key] !== undefined) {
-						// @ts-ignore
-						targetInstance[key] = props[key];
-					}
-				});
-		}
-	});
+	// One $effect PER PROP, not one over all of them. The single all-props effect subscribed to
+	// every prop, so a sprite whose `y` tweens 60×/s re-assigned EVERY prop each frame and
+	// allocated two arrays doing it — across a board of ~40 sprites that is thousands of
+	// allocations and tens of thousands of redundant pixi setter calls per second, which Safari's
+	// GC turns into repeated 100-250ms frame stalls. Per-prop effects re-run only what changed and
+	// allocate nothing per frame.
+	//
+	// Keys are captured ONCE at mount: call sites pass static template attributes, so the key set
+	// never grows. A prop absent on first render would never sync — pass it explicitly (even as
+	// undefined) if it can appear later.
+	const resolveTarget = () => (target instanceof Function ? target() : target);
+	// Pixi's width/height setters store scale RELATIVE to the current texture, so they must be
+	// re-applied when the texture swaps — the three share one effect to keep that ordering.
+	const SIZE_KEYS = ['texture', 'width', 'height'] as (keyof TProps)[];
+	const keys = (Object.keys(props) as (keyof TProps)[]).filter((key) => !ignore?.includes(key));
+	const sizeKeys = SIZE_KEYS.filter((key) => keys.includes(key));
+
+	for (const key of keys) {
+		if (sizeKeys.includes(key)) continue;
+		$effect(() => {
+			const targetInstance = resolveTarget();
+			const value = props[key];
+			if (targetInstance && value !== undefined) {
+				// @ts-ignore
+				targetInstance[key] = value;
+			}
+		});
+	}
+
+	if (sizeKeys.length > 0) {
+		$effect(() => {
+			const targetInstance = resolveTarget();
+			if (!targetInstance) return;
+			for (const key of sizeKeys) {
+				const value = props[key];
+				if (value !== undefined) {
+					// @ts-ignore
+					targetInstance[key] = value;
+				}
+			}
+		});
+	}
 }

@@ -14,6 +14,13 @@ export function createEnhanceBoard() {
 				reel.setSymbolsWithRawSymbols(rawSymbols);
 			});
 		const stop = () => board.forEach((reel) => reel.stop());
+		// Only spinning reels expose forceStop; cascading reels fall back to their plain stop.
+		const forceStop = () =>
+			board.forEach((reel) => {
+				const forceStoppable = reel as { forceStop?: () => void };
+				if (forceStoppable.forceStop) forceStoppable.forceStop();
+				else reel.stop();
+			});
 		const readyToSpinEffect = () => {
 			board.forEach((reel) => reel.readyToSpinEffect());
 		};
@@ -24,6 +31,7 @@ export function createEnhanceBoard() {
 			spin,
 			settle,
 			stop,
+			forceStop,
 			readyToSpinEffect,
 		};
 	}

@@ -66,6 +66,16 @@
 				stateConfig.betMenuOptions = stateConfig.betAmountOptions.filter((_, index) =>
 					MOST_USED_BET_INDEXES.includes(index),
 				);
+				const defaultBetAmount =
+					Number(authenticateData.config?.defaultBetLevel || 0) / API_AMOUNT_MULTIPLIER;
+				if (defaultBetAmount > 0 && stateConfig.betAmountOptions.includes(defaultBetAmount)) {
+					stateBet.betAmount = defaultBetAmount;
+					stateBet.wageredBetAmount = defaultBetAmount;
+				} else if (!stateConfig.betAmountOptions.includes(stateBet.betAmount)) {
+					const fallbackBetAmount = stateConfig.betAmountOptions[0] ?? stateBet.betAmount;
+					stateBet.betAmount = fallbackBetAmount;
+					stateBet.wageredBetAmount = fallbackBetAmount;
+				}
 			}
 
 			// round
@@ -107,6 +117,7 @@
 	};
 
 	const handleReplay = async () => {
+		if (stateUrlDerived.currency()) stateBet.currency = stateUrlDerived.currency();
 		stateBet.betAmount = (stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER) || 0;
 		stateBet.wageredBetAmount = (stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER) || 0;
 		stateBet.activeBetModeKey = stateUrlDerived.mode();
@@ -117,9 +128,12 @@
 			mode: stateUrlDerived.mode(),
 			version: stateUrlDerived.version(),
 			event: stateUrlDerived.event(),
+			language: stateUrlDerived.lang(),
 		});
 
 		if(data) {
+			const replayCurrency = data?.balance?.currency || data?.currency;
+			if (replayCurrency) stateBet.currency = replayCurrency;
 			// @ts-ignore
 			stateBet.betToResume = {
 				...data,

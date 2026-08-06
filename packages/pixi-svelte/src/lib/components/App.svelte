@@ -7,7 +7,14 @@
 	import InitialiseParent from './InitialiseParent.svelte';
 	import AssetsLoader from './AssetsLoader.svelte';
 
-	type Props = { children: Snippet };
+	type Props = {
+		children: Snippet;
+		preloadWebFont?: boolean;
+		// Renderer tuning forwarded to InitialiseApplication (all optional, default = historical).
+		maxResolution?: number;
+		antialias?: boolean;
+		rendererPreference?: 'webgpu' | 'webgl';
+	};
 
 	const props: Props = $props();
 	const context = getContextApp();
@@ -16,10 +23,17 @@
 	onDestroy(() => context.stateApp.reset());
 </script>
 
-<InitialiseApplication>
-	<InitialiseParent>
-		<AssetsLoader>
-			{@render props.children()}
-		</AssetsLoader>
-	</InitialiseParent>
+<InitialiseApplication
+	preloadWebFont={props.preloadWebFont}
+	maxResolution={props.maxResolution}
+	antialias={props.antialias}
+	rendererPreference={props.rendererPreference}
+>
+	{#if context.stateApp.pixiApplication}
+		<InitialiseParent>
+			<AssetsLoader>
+				{@render props.children()}
+			</AssetsLoader>
+		</InitialiseParent>
+	{/if}
 </InitialiseApplication>
