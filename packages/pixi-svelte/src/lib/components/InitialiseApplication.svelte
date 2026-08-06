@@ -6,6 +6,14 @@
 	import { getContextApp } from '../context.svelte';
 	import { preloadFont } from '../utils.svelte';
 
+	// pixi.js 8.8.x exports PrepareSystem but never runs its extension registration (lib/prepare/
+	// init.mjs does `extensions.add(PrepareSystem)` yet nothing imports it), so `renderer.prepare`
+	// is undefined on every renderer and AssetsLoader's prewarm aborts silently — every texture
+	// then uploads to the GPU on its first DRAW instead of at load time, a mid-spin stall exactly
+	// when a new animation appears. Register it before any Application.init(). A duplicate add is
+	// harmless: system extensions land in a name-keyed record, so re-adding overwrites in place.
+	PIXI.extensions.add(PIXI.PrepareSystem);
+
 	type Props = {
 		children: Snippet;
 		// Loads the shared Typekit kit before the app initialises. Defaults ON for backwards
@@ -22,6 +30,10 @@
 		maxResolution?: number;
 		antialias?: boolean;
 		rendererPreference?: 'webgpu' | 'webgl';
+		//  - textureGCActive: pixi's texture GC unloads any GPU texture idle for ~60s, so a
+		//    prewarmed sheet re-uploads (and stalls) on its next use. Games that prewarm their
+		//    whole art set at load should pass false to keep it resident.
+		textureGCActive?: boolean;
 	};
 
 	const props: Props = $props();
@@ -49,6 +61,7 @@
 			powerPreference: 'high-performance',
 			resolution: Math.min(devicePixelRatio.current, props.maxResolution ?? Infinity),
 			resizeTo: wrap,
+			textureGCActive: props.textureGCActive ?? true,
 		});
 
 		app.stage.sortableChildren = true;

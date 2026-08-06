@@ -18,7 +18,6 @@
 
 {#if !isValid}
 	{console.error(`SpriteSheet: key "${key}" is not found in loadedAssets`)}
-
 {/if}
 
 <AnimatedSprite {...animateSpriteProps} textures={isValid ? textures : []} />

@@ -47,5 +47,4 @@
 
 {#if texture === PIXI.Texture.EMPTY}
 	{console.error(`Particle: key "${props.key}" is not found in the loadedAssets`)}
-
 {/if}
