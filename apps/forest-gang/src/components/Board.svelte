@@ -38,6 +38,21 @@
 	const boardAnimate = $derived(!context.stateGame.buyModalOpen);
 	let show = $state(true);
 
+	// A spinning reel holds targetSymbols + padding + prevSymbols — ~20-26 symbols normally and up to
+	// ~70 on an anticipated spin, against 6 on a stopped reel. Drawing all of them costs nothing on
+	// the GPU (the board mask clips them), but every symbol's y is `reelY.current + offset` off ONE
+	// tween per reel, so a single tween tick marks ~130 subtrees dirty across the board and Svelte
+	// flushes them in one synchronous microtask. On Safari/JSC that flush is the spin stutter:
+	// 130ms+ animation frames, one per spin. Gate the each-block on the rows that can actually be
+	// seen and the flush drops to ~40 subtrees.
+	// See docs/safari-spin-stutter.md.
+	//
+	// Rows 0..y-1 are the grid. A symbol at row -1 or row `y` is still HALF visible (its centre sits
+	// one row out but the near edge lands inside the mask), so the band has to include them; the
+	// extra row on each side is slack, fully hidden, giving a symbol a full row of travel to be
+	// created before it can be seen. Without it a long frame would pop one in at the edge.
+	const isRowVisible = (row: number) => row >= -2 && row <= BOARD_DIMENSIONS.y + 1;
+
 	// Mobile-landscape uses dedicated framed symbol art; desktop/portrait keep the standard maps.
 	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
@@ -441,7 +456,7 @@
 				<!-- Row this symbol currently occupies. Buffer symbols sit outside 0..rows-1 and so are
 				     never "covered"; the board mask clips them as before. -->
 				{@const row = Math.round(y / SYMBOL_H - 0.5)}
-				{#if !covered || row < covered[0] || row >= covered[1]}
+				{#if isRowVisible(row) && (!covered || row < covered[0] || row >= covered[1])}
 				<!-- Once the expanded column's reveal has played out the overlay hands the reel back to
 				     the board: every row draws the EXPANDED symbol in its win state (normal frames and
 				     win animations) instead of the reel's own landed symbols. Without the swap the reel
