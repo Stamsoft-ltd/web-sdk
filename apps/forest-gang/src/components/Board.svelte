@@ -489,10 +489,11 @@
 				{#if symName === 'SCATTER' && scatterFrames.length > 0}
 					<!-- Scatter shimmers with its animated emblem clip and pulses continuously while it
 					     wins. Drawn a bit smaller than a cell. animationSpeed 0.14 (~8fps) stepped
-					     visibly and read as "laggy". 1/3 = exactly 3 ticks per 60 Hz frame (20 fps);
-					     the old 0.36 didn't divide the tick and alternated 50/50/33 ms frame holds
-					     (the R4 judder). The "30fps idle render cap" this comment used to cite is long
-					     gone — the ticker runs one cadence at ~60fps, see SceneAnimationDriver. -->
+					     visibly and read as "laggy". The sheet is RIFE-interpolated to 60 fps
+					     (rife_interpolate_sheets.py), so speed 1 = one frame per 60 Hz tick — which
+					     supersedes the earlier 1/3 (that divided the tick against the old 20 fps
+					     sheets; the interpolated ones divide it at speed 1). -->
+
 					<AnimatedSprite
 						textures={scatterFrames}
 						x={getX(reelIndex)}
@@ -500,7 +501,7 @@
 						anchor={0.5}
 						width={symbolW * s * SCATTER_SIZE * specialPop}
 						height={symbolH * s * SCATTER_SIZE * specialPop * (SYMBOL_W / SYMBOL_H) * SCATTER_ASPECT}
-						animationSpeed={1 / 3}
+						animationSpeed={1}
 						loop={true}
 						play={boardAnimate}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
@@ -509,9 +510,8 @@
 					<!-- Animated WILD: plays its loop briskly on every spin; pulses continuously on a win.
 					     Multiplied by symScale (s) like the scatter so per-layout sizing applies —
 					     desktop s=1.0 keeps the tuned size; mobile draws it larger (design ask).
-					     1/3 (not the old 0.4): 0.4 = 2.5 ticks/frame alternated 50/33 ms holds — the
-					     worst R4 wobble in the game on one of its two most-watched sprites. 20 fps
-					     even, and matches the scatter. -->
+					     RIFE-interpolated to 60 fps like the scatter; speed 1 = one frame per tick
+					     (the old 0.4 = 2.5 ticks/frame was the worst R4 wobble in the game). -->
 					<AnimatedSprite
 						textures={wildFrames}
 						x={getX(reelIndex)}
@@ -519,7 +519,7 @@
 						anchor={0.5}
 						height={symbolH * s * WILD_SIZE * 0.9 * specialPop}
 						width={symbolW * s * WILD_SIZE * specialPop * (SYMBOL_H / SYMBOL_W) * WILD_ASPECT}
-						animationSpeed={1 / 3}
+						animationSpeed={1}
 						loop={true}
 						play={boardAnimate}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
@@ -564,7 +564,7 @@
 						anchor={{ x: 0.5, y: 1 }}
 						width={symbolW * s * winFit}
 						height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[symName] ?? 1)}
-						animationSpeed={1 / 3}
+						animationSpeed={1}
 						loop={false}
 						play={boardAnimate}
 					/>
@@ -635,11 +635,11 @@
 							/>
 							<!-- Portrait: lift the bust ~2px so its bottom clears the frame's bottom rail
 							     (the ANIMAL_H_STRETCH pushed it down onto the wood). -->
-							<!-- 0.25 = exactly 4 ticks per 60 Hz frame (15 fps). The old 0.28 + per-cell
-							     jitter didn't divide the tick, so every idle alternated 3- and 4-tick
-							     holds (R4 judder). The per-cell speed jitter is gone WITH it — any offset
-							     off a divisor brings the wobble back; startFrame below already staggers
-							     the phases so the board doesn't blink in lockstep. -->
+							<!-- 0.5 = exactly 2 ticks per 60 Hz frame (30 fps). Idle sheets are
+							     RIFE-interpolated 2x (rife_interpolate_sheets.py) — their frames are too
+							     large to fit 4x/60 fps in a 4096px atlas. No per-cell speed jitter: any
+							     offset off a tick divisor brings the R4 judder back; startFrame below
+							     already staggers the phases so the board doesn't blink in lockstep. -->
 							<AnimatedSprite
 								textures={idleAnimTextures[symName]}
 								x={bust.xOff * panelW}
@@ -647,7 +647,7 @@
 								anchor={0.5}
 								height={idleH}
 								width={idleH * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[symName] ?? 1) * IDLE_W_STRETCH}
-								animationSpeed={0.25}
+								animationSpeed={0.5}
 								startFrame={(reelIndex * 13 + symbolIndex * 7) % (idleAnimTextures[symName]?.length ?? 1)}
 								loop={true}
 								play={boardAnimate}

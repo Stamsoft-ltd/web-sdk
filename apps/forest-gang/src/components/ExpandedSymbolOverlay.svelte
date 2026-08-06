@@ -288,7 +288,7 @@
 								anchor={0.5}
 								width={SYMBOL_W * heroPulse}
 								height={h * heroPulse}
-								animationSpeed={0.25}
+								animationSpeed={1}
 								loop={false}
 								play={true}
 							/>
