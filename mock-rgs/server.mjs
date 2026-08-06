@@ -173,7 +173,11 @@ const pickWeightedBookId = (game, mode = 'BASE', seed = Date.now()) => {
 const getRoundFromGeneratedBooks = (game, mode = 'BASE', seed = Date.now()) => {
   const books = loadGeneratedBooks(game, mode);
   if (!books || books.length === 0) return null;
-  const weightedBookId = pickWeightedBookId(game, mode, seed);
+  // FORCE_BOOK_ID pins every round of this mode to one book, so a specific outcome (a given
+  // animal's win clip, a given expansion) can be replayed on demand instead of waited for. The
+  // client picks its own seed per spin, so there is no URL-level way to do this. Unset = untouched.
+  const forced = process.env.FORCE_BOOK_ID;
+  const weightedBookId = forced ? Number(forced) : pickWeightedBookId(game, mode, seed);
   const normalizedSeed = Math.abs(Number(seed) || Date.now());
   const book = (weightedBookId != null ? books.find((entry) => Number(entry.id) === Number(weightedBookId)) : null)
     || books[normalizedSeed % books.length];
@@ -250,7 +254,9 @@ const server = https.createServer(
       const body = await readJson(req).catch(() => ({}));
       const amountMicro = Number(body.amount || API_AMOUNT_MULTIPLIER);
       const mode = String(body.mode || 'BASE').toUpperCase();
-      const seed = Number(body.seed || url.searchParams.get('seed') || Date.now());
+      // FORCE_SEED pins the weighted book pick for reproducible test runs (perf A/Bs need every
+      // variant to play the same rounds; the client never sends a seed, so default is Date.now()).
+      const seed = Number(process.env.FORCE_SEED || body.seed || url.searchParams.get('seed') || Date.now());
       const stakeMultiplier = game.modeCostMultipliers[mode] || 1;
       const stakeAmount = amountMicro * stakeMultiplier;
       const round = buildRound({ game, amountMicro, mode, seed });

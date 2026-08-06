@@ -14,6 +14,7 @@
 		maxResolution?: number;
 		antialias?: boolean;
 		rendererPreference?: 'webgpu' | 'webgl';
+		textureGCActive?: boolean;
 	};
 
 	const props: Props = $props();
@@ -28,6 +29,7 @@
 	maxResolution={props.maxResolution}
 	antialias={props.antialias}
 	rendererPreference={props.rendererPreference}
+	textureGCActive={props.textureGCActive}
 >
 	{#if context.stateApp.pixiApplication}
 		<InitialiseParent>

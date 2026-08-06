@@ -55,7 +55,13 @@
 	};
 
 	// Premium (animal) win-state cards play the animated "win state" frames (from the Magnific
-	// videos, card border baked in — generate_win_anim.py). Ping-ponged since the clips don't loop.
+	// videos, card border baked in — generate_win_anim.py). Played FORWARD ONCE and held on the
+	// final frame (`loop={false}` at the sprite below), not ping-ponged. All five sheets measure
+	// strongly directional — wrap seam over median adjacent-frame delta is 2.8 (wolf) to 5.6 (fox) —
+	// so the old ping-pong rewound a one-shot: the wolf howled, then un-howled. A win is transient,
+	// so there is nothing to loop for. Using the raw texture list also keeps the array identity
+	// stable across `loadedAssets` recomputes, which is what forced gotoAndStop(0) in the expanded
+	// overlay before fd75e79.
 	// ANIMALS ONLY: the letters (T/A/J/K/Q) have no win sheet — a winning letter renders its clean
 	// base tile with the continuous letterPulse in the final {:else} below. Letter win sheets used
 	// to be listed here, loaded, trimmed and ping-ponged into arrays nothing ever drew.
@@ -70,19 +76,21 @@
 		const map: Partial<Record<SymbolName, Texture[]>> = {};
 		for (const [sym, key] of Object.entries(WIN_ANIM_KEY) as [SymbolName, string][]) {
 			const t = (context.stateApp.loadedAssets?.[key] ?? []) as Texture[];
-			if (t.length) map[sym as SymbolName] = [...t, ...t.slice(1, -1).reverse()];
+			if (t.length) map[sym as SymbolName] = t;
 		}
 		return map;
 	});
 
-	// The clips don't loop seamlessly (the glint sweep is one-directional), so the textures are
-	// ping-ponged — same treatment as the win anims above.
-	const pingPong = (t: Texture[]) => (t.length > 2 ? [...t, ...t.slice(1, -1).reverse()] : t);
+	// These two were ping-ponged on the assumption the glint sweep was one-directional. Measured, it
+	// isn't: both sheets were authored as clean loops. Wrap seam (last frame vs first) over the
+	// median adjacent-frame delta is 0.8 for scatter and 1.5 for wild — scatter's wrap is a SMALLER
+	// step than its own average frame-to-frame motion. The ping-pong bought nothing and cost double
+	// the textures plus a sweep that ran backwards for half of every cycle. Raw list; `loop` does it.
 	// The scatter plays its own emblem clip now (luma-keyed video frames — generate_emblem_anim.py).
 	// Falls back to the static scatter sprite until it loads.
-	const scatterFrames = $derived(pingPong((context.stateApp.loadedAssets?.scatterAnim ?? []) as Texture[]));
+	const scatterFrames = $derived((context.stateApp.loadedAssets?.scatterAnim ?? []) as Texture[]);
 	// Animated WILD emblem (same pipeline). Falls back to static.
-	const wildFrames = $derived(pingPong((context.stateApp.loadedAssets?.wildAnim ?? []) as Texture[]));
+	const wildFrames = $derived((context.stateApp.loadedAssets?.wildAnim ?? []) as Texture[]);
 
 	// Animated base-state (idle blink) animals. Each cutout is trimmed to its subject so it keeps a
 	// native (non-cell) aspect — width is derived from height with the same board non-uniform-scale
@@ -295,19 +303,49 @@
 	// un-eased slide) that left the final board drawing smeared+ghosted for a frame. The bounce-back
 	// itself is 0.15 px/ms — never fast enough to blur — so nothing is lost by pinning it.
 	const prevReelY: number[] = [];
-	const reelVelocity = $state<number[]>([]);
+	// Continuous velocity lives in a PLAIN array the template never reads. The template consumes
+	// only the two QUANTIZED $state arrays below, written when a step boundary is crossed — a
+	// handful of writes per spin ramp instead of one per reel per tick.
+	const rawVelocity: number[] = [];
+	// Smear cross-fade alpha per reel, in steps of 0.2. The ramps last ~150ms, so the fade shows
+	// at most ~5 step changes over already-blurred art — visually identical to the continuous fade.
+	const reelBlurAlpha = $state<number[]>([]);
+	// Echo-ghost offset (signed px past base speed), in steps of 2px — constant through a turbo
+	// spin body, stepping only on the accel/decel ramps. Below the old |excess| > 2 draw gate the
+	// quantized value is 0, so the gate's behaviour is unchanged.
+	const reelExcess = $state<number[]>([]);
+	// Measured on the pixi ticker, NOT in a $effect (same idiom as SceneAnimationDriver): an effect
+	// subscribing to five per-frame tween positions re-enters Svelte's reactive flush every frame
+	// for the length of every spin — measured on Safari 26 as repeated 150–300ms JSC stalls that
+	// Chrome absorbs. The ticker callback is plain untracked code; the only reactive writes are the
+	// two quantized arrays above, so the board's reactive graph is idle through the spin body.
 	$effect(() => {
-		board.forEach((reel, i) => {
-			const y = reel.reelState.symbols[0]?.symbolY() ?? 0;
-			if (reel.reelState.motion !== 'spinning') {
-				prevReelY[i] = y;
-				if (reelVelocity[i] !== 0) reelVelocity[i] = 0;
-				return;
-			}
-			const dy = y - (prevReelY[i] ?? y);
-			prevReelY[i] = y;
-			if (Math.abs(dy) < SYMBOL_H * 2) reelVelocity[i] = dy;
-		});
+		const app = context.stateApp.pixiApplication;
+		if (!app) return;
+		const measure = () => {
+			board.forEach((reel, i) => {
+				const y = reel.reelState.symbols[0]?.symbolY() ?? 0;
+				let velocity: number;
+				if (reel.reelState.motion !== 'spinning') {
+					prevReelY[i] = y;
+					velocity = 0;
+				} else {
+					const dy = y - (prevReelY[i] ?? y);
+					prevReelY[i] = y;
+					// Teleport guard: keep the previous velocity through the padding re-anchor tick.
+					velocity = Math.abs(dy) < SYMBOL_H * 2 ? dy : (rawVelocity[i] ?? 0);
+				}
+				rawVelocity[i] = velocity;
+				const alpha = Math.round(blurAlpha(velocity) * 5) / 5;
+				if (reelBlurAlpha[i] !== alpha) reelBlurAlpha[i] = alpha;
+				const excess =
+					Math.abs(velocity) > BASE_SPIN_V ? velocity - Math.sign(velocity) * BASE_SPIN_V : 0;
+				const quantized = Math.round(excess / 2) * 2;
+				if (reelExcess[i] !== quantized) reelExcess[i] = quantized;
+			});
+		};
+		app.ticker.add(measure);
+		return () => app.ticker.remove(measure);
 	});
 
 	// The velocity the baked smear was generated for: SPIN_OPTIONS_DEFAULT.reelSpinSpeed (px/ms)
@@ -472,7 +510,7 @@
 				<!-- Winning wild/scatter pulse continuously like the winning letters (design ask),
 				     replacing the old one-shot spring pop. -->
 				{@const specialPop = isWin ? letterPulse : 1}
-				{@const blurA = activeSpinMap[symName] ? blurAlpha(reelVelocity[reelIndex] ?? 0) : 0}
+				{@const blurA = activeSpinMap[symName] ? (reelBlurAlpha[reelIndex] ?? 0) : 0}
 				<!-- The sharp art is the layer UNDERNEATH the smear, not a sibling branch of it: the
 				     smear cross-dissolves over it (see the overlay after this chain) instead of the two
 				     hard-swapping. Only skipped once the smear is fully opaque, so the animated cells
@@ -481,8 +519,11 @@
 				{#if symName === 'SCATTER' && scatterFrames.length > 0}
 					<!-- Scatter shimmers with its animated emblem clip and pulses continuously while it
 					     wins. Drawn a bit smaller than a cell. animationSpeed 0.14 (~8fps) stepped
-					     visibly and read as "laggy"; 0.36 (~22fps) plays smoothly and stays under the
-					     30fps idle render cap so no frames drop. -->
+					     visibly and read as "laggy". The sheet is RIFE-interpolated to 60 fps
+					     (rife_interpolate_sheets.py), so speed 1 = one frame per 60 Hz tick — which
+					     supersedes the earlier 1/3 (that divided the tick against the old 20 fps
+					     sheets; the interpolated ones divide it at speed 1). -->
+
 					<AnimatedSprite
 						textures={scatterFrames}
 						x={getX(reelIndex)}
@@ -490,7 +531,7 @@
 						anchor={0.5}
 						width={symbolW * s * SCATTER_SIZE * specialPop}
 						height={symbolH * s * SCATTER_SIZE * specialPop * (SYMBOL_W / SYMBOL_H) * SCATTER_ASPECT}
-						animationSpeed={0.36}
+						animationSpeed={1}
 						loop={true}
 						play={boardAnimate}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
@@ -498,7 +539,9 @@
 				{:else if symName === 'WILD' && wildFrames.length > 0}
 					<!-- Animated WILD: plays its loop briskly on every spin; pulses continuously on a win.
 					     Multiplied by symScale (s) like the scatter so per-layout sizing applies —
-					     desktop s=1.0 keeps the tuned size; mobile draws it larger (design ask). -->
+					     desktop s=1.0 keeps the tuned size; mobile draws it larger (design ask).
+					     RIFE-interpolated to 60 fps like the scatter; speed 1 = one frame per tick
+					     (the old 0.4 = 2.5 ticks/frame was the worst R4 wobble in the game). -->
 					<AnimatedSprite
 						textures={wildFrames}
 						x={getX(reelIndex)}
@@ -506,7 +549,7 @@
 						anchor={0.5}
 						height={symbolH * s * WILD_SIZE * 0.9 * specialPop}
 						width={symbolW * s * WILD_SIZE * specialPop * (SYMBOL_H / SYMBOL_W) * WILD_ASPECT}
-						animationSpeed={0.4}
+						animationSpeed={1}
 						loop={true}
 						play={boardAnimate}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
@@ -551,8 +594,8 @@
 						anchor={{ x: 0.5, y: 1 }}
 						width={symbolW * s * winFit}
 						height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[symName] ?? 1)}
-						animationSpeed={0.36}
-						loop={true}
+						animationSpeed={1}
+						loop={false}
 						play={boardAnimate}
 					/>
 				{:else if isWin && LOW_SYMBOLS_SET.has(symName)}
@@ -622,6 +665,11 @@
 							/>
 							<!-- Portrait: lift the bust ~2px so its bottom clears the frame's bottom rail
 							     (the ANIMAL_H_STRETCH pushed it down onto the wood). -->
+							<!-- 0.5 = exactly 2 ticks per 60 Hz frame (30 fps). Idle sheets are
+							     RIFE-interpolated 2x (rife_interpolate_sheets.py) — their frames are too
+							     large to fit 4x/60 fps in a 4096px atlas. No per-cell speed jitter: any
+							     offset off a tick divisor brings the R4 judder back; startFrame below
+							     already staggers the phases so the board doesn't blink in lockstep. -->
 							<AnimatedSprite
 								textures={idleAnimTextures[symName]}
 								x={bust.xOff * panelW}
@@ -629,7 +677,7 @@
 								anchor={0.5}
 								height={idleH}
 								width={idleH * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[symName] ?? 1) * IDLE_W_STRETCH}
-								animationSpeed={0.28 + ((reelIndex * 2 + symbolIndex) % 4) * 0.008}
+								animationSpeed={0.5}
 								startFrame={(reelIndex * 13 + symbolIndex * 7) % (idleAnimTextures[symName]?.length ?? 1)}
 								loop={true}
 								play={boardAnimate}
@@ -676,8 +724,7 @@
 					     eased stop collapses the ghosts before the smear itself fades out. Ghosts of
 					     already-blurred art melt together — no double-vision banding.
 					     Drawn LAST so it dissolves over the sharp art below it rather than replacing it. -->
-					{@const vy = reelVelocity[reelIndex] ?? 0}
-					{@const excess = Math.abs(vy) > BASE_SPIN_V ? vy - Math.sign(vy) * BASE_SPIN_V : 0}
+					{@const excess = reelExcess[reelIndex] ?? 0}
 					<!-- The smear is baked from the STATIC tile, so it must be drawn at the size that tile
 					     is drawn at when it is sharp. Everything is a full cell except the scatter, whose
 					     medallion draws at SCATTER_SIZE in both of its sharp branches — without this it

@@ -68,8 +68,11 @@
 	const FRAME_STROKE = { width: 3, color: 0x92673a, alpha: 1 };
 
 	// Animated expanded animals (frames from the "win state" videos, tile border baked in —
-	// see generate_expand_anim.py). The clips don't loop, so they play as a ping-pong
-	// (forward → reverse) for a seamless idle.
+	// see generate_expand_anim.py). The clips are one-shots (calm → raise the money → celebrate;
+	// measured wrap seam 2.3–2.9× the median adjacent-frame delta, with no cleaner loop point
+	// anywhere in the sheet), so each plays through ONCE and holds its celebration pose —
+	// `loop={false}` at the sprite. The old ping-pong rewound the one-shot: the bear celebrated,
+	// then un-celebrated. The heroPulse breathe below keeps the held pose from reading frozen.
 	const EXPAND_ANIM_KEY: Partial<Record<SymbolName, string>> = {
 		RABBIT: 'rabbitMoney',
 		BEAR: 'bearMoney',
@@ -90,7 +93,7 @@
 		if (!t.length) return [];
 		if (framesKey !== animKey) {
 			framesKey = animKey;
-			frames = [...t, ...t.slice(1, -1).reverse()];
+			frames = t;
 		}
 		return frames;
 	});
@@ -117,6 +120,10 @@
 		return () => cancelAnimationFrame(raf);
 	});
 	const lowPulse = $derived(1 + 0.1 * (0.5 - 0.5 * Math.cos(expPulseT * 7.2)));
+	// Premium hero breathe: once the one-shot money clip has played through and holds its
+	// celebration pose, this ±2% swell keeps the hero column alive — the animal is on screen for
+	// the whole round, and a hard-held frame reads as frozen. Same clock as lowPulse, ~2.6s period.
+	const heroPulse = $derived(1 + 0.02 * (0.5 - 0.5 * Math.cos(expPulseT * 2.4)));
 
 	type ReelAnim = { h: Tween<number>; y: Tween<number>; pop: Tween<number>; looping: boolean };
 	const reelAnims: Record<number, ReelAnim> = {};
@@ -279,10 +286,10 @@
 							<AnimatedSprite
 								textures={animFrames}
 								anchor={0.5}
-								width={SYMBOL_W}
-								height={h}
-								animationSpeed={0.25}
-								loop={true}
+								width={SYMBOL_W * heroPulse}
+								height={h * heroPulse}
+								animationSpeed={1}
+								loop={false}
 								play={true}
 							/>
 						{:else}

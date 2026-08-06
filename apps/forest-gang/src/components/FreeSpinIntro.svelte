@@ -213,7 +213,7 @@
 						anchor={0.5}
 						width={Math.round(BW * L.medW)}
 						height={Math.round(BW * L.medW * (443 / 485))}
-						animationSpeed={0.3}
+						animationSpeed={1 / 3}
 						loop={true}
 						play={true}
 					/>

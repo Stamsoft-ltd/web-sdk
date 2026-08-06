@@ -281,13 +281,13 @@ const assets = {
 	// clip, ping-ponged at runtime — generate_emblem_anim.py) — plays on the reels.
 	wildAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/wildAnim/wild_anim_v3.json?v=20260726',
+		src: './assets/sprites/wildAnim/wild_anim_v3.json?v=20260727',
 	},
 	// Animated SCATTER emblem (same pipeline as the WILD; 40-frame clip, ping-ponged). The
 	// free-spin popups keep their own fsMedallionAnim loop — this sheet is only for the reels.
 	scatterAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/scatterAnim/scatter_anim.json?v=20260726',
+		src: './assets/sprites/scatterAnim/scatter_anim.json?v=20260727',
 	},
 	// Shared wooden frame w/ forest scene, drawn behind every animal symbol (fox/wolf/bear/rabbit/squirrel).
 	animalBorder: {
@@ -308,23 +308,23 @@ const assets = {
 	// Animated base-state (idle blink) animals — background-removed video frames, loop on the reels.
 	wolfIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/wolfIdleAnim/wolf_idle.json?v=20260726',
+		src: './assets/sprites/wolfIdleAnim/wolf_idle.json?v=20260727',
 	},
 	foxIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/foxIdleAnim/fox_idle.json?v=20260726',
+		src: './assets/sprites/foxIdleAnim/fox_idle.json?v=20260727',
 	},
 	squirrelIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/squirrelIdleAnim/squirrel_idle.json?v=20260726',
+		src: './assets/sprites/squirrelIdleAnim/squirrel_idle.json?v=20260727',
 	},
 	bearIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/bearIdleAnim/bear_idle.json?v=20260726',
+		src: './assets/sprites/bearIdleAnim/bear_idle.json?v=20260727',
 	},
 	rabbitIdleAnim: {
 		type: 'spriteSheet',
-		src: './assets/sprites/rabbitIdleAnim/rabbit_idle.json?v=20260726',
+		src: './assets/sprites/rabbitIdleAnim/rabbit_idle.json?v=20260727',
 	},
 	// Animated loading bar (49-frame 0→100% fill, white bar/text on transparency). This is the ONLY
 	// preloaded asset: it must be ready before the loading screen paints so the bar can show first
@@ -361,30 +361,30 @@ const assets = {
 	// does NOT loop seamlessly — play once or ping-pong). Frames: rabbit_money_1..40.
 	rabbitMoney: {
 		type: 'spriteSheet',
-		src: './assets/sprites/rabbitMoney/rabbit_money.json?v=20260722',
+		src: './assets/sprites/rabbitMoney/rabbit_money.json?v=20260727',
 	},
 	bearMoney: {
 		type: 'spriteSheet',
-		src: './assets/sprites/bearMoney/bear_money.json',
+		src: './assets/sprites/bearMoney/bear_money.json?v=20260727',
 	},
 	foxMoney: {
 		type: 'spriteSheet',
-		src: './assets/sprites/foxMoney/fox_money.json?v=20260722',
+		src: './assets/sprites/foxMoney/fox_money.json?v=20260727',
 	},
 	wolfMoney: {
 		type: 'spriteSheet',
-		src: './assets/sprites/wolfMoney/wolf_money.json?v=20260722',
+		src: './assets/sprites/wolfMoney/wolf_money.json?v=20260727',
 	},
 	squirrelMoney: {
 		type: 'spriteSheet',
-		src: './assets/sprites/squirrelMoney/squirrel_money.json?v=20260722',
+		src: './assets/sprites/squirrelMoney/squirrel_money.json?v=20260727',
 	},
 	// Board win-state card animations (upper-body window of the same videos, card border baked).
-	rabbitWinAnim:   { type: 'spriteSheet', src: './assets/sprites/rabbitWinNew/rabbit_win_v2.json?v=20260726' },
-	bearWinAnim:     { type: 'spriteSheet', src: './assets/sprites/bearWinNew/bear_win_v2.json?v=20260726' },
-	foxWinAnim:      { type: 'spriteSheet', src: './assets/sprites/foxWinNew/fox_win_v2.json?v=20260726' },
-	wolfWinAnim:     { type: 'spriteSheet', src: './assets/sprites/wolfWinNew/wolf_win_v2.json?v=20260726' },
-	squirrelWinAnim: { type: 'spriteSheet', src: './assets/sprites/squirrelWinNew/squirrel_win_v2.json?v=20260726' },
+	rabbitWinAnim:   { type: 'spriteSheet', src: './assets/sprites/rabbitWinNew/rabbit_win_v2.json?v=20260727' },
+	bearWinAnim:     { type: 'spriteSheet', src: './assets/sprites/bearWinNew/bear_win_v2.json?v=20260727' },
+	foxWinAnim:      { type: 'spriteSheet', src: './assets/sprites/foxWinNew/fox_win_v2.json?v=20260727' },
+	wolfWinAnim:     { type: 'spriteSheet', src: './assets/sprites/wolfWinNew/wolf_win_v2.json?v=20260727' },
+	squirrelWinAnim: { type: 'spriteSheet', src: './assets/sprites/squirrelWinNew/squirrel_win_v2.json?v=20260727' },
 	// NOTE: there are deliberately no letter (T/A/J/K/Q) win-animation sheets. A winning letter
 	// renders its CLEAN base tile with a continuous ±10% pulse (Board.svelte) — the sheets existed,
 	// were loaded, trimmed and ping-ponged, and were drawn by nothing. Don't re-add them.
@@ -397,29 +397,18 @@ const assets = {
 	},
 } as const;
 
-// Everything the base game can DRAW now loads up front, on the loading screen (no deferred
-// stream): deferred streaming caused visible pop-in (static tiles until the anim sheets arrived,
-// win boards appearing late) and a stalled deferred pass took the art hostage for the whole
-// session. The loading bar is the honest place to pay for it. Only the deferDemand bonus set
-// below stays out of the gating pass: it is invisible until a bonus triggers, and that trigger
-// awaits (and retries) its load.
-
-// Bonus-only art: withheld from the background stream entirely and loaded on demand, because a
-// session that never triggers a bonus never draws any of it — a sizeable share of the art pool
-// that used to be paid by every player (run scripts/check-residency.py for the current figure).
-// game/utils.ts requests it from the book (see BONUS_ART_EVENTS there), which covers all four
-// entry paths: natural scatter, bought BONUS/SUPER, a one-spin FEATURE book, and a resumed round
-// replayed through createBonusSnapshot.
-const DEMAND_BONUS_ART: readonly string[] = [
-	'transition',
-	'bonusNormalBackground', 'bonusSuperBackground',
-	'deerPresenter', 'deerPresenterMobile', 'deerPresenterAnim',
-	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
-];
-for (const key of DEMAND_BONUS_ART) {
-	const entry = (assets as Record<string, { deferDemand?: boolean } | undefined>)[key];
-	if (entry) entry.deferDemand = true;
-}
+// Everything the game can DRAW loads up front, on the loading screen: no deferred stream and no
+// demand pass. Deferred streaming caused visible pop-in (static tiles until the anim sheets
+// arrived, win boards appearing late) and a stalled pass took the art hostage for the whole
+// session. The bonus set (transition spine, bonus backgrounds, deer presenter, the five expanded
+// *Money sheets) used to be withheld until a book asked for it — a session that never triggers a
+// bonus never draws any of it — but that traded a longer loading bar for a stall on the first
+// bonus. The loading bar is the honest place to pay for it, so the bonus art now gates too:
+// ~165 MiB decoded on top of the base pool (run scripts/check-residency.py for the current figure).
+//
+// game/utils.ts still gates the drawing events on loadDemandAssets(); with nothing flagged
+// deferDemand that call resolves immediately (AssetsLoader.svelte:259), so the bonus flow is
+// unchanged and re-flagging keys here is all it takes to put the demand pass back.
 
 // Layout-specific art: only the set matching the INITIAL viewport blocks playability; the other
 // layout's set is demoted to the deferred (background) pass, so rotating/resizing later still works —
