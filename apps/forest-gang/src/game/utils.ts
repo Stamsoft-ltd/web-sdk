@@ -13,8 +13,11 @@ import type { RawSymbol, SymbolState } from './types';
 
 export const { getEmptyBoard } = createGetEmptyPaddedBoard({ reelsDimensions: BOARD_DIMENSIONS });
 
-// Bonus art is demand-loaded (assets.ts DEMAND_BONUS_ART), so every book event that DRAWS it has to
-// wait for it. This is the complete consumer list: the transition spine and bonus backgrounds
+// Bonus art gates on loadDemandAssets() before every book event that DRAWS it. assets.ts no longer
+// flags any key deferDemand — the bonus set loads on the loading screen with everything else — so
+// today this gate is a no-op that resolves immediately. It stays wired because it is the whole cost
+// of putting the demand pass back (re-flag the keys in assets.ts) if the loading bar gets too long.
+// This is the complete consumer list: the transition spine and bonus backgrounds
 // (freeSpinTrigger / freeSpinEnd), the deer presenter (bonusSymbolSelected), the expanded money
 // sheets (expandedSymbolReveal), and a resumed round, which replays all of those inside itself
 // (createBonusSnapshot). Between them they cover every entry path into the bonus — natural scatter,

@@ -397,29 +397,18 @@ const assets = {
 	},
 } as const;
 
-// Everything the base game can DRAW now loads up front, on the loading screen (no deferred
-// stream): deferred streaming caused visible pop-in (static tiles until the anim sheets arrived,
-// win boards appearing late) and a stalled deferred pass took the art hostage for the whole
-// session. The loading bar is the honest place to pay for it. Only the deferDemand bonus set
-// below stays out of the gating pass: it is invisible until a bonus triggers, and that trigger
-// awaits (and retries) its load.
-
-// Bonus-only art: withheld from the background stream entirely and loaded on demand, because a
-// session that never triggers a bonus never draws any of it — a sizeable share of the art pool
-// that used to be paid by every player (run scripts/check-residency.py for the current figure).
-// game/utils.ts requests it from the book (see BONUS_ART_EVENTS there), which covers all four
-// entry paths: natural scatter, bought BONUS/SUPER, a one-spin FEATURE book, and a resumed round
-// replayed through createBonusSnapshot.
-const DEMAND_BONUS_ART: readonly string[] = [
-	'transition',
-	'bonusNormalBackground', 'bonusSuperBackground',
-	'deerPresenter', 'deerPresenterMobile', 'deerPresenterAnim',
-	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
-];
-for (const key of DEMAND_BONUS_ART) {
-	const entry = (assets as Record<string, { deferDemand?: boolean } | undefined>)[key];
-	if (entry) entry.deferDemand = true;
-}
+// Everything the game can DRAW loads up front, on the loading screen: no deferred stream and no
+// demand pass. Deferred streaming caused visible pop-in (static tiles until the anim sheets
+// arrived, win boards appearing late) and a stalled pass took the art hostage for the whole
+// session. The bonus set (transition spine, bonus backgrounds, deer presenter, the five expanded
+// *Money sheets) used to be withheld until a book asked for it — a session that never triggers a
+// bonus never draws any of it — but that traded a longer loading bar for a stall on the first
+// bonus. The loading bar is the honest place to pay for it, so the bonus art now gates too:
+// ~165 MiB decoded on top of the base pool (run scripts/check-residency.py for the current figure).
+//
+// game/utils.ts still gates the drawing events on loadDemandAssets(); with nothing flagged
+// deferDemand that call resolves immediately (AssetsLoader.svelte:259), so the bonus flow is
+// unchanged and re-flagging keys here is all it takes to put the demand pass back.
 
 // Layout-specific art: only the set matching the INITIAL viewport blocks playability; the other
 // layout's set is demoted to the deferred (background) pass, so rotating/resizing later still works —

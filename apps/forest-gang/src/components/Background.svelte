@@ -78,6 +78,9 @@
 	});
 </script>
 
+<!-- Guarded: Background mounts under the loading screen before the gating pass has published its
+     art, and an unguarded Sprite logs a key-not-found error on every render until it lands. -->
+{#if context.stateApp.loadedAssets?.[backgroundKey]}
 <Sprite
 	key={backgroundKey}
 	x={stage.width * 0.5}
@@ -87,6 +90,7 @@
 	height={cover.height}
 	alpha={0.96}
 />
+{/if}
 <!-- Portrait top/bottom vignette REMOVED: it dimmed the bg's bright golden sunbeam behind the logo,
 	 which read as a dark top (especially returning from the brighter bonus background). The sunbeam
 	 itself frames the logo, and the logo art has its own outline, so no vignette is needed. -->

@@ -254,7 +254,9 @@ const server = https.createServer(
       const body = await readJson(req).catch(() => ({}));
       const amountMicro = Number(body.amount || API_AMOUNT_MULTIPLIER);
       const mode = String(body.mode || 'BASE').toUpperCase();
-      const seed = Number(body.seed || url.searchParams.get('seed') || Date.now());
+      // FORCE_SEED pins the weighted book pick for reproducible test runs (perf A/Bs need every
+      // variant to play the same rounds; the client never sends a seed, so default is Date.now()).
+      const seed = Number(process.env.FORCE_SEED || body.seed || url.searchParams.get('seed') || Date.now());
       const stakeMultiplier = game.modeCostMultipliers[mode] || 1;
       const stakeAmount = amountMicro * stakeMultiplier;
       const round = buildRound({ game, amountMicro, mode, seed });

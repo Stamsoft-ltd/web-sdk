@@ -263,6 +263,15 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.globalMultiplier = bookEvent.multiplier;
 		eventEmitter.broadcast({ type: 'globalMultiplierUpdate', multiplier: bookEvent.multiplier });
 	},
+	// What the books actually emit for the All In progression (updateGlobalMultiplier appears in no
+	// book). The board shows ONE persistent number, so it tracks the highest reel multiplier —
+	// which follows the rules text exactly (2x at bonus start, doubles only after winning spins).
+	// The full per-reel array is kept in case a per-reel display is built later.
+	updateReelMultipliers: async (bookEvent: BookEventOfType<'updateReelMultipliers'>) => {
+		const multiplier = Math.max(...bookEvent.multipliers);
+		stateGame.globalMultiplier = multiplier;
+		eventEmitter.broadcast({ type: 'globalMultiplierUpdate', multiplier });
+	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>) => {
 		// HUD WIN readout: this spin's win only (per round) — the cumulative bonus total lives in
 		// winBookEventAmount / EARNED.
