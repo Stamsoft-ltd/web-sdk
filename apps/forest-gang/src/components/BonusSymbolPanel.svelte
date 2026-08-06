@@ -197,7 +197,7 @@
 							anchor={{ x: 0.5, y: 0.5 }}
 							height={idleH}
 							width={idleH * (IDLE_ASPECT[displaySymbol!] ?? 1)}
-							animationSpeed={0.28}
+							animationSpeed={0.25}
 							loop={true}
 							play={true}
 						/>

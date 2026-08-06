@@ -31,10 +31,10 @@
 	// deliver, because it owned only one of the two loops and the app ticker rendered uncapped at
 	// panel rate (~120/s on ProMotion).
 	//
-	// 60 rather than an idle drop to 30: at 30 Hz `deltaTime` is 2.0, and none of the current
-	// `animationSpeed` values divide into it evenly (0.28 alternates 33 ms / 67 ms holds, 44% under
-	// the mean on the short one), which reads as a stutter. The cap belongs with the clip cadences —
-	// plan 13 picks it once each clip's frame time is measured.
+	// 60 rather than an idle drop to 30: at 30 Hz `deltaTime` is 2.0 and the 3-tick cadences
+	// (`animationSpeed` 1/3 — scatter, wild, wins, free-spin sheets) stop dividing evenly, which
+	// reads as a stutter. Every clip cadence is now a divisor of the 60 Hz tick (1/3, 0.25, 0.2 —
+	// the R4 judder fix); this cap and those values are tuned as a pair.
 	//
 	// 62 and NOT 60, which is the rate we actually want. `Ticker.update()` truncates the elapsed
 	// time to whole milliseconds before testing it — `currentTime - this._lastFrame | 0`
