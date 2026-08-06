@@ -17,7 +17,11 @@
 	import { anchorToPivot } from '../utils.svelte';
 	import { getContextApp } from '../context.svelte';
 
-	const { debug, key, anchor, children, scale: scaleProp, ...baseSpineProps }: Props = $props();
+	// width/height are consumed HERE (folded into `scale` below) and must not reach the spine
+	// instance: pixi's Container.width setter is bounds-relative and assigns scale.x directly, so
+	// syncing it alongside `scale` makes the last-run effect win — a non-uniform squish.
+	const { debug, key, anchor, children, scale: scaleProp, width, height, ...baseSpineProps }: Props =
+		$props();
 	const context = getContextApp();
 	const spineData = $derived(context.stateApp.loadedAssets?.[key] as SPINE_PIXI.SkeletonData);
 
@@ -26,19 +30,19 @@
 	const scaleSize = $derived.by(() => {
 		if (!spineData) return SCALE_BASE;
 		if (!spineData?.width || !spineData?.height) return SCALE_BASE;
-		if (!baseSpineProps.width && !baseSpineProps.height) return SCALE_BASE;
-		if (!baseSpineProps.width && baseSpineProps.height) {
-			const scaleHeight = baseSpineProps.height / spineData.height;
+		if (!width && !height) return SCALE_BASE;
+		if (!width && height) {
+			const scaleHeight = height / spineData.height;
 			return { x: scaleHeight, y: scaleHeight };
 		}
-		if (baseSpineProps.width && !baseSpineProps.height) {
-			const scaleWidth = baseSpineProps.width / spineData.width;
+		if (width && !height) {
+			const scaleWidth = width / spineData.width;
 			return { x: scaleWidth, y: scaleWidth };
 		}
-		if (baseSpineProps.width && baseSpineProps.height) {
+		if (width && height) {
 			return {
-				x: baseSpineProps.width / spineData.width,
-				y: baseSpineProps.height / spineData.height,
+				x: width / spineData.width,
+				y: height / spineData.height,
 			};
 		}
 
@@ -54,8 +58,8 @@
 	const pivot = $derived.by(() => {
 		if (!spineData) return 0;
 		if (!spineData?.width || !spineData?.height) return 0;
-		const factWidth = baseSpineProps.width || spineData.width;
-		const factHeight = baseSpineProps.height || spineData.height;
+		const factWidth = width || spineData.width;
+		const factHeight = height || spineData.height;
 
 		return anchorToPivot({ anchor, sizes: { width: factWidth, height: factHeight } });
 	});
@@ -63,9 +67,6 @@
 
 {#if !spineData}
 	{console.error(`Spine: key "${key}" is not found in loadedAssets`)}
-{/if}
-
-{#if !spineData || debug}
 {/if}
 
 {#key spineData}

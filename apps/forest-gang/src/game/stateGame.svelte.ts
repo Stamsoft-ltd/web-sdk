@@ -171,11 +171,20 @@ const getBoardViewportMetrics = () => {
 
 const getBoardScale = () => {
 	const { mainLayout, availableCanvasHeight, availableCanvasWidth } = getBoardViewportMetrics();
+	const layoutType = stateLayoutDerived.layoutType();
+	// The desktop/tablet branch of boardLayout draws the grid H_SPREAD (1.12) wide and the wood
+	// frame overhangs the grid by 1.004/NEW_INNER_W (~8%) — so the DRAWN width is ~1.21× the bare
+	// grid this budget divides by. On desktop the height term binds and the 208/220 side paddings
+	// absorb the spread (the tuned look — left as is), but an almost-square window (layoutType
+	// 'tablet', 20px side pads) is width-bound, and budgeting the bare grid let the frame overflow
+	// both window edges.
+	const DESKTOP_DRAWN_W_FACTOR = (1.12 * 1.004) / (0.961 - 0.034); // mirrors boardLayout desktop
+	const widthFactor = layoutType === 'tablet' ? DESKTOP_DRAWN_W_FACTOR : 1;
 	return Math.max(
 		1,
 		Math.min(
 			availableCanvasHeight / (BOARD_SIZES.height * (mainLayout.scale || 1)),
-			availableCanvasWidth / (BOARD_SIZES.width * (mainLayout.scale || 1)),
+			availableCanvasWidth / (BOARD_SIZES.width * widthFactor * (mainLayout.scale || 1)),
 		),
 	);
 };

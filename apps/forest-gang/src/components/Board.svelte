@@ -295,19 +295,49 @@
 	// un-eased slide) that left the final board drawing smeared+ghosted for a frame. The bounce-back
 	// itself is 0.15 px/ms — never fast enough to blur — so nothing is lost by pinning it.
 	const prevReelY: number[] = [];
-	const reelVelocity = $state<number[]>([]);
+	// Continuous velocity lives in a PLAIN array the template never reads. The template consumes
+	// only the two QUANTIZED $state arrays below, written when a step boundary is crossed — a
+	// handful of writes per spin ramp instead of one per reel per tick.
+	const rawVelocity: number[] = [];
+	// Smear cross-fade alpha per reel, in steps of 0.2. The ramps last ~150ms, so the fade shows
+	// at most ~5 step changes over already-blurred art — visually identical to the continuous fade.
+	const reelBlurAlpha = $state<number[]>([]);
+	// Echo-ghost offset (signed px past base speed), in steps of 2px — constant through a turbo
+	// spin body, stepping only on the accel/decel ramps. Below the old |excess| > 2 draw gate the
+	// quantized value is 0, so the gate's behaviour is unchanged.
+	const reelExcess = $state<number[]>([]);
+	// Measured on the pixi ticker, NOT in a $effect (same idiom as SceneAnimationDriver): an effect
+	// subscribing to five per-frame tween positions re-enters Svelte's reactive flush every frame
+	// for the length of every spin — measured on Safari 26 as repeated 150–300ms JSC stalls that
+	// Chrome absorbs. The ticker callback is plain untracked code; the only reactive writes are the
+	// two quantized arrays above, so the board's reactive graph is idle through the spin body.
 	$effect(() => {
-		board.forEach((reel, i) => {
-			const y = reel.reelState.symbols[0]?.symbolY() ?? 0;
-			if (reel.reelState.motion !== 'spinning') {
-				prevReelY[i] = y;
-				if (reelVelocity[i] !== 0) reelVelocity[i] = 0;
-				return;
-			}
-			const dy = y - (prevReelY[i] ?? y);
-			prevReelY[i] = y;
-			if (Math.abs(dy) < SYMBOL_H * 2) reelVelocity[i] = dy;
-		});
+		const app = context.stateApp.pixiApplication;
+		if (!app) return;
+		const measure = () => {
+			board.forEach((reel, i) => {
+				const y = reel.reelState.symbols[0]?.symbolY() ?? 0;
+				let velocity: number;
+				if (reel.reelState.motion !== 'spinning') {
+					prevReelY[i] = y;
+					velocity = 0;
+				} else {
+					const dy = y - (prevReelY[i] ?? y);
+					prevReelY[i] = y;
+					// Teleport guard: keep the previous velocity through the padding re-anchor tick.
+					velocity = Math.abs(dy) < SYMBOL_H * 2 ? dy : (rawVelocity[i] ?? 0);
+				}
+				rawVelocity[i] = velocity;
+				const alpha = Math.round(blurAlpha(velocity) * 5) / 5;
+				if (reelBlurAlpha[i] !== alpha) reelBlurAlpha[i] = alpha;
+				const excess =
+					Math.abs(velocity) > BASE_SPIN_V ? velocity - Math.sign(velocity) * BASE_SPIN_V : 0;
+				const quantized = Math.round(excess / 2) * 2;
+				if (reelExcess[i] !== quantized) reelExcess[i] = quantized;
+			});
+		};
+		app.ticker.add(measure);
+		return () => app.ticker.remove(measure);
 	});
 
 	// The velocity the baked smear was generated for: SPIN_OPTIONS_DEFAULT.reelSpinSpeed (px/ms)
@@ -472,7 +502,7 @@
 				<!-- Winning wild/scatter pulse continuously like the winning letters (design ask),
 				     replacing the old one-shot spring pop. -->
 				{@const specialPop = isWin ? letterPulse : 1}
-				{@const blurA = activeSpinMap[symName] ? blurAlpha(reelVelocity[reelIndex] ?? 0) : 0}
+				{@const blurA = activeSpinMap[symName] ? (reelBlurAlpha[reelIndex] ?? 0) : 0}
 				<!-- The sharp art is the layer UNDERNEATH the smear, not a sibling branch of it: the
 				     smear cross-dissolves over it (see the overlay after this chain) instead of the two
 				     hard-swapping. Only skipped once the smear is fully opaque, so the animated cells
@@ -676,8 +706,7 @@
 					     eased stop collapses the ghosts before the smear itself fades out. Ghosts of
 					     already-blurred art melt together — no double-vision banding.
 					     Drawn LAST so it dissolves over the sharp art below it rather than replacing it. -->
-					{@const vy = reelVelocity[reelIndex] ?? 0}
-					{@const excess = Math.abs(vy) > BASE_SPIN_V ? vy - Math.sign(vy) * BASE_SPIN_V : 0}
+					{@const excess = reelExcess[reelIndex] ?? 0}
 					<!-- The smear is baked from the STATIC tile, so it must be drawn at the size that tile
 					     is drawn at when it is sharp. Everything is a full cell except the scatter, whose
 					     medallion draws at SCATTER_SIZE in both of its sharp branches — without this it
