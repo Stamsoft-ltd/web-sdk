@@ -192,17 +192,17 @@ const assets: Assets = {
 		type: 'sprite',
 		src: './assets/theme-park/v2/features/roller-wild-car.png',
 	},
+	// Waving (at rest) and excited (rolling down) car states as alpha-keyed sprite sheets — same
+	// ticker-driven route as the win cards, so they always animate (the webm video route froze to a
+	// still frame). 24 fps, generated from the "red duck car" MP4.
 	rollerWildCarAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/features/roller-wild-car.webm',
+		type: 'spriteSheet',
+		src: './assets/sprites/rollerCar/roller_car_wave.json',
 		defer: true,
 	},
-	// Drop-state car (duck excited, both wings up). Placeholder = the waving clip until the real
-	// "both hands in the air" animation is provided; the overlay switches to this once the car starts
-	// rolling down the reel.
 	rollerWildCarDropAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/features/roller-wild-car-drop.webm',
+		type: 'spriteSheet',
+		src: './assets/sprites/rollerCar/roller_car_excited.json',
 		defer: true,
 	},
 	coasterCarSickAnim: {

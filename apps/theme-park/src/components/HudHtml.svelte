@@ -750,7 +750,7 @@
 {/if}
 
 {#if showInfoModal}
-	<CustomInfoModal onclose={() => (showInfoModal = false)} />
+	<CustomInfoModal onclose={() => (showInfoModal = false)} {layoutType} />
 {/if}
 
 <style>

@@ -105,6 +105,10 @@ export const stateGame = $state({
 	},
 	// Roller Wilds: full-wild reels for THIS spin only
 	activeRollerReels: [] as RollerReel[],
+	// Roller Wilds animation: cells (`${reel},${row}`) the descending car has already cleared, so
+	// <Board> hides the original symbol behind it as the car passes (before the apply makes the whole
+	// reel wild).
+	rollerClearedCells: [] as string[],
 	// Mega Coaster: persistent wild tiles (Position → multiplier), persists across the bonus
 	coasterTiles: [] as CoasterTile[],
 	endRoundOnly: false,
@@ -309,6 +313,7 @@ const resetBonusState = () => {
 	stateGame.duckRunningTotal = 0;
 	stateGame.duckPicks = null;
 	stateGame.activeRollerReels = [];
+	stateGame.rollerClearedCells = [];
 	stateGame.coasterTiles = [];
 };
 

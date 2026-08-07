@@ -49,10 +49,15 @@
 	// sheet from 'Duck present.mp4', 73 frames @24fps = 3.04s) and the value disc rises out of the
 	// opened box. The whole thing — gift AND disc — clears together; nothing lingers over the duck
 	// symbol afterwards. The banner above the board carries the running total.
-	// Played 1.5× the authored rate — full speed dragged at ~3s per duck.
-	const PRESENT_PLAYBACK = 1.5;
-	const PRESENT_MS = Math.round(3040 / PRESENT_PLAYBACK);
+	// Played a touch above the authored rate — full speed dragged at ~3s per duck, but 1.5× flashed
+	// the box open too fast.
+	const PRESENT_PLAYBACK = 1.3;
 	const PRESENT_SPEED = (36 / (3.04 * 60)) * PRESENT_PLAYBACK;
+	// Wait the clip's own length PLUS a buffer. With loop:false the sprite stops on its last
+	// (fully-open) frame, so the extra time guarantees it has actually reached that frame before
+	// `revealSpinning` flips and the disc rises — the old exact-length wait let ticker jitter end it a
+	// frame or two early, so the box was still mid-open (the "cut, part of the box" artefact).
+	const PRESENT_MS = Math.round(3040 / PRESENT_PLAYBACK) + 220;
 	const GIFT_SIZE = SYMBOL_H * 1.25;
 	const REVEAL_HOLD_MS = 500;
 	/** The open box's mouth inside the square sheet cell — see <DuckPondBonus>. */

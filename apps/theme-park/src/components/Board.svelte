@@ -54,6 +54,9 @@
 	const coasterCellSet = $derived(
 		new Set(context.stateGame.coasterTiles.map(({ reel, row }) => `${reel},${row}`)),
 	);
+	// Cells the roller-wilds car has already rolled past this spin — hidden so the symbol behind it is
+	// gone (the overlay leaves a multiplier plaque or nothing in its place).
+	const rollerClearedSet = $derived(new Set(context.stateGame.rollerClearedCells));
 	const isInitialRollerTriggerCell = (
 		rawSymbol: RawSymbol,
 		reelIndex: number,
@@ -230,7 +233,7 @@
 					{@const underDuckReveal =
 						context.stateGame.duckRevealPosition?.reel === reelIndex &&
 						context.stateGame.duckRevealPosition?.row === symbolIndex - 1}
-					{#if !underDuckReveal && !isRollerMultiplierCell(reelSymbol.rawSymbol, reelIndex, symbolIndex - 1)}
+					{#if !underDuckReveal && !rollerClearedSet.has(`${reelIndex},${symbolIndex - 1}`) && !isRollerMultiplierCell(reelSymbol.rawSymbol, reelIndex, symbolIndex - 1)}
 						{@const fallbackKey = getSpriteKey(
 							reelSymbol.rawSymbol,
 							reelSymbol.symbolState,

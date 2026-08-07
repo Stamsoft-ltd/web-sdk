@@ -54,12 +54,15 @@
 			pivot={layout.pivot}
 			scale={layout.boardScale}
 		>
-			<!-- Roller reels persist as clean multiplier text only. -->
+			<!-- A roller reel persists as a wild reel with its combined multiplier shown ONCE at the
+			     centre — not repeated on every cell (that read as five separate multipliers). -->
 			{#each rollerReels as roller (roller.reel)}
 				{#each Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => row) as row (row)}
 					<Container x={cellX(roller.reel)} y={cellY(row)}>
 						<CoasterWildBackground reel={roller.reel} {row} />
-						<RollerMultiplierText text={`${roller.multiplier}X`} />
+						{#if row === Math.floor(BOARD_DIMENSIONS.y / 2)}
+							<RollerMultiplierText text={`${roller.multiplier}X`} />
+						{/if}
 					</Container>
 				{/each}
 			{/each}

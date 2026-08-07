@@ -50,7 +50,7 @@
 	// the board in gold. Square-root so the taper is gentle at first and floored well short of a
 	// thread.
 	const RIBBON_W = $derived(
-		SYMBOL_H * 0.3 * Math.max(0.55, Math.min(1, Math.sqrt(5 / Math.max(props.wins.length, 1)))),
+		SYMBOL_H * 0.2 * Math.max(0.55, Math.min(1, Math.sqrt(5 / Math.max(props.wins.length, 1)))),
 	);
 	/** Unfurl time. The ribbon is pulled across the reels once, then left to settle. */
 	const DRAW_MS = 460;

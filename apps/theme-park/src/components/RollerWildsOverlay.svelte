@@ -9,7 +9,7 @@
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
 	import { cubicOut, linear } from 'svelte/easing';
-	import { Container, Graphics } from 'pixi-svelte';
+	import { Container, Graphics, Sprite } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
 	import { waitForTimeout } from 'utils-shared/wait';
 
@@ -25,12 +25,16 @@
 	import { getSpecialSymbolKey } from '../game/utils';
 	import CoasterWildBackground from './CoasterWildBackground.svelte';
 	import LoopingAssetSprite from './LoopingAssetSprite.svelte';
+	import LoopingSheetSprite from './LoopingSheetSprite.svelte';
 	import RollerMultiplierText from './RollerMultiplierText.svelte';
 
 	const context = getContext();
 	const layout = $derived(context.stateGameDerived.boardLayout());
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const megaWildKey = $derived(getSpecialSymbolKey('megaWild', layoutType));
+	// Cells the car has rolled past — used to clear the trigger's Mega Wild art too (not just plaque
+	// rows), so every symbol in the car's path disappears as it drops.
+	const clearedSet = $derived(new Set(context.stateGame.rollerClearedCells));
 
 	let transformed = $state<RollerReel[]>([]);
 	let combinedReels = $state<number[]>([]);
@@ -38,16 +42,19 @@
 	let totalAlphas = $state<Record<number, Tween<number>>>({});
 	let triggerReels = $state<RollerReel[]>([]);
 	let expandedRows = $state<Record<number, number[]>>({});
-	let displayedMultipliers = $state<Record<number, number>>({});
+	// Per-CELL plaque value keyed `${reel},${row}` — only the rows that actually carry a multiplier
+	// plaque get one (a 3x reel of three 1x plaques shows three boxes, not all five).
+	let cellMultipliers = $state<Record<string, number>>({});
 	let rowScales = $state<Record<string, Tween<number>>>({});
 	let totalScales = $state<Record<number, Tween<number>>>({});
 	let current = $state<RollerReel | null>(null);
-	// false while the car sits stationary (waving), true once it starts rolling down (excited/both-up)
+	// Two short looping clips: the car sits WAVING (roller-wild-car.webm) at rest, then hard-switches
+	// to EXCITED / both-wings-up (roller-wild-car-drop.webm) the instant it starts rolling down.
 	let carDropping = $state(false);
 	const carY = new Tween(-SYMBOL_H);
 	const CAR_DROP_IN_MS = 260;
-	const STATIONARY_HOLD_MS = 480;
-	const CAR_DESCENT_MS = 760;
+	const STATIONARY_HOLD_MS = 620; // a beat of waving before it drops
+	const CAR_DESCENT_MS = 1050; // slower than the original 760 — the fall read as too fast
 
 	const REEL_CENTER_Y = (SYMBOL_H * BOARD_DIMENSIONS.y) / 2;
 
@@ -58,39 +65,52 @@
 			combineTweens = {};
 			totalAlphas = {};
 			triggerReels = event.reels;
+			context.stateGame.rollerClearedCells = [];
 			expandedRows = {};
-			displayedMultipliers = {};
+			cellMultipliers = {};
 			rowScales = {};
 			totalScales = {};
 			current = null;
 			carDropping = false;
 			for (const reel of event.reels) {
 				current = reel;
-				carDropping = false; // stationary: waving car
+				carDropping = false; // waving clip
 				transformed = [...transformed, reel];
 				expandedRows = { ...expandedRows, [reel.reel]: [] };
-				displayedMultipliers = { ...displayedMultipliers, [reel.reel]: 1 };
 				const startY = -SYMBOL_H * 0.72;
 				const restY = SYMBOL_H * 0.5; // top row — the car sits here (visible) before it rolls down
 				const endY = BOARD_SIZES.height + SYMBOL_H * 0.72;
-				// Drop the car in from above to a visible rest spot and hold, so the duck reads before it
-				// rolls down — it used to start off-screen and shoot straight through too fast to see.
+				// Drop the car in from above to a visible rest spot and hold while the duck waves, so it
+				// reads before it rolls down (it used to shoot straight through too fast to see).
 				carY.set(startY, { duration: 0 });
 				await carY.set(restY, { duration: CAR_DROP_IN_MS, easing: cubicOut });
 				await waitForTimeout(STATIONARY_HOLD_MS);
-				carDropping = true; // the roll begins: switch to the excited / both-wings-up car
+				carDropping = true; // switch to the excited / both-wings-up clip as the roll begins
 				const descent = carY.set(endY, {
 					duration: CAR_DESCENT_MS,
 					easing: linear,
 				});
 				let previousRevealMs = 0;
 
+				// The car passes EVERY row on the way down: it clears the symbol behind it (Board hides
+				// that cell), and where a plaque was actually won it stamps that cell with the plaque's
+				// value. Rows without a plaque are simply left empty — so a 3x reel of three 1x plaques
+				// shows three boxes and two empty cells, not five boxes.
+				const plaqueByRow = new Map(reel.multipliers.map((p) => [p.row, p.multiplier]));
 				for (let row = 0; row < BOARD_DIMENSIONS.y; row += 1) {
 					const targetY = SYMBOL_H * (row + 0.5);
 					const revealMs = ((targetY - restY) / (endY - restY)) * CAR_DESCENT_MS;
 					await waitForTimeout(Math.max(0, revealMs - previousRevealMs));
 					previousRevealMs = revealMs;
+					// Clear the original symbol behind the car.
+					context.stateGame.rollerClearedCells = [
+						...context.stateGame.rollerClearedCells,
+						`${reel.reel},${row}`,
+					];
+					const plaqueValue = plaqueByRow.get(row);
+					if (plaqueValue == null) continue; // no plaque here → cell just goes empty
 					const rowKey = `${reel.reel},${row}`;
+					cellMultipliers = { ...cellMultipliers, [rowKey]: plaqueValue };
 					const scale = new Tween(0.58);
 					rowScales = { ...rowScales, [rowKey]: scale };
 					expandedRows = {
@@ -147,8 +167,9 @@
 			combineTweens = {};
 			totalAlphas = {};
 			triggerReels = [];
+			context.stateGame.rollerClearedCells = [];
 			expandedRows = {};
-			displayedMultipliers = {};
+			cellMultipliers = {};
 			rowScales = {};
 			totalScales = {};
 			current = null;
@@ -186,9 +207,9 @@
 				}}
 			/>
 
-			<!-- Initial landed trigger stays Mega Wild until the cart replaces its row. -->
+			<!-- Initial landed trigger stays Mega Wild until the car rolls over its row. -->
 			{#each triggerReels as roller (`trigger-${roller.reel}`)}
-				{#if !expandedRows[roller.reel]?.includes(roller.triggerRow)}
+				{#if !clearedSet.has(`${roller.reel},${roller.triggerRow}`)}
 					<Container x={cellX(roller.reel)} y={cellY(roller.triggerRow)} zIndex={9}>
 						<CoasterWildBackground reel={roller.reel} row={roller.triggerRow} />
 						<LoopingAssetSprite
@@ -204,14 +225,31 @@
 			{/each}
 
 			{#if current}
+				<!-- The coaster track the car rides down: two parallel rails laid on the active reel,
+				     behind the car, for the whole drop. Masked to the board like everything else here. -->
+				{#each [-0.34, 0.34] as railOffset (railOffset)}
+					<Sprite
+						key="rollerWildRail"
+						x={cellX(current.reel) + SYMBOL_W * railOffset}
+						y={BOARD_SIZES.height * 0.5}
+						zIndex={6}
+						anchor={0.5}
+						width={SYMBOL_W * 0.12}
+						height={BOARD_SIZES.height * 1.08}
+					/>
+				{/each}
+
+				<!-- Sprite-sheet playback (ticker-driven, can't freeze like the video route did). Waving
+				     sheet at rest, excited sheet once it drops — swapping animationKey restarts the clip.
+				     Sized to the 256×334 frame aspect so the car/duck isn't squashed. -->
 				<Container x={cellX(current.reel)} y={carY.current} zIndex={30}>
-					<LoopingAssetSprite
+					<LoopingSheetSprite
 						animationKey={carDropping ? 'rollerWildCarDropAnim' : 'rollerWildCarAnim'}
 						fallbackKey="rollerWildCar"
-						restartKey={`${current.reel}-${carDropping ? 'drop' : 'idle'}`}
+						animationSpeed={24 / 60}
 						anchor={0.5}
-						width={SYMBOL_W * 1.55}
-						height={SYMBOL_H * 1.65}
+						width={SYMBOL_W * 1.45}
+						height={(SYMBOL_W * 1.45 * 334) / 256}
 					/>
 				</Container>
 			{/if}
@@ -246,7 +284,7 @@
 								scale={combining ? 1 : (rowScales[`${roller.reel},${row}`]?.current ?? 1)}
 								alpha={1 - ct}
 							>
-								<RollerMultiplierText text={`${displayedMultipliers[roller.reel] ?? 1}X`} />
+								<RollerMultiplierText text={`${cellMultipliers[`${roller.reel},${row}`] ?? 1}X`} />
 							</Container>
 						{/if}
 					{/each}
