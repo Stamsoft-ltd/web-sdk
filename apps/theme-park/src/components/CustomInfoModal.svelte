@@ -916,7 +916,8 @@
 		.info-body {
 			position: relative;
 			z-index: 1;
-			padding: 4% 4.5% 7%;
+			/* Bottom padding reserves room for the (now modal-scaled) nav so content never reaches it. */
+			padding: 3.5% 4.5% 9%;
 			display: flex;
 			flex-direction: column;
 			height: 100%;
@@ -993,11 +994,40 @@
 			max-width: 340px;
 		}
 
-		/* PAYTABLE → two columns of rows. */
+		/* PAYTABLE → two columns of rows. Symbols/values in cqh so the rows shrink with the card
+		   (fixed 54px symbols made the grid too tall on laptops and the royals hit the nav). */
 		.pay-grid {
 			display: grid;
 			grid-template-columns: 1fr 1fr;
-			gap: 8px 26px;
+			gap: 1cqh 2.4cqh;
+		}
+		.pay-row {
+			gap: 1.4cqh;
+			padding: 0 1.4cqh;
+		}
+		.pay-sym {
+			width: 5.2cqh;
+			height: 5.2cqh;
+		}
+		.pay-vals span {
+			font-size: 1.6cqh;
+		}
+		.pay-vals em {
+			font-size: 1.05cqh;
+		}
+		.pay-royals {
+			gap: 1cqh;
+			margin-top: 0.8cqh;
+		}
+		.pay-royal {
+			width: 4.6cqh;
+			height: 4.6cqh;
+		}
+		.info-note {
+			margin-bottom: 1cqh;
+		}
+		.info-note--mt {
+			margin-top: 1cqh;
 		}
 
 		/* FEATURES / FEATURE BUY → 3 × 2 grid filling the box. */
@@ -1007,10 +1037,10 @@
 			display: grid;
 			grid-template-columns: repeat(3, 1fr);
 			grid-auto-rows: 1fr;
-			gap: 14px 18px;
+			gap: 1.6cqh 18px;
 		}
 		.feat-card {
-			padding: 6px 16px 10px;
+			padding: 0.6cqh 16px 0.9cqh;
 		}
 		.feat-h {
 			font-size: 2.4cqh;
@@ -1018,17 +1048,19 @@
 		.feat-p {
 			font-size: 1.72cqh;
 		}
-		/* Fill the space left under the text and contain — never taller than the (fixed-height) card. */
+		/* Fill the space under the text but cap the height (cqh, so it scales with the card) and leave
+		   a gap below — the logo never reaches the neon border, at any screen size. */
 		.feat-logo {
 			flex: 1 1 auto;
 			min-height: 0;
-			width: 100%;
-			max-width: 100%;
-			max-height: none;
-			margin: 8px 0 0;
+			width: auto;
+			max-width: 56%;
+			max-height: 11cqh;
+			margin: 0.6cqh auto 0.4cqh;
 		}
 		.feat-logo--sm {
-			margin-top: 6px;
+			max-height: 8cqh;
+			margin-top: 0.4cqh;
 		}
 		.buy-cost {
 			font-size: 2.3cqh;
@@ -1087,34 +1119,40 @@
 			flex: 1 1 auto;
 			justify-content: flex-start;
 		}
+		.gi-ic {
+			width: 7.4cqh;
+			height: 7.4cqh;
+			margin-bottom: 1cqh;
+		}
 
-		/* UI GUIDE → five across. */
+		/* UI GUIDE → five across; icons/labels in cqh so the block scales with the card. */
 		.guide {
 			flex: 1 1 auto;
 			min-height: 0;
 			grid-template-columns: repeat(5, 1fr);
-			gap: 18px 10px;
+			gap: 2.4cqh 1cqh;
 			align-content: center;
 		}
 		.guide-btn,
 		.guide-ic {
-			width: 58px;
-			height: 58px;
+			width: 5.9cqh;
+			height: 5.9cqh;
 		}
 		.guide-btn--big {
-			width: 78px;
-			height: 78px;
+			width: 7.9cqh;
+			height: 7.9cqh;
+			margin: -0.9cqh 0;
 		}
 		.guide-name {
-			font-size: 0.9rem;
+			font-size: 1.85cqh;
 		}
 		.guide-desc {
-			font-size: 0.76rem;
+			font-size: 1.55cqh;
 		}
 
 		.info-nav {
 			position: absolute;
-			bottom: 4.5%;
+			bottom: 3.6%;
 			left: 0;
 			right: 0;
 			z-index: 3;
