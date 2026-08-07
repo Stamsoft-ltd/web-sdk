@@ -8,10 +8,8 @@
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 
-	// magnetic_logo.webp is 1400×1098 INCLUDING a wide soft glow halo; the visible logo plate is
-	// ~half the box width, so the box is sized bigger than the visible mark and the baked-in glow
-	// acts as the top-left margin (hence the small offsets).
-	const LOGO_ASPECT = 1400 / 1098;
+	// Version2 logo plate (splash/logo_plate.webp) is tight-trimmed — no baked halo margins.
+	const LOGO_ASPECT = 900 / 601;
 	// Size comes from stateGame so the left-gutter box column (LandscapeCapsule / RespinPanel), which
 	// anchors itself just below this mark, can never drift out of sync with what is actually drawn.
 	// It shrinks on popout-S sizes only; popout L and desktop keep the original full size.
@@ -29,11 +27,12 @@
 		main.height * 0.5 - context.stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1)),
 	);
 	const logoCX = $derived((canvasLeftX + boardLeftX) * 0.5);
-	// The art has a baked glow halo, so the visible mark sits slightly above the box centre.
-	const logoCY = $derived(canvasTopY + LOGO_H * 0.4);
+	// Tight art: centre sits half its height below the screen top plus a whisker of margin,
+	// matching the design's near-flush top-left plate.
+	const logoCY = $derived(canvasTopY + LOGO_H * 0.54);
 
 	// Portrait: the logo is centred near the top of the screen and larger.
-	const PT_W = $derived(main.width * 0.68);
+	const PT_W = $derived(main.width * 0.5);
 	const PT_H = $derived(PT_W / LOGO_ASPECT);
 	// Press Play studio mark, top-right corner (portrait only).
 	const PP_ASPECT = 548 / 228;
@@ -41,16 +40,20 @@
 	const PP_H = $derived(PP_W / PP_ASPECT);
 </script>
 
+<!-- While the splash logo plate is flying to this spot (logoHandoffActive) the sprite stays
+     hidden — the HTML plate IS the logo until it lands, then the swap is invisible (same art). -->
 <MainContainer zIndex={20}>
 	{#if isPortrait}
-		<Sprite
-			key="magneticLogo"
-			anchor={0.5}
-			x={main.width * 0.5}
-			y={main.height * 0.088}
-			width={PT_W}
-			height={PT_H}
-		/>
+		{#if !context.stateGame.logoHandoffActive}
+			<Sprite
+				key="magneticLogo"
+				anchor={0.5}
+				x={main.width * 0.5}
+				y={main.height * 0.088}
+				width={PT_W}
+				height={PT_H}
+			/>
+		{/if}
 		<Sprite
 			key="pressPlayLogo"
 			anchor={{ x: 1, y: 0.5 }}
@@ -61,14 +64,16 @@
 		/>
 	{:else}
 		<!-- Magnetic Megachain logo — centred in the left rail, near the screen top -->
-		<Sprite
-			key="magneticLogo"
-			anchor={0.5}
-			x={logoCX}
-			y={logoCY}
-			width={LOGO_W}
-			height={LOGO_H}
-		/>
+		{#if !context.stateGame.logoHandoffActive}
+			<Sprite
+				key="magneticLogo"
+				anchor={0.5}
+				x={logoCX}
+				y={logoCY}
+				width={LOGO_W}
+				height={LOGO_H}
+			/>
+		{/if}
 		<!-- The landscape Press Play studio mark is rendered by PressPlayMark.svelte (mounted in
 		     Game.svelte), so it is intentionally NOT drawn here to avoid a duplicate. -->
 	{/if}

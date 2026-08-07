@@ -16,7 +16,7 @@
 	// Game description / rules popup — Magnetic Megachain. Multi-page (arrows below). All copy is
 	// localized via the i18n keys ('INFO …'); numeric values stay as constants here.
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	const logo = ap('/assets/components/ui/magnetic_logo.webp');
+	const logo = ap('/assets/components/splash/logo_plate.webp');
 	// Finished art (designer exports): overview hero composite, popup frame, reels-grid box element,
 	// and the sci-fi value box used behind the small stat cards.
 	const heroImg = ap('/assets/components/ui/info_hero.webp');

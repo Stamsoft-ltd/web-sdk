@@ -11,15 +11,15 @@
 	import { stateBet } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
-	import CapsuleBolts from './CapsuleBolts.svelte';
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { getSpriteKeyByName } from '../game/utils';
 	import type { SymbolName } from '../game/types';
+	import CapsuleBeam from './CapsuleBeam.svelte';
 
 	// Centre of the tube's clear glass, as a fraction of the shell sprite's height measured from
-	// its centre. From the alpha profile of capsule_tube_shell.webp: glass y 0.387..0.794 -> 0.591.
-	const GLASS_CENTRE_OFFSET = 0.091;
+	// its centre. Version2 pillar (695x1488): glass runs y ~0.33..0.78 -> centre 0.555.
+	const GLASS_CENTRE_OFFSET = 0.055;
 
 	const context = getContext();
 	const main = $derived(context.stateLayoutDerived.mainLayout());
@@ -63,46 +63,9 @@
 		}
 	});
 
-	// ── live tube electricity (mirrors the desktop CapsulePanel) ──
-	// Additive crackle web + central bolt flickered on top of the baked tube, with random SURGES that
-	// slam everything bright then decay fast. The tube symbol gets a synced jitter + scale/alpha pulse.
-	let arcFlicker = $state(0.8);
-	let crackleA = $state(0.6);
-	let crackleB = $state(0.3);
-	let symFx = $state({ dx: 0, dy: 0, s: 1, a: 1 });
-	$effect(() => {
-		if (!isLandscape) return;
-		let raf = 0;
-		const t0 = performance.now();
-		let nextSurge = performance.now() + 800 + Math.random() * 1500;
-		let surgeStart = -1;
-		const tick = (now: number) => {
-			const t = (now - t0) / 1000;
-			if (surgeStart < 0 && now >= nextSurge) surgeStart = now;
-			let surge = 0;
-			if (surgeStart >= 0) {
-				const st = (now - surgeStart) / 1000;
-				surge = Math.max(0, (0.6 + 0.4 * Math.sin(st * 70)) * Math.exp(-st / 0.11));
-				if (st > 0.4) {
-					surgeStart = -1;
-					nextSurge = now + 900 + Math.random() * 2200;
-				}
-			}
-			arcFlicker = Math.min(1, 0.6 + 0.24 * Math.sin(t * 19) * Math.sin(t * 6.3) + 0.12 * Math.sin(t * 47) + surge * 0.5);
-			crackleA = Math.min(1, 0.42 + 0.5 * (0.5 + 0.5 * Math.sin(t * 13.7)) * (0.5 + 0.5 * Math.sin(t * 4.4)) + surge);
-			crackleB = Math.min(1, 0.6 * (0.5 + 0.5 * Math.sin(t * 11.2 + 2.4)) * (0.5 + 0.5 * Math.sin(t * 3.3 + 1.1)) + surge * 0.8);
-			const grip = 1 + surge * 3;
-			symFx = {
-				dx: Math.sin(t * 23.7) * 0.012 * grip,
-				dy: Math.cos(t * 17.3) * 0.014 * grip,
-				s: 1 + 0.02 * Math.sin(t * 9.1) + surge * 0.05,
-				a: Math.min(1, 0.93 + 0.07 * Math.sin(t * 37) + surge * 0.3),
-			};
-			raf = requestAnimationFrame(tick);
-		};
-		raf = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(raf);
-	});
+	// The old live tube electricity (crackle/flicker rAF loop feeding CapsuleBolts and symbol
+	// jitter) is removed with the Version2 empty-tube pillar — no per-frame loop runs here until
+	// the new in-tube animation is designed.
 
 	// Free-spins counter (spins REMAINING = total - current).
 	let fsCurrent = $state(0);
@@ -129,7 +92,6 @@
 	// only ~94% wide × ~43% tall opaque within its box, so draw the (trimmed) animation at those
 	// fractions to land in the same on-screen tube. Falls back to the static glass + crackle.
 	const tubeY = $derived(cap.tubeY);
-	const symSize = $derived(cap.symSize);
 	const gridHalfW = $derived(cap.gridHalfW);
 	const canvasLeftX = $derived(
 		main.width * 0.5 - context.stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1)),
@@ -191,43 +153,25 @@
 		     runs top-to-bottom, with live electricity arcing INSIDE the clear window (masked) — inherits
 		     the portrait/desktop animation. Tube (transparent) -> symbol -> lightning on top. -->
 		<Container x={colX} y={tubeY}>
-			<!-- Same treatment as desktop (CapsulePanel): a STATIC shell plus PROCEDURAL bolts, replacing
-			     the baked capsule_tube_mobile_anim flipbook. The flipbook was a fixed cycle that visibly
-			     looped and carried the source video's ~1px housing wobble; CapsuleBolts generates fresh
-			     geometry per strike. Order is shell -> lightning -> symbol, so the beam passes BEHIND the
-			     held element. focusY tracks GLASS_CENTRE_OFFSET so the bolts converge on exactly the point
-			     the symbol sits at — see the measurement note below. -->
-			<!-- Footprint matches the baked tube this replaced: it was drawn ROTATED as
-			     width={tubeH * 0.941} height={tubeW * 0.427}, so on screen it was only 0.427 of tubeW
-			     across. Sizing the upright shell at the full tubeW x tubeH made it ~2.3x too wide. -->
-			{@const shellW = tubeW * 0.427}
+			<!-- Version2 empty-tube pillar (695x1488 keyed cutout), aspect-true: height drives, width
+			     follows the canvas ratio (capped by the gutter width so it can't reach the board).
+			     The old CapsuleBolts lightning + electric-jitter rAF loop are removed with the art —
+			     a new in-tube animation will be built against this empty glass. -->
 			{@const shellH = tubeH * 0.941}
+			{@const shellW = Math.min(tubeW, shellH * (695 / 1488))}
 			<Sprite key="capsuleTubeShell" anchor={0.5} width={shellW} height={shellH} />
-			{@const symLiveScale = symbolScale.current * symFx.s}
-			<!-- The clear glass is NOT centred in the sprite: measured off capsule_tube_shell.webp, the
-			     see-through band runs y 0.387-0.794 (the top cap assembly is much deeper than the base),
-			     so its centre sits 0.091 of the sprite height BELOW the sprite centre. Drawing the symbol
-			     at y=0 therefore floated it high in the tube. The bolts focus on the same point. -->
 			{@const glassCY = shellH * GLASS_CENTRE_OFFSET}
-			<CapsuleBolts
-				width={shellW}
-				height={shellH}
-				charged={!!symbolKey}
-				focusY={GLASS_CENTRE_OFFSET}
-				symRx={symSize * 0.5 * symLiveScale}
-				symRy={symSize * (264 / 328) * 0.5 * symLiveScale}
+			<!-- In-tube laser + sparkles + the held symbol, all inside CapsuleBeam (small, bobbing,
+			     beam terminating on it with an impact flare). Glass = 0.58 of the shell width x
+			     0.45 of its height (measured on the 695x1488 art). -->
+			<CapsuleBeam
+				y={glassCY}
+				glassW={shellW * 0.58}
+				glassH={shellH * 0.45}
+				{symbolKey}
+				symbolScale={symbolScale.current}
+				symbolW={shellW * 0.58 * 0.55}
 			/>
-			{#if symbolKey}
-				<Container x={symSize * symFx.dx} y={glassCY + symSize * symFx.dy} scale={symLiveScale}>
-					<Sprite
-						key={symbolKey}
-						anchor={0.5}
-						width={symSize}
-						height={symSize * (264 / 328)}
-						alpha={symFx.a}
-					/>
-				</Container>
-			{/if}
 		</Container>
 
 		<!-- ALL WINS (reward) + FREE SPINS boxes, left gutter — only during a bonus. -->

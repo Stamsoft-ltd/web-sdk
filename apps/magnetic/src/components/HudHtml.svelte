@@ -77,39 +77,43 @@
 	const soundBtnFrame = ap('/assets/components/frames/top_sound_button_frame.webp');
 	const menuBarFrame = ap('/assets/components/navbar/nav_bar.webp'); // blue-tech bottom bar
 
-	// Button backgrounds (icon-less frames) — icons are layered on top in markup
+	// Button backgrounds (icon-less frames) — icons are layered on top in markup.
+	// Version2 (Figma 2503:7839): spin = blue ring art + circular-arrow glyph; buy bonus = the blue
+	// capsule; utility buttons are flat CSS circles (#22365B / #2391C1 ring) with bare SVG glyphs.
 	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.webp'); // (unused; utility buttons are CSS circles)
-	const btnSpinBg = ap('/assets/components/navbar/btn_spin.webp'); // blue round — spin
-	const btnSpinStop = ap('/assets/components/navbar/btn_spin_stop.webp'); // stop/disabled state (during a spin) — square baked in
-	const btnWideBg = ap('/assets/components/navbar/btn_buy_bonus.webp'); // blue pill — buy bonus
+	const btnSpinBg = ap('/assets/components/ui/spin_ring.webp?v=20260807'); // Version2 blue round — spin
+	const btnSpinStop = ap('/assets/components/ui/spin_ring.webp?v=20260807'); // busy keeps the ring; the glyph overlay conveys stop
+	const btnWideBg = ap('/assets/components/ui/buy_bonus_capsule.webp'); // Version2 blue capsule — buy bonus
 
 	// Round icon-buttons — each PNG is a COMPLETE button (dark disc + cyan ring + icon baked in),
 	// with default + disabled/mute states from the "Icon Buttons" set. Used as the whole button.
-	const iconMenu = ap('/assets/components/navbar/icons/menu.webp');
+	const iconMenu = ap('/assets/components/navbar/icons/v2/ic_menu.svg');
 	// Same button (cyan ring + dark fill) as menu.webp but with a white X (Figma 4036-3577) — shown
 	// while the menu popover is open so the button reads as "close".
 	// ?v= because an earlier cut of this file shipped with an opaque white background (Figma's export
 	// flattens onto white), and browsers that already fetched it would keep serving the white box.
 	const iconMenuClose = ap('/assets/components/navbar/icons/menu_close.webp?v=2');
-	// Menu popover (Figma 4498-8432): panel above the menu button with SOUND / MUSIC / INFO rows.
-	const menuPopupBg = ap('/assets/components/navbar/menu_popup_bg.webp');
+	// Menu popover (Figma 7041-8978): flat Version2 navy panel with SOUND / MUSIC / INFO rows —
+	// pure CSS now (same #364970 / #4E78B8 language as the bottom bar), no bitmap panel.
 	const iconMenuMusic = ap('/assets/components/navbar/icons/menu_music.svg');
 	const iconMenuInfo = ap('/assets/components/navbar/icons/menu_info.svg');
 	// Disabled state (Figma 4553-9279): slashed note. There is no menu_sound* pair any more — the
 	// SOUND row renders the bottom-bar button art whole (see .menu-row__icon--full).
 	const iconMenuMusicOff = ap('/assets/components/navbar/icons/menu_music_off.webp');
-	const iconSound = ap('/assets/components/navbar/icons/sound.webp');
-	const iconMute = ap('/assets/components/navbar/icons/mute.webp');
-	const iconMinus = ap('/assets/components/navbar/icons/minus.webp');
-	const iconMinusDisabled = ap('/assets/components/navbar/icons/minus_disabled.webp');
-	const iconPlus = ap('/assets/components/navbar/icons/plus.webp');
-	const iconPlusDisabled = ap('/assets/components/navbar/icons/plus_disabled.webp');
-	const iconAuto = ap('/assets/components/navbar/icons/auto.webp');
-	const iconAutoDisabled = ap('/assets/components/navbar/icons/auto_disabled.webp');
-	const iconSpin = ap('/assets/hud/icon-spin.webp');
-	const iconTurbo = ap('/assets/components/navbar/icons/turbo.webp');
-	const iconTurbo1 = ap('/assets/components/navbar/icons/turbo1.webp');
-	const iconTurbo3 = ap('/assets/components/navbar/icons/turbo3.webp');
+	// Version2 flat glyphs (white SVGs / cutout webp) drawn inside the CSS circle buttons — the old
+	// per-state baked-button webps are gone; disabled/muted states are conveyed by CSS dimming.
+	const iconSound = ap('/assets/components/navbar/icons/v2/ic_sound.svg');
+	const iconMute = ap('/assets/components/navbar/icons/v2/ic_sound.svg');
+	const iconMinus = ap('/assets/components/navbar/icons/v2/ic_minus.svg');
+	const iconMinusDisabled = ap('/assets/components/navbar/icons/v2/ic_minus.svg');
+	const iconPlus = ap('/assets/components/navbar/icons/v2/ic_plus.svg');
+	const iconPlusDisabled = ap('/assets/components/navbar/icons/v2/ic_plus.svg');
+	const iconAuto = ap('/assets/components/navbar/icons/v2/ic_auto.svg');
+	const iconAutoDisabled = ap('/assets/components/navbar/icons/v2/ic_auto.svg');
+	const iconSpin = ap('/assets/components/ui/spin_arrow.webp?v=20260807');
+	const iconTurbo = ap('/assets/components/ui/ic_thunder.webp');
+	const iconTurbo1 = ap('/assets/components/ui/ic_thunder.webp');
+	const iconTurbo3 = ap('/assets/components/ui/ic_thunder.webp');
 	const iconCoins = ap('/assets/components/navbar/coins.webp');
 
 	// Portrait-only pad art (passed to CSS as vars): nav bar behind the controls, round buy-bonus
@@ -453,6 +457,7 @@
 
 <div
 	class="hud-shell"
+	class:hud-shell--celebrating={context.stateGame.celebrationActive}
 	data-layout={layoutType}
 	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-stop-bg:url('${btnSpinStop}');--pt-navbar:url('${navBarMobile}');--pt-buy:url('${buyBonusMobile}');--pt-value:url('${valueBoxMobile}');--pt-balance-bg:url('${balanceContainer}');--pt-bet-bg:url('${betContainer}');--ls-navbar:url('${navBarLand}');--ls-betbox:url('${betBoxLand}');--ls-buy-x:${lsBuyX}px;--ls-buy-y:${lsBuyY}px`}
 >
@@ -465,11 +470,11 @@
 			aria-label="Close menu"
 			onclick={() => (showMenuPopup = false)}
 		></button>
-		<div class="menu-popup" style={`background-image:url('${menuPopupBg}')`}>
+		<div class="menu-popup">
 			<button class="menu-row" type="button" onclick={toggleSfx}>
 				<!-- SOUND uses the exact bottom-bar sound/mute button art so the two match 1:1. -->
-				<span class="menu-row__icon menu-row__icon--full">
-					<img class="menu-row__fullimg" src={sfxOff ? iconMute : iconSound} alt="" />
+				<span class="menu-row__icon">
+					<img class="menu-row__fullimg" class:is-muted={sfxOff} src={iconSound} alt="" />
 				</span>
 				<span class="menu-row__label">{i18nDerived.translate('SOUND')}</span>
 			</button>
@@ -510,7 +515,7 @@
 					onclick={toggleSound}
 					aria-label="Mute all sound"
 				>
-					<img class="nav-icon" src={isMuted ? iconMute : iconSound} alt="sound" />
+					<img class="nav-icon" class:is-muted={isMuted} src={iconSound} alt="sound" />
 				</button>
 			</div>
 
@@ -562,7 +567,7 @@
 						<img class="nav-icon" src={iconMenu} alt="menu" />
 					</button>
 					<button class="nav-btn nav-btn--framed" type="button" onclick={toggleSound} aria-label="Sound">
-						<img class="nav-icon" src={isMuted ? iconMute : iconSound} alt="sound" />
+						<img class="nav-icon" class:is-muted={isMuted} src={iconSound} alt="sound" />
 					</button>
 				{/if}
 				<button
@@ -604,6 +609,7 @@
 					aria-label="Spin"
 					disabled={isBusy || (canInteract && !hasAuto && !canAffordBet)}
 				>
+					<img class="spin-btn__icon" src={iconSpin} alt="" />
 					{#if hasAuto}
 						<span
 							class="spin-btn__count"
@@ -669,6 +675,7 @@
 					aria-label="Spin"
 					disabled={isBusy || (canInteract && !hasAuto && !canAffordBet)}
 				>
+					<img class="spin-btn__icon" src={iconSpin} alt="" />
 					{#if hasAuto}
 						<span class="spin-btn__count">{autoSpinsRemainingText}</span>
 					{/if}
@@ -839,7 +846,7 @@
 					onclick={toggleSound}
 					aria-label="Mute all sound"
 				>
-					<img class="nav-icon" src={isMuted ? iconMute : iconSound} alt="sound" />
+					<img class="nav-icon" class:is-muted={isMuted} src={iconSound} alt="sound" />
 				</button>
 				<button
 					class="spin-btn ls-spin"
@@ -849,6 +856,7 @@
 					aria-label="Spin"
 					disabled={isBusy || (canInteract && !hasAuto && !canAffordBet)}
 				>
+					<img class="spin-btn__icon" src={iconSpin} alt="" />
 					{#if hasAuto}
 						<span class="spin-btn__count">{autoSpinsRemainingText}</span>
 					{/if}
@@ -901,6 +909,7 @@
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
+		transition: opacity 0.25s ease;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
@@ -909,20 +918,20 @@
 		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 	}
 
-	/* Dark shelf behind the bottom bar — masks the gray full-width element that
-	   sits below the HUD (proven by diagnostic that a z5 layer fully covers it),
-	   blending up into the forest. The bar (z6) renders on top. */
-	.hud-shell::after {
-		content: '';
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		height: 120px;
-		z-index: 5;
-		pointer-events: none;
-		background: linear-gradient(to top, #070b06 0%, #070b06 78%, rgba(7, 11, 6, 0) 100%);
+	/* A congratulations screen is up. The HUD is DOM ABOVE the canvas, so the popup's pixi dim
+	   cannot reach it — without this the bright bottom bar sits on top of the celebration, and it
+	   also swallows the press that is meant to dismiss it. */
+	.hud-shell--celebrating {
+		opacity: 0.12;
 	}
+	.hud-shell--celebrating * {
+		pointer-events: none !important;
+	}
+
+	/* NOTE: there used to be a 120px opaque shelf here (a forest-gang carry-over that masked a gray
+	   full-width element below the HUD). Magnetic has no such element — elementsFromPoint at the
+	   bottom edge returns the pixi canvas directly — so all the shelf did was black out the bottom
+	   of the room background. The bar carries its own plate, so it reads fine without it. */
 
 	.hud-bottom,
 	.scatter-card {
@@ -1007,13 +1016,16 @@
 		box-shadow: none;
 	}
 
-	/* Blue-tech bottom bar (thin border + corner brackets), stretched to fill the box */
+	/* Version2 bottom bar: flat navy panel with a thick steel-blue border (Figma 2503:7839). */
 	.hud-bottom::before {
 		content: '';
 		position: absolute;
 		inset: 0;
 		z-index: 0;
-		background: var(--menu-bar-bg) center / 100% 100% no-repeat;
+		background: #364970;
+		border: 4px solid #4e78b8;
+		border-radius: 10px;
+		box-sizing: border-box;
 		pointer-events: none;
 	}
 
@@ -1191,7 +1203,7 @@
 
 	.value {
 		font-family: 'Inter', sans-serif;
-		font-size: 1.05rem;
+		font-size: 1.3rem;
 		font-weight: 700;
 		color: #fff;
 	}
@@ -1291,15 +1303,28 @@
 		pointer-events: none;
 	}
 
-	/* Utility buttons: the icon-button PNG IS the whole button (disc + ring + icon), so no CSS
-	   frame — the image fills the button box. */
+	/* Version2 utility buttons: flat CSS circle (#22365B disc, #2391C1 ring) with a bare white
+	   glyph inside — the old per-state baked-button PNGs are gone. */
 	.nav-btn--framed {
-		background: none;
+		background: #22365b;
+		border: 1px solid #2391c1;
+		border-radius: 50%;
 	}
 
 	.nav-btn--framed .nav-icon {
-		width: 100%;
-		height: 100%;
+		width: 40%;
+		height: 40%;
+	}
+
+	/* Figma glyph sizes vary per icon: the speaker is 22.5/48 ≈ 47% wide where the others sit
+	   near 40% — at a uniform 40% it read undersized (user feedback). */
+	.nav-btn--framed .nav-icon[alt='sound'] {
+		width: 50%;
+		height: 50%;
+	}
+
+	.nav-btn--framed:disabled .nav-icon {
+		opacity: 0.35;
 	}
 
 	.nav-btn:not(:disabled):hover {
@@ -1359,9 +1384,11 @@
 		width: 200px;
 		height: 200px;
 		box-sizing: border-box;
-		padding: 22px 22px 24px;
-		background-size: 100% 100%;
-		background-repeat: no-repeat;
+		padding: 18px 20px;
+		/* Version2 flat panel (Figma 7041-8978) — same navy/border language as the bottom bar. */
+		background: #364970;
+		border: 4px solid #4e78b8;
+		border-radius: 10px;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
@@ -1381,8 +1408,9 @@
 		width: 39px;
 		height: 39px;
 		border-radius: 50%;
-		border: 1px solid #00fcff;
-		background: linear-gradient(to top, #0f2053, #000000);
+		/* Matches the bottom bar's framed circle buttons on the Version2 navy panel. */
+		border: 1px solid #2391c1;
+		background: #22365b;
 		display: grid;
 		place-items: center;
 		transition: opacity 0.12s ease, filter 0.12s ease;
@@ -1401,10 +1429,14 @@
 		background: none;
 	}
 	.menu-row__fullimg {
-		width: 100%;
-		height: 100%;
+		width: 52%;
+		height: 52%;
 		object-fit: contain;
 		display: block;
+	}
+	.menu-row__fullimg.is-muted,
+	.nav-icon.is-muted {
+		opacity: 0.4;
 	}
 	/* The "off" (struck-through) icons are .webp exports with no internal padding, so at `contain`
 	   they fill the glyph box where the padded .svg on-state icons only reach ~80% of theirs.
@@ -1437,7 +1469,7 @@
 	}
 	.menu-divider {
 		height: 1px;
-		background: rgba(0, 252, 255, 0.28);
+		background: rgba(255, 255, 255, 0.18);
 		margin: 0 4px;
 	}
 
@@ -1565,7 +1597,7 @@
 		   it protrudes above/below the bar as the focal control. */
 		margin: -32px 0;
 		border: none;
-		background: var(--btn-spin-bg) center / contain no-repeat;
+		background: none;
 		padding: 0;
 		outline: none;
 		cursor: pointer;
@@ -1576,19 +1608,47 @@
 		transition: filter 0.12s ease;
 	}
 
+	/* The ring lives on its own layer so it can rotate on hover while the arrow stays put.
+	   Both assets are re-centred on their measured circle centres (untrimmed canvases), so the
+	   rotation pivots exactly on the ring's axis. */
+	.spin-btn::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: var(--btn-spin-bg) center / 108% 108% no-repeat;
+		transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+		will-change: transform;
+	}
+
 	.spin-btn__icon {
-		width: 42%;
-		height: 42%;
+		/* Untrimmed arrow canvas at the design's 40%-of-button footprint — the glyph fills ~90% of
+		   its canvas, landing the visible arrow at the Figma size, dead centre on the ring. */
+		width: 46%;
+		height: 46%;
 		object-fit: contain;
 		display: block;
 		pointer-events: none;
-		/* The green frame's disc sits ~2% below the asset's box center (leaves are
-		   heavier at the bottom), so nudge the icon down to center it on the disc. */
-		transform: translateY(7%);
+		/* Above the ::before ring layer — an absolutely-positioned pseudo paints over
+		   non-positioned inline content, which would bury the arrow under the disc. */
+		position: relative;
+		z-index: 1;
+	}
+
+	/* While busy the count / stop overlay is the message — fade the arrow behind it. */
+	.spin-btn--busy .spin-btn__icon {
+		opacity: 0.25;
 	}
 
 	.spin-btn:not(:disabled):hover {
 		filter: brightness(1.08) drop-shadow(0 0 5px #0d89c6);
+	}
+
+	/* Hover flourish: the metal ring cranks a few degrees with a springy overshoot (pointer
+	   devices only — on touch, :hover sticks after tap and the ring would stay cocked). */
+	@media (hover: hover) {
+		.spin-btn:not(:disabled):hover::before {
+			transform: rotate(24deg);
+		}
 	}
 
 	.spin-btn:not(:disabled):active {
@@ -1601,7 +1661,7 @@
 	}
 
 	/* While a spin is running: swap to the dedicated stop-state button asset (square baked in). */
-	.spin-btn.spin-btn--busy {
+	.spin-btn.spin-btn--busy::before {
 		background-image: var(--btn-spin-stop-bg);
 	}
 
@@ -1622,7 +1682,7 @@
 		display: grid;
 		place-items: center;
 		border-radius: 50%;
-		background: radial-gradient(circle, rgba(20, 48, 8, 0.96) 60%, rgba(20, 48, 8, 0) 100%);
+		background: radial-gradient(circle, rgba(8, 20, 46, 0.96) 60%, rgba(8, 20, 46, 0) 100%);
 		color: #fff;
 		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-weight: 900;
@@ -1641,7 +1701,7 @@
 	.buy-btn {
 		width: 152px;
 		height: auto;
-		aspect-ratio: 636 / 192;
+		aspect-ratio: 640 / 171;
 		border: 0;
 		background: var(--buy-btn-bg) center / 100% 100% no-repeat;
 		padding: 0 26px;
@@ -1866,9 +1926,6 @@
 	.hud-shell[data-layout='portrait'] .hud-bottom {
 		display: none;
 	}
-	.hud-shell[data-layout='portrait']::after {
-		display: none;
-	}
 
 	.pt-hud {
 		position: absolute;
@@ -2045,9 +2102,6 @@
 
 	/* ── Landscape (mobile horizontal) HUD: vertical nav bar (right) + balance/bet (bottom-left) ── */
 	.hud-shell[data-layout='landscape'] .hud-bottom {
-		display: none;
-	}
-	.hud-shell[data-layout='landscape']::after {
 		display: none;
 	}
 	.ls-hud {

@@ -2,9 +2,12 @@
 	import { onMount } from 'svelte';
 	import { stateI18nDerived } from 'state-shared';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import { getContext } from '../game/context';
 
-	type Props = { onpress: () => void };
+	type Props = { onpress: () => void; ondone: () => void };
 	const props: Props = $props();
+
+	const context = getContext();
 
 	const t = (key: string) => stateI18nDerived.translate(key);
 
@@ -15,9 +18,7 @@
 			const parent = node.parentElement;
 			if (!parent) return;
 			node.style.fontSize = '';
-			// Target ~90% of the card width so long titles (e.g. Russian "РАСШИРЯЮЩИЕСЯ") shrink to leave
-			// a side margin instead of pressing right up against the frame edges.
-			const target = parent.clientWidth * 0.9;
+			const target = parent.clientWidth * 0.92;
 			const natural = node.scrollWidth;
 			if (target > 0 && natural > target) {
 				const base = parseFloat(getComputedStyle(node).fontSize);
@@ -31,17 +32,21 @@
 		return { update: apply, destroy: () => ro.disconnect() };
 	}
 
-	// splash_intro.jpg = industrial magnet room with three empty metal frames (no logo, no text).
-	const bgSrc = './assets/components/backgrounds/splash_intro.jpg?v=20260708';
-	// Portrait artwork: a single central metal frame baked in (for the mobile carousel).
-	const bgMobileSrc = './assets/components/backgrounds/splash_intro_mobile.jpg?v=20260708b';
-	const logoSrc = './assets/components/ui/magnetic_logo.webp?v=20260708';
-	const brandSrc = './assets/components/ui/press_play_logo.webp?v=20260708';
+	// Figma "Magnetic Slot Version2" splash (node 7022:6137, 1201x671): derelict machine hall with
+	// two capsule towers baked into the bg, a central pillar machine, the logo plate on its top drum,
+	// three holo feature panels, and loose parts (coil / chip / magnet / torn cable) on the floor.
+	const roomSrc = './assets/components/splash/room.webp';
+	const pillarSrc = './assets/components/splash/pillar.webp';
+	const logoSrc = './assets/components/splash/logo_plate.webp';
+	const panelSrc = './assets/components/splash/panel.webp';
+	const coilSrc = './assets/components/splash/coil.webp';
+	const chipSrc = './assets/components/splash/chip.webp';
+	const magnetSrc = './assets/components/splash/magnet.webp';
+	const cableSrc = './assets/components/splash/cable.webp';
+	// Same URL (incl. ?v=) as assets.ts so the browser reuses the bytes pixi already downloaded.
+	const brandSrc = './assets/components/ui/press_play_logo.webp?v=20260709';
 
-	// Three feature panels (BONUS GAMES / MEGA CHAIN / MAX WIN), rendered by index via the `panel`
-	// snippet in the markup below — desktop shows all three, portrait cycles through them one at a time.
-
-	// Mobile = portrait viewport: show the three feature blocks one at a time, 3s each.
+	// Mobile = portrait viewport: show the three feature panels one at a time, 3s each.
 	let isPortrait = $state(false);
 	let slide = $state(0);
 	const SLIDE_COUNT = 3;
@@ -58,8 +63,77 @@
 		return () => clearInterval(id);
 	});
 
+	// ── logo handoff ──
+	// On press the game mounts BEHIND this overlay (onpress), the scenery fades out, and the logo
+	// plate flies (FLIP) from its splash spot to the exact rect where GameLogoFrame will draw the
+	// same art. GameLogoFrame keeps its sprite hidden (stateGame.logoHandoffActive) until `finish`,
+	// so the landing is a seamless swap under the overlay's closing fade (ondone).
+	let leaving = $state(false);
+	let flyStyle = $state('');
+	let logoEl: HTMLImageElement | undefined = $state();
+	let finished = false;
+
+	// Where GameLogoFrame draws the logo, in viewport CSS px — the same maths as GameLogoFrame,
+	// then main-coords → canvas px → client px via the live canvas rect.
+	function targetLogoRect() {
+		const main = context.stateLayoutDerived.mainLayout();
+		const canvas = context.stateLayoutDerived.canvasSizes();
+		const scale = main.scale || 1;
+		const canvasEl = document.querySelector('canvas');
+		if (!canvasEl || !canvas.width) return null;
+		const cRect = canvasEl.getBoundingClientRect();
+		const unit = cRect.width / canvas.width;
+		const canvasLeftMain = main.width * 0.5 - canvas.width / (2 * scale);
+		const canvasTopMain = main.height * 0.5 - canvas.height / (2 * scale);
+		let cx: number, cy: number, w: number;
+		if (context.stateLayoutDerived.layoutType() === 'portrait') {
+			cx = main.width * 0.5;
+			cy = main.height * 0.088;
+			w = main.width * 0.5;
+		} else {
+			w = context.stateGameDerived.landscapeLogoWidth();
+			const h = context.stateGameDerived.landscapeLogoHeight();
+			const board = context.stateGameDerived.boardLayout();
+			const boardLeftX = board.x - board.width * 0.5 * board.boardScale;
+			cx = (canvasLeftMain + boardLeftX) * 0.5;
+			cy = canvasTopMain + h * 0.54;
+		}
+		return {
+			cx: cRect.left + (cx - canvasLeftMain) * scale * unit,
+			cy: cRect.top + (cy - canvasTopMain) * scale * unit,
+			w: w * scale * unit,
+		};
+	}
+
+	function finish() {
+		if (finished) return;
+		finished = true;
+		context.stateGame.logoHandoffActive = false;
+		props.ondone();
+	}
+
 	function handlePress() {
+		if (leaving) return;
+		leaving = true;
+		const rect = logoEl?.getBoundingClientRect();
+		const target = rect && rect.width > 0 ? targetLogoRect() : null;
+		if (target) {
+			const dx = target.cx - (rect!.left + rect!.width / 2);
+			const dy = target.cy - (rect!.top + rect!.height / 2);
+			flyStyle = `--fly-x:${dx.toFixed(1)}px;--fly-y:${dy.toFixed(1)}px;--fly-s:${(target.w / rect!.width).toFixed(4)}`;
+			context.stateGame.logoHandoffActive = true;
+		}
 		props.onpress();
+		if (!target) {
+			finish();
+			return;
+		}
+		// animationend on the flight is the happy path; the timeout catches it if the animation
+		// never runs (display quirk, reduced-motion edge) so the overlay can never get stuck.
+		setTimeout(finish, 1400);
+	}
+	function handleLogoAnimEnd(e: AnimationEvent) {
+		if (e.animationName.includes('logo-fly')) finish();
 	}
 	function handleKey(e: KeyboardEvent) {
 		if (e.code === 'Space' || e.code === 'Enter') handlePress();
@@ -68,20 +142,27 @@
 
 <svelte:window onkeydown={handleKey} onresize={updateOrientation} />
 
-<div class="splash-intro" role="button" tabindex="0" onclick={handlePress} onkeydown={handleKey}>
-	<!-- Per-panel content by index (0 = BONUS GAMES, 1 = MEGA CHAIN, 2 = MAX WIN). Coloured feature
-	     keywords sit on their own lines so each is a single translatable string with a colour class. -->
-	{#snippet panel(i: number)}
+<div
+	class="splash-intro"
+	class:leaving
+	role="button"
+	tabindex="0"
+	onclick={handlePress}
+	onkeydown={handleKey}
+>
+	<!-- Per-panel text content by index (0 = BONUS GAMES, 1 = MEGA CHAIN, 2 = MAX WIN). -->
+	{#snippet panelText(i: number)}
 		{#if i === 0}
 			<div class="f-title f-blue" use:fitTitle={t('SPLASH BONUS TITLE')}>{t('SPLASH BONUS TITLE')}</div>
 			<div class="f-sub">{i18nDerived.translateVars('SPLASH SCATTERS FOR', { count: 3 })}</div>
-			<div class="f-key f-blue">{t('SPLASH MEGA TITLE')}</div>
+			<div class="f-key f-mega">{t('SPLASH MEGA TITLE')}</div>
+			<div class="f-line"></div>
 			<div class="f-sub">{i18nDerived.translateVars('SPLASH SCATTERS FOR', { count: 4 })}</div>
-			<div class="f-key f-mega">{t('SPLASH MMC')}</div>
+			<div class="f-key f-mmc">{t('SPLASH MMC')}</div>
 		{:else if i === 1}
 			<div class="f-title f-mega" use:fitTitle={t('SPLASH MEGA TITLE')}>{t('SPLASH MEGA TITLE')}</div>
 			<div class="f-sub">{t('SPLASH MEGA BUILD')}</div>
-			<div class="f-key f-blue">{t('SPLASH MEGA CHAIN')}</div>
+			<div class="f-key f-blue f-chain">{t('SPLASH MEGA CHAIN')}</div>
 			<div class="f-sub">{t('SPLASH MEGA REST')}</div>
 		{:else}
 			<div class="f-title f-blue" use:fitTitle={t('SPLASH MAX TITLE')}>{t('SPLASH MAX TITLE')}</div>
@@ -90,14 +171,50 @@
 			<div class="f-sub">{t('SPLASH MULTIPLIER')}</div>
 		{/if}
 	{/snippet}
-	{#if isPortrait}
-		<!-- Mobile / portrait: single central frame, one feature block at a time. -->
-		<div class="stage stage--mobile" style={`background-image: url('${bgMobileSrc}')`}>
-			<img class="brand brand--m" src={brandSrc} alt="Press Play" draggable="false" />
-			<img class="logo logo--m" src={logoSrc} alt="Magnetic" draggable="false" />
 
-			<div class="feat feat-m">
-				{@render panel(slide)}
+	<!-- Loose floor parts. Each is: .place (goal position) > .fly (flight + aftershock hop) > img
+	     (facing + landing squash). Coil storms in from the left, chip rises from below, magnet from
+	     the right; the magnet's landing is the "big hit" that jolts the stage and hops the parts. -->
+	<!-- Loose parts sit on the floor from the start; they only react (a small hop) when the three
+	     panels slam home. `.place` positions, the inner `.hop` animates — the two are separate
+	     elements because both use the `animation` shorthand. -->
+	{#snippet floorParts()}
+		<div class="place place-cable">
+			<div class="hop hop-cable"><img src={cableSrc} alt="" draggable="false" /></div>
+		</div>
+		<div class="place place-coil">
+			<div class="hop hop-coil"><img class="face-coil" src={coilSrc} alt="" draggable="false" /></div>
+		</div>
+		<div class="place place-chip">
+			<div class="hop hop-chip"><img class="face-chip" src={chipSrc} alt="" draggable="false" /></div>
+		</div>
+		<div class="place place-magnet">
+			<div class="hop hop-magnet"><img class="face-magnet" src={magnetSrc} alt="" draggable="false" /></div>
+		</div>
+	{/snippet}
+
+	{#if isPortrait}
+		<!-- Portrait: same pieces recomposed — pillar + logo up top, one panel at a time, parts below. -->
+		<div class="stage stage--m">
+			<div class="room-bg" style={`background-image: url('${roomSrc}')`}></div>
+			<img class="brand brand--m" src={brandSrc} alt="Press Play" draggable="false" />
+			<img class="pillar pillar--m" src={pillarSrc} alt="" draggable="false" />
+			<img
+				class="logo logo--m"
+				class:logo--fly={leaving && flyStyle}
+				style={flyStyle}
+				bind:this={logoEl}
+				onanimationend={handleLogoAnimEnd}
+				src={logoSrc}
+				alt="Magnetic Megachain"
+				draggable="false"
+			/>
+
+			<div class="panel panel-m">
+				<img class="panel-img" src={panelSrc} alt="" draggable="false" />
+				<div class="panel-body">
+					{@render panelText(slide)}
+				</div>
 			</div>
 
 			<div class="dots">
@@ -106,19 +223,37 @@
 				{/each}
 			</div>
 
+			{@render floorParts()}
+
 			<p class="press-label press-label--m">{t('SPLASH PRESS')} →</p>
 		</div>
 	{:else}
-		<!-- Desktop / landscape: 16:9 stage with all three boards. -->
-		<div class="stage" style={`background-image: url('${bgSrc}')`}>
+		<!-- Landscape: the full 1201x671 Figma stage, height-fit and centred. -->
+		<div class="stage">
+			<div class="room-bg" style={`background-image: url('${roomSrc}')`}></div>
 			<img class="brand" src={brandSrc} alt="Press Play" draggable="false" />
-			<img class="logo" src={logoSrc} alt="Magnetic" draggable="false" />
+			<img class="pillar" src={pillarSrc} alt="" draggable="false" />
+			<img
+				class="logo"
+				class:logo--fly={leaving && flyStyle}
+				style={flyStyle}
+				bind:this={logoEl}
+				onanimationend={handleLogoAnimEnd}
+				src={logoSrc}
+				alt="Magnetic Megachain"
+				draggable="false"
+			/>
 
 			{#each [0, 1, 2] as i}
-				<div class="feat feat-{i}">
-					{@render panel(i)}
+				<div class="panel panel-{i}">
+					<img class="panel-img" src={panelSrc} alt="" draggable="false" />
+					<div class="panel-body">
+						{@render panelText(i)}
+					</div>
 				</div>
 			{/each}
+
+			{@render floorParts()}
 
 			<p class="press-label">{t('SPLASH PRESS')} →</p>
 		</div>
@@ -135,185 +270,249 @@
 		user-select: none;
 		overflow: hidden;
 		background: #05070f;
+		transition: background-color 400ms ease;
+		/* The wrapper in Game.svelte is pointer-events:none; re-enable here so the splash itself
+		   stays pressable until the handoff starts. */
+		pointer-events: auto;
 	}
 
-	/* Height-fit 16:9 stage, sized to the splash CONTAINER (not the viewport) so overlays stay locked
-	   to the artwork even when the game area is smaller than the browser window. */
+	/* Handoff: the overlay goes see-through and click-through while the logo flies to its in-game
+	   spot; everything else fades. `animation: none` is required — several children carry finished
+	   fill-mode:both animations whose final opacity:1 keyframe would override the fade
+	   (their base poses equal the animations' end poses, so dropping them doesn't shift anything). */
+	.splash-intro.leaving {
+		background: transparent;
+		pointer-events: none;
+		cursor: default;
+	}
+	.leaving .stage > :not(.logo) {
+		animation: none;
+		opacity: 0;
+		transition: opacity 320ms ease;
+	}
+
+	/* Height-fit 16:9-ish stage (Figma frame is 1201x671), sized to the splash CONTAINER so overlays
+	   stay locked to the artwork even when the game area is smaller than the browser window. */
 	.stage {
 		position: absolute;
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
 		height: 100%;
-		aspect-ratio: 16 / 9;
-		background-size: 100% 100%;
+		aspect-ratio: 1201 / 671;
+		container-type: size;
+		animation:
+			stage-fade 250ms ease-out both,
+			stage-jolt 300ms ease-out 830ms both,
+			stage-slam 420ms ease-out 1750ms both;
+	}
+
+	/* Room art lives on its own layer (not the stage itself) so the handoff can fade it out while
+	   the logo — also a stage child — keeps flying at full opacity. */
+	.room-bg {
+		position: absolute;
+		inset: 0;
+		background-size: cover;
 		background-position: center;
 		background-repeat: no-repeat;
-		container-type: size;
-		/* The ground shake that sells the logo's impact. Delay = the logo's touchdown moment
-		   (46% of its 900ms drop), so the jolt fires on the frame the two make contact. */
-		animation: stage-jolt 320ms ease-out 414ms both;
 	}
 
-	/* Portrait stage: a fixed-aspect box matching the artwork (852×1846) that fills the viewport
-	   width; the bg fills the box exactly so overlays stay locked to the frame regardless of
-	   viewport aspect (the height overflows slightly and is centre-cropped). */
-	.stage--mobile {
+	/* Portrait stage: fixed-aspect tall box filling the viewport width, centre-cropped room art. */
+	.stage--m {
 		width: 100vw;
-		height: calc(100vw * 1846 / 852);
+		height: max(100vh, calc(100vw * 16 / 9));
+		aspect-ratio: auto;
 	}
 
-	/* Studio logo, centred at the very top, above the game logo. */
+	/* ------------------------------------------------------------------ set dressing */
+
+	/* Studio logo, top-right like the design (desktop) / top-centre (portrait). */
 	.brand {
 		position: absolute;
-		left: 50%;
-		top: 2%;
-		transform: translateX(-50%);
+		right: 2.2%;
+		top: 4%;
 		width: 9.4%;
 		object-fit: contain;
 		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.7));
+		animation: soft-in 400ms ease-out 150ms both;
+	}
+	.brand--m {
+		right: auto;
+		left: 50%;
+		transform: translateX(-50%);
+		top: 1.5%;
+		width: 22%;
 	}
 
-	/* Game logo, centred below the studio logo. Anchored by its CENTRE (translate -50%,-50%) so the
-	   logo art sits at `top` regardless of the transparent glow padding baked into the PNG. */
+	/* Central pillar machine. The Version2 keyed cutout (695x1488) is much narrower than the old
+	   canvas, so the width is set to keep the same on-screen HEIGHT as the Figma placement. */
+	.pillar {
+		position: absolute;
+		left: 50%;
+		top: -16.2cqh;
+		transform: translateX(-50%);
+		width: 35cqw;
+		animation: pillar-rise 450ms cubic-bezier(0.2, 0.7, 0.3, 1) 180ms both;
+	}
+	.pillar--m {
+		top: 6cqh;
+		width: 52cqw;
+	}
+
+	/* Logo plate, dropped like a stone onto the pillar's top drum. Centre-anchored (translate
+	   -50%,-50%) at the trimmed art's centre: Figma box 266x199 at top -17 → content centre 76px. */
 	.logo {
 		position: absolute;
 		left: 50%;
-		top: 26%;
+		top: 11.3cqh;
 		transform: translate(-50%, -50%);
-		width: 52%;
-		object-fit: contain;
+		width: 17.5cqw;
 		filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.75));
-		/* Entrance: the logo falls in from above the stage and lands like a dropped stone.
-		   --drop-from is the start offset in stage-height units (the stage is the container), tuned
-		   per layout so the art starts fully clear of the top edge: at width 52% the 1400x1098 logo
-		   is ~0.73 stage-heights tall on desktop and already overhangs the top at rest, so it needs
-		   to travel much further up there than on the tall portrait stage. No fade is needed —
-		   .splash-intro is overflow:hidden, so anything above the stage top is simply clipped. */
-		--drop-from: -68cqh;
-		animation: logo-drop 900ms linear both;
-	}
-
-	/* Mobile logo sizing/placement (wider % since the stage is narrow). The portrait stage is a tall
-	   fixed-aspect box centred in the viewport, so on short phones it overflows and is cropped
-	   top+bottom — which pushes the logo stack against the top edge. Anchor the stack a fixed
-	   distance below the *viewport* top once the crop exceeds the artwork-relative %:
-	   `crop-per-side + margin`, where crop-per-side = (stageHeight − viewportHeight) / 2. */
-	.brand--m {
-		top: max(11%, calc((100vw * 1846 / 852 - 100vh) / 2 + 4vh));
-		width: 24%;
+		--drop-from: -30cqh;
+		animation: logo-drop 700ms linear 500ms both;
 	}
 	.logo--m {
-		top: max(15.5%, calc((100vw * 1846 / 852 - 100vh) / 2 + 7.5vh));
-		width: 52%;
-		/* Portrait stage is ~2.17x as tall as it is wide, so the same 52% width is only ~0.19
-		   stage-heights of logo — a much shorter trip to clear the top edge. */
-		--drop-from: -32cqh;
+		top: 13.5cqh;
+		width: 46cqw;
+		--drop-from: -22cqh;
 	}
 
-	/* Feature text blocks — positioned by their centre over each metal frame. The width is matched to
-	   the frame's BLACK INTERIOR (~17.5% of the stage), not the outer frame, so long translations wrap
-	   onto multiple rows INSIDE the window instead of spilling across the metal border. */
-	.feat {
+	/* Handoff flight: FLIP to the in-game logo rect. --fly-x/y are viewport-px deltas between the
+	   two centres, --fly-s the width ratio; scale acts about the img's own centre so translate alone
+	   lands the centre. Declared after .logo so it replaces the entrance animation. */
+	.logo--fly {
+		animation: logo-fly 640ms cubic-bezier(0.55, 0.05, 0.15, 1) both;
+	}
+	@keyframes logo-fly {
+		0% {
+			transform: translate(-50%, -50%);
+		}
+		100% {
+			transform: translate(calc(-50% + var(--fly-x)), calc(-50% + var(--fly-y)))
+				scale(var(--fly-s));
+		}
+	}
+
+	/* ------------------------------------------------------------------ feature panels */
+
+	/* Figma: full panel art squeezed into a 319x280 box at top 263; trimmed art maps to a
+	   266x240 box centred at y 397.5 (59.2cqh). Width/height both set: the art is stretched
+	   exactly like the design squeezes its square source.
+
+	   Entrances: BONUS GAMES slides in from the LEFT, MEGA CHAIN from the BOTTOM, MAX WIN from
+	   the RIGHT — accelerating approach, then each skids past its mark with a squash along the
+	   motion axis. All three are home by ~1750ms, which is when stage-slam + the floor hops fire. */
+	.panel {
 		position: absolute;
+		top: 59.2cqh;
 		transform: translate(-50%, -50%);
-		width: 17.5%;
-		height: 34%;
+		width: 22.2cqw;
+		height: 35.8cqh;
+	}
+	.panel-0 {
+		left: calc(50% - 23.4cqw);
+		animation: panel-from-left 650ms linear 1050ms both;
+	}
+	.panel-1 {
+		left: 50%;
+		animation: panel-from-bottom 650ms linear 1150ms both;
+	}
+	.panel-2 {
+		left: calc(50% + 23.4cqw);
+		animation: panel-from-right 650ms linear 1250ms both;
+	}
+	.panel-img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+	.panel-body {
+		position: absolute;
+		inset: 7% 8%;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 0.5cqw;
+		gap: 0.55cqw;
 		text-align: center;
 		pointer-events: none;
 	}
 
-	/* Frame interior centres, measured from the artwork: 26.3 / 49.1 / 71.9% (symmetric about 49.1%). */
-	.feat-0 {
-		left: 26.3%;
-		top: 65%;
-	}
-	.feat-1 {
-		left: 49.1%;
-		top: 65%;
-	}
-	.feat-2 {
-		left: 71.9%;
-		top: 65%;
-	}
-
-	/* Mobile: single feature block centred on the baked frame (interior centre ≈ 54% of the art). Width
-	   matched to that frame's BLACK INTERIOR (~60% of the stage), so long keyword lines wrap inside the
-	   window instead of spilling over the metal border. */
-	.feat-m {
+	/* Portrait: single panel centred between logo and floor parts, entering from the bottom. */
+	.panel-m {
 		left: 50%;
-		top: 54%;
-		width: 60%;
-		height: 34%;
-		gap: 1.4cqw;
+		top: 52cqh;
+		width: 64cqw;
+		height: calc(64cqw * 240 / 266);
+		animation: panel-from-bottom 650ms linear 1050ms both;
+	}
+	.panel-m .panel-body {
+		gap: 1.6cqw;
 	}
 
-	/* Titles — condensed sci-fi caps, gradient-filled with a soft dark glow. */
+	/* ------------------------------------------------------------------ panel typography */
+
 	.f-title {
-		font-family: 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
+		font-family: 'Chakra Petch', 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
 		font-weight: 700;
-		font-size: 2.3cqw;
+		font-size: 2.9cqw;
 		line-height: 1;
-		letter-spacing: 0.02em;
-		text-transform: uppercase;
-		white-space: pre; /* honour the explicit line break, never auto-wrap */
-		filter: drop-shadow(0 0 0.55em rgba(0, 0, 0, 0.9));
-	}
-
-	/* Descriptive lines ("with up to" / "multiplier") — Figma: Poppins 400, #FFFFFF, 16px,
-	   letter-spacing 0.48px (= 0.03em). Sized in cqw so it scales with the artwork (16px ≈ 1.33cqw). */
-	.f-sub {
-		font-family: 'Poppins', sans-serif;
-		font-weight: 400;
-		font-size: 1.33cqw;
-		line-height: normal;
-		color: #ffffff;
-		text-align: center;
 		letter-spacing: 0.03em;
-		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
-		/* Never wider than the frame — long translations wrap onto multiple rows. */
+		text-transform: uppercase;
+		white-space: pre;
+		margin-bottom: 0.5cqw;
+		filter: drop-shadow(0 0 0.55em rgba(0, 0, 0, 0.55));
+	}
+	.f-sub {
+		font-family: 'Chakra Petch', 'Poppins', sans-serif;
+		font-weight: 400;
+		font-size: 1.4cqw;
+		line-height: 1.3;
+		color: #ffffff;
+		letter-spacing: 0.03em;
+		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
 		max-width: 100%;
 		overflow-wrap: break-word;
 	}
-
-	/* Coloured feature-keyword lines (MEGA CHAIN, MAGNETIC MEGA CHAIN, chain) — bolder/bigger than the
-	   plain description lines; a .f-blue / .f-mega gradient class is applied alongside. */
 	.f-key {
-		font-family: 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
+		font-family: 'Chakra Petch', 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
 		font-weight: 700;
 		font-size: 1.75cqw;
-		line-height: 1.08;
-		text-align: center;
-		letter-spacing: 0.02em;
-		filter: drop-shadow(0 0 0.4em rgba(0, 0, 0, 0.85));
-		/* Never wider than the frame — long keywords (e.g. de "MAGNETISCHE MEGA-KETTE") wrap to two rows
-		   instead of spilling past the card edges. */
+		line-height: 1.12;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		filter: drop-shadow(0 0 0.4em rgba(0, 0, 0, 0.5));
 		max-width: 100%;
 		overflow-wrap: break-word;
 	}
-
-	/* Big multiplier value — gold gradient, condensed bold, with a trailing smaller "x". */
+	.f-chain {
+		font-weight: 600;
+		font-size: 2.15cqw;
+		text-transform: none;
+	}
 	.f-value {
-		font-family: 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
+		font-family: 'Chakra Petch', 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
 		font-weight: 700;
-		font-size: 3.6cqw;
+		font-size: 4cqw;
 		line-height: 1;
-		letter-spacing: 0.01em;
-		filter: drop-shadow(0 0 0.35em rgba(0, 0, 0, 0.85));
+		letter-spacing: 0.03em;
+		filter: drop-shadow(0 0 0.35em rgba(0, 0, 0, 0.5));
 	}
 	.f-x {
-		font-size: 0.6em;
-		margin-left: 0.06em;
+		font-size: 0.72em;
+		margin-left: 0.05em;
+	}
+	.f-line {
+		width: 4.4cqw;
+		height: 1px;
+		margin: 0.5cqw 0;
+		background: rgba(255, 255, 255, 0.45);
 	}
 
-	/* Colour fills (Figma feature gradients) */
+	/* Figma feature gradients */
 	.f-blue {
-		background: linear-gradient(180deg, #d3ecff 0%, #6bb0ff 42%, #2f7ee0 78%, #1c5cc4 100%);
+		background: linear-gradient(180deg, #448af9 0%, #81b9f8 25%, #80bff5 49%, #60a4ec 74%, #005fe1 98%);
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
@@ -335,36 +534,229 @@
 		-webkit-text-fill-color: transparent;
 		color: transparent;
 	}
-	.f-gold {
-		background: var(
-			--gold-splash,
-			linear-gradient(183deg, #f1eea5 -7.45%, #e79a17 28.07%, #d7880c 63.58%, #a16202 93.75%)
-		);
+	.f-mmc {
+		background: linear-gradient(180deg, #c84175 0%, #afb6f5 43%, #c2aae9 98%);
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		color: transparent;
 	}
 
-	/* Mobile feature sizes — Figma (360-wide): title 30px, value 54px, sub 16px. cqw = % stage width. */
-	.feat-m .f-title {
-		font-size: 8.3cqw;
+	/* Portrait panel type — scaled to the wider panel (cqw of a narrow stage). */
+	.panel-m .f-title {
+		font-size: 8cqw;
 	}
-	.feat-m .f-sub {
-		font-size: 4.44cqw;
+	.panel-m .f-sub {
+		font-size: 4cqw;
 	}
-	.feat-m .f-key {
-		font-size: 5.6cqw;
+	.panel-m .f-key {
+		font-size: 5cqw;
 	}
-	.feat-m .f-value {
-		font-size: 15cqw;
+	.panel-m .f-chain {
+		font-size: 6cqw;
+	}
+	.panel-m .f-value {
+		font-size: 11.5cqw;
+	}
+	.panel-m .f-line {
+		width: 12cqw;
+		margin: 1.4cqw 0;
 	}
 
-	/* Slide indicator dots (mobile) — just below the frame. */
+	/* ------------------------------------------------------------------ floor parts */
+
+	.place {
+		position: absolute;
+		transform: translate(-50%, -50%);
+		pointer-events: none;
+	}
+	.place img {
+		display: block;
+		width: 100%;
+		filter: drop-shadow(0 0.6cqh 1cqh rgba(0, 0, 0, 0.5));
+	}
+	.place-cable {
+		left: 6.8%;
+		top: 89.2%;
+		width: 29cqw;
+		animation: soft-in 400ms ease-out 250ms both;
+	}
+	.place-coil {
+		left: 28.7%;
+		top: 92.2%;
+		width: 8cqw;
+	}
+	.place-chip {
+		left: 80.3%;
+		top: 91.8%;
+		width: 7cqw;
+	}
+	.place-magnet {
+		left: 95%;
+		top: 89.6%;
+		width: 8cqw;
+	}
+
+	/* Rest-pose facing (mirrors/tilts from the design). */
+	.face-coil {
+		transform: scaleX(-1);
+	}
+	.face-chip {
+		transform: rotate(15deg);
+	}
+
+	/* Portrait floor-part positions: same cast along the bottom edge. */
+	.stage--m .place-cable {
+		left: 8%;
+		top: 87.5%;
+		width: 44cqw;
+	}
+	.stage--m .place-coil {
+		left: 31%;
+		top: 92.5%;
+		width: 17cqw;
+	}
+	.stage--m .place-chip {
+		left: 58%;
+		top: 94%;
+		width: 15cqw;
+	}
+	.stage--m .place-magnet {
+		left: 86%;
+		top: 92%;
+		width: 17cqw;
+	}
+
+	/* All floor parts fade in with the scenery, then jump slightly when the panels slam home
+	   (~1750ms). Tiny per-part delay jitter so the floor doesn't hop as one rigid sheet. */
+	.place-coil,
+	.place-chip,
+	.place-magnet {
+		animation: soft-in 400ms ease-out 250ms both;
+	}
+	.hop-cable {
+		animation: part-hop-small 320ms ease-out 1790ms both;
+	}
+	.hop-coil {
+		animation: part-hop 320ms ease-out 1810ms both;
+	}
+	.hop-chip {
+		animation: part-hop 320ms ease-out 1840ms both;
+	}
+	.hop-magnet {
+		animation: part-hop 320ms ease-out 1770ms both;
+	}
+
+	/* Panel flights: offscreen → accelerate in (the 0% timing function), skid a touch past the
+	   mark with a squash along the motion axis, settle. All keyframes repeat translate(-50%,-50%)
+	   because that is what centres a panel on its anchor. */
+	@keyframes panel-from-left {
+		0% {
+			transform: translate(calc(-50% - 90cqw), -50%);
+			animation-timing-function: cubic-bezier(0.4, 0, 0.85, 0.55);
+		}
+		76% {
+			transform: translate(-50%, -50%);
+			animation-timing-function: ease-out;
+		}
+		85% {
+			transform: translate(calc(-50% + 1cqw), -50%) scale(0.955, 1.035);
+			animation-timing-function: ease-in-out;
+		}
+		100% {
+			transform: translate(-50%, -50%) scale(1, 1);
+		}
+	}
+	@keyframes panel-from-right {
+		0% {
+			transform: translate(calc(-50% + 90cqw), -50%);
+			animation-timing-function: cubic-bezier(0.4, 0, 0.85, 0.55);
+		}
+		76% {
+			transform: translate(-50%, -50%);
+			animation-timing-function: ease-out;
+		}
+		85% {
+			transform: translate(calc(-50% - 1cqw), -50%) scale(0.955, 1.035);
+			animation-timing-function: ease-in-out;
+		}
+		100% {
+			transform: translate(-50%, -50%) scale(1, 1);
+		}
+	}
+	@keyframes panel-from-bottom {
+		0% {
+			transform: translate(-50%, calc(-50% + 85cqh));
+			animation-timing-function: cubic-bezier(0.4, 0, 0.85, 0.55);
+		}
+		76% {
+			transform: translate(-50%, -50%);
+			animation-timing-function: ease-out;
+		}
+		85% {
+			transform: translate(-50%, calc(-50% - 1.2cqh)) scale(1.035, 0.955);
+			animation-timing-function: ease-in-out;
+		}
+		100% {
+			transform: translate(-50%, -50%) scale(1, 1);
+		}
+	}
+
+	@keyframes part-hop {
+		0% {
+			transform: translateY(0) rotate(0deg);
+		}
+		35% {
+			transform: translateY(-1.8cqh) rotate(-3deg);
+		}
+		70% {
+			transform: translateY(0.3cqh) rotate(1deg);
+		}
+		100% {
+			transform: translateY(0) rotate(0deg);
+		}
+	}
+	@keyframes part-hop-small {
+		0% {
+			transform: translateY(0);
+		}
+		40% {
+			transform: translateY(-0.9cqh);
+		}
+		100% {
+			transform: translateY(0);
+		}
+	}
+
+	/* ------------------------------------------------------------------ press label */
+
+	.press-label {
+		position: absolute;
+		left: 50%;
+		top: 92.8%;
+		transform: translate(-50%, -50%);
+		margin: 0;
+		white-space: nowrap;
+		font-family: 'Chakra Petch', 'Poppins', sans-serif;
+		font-weight: 700;
+		font-size: clamp(14px, 1.5cqw, 22px);
+		letter-spacing: 0.06em;
+		color: #ffffff;
+		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+		animation:
+			soft-in 350ms ease-out 2150ms both,
+			blink 1.6s ease-in-out 2500ms infinite;
+	}
+	.press-label--m {
+		top: 97%;
+		font-size: clamp(15px, 4.4cqw, 26px);
+	}
+
+	/* Slide indicator dots (portrait) — just below the panel. */
 	.dots {
 		position: absolute;
 		left: 50%;
-		top: 75%;
+		top: 74%;
 		transform: translateX(-50%);
 		display: flex;
 		gap: 3cqw;
@@ -381,26 +773,100 @@
 		background: #4aa8ff;
 	}
 
-	.press-label {
-		position: absolute;
-		left: 50%;
-		top: 93%;
-		transform: translate(-50%, -50%);
-		margin: 0;
-		white-space: nowrap;
-		font-family: 'Poppins', sans-serif;
-		font-weight: 700;
-		font-size: clamp(14px, 1.55vw, 22px);
-		letter-spacing: 0.08em;
-		color: #ffffff;
-		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
-		animation: blink 1.6s ease-in-out infinite;
+	/* ------------------------------------------------------------------ shared keyframes */
+
+	@keyframes soft-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+	@keyframes stage-fade {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+	@keyframes pillar-rise {
+		from {
+			opacity: 0;
+			transform: translateX(-50%) translateY(5cqh);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(-50%) translateY(0);
+		}
+	}
+	/* Every keyframe repeats translate(-50%, -50%) because that is what centres the logo on its
+	   anchor point — dropping it from one frame would snap the logo a full half-size sideways. */
+	@keyframes logo-drop {
+		0% {
+			transform: translate(-50%, -50%) translateY(var(--drop-from)) scale(0.94, 1.09);
+			animation-timing-function: cubic-bezier(0.55, 0, 0.95, 0.42);
+		}
+		46% {
+			transform: translate(-50%, -50%) scale(0.94, 1.09);
+			animation-timing-function: cubic-bezier(0.18, 0.7, 0.35, 1);
+		}
+		57% {
+			transform: translate(-50%, -50%) translateY(1.5%) scale(1.1, 0.87);
+			animation-timing-function: ease-out;
+		}
+		72% {
+			transform: translate(-50%, -50%) translateY(-3.5%) scale(0.99, 1.02);
+			animation-timing-function: ease-in;
+		}
+		86% {
+			transform: translate(-50%, -50%) translateY(0.6%) scale(1.015, 0.985);
+		}
+		100% {
+			transform: translate(-50%, -50%) scale(1, 1);
+		}
 	}
 
-	/* Mobile press label sits below the dots. */
-	.press-label--m {
-		top: 79%;
-		font-size: clamp(15px, 4.44cqw, 26px);
+	/* The stage is centred by its own translate(-50%, -50%), so both shakes are written as small
+	   deviations around those values. `stage-jolt` = logo touchdown; `stage-slam` = the magnet
+	   landing (the big hit). */
+	@keyframes stage-jolt {
+		0% {
+			transform: translate(-50%, -50%);
+		}
+		22% {
+			transform: translate(-50%, -49.3%);
+		}
+		48% {
+			transform: translate(-50.25%, -50.35%);
+		}
+		74% {
+			transform: translate(-49.88%, -49.88%);
+		}
+		100% {
+			transform: translate(-50%, -50%);
+		}
+	}
+	@keyframes stage-slam {
+		0% {
+			transform: translate(-50%, -50%);
+		}
+		18% {
+			transform: translate(-50.4%, -48.9%);
+		}
+		40% {
+			transform: translate(-49.6%, -50.7%);
+		}
+		62% {
+			transform: translate(-50.25%, -49.6%);
+		}
+		82% {
+			transform: translate(-49.9%, -50.2%);
+		}
+		100% {
+			transform: translate(-50%, -50%);
+		}
 	}
 
 	@keyframes blink {
@@ -413,61 +879,13 @@
 		}
 	}
 
-	/* Every keyframe repeats translate(-50%, -50%) because that is what centres the logo on its
-	   anchor point — dropping it from one frame would snap the logo a full half-size sideways. */
-	@keyframes logo-drop {
-		0% {
-			transform: translate(-50%, -50%) translateY(var(--drop-from)) scale(0.94, 1.09);
-			/* Gravity: barely moves at first, hits the floor at full speed. */
-			animation-timing-function: cubic-bezier(0.55, 0, 0.95, 0.42);
-		}
-		46% {
-			/* Touchdown, still stretched thin from the fall. */
-			transform: translate(-50%, -50%) scale(0.94, 1.09);
-			animation-timing-function: cubic-bezier(0.18, 0.7, 0.35, 1);
-		}
-		57% {
-			/* The impact flattens it hard against the ground. */
-			transform: translate(-50%, -50%) translateY(2.5%) scale(1.13, 0.85);
-			animation-timing-function: ease-out;
-		}
-		72% {
-			/* A stone barely bounces — keep the rebound low, and short. */
-			transform: translate(-50%, -50%) translateY(-5%) scale(0.985, 1.03);
-			animation-timing-function: ease-in;
-		}
-		86% {
-			transform: translate(-50%, -50%) translateY(0.8%) scale(1.02, 0.98);
-		}
-		100% {
-			transform: translate(-50%, -50%) scale(1, 1);
-		}
-	}
-
-	/* Same rule as above: the stage is centred by its own translate(-50%, -50%), so the shake is
-	   written as small deviations around those values rather than as offsets from zero. */
-	@keyframes stage-jolt {
-		0% {
-			transform: translate(-50%, -50%);
-		}
-		22% {
-			transform: translate(-50%, -49.15%);
-		}
-		48% {
-			transform: translate(-50.3%, -50.45%);
-		}
-		74% {
-			transform: translate(-49.85%, -49.85%);
-		}
-		100% {
-			transform: translate(-50%, -50%);
-		}
-	}
-
 	@media (prefers-reduced-motion: reduce) {
-		.logo,
-		.stage {
-			animation: none;
+		.stage,
+		.stage *,
+		.press-label {
+			animation-duration: 0.01ms !important;
+			animation-delay: 0ms !important;
+			animation-iteration-count: 1 !important;
 		}
 	}
 </style>

@@ -34,6 +34,7 @@
 	import PressPlayMark from './PressPlayMark.svelte';
 	import PortraitTopBar from './PortraitTopBar.svelte';
 	import LandscapeCapsule from './LandscapeCapsule.svelte';
+	import AmbientDebris from './AmbientDebris.svelte';
 
 	const context = getContext();
 
@@ -47,9 +48,28 @@
 	const uiRefArt = './assets/components/ui/scatter-panel-image.webp';
 	const paytableArt = './assets/components/backgrounds/visual_v2.webp';
 	const heroArtBackdrop = new URL(
-		'../../static/assets/components/backgrounds/splash_intro.jpg',
+		'../../static/assets/components/splash/room.webp',
 		import.meta.url,
 	).href;
+
+	// The splash intro is plain HTML/CSS, so its images are NOT pixi assets — warm the browser
+	// cache while the pixi load runs, so the splash paints complete on its very first frame.
+	const SPLASH_IMAGES = [
+		'room.webp',
+		'pillar.webp',
+		'logo_plate.webp',
+		'panel.webp',
+		'coil.webp',
+		'chip.webp',
+		'magnet.webp',
+		'cable.webp',
+	];
+	onMount(() => {
+		for (const file of SPLASH_IMAGES) {
+			const img = new Image();
+			img.src = `./assets/components/splash/${file}`;
+		}
+	});
 
 	$effect(() => {
 		stateMeta.betModeMeta = {
@@ -325,6 +345,8 @@
 					<Board />
 				</MainContainer>
 
+				<AmbientDebris />
+
 				<GameLogoFrame />
 
 				<!-- No GlobalMultiplier here: the hand-sign display is forest-theme art with no
@@ -343,12 +365,15 @@
 		</App>
 
 		{#if splashIntroVisible}
-			<div transition:fade={{ duration: 350 }} style="position:absolute;inset:0;z-index:10;">
+			<!-- pointer-events:none on the wrapper: once the splash enters its logo-handoff phase it
+			     makes ITSELF click-through, and this full-screen wrapper must not keep eating clicks. -->
+			<div
+				transition:fade={{ duration: 350 }}
+				style="position:absolute;inset:0;z-index:10;pointer-events:none;"
+			>
 				<SplashIntro
-					onpress={() => {
-						splashIntroVisible = false;
-						splashPressHandler?.();
-					}}
+					onpress={() => splashPressHandler?.()}
+					ondone={() => (splashIntroVisible = false)}
 				/>
 			</div>
 		{/if}

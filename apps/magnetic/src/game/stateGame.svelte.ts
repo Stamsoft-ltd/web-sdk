@@ -88,7 +88,11 @@ const getSkipMinSpinMs = () => {
 // (~rowStaggerMs cadence per column), a small random jitter per symbol so nothing lands in
 // lockstep, and an ACCELERATING fall (quadIn) instead of the old constant-speed slam. The
 // per-cell squash + bounce on landing stays — the reference has the same settle.
-const DROP_START_ROWS = BOARD_DIMENSIONS.y + 3;
+// y+3 → y+1: cells start just above the frame instead of 3 rows higher — with the accelerating
+// (quadIn) fall the first ~150ms of a 10-row drop happened entirely above the mask, which read
+// as the board sitting empty after the exit. At y+1 the first symbols poke into view ~60ms
+// sooner and the whole stream reads continuous (reference video: the board is never left bare).
+const DROP_START_ROWS = BOARD_DIMENSIONS.y + 1;
 const DROP_THUMP_MS = 45;
 const DROP_BOUNCE_UP_MS = 35;
 const DROP_BOUNCE_SETTLE_MS = 40;
@@ -97,10 +101,10 @@ const DROP_EXIT_ROWS = BOARD_DIMENSIONS.y + 1;
 
 const DROP_MOTION_NORMAL = {
 	startRows: DROP_START_ROWS,
-	durationMs: 240,
-	reelDelayMs: 12,
-	rowStaggerMs: 62,
-	jitterMs: 70,
+	durationMs: 220,
+	reelDelayMs: 10,
+	rowStaggerMs: 52,
+	jitterMs: 45,
 } as const;
 
 const DROP_MOTION_FAST = {
@@ -122,6 +126,10 @@ let activeDropToken = 0;
 let dropInProgress = false;
 let activeDrop: ActiveDrop | null = null;
 let boardExitPromise: Promise<void> | null = null;
+// Per-cell exit completion, so the next result's rain can chase the exit column by column
+// instead of waiting for the whole board to clear (the reference video never shows an empty
+// board — old symbols are still leaving the bottom while new ones enter up top).
+let cellExitPromises: Map<BoardCell, Promise<void>> | null = null;
 
 const cancelActiveDrop = () => {
 	if (!activeDrop) return;
@@ -287,8 +295,12 @@ const landscapeFrameFill = () =>
 // the instant the logo gained a per-screen scale — the column stayed pinned to a phantom taller logo
 // and sat too low. LOGO_SMALL_SCALE shrinks the mark on popout-S sizes only (t=0); popout L is t=1
 // and keeps the original full size.
-const LOGO_ART_ASPECT = 1400 / 1098;
-const LOGO_WIDTH_FRACTION = 0.3;
+// Version2 logo plate (splash/logo_plate.webp, 900x601) is TIGHT-TRIMMED art — the old
+// magnetic_logo.webp carried a wide baked glow halo, so its width fraction (0.3) described a box
+// twice the visible mark. 0.175 draws the new tight art at the same on-screen size as the design
+// (266px box on a 1200 stage).
+const LOGO_ART_ASPECT = 900 / 601;
+const LOGO_WIDTH_FRACTION = 0.155;
 const LOGO_SMALL_SCALE = 0.72;
 const landscapeLogoWidth = () =>
 	stateLayoutDerived.mainLayout().width *
@@ -338,6 +350,43 @@ const LANDSCAPE_CAPSULE_TUBE_STRETCH = 1.0;
 const LANDSCAPE_CAPSULE_VISIBLE_W = 0.425; // opaque width as a fraction of the sprite width (tubeW)
 const LANDSCAPE_CAPSULE_VISIBLE_H = 0.94; // opaque height as a fraction of the sprite height (tubeH)
 
+// Desktop LEFT-RAIL stack (Version2 design node 7002:11132): RESPIN / FREE SPINS / TOTAL WIN as
+// equal boxes under the logo. Single source of truth so RespinPanel and CapsulePanel cannot drift.
+// Everything is anchored to the LOGO, exactly as the design frame is:
+//   logo image 266x199 at (-1,-6) | boxes 201x90 at x=33, y=193 / 299 / 409
+//   → box width = 201/266 = 0.756 of the logo width, boxes centred on the logo's centre,
+//     stack starts at the logo's bottom, gaps ~18 = 0.2 of a box height.
+// Box aspect = the plate art as the design renders it (789/352 ≈ the 201/90 placement box).
+const RAIL_BOX_ASPECT = 781 / 335;
+const desktopRailStack = () => {
+	const main = stateLayoutDerived.mainLayout();
+	const canvas = stateLayoutDerived.canvasSizes();
+	const mainScale = main.scale || 1;
+	const board = boardLayout();
+	const canvasLeftX = main.width * 0.5 - canvas.width / (2 * mainScale);
+	const canvasTopY = main.height * 0.5 - canvas.height / (2 * mainScale);
+	const boardLeftX = board.x - board.width * 0.5 * board.boardScale;
+	const logoH = landscapeLogoHeight();
+	// Boxes are the SAME WIDTH as the logo plate (user requirement). The design's raw numbers
+	// (201 vs 266) compare against the logo IMAGE box, which carries transparent skirt — the
+	// visible plate and the boxes line up edge to edge.
+	const boxW = landscapeLogoWidth();
+	const boxH = boxW / RAIL_BOX_ASPECT;
+	const gap = boxH * 0.2;
+	// GameLogoFrame draws the plate centred at canvasTop + 0.54·logoH, so its bottom edge is at
+	// 1.04·logoH; the design's logo IMAGE carries some transparent skirt, hence the small offset.
+	const topY = canvasTopY + logoH * 1.04 + boxH * 0.2;
+	return {
+		// Same centre as the logo (GameLogoFrame.logoCX) — the design left-aligns the two.
+		x: (canvasLeftX + boardLeftX) * 0.5,
+		boxW,
+		boxH,
+		gap,
+		// Fixed slots: a hidden box leaves its slot empty instead of shifting the others.
+		slotY: (i: number) => topY + boxH * 0.5 + i * (boxH + gap),
+	};
+};
+
 const boardLayout = () => {
 	const mainLayout = stateLayoutDerived.mainLayout();
 	const layoutType = stateLayoutDerived.layoutType();
@@ -374,15 +423,17 @@ const boardLayout = () => {
 		};
 	}
 
-	// Very slightly smaller (was 0.92 → 0.9) so its bottom-right corner clears the nav on short screens
-	// like 1024×576; shrinking (rather than moving down) also eases the top, which is already tight there.
-	const boardScale = getBoardScale() * 0.88;
-	// Centre the grid in the padded region (top padding sits below the logo, bottom padding above the
-	// HUD) instead of top-anchoring it, then ease it slightly DOWN — the full bottom reserve pulled it
-	// too close to the top on short laptops (e.g. 1024×576).
-	const pad = getBoardViewportPadding();
+	// 0.82 → 0.86: user round — board back up ~5% now that the frame hugs the grid.
+	const boardScale = getBoardScale() * 0.86;
+	// Top-align the FRAME's metal edge with the logo plate's top (user request). Mirrors
+	// BoardFrame's INTERIOR_MARGIN (1.01) / ART_INNER_H (0.9033) so it is the visible bezel that
+	// lines up, and GameLogoFrame's logoCY = canvasTop + 0.54·H (top edge = canvasTop + 0.04·H).
 	const mainScale = mainLayout.scale || 1;
-	const boardY = mainLayout.height * 0.5 + (pad.top - pad.bottom + 25) / (2 * mainScale);
+	const canvasTopY =
+		mainLayout.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * mainScale);
+	const logoTopY = canvasTopY + landscapeLogoHeight() * 0.04;
+	const frameH = (BOARD_SIZES.height * boardScale * 1.01) / 0.9033;
+	const boardY = logoTopY + frameH / 2;
 	return {
 		// MainContainer is anchored 0.5 at canvasSizes().width * 0.5, so local x = width * 0.5 IS the
 		// viewport centre. This used to add getBoardOffset().x, which centred the board in the padded
@@ -937,6 +988,14 @@ export const stateGame = $state({
 	// xstate machine (RESUME_BET) but onPlayGame skips the animation so endGame just ends the round +
 	// credits balance. Ending the round outside the machine leaves it active on the RGS.
 	endRoundOnly: false,
+	// True while the splash's HTML logo plate is flying to the in-game logo spot — GameLogoFrame
+	// keeps its (identical) sprite hidden so the player never sees two logos at once.
+	logoHandoffActive: false,
+	// True while a congratulations screen (free-spins intro / bonus-end outro) is up. The HTML HUD
+	// reads this to dim and disable itself: it is DOM sitting ABOVE the pixi canvas, so the popup's
+	// full-screen dim cannot reach it and the bright bottom bar would otherwise sit on top of the
+	// celebration — and swallow the press that dismisses it.
+	celebrationActive: false,
 });
 
 // ── instant board settle ──────────────────────────────────────────────────────
@@ -952,6 +1011,9 @@ const settleBoardInstant = ({
 }) => {
 	activeDropToken += 1;
 	cancelActiveDrop();
+	// Instant settle aborts any exit tweens via set({duration: 0}); those promises never resolve,
+	// so a later spin gating on this stale map would hang — drop it.
+	cellExitPromises = null;
 	for (let ri = 0; ri < BOARD_DIMENSIONS.x; ri++) {
 		for (let rowi = 0; rowi < BOARD_DIMENSIONS.y; rowi++) {
 			const cell = stateGame.board[ri][rowi];
@@ -982,12 +1044,13 @@ const animateBoardExit = async () => {
 	const fast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
 	const motion = fast ? DROP_MOTION_FAST : DROP_MOTION_NORMAL;
 	const exitingCells = stateGame.board.flat().filter((cell) => !cell.locked);
-	await Promise.all(
-		exitingCells.map(async (cell) => {
-			// Loose free-fall out the bottom: small per-symbol jitter instead of a rigid
-			// left-to-right sweep, and gravity acceleration. Lower cells clear the frame
-			// first on their own — every cell travels the same rows, so the bottom row
-			// crosses the edge earliest.
+	const perCell = new Map<BoardCell, Promise<void>>();
+	for (const cell of exitingCells) {
+		// Loose free-fall out the bottom: small per-symbol jitter instead of a rigid
+		// left-to-right sweep, and gravity acceleration. Lower cells clear the frame
+		// first on their own — every cell travels the same rows, so the bottom row
+		// crosses the edge earliest.
+		const run = (async () => {
 			const delayMs =
 				cell.position.reel * motion.reelDelayMs + Math.random() * motion.jitterMs * 0.6;
 			if (delayMs > 0) await waitForTimeout(delayMs);
@@ -995,8 +1058,11 @@ const animateBoardExit = async () => {
 				duration: motion.durationMs,
 				easing: quadIn,
 			});
-		}),
-	);
+		})();
+		perCell.set(cell, run);
+	}
+	cellExitPromises = perCell;
+	await Promise.all(perCell.values());
 };
 
 // ── near-simultaneous board-drop reveal ───────────────────────────────────────
@@ -1021,25 +1087,18 @@ const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
 	const motion = fast ? DROP_MOTION_FAST : DROP_MOTION_NORMAL;
 	const fallingCells: Array<{ cell: BoardCell; raw: RawSymbol; delayMs: number }> = [];
 
-	// Swap to the result above the mask. Persistent super cells remain fixed while
-	// every unlocked result cell enters from the same shallow overhead plane.
+	// Persistent super cells remain fixed; every unlocked result cell enters from the same
+	// shallow overhead plane. The raw swap + teleport above the mask are DEFERRED into the
+	// per-cell task below so a still-exiting old symbol keeps its face and position — each
+	// new cell waits only for ITS OWN exit (raced with its entry delay), which lets the rain
+	// chase the exit column by column instead of the whole board sitting empty in between.
 	for (let ri = 0; ri < BOARD_DIMENSIONS.x; ri++) {
 		for (let rowi = 0; rowi < BOARD_DIMENSIONS.y; rowi++) {
 			const cell = stateGame.board[ri][rowi];
 			if (cell.locked) continue;
-			const raw = rawBoard[ri][rowi];
-			updateCellRaw(cell, raw);
-			cell.displayY.set(getTargetY(rowi) - motion.startRows * SYMBOL_H, { duration: 0 });
-			cell.displayAlpha.set(1, { duration: 0 });
-			cell.displayScale.set(1, { duration: 0 });
-			cell.displayX.set(0, { duration: 0 });
-			cell.highlighted = false;
-			cell.fresh = false;
-			cell.pulling = false;
-			cell.symbolState = 'static';
 			fallingCells.push({
 				cell,
-				raw,
+				raw: rawBoard[ri][rowi],
 				// Bottom rows first: each column piles up from the floor. A falling cell's path
 				// never goes below its own target row, so a later (higher) symbol cannot pass
 				// through an already-landed one. The random jitter breaks the grid lockstep —
@@ -1051,17 +1110,35 @@ const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
 			});
 		}
 	}
+	const exits = cellExitPromises;
+	cellExitPromises = null;
 
 	await Promise.all(
 		fallingCells.map(async ({ cell, raw, delayMs }) => {
-			if (delayMs > 0) {
-				await Promise.race([waitForTimeout(delayMs), drop.skipPromise]);
+			const gates: Promise<unknown>[] = [];
+			if (delayMs > 0) gates.push(waitForTimeout(delayMs));
+			const exitP = exits?.get(cell);
+			if (exitP) gates.push(exitP);
+			if (gates.length) {
+				await Promise.race([Promise.all(gates), drop.skipPromise]);
 			}
 			if (drop.cancelled || token !== activeDropToken) return;
+			updateCellRaw(cell, raw);
+			cell.displayAlpha.set(1, { duration: 0 });
+			cell.displayScale.set(1, { duration: 0 });
+			cell.displayX.set(0, { duration: 0 });
+			cell.highlighted = false;
+			cell.fresh = false;
+			cell.pulling = false;
 			if (drop.skipped) {
+				cell.displayY.set(getTargetY(cell.position.row), { duration: 0 });
 				cell.symbolState = 'land';
 				return;
 			}
+			cell.symbolState = 'static';
+			cell.displayY.set(getTargetY(cell.position.row) - motion.startRows * SYMBOL_H, {
+				duration: 0,
+			});
 			const tweenPromise = cell.displayY.set(getTargetY(cell.position.row), {
 				duration: motion.durationMs,
 				// Gravity: slow off the ledge, fast into the floor. The scale squash below
@@ -1131,8 +1208,11 @@ const animateReveal = async ({
 	stateGame.boardSpinning = true;
 
 	const isRespin = stateGame.nextRevealMode === 'respin';
+	// Kick the exit off (or adopt the one already running since spin start) but do NOT await it:
+	// animateSpinReels gates each entering cell on ITS OWN exit promise (cellExitPromises), so the
+	// rain chases the exit instead of the whole board sitting empty between the two phases.
+	// animateBoardExit populates cellExitPromises synchronously before its first await.
 	const exitPromise = boardExitPromise ?? animateBoardExit();
-	await exitPromise;
 	if (boardExitPromise === exitPromise) boardExitPromise = null;
 
 	if (!isRespin) {
@@ -1234,9 +1314,9 @@ const animateWinningPositions = async (positions: Position[]) => {
 			if (!keys.has(posKey(cell.position))) continue;
 			cell.highlighted = true;
 			cell.symbolState = 'win';
-			// Punchier pop than the old 1.12 — <SymbolWinFx>'s burst choreography carries it, and
-			// the settle below still brings it home with the backOut overshoot.
-			cell.displayScale.set(1.22, { duration: 0 });
+			// 1.22 → 1.1 (user round): a gentler win zoom — <SymbolWinFx>'s burst carries the
+			// impact, and the settle below still lands with the backOut overshoot.
+			cell.displayScale.set(1.1, { duration: 0 });
 		}
 	}
 	await waitForTimeout(stateBet.isTurbo || stateBet.isSuperTurbo ? 120 : 871);
@@ -1386,6 +1466,7 @@ export const stateGameDerived = {
 	landscapeLogoWidth,
 	landscapeLogoHeight,
 	landscapeStackTopY,
+	desktopRailStack,
 	boardRaw,
 	scatterLandIndex,
 	resetBoardVisuals,

@@ -21,11 +21,16 @@
 </script>
 
 {#if !isPortrait}
-	<MainContainer>
+	<!-- zIndex above CapsulePanel's 25: the lengthened pillar's top cables now reach the mark's
+	     corner, and the studio mark must sit over them. -->
+	<MainContainer zIndex={40}>
+		<!-- The art file carries ~8.9% transparent padding on its right side, so the sprite box is
+		     pushed PAST the screen edge by that amount — the VISIBLE mark then sits 0.4% from the
+		     edge (user: "move logo a bit to the right"). -->
 		<Sprite
 			key="pressPlayLogo"
 			anchor={{ x: 1, y: 0 }}
-			x={canvasRightX - main.width * 0.004}
+			x={canvasRightX - main.width * 0.004 + main.width * 0.072 * 0.089}
 			y={canvasTopY + main.height * 0.006}
 			width={main.width * 0.072}
 			height={(main.width * 0.072) / PP_ASPECT}

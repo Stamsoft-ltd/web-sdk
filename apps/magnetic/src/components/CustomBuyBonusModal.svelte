@@ -4,6 +4,16 @@
 	import { getContext } from '../game/context';
 	import { magneticStakeDerived } from '../state/magneticStake.svelte';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import { fitTextScale } from '../utils/fitText';
+	import {
+		CONFIRM_PANEL_BG,
+		CONFIRM_TITLE_FONT_F,
+		CONFIRM_TEXT_FONT_F,
+		CONFIRM_TITLE_FIT_W,
+		CONFIRM_TEXT_FIT_W,
+		CONFIRM_TITLE_FAMILY,
+		CONFIRM_TEXT_FAMILY,
+	} from './confirmDialog';
 
 	const t = (k: string) => i18nDerived.translate(k);
 	const tv = (k: string, vars: Record<string, string | number>) => i18nDerived.translateVars(k, vars);
@@ -11,7 +21,6 @@
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
 	const cardPanel      = ap('/assets/components/ui/bb_card_panel.webp?v=20260708c');
 	const betPanel       = ap('/assets/components/ui/bb_bet_panel.webp?v=20260708c');
-	const confirmPanelBg = ap('/assets/components/ui/confirm_panel.webp?v=20260708b');
 	const coinIcon       = ap('/assets/components/ui/bb_coin.svg?v=20260708c');
 	// Our control icons (same set the info modal documents) for the +, − and × (close) buttons.
 	const iconClose      = ap('/assets/components/ui/ctrl_close.svg');
@@ -129,6 +138,38 @@
 	const confirmCost = $derived(
 		confirmMode === 'SUPER' ? superCost : confirmMode === 'FEATURE' ? featureCost : bonusCost,
 	);
+	// The design's title/body are ONE nowrap line each ("CONFIRM ALL IN" / "BUY ALL IN FOR 400.00?").
+	// Our mode names and localized strings run longer, so each line shrinks to fit the plate instead
+	// of spilling past it — measured for real (see fitText), since uppercase "MAGNETIC MEGA CHAIN"
+	// is far wider per character than the design's placeholder copy.
+	const confirmTitleText = $derived(tv('CONFIRM TITLE', { name: confirmLabel }));
+	const confirmBodyText = $derived(tv('BUY CONFIRM', { name: confirmLabel, cost: confirmCost }));
+	let confirmEl = $state<HTMLDivElement>();
+	let confirmW = $state(0);
+	$effect(() => {
+		const el = confirmEl;
+		if (!el) return;
+		const measure = () => (confirmW = el.clientWidth);
+		measure();
+		const ro = new ResizeObserver(measure);
+		ro.observe(el);
+		return () => ro.disconnect();
+	});
+	const confirmVars = $derived(
+		`--confirm-title-fit:${fitTextScale(confirmTitleText, {
+			fontSizePx: confirmW * CONFIRM_TITLE_FONT_F,
+			availablePx: confirmW * CONFIRM_TITLE_FIT_W,
+			fontFamily: CONFIRM_TITLE_FAMILY,
+			letterSpacingEm: 0.03,
+		})};` +
+			`--confirm-text-fit:${fitTextScale(confirmBodyText, {
+				fontSizePx: confirmW * CONFIRM_TEXT_FONT_F,
+				availablePx: confirmW * CONFIRM_TEXT_FIT_W,
+				fontWeight: 500,
+				fontFamily: CONFIRM_TEXT_FAMILY,
+				letterSpacingEm: 0.03,
+			})}`,
+	);
 	// FEATURE is an activation toggle, not a one-shot purchase, so its confirm runs the toggle.
 	const acceptConfirm = () => {
 		if (confirmMode === 'FEATURE') { closeConfirm(); toggleActivateMode(props.onToggleFeature); return; }
@@ -228,16 +269,16 @@
 <!-- Confirm -->
 {#if confirmMode}
 	<button class="backdrop backdrop--z2" type="button" aria-label="Close" tabindex="-1" onclick={closeConfirm}></button>
-	<button class="confirm-close" type="button" onclick={closeConfirm} aria-label="Close"><img class="ctrl-glyph" src={iconClose} alt="" /></button>
-	<div class="confirm" role="dialog" aria-modal="true">
-		<div class="confirm-panel" style={`background-image:url('${confirmPanelBg}')`}>
-			<div class="confirm-content">
-				<div class="confirm-title">{tv('CONFIRM TITLE', { name: confirmLabel })}</div>
-				<div class="confirm-text">{tv('BUY CONFIRM', { name: confirmLabel, cost: confirmCost })}</div>
-				<div class="confirm-row">
-					<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}>{t('CANCEL')}</button>
-					<button class="confirm-btn confirm-btn--ok" type="button" onclick={acceptConfirm}>{t('CONFIRM')}</button>
-				</div>
+	<button class="confirm-close" type="button" onclick={closeConfirm} aria-label="Close">
+		<span class="confirm-close__glyph"></span>
+	</button>
+	<div class="confirm" role="dialog" aria-modal="true" bind:this={confirmEl} style={confirmVars}>
+		<div class="confirm-panel" style={`background-image:url('${CONFIRM_PANEL_BG}')`}>
+			<div class="confirm-title">{confirmTitleText}</div>
+			<div class="confirm-text">{confirmBodyText}</div>
+			<div class="confirm-row">
+				<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}>{t('CANCEL')}</button>
+				<button class="confirm-btn confirm-btn--ok" type="button" onclick={acceptConfirm}>{t('CONFIRM')}</button>
 			</div>
 		</div>
 	</div>
@@ -304,7 +345,6 @@
 	/* The ctrl icons are full round buttons (cyan ring + glyph) — let them fill the wrapper and
 	   strip the wrapper's own frame so it isn't a button-inside-a-button. */
 	.close-btn:has(.ctrl-glyph),
-	.confirm-close:has(.ctrl-glyph),
 	.bet-step:has(.ctrl-glyph) {
 		border: none;
 		background: none;
@@ -679,76 +719,102 @@
 		.panel.portrait .card-desc { max-width: 234px; }
 	}
 
-	/* ---- Confirm dialog (blue) ---- */
+	/* ---- Confirm dialog — Version2 (Figma 4036-3584, art node 7002:11406) ----
+	   Identical to BonusResumeModal's .resume block; keep the two in sync. The art box is
+	   507.33 x 283 design px, so with container-type:inline-size 1cqw == 1% of the design
+	   width and every number below is the design's own measurement. */
+
+	/* Version2 icon button: #22365B circle, 1px #2391C1, white 2.13px CSS glyph (no SVG asset). */
 	.confirm-close {
 		position: fixed; top: 22px; right: 22px; z-index: 73;
 		width: 48px; height: 48px; border-radius: 50%;
-		border: 1.5px solid #60a5fa;
-		background: linear-gradient(180deg, #0f2053 0%, #05070f 100%);
-		color: #cfe6ff; font-size: 1rem; font-weight: 700;
+		border: 1px solid #2391c1;
+		background: #22365b;
+		padding: 0;
 		cursor: pointer; display: grid; place-items: center;
-		box-shadow: 0 0 12px rgba(0, 140, 255, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5);
 		transition: filter 0.12s ease;
 	}
-	.confirm-close:hover { filter: brightness(1.25) drop-shadow(0 0 2.5px #0d89c6); }
+	.confirm-close:hover { filter: brightness(1.35); }
+	.confirm-close__glyph {
+		position: relative; display: block;
+		width: 18.5px; height: 2.13px;
+	}
+	.confirm-close__glyph::before,
+	.confirm-close__glyph::after {
+		content: ''; position: absolute; inset: 0;
+		border-radius: 2.13px; background: #fff;
+	}
+	.confirm-close__glyph::before { transform: rotate(45deg); }
+	.confirm-close__glyph::after { transform: rotate(-45deg); }
 
 	.confirm {
 		position: fixed; left: 50%; top: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 71;
-		/* Same sizing as BonusResumeModal .resume — the two share this bracketed panel art and the cqw
-		   scale, so they must shrink together or the buy confirm would dwarf the resume dialog in a
-		   popout. See the note there: 32vw halves both popout sizes, the 500px cap leaves desktop as-is. */
-		width: clamp(170px, 32vw, 500px);
+		/* Same sizing as BonusResumeModal .resume — the two share this plate and the cqw scale, so
+		   they must shrink together or the buy confirm would dwarf the resume dialog in a popout.
+		   See the note there: 32vw halves both popout sizes, the cap leaves desktop as-is. */
+		width: clamp(170px, 32vw, 508px);
 		container-type: inline-size;
 		font-family: 'Inter', sans-serif;
 	}
 	.confirm-panel {
-		aspect-ratio: 500 / 300;
+		position: relative;
+		aspect-ratio: 507.33 / 283;
 		background-size: 100% 100%;
 		background-repeat: no-repeat;
-		display: flex; align-items: center; justify-content: center;
-		padding: 13% 13% 14%;
-		box-sizing: border-box;
 	}
-	.confirm-content {
-		width: 100%; height: 100%;
-		display: flex; flex-direction: column; align-items: center;
-		justify-content: space-between; text-align: center;
-	}
+	/* Figma 4154:20115 — IBM Plex Sans Condensed Bold 32px, FLAT #2391C1 (not a gradient). */
 	.confirm-title {
+		position: absolute;
+		left: 7%; right: 7%; top: 29.33%;
+		transform: translateY(-50%);
+		text-align: center;
 		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
-		font-weight: 900; font-size: 4.8cqw;
+		font-weight: 700;
+		font-size: calc(6.31cqw * var(--confirm-title-fit, 1));
 		letter-spacing: 0.03em; text-transform: uppercase;
 		line-height: 1; white-space: nowrap;
-		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
-		-webkit-background-clip: text; background-clip: text;
-		-webkit-text-fill-color: transparent; color: transparent;
-		filter: drop-shadow(0 2px 8px rgba(0, 60, 140, 0.55));
+		color: #2391c1;
 	}
+	/* Figma 4036:3614 — Inter Medium 20px, white, 0.6px tracking. */
 	.confirm-text {
+		position: absolute;
+		left: 8%; right: 8%; top: 50.18%;
+		transform: translateY(-50%);
+		text-align: center;
 		font-family: 'Inter', sans-serif;
-		font-size: 4cqw; font-weight: 500;
+		font-size: calc(3.94cqw * var(--confirm-text-fit, 1)); font-weight: 500;
 		letter-spacing: 0.03em; text-transform: uppercase;
 		color: #fff; line-height: 1.3;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+		/* One line, like the design — the fitter above shrinks it instead of wrapping. */
+		white-space: nowrap;
 	}
-	.confirm-row { display: flex; gap: 3.2cqw; justify-content: center; }
+	/* Figma 4036:3615 — two 143.95x44 buttons, 16px apart, centred at 71.38% of the plate. */
+	.confirm-row {
+		position: absolute;
+		left: 0; right: 0; top: 71.38%;
+		transform: translateY(-50%);
+		display: flex; gap: 3.15cqw; justify-content: center;
+	}
 	.confirm-btn {
+		height: 8.67cqw;
+		min-width: 28.37cqw;
+		padding: 0 4.73cqw;
 		border: 1px solid #60a5fa;
-		border-radius: 2.4cqw;
-		padding: 2.4cqw 4.8cqw; min-width: 28cqw;
-		font-family: 'Inter', sans-serif; font-size: 2.8cqw; font-weight: 700;
+		border-radius: 2.37cqw;
+		font-family: 'Inter', sans-serif; font-size: 2.76cqw; font-weight: 700;
 		letter-spacing: 0.1em; text-transform: uppercase; color: #fff;
+		white-space: nowrap;
 		cursor: pointer;
 		filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
 		transition: filter 0.12s ease;
 	}
-	.confirm-btn:hover { filter: brightness(1.12) drop-shadow(0 0 6px #4a94ff); }
+	.confirm-btn:hover { filter: brightness(1.12) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25)); }
 	.confirm-btn--cancel {
 		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
 	}
 	.confirm-btn--ok {
-		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+		background: #28a6de;
 	}
 </style>

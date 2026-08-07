@@ -26,8 +26,8 @@ ASSETS_TS = ROOT / 'src' / 'game' / 'assets.ts'
 STATIC = ROOT / 'static'
 
 # Fractions of the CELL the artwork may occupy. Both leave a margin so nothing abuts the border.
-TARGET_H = 0.84
-TARGET_W = 0.86
+TARGET_H = 0.87
+TARGET_W = 0.90
 
 # The multiplier is applied ON TOP OF the class ratio in SYMBOL_SIZE_RATIOS, so the drawn box is
 # already BASE x the cell before any art is placed in it. Targeting a fraction of the cell without

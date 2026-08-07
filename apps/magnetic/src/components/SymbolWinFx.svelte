@@ -24,7 +24,9 @@
 	};
 	const props: Props = $props();
 
-	const R = $derived(Math.max(props.width, props.height) * 0.62);
+	// 0.62 → 0.5 (user round): a tighter FX footprint — glow, rings and sparks all key off R,
+	// so this one factor shrinks the whole effect around the symbol.
+	const R = $derived(Math.max(props.width, props.height) * 0.5);
 	const GLOW_COLOR = 0x46c8ff;
 	const ARC_COLOR = 0x66d4ff;
 	/** Sustain heartbeat period, seconds. */
@@ -75,7 +77,7 @@
 		if (t < 0.5) {
 			const u = t / 0.5;
 			const ease = 1 - (1 - u) ** 3;
-			const r = R * (0.35 + 1.2 * ease);
+			const r = R * (0.35 + 0.95 * ease);
 			const fade = (1 - u) ** 1.5;
 			g.circle(0, 0, r);
 			g.stroke({ width: R * 0.1 * (1 - u * 0.6), color: GLOW_COLOR, alpha: 0.55 * fade });
@@ -88,7 +90,7 @@
 			for (const p of SPARKS) {
 				const u = Math.min(1, t / BURST_DUR);
 				const ease = 1 - (1 - u) ** 3;
-				const dist = ease * R * 1.35 * p.speed;
+				const dist = ease * R * 1.1 * p.speed;
 				const fade = Math.max(0, 1 - u);
 				const c = Math.cos(p.a);
 				const s = Math.sin(p.a);
@@ -104,7 +106,7 @@
 		const ringT = (t + (props.phase ?? 0) * P) % P;
 		if (t > 0.45) {
 			const u = ringT / P;
-			g.circle(0, 0, R * (0.6 + 0.75 * u));
+			g.circle(0, 0, R * (0.6 + 0.6 * u));
 			g.stroke({ width: R * 0.06 * (1 - u), color: GLOW_COLOR, alpha: 0.3 * (1 - u) ** 2 });
 		}
 
@@ -150,9 +152,9 @@
 
 			// Decaying entry wobble + a faint perpetual sway so the symbol never sits dead still.
 			rot =
-				0.09 * Math.sin(t * 24) * Math.exp(-t * 2.6) +
+				0.06 * Math.sin(t * 24) * Math.exp(-t * 2.6) +
 				0.012 * Math.sin(t * 3.1 + (props.phase ?? 0) * 6);
-			pulse = 1 + 0.055 * beat;
+			pulse = 1 + 0.035 * beat;
 
 			if (backG?.destroyed) backG = null;
 			if (frontG?.destroyed) frontG = null;

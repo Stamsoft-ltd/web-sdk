@@ -9,18 +9,11 @@
 </script>
 
 <script lang="ts">
-	import { Container, Graphics, Sprite, SpriteSheet } from 'pixi-svelte';
+	import { Container, Graphics, Sprite } from 'pixi-svelte';
 
 	import SymbolWinFx from './SymbolWinFx.svelte';
 	import { getContext } from '../game/context';
-	import {
-		BOARD_DIMENSIONS,
-		BOARD_GRID_OFFSET_Y,
-		SYMBOL_H,
-		SYMBOL_HEAD_OFFSET,
-		SYMBOL_W,
-		SYMBOL_ZAP_OVERRIDE,
-	} from '../game/constants';
+	import { BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, SYMBOL_H, SYMBOL_W } from '../game/constants';
 	import { getSymbolInfo } from '../game/utils';
 
 	const context = getContext();
@@ -36,9 +29,6 @@
 		reel: 10,
 		symbol: 20,
 		pulledSymbol: 26,
-		// Electric burst behind a stacked symbol — under lockedSymbol so the symbol art stays fully
-		// readable and the burst only shows as a halo around it.
-		lockedZap: 28,
 		lockedSymbol: 32,
 		// Above everything in the cell stack — the electric border arcs ride the seams
 		// BETWEEN locked cells, so anything higher (opaque covers) would overdraw them.
@@ -119,7 +109,7 @@
 	const drawLockBorders = (g: LockG, now: number, cells: typeof lockedCells) => {
 		g.clear();
 		const t = now / 1000;
-		const jit = SYMBOL_W * 0.03;
+		const jit = SYMBOL_W * 0.02;
 		const loops = buildLockLoops(cells);
 
 		for (let li = 0; li < loops.length; li++) {
@@ -162,7 +152,7 @@
 			for (let i = 1; i < n; i++) g.lineTo(loop[i].x, loop[i].y);
 			g.lineTo(loop[0].x, loop[0].y);
 			g.stroke({
-				width: SYMBOL_W * 0.06,
+				width: SYMBOL_W * 0.04,
 				color: 0x2fa8ff,
 				alpha: 0.22 * flick + 0.1,
 				cap: 'round',
@@ -197,7 +187,7 @@
 				};
 				trace();
 				g.stroke({
-					width: SYMBOL_W * 0.14,
+					width: SYMBOL_W * 0.085,
 					color: 0x1e8fff,
 					alpha: 0.6 + surge * 0.3,
 					cap: 'round',
@@ -205,7 +195,7 @@
 				});
 				trace();
 				g.stroke({
-					width: SYMBOL_W * 0.06,
+					width: SYMBOL_W * 0.038,
 					color: 0x66d4ff,
 					alpha: 0.95,
 					cap: 'round',
@@ -213,7 +203,7 @@
 				});
 				trace();
 				g.stroke({
-					width: SYMBOL_W * 0.025,
+					width: SYMBOL_W * 0.016,
 					color: 0xffffff,
 					alpha: 1,
 					cap: 'round',
@@ -232,7 +222,7 @@
 						g.lineTo(mx, my);
 						g.lineTo(b.x + Math.cos(ang) * len, b.y + Math.sin(ang) * len);
 						g.stroke({
-							width: SYMBOL_W * 0.018,
+							width: SYMBOL_W * 0.013,
 							color: 0x9fdcff,
 							alpha: 0.85,
 							cap: 'round',
@@ -241,9 +231,9 @@
 					}
 				}
 				// Head spark
-				g.circle(pts[0].x, pts[0].y, SYMBOL_W * 0.09);
+				g.circle(pts[0].x, pts[0].y, SYMBOL_W * 0.055);
 				g.fill({ color: 0x2fa8ff, alpha: 0.4 });
-				g.circle(pts[0].x, pts[0].y, SYMBOL_W * 0.04);
+				g.circle(pts[0].x, pts[0].y, SYMBOL_W * 0.025);
 				g.fill({ color: 0xffffff, alpha: 0.9 });
 			}
 		}
@@ -294,10 +284,19 @@
 		scale={layout.boardScale}
 		sortableChildren={true}
 	>
+		<!-- The frame bezel now hugs the grid (BoardFrame INTERIOR_MARGIN 1.01), so the mask must
+		     clip almost exactly at the grid edge — the old half-cell overflow room let exiting
+		     symbols draw straight over the bottom border. Symbols at the current ratios stay
+		     inside their cells; 0.06 cell absorbs the landing bounce and AA fringes. -->
 		<Graphics
 			isMask
 			draw={(graphics) => {
-				graphics.rect(0, 0, SYMBOL_W * BOARD_DIMENSIONS.x, SYMBOL_H * BOARD_DIMENSIONS.y);
+				graphics.rect(
+					-SYMBOL_W * 0.06,
+					-SYMBOL_H * 0.06,
+					SYMBOL_W * (BOARD_DIMENSIONS.x + 0.12),
+					SYMBOL_H * (BOARD_DIMENSIONS.y + 0.12),
+				);
 				graphics.fill(0xffffff);
 			}}
 		/>
@@ -309,13 +308,15 @@
 		     respin symbols showing through, and still does. -->
 		{#each board as reel, reelIndex (reelIndex)}
 			{#each reel as cell, rowIndex (cell.key)}
+				<!-- cell_box_win.webp carries a 20px glow margin around the same 228×188 pad, so it is
+				     drawn proportionally larger — the pad inside still lands exactly on SYMBOL_W/H. -->
 				<Sprite
 					key={cell.highlighted ? 'cellBoxWin' : 'cellBox'}
 					x={getX(reelIndex)}
 					y={getStaticY(rowIndex)}
 					anchor={0.5}
-					width={SYMBOL_W}
-					height={SYMBOL_H}
+					width={SYMBOL_W * (cell.highlighted ? 268 / 228 : 1)}
+					height={SYMBOL_H * (cell.highlighted ? 228 / 188 : 1)}
 					zIndex={Z.grid}
 				/>
 			{/each}
@@ -328,11 +329,13 @@
 				isMask
 				draw={(graphics) => {
 					for (const cell of unlockedCells) {
+						// Padded past the cell so the oversized Version2 art isn't clipped by its own
+						// hole; adjacent unlocked rects union anyway, locked clusters still occlude.
 						graphics.rect(
-							cell.position.reel * SYMBOL_W,
-							cell.position.row * SYMBOL_H,
-							SYMBOL_W,
-							SYMBOL_H,
+							(cell.position.reel - 0.16) * SYMBOL_W,
+							(cell.position.row - 0.16) * SYMBOL_H,
+							SYMBOL_W * 1.32,
+							SYMBOL_H * 1.32,
 						);
 					}
 					graphics.fill(0xffffff);
@@ -430,39 +433,8 @@
 			{/if}
 		</Container>
 
-		<!-- Electric burst BEHIND every stacked symbol. The 10 sheet frames are independent bursts,
-		     so `startFrame` is de-phased per cell from its board position: without it every stacked
-		     cell would step through the same frame on the same tick and the stack would strobe in
-		     unison. The offset is derived (not random) so a cell keeps its phase across re-renders.
-		     Sized to the cell's SHORT side so the burst's spikes stay inside their own cell — at the
-		     original 1.34 they reached past the box and streaked across neighbours. -->
-		{#each lockedCells as cell (`${cell.key}:zap`)}
-			{@const zapInfo = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState })}
-			{@const zapBoxW = SYMBOL_W * zapInfo.sizeRatios.width * cell.displayScale.current}
-			{@const zapBoxH = SYMBOL_H * zapInfo.sizeRatios.height * cell.displayScale.current}
-			<!-- Only assets listed in SYMBOL_ZAP_OVERRIDE get the small head-anchored burst; the rest
-			     keep the full-size burst centred on the cell. Shrinking every symbol's burst weakened
-			     the effect across the board. -->
-			{@const zapOverride = SYMBOL_ZAP_OVERRIDE[zapInfo.assetKey]}
-			{@const head = zapOverride ? (SYMBOL_HEAD_OFFSET[zapInfo.assetKey] ?? { x: 0, y: 0 }) : { x: 0, y: 0 }}
-			{@const zapSize =
-				Math.min(SYMBOL_W, SYMBOL_H) * (zapOverride ?? 0.98) * cell.displayScale.current}
-			<SpriteSheet
-				key="stackZapAnim"
-				play
-				loop
-				animationSpeed={0.18}
-				startFrame={(cell.position.reel * 3 + cell.position.row * 7) % 10}
-				x={getX(cell.position.reel) + head.x * zapBoxW}
-				y={getStaticY(cell.position.row) + head.y * zapBoxH}
-				anchor={0.5}
-				width={zapSize}
-				height={zapSize}
-				alpha={0.5}
-				blendMode="add"
-				zIndex={Z.lockedZap}
-			/>
-		{/each}
+		<!-- The per-cell electric burst that used to render behind every stacked symbol was removed
+		     (user pass 2026-08-07): the cluster reads through the perimeter electricity alone. -->
 
 		<!-- Cluster state: stacked cells hold the PLAIN STATIC symbol. This used to hardcode
 		     state: 'win', so every locked cell rendered win art and looped its win flipbook for the

@@ -10,12 +10,10 @@
 	const context = getContext();
 
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	// Blue bracketed board panel (Figma 4036-2458 uses board_panel_623x514 = fs_panel art).
-	const panelBg = ap('/assets/components/ui/fs_panel.webp?v=20260708');
-	// Our control icons for the +, − and × (close) buttons (matches the buy-bonus / info modals).
-	const iconClose = ap('/assets/components/ui/ctrl_close.svg');
-	const iconMinus = ap('/assets/components/ui/ctrl_minus.svg');
-	const iconPlus = ap('/assets/components/ui/ctrl_plus.svg');
+	// Version2 steel-framed panel (Figma 4036-2458, art node 7002:11401). The export is the PLACED
+	// node with its white backdrop keyed out and trimmed, so the art box is exactly 632x524 design
+	// px — every position below is a fraction of that box, taken from the design's own child nodes.
+	const panelBg = ap('/assets/components/ui/autospin_panel.webp?v=20260807');
 
 	// Spin-count stops (last = unlimited), stepped with − / + per the Figma design.
 	const STOPS: Array<number> = [5, 10, 25, 50, 100, 250, 500, Infinity];
@@ -68,44 +66,48 @@
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div class="ap-backdrop" onclick={props.onclose}></div>
 
-<button class="ap-close" type="button" onclick={props.onclose} aria-label="Close"><img class="ctrl-glyph" src={iconClose} alt="" /></button>
+<button class="ap-close ap-icon-btn" type="button" onclick={props.onclose} aria-label="Close">
+	<span class="glyph glyph--close"></span>
+</button>
 
 <div class="ap-root" role="dialog" aria-modal="true">
 	<div class="ap-panel" style={`background-image:url('${panelBg}')`}>
-		<div class="ap-content">
-			<div class="ap-toggles">
-				<div class="ap-row">
-					<span class="ap-row__label">{t('AUTO TURBO')}</span>
-					<button class="ap-switch" class:on={isTurbo} type="button" onclick={toggleTurbo} aria-pressed={isTurbo}>
-						<span class="ap-switch__thumb"></span>
-					</button>
-				</div>
-				<div class="ap-row">
-					<span class="ap-row__label">{t('AUTO SUPER TURBO')}</span>
-					<button class="ap-switch" class:on={isSuperTurbo} type="button" onclick={toggleSuperTurbo} aria-pressed={isSuperTurbo}>
-						<span class="ap-switch__thumb"></span>
-					</button>
-				</div>
-				<div class="ap-row">
-					<span class="ap-row__label">{t('AUTO FEATURE')}</span>
-					<button class="ap-switch" class:on={isFeature} type="button" onclick={toggleFeature} aria-pressed={isFeature}>
-						<span class="ap-switch__thumb"></span>
-					</button>
-				</div>
+		<div class="ap-toggles">
+			<div class="ap-row">
+				<span class="ap-row__label">{t('AUTO TURBO')}</span>
+				<button class="ap-switch" class:on={isTurbo} type="button" onclick={toggleTurbo} aria-pressed={isTurbo}>
+					<span class="ap-switch__thumb"></span>
+				</button>
 			</div>
-
-			<p class="ap-spins-label">{t('AUTO NUM SPINS')}</p>
-
-			<div class="ap-stepper">
-				<button class="ap-step" type="button" disabled={disableDec} onclick={() => step(-1)} aria-label="Fewer spins"><img class="ctrl-glyph" src={iconMinus} alt="" /></button>
-				<span class="ap-count">{countLabel}</span>
-				<button class="ap-step" type="button" disabled={disableInc} onclick={() => step(1)} aria-label="More spins"><img class="ctrl-glyph" src={iconPlus} alt="" /></button>
+			<div class="ap-row">
+				<span class="ap-row__label">{t('AUTO SUPER TURBO')}</span>
+				<button class="ap-switch" class:on={isSuperTurbo} type="button" onclick={toggleSuperTurbo} aria-pressed={isSuperTurbo}>
+					<span class="ap-switch__thumb"></span>
+				</button>
 			</div>
+			<div class="ap-row">
+				<span class="ap-row__label">{t('AUTO FEATURE')}</span>
+				<button class="ap-switch" class:on={isFeature} type="button" onclick={toggleFeature} aria-pressed={isFeature}>
+					<span class="ap-switch__thumb"></span>
+				</button>
+			</div>
+		</div>
 
-			<button class="ap-start" type="button" onclick={start}>
-				{t('AUTO START')} ({countLabel})
+		<p class="ap-spins-label">{t('AUTO NUM SPINS')}</p>
+
+		<div class="ap-stepper">
+			<button class="ap-icon-btn" type="button" disabled={disableDec} onclick={() => step(-1)} aria-label="Fewer spins">
+				<span class="glyph glyph--minus"></span>
+			</button>
+			<span class="ap-count">{countLabel}</span>
+			<button class="ap-icon-btn" type="button" disabled={disableInc} onclick={() => step(1)} aria-label="More spins">
+				<span class="glyph glyph--plus"></span>
 			</button>
 		</div>
+
+		<button class="ap-start" type="button" onclick={start}>
+			{t('AUTO START')} ({countLabel})
+		</button>
 	</div>
 </div>
 
@@ -118,20 +120,74 @@
 		backdrop-filter: blur(4px);
 	}
 
-	/* Everything inside the panel is sized in em off this width-derived font-size, so the whole
-	   dialog scales proportionally with the panel (Figma design width = 623px → 1em = 16px). */
+	/* Type is sized in em off this width-derived font-size so the whole dialog scales with the
+	   panel art (design art box = 632px wide → 1em = 16px). Positions are % of the panel box.
+	   52.7vw is the panel's share of the design frame (632 of 1200), so on screens wider than the
+	   design the dialog keeps its intended presence instead of shrinking away; 632px is the floor
+	   and 94vw / 104vh keep it inside small or portrait viewports. */
 	.ap-root {
+		--ap-w: min(94vw, 104vh, max(632px, 52.7vw));
 		position: fixed;
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 59;
-		width: min(623px, 94vw, 104vh);
-		font-size: calc(min(623px, 94vw, 104vh) / 38.9375);
+		width: var(--ap-w);
+		font-size: calc(var(--ap-w) / 39.5);
 		font-family: 'Inter', sans-serif;
 	}
 
-	/* Blue circular close button, pinned to the top-right of the screen (matches the buy-bonus one) */
+	/* Steel frame with the navy interior baked in — trimmed to the art, so % positions are exact. */
+	.ap-panel {
+		position: relative;
+		aspect-ratio: 632 / 524;
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
+	}
+
+	/* Figma "Icon buttons": 48.696 circle, #22365B fill, 1px #2391C1 border, white glyph. */
+	.ap-icon-btn {
+		/* buttons do NOT inherit font-size — without this the em box collapses to Chrome's 13.3px */
+		font-size: inherit;
+		width: 3.0435em;
+		height: 3.0435em;
+		flex-shrink: 0;
+		padding: 0;
+		border-radius: 50%;
+		border: 1px solid #2391c1;
+		background: #22365b;
+		display: grid;
+		place-items: center;
+		cursor: pointer;
+		transition: filter 0.12s ease;
+	}
+	.ap-icon-btn:hover:not(:disabled) { filter: brightness(1.35); }
+	.ap-icon-btn:disabled { opacity: 0.4; cursor: default; }
+
+	/* Glyphs are drawn rather than imported: the design's are plain 2.13px white strokes. */
+	.glyph {
+		position: relative;
+		display: block;
+		width: 0.866em;
+		height: 0.133em;
+		border-radius: 0.133em;
+		background: #fff;
+	}
+	.glyph--plus::after,
+	.glyph--close::before,
+	.glyph--close::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: inherit;
+	}
+	.glyph--plus::after { transform: rotate(90deg); }
+	.glyph--close { width: 1.155em; background: none; }
+	.glyph--close::before { background: #fff; transform: rotate(45deg); }
+	.glyph--close::after { background: #fff; transform: rotate(-45deg); }
+
+	/* Design places the close button at the top-right of the whole screen, not on the panel. */
 	.ap-close {
 		position: fixed;
 		top: 22px;
@@ -139,47 +195,15 @@
 		z-index: 60;
 		width: 48px;
 		height: 48px;
-		border-radius: 50%;
-		border: 1.5px solid #00fcff;
-		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
-		color: #cfe6ff;
-		font-size: 1rem;
-		font-weight: 700;
-		cursor: pointer;
-		display: grid;
-		place-items: center;
-		box-shadow: 0 0 12px rgba(0, 140, 255, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5);
-		transition: filter 0.12s ease;
-	}
-	.ap-close:hover { filter: brightness(1.25); }
-	/* The ctrl icons are full round buttons — fill the wrapper and strip its own frame. */
-	.ap-close:has(.ctrl-glyph),
-	.ap-step:has(.ctrl-glyph) {
-		border: none;
-		background: none;
-		box-shadow: none;
-		padding: 0;
-	}
-	.ctrl-glyph { width: 100%; height: 100%; object-fit: contain; display: block; }
-
-	/* Blue bracketed tech panel (fs_panel.webp, 623×514 design size) */
-	.ap-panel {
-		aspect-ratio: 623 / 514;
-		background-size: 100% 100%;
-		background-repeat: no-repeat;
-		display: flex;
-		box-sizing: border-box;
-		/* Figma: content column is 494 wide inside 623 (~10.3% side padding), rows start ~15% down. */
-		padding: 15% 10.3% 9%;
+		font-size: 16px;
 	}
 
-	.ap-content {
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-	}
-
+	/* Figma 4036:2490 — three rows, 16px apart, inset 10.76% and starting 14.98% down. */
 	.ap-toggles {
+		position: absolute;
+		left: 10.76%;
+		right: 11.08%;
+		top: 14.98%;
 		display: flex;
 		flex-direction: column;
 		gap: 1em;
@@ -190,6 +214,7 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 0.6em;
+		height: 2.076em;
 	}
 
 	/* Figma: IBM Plex Sans Condensed Bold 20px, white, 0.6px tracking */
@@ -199,110 +224,96 @@
 		font-size: 1.25em;
 		letter-spacing: 0.03em;
 		color: #fff;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
 	}
 
-	/* Cyan toggle switch (62×33 design size) */
+	/* Cyan toggle switch (62 x 33.214 design size) */
 	.ap-switch {
+		font-size: inherit;
 		flex: 0 0 auto;
 		position: relative;
 		width: 3.875em;
-		height: 2.075em;
+		height: 2.076em;
 		border-radius: 999px;
-		border: 1px solid rgba(0, 0, 0, 0.4);
-		background: linear-gradient(180deg, #3c4654, #232a35);
+		border: 1px solid #556479;
+		/* OFF: near-black at the top fading to blue at the bottom (sampled from the design render) */
+		background: linear-gradient(180deg, #141b1c 0%, #2c5aa4 100%);
 		cursor: pointer;
 		padding: 0;
-		transition: background 0.2s ease;
+		transition: background 0.2s ease, border-color 0.2s ease;
 	}
 	.ap-switch.on {
-		background: linear-gradient(180deg, #00c2ff, #0075d9);
-		border-color: rgba(0, 252, 255, 0.6);
-		box-shadow: 0 0 10px rgba(0, 194, 255, 0.45);
+		border-color: transparent;
+		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
 	}
 	.ap-switch__thumb {
 		position: absolute;
-		top: 50%;
-		left: 8%;
-		transform: translateY(-50%);
-		width: 1.55em;
-		height: 1.55em;
+		top: 0.277em;
+		left: 7.14%;
+		width: 1.522em;
+		height: 1.522em;
 		border-radius: 50%;
 		background: #fff;
-		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 		transition: left 0.2s ease;
 	}
-	.ap-switch.on .ap-switch__thumb { left: calc(92% - 1.55em); }
+	.ap-switch.on .ap-switch__thumb { left: 53.57%; }
 
-	/* Figma: IBM Plex Sans Condensed Bold 20px, cyan→blue gradient, centered */
+	/* Figma 4036:2489 — IBM Plex Sans Condensed Bold 20px, flat #2391C1, centred at 51.8%. */
 	.ap-spins-label {
-		margin: auto 0 0;
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 51.81%;
+		margin: 0;
+		transform: translateY(-50%);
 		text-align: center;
 		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: 1.25em;
 		letter-spacing: 0.03em;
-		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: transparent;
+		color: #2391c1;
 	}
 
-	/* − [count] + stepper row */
+	/* − [count] + row, centred at 63.04% with the buttons 69px either side of centre. */
 	.ap-stepper {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 63.04%;
+		transform: translateY(-50%);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 2.7em;
-		margin-top: 0.9em;
+		gap: 0;
 	}
 
-	.ap-step {
-		/* own font-size is 1.4em, so box dims are divided by 1.4 to stay 48.7px at design size */
-		width: 2.17em;
-		height: 2.17em;
-		flex-shrink: 0;
-		border-radius: 50%;
-		border: 1.5px solid #00fcff;
-		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
-		color: #cfe6ff;
-		font-size: 1.4em;
-		font-weight: 400;
-		line-height: 1;
-		display: grid;
-		place-items: center;
-		cursor: pointer;
-		box-shadow: 0 0 10px rgba(0, 200, 255, 0.3);
-		transition: filter 0.12s ease;
-	}
-	.ap-step:hover:not(:disabled) { filter: brightness(1.3); }
-	.ap-step:disabled { opacity: 0.4; cursor: default; }
-
-	/* Figma: Inter Bold 32px white */
+	/* Figma 4036:2488 — Inter Bold 32px white. The count is a FIXED 89.3px slot (the design's gap
+	   between the two button edges) so 3-digit values and ∞ never shift the − / + off their marks. */
 	.ap-count {
-		min-width: 2.6em;
+		/* own font-size is 2em, so the 89.3px slot is 89.3 / 32 em here */
+		width: 2.79em;
 		text-align: center;
 		color: #fff;
 		font-weight: 700;
 		font-size: 2em;
-		letter-spacing: 0.03em;
-		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+		line-height: 1;
 	}
 
-	/* Figma: full-width cyan button, 44px tall, radius 12, Inter Bold 14 / 1.4px tracking */
+	/* Figma 4036:2503 — flat #28A6DE, 1px #60A5FA border, radius 12, Inter Bold 14 / 1.4px tracking */
 	.ap-start {
-		/* own font-size is 0.875em → design px ÷ 0.875 (44px height, 12px radius, 24px top gap) */
-		width: 100%;
-		height: 3.14em;
-		margin-top: 1.7em;
+		position: absolute;
+		left: 10.76%;
+		right: 11.08%;
+		top: 79.49%;
+		/* own font-size is 0.875em → design px ÷ 14 for this element's own metrics */
+		font-size: 0.875em;
+		height: 3.143em;
+		transform: translateY(-50%);
 		border: 1px solid #60a5fa;
 		border-radius: 0.857em;
-		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+		background: #28a6de;
 		color: #fff;
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: 0.875em;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		cursor: pointer;

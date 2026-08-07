@@ -11,14 +11,20 @@
 		layoutType === 'portrait' ? 'boardPadMobile' : layoutType === 'landscape' ? 'boardPadLand' : 'boardPad',
 	);
 
-	// board_pad.webp (2492×2056) is a thin blue-tech HUD frame: glowing border + corner brackets
-	// around a dark interior. The interior (where the grid sits) is ≈93% of the image (border ~3.5%
-	// per side). Fit width + height independently to the grid so the border stays a thin, even margin
-	// around the 7×7 cells, centred on the grid centre (layout.x / layout.y).
-	const INNER_FRAC = 0.95;
-	const MARGIN = 1.0; // grid fills the interior — border hugs the cells (minimal padding)
-	const frameW = $derived((board.width * board.boardScale * MARGIN) / INNER_FRAC);
-	const frameH = $derived((board.height * board.boardScale * MARGIN) / INNER_FRAC);
+	// board_pad.webp is the Version2 holo panel (same art as the splash feature panels). Its flat
+	// navy interior measures 0.9245w x 0.9033h of the trimmed file (measured by center-line color
+	// run) — the rest is the thin metal frame plus a wide baked glow. In the Figma base screen the
+	// metal edge HUGS the grid (~0.2 cell margin), so size the sprite so the interior comes out at
+	// grid x INTERIOR_MARGIN. Getting this wrong by trusting the design's 762x615 frame BOX (which
+	// includes the glow) inflated the navy margins to a full cell per side.
+	const ART_INNER_W = 0.9245;
+	const ART_INNER_H = 0.9033;
+	// 1.06 → 1.01 (user round vs the design edge crop): the design's outer pads sit almost flush
+	// against the bezel (~3–6px at 158px pitch), while 1.06 left ~0.21 cell of navy per side.
+	// 1.01 keeps just a hair of clearance for the interior's rounded corners.
+	const INTERIOR_MARGIN = 1.01;
+	const frameW = $derived((board.width * board.boardScale * INTERIOR_MARGIN) / ART_INNER_W);
+	const frameH = $derived((board.height * board.boardScale * INTERIOR_MARGIN) / ART_INNER_H);
 </script>
 
 <Sprite

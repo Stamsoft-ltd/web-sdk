@@ -4,38 +4,41 @@ const assets = {
 
 	bgBase: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bg_base.jpg?v=20260707'
+		src: './assets/components/backgrounds/bg_base.webp?v=20260806'
 	},
+	// Version2 bonus rooms (Figma 7022:7043 DROP-O-MAGNET / 7022:7044 ALL IN): the same workshop as
+	// the base background, lit purple and green. Blur is BAKED IN like bg_base so the board reads
+	// against them, and the old 483KB/635KB jpgs are gone (34KB/39KB now).
 	bgBonus: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bg_bonus.jpg?v=20260708'
+		src: './assets/components/backgrounds/bg_bonus.webp?v=20260807b'
 	},
 	bgSuper: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bg_super.jpg?v=20260708'
+		src: './assets/components/backgrounds/bg_super.webp?v=20260807b'
 	},
 	// Portrait (mobile) backgrounds — tall corridor art, swapped in when layoutType is 'portrait'.
 	bgMobileBase: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bg_mobile_base.jpg?v=20260709'
+		src: './assets/components/backgrounds/bg_mobile_base.webp?v=20260806'
 	},
 	bgMobileBonus: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bg_mobile_bonus.webp?v=20260709'
+		src: './assets/components/backgrounds/bg_mobile_bonus.webp?v=20260807b'
 	},
 	bgMobileSuper: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bg_mobile_super.webp?v=20260709'
+		src: './assets/components/backgrounds/bg_mobile_super.webp?v=20260807b'
 	},
 	// Portrait board frame + horizontal capsule tube + small pad (ALL WINS / FREE SPINS boxes).
 	boardPadMobile: {
 		type: 'sprite',
-		src: './assets/components/frames/board_pad_mobile.webp?v=20260709'
+		src: './assets/components/frames/board_pad.webp?v=20260806'
 	},
 	// Landscape (mobile horizontal) board frame.
 	boardPadLand: {
 		type: 'sprite',
-		src: './assets/components/frames/board_pad_land.webp?v=20260713'
+		src: './assets/components/frames/board_pad.webp?v=20260806'
 	},
 	smallPadMobile: {
 		type: 'sprite',
@@ -46,9 +49,11 @@ const assets = {
 		type: 'sprite',
 		src: './assets/components/ui/respin_icon.webp?v=20260713'
 	},
-	panelBorder: {
+	// Version2 left-rail info box (RESPIN / FREE SPINS / TOTAL WIN) — steel frame with chamfered
+	// corners over a navy gradient — the REAL design art, extracted from Figma node 7002:11384.
+	infoBox: {
 		type: 'sprite',
-		src: './assets/components/ui/panel_border.webp?v=20260708'
+		src: './assets/components/frames/info_box.webp?v=20260807e'
 	},
 	// Desktop tesla capsule housing. This is the per-pixel MEDIAN of the original 30-frame baked
 	// flipbook: the source video has sub-pixel camera wobble, so playing the whole capsule as a
@@ -58,9 +63,11 @@ const assets = {
 	// Regenerate with scripts/split-capsule-shell.py, which needs the original flipbook — deleted
 	// from the tree once the bolts went procedural, but recoverable via
 	// `git show <rev>:apps/magnetic/static/assets/sprites/capsuleTube/capsule_tube_anim.webp`.
+	// Version2 redesign: the desktop tube shell is now the splash pillar machine (Figma 2503:7839
+	// right rail) — same slot in CapsulePanel/LandscapeCapsule, new art.
 	capsuleTubeShell: {
 		type: 'sprite',
-		src: './assets/sprites/capsuleTube/capsule_tube_shell.webp?v=20260729'
+		src: './assets/components/splash/pillar.webp?v=20260806'
 	},
 	// Mobile/portrait+landscape tube: the same tesla animation exported HORIZONTALLY (mp4 → keyed,
 	// trimmed 30-frame flipbook, visible-tube aspect ~3.23). Portrait uses it as-is; mobile-landscape
@@ -85,39 +92,27 @@ const assets = {
 		type: 'sprite',
 		src: './assets/components/ui/magnetic_tube.webp?v=20260710'
 	},
-	// Free-spins intro popup: dark-blue tech panel + win-state horseshoe magnet (baked electric FX).
-	fsPanel: {
+	// Backdrop for BOTH congratulations screens (Version2, Figma 7022-6844 / 7069-9311). Cropped
+	// straight out of the artist's source PNG, which already carries real alpha — no keying, and
+	// no purple arcs: the design mock composites those from a separate layer and the user asked for
+	// the clean frame. 2048x1162.
+	fsWonFrame: {
 		type: 'sprite',
-		src: './assets/components/ui/fs_panel.webp?v=20260708'
-	},
-	// Free-spins intro: full magnet element (magnet + base + blue/orange energy) and the press arrow.
-	popupMagnet: {
-		type: 'sprite',
-		src: './assets/components/ui/popup_magnet.webp?v=20260708'
-	},
-	// Animated medallion for both congratulations popups (Magnific "lightning flicker" video,
-	// black keyed to alpha). 30-frame near-seamless loop.
-	popupMagnetAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/popupMagnet/popup_magnet_anim.json'
-	},
-	pressArrow: {
-		type: 'sprite',
-		src: './assets/components/ui/press_arrow.webp?v=20260708'
+		src: './assets/components/ui/fs_won_frame.webp?v=20260807b'
 	},
 	boardPad: {
 		type: 'sprite',
-		src: './assets/components/frames/board_pad.webp?v=20260707'
+		src: './assets/components/frames/board_pad.webp?v=20260806'
 	},
 	// Per-cell boxes: a stationary 7x7 grid of these sits behind the rolling symbols. Winning cells
 	// swap to the win-state box.
 	cellBox: {
 		type: 'sprite',
-		src: './assets/components/frames/cell_box.webp?v=20260708'
+		src: './assets/components/frames/cell_box.webp?v=20260807'
 	},
 	cellBoxWin: {
 		type: 'sprite',
-		src: './assets/components/frames/cell_box_win.webp?v=20260708'
+		src: './assets/components/frames/cell_box_win.webp?v=20260807'
 	},
 	symbolPad: {
 		type: 'sprite',
@@ -137,7 +132,7 @@ const assets = {
 	},
 	magneticLogo: {
 		type: 'sprite',
-		src: './assets/components/ui/magnetic_logo.webp?v=20260707'
+		src: './assets/components/splash/logo_plate.webp?v=20260806'
 	},
 	pressPlayLogo: {
 		type: 'sprite',
@@ -146,36 +141,36 @@ const assets = {
 	// Win-state flipbook sheets are gone: winning cells now play the procedural <SymbolWinFx>
 	// choreography over the hi-res static win art. The 9–10 frame sheets looped at ~14fps with no
 	// real object motion — the Stake review's "poor animations".
-	aTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260709' },
-	aWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_win.webp?v=20260709' },
-	aTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_mobile.webp?v=20260709' },
-	aWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_mobile_win.webp?v=20260709' },
-	kTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/washer.webp?v=20260709' },
-	kWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/washer_win.webp?v=20260709' },
-	kTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/washer_mobile.webp?v=20260709' },
-	kWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/washer_mobile_win.webp?v=20260709' },
-	qTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260709' },
-	qWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw_win.webp?v=20260709' },
-	qTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw_mobile.webp?v=20260709' },
-	qWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw_mobile_win.webp?v=20260709' },
-	wildTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild.webp?v=20260709' },
-	wildWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild.webp?v=20260709' },
-	wildTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mobile.webp?v=20260709' },
-	wildWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mobile.webp?v=20260709' },
-	wild2xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x2.webp?v=20260709' },
-	wild3xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x3.webp?v=20260709' },
-	wild4xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x4.webp?v=20260709' },
-	wild5xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x5.webp?v=20260709' },
-	wild7xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x7.webp?v=20260709' },
-	wild9xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x9.webp?v=20260709' },
-	wild10xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x10.webp?v=20260709' },
-	wild2xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x2_mobile.webp?v=20260709' },
-	wild3xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x3_mobile.webp?v=20260709' },
-	wild4xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x4_mobile.webp?v=20260709' },
-	wild5xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x5_mobile.webp?v=20260709' },
-	wild7xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x7_mobile.webp?v=20260709' },
-	wild9xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x9_mobile.webp?v=20260709' },
-	wild10xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x10_mobile.webp?v=20260709' },
+	aTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260806' },
+	aWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260806' },
+	aTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_mobile.webp?v=20260806' },
+	aWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_mobile.webp?v=20260806' },
+	kTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/washer.webp?v=20260806' },
+	kWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/washer.webp?v=20260806' },
+	kTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/washer_mobile.webp?v=20260806' },
+	kWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/washer_mobile.webp?v=20260806' },
+	qTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260806' },
+	qWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260806' },
+	qTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw_mobile.webp?v=20260806' },
+	qWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw_mobile.webp?v=20260806' },
+	wildTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild.webp?v=20260806' },
+	wildWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild.webp?v=20260806' },
+	wildTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mobile.webp?v=20260806' },
+	wildWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mobile.webp?v=20260806' },
+	wild2xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x2.webp?v=20260806' },
+	wild3xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x3.webp?v=20260806' },
+	wild4xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x4.webp?v=20260806' },
+	wild5xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x5.webp?v=20260806' },
+	wild7xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x7.webp?v=20260806' },
+	wild9xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x9.webp?v=20260806' },
+	wild10xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x10.webp?v=20260806' },
+	wild2xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x2_mobile.webp?v=20260806' },
+	wild3xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x3_mobile.webp?v=20260806' },
+	wild4xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x4_mobile.webp?v=20260806' },
+	wild5xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x5_mobile.webp?v=20260806' },
+	wild7xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x7_mobile.webp?v=20260806' },
+	wild9xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x9_mobile.webp?v=20260806' },
+	wild10xTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x10_mobile.webp?v=20260806' },
 	// Radial electric burst played BEHIND every stacked (locked) symbol. 10 independent bursts
 	// rather than a rendered animation, so the cycle is a crackle, not motion — order carries no
 	// meaning. Regenerate with scripts/build-stack-zap-sheet.py <src-dir>.
@@ -183,58 +178,58 @@ const assets = {
 		type: 'spriteSheet',
 		src: './assets/sprites/stackZap/stack_zap.json'
 	},
-	scatterCustom: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260709' },
-	scatterWin: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260709' },
-	scatterCustomMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_mobile.webp?v=20260709' },
-	scatterWinMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_mobile.webp?v=20260709' },
-	foxTile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe.webp?v=20260709' },
-	wolfTile:     { type: 'sprite', src: './assets/components/symbols/magnetic/premium/plasma_drill.webp?v=20260709' },
-	bearTile:     { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube.webp?v=20260709' },
-	rabbitTile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.webp?v=20260709' },
+	scatterCustom: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260806' },
+	scatterWin: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260806' },
+	scatterCustomMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_mobile.webp?v=20260806' },
+	scatterWinMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_mobile.webp?v=20260806' },
+	foxTile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe.webp?v=20260806' },
+	wolfTile:     { type: 'sprite', src: './assets/components/symbols/magnetic/premium/plasma_drill.webp?v=20260806' },
+	bearTile:     { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube.webp?v=20260806' },
+	rabbitTile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.webp?v=20260806' },
 	magnetTile:   { type: 'sprite', src: './assets/components/ui/magnet_win.webp?v=20260709' },
-	squirrelTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt.webp?v=20260709' },
-	squirrelTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt_mobile.webp?v=20260709' },
+	squirrelTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt.webp?v=20260806' },
+	squirrelTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt_mobile.webp?v=20260806' },
 	// Premium mobile (portrait) symbol art.
-	foxTileMobile:       { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe_mobile.webp?v=20260709' },
-	foxWinTileMobile:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe_mobile_win.webp?v=20260709' },
-	wolfTileMobile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/plasma_drill_mobile.webp?v=20260709' },
-	wolfWinTileMobile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/plasma_drill_mobile_win.webp?v=20260709' },
-	bearTileMobile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube_mobile.webp?v=20260709' },
-	bearWinTileMobile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube_mobile_win.webp?v=20260709' },
-	rabbitTileMobile:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device_mobile.webp?v=20260709' },
-	rabbitWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device_mobile_win.webp?v=20260709' },
+	foxTileMobile:       { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe_mobile.webp?v=20260806' },
+	foxWinTileMobile:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe_mobile.webp?v=20260806' },
+	wolfTileMobile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/plasma_drill_mobile.webp?v=20260806' },
+	wolfWinTileMobile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/plasma_drill_mobile.webp?v=20260806' },
+	bearTileMobile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube_mobile.webp?v=20260806' },
+	bearWinTileMobile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube_mobile.webp?v=20260806' },
+	rabbitTileMobile:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device_mobile.webp?v=20260806' },
+	rabbitWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device_mobile.webp?v=20260806' },
 	// Landscape (mobile horizontal) symbol art.
-	foxTileLand:       { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/horseshoe_land.webp?v=20260713' },
-	foxWinTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/horseshoe_land_win.webp?v=20260713' },
-	wolfTileLand:      { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/plasma_land.webp?v=20260713' },
-	wolfWinTileLand:   { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/plasma_land_win.webp?v=20260713' },
-	bearTileLand:      { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/cube_land.webp?v=20260713' },
-	bearWinTileLand:   { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/cube_land_win.webp?v=20260713' },
-	rabbitTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/emag_land.webp?v=20260713' },
-	rabbitWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/emag_land_win.webp?v=20260713' },
-	squirrelTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/bolt_land.webp?v=20260713' },
-	squirrelWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/bolt_land_win.webp?v=20260713' },
-	aTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/nut_land.webp?v=20260713' },
-	aWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/nut_land_win.webp?v=20260713' },
-	kTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/washer_land.webp?v=20260713' },
-	kWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/washer_land_win.webp?v=20260713' },
-	qTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/energy_screw_land.webp?v=20260713' },
-	qWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/energy_screw_land_win.webp?v=20260713' },
-	wildTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/wild_land.webp?v=20260713' },
-	scatterTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/scatter_land.webp?v=20260713' },
-	wild2xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/wild2x_land.webp?v=20260713' },
-	wild3xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/wild3x_land.webp?v=20260713' },
-	wild4xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/wild4x_land.webp?v=20260713' },
-	wild5xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/wild5x_land.webp?v=20260713' },
-	wild7xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/wild7x_land.webp?v=20260713' },
-	wild9xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/wild9x_land.webp?v=20260713' },
-	wild10xTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/landscape/wild10x_land.webp?v=20260713' },
-	foxWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe_win.webp?v=20260709' },
-	wolfWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/plasma_drill_win.webp?v=20260709' },
-	bearWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube_win.webp?v=20260709' },
-	rabbitWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device_win.webp?v=20260709' },
+	foxTileLand:       { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe.webp?v=20260806' },
+	foxWinTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe.webp?v=20260806' },
+	wolfTileLand:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/plasma_drill.webp?v=20260806' },
+	wolfWinTileLand:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/plasma_drill.webp?v=20260806' },
+	bearTileLand:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube.webp?v=20260806' },
+	bearWinTileLand:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube.webp?v=20260806' },
+	rabbitTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.webp?v=20260806' },
+	rabbitWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.webp?v=20260806' },
+	squirrelTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt.webp?v=20260806' },
+	squirrelWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt.webp?v=20260806' },
+	aTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260806' },
+	aWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260806' },
+	kTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/low/washer.webp?v=20260806' },
+	kWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/low/washer.webp?v=20260806' },
+	qTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260806' },
+	qWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260806' },
+	wildTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild.webp?v=20260806' },
+	scatterTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260806' },
+	wild2xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x2.webp?v=20260806' },
+	wild3xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x3.webp?v=20260806' },
+	wild4xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x4.webp?v=20260806' },
+	wild5xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x5.webp?v=20260806' },
+	wild7xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x7.webp?v=20260806' },
+	wild9xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x9.webp?v=20260806' },
+	wild10xTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x10.webp?v=20260806' },
+	foxWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe.webp?v=20260806' },
+	wolfWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/plasma_drill.webp?v=20260806' },
+	bearWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube.webp?v=20260806' },
+	rabbitWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.webp?v=20260806' },
 	magnetWinTile: { type: 'sprite', src: './assets/components/ui/magnet_win.webp?v=20260709' },
-	squirrelWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt_win.webp?v=20260709' },
+	squirrelWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt.webp?v=20260806' },
 	// Win boards — preloaded so board escalation during count-up doesn't stall
 	sweetWinBoard:     { type: 'sprite', src: './assets/components/win_boards/sweet_win.webp?v=20260730' },
 	wildWinBoard:      { type: 'sprite', src: './assets/components/win_boards/big_win.webp?v=20260730' },
@@ -326,7 +321,7 @@ flag(['loadingBarAnim', 'pressPlayLogo'], 'preload');
 flag(
 	[
 		'bgBonus', 'bgSuper', 'bgMobileBonus', 'bgMobileSuper',
-		'fsPanel', 'popupMagnet', 'popupMagnetAnim', 'pressArrow',
+		'fsWonFrame',
 		'fsIntro', 'transition', 'counterFrame',
 	],
 	'deferDemand',
