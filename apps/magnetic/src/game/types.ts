@@ -41,6 +41,11 @@ export type BoardCell = RawSymbol & {
 	displayY: Tween<number>;
 	displayAlpha: Tween<number>;
 	displayScale: Tween<number>;
+	/** Landing impact, 1 at contact decaying to 0 — Board turns it into a squash (wide + short,
+	 *  seated on the floor) so a symbol hits the grid like a dropped stone instead of stopping dead. */
+	displaySquash: Tween<number>;
+	/** performance.now() of the last landing; the dust puff is drawn from it in Board's rAF. */
+	landAt: number;
 	locked: boolean;
 	highlighted: boolean;
 	anchor: boolean;

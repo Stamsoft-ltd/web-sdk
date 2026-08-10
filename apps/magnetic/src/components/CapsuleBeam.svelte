@@ -21,6 +21,13 @@
 		symbolScale?: number;
 		/** Symbol sprite width in local px (height follows the 328x264 art aspect). */
 		symbolW?: number;
+		/** Beam ends as fractions of glassH. Defaults are the vertical-tube values (see below); the
+		 *  portrait bar passes a symmetric pair because its tube is a barrel with no cap/base. */
+		beamTop?: number;
+		beamBot?: number;
+		/** Counter-rotation for the held symbol, radians. A caller that rotates this whole component
+		 *  (the portrait bar runs the tube horizontally) uses it to keep the symbol upright. */
+		symbolRotation?: number;
 		alpha?: number;
 		zIndex?: number;
 	};
@@ -32,8 +39,8 @@
 
 	// User-tuned ends: the TOP reaches high, up under the cap (it "starts from higher"); the
 	// BOTTOM sits just clear of the base rim (0.3 was called out as too high).
-	const BEAM_TOP = -0.47;
-	const BEAM_BOT = 0.37;
+	const BEAM_TOP = $derived(props.beamTop ?? -0.47);
+	const BEAM_BOT = $derived(props.beamBot ?? 0.37);
 
 	type G = {
 		destroyed: boolean;
@@ -260,7 +267,12 @@
 <Container x={props.x ?? 0} y={props.y ?? 0} alpha={props.alpha ?? 1} zIndex={props.zIndex}>
 	<Graphics blendMode="add" draw={(gr) => (backG = gr as unknown as G)} />
 	{#if props.symbolKey}
-		<Container x={bobX} y={bobY} rotation={bobRot} scale={(props.symbolScale ?? 1) * breathe}>
+		<Container
+			x={bobX}
+			y={bobY}
+			rotation={bobRot + (props.symbolRotation ?? 0)}
+			scale={(props.symbolScale ?? 1) * breathe}
+		>
 			<!-- Rim: the same art a touch larger and additive, so the beam wraps the silhouette in a
 			     cyan edge instead of stopping dead at it. -->
 			<Sprite

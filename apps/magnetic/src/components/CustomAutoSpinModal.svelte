@@ -188,14 +188,17 @@
 	.glyph--close::after { background: #fff; transform: rotate(-45deg); }
 
 	/* Design places the close button at the top-right of the whole screen, not on the panel. */
+	/* Size and inset were fixed px, which reads fine on desktop but takes a huge bite out of a phone
+	   screen (user pass 2026-08-10). Scaled against the viewport with the old values as the cap; the
+	   glyph is drawn in `em`, so it follows font-size down with the circle. */
 	.ap-close {
 		position: fixed;
-		top: 22px;
-		right: 22px;
+		top: clamp(10px, 3vw, 22px);
+		right: clamp(10px, 3vw, 22px);
 		z-index: 60;
-		width: 48px;
-		height: 48px;
-		font-size: 16px;
+		width: clamp(32px, 8.5vw, 48px);
+		height: clamp(32px, 8.5vw, 48px);
+		font-size: clamp(10.5px, 2.8vw, 16px);
 	}
 
 	/* Figma 4036:2490 — three rows, 16px apart, inset 10.76% and starting 14.98% down. */

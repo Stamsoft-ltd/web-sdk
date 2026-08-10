@@ -98,6 +98,13 @@ const DROP_BOUNCE_UP_MS = 35;
 const DROP_BOUNCE_SETTLE_MS = 40;
 const DROP_BOUNCE_HEIGHT = SYMBOL_H * 0.08;
 const DROP_EXIT_ROWS = BOARD_DIMENSIONS.y + 1;
+// Landing squash: how long the wide-and-short deformation takes to spring back out.
+const DROP_SQUASH_MS = 190;
+// Whole-board thump. Landings arrive as a rain, so a per-cell shake would be 49 overlapping
+// jitters; instead each landing ADDS to one shared value that is clamped and decays, so a column
+// piling up reads as one growing rumble and the final mass landing as a single solid knock.
+const BOARD_THUMP_DECAY_MS = 260;
+const BOARD_THUMP_PER_LAND = 0.34;
 
 const DROP_MOTION_NORMAL = {
 	startRows: DROP_START_ROWS,
@@ -152,6 +159,8 @@ const initBoardCell = (raw: RawSymbol, reel: number, row: number): BoardCell => 
 	displayY: new Tween(getTargetY(row)),
 	displayAlpha: new Tween(1),
 	displayScale: new Tween(1),
+	displaySquash: new Tween(0),
+	landAt: 0,
 	locked: false,
 	highlighted: false,
 	anchor: false,
@@ -160,6 +169,14 @@ const initBoardCell = (raw: RawSymbol, reel: number, row: number): BoardCell => 
 	fresh: false,
 	pulling: false,
 });
+
+// Each landing adds to the shared thump and restarts its decay. Clamped so a 49-cell rain cannot
+// stack into a screen-shaking mess — the cap is what turns the pile-up into one solid knock.
+const bumpBoardThump = () => {
+	const next = Math.min(1, stateGame.boardThump.current + BOARD_THUMP_PER_LAND);
+	stateGame.boardThump.set(next, { duration: 0 });
+	void stateGame.boardThump.set(0, { duration: BOARD_THUMP_DECAY_MS, easing: cubicOut });
+};
 
 const updateCellRaw = (cell: BoardCell, raw: RawSymbol) => {
 	cell.name = raw.name;
@@ -307,11 +324,48 @@ const landscapeLogoWidth = () =>
 	LOGO_WIDTH_FRACTION *
 	(LOGO_SMALL_SCALE + landscapeSizeT() * (1 - LOGO_SMALL_SCALE));
 const landscapeLogoHeight = () => landscapeLogoWidth() / LOGO_ART_ASPECT;
+// Portrait placement of the same mark, in main coords. GameLogoFrame DRAWS from these and
+// SplashIntro's handoff flight AIMS at them; they used to be duplicated as literals in both, so
+// resizing the in-game logo silently left the splash plate flying to the old spot and old size.
+const PORTRAIT_LOGO_WIDTH_FRACTION = 0.32;
+const PORTRAIT_LOGO_CY_FRACTION = 0.041;
+// ...and shrunk further on the small phone sizes (mobile M / S), where the HTML HUD sits at its
+// minimum PIXEL sizes and so eats proportionally more of the screen — a flat fraction leaves the
+// plate looking oversized against it (user pass 2026-08-10). 0 at a 320px-wide viewport → 1 at 430.
+const PORTRAIT_LOGO_SMALL_SCALE = 0.74;
+const PORTRAIT_SIZE_W_MIN = 320;
+const PORTRAIT_SIZE_W_MAX = 430;
+const portraitSizeT = () => {
+	const w = stateLayoutDerived.canvasSizes().width;
+	return Math.max(
+		0,
+		Math.min(1, (w - PORTRAIT_SIZE_W_MIN) / (PORTRAIT_SIZE_W_MAX - PORTRAIT_SIZE_W_MIN)),
+	);
+};
+const portraitLogoWidth = () =>
+	stateLayoutDerived.mainLayout().width *
+	PORTRAIT_LOGO_WIDTH_FRACTION *
+	(PORTRAIT_LOGO_SMALL_SCALE + portraitSizeT() * (1 - PORTRAIT_LOGO_SMALL_SCALE));
+const portraitLogoHeight = () => portraitLogoWidth() / LOGO_ART_ASPECT;
+// The CY fraction alone let the plate's top edge cross the visible canvas top on short portraits
+// (user: "logo is still outside"), because main.height is the VIRTUAL height and the canvas is
+// cropped out of it. Floor the centre so the plate always clears the real top edge by 6% of its
+// own height, whatever the viewport.
+const portraitLogoCY = () => {
+	const main = stateLayoutDerived.mainLayout();
+	const canvasTopY =
+		main.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1));
+	const h = portraitLogoHeight();
+	return Math.max(main.height * PORTRAIT_LOGO_CY_FRACTION, canvasTopY + h * 0.56);
+};
 // How far below the screen top the left-gutter box column starts, as a fraction of the logo height.
 // Lerped so popout S pulls the column (and the RESPIN box at its foot) UP toward the logo, where
 // there is far less vertical room, while popout L keeps the 0.6 it was tuned at.
-const LANDSCAPE_STACK_TOP_MIN = 0.42;
-const LANDSCAPE_STACK_TOP_MAX = 0.6;
+// Raised past 1.0 on 2026-08-10 (was 0.42/0.6): the stack used to START inside the logo's lower
+// half and the TOTAL WIN box overlapped the plate (user: "should be moved down"). >1 = the stack
+// top clears the logo's full height plus a small gap.
+const LANDSCAPE_STACK_TOP_MIN = 1.06;
+const LANDSCAPE_STACK_TOP_MAX = 1.14;
 const landscapeStackTopY = () => {
 	const main = stateLayoutDerived.mainLayout();
 	const canvasTopY =
@@ -332,16 +386,24 @@ const LANDSCAPE_BOARD_TRIM = 0.912;
 // MAX (popout L, t=1) lowered from 0.33 -> 0.27: the capsule column and the BUY BONUS badge that
 // tracks it sat too far right there, crowding the nav. MIN (popout S, t=0) went the other way,
 // 0.24 -> 0.26, to push the column slightly RIGHT on small screens as requested.
-const LANDSCAPE_CAPSULE_BIAS_MIN = 0.26;
-const LANDSCAPE_CAPSULE_BIAS_MAX = 0.27;
+// Raised again 2026-08-10 (0.26/0.27 -> 0.34/0.40): the capsule's left side sat ON the board
+// frame (user screenshot); the nav bar is slimmer + tighter to the edge now, so there is room.
+// MIN raised again 0.34 -> 0.44 (user pass 2026-08-10, popout S: "move the tube a little to the
+// right") — the slimmer nav bar freed the room on the right for it — then eased back to 0.41 on
+// the follow-up ("veeery slightly to the left").
+const LANDSCAPE_CAPSULE_BIAS_MIN = 0.38;
+const LANDSCAPE_CAPSULE_BIAS_MAX = 0.4;
 const landscapeCapsuleBias = () =>
 	LANDSCAPE_CAPSULE_BIAS_MIN +
 	landscapeSizeT() * (LANDSCAPE_CAPSULE_BIAS_MAX - LANDSCAPE_CAPSULE_BIAS_MIN);
-// The landscape capsule is the portrait glass tube (magnetic_tube.webp, 1002×668) rotated to vertical.
+// The landscape capsule is the portrait glass tube (magnetic_tube_v2.webp) rotated to vertical.
 // The art has ~29% transparent margins top/bottom (→ left/right after the 90° rotation): the opaque
 // tube is only ~42.5% of the sprite's width and ~94% of its height, so the *visible* tube is a slim
 // vertical cylinder. RATIO scales the whole sprite (bigger = bigger visible tube); STRETCH keeps the
 // native aspect (1.0 = undistorted — higher just makes the visible tube thinner, which reads as small).
+// Lerped by screen size: popout S wants a tighter tube (user pass 2026-08-10) — at full size it
+// crowded the nav and the board there; popout L / phone landscape keep the original 1.5.
+const LANDSCAPE_CAPSULE_TUBE_RATIO_MIN = 1.34;
 const LANDSCAPE_CAPSULE_TUBE_RATIO = 1.5;
 const LANDSCAPE_CAPSULE_TUBE_ASPECT = 668 / 1002;
 const LANDSCAPE_CAPSULE_TUBE_STRETCH = 1.0;
@@ -451,7 +513,8 @@ const boardLayout = () => {
 // Landscape vertical-capsule column geometry, in virtual (main) coordinates. Single source of truth
 // shared by the pixi LandscapeCapsule and the HTML buy-bonus button (which converts it to device px)
 // so the capsule and the buy badge beneath it stay aligned at every device aspect ratio.
-const LANDSCAPE_CAPSULE_TOP_GAP = 0.01;
+// 0 (was 0.01): the capsule starts flush with the screen top (user pass 2026-08-10).
+const LANDSCAPE_CAPSULE_TOP_GAP = 0;
 
 const landscapeCapsuleLayout = () => {
 	const board = boardLayout();
@@ -466,7 +529,10 @@ const landscapeCapsuleLayout = () => {
 	const colX = boardRightX + (canvasRightX - boardRightX) * landscapeCapsuleBias();
 	// 10% larger than the board-derived base size, anchored near the SCREEN TOP (not centred on
 	// the board) so the capsule column starts almost at the top edge.
-	const baseH = gridHalfH * LANDSCAPE_CAPSULE_TUBE_RATIO * 1.1;
+	const tubeRatio =
+		LANDSCAPE_CAPSULE_TUBE_RATIO_MIN +
+		landscapeSizeT() * (LANDSCAPE_CAPSULE_TUBE_RATIO - LANDSCAPE_CAPSULE_TUBE_RATIO_MIN);
+	const baseH = gridHalfH * tubeRatio * 1.1;
 	const tubeW = baseH * LANDSCAPE_CAPSULE_TUBE_ASPECT;
 	const tubeH = baseH * LANDSCAPE_CAPSULE_TUBE_STRETCH;
 	// Visible (opaque) tube extents — the sprite box is padded, so size the symbol against these and
@@ -983,6 +1049,8 @@ export const stateGame = $state({
 	// True while the current bonus reveal is a cluster-growth respin (a free spin awarded to the
 	// player) — drives the RESPIN indicator panel. Cleared on normal reveals / spin start / reset.
 	respinIndicator: false,
+	// Whole-board landing thump, 0..1 — Board reads it as a decaying knock on the symbol layer.
+	boardThump: new Tween(0),
 	forceFastAnimations: false,
 	// Set true when the player chooses "End" on the unfinished-round dialog: the end flows through the
 	// xstate machine (RESUME_BET) but onPlayGame skips the animation so endGame just ends the round +
@@ -1153,6 +1221,13 @@ const animateSpinReels = async ({ rawBoard }: { rawBoard: RawSymbol[][] }) => {
 			cell.symbolState = 'land';
 			if (!drop.skipped) {
 				playLandSound(raw);
+				// Stone-hit: the cell squashes WIDE and SHORT against the floor and springs back,
+				// and Board draws a dust puff from `landAt`. The uniform 0.9 scale below is the old
+				// settle — it stays, but on its own it read as the symbol shrinking, not as impact.
+				cell.landAt = performance.now();
+				cell.displaySquash.set(1, { duration: 0 });
+				void cell.displaySquash.set(0, { duration: DROP_SQUASH_MS, easing: cubicOut });
+				bumpBoardThump();
 				cell.displayScale.set(0.9, { duration: 0 });
 				await Promise.race([
 					Promise.all([
@@ -1465,6 +1540,9 @@ export const stateGameDerived = {
 	landscapeSizeT,
 	landscapeLogoWidth,
 	landscapeLogoHeight,
+	portraitLogoWidth,
+	portraitLogoHeight,
+	portraitLogoCY,
 	landscapeStackTopY,
 	desktopRailStack,
 	boardRaw,

@@ -19,23 +19,29 @@
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 	const show = $derived(context.stateGame.respinIndicator);
 
-	// Same geometry family as the capsule's TOTAL WIN / FREE SPINS boxes (panel_border art).
-	const PANEL_ASPECT = 200 / 98;
+	const PANEL_ASPECT = 781 / 335;
 	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
 	const scale = $derived(board.boardScale);
-	// Landscape: match the LandscapeCapsule TOTAL WIN / FREE SPINS column width so RESPIN lines up
-	// beneath them as one stack. Desktop keeps its own (wider) left-rail panel width.
+	// Landscape: match the LandscapeCapsule TOTAL WIN / FREE SPINS column (Version2 InfoBox) so
+	// RESPIN lines up beneath them as one stack. Width/gap formulas kept in sync with that file.
 	const gridHalfW = $derived(board.width * 0.5 * scale);
-	// 0.49 / 0.12 kept in sync with LandscapeCapsule so RESPIN matches the TOTAL WIN / FREE SPINS boxes
-	// and the whole column stays compact enough to clear the balance/bet control on the largest landscapes.
-	const lcBoxW = $derived(gridHalfW * 0.49);
-	const lcBoxH = $derived(lcBoxW / (323 / 228));
-	const lcBoxGap = $derived(lcBoxH * 0.12);
+	const lcBoxW = $derived(
+		Math.min(
+			gridHalfW * 0.55,
+			(board.x -
+				gridHalfW -
+				(main.width * 0.5 -
+					context.stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1)))) *
+				0.84,
+		),
+	);
+	const lcBoxH = $derived(lcBoxW / PANEL_ASPECT);
+	const lcBoxGap = $derived(lcBoxH * 0.24);
 	// Desktop: the Version2 left-rail box (see stateGameDerived.desktopRailStack). Landscape keeps
 	// its own compact smallPad box so the mobile gutter column is unchanged.
 	const rail = $derived(context.stateGameDerived.desktopRailStack());
 	const PANEL_W = $derived(isLandscape ? lcBoxW : rail.boxW);
-	const PANEL_H = $derived(isLandscape ? lcBoxH : PANEL_W / PANEL_ASPECT);
+	const PANEL_H = $derived(PANEL_W / PANEL_ASPECT);
 
 	// Centre of the LEFT rail (mirror of the capsule column): between the screen's left edge and
 	// the board's left edge, below the logo (which occupies the top of the rail).
@@ -57,12 +63,6 @@
 	// Desktop: slot 0 of the left-rail stack (design order RESPIN / FREE SPINS / TOTAL WIN).
 	const panelY = $derived(isLandscape ? fsBottomY + lcBoxGap + PANEL_H * 0.5 : rail.slotY(0));
 
-	// Landscape uses the taller (equal-sized) box, so give the icon + label more presence to match the
-	// TOTAL WIN / FREE SPINS boxes; desktop keeps its original wide-short proportions.
-	const iconSize = $derived(PANEL_H * (isLandscape ? 0.42 : 0.3));
-	const iconOffY = $derived(-PANEL_H * (isLandscape ? 0.11 : 0.16));
-	const labelSize = $derived(PANEL_H * (isLandscape ? 0.17 : 0.2));
-	const labelOffY = $derived(PANEL_H * (isLandscape ? 0.22 : 0.16));
 
 	// The refresh icon is STATIC — it used to spin continuously off its own rAF, which pulled the
 	// eye away from the board during respins.
@@ -91,22 +91,15 @@
 {#if !isPortrait}
 	<MainContainer zIndex={25}>
 		<FadeContainer {show}>
-			{#if isLandscape}
-				<Container x={colX} y={panelY}>
-					<Sprite key="smallPadMobile" anchor={0.5} width={PANEL_W} height={PANEL_H} />
-					<Sprite key="respinIcon" anchor={0.5} y={iconOffY} width={iconSize} height={iconSize} />
-					<Text anchor={0.5} y={labelOffY} text={i18nDerived.translate('RESPIN')} style={labelStyle(labelSize)} />
-				</Container>
-			{:else}
-				<!-- Desktop: Version2 steel/navy box, slot 0 of the left rail (redesigned 2026-08-07). -->
-				<InfoBox
-					x={rail.x}
-					y={panelY}
-					width={PANEL_W}
-					label={i18nDerived.translate('RESPIN')}
-					iconKey="respinIcon"
-				/>
-			{/if}
+			<!-- Version2 steel/navy box on BOTH layouts (landscape joined 2026-08-10; it kept the
+			     old smallPad art long after the desktop rail was redesigned). -->
+			<InfoBox
+				x={isLandscape ? colX : rail.x}
+				y={panelY}
+				width={PANEL_W}
+				label={i18nDerived.translate('RESPIN')}
+				iconKey="respinIcon"
+			/>
 		</FadeContainer>
 	</MainContainer>
 {/if}

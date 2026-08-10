@@ -111,9 +111,11 @@
 	const iconAuto = ap('/assets/components/navbar/icons/v2/ic_auto.svg');
 	const iconAutoDisabled = ap('/assets/components/navbar/icons/v2/ic_auto.svg');
 	const iconSpin = ap('/assets/components/ui/spin_arrow.webp?v=20260807');
-	const iconTurbo = ap('/assets/components/ui/ic_thunder.webp');
-	const iconTurbo1 = ap('/assets/components/ui/ic_thunder.webp');
-	const iconTurbo3 = ap('/assets/components/ui/ic_thunder.webp');
+	// Three-state turbo bolt — the DESIGN'S own arts (Figma 4148:16896 outline = off,
+	// 2503:7489 solid = fast, 4148:16893 double = super), not regenerated shapes.
+	const iconTurbo = ap('/assets/components/ui/ic_thunder.webp?v=20260810b');
+	const iconTurbo1 = ap('/assets/components/ui/ic_thunder_double.webp?v=20260810b');
+	const iconTurbo3 = ap('/assets/components/ui/ic_thunder_outline.webp?v=20260810b');
 	const iconCoins = ap('/assets/components/navbar/coins.webp');
 
 	// Portrait-only pad art (passed to CSS as vars): nav bar behind the controls, round buy-bonus
@@ -728,13 +730,9 @@
 					>
 						<img class="nav-icon" src={disableDecrease ? iconMinusDisabled : iconMinus} alt="minus" />
 					</button>
-					<div
-						class="pt-bet-val"
-						role="button"
-						tabindex="0"
-						onkeydown={(e) => e.key === 'Enter' && canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
-						onclick={() => canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
-					>
+					<!-- Display-only, like desktop: bet changes go through the − / + steppers. The tap-to-open
+					     bet menu was removed here (user pass 2026-08-10). -->
+					<div class="pt-bet-val">
 						<span class="value" class:value--feature={isAnyModeActive}>{formattedBet}</span>
 					</div>
 					<button
@@ -1322,6 +1320,12 @@
 		width: 50%;
 		height: 50%;
 	}
+	/* The bolt is tall and narrow, so the shared 40% square under-renders it — but 58% overshot
+	   the reference (user round-trip): the design's outline bolt sits at ~47% of the button. */
+	.nav-btn--framed .nav-icon[alt='turbo'] {
+		width: 48%;
+		height: 48%;
+	}
 
 	.nav-btn--framed:disabled .nav-icon {
 		opacity: 0.35;
@@ -1348,15 +1352,9 @@
 		filter: drop-shadow(0 0 7px rgba(255, 216, 74, 0.9));
 	}
 
-	/* Turbo active — subtle icon brightness only, no coloured (yellow) glow. The turbo icon asset itself
-	   swaps outline -> solid -> double bolt, which is what conveys the fast/super state. */
-	.nav-btn--turbo.turbo-fast .nav-icon {
-		filter: brightness(1.15);
-	}
-
-	.nav-btn--turbo.turbo-super .nav-icon {
-		filter: brightness(1.4);
-	}
+	/* Turbo states are conveyed by the ICON alone (design ref: the button keeps its dark circle
+	   in every state) — outline bolt = off, solid = fast, double = super. A filled-background
+	   active state was tried and rejected against the Figma. */
 
 	/* Menu + sound buttons, docked at the left of the bottom bar */
 	.hud-system {
@@ -1574,20 +1572,14 @@
 		opacity: 0.65;
 	}
 
-	/* Fast mode: subtle icon brightness only — no coloured (yellow) glow or gold tint. */
-	.circle-btn--turbo.turbo-fast {
-		opacity: 1;
+	/* Turbo states — same Version2 toggle vocabulary as the bottom-bar button (see above). */
+	.circle-btn--turbo .btn-icon {
+		width: 23px;
+		height: 23px;
 	}
-	.circle-btn--turbo.turbo-fast .btn-icon {
-		filter: brightness(1.15);
-	}
-
-	/* Turbo (super) mode: brighter icon, still no coloured glow. */
+	.circle-btn--turbo.turbo-fast,
 	.circle-btn--turbo.turbo-super {
 		opacity: 1;
-	}
-	.circle-btn--turbo.turbo-super .btn-icon {
-		filter: brightness(1.4);
 	}
 
 	.spin-btn {
@@ -2047,7 +2039,6 @@
 		justify-content: center;
 		min-width: clamp(42px, 12.5vw, 54px);
 		padding: 0 clamp(1px, 0.6vw, 3px);
-		cursor: pointer;
 	}
 	.pt-bet-val .value {
 		font-size: clamp(0.76rem, 3.7vw, 0.96rem);
@@ -2116,16 +2107,20 @@
 	/* Right vertical nav column on the tall nav-bar panel. */
 	.ls-nav {
 		position: absolute;
-		right: clamp(12px, 2.6vw, 32px);
+		/* Tighter to the right edge (user pass 2026-08-10 — the bar floated too far inboard). */
+		right: clamp(6px, 1.2vw, 16px);
 		top: 54%;
 		transform: translateY(-50%);
 		/* Slim panel, tall enough to space the buttons out. Width is decoupled from height (the art is a
 		   plain rounded panel, so the mild horizontal stretch is invisible) so it can be narrow AND tall.
 		   The big spin disc overflows its sides as the focal control (mirrors the desktop spin button,
 		   which protrudes past the bar via negative margins). */
-		width: clamp(40px, 7vw, 68px);
+		/* Sized against BOTH axes (user pass 2026-08-10, popout S: the bar ate a third of the width and
+		   crowded the tube). vw alone kept the 36px floor on a small window, where 36px is a large
+		   FRACTION of it; the vh term pulls it in on short windows too. */
+		width: clamp(26px, min(4.8vw, 8.4vh), 48px);
 		/* Slightly shorter (was 78vh / 348) to leave room for the buy-bonus + WIN column under the capsule. */
-		height: clamp(150px, 70vh, 312px);
+		height: clamp(140px, 64vh, 300px);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -2137,15 +2132,17 @@
 		overflow: visible;
 	}
 	.ls-nav .nav-btn {
-		width: clamp(17px, 7.4vh, 42px);
-		height: clamp(17px, 7.4vh, 42px);
+		width: clamp(14px, min(6.6vh, 4.3vw), 38px);
+		height: clamp(14px, min(6.6vh, 4.3vw), 38px);
 	}
 	/* Focal spin — big disc that overflows the slim nav panel on both sides (negative side margins so
 	   it protrudes past the panel edges without widening the flex column), centred. */
 	.ls-nav .ls-spin {
-		width: clamp(54px, 24vh, 126px);
-		height: clamp(54px, 24vh, 126px);
-		margin: clamp(1px, 0.4vh, 4px) calc(-1 * clamp(20px, 6vh, 36px));
+		/* Sized against BOTH axes: vh alone let a tall-but-narrow popout grow the disc past the
+		   right screen edge (user report, twice) — the vw term caps it on narrow windows. */
+		width: clamp(40px, min(14vh, 7vw), 78px);
+		height: clamp(40px, min(14vh, 7vw), 78px);
+		margin: clamp(1px, 0.4vh, 4px) calc(-1 * clamp(8px, 2.5vh, 16px));
 		flex: 0 0 auto;
 	}
 	.ls-nav .ls-spin .spin-btn__count {

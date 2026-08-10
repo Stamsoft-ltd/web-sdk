@@ -87,9 +87,12 @@
 		const canvasTopMain = main.height * 0.5 - canvas.height / (2 * scale);
 		let cx: number, cy: number, w: number;
 		if (context.stateLayoutDerived.layoutType() === 'portrait') {
+			// Straight from stateGame, which is also what GameLogoFrame draws — these were literal
+			// copies of its old numbers, so every resize of the in-game logo left the plate flying to
+			// a stale spot at a stale size.
 			cx = main.width * 0.5;
-			cy = main.height * 0.088;
-			w = main.width * 0.5;
+			cy = context.stateGameDerived.portraitLogoCY();
+			w = context.stateGameDerived.portraitLogoWidth();
 		} else {
 			w = context.stateGameDerived.landscapeLogoWidth();
 			const h = context.stateGameDerived.landscapeLogoHeight();
@@ -371,9 +374,12 @@
 		--drop-from: -30cqh;
 		animation: logo-drop 700ms linear 500ms both;
 	}
+	/* Portrait logo: 46 -> 42cqw (user pass 2026-08-10, "make logo a bit smaller"). The centre drops
+	   0.5cqh with it so the plate's BOTTOM edge stays seated on the pillar drum instead of lifting
+	   off it as the art shrinks. */
 	.logo--m {
-		top: 13.5cqh;
-		width: 46cqw;
+		top: 14cqh;
+		width: 42cqw;
 		--drop-from: -22cqh;
 	}
 
@@ -440,9 +446,11 @@
 	}
 
 	/* Portrait: single panel centred between logo and floor parts, entering from the bottom. */
+	/* 52 -> 56cqh (user pass 2026-08-10): the card crowded the tube above it and left dead space
+	   over the floor parts. The dots track it. */
 	.panel-m {
 		left: 50%;
-		top: 52cqh;
+		top: 56cqh;
 		width: 64cqw;
 		height: calc(64cqw * 240 / 266);
 		animation: panel-from-bottom 650ms linear 1050ms both;
@@ -756,7 +764,7 @@
 	.dots {
 		position: absolute;
 		left: 50%;
-		top: 74%;
+		top: 78%;
 		transform: translateX(-50%);
 		display: flex;
 		gap: 3cqw;

@@ -26,8 +26,7 @@
 	const selectedSymbol = $derived(context.stateGame.selectedBonusSymbol);
 	const mode = $derived(context.stateGame.bonusMode);
 	// Hidden while the deer presenter is on screen; revealed once it finishes.
-	let presenterActive = $state(false);
-	const show = $derived(!!selectedSymbol && !!mode && !presenterActive);
+	const show = $derived(!!selectedSymbol && !!mode);
 	const scale = $derived(context.stateLayoutDerived.isStacked() ? 1.28 : 1);
 
 	const boardW = $derived(context.stateGameDerived.boardLayout().width);
@@ -92,8 +91,6 @@
 			if (rollDone) return;
 			await new Promise<void>((resolve) => { rollAwaitResolve = resolve; });
 		},
-		expandedPresenterShow: () => (presenterActive = true),
-		expandedPresenterHide: () => (presenterActive = false),
 	});
 
 	const spriteKey = $derived(displaySymbol ? getSpriteKeyByName({ name: displaySymbol, state: 'static' }) : 'aTile');

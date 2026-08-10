@@ -9,7 +9,7 @@
 </script>
 
 <script lang="ts">
-	import { Container, Graphics, Sprite } from 'pixi-svelte';
+	import { AnimatedSprite, Container, Graphics, Sprite, type LoadedSpriteSheet } from 'pixi-svelte';
 
 	import SymbolWinFx from './SymbolWinFx.svelte';
 	import { getContext } from '../game/context';
@@ -17,7 +17,23 @@
 	import { getSymbolInfo } from '../game/utils';
 
 	const context = getContext();
+
+	// Stacked-state idle loops (see assets.ts stackAnim*): symbol name -> spritesheet key.
+	// All eight pay symbols have videos; specials (WILD/MAGNET/SCATTER) keep the static art.
+	const STACK_ANIM_KEYS: Record<string, string> = {
+		H1: 'stackAnimH1',
+		H2: 'stackAnimH2',
+		H3: 'stackAnimH3',
+		H4: 'stackAnimH4',
+		L1: 'stackAnimL1',
+		L2: 'stackAnimL2',
+		L3: 'stackAnimL3',
+		L4: 'stackAnimL4',
+	};
+
 	const board = $derived(context.stateGame.board);
+
+
 	const spinBoard = $derived(context.stateGame.spinBoard);
 	const boardMode = $derived(context.stateGame.boardMode);
 	const layout = $derived(context.stateGameDerived.boardLayout());
@@ -45,6 +61,17 @@
 		return Math.abs(h % 100) / 100;
 	};
 
+	// Landing impact: how far a cell spreads and flattens at full squash (stateGame.displaySquash
+	// springs this back out over DROP_SQUASH_MS). Deliberately asymmetric — a stone hitting the
+	// ground loses more height than it gains width.
+	const SQUASH_X = 0.14;
+	const SQUASH_Y = 0.2;
+	// Whole-board knock, as a fraction of a symbol's height. The value oscillates as it decays so
+	// the board rings out instead of sliding back.
+	const THUMP_H = 0.05;
+	const boardThump = $derived(context.stateGame.boardThump.current);
+	const thumpY = $derived(SYMBOL_H * THUMP_H * boardThump * Math.sin(boardThump * 16));
+
 	// ── Cell electricity clock. ONE persistent rAF (started on mount, never stopped)
 	//    redraws the electric borders IMPERATIVELY into a captured Graphics instance. Nothing
 	//    reactive sits in the border render path, so the arcs cannot freeze when an upstream
@@ -60,6 +87,46 @@
 	};
 	let lockG: LockG | null = null;
 	let lockGDrawn = false;
+	// Impact dust, drawn into its own captured Graphics from the same frame loop. Imperative for the
+	// same reason the lock borders are: 49 cells landing in a rain would otherwise re-render the
+	// whole board every frame just to fade a puff.
+	let dustG: LockG | null = null;
+	let dustGDrawn = false;
+	const DUST_MS = 380;
+	// A landing kicks a low, wide cloud out along the floor plus a few flecks that hop and fall
+	// back. Both are pure functions of (now - cell.landAt), so nothing accumulates per frame.
+	const drawDust = (g: LockG, now: number) => {
+		g.clear();
+		let any = false;
+		for (const cell of unlockedCells) {
+			const t = (now - cell.landAt) / DUST_MS;
+			if (!cell.landAt || t < 0 || t > 1) continue;
+			any = true;
+			const cx = getX(cell.position.reel);
+			const floor = getStaticY(cell.position.row) + SYMBOL_H * 0.42;
+			const fade = (1 - t) ** 2;
+			// Cloud: spreads sideways and flattens as it dissipates.
+			for (let i = 0; i < 3; i++) {
+				const s = 1 - i * 0.22;
+				const rx = SYMBOL_W * (0.16 + 0.34 * t) * s;
+				const ry = SYMBOL_H * (0.07 + 0.05 * t) * s * (1 - 0.4 * t);
+				g.circle(cx, floor - ry * 0.3, Math.max(rx, ry));
+				g.fill({ color: 0xbcd6f0, alpha: 0.1 * fade * s });
+			}
+			// Flecks: hopped out on impact, pulled back down by gravity.
+			const phase = keyPhase(cell.key);
+			for (let i = 0; i < 5; i++) {
+				const dir = i % 2 === 0 ? 1 : -1;
+				const spread = 0.2 + ((i * 0.17 + phase) % 1) * 0.5;
+				const fx = cx + dir * SYMBOL_W * spread * t;
+				const hop = Math.sin(Math.min(1, t * 1.6) * Math.PI);
+				const fy = floor - SYMBOL_H * 0.16 * hop * (0.5 + spread);
+				g.circle(fx, fy, SYMBOL_W * 0.016 * (1 - t * 0.5));
+				g.fill({ color: 0xe4f1ff, alpha: 0.5 * fade });
+			}
+		}
+		return any;
+	};
 	// Trace the OUTLINE OF THE WHOLE STACKED PACK, not each locked cell. Outlining every cell drew
 	// the seams BETWEEN adjacent locked cells too, which is what read as lightning "inside" the
 	// stack. An edge is kept only when the neighbour across it is not locked, and the surviving
@@ -249,6 +316,18 @@
 				lockG = null;
 				lockGDrawn = false;
 			}
+			if (dustG?.destroyed) {
+				dustG = null;
+				dustGDrawn = false;
+			}
+			if (dustG) {
+				const drew = drawDust(dustG, now);
+				if (drew) dustGDrawn = true;
+				else if (dustGDrawn) {
+					dustG.clear();
+					dustGDrawn = false;
+				}
+			}
 			const cells = lockedCells; // untracked read inside rAF — always the current value
 			if (cells.length) {
 				if (lockG) {
@@ -323,8 +402,10 @@
 		{/each}
 
 		<!-- Moving symbols use a grid mask with cluster-cell holes. The board/background stays
-		     transparent there, while falling respin symbols disappear fully behind the cluster. -->
-		<Container zIndex={Z.reel} sortableChildren={true}>
+		     transparent there, while falling respin symbols disappear fully behind the cluster.
+		     `thumpY` knocks this whole layer on every landing — the grid boxes and frame stay put,
+		     so the symbols jolt INSIDE the machine rather than the machine bouncing. -->
+		<Container zIndex={Z.reel} sortableChildren={true} y={thumpY}>
 			<Graphics
 				isMask
 				draw={(graphics) => {
@@ -367,10 +448,16 @@
 				<!-- Base state: only unlocked symbols render here. Cluster symbols use the win state below. -->
 				{#each unlockedCells as cell (cell.key)}
 					{@const x = getX(cell.position.reel) + cell.displayX.current}
-					{@const y = cell.displayY.current}
+					<!-- Landing squash: the cell spreads sideways and flattens against the floor, and its
+					     centre drops by half the height it loses so the BASE stays planted — squashing
+					     about the centre alone leaves the symbol hovering over its own impact. -->
+					{@const sq = cell.displaySquash.current}
 					{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState })}
-					{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
-					{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
+					{@const baseH = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
+					{@const y = cell.displayY.current + baseH * SQUASH_Y * sq * 0.5}
+					{@const width =
+						SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current * (1 + SQUASH_X * sq)}
+					{@const height = baseH * (1 - SQUASH_Y * sq)}
 					{@const targetY = getStaticY(cell.position.row)}
 					{@const fallDist = targetY - y}
 					<!-- Motion-blur trail while a symbol RAINS IN (never on the exit — there the
@@ -458,17 +545,38 @@
 					phase={keyPhase(cell.key)}
 				/>
 			{:else}
-				<Sprite
-					key={safeAssetKey}
-					{x}
-					{y}
-					anchor={{ x: 0.5, y: 0.5 }}
-					{width}
-					{height}
-					alpha={1}
-					tint={0xffffff}
-					zIndex={Z.lockedSymbol}
-				/>
+				{@const stackTextures = context.stateApp.loadedAssets?.[
+					STACK_ANIM_KEYS[cell.name] ?? ''
+				] as LoadedSpriteSheet | undefined}
+				{#if stackTextures?.length}
+					<!-- Charging idle loop, de-synced per cell so a stack doesn't pulse in lockstep.
+					     0.2 speed = 12fps against the 60fps ticker (the sheets are 36f/3s loops). -->
+					<AnimatedSprite
+						textures={stackTextures}
+						play
+						loop
+						animationSpeed={0.2}
+						startFrame={Math.floor(keyPhase(cell.key) * 36)}
+						{x}
+						{y}
+						anchor={{ x: 0.5, y: 0.5 }}
+						{width}
+						{height}
+						zIndex={Z.lockedSymbol}
+					/>
+				{:else}
+					<Sprite
+						key={safeAssetKey}
+						{x}
+						{y}
+						anchor={{ x: 0.5, y: 0.5 }}
+						{width}
+						{height}
+						alpha={1}
+						tint={0xffffff}
+						zIndex={Z.lockedSymbol}
+					/>
+				{/if}
 			{/if}
 		{/each}
 
@@ -480,6 +588,14 @@
 			blendMode="add"
 			zIndex={Z.lockBorder}
 			draw={(gr) => (lockG = gr as unknown as LockG)}
+		/>
+
+		<!-- Impact dust — same capture-only pattern, redrawn imperatively by the frame loop. Sits
+		     just under the symbols so the cloud reads as kicked up from behind their feet. -->
+		<Graphics
+			blendMode="add"
+			zIndex={Z.symbol - 1}
+			draw={(gr) => (dustG = gr as unknown as LockG)}
 		/>
 	</Container>
 {/if}

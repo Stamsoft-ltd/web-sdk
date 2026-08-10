@@ -19,21 +19,19 @@
 	const tv = (k: string, vars: Record<string, string | number>) => i18nDerived.translateVars(k, vars);
 
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	const cardPanel      = ap('/assets/components/ui/bb_card_panel.webp?v=20260708c');
-	const betPanel       = ap('/assets/components/ui/bb_bet_panel.webp?v=20260708c');
+	// Version2 panels (Figma 4040-4075): steel chamfered card frame + compact bet plate, keyed off
+	// the export's white backdrop with the shared saturation flood fill (scratchpad/key_panel.py).
+	const cardPanel      = ap('/assets/components/ui/bb_card_panel_v2.webp?v=20260810');
+	const betPanel       = ap('/assets/components/ui/bb_bet_panel_v2.webp?v=20260810');
 	const coinIcon       = ap('/assets/components/ui/bb_coin.svg?v=20260708c');
-	// Our control icons (same set the info modal documents) for the +, − and × (close) buttons.
-	const iconClose      = ap('/assets/components/ui/ctrl_close.svg');
-	const iconMinus      = ap('/assets/components/ui/ctrl_minus.svg');
-	const iconPlus       = ap('/assets/components/ui/ctrl_plus.svg');
 
-	// Icons — exact Figma art (node 4040-4075): glowing magnet, purple M cube, red M briefcase.
-	const iconChance  = ap('/assets/components/ui/bb_icon_extra_chance.webp?v=20260708c');
-	// FEATURE shows the Multiplier Wild reel symbol rather than the Figma purple M cube: what the
-	// mode actually buys is a shot at Multiplier Wilds, so the card should picture the symbol the
-	// player is being sold, matching the wording in BUY FEATURE SPINS DESC.
-	const iconFeature = ap('/assets/components/symbols/magnetic/special/wild.webp?v=20260709');
-	const iconBrief   = ap('/assets/components/ui/bb_icon_briefcase.webp?v=20260708c');
+	// Card icons — the Version2 design pictures the REEL SYMBOL art on every card: the green chip
+	// for Extra Chance, the compass for Feature Spins, and the scatter capsule (with the 3x/4x
+	// badge) for both bought bonuses. This replaced the old bespoke icon set AND the earlier
+	// wild-symbol substitution on FEATURE — the design's own choice wins now.
+	const iconChance  = ap('/assets/components/symbols/magnetic/low/energy_screw.webp?v=20260806');
+	const iconFeature = ap('/assets/components/symbols/magnetic/premium/horseshoe.webp?v=20260806');
+	const iconBrief   = ap('/assets/components/symbols/magnetic/special/scatter.webp?v=20260806');
 
 	type Props = {
 		onclose: () => void;
@@ -79,9 +77,8 @@
 			const betStep = clampNum(24, betW * 0.17, 52);
 			const widthBudget = (Math.min(w, 1860) - 2 * padX - 3 * gap) / 4;
 			const heightBudget = h - padTop - padBot - vGap - betH;
-			// Cards are a touch taller than wide (--bb-card drives width + content scaling; the extra
-			// height gives breathing room so the button isn't flush to the bottom edge).
-			const cardHRatio = 1.1;
+			// Version2 plate is a near-square (556x551 art) — height follows the art's own aspect.
+			const cardHRatio = 551 / 556;
 			const card = Math.min(widthBudget, Math.max(56, heightBudget) / cardHRatio, 420);
 			const cardH = card * cardHRatio;
 			landscapeVars =
@@ -192,7 +189,7 @@
 <!-- Panel -->
 <div class="panel" class:portrait={isPortrait} bind:this={panelEl} style={isPortrait ? '' : landscapeVars} role="dialog" aria-modal="true">
 	<h2 class="title">{t('BUY BONUS')}</h2>
-	<button class="close-btn" type="button" onclick={props.onclose} aria-label="Close"><img class="ctrl-glyph" src={iconClose} alt="" /></button>
+	<button class="close-btn" type="button" onclick={props.onclose} aria-label="Close"><span class="glyph glyph--close"></span></button>
 
 	<div class="grid">
 		<!-- Extra Chance -->
@@ -254,7 +251,7 @@
 
 	<!-- Bet selector -->
 	<div class="bet" style={`background-image:url('${betPanel}')`}>
-		<button class="bet-step" type="button" disabled={disableDec} onclick={() => stepBet(-1)} aria-label={`Decrease ${i18nDerived.betLabel()}`}><img class="ctrl-glyph" src={iconMinus} alt="" /></button>
+		<button class="bet-step" type="button" disabled={disableDec} onclick={() => stepBet(-1)} aria-label={`Decrease ${i18nDerived.betLabel()}`}><span class="glyph"></span></button>
 		<div class="bet-center">
 			<img class="bet-coin" src={coinIcon} alt="" />
 			<div class="bet-value">
@@ -262,7 +259,7 @@
 				<span class="bet-amount">{betDisplay}</span>
 			</div>
 		</div>
-		<button class="bet-step" type="button" disabled={disableInc} onclick={() => stepBet(1)} aria-label={`Increase ${i18nDerived.betLabel()}`}><img class="ctrl-glyph" src={iconPlus} alt="" /></button>
+		<button class="bet-step" type="button" disabled={disableInc} onclick={() => stepBet(1)} aria-label={`Increase ${i18nDerived.betLabel()}`}><span class="glyph glyph--plus"></span></button>
 	</div>
 </div>
 
@@ -330,28 +327,42 @@
 		text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
 	}
 
-	/* Blue circular close button, pinned to the top-right of the screen */
+	/* Version2 icon button (Figma "Icon buttons"): #22365B circle, 1px #2391C1, white glyph. */
 	.close-btn {
 		position: fixed; top: 22px; right: 22px; z-index: 63;
 		width: 48px; height: 48px; border-radius: 50%;
-		border: 1.5px solid #60a5fa;
-		background: linear-gradient(180deg, #0f2053 0%, #05070f 100%);
-		color: #cfe6ff; font-size: 1rem; font-weight: 700;
+		border: 1px solid #2391c1;
+		background: #22365b;
+		font-size: 16px;
+		padding: 0;
 		cursor: pointer; display: grid; place-items: center;
-		box-shadow: 0 0 12px rgba(0, 140, 255, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5);
 		transition: filter 0.12s ease;
 	}
-	.close-btn:hover { filter: brightness(1.25) drop-shadow(0 0 2.5px #0d89c6); }
-	/* The ctrl icons are full round buttons (cyan ring + glyph) — let them fill the wrapper and
-	   strip the wrapper's own frame so it isn't a button-inside-a-button. */
-	.close-btn:has(.ctrl-glyph),
-	.bet-step:has(.ctrl-glyph) {
-		border: none;
-		background: none;
-		box-shadow: none;
-		padding: 0;
+	.close-btn:hover { filter: brightness(1.35); }
+
+	/* Glyphs are drawn, not imported — the design's are plain 2.13px white strokes (same pattern
+	   as CustomAutoSpinModal). Sized in em off the button's font-size. */
+	.glyph {
+		position: relative;
+		display: block;
+		width: 0.866em;
+		height: 0.133em;
+		border-radius: 0.133em;
+		background: #fff;
 	}
-	.ctrl-glyph { width: 100%; height: 100%; object-fit: contain; display: block; }
+	.glyph--plus::after,
+	.glyph--close::before,
+	.glyph--close::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: #fff;
+	}
+	.glyph--plus::after { transform: rotate(90deg); }
+	.glyph--close { width: 1.155em; background: none; }
+	.glyph--close::before { transform: rotate(45deg); }
+	.glyph--close::after { transform: rotate(-45deg); }
 
 	/* Four cards in a row — square, kept compact so they don't dominate the screen. */
 	.grid {
@@ -363,14 +374,14 @@
 		max-width: 1860px;
 	}
 
-	/* Card = blue bracketed panel, SQUARE to match the 550×550 (Figma 265×265) panel art.
+	/* Card = the Version2 steel chamfered panel (556x551 keyed art), near-square.
 	   Sized with clamp()/vw (reliable in the scaled game env, unlike cqw). Big Figma-scale fonts +
 	   compact gaps keep the content filling the square without overflowing it. */
 	.card {
 		flex: 1 1 0;
 		min-width: 0;
 		max-width: 400px;
-		aspect-ratio: 1 / 1;
+		aspect-ratio: 556 / 551;
 		background-size: 100% 100%;
 		background-repeat: no-repeat;
 		display: flex;
@@ -385,18 +396,15 @@
 
 	/* Children never shrink (keeps the icon full-size); the desc reserves a fixed height so the
 	   icon / price / button line up across all four cards regardless of description length. */
-	/* Figma: IBM Plex Sans Condensed Bold, cyan→blue gradient (#00fcff → #0046a9), 18px / 0.54px. */
+	/* Figma 4040:4138 — IBM Plex Sans Condensed Bold 18px, FLAT #2391C1, 0.54px tracking. */
 	.card-title {
 		flex-shrink: 0;
 		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: clamp(14px, 1.32vw, 23px);
-		letter-spacing: 0.02em;
+		letter-spacing: 0.03em;
 		white-space: nowrap;
-		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
-		-webkit-background-clip: text; background-clip: text;
-		-webkit-text-fill-color: transparent; color: transparent;
-		filter: drop-shadow(0 1px 4px rgba(0, 40, 100, 0.55));
+		color: #2391c1;
 	}
 
 	/* Figma: Inter Regular, #d7d7d7 — big & readable. `width: 100%` is essential: without it the span
@@ -493,17 +501,17 @@
 		border-color: #60a5fa;
 	}
 	.card-btn:disabled { opacity: 0.45; cursor: default; }
-	/* Buy — bright cyan */
+	/* Buy — Version2 flat primary (#28A6DE), like the confirm dialogs. */
 	.card-btn--buy {
-		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+		background: #28a6de;
 	}
-	/* Activate — dark navy */
+	/* Activate — Figma 4040:4142: bottom-lit navy (#0F2053 -> black). */
 	.card-btn--activate {
 		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
 	}
-	/* Active state — cyan to signal it's on */
+	/* Active state — the flat primary, to signal it's on. */
 	.card-btn--active {
-		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
+		background: #28a6de;
 	}
 
 	/* Bet selector — Figma: cyan-bordered steppers, coin + BET label + big value. */
@@ -512,29 +520,28 @@
 		align-items: center;
 		justify-content: space-between;
 		width: clamp(280px, 27vw, 440px);
-		aspect-ratio: 298 / 107;
+		aspect-ratio: 577 / 220;
 		background-size: 100% 100%;
 		background-repeat: no-repeat;
 		padding: 0 3.5%; /* small side padding so − / + sit near the panel ends */
 		margin-top: clamp(10px, 2.2vh, 34px); /* nudge the whole bet board down from the cards */
 		box-sizing: border-box;
 	}
-	/* Dark glossy disc with a faint rim (matches the reference — no bright cyan glow ring). */
+	/* Version2 icon button, same as the close button / HUD circles. font-size drives the glyph. */
 	.bet-step {
 		width: clamp(38px, 3.4vw, 54px);
 		height: clamp(38px, 3.4vw, 54px);
 		flex-shrink: 0;
 		border-radius: 50%;
-		border: 1px solid rgba(150, 180, 220, 0.35);
-		background: radial-gradient(circle at 50% 32%, #1a2b4d 0%, #0b1428 68%, #060b18 100%);
-		color: #d6e0f0;
-		font-size: clamp(20px, 1.9vw, 30px); font-weight: 400; line-height: 1;
+		border: 1px solid #2391c1;
+		background: #22365b;
+		font-size: clamp(13px, 1.15vw, 18px);
+		padding: 0;
 		display: grid; place-items: center;
 		cursor: pointer;
-		box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12), inset 0 -2px 5px rgba(0, 0, 0, 0.55), 0 2px 5px rgba(0, 0, 0, 0.45);
 		transition: filter 0.12s ease;
 	}
-	.bet-step:hover:not(:disabled) { filter: brightness(1.25) drop-shadow(0 0 2.5px #0d89c6); }
+	.bet-step:hover:not(:disabled) { filter: brightness(1.35); }
 	.bet-step:disabled { opacity: 0.4; cursor: default; }
 	.bet-center {
 		display: flex;
@@ -594,16 +601,16 @@
 		aspect-ratio: auto;
 		max-width: none;
 		gap: calc(var(--bb-card) * 0.015);
-		padding: calc(var(--bb-card) * 0.05) calc(var(--bb-card) * 0.06);
+		padding: calc(var(--bb-card) * 0.115) calc(var(--bb-card) * 0.08) calc(var(--bb-card) * 0.075);
 	}
 	.panel:not(.portrait) .card-title  { font-size: calc(var(--bb-card) * 0.064); }
-	.panel:not(.portrait) .card-desc   { font-size: calc(var(--bb-card) * 0.042); min-height: calc(var(--bb-card) * 0.315); }
-	.panel:not(.portrait) .card-icon-slot { height: calc(var(--bb-card) * 0.235); margin-top: calc(var(--bb-card) * 0.025); }
-	.panel:not(.portrait) .card-mult   { font-size: calc(var(--bb-card) * 0.075); }
-	.panel:not(.portrait) .card-price  { font-size: calc(var(--bb-card) * 0.055); }
+	.panel:not(.portrait) .card-desc   { font-size: calc(var(--bb-card) * 0.042); min-height: calc(var(--bb-card) * 0.27); }
+	.panel:not(.portrait) .card-icon-slot { height: calc(var(--bb-card) * 0.15); margin-top: calc(var(--bb-card) * 0.01); }
+	.panel:not(.portrait) .card-mult   { font-size: calc(var(--bb-card) * 0.062); }
+	.panel:not(.portrait) .card-price  { font-size: calc(var(--bb-card) * 0.047); }
 	.panel:not(.portrait) .card-btn {
-		font-size: calc(var(--bb-card) * 0.053);
-		padding: calc(var(--bb-card) * 0.045) calc(var(--bb-card) * 0.1);
+		font-size: calc(var(--bb-card) * 0.048);
+		padding: calc(var(--bb-card) * 0.03) calc(var(--bb-card) * 0.1);
 		margin-top: auto; /* keep the shared bottom baseline in landscape too */
 		border-radius: calc(var(--bb-card) * 0.035);
 	}
@@ -616,7 +623,7 @@
 	.panel:not(.portrait) .bet-step {
 		width: var(--bb-bet-step);
 		height: var(--bb-bet-step);
-		font-size: calc(var(--bb-bet-step) * 0.52);
+		font-size: calc(var(--bb-bet-step) * 0.34);
 	}
 	.panel:not(.portrait) .bet-center { gap: calc(var(--bb-bet-w) * 0.03); }
 	.panel:not(.portrait) .bet-coin {
@@ -672,7 +679,7 @@
 		width: 336px;
 		aspect-ratio: auto; /* height follows content in portrait */
 		height: auto;
-		padding: 18px 16px; /* px (not %): % padding mis-resolved and let the description overflow */
+		padding: 34px 22px 26px; /* px (not %): % padding mis-resolved and let the description overflow */
 	}
 	/* Bet selector: floating pill pinned to the bottom, centred (matches Figma). */
 	.panel.portrait .bet {
@@ -687,7 +694,7 @@
 	.panel.portrait .bet-step {
 		width: 50px;
 		height: 50px;
-		font-size: 28px;
+		font-size: 17px;
 	}
 	/* Coin and BET / value need clear separation in the compact portrait pill. */
 	.panel.portrait .bet-center {
@@ -752,9 +759,10 @@
 		transform: translate(-50%, -50%);
 		z-index: 71;
 		/* Same sizing as BonusResumeModal .resume — the two share this plate and the cqw scale, so
-		   they must shrink together or the buy confirm would dwarf the resume dialog in a popout.
-		   See the note there: 32vw halves both popout sizes, the cap leaves desktop as-is. */
-		width: clamp(170px, 32vw, 508px);
+		   they must grow/shrink together or the buy confirm would dwarf the resume dialog in a popout.
+		   32vw / 508px read too small at every size (user, 2026-08-10); two passes later it is 54vw with a
+		   300px floor and a 720px cap — the popout ramp is kept, the plate just has real presence now. */
+		width: clamp(300px, 54vw, 720px);
 		container-type: inline-size;
 		font-family: 'Inter', sans-serif;
 	}

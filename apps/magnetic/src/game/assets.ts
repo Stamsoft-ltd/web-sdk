@@ -1,7 +1,4 @@
 const assets = {
-
-
-
 	bgBase: {
 		type: 'sprite',
 		src: './assets/components/backgrounds/bg_base.webp?v=20260806'
@@ -69,28 +66,20 @@ const assets = {
 		type: 'sprite',
 		src: './assets/components/splash/pillar.webp?v=20260806'
 	},
-	// Mobile/portrait+landscape tube: the same tesla animation exported HORIZONTALLY (mp4 → keyed,
-	// trimmed 30-frame flipbook, visible-tube aspect ~3.23). Portrait uses it as-is; mobile-landscape
-	// rotates it 90° to run vertically.
-	capsuleTubeAnimMobile: {
-		type: 'spriteSheet',
-		src: './assets/sprites/capsuleTube/capsule_tube_mobile_anim.json'
-	},
-	capsuleLightning: {
-		type: 'sprite',
-		src: './assets/components/ui/capsule_lightning.webp?v=20260708'
-	},
 	// Fine branching filaments extracted from the tube's original baked art — drawn additively
 	// inside the glass and flickered for a live crackle web around the central bolt.
 	capsuleCrackle: {
 		type: 'sprite',
 		src: './assets/components/ui/capsule_crackle.webp?v=20260709b'
 	},
-	// Fully transparent horizontal tube (metal caps + blue rails, see-through interior) — the always-on
-	// portrait capsule bar; live lightning is drawn inside the clear window.
+	// Horizontal capsule bar for the portrait top row — the always-on tube the combining symbol sits
+	// in, with live lightning drawn over its glass. Version2 art (2026-08-10): the painted cartoon
+	// tube that matches the rest of the game, replacing the photoreal black drums; keyed off its
+	// black background by scratchpad/tube_v2/build_tube.py and shipped TRIMMED (1400x553), so its
+	// aspect IS the visible art's — see TUBE_ASPECT in PortraitTopBar.
 	capsuleTubeGlass: {
 		type: 'sprite',
-		src: './assets/components/ui/magnetic_tube.webp?v=20260710'
+		src: './assets/components/ui/magnetic_tube_v2.webp'
 	},
 	// Backdrop for BOTH congratulations screens (Version2, Figma 7022-6844 / 7069-9311). Cropped
 	// straight out of the artist's source PNG, which already carries real alpha — no keying, and
@@ -121,14 +110,6 @@ const assets = {
 	counterFrame: {
 		type: 'sprite',
 		src: './assets/components/ui/confirm_frame.webp?v=20260625'
-	},
-	deerPresenter: {
-		type: 'sprite',
-		src: './assets/components/characters/deer_presenter.webp?v=20260625'
-	},
-	multiplierHand: {
-		type: 'sprite',
-		src: './assets/components/ui/multiplier_hand.webp?v=20260624'
 	},
 	magneticLogo: {
 		type: 'sprite',
@@ -174,10 +155,6 @@ const assets = {
 	// Radial electric burst played BEHIND every stacked (locked) symbol. 10 independent bursts
 	// rather than a rendered animation, so the cycle is a crackle, not motion — order carries no
 	// meaning. Regenerate with scripts/build-stack-zap-sheet.py <src-dir>.
-	stackZapAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/stackZap/stack_zap.json'
-	},
 	scatterCustom: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260806' },
 	scatterWin: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260806' },
 	scatterCustomMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_mobile.webp?v=20260806' },
@@ -231,13 +208,49 @@ const assets = {
 	magnetWinTile: { type: 'sprite', src: './assets/components/ui/magnet_win.webp?v=20260709' },
 	squirrelWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt.webp?v=20260806' },
 	// Win boards — preloaded so board escalation during count-up doesn't stall
-	sweetWinBoard:     { type: 'sprite', src: './assets/components/win_boards/sweet_win.webp?v=20260730' },
-	wildWinBoard:      { type: 'sprite', src: './assets/components/win_boards/big_win.webp?v=20260730' },
-	epicWinBoard:      { type: 'sprite', src: './assets/components/win_boards/epic_win.webp?v=20260730' },
-	mythicWinBoard:    { type: 'sprite', src: './assets/components/win_boards/mega_win.webp?v=20260730' },
-	legendaryWinBoard: { type: 'sprite', src: './assets/components/win_boards/max_win.webp?v=20260730' },
+	// Version2 SWEET WIN sign (Figma 7022:7751) — ships as parts; WinSign.svelte assembles them
+	// (pillars fly in from the sides, magnet drops, title rises) with landing impacts.
+	winSignPlate:     { type: 'sprite', src: './assets/components/win_boards/sign_plate.webp?v=20260810' },
+	winSignPillarL:   { type: 'sprite', src: './assets/components/win_boards/sign_pillar_left.webp?v=20260810' },
+	winSignPillarR:   { type: 'sprite', src: './assets/components/win_boards/sign_pillar_right.webp?v=20260810' },
+	winSignMagnet:    { type: 'sprite', src: './assets/components/win_boards/sign_magnet.webp?v=20260810' },
+	winSignTextSweet: { type: 'sprite', src: './assets/components/win_boards/sign_text_sweet.webp?v=20260810' },
+	// EPIC WIN parts (Figma 7022:8274) — its own plate/pillar/magnet art (looping pipes).
+	winSignEpicPlate:   { type: 'sprite', src: './assets/components/win_boards/sign_epic_plate.webp?v=20260810' },
+	winSignEpicPillarL: { type: 'sprite', src: './assets/components/win_boards/sign_epic_pillar_left.webp?v=20260810' },
+	winSignEpicPillarR: { type: 'sprite', src: './assets/components/win_boards/sign_epic_pillar_right.webp?v=20260810' },
+	winSignEpicMagnet:  { type: 'sprite', src: './assets/components/win_boards/sign_epic_magnet.webp?v=20260810' },
+	winSignTextEpic:    { type: 'sprite', src: './assets/components/win_boards/sign_text_epic.webp?v=20260810' },
+	// MYTHIC WIN parts (Figma 4007:1743) — neon-tube pillars, two-line magenta neon title.
+	winSignMythicPlate:   { type: 'sprite', src: './assets/components/win_boards/sign_mythic_plate.webp?v=20260810' },
+	winSignMythicPillarL: { type: 'sprite', src: './assets/components/win_boards/sign_mythic_pillar_left.webp?v=20260810' },
+	winSignMythicPillarR: { type: 'sprite', src: './assets/components/win_boards/sign_mythic_pillar_right.webp?v=20260810' },
+	winSignMythicMagnet:  { type: 'sprite', src: './assets/components/win_boards/sign_mythic_magnet.webp?v=20260810' },
+	winSignTextMythic:    { type: 'sprite', src: './assets/components/win_boards/sign_text_mythic.webp?v=20260810' },
+	// LEGENDARY WIN parts (Figma 7022:8095) — twin-capsule pillars, gold flame title.
+	winSignLegendPlate:   { type: 'sprite', src: './assets/components/win_boards/sign_legend_plate.webp?v=20260810' },
+	winSignLegendPillarL: { type: 'sprite', src: './assets/components/win_boards/sign_legend_pillar_left.webp?v=20260810' },
+	winSignLegendPillarR: { type: 'sprite', src: './assets/components/win_boards/sign_legend_pillar_right.webp?v=20260810' },
+	winSignLegendMagnet:  { type: 'sprite', src: './assets/components/win_boards/sign_legend_magnet.webp?v=20260810' },
+	winSignTextLegend:    { type: 'sprite', src: './assets/components/win_boards/sign_text_legend.webp?v=20260810' },
+	// WILD WIN parts (Figma 7022:7925) — green title; pillars reuse the sweet strip assets.
+	winSignWildPlate:  { type: 'sprite', src: './assets/components/win_boards/sign_wild_plate.webp?v=20260810' },
+	winSignWildMagnet: { type: 'sprite', src: './assets/components/win_boards/sign_wild_magnet.webp?v=20260810' },
+	winSignTextWild:   { type: 'sprite', src: './assets/components/win_boards/sign_text_wild.webp?v=20260810' },
 	// Special wide board for the 20000x max-win cap (Figma 4143-16513), 1535×1025
 	maxWinBoard:       { type: 'sprite', src: './assets/components/win_boards/max_win_screen.webp?v=20260709' },
+	// Stacked-cluster idle animations (Kling black-bg videos -> 36-frame/12fps looping sheets via
+	// scratchpad build_stack_anims.py): a locked cell of these symbols plays its charging loop
+	// instead of freezing on the static art. Frames share the static symbol's 328x264 canvas
+	// geometry (at 0.75), so the AnimatedSprite is a drop-in at the static Sprite's size props.
+	stackAnimH1: { type: 'spriteSheet', src: './assets/sprites/stackAnims/compass_stack.json' },
+	stackAnimH2: { type: 'spriteSheet', src: './assets/sprites/stackAnims/chain_stack.json' },
+	stackAnimH3: { type: 'spriteSheet', src: './assets/sprites/stackAnims/vortex_stack.json' },
+	stackAnimH4: { type: 'spriteSheet', src: './assets/sprites/stackAnims/device_stack.json' },
+	stackAnimL1: { type: 'spriteSheet', src: './assets/sprites/stackAnims/battery_stack.json' },
+	stackAnimL2: { type: 'spriteSheet', src: './assets/sprites/stackAnims/ringmag_stack.json' },
+	stackAnimL3: { type: 'spriteSheet', src: './assets/sprites/stackAnims/coil_stack.json' },
+	stackAnimL4: { type: 'spriteSheet', src: './assets/sprites/stackAnims/chip_stack.json' },
 	goldFont: {
 		type: 'font',
 		src: './assets/fonts/goldFont/mm_gold.xml?v=20260611',
@@ -337,7 +350,7 @@ flag(
 // desktop set has to be present in every layout.
 const MOBILE_ONLY_KEYS: readonly string[] = [
 	'bgMobileBase', 'boardPadMobile', 'boardPadLand', 'smallPadMobile',
-	'capsuleTubeAnimMobile', 'capsuleTubeGlass', 'capsuleCrackle',
+	'capsuleTubeGlass', 'capsuleCrackle',
 	// Portrait symbol art
 	'aTileMobile', 'aWinTileMobile', 'kTileMobile', 'kWinTileMobile',
 	'qTileMobile', 'qWinTileMobile', 'squirrelTileMobile',
@@ -363,6 +376,14 @@ const DESKTOP_ONLY_KEYS: readonly string[] = [
 	// procedural bolts as the desktop capsule, so deferring it on mobile would leave that tube empty.
 	'boardPad',
 ];
+
+// Stack anims stream in the background pass: a cluster cannot be locked before the first spin
+// resolves, so they never gate playability.
+flag(
+	['stackAnimH1', 'stackAnimH2', 'stackAnimH3', 'stackAnimH4',
+	 'stackAnimL1', 'stackAnimL2', 'stackAnimL3', 'stackAnimL4'],
+	'defer',
+);
 
 if (typeof window !== 'undefined') {
 	const w = window.innerWidth;

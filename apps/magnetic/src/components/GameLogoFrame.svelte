@@ -31,10 +31,16 @@
 	// matching the design's near-flush top-left plate.
 	const logoCY = $derived(canvasTopY + LOGO_H * 0.54);
 
-	// Portrait: the logo is centred near the top of the screen and larger.
-	const PT_W = $derived(main.width * 0.5);
-	const PT_H = $derived(PT_W / LOGO_ASPECT);
-	// Press Play studio mark, top-right corner (portrait only).
+	// Portrait: the logo sits near the top of the screen. 0.5 -> 0.32 over three user passes on
+	// 2026-08-10 — it dominated the top row, crowded the studio mark beside it, and the top row now
+	// belongs to the (bigger) Version2 capsule tube, with the plate reading as its header.
+	// Size and centre come from stateGame so SplashIntro's handoff flight aims at the SAME rect —
+	// they were literals in both files, so every resize here silently broke the flight's landing.
+	const PT_W = $derived(context.stateGameDerived.portraitLogoWidth());
+	const PT_H = $derived(context.stateGameDerived.portraitLogoHeight());
+	const PT_CY = $derived(context.stateGameDerived.portraitLogoCY());
+	// Press Play studio mark, top-right corner (portrait only). Pushed further into the corner in
+	// the same pass ("more to top and right").
 	const PP_ASPECT = 548 / 228;
 	const PP_W = $derived(main.width * 0.26);
 	const PP_H = $derived(PP_W / PP_ASPECT);
@@ -49,7 +55,7 @@
 				key="magneticLogo"
 				anchor={0.5}
 				x={main.width * 0.5}
-				y={main.height * 0.088}
+				y={PT_CY}
 				width={PT_W}
 				height={PT_H}
 			/>
@@ -57,8 +63,8 @@
 		<Sprite
 			key="pressPlayLogo"
 			anchor={{ x: 1, y: 0.5 }}
-			x={main.width * 0.965}
-			y={main.height * 0.088}
+			x={main.width * 0.99}
+			y={main.height * 0.055}
 			width={PP_W}
 			height={PP_H}
 		/>

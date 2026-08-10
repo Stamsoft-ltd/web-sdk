@@ -7,11 +7,12 @@
 	import { backOut, cubicOut } from 'svelte/easing';
 	import { FadeContainer } from 'components-pixi';
 	import { MainContainer } from 'components-layout';
-	import { Container, FillGradient, Sprite, Text } from 'pixi-svelte';
+	import { Container, Sprite } from 'pixi-svelte';
 	import { stateBet } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
-	import CapsuleBolts from './CapsuleBolts.svelte';
+	import CapsuleBeam from './CapsuleBeam.svelte';
+	import InfoBox from './InfoBox.svelte';
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { getSpriteKeyByName } from '../game/utils';
@@ -66,24 +67,36 @@
 
 
 	// Horizontal bar centred at the top of the portrait area, above the board.
-	const CY = $derived(main.height * 0.186);
-	// magnetic_tube.webp is 2004×1336 (fully transparent, see-through interior).
-	const TUBE_ASPECT = 2004 / 1336;
-	const BOX_ASPECT = 323 / 228;
-	const capsuleW = $derived(main.width * 0.56);
+	const CY = $derived(main.height * 0.168);
+	// magnetic_tube_v2.webp is the TRIMMED Version2 art (1400x553) — no transparent margins, so the
+	// sprite box is exactly the visible tube. The old art was padded (content only 94% wide and 43%
+	// tall of its box), hence the width factor drops 0.56 -> 0.53 to keep the drawn tube the same
+	// LENGTH on screen — then 0.5 -> 0.59 (user pass 2026-08-10, "make the tube bigger"), with CY
+	// pulled up (0.186 -> 0.168 over two passes) so the taller tube keeps its clearance over the
+	// board frame and the whole top row sits higher.
+	const TUBE_ASPECT = 1400 / 553;
+	// TOTAL WIN / FREE SPINS / RESPIN wear the shared Version2 InfoBox (781/335 art), the same plate
+	// the desktop rail and the landscape gutter use — portrait was still on the old smallPadMobile
+	// pad. Slightly narrower with it (0.22 -> 0.175 of the width over two user passes 2026-08-10) —
+	// the plate is also much wider than it is tall (2.33 vs the old 1.42), so at the old width its
+	// inner end tucked under the tube's cap and its outer end ran at the screen edge.
+	const BOX_ASPECT = 781 / 335;
+	const capsuleW = $derived(main.width * 0.59);
 	const capsuleH = $derived(capsuleW / TUBE_ASPECT);
-	const boxW = $derived(main.width * 0.22);
+	const boxW = $derived(main.width * 0.175);
 	const boxH = $derived(boxW / BOX_ASPECT);
-	// A small gap between the capsule ends and the ALL WINS / FREE SPINS boxes.
-	const gap = $derived(-main.width * 0.006);
+	// Clearance between the capsule's caps and the boxes. This used to be NEGATIVE, which tucked each
+	// box under the tube art (user report) — it is a real gap now.
+	const gap = $derived(main.width * 0.004);
 	const capsuleX = $derived(main.width * 0.5);
 	const leftX = $derived(capsuleX - capsuleW * 0.5 - gap - boxW * 0.5);
 	const rightX = $derived(capsuleX + capsuleW * 0.5 + gap + boxW * 0.5);
-	const symSize = $derived(capsuleH * 0.42);
+	// The held symbol fills most of the CLEAR GLASS window, which on the trimmed v2 art is the
+	// y 0.168..0.835 band (measured) — 0.667 of the tube height.
+	const symSize = $derived(capsuleH * 0.55);
 
-	// Symbol pop-in + electric agitation — the same treatment the desktop and landscape capsules
-	// give their held symbol. Portrait was drawing it as a plain static Sprite, so the element sat
-	// dead still in a tube full of live current.
+	// Symbol pop-in. The bob/jitter/breathe that used to live here as a local rAF is now CapsuleBeam's
+	// job (it drives the symbol inside the beam), so this is only the entrance scale it consumes.
 	const symbolScale = new Tween(0, { duration: 450, easing: backOut });
 	$effect(() => {
 		if (symbolKey) {
@@ -93,78 +106,13 @@
 			symbolScale.set(0, { duration: 0 });
 		}
 	});
-	let symFx = $state({ dx: 0, dy: 0, s: 1, a: 1 });
-	$effect(() => {
-		if (!isPortrait) return;
-		let raf = 0;
-		const t0 = performance.now();
-		// Random SURGES: every couple of seconds the grip slams tight then decays fast.
-		let nextSurge = performance.now() + 800 + Math.random() * 1500;
-		let surgeStart = -1;
-		const tick = (now: number) => {
-			const t = (now - t0) / 1000;
-			if (surgeStart < 0 && now >= nextSurge) surgeStart = now;
-			let surge = 0;
-			if (surgeStart >= 0) {
-				const st = (now - surgeStart) / 1000;
-				surge = Math.max(0, (0.6 + 0.4 * Math.sin(st * 70)) * Math.exp(-st / 0.11));
-				if (st > 0.4) {
-					surgeStart = -1;
-					nextSurge = now + 900 + Math.random() * 2200;
-				}
-			}
-			const grip = 1 + surge * 3;
-			symFx = {
-				dx: Math.sin(t * 23.7) * 0.012 * grip,
-				dy: Math.cos(t * 17.3) * 0.014 * grip,
-				s: 1 + 0.02 * Math.sin(t * 9.1) + surge * 0.05,
-				a: Math.min(1, 0.93 + 0.07 * Math.sin(t * 37) + surge * 0.3),
-			};
-			raf = requestAnimationFrame(tick);
-		};
-		raf = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(raf);
-	});
-
 	// RESPIN indicator, portrait. RespinPanel.svelte is gated `{#if !isPortrait}` and PortraitTopBar
 	// had no RESPIN of its own, so portrait showed nothing at all during a cluster-growth respin.
 	// It lives here rather than in RespinPanel because this component owns the portrait top-bar
 	// layout (leftX/CY/boxW/boxH); RespinPanel keeps desktop and landscape.
+	// The three boxes' typography lives in InfoBox (it owns the design's label/value metrics), so the
+	// local Inter styles and the RESPIN gradient that went with the old smallPadMobile pad are gone.
 	const showRespin = $derived(context.stateGame.respinIndicator);
-	const RESPIN_GRADIENT = new FillGradient({
-		type: 'linear',
-		start: { x: 0, y: 0 },
-		end: { x: 0, y: 1 },
-		colorStops: [
-			{ offset: 0, color: 0x00fcff },
-			{ offset: 1, color: 0x0046a9 },
-		],
-		textureSpace: 'local',
-	});
-	const respinStyle = (fontSize: number) => ({
-		fontFamily: 'Inter',
-		fontWeight: '700' as const,
-		fontSize,
-		fill: RESPIN_GRADIENT,
-		letterSpacing: fontSize * 0.03,
-		align: 'center' as const,
-	});
-
-	const labelStyle = (fontSize: number) => ({
-		fontFamily: 'Inter',
-		fontWeight: '700' as const,
-		fontSize,
-		fill: 0x8ec7ff,
-		letterSpacing: fontSize * 0.1,
-		align: 'center' as const,
-	});
-	const valueStyle = (fontSize: number) => ({
-		fontFamily: 'Inter',
-		fontWeight: '700' as const,
-		fontSize,
-		fill: 0xffffff,
-		align: 'center' as const,
-	});
 </script>
 
 {#if isPortrait}
@@ -172,82 +120,55 @@
 		<!-- RESPIN indicator — sits above TOTAL WIN in the left column. Shown only while a cluster
 		     grew and earned a free re-spin (stateGame.respinIndicator). -->
 		<FadeContainer show={showRespin}>
-			<Container x={leftX} y={CY - boxH * 1.12}>
-				<Sprite key="smallPadMobile" anchor={0.5} width={boxW} height={boxH} />
-				<!-- Label pulled up off the bottom rail (0.27 sat it right on the frame edge); the icon
-				     lifts with it so the pair stays optically centred in the bay. -->
-				<Sprite key="respinIcon" anchor={0.5} y={-boxH * 0.17} width={boxH * 0.28} height={boxH * 0.28} />
-				<Text anchor={0.5} y={boxH * 0.17} text={i18nDerived.translate('RESPIN')} style={respinStyle(boxH * 0.16)} />
-			</Container>
+			<InfoBox
+				x={leftX}
+				y={CY - boxH * 1.12}
+				width={boxW}
+				label={i18nDerived.translate('RESPIN')}
+				iconKey="respinIcon"
+			/>
 		</FadeContainer>
 
 		<!-- TOTAL WIN (running win, counts up each spin) — only during a bonus -->
 		{#if isBonus}
-			<Container x={leftX} y={CY}>
-				<Sprite key="smallPadMobile" anchor={0.5} width={boxW} height={boxH} />
-				<Text anchor={0.5} y={-boxH * 0.17} text={i18nDerived.translate('TOTAL WIN')} style={labelStyle(boxH * 0.16)} />
-				<Text
-					anchor={0.5}
-					y={boxH * 0.15}
-					text={totalWin}
-					style={valueStyle(boxH * (totalWin.length >= 8 ? 0.19 : totalWin.length >= 6 ? 0.23 : 0.28))}
-				/>
-			</Container>
+			<InfoBox x={leftX} y={CY} width={boxW} label={i18nDerived.translate('TOTAL WIN')} value={totalWin} />
 		{/if}
 
-		<!-- Capsule — ALWAYS shown. Fully transparent tube; the combining symbol (when any) and a live
-		     crackle/bolt web arc INSIDE the clear window (masked to the interior), like the desktop. -->
+		<!-- Capsule — ALWAYS shown. Glass housing plus the SAME in-tube animation the desktop and
+		     landscape capsules run (CapsuleBeam: hot laser, drifting light particles, and the held
+		     symbol bobbing in the beam with an impact flare). Portrait used to run the older
+		     CapsuleBolts web here, so the three capsules did not match. -->
 		<Container x={capsuleX} y={CY}>
-			<!-- Same treatment as desktop/landscape: STATIC glass housing plus PROCEDURAL bolts, replacing
-			     the baked capsule_tube_mobile_anim flipbook (a fixed cycle that visibly looped).
-			     magnetic_tube.webp is already the horizontal see-through tube, so it stays as the shell. -->
 			<Sprite key="capsuleTubeGlass" anchor={0.5} width={capsuleW} height={capsuleH} />
-			<!-- CapsuleBolts always draws a VERTICAL trunk, so the whole thing is rotated 90deg to run along
-			     this tube. Under that rotation local +x maps to screen +y and local +y to screen -x, so the
-			     props are passed SWAPPED: `width` is the trunk's thickness axis (screen height) and `height`
-			     is its length axis (screen width). Footprint matches the baked tube this replaces
-			     (capsuleW * 0.941 by capsuleH * 0.427).
-			     spanTop/spanBot confine the beam to the CLEAR GLASS. Measured off magnetic_tube.webp:
-			     the metal caps are opaque (ink density ~1.0) over x 0.04-0.26 and 0.74-0.96, and the
-			     see-through glass is the 0.27-0.74 band — a half-extent of 0.235 of the tube. Divided
-			     by the 0.941 length factor and inset slightly, that is 0.239. The component's desktop
-			     defaults spanned far more and ran the beam straight over both caps. -->
+			<!-- CapsuleBeam runs its laser along local +y, so the whole thing is rotated 90deg to lie
+			     along this tube; `symbolRotation` cancels that on the held symbol so it stays upright.
+			     glassW/glassH are the CLEAR BARREL, measured off magnetic_tube_v2.webp
+			     (scratchpad/tube_v2/build_tube.py): x 0.289-0.704 (0.4157 of the length) and y
+			     0.168-0.835 (0.667 of the height). beamTop/beamBot are symmetric here — the vertical
+			     tube's asymmetric default is tuned to its cap and base, which a barrel does not have. -->
 			<Container rotation={Math.PI / 2}>
-				<CapsuleBolts
-					width={capsuleH * 0.427}
-					height={capsuleW * 0.941}
-					charged={!!symbolKey}
-					focusY={0}
-					symRx={symSize * (152 / 184) * 0.5}
-					symRy={symSize * 0.5}
-					spanTop={-0.239}
-					spanBot={0.239}
+				<CapsuleBeam
+					glassW={capsuleH * 0.667}
+					glassH={capsuleW * 0.4157}
+					beamTop={-0.46}
+					beamBot={0.46}
+					symbolRotation={-Math.PI / 2}
+					symbolKey={symbolKey}
+					symbolScale={symbolScale.current}
+					symbolW={symSize}
 				/>
 			</Container>
-			{#if symbolKey}
-				<Container
-					x={symSize * symFx.dx}
-					y={symSize * symFx.dy}
-					scale={symbolScale.current * symFx.s}
-				>
-					<Sprite
-						key={symbolKey}
-						anchor={0.5}
-						width={symSize}
-						height={symSize * (152 / 184)}
-						alpha={symFx.a}
-					/>
-				</Container>
-			{/if}
 		</Container>
 
 		<!-- FREE SPINS count (remaining) — only during a bonus -->
 		{#if isBonus}
-			<Container x={rightX} y={CY}>
-				<Sprite key="smallPadMobile" anchor={0.5} width={boxW} height={boxH} />
-				<Text anchor={0.5} y={-boxH * 0.17} text={i18nDerived.translate('FREE SPINS')} style={labelStyle(boxH * 0.15)} />
-				<Text anchor={0.5} y={boxH * 0.15} text={`${fsRemaining}`} style={valueStyle(boxH * 0.28)} />
-			</Container>
+			<InfoBox
+				x={rightX}
+				y={CY}
+				width={boxW}
+				label={i18nDerived.translate('FREE SPINS')}
+				value={`${fsRemaining}`}
+			/>
 		{/if}
 	</MainContainer>
 {/if}

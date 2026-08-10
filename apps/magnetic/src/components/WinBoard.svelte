@@ -9,6 +9,8 @@
 
 	import SparkBurst from './SparkBurst.svelte';
 	import WinBoardFx from './WinBoardFx.svelte';
+	import WinSign from './WinSign.svelte';
+	import { WIN_SIGN_TIERS } from '../game/winSignTiers';
 	import { WIN_GRADIENT } from '../game/goldGradient';
 	import { WIN_BOARD_LOGO_PATHS } from '../game/winBoardLogoPaths';
 
@@ -48,11 +50,6 @@
 	// shared 0.077 filled barely 60% of the shortest bay and less than half of the tallest, which
 	// left every board looking like it had an empty slot under the medallion.
 	const TIER_BAY: Record<string, { cy: number; w: number; h: number }> = {
-		sweetWinBoard: { cy: 0.324, w: 0.607, h: 0.126 },
-		wildWinBoard: { cy: 0.313, w: 0.608, h: 0.13 },
-		epicWinBoard: { cy: 0.379, w: 0.674, h: 0.104 },
-		mythicWinBoard: { cy: 0.361, w: 0.623, h: 0.108 },
-		legendaryWinBoard: { cy: 0.366, w: 0.631, h: 0.106 },
 	};
 	// Digits of IBM Plex Sans Condensed sit at cap height (~0.70 em), so a font size of ~1.0x the bay
 	// height fills roughly 70% of it — enough presence to read as the headline number with clear air
@@ -73,47 +70,12 @@
 	// relative to the sprite centre, +y down) — measured per art; each gets a small pulsing
 	// halo from WinBoardFx. The MAX WIN screen art has a different composition, so no entry.
 	const MEDALLION_GEMS: Record<string, { x: number; y: number }[]> = {
-		sweetWinBoard: [
-			{ x: -0.004, y: -0.132 },
-			{ x: -0.165, y: 0.033 },
-			{ x: 0.156, y: 0.033 },
-			{ x: -0.004, y: 0.195 },
-		],
-		wildWinBoard: [
-			{ x: -0.004, y: -0.127 },
-			{ x: -0.156, y: 0.022 },
-			{ x: 0.148, y: 0.022 },
-			{ x: -0.004, y: 0.178 },
-		],
-		epicWinBoard: [
-			{ x: 0, y: -0.051 },
-			{ x: -0.161, y: 0.114 },
-			{ x: 0.167, y: 0.114 },
-			{ x: 0, y: 0.255 },
-		],
-		mythicWinBoard: [
-			{ x: -0.004, y: -0.104 },
-			{ x: -0.173, y: 0.062 },
-			{ x: 0.167, y: 0.062 },
-			{ x: -0.004, y: 0.246 },
-		],
-		legendaryWinBoard: [
-			{ x: 0.001, y: -0.077 },
-			{ x: -0.157, y: 0.08 },
-			{ x: 0.156, y: 0.08 },
-			{ x: 0.001, y: 0.24 },
-		],
 	};
 
 	// Frame half-extents of each board art (fraction of the sprite box), measured from the solid
 	// alpha runs of the PNGs — where the animated frame FX (glow band / edge bars / corner gems /
 	// electric runners) should sit. cy = vertical centre offset of the frame within the sprite.
 	const FRAME_FX: Record<string, { hx: number; hy: number; cy: number }> = {
-		sweetWinBoard: { hx: 0.429, hy: 0.4645, cy: 0 },
-		wildWinBoard: { hx: 0.4035, hy: 0.443, cy: 0 },
-		epicWinBoard: { hx: 0.421, hy: 0.4585, cy: 0 },
-		mythicWinBoard: { hx: 0.433, hy: 0.4645, cy: 0 },
-		legendaryWinBoard: { hx: 0.4265, hy: 0.468, cy: 0 },
 		maxWinBoard: { hx: 0.419, hy: 0.411, cy: 0.03 },
 	};
 
@@ -164,7 +126,15 @@
 	let textSizes = $state<Sizes>({ width: 0, height: 0 });
 </script>
 
-{#if displayedKey}
+{#if WIN_SIGN_TIERS[displayedKey]}
+	<!-- Version2 tiers (sweet, epic, ...): the assembled sign, centred on the SCREEN like the
+	     design frame. WinSign owns its whole entrance (parts flying in + landing impacts), so none
+	     of the pop/entrance FX below apply to it. The remaining tiers stay on the old boards until
+	     their Version2 art lands. -->
+	<Container x={maxOffX} y={maxOffY}>
+		<WinSign tier={WIN_SIGN_TIERS[displayedKey]} {amount} {screenW} {screenH} />
+	</Container>
+{:else if displayedKey}
 	{@const isMax = displayedKey === 'maxWinBoard'}
 	<!-- MAX WIN dominates the SCREEN like the Figma (4143-16513): ~62% of the screen width
 	     (height-capped) — sized so the full art fits without clipping the top edge. -->
@@ -173,12 +143,7 @@
 	{@const offX = isMax ? maxOffX : 0}
 	<!-- MAX WIN board rides a bit high of screen-centre so it clears the HUD comfortably. -->
 	{@const offY = isMax ? maxOffY - boardH * 0.05 : 0}
-	{@const glowColor =
-		displayedKey === 'sweetWinBoard' ? 0x2fb4ff
-		: displayedKey === 'wildWinBoard' ? 0x46e04b
-		: displayedKey === 'epicWinBoard' ? 0xff4032
-		: displayedKey === 'mythicWinBoard' ? 0xa64dff
-		: 0xffb428 /* legendary + max win: gold */}
+	{@const glowColor = 0xffb428 /* only MAX WIN reaches the old path now — gold */}
 	{@const fx = FRAME_FX[displayedKey] ?? { hx: 0.42, hy: 0.46, cy: 0 }}
 	{@const bay = TIER_BAY[displayedKey] ?? DEFAULT_BAY}
 	{@const boardFont = isMax ? boardH * 0.062 : boardSize * bay.h * BAY_FONT_K}

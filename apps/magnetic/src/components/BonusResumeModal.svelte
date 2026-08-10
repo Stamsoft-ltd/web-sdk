@@ -85,7 +85,8 @@
 	   enormous in a popout: popout L is only ~800 CSS px across, so the panel took 62% of the
 	   window. The 32vw term halves it there while the cap keeps desktop as-is. */
 	.resume {
-		width: clamp(170px, 32vw, 508px);
+		/* Kept in lockstep with CustomBuyBonusModal .confirm — see the note there (2026-08-10 pass). */
+		width: clamp(300px, 54vw, 720px);
 		container-type: inline-size;
 		font-family: 'Inter', sans-serif;
 	}

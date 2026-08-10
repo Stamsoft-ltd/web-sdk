@@ -167,19 +167,6 @@ export const getSpriteKeyByName = ({
 	return staticMap?.[visualName] ?? DESKTOP_STATIC_KEYS[visualName] ?? DESKTOP_WIN_KEYS[visualName];
 };
 
-export const winBoardByAlias: Record<string, string> = {
-	zero: 'sweetWinBoard',
-	standard: 'sweetWinBoard',
-	small: 'sweetWinBoard',
-	nice: 'sweetWinBoard',
-	substantial: 'wildWinBoard',
-	big: 'wildWinBoard',
-	superwin: 'epicWinBoard',
-	mega: 'mythicWinBoard',
-	epic: 'legendaryWinBoard',
-	max: 'legendaryWinBoard',
-};
-
 export const getReelCenterX = (reelIndex: number): number => SYMBOL_W * (reelIndex + 0.5);
 export const getSymbolX = (reelIndex: number): number => SYMBOL_W * (reelIndex + 0.5);
 

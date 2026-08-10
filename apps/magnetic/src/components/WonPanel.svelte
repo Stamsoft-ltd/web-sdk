@@ -147,6 +147,25 @@
 	const titleHit = $derived(impact(clock - TITLE_LAND));
 	const bigHit = $derived(impact(clock - BIG_LAND));
 
+	// The frame itself used to just appear at full size. It now rushes the camera: it starts small
+	// and zooms out to its real size with a backOut overshoot, settling just before the heading lands
+	// (user pass 2026-08-10). Only the ART and its lights scale — the heading and value keep their
+	// own drop/rise entrances, so the whole thing reads as one choreographed move.
+	// Driven off `clock` rather than a Tween: a Tween would need a set-to-start-then-set-to-end pair
+	// in the same tick, and the second set reads the value BEFORE the first has committed, so the
+	// zoom never played (measured — the frame was already full size 170ms in).
+	const FRAME_POP_S = 0.52;
+	const FRAME_POP_FROM = 0.6;
+	const backOutEase = (t: number) => {
+		const s = 1.70158;
+		const u = t - 1;
+		return u * u * ((s + 1) * u + s) + 1;
+	};
+	const framePop = $derived(
+		FRAME_POP_FROM +
+			(1 - FRAME_POP_FROM) * backOutEase(Math.min(1, Math.max(0, clock / FRAME_POP_S))),
+	);
+
 	// The heading keeps breathing once it has settled; the amplitude ramps in so there is no step
 	// between the landing squash and the loop.
 	const breathe = $derived(
@@ -181,72 +200,75 @@
 </script>
 
 <Container x={main.width / 2} y={frameCY + joltY}>
-	<Sprite key="fsWonFrame" anchor={0.5} width={frameW} height={frameH} />
+	<!-- Frame + its lights zoom out together from FRAME_POP_FROM to full size. -->
+	<Container scale={framePop}>
+		<Sprite key="fsWonFrame" anchor={0.5} width={frameW} height={frameH} />
 
-	<!-- The art's cyan elements are painted flat, so they are lit here. A real tube is a very thin
-	     white-hot core inside a wide soft halo that spills onto the metal around it, so the glow is
-	     built from stacked layers with a power falloff (a few hard rectangles read as a sticker),
-	     the brightness carries an irregular ballast flicker rather than a clean sine, and a soft
-	     hotspot drifts back and forth INSIDE the tube instead of marching along it. -->
-	<Graphics
-		blendMode="add"
-		draw={(g) => {
-			g.clear();
-			for (const l of LIGHTS) {
-				const x = (l.cx - 0.5) * frameW;
-				const y = (l.cy - 0.5) * frameH;
-				const w = l.w * frameW;
-				const h = l.h * frameH;
-				const p = l.phase;
-				// Slow breathe, plus short irregular dips — the high powers make the dips sparse and
-				// sharp, the way a gas tube stutters, instead of a smooth in/out fade.
-				const breath = 0.86 + 0.14 * Math.sin(clock * 1.35 + p);
-				const dip =
-					0.16 * Math.max(0, Math.sin(clock * 21.7 + p * 3)) ** 10 +
-					0.1 * Math.max(0, Math.sin(clock * 6.9 + p * 1.7)) ** 8;
-				const level = Math.max(0.35, breath - dip);
+		<!-- The art's cyan elements are painted flat, so they are lit here. A real tube is a very thin
+		     white-hot core inside a wide soft halo that spills onto the metal around it, so the glow is
+		     built from stacked layers with a power falloff (a few hard rectangles read as a sticker),
+		     the brightness carries an irregular ballast flicker rather than a clean sine, and a soft
+		     hotspot drifts back and forth INSIDE the tube instead of marching along it. -->
+		<Graphics
+			blendMode="add"
+			draw={(g) => {
+				g.clear();
+				for (const l of LIGHTS) {
+					const x = (l.cx - 0.5) * frameW;
+					const y = (l.cy - 0.5) * frameH;
+					const w = l.w * frameW;
+					const h = l.h * frameH;
+					const p = l.phase;
+					// Slow breathe, plus short irregular dips — the high powers make the dips sparse and
+					// sharp, the way a gas tube stutters, instead of a smooth in/out fade.
+					const breath = 0.86 + 0.14 * Math.sin(clock * 1.35 + p);
+					const dip =
+						0.16 * Math.max(0, Math.sin(clock * 21.7 + p * 3)) ** 10 +
+						0.1 * Math.max(0, Math.sin(clock * 6.9 + p * 1.7)) ** 8;
+					const level = Math.max(0.35, breath - dip);
 
-				// Halo: 7 layers, white at the core ramping to cyan as they widen.
-				const LAYERS = 7;
-				for (let i = 0; i < LAYERS; i++) {
-					const f = i / (LAYERS - 1); // 0 = core -> 1 = outer spill
-					const grow = f ** 1.5;
-					const gw = w * (l.vertical ? 0.5 + 3.4 * grow : 1 + 0.22 * grow);
-					const gh = h * (l.vertical ? 1 + 0.22 * grow : 0.5 + 3.4 * grow);
-					const m = 1 - f;
-					const color =
-						(Math.round(60 + 195 * m ** 1.4) << 16) |
-						(Math.round(190 + 65 * m ** 1.4) << 8) |
-						255;
-					g.roundRect(x - gw / 2, y - gh / 2, gw, gh, Math.min(gw, gh) / 2);
-					g.fill({ color, alpha: (0.014 + 0.115 * m ** 2.2) * level });
+					// Halo: 7 layers, white at the core ramping to cyan as they widen.
+					const LAYERS = 7;
+					for (let i = 0; i < LAYERS; i++) {
+						const f = i / (LAYERS - 1); // 0 = core -> 1 = outer spill
+						const grow = f ** 1.5;
+						const gw = w * (l.vertical ? 0.5 + 3.4 * grow : 1 + 0.22 * grow);
+						const gh = h * (l.vertical ? 1 + 0.22 * grow : 0.5 + 3.4 * grow);
+						const m = 1 - f;
+						const color =
+							(Math.round(60 + 195 * m ** 1.4) << 16) |
+							(Math.round(190 + 65 * m ** 1.4) << 8) |
+							255;
+						g.roundRect(x - gw / 2, y - gh / 2, gw, gh, Math.min(gw, gh) / 2);
+						g.fill({ color, alpha: (0.014 + 0.115 * m ** 2.2) * level });
+					}
+					// White-hot filament down the middle.
+					const cw = l.vertical ? w * 0.26 : h * 0.26;
+					const cl = l.vertical ? h * 0.97 : w * 0.97;
+					const fw = l.vertical ? cw : cl;
+					const fh = l.vertical ? cl : cw;
+					g.roundRect(x - fw / 2, y - fh / 2, fw, fh, Math.min(fw, fh) / 2);
+					g.fill({ color: 0xffffff, alpha: 0.34 * level });
+
+					// Hotspot drifting inside the tube — a sine sweep, so it eases at both ends and never
+					// wraps. Three nested blobs give it a soft gaussian edge.
+					const span = l.vertical ? h : w;
+					const c = span * 0.3 * Math.sin(clock * 0.72 + p * 0.9);
+					for (let k = 0; k < 3; k++) {
+						const f = k / 2;
+						const len = span * (0.16 + 0.34 * f);
+						const thin = (l.vertical ? w : h) * (0.62 - 0.22 * f);
+						const bw = l.vertical ? thin : len;
+						const bh = l.vertical ? len : thin;
+						const bx = l.vertical ? x : x + c;
+						const by = l.vertical ? y + c : y;
+						g.roundRect(bx - bw / 2, by - bh / 2, bw, bh, Math.min(bw, bh) / 2);
+						g.fill({ color: 0xffffff, alpha: (0.2 - 0.06 * k) * level });
+					}
 				}
-				// White-hot filament down the middle.
-				const cw = l.vertical ? w * 0.26 : h * 0.26;
-				const cl = l.vertical ? h * 0.97 : w * 0.97;
-				const fw = l.vertical ? cw : cl;
-				const fh = l.vertical ? cl : cw;
-				g.roundRect(x - fw / 2, y - fh / 2, fw, fh, Math.min(fw, fh) / 2);
-				g.fill({ color: 0xffffff, alpha: 0.34 * level });
-
-				// Hotspot drifting inside the tube — a sine sweep, so it eases at both ends and never
-				// wraps. Three nested blobs give it a soft gaussian edge.
-				const span = l.vertical ? h : w;
-				const c = span * 0.3 * Math.sin(clock * 0.72 + p * 0.9);
-				for (let k = 0; k < 3; k++) {
-					const f = k / 2;
-					const len = span * (0.16 + 0.34 * f);
-					const thin = (l.vertical ? w : h) * (0.62 - 0.22 * f);
-					const bw = l.vertical ? thin : len;
-					const bh = l.vertical ? len : thin;
-					const bx = l.vertical ? x : x + c;
-					const by = l.vertical ? y + c : y;
-					g.roundRect(bx - bw / 2, by - bh / 2, bw, bh, Math.min(bw, bh) / 2);
-					g.fill({ color: 0xffffff, alpha: (0.2 - 0.06 * k) * level });
-				}
-			}
-		}}
-	/>
+			}}
+		/>
+	</Container>
 
 	<!-- The y offset lives on the CONTAINER and the text sits at its origin, so the squash and the
 	     breathing scale about the heading's own centre instead of sliding it around. -->
