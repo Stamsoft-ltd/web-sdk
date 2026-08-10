@@ -12,6 +12,7 @@
 	import { AnimatedSprite, Container, Graphics, Sprite, type LoadedSpriteSheet } from 'pixi-svelte';
 
 	import SymbolWinFx from './SymbolWinFx.svelte';
+	import { drawScatterIdle, drawWildIdle, type SpecialIdleG } from '../game/specialIdleFx';
 	import { getContext } from '../game/context';
 	import { BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, SYMBOL_H, SYMBOL_W } from '../game/constants';
 	import { getSymbolInfo } from '../game/utils';
@@ -92,6 +93,12 @@
 	// whole board every frame just to fade a puff.
 	let dustG: LockG | null = null;
 	let dustGDrawn = false;
+	// Idle layer: the specials' own animation plus a magnetic charge that sweeps the grid every few
+	// seconds. Same captured-Graphics pattern — the board is otherwise completely still between
+	// spins, which is the other half of the "poor animations" verdict.
+	let idleG: SpecialIdleG | null = null;
+	const SWEEP_PERIOD_S = 7.5;
+	const SWEEP_WIDTH = 1.6; // columns the leading edge lights at once
 	const DUST_MS = 380;
 	// A landing kicks a low, wide cloud out along the floor plus a few flecks that hop and fall
 	// back. Both are pure functions of (now - cell.landAt), so nothing accumulates per frame.
@@ -127,6 +134,52 @@
 		}
 		return any;
 	};
+	// The specials' idle, plus the charge sweep. Runs on the settled board only: during a drop the
+	// symbols are mid-flight and their cells are not where the FX would be drawn.
+	const drawIdle = (g: SpecialIdleG, now: number) => {
+		g.clear();
+		if (context.stateGame.boardSpinning) return false;
+		const t = now / 1000;
+		let any = false;
+
+		// Charge sweep: a soft vertical band crosses the grid, brightening the cell boxes it passes.
+		// It reads as the machine idling rather than as an effect ON any one symbol.
+		const cycle = (t % SWEEP_PERIOD_S) / SWEEP_PERIOD_S;
+		if (cycle < 0.42) {
+			const head = (cycle / 0.42) * (BOARD_DIMENSIONS.x + SWEEP_WIDTH) - SWEEP_WIDTH;
+			for (let ri = 0; ri < BOARD_DIMENSIONS.x; ri++) {
+				const d = Math.abs(ri - head);
+				if (d > SWEEP_WIDTH) continue;
+				const f = (1 - d / SWEEP_WIDTH) ** 2;
+				any = true;
+				const cx = getX(ri);
+				g.ellipse(cx, (SYMBOL_H * BOARD_DIMENSIONS.y) / 2, SYMBOL_W * 0.42, (SYMBOL_H * BOARD_DIMENSIONS.y) / 2);
+				g.fill({ color: 0x6fc4ff, alpha: 0.09 * f });
+			}
+		}
+
+		// WILD / SCATTER idle. Locked cells are included: a stacked wild is still a wild.
+		for (const cell of flatCells) {
+			const isWild = cell.wild || cell.name === 'WILD';
+			const isScatter = cell.scatter || cell.name === 'SCATTER';
+			if (!isWild && !isScatter) continue;
+			if (cell.symbolState === 'win') continue; // SymbolWinFx owns the cell during a win
+			const info = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState });
+			const o = {
+				x: getX(cell.position.reel) + cell.displayX.current,
+				y: cell.displayY.current,
+				w: SYMBOL_W * info.sizeRatios.width,
+				h: SYMBOL_H * info.sizeRatios.height,
+				t,
+				phase: keyPhase(cell.key),
+			};
+			any = true;
+			if (isWild) drawWildIdle(g, o);
+			else drawScatterIdle(g, o);
+		}
+		return any;
+	};
+
 	// Trace the OUTLINE OF THE WHOLE STACKED PACK, not each locked cell. Outlining every cell drew
 	// the seams BETWEEN adjacent locked cells too, which is what read as lightning "inside" the
 	// stack. An edge is kept only when the neighbour across it is not locked, and the surviving
@@ -320,6 +373,8 @@
 				dustG = null;
 				dustGDrawn = false;
 			}
+			if (idleG?.destroyed) idleG = null;
+			if (idleG) drawIdle(idleG, now);
 			if (dustG) {
 				const drew = drawDust(dustG, now);
 				if (drew) dustGDrawn = true;
@@ -596,6 +651,14 @@
 			blendMode="add"
 			zIndex={Z.symbol - 1}
 			draw={(gr) => (dustG = gr as unknown as LockG)}
+		/>
+
+		<!-- Specials' idle animation + the grid charge sweep. Above the symbols: the wild's field
+		     arcs across its poles and the scatter's motes orbit its core, both in front of the art. -->
+		<Graphics
+			blendMode="add"
+			zIndex={Z.lockedSymbol + 1}
+			draw={(gr) => (idleG = gr as unknown as SpecialIdleG)}
 		/>
 	</Container>
 {/if}
