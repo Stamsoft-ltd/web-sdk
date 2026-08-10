@@ -166,6 +166,10 @@ const assets = {
 	magnetTile:   { type: 'sprite', src: './assets/components/ui/magnet_win.webp?v=20260709' },
 	squirrelTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt.webp?v=20260806' },
 	squirrelTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt_mobile.webp?v=20260806' },
+	// The battery's WIN variant on the mobile sheet. It was the one hole in the base/Mobile/Land
+	// matrix: utils.ts SYMBOL_WIN_ASSET_MOBILE maps L1 -> 'squirrelWinTileMobile', so in portrait a
+	// winning battery resolved to an undefined key and the cell simply drew nothing.
+	squirrelWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/bolt_mobile.webp?v=20260806' },
 	// Premium mobile (portrait) symbol art.
 	foxTileMobile:       { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe_mobile.webp?v=20260806' },
 	foxWinTileMobile:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/horseshoe_mobile.webp?v=20260806' },
@@ -353,7 +357,7 @@ const MOBILE_ONLY_KEYS: readonly string[] = [
 	'capsuleTubeGlass', 'capsuleCrackle',
 	// Portrait symbol art
 	'aTileMobile', 'aWinTileMobile', 'kTileMobile', 'kWinTileMobile',
-	'qTileMobile', 'qWinTileMobile', 'squirrelTileMobile',
+	'qTileMobile', 'qWinTileMobile', 'squirrelTileMobile', 'squirrelWinTileMobile',
 	'foxTileMobile', 'foxWinTileMobile', 'wolfTileMobile', 'wolfWinTileMobile',
 	'bearTileMobile', 'bearWinTileMobile', 'rabbitTileMobile', 'rabbitWinTileMobile',
 	'wildTileMobile', 'wildWinTileMobile',

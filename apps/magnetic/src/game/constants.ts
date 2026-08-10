@@ -105,6 +105,9 @@ export const SYMBOL_HEAD_OFFSET: Record<string, { x: number; y: number }> = {
 	foxWinTileMobile: { x: 0.02, y: 0.033 },     // core 17% of mask
 	squirrelWinTile: { x: -0.013, y: -0.032 },   // core 21% of mask
 	squirrelWinTileLand: { x: -0.013, y: -0.03 },// core 21% of mask
+	// Same offset as ...Land: bolt_mobile.webp is a half-res copy of bolt.webp, and these are
+	// FRACTIONS of the sprite box, so resolution does not move the head.
+	squirrelWinTileMobile: { x: -0.013, y: -0.03 },
 	wild10xTile: { x: 0.008, y: 0.029 },         // core 21% of mask
 	wild10xTileMobile: { x: 0.008, y: 0.029 },   // core 22% of mask
 	qTileLand: { x: 0.027, y: -0.028 },          // core 18% of mask
@@ -175,6 +178,7 @@ export const SYMBOL_ZAP_OVERRIDE: Record<string, number> = {
 	squirrelTileLand: 0.66,
 	squirrelWinTile: 0.66,
 	squirrelWinTileLand: 0.66,
+	squirrelWinTileMobile: 0.66,
 };
 
 export const SYMBOL_SIZE_OVERRIDE: Record<string, number> = {
@@ -191,6 +195,7 @@ export const SYMBOL_SIZE_OVERRIDE: Record<string, number> = {
 	squirrelTileLand: 1.1,
 	squirrelWinTile: 1.1,
 	squirrelWinTileLand: 1.1,
+	squirrelWinTileMobile: 1.1,
 };
 
 // createReelForSpinning needs (BOARD_DIMENSIONS.y + 2) symbols per reel:

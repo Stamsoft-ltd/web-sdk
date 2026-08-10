@@ -59,10 +59,11 @@
 		'pillar.webp',
 		'logo_plate.webp',
 		'panel.webp',
-		'coil.webp',
-		'chip.webp',
-		'magnet.webp',
-		'cable.webp',
+		'part_coil.webp',
+		'part_chip.webp',
+		'part_magnet.webp',
+		'part_cable.webp',
+		'part_ring.webp',
 	];
 	onMount(() => {
 		for (const file of SPLASH_IMAGES) {

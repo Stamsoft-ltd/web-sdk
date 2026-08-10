@@ -39,10 +39,14 @@
 	const pillarSrc = './assets/components/splash/pillar.webp';
 	const logoSrc = './assets/components/splash/logo_plate.webp';
 	const panelSrc = './assets/components/splash/panel.webp';
-	const coilSrc = './assets/components/splash/coil.webp';
-	const chipSrc = './assets/components/splash/chip.webp';
-	const magnetSrc = './assets/components/splash/magnet.webp';
-	const cableSrc = './assets/components/splash/cable.webp';
+	// Loose floor parts, repainted for Version2 (Figma 7118:9777, nodes 9840-9851). New filenames
+	// rather than a ?v= query: the old flat-vector art shipped under cable/coil/chip/magnet.webp and
+	// a cached copy of those would silently keep rendering the previous style.
+	const coilSrc = './assets/components/splash/part_coil.webp';
+	const chipSrc = './assets/components/splash/part_chip.webp';
+	const magnetSrc = './assets/components/splash/part_magnet.webp';
+	const cableSrc = './assets/components/splash/part_cable.webp';
+	const ringSrc = './assets/components/splash/part_ring.webp';
 	// Same URL (incl. ?v=) as assets.ts so the browser reuses the bytes pixi already downloaded.
 	const brandSrc = './assets/components/ui/press_play_logo.webp?v=20260709';
 
@@ -189,10 +193,13 @@
 			<div class="hop hop-coil"><img class="face-coil" src={coilSrc} alt="" draggable="false" /></div>
 		</div>
 		<div class="place place-chip">
-			<div class="hop hop-chip"><img class="face-chip" src={chipSrc} alt="" draggable="false" /></div>
+			<div class="hop hop-chip"><img src={chipSrc} alt="" draggable="false" /></div>
 		</div>
 		<div class="place place-magnet">
-			<div class="hop hop-magnet"><img class="face-magnet" src={magnetSrc} alt="" draggable="false" /></div>
+			<div class="hop hop-magnet"><img src={magnetSrc} alt="" draggable="false" /></div>
+		</div>
+		<div class="place place-ring">
+			<div class="hop hop-ring"><img src={ringSrc} alt="" draggable="false" /></div>
 		</div>
 	{/snippet}
 
@@ -583,63 +590,80 @@
 		width: 100%;
 		filter: drop-shadow(0 0.6cqh 1cqh rgba(0, 0, 0, 0.5));
 	}
+	/* Positions are the Figma placements converted to stage fractions, not eyeballed: each part's
+	   node box (e.g. cable at -69,498 / 280x187) intersected with the trimmed art's own alpha bbox
+	   inside its source image, so `left`/`top` land on the VISIBLE centre and `width` is the visible
+	   width — the raw art carries a lot of empty margin. */
 	.place-cable {
-		left: 6.8%;
-		top: 89.2%;
-		width: 29cqw;
+		left: 4.83%;
+		top: 87.38%;
+		width: 18.7cqw;
 		animation: soft-in 400ms ease-out 250ms both;
 	}
 	.place-coil {
-		left: 28.7%;
-		top: 92.2%;
-		width: 8cqw;
+		left: 19.8%;
+		top: 89.29%;
+		width: 6.55cqw;
 	}
 	.place-chip {
-		left: 80.3%;
-		top: 91.8%;
-		width: 7cqw;
+		left: 28.78%;
+		top: 92.57%;
+		width: 5.79cqw;
 	}
 	.place-magnet {
-		left: 95%;
-		top: 89.6%;
-		width: 8cqw;
+		left: 77.7%;
+		top: 90.86%;
+		width: 6.14cqw;
+	}
+	.place-ring {
+		left: 93.02%;
+		top: 87.31%;
+		width: 6.17cqw;
 	}
 
-	/* Rest-pose facing (mirrors/tilts from the design). */
+	/* Rest-pose facing. The Version2 art bakes in its own tilt, so only the coil still needs the
+	   design's mirror (Figma applies rotate(180deg) + scaleY(-1) to that node, which nets to a
+	   horizontal flip). */
 	.face-coil {
 		transform: scaleX(-1);
 	}
-	.face-chip {
-		transform: rotate(15deg);
-	}
 
-	/* Portrait floor-part positions: same cast along the bottom edge. */
+	/* Portrait floor-part positions: the same five parts spread along the bottom edge. The stage is
+	   far narrower here, so each part is ~2.4x its landscape fraction — at the landscape sizes they
+	   would read as grit. Spans are laid out not to collide: cable ends ~27%, then coil / chip /
+	   magnet / ring at 34 / 51 / 70 / 89. */
 	.stage--m .place-cable {
-		left: 8%;
-		top: 87.5%;
-		width: 44cqw;
+		left: 9%;
+		top: 86.8%;
+		width: 38cqw;
 	}
 	.stage--m .place-coil {
-		left: 31%;
-		top: 92.5%;
-		width: 17cqw;
+		left: 34%;
+		top: 91.2%;
+		width: 15.5cqw;
 	}
 	.stage--m .place-chip {
-		left: 58%;
-		top: 94%;
-		width: 15cqw;
+		left: 51%;
+		top: 92.4%;
+		width: 14cqw;
 	}
 	.stage--m .place-magnet {
-		left: 86%;
-		top: 92%;
-		width: 17cqw;
+		left: 70%;
+		top: 91.2%;
+		width: 14.5cqw;
+	}
+	.stage--m .place-ring {
+		left: 89%;
+		top: 87.6%;
+		width: 14.5cqw;
 	}
 
 	/* All floor parts fade in with the scenery, then jump slightly when the panels slam home
 	   (~1750ms). Tiny per-part delay jitter so the floor doesn't hop as one rigid sheet. */
 	.place-coil,
 	.place-chip,
-	.place-magnet {
+	.place-magnet,
+	.place-ring {
 		animation: soft-in 400ms ease-out 250ms both;
 	}
 	.hop-cable {
@@ -653,6 +677,9 @@
 	}
 	.hop-magnet {
 		animation: part-hop 320ms ease-out 1770ms both;
+	}
+	.hop-ring {
+		animation: part-hop 320ms ease-out 1825ms both;
 	}
 
 	/* Panel flights: offscreen → accelerate in (the 0% timing function), skid a touch past the

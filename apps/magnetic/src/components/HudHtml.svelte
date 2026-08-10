@@ -166,7 +166,13 @@
 	const canAffordBet = $derived(stateBetDerived.isBetCostAvailable());
 	// An active manual spin is in progress (not idle, and not an auto-spin sequence) — the spin
 	// button shows its no-arrow "empty" disabled state and is not clickable.
-	const isBusy = $derived(!context.stateXstateDerived.isIdle() && !hasAuto);
+	//
+	// A held spin (isSpaceHold) is explicitly NOT busy: `busy` disables the button, and a disabled
+	// element stops delivering pointer events, so the pointerup that ends the hold would never
+	// arrive and the player would be stuck spinning.
+	const isBusy = $derived(
+		!context.stateXstateDerived.isIdle() && !hasAuto && !stateBet.isSpaceHold,
+	);
 
 	// Stop autoplay and disable spin when balance drops below bet cost
 	$effect(() => {
@@ -421,6 +427,65 @@
 		}
 	};
 
+	// ── hold the spin button to keep spinning ──
+	// Reuses the platform's `isSpaceHold` flag rather than inventing a parallel loop:
+	// createIntermediateMachineBet's `checkSpaceHold` already re-enters `fetching` instead of ending
+	// the round while it is set, and actor.ts already skips the spin-up presentation for it, so the
+	// spins chain back to back for as long as the button is held. Same 400ms threshold as
+	// components-shared/OnHotkey, so holding the button and holding Space feel identical.
+	const SPIN_HOLD_MS = 400;
+	let spinHoldTimeout: ReturnType<typeof setTimeout> | null = null;
+	// A hold consumes the click that pointerup would otherwise deliver — without this the release
+	// immediately fires onSpinButton, which reads as a STOP press and kills the round just started.
+	let spinHoldConsumedClick = false;
+
+	const beginSpinHold = () => {
+		spinHoldTimeout = null;
+		// An auto-spin batch is already a continuous loop; holding on top of it would fight the
+		// counter, and the button's job in that state is to cancel.
+		if (hasAuto || !stateBetDerived.isBetCostAvailable()) return;
+		spinHoldConsumedClick = true;
+		context.eventEmitter.broadcast({ type: 'soundPressBet' });
+		stateBet.isSpaceHold = true;
+		stateBetDerived.updateIsTurbo(true, { persistent: true });
+		// Held from idle, nothing is running yet, so the first spin still needs a kick; held during a
+		// round, the machine picks the flag up when that round ends.
+		if (context.stateXstateDerived.isIdle()) {
+			if (!isAnyModeActive) stateBet.activeBetModeKey = 'BASE';
+			context.eventEmitter.broadcast({ type: 'bet' });
+		}
+	};
+
+	const endSpinHold = () => {
+		if (spinHoldTimeout) {
+			clearTimeout(spinHoldTimeout);
+			spinHoldTimeout = null;
+		}
+		if (!stateBet.isSpaceHold) return;
+		stateBet.isSpaceHold = false;
+		stateBetDerived.updateIsTurbo(false, { persistent: true });
+	};
+
+	const onSpinPointerDown = (event: PointerEvent) => {
+		if (event.button !== 0) return;
+		endSpinHold();
+		spinHoldTimeout = setTimeout(beginSpinHold, SPIN_HOLD_MS);
+	};
+
+	const onSpinClick = (event: MouseEvent) => {
+		if (spinHoldConsumedClick) {
+			spinHoldConsumedClick = false;
+			event.preventDefault();
+			return;
+		}
+		onSpinButton();
+	};
+
+	// The balance can run dry mid-hold; the machine would keep asking for bets it cannot pay for.
+	$effect(() => {
+		if (stateBet.isSpaceHold && !stateBetDerived.isBetCostAvailable()) endSpinHold();
+	});
+
 	const onTurbo = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		if (!stateBet.isTurbo && !stateBet.isSuperTurbo) {
@@ -448,8 +513,16 @@
 
 	onDestroy(() => {
 		clearHoldRepeat();
+		// isSpaceHold lives in shared state, so leaving it set would keep the machine looping bets
+		// after this HUD is gone.
+		endSpinHold();
 	});
 </script>
+
+<!-- The hold ends on the WINDOW, not on the button: the finger routinely drifts off a round button
+     during a long press, and a release outside it (or after the layout reflows under it) must still
+     stop the spinning. pointerdown arms the hold on the button itself. -->
+<svelte:window onpointerup={endSpinHold} onpointercancel={endSpinHold} onblur={endSpinHold} />
 
 <OnHotkey
 	hotkey="Space"
@@ -606,8 +679,10 @@
 				<button
 					class="spin-btn"
 					class:spin-btn--busy={isBusy}
+					class:spin-btn--holding={stateBet.isSpaceHold}
 					type="button"
-					onclick={onSpinButton}
+					onclick={onSpinClick}
+					onpointerdown={onSpinPointerDown}
 					aria-label="Spin"
 					disabled={isBusy || (canInteract && !hasAuto && !canAffordBet)}
 				>
@@ -672,8 +747,10 @@
 				<button
 					class="spin-btn pt-spin"
 					class:spin-btn--busy={isBusy}
+					class:spin-btn--holding={stateBet.isSpaceHold}
 					type="button"
-					onclick={onSpinButton}
+					onclick={onSpinClick}
+					onpointerdown={onSpinPointerDown}
 					aria-label="Spin"
 					disabled={isBusy || (canInteract && !hasAuto && !canAffordBet)}
 				>
@@ -849,8 +926,10 @@
 				<button
 					class="spin-btn ls-spin"
 					class:spin-btn--busy={isBusy}
+					class:spin-btn--holding={stateBet.isSpaceHold}
 					type="button"
-					onclick={onSpinButton}
+					onclick={onSpinClick}
+					onpointerdown={onSpinPointerDown}
 					aria-label="Spin"
 					disabled={isBusy || (canInteract && !hasAuto && !canAffordBet)}
 				>
@@ -1659,6 +1738,29 @@
 
 	.spin-btn.spin-btn--busy:disabled {
 		opacity: 1;
+	}
+
+	/* Held for continuous spins: the ring spins for as long as the button is down, so the player can
+	   see the hold registered — the button itself never changes state while chaining. */
+	.spin-btn--holding::before {
+		animation: spin-hold-turn 900ms linear infinite;
+	}
+	.spin-btn--holding .spin-btn__icon {
+		filter: drop-shadow(0 0 6px #4bd6ff);
+	}
+	@keyframes spin-hold-turn {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.spin-btn--holding::before {
+			animation: none;
+		}
 	}
 
 	/* Stop / autospin-count overlays sit on the green disc, over the spin icon */
