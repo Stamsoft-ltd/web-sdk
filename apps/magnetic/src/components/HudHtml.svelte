@@ -439,13 +439,19 @@
 	// immediately fires onSpinButton, which reads as a STOP press and kills the round just started.
 	let spinHoldConsumedClick = false;
 
-	const beginSpinHold = () => {
+	const beginSpinHold = (fromPointer = true) => {
 		spinHoldTimeout = null;
 		// An auto-spin batch is already a continuous loop; holding on top of it would fight the
 		// counter, and the button's job in that state is to cancel.
 		if (hasAuto || !stateBetDerived.isBetCostAvailable()) return;
-		spinHoldConsumedClick = true;
-		context.eventEmitter.broadcast({ type: 'soundPressBet' });
+		// Re-entry guard: OnHotkey delivers onhold twice (callback + its isHolding effect).
+		if (stateBet.isSpaceHold) return;
+		// The click to consume and the press sound only exist on the pointer path — a Space hold has
+		// no click event, and its keydown already played the press sound via onSpinHotkey.
+		if (fromPointer) {
+			spinHoldConsumedClick = true;
+			context.eventEmitter.broadcast({ type: 'soundPressBet' });
+		}
 		stateBet.isSpaceHold = true;
 		stateBetDerived.updateIsTurbo(true, { persistent: true });
 		// Held from idle, nothing is running yet, so the first spin still needs a kick; held during a
@@ -454,6 +460,13 @@
 			if (!isAnyModeActive) stateBet.activeBetModeKey = 'BASE';
 			context.eventEmitter.broadcast({ type: 'bet' });
 		}
+	};
+
+	// Holding Space mirrors holding the spin button. The keyboard reaches the HUD even under an
+	// open modal (the button cannot), so onSpinHotkey's modal guard is re-applied here.
+	const onSpaceHold = () => {
+		if (showBuyModal || showAutoModal || showInfoModal || stateModal.modal !== null) return;
+		beginSpinHold(false);
 	};
 
 	const endSpinHold = () => {
@@ -528,6 +541,8 @@
 	hotkey="Space"
 	disabled={!stateConfig.jurisdiction ? false : stateConfig.jurisdiction.disabledSpacebar}
 	onpress={onSpinHotkey}
+	onhold={onSpaceHold}
+	onholdend={endSpinHold}
 />
 
 <div
