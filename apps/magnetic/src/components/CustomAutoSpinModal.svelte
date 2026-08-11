@@ -134,7 +134,7 @@
 		z-index: 59;
 		width: var(--ap-w);
 		font-size: calc(var(--ap-w) / 39.5);
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
 
 	/* Steel frame with the navy interior baked in — trimmed to the art, so % positions are exact. */
@@ -222,7 +222,7 @@
 
 	/* Figma: IBM Plex Sans Condensed Bold 20px, white, 0.6px tracking */
 	.ap-row__label {
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: 1.25em;
 		letter-spacing: 0.03em;
@@ -269,7 +269,7 @@
 		margin: 0;
 		transform: translateY(-50%);
 		text-align: center;
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: 1.25em;
 		letter-spacing: 0.03em;
@@ -315,7 +315,7 @@
 		border-radius: 0.857em;
 		background: #28a6de;
 		color: #fff;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
@@ -325,4 +325,15 @@
 	}
 	.ap-start:hover { filter: brightness(1.12) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25)); }
 	.ap-start:active { filter: brightness(0.95); }
+
+	/* Buttons do NOT inherit font-family: the UA stylesheet hard-sets `font: 400 13.333px Arial` on
+	   form controls, so every <button> here (and the glyph spans inside them) rendered in Arial no
+	   matter what the container was set to — measured via getComputedStyle, not assumed.
+	   Deliberately NOT scoped to a root element, and set OUTRIGHT rather than to `inherit`: the
+	   confirm dialog in CustomBuyBonusModal is a SIBLING of .panel, so a `.panel button` rule misses
+	   its buttons, and `inherit` on a top-level sibling like .confirm-close resolves against <body>,
+	   not the dialog. Svelte already scopes this to the component. */
+	button {
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+	}
 </style>

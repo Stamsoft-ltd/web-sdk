@@ -121,7 +121,7 @@
 		pointer-events: none;
 		z-index: 50;
 		color: #f9f1d2;
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
 
 	.replay-topbar {

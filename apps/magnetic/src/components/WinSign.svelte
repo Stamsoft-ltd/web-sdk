@@ -280,7 +280,7 @@
 				onresize={(s) => (amountSizes = s)}
 				text={bookEventAmountToCurrencyString(props.amount)}
 				style={{
-					fontFamily: 'Chakra Petch',
+					fontFamily: 'Chakra Petch, Inter, sans-serif',
 					fontWeight: '700',
 					fontSize: AMOUNT_FONT * S,
 					fill: WIN_GRADIENT,

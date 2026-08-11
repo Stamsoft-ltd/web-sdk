@@ -770,8 +770,14 @@ const animateClusterFormation = async ({
 	}
 
 	const isFast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
-	const flyMs = isFast ? 220 : 820;
-	const landMs = isFast ? 100 : 300;
+	// The magnet pull — symbols flying across the board and fusing into one cluster — is the
+	// signature mechanic, and at 820ms a wide pull was over before the eye could follow any single
+	// symbol. 820 -> 1250 / land 300 -> 420 (user round 2026-08-11, "make the animation that glues
+	// the win parts slower"). The turbo path is stretched much less, so turbo still reads as turbo.
+	// Note the destination-cell fade below stays capped at 250ms, so the arriving symbols are not
+	// left hovering over a still-visible occupant for the extra time.
+	const flyMs = isFast ? 300 : 1250;
+	const landMs = isFast ? 130 : 420;
 
 	const lockedPositions = isInitialPull
 		? series.flatMap((entry) => entry.lockedPositions)

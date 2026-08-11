@@ -88,7 +88,7 @@
 		/* Kept in lockstep with CustomBuyBonusModal .confirm — see the note there (2026-08-10 pass). */
 		width: clamp(300px, 54vw, 720px);
 		container-type: inline-size;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
 
 	/* Steel-framed plate; children are absolutely positioned at the design's own % offsets. */
@@ -107,7 +107,7 @@
 		top: 29.33%;
 		transform: translateY(-50%);
 		text-align: center;
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: calc(6.31cqw * var(--resume-title-fit, 1));
 		letter-spacing: 0.03em;
@@ -126,9 +126,9 @@
 		top: 50.18%;
 		transform: translateY(-50%);
 		text-align: center;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: 3.94cqw;
-		font-weight: 500;
+		font-weight: 600;
 		letter-spacing: 0.03em;
 		color: #fff;
 		line-height: 1.3;
@@ -155,7 +155,7 @@
 		padding: 0 4.73cqw;
 		border: 1px solid #60a5fa;
 		border-radius: 2.37cqw;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: 2.76cqw;
 		font-weight: 700;
 		letter-spacing: 0.1em;
@@ -180,5 +180,16 @@
 	/* End Round — the design's secondary: near-black navy */
 	.resume-btn--cancel {
 		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
+	}
+
+	/* Buttons do NOT inherit font-family: the UA stylesheet hard-sets `font: 400 13.333px Arial` on
+	   form controls, so every <button> here (and the glyph spans inside them) rendered in Arial no
+	   matter what the container was set to — measured via getComputedStyle, not assumed.
+	   Deliberately NOT scoped to a root element, and set OUTRIGHT rather than to `inherit`: the
+	   confirm dialog in CustomBuyBonusModal is a SIBLING of .panel, so a `.panel button` rule misses
+	   its buttons, and `inherit` on a top-level sibling like .confirm-close resolves against <body>,
+	   not the dialog. Svelte already scopes this to the component. */
+	button {
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
 </style>

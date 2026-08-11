@@ -1,30 +1,26 @@
 <script lang="ts">
-	import { Container, Graphics, Sprite, Text, type Sizes } from 'pixi-svelte';
-	import { Tween } from 'svelte/motion';
-	import { backOut } from 'svelte/easing';
-	import {
-		bookEventAmountToCurrencyString,
-		bookEventAmountToBetAmountMultiplier,
-	} from 'utils-shared/amount';
+	import { Container } from 'pixi-svelte';
+	import { bookEventAmountToBetAmountMultiplier } from 'utils-shared/amount';
 
-	import SparkBurst from './SparkBurst.svelte';
-	import WinBoardFx from './WinBoardFx.svelte';
 	import WinSign from './WinSign.svelte';
 	import { WIN_SIGN_TIERS } from '../game/winSignTiers';
-	import { WIN_GRADIENT } from '../game/goldGradient';
-	import { WIN_BOARD_LOGO_PATHS } from '../game/winBoardLogoPaths';
 
 	// The tiered win board. ONE board is shown for the whole presentation — the tier for the final
-	// win — and it pops in from the centre with a backOut overshoot.
+	// win — and WinSign assembles it from loose parts.
 	//
 	// The tier used to be derived from the LIVE counting amount, so a big win climbed through every
 	// intermediate board on its way up (SWEET collapsing into WILD into EPIC...). That read as the
 	// game changing its mind about how much the player had won. `tierAmount` is the settled total
 	// and is fixed for the presentation; `amount` is the counting value and only drives the text.
+	//
+	// This used to carry a SECOND rendering path for tiers still on the pre-Version2 baked board art
+	// (a single sprite plus WinBoardFx frame lights, medallion gems, bay-fitted amount text). MAX WIN
+	// was the last key on it; with its Version2 parts in place every key `targetKey` can produce is
+	// in WIN_SIGN_TIERS, so that path was unreachable and is gone. WinBoardFx.svelte and
+	// game/winBoardLogoPaths.ts were its only consumers and are now unreferenced.
 	const {
 		amount,
 		tierAmount,
-		boardSize,
 		screenW,
 		screenH,
 		maxOffX,
@@ -32,52 +28,11 @@
 	}: {
 		amount: number;
 		tierAmount: number;
-		boardSize: number;
 		screenW: number;
 		screenH: number;
 		maxOffX: number;
 		maxOffY: number;
 	} = $props();
-
-	// The amount plaque BAY of each board art — the flat dark region between the plaque's top rail
-	// and its bottom ornament — as fractions of the sprite box: `cy` is the bay's vertical centre
-	// measured DOWN from the sprite centre, `w`/`h` its extents. All MEASURED off the art (rows and
-	// columns whose 95th-percentile luminance stays low between the two bright rails), not hand
-	// tuned: the bays sit at different heights AND are different sizes across the boards, so a
-	// single shared value leaves the amount off-centre on some and undersized on all of them.
-	//
-	// The amount is sized FROM the bay rather than from a shared fraction of boardSize. The old
-	// shared 0.077 filled barely 60% of the shortest bay and less than half of the tallest, which
-	// left every board looking like it had an empty slot under the medallion.
-	const TIER_BAY: Record<string, { cy: number; w: number; h: number }> = {
-	};
-	// Digits of IBM Plex Sans Condensed sit at cap height (~0.70 em), so a font size of ~1.0x the bay
-	// height fills roughly 70% of it — enough presence to read as the headline number with clear air
-	// above and below. The width cap insets slightly from the bay so the outline never touches the rails.
-	const BAY_FONT_K = 1.02;
-	const BAY_WIDTH_K = 0.94;
-	const DEFAULT_BAY = { cy: 0.37, w: 0.62, h: 0.11 };
-
-	// Figma text spec for the win amount, quoted at a 67px reference size:
-	//   -webkit-text-stroke: 1px #000 · letter-spacing: 2.01px · weight 700 · IBM Plex Sans Condensed
-	// Both metrics are kept as RATIOS of the font size so they track the responsive board instead of
-	// pinning to 67px — the bay-derived size lands within a few percent of 67 at desktop scale anyway.
-	// The stroke is floored at 1px so it never thins to nothing on small screens.
-	const STROKE_RATIO = 1 / 67;
-	const LETTER_SPACING_RATIO = 2.01 / 67;
-
-	// The 4 hex gems on the medallion ring of each board art (fractions of the sprite box,
-	// relative to the sprite centre, +y down) — measured per art; each gets a small pulsing
-	// halo from WinBoardFx. The MAX WIN screen art has a different composition, so no entry.
-	const MEDALLION_GEMS: Record<string, { x: number; y: number }[]> = {
-	};
-
-	// Frame half-extents of each board art (fraction of the sprite box), measured from the solid
-	// alpha runs of the PNGs — where the animated frame FX (glow band / edge bars / corner gems /
-	// electric runners) should sit. cy = vertical centre offset of the frame within the sprite.
-	const FRAME_FX: Record<string, { hx: number; hy: number; cy: number }> = {
-		maxWinBoard: { hx: 0.419, hy: 0.411, cy: 0.03 },
-	};
 
 	// Win multiplier = book amount ÷ 100 (100 book units = 1× bet).
 	// Tier thresholds (× bet): <50 SWEET · 50 WILD · 100 EPIC · 200 MYTHIC · 500 LEGENDARY.
@@ -91,176 +46,10 @@
 		: mult >= 50 ? 'wildWinBoard'
 		: 'sweetWinBoard',
 	);
-
-	// The tier is settled before the board mounts and Win.svelte remounts this per win event, so
-	// there is exactly one board per presentation: pick it, pop it in. The previous version also
-	// carried a collapse-then-expand path and an `animating` re-entry guard for crossing tiers
-	// mid-count; with the tier fixed that path was unreachable.
-	let displayedKey = $state('');
-	const pop = new Tween(0, { duration: 340, easing: backOut });
-
-	// Seconds since the board popped in (-1 = idle). Drives the one-shot entrance impact — white
-	// flash + expanding shockwave ring — so the board ARRIVES instead of just appearing. The spark
-	// burst re-fires via the {#key displayedKey} remount.
-	let entranceT = $state(-1);
-
-	$effect(() => {
-		if (targetKey === displayedKey) return;
-		displayedKey = targetKey;
-		pop.set(1, { duration: 340, easing: backOut });
-		const t0 = performance.now();
-		let raf = 0;
-		const tick = (now: number) => {
-			const t = (now - t0) / 1000;
-			if (t < 0.8) {
-				entranceT = t;
-				raf = requestAnimationFrame(tick);
-			} else {
-				entranceT = -1;
-			}
-		};
-		raf = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(raf);
-	});
-
-	let textSizes = $state<Sizes>({ width: 0, height: 0 });
 </script>
 
-{#if WIN_SIGN_TIERS[displayedKey]}
-	<!-- Version2 tiers (sweet, epic, ...): the assembled sign, centred on the SCREEN like the
-	     design frame. WinSign owns its whole entrance (parts flying in + landing impacts), so none
-	     of the pop/entrance FX below apply to it. The remaining tiers stay on the old boards until
-	     their Version2 art lands. -->
-	<Container x={maxOffX} y={maxOffY}>
-		<WinSign tier={WIN_SIGN_TIERS[displayedKey]} {amount} {screenW} {screenH} />
-	</Container>
-{:else if displayedKey}
-	{@const isMax = displayedKey === 'maxWinBoard'}
-	<!-- MAX WIN dominates the SCREEN like the Figma (4143-16513): ~62% of the screen width
-	     (height-capped) — sized so the full art fits without clipping the top edge. -->
-	{@const boardW = isMax ? Math.min(screenW * 0.62, screenH * 0.78 * (1535 / 1025)) : boardSize}
-	{@const boardH = isMax ? boardW * (1025 / 1535) : boardSize}
-	{@const offX = isMax ? maxOffX : 0}
-	<!-- MAX WIN board rides a bit high of screen-centre so it clears the HUD comfortably. -->
-	{@const offY = isMax ? maxOffY - boardH * 0.05 : 0}
-	{@const glowColor = 0xffb428 /* only MAX WIN reaches the old path now — gold */}
-	{@const fx = FRAME_FX[displayedKey] ?? { hx: 0.42, hy: 0.46, cy: 0 }}
-	{@const bay = TIER_BAY[displayedKey] ?? DEFAULT_BAY}
-	{@const boardFont = isMax ? boardH * 0.062 : boardSize * bay.h * BAY_FONT_K}
-	{@const boardMaxW = isMax ? boardW * 0.4 : boardSize * bay.w * BAY_WIDTH_K}
-	{@const fitScale = textSizes.width > boardMaxW ? boardMaxW / textSizes.width : 1}
-	<Container x={offX} y={offY} scale={pop.current}>
-		<!-- Soft ambient glow behind the board, tinted to the tier. -->
-		<Graphics
-			blendMode="add"
-			draw={(g) => {
-				g.clear();
-				const R = boardW * 0.78;
-				const steps = 14;
-				for (let i = steps; i >= 1; i--) {
-					const t = i / steps;
-					g.circle(0, 0, R * t);
-					g.fill({ color: glowColor, alpha: 0.05 * (1 - t) * (1 - t) + 0.004 });
-				}
-			}}
-		/>
-		<Sprite key={displayedKey} anchor={0.5} width={boardW} height={boardH} />
-		<!-- Energized frame: breathing glow band, pulsing edge light bars + corner gems and
-		     electric runners crawling the frame, tinted to the tier — plus small halos on the
-		     medallion ring's 4 hex gems (positions compensated for the overlay's cy offset). -->
-		{@const gemPts = (MEDALLION_GEMS[displayedKey] ?? []).map((p) => ({
-			x: p.x * boardW,
-			y: p.y * boardH - boardH * fx.cy,
-		}))}
-		{@const logoPts = (WIN_BOARD_LOGO_PATHS[displayedKey] ?? []).map((path) =>
-			path.map(([px, py]) => ({ x: px * boardW, y: py * boardH - boardH * fx.cy })),
-		)}
-		<!-- Extra light on the baked lettering, with glitter sparks. MAX WIN screen: a warm glow
-		     over "MAX" and an electric one over "WIN". Tier boards: one breathing glow over the
-		     title block, tinted to the tier — all five arts put it in the same place (measured:
-		     cy −0.232, rx 0.313, ry 0.14 of the sprite box). -->
-		{@const textGlows = isMax
-			? [
-					{ x: 0.021 * boardW, y: -0.139 * boardH - boardH * fx.cy, rx: 0.235 * boardW, ry: 0.093 * boardH, color: 0xffb340 },
-					{ x: 0.015 * boardW, y: 0.056 * boardH - boardH * fx.cy, rx: 0.208 * boardW, ry: 0.112 * boardH, color: 0x4fd8ff },
-				]
-			: [
-					{ x: 0, y: -0.232 * boardH, rx: 0.313 * boardW, ry: 0.14 * boardH, color: glowColor },
-				]}
-		<!-- The two plasma faces crackle with a small contained electric glow (positions/radii
-		     measured from the art via its needle/star pivot points): the compass medallion at the
-		     plaque's bottom centre, and the blue sphere at the upper left. -->
-		{@const plasma = isMax
-			? [
-					{ x: 0.015 * boardW, y: 0.400 * boardH - boardH * fx.cy, r: boardW * 0.045, color: 0x7fd0ff },
-					{ x: -0.408 * boardW, y: -0.188 * boardH - boardH * fx.cy, r: boardW * 0.05, color: 0x7fd0ff },
-				]
-			: []}
-		<WinBoardFx
-			y={boardH * fx.cy}
-			{boardW}
-			{boardH}
-			hx={fx.hx}
-			hy={fx.hy}
-			color={glowColor}
-			gems={gemPts}
-			logoPaths={logoPts}
-			showFrame={!isMax}
-			{textGlows}
-			{plasma}
-		/>
-		<!-- Entrance impact: white flash + expanding shockwave ring + spark burst, fired once as
-		     the board pops in. -->
-		{#if entranceT >= 0}
-			{@const u = Math.min(1, entranceT / 0.55)}
-			{@const ringEase = 1 - (1 - u) ** 3}
-			<Graphics
-				blendMode="add"
-				draw={(g) => {
-					g.clear();
-					const r = boardW * (0.3 + 0.75 * ringEase);
-					const fade = (1 - u) ** 1.5;
-					g.circle(0, 0, r);
-					g.stroke({ width: boardW * 0.05 * (1 - u * 0.5), color: glowColor, alpha: 0.6 * fade });
-					g.circle(0, 0, r);
-					g.stroke({ width: boardW * 0.016, color: 0xffffff, alpha: 0.9 * fade });
-					if (u < 0.3) {
-						g.circle(0, 0, boardW * 0.55);
-						g.fill({ color: 0xffffff, alpha: 0.28 * (1 - u / 0.3) });
-					}
-				}}
-			/>
-		{/if}
-		{#key displayedKey}
-			<SparkBurst active radius={boardW * 0.6} count={26} color={glowColor} duration={0.8} />
-		{/key}
-		<!-- Win amount — IBM Plex Sans Condensed 700, gold gradient clipped to the glyphs with a 1px
-	     black outline (Figma spec); scales to fit the plaque. -->
-		<!-- The MAX art's plaque reads as centred on its compass medallion (its bottom-centre
-		     ornament), which sits at +0.015 of boardW — so the amount is aligned to that axis, not
-		     the raw sprite centre. Vertically it sits at +0.29 of boardH — the centre of the visible
-		     bay between the top rail and the compass (the compass eats the bottom-centre). -->
-		<Container
-			x={isMax ? boardW * 0.015 : 0}
-			y={isMax ? boardH * 0.3005 : boardSize * bay.cy}
-			scale={fitScale}
-		>
-			<Text
-				anchor={0.5}
-				onresize={(s) => (textSizes = s)}
-				text={bookEventAmountToCurrencyString(amount)}
-				style={{
-					fontFamily: 'IBM Plex Sans Condensed',
-					// 700, not 900 — 700 is the heaviest weight self-hosted in static/fonts/web, so 900
-					// only got the browser to synthesise a fake bold over the same face.
-					fontWeight: '700',
-					fontSize: boardFont,
-					fill: WIN_GRADIENT,
-					align: 'center',
-					letterSpacing: boardFont * LETTER_SPACING_RATIO,
-					stroke: { color: 0x000000, width: Math.max(1, boardFont * STROKE_RATIO) },
-				}}
-			/>
-		</Container>
-	</Container>
-{/if}
+<!-- The assembled sign, centred on the SCREEN like the design frame. WinSign owns its whole
+     entrance (parts flying in from the sides/top/bottom + landing impacts). -->
+<Container x={maxOffX} y={maxOffY}>
+	<WinSign tier={WIN_SIGN_TIERS[targetKey]} {amount} {screenW} {screenH} />
+</Container>

@@ -84,6 +84,71 @@ export const drawWildIdle = (g: SpecialIdleG, o: Opts) => {
 	}
 };
 
+// RING MAGNET (L2, nut.webp — the orange C with a grey block at each end of its gap). Replaces the
+// `ringmag_stack` flipbook, which read as a generic shimmer over the whole tile. The C's OPENING is
+// the interesting part of the art, so the field arcs straight across it, terminal to terminal.
+//
+// The two terminals were located by keying the low-saturation grey against the orange body and
+// taking the surviving blobs' centroids (scratchpad/ringmag): the block at (0.6875, 0.2008) and the
+// wedge at (0.8460, 0.3125) of the sprite box. The third grey blob the key finds — the big block at
+// the lower left — is decoration sitting ON the ring, not a terminal, so it is not an endpoint.
+const RING_POLE_A = { x: 0.6875, y: 0.2008 };
+const RING_POLE_B = { x: 0.846, y: 0.3125 };
+const RING_COLOR = 0xffb066;
+const RING_HOT = 0xffffff;
+
+export const drawRingMagIdle = (g: SpecialIdleG, o: Opts) => {
+	const p = o.phase * 6.28;
+	const ax = o.x + (RING_POLE_A.x - 0.5) * o.w;
+	const ay = o.y + (RING_POLE_A.y - 0.5) * o.h;
+	const bx = o.x + (RING_POLE_B.x - 0.5) * o.w;
+	const by = o.y + (RING_POLE_B.y - 0.5) * o.h;
+
+	// Charge sitting on both terminals — always on, so the gap reads as live even between strikes.
+	const charge = 0.5 + 0.5 * Math.sin(o.t * 2.6 + p);
+	for (const [tx, ty] of [
+		[ax, ay],
+		[bx, by],
+	]) {
+		for (let k = 0; k < 3; k++) {
+			g.circle(tx, ty, o.w * (0.03 + 0.04 * k));
+			g.fill({ color: k === 0 ? RING_HOT : RING_COLOR, alpha: (0.32 - 0.09 * k) * charge });
+		}
+	}
+
+	// The strike itself is intermittent: a continuous bolt across a gap this short reads as a
+	// painted-on decal. ~1.7s cycle, lit for the first third of it.
+	const cycle = (o.t * 0.58 + o.phase) % 1;
+	const fire = cycle < 0.34 ? Math.sin((cycle / 0.34) * Math.PI) : 0;
+	if (fire <= 0.02) return;
+
+	// The gap is narrow, so the bolt is jittered PERPENDICULAR to the terminal-to-terminal line
+	// rather than along a fixed axis — a vertical-only jitter would collapse to a straight line
+	// whenever the two terminals happen to sit near-vertical of each other.
+	const dx = bx - ax;
+	const dy = by - ay;
+	const len = Math.hypot(dx, dy) || 1;
+	const nx = -dy / len;
+	const ny = dx / len;
+	const SEGS = 6;
+	for (let pass = 0; pass < 2; pass++) {
+		g.moveTo(ax, ay);
+		for (let i = 1; i <= SEGS; i++) {
+			const f = i / SEGS;
+			const spread = Math.sin(f * Math.PI); // pinned at both terminals, loosest mid-gap
+			const jit = Math.sin(o.t * 47 + i * 2.3 + p) * len * 0.3 * spread;
+			g.lineTo(ax + dx * f + nx * jit, ay + dy * f + ny * jit);
+		}
+		g.stroke({
+			width: o.w * (pass === 0 ? 0.032 : 0.013),
+			color: pass === 0 ? RING_COLOR : RING_HOT,
+			alpha: (pass === 0 ? 0.55 : 0.9) * fire,
+			cap: 'round',
+			join: 'round',
+		});
+	}
+};
+
 export const drawScatterIdle = (g: SpecialIdleG, o: Opts) => {
 	const p = o.phase * 6.28;
 	const r0 = Math.min(o.w, o.h) * 0.26;

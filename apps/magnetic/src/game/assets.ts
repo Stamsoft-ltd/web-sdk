@@ -241,8 +241,14 @@ const assets = {
 	winSignWildPlate:  { type: 'sprite', src: './assets/components/win_boards/sign_wild_plate.webp?v=20260810' },
 	winSignWildMagnet: { type: 'sprite', src: './assets/components/win_boards/sign_wild_magnet.webp?v=20260810' },
 	winSignTextWild:   { type: 'sprite', src: './assets/components/win_boards/sign_text_wild.webp?v=20260810' },
-	// Special wide board for the 20000x max-win cap (Figma 4143-16513), 1535×1025
-	maxWinBoard:       { type: 'sprite', src: './assets/components/win_boards/max_win_screen.webp?v=20260709' },
+	// MAX WIN parts (Figma 7103:5231) — hazard-base pillars with a cyan neon column and a purple
+	// pipe elbow, red/blue horseshoe, gold+cyan two-line title. Replaces the single baked
+	// max_win_screen.webp board, which was the last tier still on the pre-Version2 art.
+	winSignMaxPlate:   { type: 'sprite', src: './assets/components/win_boards/sign_max_plate.webp?v=20260811' },
+	winSignMaxPillarL: { type: 'sprite', src: './assets/components/win_boards/sign_max_pillar_left.webp?v=20260811' },
+	winSignMaxPillarR: { type: 'sprite', src: './assets/components/win_boards/sign_max_pillar_right.webp?v=20260811' },
+	winSignMaxMagnet:  { type: 'sprite', src: './assets/components/win_boards/sign_max_magnet.webp?v=20260811' },
+	winSignTextMax:    { type: 'sprite', src: './assets/components/win_boards/sign_text_max.webp?v=20260811' },
 	// Stacked-cluster idle animations (Kling black-bg videos -> 36-frame/12fps looping sheets via
 	// scratchpad build_stack_anims.py): a locked cell of these symbols plays its charging loop
 	// instead of freezing on the static art. Frames share the static symbol's 328x264 canvas
@@ -252,32 +258,11 @@ const assets = {
 	stackAnimH3: { type: 'spriteSheet', src: './assets/sprites/stackAnims/vortex_stack.json' },
 	stackAnimH4: { type: 'spriteSheet', src: './assets/sprites/stackAnims/device_stack.json' },
 	stackAnimL1: { type: 'spriteSheet', src: './assets/sprites/stackAnims/battery_stack.json' },
-	stackAnimL2: { type: 'spriteSheet', src: './assets/sprites/stackAnims/ringmag_stack.json' },
 	stackAnimL3: { type: 'spriteSheet', src: './assets/sprites/stackAnims/coil_stack.json' },
 	stackAnimL4: { type: 'spriteSheet', src: './assets/sprites/stackAnims/chip_stack.json' },
-	goldFont: {
-		type: 'font',
-		src: './assets/fonts/goldFont/mm_gold.xml?v=20260611',
-	},
 	silverFont: {
 		type: 'font',
 		src: './assets/fonts/silverFont/mm_silver.xml?v=20260611',
-	},
-	bigwin: {
-		type: 'spine',
-		src: {
-			atlas: './assets/spines/bigwin/big_wins.atlas',
-			skeleton: './assets/spines/bigwin/mm_bigwin.json',
-			scale: 2,
-		},
-	},
-	fsIntro: {
-		type: 'spine',
-		src: {
-			atlas: './assets/spines/fsIntro/fs_screen.atlas',
-			skeleton: './assets/spines/fsIntro/fs_screen.json',
-			scale: 2,
-		},
 	},
 	// Animated loading bar (49-frame 0→100% fill, white bar/text on transparency). Replaces the old
 	// two-frame `progressBar` sheet, whose slot was filled by hand-drawn Rectangles. Preloaded with
@@ -339,7 +324,7 @@ flag(
 	[
 		'bgBonus', 'bgSuper', 'bgMobileBonus', 'bgMobileSuper',
 		'fsWonFrame',
-		'fsIntro', 'transition', 'counterFrame',
+		'transition', 'counterFrame',
 	],
 	'deferDemand',
 );
@@ -384,8 +369,9 @@ const DESKTOP_ONLY_KEYS: readonly string[] = [
 // Stack anims stream in the background pass: a cluster cannot be locked before the first spin
 // resolves, so they never gate playability.
 flag(
+	// L2 (ring magnet) has no sheet: its cluster idle is drawn procedurally (specialIdleFx).
 	['stackAnimH1', 'stackAnimH2', 'stackAnimH3', 'stackAnimH4',
-	 'stackAnimL1', 'stackAnimL2', 'stackAnimL3', 'stackAnimL4'],
+	 'stackAnimL1', 'stackAnimL3', 'stackAnimL4'],
 	'defer',
 );
 

@@ -27,12 +27,18 @@
 	// closes itself. The board used to wait for a press indefinitely, which stalled an unattended
 	// autoplay run on every big win. Armed only once the counting has SETTLED, so the final number
 	// is always fully readable first; a press still dismisses immediately.
-	const AUTO_DISMISS_MS = 5000;
+	//
+	// 5000 -> 8500 (user round 2026-08-11, "make the win animations 3-4 seconds longer"). The extra
+	// time deliberately goes HERE and not into presentDuration: the roll-up is the part the player
+	// is waiting on to read the amount, while this dwell is the part they are watching the sign,
+	// its neon tubes and the coins. Lengthening the roll-up instead would make the number take
+	// longer to arrive without adding a single frame of celebration.
+	const AUTO_DISMISS_MS = 8500;
 
 	// Turbo COMPRESSES the big-win presentation rather than skipping it — the board is the payoff
 	// moment, so it still plays, just at the pace turbo implies. Both halves scale by the same
 	// factor so the rhythm holds: the roll-up (presentDuration) and the dwell before auto-dismiss.
-	// A legendary win goes 5.5s + 5s = 10.5s -> 5.25s on turbo -> 3.15s on super turbo.
+	// A legendary win goes 5.5s + 8.5s = 14s -> 7s on turbo -> 4.2s on super turbo.
 	const turboSpeed = $derived(stateBet.isSuperTurbo ? 0.3 : stateBet.isTurbo ? 0.5 : 1);
 
 	let show = $state(false);
@@ -176,11 +182,6 @@
 					<MainContainer>
 						<Container x={boardLayout.x + shakeX} y={boardLayout.y + shakeY}>
 							{#if hasBoardAnimation}
-								{@const bs = boardLayout.boardScale}
-								{@const boardSize = Math.min(
-									boardLayout.width * bs * 0.55,
-									boardLayout.height * bs * 0.85,
-								)}
 								{@const screenW =
 									context.stateLayoutDerived.canvasSizes().width / (mainLayout.scale || 1)}
 								{@const screenH =
@@ -190,7 +191,6 @@
 								<WinBoard
 									amount={countUpAmount}
 									tierAmount={amount}
-									{boardSize}
 									{screenW}
 									{screenH}
 									maxOffX={mainLayout.width * 0.5 - boardLayout.x}

@@ -323,6 +323,13 @@
 		background: rgba(2, 6, 16, 0.72);
 		cursor: default;
 	}
+	/* Type: the whole rules carousel is Chakra Petch (Figma 4504:4289 OVERVIEW / 4448:6823 PAYTABLE).
+	   It previously mixed four families carried over from the forest theme — Inter, Poppins, the
+	   CINZEL serif on stat values and control names, and IBM Plex Sans Condensed.
+	   WEIGHTS ARE CONSTRAINED: static/fonts/web self-hosts Chakra Petch 400/600/700 only, so the old
+	   500/800/900 declarations were remapped to 600/700/700. Declaring a weight with no face just
+	   gets the browser to synthesise one — a faux bold smeared over 700 — which is the same trap the
+	   win-amount text hit with IBM Plex 900. Add the real face before reaching for another weight. */
 	.info-overlay {
 		position: absolute;
 		inset: 0;
@@ -331,7 +338,7 @@
 		place-items: center;
 		pointer-events: none;
 		container-type: size;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
 	.info-panel {
 		pointer-events: auto;
@@ -430,7 +437,7 @@
 	}
 	.ov-title {
 		margin: 0;
-		font-family: 'Chakra Petch', 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: clamp(24px, 5.1cqmin, 46px);
 		font-weight: 700;
 		letter-spacing: 0.03em;
@@ -446,8 +453,8 @@
 	   Tracking is expressed in em (0.39/13 and 0.96/32 both = 0.03em) so it tracks the size. */
 	.ov-text {
 		margin: 0;
-		font-family: 'Poppins', 'Inter', sans-serif;
-		font-weight: 500;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 600;
 		font-size: clamp(11px, 1.95cqmin, 18px);
 		letter-spacing: 0.03em;
 		line-height: 1.42;
@@ -455,8 +462,8 @@
 	}
 	.ov-maxwin {
 		margin: clamp(2px, 0.6cqmin, 8px) 0 0;
-		font-family: 'Poppins', 'Inter', sans-serif;
-		font-weight: 500;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 600;
 		font-size: clamp(11px, 1.95cqmin, 18px);
 		letter-spacing: 0.03em;
 		color: #fff;
@@ -464,7 +471,7 @@
 	.ov-maxwin span {
 		/* Was 3.4cqmin, which resolved to ~23px at design size against the spec's 32px. */
 		font-size: clamp(16px, 4.8cqmin, 32px);
-		font-weight: 500;
+		font-weight: 600;
 		color: #fff;
 		/* 0.03em, not 0.01: the design spec is 0.96px at a 32px size. */
 		letter-spacing: 0.03em;
@@ -540,12 +547,12 @@
 	/* Figma 4504:4330/4331 — CINZEL Black: value in flat #2391C1, label in white. */
 	.stat-txt b,
 	.stat-txt i {
-		font-family: 'Cinzel', 'IBM Plex Sans Condensed', serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		text-transform: uppercase;
 	}
 	.stat-txt b {
 		font-size: clamp(12px, 2.7cqmin, 25px);
-		font-weight: 900;
+		font-weight: 700;
 		letter-spacing: 0.03em;
 		color: #2391c1;
 	}
@@ -585,7 +592,7 @@
 	.page-title {
 		margin: 0;
 		text-align: center;
-		font-family: 'Chakra Petch', 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: clamp(22px, 4.6cqmin, 42px);
 		font-weight: 700;
 		letter-spacing: 0.04em;
@@ -613,17 +620,17 @@
 		margin: 0;
 		/* Match the page titles (.page-title / .ov-title) — without this the card titles inherit the
 		   modal root's 'Inter' instead of the Magnetic display font. */
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: clamp(14px, 3cqmin, 28px);
-		font-weight: 800;
+		font-weight: 700;
 		line-height: 1.12;
 		letter-spacing: 0.01em;
 		color: #2391c1;
 	}
 	.feat-p {
 		margin: 0;
-		font-family: 'Poppins', 'Inter', sans-serif;
-		font-weight: 500;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 600;
 		font-size: clamp(11px, 2.1cqmin, 19px);
 		letter-spacing: 0.03em;
 		line-height: 1.45;
@@ -661,8 +668,8 @@
 		vertical-align: middle;
 		border-radius: clamp(4px, 1.2cqmin, 8px);
 		padding: clamp(1px, 0.5cqmin, 5px) 0;
-		font-family: 'Poppins', 'Inter', sans-serif;
-		font-weight: 500;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 600;
 		color: #fff;
 		/* Figma "Symbols pad": navy gradient + #0B365C hairline. */
 		background: linear-gradient(151deg, #031235 1.5%, #06234d 100%);
@@ -797,7 +804,7 @@
 	}
 	.feat-x {
 		font-size: clamp(22px, 4.8cqmin, 46px);
-		font-weight: 800;
+		font-weight: 700;
 		color: #fff;
 	}
 	.feat-trigger img {
@@ -842,8 +849,8 @@
 	}
 	.cw-text p {
 		margin: 0;
-		font-family: 'Poppins', 'Inter', sans-serif;
-		font-weight: 500;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 600;
 		font-size: clamp(11px, 2cqmin, 18px);
 		letter-spacing: 0.03em;
 		line-height: 1.4;
@@ -868,8 +875,8 @@
 	.fb-sub {
 		margin: 0;
 		text-align: center;
-		font-family: 'Poppins', 'Inter', sans-serif;
-		font-weight: 500;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 600;
 		font-size: clamp(10px, 1.7cqmin, 15px);
 		letter-spacing: 0.03em;
 		line-height: 1.35;
@@ -947,7 +954,7 @@
 	}
 	/* Figma 4526:8950 — CINZEL small caps: label in flat #2391C1, value in white. */
 	.fb-k {
-		font-family: 'Cinzel', 'IBM Plex Sans Condensed', serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: clamp(11px, 2cqmin, 18px);
 		font-weight: 700;
 		letter-spacing: 0.06em;
@@ -957,7 +964,7 @@
 	.fb-v {
 		/* Same size as .fb-k — the design sets label and value in one size (both 16px-tall nodes),
 		   with only colour separating them. */
-		font-family: 'Cinzel', 'IBM Plex Sans Condensed', serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: clamp(11px, 2cqmin, 18px);
 		font-weight: 700;
 		color: #fff;
@@ -1035,7 +1042,7 @@
 	   that bottoms out at #0088C7 rather than the much darker #0046a9 the other titles use (measured
 	   off the design: line 1 #00E6F3, line 2 #0088C7). */
 	.gi-grid .feat-h {
-		font-family: 'Cinzel', 'IBM Plex Sans Condensed', serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		text-transform: uppercase;
 		letter-spacing: 0.02em;
 		color: #2391c1;
@@ -1048,8 +1055,8 @@
 	   (already inset by the card padding), so it stays proportional at every size. */
 	.gi-card .feat-p {
 		max-width: 80%;
-		font-family: 'Poppins', 'Inter', sans-serif;
-		font-weight: 500;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 600;
 		/* Figma spec: 10px / 0.3px tracking. The container is .info-overlay, so at the design's
 		   1200x670 frame cqmin is 6.7px and 1.45cqmin resolves to ~9.8px; tracking is 0.3/10 = 0.03em
 		   so it follows the size. line-height stays `normal` per the spec — Poppins' own metrics give
@@ -1112,7 +1119,7 @@
 	.ctrl-name {
 		/* Extra breathing room between the icon and its title (on top of the cell's base gap). */
 		margin: clamp(4px, 1.1cqmin, 12px) 0 0;
-		font-family: 'Cinzel', 'IBM Plex Sans Condensed', serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		text-transform: uppercase;
 		font-size: clamp(10px, 2.1cqmin, 19px);
@@ -1122,8 +1129,8 @@
 	}
 	.ctrl-desc {
 		margin: 0;
-		font-family: 'Poppins', 'Inter', sans-serif;
-		font-weight: 500;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 600;
 		font-size: clamp(8px, 1.6cqmin, 14px);
 		letter-spacing: 0.02em;
 		line-height: 1.3;
@@ -1187,7 +1194,7 @@
 	.pg-num {
 		position: absolute;
 		right: clamp(0px, 1cqmin, 8px);
-		font-family: 'Poppins', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: clamp(11px, 1.9cqmin, 16px);
 		color: #fff;
@@ -1616,5 +1623,16 @@
 		.pt-side-v {
 			font-size: clamp(14px, 3.7cqmin, 22px);
 		}
+	}
+
+	/* Buttons do NOT inherit font-family: the UA stylesheet hard-sets `font: 400 13.333px Arial` on
+	   form controls, so every <button> here (and the glyph spans inside them) rendered in Arial no
+	   matter what the container was set to — measured via getComputedStyle, not assumed.
+	   Deliberately NOT scoped to a root element, and set OUTRIGHT rather than to `inherit`: the
+	   confirm dialog in CustomBuyBonusModal is a SIBLING of .panel, so a `.panel button` rule misses
+	   its buttons, and `inherit` on a top-level sibling like .confirm-close resolves against <body>,
+	   not the dialog. Svelte already scopes this to the component. */
+	button {
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
 </style>

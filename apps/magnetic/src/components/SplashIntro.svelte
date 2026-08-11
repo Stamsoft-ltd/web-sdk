@@ -193,10 +193,10 @@
 			<div class="hop hop-coil"><img class="face-coil" src={coilSrc} alt="" draggable="false" /></div>
 		</div>
 		<div class="place place-chip">
-			<div class="hop hop-chip"><img src={chipSrc} alt="" draggable="false" /></div>
+			<div class="hop hop-chip"><img class="face-chip" src={chipSrc} alt="" draggable="false" /></div>
 		</div>
 		<div class="place place-magnet">
-			<div class="hop hop-magnet"><img src={magnetSrc} alt="" draggable="false" /></div>
+			<div class="hop hop-magnet"><img class="face-magnet" src={magnetSrc} alt="" draggable="false" /></div>
 		</div>
 		<div class="place place-ring">
 			<div class="hop hop-ring"><img src={ringSrc} alt="" draggable="false" /></div>
@@ -469,7 +469,7 @@
 	/* ------------------------------------------------------------------ panel typography */
 
 	.f-title {
-		font-family: 'Chakra Petch', 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: 2.9cqw;
 		line-height: 1;
@@ -480,7 +480,7 @@
 		filter: drop-shadow(0 0 0.55em rgba(0, 0, 0, 0.55));
 	}
 	.f-sub {
-		font-family: 'Chakra Petch', 'Poppins', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 400;
 		font-size: 1.4cqw;
 		line-height: 1.3;
@@ -491,7 +491,7 @@
 		overflow-wrap: break-word;
 	}
 	.f-key {
-		font-family: 'Chakra Petch', 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: 1.75cqw;
 		line-height: 1.12;
@@ -507,7 +507,7 @@
 		text-transform: none;
 	}
 	.f-value {
-		font-family: 'Chakra Petch', 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: 4cqw;
 		line-height: 1;
@@ -605,18 +605,24 @@
 		top: 89.29%;
 		width: 6.55cqw;
 	}
+	/* The chip is the only part painted dead-on — the cable, coil, magnet and ring all come in 3/4,
+	   so face-on it read as standing upright against the floor rather than dropped on it. Tipping it
+	   into the floor plane costs ~cos(54°) of its height, so the width grows to keep the same
+	   footprint mass as its neighbours. */
 	.place-chip {
 		left: 28.78%;
-		top: 92.57%;
-		width: 5.79cqw;
+		top: 92.9%;
+		width: 7.4cqw;
 	}
 	.place-magnet {
 		left: 77.7%;
-		top: 90.86%;
-		width: 6.14cqw;
+		top: 91.2%;
+		width: 7.6cqw;
 	}
+	/* left 93.02 -> 90.6 (user round 2026-08-11): the Figma placement put the ring hard against the
+	   right edge, where it crowded the frame on wide viewports. */
 	.place-ring {
-		left: 93.02%;
+		left: 90.6%;
 		top: 87.31%;
 		width: 6.17cqw;
 	}
@@ -626,6 +632,20 @@
 	   horizontal flip). */
 	.face-coil {
 		transform: scaleX(-1);
+	}
+	/* Chip laid into the floor: `perspective()` first (it only affects the transforms after it), a
+	   54deg tip away from camera, and a Z turn so it isn't square to the frame — an axis-aligned
+	   rectangle reads as a UI element no matter how it's foreshortened. The drop-shadow on
+	   `.place img` is applied BEFORE the transform, so it tips with the chip and lands as a contact
+	   shadow on the ground instead of floating behind it. */
+	.face-chip {
+		transform: perspective(300px) rotateX(54deg) rotate(-13deg);
+	}
+	/* Same treatment for the N/S magnet — its disc is drawn face-on too, so upright it read as
+	   propped against the wall. Tipped slightly less than the chip because it sits further up the
+	   floor (further from camera), and turned the other way so the two don't share an axis. */
+	.face-magnet {
+		transform: perspective(320px) rotateX(50deg) rotate(9deg);
 	}
 
 	/* Portrait floor-part positions: the same five parts spread along the bottom edge. The stage is
@@ -644,13 +664,13 @@
 	}
 	.stage--m .place-chip {
 		left: 51%;
-		top: 92.4%;
-		width: 14cqw;
+		top: 92.6%;
+		width: 18cqw;
 	}
 	.stage--m .place-magnet {
 		left: 70%;
-		top: 91.2%;
-		width: 14.5cqw;
+		top: 91.4%;
+		width: 18cqw;
 	}
 	.stage--m .place-ring {
 		left: 89%;
@@ -772,7 +792,7 @@
 		transform: translate(-50%, -50%);
 		margin: 0;
 		white-space: nowrap;
-		font-family: 'Chakra Petch', 'Poppins', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: clamp(14px, 1.5cqw, 22px);
 		letter-spacing: 0.06em;

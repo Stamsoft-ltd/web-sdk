@@ -34,7 +34,7 @@
 		W * VALUE_F * (!props.value ? 0 : props.value.length >= 9 ? 0.7 : props.value.length >= 7 ? 0.85 : 1),
 	);
 	const labelStyle = $derived({
-		fontFamily: 'Chakra Petch',
+		fontFamily: 'Chakra Petch, Inter, sans-serif',
 		fontWeight: '700' as const,
 		fontSize: W * LABEL_F,
 		fill: 0xffffff,
@@ -42,7 +42,7 @@
 		align: 'center' as const,
 	});
 	const valueStyle = $derived({
-		fontFamily: 'Chakra Petch',
+		fontFamily: 'Chakra Petch, Inter, sans-serif',
 		fontWeight: '700' as const,
 		fontSize: valueSize,
 		fill: 0xffffff,

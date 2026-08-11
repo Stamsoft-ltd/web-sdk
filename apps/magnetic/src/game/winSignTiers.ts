@@ -178,4 +178,50 @@ export const WIN_SIGN_TIERS: Record<string, WinSignTier> = {
 		glow: 0xb84dff,
 		portraitFit: 1020, // pillars span x107.8..1101.2 = 993 visible
 	},
+	// MAX WIN — Figma 7103:5231. The 25000x cap, and the last tier to leave the single baked
+	// max_win_screen.webp board. Two notes on reading the design file:
+	//   * the sign group (7103:5315) is offset 1px right of the frame, so the rects below are
+	//     measured in ROOT space, not group space;
+	//   * both pillars come from ONE source image which the design crops to its right third
+	//     (inner img scaled 314.86%, offset -214.78%) and mirrors for the left side — so the two
+	//     pillar assets here are a mirrored pair cut from that same crop.
+	// The design parks the amount plaque 18.5px right of centre; that is left at 0 like every other
+	// tier (WinSign centres it), since the plate itself is centred and the offset reads as a slip.
+	maxWinBoard: {
+		plate: {
+			key: 'winSignMaxPlate',
+			x: 1,
+			y: -47.9,
+			w: 654.1,
+			h: 333.9,
+			tubes: [
+				{ cx: 0.934, cy: 0.5075, w: 0.0423, h: 0.3648, color: 0x34f6ff },
+				{ cx: 0.0664, cy: 0.5075, w: 0.0415, h: 0.3648, color: 0x38f5ff },
+				{ cx: 0.4992, cy: 0.9055, w: 0.181, h: 0.0232, color: 0x22f6ff },
+				{ cx: 0.6849, cy: 0.0655, w: 0.1007, h: 0.0149, color: 0x24f3ff },
+				{ cx: 0.3143, cy: 0.0655, w: 0.1007, h: 0.0149, color: 0x23f3ff },
+			],
+		},
+		pillarL: {
+			key: 'winSignMaxPillarL',
+			x: -259.56,
+			y: -81.27,
+			w: 222,
+			h: 382.7,
+			tubes: [{ cx: 0.3896, cy: 0.5044, w: 0.2716, h: 0.3245, color: 0x46e1ff }],
+		},
+		pillarR: {
+			key: 'winSignMaxPillarR',
+			x: 260.56,
+			y: -81.27,
+			w: 222,
+			h: 382.7,
+			tubes: [{ cx: 0.6104, cy: 0.5044, w: 0.2716, h: 0.3245, color: 0x46e1ff }],
+		},
+		magnet: { key: 'winSignMaxMagnet', x: 1, y: -231.85, w: 150.2, h: 131.7 },
+		title: { key: 'winSignTextMax', x: -2, y: -51.9, w: 337.8, h: 205.3 },
+		amountY: 180.5,
+		glow: 0xffb428,
+		portraitFit: 770, // pillars span x229.4..971.6 = 742 visible
+	},
 };

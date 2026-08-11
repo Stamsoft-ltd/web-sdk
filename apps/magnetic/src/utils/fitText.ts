@@ -31,7 +31,7 @@ type Options = {
 };
 
 export const fitTextScale = (text: string, options: Options): number => {
-	const { fontSizePx, availablePx, fontWeight = 700, fontFamily = 'Inter, sans-serif' } = options;
+	const { fontSizePx, availablePx, fontWeight = 700, fontFamily = 'Chakra Petch, Inter, sans-serif' } = options;
 	const letterSpacingEm = options.letterSpacingEm ?? 0;
 	const minScale = options.minScale ?? 0.55;
 	if (!text || fontSizePx <= 0 || availablePx <= 0) return 1;

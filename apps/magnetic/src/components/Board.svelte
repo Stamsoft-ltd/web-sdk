@@ -12,7 +12,12 @@
 	import { AnimatedSprite, Container, Graphics, Sprite, type LoadedSpriteSheet } from 'pixi-svelte';
 
 	import SymbolWinFx from './SymbolWinFx.svelte';
-	import { drawScatterIdle, drawWildIdle, type SpecialIdleG } from '../game/specialIdleFx';
+	import {
+		drawRingMagIdle,
+		drawScatterIdle,
+		drawWildIdle,
+		type SpecialIdleG,
+	} from '../game/specialIdleFx';
 	import { getContext } from '../game/context';
 	import { BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, SYMBOL_H, SYMBOL_W } from '../game/constants';
 	import { getSymbolInfo } from '../game/utils';
@@ -27,7 +32,6 @@
 		H3: 'stackAnimH3',
 		H4: 'stackAnimH4',
 		L1: 'stackAnimL1',
-		L2: 'stackAnimL2',
 		L3: 'stackAnimL3',
 		L4: 'stackAnimL4',
 	};
@@ -176,6 +180,24 @@
 			any = true;
 			if (isWild) drawWildIdle(g, o);
 			else drawScatterIdle(g, o);
+		}
+
+		// RING MAGNET (L2) cluster idle — replaces the `ringmag_stack` flipbook. Scoped to LOCKED
+		// cells like the flipbook it replaces: this is the cluster's charge, not a per-symbol idle,
+		// and every loose L2 on a busy board arcing at once was noise.
+		for (const cell of lockedCells) {
+			if (cell.name !== 'L2') continue;
+			if (cell.symbolState === 'win') continue; // SymbolWinFx owns the cell during a win
+			const info = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState });
+			any = true;
+			drawRingMagIdle(g, {
+				x: getX(cell.position.reel),
+				y: getStaticY(cell.position.row),
+				w: SYMBOL_W * info.sizeRatios.width,
+				h: SYMBOL_H * info.sizeRatios.height,
+				t,
+				phase: keyPhase(cell.key),
+			});
 		}
 		return any;
 	};

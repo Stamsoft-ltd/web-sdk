@@ -65,7 +65,7 @@
 	.recovery-card h2 {
 		margin: 0 0 10px;
 		font-size: 1.2rem;
-		font-weight: 900;
+		font-weight: 700;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 	}
@@ -88,7 +88,7 @@
 		background: linear-gradient(180deg, #f0d068 0%, #c09224 100%);
 		color: #17200f;
 		font-size: 0.95rem;
-		font-weight: 900;
+		font-weight: 700;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 		cursor: pointer;

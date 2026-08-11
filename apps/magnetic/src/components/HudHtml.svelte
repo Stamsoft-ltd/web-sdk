@@ -992,7 +992,7 @@
 		justify-content: space-between;
 		padding: 8px;
 		z-index: 20;
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
 
 	/* A congratulations screen is up. The HUD is DOM ABOVE the canvas, so the popup's pixi dim
@@ -1049,14 +1049,14 @@
 	}
 
 	.scatter-card__title {
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: 1.15rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
 	}
 
 	.scatter-card__text {
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: 0.8rem;
 		font-weight: 700;
 		line-height: 1.3;
@@ -1255,10 +1255,10 @@
 	}
 
 	.label {
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: 10px;
 		font-weight: 700;
-		line-height: 15px;
+		line-height: 1.5;
 		letter-spacing: 2px;
 		text-transform: uppercase;
 		color: #60a5facc;
@@ -1278,10 +1278,16 @@
 		display: inline-block;
 	}
 
+	/* Bottom-bar amounts (Figma 7103:5300). line-height and letter-spacing are kept as RATIOS of the
+	   font size (32/24 = 133.333%, 0.07/24em) rather than the literal px: the compact desktop and
+	   mobile-landscape rules below override font-size only, so fixed px would leave those bars
+	   carrying desktop leading around 0.68rem text. */
 	.value {
-		font-family: 'Inter', sans-serif;
-		font-size: 1.3rem;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-size: 24px;
 		font-weight: 700;
+		line-height: 1.3333;
+		letter-spacing: 0.0029em;
 		color: #fff;
 	}
 
@@ -1526,7 +1532,7 @@
 		transform: scale(0.895);
 	}
 	.menu-row__label {
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 600;
 		font-size: 15px;
 		letter-spacing: 0.04em;
@@ -1778,7 +1784,7 @@
 		border-radius: 50%;
 		background: radial-gradient(circle, rgba(8, 20, 46, 0.96) 60%, rgba(8, 20, 46, 0) 100%);
 		color: #fff;
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 900;
 		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
 		pointer-events: none;
@@ -1814,7 +1820,7 @@
 	}
 
 	.buy-btn__label {
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: 12px;
 		font-weight: 700;
 		color: #fff;

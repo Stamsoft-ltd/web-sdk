@@ -13,6 +13,7 @@
 		CONFIRM_TEXT_FIT_W,
 		CONFIRM_TITLE_FAMILY,
 		CONFIRM_TEXT_FAMILY,
+		CONFIRM_TEXT_WEIGHT,
 	} from './confirmDialog';
 
 	const t = (k: string) => i18nDerived.translate(k);
@@ -162,7 +163,7 @@
 			`--confirm-text-fit:${fitTextScale(confirmBodyText, {
 				fontSizePx: confirmW * CONFIRM_TEXT_FONT_F,
 				availablePx: confirmW * CONFIRM_TEXT_FIT_W,
-				fontWeight: 500,
+				fontWeight: CONFIRM_TEXT_WEIGHT,
 				fontFamily: CONFIRM_TEXT_FAMILY,
 				letterSpacingEm: 0.03,
 			})}`,
@@ -303,7 +304,7 @@
 		/* top-heavy padding nudges the centred cards + bet selector down from the title */
 		padding: 12vh 1vw 4vh;
 		box-sizing: border-box;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		pointer-events: none;
 	}
 	.panel > * { pointer-events: auto; }
@@ -316,8 +317,8 @@
 		left: 50%;
 		transform: translate(-50%, -50%);
 		margin: 0;
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
-		font-weight: 900;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 700;
 		font-size: 18px;
 		line-height: normal;
 		letter-spacing: 0.54px;
@@ -399,7 +400,7 @@
 	/* Figma 4040:4138 — IBM Plex Sans Condensed Bold 18px, FLAT #2391C1, 0.54px tracking. */
 	.card-title {
 		flex-shrink: 0;
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: clamp(14px, 1.32vw, 23px);
 		letter-spacing: 0.03em;
@@ -420,7 +421,7 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: center; /* vertical centre; align-items:stretch (default) lets text wrap to full width */
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 400;
 		font-size: clamp(11px, 0.98vw, 16px);
 		line-height: 1.26;
@@ -454,7 +455,7 @@
 	.card-mult {
 		position: relative;
 		top: -0.12em; /* nudge up so the badge centre matches the M plate centre */
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: clamp(18px, 1.7vw, 30px);
 		letter-spacing: 0.03em;
@@ -466,7 +467,7 @@
 	/* Figma: IBM Plex Sans Condensed Bold, white, "X.XX $". */
 	.card-price {
 		flex-shrink: 0;
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: clamp(14px, 1.3vw, 21px);
 		letter-spacing: 0.02em;
@@ -486,7 +487,7 @@
 		margin-top: auto;
 		border: 1px solid #60a5fa;
 		border-radius: 14px;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: clamp(14px, 1.3vw, 21px);
 		font-weight: 700;
 		letter-spacing: 0.08em;
@@ -560,13 +561,13 @@
 		line-height: 1;
 	}
 	.bet-label {
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: clamp(8px, 0.72vw, 11px); font-weight: 700;
 		letter-spacing: 0.2em; text-transform: uppercase;
 		color: rgba(96, 165, 250, 0.85);
 	}
 	.bet-amount {
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-size: clamp(17px, 1.7vw, 26px); font-weight: 700;
 		color: #ffffff;
 		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
@@ -764,7 +765,7 @@
 		   300px floor and a 720px cap — the popout ramp is kept, the plate just has real presence now. */
 		width: clamp(300px, 54vw, 720px);
 		container-type: inline-size;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
 	.confirm-panel {
 		position: relative;
@@ -778,7 +779,7 @@
 		left: 7%; right: 7%; top: 29.33%;
 		transform: translateY(-50%);
 		text-align: center;
-		font-family: 'IBM Plex Sans Condensed', 'Inter', sans-serif;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: calc(6.31cqw * var(--confirm-title-fit, 1));
 		letter-spacing: 0.03em; text-transform: uppercase;
@@ -791,8 +792,8 @@
 		left: 8%; right: 8%; top: 50.18%;
 		transform: translateY(-50%);
 		text-align: center;
-		font-family: 'Inter', sans-serif;
-		font-size: calc(3.94cqw * var(--confirm-text-fit, 1)); font-weight: 500;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-size: calc(3.94cqw * var(--confirm-text-fit, 1)); font-weight: 600;
 		letter-spacing: 0.03em; text-transform: uppercase;
 		color: #fff; line-height: 1.3;
 		/* One line, like the design — the fitter above shrinks it instead of wrapping. */
@@ -811,7 +812,7 @@
 		padding: 0 4.73cqw;
 		border: 1px solid #60a5fa;
 		border-radius: 2.37cqw;
-		font-family: 'Inter', sans-serif; font-size: 2.76cqw; font-weight: 700;
+		font-family: 'Chakra Petch', 'Inter', sans-serif; font-size: 2.76cqw; font-weight: 700;
 		letter-spacing: 0.1em; text-transform: uppercase; color: #fff;
 		white-space: nowrap;
 		cursor: pointer;
@@ -824,5 +825,16 @@
 	}
 	.confirm-btn--ok {
 		background: #28a6de;
+	}
+
+	/* Buttons do NOT inherit font-family: the UA stylesheet hard-sets `font: 400 13.333px Arial` on
+	   form controls, so every <button> here (and the glyph spans inside them) rendered in Arial no
+	   matter what the container was set to — measured via getComputedStyle, not assumed.
+	   Deliberately NOT scoped to a root element, and set OUTRIGHT rather than to `inherit`: the
+	   confirm dialog in CustomBuyBonusModal is a SIBLING of .panel, so a `.panel button` rule misses
+	   its buttons, and `inherit` on a top-level sibling like .confirm-close resolves against <body>,
+	   not the dialog. Svelte already scopes this to the component. */
+	button {
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
 </style>

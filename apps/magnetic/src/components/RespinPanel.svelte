@@ -79,7 +79,7 @@
 		textureSpace: 'local',
 	});
 	const labelStyle = (fontSize: number) => ({
-		fontFamily: 'Inter',
+		fontFamily: 'Chakra Petch, Inter, sans-serif',
 		fontWeight: '700' as const,
 		fontSize,
 		fill: RESPIN_GRADIENT,

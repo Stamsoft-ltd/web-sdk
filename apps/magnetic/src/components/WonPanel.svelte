@@ -82,7 +82,7 @@
 			fitTextScale(props.big, {
 				fontSizePx: frameW * BIG_F,
 				availablePx: bigAvail,
-				fontFamily: 'Chakra Petch, sans-serif',
+				fontFamily: 'Chakra Petch, Inter, sans-serif',
 				letterSpacingEm: 0.035,
 				minScale: 0.4,
 			}),
@@ -90,7 +90,7 @@
 
 	// Figma: Chakra Petch Bold, 3% tracking, 0/2.78/2.78 black-25% shadow at a 24px design size.
 	const textStyle = (fontSize: number, fill: number) => ({
-		fontFamily: 'Chakra Petch',
+		fontFamily: 'Chakra Petch, Inter, sans-serif',
 		fontWeight: '700' as const,
 		fontSize,
 		fill,
@@ -126,10 +126,13 @@
 	// component (the SymbolWinFx / CapsuleBeam pattern). Everything below is a pure function of it.
 	let clock = $state(0);
 	$effect(() => {
-		if (!props.show) {
-			clock = 0;
-			return;
-		}
+		if (!props.show) return;
+		// Reset on SHOW, never on hide. Everything below is a pure function of `clock`, and the parent
+		// FADES this panel out rather than dropping it instantly — so zeroing the clock on dismiss
+		// snapped `framePop` back to its 0.6 entry scale and the player watched the panel shrink for
+		// the length of the fade before it vanished. Leaving the clock at its last value freezes the
+		// settled pose under the fade; the next show re-zeros it and the entrance replays.
+		clock = 0;
 		let raf = 0;
 		const t0 = performance.now();
 		const tick = (now: number) => {
