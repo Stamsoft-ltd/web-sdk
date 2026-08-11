@@ -6,13 +6,13 @@
 </script>
 
 <script lang="ts">
-	import { CanvasSizeRectangle, MainContainer, OnPressFullScreen } from 'components-layout';
-	import { OnHotkey } from 'components-shared';
+	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
 	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import PressToContinue from './PressToContinue.svelte';
 	import WonPanel from './WonPanel.svelte';
 
 	// Free-spins-won screen — Version2 (Figma node 7022-6844). The popup itself lives in WonPanel,
@@ -42,6 +42,5 @@
 		<WonPanel {show} big={`${freeSpinsFromEvent}`} caption={i18nDerived.translate('FREE SPINS')} />
 	</MainContainer>
 
-	<OnHotkey hotkey="Space" onpress={() => oncomplete()} />
-	<OnPressFullScreen onpress={() => oncomplete()} />
+	<PressToContinue onpress={() => oncomplete()} />
 </FadeContainer>
