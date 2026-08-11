@@ -1,3 +1,30 @@
+<script lang="ts" module>
+	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
+	// Version2 panels (Figma 4040-4075): steel chamfered card frame + compact bet plate, keyed off
+	// the export's white backdrop with the shared saturation flood fill (scratchpad/key_panel.py).
+	const cardPanel      = ap('/assets/components/ui/bb_card_panel_v2.webp?v=20260810');
+	const betPanel       = ap('/assets/components/ui/bb_bet_panel_v2.webp?v=20260810');
+	const coinIcon       = ap('/assets/components/ui/bb_coin.svg?v=20260708c');
+
+	// Card icons — the Version2 design pictures the REEL SYMBOL art on every card: the green chip
+	// for Extra Chance, the compass for Feature Spins, and the scatter capsule (with the 3x/4x
+	// badge) for both bought bonuses. This replaced the old bespoke icon set AND the earlier
+	// wild-symbol substitution on FEATURE — the design's own choice wins now.
+	const iconChance  = ap('/assets/components/symbols/magnetic/low/energy_screw.webp?v=20260806');
+	const iconFeature = ap('/assets/components/symbols/magnetic/premium/horseshoe.webp?v=20260806');
+	const iconBrief   = ap('/assets/components/symbols/magnetic/special/scatter.webp?v=20260806');
+
+	// For LoadingScreen's HTML-image pass — built from the consts above so path/?v= edits stay in sync.
+	export const BUY_BONUS_MODAL_IMAGES = [
+		cardPanel,
+		betPanel,
+		coinIcon,
+		iconChance,
+		iconFeature,
+		iconBrief,
+	];
+</script>
+
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { stateBet, stateBetDerived, stateConfig } from 'state-shared';
@@ -18,21 +45,6 @@
 
 	const t = (k: string) => i18nDerived.translate(k);
 	const tv = (k: string, vars: Record<string, string | number>) => i18nDerived.translateVars(k, vars);
-
-	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	// Version2 panels (Figma 4040-4075): steel chamfered card frame + compact bet plate, keyed off
-	// the export's white backdrop with the shared saturation flood fill (scratchpad/key_panel.py).
-	const cardPanel      = ap('/assets/components/ui/bb_card_panel_v2.webp?v=20260810');
-	const betPanel       = ap('/assets/components/ui/bb_bet_panel_v2.webp?v=20260810');
-	const coinIcon       = ap('/assets/components/ui/bb_coin.svg?v=20260708c');
-
-	// Card icons — the Version2 design pictures the REEL SYMBOL art on every card: the green chip
-	// for Extra Chance, the compass for Feature Spins, and the scatter capsule (with the 3x/4x
-	// badge) for both bought bonuses. This replaced the old bespoke icon set AND the earlier
-	// wild-symbol substitution on FEATURE — the design's own choice wins now.
-	const iconChance  = ap('/assets/components/symbols/magnetic/low/energy_screw.webp?v=20260806');
-	const iconFeature = ap('/assets/components/symbols/magnetic/premium/horseshoe.webp?v=20260806');
-	const iconBrief   = ap('/assets/components/symbols/magnetic/special/scatter.webp?v=20260806');
 
 	type Props = {
 		onclose: () => void;

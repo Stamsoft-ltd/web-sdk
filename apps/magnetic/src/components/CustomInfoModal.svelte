@@ -1,18 +1,4 @@
-<script lang="ts">
-	import { onMount } from 'svelte';
-	import { stateConfig, stateUrlDerived } from 'state-shared';
-
-	import { i18nDerived } from '../i18n/i18nDerived';
-
-	// Shorthand: reactive translate + interpolating translate (re-runs on locale change).
-	const t = (key: string) => i18nDerived.translate(key);
-
-	// Feature-buy cost value. Normally "50x BET"; in social the COST label is already "PLAY AMOUNT"
-	// and BET translates to "PLAY", which stacked up as "PLAY AMOUNT / 50x PLAY" — so drop the unit
-	// there and let the label carry it. Same flag SocialI18nSync switches the message map on.
-	const isSocial = $derived(stateConfig.jurisdiction.socialCasino || stateUrlDerived.social());
-	const cost = (multiplier: string) => (isSocial ? multiplier : `${multiplier} ${t('BET')}`);
-
+<script lang="ts" module>
 	// Game description / rules popup — Magnetic Megachain. Multi-page (arrows below). All copy is
 	// localized via the i18n keys ('INFO …'); numeric values stay as constants here.
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
@@ -79,6 +65,45 @@
 		{ img: ap('/assets/components/ui/ctrl_menu.svg'), nameKey: 'INFO CTRL MENU', descKey: 'INFO CTRL MENU DESC' },
 		{ img: ap('/assets/components/ui/ctrl_music.svg'), nameKey: 'INFO CTRL MUSIC', descKey: 'INFO CTRL MUSIC DESC' },
 	];
+
+	// Every image this modal renders, for LoadingScreen's HTML-image pass. Built from the consts
+	// above so a path or ?v= edit can never desync the preload list.
+	export const INFO_MODAL_IMAGES = [
+		panelImg,
+		heroImg,
+		cardV2,
+		cardTallV2,
+		boxGrid,
+		icCluster,
+		icTrophy,
+		icRtp,
+		valueBox,
+		...payRows.map((r) => r.img),
+		wild,
+		wildX10,
+		scatter,
+		winImg,
+		noWinImg,
+		icRotate,
+		icLegal,
+		...controls.map((c) => c.img),
+	];
+</script>
+
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { stateConfig, stateUrlDerived } from 'state-shared';
+
+	import { i18nDerived } from '../i18n/i18nDerived';
+
+	// Shorthand: reactive translate + interpolating translate (re-runs on locale change).
+	const t = (key: string) => i18nDerived.translate(key);
+
+	// Feature-buy cost value. Normally "50x BET"; in social the COST label is already "PLAY AMOUNT"
+	// and BET translates to "PLAY", which stacked up as "PLAY AMOUNT / 50x PLAY" — so drop the unit
+	// there and let the label carry it. Same flag SocialI18nSync switches the message map on.
+	const isSocial = $derived(stateConfig.jurisdiction.socialCasino || stateUrlDerived.social());
+	const cost = (multiplier: string) => (isSocial ? multiplier : `${multiplier} ${t('BET')}`);
 
 	type Props = { onclose: () => void };
 	const props: Props = $props();

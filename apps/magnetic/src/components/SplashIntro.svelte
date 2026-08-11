@@ -1,3 +1,39 @@
+<script lang="ts" module>
+	// Figma "Magnetic Slot Version2" splash (node 7022:6137, 1201x671): derelict machine hall with
+	// two capsule towers baked into the bg, a central pillar machine, the logo plate on its top drum,
+	// three holo feature panels, and loose parts (coil / chip / magnet / torn cable) on the floor.
+	const roomSrc = './assets/components/splash/room.webp';
+	const pillarSrc = './assets/components/splash/pillar.webp';
+	const logoSrc = './assets/components/splash/logo_plate.webp';
+	const panelSrc = './assets/components/splash/panel.webp';
+	// Loose floor parts, repainted for Version2 (Figma 7118:9777, nodes 9840-9851). New filenames
+	// rather than a ?v= query: the old flat-vector art shipped under cable/coil/chip/magnet.webp and
+	// a cached copy of those would silently keep rendering the previous style.
+	const coilSrc = './assets/components/splash/part_coil.webp';
+	const chipSrc = './assets/components/splash/part_chip.webp';
+	const magnetSrc = './assets/components/splash/part_magnet.webp';
+	const cableSrc = './assets/components/splash/part_cable.webp';
+	const ringSrc = './assets/components/splash/part_ring.webp';
+	// Same URL (incl. ?v=) as assets.ts so the browser reuses the bytes pixi already downloaded.
+	const brandSrc = './assets/components/ui/press_play_logo.webp?v=20260709';
+
+	// Everything this splash paints, for LoadingScreen's HTML-image pass (these are plain <img>/CSS
+	// images, invisible to the pixi loader). Built from the consts above so a path or ?v= edit can
+	// never desync the preload list.
+	export const SPLASH_INTRO_IMAGES = [
+		roomSrc,
+		pillarSrc,
+		logoSrc,
+		panelSrc,
+		coilSrc,
+		chipSrc,
+		magnetSrc,
+		cableSrc,
+		ringSrc,
+		brandSrc,
+	];
+</script>
+
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { stateI18nDerived } from 'state-shared';
@@ -31,24 +67,6 @@
 		(document as Document).fonts?.ready.then(apply);
 		return { update: apply, destroy: () => ro.disconnect() };
 	}
-
-	// Figma "Magnetic Slot Version2" splash (node 7022:6137, 1201x671): derelict machine hall with
-	// two capsule towers baked into the bg, a central pillar machine, the logo plate on its top drum,
-	// three holo feature panels, and loose parts (coil / chip / magnet / torn cable) on the floor.
-	const roomSrc = './assets/components/splash/room.webp';
-	const pillarSrc = './assets/components/splash/pillar.webp';
-	const logoSrc = './assets/components/splash/logo_plate.webp';
-	const panelSrc = './assets/components/splash/panel.webp';
-	// Loose floor parts, repainted for Version2 (Figma 7118:9777, nodes 9840-9851). New filenames
-	// rather than a ?v= query: the old flat-vector art shipped under cable/coil/chip/magnet.webp and
-	// a cached copy of those would silently keep rendering the previous style.
-	const coilSrc = './assets/components/splash/part_coil.webp';
-	const chipSrc = './assets/components/splash/part_chip.webp';
-	const magnetSrc = './assets/components/splash/part_magnet.webp';
-	const cableSrc = './assets/components/splash/part_cable.webp';
-	const ringSrc = './assets/components/splash/part_ring.webp';
-	// Same URL (incl. ?v=) as assets.ts so the browser reuses the bytes pixi already downloaded.
-	const brandSrc = './assets/components/ui/press_play_logo.webp?v=20260709';
 
 	// Mobile = portrait viewport: show the three feature panels one at a time, 3s each.
 	let isPortrait = $state(false);
