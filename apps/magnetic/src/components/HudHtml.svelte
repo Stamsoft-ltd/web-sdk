@@ -1,3 +1,113 @@
+<script lang="ts" module>
+	// Converts absolute /path to ./path so it resolves relative to the page URL at any deploy sub-path
+	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
+
+	const heroCardBg = ap('/assets/components/backgrounds/visual_v2.jpg');
+
+	// Frame backgrounds — passed as CSS vars because url() in style blocks can't use runtime paths
+	const menuBtnFrame = ap('/assets/components/frames/top_menu-button_frame.webp');
+	const soundBtnFrame = ap('/assets/components/frames/top_sound_button_frame.webp');
+	const menuBarFrame = ap('/assets/components/navbar/nav_bar.webp'); // blue-tech bottom bar
+
+	// Button backgrounds (icon-less frames) — icons are layered on top in markup.
+	// Version2 (Figma 2503:7839): spin = blue ring art + circular-arrow glyph; buy bonus = the blue
+	// capsule; utility buttons are flat CSS circles (#22365B / #2391C1 ring) with bare SVG glyphs.
+	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.webp'); // (unused; utility buttons are CSS circles)
+	const btnSpinBg = ap('/assets/components/ui/spin_ring.webp?v=20260807'); // Version2 blue round — spin
+	const btnSpinStop = ap('/assets/components/ui/spin_ring.webp?v=20260807'); // busy keeps the ring; the glyph overlay conveys stop
+	const btnWideBg = ap('/assets/components/ui/buy_bonus_capsule.webp'); // Version2 blue capsule — buy bonus
+
+	// Round icon-buttons — each PNG is a COMPLETE button (dark disc + cyan ring + icon baked in),
+	// with default + disabled/mute states from the "Icon Buttons" set. Used as the whole button.
+	const iconMenu = ap('/assets/components/navbar/icons/v2/ic_menu.svg');
+	// Same button (cyan ring + dark fill) as menu.webp but with a white X (Figma 4036-3577) — shown
+	// while the menu popover is open so the button reads as "close".
+	// ?v= because an earlier cut of this file shipped with an opaque white background (Figma's export
+	// flattens onto white), and browsers that already fetched it would keep serving the white box.
+	const iconMenuClose = ap('/assets/components/navbar/icons/menu_close.webp?v=2');
+	// Menu popover (Figma 7041-8978): flat Version2 navy panel with SOUND / MUSIC / INFO rows —
+	// pure CSS now (same #364970 / #4E78B8 language as the bottom bar), no bitmap panel.
+	const iconMenuMusic = ap('/assets/components/navbar/icons/menu_music.svg');
+	const iconMenuInfo = ap('/assets/components/navbar/icons/menu_info.svg');
+	// Disabled state (Figma 4553-9279): slashed note. There is no menu_sound* pair any more — the
+	// SOUND row renders the bottom-bar button art whole (see .menu-row__icon--full).
+	const iconMenuMusicOff = ap('/assets/components/navbar/icons/menu_music_off.webp');
+	// Version2 flat glyphs (white SVGs / cutout webp) drawn inside the CSS circle buttons — the old
+	// per-state baked-button webps are gone; disabled/muted states are conveyed by CSS dimming.
+	const iconSound = ap('/assets/components/navbar/icons/v2/ic_sound.svg');
+	const iconMute = ap('/assets/components/navbar/icons/v2/ic_sound.svg');
+	const iconMinus = ap('/assets/components/navbar/icons/v2/ic_minus.svg');
+	const iconMinusDisabled = ap('/assets/components/navbar/icons/v2/ic_minus.svg');
+	const iconPlus = ap('/assets/components/navbar/icons/v2/ic_plus.svg');
+	const iconPlusDisabled = ap('/assets/components/navbar/icons/v2/ic_plus.svg');
+	const iconAuto = ap('/assets/components/navbar/icons/v2/ic_auto.svg');
+	const iconAutoDisabled = ap('/assets/components/navbar/icons/v2/ic_auto.svg');
+	const iconSpin = ap('/assets/components/ui/spin_arrow.webp?v=20260807');
+	// Three-state turbo bolt — the DESIGN'S own arts (Figma 4148:16896 outline = off,
+	// 2503:7489 solid = fast, 4148:16893 double = super), not regenerated shapes.
+	const iconTurbo = ap('/assets/components/ui/ic_thunder.webp?v=20260810b');
+	const iconTurbo1 = ap('/assets/components/ui/ic_thunder_double.webp?v=20260810b');
+	const iconTurbo3 = ap('/assets/components/ui/ic_thunder_outline.webp?v=20260810b');
+	const iconCoins = ap('/assets/components/navbar/coins.webp');
+
+	// Portrait-only pad art (passed to CSS as vars): nav bar behind the controls, round buy-bonus
+	// badge, and the bordered value box for balance / bet.
+	const navBarMobile = ap('/assets/components/navbar/nav_bar_mobile.webp');
+	const buyBonusMobile = ap('/assets/components/navbar/buy_bonus_mobile.webp');
+	const valueBoxMobile = ap('/assets/components/navbar/value_box_mobile.webp');
+	const balanceContainer = ap('/assets/components/navbar/balance_container.webp');
+	const betContainer = ap('/assets/components/navbar/bet_container.webp');
+	// Landscape: tall vertical nav-bar panel behind the right-hand control column + the bet box.
+	const navBarLand = ap('/assets/components/navbar/nav_bar_land.webp');
+	const betBoxLand = ap('/assets/components/navbar/bet_box_land.webp');
+
+	const scatterFrame = ap('/assets/components/frames/scatter_frame.webp');
+	const hudFrame = ap('/assets/components/frames/hud_frame.webp');
+	const smallBtnFrame = ap('/assets/components/frames/lower_hud_button_frame.webp');
+	const playBtnFrame = ap('/assets/components/frames/play_button-frame.webp');
+
+	const scatterImg = ap('/assets/components/ui/scatter-panel-image.webp');
+
+	// Every image the HUD renders (CSS url() vars + <img>), for LoadingScreen's HTML-image pass —
+	// these are invisible to the pixi loader. Built from the consts above so a path or ?v= edit can
+	// never desync the preload list. Duplicate URLs are fine; the loader de-dupes with a Set.
+	export const HUD_IMAGES = [
+		heroCardBg,
+		menuBtnFrame,
+		soundBtnFrame,
+		menuBarFrame,
+		btnRoundBg,
+		btnSpinBg,
+		btnWideBg,
+		iconMenu,
+		iconMenuClose,
+		iconMenuMusic,
+		iconMenuInfo,
+		iconMenuMusicOff,
+		iconSound,
+		iconMinus,
+		iconPlus,
+		iconAuto,
+		iconSpin,
+		iconTurbo,
+		iconTurbo1,
+		iconTurbo3,
+		iconCoins,
+		navBarMobile,
+		buyBonusMobile,
+		valueBoxMobile,
+		balanceContainer,
+		betContainer,
+		navBarLand,
+		betBoxLand,
+		scatterFrame,
+		hudFrame,
+		smallBtnFrame,
+		playBtnFrame,
+		scatterImg,
+	];
+</script>
+
 <script lang="ts">
 	import { OnHotkey } from 'components-shared';
 	import { stateBet, stateBetDerived, stateConfig, stateModal, stateSound } from 'state-shared';
@@ -64,77 +174,6 @@
 		(document as Document).fonts?.ready.then(apply);
 		return { update: apply, destroy: () => ro.disconnect() };
 	}
-
-	// Converts absolute /path to ./path so it resolves relative to the page URL at any deploy sub-path
-	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-
-	const heroCardBg = ap('/assets/components/backgrounds/visual_v2.jpg');
-	const controlsBg = ap('/assets/components/reference/controls_reference.png');
-	const buyBonusBg = ap('/assets/components/reference/buy_bonus_reference.png');
-
-	// Frame backgrounds — passed as CSS vars because url() in style blocks can't use runtime paths
-	const menuBtnFrame = ap('/assets/components/frames/top_menu-button_frame.webp');
-	const soundBtnFrame = ap('/assets/components/frames/top_sound_button_frame.webp');
-	const menuBarFrame = ap('/assets/components/navbar/nav_bar.webp'); // blue-tech bottom bar
-
-	// Button backgrounds (icon-less frames) — icons are layered on top in markup.
-	// Version2 (Figma 2503:7839): spin = blue ring art + circular-arrow glyph; buy bonus = the blue
-	// capsule; utility buttons are flat CSS circles (#22365B / #2391C1 ring) with bare SVG glyphs.
-	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.webp'); // (unused; utility buttons are CSS circles)
-	const btnSpinBg = ap('/assets/components/ui/spin_ring.webp?v=20260807'); // Version2 blue round — spin
-	const btnSpinStop = ap('/assets/components/ui/spin_ring.webp?v=20260807'); // busy keeps the ring; the glyph overlay conveys stop
-	const btnWideBg = ap('/assets/components/ui/buy_bonus_capsule.webp'); // Version2 blue capsule — buy bonus
-
-	// Round icon-buttons — each PNG is a COMPLETE button (dark disc + cyan ring + icon baked in),
-	// with default + disabled/mute states from the "Icon Buttons" set. Used as the whole button.
-	const iconMenu = ap('/assets/components/navbar/icons/v2/ic_menu.svg');
-	// Same button (cyan ring + dark fill) as menu.webp but with a white X (Figma 4036-3577) — shown
-	// while the menu popover is open so the button reads as "close".
-	// ?v= because an earlier cut of this file shipped with an opaque white background (Figma's export
-	// flattens onto white), and browsers that already fetched it would keep serving the white box.
-	const iconMenuClose = ap('/assets/components/navbar/icons/menu_close.webp?v=2');
-	// Menu popover (Figma 7041-8978): flat Version2 navy panel with SOUND / MUSIC / INFO rows —
-	// pure CSS now (same #364970 / #4E78B8 language as the bottom bar), no bitmap panel.
-	const iconMenuMusic = ap('/assets/components/navbar/icons/menu_music.svg');
-	const iconMenuInfo = ap('/assets/components/navbar/icons/menu_info.svg');
-	// Disabled state (Figma 4553-9279): slashed note. There is no menu_sound* pair any more — the
-	// SOUND row renders the bottom-bar button art whole (see .menu-row__icon--full).
-	const iconMenuMusicOff = ap('/assets/components/navbar/icons/menu_music_off.webp');
-	// Version2 flat glyphs (white SVGs / cutout webp) drawn inside the CSS circle buttons — the old
-	// per-state baked-button webps are gone; disabled/muted states are conveyed by CSS dimming.
-	const iconSound = ap('/assets/components/navbar/icons/v2/ic_sound.svg');
-	const iconMute = ap('/assets/components/navbar/icons/v2/ic_sound.svg');
-	const iconMinus = ap('/assets/components/navbar/icons/v2/ic_minus.svg');
-	const iconMinusDisabled = ap('/assets/components/navbar/icons/v2/ic_minus.svg');
-	const iconPlus = ap('/assets/components/navbar/icons/v2/ic_plus.svg');
-	const iconPlusDisabled = ap('/assets/components/navbar/icons/v2/ic_plus.svg');
-	const iconAuto = ap('/assets/components/navbar/icons/v2/ic_auto.svg');
-	const iconAutoDisabled = ap('/assets/components/navbar/icons/v2/ic_auto.svg');
-	const iconSpin = ap('/assets/components/ui/spin_arrow.webp?v=20260807');
-	// Three-state turbo bolt — the DESIGN'S own arts (Figma 4148:16896 outline = off,
-	// 2503:7489 solid = fast, 4148:16893 double = super), not regenerated shapes.
-	const iconTurbo = ap('/assets/components/ui/ic_thunder.webp?v=20260810b');
-	const iconTurbo1 = ap('/assets/components/ui/ic_thunder_double.webp?v=20260810b');
-	const iconTurbo3 = ap('/assets/components/ui/ic_thunder_outline.webp?v=20260810b');
-	const iconCoins = ap('/assets/components/navbar/coins.webp');
-
-	// Portrait-only pad art (passed to CSS as vars): nav bar behind the controls, round buy-bonus
-	// badge, and the bordered value box for balance / bet.
-	const navBarMobile = ap('/assets/components/navbar/nav_bar_mobile.webp');
-	const buyBonusMobile = ap('/assets/components/navbar/buy_bonus_mobile.webp');
-	const valueBoxMobile = ap('/assets/components/navbar/value_box_mobile.webp');
-	const balanceContainer = ap('/assets/components/navbar/balance_container.webp');
-	const betContainer = ap('/assets/components/navbar/bet_container.webp');
-	// Landscape: tall vertical nav-bar panel behind the right-hand control column + the bet box.
-	const navBarLand = ap('/assets/components/navbar/nav_bar_land.webp');
-	const betBoxLand = ap('/assets/components/navbar/bet_box_land.webp');
-
-	const scatterFrame = ap('/assets/components/frames/scatter_frame.webp');
-	const hudFrame = ap('/assets/components/frames/hud_frame.webp');
-	const smallBtnFrame = ap('/assets/components/frames/lower_hud_button_frame.webp');
-	const playBtnFrame = ap('/assets/components/frames/play_button-frame.webp');
-
-	const scatterImg = ap('/assets/components/ui/scatter-panel-image.webp');
 
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isPortrait = $derived(layoutType === 'portrait');
@@ -549,7 +588,7 @@
 	class="hud-shell"
 	class:hud-shell--celebrating={context.stateGame.celebrationActive}
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--forest-controls-bg:url('${controlsBg}');--forest-buy-bg:url('${buyBonusBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-stop-bg:url('${btnSpinStop}');--pt-navbar:url('${navBarMobile}');--pt-buy:url('${buyBonusMobile}');--pt-value:url('${valueBoxMobile}');--pt-balance-bg:url('${balanceContainer}');--pt-bet-bg:url('${betContainer}');--ls-navbar:url('${navBarLand}');--ls-betbox:url('${betBoxLand}');--ls-buy-x:${lsBuyX}px;--ls-buy-y:${lsBuyY}px`}
+	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-stop-bg:url('${btnSpinStop}');--pt-navbar:url('${navBarMobile}');--pt-buy:url('${buyBonusMobile}');--pt-value:url('${valueBoxMobile}');--pt-balance-bg:url('${balanceContainer}');--pt-bet-bg:url('${betContainer}');--ls-navbar:url('${navBarLand}');--ls-betbox:url('${betBoxLand}');--ls-buy-x:${lsBuyX}px;--ls-buy-y:${lsBuyY}px`}
 >
 	<!-- Menu popover (SOUND / MUSIC / INFO) — shared by desktop and portrait; rendered inside a
 	     position:relative nav container so it floats above the menu button. -->

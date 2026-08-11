@@ -1,3 +1,14 @@
+<script lang="ts" module>
+	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
+	// Version2 steel-framed panel (Figma 4036-2458, art node 7002:11401). The export is the PLACED
+	// node with its white backdrop keyed out and trimmed, so the art box is exactly 632x524 design
+	// px — every position below is a fraction of that box, taken from the design's own child nodes.
+	const panelBg = ap('/assets/components/ui/autospin_panel.webp?v=20260807');
+
+	// For LoadingScreen's HTML-image pass — built from the const above so a ?v= bump stays in sync.
+	export const AUTOSPIN_MODAL_IMAGES = [panelBg];
+</script>
+
 <script lang="ts">
 	import { stateBet } from 'state-shared';
 	import { getContext } from '../game/context';
@@ -8,12 +19,6 @@
 	type Props = { onclose: () => void };
 	const props: Props = $props();
 	const context = getContext();
-
-	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	// Version2 steel-framed panel (Figma 4036-2458, art node 7002:11401). The export is the PLACED
-	// node with its white backdrop keyed out and trimmed, so the art box is exactly 632x524 design
-	// px — every position below is a fraction of that box, taken from the design's own child nodes.
-	const panelBg = ap('/assets/components/ui/autospin_panel.webp?v=20260807');
 
 	// Spin-count stops (last = unlimited), stepped with − / + per the Figma design.
 	const STOPS: Array<number> = [5, 10, 25, 50, 100, 250, 500, Infinity];

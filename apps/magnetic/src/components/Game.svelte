@@ -1,3 +1,17 @@
+<script lang="ts" module>
+	// Bet-mode dialog art (HTML side, not pixi assets).
+	const heroArt = './assets/components/backgrounds/visual_v2.webp';
+	const bonusArt = './assets/components/backgrounds/splash.jpg';
+	// Same URL (incl. ?v=) as CustomBuyBonusModal's iconBrief so the browser reuses one copy.
+	// (The old bare symbols/scatter.webp path never existed — this dialog image 404'd silently.)
+	const scatterArt = './assets/components/symbols/magnetic/special/scatter.webp?v=20260806';
+	const uiRefArt = './assets/components/ui/scatter-panel-image.webp';
+	const paytableArt = './assets/components/backgrounds/visual_v2.webp';
+
+	// For LoadingScreen's HTML-image pass — built from the consts above so path edits stay in sync.
+	export const GAME_DIALOG_IMAGES = [heroArt, bonusArt, scatterArt, uiRefArt, paytableArt];
+</script>
+
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
@@ -42,35 +56,10 @@
 	// screen defers its `proceed` callback to us via `oncanproceed` so nothing starts until pressed.
 	let splashIntroVisible = $state(false);
 	let splashPressHandler = $state<(() => void) | undefined>(undefined);
-	const heroArt = './assets/components/backgrounds/visual_v2.webp';
-	const bonusArt = './assets/components/backgrounds/splash.jpg';
-	const scatterArt = './assets/components/symbols/scatter.webp';
-	const uiRefArt = './assets/components/ui/scatter-panel-image.webp';
-	const paytableArt = './assets/components/backgrounds/visual_v2.webp';
 	const heroArtBackdrop = new URL(
 		'../../static/assets/components/splash/room.webp',
 		import.meta.url,
 	).href;
-
-	// The splash intro is plain HTML/CSS, so its images are NOT pixi assets — warm the browser
-	// cache while the pixi load runs, so the splash paints complete on its very first frame.
-	const SPLASH_IMAGES = [
-		'room.webp',
-		'pillar.webp',
-		'logo_plate.webp',
-		'panel.webp',
-		'part_coil.webp',
-		'part_chip.webp',
-		'part_magnet.webp',
-		'part_cable.webp',
-		'part_ring.webp',
-	];
-	onMount(() => {
-		for (const file of SPLASH_IMAGES) {
-			const img = new Image();
-			img.src = `./assets/components/splash/${file}`;
-		}
-	});
 
 	$effect(() => {
 		stateMeta.betModeMeta = {
