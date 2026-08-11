@@ -1,0 +1,915 @@
+coaster_vomit.png
+size: 2040,714
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+coaster_vomit_000
+  rotate: false
+  xy: 576, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_001
+  rotate: false
+  xy: 661, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_002
+  rotate: false
+  xy: 746, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_003
+  rotate: false
+  xy: 831, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_004
+  rotate: false
+  xy: 916, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_005
+  rotate: false
+  xy: 1001, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_006
+  rotate: false
+  xy: 1086, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_007
+  rotate: false
+  xy: 1171, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_008
+  rotate: false
+  xy: 1256, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_009
+  rotate: false
+  xy: 1341, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_010
+  rotate: false
+  xy: 1426, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_011
+  rotate: false
+  xy: 1511, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_012
+  rotate: false
+  xy: 1596, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_013
+  rotate: false
+  xy: 1681, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_014
+  rotate: false
+  xy: 1766, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_015
+  rotate: false
+  xy: 1851, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_016
+  rotate: false
+  xy: 1936, 221
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_017
+  rotate: false
+  xy: 0, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_018
+  rotate: false
+  xy: 85, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_019
+  rotate: false
+  xy: 170, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_020
+  rotate: false
+  xy: 255, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_021
+  rotate: false
+  xy: 340, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_022
+  rotate: false
+  xy: 425, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_023
+  rotate: false
+  xy: 510, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_024
+  rotate: false
+  xy: 595, 321
+  size: 82, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_025
+  rotate: false
+  xy: 679, 321
+  size: 82, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_026
+  rotate: false
+  xy: 763, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_027
+  rotate: false
+  xy: 848, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_028
+  rotate: false
+  xy: 933, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_029
+  rotate: false
+  xy: 1018, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_030
+  rotate: false
+  xy: 1103, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_031
+  rotate: false
+  xy: 1188, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_032
+  rotate: false
+  xy: 1273, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_033
+  rotate: false
+  xy: 1358, 321
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_034
+  rotate: false
+  xy: 0, 221
+  size: 83, 98
+  orig: 256, 256
+  offset: 66, 69
+  index: -1
+coaster_vomit_035
+  rotate: false
+  xy: 1486, 115
+  size: 83, 99
+  orig: 256, 256
+  offset: 66, 68
+  index: -1
+coaster_vomit_036
+  rotate: false
+  xy: 1103, 115
+  size: 84, 100
+  orig: 256, 256
+  offset: 65, 67
+  index: -1
+coaster_vomit_037
+  rotate: false
+  xy: 1189, 115
+  size: 84, 100
+  orig: 256, 256
+  offset: 65, 67
+  index: -1
+coaster_vomit_038
+  rotate: false
+  xy: 1571, 115
+  size: 84, 99
+  orig: 256, 256
+  offset: 65, 68
+  index: -1
+coaster_vomit_039
+  rotate: false
+  xy: 1275, 115
+  size: 84, 100
+  orig: 256, 256
+  offset: 65, 67
+  index: -1
+coaster_vomit_040
+  rotate: false
+  xy: 1443, 321
+  size: 92, 97
+  orig: 256, 256
+  offset: 65, 70
+  index: -1
+coaster_vomit_041
+  rotate: false
+  xy: 1537, 321
+  size: 94, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_042
+  rotate: false
+  xy: 1633, 321
+  size: 94, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_043
+  rotate: false
+  xy: 1729, 321
+  size: 94, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_044
+  rotate: false
+  xy: 1825, 321
+  size: 94, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_045
+  rotate: false
+  xy: 1921, 321
+  size: 94, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_046
+  rotate: false
+  xy: 0, 420
+  size: 94, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_047
+  rotate: false
+  xy: 96, 420
+  size: 94, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_048
+  rotate: false
+  xy: 192, 420
+  size: 98, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_049
+  rotate: false
+  xy: 292, 420
+  size: 109, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_050
+  rotate: false
+  xy: 403, 420
+  size: 109, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_051
+  rotate: false
+  xy: 514, 420
+  size: 109, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_052
+  rotate: false
+  xy: 625, 420
+  size: 109, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_053
+  rotate: false
+  xy: 736, 420
+  size: 109, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_054
+  rotate: false
+  xy: 847, 420
+  size: 109, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_055
+  rotate: false
+  xy: 958, 420
+  size: 109, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_056
+  rotate: false
+  xy: 85, 221
+  size: 114, 98
+  orig: 256, 256
+  offset: 66, 69
+  index: -1
+coaster_vomit_057
+  rotate: false
+  xy: 201, 221
+  size: 123, 98
+  orig: 256, 256
+  offset: 66, 69
+  index: -1
+coaster_vomit_058
+  rotate: false
+  xy: 326, 221
+  size: 123, 98
+  orig: 256, 256
+  offset: 66, 69
+  index: -1
+coaster_vomit_059
+  rotate: false
+  xy: 451, 221
+  size: 123, 98
+  orig: 256, 256
+  offset: 66, 69
+  index: -1
+coaster_vomit_060
+  rotate: false
+  xy: 1657, 115
+  size: 123, 99
+  orig: 256, 256
+  offset: 66, 68
+  index: -1
+coaster_vomit_061
+  rotate: false
+  xy: 1782, 115
+  size: 123, 99
+  orig: 256, 256
+  offset: 66, 68
+  index: -1
+coaster_vomit_062
+  rotate: false
+  xy: 1361, 115
+  size: 123, 100
+  orig: 256, 256
+  offset: 66, 67
+  index: -1
+coaster_vomit_063
+  rotate: false
+  xy: 1907, 115
+  size: 124, 99
+  orig: 256, 256
+  offset: 66, 67
+  index: -1
+coaster_vomit_064
+  rotate: false
+  xy: 976, 115
+  size: 125, 103
+  orig: 256, 256
+  offset: 66, 63
+  index: -1
+coaster_vomit_065
+  rotate: false
+  xy: 1600, 0
+  size: 126, 106
+  orig: 256, 256
+  offset: 66, 61
+  index: -1
+coaster_vomit_066
+  rotate: false
+  xy: 1339, 0
+  size: 127, 107
+  orig: 256, 256
+  offset: 66, 60
+  index: -1
+coaster_vomit_067
+  rotate: false
+  xy: 1077, 0
+  size: 128, 108
+  orig: 256, 256
+  offset: 66, 59
+  index: -1
+coaster_vomit_068
+  rotate: false
+  xy: 813, 0
+  size: 128, 109
+  orig: 256, 256
+  offset: 66, 58
+  index: -1
+coaster_vomit_069
+  rotate: false
+  xy: 413, 0
+  size: 129, 110
+  orig: 256, 256
+  offset: 66, 57
+  index: -1
+coaster_vomit_070
+  rotate: false
+  xy: 544, 0
+  size: 131, 110
+  orig: 256, 256
+  offset: 66, 57
+  index: -1
+coaster_vomit_071
+  rotate: false
+  xy: 281, 0
+  size: 130, 111
+  orig: 256, 256
+  offset: 66, 56
+  index: -1
+coaster_vomit_072
+  rotate: false
+  xy: 0, 0
+  size: 140, 113
+  orig: 256, 256
+  offset: 66, 54
+  index: -1
+coaster_vomit_073
+  rotate: false
+  xy: 142, 0
+  size: 137, 112
+  orig: 256, 256
+  offset: 66, 55
+  index: -1
+coaster_vomit_074
+  rotate: false
+  xy: 677, 0
+  size: 134, 110
+  orig: 256, 256
+  offset: 66, 57
+  index: -1
+coaster_vomit_075
+  rotate: false
+  xy: 943, 0
+  size: 132, 109
+  orig: 256, 256
+  offset: 66, 58
+  index: -1
+coaster_vomit_076
+  rotate: false
+  xy: 1207, 0
+  size: 130, 108
+  orig: 256, 256
+  offset: 66, 59
+  index: -1
+coaster_vomit_077
+  rotate: false
+  xy: 1468, 0
+  size: 130, 107
+  orig: 256, 256
+  offset: 66, 60
+  index: -1
+coaster_vomit_078
+  rotate: false
+  xy: 1728, 0
+  size: 130, 106
+  orig: 256, 256
+  offset: 66, 61
+  index: -1
+coaster_vomit_079
+  rotate: false
+  xy: 1860, 0
+  size: 121, 104
+  orig: 256, 256
+  offset: 66, 63
+  index: -1
+coaster_vomit_080
+  rotate: false
+  xy: 0, 115
+  size: 120, 104
+  orig: 256, 256
+  offset: 66, 63
+  index: -1
+coaster_vomit_081
+  rotate: false
+  xy: 122, 115
+  size: 120, 104
+  orig: 256, 256
+  offset: 66, 63
+  index: -1
+coaster_vomit_082
+  rotate: false
+  xy: 244, 115
+  size: 120, 104
+  orig: 256, 256
+  offset: 66, 63
+  index: -1
+coaster_vomit_083
+  rotate: false
+  xy: 366, 115
+  size: 120, 104
+  orig: 256, 256
+  offset: 66, 63
+  index: -1
+coaster_vomit_084
+  rotate: false
+  xy: 488, 115
+  size: 120, 104
+  orig: 256, 256
+  offset: 66, 63
+  index: -1
+coaster_vomit_085
+  rotate: false
+  xy: 610, 115
+  size: 120, 104
+  orig: 256, 256
+  offset: 66, 63
+  index: -1
+coaster_vomit_086
+  rotate: false
+  xy: 732, 115
+  size: 120, 104
+  orig: 256, 256
+  offset: 66, 63
+  index: -1
+coaster_vomit_087
+  rotate: false
+  xy: 854, 115
+  size: 120, 104
+  orig: 256, 256
+  offset: 66, 63
+  index: -1
+coaster_vomit_088
+  rotate: false
+  xy: 1069, 420
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_089
+  rotate: false
+  xy: 1154, 420
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_090
+  rotate: false
+  xy: 1239, 420
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_091
+  rotate: false
+  xy: 1324, 420
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_092
+  rotate: false
+  xy: 1409, 420
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_093
+  rotate: false
+  xy: 1494, 420
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_094
+  rotate: false
+  xy: 1579, 420
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_095
+  rotate: false
+  xy: 1447, 519
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_096
+  rotate: false
+  xy: 1532, 519
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_097
+  rotate: false
+  xy: 1617, 519
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_098
+  rotate: false
+  xy: 1702, 519
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_099
+  rotate: false
+  xy: 1787, 519
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_100
+  rotate: false
+  xy: 1872, 519
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_101
+  rotate: false
+  xy: 1957, 519
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_102
+  rotate: false
+  xy: 0, 618
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_103
+  rotate: false
+  xy: 85, 618
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_104
+  rotate: false
+  xy: 170, 618
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_105
+  rotate: false
+  xy: 255, 618
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_106
+  rotate: false
+  xy: 340, 618
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_107
+  rotate: false
+  xy: 425, 618
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_108
+  rotate: false
+  xy: 510, 618
+  size: 83, 96
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_109
+  rotate: false
+  xy: 1664, 420
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_110
+  rotate: false
+  xy: 1749, 420
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_111
+  rotate: false
+  xy: 1834, 420
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_vomit_112
+  rotate: false
+  xy: 1919, 420
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_113
+  rotate: false
+  xy: 0, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_114
+  rotate: false
+  xy: 84, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_115
+  rotate: false
+  xy: 168, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_116
+  rotate: false
+  xy: 252, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_117
+  rotate: false
+  xy: 336, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_118
+  rotate: false
+  xy: 420, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_119
+  rotate: false
+  xy: 504, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_120
+  rotate: false
+  xy: 588, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_121
+  rotate: false
+  xy: 672, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_122
+  rotate: false
+  xy: 756, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_123
+  rotate: false
+  xy: 840, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_124
+  rotate: false
+  xy: 924, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_125
+  rotate: false
+  xy: 1008, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_126
+  rotate: false
+  xy: 1092, 519
+  size: 82, 97
+  orig: 256, 256
+  offset: 67, 70
+  index: -1
+coaster_vomit_127
+  rotate: false
+  xy: 1176, 519
+  size: 83, 97
+  orig: 256, 256
+  offset: 66, 70
+  index: -1
+coaster_cart_back
+  rotate: false
+  xy: 1261, 519
+  size: 184, 97
+  orig: 256, 256
+  offset: 15, 14
+  index: -1
+coaster_cart_front
+  rotate: false
+  xy: 595, 618
+  size: 115, 83
+  orig: 256, 256
+  offset: 52, 14
+  index: -1

@@ -38,6 +38,7 @@ export default {
 	"START": "СТАРТ",
 	"SPINS": "ВРАЩЕНИЯ",
 	"FREE SPINS": "БЕСПЛАТНЫЕ ВРАЩЕНИЯ",
+	"DUCK PICKS": "ВЫБОР УТОК",
 	"OF": "ИЗ",
 	"BONUS COMPLETE": "БОНУС ЗАВЕРШЕН",
 	"SELECTED": "ВЫБРАНО",

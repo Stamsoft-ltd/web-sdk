@@ -38,6 +38,7 @@ export default {
 	"START": "BAŞLA",
 	"SPINS": "DÖNÜŞLER",
 	"FREE SPINS": "BEDAVA DÖNÜŞLER",
+	"DUCK PICKS": "ÖRDEK SEÇİMLERİ",
 	"OF": "/",
 	"BONUS COMPLETE": "BONUS TAMAMLANDI",
 	"SELECTED": "SEÇİLDİ",

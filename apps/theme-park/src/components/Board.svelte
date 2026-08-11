@@ -10,22 +10,41 @@
 </script>
 
 <script lang="ts">
-	import { Container, Graphics, Sprite } from 'pixi-svelte';
+	import { Container, Graphics, PIXI, Sprite } from 'pixi-svelte';
 	import { OnPressFullScreen } from 'components-layout';
 	import { onMount } from 'svelte';
 
 	import { getContext } from '../game/context';
-	import { CELL_W, SYMBOL_W, SYMBOL_H, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import {
+		CELL_W,
+		SYMBOL_W,
+		SYMBOL_H,
+		BOARD_DIMENSIONS,
+		BOARD_GRID_OFFSET_Y,
+		BOARD_SIDE_CONTENT_INSET,
+		getBoardCellCenterX,
+	} from '../game/constants';
 	import {
 		spriteKeyByName,
 		bonusSpriteKeyByName,
 		winSpriteKeyByName,
 		getSpecialSymbolKey,
 	} from '../game/utils';
+	import {
+		duckFrontAssetKeyForPosition,
+		duckLookForPosition,
+		duckVariantForPosition,
+	} from '../game/duckVisual';
 	import type { RawSymbol, SymbolName } from '../game/types';
+	import DuckPondDuck from './DuckPondDuck.svelte';
 	import LoopingAssetSprite from './LoopingAssetSprite.svelte';
+	import RollerMultiplierCell from './RollerMultiplierCell.svelte';
 
 	const LOW_SYMBOLS_SET = new Set<SymbolName>(['L1', 'L2', 'L3', 'L4', 'L5']);
+	const DUCK_SYMBOL_SIZE = Math.min(SYMBOL_W, SYMBOL_H) * 1.04;
+	// Keep reel pixels off the grid dividers. The one authored grid in BoardFrame then remains visible
+	// through these narrow gaps without drawing a second set of lines above the board.
+	const GRID_LINE_CLEARANCE = 1.4;
 	const WIN_ANIMATION_KEY_BY_NAME: Partial<Record<SymbolName, string>> = {
 		H1: 'tpH1WinAnim',
 		H2: 'tpH2WinAnim',
@@ -47,39 +66,75 @@
 	let show = $state(true);
 
 	const activeMap = $derived(context.stateGame.bonusMode ? bonusSpriteKeyByName : spriteKeyByName);
-	const getX = (reelIndex: number) => CELL_W * (reelIndex + 0.5);
-	const rollerReelSet = $derived(
-		new Set(context.stateGame.activeRollerReels.map(({ reel }) => reel)),
-	);
+	const getX = getBoardCellCenterX;
+	const drawBoardContentMask = (graphics: PIXI.Graphics) => {
+		for (let reel = 0; reel < BOARD_DIMENSIONS.x; reel += 1) {
+			const leftInset = reel === 0 ? BOARD_SIDE_CONTENT_INSET : GRID_LINE_CLEARANCE;
+			const rightInset =
+				reel === BOARD_DIMENSIONS.x - 1 ? BOARD_SIDE_CONTENT_INSET : GRID_LINE_CLEARANCE;
+			for (let row = 0; row < BOARD_DIMENSIONS.y; row += 1) {
+				graphics.rect(
+					CELL_W * reel + leftInset,
+					SYMBOL_H * row + GRID_LINE_CLEARANCE,
+					CELL_W - leftInset - rightInset,
+					SYMBOL_H - GRID_LINE_CLEARANCE * 2,
+				);
+			}
+		}
+		graphics.fill(0xffffff);
+	};
 	const coasterCellSet = $derived(
 		new Set(context.stateGame.coasterTiles.map(({ reel, row }) => `${reel},${row}`)),
 	);
-	// Cells the roller-wilds car has already rolled past this spin — hidden so the symbol behind it is
-	// gone (the overlay leaves a multiplier plaque or nothing in its place).
+	const duckCollectPrizeByCell = $derived(
+		new Map(
+			(context.stateGame.duckCollect?.revealed ?? []).map((prize) => [
+				`${prize.position.reel},${prize.position.row}`,
+				prize,
+			]),
+		),
+	);
+	const duckRevealCellSet = $derived(
+		new Set(context.stateGame.duckRevealPositions.map(({ reel, row }) => `${reel},${row}`)),
+	);
+	const duckTurnedCellSet = $derived(
+		new Set(context.stateGame.duckTurnedPositions.map(({ reel, row }) => `${reel},${row}`)),
+	);
+	const boardPosition = (reel: number, row: number): Position => ({ reel, row });
+	const getDuckCollectPrize = (reel: number, row: number) =>
+		duckCollectPrizeByCell.get(`${reel},${row}`) ?? null;
+	const duckStyleSeed = (rawSymbol: RawSymbol) => rawSymbol.duckStyleSeed ?? 0;
+	const isDuckCollectRevealing = (reel: number, row: number) =>
+		duckRevealCellSet.has(`${reel},${row}`);
+	const isDuckCollectTurned = (reel: number, row: number) =>
+		duckTurnedCellSet.has(`${reel},${row}`);
+	const finishDuckCollectReveal = (position: Position) =>
+		context.eventEmitter.broadcast({ type: 'duckCollectRevealComplete', position });
+	// Cells the roller-wilds carts have passed. Board hides each old symbol in the same render that
+	// the overlay replaces it with that row's multiplier contribution.
 	const rollerClearedSet = $derived(new Set(context.stateGame.rollerClearedCells));
 	const isInitialRollerTriggerCell = (
 		rawSymbol: RawSymbol,
-		reelIndex: number,
+		_reelIndex: number,
 		rowIndex: number,
 	) => {
-		if (rawSymbol.name !== 'W' || rollerReelSet.has(reelIndex)) return false;
+		if (rawSymbol.name !== 'W') return false;
 		if (rawSymbol.rollerTrigger) return true;
+		// Legacy books mark the centre trigger with `multiplier`. The settled reel uses the distinct
+		// `reelMultiplier` field so it can remain a plaque while it physically rolls out next spin.
 		return (
 			rowIndex === Math.floor(BOARD_DIMENSIONS.y / 2) &&
-			(Boolean(rawSymbol.reelMultiplier) || Boolean(rawSymbol.multiplier))
+			Boolean(rawSymbol.multiplier) &&
+			!rawSymbol.reelMultiplier
 		);
 	};
 	const isRollerMultiplierCell = (rawSymbol: RawSymbol, reelIndex: number, rowIndex: number) =>
 		rawSymbol.name === 'W' &&
+		Boolean(rawSymbol.reelMultiplier) &&
 		rowIndex >= 0 &&
 		rowIndex < BOARD_DIMENSIONS.y &&
 		!rawSymbol.persistent &&
-		!coasterCellSet.has(`${reelIndex},${rowIndex}`) &&
-		!isInitialRollerTriggerCell(rawSymbol, reelIndex, rowIndex) &&
-		(Boolean(rawSymbol.rollerTrigger) ||
-			Boolean(rawSymbol.reelMultiplier) ||
-			Boolean(rawSymbol.multiplier) ||
-			rollerReelSet.has(reelIndex));
+		!coasterCellSet.has(`${reelIndex},${rowIndex}`);
 	const getSpriteKey = (
 		rawSymbol: RawSymbol,
 		state: string | undefined,
@@ -94,6 +149,11 @@
 				return getSpecialSymbolKey('megaWild', layoutType);
 			return getSpecialSymbolKey('wild', layoutType);
 		}
+		if (name === 'DC')
+			return duckFrontAssetKeyForPosition(
+				{ reel: reelIndex, row: rowIndex },
+				duckStyleSeed(rawSymbol),
+			);
 		if (name === 'S_DUCK') return getSpecialSymbolKey('duckScatter', layoutType);
 		if (name === 'S_ROLLER') return getSpecialSymbolKey('rollerScatter', layoutType);
 		if (name === 'S_COASTER') return getSpecialSymbolKey('coasterScatter', layoutType);
@@ -108,19 +168,16 @@
 	) => {
 		if (rawSymbol.persistent || coasterCellSet.has(`${reelIndex},${rowIndex}`)) return undefined;
 		if (rawSymbol.name === 'W') {
-			if (isInitialRollerTriggerCell(rawSymbol, reelIndex, rowIndex))
-				return state === 'win' ? 'tpMegaWildWinAnim' : 'tpMegaWildAnim';
+			if (isInitialRollerTriggerCell(rawSymbol, reelIndex, rowIndex)) return undefined;
 			return 'tpWildAnim';
 		}
-		if (rawSymbol.name === 'S_DUCK')
-			return state === 'win' ? 'tpDuckScatterWinAnim' : 'tpDuckScatterAnim';
+		if (rawSymbol.name === 'DC' || rawSymbol.name === 'S_DUCK') return undefined;
 		if (rawSymbol.name === 'S_ROLLER')
 			return state === 'win' ? 'tpRollerScatterWinAnim' : 'tpRollerScatterAnim';
 		if (rawSymbol.name === 'S_COASTER')
 			return state === 'win' ? 'tpCoasterScatterWinAnim' : 'tpCoasterScatterAnim';
 		return state === 'win' ? WIN_ANIMATION_KEY_BY_NAME[rawSymbol.name] : undefined;
 	};
-
 	// True while any symbol is in 'win' state — used to dim non-winning symbols
 	const hasWinState = $derived(
 		context.stateGame.board.some((reel) =>
@@ -212,28 +269,17 @@
 		pivot={layout.pivot}
 		scale={layout.boardScale}
 	>
-		<Graphics
-			isMask
-			draw={(graphics) => {
-				graphics.beginFill(0xffffff);
-				graphics.rect(0, 0, CELL_W * BOARD_DIMENSIONS.x, SYMBOL_H * BOARD_DIMENSIONS.y);
-				graphics.endFill();
-			}}
-		/>
-		<!-- The 5x5 grid is painted into board-lines.webp (see ART_GRID in <BoardFrame>, which sizes
-		     the pad so its lines land on these cell boundaries). Stroking a second grid here only put
-		     a gold line on top of the art's orange one. -->
+		<Graphics isMask draw={drawBoardContentMask} />
+		<!-- The 5x5 grid exists only in board-lines.webp. The cell mask above leaves its exact dividers
+		     and outer edges unobstructed instead of repainting a second grid at a higher layer. -->
 		{#each board as reel, reelIndex (reelIndex)}
 			{#if !hiddenReels.has(reelIndex)}
 				{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
 					{@const y = reelSymbol.symbolY()}
 					{@const isWin = reelSymbol.symbolState === 'win'}
-					<!-- The DC duck under an in-flight gift reveal is hidden — the animation replaces
-					     it, and the duck art was showing through underneath. -->
-					{@const underDuckReveal =
-						context.stateGame.duckRevealPosition?.reel === reelIndex &&
-						context.stateGame.duckRevealPosition?.row === symbolIndex - 1}
-					{#if !underDuckReveal && !rollerClearedSet.has(`${reelIndex},${symbolIndex - 1}`) && !isRollerMultiplierCell(reelSymbol.rawSymbol, reelIndex, symbolIndex - 1)}
+					{#if !rollerClearedSet.has(`${reelIndex},${symbolIndex - 1}`) && !coasterCellSet.has(`${reelIndex},${symbolIndex - 1}`)}
+						{@const position = boardPosition(reelIndex, symbolIndex - 1)}
+						{@const duckPrize = getDuckCollectPrize(reelIndex, symbolIndex - 1)}
 						{@const fallbackKey = getSpriteKey(
 							reelSymbol.rawSymbol,
 							reelSymbol.symbolState,
@@ -246,7 +292,37 @@
 							reelIndex,
 							symbolIndex - 1,
 						)}
-						{#if animationKey}
+						<!-- Keep one DC component mounted for front idle -> turn -> rear idle. No
+						     Board/presenter swap, so variant, scale and timeline stay continuous. -->
+						<!-- Settled Roller cells are the multiplier itself, not a Mega Wild symbol with a
+						     badge over it. This lives inside the moving reel symbol loop, so the unchanged
+						     plaques roll out naturally on the following spin. -->
+						{#if isRollerMultiplierCell(reelSymbol.rawSymbol, reelIndex, symbolIndex - 1)}
+							<RollerMultiplierCell
+								x={getX(reelIndex)}
+								{y}
+								contentScale={0.9 * (isWin ? winPulse : 1)}
+								alpha={hasWinState && !isWin ? 0.35 : 1}
+								text={`${reelSymbol.rawSymbol.reelMultiplier}X`}
+							/>
+						{:else if reelSymbol.rawSymbol.name === 'DC'}
+							<DuckPondDuck
+								x={getX(reelIndex)}
+								{y}
+								size={DUCK_SYMBOL_SIZE}
+								variant={duckVariantForPosition(
+									position,
+									duckStyleSeed(reelSymbol.rawSymbol),
+								)}
+								look={duckLookForPosition(position, duckStyleSeed(reelSymbol.rawSymbol))}
+								prize={duckPrize ? { kind: duckPrize.kind, value: duckPrize.value } : null}
+								revealing={isDuckCollectRevealing(reelIndex, symbolIndex - 1)}
+								turned={isDuckCollectTurned(reelIndex, symbolIndex - 1)}
+								batch={context.stateGame.duckRevealBatch}
+								alpha={hasWinState && !isWin ? 0.35 : 1}
+								onrevealcomplete={() => finishDuckCollectReveal(position)}
+							/>
+						{:else if animationKey}
 							<LoopingAssetSprite
 								{animationKey}
 								{fallbackKey}

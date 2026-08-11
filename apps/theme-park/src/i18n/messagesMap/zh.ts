@@ -38,6 +38,7 @@ export default {
 	"START": "开始",
 	"SPINS": "旋转",
 	"FREE SPINS": "免费旋转",
+	"DUCK PICKS": "鸭子选择",
 	"OF": "/",
 	"BONUS COMPLETE": "奖励完成",
 	"SELECTED": "已选择",

@@ -7,18 +7,35 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
-	import { BitmapText, Container, Sprite } from 'pixi-svelte';
+	import { Container, Graphics, PIXI } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
 
 	import { getContext } from '../game/context';
-	import { CELL_W, SYMBOL_W, SYMBOL_H, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
-	import CoasterWildBackground from './CoasterWildBackground.svelte';
-	import RollerMultiplierText from './RollerMultiplierText.svelte';
+	import {
+		BOARD_DIMENSIONS,
+		SYMBOL_H,
+		BOARD_GRID_OFFSET_Y,
+		BOARD_SIDE_CONTENT_INSET,
+		CELL_W,
+		COASTER_WILD_GRID_INSET,
+		getBoardCellCenterX,
+	} from '../game/constants';
+	import CoasterWildTile from './CoasterWildTile.svelte';
 
 	const context = getContext();
 	const layout = $derived(context.stateGameDerived.boardLayout());
 	const coasterTiles = $derived(context.stateGame.coasterTiles);
-	const rollerReels = $derived(context.stateGame.activeRollerReels);
+	const hasWinState = $derived(
+		context.stateGame.board.some((reel) =>
+			reel.reelState.symbols.some((symbol) => symbol.symbolState === 'win'),
+		),
+	);
+	const isCellWinning = (reel: number, row: number) =>
+		context.stateGame.board[reel]?.reelState.symbols[row + 1]?.symbolState === 'win';
+	const hasWinningCoasterTile = $derived(
+		coasterTiles.some(({ reel, row }) => isCellWinning(reel, row)),
+	);
+	let winPulse = $state(1);
 
 	let pulsingKeys = $state<string[]>([]);
 	const pulseTimers = new SvelteSet<ReturnType<typeof setTimeout>>();
@@ -26,6 +43,22 @@
 	onDestroy(() => {
 		pulseTimers.forEach(clearTimeout);
 		pulseTimers.clear();
+	});
+
+	$effect(() => {
+		if (!hasWinningCoasterTile) {
+			winPulse = 1;
+			return;
+		}
+
+		const started = performance.now();
+		let frame = 0;
+		const tick = (now: number) => {
+			winPulse = 1.05 + Math.sin((now - started) * 0.012) * 0.06;
+			frame = requestAnimationFrame(tick);
+		};
+		frame = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(frame);
 	});
 
 	context.eventEmitter.subscribeOnMount({
@@ -40,13 +73,33 @@
 		},
 	});
 
-	const cellX = (reel: number) => CELL_W * (reel + 0.5);
+	const cellX = getBoardCellCenterX;
 	const cellY = (row: number) => SYMBOL_H * (row + 0.5);
 	const cellPulse = (reel: number, row: number) =>
-		pulsingKeys.includes(`${reel},${row}`) ? 1.14 : 1;
+		(pulsingKeys.includes(`${reel},${row}`) ? 1.14 : 1) * (isCellWinning(reel, row) ? winPulse : 1);
+	// Same cell-cut pattern as Mega Wilds: the existing BoardFrame remains visible through every
+	// divider and side rail while this later overlay supplies only Wild content.
+	const drawWildContentMask = (graphics: PIXI.Graphics) => {
+		for (let reel = 0; reel < BOARD_DIMENSIONS.x; reel += 1) {
+			const leftInset = reel === 0 ? BOARD_SIDE_CONTENT_INSET : COASTER_WILD_GRID_INSET;
+			const rightInset =
+				reel === BOARD_DIMENSIONS.x - 1
+					? BOARD_SIDE_CONTENT_INSET
+					: COASTER_WILD_GRID_INSET;
+			for (let row = 0; row < BOARD_DIMENSIONS.y; row += 1) {
+				graphics.rect(
+					CELL_W * reel + leftInset,
+					SYMBOL_H * row + COASTER_WILD_GRID_INSET,
+					CELL_W - leftInset - rightInset,
+					SYMBOL_H - COASTER_WILD_GRID_INSET * 2,
+				);
+			}
+		}
+		graphics.fill(0xffffff);
+	};
 </script>
 
-{#if coasterTiles.length > 0 || rollerReels.length > 0}
+{#if coasterTiles.length > 0}
 	<MainContainer>
 		<Container
 			x={layout.x}
@@ -54,37 +107,20 @@
 			pivot={layout.pivot}
 			scale={layout.boardScale}
 		>
-			<!-- A roller reel persists as a wild reel with its combined multiplier shown ONCE at the
-			     centre — not repeated on every cell (that read as five separate multipliers). -->
-			{#each rollerReels as roller (roller.reel)}
-				{#each Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => row) as row (row)}
-					<Container x={cellX(roller.reel)} y={cellY(row)}>
-						<CoasterWildBackground reel={roller.reel} {row} />
-						{#if row === Math.floor(BOARD_DIMENSIONS.y / 2)}
-							<RollerMultiplierText text={`${roller.multiplier}X`} />
-						{/if}
-					</Container>
-				{/each}
-			{/each}
-
+			<Graphics isMask draw={drawWildContentMask} />
 			<!-- This layer always owns persistent Coaster Wilds. The exact board
 			     crop masks the reel below; fixed sizing prevents non-paying pops. -->
 			{#each coasterTiles as tile (`${tile.reel}-${tile.row}`)}
-				<Container x={cellX(tile.reel)} y={cellY(tile.row)} scale={cellPulse(tile.reel, tile.row)}>
-					<CoasterWildBackground reel={tile.reel} row={tile.row} />
-					<Sprite
-						key="tpCoasterWild"
-						anchor={0.5}
-						width={SYMBOL_W * 0.82}
-						height={SYMBOL_H * 0.82}
+				<Container
+					x={cellX(tile.reel)}
+					y={cellY(tile.row)}
+					alpha={hasWinState && !isCellWinning(tile.reel, tile.row) ? 0.35 : 1}
+				>
+					<CoasterWildTile
+						reel={tile.reel}
+						multiplier={tile.multiplier}
+						contentScale={cellPulse(tile.reel, tile.row)}
 					/>
-					<Container y={SYMBOL_H * 0.18}>
-						<BitmapText
-							anchor={{ x: 0.5, y: 0.5 }}
-							text={`${tile.multiplier}X`}
-							style={{ fontFamily: 'gold', fontSize: SYMBOL_H * 0.22 }}
-						/>
-					</Container>
 				</Container>
 			{/each}
 		</Container>

@@ -32,6 +32,8 @@ export type RawSymbol = {
 	duck?: boolean;
 	persistent?: boolean;
 	rollerTrigger?: boolean;
+	// Client-only deterministic Duck art seed copied from the reveal event index.
+	duckStyleSeed?: number;
 };
 
 export type Position = { reel: number; row: number };
@@ -48,5 +50,6 @@ export type BetMode = 'BASE' | 'ANTE' | 'FSPIN1' | 'FSPIN2' | 'DUCK' | 'ROLLER' 
 
 export type BonusType = 'roller' | 'coaster';
 
+// Legacy wire names: `mult` is a flat whole-bet addition; `multmult` multiplies the running total.
 export type DuckKind = 'mult' | 'multmult';
 export type DuckPrize = { kind: DuckKind; value: number };

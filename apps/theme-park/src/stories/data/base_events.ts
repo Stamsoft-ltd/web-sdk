@@ -1,6 +1,6 @@
 // One sample per base-game book event type (contract shapes, amounts in cents).
 import type { BookEvent } from '../../game/typesBookEvent';
-import { makeBoard, wild, PADDING_POSITIONS, NO_ANTICIPATION } from './helpers';
+import { makeBoard, PADDING_POSITIONS, NO_ANTICIPATION } from './helpers';
 
 const events = {
 	reveal: {
@@ -59,19 +59,20 @@ const events = {
 		index: 0,
 		type: 'rollerWildsApply',
 		reels: [
-			{ reel: 1, multiplier: 5 },
-			{ reel: 3, multiplier: 2 },
+			{ reel: 0, triggerRow: 3, multiplier: 1, multipliers: [] },
+			{ reel: 2, triggerRow: 3, multiplier: 2, multipliers: [{ row: 1, multiplier: 2 }] },
+			{ reel: 3, triggerRow: 1, multiplier: 3, multipliers: [{ row: 4, multiplier: 3 }] },
 		],
 	},
-	// A reveal already containing roller wild reels (for the rollerWildsApply story)
+	// Current math contract: one trigger wild per affected reel. The event expands them.
 	revealRollerWilds: {
 		index: 0,
 		type: 'reveal',
 		board: makeBoard([
-			['H1', 'H3', 'L1', 'L3', 'H5'],
-			[wild(5), wild(5), wild(5), wild(5), wild(5)],
-			['L1', 'H3', 'H5', 'L3', 'H1'],
-			[wild(2), wild(2), wild(2), wild(2), wild(2)],
+			['H1', 'H3', 'L1', { name: 'W', wild: true, rollerTrigger: true }, 'H5'],
+			['H2', 'L2', 'H4', 'L4', 'L5'],
+			['L1', 'H3', 'H5', { name: 'W', wild: true, rollerTrigger: true }, 'H1'],
+			['H2', { name: 'W', wild: true, rollerTrigger: true }, 'H4', 'L4', 'L5'],
 			['H1', 'L1', 'H3', 'L3', 'H5'],
 		]),
 		paddingPositions: PADDING_POSITIONS,

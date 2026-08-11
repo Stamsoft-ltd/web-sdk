@@ -9,7 +9,8 @@
 <script lang="ts">
 	import { Tween } from 'svelte/motion';
 	import { cubicOut, linear } from 'svelte/easing';
-	import { Container, Graphics, Sprite } from 'pixi-svelte';
+	import { onMount, tick } from 'svelte';
+	import { Container, Graphics, PIXI, Sprite } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
 	import { waitForTimeout } from 'utils-shared/wait';
 
@@ -21,167 +22,311 @@
 		BOARD_DIMENSIONS,
 		BOARD_SIZES,
 		BOARD_GRID_OFFSET_Y,
+		BOARD_SIDE_CONTENT_INSET,
+		ROLLER_CAR_H,
+		ROLLER_CAR_W,
+		getBoardCellCenterX,
 	} from '../game/constants';
-	import { getSpecialSymbolKey } from '../game/utils';
 	import CoasterWildBackground from './CoasterWildBackground.svelte';
-	import LoopingAssetSprite from './LoopingAssetSprite.svelte';
-	import LoopingSheetSprite from './LoopingSheetSprite.svelte';
-	import RollerMultiplierText from './RollerMultiplierText.svelte';
+	import LoopingSpineSprite from './LoopingSpineSprite.svelte';
+	import RollerMultiplierCell from './RollerMultiplierCell.svelte';
+
+	type RollerPhase =
+		| 'hidden'
+		| 'ready'
+		| 'dropping'
+		| 'contributions'
+		| 'summing'
+		| 'spreading'
+		| 'settled';
 
 	const context = getContext();
 	const layout = $derived(context.stateGameDerived.boardLayout());
-	const layoutType = $derived(context.stateLayoutDerived.layoutType());
-	const megaWildKey = $derived(getSpecialSymbolKey('megaWild', layoutType));
-	// Cells the car has rolled past — used to clear the trigger's Mega Wild art too (not just plaque
-	// rows), so every symbol in the car's path disappears as it drops.
-	const clearedSet = $derived(new Set(context.stateGame.rollerClearedCells));
 
-	let transformed = $state<RollerReel[]>([]);
-	let combinedReels = $state<number[]>([]);
+	let triggerReels = $state<RollerReel[]>([]);
+	let phase = $state<RollerPhase>('hidden');
+	let carYs = $state<Record<number, Tween<number>>>({});
+	let revealedRows = $state<Record<number, number[]>>({});
+	let finalizedRows = $state<Record<number, number[]>>({});
+	let rowScales = $state<Record<string, Tween<number>>>({});
 	let combineTweens = $state<Record<number, Tween<number>>>({});
 	let totalAlphas = $state<Record<number, Tween<number>>>({});
-	let triggerReels = $state<RollerReel[]>([]);
-	let expandedRows = $state<Record<number, number[]>>({});
-	// Per-CELL plaque value keyed `${reel},${row}` — only the rows that actually carry a multiplier
-	// plaque get one (a 3x reel of three 1x plaques shows three boxes, not all five).
-	let cellMultipliers = $state<Record<string, number>>({});
-	let rowScales = $state<Record<string, Tween<number>>>({});
 	let totalScales = $state<Record<number, Tween<number>>>({});
-	let current = $state<RollerReel | null>(null);
-	// Two short looping clips: the car sits WAVING (roller-wild-car.webm) at rest, then hard-switches
-	// to EXCITED / both-wings-up (roller-wild-car-drop.webm) the instant it starts rolling down.
-	let carDropping = $state(false);
-	const carY = new Tween(-SYMBOL_H);
-	const CAR_DROP_IN_MS = 260;
-	const STATIONARY_HOLD_MS = 620; // a beat of waving before it drops
-	const CAR_DESCENT_MS = 1050; // slower than the original 760 — the fall read as too fast
 
+	const ROWS = Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => row);
+	const SPREAD_ORDER = [2, 1, 3, 0, 4];
+	const CAR_START_Y = -ROLLER_CAR_H * 0.22;
+	const CAR_END_Y = BOARD_SIZES.height + ROLLER_CAR_H * 0.46;
+	const RIDE_CLIP_MS = 480;
+	const CART_READY_MS = 180;
+	const CAR_DESCENT_MS = 650;
+	const RIDE_TIME_SCALE = RIDE_CLIP_MS / CAR_DESCENT_MS;
 	const REEL_CENTER_Y = (SYMBOL_H * BOARD_DIMENSIONS.y) / 2;
+	const GRID_LINE_CLEARANCE = 1.4;
+	// BoardFrame is behind the reel stage. These outer clearances reserve the visible bulb/glow area
+	// so the cart and rails appear to pass behind that frame instead of painting over it.
+	const FRAME_LIGHT_CLEARANCE_X = 31;
+	const FRAME_LIGHT_CLEARANCE_Y = 16;
+
+	let sequenceActive = $state(false);
+	let skipRequested = false;
+	let resolveSkip: () => void = () => {};
+	let skipSignal: Promise<void> = Promise.resolve();
+
+	const resetSkip = () => {
+		skipRequested = false;
+		skipSignal = new Promise<void>((resolve) => (resolveSkip = resolve));
+	};
+
+	const requestSkip = () => {
+		if (!sequenceActive || skipRequested) return;
+		skipRequested = true;
+		resolveSkip();
+	};
+
+	const runOrSkip = async (task: Promise<unknown>) => {
+		const completed = await Promise.race([task.then(() => true), skipSignal.then(() => false)]);
+		return completed && !skipRequested;
+	};
+
+	const contributionFor = (roller: RollerReel, row: number) => {
+		const explicit = roller.multipliers.find((entry) => entry.row === row)?.multiplier;
+		// Empty rows are neutral multipliers, not zero multipliers. The final applied reel value still
+		// comes from the math event; 1X communicates that an empty row does not erase the combination.
+		return explicit ?? 1;
+	};
+
+	const showFinalPresentation = () => {
+		phase = 'settled';
+		revealedRows = Object.fromEntries(triggerReels.map(({ reel }) => [reel, [...ROWS]]));
+		finalizedRows = Object.fromEntries(triggerReels.map(({ reel }) => [reel, [...ROWS]]));
+		rowScales = Object.fromEntries(
+			triggerReels.flatMap(({ reel }) => ROWS.map((row) => [`${reel},${row}`, new Tween(1)])),
+		);
+		combineTweens = Object.fromEntries(triggerReels.map(({ reel }) => [reel, new Tween(1)]));
+		totalAlphas = Object.fromEntries(triggerReels.map(({ reel }) => [reel, new Tween(1)]));
+		totalScales = Object.fromEntries(triggerReels.map(({ reel }) => [reel, new Tween(1)]));
+		context.stateGame.rollerClearedCells = triggerReels.flatMap(({ reel }) =>
+			ROWS.map((row) => `${reel},${row}`),
+		);
+		sequenceActive = false;
+	};
+
+	onMount(() => {
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.code !== 'Space' || !sequenceActive) return;
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			requestSkip();
+		};
+		const onClick = (event: MouseEvent) => {
+			if (!sequenceActive) return;
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			requestSkip();
+		};
+		window.addEventListener('keydown', onKeyDown, { capture: true });
+		window.addEventListener('click', onClick, { capture: true });
+		return () => {
+			window.removeEventListener('keydown', onKeyDown, { capture: true });
+			window.removeEventListener('click', onClick, { capture: true });
+		};
+	});
 
 	context.eventEmitter.subscribeOnMount({
 		rollerWildsShow: async (event) => {
-			transformed = [];
-			combinedReels = [];
+			resetSkip();
+			sequenceActive = true;
+			triggerReels = event.reels;
+			phase = 'ready';
+			carYs = Object.fromEntries(event.reels.map(({ reel }) => [reel, new Tween(CAR_START_Y)]));
+			revealedRows = {};
+			finalizedRows = {};
+			rowScales = {};
 			combineTweens = {};
 			totalAlphas = {};
-			triggerReels = event.reels;
-			context.stateGame.rollerClearedCells = [];
-			expandedRows = {};
-			cellMultipliers = {};
-			rowScales = {};
 			totalScales = {};
-			current = null;
-			carDropping = false;
-			for (const reel of event.reels) {
-				current = reel;
-				carDropping = false; // waving clip
-				transformed = [...transformed, reel];
-				expandedRows = { ...expandedRows, [reel.reel]: [] };
-				const startY = -SYMBOL_H * 0.72;
-				const restY = SYMBOL_H * 0.5; // top row — the car sits here (visible) before it rolls down
-				const endY = BOARD_SIZES.height + SYMBOL_H * 0.72;
-				// Drop the car in from above to a visible rest spot and hold while the duck waves, so it
-				// reads before it rolls down (it used to shoot straight through too fast to see).
-				carY.set(startY, { duration: 0 });
-				await carY.set(restY, { duration: CAR_DROP_IN_MS, easing: cubicOut });
-				await waitForTimeout(STATIONARY_HOLD_MS);
-				carDropping = true; // switch to the excited / both-wings-up clip as the roll begins
-				const descent = carY.set(endY, {
-					duration: CAR_DESCENT_MS,
-					easing: linear,
-				});
-				let previousRevealMs = 0;
+			// Leave the one landed Mega Wild visible. It is replaced only when the cart reaches its row.
+			context.stateGame.rollerClearedCells = [];
 
-				// The car passes EVERY row on the way down: it clears the symbol behind it (Board hides
-				// that cell), and where a plaque was actually won it stamps that cell with the plaque's
-				// value. Rows without a plaque are simply left empty — so a 3x reel of three 1x plaques
-				// shows three boxes and two empty cells, not five boxes.
-				const plaqueByRow = new Map(reel.multipliers.map((p) => [p.row, p.multiplier]));
-				for (let row = 0; row < BOARD_DIMENSIONS.y; row += 1) {
-					const targetY = SYMBOL_H * (row + 0.5);
-					const revealMs = ((targetY - restY) / (endY - restY)) * CAR_DESCENT_MS;
-					await waitForTimeout(Math.max(0, revealMs - previousRevealMs));
-					previousRevealMs = revealMs;
-					// Clear the original symbol behind the car.
-					context.stateGame.rollerClearedCells = [
-						...context.stateGame.rollerClearedCells,
-						`${reel.reel},${row}`,
-					];
-					const plaqueValue = plaqueByRow.get(row);
-					if (plaqueValue == null) continue; // no plaque here → cell just goes empty
-					const rowKey = `${reel.reel},${row}`;
-					cellMultipliers = { ...cellMultipliers, [rowKey]: plaqueValue };
-					const scale = new Tween(0.58);
+			// All affected reels spawn a cart at the exact same top position and wave together.
+			await tick();
+			if (!(await runOrSkip(waitForTimeout(CART_READY_MS)))) {
+				showFinalPresentation();
+				return;
+			}
+
+			phase = 'dropping';
+			const descents = event.reels.map(({ reel }) =>
+				carYs[reel].set(CAR_END_Y, { duration: CAR_DESCENT_MS, easing: linear }),
+			);
+			let previousRevealMs = 0;
+
+			// Every cart descends in lockstep. Each passed symbol becomes a visible row contribution.
+			for (const row of ROWS) {
+				const revealMs = ((cellY(row) - CAR_START_Y) / (CAR_END_Y - CAR_START_Y)) * CAR_DESCENT_MS;
+				if (!(await runOrSkip(waitForTimeout(Math.max(0, revealMs - previousRevealMs))))) {
+					showFinalPresentation();
+					return;
+				}
+				previousRevealMs = revealMs;
+
+				context.stateGame.rollerClearedCells = [
+					...context.stateGame.rollerClearedCells,
+					...event.reels.map(({ reel }) => `${reel},${row}`),
+				];
+				for (const roller of event.reels) {
+					const rowKey = `${roller.reel},${row}`;
+					const scale = new Tween(0.72);
 					rowScales = { ...rowScales, [rowKey]: scale };
-					expandedRows = {
-						...expandedRows,
-						[reel.reel]: [...(expandedRows[reel.reel] ?? []), row],
+					revealedRows = {
+						...revealedRows,
+						[roller.reel]: [...(revealedRows[roller.reel] ?? []), row],
 					};
-					context.eventEmitter.broadcast({
-						type: 'soundOnce',
-						name: 'sfx_reel_stop_2',
-						forcePlay: true,
-					});
 					void (async () => {
-						await scale.set(1.03, { duration: 120, easing: cubicOut });
+						await scale.set(1.05, { duration: 120, easing: cubicOut });
 						await scale.set(1, { duration: 90, easing: cubicOut });
 					})();
 				}
-
-				await descent;
-				current = null;
-				// The car has left the reel: every cell's multiplier slides to the reel centre and fades
-				// while a single combined total (the reel multiplier) pops in there, then disappears.
-				await waitForTimeout(120);
-				const combineT = new Tween(0);
-				combineTweens = { ...combineTweens, [reel.reel]: combineT };
-				const totalAlpha = new Tween(0);
-				totalAlphas = { ...totalAlphas, [reel.reel]: totalAlpha };
-				const totalScale = new Tween(0.65);
-				totalScales = { ...totalScales, [reel.reel]: totalScale };
-				combinedReels = [...combinedReels, reel.reel];
 				context.eventEmitter.broadcast({
 					type: 'soundOnce',
 					name: 'sfx_reel_stop_2',
 					forcePlay: true,
 				});
-				void totalAlpha.set(1, { duration: 240, easing: cubicOut });
-				void (async () => {
-					await totalScale.set(1.14, { duration: 260, easing: cubicOut });
-					await totalScale.set(1, { duration: 130, easing: cubicOut });
-				})();
-				await combineT.set(1, { duration: 300, easing: cubicOut });
-				await waitForTimeout(320);
-				await Promise.all([
-					totalAlpha.set(0, { duration: 240, easing: cubicOut }),
-					totalScale.set(1.4, { duration: 240, easing: cubicOut }),
-				]);
 			}
-			// Keep the animation layer intact until the handler commits the
-			// transformed board and explicitly sends rollerWildsHide.
-			await waitForTimeout(180);
+
+			if (!(await runOrSkip(Promise.all(descents)))) {
+				showFinalPresentation();
+				return;
+			}
+			phase = 'contributions';
+			if (!(await runOrSkip(waitForTimeout(480)))) {
+				showFinalPresentation();
+				return;
+			}
+
+			// Sum all five row contributions into one value per reel, in parallel.
+			combineTweens = Object.fromEntries(event.reels.map(({ reel }) => [reel, new Tween(0)]));
+			totalAlphas = Object.fromEntries(event.reels.map(({ reel }) => [reel, new Tween(0)]));
+			totalScales = Object.fromEntries(event.reels.map(({ reel }) => [reel, new Tween(0.68)]));
+			phase = 'summing';
+			context.eventEmitter.broadcast({
+				type: 'soundOnce',
+				name: 'sfx_scatter_win',
+				forcePlay: true,
+			});
+			if (
+				!(await runOrSkip(
+					Promise.all([
+						...event.reels.map(({ reel }) =>
+							combineTweens[reel].set(1, { duration: 420, easing: cubicOut }),
+						),
+						...event.reels.map(({ reel }) =>
+							totalAlphas[reel].set(1, { duration: 260, easing: cubicOut }),
+						),
+						...event.reels.map(({ reel }) =>
+							totalScales[reel].set(1.14, { duration: 320, easing: cubicOut }),
+						),
+					]),
+				))
+			) {
+				showFinalPresentation();
+				return;
+			}
+			await Promise.all(
+				event.reels.map(({ reel }) =>
+					totalScales[reel].set(1, { duration: 130, easing: cubicOut }),
+				),
+			);
+			if (!(await runOrSkip(waitForTimeout(320)))) {
+				showFinalPresentation();
+				return;
+			}
+
+			// Spread the summed value from the centre to all five cells on every affected reel.
+			phase = 'spreading';
+			for (const row of SPREAD_ORDER) {
+				for (const roller of event.reels) {
+					const rowKey = `${roller.reel},${row}`;
+					const scale = new Tween(0.68);
+					rowScales = { ...rowScales, [rowKey]: scale };
+					finalizedRows = {
+						...finalizedRows,
+						[roller.reel]: [...(finalizedRows[roller.reel] ?? []), row],
+					};
+					void (async () => {
+						await scale.set(1.08, { duration: 120, easing: cubicOut });
+						await scale.set(1, { duration: 90, easing: cubicOut });
+					})();
+				}
+				if (!(await runOrSkip(waitForTimeout(105)))) {
+					showFinalPresentation();
+					return;
+				}
+			}
+
+			phase = 'settled';
+			await runOrSkip(waitForTimeout(220));
+			sequenceActive = false;
 		},
 		rollerWildsHide: () => {
-			transformed = [];
-			combinedReels = [];
+			sequenceActive = false;
+			resolveSkip();
+			triggerReels = [];
+			phase = 'hidden';
+			carYs = {};
+			revealedRows = {};
+			finalizedRows = {};
+			rowScales = {};
 			combineTweens = {};
 			totalAlphas = {};
-			triggerReels = [];
-			context.stateGame.rollerClearedCells = [];
-			expandedRows = {};
-			cellMultipliers = {};
-			rowScales = {};
 			totalScales = {};
-			current = null;
-			carDropping = false;
+			context.stateGame.rollerClearedCells = [];
 		},
 	});
 
-	const cellX = (reel: number) => CELL_W * (reel + 0.5);
+	const cellX = getBoardCellCenterX;
 	const cellY = (row: number) => SYMBOL_H * (row + 0.5);
+	const drawReelMask = (reel: number) => (graphics: PIXI.Graphics) => {
+		const edgeShift = BOARD_SIDE_CONTENT_INSET * 0.5;
+		const leftInset = reel === 0 ? FRAME_LIGHT_CLEARANCE_X - edgeShift : GRID_LINE_CLEARANCE;
+		const rightInset =
+			reel === BOARD_DIMENSIONS.x - 1 ? FRAME_LIGHT_CLEARANCE_X - edgeShift : GRID_LINE_CLEARANCE;
+		for (const row of ROWS) {
+			const topInset = row === 0 ? FRAME_LIGHT_CLEARANCE_Y : GRID_LINE_CLEARANCE;
+			const bottomInset =
+				row === BOARD_DIMENSIONS.y - 1 ? FRAME_LIGHT_CLEARANCE_Y : GRID_LINE_CLEARANCE;
+			graphics.rect(
+				-CELL_W * 0.5 + leftInset,
+				SYMBOL_H * row + topInset,
+				CELL_W - leftInset - rightInset,
+				SYMBOL_H - topInset - bottomInset,
+			);
+		}
+		graphics.fill(0xffffff);
+	};
+	const drawBoardContentMask = (graphics: PIXI.Graphics) => {
+		for (let reel = 0; reel < BOARD_DIMENSIONS.x; reel += 1) {
+			const leftInset = reel === 0 ? FRAME_LIGHT_CLEARANCE_X : GRID_LINE_CLEARANCE;
+			const rightInset =
+				reel === BOARD_DIMENSIONS.x - 1 ? FRAME_LIGHT_CLEARANCE_X : GRID_LINE_CLEARANCE;
+			for (const row of ROWS) {
+				const topInset = row === 0 ? FRAME_LIGHT_CLEARANCE_Y : GRID_LINE_CLEARANCE;
+				const bottomInset =
+					row === BOARD_DIMENSIONS.y - 1 ? FRAME_LIGHT_CLEARANCE_Y : GRID_LINE_CLEARANCE;
+				graphics.rect(
+					CELL_W * reel + leftInset,
+					SYMBOL_H * row + topInset,
+					CELL_W - leftInset - rightInset,
+					SYMBOL_H - topInset - bottomInset,
+				);
+			}
+		}
+		graphics.fill(0xffffff);
+	};
 </script>
 
-{#if current || transformed.length}
+{#if triggerReels.length > 0}
 	<MainContainer>
 		<Container
 			x={layout.x}
@@ -190,118 +335,106 @@
 			scale={layout.boardScale}
 			sortableChildren
 		>
-			<!-- Clip the overlay to the board's BOTTOM edge so the descending car ends and vanishes the
-			     moment it rolls off the board, instead of staying visible in the empty area below it.
-			     The mask extends well above the board so the car's drop-in from the top is untouched. -->
-			<Graphics
-				isMask
-				draw={(graphics) => {
-					graphics.beginFill(0xffffff);
-					graphics.rect(
-						-SYMBOL_W,
-						-SYMBOL_H * 2,
-						CELL_W * BOARD_DIMENSIONS.x + SYMBOL_W * 2,
-						SYMBOL_H * BOARD_DIMENSIONS.y + SYMBOL_H * 2,
-					);
-					graphics.endFill();
-				}}
-			/>
+			<!-- Cell-cut mask exposes the one board-art grid beneath this feature. It also reserves the
+			     outer bulb frame, so carts and multipliers cannot cross either side border. -->
+			<Graphics isMask draw={drawBoardContentMask} />
 
-			<!-- Initial landed trigger stays Mega Wild until the car rolls over its row. -->
-			{#each triggerReels as roller (`trigger-${roller.reel}`)}
-				{#if !clearedSet.has(`${roller.reel},${roller.triggerRow}`)}
-					<Container x={cellX(roller.reel)} y={cellY(roller.triggerRow)} zIndex={9}>
-						<CoasterWildBackground reel={roller.reel} row={roller.triggerRow} />
-						<LoopingAssetSprite
-							animationKey="tpMegaWildAnim"
-							fallbackKey={megaWildKey}
-							restartKey={roller.reel}
-							anchor={0.5}
-							width={SYMBOL_W}
-							height={SYMBOL_H}
-						/>
+			<!-- Rails exist only while a cart is on-screen. Passed cells repaint through their edges,
+			     so no rail seam can remain beneath multiplier tiles. -->
+			{#if phase === 'ready' || phase === 'dropping'}
+				{#each triggerReels as roller (`track-${roller.reel}`)}
+					<Container x={cellX(roller.reel)} zIndex={6}>
+						<Graphics isMask draw={drawReelMask(roller.reel)} />
+						{#each [-0.34, 0.34] as railOffset (railOffset)}
+							<Sprite
+								key="rollerWildRail"
+								x={SYMBOL_W * railOffset}
+								y={BOARD_SIZES.height * 0.5}
+								anchor={0.5}
+								width={SYMBOL_W * 0.12}
+								height={BOARD_SIZES.height * 1.08}
+							/>
+						{/each}
 					</Container>
-				{/if}
-			{/each}
-
-			{#if current}
-				<!-- The coaster track the car rides down: two parallel rails laid on the active reel,
-				     behind the car, for the whole drop. Masked to the board like everything else here. -->
-				{#each [-0.34, 0.34] as railOffset (railOffset)}
-					<Sprite
-						key="rollerWildRail"
-						x={cellX(current.reel) + SYMBOL_W * railOffset}
-						y={BOARD_SIZES.height * 0.5}
-						zIndex={6}
-						anchor={0.5}
-						width={SYMBOL_W * 0.12}
-						height={BOARD_SIZES.height * 1.08}
-					/>
 				{/each}
-
-				<!-- Sprite-sheet playback (ticker-driven, can't freeze like the video route did). Waving
-				     sheet at rest, excited sheet once it drops — swapping animationKey restarts the clip.
-				     Sized to the 256×334 frame aspect so the car/duck isn't squashed. -->
-				<Container x={cellX(current.reel)} y={carY.current} zIndex={30}>
-					<LoopingSheetSprite
-						animationKey={carDropping ? 'rollerWildCarDropAnim' : 'rollerWildCarAnim'}
-						fallbackKey="rollerWildCar"
-						animationSpeed={24 / 60}
-						anchor={0.5}
-						width={SYMBOL_W * 1.45}
-						height={(SYMBOL_W * 1.45 * 334) / 256}
-					/>
-				</Container>
 			{/if}
 
-			{#each transformed as roller (roller.reel)}
-				{@const combining = combinedReels.includes(roller.reel)}
+			<!-- Every affected cart spawns on the same approved frontal art, then all 48 registered
+			     release-to-vertical perspective frames play while the carts drop in lockstep. -->
+			{#if phase === 'ready' || phase === 'dropping'}
+				{#each triggerReels as roller (`cart-${roller.reel}`)}
+					<Container x={cellX(roller.reel)} zIndex={30}>
+						<!-- Fixed reel mask: cart stays behind outer lights and every slot border. -->
+						<Graphics isMask draw={drawReelMask(roller.reel)} />
+						<Container y={carYs[roller.reel]?.current ?? CAR_START_Y}>
+							<LoopingSpineSprite
+								assetKey="rollerWildCarSpine"
+								animationName={phase === 'dropping' ? 'ride' : 'idle'}
+								fallbackKey="rollerWildCarStill"
+								width={ROLLER_CAR_W}
+								height={ROLLER_CAR_H}
+								timeScale={phase === 'dropping' ? RIDE_TIME_SCALE : 1}
+								loop={false}
+								restartKey={`${roller.reel}:${phase}`}
+							/>
+						</Container>
+					</Container>
+				{/each}
+			{/if}
+
+			{#each triggerReels as roller (roller.reel)}
 				{@const ct = combineTweens[roller.reel]?.current ?? 0}
 
-				<!-- Wild boxes: one per revealed row, fixed to the cell (fade in, never scale/spill). -->
-				{#each Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => row) as row (row)}
-					{#if expandedRows[roller.reel]?.includes(row)}
+				<!-- Cart trail: every passed symbol is replaced with its row contribution. -->
+				{#each ROWS as row (row)}
+					{#if revealedRows[roller.reel]?.includes(row) && !finalizedRows[roller.reel]?.includes(row)}
 						<Container
 							x={cellX(roller.reel)}
 							y={cellY(row)}
 							zIndex={10}
-							alpha={rowScales[`${roller.reel},${row}`]?.current ?? 1}
+							scale={rowScales[`${roller.reel},${row}`]?.current ?? 1}
 						>
-							<CoasterWildBackground reel={roller.reel} {row} />
+							<CoasterWildBackground reel={roller.reel} />
 						</Container>
+						<RollerMultiplierCell
+							x={cellX(roller.reel)}
+							y={cellY(row)}
+							zIndex={22}
+							contentOffsetY={(REEL_CENTER_Y - cellY(row)) * ct}
+							contentScale={(rowScales[`${roller.reel},${row}`]?.current ?? 1) * 0.9}
+							alpha={1 - ct}
+							text={`${contributionFor(roller, row)}X`}
+						/>
 					{/if}
 				{/each}
 
-				<!-- Per-cell multipliers (left behind the car's trail). While combining they slide to the
-				     reel centre and fade out. -->
-				{#if ct < 1}
-					{#each Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => row) as row (row)}
-						{#if expandedRows[roller.reel]?.includes(row)}
-							<Container
-								x={cellX(roller.reel)}
-								y={cellY(row) + (REEL_CENTER_Y - cellY(row)) * ct}
-								zIndex={22}
-								scale={combining ? 1 : (rowScales[`${roller.reel},${row}`]?.current ?? 1)}
-								alpha={1 - ct}
-							>
-								<RollerMultiplierText text={`${cellMultipliers[`${roller.reel},${row}`] ?? 1}X`} />
-							</Container>
-						{/if}
-					{/each}
-				{/if}
-
-				<!-- The combined total at the reel centre. -->
-				{#if combining}
-					<Container
+				<!-- The summed value appears once in the centre before spreading across the reel. -->
+				{#if phase === 'summing' || phase === 'spreading'}
+					<RollerMultiplierCell
 						x={cellX(roller.reel)}
 						y={REEL_CENTER_Y}
 						zIndex={24}
-						scale={totalScales[roller.reel]?.current ?? 1}
+						contentScale={totalScales[roller.reel]?.current ?? 1}
 						alpha={totalAlphas[roller.reel]?.current ?? 0}
-					>
-						<RollerMultiplierText text={`${roller.multiplier}X`} />
-					</Container>
+						text={`${roller.multiplier}X`}
+					/>
 				{/if}
+
+				<!-- Final state: the summed multiplier itself fills the reel. Do not put Mega Wild art
+				     behind it; Board takes over the same plaques so they can roll out unchanged. -->
+				{#each ROWS as row (row)}
+					{#if finalizedRows[roller.reel]?.includes(row)}
+						<Container
+							x={cellX(roller.reel)}
+							y={cellY(row)}
+							zIndex={18}
+							scale={rowScales[`${roller.reel},${row}`]?.current ?? 1}
+						>
+							<CoasterWildBackground reel={roller.reel} />
+							<RollerMultiplierCell text={`${roller.multiplier}X`} contentScale={0.9} />
+						</Container>
+					{/if}
+				{/each}
 			{/each}
 		</Container>
 	</MainContainer>

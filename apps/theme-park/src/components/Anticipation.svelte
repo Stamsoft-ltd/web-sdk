@@ -3,7 +3,7 @@
 	import { Container, Sprite, PIXI } from 'pixi-svelte';
 
 	import type { Reel } from '../game/stateGame.svelte';
-	import { CELL_W, BOARD_SIZES, BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { CELL_W, BOARD_SIZES, BOARD_GRID_OFFSET_Y, getBoardCellCenterX } from '../game/constants';
 	import { getContext } from '../game/context';
 
 	type Props = { reel: Reel; oncomplete: () => void };
@@ -96,7 +96,8 @@
 </script>
 
 <Container
-	x={board.x + ((props.reel.reelIndex + 0.5) * CELL_W - BOARD_SIZES.width * 0.5) * board.boardScale}
+	x={board.x +
+		(getBoardCellCenterX(props.reel.reelIndex) - BOARD_SIZES.width * 0.5) * board.boardScale}
 	y={board.y + BOARD_GRID_OFFSET_Y}
 	{alpha}
 >

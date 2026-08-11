@@ -156,16 +156,6 @@ const assets: Assets = {
 		src: './assets/theme-park/v2/animations/symbols/wild.webm',
 		defer: true,
 	},
-	tpMegaWildAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/mega-wild.webm',
-		defer: true,
-	},
-	tpMegaWildWinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/mega-wild-win.webm',
-		defer: true,
-	},
 	tpCoasterWild: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/symbols/wild-slime.png',
@@ -176,34 +166,36 @@ const assets: Assets = {
 		type: 'sprite',
 		src: './assets/theme-park/v2/features/coaster-track.png',
 	},
-	coasterCarHappy: {
+	coasterRigHappy: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/features/coaster-car-happy.png',
+		src: './assets/theme-park/v2/features/coaster-rig-happy.png',
 	},
-	coasterCarVomit: {
+	coasterRigVomit: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/features/coaster-car-vomit.png',
+		src: './assets/theme-park/v2/features/coaster-rig-vomit.png',
 	},
-	coasterCarSick: {
+	// Startup-gated: one layered rig owns the immutable cart and looping duck motion.
+	coasterVomitSpine: {
+		type: 'spine',
+		src: {
+			atlas: './assets/spines/coasterVomit/coaster_vomit.atlas',
+			skeleton: './assets/spines/coasterVomit/coaster_vomit.json',
+			scale: 1,
+		},
+	},
+	rollerWildCarStill: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/features/coaster-car-sick.png',
+		src: './assets/theme-park/v2/modes/mega-wild-car.png',
 	},
-	rollerWildCar: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/features/roller-wild-car.png',
-	},
-	// Waving (at rest) and excited (rolling down) car states as alpha-keyed sprite sheets — same
-	// ticker-driven route as the win cards, so they always animate (the webm video route froze to a
-	// still frame). 24 fps, generated from the "red duck car" MP4.
-	rollerWildCarAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/rollerCar/roller_car_wave.json',
-		defer: true,
-	},
-	rollerWildCarDropAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/rollerCar/roller_car_excited.json',
-		defer: true,
+	// Startup-gated: a Roller Wild can land on the first spin. Deferring this rig caused the static
+	// fallback to swap to frame zero halfway down the track.
+	rollerWildCarSpine: {
+		type: 'spine',
+		src: {
+			atlas: './assets/sprites/rollerCar/roller_car.atlas',
+			skeleton: './assets/sprites/rollerCar/roller_car_spine.json',
+			scale: 1,
+		},
 	},
 	coasterCarSickAnim: {
 		type: 'sprite',
@@ -254,16 +246,6 @@ const assets: Assets = {
 	tpCoasterScatterLandscape: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/mega-coaster-mobile-landscape.png',
-	},
-	tpDuckScatterAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/duck-your-luck.webm',
-		defer: true,
-	},
-	tpDuckScatterWinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/duck-your-luck-win.webm',
-		defer: true,
 	},
 	tpRollerScatterAnim: {
 		type: 'sprite',
@@ -372,12 +354,15 @@ const assets: Assets = {
 		src: './assets/theme-park/v2/duckpond/splash.webp',
 		defer: true,
 	},
-	// Pick reveal: the duck unwraps a gift box (36-frame 6×6 sheet from 'Duck present.mp4',
-	// black-keyed with the emblem flood pipeline); the prize disc rises out of the opened box.
-	duckPresentAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/duckPresent/duck_present.json',
-		defer: true,
+	// Shared Duck Your Luck rig for pond picks, FSPIN1 Duck Collect cells and trigger symbols.
+	// Eight front/rear variants swap at the turn silhouette; the prize slot tracks the rump.
+	// Startup-gated: Duck Collect can land on the first base spin, so its turn must never race defer.
+	duckPondTurn: {
+		type: 'spine',
+		src: {
+			atlas: './assets/spines/duckTurn/duck_turn.atlas',
+			skeleton: './assets/spines/duckTurn/duck_turn.json',
+		},
 	},
 	duckPondLogo: { type: 'sprite', src: './assets/theme-park/v2/duckpond/logo.webp', defer: true },
 	duckPondMiniYellow: {
@@ -392,14 +377,38 @@ const assets: Assets = {
 	},
 	// The PICK / TOTAL WIN plates draw the shared `bonusPanel` art with <PanelBorderLights> instead
 	// of the mock's static panel exports, so the pond chrome animates like the confirm dialogs.
-	duckPondDuck1: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_1.webp', defer: true },
-	duckPondDuck2: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_2.webp', defer: true },
-	duckPondDuck3: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_3.webp', defer: true },
-	duckPondDuck4: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_4.webp', defer: true },
-	duckPondDuck5: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_5.webp', defer: true },
-	duckPondDuck6: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_6.webp', defer: true },
-	duckPondDuck7: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_7.webp', defer: true },
-	duckPondDuck8: { type: 'sprite', src: './assets/theme-park/v2/duckpond/duck_8.webp', defer: true },
+	duckPondDuck1: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_1.webp',
+	},
+	duckPondDuck2: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_2.webp',
+	},
+	duckPondDuck3: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_3.webp',
+	},
+	duckPondDuck4: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_4.webp',
+	},
+	duckPondDuck5: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_5.webp',
+	},
+	duckPondDuck6: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_6.webp',
+	},
+	duckPondDuck7: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_7.webp',
+	},
+	duckPondDuck8: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_8.webp',
+	},
 
 	// Marquee bulb strip: a pair of these frames the anticipating reel and blinks (Anticipation).
 	// Built FROM the board pad's own right-hand bulb rail (mirrored about the bulb column to

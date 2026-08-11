@@ -21,7 +21,8 @@ describe('shared frontend completeness guards', () => {
 
 	it('recognises every one-shot Theme Park bonus during recovery', () => {
 		const resume = source('src/components/ResumeBet.svelte');
-		for (const mode of ['DUCK', 'ROLLER', 'COASTER']) expect(resume).toContain(`mode === '${mode}'`);
+		for (const mode of ['DUCK', 'ROLLER', 'COASTER'])
+			expect(resume).toContain(`mode === '${mode}'`);
 	});
 
 	it('uses a bounded renderer and self-hosted fonts', () => {
@@ -36,8 +37,18 @@ describe('shared frontend completeness guards', () => {
 	it('keeps the three-state speed selector visible in the scaled HUD', () => {
 		const hud = source('src/components/HudHtml.svelte');
 		expect(hud).toContain('data-speed={speedMode}');
-		expect(hud).toContain('--hud-u: calc(min(97vw, 1380px) / 1380)');
-		expect(hud).toContain(".hud-shell[data-layout='portrait'] .nav-btn");
+		expect(hud).toContain('--hud-u: calc(min(93.8vw, 1400px) / 1126)');
+		expect(hud).toContain(".pt-turbo[data-speed='fast']");
+	});
+
+	it('shrinks long HUD currency values in layout instead of paint-only transforms', () => {
+		const hud = source('src/components/HudHtml.svelte');
+		expect(hud).toContain("node.style.removeProperty('font-size')");
+		expect(hud).toContain('node.style.fontSize =');
+		expect(hud).not.toContain('node.style.transform =');
+		expect(hud).toMatch(/\.value-pill--balance \{[\s\S]*?width: calc\(var\(--hud-u\) \* 130\.333\);[\s\S]*?overflow: hidden;/);
+		expect(hud).toMatch(/\.bet-values \{[\s\S]*?overflow: hidden;/);
+		expect(hud).toMatch(/\.pt-bet__values \{[\s\S]*?flex: 1 1 0;[\s\S]*?overflow: hidden;/);
 	});
 
 	it('does not self-subscribe while rebuilding reactive metadata', () => {
@@ -70,13 +81,33 @@ describe('shared frontend completeness guards', () => {
 
 	it('keeps Mega Coaster routing executable', () => {
 		const presenter = source('src/components/CoasterSetupPresenter.svelte');
-		expect(presenter).toContain('const greenTriggerIndexes: number[] = []');
-		expect(presenter).toContain('greenTriggerIndexes.includes(index)');
+		expect(presenter).not.toContain('MIN_CARTS_PER_LINE');
+		expect(presenter).toContain('ROWS.flatMap((row) =>');
+		expect(presenter).toContain('return impacts.map((impact, lane) =>');
+		expect(presenter).toContain('return { row, launchDelayUnits, impact }');
+		expect(presenter).toContain('route.launchDelayUnits * timing.stagger');
+		expect(presenter).toContain('assetKey="coasterVomitSpine"');
 	});
 
 	it('ships a complete catalog for every configured locale', async () => {
 		const en = (await import('../src/i18n/messagesMap/en')).default;
-		const locales = ['ar', 'de', 'es', 'fi', 'fr', 'hi', 'id', 'ja', 'ko', 'pl', 'pt', 'ru', 'tr', 'vi', 'zh'];
+		const locales = [
+			'ar',
+			'de',
+			'es',
+			'fi',
+			'fr',
+			'hi',
+			'id',
+			'ja',
+			'ko',
+			'pl',
+			'pt',
+			'ru',
+			'tr',
+			'vi',
+			'zh',
+		];
 		const placeholders = (value: string) =>
 			[...value.matchAll(/%\w+%/g)].map(([match]) => match).sort();
 

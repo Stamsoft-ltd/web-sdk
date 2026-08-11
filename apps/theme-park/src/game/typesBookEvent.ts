@@ -82,7 +82,8 @@ type BookEventDuckReveal = {
 	type: 'duckReveal';
 	position: Position;
 	kind: DuckKind;
-	value: number; // plain multiplier, e.g. 25 = x25
+	// `mult` adds this many whole bets; `multmult` multiplies the running currency total.
+	value: number;
 	runningTotal: number; // cents
 };
 
@@ -95,6 +96,8 @@ type BookEventDuckPickStart = {
 	type: 'duckPickStart';
 	totalPicks: number;
 	pool: DuckPrize[]; // 25 prizes: first 10 picked outcomes, remaining 15 end reveals
+	// New books provide the three landed S_DUCK cells. Optional keeps published legacy books playable.
+	positions?: Position[];
 };
 
 type BookEventDuckPick = {

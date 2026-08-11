@@ -373,25 +373,36 @@
 	function fitText(node: HTMLElement, _value: unknown) {
 		void _value;
 		node.style.display = 'inline-block';
+		let frame = 0;
 		const fit = () => {
 			const slot = node.parentElement;
 			if (!slot) return;
-			node.style.transform = 'none';
-			node.style.transformOrigin = 'left center';
+			// A transform only changes paint size; the unscaled text still expands flex layout. Reset to
+			// the authored size, measure the full line, then change the real font size so layout also fits.
+			node.style.removeProperty('font-size');
 			const style = getComputedStyle(slot);
 			const available =
 				slot.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-			const full = node.offsetWidth;
+			const baseSize = parseFloat(getComputedStyle(node).fontSize);
+			const full = node.scrollWidth;
 			const scale = full > available && available > 0 ? available / full : 1;
-			node.style.transform = scale < 1 ? `scale(${scale})` : 'none';
+			if (scale < 1) node.style.fontSize = `${Math.max(1, baseSize * scale)}px`;
 		};
-		const schedule = () => requestAnimationFrame(fit);
+		const schedule = () => {
+			cancelAnimationFrame(frame);
+			frame = requestAnimationFrame(fit);
+		};
 		const observer = new ResizeObserver(schedule);
-		observer.observe(node);
 		if (node.parentElement) observer.observe(node.parentElement);
 		document.fonts?.ready.then(schedule);
 		schedule();
-		return { update: schedule, destroy: () => observer.disconnect() };
+		return {
+			update: schedule,
+			destroy: () => {
+				cancelAnimationFrame(frame);
+				observer.disconnect();
+			},
+		};
 	}
 </script>
 
@@ -936,6 +947,7 @@
 	.value-pill {
 		min-width: 0;
 		padding: 0;
+		box-sizing: border-box;
 		border-left: none;
 		display: flex;
 		flex-direction: column;
@@ -955,7 +967,8 @@
 		height: calc(var(--hud-u) * 46.667);
 		padding: 0 calc(var(--hud-u) * 6.667);
 		flex: 0 0 auto;
-		min-width: calc(var(--hud-u) * 130.333);
+		width: calc(var(--hud-u) * 130.333);
+		overflow: hidden;
 	}
 
 	/* 66 wide (node 6589:4367) — the value is fitText-shrunk rather than allowed to push the row. */
@@ -988,6 +1001,8 @@
 		align-items: flex-start;
 		gap: 0;
 		width: calc(var(--hud-u) * 66);
+		min-width: 0;
+		overflow: hidden;
 	}
 
 	.bet-coin {
@@ -1044,6 +1059,8 @@
 		font-weight: 700;
 		color: #fff;
 		white-space: nowrap;
+		max-width: 100%;
+		overflow: hidden;
 	}
 
 	.stepper,
@@ -1522,9 +1539,10 @@
 	}
 
 	.hud-shell[data-layout='landscape'] .value-pill {
-		width: fit-content;
-		min-width: min(98px, 13vw);
+		width: min(98px, 13vw);
+		min-width: 0;
 		max-width: 100%;
+		overflow: hidden;
 		padding: 1px 5px;
 		border-left: none;
 		border-radius: 12px;
@@ -1850,6 +1868,7 @@
 		border-radius: 14px;
 		background: rgba(0, 0, 0, 0.42);
 		border: 1px solid rgba(255, 255, 255, 0.08);
+		overflow: hidden;
 	}
 	.pt-pill__label {
 		font-size: 0.55rem;
@@ -1900,7 +1919,7 @@
 		height: 28px;
 	}
 	.pt-bet__values {
-		flex: 0 1 auto;
+		flex: 1 1 0;
 		min-width: 0;
 		display: flex;
 		flex-direction: column;
@@ -1908,6 +1927,7 @@
 		justify-content: center;
 		gap: 1px;
 		cursor: pointer;
+		overflow: hidden;
 	}
 	.pt-step {
 		flex: 0 0 auto;

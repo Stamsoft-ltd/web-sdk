@@ -2,6 +2,7 @@ import { stateBet } from 'state-shared';
 import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap } from 'utils-book';
 import { waitForTimeout } from 'utils-shared/wait';
 import { SECOND } from 'constants-shared/time';
+import { tick } from 'svelte';
 
 import type { BookEvent, BookEventContext, BookEventOfType } from './typesBookEvent';
 import type { RollerReel } from './types';
@@ -10,6 +11,7 @@ import { stateGame, stateGameDerived } from './stateGame.svelte';
 import { eventEmitter } from './eventEmitter';
 import { playBookEvent } from './utils';
 import config from './config';
+import { BOARD_DIMENSIONS } from './constants';
 
 const getWinLevelData = (winLevel: number): WinLevelData => {
 	const clamped = Math.min(10, Math.max(1, Math.round(winLevel))) as WinLevel;
@@ -51,6 +53,16 @@ const dedupePositions = (positions: { reel: number; row: number }[]) => {
 	});
 };
 
+const duckTriggerPositionsFromBoard = () =>
+	stateGame.board.flatMap((reel, reelIndex) =>
+		reel.reelState.symbols.flatMap((symbol, symbolIndex) => {
+			const row = symbolIndex - 1;
+			return row >= 0 && row < BOARD_DIMENSIONS.y && symbol.rawSymbol.name === 'S_DUCK'
+				? [{ reel: reelIndex, row }]
+				: [];
+		}),
+	);
+
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
 		// WIN is per spin, not the cumulative bonus total.
@@ -85,8 +97,20 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.pendingStop = false;
 		stateGame.activeRollerReels = [];
 
+		// Bind Duck art to the reveal event itself. Old reel symbols keep their prior seed while they
+		// roll out; the next spin cannot restyle them merely by starting.
+		const seededRevealEvent = {
+			...bookEvent,
+			board: bookEvent.board.map((reel) =>
+				reel.map((symbol) =>
+					symbol.name === 'DC' || symbol.name === 'S_DUCK'
+						? { ...symbol, duckStyleSeed: bookEvent.index }
+						: symbol,
+				),
+			),
+		};
 		const spinPromise = stateGameDerived.enhancedBoard.spin({
-			revealEvent: bookEvent,
+			revealEvent: seededRevealEvent,
 			paddingBoard: config.paddingReels[bookEvent.gameType],
 		});
 		if (hadPendingStop) stateGameDerived.enhancedBoard.stop();
@@ -159,15 +183,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.paylineWins = [];
 		stateGame.bonusSummaryShown = false;
 		if (stateGame.gameType === 'basegame') {
-			const settledRollerReels = stateGame.activeRollerReels;
 			stateGameDerived.resetBonusState();
-			// Keep the completed multiplier reel while idle.
-			// The following reveal releases it as the next spin starts.
-			stateGame.activeRollerReels = settledRollerReels;
+			// Settled Roller plaques remain on their board symbols. Clearing feature metadata cannot
+			// change their visuals; the following reveal makes those same symbols roll out.
 		}
 	},
 
-	// Only Roller Wilds / Mega Coaster emit freeSpinTrigger (Duck Your Luck has none)
+	// Reel bonuses use freeSpinTrigger. Duck Your Luck celebrates its landed scatters in
+	// duckPickStart because it transitions directly into the pond instead of free spins.
 	freeSpinTrigger: async (bookEvent: BookEventOfType<'freeSpinTrigger'>) => {
 		if (stateGame.stopAutoOnBonus && stateBet.autoSpinsCounter > 0) {
 			stateBet.autoSpinsCounter = 0;
@@ -189,7 +212,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
 		await eventEmitter.broadcastAsync({
 			type: 'freeSpinIntroUpdate',
-			totalFreeSpins: bookEvent.totalFs,
+			count: bookEvent.totalFs,
 			title: bookEvent.bonusType === 'coaster' ? 'MEGA COASTER' : 'ROLLER WILDS',
 		});
 		eventEmitter.broadcast({ type: 'freeSpinIntroHide' });
@@ -231,6 +254,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		await eventEmitter.broadcastAsync({ type: 'transition' });
 
 		stateGameDerived.resetBonusState();
+		// Final Roller plaques stay on board symbols through the transition and into the next spin.
 		stateGame.gameType = 'basegame';
 		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_main' });
 	},
@@ -285,6 +309,36 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 	// ── Duck Your Luck bonus (pond pick screen) ───────────────────────────────
 	duckPickStart: async (bookEvent: BookEventOfType<'duckPickStart'>) => {
+		if (stateGame.stopAutoOnBonus && stateBet.autoSpinsCounter > 0) {
+			stateBet.autoSpinsCounter = 0;
+		}
+
+		// Show the same trigger celebration as the other bonus buys, but keep the post-turn hold
+		// short now that the duck uses one fast motion. Legacy books recover S_DUCK cells from Board.
+		const triggerPositions =
+			bookEvent.positions?.length > 0 ? bookEvent.positions : duckTriggerPositionsFromBoard();
+		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_win' });
+		if (triggerPositions.length > 0) {
+			await eventEmitter.broadcastAsync({
+				type: 'boardWithAnimateSymbols',
+				symbolPositions: triggerPositions,
+			});
+			await waitForTimeout(SECOND * 0.12);
+		}
+
+		// Match the other bought bonuses: announce the awarded feature, wait for the player,
+		// then change scenes under the transition cover before mounting the pond.
+		eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
+		await eventEmitter.broadcastAsync({
+			type: 'freeSpinIntroUpdate',
+			count: bookEvent.totalPicks,
+			title: 'DUCK YOUR LUCK',
+			countLabel: 'DUCK PICKS',
+		});
+		eventEmitter.broadcast({ type: 'freeSpinIntroHide' });
+		await eventEmitter.broadcastAsync({ type: 'transition' });
+
 		stateGame.duckPicks = {
 			totalPicks: bookEvent.totalPicks,
 			pool: bookEvent.pool,
@@ -292,11 +346,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			finalAmount: null,
 		};
 		stateGame.duckRunningTotal = 0;
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_win' });
 		eventEmitter.broadcast({
 			type: 'duckPondShow',
 			totalPicks: bookEvent.totalPicks,
 			pool: bookEvent.pool,
+			seed: bookEvent.index,
 		});
 		await waitForTimeout(600);
 	},
@@ -327,11 +381,23 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if (stateGame.duckPicks) {
 			stateGame.duckPicks = { ...stateGame.duckPicks, finalAmount: bookEvent.amount };
 		}
+		stateGame.roundWin = bookEvent.amount;
 		await eventEmitter.broadcastAsync({ type: 'duckPondFinish', amount: bookEvent.amount });
-		// The pond's BONUS COMPLETE panel is this bonus's total board. Suppress
-		// the settlement setWin tier board that follows it.
-		stateGame.bonusSummaryShown = true;
 		eventEmitter.broadcast({ type: 'duckPondHide' });
+
+		// Duck Your Luck has no freeSpinEnd event, so explicitly use the same final-winnings board as
+		// the reel bonuses. Keep the pond state alive behind it until the player acknowledges the total.
+		stateGame.bonusSummaryShown = true;
+		const winLevelData = getWinLevelDataForAmount(bookEvent.amount);
+		eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_youwon_panel' });
+		await eventEmitter.broadcastAsync({
+			type: 'freeSpinOutroCountUp',
+			amount: bookEvent.amount,
+			winLevelData,
+		});
+		eventEmitter.broadcast({ type: 'freeSpinOutroHide' });
+
 		stateGame.duckPicks = null;
 		stateGame.duckRunningTotal = 0;
 	},
@@ -343,10 +409,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			// Legacy books repeat the final reel multiplier on all five W cells.
 			// That is one reel value, not five values to add. New books may supply
 			// sparse row multipliers explicitly for the apply → sum presentation.
-			const multipliers =
-				Array.isArray(entry.multipliers) && entry.multipliers.length > 0
-					? entry.multipliers.map((value) => ({ ...value }))
-					: [{ row: triggerRow, multiplier: entry.multiplier }];
+			const multipliers = Array.isArray(entry.multipliers)
+				? entry.multipliers.map((value) => ({ ...value }))
+				: [{ row: triggerRow, multiplier: entry.multiplier }];
 			const summedMultiplier = multipliers.reduce((sum, value) => sum + value.multiplier, 0);
 			return {
 				reel: entry.reel,
@@ -357,7 +422,19 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		});
 
 		// reveal handler has already awaited the reel stop. Animation therefore
-		// always starts after the complete board has settled.
+		// always starts after the complete board has settled. Pop every landed Mega Wild first so
+		// the trigger reads before its cart enters from behind the upper bulb frame.
+		const triggerPositions = reels.map(({ reel, triggerRow }) => ({ reel, row: triggerRow }));
+		await eventEmitter.broadcastAsync({
+			type: 'boardWithAnimateSymbols',
+			symbolPositions: triggerPositions,
+		});
+		await waitForTimeout(380);
+		for (const { reel, row } of triggerPositions) {
+			const symbol = stateGame.board[reel]?.reelState.symbols[row + 1];
+			if (symbol) symbol.symbolState = 'static';
+		}
+
 		await eventEmitter.broadcastAsync({ type: 'rollerWildsShow', reels });
 
 		for (const roller of reels) {
@@ -368,15 +445,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 					name: 'W',
 					wild: true,
 					reelMultiplier: roller.multiplier,
-					rollerTrigger: true,
 				};
 				symbol.symbolState = 'static';
 			}
 		}
 		stateGame.activeRollerReels = reels;
-		// Let the settled multiplier reel render before removing the animation
-		// layer. This prevents a normal-W flash before paylines appear.
-		await waitForTimeout(20);
+		// Board now owns these multiplier-only reel symbols. Mount that identical presentation before
+		// removing the feature overlay; on the next spin the same symbols move out with the reel.
+		await tick();
 		eventEmitter.broadcast({ type: 'rollerWildsHide' });
 	},
 

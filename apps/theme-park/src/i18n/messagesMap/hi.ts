@@ -38,6 +38,7 @@ export default {
 	"START": "प्रारंभ करें",
 	"SPINS": "घूमता है",
 	"FREE SPINS": "फ्री स्पिन",
+	"DUCK PICKS": "बत्तख चयन",
 	"OF": "में से",
 	"BONUS COMPLETE": "बोनस पूरा",
 	"SELECTED": "चयनित",

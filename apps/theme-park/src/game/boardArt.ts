@@ -6,10 +6,8 @@
  * the whole image is what lands the painted lines exactly on the cell boundaries <Board> spins
  * symbols through — the two agree because both are fifths of the same rect.
  *
- * Shared, not local to <BoardFrame>: <CoasterWildBackground> repaints a crop of the same art behind
- * each persistent wild, and it has to use the same numbers. It used to carry its own hardcoded 1.08
- * for both axes — right for the old art, and 4.9% too wide for this one, which showed up as a
- * mis-registered dark box around every wild.
+ * BoardFrame alone needs these values. Wild covers now use a local opaque cell fill; cloning and
+ * masking this full board texture for every persistent Wild was a major GPU cost.
  */
 export const ART = { width: 1462, height: 972 };
 export const ART_GRID = { left: 15.5, top: 41.5, right: 1435.5, bottom: 941.5 };

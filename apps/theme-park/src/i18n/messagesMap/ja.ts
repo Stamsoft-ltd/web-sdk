@@ -38,6 +38,7 @@ export default {
 	"START": "スタート",
 	"SPINS": "スピン",
 	"FREE SPINS": "フリースピン",
+	"DUCK PICKS": "アヒルピック",
 	"OF": "/",
 	"BONUS COMPLETE": "ボーナス完了",
 	"SELECTED": "選択済み",

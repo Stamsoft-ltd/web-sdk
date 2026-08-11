@@ -1,0 +1,341 @@
+roller_car_ride.webp
+size: 2048,2004
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+roller_car_ride_000
+  rotate: false
+  xy: 0, 0
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_001
+  rotate: false
+  xy: 256, 0
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_002
+  rotate: false
+  xy: 512, 0
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_003
+  rotate: false
+  xy: 768, 0
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_004
+  rotate: false
+  xy: 1024, 0
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_005
+  rotate: false
+  xy: 1280, 0
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_006
+  rotate: false
+  xy: 1536, 0
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_007
+  rotate: false
+  xy: 1792, 0
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_008
+  rotate: false
+  xy: 0, 334
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_009
+  rotate: false
+  xy: 256, 334
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_010
+  rotate: false
+  xy: 512, 334
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_011
+  rotate: false
+  xy: 768, 334
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_012
+  rotate: false
+  xy: 1024, 334
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_013
+  rotate: false
+  xy: 1280, 334
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_014
+  rotate: false
+  xy: 1536, 334
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_015
+  rotate: false
+  xy: 1792, 334
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_016
+  rotate: false
+  xy: 0, 668
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_017
+  rotate: false
+  xy: 256, 668
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_018
+  rotate: false
+  xy: 512, 668
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_019
+  rotate: false
+  xy: 768, 668
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_020
+  rotate: false
+  xy: 1024, 668
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_021
+  rotate: false
+  xy: 1280, 668
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_022
+  rotate: false
+  xy: 1536, 668
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_023
+  rotate: false
+  xy: 1792, 668
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_024
+  rotate: false
+  xy: 0, 1002
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_025
+  rotate: false
+  xy: 256, 1002
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_026
+  rotate: false
+  xy: 512, 1002
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_027
+  rotate: false
+  xy: 768, 1002
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_028
+  rotate: false
+  xy: 1024, 1002
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_029
+  rotate: false
+  xy: 1280, 1002
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_030
+  rotate: false
+  xy: 1536, 1002
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_031
+  rotate: false
+  xy: 1792, 1002
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_032
+  rotate: false
+  xy: 0, 1336
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_033
+  rotate: false
+  xy: 256, 1336
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_034
+  rotate: false
+  xy: 512, 1336
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_035
+  rotate: false
+  xy: 768, 1336
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_036
+  rotate: false
+  xy: 1024, 1336
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_037
+  rotate: false
+  xy: 1280, 1336
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_038
+  rotate: false
+  xy: 1536, 1336
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_039
+  rotate: false
+  xy: 1792, 1336
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_040
+  rotate: false
+  xy: 0, 1670
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_041
+  rotate: false
+  xy: 256, 1670
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_042
+  rotate: false
+  xy: 512, 1670
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_043
+  rotate: false
+  xy: 768, 1670
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_044
+  rotate: false
+  xy: 1024, 1670
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_045
+  rotate: false
+  xy: 1280, 1670
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_046
+  rotate: false
+  xy: 1536, 1670
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1
+roller_car_ride_047
+  rotate: false
+  xy: 1792, 1670
+  size: 256, 334
+  orig: 256, 334
+  offset: 0, 0
+  index: -1

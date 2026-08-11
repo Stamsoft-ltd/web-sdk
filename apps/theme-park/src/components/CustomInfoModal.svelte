@@ -115,7 +115,7 @@
 		{
 			img: 'duck-your-luck',
 			name: 'Duck your luck',
-			desc: '10 duck picks with multipliers and multiply-all ducks. Lump sum payout, capped at 25,000x.',
+			desc: '10 duck picks with cash additions and multiply-all ducks. Lump sum payout, capped at 25,000x.',
 			mult: 100,
 		},
 		{
@@ -216,7 +216,7 @@
 						<div class="ov-feat">
 							<h4 class="ov-feat__name">DUCK COLLECT</h4>
 							<p class="info-p">
-								Special Ducks reveal direct multipliers or multipliers that increase the collected
+								Special Ducks reveal cash additions or multiply-all values that multiply the collected
 								prize.
 							</p>
 						</div>

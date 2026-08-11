@@ -2,12 +2,19 @@
 // theme_park_event_contract.md. All amounts are integer cents of bet (100 = 1x).
 import type { RawSymbol } from '../../game/types';
 import type { BookEvent } from '../../game/typesBookEvent';
-import { makeBoard, wild, bakeTiles, PADDING_POSITIONS, NO_ANTICIPATION, type StoryBook } from './helpers';
+import {
+	makeBoard,
+	bakeTiles,
+	PADDING_POSITIONS,
+	NO_ANTICIPATION,
+	type StoryBook,
+} from './helpers';
 import realBooks from './bonus_books_real';
 import { makeDuckPool } from './duckPools';
 
 // Events are authored with index 0 and renumbered sequentially here.
-const reindex = (events: BookEvent[]): BookEvent[] => events.map((event, index) => ({ ...event, index }));
+const reindex = (events: BookEvent[]): BookEvent[] =>
+	events.map((event, index) => ({ ...event, index }));
 
 // A quiet no-win freegame board (reels 0/1 share no symbol names, no wilds)
 const quietBoard = (): RawSymbol[][] =>
@@ -91,7 +98,13 @@ const buildRollerBonusEvents = (): BookEvent[] => {
 			gameType: 'basegame',
 		},
 		{ index: 0, type: 'setTotalWin', amount: 0 },
-		{ index: 0, type: 'freeSpinTrigger', totalFs: 10, positions: SCATTER_POSITIONS, bonusType: 'roller' },
+		{
+			index: 0,
+			type: 'freeSpinTrigger',
+			totalFs: 10,
+			positions: SCATTER_POSITIONS,
+			bonusType: 'roller',
+		},
 	];
 
 	let totalWin = 0;
@@ -99,16 +112,17 @@ const buildRollerBonusEvents = (): BookEvent[] => {
 		events.push({ index: 0, type: 'updateFreeSpin', amount: spin, total: 10 });
 
 		if (spin === 2) {
-			// Reels 1+2 transform: H1 + W(x5) + W(x10) → H1 3oak (2x=200) × (5+10) = 3000
+			// Three random-row triggers stress concurrent staging. Reel 4 has no plaque (x1).
+			// H1 + W(x5) + W(x10) → H1 3oak (2x=200) × (5+10) = 3000.
 			events.push({
 				index: 0,
 				type: 'reveal',
 				board: makeBoard([
 					['H1', 'H2', 'L1', 'L3', 'H5'],
-					[wild(5), wild(5), wild(5), wild(5), wild(5)],
-					[wild(10), wild(10), wild(10), wild(10), wild(10)],
+					['H2', 'L2', 'H4', 'L4', { name: 'W', wild: true, rollerTrigger: true }],
+					['L1', { name: 'W', wild: true, rollerTrigger: true }, 'H5', 'L3', 'H1'],
 					['L2', 'H2', 'H4', 'L4', 'L5'],
-					['L3', 'L1', 'H3', 'H5', 'L2'],
+					['L3', 'L1', { name: 'W', wild: true, rollerTrigger: true }, 'H5', 'L2'],
 				]),
 				paddingPositions: PADDING_POSITIONS,
 				anticipation: NO_ANTICIPATION,
@@ -118,8 +132,9 @@ const buildRollerBonusEvents = (): BookEvent[] => {
 				index: 0,
 				type: 'rollerWildsApply',
 				reels: [
-					{ reel: 1, multiplier: 5 },
-					{ reel: 2, multiplier: 10 },
+					{ reel: 1, triggerRow: 4, multiplier: 5, multipliers: [{ row: 0, multiplier: 5 }] },
+					{ reel: 2, triggerRow: 1, multiplier: 10, multipliers: [{ row: 4, multiplier: 10 }] },
+					{ reel: 4, triggerRow: 2, multiplier: 1, multipliers: [] },
 				],
 			});
 			totalWin += 3000;
@@ -148,7 +163,7 @@ const buildRollerBonusEvents = (): BookEvent[] => {
 				index: 0,
 				type: 'reveal',
 				board: makeBoard([
-					[wild(2), wild(2), wild(2), wild(2), wild(2)],
+					['H1', 'L1', 'H3', { name: 'W', wild: true, rollerTrigger: true }, 'H5'],
 					['H2', 'L2', 'H2', 'L4', 'L5'],
 					['L1', 'H3', 'H2', 'L3', 'H1'],
 					['H5', 'L2', 'L1', 'L4', 'L5'],
@@ -158,7 +173,13 @@ const buildRollerBonusEvents = (): BookEvent[] => {
 				anticipation: NO_ANTICIPATION,
 				gameType: 'freegame',
 			});
-			events.push({ index: 0, type: 'rollerWildsApply', reels: [{ reel: 0, multiplier: 2 }] });
+			events.push({
+				index: 0,
+				type: 'rollerWildsApply',
+				reels: [
+					{ reel: 0, triggerRow: 3, multiplier: 2, multipliers: [{ row: 0, multiplier: 2 }] },
+				],
+			});
 			totalWin += 200;
 			events.push({
 				index: 0,
@@ -216,7 +237,13 @@ const buildCoasterBonusEvents = (): BookEvent[] => {
 			gameType: 'basegame',
 		},
 		{ index: 0, type: 'setTotalWin', amount: 0 },
-		{ index: 0, type: 'freeSpinTrigger', totalFs: 10, positions: SCATTER_POSITIONS, bonusType: 'coaster' },
+		{
+			index: 0,
+			type: 'freeSpinTrigger',
+			totalFs: 10,
+			positions: SCATTER_POSITIONS,
+			bonusType: 'coaster',
+		},
 		// 7 pukes; a repeat hit doubles the tile (multiplier = value AFTER the puke)
 		{
 			index: 0,
@@ -381,10 +408,38 @@ const wincapEvents: BookEvent[] = reindex([
 
 // Hand-crafted books (kept for deterministic minimal coverage)
 const handcraftedBooks: StoryBook[] = [
-	{ id: 101, payoutMultiplier: 572, events: duckYourLuckEvents, criteria: 'duck', baseGameWins: 0, freeGameWins: 572 },
-	{ id: 102, payoutMultiplier: 32, events: buildRollerBonusEvents(), criteria: 'roller', baseGameWins: 0, freeGameWins: 32 },
-	{ id: 103, payoutMultiplier: 5, events: buildCoasterBonusEvents(), criteria: 'coaster', baseGameWins: 0, freeGameWins: 5 },
-	{ id: 104, payoutMultiplier: 25000, events: wincapEvents, criteria: 'wincap', baseGameWins: 0, freeGameWins: 25000 },
+	{
+		id: 101,
+		payoutMultiplier: 572,
+		events: duckYourLuckEvents,
+		criteria: 'duck',
+		baseGameWins: 0,
+		freeGameWins: 572,
+	},
+	{
+		id: 102,
+		payoutMultiplier: 32,
+		events: buildRollerBonusEvents(),
+		criteria: 'roller',
+		baseGameWins: 0,
+		freeGameWins: 32,
+	},
+	{
+		id: 103,
+		payoutMultiplier: 5,
+		events: buildCoasterBonusEvents(),
+		criteria: 'coaster',
+		baseGameWins: 0,
+		freeGameWins: 5,
+	},
+	{
+		id: 104,
+		payoutMultiplier: 25000,
+		events: wincapEvents,
+		criteria: 'wincap',
+		baseGameWins: 0,
+		freeGameWins: 25000,
+	},
 ];
 
 // Real rounds sampled from the simulated math engine come first.

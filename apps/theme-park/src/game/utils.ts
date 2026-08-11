@@ -5,7 +5,7 @@ import { bookEventHandlerMap } from './bookEventHandlerMap';
 import { eventEmitter } from './eventEmitter';
 import type { Bet, BookEventOfType } from './typesBookEvent';
 import type { SymbolName, SymbolState, RawSymbol } from './types';
-import { CELL_W, SYMBOL_INFO_MAP } from './constants';
+import { getBoardCellCenterX, SYMBOL_INFO_MAP } from './constants';
 
 // Maps from SymbolName → asset key for each state.
 // Used by Board.svelte when NOT in bonus mode (base game).
@@ -21,7 +21,7 @@ export const spriteKeyByName: Record<SymbolName, string> = {
 	L4: 'tpL4',
 	L5: 'tpL5',
 	W: 'tpWildDesktop',
-	DC: 'tpH2',
+	DC: 'tpDuckScatterDesktop',
 	S_DUCK: 'tpDuckScatterDesktop',
 	S_ROLLER: 'tpRollerScatterDesktop',
 	S_COASTER: 'tpCoasterScatterDesktop',
@@ -43,7 +43,7 @@ export const winSpriteKeyByName: Record<SymbolName, string> = {
 	L3: 'tpL3Win',
 	L4: 'tpL4Win',
 	L5: 'tpL5Win',
-	DC: 'tpH2Win',
+	DC: 'tpDuckScatterDesktop',
 };
 
 export type SpecialSymbolVisual =
@@ -87,12 +87,12 @@ export const getSpecialSymbolKey = (visual: SpecialSymbolVisual, layoutType: str
 	return specialSymbolKeys[visual][variant];
 };
 
-export const getReelCenterX = (reelIndex: number): number => CELL_W * (reelIndex + 0.5);
+export const getReelCenterX = (reelIndex: number): number => getBoardCellCenterX(reelIndex);
 
 export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; state: SymbolState }) =>
 	SYMBOL_INFO_MAP[rawSymbol.name][state];
 
-export const getSymbolX = (reelIndex: number): number => CELL_W * (reelIndex + 0.5);
+export const getSymbolX = (reelIndex: number): number => getBoardCellCenterX(reelIndex);
 
 export const { playBookEvent, playBookEvents } = createPlayBookUtils({ bookEventHandlerMap });
 

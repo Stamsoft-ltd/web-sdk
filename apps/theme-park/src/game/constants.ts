@@ -11,6 +11,12 @@ export const SYMBOL_W = 121;
 export const SYMBOL_H = 103;
 export const SYMBOL_SIZE = SYMBOL_H;
 
+// One shared contract for the landed Roller trigger and the moving track car. The authored frame
+// includes generous transparent margins, so 1.55 cells tall keeps the visible car readable without
+// spilling across a full neighbouring reel.
+export const ROLLER_CAR_H = SYMBOL_H * 1.55;
+export const ROLLER_CAR_W = ROLLER_CAR_H * (256 / 334);
+
 // Reel pitch — how far apart the cell CENTRES sit, which is a separate thing from how big a symbol
 // is drawn. Figma 6612-4311 puts the grid at 691x457 inside a 701x467 board (nodes 6612:4553 and
 // 6612:4357), i.e. a 1.512:1 cell, far wider than the 1.175:1 the old shared-with-art pitch gave.
@@ -25,6 +31,21 @@ export const BOARD_SIZES = {
 	width: CELL_W * BOARD_DIMENSIONS.x,
 	height: CELL_H * BOARD_DIMENSIONS.y,
 };
+
+// Keep reel content behind the authored side rails. The wider reserve matches the cell-cut masks
+// used by Mega Wilds, so opaque Coaster Wild cells cannot paint across the bulbs at either edge.
+// Edge reel centres move by half the reserve, keeping their visible areas centred.
+export const BOARD_SIDE_CONTENT_INSET = 18;
+// Opaque Mega Coaster Wild cells need more clearance than transparent reel symbols. This exposes
+// the one grid authored into BoardFrame instead of drawing a second grid above the feature.
+export const COASTER_WILD_GRID_INSET = 2.5;
+export const getBoardCellCenterX = (reelIndex: number) =>
+	CELL_W * (reelIndex + 0.5) +
+	(reelIndex === 0
+		? BOARD_SIDE_CONTENT_INSET * 0.5
+		: reelIndex === BOARD_DIMENSIONS.x - 1
+			? -BOARD_SIDE_CONTENT_INSET * 0.5
+			: 0);
 
 export const BOARD_GRID_OFFSET_Y = 0;
 
@@ -78,7 +99,7 @@ export const SYMBOL_INFO_MAP: Record<SymbolName, Record<SymbolState, SymbolInfo>
 	L4: states('tpL4', 'tpL4Win'), // J
 	L5: states('tpL5', 'tpL5Win'), // 10
 	W: states('tpWildDesktop', 'tpWildDesktop'),
-	DC: states('tpH2', 'tpH2Win'),
+	DC: states('tpDuckScatterDesktop', 'tpDuckScatterDesktop'),
 	S_DUCK: states('tpDuckScatterDesktop', 'tpDuckScatterDesktop'),
 	S_ROLLER: states('tpRollerScatterDesktop', 'tpRollerScatterDesktop'),
 	S_COASTER: states('tpCoasterScatterDesktop', 'tpCoasterScatterDesktop'),

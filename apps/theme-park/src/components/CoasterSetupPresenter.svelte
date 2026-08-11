@@ -9,9 +9,11 @@
 </script>
 
 <script lang="ts">
+	import { stateBet } from 'state-shared';
+	import { onMount } from 'svelte';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut, linear } from 'svelte/easing';
-	import { BitmapText, Container, Sprite } from 'pixi-svelte';
+	import { Container, Graphics, PIXI, Sprite } from 'pixi-svelte';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
 	import { FadeContainer } from 'components-pixi';
 	import { waitForTimeout } from 'utils-shared/wait';
@@ -19,111 +21,209 @@
 	import { getContext } from '../game/context';
 	import {
 		CELL_W,
-		SYMBOL_W,
 		SYMBOL_H,
 		BOARD_DIMENSIONS,
-		BOARD_SIZES,
 		BOARD_GRID_OFFSET_Y,
+		BOARD_SIDE_CONTENT_INSET,
+		COASTER_WILD_GRID_INSET,
+		getBoardCellCenterX,
 	} from '../game/constants';
-	import CoasterWildBackground from './CoasterWildBackground.svelte';
-	import LoopingAssetSprite from './LoopingAssetSprite.svelte';
+	import CoasterWildTile from './CoasterWildTile.svelte';
+	import LoopingSpineSprite from './LoopingSpineSprite.svelte';
 
 	type CoasterImpact = { reel: number; row: number; multiplier: number };
-	type CoasterRoute = { impacts: CoasterImpact[]; lastTrackIndex: number };
-	type CartState = 'happy' | 'vomit' | 'sick';
+	type CoasterRoute = {
+		row: number;
+		launchDelayUnits: number;
+		impact: CoasterImpact;
+	};
+	type CartState = 'happy' | 'vomit';
 	type CoasterCart = {
 		id: number;
 		x: Tween<number>;
-		y: Tween<number>;
+		y: number;
 		state: CartState;
 		direction: -1 | 1;
 		visible: boolean;
+		vomitTimeScale: number;
+	};
+	type CoasterTiming = {
+		factor: number;
+		cell: number;
+		stagger: number;
+		intro: number;
+		outro: number;
+		pulseUp: number;
+		pulseDown: number;
 	};
 
 	const context = getContext();
 	const layout = $derived(context.stateGameDerived.boardLayout());
+	const mainLayout = $derived(context.stateLayoutDerived.mainLayout());
 	let show = $state(false);
 	let tilesMap = $state<Record<string, number>>({});
 	let tileScales = $state<Record<string, Tween<number>>>({});
 	let carts = $state<CoasterCart[]>([]);
-	let tileMultiplierSteps: Record<string, number[]> = {};
-	let tileHitCounts: Record<string, number> = {};
 	let animationRun = 0;
+	let sequenceActive = $state(false);
+	let skipRequested = false;
+	let skipAllowedAt = 0;
+	let resolveSkip: () => void = () => {};
+	let skipSignal: Promise<void> = Promise.resolve();
+	let finalTiles: CoasterImpact[] = [];
 
-	const cellX = (reel: number) => CELL_W * (reel + 0.5);
+	const ROWS = Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => row);
+	const MIN_CART_GAP_UNITS = 1.35;
+	const CART_GAP_VARIANCE_UNITS = 0.35;
+	// Initial setup reveal only. Free-spin reel timing is owned elsewhere and remains unchanged.
+	// Previous setup boost was 1.3; apply the requested further 1.3x increase (1.3 * 1.3).
+	const SETUP_SPEED_BOOST = 1.69;
+	const SEQUENCE_SPEED = 0.9 * SETUP_SPEED_BOOST;
+	const DUCK_PLAYBACK_SPEED = 4.5 * SETUP_SPEED_BOOST;
+	const VOMIT_SOURCE_MS = 4500;
+	const VOMIT_CLIP_MS = Math.round(VOMIT_SOURCE_MS / DUCK_PLAYBACK_SPEED);
+	const CART_SIZE = SYMBOL_H * 1.7;
+	const TRACK_HEIGHT = SYMBOL_H * 0.18;
+	const SCREEN_OVERSCAN = CART_SIZE * 0.72;
+
+	const cellX = getBoardCellCenterX;
 	const cellY = (row: number) => SYMBOL_H * (row + 0.5);
-	const RAIL_OFFSET_CELLS = 0.6;
-	const CELL_TRAVEL_MS = 420;
-	const CURVE_ENTRY_MS = 240;
-	const CURVE_TRAVEL_MS = 900;
-	const CURVE_STEPS = 16;
-	const CART_STAGGER_MS = 1500;
-	const railY = (row: number) => cellY(row) - SYMBOL_H * RAIL_OFFSET_CELLS;
+	const railY = (row: number) => cellY(row) + SYMBOL_H * 0.42;
+	const cartY = (row: number) => railY(row) - SYMBOL_H * 0.62;
 	const rowDirection = (row: number): -1 | 1 => (row % 2 === 0 ? 1 : -1);
-	const entryX = -CELL_W * 0.72;
-	const trackY = BOARD_SIZES.height * 0.5 - SYMBOL_H * 0.44;
-	const TRACK_SOURCE_WIDTH = 795;
-	const TRACK_FIRST_RAIL_X = 60;
-	const TRACK_LAST_RAIL_X = 688;
-	const TRACK_HORIZONTAL_OVERSCAN = 1.1;
-	const trackScaleX = BOARD_SIZES.width / (TRACK_LAST_RAIL_X - TRACK_FIRST_RAIL_X);
-	const baseTrackWidth = TRACK_SOURCE_WIDTH * trackScaleX;
-	const baseTrackX = baseTrackWidth * 0.5 - TRACK_FIRST_RAIL_X * trackScaleX;
-	const trackWidth = baseTrackWidth * TRACK_HORIZONTAL_OVERSCAN;
-	const trackX =
-		BOARD_SIZES.width * 0.5 + (baseTrackX - BOARD_SIZES.width * 0.5) * TRACK_HORIZONTAL_OVERSCAN;
-	const trackOverscanX = (trackWidth - baseTrackWidth) * 0.5;
-	const trackCells = Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => {
-		const reels = Array.from({ length: BOARD_DIMENSIONS.x }, (_, reel) => reel);
-		if (rowDirection(row) === -1) reels.reverse();
-		return reels.map((reel) => ({ reel, row }));
-	}).flat();
-	const trackIndexOf = (impact: CoasterImpact) =>
-		trackCells.findIndex((cell) => cell.reel === impact.reel && cell.row === impact.row);
-
-	// One route per math-provided puke: every duck vomits exactly once.
-	const buildRoutes = (pukes: CoasterImpact[]) => {
-		return pukes
-			.map((impact, order) => ({ impact, order, trackIndex: trackIndexOf(impact) }))
-			.filter(({ trackIndex }) => trackIndex >= 0)
-			.sort((a, b) => a.trackIndex - b.trackIndex || a.order - b.order)
-			.map(
-				({ impact, trackIndex }): CoasterRoute => ({
-					impacts: [impact],
-					lastTrackIndex: trackIndex,
-				}),
-			);
+	const boardScale = $derived(layout.boardScale || 1);
+	const trackLeft = $derived((0 - layout.x) / boardScale + layout.pivot.x - SCREEN_OVERSCAN);
+	const trackRight = $derived(
+		(mainLayout.width - layout.x) / boardScale + layout.pivot.x + SCREEN_OVERSCAN,
+	);
+	const trackWidth = $derived(trackRight - trackLeft);
+	const trackCenterX = $derived((trackLeft + trackRight) * 0.5);
+	// Clip only the added Wild tiles, using the same cell-cut approach as Mega Wilds. Rails and carts
+	// stay screen-wide while the authored BoardFrame grid and both side rails remain above the fill.
+	const drawWildContentMask = (graphics: PIXI.Graphics) => {
+		for (let reel = 0; reel < BOARD_DIMENSIONS.x; reel += 1) {
+			const leftInset = reel === 0 ? BOARD_SIDE_CONTENT_INSET : COASTER_WILD_GRID_INSET;
+			const rightInset =
+				reel === BOARD_DIMENSIONS.x - 1
+					? BOARD_SIDE_CONTENT_INSET
+					: COASTER_WILD_GRID_INSET;
+			for (const row of ROWS) {
+				graphics.rect(
+					CELL_W * reel + leftInset,
+					SYMBOL_H * row + COASTER_WILD_GRID_INSET,
+					CELL_W - leftInset - rightInset,
+					SYMBOL_H - COASTER_WILD_GRID_INSET * 2,
+				);
+			}
+		}
+		graphics.fill(0xffffff);
 	};
+
+	const timingForCurrentSpeed = (): CoasterTiming => {
+		// Base remains readable. Fast is ~2.4x quicker; super turbo is 5x quicker.
+		const factor = stateBet.isSuperTurbo ? 0.2 : stateBet.isTurbo ? 0.42 : 1;
+		return {
+			factor,
+			cell: Math.round((900 / SEQUENCE_SPEED) * factor),
+			stagger: Math.round((940 / SEQUENCE_SPEED) * factor),
+			intro: Math.round((260 / SETUP_SPEED_BOOST) * factor),
+			outro: Math.round((380 / SETUP_SPEED_BOOST) * factor),
+			pulseUp: Math.round((220 / SETUP_SPEED_BOOST) * factor),
+			pulseDown: Math.round((170 / SETUP_SPEED_BOOST) * factor),
+		};
+	};
+
+	const resetSkip = () => {
+		skipRequested = false;
+		skipSignal = new Promise<void>((resolve) => (resolveSkip = resolve));
+	};
+
+	const finalTileMap = () =>
+		Object.fromEntries(
+			finalTiles.map(({ reel, row, multiplier }) => [`${reel},${row}`, multiplier]),
+		);
+
+	const requestSkip = () => {
+		if (!sequenceActive || skipRequested || performance.now() < skipAllowedAt) return;
+		skipRequested = true;
+		animationRun += 1;
+		tilesMap = finalTileMap();
+		carts.forEach((cart) => {
+			cart.visible = false;
+			cart.x.set(cart.x.current, { duration: 0 });
+		});
+		resolveSkip();
+	};
+
+	const runOrSkip = async (task: Promise<unknown>) => {
+		const completed = await Promise.race([task.then(() => true), skipSignal.then(() => false)]);
+		return completed && !skipRequested;
+	};
+
+	const finishSkippedSequence = () => {
+		tilesMap = finalTileMap();
+		carts.forEach((cart) => (cart.visible = false));
+		sequenceActive = false;
+	};
+
+	onMount(() => {
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.code !== 'Space' || !sequenceActive) return;
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			requestSkip();
+		};
+		const onClick = (event: MouseEvent) => {
+			if (!sequenceActive) return;
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			requestSkip();
+		};
+		window.addEventListener('keydown', onKeyDown, { capture: true });
+		window.addEventListener('click', onClick, { capture: true });
+		return () => {
+			window.removeEventListener('keydown', onKeyDown, { capture: true });
+			window.removeEventListener('click', onClick, { capture: true });
+		};
+	});
+
+	// One authored puke = one duck = one 2x step. Repeated impacts on the same cell therefore use
+	// separate ducks and reveal the book's ordered 2x -> 4x -> 8x progression.
+	const buildRoutes = (pukes: CoasterImpact[]): CoasterRoute[] =>
+		ROWS.flatMap((row) => {
+			const direction = rowDirection(row);
+			const impacts = pukes
+				.filter((impact) => impact.row === row)
+				.sort((a, b) => direction * (a.reel - b.reel) || a.multiplier - b.multiplier);
+			let launchDelayUnits = 0;
+			return impacts.map((impact, lane) => {
+				if (lane > 0) {
+					launchDelayUnits += MIN_CART_GAP_UNITS + Math.random() * CART_GAP_VARIANCE_UNITS;
+				}
+				return { row, launchDelayUnits, impact };
+			});
+		});
 
 	const drive = async ({
 		cart,
 		x,
-		y,
 		duration,
 		run,
 	}: {
 		cart: CoasterCart;
 		x: number;
-		y: number;
 		duration: number;
 		run: number;
 	}) => {
 		if (run !== animationRun) return false;
-		await Promise.all([
-			cart.x.set(x, { duration, easing: linear }),
-			cart.y.set(y, { duration, easing: linear }),
-		]);
+		await cart.x.set(x, { duration, easing: linear });
 		return run === animationRun;
 	};
 
-	const pulseWild = (impact: CoasterImpact, run: number) => {
+	const pulseWild = (impact: CoasterImpact, run: number, timing: CoasterTiming) => {
 		if (run !== animationRun) return;
 		const key = `${impact.reel},${impact.row}`;
-		const values = tileMultiplierSteps[key] ?? [impact.multiplier];
-		const hitIndex = tileHitCounts[key] ?? 0;
-		const multiplier = values[Math.min(hitIndex, values.length - 1)];
-		tileHitCounts[key] = hitIndex + 1;
-		tilesMap = { ...tilesMap, [key]: multiplier };
+		tilesMap = { ...tilesMap, [key]: impact.multiplier };
 		const tileScale = tileScales[key] ?? new Tween(1);
 		tileScales = { ...tileScales, [key]: tileScale };
 		tileScale.set(0.72, { duration: 0 });
@@ -133,181 +233,117 @@
 			forcePlay: true,
 		});
 		void (async () => {
-			await tileScale.set(1.24, { duration: 220, easing: cubicOut });
-			await tileScale.set(1, { duration: 170, easing: cubicOut });
+			await tileScale.set(1.24, { duration: timing.pulseUp, easing: cubicOut });
+			await tileScale.set(1, { duration: timing.pulseDown, easing: cubicOut });
 		})();
 	};
 
-	const followRailBend = async (cart: CoasterCart, row: number, run: number) => {
-		const direction = rowDirection(row);
-		const centerX = direction === 1 ? BOARD_SIZES.width : 0;
-		const centerY = railY(row) + SYMBOL_H * 0.5;
-		const radiusX = SYMBOL_W * (direction === 1 ? 0.28 : 0.12) + trackOverscanX;
-		if (
-			!(await drive({
-				cart,
-				x: centerX,
-				y: railY(row),
-				duration: CURVE_ENTRY_MS,
-				run,
-			}))
-		) {
-			return false;
-		}
+	const durationForDistance = (fromX: number, toX: number, timing: CoasterTiming) =>
+		Math.round((Math.abs(toX - fromX) / CELL_W) * timing.cell);
 
-		for (let step = 1; step <= CURVE_STEPS; step += 1) {
-			const progress = step / CURVE_STEPS;
-			const previousProgress = (step - 1) / CURVE_STEPS;
-			const x = centerX + direction * Math.sin(Math.PI * progress) * radiusX;
-			const y = railY(row) + SYMBOL_H * progress;
-			const previousX = centerX + direction * Math.sin(Math.PI * previousProgress) * radiusX;
-			const previousY = railY(row) + SYMBOL_H * previousProgress;
-			const dx = x - previousX;
-			const dy = y - previousY;
-
-			cart.direction = dx < 0 ? -1 : 1;
-			if (
-				!(await drive({
-					cart,
-					x,
-					y,
-					duration: CURVE_TRAVEL_MS / CURVE_STEPS,
-					run,
-				}))
-			) {
-				return false;
-			}
-			if (Math.abs(dx) < Math.abs(dy) * 0.3) {
-				cart.direction = direction === 1 ? -1 : 1;
-			}
-		}
-
-		cart.y.set(centerY + SYMBOL_H * 0.5, { duration: 0 });
+	const waitForRouteTime = async (startedAt: number, targetMs: number, run: number) => {
+		const remaining = Math.round(targetMs - (performance.now() - startedAt));
+		if (remaining > 0 && !(await runOrSkip(waitForTimeout(remaining)))) return false;
 		return run === animationRun;
 	};
 
-	// A cart can own several ordered math placements. It never parks: each duck
-	// turns green 2-5 cells early, drive-by vomits, and completes the full track.
-	const driveDuckTo = async (cart: CoasterCart, impacts: CoasterImpact[], run: number) => {
-		const impactsByTrackIndex = new Map(
-			impacts.map((impact) => [trackIndexOf(impact), impact] as const),
-		);
-		const firstTargetIndex = Math.min(...impactsByTrackIndex.keys());
-		const firstImpact = impactsByTrackIndex.get(firstTargetIndex);
-		if (!firstImpact || firstTargetIndex < 0) return false;
-		const greenTriggerIndexes: number[] = [];
-		let previousTargetIndex = -Infinity;
-		for (const [targetIndex, impact] of impactsByTrackIndex) {
-			const desiredLead = 2 + ((impact.reel + impact.row + cart.id + targetIndex) % 4);
-			const availableLead = Number.isFinite(previousTargetIndex)
-				? Math.max(2, targetIndex - previousTargetIndex - 2)
-				: desiredLead;
-			greenTriggerIndexes.push(targetIndex - Math.min(desiredLead, availableLead));
-			previousTargetIndex = targetIndex;
-		}
-		const firstGreenIndex = Math.min(...greenTriggerIndexes);
-		let returnYellowAtIndex = -1;
+	const driveRoute = async (
+		cart: CoasterCart,
+		route: CoasterRoute,
+		run: number,
+		timing: CoasterTiming,
+	) => {
+		const direction = rowDirection(route.row);
+		const startX = direction === 1 ? trackLeft : trackRight;
+		const endX = direction === 1 ? trackRight : trackLeft;
+		const clipPlaybackMs = Math.round(VOMIT_CLIP_MS * timing.factor);
+		const impactAt = durationForDistance(startX, cellX(route.impact.reel), timing);
+		const vomitStartAt = Math.max(0, impactAt - clipPlaybackMs * 0.5);
+		const vomitEndAt = vomitStartAt + clipPlaybackMs;
 
 		cart.visible = true;
-		cart.state = firstGreenIndex <= 0 ? 'sick' : 'happy';
-		cart.direction = 1;
-		cart.x.set(entryX, { duration: 0 });
-		cart.y.set(railY(0), { duration: 0 });
+		cart.direction = direction;
+		cart.state = 'happy';
+		cart.x.set(startX, { duration: 0 });
 		if (run !== animationRun) return false;
-
-		for (let index = 0; index < trackCells.length; index += 1) {
-			const cell = trackCells[index];
-			const previous = trackCells[index - 1];
-
-			if (previous && previous.row !== cell.row) {
-				if (!(await followRailBend(cart, previous.row, run))) return false;
-			}
-
-			cart.direction = rowDirection(cell.row);
-			if (index === returnYellowAtIndex) cart.state = 'happy';
-			if (greenTriggerIndexes.includes(index)) cart.state = 'sick';
-
-			const impact = impactsByTrackIndex.get(index);
-			const movement = drive({
-				cart,
-				x: cellX(cell.reel),
-				y: railY(cell.row),
-				duration: CELL_TRAVEL_MS,
-				run,
-			});
-
-			if (impact) {
-				cart.state = 'vomit';
-				returnYellowAtIndex = index + 1;
-				await waitForTimeout(Math.round(CELL_TRAVEL_MS * 0.78));
-				if (run !== animationRun) return false;
-				pulseWild(impact, run);
-			}
-
-			if (!(await movement)) return false;
-		}
-
-		// Full-route exit: every cart clears the bottom-right end of the rail.
-		if (cart.state === 'vomit') cart.state = 'happy';
-		cart.direction = 1;
-		if (
-			!(await drive({
-				cart,
-				x: BOARD_SIZES.width + SYMBOL_W,
-				y: railY(BOARD_DIMENSIONS.y - 1),
-				duration: CELL_TRAVEL_MS * 1.5,
-				run,
-			}))
-		) {
-			return false;
-		}
+		// One screen-edge-to-screen-edge linear tween. Vomiting is timed over the motion;
+		// the cart never brakes at a reel, then accelerates again.
+		const startedAt = performance.now();
+		const movement = drive({
+			cart,
+			x: endX,
+			duration: durationForDistance(startX, endX, timing),
+			run,
+		});
+		if (!(await waitForRouteTime(startedAt, vomitStartAt, run))) return false;
+		cart.state = 'vomit';
+		if (!(await waitForRouteTime(startedAt, impactAt, run))) return false;
+		pulseWild(route.impact, run, timing);
+		if (!(await waitForRouteTime(startedAt, vomitEndAt, run))) return false;
+		cart.state = 'happy';
+		if (!(await movement)) return false;
 		cart.visible = false;
 		return run === animationRun;
 	};
 
 	context.eventEmitter.subscribeOnMount({
 		coasterSetupShow: async (event) => {
+			resetSkip();
+			sequenceActive = true;
+			skipAllowedAt = performance.now() + 140;
+			finalTiles = event.tiles;
 			const run = ++animationRun;
+			const timing = timingForCurrentSpeed();
 			show = true;
 			tilesMap = {};
 			tileScales = {};
-			tileMultiplierSteps = event.pukes.reduce<Record<string, number[]>>((steps, impact) => {
-				const key = `${impact.reel},${impact.row}`;
-				steps[key] = [...(steps[key] ?? []), impact.multiplier];
-				return steps;
-			}, {});
-			Object.values(tileMultiplierSteps).forEach((values) => values.sort((a, b) => a - b));
-			tileHitCounts = {};
 			const routes = buildRoutes(event.pukes);
-			carts = routes.map((_, id) => ({
+			carts = routes.map((route, id) => ({
 				id,
-				x: new Tween(entryX),
-				y: new Tween(railY(0)),
+				x: new Tween(rowDirection(route.row) === 1 ? trackLeft : trackRight),
+				y: cartY(route.row),
 				state: 'happy',
-				direction: 1,
+				direction: rowDirection(route.row),
 				visible: false,
+				vomitTimeScale: DUCK_PLAYBACK_SPEED / timing.factor,
 			}));
-			await waitForTimeout(320);
+			if (!(await runOrSkip(waitForTimeout(timing.intro)))) {
+				finishSkippedSequence();
+				return;
+			}
 
-			await Promise.all(
-				routes.map(async (route, index) => {
-					await waitForTimeout(index * CART_STAGGER_MS);
-					const cart = carts[index];
-					if (!cart) return;
-					await driveDuckTo(cart, route.impacts, run);
-				}),
-			);
+			if (
+				!(await runOrSkip(
+					Promise.all(
+						routes.map(async (route, index) => {
+							if (!(await runOrSkip(waitForTimeout(route.launchDelayUnits * timing.stagger))))
+								return;
+							const cart = carts[index];
+							if (!cart) return;
+							await driveRoute(cart, route, run, timing);
+						}),
+					),
+				))
+			) {
+				finishSkippedSequence();
+				return;
+			}
 
 			carts.forEach((cart) => (cart.visible = false));
-			await waitForTimeout(550);
+			if (!(await runOrSkip(waitForTimeout(timing.outro)))) {
+				finishSkippedSequence();
+				return;
+			}
+			sequenceActive = false;
 		},
 		coasterSetupHide: () => {
 			animationRun += 1;
+			sequenceActive = false;
+			resolveSkip();
 			show = false;
 			tilesMap = {};
 			tileScales = {};
-			tileMultiplierSteps = {};
-			tileHitCounts = {};
+			finalTiles = [];
 			carts = [];
 		},
 	});
@@ -316,10 +352,8 @@
 		const [reel, row] = key.split(',').map(Number);
 		return { reel, row };
 	};
-	const carAsset = (state: CartState) =>
-		state === 'vomit' ? 'coasterCarVomit' : state === 'sick' ? 'coasterCarSick' : 'coasterCarHappy';
-	const carAnimationAsset = (state: CartState) =>
-		state === 'vomit' ? 'coasterCarVomitAnim' : state === 'sick' ? 'coasterCarSickAnim' : null;
+	const rigFallback = (state: CartState) =>
+		state === 'vomit' ? 'coasterRigVomit' : 'coasterRigHappy';
 </script>
 
 <FadeContainer {show}>
@@ -332,68 +366,52 @@
 			scale={layout.boardScale}
 			sortableChildren
 		>
-			{#each Object.entries(tilesMap) as [key, multiplier] (key)}
-				{@const position = parseKey(key)}
-				<Container
-					x={cellX(position.reel)}
-					y={cellY(position.row)}
-					scale={tileScales[key]?.current ?? 1}
-					zIndex={10}
-				>
-					<CoasterWildBackground reel={position.reel} row={position.row} />
-					<Sprite
-						key="tpCoasterWild"
-						anchor={0.5}
-						width={SYMBOL_W * 0.82}
-						height={SYMBOL_H * 0.82}
-					/>
-					<Container y={SYMBOL_H * 0.18}>
-						<BitmapText
-							anchor={{ x: 0.5, y: 0.5 }}
-							text={`${multiplier}X`}
-							style={{ fontFamily: 'gold', fontSize: SYMBOL_H * 0.22 }}
-						/>
-					</Container>
-				</Container>
+			<!-- Five independent rails span the complete screen, not just the 5x5 board. -->
+			{#each ROWS as row (row)}
+				<Sprite
+					key="coasterTrack"
+					x={trackCenterX}
+					y={railY(row)}
+					zIndex={20}
+					anchor={0.5}
+					width={trackWidth}
+					height={TRACK_HEIGHT}
+					alpha={0.96}
+				/>
 			{/each}
 
-			<Sprite
-				key="coasterTrack"
-				x={trackX}
-				y={trackY}
-				zIndex={20}
-				anchor={0.5}
-				width={trackWidth}
-				height={BOARD_SIZES.height * 1.2}
-				alpha={0.96}
-			/>
+			<Container zIndex={10}>
+				<Graphics isMask draw={drawWildContentMask} />
+				{#each Object.entries(tilesMap) as [key, multiplier] (key)}
+					{@const position = parseKey(key)}
+					<Container x={cellX(position.reel)} y={cellY(position.row)}>
+						<CoasterWildTile
+							reel={position.reel}
+							{multiplier}
+							contentScale={tileScales[key]?.current ?? 1}
+						/>
+					</Container>
+				{/each}
+			</Container>
 
 			{#each carts as cart (cart.id)}
 				{#if cart.visible}
 					<Container
 						x={cart.x.current}
-						y={cart.y.current}
+						y={cart.y}
 						scale={{ x: cart.direction, y: 1 }}
 						zIndex={30 + cart.id}
 					>
-						{@const animationKey = carAnimationAsset(cart.state)}
-						{#if animationKey}
-							<LoopingAssetSprite
-								{animationKey}
-								fallbackKey={carAsset(cart.state)}
-								restartKey={`${cart.id}:${cart.state}`}
-								anchor={0.5}
-								width={SYMBOL_W * 1.08}
-								height={SYMBOL_H * 1.27}
-							/>
-						{:else}
-							<Sprite
-								key={carAsset(cart.state)}
-								anchor={0.5}
-								width={SYMBOL_W * 1.08}
-								height={SYMBOL_H * 1.27}
-							/>
-						{/if}
+						<!-- One rig: immutable cart back/front slots, moving duck between them. -->
+						<LoopingSpineSprite
+							assetKey="coasterVomitSpine"
+							animationName={cart.state === 'vomit' ? 'vomit' : 'idle'}
+							fallbackKey={rigFallback(cart.state)}
+							width={CART_SIZE}
+							height={CART_SIZE}
+							timeScale={cart.state === 'vomit' ? cart.vomitTimeScale : 0}
+							loop={true}
+						/>
 					</Container>
 				{/if}
 			{/each}

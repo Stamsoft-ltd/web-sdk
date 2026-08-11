@@ -38,6 +38,7 @@ export default {
 	"START": "시작",
 	"SPINS": "스핀",
 	"FREE SPINS": "무료 스핀",
+	"DUCK PICKS": "오리 선택",
 	"OF": "/",
 	"BONUS COMPLETE": "보너스 완료",
 	"SELECTED": "선택됨",

@@ -29,7 +29,7 @@
 	import FreeSpinCounter from './FreeSpinCounter.svelte';
 	import FreeSpinOutro from './FreeSpinOutro.svelte';
 	import Transition from './Transition.svelte';
-	import PaylineRibbon from './PaylineRibbon.svelte';
+	import NeonPaylines from './NeonPaylines.svelte';
 	import PersistentWildBadges from './PersistentWildBadges.svelte';
 	import RollerWildsOverlay from './RollerWildsOverlay.svelte';
 	import DuckCollectPresenter from './DuckCollectPresenter.svelte';
@@ -454,7 +454,7 @@
 							pivot={bl.pivot}
 							scale={bl.boardScale}
 						>
-							<PaylineRibbon wins={context.stateGame.paylineWins} />
+							<NeonPaylines wins={context.stateGame.paylineWins} />
 						</Container>
 					</MainContainer>
 				{/if}

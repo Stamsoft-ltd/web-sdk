@@ -1,7 +1,7 @@
 // Hand-crafted sample books for the BASE mode, conforming to the LOCKED
 // theme_park_event_contract.md. All amounts are integer cents of bet (100 = 1x).
 import type { BookEvent } from '../../game/typesBookEvent';
-import { makeBoard, wild, PADDING_POSITIONS, NO_ANTICIPATION, type StoryBook } from './helpers';
+import { makeBoard, PADDING_POSITIONS, NO_ANTICIPATION, type StoryBook } from './helpers';
 import realBooks from './base_books_real';
 
 // ── Book 1: losing round ────────────────────────────────────────────────────
@@ -80,9 +80,30 @@ const duckCollectEvents: BookEvent[] = [
 		anticipation: NO_ANTICIPATION,
 		gameType: 'basegame',
 	},
-	{ index: 1, type: 'duckCollectStart', positions: [{ reel: 1, row: 2 }, { reel: 3, row: 1 }] },
-	{ index: 2, type: 'duckReveal', position: { reel: 1, row: 2 }, kind: 'mult', value: 5, runningTotal: 500 },
-	{ index: 3, type: 'duckReveal', position: { reel: 3, row: 1 }, kind: 'multmult', value: 2, runningTotal: 1000 },
+	{
+		index: 1,
+		type: 'duckCollectStart',
+		positions: [
+			{ reel: 1, row: 2 },
+			{ reel: 3, row: 1 },
+		],
+	},
+	{
+		index: 2,
+		type: 'duckReveal',
+		position: { reel: 1, row: 2 },
+		kind: 'mult',
+		value: 5,
+		runningTotal: 500,
+	},
+	{
+		index: 3,
+		type: 'duckReveal',
+		position: { reel: 3, row: 1 },
+		kind: 'multmult',
+		value: 2,
+		runningTotal: 1000,
+	},
 	{ index: 4, type: 'duckCollectEnd', amount: 1000 },
 	{ index: 5, type: 'setTotalWin', amount: 1000 },
 	{ index: 6, type: 'setWin', amount: 1000, winLevel: 3 },
@@ -97,7 +118,7 @@ const baseRollerWildEvents: BookEvent[] = [
 		type: 'reveal',
 		board: makeBoard([
 			['H1', 'H3', 'L1', 'L3', 'H5'],
-			[wild(2), wild(2), wild(2), wild(2), wild(2)],
+			['H2', 'L2', 'H4', 'L4', { name: 'W', wild: true, rollerTrigger: true }],
 			['L1', 'H3', 'H5', 'L3', 'H1'],
 			['H2', 'L2', 'H4', 'L4', 'L5'],
 			['H1', 'L1', 'H3', 'L3', 'H5'],
@@ -106,7 +127,11 @@ const baseRollerWildEvents: BookEvent[] = [
 		anticipation: NO_ANTICIPATION,
 		gameType: 'basegame',
 	},
-	{ index: 1, type: 'rollerWildsApply', reels: [{ reel: 1, multiplier: 2 }] },
+	{
+		index: 1,
+		type: 'rollerWildsApply',
+		reels: [{ reel: 1, triggerRow: 4, multiplier: 2, multipliers: [{ row: 1, multiplier: 2 }] }],
+	},
 	{
 		index: 2,
 		type: 'winInfo',
@@ -132,10 +157,38 @@ const baseRollerWildEvents: BookEvent[] = [
 
 // Hand-crafted books (kept for deterministic minimal coverage)
 const handcraftedBooks: StoryBook[] = [
-	{ id: 1, payoutMultiplier: 0, events: losingRoundEvents, criteria: 'basegame', baseGameWins: 0, freeGameWins: 0 },
-	{ id: 2, payoutMultiplier: 2, events: lineWinEvents, criteria: 'basegame', baseGameWins: 2, freeGameWins: 0 },
-	{ id: 3, payoutMultiplier: 10, events: duckCollectEvents, criteria: 'duckcollect', baseGameWins: 10, freeGameWins: 0 },
-	{ id: 4, payoutMultiplier: 2, events: baseRollerWildEvents, criteria: 'rollerwild', baseGameWins: 2, freeGameWins: 0 },
+	{
+		id: 1,
+		payoutMultiplier: 0,
+		events: losingRoundEvents,
+		criteria: 'basegame',
+		baseGameWins: 0,
+		freeGameWins: 0,
+	},
+	{
+		id: 2,
+		payoutMultiplier: 2,
+		events: lineWinEvents,
+		criteria: 'basegame',
+		baseGameWins: 2,
+		freeGameWins: 0,
+	},
+	{
+		id: 3,
+		payoutMultiplier: 10,
+		events: duckCollectEvents,
+		criteria: 'duckcollect',
+		baseGameWins: 10,
+		freeGameWins: 0,
+	},
+	{
+		id: 4,
+		payoutMultiplier: 2,
+		events: baseRollerWildEvents,
+		criteria: 'rollerwild',
+		baseGameWins: 2,
+		freeGameWins: 0,
+	},
 ];
 
 // Real rounds sampled from the simulated math engine come first.

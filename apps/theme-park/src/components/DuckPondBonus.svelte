@@ -4,7 +4,7 @@
 	export type DuckPondPrize = { kind: DuckKind; value: number };
 
 	export type EmitterEventDuckPond =
-		| { type: 'duckPondShow'; totalPicks: number; pool: DuckPondPrize[] }
+		| { type: 'duckPondShow'; totalPicks: number; pool: DuckPondPrize[]; seed: number }
 		| {
 				type: 'duckPondPick';
 				pickIndex: number;
@@ -17,28 +17,18 @@
 </script>
 
 <script lang="ts">
-	import { onDestroy } from 'svelte';
-	import { backOut } from 'svelte/easing';
-	import { Tween } from 'svelte/motion';
-	import {
-		AnimatedSprite,
-		Container,
-		FillGradient,
-		Graphics,
-		Sprite,
-		Text,
-		type Texture,
-	} from 'pixi-svelte';
+	import { onDestroy, onMount } from 'svelte';
+	import { Container, Sprite, Text } from 'pixi-svelte';
 	import { Button, FadeContainer } from 'components-pixi';
 	import { MainContainer } from 'components-layout';
 	import { waitForResolve, waitForTimeout } from 'utils-shared/wait';
-	import {
-		bookEventAmountToBetAmountMultiplier,
-		bookEventAmountToCurrencyString,
-	} from 'utils-shared/amount';
+	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 	import { stateI18nDerived } from 'state-shared';
 
 	import { getContext } from '../game/context';
+	import { stripEmptyCurrencyDecimals } from '../game/currency';
+	import { duckLookForIndex, duckVariantForIndex } from '../game/duckVisual';
+	import DuckPondDuck from './DuckPondDuck.svelte';
 	import PondPanel from './PondPanel.svelte';
 	import {
 		BOARD_DIMENSIONS,
@@ -53,54 +43,33 @@
 	type PondDuck = {
 		prize: DuckPondPrize | null;
 		selected: boolean;
-		revealed: boolean;
-		pickIndex: number | null;
 		variant: number;
+		look: number;
 	};
 
 	const POND_SIZE = 25;
-	const DUCK_VARIANTS = 8;
 	const context = getContext();
 	const layout = $derived(context.stateGameDerived.boardLayout());
+	const turnReady = $derived(!!context.stateApp.loadedAssets?.duckPondTurn);
 	let show = $state(false);
 	let totalPicks = $state(10);
-	let pool = $state<DuckPondPrize[]>([]);
 	let ducks = $state<PondDuck[]>([]);
 	let pendingPick = $state<PendingPick | null>(null);
+	let revealingPick = $state<PendingPick | null>(null);
 	let revealingIndex = $state<number | null>(null);
 	let runningTotal = $state(0);
-	let finalAmount = $state<number | null>(null);
 	let resolveSelection: () => void = () => {};
+	let skipAllowedAt = 0;
 
-	// Pick reveal, centre-stage: the clicked duck vanishes from the grid and the gift clip (36
-	// frames, the authored 73-frame / 24fps video's 3.04s — the duck unwraps the box, the lid flies
-	// off) plays BIG over the middle of the pond; then the prize disc RISES out of the opened box
-	// while zooming from almost nothing, holds a beat, and the cell stays empty.
-	// Played 1.5× the authored rate — full speed dragged at ~3s per pick.
-	const SPIN_PLAYBACK = 1.5;
-	const SPIN_MS = Math.round(3040 / SPIN_PLAYBACK);
-	const SPIN_SPEED = (36 / (3.04 * 60)) * SPIN_PLAYBACK;
-	const REVEAL_HOLD_MS = 600;
-	// Where the open box's mouth sits inside the SQUARE sheet cell (art 1068×860 letterboxed into
-	// 320×320: mouth centre at 44.5%, 38.4% of the art).
-	const BOX_MOUTH = { x: 0.445 - 0.5, y: (31 + 0.384 * 258) / 320 - 0.5 };
-	const discPop = new Tween(0);
-	let centerPrize = $state<DuckPondPrize | null>(null);
-	let centerSpinning = $state(false);
-	const spinFrames = $derived(
-		(context.stateApp.loadedAssets?.duckPresentAnim ?? []) as Texture[],
-	);
-
-	const emptyPond = () =>
+	const emptyPond = (eventId: number) =>
 		Array.from(
 			{ length: POND_SIZE },
-			(): PondDuck => ({
+			(_, index): PondDuck => ({
 				prize: null,
 				selected: false,
-				revealed: false,
-				pickIndex: null,
-				// "all the ducks to be random image from figma" — one of the 8 ring-duck arts per cell.
-				variant: 1 + Math.floor(Math.random() * DUCK_VARIANTS),
+				// Event-seeded variety stays unchanged for the complete bonus and replay.
+				variant: duckVariantForIndex(eventId, index),
+				look: duckLookForIndex(eventId, index),
 			}),
 		);
 
@@ -116,15 +85,11 @@
 		duckPondShow: (event) => {
 			releasePending();
 			totalPicks = event.totalPicks;
-			pool = event.pool;
-			ducks = emptyPond();
+			ducks = emptyPond(event.seed);
 			pendingPick = null;
+			revealingPick = null;
 			revealingIndex = null;
 			runningTotal = 0;
-			finalAmount = null;
-			centerPrize = null;
-			centerSpinning = false;
-			discPop.set(0, { duration: 0 });
 			show = true;
 		},
 		// Book playback remains blocked until the user picks an actual reel cell.
@@ -135,7 +100,6 @@
 		// The unpicked ducks stay face-forward — no end-of-bonus reveal of what they held (removed
 		// by request, for now).
 		duckPondFinish: async (event) => {
-			finalAmount = event.amount;
 			runningTotal = event.amount;
 			context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_win' });
 			await waitForTimeout(1800);
@@ -143,31 +107,29 @@
 		duckPondHide: () => {
 			releasePending();
 			show = false;
-			pool = [];
 			ducks = [];
 			pendingPick = null;
+			revealingPick = null;
 			revealingIndex = null;
-			finalAmount = null;
-			centerPrize = null;
-			centerSpinning = false;
 		},
 	});
 
 	const chooseDuck = async (pondIndex: number) => {
-		if (!pendingPick || ducks[pondIndex]?.selected || revealingIndex !== null)
-			return;
+		if (!pendingPick || ducks[pondIndex]?.selected || revealingIndex !== null) return;
 		const result = pendingPick;
 		pendingPick = null;
+		revealingPick = result;
 		revealingIndex = pondIndex;
-		// The clicked duck leaves the grid immediately — it "jumps" to centre stage.
+		// The native click generated after Pixi's pointer-up is the same click that selected the duck.
+		// Do not let the global skip handler consume the turn animation in that same event sequence.
+		skipAllowedAt = performance.now() + 140;
+		// The clicked duck turns in its own cell; its rear pose and butt prize remain visible.
 		ducks = ducks.map((duck, index) =>
 			index === pondIndex
 				? {
 						...duck,
 						prize: { kind: result.kind, value: result.value },
 						selected: true,
-						revealed: true,
-						pickIndex: result.pickIndex,
 					}
 				: duck,
 		);
@@ -176,18 +138,47 @@
 			name: 'sfx_scatter_stop_2',
 			forcePlay: true,
 		});
-		centerPrize = { kind: result.kind, value: result.value };
-		centerSpinning = true;
-		discPop.set(0, { duration: 0 });
-		await waitForTimeout(SPIN_MS);
-		centerSpinning = false;
-		await discPop.set(1, { duration: 380, easing: backOut });
-		await waitForTimeout(REVEAL_HOLD_MS);
-		centerPrize = null;
-		runningTotal = result.runningTotal;
+		// Asset failure must never leave the book waiting forever for a Spine completion event.
+		if (!turnReady) {
+			await waitForTimeout(400);
+			finishDuckReveal(pondIndex);
+		}
+	};
+
+	function finishDuckReveal(pondIndex: number) {
+		if (revealingIndex !== pondIndex || !revealingPick) return;
+		runningTotal = revealingPick.runningTotal;
+		revealingPick = null;
 		revealingIndex = null;
 		releasePending();
+	}
+
+	const skipDuckReveal = () => {
+		if (revealingIndex === null) return;
+		finishDuckReveal(revealingIndex);
 	};
+
+	onMount(() => {
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.code !== 'Space' || revealingIndex === null) return;
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			skipDuckReveal();
+		};
+		const onClick = (event: MouseEvent) => {
+			if (revealingIndex === null) return;
+			if (performance.now() < skipAllowedAt) return;
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			skipDuckReveal();
+		};
+		window.addEventListener('keydown', onKeyDown, { capture: true });
+		window.addEventListener('click', onClick, { capture: true });
+		return () => {
+			window.removeEventListener('keydown', onKeyDown, { capture: true });
+			window.removeEventListener('click', onClick, { capture: true });
+		};
+	});
 
 	const pickedCount = $derived(ducks.filter((duck) => duck.selected).length);
 	const remainingPicks = $derived(Math.max(0, totalPicks - pickedCount));
@@ -196,7 +187,10 @@
 	// opening is narrower than the reel grid.
 	const cellX = (index: number) => {
 		const col = index % BOARD_DIMENSIONS.x;
-		return CELL_W * (col + 0.5) + 14 * ((BOARD_DIMENSIONS.x - 1) / 2 - col) / ((BOARD_DIMENSIONS.x - 1) / 2);
+		return (
+			CELL_W * (col + 0.5) +
+			(14 * ((BOARD_DIMENSIONS.x - 1) / 2 - col)) / ((BOARD_DIMENSIONS.x - 1) / 2)
+		);
 	};
 	// Rows lift progressively toward the bottom (top row stays on its cell centre, the last row
 	// rises ~26% of a cell) so the bottom ducks — splash included — float with open water below
@@ -246,8 +240,7 @@
 		const roomL = layout.x / bs - layout.pivot.x;
 		const roomR = (mainW - layout.x) / bs - layout.pivot.x;
 		const need = mode === 'desktop' ? { left: 420, right: 330 } : { left: 440, right: 210 };
-		const clamp = (room: number, needed: number) =>
-			Math.max(0.55, Math.min(1, room / needed));
+		const clamp = (room: number, needed: number) => Math.max(0.55, Math.min(1, room / needed));
 		return { left: clamp(roomL, need.left), right: clamp(roomR, need.right) };
 	});
 
@@ -363,9 +356,13 @@
 	const pickLineW = $derived(pickW + numW + ducksW);
 	const wordsY = $derived(numH / 2 - 0.24 * (ui.pick.num - ui.pick.base));
 
-	const totalMultiplier = $derived(bookEventAmountToBetAmountMultiplier(runningTotal));
-	const multiplierLabel = $derived(
-		`x${totalMultiplier >= 100 ? Math.round(totalMultiplier) : Math.round(totalMultiplier * 100) / 100}`,
+	const totalLabel = $derived(
+		stripEmptyCurrencyDecimals(bookEventAmountToCurrencyString(runningTotal)),
+	);
+	const totalValueSize = $derived(
+		Math.round(
+			Math.max(ui.total.value * 0.48, ui.total.value * Math.min(1, 6.5 / totalLabel.length)),
+		),
 	);
 
 	// The pond art is in the deferred tier. <Sprite> width/height are synced against whatever
@@ -375,23 +372,10 @@
 	const artReady = $derived(
 		!!context.stateApp.loadedAssets?.duckPondWater &&
 			!!context.stateApp.loadedAssets?.duckPondDuck1 &&
+			!!context.stateApp.loadedAssets?.duckPondSplash &&
 			!!context.stateApp.loadedAssets?.duckPondMiniYellow &&
-			!!context.stateApp.loadedAssets?.duckPondLogo &&
-			!!context.stateApp.loadedAssets?.duckPresentAnim,
+			!!context.stateApp.loadedAssets?.duckPondLogo,
 	);
-
-	// Multiplier disc on the turned duck's back (Figma 6490:6675): a 99px circle with a 135°
-	// #D836FC → #272FDD gradient and white stroke; the value is Inter 700 at 52/99 of the diameter.
-	const discFill = new FillGradient({
-		type: 'linear',
-		start: { x: 0, y: 0 },
-		end: { x: 1, y: 1 },
-		colorStops: [
-			{ offset: 0, color: 0xd836fc },
-			{ offset: 1, color: 0x272fdd },
-		],
-		textureSpace: 'local',
-	});
 
 	// Sized off the reference: the duck-and-ring art takes ~85% of the row pitch, leaving open water
 	// between rows. (The desktop mock's nominal 1.2× pitch reads far too big against real art.)
@@ -401,10 +385,7 @@
 	const miniRow = $derived.by(() => {
 		const { length, thick, x, y, vertical } = ui.counter;
 		const span = length * COUNTER_ROW_SPAN;
-		const mini = Math.min(
-			thick * 0.62,
-			span / ((1 + COUNTER_GAP) * totalPicks - COUNTER_GAP),
-		);
+		const mini = Math.min(thick * 0.62, span / ((1 + COUNTER_GAP) * totalPicks - COUNTER_GAP));
 		const pitch = mini * (1 + COUNTER_GAP);
 		const rowW = mini + (totalPicks - 1) * pitch;
 		return { start: (vertical ? y : x) - rowW / 2 + mini / 2, mini, pitch, vertical, x, y };
@@ -440,82 +421,32 @@
 					sizes={{ width: SYMBOL_W, height: SYMBOL_H }}
 					disabled={!pendingPick || duck.selected || revealingIndex !== null}
 					onpress={() => chooseDuck(index)}
-					alpha={duck.revealed && !duck.selected ? 0.62 : 1}
 				>
 					{#snippet children({ center, hovered, pressed })}
 						{@const duckSize = DUCK_SIZE * (pressed ? 0.94 : hovered && !duck.selected ? 1.06 : 1)}
-						<!-- A picked duck leaves the grid — its reveal plays centre-stage below, and the
-						     cell stays open water afterwards. -->
-						{#if !duck.selected}
-							<!-- Splash pool disc under every duck. Sized against the DUCK, not the cell:
-							     the droplets flank the ring and the swoosh hugs its underside. 1.484 is
-							     the art aspect. -->
-							{@const splashW = duckSize * 1.28}
-							<Sprite
-								key="duckPondSplash"
-								x={center.x}
-								y={center.y + duckSize * 0.28}
-								anchor={0.5}
-								width={splashW}
-								height={splashW / 1.484}
-							/>
-							<Sprite
-								key={`duckPondDuck${duck.variant}`}
-								x={center.x}
-								y={center.y}
-								anchor={0.5}
-								width={duckSize * 0.97}
-								height={duckSize}
-							/>
-						{/if}
+						<!-- Splash stays in world space while Spine squashes/swaps the duck front to back. -->
+						{@const splashW = duckSize * 1.28}
+						<Sprite
+							key="duckPondSplash"
+							x={center.x}
+							y={center.y + duckSize * 0.28}
+							anchor={0.5}
+							width={splashW}
+							height={splashW / 1.484}
+						/>
+						<DuckPondDuck
+							x={center.x}
+							y={center.y}
+							size={duckSize}
+							variant={duck.variant}
+							look={duck.look}
+							prize={duck.prize}
+							revealing={revealingIndex === index}
+							onrevealcomplete={() => finishDuckReveal(index)}
+						/>
 					{/snippet}
 				</Button>
 			{/each}
-
-			<!-- Centre-stage pick reveal: the gift clip plays big over the middle of the pond (once,
-			     frozen on the opened box), then the prize disc rises out of the box. -->
-			{#if centerPrize}
-				{@const bigSize = BH * 0.52}
-				<Container x={BW / 2} y={BH / 2}>
-					{#if spinFrames.length}
-						<AnimatedSprite
-							textures={spinFrames}
-							animationSpeed={SPIN_SPEED}
-							loop={false}
-							play={centerSpinning}
-							startFrame={centerSpinning ? 0 : spinFrames.length - 1}
-							anchor={0.5}
-							width={bigSize}
-							height={bigSize}
-						/>
-					{/if}
-					{#if !centerSpinning}
-						<!-- The disc emerges from the opened box: it starts lower (inside the box mouth)
-						     and rises to the mouth while scaling up, driven by the same pop tween. -->
-						{@const discR = bigSize * 0.118}
-						{@const rise = 1 - discPop.current}
-						<Container
-							x={bigSize * BOX_MOUTH.x}
-							y={bigSize * BOX_MOUTH.y + bigSize * 0.14 * rise}
-							scale={Math.max(0.02, discPop.current)}
-						>
-							<Graphics
-								draw={(graphics) => {
-									graphics
-										.circle(0, 0, discR)
-										.fill({ fill: discFill })
-										.stroke({ color: 0xffffff, width: Math.max(1, discR * 0.03) });
-								}}
-							/>
-							<Text
-								anchor={0.5}
-								text={`x${centerPrize.value}`}
-								style={textStyle(discR * 1.05, 0xffffff)}
-							/>
-						</Container>
-					{/if}
-				</Container>
-			{/if}
 
 			<!-- DUCK YOUR LUCK logo. -->
 			<Sprite
@@ -532,7 +463,7 @@
 			<Container x={ui.counter.x} y={ui.counter.y} rotation={ui.counter.vertical ? Math.PI / 2 : 0}>
 				<PondPanel width={ui.counter.length} height={ui.counter.thick} />
 			</Container>
-			{#each Array.from({ length: totalPicks }) as _, index (index)}
+			{#each [...Array(totalPicks).keys()] as index (index)}
 				<Sprite
 					key={index < remainingPicks ? 'duckPondMiniYellow' : 'duckPondMiniGray'}
 					x={miniRow.vertical ? miniRow.x : miniRow.start + index * miniRow.pitch}
@@ -577,8 +508,7 @@
 				/>
 			</Container>
 
-			<!-- TOTAL WIN panel: the accumulated multiplier only, per the design — no currency line.
-			     Same plate + running lights as the pick panel. -->
+			<!-- TOTAL WIN panel: running book cents converted through the active bet/currency. -->
 			<Container x={ui.total.x} y={ui.total.y}>
 				<PondPanel width={ui.total.w} height={ui.total.h} />
 			</Container>
@@ -593,8 +523,8 @@
 				anchor={0.5}
 				x={ui.total.x}
 				y={ui.total.valueY}
-				text={multiplierLabel}
-				style={textStyle(ui.total.value, NUM_PURPLE)}
+				text={totalLabel}
+				style={textStyle(totalValueSize, NUM_PURPLE)}
 			/>
 		</Container>
 	</MainContainer>

@@ -40,6 +40,7 @@ export default {
 	START: 'START',
 	SPINS: 'SPINS',
 	'FREE SPINS': 'FREE SPINS',
+	'DUCK PICKS': 'DUCK PICKS',
 	OF: 'OF',
 	'BONUS COMPLETE': 'BONUS COMPLETE',
 	// Headings on the bonus-complete screen (Figma 6094:4022).
@@ -102,7 +103,7 @@ export default {
 	'BET MODE FSPIN2 TICKER SPIN': 'ROLLER WILDS',
 	'BET MODE DUCK TITLE': 'DUCK YOUR LUCK',
 	'BET MODE DUCK DIALOG':
-		'10 duck picks with multipliers and multiply-all ducks. Lump sum payout, capped at 25,000x.',
+		'10 duck picks with cash additions and multiply-all ducks. Lump sum payout, capped at 25,000x.',
 	'BET MODE DUCK DESCRIPTION': 'Buy the Duck Your Luck bonus for 100x bet.',
 	'BET MODE DUCK BUTTON': 'BUY',
 	'BET MODE DUCK TICKER IDLE': 'PLACE YOUR BET',
@@ -143,10 +144,10 @@ export default {
 	// ── Features ─────────────────────────────────────────────────────────────
 	'FEATURE DUCK COLLECT TITLE': 'DUCK COLLECT',
 	'FEATURE DUCK COLLECT TEXT':
-		'At least 1 collect duck is guaranteed; up to all 25 positions can be ducks. Each reveals a bet multiplier or a multiply-all duck; the collected total pays as a lump sum.',
+		'At least 1 collect duck is guaranteed; up to all 25 positions can be ducks. Each reveals a cash addition or a multiply-all duck; the collected total pays as a lump sum.',
 	'FEATURE DUCK LUCK TITLE': 'DUCK YOUR LUCK',
 	'FEATURE DUCK LUCK TEXT':
-		'10 duck picks at the pond. Multiplier ducks add to the total; multiply-all ducks multiply the running total. Capped at 25,000x.',
+		'10 duck picks at the pond. Cash ducks add to the total; multiply-all ducks multiply the running total. Capped at 25,000x.',
 	'FEATURE ROLLER TITLE': 'ROLLER WILDS',
 	'FEATURE ROLLER TEXT':
 		'10 free spins. A wild lands first, then its reel transforms into a full wild stack. Multiplier plaques can appear on any rows; their values add across the reel and across multiple wild reels.',

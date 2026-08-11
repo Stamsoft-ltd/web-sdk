@@ -38,6 +38,7 @@ export default {
 	"START": "BẮT ĐẦU",
 	"SPINS": "VÒNG QUAY",
 	"FREE SPINS": "LƯỢT QUAY MIỄN PHÍ",
+	"DUCK PICKS": "LƯỢT CHỌN VỊT",
 	"OF": "TRÊN",
 	"BONUS COMPLETE": "THƯỞNG HOÀN TẤT",
 	"SELECTED": "ĐÃ CHỌN",

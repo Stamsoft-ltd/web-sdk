@@ -38,6 +38,7 @@ export default {
 	"START": "ابدأ",
 	"SPINS": "يدور",
 	"FREE SPINS": "لفات مجانية",
+	"DUCK PICKS": "اختيارات البط",
 	"OF": "من",
 	"BONUS COMPLETE": "اكتمل البونص",
 	"SELECTED": "محدد",

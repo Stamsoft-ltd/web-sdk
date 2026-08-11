@@ -2,7 +2,12 @@
 	export type EmitterEventFreeSpinIntro =
 		| { type: 'freeSpinIntroShow' }
 		| { type: 'freeSpinIntroHide' }
-		| { type: 'freeSpinIntroUpdate'; totalFreeSpins: number; title?: string };
+		| {
+				type: 'freeSpinIntroUpdate';
+				count: number;
+				title?: string;
+				countLabel?: string;
+		  };
 </script>
 
 <script lang="ts">
@@ -21,19 +26,28 @@
 	const context = getContext();
 
 	let show = $state(false);
-	let freeSpinsFromEvent = $state(0);
+	let awardedCount = $state(0);
 	let title = $state('FREE SPINS');
+	let countLabel = $state('FREE SPINS');
 	let oncomplete = $state(() => {});
 	let descHeight = $state(0);
 
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const badgeKey = $derived(
-		getSpecialSymbolKey(title === 'MEGA COASTER' ? 'coasterScatter' : 'rollerScatter', layoutType),
+		getSpecialSymbolKey(
+			title === 'DUCK YOUR LUCK'
+				? 'duckScatter'
+				: title === 'MEGA COASTER'
+					? 'coasterScatter'
+					: 'rollerScatter',
+			layoutType,
+		),
 	);
 	// The name and the feature blurb the buy menu already shows for this bonus, so the two screens
 	// never drift. `title` arrives from the book event as the English name, which is also the
 	// fallback when a bonus lands here without a bet mode of its own.
 	const BONUS_COPY: Record<string, { name: string; desc: string }> = {
+		'DUCK YOUR LUCK': { name: 'BET MODE DUCK TITLE', desc: 'BET MODE DUCK DIALOG' },
 		'MEGA COASTER': { name: 'BET MODE COASTER TITLE', desc: 'BET MODE COASTER DIALOG' },
 		'ROLLER WILDS': { name: 'BET MODE ROLLER TITLE', desc: 'BET MODE ROLLER DIALOG' },
 	};
@@ -77,9 +91,7 @@
 
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const board = $derived(context.stateGameDerived.boardLayout());
-	const limits = $derived(
-		popupPanelLimits(context.stateLayoutDerived.canvasSizes(), main.scale),
-	);
+	const limits = $derived(popupPanelLimits(context.stateLayoutDerived.canvasSizes(), main.scale));
 	const panelWidth = $derived(
 		Math.min(
 			board.height * board.boardScale * PANEL.overGridHeight,
@@ -108,8 +120,9 @@
 			context.stateGame.freeSpinPopupShowing = false;
 		},
 		freeSpinIntroUpdate: async (emitterEvent) => {
-			freeSpinsFromEvent = emitterEvent.totalFreeSpins;
+			awardedCount = emitterEvent.count;
 			title = emitterEvent.title ?? 'FREE SPINS';
+			countLabel = emitterEvent.countLabel ?? 'FREE SPINS';
 			await waitForResolve((resolve) => (oncomplete = resolve));
 		},
 	});
@@ -190,7 +203,7 @@
 				/>
 				<Text
 					anchor={0.5}
-					text={`${freeSpinsFromEvent}`}
+					text={`${awardedCount}`}
 					style={headingStyle(Math.round(size * PANEL.countSize), TITLE_FILL)}
 				/>
 			</Container>
@@ -198,7 +211,7 @@
 			<Text
 				anchor={0.5}
 				y={size * PANEL.freeSpins}
-				text={stateI18nDerived.translate('FREE SPINS')}
+				text={stateI18nDerived.translate(countLabel)}
 				style={headingStyle(Math.round(size * PANEL.freeSpinsSize), ACCENT_FILL)}
 			/>
 		</Container>

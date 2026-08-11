@@ -92,9 +92,11 @@ export const stateGame = $state({
 	paylineWins: [] as Array<{ lineIndex: number; path: Array<{ reel: number; row: number }> }>,
 	// Duck Collect (base-game DC symbols) presentation state
 	duckCollect: null as null | { positions: Position[]; revealed: DuckRevealed[] },
-	// While a DC duck's gift reveal is playing, <Board> hides the symbol at this position so the
-	// duck art doesn't show under the animation.
-	duckRevealPosition: null as null | Position,
+	// DC ducks currently turning and ducks that have settled on their rear pose. Arrays let
+	// fast/turbo playback and a user skip turn the complete landed set in one synchronized batch.
+	duckRevealPositions: [] as Position[],
+	duckTurnedPositions: [] as Position[],
+	duckRevealBatch: false,
 	duckRunningTotal: 0, // cents — shared by duck collect and duck pond
 	// Duck Your Luck pond bonus state
 	duckPicks: null as null | {
@@ -103,7 +105,8 @@ export const stateGame = $state({
 		picks: DuckPickRevealed[];
 		finalAmount: number | null;
 	},
-	// Roller Wilds: full-wild reels for THIS spin only
+	// Roller Wilds result metadata for THIS spin only. The actual multiplier-only plaques live on
+	// board symbols so they can remain idle, then roll out unchanged with the following spin.
 	activeRollerReels: [] as RollerReel[],
 	// Roller Wilds animation: cells (`${reel},${row}`) the descending car has already cleared, so
 	// <Board> hides the original symbol behind it as the car passes (before the apply makes the whole
@@ -156,19 +159,6 @@ const getBoardViewportMetrics = () => {
 		canvasSizes.height - padding.top - padding.bottom,
 	);
 	return { mainLayout, canvasSizes, padding, availableCanvasWidth, availableCanvasHeight };
-};
-
-const getBoardOffset = () => {
-	const { mainLayout, canvasSizes, padding, availableCanvasHeight, availableCanvasWidth } =
-		getBoardViewportMetrics();
-	const layoutType = stateLayoutDerived.layoutType();
-	const extraLeftShiftPx = layoutType === 'desktop' ? 75 : layoutType === 'landscape' ? 55 : 0;
-	const centeredCanvasX = padding.left + availableCanvasWidth * 0.5 - canvasSizes.width * 0.5;
-	const centeredCanvasY = padding.top + availableCanvasHeight * 0.5 - canvasSizes.height * 0.5;
-	return {
-		x: (centeredCanvasX - extraLeftShiftPx + 90) / (mainLayout.scale || 1),
-		y: (centeredCanvasY + 10) / (mainLayout.scale || 1),
-	};
 };
 
 // The 5x5 grid in Figma 6612-4311 (node 6612:4553): 691x457 at (255, 86) inside the 1200x670 frame.
@@ -234,12 +224,12 @@ const boardLayout = () => {
 		// The visible frame is the grid blown up by FRAME_OVER_GRID_X (the decorative border baked into
 		// the board art). Scale so THAT equals the full canvas width — the reels sit inside it — else
 		// the ~3% border leaves a sky margin and the board reads as not-quite full width.
-		const boardScale = (availableWidth * PORTRAIT_FRAME_FILL) / (BOARD_SIZES.width * FRAME_OVER_GRID_X);
+		const boardScale =
+			(availableWidth * PORTRAIT_FRAME_FILL) / (BOARD_SIZES.width * FRAME_OVER_GRID_X);
 		const frameHeight = (BOARD_SIZES.height * boardScale) / MOBILE_FRAME_INNER_H;
 
 		return {
-			// Centre the board on screen — same as frameCx. (getBoardOffset() carries a desktop-only
-			// +90px left-rail nudge that would otherwise push the portrait board off the right edge.)
+			// Centre the portrait board on screen; desktop applies its own design-space placement below.
 			x: mainLayout.width * 0.5,
 			y: PORTRAIT_TOP_OFFSET + frameHeight * 0.5,
 			frameTopY: PORTRAIT_TOP_OFFSET,
