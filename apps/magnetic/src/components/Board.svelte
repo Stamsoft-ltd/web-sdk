@@ -93,6 +93,82 @@
 	const boardThump = $derived(context.stateGame.boardThump.current);
 	const thumpY = $derived(SYMBOL_H * THUMP_H * boardThump * Math.sin(boardThump * 16));
 
+	// ── Idle liveliness ──
+	// A resting board is 49 stickers. Every few seconds of genuine idle, one symbol TYPE twitches:
+	// all its cells shake and lift a little, rippling out from the top-left of the group. It is
+	// deliberately unlike anything the game uses to mean something — no glow, no scale-up, no
+	// electricity — so it reads as the machine idling rather than as a hint about a win.
+	//
+	// Gated on the state machine being idle, not merely on the reels having stopped: mid-round the
+	// board sits still for long stretches (count-ups, cascades, the bonus hand-off) and a twitch
+	// there would look like a bug. Specials are excluded — a scatter or magnet shivering on its own
+	// would read as an anticipation tease.
+	const WIGGLE_GAP = [4.5, 9.5]; // seconds between twitches
+	const WIGGLE_MS = 900;
+	const WIGGLE_STAGGER = 0.3; // fraction of the run spent rippling through the group
+	let wiggleName = $state<string | null>(null);
+	let wiggleClock = $state(0); // seconds into the current twitch; only ticks while one runs
+	let wiggleT0 = 0;
+	let nextWiggleAt = 0;
+	const wiggleGap = () => (WIGGLE_GAP[0] + Math.random() * (WIGGLE_GAP[1] - WIGGLE_GAP[0])) * 1000;
+
+	const wiggleTick = (now: number) => {
+		const idle =
+			context.stateXstateDerived.isIdle() &&
+			context.stateGame.boardMode === 'settle' &&
+			!context.stateGame.celebrationActive &&
+			!context.stateGame.bonusHandoffActive &&
+			!lockedCells.length &&
+			!hasWinCells;
+		if (!idle) {
+			if (wiggleName) wiggleName = null;
+			nextWiggleAt = now + wiggleGap();
+			return;
+		}
+		if (wiggleName) {
+			wiggleClock = (now - wiggleT0) / 1000;
+			if (now - wiggleT0 >= WIGGLE_MS) {
+				wiggleName = null;
+				nextWiggleAt = now + wiggleGap();
+			}
+			return;
+		}
+		if (!nextWiggleAt) nextWiggleAt = now + wiggleGap();
+		if (now < nextWiggleAt) return;
+		// Pick a type that actually has a group on the board — a lone symbol twitching by itself
+		// reads as a glitch, three or more reads as a deliberate ripple.
+		const counts = new Map<string, number>();
+		for (const cell of unlockedCells) {
+			if (cell.wild || cell.scatter || cell.magnet) continue;
+			counts.set(cell.name, (counts.get(cell.name) ?? 0) + 1);
+		}
+		const names = [...counts].filter(([, n]) => n >= 3).map(([n]) => n);
+		if (!names.length) {
+			nextWiggleAt = now + wiggleGap();
+			return;
+		}
+		wiggleName = names[Math.floor(Math.random() * names.length)];
+		wiggleT0 = now;
+		wiggleClock = 0;
+	};
+
+	/** Per-cell twitch transform, or null when this cell is not part of the current one. */
+	const wiggleFor = (cell: { name: string; position: { reel: number; row: number } }) => {
+		if (!wiggleName || cell.name !== wiggleName) return null;
+		const u = wiggleClock / (WIGGLE_MS / 1000);
+		if (u <= 0 || u >= 1) return null;
+		// Ripple order: top-left first, bottom-right last.
+		const order = ((cell.position.reel + cell.position.row) % 7) / 7;
+		const v = (u - order * WIGGLE_STAGGER) / (1 - WIGGLE_STAGGER);
+		if (v <= 0 || v >= 1) return null;
+		const env = Math.sin(Math.PI * v) ** 1.3;
+		return {
+			rot: 0.11 * env * Math.sin(v * Math.PI * 6),
+			dy: -SYMBOL_H * 0.055 * env,
+			scale: 1 + 0.045 * env,
+		};
+	};
+
 	// ── Cell electricity clock. ONE persistent rAF (started on mount, never stopped)
 	//    redraws the electric borders IMPERATIVELY into a captured Graphics instance. Nothing
 	//    reactive sits in the border render path, so the arcs cannot freeze when an upstream
@@ -429,6 +505,7 @@
 					dustGDrawn = false;
 				}
 			}
+			wiggleTick(now);
 			const cells = lockedCells; // untracked read inside rAF — always the current value
 			if (cells.length) {
 				if (lockG) {
@@ -605,13 +682,15 @@
 							phase={keyPhase(cell.key)}
 						/>
 					{:else}
+						{@const wig = wiggleFor(cell)}
 						<Sprite
 							key={symbolInfo.assetKey}
 							{x}
-							{y}
+							y={y + (wig?.dy ?? 0)}
 							anchor={{ x: 0.5, y: 0.5 }}
-							{width}
-							{height}
+							rotation={wig?.rot ?? 0}
+							width={width * (wig?.scale ?? 1)}
+							height={height * (wig?.scale ?? 1)}
 							alpha={cell.displayAlpha.current * loserAlpha}
 							tint={0xffffff}
 							zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}

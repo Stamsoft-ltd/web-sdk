@@ -49,6 +49,7 @@
 	import PortraitTopBar from './PortraitTopBar.svelte';
 	import LandscapeCapsule from './LandscapeCapsule.svelte';
 	import AmbientDebris from './AmbientDebris.svelte';
+	import BonusHandoffVeil from './BonusHandoffVeil.svelte';
 	import InsufficientFundsModal from './InsufficientFundsModal.svelte';
 
 	const context = getContext();
@@ -349,6 +350,9 @@
 				     magnetic redesign — the series multiplier reads from the multiplier wilds
 				     on the board instead. The globalMultiplier* events still fire unheard. -->
 				<Win />
+				<!-- Directly under the congratulations screen and over the game scene: the veil has to
+				     cover the room/board it is hiding the swap of, and the congrats has to sit on it. -->
+				<BonusHandoffVeil />
 				<FreeSpinIntro />
 				<CapsulePanel />
 				<RespinPanel />

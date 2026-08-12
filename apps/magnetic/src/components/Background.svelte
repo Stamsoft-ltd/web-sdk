@@ -183,10 +183,16 @@
 	});
 </script>
 
-{#if outgoingKey}
-	<!-- Outgoing room, held at full strength underneath while the new one dissolves over it. -->
+{#if hasBg}
+	<!-- Outgoing room, held at full strength underneath while the new one dissolves over it.
+	     BOTH sprites stay mounted for the life of the component, and that is load-bearing: stage
+	     layering in this game is MOUNT ORDER (see Game.svelte), so a sprite mounted on demand is
+	     appended to the TOP of the stage. Gating this one on `outgoingKey` put the old room above
+	     the bonus hand-off veil for the length of the fade, and it read as the base game flashing
+	     back on right as the congratulations arrived. With no outgoing room this simply holds a
+	     second copy of the current one, invisible under the sprite below it. -->
 	<Sprite
-		key={outgoingKey}
+		key={outgoingKey ?? displayedKey}
 		x={canvas.width * 0.5}
 		y={canvas.height * 0.5}
 		anchor={0.5}
@@ -194,8 +200,6 @@
 		height={cover.height * breath}
 		alpha={0.96}
 	/>
-{/if}
-{#if hasBg}
 	<Sprite
 		key={displayedKey}
 		x={canvas.width * 0.5}

@@ -6,7 +6,10 @@
 	// and the sci-fi value box used behind the small stat cards.
 	const panelImg = ap('/assets/components/ui/info_panel_v2.webp?v=20260810');
 	// Overview hero (Figma 7109:5399, added 2026-08-10): symbol-prop composite, top-right.
-	const heroImg = ap('/assets/components/ui/info_hero_v2.webp?v=20260810');
+	// ?v=20260812: re-exported from Figma 7194:11187 after the L3 and H2 symbols were replaced —
+	// the previous composite still showed the purple coil and the chain link, which no longer exist
+	// anywhere else in the game.
+	const heroImg = ap('/assets/components/ui/info_hero_v2.webp?v=20260812');
 	// Version2 card shells, shared with the buy-bonus screen: the near-square steel card and the
 	// compact bet plate (behind the overview stats), plus the tall card cut for this carousel.
 	const cardV2 = ap('/assets/components/ui/bb_card_panel_v2.webp?v=20260810');
@@ -30,12 +33,17 @@
 	// centre does not shift them. Re-measure if the symbol art is re-exported.
 	const payRows = [
 		{ img: sym('premium/horseshoe.webp'), fit: 1.11, v: ['0.5x', '1x', '2x', '4x', '8x', '15x', '30x', '75x', '200x', '500x', '1000x', '2000x'] },
-		{ img: sym('premium/plasma_drill.webp'), fit: 1.22, v: ['0.4x', '0.8x', '1.5x', '3x', '6x', '12x', '25x', '60x', '150x', '350x', '750x', '1500x'] },
+		// Lightning (H2) carries the most padding in the set — the Version2 export places a 210px
+		// badge on the same 328x264 canvas where every other symbol fills ~250px — so its fit is the
+		// highest here, matching the SYMBOL_SIZE_OVERRIDE nudge that puts it at parity on the board.
+		{ img: sym('premium/lightning.webp'), fit: 1.32, v: ['0.4x', '0.8x', '1.5x', '3x', '6x', '12x', '25x', '60x', '150x', '350x', '750x', '1500x'] },
 		{ img: sym('premium/magnetic_core_cube.webp'), fit: 1.1, v: ['0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '20x', '45x', '120x', '275x', '600x', '1200x'] },
 		{ img: sym('premium/electromagnetic_device.webp'), fit: 1.15, v: ['0.2x', '0.5x', '1x', '2x', '4x', '8x', '15x', '35x', '90x', '200x', '450x', '900x'] },
 		{ img: sym('low/bolt.webp'), fit: 1.33, v: ['0.15x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '10x', '25x', '60x', '125x', '250x', '500x'] },
 		{ img: sym('low/nut.webp'), fit: 1.15, v: ['0.12x', '0.25x', '0.5x', '1x', '2x', '4x', '8x', '20x', '50x', '100x', '200x', '400x'] },
-		{ img: sym('low/washer.webp'), fit: 1.24, v: ['0.1x', '0.2x', '0.4x', '0.8x', '1.6x', '3x', '6x', '15x', '40x', '80x', '150x', '300x'] },
+		// Coil (L3): like the lightning, the Version2 export sits smaller on the shared canvas (241px
+		// wide against the old art's 293), so its fit is raised to keep the row consistent.
+		{ img: sym('low/coil.webp'), fit: 1.45, v: ['0.1x', '0.2x', '0.4x', '0.8x', '1.6x', '3x', '6x', '15x', '40x', '80x', '150x', '300x'] },
 		{ img: sym('low/energy_screw.webp'), fit: 1.19, v: ['0.08x', '0.1x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '12x', '30x', '60x', '120x', '250x'] },
 	];
 	const wild = sym('special/wild.webp');

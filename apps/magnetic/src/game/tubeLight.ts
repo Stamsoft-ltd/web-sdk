@@ -38,6 +38,13 @@ export type TubeLightOpts = {
 
 const SPILL_LAYERS = 8;
 const CORE_STEPS = 4;
+const STREAKS = 3;
+
+/** Deterministic 0..1 from an index — the mote field must be identical on every frame. */
+const rnd = (i: number, k: number) => {
+	const v = Math.sin((i + 1) * k) * 43758.5453;
+	return v - Math.floor(v);
+};
 
 export const drawTubeLight = (g: TubeG, o: TubeLightOpts) => {
 	const master = o.level ?? 1;
@@ -111,7 +118,9 @@ export const drawTubeLight = (g: TubeG, o: TubeLightOpts) => {
 			vertical ? coreThick : len,
 			vertical ? len : coreThick,
 			coreColor,
-			0.1 * level,
+			// Deliberately low: the art under these tubes is already bright, and a heavy core
+			// flattens the motes and streaks back into one smooth white blob.
+			0.075 * level,
 		);
 	}
 
@@ -148,7 +157,57 @@ export const drawTubeLight = (g: TubeG, o: TubeLightOpts) => {
 			vertical ? thin : len,
 			vertical ? len : thin,
 			coreColor,
-			(0.17 - 0.05 * k) * level,
+			(0.12 - 0.035 * k) * level,
 		);
+	}
+
+	// ── Caustic streaks ──
+	// Thin bright bands running the length of the glass, drifting slowly across it. Without these
+	// the tube is a smooth airbrushed gradient — technically a glow, but nothing inside it, which
+	// is what makes it read as painted-on. These give the light something to happen ON.
+	for (let k = 0; k < STREAKS; k++) {
+		const r = rnd(k, 12.9898);
+		const drift = Math.sin(o.t * (0.29 + 0.17 * r) + p + k * 2.1) * across * 0.24;
+		const off = (r * 2 - 1) * across * 0.2 + drift;
+		const wid = across * (0.05 + 0.05 * rnd(k, 78.233));
+		const len = along * (0.62 + 0.24 * rnd(k, 37.719));
+		bar(
+			vertical ? o.x + off : o.x,
+			vertical ? o.y : o.y + off,
+			vertical ? wid : len,
+			vertical ? len : wid,
+			coreColor,
+			(0.05 + 0.04 * Math.sin(o.t * 1.6 + k * 1.9)) * level,
+		);
+	}
+
+	// ── Motes ──
+	// Bubbles rising through the glass, the detail the game's own plasma capsule has and these
+	// tubes did not. They travel along the tube's LONG axis (so a vertical tube reads as liquid
+	// rising and a horizontal one as charge flowing), wrap at the ends and fade in and out there so
+	// nothing pops. Parameters are hashed from the index rather than random: the field has to be
+	// identical every frame and across remounts, since this runs from a draw call, not a system
+	// that owns state.
+	const count = Math.max(5, Math.min(18, Math.round(along / (across * 0.45))));
+	const moteColor = (hot(cr, 0.92) << 16) | (hot(cg, 0.92) << 8) | hot(cb, 0.92);
+	for (let k = 0; k < count; k++) {
+		const r1 = rnd(k, 45.164);
+		const r2 = rnd(k, 91.317);
+		const r3 = rnd(k, 27.611);
+		// Slow, and varied enough that they never form a marching column.
+		const u = (o.t * (0.09 + 0.14 * r1) + r2 + p * 0.1) % 1;
+		// Rising: u 0 -> 1 walks from the bottom of the glass to the top.
+		const travel = (0.5 - u) * along * 0.9;
+		const sway = Math.sin(o.t * (1.1 + r3) + r2 * 6.3) * across * 0.05;
+		const lateral = (r3 * 2 - 1) * across * 0.32 + sway;
+		const rad = across * (0.045 + 0.055 * r1);
+		// Fade in off the bottom, out at the top; the middle rides at full strength.
+		const edge = Math.min(1, u / 0.14, (1 - u) / 0.18);
+		const a = (0.16 + 0.16 * r2) * edge * level;
+		const mx2 = vertical ? o.x + lateral : o.x + travel;
+		const my2 = vertical ? o.y + travel : o.y + lateral;
+		// Halo then core: a flat disc reads as a dot on the glass, the pair reads as a bubble in it.
+		bar(mx2, my2, rad * 2.4, rad * 2.4, moteColor, a * 0.3);
+		bar(mx2, my2, rad, rad, moteColor, a);
 	}
 };

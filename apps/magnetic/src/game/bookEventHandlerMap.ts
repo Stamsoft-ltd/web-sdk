@@ -1,6 +1,6 @@
 
 import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap } from 'utils-book';
-import { stateBet, stateUi } from 'state-shared';
+import { stateBet, stateBetDerived, stateUi } from 'state-shared';
 import { waitForTimeout } from 'utils-shared/wait';
 
 import { eventEmitter } from './eventEmitter';
@@ -22,6 +22,11 @@ const getWinLevelData = (winLevel: number): WinLevelData =>
 // music_super had a player branch and files on disk but was never broadcast, so Mega Chain used
 // to play the Drop-O-Magnet theme.
 const bonusMusicFor = (mode: string | null) => (mode === 'superspin' ? 'music_super' : 'music_bonus');
+
+// How long the bonus hand-off waits before swapping the scene in, in ms. Matches the veil's dim
+// ramp (BonusHandoffVeil's IN_MS): the swap has to land after the dim is fully up, or it happens
+// in view.
+const BONUS_HANDOFF_DIM_MS = 1500;
 
 const winLevelSoundsPlay = ({ winLevelData }: { winLevelData: WinLevelData }) => {
 	if (winLevelData?.alias === 'max') eventEmitter.broadcastAsync({ type: 'uiHide' });
@@ -299,14 +304,28 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateBet.autoSpinsCounter = 0;
 		}
 		if (!isFeatureSpin) {
+			// Entering a bonus always drops back to normal speed. The bonus is the presentation the
+			// player has been waiting for — its intro, its sign, its coins — and turbo exists to skip
+			// exactly that. Cleared through updateIsTurbo(persistent) as well as the flag, because
+			// hold-to-spin arms a persistent turbo LOCK (see HudHtml's beginSpinHold) that would
+			// otherwise survive; the player is free to turn it straight back on.
+			//
+			// A FEATURE spin is deliberately excluded — it is one base-game spin with a guaranteed
+			// magnet, with no intro and no counter, so there is nothing to slow down for.
+			stateBet.isSuperTurbo = false;
+			stateBetDerived.updateIsTurbo(false, { persistent: true });
+
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_trigger' });
 			await animateSymbols({ positions: bookEvent.positions });
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_transition' });
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
-			// coins: the wipe INTO a bonus is the payoff moment. The matching wipe on the way out
-			// (freeSpinEnd) deliberately does not ask for them — a shower there lands right after
-			// the total-win panel and reads as a second, phantom payout.
-			await eventEmitter.broadcastAsync({ type: 'transition', coins: true });
+			// The veil's dim IS the transition into the bonus. No spine wipe here any more: it played
+			// OVER the veil, so its bright frames read as a flash of the undimmed base game, and it
+			// ended before the congratulations arrived — which is the gap the veil exists to close.
+			// The veil stays up until the congratulations is dismissed.
+			stateGame.bonusHandoffActive = true;
+			await waitForTimeout(BONUS_HANDOFF_DIM_MS);
+			// Dim is fully up, so none of this can be seen changing.
 			stateGameDerived.clearWinCellStates();
 			// Set the mode before the intro mounts its content — it reads bonusMode to
 			// pick the bonus title (DROP-O-MAGNET vs MAGNETIC MEGA CHAIN).
@@ -324,6 +343,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateGame.bonusMode = bonusMode;
 		}
 		if (!isFeatureSpin) eventEmitter.broadcast({ type: 'freeSpinIntroHide' });
+		// The bonus is fully in place behind the veil by now; dropping it here is what reveals it.
+		if (!isFeatureSpin) stateGame.bonusHandoffActive = false;
 		if (!isFeatureSpin) {
 			eventEmitter.broadcast({ type: 'freeSpinCounterShow' });
 			stateUi.freeSpinCounterShow = true;

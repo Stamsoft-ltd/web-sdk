@@ -25,109 +25,107 @@ export type WinSignTier = {
 };
 
 export const WIN_SIGN_TIERS: Record<string, WinSignTier> = {
-	// SWEET WIN — Figma 7022:7751
+	// SWEET WIN — Figma 7170:6254 (redesign 2026-08-12). The frame is messy: plate, left pillar and
+	// magnet live in a NESTED duplicate "Epic Win" frame whose own Frame 97 is offset (1,0), while
+	// the right pillar and the title are frame-level siblings at (0,0). The right pillar is the left
+	// one mirrored, placed in its own slightly-asymmetric box.
+	//
+	// Tube boxes on the four tiers redesigned that day were measured afterwards (2026-08-12) by
+	// re-running scratchpad/tubes/measure_tubes.py against the re-cut pillars — the glass cylinders
+	// were sitting dead while every other tier's pulsed. Each tier's tubes are the largest saturated
+	// blobs in its pillar art, and the colours are those blobs' measured means.
 	sweetWinBoard: {
-		plate: {
-			key: 'winSignPlate',
-			x: 0.75,
-			y: -41.25,
-			w: 788.5,
-			h: 291.5,
-			tubes: [{ cx: 0.501, cy: 0.1415, w: 0.7077, h: 0.0189, color: 0x19e0ec }],
-		},
+		plate: { key: 'winSignPlate', x: 1.33, y: -48.83, w: 649.3, h: 231.7 },
 		pillarL: {
 			key: 'winSignPillarL',
-			x: -329.85,
-			y: -84.8,
-			w: 181.1,
-			h: 309,
-			tubes: [{ cx: 0.3978, cy: 0.5057, w: 0.2707, h: 0.3252, color: 0x53e1fa }],
+			x: -324.33,
+			y: -98.5,
+			w: 234,
+			h: 290.3,
+			// One cyan cylinder per pillar; the second blob in this art is the violet PIPE, which is
+			// painted, not lit, so it stays dark.
+			tubes: [{ cx: 0.703, cy: 0.4957, w: 0.2949, h: 0.358, color: 0x3bddf6 }],
 		},
 		pillarR: {
 			key: 'winSignPillarR',
-			x: 333.6,
-			y: -84.8,
-			w: 179.8,
-			h: 309,
-			tubes: [{ cx: 0.6111, cy: 0.5049, w: 0.2722, h: 0.3236, color: 0x55e1fa }],
+			x: 328.33,
+			y: -84.5,
+			w: 234,
+			h: 290.3,
+			tubes: [{ cx: 0.297, cy: 0.4957, w: 0.2949, h: 0.358, color: 0x3bddf6 }],
 		},
-		magnet: { key: 'winSignMagnet', x: -0.15, y: -187.5, w: 395.3, h: 271 },
-		title: { key: 'winSignTextSweet', x: -0.35, y: -43.05, w: 557.9, h: 118.3 },
-		amountY: 172.5,
+		magnet: { key: 'winSignMagnet', x: -0.33, y: -179, w: 135.3, h: 108.7 },
+		title: { key: 'winSignTextSweet', x: 6.83, y: -53.5, w: 361, h: 76.3 },
+		amountY: 139.5,
 		glow: 0x2fb4ff,
-		portraitFit: 920,
+		portraitFit: 920, // pillars span x158.7..1045.3 = 887 visible
 	},
-	// MYTHIC WIN — Figma 4007:1743 (neon-tube pillars, two-line magenta neon title; the design
-	// parks the plate 7px left of centre — measured, not a bug)
+	// MYTHIC WIN — Figma 7174:7719 (redesign 2026-08-12). Parts sit at FRAME level here, including
+	// inside a `contents` Group 89 whose children carry root coords — so no group offset, unlike the
+	// tiers whose parts live in a Frame 97.
 	mythicWinBoard: {
-		plate: {
-			key: 'winSignMythicPlate',
-			x: -7.27,
-			y: -92.58,
-			w: 563,
-			h: 250.8,
-			tubes: [{ cx: 0.5, cy: 0.1939, w: 0.8017, h: 0.0233, color: 0xee6cf2 }],
-		},
+		plate: { key: 'winSignMythicPlate', x: -7.33, y: -66.67, w: 563.3, h: 251.3 },
 		pillarL: {
 			key: 'winSignMythicPillarL',
-			x: -292.43,
-			y: -118.45,
-			w: 166.9,
-			h: 249,
+			x: -291.33,
+			y: -92.33,
+			w: 166.7,
+			h: 248.7,
+			// Wide inner cylinder + the narrower outer strip beside it, both magenta.
 			tubes: [
-				{ cx: 0.5808, cy: 0.5382, w: 0.3174, h: 0.4378, color: 0xc755f8 },
-				{ cx: 0.2021, cy: 0.5492, w: 0.1527, h: 0.3514, color: 0xc85df6 },
+				{ cx: 0.5811, cy: 0.5372, w: 0.3153, h: 0.4386, color: 0xc755f7 },
+				{ cx: 0.1997, cy: 0.5483, w: 0.1532, h: 0.3521, color: 0xc75df6 },
 			],
 		},
 		pillarR: {
 			key: 'winSignMythicPillarR',
-			x: 290.43,
-			y: -118.45,
-			w: 166.9,
-			h: 249,
+			x: 291.33,
+			y: -92.33,
+			w: 166.7,
+			h: 248.7,
 			tubes: [
-				{ cx: 0.4192, cy: 0.5382, w: 0.3174, h: 0.4378, color: 0xc755f8 },
-				{ cx: 0.7979, cy: 0.5492, w: 0.1527, h: 0.3514, color: 0xc85df6 },
+				{ cx: 0.4204, cy: 0.5372, w: 0.3183, h: 0.4386, color: 0xc755f7 },
+				{ cx: 0.8003, cy: 0.5483, w: 0.1532, h: 0.3521, color: 0xc85df6 },
 			],
 		},
-		magnet: { key: 'winSignMythicMagnet', x: -0.42, y: -229.01, w: 145.3, h: 101.4 },
-		title: { key: 'winSignTextMythic', x: 2.92, y: -78.89, w: 286.6, h: 158.7 },
+		magnet: { key: 'winSignMythicMagnet', x: -0.33, y: -206.17, w: 145.3, h: 101.7 },
+		title: { key: 'winSignTextMythic', x: -2.83, y: -55.67, w: 444.3, h: 72.7 },
 		amountY: 139.5,
 		glow: 0xe04dff,
-		portraitFit: 775, // pillars span x224.1..973.9 = 750 visible
+		portraitFit: 775, // pillars span x225.3..974.7 = 749 visible
 	},
-	// WILD WIN — Figma 7022:7925 (green title; the pillars REUSE the sweet strip art in smaller
-	// boxes, so pillarL/pillarR point at the sweet assets with wild's own rects)
+	// WILD WIN — Figma 7174:7394 (redesign 2026-08-12). Green neon, and it now has its OWN pillar
+	// art instead of reusing the sweet strip. plate + pillars are in the nested frame's Frame 97
+	// (offset 1,0); title and magnet are frame-level.
 	wildWinBoard: {
-		plate: {
-			key: 'winSignWildPlate',
-			x: 0,
-			y: -80.5,
-			w: 733.3,
-			h: 286.4,
-			tubes: [{ cx: 0.5, cy: 0.1828, w: 0.7181, h: 0.0115, color: 0x96e0f2 }],
-		},
+		plate: { key: 'winSignWildPlate', x: -1.33, y: -50, w: 586, h: 265 },
 		pillarL: {
-			key: 'winSignPillarL',
-			x: -300.93,
-			y: -109.93,
-			w: 155.8,
-			h: 265.3,
-			tubes: [{ cx: 0.3978, cy: 0.5057, w: 0.2707, h: 0.3252, color: 0x53e1fa }],
+			key: 'winSignWildPillarL',
+			x: -270.17,
+			y: -62.22,
+			w: 141.7,
+			h: 212,
+			tubes: [
+				{ cx: 0.5724, cy: 0.5389, w: 0.2191, h: 0.4175, color: 0x72dd25 },
+				{ cx: 0.2014, cy: 0.5578, w: 0.0919, h: 0.3184, color: 0x80dc29 },
+			],
 		},
 		pillarR: {
-			key: 'winSignPillarR',
-			x: 312.57,
-			y: -109.39,
-			w: 154.7,
-			h: 264.7,
-			tubes: [{ cx: 0.6111, cy: 0.5049, w: 0.2722, h: 0.3236, color: 0x55e1fa }],
+			key: 'winSignWildPillarR',
+			x: 279.27,
+			y: -62.22,
+			w: 141.7,
+			h: 212,
+			tubes: [
+				{ cx: 0.4276, cy: 0.5377, w: 0.2191, h: 0.4198, color: 0x72dd25 },
+				{ cx: 0.8004, cy: 0.5578, w: 0.0954, h: 0.3184, color: 0x7fdb29 },
+			],
 		},
-		magnet: { key: 'winSignWildMagnet', x: 0, y: -218.12, w: 217.2, h: 111.1 },
-		title: { key: 'winSignTextWild', x: -1.95, y: -77.19, w: 491.1, h: 106 },
+		magnet: { key: 'winSignWildMagnet', x: -1.33, y: -206, w: 135.3, h: 108.7 },
+		title: { key: 'winSignTextWild', x: -0.67, y: -42.33, w: 404.7, h: 82 },
 		amountY: 139.5,
 		glow: 0x46e04b,
-		portraitFit: 995, // plate spans x233.4..966.6, pillars to x989.9 = 969 visible
+		portraitFit: 760, // pillars span x259..950.1 = 691 visible, plus margin
 	},
 	// LEGENDARY WIN — Figma 7022:8095 (twin-capsule pillars, gold flame title)
 	legendaryWinBoard: {
@@ -167,16 +165,40 @@ export const WIN_SIGN_TIERS: Record<string, WinSignTier> = {
 		glow: 0xffb428,
 		portraitFit: 920, // pillars span x151.3..1045.7 = 894 visible
 	},
-	// EPIC WIN — Figma 7022:8274 (looping-pipe pillars, violet title)
+	// EPIC WIN — Figma 7167:5096, sign group 7167:5180 (redesign 2026-08-12: red neon on a violet
+	// plate, replacing the violet looping-pipe version). NOTE the frame is misnamed "Mythic Win" in
+	// the file — the render is the red EPIC sign; trust the render, not the layer name.
+	// Both pillars are ONE source image; the right one is the design's mirrored copy in its own box
+	// at x 770 (get_design_context), NOT the 998 the frame metadata reports for the transformed node.
 	epicWinBoard: {
-		plate: { key: 'winSignEpicPlate', x: 0, y: -49.14, w: 649.5, h: 231.4 },
-		pillarL: { key: 'winSignEpicPillarL', x: -339.59, y: -96.5, w: 305.2, h: 407 },
-		pillarR: { key: 'winSignEpicPillarR', x: 348.59, y: -96.5, w: 305.2, h: 407 },
-		magnet: { key: 'winSignEpicMagnet', x: 0.27, y: -204.24, w: 199.1, h: 160 },
-		title: { key: 'winSignTextEpic', x: -0.22, y: -54.39, w: 416, h: 86.2 },
+		plate: { key: 'winSignEpicPlate', x: -5.17, y: -57.17, w: 554.3, h: 247.7 },
+		pillarL: {
+			key: 'winSignEpicPillarL',
+			x: -290.17,
+			y: -89,
+			w: 164.3,
+			h: 244.7,
+			tubes: [
+				{ cx: 0.579, cy: 0.5348, w: 0.1915, h: 0.4274, color: 0xdb1a15 },
+				{ cx: 0.2021, cy: 0.5593, w: 0.0821, h: 0.317, color: 0xdc211e },
+			],
+		},
+		pillarR: {
+			key: 'winSignEpicPillarR',
+			x: 282.17,
+			y: -89,
+			w: 164.3,
+			h: 244.7,
+			tubes: [
+				{ cx: 0.421, cy: 0.5348, w: 0.1915, h: 0.4274, color: 0xdb1a15 },
+				{ cx: 0.7994, cy: 0.5593, w: 0.0851, h: 0.317, color: 0xdb211d },
+			],
+		},
+		magnet: { key: 'winSignEpicMagnet', x: -4.33, y: -197, w: 135.3, h: 108.7 },
+		title: { key: 'winSignTextEpic', x: 2.17, y: -48.83, w: 367, h: 81.7 },
 		amountY: 139.5,
-		glow: 0xb84dff,
-		portraitFit: 1020, // pillars span x107.8..1101.2 = 993 visible
+		glow: 0xff2f3a,
+		portraitFit: 810, // pillars span x227.7..972.3 = 745 visible, plus margin
 	},
 	// MAX WIN — Figma 7103:5231. The 25000x cap, and the last tier to leave the single baked
 	// max_win_screen.webp board. Two notes on reading the design file:

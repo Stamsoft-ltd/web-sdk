@@ -174,7 +174,9 @@
 			>
 				{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
 					{#if isBigWin}
-						<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
+						<!-- 0.5 -> 0.82: the Version2 win screens are near-black behind the sign (measured off the
+						     design renders); at 0.5 the lit workshop read through the dim and competed with the sign. -->
+						<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.82} />
 					{/if}
 
 					<OnMount onmount={() => startCountUp()} />

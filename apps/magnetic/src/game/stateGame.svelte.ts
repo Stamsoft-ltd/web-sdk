@@ -1070,6 +1070,12 @@ export const stateGame = $state({
 	// full-screen dim cannot reach it and the bright bottom bar would otherwise sit on top of the
 	// celebration — and swallow the press that dismisses it.
 	celebrationActive: false,
+	// True from the start of the bonus transition until the congratulations screen is dismissed.
+	// <BonusHandoffVeil> eases a full-screen dim in over that span, which is what lets the room, the
+	// capsule and the whole bonus scene swap UNDERNEATH it — the swap used to land in the gap
+	// between the old wipe ending and the congratulations fading in, and read as a snap no matter
+	// how the background itself was cross-faded.
+	bonusHandoffActive: false,
 });
 
 // ── instant board settle ──────────────────────────────────────────────────────

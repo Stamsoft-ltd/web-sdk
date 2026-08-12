@@ -6,7 +6,7 @@
 </script>
 
 <script lang="ts">
-	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
+	import { MainContainer } from 'components-layout';
 	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
 
@@ -34,9 +34,8 @@
 </script>
 
 <FadeContainer {show}>
-	<!-- The design blacks the game out almost completely behind this screen (measured mean 7/255
-	     outside the frame vs 88 undimmed), so the dim is much heavier than the old 0.6. -->
-	<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.88} />
+	<!-- No dim here: <BonusHandoffVeil> is already holding the design's 0.88 black over the whole
+	     hand-off, and a second full-screen dim would stack with it to ~0.99. -->
 
 	<MainContainer>
 		<WonPanel {show} big={`${freeSpinsFromEvent}`} caption={i18nDerived.translate('FREE SPINS')} />

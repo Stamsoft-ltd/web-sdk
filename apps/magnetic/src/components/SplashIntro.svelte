@@ -9,7 +9,10 @@
 	// Loose floor parts, repainted for Version2 (Figma 7118:9777, nodes 9840-9851). New filenames
 	// rather than a ?v= query: the old flat-vector art shipped under cable/coil/chip/magnet.webp and
 	// a cached copy of those would silently keep rendering the previous style.
-	const coilSrc = './assets/components/splash/part_coil.webp';
+	// _v2: re-cut from the Version2 splash node (Figma 7022:6228) once the L3 symbol became the blue
+	// coil — the old part was the purple, battered version and no longer matched the board. Same
+	// source art as the symbol itself. New FILENAME rather than ?v=, for the reason above.
+	const coilSrc = './assets/components/splash/part_coil_v2.webp';
 	const chipSrc = './assets/components/splash/part_chip.webp';
 	const magnetSrc = './assets/components/splash/part_magnet.webp';
 	const cableSrc = './assets/components/splash/part_cable.webp';

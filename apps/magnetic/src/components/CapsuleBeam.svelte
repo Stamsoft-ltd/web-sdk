@@ -3,8 +3,8 @@
 
 	// The NEW in-tube animation for the Version2 empty pillar (replaces the removed CapsuleBolts):
 	// a hot central laser plus sparse falling light particles, and — when a symbol is being held —
-	// the symbol itself, drawn INSIDE the beam: it bobs gently, the beam visually terminates on it
-	// (the lower segment dims as if occluded) and an impact flare burns at the contact point.
+	// the symbol itself, drawn INSIDE the beam: it drifts around the glass, the beam visually
+	// terminates on it (the lower segment dims as if occluded) and sparks pop along its upper edge.
 	// Everything renders imperatively into captured Graphics from ONE persistent rAF (same pattern
 	// as SymbolWinFx / the board's lock borders) with additive blending. Positions are pure
 	// functions of time — no per-frame state accumulates, and the loop tears down with the
@@ -199,35 +199,58 @@
 		}
 	};
 
-	// Impact flare ON TOP of the held symbol: a hot point where the beam strikes its upper edge,
-	// with a tight lens streak and flickering micro-sparks — this is what sells "the laser is
-	// hitting it".
+	// Deterministic 0..1 from an index — the sparkle field must not re-roll every frame.
+	const hash = (i: number, k: number) => {
+		const v = Math.sin((i + 1) * k) * 43758.5453;
+		return v - Math.floor(v);
+	};
+
+	// Contact FX on top of the held symbol. There is deliberately no flare disc here any more: the
+	// hot core + lens ellipses read as a painted white circle stuck to the art (user-flagged), and
+	// once the sparkles carry the contact, nothing was left for the disc to do.
 	const drawFlare = (gr: G, t: number) => {
 		gr.clear();
 		if (!props.symbolKey) return;
 		const s = props.symbolScale ?? 1;
 		if (s < 0.05) return;
 		const W = props.glassW;
-		const flick = 0.75 + 0.25 * Math.sin(t * 11) * Math.sin(t * 4.3);
-		// On the symbol's upper visual mass (not the bbox top — diagonal art left the flare
-		// floating in air above the piece).
-		const hy = bobY - symH * 0.25 * s;
-		const r = W * 0.045 * s;
-		// Horizontal lens streak.
-		gr.ellipse(0, hy, r * 4.2, r * 0.75);
-		gr.fill({ color: 0x9fe4ff, alpha: 0.35 * flick });
-		gr.ellipse(0, hy, r * 2.1, r * 0.55);
-		gr.fill({ color: 0xffffff, alpha: 0.5 * flick });
-		// Hot core.
-		gr.circle(0, hy, r);
-		gr.fill({ color: 0xffffff, alpha: 0.85 * flick });
-		// Micro-sparks kicked off the contact point, re-jittered each frame.
-		for (let i = 0; i < 3; i++) {
-			const a = Math.PI * (1.15 + 0.7 * ((i + 1) / 4)) + (Math.random() - 0.5) * 0.5;
-			const len = r * (1.8 + Math.random() * 2.2);
-			gr.moveTo(0, hy);
-			gr.lineTo(Math.cos(a) * len, hy + Math.sin(a) * len * 0.6);
-			gr.stroke({ width: r * 0.22, color: 0xdff4ff, alpha: 0.5 * flick, cap: 'round' });
+
+		// ── Sparkles ──
+		// Small sparks popping along the piece's upper edge, where the beam lands on it. Each one
+		// runs its own slow cycle and is re-placed on every pop, so the cluster keeps moving without
+		// any of them tracing a path. Deliberately small: the contact should read as the beam
+		// grazing the piece, not as it being welded.
+		const SPARKS = 18;
+		for (let i = 0; i < SPARKS; i++) {
+			const life = 0.55 + 0.5 * hash(i, 12.9898);
+			const phase = t / life + hash(i, 78.233);
+			const u = phase % 1;
+			// Lit for the first part of the cycle; the gap is what makes them pop rather than pulse.
+			if (u > 0.55) continue;
+			const v = u / 0.55;
+			const fade = Math.sin(Math.PI * v);
+			// New position per pop, from the cycle index.
+			const pop = Math.floor(phase);
+			const px = bobX + (hash(i * 13 + pop, 45.164) * 2 - 1) * symW * 0.34 * s;
+			const py =
+				bobY -
+				symH * (0.24 + 0.12 * hash(i * 13 + pop, 91.317)) * s -
+				v * symH * 0.1 * s; // drifts up as it dies
+			const rr = W * 0.008 * (0.7 + 0.9 * hash(i * 13 + pop, 27.611));
+			// A tight cyan halo only — anything wider turns each spark back into a soft disc.
+			gr.circle(px, py, rr * 1.7);
+			gr.fill({ color: 0x8fd8ff, alpha: 0.22 * fade });
+			gr.circle(px, py, rr * (0.7 + 0.45 * fade));
+			gr.fill({ color: 0xffffff, alpha: 0.92 * fade });
+			// The biggest ones flash a star cross at their peak.
+			if (rr > W * 0.010 && fade > 0.6) {
+				const L = rr * 5 * fade;
+				gr.moveTo(px - L, py);
+				gr.lineTo(px + L, py);
+				gr.moveTo(px, py - L);
+				gr.lineTo(px, py + L);
+				gr.stroke({ width: rr * 0.5, color: 0xdff4ff, alpha: 0.55 * fade, cap: 'round' });
+			}
 		}
 	};
 
@@ -243,13 +266,30 @@
 			surge = Math.max(0, Math.sin(t * 1.8 + 0.6)) ** 12;
 			const humX = (Math.random() - 0.5) * props.glassW * 0.004;
 			const humY = (Math.random() - 0.5) * props.glassW * 0.003;
+			// Three incommensurate sines per axis: the piece wanders the glass instead of tracing
+			// the same short oscillation, which is what read as "not alive". Amplitudes are up
+			// roughly half again on both axes, and the roll now has a slow swing under the fast one.
+			// Every rate here was then roughly DOUBLED (user: "move faster inside the tube") while
+			// the amplitudes stayed put, so it covers the same box in half the time rather than
+			// swinging further.
 			bobY =
-				props.glassH * (0.02 * Math.sin(t * 0.9) + 0.007 * Math.sin(t * 2.3 + 1.7)) +
+				props.glassH *
+					(0.03 * Math.sin(t * 1.95) +
+						0.012 * Math.sin(t * 4.6 + 1.7) +
+						0.006 * Math.sin(t * 0.9 + 2.6)) +
 				props.glassH * 0.012 * surge +
 				humY;
-			bobX = props.glassW * 0.02 * Math.sin(t * 0.62 + 0.5) + humX;
-			bobRot = 0.07 * Math.sin(t * 0.55 + 1.3) + 0.022 * Math.sin(t * 1.9);
-			breathe = 1 + 0.03 * Math.sin(t * 1.5 + 0.8) + 0.05 * surge;
+			bobX =
+				props.glassW *
+					(0.032 * Math.sin(t * 1.34 + 0.5) +
+						0.011 * Math.sin(t * 3.1 + 2.1) +
+						0.006 * Math.sin(t * 6.4 + 0.4)) +
+				humX;
+			bobRot =
+				0.105 * Math.sin(t * 1.2 + 1.3) +
+				0.035 * Math.sin(t * 4.1) +
+				0.014 * Math.sin(t * 8.8 + 0.9);
+			breathe = 1 + 0.045 * Math.sin(t * 3.1 + 0.8) + 0.018 * Math.sin(t * 1.5) + 0.05 * surge;
 			// Same flicker the beam body uses, so the symbol pulses in lock-step with the light.
 			const beamFlick = 0.5 + 0.5 * Math.sin(t * 6.7) * Math.sin(t * 2.3);
 			litAlpha = 0.1 + 0.11 * beamFlick + 0.3 * surge;
