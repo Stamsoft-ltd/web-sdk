@@ -1341,13 +1341,19 @@ const setSeriesSnapshots = ({
 	magnetTargetSymbol,
 	totalMultiplier,
 }: {
-	series: ClusterSeriesSnapshot[] | null;
+	series: ClusterSeriesSnapshot[] | ClusterSeriesSnapshot | null;
 	magnetTargetSymbol: PaySymbolName | null;
 	totalMultiplier: number;
 }) => {
 	// The math emits superSeriesCarry/clusterSeriesUpdate with series: null when a super
 	// spin has no cluster to carry — treat it as "no active series", not a crash.
-	const series = seriesInput ?? [];
+	//
+	// A BARE SNAPSHOT is accepted as well. superSeriesCarry has shipped one entry unwrapped, and
+	// the resulting `series.flatMap is not a function` threw out of playGame and stranded the whole
+	// super round — the free spins stopped advancing and the outro never ran. Normalising here is
+	// cheap insurance against any producer disagreeing about that shape again; the mock RGS emits
+	// a proper array now either way.
+	const series = seriesInput ? (Array.isArray(seriesInput) ? seriesInput : [seriesInput]) : [];
 	const prevLocked = getCurrentLockedKeys();
 	const nextLocked = new Set(series.flatMap((e) => e.lockedPositions.map(posKey)));
 	const freshKeys = new Set([...nextLocked].filter((key) => !prevLocked.has(key)));

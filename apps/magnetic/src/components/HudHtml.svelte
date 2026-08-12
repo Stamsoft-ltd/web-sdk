@@ -263,6 +263,11 @@
 	const autoSpinsRemainingText = $derived(
 		stateBet.autoSpinsCounter === Infinity ? '∞' : `${stateBet.autoSpinsCounter}`,
 	);
+	// The counter sits inside a fixed disc on the spin button, so a 3-digit run (the autoplay stops
+	// go up to 500) overflowed the dark backing and spilled onto the arrow art — "99" already
+	// touched the edges. Shrink the type per digit count instead of sizing everything for the worst
+	// case, which would leave the common 1- and 2-digit values looking undersized.
+	const autoSpinsCountScale = $derived(autoSpinsRemainingText.length >= 3 ? 0.8 : 1);
 	// `setBetAmount` refuses to leave a bet level the balance can't cover, so + would otherwise sit
 	// enabled but do nothing once the next level up is unaffordable. Disable it at that ceiling.
 	const highestAffordableBet = $derived.by(() => {
@@ -744,6 +749,7 @@
 					{#if hasAuto}
 						<span
 							class="spin-btn__count"
+							style={`--spin-count-scale:${autoSpinsCountScale}`}
 							aria-label={`Remaining auto spins ${autoSpinsRemainingText}`}
 							>{autoSpinsRemainingText}</span
 						>
@@ -810,7 +816,9 @@
 				>
 					<img class="spin-btn__icon" src={iconSpin} alt="" />
 					{#if hasAuto}
-						<span class="spin-btn__count">{autoSpinsRemainingText}</span>
+						<span class="spin-btn__count" style={`--spin-count-scale:${autoSpinsCountScale}`}
+							>{autoSpinsRemainingText}</span
+						>
 					{/if}
 				</button>
 
@@ -989,7 +997,9 @@
 				>
 					<img class="spin-btn__icon" src={iconSpin} alt="" />
 					{#if hasAuto}
-						<span class="spin-btn__count">{autoSpinsRemainingText}</span>
+						<span class="spin-btn__count" style={`--spin-count-scale:${autoSpinsCountScale}`}
+							>{autoSpinsRemainingText}</span
+						>
 					{/if}
 				</button>
 				<button
@@ -1752,10 +1762,12 @@
 	}
 
 	.spin-btn__icon {
-		/* Untrimmed arrow canvas at the design's 40%-of-button footprint — the glyph fills ~90% of
-		   its canvas, landing the visible arrow at the Figma size, dead centre on the ring. */
-		width: 46%;
-		height: 46%;
+		/* Untrimmed arrow canvas; the glyph fills ~90% of it, centred on the ring.
+		   46% -> 54%: the autoplay counter sits INSIDE the arrow's circle, and at 46% the arrow's
+		   hole was narrower than a two-digit count — "99" overlapped the stroke and "100" had
+		   nowhere to go. 62% was tried first and crowded the metal ring (user round). */
+		width: 54%;
+		height: 54%;
 		object-fit: contain;
 		display: block;
 		pointer-events: none;
@@ -1830,13 +1842,15 @@
 		/* match the disc center (slightly below box center) like .spin-btn__icon */
 		top: 50%;
 		left: 50%;
-		width: 56%;
-		height: 56%;
+		/* 56% -> 48%: the backing now sits INSIDE the enlarged arrow's hole instead of covering the
+		   arrow, so the count reads as the arrow's centre rather than a disc pasted over it. */
+		width: 48%;
+		height: 48%;
 		transform: translate(-50%, -50%);
 		display: grid;
 		place-items: center;
 		border-radius: 50%;
-		background: radial-gradient(circle, rgba(8, 20, 46, 0.96) 60%, rgba(8, 20, 46, 0) 100%);
+		background: radial-gradient(circle, rgba(8, 20, 46, 0.96) 62%, rgba(8, 20, 46, 0) 100%);
 		color: #fff;
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 900;
@@ -1849,7 +1863,9 @@
 	}
 
 	.spin-btn__count {
-		font-size: 1.5rem;
+		/* --spin-count-scale is set per-render from the digit count (see script). */
+		font-size: calc(1.25rem * var(--spin-count-scale, 1));
+		line-height: 1;
 	}
 
 	.buy-btn {
@@ -2153,7 +2169,7 @@
 		z-index: 1;
 	}
 	.pt-spin .spin-btn__count {
-		font-size: 1.25rem;
+		font-size: calc(1.05rem * var(--spin-count-scale, 1));
 	}
 
 	/* Balance in its own container asset — left-aligned white label + value, sized to fit content. */
@@ -2308,7 +2324,7 @@
 		flex: 0 0 auto;
 	}
 	.ls-nav .ls-spin .spin-btn__count {
-		font-size: 0.9rem;
+		font-size: calc(0.8rem * var(--spin-count-scale, 1));
 	}
 	/* Balance + bet, bottom-left. */
 	.ls-stats {

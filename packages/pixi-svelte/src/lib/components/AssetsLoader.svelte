@@ -42,13 +42,19 @@
 	);
 
 	// Deferred pass: streamed in the background AFTER the game is interactive (see effect below).
-	// `deferDemand` keys are excluded — they wait for an explicit loadDemandAssets() call.
+	//
+	// A key may carry BOTH `defer` and `deferDemand`. That combination means "stream it in the
+	// background, but still guarantee it before anything draws it": the background pass pulls it in
+	// so the feature is normally already resident when it is reached, while loadDemandAssets() stays
+	// as the hard backstop for a player who gets there before the stream does. The demand load is
+	// then nearly free — PIXI.Assets dedupes by URL, so it joins the in-flight request or returns
+	// the cached asset instead of downloading again.
+	//
+	// `deferDemand` ALONE (no `defer`) keeps the old behaviour: withheld entirely until asked for.
 	const deferredNameList = $derived(
 		context.stateApp.assets
 			? Object.keys(context.stateApp.assets).filter(
-					(key) =>
-						context.stateApp.assets?.[key].defer === true &&
-						context.stateApp.assets?.[key].deferDemand !== true,
+					(key) => context.stateApp.assets?.[key].defer === true,
 				)
 			: [],
 	);

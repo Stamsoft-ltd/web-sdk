@@ -58,11 +58,16 @@ export const INITIAL_SYMBOL_STATE: SymbolState = 'static';
 // design; 0.92 measured 0.412 with the canvas-composited art), then taken down 5% on the user's
 // final pass once the pads/gaps matched — the design's own symbols vary per piece, and slightly
 // smaller read better across the set.
+// Every class used to sit at 0.875, which is why the grid read as 49 icons of identical weight:
+// nothing told the eye which symbols were worth chasing. Premiums now carry ~13% more cell than
+// lows — enough to rank them at a glance, small enough that the pads still frame everything.
+// (This is the deliberate flattening noted when the Version2 art landed; it was flagged in the
+// 2026-08-11 review pass, so the hierarchy is back.) Specials stay biggest.
 export const SYMBOL_SIZE_RATIOS = {
-	premium: { width: 0.875, height: 0.875 },
-	low: { width: 0.875, height: 0.875 },
-	special: { width: 0.93, height: 0.93 },
-	multiplierWild: { width: 0.93, height: 0.93 },
+	premium: { width: 0.92, height: 0.92 },
+	low: { width: 0.815, height: 0.815 },
+	special: { width: 0.95, height: 0.95 },
+	multiplierWild: { width: 0.95, height: 0.95 },
 } as const;
 
 // Per-asset compensation for padding baked into the ART FILE. The idle symbol art is heavily

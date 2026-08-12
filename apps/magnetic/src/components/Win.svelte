@@ -8,15 +8,15 @@
 </script>
 
 <script lang="ts">
-	import { Container, Text, type Sizes } from 'pixi-svelte';
+	import { Container } from 'pixi-svelte';
 	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
-	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
 	import { OnMount } from 'components-shared';
 
 	import WinCoins from './WinCoins.svelte';
 	import WinBoard from './WinBoard.svelte';
+	import WinAmountPlaque from './WinAmountPlaque.svelte';
 	import PressToContinue from './PressToContinue.svelte';
 	import { getContext } from '../game/context';
 	import { stateBet } from 'state-shared';
@@ -41,6 +41,11 @@
 	// A legendary win goes 5.5s + 8.5s = 14s -> 7s on turbo -> 4.2s on super turbo.
 	const turboSpeed = $derived(stateBet.isSuperTurbo ? 0.3 : stateBet.isTurbo ? 0.5 : 1);
 
+	// Ordinary-win plaque width as a fraction of the visible board width. Wide enough to carry a
+	// seven-figure amount at full size, narrow enough that the winning cluster stays readable
+	// around it — the old bare number spanned the whole board.
+	const PLAQUE_BOARD_FILL = 0.52;
+
 	let show = $state(false);
 	let amount = $state(0);
 	let winLevelData = $state<WinLevelData>();
@@ -50,8 +55,6 @@
 	let isCountingUp = $state(false);
 	let shakeX = $state(0);
 	let shakeY = $state(0);
-	// Measured text size for scale-to-fit (full-screen line win).
-	let winSizes = $state<Sizes>({ width: 0, height: 0 });
 
 	const boardLayout = $derived(context.stateGameDerived.boardLayout());
 	const mainLayout = $derived(context.stateLayoutDerived.mainLayout());
@@ -197,27 +200,13 @@
 									maxOffY={mainLayout.height * 0.5 - boardLayout.y}
 								/>
 							{:else}
-								{@const winMaxW =
-									context.stateLayoutDerived.canvasSizes().width /
-									context.stateLayoutDerived.mainLayout().scale}
-								{@const winScale = winSizes.width > winMaxW ? winMaxW / winSizes.width : 1}
-								<!-- Line-win amount (no board animation) — white, per design feedback -->
-								<Container scale={winScale}>
-									<Text
-										anchor={0.5}
-										onresize={(s) => (winSizes = s)}
-										text={bookEventAmountToCurrencyString(countUpAmount)}
-										style={{
-											fontFamily: 'Orbitron',
-											fontWeight: '900',
-											fontSize: 128,
-											fill: 0xffffff,
-											align: 'center',
-											letterSpacing: 3.84,
-											stroke: { color: 0x000000, width: 2 },
-										}}
-									/>
-								</Container>
+								<!-- Ordinary win (no big-win board): the shared amount plaque, sized off the
+								     board so it stays legible from a phone to a desktop without ever
+								     covering more than a couple of symbol rows. -->
+								<WinAmountPlaque
+									amount={countUpAmount}
+									width={boardLayout.width * boardLayout.boardScale * PLAQUE_BOARD_FILL}
+								/>
 							{/if}
 						</Container>
 					</MainContainer>

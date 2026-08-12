@@ -10,6 +10,8 @@
 
 <script lang="ts">
 	import { AnimatedSprite, Container, Graphics, Sprite, type LoadedSpriteSheet } from 'pixi-svelte';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 
 	import SymbolWinFx from './SymbolWinFx.svelte';
 	import {
@@ -59,6 +61,20 @@
 
 	const getX = (reelIndex: number) => SYMBOL_W * (reelIndex + 0.5);
 	const getStaticY = (rowIndex: number) => SYMBOL_H * (rowIndex + 0.5);
+
+	// ── Win focus ──
+	// A paying cluster used to sit in a board of 48 equally bright symbols, so the only thing
+	// marking it was the cyan pad underneath it — nothing pulled the eye. Everything that is NOT
+	// part of the win now recedes for as long as it pays, which costs no assets and is what makes
+	// a cluster read as a cluster. Tweened rather than switched: a hard alpha step looks like a
+	// rendering fault.
+	const LOSER_DIM = 0.34;
+	const hasWinCells = $derived(flatCells.some((cell) => cell.symbolState === 'win'));
+	const winFocus = new Tween(0, { duration: 260, easing: cubicOut });
+	$effect(() => {
+		winFocus.set(hasWinCells ? 1 : 0);
+	});
+	const loserAlpha = $derived(1 - (1 - LOSER_DIM) * winFocus.current);
 
 	const keyPhase = (key: string) => {
 		let h = 0;
@@ -169,6 +185,11 @@
 			if (!isWild && !isScatter) continue;
 			if (cell.symbolState === 'win') continue; // SymbolWinFx owns the cell during a win
 			const info = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState });
+			// The SAME alpha the sprite is drawn at. The magnet pull dims every non-target cell to
+			// 0.08 and a win dims the losers to LOSER_DIM, and neither touched this layer — a
+			// scatter caught by either faded out while its electricity kept arcing in the empty
+			// cell. Locked cells are not alpha-tweened, so they take the win dim only.
+			const cellAlpha = (cell.locked ? 1 : cell.displayAlpha.current) * loserAlpha;
 			const o = {
 				x: getX(cell.position.reel) + cell.displayX.current,
 				y: cell.displayY.current,
@@ -176,7 +197,9 @@
 				h: SYMBOL_H * info.sizeRatios.height,
 				t,
 				phase: keyPhase(cell.key),
+				alpha: cellAlpha,
 			};
+			if (cellAlpha <= 0.01) continue;
 			any = true;
 			if (isWild) drawWildIdle(g, o);
 			else drawScatterIdle(g, o);
@@ -197,6 +220,7 @@
 				h: SYMBOL_H * info.sizeRatios.height,
 				t,
 				phase: keyPhase(cell.key),
+				alpha: loserAlpha,
 			});
 		}
 		return any;
@@ -588,7 +612,7 @@
 							anchor={{ x: 0.5, y: 0.5 }}
 							{width}
 							{height}
-							alpha={cell.displayAlpha.current}
+							alpha={cell.displayAlpha.current * loserAlpha}
 							tint={0xffffff}
 							zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
 						/>
@@ -639,6 +663,7 @@
 						anchor={{ x: 0.5, y: 0.5 }}
 						{width}
 						{height}
+						alpha={loserAlpha}
 						zIndex={Z.lockedSymbol}
 					/>
 				{:else}
@@ -649,7 +674,7 @@
 						anchor={{ x: 0.5, y: 0.5 }}
 						{width}
 						{height}
-						alpha={1}
+						alpha={loserAlpha}
 						tint={0xffffff}
 						zIndex={Z.lockedSymbol}
 					/>

@@ -250,6 +250,11 @@ export default {
 	'RESPIN': 'RESPIN',
 	// Bonus resume modal
 	'UNFINISHED ROUND': 'UNFINISHED ROUND',
+	// Shown instead of the shared generic error modal when a bet cannot be covered — see
+	// InsufficientFundsModal.svelte. Social-mode wording is overridden in socialOverridesEn.ts.
+	'NO BALANCE TITLE': 'NOT ENOUGH BALANCE',
+	'NO BALANCE BODY': 'Your balance is too low for this bet. Lower your bet level to keep playing.',
+	OK: 'OK',
 	'RESUME BODY': 'You have an active %mode% bonus in progress.',
 	'PLAY ROUND': 'PLAY ROUND',
 	'END ROUND': 'END ROUND',

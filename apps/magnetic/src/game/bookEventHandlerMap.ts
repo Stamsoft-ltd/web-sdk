@@ -303,7 +303,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			await animateSymbols({ positions: bookEvent.positions });
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_transition' });
 			await eventEmitter.broadcastAsync({ type: 'uiHide' });
-			await eventEmitter.broadcastAsync({ type: 'transition' });
+			// coins: the wipe INTO a bonus is the payoff moment. The matching wipe on the way out
+			// (freeSpinEnd) deliberately does not ask for them — a shower there lands right after
+			// the total-win panel and reads as a second, phantom payout.
+			await eventEmitter.broadcastAsync({ type: 'transition', coins: true });
 			stateGameDerived.clearWinCellStates();
 			// Set the mode before the intro mounts its content — it reads bonusMode to
 			// pick the bonus title (DROP-O-MAGNET vs MAGNETIC MEGA CHAIN).

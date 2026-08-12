@@ -110,6 +110,12 @@ export const socialOverridesEn: Record<string, string> = {
 	'INFO GI LEGAL 1':
 		'Malfunction voids all wins and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.',
 
+	// Insufficient-balance dialog. The base copy carries two restricted terms — "bet" (-> play) and
+	// "funds" (fund -> balance / deposit -> get coins) — so social mode gets its own sentence. The
+	// TITLE needs no override: "NOT ENOUGH BALANCE" contains no restricted substring.
+	'NO BALANCE BODY':
+		'Your balance is too low for this play amount. Lower it to keep playing.',
+
 	// Note: the General Game Disclaimer (DISCLAIMER TEXT) is intentionally NOT overridden here — the
 	// base copy is jurisdiction-neutral legal boilerplate, so social mode shows the same verbatim text
 	// (it contains no prohibited terms, so the "pay/win" review passes without a substitution).

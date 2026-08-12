@@ -97,7 +97,7 @@ const assets = {
 	// swap to the win-state box.
 	cellBox: {
 		type: 'sprite',
-		src: './assets/components/frames/cell_box.webp?v=20260807'
+		src: './assets/components/frames/cell_box.webp?v=20260811'
 	},
 	cellBoxWin: {
 		type: 'sprite',
@@ -315,11 +315,18 @@ const flag = (keys: readonly string[], prop: keyof AssetFlags) => {
 // The loading screen draws exactly these two, so they must exist before it renders.
 flag(['loadingBarAnim', 'pressPlayLogo'], 'preload');
 
-// Bonus-only art: a session that never enters a bonus never draws any of it, so it is withheld
-// from the gating pass and from the background stream, and loaded when a book that will draw it
-// arrives. game/utils.ts gates the drawing events (freeSpinTrigger / freeSpinEnd /
+// Bonus-only art. game/utils.ts gates the drawing events (freeSpinTrigger / freeSpinEnd /
 // createBonusSnapshot) on loadDemandAssets(), which covers every entry path — natural scatter, a
 // bought DROP-O-MAGNET / MEGA CHAIN round, an activated FEATURE round, and a resumed round.
+//
+// Flagged BOTH: it streams in the background wave AND stays behind the demand gate. It used to be
+// demand-only, which meant the first bonus of a session — the thing a reviewer goes looking for
+// almost immediately — paid a ~720KB download before it could be drawn. Streaming it costs the
+// loading screen nothing (the gating pass does not wait on it) and by the time anyone reaches a
+// bonus it is already resident, so the gate resolves against the cache. The gate stays because it
+// is the only hard guarantee for a player who buys a bonus before the stream finishes.
+//
+// Priority 2: behind the stack anims, which a cluster can need on the very first spin.
 flag(
 	[
 		'bgBonus', 'bgSuper', 'bgMobileBonus', 'bgMobileSuper',
@@ -328,6 +335,18 @@ flag(
 	],
 	'deferDemand',
 );
+flag(
+	[
+		'bgBonus', 'bgSuper', 'bgMobileBonus', 'bgMobileSuper',
+		'fsWonFrame',
+		'transition', 'counterFrame',
+	],
+	'defer',
+);
+for (const key of ['bgBonus', 'bgSuper', 'bgMobileBonus', 'bgMobileSuper', 'fsWonFrame', 'transition', 'counterFrame']) {
+	const entry = (assets as Record<string, { deferPriority?: number } | undefined>)[key];
+	if (entry) entry.deferPriority = 2;
+}
 
 // Layout-specific art: only the set matching the INITIAL viewport gates playability; the other
 // layout's set is demoted to the background pass, so a later rotate/resize still works — worst

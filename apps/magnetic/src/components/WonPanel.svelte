@@ -6,6 +6,7 @@
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { fitTextScale } from '../utils/fitText';
+	import { drawTubeLight } from '../game/tubeLight';
 
 	// The Version2 congratulations panel, shared by BOTH celebration screens:
 	//   * FreeSpinIntro  — "YOU WON / 10 / FREE SPINS"      (Figma node 7022-6844)
@@ -186,11 +187,14 @@
 	// the PNG, so they are lit here: a slow breathing bloom with a bright sparkle running along each
 	// one's long axis. Boxes are fractions of the frame, measured off the asset by colour-keying its
 	// hot cyan pixels (so they track the art exactly, at any size).
+	// The art's four cyan elements (two pillar tubes + the top and bottom bars), as fractions of the
+	// frame, found by colour-keying hot cyan in fs_won_frame.webp. Orientation is not stored: the
+	// shared tube renderer takes the longer axis of the box as the tube's length.
 	const LIGHTS = [
-		{ cx: 0.0884, cy: 0.445, w: 0.0518, h: 0.2255, vertical: true, phase: 0 },
-		{ cx: 0.9166, cy: 0.4432, w: 0.0459, h: 0.222, vertical: true, phase: 1.7 },
-		{ cx: 0.502, cy: 0.1308, w: 0.2071, h: 0.0172, vertical: false, phase: 0.9 },
-		{ cx: 0.5005, cy: 0.9501, w: 0.1944, h: 0.0206, vertical: false, phase: 2.6 },
+		{ cx: 0.0884, cy: 0.445, w: 0.0518, h: 0.2255, phase: 0 },
+		{ cx: 0.9166, cy: 0.4432, w: 0.0459, h: 0.222, phase: 1.7 },
+		{ cx: 0.502, cy: 0.1308, w: 0.2071, h: 0.0172, phase: 0.9 },
+		{ cx: 0.5005, cy: 0.9501, w: 0.1944, h: 0.0206, phase: 2.6 },
 	];
 
 	// While a celebration is up the HTML HUD must not sit brightly on top of it — it is DOM, so the
@@ -217,57 +221,15 @@
 			draw={(g) => {
 				g.clear();
 				for (const l of LIGHTS) {
-					const x = (l.cx - 0.5) * frameW;
-					const y = (l.cy - 0.5) * frameH;
-					const w = l.w * frameW;
-					const h = l.h * frameH;
-					const p = l.phase;
-					// Slow breathe, plus short irregular dips — the high powers make the dips sparse and
-					// sharp, the way a gas tube stutters, instead of a smooth in/out fade.
-					const breath = 0.86 + 0.14 * Math.sin(clock * 1.35 + p);
-					const dip =
-						0.16 * Math.max(0, Math.sin(clock * 21.7 + p * 3)) ** 10 +
-						0.1 * Math.max(0, Math.sin(clock * 6.9 + p * 1.7)) ** 8;
-					const level = Math.max(0.35, breath - dip);
-
-					// Halo: 7 layers, white at the core ramping to cyan as they widen.
-					const LAYERS = 7;
-					for (let i = 0; i < LAYERS; i++) {
-						const f = i / (LAYERS - 1); // 0 = core -> 1 = outer spill
-						const grow = f ** 1.5;
-						const gw = w * (l.vertical ? 0.5 + 3.4 * grow : 1 + 0.22 * grow);
-						const gh = h * (l.vertical ? 1 + 0.22 * grow : 0.5 + 3.4 * grow);
-						const m = 1 - f;
-						const color =
-							(Math.round(60 + 195 * m ** 1.4) << 16) |
-							(Math.round(190 + 65 * m ** 1.4) << 8) |
-							255;
-						g.roundRect(x - gw / 2, y - gh / 2, gw, gh, Math.min(gw, gh) / 2);
-						g.fill({ color, alpha: (0.014 + 0.115 * m ** 2.2) * level });
-					}
-					// White-hot filament down the middle.
-					const cw = l.vertical ? w * 0.26 : h * 0.26;
-					const cl = l.vertical ? h * 0.97 : w * 0.97;
-					const fw = l.vertical ? cw : cl;
-					const fh = l.vertical ? cl : cw;
-					g.roundRect(x - fw / 2, y - fh / 2, fw, fh, Math.min(fw, fh) / 2);
-					g.fill({ color: 0xffffff, alpha: 0.34 * level });
-
-					// Hotspot drifting inside the tube — a sine sweep, so it eases at both ends and never
-					// wraps. Three nested blobs give it a soft gaussian edge.
-					const span = l.vertical ? h : w;
-					const c = span * 0.3 * Math.sin(clock * 0.72 + p * 0.9);
-					for (let k = 0; k < 3; k++) {
-						const f = k / 2;
-						const len = span * (0.16 + 0.34 * f);
-						const thin = (l.vertical ? w : h) * (0.62 - 0.22 * f);
-						const bw = l.vertical ? thin : len;
-						const bh = l.vertical ? len : thin;
-						const bx = l.vertical ? x : x + c;
-						const by = l.vertical ? y + c : y;
-						g.roundRect(bx - bw / 2, by - bh / 2, bw, bh, Math.min(bw, bh) / 2);
-						g.fill({ color: 0xffffff, alpha: (0.2 - 0.06 * k) * level });
-					}
+					drawTubeLight(g, {
+						x: (l.cx - 0.5) * frameW,
+						y: (l.cy - 0.5) * frameH,
+						w: l.w * frameW,
+						h: l.h * frameH,
+						color: 0x3ce6ff,
+						t: clock,
+						phase: l.phase,
+					});
 				}
 			}}
 		/>

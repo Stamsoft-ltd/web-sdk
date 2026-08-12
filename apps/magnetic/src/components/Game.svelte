@@ -49,6 +49,7 @@
 	import PortraitTopBar from './PortraitTopBar.svelte';
 	import LandscapeCapsule from './LandscapeCapsule.svelte';
 	import AmbientDebris from './AmbientDebris.svelte';
+	import InsufficientFundsModal from './InsufficientFundsModal.svelte';
 
 	const context = getContext();
 
@@ -327,6 +328,13 @@
 				<ResumeBet />
 				<Sound />
 
+				<!-- Debris drifts in the room BEHIND the board, so it never crawls across the reels.
+				     Stage layering here is MOUNT ORDER, not the zIndex props: MainContainer spreads
+				     its props onto an INNER container, so every MainContainer's outer node — the one
+				     the sorted stage actually sees — keeps zIndex 0 and ties are resolved by the
+				     order components appear in this file. Moving a line here moves the layer. -->
+				<AmbientDebris />
+
 				<MainContainer zIndex={0}>
 					<BoardFrame />
 				</MainContainer>
@@ -334,8 +342,6 @@
 				<MainContainer>
 					<Board />
 				</MainContainer>
-
-				<AmbientDebris />
 
 				<GameLogoFrame />
 
@@ -370,6 +376,7 @@
 
 		{#if !context.stateLayout.showLoadingScreen}
 			<HudHtml />
+			<InsufficientFundsModal />
 			<ReplayHud />
 			<PendingRoundRecovery />
 		{/if}

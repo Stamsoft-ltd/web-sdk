@@ -146,9 +146,12 @@
 	});
 </script>
 
-<!-- Above the board and its frame, below the logo (20) and the info panels (25), so the debris
-     drifts over the reels without crawling across UI text. -->
-<MainContainer zIndex={18}>
+<!-- Behind the board and its frame: the debris belongs to the ROOM, and blowing it across the
+     reels put moving specks on top of the symbols the player is reading.
+     The layer is set by where <AmbientDebris /> sits in Game.svelte, NOT by this zIndex — a
+     MainContainer spreads its props onto an inner container, so the outer node the stage sorts
+     always has zIndex 0 and siblings tie-break on mount order. Kept at 0 to say so honestly. -->
+<MainContainer zIndex={0}>
 	<Graphics draw={(gr) => (ashG = gr as unknown as G)} />
 	<Graphics blendMode="add" draw={(gr) => (emberG = gr as unknown as G)} />
 </MainContainer>

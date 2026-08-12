@@ -38,6 +38,7 @@
 	import { onMount } from 'svelte';
 	import { stateI18nDerived } from 'state-shared';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import SplashDust from './SplashDust.svelte';
 	import { getContext } from '../game/context';
 
 	type Props = { onpress: () => void; ondone: () => void };
@@ -225,6 +226,8 @@
 		<!-- Portrait: same pieces recomposed — pillar + logo up top, one panel at a time, parts below. -->
 		<div class="stage stage--m">
 			<div class="room-bg" style={`background-image: url('${roomSrc}')`}></div>
+			<!-- Air first, everything else on top: the dust must never drift across the panels. -->
+			<SplashDust count={22} />
 			<img class="brand brand--m" src={brandSrc} alt="Press Play" draggable="false" />
 			<img class="pillar pillar--m" src={pillarSrc} alt="" draggable="false" />
 			<img
@@ -259,6 +262,8 @@
 		<!-- Landscape: the full 1201x671 Figma stage, height-fit and centred. -->
 		<div class="stage">
 			<div class="room-bg" style={`background-image: url('${roomSrc}')`}></div>
+			<!-- Air first, everything else on top: the dust must never drift across the panels. -->
+			<SplashDust />
 			<img class="brand" src={brandSrc} alt="Press Play" draggable="false" />
 			<img class="pillar" src={pillarSrc} alt="" draggable="false" />
 			<img

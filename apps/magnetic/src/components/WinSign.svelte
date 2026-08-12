@@ -6,6 +6,7 @@
 
 	import SparkBurst from './SparkBurst.svelte';
 	import { WIN_GRADIENT } from '../game/goldGradient';
+	import { drawTubeLight } from '../game/tubeLight';
 	import type { SignPart, WinSignTier } from '../game/winSignTiers';
 
 	// Version2 big-win sign (Figma 7022:7751 "Sweet win", 7022:8274 "Epic win", ...). Each design
@@ -117,65 +118,18 @@
 		const pw = part.w * S;
 		const ph = part.h * S;
 		for (let i = 0; i < part.tubes.length; i++) {
-			const t = part.tubes[i];
-			const x = (t.cx - 0.5) * pw;
-			const y = (t.cy - 0.5) * ph;
-			const w = Math.max(2, t.w * pw);
-			const h = Math.max(2, t.h * ph);
-			const vertical = h >= w;
-			const p = i * 1.7 + part.x * 0.01;
-			const cr = (t.color >> 16) & 0xff;
-			const cg = (t.color >> 8) & 0xff;
-			const cb = t.color & 0xff;
-
-			const breath = 0.86 + 0.14 * Math.sin(clock * 1.35 + p);
-			const dip =
-				0.16 * Math.max(0, Math.sin(clock * 21.7 + p * 3)) ** 10 +
-				0.1 * Math.max(0, Math.sin(clock * 6.9 + p * 1.7)) ** 8;
-			const level = Math.max(0.35, breath - dip) * lit;
-
-			// Halo: white at the core, ramping to the tube's own colour as the layers widen.
-			const LAYERS = 7;
-			for (let k = 0; k < LAYERS; k++) {
-				const f = k / (LAYERS - 1);
-				const grow = f ** 1.5;
-				const gw = w * (vertical ? 0.62 + 2.6 * grow : 1 + 0.22 * grow);
-				const gh = h * (vertical ? 1 + 0.22 * grow : 0.62 + 2.6 * grow);
-				const m = 1 - f;
-				// Only PARTLY toward white at the core: a full white core blew the widest tube (sweet's
-				// cylinder) out to milky grey, since additive white over an already bright art clips.
-				const mix = (c: number) => Math.round(c + (255 - c) * 0.55 * m ** 1.8);
-				g.roundRect(x - gw / 2, y - gh / 2, gw, gh, Math.min(gw, gh) / 2);
-				g.fill({
-					color: (mix(cr) << 16) | (mix(cg) << 8) | mix(cb),
-					alpha: (0.018 + 0.12 * m ** 2.2) * level,
-				});
-			}
-			// Hot filament down the middle — near-white, but carrying a little of the tube's colour so
-			// wide tubes read as glowing gas rather than a white bar.
-			const hot = (c: number) => Math.round(c + (255 - c) * 0.82);
-			const hotColor = (hot(cr) << 16) | (hot(cg) << 8) | hot(cb);
-			const cw = (vertical ? w : h) * 0.2;
-			const cl = (vertical ? h : w) * 0.95;
-			const fw = vertical ? cw : cl;
-			const fh = vertical ? cl : cw;
-			g.roundRect(x - fw / 2, y - fh / 2, fw, fh, Math.min(fw, fh) / 2);
-			g.fill({ color: hotColor, alpha: 0.22 * level });
-
-			// Hotspot drifting inside the tube — a sine sweep, so it eases at both ends.
-			const span = vertical ? h : w;
-			const c = span * 0.3 * Math.sin(clock * 0.72 + p * 0.9);
-			for (let k = 0; k < 3; k++) {
-				const f = k / 2;
-				const len = span * (0.16 + 0.34 * f);
-				const thin = (vertical ? w : h) * (0.62 - 0.22 * f);
-				const bw = vertical ? thin : len;
-				const bh = vertical ? len : thin;
-				const bx = vertical ? x : x + c;
-				const by = vertical ? y + c : y;
-				g.roundRect(bx - bw / 2, by - bh / 2, bw, bh, Math.min(bw, bh) / 2);
-				g.fill({ color: hotColor, alpha: (0.13 - 0.04 * k) * level });
-			}
+			const tube = part.tubes[i];
+			drawTubeLight(g, {
+				x: (tube.cx - 0.5) * pw,
+				y: (tube.cy - 0.5) * ph,
+				w: Math.max(2, tube.w * pw),
+				h: Math.max(2, tube.h * ph),
+				color: tube.color,
+				t: clock,
+				// Offset by the part's own x so the left and right pillars never strike together.
+				phase: i * 1.7 + part.x * 0.01,
+				level: lit,
+			});
 		}
 	};
 

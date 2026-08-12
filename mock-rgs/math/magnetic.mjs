@@ -541,11 +541,15 @@ const emitMagnetActivated = (events, { seriesId, symbol, positions, multiplier, 
     persistent,
   });
 };
+// series is the LIST, snapshotted the same way clusterSeriesUpdate does it. This used to take one
+// entry and emit `snapshotOf(series)` — a bare object where every consumer expects an array, which
+// blew up the client's setSeriesSnapshots (`series.flatMap is not a function`) and killed the whole
+// super round mid-bonus, so the outro never ran.
 const emitSuperCarry = (events, series, magnetTargetSymbol, totalMultiplier) => {
   events.push({
     index: events.length,
     type: 'superSeriesCarry',
-    series: series ? snapshotOf(series) : null,
+    series: series && series.length ? series.map(snapshotOf) : null,
     magnetTargetSymbol,
     totalMultiplier,
   });
@@ -852,7 +856,7 @@ const buildNormalBonusSpin = ({ rng, runningTotal, spinIndex }) => {
 
 const buildSuperBonusSpin = ({ rng, spinIndex, persistentState, runningTotal }) => {
   const events = [];
-  emitSuperCarry(events, persistentState.series[0] ?? null, persistentState.targetSymbol, persistentState.totalMultiplier);
+  emitSuperCarry(events, persistentState.series, persistentState.targetSymbol, persistentState.totalMultiplier);
 
   const settings = MODE_SETTINGS.SUPER;
   const magnetCount = spinIndex === 0 ? 1 : randomMagnetCount(rng, settings.magnetSpinRate * (spinIndex === 0 ? 1 : 0.72));
@@ -884,7 +888,7 @@ const buildSuperBonusSpin = ({ rng, spinIndex, persistentState, runningTotal }) 
     totalMultiplier: resolved.totalMultiplier,
     series: resolved.series,
   };
-  emitSuperCarry(events, nextState.series[0] ?? null, nextState.targetSymbol, nextState.totalMultiplier);
+  emitSuperCarry(events, nextState.series, nextState.targetSymbol, nextState.totalMultiplier);
   emitSetTotal(events, runningTotal);
   return { events, nextState };
 };
