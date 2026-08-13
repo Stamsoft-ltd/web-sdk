@@ -333,15 +333,22 @@
 
 	const NUM_PURPLE = 0xe471f6;
 
-	// Figma: Inter 700; letter-spacing is 3% of the size at every specced size (0.54/18, 1.14/38,
-	// 1.44/48). Inter is self-hosted in app.html for the HUD; <Game> fonts.load()s it for canvas.
+	// Figma 6471:6347 and 6503:7416: the numbers and PICK ... DUCKS are the display face, Lilita
+	// One; only the TOTAL WIN caption above the value is body type. Letter-spacing is 3% of the
+	// size at every specced size (0.54/18, 1.14/38, 1.44/48). Both faces are self-hosted in
+	// app.html, and <Game> fonts.load()s them so canvas text does not fall back.
 	const textStyle = (fontSize: number, fill: number) => ({
-		fontFamily: 'Inter, Helvetica, Arial, sans-serif',
-		fontWeight: '700' as const,
+		fontFamily: 'Lilita One',
+		fontWeight: '400' as const,
 		fontSize,
 		align: 'center' as const,
 		fill,
 		letterSpacing: fontSize * 0.03,
+	});
+	const captionStyle = (fontSize: number, fill: number) => ({
+		...textStyle(fontSize, fill),
+		fontFamily: 'Nunito Sans',
+		fontWeight: '700' as const,
 	});
 
 	// PICK <n> DUCKS is three runs (the number is bigger and coloured), centred as one line off
@@ -517,7 +524,7 @@
 				x={ui.total.x}
 				y={ui.total.titleY}
 				text={stateI18nDerived.translate('TOTAL WIN')}
-				style={textStyle(ui.total.title, 0xffffff)}
+				style={captionStyle(ui.total.title, 0xffffff)}
 			/>
 			<Text
 				anchor={0.5}

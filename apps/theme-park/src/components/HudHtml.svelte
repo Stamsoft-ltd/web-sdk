@@ -24,10 +24,12 @@
 	const navTurboOutline = ap('/assets/theme-park/v2/hud/turbo-3.webp');
 	const barPlate = ap('/assets/theme-park/v2/hud/bar_plate.webp');
 	const buyPlate = ap('/assets/theme-park/v2/hud/buy_plate.webp');
-	const navSpinDefault = ap('/assets/theme-park/v2/controls/spin-default.png');
-	const navSpinDefaultMobile = ap('/assets/theme-park/v2/controls/spin-default-mobile.png');
-	const navSpinActive = ap('/assets/theme-park/v2/controls/spin-active.png');
-	const navSpinStop = ap('/assets/theme-park/v2/controls/spin-stop.png');
+	// The spin button is a rotatable marquee ring plus a static glyph on top, NOT one flat composite
+	// (see scripts/spin-button/build_spin_button.py). The ring is identical in every state — only the
+	// glyph changes — so one background serves all of them and can keep spinning across a state swap.
+	const navSpinBg = ap('/assets/theme-park/v2/controls/spin-bg.webp');
+	const navSpinArrow = ap('/assets/theme-park/v2/controls/spin-arrow.webp');
+	const navSpinStopGlyph = ap('/assets/theme-park/v2/controls/spin-stop-glyph.webp');
 	const navCoins = ap('/assets/theme-park/v2/hud/icon_coin.svg');
 	const gameLogo = ap('/assets/theme-park/v2/logo.png');
 	const pressPlayLogo = ap('/assets/theme-park/v2/press-play.webp');
@@ -74,7 +76,6 @@
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isLandscapeMobile = $derived(layoutType === 'landscape');
 	const isPortrait = $derived(layoutType === 'portrait');
-	const isMobileLayout = $derived(layoutType === 'portrait' || layoutType === 'landscape');
 
 	// The THEME PARK logo tracks the board: it sits just above the portrait board frame, whose top is
 	// at logical Y = 236 (PORTRAIT_TOP_OFFSET) in the 1080×1920 portrait space. MainContainer maps a
@@ -412,7 +413,12 @@
 	onpress={onSpinHotkey}
 />
 
-<div class="hud-shell" class:hud-shell--blocked={congratsBlocking} data-layout={layoutType}>
+<div
+	class="hud-shell"
+	class:hud-shell--blocked={congratsBlocking}
+	class:hud-shell--dimmed={showBuyModal}
+	data-layout={layoutType}
+>
 	{#if isPortrait}
 		<!-- Portrait logo stack: Press Play mark above the THEME PARK logo, the stack's bottom
 		     (the game logo) anchored just above the board via inline top + translateY(-100%). -->
@@ -562,21 +568,19 @@
 			<div class="play-cluster">
 				<button
 					class="spin-btn"
+					class:is-spinning={isSpinStop}
 					type="button"
 					onclick={onSpinButton}
 					aria-label={i18nDerived.translate('SPIN')}
 					disabled={canInteract && !hasAuto && !canAffordBet}
 				>
+					<!-- Mounted unconditionally so the ring's rotation survives the glyph swapping between
+					     arrow and stop — remounting it would restart the animation from 0deg and snap. -->
+					<img src={navSpinBg} alt="" class="spin-btn__img spin-btn__img--bg" />
 					{#if isSpinStop}
-						<img src={navSpinStop} alt="" class="spin-btn__img spin-btn__img--stop" />
+						<img src={navSpinStopGlyph} alt="" class="spin-btn__img spin-btn__img--stopglyph" />
 					{:else}
-						<img
-							src={isMobileLayout ? navSpinDefaultMobile : navSpinDefault}
-							alt=""
-							class="spin-btn__img spin-btn__img--default"
-							class:spin-btn__img--mobile={isMobileLayout}
-						/>
-						<img src={navSpinActive} alt="" class="spin-btn__img spin-btn__img--active" />
+						<img src={navSpinArrow} alt="" class="spin-btn__img spin-btn__img--arrow" />
 					{/if}
 					{#if hasAuto}
 						<span
@@ -650,15 +654,17 @@
 
 			<button
 				class="pt-spin"
+				class:is-spinning={isSpinStop}
 				type="button"
 				onclick={onSpinButton}
 				aria-label={i18nDerived.translate('SPIN')}
 				disabled={canInteract && !hasAuto && !canAffordBet}
 			>
+				<img src={navSpinBg} alt="" class="pt-spin__img pt-spin__img--bg" />
 				{#if isSpinStop}
-					<img src={navSpinStop} alt="" class="pt-spin__img" />
+					<img src={navSpinStopGlyph} alt="" class="pt-spin__img pt-spin__img--stopglyph" />
 				{:else}
-					<img src={navSpinDefaultMobile} alt="" class="pt-spin__img" />
+					<img src={navSpinArrow} alt="" class="pt-spin__img pt-spin__img--arrow" />
 				{/if}
 				{#if hasAuto}
 					<span class="pt-spin__count">{autoSpinsRemainingText}</span>
@@ -778,7 +784,7 @@
 		justify-content: space-between;
 		padding: 8px;
 		z-index: 20;
-		font-family: 'Cinzel', serif;
+		font-family: 'Lilita One', sans-serif;
 		/* One design unit = one pixel of Figma 6281-1791, so every size below can be read straight off
 		   the design. The bar plate is 1126 wide in a 1200-wide frame (93.8%); the 1400px cap stops it
 		   from growing past the design's proportions on an ultrawide monitor. */
@@ -786,8 +792,18 @@
 	}
 
 	.hud-shell--blocked,
-	.hud-shell--blocked * {
+	.hud-shell--blocked *,
+	.hud-shell--dimmed,
+	.hud-shell--dimmed * {
 		pointer-events: none !important;
+	}
+
+	/* Same treatment for the buy-bonus screen (Figma 6695:4781), which scrims the whole frame — bar
+	   and logo included — and lifts only the bet stepper back above it. That stepper belongs to the
+	   modal, not to this bar, so the bar can dim wholesale. Unlike --blocked the logo is only dimmed,
+	   not hidden: the design keeps it behind the title. */
+	.hud-shell--dimmed {
+		filter: brightness(0.3);
 	}
 
 	/* The design scrims the WHOLE frame behind a congratulations screen, the bottom bar and the logo
@@ -1026,14 +1042,14 @@
 		cursor: pointer;
 	}
 
-	/* 10px / 2px tracking / #bd46c6, 15px line box (nodes 6589:4364, :4369, :4375). */
+	/* 10px / 2px tracking / #bd46c6, 15px line box, Nunito Sans ExtraBold (node 6957:7108). */
 	.label {
-		font-family: 'Inter', sans-serif;
+		font-family: 'Nunito Sans', sans-serif;
 		font-size: calc(var(--hud-u) * 10);
 		line-height: calc(var(--hud-u) * 15);
 		letter-spacing: calc(var(--hud-u) * 2);
 		text-transform: uppercase;
-		font-weight: 700;
+		font-weight: 800;
 		color: #bd46c6;
 		display: flex;
 		align-items: center;
@@ -1051,12 +1067,12 @@
 		display: inline-block;
 	}
 
-	/* 24px white, 32px line box (nodes 6589:4365, :4370, :4377). */
+	/* 24px white, 32px line box, Lilita One (node 6957:7109). */
 	.value {
-		font-family: 'Inter', sans-serif;
+		font-family: 'Lilita One', sans-serif;
 		font-size: calc(var(--hud-u) * 24);
 		line-height: calc(var(--hud-u) * 32);
-		font-weight: 700;
+		font-weight: 400;
 		color: #fff;
 		white-space: nowrap;
 		max-width: 100%;
@@ -1283,8 +1299,8 @@
 		-webkit-mask: var(--icon) center / contain no-repeat;
 	}
 	.hud-menu__label {
-		font-family: 'Inter', sans-serif;
-		font-weight: 700;
+		font-family: 'Lilita One', sans-serif;
+		font-weight: 400;
 		font-size: 14px;
 		letter-spacing: 0.05em;
 		color: inherit;
@@ -1321,13 +1337,15 @@
 		color: #fff;
 	}
 
-	/* The three spin states are three separate exports whose ring is a different size AND a different
-	   distance from the centre of its own frame (default +11.5, active -6.5, stop -6.5/-7.0 px in
-	   source pixels). Letting object-fit letterbox them meant the ring changed size and jumped as the
-	   state changed, and none of them matched the design's 105 ring centred 4.5 below the button
-	   centre. Each variant below is sized and nudged so the RING — not the frame — lands in the same
-	   place every time. All values are percentages so the mobile layouts, which resize .spin-btn,
-	   keep the same relationship. */
+	/* The button is a stack: one marquee ring (spin-bg) with a glyph centred on it. The ring art is
+	   square and centred on its own circle, so `rotate()` turns about the circle's centre with no
+	   transform-origin correction — that squareness is the whole reason the build script crops the
+	   way it does.
+
+	   Every variant below is sized and nudged so the RING — not the image frame — lands in exactly
+	   the place the old flat composites put it; the numbers are printed by
+	   scripts/spin-button/build_spin_button.py, which derives them FROM those composites. All values
+	   are percentages so the mobile layouts, which resize .spin-btn, keep the same relationship. */
 	.spin-btn__img {
 		position: absolute;
 		left: 50%;
@@ -1345,47 +1363,63 @@
 		filter: drop-shadow(0 0 12px rgba(255, 79, 216, 0.35));
 	}
 
-	/* spin-default.png — 536x475 frame, 379px ring sitting 11.5px low. */
-	.spin-btn__img--default {
-		--art-h: 111.02%;
+	.spin-btn__img--bg {
+		--art-h: 88.115%;
 		--art-dx: 0%;
-		--art-dy: 0.998%;
+		--art-dy: 4.44%;
 	}
 
-	/* spin-default-mobile.png — 412x356 frame, 310px ring. */
-	.spin-btn__img--default.spin-btn__img--mobile {
-		--art-h: 101.72%;
-		--art-dx: -0.485%;
-		--art-dy: 3.592%;
+	.spin-btn__img--arrow {
+		--art-h: 34.591%;
+		--art-dx: -0.676%;
+		--art-dy: 9.284%;
 	}
 
-	/* spin-active.png — 536x532 frame, 454px ring sitting 6.5px high. */
-	.spin-btn__img--active {
-		--art-h: 103.8%;
-		--art-dx: 0.094%;
-		--art-dy: 4.879%;
+	.spin-btn__img--stopglyph {
+		--art-h: 19.633%;
+		--art-dx: -1.786%;
+		--art-dy: 23.501%;
 	}
 
-	/* spin-stop.png — 536x475 frame, 379px ring sitting 7.0px left and 6.5px high. */
-	.spin-btn__img--stop {
-		--art-h: 111.02%;
-		--art-dx: 1.306%;
-		--art-dy: 4.788%;
+	/* The marquee spins whenever the player engages the button — pointer, keyboard focus, the press
+	   itself — and keeps spinning for as long as the round is running. Keyed off .spin-btn rather
+	   than the image so the glyph swap at spin-start doesn't interrupt it.
+
+	   translate() is repeated in the keyframes because the element's placement lives in the same
+	   `transform` property; dropping it here would fling the ring to the button's top-left. */
+	@keyframes spin-btn-ring {
+		from {
+			transform: translate(calc(-50% + var(--art-dx)), calc(-50% + var(--art-dy))) rotate(0deg);
+		}
+		to {
+			transform: translate(calc(-50% + var(--art-dx)), calc(-50% + var(--art-dy))) rotate(360deg);
+		}
 	}
 
-	.spin-btn__img--active {
-		opacity: 0;
+	.spin-btn:not(:disabled):hover .spin-btn__img--bg,
+	.spin-btn:not(:disabled):focus-visible .spin-btn__img--bg,
+	.spin-btn:not(:disabled):active .spin-btn__img--bg,
+	.spin-btn.is-spinning .spin-btn__img--bg {
+		animation: spin-btn-ring 2.4s linear infinite;
 	}
 
-	/* Swap to the "active" spin art only on PRESS, not hover: the active frame renders at a slightly
-	   different size, so swapping it in on hover made the button appear to shrink. Hover keeps the
-	   lift + brighten feedback below. */
-	.spin-btn:not(:disabled):active .spin-btn__img--default {
-		opacity: 0;
+	/* Faster while the reels are actually turning, so the button reads as "running" rather than just
+	   "hovered". */
+	.spin-btn.is-spinning .spin-btn__img--bg {
+		animation-duration: 1.1s;
 	}
 
-	.spin-btn:not(:disabled):active .spin-btn__img--active {
-		opacity: 1;
+	@media (prefers-reduced-motion: reduce) {
+		.spin-btn .spin-btn__img--bg {
+			animation: none;
+		}
+	}
+
+	/* The old press state swapped in a separate export whose only real difference was a bigger outer
+	   glow (its ring measured the same 377px). A filter reproduces that without a second download —
+	   and without the 16% size jump that export actually introduced. */
+	.spin-btn:not(:disabled):active .spin-btn__img--bg {
+		filter: drop-shadow(0 0 14px rgba(209, 0, 255, 0.75)) brightness(1.06);
 	}
 
 	/* The old stepper art carried its own circle, so the button chrome was switched off for it. The
@@ -1417,8 +1451,8 @@
 		border-radius: 50%;
 		background: radial-gradient(circle, rgba(70, 20, 110, 0.96) 60%, rgba(70, 20, 110, 0) 100%);
 		color: #fff;
-		font-family: Cinzel, serif;
-		font-weight: 900;
+		font-family: 'Lilita One', sans-serif;
+		font-weight: 400;
 		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
 		pointer-events: none;
 	}
@@ -1471,12 +1505,12 @@
 		transform: translateY(1px) scale(0.95);
 	}
 
-	/* Inter Bold 12 / 1.4 tracking / 20 line box, white (node 6004:4333). */
+	/* Lilita One 12 / 1.4 tracking / 20 line box, white (node 6004:4333). */
 	.buy-btn__label {
 		position: relative;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Lilita One', sans-serif;
 		font-size: calc(var(--hud-u) * 12);
-		font-weight: 700;
+		font-weight: 400;
 		color: #fff;
 		letter-spacing: calc(var(--hud-u) * 1.4);
 		text-transform: uppercase;
@@ -1704,7 +1738,7 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 22px;
-		font-family: 'Cinzel', serif;
+		font-family: 'Lilita One', sans-serif;
 	}
 
 	/* --- Controls row: the Navigation plate art (bar_plate) is the bar background; the buttons sit
@@ -1821,12 +1855,56 @@
 		transition: transform 0.12s ease;
 		z-index: 2;
 	}
+	/* Same two-layer stack as the landscape button. The ring art is square and centred on its own
+	   circle, so a plain 100% box puts the ring exactly where the old composite had it and lets the
+	   ring rotate without drifting. The glyph percentages are the design's glyph-to-ring ratios. */
 	.pt-spin__img {
-		width: 100%;
-		height: 100%;
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
 		object-fit: contain;
 		display: block;
+		pointer-events: none;
+	}
+	.pt-spin__img--bg {
+		width: 100%;
+		height: 100%;
 		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+	}
+	.pt-spin__img--arrow {
+		width: 39.3%;
+		height: 39.3%;
+		transform: translate(calc(-50% - 0.27%), calc(-50% - 0.8%));
+	}
+	.pt-spin__img--stopglyph {
+		width: 22.3%;
+		height: 22.3%;
+		transform: translate(calc(-50% - 0.4%), calc(-50% + 0.9%));
+	}
+
+	@keyframes pt-spin-ring {
+		from {
+			transform: translate(-50%, -50%) rotate(0deg);
+		}
+		to {
+			transform: translate(-50%, -50%) rotate(360deg);
+		}
+	}
+
+	.pt-spin:not(:disabled):hover .pt-spin__img--bg,
+	.pt-spin:not(:disabled):focus-visible .pt-spin__img--bg,
+	.pt-spin:not(:disabled):active .pt-spin__img--bg,
+	.pt-spin.is-spinning .pt-spin__img--bg {
+		animation: pt-spin-ring 2.4s linear infinite;
+	}
+	.pt-spin.is-spinning .pt-spin__img--bg {
+		animation-duration: 1.1s;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.pt-spin .pt-spin__img--bg {
+			animation: none;
+		}
 	}
 	.pt-spin:active {
 		transform: scale(0.94);

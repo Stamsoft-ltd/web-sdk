@@ -402,6 +402,11 @@
 		// Inter Bold is fetched by the HUD's DOM text on most paths, but the duck-pond panels draw
 		// it on canvas — make its load unconditional too.
 		document.fonts?.load('700 38px Inter').catch(() => {});
+		// The design's two faces (Figma 6541:4136 and the buy menu): Lilita One carries every
+		// heading, amount and badge drawn on canvas, Nunito Sans the captions beside them.
+		document.fonts?.load('400 64px "Lilita One"').catch(() => {});
+		document.fonts?.load('700 18px "Nunito Sans"').catch(() => {});
+		document.fonts?.load('400 18px "Nunito Sans"').catch(() => {});
 	});
 </script>
 

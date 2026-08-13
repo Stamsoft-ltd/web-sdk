@@ -17,13 +17,14 @@
 
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { BitmapText, Container, Sprite } from 'pixi-svelte';
+	import { BitmapText, Container } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
 	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve, waitForTimeout } from 'utils-shared/wait';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 	import { stateBet } from 'state-shared';
 
+	import NeonPlaque from './NeonPlaque.svelte';
 	import { getContext } from '../game/context';
 	import { stripEmptyCurrencyDecimals } from '../game/currency';
 
@@ -194,7 +195,7 @@
 <FadeContainer {show}>
 	<MainContainer>
 		<Container x={layout.x} y={bannerY}>
-			<Sprite key="forestBonusBadge" anchor={0.5} width={500} height={96} />
+			<NeonPlaque key="bonusBannerPlate" width={500} height={96} />
 			<BitmapText
 				anchor={{ x: 0.5, y: 0.5 }}
 				y={-16}

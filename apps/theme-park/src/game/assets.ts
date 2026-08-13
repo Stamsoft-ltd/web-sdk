@@ -162,6 +162,14 @@ const assets: Assets = {
 	},
 
 	// === FEATURE PRESENTERS ===
+	// Full-scene backdrop for the whole Mega Coaster bonus: the blurred night-time coaster POV
+	// (Figma 6824:5157, built by scripts/coaster-bg/build_coaster_bg.py). Drawn by <Background> over
+	// the plaza art for as long as the bonus runs, the same way the pond swaps in its booth.
+	coasterBackground: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/features/coaster-bg.webp',
+		defer: true,
+	},
 	coasterTrack: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/features/coaster-track.png',
@@ -269,7 +277,23 @@ const assets: Assets = {
 	},
 
 	// === WIN BOARDS ===
-	// Bonus-complete screen (Figma 6094:4022): the square neon panel and the prize pile on it.
+	// The congratulations screens' panel (Figma 6909:9366), in the separate pieces <CongratsPanel>
+	// animates apart: the marquee frame with its amount well built in, the medallion ring, and the
+	// gold P that punches in inside it. Deferred, because these only show once a bonus has run;
+	// until they land the flat `bonusPanel` below holds the place.
+	congratsPanel: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/popup/congrats/panel.webp',
+		defer: true,
+	},
+	congratsRing: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/popup/congrats/ring.webp',
+		defer: true,
+	},
+	congratsP: { type: 'sprite', src: './assets/theme-park/v2/popup/congrats/p.webp', defer: true },
+	// Bonus-complete screen (Figma 6094:4022): the square neon panel, still drawn by the duck pond's
+	// PICK / TOTAL WIN plates and used as the congratulations panel's fallback.
 	bonusPanel: { type: 'sprite', src: './assets/theme-park/v2/popup/square_panel_neon.webp' },
 	// Figma 6682:5285 — the gift, popcorn and coin pile, without the coaster car the first pass used.
 	bonusPrize: { type: 'sprite', src: './assets/theme-park/v2/wins/bonus-prize-gift.webp' },
@@ -282,42 +306,143 @@ const assets: Assets = {
 	},
 	winMythic: { type: 'sprite', src: './assets/theme-park/v2/wins/mythic.webp' },
 	winMax: { type: 'sprite', src: './assets/theme-park/v2/wins/max.webp' },
-	// Win-card animations as alpha-keyed sprite sheets (36 frames, 6×6 of 512px), generated from
-	// the yuv420p win-card MP4s — the source videos carry NO alpha, so the old webm route composited
-	// their black background into the scene. The card silhouette is flood-fill masked opaque and
-	// the outside glows are un-premultiplied from black. Regenerate with the pipeline script if the
-	// source videos change, and RENAME the outputs to bust caches.
-	winSweetAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/winCards/sweet_card.json',
+	// The win cards' separate parts (Figma 6089:434 and the four tier frames beside it), which
+	// <ThemeWinBoard> assembles and animates apart — the wordmark drops in, the coins fly in
+	// spinning, the badge punches in, the bulbs light. This replaced five 36-frame sprite sheets
+	// that carried the same motion pre-baked: 3.9 MB of parts against 16 MB of sheets, and the
+	// choreography is now editable.
+	//
+	// Deferred, with the flat one-piece `winSweet`/`winMythic`/... cards above as the immediate
+	// fallback: same art, so a card that lands before the parts do just shows without choreography.
+	// Placement and bulb positions live in game/winCardParts.ts.
+	winCardCoin: { type: 'sprite', src: './assets/theme-park/v2/wins/parts/coin.webp', defer: true },
+	// The falling coin for <WinCoinRain> — the P coin, Figma 6449:8830. Deliberately NOT the card's
+	// `winCardCoin`: that one is the balloon medallion symbol, and raining the symbol instead of
+	// money read as wrong. It has to be the FACE-ON art too, because the rain tumbles it by
+	// squashing its width; an already-tilted coin squashed further just looks permanently skewed.
+	winRainCoin: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/rain_coin.webp',
 		defer: true,
 	},
-	winWildAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/winCards/wild_card.json',
+	// The same coin's FAR face — its silhouette filled with a plain metal gradient, no P and no
+	// bevel. Drawn behind the near face and offset, it is what gives the tumbling coin its
+	// thickness; see <WinCoinRain> for why the edge cannot be drawn beside the face instead.
+	winRainCoinRim: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/rain_coin_rim.webp',
 		defer: true,
 	},
-	winEpicAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/winCards/epic_card.json',
+	winCardSweetPanel: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/sweet/panel.webp',
 		defer: true,
 	},
-	winLegendaryAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/winCards/legendary_card.json',
+	winCardSweetText: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/sweet/text.webp',
 		defer: true,
 	},
-	winMythicAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/winCards/mythic_card.json',
+	winCardSweetRing: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/sweet/ring.webp',
+		defer: true,
+	},
+	winCardSweetBadge: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/sweet/badge.webp',
+		defer: true,
+	},
+	winCardWildPanel: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/wild/panel.webp',
+		defer: true,
+	},
+	winCardWildText: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/wild/text.webp',
+		defer: true,
+	},
+	winCardWildRing: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/wild/ring.webp',
+		defer: true,
+	},
+	winCardWildBadge: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/wild/badge.webp',
+		defer: true,
+	},
+	winCardEpicPanel: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/epic/panel.webp',
+		defer: true,
+	},
+	winCardEpicText: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/epic/text.webp',
+		defer: true,
+	},
+	winCardEpicRing: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/epic/ring.webp',
+		defer: true,
+	},
+	winCardEpicBadge: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/epic/badge.webp',
+		defer: true,
+	},
+	winCardMythicPanel: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/mythic/panel.webp',
+		defer: true,
+	},
+	winCardMythicText: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/mythic/text.webp',
+		defer: true,
+	},
+	winCardMythicRing: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/mythic/ring.webp',
+		defer: true,
+	},
+	winCardMythicBadge: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/mythic/badge.webp',
+		defer: true,
+	},
+	winCardLegendaryPanel: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/legendary/panel.webp',
+		defer: true,
+	},
+	winCardLegendaryText: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/legendary/text.webp',
+		defer: true,
+	},
+	winCardLegendaryRing: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/legendary/ring.webp',
+		defer: true,
+	},
+	winCardLegendaryBadge: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/parts/legendary/badge.webp',
 		defer: true,
 	},
 
 	// === FRAMES / UI ===
 	symbolPad: { type: 'sprite', src: './assets/components/frames/symbol_pad.png' },
-	forestBonusBadge: {
+	// Backs the in-board bonus banners. The HUD's own navigation bar art: plain neon tube, uniform
+	// along its length, which is what lets <NeonPlaque> 3-slice it to any width. It replaces a 1.73MB
+	// lossless carve-wood sign left over from Forest Gang — wrong game, wrong theme, and 150x the
+	// bytes for something drawn 500x96.
+	bonusBannerPlate: {
 		type: 'sprite',
-		src: './assets/components/frames/forest/badge_frame.png',
+		src: './assets/theme-park/v2/hud/bar_plate.webp',
 	},
 	// Temporary production placeholders copied from Magnetic. Replace with final
 	// Theme Park lock art without changing the component contract.

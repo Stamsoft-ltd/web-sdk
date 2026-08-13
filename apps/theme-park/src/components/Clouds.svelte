@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Container, Sprite } from 'pixi-svelte';
 	import { onMount } from 'svelte';
+	import { Tween } from 'svelte/motion';
+	import { cubicInOut } from 'svelte/easing';
 
 	import { getContext } from '../game/context';
 	import { CLOUDS_Z, backgroundCover } from '../game/sceneBackground';
@@ -154,6 +156,15 @@
 	// Kept mounted at alpha 0 (see the note on `placed`) rather than unmounted.
 	const pondActive = $derived(!!context.stateGame.duckPicks);
 
+	// Same for Mega Coaster, whose backdrop is a night sky — daytime clouds over it look like art from
+	// the wrong scene. Faded on the same 600ms curve <Background> crossfades the backdrop with, so the
+	// clouds do not blink out while the plaza is still showing.
+	const coasterActive = $derived(context.stateGame.bonusType === 'coaster');
+	const cloudFade = new Tween(1, { duration: 600, easing: cubicInOut });
+	$effect(() => {
+		cloudFade.set(coasterActive ? 0 : 1);
+	});
+
 	const placed = $derived.by(() => {
 		void frame;
 		return clouds.map((cloud) => {
@@ -191,7 +202,7 @@
 				y={cloud.y}
 				width={cloud.width}
 				height={cloud.height}
-				alpha={pondActive ? 0 : cloud.alpha}
+				alpha={pondActive ? 0 : cloud.alpha * cloudFade.current}
 			/>
 		{/each}
 	{/if}

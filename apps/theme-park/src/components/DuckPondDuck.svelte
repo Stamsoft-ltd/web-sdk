@@ -74,6 +74,9 @@
 		}
 	});
 
+	/** How big the prize badge reads on the duck, against the size the spine slot was laid out at. */
+	const PRIZE_SCALE = 2;
+
 	const prizeFill = new FillGradient({
 		type: 'linear',
 		start: { x: 0, y: 0 },
@@ -127,7 +130,10 @@
 		<SpineEventEmitterProvider>
 			<SpineSlot slotName="prize">
 				{#if props.prize}
-					<Container>
+					<!-- Scaled as one piece rather than by re-sizing the circle, the value and the ALL
+					     line separately: the badge is laid out in the spine slot's own units, and the
+					     only thing that has to change is how big the whole thing reads on the duck. -->
+					<Container scale={PRIZE_SCALE}>
 						<Graphics
 							draw={(graphics) => {
 								graphics
@@ -143,8 +149,8 @@
 							y={props.prize.kind === 'multmult' ? -8 : 0}
 							text={label}
 							style={{
-								fontFamily: 'Inter, Helvetica, Arial, sans-serif',
-								fontWeight: '900',
+								fontFamily: 'Lilita One',
+								fontWeight: '400',
 								fontSize: labelSize,
 								align: 'center',
 								fill: 0xffffff,
@@ -165,8 +171,8 @@
 								y={28}
 								text="ALL"
 								style={{
-									fontFamily: 'Inter, Helvetica, Arial, sans-serif',
-									fontWeight: '900',
+									fontFamily: 'Lilita One',
+									fontWeight: '400',
 									fontSize: 18,
 									align: 'center',
 									fill: 0xffffff,

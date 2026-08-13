@@ -23,6 +23,7 @@
 	import { boardKeyForMultiplier } from '../game/winPresentation';
 	import PressToContinue from './PressToContinue.svelte';
 	import ThemeWinBoard from './ThemeWinBoard.svelte';
+	import WinCoinRain, { coinsForMultiplier } from './WinCoinRain.svelte';
 
 	const context = getContext();
 
@@ -56,14 +57,20 @@
 	const BIG_COUNT_MS = 2500;
 	const turboFactor = () => (stateBet.isSuperTurbo ? 0.4 : stateBet.isTurbo ? 0.6 : 1);
 	const bigCountDuration = () => Math.max(1500, BIG_COUNT_MS * turboFactor());
+	// How long the finished card sits there before it closes itself. EXTRA_HOLD is a flat design ask
+	// (2026-08-12): the card was leaving too soon to take in, so every mode holds three seconds
+	// longer. It is on top of the per-mode figures rather than folded into them so the turbo modes
+	// keep their relative pacing, and a player who wants it gone can still press to dismiss.
+	const EXTRA_HOLD = 3000;
 	const bigHoldDuration = () =>
-		bookEventAmountToBetAmountMultiplier(amount) >= 25000
+		EXTRA_HOLD +
+		(bookEventAmountToBetAmountMultiplier(amount) >= 25000
 			? 3500
 			: stateBet.isSuperTurbo
 				? 1200
 				: stateBet.isTurbo
 					? 1800
-					: 2500;
+					: 2500);
 
 	const clearTimers = () => {
 		if (autoCloseTimer) clearTimeout(autoCloseTimer);
@@ -156,6 +163,15 @@
 					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.42} />
 				{/if}
 
+				<!-- Coin rain, entirely BEHIND the card: in front it competed with the amount, which
+				     is the one thing on this screen the player is actually reading. Mounted
+				     unconditionally and gated by `intensity` — layering here is MOUNT ORDER, so a
+				     layer mounted on demand would jump above the card. -->
+				<WinCoinRain
+					count={coinsForMultiplier(bookEventAmountToBetAmountMultiplier(amount))}
+					intensity={hasBoardAnimation ? 1 : 0}
+				/>
+
 				<MainContainer>
 					<Container x={boardLayout.x} y={boardLayout.y}>
 						{#if hasBoardAnimation}
@@ -180,8 +196,8 @@
 										y={boardSize * 0.29}
 										text={bookEventAmountToCurrencyString(countUpAmount)}
 										style={{
-											fontFamily: 'Cinzel',
-											fontWeight: '900',
+											fontFamily: 'Lilita One',
+											fontWeight: '400',
 											fontSize: SYMBOL_SIZE * boardScale * 0.22,
 											align: 'center',
 											fill: 0xffffff,
@@ -192,7 +208,7 @@
 							{:else}
 								<ThemeWinBoard
 									boardKey={boardKeyForMultiplier(finalMultiplier)}
-									finalKey={boardKeyForMultiplier(finalMultiplier)}
+									active={show}
 									{winId}
 									{boardSize}
 									amountText={bookEventAmountToCurrencyString(countUpAmount)}
@@ -212,8 +228,8 @@
 									onresize={(size) => (smallWinSize = size)}
 									text={bookEventAmountToCurrencyString(countUpAmount)}
 									style={{
-										fontFamily: 'Cinzel',
-										fontWeight: '900',
+										fontFamily: 'Lilita One',
+										fontWeight: '400',
 										fontSize: SYMBOL_SIZE * 0.7,
 										align: 'center',
 										fill: 0xffe36b,

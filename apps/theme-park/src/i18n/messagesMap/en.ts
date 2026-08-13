@@ -58,9 +58,12 @@ export default {
 	// ── Splash feature cards (Figma 6102-1129) ───────────────────────────────
 	// The three headline names stay English in every locale, like GAME TITLE — they are feature
 	// brand names, and the design sets them in a stylised gradient face.
-	'SPLASH FEATURE 1': 'EXPANDING REELS',
-	'SPLASH FEATURE 2': 'MEGA CHAIN',
-	'SPLASH FEATURE 3': 'EPIC WINS',
+	'SPLASH FEATURE 1': 'WELCOME TO\nTHE PARK',
+	'SPLASH FEATURE 1 BODY': 'Bright lights, wild rides\nand big surprises\naround every corner.',
+	'SPLASH FEATURE 2': '3 UNIQUE\nBONUSES',
+	'SPLASH FEATURE 2 BODY': 'Pick the Ducks\nRide the Wilds\nSurvive the Coaster',
+	'SPLASH FEATURE 3': 'MAX WIN OF',
+	'SPLASH FEATURE 3 BODY': 'THE ULTIMATE\nPARK PRIZE',
 	'SPLASH WITH UP TO': 'with up to',
 	'SPLASH MULTIPLIER': 'multiplier',
 	SOUND: 'SOUND',
@@ -194,4 +197,95 @@ export default {
 	'COASTER SETUP': 'COASTER CARS DROP PERSISTENT WILDS',
 	'MAX WIN': 'MAX WIN',
 	'DISCLAIMER TEXT': 'This game is for entertainment purposes. 18+.',
+	// ── Info modal (CustomInfoModal, 7 pages) ────────────────────────────────
+	// Every string on those pages used to be an English literal in the markup, which meant the
+	// 15 non-English catalogues never reached it AND the social-jurisdiction overrides could not
+	// scrub it. The PAYTABLE page title reuses the existing PAYTABLE key; the six feature cards
+	// reuse the BET MODE * TITLE/DIALOG keys the buy-bonus modal already uses, so the two screens
+	// cannot drift apart and neither needs its own translation.
+	'INFO PAGE OVERVIEW': 'OVERVIEW',
+	'INFO PAGE FEATURES': 'FEATURES',
+	'INFO PAGE WAYS TO WIN': 'WAYS TO WIN',
+	'INFO PAGE FEATURE BUY': 'FEATURE BUY',
+	'INFO PAGE GENERAL INFO': 'GENERAL INFO',
+	'INFO PAGE UI GUIDE': 'USER INTERFACE GUIDE',
+	'INFO PAGE LABEL': 'Page',
+	RTP: 'RTP',
+	// Overview page.
+	'INFO OV INTRO': 'Theme Park is a 5×5 high-volatility video slot played on 15 fixed paylines.',
+	'INFO OV WINS':
+		'Wins are formed when matching symbols land on consecutive reels from left to right, starting from Reel 1.',
+	'INFO OV FEATURES':
+		'The game features Duck Collect, Roller Wilds, and the Mega Coaster Bonus, bringing multipliers, full-reel Wilds, and persistent multiplier Wilds into play.',
+	'INFO OV MAX WIN': 'Maximum Win:',
+	'INFO OV BET': 'bet',
+	'INFO OV RTP': 'Theoretical RTP:',
+	'INFO OV DUCK DESC':
+		'Special Ducks reveal cash additions or multiply-all values that multiply the collected prize.',
+	'INFO OV ROLLER DESC':
+		'Roller coaster ducks can transform entire reels into Wild reels with multipliers up to ×100.',
+	'INFO OV COASTER DESC':
+		'Creates persistent Wild positions before 10 Free Spins. Repeated hits can increase Wild multipliers up to ×1024.',
+	'INFO OV BONUS TITLE': 'BONUS FEATURES',
+	'INFO OV BONUS DESC':
+		'Three different feature experiences: Duck Your Luck, Roller Wilds, and Mega Coaster.',
+	// Paytable page — column headers and the symbol names beside the art.
+	'INFO PAY SYMBOL': 'Symbol',
+	'INFO PAY 3': '3 In a Line',
+	'INFO PAY 4': '4 In a Line',
+	'INFO PAY 5': '5 In a Line',
+	'INFO SYM ROYALS': 'J A K 10 Q',
+	'INFO SYM FERRIS': 'Ferris Wheel',
+	'INFO SYM POPCORN': 'Popcorn',
+	'INFO SYM DUCK': 'Duck',
+	'INFO SYM BALLOONS': 'Balloons',
+	'INFO SYM COASTER': 'Roller Coaster',
+	'INFO SYM WILD': 'Wild',
+	// Ways to win page.
+	'INFO WTW LINES': 'Theme Park is played on 15 fixed paylines.',
+	'INFO WTW COMBO':
+		'A standard winning combination is formed when 3 or more matching symbols land on consecutive reels from left to right, starting from Reel 1, on one of the fixed paylines.',
+	'INFO WTW EVAL': 'Wins are evaluated after the reels stop and are paid according to the Paytable.',
+	'INFO WTW WILD': 'Wild symbols substitute for all regular paying symbols except Scatter symbols.',
+	'INFO WTW SCATTER':
+		'Scatter symbols do not need to follow a payline and are used to trigger their associated bonus features.',
+	'INFO WTW HIGHEST': 'Only the highest winning combination per symbol per payline is paid.',
+	'INFO WTW MULTIPLES': 'All displayed payouts are expressed as multiples of the total bet.',
+	'INFO WTW DIAGRAM ALT': '15 paylines',
+	'INFO WTW MULT TITLE': 'WILD REEL MULTIPLIERS',
+	'INFO WTW MULT BODY':
+		'When a Roller Wild transforms a reel, the entire reel becomes Wild and receives a multiplier of:',
+	'INFO WTW MULT SUM':
+		'When multiple multiplier Wild reels contribute to the same winning combination, their multipliers are added together and applied to the win.',
+	// General info page. The \n in the first title is the design's forced line break.
+	'INFO GI INTERRUPTED TITLE': 'INTERRUPTED\nROUNDS',
+	'INFO GI INTERRUPTED BODY':
+		'If a game round is interrupted, it will continue when the game is reloaded, where possible.',
+	'INFO GI INTERRUPTED HOLD':
+		'All valid wagers and potential winnings remain active until the round is fully completed.',
+	'INFO GI LEGAL TITLE': 'LEGAL NOTICE',
+	'INFO GI LEGAL MALFUNCTION':
+		'Malfunction voids all pays and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.',
+	'INFO GI LEGAL RETURN':
+		'The expected return is calculated over a large number of plays. The game display is for visual and entertainment purposes only and does not represent any physical gaming device.',
+	'INFO GI LEGAL SETTLE':
+		'All winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.',
+	// User interface guide page. SPIN/TURBO/INFO/SOUND/CLOSE/MENU/MUSIC reuse the HUD keys above.
+	'INFO UI AUTO SPINS': 'AUTO SPINS',
+	'INFO UI BET PLUS': 'BET +',
+	'INFO UI BET MINUS': 'BET -',
+	'INFO UI PREVIOUS': 'PREVIOUS',
+	'INFO UI NEXT': 'NEXT',
+	'INFO UI SPIN DESC': 'Starts a new game round.',
+	'INFO UI AUTO DESC': 'Opens the Auto Spins menu.',
+	'INFO UI TURBO DESC': 'Enables faster reel spins.',
+	'INFO UI BET PLUS DESC': 'Increases your total bet.',
+	'INFO UI BET MINUS DESC': 'Decreases your total bet.',
+	'INFO UI INFO DESC': 'Opens the game information.',
+	'INFO UI SOUND DESC': 'Turns game sound on or off.',
+	'INFO UI PREVIOUS DESC': 'Goes to the previous page.',
+	'INFO UI NEXT DESC': 'Goes to the next page.',
+	'INFO UI CLOSE DESC': 'Closes the current window.',
+	'INFO UI MENU DESC': 'Opens the game menu.',
+	'INFO UI MUSIC DESC': 'Turns game music on or off.',
 };

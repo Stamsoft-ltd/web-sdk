@@ -19,6 +19,9 @@
 	import { stateI18nDerived } from 'state-shared';
 	import { innerWidth, innerHeight } from 'svelte/reactivity/window';
 
+	import SplashLights from './SplashLights.svelte';
+	import { SPLASH_FRAME_BULBS, SPLASH_CARD_BULBS, SPLASH_PARK_BULBS } from './splashBulbs';
+
 	type Props = { onpress: () => void };
 	const props: Props = $props();
 
@@ -40,45 +43,63 @@
 	});
 
 	// Not translated — a numeral, and it is the same figure on all three cards in the design.
-	const MULTIPLIER = '1024x';
+	/** The headline number on the third sign (Figma 6581:4302). */
+	const MAX_WIN = '25,000x';
 
 	// One entry per marquee frame. Every number is the Figma node's own geometry expressed against
 	// the 1200x670 design frame: `cx` is the column centre and each `*Y` is the vertical CENTRE of
 	// that text node's box. Anchoring by centre rather than by top is what lets card 1's title wrap
 	// to two lines (and any locale's title wrap to two) without shoving "with up to" down into it.
+	//
+	// `cx` is MEASURED from the artwork (the dark interior of each painted frame, mapped through the
+	// background's own placement) rather than taken from the Figma text nodes. The two disagree by
+	// 3-6px because the outer frames are drawn in slight perspective, and at that size the copy read
+	// as visibly off-centre inside its sign.
+	// One entry per marquee sign. The copy is Figma 6581:4239: two signs are a headline over a
+	// blurb, and only the third carries a number — so `big` is optional rather than every sign
+	// repeating the same "with up to <x> multiplier" block the first design had.
+	//
+	// `cx` stays measured from the SHIPPED background art, not from the design frame: the signs are
+	// painted into it and sit a few pixels off where the mock draws them (see the centring fix).
+	// The y values are the design's block layout re-centred in those painted signs.
 	const CARDS = [
 		{
 			key: 'SPLASH FEATURE 1',
 			tone: 'blue',
-			cx: 337,
-			titleY: 385, // box 353..417 — two lines at 32px, leading-none
-			upToY: 435,
-			bigY: 480.5,
-			multY: 527,
+			cx: 341.9,
+			titleY: 398, // two lines at 32px, leading-none
+			bodyY: 476, // three lines at 16px
+			big: false,
 		},
 		{
 			key: 'SPLASH FEATURE 2',
 			tone: 'candy',
-			cx: 603,
-			titleY: 381, // box 360..402
-			upToY: 422,
-			bigY: 467.5,
-			multY: 514,
+			cx: 599.8,
+			titleY: 394,
+			bodyY: 472,
+			big: false,
 		},
 		{
 			key: 'SPLASH FEATURE 3',
 			tone: 'blue',
-			cx: 863,
-			titleY: 380, // box 359..401
-			upToY: 423,
-			bigY: 468.5,
-			multY: 515,
+			cx: 857.3,
+			titleY: 383, // one line, so the number and the blurb take the rest
+			bigY: 428,
+			bodyY: 486,
+			big: true,
 		},
 	] as const;
 
 	// Design-frame coordinates -> percentages of the stage.
 	const px = (x: number) => `${(x / 1200) * 100}%`;
 	const py = (y: number) => `${(y / 670) * 100}%`;
+
+	// ENTRANCE. The logo's own drop runs 0-900ms and thumps the stage at 414ms; the copy starts
+	// after that thump so it reads as being shaken into place rather than racing the logo down.
+	const CARD_IN_AT = 520;
+	const CARD_IN_STEP = 150;
+	/** Each sign's bulbs come up just as its copy lands, in seconds for <SplashLights>. */
+	const IGNITE = CARDS.map((_, i) => (CARD_IN_AT + i * CARD_IN_STEP + 260) / 1000);
 
 	function handlePress() {
 		props.onpress();
@@ -102,6 +123,24 @@
 		     deliberately bleeds past every edge. Reproduced exactly so the marquee frames land under
 		     the text at the coordinates below. -->
 		<img class="bg" src={bgSrc} alt="" />
+		<!-- Lights the marquee bulbs painted on the three frames. Shares the bg's exact rect, so the
+		     bulb coordinates (fractions of the art) map straight onto it. -->
+		<div class="bg-lights">
+			<!-- The park first: the coaster, wheel and carousels come up as the scene settles, then
+			     each sign lights as its copy lands. Small, dim and out of step — they are distant
+			     strings of lamps, and matching the signs' punch would flatten the depth. -->
+			<SplashLights
+				groups={[SPLASH_PARK_BULBS]}
+				mode="twinkle"
+				radius={0.0065}
+				cycles={1}
+				speed={0.22}
+				floor={0.3}
+				ignite={[0.2]}
+				igniteDuration={1.1}
+			/>
+			<SplashLights groups={SPLASH_FRAME_BULBS} ignite={IGNITE} />
+		</div>
 
 		<img class="press-play" src={pressPlaySrc} alt="Press Play" />
 
@@ -109,16 +148,22 @@
 			<img class="logo" src={logoSrc} alt={t('GAME TITLE')} />
 		</div>
 
-		{#each CARDS as card (card.key)}
-			<p class="title title--{card.tone}" style={`left:${px(card.cx)};top:${py(card.titleY)}`}>
+		<!-- The copy arrives one sign at a time, left to right, after the logo has landed. The signs
+		     themselves are painted into the background and cannot be moved, so the staging is the
+		     copy plus each sign's bulbs igniting with it (see `ignite` above). -->
+		{#each CARDS as card, i (card.key)}
+			{@const delay = `--card-in: ${CARD_IN_AT + i * CARD_IN_STEP}ms`}
+			<p
+				class="title title--{card.tone}"
+				style={`left:${px(card.cx)};top:${py(card.titleY)};${delay}`}
+			>
 				{t(card.key)}
 			</p>
-			<p class="body" style={`left:${px(card.cx)};top:${py(card.upToY)}`}>
-				{t('SPLASH WITH UP TO')}
-			</p>
-			<p class="big" style={`left:${px(card.cx)};top:${py(card.bigY)}`}>{MULTIPLIER}</p>
-			<p class="body" style={`left:${px(card.cx)};top:${py(card.multY)}`}>
-				{t('SPLASH MULTIPLIER')}
+			{#if card.big}
+				<p class="big" style={`left:${px(card.cx)};top:${py(card.bigY)};${delay}`}>{MAX_WIN}</p>
+			{/if}
+			<p class="body" style={`left:${px(card.cx)};top:${py(card.bodyY)};${delay}`}>
+				{t(`${card.key} BODY`)}
 			</p>
 		{/each}
 
@@ -141,12 +186,16 @@
 		<div class="pt-carousel">
 			<div class="pt-frame">
 				<img class="pt-frame-art" src={cardFrameSrc} alt="" />
+				<!-- The art is object-fit:fill on this box, so it maps linearly and the canvas can just
+				     fill the box too. One frame, so one group. -->
+				<SplashLights groups={[SPLASH_CARD_BULBS]} radius={0.05} cycles={1} />
 				{#each CARDS as card, i (card.key)}
 					<div class="pt-slide" class:is-active={i === slide} aria-hidden={i !== slide}>
 						<p class="pt-feat-title title--{card.tone}">{t(card.key)}</p>
-						<p class="pt-feat-sub">{t('SPLASH WITH UP TO')}</p>
-						<p class="pt-feat-big">{MULTIPLIER}</p>
-						<p class="pt-feat-sub">{t('SPLASH MULTIPLIER')}</p>
+						{#if card.big}
+							<p class="pt-feat-big">{MAX_WIN}</p>
+						{/if}
+						<p class="pt-feat-sub">{t(`${card.key} BODY`)}</p>
 					</div>
 				{/each}
 			</div>
@@ -229,13 +278,20 @@
 		}
 	}
 
-	.bg {
+	.bg,
+	.bg-lights {
 		position: absolute;
 		left: -1.58333%; /* -19 / 1200 */
 		top: -0.89552%; /* -6 / 670 */
 		width: 103.25%; /* 1239 / 1200 */
 		height: 104.02985%; /* 697 / 670 */
 		object-fit: cover;
+	}
+
+	/* The art's aspect (1672x941) matches this box to within a rounding error, so `cover` neither
+	   crops nor letterboxes it and the bulb fractions land on the painted bulbs exactly. */
+	.bg-lights {
+		pointer-events: none;
 	}
 
 	/* Press Play studio mark — group box 112.5181 x 36.4013, centred at (601.3, 164.2) in the design.
@@ -281,6 +337,23 @@
 		margin: 0;
 		text-align: center;
 		letter-spacing: 0.03em;
+		/* Staged per sign; `--card-in` is set inline per card. `both` holds the 0% frame during the
+		   delay, which is what keeps the copy off screen until its turn. */
+		animation: card-in 460ms cubic-bezier(0.2, 0.8, 0.3, 1) var(--card-in, 0ms) both;
+	}
+
+	/* A short rise into place. The centring lives in the same transform, so every frame has to
+	   repeat translate(-50%, -50%) or the copy is flung half a box off while it plays — the same
+	   trap as logo-drop below. */
+	@keyframes card-in {
+		0% {
+			opacity: 0;
+			transform: translate(-50%, -50%) translateY(14%) scale(0.94);
+		}
+		100% {
+			opacity: 1;
+			transform: translate(-50%, -50%) translateY(0) scale(1);
+		}
 	}
 
 	/* IBM Plex Sans Condensed Bold, 32px on a 1200 frame. Constrained to the 216px title box from
@@ -288,10 +361,11 @@
 	   translation wraps instead of running out over the marquee frame. */
 	.title {
 		width: 18%;
-		font-family: 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
-		font-weight: 700;
+		font-family: 'Lilita One', sans-serif;
+		font-weight: 400;
 		font-size: 2.66667cqw;
-		line-height: 1;
+		line-height: 1.05;
+		white-space: pre-line;
 		background-clip: text;
 		-webkit-background-clip: text;
 		color: transparent;
@@ -319,21 +393,22 @@
 		);
 	}
 
-	/* Poppins Regular 16px, plain white. */
+	/* Nunito Sans SemiBold 16px, plain white (node 6581:4288). */
 	.body {
-		font-family: 'Poppins', sans-serif;
-		font-weight: 400;
+		font-family: 'Nunito Sans', sans-serif;
+		font-weight: 600;
 		font-size: 1.33333cqw;
-		line-height: 1;
+		line-height: 1.35;
 		color: #fff;
-		white-space: nowrap;
+		white-space: pre-line;
 	}
 
-	/* IBM Plex Sans Condensed Bold 58px, gold. */
+	/* Lilita One 42px, gold (node 6581:4302). Was 58 when the number was "1024x"; "25,000x" is two
+	   glyphs longer and at 58 it ran out over both rails of the sign. */
 	.big {
-		font-family: 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
-		font-weight: 700;
-		font-size: 4.83333cqw;
+		font-family: 'Lilita One', sans-serif;
+		font-weight: 400;
+		font-size: 3.5cqw;
 		line-height: 1;
 		white-space: nowrap;
 		background-image: linear-gradient(
@@ -371,8 +446,23 @@
 		gap: 0.58333cqw;
 		white-space: nowrap;
 		/* The design's row is static; the pulse is the affordance that it is a tap target, and was
-		   already on the screen this replaces. */
-		animation: blink 1.6s ease-in-out infinite;
+		   already on the screen this replaces. It fades in LAST, once the three signs have lit —
+		   the prompt to continue arriving before the thing it is prompting you past reads as an
+		   invitation to skip. */
+		animation:
+			press-in 420ms ease-out 1350ms both,
+			blink 1.6s ease-in-out 1770ms infinite;
+	}
+
+	@keyframes press-in {
+		0% {
+			opacity: 0;
+			transform: translate(-50%, -50%) translateY(30%);
+		}
+		100% {
+			opacity: 1;
+			transform: translate(-50%, -50%) translateY(0);
+		}
 	}
 	.press-label {
 		/* Figma specifies Helvetica Bold. It is a system face on Apple platforms and Arial is a
@@ -452,7 +542,10 @@
 	@media (prefers-reduced-motion: reduce) {
 		.press-row,
 		.logo-box,
-		.stage {
+		.stage,
+		.title,
+		.body,
+		.big {
 			animation: none;
 		}
 	}
@@ -543,9 +636,10 @@
 	}
 	.pt-feat-title {
 		margin: 0 0 1.2cqh;
-		font-family: 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
-		font-weight: 700;
+		font-family: 'Lilita One', sans-serif;
+		font-weight: 400;
 		font-size: 9.6cqw;
+		white-space: pre-line;
 		line-height: 1.04;
 		letter-spacing: 0.02em;
 		/* Bigger title is allowed to wrap onto two lines inside the frame. */
@@ -556,16 +650,17 @@
 	}
 	.pt-feat-sub {
 		margin: 0;
-		font-family: 'Poppins', sans-serif;
-		font-weight: 400;
+		font-family: 'Nunito Sans', sans-serif;
+		font-weight: 600;
 		font-size: 4.6cqw;
+		white-space: pre-line;
 		line-height: 1.2;
 		color: #fff;
 	}
 	.pt-feat-big {
 		margin: 0.6cqh 0;
-		font-family: 'IBM Plex Sans Condensed', 'Poppins', sans-serif;
-		font-weight: 700;
+		font-family: 'Lilita One', sans-serif;
+		font-weight: 400;
 		font-size: 16cqw;
 		line-height: 1;
 		background-image: linear-gradient(

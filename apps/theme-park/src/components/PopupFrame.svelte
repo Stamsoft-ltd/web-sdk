@@ -75,7 +75,7 @@
 	.tp-popup {
 		position: relative;
 		container-type: inline-size;
-		font-family: Helvetica, Arial, sans-serif;
+		font-family: 'Lilita One', sans-serif;
 	}
 
 	/* --pop-w is the panel's width IN DESIGN UNITS. Every shared rule below divides a Figma pixel by
@@ -137,11 +137,11 @@
 	   :global because these are used by the dialogs that mount inside `children`, and Svelte scopes
 	   styles to the file that declares the markup. One source of truth for the design language. */
 
-	/* Helvetica Bold 32 / 0.96 tracking, magenta-to-blue gradient (node 6401:2082). */
+	/* Lilita One 32 / 0.96 tracking, magenta-to-blue gradient (node 6401:2082). */
 	:global(.tp-popup__title) {
 		margin: 0;
-		font-family: Helvetica, Arial, sans-serif;
-		font-weight: 700;
+		font-family: 'Lilita One', sans-serif;
+		font-weight: 400;
 		font-size: calc(32 / var(--pop-w) * 100cqw);
 		letter-spacing: 0.03em;
 		line-height: 1.15;
@@ -153,10 +153,10 @@
 		color: transparent;
 	}
 
-	/* Helvetica Regular 20 / 0.6 tracking, white (node 6401:2083). */
+	/* Nunito Sans Regular 20 / 0.6 tracking, white (node 6401:2083). */
 	:global(.tp-popup__body) {
 		margin: 0;
-		font-family: Helvetica, Arial, sans-serif;
+		font-family: 'Nunito Sans', sans-serif;
 		font-weight: 400;
 		font-size: calc(20 / var(--pop-w) * 100cqw);
 		letter-spacing: 0.03em;
@@ -165,17 +165,17 @@
 		color: #fff;
 	}
 
-	/* Helvetica Bold 20 / 0.6 tracking — the wide panel's row labels (node 6045:4622). */
+	/* Nunito Sans Bold 20 / 0.6 tracking — the wide panel's row labels (node 6045:4622). */
 	:global(.tp-popup__label) {
 		margin: 0;
-		font-family: Helvetica, Arial, sans-serif;
+		font-family: 'Nunito Sans', sans-serif;
 		font-weight: 700;
 		font-size: calc(20 / var(--pop-w) * 100cqw);
 		letter-spacing: 0.03em;
 		color: #fff;
 	}
 
-	/* 44 tall, radius 12, 1px #b65df3, 12/24 padding, Helvetica Bold 14 / 1.4 tracking
+	/* 44 tall, radius 12, 1px #b65df3, 12/24 padding, Lilita One 14 / 1.4 tracking
 	   (nodes 6401:2085, 6401:2086, 6045:4632). */
 	:global(.tp-popup__btn) {
 		flex: 1 0 0;
@@ -192,8 +192,8 @@
 		background-image: linear-gradient(0deg, #1a0535 0%, #000 100%);
 		filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
 		cursor: pointer;
-		font-family: Helvetica, Arial, sans-serif;
-		font-weight: 700;
+		font-family: 'Lilita One', sans-serif;
+		font-weight: 400;
 		font-size: calc(14 / var(--pop-w) * 100cqw);
 		letter-spacing: 0.1em;
 		line-height: calc(20 / var(--pop-w) * 100cqw);

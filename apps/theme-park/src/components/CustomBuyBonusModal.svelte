@@ -3,14 +3,16 @@
 
 	const modeAsset = (icon: string, variant: 'desktop' | 'mobile' | 'mobile-landscape') =>
 		ap(`/assets/theme-park/v2/modes/${icon}-${variant}.png`);
-	// Neon gradient frame (download "S pad") — the glowing card border from the design.
-	const neonFrame = ap('/assets/theme-park/v2/hud/neon-frame.png');
-	// Circular neon +/- buttons — same art the main HUD bet stepper uses.
-	const betMinus = ap('/assets/theme-park/v2/controls/btn-minus.png');
-	const betMinusDisabled = ap('/assets/theme-park/v2/controls/btn-minus-disabled.png');
-	const betPlus = ap('/assets/theme-park/v2/controls/btn-plus.png');
-	const betPlusDisabled = ap('/assets/theme-park/v2/controls/btn-plus-disabled.png');
-	// Money coin — same glyph the main HUD shows beside the bet amount.
+	// Neon gradient frame (download "S pad") — the glowing card border from the design, and the plate
+	// behind the bet stepper. The design stretches this one image to fill each box and lets its own
+	// rounded corners do the shaping, so the neon line stays proportional to the card at any size.
+	// The de-lit variant (scripts/info/build_neon_frame.py): this screen runs real marching lights
+	// round the same line, and the blobs painted into the original read as bulbs stuck on.
+	const neonFrame = ap('/assets/theme-park/v2/hud/neon-frame-plain.png');
+	// Stepper glyphs and coin — the very same SVGs the main HUD's bet row uses, so the lifted stepper
+	// reads as that row rather than as a second, different control.
+	const iconMinus = ap('/assets/theme-park/v2/hud/icon_minus.svg');
+	const iconPlus = ap('/assets/theme-park/v2/hud/icon_plus.svg');
 	const coinIcon = ap('/assets/theme-park/v2/hud/icon_coin.svg');
 
 	for (const icon of ['duck-your-luck', 'roller-wilds', 'mega-coaster']) {
@@ -26,6 +28,7 @@
 	import { templateStakeDerived } from '../state/templateStake.svelte';
 	import PopupFrame from './PopupFrame.svelte';
 	import PopupCloseButton from './PopupCloseButton.svelte';
+	import InfoBorderLights from './InfoBorderLights.svelte';
 	import type { BetMode } from '../game/types';
 
 	type ToggleMode = Extract<BetMode, 'ANTE' | 'FSPIN1' | 'FSPIN2'>;
@@ -42,6 +45,13 @@
 	const context = getContext();
 	const t = (key: string) => i18nDerived.translate(key);
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+
+	// The marching lights are a canvas, so their radius and glow have to be real pixels rather than
+	// the stylesheet's --u. A 100-unit-wide ruler element is measured instead of hard-coding the
+	// relationship: --u is defined differently in landscape and portrait, and the ruler is right in
+	// both without this file having to know which.
+	let rulerWidth = $state(0);
+	const u = $derived(rulerWidth / 100);
 
 	const betAmount = $derived(stateBet.betAmount);
 	const canAfford = (multiplier: number) => stateBet.balanceAmount >= betAmount * multiplier;
@@ -74,12 +84,19 @@
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 	};
 
+	// Row 1 of the design's grid: per-spin toggles, priced "/ SPIN". ANTE leads (node 6695:4876).
 	const FEATURE_CARDS: {
-		mode: Exclude<ToggleMode, 'ANTE'>;
+		mode: ToggleMode;
 		costMultiplier: number;
 		title: string;
 		desc: string;
 	}[] = [
+		{
+			mode: 'ANTE',
+			costMultiplier: 3,
+			title: 'BET MODE ANTE TITLE',
+			desc: 'BET MODE ANTE DIALOG',
+		},
 		{
 			mode: 'FSPIN1',
 			costMultiplier: 20,
@@ -94,6 +111,7 @@
 		},
 	];
 
+	// Row 2: one-shot bonus buys, each with its logo (node 6695:4894).
 	const BUY_CARDS: {
 		mode: BuyMode;
 		costMultiplier: number;
@@ -129,11 +147,9 @@
 
 	let confirmMode = $state<null | ConfirmMode>(null);
 	const confirmCard = $derived(
-		confirmMode === 'ANTE'
-			? { mode: 'ANTE' as const, costMultiplier: 3, title: 'BET MODE ANTE TITLE' }
-			: FEATURE_CARDS.find((card) => card.mode === confirmMode) ??
-				BUY_CARDS.find((card) => card.mode === confirmMode) ??
-				null,
+		FEATURE_CARDS.find((card) => card.mode === confirmMode) ??
+			BUY_CARDS.find((card) => card.mode === confirmMode) ??
+			null,
 	);
 
 	const buyMode = (mode: BuyMode) => {
@@ -185,111 +201,114 @@
 	});
 </script>
 
-<!-- Backdrop -->
-<button class="backdrop" type="button" aria-label={t('CLOSE')} tabindex="-1" onclick={props.onclose}
-></button>
+<!-- Scrim + stage. The stage is the design's own 1200x670 frame scaled to fit, so every number in
+     the stylesheet below is the Figma pixel straight off node 6695:4781. -->
+<div
+	class="buy-overlay"
+	class:is-portrait={isPortrait}
+	role="presentation"
+	onclick={props.onclose}
+>
+	<div
+		class="stage"
+		role="dialog"
+		aria-modal="true"
+		aria-label={t('BUY BONUS')}
+		onclick={(e) => e.stopPropagation()}
+	>
+		<span class="unit-ruler" aria-hidden="true" bind:clientWidth={rulerWidth}></span>
+		<h2 class="title">{t('BUY BONUS')}</h2>
+
+		<div class="grid">
+			{#each FEATURE_CARDS as card (card.mode)}
+				<div class="card card--toggle">
+					<img class="card-bg" src={neonFrame} alt="" aria-hidden="true" />
+					{#if u}
+						<InfoBorderLights radius={21 * u} inset={0} pad={14 * u} glow={7 * u} />
+					{/if}
+					<span class="card-title">{t(card.title)}</span>
+					<span class="card-desc">{t(card.desc)}</span>
+					<span class="card-price">{cost(card.costMultiplier)} {t('PER SPIN')}</span>
+					<button
+						class="card-btn"
+						class:card-btn--active={props.activeToggleMode === card.mode}
+						type="button"
+						disabled={props.activeToggleMode !== card.mode && !canAfford(card.costMultiplier)}
+						onclick={() => requestToggle(card.mode, card.costMultiplier)}
+						>{t(props.activeToggleMode === card.mode ? 'DEACTIVATE' : 'ACTIVATE')}</button
+					>
+				</div>
+			{/each}
+
+			{#each BUY_CARDS as card (card.mode)}
+				<div class="card card--buy">
+					<img class="card-bg" src={neonFrame} alt="" aria-hidden="true" />
+					{#if u}
+						<InfoBorderLights radius={24 * u} inset={0} pad={14 * u} glow={7 * u} />
+					{/if}
+					<span class="card-title">{t(card.title)}</span>
+					<span class="card-desc">{t(card.desc)}</span>
+					<picture class="mode-art">
+						<source
+							media="(max-width: 900px) and (orientation: landscape)"
+							srcset={modeAsset(card.icon, 'mobile-landscape')}
+						/>
+						<source media="(max-width: 900px)" srcset={modeAsset(card.icon, 'mobile')} />
+						<img src={modeAsset(card.icon, 'desktop')} alt="" />
+					</picture>
+					<span class="card-price">{cost(card.costMultiplier)}</span>
+					<button
+						class="card-btn card-btn--primary"
+						type="button"
+						disabled={!canAfford(card.costMultiplier)}
+						onclick={() => openConfirm(card.mode)}>{t('BUY')}</button
+					>
+				</div>
+			{/each}
+		</div>
+
+		<!-- Bet stepper, lifted above the scrim at the design's spot (nodes 6695:4861-4873): the HUD's
+		     own bet readout flanked by its two stepper circles, on the neon plate. The bar underneath
+		     is dimmed by HudHtml for the duration, so this is the only live control down there. -->
+		<div class="betrow">
+			<img class="card-bg" src={neonFrame} alt="" aria-hidden="true" />
+			{#if u}
+				<InfoBorderLights radius={12 * u} inset={0} pad={12 * u} glow={6 * u} />
+			{/if}
+			<button
+				class="bet-step"
+				type="button"
+				disabled={disableDecrease}
+				onclick={() => stepBet(-1)}
+				aria-label={t('DECREASE BET')}
+			>
+				<img class="bet-step__glyph bet-step__glyph--minus" src={iconMinus} alt="" />
+			</button>
+			<div class="bet-mid">
+				<span class="bet-coin"><img src={coinIcon} alt="" /></span>
+				<div class="bet-readout">
+					<span class="bet-readout__label">{i18nDerived.betLabel()}</span>
+					<span class="bet-readout__value">{formattedBet}</span>
+				</div>
+			</div>
+			<button
+				class="bet-step"
+				type="button"
+				disabled={disableIncrease}
+				onclick={() => stepBet(1)}
+				aria-label={t('INCREASE BET')}
+			>
+				<img class="bet-step__glyph bet-step__glyph--plus" src={iconPlus} alt="" />
+			</button>
+		</div>
+	</div>
+</div>
 
 <!-- Screen-corner close, matching every other popup. Hidden while the confirm dialog is up, which
      brings its own in the same spot. -->
 {#if !confirmMode}
 	<PopupCloseButton onclick={props.onclose} label={t('CLOSE')} />
 {/if}
-
-<!-- Panel -->
-<div
-	class="panel"
-	class:is-portrait={isPortrait}
-	role="dialog"
-	aria-modal="true"
-	style={`--neon-frame:url('${neonFrame}')`}
->
-	<h2 class="title">{t('BUY BONUS')}</h2>
-
-	<div class="grid">
-		<!-- Persistent per-spin toggles -->
-		<div class="card">
-			<span class="card-title">{t('BET MODE ANTE TITLE')}</span>
-			<span class="card-desc">{t('BET MODE ANTE DIALOG')}</span>
-			<span class="card-price">{cost(3)} {t('PER SPIN')}</span>
-			<button
-				class="card-btn"
-				class:card-btn--active={props.activeToggleMode === 'ANTE'}
-				type="button"
-				disabled={props.activeToggleMode !== 'ANTE' && !canAfford(3)}
-				onclick={() => requestToggle('ANTE', 3)}
-				>{t(props.activeToggleMode === 'ANTE' ? 'DEACTIVATE' : 'ACTIVATE')}</button
-			>
-		</div>
-
-		{#each FEATURE_CARDS as card (card.mode)}
-			<div class="card">
-				<span class="card-title">{t(card.title)}</span>
-				<span class="card-desc">{t(card.desc)}</span>
-				<span class="card-price">{cost(card.costMultiplier)} {t('PER SPIN')}</span>
-				<button
-					class="card-btn"
-					class:card-btn--active={props.activeToggleMode === card.mode}
-					type="button"
-					disabled={props.activeToggleMode !== card.mode && !canAfford(card.costMultiplier)}
-					onclick={() => requestToggle(card.mode, card.costMultiplier)}
-					>{t(props.activeToggleMode === card.mode ? 'DEACTIVATE' : 'ACTIVATE')}</button
-				>
-			</div>
-		{/each}
-
-		<!-- One-time bonus buys -->
-		{#each BUY_CARDS as card (card.mode)}
-			<div class="card">
-				<span class="card-title">{t(card.title)}</span>
-				<span class="card-desc">{t(card.desc)}</span>
-				<picture class="mode-art">
-					<source
-						media="(max-width: 900px) and (orientation: landscape)"
-						srcset={modeAsset(card.icon, 'mobile-landscape')}
-					/>
-					<source media="(max-width: 900px)" srcset={modeAsset(card.icon, 'mobile')} />
-					<img src={modeAsset(card.icon, 'desktop')} alt="" />
-				</picture>
-				<span class="card-price">{cost(card.costMultiplier)}</span>
-				<button
-					class="card-btn card-btn--buy"
-					type="button"
-					disabled={!canAfford(card.costMultiplier)}
-					onclick={() => openConfirm(card.mode)}>{t('BUY')}</button
-				>
-			</div>
-		{/each}
-	</div>
-
-	<!-- Bet stepper — same neon frame as the cards; retunes the stake that drives every card price. -->
-	<div class="bet-setter">
-		<button
-			class="bet-step"
-			type="button"
-			disabled={disableDecrease}
-			onclick={() => stepBet(-1)}
-			aria-label={t('DECREASE BET')}
-		>
-			<img src={disableDecrease ? betMinusDisabled : betMinus} alt="" />
-		</button>
-		<div class="bet-mid">
-			<img class="bet-coin" src={coinIcon} alt="" />
-			<div class="bet-readout">
-				<span class="bet-readout__label">{i18nDerived.betLabel()}</span>
-				<span class="bet-readout__value">{formattedBet}</span>
-			</div>
-		</div>
-		<button
-			class="bet-step"
-			type="button"
-			disabled={disableIncrease}
-			onclick={() => stepBet(1)}
-			aria-label={t('INCREASE BET')}
-		>
-			<img src={disableIncrease ? betPlusDisabled : betPlus} alt="" />
-		</button>
-	</div>
-</div>
 
 <!-- Confirm — Figma 6094-4364. Same frame, type and buttons as BonusResumeModal. -->
 {#if confirmMode && confirmCard}
@@ -311,307 +330,404 @@
 {/if}
 
 <style>
-	/* Backdrops */
-	.backdrop {
-		position: fixed;
+	/* The overlay fills the game frame (not the viewport): the frame is what the design's 1200x670
+	   maps onto, and container-type makes cqw/cqh mean "of that frame". */
+	.buy-overlay {
+		position: absolute;
 		inset: 0;
 		z-index: 60;
-		background: rgba(0, 0, 0, 0.7);
-		border: 0;
-		padding: 0;
-		cursor: pointer;
+		container-type: size;
+		background: rgba(4, 1, 12, 0.8);
+		font-family: 'Nunito Sans', sans-serif;
 	}
-	/* Panel */
-	.panel {
-		position: fixed;
+
+	/* One design pixel. `min` fits the 1200x670 frame inside whatever shape the game has — the game
+	   itself scales its board by height, so on a normal desktop this resolves to the height term and
+	   the whole screen lines up with the design. Everything below is then a literal Figma number. */
+	.stage {
+		--u: min(calc(100cqw / 1200), calc(100cqh / 670));
+		position: absolute;
 		left: 50%;
 		top: 50%;
 		transform: translate(-50%, -50%);
-		z-index: 61;
-		width: min(760px, 97vw);
-		max-height: 92dvh;
-		overflow-y: auto;
-		padding: 20px 12px;
+		width: calc(var(--u) * 1200);
+		height: calc(var(--u) * 670);
 	}
 
-	/* Mobile portrait: stack the modes in a single scrolling column, with the bet bar pinned near
-	   the screen bottom instead of scrolling away with the cards. */
-	.panel.is-portrait {
-		display: flex;
-		flex-direction: column;
-		height: 92dvh;
-		overflow: hidden;
-	}
-	.panel.is-portrait .title {
-		flex: 0 0 auto;
-		margin-bottom: 12px;
-	}
-	.panel.is-portrait .grid {
-		grid-template-columns: 1fr;
-		gap: 12px;
-		flex: 1 1 auto;
-		min-height: 0;
-		overflow-y: auto;
-		padding: 2px 4px 8px;
-	}
-	.panel.is-portrait .bet-setter {
-		flex: 0 0 auto;
-		margin: 12px auto 0;
-	}
-	/* Full-width column cards can carry bigger type and a bigger icon than the 3-up grid. */
-	.panel.is-portrait .card {
-		padding: 16px 20px 18px;
-	}
-	.panel.is-portrait .card-title {
-		font-size: clamp(1rem, 4.8vw, 1.3rem);
-	}
-	.panel.is-portrait .card-desc {
-		font-size: clamp(0.66rem, 3.3vw, 0.82rem);
-		display: block;
-		overflow: visible;
-	}
-	.panel.is-portrait .card-price {
-		font-size: clamp(0.92rem, 4.2vw, 1.1rem);
-	}
-	.panel.is-portrait .card-btn {
-		font-size: clamp(0.82rem, 3.9vw, 1rem);
-		padding: 11px 0;
-	}
-	.panel.is-portrait .mode-art img {
-		height: clamp(58px, 16vw, 82px);
+	/* Measured, never seen: 100 design units wide and nothing tall, so `u` in the script is whatever
+	   --u currently resolves to. */
+	.unit-ruler {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: calc(var(--u) * 100);
+		height: 0;
+		pointer-events: none;
 	}
 
+	/* Node 6695:4860 — 26px Lilita One, white, centred, 27 down. White rather than the brand gradient
+	   because it lands on the game logo, which the gradient disappeared into. */
 	.title {
-		margin: 0 0 20px;
-		font-family: Helvetica, Arial, sans-serif;
-		font-size: 1.35rem;
-		font-weight: 700;
-		letter-spacing: 0.03em;
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: calc(var(--u) * 27);
+		margin: 0;
+		font-family: 'Lilita One', sans-serif;
+		font-size: calc(var(--u) * 26);
+		line-height: calc(var(--u) * 30);
+		font-weight: 400;
+		letter-spacing: calc(var(--u) * 0.78);
 		text-transform: uppercase;
 		text-align: center;
-		background: linear-gradient(173.06deg, #d836fc 0%, #272fdd 100%);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: transparent;
+		color: #fff;
+		text-shadow: 0 calc(var(--u) * 2) calc(var(--u) * 8) rgba(0, 0, 0, 0.75);
 	}
 
+	/* Node 6695:4874 — 1041x453 at (80, 91), two rows of three with a 12 gutter. The rows are
+	   deliberately unequal: the buys are taller because they carry a logo. */
 	.grid {
+		position: absolute;
+		left: calc(var(--u) * 80);
+		top: calc(var(--u) * 91);
+		width: calc(var(--u) * 1041);
+		height: calc(var(--u) * 453);
 		display: grid;
-		/* Fixed 3-up so the six modes lay out as three-per-row on two rows. */
 		grid-template-columns: repeat(3, 1fr);
-		gap: 4px;
+		grid-template-rows: calc(var(--u) * 194) calc(var(--u) * 247);
+		gap: calc(var(--u) * 12);
 	}
 
+	/* The card is the neon frame stretched to fill, exactly as the design places it — so the glow
+	   line stays proportional to the card instead of being a fixed pixel thickness that swamps it on
+	   a small screen. The art carries its own dark interior and transparent corners. */
 	.card {
+		position: relative;
+		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
-		box-sizing: border-box;
-		padding: clamp(6px, 1.4vw, 12px) clamp(6px, 1.4vw, 14px) clamp(4px, 1vw, 10px);
-		gap: clamp(5px, 1.4vw, 10px);
-		/* Neon gradient frame (download "S pad") drawn as a 9-slice border-image, NOT a stretched
-		   background: on a tall narrow card `background-size:100% 100%` distorts the frame and pushes
-		   its border inward, so the button spilled past it. A 9-slice keeps the border a constant
-		   thickness at any aspect ratio; `fill` paints the dark interior. Slices measured off the PNG
-		   (interior starts at 22/20/39/17 px, T/R/B/L of the 615×309 image). */
-		border-style: solid;
-		border-width: 16px 15px 28px 14px;
-		border-image-source: var(--neon-frame);
-		border-image-slice: 22 20 39 17 fill;
-		border-image-repeat: stretch;
+		/* The backdrop below is absolutely positioned, and a positioned element paints ABOVE static
+		   inline content however early it sits in the DOM — without a stacking context of its own the
+		   card art buried its own title, copy and price. Isolating keeps the two z-indexes local. */
+		isolation: isolate;
 	}
 
+	/* The art does NOT fill its own canvas: measured against neon-frame.png (615x309) the neon line
+	   peaks at x 21..590 and y 18..270, i.e. dead margin of 3.4/3.9% at the sides, 5.8% at the top and
+	   12.3% at the bottom. Simply stretching it to the card box therefore drew the card ~7% narrower
+	   and ~18% shorter than the box, which turned the design's 12px gutter into a ~70px canyon and
+	   squashed every card's aspect. The design crops that margin off (its own image is placed at
+	   104.78%/105.87% and clipped); these numbers are the same crop computed for THIS file, so the
+	   neon line lands exactly on the card's edge. Left unclipped on purpose — the little bloom that
+	   spills into the gutter is what the design shows between cards. */
+	.card-bg {
+		position: absolute;
+		left: -3.691%; /* -21 / 569 */
+		top: -7.143%; /* -18 / 252 */
+		width: 108.084%; /* 615 / 569 */
+		height: 122.619%; /* 309 / 252 */
+		object-fit: fill;
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	.card > :not(.card-bg, canvas) {
+		position: relative;
+		z-index: 1;
+	}
+
+	/* Paddings and the margins below add up to the design's exact stack:
+	   toggle 16+29+5+48+4+19+9+44+20 = 194; buy 16+29+5+45+5+55+5+19+8+44+16 = 247. */
+	.card--toggle {
+		padding: calc(var(--u) * 16) calc(var(--u) * 20) calc(var(--u) * 20);
+	}
+	.card--buy {
+		padding: calc(var(--u) * 16) calc(var(--u) * 20) calc(var(--u) * 16);
+	}
+
+	/* 24px Lilita One on the brand ramp (nodes 6695:4879 etc). */
+	.card-title {
+		font-family: 'Lilita One', sans-serif;
+		font-size: calc(var(--u) * 24);
+		line-height: calc(var(--u) * 29);
+		font-weight: 400;
+		letter-spacing: calc(var(--u) * 0.72);
+		text-transform: uppercase;
+		background-image: linear-gradient(171deg, #d836fc 0%, #272fdd 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+		white-space: nowrap;
+		max-width: 100%;
+		overflow: hidden;
+	}
+
+	/* 12px Nunito Sans #d7d7d7 (nodes 6695:4880 etc). The height is fixed so a long description can
+	   never push its card taller than its row-mates; three lines is what the design allows. */
+	.card-desc {
+		margin-top: calc(var(--u) * 5);
+		font-size: calc(var(--u) * 12);
+		/* 14.8, not Nunito's ~16.4 default: the design fits three lines into a 45-tall box, and at the
+		   browser's own leading the third line was clipped in half. */
+		line-height: calc(var(--u) * 14.8);
+		letter-spacing: calc(var(--u) * 0.36);
+		color: #d7d7d7;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	.card--toggle .card-desc {
+		height: calc(var(--u) * 48);
+	}
+	.card--buy .card-desc {
+		height: calc(var(--u) * 45);
+	}
+
+	/* 55x55 logo box (nodes 6695:5007 etc). */
 	.mode-art {
+		margin-top: calc(var(--u) * 5);
+		width: calc(var(--u) * 55);
+		height: calc(var(--u) * 55);
 		display: grid;
 		place-items: center;
-		width: 100%;
-		margin: 1px 0;
 	}
-
 	.mode-art img {
 		display: block;
-		/* Explicit height (not %) so it resolves against the grid — a % height falls back to the
-		   image's intrinsic size and overflows, colliding with the neighbouring rows. */
-		height: clamp(38px, 10vw, 62px);
-		width: auto;
 		max-width: 100%;
+		max-height: 100%;
 		object-fit: contain;
-		filter: drop-shadow(0 5px 6px rgba(0, 0, 0, 0.62));
+		filter: drop-shadow(0 calc(var(--u) * 3) calc(var(--u) * 5) rgba(0, 0, 0, 0.6));
 		animation: mode-art-idle 3s ease-in-out infinite;
 	}
-
 	.card:nth-child(2n) .mode-art img {
 		animation-delay: -1.5s;
 	}
-
 	.card:hover .mode-art img {
 		animation-duration: 1.2s;
-		filter: brightness(1.08) drop-shadow(0 0 12px rgba(255, 67, 220, 0.5));
+		filter: brightness(1.08) drop-shadow(0 0 calc(var(--u) * 10) rgba(255, 67, 220, 0.5));
 	}
-
 	@keyframes mode-art-idle {
 		0%,
 		100% {
 			transform: translateY(0) scale(1);
 		}
 		50% {
-			transform: translateY(-4px) scale(1.025);
+			transform: translateY(-4%) scale(1.03);
 		}
 	}
 
-	.card-title {
-		font-family: Helvetica, Arial, sans-serif;
-		font-size: clamp(0.62rem, 2.9vw, 1.05rem);
-		line-height: 1.1;
-		font-weight: 700;
-		letter-spacing: 0.02em;
-		text-transform: uppercase;
-		background: linear-gradient(173.06deg, #d836fc 0%, #272fdd 100%);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: transparent;
-		display: block;
-	}
-
-	.card-desc {
-		font-family: Helvetica, Arial, sans-serif;
-		font-size: clamp(0.42rem, 1.95vw, 0.6rem);
-		color: rgba(255, 255, 255, 0.75);
-		letter-spacing: 0.01em;
-		line-height: 1.32;
-		/* Clamp so long copy can't blow one card's height out relative to its row-mates. */
-		display: -webkit-box;
-		-webkit-line-clamp: 4;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-
+	/* 16px Lilita One white (nodes 6695:4881 etc). */
 	.card-price {
-		font-family: Helvetica, Arial, sans-serif;
-		font-size: clamp(0.66rem, 2.8vw, 0.95rem);
-		font-weight: 700;
+		font-family: 'Lilita One', sans-serif;
+		font-size: calc(var(--u) * 16);
+		line-height: calc(var(--u) * 19);
+		font-weight: 400;
 		color: #fff;
-		letter-spacing: 0.02em;
-		display: block;
-		/* Push the price+button bet group to the card bottom so bets line up across a row. */
-		margin-top: auto;
+		white-space: nowrap;
+	}
+	.card--toggle .card-price {
+		margin-top: calc(var(--u) * 4);
+	}
+	.card--buy .card-price {
+		margin-top: calc(var(--u) * 5);
 	}
 
+	/* 300x44 button, radius 12, 1px #b65df3 (nodes 6695:4878 etc). The toggles are the dark fill and
+	   the buys the brand gradient; an armed toggle takes the gradient too, to read as "on". */
 	.card-btn {
-		width: 100%;
-		padding: clamp(7px, 1.8vw, 11px) 0;
-		border-radius: 10px;
-		font-family: Helvetica, Arial, sans-serif;
-		font-size: clamp(0.56rem, 2.4vw, 0.85rem);
-		font-weight: 700;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		cursor: pointer;
+		width: calc(var(--u) * 300);
+		height: calc(var(--u) * 44);
+		box-sizing: border-box;
+		padding: 0;
 		border: 1px solid #b65df3;
+		border-radius: calc(var(--u) * 12);
 		background-image: linear-gradient(0deg, #1a0535 0%, #000 100%);
 		color: #fff;
-		transition:
-			background 0.2s,
-			border-color 0.2s,
-			color 0.2s;
+		font-family: 'Lilita One', sans-serif;
+		font-size: calc(var(--u) * 14);
+		line-height: calc(var(--u) * 20);
+		font-weight: 400;
+		letter-spacing: calc(var(--u) * 1.4);
+		text-transform: uppercase;
+		cursor: pointer;
+		filter: drop-shadow(0 calc(var(--u) * 4) calc(var(--u) * 2) rgba(0, 0, 0, 0.25));
+		transition: filter 0.2s;
+	}
+	.card--toggle .card-btn {
+		margin-top: calc(var(--u) * 9);
+	}
+	.card--buy .card-btn {
+		margin-top: calc(var(--u) * 8);
 	}
 	.card-btn--active,
-	.card-btn--buy {
-		background-image: linear-gradient(167.38deg, #d836fc 0%, #272fdd 100%);
-		color: #fff;
+	.card-btn--primary {
+		background-image: linear-gradient(171.66deg, #d836fc 0%, #272fdd 100%);
 	}
 	.card-btn:not(:disabled):hover {
 		filter: brightness(1.14);
 	}
-	.card-btn--buy:disabled {
+	.card-btn:disabled {
 		opacity: 0.4;
 		cursor: default;
 	}
 
-	/* Bet stepper under the cards — wrapped in the same neon gradient frame as the cards. */
-	.bet-setter {
-		margin: 3px auto 0;
+	/* Bet stepper on its 287x83 plate at (457, 568), centred on the frame (node 6695:4861). */
+	.betrow {
+		position: absolute;
+		left: 50%;
+		top: calc(var(--u) * 568);
+		transform: translateX(-50%);
 		box-sizing: border-box;
-		width: min(240px, 78%);
+		width: calc(var(--u) * 287);
+		height: calc(var(--u) * 83);
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 8px;
-		/* More vertical breathing room; bottom padding stays a touch bigger to clear the frame's
-		   larger bottom-border inset. */
-		padding: 12px 18px 15px;
-		background: var(--neon-frame) center / 100% 100% no-repeat;
+		justify-content: center;
+		gap: calc(var(--u) * 14);
+		/* Cropped the same way the cards are, so its own marching lights ride the neon line. */
+		isolation: isolate;
+	}
+
+	.betrow > :not(.card-bg, canvas) {
+		position: relative;
+		z-index: 1;
+	}
+
+	/* 48.696 circles carrying the HUD's own -/+ glyphs at their designed sizes. */
+	.bet-step {
+		flex: 0 0 auto;
+		width: calc(var(--u) * 48.696);
+		height: calc(var(--u) * 48.696);
+		padding: 0;
+		box-sizing: border-box;
+		border: 1px solid #d836fc;
+		border-radius: 9999px;
+		background-image: linear-gradient(0deg, #1a0535 0%, #000 100%);
+		display: grid;
+		place-items: center;
+		cursor: pointer;
+		transition:
+			transform 0.12s ease,
+			filter 0.12s ease;
+	}
+	.bet-step__glyph {
+		display: block;
+		object-fit: contain;
+	}
+	.bet-step__glyph--minus {
+		width: calc(var(--u) * 13.854);
+		height: calc(var(--u) * 2.13);
+	}
+	.bet-step__glyph--plus {
+		width: calc(var(--u) * 13.854);
+		height: calc(var(--u) * 13.854);
+	}
+	.bet-step:disabled {
+		cursor: default;
+		opacity: 0.45;
+	}
+	.bet-step:not(:disabled):hover {
+		filter: brightness(1.2);
+	}
+	.bet-step:not(:disabled):active {
+		transform: translateY(1px) scale(0.96);
 	}
 
 	.bet-mid {
 		display: flex;
 		align-items: center;
-		gap: 7px;
+		gap: calc(var(--u) * 12);
 		min-width: 0;
 	}
-
+	/* The glyph is 24 inside a 40 box, as in the HUD (node 6695:4866). */
 	.bet-coin {
 		flex: 0 0 auto;
-		width: 26px;
-		height: 26px;
+		width: calc(var(--u) * 40);
+		height: calc(var(--u) * 40);
+		display: grid;
+		place-items: center;
+	}
+	.bet-coin img {
+		display: block;
+		width: calc(var(--u) * 24);
+		height: calc(var(--u) * 24);
 		object-fit: contain;
-		display: block;
 	}
-
-	.bet-step {
-		flex: 0 0 auto;
-		width: 36px;
-		height: 36px;
-		padding: 0;
-		border: 0;
-		background: none;
-		cursor: pointer;
-		transition: filter 0.15s;
-	}
-	.bet-step img {
-		display: block;
-		width: 100%;
-		height: 100%;
-	}
-	.bet-step:disabled {
-		cursor: default;
-	}
-	.bet-step:not(:disabled):hover {
-		filter: brightness(1.12);
-	}
-	.bet-step:not(:disabled):active {
-		transform: translateY(1px);
-	}
-
 	.bet-readout {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: 2px;
+		align-items: flex-start;
 		min-width: 0;
 	}
 	.bet-readout__label {
-		font-family: Helvetica, Arial, sans-serif;
-		font-size: 0.58rem;
-		font-weight: 700;
-		letter-spacing: 0.14em;
+		font-size: calc(var(--u) * 10);
+		line-height: calc(var(--u) * 15);
+		letter-spacing: calc(var(--u) * 2);
+		font-weight: 800;
 		text-transform: uppercase;
-		/* Pink/purple gradient, matching the card titles. */
-		background: linear-gradient(173.06deg, #d836fc 0%, #272fdd 100%);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: transparent;
+		color: #bd46c6;
 	}
 	.bet-readout__value {
-		font-family: Helvetica, Arial, sans-serif;
-		font-size: 1.1rem;
-		font-weight: 700;
-		letter-spacing: 0.02em;
+		font-family: 'Lilita One', sans-serif;
+		font-size: calc(var(--u) * 24);
+		line-height: calc(var(--u) * 32);
+		font-weight: 400;
 		color: #fff;
+		white-space: nowrap;
+	}
+
+	/* Portrait: no design of its own, so the same cards run as one scrolling column sized off the
+	   frame's WIDTH — a card is 92cqw across, which is what makes --u resolve to readable type here
+	   (the landscape height term would give a card barely a third of the screen). Card heights go
+	   auto so the full description shows rather than being clipped to three lines. */
+	.buy-overlay.is-portrait {
+		.stage {
+			--u: calc(92cqw / 339);
+			left: 0;
+			top: 0;
+			transform: none;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			padding: calc(var(--u) * 20) 0;
+			box-sizing: border-box;
+		}
+		.title {
+			position: static;
+			flex: 0 0 auto;
+			margin-bottom: calc(var(--u) * 14);
+		}
+		.grid {
+			position: static;
+			flex: 1 1 auto;
+			width: calc(var(--u) * 339);
+			height: auto;
+			min-height: 0;
+			overflow-y: auto;
+			grid-template-columns: 1fr;
+			grid-template-rows: none;
+			grid-auto-rows: min-content;
+			padding: calc(var(--u) * 2) 0;
+			/* Six full-width cards never fit, so the column always scrolls. Fading the last few pixels
+			   stops the card at the cut from reading as a broken one. */
+			mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
+		}
+		.card-desc {
+			height: auto;
+			-webkit-line-clamp: initial;
+		}
+		.betrow {
+			position: static;
+			flex: 0 0 auto;
+			transform: none;
+			margin-top: calc(var(--u) * 12);
+		}
 	}
 
 	/* Confirm dialog — the design's own spacing, converted to flow so a long mode name (e.g.

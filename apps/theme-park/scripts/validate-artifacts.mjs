@@ -230,7 +230,6 @@ for (const relativePath of [
 	'assets/sprites/rollerCar/roller_car_ride.webp',
 	'assets/components/frames/magnetic/cell_box.png',
 	'assets/components/frames/magnetic/cell_box_win.png',
-	'assets/components/frames/forest/badge_frame.png',
 ]) {
 	assert.ok(
 		fs.existsSync(path.join(root, 'static', relativePath)),
@@ -361,6 +360,11 @@ assert.doesNotMatch(
 	duckCollectSource,
 	/DuckPondDuck/,
 	'Duck Collect presenter must not remount Board-owned duck Spine instances',
+);
+assert.match(
+	duckCollectSource,
+	/<NeonPlaque key="bonusBannerPlate"/,
+	'Duck Collect banner must use the sliced neon plate, not a Forest Gang plaque',
 );
 assert.match(
 	duckCollectSource,

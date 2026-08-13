@@ -33,15 +33,28 @@
 	const cover = $derived(backgroundCover(canvas));
 
 	// Duck Your Luck swaps the plaza for the blurred fishing-booth backdrop for as long as the pond
-	// state is live, crossfaded over the base art so entry/exit are not a hard cut.
-	const BOOTH_ASPECT = 1200 / 670;
+	// state is live, crossfaded over the base art so entry/exit are not a hard cut. Mega Coaster does
+	// the same with its coaster POV — both were authored against the 1200x670 design frame, so they
+	// share its aspect.
+	const SCENE_ASPECT = 1200 / 670;
+	const sceneCover = $derived(backgroundCover(canvas, SCENE_ASPECT));
+
 	const pondReady = $derived(!!context.stateApp.loadedAssets?.duckPondBackground);
 	const pondActive = $derived(!!context.stateGame.duckPicks);
 	const pondFade = new Tween(0, { duration: 600, easing: cubicInOut });
 	$effect(() => {
 		pondFade.set(pondActive && pondReady ? 1 : 0);
 	});
-	const boothCover = $derived(backgroundCover(canvas, BOOTH_ASPECT));
+
+	// Mega Coaster runs from the moment the bonus is announced (bonusType is set just before the
+	// intro screen) until resetBonusState clears it, so this covers the intro, the coaster setup and
+	// every free spin.
+	const coasterReady = $derived(!!context.stateApp.loadedAssets?.coasterBackground);
+	const coasterActive = $derived(context.stateGame.bonusType === 'coaster');
+	const coasterFade = new Tween(0, { duration: 600, easing: cubicInOut });
+	$effect(() => {
+		coasterFade.set(coasterActive && coasterReady ? 1 : 0);
+	});
 </script>
 
 <!-- zIndex is explicit because this sprite is gated on its texture: it mounts a beat after <Clouds>
@@ -60,17 +73,31 @@
 		zIndex={BACKGROUND_Z}
 	/>
 {/if}
-{#if pondReady && pondFade.current > 0}
+{#if coasterReady && coasterFade.current > 0}
 	<!-- One step above the plaza art, still below the clouds and everything else. -->
+	<Sprite
+		key="coasterBackground"
+		x={canvas.width * 0.5 + driftX}
+		y={canvas.height * 0.5 + driftY}
+		anchor={0.5}
+		width={sceneCover.width}
+		height={sceneCover.height}
+		alpha={0.98 * coasterFade.current}
+		zIndex={BACKGROUND_Z + 1}
+	/>
+{/if}
+{#if pondReady && pondFade.current > 0}
+	<!-- Above the coaster art as well: Duck Your Luck is its own bonus, never nested in this one, but
+	     ordering them makes the overlap impossible rather than merely unlikely. -->
 	<Sprite
 		key="duckPondBackground"
 		x={canvas.width * 0.5 + driftX}
 		y={canvas.height * 0.5 + driftY}
 		anchor={0.5}
-		width={boothCover.width}
-		height={boothCover.height}
+		width={sceneCover.width}
+		height={sceneCover.height}
 		alpha={0.98 * pondFade.current}
-		zIndex={BACKGROUND_Z + 1}
+		zIndex={BACKGROUND_Z + 2}
 	/>
 {/if}
 <Rectangle {...canvas} backgroundColor={0x050407} alpha={0.2} zIndex={BACKGROUND_Z - 2} />
