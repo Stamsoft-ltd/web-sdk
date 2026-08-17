@@ -5,8 +5,8 @@
 		BOARD_DIMENSIONS,
 		BOARD_SIDE_CONTENT_INSET,
 		CELL_W,
+		CELL_H,
 		COASTER_WILD_GRID_INSET,
-		SYMBOL_H,
 	} from '../game/constants';
 
 	type Props = { reel?: number };
@@ -30,9 +30,9 @@
 	draw={(graphics) => {
 		graphics.rect(
 			-CELL_W * 0.5 + leftInset,
-			-SYMBOL_H * 0.5 + COASTER_WILD_GRID_INSET,
+			-CELL_H * 0.5 + COASTER_WILD_GRID_INSET,
 			CELL_W - leftInset - rightInset,
-			SYMBOL_H - COASTER_WILD_GRID_INSET * 2,
+			CELL_H - COASTER_WILD_GRID_INSET * 2,
 		);
 		graphics.fill({ color: 0x15002f, alpha: 1 });
 	}}

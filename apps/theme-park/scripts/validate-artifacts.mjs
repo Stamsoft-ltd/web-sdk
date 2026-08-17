@@ -127,48 +127,34 @@ for (const mode of modes) {
 					Number.isInteger(roller.reel) && roller.reel >= 0 && roller.reel < 5,
 					`${mode}/${book.id}: roller reel`,
 				);
-				const isSparseContract = 'triggerRow' in roller || 'multipliers' in roller;
-				if (isSparseContract) {
+				assert.ok(roller.multiplier > 0, `${mode}/${book.id}: positive reel multiplier`);
+				if ('triggerRow' in roller) {
 					assert.ok(
 						Number.isInteger(roller.triggerRow) && roller.triggerRow >= 0 && roller.triggerRow < 5,
 						`${mode}/${book.id}: roller trigger row`,
 					);
-					assert.ok(Array.isArray(roller.multipliers), `${mode}/${book.id}: sparse multipliers`);
-					assert.equal(
-						new Set(roller.multipliers.map(({ row }) => row)).size,
-						roller.multipliers.length,
-						`${mode}/${book.id}: unique multiplier rows`,
-					);
-					for (const plaque of roller.multipliers) {
+					assert.ok(!('multipliers' in roller), `${mode}/${book.id}: one multiplier per reel`);
+					if ('fakeMultiplier' in roller) {
 						assert.ok(
-							Number.isInteger(plaque.row) && plaque.row >= 0 && plaque.row < 5,
-							`${mode}/${book.id}: multiplier row`,
+							roller.fakeMultiplier > 0,
+							`${mode}/${book.id}: positive fake plaque multiplier`,
 						);
-						assert.ok(plaque.multiplier > 0, `${mode}/${book.id}: positive multiplier`);
+						assert.notEqual(
+							roller.fakeMultiplier,
+							roller.multiplier,
+							`${mode}/${book.id}: fake and real plaque multipliers differ`,
+						);
 					}
-					const summedMultiplier = roller.multipliers.reduce(
-						(sum, { multiplier }) => sum + multiplier,
-						0,
-					);
-					assert.equal(
-						roller.multiplier,
-						Math.max(1, summedMultiplier),
-						`${mode}/${book.id}: sparse reel multiplier`,
-					);
 					const trigger = reveal.board[roller.reel][roller.triggerRow + 1];
 					assert.equal(trigger.name, 'W', `${mode}/${book.id}: roller trigger symbol`);
 					assert.equal(trigger.wild, true, `${mode}/${book.id}: roller trigger wild`);
 					assert.equal(trigger.rollerTrigger, true, `${mode}/${book.id}: roller trigger flag`);
 				} else {
-					for (let paddedRow = 1; paddedRow <= 5; paddedRow += 1) {
-						const cell = reveal.board[roller.reel][paddedRow];
-						assert.equal(cell.name, 'W', `${mode}/${book.id}: legacy roller wild cell`);
-						assert.equal(
-							cell.multiplier,
-							roller.multiplier,
-							`${mode}/${book.id}: legacy roller multiplier`,
-						);
-					}
+					// Published legacy fixtures stay playable until math books are regenerated.
+					assert.ok(
+						reveal.board[roller.reel].slice(1, 6).every((cell) => cell.name === 'W' && cell.wild),
+						`${mode}/${book.id}: legacy complete Wild reel`,
+					);
 				}
 			}
 		}
@@ -225,9 +211,13 @@ for (const relativePath of [
 	'assets/spines/coasterVomit/coaster_vomit.png',
 	'assets/theme-park/v2/features/coaster-rig-happy.png',
 	'assets/theme-park/v2/features/coaster-rig-vomit.png',
-	'assets/sprites/rollerCar/roller_car.atlas',
-	'assets/sprites/rollerCar/roller_car_spine.json',
-	'assets/sprites/rollerCar/roller_car_ride.webp',
+	'assets/theme-park/v2/board-border-backdrop.png',
+	'assets/theme-park/v2/board-border-expanded.png',
+	'assets/theme-park/v2/board-grid-backboard.webp',
+	'assets/spines/megaWildFullReel/mega_wild_full_reel.atlas',
+	'assets/spines/megaWildFullReel/mega_wild_full_reel.json',
+	'assets/spines/megaWildFullReel/mega_wild_full_reel.png',
+	'assets/spines/megaWildFullReel/mega_wild_full_reel_fallback.png',
 	'assets/components/frames/magnetic/cell_box.png',
 	'assets/components/frames/magnetic/cell_box_win.png',
 ]) {
@@ -255,11 +245,15 @@ assert.match(
 	/variant: duckVariantForIndex\(eventId, index\)[\s\S]*look: duckLookForIndex\(eventId, index\)[\s\S]*ducks = emptyPond\(event\.seed\)[\s\S]*look=\{duck\.look\}/,
 	'Duck pond must derive and preserve each Duck look from its event seed',
 );
-assert.doesNotMatch(duckPondSource, /Math\.random/, 'Duck pond styles must not depend on render timing');
+assert.doesNotMatch(
+	duckPondSource,
+	/Math\.random/,
+	'Duck pond styles must not depend on render timing',
+);
 assert.match(
 	duckVisualSource,
-	/seededDuckValue[\s\S]*duckLookForIndex[\s\S]*duckVariantForIndex/,
-	'Duck style selection must use the deterministic event-index mixer',
+	/DUCK_SOLID_VARIANTS = \[1, 5, 7, 8\][\s\S]*seededDuckValue[\s\S]*duckLookForIndex[\s\S]*duckVariantForIndex/,
+	'Duck style selection must use solid floaties and the deterministic event-index mixer',
 );
 assert.doesNotMatch(
 	duckVisualSource,
@@ -430,8 +424,8 @@ assert.match(
 );
 assert.match(
 	boardSource,
-	/duckLookForPosition\(position, duckStyleSeed\(reelSymbol\.rawSymbol\)\)/,
-	'Board Duck symbols must use the reveal-event seed for stable accessory looks',
+	/rawSymbol\.duckVariant \?\?[\s\S]*rawSymbol\.duckLook \?\?[\s\S]*look=\{duckLook\(reelSymbol\.rawSymbol, position\)\}/,
+	'Board Duck symbols must retain their resolved reveal-event style while moving',
 );
 assert.match(
 	boardSource,
@@ -498,7 +492,7 @@ assert.ok(
 );
 assert.match(
 	boardSource,
-	/duckFrontAssetKeyForPosition/,
+	/`duckPondDuck\$\{duckVariant\(rawSymbol/,
 	'Duck feature fallback must use the matching pond front variant',
 );
 assert.match(
@@ -529,8 +523,8 @@ assert.match(
 );
 assert.match(
 	duckBookHandlerSource,
-	/\? \{ \.\.\.symbol, duckStyleSeed: bookEvent\.index \}/,
-	'Duck reel symbols must retain their reveal event index while rolling out',
+	/duckStyleSeed: bookEvent\.index,[\s\S]*duckVariant: duckVariantForPosition\(position, bookEvent\.index\),[\s\S]*duckLook: duckLookForPosition\(position, bookEvent\.index\)/,
+	'Duck reel symbols must retain resolved event-seeded art while rolling out',
 );
 assert.match(
 	duckStartHandler,
@@ -563,8 +557,8 @@ assert.match(
 );
 assert.match(
 	constantsSource,
-	/BOARD_SIDE_CONTENT_INSET = 18[\s\S]*COASTER_WILD_GRID_INSET = 2\.5[\s\S]*getBoardCellCenterX[\s\S]*BOARD_SIDE_CONTENT_INSET \* 0\.5/,
-	'Outer reels must reserve wider side rails and shift inward by half that reserve',
+	/BOARD_SIDE_CONTENT_INSET = 1\.4[\s\S]*COASTER_WILD_GRID_INSET = 2\.5[\s\S]*getBoardCellCenterX = \(reelIndex: number\) => CELL_W \* \(reelIndex \+ 0\.5\)/,
+	'Every reel must use one equal grid-line-to-grid-line width without edge shifts',
 );
 
 const duckSpine = JSON.parse(
@@ -589,7 +583,7 @@ const duckPoseTimes = Array.from({ length: 64 }, (_, pose) =>
 assert.equal(duckSpine.skeleton.spine, '4.2.0', 'Duck rig Spine version');
 assert.equal(
 	duckSpine.skeleton.hash,
-	'duck-your-luck-turn-v18-correct-temple-wide-rear',
+	'duck-your-luck-turn-v19-solid-floaties',
 	'Duck 2.5D rig version',
 );
 assert.match(
@@ -634,9 +628,10 @@ assert.doesNotMatch(
 );
 assert.match(
 	duckBuilderSource,
-	/1: \{"hue": None, "star": True, "striped": False[\s\S]*2: \{"hue": 77, "star": False, "striped": True[\s\S]*3: \{"hue": 238, "star": True, "striped": True/,
-	'Duck rings must include star-only, stripe-only, and combined decoration',
+	/1: \{"hue": None, "star": True, "striped": False[\s\S]*2: \{"hue": 77, "star": False, "striped": False[\s\S]*3: \{"hue": 238, "star": True, "striped": False/,
+	'Duck rings must keep colour and star variety without stripes',
 );
+assert.doesNotMatch(duckBuilderSource, /"striped": True/, 'Duck floaties must not use stripes');
 assert.match(
 	duckBuilderSource,
 	/depth_overlap = 2[\s\S]*if y < boundary \+ depth_overlap:[\s\S]*if y >= boundary - depth_overlap:/,
@@ -843,10 +838,6 @@ const rollerOverlaySource = fs.readFileSync(
 	path.join(root, 'src', 'components', 'RollerWildsOverlay.svelte'),
 	'utf8',
 );
-const rollerMultiplierCellSource = fs.readFileSync(
-	path.join(root, 'src', 'components', 'RollerMultiplierCell.svelte'),
-	'utf8',
-);
 assert.doesNotMatch(
 	rollerOverlaySource,
 	/key="tpCoasterWild"/,
@@ -864,68 +855,18 @@ assert.doesNotMatch(
 );
 assert.doesNotMatch(
 	rollerOverlaySource,
-	/forestBonusBadge/,
-	'Cart-filled Roller cells must use multiplier text without plaques',
+	/forestBonusBadge|RollerMultiplierCell|CoasterWildBackground|rollerWildRail/,
+	'Roller overlay must use one combined rails + duck/plaque rig without old row stacking',
 );
 assert.match(
 	rollerOverlaySource,
-	/\{#each \[-0\.34, 0\.34\] as railOffset/,
-	'Roller animation must draw two rails per reel',
-);
-assert.match(
-	rollerOverlaySource,
-	/\{#if phase === 'ready' \|\| phase === 'dropping'\}[\s\S]*key="rollerWildRail"/,
-	'Roller rails must disappear as soon as the carts leave',
-);
-assert.match(
-	rollerOverlaySource,
-	/<Graphics isMask draw=\{drawBoardContentMask\} \/>/,
-	'Roller carts and multiplier symbols must use the bulb-safe board mask',
-);
-assert.match(
-	rollerOverlaySource,
-	/for \(let reel = 0; reel < BOARD_DIMENSIONS\.x; reel \+= 1\)[\s\S]*for \(const row of ROWS\)/,
-	'Roller board mask must cut content into cells instead of painting a second grid',
-);
-assert.match(
-	rollerOverlaySource,
-	/<Graphics isMask draw=\{drawReelMask\(roller\.reel\)\} \/>/,
-	'Each Roller cart and rail pair must be clipped to its own reel',
-);
-assert.match(
-	rollerOverlaySource,
-	/CELL_W - leftInset - rightInset/,
-	'Roller cart masks must preserve the vertical grid-line clearance',
-);
-assert.match(
-	rollerOverlaySource,
-	/SYMBOL_H - topInset - bottomInset/,
-	'Roller carts must leave every horizontal board divider unobstructed',
-);
-assert.match(
-	rollerOverlaySource,
-	/FRAME_LIGHT_CLEARANCE_X = 31[\s\S]*FRAME_LIGHT_CLEARANCE_Y = 16/,
-	'Roller carts must reserve the full outer bulb halo on every board edge',
+	/<Graphics isMask draw=\{drawBoardMask\} \/>/,
+	'Roller combined symbols must use the widened board mask',
 );
 assert.doesNotMatch(
 	rollerOverlaySource,
 	/drawForegroundGrid|stroke\(\{ color: 0xe3a331/,
 	'Roller overlay must not paint a secondary grid',
-);
-assert.match(
-	rollerMultiplierCellSource,
-	/const GRID_LINE_INSET = 1\.4;/,
-	'Roller multiplier masks must preserve every grid line',
-);
-assert.match(
-	rollerMultiplierCellSource,
-	/<Graphics[\s\S]*isMask[\s\S]*contentOffsetY/,
-	'Roller multiplier motion must remain inside one fixed cell mask',
-);
-assert.equal(
-	(rollerOverlaySource.match(/<CoasterWildBackground/g) ?? []).length,
-	2,
-	'Passed and final Roller cells must use opaque cell covers',
 );
 assert.doesNotMatch(
 	rollerOverlaySource,
@@ -940,28 +881,12 @@ assert.doesNotMatch(
 assert.match(
 	boardSource,
 	/const drawBoardContentMask =[\s\S]*reel === 0 \? BOARD_SIDE_CONTENT_INSET : GRID_LINE_CLEARANCE[\s\S]*CELL_W - leftInset - rightInset[\s\S]*<Graphics isMask draw=\{drawBoardContentMask\} \/>/,
-	'Board symbols must be clipped away from the authored grid and side edges',
-);
-assert.match(
-	rollerOverlaySource,
-	/fallbackKey="rollerWildCarStill"/,
-	'Roller Spine fallback must use the matching car frame',
-);
-assert.match(rollerOverlaySource, /let carYs =/, 'Each Roller car needs an independent Y tween');
-assert.match(
-	rollerOverlaySource,
-	/event\.reels\.map\(\(\{ reel \}\) => \[reel, new Tween\(CAR_START_Y\)\]\)/,
-	'Every Roller cart must spawn from the same top position',
+	'Board symbols must use equal edge and internal grid clearance',
 );
 assert.doesNotMatch(
 	rollerOverlaySource,
-	/new Tween\(cellY\(triggerRow\)\)|CAR_STATION_Y/,
-	'Cart starting positions must not depend on trigger rows',
-);
-assert.match(
-	rollerOverlaySource,
-	/const descents = event\.reels\.map\([\s\S]*carYs\[reel\]\.set\(CAR_END_Y/,
-	'All Roller carts must begin their synchronized descent together',
+	/carYs|CAR_START_Y|CAR_END_Y|contributionFor|SPREAD_ORDER/,
+	'Old cart descent and contribution-stack state must be removed',
 );
 assert.match(
 	rollerOverlaySource,
@@ -970,57 +895,33 @@ assert.match(
 );
 assert.match(
 	rollerOverlaySource,
-	/for \(const row of ROWS\)[\s\S]*event\.reels\.map\(\(\{ reel \}\) => `\$\{reel\},\$\{row\}`\)/,
-	'Each cart pass must clear the same row on every affected reel',
-);
-assert.match(
-	rollerOverlaySource,
-	/contributionFor\(roller, row\)/,
-	'Every passed symbol must become a visible multiplier contribution',
-);
-assert.match(
-	rollerOverlaySource,
-	/return explicit \?\? 1;/,
-	'Empty Roller rows must display neutral 1X values',
-);
-assert.doesNotMatch(
-	rollerOverlaySource,
-	/return 0;/,
-	'Roller rows must never display destructive 0X values',
-);
-assert.match(
-	rollerOverlaySource,
 	/showFinalPresentation\(\)/,
-	'Roller skip must fast-forward to a fully covered final presentation',
+	'Roller skip must fast-forward to the settled combined symbol',
 );
 assert.doesNotMatch(
 	rollerOverlaySource,
 	/totalAlpha\.set\(0/,
 	'Combined reel totals must remain visible through the persistent-state handoff',
 );
-assert.ok(
-	(rollerOverlaySource.match(/loop=\{false\}/g) ?? []).length >= 1,
-	'The selected Roller ride clip must be non-cyclic',
+assert.match(
+	rollerOverlaySource,
+	/const INTRO_MS = 1990;[\s\S]*phase = 'revealing'[\s\S]*waitForTimeout\(INTRO_MS\)/,
+	'Combined 64-frame Roller intro must run as one skippable timeline',
 );
 assert.match(
 	rollerOverlaySource,
-	/const RIDE_CLIP_MS = 480;[\s\S]*const CART_READY_MS = 180;[\s\S]*const CAR_DESCENT_MS = 650;/,
-	'The 48-frame Roller ride must complete faster than the previous animation',
+	/REEL_STAGGER_MS = INTRO_MS[\s\S]*stateBet\.isTurbo \|\| stateBet\.isSuperTurbo[\s\S]*triggerReels\.slice\(0, revealedReelCount\)/,
+	'Normal Roller reveals must stagger left-to-right while fast modes reveal as one batch',
+);
+assert.match(
+	duckBookHandlerSource,
+	/initialReal: seededEventChoice\(bookEvent\.index, entry\.reel, 17, 2\) === 1/,
+	'Roller initial plaque face must be deterministic from event index and reel',
 );
 assert.match(
 	rollerOverlaySource,
-	/Promise\.all\(\[[\s\S]*combineTweens\[reel\]\.set\(1/,
-	'All reel contributions must sum in parallel',
-);
-assert.match(
-	rollerOverlaySource,
-	/const SPREAD_ORDER = \[2, 1, 3, 0, 4\][\s\S]*for \(const row of SPREAD_ORDER\)/,
-	'Summed reel values must spread from the center across all five rows',
-);
-assert.match(
-	rollerOverlaySource,
-	/finalizedRows[\s\S]*text=\{`\$\{roller\.multiplier\}X`\}/,
-	'Every final Roller cell must show the summed multiplier',
+	/<MegaWildFullReel[\s\S]*multiplier=\{roller\.multiplier\}[\s\S]*initialReal=\{roller\.initialReal\}/,
+	'Each Roller reel must resolve to one rails + duck/plaque multiplier symbol',
 );
 assert.doesNotMatch(
 	rollerOverlaySource.slice(rollerOverlaySource.indexOf('<!-- Final state:')),
@@ -1053,24 +954,68 @@ assert.doesNotMatch(
 	'Fixed-screen persistence must not own Roller results',
 );
 assert.match(
-	boardSource,
-	/isRollerMultiplierCell[\s\S]*Boolean\(rawSymbol\.reelMultiplier\)[\s\S]*contentScale=\{0\.9 \* \(isWin \? winPulse : 1\)\}[\s\S]*reelMultiplier\}X/,
-	'The moving Board symbol must own settled Roller multiplier plaques',
+	rollerOverlaySource,
+	/rollerWildsHandoff:[\s\S]*phase = 'settled'[\s\S]*presentationOwner = 'overlay'[\s\S]*await tick\(\)/,
+	'The settled full-reel result must remain overlay-owned above the authored grid',
 );
-assert.doesNotMatch(
-	boardSource,
-	/isRollerMultiplierCell[\s\S]{0,300}activeRollerReels|isRollerMultiplierCell[\s\S]{0,300}rollerReelSet/,
-	'Roller plaques must survive active metadata clearing so they roll out unchanged',
+assert.ok(
+	gameSource.indexOf('<RollerWildsOverlay />') <
+		gameSource.indexOf('{#if context.stateGame.paylineWins.length > 0}'),
+	'Settled Roller Wild must render above BoardFrame but below paylines',
 );
 
 const bookHandlerSource = fs.readFileSync(
 	path.join(root, 'src', 'game', 'bookEventHandlerMap.ts'),
 	'utf8',
 );
+const gameStateSource = fs.readFileSync(
+	path.join(root, 'src', 'game', 'stateGame.svelte.ts'),
+	'utf8',
+);
+const actorSource = fs.readFileSync(path.join(root, 'src', 'game', 'actor.ts'), 'utf8');
+const neonPaylinesSource = fs.readFileSync(
+	path.join(root, 'src', 'components', 'NeonPaylines.svelte'),
+	'utf8',
+);
+const revealHandlerSource = bookHandlerSource.slice(
+	bookHandlerSource.indexOf('reveal: async'),
+	bookHandlerSource.indexOf('winInfo: async'),
+);
+const finalWinHandlerSource = bookHandlerSource.slice(
+	bookHandlerSource.indexOf('finalWin: async'),
+	bookHandlerSource.indexOf('freeSpinTrigger: async'),
+);
+const resetBonusStateSource = gameStateSource.slice(gameStateSource.indexOf('const resetBonusState'));
+assert.doesNotMatch(
+	finalWinHandlerSource,
+	/stateGame\.paylineWins = \[\]/,
+	'finalWin must keep paylines visible through the idle result hold',
+);
+assert.doesNotMatch(
+	resetBonusStateSource,
+	/stateGame\.paylineWins = \[\]/,
+	'Bonus cleanup must not hide paylines before the next spin',
+);
+assert.ok(
+	revealHandlerSource.indexOf('stateGame.paylineWins = []') > -1 &&
+		revealHandlerSource.indexOf('stateGame.paylineWins = []') <
+			revealHandlerSource.indexOf('stateGameDerived.enhancedBoard.spin'),
+	'Next reveal must clear old paylines immediately before starting reel motion',
+);
 assert.match(
+	actorSource,
+	/onNewGameStart:[\s\S]*stateGame\.paylineWins = \[\]/,
+	'Physical next-spin initiation must stop and unmount the prior payline cycle',
+);
+assert.match(
+	neonPaylinesSource,
+	/time = elapsed \/ 1000[\s\S]*cycleTime = elapsed % cycleMs[\s\S]*lineAlpha = 0[\s\S]*app\.ticker\.add\(tick/,
+	'Mounted paylines must draw, fade out, and redraw until next-spin initiation unmounts them',
+);
+assert.doesNotMatch(
 	bookHandlerSource,
-	/Array\.isArray\(entry\.multipliers\)/,
-	'Explicit empty Roller multiplier arrays must remain empty',
+	/entry\.multipliers|Array\.isArray\(entry\.multipliers\)/,
+	'Roller event playback must use exactly one multiplier per reel',
 );
 assert.match(
 	bookHandlerSource,
@@ -1082,10 +1027,19 @@ assert.doesNotMatch(
 	/reelMultiplier: roller\.multiplier,[\s\S]{0,80}rollerTrigger: true/,
 	'Settled full-reel Wilds must not masquerade as five new trigger cars',
 );
-assert.match(
-	bookHandlerSource,
-	/await tick\(\);[\s\S]{0,100}rollerWildsHide/,
-	'Moving Roller plaque symbols must mount before the animation overlay is removed',
+const rollerApplySource = bookHandlerSource.slice(
+	bookHandlerSource.indexOf('rollerWildsApply: async'),
+	bookHandlerSource.indexOf('coasterSetup: async'),
+);
+assert.doesNotMatch(
+	rollerApplySource,
+	/symbol\.rawSymbol\s*=|reelMultiplier: roller\.multiplier/,
+	'Roller presentation must preserve the authored reveal symbols under its overlay',
+);
+assert.doesNotMatch(
+	rollerApplySource,
+	/rollerWildsHide/,
+	'Settled Roller overlay must remain mounted through paylines and result display',
 );
 
 const coasterPresenterSource = fs.readFileSync(
@@ -1094,13 +1048,13 @@ const coasterPresenterSource = fs.readFileSync(
 );
 assert.match(
 	coasterPresenterSource,
-	/const MIN_CART_GAP_UNITS = 1\.35;[\s\S]*const CART_GAP_VARIANCE_UNITS = 0\.35;[\s\S]*return impacts\.map\(\(impact, lane\) =>[\s\S]*launchDelayUnits \+= MIN_CART_GAP_UNITS \+ Math\.random\(\) \* CART_GAP_VARIANCE_UNITS[\s\S]*return \{ row, launchDelayUnits, impact \}/,
-	'Mega Coaster must spawn one duck per puke with a safe randomized minimum gap',
+	/const MIN_CART_GAP_UNITS = 1\.35;[\s\S]*const MIN_CART_COUNT = 15;[\s\S]*const MAX_EXTRA_CARTS = 7;[\s\S]*return impacts\.map\(\(impact, lane\) =>[\s\S]*lane \* \(MIN_CART_GAP_UNITS \+ CART_GAP_VARIANCE_UNITS\)[\s\S]*seededValue\(seed, lane \+ row \* 7, 1\)[\s\S]*const extraCount = Math\.max\([\s\S]*1,[\s\S]*impact: null/,
+	'Mega Coaster must spawn at least fifteen deterministic mixed-purpose carts',
 );
 assert.doesNotMatch(
 	coasterPresenterSource,
-	/MIN_CARTS_PER_LINE|groupsByReel|impactGroups|Math\.max\([^\n]*impacts\.length/,
-	'Mega Coaster must not merge repeat hits or add empty decorative carts',
+	/MIN_CARTS_PER_LINE|groupsByReel|impactGroups|Math\.random/,
+	'Mega Coaster must not merge hits or use render-time randomness',
 );
 assert.match(
 	coasterPresenterSource,
@@ -1109,8 +1063,8 @@ assert.match(
 );
 assert.match(
 	coasterPresenterSource,
-	/const impactAt = durationForDistance\(startX, cellX\(route\.impact\.reel\), timing\);[\s\S]*waitForRouteTime\(startedAt, vomitStartAt, run\)[\s\S]*cart\.state = 'vomit';[\s\S]*waitForRouteTime\(startedAt, impactAt, run\)[\s\S]*pulseWild\(route\.impact, run, timing\)[\s\S]*waitForRouteTime\(startedAt, vomitEndAt, run\)[\s\S]*cart\.state = 'happy'/,
-	'Mega Coaster ducks must execute one allocation-free vomit sequence',
+	/const impactAt = route\.impact[\s\S]*route\.impact &&[\s\S]*routeTime >= route\.impactAt[\s\S]*pulseWild\(route\.impact, run, timing\)[\s\S]*completeImpact\(route\.impactIndex\)[\s\S]*route\.impact && routeTime >= route\.vomitStartAt[\s\S]*\? 'vomit'[\s\S]*: 'happy'/,
+	'Mega Coaster impact carts must vomit once while decorative carts pass happily',
 );
 assert.doesNotMatch(
 	coasterPresenterSource,
@@ -1154,8 +1108,8 @@ assert.match(
 );
 assert.match(
 	coasterPresenterSource,
-	/Initial setup reveal only[\s\S]*Free-spin reel timing is owned elsewhere and remains unchanged[\s\S]*const SETUP_SPEED_BOOST = 1\.69;[\s\S]*const SEQUENCE_SPEED = 0\.9 \* SETUP_SPEED_BOOST;[\s\S]*const DUCK_PLAYBACK_SPEED = 4\.5 \* SETUP_SPEED_BOOST;[\s\S]*const VOMIT_CLIP_MS = Math\.round\(VOMIT_SOURCE_MS \/ DUCK_PLAYBACK_SPEED\);[\s\S]*duration: durationForDistance\(startX, endX, timing\)/,
-	'Mega Coaster initial setup must run another 1.3-times faster at every speed level without changing spins',
+	/Initial setup reveal only[\s\S]*Free-spin reel timing is owned elsewhere and remains unchanged[\s\S]*const SETUP_SPEED_BOOST = 1\.69;[\s\S]*const SEQUENCE_SPEED = 0\.9 \* SETUP_SPEED_BOOST \* 0\.85;[\s\S]*const DUCK_PLAYBACK_SPEED = 4\.5 \* SETUP_SPEED_BOOST;[\s\S]*const VOMIT_CLIP_MS = Math\.round\(VOMIT_SOURCE_MS \/ DUCK_PLAYBACK_SPEED\);/,
+	'Mega Coaster cart movement must be fifteen percent slower without changing duck playback',
 );
 assert.doesNotMatch(
 	coasterPresenterSource,
@@ -1174,8 +1128,8 @@ assert.match(
 );
 assert.match(
 	coasterPresenterSource,
-	/Promise\.race\(\[task\.then\(\(\) => true\), skipSignal\.then\(\(\) => false\)\]\)/,
-	'Mega Coaster setup must race its animation against click and Space skip',
+	/requestNextVomit[\s\S]*requestedImpactIndexes\.add\(index\)[\s\S]*timelineOffsetMs \+= Math\.max\(0, dueAt - timelineNow\)[\s\S]*finishRequested = true[\s\S]*playTimeline[\s\S]*completeImpact\(route\.impactIndex\)[\s\S]*if \(!finishRequested\) await waitForTimeout\(timing\.outro\)/,
+	'Mega Coaster click and Space must advance every cart to the next vomit, then skip the tail',
 );
 assert.doesNotMatch(
 	coasterPresenterSource,
@@ -1415,8 +1369,8 @@ assert.doesNotMatch(
 );
 assert.match(
 	coasterWildBackgroundSource,
-	/COASTER_WILD_GRID_INSET[\s\S]*EDGE_LOCAL_INSET = BOARD_SIDE_CONTENT_INSET \* 0\.5[\s\S]*CELL_W - leftInset - rightInset[\s\S]*SYMBOL_H - COASTER_WILD_GRID_INSET \* 2/,
-	'Mega Coaster Wild backgrounds must leave all grid dividers and side edges visible',
+	/COASTER_WILD_GRID_INSET[\s\S]*EDGE_LOCAL_INSET = BOARD_SIDE_CONTENT_INSET \* 0\.5[\s\S]*CELL_W - leftInset - rightInset[\s\S]*CELL_H - COASTER_WILD_GRID_INSET \* 2/,
+	'Mega Coaster Wild backgrounds must leave every equal grid cell divider visible',
 );
 assert.doesNotMatch(
 	coasterPresenterSource,
@@ -1434,9 +1388,9 @@ assert.match(
 	'Normal Wilds must pop with other winning symbols',
 );
 assert.match(
-	boardSource,
-	/contentScale=\{0\.9 \* \(isWin \? winPulse : 1\)\}/,
-	'Settled Roller Wild multiplier cells must pop on wins',
+	rollerOverlaySource,
+	/reelIsWinning[\s\S]*symbol\.symbolState === 'win'[\s\S]*winning=\{phase === 'settled' && reelIsWinning\(roller\.reel\)\}/,
+	'Settled full-reel Mega Wilds must pulse when paylines cross their reel',
 );
 assert.match(
 	persistentWildSource,
@@ -1449,7 +1403,7 @@ assert.doesNotMatch(
 	'Mega Coaster Wild background must not clone and mask the full board texture',
 );
 const coasterAssetBlock = assetsSource.match(
-	/coasterVomitSpine:\s*\{[\s\S]*?\n\t\},\n\trollerWildCarStill:/,
+	/coasterVomitSpine:\s*\{[\s\S]*?\n\t\},\n\tmegaWildFullReelFallback:/,
 )?.[0];
 assert.ok(coasterAssetBlock, 'Mega Coaster vomit Spine must be registered');
 assert.doesNotMatch(
@@ -1458,102 +1412,247 @@ assert.doesNotMatch(
 	'Mega Coaster vomit Spine must load before first use',
 );
 
-const rollerAssetBlock = assetsSource.match(
-	/rollerWildCarSpine:\s*\{[\s\S]*?\n\t\},\n\tcoasterCarSickAnim:/,
+const megaWildAssetBlock = assetsSource.match(
+	/megaWildFullReelSpine:\s*\{[\s\S]*?\n\t\},\n\tcoasterCarSickAnim:/,
 )?.[0];
-assert.ok(rollerAssetBlock, 'Roller car Spine must be registered');
+assert.ok(megaWildAssetBlock, 'Combined full-reel Mega Wild Spine must be registered');
 assert.doesNotMatch(
-	rollerAssetBlock,
+	megaWildAssetBlock,
 	/defer:\s*true/,
-	'Roller car Spine must load at startup so its timeline cannot reset mid-drop',
+	'Combined full-reel rig must load before first use',
 );
-for (const assetKey of [
-	'tpMegaWildDesktop',
-	'tpMegaWildMobile',
-	'tpMegaWildLandscape',
-	'rollerWildCarStill',
-]) {
-	assert.match(assetsSource, new RegExp(`${assetKey}:`), `missing Roller asset key: ${assetKey}`);
-}
 
-const rollerSpine = JSON.parse(
+const megaWildSpine = JSON.parse(
 	fs.readFileSync(
-		path.join(root, 'static', 'assets', 'sprites', 'rollerCar', 'roller_car_spine.json'),
+		path.join(root, 'static', 'assets', 'spines', 'megaWildFullReel', 'mega_wild_full_reel.json'),
 	),
 );
-assert.equal(rollerSpine.skeleton.spine, '4.2.0', 'Roller rig Spine version');
+assert.equal(megaWildSpine.skeleton.spine, '4.2.0', 'Combined Mega Wild rig Spine version');
 assert.deepEqual(
-	Object.keys(rollerSpine.animations).sort(),
-	['idle', 'ride'],
-	'Roller rig animation names',
+	Object.keys(megaWildSpine.animations).sort(),
+	['idle', 'intro', 'intro_real'],
+	'Combined Mega Wild rig animation names',
 );
 assert.equal(
-	rollerSpine.skeleton.hash,
-	'theme-park-roller-car-v6-frontal-to-vertical-arms-48frame-fast',
-	'Roller rig revision',
+	megaWildSpine.skeleton.hash,
+	'theme-park-mega-wild-v22-seeded-start-face',
+	'Combined Mega Wild rig revision',
 );
 assert.equal(
-	rollerSpine.animations.ride.slots.art.attachment.at(-1).time,
-	0.48,
-	'Roller ride clip duration',
-);
-const rollerAttachments = new Set(Object.keys(rollerSpine.skins[0].attachments.art));
-for (const animation of Object.values(rollerSpine.animations)) {
-	for (const timeline of Object.values(animation.slots ?? {})) {
-		for (const frame of timeline.attachment ?? []) {
-			assert.ok(
-				rollerAttachments.has(frame.name),
-				`Roller animation references missing skin attachment: ${frame.name}`,
-			);
-		}
-	}
-}
-const rollerFrames = rollerSpine.animations.ride.slots.art.attachment;
-assert.equal(rollerFrames.length, 48, 'Roller ride must contain 48 registered perspective frames');
-assert.deepEqual(
-	rollerFrames.map(({ time }) => time),
-	[...rollerFrames].map(({ time }) => time).sort((a, b) => a - b),
-	'Roller ride frames must remain monotonic',
-);
-assert.equal(
-	rollerAttachments.size,
-	48,
-	'Roller rig must expose every registered perspective frame',
-);
-assert.equal(
-	new Set(rollerFrames.map(({ name }) => name)).size,
-	48,
-	'Roller ride must never reuse or hide a frame',
+	megaWildSpine.animations.intro.bones.ride.translate.length,
+	64,
+	'Duck pass must contain 64 explicit poses',
 );
 assert.ok(
-	fs.statSync(path.join(root, 'static', 'assets', 'sprites', 'rollerCar', 'roller_car_ride.webp'))
-		.size <
-		1400 * 1024,
-	'Roller 48-frame perspective atlas must stay below 1400 KiB',
+	megaWildSpine.animations.intro.bones.ride.translate[23].y > 0 &&
+		megaWildSpine.animations.intro.bones.ride.translate[24].y === 0,
+	'Duck cart must complete its faster descent on frame 24',
 );
-const rollerBuilderSource = fs.readFileSync(
-	path.join(root, 'scripts', 'generate-feature-spines.py'),
-	'utf8',
+const parkedRideBone = megaWildSpine.bones.find(({ name }) => name === 'ride');
+const parkedCartBone = megaWildSpine.bones.find(({ name }) => name === 'cart');
+assert.equal(parkedRideBone.y, -112, 'Duck cart ride bone must stop on the flat bottom track');
+assert.equal(parkedCartBone.y, -205, 'Duck cart local position must preserve its authored rail alignment');
+assert.equal(
+	megaWildSpine.animations.intro.bones.cart.scale.length,
+	64,
+	'Duck cart must grow smoothly with the rail perspective',
 );
-assert.match(
-	rollerBuilderSource,
-	/mega-wild-cart-front-reference\.png[\s\S]*mega-wild-cart-arms-up\.png[\s\S]*mega-wild-cart-vertical\.png[\s\S]*FRAME_COUNT = 48/,
-	'Roller rig builder must use all three approved perspective keys',
+for (const cartView of ['cart_steep', 'cart_high_mid', 'cart_mid', 'cart_low_mid', 'cart']) {
+	assert.equal(
+		megaWildSpine.animations.intro.slots[cartView].rgba.length,
+		64,
+		`${cartView} must crossfade across the full descent`,
+	);
+}
+assert.equal(
+	megaWildSpine.animations.intro.bones.ride.translate.at(-1).y,
+	0,
+	'Duck cart intro must finish exactly at its parked setup pose',
 );
-assert.match(
-	rollerBuilderSource,
-	/transformed_layer\([\s\S]*warp_vertical\([\s\S]*vertical_flap/,
-	'Roller rig builder must animate the released arms and vertical pitch',
+assert.ok(!megaWildSpine.animations.win, 'Win pulse must not swap Spine animations during paylines');
+const fixedPlaqueBone = megaWildSpine.bones.find(({ name }) => name === 'plaque');
+assert.equal(fixedPlaqueBone.parent, 'root', 'Multiplier plaque must stay fixed above the rails');
+assert.equal(fixedPlaqueBone.y, 0, 'Multiplier plaque must remain at exact reel centre');
+assert.ok(
+	!megaWildSpine.animations.intro.bones.plaque.translate,
+	'Wind may spin the plaque but must never move it from centre',
 );
-assert.doesNotMatch(
-	JSON.stringify(rollerSpine.animations.ride),
-	/rgba|handoff/,
-	'Roller ride must stay opaque without a crossfade handoff',
+assert.equal(
+	megaWildSpine.animations.intro.bones.plaque.rotate.length,
+	128,
+	'Plaque wind roll must contain 128 smooth bank poses',
 );
+assert.equal(
+	megaWildSpine.animations.intro.bones.plaque_edge.scale.length,
+	128,
+	'Plaque side-view rig must contain 128 perspective poses',
+);
+for (const plaqueView of [
+	'plaque',
+	'plaque_top_35',
+	'plaque_top_60',
+	'plaque_top_side',
+	'plaque_bottom_35',
+	'plaque_bottom_60',
+	'plaque_bottom_side',
+]) {
+	assert.equal(
+		megaWildSpine.animations.intro.slots[plaqueView].rgba.length,
+		128,
+		`${plaqueView} must crossfade through all 128 plaque poses`,
+	);
+}
+assert.ok(
+	Math.min(...megaWildSpine.animations.intro.bones.plaque.scale.map(({ y }) => y)) >= 0.24,
+	'Plaque must retain a visible edge instead of blinking out during its roll',
+);
+assert.ok(
+	!megaWildSpine.animations.intro.bones.multiplier &&
+		!megaWildSpine.animations.intro.bones.fake_multiplier,
+	'Multiplier text must inherit one plaque transform instead of collapsing under a second scale',
+);
+assert.ok(
+	!megaWildSpine.bones.some(({ name }) => name.includes('hand')) &&
+		!megaWildSpine.slots.some(({ name }) => name.includes('hand')),
+	'Combined Mega Wild rig must not add detached hand overlays above the complete cart art',
+);
+for (const attachment of [
+	'background',
+	'cart_steep',
+	'cart_high_mid',
+	'cart_mid',
+	'cart_low_mid',
+	'cart',
+	'plaque',
+	'plaque_top_35',
+	'plaque_top_60',
+	'plaque_top_side',
+	'plaque_bottom_35',
+	'plaque_bottom_60',
+	'plaque_bottom_side',
+	'multiplier',
+]) {
+	assert.ok(
+		megaWildSpine.skins[0].attachments[attachment],
+		`Combined Mega Wild rig missing ${attachment} attachment`,
+	);
+}
 
 const rollerMultiplierTextSource = fs.readFileSync(
 	path.join(root, 'src', 'components', 'RollerMultiplierText.svelte'),
 	'utf8',
+);
+
+const boardFrameSource = fs.readFileSync(
+	path.join(root, 'src', 'components', 'BoardFrame.svelte'),
+	'utf8',
+);
+const boardArtSource = fs.readFileSync(path.join(root, 'src', 'game', 'boardArt.ts'), 'utf8');
+const boardBorderBuilderSource = fs.readFileSync(
+	path.join(root, 'scripts', 'build-board-border-layer.py'),
+	'utf8',
+);
+assert.match(
+	boardFrameSource,
+	/key="themeBoardGrid"/,
+	'BoardFrame must use the tightly cropped equal-cell grid/backboard layer',
+);
+assert.match(
+	boardFrameSource,
+	/key="themeBoardBorderBackdrop"/,
+	'BoardFrame must render the opaque authored rail below reel content',
+);
+assert.match(
+	boardFrameSource,
+	/key="themeBoardBorderExpanded"/,
+	'BoardFrame must render the transparent authored light overlay',
+);
+assert.doesNotMatch(
+	boardFrameSource,
+	/BORDER_EXPAND_X/,
+	'BoardFrame border styling must not scale independently from the canonical grid rect',
+);
+assert.match(
+	boardFrameSource,
+	/<Graphics/,
+	'BoardFrame must mask the exact-grid base to the shared rounded interior',
+);
+assert.match(
+	boardFrameSource,
+	/type Props = \{ layer\?: 'base' \| 'border' \}/,
+	'BoardFrame must split immutable base geometry from the top border overlay',
+);
+assert.match(
+	boardArtSource,
+	/ART_RAIL = \{ left: 21, top: 16, right: 1425, bottom: 958 \}/,
+	'Backboard geometry must derive from the exact authored light/glow bounds',
+);
+for (const pattern of [
+	/LIGHT_PATH_LEFT = 33\.8404/,
+	/LIGHT_PATH_RIGHT = 1411\.7267/,
+	/DIVIDERS_X = \(300, 584, 868, 1152\)/,
+	/TARGET_GRID_LEFT = 16/,
+	/TARGET_GRID_RIGHT = 1436/,
+	/backdrop = warp_border_x\(backdrop\)/,
+	/bright_alpha = strongest\.point\(/,
+	/lights = warp_border_x\(lights\)/,
+]) {
+	assert.match(
+		boardBorderBuilderSource,
+		pattern,
+		'Border assets must share the equal-cell warp and split dark underlay from top lights',
+	);
+}
+assert.match(
+	assetsSource,
+	/board-border-backdrop\.png/,
+	'Opaque board-frame underlay must be registered',
+);
+assert.match(
+	assetsSource,
+	/board-border-expanded\.png/,
+	'Transparent bulb-only top layer must be registered',
+);
+assert.match(
+	assetsSource,
+	/board-grid-backboard\.webp/,
+	'Tightly cropped equal-cell grid/backboard must be registered',
+);
+assert.match(
+	boardArtSource,
+	/ART_GRID = \{ left: 16, top: 41\.5, right: 1436, bottom: 941\.5 \}/,
+	'Board border must sit outside five equal 284px cells',
+);
+assert.doesNotMatch(boardFrameSource, /drawFrameMask/, 'BoardFrame must not crop through border lights');
+assert.doesNotMatch(
+	boardFrameSource,
+	/borderPoint|key="spark"/,
+	'BoardFrame must not restore the old per-spark autoplay path',
+);
+assert.match(
+	boardFrameSource,
+	/BOARD_BULBS[\s\S]*alpha=\{hotGlowAlpha\}[\s\S]*alpha=\{coolGlowAlpha\}/,
+	'BoardFrame must restore the original alternating authored-bulb halo',
+);
+assert.match(
+	gameSource,
+	/<BoardFrame layer="base" \/>/,
+	'Game must mount the exact-grid board base below reel content',
+);
+assert.match(
+	gameSource,
+	/<BoardFrame layer="border" \/>/,
+	'Game must mount the authored border above board feature content',
+);
+assert.match(
+	gameSource,
+	/const BOARD_BORDER_Z = 6/,
+	'Board border overlay must stay below presentation z-index and above Mega Wild reveal',
+);
+assert.match(
+	rollerOverlaySource,
+	/BOARD_CORNER_RADIUS[\s\S]*\.roundRect\(/,
+	'Expanded Mega Wild reels must use the shared rounded board-interior mask',
 );
 assert.match(
 	rollerMultiplierTextSource,
@@ -1562,8 +1661,8 @@ assert.match(
 );
 assert.match(
 	rollerMultiplierTextSource,
-	/\{ offset: 0\.18, color: 0xf49bff \}/,
-	'Roller multipliers must use the Theme Park neon gradient',
+	/\{ offset: 0\.42, color: 0xffd329 \}/,
+	'Roller contribution multipliers must match the final Mega Wild gold gradient',
 );
 
 for (const component of [

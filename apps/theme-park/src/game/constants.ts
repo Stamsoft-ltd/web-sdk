@@ -8,6 +8,7 @@ export const BOARD_DIMENSIONS = { x: 5, y: 5 };
 // exports are 448x360 frames, so 121x103 is the shape every piece of art in this game is authored
 // against.
 export const SYMBOL_W = 121;
+// Symbol art keeps its authored size. Grid row pitch is separate and 5% taller for breathing room.
 export const SYMBOL_H = 103;
 export const SYMBOL_SIZE = SYMBOL_H;
 
@@ -25,27 +26,24 @@ export const ROLLER_CAR_W = ROLLER_CAR_H * (256 / 334);
 // every symbol, badge and overlay drawn as before. <BoardFrame> sizes the pad art off this same
 // grid, so the lines painted into it land on these cell boundaries.
 export const CELL_W = SYMBOL_H * (691 / 457);
-export const CELL_H = SYMBOL_H;
+export const CELL_H = SYMBOL_H * 1.05;
 
 export const BOARD_SIZES = {
 	width: CELL_W * BOARD_DIMENSIONS.x,
 	height: CELL_H * BOARD_DIMENSIONS.y,
 };
 
-// Keep reel content behind the authored side rails. The wider reserve matches the cell-cut masks
-// used by Mega Wilds, so opaque Coaster Wild cells cannot paint across the bulbs at either edge.
-// Edge reel centres move by half the reserve, keeping their visible areas centred.
-export const BOARD_SIDE_CONTENT_INSET = 18;
+// One shared board-interior curve. Base art and full-reel feature masks must agree or dark square
+// corners/feature pixels can protrude beyond the rounded authored rail.
+export const BOARD_CORNER_RADIUS = CELL_H * 0.22;
+
+// Borderless board: every reel owns the same exact grid-line-to-grid-line width. Edge content only
+// leaves the same narrow divider clearance as internal cells; edge reel centres never shift.
+export const BOARD_SIDE_CONTENT_INSET = 1.4;
 // Opaque Mega Coaster Wild cells need more clearance than transparent reel symbols. This exposes
 // the one grid authored into BoardFrame instead of drawing a second grid above the feature.
 export const COASTER_WILD_GRID_INSET = 2.5;
-export const getBoardCellCenterX = (reelIndex: number) =>
-	CELL_W * (reelIndex + 0.5) +
-	(reelIndex === 0
-		? BOARD_SIDE_CONTENT_INSET * 0.5
-		: reelIndex === BOARD_DIMENSIONS.x - 1
-			? -BOARD_SIDE_CONTENT_INSET * 0.5
-			: 0);
+export const getBoardCellCenterX = (reelIndex: number) => CELL_W * (reelIndex + 0.5);
 
 export const BOARD_GRID_OFFSET_Y = 0;
 

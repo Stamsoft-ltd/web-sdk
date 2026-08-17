@@ -13,10 +13,10 @@
 	import { getContext } from '../game/context';
 	import {
 		BOARD_DIMENSIONS,
-		SYMBOL_H,
 		BOARD_GRID_OFFSET_Y,
 		BOARD_SIDE_CONTENT_INSET,
 		CELL_W,
+		CELL_H,
 		COASTER_WILD_GRID_INSET,
 		getBoardCellCenterX,
 	} from '../game/constants';
@@ -74,7 +74,7 @@
 	});
 
 	const cellX = getBoardCellCenterX;
-	const cellY = (row: number) => SYMBOL_H * (row + 0.5);
+	const cellY = (row: number) => CELL_H * (row + 0.5);
 	const cellPulse = (reel: number, row: number) =>
 		(pulsingKeys.includes(`${reel},${row}`) ? 1.14 : 1) * (isCellWinning(reel, row) ? winPulse : 1);
 	// Same cell-cut pattern as Mega Wilds: the existing BoardFrame remains visible through every
@@ -89,9 +89,9 @@
 			for (let row = 0; row < BOARD_DIMENSIONS.y; row += 1) {
 				graphics.rect(
 					CELL_W * reel + leftInset,
-					SYMBOL_H * row + COASTER_WILD_GRID_INSET,
+					CELL_H * row + COASTER_WILD_GRID_INSET,
 					CELL_W - leftInset - rightInset,
-					SYMBOL_H - COASTER_WILD_GRID_INSET * 2,
+					CELL_H - COASTER_WILD_GRID_INSET * 2,
 				);
 			}
 		}

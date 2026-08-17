@@ -60,13 +60,16 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 	// interruptible
 	const interruptible = createInterruptible();
 	// Separate escape hatch for noStop reels (anticipated spins) — resolved by forceStop().
-	let forceStopResolve: (() => void) | null = null;
+	type ForcedStopMode = 'snap' | 'settle';
+	let forceStopResolve: ((mode: ForcedStopMode) => void) | null = null;
+	let pendingForcedStopMode: ForcedStopMode | null = null;
 
 	// reactive states
 	const reelY = new Tween(defaultY);
 	const reelState = $state({
 		symbols: createReelSymbols(reelOptions.initialSymbols),
 		motion: 'stopped' as SpinningReelMotion,
+		landingSequence: 0,
 		spinType: 'normal' as SpinType,
 		anticipating: false,
 		readyToSpin: () => {},
@@ -152,6 +155,9 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 	const removePaddingAndBounceBack = async () => {
 		reelState.symbols = [...targetSymbols];
 		placeY(defaultY + reelOptions.symbolHeight * reelState.spinOptions().reelBounceSizeMulti);
+		// One deterministic pulse per reel landing. UI consumers key squash presentation from this
+		// instead of sampling the short-lived `bouncing` state, which fast paths can batch away.
+		reelState.landingSequence += 1;
 		await slideY({
 			reelY: defaultY,
 			speed: reelState.spinOptions().reelBounceBackSpeed,
@@ -233,15 +239,19 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 
 		// Q: When to skip the slideDown?
 		// A: When it's preSpinning(isSpinning) and stop button is clicked(isTurbo) and is noStop is false
-		let wasForced = false;
+		let forcedStopMode: ForcedStopMode | null = null;
 		if (stateBet.isSuperTurbo) {
 			await slideDown();
 		} else if (noStop) {
 			// noStop reels are normally un-interruptible but can be force-stopped via forceStop().
 			const forcePromise = new Promise<void>((resolve) => {
-				forceStopResolve = () => { wasForced = true; resolve(); };
+				forceStopResolve = (mode) => {
+					forcedStopMode = mode;
+					resolve();
+				};
 			});
-			await Promise.race([slideDown(), forcePromise]);
+			if (pendingForcedStopMode) forceStopResolve(pendingForcedStopMode);
+			else await Promise.race([slideDown(), forcePromise]);
 			forceStopResolve = null;
 		} else if ((stateBet.isTurbo || stateBet.isSuperTurbo) && isSpinning) {
 			// skip
@@ -249,12 +259,26 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 			await interruptible.add(slideDown);
 		}
 
-		if (wasForced) {
+		if (forcedStopMode === 'snap') {
 			// Snapped by forceStop — settle symbols immediately without bounce.
 			reelState.symbols = [...targetSymbols];
 			placeY(defaultY);
 			reelState.motion = 'stopped';
+			reelState.landingSequence += 1;
 			updateAllReelSymbolState('land');
+			pendingForcedStopMode = null;
+			return;
+		}
+
+		if (forcedStopMode === 'settle') {
+			// Scatter cap reached: discard long anticipation padding, but retain the authored landing
+			// bounce/squash so the remaining reels stop like an ordinary reel rather than snapping.
+			reelState.motion = 'bouncing';
+			onSpinFinishing();
+			await removePaddingAndBounceBack();
+			reelState.motion = 'stopped';
+			updateAllReelSymbolState('land');
+			pendingForcedStopMode = null;
 			return;
 		}
 
@@ -352,6 +376,7 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 		reelState.spinType = prepareToSpinOptions.spinType;
 
 		noStop = prepareToSpinOptions.noStop;
+		pendingForcedStopMode = null;
 		prevSymbols = targetSymbols;
 		targetPaddingPosition = prepareToSpinOptions.paddingPosition;
 		targetSymbols = createReelSymbols(prepareToSpinOptions.symbols);
@@ -403,7 +428,20 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 	// Interrupts even noStop (anticipated) reels. Use when the player explicitly skips.
 	const forceStop = () => {
 		interruptible.interrupt();
-		forceStopResolve?.();
+		pendingForcedStopMode = 'snap';
+		forceStopResolve?.('snap');
+		if (isPreSpinning) placeY(defaultY);
+	};
+
+	// Ends a mathematically exhausted anticipation without the long no-stop padding. Unlike an
+	// explicit player skip, this keeps the normal landing bounce and symbol squash.
+	const releaseAnticipation = () => {
+		interruptible.interrupt();
+		// The cap means anticipation is over. Use the ordinary spin's bounce/landing tuning for the
+		// remaining reel instead of retaining the anticipated reel's sharper stop profile.
+		reelState.spinType = 'normal';
+		pendingForcedStopMode = 'settle';
+		forceStopResolve?.('settle');
 		if (isPreSpinning) placeY(defaultY);
 	};
 
@@ -429,6 +467,7 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 		spin,
 		stop,
 		forceStop,
+		releaseAnticipation,
 		setSymbolsWithRawSymbols,
 		readyToSpinEffect,
 	};

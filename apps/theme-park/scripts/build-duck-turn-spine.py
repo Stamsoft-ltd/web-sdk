@@ -99,13 +99,13 @@ GLASSES_REAR_SHOW_POSE = 48
 # Hue values use Pillow's 0..255 HSV range. None keeps the authored purple.
 RING_VARIANTS = {
     1: {"hue": None, "star": True, "striped": False, "value": 1.0, "saturation": 0},
-    2: {"hue": 77, "star": False, "striped": True, "value": 1.10, "saturation": 190},
-    3: {"hue": 238, "star": True, "striped": True, "value": 1.08, "saturation": 175},
-    4: {"hue": 2, "star": False, "striped": True, "value": 1.16, "saturation": 210},
+    2: {"hue": 77, "star": False, "striped": False, "value": 1.10, "saturation": 190},
+    3: {"hue": 238, "star": True, "striped": False, "value": 1.08, "saturation": 175},
+    4: {"hue": 2, "star": False, "striped": False, "value": 1.16, "saturation": 210},
     5: {"hue": 76, "star": True, "striped": False, "value": 1.20, "saturation": 210},
-    6: {"hue": 153, "star": True, "striped": True, "value": 1.12, "saturation": 190},
+    6: {"hue": 153, "star": True, "striped": False, "value": 1.12, "saturation": 190},
     7: {"hue": 18, "star": True, "striped": False, "value": 1.35, "saturation": 225},
-    8: {"hue": 1, "star": False, "striped": True, "value": 1.22, "saturation": 220},
+    8: {"hue": 1, "star": False, "striped": False, "value": 1.22, "saturation": 220},
 }
 
 
@@ -388,17 +388,9 @@ def recolour_ring(ring: Image.Image, variant: int) -> Image.Image:
             if a <= 8 or star_exclusion[y, x]:
                 continue
 
-            # Diagonal highlights make striped variants wrap around the torus
-            # instead of reading as a flat screen-space barcode.
-            stripe_phase = x + round((y - FRAME_SIZE * 0.62) * 0.42)
-            white_stripe = bool(config["striped"]) and ((stripe_phase + 17) // 47) % 2 == 0
-            if white_stripe:
-                target_h, target_s = 0, min(12, round(s * 0.08))
-                target_v = min(255, round(v * 1.13))
-            else:
-                target_h = int(config["hue"])
-                target_s = min(int(config["saturation"]), round(s * 1.15))
-                target_v = min(255, round(v * float(config["value"])))
+            target_h = int(config["hue"])
+            target_s = min(int(config["saturation"]), round(s * 1.15))
+            target_v = min(255, round(v * float(config["value"])))
 
             rr, gg, bb = colorsys.hsv_to_rgb(
                 target_h / 255,
@@ -1084,7 +1076,7 @@ def build_skeleton(frames: dict[str, Image.Image]) -> None:
 
     skeleton = {
         "skeleton": {
-            "hash": "duck-your-luck-turn-v18-correct-temple-wide-rear",
+            "hash": "duck-your-luck-turn-v19-solid-floaties",
             "spine": "4.2.0",
             "x": -FRAME_SIZE / 2,
             "y": -FRAME_SIZE / 2,

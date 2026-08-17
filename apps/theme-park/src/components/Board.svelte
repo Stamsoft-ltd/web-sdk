@@ -17,6 +17,7 @@
 	import { getContext } from '../game/context';
 	import {
 		CELL_W,
+		CELL_H,
 		SYMBOL_W,
 		SYMBOL_H,
 		BOARD_DIMENSIONS,
@@ -30,15 +31,12 @@
 		winSpriteKeyByName,
 		getSpecialSymbolKey,
 	} from '../game/utils';
-	import {
-		duckFrontAssetKeyForPosition,
-		duckLookForPosition,
-		duckVariantForPosition,
-	} from '../game/duckVisual';
+	import { duckLookForPosition, duckVariantForPosition } from '../game/duckVisual';
 	import type { RawSymbol, SymbolName } from '../game/types';
 	import DuckPondDuck from './DuckPondDuck.svelte';
+	import LandingSquish from './LandingSquish.svelte';
 	import LoopingAssetSprite from './LoopingAssetSprite.svelte';
-	import RollerMultiplierCell from './RollerMultiplierCell.svelte';
+	import MegaWildFullReel from './MegaWildFullReel.svelte';
 
 	const LOW_SYMBOLS_SET = new Set<SymbolName>(['L1', 'L2', 'L3', 'L4', 'L5']);
 	const DUCK_SYMBOL_SIZE = Math.min(SYMBOL_W, SYMBOL_H) * 1.04;
@@ -75,9 +73,9 @@
 			for (let row = 0; row < BOARD_DIMENSIONS.y; row += 1) {
 				graphics.rect(
 					CELL_W * reel + leftInset,
-					SYMBOL_H * row + GRID_LINE_CLEARANCE,
+					CELL_H * row + GRID_LINE_CLEARANCE,
 					CELL_W - leftInset - rightInset,
-					SYMBOL_H - GRID_LINE_CLEARANCE * 2,
+					CELL_H - GRID_LINE_CLEARANCE * 2,
 				);
 			}
 		}
@@ -104,6 +102,10 @@
 	const getDuckCollectPrize = (reel: number, row: number) =>
 		duckCollectPrizeByCell.get(`${reel},${row}`) ?? null;
 	const duckStyleSeed = (rawSymbol: RawSymbol) => rawSymbol.duckStyleSeed ?? 0;
+	const duckVariant = (rawSymbol: RawSymbol, position: Position) =>
+		rawSymbol.duckVariant ?? duckVariantForPosition(position, duckStyleSeed(rawSymbol));
+	const duckLook = (rawSymbol: RawSymbol, position: Position) =>
+		rawSymbol.duckLook ?? duckLookForPosition(position, duckStyleSeed(rawSymbol));
 	const isDuckCollectRevealing = (reel: number, row: number) =>
 		duckRevealCellSet.has(`${reel},${row}`);
 	const isDuckCollectTurned = (reel: number, row: number) =>
@@ -135,6 +137,15 @@
 		rowIndex < BOARD_DIMENSIONS.y &&
 		!rawSymbol.persistent &&
 		!coasterCellSet.has(`${reelIndex},${rowIndex}`);
+	const isRollerReelWinning = (reelIndex: number, reelMultiplier: number) =>
+		board[reelIndex]?.reelState.symbols.some(
+			(symbol) =>
+				symbol.symbolState === 'win' && symbol.rawSymbol.reelMultiplier === reelMultiplier,
+		) ?? false;
+	const reelBounceDurationMs = (reelIndex: number) => {
+		const options = board[reelIndex].reelState.spinOptions();
+		return (CELL_H * options.reelBounceSizeMulti) / options.reelBounceBackSpeed;
+	};
 	const getSpriteKey = (
 		rawSymbol: RawSymbol,
 		state: string | undefined,
@@ -150,10 +161,7 @@
 			return getSpecialSymbolKey('wild', layoutType);
 		}
 		if (name === 'DC')
-			return duckFrontAssetKeyForPosition(
-				{ reel: reelIndex, row: rowIndex },
-				duckStyleSeed(rawSymbol),
-			);
+			return `duckPondDuck${duckVariant(rawSymbol, { reel: reelIndex, row: rowIndex })}`;
 		if (name === 'S_DUCK') return getSpecialSymbolKey('duckScatter', layoutType);
 		if (name === 'S_ROLLER') return getSpecialSymbolKey('rollerScatter', layoutType);
 		if (name === 'S_COASTER') return getSpecialSymbolKey('coasterScatter', layoutType);
@@ -297,54 +305,68 @@
 						<!-- Settled Roller cells are the multiplier itself, not a Mega Wild symbol with a
 						     badge over it. This lives inside the moving reel symbol loop, so the unchanged
 						     plaques roll out naturally on the following spin. -->
-						{#if isRollerMultiplierCell(reelSymbol.rawSymbol, reelIndex, symbolIndex - 1)}
-							<RollerMultiplierCell
-								x={getX(reelIndex)}
-								{y}
-								contentScale={0.9 * (isWin ? winPulse : 1)}
-								alpha={hasWinState && !isWin ? 0.35 : 1}
-								text={`${reelSymbol.rawSymbol.reelMultiplier}X`}
-							/>
-						{:else if reelSymbol.rawSymbol.name === 'DC'}
-							<DuckPondDuck
-								x={getX(reelIndex)}
-								{y}
-								size={DUCK_SYMBOL_SIZE}
-								variant={duckVariantForPosition(
-									position,
-									duckStyleSeed(reelSymbol.rawSymbol),
-								)}
-								look={duckLookForPosition(position, duckStyleSeed(reelSymbol.rawSymbol))}
-								prize={duckPrize ? { kind: duckPrize.kind, value: duckPrize.value } : null}
-								revealing={isDuckCollectRevealing(reelIndex, symbolIndex - 1)}
-								turned={isDuckCollectTurned(reelIndex, symbolIndex - 1)}
-								batch={context.stateGame.duckRevealBatch}
-								alpha={hasWinState && !isWin ? 0.35 : 1}
-								onrevealcomplete={() => finishDuckCollectReveal(position)}
-							/>
-						{:else if animationKey}
-							<LoopingAssetSprite
-								{animationKey}
-								{fallbackKey}
-								restartKey={`${reelSymbol.rawSymbol.name}:${reelSymbol.symbolState}`}
-								x={getX(reelIndex)}
-								{y}
-								anchor={{ x: 0.5, y: 0.5 }}
-								width={SYMBOL_W * (isWin ? winPulse : 1)}
-								height={SYMBOL_H * (isWin ? winPulse : 1)}
-								alpha={hasWinState && !isWin ? 0.35 : 1}
-							/>
-						{:else}
-							<Sprite
-								key={fallbackKey}
-								x={getX(reelIndex)}
-								{y}
-								anchor={{ x: 0.5, y: 0.5 }}
-								width={SYMBOL_W * (isWin ? winPulse : 1)}
-								height={SYMBOL_H * (isWin ? winPulse : 1)}
-								alpha={hasWinState && !isWin ? 0.35 : 1}
-							/>
-						{/if}
+						<LandingSquish
+							trigger={reel.reelState.landingSequence}
+							x={getX(reelIndex)}
+							{y}
+							durationMs={reelBounceDurationMs(reelIndex)}
+						>
+							{#if isRollerMultiplierCell(reelSymbol.rawSymbol, reelIndex, symbolIndex - 1)}
+								{#if symbolIndex - 1 === Math.floor(BOARD_DIMENSIONS.y / 2)}
+									<MegaWildFullReel
+										x={getX(reelIndex)}
+										{y}
+										fakeMultiplier={reelSymbol.rawSymbol.reelMultiplier ?? 1}
+										multiplier={reelSymbol.rawSymbol.reelMultiplier ?? 1}
+										animationName={!reelSymbol.rawSymbol.rollerExpanded
+											? 'intro'
+											: isRollerReelWinning(reelIndex, reelSymbol.rawSymbol.reelMultiplier ?? 1)
+												? 'win'
+												: 'idle'}
+										alpha={hasWinState &&
+										!isRollerReelWinning(reelIndex, reelSymbol.rawSymbol.reelMultiplier ?? 1)
+											? 0.35
+											: 1}
+									/>
+								{/if}
+							{:else if reelSymbol.rawSymbol.name === 'DC'}
+								<DuckPondDuck
+									x={getX(reelIndex)}
+									{y}
+									size={DUCK_SYMBOL_SIZE}
+									variant={duckVariant(reelSymbol.rawSymbol, position)}
+									look={duckLook(reelSymbol.rawSymbol, position)}
+									prize={duckPrize ? { kind: duckPrize.kind, value: duckPrize.value } : null}
+									revealing={isDuckCollectRevealing(reelIndex, symbolIndex - 1)}
+									turned={isDuckCollectTurned(reelIndex, symbolIndex - 1)}
+									batch={context.stateGame.duckRevealBatch}
+									alpha={hasWinState && !isWin ? 0.35 : 1}
+									onrevealcomplete={() => finishDuckCollectReveal(position)}
+								/>
+							{:else if animationKey}
+								<LoopingAssetSprite
+									{animationKey}
+									{fallbackKey}
+									restartKey={`${reelSymbol.rawSymbol.name}:${reelSymbol.symbolState}`}
+									x={getX(reelIndex)}
+									{y}
+									anchor={{ x: 0.5, y: 0.5 }}
+									width={SYMBOL_W * (isWin ? winPulse : 1)}
+									height={SYMBOL_H * (isWin ? winPulse : 1)}
+									alpha={hasWinState && !isWin ? 0.35 : 1}
+								/>
+							{:else}
+								<Sprite
+									key={fallbackKey}
+									x={getX(reelIndex)}
+									{y}
+									anchor={{ x: 0.5, y: 0.5 }}
+									width={SYMBOL_W * (isWin ? winPulse : 1)}
+									height={SYMBOL_H * (isWin ? winPulse : 1)}
+									alpha={hasWinState && !isWin ? 0.35 : 1}
+								/>
+							{/if}
+						</LandingSquish>
 					{/if}
 				{/each}
 			{/if}

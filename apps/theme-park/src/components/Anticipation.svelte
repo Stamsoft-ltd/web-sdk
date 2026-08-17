@@ -1,43 +1,38 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Container, Sprite, PIXI } from 'pixi-svelte';
+	import { Container, Graphics, Sprite, PIXI } from 'pixi-svelte';
 
 	import type { Reel } from '../game/stateGame.svelte';
 	import { CELL_W, BOARD_SIZES, BOARD_GRID_OFFSET_Y, getBoardCellCenterX } from '../game/constants';
 	import { getContext } from '../game/context';
 
 	type Props = { reel: Reel; oncomplete: () => void };
+	type Point = { x: number; y: number };
+
 	const props: Props = $props();
 	const context = getContext();
 	const board = $derived(context.stateGameDerived.boardLayout());
 
-	// ── Marquee strips ───────────────────────────────────────────────────────────────────────────
-	//
-	// The anticipating reel is framed by a pair of vertical bulb strips sitting on its column
-	// borders, pulsing between warm amber and full white — the park's marquee lights picking out
-	// the reel everyone is waiting on. This replaced the Forest Gang leaf-and-beam Spine, so the
-	// intro/loop/out lifecycle survives as a plain alpha envelope: fade in, blink while the reel
-	// spins, fade out once it stops.
-
-	/** The strip art is 29x488 (12 bulbs cut from the board pad's rail — see assets.ts); stretched
-	 * to the grid's height it keeps its own aspect for width, which lands the rendered bulb size
-	 * and spacing on the frame's own. */
-	const STRIP_ASPECT = 29 / 488;
-	const stripHeight = BOARD_SIZES.height;
-	const stripWidth = stripHeight * STRIP_ASPECT;
-	/** Whole-strip pulse rate. Fast enough to read as blinking, slow enough not to strobe. */
-	const BLINK_HZ = 3.1;
-	const FADE_IN_S = 0.2;
-	const FADE_OUT_S = 0.25;
-	/** The dim half of the pulse. NEUTRAL, because the strip's bulbs are multicoloured — a tinted
-	 * dim (the old amber) multiplies into the art and turns the blue and green bulbs muddy. */
-	const DIM = { r: 0x82, g: 0x82, b: 0x82 };
+	const MAX_SCATTERS = 3;
+	const FRAME_WIDTH = CELL_W * 1.02;
+	const FRAME_HEIGHT = BOARD_SIZES.height * 1.015;
+	const FADE_IN_S = 0.18;
+	const FADE_OUT_S = 0.24;
+	const PULSE_HZ = 0.28;
+	const CHASE_SPEED = 0.075;
+	const CHASE_COLOURS = [0x39ddff, 0xff4cdd, 0xffbe38, 0xffffff];
 
 	let completed = false;
 	const complete = () => {
 		if (completed) return;
 		completed = true;
 		props.oncomplete();
+	};
+
+	const stopAtScatterCap = () => {
+		if (context.stateGame.scatterCounter < MAX_SCATTERS) return false;
+		complete();
+		return true;
 	};
 
 	let fading = $state<'in' | 'out'>('in');
@@ -48,10 +43,13 @@
 		if (context.stateGame.anticipationSkipped) {
 			props.reel.forceStop();
 			complete();
+			return;
 		}
+		stopAtScatterCap();
 	});
 
 	$effect(() => {
+		if (stopAtScatterCap()) return;
 		if (props.reel.reelState.motion === 'stopped') fading = 'out';
 	});
 
@@ -63,8 +61,6 @@
 		},
 	});
 
-	// Driven off the application ticker for the same reason as <PaylineRibbon>: a private rAF would
-	// run at panel rate, out of phase with the frames <SceneAnimationDriver> actually renders.
 	$effect(() => {
 		const app = context.stateApp.pixiApplication;
 		if (!app) return;
@@ -84,14 +80,71 @@
 		return () => app.ticker.remove(tick, null);
 	});
 
-	// The blink is a tint, not an alpha: the bars stay solid while their light swells from dimmed to
-	// full, which is how a real marquee reads (the bulb never vanishes, its glow does the work).
-	const tint = $derived.by(() => {
-		const t = 0.5 + 0.5 * Math.sin(time * Math.PI * 2 * BLINK_HZ);
-		const r = Math.round(DIM.r + (0xff - DIM.r) * t);
-		const g = Math.round(DIM.g + (0xff - DIM.g) * t);
-		const b = Math.round(DIM.b + (0xff - DIM.b) * t);
-		return (r << 16) | (g << 8) | b;
+	const pulse = $derived(0.5 + 0.5 * Math.sin(time * Math.PI * 2 * PULSE_HZ));
+	const intro = $derived(Math.min(1, time / FADE_IN_S));
+	const introEase = $derived(1 - Math.pow(1 - intro, 3));
+	const baseHeight = $derived(FRAME_HEIGHT * (0.94 + introEase * 0.06));
+	const glowWidth = $derived(FRAME_WIDTH * (1.012 + pulse * 0.016));
+	const glowHeight = $derived(baseHeight * (1.006 + pulse * 0.01));
+	const glowAlpha = $derived(0.08 + pulse * 0.14);
+
+	const pointOnPerimeter = (progress: number): Point => {
+		const left = -FRAME_WIDTH * 0.46;
+		const right = FRAME_WIDTH * 0.46;
+		const top = -FRAME_HEIGHT * 0.465;
+		const bottom = FRAME_HEIGHT * 0.465;
+		const width = right - left;
+		const height = bottom - top;
+		const total = 2 * (width + height);
+		let distance = (((progress % 1) + 1) % 1) * total;
+
+		if (distance <= width) return { x: left + distance, y: top };
+		distance -= width;
+		if (distance <= height) return { x: right, y: top + distance };
+		distance -= height;
+		if (distance <= width) return { x: right - distance, y: bottom };
+		distance -= width;
+		return { x: left, y: bottom - distance };
+	};
+
+	const drawMotion = $derived.by(() => {
+		const now = time;
+		const flare = 0.5 + 0.5 * Math.sin(now * Math.PI * 2 * 0.24);
+		return (graphics: PIXI.Graphics) => {
+			graphics.clear();
+
+			// Bright bulbs chase around all four sides instead of blinking two static rails.
+			for (let index = 0; index < 18; index += 1) {
+				const position = pointOnPerimeter(index / 18 + now * CHASE_SPEED);
+				const colour = CHASE_COLOURS[index % CHASE_COLOURS.length];
+				graphics.circle(position.x, position.y, 4.8).fill({ color: colour, alpha: 0.12 });
+				graphics.circle(position.x, position.y, 2.2).fill({ color: colour, alpha: 0.48 });
+				graphics.circle(position.x, position.y, 0.9).fill({ color: 0xffffff, alpha: 0.95 });
+			}
+
+			// Independent ignition beats make the authored top and bottom caps feel alive.
+			const top = -FRAME_HEIGHT * 0.458;
+			const bottom = FRAME_HEIGHT * 0.458;
+			graphics.circle(0, top, 11 + flare * 5).fill({ color: 0xffd45b, alpha: 0.08 + flare * 0.1 });
+			graphics.circle(0, top, 3.3 + flare * 1.2).fill({ color: 0xffffff, alpha: 0.65 });
+			graphics
+				.circle(0, bottom, 14 + flare * 7)
+				.fill({ color: 0xff38d4, alpha: 0.08 + flare * 0.11 });
+			graphics.circle(0, bottom, 4 + flare * 1.5).fill({ color: 0xffffff, alpha: 0.72 });
+
+			// Small upward sparks. Deterministic phases avoid allocation/random jitter every frame.
+			for (let index = 0; index < 8; index += 1) {
+				const phase = (now * 0.12 + index * 0.137) % 1;
+				const side = index % 2 === 0 ? -1 : 1;
+				const x = side * (FRAME_WIDTH * 0.48 + Math.sin(now * 1.8 + index) * 3);
+				const y = FRAME_HEIGHT * (0.44 - phase * 0.88);
+				const sparkAlpha = Math.sin(phase * Math.PI) * 0.7;
+				graphics.circle(x, y, 0.8 + (index % 3) * 0.3).fill({
+					color: index % 2 === 0 ? 0x48ddff : 0xffcf4a,
+					alpha: sparkAlpha,
+				});
+			}
+		};
 	});
 </script>
 
@@ -101,21 +154,21 @@
 	y={board.y + BOARD_GRID_OFFSET_Y}
 	{alpha}
 >
-	<!-- One strip either side of the column, INSIDE its borders — the bars frame the symbols with a
-	     small gap to the grid line, per the design mocks, rather than straddling the line itself.
-	     The SAME inset on every reel: the edge reels used to sink theirs 18px deep so the old thin
-	     strip cleared the frame's rounded rail, which read as the strips hugging the symbols on
-	     reels 1 and 5 while sitting on the grid lines elsewhere. The rail-matched strip art can
-	     sit beside the frame rail, so the special case is gone. -->
-	{#each [-1, 1] as side (side)}
-		{@const offset = CELL_W * 0.5 - stripWidth * 0.5 - 6}
-		<Sprite
-			key="anticipationStrip"
-			anchor={0.5}
-			x={side * offset * board.boardScale}
-			width={stripWidth * board.boardScale}
-			height={stripHeight * board.boardScale}
-			{tint}
-		/>
-	{/each}
+	<Sprite
+		key="anticipationFrame"
+		anchor={0.5}
+		width={FRAME_WIDTH * board.boardScale}
+		height={baseHeight * board.boardScale}
+	/>
+	<Sprite
+		key="anticipationFrame"
+		anchor={0.5}
+		width={glowWidth * board.boardScale}
+		height={glowHeight * board.boardScale}
+		alpha={glowAlpha}
+		blendMode="add"
+	/>
+	<Container scale={board.boardScale}>
+		<Graphics blendMode="add" draw={drawMotion} />
+	</Container>
 </Container>

@@ -1,7 +1,9 @@
 import { BOARD_DIMENSIONS } from './constants';
 import type { Position } from './types';
 
-export const DUCK_VARIANT_COUNT = 8;
+// Only solid floaties: authored variants 1, 5, 7, 8. Variant 1/5/7 retain their optional star;
+// striped 2/3/4/6 never enter runtime selection.
+export const DUCK_SOLID_VARIANTS = [1, 5, 7, 8] as const;
 export const DUCK_ACCESSORY_COLOR_COUNT = 4;
 export const DUCK_LOOK_COUNT = 1 + DUCK_ACCESSORY_COLOR_COUNT * 2 + DUCK_ACCESSORY_COLOR_COUNT ** 2;
 
@@ -14,7 +16,7 @@ const seededDuckValue = (eventId: number, duckIndex: number, salt: number) => {
 	return (value ^ (value >>> 16)) >>> 0;
 };
 
-const seededChoice = (eventId: number, duckIndex: number, salt: number, count: number) =>
+export const seededEventChoice = (eventId: number, duckIndex: number, salt: number, count: number) =>
 	seededDuckValue(eventId, duckIndex, salt) % count;
 
 /**
@@ -22,25 +24,21 @@ const seededChoice = (eventId: number, duckIndex: number, salt: number, count: n
  * independently random for the combined look.
  */
 export const duckLookForIndex = (eventId: number, duckIndex: number) => {
-	const style = seededChoice(eventId, duckIndex, 1, 4);
-	const firstColor = seededChoice(eventId, duckIndex, 2, DUCK_ACCESSORY_COLOR_COUNT);
-	const secondColor = seededChoice(eventId, duckIndex, 3, DUCK_ACCESSORY_COLOR_COUNT);
+	const style = seededEventChoice(eventId, duckIndex, 1, 4);
+	const firstColor = seededEventChoice(eventId, duckIndex, 2, DUCK_ACCESSORY_COLOR_COUNT);
+	const secondColor = seededEventChoice(eventId, duckIndex, 3, DUCK_ACCESSORY_COLOR_COUNT);
 	if (style === 0) return 0;
 	if (style === 1) return 1 + firstColor;
 	if (style === 2) return 1 + DUCK_ACCESSORY_COLOR_COUNT + firstColor;
-	return (
-		1 +
-		DUCK_ACCESSORY_COLOR_COUNT * 2 +
-		firstColor * DUCK_ACCESSORY_COLOR_COUNT +
-		secondColor
-	);
+	return 1 + DUCK_ACCESSORY_COLOR_COUNT * 2 + firstColor * DUCK_ACCESSORY_COLOR_COUNT + secondColor;
 };
 
 export const duckVariantForIndex = (eventId: number, duckIndex: number) =>
-	1 + seededChoice(eventId, duckIndex, 4, DUCK_VARIANT_COUNT);
+	DUCK_SOLID_VARIANTS[
+		seededEventChoice(eventId, duckIndex, 4, DUCK_SOLID_VARIANTS.length)
+	]!;
 
-const positionIndex = ({ reel, row }: Position) =>
-	reel * BOARD_DIMENSIONS.y + Math.max(0, row);
+const positionIndex = ({ reel, row }: Position) => reel * BOARD_DIMENSIONS.y + Math.max(0, row);
 
 /** Stable reel-cell variant for one reveal-event lifecycle, including the following roll-out. */
 export const duckVariantForPosition = (position: Position, eventId = 0) =>
@@ -49,6 +47,3 @@ export const duckVariantForPosition = (position: Position, eventId = 0) =>
 /** Stable look for reel-owned ducks, seeded by the reveal event rather than render timing. */
 export const duckLookForPosition = (position: Position, eventId = 0) =>
 	duckLookForIndex(eventId, positionIndex(position));
-
-export const duckFrontAssetKeyForPosition = (position: Position, eventId = 0) =>
-	`duckPondDuck${duckVariantForPosition(position, eventId)}`;

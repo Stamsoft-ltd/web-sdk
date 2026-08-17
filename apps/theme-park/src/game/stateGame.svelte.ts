@@ -17,7 +17,7 @@ import { stateLayoutDerived } from './stateLayout';
 import { winLevelMap } from './winLevelMap';
 import { eventEmitter } from './eventEmitter';
 import {
-	SYMBOL_SIZE,
+	CELL_H,
 	BOARD_SIZES,
 	INITIAL_BOARD,
 	BOARD_DIMENSIONS,
@@ -41,7 +41,7 @@ const onSymbolLand = ({ rawSymbol }: { rawSymbol: RawSymbol }) => {
 const board = _.range(BOARD_DIMENSIONS.x).map((reelIndex) => {
 	const reel = createReelForSpinning({
 		reelIndex,
-		symbolHeight: SYMBOL_SIZE,
+		symbolHeight: CELL_H,
 		initialSymbols: INITIAL_BOARD[reelIndex],
 		initialSymbolState: INITIAL_SYMBOL_STATE,
 		onReelStopping: () => {
@@ -105,12 +105,11 @@ export const stateGame = $state({
 		picks: DuckPickRevealed[];
 		finalAmount: number | null;
 	},
-	// Roller Wilds result metadata for THIS spin only. The actual multiplier-only plaques live on
-	// board symbols so they can remain idle, then roll out unchanged with the following spin.
+	// Roller Wilds result metadata for THIS spin only. The overlay owns the full-reel art through
+	// paylines; the authored reveal symbols stay unchanged beneath it and roll on the next spin.
 	activeRollerReels: [] as RollerReel[],
 	// Roller Wilds animation: cells (`${reel},${row}`) the descending car has already cleared, so
-	// <Board> hides the original symbol behind it as the car passes (before the apply makes the whole
-	// reel wild).
+	// <Board> hides the original symbols while the overlay owns the transformed reel presentation.
 	rollerClearedCells: [] as string[],
 	// Mega Coaster: persistent wild tiles (Position → multiplier), persists across the bonus
 	coasterTiles: [] as CoasterTile[],
@@ -298,7 +297,8 @@ const resetBonusState = () => {
 	stateGame.bonusType = null;
 	stateGame.expandedSymbol = null;
 	stateGame.expandedSymbolWon = false;
-	stateGame.paylineWins = [];
+	// Paylines are per-spin presentation, not bonus metadata. They persist through finalWin/outro and
+	// are cleared by the next reveal immediately before reel motion begins.
 	stateGame.duckCollect = null;
 	stateGame.duckRunningTotal = 0;
 	stateGame.duckPicks = null;

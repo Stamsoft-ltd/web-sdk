@@ -154,19 +154,22 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(game).not.toContain("import LoopingSpineSprite from './LoopingSpineSprite.svelte'");
 	});
 
-	it('draws one screen-wide rail per row and one cart per authored puke', () => {
+	it('draws one screen-wide rail per row and at least fifteen mixed carts', () => {
 		const presenter = source('components/CoasterSetupPresenter.svelte');
 
-		expect(presenter).not.toContain('MIN_CARTS_PER_LINE');
+		expect(presenter).toContain('const MIN_CART_COUNT = 15');
+		expect(presenter).toContain('const MAX_EXTRA_CARTS = 7');
 		expect(presenter).toContain('ROWS.flatMap((row) =>');
 		expect(presenter).toContain('return impacts.map((impact, lane) =>');
 		expect(presenter).toContain('return { row, launchDelayUnits, impact }');
+		expect(presenter).toContain('impact: null');
+		expect(presenter).toContain('const extraCount = Math.max(\n\t\t\t1,');
 		expect(presenter).not.toContain('groupsByReel');
 		expect(presenter).toContain('const MIN_CART_GAP_UNITS = 1.35');
 		expect(presenter).toContain('const CART_GAP_VARIANCE_UNITS = 0.35');
-		expect(presenter).toContain(
-			'launchDelayUnits += MIN_CART_GAP_UNITS + Math.random() * CART_GAP_VARIANCE_UNITS',
-		);
+		expect(presenter).toContain('lane * (MIN_CART_GAP_UNITS + CART_GAP_VARIANCE_UNITS)');
+		expect(presenter).toContain('seededValue(seed, lane + row * 7, 1)');
+		expect(presenter).not.toContain('Math.random');
 		expect(presenter).toContain('route.launchDelayUnits * timing.stagger');
 		expect(presenter).toContain('tilesMap = { ...tilesMap, [key]: impact.multiplier }');
 		expect(presenter).toContain('{#each ROWS as row (row)}');
@@ -185,20 +188,18 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		const presenter = source('components/CoasterSetupPresenter.svelte');
 
 		expect(presenter).not.toContain('decorativeVomitReel');
-		expect(presenter).toContain(
-			'const impactAt = durationForDistance(startX, cellX(route.impact.reel), timing)',
-		);
-		expect(presenter).toContain(
-			'const vomitStartAt = Math.max(0, impactAt - clipPlaybackMs * 0.5)',
-		);
-		expect(presenter).toContain('const vomitEndAt = vomitStartAt + clipPlaybackMs');
-		expect(presenter).toContain("cart.state = 'vomit'");
+		expect(presenter).toContain('const impactAt = route.impact');
+		expect(presenter).toContain('route.impact && routeTime >= route.vomitStartAt');
+		expect(presenter).toContain("? 'vomit'");
 		expect(presenter).toContain('pulseWild(route.impact, run, timing)');
 		expect(presenter).not.toContain('impactsByReel');
 		expect(presenter).not.toContain('routeEvents');
 		expect(presenter).not.toContain('vomitRun');
-		expect(presenter).toContain('const movement = drive({');
-		expect(presenter).toContain('duration: durationForDistance(startX, endX, timing)');
+		expect(presenter).toContain(
+			'const movementDuration = durationForDistance(startX, endX, timing)',
+		);
+		expect(presenter).toContain('const playTimeline = async');
+		expect(presenter).toContain('cart.x = route.startX +');
 		expect(presenter).not.toContain('x: cellX(reel)');
 		expect(presenter).toContain('assetKey="coasterVomitSpine"');
 		expect(presenter).toContain("animationName={cart.state === 'vomit' ? 'vomit' : 'idle'}");
@@ -218,7 +219,7 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(presenter).toContain('const SETUP_SPEED_BOOST = 1.69');
 		expect(presenter).toContain('Initial setup reveal only');
 		expect(presenter).toContain('Free-spin reel timing is owned elsewhere and remains unchanged');
-		expect(presenter).toContain('const SEQUENCE_SPEED = 0.9 * SETUP_SPEED_BOOST');
+		expect(presenter).toContain('const SEQUENCE_SPEED = 0.9 * SETUP_SPEED_BOOST * 0.85');
 		expect(presenter).toContain('const DUCK_PLAYBACK_SPEED = 4.5 * SETUP_SPEED_BOOST');
 		expect(presenter).toContain('const VOMIT_SOURCE_MS = 4500');
 		expect(presenter).toContain(
@@ -233,17 +234,20 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(presenter).toContain('pulseDown: Math.round((170 / SETUP_SPEED_BOOST) * factor)');
 	});
 
-	it('supports click and Space skip without leaving animated carts behind', () => {
+	it('fast-forwards the shared cart timeline per vomit and skips after the final one', () => {
 		const presenter = source('components/CoasterSetupPresenter.svelte');
 
 		expect(presenter).toContain('skipAllowedAt = performance.now() + 140');
 		expect(presenter).toContain("event.code !== 'Space' || !sequenceActive");
 		expect(presenter).toContain("window.addEventListener('click', onClick, { capture: true })");
-		expect(presenter).toContain(
-			'Promise.race([task.then(() => true), skipSignal.then(() => false)])',
-		);
-		expect(presenter).toContain('tilesMap = finalTileMap()');
-		expect(presenter).toContain('cart.x.set(cart.x.current, { duration: 0 })');
+		expect(presenter).toContain('requestNextVomit()');
+		expect(presenter).toContain('requestedImpactIndexes.add(index)');
+		expect(presenter).toContain('timelineOffsetMs += Math.max(0, dueAt - timelineNow)');
+		expect(presenter).toContain('finishRequested = true');
+		expect(presenter).toContain('carts.forEach((cart) => (cart.visible = false))');
+		expect(presenter).toContain('if (!finishRequested) await waitForTimeout(timing.outro)');
+		expect(presenter).toContain('completeImpact(route.impactIndex)');
+		expect(presenter).not.toContain('finalTileMap()');
 	});
 
 	it('reuses one lightweight exact-size Wild presentation before and after handoff', () => {
@@ -295,7 +299,7 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(background).toContain('COASTER_WILD_GRID_INSET');
 		expect(background).toContain('const EDGE_LOCAL_INSET = BOARD_SIDE_CONTENT_INSET * 0.5');
 		expect(background).toContain('CELL_W - leftInset - rightInset');
-		expect(background).toContain('SYMBOL_H - COASTER_WILD_GRID_INSET * 2');
+		expect(background).toContain('CELL_H - COASTER_WILD_GRID_INSET * 2');
 		expect(background).not.toContain('EDGE_OVERLAP');
 		expect(background).not.toContain('coverTopEdge');
 		expect(background).not.toContain('coverBottomEdge');
@@ -311,23 +315,23 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(board).toContain('<Graphics isMask draw={drawBoardContentMask} />');
 		expect(board).toContain('reel === 0 ? BOARD_SIDE_CONTENT_INSET : GRID_LINE_CLEARANCE');
 		expect(board).toContain('CELL_W - leftInset - rightInset');
-		expect(board).toContain('SYMBOL_H - GRID_LINE_CLEARANCE * 2');
-		expect(board).toContain(
-			"!coasterCellSet.has(`${reelIndex},${symbolIndex - 1}`)",
-		);
-		expect(constants).toContain('export const BOARD_SIDE_CONTENT_INSET = 18');
+		expect(board).toContain('CELL_H - GRID_LINE_CLEARANCE * 2');
+		expect(board).toContain('!coasterCellSet.has(`${reelIndex},${symbolIndex - 1}`)');
+		expect(constants).toContain('export const BOARD_SIDE_CONTENT_INSET = 1.4');
 		expect(constants).toContain('export const COASTER_WILD_GRID_INSET = 2.5');
 		expect(constants).toContain('export const getBoardCellCenterX =');
-		expect(constants).toContain('? BOARD_SIDE_CONTENT_INSET * 0.5');
+		expect(constants).toContain('CELL_W * (reelIndex + 0.5)');
+		expect(constants).not.toContain('? BOARD_SIDE_CONTENT_INSET * 0.5');
 		expect(persistent).toContain('for (let reel = 0; reel < BOARD_DIMENSIONS.x; reel += 1)');
 		expect(persistent).toContain('for (let row = 0; row < BOARD_DIMENSIONS.y; row += 1)');
 		expect(presenter).toContain('for (const row of ROWS)');
 
-		// Normal Wild video, settled Roller plaque, and only the persistent Coaster Wild content pulse.
+		// Normal Wild video, settled full-reel Roller rig, and persistent Coaster Wild content pulse.
 		expect(board).toContain("return 'tpWildAnim'");
 		expect(board).toContain('width={SYMBOL_W * (isWin ? winPulse : 1)}');
-		expect(board).toContain('contentScale={0.9 * (isWin ? winPulse : 1)}');
-		expect(board).toContain('<RollerMultiplierCell');
+		expect(board).toContain('<MegaWildFullReel');
+		expect(board).toContain('animationName={!reelSymbol.rawSymbol.rollerExpanded');
+		expect(board).toContain(': isRollerReelWinning(');
 		expect(persistent).toContain('isCellWinning(reel, row) ? winPulse : 1');
 		expect(persistent).toContain(
 			'alpha={hasWinState && !isCellWinning(tile.reel, tile.row) ? 0.35 : 1}',
@@ -338,7 +342,7 @@ describe('Mega Coaster screen-wide setup animation', () => {
 	it('startup-loads the generated rig and keeps the supplied key art as fallback', () => {
 		const assets = source('game/assets.ts');
 		const start = assets.indexOf('coasterVomitSpine:');
-		const end = assets.indexOf('rollerWildCarStill:', start);
+		const end = assets.indexOf('megaWildFullReelFallback:', start);
 		const block = assets.slice(start, end);
 
 		expect(start).toBeGreaterThan(-1);

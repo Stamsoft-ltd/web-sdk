@@ -74,6 +74,29 @@ describe('shared frontend completeness guards', () => {
 		expect(boardKeyForMultiplier(1000)).toBe('winLegendary');
 	});
 
+	it('loops paylines until the next physical spin starts', () => {
+		const events = source('src/game/bookEventHandlerMap.ts');
+		const actor = source('src/game/actor.ts');
+		const state = source('src/game/stateGame.svelte.ts');
+		const neon = source('src/components/NeonPaylines.svelte');
+		const finalWin = events.slice(events.indexOf('finalWin: async'), events.indexOf('freeSpinTrigger: async'));
+		const reveal = events.slice(events.indexOf('reveal: async'), events.indexOf('winInfo: async'));
+
+		expect(finalWin).not.toContain('stateGame.paylineWins = []');
+		expect(state.slice(state.indexOf('const resetBonusState'))).not.toContain(
+			'stateGame.paylineWins = []',
+		);
+		expect(reveal).toContain('stateGame.paylineWins = []');
+		expect(reveal.indexOf('stateGame.paylineWins = []')).toBeLessThan(
+			reveal.indexOf('stateGameDerived.enhancedBoard.spin'),
+		);
+		expect(actor).toMatch(/onNewGameStart:[\s\S]*stateGame\.paylineWins = \[\]/);
+		expect(neon).toContain('app.ticker.add(tick');
+		expect(neon).toContain('time = elapsed / 1000');
+		expect(neon).toContain('const cycleTime = elapsed % cycleMs');
+		expect(neon).toContain('lineAlpha = 0');
+	});
+
 	it('keeps the initial reel contract identical to seven-row reveal boards', () => {
 		expect(INITIAL_BOARD).toHaveLength(5);
 		for (const reel of INITIAL_BOARD) expect(reel).toHaveLength(7);

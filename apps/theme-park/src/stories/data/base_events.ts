@@ -59,9 +59,9 @@ const events = {
 		index: 0,
 		type: 'rollerWildsApply',
 		reels: [
-			{ reel: 0, triggerRow: 3, multiplier: 1, multipliers: [] },
-			{ reel: 2, triggerRow: 3, multiplier: 2, multipliers: [{ row: 1, multiplier: 2 }] },
-			{ reel: 3, triggerRow: 1, multiplier: 3, multipliers: [{ row: 4, multiplier: 3 }] },
+			{ reel: 0, triggerRow: 3, fakeMultiplier: 5, multiplier: 1 },
+			{ reel: 2, triggerRow: 3, fakeMultiplier: 10, multiplier: 2 },
+			{ reel: 3, triggerRow: 1, fakeMultiplier: 2, multiplier: 3 },
 		],
 	},
 	// Current math contract: one trigger wild per affected reel. The event expands them.

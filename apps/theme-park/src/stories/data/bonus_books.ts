@@ -132,9 +132,9 @@ const buildRollerBonusEvents = (): BookEvent[] => {
 				index: 0,
 				type: 'rollerWildsApply',
 				reels: [
-					{ reel: 1, triggerRow: 4, multiplier: 5, multipliers: [{ row: 0, multiplier: 5 }] },
-					{ reel: 2, triggerRow: 1, multiplier: 10, multipliers: [{ row: 4, multiplier: 10 }] },
-					{ reel: 4, triggerRow: 2, multiplier: 1, multipliers: [] },
+					{ reel: 1, triggerRow: 4, fakeMultiplier: 2, multiplier: 5 },
+					{ reel: 2, triggerRow: 1, fakeMultiplier: 25, multiplier: 10 },
+					{ reel: 4, triggerRow: 2, fakeMultiplier: 5, multiplier: 1 },
 				],
 			});
 			totalWin += 3000;
@@ -176,9 +176,7 @@ const buildRollerBonusEvents = (): BookEvent[] => {
 			events.push({
 				index: 0,
 				type: 'rollerWildsApply',
-				reels: [
-					{ reel: 0, triggerRow: 3, multiplier: 2, multipliers: [{ row: 0, multiplier: 2 }] },
-				],
+				reels: [{ reel: 0, triggerRow: 3, fakeMultiplier: 10, multiplier: 2 }],
 			});
 			totalWin += 200;
 			events.push({

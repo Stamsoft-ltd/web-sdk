@@ -63,6 +63,9 @@
 	// of the win box. Board-space layers are deliberately left at 0: the vines are drawn after the
 	// wild badges there and should stay that way, or a wild's cell patch cuts the line in half.
 	const PRESENTATION_Z = 10;
+	// Above every board-space feature, below win/bonus presentation. The border is visual containment;
+	// it never participates in board sizing or reel placement.
+	const BOARD_BORDER_Z = 6;
 
 	const t = (key: string) => i18nDerived.translate?.(key) ?? key;
 
@@ -442,13 +445,25 @@
 				<Sound />
 
 				<MainContainer zIndex={0}>
-					<BoardFrame />
+					<BoardFrame layer="base" />
 				</MainContainer>
 
 				<MainContainer>
 					<Board />
 					<Anticipations />
 				</MainContainer>
+
+				<!-- Settled Mega Wild reels sit above the authored grid/frame but below paylines.
+				     During their intro the overlay raises its own z-index over the whole board. -->
+				<RollerWildsOverlay />
+
+				<!-- Independent top rail: same authored look as the original board, with current cell/grid
+				     geometry untouched. It also covers edge-reel art at the rounded board corners. -->
+				<Container zIndex={BOARD_BORDER_Z}>
+					<MainContainer>
+						<BoardFrame layer="border" />
+					</MainContainer>
+				</Container>
 
 				{#if context.stateGame.paylineWins.length > 0}
 					<MainContainer>
@@ -466,7 +481,6 @@
 
 				<!-- Theme Park overlays (board-space first, then full-screen) -->
 				<PersistentWildBadges />
-				<RollerWildsOverlay />
 				<DuckCollectPresenter />
 				<CoasterSetupPresenter />
 				<DuckPondBonus />

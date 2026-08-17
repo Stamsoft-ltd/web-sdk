@@ -745,10 +745,12 @@ const books: StoryBook[] = [
    "reels": [
     {
      "reel": 1,
+     "fakeMultiplier": 5,
      "multiplier": 2
     },
     {
      "reel": 2,
+     "fakeMultiplier": 5,
      "multiplier": 3
     }
    ],

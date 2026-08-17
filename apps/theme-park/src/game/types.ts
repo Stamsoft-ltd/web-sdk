@@ -27,23 +27,28 @@ export type RawSymbol = {
 	name: SymbolName;
 	multiplier?: number;
 	reelMultiplier?: number;
+	// Client-only: final Roller reel rig has already played its rails + duck/plaque roll reveal.
+	rollerExpanded?: boolean;
 	wild?: boolean;
 	scatter?: boolean;
 	duck?: boolean;
 	persistent?: boolean;
 	rollerTrigger?: boolean;
-	// Client-only deterministic Duck art seed copied from the reveal event index.
+	// Client-only deterministic Duck art copied from the reveal event. Persisting the resolved
+	// values prevents a moving reel symbol from changing style when its temporary row index shifts.
 	duckStyleSeed?: number;
+	duckVariant?: number;
+	duckLook?: number;
 };
 
 export type Position = { reel: number; row: number };
 
-export type RollerRowMultiplier = { row: number; multiplier: number };
 export type RollerReel = {
 	reel: number;
 	triggerRow: number;
+	fakeMultiplier: number;
 	multiplier: number;
-	multipliers: RollerRowMultiplier[];
+	initialReal: boolean;
 };
 
 export type BetMode = 'BASE' | 'ANTE' | 'FSPIN1' | 'FSPIN2' | 'DUCK' | 'ROLLER' | 'COASTER';

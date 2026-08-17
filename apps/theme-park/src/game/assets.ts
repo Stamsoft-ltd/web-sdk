@@ -18,9 +18,32 @@ const assets: Assets = {
 	// The pad carries its own 5x5 grid lines, so <Board> no longer strokes them. New filename rather
 	// than a ?v= on the old one, so a cached board.png cannot survive the swap.
 	themeBoard: { type: 'sprite', src: './assets/theme-park/v2/board-lines.webp' },
+	// Borderless runtime board. Grid and opaque board background stay; all light rails are removed.
+	themeBoardBorderless: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/board-lines-borderless.webp',
+	},
+	themeBoardGrid: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/board-grid-backboard.webp',
+	},
+	// Opaque purple rail/shadow stays below reel content. The matching expanded asset is lights-only
+	// and stays above it, so neither layer changes or visually trims the equal-cell gameplay rect.
+	themeBoardBorderBackdrop: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/board-border-backdrop.png',
+	},
+	themeBoardBorderExpanded: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/board-border-expanded.png',
+	},
 	// The autoplay pad: same rect and same grid lines, but a clean neon outline in place of the
 	// bulbs, so the lights running round that outline are the only thing moving on the border.
 	themeBoardAuto: { type: 'sprite', src: './assets/theme-park/v2/board-auto.webp' },
+	themeBoardAutoBorderless: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/board-auto-borderless.webp',
+	},
 	// One white radial glow, tinted per light. Drawing the lights as sprites rather than as a
 	// Graphics rebuilt every frame is what keeps autoplay at 60fps — the geometry rebuild cost 7ms a
 	// frame, moving sprites costs nothing.
@@ -191,17 +214,16 @@ const assets: Assets = {
 			scale: 1,
 		},
 	},
-	rollerWildCarStill: {
+	megaWildFullReelFallback: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-wild-car.png',
+		src: './assets/spines/megaWildFullReel/mega_wild_full_reel_fallback.png',
 	},
-	// Startup-gated: a Roller Wild can land on the first spin. Deferring this rig caused the static
-	// fallback to swap to frame zero halfway down the track.
-	rollerWildCarSpine: {
+	// Combined Mega Wild: empty rails, then one duck/cart/plaque slide and multiplier roll.
+	megaWildFullReelSpine: {
 		type: 'spine',
 		src: {
-			atlas: './assets/sprites/rollerCar/roller_car.atlas',
-			skeleton: './assets/sprites/rollerCar/roller_car_spine.json',
+			atlas: './assets/spines/megaWildFullReel/mega_wild_full_reel.atlas',
+			skeleton: './assets/spines/megaWildFullReel/mega_wild_full_reel.json',
 			scale: 1,
 		},
 	},
@@ -214,10 +236,6 @@ const assets: Assets = {
 		type: 'sprite',
 		src: './assets/theme-park/v2/animations/features/coaster-car-vomit.webm',
 		defer: true,
-	},
-	rollerWildRail: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/features/roller-wild-rail.png',
 	},
 	tpDuckScatterDesktop: {
 		type: 'sprite',
@@ -534,15 +552,13 @@ const assets: Assets = {
 		type: 'sprite',
 		src: './assets/theme-park/v2/duckpond/duck_8.webp',
 	},
-
-	// Marquee bulb strip: a pair of these frames the anticipating reel and blinks (Anticipation).
-	// Built FROM the board pad's own right-hand bulb rail (mirrored about the bulb column to
-	// restore the edge-clipped halos, tiled to 12 bulbs) so the strip matches the frame's bulbs
-	// exactly — the previous light_strip.webp art read as a different fixture.
-	anticipationStrip: {
+	// Full-reel Theme Park marquee. The clear centre leaves live symbols visible while its separate
+	// Pixi light chase/glow layers animate the generated frame around all four sides.
+	anticipationFrame: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/features/rail_strip.webp',
+		src: './assets/theme-park/v2/features/anticipation-frame-v2.webp',
 	},
+
 	// Forest Gang's production intro/idle panel. Reused for free-spin intro/outro
 	// instead of drawing three rounded Pixi rectangles.
 	fsIntro: {

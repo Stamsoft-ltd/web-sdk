@@ -12,6 +12,7 @@ import { eventEmitter } from './eventEmitter';
 import { playBookEvent } from './utils';
 import config from './config';
 import { BOARD_DIMENSIONS } from './constants';
+import { duckLookForPosition, duckVariantForPosition, seededEventChoice } from './duckVisual';
 
 const getWinLevelData = (winLevel: number): WinLevelData => {
 	const clamped = Math.min(10, Math.max(1, Math.round(winLevel))) as WinLevel;
@@ -67,6 +68,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
 		// WIN is per spin, not the cumulative bonus total.
 		stateGame.roundWin = 0;
+		// Capture before base-game reset clears the metadata. The overlay has its own local reels and
+		// otherwise survived into the next spin because the later length check could no longer see it.
+		const hadActiveRollerReels = stateGame.activeRollerReels.length > 0;
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
 		const hasAnticipation = bookEvent.anticipation?.some(Boolean);
 		if (isBonusGame || hasAnticipation) eventEmitter.broadcast({ type: 'stopButtonEnable' });
@@ -95,18 +99,26 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		const hadPendingStop = stateGame.pendingStop && stateGame.awaitingFirstReveal;
 		stateGame.awaitingFirstReveal = false;
 		stateGame.pendingStop = false;
+		const rollerRollOutPromise = hadActiveRollerReels
+			? eventEmitter.broadcastAsync({ type: 'rollerWildsRollOut' })
+			: Promise.resolve();
 		stateGame.activeRollerReels = [];
 
 		// Bind Duck art to the reveal event itself. Old reel symbols keep their prior seed while they
 		// roll out; the next spin cannot restyle them merely by starting.
 		const seededRevealEvent = {
 			...bookEvent,
-			board: bookEvent.board.map((reel) =>
-				reel.map((symbol) =>
-					symbol.name === 'DC' || symbol.name === 'S_DUCK'
-						? { ...symbol, duckStyleSeed: bookEvent.index }
-						: symbol,
-				),
+			board: bookEvent.board.map((reel, reelIndex) =>
+				reel.map((symbol, symbolIndex) => {
+					if (symbol.name !== 'DC' && symbol.name !== 'S_DUCK') return symbol;
+					const position = { reel: reelIndex, row: symbolIndex - 1 };
+					return {
+						...symbol,
+						duckStyleSeed: bookEvent.index,
+						duckVariant: duckVariantForPosition(position, bookEvent.index),
+						duckLook: duckLookForPosition(position, bookEvent.index),
+					};
+				}),
 			),
 		};
 		const spinPromise = stateGameDerived.enhancedBoard.spin({
@@ -114,7 +126,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			paddingBoard: config.paddingReels[bookEvent.gameType],
 		});
 		if (hadPendingStop) stateGameDerived.enhancedBoard.stop();
-		await spinPromise;
+		await Promise.all([spinPromise, rollerRollOutPromise]);
 		stateGame.hasAnticipationPending = false;
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
 	},
@@ -180,7 +192,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateBet.winBookEventAmount = bookEvent.amount;
 		stateGame.roundWin = bookEvent.amount;
 		eventEmitter.broadcast({ type: 'winHide' });
-		stateGame.paylineWins = [];
+		// Keep winning paths mounted and ticking after the count-up/result event. The next reveal owns
+		// their teardown immediately before the reels start, so paylines never vanish during the idle
+		// result hold between spins.
 		stateGame.bonusSummaryShown = false;
 		if (stateGame.gameType === 'basegame') {
 			stateGameDerived.resetBonusState();
@@ -404,22 +418,15 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 	// ── Roller Wilds: trigger lands, animation plays, then reel transforms ─────
 	rollerWildsApply: async (bookEvent: BookEventOfType<'rollerWildsApply'>) => {
-		const reels: RollerReel[] = bookEvent.reels.map((entry) => {
-			const triggerRow = entry.triggerRow ?? 2;
-			// Legacy books repeat the final reel multiplier on all five W cells.
-			// That is one reel value, not five values to add. New books may supply
-			// sparse row multipliers explicitly for the apply → sum presentation.
-			const multipliers = Array.isArray(entry.multipliers)
-				? entry.multipliers.map((value) => ({ ...value }))
-				: [{ row: triggerRow, multiplier: entry.multiplier }];
-			const summedMultiplier = multipliers.reduce((sum, value) => sum + value.multiplier, 0);
-			return {
-				reel: entry.reel,
-				triggerRow,
-				multiplier: Math.max(1, summedMultiplier || entry.multiplier),
-				multipliers,
-			};
-		});
+		const reels: RollerReel[] = bookEvent.reels.map((entry) => ({
+			reel: entry.reel,
+			triggerRow: entry.triggerRow ?? 2,
+			// Legacy books lacked the fake first face. Keep them playable until math is regenerated.
+			fakeMultiplier: Math.max(1, entry.fakeMultiplier ?? entry.multiplier),
+			multiplier: Math.max(1, entry.multiplier),
+			// Stable in live/replay and independent per reel. Salt isolates this from duck cosmetics.
+			initialReal: seededEventChoice(bookEvent.index, entry.reel, 17, 2) === 1,
+		}));
 
 		// reveal handler has already awaited the reel stop. Animation therefore
 		// always starts after the complete board has settled. Pop every landed Mega Wild first so
@@ -436,24 +443,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 
 		await eventEmitter.broadcastAsync({ type: 'rollerWildsShow', reels });
-
-		for (const roller of reels) {
-			for (let row = 0; row < 5; row += 1) {
-				const symbol = stateGame.board[roller.reel]?.reelState.symbols[row + 1];
-				if (!symbol) continue;
-				symbol.rawSymbol = {
-					name: 'W',
-					wild: true,
-					reelMultiplier: roller.multiplier,
-				};
-				symbol.symbolState = 'static';
-			}
-		}
 		stateGame.activeRollerReels = reels;
-		// Board now owns these multiplier-only reel symbols. Mount that identical presentation before
-		// removing the feature overlay; on the next spin the same symbols move out with the reel.
+		// Keep the authored reveal symbols intact underneath the full-reel presentation. The math uses
+		// its transformed copy for payout; mutating the client board left five fake Wild cells behind
+		// when the full-reel art was removed.
 		await tick();
-		eventEmitter.broadcast({ type: 'rollerWildsHide' });
+		await eventEmitter.broadcastAsync({ type: 'rollerWildsHandoff' });
 	},
 
 	// ── Mega Coaster setup (after freeSpinTrigger, before first freegame reveal) ─
@@ -462,6 +457,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			type: 'coasterSetupShow',
 			pukes: bookEvent.pukes,
 			tiles: bookEvent.tiles,
+			seed: bookEvent.index,
 		});
 		stateGame.coasterTiles = bookEvent.tiles;
 		eventEmitter.broadcast({ type: 'coasterSetupHide' });

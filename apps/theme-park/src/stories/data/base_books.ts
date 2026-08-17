@@ -130,7 +130,7 @@ const baseRollerWildEvents: BookEvent[] = [
 	{
 		index: 1,
 		type: 'rollerWildsApply',
-		reels: [{ reel: 1, triggerRow: 4, multiplier: 2, multipliers: [{ row: 1, multiplier: 2 }] }],
+		reels: [{ reel: 1, triggerRow: 4, fakeMultiplier: 10, multiplier: 2 }],
 	},
 	{
 		index: 2,

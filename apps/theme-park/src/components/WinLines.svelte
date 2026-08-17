@@ -6,7 +6,7 @@
 
 	import BoardContainer from './BoardContainer.svelte';
 	import { getContext } from '../game/context';
-	import { BOARD_GRID_OFFSET_Y, SYMBOL_SIZE } from '../game/constants';
+	import { BOARD_GRID_OFFSET_Y, CELL_H, getBoardCellCenterX } from '../game/constants';
 
 	const context = getContext();
 
@@ -20,8 +20,8 @@
 	// Center of a symbol in board pixel space.
 	// pos.reel 0-4, pos.row 1-4 (math uses ROW_OFFSET=1 so row 1 = top visible row)
 	const center = (pos: Position) => ({
-		x: (pos.reel + 0.5) * SYMBOL_SIZE,
-		y: (pos.row - 1 + 0.5) * SYMBOL_SIZE,
+		x: getBoardCellCenterX(pos.reel),
+		y: (pos.row - 1 + 0.5) * CELL_H,
 	});
 
 	context.eventEmitter.subscribeOnMount({

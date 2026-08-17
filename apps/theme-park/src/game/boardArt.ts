@@ -1,16 +1,18 @@
 /**
  * How the pad art sits over the reel grid.
  *
- * board-lines.webp is 1462x972 and paints its own 5x5 grid; those lines put the playable rect at
- * 15.5..1435.5 x 41.5..941.5, i.e. a 1420x900 grid. Sizing the art off THAT rect rather than off
- * the whole image is what lands the painted lines exactly on the cell boundaries <Board> spins
- * symbols through — the two agree because both are fifths of the same rect.
+ * board-lines.webp is 1462x972. Its internal vertical dividers are exactly 284px apart at
+ * x=300/584/868/1152, so the true equal-cell grid runs x=16..1436. The border therefore owns
+ * 16px outside the first/last cells instead of consuming their width. Vertical bounds remain
+ * y=41.5..941.5.
  *
  * BoardFrame alone needs these values. Wild covers now use a local opaque cell fill; cloning and
  * masking this full board texture for every persistent Wild was a major GPU cost.
  */
 export const ART = { width: 1462, height: 972 };
-export const ART_GRID = { left: 15.5, top: 41.5, right: 1435.5, bottom: 941.5 };
+export const ART_GRID = { left: 16, top: 41.5, right: 1436, bottom: 941.5 };
+// Exact non-transparent bounds of the separated authored light rail, including bulb glow.
+export const ART_RAIL = { left: 21, top: 16, right: 1425, bottom: 958 };
 
 export const FRAME_OVER_GRID_X = ART.width / (ART_GRID.right - ART_GRID.left);
 export const FRAME_OVER_GRID_Y = ART.height / (ART_GRID.bottom - ART_GRID.top);

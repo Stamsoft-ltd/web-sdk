@@ -46,7 +46,7 @@ describe('Duck Your Luck Spine rig', () => {
 
 	it('exports sixty-four short-side turn frames and separate depth layers for every ring', () => {
 		expect(skeleton.skeleton.spine).toBe('4.2.0');
-		expect(skeleton.skeleton.hash).toBe('duck-your-luck-turn-v18-correct-temple-wide-rear');
+		expect(skeleton.skeleton.hash).toBe('duck-your-luck-turn-v19-solid-floaties');
 		expect(buildScript).toContain('if pose_index == 0:');
 		expect(buildScript).toContain('Duck turn opening frame changed');
 		expect(buildScript).toContain('def motion_interpolate_poses(source_poses: list[Image.Image])');
@@ -203,15 +203,15 @@ describe('Duck Your Luck Spine rig', () => {
 		expect(slotNames.indexOf('glasses_back')).toBeLessThan(slotNames.indexOf('duck_pose'));
 		expect(slotNames.indexOf('glasses_front')).toBeGreaterThan(slotNames.indexOf('duck_pose'));
 		expect(slotNames.indexOf('glasses_rear')).toBeGreaterThan(slotNames.indexOf('duck_pose'));
-		expect(
-			named(skeleton.animations.look_back_idle_1.slots.glasses_rear.attachment),
-		).toHaveLength(2);
-		expect(
-			named(skeleton.animations.look_back_idle_1.slots.glasses_back.attachment),
-		).toHaveLength(0);
-		expect(
-			named(skeleton.animations.look_back_idle_1.slots.glasses_front.attachment),
-		).toHaveLength(0);
+		expect(named(skeleton.animations.look_back_idle_1.slots.glasses_rear.attachment)).toHaveLength(
+			2,
+		);
+		expect(named(skeleton.animations.look_back_idle_1.slots.glasses_back.attachment)).toHaveLength(
+			0,
+		);
+		expect(named(skeleton.animations.look_back_idle_1.slots.glasses_front.attachment)).toHaveLength(
+			0,
+		);
 	});
 
 	it('keeps one opaque pose visible while the ring moves on independent bones', () => {
@@ -231,10 +231,9 @@ describe('Duck Your Luck Spine rig', () => {
 		expect(turn.bones.ring).toHaveProperty('rotate');
 	});
 
-	it('varies floatie decoration and overlaps both depth arcs without a moving seam', () => {
+	it('uses only solid floaties and overlaps both depth arcs without a moving seam', () => {
 		expect(buildScript).toMatch(/1: \{"hue": None, "star": True, "striped": False/);
-		expect(buildScript).toMatch(/2: \{"hue": 77, "star": False, "striped": True/);
-		expect(buildScript).toMatch(/3: \{"hue": 238, "star": True, "striped": True/);
+		expect(buildScript).not.toContain('"striped": True');
 		expect(buildScript).toContain('def remove_star_badge(ring: Image.Image)');
 		expect(buildScript).toContain('depth_overlap = 2');
 		expect(buildScript).toContain('if y < boundary + depth_overlap:');
@@ -321,6 +320,7 @@ describe('Duck Your Luck Spine rig', () => {
 		expect(source).not.toContain('Math.random');
 		expect(visual).toContain('seededDuckValue');
 		expect(visual).toContain('duckLookForIndex = (eventId: number, duckIndex: number)');
+		expect(visual).toContain('DUCK_SOLID_VARIANTS = [1, 5, 7, 8]');
 		expect(visual).not.toContain('Math.random');
 		expect(handler).toContain('seed: bookEvent.index');
 		expect(duck).toContain('bookEventAmountToCurrencyString((props.prize?.value ?? 0) * 100)');
@@ -384,8 +384,9 @@ describe('Duck Your Luck Spine rig', () => {
 		expect(board).toContain("rawSymbol.name === 'DC'");
 		expect(board).toContain('<DuckPondDuck');
 		expect(board).toContain('duckVariantForPosition');
-		expect(board).toContain('duckStyleSeed(reelSymbol.rawSymbol)');
-		expect(board).toContain('look={duckLookForPosition(position, duckStyleSeed(reelSymbol.rawSymbol))}');
+		expect(board).toContain('rawSymbol.duckVariant ??');
+		expect(board).toContain('rawSymbol.duckLook ??');
+		expect(board).toContain('look={duckLook(reelSymbol.rawSymbol, position)}');
 		expect(board).not.toContain('directPrefix=');
 		expect(board).toContain('onrevealcomplete=');
 		expect(board).toContain("type: 'duckCollectRevealComplete'");
@@ -422,11 +423,14 @@ describe('Duck Your Luck Spine rig', () => {
 		expect(assets).toContain('duckPondTurn:');
 		expect(assets).not.toContain('duckPresentSpine:');
 		expect(board).toContain("rawSymbol.name === 'DC'");
-		expect(board).toContain("if (name === 'S_DUCK') return getSpecialSymbolKey('duckScatter', layoutType)");
-		expect(board).toContain('duckFrontAssetKeyForPosition');
+		expect(board).toContain(
+			"if (name === 'S_DUCK') return getSpecialSymbolKey('duckScatter', layoutType)",
+		);
+		expect(board).toContain('`duckPondDuck${duckVariant(rawSymbol');
 		expect(board).toContain('duckLookForPosition');
 		expect(board).not.toContain('LoopingSpineSprite');
-		expect(handler).toContain('? { ...symbol, duckStyleSeed: bookEvent.index }');
+		expect(handler).toContain('duckVariant: duckVariantForPosition(position, bookEvent.index)');
+		expect(handler).toContain('duckLook: duckLookForPosition(position, bookEvent.index)');
 		expect(board).not.toMatch(/revealedDuckCollectCellSet|underDuckCollect/);
 		expect(board).not.toContain("assetKey: 'duckPresentSpine'");
 		expect(assets).toContain("src: './assets/theme-park/v2/modes/duck-your-luck-desktop.png'");

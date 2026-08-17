@@ -3,70 +3,47 @@
 
 	export type EmitterEventRollerWilds =
 		| { type: 'rollerWildsShow'; reels: RollerReel[] }
+		| { type: 'rollerWildsHandoff' }
+		| { type: 'rollerWildsRollOut' }
 		| { type: 'rollerWildsHide' };
 </script>
 
 <script lang="ts">
-	import { Tween } from 'svelte/motion';
-	import { cubicOut, linear } from 'svelte/easing';
 	import { onMount, tick } from 'svelte';
-	import { Container, Graphics, PIXI, Sprite } from 'pixi-svelte';
+	import { Container, Graphics, PIXI } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
+	import { stateBet } from 'state-shared';
 	import { waitForTimeout } from 'utils-shared/wait';
 
 	import { getContext } from '../game/context';
 	import {
 		CELL_W,
-		SYMBOL_W,
-		SYMBOL_H,
+		CELL_H,
 		BOARD_DIMENSIONS,
-		BOARD_SIZES,
+		BOARD_CORNER_RADIUS,
 		BOARD_GRID_OFFSET_Y,
-		BOARD_SIDE_CONTENT_INSET,
-		ROLLER_CAR_H,
-		ROLLER_CAR_W,
 		getBoardCellCenterX,
 	} from '../game/constants';
-	import CoasterWildBackground from './CoasterWildBackground.svelte';
-	import LoopingSpineSprite from './LoopingSpineSprite.svelte';
-	import RollerMultiplierCell from './RollerMultiplierCell.svelte';
+	import MegaWildFullReel from './MegaWildFullReel.svelte';
 
-	type RollerPhase =
-		| 'hidden'
-		| 'ready'
-		| 'dropping'
-		| 'contributions'
-		| 'summing'
-		| 'spreading'
-		| 'settled';
+	type RollerPhase = 'hidden' | 'ready' | 'revealing' | 'settled' | 'rollingOut';
 
 	const context = getContext();
 	const layout = $derived(context.stateGameDerived.boardLayout());
 
 	let triggerReels = $state<RollerReel[]>([]);
+	let revealedReelCount = $state(0);
+	type RollOutAnchor = { symbolY: () => number; startY: number };
+	let rollOutAnchors = $state(new Map<number, RollOutAnchor>());
 	let phase = $state<RollerPhase>('hidden');
-	let carYs = $state<Record<number, Tween<number>>>({});
-	let revealedRows = $state<Record<number, number[]>>({});
-	let finalizedRows = $state<Record<number, number[]>>({});
-	let rowScales = $state<Record<string, Tween<number>>>({});
-	let combineTweens = $state<Record<number, Tween<number>>>({});
-	let totalAlphas = $state<Record<number, Tween<number>>>({});
-	let totalScales = $state<Record<number, Tween<number>>>({});
+	let presentationOwner = $state<'overlay' | 'board'>('overlay');
 
 	const ROWS = Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => row);
-	const SPREAD_ORDER = [2, 1, 3, 0, 4];
-	const CAR_START_Y = -ROLLER_CAR_H * 0.22;
-	const CAR_END_Y = BOARD_SIZES.height + ROLLER_CAR_H * 0.46;
-	const RIDE_CLIP_MS = 480;
-	const CART_READY_MS = 180;
-	const CAR_DESCENT_MS = 650;
-	const RIDE_TIME_SCALE = RIDE_CLIP_MS / CAR_DESCENT_MS;
-	const REEL_CENTER_Y = (SYMBOL_H * BOARD_DIMENSIONS.y) / 2;
-	const GRID_LINE_CLEARANCE = 1.4;
-	// BoardFrame is behind the reel stage. These outer clearances reserve the visible bulb/glow area
-	// so the cart and rails appear to pass behind that frame instead of painting over it.
-	const FRAME_LIGHT_CLEARANCE_X = 31;
-	const FRAME_LIGHT_CLEARANCE_Y = 16;
+	const INTRO_MS = 1990;
+	// Normal mode completes the entire expand/cart/plaque timeline before mounting the next reel.
+	// Fast/turbo bypass this sequence and mount every affected reel in one batch.
+	const REEL_STAGGER_MS = INTRO_MS;
+	const REEL_CENTER_Y = (CELL_H * BOARD_DIMENSIONS.y) / 2;
 
 	let sequenceActive = $state(false);
 	let skipRequested = false;
@@ -89,28 +66,66 @@
 		return completed && !skipRequested;
 	};
 
-	const contributionFor = (roller: RollerReel, row: number) => {
-		const explicit = roller.multipliers.find((entry) => entry.row === row)?.multiplier;
-		// Empty rows are neutral multipliers, not zero multipliers. The final applied reel value still
-		// comes from the math event; 1X communicates that an empty row does not erase the combination.
-		return explicit ?? 1;
+	const setClearedReels = (reels: RollerReel[]) => {
+		context.stateGame.rollerClearedCells = reels.flatMap(({ reel }) =>
+			ROWS.map((row) => `${reel},${row}`),
+		);
+	};
+
+	const revealTriggeredReels = async () => {
+		if (stateBet.isTurbo || stateBet.isSuperTurbo) {
+			setClearedReels(triggerReels);
+			revealedReelCount = triggerReels.length;
+			await tick();
+			return true;
+		}
+		for (let index = 0; index < triggerReels.length; index += 1) {
+			// Keep later reels untouched until their own reveal starts. The mounted full-reel symbol and
+			// cell clearing enter in one render, so expansion visibly originates at its landed trigger.
+			setClearedReels(triggerReels.slice(0, index + 1));
+			revealedReelCount = index + 1;
+			await tick();
+			if (index < triggerReels.length - 1 && !(await runOrSkip(waitForTimeout(REEL_STAGGER_MS)))) {
+				return false;
+			}
+		}
+		return true;
 	};
 
 	const showFinalPresentation = () => {
+		revealedReelCount = triggerReels.length;
+		setClearedReels(triggerReels);
 		phase = 'settled';
-		revealedRows = Object.fromEntries(triggerReels.map(({ reel }) => [reel, [...ROWS]]));
-		finalizedRows = Object.fromEntries(triggerReels.map(({ reel }) => [reel, [...ROWS]]));
-		rowScales = Object.fromEntries(
-			triggerReels.flatMap(({ reel }) => ROWS.map((row) => [`${reel},${row}`, new Tween(1)])),
-		);
-		combineTweens = Object.fromEntries(triggerReels.map(({ reel }) => [reel, new Tween(1)]));
-		totalAlphas = Object.fromEntries(triggerReels.map(({ reel }) => [reel, new Tween(1)]));
-		totalScales = Object.fromEntries(triggerReels.map(({ reel }) => [reel, new Tween(1)]));
-		context.stateGame.rollerClearedCells = triggerReels.flatMap(({ reel }) =>
-			ROWS.map((row) => `${reel},${row}`),
-		);
+		presentationOwner = 'overlay';
 		sequenceActive = false;
 	};
+
+	const rollOutOffsetY = (roller: RollerReel) => {
+		if (phase !== 'rollingOut') return 0;
+		const anchor = rollOutAnchors.get(roller.reel);
+		return anchor ? anchor.symbolY() - anchor.startY : 0;
+	};
+
+	const waitForRollOut = () =>
+		new Promise<void>((resolve) => {
+			const deadline = performance.now() + 3000;
+			const check = (now: number) => {
+				const allOutside = triggerReels.every(
+					(roller) => rollOutOffsetY(roller) >= CELL_H * BOARD_DIMENSIONS.y,
+				);
+				if (phase !== 'rollingOut' || allOutside || now >= deadline) {
+					resolve();
+					return;
+				}
+				requestAnimationFrame(check);
+			};
+			requestAnimationFrame(check);
+		});
+
+	const reelIsWinning = (reel: number) =>
+		context.stateGame.board[reel]?.reelState.symbols
+			.slice(1, BOARD_DIMENSIONS.y + 1)
+			.some((symbol) => symbol.symbolState === 'win') ?? false;
 
 	onMount(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
@@ -137,305 +152,121 @@
 		rollerWildsShow: async (event) => {
 			resetSkip();
 			sequenceActive = true;
-			triggerReels = event.reels;
+			triggerReels = [...event.reels].sort((left, right) => left.reel - right.reel);
+			revealedReelCount = 0;
+			rollOutAnchors = new Map();
+			presentationOwner = 'overlay';
 			phase = 'ready';
-			carYs = Object.fromEntries(event.reels.map(({ reel }) => [reel, new Tween(CAR_START_Y)]));
-			revealedRows = {};
-			finalizedRows = {};
-			rowScales = {};
-			combineTweens = {};
-			totalAlphas = {};
-			totalScales = {};
-			// Leave the one landed Mega Wild visible. It is replaced only when the cart reaches its row.
+
+			// Keep every trigger reel intact until that reel's own reveal begins. This prevents later
+			// normal-speed reels from sitting empty while earlier reels finish their animation.
 			context.stateGame.rollerClearedCells = [];
-
-			// All affected reels spawn a cart at the exact same top position and wave together.
 			await tick();
-			if (!(await runOrSkip(waitForTimeout(CART_READY_MS)))) {
-				showFinalPresentation();
-				return;
-			}
-
-			phase = 'dropping';
-			const descents = event.reels.map(({ reel }) =>
-				carYs[reel].set(CAR_END_Y, { duration: CAR_DESCENT_MS, easing: linear }),
-			);
-			let previousRevealMs = 0;
-
-			// Every cart descends in lockstep. Each passed symbol becomes a visible row contribution.
-			for (const row of ROWS) {
-				const revealMs = ((cellY(row) - CAR_START_Y) / (CAR_END_Y - CAR_START_Y)) * CAR_DESCENT_MS;
-				if (!(await runOrSkip(waitForTimeout(Math.max(0, revealMs - previousRevealMs))))) {
-					showFinalPresentation();
-					return;
-				}
-				previousRevealMs = revealMs;
-
-				context.stateGame.rollerClearedCells = [
-					...context.stateGame.rollerClearedCells,
-					...event.reels.map(({ reel }) => `${reel},${row}`),
-				];
-				for (const roller of event.reels) {
-					const rowKey = `${roller.reel},${row}`;
-					const scale = new Tween(0.72);
-					rowScales = { ...rowScales, [rowKey]: scale };
-					revealedRows = {
-						...revealedRows,
-						[roller.reel]: [...(revealedRows[roller.reel] ?? []), row],
-					};
-					void (async () => {
-						await scale.set(1.05, { duration: 120, easing: cubicOut });
-						await scale.set(1, { duration: 90, easing: cubicOut });
-					})();
-				}
-				context.eventEmitter.broadcast({
-					type: 'soundOnce',
-					name: 'sfx_reel_stop_2',
-					forcePlay: true,
-				});
-			}
-
-			if (!(await runOrSkip(Promise.all(descents)))) {
-				showFinalPresentation();
-				return;
-			}
-			phase = 'contributions';
-			if (!(await runOrSkip(waitForTimeout(480)))) {
-				showFinalPresentation();
-				return;
-			}
-
-			// Sum all five row contributions into one value per reel, in parallel.
-			combineTweens = Object.fromEntries(event.reels.map(({ reel }) => [reel, new Tween(0)]));
-			totalAlphas = Object.fromEntries(event.reels.map(({ reel }) => [reel, new Tween(0)]));
-			totalScales = Object.fromEntries(event.reels.map(({ reel }) => [reel, new Tween(0.68)]));
-			phase = 'summing';
+			phase = 'revealing';
 			context.eventEmitter.broadcast({
 				type: 'soundOnce',
 				name: 'sfx_scatter_win',
 				forcePlay: true,
 			});
-			if (
-				!(await runOrSkip(
-					Promise.all([
-						...event.reels.map(({ reel }) =>
-							combineTweens[reel].set(1, { duration: 420, easing: cubicOut }),
-						),
-						...event.reels.map(({ reel }) =>
-							totalAlphas[reel].set(1, { duration: 260, easing: cubicOut }),
-						),
-						...event.reels.map(({ reel }) =>
-							totalScales[reel].set(1.14, { duration: 320, easing: cubicOut }),
-						),
-					]),
-				))
-			) {
+			if (!(await revealTriggeredReels())) {
 				showFinalPresentation();
 				return;
 			}
-			await Promise.all(
-				event.reels.map(({ reel }) =>
-					totalScales[reel].set(1, { duration: 130, easing: cubicOut }),
-				),
-			);
-			if (!(await runOrSkip(waitForTimeout(320)))) {
+			if (!(await runOrSkip(waitForTimeout(INTRO_MS)))) {
 				showFinalPresentation();
 				return;
 			}
-
-			// Spread the summed value from the centre to all five cells on every affected reel.
-			phase = 'spreading';
-			for (const row of SPREAD_ORDER) {
-				for (const roller of event.reels) {
-					const rowKey = `${roller.reel},${row}`;
-					const scale = new Tween(0.68);
-					rowScales = { ...rowScales, [rowKey]: scale };
-					finalizedRows = {
-						...finalizedRows,
-						[roller.reel]: [...(finalizedRows[roller.reel] ?? []), row],
-					};
-					void (async () => {
-						await scale.set(1.08, { duration: 120, easing: cubicOut });
-						await scale.set(1, { duration: 90, easing: cubicOut });
-					})();
-				}
-				if (!(await runOrSkip(waitForTimeout(105)))) {
-					showFinalPresentation();
-					return;
-				}
-			}
-
-			phase = 'settled';
-			await runOrSkip(waitForTimeout(220));
-			sequenceActive = false;
+			showFinalPresentation();
 		},
 		rollerWildsHide: () => {
 			sequenceActive = false;
 			resolveSkip();
 			triggerReels = [];
+			revealedReelCount = 0;
+			rollOutAnchors = new Map();
+			presentationOwner = 'overlay';
 			phase = 'hidden';
-			carYs = {};
-			revealedRows = {};
-			finalizedRows = {};
-			rowScales = {};
-			combineTweens = {};
-			totalAlphas = {};
-			totalScales = {};
 			context.stateGame.rollerClearedCells = [];
+		},
+		rollerWildsRollOut: async () => {
+			if (triggerReels.length === 0) return;
+			// Anchor each overlay to one unchanged symbol from its own reel. The symbol object survives
+			// padding insertion, so symbolY follows the reel's real delay, acceleration, and ordering.
+			rollOutAnchors = new Map(
+				triggerReels.flatMap((roller) => {
+					const symbol =
+						context.stateGame.board[roller.reel]?.reelState.symbols[roller.triggerRow + 1];
+					if (!symbol) return [];
+					return [[roller.reel, { symbolY: symbol.symbolY, startY: symbol.symbolY() }] as const];
+				}),
+			);
+			sequenceActive = false;
+			phase = 'rollingOut';
+			// Reveal the live reel below the departing feature. Each full-reel overlay now rides the exact
+			// same transform as the symbols under it instead of running a separate global tween.
+			context.stateGame.rollerClearedCells = [];
+			await waitForRollOut();
+			triggerReels = [];
+			revealedReelCount = 0;
+			rollOutAnchors = new Map();
+			presentationOwner = 'overlay';
+			phase = 'hidden';
+		},
+		rollerWildsHandoff: async () => {
+			// The overlay remains the sole owner through paylines/result display. Keeping the original
+			// board masked avoids a five-Wild replacement flash and keeps the reel above authored grid art.
+			phase = 'settled';
+			revealedReelCount = triggerReels.length;
+			presentationOwner = 'overlay';
+			await tick();
 		},
 	});
 
 	const cellX = getBoardCellCenterX;
-	const cellY = (row: number) => SYMBOL_H * (row + 0.5);
-	const drawReelMask = (reel: number) => (graphics: PIXI.Graphics) => {
-		const edgeShift = BOARD_SIDE_CONTENT_INSET * 0.5;
-		const leftInset = reel === 0 ? FRAME_LIGHT_CLEARANCE_X - edgeShift : GRID_LINE_CLEARANCE;
-		const rightInset =
-			reel === BOARD_DIMENSIONS.x - 1 ? FRAME_LIGHT_CLEARANCE_X - edgeShift : GRID_LINE_CLEARANCE;
-		for (const row of ROWS) {
-			const topInset = row === 0 ? FRAME_LIGHT_CLEARANCE_Y : GRID_LINE_CLEARANCE;
-			const bottomInset =
-				row === BOARD_DIMENSIONS.y - 1 ? FRAME_LIGHT_CLEARANCE_Y : GRID_LINE_CLEARANCE;
-			graphics.rect(
-				-CELL_W * 0.5 + leftInset,
-				SYMBOL_H * row + topInset,
-				CELL_W - leftInset - rightInset,
-				SYMBOL_H - topInset - bottomInset,
-			);
-		}
-		graphics.fill(0xffffff);
-	};
-	const drawBoardContentMask = (graphics: PIXI.Graphics) => {
-		for (let reel = 0; reel < BOARD_DIMENSIONS.x; reel += 1) {
-			const leftInset = reel === 0 ? FRAME_LIGHT_CLEARANCE_X : GRID_LINE_CLEARANCE;
-			const rightInset =
-				reel === BOARD_DIMENSIONS.x - 1 ? FRAME_LIGHT_CLEARANCE_X : GRID_LINE_CLEARANCE;
-			for (const row of ROWS) {
-				const topInset = row === 0 ? FRAME_LIGHT_CLEARANCE_Y : GRID_LINE_CLEARANCE;
-				const bottomInset =
-					row === BOARD_DIMENSIONS.y - 1 ? FRAME_LIGHT_CLEARANCE_Y : GRID_LINE_CLEARANCE;
-				graphics.rect(
-					CELL_W * reel + leftInset,
-					SYMBOL_H * row + topInset,
-					CELL_W - leftInset - rightInset,
-					SYMBOL_H - topInset - bottomInset,
-				);
-			}
-		}
-		graphics.fill(0xffffff);
-	};
+	// Keep straight edges at the exact grid bounds. Only the four corners curve inward, matching the
+	// authored rail, so full-reel art cannot leak outside it without narrowing any reel.
+	const drawBoardMask = (graphics: PIXI.Graphics) =>
+		graphics
+			.roundRect(
+				0,
+				0,
+				CELL_W * BOARD_DIMENSIONS.x,
+				CELL_H * BOARD_DIMENSIONS.y,
+				BOARD_CORNER_RADIUS,
+			)
+			.fill(0xffffff);
 </script>
 
 {#if triggerReels.length > 0}
-	<MainContainer>
-		<Container
-			x={layout.x}
-			y={layout.y + BOARD_GRID_OFFSET_Y}
-			pivot={layout.pivot}
-			scale={layout.boardScale}
-			sortableChildren
-		>
-			<!-- Cell-cut mask exposes the one board-art grid beneath this feature. It also reserves the
-			     outer bulb frame, so carts and multipliers cannot cross either side border. -->
-			<Graphics isMask draw={drawBoardContentMask} />
+	<!-- Explicit stage layer. MainContainer applies zIndex only to its inner node, so without this
+	     wrapper the already-mounted BoardFrame can sort above the reveal and expose its grid lines. -->
+	<Container zIndex={phase === 'settled' ? 0 : 5}>
+		<MainContainer>
+			<Container
+				x={layout.x}
+				y={layout.y + BOARD_GRID_OFFSET_Y}
+				pivot={layout.pivot}
+				scale={layout.boardScale}
+				sortableChildren
+			>
+				<Graphics isMask draw={drawBoardMask} />
 
-			<!-- Rails exist only while a cart is on-screen. Passed cells repaint through their edges,
-			     so no rail seam can remain beneath multiplier tiles. -->
-			{#if phase === 'ready' || phase === 'dropping'}
-				{#each triggerReels as roller (`track-${roller.reel}`)}
-					<Container x={cellX(roller.reel)} zIndex={6}>
-						<Graphics isMask draw={drawReelMask(roller.reel)} />
-						{#each [-0.34, 0.34] as railOffset (railOffset)}
-							<Sprite
-								key="rollerWildRail"
-								x={SYMBOL_W * railOffset}
-								y={BOARD_SIZES.height * 0.5}
-								anchor={0.5}
-								width={SYMBOL_W * 0.12}
-								height={BOARD_SIZES.height * 1.08}
-							/>
-						{/each}
-					</Container>
-				{/each}
-			{/if}
-
-			<!-- Every affected cart spawns on the same approved frontal art, then all 48 registered
-			     release-to-vertical perspective frames play while the carts drop in lockstep. -->
-			{#if phase === 'ready' || phase === 'dropping'}
-				{#each triggerReels as roller (`cart-${roller.reel}`)}
-					<Container x={cellX(roller.reel)} zIndex={30}>
-						<!-- Fixed reel mask: cart stays behind outer lights and every slot border. -->
-						<Graphics isMask draw={drawReelMask(roller.reel)} />
-						<Container y={carYs[roller.reel]?.current ?? CAR_START_Y}>
-							<LoopingSpineSprite
-								assetKey="rollerWildCarSpine"
-								animationName={phase === 'dropping' ? 'ride' : 'idle'}
-								fallbackKey="rollerWildCarStill"
-								width={ROLLER_CAR_W}
-								height={ROLLER_CAR_H}
-								timeScale={phase === 'dropping' ? RIDE_TIME_SCALE : 1}
-								loop={false}
-								restartKey={`${roller.reel}:${phase}`}
+				{#if presentationOwner === 'overlay'}
+					{#each triggerReels.slice(0, revealedReelCount) as roller (roller.reel)}
+						<Container zIndex={18} y={rollOutOffsetY(roller)}>
+							<MegaWildFullReel
+								x={cellX(roller.reel)}
+								fakeMultiplier={roller.fakeMultiplier}
+								multiplier={roller.multiplier}
+								initialReal={roller.initialReal}
+								animationName={phase === 'revealing' ? 'intro' : 'idle'}
+								winning={phase === 'settled' && reelIsWinning(roller.reel)}
+								originY={CELL_H * (roller.triggerRow + 0.5) - REEL_CENTER_Y}
 							/>
 						</Container>
-					</Container>
-				{/each}
-			{/if}
-
-			{#each triggerReels as roller (roller.reel)}
-				{@const ct = combineTweens[roller.reel]?.current ?? 0}
-
-				<!-- Cart trail: every passed symbol is replaced with its row contribution. -->
-				{#each ROWS as row (row)}
-					{#if revealedRows[roller.reel]?.includes(row) && !finalizedRows[roller.reel]?.includes(row)}
-						<Container
-							x={cellX(roller.reel)}
-							y={cellY(row)}
-							zIndex={10}
-							scale={rowScales[`${roller.reel},${row}`]?.current ?? 1}
-						>
-							<CoasterWildBackground reel={roller.reel} />
-						</Container>
-						<RollerMultiplierCell
-							x={cellX(roller.reel)}
-							y={cellY(row)}
-							zIndex={22}
-							contentOffsetY={(REEL_CENTER_Y - cellY(row)) * ct}
-							contentScale={(rowScales[`${roller.reel},${row}`]?.current ?? 1) * 0.9}
-							alpha={1 - ct}
-							text={`${contributionFor(roller, row)}X`}
-						/>
-					{/if}
-				{/each}
-
-				<!-- The summed value appears once in the centre before spreading across the reel. -->
-				{#if phase === 'summing' || phase === 'spreading'}
-					<RollerMultiplierCell
-						x={cellX(roller.reel)}
-						y={REEL_CENTER_Y}
-						zIndex={24}
-						contentScale={totalScales[roller.reel]?.current ?? 1}
-						alpha={totalAlphas[roller.reel]?.current ?? 0}
-						text={`${roller.multiplier}X`}
-					/>
+					{/each}
 				{/if}
-
-				<!-- Final state: the summed multiplier itself fills the reel. Do not put Mega Wild art
-				     behind it; Board takes over the same plaques so they can roll out unchanged. -->
-				{#each ROWS as row (row)}
-					{#if finalizedRows[roller.reel]?.includes(row)}
-						<Container
-							x={cellX(roller.reel)}
-							y={cellY(row)}
-							zIndex={18}
-							scale={rowScales[`${roller.reel},${row}`]?.current ?? 1}
-						>
-							<CoasterWildBackground reel={roller.reel} />
-							<RollerMultiplierCell text={`${roller.multiplier}X`} contentScale={0.9} />
-						</Container>
-					{/if}
-				{/each}
-			{/each}
-		</Container>
-	</MainContainer>
+			</Container>
+		</MainContainer>
+	</Container>
 {/if}

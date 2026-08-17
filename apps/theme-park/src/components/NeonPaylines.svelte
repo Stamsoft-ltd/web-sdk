@@ -3,7 +3,7 @@
 	import { stateBetDerived } from 'state-shared';
 
 	import { getContext } from '../game/context';
-	import { SYMBOL_H, getBoardCellCenterX } from '../game/constants';
+	import { CELL_H, SYMBOL_H, getBoardCellCenterX } from '../game/constants';
 
 	type Point = { x: number; y: number };
 	type WinEntry = { lineIndex: number; path: Array<{ reel: number; row: number }> };
@@ -34,7 +34,7 @@
 
 	const centre = (position: { reel: number; row: number }): Point => ({
 		x: getBoardCellCenterX(position.reel),
-		y: SYMBOL_H * (position.row + 0.5),
+		y: CELL_H * (position.row + 0.5),
 	});
 
 	const lines = $derived(
@@ -49,24 +49,47 @@
 
 	const TUBE_WIDTH = SYMBOL_H * 0.028;
 	const DRAW_MS = 420;
+	const HOLD_MS = 560;
+	const FADE_MS = 220;
+	const GAP_MS = 160;
 	const easeOutCubic = (value: number) => 1 - (1 - value) ** 3;
 
 	let progress = $state(0);
+	let lineAlpha = $state(1);
 	let time = $state(0);
 
 	$effect(() => {
 		const app = context.stateApp.pixiApplication;
 		if (!app || props.wins.length === 0) return;
 
-		const drawMs = DRAW_MS / stateBetDerived.timeScale();
+		const timeScale = stateBetDerived.timeScale();
+		const drawMs = DRAW_MS / timeScale;
+		const holdMs = HOLD_MS / timeScale;
+		const fadeMs = FADE_MS / timeScale;
+		const gapMs = GAP_MS / timeScale;
+		const cycleMs = drawMs + holdMs + fadeMs + gapMs;
 		let elapsed = 0;
 		progress = 0;
+		lineAlpha = 1;
 		time = 0;
 
 		const tick = () => {
 			elapsed += app.ticker.deltaMS;
 			time = elapsed / 1000;
-			progress = easeOutCubic(Math.min(elapsed / drawMs, 1));
+			const cycleTime = elapsed % cycleMs;
+			if (cycleTime < drawMs) {
+				progress = easeOutCubic(cycleTime / drawMs);
+				lineAlpha = 1;
+			} else if (cycleTime < drawMs + holdMs) {
+				progress = 1;
+				lineAlpha = 1;
+			} else if (cycleTime < drawMs + holdMs + fadeMs) {
+				progress = 1;
+				lineAlpha = 1 - easeOutCubic((cycleTime - drawMs - holdMs) / fadeMs);
+			} else {
+				progress = 0;
+				lineAlpha = 0;
+			}
 		};
 
 		app.ticker.add(tick, null, PIXI.UPDATE_PRIORITY.HIGH);
@@ -99,12 +122,20 @@
 			const flicker = 0.96 + 0.04 * Math.sin(time * 11.7 + line.phase * 2.3);
 			const style =
 				layer === 'farGlow'
-					? { width: TUBE_WIDTH * 8.5, color: line.color, alpha: 0.18 * pulse }
+					? { width: TUBE_WIDTH * 8.5, color: line.color, alpha: 0.18 * pulse * lineAlpha }
 					: layer === 'nearGlow'
-						? { width: TUBE_WIDTH * 4.4, color: line.color, alpha: 0.42 * pulse }
+						? { width: TUBE_WIDTH * 4.4, color: line.color, alpha: 0.42 * pulse * lineAlpha }
 						: layer === 'tube'
-							? { width: TUBE_WIDTH * 2.05, color: line.color, alpha: 0.98 * flicker }
-							: { width: Math.max(1.4, TUBE_WIDTH * 0.55), color: 0xffffff, alpha: flicker };
+							? {
+									width: TUBE_WIDTH * 2.05,
+									color: line.color,
+									alpha: 0.98 * flicker * lineAlpha,
+								}
+							: {
+									width: Math.max(1.4, TUBE_WIDTH * 0.55),
+									color: 0xffffff,
+									alpha: flicker * lineAlpha,
+								};
 
 			graphics.moveTo(points[0].x, points[0].y);
 			for (let i = 1; i < points.length; i += 1) graphics.lineTo(points[i].x, points[i].y);

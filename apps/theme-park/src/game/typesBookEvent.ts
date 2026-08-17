@@ -113,17 +113,17 @@ type BookEventDuckPickEnd = { index: number; type: 'duckPickEnd'; amount: number
 
 // ── Roller Wilds ───────────────────────────────────────────────────────────────
 // Emitted AFTER the trigger-Wild reveal settles. The event drives the coaster
-// animation, then transforms the complete reel. Sparse row plaques add into the
-// reel multiplier; multiple transformed reels also add.
+// animation, then transforms the complete reel. One event multiplier is presented on the
+// duck-car plaque; multiple transformed reels also add when used on one win line.
 
 type BookEventRollerWildsApply = {
 	index: number;
 	type: 'rollerWildsApply';
 	reels: {
 		reel: number;
+		fakeMultiplier?: number;
 		multiplier: number;
 		triggerRow?: number;
-		multipliers?: { row: number; multiplier: number }[];
 	}[];
 };
 

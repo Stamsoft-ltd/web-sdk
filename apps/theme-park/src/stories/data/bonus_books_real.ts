@@ -1280,6 +1280,7 @@ const books: StoryBook[] = [
    "reels": [
     {
      "reel": 3,
+     "fakeMultiplier": 5,
      "multiplier": 3
     }
    ],
@@ -1442,6 +1443,7 @@ const books: StoryBook[] = [
    "reels": [
     {
      "reel": 1,
+     "fakeMultiplier": 2,
      "multiplier": 5
     }
    ],
@@ -1686,14 +1688,17 @@ const books: StoryBook[] = [
    "reels": [
     {
      "reel": 0,
+     "fakeMultiplier": 5,
      "multiplier": 2
     },
     {
      "reel": 2,
+     "fakeMultiplier": 5,
      "multiplier": 3
     },
     {
      "reel": 4,
+     "fakeMultiplier": 5,
      "multiplier": 2
     }
    ],
@@ -5141,22 +5146,27 @@ const books: StoryBook[] = [
    "reels": [
     {
      "reel": 0,
+     "fakeMultiplier": 5,
      "multiplier": 2
     },
     {
      "reel": 1,
+     "fakeMultiplier": 5,
      "multiplier": 100
     },
     {
      "reel": 2,
+     "fakeMultiplier": 2,
      "multiplier": 5
     },
     {
      "reel": 3,
+     "fakeMultiplier": 5,
      "multiplier": 2
     },
     {
      "reel": 4,
+     "fakeMultiplier": 5,
      "multiplier": 3
     }
    ],
