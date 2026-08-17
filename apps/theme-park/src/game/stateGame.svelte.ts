@@ -184,7 +184,7 @@ const LS_PANEL_TOP = 88;
 const LS_BOTTOM_BAR = 66;
 const LS_LEFT_RAIL = 150;
 const LS_RIGHT_RAIL = 120;
-const LS_PANEL_FILL = 0.98;
+const LS_PANEL_FILL = 0.9;
 
 const boardLayout = () => {
 	const layoutType = stateLayoutDerived.layoutType();

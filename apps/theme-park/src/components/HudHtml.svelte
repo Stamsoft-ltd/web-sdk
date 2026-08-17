@@ -37,8 +37,12 @@
 	// landscape only — portrait shows the larger pressPlayLogo inside its own logo stack instead.
 	const pressPlayMark = ap('/assets/theme-park/v2/splash/press_play_mark.svg');
 
-	// Real marquee button art (portrait HUD). Round neon-rim buttons.
+	// Real marquee button art (portrait + landscape HUD). Round neon-rim buttons.
 	const ptMenu = ap('/assets/theme-park/v2/controls/btn-menu.png');
+	const ptSound = ap('/assets/theme-park/v2/controls/btn-sound.png');
+	const ptSoundMuted = ap('/assets/theme-park/v2/controls/btn-sound-muted.png');
+	// Landscape control-dock box art (neon-edged vertical panel behind the right-hand buttons).
+	const lsNavBox = ap('/assets/theme-park/v2/controls/nav-box-landscape.svg');
 	const ptTurbo = ap('/assets/theme-park/v2/controls/btn-turbo.png');
 	const ptTurboFast = ap('/assets/theme-park/v2/controls/btn-turbo-fast.png');
 	const ptTurboSuper = ap('/assets/theme-park/v2/controls/btn-turbo-super.png');
@@ -433,7 +437,122 @@
 		<img class="game-logo" src={gameLogo} alt={i18nDerived.gameTitle()} />
 		<img class="press-play-mark" src={pressPlayMark} alt="Press Play" />
 	{/if}
-	{#if !isPortrait}
+	{#if isLandscapeMobile}
+	<!-- MOBILE-LANDSCAPE HUD — two side columns flanking the board, matching the design. Left: balance
+	     + bet stepper. Right: menu · sound · SPIN · turbo · auto stack, with BUY BONUS + WIN beside it. -->
+	<div class="ls-hud">
+		<div class="ls-left">
+			<div class="ls-pill ls-pill--balance">
+				<span class="ls-pill__label">{i18nDerived.balance()}</span>
+				<span class="ls-pill__value" use:fitText={formattedBalance}>{formattedBalance}</span>
+			</div>
+			<div class="ls-bet">
+				<img class="ls-bet__bg" src={ptBetBox} alt="" aria-hidden="true" />
+				<button
+					class="ls-step"
+					type="button"
+					onpointerdown={(event) =>
+						startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
+					onpointerup={clearHoldRepeat}
+					onpointercancel={clearHoldRepeat}
+					onpointerleave={clearHoldRepeat}
+					onclick={(event) => maybeRunClickAction(event, onDecrease)}
+					disabled={disableDecrease}
+					aria-label={i18nDerived.translate('DECREASE BET')}
+				>
+					<img src={disableDecrease ? ptMinusDisabled : ptMinus} alt="" />
+				</button>
+				<div
+					class="ls-bet__values"
+					role="button"
+					tabindex="0"
+					onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
+					onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
+				>
+					<span class="ls-pill__value ls-bet__value" use:fitText={formattedBet}>{formattedBet}</span>
+				</div>
+				<button
+					class="ls-step"
+					type="button"
+					onpointerdown={(event) =>
+						startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
+					onpointerup={clearHoldRepeat}
+					onpointercancel={clearHoldRepeat}
+					onpointerleave={clearHoldRepeat}
+					onclick={(event) => maybeRunClickAction(event, onIncrease)}
+					disabled={disableIncrease}
+					aria-label={i18nDerived.translate('INCREASE BET')}
+				>
+					<img src={disableIncrease ? ptPlusDisabled : ptPlus} alt="" />
+				</button>
+			</div>
+		</div>
+
+		<div class="ls-actions">
+			<img class="ls-actions__bg" src={lsNavBox} alt="" aria-hidden="true" />
+			<button class="ls-btn" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
+				<img src={ptMenu} alt="" />
+			</button>
+			<button class="ls-btn" type="button" onclick={toggleSound} aria-label={i18nDerived.translate('SOUND')}>
+				<img src={isMuted ? ptSoundMuted : ptSound} alt="" />
+			</button>
+			<button
+				class="spin-btn ls-spin"
+				class:is-spinning={isSpinStop}
+				type="button"
+				onclick={onSpinButton}
+				aria-label={i18nDerived.translate('SPIN')}
+				disabled={canInteract && !hasAuto && !canAffordBet}
+			>
+				<img src={navSpinBg} alt="" class="spin-btn__img spin-btn__img--bg" />
+				{#if isSpinStop}
+					<img src={navSpinStopGlyph} alt="" class="spin-btn__img spin-btn__img--stopglyph" />
+				{:else}
+					<img src={navSpinArrow} alt="" class="spin-btn__img spin-btn__img--arrow" />
+				{/if}
+				{#if hasAuto}
+					<span class="spin-btn__count">{autoSpinsRemainingText}</span>
+				{/if}
+			</button>
+			<button
+				class="ls-btn"
+				data-speed={speedMode}
+				type="button"
+				onclick={onTurbo}
+				aria-label={i18nDerived.turboLabel()}
+				title={`${i18nDerived.turboLabel()}: ${speedMode}`}
+			>
+				<img src={ptTurboImg} alt="" />
+			</button>
+			<button
+				class="ls-btn"
+				class:active={hasAuto}
+				type="button"
+				onclick={onAuto}
+				disabled={disableAuto}
+				aria-label={i18nDerived.autoplayLabel()}
+			>
+				<img src={disableAuto && !hasAuto ? ptAutoDisabled : ptAuto} alt="" />
+			</button>
+		</div>
+
+		<button
+			class="ls-buy"
+			type="button"
+			disabled={disableBuy}
+			onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
+			aria-label={buyLabel}
+		>
+			<img src={ptBuy} alt="" />
+			<span class="ls-buy__label">{buyLabel}</span>
+		</button>
+
+		<div class="ls-pill ls-pill--win">
+			<span class="ls-pill__label">{i18nDerived.win()}</span>
+			<span class="ls-pill__value" use:fitText={formattedWin}>{formattedWin}</span>
+		</div>
+	</div>
+	{:else if !isPortrait}
 	<div class="hud-bottom">
 		<!-- The bar itself is art (1126x107 neon pill), not CSS chrome. It is a sibling rather than a
 		     background-image because the spin button overhangs the plate top and bottom, so the plate
@@ -1642,6 +1761,244 @@
 	.hud-shell[data-layout='portrait'] .hud-bottom,
 	.hud-shell[data-layout='landscape'] .hud-bottom {
 		height: auto;
+	}
+
+	/* ===== MOBILE-LANDSCAPE HUD — two side columns flanking the board =====================
+	   A full-screen overlay whose groups are pinned to the left/right margins so nothing floats over
+	   the reels. Buttons reuse the round marquee art; sizes are vh-based so the columns scale with a
+	   short landscape viewport. */
+	.ls-hud {
+		position: absolute;
+		inset: 0;
+		z-index: 6;
+		pointer-events: none;
+		font-family: Helvetica, Arial, sans-serif;
+	}
+	.ls-hud > * {
+		pointer-events: auto;
+	}
+
+	/* Shared neon pill (balance / win). Design spec: magenta top border + soft drop shadow, 8px radius. */
+	.ls-pill {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1px;
+		padding: 3px 9px;
+		border-radius: 8px;
+		border: none;
+		border-top: 1px solid #9f0ac0;
+		background: rgba(22, 7, 46, 0.82);
+		box-shadow: 0px 2px 10px 0px #0000008c;
+		backdrop-filter: blur(4px);
+		box-sizing: border-box;
+	}
+	/* Balance: label + value on one row. */
+	.ls-pill--balance {
+		flex-direction: row;
+		align-items: baseline;
+		justify-content: center;
+		gap: 6px;
+		padding: 4px 10px;
+	}
+	.ls-pill__label {
+		font-size: clamp(0.38rem, 1.1vh, 0.5rem);
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: #b79ae6;
+		line-height: 1.1;
+	}
+	.ls-pill__value {
+		font-size: clamp(0.56rem, 1.75vh, 0.76rem);
+		font-weight: 800;
+		color: #fff;
+		white-space: nowrap;
+		line-height: 1.1;
+	}
+
+	/* Left column: balance above the bet stepper, small, pinned to the bottom-left. */
+	.ls-left {
+		position: absolute;
+		left: 2.4%;
+		bottom: 5%;
+		display: flex;
+		flex-direction: column;
+		gap: clamp(4px, 1.1vh, 8px);
+		width: clamp(94px, 15vw, 134px);
+	}
+	.ls-bet {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 5px;
+		/* Roomier now that it shows only the value (no BET label). */
+		padding: clamp(6px, 1.5vh, 11px) clamp(8px, 1.8vh, 14px);
+	}
+	.ls-bet__bg {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: fill;
+		pointer-events: none;
+	}
+	.ls-bet__values {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		cursor: pointer;
+		min-width: 0;
+	}
+	.ls-bet__value {
+		font-size: clamp(0.74rem, 2.3vh, 1rem);
+	}
+	.ls-step {
+		position: relative;
+		flex: 0 0 auto;
+		width: clamp(24px, 3.8vh, 32px);
+		height: clamp(24px, 3.8vh, 32px);
+		border: 0;
+		padding: 0;
+		background: none;
+		cursor: pointer;
+	}
+	.ls-step img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		display: block;
+	}
+	.ls-step:disabled {
+		opacity: 0.4;
+		cursor: default;
+	}
+
+	/* Right column: menu · sound · SPIN · turbo · auto inside the neon dock box art, pinned to the
+	   right edge and bottom-anchored so its end lines up with BUY BONUS. Taller now (roomier gaps). */
+	.ls-actions {
+		position: absolute;
+		right: 1.8%;
+		bottom: 15%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: clamp(8px, 2.4vh, 16px);
+		padding: clamp(13px, 3vh, 22px) clamp(6px, 1.5vh, 12px);
+	}
+	.ls-actions__bg {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: fill;
+		pointer-events: none;
+		z-index: 0;
+	}
+	.ls-actions > button {
+		position: relative;
+		z-index: 1;
+	}
+	.ls-btn {
+		width: clamp(34px, 5.7vh, 46px);
+		height: clamp(34px, 5.7vh, 46px);
+		border: 0;
+		padding: 0;
+		background: none;
+		cursor: pointer;
+		display: block;
+	}
+	.ls-btn img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		display: block;
+	}
+	.ls-btn:disabled {
+		opacity: 0.45;
+		cursor: default;
+	}
+	/* The turn button — taller than it is wide so the dock stays narrow (leaving room for BUY BONUS)
+	   while the ring still reads as the biggest control. The ring art is height-driven, so it fills
+	   the taller box and slightly overhangs the narrow width, which reads as it popping out. */
+	.ls-spin.spin-btn {
+		width: clamp(56px, 10.5vh, 84px);
+		height: clamp(88px, 17vh, 132px);
+	}
+	.ls-spin .spin-btn__count {
+		position: relative;
+		z-index: 4;
+		font-weight: 800;
+		color: #fff;
+		font-size: clamp(0.7rem, 2.4vh, 1rem);
+	}
+
+	/* BUY BONUS — round button, seated left of the action dock near the bottom. Bigger so the
+	   two-word label fits inside the circle. */
+	/* BUY BONUS — bottom aligned with the dock's end, and centred horizontally in the gap between the
+	   board and the dock. The gap runs from the dock's left edge (~1.8% + 68px) to the board's right
+	   edge (~23.6% of the viewport), so its centre is ~16.6% from the right; place the button's centre
+	   there (right edge = centre − half its width). */
+	.ls-buy {
+		position: absolute;
+		/* Right edge just onto the dock's left edge (≈ 1.8% + ~68px) — a few px over its neon border,
+		   still clear of the buttons inside. */
+		right: calc(1.8% + 64px);
+		bottom: 15%;
+		width: clamp(66px, 12.5vh, 98px);
+		height: clamp(66px, 12.5vh, 98px);
+		border: 0;
+		padding: 0;
+		background: none;
+		cursor: pointer;
+		display: grid;
+		place-items: center;
+	}
+	.ls-buy img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+	.ls-buy__label {
+		position: relative;
+		z-index: 2;
+		/* Narrow enough that "BUY BONUS" wraps onto two rows, as the design shows. */
+		max-width: 58%;
+		font-size: clamp(0.5rem, 1.85vh, 0.68rem);
+		font-weight: 800;
+		line-height: 1.08;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		text-align: center;
+		color: #fff;
+	}
+	.ls-buy:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+
+	/* WIN — bottom-right corner, label + value on a single row. Bigger and more square (8px radius). */
+	.ls-pill--win {
+		position: absolute;
+		right: 1.8%;
+		bottom: 3%;
+		flex-direction: row;
+		align-items: baseline;
+		justify-content: center;
+		gap: 7px;
+		width: auto;
+		min-width: clamp(126px, 17vw, 172px);
+		padding: 7px 16px;
+	}
+	.ls-pill--win .ls-pill__value {
+		font-size: clamp(0.68rem, 2.15vh, 0.92rem);
+	}
+	.ls-pill--win .ls-pill__label {
+		font-size: clamp(0.44rem, 1.35vh, 0.58rem);
 	}
 
 	/* ===== PORTRAIT HUD — dedicated 2-row marquee layout ===== */
