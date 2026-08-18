@@ -1,8 +1,12 @@
 <script lang="ts" module>
 	import { ap } from '../lib/preloadArt';
 
+	// `-marquee` is the cache-bust suffix the flat redraws of these three facades ship under; the
+	// filename is the cache key on Stake's CDN and they replaced art that shipped under the old
+	// names. Safe to bake into the template here because every card on this screen is a redrawn
+	// facade — unlike <CustomInfoModal>, which also lists art that never went through the redraw.
 	const modeAsset = (icon: string, variant: 'desktop' | 'mobile' | 'mobile-landscape') =>
-		ap(`/assets/theme-park/v2/modes/${icon}-${variant}.png`);
+		ap(`/assets/theme-park/v2/modes/${icon}-${variant}-marquee.png`);
 	// Neon gradient frame (download "S pad") — the glowing card border from the design, and the plate
 	// behind the bet stepper. The design stretches this one image to fill each box and lets its own
 	// rounded corners do the shaping, so the neon line stays proportional to the card at any size.
@@ -16,7 +20,8 @@
 	const coinIcon = ap('/assets/theme-park/v2/hud/icon_coin.svg');
 
 	for (const icon of ['duck-your-luck', 'roller-wilds', 'mega-coaster']) {
-		for (const variant of ['desktop', 'mobile', 'mobile-landscape'] as const) modeAsset(icon, variant);
+		for (const variant of ['desktop', 'mobile', 'mobile-landscape'] as const)
+			modeAsset(icon, variant);
 	}
 </script>
 
@@ -203,12 +208,7 @@
 
 <!-- Scrim + stage. The stage is the design's own 1200x670 frame scaled to fit, so every number in
      the stylesheet below is the Figma pixel straight off node 6695:4781. -->
-<div
-	class="buy-overlay"
-	class:is-portrait={isPortrait}
-	role="presentation"
-	onclick={props.onclose}
->
+<div class="buy-overlay" class:is-portrait={isPortrait} role="presentation" onclick={props.onclose}>
 	<div
 		class="stage"
 		role="dialog"
@@ -722,8 +722,17 @@
 			height: auto;
 			-webkit-line-clamp: initial;
 		}
+		/* Relative, NOT static: the plate art inside is absolutely positioned against this box, and a
+		   static betrow handed it the overlay instead — so the neon frame stretched over the whole
+		   screen and, because `isolation` keeps it inside this element's stacking context and this
+		   element is last in the DOM, painted right over the title and the cards. The row itself is
+		   laid out by the flex column, so relative costs nothing. */
 		.betrow {
-			position: static;
+			position: relative;
+			/* The landscape rule pins this row with left/top, and `relative` does not ignore those the
+			   way `static` did — it offsets from the flow position instead, which pushed the row 568u
+			   below the cards and half a screen to the right, i.e. off the bottom of the modal. */
+			inset: auto;
 			flex: 0 0 auto;
 			transform: none;
 			margin-top: calc(var(--u) * 12);

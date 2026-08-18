@@ -4,9 +4,11 @@
 	// Paytable symbol art (premium symbols and royals).
 	const symImg = (name: string) => ap(`/assets/theme-park/v2/symbols/${name}.png`);
 	// Feature / mode logos (reused from the buy-bonus modes set).
-	const modeImg = (name: string) => ap(`/assets/theme-park/v2/modes/${name}-desktop.png`);
+	// Full stem, not a prefix: only the redrawn facades carry the -marquee cache-bust suffix, so a
+	// shared template here would have to guess which ones have been through the flat redraw.
+	const modeImg = (stem: string) => ap(`/assets/theme-park/v2/modes/${stem}.png`);
 	// The WILD row's symbol is the game's own marquee W — the same art the reels drop.
-	const wildImg = ap('/assets/theme-park/v2/modes/wild-desktop.png');
+	const wildImg = ap('/assets/theme-park/v2/modes/wild-desktop-marquee.png');
 
 	// Landscape (desktop) tutorial box: neon gradient frame, the duck-on-coaster hero, and the logo.
 	const tutorialBg = ap('/assets/theme-park/v2/info/tutorial-bg.webp');
@@ -61,17 +63,17 @@
 
 	// Paytable — one row per symbol, values in 3/4/5-in-a-line order, × the line bet. Ordered
 	// cheapest first, like the design; the royals all pay the same and share a single row.
-	const ROYALS = ['l4-j', 'l1-a', 'l2-k', 'l5-10', 'l3-q'];
+	const ROYALS = ['l4-j-marquee', 'l1-a-marquee', 'l2-k-marquee', 'l5-10-marquee', 'l3-q-marquee'];
 	// `name` is an i18n KEY, not display copy — the each-block keys on it, so it must stay stable
 	// across a locale switch, which a translated string would not.
 	type PayRow = { img?: string; royals?: boolean; wild?: boolean; name: string; pays: string[] };
 	const PAY_ROWS: PayRow[] = [
 		{ royals: true, name: 'INFO SYM ROYALS', pays: ['0.1', '0.5', '1'] },
-		{ img: 'h5-ferris', name: 'INFO SYM FERRIS', pays: ['0.5', '2.5', '5'] },
-		{ img: 'h4-popcorn', name: 'INFO SYM POPCORN', pays: ['0.5', '2.5', '5'] },
-		{ img: 'h2-duck', name: 'INFO SYM DUCK', pays: ['1', '5', '10'] },
-		{ img: 'h3-balloons', name: 'INFO SYM BALLOONS', pays: ['1', '5', '10'] },
-		{ img: 'h1-coaster', name: 'INFO SYM COASTER', pays: ['2', '10', '20'] },
+		{ img: 'h5-ferris-marquee', name: 'INFO SYM FERRIS', pays: ['0.5', '2.5', '5'] },
+		{ img: 'h4-popcorn-marquee', name: 'INFO SYM POPCORN', pays: ['0.5', '2.5', '5'] },
+		{ img: 'h2-duck-marquee', name: 'INFO SYM DUCK', pays: ['1', '5', '10'] },
+		{ img: 'h3-balloons-marquee', name: 'INFO SYM BALLOONS', pays: ['1', '5', '10'] },
+		{ img: 'h1-coaster-marquee', name: 'INFO SYM COASTER', pays: ['2', '10', '20'] },
 		{ wild: true, name: 'INFO SYM WILD', pays: ['-', '-', '20'] },
 	];
 
@@ -86,19 +88,19 @@
 	];
 	const BONUS_BUYS = [
 		{
-			img: 'duck-your-luck',
+			img: 'duck-your-luck-desktop-marquee',
 			name: 'BET MODE DUCK TITLE',
 			desc: 'BET MODE DUCK DIALOG',
 			mult: 100,
 		},
 		{
-			img: 'roller-wilds',
+			img: 'roller-wilds-desktop-marquee',
 			name: 'BET MODE ROLLER TITLE',
 			desc: 'BET MODE ROLLER DIALOG',
 			mult: 200,
 		},
 		{
-			img: 'mega-coaster',
+			img: 'mega-coaster-desktop-marquee',
 			name: 'BET MODE COASTER TITLE',
 			desc: 'BET MODE COASTER DIALOG',
 			mult: 500,

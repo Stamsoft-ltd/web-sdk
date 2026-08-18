@@ -4,8 +4,17 @@
 	import { POPUP_BORDERS } from '../lib/popupBorder';
 	import { rampCss, roundedRectPoint } from '../lib/roundedRectPath';
 
-	type Props = { variant: 'confirm' | 'wide' };
-	const { variant }: Props = $props();
+	type Props = {
+		variant: keyof typeof POPUP_BORDERS;
+		/**
+		 * Multiplier on the glow sizes below. They are fractions of the panel's WIDTH, which holds
+		 * while the panels are roughly square — the HUD bar is 10:1, so the same fraction gives it a
+		 * glow two thirds as tall as the whole bar. Its own scale brings that back to the size the
+		 * light is on a popup.
+		 */
+		scale?: number;
+	};
+	const { variant, scale = 1 }: Props = $props();
 
 	/** Seconds for a light to run from the top of the panel to the bottom. A drift, not a chase. */
 	const RUN_SECONDS = 8;
@@ -28,6 +37,8 @@
 	const CORE = 0.0022;
 
 	const border = $derived(POPUP_BORDERS[variant]);
+	const halo = $derived(HALO * scale);
+	const core = $derived(CORE * scale);
 
 	let canvas: HTMLCanvasElement;
 
@@ -86,7 +97,7 @@
 					glow(
 						point.x,
 						point.y,
-						HALO * width * (0.18 + fade * 0.45),
+						halo * width * (0.18 + fade * 0.45),
 						rampCss(border.ramp, t, fade * 0.75 * life),
 						rampCss(border.ramp, t, 0),
 					);
@@ -98,21 +109,21 @@
 				glow(
 					point.x,
 					point.y,
-					HALO * width,
+					halo * width,
 					rampCss(border.ramp, head, 0.5 * life),
 					rampCss(border.ramp, head, 0),
 				);
 				glow(
 					point.x,
 					point.y,
-					HALO * width * 0.42,
+					halo * width * 0.42,
 					rampCss(border.ramp, head, 0.95 * life),
 					rampCss(border.ramp, head, 0),
 				);
 				glow(
 					point.x,
 					point.y,
-					CORE * width * 2,
+					core * width * 2,
 					`rgba(255, 255, 255, ${0.8 * life})`,
 					'rgba(255, 255, 255, 0)',
 				);

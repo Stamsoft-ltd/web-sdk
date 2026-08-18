@@ -12,6 +12,8 @@
 	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
 	import { stateBet } from 'state-shared';
+	import { Tween } from 'svelte/motion';
+	import { backOut } from 'svelte/easing';
 	import {
 		bookEventAmountToBetAmountMultiplier,
 		bookEventAmountToCurrencyString,
@@ -72,6 +74,38 @@
 					? 1800
 					: 2500);
 
+	// ── Small wins (levels 1-5, no card) ────────────────────────────────────────────────────────
+	//
+	// These used to be a bare gold number over the reels that finished counting and vanished in the
+	// same frame — on a grid of lit marquee symbols there was nothing to read it against and no time
+	// to read it in. Three things fix that, and none of them touch the card tiers: it lands on its own
+	// dark lozenge, it pops in rather than appearing, and it holds for a beat once the count lands.
+	const SMALL_POP_MS = 280;
+	const SMALL_HOLD_MS = 750;
+
+	/**
+	 * The gold marquee plaque the amount sits inside, drawn at its authored aspect.
+	 *
+	 * It replaces a stack of dark ellipses that did the same job — separate the number from the lit
+	 * reels behind it — but read as a smudge rather than as part of the park. Aspect is fixed and the
+	 * TEXT is what shrinks to fit, because the frame's corner scrollwork and its two centred gems make
+	 * it the one piece of art in this game that cannot be stretched: 3-slicing it would space out the
+	 * bulbs running along its edges and put a second gem in the wrong place.
+	 */
+	const PLAQUE_ASPECT = 244 / 163;
+	const PLAQUE_H = SYMBOL_SIZE * 1.5;
+	const PLAQUE_W = PLAQUE_H * PLAQUE_ASPECT;
+	/**
+	 * How much of the plaque the amount may fill. Well inside the flat purple: the frame's inner edge
+	 * curves in at the corners and the gems bite into the top and bottom centre, so the largest
+	 * genuinely clear rectangle is much smaller than the purple region's bounding box.
+	 */
+	const PLAQUE_TEXT_W = 0.62;
+	const PLAQUE_TEXT_H = 0.4;
+
+	const smallPop = new Tween(1, { duration: SMALL_POP_MS, easing: backOut });
+	const smallHoldDuration = () => SMALL_HOLD_MS * turboFactor();
+
 	const clearTimers = () => {
 		if (autoCloseTimer) clearTimeout(autoCloseTimer);
 		if (dismissTimer) clearTimeout(dismissTimer);
@@ -107,6 +141,10 @@
 			isCountingUp = true;
 			breatheScale = 1;
 			winId += 1;
+			if (!event.winLevelData.animation) {
+				smallPop.set(0.7, { duration: 0 });
+				smallPop.set(1, { duration: SMALL_POP_MS, easing: backOut });
+			}
 			await waitForResolve((resolve) => (oncomplete = resolve));
 			isCountingUp = false;
 		},
@@ -148,7 +186,9 @@
 					if (!boardClickHandled) {
 						snappedToFinal = true;
 						boardClickHandled = true;
-						oncomplete();
+						// Held rather than closed on the frame the number lands — see SMALL_HOLD_MS.
+						if (autoCloseTimer) clearTimeout(autoCloseTimer);
+						autoCloseTimer = setTimeout(() => oncomplete(), smallHoldDuration());
 					}
 					return;
 				}
@@ -220,22 +260,39 @@
 							{@const maxWidth =
 								context.stateLayoutDerived.canvasSizes().width /
 								context.stateLayoutDerived.mainLayout().scale}
-							{@const scale =
-								smallWinSize.width > maxWidth ? maxWidth / smallWinSize.width : 1}
-							<Container {scale}>
-								<Text
-									anchor={0.5}
-									onresize={(size) => (smallWinSize = size)}
-									text={bookEventAmountToCurrencyString(countUpAmount)}
-									style={{
-										fontFamily: 'Lilita One',
-										fontWeight: '400',
-										fontSize: SYMBOL_SIZE * 0.7,
-										align: 'center',
-										fill: 0xffe36b,
-										stroke: { color: 0x5c116f, width: 8 },
-									}}
-								/>
+							{@const scale = PLAQUE_W > maxWidth ? maxWidth / PLAQUE_W : 1}
+							{@const textFit = Math.min(
+								1,
+								smallWinSize.width ? (PLAQUE_W * PLAQUE_TEXT_W) / smallWinSize.width : 1,
+								smallWinSize.height ? (PLAQUE_H * PLAQUE_TEXT_H) / smallWinSize.height : 1,
+							)}
+							<Container scale={scale * smallPop.current}>
+								<!-- Behind the number, so it is read against something other than lit reels. -->
+								<Sprite key="tpSmallWinPlaque" anchor={0.5} width={PLAQUE_W} height={PLAQUE_H} />
+								<!-- Scaled rather than re-sized: dropping fontSize per amount re-rasterises the
+								     glyphs, which makes the number crawl as it counts up. -->
+								<Container scale={textFit}>
+									<Text
+										anchor={0.5}
+										onresize={(size) => (smallWinSize = size)}
+										text={bookEventAmountToCurrencyString(countUpAmount)}
+										style={{
+											fontFamily: 'Lilita One',
+											fontWeight: '400',
+											fontSize: SYMBOL_SIZE * 0.8,
+											align: 'center',
+											fill: 0xffe36b,
+											stroke: { color: 0x3d0b4a, width: 10 },
+											dropShadow: {
+												color: 0x000000,
+												alpha: 0.55,
+												blur: 6,
+												distance: 3,
+												angle: Math.PI / 2,
+											},
+										}}
+									/>
+								</Container>
 							</Container>
 						{/if}
 					</Container>

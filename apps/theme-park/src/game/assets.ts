@@ -15,6 +15,14 @@ const assets: Assets = {
 	cloud3: { type: 'sprite', src: './assets/theme-park/v2/clouds/cloud3.webp' },
 	cloud4: { type: 'sprite', src: './assets/theme-park/v2/clouds/cloud4.webp' },
 	cloud5: { type: 'sprite', src: './assets/theme-park/v2/clouds/cloud5.webp' },
+	// One of these drifts up through the sky between spins — see <EscapedBalloon>. Only ever one is
+	// on screen, but the colour is re-rolled per flight, so all five have to be here; they total
+	// ~12 kB. Cut from the h3 symbol by scripts/build-escaped-balloon.py.
+	balloonPink: { type: 'sprite', src: './assets/theme-park/v2/balloon/pink.webp' },
+	balloonOrange: { type: 'sprite', src: './assets/theme-park/v2/balloon/orange.webp' },
+	balloonYellow: { type: 'sprite', src: './assets/theme-park/v2/balloon/yellow.webp' },
+	balloonGreen: { type: 'sprite', src: './assets/theme-park/v2/balloon/green.webp' },
+	balloonBlue: { type: 'sprite', src: './assets/theme-park/v2/balloon/blue.webp' },
 	// The pad carries its own 5x5 grid lines, so <Board> no longer strokes them. New filename rather
 	// than a ?v= on the old one, so a cached board.png cannot survive the swap.
 	themeBoard: { type: 'sprite', src: './assets/theme-park/v2/board-lines.webp' },
@@ -50,134 +58,47 @@ const assets: Assets = {
 	spark: { type: 'sprite', src: './assets/theme-park/v2/spark.webp' },
 
 	// === FINAL HIGH SYMBOL ART ===
-	tpH1: { type: 'sprite', src: './assets/theme-park/v2/symbols/h1-coaster.png' },
-	tpH1Win: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/h1-coaster-win.png',
-	},
-	tpH2: { type: 'sprite', src: './assets/theme-park/v2/symbols/h2-duck.png' },
-	tpH2Win: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/h2-duck-win.png',
-	},
-	tpH3: { type: 'sprite', src: './assets/theme-park/v2/symbols/h3-balloons.png' },
-	tpH3Win: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/h3-balloons-win.png',
-	},
-	tpH4: { type: 'sprite', src: './assets/theme-park/v2/symbols/h4-popcorn.png' },
-	tpH4Win: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/h4-popcorn-win.png',
-	},
-	tpH5: { type: 'sprite', src: './assets/theme-park/v2/symbols/h5-ferris.png' },
-	tpH5Win: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/h5-ferris-win.png',
-	},
-	tpL1: { type: 'sprite', src: './assets/theme-park/v2/symbols/l1-a.png' },
-	tpL1Win: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/l1-a-win.png',
-	},
-	tpL2: { type: 'sprite', src: './assets/theme-park/v2/symbols/l2-k.png' },
-	tpL2Win: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/l2-k-win.png',
-	},
-	tpL3: { type: 'sprite', src: './assets/theme-park/v2/symbols/l3-q.png' },
-	tpL3Win: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/l3-q-win.png',
-	},
-	tpL4: { type: 'sprite', src: './assets/theme-park/v2/symbols/l4-j.png' },
-	tpL4Win: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/l4-j-win.png',
-	},
-	tpL5: { type: 'sprite', src: './assets/theme-park/v2/symbols/l5-10.png' },
-	tpL5Win: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/l5-10-win.png',
-	},
-	tpH1WinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/h1-coaster-win.webm',
-		defer: true,
-	},
-	tpH2WinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/h2-duck-win.webm',
-		defer: true,
-	},
-	tpH3WinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/h3-balloons-win.webm',
-		defer: true,
-	},
-	tpH4WinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/h4-popcorn-win.webm',
-		defer: true,
-	},
-	tpH5WinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/h5-ferris-win.webm',
-		defer: true,
-	},
-	tpL1WinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/l1-a-win.webm',
-		defer: true,
-	},
-	tpL2WinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/l2-k-win.webm',
-		defer: true,
-	},
-	tpL3WinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/l3-q-win.webm',
-		defer: true,
-	},
-	tpL4WinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/l4-j-win.webm',
-		defer: true,
-	},
-	tpL5WinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/l5-10-win.webm',
-		defer: true,
-	},
+	// Every high symbol has ONE state. These are the flat cartoon redraws, and there is no lit second
+	// still authored for them — the wheel and the royals win by <SymbolBulbs> lighting the bulbs drawn
+	// into the art, the duck/balloons/popcorn by the board's own win pulse. `-marquee` rather than
+	// `-win`: the filename is the cache key on Stake's CDN, and these replaced art that shipped under
+	// the old names.
+	tpH1: { type: 'sprite', src: './assets/theme-park/v2/symbols/h1-coaster-marquee.png' },
+	tpH2: { type: 'sprite', src: './assets/theme-park/v2/symbols/h2-duck-marquee.png' },
+	tpH3: { type: 'sprite', src: './assets/theme-park/v2/symbols/h3-balloons-marquee.png' },
+	tpH4: { type: 'sprite', src: './assets/theme-park/v2/symbols/h4-popcorn-marquee.png' },
+	tpH5: { type: 'sprite', src: './assets/theme-park/v2/symbols/h5-ferris-marquee.png' },
+	// The gold marquee frame a small win's amount is drawn inside — see <Win>. Same plaque art the
+	// Mega Wild reel carries, so the two read as the same furniture rather than two gold frames.
+	tpSmallWinPlaque: { type: 'sprite', src: './assets/theme-park/v2/wins/small-win-plaque.png' },
+	tpL1: { type: 'sprite', src: './assets/theme-park/v2/symbols/l1-a-marquee.png' },
+	tpL2: { type: 'sprite', src: './assets/theme-park/v2/symbols/l2-k-marquee.png' },
+	tpL3: { type: 'sprite', src: './assets/theme-park/v2/symbols/l3-q-marquee.png' },
+	tpL4: { type: 'sprite', src: './assets/theme-park/v2/symbols/l4-j-marquee.png' },
+	tpL5: { type: 'sprite', src: './assets/theme-park/v2/symbols/l5-10-marquee.png' },
 	tpWildDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/wild-desktop.png',
+		src: './assets/theme-park/v2/modes/wild-desktop-marquee.png',
 	},
 	tpWildMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/wild-mobile.png',
+		src: './assets/theme-park/v2/modes/wild-mobile-marquee.png',
 	},
 	tpWildLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/wild-mobile-landscape.png',
+		src: './assets/theme-park/v2/modes/wild-mobile-landscape-marquee.png',
 	},
 	tpMegaWildDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-wild-desktop.png',
+		src: './assets/theme-park/v2/modes/mega-wild-desktop-marquee.png',
 	},
 	tpMegaWildMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-wild-mobile.png',
+		src: './assets/theme-park/v2/modes/mega-wild-mobile-marquee.png',
 	},
 	tpMegaWildLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-wild-mobile-landscape.png',
-	},
-	tpWildAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/wild.webm',
-		defer: true,
+		src: './assets/theme-park/v2/modes/mega-wild-mobile-landscape-marquee.png',
 	},
 	tpCoasterWild: {
 		type: 'sprite',
@@ -239,59 +160,39 @@ const assets: Assets = {
 	},
 	tpDuckScatterDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/duck-your-luck-desktop.png',
+		src: './assets/theme-park/v2/modes/duck-your-luck-desktop-marquee.png',
 	},
 	tpDuckScatterMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/duck-your-luck-mobile.png',
+		src: './assets/theme-park/v2/modes/duck-your-luck-mobile-marquee.png',
 	},
 	tpDuckScatterLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/duck-your-luck-mobile-landscape.png',
+		src: './assets/theme-park/v2/modes/duck-your-luck-mobile-landscape-marquee.png',
 	},
 	tpRollerScatterDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/roller-wilds-desktop.png',
+		src: './assets/theme-park/v2/modes/roller-wilds-desktop-marquee.png',
 	},
 	tpRollerScatterMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/roller-wilds-mobile.png',
+		src: './assets/theme-park/v2/modes/roller-wilds-mobile-marquee.png',
 	},
 	tpRollerScatterLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/roller-wilds-mobile-landscape.png',
+		src: './assets/theme-park/v2/modes/roller-wilds-mobile-landscape-marquee.png',
 	},
 	tpCoasterScatterDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-coaster-desktop.png',
+		src: './assets/theme-park/v2/modes/mega-coaster-desktop-marquee.png',
 	},
 	tpCoasterScatterMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-coaster-mobile.png',
+		src: './assets/theme-park/v2/modes/mega-coaster-mobile-marquee.png',
 	},
 	tpCoasterScatterLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-coaster-mobile-landscape.png',
-	},
-	tpRollerScatterAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/roller-wilds.webm',
-		defer: true,
-	},
-	tpRollerScatterWinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/roller-wilds-win.webm',
-		defer: true,
-	},
-	tpCoasterScatterAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/mega-coaster.webm',
-		defer: true,
-	},
-	tpCoasterScatterWinAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/symbols/mega-coaster-win.webm',
-		defer: true,
+		src: './assets/theme-park/v2/modes/mega-coaster-mobile-landscape-marquee.png',
 	},
 
 	// === WIN BOARDS ===
@@ -454,13 +355,14 @@ const assets: Assets = {
 
 	// === FRAMES / UI ===
 	symbolPad: { type: 'sprite', src: './assets/components/frames/symbol_pad.png' },
-	// Backs the in-board bonus banners. The HUD's own navigation bar art: plain neon tube, uniform
-	// along its length, which is what lets <NeonPlaque> 3-slice it to any width. It replaces a 1.73MB
+	// Backs the in-board bonus banners. The HUD's own navigation bar art, sparkle-free: a plain neon
+	// tube, uniform along its length, which is what lets <NeonPlaque> 3-slice it to any width — the
+	// painted sparkles it used to carry stretched with the slice. It replaces a 1.73MB
 	// lossless carve-wood sign left over from Forest Gang — wrong game, wrong theme, and 150x the
 	// bytes for something drawn 500x96.
 	bonusBannerPlate: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/hud/bar_plate.webp',
+		src: './assets/theme-park/v2/hud/bar_plate-clean.webp',
 	},
 	// Temporary production placeholders copied from Magnetic. Replace with final
 	// Theme Park lock art without changing the component contract.

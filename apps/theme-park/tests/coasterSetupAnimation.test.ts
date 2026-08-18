@@ -326,8 +326,11 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(persistent).toContain('for (let row = 0; row < BOARD_DIMENSIONS.y; row += 1)');
 		expect(presenter).toContain('for (const row of ROWS)');
 
-		// Normal Wild video, settled full-reel Roller rig, and persistent Coaster Wild content pulse.
-		expect(board).toContain("return 'tpWildAnim'");
+		// The Wild plays no video any more — it is a flat marquee sign whose bulbs are lit by
+		// <SymbolBulbs>, gated per sprite so the pattern never lands on the Coaster Wild tile.
+		expect(board).not.toContain('tpWildAnim');
+		expect(board).toContain('const bulbsFor = (name: SymbolName, spriteKey: string)');
+		// Settled full-reel Roller rig, and persistent Coaster Wild content pulse.
 		expect(board).toContain('width={SYMBOL_W * (isWin ? winPulse : 1)}');
 		expect(board).toContain('<MegaWildFullReel');
 		expect(board).toContain('animationName={!reelSymbol.rawSymbol.rollerExpanded');

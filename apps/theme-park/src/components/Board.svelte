@@ -38,24 +38,20 @@
 	import LandingSquish from './LandingSquish.svelte';
 	import LoopingAssetSprite from './LoopingAssetSprite.svelte';
 	import MegaWildFullReel from './MegaWildFullReel.svelte';
+	import SymbolBulbs from './SymbolBulbs.svelte';
+	import { MEGA_WILD_BULBS, SYMBOL_BULBS } from '../game/symbolBulbs';
 
 	const LOW_SYMBOLS_SET = new Set<SymbolName>(['L1', 'L2', 'L3', 'L4', 'L5']);
 	const DUCK_SYMBOL_SIZE = Math.min(SYMBOL_W, SYMBOL_H) * 1.04;
 	// Keep reel pixels off the grid dividers. The one authored grid in BoardFrame then remains visible
 	// through these narrow gaps without drawing a second set of lines above the board.
 	const GRID_LINE_CLEARANCE = 1.4;
-	const WIN_ANIMATION_KEY_BY_NAME: Partial<Record<SymbolName, string>> = {
-		H1: 'tpH1WinAnim',
-		H2: 'tpH2WinAnim',
-		H3: 'tpH3WinAnim',
-		H4: 'tpH4WinAnim',
-		H5: 'tpH5WinAnim',
-		L1: 'tpL1WinAnim',
-		L2: 'tpL2WinAnim',
-		L3: 'tpL3WinAnim',
-		L4: 'tpL4WinAnim',
-		L5: 'tpL5WinAnim',
-	};
+	// Nothing wins by video any more. The whole symbol set was redrawn as flat cartoons, which left
+	// every *-win.webm animating art that is no longer on the board — a win would have snapped the
+	// symbol from cartoon back to the old photoreal render. Wins are now <SymbolBulbs> lighting the
+	// bulbs drawn into the art, plus the board's own win pulse. Kept as a map, empty, because the
+	// branch below is the seam where a per-symbol win animation would go back in.
+	const WIN_ANIMATION_KEY_BY_NAME: Partial<Record<SymbolName, string>> = {};
 
 	const context = getContext();
 	const board = $derived(context.stateGame.board);
@@ -169,6 +165,19 @@
 		if (state === 'win') return winSpriteKeyByName[name] ?? activeMap[name] ?? 'tpH1';
 		return activeMap[name] ?? 'tpH1';
 	};
+	/**
+	 * The bulb pattern to light over `spriteKey`, if there is one.
+	 *
+	 * Gated on the SPRITE and not just the symbol, because 'W' is drawn three different ways — the
+	 * marquee wild, the Mega Wild plaque on a roller trigger, and the Coaster Wild tile — each with
+	 * its own bulbs or, in the tile's case, none. Keying on the symbol alone would scatter the W's
+	 * pattern across the other two.
+	 */
+	const bulbsFor = (name: SymbolName, spriteKey: string) => {
+		if (name !== 'W') return SYMBOL_BULBS[name];
+		if (spriteKey.startsWith('tpMegaWild')) return MEGA_WILD_BULBS;
+		return spriteKey.startsWith('tpWild') ? SYMBOL_BULBS.W : undefined;
+	};
 	const getAnimationKey = (
 		rawSymbol: RawSymbol,
 		state: string | undefined,
@@ -176,15 +185,13 @@
 		rowIndex: number,
 	) => {
 		if (rawSymbol.persistent || coasterCellSet.has(`${reelIndex},${rowIndex}`)) return undefined;
-		if (rawSymbol.name === 'W') {
-			if (isInitialRollerTriggerCell(rawSymbol, reelIndex, rowIndex)) return undefined;
-			return 'tpWildAnim';
-		}
 		if (rawSymbol.name === 'DC' || rawSymbol.name === 'S_DUCK') return undefined;
-		if (rawSymbol.name === 'S_ROLLER')
-			return state === 'win' ? 'tpRollerScatterWinAnim' : 'tpRollerScatterAnim';
-		if (rawSymbol.name === 'S_COASTER')
-			return state === 'win' ? 'tpCoasterScatterWinAnim' : 'tpCoasterScatterAnim';
+		// W, S_ROLLER and S_COASTER used to animate here and no longer do. Each was redrawn as a flat
+		// marquee sign, which left its webms animating a building, a badge and a wild that are not on
+		// the board any more. It mattered more for these three than for the royals, because their idle
+		// key was returned unconditionally: the new still was only ever a load-time fallback, so
+		// swapping the PNG alone would have changed nothing on screen. Dropping the key is what lets
+		// them reach the static branch below, where <SymbolBulbs> lights the bulbs drawn into the art.
 		return state === 'win' ? WIN_ANIMATION_KEY_BY_NAME[rawSymbol.name] : undefined;
 	};
 	// True while any symbol is in 'win' state — used to dim non-winning symbols
@@ -194,6 +201,8 @@
 		),
 	);
 	let winPulse = $state(1);
+	/** Seconds since the current win started, and 0 whenever there is none. Drives <SymbolBulbs>. */
+	let winClock = $state(0);
 
 	// --- Ambient life ---------------------------------------------------------------------------
 	// Between spins the grid used to be completely still: two frames 1.2s apart differed by 0.00% of
@@ -250,6 +259,17 @@
 	const LAND_SHAKE = { impulse: 4.2, lastImpulse: 7.5, hz: 15, decay: 9 };
 
 	let idleClock = $state(0);
+	/**
+	 * How often the RESTING bulb shimmer is allowed to redraw, in steps per second.
+	 *
+	 * A winning royal is one of a handful on screen; a resting one is one of fifteen or so, and each
+	 * redraw rebuilds every bulb's geometry. The shimmer runs at 0.21Hz, so ten steps a second is
+	 * already far finer than the eye can follow there, and quantising the clock this way means the
+	 * <Graphics> effect wakes ten times a second instead of sixty — a `$derived` that lands on the same
+	 * number does not notify.
+	 */
+	const IDLE_BULB_STEPS = 10;
+	const idleBulbClock = $derived(Math.round(idleClock * IDLE_BULB_STEPS) / IDLE_BULB_STEPS);
 	let idleAmount = $state(0);
 	let spinBlur = $state<number[]>(new Array(BOARD_DIMENSIONS.x).fill(0));
 	/** Cell key -> its delay into the current rattle. Empty between events. */
@@ -300,6 +320,7 @@
 			previous = now;
 
 			winPulse = hasWinState ? 1.05 + Math.sin((now - started) * 0.012) * 0.06 : 1;
+			winClock = hasWinState ? winClock + delta : 0;
 
 			idleClock += delta;
 			// Held at zero while anything is moving and eased back slowly, so the breathing never
@@ -561,6 +582,28 @@
 									height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
 									alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
 								/>
+								{#if isWin || blur < 0.02}
+									{@const bulbs = bulbsFor(reelSymbol.rawSymbol.name, fallbackKey)}
+									<!-- Over the symbol, so the lit bulbs sit on the unlit ones drawn into it. A
+									     winning sign chases hard; every other SETTLED one keeps a faint shimmer,
+									     which is what stops a grid of marquee signs reading as unlit artwork. The
+									     blur gate is why it does not run mid-spin: the symbols are stretched and
+									     faded there, so a glow pinned to their still positions would come off the
+									     bulbs it is meant to be lighting. -->
+									{#if bulbs}
+										<SymbolBulbs
+											{bulbs}
+											x={getX(reelIndex) + shake}
+											{y}
+											width={SYMBOL_W * (isWin ? winPulse : 1)}
+											height={SYMBOL_H * (isWin ? winPulse : 1)}
+											win={isWin}
+											clock={isWin ? winClock : idleBulbClock}
+											phase={reelIndex * 0.83 + (symbolIndex - 1) * 1.37}
+											alpha={hasWinState && !isWin ? 0.35 : 1}
+										/>
+									{/if}
+								{/if}
 							{/if}
 						</LandingSquish>
 					{/if}

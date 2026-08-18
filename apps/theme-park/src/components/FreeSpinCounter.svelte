@@ -51,15 +51,67 @@
 	const PLATE_FILL = 0x160139;
 	const PLATE_STROKE = 0xab34f4;
 
+	/** Clearance kept between the stack and the edge of the screen, as a fraction of grid width. */
+	const EDGE_MARGIN = 0.02;
+	/**
+	 * Share of the gutter the stack may take in the landscape layout. The gutter there is wider
+	 * relative to the grid than the design's is, so filling it draws plates far bigger than the design
+	 * ever shows — they end up competing with the reels for attention on the smallest screen the game
+	 * runs on.
+	 */
+	const GUTTER_SHARE = 0.72;
+
 	const main = $derived(context.stateLayoutDerived.mainLayout());
+	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 	const board = $derived(context.stateGameDerived.boardLayout());
 	const gridWidth = $derived(board.width * board.boardScale);
-	const plateWidth = $derived(gridWidth * PLATE.width);
-	const plateHeight = $derived(gridWidth * PLATE.height);
-	// A canvas narrower than the design's 1.79 leaves less gutter than the design assumes, so the
-	// stack is held inside the frame rather than allowed to run off the right edge.
+
+	// The visible screen in main-layout units. main.width is the DESIGN width, which on most canvases
+	// is not what the player can actually see — MainContainer scales main-space to fit and lets the
+	// long axis overhang — so clamping against it puts the stack off screen or leaves room unused.
+	const halfView = $derived(canvas.width / (2 * (main.scale || 1)));
+	const viewLeft = $derived(main.width * 0.5 - halfView);
+	const viewRight = $derived(main.width * 0.5 + halfView);
+
+	/**
+	 * Which side of the grid the stack sits on.
+	 *
+	 * The design puts it in the right gutter, which is empty on desktop. The small-popout landscape
+	 * layout is the exception: there the HUD's control rail owns the right edge, and the plates were
+	 * being clamped straight on top of it. That layout's left gutter is clear — the balance and bet
+	 * pills sit at the bottom of it, well below where the stack hangs.
+	 */
+	const onLeft = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
+
+	// Measured to the FRAME's edge, not the grid's: the frame is the wider of the two and it is what
+	// the plates must not run under.
+	const frameLeft = $derived(board.frameCx - board.frameW * 0.5);
+	const gutter = $derived(
+		onLeft ? frameLeft - viewLeft : viewRight - (board.x + gridWidth * 0.5),
+	);
+	// Portrait's board is full-bleed, so it has no gutter at all and the plates ride over the reels as
+	// they always have; sizing them against a gutter of zero would shrink them away to nothing.
+	const hasGutter = $derived(gutter > gridWidth * 0.12);
+	const plateWidth = $derived(
+		hasGutter
+			? Math.min(
+					gridWidth * PLATE.width,
+					onLeft ? gutter * GUTTER_SHARE : gutter - gridWidth * EDGE_MARGIN,
+				)
+			: gridWidth * PLATE.width,
+	);
+	const plateHeight = $derived(plateWidth * (PLATE.height / PLATE.width));
+	// Held inside the visible screen: a canvas narrower than the design's 1.79 leaves less gutter than
+	// the design assumes, and the stack would otherwise run off the edge.
 	const plateX = $derived(
-		Math.min(board.x + gridWidth * PLATE.x, main.width - plateWidth * 0.5 - plateHeight * 0.1),
+		onLeft
+			? // Centred on the gutter — the same axis <HudHtml> puts the balance and bet pills on, so the
+				// four stack up as one column down the side of the board.
+				(viewLeft + frameLeft) * 0.5
+			: Math.min(
+					board.x + gridWidth * PLATE.x,
+					viewRight - plateWidth * 0.5 - gridWidth * EDGE_MARGIN,
+				),
 	);
 
 	const textStyle = (fontSize: number, fill: number) => ({

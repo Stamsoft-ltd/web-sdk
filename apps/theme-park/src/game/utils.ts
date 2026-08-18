@@ -33,16 +33,9 @@ export const bonusSpriteKeyByName: Record<SymbolName, string> = { ...spriteKeyBy
 // Win state sprite keys
 export const winSpriteKeyByName: Record<SymbolName, string> = {
 	...spriteKeyByName,
-	H1: 'tpH1Win',
-	H2: 'tpH2Win',
-	H3: 'tpH3Win',
-	H4: 'tpH4Win',
-	H5: 'tpH5Win',
-	L1: 'tpL1Win',
-	L2: 'tpL2Win',
-	L3: 'tpL3Win',
-	L4: 'tpL4Win',
-	L5: 'tpL5Win',
+	// Every symbol except the duck scatter is deliberately absent: the flat cartoon redraws keep
+	// their one piece of art through a win, lit by <SymbolBulbs> where they have bulbs and by the
+	// board's win pulse where they do not, so they all fall through to `spriteKeyByName`.
 	DC: 'tpDuckScatterDesktop',
 };
 

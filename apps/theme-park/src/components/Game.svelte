@@ -20,6 +20,8 @@
 	import Sound from './Sound.svelte';
 	import Background from './Background.svelte';
 	import Clouds from './Clouds.svelte';
+	import EscapedBalloon from './EscapedBalloon.svelte';
+	import LampGlow from './LampGlow.svelte';
 	import LoadingScreen from './LoadingScreen.svelte';
 	import BoardFrame from './BoardFrame.svelte';
 	import Board from './Board.svelte';
@@ -432,7 +434,9 @@
 			<Background />
 			<!-- Straight after the backdrop and before every <MainContainer>: they all sort at zIndex
 			     0, so insertion order is what keeps the sky behind the board. -->
+			<LampGlow />
 			<Clouds />
+			<EscapedBalloon />
 
 			{#if context.stateLayout.showLoadingScreen}
 				<LoadingScreen

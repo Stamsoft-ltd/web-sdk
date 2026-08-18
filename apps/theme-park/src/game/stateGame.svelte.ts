@@ -174,17 +174,36 @@ const DESIGN_GRID = {
 // they described that game's frame art, not this one's, and nothing else read them.
 const PORTRAIT_FRAME_FILL = 1;
 const PORTRAIT_TOP_OFFSET = 236;
+/**
+ * Share of the room left between the board and the control bar that is given back above the board.
+ *
+ * The offset above is a fixed design number, so on anything taller than the design the whole surplus
+ * collects underneath as a long empty apron of ground while the board rides up under the logo. This
+ * hands part of that surplus back, which settles the board towards the middle of the play area
+ * without ever lifting it above the design's own position on a short screen.
+ */
+const PORTRAIT_SETTLE = 0.2;
 const MOBILE_FRAME_INNER_W = 0.95;
 const MOBILE_FRAME_INNER_H = 0.95;
 
-// Same mobile-landscape play-area reservation used by Forest Gang. Theme Park
-// uses a different temporary frame, but the reel grid follows the same fit and
-// centering rules so board-space features remain aligned at every viewport.
+// Mobile-landscape play-area reservation, inherited from Forest Gang. This is also the layout the
+// site's small popout windows land in — anything whose short side is 480 or less — so it is judged
+// against those and not only against a phone on its side.
+//
+// The fit is height-limited here (the play area is 1.78 wide, the grid 1.44), which means these two
+// vertical numbers and the fill are the only things that set the board's size. The bar reservation
+// was 66 and the fill 0.9, which together left a strip of empty ground under the board while the
+// HUD's own controls sit out at the corners; the values below spend most of that on the board.
 const LS_PANEL_TOP = 88;
-const LS_BOTTOM_BAR = 66;
+const LS_BOTTOM_BAR = 52;
+// The two rails are deliberately lopsided. Because the fit is height-limited, neither of them changes
+// the board's SIZE — between them they only decide where it sits horizontally, and the right side has
+// two things to hold (the action dock AND the BUY BONUS button beside it) against the left's one
+// column of pills. With the rails equal the button was left a 48px slot on an 856-wide popout, i.e.
+// smaller than its own label; the extra ~100 units here move the board off it.
 const LS_LEFT_RAIL = 150;
-const LS_RIGHT_RAIL = 120;
-const LS_PANEL_FILL = 0.9;
+const LS_RIGHT_RAIL = 218;
+const LS_PANEL_FILL = 0.93;
 
 const boardLayout = () => {
 	const layoutType = stateLayoutDerived.layoutType();
@@ -215,7 +234,7 @@ const boardLayout = () => {
 	}
 
 	if (layoutType === 'portrait') {
-		const { mainLayout, canvasSizes } = getBoardViewportMetrics();
+		const { mainLayout, canvasSizes, padding } = getBoardViewportMetrics();
 		// Full-bleed board on mobile portrait: the frame spans the ENTIRE screen width. Use the raw
 		// canvas width (not availableCanvasWidth, which reserves 6px side padding) so frameW resolves
 		// to exactly the canvas width; the reels stay inset by MOBILE_FRAME_INNER_W within it.
@@ -227,13 +246,23 @@ const boardLayout = () => {
 			(availableWidth * PORTRAIT_FRAME_FILL) / (BOARD_SIZES.width * FRAME_OVER_GRID_X);
 		const frameHeight = (BOARD_SIZES.height * boardScale) / MOBILE_FRAME_INNER_H;
 
+		// Whatever room is left between the board's bottom and the control bar, and the share of it
+		// handed back above the board — see PORTRAIT_SETTLE. MainContainer draws main-space around the
+		// canvas centre, so this is that mapping inverted: canvas y -> main y.
+		const scale = mainLayout.scale || 1;
+		const toMainY = (canvasY: number) =>
+			mainLayout.height * 0.5 + (canvasY - canvasSizes.height * 0.5) / scale;
+		const barTop = toMainY(canvasSizes.height - padding.bottom);
+		const slack = Math.max(0, barTop - (PORTRAIT_TOP_OFFSET + frameHeight));
+		const topY = PORTRAIT_TOP_OFFSET + slack * PORTRAIT_SETTLE;
+
 		return {
 			// Centre the portrait board on screen; desktop applies its own design-space placement below.
 			x: mainLayout.width * 0.5,
-			y: PORTRAIT_TOP_OFFSET + frameHeight * 0.5,
-			frameTopY: PORTRAIT_TOP_OFFSET,
+			y: topY + frameHeight * 0.5,
+			frameTopY: topY,
 			frameCx: mainLayout.width * 0.5,
-			frameCy: PORTRAIT_TOP_OFFSET + frameHeight * 0.5,
+			frameCy: topY + frameHeight * 0.5,
 			frameW: (BOARD_SIZES.width * boardScale) / MOBILE_FRAME_INNER_W,
 			frameH: frameHeight,
 			boardScale,

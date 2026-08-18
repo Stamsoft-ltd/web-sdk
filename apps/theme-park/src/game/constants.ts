@@ -4,12 +4,20 @@ import type { SymbolName, RawSymbol, SymbolState } from './types';
 // Theme Park board: 5 reels x 5 rows
 export const BOARD_DIMENSIONS = { x: 5, y: 5 };
 
-// Drawn size of a symbol. Inherited from Forest Gang's reel pitch, and left alone: the symbol
-// exports are 448x360 frames, so 121x103 is the shape every piece of art in this game is authored
-// against.
-export const SYMBOL_W = 121;
+// The frame every piece of symbol art in this game is authored in.
+export const SYMBOL_FRAME = { width: 448, height: 360 };
+
 // Symbol art keeps its authored size. Grid row pitch is separate and 5% taller for breathing room.
 export const SYMBOL_H = 103;
+// Drawn size of a symbol, derived from the frame so the art is never distorted.
+//
+// This used to be a flat 121, inherited from Forest Gang's reel pitch. 121x103 is 1.175:1 against
+// the frame's 1.244:1, so every symbol was being squeezed 5.6% horizontally — invisible on the
+// photoreal renders the game shipped with, and immediately obvious the moment a flat cartoon with a
+// circle in it (the ferris wheel, the balloons) went on the board. Width is the side that gives,
+// because SYMBOL_H drives CELL_H and therefore the whole board's height, while CELL_W is derived
+// from SYMBOL_H too and at 155.7 has room to spare for the 128.2 this comes out at.
+export const SYMBOL_W = SYMBOL_H * (SYMBOL_FRAME.width / SYMBOL_FRAME.height);
 export const SYMBOL_SIZE = SYMBOL_H;
 
 // One shared contract for the landed Roller trigger and the moving track car. The authored frame
@@ -85,17 +93,19 @@ const states = (base: string, win: string): Record<SymbolState, SymbolInfo> => (
 	win: sprite(win),
 });
 
+// Every symbol passes the same asset for both states on purpose: a win is <SymbolBulbs> lighting
+// the bulbs already in the art, or the board's win pulse, never a second piece of art.
 export const SYMBOL_INFO_MAP: Record<SymbolName, Record<SymbolState, SymbolInfo>> = {
-	H1: states('tpH1', 'tpH1Win'), // Coaster Car
-	H2: states('tpH2', 'tpH2Win'), // Rubber Duck
-	H3: states('tpH3', 'tpH3Win'), // Balloon Bundle
-	H4: states('tpH4', 'tpH4Win'), // Popcorn
-	H5: states('tpH5', 'tpH5Win'), // Ferris Wheel
-	L1: states('tpL1', 'tpL1Win'), // A
-	L2: states('tpL2', 'tpL2Win'), // K
-	L3: states('tpL3', 'tpL3Win'), // Q
-	L4: states('tpL4', 'tpL4Win'), // J
-	L5: states('tpL5', 'tpL5Win'), // 10
+	H1: states('tpH1', 'tpH1'), // Coaster Car
+	H2: states('tpH2', 'tpH2'), // Rubber Duck
+	H3: states('tpH3', 'tpH3'), // Balloon Bundle
+	H4: states('tpH4', 'tpH4'), // Popcorn
+	H5: states('tpH5', 'tpH5'), // Ferris Wheel
+	L1: states('tpL1', 'tpL1'), // A
+	L2: states('tpL2', 'tpL2'), // K
+	L3: states('tpL3', 'tpL3'), // Q
+	L4: states('tpL4', 'tpL4'), // J
+	L5: states('tpL5', 'tpL5'), // 10
 	W: states('tpWildDesktop', 'tpWildDesktop'),
 	DC: states('tpDuckScatterDesktop', 'tpDuckScatterDesktop'),
 	S_DUCK: states('tpDuckScatterDesktop', 'tpDuckScatterDesktop'),

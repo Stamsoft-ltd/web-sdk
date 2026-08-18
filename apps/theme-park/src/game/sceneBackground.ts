@@ -19,7 +19,11 @@ export const BACKGROUND_OVERSCAN = 1.025;
  * gated on its texture, mounts last. These keep the sky below the game whatever the load order.
  */
 export const BACKGROUND_Z = -4;
+/** The lamp glows belong to the painted plaza, so nothing in the sky passes behind them. */
+export const LAMPS_Z = -3;
 export const CLOUDS_Z = -2;
+/** The escaped balloon is nearer than the sky, so it passes in front of the clouds. */
+export const BALLOON_Z = -1;
 
 export type CanvasSizes = { width: number; height: number };
 

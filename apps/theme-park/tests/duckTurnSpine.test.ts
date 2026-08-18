@@ -433,10 +433,10 @@ describe('Duck Your Luck Spine rig', () => {
 		expect(handler).toContain('duckLook: duckLookForPosition(position, bookEvent.index)');
 		expect(board).not.toMatch(/revealedDuckCollectCellSet|underDuckCollect/);
 		expect(board).not.toContain("assetKey: 'duckPresentSpine'");
-		expect(assets).toContain("src: './assets/theme-park/v2/modes/duck-your-luck-desktop.png'");
-		expect(assets).toContain("src: './assets/theme-park/v2/modes/duck-your-luck-mobile.png'");
+		expect(assets).toContain("src: './assets/theme-park/v2/modes/duck-your-luck-desktop-marquee.png'");
+		expect(assets).toContain("src: './assets/theme-park/v2/modes/duck-your-luck-mobile-marquee.png'");
 		expect(assets).toContain(
-			"src: './assets/theme-park/v2/modes/duck-your-luck-mobile-landscape.png'",
+			"src: './assets/theme-park/v2/modes/duck-your-luck-mobile-landscape-marquee.png'",
 		);
 		expect(utils).toMatch(
 			/duckScatter: \{[\s\S]*desktop: 'tpDuckScatterDesktop',[\s\S]*portrait: 'tpDuckScatterMobile',[\s\S]*landscape: 'tpDuckScatterLandscape'/,

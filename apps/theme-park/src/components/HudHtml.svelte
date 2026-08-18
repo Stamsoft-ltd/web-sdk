@@ -22,7 +22,9 @@
 	const navTurboSolid = ap('/assets/theme-park/v2/hud/turbo-1.webp');
 	const navTurboDouble = ap('/assets/theme-park/v2/hud/turbo-2.webp');
 	const navTurboOutline = ap('/assets/theme-park/v2/hud/turbo-3.webp');
-	const barPlate = ap('/assets/theme-park/v2/hud/bar_plate.webp');
+	// The sparkle-free plate (scripts/build-hud-bar-plain.py). The five points painted onto the
+	// original never moved, and <PopupBorderLights> now runs real ones along the same line.
+	const barPlate = ap('/assets/theme-park/v2/hud/bar_plate-clean.webp');
 	const buyPlate = ap('/assets/theme-park/v2/hud/buy_plate.webp');
 	// The spin button is a rotatable marquee ring plus a static glyph on top, NOT one flat composite
 	// (see scripts/spin-button/build_spin_button.py). The ring is identical in every state — only the
@@ -57,8 +59,9 @@
 	// bet setter, stretched to fill this box so the two match.
 	const ptBetBox = ap('/assets/theme-park/v2/hud/neon-frame.png');
 	// Portrait nav bar — bar_plate cropped tight + vertically symmetric, so the visible bar nearly
-	// fills its box and the (bigger) buttons sit centred inside it.
-	const ptNavBar = ap('/assets/theme-park/v2/controls/nav-bar.png');
+	// fills its box and the (bigger) buttons sit centred inside it. Sparkle-free, like the desktop
+	// plate above (scripts/build-hud-bar-plain.py); <PopupBorderLights> runs real ones on it.
+	const ptNavBar = ap('/assets/theme-park/v2/controls/nav-bar-clean.png');
 </script>
 
 <script lang="ts">
@@ -74,6 +77,7 @@
 	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
 	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
 	import CustomInfoModal from './CustomInfoModal.svelte';
+	import PopupBorderLights from './PopupBorderLights.svelte';
 
 	const context = getContext();
 
@@ -81,18 +85,60 @@
 	const isLandscapeMobile = $derived(layoutType === 'landscape');
 	const isPortrait = $derived(layoutType === 'portrait');
 
-	// The THEME PARK logo tracks the board: it sits just above the portrait board frame, whose top is
-	// at logical Y = 236 (PORTRAIT_TOP_OFFSET) in the 1080×1920 portrait space. MainContainer maps a
-	// logical point to CSS px as cssY = canvasH/2 + (logicalY − mainH/2) · scale, scale = min(cssW/1080,
-	// cssH/1920). We anchor the logo's BOTTOM at that Y (via translateY(-100%)), so it never overlaps.
-	const PORTRAIT_BOARD_FRAME_TOP = 236;
+	// The THEME PARK logo tracks the board: it sits just above the portrait board frame. MainContainer
+	// maps a logical point to CSS px as cssY = canvasH/2 + (logicalY − mainH/2) · scale, so this is
+	// that mapping applied to whatever top the board reports. Read rather than hard-coded: the board
+	// settles further down the taller the screen is (PORTRAIT_SETTLE), and a fixed number left the logo
+	// stranded halfway up the sky.
 	const portraitLogoTop = $derived.by(() => {
 		if (!isPortrait) return null;
 		const canvas = context.stateLayoutDerived.canvasSizes();
 		const main = context.stateLayoutDerived.mainLayout();
-		const boardTopCss = canvas.height / 2 + (PORTRAIT_BOARD_FRAME_TOP - main.height / 2) * main.scale;
+		const board = context.stateGameDerived.boardLayout();
+		const boardTopCss = canvas.height / 2 + (board.frameTopY - main.height / 2) * main.scale;
 		// logo BOTTOM anchored just above the board frame — small gap so it nearly touches
 		return Math.max(6, Math.round(boardTopCss + 10));
+	});
+
+	/**
+	 * The two x positions the landscape HUD cannot get from CSS, in canvas px: the centre of the gutter
+	 * left of the board (which the balance/bet column shares with the free-spin plates, so the two line
+	 * up in one column) and the centre of the gap between the board and the action dock (where BUY
+	 * BONUS goes). Both edges belong to the board, which is drawn on the canvas.
+	 */
+	/**
+	 * The dock's rendered width, measured rather than recomputed. Its box is as wide as its widest
+	 * child, which is the spin button and not the small round ones, and every attempt to mirror that
+	 * arithmetic here goes stale the moment one of the clamps changes.
+	 */
+	let lsDockWidth = $state(0);
+
+	const landscapeColumns = $derived.by(() => {
+		if (!isLandscapeMobile) return null;
+		const canvas = context.stateLayoutDerived.canvasSizes();
+		const main = context.stateLayoutDerived.mainLayout();
+		const board = context.stateGameDerived.boardLayout();
+		const toCss = (x: number) => canvas.width / 2 + (x - main.width / 2) * main.scale;
+		const frameLeft = toCss(board.frameCx - board.frameW / 2);
+		const frameRight = toCss(board.frameCx + board.frameW / 2);
+		const clamp = (min: number, value: number, max: number) => Math.min(max, Math.max(min, value));
+		const vh = canvas.height / 100;
+		// 1.8% mirrors the dock's own `right` in CSS — it has to, or the gap is measured to the wrong
+		// edge and the button drifts into the dock.
+		const dockLeft = canvas.width - canvas.width * 0.018 - lsDockWidth;
+		// Centring BUY BONUS in the gap is only half the job: on the narrower popouts the gap is smaller
+		// than the button, and a centred button that does not fit overlaps BOTH edges. So it is sized to
+		// the gap as well, keeping a margin off the board's rail and the dock's border. The margin is
+		// small because the gap is the scarce thing here — the board's neon rail and the dock's border
+		// both fade out at their edges, so a few pixels read as clearance already.
+		const BUY_MARGIN = 3;
+		return {
+			left: Math.round(frameLeft / 2),
+			buy: Math.round((frameRight + dockLeft) / 2),
+			buySize: Math.round(
+				clamp(52, Math.min(dockLeft - frameRight - BUY_MARGIN * 2, 18 * vh), 104),
+			),
+		};
 	});
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
 	const congratsBlocking = $derived(context.stateGame.freeSpinPopupShowing);
@@ -440,7 +486,12 @@
 	{#if isLandscapeMobile}
 	<!-- MOBILE-LANDSCAPE HUD — two side columns flanking the board, matching the design. Left: balance
 	     + bet stepper. Right: menu · sound · SPIN · turbo · auto stack, with BUY BONUS + WIN beside it. -->
-	<div class="ls-hud">
+	<div
+		class="ls-hud"
+		style:--ls-left-x="{landscapeColumns?.left ?? 0}px"
+		style:--ls-buy-x="{landscapeColumns?.buy ?? 0}px"
+		style:--ls-buy-size="{landscapeColumns?.buySize ?? 66}px"
+	>
 		<div class="ls-left">
 			<div class="ls-pill ls-pill--balance">
 				<span class="ls-pill__label">{i18nDerived.balance()}</span>
@@ -488,7 +539,7 @@
 			</div>
 		</div>
 
-		<div class="ls-actions">
+		<div class="ls-actions" bind:clientWidth={lsDockWidth}>
 			<img class="ls-actions__bg" src={lsNavBox} alt="" aria-hidden="true" />
 			<button class="ls-btn" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
 				<img src={ptMenu} alt="" />
@@ -558,6 +609,12 @@
 		     background-image because the spin button overhangs the plate top and bottom, so the plate
 		     has to sit BEHIND the row at its own smaller height while the row keeps the taller box. -->
 		<img class="hud-plate" src={barPlate} alt="" />
+		<!-- The dialogs' running lights, on the bar's own neon line. Same box as the plate so the
+		     path lands on the painted edge; the scale pulls the glow back to the size it is on a
+		     popup, which the bar's 10:1 box would otherwise blow up (see <PopupBorderLights>). -->
+		<div class="hud-plate-lights">
+			<PopupBorderLights variant="bar" scale={0.55} />
+		</div>
 		<div class="hud-left">
 			<div class="hud-system">
 				<button
@@ -754,6 +811,10 @@
 	<div class="pt-hud">
 		<div class="pt-controls">
 			<img class="pt-bar-bg" src={ptNavBar} alt="" aria-hidden="true" />
+			<!-- The dialogs' running lights, on the portrait bar's own neon line. -->
+			<div class="pt-bar-lights">
+				<PopupBorderLights variant="navBar" scale={0.55} />
+			</div>
 			<div class="pt-side pt-side--left">
 				<button class="pt-btn" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
 					<img src={ptMenu} alt="" />
@@ -1026,7 +1087,8 @@
 	   every control 4 units BELOW the middle of the pill, which is what read as "not centred". The
 	   design does the same correction — it places the plate 3.23 below the row centre rather than on
 	   it. Pushing the image down by 4 puts the pill's centre on the row's centre instead. */
-	.hud-plate {
+	.hud-plate,
+	.hud-plate-lights {
 		position: absolute;
 		left: 0;
 		top: 50%;
@@ -1037,7 +1099,7 @@
 		pointer-events: none;
 	}
 
-	.hud-bottom > *:not(.hud-plate) {
+	.hud-bottom > *:not(.hud-plate, .hud-plate-lights) {
 		position: relative;
 		z-index: 1;
 	}
@@ -1754,7 +1816,9 @@
 	   stretched plate wrecked it. Portrait no longer renders .hud-bottom at all — it has its own
 	   .pt-hud marquee below — but the rules stay keyed to both so the fallback is safe. */
 	.hud-shell[data-layout='portrait'] .hud-plate,
-	.hud-shell[data-layout='landscape'] .hud-plate {
+	.hud-shell[data-layout='landscape'] .hud-plate,
+	.hud-shell[data-layout='portrait'] .hud-plate-lights,
+	.hud-shell[data-layout='landscape'] .hud-plate-lights {
 		display: none;
 	}
 
@@ -1817,15 +1881,20 @@
 		line-height: 1.1;
 	}
 
-	/* Left column: balance above the bet stepper, small, pinned to the bottom-left. */
+	/* Left column: balance above the bet stepper, pinned to the bottom and centred on the gutter left
+	   of the board — the same axis the free-spin plates use, so the four read as one column. */
 	.ls-left {
 		position: absolute;
-		left: 2.4%;
+		left: var(--ls-left-x, 2.4%);
+		transform: translateX(-50%);
 		bottom: 5%;
 		display: flex;
 		flex-direction: column;
 		gap: clamp(4px, 1.1vh, 8px);
-		width: clamp(94px, 15vw, 134px);
+		/* Held inside the left gutter as well as sized off the viewport. --ls-left-x is the gutter's
+		   MIDPOINT, so twice it is the gutter; without the cap the column kept its viewport width and
+		   ran off the left edge of the screen once the board moved left to make room for BUY BONUS. */
+		width: min(clamp(94px, 15vw, 134px), calc(var(--ls-left-x, 100px) * 2 - 8px));
 	}
 	.ls-bet {
 		position: relative;
@@ -1937,18 +2006,18 @@
 
 	/* BUY BONUS — round button, seated left of the action dock near the bottom. Bigger so the
 	   two-word label fits inside the circle. */
-	/* BUY BONUS — bottom aligned with the dock's end, and centred horizontally in the gap between the
-	   board and the dock. The gap runs from the dock's left edge (~1.8% + 68px) to the board's right
-	   edge (~23.6% of the viewport), so its centre is ~16.6% from the right; place the button's centre
-	   there (right edge = centre − half its width). */
+	/* BUY BONUS — bottom aligned with the dock's end, centred in the gap between the board's right edge
+	   and the dock. It used to be placed by a fixed offset off the right edge, which put it on the
+	   board's neon rail once the board grew; centring keeps it off both sides whatever the window does.
+	   A size down as well, because that gap is narrow on the site's small popout windows. */
 	.ls-buy {
 		position: absolute;
-		/* Right edge just onto the dock's left edge (≈ 1.8% + ~68px) — a few px over its neon border,
-		   still clear of the buttons inside. */
-		right: calc(1.8% + 64px);
+		/* Centred in the gap, which means knowing where the board's edge is — see landscapeColumns. */
+		left: var(--ls-buy-x);
+		transform: translateX(-50%);
 		bottom: 15%;
-		width: clamp(66px, 12.5vh, 98px);
-		height: clamp(66px, 12.5vh, 98px);
+		width: var(--ls-buy-size);
+		height: var(--ls-buy-size);
 		border: 0;
 		padding: 0;
 		background: none;
@@ -1956,19 +2025,34 @@
 		display: grid;
 		place-items: center;
 	}
+	/* btn-buy-mobile.png is a 174x174 export in which the disc itself is only the middle 119px — the
+	   rest is transparent margin around the glow. Drawn at `inset: 0` the button therefore rendered a
+	   disc 68% of its own declared size, so the box was reserving 65px of gap to paint 44px of button
+	   and the label, sized against the box, ran straight off the rim. Blowing the image up by 174/119
+	   makes the declared size and the visible disc the same thing, which is what every measurement
+	   here (the gap arithmetic, the label ratio below) already assumed. */
 	.ls-buy img {
 		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
+		left: -23.1%;
+		top: -23.1%;
+		width: 146.2%;
+		height: 146.2%;
 		object-fit: contain;
+		/* The blown-up box now hangs past the button on every side, and a child does not get clipped to
+		   its parent — without this it would swallow clicks meant for the dock next to it. */
+		pointer-events: none;
 	}
 	.ls-buy__label {
 		position: relative;
 		z-index: 2;
 		/* Narrow enough that "BUY BONUS" wraps onto two rows, as the design shows. */
-		max-width: 58%;
-		font-size: clamp(0.5rem, 1.85vh, 0.68rem);
+		max-width: 80%;
+		/* Sized off the BUTTON, not the viewport. A vh-based size ignores the fact that the button is
+		   itself clamped to the gap beside the board, so on the small popouts the disc shrank to its
+		   floor while the label did not, and "BONUS" ran out past the rim. The ratio is set by the
+		   longer of the two rows: "BONUS" runs about 4.1 times the font size, so anything above ~0.19
+		   is wider than the disc's flat centre. */
+		font-size: calc(var(--ls-buy-size, 66px) * 0.16);
 		font-weight: 800;
 		line-height: 1.08;
 		letter-spacing: 0.02em;
@@ -1981,7 +2065,9 @@
 		cursor: default;
 	}
 
-	/* WIN — bottom-right corner, label + value on a single row. Bigger and more square (8px radius). */
+	/* WIN — bottom-right corner, label + value on a single row. Kept narrow: the board's bottom-right
+	   corner comes down close to it on the small popout windows, and the pill was running under the
+	   corner's neon rail. It grows from its content anyway, so a long amount still fits. */
 	.ls-pill--win {
 		position: absolute;
 		right: 1.8%;
@@ -1989,10 +2075,10 @@
 		flex-direction: row;
 		align-items: baseline;
 		justify-content: center;
-		gap: 7px;
+		gap: 6px;
 		width: auto;
-		min-width: clamp(126px, 17vw, 172px);
-		padding: 7px 16px;
+		min-width: clamp(104px, 13vw, 140px);
+		padding: 6px 12px;
 	}
 	.ls-pill--win .ls-pill__value {
 		font-size: clamp(0.68rem, 2.15vh, 0.92rem);
@@ -2115,7 +2201,8 @@
 		padding: 0 10px;
 		overflow: visible;
 	}
-	.pt-bar-bg {
+	.pt-bar-bg,
+	.pt-bar-lights {
 		position: absolute;
 		inset: 0;
 		width: 100%;
@@ -2124,7 +2211,7 @@
 		z-index: 0;
 		pointer-events: none;
 	}
-	.pt-controls > :not(.pt-bar-bg) {
+	.pt-controls > :not(.pt-bar-bg, .pt-bar-lights) {
 		position: relative;
 		z-index: 1;
 	}
