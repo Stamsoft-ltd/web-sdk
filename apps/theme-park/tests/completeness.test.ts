@@ -46,7 +46,9 @@ describe('shared frontend completeness guards', () => {
 		expect(hud).toContain("node.style.removeProperty('font-size')");
 		expect(hud).toContain('node.style.fontSize =');
 		expect(hud).not.toContain('node.style.transform =');
-		expect(hud).toMatch(/\.value-pill--balance \{[\s\S]*?width: calc\(var\(--hud-u\) \* 130\.333\);[\s\S]*?overflow: hidden;/);
+		expect(hud).toMatch(
+			/\.value-pill--balance \{[\s\S]*?width: calc\(var\(--hud-u\) \* 130\.333\);[\s\S]*?overflow: hidden;/,
+		);
 		expect(hud).toMatch(/\.bet-values \{[\s\S]*?overflow: hidden;/);
 		expect(hud).toMatch(/\.pt-bet__values \{[\s\S]*?flex: 1 1 0;[\s\S]*?overflow: hidden;/);
 	});
@@ -74,12 +76,33 @@ describe('shared frontend completeness guards', () => {
 		expect(boardKeyForMultiplier(1000)).toBe('winLegendary');
 	});
 
+	it('shows a normal win board before the Duck Your Luck bonus summary', () => {
+		const events = source('src/game/bookEventHandlerMap.ts');
+		const duckEnd = events.slice(
+			events.indexOf('duckPickEnd: async'),
+			events.indexOf('rollerWildsApply: async'),
+		);
+		expect(duckEnd).toContain("type: 'winUpdate'");
+		expect(duckEnd.indexOf("type: 'winShow'")).toBeLessThan(
+			duckEnd.indexOf("type: 'freeSpinOutroShow'"),
+		);
+		expect(duckEnd.indexOf("type: 'winHide'")).toBeLessThan(
+			duckEnd.indexOf("type: 'freeSpinOutroShow'"),
+		);
+		expect(duckEnd.indexOf('stateGame.bonusSummaryShown = true')).toBeGreaterThan(
+			duckEnd.indexOf("type: 'winHide'"),
+		);
+	});
+
 	it('loops paylines until the next physical spin starts', () => {
 		const events = source('src/game/bookEventHandlerMap.ts');
 		const actor = source('src/game/actor.ts');
 		const state = source('src/game/stateGame.svelte.ts');
 		const neon = source('src/components/NeonPaylines.svelte');
-		const finalWin = events.slice(events.indexOf('finalWin: async'), events.indexOf('freeSpinTrigger: async'));
+		const finalWin = events.slice(
+			events.indexOf('finalWin: async'),
+			events.indexOf('freeSpinTrigger: async'),
+		);
 		const reveal = events.slice(events.indexOf('reveal: async'), events.indexOf('winInfo: async'));
 
 		expect(finalWin).not.toContain('stateGame.paylineWins = []');

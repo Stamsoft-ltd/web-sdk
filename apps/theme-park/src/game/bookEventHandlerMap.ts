@@ -11,7 +11,7 @@ import { stateGame, stateGameDerived } from './stateGame.svelte';
 import { eventEmitter } from './eventEmitter';
 import { playBookEvent } from './utils';
 import config from './config';
-import { BOARD_DIMENSIONS } from './constants';
+import { BOARD_DIMENSIONS, REEL_SKIP_GAP_MS } from './constants';
 import { duckLookForPosition, duckVariantForPosition, seededEventChoice } from './duckVisual';
 
 const getWinLevelData = (winLevel: number): WinLevelData => {
@@ -96,9 +96,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// before the delay made only the final 500x spin readable.
 		stateGame.paylineWins = [];
 
-		const hadPendingStop = stateGame.pendingStop && stateGame.awaitingFirstReveal;
-		stateGame.awaitingFirstReveal = false;
-		stateGame.pendingStop = false;
 		const rollerRollOutPromise = hadActiveRollerReels
 			? eventEmitter.broadcastAsync({ type: 'rollerWildsRollOut' })
 			: Promise.resolve();
@@ -124,9 +121,25 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		const spinPromise = stateGameDerived.enhancedBoard.spin({
 			revealEvent: seededRevealEvent,
 			paddingBoard: config.paddingReels[bookEvent.gameType],
+			onWaitingForReady: () => {
+				stateGame.revealPreparing = true;
+			},
+			onPrepared: () => {
+				const hadPendingStop = stateGame.pendingStop;
+				stateGame.awaitingFirstReveal = false;
+				stateGame.revealPreparing = false;
+				stateGame.pendingStop = false;
+				if (!hadPendingStop) return;
+				const delayMs = stateBet.isSuperTurbo
+					? REEL_SKIP_GAP_MS.turbo
+					: stateBet.isTurbo
+						? REEL_SKIP_GAP_MS.fast
+						: REEL_SKIP_GAP_MS.normal;
+				stateGameDerived.enhancedBoard.stopSequentially({ delayMs });
+			},
 		});
-		if (hadPendingStop) stateGameDerived.enhancedBoard.stop();
 		await Promise.all([spinPromise, rollerRollOutPromise]);
+		stateGame.revealPreparing = false;
 		stateGame.hasAnticipationPending = false;
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
 	},
@@ -399,10 +412,20 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		await eventEmitter.broadcastAsync({ type: 'duckPondFinish', amount: bookEvent.amount });
 		eventEmitter.broadcast({ type: 'duckPondHide' });
 
-		// Duck Your Luck has no freeSpinEnd event, so explicitly use the same final-winnings board as
-		// the reel bonuses. Keep the pond state alive behind it until the player acknowledges the total.
-		stateGame.bonusSummaryShown = true;
+		// First celebrate the won tier like a normal settled win. Duck Your Luck has no winInfo event,
+		// so without this explicit beat it jumped directly from the pond to the bonus summary.
 		const winLevelData = getWinLevelDataForAmount(bookEvent.amount);
+		eventEmitter.broadcast({ type: 'winShow' });
+		await eventEmitter.broadcastAsync({
+			type: 'winUpdate',
+			amount: bookEvent.amount,
+			winLevelData,
+		});
+		eventEmitter.broadcast({ type: 'winHide' });
+
+		// Then use the dedicated final-winnings board. Keep pond state alive behind both screens until
+		// the player acknowledges the total; the later setWin is settlement data and stays suppressed.
+		stateGame.bonusSummaryShown = true;
 		eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_youwon_panel' });
 		await eventEmitter.broadcastAsync({

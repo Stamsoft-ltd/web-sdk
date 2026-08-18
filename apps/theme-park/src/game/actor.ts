@@ -22,6 +22,7 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		if (lastRevealEvent) stateGameDerived.enhancedBoard.settle(lastRevealEvent.board);
 	},
 	onNewGameStart: async () => {
+		stateGame.revealPreparing = false;
 		// Physical spin press owns payline teardown. Waiting for the RGS reveal left the prior line
 		// cycle visible over pre-spin/network latency.
 		stateGame.paylineWins = [];
@@ -29,7 +30,8 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		// the feature should travel down with the live reels rather than delay their next motion.
 		void eventEmitter.broadcastAsync({ type: 'rollerWildsRollOut' });
 		stateGame.activeRollerReels = [];
-		if ((stateBet.isSuperTurbo && stateXstateDerived.isAutoBetting()) || stateBet.isSpaceHold) return;
+		if ((stateBet.isSuperTurbo && stateXstateDerived.isAutoBetting()) || stateBet.isSpaceHold)
+			return;
 		stateBet.winBookEventAmount = 0;
 		stateGame.pendingStop = false;
 		stateGame.awaitingFirstReveal = true; // open the buffer window
@@ -37,7 +39,10 @@ const primaryMachines = createPrimaryMachines<Bet>({
 			paddingBoard: config.paddingReels[stateGame.gameType],
 		});
 	},
-	onNewGameError: () => stateGameDerived.enhancedBoard.settle(),
+	onNewGameError: () => {
+		stateGame.revealPreparing = false;
+		stateGameDerived.enhancedBoard.settle();
+	},
 	onPlayGame: async (bet) => {
 		if (stateGame.endRoundOnly) {
 			stateGame.endRoundOnly = false;

@@ -192,6 +192,10 @@ export const SPIN_OPTIONS_ANTICIPATED = {
 
 export const MOTION_BLUR_VELOCITY = SYMBOL_H * 0.7;
 
+// A manual stop lands columns in visual reading order. Fast/turbo still keep a small separation so
+// the result never looks like five unrelated reels snapping in a scheduler-dependent order.
+export const REEL_SKIP_GAP_MS = { normal: 70, fast: 35, turbo: 18 } as const;
+
 export const zIndexes = {
 	board: 0,
 	overlay: 10,

@@ -81,6 +81,7 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 
 	// internal states
 	let isPreSpinning = false;
+	let spinActive = false;
 	let targetPaddingPosition = reelLength - 1;
 	let prevSymbols: ReelSymbol[] = createReelSymbols(reelOptions.initialSymbols);
 	let targetSymbols: ReelSymbol[] = createReelSymbols(reelOptions.initialSymbols);
@@ -197,6 +198,7 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 				: reelState.spinOptions().reelPreSpinSpeed;
 			const easing = started || isTurboBeforeAll ? linear : backIn;
 			await slideY({ reelY: defaultY, speed, easing });
+			if (!isPreSpinning) return;
 			await preSpinPadding({ preSpinPaddingRawReel });
 			if (!started) {
 				reelState.motion = 'spinning';
@@ -204,6 +206,14 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 				started = true;
 			}
 		}
+	};
+
+	// Align the running padding strip without arming the final-spin interrupt. Once the reveal owns
+	// real targets, its ordered stop can start immediately and never expose a random padding result.
+	const finishPreSpin = () => {
+		if (!isPreSpinning) return;
+		isPreSpinning = false;
+		placeY(defaultY);
 	};
 
 	const delaySpinByReelIndex = async () => {
@@ -220,6 +230,7 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 		const preSpinPaddingRawReel = preSpinPaddingReel;
 
 		isPreSpinning = true;
+		spinActive = true;
 		reelState.spinType = isTurboBeforeAll ? 'fast' : 'normal';
 		await preSpinPadding({ preSpinPaddingRawReel });
 		if (!isTurboBeforeAll) await delaySpinByReelIndex();
@@ -396,13 +407,21 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 
 	const spin = async () => {
 		isPreSpinning = false;
-
-		await SPIN_MAP[reelState.spinType]();
-
-		interruptible.clear();
+		spinActive = true;
+		try {
+			await SPIN_MAP[reelState.spinType]();
+		} finally {
+			interruptible.clear();
+			spinActive = false;
+		}
 	};
 
+	const isActive = () => spinActive;
+
 	const setSymbolsWithReelSymbols = (reelSymbols?: ReelSymbol[]) => {
+		isPreSpinning = false;
+		spinActive = false;
+		interruptible.clear();
 		reelState.motion = 'stopped';
 		placeY(defaultY);
 		if (reelSymbols) {
@@ -465,6 +484,8 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 		preSpin,
 		prepareToSpin,
 		spin,
+		isActive,
+		finishPreSpin,
 		stop,
 		forceStop,
 		releaseAnticipation,

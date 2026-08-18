@@ -116,6 +116,7 @@ export const stateGame = $state({
 	endRoundOnly: false,
 	pendingStop: false,
 	awaitingFirstReveal: false,
+	revealPreparing: false,
 	hasAnticipationPending: false,
 	anticipationSkipped: false,
 	stopAutoOnBonus: false,

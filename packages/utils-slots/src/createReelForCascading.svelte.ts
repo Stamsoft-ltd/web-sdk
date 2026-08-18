@@ -78,6 +78,8 @@ export function createReelForCascading<TRawSymbol extends object, TSymbolState e
 	let onSpinFinishing: () => void = () => {};
 	let noStop = false;
 	let paddingSize = 0;
+	let isPreSpinning = false;
+	let spinActive = false;
 
 	const delaySpinByReelIndex = async () => {
 		await waitForTimeout(reelState.spinOptions().reelFallOutDelay * reelOptions.reelIndex);
@@ -88,6 +90,8 @@ export function createReelForCascading<TRawSymbol extends object, TSymbolState e
 	}: {
 		isTurboBeforeAll: boolean; // To avoid previous spinType has effect on "getSpinOption" in "slideDownLoop"
 	}) => {
+		isPreSpinning = true;
+		spinActive = true;
 		reelState.spinType = isTurboBeforeAll ? 'fast' : 'normal';
 		if (!isTurboBeforeAll) await delaySpinByReelIndex();
 		await fallOut();
@@ -222,10 +226,22 @@ export function createReelForCascading<TRawSymbol extends object, TSymbolState e
 	};
 
 	const spin = async () => {
-		await SPIN_MAP[reelState.spinType]();
+		isPreSpinning = false;
+		spinActive = true;
+		try {
+			await SPIN_MAP[reelState.spinType]();
+		} finally {
+			interruptible.clear();
+			spinActive = false;
+		}
 	};
 
+	const isActive = () => spinActive;
+
 	const setSymbolsWithRawSymbols = (value?: TRawSymbol[]) => {
+		isPreSpinning = false;
+		spinActive = false;
+		interruptible.clear();
 		reelState.motion = 'stopped';
 		if (value) {
 			updateSymbols(value);
@@ -256,6 +272,7 @@ export function createReelForCascading<TRawSymbol extends object, TSymbolState e
 		preSpin,
 		prepareToSpin,
 		spin,
+		isActive,
 		stop,
 		setSymbolsWithRawSymbols,
 		readyToSpinEffect,

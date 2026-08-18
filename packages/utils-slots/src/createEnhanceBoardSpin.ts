@@ -22,16 +22,24 @@ export function createEnhanceBoardSpin<TReel extends Reel<any, any>>({
 	async function spin<RevealEvent extends BaseRevealEvent>({
 		revealEvent,
 		paddingBoard,
+		onWaitingForReady,
+		onPrepared,
 	}: {
 		revealEvent: RevealEvent;
 		paddingBoard?: TRawSymbol[][];
+		onWaitingForReady?: () => void;
+		onPrepared?: () => void;
 	}) {
 		if (stateSlots.isPreSpinning) {
-			await Promise.all(
+			const readyPromise = Promise.all(
 				board.map(async (reel) => {
 					await waitForResolve((resolve) => (reel.reelState.readyToSpin = resolve));
 				}),
 			);
+			// Ready listeners now exist. A buffered stop may safely finish pre-spin immediately without
+			// racing past the listeners and waiting for another full reel loop.
+			onWaitingForReady?.();
+			await readyPromise;
 		}
 
 		stateSlots.isPreSpinning = false;
@@ -73,12 +81,17 @@ export function createEnhanceBoardSpin<TReel extends Reel<any, any>>({
 					reel.onReelStopping();
 					const nextReelIndex = reelIndex + 1;
 					const isNextReelAnticipated = (revealEvent.anticipation?.[nextReelIndex] || 0) > 0;
-					if (isNextReelAnticipated && !stateBet.isSuperTurbo) board[nextReelIndex].reelState.anticipating = true;
+					if (isNextReelAnticipated && !stateBet.isSuperTurbo)
+						board[nextReelIndex].reelState.anticipating = true;
 				},
 			});
 
 			return paddingSize;
 		}, 0);
+
+		// Call only after every reel owns its final target symbols. Consumers may now apply a buffered
+		// stop without exposing the random pre-spin strip before the real reveal is installed.
+		onPrepared?.();
 
 		await Promise.all(
 			board.map(async (reel) => {

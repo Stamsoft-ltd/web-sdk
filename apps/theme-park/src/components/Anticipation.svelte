@@ -42,7 +42,6 @@
 
 	onMount(() => {
 		if (context.stateGame.anticipationSkipped) {
-			props.reel.forceStop();
 			complete();
 			return;
 		}
@@ -57,8 +56,7 @@
 	context.eventEmitter.subscribeOnMount({
 		stopButtonClick: () => {
 			context.stateGame.anticipationSkipped = true;
-			props.reel.forceStop();
-			complete();
+			fading = 'out';
 		},
 	});
 

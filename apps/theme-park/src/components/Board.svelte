@@ -12,6 +12,7 @@
 <script lang="ts">
 	import { Container, Graphics, PIXI, Sprite } from 'pixi-svelte';
 	import { OnPressFullScreen } from 'components-layout';
+	import { stateBet } from 'state-shared';
 	import { onMount } from 'svelte';
 
 	import { boardShake } from '../game/boardShake.svelte';
@@ -24,6 +25,7 @@
 		BOARD_DIMENSIONS,
 		BOARD_GRID_OFFSET_Y,
 		BOARD_SIDE_CONTENT_INSET,
+		REEL_SKIP_GAP_MS,
 		getBoardCellCenterX,
 	} from '../game/constants';
 	import {
@@ -423,12 +425,17 @@
 	});
 
 	const hasActiveAnticipation = () => board.some((reel) => reel.reelState.anticipating);
+	const reelSkipGap = () =>
+		stateBet.isSuperTurbo
+			? REEL_SKIP_GAP_MS.turbo
+			: stateBet.isTurbo
+				? REEL_SKIP_GAP_MS.fast
+				: REEL_SKIP_GAP_MS.normal;
 	const stopReelsForSkip = () => {
-		if (hasActiveAnticipation()) {
-			context.stateGameDerived.enhancedBoard.forceStop();
-			return;
-		}
-		context.stateGameDerived.enhancedBoard.stop();
+		context.stateGameDerived.enhancedBoard.stopSequentially({
+			force: hasActiveAnticipation(),
+			delayMs: reelSkipGap(),
+		});
 	};
 	const requestSpinSkip = () => {
 		if (context.stateGame.awaitingFirstReveal) {
@@ -443,9 +450,17 @@
 		context.eventEmitter.broadcast({ type: 'stopButtonClick' });
 	};
 
+	// A reveal can arrive while the staggered pre-spin is still aligning. End only that padding loop
+	// as soon as a buffered click exists; the prepared final targets then stop in ordered sequence.
+	$effect(() => {
+		if (!context.stateGame.revealPreparing || !context.stateGame.pendingStop) return;
+		board.forEach((reel) => reel.finishPreSpin());
+	});
+
 	context.eventEmitter.subscribeOnMount({
 		stopButtonClick: () => stopReelsForSkip(),
-		skipToAnticipation: () => board.forEach((reel) => reel.stop()),
+		skipToAnticipation: () =>
+			context.stateGameDerived.enhancedBoard.stopSequentially({ delayMs: reelSkipGap() }),
 		boardSettle: ({ board }) => context.stateGameDerived.enhancedBoard.settle(board),
 		boardShow: () => (show = true),
 		boardHide: () => (show = false),
