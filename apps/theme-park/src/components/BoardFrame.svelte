@@ -14,6 +14,7 @@
 		GRID_OFFSET_X,
 		GRID_OFFSET_Y,
 	} from '../game/boardArt';
+	import { boardShake } from '../game/boardShake.svelte';
 	import { BOARD_CORNER_RADIUS } from '../game/constants';
 	import { BOARD_BULBS } from '../game/boardBulbs';
 	import { getContext } from '../game/context';
@@ -90,14 +91,13 @@
 	const glowLevel = (offset: number) => {
 		const mood = inBonus ? GLOW_MOOD.bonus : GLOW_MOOD.basegame;
 		return (
-			Math.min(1, Math.max(0, Math.cos(glowPhase + offset) * mood.snap + 0.55)) *
-			mood.brightness
+			Math.min(1, Math.max(0, Math.cos(glowPhase + offset) * mood.snap + 0.55)) * mood.brightness
 		);
 	};
 	const hotGlowAlpha = $derived(glowLevel(0));
 	const coolGlowAlpha = $derived(glowLevel(Math.PI));
-	const glowPainter = (groupWanted: 0 | 1, width: number, height: number) =>
-		(graphics: PIXI.Graphics) => {
+	const glowPainter =
+		(groupWanted: 0 | 1, width: number, height: number) => (graphics: PIXI.Graphics) => {
 			for (const [x, y, radius, group, colour] of BOARD_BULBS) {
 				if (group !== groupWanted) continue;
 				const cx = (mapBorderX(x) - 0.5) * width;
@@ -110,27 +110,61 @@
 		};
 	const drawHotGlow = $derived(glowPainter(0, frameW, frameH));
 	const drawCoolGlow = $derived(glowPainter(1, frameW, frameH));
+
+	// The grid art is one flat image, so the playfield read as a table rather than a lit surface.
+	// A vignette gives it a centre: rings of black stroked from the edge inward, each fainter than
+	// the last. Rings rather than stacked fills because a fill covers everything inside it, which
+	// darkens the middle — the exact opposite of a vignette.
+	const VIGNETTE_RINGS = 14;
+	const VIGNETTE_REACH = 0.3; // fraction of the short side the falloff spans
+	const VIGNETTE_DEPTH = 0.17; // alpha at the outermost ring
+	const drawVignette =
+		(width: number, height: number, radius: number) =>
+		(graphics: InstanceType<typeof PIXI.Graphics>) => {
+			graphics.clear();
+			const step = (Math.min(width, height) * VIGNETTE_REACH) / VIGNETTE_RINGS;
+			for (let ring = 0; ring < VIGNETTE_RINGS; ring += 1) {
+				const inset = ring * step;
+				const fade = (1 - ring / VIGNETTE_RINGS) ** 2;
+				graphics
+					.roundRect(
+						-width * 0.5 + inset,
+						-height * 0.5 + inset,
+						width - inset * 2,
+						height - inset * 2,
+						Math.max(1, radius - inset),
+					)
+					// 1.7x overlap between neighbouring rings, so the falloff has no visible banding.
+					.stroke({ width: step * 1.7, color: 0x000000, alpha: (VIGNETTE_DEPTH * fade) / 3 });
+			}
+		};
+	const drawGridVignette = $derived(drawVignette(gridW, gridH, gridRadius));
 </script>
 
 {#if layer === 'base'}
 	<!-- Dark frame is an underlay. It may extend past the gameplay rect but cannot cover reels. -->
-	<Container x={board.x + frameW * GRID_OFFSET_X} y={board.y + frameH * GRID_OFFSET_Y}>
+	<Container
+		x={board.x + frameW * GRID_OFFSET_X + boardShake.x}
+		y={board.y + frameH * GRID_OFFSET_Y + boardShake.y}
+	>
 		<Sprite key="themeBoardBorderBackdrop" anchor={0.5} width={frameW} height={frameH} />
 	</Container>
 	<!-- Exact grid crop. Its size is the gameplay contract and never changes with border styling. -->
-	<Container x={board.x} y={board.y}>
+	<Container x={board.x + boardShake.x} y={board.y + boardShake.y}>
 		<Graphics
 			isMask
 			draw={(graphics) =>
-				graphics
-					.roundRect(-gridW * 0.5, -gridH * 0.5, gridW, gridH, gridRadius)
-					.fill(0xffffff)}
+				graphics.roundRect(-gridW * 0.5, -gridH * 0.5, gridW, gridH, gridRadius).fill(0xffffff)}
 		/>
 		<Sprite key="themeBoardGrid" anchor={0.5} width={gridW} height={gridH} />
+		<Graphics draw={drawGridVignette} />
 	</Container>
 {:else}
 	<!-- Alpha-only bulbs/glow above feature art. No opaque frame pixels can trim edge reels. -->
-	<Container x={board.x + frameW * GRID_OFFSET_X} y={board.y + frameH * GRID_OFFSET_Y}>
+	<Container
+		x={board.x + frameW * GRID_OFFSET_X + boardShake.x}
+		y={board.y + frameH * GRID_OFFSET_Y + boardShake.y}
+	>
 		<Sprite
 			key="themeBoardBorderExpanded"
 			anchor={0.5}

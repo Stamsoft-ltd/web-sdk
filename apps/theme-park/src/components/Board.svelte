@@ -14,6 +14,7 @@
 	import { OnPressFullScreen } from 'components-layout';
 	import { onMount } from 'svelte';
 
+	import { boardShake } from '../game/boardShake.svelte';
 	import { getContext } from '../game/context';
 	import {
 		CELL_W,
@@ -194,16 +195,192 @@
 	);
 	let winPulse = $state(1);
 
+	// --- Ambient life ---------------------------------------------------------------------------
+	// Between spins the grid used to be completely still: two frames 1.2s apart differed by 0.00% of
+	// pixels inside the board, while the park behind it changed on 17% — the scenery was livelier
+	// than the game. Every settled symbol now breathes in brightness, each on its own phase so the
+	// board reads as a field that is alive rather than as one metronome.
+	//
+	// It is a TINT and deliberately not any kind of movement. Drifting or scaling the symbols meant
+	// pixi resampled them every frame, and these are marquee signs: their rings of small bright bulbs
+	// twinkled as the sampling phase shifted, which is what read as flicker along the bottom of the
+	// letters. Back-to-back frames differed by a mean of 8.9 with a drift, against 0.37 with none —
+	// individual pixels flipping outright, not a gentle change. Rounding the drift to whole device
+	// pixels was tried and is a dead end here: the sprite sits under boardScale, <MainContainer>'s
+	// responsive scale AND the renderer resolution, and any error in that chain puts it back on a
+	// fraction. Tint touches no geometry, so there is nothing to resample.
+	const TAU = Math.PI * 2;
+	/** How far the dimmest point of the breath drops below full brightness. */
+	const IDLE_TINT = 0.09;
+	const IDLE_TINT_HZ = 0.17;
+	const NO_IDLE = 0xffffff;
+
+	// Spinning symbols are stretched, narrowed and faded rather than blurred with a real filter: a
+	// filter costs a render-target pass per reel, which this game cannot afford. The stretch is
+	// sized to roughly match how far a symbol travels between two frames, which is what makes the
+	// strip read as motion instead of as the slideshow it was (edge energy fell only 18% mid-spin).
+	const SPIN_STRETCH = 0.26;
+	const SPIN_SQUEEZE = 0.08;
+	const SPIN_FADE = 0.15;
+	// Stretching alone leaves the symbol razor-sharp — it reads as a squashed symbol, not a fast one.
+	// Two faint copies trailing above and below smear it along the direction of travel, which is the
+	// actual look of a blurred reel, and costs two extra batched sprites per cell instead of a
+	// filter's render target. Drawn before the symbol so it stays the sharpest thing in the cell.
+	const SPIN_GHOSTS = [
+		{ offset: -0.5, alpha: 0.3 },
+		{ offset: 0.5, alpha: 0.3 },
+	];
+
+	// Every so often a small clump of symbols rattles, like a sign shaken by a passing ride. This one
+	// IS geometric, which the constant breath deliberately is not — and it is safe for the opposite
+	// reason: it is several pixels of fast motion over a third of a second, so the resampling that
+	// made a sub-pixel drift twinkle is buried under the movement itself. Keep it big and brief; a
+	// slow or tiny version brings the shimmer straight back.
+	const SHAKE_GAP = { min: 4, max: 9 };
+	const SHAKE_SECONDS = 0.5;
+	// 0.11 of SYMBOL_H is ~11px on a desktop board and still inside the cell's 17-unit horizontal
+	// margin, so nothing clips. The first version at 0.055 was invisible in play.
+	const SHAKE_AMPLITUDE = 0.11;
+	const SHAKE_HZ = 11;
+	const SHAKE_STAGGER = 0.055; // per cell, so the clump ripples instead of moving as a block
+
+	// The reels hitting their stop. Every landing adds an impulse to one shared damped oscillator, so
+	// five reels stopping in sequence keep knocking the board rather than each starting a new shake;
+	// the last reel hits hardest, which is what gives the round a full stop.
+	const LAND_SHAKE = { impulse: 4.2, lastImpulse: 7.5, hz: 15, decay: 9 };
+
+	let idleClock = $state(0);
+	let idleAmount = $state(0);
+	let spinBlur = $state<number[]>(new Array(BOARD_DIMENSIONS.x).fill(0));
+	/** Cell key -> its delay into the current rattle. Empty between events. */
+	let shakeCells = $state(new Map<string, number>());
+	let shakeStartedAt = $state(-Infinity);
+	let nextShakeAt = SHAKE_GAP.min;
+
+	let landShakeEnergy = 0;
+	let landShakePhase = 0;
+	const seenLandingSequence = new Array<number>(BOARD_DIMENSIONS.x).fill(-1);
+
+	const pickShakeGroup = () => {
+		const reel = Math.floor(Math.random() * BOARD_DIMENSIONS.x);
+		const row = Math.floor(Math.random() * BOARD_DIMENSIONS.y);
+		const wanted = 3 + Math.floor(Math.random() * 3);
+		const group = new Map<string, number>();
+		// Ordered so the clump grows outward from the chosen cell and stays contiguous.
+		for (const [dReel, dRow] of [
+			[0, 0],
+			[1, 0],
+			[0, 1],
+			[1, 1],
+			[-1, 0],
+			[0, -1],
+		]) {
+			if (group.size >= wanted) break;
+			const r = reel + dReel;
+			const w = row + dRow;
+			if (r < 0 || r >= BOARD_DIMENSIONS.x || w < 0 || w >= BOARD_DIMENSIONS.y) continue;
+			group.set(`${r},${w}`, group.size * SHAKE_STAGGER);
+		}
+		return group;
+	};
+
+	/** Eases `value` toward `target`, snapping the tail so a settled reel ends exactly sharp. */
+	const approach = (value: number, target: number, rate: number, delta: number) => {
+		const next = value + (target - value) * Math.min(1, delta * rate);
+		return Math.abs(next - target) < 0.004 ? target : next;
+	};
+
 	onMount(() => {
 		let frame = 0;
 		const started = performance.now();
+		let previous = started;
 		const tick = (now: number) => {
+			// Clamped so a backgrounded tab does not resume with a jump.
+			const delta = Math.min((now - previous) / 1000, 0.1);
+			previous = now;
+
 			winPulse = hasWinState ? 1.05 + Math.sin((now - started) * 0.012) * 0.06 : 1;
+
+			idleClock += delta;
+			// Held at zero while anything is moving and eased back slowly, so the breathing never
+			// fights the landing bounce; dropped fast when a spin starts.
+			idleAmount = approach(
+				idleAmount,
+				isAnyReelSpinning ? 0 : 1,
+				isAnyReelSpinning ? 16 : 2.4,
+				delta,
+			);
+
+			for (let reel = 0; reel < spinBlur.length; reel += 1) {
+				const spinning = board[reel]?.reelState.motion === 'spinning';
+				spinBlur[reel] = approach(spinBlur[reel], spinning ? 1 : 0, spinning ? 12 : 18, delta);
+
+				const sequence = board[reel]?.reelState.landingSequence ?? 0;
+				if (sequence !== seenLandingSequence[reel]) {
+					const first = seenLandingSequence[reel] === -1;
+					seenLandingSequence[reel] = sequence;
+					// Skipped on the very first render, where every reel reports its starting sequence.
+					if (!first) {
+						const last = reel === BOARD_DIMENSIONS.x - 1;
+						landShakeEnergy += last ? LAND_SHAKE.lastImpulse : LAND_SHAKE.impulse;
+						// Restart the swing on every hit so each impulse begins by driving downward.
+						landShakePhase = 0;
+					}
+				}
+			}
+
+			if (landShakeEnergy > 0.05) {
+				landShakePhase += delta * LAND_SHAKE.hz * TAU;
+				landShakeEnergy *= Math.exp(-LAND_SHAKE.decay * delta);
+				boardShake.y = Math.sin(landShakePhase) * landShakeEnergy;
+				// A little sideways sway, off the vertical rhythm, so it reads as a knock rather than
+				// as a lift.
+				boardShake.x = Math.sin(landShakePhase * 0.63) * landShakeEnergy * 0.35;
+			} else if (landShakeEnergy !== 0) {
+				landShakeEnergy = 0;
+				boardShake.x = 0;
+				boardShake.y = 0;
+			}
+
+			// Only once the board is fully settled, and never over a win — the win presentation owns
+			// the symbols then.
+			if (idleAmount > 0.99 && !hasWinState && idleClock >= nextShakeAt) {
+				shakeCells = pickShakeGroup();
+				shakeStartedAt = idleClock;
+				nextShakeAt = idleClock + SHAKE_GAP.min + Math.random() * (SHAKE_GAP.max - SHAKE_GAP.min);
+			} else if (shakeCells.size > 0 && idleClock - shakeStartedAt > SHAKE_SECONDS + 0.4) {
+				shakeCells = new Map();
+			}
+
 			frame = requestAnimationFrame(tick);
 		};
 		frame = requestAnimationFrame(tick);
 		return () => cancelAnimationFrame(frame);
 	});
+
+	/** Horizontal rattle for this cell, in board units. Zero for everything not in the clump. */
+	const shakeOffset = (reel: number, row: number) => {
+		if (shakeCells.size === 0) return 0;
+		const delay = shakeCells.get(`${reel},${row}`);
+		if (delay === undefined) return 0;
+		const elapsed = idleClock - shakeStartedAt - delay;
+		if (elapsed < 0 || elapsed > SHAKE_SECONDS) return 0;
+		const progress = elapsed / SHAKE_SECONDS;
+		// Squared decay: a hard first swing that dies away, rather than a even wobble.
+		const damping = (1 - progress) ** 2;
+		return Math.sin(progress * SHAKE_HZ * TAU) * SHAKE_AMPLITUDE * SYMBOL_H * damping;
+	};
+
+	/** Grey tint for this cell's point in the breath. Tint multiplies, so it can only darken. */
+	const idleTint = (reel: number, row: number) => {
+		if (idleAmount < 0.002) return NO_IDLE;
+		// A rattling symbol comes up to full brightness — the bulbs flare as it is jolted.
+		if (shakeCells.has(`${reel},${row}`)) return NO_IDLE;
+		const phase = reel * 0.83 + row * 1.37;
+		const dip = 0.5 + 0.5 * Math.cos(idleClock * IDLE_TINT_HZ * TAU + phase);
+		const level = Math.round(255 * (1 - dip * IDLE_TINT * idleAmount));
+		return (level << 16) | (level << 8) | level;
+	};
 
 	// Reels whose symbols should be hidden behind the low-symbol expanded overlay.
 	// Added one-by-one with a small delay so the overlay sprite starts drawing first.
@@ -272,8 +449,8 @@
 
 {#if show}
 	<Container
-		x={layout.x}
-		y={layout.y + BOARD_GRID_OFFSET_Y}
+		x={layout.x + boardShake.x}
+		y={layout.y + BOARD_GRID_OFFSET_Y + boardShake.y}
 		pivot={layout.pivot}
 		scale={layout.boardScale}
 	>
@@ -288,6 +465,9 @@
 					{#if !rollerClearedSet.has(`${reelIndex},${symbolIndex - 1}`) && !coasterCellSet.has(`${reelIndex},${symbolIndex - 1}`)}
 						{@const position = boardPosition(reelIndex, symbolIndex - 1)}
 						{@const duckPrize = getDuckCollectPrize(reelIndex, symbolIndex - 1)}
+						{@const idle = isWin ? NO_IDLE : idleTint(reelIndex, symbolIndex - 1)}
+						{@const blur = spinBlur[reelIndex] ?? 0}
+						{@const shake = isWin ? 0 : shakeOffset(reelIndex, symbolIndex - 1)}
 						{@const fallbackKey = getSpriteKey(
 							reelSymbol.rawSymbol,
 							reelSymbol.symbolState,
@@ -351,19 +531,35 @@
 									x={getX(reelIndex)}
 									{y}
 									anchor={{ x: 0.5, y: 0.5 }}
-									width={SYMBOL_W * (isWin ? winPulse : 1)}
-									height={SYMBOL_H * (isWin ? winPulse : 1)}
-									alpha={hasWinState && !isWin ? 0.35 : 1}
+									width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+									height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+									alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
 								/>
 							{:else}
+								<!-- The static base symbols: the ones that were dead on the board, so these carry
+								     the idle breath, the rattle and the spin trail. -->
+								{#if blur > 0.02}
+									{#each SPIN_GHOSTS as ghost, ghostIndex (ghostIndex)}
+										<Sprite
+											key={fallbackKey}
+											x={getX(reelIndex)}
+											y={y + ghost.offset * SYMBOL_H * blur}
+											anchor={{ x: 0.5, y: 0.5 }}
+											width={SYMBOL_W * (1 - SPIN_SQUEEZE * blur)}
+											height={SYMBOL_H * (1 + SPIN_STRETCH * blur)}
+											alpha={ghost.alpha * blur}
+										/>
+									{/each}
+								{/if}
 								<Sprite
 									key={fallbackKey}
-									x={getX(reelIndex)}
+									x={getX(reelIndex) + shake}
 									{y}
 									anchor={{ x: 0.5, y: 0.5 }}
-									width={SYMBOL_W * (isWin ? winPulse : 1)}
-									height={SYMBOL_H * (isWin ? winPulse : 1)}
-									alpha={hasWinState && !isWin ? 0.35 : 1}
+									tint={idle}
+									width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+									height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+									alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
 								/>
 							{/if}
 						</LandingSquish>

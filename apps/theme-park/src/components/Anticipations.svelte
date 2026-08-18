@@ -5,6 +5,7 @@
 	import { Container, Graphics } from 'pixi-svelte';
 	import { stateBet } from 'state-shared';
 
+	import { boardShake } from '../game/boardShake.svelte';
 	import { getContext } from '../game/context';
 	import {
 		BOARD_DIMENSIONS,
@@ -84,8 +85,8 @@
 	<!-- Hold focus on the active reel. Straight cell-interior scrims preserve the authored grid and
 	     disappear beneath its real top/bottom border; rounded fake panels caused visible end gaps. -->
 	<Container
-		x={layout.x}
-		y={layout.y + BOARD_GRID_OFFSET_Y}
+		x={layout.x + boardShake.x}
+		y={layout.y + BOARD_GRID_OFFSET_Y + boardShake.y}
 		pivot={layout.pivot}
 		scale={layout.boardScale}
 	>

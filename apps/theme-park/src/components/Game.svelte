@@ -24,6 +24,8 @@
 	import BoardFrame from './BoardFrame.svelte';
 	import Board from './Board.svelte';
 	import Anticipations from './Anticipations.svelte';
+	import BoardSheen from './BoardSheen.svelte';
+	import ReelLandBursts from './ReelLandBursts.svelte';
 	import Win from './Win.svelte';
 	import FreeSpinIntro from './FreeSpinIntro.svelte';
 	import FreeSpinCounter from './FreeSpinCounter.svelte';
@@ -450,6 +452,10 @@
 
 				<MainContainer>
 					<Board />
+					<!-- Both sit above the symbols and below the frame's top rail: the landing sparks fly
+					     up off the reel feet, and the sheen is light falling across the playfield. -->
+					<ReelLandBursts />
+					<BoardSheen />
 					<Anticipations />
 				</MainContainer>
 

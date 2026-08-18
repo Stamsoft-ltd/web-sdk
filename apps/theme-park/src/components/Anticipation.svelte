@@ -4,6 +4,7 @@
 
 	import type { Reel } from '../game/stateGame.svelte';
 	import { CELL_W, BOARD_SIZES, BOARD_GRID_OFFSET_Y, getBoardCellCenterX } from '../game/constants';
+	import { boardShake } from '../game/boardShake.svelte';
 	import { getContext } from '../game/context';
 
 	type Props = { reel: Reel; oncomplete: () => void };
@@ -150,8 +151,9 @@
 
 <Container
 	x={board.x +
-		(getBoardCellCenterX(props.reel.reelIndex) - BOARD_SIZES.width * 0.5) * board.boardScale}
-	y={board.y + BOARD_GRID_OFFSET_Y}
+		(getBoardCellCenterX(props.reel.reelIndex) - BOARD_SIZES.width * 0.5) * board.boardScale +
+		boardShake.x}
+	y={board.y + BOARD_GRID_OFFSET_Y + boardShake.y}
 	{alpha}
 >
 	<Sprite
