@@ -1866,7 +1866,7 @@
 		padding: 4px 10px;
 	}
 	.ls-pill__label {
-		font-size: clamp(0.38rem, 1.1vh, 0.5rem);
+		font-size: clamp(0.28rem, 1.56vh, 0.5rem);
 		font-weight: 700;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
@@ -1874,7 +1874,7 @@
 		line-height: 1.1;
 	}
 	.ls-pill__value {
-		font-size: clamp(0.56rem, 1.75vh, 0.76rem);
+		font-size: clamp(0.4rem, 2.3vh, 0.76rem);
 		font-weight: 800;
 		color: #fff;
 		white-space: nowrap;
@@ -1903,7 +1903,7 @@
 		justify-content: space-between;
 		gap: 5px;
 		/* Roomier now that it shows only the value (no BET label). */
-		padding: clamp(6px, 1.5vh, 11px) clamp(8px, 1.8vh, 14px);
+		padding: clamp(3px, 1.55vh, 11px) clamp(4px, 2.05vh, 14px);
 	}
 	.ls-bet__bg {
 		position: absolute;
@@ -1922,13 +1922,13 @@
 		min-width: 0;
 	}
 	.ls-bet__value {
-		font-size: clamp(0.74rem, 2.3vh, 1rem);
+		font-size: clamp(0.5rem, 3.05vh, 1rem);
 	}
 	.ls-step {
 		position: relative;
 		flex: 0 0 auto;
-		width: clamp(24px, 3.8vh, 32px);
-		height: clamp(24px, 3.8vh, 32px);
+		width: clamp(11px, 6.15vh, 32px);
+		height: clamp(11px, 6.15vh, 32px);
 		border: 0;
 		padding: 0;
 		background: none;
@@ -1954,8 +1954,8 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: clamp(8px, 2.4vh, 16px);
-		padding: clamp(13px, 3vh, 22px) clamp(6px, 1.5vh, 12px);
+		gap: clamp(3px, 2.4vh, 16px);
+		padding: clamp(6px, 3.35vh, 22px) clamp(3px, 1.55vh, 12px);
 	}
 	.ls-actions__bg {
 		position: absolute;
@@ -1971,8 +1971,8 @@
 		z-index: 1;
 	}
 	.ls-btn {
-		width: clamp(34px, 5.7vh, 46px);
-		height: clamp(34px, 5.7vh, 46px);
+		width: clamp(15px, 8.7vh, 46px);
+		height: clamp(15px, 8.7vh, 46px);
 		border: 0;
 		padding: 0;
 		background: none;
@@ -1993,15 +1993,15 @@
 	   while the ring still reads as the biggest control. The ring art is height-driven, so it fills
 	   the taller box and slightly overhangs the narrow width, which reads as it popping out. */
 	.ls-spin.spin-btn {
-		width: clamp(56px, 10.5vh, 84px);
-		height: clamp(88px, 17vh, 132px);
+		width: clamp(26px, 14.4vh, 84px);
+		height: clamp(42px, 22.6vh, 132px);
 	}
 	.ls-spin .spin-btn__count {
 		position: relative;
 		z-index: 4;
 		font-weight: 800;
 		color: #fff;
-		font-size: clamp(0.7rem, 2.4vh, 1rem);
+		font-size: clamp(0.5rem, 2.87vh, 1rem);
 	}
 
 	/* BUY BONUS — round button, seated left of the action dock near the bottom. Bigger so the
@@ -2081,10 +2081,39 @@
 		padding: 6px 12px;
 	}
 	.ls-pill--win .ls-pill__value {
-		font-size: clamp(0.68rem, 2.15vh, 0.92rem);
+		font-size: clamp(0.46rem, 2.79vh, 0.92rem);
 	}
 	.ls-pill--win .ls-pill__label {
-		font-size: clamp(0.44rem, 1.35vh, 0.58rem);
+		font-size: clamp(0.32rem, 1.8vh, 0.58rem);
+	}
+
+	/* Very small landscape (e.g. 400×225): the board takes most of the width, leaving a tiny gap and
+	   narrow corners. Shrink BUY BONUS and centre it in that gap, trim the balance/win boxes so they
+	   don't crowd the board. Only fires well below phone size, so the normal layout is untouched. */
+	@media (max-height: 300px) {
+		.ls-buy {
+			width: clamp(18px, 13.3vh, 34px);
+			height: clamp(18px, 13.3vh, 34px);
+			/* The gap is tiny here, so bias toward the dock (onto its edge, like on phones) to gain
+			   size while the left edge still clears the board. */
+			right: 11%;
+		}
+		.ls-buy__label {
+			font-size: clamp(0.26rem, 1.7vh, 0.42rem);
+			max-width: 78%;
+		}
+		.ls-pill--balance {
+			padding: 2px 5px;
+			gap: 3px;
+		}
+		.ls-pill--balance .ls-pill__label {
+			font-size: clamp(0.24rem, 1.35vh, 0.4rem);
+		}
+		.ls-pill--win {
+			min-width: clamp(56px, 16.5vw, 100px);
+			padding: 2px 7px;
+			gap: 4px;
+		}
 	}
 
 	/* ===== PORTRAIT HUD — dedicated 2-row marquee layout ===== */

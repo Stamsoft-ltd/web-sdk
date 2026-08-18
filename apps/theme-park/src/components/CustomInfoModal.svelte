@@ -34,6 +34,7 @@
 </script>
 
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { stateBet } from 'state-shared';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { templateStakeDerived } from '../state/templateStake.svelte';
@@ -45,6 +46,17 @@
 	const props: Props = $props();
 	// Wide (landscape) box on desktop/landscape; the tall portrait card on phones in portrait.
 	const wide = $derived(props.layoutType !== 'portrait');
+
+	// Very short landscape (e.g. 400×225): the frame is small, so its marching dots read as too big.
+	// Track it with matchMedia (a viewport condition, not a box size) so only that case shrinks them.
+	let smallLandscape = $state(false);
+	onMount(() => {
+		const mq = window.matchMedia('(max-height: 300px)');
+		smallLandscape = mq.matches;
+		const onChange = (e: MediaQueryListEvent) => (smallLandscape = e.matches);
+		mq.addEventListener('change', onChange);
+		return () => mq.removeEventListener('change', onChange);
+	});
 
 	// Page count only — each page renders its own translated title, so this list holds no copy.
 	const PAGES = 7;
@@ -165,9 +177,9 @@
 		<!-- Marching border lights round the frame, like the confirm dialog. -->
 		<InfoBorderLights
 			radius={wide ? 30 : 22}
-			inset={wide ? 6 : 2}
-			pad={wide ? 26 : 16}
-			glow={wide ? 10 : 8}
+			inset={smallLandscape ? 3 : wide ? 6 : 2}
+			pad={smallLandscape ? 12 : wide ? 26 : 16}
+			glow={smallLandscape ? 4.5 : wide ? 10 : 8}
 		/>
 		<button class="info-x" type="button" aria-label={t('CLOSE')} onclick={props.onclose}>
 			<img src={iconClose} alt="" />
@@ -1141,21 +1153,32 @@
 
 		.info-nav {
 			position: absolute;
-			bottom: 3.6%;
+			bottom: 4%;
 			left: 0;
 			right: 0;
 			z-index: 3;
+			gap: clamp(8px, 3vh, 22px);
+			/* Drop the base row's 10/12px padding — on a short mobile-landscape modal that padding
+			   pushed the arrow row up into the bottom row of cards. */
+			padding: 0;
+		}
+		/* Arrows/page count scale with the viewport so they don't dwarf (and collide with) the content
+		   on a short mobile-landscape screen; capped so desktop keeps its size. */
+		.nav-arrow {
+			width: clamp(16px, 8.5vh, 42px);
+			height: clamp(16px, 8.5vh, 42px);
 		}
 		.nav-page {
 			/* Inside the frame's right neon border. */
 			right: 5%;
+			font-size: clamp(0.46rem, 3.35vh, 0.86rem);
 		}
 		.info-x {
 			/* Clear of the frame — sits in the gap beyond the rounded top-right corner, not on it. */
-			top: -30px;
-			right: -34px;
-			width: 44px;
-			height: 44px;
+			top: clamp(-30px, -7.7vh, -14px);
+			right: clamp(-34px, -8.7vh, -16px);
+			width: clamp(24px, 11.3vh, 46px);
+			height: clamp(24px, 11.3vh, 46px);
 		}
 	}
 </style>
