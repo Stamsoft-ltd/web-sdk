@@ -2,21 +2,29 @@ const assets = {
 
 
 
-	// Dedicated portrait forest scene (360×800) — used in the base game on portrait phones
-	// instead of the cropped landscape visualV2.
-	visualPortrait: {
-		type: 'sprite',
-		src: './assets/components/backgrounds/bg_mobile_portrait.webp?v=20260722',
-	},
-	// New-design desktop base background (static forest; replaced the looping video).
+	// Base background for EVERY layout (static forest; replaced the looping video). The dedicated
+	// portrait / mobile-landscape scenes are gone: bg_mobile_portrait still had the old FOREST
+	// CASINO house in it, and both were ~546KB of art for scenes this one already covers. The
+	// static files are still on disk if either is ever wanted back.
 	baseBackground: {
 		type: 'sprite',
 		src: './assets/components/backgrounds/base_bg.webp?v=20260723c',
 	},
-	// Mobile-landscape base background (static forest art).
-	baseBgLandscape: {
+	// Portrait-only scenes. The 16:9 art above is `cover`-cropped to ~26% of its width on a phone,
+	// so portrait gets its own tall paintings of the same three scenes (base / Deal It / All In).
+	// Sources were RGBA with a feathered transparent border — cropped to the opaque region before
+	// conversion, or the see-through edge would have shown as a black rim on a full-bleed sprite.
+	portraitBase: {
 		type: 'sprite',
-		src: './assets/components/backgrounds/bg_mobile_landscape.webp?v=20260722',
+		src: './assets/components/backgrounds/bg_portrait_base.webp?v=20260727',
+	},
+	portraitDealIt: {
+		type: 'sprite',
+		src: './assets/components/backgrounds/bg_portrait_dealit.webp?v=20260727',
+	},
+	portraitAllIn: {
+		type: 'sprite',
+		src: './assets/components/backgrounds/bg_portrait_allin.webp?v=20260727',
 	},
 	// Figma top+bottom shadow (node 2792-4133) layered on top of the portrait bg ONLY —
 	// rendered below the board/symbols/logo so it darkens the scene, never the UI.
@@ -92,15 +100,10 @@ const assets = {
 	},
 	reelDivider: { type: 'sprite', src: './assets/components/frames/reel_divider.webp?v=20260722' },
 	aTile: { type: 'sprite', src: './assets/components/symbols/card_a.webp?v=20260723' },
-	aWinTile: { type: 'sprite', src: './assets/components/symbols/card_a_win.webp?v=20260722' },
 	kTile: { type: 'sprite', src: './assets/components/symbols/card_k.webp?v=20260723' },
-	kWinTile: { type: 'sprite', src: './assets/components/symbols/card_k_win.webp?v=20260722' },
 	qTile: { type: 'sprite', src: './assets/components/symbols/card_q.webp?v=20260723' },
-	qWinTile: { type: 'sprite', src: './assets/components/symbols/card_q_win.webp?v=20260722' },
 	jTile: { type: 'sprite', src: './assets/components/symbols/card_j.webp?v=20260723' },
-	jWinTile: { type: 'sprite', src: './assets/components/symbols/card_j_win.webp?v=20260722' },
 	tTile: { type: 'sprite', src: './assets/components/symbols/card_t.webp?v=20260723' },
-	tWinTile: { type: 'sprite', src: './assets/components/symbols/card_t_win.webp?v=20260722' },
 	wildTile: { type: 'sprite', src: './assets/components/symbols/wild_v2.webp?v=20260723' },
 	wildWinTile: { type: 'sprite', src: './assets/components/symbols/wild_v2.webp?v=20260723' },
 	scatterCustom: { type: 'sprite', src: './assets/components/symbols/scatter_v2.webp?v=20260723' },
@@ -110,47 +113,58 @@ const assets = {
 	bearTile:     { type: 'sprite', src: './assets/components/symbols/bear.webp?v=20260722' },
 	rabbitTile:   { type: 'sprite', src: './assets/components/symbols/rabbit.webp?v=20260722' },
 	squirrelTile: { type: 'sprite', src: './assets/components/symbols/squirrel.webp?v=20260722' },
-	foxBonusTile: { type: 'sprite', src: './assets/components/symbols/fox.webp?v=20260722' },
-	foxWinTile: { type: 'sprite', src: './assets/components/symbols/fox.webp?v=20260722' },
-	wolfBonusTile: { type: 'sprite', src: './assets/components/symbols/wolf.webp?v=20260722' },
-	wolfWinTile: { type: 'sprite', src: './assets/components/symbols/wolf.webp?v=20260722' },
-	bearBonusTile: { type: 'sprite', src: './assets/components/symbols/bear.webp?v=20260722' },
-	bearWinTile: { type: 'sprite', src: './assets/components/symbols/bear.webp?v=20260722' },
-	rabbitBonusTile: { type: 'sprite', src: './assets/components/symbols/rabbit.webp?v=20260722' },
-	rabbitWinTile: { type: 'sprite', src: './assets/components/symbols/rabbit.webp?v=20260722' },
-	squirrelBonusTile: { type: 'sprite', src: './assets/components/symbols/squirrel.webp?v=20260722' },
-	squirrelWinTile: { type: 'sprite', src: './assets/components/symbols/squirrel.webp?v=20260722' },
+	// Vertically motion-blurred spin variants of the board tiles (R7), generated from the statics
+	// above by tools/assets/sprites/generate_spin_blur.py. Drawn instead of the normal symbol art
+	// while a reel moves faster than MOTION_BLUR_VELOCITY (see Board.svelte).
+	aSpinTile:        { type: 'sprite', src: './assets/components/symbols/card_a_spin.webp' },
+	kSpinTile:        { type: 'sprite', src: './assets/components/symbols/card_k_spin.webp' },
+	qSpinTile:        { type: 'sprite', src: './assets/components/symbols/card_q_spin.webp' },
+	jSpinTile:        { type: 'sprite', src: './assets/components/symbols/card_j_spin.webp' },
+	tSpinTile:        { type: 'sprite', src: './assets/components/symbols/card_t_spin.webp' },
+	foxSpinTile:      { type: 'sprite', src: './assets/components/symbols/fox_spin.webp' },
+	wolfSpinTile:     { type: 'sprite', src: './assets/components/symbols/wolf_spin.webp' },
+	bearSpinTile:     { type: 'sprite', src: './assets/components/symbols/bear_spin.webp' },
+	rabbitSpinTile:   { type: 'sprite', src: './assets/components/symbols/rabbit_spin.webp' },
+	squirrelSpinTile: { type: 'sprite', src: './assets/components/symbols/squirrel_spin.webp' },
+	wildSpinTile:     { type: 'sprite', src: './assets/components/symbols/wild_v2_spin.webp' },
+	scatterSpinTile:  { type: 'sprite', src: './assets/components/symbols/scatter_v2_spin.webp' },
+	// Mobile-landscape spins blur the landscape tile set, not the desktop art.
+	aSpinTileLs:        { type: 'sprite', src: './assets/components/symbols/landscape/card_a_spin.webp' },
+	kSpinTileLs:        { type: 'sprite', src: './assets/components/symbols/landscape/card_k_spin.webp' },
+	qSpinTileLs:        { type: 'sprite', src: './assets/components/symbols/landscape/card_q_spin.webp' },
+	jSpinTileLs:        { type: 'sprite', src: './assets/components/symbols/landscape/card_j_spin.webp' },
+	tSpinTileLs:        { type: 'sprite', src: './assets/components/symbols/landscape/card_t_spin.webp' },
+	foxSpinTileLs:      { type: 'sprite', src: './assets/components/symbols/landscape/fox_spin.webp' },
+	wolfSpinTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/wolf_spin.webp' },
+	bearSpinTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/bear_spin.webp' },
+	rabbitSpinTileLs:   { type: 'sprite', src: './assets/components/symbols/landscape/rabbit_spin.webp' },
+	squirrelSpinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/squirrel_spin.webp' },
+	wildSpinTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/wild_spin.webp' },
+	scatterSpinTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/scatter_spin.webp' },
+	// Win-state stills for the animals: the held final frame of each *WinNew clip, so a win whose
+	// sheets have not loaded shows the celebration pose instead of the idle bust. Landscape has had
+	// its own set all along (*WinTileLs below); these are the desktop/portrait counterparts.
+	foxWinTile:      { type: 'sprite', src: './assets/components/symbols/fox_win.webp?v=20260728' },
+	wolfWinTile:     { type: 'sprite', src: './assets/components/symbols/wolf_win.webp?v=20260728' },
+	bearWinTile:     { type: 'sprite', src: './assets/components/symbols/bear_win.webp?v=20260728' },
+	rabbitWinTile:   { type: 'sprite', src: './assets/components/symbols/rabbit_win.webp?v=20260728' },
+	squirrelWinTile: { type: 'sprite', src: './assets/components/symbols/squirrel_win.webp?v=20260728' },
 	aExpTile: { type: 'sprite', src: './assets/components/symbols/card_a.webp?v=20260723' },
-	aWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_a_win.webp?v=20260722' },
 	kExpTile: { type: 'sprite', src: './assets/components/symbols/card_k.webp?v=20260723' },
-	kWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_k_win.webp?v=20260722' },
 	qExpTile: { type: 'sprite', src: './assets/components/symbols/card_q.webp?v=20260723' },
-	qWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_q_win.webp?v=20260722' },
 	jExpTile: { type: 'sprite', src: './assets/components/symbols/card_j.webp?v=20260723' },
-	jWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_j_win.webp?v=20260722' },
 	tExpTile: { type: 'sprite', src: './assets/components/symbols/card_t.webp?v=20260723' },
-	tWinExpTile: { type: 'sprite', src: './assets/components/symbols/card_t_win.webp?v=20260722' },
 	foxExpTile: { type: 'sprite', src: './assets/components/symbols/fox_expand.webp?v=20260722' },
-	foxExpWinTile: { type: 'sprite', src: './assets/components/symbols/fox_expand.webp?v=20260722' },
 	wolfExpTile: { type: 'sprite', src: './assets/components/symbols/wolf_expand.webp?v=20260722' },
-	wolfExpWinTile: { type: 'sprite', src: './assets/components/symbols/wolf_expand.webp?v=20260722' },
 	bearExpTile: { type: 'sprite', src: './assets/components/symbols/bear_expand.webp?v=20260722' },
-	bearExpWinTile: { type: 'sprite', src: './assets/components/symbols/bear_expand.webp?v=20260722' },
 	rabbitExpTile: { type: 'sprite', src: './assets/components/symbols/rabbit_expand.webp?v=20260722' },
-	rabbitExpWinTile: { type: 'sprite', src: './assets/components/symbols/rabbit_expand.webp?v=20260722' },
 	squirrelExpTile: { type: 'sprite', src: './assets/components/symbols/squirrel_expand.webp?v=20260722' },
-	squirrelExpWinTile: { type: 'sprite', src: './assets/components/symbols/squirrel_expand.webp?v=20260722' },
 	// --- Mobile-landscape symbol art (used only when layoutType() === 'landscape') ---
 	aTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_a.webp?v=20260723' },
 	kTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_k.webp?v=20260723' },
 	qTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_q.webp?v=20260723' },
 	jTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_j.webp?v=20260723' },
 	tTileLs:  { type: 'sprite', src: './assets/components/symbols/landscape/card_t.webp?v=20260723' },
-	aWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_a_win.webp?v=20260722' },
-	kWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_k_win.webp?v=20260722' },
-	qWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_q_win.webp?v=20260722' },
-	jWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_j_win.webp?v=20260722' },
-	tWinTileLs: { type: 'sprite', src: './assets/components/symbols/landscape/card_t_win.webp?v=20260722' },
 	foxTileLs:      { type: 'sprite', src: './assets/components/symbols/landscape/fox.webp?v=20260722' },
 	wolfTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/wolf.webp?v=20260722' },
 	bearTileLs:     { type: 'sprite', src: './assets/components/symbols/landscape/bear.webp?v=20260722' },
@@ -164,7 +178,6 @@ const assets = {
 	wildTileLs:    { type: 'sprite', src: './assets/components/symbols/landscape/wild.webp?v=20260722' },
 	scatterCustomLs: { type: 'sprite', src: './assets/components/symbols/landscape/scatter.webp?v=20260722' },
 	cardPadLs:     { type: 'sprite', src: './assets/components/symbols/landscape/card_pad.webp?v=20260722' },
-	reelFrameLs:   { type: 'sprite', src: './assets/components/symbols/landscape/reel_frame.webp?v=20260722' },
 	stepperPadLs:  { type: 'sprite', src: './assets/components/symbols/landscape/stepper_pad.webp?v=20260722' },
 	navBarLs:      { type: 'sprite', src: './assets/components/symbols/landscape/right_bar.webp?v=20260722' },
 	buyBonusLs:    { type: 'sprite', src: './assets/components/symbols/landscape/buy_bonus.webp?v=20260722' },
@@ -384,58 +397,12 @@ const assets = {
 	},
 } as const;
 
-// Bonus / win / free-spin assets — none are needed for the first spins, so stream them in the
-// BACKGROUND after the game is interactive (AssetsLoader's deferred pass) instead of blocking first
-// playability on them. Render paths fall back to static art until each arrives, and the whole set
-// finishes within a couple seconds of the game becoming playable — long before a bonus can trigger.
-// Keep base-game essentials (symbols, base bg, board frame, HUD, sounds) OUT of this list.
-const DEFERRED_KEYS: readonly string[] = [
-	// Bonus backgrounds + entry/exit spine
-	'transition',
-	// Deer reveal (bonus symbol picker)
-	'deerPresenter', 'deerPresenterMobile', 'deerPresenterAnim',
-	// Win-tier boards + emblem + big-win/global-multiplier spines
-	'sweetWinBoard', 'wildWinBoard', 'epicWinBoard', 'mythicWinBoard', 'legendaryWinBoard',
-	'maxWinScreen', 'winEmblemP', 'globalMultiplier',
-	// Free-spin intro/outro popup + scatter medallion
-	'fsIntro', 'fsMedallion', 'fsMedallionAnim',
-	// Win coins
-	'pCoins',
-	// Idle animal blink loops (~8.6MB) — the static animal tiles render until these arrive
-	// (wave 0), so the board is never blank; deferring them cuts the blocking load nearly in half.
-	'wolfIdleAnim', 'foxIdleAnim', 'squirrelIdleAnim', 'bearIdleAnim', 'rabbitIdleAnim',
-	// Expanded-symbol animations (animals) + board win animations (animals only — letters win with
-	// a pulsing static tile, no sheet)
-	'rabbitMoney', 'bearMoney', 'foxMoney', 'wolfMoney', 'squirrelMoney',
-	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
-	// Animated WILD + SCATTER (static tiles render until they arrive — same pattern as the idle blinks)
-	'wildAnim', 'scatterAnim',
-	// Bonus-only art: expanded-symbol reveal tiles/frame, free-spin popup sprites, big-win glow,
-	// and the static bonus backgrounds (posters under the deferred bonus videos)
-	'foxExpTile', 'foxExpWinTile', 'wolfExpTile', 'wolfExpWinTile', 'bearExpTile', 'bearExpWinTile',
-	'rabbitExpTile', 'rabbitExpWinTile', 'squirrelExpTile', 'squirrelExpWinTile', 'expandedFrame',
-	'winGlow',
-	'bonusNormalBackground', 'bonusSuperBackground',
-];
-for (const key of DEFERRED_KEYS) {
-	const entry = (assets as Record<string, { defer?: boolean } | undefined>)[key];
-	if (entry) entry.defer = true;
-}
-
-// Order the background stream: a first base-game win can land seconds after the game becomes
-// playable, so everything visible in that moment (symbol win animations + flying coins) downloads
-// first (wave 0). The rest — big-win boards, free-spin popup art — takes the default wave 1.
-const DEFER_WAVE_0: readonly string[] = [
-	// Idle blinks + the animated WILD / SCATTER first — visible from the first settled board.
-	'wolfIdleAnim', 'foxIdleAnim', 'squirrelIdleAnim', 'bearIdleAnim', 'rabbitIdleAnim',
-	'wildAnim', 'scatterAnim',
-	'rabbitWinAnim', 'bearWinAnim', 'foxWinAnim', 'wolfWinAnim', 'squirrelWinAnim',
-	'pCoins',
-];
-for (const key of DEFER_WAVE_0) {
-	const entry = (assets as Record<string, { deferPriority?: number } | undefined>)[key];
-	if (entry) entry.deferPriority = 0;
-}
+// Everything the base game can DRAW now loads up front, on the loading screen (no deferred
+// stream): deferred streaming caused visible pop-in (static tiles until the anim sheets arrived,
+// win boards appearing late) and a stalled deferred pass took the art hostage for the whole
+// session. The loading bar is the honest place to pay for it. Only the deferDemand bonus set
+// below stays out of the gating pass: it is invisible until a bonus triggers, and that trigger
+// awaits (and retries) its load.
 
 // Bonus-only art: withheld from the background stream entirely and loaded on demand, because a
 // session that never triggers a bonus never draws any of it — a sizeable share of the art pool
@@ -460,20 +427,21 @@ for (const key of DEMAND_BONUS_ART) {
 // utils-layout/createLayout.svelte.ts (portrait = ratio ≤ 0.8; landscape = short side ≤ 480).
 const MOBILE_ONLY_KEYS: readonly string[] = [
 	// Portrait art
-	'visualPortrait', 'portraitShadow', 'slotPadMobile',
+	'portraitBase', 'portraitDealIt', 'portraitAllIn',
+	'portraitShadow', 'slotPadMobile',
 	// Mobile-landscape art
-	'baseBgLandscape',
 	'aTileLs', 'kTileLs', 'qTileLs', 'jTileLs', 'tTileLs',
-	'aWinTileLs', 'kWinTileLs', 'qWinTileLs', 'jWinTileLs', 'tWinTileLs',
 	'foxTileLs', 'wolfTileLs', 'bearTileLs', 'rabbitTileLs', 'squirrelTileLs',
 	'foxWinTileLs', 'wolfWinTileLs', 'bearWinTileLs', 'rabbitWinTileLs', 'squirrelWinTileLs',
-	'wildTileLs', 'scatterCustomLs', 'cardPadLs', 'reelFrameLs', 'stepperPadLs', 'navBarLs',
+	'wildTileLs', 'scatterCustomLs', 'cardPadLs', 'stepperPadLs', 'navBarLs',
 	'buyBonusLs',
 ];
-const DESKTOP_ONLY_KEYS: readonly string[] = [
-	// Desktop base background + board frame (mobile portrait/landscape have their own art)
-	'baseBackground', 'boardFrameDesktop',
-];
+// Empty since the layouts were unified on one base background: `baseBackground` used to live here,
+// but it is now the base art on phones too, so deferring it would ship them a bare stage until the
+// background pass finished. NOTE: boardFrameDesktop was never here either — since the redesign
+// BoardFrame draws it in every layout, so deferring it on mobile shipped a frameless board when the
+// deferred stream stalled.
+const DESKTOP_ONLY_KEYS: readonly string[] = [];
 if (typeof window !== 'undefined') {
 	const w = window.innerWidth;
 	const h = window.innerHeight;

@@ -35,7 +35,19 @@
 	// `animationSpeed` values divide into it evenly (0.28 alternates 33 ms / 67 ms holds, 44% under
 	// the mean on the short one), which reads as a stutter. The cap belongs with the clip cadences —
 	// plan 13 picks it once each clip's frame time is measured.
-	const MAX_FPS = 60;
+	//
+	// 62 and NOT 60, which is the rate we actually want. `Ticker.update()` truncates the elapsed
+	// time to whole milliseconds before testing it — `currentTime - this._lastFrame | 0`
+	// (Ticker.mjs:246) — and compares that against `_minElapsedMS = 1000/maxFPS`. At maxFPS 60 the
+	// threshold is 16.6667 while a real 16.67 ms vsync frame truncates to 16, so the frame is
+	// DROPPED: the cap admits only frames of >= 17 ms, a 58.8 fps ceiling. Worse, a drop is a
+	// doubled frame, not a missing one — `lastTime` isn't advanced on the early return, so the next
+	// accepted frame carries `deltaTime` 2.0. Simulated against that exact code path, maxFPS 60 on a
+	// 60 Hz panel yields 58.0 fps with 9/299 frames doubled (a hitch about twice a second) even with
+	// zero timing jitter; 62 yields 59.8 fps with none. On a 120 Hz ProMotion panel 62 still
+	// throttles — 60.0 fps vs 58.0 — so it is strictly better on both. Anything >= 62 behaves
+	// identically here; the value only has to clear the truncation, not name the target rate.
+	const MAX_FPS = 62;
 
 	// The walk itself lives in ../game/sceneAnimation.ts: same code, but importable by a test that
 	// drives it with a fixed delta instead of the ticker's (plan 14's deterministic clock).

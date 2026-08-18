@@ -5,7 +5,7 @@
 	import { EnablePixiExtension } from 'components-pixi';
 	import { EnableHotkey } from 'components-shared';
 	import { MainContainer } from 'components-layout';
-	import { App, Container } from 'pixi-svelte';
+	import { App } from 'pixi-svelte';
 	import { stateMeta, stateUi } from 'state-shared';
 
 	import { Modals } from 'components-ui-html';
@@ -36,12 +36,10 @@
 	import ExpandedSymbolPresenter from './ExpandedSymbolPresenter.svelte';
 	import DealItMultiplierPanel from './DealItMultiplierPanel.svelte';
 	import GameLogoFrame from './GameLogoFrame.svelte';
-	import PaylineVine from './PaylineVine.svelte';
 	import HudHtml from './HudHtml.svelte';
 	import StakeSync from './StakeSync.svelte';
 	import ReplayHud from './replay/ReplayHud.svelte';
 	import SplashIntro from './SplashIntro.svelte';
-	import { BOARD_GRID_OFFSET_Y } from '../game/constants';
 	import { registerArtDeep, warmArt } from '../lib/preloadArt';
 
 	const context = getContext();
@@ -50,7 +48,7 @@
 	let splashPressHandler = $state<(() => void) | undefined>(undefined);
 	const heroArt = './assets/components/backgrounds/visual_v2.webp';
 	const bonusArt = './assets/components/backgrounds/visual_v1.jpg';
-	const scatterArt = './assets/components/symbols/scatter.png';
+	const scatterArt = './assets/components/symbols/scatter.webp';
 	// (the old reference/*.png screenshots were removed in an earlier asset cleanup; point the
 	// rule/dialog illustrations at existing art so nothing renders a broken image)
 	const uiRefArt = './assets/components/backgrounds/visual_v2.webp';
@@ -437,7 +435,13 @@
 			{#if context.stateLayout.showLoadingScreen}
 				<LoadingScreen
 					onloaded={() => (context.stateLayout.showLoadingScreen = false)}
-					oncanproceed={(handler) => { splashPressHandler = handler; splashIntroVisible = true; }}
+					oncanproceed={(handler) => {
+						// Replay links go straight to the round summary — the feature splash is marketing
+						// for a player about to bet, and here it just buries the replay details.
+						if (stateUi.config.mode === 'replay') { handler(); return; }
+						splashPressHandler = handler;
+						splashIntroVisible = true;
+					}}
 				/>
 			{:else}
 				<ResumeBet />
@@ -457,14 +461,10 @@
 				</MainContainer>
 
 				<ExpandedSymbolOverlay />
-				{#if context.stateGame.paylineWins.length > 0}
-				<MainContainer>
-					{@const bl = context.stateGameDerived.boardLayout()}
-					<Container x={bl.x} y={bl.y + BOARD_GRID_OFFSET_Y} pivot={bl.pivot} scale={{ x: bl.boardScaleX ?? bl.boardScale, y: bl.boardScaleY ?? bl.boardScale }}>
-						<PaylineVine wins={context.stateGame.paylineWins} snap={context.stateGame.paylineSnap} />
-					</Container>
-				</MainContainer>
-				{/if}
+				<!-- The payline vines used to render here, in their own MainContainer above the board.
+				     That put every leaf on top of the winning symbols' win animations, so they now
+				     draw INSIDE Board (same transform) at a zIndex between the losing and winning
+				     symbols. See the sortableChildren note in Board.svelte. -->
 				<BonusSymbolPanel />
 				<GlobalMultiplier />
 				<DealItMultiplierPanel />

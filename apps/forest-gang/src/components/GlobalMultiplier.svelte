@@ -84,9 +84,12 @@
 				: portraitPosition,
 	);
 
-	// This is the "DEAL IT" bonus board (internally `superspin` — the UI labels are the reverse of the
-	// mode names). The board is PERSISTENT: it stays on screen for the whole bonus (red X at 1x) and
-	// animates (fade out, swap value, settle from 1.45x down to 1x) only when the multiplier CHANGES.
+	// This is the "ALL IN" bonus board — bonusMode `superspin`, the 4-or-5-scatter feature, which is
+	// what `globalMultiplierShow` is broadcast for (see bookEventHandlerMap's freeSpinTrigger). The
+	// comment here used to name it DEAL IT, which is the OTHER board (DealItMultiplierPanel).
+	// PERSISTENT by design, matching the All In rules text ("the multiplier starts at 2x and doubles
+	// only on winning spins"): it stays on screen for the whole bonus, showing the red X at 1x, and
+	// animates only when the multiplier CHANGES.
 	let show = $state(false);
 	let multiplier = $state(1);
 	let groupX = new Tween(0);
@@ -100,6 +103,17 @@
 	// paw needs horizontal room that the stacked portrait/landscape columns don't have, which is
 	// what got it pulled everywhere — only the desktop right strip is wide enough for it.
 	const useFlatBoard = $derived(!isDesktop);
+
+	// Swap choreography, per variant. The flat board zooms in place, so 170/280ms reads as a snappy
+	// pop; the paw CARRIES the board across the strip, and at those same timings the whole travel
+	// was over in about a third of a second — you saw a flick, not a hand. Its path runs ~1.8x
+	// longer. The fades are scaled by the same factor so the value still changes while the board is
+	// at its most hidden, and each wait in `swapTo` MIRRORS its tween (see there), so the pairs
+	// always move together.
+	const outMs = $derived(useFlatBoard ? 170 : 300);
+	const outFadeMs = $derived(useFlatBoard ? 150 : 265);
+	const inMs = $derived(useFlatBoard ? 280 : 500);
+	const inFadeMs = $derived(useFlatBoard ? 190 : 340);
 
 	// Swap the displayed value — the old value fades out, then the new one arrives: on the flat
 	// board it lands oversized (1.45x) and settles under backOut, on the paw it rides back in from
@@ -116,15 +130,15 @@
 		swapTarget = next;
 		swapped = false;
 		// Paw leaves first, carrying the old value out with it.
-		if (!useFlatBoard) groupX.set(SLIDE, { duration: 170 * speed, easing: cubicIn });
-		groupAlpha.set(0, { duration: 150 * speed });
-		const cut = await hold(170);
+		if (!useFlatBoard) groupX.set(SLIDE, { duration: outMs * speed, easing: cubicIn });
+		groupAlpha.set(0, { duration: outFadeMs * speed });
+		const cut = await hold(outMs);
 		// `show` guard: the bonus can end (globalMultiplierHide) while this swap is still in flight,
 		// and the continuation below would otherwise rewrite the value and tweens of a hidden board.
 		if (swapped || !show) return;
 		swapTarget = null;
 		multiplier = next;
-		const swapIn = cut ? 0 : 280 * speed;
+		const swapIn = cut ? 0 : inMs * speed;
 		if (useFlatBoard) {
 			groupScale.set(1.45, { duration: 0 });
 			groupScale.set(1, { duration: swapIn, easing: backOut });
@@ -134,8 +148,8 @@
 			groupX.set(-SLIDE, { duration: 0 });
 			groupX.set(0, { duration: swapIn, easing: backOut });
 		}
-		groupAlpha.set(1, { duration: cut ? 0 : 190 * speed });
-		await hold(280);
+		groupAlpha.set(1, { duration: cut ? 0 : inFadeMs * speed });
+		await hold(inMs);
 	};
 
 	$effect(() => {

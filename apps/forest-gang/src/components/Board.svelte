@@ -15,7 +15,7 @@
 	import type { Texture } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
-	import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, blurAlpha } from '../game/constants';
 	import {
 		spriteKeyByName,
 		bonusSpriteKeyByName,
@@ -25,6 +25,7 @@
 	} from '../game/utils';
 	import type { SymbolName } from '../game/types';
 	import { HIGH_SYMBOLS_SET, isWinState, anyPulsingWin } from '../game/boardPulse';
+	import PaylineVine from './PaylineVine.svelte';
 
 	const LOW_SYMBOLS_SET = new Set<SymbolName>(['T', 'J', 'Q', 'K', 'A']);
 
@@ -36,6 +37,21 @@
 	// so nothing moves behind its blurred backdrop.
 	const boardAnimate = $derived(!context.stateGame.buyModalOpen);
 	let show = $state(true);
+
+	// A spinning reel holds targetSymbols + padding + prevSymbols — ~20-26 symbols normally and up to
+	// ~70 on an anticipated spin, against 6 on a stopped reel. Drawing all of them costs nothing on
+	// the GPU (the board mask clips them), but every symbol's y is `reelY.current + offset` off ONE
+	// tween per reel, so a single tween tick marks ~130 subtrees dirty across the board and Svelte
+	// flushes them in one synchronous microtask. On Safari/JSC that flush is the spin stutter:
+	// 130ms+ animation frames, one per spin. Gate the each-block on the rows that can actually be
+	// seen and the flush drops to ~40 subtrees.
+	// See docs/safari-spin-stutter.md.
+	//
+	// Rows 0..y-1 are the grid. A symbol at row -1 or row `y` is still HALF visible (its centre sits
+	// one row out but the near edge lands inside the mask), so the band has to include them; the
+	// extra row on each side is slack, fully hidden, giving a symbol a full row of travel to be
+	// created before it can be seen. Without it a long frame would pop one in at the edge.
+	const isRowVisible = (row: number) => row >= -2 && row <= BOARD_DIMENSIONS.y + 1;
 
 	// Mobile-landscape uses dedicated framed symbol art; desktop/portrait keep the standard maps.
 	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
@@ -258,28 +274,100 @@
 	);
 
 
-	// Reels whose symbols should be hidden behind the low-symbol expanded overlay.
-	// Added one-by-one with a small delay so the overlay sprite starts drawing first.
-	let hiddenReels = $state(new Set<number>());
-
-	$effect(() => {
+	// After the expanded-column reveal has finished playing, the overlay stops drawing and the reels
+	// it covered render the expanded symbol themselves (see `swapName` in the markup). Null while the
+	// expansion is still animating — the overlay owns those columns until then.
+	const expandedSwap = $derived.by(() => {
 		const expanded = context.stateGame.expandedSymbol;
-		// Reset when no expansion, non-low symbol, OR reels cleared for next spin
-		if (!expanded || !LOW_SYMBOLS_SET.has(expanded.symbol) || expanded.reels.length === 0) {
-			if (hiddenReels.size > 0) hiddenReels = new Set<number>();
-			return;
-		}
-		// Hide EVERY reel the overlay currently covers, not just the newest one. Only the last reel
-		// used to be added, which held up while the reveal appended one reel at a time — but a stop
-		// press (and super-turbo) lands all remaining columns in a SINGLE assignment, so every column
-		// except the last stayed visible and its original symbols showed through the expanded symbol.
-		const pending = expanded.reels.filter((reel) => !hiddenReels.has(reel));
-		if (pending.length === 0) return;
-		const t = setTimeout(() => {
-			hiddenReels = new Set([...hiddenReels, ...pending]);
-		}, 80);
-		return () => clearTimeout(t);
+		if (!expanded || !context.stateGame.expandedSettled || expanded.reels.length === 0) return null;
+		// LOW (card) expands ONLY. An animal's expanded column is one big animated animal — that is
+		// the feature's hero art, and it stays on screen for the whole round; swapping it for four
+		// separate symbols the moment the reveal landed threw the whole animation away.
+		if (!LOW_SYMBOLS_SET.has(expanded.symbol)) return null;
+		return { symbol: expanded.symbol, reels: new Set(expanded.reels) };
 	});
+
+	// Cells the expanded-column overlay is currently painting over, published per reel by
+	// ExpandedSymbolOverlay as [firstRow, endRow). Hiding exactly these cells replaces the old
+	// "hide the whole reel 80ms after it starts expanding" timer, which caused two artefacts: for
+	// those 80ms the reel's own symbol drew UNDER the half-transparent expanded tile and the two
+	// glyphs merged into one garbled shape, and once it fired every row the reveal had not reached
+	// yet went bare. It also removes the timer's restart race entirely. Null once the reveal has
+	// settled — from there `expandedSwap` below renders those reels as normal win symbols. Read
+	// straight from state rather than gating on `expandedSettled`: the overlay publishes {} exactly
+	// when it stops drawing, so coverage always tracks what is actually painted. An ANIMAL expand
+	// keeps drawing after it settles, and keeps its rows covered with it.
+	const expandedCoverage = $derived(context.stateGame.expandedCoverage);
+
+	// ── Per-reel spin velocity, measured off the reel's own Y tween (R7 blur gate) ───────────────
+	// Signed board-px per tick. The effect re-runs on every tween update while a reel moves (the
+	// tween's `.current` is reactive) and pins 0 for anything that is not a spin, so the blur gate
+	// can never stick on. Teleports (padding re-anchor at spin start jumps reelY in one tick) are
+	// ignored — a real frame never moves more than two cells.
+	// Pinned on 'bouncing' as well as 'stopped': `removePaddingAndBounceBack` swaps in the LANDED
+	// symbols and teleports Y in the same tick, and the teleport guard below skips that tick's
+	// velocity write. On the paths that reach the bounce at full speed (turbo, and fastSpin's
+	// un-eased slide) that left the final board drawing smeared+ghosted for a frame. The bounce-back
+	// itself is 0.15 px/ms — never fast enough to blur — so nothing is lost by pinning it.
+	const prevReelY: number[] = [];
+	const reelVelocity = $state<number[]>([]);
+	$effect(() => {
+		board.forEach((reel, i) => {
+			const y = reel.reelState.symbols[0]?.symbolY() ?? 0;
+			if (reel.reelState.motion !== 'spinning') {
+				prevReelY[i] = y;
+				if (reelVelocity[i] !== 0) reelVelocity[i] = 0;
+				return;
+			}
+			const dy = y - (prevReelY[i] ?? y);
+			prevReelY[i] = y;
+			if (Math.abs(dy) < SYMBOL_H * 2) reelVelocity[i] = dy;
+		});
+	});
+
+	// The velocity the baked smear was generated for: SPIN_OPTIONS_DEFAULT.reelSpinSpeed (px/ms)
+	// over one 60 Hz frame. Velocity beyond this renders as echo ghosts in the template.
+	const BASE_SPIN_V = 2.3 * (1000 / 60);
+
+	// Pre-blurred spin tiles (R7, generate_spin_blur.py) cross-faded over the normal symbol
+	// branches at `blurAlpha(velocity)`. Landscape has its own
+	// framed tile art, so it blurs its own set — a desktop smear at speed would flash the wrong
+	// card design.
+	// Both maps are TOTAL over SymbolName — every symbol has a baked smear — so the lookups below
+	// type as `string` and can be handed straight to <Sprite key>. `Partial<>` here only cost us
+	// three `string | undefined` errors on props that can never actually receive undefined.
+	const SPIN_BLUR_KEY: Record<SymbolName, string> = {
+		A: 'aSpinTile',
+		K: 'kSpinTile',
+		Q: 'qSpinTile',
+		J: 'jSpinTile',
+		T: 'tSpinTile',
+		FOX: 'foxSpinTile',
+		WOLF: 'wolfSpinTile',
+		BEAR: 'bearSpinTile',
+		RABBIT: 'rabbitSpinTile',
+		SQUIRREL: 'squirrelSpinTile',
+		WILD: 'wildSpinTile',
+		SCATTER: 'scatterSpinTile',
+	};
+	// Spelled out rather than derived with `${key}Ls`: the dead-asset scan in tests/assets.test.ts
+	// greps the source for each asset key literally, so a computed name makes twelve live keys look
+	// unreferenced and the real dead ones get lost in the noise.
+	const SPIN_BLUR_KEY_LS: Record<SymbolName, string> = {
+		A: 'aSpinTileLs',
+		K: 'kSpinTileLs',
+		Q: 'qSpinTileLs',
+		J: 'jSpinTileLs',
+		T: 'tSpinTileLs',
+		FOX: 'foxSpinTileLs',
+		WOLF: 'wolfSpinTileLs',
+		BEAR: 'bearSpinTileLs',
+		RABBIT: 'rabbitSpinTileLs',
+		SQUIRREL: 'squirrelSpinTileLs',
+		WILD: 'wildSpinTileLs',
+		SCATTER: 'scatterSpinTileLs',
+	};
+	const activeSpinMap = $derived(isLandscape ? SPIN_BLUR_KEY_LS : SPIN_BLUR_KEY);
 
 	const hasActiveAnticipation = () =>
 		context.stateGame.board.some((reel) => reel.reelState.anticipating);
@@ -332,7 +420,12 @@
 {/if}
 
 {#if show}
-	<Container x={layout.x} y={layout.y + BOARD_GRID_OFFSET_Y} pivot={layout.pivot} scale={{ x: scaleX, y: scaleY }}>
+	<!-- sortableChildren: the payline vine is drawn as a SIBLING of the symbols (below) so it can sit
+	     at a depth BETWEEN them — above the losing symbols it connects across, but under the winning
+	     ones it links, whose animations must never be crossed by a leaf. Draw order is therefore
+	     zIndex, not markup order: 0 = board furniture + non-winning symbols, 1 = vine, 2 = winning
+	     symbols. Children that share a zIndex keep their insertion order (Array#sort is stable). -->
+	<Container sortableChildren x={layout.x} y={layout.y + BOARD_GRID_OFFSET_Y} pivot={layout.pivot} scale={{ x: scaleX, y: scaleY }}>
 		<Graphics
 			isMask
 			draw={(graphics) => {
@@ -356,9 +449,32 @@
 			/>
 		{/each}
 		{#each board as reel, reelIndex (reelIndex)}
-			{#if !hiddenReels.has(reelIndex)}
+			{@const swapName = expandedSwap?.reels.has(reelIndex) ? expandedSwap.symbol : null}
+			{@const covered = swapName ? null : expandedCoverage?.[reelIndex]}
 			{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
 				{@const y = reelSymbol.symbolY()}
+				<!-- Row this symbol currently occupies. Buffer symbols sit outside 0..rows-1 and so are
+				     never "covered"; the board mask clips them as before. -->
+				{@const row = Math.round(y / SYMBOL_H - 0.5)}
+				{#if isRowVisible(row) && (!covered || row < covered[0] || row >= covered[1])}
+				<!-- Once the expanded column's reveal has played out the overlay hands the reel back to
+				     the board: every row draws the EXPANDED symbol in its win state (normal frames and
+				     win animations) instead of the reel's own landed symbols. Without the swap the reel
+				     stays hidden behind an overlay that is no longer drawing and the column reads as an
+				     empty forest cell. `swapName` is null on every other reel, so nothing else changes. -->
+				{@const symName = swapName ?? reelSymbol.rawSymbol.name}
+				{@const symState = swapName ? 'win' : reelSymbol.symbolState}
+				{@const isWin = swapName ? true : isWinState(reelSymbol.symbolState)}
+				<!-- One wrapper per symbol so the whole cell (frame + art) moves as a unit relative to
+				     the vine at zIndex 1. The wrapper has no transform of its own, so every child keeps
+				     its absolute grid x/y.
+				     ONLY the animal win ANIMATIONS rise above the vine — they are the art a leaf must
+				     never cross. Everything else, winning letters included, stays below it, because the
+				     vine is meant to read as growing OVER the board (lifting every winning cell put the
+				     vine behind the J's it was threading through). Gated on the animal being a winner
+				     rather than on its win sheet having loaded, so a cell can't pop between layers the
+				     moment the sheet streams in. -->
+				<Container zIndex={isWin && HIGH_SYMBOLS_SET.has(symName) ? 2 : 0}>
 				<Rectangle
 					x={getX(reelIndex) - SYMBOL_W * 0.5}
 					y={y - SYMBOL_H * 0.5}
@@ -367,12 +483,17 @@
 					backgroundColor={0x000000}
 					alpha={0.02}
 				/>
-				{@const isWin = isWinState(reelSymbol.symbolState)}
-				{@const s = symScale(reelSymbol.rawSymbol.name)}
+				{@const s = symScale(symName)}
 				<!-- Winning wild/scatter pulse continuously like the winning letters (design ask),
 				     replacing the old one-shot spring pop. -->
 				{@const specialPop = isWin ? letterPulse : 1}
-				{#if reelSymbol.rawSymbol.name === 'SCATTER' && scatterFrames.length > 0}
+				{@const blurA = activeSpinMap[symName] ? blurAlpha(reelVelocity[reelIndex] ?? 0) : 0}
+				<!-- The sharp art is the layer UNDERNEATH the smear, not a sibling branch of it: the
+				     smear cross-dissolves over it (see the overlay after this chain) instead of the two
+				     hard-swapping. Only skipped once the smear is fully opaque, so the animated cells
+				     (idle blinks, wild/scatter clips) still cost nothing through the body of a spin. -->
+				{#if blurA < 1}
+				{#if symName === 'SCATTER' && scatterFrames.length > 0}
 					<!-- Scatter shimmers with its animated emblem clip and pulses continuously while it
 					     wins. Drawn a bit smaller than a cell. animationSpeed 0.14 (~8fps) stepped
 					     visibly and read as "laggy"; 0.36 (~22fps) plays smoothly and stays under the
@@ -389,7 +510,7 @@
 						play={boardAnimate}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
-				{:else if reelSymbol.rawSymbol.name === 'WILD' && wildFrames.length > 0}
+				{:else if symName === 'WILD' && wildFrames.length > 0}
 					<!-- Animated WILD: plays its loop briskly on every spin; pulses continuously on a win.
 					     Multiplied by symScale (s) like the scatter so per-layout sizing applies —
 					     desktop s=1.0 keeps the tuned size; mobile draws it larger (design ask). -->
@@ -405,11 +526,11 @@
 						play={boardAnimate}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
-				{:else if reelSymbol.rawSymbol.name === 'SCATTER'}
+				{:else if symName === 'SCATTER'}
 					<!-- Fallback until the animation frames load: static medallion (no tilt). Still takes
 					     specialPop — a bonus trigger inside the load window must not show a dead scatter. -->
 					<Sprite
-						key={getSpriteKey(reelSymbol.rawSymbol.name, reelSymbol.symbolState)}
+						key={getSpriteKey(symName, symState)}
 						x={getX(reelIndex)}
 						y={y}
 						anchor={{ x: 0.5, y: 0.5 }}
@@ -417,7 +538,7 @@
 						height={symbolH * s * SCATTER_SIZE * specialPop}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
-				{:else if isWin && HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name) && winAnimTextures[reelSymbol.rawSymbol.name]}
+				{:else if isWin && HIGH_SYMBOLS_SET.has(symName) && winAnimTextures[symName]}
 					<!-- The HIGH_SYMBOLS_SET guard is explicit rather than implied by WIN_ANIM_KEY's contents,
 					     so nothing but an animal can ever reach the animalBorder + win-sheet pair.
 					     Animal win: same brown frame + the full (uncropped) win animation on top. The
@@ -439,17 +560,17 @@
 					<!-- Desktop: lift the win art ~2-3px so its feet clear the frame's bottom rail
 					     (the enlarged desktop animals pushed it onto the border). -->
 					<AnimatedSprite
-						textures={winAnimTextures[reelSymbol.rawSymbol.name]}
+						textures={winAnimTextures[symName]}
 						x={getX(reelIndex)}
 						y={y + (symbolH * s * BORDER_SIZE * FRAME_H_MULT) / 2 - (isDesktop ? symbolH * 0.02 : isLandscape ? symbolH * 0.05 : 0)}
 						anchor={{ x: 0.5, y: 1 }}
 						width={symbolW * s * winFit}
-						height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[reelSymbol.rawSymbol.name] ?? 1)}
+						height={symbolW * s * winFit * (SYMBOL_W / SYMBOL_H) / (WIN_ASPECT[symName] ?? 1)}
 						animationSpeed={0.36}
 						loop={true}
 						play={boardAnimate}
 					/>
-				{:else if isWin && LOW_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
+				{:else if isWin && LOW_SYMBOLS_SET.has(symName)}
 					<!-- Letter (low) win: there is no letter win sheet - the CLEAN base tile pulses
 					     continuously (normal <-> +10%) for as long as the win is shown. Gated on
 					     LOW_SYMBOLS_SET rather than a bare `isWin`: a bare catch-all would also swallow a
@@ -457,14 +578,14 @@
 					     leaving the transparent bust cutout floating on the bare board background. Animals
 					     must keep falling through to the animalBorder branch below. -->
 					<Sprite
-						key={getSpriteKey(reelSymbol.rawSymbol.name, undefined)}
+						key={getSpriteKey(symName, undefined)}
 						x={getX(reelIndex)}
 						y={y}
 						anchor={{ x: 0.5, y: 0.5 }}
 						width={symbolW * s * letterPulse}
 						height={symbolH * s * letterPulse}
 					/>
-				{:else if HIGH_SYMBOLS_SET.has(reelSymbol.rawSymbol.name)}
+				{:else if HIGH_SYMBOLS_SET.has(symName)}
 					<!-- Base-state animal: shared brown frame + animated idle blink (or static tile for
 					     the animals without an idle sheet yet). The frame carries the OPAQUE forest panel
 					     the bust sits on, so it must ALWAYS draw: hiding it during anticipation left the
@@ -480,8 +601,8 @@
 						height={symbolH * s * BORDER_SIZE * FRAME_H_MULT * ANIMAL_H_STRETCH}
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
-					{#if idleAnimTextures[reelSymbol.rawSymbol.name]}
-						{@const bust = IDLE_BUST[reelSymbol.rawSymbol.name] ?? { zoom: 1, yOff: 0, xOff: 0 }}
+					{#if idleAnimTextures[symName]}
+						{@const bust = IDLE_BUST[symName] ?? { zoom: 1, yOff: 0, xOff: 0 }}
 						{@const idleH = symbolH * s * idleFit * bust.zoom * ANIMAL_H_STRETCH}
 						{@const panelW = symbolW * s * BORDER_SIZE * FRAME_W_MULT * PANEL_W_FRAC}
 						{@const panelH = symbolH * s * BORDER_SIZE * FRAME_H_MULT * PANEL_H_FRAC * ANIMAL_H_STRETCH}
@@ -506,25 +627,25 @@
 							     animation, so the blink plays on top with identical content (no ghosting);
 							     if the animation ever goes blank, this rest pose still shows. -->
 							<BaseSprite
-								texture={idleAnimTextures[reelSymbol.rawSymbol.name]?.[0]}
+								texture={idleAnimTextures[symName]?.[0]}
 								x={bust.xOff * panelW}
 								y={idleH * bust.yOff - (isPortrait ? symbolH * 0.015 : 0)}
 								anchor={0.5}
 								height={idleH}
-								width={idleH * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[reelSymbol.rawSymbol.name] ?? 1) * IDLE_W_STRETCH}
+								width={idleH * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[symName] ?? 1) * IDLE_W_STRETCH}
 								alpha={hasWinState && !isWin ? 0.35 : 1}
 							/>
 							<!-- Portrait: lift the bust ~2px so its bottom clears the frame's bottom rail
 							     (the ANIMAL_H_STRETCH pushed it down onto the wood). -->
 							<AnimatedSprite
-								textures={idleAnimTextures[reelSymbol.rawSymbol.name]}
+								textures={idleAnimTextures[symName]}
 								x={bust.xOff * panelW}
 								y={idleH * bust.yOff - (isPortrait ? symbolH * 0.015 : 0)}
 								anchor={0.5}
 								height={idleH}
-								width={idleH * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[reelSymbol.rawSymbol.name] ?? 1) * IDLE_W_STRETCH}
+								width={idleH * (SYMBOL_H / SYMBOL_W) * (IDLE_ASPECT[symName] ?? 1) * IDLE_W_STRETCH}
 								animationSpeed={0.28 + ((reelIndex * 2 + symbolIndex) % 4) * 0.008}
-								startFrame={(reelIndex * 13 + symbolIndex * 7) % (idleAnimTextures[reelSymbol.rawSymbol.name]?.length ?? 1)}
+								startFrame={(reelIndex * 13 + symbolIndex * 7) % (idleAnimTextures[symName]?.length ?? 1)}
 								loop={true}
 								play={boardAnimate}
 								alpha={hasWinState && !isWin ? 0.35 : 1}
@@ -532,7 +653,7 @@
 						</Container>
 					{:else}
 						<Sprite
-							key={getSpriteKey(reelSymbol.rawSymbol.name, reelSymbol.symbolState)}
+							key={getSpriteKey(symName, symState)}
 							x={getX(reelIndex)}
 							y={y}
 							anchor={{ x: 0.5, y: 0.5 }}
@@ -552,7 +673,7 @@
 					     hasn't loaded takes the animalBorder branch, so the opaque forest panel always draws
 					     and the transparent bust cutout is never left floating on the bare board. -->
 					<Sprite
-						key={getSpriteKey(reelSymbol.rawSymbol.name, isWin ? undefined : reelSymbol.symbolState)}
+						key={getSpriteKey(symName, isWin ? undefined : symState)}
 						x={getX(reelIndex)}
 						y={y}
 						anchor={{ x: 0.5, y: 0.5 }}
@@ -561,8 +682,65 @@
 						alpha={hasWinState && !isWin ? 0.35 : 1}
 					/>
 				{/if}
+				{/if}
+				{#if blurA > 0}
+					<!-- Reel motion treatment (R7) — the pre-blurred spin tile is the base look (its smear is baked
+					     for BASE spin speed). Whatever velocity the reel carries ABOVE base speed is
+					     rendered as echo ghosts of the same blurred tile, so turbo extends the smear
+					     instead of under-reading, base spin is the pure baked art (excess 0), and the
+					     eased stop collapses the ghosts before the smear itself fades out. Ghosts of
+					     already-blurred art melt together — no double-vision banding.
+					     Drawn LAST so it dissolves over the sharp art below it rather than replacing it. -->
+					{@const vy = reelVelocity[reelIndex] ?? 0}
+					{@const excess = Math.abs(vy) > BASE_SPIN_V ? vy - Math.sign(vy) * BASE_SPIN_V : 0}
+					<!-- The smear is baked from the STATIC tile, so it must be drawn at the size that tile
+					     is drawn at when it is sharp. Everything is a full cell except the scatter, whose
+					     medallion draws at SCATTER_SIZE in both of its sharp branches — without this it
+					     spun ~39% oversized and snapped down at the stop. -->
+					{@const blurFit = symName === 'SCATTER' ? SCATTER_SIZE : 1}
+					{#if Math.abs(excess) > 2}
+						<Sprite
+							key={activeSpinMap[symName]}
+							x={getX(reelIndex)}
+							y={y - excess * 0.66}
+							anchor={{ x: 0.5, y: 0.5 }}
+							width={symbolW * s * blurFit}
+							height={symbolH * s * blurFit}
+							alpha={0.22 * blurA}
+						/>
+						<Sprite
+							key={activeSpinMap[symName]}
+							x={getX(reelIndex)}
+							y={y - excess * 0.33}
+							anchor={{ x: 0.5, y: 0.5 }}
+							width={symbolW * s * blurFit}
+							height={symbolH * s * blurFit}
+							alpha={0.4 * blurA}
+						/>
+					{/if}
+					<Sprite
+						key={activeSpinMap[symName]}
+						x={getX(reelIndex)}
+						y={y}
+						anchor={{ x: 0.5, y: 0.5 }}
+						width={symbolW * s * blurFit}
+						height={symbolH * s * blurFit}
+						alpha={blurA}
+					/>
+				{/if}
+				</Container>
+				{/if}
 			{/each}
-			{/if}
 		{/each}
+		{#if context.stateGame.paylineWins.length > 0}
+			<!-- Payline vines live INSIDE the board container (was a separate MainContainer in
+			     Game.svelte, which forced them entirely above the reels — leaves kept crossing the
+			     winning animals' win animations). Same transform as before, so the geometry is
+			     unchanged; only the depth moved. They now also hide with `boardHide` during the
+			     free-spin transitions, which is what we want. -->
+			<Container zIndex={1}>
+				<PaylineVine wins={context.stateGame.paylineWins} snap={context.stateGame.paylineSnap} />
+			</Container>
+		{/if}
 	</Container>
 {/if}

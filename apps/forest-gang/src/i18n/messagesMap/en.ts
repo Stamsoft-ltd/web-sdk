@@ -115,12 +115,14 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild substitutes for all regular paying symbols. Scatter does not pay by itself and only triggers the bonus features.',
 	'PAYTABLE BUY_TEXT': 'Deal It: 100x bet.\nAll In: 400x bet.\nChance Spin: 2x bet per round.\nFeature Spin: 20x bet per round.\nDeal It and All In require confirmation before the round starts.',
 	'PAYTABLE MAX_TEXT': 'Advertised max win is 25,000x the selected bet.',
-	'DISCLAIMER TEXT': 'Malfunction voids all pays and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted bets. The expected return is calculated over many spins. Animations are not representative of any physical device, and are for illustrative purposes only. Winnings are settled according to the result received from the Remote Game Server and not from events within the web browser. TM and © 2025 Stake Engine.',
+	// Stake Engine's template General Disclaimer, verbatim:
+	// https://stake-engine.com/docs/approval-guidelines/general-disclaimer
+	'DISCLAIMER TEXT': 'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'OVERVIEW',
 	'INFO OVERVIEW BODY':
-		'Forest Gang is a 5x4 video slot played on 20 paylines.\nWins are awarded from left to right on consecutive reels, starting from reel 1, when matching symbols land on an active payline.\nThe game includes 5 premium symbols, 5 low symbols, a Wild symbol, and a Scatter symbol.\n\nMaximum win potential is 25,000x the total bet.\n\nTheoretical RTP: 96.11%',
+		'Forest Gang is a 5x4 video slot played on 20 paylines.\nStandard wins are awarded from left to right on consecutive reels, starting from reel 1, when matching symbols land on an active payline.\nExpanding Symbol wins follow a special win mechanic and do not require the winning reels to be consecutive. See the Expanding Symbol section for details.\nThe game includes 5 premium symbols, 5 low symbols, a Wild symbol, and a Scatter symbol.\n\nMaximum win potential is 25,000x the total bet.\n\nTheoretical RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'REELS',
 	'INFO STAT PAYLINES': '20',
@@ -132,7 +134,7 @@ export default {
 	'INFO FEATURES TITLE': 'FEATURES',
 	'INFO EXPANDING TITLE': 'EXPANDING SYMBOL',
 	'INFO EXPANDING TEXT':
-		'During qualifying feature spins and bonus rounds, one random symbol is selected as the expanding symbol. When the selected expanding symbol lands on the reels, it expands vertically to cover the full reel. Expanded symbols can create multiple payline wins on the same spin. Random multiplier can appear on any spin and apply to the winning amount of that spin.\n\nThe random multiplier can be from 2x to 1024x.',
+		'During qualifying feature spins and bonus rounds, one random symbol is selected as the Expanding Symbol.\nWhen the selected symbol appears on a reel, it expands vertically to cover the full reel.\nExpanding Symbol wins are evaluated differently from standard payline wins. Expanded symbols do not need to appear on consecutive reels to award a win. Reels without the selected symbol do not break an Expanding Symbol win.\nThe number of reels containing the selected Expanding Symbol determines the applicable symbol payout. Expanded symbols can create multiple payline wins on the same spin.\nA random multiplier may apply to any winning spin and is applied to the total winning amount of that spin.\n\nThe random multiplier can range from 2x to 1024x.',
 	'INFO DEAL IT TITLE': 'DEAL IT BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
@@ -157,7 +159,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'WAYS TO WIN',
 	'INFO WAYS NOTE':
-		'Forest Gang is played on 20 fixed paylines. A winning combination is formed when matching symbols land on consecutive reels from left to right on any active payline. Only the highest win per symbol per payline is paid, unless stated otherwise in the final game rules.',
+		'Forest Gang is played on 20 fixed paylines. Standard symbol wins are formed when matching symbols land on consecutive reels from left to right on an active payline, starting from reel 1. Expanding Symbol wins follow a special win mechanic and do not require the winning reels to be consecutive. Reels without the selected Expanding Symbol do not interrupt an Expanding Symbol win. See the Expanding Symbol section for full details. Only the highest win per symbol per payline is paid, unless otherwise stated in the Game Rules.',
 	// Feature buy page
 	'INFO BUY TITLE': 'FEATURE BUY',
 	'INFO BUY CHANCE TITLE': 'EXTRA BONUS CHANCE',
@@ -189,8 +191,10 @@ export default {
 	'INFO INTERRUPTED TEXT':
 		'If a game round is interrupted, it will continue when the game is reloaded, where possible.\n\nAll valid wagers and potential winnings remain active until the round is fully completed.',
 	'INFO LEGAL TITLE': 'LEGAL NOTICE',
+	// Same verbatim template as DISCLAIMER TEXT; only paragraph breaks are inserted, so the
+	// sentences a reviewer diffs are identical to Stake's.
 	'INFO LEGAL TEXT':
-		'Malfunction voids all pays and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted bets.\n\nThe expected return is calculated over many spins. Animations are not representative of any physical device, and are for illustrative purposes only.\n\nAll winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.\n\nTM and © 2025 Stake Engine.',
+		'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds.\n\nThe expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only.\n\nWinnings are settled according to the amount received from the Remote Game Server and not from events within the web browser.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'EXPANDING\nREELS',

@@ -105,12 +105,12 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild thay thế cho tất cả biểu tượng trả thưởng thông thường. Scatter không tự trả thưởng và chỉ kích hoạt các tính năng thưởng.',
 	'PAYTABLE BUY_TEXT': 'Chia Bài: 100x cược.\nTất Tay: 400x cược.\nQuay Cơ Hội: 2x cược mỗi ván.\nQuay Tính Năng: 20x cược mỗi ván.\nChia Bài và Tất Tay cần xác nhận trước khi ván bắt đầu.',
 	'PAYTABLE MAX_TEXT': 'Thắng tối đa được quảng cáo là 25,000x mức cược đã chọn.',
-	'DISCLAIMER TEXT': 'Sự cố sẽ làm vô hiệu tất cả tiền thắng và lượt chơi. Cần có kết nối internet ổn định. Trong trường hợp mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành. Lợi nhuận kỳ vọng được tính trên nhiều lượt chơi. Màn hình trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ nhằm mục đích minh họa. Tiền thắng được thanh toán theo số tiền nhận từ Remote Game Server chứ không phải từ các sự kiện trong trình duyệt web. TM và © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'Sự cố sẽ làm vô hiệu tất cả tiền thắng và lượt chơi. Cần có kết nối internet ổn định. Trong trường hợp mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành. Lợi nhuận kỳ vọng được tính trên nhiều lượt chơi. Màn hình trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ nhằm mục đích minh họa. Tiền thắng được thanh toán theo số tiền nhận từ Remote Game Server chứ không phải từ các sự kiện trong trình duyệt web. TM và © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'TỔNG QUAN',
 	'INFO OVERVIEW BODY':
-		'Forest Gang là video slot 5x4 chơi trên 20 dòng trả thưởng.\nThắng được trao từ trái sang phải trên các cuộn liên tiếp, bắt đầu từ cuộn 1, khi các biểu tượng khớp xuất hiện trên một dòng trả thưởng đang hoạt động.\nTrò chơi gồm 5 biểu tượng premium, 5 biểu tượng thấp, một biểu tượng Wild và một biểu tượng Scatter.\n\nTiềm năng thắng tối đa là 25,000x tổng cược.\n\nRTP lý thuyết: 96.11%',
+		'Forest Gang là video slot 5x4 chơi trên 20 dòng trả thưởng.\nThắng tiêu chuẩn được trao từ trái sang phải trên các cuộn liên tiếp, bắt đầu từ cuộn 1, khi các biểu tượng khớp xuất hiện trên một dòng trả thưởng đang hoạt động.\nThắng từ Biểu Tượng Mở Rộng theo một cơ chế thắng đặc biệt và không yêu cầu các cuộn thắng phải liên tiếp. Xem phần Biểu Tượng Mở Rộng để biết chi tiết.\nTrò chơi gồm 5 biểu tượng premium, 5 biểu tượng thấp, một biểu tượng Wild và một biểu tượng Scatter.\n\nTiềm năng thắng tối đa là 25,000x tổng cược.\n\nRTP lý thuyết: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'CUỘN',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'TÍNH NĂNG',
 	'INFO EXPANDING TITLE': 'BIỂU TƯỢNG MỞ RỘNG',
 	'INFO EXPANDING TEXT':
-		'Trong các lượt quay tính năng đủ điều kiện và các ván thưởng, một biểu tượng ngẫu nhiên được chọn làm biểu tượng mở rộng. Khi biểu tượng mở rộng đã chọn xuất hiện trên các cuộn, nó mở rộng theo chiều dọc để phủ kín cả cuộn. Các biểu tượng mở rộng có thể tạo nhiều thắng dòng trả thưởng trong cùng một lượt quay. Hệ số nhân ngẫu nhiên có thể xuất hiện ở bất kỳ lượt quay nào và áp dụng cho số tiền thắng của lượt quay đó.\n\nHệ số nhân ngẫu nhiên có thể từ 2x đến 1024x.',
+		'Trong các lượt quay tính năng đủ điều kiện và các ván thưởng, một biểu tượng ngẫu nhiên được chọn làm Biểu Tượng Mở Rộng.\nKhi biểu tượng đã chọn xuất hiện trên một cuộn, nó mở rộng theo chiều dọc để phủ kín cả cuộn.\nThắng từ Biểu Tượng Mở Rộng được tính khác với thắng dòng trả thưởng tiêu chuẩn. Các biểu tượng mở rộng không cần xuất hiện trên các cuộn liên tiếp để trao thắng. Các cuộn không có biểu tượng đã chọn không làm gián đoạn thắng từ Biểu Tượng Mở Rộng.\nSố cuộn chứa Biểu Tượng Mở Rộng đã chọn quyết định mức trả thưởng của biểu tượng được áp dụng. Các biểu tượng mở rộng có thể tạo nhiều thắng dòng trả thưởng trong cùng một lượt quay.\nHệ số nhân ngẫu nhiên có thể áp dụng cho bất kỳ lượt quay thắng nào và được áp dụng cho tổng số tiền thắng của lượt quay đó.\n\nHệ số nhân ngẫu nhiên có thể từ 2x đến 1024x.',
 	'INFO DEAL IT TITLE': 'THƯỞNG CHIA BÀI',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'CÁCH THẮNG',
 	'INFO WAYS NOTE':
-		'Forest Gang chơi trên 20 dòng trả thưởng cố định. Một tổ hợp thắng được tạo thành khi các biểu tượng khớp xuất hiện trên các cuộn liên tiếp từ trái sang phải trên bất kỳ dòng trả thưởng nào đang hoạt động. Chỉ thắng cao nhất trên mỗi biểu tượng mỗi dòng được trả, trừ khi có quy định khác trong luật chơi cuối cùng.',
+		'Forest Gang được chơi trên 20 dòng trả thưởng cố định. Thắng biểu tượng tiêu chuẩn được tạo thành khi các biểu tượng khớp xuất hiện trên các cuộn liên tiếp từ trái sang phải trên một dòng trả thưởng đang hoạt động, bắt đầu từ cuộn 1. Thắng từ Biểu Tượng Mở Rộng theo một cơ chế thắng đặc biệt và không yêu cầu các cuộn thắng phải liên tiếp. Các cuộn không có Biểu Tượng Mở Rộng đã chọn không làm gián đoạn thắng từ Biểu Tượng Mở Rộng. Xem phần Biểu Tượng Mở Rộng để biết đầy đủ chi tiết. Chỉ thắng cao nhất cho mỗi biểu tượng trên mỗi dòng trả thưởng được trả, trừ khi có quy định khác trong Luật Chơi.',
 	// Feature buy page
 	'INFO BUY TITLE': 'MUA TÍNH NĂNG',
 	'INFO BUY CHANCE TITLE': 'CƠ HỘI THƯỞNG THÊM',
@@ -171,7 +171,7 @@ export default {
 		'Nếu một ván chơi bị gián đoạn, nó sẽ tiếp tục khi trò chơi được tải lại, nếu có thể.\n\nTất cả tiền cược hợp lệ và tiền thắng tiềm năng vẫn hoạt động cho đến khi ván hoàn thành đầy đủ.',
 	'INFO LEGAL TITLE': 'THÔNG BÁO PHÁP LÝ',
 	'INFO LEGAL TEXT':
-		'Sự cố làm vô hiệu tất cả chi trả và lượt chơi. Cần có kết nối internet ổn định. Nếu mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành.\n\nLợi nhuận kỳ vọng được tính trên số lượng lớn lượt chơi. Màn hình trò chơi chỉ nhằm mục đích hình ảnh và giải trí và không đại diện cho bất kỳ thiết bị chơi vật lý nào.\n\nTất cả tiền thắng được thanh toán theo kết quả nhận từ Remote Game Server, không phải từ hoạt ảnh hay sự kiện hiển thị trong trình duyệt web.\n\nTM and © 2025 Stake Engine.',
+		'Sự cố làm vô hiệu tất cả chi trả và lượt chơi. Cần có kết nối internet ổn định. Nếu mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành.\n\nLợi nhuận kỳ vọng được tính trên số lượng lớn lượt chơi. Màn hình trò chơi chỉ nhằm mục đích hình ảnh và giải trí và không đại diện cho bất kỳ thiết bị chơi vật lý nào.\n\nTất cả tiền thắng được thanh toán theo kết quả nhận từ Remote Game Server, không phải từ hoạt ảnh hay sự kiện hiển thị trong trình duyệt web.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'CUỘN\nMỞ RỘNG',

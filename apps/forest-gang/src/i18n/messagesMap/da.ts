@@ -105,12 +105,12 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild erstatter alle almindelige udbetalende symboler. Scatter udbetaler ikke i sig selv og udløser kun bonusfunktionerne.',
 	'PAYTABLE BUY_TEXT': 'Del Ud: 100x indsats.\nAlt Ind: 400x indsats.\nChancespin: 2x indsats pr. runde.\nFunktionsspin: 20x indsats pr. runde.\nDel Ud og Alt Ind kræver bekræftelse, før runden starter.',
 	'PAYTABLE MAX_TEXT': 'Den annoncerede maksimale gevinst er 25,000x den valgte indsats.',
-	'DISCLAIMER TEXT': 'En fejlfunktion annullerer alle gevinster og spil. En stabil internetforbindelse er påkrævet. I tilfælde af afbrydelse skal du genindlæse spillet for at afslutte uafsluttede runder. Det forventede afkast beregnes over mange spil. Spilvisningen er ikke repræsentativ for nogen fysisk enhed og er kun til illustrative formål. Gevinster afregnes i henhold til det beløb, der modtages fra Remote Game Server, og ikke fra begivenheder i webbrowseren. TM og © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'En fejlfunktion annullerer alle gevinster og spil. En stabil internetforbindelse er påkrævet. I tilfælde af afbrydelse skal du genindlæse spillet for at afslutte uafsluttede runder. Det forventede afkast beregnes over mange spil. Spilvisningen er ikke repræsentativ for nogen fysisk enhed og er kun til illustrative formål. Gevinster afregnes i henhold til det beløb, der modtages fra Remote Game Server, og ikke fra begivenheder i webbrowseren. TM og © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'OVERSIGT',
 	'INFO OVERVIEW BODY':
-		'Forest Gang er en 5x4-videoslot, der spilles på 20 gevinstlinjer.\nGevinster tildeles fra venstre mod højre på fortløbende hjul, startende fra hjul 1, når matchende symboler lander på en aktiv gevinstlinje.\nSpillet indeholder 5 premium-symboler, 5 lave symboler, et Wild-symbol og et Scatter-symbol.\n\nDet maksimale gevinstpotentiale er 25,000x den samlede indsats.\n\nTeoretisk RTP: 96.11%',
+		'Forest Gang er en 5x4-videoslot, der spilles på 20 gevinstlinjer.\nStandardgevinster tildeles fra venstre mod højre på fortløbende hjul, startende fra hjul 1, når matchende symboler lander på en aktiv gevinstlinje.\nGevinster fra det udvidende symbol følger en særlig gevinstmekanik og kræver ikke, at de vindende hjul er fortløbende. Se afsnittet om det udvidende symbol for detaljer.\nSpillet indeholder 5 premium-symboler, 5 lave symboler, et Wild-symbol og et Scatter-symbol.\n\nDet maksimale gevinstpotentiale er 25,000x den samlede indsats.\n\nTeoretisk RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'HJUL',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'FUNKTIONER',
 	'INFO EXPANDING TITLE': 'UDVIDENDE SYMBOL',
 	'INFO EXPANDING TEXT':
-		'Under kvalificerende funktionsspins og bonusrunder vælges ét tilfældigt symbol som det udvidende symbol. Når det valgte udvidende symbol lander på hjulene, udvider det sig lodret for at dække hele hjulet. Udvidede symboler kan skabe flere gevinstlinjegevinster i samme spin. En tilfældig multiplikator kan optræde ved ethvert spin og anvendes på gevinstbeløbet for det spin.\n\nDen tilfældige multiplikator kan være fra 2x til 1024x.',
+		'Under kvalificerende funktionsspins og bonusrunder vælges ét tilfældigt symbol som det udvidende symbol.\nNår det valgte symbol vises på et hjul, udvider det sig lodret for at dække hele hjulet.\nGevinster fra det udvidende symbol beregnes anderledes end almindelige gevinstlinjegevinster. Udvidede symboler behøver ikke at optræde på fortløbende hjul for at give gevinst. Hjul uden det valgte symbol afbryder ikke en gevinst fra det udvidende symbol.\nAntallet af hjul, der indeholder det valgte udvidende symbol, bestemmer den gældende symboludbetaling. Udvidede symboler kan skabe flere gevinstlinjegevinster i samme spin.\nEn tilfældig multiplikator kan gælde for ethvert vindende spin og anvendes på det samlede gevinstbeløb for det spin.\n\nDen tilfældige multiplikator kan variere fra 2x til 1024x.',
 	'INFO DEAL IT TITLE': 'DEL UD BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'MÅDER AT VINDE PÅ',
 	'INFO WAYS NOTE':
-		'Forest Gang spilles på 20 faste gevinstlinjer. En vindende kombination dannes, når matchende symboler lander på fortløbende hjul fra venstre mod højre på en aktiv gevinstlinje. Kun den højeste gevinst pr. symbol pr. gevinstlinje udbetales, medmindre andet er angivet i de endelige spilleregler.',
+		'Forest Gang spilles på 20 faste gevinstlinjer. Almindelige symbolgevinster dannes, når matchende symboler lander på fortløbende hjul fra venstre mod højre på en aktiv gevinstlinje, startende fra hjul 1. Gevinster fra det udvidende symbol følger en særlig gevinstmekanik og kræver ikke, at de vindende hjul er fortløbende. Hjul uden det valgte udvidende symbol afbryder ikke en gevinst fra det udvidende symbol. Se afsnittet om det udvidende symbol for alle detaljer. Kun den højeste gevinst pr. symbol pr. gevinstlinje udbetales, medmindre andet er angivet i spillereglerne.',
 	// Feature buy page
 	'INFO BUY TITLE': 'FUNKTIONSKØB',
 	'INFO BUY CHANCE TITLE': 'EKSTRA BONUSCHANCE',
@@ -171,7 +171,7 @@ export default {
 		'Hvis en spilrunde afbrydes, fortsætter den, når spillet genindlæses, hvor det er muligt.\n\nAlle gyldige indsatser og potentielle gevinster forbliver aktive, indtil runden er fuldstændigt afsluttet.',
 	'INFO LEGAL TITLE': 'JURIDISK MEDDELELSE',
 	'INFO LEGAL TEXT':
-		'En fejlfunktion annullerer alle udbetalinger og spil. En stabil internetforbindelse er påkrævet. Hvis forbindelsen mistes, skal du genindlæse spillet for at afslutte uafsluttede runder.\n\nDet forventede afkast beregnes over et stort antal spil. Spilvisningen er kun til visuelle formål og underholdning og repræsenterer ikke nogen fysisk spilleenhed.\n\nAlle gevinster afregnes i henhold til resultatet modtaget fra Remote Game Server, ikke fra animationer eller begivenheder vist i webbrowseren.\n\nTM and © 2025 Stake Engine.',
+		'En fejlfunktion annullerer alle udbetalinger og spil. En stabil internetforbindelse er påkrævet. Hvis forbindelsen mistes, skal du genindlæse spillet for at afslutte uafsluttede runder.\n\nDet forventede afkast beregnes over et stort antal spil. Spilvisningen er kun til visuelle formål og underholdning og repræsenterer ikke nogen fysisk spilleenhed.\n\nAlle gevinster afregnes i henhold til resultatet modtaget fra Remote Game Server, ikke fra animationer eller begivenheder vist i webbrowseren.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'UDVIDENDE\nHJUL',

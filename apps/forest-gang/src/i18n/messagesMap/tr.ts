@@ -105,12 +105,12 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild, tüm normal ödeme yapan sembollerin yerine geçer. Scatter tek başına ödeme yapmaz ve yalnızca bonus özelliklerini tetikler.',
 	'PAYTABLE BUY_TEXT': 'Dağıt: 100x bahis.\nYa Hep Ya Hiç: 400x bahis.\nŞans Dönüşü: tur başına 2x bahis.\nÖzellik Dönüşü: tur başına 20x bahis.\nDağıt ve Ya Hep Ya Hiç tur başlamadan önce onay gerektirir.',
 	'PAYTABLE MAX_TEXT': 'Reklam edilen maksimum kazanç seçilen bahsin 25,000x katıdır.',
-	'DISCLAIMER TEXT': 'Arıza tüm kazançları ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilmesi durumunda, tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı herhangi bir fiziksel cihazı temsil etmez ve yalnızca gösterim amaçlıdır. Kazançlar web tarayıcısındaki olaylara göre değil, Uzak Oyun Sunucusundan alınan tutara göre ödenir. TM ve © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'Arıza tüm kazançları ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilmesi durumunda, tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı herhangi bir fiziksel cihazı temsil etmez ve yalnızca gösterim amaçlıdır. Kazançlar web tarayıcısındaki olaylara göre değil, Uzak Oyun Sunucusundan alınan tutara göre ödenir. TM ve © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'GENEL BAKIŞ',
 	'INFO OVERVIEW BODY':
-		'Forest Gang, 20 ödeme çizgisinde oynanan bir 5x4 video slottur.\nKazançlar, eşleşen semboller etkin bir ödeme çizgisine indiğinde, makara 1\'den başlayarak ardışık makaralarda soldan sağa verilir.\nOyun 5 premium sembol, 5 düşük sembol, bir Wild sembolü ve bir Scatter sembolü içerir.\n\nMaksimum kazanç potansiyeli toplam bahsin 25,000x katıdır.\n\nTeorik RTP: %96.11',
+		'Forest Gang, 20 ödeme çizgisinde oynanan bir 5x4 video slottur.\nStandart kazançlar, eşleşen semboller etkin bir ödeme çizgisine indiğinde, makara 1\'den başlayarak ardışık makaralarda soldan sağa verilir.\nGenişleyen Sembol kazançları özel bir kazanç mekaniğine tabidir ve kazanan makaraların ardışık olmasını gerektirmez. Ayrıntılar için Genişleyen Sembol bölümüne bakın.\nOyun 5 premium sembol, 5 düşük sembol, bir Wild sembolü ve bir Scatter sembolü içerir.\n\nMaksimum kazanç potansiyeli toplam bahsin 25,000x katıdır.\n\nTeorik RTP: %96.11',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'MAKARALAR',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'ÖZELLİKLER',
 	'INFO EXPANDING TITLE': 'GENİŞLEYEN SEMBOL',
 	'INFO EXPANDING TEXT':
-		'Uygun özellik dönüşleri ve bonus turları sırasında, rastgele bir sembol genişleyen sembol olarak seçilir. Seçilen genişleyen sembol makaralara indiğinde, tüm makarayı kaplayacak şekilde dikey olarak genişler. Genişleyen semboller aynı dönüşte birden fazla ödeme çizgisi kazancı oluşturabilir. Rastgele çarpan herhangi bir dönüşte görünebilir ve o dönüşün kazanç tutarına uygulanır.\n\nRastgele çarpan 2x ile 1024x arasında olabilir.',
+		'Uygun özellik dönüşleri ve bonus turları sırasında, rastgele bir sembol Genişleyen Sembol olarak seçilir.\nSeçilen sembol bir makarada göründüğünde, tüm makarayı kaplayacak şekilde dikey olarak genişler.\nGenişleyen Sembol kazançları standart ödeme çizgisi kazançlarından farklı değerlendirilir. Genişleyen sembollerin kazanç vermesi için ardışık makaralarda görünmesi gerekmez. Seçilen sembolü içermeyen makaralar Genişleyen Sembol kazancını bölmez.\nSeçilen Genişleyen Sembolü içeren makara sayısı, uygulanacak sembol ödemesini belirler. Genişleyen semboller aynı dönüşte birden fazla ödeme çizgisi kazancı oluşturabilir.\nRastgele çarpan kazanan herhangi bir dönüşe uygulanabilir ve o dönüşün toplam kazanç tutarına uygulanır.\n\nRastgele çarpan 2x ile 1024x arasında olabilir.',
 	'INFO DEAL IT TITLE': 'DAĞIT BONUSU',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'KAZANMA YOLLARI',
 	'INFO WAYS NOTE':
-		'Forest Gang 20 sabit ödeme çizgisinde oynanır. Eşleşen semboller herhangi bir etkin ödeme çizgisinde soldan sağa ardışık makaralara indiğinde kazanan bir kombinasyon oluşur. Nihai oyun kurallarında aksi belirtilmedikçe, çizgi başına sembol başına yalnızca en yüksek kazanç ödenir.',
+		'Forest Gang 20 sabit ödeme çizgisinde oynanır. Standart sembol kazançları, eşleşen semboller etkin bir ödeme çizgisinde makara 1\'den başlayarak soldan sağa ardışık makaralara indiğinde oluşur. Genişleyen Sembol kazançları özel bir kazanç mekaniğine tabidir ve kazanan makaraların ardışık olmasını gerektirmez. Seçilen Genişleyen Sembolü içermeyen makaralar Genişleyen Sembol kazancını kesmez. Tüm ayrıntılar için Genişleyen Sembol bölümüne bakın. Oyun Kurallarında aksi belirtilmedikçe, sembol başına ödeme çizgisi başına yalnızca en yüksek kazanç ödenir.',
 	// Feature buy page
 	'INFO BUY TITLE': 'ÖZELLİK SATIN ALMA',
 	'INFO BUY CHANCE TITLE': 'EKSTRA BONUS ŞANSI',
@@ -171,7 +171,7 @@ export default {
 		'Bir oyun turu kesintiye uğrarsa, mümkün olduğunda oyun yeniden yüklendiğinde devam eder.\n\nTur tamamen tamamlanana kadar tüm geçerli bahisler ve olası kazançlar etkin kalır.',
 	'INFO LEGAL TITLE': 'YASAL BİLDİRİM',
 	'INFO LEGAL TEXT':
-		'Arıza tüm ödemeleri ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilirse, tamamlanmamış turları tamamlamak için oyunu yeniden yükleyin.\n\nBeklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı yalnızca görsel ve eğlence amaçlıdır ve herhangi bir fiziksel oyun cihazını temsil etmez.\n\nTüm kazançlar, web tarayıcısında gösterilen animasyonlara veya olaylara göre değil, Uzak Oyun Sunucusundan alınan sonuca göre ödenir.\n\nTM and © 2025 Stake Engine.',
+		'Arıza tüm ödemeleri ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilirse, tamamlanmamış turları tamamlamak için oyunu yeniden yükleyin.\n\nBeklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı yalnızca görsel ve eğlence amaçlıdır ve herhangi bir fiziksel oyun cihazını temsil etmez.\n\nTüm kazançlar, web tarayıcısında gösterilen animasyonlara veya olaylara göre değil, Uzak Oyun Sunucusundan alınan sonuca göre ödenir.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'GENİŞLEYEN\nMAKARALAR',

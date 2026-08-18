@@ -152,7 +152,13 @@
 	// All symbols centre on the board (no per-symbol vertical nudge).
 	const symbolCy = $derived(PLACEHOLDER.cy);
 
-	const letterH = $derived(deerH * PLACEHOLDER.h * symScale(displaySymbol));
+	// Landing pop (sc 1.18) + wiggle (±0.07 rad) headroom. The ANIMAL bust is masked to the sign's
+	// interior so it can never spill, but the letter sprite is drawn OUTSIDE that mask — at the pop
+	// it grew 18% and rode off the top/bottom of the wooden board the deer holds. 1/1.18 puts the
+	// PEAK of the pop at the size the letter used to rest at; the extra /1.04 covers the vertical
+	// extent the wiggle's rotation adds (halfW·sin θ) for a wider-than-tall glyph.
+	const LETTER_POP_HEADROOM = 1 / (1.18 * 1.04);
+	const letterH = $derived(deerH * PLACEHOLDER.h * symScale(displaySymbol) * LETTER_POP_HEADROOM);
 	const letterW = $derived(letterH * LETTER_ASPECT);
 
 	// Deer zoom-out entrance (both orientations).
@@ -168,6 +174,16 @@
 	let skipped = false;
 	let closeResolve: (() => void) | null = null;
 	let holdTimer = 0;
+	// Presses are ignored until the presenter has been up long enough to be seen. On a phone the SAME
+	// gesture that dismisses the CONGRATULATIONS screen also reaches this presenter: that screen
+	// closes on `pointerup` (OnPressFullScreen), the book immediately opens the deer, and the canvas
+	// tap-to-skip in HudHtml broadcasts `stopButtonClick` off the same touch — so the deer opened and
+	// closed on one tap and was on screen for a couple of frames. A mouse click doesn't double-fire
+	// the same way, which is why it only showed on a real device and not in the simulator.
+	// Armed after the roll's own duration so the symbol has landed before a press can take it away.
+	// Same guard, and the same reason, as `readyToSkip` in DealItMultiplierPanel.
+	let readyToSkip = false;
+	let armTimer = 0;
 	// The roll must LAND on the chosen symbol before the presenter closes — otherwise the deer was
 	// hidden mid-roll on a random symbol (mismatching the reels / bonus panel).
 	let rollSettled = false;
@@ -180,6 +196,7 @@
 
 	const skip = () => {
 		if (!show || skipped) return;
+		if (!readyToSkip) return;
 		skipped = true;
 		clearTimeout(rollTimer);
 		wiggling = false;
@@ -231,6 +248,9 @@
 		expandedPresenterShow: (emitterEvent) => {
 			show = true;
 			skipped = false;
+			readyToSkip = false;
+			clearTimeout(armTimer);
+			armTimer = setTimeout(() => (readyToSkip = true), ROLL_MS) as unknown as number;
 			rollSettled = false;
 			rollResolve = null;
 			finalSymbol = emitterEvent.symbol;
@@ -267,6 +287,8 @@
 			show = false;
 			wiggling = false;
 			skipped = false;
+			readyToSkip = false;
+			clearTimeout(armTimer);
 			clearTimeout(rollTimer);
 			clearTimeout(holdTimer);
 			closeResolve?.();

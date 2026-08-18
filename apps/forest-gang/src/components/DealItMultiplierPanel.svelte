@@ -23,10 +23,20 @@
 	import { SYMBOL_SIZE, SYMBOL_W } from '../game/constants';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
 
-	// Flat leaf-corner board (counterFrame — same art as the FREE SPINS / EARNED card). Match the
-	// top symbol board width (BonusSymbolPanel uses SYMBOL_W * 1.1). The bear paw is retired; the
-	// value zooms onto this board instead (design ask — same reveal as GlobalMultiplier).
+	// Board width matches the top symbol board (BonusSymbolPanel uses SYMBOL_W * 1.1). DESKTOP
+	// carries this board on the bear paw, like the All In board; every other layout keeps the flat
+	// leaf-corner board (counterFrame — same art as the FREE SPINS / EARNED card), because the paw
+	// needs horizontal room the stacked portrait/landscape columns don't have.
 	const BOARD_W = SYMBOL_W * 1.1;
+	// Bear-paw sizing (DESKTOP only), identical to GlobalMultiplier: the art is 944x708 and the
+	// board it carries is 592px wide centred at (368,324), so scaling by 944/592 renders that board
+	// at exactly BOARD_W and the anchor below puts it on the container origin, paw reaching right.
+	const HAND_W = BOARD_W * (944 / 592);
+	const HAND_H = HAND_W * (708 / 944);
+	// Travel for the paw's entrance/exit. Longer than the All In board's 0.55 swap slide: that one
+	// only swaps a value on a board already on screen, this one arrives from off-strip and leaves
+	// again, so it needs to clear more of the board to read as a hand carrying it in.
+	const SLIDE = BOARD_W * 0.9;
 	const NUM_FONT = BOARD_W * 0.215;
 	// Red X emblem (872×776 after crop) shown at 1x — matches GlobalMultiplier (All In board).
 	const X_RED_W = BOARD_W * 0.34;
@@ -89,8 +99,11 @@
 				: portraitPosition,
 	);
 
-	// This is the "ALL IN" bonus board (internally `freegame`/`feature` — the UI labels are the reverse
-	// of the mode names). Its hand is HIDDEN during spins and only appears when the multiplier CHANGES:
+	// This is the "DEAL IT" bonus board — bonusMode `freegame` (3 scatters) and `feature`, which is
+	// what `dealItMultiplierStart` is broadcast for. The comment here used to name it ALL IN, which
+	// is the OTHER board (GlobalMultiplier). CHANGE-ONLY by design, matching the Deal It rules text
+	// ("multipliers apply to the current winning spin only"): the board is HIDDEN during spins and
+	// only appears when the multiplier CHANGES:
 	// it slides in with the new value, holds, then slides out and hides again. `multiplier` is the last
 	// shown value, kept across spins so a drop back to 1x still reads as a change (negative sting).
 	let show = $state(false);
@@ -100,6 +113,14 @@
 	// (backOut), holds, then fades out — no bear paw sliding across.
 	let groupScale = new Tween(1);
 	let groupAlpha = new Tween(1);
+	// Desktop rides the paw in and out along X; every other layout keeps the zoom-settle.
+	const useFlatBoard = $derived(!isDesktop);
+	let groupX = new Tween(0);
+	// The paw's travel is slower than the flat board's zoom — it crosses the strip rather than
+	// popping in place, and at the zoom's timings it flicked past. Each raw wait below is
+	// lock-stepped to these, so they must move together.
+	const enterMs = $derived(useFlatBoard ? 300 : 320);
+	const exitMs = $derived(useFlatBoard ? 260 : 300);
 	// Value pops onto the board once it has landed (backOut scale) for a distinct landing moment.
 	let numReveal = new Tween(1);
 	let revealed = false;
@@ -115,6 +136,7 @@
 		show = false;
 		groupScale.set(1, { duration: 0 });
 		groupAlpha.set(1, { duration: 0 });
+		groupX.set(0, { duration: 0 });
 		skipReveal?.();
 	};
 
@@ -124,43 +146,72 @@
 		revealed = false;
 		readyToSkip = false;
 		multiplier = next;
-		groupScale.set(1.45, { duration: 0 }); // oversized start
+		// Flat board starts oversized and zooms down; the paw starts off-strip and rides in.
+		groupScale.set(useFlatBoard ? 1.45 : 1, { duration: 0 });
+		groupX.set(useFlatBoard ? 0 : SLIDE, { duration: 0 });
 		groupAlpha.set(0, { duration: 0 });
 		numReveal.set(0, { duration: 0 }); // value hidden until the board has landed
 		show = true; // FadeContainer fades it in
-		groupScale.set(1, { duration: 300, easing: backOut }); // zoom out to settle
-		groupAlpha.set(1, { duration: 200 });
+		if (useFlatBoard) {
+			groupScale.set(1, { duration: enterMs, easing: backOut }); // zoom out to settle
+		} else {
+			groupX.set(0, { duration: enterMs, easing: backOut }); // paw carries the board in
+		}
+		groupAlpha.set(1, { duration: Math.round(enterMs * 0.67) });
 		// DELIBERATELY RAW, in all speed modes: this 300/80/180 window is the reveal itself, and
 		// `readyToSkip` exists precisely so the press that triggered forceStop cannot also hide the
 		// board before the player has seen it. It is also lock-stepped with the 300 ms / 240 ms
 		// tweens above and below — scaling the waits without scaling those would hide the board
 		// mid-zoom. Only the HOLD after it (below) is scaled and skippable.
-		await waitForTimeout(300);
+		// Start the value's pop just BEFORE the board finishes landing, not a beat after it: the
+		// separate 80ms beat plus a 240/180 pop put the multiplier on screen ~780ms into a reveal
+		// that then had to be read and gone — it arrived late enough to feel like it was already
+		// leaving. It now lands with the board.
+		await waitForTimeout(Math.round(enterMs * 0.8));
 		if (revealed) { readyToSkip = false; return; }
-		// Beat, then pop the value onto the board.
-		await waitForTimeout(80);
-		numReveal.set(1, { duration: 240, easing: backOut });
-		await waitForTimeout(180);
+		numReveal.set(1, { duration: 200, easing: backOut });
+		await waitForTimeout(200);
 		if (revealed) { readyToSkip = false; return; }
 		readyToSkip = true;
-		// The read-the-value hold and the fade-out: scaled by speed mode, and cut short by a stop
-		// press either directly (skipReveal, when the press lands during this phase) or via the
-		// round's sticky interrupt (when it landed earlier — e.g. the press that stopped the reels).
-		await Promise.race([hold(900), new Promise<void>((r) => { skipReveal = r; })]);
+		// Read window, in two parts.
+		//
+		// The first part is a FLOOR that a stop press landing earlier in the round cannot touch.
+		// `hold()` is sticky-interruptible: once anything in the round interrupts (the press that
+		// stopped the reels, tap-to-skip), every later hold resolves instantly — so this whole
+		// window collapsed to nothing and the board flashed past no matter what the duration was
+		// set to. Raising 900 → 1700 → 3400 changed nothing for exactly that reason. A press DURING
+		// the reveal still skips it, via skipReveal (armed by `readyToSkip` just above), which is
+		// the only skip that should apply once the player is looking at the value.
+		const MIN_READ_MS = 1400;
+		await Promise.race([waitForTimeout(MIN_READ_MS), new Promise<void>((r) => { skipReveal = r; })]);
+		skipReveal = null;
+		// The second part is the usual scaled, fully interruptible remainder.
+		if (!revealed) {
+			const READ_HOLD_MS = 3400;
+			await Promise.race([
+				hold(READ_HOLD_MS - MIN_READ_MS),
+				new Promise<void>((r) => { skipReveal = r; }),
+			]);
+		}
 		skipReveal = null;
 		readyToSkip = false;
 		if (revealed) return;
-		const exit = 260 * holdScale();
-		groupAlpha.set(0, { duration: exit }); // fade the board out (slight zoom for a soft exit)
-		groupScale.set(1.12, { duration: exit, easing: cubicIn });
-		await Promise.race([hold(260), new Promise<void>((r) => { skipReveal = r; })]);
+		const exit = exitMs * holdScale();
+		groupAlpha.set(0, { duration: exit }); // fade the board out
+		if (useFlatBoard) {
+			groupScale.set(1.12, { duration: exit, easing: cubicIn }); // slight zoom for a soft exit
+		} else {
+			groupX.set(SLIDE, { duration: exit, easing: cubicIn }); // paw carries the board back out
+		}
+		await Promise.race([hold(exitMs), new Promise<void>((r) => { skipReveal = r; })]);
 		skipReveal = null;
 		if (revealed) return;
 		// Land the exit tweens on their end state before hiding. A cut hold (stop press earlier in
 		// the round) returns before the fade has run, and FadeContainer would otherwise cross-fade a
 		// half-faded board. A no-op on the normal path, where the tween has already finished.
 		groupAlpha.set(0, { duration: 0 });
-		groupScale.set(1.12, { duration: 0 });
+		groupScale.set(useFlatBoard ? 1.12 : 1, { duration: 0 });
+		groupX.set(useFlatBoard ? 0 : SLIDE, { duration: 0 });
 		show = false; // FadeContainer fades it out
 	};
 
@@ -196,16 +247,28 @@
 			pendingTarget = 1;
 			groupScale.set(1, { duration: 0 });
 			groupAlpha.set(1, { duration: 0 });
+			groupX.set(0, { duration: 0 });
 		},
 	});
 </script>
 
 {#snippet panel()}
-	<!-- Flat leaf-corner board; the value zooms out onto it when the multiplier changes (fade via
-	     FadeContainer + groupAlpha, scale settle via groupScale). No bear paw. -->
-	<Container x={position.x} y={position.y} scale={scale * groupScale.current} alpha={groupAlpha.current}>
-			<!-- Hand-less board (same art as the FREE SPINS / EARNED card), centred on the origin. -->
-			<Sprite key="counterFrame" anchor={0.5} width={BOARD_W * 1.02} height={BOARD_W * 0.76} />
+	<!-- The board appears only when the multiplier CHANGES: desktop rides it in on the bear paw,
+	     every other layout zooms it out onto the flat board (fade via FadeContainer + groupAlpha). -->
+	<Container
+		x={position.x + (useFlatBoard ? 0 : groupX.current)}
+		y={position.y}
+		scale={scale * groupScale.current}
+		alpha={groupAlpha.current}
+	>
+			{#if useFlatBoard}
+				<!-- Leaf-corner board (same art as the FREE SPINS / EARNED card), centred on the origin. -->
+				<Sprite key="counterFrame" anchor={0.5} width={BOARD_W * 1.02} height={BOARD_W * 0.76} />
+			{:else}
+				<!-- Desktop: bear paw carrying the board. The anchor (0.39/0.458) is the art's board
+				     region, so it lands on the container origin and the paw extends to the right. -->
+				<Sprite key="multiplierHand" anchor={{ x: 0.39, y: 0.458 }} width={HAND_W} height={HAND_H} />
+			{/if}
 
 			<!-- At 1x, show the red X emblem; otherwise the Cinzel 900 gold number.
 			     Wrapped in a scaling container for the pop-in reveal (numReveal). -->

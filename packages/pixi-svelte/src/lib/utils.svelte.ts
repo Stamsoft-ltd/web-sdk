@@ -82,8 +82,14 @@ export const preloadFont = () =>
 
 		try {
 			const loaderModule = await loadWebFontLoader();
-			const WebFont =
-				loaderModule && 'default' in loaderModule ? loaderModule.default : loaderModule;
+			// The interop branch is a runtime necessity — webfontloader is CJS, and bundlers hand it
+			// back either bare or wrapped in `{ default }`. It is invisible to the types, though:
+			// `@types/webfontloader` uses `export =`, so the namespace has no `default`, the `in`
+			// check narrows that arm to `unknown`, and the union collapses to `{}` — losing `load`.
+			// The annotation states the shape the branch actually produces; nothing here changes.
+			const WebFont = (
+				loaderModule && 'default' in loaderModule ? loaderModule.default : loaderModule
+			) as typeof import('webfontloader') | null;
 
 			if (!WebFont) {
 				resolve();

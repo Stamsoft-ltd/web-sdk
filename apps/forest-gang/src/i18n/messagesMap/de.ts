@@ -105,12 +105,12 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild ersetzt alle regulären auszahlenden Symbole. Scatter zahlt nicht selbst aus und löst nur die Bonus-Features aus.',
 	'PAYTABLE BUY_TEXT': 'Zock Los: 100x Einsatz.\nAlles Rein: 400x Einsatz.\nChance-Spin: 2x Einsatz pro Runde.\nFunktions-Spin: 20x Einsatz pro Runde.\nZock Los und Alles Rein erfordern eine Bestätigung vor Rundenbeginn.',
 	'PAYTABLE MAX_TEXT': 'Der angegebene Maximalgewinn beträgt das 25,000x-fache des gewählten Einsatzes.',
-	'DISCLAIMER TEXT': 'Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Im Falle einer Verbindungsunterbrechung lade das Spiel neu, um unvollständige Runden abzuschließen. Die erwartete Rendite wird über viele Spiele berechnet. Die Spielanzeige ist nicht repräsentativ für ein physisches Gerät und dient nur zur Veranschaulichung. Gewinne werden gemäß dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht anhand von Ereignissen im Webbrowser. TM und © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Im Falle einer Verbindungsunterbrechung lade das Spiel neu, um unvollständige Runden abzuschließen. Die erwartete Rendite wird über viele Spiele berechnet. Die Spielanzeige ist nicht repräsentativ für ein physisches Gerät und dient nur zur Veranschaulichung. Gewinne werden gemäß dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht anhand von Ereignissen im Webbrowser. TM und © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'ÜBERSICHT',
 	'INFO OVERVIEW BODY':
-		'Forest Gang ist ein 5x4 Video-Slot mit 20 Gewinnlinien.\nGewinne werden von links nach rechts auf aufeinanderfolgenden Walzen ab Walze 1 vergeben, wenn passende Symbole auf einer aktiven Gewinnlinie landen.\nDas Spiel enthält 5 Premium-Symbole, 5 niedrige Symbole, ein Wild-Symbol und ein Scatter-Symbol.\n\nDas maximale Gewinnpotenzial beträgt das 25,000x-fache des Gesamteinsatzes.\n\nTheoretischer RTP: 96.11%',
+		'Forest Gang ist ein 5x4 Video-Slot mit 20 Gewinnlinien.\nStandardgewinne werden von links nach rechts auf aufeinanderfolgenden Walzen ab Walze 1 vergeben, wenn passende Symbole auf einer aktiven Gewinnlinie landen.\nGewinne mit dem expandierenden Symbol folgen einer speziellen Gewinnmechanik und erfordern nicht, dass die gewinnenden Walzen aufeinanderfolgend sind. Einzelheiten finden Sie im Abschnitt zum expandierenden Symbol.\nDas Spiel enthält 5 Premium-Symbole, 5 niedrige Symbole, ein Wild-Symbol und ein Scatter-Symbol.\n\nDas maximale Gewinnpotenzial beträgt das 25,000x-fache des Gesamteinsatzes.\n\nTheoretischer RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'WALZEN',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'FUNKTIONEN',
 	'INFO EXPANDING TITLE': 'EXPANDIERENDES SYMBOL',
 	'INFO EXPANDING TEXT':
-		'Während qualifizierender Feature-Spins und Bonusrunden wird ein zufälliges Symbol als expandierendes Symbol gewählt. Wenn das gewählte expandierende Symbol auf den Walzen landet, expandiert es vertikal, um die gesamte Walze zu bedecken. Expandierte Symbole können mehrere Gewinnlinien im selben Spin erzeugen. Ein zufälliger Multiplikator kann bei jedem Spin erscheinen und wird auf den Gewinnbetrag dieses Spins angewendet.\n\nDer zufällige Multiplikator kann von 2x bis 1024x reichen.',
+		'Während qualifizierender Feature-Spins und Bonusrunden wird ein zufälliges Symbol als expandierendes Symbol gewählt.\nWenn das gewählte Symbol auf einer Walze erscheint, expandiert es vertikal und bedeckt die gesamte Walze.\nGewinne mit dem expandierenden Symbol werden anders bewertet als normale Gewinnlinien-Gewinne. Expandierte Symbole müssen nicht auf aufeinanderfolgenden Walzen erscheinen, um einen Gewinn auszulösen. Walzen ohne das gewählte Symbol unterbrechen einen Gewinn mit dem expandierenden Symbol nicht.\nDie Anzahl der Walzen mit dem gewählten expandierenden Symbol bestimmt die geltende Symbolauszahlung. Expandierte Symbole können mehrere Gewinnlinien-Gewinne im selben Spin erzeugen.\nEin zufälliger Multiplikator kann bei jedem gewinnenden Spin gelten und wird auf den Gesamtgewinnbetrag dieses Spins angewendet.\n\nDer zufällige Multiplikator kann von 2x bis 1024x reichen.',
 	'INFO DEAL IT TITLE': 'ZOCK LOS BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'GEWINNWEGE',
 	'INFO WAYS NOTE':
-		'Forest Gang wird auf 20 festen Gewinnlinien gespielt. Eine Gewinnkombination entsteht, wenn passende Symbole auf aufeinanderfolgenden Walzen von links nach rechts auf einer aktiven Gewinnlinie landen. Nur der höchste Gewinn pro Symbol pro Gewinnlinie wird ausgezahlt, sofern in den endgültigen Spielregeln nicht anders angegeben.',
+		'Forest Gang wird auf 20 festen Gewinnlinien gespielt. Standard-Symbolgewinne entstehen, wenn passende Symbole von links nach rechts auf aufeinanderfolgenden Walzen auf einer aktiven Gewinnlinie landen, beginnend mit Walze 1. Gewinne mit dem expandierenden Symbol folgen einer speziellen Gewinnmechanik und erfordern nicht, dass die gewinnenden Walzen aufeinanderfolgend sind. Walzen ohne das gewählte expandierende Symbol unterbrechen einen Gewinn mit dem expandierenden Symbol nicht. Alle Einzelheiten finden Sie im Abschnitt zum expandierenden Symbol. Nur der höchste Gewinn pro Symbol und Gewinnlinie wird ausgezahlt, sofern in den Spielregeln nicht anders angegeben.',
 	// Feature buy page
 	'INFO BUY TITLE': 'FEATURE-KAUF',
 	'INFO BUY CHANCE TITLE': 'ZUSÄTZLICHE BONUS-CHANCE',
@@ -171,7 +171,7 @@ export default {
 		'Wenn eine Spielrunde unterbrochen wird, wird sie beim Neuladen des Spiels fortgesetzt, sofern möglich.\n\nAlle gültigen Einsätze und potenziellen Gewinne bleiben aktiv, bis die Runde vollständig abgeschlossen ist.',
 	'INFO LEGAL TITLE': 'RECHTLICHER HINWEIS',
 	'INFO LEGAL TEXT':
-		'Eine Fehlfunktion macht alle Auszahlungen und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Bei Verbindungsverlust lade das Spiel neu, um unvollständige Runden abzuschließen.\n\nDie erwartete Rendite wird über eine große Anzahl von Spielen berechnet. Die Spielanzeige dient nur visuellen und Unterhaltungszwecken und stellt kein physisches Spielgerät dar.\n\nAlle Gewinne werden gemäß dem vom Remote Game Server erhaltenen Ergebnis abgerechnet, nicht anhand von Animationen oder Ereignissen im Webbrowser.\n\nTM and © 2025 Stake Engine.',
+		'Eine Fehlfunktion macht alle Auszahlungen und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Bei Verbindungsverlust lade das Spiel neu, um unvollständige Runden abzuschließen.\n\nDie erwartete Rendite wird über eine große Anzahl von Spielen berechnet. Die Spielanzeige dient nur visuellen und Unterhaltungszwecken und stellt kein physisches Spielgerät dar.\n\nAlle Gewinne werden gemäß dem vom Remote Game Server erhaltenen Ergebnis abgerechnet, nicht anhand von Animationen oder Ereignissen im Webbrowser.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'EXPANDIERENDE\nWALZEN',

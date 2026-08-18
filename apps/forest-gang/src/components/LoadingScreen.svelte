@@ -6,6 +6,7 @@
 	import { MainContainer } from 'components-layout';
 
 	import { getContext } from '../game/context';
+	import { whenArtWarm } from '../lib/preloadArt';
 
 	type Props = { onloaded: () => void; oncanproceed?: (onpress: () => void) => void };
 	const props: Props = $props();
@@ -14,13 +15,17 @@
 
 	const MIN_LOADER_MS = 1500;
 	let minTimeElapsed = $state(false);
+	// The splash and HUD are plain <img>/CSS art fetched by the preloadArt queue — hold the
+	// loading screen until that queue drains too, so nothing pops in after the game shows.
+	let artWarm = $state(false);
 	onMount(() => {
 		setTimeout(() => {
 			minTimeElapsed = true;
 		}, MIN_LOADER_MS);
+		whenArtWarm().then(() => (artWarm = true));
 	});
 
-	const canProceed = $derived(context.stateApp.loaded && minTimeElapsed);
+	const canProceed = $derived(context.stateApp.loaded && artWarm && minTimeElapsed);
 
 	let _notified = false;
 	$effect(() => {

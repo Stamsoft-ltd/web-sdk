@@ -105,12 +105,12 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild korvaa kaikki tavalliset maksavat symbolit. Scatter ei maksa itsestään ja laukaisee vain bonusominaisuudet.',
 	'PAYTABLE BUY_TEXT': 'Jaa Kortit: 100x panos.\nKaikki Peliin: 400x panos.\nMahdollisuuskierros: 2x panos kierrosta kohti.\nOminaisuuskierros: 20x panos kierrosta kohti.\nJaa Kortit ja Kaikki Peliin vaativat vahvistuksen ennen kierroksen alkua.',
 	'PAYTABLE MAX_TEXT': 'Ilmoitettu maksimivoitto on 25,000x valittu panos.',
-	'DISCLAIMER TEXT': 'Toimintahäiriö mitätöi kaikki voitot ja pelit. Vakaa internetyhteys vaaditaan. Yhteyden katketessa lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset. Odotettu palautus lasketaan monien pelien yli. Pelinäyttö ei edusta mitään fyysistä laitetta ja on tarkoitettu vain havainnollistaviin tarkoituksiin. Voitot maksetaan etäpelipalvelimelta saadun summan mukaan, ei verkkoselaimen sisäisten tapahtumien perusteella. TM ja © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'Toimintahäiriö mitätöi kaikki voitot ja pelit. Vakaa internetyhteys vaaditaan. Yhteyden katketessa lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset. Odotettu palautus lasketaan monien pelien yli. Pelinäyttö ei edusta mitään fyysistä laitetta ja on tarkoitettu vain havainnollistaviin tarkoituksiin. Voitot maksetaan etäpelipalvelimelta saadun summan mukaan, ei verkkoselaimen sisäisten tapahtumien perusteella. TM ja © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'YLEISKATSAUS',
 	'INFO OVERVIEW BODY':
-		'Forest Gang on 5x4-videokolikkopeli, jota pelataan 20 voittolinjalla.\nVoitot myönnetään vasemmalta oikealle peräkkäisillä rullilla, rullasta 1 alkaen, kun täsmäävät symbolit osuvat aktiiviselle voittolinjalle.\nPeli sisältää 5 premium-symbolia, 5 matalaa symbolia, Wild-symbolin ja Scatter-symbolin.\n\nSuurin voittopotentiaali on 25,000x kokonaispanos.\n\nTeoreettinen RTP: 96.11%',
+		'Forest Gang on 5x4-videokolikkopeli, jota pelataan 20 voittolinjalla.\nTavalliset voitot myönnetään vasemmalta oikealle peräkkäisillä rullilla, rullasta 1 alkaen, kun täsmäävät symbolit osuvat aktiiviselle voittolinjalle.\nLaajenevan symbolin voitot noudattavat erityistä voittomekaniikkaa eivätkä edellytä, että voittavat rullat ovat peräkkäisiä. Katso tarkemmat tiedot laajenevan symbolin osiosta.\nPeli sisältää 5 premium-symbolia, 5 matalaa symbolia, Wild-symbolin ja Scatter-symbolin.\n\nSuurin voittopotentiaali on 25,000x kokonaispanos.\n\nTeoreettinen RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'RULLAT',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'OMINAISUUDET',
 	'INFO EXPANDING TITLE': 'LAAJENEVA SYMBOLI',
 	'INFO EXPANDING TEXT':
-		'Ehdot täyttävien ominaisuuskierrosten ja bonuskierrosten aikana yksi satunnainen symboli valitaan laajenevaksi symboliksi. Kun valittu laajeneva symboli osuu rullille, se laajenee pystysuunnassa peittäen koko rullan. Laajennetut symbolit voivat luoda useita voittolinjavoittoja samalla kierroksella. Satunnainen kerroin voi ilmestyä millä tahansa kierroksella ja soveltua kyseisen kierroksen voittosummaan.\n\nSatunnainen kerroin voi olla 2x:stä 1024x:ään.',
+		'Ehdot täyttävien ominaisuuskierrosten ja bonuskierrosten aikana yksi satunnainen symboli valitaan laajenevaksi symboliksi.\nKun valittu symboli ilmestyy rullalle, se laajenee pystysuunnassa peittäen koko rullan.\nLaajenevan symbolin voitot lasketaan eri tavalla kuin tavalliset voittolinjavoitot. Laajennettujen symbolien ei tarvitse ilmestyä peräkkäisille rullille voiton saamiseksi. Rullat, joilla ei ole valittua symbolia, eivät katkaise laajenevan symbolin voittoa.\nValitun laajenevan symbolin sisältävien rullien määrä määrää sovellettavan symbolin voiton. Laajennetut symbolit voivat luoda useita voittolinjavoittoja samalla kierroksella.\nSatunnainen kerroin voi koskea mitä tahansa voittavaa kierrosta, ja sitä sovelletaan kyseisen kierroksen kokonaisvoittosummaan.\n\nSatunnainen kerroin voi olla 2x:stä 1024x:ään.',
 	'INFO DEAL IT TITLE': 'JAA KORTIT -BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'VOITTOTAVAT',
 	'INFO WAYS NOTE':
-		'Forest Gangia pelataan 20 kiinteällä voittolinjalla. Voittava yhdistelmä muodostuu, kun täsmäävät symbolit osuvat peräkkäisille rullille vasemmalta oikealle millä tahansa aktiivisella voittolinjalla. Vain korkein voitto symbolia ja voittolinjaa kohti maksetaan, ellei lopullisissa pelisäännöissä toisin mainita.',
+		'Forest Gangia pelataan 20 kiinteällä voittolinjalla. Tavalliset symbolivoitot muodostuvat, kun täsmäävät symbolit osuvat peräkkäisille rullille vasemmalta oikealle aktiivisella voittolinjalla, rullasta 1 alkaen. Laajenevan symbolin voitot noudattavat erityistä voittomekaniikkaa eivätkä edellytä, että voittavat rullat ovat peräkkäisiä. Rullat, joilla ei ole valittua laajenevaa symbolia, eivät katkaise laajenevan symbolin voittoa. Katso kaikki tiedot laajenevan symbolin osiosta. Vain korkein voitto symbolia ja voittolinjaa kohden maksetaan, ellei pelisäännöissä toisin mainita.',
 	// Feature buy page
 	'INFO BUY TITLE': 'OMINAISUUDEN OSTO',
 	'INFO BUY CHANCE TITLE': 'YLIMÄÄRÄINEN BONUSMAHDOLLISUUS',
@@ -171,7 +171,7 @@ export default {
 		'Jos pelikierros keskeytyy, se jatkuu pelin uudelleenlatauksen yhteydessä, mikäli mahdollista.\n\nKaikki voimassa olevat panokset ja mahdolliset voitot pysyvät aktiivisina kunnes kierros on täysin suoritettu.',
 	'INFO LEGAL TITLE': 'OIKEUDELLINEN HUOMAUTUS',
 	'INFO LEGAL TEXT':
-		'Toimintahäiriö mitätöi kaikki maksut ja pelit. Vakaa internetyhteys vaaditaan. Jos yhteys katkeaa, lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset.\n\nOdotettu palautus lasketaan suuren pelimäärän yli. Pelinäyttö on tarkoitettu vain visuaalisiin ja viihdetarkoituksiin eikä edusta mitään fyysistä pelilaitetta.\n\nKaikki voitot maksetaan etäpelipalvelimelta saadun tuloksen mukaan, ei verkkoselaimen sisällä näytettyjen animaatioiden tai tapahtumien perusteella.\n\nTM and © 2025 Stake Engine.',
+		'Toimintahäiriö mitätöi kaikki maksut ja pelit. Vakaa internetyhteys vaaditaan. Jos yhteys katkeaa, lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset.\n\nOdotettu palautus lasketaan suuren pelimäärän yli. Pelinäyttö on tarkoitettu vain visuaalisiin ja viihdetarkoituksiin eikä edusta mitään fyysistä pelilaitetta.\n\nKaikki voitot maksetaan etäpelipalvelimelta saadun tuloksen mukaan, ei verkkoselaimen sisällä näytettyjen animaatioiden tai tapahtumien perusteella.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'LAAJENEVAT\nRULLAT',

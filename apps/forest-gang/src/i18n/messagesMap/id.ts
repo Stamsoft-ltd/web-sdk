@@ -105,12 +105,12 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild menggantikan semua simbol bayaran reguler. Scatter tidak membayar dengan sendirinya dan hanya memicu fitur bonus.',
 	'PAYTABLE BUY_TEXT': 'Bagikan: 100x taruhan.\nPasang Semua: 400x taruhan.\nPutaran Peluang: 2x taruhan per ronde.\nPutaran Fitur: 20x taruhan per ronde.\nBagikan dan Pasang Semua memerlukan konfirmasi sebelum ronde dimulai.',
 	'PAYTABLE MAX_TEXT': 'Kemenangan maks yang diiklankan adalah 25,000x taruhan yang dipilih.',
-	'DISCLAIMER TEXT': 'Kerusakan membatalkan semua kemenangan dan permainan. Koneksi internet yang stabil diperlukan. Jika terjadi pemutusan koneksi, muat ulang permainan untuk menyelesaikan ronde yang belum selesai. Pengembalian yang diharapkan dihitung dari banyak permainan. Tampilan permainan tidak mewakili perangkat fisik apa pun dan hanya untuk tujuan ilustrasi. Kemenangan diselesaikan sesuai jumlah yang diterima dari Remote Game Server dan bukan dari event di dalam peramban web. TM dan © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'Kerusakan membatalkan semua kemenangan dan permainan. Koneksi internet yang stabil diperlukan. Jika terjadi pemutusan koneksi, muat ulang permainan untuk menyelesaikan ronde yang belum selesai. Pengembalian yang diharapkan dihitung dari banyak permainan. Tampilan permainan tidak mewakili perangkat fisik apa pun dan hanya untuk tujuan ilustrasi. Kemenangan diselesaikan sesuai jumlah yang diterima dari Remote Game Server dan bukan dari event di dalam peramban web. TM dan © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'IKHTISAR',
 	'INFO OVERVIEW BODY':
-		'Forest Gang adalah video slot 5x4 yang dimainkan pada 20 garis bayaran.\nKemenangan diberikan dari kiri ke kanan pada gulungan berurutan, dimulai dari gulungan 1, saat simbol yang cocok muncul pada garis bayaran aktif.\nPermainan ini mencakup 5 simbol premium, 5 simbol rendah, satu simbol Wild, dan satu simbol Scatter.\n\nPotensi kemenangan maksimum adalah 25,000x total taruhan.\n\nRTP teoretis: 96.11%',
+		'Forest Gang adalah video slot 5x4 yang dimainkan pada 20 garis bayaran.\nKemenangan standar diberikan dari kiri ke kanan pada gulungan berurutan, dimulai dari gulungan 1, saat simbol yang cocok muncul pada garis bayaran aktif.\nKemenangan Simbol Mengembang mengikuti mekanisme kemenangan khusus dan tidak mengharuskan gulungan pemenang berurutan. Lihat bagian Simbol Mengembang untuk detailnya.\nPermainan ini mencakup 5 simbol premium, 5 simbol rendah, satu simbol Wild, dan satu simbol Scatter.\n\nPotensi kemenangan maksimum adalah 25,000x total taruhan.\n\nRTP teoretis: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'GULUNGAN',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'FITUR',
 	'INFO EXPANDING TITLE': 'SIMBOL MENGEMBANG',
 	'INFO EXPANDING TEXT':
-		'Selama putaran fitur yang memenuhi syarat dan ronde bonus, satu simbol acak dipilih sebagai simbol mengembang. Saat simbol mengembang yang dipilih muncul pada gulungan, ia mengembang secara vertikal untuk menutupi seluruh gulungan. Simbol yang mengembang dapat menciptakan beberapa kemenangan garis bayaran pada putaran yang sama. Pengganda acak dapat muncul pada putaran mana pun dan berlaku untuk jumlah kemenangan putaran tersebut.\n\nPengganda acak dapat dari 2x hingga 1024x.',
+		'Selama putaran fitur yang memenuhi syarat dan ronde bonus, satu simbol acak dipilih sebagai Simbol Mengembang.\nSaat simbol yang dipilih muncul pada sebuah gulungan, ia mengembang secara vertikal untuk menutupi seluruh gulungan.\nKemenangan Simbol Mengembang dihitung berbeda dari kemenangan garis bayaran standar. Simbol yang mengembang tidak harus muncul pada gulungan berurutan untuk memberikan kemenangan. Gulungan tanpa simbol yang dipilih tidak memutus kemenangan Simbol Mengembang.\nJumlah gulungan yang berisi Simbol Mengembang yang dipilih menentukan pembayaran simbol yang berlaku. Simbol yang mengembang dapat menciptakan beberapa kemenangan garis bayaran pada putaran yang sama.\nPengganda acak dapat berlaku pada putaran menang mana pun dan diterapkan pada total jumlah kemenangan putaran tersebut.\n\nPengganda acak dapat berkisar dari 2x hingga 1024x.',
 	'INFO DEAL IT TITLE': 'BONUS BAGIKAN',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'CARA MENANG',
 	'INFO WAYS NOTE':
-		'Forest Gang dimainkan pada 20 garis bayaran tetap. Kombinasi menang terbentuk saat simbol yang cocok muncul pada gulungan berurutan dari kiri ke kanan pada garis bayaran aktif mana pun. Hanya kemenangan tertinggi per simbol per garis yang dibayar, kecuali dinyatakan lain dalam aturan permainan akhir.',
+		'Forest Gang dimainkan pada 20 garis bayaran tetap. Kemenangan simbol standar terbentuk saat simbol yang cocok muncul pada gulungan berurutan dari kiri ke kanan pada garis bayaran aktif, dimulai dari gulungan 1. Kemenangan Simbol Mengembang mengikuti mekanisme kemenangan khusus dan tidak mengharuskan gulungan pemenang berurutan. Gulungan tanpa Simbol Mengembang yang dipilih tidak memutus kemenangan Simbol Mengembang. Lihat bagian Simbol Mengembang untuk detail lengkap. Hanya kemenangan tertinggi per simbol per garis bayaran yang dibayarkan, kecuali dinyatakan lain dalam Aturan Permainan.',
 	// Feature buy page
 	'INFO BUY TITLE': 'BELI FITUR',
 	'INFO BUY CHANCE TITLE': 'PELUANG BONUS EKSTRA',
@@ -171,7 +171,7 @@ export default {
 		'Jika ronde permainan terganggu, ia akan dilanjutkan saat permainan dimuat ulang, jika memungkinkan.\n\nSemua taruhan yang sah dan potensi kemenangan tetap aktif hingga ronde sepenuhnya selesai.',
 	'INFO LEGAL TITLE': 'PEMBERITAHUAN HUKUM',
 	'INFO LEGAL TEXT':
-		'Kerusakan membatalkan semua pembayaran dan permainan. Koneksi internet yang stabil diperlukan. Jika koneksi terputus, muat ulang permainan untuk menyelesaikan ronde yang belum selesai.\n\nPengembalian yang diharapkan dihitung dari sejumlah besar permainan. Tampilan permainan hanya untuk tujuan visual dan hiburan dan tidak mewakili perangkat permainan fisik apa pun.\n\nSemua kemenangan diselesaikan sesuai hasil yang diterima dari Remote Game Server, bukan dari animasi atau event yang ditampilkan di dalam peramban web.\n\nTM and © 2025 Stake Engine.',
+		'Kerusakan membatalkan semua pembayaran dan permainan. Koneksi internet yang stabil diperlukan. Jika koneksi terputus, muat ulang permainan untuk menyelesaikan ronde yang belum selesai.\n\nPengembalian yang diharapkan dihitung dari sejumlah besar permainan. Tampilan permainan hanya untuk tujuan visual dan hiburan dan tidak mewakili perangkat permainan fisik apa pun.\n\nSemua kemenangan diselesaikan sesuai hasil yang diterima dari Remote Game Server, bukan dari animasi atau event yang ditampilkan di dalam peramban web.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'GULUNGAN\nMENGEMBANG',

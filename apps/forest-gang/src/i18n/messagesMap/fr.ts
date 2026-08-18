@@ -105,12 +105,12 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Le Wild remplace tous les symboles de paiement réguliers. Le Scatter ne paie pas de lui-même et déclenche uniquement les fonctions bonus.',
 	'PAYTABLE BUY_TEXT': 'Distribue : 100x mise.\nVa-Banque : 400x mise.\nTour Chance : 2x mise par tour.\nTour Fonction : 20x mise par tour.\nDistribue et Va-Banque nécessitent une confirmation avant le début du tour.',
 	'PAYTABLE MAX_TEXT': 'Le gain max annoncé est de 25,000x la mise sélectionnée.',
-	'DISCLAIMER TEXT': 'Un dysfonctionnement annule tous les gains et jeux. Une connexion Internet stable est requise. En cas de déconnexion, rechargez le jeu pour terminer les tours inachevés. Le retour attendu est calculé sur de nombreuses parties. L\'affichage du jeu ne représente aucun appareil physique et n\'est fourni qu\'à titre illustratif. Les gains sont réglés selon le montant reçu du Remote Game Server et non selon les événements du navigateur web. TM et © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'Un dysfonctionnement annule tous les gains et jeux. Une connexion Internet stable est requise. En cas de déconnexion, rechargez le jeu pour terminer les tours inachevés. Le retour attendu est calculé sur de nombreuses parties. L\'affichage du jeu ne représente aucun appareil physique et n\'est fourni qu\'à titre illustratif. Les gains sont réglés selon le montant reçu du Remote Game Server et non selon les événements du navigateur web. TM et © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'APERÇU',
 	'INFO OVERVIEW BODY':
-		'Forest Gang est une machine à sous vidéo 5x4 jouée sur 20 lignes de paiement.\nLes gains sont attribués de gauche à droite sur des rouleaux consécutifs, à partir du rouleau 1, lorsque des symboles correspondants apparaissent sur une ligne de paiement active.\nLe jeu comprend 5 symboles premium, 5 symboles bas, un symbole Wild et un symbole Scatter.\n\nLe potentiel de gain maximum est de 25,000x la mise totale.\n\nRTP théorique : 96.11%',
+		'Forest Gang est une machine à sous vidéo 5x4 jouée sur 20 lignes de paiement.\nLes gains standard sont attribués de gauche à droite sur des rouleaux consécutifs, à partir du rouleau 1, lorsque des symboles correspondants apparaissent sur une ligne de paiement active.\nLes gains du symbole extensible suivent une mécanique de gain spéciale et n\'exigent pas que les rouleaux gagnants soient consécutifs. Consultez la section du symbole extensible pour plus de détails.\nLe jeu comprend 5 symboles premium, 5 symboles bas, un symbole Wild et un symbole Scatter.\n\nLe potentiel de gain maximum est de 25,000x la mise totale.\n\nRTP théorique : 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'ROULEAUX',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'FONCTIONS',
 	'INFO EXPANDING TITLE': 'SYMBOLE EXTENSIBLE',
 	'INFO EXPANDING TEXT':
-		'Pendant les tours de fonction qualifiants et les tours bonus, un symbole aléatoire est sélectionné comme symbole extensible. Lorsque le symbole extensible sélectionné apparaît sur les rouleaux, il s\'étend verticalement pour couvrir le rouleau entier. Les symboles étendus peuvent créer plusieurs gains de ligne de paiement sur le même tour. Un multiplicateur aléatoire peut apparaître sur n\'importe quel tour et s\'appliquer au montant gagné de ce tour.\n\nLe multiplicateur aléatoire peut aller de 2x à 1024x.',
+		'Pendant les tours de fonction qualifiants et les tours bonus, un symbole aléatoire est sélectionné comme symbole extensible.\nLorsque le symbole sélectionné apparaît sur un rouleau, il s\'étend verticalement pour couvrir le rouleau entier.\nLes gains du symbole extensible sont évalués différemment des gains de ligne de paiement standard. Les symboles étendus n\'ont pas besoin d\'apparaître sur des rouleaux consécutifs pour accorder un gain. Les rouleaux sans le symbole sélectionné n\'interrompent pas un gain du symbole extensible.\nLe nombre de rouleaux contenant le symbole extensible sélectionné détermine le paiement du symbole applicable. Les symboles étendus peuvent créer plusieurs gains de ligne de paiement sur le même tour.\nUn multiplicateur aléatoire peut s\'appliquer à tout tour gagnant et est appliqué au montant total gagné de ce tour.\n\nLe multiplicateur aléatoire peut aller de 2x à 1024x.',
 	'INFO DEAL IT TITLE': 'BONUS DISTRIBUE',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'FAÇONS DE GAGNER',
 	'INFO WAYS NOTE':
-		'Forest Gang se joue sur 20 lignes de paiement fixes. Une combinaison gagnante est formée lorsque des symboles correspondants apparaissent sur des rouleaux consécutifs de gauche à droite sur toute ligne de paiement active. Seul le gain le plus élevé par symbole par ligne de paiement est payé, sauf indication contraire dans les règles finales du jeu.',
+		'Forest Gang se joue sur 20 lignes de paiement fixes. Les gains de symboles standard se forment lorsque des symboles correspondants apparaissent sur des rouleaux consécutifs de gauche à droite sur une ligne de paiement active, à partir du rouleau 1. Les gains du symbole extensible suivent une mécanique de gain spéciale et n\'exigent pas que les rouleaux gagnants soient consécutifs. Les rouleaux sans le symbole extensible sélectionné n\'interrompent pas un gain du symbole extensible. Consultez la section du symbole extensible pour tous les détails. Seul le gain le plus élevé par symbole et par ligne de paiement est payé, sauf indication contraire dans les Règles du Jeu.',
 	// Feature buy page
 	'INFO BUY TITLE': 'ACHAT DE FONCTION',
 	'INFO BUY CHANCE TITLE': 'CHANCE BONUS SUPPLÉMENTAIRE',
@@ -171,7 +171,7 @@ export default {
 		'Si un tour de jeu est interrompu, il continuera au rechargement du jeu, lorsque cela est possible.\n\nToutes les mises valides et les gains potentiels restent actifs jusqu\'à ce que le tour soit entièrement terminé.',
 	'INFO LEGAL TITLE': 'MENTIONS LÉGALES',
 	'INFO LEGAL TEXT':
-		'Un dysfonctionnement annule tous les paiements et jeux. Une connexion Internet stable est requise. Si la connexion est perdue, rechargez le jeu pour terminer les tours inachevés.\n\nLe retour attendu est calculé sur un grand nombre de parties. L\'affichage du jeu est fourni uniquement à des fins visuelles et de divertissement et ne représente aucun appareil de jeu physique.\n\nTous les gains sont réglés selon le résultat reçu du Remote Game Server, et non selon les animations ou événements affichés dans le navigateur web.\n\nTM and © 2025 Stake Engine.',
+		'Un dysfonctionnement annule tous les paiements et jeux. Une connexion Internet stable est requise. Si la connexion est perdue, rechargez le jeu pour terminer les tours inachevés.\n\nLe retour attendu est calculé sur un grand nombre de parties. L\'affichage du jeu est fourni uniquement à des fins visuelles et de divertissement et ne représente aucun appareil de jeu physique.\n\nTous les gains sont réglés selon le résultat reçu du Remote Game Server, et non selon les animations ou événements affichés dans le navigateur web.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'ROULEAUX\nEXTENSIBLES',

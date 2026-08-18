@@ -105,12 +105,12 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild zastępuje wszystkie zwykłe płacące symbole. Scatter nie płaci samodzielnie i tylko uruchamia funkcje bonusowe.',
 	'PAYTABLE BUY_TEXT': 'Rozdaj: 100x zakład.\nVa Banque: 400x zakład.\nSpin Szansy: 2x zakład za rundę.\nSpin Funkcji: 20x zakład za rundę.\nRozdaj i Va Banque wymagają potwierdzenia przed rozpoczęciem rundy.',
 	'PAYTABLE MAX_TEXT': 'Reklamowana maksymalna wygrana to 25,000x wybranego zakładu.',
-	'DISCLAIMER TEXT': 'Awaria unieważnia wszystkie wygrane i gry. Wymagane jest stabilne połączenie internetowe. W przypadku utraty połączenia przeładuj grę, aby dokończyć niezakończone rundy. Oczekiwany zwrot obliczany jest na podstawie wielu gier. Wyświetlanie gry nie odpowiada żadnemu fizycznemu urządzeniu i służy wyłącznie celom ilustracyjnym. Wygrane rozliczane są zgodnie z kwotą otrzymaną z Zdalnego Serwera Gry, a nie ze zdarzeń w przeglądarce internetowej. TM oraz © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'Awaria unieważnia wszystkie wygrane i gry. Wymagane jest stabilne połączenie internetowe. W przypadku utraty połączenia przeładuj grę, aby dokończyć niezakończone rundy. Oczekiwany zwrot obliczany jest na podstawie wielu gier. Wyświetlanie gry nie odpowiada żadnemu fizycznemu urządzeniu i służy wyłącznie celom ilustracyjnym. Wygrane rozliczane są zgodnie z kwotą otrzymaną z Zdalnego Serwera Gry, a nie ze zdarzeń w przeglądarce internetowej. TM oraz © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'PRZEGLĄD',
 	'INFO OVERVIEW BODY':
-		'Forest Gang to wideoslot 5x4 grany na 20 liniach wypłat.\nWygrane przyznawane są od lewej do prawej na kolejnych bębnach, począwszy od bębna 1, gdy pasujące symbole wylądują na aktywnej linii wypłat.\nGra zawiera 5 symboli premium, 5 niskich symboli, symbol Wild oraz symbol Scatter.\n\nMaksymalny potencjał wygranej to 25,000x całkowitego zakładu.\n\nTeoretyczny RTP: 96.11%',
+		'Forest Gang to wideoslot 5x4 grany na 20 liniach wypłat.\nStandardowe wygrane przyznawane są od lewej do prawej na kolejnych bębnach, począwszy od bębna 1, gdy pasujące symbole wylądują na aktywnej linii wypłat.\nWygrane z symbolem rozszerzającym działają według specjalnej mechaniki i nie wymagają, aby wygrywające bębny były kolejne. Szczegóły znajdziesz w sekcji symbolu rozszerzającego.\nGra zawiera 5 symboli premium, 5 niskich symboli, symbol Wild oraz symbol Scatter.\n\nMaksymalny potencjał wygranej to 25,000x całkowitego zakładu.\n\nTeoretyczny RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'BĘBNY',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'FUNKCJE',
 	'INFO EXPANDING TITLE': 'SYMBOL ROZSZERZAJĄCY',
 	'INFO EXPANDING TEXT':
-		'Podczas kwalifikujących się spinów funkcji i rund bonusowych jeden losowy symbol jest wybierany jako symbol rozszerzający. Gdy wybrany symbol rozszerzający wyląduje na bębnach, rozszerza się pionowo, aby pokryć cały bęben. Rozszerzone symbole mogą tworzyć wygrane na wielu liniach w tym samym spinie. Losowy mnożnik może pojawić się na dowolnym spinie i stosuje się do kwoty wygranej tego spinu.\n\nLosowy mnożnik może wynosić od 2x do 1024x.',
+		'Podczas kwalifikujących się spinów funkcji i rund bonusowych jeden losowy symbol jest wybierany jako symbol rozszerzający.\nGdy wybrany symbol pojawi się na bębnie, rozszerza się pionowo, aby pokryć cały bęben.\nWygrane z symbolem rozszerzającym są oceniane inaczej niż standardowe wygrane na liniach wypłat. Rozszerzone symbole nie muszą pojawić się na kolejnych bębnach, aby przyznać wygraną. Bębny bez wybranego symbolu nie przerywają wygranej z symbolem rozszerzającym.\nLiczba bębnów zawierających wybrany symbol rozszerzający określa obowiązującą wypłatę za symbol. Rozszerzone symbole mogą tworzyć wiele wygranych na liniach wypłat w tym samym spinie.\nLosowy mnożnik może dotyczyć każdego wygrywającego spinu i jest stosowany do całkowitej kwoty wygranej tego spinu.\n\nLosowy mnożnik może wynosić od 2x do 1024x.',
 	'INFO DEAL IT TITLE': 'BONUS ROZDAJ',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'SPOSOBY WYGRANEJ',
 	'INFO WAYS NOTE':
-		'Forest Gang grany jest na 20 stałych liniach wypłat. Wygrywająca kombinacja powstaje, gdy pasujące symbole lądują na kolejnych bębnach od lewej do prawej na dowolnej aktywnej linii wypłat. Płacona jest tylko najwyższa wygrana za symbol na linię, chyba że w ostatecznych zasadach gry zaznaczono inaczej.',
+		'Forest Gang jest grany na 20 stałych liniach wypłat. Standardowe wygrane symboli powstają, gdy pasujące symbole wylądują na kolejnych bębnach od lewej do prawej na aktywnej linii wypłat, począwszy od bębna 1. Wygrane z symbolem rozszerzającym działają według specjalnej mechaniki i nie wymagają, aby wygrywające bębny były kolejne. Bębny bez wybranego symbolu rozszerzającego nie przerywają wygranej z symbolem rozszerzającym. Pełne szczegóły znajdziesz w sekcji symbolu rozszerzającego. Wypłacana jest tylko najwyższa wygrana na symbol na linię wypłat, o ile Zasady Gry nie stanowią inaczej.',
 	// Feature buy page
 	'INFO BUY TITLE': 'KUPNO FUNKCJI',
 	'INFO BUY CHANCE TITLE': 'DODATKOWA SZANSA BONUSU',
@@ -171,7 +171,7 @@ export default {
 		'Jeśli runda gry zostanie przerwana, będzie kontynuowana po przeładowaniu gry, tam gdzie to możliwe.\n\nWszystkie ważne zakłady i potencjalne wygrane pozostają aktywne do pełnego zakończenia rundy.',
 	'INFO LEGAL TITLE': 'INFORMACJA PRAWNA',
 	'INFO LEGAL TEXT':
-		'Awaria unieważnia wszystkie wypłaty i gry. Wymagane jest stabilne połączenie internetowe. Jeśli połączenie zostanie utracone, przeładuj grę, aby dokończyć niezakończone rundy.\n\nOczekiwany zwrot obliczany jest na podstawie dużej liczby gier. Wyświetlanie gry służy wyłącznie celom wizualnym i rozrywkowym i nie reprezentuje żadnego fizycznego urządzenia do gier.\n\nWszystkie wygrane rozliczane są zgodnie z wynikiem otrzymanym z Zdalnego Serwera Gry, a nie z animacji lub zdarzeń pokazanych wewnątrz przeglądarki internetowej.\n\nTM and © 2025 Stake Engine.',
+		'Awaria unieważnia wszystkie wypłaty i gry. Wymagane jest stabilne połączenie internetowe. Jeśli połączenie zostanie utracone, przeładuj grę, aby dokończyć niezakończone rundy.\n\nOczekiwany zwrot obliczany jest na podstawie dużej liczby gier. Wyświetlanie gry służy wyłącznie celom wizualnym i rozrywkowym i nie reprezentuje żadnego fizycznego urządzenia do gier.\n\nWszystkie wygrane rozliczane są zgodnie z wynikiem otrzymanym z Zdalnego Serwera Gry, a nie z animacji lub zdarzeń pokazanych wewnątrz przeglądarki internetowej.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'ROZSZERZAJĄCE\nBĘBNY',

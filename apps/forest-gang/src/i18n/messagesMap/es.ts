@@ -105,12 +105,12 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'El Wild sustituye a todos los símbolos de pago regulares. El Scatter no paga por sí solo y solo activa las funciones de bono.',
 	'PAYTABLE BUY_TEXT': 'Reparte: 100x apuesta.\nTodo o Nada: 400x apuesta.\nGiro Chance: 2x apuesta por ronda.\nGiro de Función: 20x apuesta por ronda.\nReparte y Todo o Nada requieren confirmación antes de que empiece la ronda.',
 	'PAYTABLE MAX_TEXT': 'La ganancia máxima anunciada es 25,000x la apuesta seleccionada.',
-	'DISCLAIMER TEXT': 'Un mal funcionamiento anula todas las ganancias y jugadas. Se requiere una conexión a internet estable. En caso de desconexión, recarga el juego para finalizar cualquier ronda incompleta. El retorno esperado se calcula sobre muchas jugadas. La pantalla del juego no representa ningún dispositivo físico y es solo con fines ilustrativos. Las ganancias se liquidan según el importe recibido del Remote Game Server y no según los eventos dentro del navegador web. TM y © 2025 Stake Engine.',
+	'DISCLAIMER TEXT': 'Un mal funcionamiento anula todas las ganancias y jugadas. Se requiere una conexión a internet estable. En caso de desconexión, recarga el juego para finalizar cualquier ronda incompleta. El retorno esperado se calcula sobre muchas jugadas. La pantalla del juego no representa ningún dispositivo físico y es solo con fines ilustrativos. Las ganancias se liquidan según el importe recibido del Remote Game Server y no según los eventos dentro del navegador web. TM y © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'RESUMEN',
 	'INFO OVERVIEW BODY':
-		'Forest Gang es una tragamonedas de vídeo 5x4 jugada en 20 líneas de pago.\nLas ganancias se otorgan de izquierda a derecha en rodillos consecutivos, empezando por el rodillo 1, cuando símbolos coincidentes aparecen en una línea de pago activa.\nEl juego incluye 5 símbolos premium, 5 símbolos bajos, un símbolo Wild y un símbolo Scatter.\n\nEl potencial de ganancia máxima es 25,000x la apuesta total.\n\nRTP teórico: 96.11%',
+		'Forest Gang es una tragamonedas de vídeo 5x4 jugada en 20 líneas de pago.\nLas ganancias estándar se otorgan de izquierda a derecha en rodillos consecutivos, empezando por el rodillo 1, cuando símbolos coincidentes aparecen en una línea de pago activa.\nLas ganancias del símbolo expansivo siguen una mecánica de ganancia especial y no requieren que los rodillos ganadores sean consecutivos. Consulta la sección del símbolo expansivo para más detalles.\nEl juego incluye 5 símbolos premium, 5 símbolos bajos, un símbolo Wild y un símbolo Scatter.\n\nEl potencial de ganancia máxima es 25,000x la apuesta total.\n\nRTP teórico: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'RODILLOS',
 	'INFO STAT PAYLINES': '20',
@@ -122,7 +122,7 @@ export default {
 	'INFO FEATURES TITLE': 'FUNCIONES',
 	'INFO EXPANDING TITLE': 'SÍMBOLO EXPANSIVO',
 	'INFO EXPANDING TEXT':
-		'Durante los giros de función y las rondas de bono que califican, se selecciona un símbolo al azar como símbolo expansivo. Cuando el símbolo expansivo seleccionado aparece en los rodillos, se expande verticalmente para cubrir el rodillo completo. Los símbolos expandidos pueden crear varias ganancias de línea de pago en el mismo giro. Un multiplicador aleatorio puede aparecer en cualquier giro y aplicarse al importe ganado de ese giro.\n\nEl multiplicador aleatorio puede ir de 2x a 1024x.',
+		'Durante los giros de función y las rondas de bono que califican, se selecciona un símbolo al azar como símbolo expansivo.\nCuando el símbolo seleccionado aparece en un rodillo, se expande verticalmente para cubrir el rodillo completo.\nLas ganancias del símbolo expansivo se evalúan de forma distinta a las ganancias de línea de pago estándar. Los símbolos expandidos no necesitan aparecer en rodillos consecutivos para otorgar una ganancia. Los rodillos sin el símbolo seleccionado no interrumpen una ganancia del símbolo expansivo.\nEl número de rodillos que contienen el símbolo expansivo seleccionado determina el pago del símbolo aplicable. Los símbolos expandidos pueden crear varias ganancias de línea de pago en el mismo giro.\nUn multiplicador aleatorio puede aplicarse a cualquier giro ganador y se aplica al importe total ganado de ese giro.\n\nEl multiplicador aleatorio puede ir de 2x a 1024x.',
 	'INFO DEAL IT TITLE': 'BONO REPARTE',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'FORMAS DE GANAR',
 	'INFO WAYS NOTE':
-		'Forest Gang se juega en 20 líneas de pago fijas. Se forma una combinación ganadora cuando símbolos coincidentes aparecen en rodillos consecutivos de izquierda a derecha en cualquier línea de pago activa. Solo se paga la ganancia más alta por símbolo por línea de pago, salvo que se indique lo contrario en las reglas finales del juego.',
+		'Forest Gang se juega en 20 líneas de pago fijas. Las ganancias de símbolos estándar se forman cuando símbolos coincidentes aparecen en rodillos consecutivos de izquierda a derecha en una línea de pago activa, empezando por el rodillo 1. Las ganancias del símbolo expansivo siguen una mecánica de ganancia especial y no requieren que los rodillos ganadores sean consecutivos. Los rodillos sin el símbolo expansivo seleccionado no interrumpen una ganancia del símbolo expansivo. Consulta la sección del símbolo expansivo para todos los detalles. Solo se paga la ganancia más alta por símbolo y por línea de pago, salvo que se indique lo contrario en las Reglas del Juego.',
 	// Feature buy page
 	'INFO BUY TITLE': 'COMPRA DE FUNCIÓN',
 	'INFO BUY CHANCE TITLE': 'PROBABILIDAD DE BONO EXTRA',
@@ -171,7 +171,7 @@ export default {
 		'Si una ronda de juego se interrumpe, continuará cuando se recargue el juego, siempre que sea posible.\n\nTodas las apuestas válidas y las posibles ganancias permanecen activas hasta que la ronda se complete por completo.',
 	'INFO LEGAL TITLE': 'AVISO LEGAL',
 	'INFO LEGAL TEXT':
-		'Un mal funcionamiento anula todos los pagos y jugadas. Se requiere una conexión a internet estable. Si se pierde la conexión, recarga el juego para completar cualquier ronda sin finalizar.\n\nEl retorno esperado se calcula sobre un gran número de jugadas. La pantalla del juego es solo con fines visuales y de entretenimiento y no representa ningún dispositivo de juego físico.\n\nTodas las ganancias se liquidan según el resultado recibido del Remote Game Server, no según animaciones o eventos mostrados dentro del navegador web.\n\nTM and © 2025 Stake Engine.',
+		'Un mal funcionamiento anula todos los pagos y jugadas. Se requiere una conexión a internet estable. Si se pierde la conexión, recarga el juego para completar cualquier ronda sin finalizar.\n\nEl retorno esperado se calcula sobre un gran número de jugadas. La pantalla del juego es solo con fines visuales y de entretenimiento y no representa ningún dispositivo de juego físico.\n\nTodas las ganancias se liquidan según el resultado recibido del Remote Game Server, no según animaciones o eventos mostrados dentro del navegador web.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'RODILLOS\nEXPANSIVOS',

@@ -15,34 +15,34 @@
 	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.webp'); // wooden round — utility buttons
 	const btnSpinBg = ap('/assets/components/navbar/btn_bg_spin.webp?v=20260720'); // green round — spin
 	const btnSpinHoverBg = ap('/assets/components/navbar/btn_bg_spin_hover.webp?v=20260720'); // spin hover
-	const btnWideBg = ap('/assets/components/navbar/btn_bg_wide.png?v=20260720'); // wide green — buy bonus
-	const btnWideHoverBg = ap('/assets/components/navbar/btn_bg_wide_hover.png?v=20260720'); // buy hover
+	const btnWideBg = ap('/assets/components/navbar/btn_bg_wide.webp?v=20260720'); // wide green — buy bonus
+	const btnWideHoverBg = ap('/assets/components/navbar/btn_bg_wide_hover.webp?v=20260720'); // buy hover
 	// Portrait/mobile pads (Figma 2792-4133)
 	// Mobile-landscape HUD art (Figma 2682-3639)
 	const lsRightBar = ap('/assets/components/symbols/landscape/right_bar.webp?v=20260715'); // vertical control bar
-	const lsBetPad = ap('/assets/components/symbols/landscape/stepper_pad.png'); // − value + bottom pad
-	const lsBuyBonus = ap('/assets/components/symbols/landscape/buy_bonus.png'); // round green badge
+	const lsBetPad = ap('/assets/components/symbols/landscape/stepper_pad.webp'); // − value + bottom pad
+	const lsBuyBonus = ap('/assets/components/symbols/landscape/buy_bonus.webp'); // round green badge
 	const navPadMobile = ap('/assets/components/navbar/nav_pad_mobile.webp'); // control-bar pill
-	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.png'); // − value + pill
-	const buyBonusMobile = ap('/assets/components/navbar/buy_bonus_mobile.png'); // round green badge
+	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.webp'); // − value + pill
+	const buyBonusMobile = ap('/assets/components/navbar/buy_bonus_mobile.webp'); // round green badge
 	const spinMobile = ap('/assets/components/navbar/spin_mobile.webp'); // green spin w/ leaves
 
 	// Gold icons layered over the button backgrounds
-	const iconMenu = ap('/assets/hud/icon-info.png');
-	const iconMenuBars = ap('/assets/hud/icon-menu.png'); // hamburger — opens the portrait sound/info menu
-	const iconSound = ap('/assets/hud/icon-volume.png');
-	const iconSoundMuted = ap('/assets/hud/icon-volume-muted.png');
+	const iconMenu = ap('/assets/hud/icon-info.webp');
+	const iconMenuBars = ap('/assets/hud/icon-menu.webp'); // hamburger — opens the portrait sound/info menu
+	const iconSound = ap('/assets/hud/icon-volume.webp');
+	const iconSoundMuted = ap('/assets/hud/icon-volume-muted.webp');
 	const iconMinus = ap('/assets/hud/icon-minus.webp');
 	const iconPlus = ap('/assets/hud/icon-plus.webp');
-	const iconAuto = ap('/assets/hud/icon-autoplay.png');
-	const iconSpin = ap('/assets/hud/icon-spin.png');
-	const iconStop = ap('/assets/hud/icon-stop.png');
-	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.png');
-	const iconTurbo2 = ap('/assets/hud/icon-lightning-2.png');
-	const iconTurbo3 = ap('/assets/hud/icon-lightning-3.png');
+	const iconAuto = ap('/assets/hud/icon-autoplay.webp');
+	const iconSpin = ap('/assets/hud/icon-spin.webp');
+	const iconStop = ap('/assets/hud/icon-stop.webp');
+	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.webp');
+	const iconTurbo2 = ap('/assets/hud/icon-lightning-2.webp');
+	const iconTurbo3 = ap('/assets/hud/icon-lightning-3.webp');
 	const iconCoins = ap('/assets/hud/icon-coins.webp');
 
-	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
+	const scatterFrame = ap('/assets/components/frames/scatter_frame.webp');
 	const hudFrame = ap('/assets/components/frames/hud_frame.webp');
 	const smallBtnFrame = ap('/assets/components/frames/lower_hud_button_frame.webp');
 	const playBtnFrame = ap('/assets/components/frames/play_button-frame.webp');
@@ -137,8 +137,18 @@
 	const autoSpinsRemainingText = $derived(
 		stateBet.autoSpinsCounter === Infinity ? '∞' : `${stateBet.autoSpinsCounter}`,
 	);
+	// `setBetAmount` refuses to leave a bet level the balance can't cover, so + would otherwise sit
+	// enabled but do nothing once the next level up is unaffordable. Disable it at that ceiling.
+	const highestAffordableBet = $derived.by(() => {
+		const costMultiplier = stateBetDerived.betCostMultiplier();
+		if (costMultiplier <= 0) return biggestBet;
+		const affordable = betOptions.filter((option) => option * costMultiplier <= stateBet.balanceAmount);
+		return affordable.length ? affordable[affordable.length - 1] : smallestBet;
+	});
 	const disableDecrease = $derived(!canInteract || stateBet.betAmount === smallestBet);
-	const disableIncrease = $derived(!canInteract || stateBet.betAmount === biggestBet);
+	const disableIncrease = $derived(
+		!canInteract || stateBet.betAmount >= Math.min(biggestBet, highestAffordableBet),
+	);
 	const disableAuto = $derived.by(() => {
 		if (stateBet.isSpaceHold) return true;
 		if (!canInteract && !hasAuto) return true;
@@ -243,11 +253,31 @@
 		if (c === '$') return 0.6;
 		return 0.66; // letters / other currency glyphs (conservative)
 	};
-	const desktopValueFontStyle = (s: string) => {
+	const valueFontStyle = (s: string, capEm: number) => {
 		let em = 0;
 		for (const c of s) em += glyphEm(c);
-		const scale = Math.min(1, DESKTOP_VALUE_CAP_EM / Math.max(em, 0.01));
+		const scale = Math.min(1, capEm / Math.max(em, 0.01));
 		return `font-size: calc(var(--u) * ${(DESKTOP_VALUE_BASE_U * scale).toFixed(2)});`;
+	};
+	const desktopValueFontStyle = (s: string) => valueFontStyle(s, DESKTOP_VALUE_CAP_EM);
+	// The BET slot is narrower than BALANCE/WIN (90u vs 126u — see .value-fit--bet). It used the
+	// action-based fitText, which never applied here: Svelte 5 doesn't call an action's `update`,
+	// and neither a ResizeObserver nor a MutationObserver fired for the value swap, so the fit stayed
+	// frozen at the string present on mount ("$1.00") and a longer amount ("€750.00") overflowed the
+	// slot and pushed the +/- steppers off the pad. Sizing from the characters is reactive by
+	// construction — the style attribute is recomputed whenever the value changes.
+	const DESKTOP_BET_CAP_EM = (90 / DESKTOP_VALUE_BASE_U) * 0.88;
+	const desktopBetFontStyle = (s: string) => valueFontStyle(s, DESKTOP_BET_CAP_EM);
+
+	// Landscape / portrait size the pad in vh and `--u`, not in the desktop `u` grid, so the cap is
+	// expressed in CSS instead: each pad publishes the width left for the value, and the value's
+	// font-size becomes min(designSize, avail / --bet-em). Publishing the string's em width as a
+	// custom property keeps it reactive — Svelte rewrites the style attribute on every change.
+	const betEmStyle = (s: string) => {
+		let em = 0;
+		for (const c of s) em += glyphEm(c);
+		// /0.9 leaves ~10% headroom for letter-spacing and glyph-estimate error.
+		return `--bet-em:${(Math.max(em, 0.01) / 0.9).toFixed(3)};`;
 	};
 
 	const openPaytable = () => {
@@ -452,64 +482,10 @@
 	// Scale the balance text down to fit its slot so a very long balance can't
 	// widen the HUD and push the navigation off the bar. Only ever shrinks; all
 	// digits stay visible. Re-runs when the text changes and when the slot resizes.
-	function fitText(node: HTMLElement, _value: unknown) {
-		// transform:scale is IGNORED on inline elements, so force inline-block here (independent of
-		// CSS specificity/media) — otherwise the shrink silently no-ops and a long value renders
-		// full-size and gets clipped by the slot's overflow:hidden.
-		node.style.display = 'inline-block';
-		const fit = () => {
-			const slot = node.parentElement;
-			if (!slot) return;
-			node.style.transform = 'none';
-			// Space actually left for the value: the slot minus what the preceding sibling
-			// (label / minus-button) already occupies — but ONLY when that sibling sits on the
-			// same row. In a column layout (portrait BALANCE: label ABOVE value) the value has the
-			// full slot width, so subtracting the label there wrongly shrank it to nothing.
-			const prev = node.previousElementSibling as HTMLElement | null;
-			const sameRow = prev ? Math.abs(prev.offsetTop - node.offsetTop) < node.offsetHeight * 0.6 : false;
-			// Measure the fit entirely in LAYOUT px (offsetWidth / clientWidth) so the CSS-transform
-			// scale of the game container cancels out on its own. The earlier version mixed layout px
-			// (clientWidth) with rendered px (getBoundingClientRect) through a `slotScale` factor; any
-			// drift in that factor left `avail >= full`, so a long value (e.g. $100,000.00 on desktop,
-			// or a big landscape balance) never shrank and clipped under the slot's overflow:hidden.
-			// offsetWidth is the inline-block's unscaled border-box width = the full text width, and
-			// clientWidth is the slot's unscaled content+padding width — both immune to the transform.
-			const used = prev && sameRow ? prev.offsetWidth + 8 : 0;
-			const cs = getComputedStyle(slot);
-			const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
-			const avail = slot.clientWidth - pad - used;
-			const full = node.offsetWidth;
-			// Adaptive shrink origin: portrait centres the value in its slot (align-items:center) —
-			// there a left origin keeps clipping the "$" prefix, so shrink from the CENTRE. Desktop
-			// (.value-fit, left-aligned text) and landscape (label-beside-value row) are left-aligned
-			// — there a centre origin shifts/clips the value, so shrink from the LEFT. Detect which by
-			// comparing the value's centre to the slot's centre (rendered px ratios, scale cancels).
-			const nodeRect = node.getBoundingClientRect();
-			const slotRect = slot.getBoundingClientRect();
-			const centered =
-				!sameRow &&
-				Math.abs(nodeRect.left + nodeRect.width / 2 - (slotRect.left + slotRect.width / 2)) <
-					slotRect.width * 0.15;
-			node.style.transformOrigin = centered ? 'center center' : 'left center';
-			const scale = full > avail && avail > 0 ? avail / full : 1;
-			node.style.transform = scale < 1 ? `scale(${scale})` : 'none';
-		};
-		const raf = () => requestAnimationFrame(fit);
-		const ro = new ResizeObserver(raf);
-		// Observe the NODE itself, not just the slot: the balance/bet slots are fixed-width so they
-		// never resize when the value changes — observing only the parent meant a longer value that
-		// arrived AFTER load (e.g. balance grows past the slot once the player wins/loses into a big
-		// number) never re-fit and clipped. The value span's own width DOES change with the text, so
-		// this fires the re-fit reliably (transform:scale doesn't alter its layout box, so no loop).
-		// The action `update` callback proved unreliable as the sole trigger, hence the observer.
-		ro.observe(node);
-		if (node.parentElement) ro.observe(node.parentElement);
-		// Re-fit once the webfont arrives: the first fit measures fallback-font metrics, and a
-		// fixed-width slot never resizes afterwards (so the observer alone can't catch it).
-		document.fonts?.ready.then(raf);
-		raf();
-		return { update: raf, destroy: () => ro.disconnect() };
-	}
+	// (A transform-based `fitText` action used to live here. It shrank glyphs without changing the
+	// layout box and never re-ran on value change — Svelte 5 does not call an action's `update`, and
+	// neither a ResizeObserver nor a MutationObserver fired for the text swap. Every value is now
+	// sized from its own characters via a style binding, which Svelte recomputes reactively.)
 
 	// Landscape BALANCE pill: scale the WHOLE pill (label + value + padding, measured at max-content
 	// width) down to its rail, instead of fitText's shrink-only-the-value. On small landscape windows
@@ -666,7 +642,7 @@
 			<div class="pt-stats">
 				<div class="pt-balance">
 					<span class="pt-balance__label">{i18nDerived.balance()}</span>
-					<span class="pt-balance__value" use:fitText={formattedBalance}>{formattedBalance}</span>
+					<span class="pt-balance__value" style={betEmStyle(formattedBalance)}>{formattedBalance}</span>
 				</div>
 
 				<div class="pt-bet">
@@ -682,7 +658,7 @@
 					<span
 						class="pt-bet__value"
 						class:value--feature={isAnyModeActive}
-						use:fitText={formattedBet}
+						style={betEmStyle(formattedBet)}
 					>{formattedBet}</span>
 					<button
 						class="pt-round pt-round--sm"
@@ -699,7 +675,7 @@
 				     Hidden (but keeps its slot, so the bet stays centred) until there is a win. -->
 				<div class="pt-win" class:pt-win--hidden={!hasWin}>
 					<span class="pt-win__label">{i18nDerived.win()}</span>
-					<span class="pt-win__value" use:fitText={winValue}>{hasWin ? winValue : ''}</span>
+					<span class="pt-win__value" style={betEmStyle(winValue)}>{hasWin ? winValue : ''}</span>
 				</div>
 			</div>
 		</div>
@@ -741,7 +717,7 @@
 				<span
 					class="ls-bet__value"
 					class:value--feature={isAnyModeActive}
-					use:fitText={formattedBet}
+					style={betEmStyle(formattedBet)}
 				>{formattedBet}</span>
 				<button
 					class="ls-step"
@@ -844,7 +820,10 @@
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Disable' : i18nDerived.buyBonus()}
 				>
-					<span class="buy-btn__label" use:fitLabel={isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
+					<!-- maxFraction: the plate art's flat green body is ~84% of the button box — the rest is
+					     the rounded/leafed ends. Without the cap, fitLabel happily fills the whole box and
+					     long translations ("ACHETER BONUS") run onto the decoration. -->
+					<span class="buy-btn__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.84 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
 				</button>
 			</div>
 		</div>
@@ -879,7 +858,7 @@
 				<div class="bet-values">
 					<span class="label">{i18nDerived.betLabel()}</span>
 					<div class="value-fit value-fit--bet">
-						<span class="value" class:value--feature={isAnyModeActive} use:fitText={formattedBet}>{formattedBet}</span>
+						<span class="value" class:value--feature={isAnyModeActive} style={desktopBetFontStyle(formattedBet)}>{formattedBet}</span>
 					</div>
 				</div>
 			</div>
@@ -2036,6 +2015,8 @@
 
 	/* Bottom-centre bet pad: − value + */
 	.ls-bet {
+		/* Pad width (0.96 allows for the 1% side padding) minus both .ls-step buttons. */
+		--ls-bet-avail: calc(clamp(90px, 46vh, 390px) * 0.96 - 2 * clamp(21px, 10.5vh, 84px));
 		position: absolute;
 		/* Shifted right of centre; BUY BONUS sits to its left (Figma design). */
 		left: 61%;
@@ -2054,7 +2035,8 @@
 	.ls-bet__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 700;
-		font-size: clamp(11px, 3.9vh, 23px);
+		/* Capped to the room between the two steppers — see --ls-bet-avail. */
+		font-size: min(clamp(11px, 3.9vh, 23px), calc(var(--ls-bet-avail) / var(--bet-em, 5)));
 		color: #fff;
 		/* Auto side margins centre the value and push the two buttons to the pill ends. */
 		margin: 0 auto;
@@ -2336,10 +2318,16 @@
 		margin-top: calc(var(--u) * 0.022);
 	}
 	.pt-stats .pt-balance { justify-self: start; margin-left: calc(var(--u) * 0.008); }
-	.pt-stats .pt-win { justify-self: end; margin-right: calc(var(--u) * 0.03); }
+	/* 0.012, not 0.03: the WIN pill is end-aligned, so its right margin is what pushes it LEFT —
+	   at 0.03·u it sat hard against the bet pill's + button. Trimming the margin slides it right,
+	   opening the gap. It still clears the screen edge: .pt-stats is only --u wide (≤97% of the
+	   canvas), so there is ~1.5% of viewport either side before this margin is counted. */
+	.pt-stats .pt-win { justify-self: end; margin-right: calc(var(--u) * 0.012); }
 	/* Balance: transparent (no pad), centred label + gold value. */
 	.pt-balance {
 		flex: 0 0 auto;
+		/* max-width minus the 10px side padding — the value's font-size is capped to this. */
+		--pt-value-avail: calc(var(--u) * 0.22 - 20px);
 		/* Cap to the balance's actual grid column (~0.25·u in the 1fr auto 1fr row, less the
 		   0.03·u margin) so a long balance can't overflow the column into the centre bet pill. */
 		max-width: calc(var(--u) * 0.22);
@@ -2363,11 +2351,11 @@
 		-webkit-text-fill-color: transparent; color: transparent;
 	}
 	.pt-balance__value {
-		/* inline-block so fitText's transform:scale actually applies (CSS transforms are ignored on
-		   inline elements) and scrollWidth measures the true text width — otherwise a long balance
-		   renders full-size and gets clipped by the parent's overflow:hidden. */
 		display: inline-block;
-		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
+		font-family: 'Poppins', sans-serif; font-weight: 500;
+		/* Capped to the pill's usable width so a long balance shrinks instead of being clipped by
+		   the parent's overflow:hidden. --bet-em comes from the value string (see betEmStyle). */
+		font-size: min(12px, calc(var(--pt-value-avail) / var(--bet-em, 8)));
 		font-style: normal; line-height: normal; letter-spacing: 0.36px;
 		white-space: nowrap; transform-origin: center;
 		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);
@@ -2382,10 +2370,15 @@
 		padding: 0 calc(var(--u) * 0.018);
 		box-sizing: border-box;
 		background: var(--pt-betpad) center / 100% 100% no-repeat;
+		/* width - 2*padding - 2*.pt-round--sm - 2*gap. The value's font-size is capped to this so a
+		   long amount shrinks instead of shoving the +/- buttons off the pad. */
+		--pt-bet-avail: calc(var(--u) * 0.234 - 8px);
 	}
 	.pt-bet__value {
-		flex: 1 1 auto; text-align: center;
-		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 18px;
+		flex: 1 1 auto; text-align: center; min-width: 0;
+		font-family: 'Poppins', sans-serif; font-weight: 500;
+		/* Pad width minus its padding, both steppers and both gaps — see --pt-bet-avail. */
+		font-size: min(18px, calc(var(--pt-bet-avail) / var(--bet-em, 5)));
 		font-style: normal; line-height: normal; letter-spacing: 0.54px; color: #fff;
 		white-space: nowrap; cursor: pointer; transform-origin: center;
 		text-shadow: 0 1px 2px rgba(0,0,0,0.6);
@@ -2398,7 +2391,13 @@
 		width: calc(var(--u) * 0.145); height: calc(var(--u) * 0.138);
 		border: 0; padding: 0; cursor: pointer;
 		background: var(--pt-buybonus) center / contain no-repeat;
-		display: grid; place-items: center;
+		/* minmax(0, 1fr), not the implicit auto track: the label's lines are `white-space: nowrap`,
+		   so an auto track sizes itself to their max-content and OVERFLOWS this fixed-width button
+		   (58px of track in a 51.2px button at 320px wide). `place-items: center` then centres the
+		   label in that oversized track, which starts at the button's left edge — so the label's
+		   centre landed 3.4px right of the disc, ~9% of it. Capping the track at the button's width
+		   puts the centre back on the disc; the nowrap line overflows it symmetrically instead. */
+		display: grid; grid-template-columns: minmax(0, 1fr); place-items: center;
 		transition: filter 0.12s ease, transform 0.12s ease;
 	}
 	.pt-buy:hover { filter: brightness(1.1); }
@@ -2413,6 +2412,15 @@
 		/* Each word is its own block line (.pt-buy__line), so nothing has to wrap: the box spans
 		   the full button and text-align:center centres every line. The previous single nowrap
 		   line is what forced the shrink-to-illegible on small phones. */
+		/* width, not max-width. The lines are `white-space: nowrap`, so a long single word (DISABLE)
+		   gives this box a min-content width WIDER than the button — 58px inside a 51.2px button at
+		   320px wide. An over-sized grid item can't be centred without overflowing the start edge,
+		   so `place-items: center` degrades to start alignment: the box sat flush against the
+		   button's left edge and overflowed 6.8px to the right, putting the label's centre 3.4px
+		   right of the disc (~9% of it — clearly visible). Pinning the box to the button's width
+		   keeps it centred, and `text-align: center` then overflows the nowrap line symmetrically,
+		   which is what fitLabel scales back inside the disc anyway. */
+		width: 100%;
 		max-width: 100%;
 		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
 		-webkit-background-clip: text; background-clip: text;
@@ -2431,6 +2439,7 @@
 	/* WIN readout — mirrors the balance block, pinned to the right of the stats row. */
 	.pt-win {
 		flex: 0 0 auto;
+		--pt-value-avail: calc(var(--u) * 0.22 - 20px);
 		/* Match .pt-balance: cap to the win column so a big win can't overflow into the bet pill. */
 		max-width: calc(var(--u) * 0.22);
 		display: flex; flex-direction: column;
@@ -2455,9 +2464,9 @@
 		-webkit-text-fill-color: transparent; color: transparent;
 	}
 	.pt-win__value {
-		/* inline-block so fitText's transform:scale applies (see .pt-balance__value). */
 		display: inline-block;
-		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
+		font-family: 'Poppins', sans-serif; font-weight: 500;
+		font-size: min(12px, calc(var(--pt-value-avail) / var(--bet-em, 8)));
 		font-style: normal; line-height: normal; letter-spacing: 0.36px;
 		white-space: nowrap; transform-origin: center; min-height: 12px;
 		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);

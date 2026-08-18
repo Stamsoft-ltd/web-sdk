@@ -4,6 +4,7 @@ import { bookEventAmountToBetAmountMultiplier } from 'utils-shared/amount';
 
 import { eventEmitter } from './eventEmitter';
 import { hold, interruptHolds } from './sequenceHold';
+import { waitForTimeout } from 'utils-shared/wait';
 import { playBookEvent } from './utils';
 import { winLevelMap, type WinLevel, type WinLevelData } from './winLevelMap';
 import type { SoundEffectName } from './sound';
@@ -63,6 +64,8 @@ const resetRoundVisualState = () => {
 	stateGame.globalMultiplier = 1;
 	stateGame.expandedSymbol = null;
 	stateGame.expandedSymbolWon = false;
+	stateGame.expandedSettled = false;
+	stateGame.expandedCoverage = {};
 	stateGame.tempMultiplier = null;
 	stateGame.paylineWins = [];
 	stateGame.paylineSnap = false;
@@ -98,6 +101,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if (stateGame.expandedSymbol && bookEvent.gameType !== 'basegame') {
 			stateGame.expandedSymbol = { ...stateGame.expandedSymbol, reels: [] };
 		}
+		stateGame.expandedSettled = false;
+		stateGame.expandedCoverage = {};
 		stateGame.expandedSymbolWon = false;
 		stateGame.paylineWins = [];
 		stateGame.paylineSnap = false;
@@ -182,6 +187,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 				}
 			}
 		}
+		stateGame.expandedSettled = false;
+		stateGame.expandedCoverage = {};
 		stateGame.expandedSymbol = { symbol: bookEvent.symbol, reels: [], positions: bookEvent.positions };
 
 		// Find origin reel: leftmost reel that had the symbol in the original positions
@@ -197,6 +204,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		});
 
 		// Reveal one by one in distance order (origin first, then outward) — slower for drama.
+		// Stamped every time a column is added, so the settle below can guarantee the overlay's own
+		// grow tween had time to play even when every hold in this round was interrupted.
+		let lastColumnAt = performance.now();
 		for (let i = 0; i < reelsByDistance.length; i++) {
 			const cut = i > 0 && (await hold(190));
 			// forcePlay so every expanding column retriggers the sound (the effect is longer than the
@@ -206,6 +216,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 				// Stop press (or super-turbo): land every remaining column at once. Walking the rest at
 				// zero delay would retrigger the expand sound once per reel inside a single frame.
 				stateGame.expandedSymbol = { ...stateGame.expandedSymbol!, reels: [...bookEvent.reels] };
+				lastColumnAt = performance.now();
 				break;
 			}
 			const reel = reelsByDistance[i];
@@ -213,9 +224,25 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 				...stateGame.expandedSymbol!,
 				reels: [...stateGame.expandedSymbol!.reels, reel],
 			};
+			lastColumnAt = performance.now();
 		}
 		// Hold on the fully-expanded board before the win/multiplier sequence begins.
 		await hold(650);
+		// Floor on how long the expanded columns stay up, measured from the last column appearing.
+		// Deliberately waitForTimeout, NOT hold(): hold() is sticky-interruptible, so a single stop
+		// press earlier in the round (or super-turbo, where holdScale() is 0) collapsed both the
+		// per-column steps AND the hold above to zero — the swap below then ran in the same tick the
+		// last column was assigned and the expansion was never drawn at all. The overlay's grow tween
+		// is 460ms; this gives it that plus a beat to be read. In an un-skipped round the 650ms hold
+		// has already covered it and nothing extra is waited.
+		const EXPAND_MIN_VISIBLE_MS = 520;
+		const remaining = EXPAND_MIN_VISIBLE_MS - (performance.now() - lastColumnAt);
+		if (remaining > 0) await waitForTimeout(remaining);
+		// Hand the columns back to the reels: the overlay stops drawing and Board renders the expanded
+		// symbol on those reels as normal WIN symbols (frames + win animations). The overlay's flat
+		// column art has no win state of its own, so leaving it up through the win presentation left
+		// the columns looking empty once anything drew over them.
+		stateGame.expandedSettled = true;
 	},
 	applyTempMultiplier: async (bookEvent: BookEventOfType<'applyTempMultiplier'>) => {
 		stateGame.tempMultiplier = bookEvent.multiplier;
@@ -311,6 +338,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			// so the CONGRATULATIONS intro appears already on the bonus background, not the base one.
 			stateGame.gameType = bonusMode;
 			stateGame.bonusMode = bonusMode;
+			stateGame.bonusBackgroundMode = bonusMode;
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
 			// Same "congratulations" sting the bonus-end (outro) congratulations uses.
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_congratulations' });
@@ -319,6 +347,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 		stateGame.gameType = bonusMode;
 		stateGame.bonusMode = bonusMode;
+		stateGame.bonusBackgroundMode = bonusMode;
 		if (!isFeatureSpin) {
 			eventEmitter.broadcast({ type: 'freeSpinIntroHide' });
 		}

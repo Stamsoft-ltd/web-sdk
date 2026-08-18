@@ -105,9 +105,22 @@ export const stateGame = $state({
 	scatterCounter: 0,
 	selectedBonusSymbol: null as SymbolName | null,
 	bonusMode: null as 'freegame' | 'superspin' | 'feature' | null,
+	// What the BACKGROUND should show. Mirrors bonusMode, but is only ever assigned at the points
+	// where the transition veil covers the screen (see bookEventHandlerMap's freeSpinTrigger).
+	// bonusMode itself is also set by `bonusSymbolSelected`, which runs with the deer presenter on
+	// screen and nothing covering it — driving the background from that flipped the forest art
+	// mid-animation, in full view.
+	bonusBackgroundMode: null as 'freegame' | 'superspin' | 'feature' | null,
 	globalMultiplier: 1,
 	expandedSymbol: null as null | { symbol: SymbolName; reels: number[]; positions: Position[] },
 	expandedSymbolWon: false,
+	// True once the expanded column's reveal animation has finished. From that point the overlay
+	// stops drawing and Board renders the expanded symbol on those reels as normal win symbols.
+	expandedSettled: false,
+	// Rows the expanded-column overlay currently paints over, per reel, as [firstRow, endRow).
+	// Published by ExpandedSymbolOverlay as its reveal grows; Board hides exactly these cells so the
+	// reel's own symbols stay visible in the rows the reveal has not reached yet.
+	expandedCoverage: {} as Record<number, [number, number]>,
 	paylineWins: [] as Array<{ lineIndex: number; path: Array<{ reel: number; row: number }> }>,
 	paylineSnap: false,
 	tempMultiplier: null as number | null,
@@ -345,9 +358,12 @@ const scatterLandIndex = () => {
 const resetBonusState = () => {
 	stateGame.selectedBonusSymbol = null;
 	stateGame.bonusMode = null;
+	stateGame.bonusBackgroundMode = null;
 	stateGame.globalMultiplier = 1;
 	stateGame.expandedSymbol = null;
 	stateGame.expandedSymbolWon = false;
+	stateGame.expandedSettled = false;
+	stateGame.expandedCoverage = {};
 	stateGame.tempMultiplier = null;
 	// paylineWins is deliberately NOT cleared here. This resets BONUS presentation, and finalWin
 	// calls it at the end of every round — which wiped the payline vines a moment after they were

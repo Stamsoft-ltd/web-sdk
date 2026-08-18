@@ -20,7 +20,17 @@
 	};
 
 	const context = getContext();
-	const expanded = $derived(context.stateGame.expandedSymbol);
+	// LOW (card) expands drop out once the reveal has settled — from then on Board draws those
+	// columns as normal win symbols (see `expandedSwap` there), so the overlay must stop or the two
+	// would double-draw. ANIMAL expands STAY UP for the whole round: the big animated animal filling
+	// the column IS the presentation, and handing it back to the reels replaced that hero art with
+	// four separate symbols the moment the reveal finished.
+	const expanded = $derived.by(() => {
+		const current = context.stateGame.expandedSymbol;
+		if (!current) return null;
+		if (context.stateGame.expandedSettled && LOW_SYMBOLS.has(current.symbol)) return null;
+		return current;
+	});
 	const bl = $derived(context.stateGameDerived.boardLayout());
 
 	const LOW_SYMBOLS = new Set<SymbolName>(['T', 'J', 'Q', 'K', 'A']);
@@ -67,11 +77,22 @@
 		WOLF: 'wolfMoney',
 		SQUIRREL: 'squirrelMoney',
 	};
+	// Memoized per animKey: this MUST return the same array identity while one expansion plays.
+	// A fresh array per recompute (every reel append, every background loadedAssets merge) defeats
+	// AnimatedSprite's identity guard — each reassignment is a gotoAndStop(0), so the clip restarts
+	// over and over and reads as frozen on its start pose.
+	let framesKey: string | undefined;
+	let frames: Texture[] = [];
 	const animFrames = $derived.by(() => {
 		const animKey = expanded ? EXPAND_ANIM_KEY[expanded.symbol] : undefined;
 		if (!animKey) return [];
 		const t = (context.stateApp.loadedAssets?.[animKey] ?? []) as Texture[];
-		return t.length ? [...t, ...t.slice(1, -1).reverse()] : [];
+		if (!t.length) return [];
+		if (framesKey !== animKey) {
+			framesKey = animKey;
+			frames = [...t, ...t.slice(1, -1).reverse()];
+		}
+		return frames;
 	});
 
 	// Low (card) expands show the CLEAN base tile with a continuous ±10% pulse (matching the reel
@@ -122,42 +143,88 @@
 		}
 	});
 
+	// Every reel that has not started revealing yet, not just the newest one. A stop press (and
+	// super-turbo) assigns all remaining columns in ONE update, so keying this on the last reel left
+	// the columns in between with a freshly-created anim that nothing ever tweened — they sat frozen
+	// at a single row.
 	$effect(() => {
 		if (!expanded) return;
-		const lastReel = expanded.reels[expanded.reels.length - 1];
-		if (lastReel === undefined) return;
-		if (revealedReels.has(lastReel)) return;
-		revealedReels.add(lastReel);
+		for (const reel of expanded.reels) {
+			if (revealedReels.has(reel)) continue;
+			revealedReels.add(reel);
 
-		const reelPos = expanded.positions.filter((p) => p.reel === lastReel);
-		const originRow = reelPos.length > 0 ? reelPos[0].row : 2;
-		const originY = (originRow + 0.5) * SYMBOL_H;
+			const reelPos = expanded.positions.filter((p) => p.reel === reel);
+			const originRow = reelPos.length > 0 ? reelPos[0].row : 2;
+			const originY = (originRow + 0.5) * SYMBOL_H;
 
-		const anim = getAnim(lastReel, originY);
+			const anim = getAnim(reel, originY);
 
-		anim.h.set(SYMBOL_H, { duration: 0 });
-		anim.y.set(originY, { duration: 0 });
-		anim.pop.set(1, { duration: 0 });
-		anim.looping = false;
+			anim.h.set(SYMBOL_H, { duration: 0 });
+			anim.y.set(originY, { duration: 0 });
+			anim.pop.set(1, { duration: 0 });
+			anim.looping = false;
 
-		anim.h.set(colHeight, { duration: 460, easing: cubicOut });
-		anim.y.set(halfH, { duration: 460, easing: cubicOut });
+			anim.h.set(colHeight, { duration: 460, easing: cubicOut });
+			anim.y.set(halfH, { duration: 460, easing: cubicOut });
 
-		anim.pop.set(1.08, { duration: 0 });
-		// NOT cleared when this effect re-runs — a later reel's reveal must not cancel an earlier
-		// reel's settle. Only unmount clears them (see popTimers / onDestroy).
-		const popTimer = setTimeout(() => {
-			popTimers.delete(popTimer);
-			anim.pop.set(1, { duration: 220, easing: (t) => 1 - (1 - t) ** 3 });
-		}, 460);
-		popTimers.add(popTimer);
+			anim.pop.set(1.08, { duration: 0 });
+			// NOT cleared when this effect re-runs — a later reel's reveal must not cancel an earlier
+			// reel's settle. Only unmount clears them (see popTimers / onDestroy).
+			const popTimer = setTimeout(() => {
+				popTimers.delete(popTimer);
+				anim.pop.set(1, { duration: 220, easing: (t) => 1 - (1 - t) ** 3 });
+			}, 460);
+			popTimers.add(popTimer);
+		}
+	});
+
+	// ── Coverage: which ROWS of each reel the overlay currently paints over ──────────────────────
+	//
+	// Published to shared state so Board can hide exactly those cells. Board used to hide the WHOLE
+	// reel on an 80ms timer, which produced both artefacts this replaces: for those 80ms the reel's
+	// own symbol drew under the half-transparent expanded tile (a `Q` and a `10` merged into one
+	// garbled glyph), and afterwards every row the reveal had not reached yet was bare wood.
+	const isLowExpanded = $derived(!!expanded && LOW_SYMBOLS.has(expanded.symbol));
+	const coverage = $derived.by(() => {
+		const out: Record<number, [number, number]> = {};
+		if (!expanded || expanded.reels.length === 0) return out;
+		const rows = BOARD_DIMENSIONS.y;
+		for (const reel of expanded.reels) {
+			const anim = reelAnims[reel];
+			if (!anim) {
+				// The anim is created by the effect above, which runs AFTER this render. Until then a
+				// freshly added reel covers just its origin cell — the same place its tween starts —
+				// so the column never flashes fully hidden on the frame it appears.
+				const pos = expanded.positions.find((p) => p.reel === reel);
+				const originRow = pos ? pos.row : Math.floor(rows / 2);
+				out[reel] = [Math.max(0, originRow), Math.min(rows, originRow + 1)];
+				continue;
+			}
+			const top = (anim.y.current - anim.h.current / 2) / SYMBOL_H;
+			const bottom = (anim.y.current + anim.h.current / 2) / SYMBOL_H;
+			// Low expands quantise their mask to whole rows (see the markup), so match it exactly.
+			// Animal expands stretch ONE opaque sprite, so round INWARD instead — never claim a row
+			// the sprite only half covers, or that half row would be blanked out behind it.
+			const first = isLowExpanded ? Math.round(top) : Math.ceil(top - 1e-6);
+			const end = isLowExpanded ? Math.round(bottom) : Math.floor(bottom + 1e-6);
+			out[reel] = [Math.max(0, first), Math.min(rows, Math.max(first + 1, end))];
+		}
+		return out;
+	});
+	$effect(() => {
+		context.stateGame.expandedCoverage = coverage;
 	});
 </script>
 
-{#if expanded}
-	{@const assetKey = EXPANDED_ASSET[expanded.symbol] ?? 'foxExpTile'}
-	{@const isLowExpanded = LOW_SYMBOLS.has(expanded.symbol)}
-	<MainContainer>
+<!-- The MainContainer is mounted UNCONDITIONALLY and the `{#if}` lives inside it. A pixi container
+     created lazily is APPENDED to the end of the stage's child list, so a top-level container that
+     only exists while a symbol is expanded draws above everything mounted before it — including the
+     big-win panel, which is why expanded letters showed on top of the SWEET WIN board. Keeping the
+     container mounted pins this layer at its template position in the display list. -->
+<MainContainer>
+	{#if expanded}
+		{@const assetKey = EXPANDED_ASSET[expanded.symbol] ?? 'foxExpTile'}
+		{@const isLowExpanded = LOW_SYMBOLS.has(expanded.symbol)}
 		<Container
 			x={bl.x}
 			y={bl.y + BOARD_GRID_OFFSET_Y}
@@ -172,16 +239,26 @@
 				{@const cy = anim.y.current}
 				{@const px = anim.pop.current}
 				{#if isLowExpanded}
+					<!-- The reveal window is SNAPPED TO WHOLE ROWS. The column's content is a stack of
+					     discrete card tiles, so a continuous wipe cut in half whichever tiles straddled the
+					     window's edges — the sliced "10"s. Rounding the window to row boundaries means a
+					     tile is always either fully revealed or not yet revealed, never sliced, and the
+					     column grows as a cascade of whole cards. The tween itself is unchanged; only the
+					     mask reads a quantised version of it — read straight off `coverage` so the rows the
+					     mask reveals and the rows Board hides can never disagree. -->
+					{@const window = coverage[reelIndex] ?? [0, BOARD_DIMENSIONS.y]}
+					{@const topRow = window[0]}
+					{@const rowsShown = Math.max(1, window[1] - window[0])}
 					<Container x={leftX} y={0} scale={{ x: px, y: 1 }}>
-						<!-- Reveal mask drawn ONCE at full column height, centred on zero; the expansion is a
-						     transform on the Graphics itself (y = cy, y-scale = h / colHeight) instead of a
-						     re-tessellated rect every frame. A filled rect survives non-uniform scale exactly,
-						     so the masked region is identical: [cy - h/2, cy + h/2] × [0, SYMBOL_W]. -->
+						<!-- Mask rect drawn ONCE at ONE row's height; the reveal is a transform on the
+						     Graphics (y = the top row's edge, y-scale = how many rows are shown) rather than
+						     a re-tessellated rect every frame. A filled rect survives non-uniform scale
+						     exactly, so the masked region is [topRow, topRow + rowsShown] × [0, SYMBOL_W]. -->
 						<Graphics
 							isMask
-							y={cy}
-							scale={{ x: 1, y: h / colHeight }}
-							draw={(graphics) => graphics.rect(0, -halfH, SYMBOL_W, colHeight).fill(0xffffff)}
+							y={topRow * SYMBOL_H}
+							scale={{ x: 1, y: rowsShown }}
+							draw={(graphics) => graphics.rect(0, 0, SYMBOL_W, SYMBOL_H).fill(0xffffff)}
 						/>
 						{@const lowTileKey = LOW_EXP_TILE[expanded.symbol] ?? 'aExpTile'}
 						{#each Array.from({ length: BOARD_DIMENSIONS.y }, (_, rowIndex) => rowIndex) as rowIndex (rowIndex)}
@@ -230,5 +307,5 @@
 				{/if}
 			{/each}
 		</Container>
-	</MainContainer>
-{/if}
+	{/if}
+</MainContainer>
