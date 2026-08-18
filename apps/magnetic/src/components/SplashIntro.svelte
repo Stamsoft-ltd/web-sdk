@@ -20,7 +20,7 @@
 	// Same URL (incl. ?v=) as assets.ts so the browser reuses the bytes pixi already downloaded.
 	const brandSrc = './assets/components/ui/press_play_logo.webp?v=20260709';
 
-	// Everything this splash paints, for LoadingScreen's HTML-image pass (these are plain <img>/CSS
+	// Everything this splash paints, for LoadingController's HTML-image pass (these are plain <img>/CSS
 	// images, invisible to the pixi loader). Built from the consts above so a path or ?v= edit can
 	// never desync the preload list.
 	export const SPLASH_INTRO_IMAGES = [
@@ -39,15 +39,37 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { stateI18nDerived } from 'state-shared';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import SplashDust from './SplashDust.svelte';
+	import LoadingMark from './LoadingMark.svelte';
 	import { getContext } from '../game/context';
 
-	type Props = { onpress: () => void; ondone: () => void };
+	// `loading` = the pre-game phase (Figma node 7219:5322): the SAME room backdrop this splash uses,
+	// dimmed and blurred, with the Press Play progress mark on it. It is one component and one DOM
+	// subtree on purpose — the handover to the splash proper is then just the backdrop easing back to
+	// full brightness while the splash pieces fly in over it, with nothing reloaded or re-created.
+	type Props = {
+		onpress: () => void;
+		ondone: () => void;
+		loading?: boolean;
+		progress?: number;
+	};
 	const props: Props = $props();
+	const loading = $derived(props.loading ?? false);
 
 	const context = getContext();
+
+	// The backdrop is the first pixel the player sees, so fade it in the moment it decodes rather
+	// than letting it pop mid-load. (LoadingController warms the same URL in its HTML pass; the
+	// browser serves both from one request.)
+	let roomReady = $state(false);
+	onMount(() => {
+		const img = new Image();
+		img.onload = img.onerror = () => (roomReady = true);
+		img.src = roomSrc;
+	});
 
 	const t = (key: string) => stateI18nDerived.translate(key);
 
@@ -142,7 +164,7 @@
 	}
 
 	function handlePress() {
-		if (leaving) return;
+		if (leaving || loading) return;
 		leaving = true;
 		const rect = logoEl?.getBoundingClientRect();
 		const target = rect && rect.width > 0 ? targetLogoRect() : null;
@@ -174,6 +196,7 @@
 <div
 	class="splash-intro"
 	class:leaving
+	class:loading
 	role="button"
 	tabindex="0"
 	onclick={handlePress}
@@ -182,14 +205,18 @@
 	<!-- Per-panel text content by index (0 = BONUS GAMES, 1 = MEGA CHAIN, 2 = MAX WIN). -->
 	{#snippet panelText(i: number)}
 		{#if i === 0}
-			<div class="f-title f-blue" use:fitTitle={t('SPLASH BONUS TITLE')}>{t('SPLASH BONUS TITLE')}</div>
+			<div class="f-title f-blue" use:fitTitle={t('SPLASH BONUS TITLE')}>
+				{t('SPLASH BONUS TITLE')}
+			</div>
 			<div class="f-sub">{i18nDerived.translateVars('SPLASH SCATTERS FOR', { count: 3 })}</div>
 			<div class="f-key f-mega">{t('SPLASH MEGA TITLE')}</div>
 			<div class="f-line"></div>
 			<div class="f-sub">{i18nDerived.translateVars('SPLASH SCATTERS FOR', { count: 4 })}</div>
 			<div class="f-key f-mmc">{t('SPLASH MMC')}</div>
 		{:else if i === 1}
-			<div class="f-title f-mega" use:fitTitle={t('SPLASH MEGA TITLE')}>{t('SPLASH MEGA TITLE')}</div>
+			<div class="f-title f-mega" use:fitTitle={t('SPLASH MEGA TITLE')}>
+				{t('SPLASH MEGA TITLE')}
+			</div>
 			<div class="f-sub">{t('SPLASH MEGA BUILD')}</div>
 			<div class="f-key f-blue f-chain">{t('SPLASH MEGA CHAIN')}</div>
 			<div class="f-sub">{t('SPLASH MEGA REST')}</div>
@@ -212,88 +239,109 @@
 			<div class="hop hop-cable"><img src={cableSrc} alt="" draggable="false" /></div>
 		</div>
 		<div class="place place-coil">
-			<div class="hop hop-coil"><img class="face-coil" src={coilSrc} alt="" draggable="false" /></div>
+			<div class="hop hop-coil">
+				<img class="face-coil" src={coilSrc} alt="" draggable="false" />
+			</div>
 		</div>
 		<div class="place place-chip">
-			<div class="hop hop-chip"><img class="face-chip" src={chipSrc} alt="" draggable="false" /></div>
+			<div class="hop hop-chip">
+				<img class="face-chip" src={chipSrc} alt="" draggable="false" />
+			</div>
 		</div>
 		<div class="place place-magnet">
-			<div class="hop hop-magnet"><img class="face-magnet" src={magnetSrc} alt="" draggable="false" /></div>
+			<div class="hop hop-magnet">
+				<img class="face-magnet" src={magnetSrc} alt="" draggable="false" />
+			</div>
 		</div>
 		<div class="place place-ring">
 			<div class="hop hop-ring"><img src={ringSrc} alt="" draggable="false" /></div>
 		</div>
 	{/snippet}
 
-	{#if isPortrait}
-		<!-- Portrait: same pieces recomposed — pillar + logo up top, one panel at a time, parts below. -->
-		<div class="stage stage--m">
-			<div class="room-bg" style={`background-image: url('${roomSrc}')`}></div>
-			<!-- Air first, everything else on top: the dust must never drift across the panels. -->
-			<SplashDust count={22} />
-			<img class="brand brand--m" src={brandSrc} alt="Press Play" draggable="false" />
-			<img class="pillar pillar--m" src={pillarSrc} alt="" draggable="false" />
-			<img
-				class="logo logo--m"
-				class:logo--fly={leaving && flyStyle}
-				style={flyStyle}
-				bind:this={logoEl}
-				onanimationend={handleLogoAnimEnd}
-				src={logoSrc}
-				alt="Magnetic Megachain"
-				draggable="false"
-			/>
+	<!-- ONE stage for both phases. `.stage` owns the geometry (and is the container the cq units in
+	     this file resolve against); `.shake` inside it carries the impact animations, so those can
+	     start when the intro starts without restarting the stage's own fade-in. `.room-bg` lives
+	     outside the phase branch and is never re-created: loading→intro is a pure CSS transition on
+	     it, which is exactly why the handover has no reload flash. -->
+	<div class="stage" class:stage--m={isPortrait}>
+		<div class="shake" class:shake--intro={!loading}>
+			<div
+				class="room-bg"
+				class:room-bg--ready={roomReady}
+				class:room-bg--dim={loading}
+				style={`background-image: url('${roomSrc}')`}
+			></div>
 
-			<div class="panel panel-m">
-				<img class="panel-img" src={panelSrc} alt="" draggable="false" />
-				<div class="panel-body">
-					{@render panelText(slide)}
+			{#if loading}
+				<!-- Figma 7219:5322 — the lockup sits dead centre of the frame. -->
+				<div class="loader" out:fade={{ duration: 280 }}>
+					<LoadingMark progress={props.progress ?? 0} />
 				</div>
-			</div>
+			{:else if isPortrait}
+				<!-- Portrait: same pieces recomposed — pillar + logo up top, one panel at a time, parts below. -->
+				<!-- Air first, everything else on top: the dust must never drift across the panels. -->
+				<SplashDust count={22} />
+				<img class="brand brand--m" src={brandSrc} alt="Press Play" draggable="false" />
+				<img class="pillar pillar--m" src={pillarSrc} alt="" draggable="false" />
+				<img
+					class="logo logo--m"
+					class:logo--fly={leaving && flyStyle}
+					style={flyStyle}
+					bind:this={logoEl}
+					onanimationend={handleLogoAnimEnd}
+					src={logoSrc}
+					alt="Magnetic Megachain"
+					draggable="false"
+				/>
 
-			<div class="dots">
-				{#each Array(SLIDE_COUNT) as _, i}
-					<span class="dot" class:dot--on={slide === i}></span>
-				{/each}
-			</div>
-
-			{@render floorParts()}
-
-			<p class="press-label press-label--m">{t('SPLASH PRESS')} →</p>
-		</div>
-	{:else}
-		<!-- Landscape: the full 1201x671 Figma stage, height-fit and centred. -->
-		<div class="stage">
-			<div class="room-bg" style={`background-image: url('${roomSrc}')`}></div>
-			<!-- Air first, everything else on top: the dust must never drift across the panels. -->
-			<SplashDust />
-			<img class="brand" src={brandSrc} alt="Press Play" draggable="false" />
-			<img class="pillar" src={pillarSrc} alt="" draggable="false" />
-			<img
-				class="logo"
-				class:logo--fly={leaving && flyStyle}
-				style={flyStyle}
-				bind:this={logoEl}
-				onanimationend={handleLogoAnimEnd}
-				src={logoSrc}
-				alt="Magnetic Megachain"
-				draggable="false"
-			/>
-
-			{#each [0, 1, 2] as i}
-				<div class="panel panel-{i}">
+				<div class="panel panel-m">
 					<img class="panel-img" src={panelSrc} alt="" draggable="false" />
 					<div class="panel-body">
-						{@render panelText(i)}
+						{@render panelText(slide)}
 					</div>
 				</div>
-			{/each}
 
-			{@render floorParts()}
+				<div class="dots">
+					{#each Array(SLIDE_COUNT) as _, i}
+						<span class="dot" class:dot--on={slide === i}></span>
+					{/each}
+				</div>
 
-			<p class="press-label">{t('SPLASH PRESS')} →</p>
+				{@render floorParts()}
+
+				<p class="press-label press-label--m">{t('SPLASH PRESS')} →</p>
+			{:else}
+				<!-- Landscape: the full 1201x671 Figma stage, height-fit and centred. -->
+				<!-- Air first, everything else on top: the dust must never drift across the panels. -->
+				<SplashDust />
+				<img class="brand" src={brandSrc} alt="Press Play" draggable="false" />
+				<img class="pillar" src={pillarSrc} alt="" draggable="false" />
+				<img
+					class="logo"
+					class:logo--fly={leaving && flyStyle}
+					style={flyStyle}
+					bind:this={logoEl}
+					onanimationend={handleLogoAnimEnd}
+					src={logoSrc}
+					alt="Magnetic Megachain"
+					draggable="false"
+				/>
+
+				{#each [0, 1, 2] as i}
+					<div class="panel panel-{i}">
+						<img class="panel-img" src={panelSrc} alt="" draggable="false" />
+						<div class="panel-body">
+							{@render panelText(i)}
+						</div>
+					</div>
+				{/each}
+
+				{@render floorParts()}
+
+				<p class="press-label">{t('SPLASH PRESS')} →</p>
+			{/if}
 		</div>
-	{/if}
+	</div>
 </div>
 
 <style>
@@ -321,7 +369,11 @@
 		pointer-events: none;
 		cursor: default;
 	}
-	.leaving .stage > :not(.logo) {
+	/* Nothing on the loading screen is pressable — the game is still downloading. */
+	.splash-intro.loading {
+		cursor: default;
+	}
+	.leaving .shake > :not(.logo) {
 		animation: none;
 		opacity: 0;
 		transition: opacity 320ms ease;
@@ -337,20 +389,65 @@
 		height: 100%;
 		aspect-ratio: 1201 / 671;
 		container-type: size;
+		animation: stage-fade 250ms ease-out both;
+	}
+
+	/* Impact shakes live on an inner layer rather than on .stage. The stage is mounted for the whole
+	   loading phase, so a shake declared there would either have fired during the download or — if
+	   toggled by a class — have restarted .stage's own fade and flashed the backdrop. This element
+	   fills the stage exactly, so the keyframes are plain deltas around 0 instead of deviations
+	   around the stage's centring translate(-50%, -50%). */
+	.shake {
+		position: absolute;
+		inset: 0;
+	}
+	.shake--intro {
 		animation:
-			stage-fade 250ms ease-out both,
 			stage-jolt 300ms ease-out 830ms both,
 			stage-slam 420ms ease-out 1750ms both;
 	}
 
 	/* Room art lives on its own layer (not the stage itself) so the handoff can fade it out while
-	   the logo — also a stage child — keeps flying at full opacity. */
+	   the logo — also a stage child — keeps flying at full opacity.
+
+	   It is also the ONE element shared by the loading screen and the splash. Loading dims and
+	   blurs it (Figma 7219:5322: 60% over black, 2px blur); handing over to the splash just drops
+	   that class, so the same never-reloaded bitmap eases up to full brightness. */
 	.room-bg {
 		position: absolute;
 		inset: 0;
 		background-size: cover;
 		background-position: center;
 		background-repeat: no-repeat;
+		opacity: 0;
+		transition:
+			opacity 620ms ease,
+			filter 620ms ease,
+			transform 620ms ease;
+	}
+	.room-bg--ready {
+		opacity: 1;
+	}
+	/* Scaled a hair so the blur's soft edge stays outside the frame. */
+	.room-bg--ready.room-bg--dim {
+		opacity: 0.6;
+		filter: blur(2px);
+		transform: scale(1.012);
+	}
+
+	/* Loading lockup, centred in the frame. --mark is the tile edge; LoadingMark derives the gap and
+	   wordmark from it. Landscape uses cqh (86/671 of the Figma frame), portrait cqw — the portrait
+	   stage is taller than the viewport, so its height is not a usable reference. */
+	.loader {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		--mark: 12.82cqh;
+		animation: soft-in 450ms ease-out both;
+	}
+	.stage--m .loader {
+		--mark: 18cqw;
 	}
 
 	/* Portrait stage: fixed-aspect tall box filling the viewport width, centre-cropped room art. */
@@ -427,8 +524,7 @@
 			transform: translate(-50%, -50%);
 		}
 		100% {
-			transform: translate(calc(-50% + var(--fly-x)), calc(-50% + var(--fly-y)))
-				scale(var(--fly-s));
+			transform: translate(calc(-50% + var(--fly-x)), calc(-50% + var(--fly-y))) scale(var(--fly-s));
 		}
 	}
 
@@ -527,10 +623,11 @@
 		max-width: 100%;
 		overflow-wrap: break-word;
 	}
+	/* Inherits .f-key's uppercase — the source strings are lowercase in every locale, and the word
+	   is the feature's NAME, so it is set like one (user pass 2026-08-18). */
 	.f-chain {
 		font-weight: 600;
 		font-size: 2.15cqw;
-		text-transform: none;
 	}
 	.f-value {
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
@@ -553,7 +650,14 @@
 
 	/* Figma feature gradients */
 	.f-blue {
-		background: linear-gradient(180deg, #448af9 0%, #81b9f8 25%, #80bff5 49%, #60a4ec 74%, #005fe1 98%);
+		background: linear-gradient(
+			180deg,
+			#448af9 0%,
+			#81b9f8 25%,
+			#80bff5 49%,
+			#60a4ec 74%,
+			#005fe1 98%
+		);
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
@@ -909,44 +1013,44 @@
 		}
 	}
 
-	/* The stage is centred by its own translate(-50%, -50%), so both shakes are written as small
-	   deviations around those values. `stage-jolt` = logo touchdown; `stage-slam` = the magnet
+	/* Both shakes run on `.shake`, which fills the stage, so the offsets are percentages of the
+	   stage size around a resting 0. `stage-jolt` = logo touchdown; `stage-slam` = the magnet
 	   landing (the big hit). */
 	@keyframes stage-jolt {
 		0% {
-			transform: translate(-50%, -50%);
+			transform: translate(0, 0);
 		}
 		22% {
-			transform: translate(-50%, -49.3%);
+			transform: translate(0, 0.7%);
 		}
 		48% {
-			transform: translate(-50.25%, -50.35%);
+			transform: translate(-0.25%, -0.35%);
 		}
 		74% {
-			transform: translate(-49.88%, -49.88%);
+			transform: translate(0.12%, 0.12%);
 		}
 		100% {
-			transform: translate(-50%, -50%);
+			transform: translate(0, 0);
 		}
 	}
 	@keyframes stage-slam {
 		0% {
-			transform: translate(-50%, -50%);
+			transform: translate(0, 0);
 		}
 		18% {
-			transform: translate(-50.4%, -48.9%);
+			transform: translate(-0.4%, 1.1%);
 		}
 		40% {
-			transform: translate(-49.6%, -50.7%);
+			transform: translate(0.4%, -0.7%);
 		}
 		62% {
-			transform: translate(-50.25%, -49.6%);
+			transform: translate(-0.25%, 0.4%);
 		}
 		82% {
-			transform: translate(-49.9%, -50.2%);
+			transform: translate(0.1%, -0.2%);
 		}
 		100% {
-			transform: translate(-50%, -50%);
+			transform: translate(0, 0);
 		}
 	}
 

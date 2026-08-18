@@ -8,7 +8,7 @@
 	const uiRefArt = './assets/components/ui/scatter-panel-image.webp';
 	const paytableArt = './assets/components/backgrounds/visual_v2.webp';
 
-	// For LoadingScreen's HTML-image pass — built from the consts above so path edits stay in sync.
+	// For LoadingController's HTML-image pass — built from the consts above so path edits stay in sync.
 	export const GAME_DIALOG_IMAGES = [heroArt, bonusArt, scatterArt, uiRefArt, paytableArt];
 </script>
 
@@ -30,7 +30,7 @@
 	import ResumeBet from './ResumeBet.svelte';
 	import Sound from './Sound.svelte';
 	import Background from './Background.svelte';
-	import LoadingScreen from './LoadingScreen.svelte';
+	import LoadingController from './LoadingController.svelte';
 	import BoardFrame from './BoardFrame.svelte';
 	import Board from './Board.svelte';
 	import GameLogoFrame from './GameLogoFrame.svelte';
@@ -54,10 +54,21 @@
 
 	const context = getContext();
 
-	// Splash intro overlay: shown once assets have loaded, dismissed on first press. The loading
-	// screen defers its `proceed` callback to us via `oncanproceed` so nothing starts until pressed.
-	let splashIntroVisible = $state(false);
+	// The splash overlay is up from the very first frame and covers BOTH phases: while the download
+	// runs it shows the dimmed room + Press Play progress mark, and when LoadingController says the
+	// game may start it undims into the splash proper. One component, one backdrop, no reload
+	// between them. LoadingController defers its `proceed` callback to us via `oncanproceed` so
+	// nothing actually starts until the player presses.
+	let splashLoading = $state(true);
+	let splashDone = $state(false);
+	let loadProgress = $state(0);
 	let splashPressHandler = $state<(() => void) | undefined>(undefined);
+	// Visible from mount until `ondone`. Keyed off showLoadingScreen while still loading so the
+	// storybook harness — which flips showLoadingScreen off itself the moment assets resolve, before
+	// LoadingController can ever reach `canProceed` — is never left under a stuck overlay.
+	const splashVisible = $derived(
+		!splashDone && (context.stateLayout.showLoadingScreen || !splashLoading),
+	);
 	const heroArtBackdrop = new URL(
 		'../../static/assets/components/splash/room.webp',
 		import.meta.url,
@@ -318,12 +329,13 @@
 			<Background />
 
 			{#if context.stateLayout.showLoadingScreen}
-				<LoadingScreen
+				<LoadingController
 					onloaded={() => (context.stateLayout.showLoadingScreen = false)}
 					oncanproceed={(handler) => {
 						splashPressHandler = handler;
-						splashIntroVisible = true;
+						splashLoading = false;
 					}}
+					onprogress={(progress) => (loadProgress = progress)}
 				/>
 			{:else}
 				<ResumeBet />
@@ -364,16 +376,20 @@
 			{/if}
 		</App>
 
-		{#if splashIntroVisible}
+		{#if splashVisible}
 			<!-- pointer-events:none on the wrapper: once the splash enters its logo-handoff phase it
-			     makes ITSELF click-through, and this full-screen wrapper must not keep eating clicks. -->
+			     makes ITSELF click-through, and this full-screen wrapper must not keep eating clicks.
+			     This overlay is also what hides the pixi canvas during loading — it is opaque, so the
+			     loader no longer needs a pixi-side backdrop fighting <Background /> for z-order. -->
 			<div
-				transition:fade={{ duration: 350 }}
+				out:fade={{ duration: 350 }}
 				style="position:absolute;inset:0;z-index:10;pointer-events:none;"
 			>
 				<SplashIntro
+					loading={splashLoading}
+					progress={loadProgress}
 					onpress={() => splashPressHandler?.()}
-					ondone={() => (splashIntroVisible = false)}
+					ondone={() => (splashDone = true)}
 				/>
 			</div>
 		{/if}

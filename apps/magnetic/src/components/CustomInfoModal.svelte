@@ -74,7 +74,7 @@
 		{ img: ap('/assets/components/ui/ctrl_music.svg'), nameKey: 'INFO CTRL MUSIC', descKey: 'INFO CTRL MUSIC DESC' },
 	];
 
-	// Every image this modal renders, for LoadingScreen's HTML-image pass. Built from the consts
+	// Every image this modal renders, for LoadingController's HTML-image pass. Built from the consts
 	// above so a path or ?v= edit can never desync the preload list.
 	export const INFO_MODAL_IMAGES = [
 		panelImg,

@@ -68,7 +68,7 @@
 
 	const scatterImg = ap('/assets/components/ui/scatter-panel-image.webp');
 
-	// Every image the HUD renders (CSS url() vars + <img>), for LoadingScreen's HTML-image pass —
+	// Every image the HUD renders (CSS url() vars + <img>), for LoadingController's HTML-image pass —
 	// these are invisible to the pixi loader. Built from the consts above so a path or ?v= edit can
 	// never desync the preload list. Duplicate URLs are fine; the loader de-dupes with a Set.
 	export const HUD_IMAGES = [

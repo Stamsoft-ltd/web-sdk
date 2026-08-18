@@ -16,7 +16,8 @@
 	// review requires the game to ship no Stake Engine branding. It used to hold a Stake Engine gif
 	// over the screen until stateApp.loaded. <Authenticate> gates its children, so nothing paints
 	// until the auth round-trip resolves; that window now shows the branded body background set in
-	// app.html, and our own LoadingScreen takes over the moment <Game> mounts.
+	// app.html, and our own loading screen (SplashIntro's `loading` phase) takes over the moment
+	// <Game> mounts.
 	setContext();
 </script>
 

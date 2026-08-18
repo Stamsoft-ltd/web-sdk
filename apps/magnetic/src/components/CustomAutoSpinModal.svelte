@@ -5,7 +5,7 @@
 	// px — every position below is a fraction of that box, taken from the design's own child nodes.
 	const panelBg = ap('/assets/components/ui/autospin_panel.webp?v=20260807');
 
-	// For LoadingScreen's HTML-image pass — built from the const above so a ?v= bump stays in sync.
+	// For LoadingController's HTML-image pass — built from the const above so a ?v= bump stays in sync.
 	export const AUTOSPIN_MODAL_IMAGES = [panelBg];
 </script>
 

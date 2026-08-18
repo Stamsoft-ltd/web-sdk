@@ -266,14 +266,6 @@ const assets = {
 		type: 'font',
 		src: './assets/fonts/silverFont/mm_silver.xml?v=20260611',
 	},
-	// Animated loading bar (49-frame 0→100% fill, white bar/text on transparency). Replaces the old
-	// two-frame `progressBar` sheet, whose slot was filled by hand-drawn Rectangles. Preloaded with
-	// the studio logo so the loading screen can paint before anything else streams in, and stepped
-	// by real download progress rather than autoplayed — see LoadingScreen.svelte.
-	loadingBarAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/loadingBarAnim/loading_bar.json?v=20260730',
-	},
 	transition: {
 		type: 'spine',
 		src: {
@@ -314,8 +306,11 @@ const flag = (keys: readonly string[], prop: keyof AssetFlags) => {
 	}
 };
 
-// The loading screen draws exactly these two, so they must exist before it renders.
-flag(['loadingBarAnim', 'pressPlayLogo'], 'preload');
+// The loading screen itself is pure HTML now (SplashIntro's `loading` phase — an inline-SVG Press
+// Play mark over the room backdrop, which app.html <link rel=preload>s), so it needs nothing from
+// this list to paint. The studio mark stays here only because it is the first thing the game tree
+// draws once the splash hands over. The old `loadingBarAnim` sheet went with the bar it animated.
+flag(['pressPlayLogo'], 'preload');
 
 // Bonus-only art. game/utils.ts gates the drawing events (freeSpinTrigger / freeSpinEnd /
 // createBonusSnapshot) on loadDemandAssets(), which covers every entry path — natural scatter, a

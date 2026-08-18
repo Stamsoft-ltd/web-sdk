@@ -14,7 +14,7 @@
 	const iconFeature = ap('/assets/components/symbols/magnetic/premium/horseshoe.webp?v=20260806');
 	const iconBrief   = ap('/assets/components/symbols/magnetic/special/scatter.webp?v=20260806');
 
-	// For LoadingScreen's HTML-image pass — built from the consts above so path/?v= edits stay in sync.
+	// For LoadingController's HTML-image pass — built from the consts above so path/?v= edits stay in sync.
 	export const BUY_BONUS_MODAL_IMAGES = [
 		cardPanel,
 		betPanel,
