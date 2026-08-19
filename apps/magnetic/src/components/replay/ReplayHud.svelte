@@ -3,6 +3,7 @@
 
 	import { getContext } from '../../game/context';
 	import { magneticStakeDerived, magneticStakeState } from '../../state/magneticStake.svelte';
+	import { formatReplayMultiplier } from '../../state/replay';
 	import { logMagneticDiagnostic } from '../../utils/magneticDiagnostics';
 
 	const context = getContext();
@@ -25,10 +26,7 @@
 	);
 	const replayCostMultiplierText = $derived(`${magneticStakeDerived.replayCostMultiplier()}x`);
 	const replayPayoutMultiplierText = $derived(
-		`${magneticStakeDerived
-			.replayPayoutMultiplier()
-			.toFixed(2)
-			.replace(/\.?0+$/, '')}x`,
+		`${formatReplayMultiplier(magneticStakeDerived.replayPayoutMultiplier())}x`,
 	);
 	const replayWinText = $derived(
 		magneticStakeDerived.formatCurrencyAmount(magneticStakeDerived.replayWinAmount()),

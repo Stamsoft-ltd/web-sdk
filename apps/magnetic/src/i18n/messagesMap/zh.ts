@@ -6,7 +6,8 @@ export default {
 	'INFO FEATURE BUY': '购买特色',
 	'INFO GENERAL INFO': '一般信息',
 	'INFO UI GUIDE': '用户界面指南',
-	'INFO OV TEXT 1': 'Magnetic 是一款 7x7 连群赔付老虎机，获胜由成组的相同符号构成。让 5 个或更多相同符号在横向或纵向上相连即可获胜。',
+	'INFO OV TEXT 1':
+		'Magnetic 是一款 7x7 连群赔付老虎机，获胜由成组的相同符号构成。让 5 个或更多相同符号在横向或纵向上相连即可获胜。',
 	'INFO OV TEXT 2': 'Magnetic 特色功能可将相同符号吸引到一起，帮助形成更大的连群和更丰厚的奖励。',
 	'INFO OV MAXWIN': '最高奖金：投注的 %value%。',
 	'INFO STAT REELS': '卷轴',
@@ -19,19 +20,23 @@ export default {
 	'INFO WILD STANDARD': '标准倍数百搭数值：',
 	'INFO WILD RARE': '稀有倍数百搭数值（主要出现在 Magnetic Mega Chain 中）：',
 	'INFO FEAT WILD TITLE': '百搭符号',
-	'INFO FEAT WILD TEXT': '可替代除分散符号以外的所有赔付符号。',
+	'INFO FEAT WILD TEXT':
+		'可替代除分散符号以外的所有赔付符号。 激活后，磁力百搭符号会从当前网格上的普通派彩符号中随机选择一种，并将所有相同符号吸到一起。Wild和Scatter不能被选中。',
 	'INFO FEAT MWILD TITLE': '倍数百搭',
 	'INFO FEAT MWILD TEXT': '像百搭一样替代符号，并在特色功能剩余期间提升当前生效的奖励倍数。',
 	'INFO FEAT DROP TITLE': 'Drop-O-Magnet 免费旋转',
-	'INFO FEAT DROP TEXT': '由 3 个分散符号触发。奖励 10 次免费旋转。每次免费旋转时，随机一个符号会带有磁性，相同符号会被吸引到一起。',
+	'INFO FEAT DROP TEXT':
+		'由3个Scatter触发并获得10次免费旋转。当磁力百搭符号落下时，它会按相同的可见位置规则选择目标，并将相同符号吸到一起。',
 	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain 免费旋转',
-	'INFO FEAT MEGA TEXT': '由 4 个分散符号触发。奖励 10 次免费旋转。磁性连群可保持锁定并在整个特色功能期间不断增长。',
+	'INFO FEAT MEGA TEXT':
+		'由 4 个分散符号触发。奖励 10 次免费旋转。磁性连群可保持锁定并在整个特色功能期间不断增长。',
 	'INFO CW 1': 'Magnetic 采用连群获胜而非赔付线。',
 	'INFO CW 2': '当 5 个或更多相同符号在横向或纵向上彼此相邻时即形成获胜。',
 	'INFO CW 3': '对角线连接不计入。',
 	'INFO CW 4': '获胜符号无需排成一条直线，只需作为一个整体相连即可。',
 	'INFO CW 5': '连群越大，奖励越丰厚。',
-	'INFO FB SUB': '购买特色选项仅在允许的地区提供。所有购买特色和购买奖励选项均按所选投注的倍数支付。',
+	'INFO FB SUB':
+		'购买特色选项仅在允许的地区提供。所有购买特色和购买奖励选项均按所选投注的倍数支付。',
 	'INFO FB EXTRA TITLE': '额外特色',
 	'INFO FB EXTRA TEXT': '购买一次特别旋转，保证出现磁性连接，并有机会获得倍数百搭。',
 	'INFO FB FEATURE TITLE': '购买特色',
@@ -44,10 +49,14 @@ export default {
 	'INFO GI INTERRUPTED 1': '如果游戏回合被中断，在可能的情况下，将在重新加载游戏时继续进行。',
 	'INFO GI INTERRUPTED 2': '所有有效的投注和潜在奖金在该回合完全结束之前均保持有效。',
 	'INFO GI LEGAL TITLE': '法律声明',
-	'INFO GI LEGAL 1': '故障将使所有赔付和游戏无效。需要稳定的网络连接。若连接中断，请重新加载游戏以完成任何未结束的回合。',
-	'INFO GI LEGAL 2': '预期回报是基于大量游戏计算得出的。游戏显示仅用于视觉和娱乐目的，并不代表任何实体游戏设备。',
-	'INFO GI LEGAL 3': '所有奖金均根据远程游戏服务器收到的结果进行结算，而非依据网页浏览器中显示的动画或事件。',
-	'DISCLAIMER TEXT': '故障使所有奖金和游戏无效。需要稳定的网络连接。如遇断线，请重新加载游戏以完成任何未完成的回合。预期回报是基于多次游戏计算得出的。游戏显示不代表任何实体设备，仅用于说明目的。奖金根据从远程游戏服务器收到的金额结算，而非根据网页浏览器内的事件。TM 和 © 2026 Stake Engine。',
+	'INFO GI LEGAL 1':
+		'故障将使所有赔付和游戏无效。需要稳定的网络连接。若连接中断，请重新加载游戏以完成任何未结束的回合。',
+	'INFO GI LEGAL 2':
+		'预期回报是基于大量游戏计算得出的。游戏显示仅用于视觉和娱乐目的，并不代表任何实体游戏设备。',
+	'INFO GI LEGAL 3':
+		'所有奖金均根据远程游戏服务器收到的结果进行结算，而非依据网页浏览器中显示的动画或事件。',
+	'DISCLAIMER TEXT':
+		'故障使所有奖金和游戏无效。需要稳定的网络连接。如遇断线，请重新加载游戏以完成任何未完成的回合。预期回报是基于多次游戏计算得出的。游戏显示不代表任何实体设备，仅用于说明目的。奖金根据从远程游戏服务器收到的金额结算，而非根据网页浏览器内的事件。TM 和 © 2026 Stake Engine。',
 	'INFO CTRL SPIN': '旋转',
 	'INFO CTRL SPIN DESC': '以所选投注开始一个游戏回合。',
 	'INFO CTRL AUTO': '自动旋转',
@@ -125,12 +134,13 @@ export default {
 	'BUY EXTRA CHANCE TITLE': '额外机会',
 	'BUY EXTRA CHANCE DESC': '启用后，触发奖励回合的几率提高三倍。',
 	'BUY FEATURE SPINS TITLE': '特色旋转',
-	'BUY FEATURE SPINS DESC':
-		'购买一次特别旋转，保证出现磁性连接，并有机会获得倍数百搭。',
+	'BUY FEATURE SPINS DESC': '购买一次特别旋转，保证出现磁性连接，并有机会获得倍数百搭。',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
-	'BUY DROP DESC': '赠送10次免费旋转。每次旋转随机一个符号变为磁性符号。相同符号自动连接在一起。乘数百搭永久提升奖励乘数。',
+	'BUY DROP DESC':
+		'赠送10次免费旋转。每次旋转随机一个符号变为磁性符号。相同符号自动连接在一起。乘数百搭永久提升奖励乘数。',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',
-	'BUY MEGA DESC': '赠送10次免费旋转。随机一个符号变为磁性符号并在旋转之间保持连接。磁性符号群在整个功能期间持续存在并不断扩大，乘数也持续累加。',
+	'BUY MEGA DESC':
+		'赠送10次免费旋转。随机一个符号变为磁性符号并在旋转之间保持连接。磁性符号群在整个功能期间持续存在并不断扩大，乘数也持续累加。',
 	'AUTO TURBO': '极速旋转',
 	'AUTO SUPER TURBO': '超级极速旋转',
 	'AUTO FEATURE': '50X 奖励功能',
@@ -138,13 +148,132 @@ export default {
 	'AUTO START': '开始自动',
 	'YOU WON': '您赢得',
 	'FREE SPINS': '免费旋转',
-	'CONGRATULATIONS': '恭喜',
+	CONGRATULATIONS: '恭喜',
 	'PRESS ANYWHERE': '点击任意处继续',
 	'TOTAL WIN': '总赢额',
 	'ALL WINS': '全部赢额',
-	'RESPIN': '重转',
+	RESPIN: '重转',
 	'UNFINISHED ROUND': '未完成回合',
 	'RESUME BODY': '您有一个正在进行的 %mode% 奖励。',
 	'PLAY ROUND': '进行回合',
 	'END ROUND': '结束回合',
+
+	// Approved shared translations reused from Forest Gang.
+	'BET MODE BASE TITLE': '基础',
+	'BET MODE BASE BUTTON': '开始',
+	'BET MODE BASE TICKER SPIN': '祝你好运',
+	'BET MODE BONUS BUTTON': '购买',
+	'BET MODE BONUS TICKER IDLE': '请下注',
+	'BET MODE CHANCE TITLE': '机会旋转',
+	'BET MODE CHANCE DESCRIPTION': '以每回合所选投注的2倍激活机会旋转。',
+	'BET MODE CHANCE BUTTON': '激活',
+	'BET MODE CHANCE TICKER IDLE': '机会旋转已激活',
+	'BET MODE CHANCE TICKER SPIN': '祝你好运',
+	'BET MODE SUPER BUTTON': '购买',
+	'BET MODE SUPER TICKER IDLE': '请下注',
+	'BET MODE FEATURE TITLE': '功能旋转',
+	'BET MODE FEATURE BUTTON': '激活',
+	'BET MODE FEATURE TICKER IDLE': '功能旋转已激活',
+	'BET MODE FEATURE TICKER SPIN': '功能旋转激活中',
+	'RULE SECTION GAME INFO': '游戏信息',
+	'RULE SECTION FEATURES': '功能',
+	'RULE SECTION HOW TO PLAY': '玩法',
+	'RULE SECTION DISCLAIMER': '一般免责声明',
+	'RULE WILD TITLE': '百搭',
+	'RULE SCATTER TITLE': '分散',
+	'RULE BUY TITLE': '购买 / 激活模式',
+	'HOWTO SPIN TITLE': '旋转 / 停止',
+	'HOWTO BET TITLE': '投注选择器',
+	'HOWTO BET TEXT': '使用 + 和 - 按钮或打开投注菜单，在回合开始前更改显示的投注金额。',
+	'HOWTO BUY TITLE': '购买奖励',
+	'HOWTO TURBO TITLE': '加速',
+	'HOWTO TURBO TEXT': '加速缩短某些回合时长，让游戏更快。',
+	'HOWTO AUTOPLAY TITLE': '自动游戏',
+	'HOWTO AUTOPLAY TEXT': '自动游戏会自动重复回合，直到所选停止条件或计数器结束。',
+	'HOWTO REPLAY TITLE': '重播模式',
+	'PAYTABLE PREMIUM TITLE': '高级符号',
+	'PAYTABLE LOW TITLE': '低级符号',
+	'PAYTABLE SPECIAL TITLE': '特殊符号',
+	'PAYTABLE BUY TITLE': '购买模式',
+	'PAYTABLE MAX TITLE': '最大奖金',
+
+	// Magnetic-specific rules, replay, modes, and paytable.
+	'BET REPLAY': '投注重播',
+	'REPLAY EVENT': '重播事件',
+	'BASE BET': '基础投注',
+	'COST MULTIPLIER': '成本倍数',
+	'TOTAL BET COST': '总投注成本',
+	'PAYOUT MULTIPLIER': '派彩倍数',
+	'REPLAY DISCLAIMER': '这是先前投注回合的重播，不会进行新的投注。',
+	'DEAL IT': 'Drop-O-Magnet',
+	'ALL IN': '超级连锁',
+	'BET MODE BASE DIALOG':
+		'Magnetic 是一款 7x7 连群赔付老虎机，获胜由成组的相同符号构成。让 5 个或更多相同符号在横向或纵向上相连即可获胜。',
+	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
+	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS DIALOG': '10次免费旋转，磁铁出现概率大幅提升。',
+	'BET MODE BONUS DESCRIPTION': '以所选投注的100x购买10次磁铁概率提升的免费旋转。',
+	'BET MODE BONUS TICKER SPIN': '奖励已启用',
+	'BET MODE CHANCE DIALOG':
+		'Chance Spin会保持启用，直到关闭。每回合费用为投注的2x，并将奖励触发概率提高至3倍。',
+	'BET MODE SUPER TITLE': '超级连锁',
+	'BET MODE SUPER DIALOG':
+		'10次免费旋转，首次旋转保证出现磁铁。目标符号、已收集集群和组合倍数将在整个奖励中保留。',
+	'BET MODE SUPER DESCRIPTION': '以所选投注的500x购买持续型超级奖励。',
+	'BET MODE SUPER TICKER SPIN': '超级模式已启用',
+	'BET MODE FEATURE DIALOG':
+		'Feature Spin会保持启用，直到关闭。每回合费用为投注的50x，并保证一次付费磁铁旋转。',
+	'BET MODE FEATURE DESCRIPTION': '以每回合所选投注的50x启用Feature Spin。',
+	'RULE GAME TITLE': 'MAGNETIC',
+	'RULE GAME TEXT':
+		'Magnetic 是一款 7x7 连群赔付老虎机，获胜由成组的相同符号构成。让 5 个或更多相同符号在横向或纵向上相连即可获胜。 对角线连接不计入。',
+	'RULE WILD TEXT':
+		'在基础模式中，Magnetic Wild会从可见的普通符号位置中随机选择一个。每个可见位置的概率相同，因此出现次数较多的符号类型更容易被选中。随后它会吸引该类型的所有可见符号。在当前磁力系列期间，目标保持不变。',
+	'RULE SCATTER TEXT': '3个Scatter触发Drop-O-Magnet，4个Scatter触发Mega Chain。Scatter本身不派彩。',
+	'RULE DEAL IT TITLE': '集群重转',
+	'RULE DEAL IT TEXT':
+		'自然形成且符合条件的集群会锁定在原位，其他所有格子重新旋转。如果新的相同符号落在当前集群旁并与之相连，它们会加入集群并再次重转。',
+	'RULE ALL IN TITLE': '超级连锁',
+	'RULE ALL IN TEXT':
+		'首次Super免费旋转保证出现磁铁。选中的目标符号、已收集集群和系列相乘后的数值会在全部10次免费旋转中保留，并在最后结算。',
+	'RULE BUY TEXT':
+		'Drop-O-Magnet费用为投注的100x，Mega Chain为500x，Chance Spin每回合为2x，Feature Spin每回合为50x。最高赢取：20,000x。目标RTP：96.1%。',
+	'FEATURE SELECTED SYMBOL TITLE': '磁铁目标',
+	'FEATURE SELECTED SYMBOL TEXT':
+		'Magnetic Wild会从可见的普通符号位置中随机选择一个。每个位置的概率相同，因此可见位置更多的符号类型更容易被选中。所选类型的全部可见符号都会被吸引，额外磁铁不会在系列中途改变目标。',
+	'FEATURE DEAL IT MULTIPLIER TITLE': '倍数百搭',
+	'FEATURE DEAL IT MULTIPLIER TEXT':
+		'在一个当前磁力系列内，Multiplier Wild数值彼此相乘。例如：2x × 3x × 4x = 总计24x。',
+	'FEATURE ALL IN_MULTIPLIER TITLE': '持续超级系列',
+	'FEATURE ALL IN_MULTIPLIER TEXT':
+		'在Super Bonus中，目标符号、已收集格子和系列相乘后的数值会在全部10次免费旋转中保留，直到最终奖励结算。',
+	'HOWTO SPIN TEXT': '按下Spin开始回合。在动画序列进行时再次按下，可在支持时请求停止。',
+	'HOWTO BUY TEXT':
+		'打开Buy Bonus，选择Drop-O-Magnet、Mega Chain、Chance Spin或Feature Spin。购买奖励需要确认，启用模式可以开启或关闭。',
+	'HOWTO REPLAY TEXT': '重播会加载已完成的事件，并显示原始投注、总成本、派彩和赢取信息。',
+	'PAYTABLE TITLE PAYLINES': '连群',
+	'PAYTABLE TEXT PAYLINES':
+		'当 5 个或更多相同符号在横向或纵向上彼此相邻时即形成获胜。 对角线连接不计入。',
+	'PAYTABLE FOX':
+		'马蹄磁铁 (H1)\n5 = 0.5x\n6 = 1x\n7 = 2x\n8 = 4x\n9 = 8x\n10-11 = 15x\n12-14 = 30x\n15-19 = 80x\n20-24 = 200x\n25-29 = 500x\n30-32 = 1000x\n33+ = 2000x',
+	'PAYTABLE WOLF':
+		'等离子钻头 (H2)\n5 = 0.4x\n6 = 0.8x\n7 = 1.5x\n8 = 3x\n9 = 6x\n10-11 = 12x\n12-14 = 25x\n15-19 = 60x\n20-24 = 150x\n25-29 = 350x\n30-32 = 750x\n33+ = 1500x',
+	'PAYTABLE BEAR':
+		'磁芯立方体 (H3)\n5 = 0.3x\n6 = 0.6x\n7 = 1.2x\n8 = 2.5x\n9 = 5x\n10-11 = 10x\n12-14 = 20x\n15-19 = 50x\n20-24 = 120x\n25-29 = 280x\n30-32 = 600x\n33+ = 1200x',
+	'PAYTABLE RABBIT':
+		'电磁装置 (H4)\n5 = 0.25x\n6 = 0.5x\n7 = 1x\n8 = 2x\n9 = 4x\n10-11 = 8x\n12-14 = 16x\n15-19 = 35x\n20-24 = 90x\n25-29 = 220x\n30-32 = 450x\n33+ = 900x',
+	'PAYTABLE SQUIRREL':
+		'螺栓 (L1)\n5 = 0.2x\n6 = 0.4x\n7 = 0.8x\n8 = 1.6x\n9 = 3.2x\n10-11 = 6x\n12-14 = 12x\n15-19 = 30x\n20-24 = 75x\n25-29 = 180x\n30-32 = 350x\n33+ = 500x',
+	'PAYTABLE LOWS_1':
+		'螺母 (L2)\n5 = 0.12x\n6 = 0.25x\n7 = 0.5x\n8 = 1x\n9 = 2x\n10-11 = 4x\n12-14 = 8x\n15-19 = 20x\n20-24 = 50x\n25-29 = 100x\n30-32 = 200x\n33+ = 400x\n\n垫圈 (L3)\n5 = 0.1x\n6 = 0.2x\n7 = 0.4x\n8 = 0.8x\n9 = 1.6x\n10-11 = 3x\n12-14 = 6x\n15-19 = 15x\n20-24 = 40x\n25-29 = 80x\n30-32 = 150x\n33+ = 300x',
+	'PAYTABLE LOWS_2':
+		'能量螺钉 (L4)\n5 = 0.08x\n6 = 0.16x\n7 = 0.32x\n8 = 0.64x\n9 = 1.28x\n10-11 = 2.5x\n12-14 = 5x\n15-19 = 12x\n20-24 = 30x\n25-29 = 60x\n30-32 = 120x\n33+ = 250x',
+	'PAYTABLE SPECIAL_TEXT':
+		'Magnet会启动磁力系列。Wild替代普通符号。Multiplier Wild会乘算当前系列。Scatter仅触发奖励。',
+	'PAYTABLE BUY_TEXT':
+		'Drop-O-Magnet：投注100x。\nMega Chain：投注500x。\nChance Spin：每回合投注2x。\nFeature Spin：每回合投注50x。',
+	'PAYTABLE MAX_TEXT': '公布的最高赢取为所选投注的20,000x。',
+	'NO BALANCE TITLE': '余额不足',
+	'NO BALANCE BODY': '您的余额不足以进行此投注。请降低投注级别以继续游戏。',
+	OK: '确定',
 };

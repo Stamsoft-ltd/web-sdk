@@ -102,7 +102,8 @@ export const socialOverridesEn: Record<string, string> = {
 	'REAL COST': 'REAL PLAY',
 	'INFO CTRL INFO DESC': 'View the game rules and win table.',
 	'INFO CW 1': 'Magnetic uses cluster wins instead of win lines.',
-	'INFO FEAT WILD TEXT': 'Substitutes for all winning symbols except Scatter.',
+	'INFO FEAT WILD TEXT':
+		'Substitutes for regular symbols except Scatter. When activated, the Magnetic Wild randomly selects one regular symbol currently on the grid and attracts all matching symbols together. Wilds and Scatters cannot be selected.',
 	'BET MODE BASE DIALOG': '7x7 cluster-win base game with natural clusters and random magnets.',
 	'RULE GAME TEXT':
 		'Magnetic is a 7x7 cluster-win slot. Wins form when 5 or more matching symbols touch horizontally or vertically. Diagonal connections do not count.',

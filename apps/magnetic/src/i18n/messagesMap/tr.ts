@@ -6,8 +6,10 @@ export default {
 	'INFO FEATURE BUY': 'ÖZELLİK SATIN AL',
 	'INFO GENERAL INFO': 'GENEL BİLGİ',
 	'INFO UI GUIDE': 'KULLANICI ARAYÜZÜ KILAVUZU',
-	'INFO OV TEXT 1': 'Magnetic, kazançların eşleşen sembol gruplarıyla oluşturulduğu 7x7 küme ödemeli bir slottur. Kazanmak için yatay veya dikey olarak bağlı 5 veya daha fazla eşleşen sembol düşürün.',
-	'INFO OV TEXT 2': 'Magnetic özellikleri eşleşen sembolleri bir araya çekerek daha büyük kümeler ve daha güçlü kazançlar oluşturmaya yardımcı olabilir.',
+	'INFO OV TEXT 1':
+		'Magnetic, kazançların eşleşen sembol gruplarıyla oluşturulduğu 7x7 küme ödemeli bir slottur. Kazanmak için yatay veya dikey olarak bağlı 5 veya daha fazla eşleşen sembol düşürün.',
+	'INFO OV TEXT 2':
+		'Magnetic özellikleri eşleşen sembolleri bir araya çekerek daha büyük kümeler ve daha güçlü kazançlar oluşturmaya yardımcı olabilir.',
 	'INFO OV MAXWIN': 'Maksimum kazanç: %value% bahis.',
 	'INFO STAT REELS': 'MAKARALAR',
 	'INFO STAT CLUSTER': 'KÜME',
@@ -17,37 +19,52 @@ export default {
 	'INFO SYMBOL RANK': 'SEMBOL SIRASI',
 	'INFO WILD VALUES': 'Çarpan Wild Değerleri',
 	'INFO WILD STANDARD': 'Standart çarpan wild değerleri:',
-	'INFO WILD RARE': 'Nadir çarpan wild değerleri (çoğunlukla Magnetic Mega Chain\'de):',
+	'INFO WILD RARE': "Nadir çarpan wild değerleri (çoğunlukla Magnetic Mega Chain'de):",
 	'INFO FEAT WILD TITLE': 'Wild Sembol',
-	'INFO FEAT WILD TEXT': 'Scatter dışındaki tüm ödeme sembollerinin yerine geçer.',
+	'INFO FEAT WILD TEXT':
+		'Scatter dışındaki tüm ödeme sembollerinin yerine geçer. Etkinleştirildiğinde Manyetik Wild, ızgarada bulunan bir normal ödeme sembolünü rastgele seçer ve eşleşen tüm sembolleri bir araya çeker. Wild ve Scatter seçilemez.',
 	'INFO FEAT MWILD TITLE': 'Çarpan Wild',
-	'INFO FEAT MWILD TEXT': 'Bir Wild gibi yerine geçer ve özelliğin geri kalanı boyunca aktif bonus çarpanını artırır.',
+	'INFO FEAT MWILD TEXT':
+		'Bir Wild gibi yerine geçer ve özelliğin geri kalanı boyunca aktif bonus çarpanını artırır.',
 	'INFO FEAT DROP TITLE': 'Drop-O-Magnet Bedava Dönüşler',
-	'INFO FEAT DROP TEXT': '3 Scatter ile tetiklenir. 10 Bedava Dönüş verir. Her Bedava Dönüşte rastgele bir sembol manyetik hale gelir ve eşleşen semboller bir araya çekilir.',
+	'INFO FEAT DROP TEXT':
+		'3 Scatter ile tetiklenir ve 10 bedava dönüş verir. Manyetik Wild geldiğinde aynı görünür konum kuralıyla bir hedef seçer ve eşleşen sembolleri bir araya çeker.',
 	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain Bedava Dönüşler',
-	'INFO FEAT MEGA TEXT': '4 Scatter ile tetiklenir. 10 Bedava Dönüş verir. Manyetik kümeler kilitli kalabilir ve özellik boyunca büyüyebilir.',
+	'INFO FEAT MEGA TEXT':
+		'4 Scatter ile tetiklenir. 10 Bedava Dönüş verir. Manyetik kümeler kilitli kalabilir ve özellik boyunca büyüyebilir.',
 	'INFO CW 1': 'Magnetic, ödeme çizgileri yerine küme kazançları kullanır.',
-	'INFO CW 2': 'Bir kazanç, 5 veya daha fazla eşleşen sembol yatay veya dikey olarak birbirine dokunduğunda oluşur.',
+	'INFO CW 2':
+		'Bir kazanç, 5 veya daha fazla eşleşen sembol yatay veya dikey olarak birbirine dokunduğunda oluşur.',
 	'INFO CW 3': 'Çapraz bağlantılar sayılmaz.',
-	'INFO CW 4': 'Kazanan sembollerin düz bir çizgi oluşturması gerekmez. Yalnızca tek bir grup olarak bağlı olmaları yeterlidir.',
+	'INFO CW 4':
+		'Kazanan sembollerin düz bir çizgi oluşturması gerekmez. Yalnızca tek bir grup olarak bağlı olmaları yeterlidir.',
 	'INFO CW 5': 'Daha büyük kümeler daha büyük kazançlar verir.',
-	'INFO FB SUB': 'Özellik Satın Alma seçenekleri yalnızca izin verilen yerlerde mevcuttur. Tüm Özellik Satın Alma ve Bonus Satın Alma seçenekleri, seçilen bahsin katı olarak ödenir.',
+	'INFO FB SUB':
+		'Özellik Satın Alma seçenekleri yalnızca izin verilen yerlerde mevcuttur. Tüm Özellik Satın Alma ve Bonus Satın Alma seçenekleri, seçilen bahsin katı olarak ödenir.',
 	'INFO FB EXTRA TITLE': 'Ekstra Özellik',
-	'INFO FB EXTRA TEXT': 'Garantili manyetik bağlantı ve Çarpan Wild düşürme şansı içeren özel bir dönüş satın alır.',
+	'INFO FB EXTRA TEXT':
+		'Garantili manyetik bağlantı ve Çarpan Wild düşürme şansı içeren özel bir dönüş satın alır.',
 	'INFO FB FEATURE TITLE': 'Özellik Satın Al',
 	'INFO FB FEATURE TEXT': 'Drop-O-Magnet Bedava Dönüşler özelliğine doğrudan erişim satın alır.',
 	'INFO FB BONUS TITLE': 'Bonus Satın Al',
-	'INFO FB BONUS TEXT': 'Daha güçlü Magnetic Mega Chain Bedava Dönüşler özelliğine doğrudan erişim satın alır.',
+	'INFO FB BONUS TEXT':
+		'Daha güçlü Magnetic Mega Chain Bedava Dönüşler özelliğine doğrudan erişim satın alır.',
 	'INFO COST': 'MALİYET',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': 'Kesintiye Uğrayan Turlar',
-	'INFO GI INTERRUPTED 1': 'Bir oyun turu kesintiye uğrarsa, mümkün olduğunda oyun yeniden yüklendiğinde devam eder.',
-	'INFO GI INTERRUPTED 2': 'Tüm geçerli bahisler ve olası kazançlar, tur tamamen tamamlanana kadar aktif kalır.',
+	'INFO GI INTERRUPTED 1':
+		'Bir oyun turu kesintiye uğrarsa, mümkün olduğunda oyun yeniden yüklendiğinde devam eder.',
+	'INFO GI INTERRUPTED 2':
+		'Tüm geçerli bahisler ve olası kazançlar, tur tamamen tamamlanana kadar aktif kalır.',
 	'INFO GI LEGAL TITLE': 'Yasal Uyarı',
-	'INFO GI LEGAL 1': 'Arıza tüm ödemeleri ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilirse, tamamlanmamış turları bitirmek için oyunu yeniden yükleyin.',
-	'INFO GI LEGAL 2': 'Beklenen getiri, çok sayıda oyun üzerinden hesaplanır. Oyun görüntüsü yalnızca görsel ve eğlence amaçlıdır ve herhangi bir fiziksel oyun cihazını temsil etmez.',
-	'INFO GI LEGAL 3': 'Tüm kazançlar, web tarayıcısında gösterilen animasyonlara veya olaylara göre değil, Uzak Oyun Sunucusundan alınan sonuca göre ödenir.',
-	'DISCLAIMER TEXT': 'Arıza tüm kazançları ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilmesi durumunda, tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı herhangi bir fiziksel cihazı temsil etmez ve yalnızca gösterim amaçlıdır. Kazançlar web tarayıcısındaki olaylara göre değil, Uzak Oyun Sunucusundan alınan tutara göre ödenir. TM ve © 2026 Stake Engine.',
+	'INFO GI LEGAL 1':
+		'Arıza tüm ödemeleri ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilirse, tamamlanmamış turları bitirmek için oyunu yeniden yükleyin.',
+	'INFO GI LEGAL 2':
+		'Beklenen getiri, çok sayıda oyun üzerinden hesaplanır. Oyun görüntüsü yalnızca görsel ve eğlence amaçlıdır ve herhangi bir fiziksel oyun cihazını temsil etmez.',
+	'INFO GI LEGAL 3':
+		'Tüm kazançlar, web tarayıcısında gösterilen animasyonlara veya olaylara göre değil, Uzak Oyun Sunucusundan alınan sonuca göre ödenir.',
+	'DISCLAIMER TEXT':
+		'Arıza tüm kazançları ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilmesi durumunda, tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı herhangi bir fiziksel cihazı temsil etmez ve yalnızca gösterim amaçlıdır. Kazançlar web tarayıcısındaki olaylara göre değil, Uzak Oyun Sunucusundan alınan tutara göre ödenir. TM ve © 2026 Stake Engine.',
 	'INFO CTRL SPIN': 'Döndür',
 	'INFO CTRL SPIN DESC': 'Seçtiğiniz bahisle bir oyun turu başlatın.',
 	'INFO CTRL AUTO': 'Otomatik Oyun',
@@ -105,7 +122,8 @@ export default {
 	'PLAY AGAIN': 'TEKRAR OYNA',
 	'RETRY RESUME': 'TURU YENİDEN DENE',
 	'RECOVERY TITLE': 'BİTMEMİŞ TUR TESPİT EDİLDİ',
-	'RECOVERY BODY': 'Önceki tur otomatik olarak geri yüklenemedi. Yeni bir tura başlamadan önce orijinal turu bitirmek için yeniden deneyin.',
+	'RECOVERY BODY':
+		'Önceki tur otomatik olarak geri yüklenemedi. Yeni bir tura başlamadan önce orijinal turu bitirmek için yeniden deneyin.',
 	EVENT: 'OLAY',
 	PAYOUT: 'ÖDEME',
 	WIN: 'KAZANÇ',
@@ -128,9 +146,11 @@ export default {
 	'BUY FEATURE SPINS DESC':
 		'Garantili manyetik bağlantı ve Çarpan Wild düşürme şansı içeren özel bir dönüş satın alır.',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
-	'BUY DROP DESC': '10 bedava dönüş verilir. Her dönüşte rastgele bir sembol manyetik hale gelir. Eşleşen semboller otomatik olarak birbirine bağlanır. Multiplier Wild\'lar bonus çarpanını kalıcı olarak artırır.',
+	'BUY DROP DESC':
+		"10 bedava dönüş verilir. Her dönüşte rastgele bir sembol manyetik hale gelir. Eşleşen semboller otomatik olarak birbirine bağlanır. Multiplier Wild'lar bonus çarpanını kalıcı olarak artırır.",
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',
-	'BUY MEGA DESC': '10 bedava dönüş verilir. Rastgele bir sembol manyetik hale gelir ve dönüşler arasında bağlı kalır. Manyetik küme özellik boyunca kalıcı olur ve büyür, çarpanlar ise istiflenmeye devam eder.',
+	'BUY MEGA DESC':
+		'10 bedava dönüş verilir. Rastgele bir sembol manyetik hale gelir ve dönüşler arasında bağlı kalır. Manyetik küme özellik boyunca kalıcı olur ve büyür, çarpanlar ise istiflenmeye devam eder.',
 	'AUTO TURBO': 'TURBO DÖNÜŞ',
 	'AUTO SUPER TURBO': 'SÜPER TURBO DÖNÜŞ',
 	'AUTO FEATURE': '50X BONUS ÖZELLİĞİ',
@@ -138,13 +158,141 @@ export default {
 	'AUTO START': 'OTOMATİK OYNATMAYI BAŞLAT',
 	'YOU WON': 'KAZANDINIZ',
 	'FREE SPINS': 'BEDAVA DÖNÜŞLER',
-	'CONGRATULATIONS': 'TEBRİKLER',
+	CONGRATULATIONS: 'TEBRİKLER',
 	'PRESS ANYWHERE': 'DEVAM ETMEK İÇİN HERHANGİ BİR YERE BASIN',
 	'TOTAL WIN': 'TOPLAM KAZANÇ',
 	'ALL WINS': 'TÜM KAZANÇLAR',
-	'RESPIN': 'YENİDEN DÖNÜŞ',
+	RESPIN: 'YENİDEN DÖNÜŞ',
 	'UNFINISHED ROUND': 'BİTMEMİŞ TUR',
 	'RESUME BODY': 'Devam eden aktif bir %mode% bonusunuz var.',
 	'PLAY ROUND': 'TURU OYNA',
 	'END ROUND': 'TURU BİTİR',
+
+	// Approved shared translations reused from Forest Gang.
+	'BET MODE BASE TITLE': 'TEMEL',
+	'BET MODE BASE BUTTON': 'OYNA',
+	'BET MODE BASE TICKER SPIN': 'İYİ ŞANSLAR',
+	'BET MODE BONUS BUTTON': 'AL',
+	'BET MODE BONUS TICKER IDLE': 'BAHSİNİZİ YAPIN',
+	'BET MODE CHANCE TITLE': 'ŞANS DÖNÜŞÜ',
+	'BET MODE CHANCE DESCRIPTION':
+		'Şans Dönüşünü tur başına seçtiğiniz bahsin 2x katına etkinleştirin.',
+	'BET MODE CHANCE BUTTON': 'ETKİNLEŞTİR',
+	'BET MODE CHANCE TICKER IDLE': 'ŞANS DÖNÜŞÜ ETKİN',
+	'BET MODE CHANCE TICKER SPIN': 'İYİ ŞANSLAR',
+	'BET MODE SUPER BUTTON': 'AL',
+	'BET MODE SUPER TICKER IDLE': 'BAHSİNİZİ YAPIN',
+	'BET MODE FEATURE TITLE': 'ÖZELLİK DÖNÜŞÜ',
+	'BET MODE FEATURE BUTTON': 'ETKİNLEŞTİR',
+	'BET MODE FEATURE TICKER IDLE': 'ÖZELLİK DÖNÜŞÜ ETKİN',
+	'BET MODE FEATURE TICKER SPIN': 'ÖZELLİK DÖNÜŞÜ ETKİN',
+	'RULE SECTION GAME INFO': 'OYUN BİLGİSİ',
+	'RULE SECTION FEATURES': 'ÖZELLİKLER',
+	'RULE SECTION HOW TO PLAY': 'NASIL OYNANIR',
+	'RULE SECTION DISCLAIMER': 'GENEL SORUMLULUK REDDİ',
+	'RULE WILD TITLE': 'WILD',
+	'RULE SCATTER TITLE': 'SCATTER',
+	'RULE BUY TITLE': 'SATIN ALMA / ETKİNLEŞTİRME MODLARI',
+	'HOWTO SPIN TITLE': 'DÖNDÜR / DUR',
+	'HOWTO BET TITLE': 'BAHİS SEÇİCİ',
+	'HOWTO BET TEXT':
+		'Bir tur başlamadan önce görüntülenen bahis miktarını değiştirmek için + ve - düğmelerini kullanın veya bahis menüsünü açın.',
+	'HOWTO BUY TITLE': 'BONUS AL',
+	'HOWTO TURBO TITLE': 'TURBO',
+	'HOWTO TURBO TEXT': 'Turbo, daha hızlı oyun için belirli tur zamanlamalarını kısaltır.',
+	'HOWTO AUTOPLAY TITLE': 'OTOMATİK OYUN',
+	'HOWTO AUTOPLAY TEXT':
+		'Otomatik oyun, seçilen durdurma koşulu veya sayaç bitene kadar turları otomatik olarak tekrarlar.',
+	'HOWTO REPLAY TITLE': 'TEKRAR MODU',
+	'PAYTABLE PREMIUM TITLE': 'PREMIUM SEMBOLLER',
+	'PAYTABLE LOW TITLE': 'DÜŞÜK SEMBOLLER',
+	'PAYTABLE SPECIAL TITLE': 'ÖZEL SEMBOLLER',
+	'PAYTABLE BUY TITLE': 'SATIN ALMA MODLARI',
+	'PAYTABLE MAX TITLE': 'MAKS. KAZANÇ',
+
+	// Magnetic-specific rules, replay, modes, and paytable.
+	'BET REPLAY': 'BAHİS TEKRARI',
+	'REPLAY EVENT': 'ETKİNLİĞİ TEKRARLA',
+	'BASE BET': 'TEMEL BAHİS',
+	'COST MULTIPLIER': 'MALİYET ÇARPANI',
+	'TOTAL BET COST': 'TOPLAM BAHİS MALİYETİ',
+	'PAYOUT MULTIPLIER': 'ÖDEME ÇARPANI',
+	'REPLAY DISCLAIMER': 'Bu, önceki bir bahis turunun tekrarıdır. Yeni bahis oynanmayacaktır.',
+	'DEAL IT': 'Drop-O-Magnet',
+	'ALL IN': 'MEGA ZİNCİR',
+	'BET MODE BASE DIALOG':
+		'Magnetic, kazançların eşleşen sembol gruplarıyla oluşturulduğu 7x7 küme ödemeli bir slottur. Kazanmak için yatay veya dikey olarak bağlı 5 veya daha fazla eşleşen sembol düşürün.',
+	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
+	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS DIALOG': 'Mıknatıs şansı büyük ölçüde artırılmış 10 bedava dönüş.',
+	'BET MODE BONUS DESCRIPTION':
+		'Seçtiğiniz bahsin 100 katına artırılmış mıknatıs şanslı 10 bedava dönüş satın alın.',
+	'BET MODE BONUS TICKER SPIN': 'BONUS AKTİF',
+	'BET MODE CHANCE DIALOG':
+		'Chance Spin devre dışı bırakılana kadar aktif kalır. Her tur 2x bahse mal olur ve bonus tetikleme şansını üçe katlar.',
+	'BET MODE SUPER TITLE': 'MEGA ZİNCİR',
+	'BET MODE SUPER DIALOG':
+		'İlk dönüşte garantili mıknatıs bulunan 10 bedava dönüş. Hedef sembol, toplanan küme ve birleşik çarpan bonus boyunca korunur.',
+	'BET MODE SUPER DESCRIPTION': 'Kalıcı süper bonusu seçtiğiniz bahsin 500 katına satın alın.',
+	'BET MODE SUPER TICKER SPIN': 'SÜPER AKTİF',
+	'BET MODE FEATURE DIALOG':
+		'Feature Spin devre dışı bırakılana kadar aktif kalır. Her tur 50x bahse mal olur ve bir ücretli mıknatıs dönüşünü garanti eder.',
+	'BET MODE FEATURE DESCRIPTION':
+		"Feature Spin'i tur başına seçtiğiniz bahsin 50 katına etkinleştirin.",
+	'RULE GAME TITLE': 'MAGNETIC',
+	'RULE GAME TEXT':
+		'Magnetic, kazançların eşleşen sembol gruplarıyla oluşturulduğu 7x7 küme ödemeli bir slottur. Kazanmak için yatay veya dikey olarak bağlı 5 veya daha fazla eşleşen sembol düşürün. Çapraz bağlantılar sayılmaz.',
+	'RULE WILD TEXT':
+		'Temel modda Magnetic Wild, görünür normal sembol konumlarından birini rastgele seçer. Her görünür konumun şansı aynıdır; bu yüzden daha çok görünen sembol türlerinin seçilme ihtimali daha yüksektir. Ardından bu türdeki tüm görünür sembolleri çeker. Hedef, aktif manyetik seri boyunca sabit kalır.',
+	'RULE SCATTER TEXT':
+		"3 Scatter Drop-O-Magnet'i, 4 Scatter Mega Chain'i tetikler. Scatter tek başına ödeme yapmaz.",
+	'RULE DEAL IT TITLE': 'KÜME YENİDEN DÖNÜŞLERİ',
+	'RULE DEAL IT TEXT':
+		'Doğal uygun kümeler kilitlenir. Diğer tüm hücreler yeniden döner. Aktif kümeye temas eden yeni eşleşen semboller gelirse kümeye katılır ve bir yeniden dönüş daha başlar.',
+	'RULE ALL IN TITLE': 'MEGA ZİNCİR',
+	'RULE ALL IN TEXT':
+		'İlk Süper bedava dönüşte bir mıknatıs garantidir. Seçilen hedef sembol, toplanan küme ve serinin çarpılmış değeri 10 bedava dönüşün tamamında korunur ve sonunda sonuçlandırılır.',
+	'RULE BUY TEXT':
+		'Drop-O-Magnet 100x bahis, Mega Chain 500x bahis, Chance Spin tur başına 2x bahis ve Feature Spin tur başına 50x bahis tutarındadır. Maksimum kazanç: 20.000x. Hedef RTP: %96,1.',
+	'FEATURE SELECTED SYMBOL TITLE': 'MIKNATIS HEDEFİ',
+	'FEATURE SELECTED SYMBOL TEXT':
+		'Magnetic Wild görünür normal sembol konumlarından birini rastgele seçer. Her konumun şansı aynıdır; daha fazla görünür konumu olan türler daha olasıdır. Seçilen türdeki tüm görünür semboller çekilir ve ek mıknatıslar seri sırasında hedefi değiştirmez.',
+	'FEATURE DEAL IT MULTIPLIER TITLE': 'ÇARPAN WILD',
+	'FEATURE DEAL IT MULTIPLIER TEXT':
+		'Çarpan Wild değerleri tek bir aktif manyetik seri içinde birbiriyle çarpılır. Örnek: 2x × 3x × 4x = toplam 24x.',
+	'FEATURE ALL IN_MULTIPLIER TITLE': 'KALICI SÜPER SERİ',
+	'FEATURE ALL IN_MULTIPLIER TEXT':
+		"Süper Bonus'ta hedef sembol, toplanan hücreler ve serinin çarpılmış değeri, son ödül hesaplanana kadar 10 bedava dönüş boyunca taşınır.",
+	'HOWTO SPIN TEXT':
+		"Bir tur başlatmak için Döndür'e basın. Bir dizi çalışırken, mümkün olduğunda durdurma istemek için tekrar basın.",
+	'HOWTO BUY TEXT':
+		"Drop-O-Magnet, Mega Chain, Chance Spin veya Feature Spin seçmek için Bonus Satın Al'ı açın. Satın alınan bonuslar onay gerektirir. Etkinleştirme modları açılıp kapatılabilir.",
+	'HOWTO REPLAY TEXT':
+		'Tekrar, tamamlanmış bir etkinliği yükler ve ilk bahis, toplam maliyet, ödeme ve kazanç bilgilerini gösterir.',
+	'PAYTABLE TITLE PAYLINES': 'KÜME',
+	'PAYTABLE TEXT PAYLINES':
+		'Bir kazanç, 5 veya daha fazla eşleşen sembol yatay veya dikey olarak birbirine dokunduğunda oluşur. Çapraz bağlantılar sayılmaz.',
+	'PAYTABLE FOX':
+		'AT NALI MIKNATISI (H1)\n5 = 0.5x\n6 = 1x\n7 = 2x\n8 = 4x\n9 = 8x\n10-11 = 15x\n12-14 = 30x\n15-19 = 80x\n20-24 = 200x\n25-29 = 500x\n30-32 = 1000x\n33+ = 2000x',
+	'PAYTABLE WOLF':
+		'PLAZMA MATKABI (H2)\n5 = 0.4x\n6 = 0.8x\n7 = 1.5x\n8 = 3x\n9 = 6x\n10-11 = 12x\n12-14 = 25x\n15-19 = 60x\n20-24 = 150x\n25-29 = 350x\n30-32 = 750x\n33+ = 1500x',
+	'PAYTABLE BEAR':
+		'MANYETİK ÇEKİRDEK KÜPÜ (H3)\n5 = 0.3x\n6 = 0.6x\n7 = 1.2x\n8 = 2.5x\n9 = 5x\n10-11 = 10x\n12-14 = 20x\n15-19 = 50x\n20-24 = 120x\n25-29 = 280x\n30-32 = 600x\n33+ = 1200x',
+	'PAYTABLE RABBIT':
+		'ELEKTROMANYETİK CİHAZ (H4)\n5 = 0.25x\n6 = 0.5x\n7 = 1x\n8 = 2x\n9 = 4x\n10-11 = 8x\n12-14 = 16x\n15-19 = 35x\n20-24 = 90x\n25-29 = 220x\n30-32 = 450x\n33+ = 900x',
+	'PAYTABLE SQUIRREL':
+		'CIVATA (L1)\n5 = 0.2x\n6 = 0.4x\n7 = 0.8x\n8 = 1.6x\n9 = 3.2x\n10-11 = 6x\n12-14 = 12x\n15-19 = 30x\n20-24 = 75x\n25-29 = 180x\n30-32 = 350x\n33+ = 500x',
+	'PAYTABLE LOWS_1':
+		'SOMUN (L2)\n5 = 0.12x\n6 = 0.25x\n7 = 0.5x\n8 = 1x\n9 = 2x\n10-11 = 4x\n12-14 = 8x\n15-19 = 20x\n20-24 = 50x\n25-29 = 100x\n30-32 = 200x\n33+ = 400x\n\nRONDELA (L3)\n5 = 0.1x\n6 = 0.2x\n7 = 0.4x\n8 = 0.8x\n9 = 1.6x\n10-11 = 3x\n12-14 = 6x\n15-19 = 15x\n20-24 = 40x\n25-29 = 80x\n30-32 = 150x\n33+ = 300x',
+	'PAYTABLE LOWS_2':
+		'ENERJİ VİDASI (L4)\n5 = 0.08x\n6 = 0.16x\n7 = 0.32x\n8 = 0.64x\n9 = 1.28x\n10-11 = 2.5x\n12-14 = 5x\n15-19 = 12x\n20-24 = 30x\n25-29 = 60x\n30-32 = 120x\n33+ = 250x',
+	'PAYTABLE SPECIAL_TEXT':
+		"Mıknatıs manyetik serileri başlatır. Wild normal sembollerin yerine geçer. Çarpan Wild'lar aktif seriyi çarpar. Scatter yalnızca bonusları tetikler.",
+	'PAYTABLE BUY_TEXT':
+		'Drop-O-Magnet: 100x bahis.\nMega Chain: 500x bahis.\nChance Spin: tur başına 2x bahis.\nFeature Spin: tur başına 50x bahis.',
+	'PAYTABLE MAX_TEXT': 'Duyurulan maksimum kazanç seçilen bahsin 20.000 katıdır.',
+	'NO BALANCE TITLE': 'YETERSİZ BAKİYE',
+	'NO BALANCE BODY':
+		'Bakiyeniz bu bahis için çok düşük. Oynamaya devam etmek için bahis seviyesini düşürün.',
+	OK: 'TAMAM',
 };

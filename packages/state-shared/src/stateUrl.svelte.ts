@@ -1,5 +1,6 @@
 import { locales } from 'config-lingui';
 import { page } from '$app/state';
+import { normalizeLanguageParam } from './language';
 
 export type Language = (typeof locales)[number];
 
@@ -12,20 +13,18 @@ export type Key =
 	| 'device'
 	| 'social'
 	| 'demo'
-	// keys for replay 
+	// keys for replay
 	| 'replay'
 	| 'amount'
 	| 'game'
 	| 'mode'
 	| 'version'
-	| 'event'
-	;
+	| 'event';
 
 const getUrlSearchParam = (key: Key) => page.url.searchParams.get(key) as string;
 
 // params for play
-const lang = () =>
-	getUrlSearchParam('lang') === 'br' ? 'pt' : (getUrlSearchParam('lang') as Language) || 'en';
+const lang = () => normalizeLanguageParam(getUrlSearchParam('lang'));
 const sessionID = () => getUrlSearchParam('sessionID') || '';
 const rgsUrl = () => getUrlSearchParam('rgs_url') || '';
 const social = () => getUrlSearchParam('social') === 'true';

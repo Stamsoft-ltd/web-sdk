@@ -1,8 +1,9 @@
 import { stateBet, stateI18nDerived, stateModal, stateUi, stateUrlDerived } from 'state-shared';
 import { API_AMOUNT_MULTIPLIER, BOOK_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import type { BaseBet } from 'utils-bet';
-import { formatCurrencyAmountForCurrency, normalizeCurrency } from '../lib/utils/currency';
+import { formatCurrencyAmount as formatSharedCurrencyAmount } from 'utils-shared/currency';
 import { logMagneticDiagnostic } from '../utils/magneticDiagnostics';
+import { resolveReplayCostMultiplier } from './replay';
 
 type BootStatus = 'booting' | 'ready' | 'error';
 
@@ -62,17 +63,6 @@ const modeTitleKey = (mode: string) => {
 	if (mode === 'SUPER') return 'BET MODE SUPER TITLE';
 	return 'BET MODE BASE TITLE';
 };
-
-const modeCostMultiplier = (mode: string) =>
-	mode === 'CHANCE'
-		? 2
-		: mode === 'FEATURE'
-			? 50
-			: mode === 'BONUS'
-				? 100
-				: mode === 'SUPER'
-					? 500
-					: 1;
 
 const selectedModeLabel = () => t(modeTitleKey(replayModeKey()));
 
@@ -160,10 +150,14 @@ const replayBetAmount = () => {
 };
 
 const replayCostAmount = () => {
-	return replayBetAmount() * modeCostMultiplier(replayModeKey());
+	return replayBetAmount() * replayCostMultiplier();
 };
 
-const replayCostMultiplier = () => modeCostMultiplier(replayModeKey());
+const replayCostMultiplier = () =>
+	resolveReplayCostMultiplier(
+		magneticStakeState.replaySnapshot as { costMultiplier?: unknown } | null,
+		replayModeKey(),
+	);
 
 const replayPayoutAmount = () => {
 	const raw = (magneticStakeState.replaySnapshot as { payout?: number })?.payout;
@@ -221,11 +215,7 @@ const replayWinAmount = () => {
 // No default of 2 here: each currency carries its own decimal count in the RGS table (JPY/KRW/IDR
 // are 0, the Gulf dinars are 3). Passing 2 unconditionally overrode all of them.
 const formatCurrencyAmount = (amount: number, fractionDigits?: number) =>
-	formatCurrencyAmountForCurrency(
-		normalizeCurrency(stateBet.currency),
-		safeAmount(amount),
-		fractionDigits,
-	);
+	formatSharedCurrencyAmount(stateBet.currency, safeAmount(amount), fractionDigits);
 
 const t = (key: string) => stateI18nDerived.translate(key);
 
@@ -234,7 +224,7 @@ const syncModalError = () => {
 	const message =
 		(stateModal.modal.error as { message?: string; error?: string } | undefined)?.message ||
 		(stateModal.modal.error as { error?: string } | undefined)?.error ||
-		t('REPLAY_ERROR_GENERIC');
+		t('REPLAY ERROR GENERIC');
 	setBootError(String(message));
 };
 

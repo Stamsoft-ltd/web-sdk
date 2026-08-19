@@ -216,7 +216,7 @@
 					<h2 class="page-title">{t('INFO FEATURES')}</h2>
 					<div class="feat-grid">
 						<div class="feat-col-small">
-							<div class="card feat-card">
+							<div class="card feat-card feat-card--wild">
 								<h3 class="feat-h">{t('INFO FEAT WILD TITLE')}</h3>
 								<p class="feat-p">{t('INFO FEAT WILD TEXT')}</p>
 								<img class="feat-ic" src={wild} alt="Wild" />
@@ -814,6 +814,13 @@
 		width: clamp(44px, 9.5cqmin, 76px);
 		margin: 0;
 	}
+	/* The approved Magnetic Wild explanation is substantially longer than the other feature copy.
+	   Keep it inside the half-height card without pushing the Wild art through the lower frame. */
+	.feat-grid .feat-col-small .feat-card--wild .feat-p {
+		font-size: clamp(9px, 1.65cqmin, 15px);
+		line-height: 1.3;
+		letter-spacing: 0.015em;
+	}
 	.feat-card {
 		display: flex;
 		flex-direction: column;
@@ -1302,8 +1309,13 @@
 		.feat-grid .feat-p { font-size: 12px; }
 		/* The Multiplier Wild card (small left column) has the most copy — a touch smaller so it sits easy. */
 		.feat-grid .feat-col-small .feat-p { font-size: 11px; }
+		.feat-grid .feat-col-small .feat-card--wild .feat-p {
+			font-size: 9px;
+			line-height: 1.25;
+		}
 		.feat-grid .feat-ic { width: 96px; }
 		.feat-grid .feat-col-small .feat-ic { width: 70px; }
+		.feat-grid .feat-col-small .feat-card--wild .feat-ic { width: 56px; }
 		.feat-grid .feat-trigger img { width: 86px; }
 		.feat-grid .feat-x { font-size: 32px; }
 
@@ -1605,6 +1617,11 @@
 		.feat-grid .feat-p,
 		.fb-grid .feat-p {
 			font-size: clamp(14px, 3.5cqmin, 21px);
+		}
+		.feat-grid .feat-col-small .feat-card--wild .feat-p {
+			font-size: clamp(14px, 3.5cqmin, 21px);
+			line-height: 1.45;
+			letter-spacing: 0.03em;
 		}
 		.feat-grid .feat-ic,
 		.fb-grid .feat-ic {

@@ -25,7 +25,23 @@ import da from './da';
 // missing (e.g. the non-modal game strings, which are localized app-side later) still resolves to
 // English instead of showing a raw key.
 const localeMaps: Record<string, Record<string, string>> = {
-	ar, de, en, es, fi, fr, hi, id, ja, ko, pl, pt, ru, tr, vi, zh, da,
+	ar,
+	de,
+	en,
+	es,
+	fi,
+	fr,
+	hi,
+	id,
+	ja,
+	ko,
+	pl,
+	pt,
+	ru,
+	tr,
+	vi,
+	zh,
+	da,
 };
 
 // Danish (`da`) is not one of the shared `config-lingui` locales, but the launcher can still request
@@ -50,9 +66,7 @@ merged.da = { ...merged.en, ...merged.da };
 // English — otherwise Lingui returns the raw message KEY, leaving the modal showing identifiers.
 const messagesMap = new Proxy(merged, {
 	get: (target, prop) =>
-		typeof prop === 'string' && !(prop in target) && /^[a-z]{2}([-_][A-Za-z]+)?$/.test(prop)
-			? target.en
-			: target[prop as keyof typeof target],
+		typeof prop === 'string' && !(prop in target) ? target.en : target[prop as keyof typeof target],
 }) as unknown as MessagesMap & Record<string, typeof en>;
 
 export default messagesMap;

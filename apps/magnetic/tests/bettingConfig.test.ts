@@ -57,6 +57,8 @@ describe('RGS betting configuration', () => {
 		const betLevels = Array.from({ length: 40 }, (_, index) => (index + 1) * 100_000);
 		const result = normalizeRgsBetConfig({ betLevels, defaultBetLevel: 100_000 }, [1]);
 
+		// The compact menu may show a curated subset, but +/- navigation must retain every RGS level.
+		expect(result.betAmountOptions).toEqual(betLevels.map((level) => level / 1_000_000));
 		expect(result.betMenuOptions[0]).toBe(0.1);
 		expect(result.betMenuOptions.at(-1)).toBe(4);
 	});

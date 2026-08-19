@@ -113,8 +113,8 @@
 				},
 				text: {
 					title: 'CHANCE SPIN',
-					dialog: '2x cost. Base game with 3x higher bonus chance.',
-					description: '2x cost per spin, 3x bonus trigger odds.',
+					dialog: 'Each round plays for 2x the selected play amount with 3x bonus chance.',
+					description: '2x play amount per spin, 3x bonus trigger odds.',
 					button: 'ACTIVATE',
 					tickerIdle: 'CHANCE ACTIVE',
 					tickerSpin: 'GOOD LUCK',
@@ -162,9 +162,9 @@
 					title: 'DROP-O-MAGNET',
 					dialog:
 						'10 free spins. Magnet chance is boosted; any magnet selects one target symbol for that active series.',
-					description: 'Buy the 10-spin Drop-O-Magnet bonus for 100x bet.',
-					button: 'BUY',
-					tickerIdle: 'PLACE YOUR BET',
+					description: 'Play the 10-spin Drop-O-Magnet bonus for 100x the selected play amount.',
+					button: 'PLAY',
+					tickerIdle: 'COME AND PLAY',
 					tickerSpin: 'BONUS ACTIVE',
 				},
 				maxWin: 20000,
@@ -186,9 +186,10 @@
 					title: 'MEGA CHAIN',
 					dialog:
 						'10 free spins. First spin guarantees a magnet, and the same target cluster persists across the whole bonus.',
-					description: 'Buy the persistent Magnetic Mega Chain bonus for 500x bet.',
-					button: 'BUY',
-					tickerIdle: 'PLACE YOUR BET',
+					description:
+						'Play the persistent Magnetic Mega Chain bonus for 500x the selected play amount.',
+					button: 'PLAY',
+					tickerIdle: 'COME AND PLAY',
 					tickerSpin: 'SUPER ACTIVE',
 				},
 				maxWin: 20000,
@@ -220,7 +221,7 @@
 						},
 						{
 							title: 'MAGNETS',
-							text: 'A visible magnet can appear in base game, normal bonus, or super bonus. It selects one pay symbol, and only that target can keep growing during the active magnetic series.',
+							text: 'In base mode, a Magnetic Wild randomly selects one visible regular-symbol position. Each position has equal chance, so types shown more often are more likely. It attracts every visible symbol of that type and keeps the target for the active magnetic series.',
 							image: scatterArt,
 							row: 2,
 							column: 0,
@@ -277,14 +278,14 @@
 						},
 						{
 							title: 'SPECIALS',
-							text: 'Wild substitutes for all pay symbols except Scatter. Scatter triggers bonuses. Magnet starts the magnetic series and may also carry a multiplier that compounds with later multiplier magnets.',
+							text: 'Wild substitutes for all regular symbols except Scatter. Scatter triggers bonuses. Magnet starts the magnetic series and may also carry a multiplier that compounds with later multiplier magnets.',
 							image: scatterArt,
 							row: 1,
 							column: 1,
 							imagePosition: 'left',
 						},
 						{
-							title: 'BUY MODES',
+							title: 'PLAY MODES',
 							text: 'Drop-O-Magnet: 100x\nMagnetic Mega Chain: 500x\nFeature Spin: 50x / spin\nChance Spin: 2x / spin',
 							image: bonusArt,
 							row: 2,

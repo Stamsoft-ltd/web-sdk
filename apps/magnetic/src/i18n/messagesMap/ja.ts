@@ -6,8 +6,10 @@ export default {
 	'INFO FEATURE BUY': 'フィーチャー購入',
 	'INFO GENERAL INFO': '一般情報',
 	'INFO UI GUIDE': '操作ガイド',
-	'INFO OV TEXT 1': 'Magneticは7x7のクラスター配当スロットで、同じシンボルのグループによって配当が成立します。同じシンボルが縦または横に5個以上つながると配当が発生します。',
-	'INFO OV TEXT 2': 'Magneticのフィーチャーは同じシンボルを引き寄せ、より大きなクラスターとより強力な配当の形成をサポートします。',
+	'INFO OV TEXT 1':
+		'Magneticは7x7のクラスター配当スロットで、同じシンボルのグループによって配当が成立します。同じシンボルが縦または横に5個以上つながると配当が発生します。',
+	'INFO OV TEXT 2':
+		'Magneticのフィーチャーは同じシンボルを引き寄せ、より大きなクラスターとより強力な配当の形成をサポートします。',
 	'INFO OV MAXWIN': '最大配当：ベットの%value%。',
 	'INFO STAT REELS': 'リール',
 	'INFO STAT CLUSTER': 'クラスター',
@@ -19,35 +21,49 @@ export default {
 	'INFO WILD STANDARD': '標準のマルチプライヤーワイルド倍率：',
 	'INFO WILD RARE': 'レアなマルチプライヤーワイルド倍率（主にMagnetic Mega Chainで出現）：',
 	'INFO FEAT WILD TITLE': 'ワイルドシンボル',
-	'INFO FEAT WILD TEXT': 'スキャッター以外のすべての配当シンボルの代わりになります。',
+	'INFO FEAT WILD TEXT':
+		'スキャッター以外のすべての配当シンボルの代わりになります。 発動すると、Magnetic Wildは現在グリッド上にある通常の配当シンボルを1種類ランダムに選び、同じシンボルをすべて引き寄せます。WildとScatterは選択されません。',
 	'INFO FEAT MWILD TITLE': 'マルチプライヤーワイルド',
-	'INFO FEAT MWILD TEXT': 'ワイルドと同様に代役となり、フィーチャーの残りの間、有効なボーナス倍率を上昇させます。',
+	'INFO FEAT MWILD TEXT':
+		'ワイルドと同様に代役となり、フィーチャーの残りの間、有効なボーナス倍率を上昇させます。',
 	'INFO FEAT DROP TITLE': 'Drop-O-Magnet フリースピン',
-	'INFO FEAT DROP TEXT': 'スキャッター3個で発動。フリースピン10回を獲得します。各フリースピンでランダムな1つのシンボルがマグネットになり、同じシンボルが引き寄せられます。',
+	'INFO FEAT DROP TEXT':
+		'Scatterが3個で発動し、フリースピン10回を獲得します。Magnetic Wildが停止すると、同じ表示位置ルールで対象を選び、同種シンボルを引き寄せます。',
 	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain フリースピン',
-	'INFO FEAT MEGA TEXT': 'スキャッター4個で発動。フリースピン10回を獲得します。マグネットクラスターはロックされたまま、フィーチャー中に成長し続けることがあります。',
+	'INFO FEAT MEGA TEXT':
+		'スキャッター4個で発動。フリースピン10回を獲得します。マグネットクラスターはロックされたまま、フィーチャー中に成長し続けることがあります。',
 	'INFO CW 1': 'Magneticはペイラインの代わりにクラスター配当を採用しています。',
 	'INFO CW 2': '同じシンボルが縦または横に5個以上隣接すると配当が成立します。',
 	'INFO CW 3': '斜めのつながりはカウントされません。',
-	'INFO CW 4': '配当シンボルは直線を形成する必要はありません。1つのグループとしてつながっていればよいだけです。',
+	'INFO CW 4':
+		'配当シンボルは直線を形成する必要はありません。1つのグループとしてつながっていればよいだけです。',
 	'INFO CW 5': 'より大きなクラスターほど、より大きな配当を獲得します。',
-	'INFO FB SUB': 'フィーチャー購入は許可されている地域でのみ利用できます。すべてのフィーチャー購入およびボーナス購入のオプションは、選択したベットの倍数で支払われます。',
+	'INFO FB SUB':
+		'フィーチャー購入は許可されている地域でのみ利用できます。すべてのフィーチャー購入およびボーナス購入のオプションは、選択したベットの倍数で支払われます。',
 	'INFO FB EXTRA TITLE': 'エクストラフィーチャー',
-	'INFO FB EXTRA TEXT': 'マグネット接続が保証され、マルチプライヤーワイルドが出現するチャンスがある特別なスピンを購入します。',
+	'INFO FB EXTRA TEXT':
+		'マグネット接続が保証され、マルチプライヤーワイルドが出現するチャンスがある特別なスピンを購入します。',
 	'INFO FB FEATURE TITLE': 'フィーチャー購入',
 	'INFO FB FEATURE TEXT': 'Drop-O-Magnet フリースピン フィーチャーへ直接アクセスを購入します。',
 	'INFO FB BONUS TITLE': 'ボーナス購入',
-	'INFO FB BONUS TEXT': 'より強力なMagnetic Mega Chain フリースピン フィーチャーへ直接アクセスを購入します。',
+	'INFO FB BONUS TEXT':
+		'より強力なMagnetic Mega Chain フリースピン フィーチャーへ直接アクセスを購入します。',
 	'INFO COST': 'コスト',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': '中断されたラウンド',
-	'INFO GI INTERRUPTED 1': 'ゲームラウンドが中断された場合、可能な限り、ゲームの再読み込み時に続行されます。',
-	'INFO GI INTERRUPTED 2': 'すべての有効なベットと獲得可能な配当は、ラウンドが完全に終了するまで有効なままです。',
+	'INFO GI INTERRUPTED 1':
+		'ゲームラウンドが中断された場合、可能な限り、ゲームの再読み込み時に続行されます。',
+	'INFO GI INTERRUPTED 2':
+		'すべての有効なベットと獲得可能な配当は、ラウンドが完全に終了するまで有効なままです。',
 	'INFO GI LEGAL TITLE': '法的通知',
-	'INFO GI LEGAL 1': '不具合が発生した場合、すべての配当およびプレイは無効となります。安定したインターネット接続が必要です。接続が失われた場合は、ゲームを再読み込みして未完了のラウンドを終了してください。',
-	'INFO GI LEGAL 2': '予想される還元率は多数のプレイにわたって算出されます。ゲームの表示は視覚的および娯楽目的のみであり、いかなる物理的なゲーム機器も表すものではありません。',
-	'INFO GI LEGAL 3': 'すべての配当は、ウェブブラウザ内に表示されるアニメーションやイベントではなく、リモートゲームサーバーから受信した結果に従って確定されます。',
-	'DISCLAIMER TEXT': '不具合はすべての勝利とプレイを無効にします。安定したインターネット接続が必要です。接続が切断された場合は、ゲームを再読み込みして未完了のラウンドを完了してください。期待される還元率は多数のプレイにわたって計算されます。ゲーム表示はいかなる物理的なデバイスを表すものではなく、説明目的のみのものです。勝利金はウェブブラウザ内のイベントではなく、リモートゲームサーバーから受信した金額に従って清算されます。TM および © 2026 Stake Engine。',
+	'INFO GI LEGAL 1':
+		'不具合が発生した場合、すべての配当およびプレイは無効となります。安定したインターネット接続が必要です。接続が失われた場合は、ゲームを再読み込みして未完了のラウンドを終了してください。',
+	'INFO GI LEGAL 2':
+		'予想される還元率は多数のプレイにわたって算出されます。ゲームの表示は視覚的および娯楽目的のみであり、いかなる物理的なゲーム機器も表すものではありません。',
+	'INFO GI LEGAL 3':
+		'すべての配当は、ウェブブラウザ内に表示されるアニメーションやイベントではなく、リモートゲームサーバーから受信した結果に従って確定されます。',
+	'DISCLAIMER TEXT':
+		'不具合はすべての勝利とプレイを無効にします。安定したインターネット接続が必要です。接続が切断された場合は、ゲームを再読み込みして未完了のラウンドを完了してください。期待される還元率は多数のプレイにわたって計算されます。ゲーム表示はいかなる物理的なデバイスを表すものではなく、説明目的のみのものです。勝利金はウェブブラウザ内のイベントではなく、リモートゲームサーバーから受信した金額に従って清算されます。TM および © 2026 Stake Engine。',
 	'INFO CTRL SPIN': 'スピン',
 	'INFO CTRL SPIN DESC': '選択したベットでゲームラウンドを開始します。',
 	'INFO CTRL AUTO': 'オートプレイ',
@@ -105,7 +121,8 @@ export default {
 	'PLAY AGAIN': 'もう一度',
 	'RETRY RESUME': 'ラウンド再試行',
 	'RECOVERY TITLE': '未完了ラウンドを検出',
-	'RECOVERY BODY': '前回のラウンドを自動的に復元できませんでした。新しいラウンドを始める前に、元のラウンドを再試行して完了してください。',
+	'RECOVERY BODY':
+		'前回のラウンドを自動的に復元できませんでした。新しいラウンドを始める前に、元のラウンドを再試行して完了してください。',
 	EVENT: 'イベント',
 	PAYOUT: '配当',
 	WIN: 'ウィン',
@@ -128,9 +145,11 @@ export default {
 	'BUY FEATURE SPINS DESC':
 		'マグネット接続が保証され、マルチプライヤーワイルドが出現するチャンスがある特別なスピンを購入します。',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
-	'BUY DROP DESC': 'フリースピンを10回獲得。毎スピン、ランダムなシンボル1つがマグネットになります。一致するシンボルは自動的に連結します。マルチプライヤーワイルドはボーナス倍率を永続的に上昇させます。',
+	'BUY DROP DESC':
+		'フリースピンを10回獲得。毎スピン、ランダムなシンボル1つがマグネットになります。一致するシンボルは自動的に連結します。マルチプライヤーワイルドはボーナス倍率を永続的に上昇させます。',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',
-	'BUY MEGA DESC': 'フリースピンを10回獲得。ランダムなシンボル1つがマグネットになり、スピン間も連結を維持します。マグネットクラスターはフィーチャー中ずっと持続して成長し、マルチプライヤーは積み重なり続けます。',
+	'BUY MEGA DESC':
+		'フリースピンを10回獲得。ランダムなシンボル1つがマグネットになり、スピン間も連結を維持します。マグネットクラスターはフィーチャー中ずっと持続して成長し、マルチプライヤーは積み重なり続けます。',
 	'AUTO TURBO': 'ターボスピン',
 	'AUTO SUPER TURBO': 'スーパーターボスピン',
 	'AUTO FEATURE': '50X ボーナスフィーチャー',
@@ -138,13 +157,140 @@ export default {
 	'AUTO START': 'オート開始',
 	'YOU WON': '獲得',
 	'FREE SPINS': 'フリースピン',
-	'CONGRATULATIONS': 'おめでとう',
+	CONGRATULATIONS: 'おめでとう',
 	'PRESS ANYWHERE': 'どこでも押して続行',
 	'TOTAL WIN': '合計ウィン',
 	'ALL WINS': '全ウィン',
-	'RESPIN': 'リスピン',
+	RESPIN: 'リスピン',
 	'UNFINISHED ROUND': '未完了ラウンド',
 	'RESUME BODY': '進行中の %mode% ボーナスがあります。',
 	'PLAY ROUND': 'ラウンド開始',
 	'END ROUND': 'ラウンド終了',
+
+	// Approved shared translations reused from Forest Gang.
+	'BET MODE BASE TITLE': 'ベース',
+	'BET MODE BASE BUTTON': 'プレイ',
+	'BET MODE BASE TICKER SPIN': 'グッドラック',
+	'BET MODE BONUS BUTTON': '購入',
+	'BET MODE BONUS TICKER IDLE': 'ベットしてください',
+	'BET MODE CHANCE TITLE': 'チャンススピン',
+	'BET MODE CHANCE DESCRIPTION':
+		'1ラウンドにつき選択したベットの2倍でチャンススピンを有効にします。',
+	'BET MODE CHANCE BUTTON': '有効化',
+	'BET MODE CHANCE TICKER IDLE': 'チャンススピン有効中',
+	'BET MODE CHANCE TICKER SPIN': 'グッドラック',
+	'BET MODE SUPER BUTTON': '購入',
+	'BET MODE SUPER TICKER IDLE': 'ベットしてください',
+	'BET MODE FEATURE TITLE': 'フィーチャースピン',
+	'BET MODE FEATURE BUTTON': '有効化',
+	'BET MODE FEATURE TICKER IDLE': 'フィーチャースピン有効中',
+	'BET MODE FEATURE TICKER SPIN': 'フィーチャースピン有効',
+	'RULE SECTION GAME INFO': 'ゲーム情報',
+	'RULE SECTION FEATURES': '機能',
+	'RULE SECTION HOW TO PLAY': '遊び方',
+	'RULE SECTION DISCLAIMER': '免責事項',
+	'RULE WILD TITLE': 'ワイルド',
+	'RULE SCATTER TITLE': 'スキャッター',
+	'RULE BUY TITLE': '購入 / 有効化モード',
+	'HOWTO SPIN TITLE': 'スピン / 停止',
+	'HOWTO BET TITLE': 'ベットセレクター',
+	'HOWTO BET TEXT':
+		'+と-のボタンを使用するか、ベットメニューを開いて、ラウンド開始前に表示されるベット額を変更します。',
+	'HOWTO BUY TITLE': 'ボーナス購入',
+	'HOWTO TURBO TITLE': 'ターボ',
+	'HOWTO TURBO TEXT': 'ターボは特定のラウンドのタイミングを短縮し、より速いプレイを実現します。',
+	'HOWTO AUTOPLAY TITLE': 'オートプレイ',
+	'HOWTO AUTOPLAY TEXT':
+		'オートプレイは、選択した停止条件またはカウンターが終了するまで、ラウンドを自動的に繰り返します。',
+	'HOWTO REPLAY TITLE': 'リプレイモード',
+	'PAYTABLE PREMIUM TITLE': 'プレミアムシンボル',
+	'PAYTABLE LOW TITLE': 'ローシンボル',
+	'PAYTABLE SPECIAL TITLE': 'スペシャルシンボル',
+	'PAYTABLE BUY TITLE': '購入モード',
+	'PAYTABLE MAX TITLE': '最大勝利',
+
+	// Magnetic-specific rules, replay, modes, and paytable.
+	'BET REPLAY': 'ベットリプレイ',
+	'REPLAY EVENT': 'イベントをリプレイ',
+	'BASE BET': 'ベースベット',
+	'COST MULTIPLIER': 'コスト倍率',
+	'TOTAL BET COST': '合計ベットコスト',
+	'PAYOUT MULTIPLIER': '配当倍率',
+	'REPLAY DISCLAIMER': 'これは以前のベットラウンドのリプレイです。新しいベットは行われません。',
+	'DEAL IT': 'Drop-O-Magnet',
+	'ALL IN': 'メガチェイン',
+	'BET MODE BASE DIALOG':
+		'Magneticは7x7のクラスター配当スロットで、同じシンボルのグループによって配当が成立します。同じシンボルが縦または横に5個以上つながると配当が発生します。',
+	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
+	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS DIALOG': 'マグネット出現率が大幅に上昇したフリースピン10回。',
+	'BET MODE BONUS DESCRIPTION':
+		'選択ベットの100xで、マグネット出現率が上昇したフリースピン10回を購入します。',
+	'BET MODE BONUS TICKER SPIN': 'ボーナス有効',
+	'BET MODE CHANCE DIALOG':
+		'Chance Spinは無効にするまで有効です。各ラウンドはベットの2xで、ボーナス発動率が3倍になります。',
+	'BET MODE SUPER TITLE': 'メガチェイン',
+	'BET MODE SUPER DIALOG':
+		'最初のスピンでマグネットが保証されるフリースピン10回。対象シンボル、集めたクラスター、合成倍率はボーナス終了まで維持されます。',
+	'BET MODE SUPER DESCRIPTION': '選択ベットの500xで継続型スーパーボーナスを購入します。',
+	'BET MODE SUPER TICKER SPIN': 'スーパー有効',
+	'BET MODE FEATURE DIALOG':
+		'Feature Spinは無効にするまで有効です。各ラウンドはベットの50xで、有料マグネットスピン1回が保証されます。',
+	'BET MODE FEATURE DESCRIPTION': 'Feature Spinを1ラウンドにつき選択ベットの50xで有効にします。',
+	'RULE GAME TITLE': 'MAGNETIC',
+	'RULE GAME TEXT':
+		'Magneticは7x7のクラスター配当スロットで、同じシンボルのグループによって配当が成立します。同じシンボルが縦または横に5個以上つながると配当が発生します。 斜めのつながりはカウントされません。',
+	'RULE WILD TEXT':
+		'ベースモードでは、Magnetic Wildが表示中の通常シンボル位置を1つランダムに選びます。各位置の選択確率は同じため、表示数が多いシンボルほど選ばれやすくなります。その種類の表示中シンボルをすべて引き寄せます。対象は有効なマグネットシリーズ中は変わりません。',
+	'RULE SCATTER TEXT':
+		'Scatterが3個でDrop-O-Magnet、4個でMega Chainが発動します。Scatter単体では配当はありません。',
+	'RULE DEAL IT TITLE': 'クラスターリスピン',
+	'RULE DEAL IT TEXT':
+		'条件を満たした自然クラスターはその場にロックされ、その他のセルがリスピンします。新しい同種シンボルが有効クラスターに接して停止するとクラスターに加わり、さらにリスピンします。',
+	'RULE ALL IN TITLE': 'メガチェイン',
+	'RULE ALL IN TEXT':
+		'最初のSuperフリースピンではマグネットが保証されます。選ばれた対象シンボル、集めたクラスター、シリーズの乗算値は10回のフリースピンすべてで維持され、最後に精算されます。',
+	'RULE BUY TEXT':
+		'Drop-O-Magnetはベットの100x、Mega Chainは500x、Chance Spinは1ラウンド2x、Feature Spinは1ラウンド50xです。最大配当：20,000x。理論RTP：96.1%。',
+	'FEATURE SELECTED SYMBOL TITLE': 'マグネット対象',
+	'FEATURE SELECTED SYMBOL TEXT':
+		'Magnetic Wildが表示中の通常シンボル位置を1つランダムに選びます。各位置の確率は同じため、表示位置が多い種類ほど選ばれやすくなります。選ばれた種類の表示中シンボルはすべて引き寄せられ、追加マグネットがシリーズ途中で対象を変えることはありません。',
+	'FEATURE DEAL IT MULTIPLIER TITLE': 'マルチプライヤーワイルド',
+	'FEATURE DEAL IT MULTIPLIER TEXT':
+		'1つの有効なマグネットシリーズ内では、Multiplier Wildの値が乗算されます。例：2x × 3x × 4x = 合計24x。',
+	'FEATURE ALL IN_MULTIPLIER TITLE': '継続スーパーシリーズ',
+	'FEATURE ALL IN_MULTIPLIER TEXT':
+		'Super Bonusでは、対象シンボル、集めたセル、シリーズの乗算値が最終報酬の精算まで10回のフリースピンすべてに引き継がれます。',
+	'HOWTO SPIN TEXT':
+		'Spinを押してラウンドを開始します。シーケンス中にもう一度押すと、利用可能な場合は停止を要求します。',
+	'HOWTO BUY TEXT':
+		'Buy Bonusを開き、Drop-O-Magnet、Mega Chain、Chance Spin、Feature Spinから選びます。購入ボーナスは確認が必要です。有効化モードはオンとオフを切り替えられます。',
+	'HOWTO REPLAY TEXT':
+		'リプレイは完了済みイベントを読み込み、元のベット、合計コスト、配当、獲得情報を表示します。',
+	'PAYTABLE TITLE PAYLINES': 'クラスター',
+	'PAYTABLE TEXT PAYLINES':
+		'同じシンボルが縦または横に5個以上隣接すると配当が成立します。 斜めのつながりはカウントされません。',
+	'PAYTABLE FOX':
+		'馬蹄形マグネット (H1)\n5 = 0.5x\n6 = 1x\n7 = 2x\n8 = 4x\n9 = 8x\n10-11 = 15x\n12-14 = 30x\n15-19 = 80x\n20-24 = 200x\n25-29 = 500x\n30-32 = 1000x\n33+ = 2000x',
+	'PAYTABLE WOLF':
+		'プラズマドリル (H2)\n5 = 0.4x\n6 = 0.8x\n7 = 1.5x\n8 = 3x\n9 = 6x\n10-11 = 12x\n12-14 = 25x\n15-19 = 60x\n20-24 = 150x\n25-29 = 350x\n30-32 = 750x\n33+ = 1500x',
+	'PAYTABLE BEAR':
+		'マグネットコアキューブ (H3)\n5 = 0.3x\n6 = 0.6x\n7 = 1.2x\n8 = 2.5x\n9 = 5x\n10-11 = 10x\n12-14 = 20x\n15-19 = 50x\n20-24 = 120x\n25-29 = 280x\n30-32 = 600x\n33+ = 1200x',
+	'PAYTABLE RABBIT':
+		'電磁装置 (H4)\n5 = 0.25x\n6 = 0.5x\n7 = 1x\n8 = 2x\n9 = 4x\n10-11 = 8x\n12-14 = 16x\n15-19 = 35x\n20-24 = 90x\n25-29 = 220x\n30-32 = 450x\n33+ = 900x',
+	'PAYTABLE SQUIRREL':
+		'ボルト (L1)\n5 = 0.2x\n6 = 0.4x\n7 = 0.8x\n8 = 1.6x\n9 = 3.2x\n10-11 = 6x\n12-14 = 12x\n15-19 = 30x\n20-24 = 75x\n25-29 = 180x\n30-32 = 350x\n33+ = 500x',
+	'PAYTABLE LOWS_1':
+		'ナット (L2)\n5 = 0.12x\n6 = 0.25x\n7 = 0.5x\n8 = 1x\n9 = 2x\n10-11 = 4x\n12-14 = 8x\n15-19 = 20x\n20-24 = 50x\n25-29 = 100x\n30-32 = 200x\n33+ = 400x\n\nワッシャー (L3)\n5 = 0.1x\n6 = 0.2x\n7 = 0.4x\n8 = 0.8x\n9 = 1.6x\n10-11 = 3x\n12-14 = 6x\n15-19 = 15x\n20-24 = 40x\n25-29 = 80x\n30-32 = 150x\n33+ = 300x',
+	'PAYTABLE LOWS_2':
+		'エネルギースクリュー (L4)\n5 = 0.08x\n6 = 0.16x\n7 = 0.32x\n8 = 0.64x\n9 = 1.28x\n10-11 = 2.5x\n12-14 = 5x\n15-19 = 12x\n20-24 = 30x\n25-29 = 60x\n30-32 = 120x\n33+ = 250x',
+	'PAYTABLE SPECIAL_TEXT':
+		'Magnetはマグネットシリーズを開始します。Wildは通常シンボルの代わりになります。Multiplier Wildは有効なシリーズを乗算します。Scatterはボーナスのみを発動します。',
+	'PAYTABLE BUY_TEXT':
+		'Drop-O-Magnet：ベット100x。\nMega Chain：ベット500x。\nChance Spin：1ラウンドにつきベット2x。\nFeature Spin：1ラウンドにつきベット50x。',
+	'PAYTABLE MAX_TEXT': '公表されている最大配当は選択ベットの20,000xです。',
+	'NO BALANCE TITLE': '残高不足',
+	'NO BALANCE BODY':
+		'このベットには残高が不足しています。プレイを続けるにはベットレベルを下げてください。',
+	OK: 'OK',
 };

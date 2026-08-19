@@ -92,7 +92,7 @@ export default {
 		'Magnetic is a 7x7 cluster-pay slot. Wins form when 5 or more matching symbols touch horizontally or vertically. Diagonal connections do not count.',
 	'RULE WILD TITLE': 'WILD',
 	'RULE WILD TEXT':
-		'When a magnet lands it picks one visible symbol. Only that symbol can keep growing during the active magnet series.',
+		'In base mode, a Magnetic Wild randomly selects one visible regular-symbol position. Every visible position has the same chance, so symbol types shown more often are more likely to be selected. It then attracts all visible symbols of that type. The target stays fixed for the active magnetic series.',
 	'RULE SCATTER TITLE': 'SCATTER',
 	'RULE SCATTER TEXT':
 		'3 scatters trigger Drop-O-Magnet. 4 scatters trigger Mega Chain. Scatter does not pay by itself.',
@@ -107,7 +107,7 @@ export default {
 		'Drop-O-Magnet costs 100x bet. Mega Chain costs 500x bet. Chance Spin costs 2x bet per round. Feature Spin costs 50x bet per round. Max win is 20,000x. Target RTP is 96.1%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'MAGNET TARGET',
 	'FEATURE SELECTED SYMBOL TEXT':
-		'A magnet randomly picks one visible regular symbol and keeps that target for the whole active magnet series. Extra magnets never change the target mid-series.',
+		'A Magnetic Wild randomly selects one visible regular-symbol position. Each position has equal chance, so symbol types with more visible positions are more likely. All visible symbols of the selected type are attracted, and extra magnets never change the target mid-series.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'MULTIPLIER WILDS',
 	'FEATURE DEAL IT MULTIPLIER TEXT':
 		'Multiplier Wild values stack multiplicatively inside one active magnetic series. Example: 2x × 3x × 4x = 24x total.',
@@ -190,13 +190,14 @@ export default {
 	'INFO WILD RARE': 'Rare multiplier wild values (mainly in Magnetic Mega Chain):',
 	// Features
 	'INFO FEAT WILD TITLE': 'Wild Symbol',
-	'INFO FEAT WILD TEXT': 'Substitutes for all pay symbols except Scatter.',
+	'INFO FEAT WILD TEXT':
+		'Substitutes for all pay symbols except Scatter. When activated, the Magnetic Wild randomly selects one regular pay symbol currently on the grid and attracts all matching symbols together. Wilds and Scatters cannot be selected.',
 	'INFO FEAT MWILD TITLE': 'Multiplier Wild',
 	'INFO FEAT MWILD TEXT':
 		'Substitutes like a Wild and increases the active bonus multiplier for the rest of the feature.',
 	'INFO FEAT DROP TITLE': 'Drop-O-Magnet Free Spins',
 	'INFO FEAT DROP TEXT':
-		'Triggered by 3 Scatters. Awards 10 Free Spins. On each Free Spin, one random symbol becomes magnetic and matching symbols are pulled together.',
+		'Triggered by 3 Scatters. Awards 10 Free Spins. When a Magnetic Wild lands, it selects a target using the same visible-position rule and pulls matching symbols together.',
 	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain Free Spins',
 	'INFO FEAT MEGA TEXT':
 		'Triggered by 4 Scatters. Awards 10 Free Spins. Magnetic clusters can remain locked and grow across the feature.',

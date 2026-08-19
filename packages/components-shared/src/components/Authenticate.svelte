@@ -114,43 +114,51 @@
 	};
 
 	const handleReplay = async () => {
-		if (stateUrlDerived.currency()) stateBet.currency = stateUrlDerived.currency();
-		stateBet.betAmount = stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER || 0;
-		stateBet.wageredBetAmount = stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER || 0;
-		stateBet.activeBetModeKey = stateUrlDerived.mode();
+		try {
+			if (stateUrlDerived.currency()) stateBet.currency = stateUrlDerived.currency();
+			stateBet.betAmount = stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER || 0;
+			stateBet.wageredBetAmount = stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER || 0;
+			stateBet.activeBetModeKey = stateUrlDerived.mode();
 
-		const data = await requestReplay({
-			rgsUrl: stateUrlDerived.rgsUrl(),
-			game: stateUrlDerived.game(),
-			mode: stateUrlDerived.mode(),
-			version: stateUrlDerived.version(),
-			event: stateUrlDerived.event(),
-			language: stateUrlDerived.lang(),
-		});
+			const data = await requestReplay({
+				rgsUrl: stateUrlDerived.rgsUrl(),
+				game: stateUrlDerived.game(),
+				mode: stateUrlDerived.mode(),
+				version: stateUrlDerived.version(),
+				event: stateUrlDerived.event(),
+				language: stateUrlDerived.lang(),
+			});
 
-		if (data) {
-			const replayCurrency = data?.balance?.currency || data?.currency;
+			if (!data || data.error) throw data || new Error('Replay unavailable. Please retry.');
+
+			const replayCurrency = data.balance?.currency || data.currency;
 			if (replayCurrency) stateBet.currency = replayCurrency;
-			// @ts-ignore
+			// @ts-ignore replay endpoint is not part of the generated RGS schema yet.
 			stateBet.betToResume = {
 				...data,
 				event: '0',
 				active: true,
 				mode: stateUrlDerived.mode(),
 			};
+		} catch (error) {
+			console.error(error);
+			stateModal.modal = { name: 'error', error };
 		}
 	};
 
 	onMount(async () => {
-		if (stateUrlDerived.replay()) {
-			stateUi.config.mode = 'replay';
-			await handleReplay();
-		} else {
-			stateUi.config.mode = 'default';
-			await authenticate();
+		try {
+			if (stateUrlDerived.replay()) {
+				stateUi.config.mode = 'replay';
+				await handleReplay();
+			} else {
+				stateUi.config.mode = 'default';
+				await authenticate();
+			}
+		} finally {
+			// Failed replay requests must still mount the app so its replay error/retry UI can render.
+			authenticated = true;
 		}
-
-		authenticated = true;
 	});
 </script>
 

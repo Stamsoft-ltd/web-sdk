@@ -125,26 +125,36 @@ export const SUPPORTED_CURRENCIES = Object.keys(CURRENCY_META) as Currency[];
 const CURRENCY_SET = new Set<string>(SUPPORTED_CURRENCIES);
 
 export const isSupportedCurrency = (raw: unknown): raw is Currency =>
-	CURRENCY_SET.has(String(raw ?? '').trim().toUpperCase());
+	CURRENCY_SET.has(
+		String(raw ?? '')
+			.trim()
+			.toUpperCase(),
+	);
 
 /** Uppercase the code and keep it as-is. Unknown codes are NOT coerced to USD — showing "$" for a
  *  currency we do not recognise misstates the player's balance; `metaFor` renders the raw code
  *  after the amount instead, exactly as the RGS spec's reference `DisplayBalance` does. */
 export const normalizeCurrency = (raw: unknown): string =>
-	String(raw ?? '').trim().toUpperCase() || 'USD';
+	String(raw ?? '')
+		.trim()
+		.toUpperCase() || 'USD';
 
 export const metaFor = (currency: string): CurrencyMeta =>
 	CURRENCY_META[currency as Currency] ?? { symbol: currency, decimals: 2, symbolAfter: true };
 
-// Sub-cent payouts must never render as a flat "0.00" — a genuine non-zero win has to show a
-// non-zero figure. Grow the fraction digits until it does, capped so no trailing noise appears.
+// Sub-cent payouts must preserve the exact settled amount, not merely round to a non-zero value.
+// API amounts carry 6 decimal places and book multipliers carry 2, so 8 fraction digits cover the
+// complete precision of their product. Find the first decimal width that round-trips the value.
 const MAX_FRACTION_DIGITS = 8;
 export const fractionDigitsForAmount = (value: number, min: number) => {
 	const abs = Math.abs(value);
 	if (abs === 0) return min;
-	let digits = min;
-	while (digits < MAX_FRACTION_DIGITS && Number(abs.toFixed(digits)) === 0) digits += 1;
-	return digits;
+	const minimum = Math.min(MAX_FRACTION_DIGITS, Math.max(0, Math.trunc(min)));
+	const tolerance = Math.max(Number.EPSILON * Math.max(1, abs) * 8, 1e-12);
+	for (let digits = minimum; digits < MAX_FRACTION_DIGITS; digits += 1) {
+		if (Math.abs(Number(abs.toFixed(digits)) - abs) <= tolerance) return digits;
+	}
+	return MAX_FRACTION_DIGITS;
 };
 
 /**

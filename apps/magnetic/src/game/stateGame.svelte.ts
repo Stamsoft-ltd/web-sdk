@@ -920,7 +920,9 @@ const animateClusterFormation = async ({
 				if (lockedDestKeys.has(sourceKey)) {
 					source.displayAlpha.set(1, { duration: 0 });
 				} else {
-					void source.displayAlpha.set(0, { duration: 60 });
+					// Hide before snapping the flight sprite back to its source coordinates.
+					// Fading here let one frame render at the old position after landing.
+					source.displayAlpha.set(0, { duration: 0 });
 				}
 				source.displayX.set(0, { duration: 0 });
 				source.displayY.set(getTargetY(source.position.row), { duration: 0 });
