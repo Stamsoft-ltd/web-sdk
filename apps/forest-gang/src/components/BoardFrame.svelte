@@ -9,32 +9,39 @@
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 	const isLandscape = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
 
-	// Mobile board frame (board_frame_mobile.png) — full-width panel, top/bottom borders
-	// only. Drawn centred on the grid, stretched so the reels fill its inner window.
-	// Fractions mirror stateGame.svelte.ts MOBILE_FRAME_INNER_*.
-	const MOBILE_INNER_W = 0.965;
-	const MOBILE_INNER_H = 0.78;
-	const mFrameW = $derived((board.width * board.boardScale) / MOBILE_INNER_W);
-	const mFrameH = $derived((board.height * board.boardScale) / MOBILE_INNER_H);
+	// --- Desktop: new-design rounded log frame (board_frame_desktop.webp, 2048×1276) ---
+	// Measured interior (dark wood panel) as fractions of the image: x 0.034..0.961,
+	// y 0.040..0.947 (multi-column scan — the top rail dips to 0.043 at the centre vine).
+	// The frame is sized so that interior box = reel grid + a tiny margin (~1px), and
+	// anchored so the interior's centre sits on the grid centre.
+	const INNER_X0 = 0.034;
+	const INNER_X1 = 0.961;
+	const INNER_Y0 = 0.04;
+	const INNER_Y1 = 0.947;
+	const INNER_CX = (INNER_X0 + INNER_X1) / 2;
+	const INNER_CY = (INNER_Y0 + INNER_Y1) / 2;
+	const MARGIN_W = 1.004;
+	// Grid wrap tightness. stateGame positions the GRID with 1.004 (its bottom gap is tuned).
+	// The frame sprite draws ~0.002 LOOSER and the drop formula below keeps the bottom rail
+	// anchored, so the extra wrap lands entirely on the TOP rail gap (~+2px of space there).
+	const MARGIN_H_GRID = 1.004;
+	const MARGIN_H = 1.006;
 
-	// --- Desktop / portrait: rope-framed slot_pad (top-anchored) ---
-	// slot_pad.png is 3220×2364. Geometry of the inner brown panel (where the reels
-	// sit): inner panel ≈ 76% of image width, centred at ~(0.52, 0.50). We scale the
-	// frame so the inner panel ≈ board grid + margin, then anchor it over the grid.
-	const FRAME_ASPECT = 3220 / 2364;
-	const INNER_W_FRAC = 0.762;
-	const ANCHOR_X = 0.505; // = slot_pad window centre x (grid centred horizontally)
-	const MARGIN = 1.04;
-	const FRAME_EXTRA_SCALE = 1.30 / 1.15;
-	// Draw the frame slightly narrower (height unchanged) so the bamboo poles sit
-	// closer to the reels — reduces the left/right margin without touching top/bottom.
-	const H_SQUASH = 0.93;
-	// Shorten the frame vertically (top stays pinned at y=0) so its bottom border rises and
-	// leaves a forest gap above the bet bar, matching the Figma.
-	const V_SQUASH = 0.94;
-
-	const frameH = $derived((board.width * board.boardScale * MARGIN * FRAME_EXTRA_SCALE) / INNER_W_FRAC / FRAME_ASPECT * V_SQUASH);
-	const frameW = $derived(((board.width * board.boardScale * MARGIN * FRAME_EXTRA_SCALE) / INNER_W_FRAC) * H_SQUASH);
+	// Use the ACTUAL grid pixel span: desktop spreads reel pitch via boardScaleX/boardScaleY,
+	// so sizing from the uniform boardScale would leave the frame narrower than the reels.
+	const frameW = $derived(
+		(board.width * (board.boardScaleX ?? board.boardScale) * MARGIN_W) / (INNER_X1 - INNER_X0),
+	);
+	const frameH = $derived(
+		(board.height * (board.boardScaleY ?? board.boardScale) * MARGIN_H) / (INNER_Y1 - INNER_Y0),
+	);
+	// Half the frameH delta between the grid margin and the sprite margin — keeps the bottom
+	// rail anchored while the tighter sprite trims the top rail gap.
+	const FRAME_Y_DROP = $derived(
+		((board.height * (board.boardScaleY ?? board.boardScale) * (MARGIN_H_GRID - MARGIN_H)) /
+			(INNER_Y1 - INNER_Y0)) *
+			(1 - INNER_CY),
+	);
 
 	// --- Mobile landscape: rope-hung reel_frame, sized/placed by boardLayout() (frame-driven).
 	const lsFrameW = $derived(board.frameW ?? board.width * board.boardScale);
@@ -44,22 +51,34 @@
 </script>
 
 {#if isLandscape}
-	<Sprite key="reelFrameLs" anchor={0.5} x={lsCx} y={lsCy} width={lsFrameW} height={lsFrameH} />
-{:else if isPortrait}
+	<!-- New-design rounded log frame (same art as desktop, Figma 3451-2143) wrapped around the
+	     landscape grid with the desktop interior-fraction math — replaces the old rope-hung frame. -->
 	<Sprite
-		key="slotPadMobile"
-		anchor={0.5}
+		key="boardFrameDesktop"
+		anchor={{ x: INNER_CX, y: INNER_CY }}
 		x={board.x}
-		y={board.y}
-		width={mFrameW}
-		height={mFrameH}
+		y={board.y + BOARD_GRID_OFFSET_Y + FRAME_Y_DROP}
+		width={frameW}
+		height={frameH}
+	/>
+{:else if isPortrait}
+	<!-- Portrait now uses the same rounded log frame as desktop/landscape (design ask), wrapped
+	     around the portrait grid with the desktop interior-fraction math (boardScaleX/Y fall back
+	     to the uniform portrait boardScale). Replaces the old flat board_frame_mobile pad. -->
+	<Sprite
+		key="boardFrameDesktop"
+		anchor={{ x: INNER_CX, y: INNER_CY }}
+		x={board.x}
+		y={board.y + BOARD_GRID_OFFSET_Y + FRAME_Y_DROP}
+		width={frameW}
+		height={frameH}
 	/>
 {:else}
 	<Sprite
-		key="slotPad"
-		anchor={{ x: ANCHOR_X, y: 0 }}
+		key="boardFrameDesktop"
+		anchor={{ x: INNER_CX, y: INNER_CY }}
 		x={board.x}
-		y={board.frameTopY ?? 0}
+		y={board.y + BOARD_GRID_OFFSET_Y + FRAME_Y_DROP}
 		width={frameW}
 		height={frameH}
 	/>

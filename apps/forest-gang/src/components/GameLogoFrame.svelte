@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Sprite, Container, Text } from 'pixi-svelte';
+	import { Sprite, Container, Text, AnimatedSprite } from 'pixi-svelte';
+	import type { Texture } from 'pixi-svelte';
 	import { MainContainer } from 'components-layout';
 	import { stateBet } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
@@ -7,6 +8,7 @@
 	import { getContext } from '../game/context';
 	import { GOLD_GRADIENT } from '../game/goldGradient';
 	import { spriteKeyByName } from '../game/utils';
+	import type { SymbolName } from '../game/types';
 	import { i18nDerived } from '../i18n/i18nDerived';
 
 	const context = getContext();
@@ -16,10 +18,18 @@
 
 	const LOGO_ASPECT = 1176 / 572;
 	// Landscape uses a smaller logo than desktop.
-	const LOGO_W = $derived(main.width * (isLandscape ? 0.10 : 0.15));
+	const LOGO_W = $derived(main.width * (isLandscape ? 0.10 : 0.12));
 	const LOGO_H = $derived(LOGO_W / LOGO_ASPECT);
 	const MARGIN_X = $derived(main.width * 0.02);
 	const MARGIN_Y = $derived(main.height * 0.03);
+	// Desktop: centre the logo in the gap between the screen's left edge and the board frame's
+	// left edge (frame anchor x mirrors BoardFrame's INNER_CX).
+	const FRAME_INNER_CX = 0.4975;
+	const logoCx = $derived.by(() => {
+		const bl = context.stateGameDerived.boardLayout();
+		const frameLeft = bl.x - (bl.frameW || 0) * FRAME_INNER_CX;
+		return frameLeft > LOGO_W ? frameLeft / 2 : MARGIN_X + LOGO_W / 2;
+	});
 
 	// Studio logo, top-right corner.
 	const BRAND_ASPECT = 548 / 228;
@@ -95,12 +105,35 @@
 	const bonusSymbolKey = $derived(bonusSymbol ? (spriteKeyByName[bonusSymbol] ?? null) : null);
 	const globalMultiplier = $derived(context.stateGame.globalMultiplier);
 
+	// Animated idle art for the portrait bonus-symbol badge — the same background-removed cutouts the
+	// reels use. Without this the badge fell back to the OLD crowned `spriteKeyByName` tile (read as
+	// "old art" on mobile). Animals animate; any non-animal bonus symbol keeps its static tile.
+	const IDLE_ANIM_KEY: Partial<Record<SymbolName, string>> = {
+		WOLF: 'wolfIdleAnim',
+		FOX: 'foxIdleAnim',
+		SQUIRREL: 'squirrelIdleAnim',
+		BEAR: 'bearIdleAnim',
+		RABBIT: 'rabbitIdleAnim',
+	};
+	const IDLE_ASPECT: Partial<Record<SymbolName, number>> = {
+		WOLF: 337 / 360,
+		FOX: 249 / 360,
+		SQUIRREL: 282 / 360,
+		BEAR: 360 / 327,
+		RABBIT: 284 / 360,
+	};
+	const bonusIdle = $derived(
+		bonusSymbol && IDLE_ANIM_KEY[bonusSymbol]
+			? ((context.stateApp.loadedAssets?.[IDLE_ANIM_KEY[bonusSymbol]!] ?? []) as Texture[])
+			: [],
+	);
+
 	const showFsBadge = $derived(isPortrait && fsShow && bonusMode !== 'feature' && !presenterActive);
 	const showBonusBadge = $derived(isPortrait && !!bonusSymbolKey && !!bonusMode && !presenterActive);
 
 	const titleStyle = (fontSize: number) => ({
 		fontFamily: 'Cinzel',
-		fontWeight: '700',
+		fontWeight: '700' as const,
 		fontSize,
 		fill: GOLD_GRADIENT,
 		align: 'center' as const,
@@ -141,7 +174,20 @@
 		{#if showBonusBadge && bonusSymbolKey}
 			<Container x={leftBadgeX} y={symBadgeCY}>
 				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />
-				<Sprite key={bonusSymbolKey} anchor={0.5} y={-badgeH * 0.02} width={badgeH * 0.56} height={badgeH * 0.42} />
+				{#if bonusIdle.length}
+					<AnimatedSprite
+						textures={bonusIdle}
+						anchor={0.5}
+						y={-badgeH * 0.02}
+						height={badgeH * 0.52}
+						width={badgeH * 0.52 * (IDLE_ASPECT[bonusSymbol!] ?? 1)}
+						animationSpeed={0.28}
+						loop={true}
+						play={true}
+					/>
+				{:else}
+					<Sprite key={bonusSymbolKey} anchor={0.5} y={-badgeH * 0.02} width={badgeH * 0.56} height={badgeH * 0.42} />
+				{/if}
 			</Container>
 			<Container x={leftBadgeX} y={multBadgeCY}>
 				<Sprite key="badgeFrame" anchor={0.5} width={badgeW} height={badgeH} />
@@ -182,22 +228,23 @@
 			</Container>
 		{/if}
 	{:else}
-		<!-- Text logo, anchored to the top-left corner of the game area -->
+		<!-- Text logo — centred between the left screen edge and the board frame (desktop) -->
 		<Sprite
 			key="forestGangLogo"
-			anchor={{ x: 0, y: 0 }}
-			x={MARGIN_X}
+			anchor={{ x: 0.5, y: 0 }}
+			x={isLandscape ? MARGIN_X + LOGO_W / 2 : logoCx}
 			y={MARGIN_Y}
 			width={LOGO_W}
 			height={LOGO_H}
 		/>
 
-		<!-- Studio logo, anchored to the top-right corner of the game area -->
+		<!-- Studio logo, anchored to the top-right corner of the game area. Landscape hugs the very
+		     top edge so it clears the right button rail on short screens. -->
 		<Sprite
 			key="pressPlayLogo"
 			anchor={{ x: 1, y: 0 }}
 			x={main.width - MARGIN_X}
-			y={MARGIN_Y + BRAND_H * 0.2}
+			y={isLandscape ? main.height * 0.012 : MARGIN_Y + BRAND_H * 0.2}
 			width={BRAND_W}
 			height={BRAND_H}
 		/>

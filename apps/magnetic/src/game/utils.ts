@@ -149,14 +149,24 @@ export const getSpriteKeyByName = ({
 }) => {
 	const visualName: SymbolName = magnet && name !== 'WILD' ? 'MAGNET' : name;
 	const variant = layoutVariant();
-	const staticMap = variant === 'mobile' ? MOBILE_STATIC_KEYS : variant === 'land' ? LANDSCAPE_STATIC_KEYS : null;
-	const winMap = variant === 'mobile' ? MOBILE_WIN_KEYS : variant === 'land' ? LANDSCAPE_WIN_KEYS : null;
+	const staticMap =
+		variant === 'mobile' ? MOBILE_STATIC_KEYS : variant === 'land' ? LANDSCAPE_STATIC_KEYS : null;
+	const winMap =
+		variant === 'mobile' ? MOBILE_WIN_KEYS : variant === 'land' ? LANDSCAPE_WIN_KEYS : null;
 
 	if (visualName === 'WILD' && multiplier && multiplier > 1) {
-		const keys = Object.keys(MULTIPLIER_WILD_KEYS).map(Number).sort((a, b) => a - b);
-		const snapped = keys.reduce((prev, cur) => (Math.abs(cur - multiplier) < Math.abs(prev - multiplier) ? cur : prev));
+		const keys = Object.keys(MULTIPLIER_WILD_KEYS)
+			.map(Number)
+			.sort((a, b) => a - b);
+		const snapped = keys.reduce((prev, cur) =>
+			Math.abs(cur - multiplier) < Math.abs(prev - multiplier) ? cur : prev,
+		);
 		const multMap =
-			variant === 'mobile' ? MULTIPLIER_WILD_KEYS_MOBILE : variant === 'land' ? MULTIPLIER_WILD_KEYS_LANDSCAPE : MULTIPLIER_WILD_KEYS;
+			variant === 'mobile'
+				? MULTIPLIER_WILD_KEYS_MOBILE
+				: variant === 'land'
+					? MULTIPLIER_WILD_KEYS_LANDSCAPE
+					: MULTIPLIER_WILD_KEYS;
 		return multMap[snapped] ?? MULTIPLIER_WILD_KEYS[snapped] ?? 'wild10xTile';
 	}
 
@@ -170,7 +180,13 @@ export const getSpriteKeyByName = ({
 export const getReelCenterX = (reelIndex: number): number => SYMBOL_W * (reelIndex + 0.5);
 export const getSymbolX = (reelIndex: number): number => SYMBOL_W * (reelIndex + 0.5);
 
-export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; state: SymbolState }) => {
+export const getSymbolInfo = ({
+	rawSymbol,
+	state,
+}: {
+	rawSymbol: RawSymbol;
+	state: SymbolState;
+}) => {
 	const assetState = ['win', 'magnet'].includes(state) ? 'win' : 'static';
 	const assetKey = getSpriteKeyByName({
 		name: rawSymbol.name,
@@ -197,9 +213,7 @@ export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; stat
 	// once. Keeping both would leave H1 uniquely undersized.
 	const pad = (SYMBOL_PAD_SCALE[assetKey] ?? 1) * (SYMBOL_SIZE_OVERRIDE[assetKey] ?? 1);
 	const sizeRatios =
-		pad === 1
-			? baseRatios
-			: { width: baseRatios.width * pad, height: baseRatios.height * pad };
+		pad === 1 ? baseRatios : { width: baseRatios.width * pad, height: baseRatios.height * pad };
 
 	return {
 		type: 'sprite' as const,
@@ -229,16 +243,17 @@ const BONUS_ART_EVENTS: ReadonlySet<string> = new Set([
 // that actually draws bonus art waits — by which point it is normally already in.
 type AnyBookEventHandler = (bookEvent: never, context: never) => Promise<void>;
 const bonusArtGatedHandlerMap = Object.fromEntries(
-	Object.entries(bookEventHandlerMap as Record<string, AnyBookEventHandler>).map(([type, handler]) =>
-		BONUS_ART_EVENTS.has(type)
-			? ([
-					type,
-					(async (bookEvent, context) => {
-						await loadDemandAssets();
-						await handler(bookEvent, context);
-					}) as AnyBookEventHandler,
-				] as const)
-			: ([type, handler] as const),
+	Object.entries(bookEventHandlerMap as Record<string, AnyBookEventHandler>).map(
+		([type, handler]) =>
+			BONUS_ART_EVENTS.has(type)
+				? ([
+						type,
+						(async (bookEvent, context) => {
+							await loadDemandAssets();
+							await handler(bookEvent, context);
+						}) as AnyBookEventHandler,
+					] as const)
+				: ([type, handler] as const),
 	),
 ) as typeof bookEventHandlerMap;
 
@@ -258,6 +273,7 @@ export const playBet = async (bet: Bet) => {
 
 const BOOK_EVENT_TYPES_TO_RESERVE_FOR_SNAPSHOT = [
 	'reveal',
+	'magnetTargetSelected',
 	'magnetActivated',
 	'clusterSeriesUpdate',
 	'superSeriesCarry',
@@ -268,14 +284,20 @@ const BOOK_EVENT_TYPES_TO_RESERVE_FOR_SNAPSHOT = [
 
 export const convertTorResumableBet = (betToResume: Bet) => {
 	const resumingIndex = Number(betToResume.event);
-	const bookEventsBeforeResume = betToResume.state.filter((_, eventIndex) => eventIndex < resumingIndex);
-	const bookEventsAfterResume = betToResume.state.filter((_, eventIndex) => eventIndex >= resumingIndex);
+	const bookEventsBeforeResume = betToResume.state.filter(
+		(_, eventIndex) => eventIndex < resumingIndex,
+	);
+	const bookEventsAfterResume = betToResume.state.filter(
+		(_, eventIndex) => eventIndex >= resumingIndex,
+	);
 
 	const bookEventToCreateSnapshot: BookEventOfType<'createBonusSnapshot'> = {
 		index: 0,
 		type: 'createBonusSnapshot',
 		bookEvents: bookEventsBeforeResume.filter((bookEvent) =>
-			BOOK_EVENT_TYPES_TO_RESERVE_FOR_SNAPSHOT.includes(bookEvent.type as (typeof BOOK_EVENT_TYPES_TO_RESERVE_FOR_SNAPSHOT)[number]),
+			BOOK_EVENT_TYPES_TO_RESERVE_FOR_SNAPSHOT.includes(
+				bookEvent.type as (typeof BOOK_EVENT_TYPES_TO_RESERVE_FOR_SNAPSHOT)[number],
+			),
 		),
 	};
 

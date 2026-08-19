@@ -17,6 +17,7 @@ import AmountFadeProvider from './src/components/AmountFadeProvider.svelte';
 
 export * from './src/context';
 export * from './src/types';
+export * from './src/betConfig';
 
 export {
 	LoaderBase,

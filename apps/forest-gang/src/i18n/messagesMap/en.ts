@@ -13,7 +13,15 @@ export default {
 	AUTOPLAY: 'AUTOPLAY',
 	TURBO: 'TURBO',
 	REPLAY: 'REPLAY',
+	'BET REPLAY': 'Bet Replay',
 	'START REPLAY': 'START REPLAY',
+	'REPLAY EVENT': 'Replay Event',
+	'BASE BET': 'Base Bet',
+	'COST MULTIPLIER': 'Cost Multiplier',
+	'TOTAL BET COST': 'Total Bet Cost',
+	'PAYOUT MULTIPLIER': 'Payout Multiplier',
+	'TOTAL WIN': 'Total Win',
+	'REPLAY DISCLAIMER': 'This is a replay of a previous bet round. No bets will be placed.',
 	'PLAY AGAIN': 'PLAY AGAIN',
 	'RETRY RESUME': 'RETRY ROUND',
 	'RECOVERY TITLE': 'UNFINISHED ROUND DETECTED',
@@ -69,7 +77,7 @@ export default {
 	'RULE ALL IN TITLE': 'ALL IN',
 	'RULE ALL IN TEXT': 'All In awards 10 free spins with 1 randomly selected expanding symbol. The multiplier starts at 2x and doubles only on winning spins, creating small early wins and a late-spin chase for the max win.',
 	'RULE BUY TITLE': 'BUY / ACTIVATE MODES',
-	'RULE BUY TEXT': 'Deal It buy cost is 100x bet. All In buy cost is 400x bet. Chance Spin costs 2x bet per round. Feature Spin costs 20x bet per round. Max win is 25,000x. Target RTP is 96.1%.',
+	'RULE BUY TEXT': 'Deal It buy cost is 100x bet. All In buy cost is 400x bet. Chance Spin costs 2x bet per round. Feature Spin costs 20x bet per round. Max win is 25,000x. Target RTP is 96.11%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'SELECTED PREMIUM SYMBOL',
 	'FEATURE SELECTED SYMBOL TEXT': 'Any regular paying symbol can be the expanding symbol. When it lands, all affected reels expand to fill that symbol, and 3 or more reels pay even without adjacent connections.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'DEAL IT MULTIPLIERS',
@@ -81,13 +89,15 @@ export default {
 	'HOWTO BET TITLE': 'BET SELECTOR',
 	'HOWTO BET TEXT': 'Use the + and - buttons or open the bet menu to change the displayed bet amount before a round starts.',
 	'HOWTO BUY TITLE': 'BUY BONUS',
-	'HOWTO BUY TEXT': 'Open Buy Bonus to choose Deal It, All In, Chance Spin or Feature Spin. Deal It and All In require confirmation. Chance Spin and Feature Spin activate immediately and can be turned off with the DEACTIVATE button.',
+	'HOWTO BUY TEXT': 'Open Buy Bonus to choose Deal It, All In, Chance Spin or Feature Spin. Deal It and All In require confirmation. Chance Spin and Feature Spin activate immediately and can be turned off with the DISABLE button.',
 	'HOWTO TURBO TITLE': 'TURBO',
 	'HOWTO TURBO TEXT': 'Turbo shortens certain round timings for faster play.',
 	'HOWTO AUTOPLAY TITLE': 'AUTOPLAY',
 	'HOWTO AUTOPLAY TEXT': 'Autoplay repeats rounds automatically until the selected stop condition or counter ends.',
 	'HOWTO REPLAY TITLE': 'REPLAY MODE',
 	'HOWTO REPLAY TEXT': 'Replay loads a previously completed Stake event and displays the original bet, total cost, payout and win information.',
+	'HOWTO USER INTERACTION TITLE': 'USER INTERACTION',
+	'HOWTO USER INTERACTION TEXT': 'Use the main Spin button to start a round. Use + and - to change bet, open Buy Bonus to select feature modes, use Turbo to speed up supported animations, use Autoplay to repeat rounds automatically, and use the sound/settings buttons to adjust the game experience. In replay mode, use Start Replay to begin the recorded sequence and Replay Event at the end to watch it again.',
 	'PAYTABLE PREMIUM TITLE': 'PREMIUM SYMBOLS',
 	'PAYTABLE LOW TITLE': 'LOW SYMBOLS',
 	'PAYTABLE SPECIAL TITLE': 'SPECIAL SYMBOLS',
@@ -105,32 +115,34 @@ export default {
 	'PAYTABLE SPECIAL_TEXT': 'Wild substitutes for all regular paying symbols. Scatter does not pay by itself and only triggers the bonus features.',
 	'PAYTABLE BUY_TEXT': 'Deal It: 100x bet.\nAll In: 400x bet.\nChance Spin: 2x bet per round.\nFeature Spin: 20x bet per round.\nDeal It and All In require confirmation before the round starts.',
 	'PAYTABLE MAX_TEXT': 'Advertised max win is 25,000x the selected bet.',
+	// Stake Engine's template General Disclaimer, verbatim:
+	// https://stake-engine.com/docs/approval-guidelines/general-disclaimer
 	'DISCLAIMER TEXT': 'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
 
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'OVERVIEW',
 	'INFO OVERVIEW BODY':
-		'Forest Gang is a 5x4 video slot played on 20 paylines.\nWins are awarded from left to right on consecutive reels, starting from reel 1, when matching symbols land on an active payline.\nThe game includes 5 premium symbols, 5 low symbols, a Wild symbol, and a Scatter symbol.\n\nMaximum win potential is 25,000x the total bet.\n\nTheoretical RTP: 96.1%',
+		'Forest Gang is a 5x4 video slot played on 20 paylines.\nStandard wins are awarded from left to right on consecutive reels, starting from reel 1, when matching symbols land on an active payline.\nExpanding Symbol wins follow a special win mechanic and do not require the winning reels to be consecutive. See the Expanding Symbol section for details.\nThe game includes 5 premium symbols, 5 low symbols, a Wild symbol, and a Scatter symbol.\n\nMaximum win potential is 25,000x the total bet.\n\nTheoretical RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'REELS',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': 'PAYLINES',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': 'MAX WIN',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': 'FEATURES',
 	'INFO EXPANDING TITLE': 'EXPANDING SYMBOL',
 	'INFO EXPANDING TEXT':
-		'During qualifying feature spins and bonus rounds, one random symbol is selected as the expanding symbol. When the selected expanding symbol lands on the reels, it expands vertically to cover the full reel. Expanded symbols can create multiple payline wins on the same spin. Random multiplier can appear on any spin and apply to the winning amount of that spin.\n\nThe random multiplier can be from 2x to 1024x.',
+		'During qualifying feature spins and bonus rounds, one random symbol is selected as the Expanding Symbol.\nWhen the selected symbol appears on a reel, it expands vertically to cover the full reel.\nExpanding Symbol wins are evaluated differently from standard payline wins. Expanded symbols do not need to appear on consecutive reels to award a win. Reels without the selected symbol do not break an Expanding Symbol win.\nThe number of reels containing the selected Expanding Symbol determines the applicable symbol payout. Expanded symbols can create multiple payline wins on the same spin.\nA random multiplier may apply to any winning spin and is applied to the total winning amount of that spin.\n\nThe random multiplier can range from 2x to 1024x.',
 	'INFO DEAL IT TITLE': 'DEAL IT BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
-		'Triggered by 3 Scatter symbols.\n\nAwards 10 free spins. Before the bonus begins, one random expanding symbol is selected. During the bonus, the selected symbol may expand to cover the full reel.\n\nA random multiplier can apply to any winning spin, up to 100x.',
+		'Triggered by 3 Scatter symbols.\n\nAwards 10 free spins. Before the bonus begins, one random expanding symbol is selected. During the bonus, the selected symbol may expand to cover the full reel.\n\nA random multiplier can apply to any winning spin, up to 100x.\n\nBonus round can retrigger as follows:\n[[3 Scatters]] +3 spins\n[[4 Scatters]] +5 spins\n[[5 Scatters]] +8 spins',
 	'INFO ALL IN TITLE': 'ALL IN BONUS',
 	'INFO ALL IN HL': '4 Scatter',
 	'INFO ALL IN TEXT':
-		'Triggered by 4 Scatter symbols and awards 10 free spins.\n\nBefore the bonus begins, one random expanding symbol is selected. During the bonus, the selected symbol may expand to cover the full reel. Reel multipliers stay active for the full bonus and double on every qualifying win, starting at 2x.',
+		'Triggered by 4 Scatter symbols and awards 10 free spins.\n\nBefore the bonus begins, one random expanding symbol is selected. During the bonus, the selected symbol may expand to cover the full reel. Reel multipliers stay active for the full bonus and double on every qualifying win, starting at 2x.\n\nBonus round can retrigger as follows:\n[[3 Scatters]] +3 spins\n[[4 Scatters]] +5 spins\n[[5 Scatters]] +8 spins',
 	'INFO PLACEHOLDER BODY': 'Design coming soon.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': 'PAYTABLE',
@@ -147,7 +159,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'WAYS TO WIN',
 	'INFO WAYS NOTE':
-		'Forest Gang is played on 20 fixed paylines. A winning combination is formed when matching symbols land on consecutive reels from left to right on any active payline. Only the highest win per symbol per payline is paid, unless stated otherwise in the final game rules.',
+		'Forest Gang is played on 20 fixed paylines. Standard symbol wins are formed when matching symbols land on consecutive reels from left to right on an active payline, starting from reel 1. Expanding Symbol wins follow a special win mechanic and do not require the winning reels to be consecutive. Reels without the selected Expanding Symbol do not interrupt an Expanding Symbol win. See the Expanding Symbol section for full details. Only the highest win per symbol per payline is paid, unless otherwise stated in the Game Rules.',
 	// Feature buy page
 	'INFO BUY TITLE': 'FEATURE BUY',
 	'INFO BUY CHANCE TITLE': 'EXTRA BONUS CHANCE',
@@ -158,9 +170,19 @@ export default {
 	'INFO BUY DEALIT TEXT': 'Instantly awards the Deal It Bonus.',
 	'INFO BUY ALLIN TITLE': 'ALL IN BONUS',
 	'INFO BUY ALLIN TEXT': 'Instantly awards the All In Bonus.',
+	'INFO USER TITLE': 'USER INTERACTION',
+	'INFO USER SPIN TITLE': 'SPIN / STOP',
+	'INFO USER SPIN TEXT': 'Press Spin to start a round. During eligible sequences, pressing the button again may request a stop or speed-up.',
+	'INFO USER BET TITLE': 'BET AND MODES',
+	'INFO USER BET TEXT': 'Use + and - or the bet menu to choose an available bet level. Buy Bonus opens Deal It, All In, Chance Spin and Feature Spin options.',
+	'INFO USER AUTO TITLE': 'TURBO / AUTOPLAY',
+	'INFO USER AUTO TEXT': 'Turbo shortens supported animations. Autoplay repeats rounds until the selected count or stop condition is reached.',
+	'INFO USER REPLAY TITLE': 'REPLAY',
+	'INFO USER REPLAY TEXT': 'Replay mode shows the recorded round details before playback. Press Start Replay to watch it, then Replay Event to watch the same event again.',
 	'INFO BUY COST': 'COST',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "Base RTP 96.11%",
 	'INFO BUY CHANCE_LABEL': 'BONUS CHANCE',
 	'INFO BUY CHANCE_VALUE': '3x CHANCE',
 	// General info page
@@ -169,8 +191,10 @@ export default {
 	'INFO INTERRUPTED TEXT':
 		'If a game round is interrupted, it will continue when the game is reloaded, where possible.\n\nAll valid wagers and potential winnings remain active until the round is fully completed.',
 	'INFO LEGAL TITLE': 'LEGAL NOTICE',
+	// Same verbatim template as DISCLAIMER TEXT; only paragraph breaks are inserted, so the
+	// sentences a reviewer diffs are identical to Stake's.
 	'INFO LEGAL TEXT':
-		'Malfunction voids all pays and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.\n\nThe expected return is calculated over a large number of plays. The game display is for visual and entertainment purposes only and does not represent any physical gaming device.\n\nAll winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.\n\nTM and © 2026 Stake Engine.',
+		'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds.\n\nThe expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only.\n\nWinnings are settled according to the amount received from the Remote Game Server and not from events within the web browser.\n\nTM and © 2026 Stake Engine.',
 
 	// Splash intro feature boards (the big gold values are images)
 	'SPLASH EXP TITLE': 'EXPANDING\nREELS',
@@ -184,6 +208,7 @@ export default {
 	'SPLASH EPIC TOP': 'become the king of the\nforest with',
 	'SPLASH EPIC BOTTOM': 'MAX WIN',
 	'SPLASH PRESS': 'PRESS TO CONTINUE',
+	'PRESS ANYWHERE': 'PRESS ANYWHERE TO CONTINUE',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': 'CONGRATULATIONS!',
@@ -195,7 +220,7 @@ export default {
 
 	// Buy bonus modal — card titles/descriptions, buttons, confirm dialog
 	ACTIVATE: 'ACTIVATE',
-	DEACTIVATE: 'DEACTIVATE',
+	DEACTIVATE: 'DISABLE',
 	BUY: 'BUY',
 	CONFIRM: 'CONFIRM',
 	CANCEL: 'CANCEL',
@@ -211,7 +236,7 @@ export default {
 	'AUTO SPIN': 'AUTO SPIN',
 	'TURBO SPIN': 'TURBO SPIN',
 	'SUPER TURBO SPIN': 'SUPER TURBO SPIN',
-	'BONUS FEATURE 100X': '100 X BONUS FEATURE',
+	'BONUS FEATURE 100X': '20 X BONUS FEATURE',
 	'NUMBER OF SPINS': 'NUMBER OF SPINS',
 	'START AUTOPLAY': 'START AUTOPLAY',
 
@@ -220,4 +245,25 @@ export default {
 	'RESUME BODY': 'You have an active %mode% bonus in progress.',
 	'END ROUND': 'END ROUND',
 	'PLAY ROUND': 'PLAY ROUND',
+	'INFO UI TITLE': 'USER INTERFACE GUIDE',
+	'INFO UI SPIN TITLE': 'SPIN',
+	'INFO UI SPIN TEXT': 'Starts a new game round.',
+	'INFO UI AUTO TITLE': 'AUTO SPINS',
+	'INFO UI AUTO TEXT': 'Opens the Auto Spins menu.',
+	'INFO UI TURBO TITLE': 'TURBO',
+	'INFO UI TURBO TEXT': 'Enables faster reel spins.',
+	'INFO UI BETPLUS TITLE': 'BET +',
+	'INFO UI BETPLUS TEXT': 'Increases your total bet.',
+	'INFO UI BETMINUS TITLE': 'BET -',
+	'INFO UI BETMINUS TEXT': 'Decreases your total bet.',
+	'INFO UI INFO TITLE': 'INFO',
+	'INFO UI INFO TEXT': 'Opens the game information.',
+	'INFO UI SOUND TITLE': 'SOUND',
+	'INFO UI SOUND TEXT': 'Turns game sound on or off.',
+	'INFO UI PREV TITLE': 'PREVIOUS',
+	'INFO UI PREV TEXT': 'Goes to the previous page.',
+	'INFO UI NEXT TITLE': 'NEXT',
+	'INFO UI NEXT TEXT': 'Goes to the next page.',
+	'INFO UI CLOSE TITLE': 'CLOSE',
+	'INFO UI CLOSE TEXT': 'Closes the current window.',
 };

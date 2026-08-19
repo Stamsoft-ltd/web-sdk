@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': 'PASANG SEMUA',
 	'RULE ALL IN TEXT': 'Pasang Semua memberikan 10 putaran gratis dengan 1 simbol mengembang yang dipilih secara acak. Pengganda mulai dari 2x dan berlipat ganda hanya pada putaran menang, menciptakan kemenangan kecil di awal dan perburuan kemenangan maks di putaran akhir.',
 	'RULE BUY TITLE': 'MODE BELI / AKTIFKAN',
-	'RULE BUY TEXT': 'Biaya beli Bagikan adalah 100x taruhan. Biaya beli Pasang Semua adalah 400x taruhan. Putaran Peluang berbiaya 2x taruhan per ronde. Putaran Fitur berbiaya 20x taruhan per ronde. Kemenangan maks adalah 25,000x. Target RTP adalah 96.1%.',
+	'RULE BUY TEXT': 'Biaya beli Bagikan adalah 100x taruhan. Biaya beli Pasang Semua adalah 400x taruhan. Putaran Peluang berbiaya 2x taruhan per ronde. Putaran Fitur berbiaya 20x taruhan per ronde. Kemenangan maks adalah 25,000x. Target RTP adalah 96.11%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'SIMBOL PREMIUM TERPILIH',
 	'FEATURE SELECTED SYMBOL TEXT': 'Simbol bayaran reguler mana pun bisa menjadi simbol mengembang. Saat muncul, semua gulungan yang terpengaruh mengembang untuk mengisi simbol tersebut, dan 3 gulungan atau lebih membayar bahkan tanpa koneksi berdekatan.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'PENGGANDA BAGIKAN',
@@ -110,27 +110,27 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'IKHTISAR',
 	'INFO OVERVIEW BODY':
-		'Forest Gang adalah video slot 5x4 yang dimainkan pada 20 garis bayaran.\nKemenangan diberikan dari kiri ke kanan pada gulungan berurutan, dimulai dari gulungan 1, saat simbol yang cocok muncul pada garis bayaran aktif.\nPermainan ini mencakup 5 simbol premium, 5 simbol rendah, satu simbol Wild, dan satu simbol Scatter.\n\nPotensi kemenangan maksimum adalah 25,000x total taruhan.\n\nRTP teoretis: 96.1%',
+		'Forest Gang adalah video slot 5x4 yang dimainkan pada 20 garis bayaran.\nKemenangan standar diberikan dari kiri ke kanan pada gulungan berurutan, dimulai dari gulungan 1, saat simbol yang cocok muncul pada garis bayaran aktif.\nKemenangan Simbol Mengembang mengikuti mekanisme kemenangan khusus dan tidak mengharuskan gulungan pemenang berurutan. Lihat bagian Simbol Mengembang untuk detailnya.\nPermainan ini mencakup 5 simbol premium, 5 simbol rendah, satu simbol Wild, dan satu simbol Scatter.\n\nPotensi kemenangan maksimum adalah 25,000x total taruhan.\n\nRTP teoretis: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'GULUNGAN',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': 'GARIS BAYARAN',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': 'KEMENANGAN MAKS',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': 'FITUR',
 	'INFO EXPANDING TITLE': 'SIMBOL MENGEMBANG',
 	'INFO EXPANDING TEXT':
-		'Selama putaran fitur yang memenuhi syarat dan ronde bonus, satu simbol acak dipilih sebagai simbol mengembang. Saat simbol mengembang yang dipilih muncul pada gulungan, ia mengembang secara vertikal untuk menutupi seluruh gulungan. Simbol yang mengembang dapat menciptakan beberapa kemenangan garis bayaran pada putaran yang sama. Pengganda acak dapat muncul pada putaran mana pun dan berlaku untuk jumlah kemenangan putaran tersebut.\n\nPengganda acak dapat dari 2x hingga 1024x.',
+		'Selama putaran fitur yang memenuhi syarat dan ronde bonus, satu simbol acak dipilih sebagai Simbol Mengembang.\nSaat simbol yang dipilih muncul pada sebuah gulungan, ia mengembang secara vertikal untuk menutupi seluruh gulungan.\nKemenangan Simbol Mengembang dihitung berbeda dari kemenangan garis bayaran standar. Simbol yang mengembang tidak harus muncul pada gulungan berurutan untuk memberikan kemenangan. Gulungan tanpa simbol yang dipilih tidak memutus kemenangan Simbol Mengembang.\nJumlah gulungan yang berisi Simbol Mengembang yang dipilih menentukan pembayaran simbol yang berlaku. Simbol yang mengembang dapat menciptakan beberapa kemenangan garis bayaran pada putaran yang sama.\nPengganda acak dapat berlaku pada putaran menang mana pun dan diterapkan pada total jumlah kemenangan putaran tersebut.\n\nPengganda acak dapat berkisar dari 2x hingga 1024x.',
 	'INFO DEAL IT TITLE': 'BONUS BAGIKAN',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
-		'Dipicu oleh 3 simbol Scatter.\n\nMemberikan 10 putaran gratis. Sebelum bonus dimulai, satu simbol mengembang acak dipilih. Selama bonus, simbol yang dipilih dapat mengembang untuk menutupi seluruh gulungan.\n\nPengganda acak dapat berlaku untuk putaran menang mana pun, hingga 100x.',
+		'Dipicu oleh 3 simbol Scatter.\n\nMemberikan 10 putaran gratis. Sebelum bonus dimulai, satu simbol mengembang acak dipilih. Selama bonus, simbol yang dipilih dapat mengembang untuk menutupi seluruh gulungan.\n\nPengganda acak dapat berlaku untuk putaran menang mana pun, hingga 100x.\n\nRonde bonus dapat terpicu kembali sebagai berikut:\n[[3 Scatter]] +3 putaran\n[[4 Scatter]] +5 putaran\n[[5 Scatter]] +8 putaran',
 	'INFO ALL IN TITLE': 'BONUS PASANG SEMUA',
 	'INFO ALL IN HL': '4 Scatter',
 	'INFO ALL IN TEXT':
-		'Dipicu oleh 4 simbol Scatter dan memberikan 10 putaran gratis.\n\nSebelum bonus dimulai, satu simbol mengembang acak dipilih. Selama bonus, simbol yang dipilih dapat mengembang untuk menutupi seluruh gulungan. Pengganda gulungan tetap aktif sepanjang bonus dan berlipat ganda setiap kemenangan yang memenuhi syarat, dimulai dari 2x.',
+		'Dipicu oleh 4 simbol Scatter dan memberikan 10 putaran gratis.\n\nSebelum bonus dimulai, satu simbol mengembang acak dipilih. Selama bonus, simbol yang dipilih dapat mengembang untuk menutupi seluruh gulungan. Pengganda gulungan tetap aktif sepanjang bonus dan berlipat ganda setiap kemenangan yang memenuhi syarat, dimulai dari 2x.\n\nRonde bonus dapat terpicu kembali sebagai berikut:\n[[3 Scatter]] +3 putaran\n[[4 Scatter]] +5 putaran\n[[5 Scatter]] +8 putaran',
 	'INFO PLACEHOLDER BODY': 'Desain segera hadir.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': 'TABEL BAYARAN',
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'CARA MENANG',
 	'INFO WAYS NOTE':
-		'Forest Gang dimainkan pada 20 garis bayaran tetap. Kombinasi menang terbentuk saat simbol yang cocok muncul pada gulungan berurutan dari kiri ke kanan pada garis bayaran aktif mana pun. Hanya kemenangan tertinggi per simbol per garis yang dibayar, kecuali dinyatakan lain dalam aturan permainan akhir.',
+		'Forest Gang dimainkan pada 20 garis bayaran tetap. Kemenangan simbol standar terbentuk saat simbol yang cocok muncul pada gulungan berurutan dari kiri ke kanan pada garis bayaran aktif, dimulai dari gulungan 1. Kemenangan Simbol Mengembang mengikuti mekanisme kemenangan khusus dan tidak mengharuskan gulungan pemenang berurutan. Gulungan tanpa Simbol Mengembang yang dipilih tidak memutus kemenangan Simbol Mengembang. Lihat bagian Simbol Mengembang untuk detail lengkap. Hanya kemenangan tertinggi per simbol per garis bayaran yang dibayarkan, kecuali dinyatakan lain dalam Aturan Permainan.',
 	// Feature buy page
 	'INFO BUY TITLE': 'BELI FITUR',
 	'INFO BUY CHANCE TITLE': 'PELUANG BONUS EKSTRA',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': 'Memberikan Bonus Pasang Semua secara instan.',
 	'INFO BUY COST': 'BIAYA',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "RTP Dasar 96.11%",
 	'INFO BUY CHANCE_LABEL': 'PELUANG BONUS',
 	'INFO BUY CHANCE_VALUE': 'PELUANG 3x',
 	// General info page
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': 'jadilah raja\nhutan dengan',
 	'SPLASH EPIC BOTTOM': 'KEMENANGAN MAKS',
 	'SPLASH PRESS': 'TEKAN UNTUK LANJUT',
+	'PRESS ANYWHERE': 'TEKAN DI MANA SAJA UNTUK LANJUT',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': 'SELAMAT!',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': 'PUTAR OTOMATIS',
 	'TURBO SPIN': 'PUTAR TURBO',
 	'SUPER TURBO SPIN': 'PUTAR SUPER TURBO',
-	'BONUS FEATURE 100X': 'FITUR BONUS 100 X',
+	'BONUS FEATURE 100X': 'FITUR BONUS 20 X',
 	'NUMBER OF SPINS': 'JUMLAH PUTARAN',
 	'START AUTOPLAY': 'MULAI OTOMATIS',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': 'Anda memiliki bonus %mode% aktif yang sedang berlangsung.',
 	'END ROUND': 'AKHIRI RONDE',
 	'PLAY ROUND': 'MAINKAN RONDE',
+	'INFO UI TITLE': 'PANDUAN ANTARMUKA',
+	'INFO UI SPIN TITLE': 'PUTAR',
+	'INFO UI SPIN TEXT': 'Memulai ronde permainan baru.',
+	'INFO UI AUTO TITLE': 'PUTAR OTOMATIS',
+	'INFO UI AUTO TEXT': 'Membuka menu putar otomatis.',
+	'INFO UI TURBO TITLE': 'TURBO',
+	'INFO UI TURBO TEXT': 'Mengaktifkan putaran lebih cepat.',
+	'INFO UI BETPLUS TITLE': 'TARUHAN +',
+	'INFO UI BETPLUS TEXT': 'Menambah total taruhan Anda.',
+	'INFO UI BETMINUS TITLE': 'TARUHAN -',
+	'INFO UI BETMINUS TEXT': 'Mengurangi total taruhan Anda.',
+	'INFO UI INFO TITLE': 'INFO',
+	'INFO UI INFO TEXT': 'Membuka informasi permainan.',
+	'INFO UI SOUND TITLE': 'SUARA',
+	'INFO UI SOUND TEXT': 'Menyalakan atau mematikan suara.',
+	'INFO UI PREV TITLE': 'SEBELUMNYA',
+	'INFO UI PREV TEXT': 'Ke halaman sebelumnya.',
+	'INFO UI NEXT TITLE': 'BERIKUTNYA',
+	'INFO UI NEXT TEXT': 'Ke halaman berikutnya.',
+	'INFO UI CLOSE TITLE': 'TUTUP',
+	'INFO UI CLOSE TEXT': 'Menutup jendela saat ini.',
 };

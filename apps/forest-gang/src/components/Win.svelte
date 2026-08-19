@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { WinLevelData } from '../game/winLevelMap';
+	import type { WinLevelAlias, WinLevelData } from '../game/winLevelMap';
 
 	export type EmitterEventWin =
 		| { type: 'winShow' }
@@ -8,15 +8,14 @@
 </script>
 
 <script lang="ts">
-	import { Container, Text } from 'pixi-svelte';
+	import { Container, Text, SpineProvider, SpineTrack } from 'pixi-svelte';
 	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
 	import { bookEventAmountToCurrencyString, bookEventAmountToBetAmountMultiplier } from 'utils-shared/amount';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
-	import { OnMount } from 'components-shared';
 
 	import WinCoins from './WinCoins.svelte';
-	import WinBoard from './WinBoard.svelte';
+	import WinBoard, { boardKeyForMult } from './WinBoard.svelte';
 	import MaxWinScreen from './MaxWinScreen.svelte';
 	import PressToContinue from './PressToContinue.svelte';
 	import { SYMBOL_SIZE } from '../game/constants';
@@ -33,8 +32,60 @@
 	let boardClickHandled = false;
 	let snappedToFinal = false;
 	let dismissTimer = 0;
+	// Board-animation (big) wins auto-close this long after the count-up finishes (no press needed).
+	let autoCloseTimer = 0;
 	let isCountingUp = $state(false);
 	let winSizes = $state({ width: 0, height: 0 });
+	// Bumped once per win. The win subtree used to be wrapped in `{#key oncomplete}`, so every win
+	// tore down and rebuilt it just to reset the count-up; now the provider resets itself on this.
+	let winId = $state(0);
+
+	// ── Count curve (R8) ──────────────────────────────────────────────────────────────────────
+	// Linear for the first 80% of the time, then a quadratic ease-out over the last 20%. A plain
+	// cubicOut would bunch every tier crossing into the first second (each crossing is an amount
+	// threshold, so front-loading the amount front-loads all of them); staying linear through the
+	// tier range keeps them spread and still lets the number settle instead of stopping dead.
+	// EASE_V = 2T/(1+T) makes the two segments share a slope at the join, so there is no kink.
+	// NOTE on tier spacing: for a huge win the raw crossings are unavoidably bunched (500× is 2% of
+	// a 25,000× win, so it is passed in ~110 ms under ANY monotone amount-driven curve). What the
+	// player sees is spaced by WinBoard's `animating` guard, which both floors the cadence at one
+	// transition (400 ms) and SKIPS tiers the count has already outrun — a 25,000× win therefore
+	// renders SWEET → LEGENDARY at t≈420 ms and nothing more until the MAX WIN flash.
+	const EASE_T = 0.8;
+	const EASE_V = (2 * EASE_T) / (1 + EASE_T); // 0.888…
+	const countCurve = (t: number) => {
+		if (t < EASE_T) return (EASE_V / EASE_T) * t;
+		const u = (t - EASE_T) / (1 - EASE_T);
+		return EASE_V + (1 - EASE_V) * u * (2 - u);
+	};
+
+	// ── Big-win count-up length (R8) ──────────────────────────────────────────────────────────
+	// Explicit per-tier lengths in ms, replacing `presentDuration × 0.25` — that formula gave
+	// LEGENDARY an 11.25 s climb (45 s presentDuration) on top of a 3 s hold.
+	const BIG_COUNT_MS: Partial<Record<WinLevelAlias, number>> = {
+		big: 2500, // SWEET
+		superwin: 3500, // WILD
+		mega: 4500, // EPIC
+		epic: 5250, // MYTHIC
+		max: 6000, // LEGENDARY / MAX WIN
+	};
+	// Turbo now shortens big wins too (it never did), but never to a flash: each tier cross-fade
+	// needs ~400 ms and MAX WIN needs its entrance, so the floor keeps the choreography readable.
+	const BIG_COUNT_MIN_MS = 1500;
+	const turboFactor = () => (stateBet.isSuperTurbo ? 0.4 : stateBet.isTurbo ? 0.6 : 1);
+	const bigCountDuration = (alias: WinLevelAlias) =>
+		Math.max(BIG_COUNT_MIN_MS, (BIG_COUNT_MS[alias] ?? 3000) * turboFactor());
+	// Hold after the count finishes before the board auto-closes. Follows turbo, EXCEPT for MAX WIN:
+	// its screen only appears on the final value, so the hold is all the time it gets, and ~520 ms
+	// of that is its entrance. Turbo does not get to cut the game's biggest moment to half a second.
+	const bigHoldMs = () =>
+		bookEventAmountToBetAmountMultiplier(amount) >= 25000
+			? 3500
+			: stateBet.isSuperTurbo
+				? 1200
+				: stateBet.isTurbo
+					? 2000
+					: 2500;
 
 	// Breathing: gentle ±2% scale oscillation while counting up
 	let breatheScale = $state(1);
@@ -45,7 +96,12 @@
 	// more on portrait phones where the celebration should dominate the screen. Board + amount
 	// text both scale by this so their proportions are preserved.
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
-	const winBoardBoost = $derived(layoutType === 'portrait' ? 1.58 : 1.6);
+	// Mobile (portrait + landscape) win boards run 20% smaller than desktop (design ask).
+	// Portrait gets +10%, then another +10% (design ask "win animations a bit bigger, all") so the
+	// celebration reads bigger on phones — applies to every win tier.
+	const winBoardBoost = $derived(
+		layoutType === 'portrait' ? 1.58 * 0.8 * 1.1 * 1.1 : layoutType === 'landscape' ? 1.6 * 0.8 : 1.6,
+	);
 
 	const snapToFinal = (finishCountUp: () => void) => {
 		if (snappedToFinal) return;
@@ -57,7 +113,8 @@
 	const scheduleDismiss = () => {
 		if (boardClickHandled) return;
 		boardClickHandled = true;
-		dismissTimer = setTimeout(() => oncomplete(), 500) as unknown as number;
+		clearTimeout(autoCloseTimer);
+		dismissTimer = setTimeout(() => oncomplete(), 300) as unknown as number;
 	};
 
 	context.eventEmitter.subscribeOnMount({
@@ -74,10 +131,19 @@
 			boardClickHandled = false;
 			snappedToFinal = false;
 			clearTimeout(dismissTimer);
+			dismissTimer = 0;
+			clearTimeout(autoCloseTimer);
+			autoCloseTimer = 0;
 			amount = emitterEvent.amount;
 			winLevelData = emitterEvent.winLevelData;
 			breatheScale = 1;
 			isCountingUp = true;
+			// Tell the (now persistent) WinCountUpProvider a new win started: it resets to 0 and
+			// starts counting. Must come after `amount` so it counts up to the right total.
+			winId += 1;
+			// Board-animation (big) wins auto-close a short hold after the count-up finishes — no manual
+			// press required (see the WinCountUpProvider oncomplete below). Non-board wins self-resolve
+			// on count-up completion there too. A manual press can still snap/close earlier.
 			await waitForResolve((resolve) => (oncomplete = resolve));
 			isCountingUp = false;
 		},
@@ -105,16 +171,31 @@
 	{#if winLevelData}
 		{@const isBigWin = winLevelData.type === 'big'}
 		{@const hasBoardAnimation = !!winLevelData?.animation}
-		{@const duration = (stateBet.isTurbo || stateBet.isSuperTurbo) && !hasBoardAnimation ? Math.min(winLevelData.presentDuration, 400) : winLevelData.presentDuration}
-		{#key oncomplete}
-		<WinCountUpProvider {amount} {duration} oncomplete={() => { context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' }); if (!hasBoardAnimation && !boardClickHandled) { snappedToFinal = true; context.stateGame.paylineSnap = true; boardClickHandled = true; oncomplete(); } }}>
-			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
+		<!-- Small/medium wins tally at half their present duration (600ms–1.75s) so they read as a
+		     count-up rather than an instant pop; big-win boards use explicit per-tier lengths
+		     (BIG_COUNT_MS above) instead of a fraction of their 10–45s presentDuration. -->
+		{@const duration = hasBoardAnimation
+			? bigCountDuration(winLevelData.alias)
+			: (stateBet.isTurbo || stateBet.isSuperTurbo)
+				? Math.min(winLevelData.presentDuration, 400)
+				: winLevelData.presentDuration * 0.5}
+		<WinCountUpProvider {amount} {duration} easing={countCurve} restartKey={winId} oncomplete={() => {
+			context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_count_end' });
+			if (!hasBoardAnimation) {
+				if (!boardClickHandled) { snappedToFinal = true; context.stateGame.paylineSnap = true; boardClickHandled = true; oncomplete(); }
+			} else if (!boardClickHandled) {
+				// Board-animation (big) win finished counting (naturally or via a press-snap) → auto-close
+				// after a short hold instead of waiting for a manual press. A further press closes sooner.
+				context.stateGame.paylineSnap = true;
+				clearTimeout(autoCloseTimer);
+				autoCloseTimer = setTimeout(() => oncomplete(), bigHoldMs()) as unknown as number;
+			}
+		}}>
+			{#snippet children({ countUpAmount, finishCountUp, countUpCompleted })}
 
 				{#if isBigWin}
 					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.3} />
 				{/if}
-
-				<OnMount onmount={() => startCountUp()} />
 
 				<!-- Coins on a low zIndex so the win panel (zIndex 20 below) always stays the hero
 				     on top of them — sibling MainContainers don't sort reliably by template order. -->
@@ -139,13 +220,20 @@
 							     betAmount — the book amount is already bet-relative, and doing so inflated the
 							     tier ~100× (a 25× win showed LEGENDARY instead of SWEET). -->
 							{@const mult = bookEventAmountToBetAmountMultiplier(countUpAmount)}
-							<!-- Win-tier thresholds (× bet): 20 SWEET · 50 WILD · 100 EPIC · 200 MYTHIC · 500 LEGENDARY.
-							     (1000×+ MAX WIN is a separate special screen.) A board only shows from 20× via the
-							     winLevel gate, so <50× maps to SWEET. -->
-							{@const boardKey = mult >= 500 ? 'legendaryWinBoard' : mult >= 200 ? 'mythicWinBoard' : mult >= 100 ? 'epicWinBoard' : mult >= 50 ? 'wildWinBoard' : 'sweetWinBoard'}
+							<!-- Live board vs. the board this win ends on (thresholds live in WinBoard). The final
+							     one is the only crossing that still pops — the rest cross-fade. -->
+							{@const boardKey = boardKeyForMult(mult)}
+							{@const finalKey = boardKeyForMult(bookEventAmountToBetAmountMultiplier(amount))}
 							{@const maxBoardSize = Math.min(boardLayout.width * bs * 0.55, boardLayout.height * bs * 0.85) * winBoardBoost}
+							<!-- Golden radial glow behind the board — the fsIntro spine's glow layers with the
+							     frame stripped (fs_glow.json), slightly smaller than on the congratulations screen. -->
+							<SpineProvider key="winGlow" width={maxBoardSize * 1.3}>
+								<SpineTrack trackIndex={0} animationName="idle" loop />
+							</SpineProvider>
 							<WinBoard
 								{boardKey}
+								{finalKey}
+								{winId}
 								{maxBoardSize}
 								{breatheScale}
 								{mult}
@@ -178,8 +266,10 @@
 				{/if}
 				</Container>
 
-				<PressToContinue onpress={() => {
-					if (!snappedToFinal) {
+				<!-- No text on the win screen. First press snaps the count-up to the final amount; once the
+				     count is done (snapped or naturally finished) the next press closes it immediately. -->
+				<PressToContinue showText={false} onpress={() => {
+					if (!countUpCompleted && !snappedToFinal) {
 						snapToFinal(finishCountUp);
 					} else {
 						scheduleDismiss();
@@ -187,6 +277,5 @@
 				}} />
 			{/snippet}
 		</WinCountUpProvider>
-		{/key}
 	{/if}
 </FadeContainer>

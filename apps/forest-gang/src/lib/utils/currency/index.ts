@@ -1,81 +1,21 @@
-export type SupportedCurrency =
-	| 'USD'
-	| 'CAD'
-	| 'JPY'
-	| 'EUR'
-	| 'RUB'
-	| 'CNY'
-	| 'PHP'
-	| 'INR'
-	| 'IDR'
-	| 'KRW'
-	| 'BRL'
-	| 'MXN'
-	| 'DKK'
-	| 'PLN'
-	| 'VND'
-	| 'TRY'
-	| 'CLP'
-	| 'ARS'
-	| 'PEN'
-	| 'XGC'
-	| 'XSC';
+// The canonical Stake Engine currency table lives in utils-shared so the HUD formatter
+// (utils-shared/amount) and this module cannot drift apart. See packages/utils-shared/currency.ts.
+import {
+	formatCurrencyAmount,
+	normalizeCurrency as normalizeCurrencyCode,
+	SUPPORTED_CURRENCIES as SUPPORTED,
+	type Currency,
+} from 'utils-shared/currency';
 
-export const SUPPORTED_CURRENCIES: SupportedCurrency[] = [
-	'USD',
-	'CAD',
-	'JPY',
-	'EUR',
-	'RUB',
-	'CNY',
-	'PHP',
-	'INR',
-	'IDR',
-	'KRW',
-	'BRL',
-	'MXN',
-	'DKK',
-	'PLN',
-	'VND',
-	'TRY',
-	'CLP',
-	'ARS',
-	'PEN',
-	'XGC',
-	'XSC',
-];
+export type SupportedCurrency = Currency;
+export const SUPPORTED_CURRENCIES = SUPPORTED;
 
-const CURRENCY_SET = new Set<string>(SUPPORTED_CURRENCIES);
-const SOCIAL_CURRENCY_SYMBOL: Record<'XGC' | 'XSC', string> = {
-	XGC: 'G',
-	XSC: 'SC',
-};
-
-export function normalizeCurrency(raw: unknown): SupportedCurrency {
-	const code = String(raw ?? '').trim().toUpperCase();
-	return CURRENCY_SET.has(code) ? (code as SupportedCurrency) : 'USD';
-}
+export { normalizeCurrencyCode as normalizeCurrency };
 
 export function formatCurrencyAmountForCurrency(
-	currency: SupportedCurrency,
+	currency: string,
 	amount: number,
-	fractionDigits = 2,
+	fractionDigits?: number,
 ) {
-	const value = Number.isFinite(amount) ? amount : 0;
-	if (currency === 'XGC' || currency === 'XSC') {
-		const sign = value < 0 ? '-' : '';
-		const abs = Math.abs(value);
-		return `${sign}${SOCIAL_CURRENCY_SYMBOL[currency]}${abs.toFixed(fractionDigits)}`;
-	}
-	try {
-		return new Intl.NumberFormat('en-US', {
-			style: 'currency',
-			currency,
-			currencyDisplay: 'symbol',
-			minimumFractionDigits: fractionDigits,
-			maximumFractionDigits: fractionDigits,
-		}).format(value);
-	} catch {
-		return `${value.toFixed(fractionDigits)} ${currency}`;
-	}
+	return formatCurrencyAmount(currency, amount, fractionDigits);
 }

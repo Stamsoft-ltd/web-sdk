@@ -5,11 +5,17 @@
 	import { socialOverridesEn } from '../i18n/socialOverridesEn';
 
 	const reinit = () => {
-		const lang = stateUrlDerived.lang();
 		const social = stateConfig.jurisdiction.socialCasino || stateUrlDerived.social();
+		if (social) {
+			// Social-casino jurisdictions (e.g. Stake.US) must present English-only, compliant
+			// terminology regardless of the requested locale. Lock to `en` + the social overrides
+			// so a `?lang=de` (etc.) session can't fall back to base gambling wording.
+			stateI18nDerived.init('en', { ...messagesMap.en, ...socialOverridesEn });
+			return;
+		}
+		const lang = stateUrlDerived.lang();
 		const base = messagesMap[lang] ?? messagesMap.en;
-		const messages = social && lang === 'en' ? { ...base, ...socialOverridesEn } : base;
-		stateI18nDerived.init(lang, messages);
+		stateI18nDerived.init(lang, base);
 	};
 
 	$effect(() => {

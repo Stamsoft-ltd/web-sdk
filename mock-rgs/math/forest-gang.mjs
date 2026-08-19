@@ -187,6 +187,42 @@ const createBoard = ({ rng, scatterPositions = [], forcedPositions = [], expande
   return board;
 };
 
+
+// A random board frequently shows ACCIDENTAL left-to-right alignments (letters are the heaviest
+// weights) that this proto-math never pays — on the frontend that reads as "a win with no payline
+// and no payout", which looks like a bug. Scan the visible grid for line wins and reroll boards
+// whose alignments aren't covered by the round's actual paid positions.
+const boardLineWins = (board) => {
+  const wins = [];
+  for (const [lineIndex, rows] of Object.entries(PAYLINES)) {
+    const names = rows.map((row, reel) => board[reel][row + 1].name);
+    let symbol = null;
+    let count = 0;
+    for (const name of names) {
+      const effective = name === WILD ? symbol : name;
+      if (symbol === null && name !== WILD) symbol = name;
+      if (name === WILD || effective === symbol || symbol === null) count++;
+      else break;
+    }
+    if (symbol && symbol !== 'SCATTER' && count >= 3) {
+      wins.push({ lineIndex: Number(lineIndex), positions: rows.slice(0, count).map((row, reel) => ({ reel, row: row + 1 })) });
+    }
+  }
+  return wins;
+};
+
+const createBoardWithoutAccidentalWins = (options, paidPositions = []) => {
+  const paidKeys = new Set(paidPositions.map((position) => `${position.reel},${position.row}`));
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const board = createBoard(options);
+    const accidental = boardLineWins(board).filter((win) =>
+      win.positions.some((position) => !paidKeys.has(`${position.reel},${position.row}`)),
+    );
+    if (accidental.length === 0) return board;
+  }
+  return createBoard(options);
+};
+
 const positionsForLine = (lineIndex) =>
   PAYLINES[lineIndex].map((row, reel) => ({ reel, row: row + 1 }));
 
@@ -252,10 +288,13 @@ const buildBaseLineWin = (rng, amount) => {
   const lineIndex = randomLineIndex(rng);
   const positions = positionsForLine(lineIndex);
   const symbol = weightedChoice(rng, PAY_SYMBOL_WEIGHTS);
-  const board = createBoard({
-    rng,
-    forcedPositions: positions.map((position) => ({ ...position, name: symbol })),
-  });
+  const board = createBoardWithoutAccidentalWins(
+    {
+      rng,
+      forcedPositions: positions.map((position) => ({ ...position, name: symbol })),
+    },
+    positions,
+  );
 
   return {
     board,
@@ -330,11 +369,14 @@ function generateBonusEvents({ rng, mode, selectedSymbol, totalPayoutX, initialT
       ? randomExpandedReels(rng, mode === 'superspin' ? 2 : 2, mode === 'superspin' ? 5 : 4)
       : [];
     const expandedPositions = expandedPositionsForReels(expandedReels);
-    const board = createBoard({
-      rng,
-      expandedReels,
-      expandedSymbol: plannedAmount > 0 ? selectedSymbol : null,
-    });
+    const board = createBoardWithoutAccidentalWins(
+      {
+        rng,
+        expandedReels,
+        expandedSymbol: plannedAmount > 0 ? selectedSymbol : null,
+      },
+      expandedPositions,
+    );
 
     events.push({ index: idx++, type: 'updateFreeSpin', amount: spinIndex, total: BONUS_TOTAL_FS });
     events.push(makeRevealEvent(idx++, board, mode, rng));
@@ -411,7 +453,7 @@ function generateBaseRound(rng) {
   let idx = 0;
 
   if (outcomeKind === 'lose') {
-    const board = createBoard({ rng });
+    const board = createBoardWithoutAccidentalWins({ rng });
     events.push(makeRevealEvent(idx++, board, 'basegame', rng));
     events.push({ index: idx++, type: 'setTotalWin', amount: 0 });
     events.push({ index: idx++, type: 'finalWin', amount: 0 });
@@ -449,11 +491,14 @@ function generateBaseRound(rng) {
     forcedPositions = positions.map((position) => ({ ...position, name: symbol }));
   }
 
-  const board = createBoard({
-    rng,
-    scatterPositions: triggerScatterPositions,
+  const board = createBoardWithoutAccidentalWins(
+    {
+      rng,
+      scatterPositions: triggerScatterPositions,
+      forcedPositions,
+    },
     forcedPositions,
-  });
+  );
 
   events.push(makeRevealEvent(idx++, board, 'basegame', rng));
   if (baseSpinAmount > 0) {
@@ -487,7 +532,7 @@ function generateBuyRound(rng, mode) {
     ? [{ reel: 0, row: 1 }, { reel: 1, row: 3 }, { reel: 3, row: 2 }, { reel: 4, row: 1 }]
     : [{ reel: 0, row: 2 }, { reel: 2, row: 1 }, { reel: 4, row: 3 }];
 
-  const cinematicBoard = createBoard({ rng, scatterPositions: cinematicScatterPositions });
+  const cinematicBoard = createBoardWithoutAccidentalWins({ rng, scatterPositions: cinematicScatterPositions });
   const revealEvent = makeRevealEvent(0, cinematicBoard, 'basegame', rng);
 
   const bonusEvents = generateBonusEvents({

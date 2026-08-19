@@ -1,3 +1,16 @@
+<script lang="ts" module>
+	// Module scope so the splash art preloads during the loading screen — the splash is the
+	// very next thing on screen, so it must not pop in image-by-image.
+	import { ap } from '../lib/preloadArt';
+
+	// splash.jpg = forest + 5 characters holding 3 empty wooden boards (no logo, no text).
+	const bgSrc = ap('/assets/components/backgrounds/splash.jpg?v=20260630');
+	// Portrait artwork: the gang holding a single central board (for the mobile carousel).
+	const bgMobileSrc = ap('/assets/components/backgrounds/splash_mobile.jpg?v=20260630');
+	const logoSrc = ap('/assets/components/ui/forest_gang_logo.webp');
+	const brandSrc = ap('/assets/components/ui/press_play_logo.webp?v=20260630');
+</script>
+
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { stateI18nDerived } from 'state-shared';
@@ -15,13 +28,6 @@
 	};
 	const bonusTop = $derived(splitNum(t('SPLASH BONUS TOP')));
 	const bonusMid = $derived(splitNum(t('SPLASH BONUS MID')));
-
-	// splash.jpg = forest + 5 characters holding 3 empty wooden boards (no logo, no text).
-	const bgSrc = './assets/components/backgrounds/splash.jpg?v=20260630';
-	// Portrait artwork: the gang holding a single central board (for the mobile carousel).
-	const bgMobileSrc = './assets/components/backgrounds/splash_mobile.jpg?v=20260630';
-	const logoSrc = './assets/components/ui/forest_gang_logo.png';
-	const brandSrc = './assets/components/ui/press_play_logo.png?v=20260630';
 
 	// Mobile = portrait viewport: show the three feature blocks one at a time, 3s each.
 	let isPortrait = $state(false);
@@ -57,27 +63,32 @@
 			<img class="brand brand--m" src={brandSrc} alt="Press Play" draggable="false" />
 			<img class="logo logo--m" src={logoSrc} alt="Forest Gang" draggable="false" />
 
+			<!-- All three stay mounted and stacked, cross-fading on `slide`. A {#if} chain here was a
+			     bare block swap — the first motion a player sees was a hard cut. Keeping them mounted
+			     also stops `fitLabel` from re-measuring every text block every 3s. -->
 			<div class="feat feat-m">
-				{#if slide === 0}
-					<!-- EPIC WIN -->
+				<!-- EPIC WIN -->
+				<div class="f-slide" class:f-slide--on={slide === 0}>
 					<div class="f-title f-purple" use:fitLabel={{ dep: t('SPLASH EPIC TITLE'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH EPIC TITLE')}</div>
 					<div class="f-sub f-sub--fit f-pre">{t('SPLASH EPIC TOP')}</div>
 					<div class="f-value-num f-gold">25'000x</div>
 					<div class="f-hl f-gold" use:fitLabel={{ dep: t('SPLASH EPIC BOTTOM'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH EPIC BOTTOM')}</div>
-				{:else if slide === 1}
-					<!-- BONUS GAME -->
+				</div>
+				<!-- BONUS GAME -->
+				<div class="f-slide" class:f-slide--on={slide === 1}>
 					<div class="f-title f-gold" use:fitLabel={{ dep: t('SPLASH BONUS TITLE'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH BONUS TITLE')}</div>
 					<div class="f-sub f-pre"><span class="f-num f-gold">{bonusTop[0]}</span>{bonusTop[1]}</div>
 					<div class="f-divider"></div>
 					<div class="f-sub"><span class="f-num f-gold">{bonusMid[0]}</span>{bonusMid[1]}</div>
 					<div class="f-hl f-gold" use:fitLabel={{ dep: t('SPLASH BONUS HL'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH BONUS HL')}</div>
-				{:else}
-					<!-- EXPANDING REELS -->
+				</div>
+				<!-- EXPANDING REELS -->
+				<div class="f-slide" class:f-slide--on={slide === 2}>
 					<div class="f-title f-green" use:fitLabel={{ dep: t('SPLASH EXP TITLE'), maxFraction: isPortrait ? 0.68 : 0.82 }}>{t('SPLASH EXP TITLE')}</div>
 					<div class="f-sub">{t('SPLASH EXP TOP')}</div>
 					<div class="f-value-num f-gold">1024x</div>
 					<div class="f-sub">{t('SPLASH EXP BOTTOM')}</div>
-				{/if}
+				</div>
 			</div>
 
 			<div class="dots">
@@ -231,6 +242,22 @@
 		height: 22%;
 		justify-content: center;
 		gap: 1.5cqw;
+	}
+	/* Stacked so the outgoing and incoming block occupy the same box and cross-fade in place.
+	   Each slide carries the column layout `.feat` gave the blocks when they were direct children. */
+	.feat-m .f-slide {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1.5cqw;
+		opacity: 0;
+		transition: opacity 450ms ease;
+	}
+	.feat-m .f-slide--on {
+		opacity: 1;
 	}
 
 	/* Titles */

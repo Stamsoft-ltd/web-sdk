@@ -79,6 +79,23 @@
 		wasMuted = muted;
 	});
 
+	// While the reels run a scatter-anticipation tease (bought-bonus trigger spin, natural trigger,
+	// or a near-miss), duck the background music to 10% so the anticipation loop carries the moment;
+	// restore full volume as soon as the anticipation ends.
+	let wasAnticipating = false;
+	$effect(() => {
+		const anticipating = context.stateGame.board.some((row) => row.reelState.anticipating);
+		if (anticipating === wasAnticipating) return;
+		wasAnticipating = anticipating;
+		if (stateSound.volumeValueMaster === 0) return;
+		void sound.fade({
+			name: currentMusic(),
+			from: anticipating ? 1 : 0.1,
+			to: anticipating ? 0.1 : 1,
+			duration: 300,
+		});
+	});
+
 	onMount(() => {
 		if (stateSound.volumeValueMaster !== 0) playMusic({ name: currentMusic() });
 	});

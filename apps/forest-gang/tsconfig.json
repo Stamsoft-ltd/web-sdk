@@ -10,8 +10,23 @@
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"sourceMap": true,
-		"strict": true
+		"strict": true,
+		// `tests/` constructs real PIXI objects (`new PIXI.Texture(...)`), so it imports pixi.js as a
+		// value. The app itself deliberately does NOT depend on pixi.js — adding it to package.json
+		// pulls its .svelte-adjacent types into every component check — so point TS at the copy
+		// pixi-svelte already installs. Vitest resolves the same module at runtime via the workspace.
+		// `paths` REPLACES the extended config's rather than merging, so $lib is restated here — it
+		// is unused today, but the first `import '$lib/…'` would otherwise fail to resolve for a
+		// reason nothing points at. Relative to this file, not to .svelte-kit/.
+		"paths": {
+			"$lib": ["./src/lib"],
+			"$lib/*": ["./src/lib/*"],
+			"pixi.js": ["../../packages/pixi-svelte/node_modules/pixi.js"]
+		}
 	},
 	"include": ["."],
-	"exclude": ["dist", "build", "node_modules", "static"]
+	// `scripts/` is hand-run node tooling (a math check, an audio sheet builder), not app code, and
+	// nothing bundles it. With `checkJs` + `strict` on, plain untyped .mjs there floods svelte-check
+	// with implicit-any errors that bury the real ones in src/ — 16 of 27 at the time of writing.
+	"exclude": ["dist", "build", "node_modules", "static", "scripts"]
 }

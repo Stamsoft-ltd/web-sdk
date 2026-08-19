@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': 'KAIKKI PELIIN',
 	'RULE ALL IN TEXT': 'Kaikki Peliin antaa 10 ilmaiskierrosta yhdellä satunnaisesti valitulla laajenevalla symbolilla. Kerroin alkaa 2x:stä ja kaksinkertaistuu vain voittavilla kierroksilla, luoden pieniä varhaisia voittoja ja loppukierrosten jahdin maksimivoittoon.',
 	'RULE BUY TITLE': 'OSTO- / AKTIVOINTITILAT',
-	'RULE BUY TEXT': 'Jaa Kortit -ostohinta on 100x panos. Kaikki Peliin -ostohinta on 400x panos. Mahdollisuuskierros maksaa 2x panos kierrosta kohti. Ominaisuuskierros maksaa 20x panos kierrosta kohti. Maksimivoitto on 25,000x. Tavoite-RTP on 96.1%.',
+	'RULE BUY TEXT': 'Jaa Kortit -ostohinta on 100x panos. Kaikki Peliin -ostohinta on 400x panos. Mahdollisuuskierros maksaa 2x panos kierrosta kohti. Ominaisuuskierros maksaa 20x panos kierrosta kohti. Maksimivoitto on 25,000x. Tavoite-RTP on 96.11%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'VALITTU PREMIUM-SYMBOLI',
 	'FEATURE SELECTED SYMBOL TEXT': 'Mikä tahansa tavallinen maksava symboli voi olla laajeneva symboli. Kun se ilmestyy, kaikki vaikutetut rullat laajenevat täyttääkseen kyseisen symbolin, ja 3 tai useampi rulla maksaa jopa ilman vierekkäisiä yhteyksiä.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'JAA KORTIT -KERTOIMET',
@@ -81,7 +81,7 @@ export default {
 	'HOWTO BET TITLE': 'PANOKSEN VALITSIN',
 	'HOWTO BET TEXT': 'Käytä + ja - painikkeita tai avaa panosvalikko muuttaaksesi näytettyä panosmäärää ennen kierroksen alkua.',
 	'HOWTO BUY TITLE': 'OSTA BONUS',
-	'HOWTO BUY TEXT': 'Avaa Osta bonus valitaksesi Jaa Kortit, Kaikki Peliin, mahdollisuuskierros tai ominaisuuskierros. Jaa Kortit ja Kaikki Peliin vaativat vahvistuksen. Mahdollisuuskierros ja ominaisuuskierros aktivoituvat välittömästi ja voidaan poistaa käytöstä DEACTIVATE-painikkeella.',
+	'HOWTO BUY TEXT': 'Avaa Osta bonus valitaksesi Jaa Kortit, Kaikki Peliin, mahdollisuuskierros tai ominaisuuskierros. Jaa Kortit ja Kaikki Peliin vaativat vahvistuksen. Mahdollisuuskierros ja ominaisuuskierros aktivoituvat välittömästi ja voidaan poistaa käytöstä POISTA KÄYTÖSTÄ -painikkeella.',
 	'HOWTO TURBO TITLE': 'TURBO',
 	'HOWTO TURBO TEXT': 'Turbo lyhentää tiettyjä kierrosaikoja nopeampaa peliä varten.',
 	'HOWTO AUTOPLAY TITLE': 'AUTOMAATTIPELI',
@@ -110,27 +110,27 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'YLEISKATSAUS',
 	'INFO OVERVIEW BODY':
-		'Forest Gang on 5x4-videokolikkopeli, jota pelataan 20 voittolinjalla.\nVoitot myönnetään vasemmalta oikealle peräkkäisillä rullilla, rullasta 1 alkaen, kun täsmäävät symbolit osuvat aktiiviselle voittolinjalle.\nPeli sisältää 5 premium-symbolia, 5 matalaa symbolia, Wild-symbolin ja Scatter-symbolin.\n\nSuurin voittopotentiaali on 25,000x kokonaispanos.\n\nTeoreettinen RTP: 96.1%',
+		'Forest Gang on 5x4-videokolikkopeli, jota pelataan 20 voittolinjalla.\nTavalliset voitot myönnetään vasemmalta oikealle peräkkäisillä rullilla, rullasta 1 alkaen, kun täsmäävät symbolit osuvat aktiiviselle voittolinjalle.\nLaajenevan symbolin voitot noudattavat erityistä voittomekaniikkaa eivätkä edellytä, että voittavat rullat ovat peräkkäisiä. Katso tarkemmat tiedot laajenevan symbolin osiosta.\nPeli sisältää 5 premium-symbolia, 5 matalaa symbolia, Wild-symbolin ja Scatter-symbolin.\n\nSuurin voittopotentiaali on 25,000x kokonaispanos.\n\nTeoreettinen RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'RULLAT',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': 'VOITTOLINJAT',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': 'MAKSIMIVOITTO',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': 'OMINAISUUDET',
 	'INFO EXPANDING TITLE': 'LAAJENEVA SYMBOLI',
 	'INFO EXPANDING TEXT':
-		'Ehdot täyttävien ominaisuuskierrosten ja bonuskierrosten aikana yksi satunnainen symboli valitaan laajenevaksi symboliksi. Kun valittu laajeneva symboli osuu rullille, se laajenee pystysuunnassa peittäen koko rullan. Laajennetut symbolit voivat luoda useita voittolinjavoittoja samalla kierroksella. Satunnainen kerroin voi ilmestyä millä tahansa kierroksella ja soveltua kyseisen kierroksen voittosummaan.\n\nSatunnainen kerroin voi olla 2x:stä 1024x:ään.',
+		'Ehdot täyttävien ominaisuuskierrosten ja bonuskierrosten aikana yksi satunnainen symboli valitaan laajenevaksi symboliksi.\nKun valittu symboli ilmestyy rullalle, se laajenee pystysuunnassa peittäen koko rullan.\nLaajenevan symbolin voitot lasketaan eri tavalla kuin tavalliset voittolinjavoitot. Laajennettujen symbolien ei tarvitse ilmestyä peräkkäisille rullille voiton saamiseksi. Rullat, joilla ei ole valittua symbolia, eivät katkaise laajenevan symbolin voittoa.\nValitun laajenevan symbolin sisältävien rullien määrä määrää sovellettavan symbolin voiton. Laajennetut symbolit voivat luoda useita voittolinjavoittoja samalla kierroksella.\nSatunnainen kerroin voi koskea mitä tahansa voittavaa kierrosta, ja sitä sovelletaan kyseisen kierroksen kokonaisvoittosummaan.\n\nSatunnainen kerroin voi olla 2x:stä 1024x:ään.',
 	'INFO DEAL IT TITLE': 'JAA KORTIT -BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
-		'Laukaistaan 3 Scatter-symbolilla.\n\nAntaa 10 ilmaiskierrosta. Ennen bonuksen alkua yksi satunnainen laajeneva symboli valitaan. Bonuksen aikana valittu symboli voi laajentua peittäen koko rullan.\n\nSatunnainen kerroin voi soveltua mihin tahansa voittavaan kierrokseen, jopa 100x.',
+		'Laukaistaan 3 Scatter-symbolilla.\n\nAntaa 10 ilmaiskierrosta. Ennen bonuksen alkua yksi satunnainen laajeneva symboli valitaan. Bonuksen aikana valittu symboli voi laajentua peittäen koko rullan.\n\nSatunnainen kerroin voi soveltua mihin tahansa voittavaan kierrokseen, jopa 100x.\n\nBonuskierros voi aktivoitua uudelleen seuraavasti:\n[[3 Scatteria]] +3 kierrosta\n[[4 Scatteria]] +5 kierrosta\n[[5 Scatteria]] +8 kierrosta',
 	'INFO ALL IN TITLE': 'KAIKKI PELIIN -BONUS',
 	'INFO ALL IN HL': '4 Scatter',
 	'INFO ALL IN TEXT':
-		'Laukaistaan 4 Scatter-symbolilla ja antaa 10 ilmaiskierrosta.\n\nEnnen bonuksen alkua yksi satunnainen laajeneva symboli valitaan. Bonuksen aikana valittu symboli voi laajentua peittäen koko rullan. Rullakertoimet pysyvät aktiivisina koko bonuksen ajan ja kaksinkertaistuvat jokaisella ehdot täyttävällä voitolla, alkaen 2x:stä.',
+		'Laukaistaan 4 Scatter-symbolilla ja antaa 10 ilmaiskierrosta.\n\nEnnen bonuksen alkua yksi satunnainen laajeneva symboli valitaan. Bonuksen aikana valittu symboli voi laajentua peittäen koko rullan. Rullakertoimet pysyvät aktiivisina koko bonuksen ajan ja kaksinkertaistuvat jokaisella ehdot täyttävällä voitolla, alkaen 2x:stä.\n\nBonuskierros voi aktivoitua uudelleen seuraavasti:\n[[3 Scatteria]] +3 kierrosta\n[[4 Scatteria]] +5 kierrosta\n[[5 Scatteria]] +8 kierrosta',
 	'INFO PLACEHOLDER BODY': 'Suunnittelu tulossa pian.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': 'VOITTOTAULUKKO',
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'VOITTOTAVAT',
 	'INFO WAYS NOTE':
-		'Forest Gangia pelataan 20 kiinteällä voittolinjalla. Voittava yhdistelmä muodostuu, kun täsmäävät symbolit osuvat peräkkäisille rullille vasemmalta oikealle millä tahansa aktiivisella voittolinjalla. Vain korkein voitto symbolia ja voittolinjaa kohti maksetaan, ellei lopullisissa pelisäännöissä toisin mainita.',
+		'Forest Gangia pelataan 20 kiinteällä voittolinjalla. Tavalliset symbolivoitot muodostuvat, kun täsmäävät symbolit osuvat peräkkäisille rullille vasemmalta oikealle aktiivisella voittolinjalla, rullasta 1 alkaen. Laajenevan symbolin voitot noudattavat erityistä voittomekaniikkaa eivätkä edellytä, että voittavat rullat ovat peräkkäisiä. Rullat, joilla ei ole valittua laajenevaa symbolia, eivät katkaise laajenevan symbolin voittoa. Katso kaikki tiedot laajenevan symbolin osiosta. Vain korkein voitto symbolia ja voittolinjaa kohden maksetaan, ellei pelisäännöissä toisin mainita.',
 	// Feature buy page
 	'INFO BUY TITLE': 'OMINAISUUDEN OSTO',
 	'INFO BUY CHANCE TITLE': 'YLIMÄÄRÄINEN BONUSMAHDOLLISUUS',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': 'Antaa välittömästi Kaikki Peliin -bonuksen.',
 	'INFO BUY COST': 'KUSTANNUS',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "Perus-RTP 96.11%",
 	'INFO BUY CHANCE_LABEL': 'BONUSMAHDOLLISUUS',
 	'INFO BUY CHANCE_VALUE': '3x MAHDOLLISUUS',
 	// General info page
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': 'ryhdy metsän\nkuninkaaksi',
 	'SPLASH EPIC BOTTOM': 'MAKSIMIVOITTO',
 	'SPLASH PRESS': 'PAINA JATKAAKSESI',
+	'PRESS ANYWHERE': 'JATKA PAINAMALLA MITÄ TAHANSA KOHTAA',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': 'ONNITTELUT!',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': 'AUTOMAATTIPYÖRÄYTYS',
 	'TURBO SPIN': 'TURBOPYÖRÄYTYS',
 	'SUPER TURBO SPIN': 'SUPERTURBOPYÖRÄYTYS',
-	'BONUS FEATURE 100X': '100 X BONUSOMINAISUUS',
+	'BONUS FEATURE 100X': '20 X BONUSOMINAISUUS',
 	'NUMBER OF SPINS': 'KIERROSTEN MÄÄRÄ',
 	'START AUTOPLAY': 'ALOITA AUTOMAATTIPELI',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': 'Sinulla on aktiivinen %mode%-bonus käynnissä.',
 	'END ROUND': 'LOPETA KIERROS',
 	'PLAY ROUND': 'PELAA KIERROS',
+	'INFO UI TITLE': 'KÄYTTÖLIITTYMÄOPAS',
+	'INFO UI SPIN TITLE': 'PYÖRÄYTÄ',
+	'INFO UI SPIN TEXT': 'Aloittaa uuden pelikierroksen.',
+	'INFO UI AUTO TITLE': 'AUTOPYÖRÄYTYKSET',
+	'INFO UI AUTO TEXT': 'Avaa autopyöräytysvalikon.',
+	'INFO UI TURBO TITLE': 'TURBO',
+	'INFO UI TURBO TEXT': 'Nopeuttaa kelojen pyörimistä.',
+	'INFO UI BETPLUS TITLE': 'PANOS +',
+	'INFO UI BETPLUS TEXT': 'Kasvattaa kokonaispanosta.',
+	'INFO UI BETMINUS TITLE': 'PANOS -',
+	'INFO UI BETMINUS TEXT': 'Pienentää kokonaispanosta.',
+	'INFO UI INFO TITLE': 'INFO',
+	'INFO UI INFO TEXT': 'Avaa pelin tiedot.',
+	'INFO UI SOUND TITLE': 'ÄÄNI',
+	'INFO UI SOUND TEXT': 'Kytkee pelin äänet päälle tai pois.',
+	'INFO UI PREV TITLE': 'EDELLINEN',
+	'INFO UI PREV TEXT': 'Siirtyy edelliselle sivulle.',
+	'INFO UI NEXT TITLE': 'SEURAAVA',
+	'INFO UI NEXT TEXT': 'Siirtyy seuraavalle sivulle.',
+	'INFO UI CLOSE TITLE': 'SULJE',
+	'INFO UI CLOSE TEXT': 'Sulkee nykyisen ikkunan.',
 };

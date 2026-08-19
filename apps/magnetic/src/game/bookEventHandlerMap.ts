@@ -1,4 +1,3 @@
-
 import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap } from 'utils-book';
 import { stateBet, stateBetDerived, stateUi } from 'state-shared';
 import { waitForTimeout } from 'utils-shared/wait';
@@ -9,6 +8,7 @@ import { winLevelMap, type WinLevel, type WinLevelData } from './winLevelMap';
 import { stateGame, stateGameDerived } from './stateGame.svelte';
 import type { BookEvent, BookEventContext, BookEventOfType } from './typesBookEvent';
 import type { ClusterSeriesSnapshot, Position } from './types';
+import { getSuperSeriesPreviewAmount } from './bonusWin';
 import { logMagneticDiagnostic } from '../utils/magneticDiagnostics';
 
 // An out-of-range server winLevel must not yield undefined winLevelData — Win.svelte only
@@ -21,7 +21,8 @@ const getWinLevelData = (winLevel: number): WinLevelData =>
 // music_bonus, Magnetic Mega Chain (superspin, 4+ scatters / bought SUPER) runs music_super.
 // music_super had a player branch and files on disk but was never broadcast, so Mega Chain used
 // to play the Drop-O-Magnet theme.
-const bonusMusicFor = (mode: string | null) => (mode === 'superspin' ? 'music_super' : 'music_bonus');
+const bonusMusicFor = (mode: string | null) =>
+	mode === 'superspin' ? 'music_super' : 'music_bonus';
 
 // How long the bonus hand-off waits before swapping the scene in, in ms. Matches the veil's dim
 // ramp (BonusHandoffVeil's IN_MS): the swap has to land after the dim is fully up, or it happens
@@ -88,7 +89,6 @@ const animateSymbols = async ({ positions }: { positions: Position[] }) => {
 		symbolPositions: positions,
 	});
 };
-
 
 const didSeriesGrow = (previous: ClusterSeriesSnapshot[], next: ClusterSeriesSnapshot[]) => {
 	if (previous.length !== next.length) return true;
@@ -161,6 +161,9 @@ const getBonusModeFromScatters = (positions: Position[]) =>
 	positions.length >= 4 ? 'superspin' : 'freegame';
 
 let pendingMagnetActivationPositions: Position[] = [];
+let bonusCarryWinAmount = 0;
+let presentedBonusWinAmount = 0;
+let superSeriesPreviewAmount = 0;
 
 const nextBookEventAfter = (bookEvent: BookEvent, bookEvents: BookEvent[]) => {
 	const currentIndex = bookEvents.findIndex((event) => event.index === bookEvent.index);
@@ -248,6 +251,13 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			pendingMagnetActivationPositions = [];
 		}
 	},
+	magnetTargetSelected: async (bookEvent: BookEventOfType<'magnetTargetSelected'>) => {
+		// The production math emits this before magnetActivated, including sub-threshold pulls that
+		// never activate. Populate the capsule immediately and consume the event instead of logging a
+		// missing-handler error.
+		stateGame.selectedBonusSymbol = bookEvent.symbol;
+		stateGame.magnetTargetSymbol = bookEvent.symbol;
+	},
 	clusterSeriesUpdate: async (bookEvent: BookEventOfType<'clusterSeriesUpdate'>) => {
 		const activatedPositions = pendingMagnetActivationPositions;
 		pendingMagnetActivationPositions = [];
@@ -277,6 +287,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			magnetTargetSymbol: bookEvent.magnetTargetSymbol,
 			totalMultiplier: bookEvent.totalMultiplier,
 		});
+		superSeriesPreviewAmount = getSuperSeriesPreviewAmount(bookEvent.series);
+		presentedBonusWinAmount = Math.max(
+			presentedBonusWinAmount,
+			bonusCarryWinAmount + superSeriesPreviewAmount,
+		);
+		stateBet.winBookEventAmount = presentedBonusWinAmount;
 	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>, { bookEvents }: BookEventContext) => {
 		const isSuperFinal =
@@ -284,22 +300,32 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// Super bonus pays at outro; per-spin winInfo badges/anim cause green number overlays and
 		// whole-board flash on no-growth spins. Keep only the final cluster win-state pass.
 		if (stateGame.bonusMode === 'superspin' && !isSuperFinal) return;
+		if (stateGame.bonusMode === 'freegame' || stateGame.bonusMode === 'feature') {
+			presentedBonusWinAmount += bookEvent.totalWin;
+			stateBet.winBookEventAmount = presentedBonusWinAmount;
+		}
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_cluster_win' });
 		// Per-symbol celebration runs CONCURRENTLY with the win amount — fired, not awaited, so
 		// the win screen still comes up immediately. (The old AWAITED flipbook pass held the total
 		// back ~1.2s, which is why it was removed; the procedural <SymbolWinFx> choreography this
 		// triggers persists until the next reveal's clearWinCellStates.)
 		eventEmitter.broadcast({ type: 'boardShow' });
-		void stateGameDerived.animateWinningPositions(
-			bookEvent.wins.flatMap((win) => win.positions),
-		);
+		void stateGameDerived.animateWinningPositions(bookEvent.wins.flatMap((win) => win.positions));
 	},
 	setTotalWin: async (bookEvent: BookEventOfType<'setTotalWin'>) => {
-		stateBet.winBookEventAmount = bookEvent.amount;
+		const authoritativeAmount =
+			stateGame.bonusMode === 'superspin'
+				? Math.max(bookEvent.amount, bonusCarryWinAmount + superSeriesPreviewAmount)
+				: bookEvent.amount;
+		presentedBonusWinAmount = authoritativeAmount;
+		stateBet.winBookEventAmount = authoritativeAmount;
 	},
 	freeSpinTrigger: async (bookEvent: BookEventOfType<'freeSpinTrigger'>) => {
 		const isFeatureSpin = bookEvent.totalFs === 1;
 		const bonusMode = isFeatureSpin ? 'feature' : getBonusModeFromScatters(bookEvent.positions);
+		bonusCarryWinAmount = stateBet.winBookEventAmount;
+		presentedBonusWinAmount = bonusCarryWinAmount;
+		superSeriesPreviewAmount = 0;
 		if (!isFeatureSpin && stateGame.stopAutoOnBonus && stateBet.autoSpinsCounter > 0) {
 			stateBet.autoSpinsCounter = 0;
 		}
@@ -437,6 +463,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 	},
 	finalWin: async (bookEvent: BookEventOfType<'finalWin'>) => {
+		stateBet.winBookEventAmount = bookEvent.amount;
+		bonusCarryWinAmount = 0;
+		presentedBonusWinAmount = bookEvent.amount;
+		superSeriesPreviewAmount = 0;
 		logMagneticDiagnostic('info', 'round_finalized', {
 			amount: bookEvent.amount,
 			bonusMode: stateGame.bonusMode,

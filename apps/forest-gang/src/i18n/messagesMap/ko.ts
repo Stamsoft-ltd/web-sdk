@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': '올인',
 	'RULE ALL IN TEXT': '올인은 무작위로 선택된 확장 심볼 1개와 함께 프리 스핀 10회를 제공합니다. 배율은 2x에서 시작하여 승리 스핀에서만 두 배가 되며, 초반의 작은 승리와 후반의 최대 승리 추격을 만들어냅니다.',
 	'RULE BUY TITLE': '구매 / 활성화 모드',
-	'RULE BUY TEXT': '딜 잇 구매 비용은 베팅의 100배입니다. 올인 구매 비용은 베팅의 400배입니다. 찬스 스핀은 라운드당 베팅의 2배입니다. 피처 스핀은 라운드당 베팅의 20배입니다. 최대 승리는 25,000x입니다. 목표 RTP는 96.1%입니다.',
+	'RULE BUY TEXT': '딜 잇 구매 비용은 베팅의 100배입니다. 올인 구매 비용은 베팅의 400배입니다. 찬스 스핀은 라운드당 베팅의 2배입니다. 피처 스핀은 라운드당 베팅의 20배입니다. 최대 승리는 25,000x입니다. 목표 RTP는 96.11%입니다.',
 	'FEATURE SELECTED SYMBOL TITLE': '선택된 프리미엄 심볼',
 	'FEATURE SELECTED SYMBOL TEXT': '모든 일반 배당 심볼이 확장 심볼이 될 수 있습니다. 착지하면 영향을 받는 모든 릴이 해당 심볼로 채워지며, 인접한 연결이 없어도 3개 이상의 릴에서 배당합니다.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': '딜 잇 배율',
@@ -81,7 +81,7 @@ export default {
 	'HOWTO BET TITLE': '베팅 선택기',
 	'HOWTO BET TEXT': '+ 및 - 버튼을 사용하거나 베팅 메뉴를 열어 라운드 시작 전에 표시된 베팅 금액을 변경하세요.',
 	'HOWTO BUY TITLE': '보너스 구매',
-	'HOWTO BUY TEXT': '보너스 구매를 열어 딜 잇, 올인, 찬스 스핀 또는 피처 스핀을 선택하세요. 딜 잇과 올인은 확인이 필요합니다. 찬스 스핀과 피처 스핀은 즉시 활성화되며 DEACTIVATE 버튼으로 끌 수 있습니다.',
+	'HOWTO BUY TEXT': '보너스 구매를 열어 딜 잇, 올인, 찬스 스핀 또는 피처 스핀을 선택하세요. 딜 잇과 올인은 확인이 필요합니다. 찬스 스핀과 피처 스핀은 즉시 활성화되며 비활성화 버튼으로 끌 수 있습니다.',
 	'HOWTO TURBO TITLE': '터보',
 	'HOWTO TURBO TEXT': '터보는 특정 라운드 타이밍을 단축하여 더 빠른 플레이를 제공합니다.',
 	'HOWTO AUTOPLAY TITLE': '자동 플레이',
@@ -110,27 +110,27 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': '개요',
 	'INFO OVERVIEW BODY':
-		'Forest Gang은 20개의 페이라인에서 플레이하는 5x4 비디오 슬롯입니다.\n승리는 릴 1부터 시작하여 일치하는 심볼이 활성 페이라인에 착지할 때 연속된 릴에서 왼쪽에서 오른쪽으로 지급됩니다.\n게임에는 프리미엄 심볼 5개, 로우 심볼 5개, 와일드 심볼, 스캐터 심볼이 포함됩니다.\n\n최대 승리 잠재력은 총 베팅의 25,000배입니다.\n\n이론적 RTP: 96.1%',
+		'Forest Gang은 20개의 페이라인에서 플레이하는 5x4 비디오 슬롯입니다.\n일반 승리는 릴 1부터 시작하여 일치하는 심볼이 활성 페이라인에 착지할 때 연속된 릴에서 왼쪽에서 오른쪽으로 지급됩니다.\n확장 심볼 승리는 특별한 승리 방식을 따르며 승리 릴이 연속될 필요가 없습니다. 자세한 내용은 확장 심볼 섹션을 참조하세요.\n게임에는 프리미엄 심볼 5개, 로우 심볼 5개, 와일드 심볼, 스캐터 심볼이 포함됩니다.\n\n최대 승리 잠재력은 총 베팅의 25,000배입니다.\n\n이론적 RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': '릴',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': '페이라인',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': '최대 승리',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': '기능',
 	'INFO EXPANDING TITLE': '확장 심볼',
 	'INFO EXPANDING TEXT':
-		'해당 피처 스핀과 보너스 라운드 중에 무작위 심볼 1개가 확장 심볼로 선택됩니다. 선택된 확장 심볼이 릴에 착지하면 수직으로 확장되어 릴 전체를 덮습니다. 확장된 심볼은 같은 스핀에서 여러 페이라인 승리를 만들 수 있습니다. 무작위 배율은 어떤 스핀에서도 나타날 수 있으며 해당 스핀의 승리 금액에 적용됩니다.\n\n무작위 배율은 2x에서 1024x까지입니다.',
+		'해당 피처 스핀과 보너스 라운드 중에 무작위 심볼 1개가 확장 심볼로 선택됩니다.\n선택된 심볼이 릴에 나타나면 수직으로 확장되어 릴 전체를 덮습니다.\n확장 심볼 승리는 일반 페이라인 승리와 다르게 계산됩니다. 확장된 심볼은 승리를 위해 연속된 릴에 나타날 필요가 없습니다. 선택된 심볼이 없는 릴은 확장 심볼 승리를 끊지 않습니다.\n선택된 확장 심볼이 포함된 릴의 수에 따라 적용되는 심볼 배당이 결정됩니다. 확장된 심볼은 같은 스핀에서 여러 페이라인 승리를 만들 수 있습니다.\n무작위 배율은 승리한 어떤 스핀에도 적용될 수 있으며 해당 스핀의 총 승리 금액에 적용됩니다.\n\n무작위 배율은 2x에서 1024x까지입니다.',
 	'INFO DEAL IT TITLE': '딜 잇 보너스',
 	'INFO DEAL IT HL': '스캐터 3개',
 	'INFO DEAL IT TEXT':
-		'스캐터 심볼 3개로 발동됩니다.\n\n프리 스핀 10회를 제공합니다. 보너스가 시작되기 전에 무작위 확장 심볼 1개가 선택됩니다. 보너스 동안 선택된 심볼이 릴 전체를 덮도록 확장될 수 있습니다.\n\n무작위 배율은 최대 100x까지 어떤 승리 스핀에도 적용될 수 있습니다.',
+		'스캐터 심볼 3개로 발동됩니다.\n\n프리 스핀 10회를 제공합니다. 보너스가 시작되기 전에 무작위 확장 심볼 1개가 선택됩니다. 보너스 동안 선택된 심볼이 릴 전체를 덮도록 확장될 수 있습니다.\n\n무작위 배율은 최대 100x까지 어떤 승리 스핀에도 적용될 수 있습니다.\n\n보너스 라운드는 다음과 같이 재트리거될 수 있습니다:\n[[스캐터 3개]] +3 스핀\n[[스캐터 4개]] +5 스핀\n[[스캐터 5개]] +8 스핀',
 	'INFO ALL IN TITLE': '올인 보너스',
 	'INFO ALL IN HL': '스캐터 4개',
 	'INFO ALL IN TEXT':
-		'스캐터 심볼 4개로 발동되며 프리 스핀 10회를 제공합니다.\n\n보너스가 시작되기 전에 무작위 확장 심볼 1개가 선택됩니다. 보너스 동안 선택된 심볼이 릴 전체를 덮도록 확장될 수 있습니다. 릴 배율은 보너스 전체 동안 활성 상태로 유지되며, 2x에서 시작하여 해당 승리마다 두 배가 됩니다.',
+		'스캐터 심볼 4개로 발동되며 프리 스핀 10회를 제공합니다.\n\n보너스가 시작되기 전에 무작위 확장 심볼 1개가 선택됩니다. 보너스 동안 선택된 심볼이 릴 전체를 덮도록 확장될 수 있습니다. 릴 배율은 보너스 전체 동안 활성 상태로 유지되며, 2x에서 시작하여 해당 승리마다 두 배가 됩니다.\n\n보너스 라운드는 다음과 같이 재트리거될 수 있습니다:\n[[스캐터 3개]] +3 스핀\n[[스캐터 4개]] +5 스핀\n[[스캐터 5개]] +8 스핀',
 	'INFO PLACEHOLDER BODY': '디자인 곧 공개됩니다.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': '배당표',
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': '승리 방법',
 	'INFO WAYS NOTE':
-		'Forest Gang은 20개의 고정 페이라인에서 플레이됩니다. 일치하는 심볼이 활성 페이라인에서 왼쪽에서 오른쪽으로 연속된 릴에 착지할 때 승리 조합이 형성됩니다. 최종 게임 규칙에 달리 명시되지 않는 한, 페이라인당 심볼당 가장 높은 승리만 지급됩니다.',
+		'Forest Gang은 20개의 고정 페이라인에서 플레이합니다. 일반 심볼 승리는 릴 1부터 시작하여 일치하는 심볼이 활성 페이라인에서 왼쪽에서 오른쪽으로 연속된 릴에 착지할 때 성립합니다. 확장 심볼 승리는 특별한 승리 방식을 따르며 승리 릴이 연속될 필요가 없습니다. 선택된 확장 심볼이 없는 릴은 확장 심볼 승리를 중단시키지 않습니다. 자세한 내용은 확장 심볼 섹션을 참조하세요. 게임 규칙에 달리 명시되지 않는 한, 심볼당 페이라인당 가장 높은 승리만 지급됩니다.',
 	// Feature buy page
 	'INFO BUY TITLE': '기능 구매',
 	'INFO BUY CHANCE TITLE': '추가 보너스 찬스',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': '올인 보너스를 즉시 제공합니다.',
 	'INFO BUY COST': '비용',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "기본 RTP 96.11%",
 	'INFO BUY CHANCE_LABEL': '보너스 찬스',
 	'INFO BUY CHANCE_VALUE': '3x 찬스',
 	// General info page
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': '숲의 왕이 되어보세요',
 	'SPLASH EPIC BOTTOM': '최대 승리',
 	'SPLASH PRESS': '눌러서 계속',
+	'PRESS ANYWHERE': '아무 곳이나 눌러 계속',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': '축하합니다!',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': '자동 스핀',
 	'TURBO SPIN': '터보 스핀',
 	'SUPER TURBO SPIN': '슈퍼 터보 스핀',
-	'BONUS FEATURE 100X': '100 X 보너스 기능',
+	'BONUS FEATURE 100X': '20 X 보너스 기능',
 	'NUMBER OF SPINS': '스핀 횟수',
 	'START AUTOPLAY': '자동 플레이 시작',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': '진행 중인 %mode% 보너스가 있습니다.',
 	'END ROUND': '라운드 종료',
 	'PLAY ROUND': '라운드 플레이',
+	'INFO UI TITLE': '사용자 인터페이스 가이드',
+	'INFO UI SPIN TITLE': '스핀',
+	'INFO UI SPIN TEXT': '새 게임 라운드를 시작합니다.',
+	'INFO UI AUTO TITLE': '자동 스핀',
+	'INFO UI AUTO TEXT': '자동 스핀 메뉴를 엽니다.',
+	'INFO UI TURBO TITLE': '터보',
+	'INFO UI TURBO TEXT': '릴 회전 속도를 높입니다.',
+	'INFO UI BETPLUS TITLE': '베팅 +',
+	'INFO UI BETPLUS TEXT': '총 베팅 금액을 늘립니다.',
+	'INFO UI BETMINUS TITLE': '베팅 -',
+	'INFO UI BETMINUS TEXT': '총 베팅 금액을 줄입니다.',
+	'INFO UI INFO TITLE': '정보',
+	'INFO UI INFO TEXT': '게임 정보를 엽니다.',
+	'INFO UI SOUND TITLE': '사운드',
+	'INFO UI SOUND TEXT': '게임 소리를 켜거나 끕니다.',
+	'INFO UI PREV TITLE': '이전',
+	'INFO UI PREV TEXT': '이전 페이지로 이동합니다.',
+	'INFO UI NEXT TITLE': '다음',
+	'INFO UI NEXT TEXT': '다음 페이지로 이동합니다.',
+	'INFO UI CLOSE TITLE': '닫기',
+	'INFO UI CLOSE TEXT': '현재 창을 닫습니다.',
 };

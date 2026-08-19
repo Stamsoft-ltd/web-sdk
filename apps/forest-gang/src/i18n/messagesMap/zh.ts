@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': '全押',
 	'RULE ALL IN TEXT': '全押奖励10次免费旋转，随机选择1个扩展符号。倍数从2x开始，仅在中奖旋转时翻倍，形成早期小奖和后期冲击最大奖金的追逐。',
 	'RULE BUY TITLE': '购买 / 激活模式',
-	'RULE BUY TEXT': '发牌购买费用为100x投注。全押购买费用为400x投注。机会旋转每回合2x投注。功能旋转每回合20x投注。最大奖金为25,000x。目标RTP为96.1%。',
+	'RULE BUY TEXT': '发牌购买费用为100x投注。全押购买费用为400x投注。机会旋转每回合2x投注。功能旋转每回合20x投注。最大奖金为25,000x。目标RTP为96.11%。',
 	'FEATURE SELECTED SYMBOL TITLE': '所选高级符号',
 	'FEATURE SELECTED SYMBOL TEXT': '任何常规赔付符号都可以成为扩展符号。当它落定时，所有受影响的卷轴都会扩展填满该符号，3个或更多卷轴即使没有相邻连接也会赔付。',
 	'FEATURE DEAL IT MULTIPLIER TITLE': '发牌倍数',
@@ -81,7 +81,7 @@ export default {
 	'HOWTO BET TITLE': '投注选择器',
 	'HOWTO BET TEXT': '使用 + 和 - 按钮或打开投注菜单，在回合开始前更改显示的投注金额。',
 	'HOWTO BUY TITLE': '购买奖励',
-	'HOWTO BUY TEXT': '打开购买奖励以选择发牌、全押、机会旋转或功能旋转。发牌和全押需要确认。机会旋转和功能旋转立即激活，可用DEACTIVATE按钮关闭。',
+	'HOWTO BUY TEXT': '打开购买奖励以选择发牌、全押、机会旋转或功能旋转。发牌和全押需要确认。机会旋转和功能旋转立即激活，可用停用按钮关闭。',
 	'HOWTO TURBO TITLE': '加速',
 	'HOWTO TURBO TEXT': '加速缩短某些回合时长，让游戏更快。',
 	'HOWTO AUTOPLAY TITLE': '自动游戏',
@@ -110,27 +110,27 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': '概览',
 	'INFO OVERVIEW BODY':
-		'森林帮派是一款在20条赔付线上进行的5x4视频老虎机。\n当匹配符号落在激活的赔付线上时，从卷轴1开始，在连续卷轴上从左到右赔付。\n游戏包含5个高级符号、5个低级符号、1个百搭符号和1个分散符号。\n\n最大奖金潜力为总投注的25,000倍。\n\n理论RTP：96.1%',
+		'森林帮派是一款在20条赔付线上进行的5x4视频老虎机。\n当匹配符号落在激活的赔付线上时，标准奖金从卷轴1开始，在连续卷轴上从左到右赔付。\n扩展符号的奖金采用特殊的中奖机制，中奖卷轴无需连续。详情请参阅扩展符号章节。\n游戏包含5个高级符号、5个低级符号、1个百搭符号和1个分散符号。\n\n最大奖金潜力为总投注的25,000倍。\n\n理论RTP：96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': '卷轴',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': '赔付线',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': '最大奖金',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': '功能',
 	'INFO EXPANDING TITLE': '扩展符号',
 	'INFO EXPANDING TEXT':
-		'在符合条件的功能旋转和奖励回合中，会随机选择一个符号作为扩展符号。当所选扩展符号落在卷轴上时，它会垂直扩展以覆盖整个卷轴。扩展符号可在同一次旋转中形成多条赔付线的奖金。随机倍数可在任何旋转中出现，并应用于该次旋转的中奖金额。\n\n随机倍数可从2x到1024x。',
+		'在符合条件的功能旋转和奖励回合中，会随机选择一个符号作为扩展符号。\n当所选符号出现在某个卷轴上时，它会垂直扩展以覆盖整个卷轴。\n扩展符号的奖金判定方式与标准赔付线奖金不同。扩展符号无需出现在连续卷轴上即可获得奖金。不含所选符号的卷轴不会中断扩展符号的奖金。\n包含所选扩展符号的卷轴数量决定适用的符号赔付。扩展符号可在同一次旋转中形成多条赔付线的奖金。\n随机倍数可应用于任何中奖旋转，并应用于该次旋转的总中奖金额。\n\n随机倍数可从2x到1024x。',
 	'INFO DEAL IT TITLE': '发牌奖励',
 	'INFO DEAL IT HL': '3个分散',
 	'INFO DEAL IT TEXT':
-		'由3个分散符号触发。\n\n奖励10次免费旋转。奖励开始前，会随机选择一个扩展符号。奖励期间，所选符号可能扩展以覆盖整个卷轴。\n\n随机倍数可应用于任何中奖旋转，最高100x。',
+		'由3个分散符号触发。\n\n奖励10次免费旋转。奖励开始前，会随机选择一个扩展符号。奖励期间，所选符号可能扩展以覆盖整个卷轴。\n\n随机倍数可应用于任何中奖旋转，最高100x。\n\n奖励回合可按以下方式重新触发:\n[[3个夺宝符号]] +3次旋转\n[[4个夺宝符号]] +5次旋转\n[[5个夺宝符号]] +8次旋转',
 	'INFO ALL IN TITLE': '全押奖励',
 	'INFO ALL IN HL': '4个分散',
 	'INFO ALL IN TEXT':
-		'由4个分散符号触发并奖励10次免费旋转。\n\n奖励开始前，会随机选择一个扩展符号。奖励期间，所选符号可能扩展以覆盖整个卷轴。卷轴倍数在整个奖励期间保持激活，从2x开始，每次符合条件的中奖时翻倍。',
+		'由4个分散符号触发并奖励10次免费旋转。\n\n奖励开始前，会随机选择一个扩展符号。奖励期间，所选符号可能扩展以覆盖整个卷轴。卷轴倍数在整个奖励期间保持激活，从2x开始，每次符合条件的中奖时翻倍。\n\n奖励回合可按以下方式重新触发:\n[[3个夺宝符号]] +3次旋转\n[[4个夺宝符号]] +5次旋转\n[[5个夺宝符号]] +8次旋转',
 	'INFO PLACEHOLDER BODY': '设计即将推出。',
 	// Paytable page
 	'INFO PAYTABLE TITLE': '赔付表',
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': '中奖方式',
 	'INFO WAYS NOTE':
-		'森林帮派在20条固定赔付线上进行。当匹配符号在任何激活赔付线上从左到右落在连续卷轴上时，即形成中奖组合。除非最终游戏规则另有说明，否则每个符号每条赔付线仅支付最高奖金。',
+		'森林帮派在20条固定赔付线上进行。当匹配符号在激活的赔付线上从卷轴1开始、从左到右落在连续卷轴上时，即形成标准符号奖金。扩展符号的奖金采用特殊的中奖机制，中奖卷轴无需连续。不含所选扩展符号的卷轴不会中断扩展符号的奖金。完整详情请参阅扩展符号章节。除非游戏规则另有说明，每个符号每条赔付线仅赔付最高奖金。',
 	// Feature buy page
 	'INFO BUY TITLE': '功能购买',
 	'INFO BUY CHANCE TITLE': '额外奖励机会',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': '立即奖励全押奖励。',
 	'INFO BUY COST': '费用',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "基础RTP 96.11%",
 	'INFO BUY CHANCE_LABEL': '奖励机会',
 	'INFO BUY CHANCE_VALUE': '3x 机会',
 	// General info page
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': '成为森林之王，赢取',
 	'SPLASH EPIC BOTTOM': '最大奖金',
 	'SPLASH PRESS': '按此继续',
+	'PRESS ANYWHERE': '按任意位置继续',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': '恭喜！',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': '自动旋转',
 	'TURBO SPIN': '加速旋转',
 	'SUPER TURBO SPIN': '超级加速旋转',
-	'BONUS FEATURE 100X': '100 X 奖励功能',
+	'BONUS FEATURE 100X': '20 X 奖励功能',
 	'NUMBER OF SPINS': '旋转次数',
 	'START AUTOPLAY': '开始自动游戏',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': '您有一个正在进行的 %mode% 奖励。',
 	'END ROUND': '结束回合',
 	'PLAY ROUND': '进行回合',
+	'INFO UI TITLE': '用户界面指南',
+	'INFO UI SPIN TITLE': '旋转',
+	'INFO UI SPIN TEXT': '开始新一轮游戏。',
+	'INFO UI AUTO TITLE': '自动旋转',
+	'INFO UI AUTO TEXT': '打开自动旋转菜单。',
+	'INFO UI TURBO TITLE': '涡轮',
+	'INFO UI TURBO TEXT': '启用更快的卷轴旋转。',
+	'INFO UI BETPLUS TITLE': '投注 +',
+	'INFO UI BETPLUS TEXT': '增加您的总投注。',
+	'INFO UI BETMINUS TITLE': '投注 -',
+	'INFO UI BETMINUS TEXT': '减少您的总投注。',
+	'INFO UI INFO TITLE': '信息',
+	'INFO UI INFO TEXT': '打开游戏信息。',
+	'INFO UI SOUND TITLE': '声音',
+	'INFO UI SOUND TEXT': '打开或关闭游戏声音。',
+	'INFO UI PREV TITLE': '上一页',
+	'INFO UI PREV TEXT': '转到上一页。',
+	'INFO UI NEXT TITLE': '下一页',
+	'INFO UI NEXT TEXT': '转到下一页。',
+	'INFO UI CLOSE TITLE': '关闭',
+	'INFO UI CLOSE TEXT': '关闭当前窗口。',
 };

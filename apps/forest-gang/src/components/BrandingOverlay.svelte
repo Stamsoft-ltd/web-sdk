@@ -1,6 +1,6 @@
 <script lang="ts">
-	const heroUrl = './assets/components/backgrounds/visual_v2.png';
-	const scatterUrl = './assets/components/symbols/scatter.png';
+	const heroUrl = './assets/components/backgrounds/visual_v2.webp';
+	const scatterUrl = './assets/components/symbols/scatter.webp';
 </script>
 
 <div class="branding-overlay">
@@ -46,7 +46,7 @@
 	.hero-copy {
 		padding: 0.6rem 0.8rem 0.8rem;
 		color: #fff5cf;
-		font-family: proxima-nova, sans-serif;
+		font-family: 'Poppins', sans-serif;
 	}
 
 	.title {

@@ -19,6 +19,12 @@ export const socialOverridesEn: Record<string, string> = {
 	'BUY BONUS': 'GET BONUS',
 	BUY: 'PLAY',
 	PAYOUT: 'WIN',
+	'BET REPLAY': 'Play Replay',
+	'TOTAL BET COST': 'Total Play',
+	'REPLAY DISCLAIMER': 'This is a replay of a previous play round. No plays will be placed.',
+	'BASE BET': 'BASE PLAY',
+	'COST MULTIPLIER': 'FEATURE MULTIPLIER',
+	'PAYOUT MULTIPLIER': 'FINAL MULTIPLIER',
 
 	// ── Bet-mode cards / tickers ─────────────────────────────────────────────────
 	'BET MODE BONUS DESCRIPTION':
@@ -97,8 +103,7 @@ export const socialOverridesEn: Record<string, string> = {
 	'INFO CTRL INFO DESC': 'View the game rules and win table.',
 	'INFO CW 1': 'Magnetic uses cluster wins instead of win lines.',
 	'INFO FEAT WILD TEXT': 'Substitutes for all winning symbols except Scatter.',
-	'BET MODE BASE DIALOG':
-		'7x7 cluster-win base game with natural clusters and random magnets.',
+	'BET MODE BASE DIALOG': '7x7 cluster-win base game with natural clusters and random magnets.',
 	'RULE GAME TEXT':
 		'Magnetic is a 7x7 cluster-win slot. Wins form when 5 or more matching symbols touch horizontally or vertically. Diagonal connections do not count.',
 	'RULE SCATTER TEXT':
@@ -113,8 +118,7 @@ export const socialOverridesEn: Record<string, string> = {
 	// Insufficient-balance dialog. The base copy carries two restricted terms — "bet" (-> play) and
 	// "funds" (fund -> balance / deposit -> get coins) — so social mode gets its own sentence. The
 	// TITLE needs no override: "NOT ENOUGH BALANCE" contains no restricted substring.
-	'NO BALANCE BODY':
-		'Your balance is too low for this play amount. Lower it to keep playing.',
+	'NO BALANCE BODY': 'Your balance is too low for this play amount. Lower it to keep playing.',
 
 	// Note: the General Game Disclaimer (DISCLAIMER TEXT) is intentionally NOT overridden here — the
 	// base copy is jurisdiction-neutral legal boilerplate, so social mode shows the same verbatim text

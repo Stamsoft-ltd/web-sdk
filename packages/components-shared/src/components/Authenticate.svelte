@@ -3,7 +3,8 @@
 
 	import { requestAuthenticate, requestReplay } from 'rgs-requests';
 	import { stateUrlDerived, stateBet, stateConfig, stateModal, stateUi } from 'state-shared';
-	import { API_AMOUNT_MULTIPLIER, MOST_USED_BET_INDEXES } from 'constants-shared/bet';
+	import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
+	import { normalizeRgsBetConfig } from '../betConfig';
 
 	type Props = { children: Snippet };
 
@@ -60,17 +61,23 @@
 				// 	}
 				// }
 				stateConfig.jurisdiction = authenticateData?.config?.jurisdiction;
-				stateConfig.betAmountOptions = (authenticateData.config?.betLevels || []).map(
-					(level) => level / API_AMOUNT_MULTIPLIER,
+				const normalizedBetConfig = normalizeRgsBetConfig(
+					authenticateData.config,
+					stateConfig.betAmountOptions,
 				);
-				stateConfig.betMenuOptions = stateConfig.betAmountOptions.filter((_, index) =>
-					MOST_USED_BET_INDEXES.includes(index),
-				);
+				stateConfig.betAmountOptions = normalizedBetConfig.betAmountOptions;
+				stateConfig.betMenuOptions = normalizedBetConfig.betMenuOptions;
+				stateConfig.minBetAmount = normalizedBetConfig.minBetAmount;
+				stateConfig.maxBetAmount = normalizedBetConfig.maxBetAmount;
+				stateConfig.stepBetAmount = normalizedBetConfig.stepBetAmount;
+				stateConfig.defaultBetAmount = normalizedBetConfig.defaultBetAmount;
+				stateBet.betAmount = normalizedBetConfig.defaultBetAmount;
+				stateBet.wageredBetAmount = normalizedBetConfig.defaultBetAmount;
 			}
 
 			// round
 			if (authenticateData?.round) {
-				// Example of authenticateData.round 
+				// Example of authenticateData.round
 				// {
 				// 	"betID": 62277967,
 				// 	"amount": 1000000,
@@ -82,12 +89,12 @@
 				// 	"event": null
 				// }
 
-				if(authenticateData.round?.state) {
+				if (authenticateData.round?.state) {
 					// @ts-ignore
-					stateBet.betToResume =  authenticateData.round;
+					stateBet.betToResume = authenticateData.round;
 				}
 
-				if(authenticateData.round?.amount) {
+				if (authenticateData.round?.amount) {
 					const betAmountValue =
 						authenticateData.round.amount > 0
 							? authenticateData.round.amount / API_AMOUNT_MULTIPLIER
@@ -98,7 +105,7 @@
 
 				if (authenticateData.round?.mode) {
 					stateBet.activeBetModeKey = authenticateData.round.mode;
-				};
+				}
 			}
 		} catch (error) {
 			console.error(error);
@@ -107,8 +114,9 @@
 	};
 
 	const handleReplay = async () => {
-		stateBet.betAmount = (stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER) || 0;
-		stateBet.wageredBetAmount = (stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER) || 0;
+		if (stateUrlDerived.currency()) stateBet.currency = stateUrlDerived.currency();
+		stateBet.betAmount = stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER || 0;
+		stateBet.wageredBetAmount = stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER || 0;
 		stateBet.activeBetModeKey = stateUrlDerived.mode();
 
 		const data = await requestReplay({
@@ -117,9 +125,12 @@
 			mode: stateUrlDerived.mode(),
 			version: stateUrlDerived.version(),
 			event: stateUrlDerived.event(),
+			language: stateUrlDerived.lang(),
 		});
 
-		if(data) {
+		if (data) {
+			const replayCurrency = data?.balance?.currency || data?.currency;
+			if (replayCurrency) stateBet.currency = replayCurrency;
 			// @ts-ignore
 			stateBet.betToResume = {
 				...data,
@@ -131,13 +142,13 @@
 	};
 
 	onMount(async () => {
-		if(stateUrlDerived.replay()) {
+		if (stateUrlDerived.replay()) {
 			stateUi.config.mode = 'replay';
 			await handleReplay();
 		} else {
 			stateUi.config.mode = 'default';
 			await authenticate();
-		};
+		}
 
 		authenticated = true;
 	});

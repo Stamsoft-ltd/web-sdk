@@ -1,26 +1,31 @@
+<script lang="ts" module>
+	// Module scope so the art registers at bootstrap and preloads during the loading screen —
+	// this modal only mounts when opened, which used to be when its images first fetched.
+	import { ap } from '../lib/preloadArt';
+
+	const cardBg       = ap('/assets/components/ui/bonus_card_bg.webp');
+	const chanceIcon   = ap('/assets/components/ui/bonus_icon_chance.webp');
+	const featureIcon  = ap('/assets/components/ui/bonus_icon_feature.webp');
+	const allInIcon    = ap('/assets/components/ui/bonus_icon_allin.webp?v=20260724');   // 3 emblems (DEAL IT card)
+	const dealItIcon   = ap('/assets/components/ui/bonus_icon_dealit.webp?v=20260724');  // 4 emblems (ALL IN card)
+	// Bet readout + steppers reuse the navigation icons / round frame
+	const iconCoins    = ap('/assets/hud/icon-coins.webp');
+	const iconMinus    = ap('/assets/hud/icon-minus.webp');
+	const iconPlus     = ap('/assets/hud/icon-plus.webp');
+	const btnRoundBg   = ap('/assets/components/navbar/btn_bg_round.webp');
+	const betBoxMobile = ap('/assets/components/navbar/bet_box_mobile.webp'); // wooden bet-box bg (portrait)
+	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.webp?v=20260624');
+	// Reuse the game-rules ("tutorials") round nav-button ring for the close button so they match.
+	const closeBtnBg = ap('/assets/components/info/nav_btn_bg.webp');
+</script>
+
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { stateBet, stateBetDerived, stateConfig } from 'state-shared';
+	import { stateBet, stateBetDerived, stateConfig, stateUrlDerived } from 'state-shared';
 	import { getContext } from '../game/context';
 	import { forestStakeDerived } from '../state/forestStake.svelte';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { fitLabel } from '../lib/fitLabel';
-
-	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	const cardBg       = ap('/assets/components/ui/bonus_card_bg.png');
-	const chanceIcon   = ap('/assets/components/ui/bonus_icon_chance.png');
-	const featureIcon  = ap('/assets/components/ui/bonus_icon_feature.png');
-	const allInIcon    = ap('/assets/components/ui/bonus_icon_allin.png');   // 3 coins
-	const dealItIcon   = ap('/assets/components/ui/bonus_icon_dealit.png');  // 4 coins
-	// Bet readout + steppers reuse the navigation icons / round frame
-	const iconCoins    = ap('/assets/hud/icon-coins.png');
-	const iconMinus    = ap('/assets/hud/icon-minus.png');
-	const iconPlus     = ap('/assets/hud/icon-plus.png');
-	const btnRoundBg   = ap('/assets/components/navbar/btn_bg_round.png');
-	const betBoxMobile = ap('/assets/components/navbar/bet_box_mobile.png'); // wooden bet-box bg (portrait)
-	const confirmPanelBg = ap('/assets/components/ui/confirm_frame.png?v=20260624');
-	// Reuse the game-rules ("tutorials") round nav-button ring for the close button so they match.
-	const closeBtnBg = ap('/assets/components/info/nav_btn_bg.webp');
 
 	type Props = {
 		onclose: () => void;
@@ -37,6 +42,18 @@
 	// Short-height row layouts (mobile landscape / tablet) need tighter card packing so the longest
 	// descriptions fit; desktop has room to spare and keeps the roomier original spacing.
 	const isCompactRow = $derived(layoutType === 'landscape' || layoutType === 'tablet');
+
+	// Compact one-row mode (Stake popup S, landscape phones): instead of guessing device sizes with
+	// media-query breakpoints, measure whether the REGULAR layout fits. A regular card is a square
+	// sized by the panel width ((panel − padding − 3 gaps) / 4); the title, bet bar and card text
+	// need ~200px on top of that. Shorter than that → compact (4:5 cards, slim title/bet bar).
+	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
+	const isCompactShort = $derived.by(() => {
+		if (isPortrait) return false;
+		const panelWidth = Math.min(1120, canvas.width * 0.97);
+		const cardSize = (panelWidth - 32 - 48) / 4;
+		return canvas.height < cardSize + 210;
+	});
 
 	// Cost multipliers match config.betModes: CHANCE 2×, FEATURE 20×, BONUS 100×, SUPER 400×.
 	// "DEAL IT" is the 100× (BONUS) mode, "ALL IN" the 400× (SUPER) mode.
@@ -56,6 +73,12 @@
 	const canAllIn   = $derived(canAfford(100)); // BONUS
 	const canDealIt  = $derived(canAfford(400)); // SUPER
 
+	// Social-casino jurisdictions can't surface "bet" wording — swap the +/- screen-reader
+	// labels to "play amount" so assistive tech matches the on-screen social terminology.
+	const isSocial = $derived(stateConfig.jurisdiction.socialCasino || stateUrlDerived.social());
+	const decBetLabel = $derived(isSocial ? 'Decrease play amount' : 'Decrease bet');
+	const incBetLabel = $derived(isSocial ? 'Increase play amount' : 'Increase bet');
+
 	// Bet stepper (mirrors the HUD): changing the bet rescales the bonus costs.
 	const betOptions = $derived(stateConfig.betAmountOptions);
 	const currentBetIndex = $derived(Math.max(0, betOptions.indexOf(stateBet.betAmount)));
@@ -68,16 +91,35 @@
 		stateBetDerived.setBetAmount(next);
 	};
 
-	let confirmMode = $state<null | 'BONUS' | 'SUPER'>(null);
+	let confirmMode = $state<null | 'BONUS' | 'SUPER' | 'FEATURE'>(null);
 
 	const buyMode      = (mode: 'BONUS' | 'SUPER') => { stateBet.activeBetModeKey = mode; props.onclose(); context.eventEmitter.broadcast({ type: 'bet' }); };
-	const openConfirm  = (mode: 'BONUS' | 'SUPER') => { confirmMode = mode; };
+	const openConfirm  = (mode: 'BONUS' | 'SUPER' | 'FEATURE') => { confirmMode = mode; };
 	const closeConfirm = () => { confirmMode = null; };
 	const toggleActivateMode = (toggle: () => void) => { toggle(); props.onclose(); };
 
 	// BONUS → DEAL IT (100×), SUPER → ALL IN (400×)
-	const confirmLabel = $derived(confirmMode === 'SUPER' ? i18nDerived.allIn() : i18nDerived.dealIt());
-	const confirmCost  = $derived(confirmMode === 'SUPER' ? dealItCost : allInCost);
+	const confirmLabel = $derived(
+		confirmMode === 'SUPER'
+			? i18nDerived.allIn()
+			: confirmMode === 'FEATURE'
+				? i18nDerived.translate('CARD FEATURE TITLE')
+				: i18nDerived.dealIt(),
+	);
+	const confirmCost  = $derived(
+		confirmMode === 'SUPER' ? dealItCost : confirmMode === 'FEATURE' ? featureCost : allInCost,
+	);
+	// Compliance: any mode costing more than 2x base must be confirmed before activation —
+	// Feature Spins (20x) goes through the same confirm dialog as the buy bonuses. Confirming
+	// FEATURE toggles the mode on; deactivation stays single-click (it costs nothing).
+	const confirmAccept = () => {
+		if (confirmMode === 'FEATURE') {
+			confirmMode = null;
+			toggleActivateMode(props.onToggleFeature);
+			return;
+		}
+		buyMode(confirmMode!);
+	};
 
 	onMount(() => {
 		const onKeyDown = (e: KeyboardEvent) => {
@@ -93,7 +135,7 @@
 <button class="backdrop" type="button" aria-label="Close" tabindex="-1" onclick={props.onclose}></button>
 
 <!-- Panel -->
-<div class="panel" class:panel--portrait={isPortrait} role="dialog" aria-modal="true">
+<div class="panel" class:panel--portrait={isPortrait} class:panel--compact={isCompactShort} role="dialog" aria-modal="true">
 
 	<button class="close-btn" type="button" style={`background-image:url('${closeBtnBg}')`} aria-label="Close" onclick={props.onclose}><span class="close-btn__x">✕</span></button>
 
@@ -130,7 +172,10 @@
 					class:card-btn--active={props.isFeatureActive}
 					type="button"
 					disabled={!props.isFeatureActive && !canFeature}
-					onclick={() => toggleActivateMode(props.onToggleFeature)}
+					onclick={() =>
+						props.isFeatureActive
+							? toggleActivateMode(props.onToggleFeature)
+							: openConfirm('FEATURE')}
 				><span class="btn-label" use:fitLabel={props.isFeatureActive ? i18nDerived.deactivate() : i18nDerived.activate()}>{props.isFeatureActive ? i18nDerived.deactivate() : i18nDerived.activate()}</span></button>
 			</div>
 		</div>
@@ -165,7 +210,7 @@
 		<!-- Portrait: fixed footer — a wooden bet box holding [−] [coins · BET · amount] [+] -->
 		<div class="bet-bar bet-bar--portrait">
 			<div class="bet-box" style="--betbox:url('{betBoxMobile}')">
-				<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canDec} onclick={() => stepBet(-1)} aria-label="Decrease bet">
+				<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canDec} onclick={() => stepBet(-1)} aria-label={decBetLabel}>
 					<img src={iconMinus} alt="" />
 				</button>
 				<div class="bet-pill">
@@ -175,7 +220,7 @@
 						<span class="bet-amount">{formattedBet}</span>
 					</div>
 				</div>
-				<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canInc} onclick={() => stepBet(1)} aria-label="Increase bet">
+				<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canInc} onclick={() => stepBet(1)} aria-label={incBetLabel}>
 					<img src={iconPlus} alt="" />
 				</button>
 			</div>
@@ -188,10 +233,10 @@
 				<span class="bet-label">{i18nDerived.betLabel()}</span>
 				<span class="bet-amount">{formattedBet}</span>
 			</div>
-			<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canDec} onclick={() => stepBet(-1)} aria-label="Decrease bet">
+			<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canDec} onclick={() => stepBet(-1)} aria-label={decBetLabel}>
 				<img src={iconMinus} alt="" />
 			</button>
-			<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canInc} onclick={() => stepBet(1)} aria-label="Increase bet">
+			<button class="step-btn" style="--round:url('{btnRoundBg}')" type="button" disabled={!canInc} onclick={() => stepBet(1)} aria-label={incBetLabel}>
 				<img src={iconPlus} alt="" />
 			</button>
 		</div>
@@ -201,15 +246,15 @@
 <!-- Confirm -->
 {#if confirmMode}
 	<button class="backdrop backdrop--z2" type="button" aria-label="Close" tabindex="-1" onclick={closeConfirm}></button>
-	<button class="confirm-close" type="button" onclick={closeConfirm} aria-label="Close">✕</button>
 	<div class="confirm" role="dialog" aria-modal="true">
+		<button class="confirm-close" type="button" onclick={closeConfirm} aria-label="Close">✕</button>
 		<div class="confirm-panel" style={`background-image:url('${confirmPanelBg}')`}>
 			<div class="confirm-content">
 				<div class="confirm-title">{i18nDerived.confirm()} {confirmLabel}</div>
 				<div class="confirm-text">{i18nDerived.translateVars('CONFIRM TEXT', { mode: confirmLabel, cost: confirmCost })}</div>
 				<div class="confirm-row">
 					<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}>{i18nDerived.cancel()}</button>
-					<button class="confirm-btn confirm-btn--ok" type="button" onclick={() => buyMode(confirmMode!)}>{i18nDerived.confirm()}</button>
+					<button class="confirm-btn confirm-btn--ok" type="button" onclick={confirmAccept}>{i18nDerived.confirm()}</button>
 				</div>
 			</div>
 		</div>
@@ -262,9 +307,11 @@
 		background-clip: text; -webkit-background-clip: text; color: transparent;
 	}
 
-	/* One row of 4 cards with gaps between them (Figma node 2349-2074) */
+	/* One row of 4 cards with gaps between them (Figma node 2349-2074).
+	   align-items: center, NOT stretch — stretch overrides the cards' square aspect-ratio when the
+	   host constrains the row height (seen in the Stake popup) and squashes the frames flat. */
 	.grid {
-		display: flex; justify-content: center; align-items: stretch;
+		display: flex; justify-content: center; align-items: center;
 		gap: 16px;
 		width: 100%;
 	}
@@ -328,7 +375,7 @@
 	}
 
 	.card-icon-wrap {
-		height: clamp(22px, 15cqw, 40px);
+		height: clamp(17px, 11cqw, 30px);
 		display: flex; align-items: center; justify-content: center;
 		flex-shrink: 0;
 	}
@@ -337,6 +384,7 @@
 		width: auto; height: auto;
 		object-fit: contain;
 		filter: drop-shadow(0 2px 5px rgba(0,0,0,0.55));
+		/* Static — no swing (per design). */
 	}
 
 	.card-price {
@@ -413,13 +461,15 @@
 	.step-btn:disabled { opacity: 0.45; cursor: default; }
 	.step-btn img { width: 44%; height: 44%; object-fit: contain; }
 
-	/* Confirm */
+	/* Confirm — mirrors BonusResumeModal: cqw-based inner sizing so the content scales with the
+	   panel (not the viewport), which keeps the 505:301 art aspect intact at every window size. */
 	.confirm-close {
-		position: fixed; top: 22px; right: 22px; z-index: 73;
-		width: 52px; height: 52px; border-radius: 50%;
-		border: 2px solid rgba(217, 133, 3, 0.7);
+		/* Sit just off the top-right corner — clear of the leaves but still attached to the panel. */
+		position: absolute; top: -6cqw; right: -6cqw; z-index: 73;
+		width: 11cqw; height: 11cqw; border-radius: 50%;
+		border: 0.45cqw solid rgba(217, 133, 3, 0.7);
 		background: radial-gradient(circle at 50% 35%, #3a2a16, #140d06);
-		color: #e8c878; font-size: 1.1rem; font-weight: 700;
+		color: #e8c878; font-size: 3.4cqw; font-weight: 700;
 		cursor: pointer; display: grid; place-items: center;
 		box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 		transition: filter 0.12s ease;
@@ -430,8 +480,23 @@
 		position: fixed; left: 50%; top: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 71;
-		width: min(680px, 94vw);
+		/* Desktop confirm was capped tiny (333px) — reads small on a wide canvas. Bigger cap so it
+		   matches the presence of the parent BUY BONUS modal; 46vw/74vh still bound it on small screens. */
+		width: min(560px, 46vw, 74vh);
 		font-family: 'Cinzel', serif;
+		/* All inner sizing is in cqw so the content scales with the panel, not the viewport. */
+		container-type: inline-size;
+	}
+	/* Portrait windows are narrow — 46vw reads tiny there; let the panel take most of the width. */
+	@media (orientation: portrait) {
+		.confirm { width: min(420px, 88vw); }
+		/* On the wide portrait panel (88vw) the desktop -10cqw pushed the close button off the right
+		   screen edge (clipped in half). Shrink it and pull it inward so it stays fully visible. */
+		.confirm-close {
+			top: -2cqw; right: -2cqw;
+			width: 8cqw; height: 8cqw;
+			border-width: 0.35cqw; font-size: 2.6cqw;
+		}
 	}
 
 	.confirm-panel {
@@ -446,12 +511,13 @@
 	.confirm-content {
 		width: 100%;
 		display: flex; flex-direction: column; align-items: center;
-		gap: clamp(14px, 2.6vw, 26px);
+		gap: 3.4cqw;
 		text-align: center;
 	}
 
 	.confirm-title {
-		font-weight: 900; font-size: clamp(1.4rem, 3.2vw, 2.1rem);
+		font-weight: 900; font-size: 4.7cqw;
+		white-space: nowrap;
 		letter-spacing: 0.06em;
 		background: linear-gradient(180deg, #ffd84a 10%, #ffa90e 60%, #d18005 95%);
 		-webkit-background-clip: text; background-clip: text;
@@ -459,16 +525,17 @@
 		text-shadow: 0 2px 6px rgba(0,0,0,0.5);
 	}
 	.confirm-text {
-		font-size: clamp(0.95rem, 2vw, 1.25rem); font-weight: 700;
+		font-size: 2.9cqw; font-weight: 700;
 		color: #fff; line-height: 1.45;
 		text-shadow: 0 2px 4px rgba(0,0,0,0.7);
 	}
-	.confirm-row { display: flex; gap: 16px; justify-content: center; width: 100%; }
+	.confirm-row { display: flex; gap: 2.4cqw; justify-content: center; width: 100%; }
 	.confirm-btn {
-		flex: 1 1 0; border-radius: 11px; padding: clamp(11px, 2vw, 16px);
-		font-family: 'Cinzel', serif; font-size: clamp(0.85rem, 1.7vw, 1.05rem); font-weight: 900;
+		flex: 1 1 0; border-radius: 1.6cqw; padding: 2.2cqw;
+		font-family: 'Cinzel', serif; font-size: 2.4cqw; font-weight: 900;
 		letter-spacing: 0.06em; cursor: pointer;
 		transition: filter 0.12s ease;
+		white-space: nowrap;
 	}
 	.confirm-btn:hover { filter: brightness(1.08); }
 	.confirm-btn--cancel {
@@ -480,6 +547,122 @@
 		background: linear-gradient(180deg, #ffa90e 15%, #ee960b 70%, #d18005 93%);
 		color: #452b01;
 		box-shadow: 0 0 4px #d98503;
+	}
+
+	/* Compact one-row mode — applied via the MEASURED isCompactShort flag (Stake popup S, landscape
+	   phones), never a guessed media breakpoint: all four cards stay visible in one row with a slim
+	   title and bet bar. Viewports where the regular layout fits (Stake popup L, desktop) never get
+	   this class. */
+	.panel--compact {
+		height: 96dvh;
+		max-height: 96dvh;
+		/* Nearly the full viewport width so the four cards get as wide as possible. */
+		width: calc(100vw - 8px);
+		display: flex;
+		flex-direction: column;
+		padding: 4px 8px 6px;
+		box-sizing: border-box;
+	}
+	/* Slim header/footer so the cards get as much height as possible. */
+	.panel--compact .title {
+		flex: 0 0 auto;
+		margin-bottom: 3px;
+		font-size: 0.6rem;
+	}
+	.panel--compact .close-btn {
+		width: 32px;
+		height: 32px;
+		top: 5px;
+		right: 8px;
+	}
+	.panel--compact .grid {
+		flex: 1 1 auto;
+		min-height: 0;
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		grid-template-rows: minmax(0, 1fr);
+		align-items: center;
+		justify-items: center;
+		gap: 6px;
+	}
+	.panel--compact .grid .card {
+		/* Figma popup-S spec (2712-9693): cards slightly taller than wide, filling the row.
+		   Width-driven with a max-height cap: when the cap bites, the width follows the
+		   aspect-ratio back down, so the frame art never stretches. */
+		width: 100%;
+		height: auto;
+		max-height: 100%;
+		aspect-ratio: 4 / 5;
+	}
+	/* A too-long description clips inside its slot instead of piling onto the price/button. */
+	.panel--compact .grid .card-desc {
+		overflow: hidden;
+	}
+	/* Tiny popups (Stake popup S ≈ 434×294): the cards are only ~95px wide but there is spare
+	   vertical room — stretch them taller (2:3) and drop the decorative icon so the FULL
+	   description text fits (it's the informative part). Fixed small font sizes: the cqw clamps
+	   were tuned for larger cards. Wider compact viewports (landscape phones ≥ 640px) keep the
+	   Figma 4:5 cards with icons. */
+	@media (max-width: 640px) {
+		.panel--compact .grid .card {
+			aspect-ratio: 3 / 5;
+		}
+		.panel--compact .grid .card-inner {
+			width: 75%;
+			/* Bigger bottom padding lifts the ACTIVATE/BUY buttons off the corner leaves. */
+			padding: 16% 0 14%;
+			gap: 5px;
+		}
+		.panel--compact .grid .card-icon-wrap {
+			height: 14px;
+		}
+		.panel--compact .grid .card-title {
+			font-size: 8px;
+			padding: 2px;
+		}
+		.panel--compact .grid .card-desc {
+			font-size: 6px;
+			line-height: 1.2;
+			padding: 1px;
+		}
+		.panel--compact .grid .card-price {
+			font-size: 8px;
+		}
+		.panel--compact .grid .card-btn {
+			width: 65%;
+			font-size: 7px;
+			padding: 1px 0;
+			margin-bottom: 4px;
+		}
+		.panel--compact .close-btn {
+			width: 28px;
+			height: 28px;
+			top: 4px;
+			right: 6px;
+		}
+		.panel--compact .close-btn__x {
+			font-size: 0.8rem;
+		}
+	}
+	/* Compact bet row: smaller coin, labels and − / + buttons (they were HUD-sized). */
+	.panel--compact .bet-bar {
+		flex: 0 0 auto;
+		margin-top: 3px;
+		gap: 8px;
+	}
+	.panel--compact .bet-bar .step-btn {
+		width: 26px;
+		height: 26px;
+	}
+	.panel--compact .bet-bar .bet-coin {
+		width: 18px;
+		height: 23px;
+	}
+	.panel--compact .bet-bar .bet-label {
+		font-size: 8px;
+	}
+	.panel--compact .bet-bar .bet-amount {
+		font-size: 9px;
 	}
 
 	/* ==================== Portrait: full-screen scrollable card list (Figma 2483-2681) ==================== */
@@ -518,6 +701,28 @@
 		max-width: 340px;
 	}
 	.grid--portrait .card:not(:first-child) { margin-top: -3%; } /* slight leaf overlap (Figma) */
+
+	/* Portrait M (375) and L (425): the cards read a touch small at base — bump the title and
+	   description, drop the content down so the title clears the top leaf corners, and add a
+	   title↔description gap. Mobile S (320) is narrower and OVERRIDES these smaller below (its long
+	   "ALL IN" blurb needs less to avoid overlapping the icon). */
+	.grid--portrait .card-title {
+		font-size: clamp(13px, 7cqw, 20px);
+		margin-bottom: clamp(3px, 2cqw, 8px);
+	}
+	.grid--portrait .card-desc { font-size: clamp(9px, 5cqw, 13px); }
+	.grid--portrait .card-inner { padding-top: 16%; }
+
+	/* Mobile S (320px wide) ONLY — the 360px cutoff sits between S(320) and M(375) so only the
+	   smallest popout matches; M/L keep the larger sizes above. */
+	@media (max-width: 360px) {
+		.grid--portrait .card-title {
+			font-size: clamp(11px, 6.2cqw, 17px);
+			margin-bottom: clamp(2px, 1.6cqw, 6px);
+		}
+		.grid--portrait .card-desc { font-size: clamp(8px, 4cqw, 11px); }
+		.grid--portrait .card-inner { padding-top: 15%; }
+	}
 
 	.bet-bar--portrait {
 		flex: 0 0 auto;

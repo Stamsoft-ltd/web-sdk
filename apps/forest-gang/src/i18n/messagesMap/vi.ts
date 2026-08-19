@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': 'TẤT TAY',
 	'RULE ALL IN TEXT': 'Tất Tay trao 10 lượt quay miễn phí với 1 biểu tượng mở rộng được chọn ngẫu nhiên. Hệ số nhân bắt đầu từ 2x và chỉ nhân đôi ở các lượt quay thắng, tạo ra các thắng nhỏ ban đầu và cuộc săn thắng tối đa ở các lượt quay cuối.',
 	'RULE BUY TITLE': 'CHẾ ĐỘ MUA / KÍCH HOẠT',
-	'RULE BUY TEXT': 'Chi phí mua Chia Bài là 100x cược. Chi phí mua Tất Tay là 400x cược. Quay Cơ Hội tốn 2x cược mỗi ván. Quay Tính Năng tốn 20x cược mỗi ván. Thắng tối đa là 25,000x. RTP mục tiêu là 96.1%.',
+	'RULE BUY TEXT': 'Chi phí mua Chia Bài là 100x cược. Chi phí mua Tất Tay là 400x cược. Quay Cơ Hội tốn 2x cược mỗi ván. Quay Tính Năng tốn 20x cược mỗi ván. Thắng tối đa là 25,000x. RTP mục tiêu là 96.11%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'BIỂU TƯỢNG PREMIUM ĐÃ CHỌN',
 	'FEATURE SELECTED SYMBOL TEXT': 'Bất kỳ biểu tượng trả thưởng thông thường nào cũng có thể là biểu tượng mở rộng. Khi nó xuất hiện, tất cả cuộn bị ảnh hưởng sẽ mở rộng để lấp đầy biểu tượng đó, và 3 cuộn trở lên trả thưởng ngay cả khi không có kết nối liền kề.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'HỆ SỐ NHÂN CHIA BÀI',
@@ -81,7 +81,7 @@ export default {
 	'HOWTO BET TITLE': 'CHỌN MỨC CƯỢC',
 	'HOWTO BET TEXT': 'Dùng nút + và - hoặc mở menu cược để thay đổi mức cược hiển thị trước khi ván bắt đầu.',
 	'HOWTO BUY TITLE': 'MUA THƯỞNG',
-	'HOWTO BUY TEXT': 'Mở Mua Thưởng để chọn Chia Bài, Tất Tay, Quay Cơ Hội hoặc Quay Tính Năng. Chia Bài và Tất Tay cần xác nhận. Quay Cơ Hội và Quay Tính Năng kích hoạt ngay lập tức và có thể tắt bằng nút HỦY KÍCH HOẠT.',
+	'HOWTO BUY TEXT': 'Mở Mua Thưởng để chọn Chia Bài, Tất Tay, Quay Cơ Hội hoặc Quay Tính Năng. Chia Bài và Tất Tay cần xác nhận. Quay Cơ Hội và Quay Tính Năng kích hoạt ngay lập tức và có thể tắt bằng nút TẮT.',
 	'HOWTO TURBO TITLE': 'TURBO',
 	'HOWTO TURBO TEXT': 'Turbo rút ngắn một số thời gian ván để chơi nhanh hơn.',
 	'HOWTO AUTOPLAY TITLE': 'TỰ ĐỘNG',
@@ -110,27 +110,27 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'TỔNG QUAN',
 	'INFO OVERVIEW BODY':
-		'Forest Gang là video slot 5x4 chơi trên 20 dòng trả thưởng.\nThắng được trao từ trái sang phải trên các cuộn liên tiếp, bắt đầu từ cuộn 1, khi các biểu tượng khớp xuất hiện trên một dòng trả thưởng đang hoạt động.\nTrò chơi gồm 5 biểu tượng premium, 5 biểu tượng thấp, một biểu tượng Wild và một biểu tượng Scatter.\n\nTiềm năng thắng tối đa là 25,000x tổng cược.\n\nRTP lý thuyết: 96.1%',
+		'Forest Gang là video slot 5x4 chơi trên 20 dòng trả thưởng.\nThắng tiêu chuẩn được trao từ trái sang phải trên các cuộn liên tiếp, bắt đầu từ cuộn 1, khi các biểu tượng khớp xuất hiện trên một dòng trả thưởng đang hoạt động.\nThắng từ Biểu Tượng Mở Rộng theo một cơ chế thắng đặc biệt và không yêu cầu các cuộn thắng phải liên tiếp. Xem phần Biểu Tượng Mở Rộng để biết chi tiết.\nTrò chơi gồm 5 biểu tượng premium, 5 biểu tượng thấp, một biểu tượng Wild và một biểu tượng Scatter.\n\nTiềm năng thắng tối đa là 25,000x tổng cược.\n\nRTP lý thuyết: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'CUỘN',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': 'DÒNG THƯỞNG',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': 'THẮNG TỐI ĐA',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': 'TÍNH NĂNG',
 	'INFO EXPANDING TITLE': 'BIỂU TƯỢNG MỞ RỘNG',
 	'INFO EXPANDING TEXT':
-		'Trong các lượt quay tính năng đủ điều kiện và các ván thưởng, một biểu tượng ngẫu nhiên được chọn làm biểu tượng mở rộng. Khi biểu tượng mở rộng đã chọn xuất hiện trên các cuộn, nó mở rộng theo chiều dọc để phủ kín cả cuộn. Các biểu tượng mở rộng có thể tạo nhiều thắng dòng trả thưởng trong cùng một lượt quay. Hệ số nhân ngẫu nhiên có thể xuất hiện ở bất kỳ lượt quay nào và áp dụng cho số tiền thắng của lượt quay đó.\n\nHệ số nhân ngẫu nhiên có thể từ 2x đến 1024x.',
+		'Trong các lượt quay tính năng đủ điều kiện và các ván thưởng, một biểu tượng ngẫu nhiên được chọn làm Biểu Tượng Mở Rộng.\nKhi biểu tượng đã chọn xuất hiện trên một cuộn, nó mở rộng theo chiều dọc để phủ kín cả cuộn.\nThắng từ Biểu Tượng Mở Rộng được tính khác với thắng dòng trả thưởng tiêu chuẩn. Các biểu tượng mở rộng không cần xuất hiện trên các cuộn liên tiếp để trao thắng. Các cuộn không có biểu tượng đã chọn không làm gián đoạn thắng từ Biểu Tượng Mở Rộng.\nSố cuộn chứa Biểu Tượng Mở Rộng đã chọn quyết định mức trả thưởng của biểu tượng được áp dụng. Các biểu tượng mở rộng có thể tạo nhiều thắng dòng trả thưởng trong cùng một lượt quay.\nHệ số nhân ngẫu nhiên có thể áp dụng cho bất kỳ lượt quay thắng nào và được áp dụng cho tổng số tiền thắng của lượt quay đó.\n\nHệ số nhân ngẫu nhiên có thể từ 2x đến 1024x.',
 	'INFO DEAL IT TITLE': 'THƯỞNG CHIA BÀI',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
-		'Kích hoạt bởi 3 biểu tượng Scatter.\n\nTrao 10 lượt quay miễn phí. Trước khi thưởng bắt đầu, một biểu tượng mở rộng ngẫu nhiên được chọn. Trong quá trình thưởng, biểu tượng đã chọn có thể mở rộng để phủ kín cả cuộn.\n\nHệ số nhân ngẫu nhiên có thể áp dụng cho bất kỳ lượt quay thắng nào, lên đến 100x.',
+		'Kích hoạt bởi 3 biểu tượng Scatter.\n\nTrao 10 lượt quay miễn phí. Trước khi thưởng bắt đầu, một biểu tượng mở rộng ngẫu nhiên được chọn. Trong quá trình thưởng, biểu tượng đã chọn có thể mở rộng để phủ kín cả cuộn.\n\nHệ số nhân ngẫu nhiên có thể áp dụng cho bất kỳ lượt quay thắng nào, lên đến 100x.\n\nVòng thưởng có thể được kích hoạt lại như sau:\n[[3 Scatter]] +3 lượt quay\n[[4 Scatter]] +5 lượt quay\n[[5 Scatter]] +8 lượt quay',
 	'INFO ALL IN TITLE': 'THƯỞNG TẤT TAY',
 	'INFO ALL IN HL': '4 Scatter',
 	'INFO ALL IN TEXT':
-		'Kích hoạt bởi 4 biểu tượng Scatter và trao 10 lượt quay miễn phí.\n\nTrước khi thưởng bắt đầu, một biểu tượng mở rộng ngẫu nhiên được chọn. Trong quá trình thưởng, biểu tượng đã chọn có thể mở rộng để phủ kín cả cuộn. Hệ số nhân cuộn luôn hoạt động trong suốt thưởng và nhân đôi mỗi thắng đủ điều kiện, bắt đầu từ 2x.',
+		'Kích hoạt bởi 4 biểu tượng Scatter và trao 10 lượt quay miễn phí.\n\nTrước khi thưởng bắt đầu, một biểu tượng mở rộng ngẫu nhiên được chọn. Trong quá trình thưởng, biểu tượng đã chọn có thể mở rộng để phủ kín cả cuộn. Hệ số nhân cuộn luôn hoạt động trong suốt thưởng và nhân đôi mỗi thắng đủ điều kiện, bắt đầu từ 2x.\n\nVòng thưởng có thể được kích hoạt lại như sau:\n[[3 Scatter]] +3 lượt quay\n[[4 Scatter]] +5 lượt quay\n[[5 Scatter]] +8 lượt quay',
 	'INFO PLACEHOLDER BODY': 'Thiết kế sắp ra mắt.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': 'BẢNG TRẢ THƯỞNG',
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'CÁCH THẮNG',
 	'INFO WAYS NOTE':
-		'Forest Gang chơi trên 20 dòng trả thưởng cố định. Một tổ hợp thắng được tạo thành khi các biểu tượng khớp xuất hiện trên các cuộn liên tiếp từ trái sang phải trên bất kỳ dòng trả thưởng nào đang hoạt động. Chỉ thắng cao nhất trên mỗi biểu tượng mỗi dòng được trả, trừ khi có quy định khác trong luật chơi cuối cùng.',
+		'Forest Gang được chơi trên 20 dòng trả thưởng cố định. Thắng biểu tượng tiêu chuẩn được tạo thành khi các biểu tượng khớp xuất hiện trên các cuộn liên tiếp từ trái sang phải trên một dòng trả thưởng đang hoạt động, bắt đầu từ cuộn 1. Thắng từ Biểu Tượng Mở Rộng theo một cơ chế thắng đặc biệt và không yêu cầu các cuộn thắng phải liên tiếp. Các cuộn không có Biểu Tượng Mở Rộng đã chọn không làm gián đoạn thắng từ Biểu Tượng Mở Rộng. Xem phần Biểu Tượng Mở Rộng để biết đầy đủ chi tiết. Chỉ thắng cao nhất cho mỗi biểu tượng trên mỗi dòng trả thưởng được trả, trừ khi có quy định khác trong Luật Chơi.',
 	// Feature buy page
 	'INFO BUY TITLE': 'MUA TÍNH NĂNG',
 	'INFO BUY CHANCE TITLE': 'CƠ HỘI THƯỞNG THÊM',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': 'Trao ngay Thưởng Tất Tay.',
 	'INFO BUY COST': 'CHI PHÍ',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "RTP cơ bản 96.11%",
 	'INFO BUY CHANCE_LABEL': 'CƠ HỘI THƯỞNG',
 	'INFO BUY CHANCE_VALUE': 'CƠ HỘI 3x',
 	// General info page
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': 'trở thành vua của\nkhu rừng với',
 	'SPLASH EPIC BOTTOM': 'THẮNG TỐI ĐA',
 	'SPLASH PRESS': 'NHẤN ĐỂ TIẾP TỤC',
+	'PRESS ANYWHERE': 'NHẤN VÀO BẤT KỲ ĐÂU ĐỂ TIẾP TỤC',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': 'CHÚC MỪNG!',
@@ -195,7 +197,7 @@ export default {
 
 	// Buy bonus modal — card titles/descriptions, buttons, confirm dialog
 	ACTIVATE: 'KÍCH HOẠT',
-	DEACTIVATE: 'HỦY KÍCH HOẠT',
+	DEACTIVATE: 'TẮT',
 	BUY: 'MUA',
 	CONFIRM: 'XÁC NHẬN',
 	CANCEL: 'HỦY',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': 'QUAY TỰ ĐỘNG',
 	'TURBO SPIN': 'QUAY TURBO',
 	'SUPER TURBO SPIN': 'QUAY SIÊU TURBO',
-	'BONUS FEATURE 100X': 'TÍNH NĂNG THƯỞNG 100 X',
+	'BONUS FEATURE 100X': 'TÍNH NĂNG THƯỞNG 20 X',
 	'NUMBER OF SPINS': 'SỐ LƯỢT QUAY',
 	'START AUTOPLAY': 'BẮT ĐẦU TỰ ĐỘNG',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': 'Bạn có một phần thưởng %mode% đang hoạt động.',
 	'END ROUND': 'KẾT THÚC VÒNG',
 	'PLAY ROUND': 'CHƠI VÒNG',
+	'INFO UI TITLE': 'HƯỚNG DẪN GIAO DIỆN',
+	'INFO UI SPIN TITLE': 'QUAY',
+	'INFO UI SPIN TEXT': 'Bắt đầu một vòng chơi mới.',
+	'INFO UI AUTO TITLE': 'QUAY TỰ ĐỘNG',
+	'INFO UI AUTO TEXT': 'Mở menu quay tự động.',
+	'INFO UI TURBO TITLE': 'TURBO',
+	'INFO UI TURBO TEXT': 'Bật chế độ quay nhanh hơn.',
+	'INFO UI BETPLUS TITLE': 'CƯỢC +',
+	'INFO UI BETPLUS TEXT': 'Tăng tổng tiền cược của bạn.',
+	'INFO UI BETMINUS TITLE': 'CƯỢC -',
+	'INFO UI BETMINUS TEXT': 'Giảm tổng tiền cược của bạn.',
+	'INFO UI INFO TITLE': 'THÔNG TIN',
+	'INFO UI INFO TEXT': 'Mở thông tin trò chơi.',
+	'INFO UI SOUND TITLE': 'ÂM THANH',
+	'INFO UI SOUND TEXT': 'Bật hoặc tắt âm thanh trò chơi.',
+	'INFO UI PREV TITLE': 'TRƯỚC',
+	'INFO UI PREV TEXT': 'Chuyển đến trang trước.',
+	'INFO UI NEXT TITLE': 'TIẾP',
+	'INFO UI NEXT TEXT': 'Chuyển đến trang tiếp theo.',
+	'INFO UI CLOSE TITLE': 'ĐÓNG',
+	'INFO UI CLOSE TEXT': 'Đóng cửa sổ hiện tại.',
 };

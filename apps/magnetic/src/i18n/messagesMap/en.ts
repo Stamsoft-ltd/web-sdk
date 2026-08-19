@@ -30,11 +30,19 @@ export default {
 	AUTOPLAY: 'AUTOPLAY',
 	TURBO: 'TURBO',
 	REPLAY: 'REPLAY',
+	'BET REPLAY': 'Bet Replay',
 	'START REPLAY': 'START REPLAY',
+	'REPLAY EVENT': 'Replay Event',
+	'BASE BET': 'Base Bet',
+	'COST MULTIPLIER': 'Cost Multiplier',
+	'TOTAL BET COST': 'Total Bet Cost',
+	'PAYOUT MULTIPLIER': 'Payout Multiplier',
+	'REPLAY DISCLAIMER': 'This is a replay of a previous bet round. No bets will be placed.',
 	'PLAY AGAIN': 'PLAY AGAIN',
 	'RETRY RESUME': 'RETRY ROUND',
 	'RECOVERY TITLE': 'UNFINISHED ROUND DETECTED',
-	'RECOVERY BODY': 'The previous round could not be restored automatically. Retry to finish the original round before starting a new one.',
+	'RECOVERY BODY':
+		'The previous round could not be restored automatically. Retry to finish the original round before starting a new one.',
 	EVENT: 'EVENT',
 	PAYOUT: 'PAYOUT',
 	WIN: 'WIN',
@@ -49,24 +57,28 @@ export default {
 	'BET MODE BASE TICKER SPIN': 'GOOD LUCK',
 	'BET MODE BONUS TITLE': 'DROP-O-MAGNET',
 	'BET MODE BONUS DIALOG': '10 free spins with heavily boosted magnet chance.',
-	'BET MODE BONUS DESCRIPTION': 'Buy 10 free spins with boosted magnet odds for 100x your selected bet.',
+	'BET MODE BONUS DESCRIPTION':
+		'Buy 10 free spins with boosted magnet odds for 100x your selected bet.',
 	'BET MODE BONUS BUTTON': 'BUY',
 	'BET MODE BONUS TICKER IDLE': 'PLACE YOUR BET',
 	'BET MODE BONUS TICKER SPIN': 'BONUS ACTIVE',
 	'BET MODE CHANCE TITLE': 'CHANCE SPIN',
-	'BET MODE CHANCE DIALOG': 'Chance Spin stays active until disabled. Each round costs 2x bet and triples bonus trigger odds.',
+	'BET MODE CHANCE DIALOG':
+		'Chance Spin stays active until disabled. Each round costs 2x bet and triples bonus trigger odds.',
 	'BET MODE CHANCE DESCRIPTION': 'Activate Chance Spin for 2x your selected bet per round.',
 	'BET MODE CHANCE BUTTON': 'ACTIVATE',
 	'BET MODE CHANCE TICKER IDLE': 'CHANCE SPIN IS ACTIVE',
 	'BET MODE CHANCE TICKER SPIN': 'GOOD LUCK',
 	'BET MODE SUPER TITLE': 'MEGA CHAIN',
-	'BET MODE SUPER DIALOG': '10 free spins with a guaranteed first-spin magnet. The target symbol, collected cluster and combined multiplier persist for the full bonus.',
+	'BET MODE SUPER DIALOG':
+		'10 free spins with a guaranteed first-spin magnet. The target symbol, collected cluster and combined multiplier persist for the full bonus.',
 	'BET MODE SUPER DESCRIPTION': 'Buy the persistent super bonus for 500x your selected bet.',
 	'BET MODE SUPER BUTTON': 'BUY',
 	'BET MODE SUPER TICKER IDLE': 'PLACE YOUR BET',
 	'BET MODE SUPER TICKER SPIN': 'SUPER ACTIVE',
 	'BET MODE FEATURE TITLE': 'FEATURE SPIN',
-	'BET MODE FEATURE DIALOG': 'Feature Spin stays active until disabled. Each round costs 50x bet and guarantees one paid magnet spin.',
+	'BET MODE FEATURE DIALOG':
+		'Feature Spin stays active until disabled. Each round costs 50x bet and guarantees one paid magnet spin.',
 	'BET MODE FEATURE DESCRIPTION': 'Activate Feature Spin for 50x your selected bet per round.',
 	'BET MODE FEATURE BUTTON': 'ACTIVATE',
 	'BET MODE FEATURE TICKER IDLE': 'FEATURE SPIN IS ACTIVE',
@@ -76,53 +88,78 @@ export default {
 	'RULE SECTION HOW TO PLAY': 'HOW TO PLAY',
 	'RULE SECTION DISCLAIMER': 'GENERAL DISCLAIMER',
 	'RULE GAME TITLE': 'MAGNETIC',
-	'RULE GAME TEXT': 'Magnetic is a 7x7 cluster-pay slot. Wins form when 5 or more matching symbols touch horizontally or vertically. Diagonal connections do not count.',
+	'RULE GAME TEXT':
+		'Magnetic is a 7x7 cluster-pay slot. Wins form when 5 or more matching symbols touch horizontally or vertically. Diagonal connections do not count.',
 	'RULE WILD TITLE': 'WILD',
-	'RULE WILD TEXT': 'When a magnet lands it picks one visible symbol. Only that symbol can keep growing during the active magnet series.',
+	'RULE WILD TEXT':
+		'When a magnet lands it picks one visible symbol. Only that symbol can keep growing during the active magnet series.',
 	'RULE SCATTER TITLE': 'SCATTER',
-	'RULE SCATTER TEXT': '3 scatters trigger Drop-O-Magnet. 4 scatters trigger Mega Chain. Scatter does not pay by itself.',
+	'RULE SCATTER TEXT':
+		'3 scatters trigger Drop-O-Magnet. 4 scatters trigger Mega Chain. Scatter does not pay by itself.',
 	'RULE DEAL IT TITLE': 'CLUSTER RESPINS',
-	'RULE DEAL IT TEXT': 'Natural qualifying clusters lock in place. All other cells respin. If new matching symbols land touching the active cluster, they join it and another respin follows.',
+	'RULE DEAL IT TEXT':
+		'Natural qualifying clusters lock in place. All other cells respin. If new matching symbols land touching the active cluster, they join it and another respin follows.',
 	'RULE ALL IN TITLE': 'MEGA CHAIN',
-	'RULE ALL IN TEXT': 'On the first super free spin a magnet is guaranteed. The chosen target symbol, collected cluster and multiplied series value persist through all 10 free spins and resolve at the end.',
+	'RULE ALL IN TEXT':
+		'On the first super free spin a magnet is guaranteed. The chosen target symbol, collected cluster and multiplied series value persist through all 10 free spins and resolve at the end.',
 	'RULE BUY TITLE': 'BUY / ACTIVATE MODES',
-	'RULE BUY TEXT': 'Drop-O-Magnet costs 100x bet. Mega Chain costs 500x bet. Chance Spin costs 2x bet per round. Feature Spin costs 50x bet per round. Max win is 20,000x. Target RTP is 96.1%.',
+	'RULE BUY TEXT':
+		'Drop-O-Magnet costs 100x bet. Mega Chain costs 500x bet. Chance Spin costs 2x bet per round. Feature Spin costs 50x bet per round. Max win is 20,000x. Target RTP is 96.1%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'MAGNET TARGET',
-	'FEATURE SELECTED SYMBOL TEXT': 'A magnet randomly picks one visible regular symbol and keeps that target for the whole active magnet series. Extra magnets never change the target mid-series.',
+	'FEATURE SELECTED SYMBOL TEXT':
+		'A magnet randomly picks one visible regular symbol and keeps that target for the whole active magnet series. Extra magnets never change the target mid-series.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'MULTIPLIER WILDS',
-	'FEATURE DEAL IT MULTIPLIER TEXT': 'Multiplier Wild values stack multiplicatively inside one active magnetic series. Example: 2x × 3x × 4x = 24x total.',
+	'FEATURE DEAL IT MULTIPLIER TEXT':
+		'Multiplier Wild values stack multiplicatively inside one active magnetic series. Example: 2x × 3x × 4x = 24x total.',
 	'FEATURE ALL IN_MULTIPLIER TITLE': 'PERSISTENT SUPER SERIES',
-	'FEATURE ALL IN_MULTIPLIER TEXT': 'In Super Bonus the target symbol, collected cells and multiplied series value carry through all 10 free spins until the final award is resolved.',
+	'FEATURE ALL IN_MULTIPLIER TEXT':
+		'In Super Bonus the target symbol, collected cells and multiplied series value carry through all 10 free spins until the final award is resolved.',
 	'HOWTO SPIN TITLE': 'SPIN / STOP',
-	'HOWTO SPIN TEXT': 'Press Spin to start a round. Press again while a sequence is running to request stop behaviour where available.',
+	'HOWTO SPIN TEXT':
+		'Press Spin to start a round. Press again while a sequence is running to request stop behaviour where available.',
 	'HOWTO BET TITLE': 'BET SELECTOR',
-	'HOWTO BET TEXT': 'Use the + and - buttons or open the bet menu to change the displayed bet amount before a round starts.',
+	'HOWTO BET TEXT':
+		'Use the + and - buttons or open the bet menu to change the displayed bet amount before a round starts.',
 	'HOWTO BUY TITLE': 'BUY BONUS',
-	'HOWTO BUY TEXT': 'Open Buy Bonus to choose Drop-O-Magnet, Mega Chain, Chance Spin or Feature Spin. Bought bonuses require confirmation. Activate modes can be toggled on or off.',
+	'HOWTO BUY TEXT':
+		'Open Buy Bonus to choose Drop-O-Magnet, Mega Chain, Chance Spin or Feature Spin. Bought bonuses require confirmation. Activate modes can be toggled on or off.',
 	'HOWTO TURBO TITLE': 'TURBO',
 	'HOWTO TURBO TEXT': 'Turbo shortens certain round timings for faster play.',
 	'HOWTO AUTOPLAY TITLE': 'AUTOPLAY',
-	'HOWTO AUTOPLAY TEXT': 'Autoplay repeats rounds automatically until the selected stop condition or counter ends.',
+	'HOWTO AUTOPLAY TEXT':
+		'Autoplay repeats rounds automatically until the selected stop condition or counter ends.',
 	'HOWTO REPLAY TITLE': 'REPLAY MODE',
-	'HOWTO REPLAY TEXT': 'Replay loads a previously completed event and displays the original bet, total cost, payout and win information.',
+	'HOWTO REPLAY TEXT':
+		'Replay loads a previously completed event and displays the original bet, total cost, payout and win information.',
 	'PAYTABLE PREMIUM TITLE': 'PREMIUM SYMBOLS',
 	'PAYTABLE LOW TITLE': 'LOW SYMBOLS',
 	'PAYTABLE SPECIAL TITLE': 'SPECIAL SYMBOLS',
 	'PAYTABLE TITLE PAYLINES': 'CLUSTERS',
-	'PAYTABLE TEXT PAYLINES': 'Wins require 5 or more touching matching symbols. Only horizontal and vertical adjacency counts.',
+	'PAYTABLE TEXT PAYLINES':
+		'Wins require 5 or more touching matching symbols. Only horizontal and vertical adjacency counts.',
 	'PAYTABLE BUY TITLE': 'BUY MODES',
 	'PAYTABLE MAX TITLE': 'MAX WIN',
-	'PAYTABLE FOX': 'HORSESHOE MAGNET (H1)\n5 = 0.5x\n6 = 1x\n7 = 2x\n8 = 4x\n9 = 8x\n10-11 = 15x\n12-14 = 30x\n15-19 = 80x\n20-24 = 200x\n25-29 = 500x\n30-32 = 1000x\n33+ = 2000x',
-	'PAYTABLE WOLF': 'PLASMA DRILL (H2)\n5 = 0.4x\n6 = 0.8x\n7 = 1.5x\n8 = 3x\n9 = 6x\n10-11 = 12x\n12-14 = 25x\n15-19 = 60x\n20-24 = 150x\n25-29 = 350x\n30-32 = 750x\n33+ = 1500x',
-	'PAYTABLE BEAR': 'MAGNETIC CORE CUBE (H3)\n5 = 0.3x\n6 = 0.6x\n7 = 1.2x\n8 = 2.5x\n9 = 5x\n10-11 = 10x\n12-14 = 20x\n15-19 = 50x\n20-24 = 120x\n25-29 = 280x\n30-32 = 600x\n33+ = 1200x',
-	'PAYTABLE RABBIT': 'ELECTROMAGNETIC DEVICE (H4)\n5 = 0.25x\n6 = 0.5x\n7 = 1x\n8 = 2x\n9 = 4x\n10-11 = 8x\n12-14 = 16x\n15-19 = 35x\n20-24 = 90x\n25-29 = 220x\n30-32 = 450x\n33+ = 900x',
-	'PAYTABLE SQUIRREL': 'BOLT (L1)\n5 = 0.2x\n6 = 0.4x\n7 = 0.8x\n8 = 1.6x\n9 = 3.2x\n10-11 = 6x\n12-14 = 12x\n15-19 = 30x\n20-24 = 75x\n25-29 = 180x\n30-32 = 350x\n33+ = 500x',
-	'PAYTABLE LOWS_1': 'NUT (L2)\n5 = 0.12x\n6 = 0.25x\n7 = 0.5x\n8 = 1x\n9 = 2x\n10-11 = 4x\n12-14 = 8x\n15-19 = 20x\n20-24 = 50x\n25-29 = 100x\n30-32 = 200x\n33+ = 400x\n\nWASHER (L3)\n5 = 0.1x\n6 = 0.2x\n7 = 0.4x\n8 = 0.8x\n9 = 1.6x\n10-11 = 3x\n12-14 = 6x\n15-19 = 15x\n20-24 = 40x\n25-29 = 80x\n30-32 = 150x\n33+ = 300x',
-	'PAYTABLE LOWS_2': 'ENERGY SCREW (L4)\n5 = 0.08x\n6 = 0.16x\n7 = 0.32x\n8 = 0.64x\n9 = 1.28x\n10-11 = 2.5x\n12-14 = 5x\n15-19 = 12x\n20-24 = 30x\n25-29 = 60x\n30-32 = 120x\n33+ = 250x',
-	'PAYTABLE SPECIAL_TEXT': 'Magnet starts magnetic series. Wild substitutes for regular symbols. Multiplier Wilds multiply the active series. Scatter triggers bonuses only.',
-	'PAYTABLE BUY_TEXT': 'Drop-O-Magnet: 100x bet.\nMega Chain: 500x bet.\nChance Spin: 2x bet per round.\nFeature Spin: 50x bet per round.',
+	'PAYTABLE FOX':
+		'HORSESHOE MAGNET (H1)\n5 = 0.5x\n6 = 1x\n7 = 2x\n8 = 4x\n9 = 8x\n10-11 = 15x\n12-14 = 30x\n15-19 = 80x\n20-24 = 200x\n25-29 = 500x\n30-32 = 1000x\n33+ = 2000x',
+	'PAYTABLE WOLF':
+		'PLASMA DRILL (H2)\n5 = 0.4x\n6 = 0.8x\n7 = 1.5x\n8 = 3x\n9 = 6x\n10-11 = 12x\n12-14 = 25x\n15-19 = 60x\n20-24 = 150x\n25-29 = 350x\n30-32 = 750x\n33+ = 1500x',
+	'PAYTABLE BEAR':
+		'MAGNETIC CORE CUBE (H3)\n5 = 0.3x\n6 = 0.6x\n7 = 1.2x\n8 = 2.5x\n9 = 5x\n10-11 = 10x\n12-14 = 20x\n15-19 = 50x\n20-24 = 120x\n25-29 = 280x\n30-32 = 600x\n33+ = 1200x',
+	'PAYTABLE RABBIT':
+		'ELECTROMAGNETIC DEVICE (H4)\n5 = 0.25x\n6 = 0.5x\n7 = 1x\n8 = 2x\n9 = 4x\n10-11 = 8x\n12-14 = 16x\n15-19 = 35x\n20-24 = 90x\n25-29 = 220x\n30-32 = 450x\n33+ = 900x',
+	'PAYTABLE SQUIRREL':
+		'BOLT (L1)\n5 = 0.2x\n6 = 0.4x\n7 = 0.8x\n8 = 1.6x\n9 = 3.2x\n10-11 = 6x\n12-14 = 12x\n15-19 = 30x\n20-24 = 75x\n25-29 = 180x\n30-32 = 350x\n33+ = 500x',
+	'PAYTABLE LOWS_1':
+		'NUT (L2)\n5 = 0.12x\n6 = 0.25x\n7 = 0.5x\n8 = 1x\n9 = 2x\n10-11 = 4x\n12-14 = 8x\n15-19 = 20x\n20-24 = 50x\n25-29 = 100x\n30-32 = 200x\n33+ = 400x\n\nWASHER (L3)\n5 = 0.1x\n6 = 0.2x\n7 = 0.4x\n8 = 0.8x\n9 = 1.6x\n10-11 = 3x\n12-14 = 6x\n15-19 = 15x\n20-24 = 40x\n25-29 = 80x\n30-32 = 150x\n33+ = 300x',
+	'PAYTABLE LOWS_2':
+		'ENERGY SCREW (L4)\n5 = 0.08x\n6 = 0.16x\n7 = 0.32x\n8 = 0.64x\n9 = 1.28x\n10-11 = 2.5x\n12-14 = 5x\n15-19 = 12x\n20-24 = 30x\n25-29 = 60x\n30-32 = 120x\n33+ = 250x',
+	'PAYTABLE SPECIAL_TEXT':
+		'Magnet starts magnetic series. Wild substitutes for regular symbols. Multiplier Wilds multiply the active series. Scatter triggers bonuses only.',
+	'PAYTABLE BUY_TEXT':
+		'Drop-O-Magnet: 100x bet.\nMega Chain: 500x bet.\nChance Spin: 2x bet per round.\nFeature Spin: 50x bet per round.',
 	'PAYTABLE MAX_TEXT': 'Advertised max win is 20,000x the selected bet.',
-	'DISCLAIMER TEXT': 'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
+	'DISCLAIMER TEXT':
+		'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
 
 	// ── Info / rules popup (CustomInfoModal.svelte). Numeric values (7X7, 20,000, 96.10%, 2x…) stay as
 	//    constants in the component; only the copy below is translated. %value% placeholders are left
@@ -136,8 +173,10 @@ export default {
 	'INFO GENERAL INFO': 'GENERAL INFO',
 	'INFO UI GUIDE': 'USER INTERFACE GUIDE',
 	// Overview
-	'INFO OV TEXT 1': 'Magnetic is a 7x7 cluster-pay slot where wins are created by groups of matching symbols. Land 5 or more matching symbols connected horizontally or vertically to win.',
-	'INFO OV TEXT 2': 'Magnetic features can pull matching symbols together, helping create bigger clusters and stronger wins.',
+	'INFO OV TEXT 1':
+		'Magnetic is a 7x7 cluster-pay slot where wins are created by groups of matching symbols. Land 5 or more matching symbols connected horizontally or vertically to win.',
+	'INFO OV TEXT 2':
+		'Magnetic features can pull matching symbols together, helping create bigger clusters and stronger wins.',
 	'INFO OV MAXWIN': 'Maximum win: %value% bet.',
 	'INFO STAT REELS': 'REELS',
 	'INFO STAT CLUSTER': 'CLUSTER',
@@ -153,35 +192,48 @@ export default {
 	'INFO FEAT WILD TITLE': 'Wild Symbol',
 	'INFO FEAT WILD TEXT': 'Substitutes for all pay symbols except Scatter.',
 	'INFO FEAT MWILD TITLE': 'Multiplier Wild',
-	'INFO FEAT MWILD TEXT': 'Substitutes like a Wild and increases the active bonus multiplier for the rest of the feature.',
+	'INFO FEAT MWILD TEXT':
+		'Substitutes like a Wild and increases the active bonus multiplier for the rest of the feature.',
 	'INFO FEAT DROP TITLE': 'Drop-O-Magnet Free Spins',
-	'INFO FEAT DROP TEXT': 'Triggered by 3 Scatters. Awards 10 Free Spins. On each Free Spin, one random symbol becomes magnetic and matching symbols are pulled together.',
+	'INFO FEAT DROP TEXT':
+		'Triggered by 3 Scatters. Awards 10 Free Spins. On each Free Spin, one random symbol becomes magnetic and matching symbols are pulled together.',
 	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain Free Spins',
-	'INFO FEAT MEGA TEXT': 'Triggered by 4 Scatters. Awards 10 Free Spins. Magnetic clusters can remain locked and grow across the feature.',
+	'INFO FEAT MEGA TEXT':
+		'Triggered by 4 Scatters. Awards 10 Free Spins. Magnetic clusters can remain locked and grow across the feature.',
 	// Cluster win
 	'INFO CW 1': 'Magnetic uses cluster wins instead of paylines.',
-	'INFO CW 2': 'A win is created when 5 or more matching symbols touch each other horizontally or vertically.',
+	'INFO CW 2':
+		'A win is created when 5 or more matching symbols touch each other horizontally or vertically.',
 	'INFO CW 3': 'Diagonal connections do not count.',
-	'INFO CW 4': 'Winning symbols do not need to form a straight line. They only need to be connected as one group.',
+	'INFO CW 4':
+		'Winning symbols do not need to form a straight line. They only need to be connected as one group.',
 	'INFO CW 5': 'Bigger clusters award bigger wins.',
 	// Feature buy
-	'INFO FB SUB': 'Feature Buy options are available only where allowed. All Feature Buy and Bonus Buy options are paid as a multiple of the selected bet.',
+	'INFO FB SUB':
+		'Feature Buy options are available only where allowed. All Feature Buy and Bonus Buy options are paid as a multiple of the selected bet.',
 	'INFO FB EXTRA TITLE': 'Extra Feature',
-	'INFO FB EXTRA TEXT': 'Buys a special spin with a guaranteed magnetic connection and a chance to land Multiplier Wilds.',
+	'INFO FB EXTRA TEXT':
+		'Buys a special spin with a guaranteed magnetic connection and a chance to land Multiplier Wilds.',
 	'INFO FB FEATURE TITLE': 'Feature Buy',
 	'INFO FB FEATURE TEXT': 'Buys direct access to the Drop-O-Magnet Free Spins feature.',
 	'INFO FB BONUS TITLE': 'Bonus Buy',
-	'INFO FB BONUS TEXT': 'Buys direct access to the stronger Magnetic Mega Chain Free Spins feature.',
+	'INFO FB BONUS TEXT':
+		'Buys direct access to the stronger Magnetic Mega Chain Free Spins feature.',
 	'INFO COST': 'COST',
 	'INFO RTP': 'RTP',
 	// General info
 	'INFO GI INTERRUPTED TITLE': 'Interrupted Rounds',
-	'INFO GI INTERRUPTED 1': 'If a game round is interrupted, it will continue when the game is reloaded, where possible.',
-	'INFO GI INTERRUPTED 2': 'All valid wagers and potential winnings remain active until the round is fully completed.',
+	'INFO GI INTERRUPTED 1':
+		'If a game round is interrupted, it will continue when the game is reloaded, where possible.',
+	'INFO GI INTERRUPTED 2':
+		'All valid wagers and potential winnings remain active until the round is fully completed.',
 	'INFO GI LEGAL TITLE': 'Legal Notice',
-	'INFO GI LEGAL 1': 'Malfunction voids all pays and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.',
-	'INFO GI LEGAL 2': 'The expected return is calculated over a large number of plays. The game display is for visual and entertainment purposes only and does not represent any physical gaming device.',
-	'INFO GI LEGAL 3': 'All winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.',
+	'INFO GI LEGAL 1':
+		'Malfunction voids all pays and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.',
+	'INFO GI LEGAL 2':
+		'The expected return is calculated over a large number of plays. The game display is for visual and entertainment purposes only and does not represent any physical gaming device.',
+	'INFO GI LEGAL 3':
+		'All winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.',
 	// Controls / UI guide
 	'INFO CTRL SPIN': 'Spin',
 	'INFO CTRL SPIN DESC': 'Start a game round with your selected bet.',
@@ -231,9 +283,11 @@ export default {
 	'BUY FEATURE SPINS DESC':
 		'Buys a special spin with a guaranteed magnetic connection and a chance to land Multiplier Wilds.',
 	'BUY DROP TITLE': 'Drop-O-Magnet',
-	'BUY DROP DESC': '10 free spins awarded. One random symbol becomes magnetic every spin. Matching symbols connect together automatically. Multiplier Wilds increase the bonus multiplier permanently.',
+	'BUY DROP DESC':
+		'10 free spins awarded. One random symbol becomes magnetic every spin. Matching symbols connect together automatically. Multiplier Wilds increase the bonus multiplier permanently.',
 	'BUY MEGA TITLE': 'Magnetic Mega Chain',
-	'BUY MEGA DESC': '10 free spins awarded. One random symbol becomes magnetic and remains connected between spins. The magnetic cluster persists and grows throughout the feature while multipliers continue stacking.',
+	'BUY MEGA DESC':
+		'10 free spins awarded. One random symbol becomes magnetic and remains connected between spins. The magnetic cluster persists and grows throughout the feature while multipliers continue stacking.',
 	// Autoplay modal
 	'AUTO TURBO': 'TURBO SPIN',
 	'AUTO SUPER TURBO': 'SUPER TURBO SPIN',
@@ -243,11 +297,11 @@ export default {
 	// Win / free-spin screens
 	'YOU WON': 'YOU WON',
 	'FREE SPINS': 'FREE SPINS',
-	'CONGRATULATIONS': 'CONGRATULATIONS!',
+	CONGRATULATIONS: 'CONGRATULATIONS!',
 	'PRESS ANYWHERE': 'PRESS ANYWHERE TO CONTINUE',
 	'TOTAL WIN': 'TOTAL WIN',
 	'ALL WINS': 'ALL WINS',
-	'RESPIN': 'RESPIN',
+	RESPIN: 'RESPIN',
 	// Bonus resume modal
 	'UNFINISHED ROUND': 'UNFINISHED ROUND',
 	// Shown instead of the shared generic error modal when a bet cannot be covered — see

@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': 'VA-BANQUE',
 	'RULE ALL IN TEXT': 'Va-Banque offre 10 tours gratuits avec 1 symbole extensible choisi au hasard. Le multiplicateur commence à 2x et double uniquement lors des tours gagnants, créant de petits gains précoces et une course finale vers le gain max.',
 	'RULE BUY TITLE': 'MODES ACHAT / ACTIVATION',
-	'RULE BUY TEXT': 'Le coût d\'achat de Distribue est de 100x la mise. Le coût d\'achat de Va-Banque est de 400x la mise. Tour Chance coûte 2x la mise par tour. Tour Fonction coûte 20x la mise par tour. Le gain max est de 25,000x. Le RTP cible est de 96.1%.',
+	'RULE BUY TEXT': 'Le coût d\'achat de Distribue est de 100x la mise. Le coût d\'achat de Va-Banque est de 400x la mise. Tour Chance coûte 2x la mise par tour. Tour Fonction coûte 20x la mise par tour. Le gain max est de 25,000x. Le RTP cible est de 96.11%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'SYMBOLE PREMIUM SÉLECTIONNÉ',
 	'FEATURE SELECTED SYMBOL TEXT': 'Tout symbole de paiement régulier peut être le symbole extensible. Lorsqu\'il apparaît, tous les rouleaux concernés s\'étendent pour se remplir de ce symbole, et 3 rouleaux ou plus paient même sans connexions adjacentes.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'MULTIPLICATEURS DISTRIBUE',
@@ -110,27 +110,27 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'APERÇU',
 	'INFO OVERVIEW BODY':
-		'Forest Gang est une machine à sous vidéo 5x4 jouée sur 20 lignes de paiement.\nLes gains sont attribués de gauche à droite sur des rouleaux consécutifs, à partir du rouleau 1, lorsque des symboles correspondants apparaissent sur une ligne de paiement active.\nLe jeu comprend 5 symboles premium, 5 symboles bas, un symbole Wild et un symbole Scatter.\n\nLe potentiel de gain maximum est de 25,000x la mise totale.\n\nRTP théorique : 96.1%',
+		'Forest Gang est une machine à sous vidéo 5x4 jouée sur 20 lignes de paiement.\nLes gains standard sont attribués de gauche à droite sur des rouleaux consécutifs, à partir du rouleau 1, lorsque des symboles correspondants apparaissent sur une ligne de paiement active.\nLes gains du symbole extensible suivent une mécanique de gain spéciale et n\'exigent pas que les rouleaux gagnants soient consécutifs. Consultez la section du symbole extensible pour plus de détails.\nLe jeu comprend 5 symboles premium, 5 symboles bas, un symbole Wild et un symbole Scatter.\n\nLe potentiel de gain maximum est de 25,000x la mise totale.\n\nRTP théorique : 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'ROULEAUX',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': 'LIGNES',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': 'GAIN MAX',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': 'FONCTIONS',
 	'INFO EXPANDING TITLE': 'SYMBOLE EXTENSIBLE',
 	'INFO EXPANDING TEXT':
-		'Pendant les tours de fonction qualifiants et les tours bonus, un symbole aléatoire est sélectionné comme symbole extensible. Lorsque le symbole extensible sélectionné apparaît sur les rouleaux, il s\'étend verticalement pour couvrir le rouleau entier. Les symboles étendus peuvent créer plusieurs gains de ligne de paiement sur le même tour. Un multiplicateur aléatoire peut apparaître sur n\'importe quel tour et s\'appliquer au montant gagné de ce tour.\n\nLe multiplicateur aléatoire peut aller de 2x à 1024x.',
+		'Pendant les tours de fonction qualifiants et les tours bonus, un symbole aléatoire est sélectionné comme symbole extensible.\nLorsque le symbole sélectionné apparaît sur un rouleau, il s\'étend verticalement pour couvrir le rouleau entier.\nLes gains du symbole extensible sont évalués différemment des gains de ligne de paiement standard. Les symboles étendus n\'ont pas besoin d\'apparaître sur des rouleaux consécutifs pour accorder un gain. Les rouleaux sans le symbole sélectionné n\'interrompent pas un gain du symbole extensible.\nLe nombre de rouleaux contenant le symbole extensible sélectionné détermine le paiement du symbole applicable. Les symboles étendus peuvent créer plusieurs gains de ligne de paiement sur le même tour.\nUn multiplicateur aléatoire peut s\'appliquer à tout tour gagnant et est appliqué au montant total gagné de ce tour.\n\nLe multiplicateur aléatoire peut aller de 2x à 1024x.',
 	'INFO DEAL IT TITLE': 'BONUS DISTRIBUE',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
-		'Déclenché par 3 symboles Scatter.\n\nOffre 10 tours gratuits. Avant le début du bonus, un symbole extensible aléatoire est sélectionné. Pendant le bonus, le symbole sélectionné peut s\'étendre pour couvrir le rouleau entier.\n\nUn multiplicateur aléatoire peut s\'appliquer à tout tour gagnant, jusqu\'à 100x.',
+		'Déclenché par 3 symboles Scatter.\n\nOffre 10 tours gratuits. Avant le début du bonus, un symbole extensible aléatoire est sélectionné. Pendant le bonus, le symbole sélectionné peut s\'étendre pour couvrir le rouleau entier.\n\nUn multiplicateur aléatoire peut s\'appliquer à tout tour gagnant, jusqu\'à 100x.\n\nLe tour bonus peut se redéclencher comme suit :\n[[3 Scatters]] +3 tours\n[[4 Scatters]] +5 tours\n[[5 Scatters]] +8 tours',
 	'INFO ALL IN TITLE': 'BONUS VA-BANQUE',
 	'INFO ALL IN HL': '4 Scatter',
 	'INFO ALL IN TEXT':
-		'Déclenché par 4 symboles Scatter et offre 10 tours gratuits.\n\nAvant le début du bonus, un symbole extensible aléatoire est sélectionné. Pendant le bonus, le symbole sélectionné peut s\'étendre pour couvrir le rouleau entier. Les multiplicateurs de rouleau restent actifs pendant tout le bonus et doublent à chaque gain qualifiant, à partir de 2x.',
+		'Déclenché par 4 symboles Scatter et offre 10 tours gratuits.\n\nAvant le début du bonus, un symbole extensible aléatoire est sélectionné. Pendant le bonus, le symbole sélectionné peut s\'étendre pour couvrir le rouleau entier. Les multiplicateurs de rouleau restent actifs pendant tout le bonus et doublent à chaque gain qualifiant, à partir de 2x.\n\nLe tour bonus peut se redéclencher comme suit :\n[[3 Scatters]] +3 tours\n[[4 Scatters]] +5 tours\n[[5 Scatters]] +8 tours',
 	'INFO PLACEHOLDER BODY': 'Design bientôt disponible.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': 'TABLE DES GAINS',
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'FAÇONS DE GAGNER',
 	'INFO WAYS NOTE':
-		'Forest Gang se joue sur 20 lignes de paiement fixes. Une combinaison gagnante est formée lorsque des symboles correspondants apparaissent sur des rouleaux consécutifs de gauche à droite sur toute ligne de paiement active. Seul le gain le plus élevé par symbole par ligne de paiement est payé, sauf indication contraire dans les règles finales du jeu.',
+		'Forest Gang se joue sur 20 lignes de paiement fixes. Les gains de symboles standard se forment lorsque des symboles correspondants apparaissent sur des rouleaux consécutifs de gauche à droite sur une ligne de paiement active, à partir du rouleau 1. Les gains du symbole extensible suivent une mécanique de gain spéciale et n\'exigent pas que les rouleaux gagnants soient consécutifs. Les rouleaux sans le symbole extensible sélectionné n\'interrompent pas un gain du symbole extensible. Consultez la section du symbole extensible pour tous les détails. Seul le gain le plus élevé par symbole et par ligne de paiement est payé, sauf indication contraire dans les Règles du Jeu.',
 	// Feature buy page
 	'INFO BUY TITLE': 'ACHAT DE FONCTION',
 	'INFO BUY CHANCE TITLE': 'CHANCE BONUS SUPPLÉMENTAIRE',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': 'Offre instantanément le Bonus Va-Banque.',
 	'INFO BUY COST': 'COÛT',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "RTP de base 96.11%",
 	'INFO BUY CHANCE_LABEL': 'CHANCE BONUS',
 	'INFO BUY CHANCE_VALUE': '3x CHANCE',
 	// General info page
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': 'devenez le roi de la\nforêt avec',
 	'SPLASH EPIC BOTTOM': 'GAIN MAX',
 	'SPLASH PRESS': 'APPUYEZ POUR CONTINUER',
+	'PRESS ANYWHERE': "APPUYEZ N'IMPORTE OÙ POUR CONTINUER",
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': 'FÉLICITATIONS !',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': 'TOUR AUTO',
 	'TURBO SPIN': 'TOUR TURBO',
 	'SUPER TURBO SPIN': 'TOUR SUPER TURBO',
-	'BONUS FEATURE 100X': 'FONCTION BONUS 100 X',
+	'BONUS FEATURE 100X': 'FONCTION BONUS 20 X',
 	'NUMBER OF SPINS': 'NOMBRE DE TOURS',
 	'START AUTOPLAY': 'LANCER AUTO',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': 'Vous avez un bonus %mode% actif en cours.',
 	'END ROUND': 'TERMINER LE TOUR',
 	'PLAY ROUND': 'JOUER LE TOUR',
+	'INFO UI TITLE': "GUIDE DE L'INTERFACE",
+	'INFO UI SPIN TITLE': 'TOURNER',
+	'INFO UI SPIN TEXT': 'Lance une nouvelle partie.',
+	'INFO UI AUTO TITLE': 'TOURS AUTO',
+	'INFO UI AUTO TEXT': 'Ouvre le menu des tours auto.',
+	'INFO UI TURBO TITLE': 'TURBO',
+	'INFO UI TURBO TEXT': 'Active des tours plus rapides.',
+	'INFO UI BETPLUS TITLE': 'MISE +',
+	'INFO UI BETPLUS TEXT': 'Augmente votre mise totale.',
+	'INFO UI BETMINUS TITLE': 'MISE -',
+	'INFO UI BETMINUS TEXT': 'Diminue votre mise totale.',
+	'INFO UI INFO TITLE': 'INFO',
+	'INFO UI INFO TEXT': 'Ouvre les informations du jeu.',
+	'INFO UI SOUND TITLE': 'SON',
+	'INFO UI SOUND TEXT': 'Active ou coupe le son du jeu.',
+	'INFO UI PREV TITLE': 'PRÉCÉDENT',
+	'INFO UI PREV TEXT': 'Va à la page précédente.',
+	'INFO UI NEXT TITLE': 'SUIVANT',
+	'INFO UI NEXT TEXT': 'Va à la page suivante.',
+	'INFO UI CLOSE TITLE': 'FERMER',
+	'INFO UI CLOSE TEXT': 'Ferme la fenêtre actuelle.',
 };

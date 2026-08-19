@@ -1,6 +1,14 @@
 import type { BetType } from 'rgs-requests';
 
-import type { SymbolName, PaySymbolName, RawSymbol, GameType, Position, ClusterSeriesSnapshot, SeriesKind } from './types';
+import type {
+	SymbolName,
+	PaySymbolName,
+	RawSymbol,
+	GameType,
+	Position,
+	ClusterSeriesSnapshot,
+	SeriesKind,
+} from './types';
 
 type BookEventReveal = {
 	index: number;
@@ -81,6 +89,12 @@ type BookEventMagnetActivated = {
 	persistent: boolean;
 };
 
+type BookEventMagnetTargetSelected = {
+	index: number;
+	type: 'magnetTargetSelected';
+	symbol: PaySymbolName;
+};
+
 type BookEventClusterSeriesUpdate = {
 	index: number;
 	type: 'clusterSeriesUpdate';
@@ -122,6 +136,7 @@ export type BookEvent =
 	| BookEventFinalWin
 	| BookEventSetWin
 	| BookEventFreeSpinEnd
+	| BookEventMagnetTargetSelected
 	| BookEventMagnetActivated
 	| BookEventClusterSeriesUpdate
 	| BookEventClusterSeriesResolved

@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': 'ALLES REIN',
 	'RULE ALL IN TEXT': 'Alles Rein vergibt 10 Freispiele mit 1 zufällig gewählten expandierenden Symbol. Der Multiplikator startet bei 2x und verdoppelt sich nur bei Gewinnspielen, was kleine frühe Gewinne und eine späte Jagd auf den Maximalgewinn erzeugt.',
 	'RULE BUY TITLE': 'KAUF- / AKTIVIERUNGSMODI',
-	'RULE BUY TEXT': 'Zock Los Kaufkosten betragen den 100-fachen Einsatz. Alles Rein Kaufkosten betragen den 400-fachen Einsatz. Chance-Spin kostet den 2-fachen Einsatz pro Runde. Funktions-Spin kostet den 20-fachen Einsatz pro Runde. Der Maximalgewinn beträgt 25,000x. Ziel-RTP ist 96.1%.',
+	'RULE BUY TEXT': 'Zock Los Kaufkosten betragen den 100-fachen Einsatz. Alles Rein Kaufkosten betragen den 400-fachen Einsatz. Chance-Spin kostet den 2-fachen Einsatz pro Runde. Funktions-Spin kostet den 20-fachen Einsatz pro Runde. Der Maximalgewinn beträgt 25,000x. Ziel-RTP ist 96.11%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'GEWÄHLTES PREMIUM-SYMBOL',
 	'FEATURE SELECTED SYMBOL TEXT': 'Jedes reguläre auszahlende Symbol kann das expandierende Symbol sein. Wenn es landet, expandieren alle betroffenen Walzen, um dieses Symbol zu füllen, und 3 oder mehr Walzen zahlen auch ohne benachbarte Verbindungen aus.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'ZOCK LOS MULTIPLIKATOREN',
@@ -110,27 +110,27 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'ÜBERSICHT',
 	'INFO OVERVIEW BODY':
-		'Forest Gang ist ein 5x4 Video-Slot mit 20 Gewinnlinien.\nGewinne werden von links nach rechts auf aufeinanderfolgenden Walzen ab Walze 1 vergeben, wenn passende Symbole auf einer aktiven Gewinnlinie landen.\nDas Spiel enthält 5 Premium-Symbole, 5 niedrige Symbole, ein Wild-Symbol und ein Scatter-Symbol.\n\nDas maximale Gewinnpotenzial beträgt das 25,000x-fache des Gesamteinsatzes.\n\nTheoretischer RTP: 96.1%',
+		'Forest Gang ist ein 5x4 Video-Slot mit 20 Gewinnlinien.\nStandardgewinne werden von links nach rechts auf aufeinanderfolgenden Walzen ab Walze 1 vergeben, wenn passende Symbole auf einer aktiven Gewinnlinie landen.\nGewinne mit dem expandierenden Symbol folgen einer speziellen Gewinnmechanik und erfordern nicht, dass die gewinnenden Walzen aufeinanderfolgend sind. Einzelheiten finden Sie im Abschnitt zum expandierenden Symbol.\nDas Spiel enthält 5 Premium-Symbole, 5 niedrige Symbole, ein Wild-Symbol und ein Scatter-Symbol.\n\nDas maximale Gewinnpotenzial beträgt das 25,000x-fache des Gesamteinsatzes.\n\nTheoretischer RTP: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'WALZEN',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': 'GEWINNLINIEN',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': 'MAX. GEWINN',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': 'FUNKTIONEN',
 	'INFO EXPANDING TITLE': 'EXPANDIERENDES SYMBOL',
 	'INFO EXPANDING TEXT':
-		'Während qualifizierender Feature-Spins und Bonusrunden wird ein zufälliges Symbol als expandierendes Symbol gewählt. Wenn das gewählte expandierende Symbol auf den Walzen landet, expandiert es vertikal, um die gesamte Walze zu bedecken. Expandierte Symbole können mehrere Gewinnlinien im selben Spin erzeugen. Ein zufälliger Multiplikator kann bei jedem Spin erscheinen und wird auf den Gewinnbetrag dieses Spins angewendet.\n\nDer zufällige Multiplikator kann von 2x bis 1024x reichen.',
+		'Während qualifizierender Feature-Spins und Bonusrunden wird ein zufälliges Symbol als expandierendes Symbol gewählt.\nWenn das gewählte Symbol auf einer Walze erscheint, expandiert es vertikal und bedeckt die gesamte Walze.\nGewinne mit dem expandierenden Symbol werden anders bewertet als normale Gewinnlinien-Gewinne. Expandierte Symbole müssen nicht auf aufeinanderfolgenden Walzen erscheinen, um einen Gewinn auszulösen. Walzen ohne das gewählte Symbol unterbrechen einen Gewinn mit dem expandierenden Symbol nicht.\nDie Anzahl der Walzen mit dem gewählten expandierenden Symbol bestimmt die geltende Symbolauszahlung. Expandierte Symbole können mehrere Gewinnlinien-Gewinne im selben Spin erzeugen.\nEin zufälliger Multiplikator kann bei jedem gewinnenden Spin gelten und wird auf den Gesamtgewinnbetrag dieses Spins angewendet.\n\nDer zufällige Multiplikator kann von 2x bis 1024x reichen.',
 	'INFO DEAL IT TITLE': 'ZOCK LOS BONUS',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
-		'Ausgelöst durch 3 Scatter-Symbole.\n\nVergibt 10 Freispiele. Bevor der Bonus beginnt, wird ein zufälliges expandierendes Symbol gewählt. Während des Bonus kann das gewählte Symbol expandieren, um die gesamte Walze zu bedecken.\n\nEin zufälliger Multiplikator kann auf jedes Gewinnspiel angewendet werden, bis zu 100x.',
+		'Ausgelöst durch 3 Scatter-Symbole.\n\nVergibt 10 Freispiele. Bevor der Bonus beginnt, wird ein zufälliges expandierendes Symbol gewählt. Während des Bonus kann das gewählte Symbol expandieren, um die gesamte Walze zu bedecken.\n\nEin zufälliger Multiplikator kann auf jedes Gewinnspiel angewendet werden, bis zu 100x.\n\nDie Bonusrunde kann wie folgt erneut ausgelöst werden:\n[[3 Scatter]] +3 Freispiele\n[[4 Scatter]] +5 Freispiele\n[[5 Scatter]] +8 Freispiele',
 	'INFO ALL IN TITLE': 'ALLES REIN BONUS',
 	'INFO ALL IN HL': '4 Scatter',
 	'INFO ALL IN TEXT':
-		'Ausgelöst durch 4 Scatter-Symbole und vergibt 10 Freispiele.\n\nBevor der Bonus beginnt, wird ein zufälliges expandierendes Symbol gewählt. Während des Bonus kann das gewählte Symbol expandieren, um die gesamte Walze zu bedecken. Walzen-Multiplikatoren bleiben für den gesamten Bonus aktiv und verdoppeln sich bei jedem qualifizierenden Gewinn, beginnend bei 2x.',
+		'Ausgelöst durch 4 Scatter-Symbole und vergibt 10 Freispiele.\n\nBevor der Bonus beginnt, wird ein zufälliges expandierendes Symbol gewählt. Während des Bonus kann das gewählte Symbol expandieren, um die gesamte Walze zu bedecken. Walzen-Multiplikatoren bleiben für den gesamten Bonus aktiv und verdoppeln sich bei jedem qualifizierenden Gewinn, beginnend bei 2x.\n\nDie Bonusrunde kann wie folgt erneut ausgelöst werden:\n[[3 Scatter]] +3 Freispiele\n[[4 Scatter]] +5 Freispiele\n[[5 Scatter]] +8 Freispiele',
 	'INFO PLACEHOLDER BODY': 'Design folgt in Kürze.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': 'GEWINNTABELLE',
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'GEWINNWEGE',
 	'INFO WAYS NOTE':
-		'Forest Gang wird auf 20 festen Gewinnlinien gespielt. Eine Gewinnkombination entsteht, wenn passende Symbole auf aufeinanderfolgenden Walzen von links nach rechts auf einer aktiven Gewinnlinie landen. Nur der höchste Gewinn pro Symbol pro Gewinnlinie wird ausgezahlt, sofern in den endgültigen Spielregeln nicht anders angegeben.',
+		'Forest Gang wird auf 20 festen Gewinnlinien gespielt. Standard-Symbolgewinne entstehen, wenn passende Symbole von links nach rechts auf aufeinanderfolgenden Walzen auf einer aktiven Gewinnlinie landen, beginnend mit Walze 1. Gewinne mit dem expandierenden Symbol folgen einer speziellen Gewinnmechanik und erfordern nicht, dass die gewinnenden Walzen aufeinanderfolgend sind. Walzen ohne das gewählte expandierende Symbol unterbrechen einen Gewinn mit dem expandierenden Symbol nicht. Alle Einzelheiten finden Sie im Abschnitt zum expandierenden Symbol. Nur der höchste Gewinn pro Symbol und Gewinnlinie wird ausgezahlt, sofern in den Spielregeln nicht anders angegeben.',
 	// Feature buy page
 	'INFO BUY TITLE': 'FEATURE-KAUF',
 	'INFO BUY CHANCE TITLE': 'ZUSÄTZLICHE BONUS-CHANCE',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': 'Vergibt sofort den Alles Rein Bonus.',
 	'INFO BUY COST': 'KOSTEN',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "Basis-RTP 96.11%",
 	'INFO BUY CHANCE_LABEL': 'BONUS-CHANCE',
 	'INFO BUY CHANCE_VALUE': '3x CHANCE',
 	// General info page
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': 'werde der König des\nWaldes mit',
 	'SPLASH EPIC BOTTOM': 'MAX. GEWINN',
 	'SPLASH PRESS': 'DRÜCKEN ZUM FORTFAHREN',
+	'PRESS ANYWHERE': 'BELIEBIGE STELLE DRÜCKEN, UM FORTZUFAHREN',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': 'GLÜCKWUNSCH!',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': 'AUTOMATIK-SPIN',
 	'TURBO SPIN': 'TURBO-SPIN',
 	'SUPER TURBO SPIN': 'SUPER-TURBO-SPIN',
-	'BONUS FEATURE 100X': '100 X BONUS-FEATURE',
+	'BONUS FEATURE 100X': '20 X BONUS-FEATURE',
 	'NUMBER OF SPINS': 'ANZAHL DER SPINS',
 	'START AUTOPLAY': 'AUTOPLAY STARTEN',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': 'Du hast einen aktiven %mode% Bonus in Bearbeitung.',
 	'END ROUND': 'RUNDE BEENDEN',
 	'PLAY ROUND': 'RUNDE SPIELEN',
+	'INFO UI TITLE': 'BENUTZEROBERFLÄCHE',
+	'INFO UI SPIN TITLE': 'DREHEN',
+	'INFO UI SPIN TEXT': 'Startet eine neue Spielrunde.',
+	'INFO UI AUTO TITLE': 'AUTO-SPINS',
+	'INFO UI AUTO TEXT': 'Öffnet das Auto-Spins-Menü.',
+	'INFO UI TURBO TITLE': 'TURBO',
+	'INFO UI TURBO TEXT': 'Aktiviert schnellere Drehungen.',
+	'INFO UI BETPLUS TITLE': 'EINSATZ +',
+	'INFO UI BETPLUS TEXT': 'Erhöht deinen Gesamteinsatz.',
+	'INFO UI BETMINUS TITLE': 'EINSATZ -',
+	'INFO UI BETMINUS TEXT': 'Verringert deinen Gesamteinsatz.',
+	'INFO UI INFO TITLE': 'INFO',
+	'INFO UI INFO TEXT': 'Öffnet die Spielinformationen.',
+	'INFO UI SOUND TITLE': 'TON',
+	'INFO UI SOUND TEXT': 'Schaltet den Spielton ein oder aus.',
+	'INFO UI PREV TITLE': 'ZURÜCK',
+	'INFO UI PREV TEXT': 'Geht zur vorherigen Seite.',
+	'INFO UI NEXT TITLE': 'WEITER',
+	'INFO UI NEXT TEXT': 'Geht zur nächsten Seite.',
+	'INFO UI CLOSE TITLE': 'SCHLIESSEN',
+	'INFO UI CLOSE TEXT': 'Schließt das aktuelle Fenster.',
 };

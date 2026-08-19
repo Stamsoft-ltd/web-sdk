@@ -69,7 +69,7 @@ export default {
 	'RULE ALL IN TITLE': 'TODO O NADA',
 	'RULE ALL IN TEXT': 'Todo o Nada otorga 10 giros gratis con 1 símbolo expansivo elegido al azar. El multiplicador comienza en 2x y se duplica solo en giros ganadores, creando pequeñas ganancias iniciales y una persecución final por la ganancia máxima.',
 	'RULE BUY TITLE': 'MODOS DE COMPRA / ACTIVACIÓN',
-	'RULE BUY TEXT': 'El coste de compra de Reparte es 100x la apuesta. El coste de compra de Todo o Nada es 400x la apuesta. Giro Chance cuesta 2x la apuesta por ronda. Giro de Función cuesta 20x la apuesta por ronda. La ganancia máxima es 25,000x. El RTP objetivo es 96.1%.',
+	'RULE BUY TEXT': 'El coste de compra de Reparte es 100x la apuesta. El coste de compra de Todo o Nada es 400x la apuesta. Giro Chance cuesta 2x la apuesta por ronda. Giro de Función cuesta 20x la apuesta por ronda. La ganancia máxima es 25,000x. El RTP objetivo es 96.11%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'SÍMBOLO PREMIUM SELECCIONADO',
 	'FEATURE SELECTED SYMBOL TEXT': 'Cualquier símbolo de pago regular puede ser el símbolo expansivo. Cuando aparece, todos los rodillos afectados se expanden para llenarse con ese símbolo, y 3 o más rodillos pagan incluso sin conexiones adyacentes.',
 	'FEATURE DEAL IT MULTIPLIER TITLE': 'MULTIPLICADORES REPARTE',
@@ -110,27 +110,27 @@ export default {
 	// Game info modal — paginated framed pages
 	'INFO OVERVIEW TITLE': 'RESUMEN',
 	'INFO OVERVIEW BODY':
-		'Forest Gang es una tragamonedas de vídeo 5x4 jugada en 20 líneas de pago.\nLas ganancias se otorgan de izquierda a derecha en rodillos consecutivos, empezando por el rodillo 1, cuando símbolos coincidentes aparecen en una línea de pago activa.\nEl juego incluye 5 símbolos premium, 5 símbolos bajos, un símbolo Wild y un símbolo Scatter.\n\nEl potencial de ganancia máxima es 25,000x la apuesta total.\n\nRTP teórico: 96.1%',
+		'Forest Gang es una tragamonedas de vídeo 5x4 jugada en 20 líneas de pago.\nLas ganancias estándar se otorgan de izquierda a derecha en rodillos consecutivos, empezando por el rodillo 1, cuando símbolos coincidentes aparecen en una línea de pago activa.\nLas ganancias del símbolo expansivo siguen una mecánica de ganancia especial y no requieren que los rodillos ganadores sean consecutivos. Consulta la sección del símbolo expansivo para más detalles.\nEl juego incluye 5 símbolos premium, 5 símbolos bajos, un símbolo Wild y un símbolo Scatter.\n\nEl potencial de ganancia máxima es 25,000x la apuesta total.\n\nRTP teórico: 96.11%',
 	'INFO STAT REELS': '5 x 4',
 	'INFO STAT REELS LABEL': 'RODILLOS',
 	'INFO STAT PAYLINES': '20',
 	'INFO STAT PAYLINES LABEL': 'LÍNEAS DE PAGO',
 	'INFO STAT MAXWIN': '25,000x',
 	'INFO STAT MAXWIN LABEL': 'GANANCIA MÁX.',
-	'INFO STAT RTP': '96.1%',
+	'INFO STAT RTP': '96.11%',
 	'INFO STAT RTP LABEL': 'RTP',
 	'INFO FEATURES TITLE': 'FUNCIONES',
 	'INFO EXPANDING TITLE': 'SÍMBOLO EXPANSIVO',
 	'INFO EXPANDING TEXT':
-		'Durante los giros de función y las rondas de bono que califican, se selecciona un símbolo al azar como símbolo expansivo. Cuando el símbolo expansivo seleccionado aparece en los rodillos, se expande verticalmente para cubrir el rodillo completo. Los símbolos expandidos pueden crear varias ganancias de línea de pago en el mismo giro. Un multiplicador aleatorio puede aparecer en cualquier giro y aplicarse al importe ganado de ese giro.\n\nEl multiplicador aleatorio puede ir de 2x a 1024x.',
+		'Durante los giros de función y las rondas de bono que califican, se selecciona un símbolo al azar como símbolo expansivo.\nCuando el símbolo seleccionado aparece en un rodillo, se expande verticalmente para cubrir el rodillo completo.\nLas ganancias del símbolo expansivo se evalúan de forma distinta a las ganancias de línea de pago estándar. Los símbolos expandidos no necesitan aparecer en rodillos consecutivos para otorgar una ganancia. Los rodillos sin el símbolo seleccionado no interrumpen una ganancia del símbolo expansivo.\nEl número de rodillos que contienen el símbolo expansivo seleccionado determina el pago del símbolo aplicable. Los símbolos expandidos pueden crear varias ganancias de línea de pago en el mismo giro.\nUn multiplicador aleatorio puede aplicarse a cualquier giro ganador y se aplica al importe total ganado de ese giro.\n\nEl multiplicador aleatorio puede ir de 2x a 1024x.',
 	'INFO DEAL IT TITLE': 'BONO REPARTE',
 	'INFO DEAL IT HL': '3 Scatter',
 	'INFO DEAL IT TEXT':
-		'Activado por 3 símbolos Scatter.\n\nOtorga 10 giros gratis. Antes de que empiece el bono, se selecciona un símbolo expansivo al azar. Durante el bono, el símbolo seleccionado puede expandirse para cubrir el rodillo completo.\n\nUn multiplicador aleatorio puede aplicarse a cualquier giro ganador, hasta 100x.',
+		'Activado por 3 símbolos Scatter.\n\nOtorga 10 giros gratis. Antes de que empiece el bono, se selecciona un símbolo expansivo al azar. Durante el bono, el símbolo seleccionado puede expandirse para cubrir el rodillo completo.\n\nUn multiplicador aleatorio puede aplicarse a cualquier giro ganador, hasta 100x.\n\nLa ronda de bonificación puede reactivarse de la siguiente manera:\n[[3 Scatters]] +3 giros\n[[4 Scatters]] +5 giros\n[[5 Scatters]] +8 giros',
 	'INFO ALL IN TITLE': 'BONO TODO O NADA',
 	'INFO ALL IN HL': '4 Scatter',
 	'INFO ALL IN TEXT':
-		'Activado por 4 símbolos Scatter y otorga 10 giros gratis.\n\nAntes de que empiece el bono, se selecciona un símbolo expansivo al azar. Durante el bono, el símbolo seleccionado puede expandirse para cubrir el rodillo completo. Los multiplicadores de rodillo permanecen activos durante todo el bono y se duplican en cada ganancia que califique, empezando en 2x.',
+		'Activado por 4 símbolos Scatter y otorga 10 giros gratis.\n\nAntes de que empiece el bono, se selecciona un símbolo expansivo al azar. Durante el bono, el símbolo seleccionado puede expandirse para cubrir el rodillo completo. Los multiplicadores de rodillo permanecen activos durante todo el bono y se duplican en cada ganancia que califique, empezando en 2x.\n\nLa ronda de bonificación puede reactivarse de la siguiente manera:\n[[3 Scatters]] +3 giros\n[[4 Scatters]] +5 giros\n[[5 Scatters]] +8 giros',
 	'INFO PLACEHOLDER BODY': 'Diseño próximamente.',
 	// Paytable page
 	'INFO PAYTABLE TITLE': 'TABLA DE PAGOS',
@@ -147,7 +147,7 @@ export default {
 	// Ways to win page
 	'INFO WAYS TITLE': 'FORMAS DE GANAR',
 	'INFO WAYS NOTE':
-		'Forest Gang se juega en 20 líneas de pago fijas. Se forma una combinación ganadora cuando símbolos coincidentes aparecen en rodillos consecutivos de izquierda a derecha en cualquier línea de pago activa. Solo se paga la ganancia más alta por símbolo por línea de pago, salvo que se indique lo contrario en las reglas finales del juego.',
+		'Forest Gang se juega en 20 líneas de pago fijas. Las ganancias de símbolos estándar se forman cuando símbolos coincidentes aparecen en rodillos consecutivos de izquierda a derecha en una línea de pago activa, empezando por el rodillo 1. Las ganancias del símbolo expansivo siguen una mecánica de ganancia especial y no requieren que los rodillos ganadores sean consecutivos. Los rodillos sin el símbolo expansivo seleccionado no interrumpen una ganancia del símbolo expansivo. Consulta la sección del símbolo expansivo para todos los detalles. Solo se paga la ganancia más alta por símbolo y por línea de pago, salvo que se indique lo contrario en las Reglas del Juego.',
 	// Feature buy page
 	'INFO BUY TITLE': 'COMPRA DE FUNCIÓN',
 	'INFO BUY CHANCE TITLE': 'PROBABILIDAD DE BONO EXTRA',
@@ -160,7 +160,8 @@ export default {
 	'INFO BUY ALLIN TEXT': 'Otorga al instante el Bono Todo o Nada.',
 	'INFO BUY COST': 'COSTE',
 	'INFO BUY RTP': 'RTP',
-	'INFO BUY RTP_VALUE': '96.1%',
+	'INFO BUY RTP_VALUE': '96.11%',
+	'INFO BUY BASE RTP': "RTP base 96.11%",
 	'INFO BUY CHANCE_LABEL': 'PROB. DE BONO',
 	'INFO BUY CHANCE_VALUE': '3x PROB.',
 	// General info page
@@ -184,6 +185,7 @@ export default {
 	'SPLASH EPIC TOP': 'conviértete en el rey del\nbosque con',
 	'SPLASH EPIC BOTTOM': 'GANANCIA MÁX.',
 	'SPLASH PRESS': 'PULSA PARA CONTINUAR',
+	'PRESS ANYWHERE': 'PULSA EN CUALQUIER LUGAR PARA CONTINUAR',
 
 	// Free spins intro popup (rendered as live text so it is translatable)
 	'FS CONGRATS': '¡FELICIDADES!',
@@ -211,7 +213,7 @@ export default {
 	'AUTO SPIN': 'GIRO AUTOMÁTICO',
 	'TURBO SPIN': 'GIRO TURBO',
 	'SUPER TURBO SPIN': 'GIRO SÚPER TURBO',
-	'BONUS FEATURE 100X': 'FUNCIÓN BONO 100 X',
+	'BONUS FEATURE 100X': 'FUNCIÓN BONO 20 X',
 	'NUMBER OF SPINS': 'NÚMERO DE GIROS',
 	'START AUTOPLAY': 'INICIAR AUTOJUEGO',
 
@@ -220,4 +222,25 @@ export default {
 	'RESUME BODY': 'Tienes un bono %mode% activo en curso.',
 	'END ROUND': 'TERMINAR RONDA',
 	'PLAY ROUND': 'JUGAR RONDA',
+	'INFO UI TITLE': 'GUÍA DE LA INTERFAZ',
+	'INFO UI SPIN TITLE': 'GIRAR',
+	'INFO UI SPIN TEXT': 'Inicia una nueva ronda de juego.',
+	'INFO UI AUTO TITLE': 'GIROS AUTO',
+	'INFO UI AUTO TEXT': 'Abre el menú de giros automáticos.',
+	'INFO UI TURBO TITLE': 'TURBO',
+	'INFO UI TURBO TEXT': 'Activa giros más rápidos.',
+	'INFO UI BETPLUS TITLE': 'APUESTA +',
+	'INFO UI BETPLUS TEXT': 'Aumenta tu apuesta total.',
+	'INFO UI BETMINUS TITLE': 'APUESTA -',
+	'INFO UI BETMINUS TEXT': 'Reduce tu apuesta total.',
+	'INFO UI INFO TITLE': 'INFO',
+	'INFO UI INFO TEXT': 'Abre la información del juego.',
+	'INFO UI SOUND TITLE': 'SONIDO',
+	'INFO UI SOUND TEXT': 'Activa o desactiva el sonido.',
+	'INFO UI PREV TITLE': 'ANTERIOR',
+	'INFO UI PREV TEXT': 'Va a la página anterior.',
+	'INFO UI NEXT TITLE': 'SIGUIENTE',
+	'INFO UI NEXT TEXT': 'Va a la página siguiente.',
+	'INFO UI CLOSE TITLE': 'CERRAR',
+	'INFO UI CLOSE TEXT': 'Cierra la ventana actual.',
 };

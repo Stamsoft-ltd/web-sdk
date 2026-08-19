@@ -1,11 +1,5 @@
 // Shared golden gradients for canvas (Pixi) text fills, clipped to glyphs like CSS background-clip:text.
-//
-// `pixi.js` is a transitive dependency of `pixi-svelte`; it isn't a direct dependency of this app, so
-// TypeScript can't resolve its types here — but the app's vite config aliases `pixi.js` to the
-// workspace root, so it resolves correctly at build/runtime. The @ts-expect-error covers only the
-// type-resolution gap.
-// @ts-expect-error - 'pixi.js' is resolved at build time via the vite alias (transitive dep).
-import { FillGradient } from 'pixi.js';
+import { FillGradient } from 'pixi-svelte';
 
 // Figma "golden-gradient": linear-gradient(184deg, #FFA90E 15.26%, #EE960B 69.74%, #D18005 92.88%).
 // 184deg ≈ vertical (top → bottom), so a straight vertical gradient matches.
