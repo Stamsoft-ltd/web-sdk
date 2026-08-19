@@ -101,7 +101,7 @@
 		// by request, for now).
 		duckPondFinish: async (event) => {
 			runningTotal = event.amount;
-			context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_win' });
+			context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_duck_land' });
 			await waitForTimeout(1800);
 		},
 		duckPondHide: () => {
@@ -135,7 +135,7 @@
 		);
 		context.eventEmitter.broadcast({
 			type: 'soundOnce',
-			name: 'sfx_scatter_stop_2',
+			name: 'sfx_duck_click',
 			forcePlay: true,
 		});
 		// Asset failure must never leave the book waiting forever for a Spine completion event.

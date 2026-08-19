@@ -57,7 +57,7 @@
 			complete: props.oncomplete,
 			event: (_, event) => {
 				if (event.data?.name === 'wildExplode') {
-					context.eventEmitter?.broadcast({ type: 'soundOnce', name: 'sfx_wild_explode' });
+					context.eventEmitter?.broadcast({ type: 'soundOnce', name: 'sfx_megawild_drop' });
 				}
 			},
 		}}

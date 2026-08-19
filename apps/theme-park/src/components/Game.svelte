@@ -12,6 +12,8 @@
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import { sound } from '../game/sound';
+	import { Howler } from 'utils-sound';
 	import EnableSound from './EnableSound.svelte';
 	import SceneAnimationDriver from './SceneAnimationDriver.svelte';
 	import EnableGameActor from './EnableGameActor.svelte';
@@ -51,6 +53,15 @@
 
 	let splashIntroVisible = $state(false);
 	let splashPressHandler = $state<(() => void) | undefined>(undefined);
+
+	// Start the base bed at the EARLIEST edge of the dismiss gesture (pointerdown, not the click that
+	// fires on release) and resume the audio context in the same synchronous beat, so the music is
+	// audible the instant the player touches the splash rather than a frame or two later. Idempotent:
+	// replaying an already-playing bed is a no-op, so pointerdown + the onpress fallback are safe.
+	const startBaseMusic = () => {
+		if (Howler.ctx?.state === 'suspended') void Howler.ctx.resume();
+		sound.players?.music.play({ name: 'bgm_main' });
+	};
 
 	const heroArt = './assets/theme-park/v2/background-blur.webp';
 	const bonusArt = './assets/theme-park/coaster-bonus.webp';
@@ -510,9 +521,16 @@
 		</App>
 
 		{#if splashIntroVisible}
-			<div transition:fade={{ duration: 350 }} style="position:absolute;inset:0;z-index:10;">
+			<!-- pointerdown starts the music on the press itself; onpress (click / keyboard) is the
+			     dismiss + a fallback start for keyboard, which has no pointerdown. -->
+			<div
+				transition:fade={{ duration: 350 }}
+				style="position:absolute;inset:0;z-index:10;"
+				onpointerdown={startBaseMusic}
+			>
 				<SplashIntro
 					onpress={() => {
+						startBaseMusic();
 						splashIntroVisible = false;
 						splashPressHandler?.();
 					}}

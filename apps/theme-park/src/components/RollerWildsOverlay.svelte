@@ -165,7 +165,7 @@
 			phase = 'revealing';
 			context.eventEmitter.broadcast({
 				type: 'soundOnce',
-				name: 'sfx_scatter_win',
+				name: 'sfx_megawild_expand',
 				forcePlay: true,
 			});
 			if (!(await revealTriggeredReels())) {

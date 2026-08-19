@@ -118,6 +118,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 				}),
 			),
 		};
+		// Looping spin whoosh under the reels; stateGame stops it as the last reel lands.
+		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_reel_spin_loop' });
 		const spinPromise = stateGameDerived.enhancedBoard.spin({
 			revealEvent: seededRevealEvent,
 			paddingBoard: config.paddingReels[bookEvent.gameType],
@@ -224,7 +226,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_win' });
+		eventEmitter.broadcast({
+			type: 'soundOnce',
+			name: bookEvent.bonusType === 'coaster' ? 'sfx_coaster_scatter_land' : 'sfx_roller_scatter_land',
+		});
 		if (bookEvent.positions.length > 0) {
 			await eventEmitter.broadcastAsync({
 				type: 'boardWithAnimateSymbols',
@@ -249,7 +254,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.gameType = 'freegame';
 		eventEmitter.broadcast({ type: 'boardFrameGlowShow' });
 		eventEmitter.broadcast({ type: 'freeSpinCounterUpdate', total: bookEvent.totalFs });
-		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
+		// The two reel bonuses share the free-spin flow but not the music: Mega Coaster rides its
+		// free-spins loop, Roller Wilds its own theme.
+		eventEmitter.broadcast({
+			type: 'soundMusic',
+			name: bookEvent.bonusType === 'coaster' ? 'bgm_freespin' : 'bgm_roller_wilds',
+		});
 	},
 
 	updateFreeSpin: async (bookEvent: BookEventOfType<'updateFreeSpin'>) => {
@@ -270,7 +280,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 		const winLevelData = getWinLevelData(bookEvent.winLevel);
 		eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_youwon_panel' });
+		eventEmitter.broadcast({
+			type: 'soundOnce',
+			name: stateGame.bonusType === 'coaster' ? 'sfx_coaster_bonus_end' : 'sfx_roller_bonus_end',
+		});
 		await eventEmitter.broadcastAsync({
 			type: 'freeSpinOutroCountUp',
 			amount: bookEvent.amount,
@@ -289,10 +302,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	// Hard cap reached (25,000x); round then ends
 	wincap: async (bookEvent: BookEventOfType<'wincap'>) => {
 		// Real books emit wincap AND a following setWin(winLevel 10), so this
-		// handler only clamps the displayed total and plays the max-win sting —
-		// the count-up/big-win screen is presented once, by the setWin handler.
+		// handler only clamps the displayed total; the count-up/big-win screen (and
+		// its max-win music) is presented once, by the setWin handler.
 		stateBet.winBookEventAmount = bookEvent.amount;
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_youwon_panel' });
 		await waitForTimeout(SECOND * 0.4);
 	},
 
@@ -345,7 +357,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		const triggerPositions =
 			bookEvent.positions?.length > 0 ? bookEvent.positions : duckTriggerPositionsFromBoard();
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_win' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_duck_scatter_land' });
 		if (triggerPositions.length > 0) {
 			await eventEmitter.broadcastAsync({
 				type: 'boardWithAnimateSymbols',
@@ -373,6 +385,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			finalAmount: null,
 		};
 		stateGame.duckRunningTotal = 0;
+		// Duck Your Luck has no free-spin flow, so it swaps the base bed for its own pond theme here;
+		// duckPickEnd restores bgm_main.
+		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_duck_bonus' });
 		eventEmitter.broadcast({
 			type: 'duckPondShow',
 			totalPicks: bookEvent.totalPicks,
@@ -427,13 +442,15 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// the player acknowledges the total; the later setWin is settlement data and stays suppressed.
 		stateGame.bonusSummaryShown = true;
 		eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_youwon_panel' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_duck_bonus_end' });
 		await eventEmitter.broadcastAsync({
 			type: 'freeSpinOutroCountUp',
 			amount: bookEvent.amount,
 			winLevelData,
 		});
 		eventEmitter.broadcast({ type: 'freeSpinOutroHide' });
+		// Pond theme gave way back to the base bed now the feature is over.
+		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_main' });
 
 		stateGame.duckPicks = null;
 		stateGame.duckRunningTotal = 0;
@@ -476,6 +493,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 	// ── Mega Coaster setup (after freeSpinTrigger, before first freegame reveal) ─
 	coasterSetup: async (bookEvent: BookEventOfType<'coasterSetup'>) => {
+		// The cart-stamping setup has its own short theme; hand back to the free-spins loop after.
+		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_coaster_setup' });
 		await eventEmitter.broadcastAsync({
 			type: 'coasterSetupShow',
 			pukes: bookEvent.pukes,
@@ -484,6 +503,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		});
 		stateGame.coasterTiles = bookEvent.tiles;
 		eventEmitter.broadcast({ type: 'coasterSetupHide' });
+		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
 	},
 
 	createBonusSnapshot: async (bookEvent: BookEventOfType<'createBonusSnapshot'>) => {

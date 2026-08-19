@@ -23,11 +23,29 @@
 	import { SYMBOL_SIZE } from '../game/constants';
 	import { getContext } from '../game/context';
 	import { boardKeyForMultiplier } from '../game/winPresentation';
+	import type { MusicName } from '../game/sound';
 	import PressToContinue from './PressToContinue.svelte';
 	import ThemeWinBoard from './ThemeWinBoard.svelte';
 	import WinCoinRain, { coinsForMultiplier } from './WinCoinRain.svelte';
 
 	const context = getContext();
+
+	// The five big-win beds track the win-card art tiers (boardKeyForMultiplier), so the music the
+	// player hears matches the card they see. 25,000x+ shows the MAX card and rides the top bed.
+	const BIGWIN_MUSIC: Record<string, MusicName> = {
+		winSweet: 'bgm_bigwin_sweet',
+		winWild: 'bgm_bigwin_wild',
+		winEpic: 'bgm_bigwin_epic',
+		winMythic: 'bgm_bigwin_mythic',
+		winLegendary: 'bgm_bigwin_legendary',
+	};
+	const bigWinMusicFor = (multiplier: number): MusicName =>
+		multiplier >= 25000 ? 'bgm_bigwin_legendary' : BIGWIN_MUSIC[boardKeyForMultiplier(multiplier)];
+
+	// The big-win bed currently replacing the background bed, so winHide can stop the right one.
+	let activeBigWinMusic: MusicName | null = null;
+	const stopWinCountLoop = () =>
+		context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_win_count_loop' });
 
 	let show = $state(false);
 	let amount = $state(0);
@@ -131,6 +149,12 @@
 		winHide: () => {
 			show = false;
 			clearTimers();
+			stopWinCountLoop();
+			// End of the big-win presentation — stop its bed, which resumes the background bed.
+			if (activeBigWinMusic) {
+				context.eventEmitter.broadcast({ type: 'soundStop', name: activeBigWinMusic });
+				activeBigWinMusic = null;
+			}
 		},
 		winUpdate: async (event) => {
 			clearTimers();
@@ -141,9 +165,17 @@
 			isCountingUp = true;
 			breatheScale = 1;
 			winId += 1;
-			if (!event.winLevelData.animation) {
+			if (event.winLevelData.animation) {
+				// Big win: its tier bed takes over the music and the coin-count loop runs while it climbs.
+				activeBigWinMusic = bigWinMusicFor(bookEventAmountToBetAmountMultiplier(event.amount));
+				context.eventEmitter.broadcast({ type: 'soundMusic', name: activeBigWinMusic });
+				context.eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_win_count_loop' });
+			} else {
 				smallPop.set(0.7, { duration: 0 });
 				smallPop.set(1, { duration: SMALL_POP_MS, easing: backOut });
+				if (event.amount > 0) {
+					context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_regular_win' });
+				}
 			}
 			await waitForResolve((resolve) => (oncomplete = resolve));
 			isCountingUp = false;
@@ -182,6 +214,9 @@
 			easing={countCurve}
 			restartKey={winId}
 			oncomplete={() => {
+				// The amount has landed — the coin-count loop belongs to the climb, so end it here
+				// while the big-win bed keeps playing under the held card.
+				stopWinCountLoop();
 				if (!hasBoardAnimation) {
 					if (!boardClickHandled) {
 						snappedToFinal = true;

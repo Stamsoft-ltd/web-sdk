@@ -26,15 +26,23 @@ import {
 	SPIN_OPTIONS_TURBO,
 	SPIN_OPTIONS_ANTICIPATED,
 	INITIAL_SYMBOL_STATE,
-	SCATTER_LAND_SOUND_MAP,
-	SCATTER_SYMBOLS,
 } from './constants';
+import type { SoundEffectName } from './sound';
 import { FRAME_OVER_GRID_X } from './boardArt';
 
+// Each scatter carries its own feature's landing sting (the three features sound distinct as they
+// build). A symbol not in this map is not a scatter, so it also gates the counter increment.
+const SCATTER_LAND_SOUND: Partial<Record<SymbolName, SoundEffectName>> = {
+	S_COASTER: 'sfx_coaster_scatter_land',
+	S_DUCK: 'sfx_duck_scatter_land',
+	S_ROLLER: 'sfx_roller_scatter_land',
+};
+
 const onSymbolLand = ({ rawSymbol }: { rawSymbol: RawSymbol }) => {
-	if (SCATTER_SYMBOLS.includes(rawSymbol.name)) {
+	const scatterSound = SCATTER_LAND_SOUND[rawSymbol.name];
+	if (scatterSound) {
 		eventEmitter.broadcast({ type: 'soundScatterCounterIncrease' });
-		eventEmitter.broadcast({ type: 'soundOnce', name: SCATTER_LAND_SOUND_MAP[scatterLandIndex()] });
+		eventEmitter.broadcast({ type: 'soundOnce', name: scatterSound });
 	}
 };
 
@@ -47,9 +55,14 @@ const board = _.range(BOARD_DIMENSIONS.x).map((reelIndex) => {
 		onReelStopping: () => {
 			eventEmitter.broadcast({
 				type: 'soundOnce',
-				name: 'sfx_reel_stop_1',
+				name: 'sfx_reel_stop',
 				forcePlay: !(stateBet.isTurbo || stateBet.isSuperTurbo),
 			});
+			// The reels started the spin loop together; kill it when the last reel lands so it never
+			// bleeds past the settle (anticipation keeps the final reel spinning, which is correct).
+			if (reelIndex === BOARD_DIMENSIONS.x - 1) {
+				eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_reel_spin_loop' });
+			}
 		},
 		onSymbolLand,
 	});

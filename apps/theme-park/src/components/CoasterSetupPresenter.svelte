@@ -246,7 +246,7 @@
 		tileScale.set(0.72, { duration: 0 });
 		context.eventEmitter.broadcast({
 			type: 'soundOnce',
-			name: 'sfx_reel_stop_3',
+			name: 'sfx_coaster_duck_splash',
 			forcePlay: true,
 		});
 		void (async () => {

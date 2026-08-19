@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { OnMount } from 'components-shared';
-	import { SECOND } from 'constants-shared/time';
 	import { Container, Graphics } from 'pixi-svelte';
 	import { stateBet } from 'state-shared';
 
@@ -61,25 +59,6 @@
 		});
 	});
 </script>
-
-{#if hasAnticipation}
-	<OnMount
-		onmount={() => {
-			context.eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_anticipation' });
-			context.eventEmitter.broadcast({
-				type: 'soundFade',
-				name: 'sfx_anticipation',
-				from: 0,
-				to: 1,
-				duration: SECOND,
-			});
-
-			return () => {
-				context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_anticipation' });
-			};
-		}}
-	/>
-{/if}
 
 {#if hasAnticipation}
 	<!-- Hold focus on the active reel. Straight cell-interior scrims preserve the authored grid and

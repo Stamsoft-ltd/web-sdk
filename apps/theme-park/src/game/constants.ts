@@ -142,15 +142,6 @@ export const INITIAL_BOARD: RawSymbol[][] = _.range(BOARD_DIMENSIONS.x).map(() =
 	}),
 );
 
-// Scatter land sounds — indexed by how many scatters have landed (1-5)
-export const SCATTER_LAND_SOUND_MAP: Record<1 | 2 | 3 | 4 | 5, string> = {
-	1: 'sfx_scatter_stop_1',
-	2: 'sfx_scatter_stop_2',
-	3: 'sfx_scatter_stop_3',
-	4: 'sfx_scatter_stop_4',
-	5: 'sfx_scatter_stop_5',
-};
-
 // Spin timing options — SpinningReelSpinOptions shape.
 const SPIN_OPTIONS_SHARED = {
 	reelBounceBackSpeed: 0.15,

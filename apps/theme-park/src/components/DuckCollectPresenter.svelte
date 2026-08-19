@@ -88,7 +88,7 @@
 		);
 		context.eventEmitter.broadcast({
 			type: 'soundOnce',
-			name: 'sfx_scatter_stop_1',
+			name: 'sfx_duck_land',
 			forcePlay: true,
 		});
 
@@ -157,7 +157,7 @@
 			context.stateGame.duckRevealPositions = [event.position];
 			context.eventEmitter.broadcast({
 				type: 'soundOnce',
-				name: 'sfx_scatter_stop_1',
+				name: 'sfx_duck_land',
 				forcePlay: true,
 			});
 
