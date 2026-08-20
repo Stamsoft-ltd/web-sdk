@@ -1,7 +1,7 @@
 import { stateBet, stateI18nDerived, stateModal, stateUi, stateUrlDerived } from 'state-shared';
 import { API_AMOUNT_MULTIPLIER, BOOK_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import type { BaseBet } from 'utils-bet';
-import { formatCurrencyAmount as formatSharedCurrencyAmount } from 'utils-shared/currency';
+import { formatWalletAmount, formatWinAmount } from 'utils-shared/currency';
 import { logMagneticDiagnostic } from '../utils/magneticDiagnostics';
 import { resolveReplayCostMultiplier } from './replay';
 
@@ -212,10 +212,17 @@ const replayWinAmount = () => {
 	return safeAmount(replayPayoutMultiplier() * replayBetAmount());
 };
 
-// No default of 2 here: each currency carries its own decimal count in the RGS table (JPY/KRW/IDR
-// are 0, the Gulf dinars are 3). Passing 2 unconditionally overrode all of them.
-const formatCurrencyAmount = (amount: number, fractionDigits?: number) =>
-	formatSharedCurrencyAmount(stateBet.currency, safeAmount(amount), fractionDigits);
+// Two formatters, not one with an optional digit count — the choice of function IS the compliance
+// decision. Each currency carries its own decimal count in the RGS table (JPY/KRW/IDR are 0, the
+// Gulf dinars are 3), so neither hardcodes 2.
+
+/** Wallet money: balance, bet, buy-bonus costs, replay bet/cost. Fixed at the currency decimals. */
+const formatCurrencyAmount = (amount: number) =>
+	formatWalletAmount(stateBet.currency, safeAmount(amount));
+
+/** Win money: replay payout/win. Exact value, expanding to 4 decimals for sub-cent payouts. */
+const formatWinCurrencyAmount = (amount: number) =>
+	formatWinAmount(stateBet.currency, safeAmount(amount));
 
 const t = (key: string) => stateI18nDerived.translate(key);
 
@@ -245,5 +252,6 @@ export const magneticStakeDerived = {
 	replayPayoutMultiplier,
 	replayWinAmount,
 	formatCurrencyAmount,
+	formatWinCurrencyAmount,
 	t,
 };

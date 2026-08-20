@@ -28,8 +28,10 @@
 	const replayPayoutMultiplierText = $derived(
 		`${formatReplayMultiplier(magneticStakeDerived.replayPayoutMultiplier())}x`,
 	);
+	// Win, not wallet: a replayed sub-cent payout must show its exact value, so this one expands to
+	// 4 decimals while the bet/cost above stay fixed at the currency's decimals.
 	const replayWinText = $derived(
-		magneticStakeDerived.formatCurrencyAmount(magneticStakeDerived.replayWinAmount()),
+		magneticStakeDerived.formatWinCurrencyAmount(magneticStakeDerived.replayWinAmount()),
 	);
 
 	const replayValueStyle = (text: string) => {

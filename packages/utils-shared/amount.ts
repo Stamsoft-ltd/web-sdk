@@ -1,7 +1,7 @@
 import { BOOK_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import { stateBet } from 'state-shared';
 
-import { formatCurrencyAmount, metaFor } from './currency';
+import { formatWalletAmount, formatWinAmount } from './currency';
 
 // bookEventAmount: is the amount or win numbers in the events of books, e.g. the amount in setTotalWin bookEvent
 // {
@@ -24,19 +24,30 @@ export const bookEventAmountToNormalisedAmount = (bookEventAmount: number) => {
 
 export const numberToFloat = (value: number) => Number.parseFloat(`${value}`);
 
-// Sub-cent payouts: a genuine non-zero win must never render as a flat "0.00" (Stake
-// pre-submission requirement). Re-exported from the currency module so the win readout and the
-// HUD balance/bet agree on precision.
 export { fractionDigitsForAmount } from './currency';
 
-// Formats via the RGS-documented currency table rather than Intl's own currency rendering, so a
-// win shows the same symbol, decimal count and symbol placement as the balance. Previously only
-// XGC/XSC were special-cased here and every other code went through Intl, which disagreed with the
-// spec for ~20 currencies (e.g. "PLN 10.00" instead of "10.00 zł") and omitted XEC entirely.
-export const numberToCurrencyString = (value: number) =>
-	formatCurrencyAmount(stateBet.currency, value, metaFor(stateBet.currency).decimals);
+// Money on screen has TWO display contracts, and Stake reviews them separately:
+//
+//   wallet (balance, bet, costs) -> exactly the currency's decimals. A balance must never grow a
+//     third decimal just because the float is precise; "$999.946" was rejected 2026-08-20.
+//   win (spin/round/total, countups) -> the exact settled value, up to 4 decimals, so a sub-cent
+//     payout reads "$0.0016" rather than "$0.00".
+//
+// These two used to share one expanding formatter, which satisfied the win rule and broke the
+// wallet rule. Keep them separate: the function you call IS the compliance decision.
+//
+// Both format via the RGS-documented currency table rather than Intl's own currency rendering, so
+// symbol, decimal count and symbol placement match the spec (Intl renders PLN as "PLN 10.00"
+// rather than "10.00 zł", and has no notion of XGC/XSC/XEC at all).
 
-export const bookEventAmountToCurrencyString = (bookEventAmount: number) => {
-	const normalisedAmount = bookEventAmountToNormalisedAmount(bookEventAmount);
-	return numberToCurrencyString(normalisedAmount);
-};
+/** Wallet money in currency units: balance, bet, total cost, buy-bonus prices, autoplay limits. */
+export const numberToCurrencyString = (value: number) =>
+	formatWalletAmount(stateBet.currency, value);
+
+/** Win money in currency units. Prefer `bookEventAmountToCurrencyString` for book amounts. */
+export const numberToWinCurrencyString = (value: number) =>
+	formatWinAmount(stateBet.currency, value);
+
+/** Win money from a book-event amount — the normal path for every win readout. */
+export const bookEventAmountToCurrencyString = (bookEventAmount: number) =>
+	numberToWinCurrencyString(bookEventAmountToNormalisedAmount(bookEventAmount));

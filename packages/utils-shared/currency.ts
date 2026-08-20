@@ -157,25 +157,71 @@ export const fractionDigitsForAmount = (value: number, min: number) => {
 	return MAX_FRACTION_DIGITS;
 };
 
+const render = (currency: string, amount: number, min: number, max: number) => {
+	const meta = metaFor(currency);
+	const value = Number.isFinite(amount) ? amount : 0;
+	const sign = value < 0 ? '-' : '';
+	// Group the digits (Intl for the NUMBER only) and attach the symbol ourselves, so the currency
+	// rendering stays exactly as specified rather than however Intl localises that code.
+	const body = new Intl.NumberFormat('en-US', {
+		minimumFractionDigits: min,
+		maximumFractionDigits: Math.max(min, max),
+	}).format(Math.abs(value));
+	return meta.symbolAfter ? `${sign}${body} ${meta.symbol}` : `${sign}${meta.symbol}${body}`;
+};
+
 /**
  * Format an amount for display using the documented symbol, decimals and placement.
  * `minFractionDigits` overrides the currency's default decimal count when a caller needs more.
+ *
+ * @deprecated Money on screen has two incompatible display contracts, and this single function
+ * cannot express both — it always expands precision, which is correct for wins and wrong for the
+ * wallet (Stake rejected magnetic 2026-08-20 for a `$999.946` balance). Use `formatWalletAmount`
+ * for balance/bet/costs and `formatWinAmount` for wins. Kept only for apps not yet migrated; the
+ * optional `minFractionDigits` argument is exactly how the wrong contract spread, because every
+ * caller that omitted it silently inherited the expanding behaviour.
  */
 export const formatCurrencyAmount = (
 	currency: string,
 	amount: number,
 	minFractionDigits?: number,
 ) => {
-	const meta = metaFor(currency);
 	const value = Number.isFinite(amount) ? amount : 0;
-	const min = minFractionDigits ?? meta.decimals;
-	const digits = fractionDigitsForAmount(value, min);
-	const sign = value < 0 ? '-' : '';
-	// Group the digits (Intl for the NUMBER only) and attach the symbol ourselves, so the currency
-	// rendering stays exactly as specified rather than however Intl localises that code.
-	const body = new Intl.NumberFormat('en-US', {
-		minimumFractionDigits: min,
-		maximumFractionDigits: digits,
-	}).format(Math.abs(value));
-	return meta.symbolAfter ? `${sign}${body} ${meta.symbol}` : `${sign}${meta.symbol}${body}`;
+	const min = minFractionDigits ?? metaFor(currency).decimals;
+	return render(currency, value, min, fractionDigitsForAmount(value, min));
+};
+
+// Stake requires in-game win values to show the exact settled amount with "up to 4 decimal places
+// when necessary". Wallet values get no such allowance — they are fixed at the currency's own
+// decimal count.
+export const WIN_MAX_FRACTION_DIGITS = 4;
+
+/**
+ * Wallet money: balance, bet, total cost, buy-bonus prices, autoplay limits.
+ *
+ * Fixed at the currency's decimal count — 2 for most, 0 for JPY/KRW/IDR, 3 for the Gulf dinars.
+ * Never expands: a balance of 999.946 renders "$999.95", not "$999.946".
+ */
+export const formatWalletAmount = (currency: string, amount: number) => {
+	const decimals = metaFor(currency).decimals;
+	return render(currency, amount, decimals, decimals);
+};
+
+/**
+ * Win money: spin/round/total wins, countups, win animations, replay payout.
+ *
+ * The currency's decimals are the MINIMUM; precision expands up to 4 digits so a genuine sub-cent
+ * payout shows its exact value (a 0.16x win on a 0.01 bet must read "$0.0016", never "$0.00").
+ *
+ * The 4-digit ceiling never overrides that: if a value is non-zero but rounds to all-zeros at 4
+ * decimals, we keep expanding to the exact width instead. Displaying a real win as "$0.0000" is
+ * the precise failure the requirement exists to prevent, so the cap must not re-introduce it.
+ */
+export const formatWinAmount = (currency: string, amount: number) => {
+	const decimals = metaFor(currency).decimals;
+	const value = Number.isFinite(amount) ? amount : 0;
+	const exact = fractionDigitsForAmount(value, decimals);
+	const capped = Math.min(exact, WIN_MAX_FRACTION_DIGITS);
+	const vanishes = value !== 0 && Number(Math.abs(value).toFixed(capped)) === 0;
+	return render(currency, value, decimals, vanishes ? exact : capped);
 };

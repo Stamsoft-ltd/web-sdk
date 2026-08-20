@@ -54,7 +54,13 @@
 	$effect(() => {
 		winDisplay.set(winTarget);
 	});
-	const totalWin = $derived(bookEventAmountToCurrencyString(Math.round(winDisplay.current)));
+	// Round only the IN-FLIGHT tween value: a fractional book amount mid-countup would otherwise
+	// render a jittering 7-digit string. Once the tween lands, show the settled amount exactly —
+	// rounding a settled book amount truncates the win (book 16.4 must read $0.00164, not $0.0016).
+	const displayWinAmount = $derived(
+		Math.abs(winDisplay.current - winTarget) < 0.5 ? winTarget : Math.round(winDisplay.current),
+	);
+	const totalWin = $derived(bookEventAmountToCurrencyString(displayWinAmount));
 
 	// Element inside the capsule = the symbol currently being combined: the magnet's target when a
 	// magnet series runs, else the active cluster's symbol (natural clusters don't set a magnet

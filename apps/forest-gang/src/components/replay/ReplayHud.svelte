@@ -20,7 +20,7 @@
 	const replayCostMultiplierText = $derived(`${forestStakeDerived.replayCostMultiplier()}x`);
 	const replayPayoutMultiplierText = $derived(`${forestStakeDerived.replayPayoutMultiplier().toFixed(2).replace(/\.?0+$/, '')}x`);
 	const replayWinText = $derived(
-		forestStakeDerived.formatCurrencyAmount(forestStakeDerived.replayWinAmount()),
+		forestStakeDerived.formatWinCurrencyAmount(forestStakeDerived.replayWinAmount()),
 	);
 
 	const replayValueStyle = (text: string) => {

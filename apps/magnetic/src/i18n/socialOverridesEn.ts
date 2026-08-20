@@ -121,6 +121,25 @@ export const socialOverridesEn: Record<string, string> = {
 	// TITLE needs no override: "NOT ENOUGH BALANCE" contains no restricted substring.
 	'NO BALANCE BODY': 'Your balance is too low for this play amount. Lower it to keep playing.',
 
+	// ── Shared package keys (components-ui-html / components-ui-pixi / utils-xstate) ──────────────
+	// These strings do NOT live in this game's messagesMap — they are hardcoded English inside the
+	// shared packages, where the full sentence IS the lingui key. Lingui returns the key verbatim
+	// when the catalog has no entry, so a missing override here renders raw gambling copy with no
+	// error and no missing-translation marker. Scrubbing messagesMap/en.ts alone cannot catch them.
+	//
+	// Regenerate the list of keys the shared packages can render with:
+	//   grep -rhno "translate('[^']*')" --include="*.ts" --include="*.svelte" \
+	//     packages/components-ui-html/src packages/components-ui-pixi/src \
+	//     packages/components-shared/src packages/utils-xstate/src | sed "s/.*translate('//;s/')$//" | sort -u
+	// Every returned key must be free of restricted substrings or overridden here.
+	'BET MENU': 'PLAY MENU',
+	'SELECT YOUR BET': 'SELECT YOUR PLAY AMOUNT',
+	// Rejected 2026-08-20. Reached ONLY by autoplay running out of balance, which renders the shared
+	// <ModalAutoSpinMessage> — NOT this game's own scrubbed InsufficientFundsModal ('NO BALANCE BODY'
+	// above), which handles the `modal.name === 'error'` path. Two dialogs, one logical message.
+	'INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.':
+		'NOT ENOUGH BALANCE. GET MORE COINS OR LOWER YOUR PLAY LEVEL.',
+
 	// Note: the General Game Disclaimer (DISCLAIMER TEXT) is intentionally NOT overridden here — the
 	// base copy is jurisdiction-neutral legal boilerplate, so social mode shows the same verbatim text
 	// (it contains no prohibited terms, so the "pay/win" review passes without a substitution).
