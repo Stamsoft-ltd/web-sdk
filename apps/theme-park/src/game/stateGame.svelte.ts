@@ -42,7 +42,9 @@ const onSymbolLand = ({ rawSymbol }: { rawSymbol: RawSymbol }) => {
 	const scatterSound = SCATTER_LAND_SOUND[rawSymbol.name];
 	if (scatterSound) {
 		eventEmitter.broadcast({ type: 'soundScatterCounterIncrease' });
-		eventEmitter.broadcast({ type: 'soundOnce', name: scatterSound });
+		// force-replay: consecutive scatters share one sound name, and a plain soundOnce is a no-op
+		// while the previous ~1s sting is still playing — which is why the 2nd of three used to be silent.
+		eventEmitter.broadcast({ type: 'soundOnce', name: scatterSound, forcePlay: true });
 	}
 };
 

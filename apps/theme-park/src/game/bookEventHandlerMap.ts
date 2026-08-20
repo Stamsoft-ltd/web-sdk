@@ -143,6 +143,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		await Promise.all([spinPromise, rollerRollOutPromise]);
 		stateGame.revealPreparing = false;
 		stateGame.hasAnticipationPending = false;
+		// Backstop for the spin whoosh: the per-reel stop in stateGame can be skipped when a bought
+		// bonus (or a fast skip) settles the board without the last reel's onReelStopping firing, which
+		// left the loop droning into the Duck Your Luck bonus. The spin has fully settled here.
+		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_reel_spin_loop' });
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
 	},
 
@@ -225,6 +229,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateBet.autoSpinsCounter = 0;
 		}
 
+		// Silence the spin whoosh before the free-spin intro (bought bonus + skip can settle without the
+		// reveal's own stop firing).
+		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_reel_spin_loop' });
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
 		eventEmitter.broadcast({
 			type: 'soundOnce',
@@ -290,6 +297,13 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			winLevelData,
 		});
 		eventEmitter.broadcast({ type: 'freeSpinOutroHide' });
+		// Stop the final-screen sting with the screen it belongs to — the coaster one runs ~10s and was
+		// still playing into base game once the shorter outro closed. bonusType is still set here (reset
+		// below), so it targets whichever sting played.
+		eventEmitter.broadcast({
+			type: 'soundStop',
+			name: stateGame.bonusType === 'coaster' ? 'sfx_coaster_bonus_end' : 'sfx_roller_bonus_end',
+		});
 
 		await eventEmitter.broadcastAsync({ type: 'transition' });
 
@@ -356,6 +370,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// short now that the duck uses one fast motion. Legacy books recover S_DUCK cells from Board.
 		const triggerPositions =
 			bookEvent.positions?.length > 0 ? bookEvent.positions : duckTriggerPositionsFromBoard();
+		// Make sure the spin whoosh is silenced before the pond opens (a bought bonus + skip can settle
+		// the board without the reveal's own stop firing).
+		eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_reel_spin_loop' });
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_duck_scatter_land' });
 		if (triggerPositions.length > 0) {

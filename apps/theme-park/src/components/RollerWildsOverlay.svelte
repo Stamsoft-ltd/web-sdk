@@ -72,10 +72,17 @@
 		);
 	};
 
+	// Each reel expands on its own beat, so the sting fires per reel — force-replay because a plain
+	// soundOnce is a no-op while the previous ~2.3s expand sound is still playing, which is exactly why
+	// only the first of several expands used to make a sound.
+	const playExpandSound = () =>
+		context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_megawild_expand', forcePlay: true });
+
 	const revealTriggeredReels = async () => {
 		if (stateBet.isTurbo || stateBet.isSuperTurbo) {
 			setClearedReels(triggerReels);
 			revealedReelCount = triggerReels.length;
+			playExpandSound();
 			await tick();
 			return true;
 		}
@@ -84,6 +91,7 @@
 			// cell clearing enter in one render, so expansion visibly originates at its landed trigger.
 			setClearedReels(triggerReels.slice(0, index + 1));
 			revealedReelCount = index + 1;
+			playExpandSound();
 			await tick();
 			if (index < triggerReels.length - 1 && !(await runOrSkip(waitForTimeout(REEL_STAGGER_MS)))) {
 				return false;
@@ -163,11 +171,6 @@
 			context.stateGame.rollerClearedCells = [];
 			await tick();
 			phase = 'revealing';
-			context.eventEmitter.broadcast({
-				type: 'soundOnce',
-				name: 'sfx_megawild_expand',
-				forcePlay: true,
-			});
 			if (!(await revealTriggeredReels())) {
 				showFinalPresentation();
 				return;
