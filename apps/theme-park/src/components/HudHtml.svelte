@@ -1,5 +1,6 @@
 <script lang="ts" module>
 	import { ap } from '../lib/preloadArt';
+	import { fitLabel } from '../lib/fitLabel';
 
 	// Bottom-bar chrome and glyphs from Figma 6281-1791. The glyphs replace the old set, which baked
 	// each icon into its own dark badge — those badges doubled up with this design's circular button
@@ -595,7 +596,7 @@
 			aria-label={buyLabel}
 		>
 			<img src={ptBuy} alt="" />
-			<span class="ls-buy__label">{buyLabel}</span>
+			<span class="ls-buy__label" use:fitLabel={{ dep: buyLabel, maxFraction: 0.82 }}>{buyLabel}</span>
 		</button>
 
 		<div class="ls-pill ls-pill--win">
@@ -661,7 +662,7 @@
 					aria-label={buyLabel}
 				>
 					<img class="buy-btn__plate" src={buyPlate} alt="" />
-					<span class="buy-btn__label">{buyLabel}</span>
+					<span class="buy-btn__label" use:fitLabel={{ dep: buyLabel, maxFraction: 0.9 }}>{buyLabel}</span>
 				</button>
 			</div>
 		</div>
@@ -828,7 +829,7 @@
 					aria-label={buyLabel}
 				>
 					<img src={ptBuy} alt="" />
-					<span class="pt-buy__label">{buyLabel}</span>
+					<span class="pt-buy__label" use:fitLabel={{ dep: buyLabel, maxFraction: 0.86 }}>{buyLabel}</span>
 				</button>
 			</div>
 
@@ -2102,12 +2103,32 @@
 			font-size: clamp(0.26rem, 1.7vh, 0.42rem);
 			max-width: 78%;
 		}
+		.ls-left {
+			/* Reclaim a few px of the narrow gutter (the board is only ~2px off the column here) so the
+			   stepper value and balance aren't crushed. */
+			width: min(clamp(94px, 15vw, 134px), calc(var(--ls-left-x, 100px) * 2 - 4px));
+		}
 		.ls-pill--balance {
-			padding: 2px 5px;
+			/* Roomier box — the razor-thin 2px was the "too small" the balance read as. */
+			padding: 4px 6px;
 			gap: 3px;
 		}
 		.ls-pill--balance .ls-pill__label {
 			font-size: clamp(0.24rem, 1.35vh, 0.4rem);
+		}
+		/* The stepper is the tightest thing on this screen: two +/- buttons plus gaps ate the whole
+		   50px row and fitText collapsed the bet value to ~1px. Shrink the buttons, gaps and padding so
+		   the value gets real width, and lift its size ceiling so fitText fills that width. */
+		.ls-bet {
+			padding: 2px 3px;
+			gap: 2px;
+		}
+		.ls-step {
+			width: clamp(9px, 4.9vh, 14px);
+			height: clamp(9px, 4.9vh, 14px);
+		}
+		.ls-bet__value {
+			font-size: clamp(0.6rem, 4.6vh, 1rem);
 		}
 		.ls-pill--win {
 			min-width: clamp(56px, 16.5vw, 100px);

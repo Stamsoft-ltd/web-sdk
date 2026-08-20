@@ -363,6 +363,13 @@
 	const pickLineW = $derived(pickW + numW + ducksW);
 	const wordsY = $derived(numH / 2 - 0.24 * (ui.pick.num - ui.pick.base));
 
+	// "PICK %count% DUCKS" as one catalogue string, split around the number so the big purple count
+	// keeps its own style while the words localise AND reorder — languages that place the number first
+	// (Turkish, Hindi) get an empty leading part and all the text after it.
+	const pickParts = $derived(stateI18nDerived.translate('PICK N DUCKS').split('%count%'));
+	const pickBefore = $derived(pickParts[0] ?? '');
+	const pickAfter = $derived(pickParts.length > 1 ? pickParts[pickParts.length - 1] : '');
+
 	const totalLabel = $derived(
 		stripEmptyCurrencyDecimals(bookEventAmountToCurrencyString(runningTotal)),
 	);
@@ -490,7 +497,7 @@
 					anchor={{ x: 0, y: 1 }}
 					x={-pickLineW / 2}
 					y={wordsY}
-					text={`${stateI18nDerived.translate('PICK')} `}
+					text={pickBefore}
 					onresize={({ width }) => (pickW = width)}
 					style={textStyle(ui.pick.base, 0xffffff)}
 				/>
@@ -509,7 +516,7 @@
 					anchor={{ x: 0, y: 1 }}
 					x={-pickLineW / 2 + pickW + numW}
 					y={wordsY}
-					text={` ${stateI18nDerived.translate('DUCKS')}`}
+					text={pickAfter}
 					onresize={({ width }) => (ducksW = width)}
 					style={textStyle(ui.pick.base, 0xffffff)}
 				/>

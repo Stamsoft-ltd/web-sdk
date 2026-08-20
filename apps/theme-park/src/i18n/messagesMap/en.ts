@@ -190,6 +190,7 @@ export default {
 	'PAYTABLE MAX TITLE': 'MAX WIN',
 	// ── Feature presentation strings ─────────────────────────────────────────
 	'DUCK COLLECT': 'DUCK COLLECT',
+	'PICK N DUCKS': 'PICK %count% DUCKS',
 	'DUCKS COLLECTED': 'DUCKS COLLECTED!',
 	'DUCK YOUR LUCK': 'DUCK YOUR LUCK',
 	'RUNNING TOTAL': 'RUNNING TOTAL',

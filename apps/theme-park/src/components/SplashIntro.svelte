@@ -20,6 +20,8 @@
 	import { stateI18nDerived } from 'state-shared';
 	import { innerWidth, innerHeight } from 'svelte/reactivity/window';
 
+	import { fitFont } from '../lib/fitLabel';
+
 	type Props = { onpress: () => void };
 	const props: Props = $props();
 
@@ -130,7 +132,11 @@
 					style={`left:${px(CARD_X0 + i * CARD_STEP)};top:${py(CARD_CY)};--card-in:${CARD_IN_AT + i * CARD_IN_STEP}ms`}
 				>
 					<img class="card-art" src={cardSrc} alt="" />
-					<p class="title title--{card.tone}" style={`top:${inCard(card.titleY)}`}>
+					<p
+						class="title title--{card.tone}"
+						style={`top:${inCard(card.titleY)}`}
+						use:fitFont={t(card.key)}
+					>
 						{t(card.key)}
 					</p>
 					{#if card.big}
@@ -171,7 +177,7 @@
 					<img class="pt-frame-art" src={cardSrc} alt="" />
 					{#each CARDS as card, i (card.key)}
 						<div class="pt-slide" class:is-active={i === slide} aria-hidden={i !== slide}>
-							<p class="pt-feat-title title--{card.tone}">{t(card.key)}</p>
+							<p class="pt-feat-title title--{card.tone}" use:fitFont={t(card.key)}>{t(card.key)}</p>
 							{#if card.big}
 								<p class="pt-feat-big">{MAX_WIN}</p>
 							{/if}

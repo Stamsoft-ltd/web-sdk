@@ -1,5 +1,6 @@
 <script lang="ts" module>
 	import { ap } from '../lib/preloadArt';
+	import { fitLabel } from '../lib/fitLabel';
 
 	// `-marquee` is the cache-bust suffix the flat redraws of these three facades ship under; the
 	// filename is the cache key on Stake's CDN and they replaced art that shipped under the old
@@ -226,7 +227,7 @@
 					{#if u}
 						<InfoBorderLights radius={21 * u} inset={0} pad={14 * u} glow={7 * u} />
 					{/if}
-					<span class="card-title">{t(card.title)}</span>
+					<span class="card-title" use:fitLabel={{ dep: t(card.title) }}>{t(card.title)}</span>
 					<span class="card-desc">{t(card.desc)}</span>
 					<span class="card-price">{cost(card.costMultiplier)} {t('PER SPIN')}</span>
 					<button
@@ -246,7 +247,7 @@
 					{#if u}
 						<InfoBorderLights radius={24 * u} inset={0} pad={14 * u} glow={7 * u} />
 					{/if}
-					<span class="card-title">{t(card.title)}</span>
+					<span class="card-title" use:fitLabel={{ dep: t(card.title) }}>{t(card.title)}</span>
 					<span class="card-desc">{t(card.desc)}</span>
 					<picture class="mode-art">
 						<source

@@ -10,7 +10,7 @@
 		Sprite,
 		Text,
 	} from 'pixi-svelte';
-	import { stateBetDerived } from 'state-shared';
+	import { stateBetDerived, stateI18nDerived } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import { getContext } from '../game/context';
@@ -169,7 +169,7 @@
 							<Text
 								anchor={0.5}
 								y={28}
-								text="ALL"
+								text={stateI18nDerived.translate('ALL')}
 								style={{
 									fontFamily: 'Lilita One',
 									fontWeight: '400',
