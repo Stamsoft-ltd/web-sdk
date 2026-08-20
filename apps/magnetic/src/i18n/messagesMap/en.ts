@@ -191,7 +191,7 @@ export default {
 	// Features
 	'INFO FEAT WILD TITLE': 'Wild Symbol',
 	'INFO FEAT WILD TEXT':
-		'Substitutes for all pay symbols except Scatter. When activated, the Magnetic Wild randomly selects one regular pay symbol currently on the grid and attracts all matching symbols together. Wilds and Scatters cannot be selected.',
+		'Substitutes for all pay symbols except Scatter. When activated, the Magnetic Wild randomly selects one regular pay symbol currently on the grid and attracts all matching symbols together. Wilds and Scatters cannot be selected. A Magnetic Wild activates only when it lands and does not reactivate during the resulting respin.',
 	'INFO FEAT MWILD TITLE': 'Multiplier Wild',
 	'INFO FEAT MWILD TEXT':
 		'Substitutes like a Wild and increases the active bonus multiplier for the rest of the feature.',

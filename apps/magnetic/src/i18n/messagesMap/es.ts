@@ -22,7 +22,7 @@ export default {
 	'INFO WILD RARE': 'Valores raros del Wild multiplicador (principalmente en Magnetic Mega Chain):',
 	'INFO FEAT WILD TITLE': 'Símbolo Wild',
 	'INFO FEAT WILD TEXT':
-		'Sustituye a todos los símbolos de pago excepto al Scatter. Al activarse, el Wild Magnético selecciona al azar un símbolo normal de pago presente en la cuadrícula y atrae todos los símbolos iguales. Los Wilds y Scatters no pueden seleccionarse.',
+		'Sustituye a todos los símbolos de pago excepto al Scatter. Al activarse, el Wild Magnético selecciona al azar un símbolo normal de pago presente en la cuadrícula y atrae todos los símbolos iguales. Los Wilds y Scatters no pueden seleccionarse. Un Wild Magnético solo se activa cuando cae y no vuelve a activarse durante el respin resultante.',
 	'INFO FEAT MWILD TITLE': 'Wild multiplicador',
 	'INFO FEAT MWILD TEXT':
 		'Sustituye como un Wild y aumenta el multiplicador de bonificación activo durante el resto de la función.',

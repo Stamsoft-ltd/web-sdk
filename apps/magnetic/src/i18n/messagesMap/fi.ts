@@ -22,7 +22,7 @@ export default {
 	'INFO WILD RARE': 'Harvinaiset kerroin-Wild-arvot (pääasiassa Magnetic Mega Chain -tilassa):',
 	'INFO FEAT WILD TITLE': 'Wild-symboli',
 	'INFO FEAT WILD TEXT':
-		'Korvaa kaikki maksavat symbolit paitsi Scatterin. Aktivoituessaan Magnetic Wild valitsee satunnaisesti yhden ruudukossa olevan tavallisen maksavan symbolin ja vetää kaikki vastaavat symbolit yhteen. Wildeja ja Scattereita ei voi valita.',
+		'Korvaa kaikki maksavat symbolit paitsi Scatterin. Aktivoituessaan Magnetic Wild valitsee satunnaisesti yhden ruudukossa olevan tavallisen maksavan symbolin ja vetää kaikki vastaavat symbolit yhteen. Wildeja ja Scattereita ei voi valita. Magnetic Wild aktivoituu vain laskeutuessaan, eikä se aktivoidu uudelleen siitä seuraavan uusintapyöräytyksen aikana.',
 	'INFO FEAT MWILD TITLE': 'Kerroin-Wild',
 	'INFO FEAT MWILD TEXT':
 		'Korvaa kuten Wild ja nostaa aktiivista bonuskerrointa ominaisuuden loppuun asti.',

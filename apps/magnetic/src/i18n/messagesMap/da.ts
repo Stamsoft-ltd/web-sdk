@@ -24,7 +24,7 @@ export default {
 	'INFO WILD RARE': 'Sjældne multiplikator-Wild-værdier (hovedsageligt i Magnetic Mega Chain):',
 	'INFO FEAT WILD TITLE': 'Wild-symbol',
 	'INFO FEAT WILD TEXT':
-		'Erstatter alle udbetalende symboler undtagen Scatter. Når den aktiveres, vælger Magnetic Wild tilfældigt ét almindeligt gevinstsymbol, der aktuelt findes på spillefeltet, og trækker alle matchende symboler sammen. Wilds og Scatters kan ikke vælges.',
+		'Erstatter alle udbetalende symboler undtagen Scatter. Når den aktiveres, vælger Magnetic Wild tilfældigt ét almindeligt gevinstsymbol, der aktuelt findes på spillefeltet, og trækker alle matchende symboler sammen. Wilds og Scatters kan ikke vælges. Et Magnetic Wild aktiveres kun, når det lander, og aktiveres ikke igen under det efterfølgende respin.',
 	'INFO FEAT MWILD TITLE': 'Multiplikator-Wild',
 	'INFO FEAT MWILD TEXT':
 		'Erstatter som en Wild og hæver den aktive bonusmultiplikator for resten af funktionen.',

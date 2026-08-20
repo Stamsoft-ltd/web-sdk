@@ -932,25 +932,6 @@ const resolveMagnetSequence = ({
 	});
 	emitSeriesUpdate(events, activeSeries, seriesTarget, totalMultiplier);
 
-	const nonTargetWins = getQualifyingNaturalSeries(currentBoard)
-		.filter((group) => group.symbol !== seriesTarget)
-		.map((group, index) => ({
-			seriesId: `side-${index + 1}`,
-			symbol: group.symbol,
-			size: group.positions.length,
-			positions: clonePositions(group.positions),
-			amount: Math.round(
-				Math.round(getPayForSize(group.symbol, group.positions.length) * 100) * payoutScale,
-			),
-			meta: {
-				baseAmount: Math.round(getPayForSize(group.symbol, group.positions.length) * 100),
-				totalMultiplier: 1,
-				seriesKind: kind,
-				anchors: clonePositions(group.positions),
-			},
-		}))
-		.filter((entry) => entry.amount > 0);
-
 	let respins = 0;
 	while (true) {
 		const nextBoard = respinBoard({
@@ -1012,6 +993,33 @@ const resolveMagnetSequence = ({
 		)
 			break;
 	}
+
+	// Side wins are read off the board that is ACTUALLY on screen when winInfo fires. Computed
+	// before the respin loop (where this used to live) they described clusters respinBoard had
+	// long since re-rolled — only locked target cells survive a respin — so the stale snapshot
+	// was paid and highlighted over whatever symbols now occupied those cells.
+	const lockedKeys = new Set(activeSeries.flatMap((entry) => entry.lockedPositions.map(posKey)));
+	const nonTargetWins = getQualifyingNaturalSeries(currentBoard)
+		.filter((group) => group.symbol !== seriesTarget)
+		// A WILD locked into the target chain can bridge a side cluster through it on the final
+		// board, paying the same cell twice. Unreachable from the old placement, reachable here.
+		.filter((group) => !group.positions.some((position) => lockedKeys.has(posKey(position))))
+		.map((group, index) => ({
+			seriesId: `side-${index + 1}`,
+			symbol: group.symbol,
+			size: group.positions.length,
+			positions: clonePositions(group.positions),
+			amount: Math.round(
+				Math.round(getPayForSize(group.symbol, group.positions.length) * 100) * payoutScale,
+			),
+			meta: {
+				baseAmount: Math.round(getPayForSize(group.symbol, group.positions.length) * 100),
+				totalMultiplier: 1,
+				seriesKind: kind,
+				anchors: clonePositions(group.positions),
+			},
+		}))
+		.filter((entry) => entry.amount > 0);
 
 	const cappedNonTargetWins = capWins(nonTargetWins, MAX_WIN_AMOUNT);
 	const remainingCap =

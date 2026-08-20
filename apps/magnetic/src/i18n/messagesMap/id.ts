@@ -22,7 +22,7 @@ export default {
 	'INFO WILD RARE': 'Nilai wild pengganda langka (terutama di Magnetic Mega Chain):',
 	'INFO FEAT WILD TITLE': 'Simbol Wild',
 	'INFO FEAT WILD TEXT':
-		'Menggantikan semua simbol pembayaran kecuali Scatter. Saat diaktifkan, Wild Magnetik memilih secara acak satu simbol pembayaran reguler yang sedang ada di grid dan menarik semua simbol yang cocok. Wild dan Scatter tidak dapat dipilih.',
+		'Menggantikan semua simbol pembayaran kecuali Scatter. Saat diaktifkan, Wild Magnetik memilih secara acak satu simbol pembayaran reguler yang sedang ada di grid dan menarik semua simbol yang cocok. Wild dan Scatter tidak dapat dipilih. Wild Magnetik hanya aktif saat mendarat dan tidak aktif kembali selama respin yang dihasilkan.',
 	'INFO FEAT MWILD TITLE': 'Wild Pengganda',
 	'INFO FEAT MWILD TEXT':
 		'Menggantikan seperti Wild dan meningkatkan pengganda bonus aktif untuk sisa fitur.',

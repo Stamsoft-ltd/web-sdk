@@ -22,7 +22,7 @@ export default {
 	'INFO WILD RARE': "Nadir çarpan wild değerleri (çoğunlukla Magnetic Mega Chain'de):",
 	'INFO FEAT WILD TITLE': 'Wild Sembol',
 	'INFO FEAT WILD TEXT':
-		'Scatter dışındaki tüm ödeme sembollerinin yerine geçer. Etkinleştirildiğinde Manyetik Wild, ızgarada bulunan bir normal ödeme sembolünü rastgele seçer ve eşleşen tüm sembolleri bir araya çeker. Wild ve Scatter seçilemez.',
+		'Scatter dışındaki tüm ödeme sembollerinin yerine geçer. Etkinleştirildiğinde Manyetik Wild, ızgarada bulunan bir normal ödeme sembolünü rastgele seçer ve eşleşen tüm sembolleri bir araya çeker. Wild ve Scatter seçilemez. Manyetik Wild yalnızca geldiğinde etkinleşir ve bunun sonucunda oluşan yeniden çevrim sırasında tekrar etkinleşmez.',
 	'INFO FEAT MWILD TITLE': 'Çarpan Wild',
 	'INFO FEAT MWILD TEXT':
 		'Bir Wild gibi yerine geçer ve özelliğin geri kalanı boyunca aktif bonus çarpanını artırır.',

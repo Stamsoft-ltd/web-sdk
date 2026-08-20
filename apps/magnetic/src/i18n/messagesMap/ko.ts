@@ -22,7 +22,7 @@ export default {
 	'INFO WILD RARE': '희귀 멀티플라이어 와일드 배율 (주로 Magnetic Mega Chain에서 등장):',
 	'INFO FEAT WILD TITLE': '와일드 심볼',
 	'INFO FEAT WILD TEXT':
-		'스캐터를 제외한 모든 배당 심볼을 대체합니다. 활성화되면 Magnetic Wild는 현재 그리드에 있는 일반 배당 심볼 하나를 무작위로 선택하고 일치하는 모든 심볼을 끌어당깁니다. Wild와 Scatter는 선택될 수 없습니다.',
+		'스캐터를 제외한 모든 배당 심볼을 대체합니다. 활성화되면 Magnetic Wild는 현재 그리드에 있는 일반 배당 심볼 하나를 무작위로 선택하고 일치하는 모든 심볼을 끌어당깁니다. Wild와 Scatter는 선택될 수 없습니다. Magnetic Wild는 착지할 때만 활성화되며, 그 결과 발생한 리스핀 중에는 다시 활성화되지 않습니다.',
 	'INFO FEAT MWILD TITLE': '멀티플라이어 와일드',
 	'INFO FEAT MWILD TEXT': '와일드처럼 대체하며, 기능이 진행되는 동안 활성 보너스 배율을 높입니다.',
 	'INFO FEAT DROP TITLE': 'Drop-O-Magnet 프리 스핀',

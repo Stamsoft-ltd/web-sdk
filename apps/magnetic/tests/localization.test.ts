@@ -26,7 +26,7 @@ describe('Magnetic localization catalogs', () => {
 	it('uses the approved Magnetic Wild explanation', () => {
 		expect(en['INFO FEAT WILD TITLE']).toBe('Wild Symbol');
 		expect(en['INFO FEAT WILD TEXT']).toBe(
-			'Substitutes for all pay symbols except Scatter. When activated, the Magnetic Wild randomly selects one regular pay symbol currently on the grid and attracts all matching symbols together. Wilds and Scatters cannot be selected.',
+			'Substitutes for all pay symbols except Scatter. When activated, the Magnetic Wild randomly selects one regular pay symbol currently on the grid and attracts all matching symbols together. Wilds and Scatters cannot be selected. A Magnetic Wild activates only when it lands and does not reactivate during the resulting respin.',
 		);
 	});
 

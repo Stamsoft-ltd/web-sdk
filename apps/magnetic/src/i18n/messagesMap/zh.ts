@@ -21,7 +21,7 @@ export default {
 	'INFO WILD RARE': '稀有倍数百搭数值（主要出现在 Magnetic Mega Chain 中）：',
 	'INFO FEAT WILD TITLE': '百搭符号',
 	'INFO FEAT WILD TEXT':
-		'可替代除分散符号以外的所有赔付符号。 激活后，磁力百搭符号会从当前网格上的普通派彩符号中随机选择一种，并将所有相同符号吸到一起。Wild和Scatter不能被选中。',
+		'可替代除分散符号以外的所有赔付符号。 激活后，磁力百搭符号会从当前网格上的普通派彩符号中随机选择一种，并将所有相同符号吸到一起。Wild和Scatter不能被选中。磁力百搭仅在落下时激活，并且不会在由此触发的重转中再次激活。',
 	'INFO FEAT MWILD TITLE': '倍数百搭',
 	'INFO FEAT MWILD TEXT': '像百搭一样替代符号，并在特色功能剩余期间提升当前生效的奖励倍数。',
 	'INFO FEAT DROP TITLE': 'Drop-O-Magnet 免费旋转',

@@ -23,7 +23,7 @@ export default {
 		'Valeurs rares des Wilds à multiplicateur (principalement dans Magnetic Mega Chain) :',
 	'INFO FEAT WILD TITLE': 'Symbole Wild',
 	'INFO FEAT WILD TEXT':
-		'Remplace tous les symboles de gain sauf le Scatter. Lorsqu’il est activé, le Wild Magnétique sélectionne au hasard un symbole payant normal présent sur la grille et attire tous les symboles identiques. Les Wilds et les Scatters ne peuvent pas être sélectionnés.',
+		'Remplace tous les symboles de gain sauf le Scatter. Lorsqu’il est activé, le Wild Magnétique sélectionne au hasard un symbole payant normal présent sur la grille et attire tous les symboles identiques. Les Wilds et les Scatters ne peuvent pas être sélectionnés. Un Wild Magnétique ne s’active que lorsqu’il atterrit et ne se réactive pas pendant le respin qui en résulte.',
 	'INFO FEAT MWILD TITLE': 'Wild à multiplicateur',
 	'INFO FEAT MWILD TEXT':
 		'Remplace comme un Wild et augmente le multiplicateur de bonus actif pour le reste de la fonction.',

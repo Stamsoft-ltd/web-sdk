@@ -22,7 +22,7 @@ export default {
 	'INFO WILD RARE': 'Giá trị wild nhân hiếm (chủ yếu trong Magnetic Mega Chain):',
 	'INFO FEAT WILD TITLE': 'Biểu Tượng Wild',
 	'INFO FEAT WILD TEXT':
-		'Thay thế cho tất cả biểu tượng trả thưởng ngoại trừ Scatter. Khi được kích hoạt, Wild Nam Châm chọn ngẫu nhiên một biểu tượng trả thưởng thường đang có trên lưới và hút tất cả biểu tượng khớp lại với nhau. Không thể chọn Wild hoặc Scatter.',
+		'Thay thế cho tất cả biểu tượng trả thưởng ngoại trừ Scatter. Khi được kích hoạt, Wild Nam Châm chọn ngẫu nhiên một biểu tượng trả thưởng thường đang có trên lưới và hút tất cả biểu tượng khớp lại với nhau. Không thể chọn Wild hoặc Scatter. Wild Nam Châm chỉ kích hoạt khi xuất hiện và không kích hoạt lại trong lượt quay lại phát sinh.',
 	'INFO FEAT MWILD TITLE': 'Wild Nhân',
 	'INFO FEAT MWILD TEXT':
 		'Thay thế như một Wild và tăng hệ số nhân thưởng đang hoạt động trong phần còn lại của tính năng.',

@@ -22,7 +22,7 @@ export default {
 	'INFO WILD RARE': 'Rzadkie wartości wilda z mnożnikiem (głównie w Magnetic Mega Chain):',
 	'INFO FEAT WILD TITLE': 'Symbol Wild',
 	'INFO FEAT WILD TEXT':
-		'Zastępuje wszystkie symbole wypłacające z wyjątkiem Scattera. Po aktywacji Magnetic Wild losowo wybiera jeden zwykły symbol wypłacający znajdujący się obecnie na siatce i przyciąga wszystkie pasujące symbole. Wildy i Scattery nie mogą zostać wybrane.',
+		'Zastępuje wszystkie symbole wypłacające z wyjątkiem Scattera. Po aktywacji Magnetic Wild losowo wybiera jeden zwykły symbol wypłacający znajdujący się obecnie na siatce i przyciąga wszystkie pasujące symbole. Wildy i Scattery nie mogą zostać wybrane. Magnetic Wild aktywuje się tylko wtedy, gdy wyląduje, i nie aktywuje się ponownie podczas wynikającego z tego respinu.',
 	'INFO FEAT MWILD TITLE': 'Wild z Mnożnikiem',
 	'INFO FEAT MWILD TEXT': 'Zastępuje jak Wild i zwiększa aktywny mnożnik bonusu do końca funkcji.',
 	'INFO FEAT DROP TITLE': 'Darmowe Spiny Drop-O-Magnet',

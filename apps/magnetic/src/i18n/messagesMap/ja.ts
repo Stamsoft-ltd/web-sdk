@@ -22,7 +22,7 @@ export default {
 	'INFO WILD RARE': 'レアなマルチプライヤーワイルド倍率（主にMagnetic Mega Chainで出現）：',
 	'INFO FEAT WILD TITLE': 'ワイルドシンボル',
 	'INFO FEAT WILD TEXT':
-		'スキャッター以外のすべての配当シンボルの代わりになります。 発動すると、Magnetic Wildは現在グリッド上にある通常の配当シンボルを1種類ランダムに選び、同じシンボルをすべて引き寄せます。WildとScatterは選択されません。',
+		'スキャッター以外のすべての配当シンボルの代わりになります。 発動すると、Magnetic Wildは現在グリッド上にある通常の配当シンボルを1種類ランダムに選び、同じシンボルをすべて引き寄せます。WildとScatterは選択されません。Magnetic Wildは停止したときにのみ発動し、その結果発生するリスピン中には再発動しません。',
 	'INFO FEAT MWILD TITLE': 'マルチプライヤーワイルド',
 	'INFO FEAT MWILD TEXT':
 		'ワイルドと同様に代役となり、フィーチャーの残りの間、有効なボーナス倍率を上昇させます。',

@@ -22,7 +22,7 @@ export default {
 	'INFO WILD RARE': 'Seltene Multiplikator-Wild-Werte (hauptsächlich in Magnetic Mega Chain):',
 	'INFO FEAT WILD TITLE': 'Wild-Symbol',
 	'INFO FEAT WILD TEXT':
-		'Ersetzt alle Gewinnsymbole außer dem Scatter. Bei Aktivierung wählt das Magnetic Wild zufällig ein reguläres Gewinnsymbol aus, das sich aktuell im Raster befindet, und zieht alle passenden Symbole zusammen. Wilds und Scatter können nicht ausgewählt werden.',
+		'Ersetzt alle Gewinnsymbole außer dem Scatter. Bei Aktivierung wählt das Magnetic Wild zufällig ein reguläres Gewinnsymbol aus, das sich aktuell im Raster befindet, und zieht alle passenden Symbole zusammen. Wilds und Scatter können nicht ausgewählt werden. Ein Magnetic Wild wird nur aktiviert, wenn es landet, und während des daraus entstehenden Respins nicht erneut aktiviert.',
 	'INFO FEAT MWILD TITLE': 'Multiplikator-Wild',
 	'INFO FEAT MWILD TEXT':
 		'Ersetzt wie ein Wild und erhöht den aktiven Bonus-Multiplikator für den Rest der Funktion.',
