@@ -18,11 +18,12 @@
 	import { stateI18nDerived } from 'state-shared';
 
 	import { POPUP_SCRIM_ALPHA } from '../game/constants';
-	import { CONGRATS_PANEL_ASPECT } from '../game/congratsPanelParts';
+	import { CONGRATS_MARQUEES } from '../game/congratsPanelParts';
 	import { getContext } from '../game/context';
 	import { getSpecialSymbolKey, popupPanelLimits } from '../game/utils';
 	import CongratsPanel from './CongratsPanel.svelte';
 	import PressToContinue from './PressToContinue.svelte';
+	import WinConfettiRain from './WinConfettiRain.svelte';
 
 	const context = getContext();
 
@@ -54,27 +55,25 @@
 	};
 	const copy = $derived(BONUS_COPY[title]);
 
-	// ── Bonus won, Figma 6909:9366 ───────────────────────────────────────────────────────────────
+	// ── Bonus won, Figma 7033:24761 ──────────────────────────────────────────────────────────────
 	//
-	// The same redesigned marquee panel the bonus-complete screen uses — <CongratsPanel> owns the
-	// layout and the choreography, so the two screens move alike and only their content differs.
-	// Here the medallion holds the bonus's own scatter symbol rather than the P, and the well counts
-	// the spins awarded.
+	// The TALL congratulations marquee. <CongratsPanel> owns the layout and the choreography; this
+	// file decides how big it is and what goes in it. The slot the old design gave a medallion now
+	// holds the bonus's own scatter symbol, and the well holds the spins awarded with the label
+	// spelled out under it.
 	//
-	// Sized off the REEL GRID (the design's 566-wide panel against its 457-tall grid), capped by
+	// Sized off the REEL GRID (the design's 524-wide marquee against its 457-tall grid), capped by
 	// popupPanelLimits — see that helper for why a fixed frame share cannot do the capping.
-	const OVER_GRID_HEIGHT = 566 / 457;
-	// The design sits the panel a little above the frame's centre, which lifts its bottom edge clear
-	// of the HUD bar; as a fraction of the panel it holds at every size.
-	const CENTRE_Y = -0.02;
-	// The bonus badge stands on its own here — no medallion ring around it. The badge is already a
-	// lit gold roundel with its own bulbs, and ringing it with a second circle of bulbs made both
-	// harder to read; without the ring it can also be drawn about as wide as the ring used to be.
-	/** The badge art is 448x360, fitted to this share of the panel at its own aspect. */
-	const BADGE_WIDTH = 0.42;
+	const OVER_GRID_HEIGHT = 524 / 457;
+	// The design sits the marquee above the frame's centre, which lifts its bottom edge clear of the
+	// HUD bar: its box spans y 1..601 of the 670 frame, so the middle of it is 34px up. As a fraction
+	// of the marquee's width that holds at every size.
+	const CENTRE_Y = -34 / 524;
+	/** The badge art is 448x360, fitted to this share of the marquee at its own aspect. */
+	const BADGE_WIDTH = 0.3;
 	const BADGE_ASPECT = 448 / 360;
-	/** The medallion's slot gives up this much of its size to make room for the blurb above it. */
-	const RING_SCALE = 0.8;
+	/** Scraps falling behind the board. A fixed handful: nothing has been won here yet but a bonus. */
+	const CONFETTI = 40;
 
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const board = $derived(context.stateGameDerived.boardLayout());
@@ -83,7 +82,7 @@
 		Math.min(
 			board.height * board.boardScale * OVER_GRID_HEIGHT,
 			limits.maxWidth,
-			limits.maxHeight * CONGRATS_PANEL_ASPECT,
+			limits.maxHeight * CONGRATS_MARQUEES.tall.aspect,
 		),
 	);
 
@@ -113,23 +112,29 @@
 	     canvas, so the HUD dims itself to match — see .hud-shell--blocked. -->
 	<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={POPUP_SCRIM_ALPHA} />
 
+	<!-- The design's static confetti is NOT drawn (design ask, 2026-08-18): this falls the same
+	     scraps down the whole canvas instead. Mounted BEHIND the marquee — layering here is mount
+	     order — so it never comes between the player and what the screen is telling them. -->
+	<WinConfettiRain count={CONFETTI} intensity={show ? 1 : 0} delay={0.4} restartKey={runId} />
+
 	<MainContainer>
 		<Container x={main.width * 0.5} y={main.height * 0.5 + panelWidth * CENTRE_Y}>
-			<!-- The bonus's NAME takes the design's subtitle line: on this screen it says more than
-			     'YOU WON' does, and the spins awarded are already spelled out in the well. -->
+			<!-- The bonus's own NAME goes on the design's third line, under YOU WON, with the feature
+			     blurb the buy menu shows under that. -->
 			<CongratsPanel
+				variant="tall"
 				size={panelWidth}
 				active={show}
 				{runId}
-				title={stateI18nDerived.translate('CONGRATULATIONS!')}
-				subtitle={stateI18nDerived.translate(copy?.name ?? title)}
+				title={stateI18nDerived.translate('CONGRATS!')}
+				subtitle={stateI18nDerived.translate('YOU WON')}
+				name={stateI18nDerived.translate(copy?.name ?? title)}
 				desc={copy ? stateI18nDerived.translate(copy.desc) : undefined}
-				ring={false}
 				centreKey={badgeKey}
 				centreWidth={BADGE_WIDTH}
 				centreAspect={BADGE_ASPECT}
-				ringScale={RING_SCALE}
-				wellText={`${awardedCount} ${stateI18nDerived.translate(countLabel)}`}
+				wellText={`${awardedCount}`}
+				wellLabel={stateI18nDerived.translate(countLabel)}
 			/>
 		</Container>
 	</MainContainer>

@@ -242,18 +242,27 @@
 		{ offset: 0.5, alpha: 0.3 },
 	];
 
-	// Every so often a small clump of symbols rattles, like a sign shaken by a passing ride. This one
-	// IS geometric, which the constant breath deliberately is not — and it is safe for the opposite
-	// reason: it is several pixels of fast motion over a third of a second, so the resampling that
-	// made a sub-pixel drift twinkle is buried under the movement itself. Keep it big and brief; a
-	// slow or tiny version brings the shimmer straight back.
+	// Every so often a small clump of symbols stirs, like signs rocking on their hooks as a ride goes
+	// past. Each one turns ABOUT ITS OWN MIDDLE rather than sliding sideways (design ask, 2026-08-18):
+	// a sideways slide moves the sign off its hook, and with a clump of neighbours doing it together it
+	// read as the grid itself jolting. A rock about the centre is the motion a hanging sign actually
+	// has, and it stays inside the cell however hard it is driven.
+	//
+	// This IS geometric, which the constant breath deliberately is not, so it carries the same
+	// resampling risk the breath avoids: a sub-pixel drift twinkles. What keeps it clear of that is
+	// that the corners still travel a few whole pixels — the amplitude below is small in degrees, not
+	// in pixels — and that it is over in under a second.
 	const SHAKE_GAP = { min: 4, max: 9 };
-	const SHAKE_SECONDS = 0.5;
-	// 0.11 of SYMBOL_H is ~11px on a desktop board and still inside the cell's 17-unit horizontal
-	// margin, so nothing clips. The first version at 0.055 was invisible in play.
-	const SHAKE_AMPLITUDE = 0.11;
-	const SHAKE_HZ = 11;
-	const SHAKE_STAGGER = 0.055; // per cell, so the clump ripples instead of moving as a block
+	const SHAKE_SECONDS = 0.8;
+	/**
+	 * Peak swing, in radians. 0.045 is ~2.6°, which throws a corner of a desktop symbol about three
+	 * board units — a quarter of what the old sideways rattle moved the whole sprite, and the "very
+	 * gentle" the design asked for.
+	 */
+	const SHAKE_RADIANS = 0.045;
+	/** Slower than the old rattle: a sign on a hook swings, it does not buzz. */
+	const SHAKE_HZ = 3.4;
+	const SHAKE_STAGGER = 0.09; // per cell, so the clump ripples instead of moving as a block
 
 	// The reels hitting their stop. Every landing adds an impulse to one shared damped oscillator, so
 	// five reels stopping in sequence keep knocking the board rather than each starting a new shake;
@@ -381,17 +390,19 @@
 		return () => cancelAnimationFrame(frame);
 	});
 
-	/** Horizontal rattle for this cell, in board units. Zero for everything not in the clump. */
-	const shakeOffset = (reel: number, row: number) => {
+	/** This cell's rock about its own centre, in radians. Zero for everything not in the clump. */
+	const shakeRotation = (reel: number, row: number) => {
 		if (shakeCells.size === 0) return 0;
 		const delay = shakeCells.get(`${reel},${row}`);
 		if (delay === undefined) return 0;
 		const elapsed = idleClock - shakeStartedAt - delay;
 		if (elapsed < 0 || elapsed > SHAKE_SECONDS) return 0;
 		const progress = elapsed / SHAKE_SECONDS;
-		// Squared decay: a hard first swing that dies away, rather than a even wobble.
+		// Squared decay: a first swing that dies away, rather than an even wobble. Alternating the
+		// direction by cell keeps a clump from leaning as one piece.
 		const damping = (1 - progress) ** 2;
-		return Math.sin(progress * SHAKE_HZ * TAU) * SHAKE_AMPLITUDE * SYMBOL_H * damping;
+		const direction = (reel + row) % 2 ? -1 : 1;
+		return Math.sin(progress * SHAKE_HZ * TAU) * SHAKE_RADIANS * damping * direction;
 	};
 
 	/** Grey tint for this cell's point in the breath. Tint multiplies, so it can only darken. */
@@ -503,7 +514,7 @@
 						{@const duckPrize = getDuckCollectPrize(reelIndex, symbolIndex - 1)}
 						{@const idle = isWin ? NO_IDLE : idleTint(reelIndex, symbolIndex - 1)}
 						{@const blur = spinBlur[reelIndex] ?? 0}
-						{@const shake = isWin ? 0 : shakeOffset(reelIndex, symbolIndex - 1)}
+						{@const shake = isWin ? 0 : shakeRotation(reelIndex, symbolIndex - 1)}
 						{@const fallbackKey = getSpriteKey(
 							reelSymbol.rawSymbol,
 							reelSymbol.symbolState,
@@ -589,9 +600,10 @@
 								{/if}
 								<Sprite
 									key={fallbackKey}
-									x={getX(reelIndex) + shake}
+									x={getX(reelIndex)}
 									{y}
 									anchor={{ x: 0.5, y: 0.5 }}
+									rotation={shake}
 									tint={idle}
 									width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
 									height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
@@ -608,8 +620,9 @@
 									{#if bulbs}
 										<SymbolBulbs
 											{bulbs}
-											x={getX(reelIndex) + shake}
+											x={getX(reelIndex)}
 											{y}
+											rotation={shake}
 											width={SYMBOL_W * (isWin ? winPulse : 1)}
 											height={SYMBOL_H * (isWin ? winPulse : 1)}
 											win={isWin}

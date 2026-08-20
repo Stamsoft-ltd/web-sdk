@@ -1,26 +1,24 @@
 <script lang="ts" module>
 	import { ap } from '../lib/preloadArt';
 
-	// Splash art (Figma 6102-1129). The park scene is NOT the in-game background: the three gold
-	// marquee frames the feature copy sits inside are painted into this image, so the text layer
-	// below is positioned against it and the two must scale as one unit.
+	// Splash art, Figma 7027:12708 (2026-08-19 redesign). Every piece is cut by
+	// scripts/splash/build_splash_art.py. The background is shipped at the exposure the design
+	// renders at — measured, not guessed: the splash applies no tint above y=530 and only the bottom
+	// gradient `.vignette` already draws below it, and the LOADING screen is the same picture
+	// multiplied by 0.4 (LoadingScreen's BACKDROP_LEVEL, Figma 7028:15400).
 	const bgSrc = ap('/assets/theme-park/v2/splash/background.webp');
-	// Mobile portrait uses the bright daytime park scene (the in-game background / basegame video
-	// still from the latest download) rather than the night splash art with its baked-in frames.
-	const portraitBgSrc = ap('/assets/theme-park/v2/background.webp');
 	const logoSrc = ap('/assets/theme-park/v2/splash/logo.webp');
 	const pressPlaySrc = ap('/assets/theme-park/v2/splash/press_play_mark.svg');
 	const arrowSrc = ap('/assets/theme-park/v2/splash/arrow.svg');
-	// One gold marquee frame lifted from the splash art, used as the portrait carousel card.
-	const cardFrameSrc = ap('/assets/theme-park/v2/splash/card-frame.webp');
+	// One purple feature panel. The design draws three of them as a single image, but they differ
+	// only by generation noise (mean 2/255), so the middle one is cut out and drawn three times —
+	// which is also what lets each panel arrive on its own beat.
+	const cardSrc = ap('/assets/theme-park/v2/splash/feature-card.webp');
 </script>
 
 <script lang="ts">
 	import { stateI18nDerived } from 'state-shared';
 	import { innerWidth, innerHeight } from 'svelte/reactivity/window';
-
-	import SplashLights from './SplashLights.svelte';
-	import { SPLASH_FRAME_BULBS, SPLASH_CARD_BULBS, SPLASH_PARK_BULBS } from './splashBulbs';
 
 	type Props = { onpress: () => void };
 	const props: Props = $props();
@@ -33,8 +31,8 @@
 	// mirrors the game's own 'portrait' layoutType (canvas ratio ≤ 0.8).
 	const isPortrait = $derived((innerWidth.current ?? 1) / (innerHeight.current ?? 1) <= 0.8);
 
-	// Portrait shows ONE feature card at a time (Expanding Reels → Mega Chain → Epic Wins) in a gold
-	// marquee frame, auto-advancing with pagination dots — a carousel rather than a stack.
+	// Portrait shows ONE feature card at a time (Expanding Reels → Mega Chain → Epic Wins) in a
+	// panel, auto-advancing with pagination dots — a carousel rather than a stack.
 	let slide = $state(0);
 	$effect(() => {
 		if (!isPortrait) return;
@@ -43,49 +41,38 @@
 	});
 
 	// Not translated — a numeral, and it is the same figure on all three cards in the design.
-	/** The headline number on the third sign (Figma 6581:4302). */
+	/** The headline number on the third card (Figma 7027:12760). */
 	const MAX_WIN = '25,000x';
 
-	// One entry per marquee frame. Every number is the Figma node's own geometry expressed against
-	// the 1200x670 design frame: `cx` is the column centre and each `*Y` is the vertical CENTRE of
-	// that text node's box. Anchoring by centre rather than by top is what lets card 1's title wrap
-	// to two lines (and any locale's title wrap to two) without shoving "with up to" down into it.
-	//
-	// `cx` is MEASURED from the artwork (the dark interior of each painted frame, mapped through the
-	// background's own placement) rather than taken from the Figma text nodes. The two disagree by
-	// 3-6px because the outer frames are drawn in slight perspective, and at that size the copy read
-	// as visibly off-centre inside its sign.
-	// One entry per marquee sign. The copy is Figma 6581:4239: two signs are a headline over a
-	// blurb, and only the third carries a number — so `big` is optional rather than every sign
+	// One entry per feature card. The copy is Figma 7027:12755-12761: two cards are a headline over a
+	// blurb, and only the third carries a number — so `big` is optional rather than every card
 	// repeating the same "with up to <x> multiplier" block the first design had.
 	//
-	// `cx` stays measured from the SHIPPED background art, not from the design frame: the signs are
-	// painted into it and sit a few pixels off where the mock draws them (see the centring fix).
-	// The y values are the design's block layout re-centred in those painted signs.
+	// Each `*Y` is the vertical CENTRE of that text node's box on the 1200x670 design frame.
+	// Anchoring by centre rather than by top is what lets a title wrap to an extra line (in any
+	// locale) without shoving the blurb down into it. There is no `cx`: the three cards are evenly
+	// spaced and the copy is centred in each, so the column comes from the card geometry below.
 	const CARDS = [
 		{
 			key: 'SPLASH FEATURE 1',
 			tone: 'blue',
-			cx: 341.9,
-			titleY: 398, // two lines at 32px, leading-none
-			bodyY: 476, // three lines at 16px
+			titleY: 385,
+			bodyY: 494,
 			big: false,
 		},
 		{
 			key: 'SPLASH FEATURE 2',
 			tone: 'candy',
-			cx: 599.8,
-			titleY: 394,
-			bodyY: 472,
+			titleY: 392.5,
+			bodyY: 490,
 			big: false,
 		},
 		{
 			key: 'SPLASH FEATURE 3',
 			tone: 'blue',
-			cx: 857.3,
-			titleY: 383, // one line, so the number and the blurb take the rest
-			bigY: 428,
-			bodyY: 486,
+			titleY: 387,
+			bigY: 448.5,
+			bodyY: 510,
 			big: true,
 		},
 	] as const;
@@ -94,12 +81,24 @@
 	const px = (x: number) => `${(x / 1200) * 100}%`;
 	const py = (y: number) => `${(y / 670) * 100}%`;
 
-	// ENTRANCE. The logo's own drop runs 0-900ms and thumps the stage at 414ms; the copy starts
-	// after that thump so it reads as being shaken into place rather than racing the logo down.
+	// === THE CARDS ===
+	// Fitted against the design render rather than read off the node box: the panels are one AI
+	// render with soft edges, so the Figma node is padding around the ink. The strip's trimmed art
+	// lands at (221, 287) 755x293, which puts the three panels on a 256.5px pitch starting at 340.9.
+	const CARD_W = 242;
+	const CARD_H = (CARD_W * 716) / 590;
+	const CARD_CY = 433.5;
+	const CARD_X0 = 340.9;
+	const CARD_STEP = 256.5;
+	const CARD_TOP = CARD_CY - CARD_H / 2;
+
+	/** Design-frame y -> percentage down the card box. */
+	const inCard = (y: number) => `${((y - CARD_TOP) / CARD_H) * 100}%`;
+
+	// ENTRANCE. The logo's own drop runs 0-900ms and thumps the stage at 414ms; the cards start
+	// after that thump so they read as being shaken into place rather than racing the logo down.
 	const CARD_IN_AT = 520;
 	const CARD_IN_STEP = 150;
-	/** Each sign's bulbs come up just as its copy lands, in seconds for <SplashLights>. */
-	const IGNITE = CARDS.map((_, i) => (CARD_IN_AT + i * CARD_IN_STEP + 260) / 1000);
 
 	function handlePress() {
 		props.onpress();
@@ -118,109 +117,90 @@
 	<div class="backdrop" style={`background-image:url('${bgSrc}')`}></div>
 
 	{#if !isPortrait}
-	<div class="stage">
-		<!-- The background node is placed at (-19,-6) at 1239x697 in a 1200x670 frame, i.e. it
-		     deliberately bleeds past every edge. Reproduced exactly so the marquee frames land under
-		     the text at the coordinates below. -->
-		<img class="bg" src={bgSrc} alt="" />
-		<!-- Lights the marquee bulbs painted on the three frames. Shares the bg's exact rect, so the
-		     bulb coordinates (fractions of the art) map straight onto it. -->
-		<div class="bg-lights">
-			<!-- The park first: the coaster, wheel and carousels come up as the scene settles, then
-			     each sign lights as its copy lands. Small, dim and out of step — they are distant
-			     strings of lamps, and matching the signs' punch would flatten the depth. -->
-			<SplashLights
-				groups={[SPLASH_PARK_BULBS]}
-				mode="twinkle"
-				radius={0.0065}
-				cycles={1}
-				speed={0.22}
-				floor={0.3}
-				ignite={[0.2]}
-				igniteDuration={1.1}
-			/>
-			<SplashLights groups={SPLASH_FRAME_BULBS} ignite={IGNITE} />
-		</div>
+		<div class="stage">
+			<img class="bg" src={bgSrc} alt="" />
 
-		<img class="press-play" src={pressPlaySrc} alt="Press Play" />
+			<img class="press-play" src={pressPlaySrc} alt="Press Play" />
 
-		<div class="logo-box">
+			<!-- The cards arrive one at a time, left to right, after the logo has landed. Panel and copy
+			     are one element so they stage as a unit. -->
+			{#each CARDS as card, i (card.key)}
+				<div
+					class="card"
+					style={`left:${px(CARD_X0 + i * CARD_STEP)};top:${py(CARD_CY)};--card-in:${CARD_IN_AT + i * CARD_IN_STEP}ms`}
+				>
+					<img class="card-art" src={cardSrc} alt="" />
+					<p class="title title--{card.tone}" style={`top:${inCard(card.titleY)}`}>
+						{t(card.key)}
+					</p>
+					{#if card.big}
+						<p class="big" style={`top:${inCard(card.bigY)}`}>{MAX_WIN}</p>
+					{/if}
+					<p class="body" style={`top:${inCard(card.bodyY)}`}>
+						{t(`${card.key} BODY`)}
+					</p>
+				</div>
+			{/each}
+
+			<!-- Drawn AFTER the cards: the design overlaps the logo's coaster rails onto their top
+			     edge, which is what ties the lockup to the row instead of leaving it floating above. -->
 			<img class="logo" src={logoSrc} alt={t('GAME TITLE')} />
 		</div>
 
-		<!-- The copy arrives one sign at a time, left to right, after the logo has landed. The signs
-		     themselves are painted into the background and cannot be moved, so the staging is the
-		     copy plus each sign's bulbs igniting with it (see `ignite` above). -->
-		{#each CARDS as card, i (card.key)}
-			{@const delay = `--card-in: ${CARD_IN_AT + i * CARD_IN_STEP}ms`}
-			<p
-				class="title title--{card.tone}"
-				style={`left:${px(card.cx)};top:${py(card.titleY)};${delay}`}
-			>
-				{t(card.key)}
-			</p>
-			{#if card.big}
-				<p class="big" style={`left:${px(card.cx)};top:${py(card.bigY)};${delay}`}>{MAX_WIN}</p>
-			{/if}
-			<p class="body" style={`left:${px(card.cx)};top:${py(card.bodyY)};${delay}`}>
-				{t(`${card.key} BODY`)}
-			</p>
-		{/each}
-
-		<!-- Sits ABOVE the cards so its dark stop deepens the paving at the bottom of the scene, but
-		     the press row is drawn after it and so stays legible. -->
+		<!-- Outside .stage, and deliberately. Past ~1.2:1 the stage switches to cover and is TALLER
+		     than the viewport, so anything anchored near its bottom edge — the design's dark fade and
+		     the prompt that has to stay legible over it — is cropped away on a wide window. Both are
+		     screen furniture rather than part of the 1200x670 composition, so they hang off the
+		     splash box and are always where the eye expects them. -->
 		<div class="vignette"></div>
 
 		<div class="press-row">
 			<span class="press-label">{t('PRESS TO CONTINUE')}</span>
 			<img class="press-arrow" src={arrowSrc} alt="" />
 		</div>
-	</div>
 	{:else}
-	<!-- PORTRAIT splash: dedicated vertical layout that fills the phone screen. -->
-	<div class="splash-pt">
-		<img class="pt-bg" src={portraitBgSrc} alt="" />
-		<div class="pt-scrim"></div>
-		<img class="pt-pp" src={pressPlaySrc} alt="Press Play" />
+		<!-- PORTRAIT splash: dedicated vertical layout that fills the phone screen. -->
+		<div class="splash-pt">
+			<img class="pt-bg" src={bgSrc} alt="" />
+			<div class="pt-scrim"></div>
+			<img class="pt-pp" src={pressPlaySrc} alt="Press Play" />
+			<img class="pt-logo" src={logoSrc} alt={t('GAME TITLE')} />
 
-		<div class="pt-carousel">
-			<div class="pt-frame">
-				<img class="pt-frame-art" src={cardFrameSrc} alt="" />
-				<!-- The art is object-fit:fill on this box, so it maps linearly and the canvas can just
-				     fill the box too. One frame, so one group. -->
-				<SplashLights groups={[SPLASH_CARD_BULBS]} radius={0.05} cycles={1} />
-				{#each CARDS as card, i (card.key)}
-					<div class="pt-slide" class:is-active={i === slide} aria-hidden={i !== slide}>
-						<p class="pt-feat-title title--{card.tone}">{t(card.key)}</p>
-						{#if card.big}
-							<p class="pt-feat-big">{MAX_WIN}</p>
-						{/if}
-						<p class="pt-feat-sub">{t(`${card.key} BODY`)}</p>
-					</div>
-				{/each}
+			<div class="pt-carousel">
+				<div class="pt-frame">
+					<img class="pt-frame-art" src={cardSrc} alt="" />
+					{#each CARDS as card, i (card.key)}
+						<div class="pt-slide" class:is-active={i === slide} aria-hidden={i !== slide}>
+							<p class="pt-feat-title title--{card.tone}">{t(card.key)}</p>
+							{#if card.big}
+								<p class="pt-feat-big">{MAX_WIN}</p>
+							{/if}
+							<p class="pt-feat-sub">{t(`${card.key} BODY`)}</p>
+						</div>
+					{/each}
+				</div>
+
+				<div class="pt-dots">
+					{#each CARDS as card, i (card.key)}
+						<button
+							class="pt-dot"
+							class:is-active={i === slide}
+							type="button"
+							aria-label={`Slide ${i + 1}`}
+							onclick={(e) => {
+								e.stopPropagation();
+								slide = i;
+							}}
+						></button>
+					{/each}
+				</div>
 			</div>
 
-			<div class="pt-dots">
-				{#each CARDS as card, i (card.key)}
-					<button
-						class="pt-dot"
-						class:is-active={i === slide}
-						type="button"
-						aria-label={`Slide ${i + 1}`}
-						onclick={(e) => {
-							e.stopPropagation();
-							slide = i;
-						}}
-					></button>
-				{/each}
+			<div class="pt-press">
+				<span class="pt-press-label">{t('PRESS TO CONTINUE')}</span>
+				<img class="pt-press-arrow" src={arrowSrc} alt="" />
 			</div>
 		</div>
-
-		<div class="pt-press">
-			<span class="pt-press-label">{t('PRESS TO CONTINUE')}</span>
-			<img class="pt-press-arrow" src={arrowSrc} alt="" />
-		</div>
-	</div>
 	{/if}
 </div>
 
@@ -247,12 +227,12 @@
 		background-position: center;
 		background-size: cover;
 		background-repeat: no-repeat;
-		filter: blur(26px) brightness(0.42) saturate(0.85);
+		filter: blur(26px) brightness(0.26) saturate(0.85);
 		transform: scale(1.12);
 	}
 
-	/* The 1200x670 design frame. Contain-fit by default: the three marquee frames span x 248..944 of
-	   1200, so a cover-fit on a portrait phone would crop two of them off-screen entirely. */
+	/* The 1200x670 design frame. Contain-fit by default: the three cards span x 220..975 of 1200, so
+	   a cover-fit on a portrait phone would crop two of them off-screen entirely. */
 	.stage {
 		position: absolute;
 		left: 50%;
@@ -268,9 +248,9 @@
 		animation: stage-jolt 320ms ease-out 414ms both;
 	}
 
-	/* Past ~1.2:1 the horizontal crop can no longer reach the outer marquee frames (at exactly 1.2:1
-	   the visible window is design x 198..1002 against cards at 248..944), so switch to cover and
-	   drop the letterbox entirely. */
+	/* Past ~1.2:1 the horizontal crop can no longer reach the outer cards (at exactly 1.2:1 the
+	   visible window is design x 198..1002 against cards at 220..975), so switch to cover and drop
+	   the letterbox entirely. */
 	@media (min-aspect-ratio: 6 / 5) {
 		.stage {
 			width: max(100cqw, calc(100cqh * 1200 / 670));
@@ -278,72 +258,96 @@
 		}
 	}
 
-	.bg,
-	.bg-lights {
+	/* The art (1680x936) is within a rounding error of this box, so `cover` neither crops nor
+	   letterboxes it in any meaningful way. */
+	.bg {
 		position: absolute;
-		left: -1.58333%; /* -19 / 1200 */
-		top: -0.89552%; /* -6 / 670 */
-		width: 103.25%; /* 1239 / 1200 */
-		height: 104.02985%; /* 697 / 670 */
+		inset: 0;
+		width: 100%;
+		height: 100%;
 		object-fit: cover;
 	}
 
-	/* The art's aspect (1672x941) matches this box to within a rounding error, so `cover` neither
-	   crops nor letterboxes it and the bulb fractions land on the painted bulbs exactly. */
-	.bg-lights {
-		pointer-events: none;
-	}
-
-	/* Press Play studio mark — group box 112.5181 x 36.4013, centred at (601.3, 164.2) in the design.
-	   Lifted to y 116 on request: the design tucks it right against the logo plate, and once the
-	   logo drops into place the two read as one crowded block. */
+	/* Press Play studio mark — group box 112.5181 x 36.4013, centred at (600.3, 96.2). */
 	.press-play {
 		position: absolute;
-		left: 50.10832%;
-		top: 17.31343%; /* 116 / 670 */
+		left: 50.02167%;
+		top: 14.35821%;
 		transform: translate(-50%, -50%);
 		width: 9.37651%;
 		height: auto;
 	}
 
-	/* Theme Park logo — 517 x 178 box centred at (589.5, 271). The artwork is 3:1, slightly wider
-	   than the box, and the design crops it horizontally rather than letterboxing it, so the wrapper
-	   keeps the designed box and the image covers it. */
-	.logo-box {
+	/* THEME PARK logo. The rect is the trimmed ARTWORK's, fitted against the design render (649x193
+	   at (276,114)) rather than taken from the Figma node, whose box is padding around the ink. */
+	.logo {
 		position: absolute;
-		left: 49.125%;
-		top: 40.44776%;
+		left: 50.04167%;
+		top: 31.41791%;
 		transform: translate(-50%, -50%);
-		width: 38.5%;
-		aspect-ratio: 517 / 178;
-		overflow: hidden;
-		/* Falls in from off-screen and lands hard. -210% of its own height clears the stage top from
-		   a centre at 40.45% (needs 271 + 89 = 360 design px = 202% of the 178px box). */
-		--drop-from: -210%;
+		width: 54.08333%;
+		height: auto;
+		display: block;
+		/* Falls in from off-screen and lands hard. -170% of its own height clears the stage top from a
+		   centre at 31.42% (needs 210.5 + 96.5 = 307 design px = 159% of the 193px art). */
+		--drop-from: -170%;
 		animation: logo-drop 900ms linear both;
 	}
-	.logo {
+
+	/* One feature card: the purple panel and its copy, positioned and staged as a unit. No
+	   `container-type` here on purpose — every font size below is in cqw and has to keep resolving
+	   against .stage so the whole composition still scales as one. */
+	.card {
+		position: absolute;
+		width: 20.16667%; /* 242 / 1200 */
+		height: 43.83085%; /* 293.7 / 670 */
+		transform: translate(-50%, -50%);
+		/* Staged per card; `--card-in` is set inline. `both` holds the 0% frame during the delay,
+		   which is what keeps the card off screen until its turn. */
+		animation: card-in 460ms cubic-bezier(0.2, 0.8, 0.3, 1) var(--card-in, 0ms) both;
+	}
+
+	.card-art {
+		position: absolute;
+		inset: 0;
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
-		display: block;
+		/* `fill`: the box is the art's own aspect to within a rounding error, and letterboxing would
+		   pull the panel off the column the copy is placed against. */
+		object-fit: fill;
 	}
 
 	.title,
 	.body,
 	.big {
 		position: absolute;
+		/* The panel's interior is centred to within half a percent (measured off the art: x
+		   0.053..0.944, y 0.043..0.947), so the copy simply centres on the card. */
+		left: 50%;
 		transform: translate(-50%, -50%);
 		margin: 0;
 		text-align: center;
 		letter-spacing: 0.03em;
-		/* Staged per sign; `--card-in` is set inline per card. `both` holds the 0% frame during the
-		   delay, which is what keeps the copy off screen until its turn. */
-		animation: card-in 460ms cubic-bezier(0.2, 0.8, 0.3, 1) var(--card-in, 0ms) both;
+		/* The design's 179px copy box. Absolutely positioned text has to be given this explicitly:
+		   with only `left:50%` set, shrink-to-fit measures against the space LEFT of the right edge,
+		   so the blurb wrapped at half the card. */
+		width: 73.96694%; /* 179 / 242 */
+	}
+
+	/* The design sets the copy off the flat panel with a soft shadow. It has to be a filter on the
+	   gradient headlines, not a text-shadow: those are painted through `background-clip: text` with
+	   a transparent fill, and a text-shadow draws BEHIND that transparent fill — i.e. straight
+	   through the glyphs, greying out the gradient instead of sitting under it. */
+	.title,
+	.big {
+		filter: drop-shadow(0 0.15cqw 0.3cqw rgba(10, 0, 16, 0.75));
+	}
+	.body {
+		text-shadow: 0 0.12cqw 0.3cqw rgba(10, 0, 16, 0.7);
 	}
 
 	/* A short rise into place. The centring lives in the same transform, so every frame has to
-	   repeat translate(-50%, -50%) or the copy is flung half a box off while it plays — the same
+	   repeat translate(-50%, -50%) or the card is flung half a box off while it plays — the same
 	   trap as logo-drop below. */
 	@keyframes card-in {
 		0% {
@@ -356,11 +360,10 @@
 		}
 	}
 
-	/* IBM Plex Sans Condensed Bold, 32px on a 1200 frame. Constrained to the 216px title box from
-	   the design so "EXPANDING REELS" wraps to two lines exactly as drawn — and so a long
-	   translation wraps instead of running out over the marquee frame. */
+	/* Lilita One, 32px on a 1200 frame. The shared 179px box above is what makes the headlines break
+	   where they are drawn, and what makes a long translation wrap instead of running out over the
+	   panel's rail. */
 	.title {
-		width: 18%;
 		font-family: 'Lilita One', sans-serif;
 		font-weight: 400;
 		font-size: 2.66667cqw;
@@ -393,7 +396,7 @@
 		);
 	}
 
-	/* Nunito Sans SemiBold 16px, plain white (node 6581:4288). */
+	/* Nunito Sans SemiBold 16px, plain white (node 7027:12755). */
 	.body {
 		font-family: 'Nunito Sans', sans-serif;
 		font-weight: 600;
@@ -403,8 +406,7 @@
 		white-space: pre-line;
 	}
 
-	/* Lilita One 42px, gold (node 6581:4302). Was 58 when the number was "1024x"; "25,000x" is two
-	   glyphs longer and at 58 it ran out over both rails of the sign. */
+	/* Lilita One 42px, gold (node 7027:12760). */
 	.big {
 		font-family: 'Lilita One', sans-serif;
 		font-weight: 400;
@@ -423,6 +425,8 @@
 		color: transparent;
 	}
 
+	/* Measured off the design render: no tint at all above y=530, then a ramp to solid #27002c by
+	   y=651. */
 	.vignette {
 		position: absolute;
 		inset: 0;
@@ -435,18 +439,21 @@
 		pointer-events: none;
 	}
 
-	/* Row box 223 x 21 centred at (600.5, 633.5); 7px gap between label and arrow. */
+	/* Design row: 223 x 21 centred at (600.5, 633.5) of 670, i.e. 5.45% up from the bottom edge. Both
+	   this and the sizes below are expressed against the SPLASH box, not the stage, because the row
+	   no longer lives in the stage — `min(cqw, cqh)` tracks the stage's own scale (its width is
+	   `min(100cqw, 100cqh * 1200/670)`) so the row still grows and shrinks with the composition. */
 	.press-row {
 		position: absolute;
-		left: 50.04167%;
-		top: 94.55224%;
-		transform: translate(-50%, -50%);
+		left: 50%;
+		bottom: 5.45%;
+		transform: translate(-50%, 50%);
 		display: flex;
 		align-items: center;
-		gap: 0.58333cqw;
+		gap: min(0.58333cqw, 1.04478cqh);
 		white-space: nowrap;
 		/* The design's row is static; the pulse is the affordance that it is a tap target, and was
-		   already on the screen this replaces. It fades in LAST, once the three signs have lit —
+		   already on the screen this replaces. It fades in LAST, once the three cards have landed —
 		   the prompt to continue arriving before the thing it is prompting you past reads as an
 		   invitation to skip. */
 		animation:
@@ -457,11 +464,11 @@
 	@keyframes press-in {
 		0% {
 			opacity: 0;
-			transform: translate(-50%, -50%) translateY(30%);
+			transform: translate(-50%, 50%) translateY(30%);
 		}
 		100% {
 			opacity: 1;
-			transform: translate(-50%, -50%) translateY(0);
+			transform: translate(-50%, 50%) translateY(0);
 		}
 	}
 	.press-label {
@@ -469,13 +476,13 @@
 		   metric-compatible stand-in everywhere else, so this needs no webfont download. */
 		font-family: Helvetica, Arial, sans-serif;
 		font-weight: 700;
-		font-size: 1.5cqw;
+		font-size: min(1.5cqw, 2.68657cqh);
 		letter-spacing: 0.03em;
 		line-height: 1;
 		color: #fff;
 	}
 	.press-arrow {
-		width: 1.5cqw; /* 18 / 1200 */
+		width: min(1.5cqw, 2.68657cqh); /* 18 / 1200 and 18 / 670 */
 		height: auto;
 		display: block;
 	}
@@ -541,11 +548,9 @@
 
 	@media (prefers-reduced-motion: reduce) {
 		.press-row,
-		.logo-box,
+		.logo,
 		.stage,
-		.title,
-		.body,
-		.big {
+		.card {
 			animation: none;
 		}
 	}
@@ -565,19 +570,22 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		/* Daytime park scene is a clean landscape with no baked-in frames, so no zoom is needed —
-		   cover crops to the central path/coaster/wheel. */
+		/* The same dusk park as landscape — cover crops the 1.79:1 art to the central
+		   path/coaster/wheel. It used to be the bright daytime in-game background, which read as a
+		   different game once the panels went dark purple. */
 		object-position: center center;
 	}
+	/* Lighter than it was: the art is dusk now, so this only has to seat the copy and the press row,
+	   not turn a midday sky into evening. */
 	.pt-scrim {
 		position: absolute;
 		inset: 0;
 		background: linear-gradient(
 			180deg,
-			rgba(20, 0, 30, 0.45) 0%,
-			rgba(20, 0, 30, 0.1) 28%,
-			rgba(20, 0, 30, 0.32) 62%,
-			rgba(20, 0, 30, 0.85) 100%
+			rgba(20, 0, 30, 0.4) 0%,
+			rgba(20, 0, 30, 0.05) 30%,
+			rgba(20, 0, 30, 0.2) 62%,
+			rgba(20, 0, 30, 0.75) 100%
 		);
 	}
 	.pt-pp {
@@ -588,20 +596,31 @@
 		margin-top: 7cqh;
 		filter: drop-shadow(0 0.5cqh 1cqh rgba(0, 0, 0, 0.5));
 	}
-	/* --- Feature carousel: one gold marquee frame, copy cross-fades, dots below --- */
+	/* The game's own lockup. Landscape has always carried it and portrait never did, which left the
+	   phone splash introducing the studio and not the game. */
+	.pt-logo {
+		position: relative;
+		z-index: 1;
+		width: 88cqw;
+		max-width: 420px;
+		height: auto;
+		margin-top: 2cqh;
+		filter: drop-shadow(0 1cqh 1.6cqh rgba(0, 0, 0, 0.55));
+	}
+	/* --- Feature carousel: one panel, copy cross-fades, dots below --- */
 	.pt-carousel {
 		position: relative;
 		z-index: 1;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		margin-top: 4cqh;
+		margin-top: 2.5cqh;
 	}
 	.pt-frame {
 		position: relative;
 		width: 80cqw;
 		max-width: 360px;
-		aspect-ratio: 369 / 378;
+		aspect-ratio: 590 / 716;
 	}
 	.pt-frame-art {
 		position: absolute;
@@ -611,13 +630,11 @@
 		object-fit: fill;
 		filter: drop-shadow(0 1.4cqh 2cqh rgba(0, 0, 0, 0.55));
 	}
-	/* Each slide's copy sits inside the frame interior; only the active one is visible. */
+	/* Each slide's copy sits inside the panel interior; only the active one is visible. The panel's
+	   rail is a thin even band (~5% of the art), so this is a symmetric inset with room to breathe. */
 	.pt-slide {
 		position: absolute;
-		/* The frame art's right rail is thicker (3D side panel), so its dark interior sits ~3% left of
-		   the art's centre. Bigger right inset than left shifts the copy to the interior's true centre
-		   (same text width, just offset). */
-		inset: 13% 15% 13% 9%;
+		inset: 9%;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -634,6 +651,14 @@
 		opacity: 1;
 		transform: scale(1);
 	}
+	/* Same trap as the landscape headlines: a text-shadow would draw through the transparent fill. */
+	.pt-feat-title,
+	.pt-feat-big {
+		filter: drop-shadow(0 0.4cqw 0.8cqw rgba(10, 0, 16, 0.7));
+	}
+	.pt-feat-sub {
+		text-shadow: 0 0.3cqw 0.7cqw rgba(10, 0, 16, 0.7);
+	}
 	.pt-feat-title {
 		margin: 0 0 1.2cqh;
 		font-family: 'Lilita One', sans-serif;
@@ -642,7 +667,7 @@
 		white-space: pre-line;
 		line-height: 1.04;
 		letter-spacing: 0.02em;
-		/* Bigger title is allowed to wrap onto two lines inside the frame. */
+		/* Bigger title is allowed to wrap onto two lines inside the panel. */
 		max-width: 100%;
 		background-clip: text;
 		-webkit-background-clip: text;
@@ -661,7 +686,8 @@
 		margin: 0.6cqh 0;
 		font-family: 'Lilita One', sans-serif;
 		font-weight: 400;
-		font-size: 16cqw;
+		/* "25,000x" is seven glyphs of Lilita — at 16cqw it ran into both rails of the panel. */
+		font-size: 13cqw;
 		line-height: 1;
 		background-image: linear-gradient(
 			181.3deg,

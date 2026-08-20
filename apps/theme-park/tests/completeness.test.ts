@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { boardKeyForMultiplier } from '../src/game/winPresentation';
+import { tierForMultiplier } from '../src/game/winPresentation';
 import { INITIAL_BOARD } from '../src/game/constants';
 
 const source = (path: string) => readFileSync(resolve(import.meta.dirname, '..', path), 'utf8');
@@ -69,11 +69,11 @@ describe('shared frontend completeness guards', () => {
 		expect(events).toContain('getWinLevelDataForAmount(bookEvent.totalWin)');
 		expect(events).toContain('if (stateGame.bonusSummaryShown) return');
 		expect(hud).toContain('context.stateGame.roundWin');
-		expect(boardKeyForMultiplier(49.99)).toBe('winSweet');
-		expect(boardKeyForMultiplier(50)).toBe('winWild');
-		expect(boardKeyForMultiplier(100)).toBe('winEpic');
-		expect(boardKeyForMultiplier(250)).toBe('winMythic');
-		expect(boardKeyForMultiplier(1000)).toBe('winLegendary');
+		expect(tierForMultiplier(49.99)).toBe('sweet');
+		expect(tierForMultiplier(50)).toBe('wild');
+		expect(tierForMultiplier(100)).toBe('epic');
+		expect(tierForMultiplier(250)).toBe('mythic');
+		expect(tierForMultiplier(1000)).toBe('legendary');
 	});
 
 	it('shows a normal win board before the Duck Your Luck bonus summary', () => {

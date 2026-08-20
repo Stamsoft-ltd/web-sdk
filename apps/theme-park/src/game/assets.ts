@@ -196,161 +196,252 @@ const assets: Assets = {
 	},
 
 	// === WIN BOARDS ===
-	// The congratulations screens' panel (Figma 6909:9366), in the separate pieces <CongratsPanel>
-	// animates apart: the marquee frame with its amount well built in, the medallion ring, and the
-	// gold P that punches in inside it. Deferred, because these only show once a bonus has run;
-	// until they land the flat `bonusPanel` below holds the place.
-	congratsPanel: {
+	// The congratulations screens' marquees: the TALL one for bonus won (Figma 7033:24761) and the
+	// WIDE cloud for bonus complete (7032:19821). Just the frames — the amount well, the medallion
+	// and the gold P that used to be built into this art are gone; <CongratsPanel> draws the well and
+	// puts the bonus's own scatter symbol where the medallion was. Deferred, because these only show
+	// once a bonus has run; until they land the flat `bonusPanel` below holds the place.
+	congratsMarqueeTall: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/popup/congrats/panel.webp',
+		src: './assets/theme-park/v2/popup/congrats/marquee-tall.webp',
 		defer: true,
 	},
-	congratsRing: {
+	congratsMarqueeWide: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/popup/congrats/ring.webp',
+		src: './assets/theme-park/v2/popup/congrats/marquee-wide.webp',
 		defer: true,
 	},
-	congratsP: { type: 'sprite', src: './assets/theme-park/v2/popup/congrats/p.webp', defer: true },
 	// Bonus-complete screen (Figma 6094:4022): the square neon panel, still drawn by the duck pond's
 	// PICK / TOTAL WIN plates and used as the congratulations panel's fallback.
 	bonusPanel: { type: 'sprite', src: './assets/theme-park/v2/popup/square_panel_neon.webp' },
 	// Figma 6682:5285 — the gift, popcorn and coin pile, without the coaster car the first pass used.
 	bonusPrize: { type: 'sprite', src: './assets/theme-park/v2/wins/bonus-prize-gift.webp' },
-	winSweet: { type: 'sprite', src: './assets/theme-park/v2/wins/sweet.webp' },
-	winWild: { type: 'sprite', src: './assets/theme-park/v2/wins/wild.webp' },
-	winEpic: { type: 'sprite', src: './assets/theme-park/v2/wins/epic.webp' },
-	winLegendary: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/wins/legendary.webp',
-	},
-	winMythic: { type: 'sprite', src: './assets/theme-park/v2/wins/mythic.webp' },
-	winMax: { type: 'sprite', src: './assets/theme-park/v2/wins/max.webp' },
-	// The win cards' separate parts (Figma 6089:434 and the four tier frames beside it), which
-	// <ThemeWinBoard> assembles and animates apart — the wordmark drops in, the coins fly in
-	// spinning, the badge punches in, the bulbs light. This replaced five 36-frame sprite sheets
-	// that carried the same motion pre-baked: 3.9 MB of parts against 16 MB of sheets, and the
-	// choreography is now editable.
+	// The marquee win card (Figma 7013:9117), shipped as the loose pieces <WinCard> animates apart:
+	// the bulb-lit tent plate, one wordmark per tier, the gold star that flies onto each shoulder, and
+	// the confetti fan cut into its fifteen scraps. The scraps are the card's burst AND the falling
+	// rain behind it (<WinConfettiRain>), so the screen has one vocabulary of paper.
 	//
-	// Deferred, with the flat one-piece `winSweet`/`winMythic`/... cards above as the immediate
-	// fallback: same art, so a card that lands before the parts do just shows without choreography.
-	// Placement and bulb positions live in game/winCardParts.ts.
-	winCardCoin: { type: 'sprite', src: './assets/theme-park/v2/wins/parts/coin.webp', defer: true },
-	// The falling coin for <WinCoinRain> — the P coin, Figma 6449:8830. Deliberately NOT the card's
-	// `winCardCoin`: that one is the balloon medallion symbol, and raining the symbol instead of
-	// money read as wrong. It has to be the FACE-ON art too, because the rain tumbles it by
-	// squashing its width; an already-tilted coin squashed further just looks permanently skewed.
-	winRainCoin: {
+	// This replaced the previous card entirely — five flat 1 MB tier cards plus panel/ring/badge/coin
+	// parts for each, 9.5 MB in all, against 1.0 MB here.
+	//
+	// Deferred at priority 0, so they are the first thing to stream in once the game is interactive:
+	// there is no flat fallback card any more, and a big win can land within a couple of spins. The
+	// amount plate is drawn rather than loaded, so even a card whose art has not arrived still shows
+	// the number. Placement lives in game/winCardMarquee.ts.
+	winMarqueePlate: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/rain_coin.webp',
+		src: './assets/theme-park/v2/wins/marquee/plate.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	// The same coin's FAR face — its silhouette filled with a plain metal gradient, no P and no
-	// bevel. Drawn behind the near face and offset, it is what gives the tumbling coin its
-	// thickness; see <WinCoinRain> for why the edge cannot be drawn beside the face instead.
-	winRainCoinRim: {
+	winMarqueeStar: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/rain_coin_rim.webp',
+		src: './assets/theme-park/v2/wins/marquee/star.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardSweetPanel: {
+	winMarqueeTextSweet: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/sweet/panel.webp',
+		src: './assets/theme-park/v2/wins/marquee/text-sweet.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardSweetText: {
+	winMarqueeTextWild: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/sweet/text.webp',
+		src: './assets/theme-park/v2/wins/marquee/text-wild.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardSweetRing: {
+	winMarqueeTextEpic: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/sweet/ring.webp',
+		src: './assets/theme-park/v2/wins/marquee/text-epic.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardSweetBadge: {
+	winMarqueeTextMythic: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/sweet/badge.webp',
+		src: './assets/theme-park/v2/wins/marquee/text-mythic.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardWildPanel: {
+	winMarqueeTextLegendary: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/wild/panel.webp',
+		src: './assets/theme-park/v2/wins/marquee/text-legendary.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardWildText: {
+	winMarqueeConfetti0: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/wild/text.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p00.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardWildRing: {
+	winMarqueeConfetti1: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/wild/ring.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p01.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardWildBadge: {
+	winMarqueeConfetti2: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/wild/badge.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p02.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardEpicPanel: {
+	winMarqueeConfetti3: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/epic/panel.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p03.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardEpicText: {
+	winMarqueeConfetti4: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/epic/text.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p04.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardEpicRing: {
+	winMarqueeConfetti5: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/epic/ring.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p05.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardEpicBadge: {
+	winMarqueeConfetti6: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/epic/badge.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p06.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardMythicPanel: {
+	winMarqueeConfetti7: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/mythic/panel.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p07.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardMythicText: {
+	winMarqueeConfetti8: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/mythic/text.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p08.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardMythicRing: {
+	winMarqueeConfetti9: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/mythic/ring.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p09.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardMythicBadge: {
+	winMarqueeConfetti10: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/mythic/badge.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p10.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardLegendaryPanel: {
+	winMarqueeConfetti11: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/legendary/panel.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p11.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardLegendaryText: {
+	winMarqueeConfetti12: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/legendary/text.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p12.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardLegendaryRing: {
+	winMarqueeConfetti13: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/legendary/ring.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p13.webp',
 		defer: true,
+		deferPriority: 0,
 	},
-	winCardLegendaryBadge: {
+	winMarqueeConfetti14: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/parts/legendary/badge.webp',
+		src: './assets/theme-park/v2/wins/marquee/confetti/p14.webp',
 		defer: true,
+		deferPriority: 0,
+	},
+
+	// The MAX WIN card (Figma 6090:4147) — its own lockup rather than a sixth tier of the marquee,
+	// because the design glues a duck, a coaster loop, a ferris wheel, balloons, tents, stars and the
+	// game's logo onto one bulb-framed plate. Shipped as the eleven loose pieces <MaxWinCard> flies in
+	// from off screen; placement lives in game/maxWinCard.ts.
+	//
+	// Deferred at priority 1 — BEHIND the marquee's parts. Every big win shows the marquee; a max win
+	// is 25,000x, so its 1.3MB has no business competing with art the next spin might need. The card
+	// checks its own plate before it draws anything.
+	maxWinPlate: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/maxwin/plate.webp',
+		defer: true,
+		deferPriority: 1,
+	},
+	maxWinWord: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/maxwin/word.webp',
+		defer: true,
+		deferPriority: 1,
+	},
+	maxWinDuck: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/maxwin/duck.webp',
+		defer: true,
+		deferPriority: 1,
+	},
+	maxWinCoaster: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/maxwin/coaster.webp',
+		defer: true,
+		deferPriority: 1,
+	},
+	maxWinWheel: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/maxwin/wheel.webp',
+		defer: true,
+		deferPriority: 1,
+	},
+	maxWinBalloonL: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/maxwin/balloonL.webp',
+		defer: true,
+		deferPriority: 1,
+	},
+	maxWinBalloonR: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/maxwin/balloonR.webp',
+		defer: true,
+		deferPriority: 1,
+	},
+	maxWinTentL: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/maxwin/tentL.webp',
+		defer: true,
+		deferPriority: 1,
+	},
+	maxWinTentR: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/maxwin/tentR.webp',
+		defer: true,
+		deferPriority: 1,
+	},
+	maxWinStarL: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/maxwin/starL.webp',
+		defer: true,
+		deferPriority: 1,
+	},
+	maxWinStarR: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/maxwin/starR.webp',
+		defer: true,
+		deferPriority: 1,
+	},
+	// The SAME file the splash overlay loads in CSS — the design's THEME PARK lockup is this logo, so
+	// re-cutting it from the max-win frame would ship a second copy of it for no visible difference.
+	maxWinLogo: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/splash/logo.webp',
+		defer: true,
+		deferPriority: 1,
 	},
 
 	// === FRAMES / UI ===
@@ -477,18 +568,33 @@ const assets: Assets = {
 	silverFont: { type: 'font', src: './assets/fonts/silverFont/mm_silver.xml' },
 
 	// === LOADING SCREEN ===
-	// The only two entries in the `preload` tier. Animated loading bar (49-frame 0→100% fill, white
-	// bar/text on transparency) plus the studio mark above it. Stepped by real download progress
-	// rather than autoplayed — the shared pixi ticker isn't running while the loader is up, so an
-	// AnimatedSprite would never advance. See LoadingScreen.svelte.
-	loadingBarAnim: {
-		type: 'spriteSheet',
-		src: './assets/sprites/loadingBarAnim/loading_bar.json?v=20260731',
+	// The only entries in the `preload` tier, so they are on screen before the counted download this
+	// screen is measuring even starts. Figma 7003:4499 — the studio mark fills red as loading runs and
+	// the wordmark joins it at 100%; see LoadingScreen.svelte and scripts/loading/build_press_play.py.
+	//
+	// The fill is a horizontal wipe between the two marks rather than the design's twelve baked
+	// states: 4 kB for a continuous fill instead of 12 files for a stepped one.
+	loadingMarkEmpty: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/loading/mark-empty.webp',
 		preload: true,
 	},
-	pressPlayLogo: {
+	loadingMarkFull: {
 		type: 'sprite',
-		src: './assets/components/ui/press_play_logo.webp',
+		src: './assets/theme-park/v2/loading/mark-full.webp',
+		preload: true,
+	},
+	loadingWordmark: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/loading/wordmark.webp',
+		preload: true,
+	},
+	// The splash art, so the loader can sit on the darkened park the splash is about to reveal and
+	// the two can cross-fade. It is the SAME file the splash overlay uses in CSS, so the second
+	// request comes out of the browser cache — this costs one download, not two.
+	loadingBackdrop: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/splash/background.webp',
 		preload: true,
 	},
 };

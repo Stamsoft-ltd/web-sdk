@@ -1,121 +1,154 @@
+<script lang="ts" module>
+	export type CongratsVariant = 'tall' | 'wide';
+</script>
+
 <script lang="ts">
-	import { Container, FillGradient, Sprite, Text, PIXI } from 'pixi-svelte';
+	import { Container, FillGradient, Graphics, Sprite, Text, PIXI } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
-	import {
-		CONGRATS_PANEL_ASPECT,
-		CONGRATS_PANEL_BULBS,
-		CONGRATS_PANEL_BULB_COLOUR,
-		CONGRATS_PARTS,
-		CONGRATS_RING_BULBS,
-		CONGRATS_RING_BULB_COLOUR,
-	} from '../game/congratsPanelParts';
+	import { CONGRATS_MARQUEES } from '../game/congratsPanelParts';
 	import WinCardLights from './WinCardLights.svelte';
 
-	// The congratulations panel (Figma 6909:9366), shared by both bonus screens.
+	// The congratulations marquee, shared by both bonus screens.
 	//
-	// It replaces the flat neon square both of them used to draw. The redesign ships as separate
-	// images — the marquee frame with its amount well built in, the medallion ring, and what goes
-	// inside the ring — so the screen is assembled live and each piece gets its own entrance, the
-	// same way <ThemeWinBoard> rebuilt the win cards: the headline drops in from above, the medallion
-	// swings open, the badge inside it punches in from nothing, and the painted bulbs light.
+	// Two arrangements of one idea (Figma 7033:24761 bonus won, 7032:19821 bonus complete): a circus
+	// marquee — purple field, gold rail of painted bulbs, striped tent top — with the copy inside it
+	// and the number in a black well. `tall` is the bonus-won board and carries the whole story (the
+	// bonus's name, its blurb, its symbol, the spins awarded); `wide` is the bonus-complete cloud and
+	// carries only CONGRATS! / YOU WON, with the total in a well that hangs BELOW the marquee.
+	//
+	// The screen is assembled live so each piece gets its own entrance, the same way <WinCard> rebuilt
+	// the win cards: the headline drops in from above, the symbol punches in from nothing, the well
+	// swells up under it and the painted bulbs light.
 	//
 	// Everything is a pure function of `elapsed` off one clock rather than a Tween per element. With
 	// this many overlapping delays, having the whole timeline readable in one block is worth more
 	// than per-property interpolation.
 	//
-	// Sizes: `size` is the panel's rendered WIDTH, and every fraction in congratsPanelParts is of the
-	// panel's box, which is 566x567 — square to within 0.2% — so one number scales the whole screen.
+	// NOT drawn: the design's static confetti, on either screen. <WinConfettiRain> falls the same
+	// scraps down the whole canvas instead (design ask, 2026-08-18) — the screens mount it, not this.
+	//
+	// Sizes: `size` is the marquee's rendered WIDTH. Sizes below are fractions of that width; Y
+	// positions are fractions of its HEIGHT, which is no longer the same number — the old panel was
+	// square to within 0.2% and these are 0.87 and 1.41.
 
 	type Props = {
-		/** Panel width in the parent's units. */
+		variant: CongratsVariant;
+		/** Marquee width in the parent's units. */
 		size: number;
 		/** On screen. The dialogs keep this mounted and fade it, so the clock has to be gated. */
 		active: boolean;
 		/** Bumped by the parent to restart the choreography. */
 		runId: number;
-		/** The white headline. */
+		/** The headline. */
 		title: string;
-		/** The line under it — 'YOU WON', or the bonus's name. */
+		/** The line under it — 'YOU WON'. */
 		subtitle?: string;
-		/** Optional blurb between the subtitle and the medallion. */
+		/** `tall` only: the bonus's own name, under YOU WON. */
+		name?: string;
+		/** `tall` only: the feature blurb under the name. */
 		desc?: string;
-		/**
-		 * Whether to draw the medallion ring around the centre piece. Off for the bonus-won screen:
-		 * the bonus's own badge is already a lit gold roundel, and framing one ring of bulbs with
-		 * another just made both harder to read.
-		 */
-		ring?: boolean;
-		/** What sits in the medallion's place: the gold P, or the bonus's own scatter symbol. */
+		/** `tall` only: the bonus's scatter symbol, between the blurb and the well. */
 		centreKey?: string;
-		/** Its width as a fraction of the panel, and its art's aspect, so it is never stretched. */
+		/** Its width as a fraction of the marquee, and its art's aspect, so it is never stretched. */
 		centreWidth?: number;
 		centreAspect?: number;
-		/** Scales the medallion slot down when the panel has a blurb to fit above it. */
-		ringScale?: number;
-		/** The line in the amount well. */
+		/** The line in the well: the spins awarded, or the total won. */
 		wellText: string;
+		/** `tall` only: the caption under the well — 'FREE SPINS'. */
+		wellLabel?: string;
 	};
 
 	const {
+		variant,
 		size,
 		active,
 		runId,
 		title,
 		subtitle,
+		name,
 		desc,
-		ring = true,
-		centreKey = 'congratsP',
-		centreWidth = CONGRATS_PARTS.p.w,
-		centreAspect = CONGRATS_PARTS.p.w / CONGRATS_PARTS.p.h,
-		ringScale = 1,
+		centreKey,
+		centreWidth = 0.3,
+		centreAspect = 448 / 360,
 		wellText,
+		wellLabel,
 	}: Props = $props();
 
 	const context = getContext();
 
-	/** The panel art is deferred; until it lands the old flat panel holds the place. */
-	const partsReady = $derived(!!context.stateApp.loadedAssets?.congratsPanel);
-	/**
-	 * The centre piece only waits on that same stream when it is our own gold P. A bonus's scatter
-	 * badge is loaded up front, so the bonus-won screen shows its symbol either way.
-	 */
-	const centreReady = $derived(centreKey !== 'congratsP' || partsReady);
+	const art = $derived(CONGRATS_MARQUEES[variant]);
+	const artKey = $derived(variant === 'tall' ? 'congratsMarqueeTall' : 'congratsMarqueeWide');
+	/** The marquees are deferred; until they land the old flat panel holds the place. */
+	const artReady = $derived(!!context.stateApp.loadedAssets?.[artKey]);
 
-	// === LAYOUT (fractions of the panel) ===
-	// Two arrangements. `plain` is the design's, for the bonus-complete screen it was drawn for.
-	// `withDesc` is the bonus-won screen's: that one has a bonus name AND a blurb to fit, which the
-	// design's mock has no line for, so the block above the medallion tightens up and the medallion
-	// gives way (the caller shrinks it with `ringScale`) rather than the blurb being dropped.
-	const HEADINGS = {
-		plain: { title: 0.1984, subtitle: 0.2857 },
-		withDesc: { title: 0.165, subtitle: 0.245 },
-	};
-	const DESC_Y = 0.34;
-	const DESC_WIDTH = 0.62;
-	/** The blurb is scaled down to this height rather than allowed to reach the medallion. */
-	const DESC_MAX_HEIGHT = 0.135;
-	const WELL_Y = 0.8607;
-	/** The well's inner width; a long currency string or a translated label is scaled to fit it. */
-	const WELL_WIDTH = 0.66;
-	const TITLE_SIZE = 0.0636;
-	const SUBTITLE_SIZE = 0.0495;
-	const DESC_SIZE = 0.028;
-	const WELL_SIZE = 0.106;
-	/** How far down the medallion drops when it is scaled to make room for a blurb. */
-	const RING_SHIFT = 0.115;
+	// === LAYOUT ===
+	// Straight off the two Figma frames. `y` is a fraction of the marquee's height measured from its
+	// top; everything else is a fraction of its width. The well's `y` on `wide` is past 1 because the
+	// design hangs it below the art.
+	const GOLD = 0xffba3e;
+	const LAYOUT = {
+		tall: {
+			// Box 348,1 524x600 in frame 7033:24761.
+			title: { y: 0.26, size: 0.09958, fill: GOLD, width: 0.78 },
+			subtitle: { y: 0.3375, size: 0.041872, fill: GOLD },
+			name: { y: 0.408333, size: 0.053435, width: 0.72 },
+			desc: { y: 0.49, size: 0.026718, width: 0.73855, maxHeight: 0.11 },
+			centre: { y: 0.635 },
+			well: {
+				y: 0.806667,
+				height: 0.118321,
+				radius: 0.022901,
+				text: 0.076336,
+				padX: 0.045802,
+				minWidth: 0.274714,
+				maxWidth: 0.68,
+				border: 0xb65df3,
+				at: 1080,
+			},
+			label: { y: 0.903333, size: 0.053435, width: 0.72 },
+		},
+		wide: {
+			// Box 337,57 532x377 in frame 7032:19821.
+			title: { y: 0.526525, size: 0.073649, fill: 0xffffff, width: 0.7 },
+			subtitle: { y: 0.629973, size: 0.041242, fill: 0xffffff },
+			name: undefined,
+			desc: undefined,
+			centre: undefined,
+			well: {
+				y: 1.061194,
+				height: 0.225836,
+				radius: 0.033457,
+				text: 0.111524,
+				padX: 0.066915,
+				minWidth: 0.75,
+				maxWidth: 0.98,
+				border: 0xd836fc,
+				// Far earlier than on the bonus-won board, which has a symbol to punch in first. Here
+				// the well IS the screen, and it is also where the total counts up, so a beat of
+				// nothing before it appears would be a beat of the count-up nobody sees.
+				at: 640,
+			},
+			label: undefined,
+		},
+	} as const;
+	const L = $derived(LAYOUT[variant]);
+
+	/** Well border, as a fraction of the marquee — the two designs differ by a third of a pixel. */
+	const WELL_BORDER = 0.0024;
 
 	// === TIMELINE (ms from the panel appearing) ===
 	const PANEL = { at: 0, dur: 420 };
 	const LIGHTS = { at: 260, dur: 620 };
 	const TITLE = { at: 300, dur: 1000 };
 	const SUBTITLE = { at: 460, dur: 950 };
+	const NAME = { at: 620, dur: 420 };
 	const DESC = { at: 780, dur: 400 };
-	const RING = { at: 520, dur: 620 };
-	const CENTRE = { at: 950, dur: 900 };
-	const WELL = { at: 1080, dur: 420 };
+	const CENTRE = { at: 900, dur: 900 };
+	const WELL = $derived({ at: L.well.at, dur: 420 });
+	const LABEL = $derived({ at: L.well.at + 180, dur: 380 });
 
-	/** Where the headline starts, in panel heights above its resting place — clear of the frame. */
+	/** Where the headline starts, in marquee heights above its resting place — clear of the frame. */
 	const TITLE_FROM = -0.95;
 	const SUBTITLE_FROM = -0.55;
 
@@ -143,13 +176,18 @@
 
 	const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 	const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+	const height = $derived(size / art.aspect);
 	/**
-	 * A panel fraction as an offset from the panel's CENTRE, which is where this component's origin
+	 * A marquee-HEIGHT fraction as an offset from its centre, which is where this component's origin
 	 * sits (the art is drawn anchored 0.5). Differences between two fractions do not go through this
 	 * — they are already relative.
 	 */
-	const from = (fraction: number) => (fraction - 0.5) * size;
-	const at = (stage: { at: number; dur: number }) => clamp01((elapsed * 1000 - stage.at) / stage.dur);
+	const fromY = (fraction: number) => (fraction - 0.5) * height;
+	const at = (stage: { at: number; dur: number }) =>
+		clamp01((elapsed * 1000 - stage.at) / stage.dur);
+	/** Scale a measured line into the marquee width it was laid out for, never up. */
+	const fitTo = (measured: number, width: number) =>
+		measured > 0 ? Math.min(1, (width * size) / measured) : 1;
 
 	/** Overshoot ease; `s` sets how far past the target it goes. */
 	const backOut = (s: number) => (t: number) => {
@@ -186,45 +224,40 @@
 		return lerp(PEAK, 1, 1 - (1 - (t - RISE) / (1 - RISE)) ** 3);
 	};
 
-	const height = $derived(size / CONGRATS_PANEL_ASPECT);
-
-	// === PANEL ===
+	// === MARQUEE ===
 	const panelIn = $derived(softBack(at(PANEL)));
 	const panelScale = $derived(lerp(0.66, 1, panelIn));
 	const panelAlpha = $derived(clamp01(at(PANEL) * 3.5));
 	/**
-	 * A second copy of the panel drawn additively. Additive blending scales with source brightness,
-	 * so it blooms the bulbs, the neon rails and the gold and leaves the dark field alone: the whole
-	 * frame breathes light for the cost of one sprite, and unlike a per-bulb glow it cannot land in
-	 * the wrong place.
+	 * A second copy of the marquee drawn additively. Additive blending scales with source brightness,
+	 * so it blooms the bulbs and the gold rail and leaves the purple field alone: the whole frame
+	 * breathes light for the cost of one sprite, and unlike a per-bulb glow it cannot land in the
+	 * wrong place.
 	 */
 	const panelBloom = $derived(0.09 + 0.085 * Math.sin(elapsed * 3.2) * clamp01(at(LIGHTS)));
 	const lightsIn = $derived(clamp01(at(LIGHTS)));
 	/**
-	 * Once the entrance is over the whole card keeps breathing. Every piece landing and then holding
-	 * perfectly still read as a screenshot, however busy the lights underneath were — so the panel,
-	 * the headline and the medallion all keep a slow idle, on offset phases so they never pulse as
-	 * one block.
+	 * Once the entrance is over the whole board keeps breathing. Every piece landing and then holding
+	 * perfectly still read as a screenshot, however busy the lights underneath were — so the marquee,
+	 * the headline and the symbol all keep a slow idle, on offset phases so they never pulse as one
+	 * block.
 	 */
 	const IDLE_RATE = 2.1;
 	/**
-	 * Chase speed, in laps per second — a bulb flashes `speed * cycles` times a second, so these are
-	 * 2.5 and 1.2 Hz, up from the 1.5 and 0.6 this started at. Deliberately kept under three: a
-	 * hundred and twenty bulbs going at once past that stops reading as a marquee and starts reading
-	 * as a strobe.
+	 * Chase speed, in laps per second — a bulb flashes `speed * cycles` times a second, so this is
+	 * 2.5 Hz. Deliberately under three: eighty bulbs going at once past that stops reading as a
+	 * marquee and starts reading as a strobe.
 	 */
-	const PANEL_CHASE_SPEED = 0.62;
-	const RING_CHASE_SPEED = 0.6;
+	const CHASE_SPEED = 0.62;
 	const settled = $derived(clamp01(at(WELL) * 2));
 	const panelBreathe = $derived(1 + 0.006 * Math.sin(elapsed * IDLE_RATE * 0.7) * settled);
 
 	// === HEADLINE ===
-	const headings = $derived(desc ? HEADINGS.withDesc : HEADINGS.plain);
 	const titleIn = $derived(gravityDrop(at(TITLE)));
 	/** A gentle bob and swell after the drop — "make the congratulations text move a bit". */
 	const titleIdle = $derived(Math.sin(elapsed * IDLE_RATE) * settled);
 	const titleY = $derived(
-		from(lerp(headings.title + TITLE_FROM, headings.title, titleIn) + titleIdle * 0.008),
+		fromY(lerp(L.title.y + TITLE_FROM, L.title.y, titleIn) + titleIdle * 0.008),
 	);
 	/** Stretched on the way down, squashed on the landing — the impact the drop needs to sell it. */
 	const titleSquash = $derived(Math.max(0, titleIn - 1) * 2.2);
@@ -234,36 +267,67 @@
 	const subtitleIn = $derived(gravityDrop(at(SUBTITLE)));
 	// Counter-phase to the headline, so the two lines drift apart and together rather than as a pair.
 	const subtitleY = $derived(
-		from(
-			lerp(headings.subtitle + SUBTITLE_FROM, headings.subtitle, subtitleIn) -
-				titleIdle * 0.004,
-		),
+		fromY(lerp(L.subtitle.y + SUBTITLE_FROM, L.subtitle.y, subtitleIn) - titleIdle * 0.004),
 	);
 
-	// === MEDALLION ===
-	const ringIn = $derived(softBack(at(RING)));
-	const ringY = $derived(from(CONGRATS_PARTS.ringCentre.y + (1 - ringScale) * RING_SHIFT));
-	/**
-	 * Without a ring to swing open first, the centre piece takes the medallion's slot in the
-	 * timeline as well as its place — held back to 950ms it would punch in after a beat of nothing.
-	 */
-	const centreStage = $derived(ring ? CENTRE : { at: RING.at, dur: CENTRE.dur });
-	const centreIn = $derived(at(centreStage));
+	// === SYMBOL ===
+	const centreIn = $derived(at(CENTRE));
 	const centreIdle = $derived(1 + 0.03 * Math.sin(elapsed * 2.4) * clamp01(centreIn * 10 - 9));
 	const centreScale = $derived(punchScale(centreIn) * centreIdle);
-	/** The medallion's own offsets, about its bulb circle rather than its box. */
-	const ringOffsetY = $derived((CONGRATS_PARTS.ring.y - CONGRATS_PARTS.ringCentre.y) * size);
-	const centreOffsetY = $derived((CONGRATS_PARTS.p.y - CONGRATS_PARTS.ringCentre.y) * size);
 
 	// === WELL ===
-	let wellWidth = $state(0);
-	const wellFit = $derived(wellWidth > 0 ? Math.min(1, (size * WELL_WIDTH) / wellWidth) : 1);
-	const wellIn = $derived(at(WELL));
-
+	// Drawn rather than loaded: the design's well is a plain rounded plate whose WIDTH follows its
+	// text (auto-layout with 24px padding), so it cannot be a fixed image — a three-digit spin count
+	// or a long currency string has to widen it rather than overflow it.
+	let wellTextWidth = $state(0);
+	let titleWidth = $state(0);
+	let nameWidth = $state(0);
+	let labelWidth = $state(0);
 	let descHeight = $state(0);
+	const titleFit = $derived(fitTo(titleWidth, L.title.width));
 
-	// Figma 6909:9450 / 6909:9449 / 6541:4136: Lilita One at 3% tracking. It only ships one weight,
-	// so the boldness is the face itself rather than a weight — asking for 900 would have the
+	const wellIn = $derived(at(WELL));
+	const wellHeight = $derived(L.well.height * size);
+	const wellWidth = $derived(
+		Math.min(
+			L.well.maxWidth * size,
+			Math.max(L.well.minWidth * size, wellTextWidth + 2 * L.well.padX * size),
+		),
+	);
+	/** A line longer than the plate is allowed to grow to is scaled into it instead of clipped. */
+	const wellFit = $derived(
+		wellTextWidth > 0 ? Math.min(1, (wellWidth - 2 * L.well.padX * size) / wellTextWidth) : 1,
+	);
+
+	/**
+	 * Figma: `linear-gradient(0deg, #1a0535 0%, #000 100%)` — 0deg runs bottom to top, so the plate is
+	 * black at the top and lifts to a dark violet at the foot.
+	 */
+	const wellFill = new FillGradient({
+		type: 'linear',
+		start: { x: 0.5, y: 0 },
+		end: { x: 0.5, y: 1 },
+		colorStops: [
+			{ offset: 0, color: 0x000000 },
+			{ offset: 1, color: 0x1a0535 },
+		],
+		textureSpace: 'local',
+	});
+
+	const drawWell = (graphics: InstanceType<typeof PIXI.Graphics>) => {
+		const w = wellWidth;
+		const h = wellHeight;
+		graphics.roundRect(-w / 2, -h / 2, w, h, L.well.radius * size);
+		graphics.fill(wellFill);
+		graphics.stroke({
+			color: L.well.border,
+			width: Math.max(1, WELL_BORDER * size),
+			alignment: 0.5,
+		});
+	};
+
+	// Lilita One at 3% tracking (Figma: 1.5654px on 52.18px and so on down). It only ships one
+	// weight, so the boldness is the face itself rather than a weight — asking for 900 would have the
 	// browser synthesise a fake bold on canvas.
 	const headingStyle = (fontSize: number, fill: number | FillGradient) => ({
 		fontFamily: 'Lilita One',
@@ -273,75 +337,79 @@
 		align: 'center' as const,
 		letterSpacing: fontSize * 0.03,
 	});
-
-	// Figma: linear-gradient(163deg, #D836FC 0%, #272FDD 100%) on 'YOU WON'. Rendered as a near
-	// vertical ramp — the design's angle over a single short line is all but vertical anyway.
-	const subtitleFill = new FillGradient({
-		type: 'linear',
-		start: { x: 0.15, y: 0 },
-		end: { x: 0.85, y: 1 },
-		colorStops: [
-			{ offset: 0, color: 0xe45cff },
-			{ offset: 1, color: 0x6a5cff },
-		],
-		textureSpace: 'local',
-	});
-	// Figma: linear-gradient(181deg, #E2D981 17.62%, #FBC503 60.04%, #D98503 102.47%) — the same
-	// gold the win cards' amount uses.
-	const wellFill = new FillGradient({
-		type: 'linear',
-		start: { x: 0.52, y: 0 },
-		end: { x: 0.48, y: 1 },
-		colorStops: [
-			{ offset: 0.1762, color: 0xe2d981 },
-			{ offset: 0.6004, color: 0xfbc503 },
-			{ offset: 1, color: 0xd98503 },
-		],
-		textureSpace: 'local',
+	const shadow = (fontSize: number) => ({
+		dropShadow: {
+			color: 0x000000,
+			alpha: 0.25,
+			blur: 2,
+			distance: fontSize * 0.053,
+			angle: Math.PI / 2,
+		},
 	});
 </script>
 
 <!-- Every layer stays mounted and is driven by alpha: on this stage paint order is MOUNT order, so
      a layer mounted on demand would jump above the ones already there.
-     ONLY THE ART is gated on the deferred parts arriving. The copy is not: gating the whole screen
+     ONLY THE ART is gated on the deferred marquee arriving. The copy is not: gating the whole screen
      meant that on a slow load the player got the fallback panel with nothing written on it, which
      reads as a broken dialog rather than as art still on its way. -->
-<Container alpha={partsReady ? 0 : 1}>
-	<Sprite key="bonusPanel" anchor={0.5} width={size} height={height} />
+<Container alpha={artReady ? 0 : 1}>
+	<!-- Square art, so it is fitted INSIDE the marquee's box rather than stretched to it. -->
+	{@const fallback = Math.min(size, height)}
+	<Sprite key="bonusPanel" anchor={0.5} width={fallback} height={fallback} />
 </Container>
 
-<!-- `panelBreathe` is on the WHOLE card, text and medallion included, so it pulses as one object
+<!-- `panelBreathe` is on the WHOLE board, text and symbol included, so it pulses as one object
      rather than the frame swelling around pieces that sit still. -->
 <Container scale={panelBreathe}>
-	<Container scale={panelScale} alpha={partsReady ? 1 : 0}>
-		<Sprite key="congratsPanel" anchor={0.5} width={size} height={height} alpha={panelAlpha} />
+	<Container scale={panelScale} alpha={artReady ? 1 : 0}>
+		<Sprite key={artKey} anchor={0.5} width={size} {height} alpha={panelAlpha} />
 		<Sprite
-			key="congratsPanel"
+			key={artKey}
 			anchor={0.5}
 			blendMode="add"
 			width={size}
-			height={height}
+			{height}
 			alpha={panelBloom * panelAlpha}
 		/>
 		<WinCardLights
-			bulbs={CONGRATS_PANEL_BULBS}
+			bulbs={art.bulbs}
 			{size}
-			origin={{ x: 0.5, y: 0.5 }}
-			colour={CONGRATS_PANEL_BULB_COLOUR}
-			radius={0.031}
+			origin={art.centre}
+			colour={art.bulbColour}
+			radius={0.028}
 			cycles={4}
-			speed={PANEL_CHASE_SPEED}
-			intensity={partsReady ? lightsIn : 0}
+			speed={CHASE_SPEED}
+			intensity={artReady ? lightsIn : 0}
 			{elapsed}
 		/>
 	</Container>
 
-	{#if desc}
-		<!-- Scaled down rather than allowed to run into the medallion when a translation is longer
-		     than the copy this was laid out for. -->
-		{@const descMax = size * DESC_MAX_HEIGHT}
+	{#if L.name && name}
+		<Container y={fromY(L.name.y)} scale={fitTo(nameWidth, L.name.width)} alpha={at(NAME)}>
+			<Text
+				anchor={0.5}
+				text={name}
+				onresize={({ width }) => (nameWidth = width)}
+				style={{
+					fontFamily: 'Nunito Sans',
+					fontWeight: '700',
+					fontSize: Math.round(size * L.name.size),
+					fill: 0xffffff,
+					align: 'center',
+					letterSpacing: size * L.name.size * 0.03,
+					...shadow(size * L.name.size),
+				}}
+			/>
+		</Container>
+	{/if}
+
+	{#if L.desc && desc}
+		<!-- Scaled down rather than allowed to run into the symbol when a translation is longer than
+		     the copy this was laid out for. -->
+		{@const descMax = size * L.desc.maxHeight}
 		<Container
-			y={from(DESC_Y)}
+			y={fromY(L.desc.y)}
 			scale={descHeight > descMax ? descMax / descHeight : 1}
 			alpha={at(DESC)}
 		>
@@ -352,55 +420,21 @@
 				style={{
 					fontFamily: 'Nunito Sans',
 					fontWeight: '400',
-					fontSize: Math.round(size * DESC_SIZE),
-					fill: 0xe8dcff,
+					fontSize: Math.round(size * L.desc.size),
+					fill: 0xffffff,
 					align: 'center',
-					lineHeight: size * DESC_SIZE * 1.15,
+					letterSpacing: size * L.desc.size * 0.03,
+					lineHeight: size * L.desc.size * 1.35,
 					wordWrap: true,
-					wordWrapWidth: size * DESC_WIDTH,
+					wordWrapWidth: size * L.desc.width,
 				}}
 			/>
 		</Container>
 	{/if}
 
-	<!-- The medallion's slot. With a ring it swings open and the centre piece rides that swing; with
-	     no ring the slot is just a place, and the centre piece punches into it on its own. -->
-	<Container
-		x={from(CONGRATS_PARTS.ringCentre.x)}
-		y={ringY}
-		scale={(ring ? lerp(0.3, 1, ringIn) : 1) * ringScale}
-		rotation={ring ? (1 - ringIn) * -0.5 : 0}
-		alpha={ring ? clamp01(at(RING) * 3.5) : 1}
-	>
-		{#if ring}
-			<Sprite
-				key="congratsRing"
-				anchor={0.5}
-				y={ringOffsetY}
-				width={CONGRATS_PARTS.ring.w * size}
-				height={CONGRATS_PARTS.ring.h * size}
-				alpha={partsReady ? 1 : 0}
-			/>
-			<WinCardLights
-				bulbs={CONGRATS_RING_BULBS}
-				{size}
-				origin={CONGRATS_PARTS.ringCentre}
-				colour={CONGRATS_RING_BULB_COLOUR}
-				radius={0.05}
-				cycles={2}
-				speed={RING_CHASE_SPEED}
-				intensity={partsReady ? lightsIn : 0}
-				{elapsed}
-			/>
-		{/if}
-
-		<!-- Punching in from nothing. Offset to the ring's own centre only when there is a ring to
-		     sit inside; on its own it takes the middle of the slot. -->
-		<Container
-			y={ring ? centreOffsetY : 0}
-			scale={centreScale}
-			alpha={clamp01(centreIn * 6) * (centreReady ? 1 : 0)}
-		>
+	{#if L.centre && centreKey}
+		<!-- Punching in from nothing, in the slot between the blurb and the well. -->
+		<Container y={fromY(L.centre.y)} scale={centreScale} alpha={clamp01(centreIn * 6)}>
 			<Sprite
 				key={centreKey}
 				anchor={0.5}
@@ -408,22 +442,26 @@
 				height={(centreWidth * size) / centreAspect}
 			/>
 		</Container>
-	</Container>
+	{/if}
 
+	<!-- `titleFit` is what lets the headline keep the design's size: English says CONGRATS!, but the
+	     other sixteen locales have no short form and reuse their CONGRATULATIONS! translation, which
+	     is up to two thirds longer. It scales the line down rather than letting it run off the rail. -->
 	<Container
 		y={titleY}
 		scale={{
-			x: (1 + titleSquash - titleStretch) * titleSwell,
-			y: (1 - titleSquash + titleStretch) * titleSwell,
+			x: (1 + titleSquash - titleStretch) * titleSwell * titleFit,
+			y: (1 - titleSquash + titleStretch) * titleSwell * titleFit,
 		}}
 	>
 		<Text
 			anchor={0.5}
 			text={title}
+			onresize={({ width }) => (titleWidth = width)}
 			style={{
-				...headingStyle(Math.round(size * TITLE_SIZE), 0xffffff),
-				stroke: { color: 0x2a0033, width: Math.max(1, size * 0.006) },
-				dropShadow: { color: 0x000000, alpha: 0.35, blur: 4, distance: size * 0.005, angle: Math.PI / 2 },
+				...headingStyle(Math.round(size * L.title.size), L.title.fill),
+				stroke: { color: 0x2a0033, width: Math.max(1, size * 0.005) },
+				...shadow(size * L.title.size),
 			}}
 		/>
 	</Container>
@@ -434,23 +472,47 @@
 				anchor={0.5}
 				text={subtitle}
 				style={{
-					...headingStyle(Math.round(size * SUBTITLE_SIZE), subtitleFill),
-					stroke: { color: 0x1b0033, width: Math.max(1, size * 0.005) },
+					...headingStyle(Math.round(size * L.subtitle.size), L.subtitle.fill),
+					stroke: { color: 0x2a0033, width: Math.max(1, size * 0.004) },
+					...shadow(size * L.subtitle.size),
 				}}
 			/>
 		</Container>
 	{/if}
 
-	<!-- The amount well is painted into the panel art, so this only has to place the line in it. -->
-	<Container y={from(WELL_Y)} scale={wellFit * lerp(0.86, 1, softBack(wellIn))} alpha={clamp01(wellIn * 2)}>
-		<Text
-			anchor={0.5}
-			text={wellText}
-			onresize={({ width }) => (wellWidth = width)}
-			style={{
-				...headingStyle(Math.round(size * WELL_SIZE), wellFill),
-				stroke: { color: 0x000000, width: Math.max(1, Math.round(size * WELL_SIZE * 0.02)) },
-			}}
-		/>
+	<!-- The well and its line swell up together; the plate is redrawn only when the line's measured
+	     width changes it, never per frame. -->
+	<Container
+		y={fromY(L.well.y)}
+		scale={lerp(0.86, 1, softBack(wellIn))}
+		alpha={clamp01(wellIn * 2)}
+	>
+		<Graphics draw={drawWell} />
+		<Container scale={wellFit}>
+			<Text
+				anchor={0.5}
+				text={wellText}
+				onresize={({ width }) => (wellTextWidth = width)}
+				style={headingStyle(Math.round(size * L.well.text), GOLD)}
+			/>
+		</Container>
 	</Container>
+
+	{#if L.label && wellLabel}
+		<Container
+			y={fromY(L.label.y)}
+			scale={fitTo(labelWidth, L.label.width)}
+			alpha={clamp01(at(LABEL) * 2)}
+		>
+			<Text
+				anchor={0.5}
+				text={wellLabel}
+				onresize={({ width }) => (labelWidth = width)}
+				style={{
+					...headingStyle(Math.round(size * L.label.size), GOLD),
+					...shadow(size * L.label.size),
+				}}
+			/>
+		</Container>
+	{/if}
 </Container>

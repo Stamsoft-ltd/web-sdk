@@ -22,25 +22,28 @@
 
 	import { SYMBOL_SIZE } from '../game/constants';
 	import { getContext } from '../game/context';
-	import { boardKeyForMultiplier } from '../game/winPresentation';
+	import type { MarqueeTier } from '../game/winCardMarquee';
+	import { isMaxWin, tierForMultiplier } from '../game/winPresentation';
 	import type { MusicName } from '../game/sound';
+	import MaxWinCard, { MAXWIN_IMPACT_MS } from './MaxWinCard.svelte';
 	import PressToContinue from './PressToContinue.svelte';
-	import ThemeWinBoard from './ThemeWinBoard.svelte';
-	import WinCoinRain, { coinsForMultiplier } from './WinCoinRain.svelte';
+	import WinCard, { CARD_IMPACT_MS } from './WinCard.svelte';
+	import WinConfettiRain, { confettiForMultiplier } from './WinConfettiRain.svelte';
 
 	const context = getContext();
 
-	// The five big-win beds track the win-card art tiers (boardKeyForMultiplier), so the music the
-	// player hears matches the card they see. 25,000x+ shows the MAX card and rides the top bed.
-	const BIGWIN_MUSIC: Record<string, MusicName> = {
-		winSweet: 'bgm_bigwin_sweet',
-		winWild: 'bgm_bigwin_wild',
-		winEpic: 'bgm_bigwin_epic',
-		winMythic: 'bgm_bigwin_mythic',
-		winLegendary: 'bgm_bigwin_legendary',
+	// The five big-win beds track the marquee tiers (tierForMultiplier), so the music the player hears
+	// matches the wordmark they see. MAX WIN has no bed of its own — it shows <MaxWinCard> instead of
+	// a sixth wordmark, and rides the top bed.
+	const BIGWIN_MUSIC: Record<MarqueeTier, MusicName> = {
+		sweet: 'bgm_bigwin_sweet',
+		wild: 'bgm_bigwin_wild',
+		epic: 'bgm_bigwin_epic',
+		mythic: 'bgm_bigwin_mythic',
+		legendary: 'bgm_bigwin_legendary',
 	};
 	const bigWinMusicFor = (multiplier: number): MusicName =>
-		multiplier >= 25000 ? 'bgm_bigwin_legendary' : BIGWIN_MUSIC[boardKeyForMultiplier(multiplier)];
+		isMaxWin(multiplier) ? 'bgm_bigwin_legendary' : BIGWIN_MUSIC[tierForMultiplier(multiplier)];
 
 	// The big-win bed currently replacing the background bed, so winHide can stop the right one.
 	let activeBigWinMusic: MusicName | null = null;
@@ -61,6 +64,59 @@
 	let smallWinSize = $state({ width: 0, height: 0 });
 
 	const boardLayout = $derived(context.stateGameDerived.boardLayout());
+	/** The canvas in the units everything inside <MainContainer> is drawn in. */
+	const mainWidth = $derived(
+		context.stateLayoutDerived.canvasSizes().width / context.stateLayoutDerived.mainLayout().scale,
+	);
+
+	// === Big-win card ===
+	//
+	// The marquee is sized against the REELS at the proportions the design has it (Figma 7013:9117:
+	// a 653.6px-wide card over a 691x457 board), so it covers the same share of the game whatever
+	// the viewport. Both figures are that ONE card measured two ways — against the board's width and
+	// against its height — so a layout whose board is proportionally taller than the design's cannot
+	// push the card off the top.
+	//
+	// Held at 80% of the design's figures (design ask, 2026-08-18): at full size the card ran the
+	// whole width of the board and its amount plate hung off the bottom edge, so the win covered the
+	// grid it is celebrating instead of sitting on it.
+	const CARD_SIZE = 0.8;
+	const CARD_TO_BOARD_W = 0.946 * CARD_SIZE;
+	const CARD_TO_BOARD_H = 1.43 * CARD_SIZE;
+	/**
+	 * The assembly's full width in card widths. The plate IS the widest piece now that the design's
+	 * static confetti fan is no longer drawn — the stars land well inside it — so this is 1 plus a
+	 * hair for the bloom.
+	 */
+	const ASSEMBLY_W = 1.02;
+	/** The card sits above the board's centre — the amount plate takes the space below it. */
+	const CARD_Y = -0.11;
+
+	// The MAX WIN card is a different shape: its plate is the same unit, but the rides, balloons and
+	// tents hang a long way outside it and the logo sits under its foot, so the assembly is 1.32 card
+	// widths across and 1.14 tall against the marquee's ~1.0 and ~0.79. These figures hold the max
+	// card's assembly to the same footprint the marquee's gets rather than to the same PLATE size,
+	// which would put its wheel through the top of the board.
+	const MAXWIN_TO_BOARD_W = 0.585;
+	const MAXWIN_TO_BOARD_H = 0.788;
+	const MAXWIN_ASSEMBLY_W = 1.32;
+	/** Centred on the board: this card carries its own amount lozenge rather than hanging one below. */
+	const MAXWIN_Y = -0.02;
+
+	const isMax = $derived(isMaxWin(bookEventAmountToBetAmountMultiplier(amount)));
+	const cardWidth = $derived(
+		isMax
+			? Math.min(
+					boardLayout.width * boardLayout.boardScale * MAXWIN_TO_BOARD_W,
+					boardLayout.height * boardLayout.boardScale * MAXWIN_TO_BOARD_H,
+					(mainWidth * 0.94) / MAXWIN_ASSEMBLY_W,
+				)
+			: Math.min(
+					boardLayout.width * boardLayout.boardScale * CARD_TO_BOARD_W,
+					boardLayout.height * boardLayout.boardScale * CARD_TO_BOARD_H,
+					(mainWidth * 0.94) / ASSEMBLY_W,
+				),
+	);
 
 	// Keep the amount moving linearly through most tier thresholds, then settle smoothly.
 	const EASE_T = 0.8;
@@ -83,14 +139,7 @@
 	// keep their relative pacing, and a player who wants it gone can still press to dismiss.
 	const EXTRA_HOLD = 3000;
 	const bigHoldDuration = () =>
-		EXTRA_HOLD +
-		(bookEventAmountToBetAmountMultiplier(amount) >= 25000
-			? 3500
-			: stateBet.isSuperTurbo
-				? 1200
-				: stateBet.isTurbo
-					? 1800
-					: 2500);
+		EXTRA_HOLD + (isMax ? 3500 : stateBet.isSuperTurbo ? 1200 : stateBet.isTurbo ? 1800 : 2500);
 
 	// ── Small wins (levels 1-5, no card) ────────────────────────────────────────────────────────
 	//
@@ -238,64 +287,49 @@
 					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.42} />
 				{/if}
 
-				<!-- Coin rain, entirely BEHIND the card: in front it competed with the amount, which
-				     is the one thing on this screen the player is actually reading. Mounted
+				<!-- Confetti rain, entirely BEHIND the card: in front it competed with the amount,
+				     which is the one thing on this screen the player is actually reading. Mounted
 				     unconditionally and gated by `intensity` — layering here is MOUNT ORDER, so a
-				     layer mounted on demand would jump above the card. -->
-				<WinCoinRain
-					count={coinsForMultiplier(bookEventAmountToBetAmountMultiplier(amount))}
+				     layer mounted on demand would jump above the card.
+
+				     Held until the wordmark lands, so the rain reads as thrown by the impact rather
+				     than as weather the card fell into. It is the ONLY confetti on screen: the
+				     design's static fan around the plate is not drawn (design ask, 2026-08-18). -->
+				<WinConfettiRain
+					count={confettiForMultiplier(bookEventAmountToBetAmountMultiplier(amount))}
 					intensity={hasBoardAnimation ? 1 : 0}
+					delay={(isMax ? MAXWIN_IMPACT_MS : CARD_IMPACT_MS) / 1000}
+					restartKey={winId}
 				/>
 
 				<MainContainer>
 					<Container x={boardLayout.x} y={boardLayout.y}>
 						{#if hasBoardAnimation}
-							{@const boardScale = boardLayout.boardScale}
-							{@const boardSize = Math.min(
-								boardLayout.width * boardScale * 0.72,
-								boardLayout.height * boardScale * 0.82,
-							)}
 							<!-- The FINAL tier's card shows from the first frame (design ask, matching
 							     Forest Gang) — no SWEET→…→LEGENDARY ladder while the number climbs. -->
 							{@const finalMultiplier = bookEventAmountToBetAmountMultiplier(amount)}
-							{#if finalMultiplier >= 25000}
-								<Container scale={breatheScale}>
-									<Sprite
-										key="winMax"
-										anchor={0.5}
-										width={boardSize * 1.5}
-										height={boardSize}
+							<Container y={(isMax ? MAXWIN_Y : CARD_Y) * cardWidth} scale={breatheScale}>
+								{#if isMax}
+									<!-- The win cap gets its own lockup, not a sixth wordmark on the
+									     marquee plate — see winPresentation.ts. -->
+									<MaxWinCard
+										active={show}
+										{winId}
+										{cardWidth}
+										amountText={bookEventAmountToCurrencyString(countUpAmount)}
 									/>
-									<Text
-										anchor={0.5}
-										y={boardSize * 0.29}
-										text={bookEventAmountToCurrencyString(countUpAmount)}
-										style={{
-											fontFamily: 'Lilita One',
-											fontWeight: '400',
-											fontSize: SYMBOL_SIZE * boardScale * 0.22,
-											align: 'center',
-											fill: 0xffffff,
-											stroke: { color: 0x2b082f, width: 5 },
-										}}
+								{:else}
+									<WinCard
+										tier={tierForMultiplier(finalMultiplier)}
+										active={show}
+										{winId}
+										{cardWidth}
+										amountText={bookEventAmountToCurrencyString(countUpAmount)}
 									/>
-								</Container>
-							{:else}
-								<ThemeWinBoard
-									boardKey={boardKeyForMultiplier(finalMultiplier)}
-									active={show}
-									{winId}
-									{boardSize}
-									amountText={bookEventAmountToCurrencyString(countUpAmount)}
-									fontSize={boardSize * 0.105}
-									{breatheScale}
-								/>
-							{/if}
+								{/if}
+							</Container>
 						{:else}
-							{@const maxWidth =
-								context.stateLayoutDerived.canvasSizes().width /
-								context.stateLayoutDerived.mainLayout().scale}
-							{@const scale = PLAQUE_W > maxWidth ? maxWidth / PLAQUE_W : 1}
+							{@const scale = PLAQUE_W > mainWidth ? mainWidth / PLAQUE_W : 1}
 							{@const textFit = Math.min(
 								1,
 								smallWinSize.width ? (PLAQUE_W * PLAQUE_TEXT_W) / smallWinSize.width : 1,

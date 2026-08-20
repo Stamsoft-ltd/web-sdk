@@ -122,6 +122,12 @@
 		/** Spreads the shimmer across the grid so the cells are not a single metronome. */
 		phase?: number;
 		alpha?: number;
+		/**
+		 * Radians about the symbol's centre, so the bulbs ride the board's idle rock with the sprite
+		 * they are lighting. Free: every bulb is already drawn relative to the centre, so this is one
+		 * transform rather than a redraw.
+		 */
+		rotation?: number;
 	};
 
 	const props: Props = $props();
@@ -167,4 +173,11 @@
 	};
 </script>
 
-<Graphics x={props.x} y={props.y} alpha={props.alpha ?? 1} blendMode="add" {draw} />
+<Graphics
+	x={props.x}
+	y={props.y}
+	rotation={props.rotation ?? 0}
+	alpha={props.alpha ?? 1}
+	blendMode="add"
+	{draw}
+/>

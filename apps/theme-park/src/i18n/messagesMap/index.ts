@@ -43,10 +43,11 @@ const messagesMapGame = Object.fromEntries(
 	locales.map((locale) => [locale, { ...en, ...(localeMaps[locale] ?? {}) }]),
 );
 
-const merged = mergeMessagesMaps([messagesMapGame, messagesMapUiPixi, messagesMapUiHtml]) as unknown as Record<
-	string,
-	typeof en
->;
+const merged = mergeMessagesMaps([
+	messagesMapGame,
+	messagesMapUiPixi,
+	messagesMapUiHtml,
+]) as unknown as Record<string, typeof en>;
 
 const messagesMap = new Proxy(merged, {
 	get: (target, prop) =>

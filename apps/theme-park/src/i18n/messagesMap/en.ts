@@ -45,6 +45,10 @@ export default {
 	'BONUS COMPLETE': 'BONUS COMPLETE',
 	// Headings on the bonus-complete screen (Figma 6094:4022).
 	'CONGRATULATIONS!': 'CONGRATULATIONS!',
+	// The 2026-08-20 congratulations marquees (Figma 7033:24761, 7032:19821) shorten the headline to
+	// fit the frame. Only English has a short form; every other locale reuses its CONGRATULATIONS!
+	// translation and <CongratsPanel> scales the longer word into the frame.
+	'CONGRATS!': 'CONGRATS!',
 	'YOU WON': 'YOU WON',
 	SELECTED: 'SELECTED',
 	'REVEALING ALL DUCKS': 'REVEALING ALL DUCKS',
@@ -245,7 +249,8 @@ export default {
 	'INFO WTW LINES': 'Theme Park is played on 15 fixed paylines.',
 	'INFO WTW COMBO':
 		'A standard winning combination is formed when 3 or more matching symbols land on consecutive reels from left to right, starting from Reel 1, on one of the fixed paylines.',
-	'INFO WTW EVAL': 'Wins are evaluated after the reels stop and are paid according to the Paytable.',
+	'INFO WTW EVAL':
+		'Wins are evaluated after the reels stop and are paid according to the Paytable.',
 	'INFO WTW WILD': 'Wild symbols substitute for all regular paying symbols except Scatter symbols.',
 	'INFO WTW SCATTER':
 		'Scatter symbols do not need to follow a payline and are used to trigger their associated bonus features.',
