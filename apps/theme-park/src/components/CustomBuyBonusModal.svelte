@@ -340,6 +340,11 @@
 		container-type: size;
 		background: rgba(4, 1, 12, 0.8);
 		font-family: 'Nunito Sans', sans-serif;
+		/* The shared close button sits in the viewport's top-right corner and is floored to a 40px tap
+		   target, so on small screens it is proportionally BIGGER than the --u-scaled modal and drops
+		   over the top-right card. This is the y its bottom edge reaches (its own formula × 84 ≈ bottom
+		   + a small gap); the grid keeps its top row clear of it. */
+		--close-clear: calc(clamp(0.8214px, 100vw / 1200, 1.25px) * 84);
 	}
 
 	/* One design pixel. `min` fits the 1200x670 frame inside whatever shape the game has — the game
@@ -390,12 +395,15 @@
 	.grid {
 		position: absolute;
 		left: calc(var(--u) * 80);
-		top: calc(var(--u) * 91);
+		/* Start below the close button when it (floored) reaches lower than the design's 91u top, so the
+		   top-right card never sits under it. Pinned by top+bottom (not height) with proportional rows,
+		   so the cards simply shrink to the room that leaves instead of overrunning the bet row. */
+		top: max(calc(var(--u) * 91), var(--close-clear));
+		bottom: calc(var(--u) * 126);
 		width: calc(var(--u) * 1041);
-		height: calc(var(--u) * 453);
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		grid-template-rows: calc(var(--u) * 194) calc(var(--u) * 247);
+		grid-template-rows: 1fr 1.27fr;
 		gap: calc(var(--u) * 12);
 	}
 
@@ -714,7 +722,14 @@
 			grid-template-columns: 1fr;
 			grid-template-rows: none;
 			grid-auto-rows: min-content;
-			padding: calc(var(--u) * 2) 0;
+			/* overflow-y:auto makes overflow-x compute to auto too, so the scroll column CLIPS sideways
+			   at its padding edge. The card's neon frame (card-bg) and its InfoBorderLights glow each
+			   extend ~14u past the card, so without side padding the right (and left) border was sliced
+			   off — this reserves the room the glow needs inside the clip. */
+			padding: calc(var(--u) * 2) calc(var(--u) * 16);
+			/* Drop the first full-width card clear of the floored close button (the title above the grid
+			   already accounts for ~60u of the clearance). */
+			margin-top: max(0px, calc(var(--close-clear) - var(--u) * 60));
 			/* Six full-width cards never fit, so the column always scrolls. Fading the last few pixels
 			   stops the card at the cut from reading as a broken one. */
 			mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);

@@ -2117,18 +2117,24 @@
 			font-size: clamp(0.24rem, 1.35vh, 0.4rem);
 		}
 		/* The stepper is the tightest thing on this screen: two +/- buttons plus gaps ate the whole
-		   50px row and fitText collapsed the bet value to ~1px. Shrink the buttons, gaps and padding so
-		   the value gets real width, and lift its size ceiling so fitText fills that width. */
+		   row and fitText collapsed the bet value. Shrink the +/- buttons, gaps and padding hard so the
+		   value gets most of the width, and lift its ceiling so fitText fills it (bet was still too small). */
 		.ls-bet {
-			padding: 2px 3px;
-			gap: 2px;
+			padding: 2px 2px;
+			gap: 1px;
 		}
 		.ls-step {
-			width: clamp(9px, 4.9vh, 14px);
-			height: clamp(9px, 4.9vh, 14px);
+			width: clamp(8px, 4vh, 12px);
+			height: clamp(8px, 4vh, 12px);
 		}
 		.ls-bet__value {
-			font-size: clamp(0.6rem, 4.6vh, 1rem);
+			font-size: clamp(0.75rem, 5.5vh, 1rem);
+		}
+		/* Spin (the round "turn" button) dwarfed the dock here — pull its floor/scale down so it stays
+		   the biggest control without swallowing the whole column. */
+		.ls-spin.spin-btn {
+			width: clamp(22px, 11.5vh, 84px);
+			height: clamp(34px, 17.8vh, 132px);
 		}
 		.ls-pill--win {
 			min-width: clamp(56px, 16.5vw, 100px);
@@ -2273,8 +2279,10 @@
 
 	.pt-btn {
 		flex: 0 0 auto;
-		width: 34px;
-		height: 34px;
+		/* Cap at the design px but scale down with the viewport, so the whole control row shrinks
+		   together on a narrow portrait rather than staying phone-sized on a 320px screen. */
+		width: min(34px, 9vw);
+		height: min(34px, 9vw);
 		padding: 0;
 		border: 0;
 		background: transparent;
@@ -2307,8 +2315,8 @@
 	/* Buy bonus — round purple button, bigger than the small buttons, centered in the bar. */
 	.pt-buy {
 		position: relative;
-		width: 60px;
-		height: 60px;
+		width: min(58px, 15vw);
+		height: min(58px, 15vw);
 		align-self: center;
 	}
 	.pt-buy__label {
@@ -2337,8 +2345,10 @@
 		flex: 0 0 auto;
 		position: relative;
 		align-self: center;
-		width: 98px;
-		height: 98px;
+		/* Was a flat 98px that dwarfed the bar on small portrait screens — cap smaller and scale it with
+		   the viewport so it stays the biggest control without swallowing a 320px-wide row. */
+		width: min(86px, 22.5vw);
+		height: min(86px, 22.5vw);
 		margin: 0;
 		padding: 0;
 		border: 0;
@@ -2465,12 +2475,14 @@
 		position: relative;
 		flex: 1.5 1 0;
 		min-width: 0;
-		height: 50px;
+		height: min(50px, 13vw);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 12px;
-		padding: 0 18px;
+		/* Scale the −/+ margins with the viewport so the value keeps most of the box on a narrow screen —
+		   fixed 12/18px overhead is what crushed "$1.00" to a few px at 320. */
+		gap: min(11px, 3vw);
+		padding: 0 min(16px, 4.2vw);
 	}
 	.pt-bet__bg {
 		position: absolute;
@@ -2487,8 +2499,8 @@
 	}
 	/* small step buttons that fit inside the bet box with clear margin */
 	.pt-bet .pt-step {
-		width: 28px;
-		height: 28px;
+		width: min(27px, 7vw);
+		height: min(27px, 7vw);
 	}
 	.pt-bet__values {
 		flex: 1 1 0;

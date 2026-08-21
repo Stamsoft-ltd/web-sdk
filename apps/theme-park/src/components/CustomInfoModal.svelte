@@ -466,10 +466,13 @@
 		margin: 0 0 12px;
 		font-family: 'Lilita One', sans-serif;
 		font-weight: 400;
-		font-size: 1.9rem;
+		/* Portrait: shrink long/translated titles with the viewport so "GEWINNTABELLE" et al. never grow
+		   into the close button, and reserve its top-right corner so the centred title clears it. */
+		font-size: min(1.9rem, 6.5cqw);
 		line-height: 1;
 		letter-spacing: 0.03em;
 		text-align: center;
+		padding: 0 44px;
 		background-image: var(--brand-ramp);
 		background-clip: text;
 		-webkit-background-clip: text;
@@ -478,6 +481,8 @@
 	/* Only OVERVIEW is left-aligned; every other page centres its title. */
 	.info-title--left {
 		text-align: left;
+		/* Left-pinned title only needs the right side kept clear of the X. */
+		padding-left: 0;
 	}
 
 	.info-p {
@@ -616,10 +621,12 @@
 		object-fit: contain;
 		flex: 0 0 auto;
 	}
-	/* Five royals share one row, so they run smaller and overlap slightly to stay in the cell. */
+	/* Five royals share one row, so they run smaller and overlap slightly to stay in the cell. Portrait
+	   is narrow, so cap them to the viewport width too — a flat 30px overflowed the symbol column into
+	   the "0.1x" values. (Wide layout re-sizes these by cqh below.) */
 	.pay-img--royal {
-		width: 30px;
-		height: 30px;
+		width: min(30px, 6.2cqw);
+		height: min(30px, 6.2cqw);
 		margin-right: -3px;
 	}
 	.pay-val {
@@ -933,6 +940,8 @@
 			font-size: 6cqh;
 			line-height: 1;
 			margin: 0 0 2.5%;
+			/* Wide layout parks the X outside the frame, so the title reclaims the full width. */
+			padding: 0;
 		}
 		.info-p {
 			font-size: 1.9cqh;
