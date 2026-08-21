@@ -52,6 +52,7 @@ const board = _.range(BOARD_DIMENSIONS.x).map((reelIndex) => {
 	const reel = createReelForSpinning({
 		reelIndex,
 		symbolHeight: CELL_H,
+		skipSuperTurboSlideWhenPreSpinning: true,
 		initialSymbols: INITIAL_BOARD[reelIndex],
 		initialSymbolState: INITIAL_SYMBOL_STATE,
 		onReelStopping: () => {

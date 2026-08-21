@@ -33,13 +33,17 @@
 
 	let triggerReels = $state<RollerReel[]>([]);
 	let revealedReelCount = $state(0);
-	type RollOutAnchor = { symbolY: () => number; startY: number };
+	type RollOutAnchor = { symbolY: () => number; lastY: number };
 	let rollOutAnchors = $state(new Map<number, RollOutAnchor>());
+	let rollOutOffsets = $state(new Map<number, number>());
 	let phase = $state<RollerPhase>('hidden');
 	let presentationOwner = $state<'overlay' | 'board'>('overlay');
 
 	const ROWS = Array.from({ length: BOARD_DIMENSIONS.y }, (_, row) => row);
 	const INTRO_MS = 1990;
+	const SUPER_TURBO_INTRO_FACTOR = 0.2;
+	const introWaitMs = () =>
+		stateBet.isSuperTurbo ? INTRO_MS * SUPER_TURBO_INTRO_FACTOR : INTRO_MS;
 	// Normal mode completes the entire expand/cart/plaque timeline before mounting the next reel.
 	// Fast/turbo bypass this sequence and mount every affected reel in one batch.
 	const REEL_STAGGER_MS = INTRO_MS;
@@ -110,14 +114,38 @@
 
 	const rollOutOffsetY = (roller: RollerReel) => {
 		if (phase !== 'rollingOut') return 0;
-		const anchor = rollOutAnchors.get(roller.reel);
-		return anchor ? anchor.symbolY() - anchor.startY : 0;
+		return rollOutOffsets.get(roller.reel) ?? 0;
+	};
+
+	const sampleRollOutOffsets = () => {
+		const nextOffsets = new Map(rollOutOffsets);
+		for (const roller of triggerReels) {
+			const anchor = rollOutAnchors.get(roller.reel);
+			if (!anchor) continue;
+			const currentY = anchor.symbolY();
+			const deltaY = currentY - anchor.lastY;
+			anchor.lastY = currentY;
+			// Reels recycle their symbol strip by snapping it back above the board. Ignore that negative
+			// reset and accumulate only physical downward travel, otherwise the full-reel overlay jumps
+			// back onscreen and appears again as a padding symbol on the following spin.
+			if (deltaY > 0) {
+				nextOffsets.set(
+					roller.reel,
+					Math.min(
+						CELL_H * BOARD_DIMENSIONS.y,
+						(nextOffsets.get(roller.reel) ?? 0) + deltaY,
+					),
+				);
+			}
+		}
+		rollOutOffsets = nextOffsets;
 	};
 
 	const waitForRollOut = () =>
 		new Promise<void>((resolve) => {
 			const deadline = performance.now() + 3000;
 			const check = (now: number) => {
+				sampleRollOutOffsets();
 				const allOutside = triggerReels.every(
 					(roller) => rollOutOffsetY(roller) >= CELL_H * BOARD_DIMENSIONS.y,
 				);
@@ -163,6 +191,7 @@
 			triggerReels = [...event.reels].sort((left, right) => left.reel - right.reel);
 			revealedReelCount = 0;
 			rollOutAnchors = new Map();
+			rollOutOffsets = new Map();
 			presentationOwner = 'overlay';
 			phase = 'ready';
 
@@ -175,7 +204,7 @@
 				showFinalPresentation();
 				return;
 			}
-			if (!(await runOrSkip(waitForTimeout(INTRO_MS)))) {
+			if (!(await runOrSkip(waitForTimeout(introWaitMs())))) {
 				showFinalPresentation();
 				return;
 			}
@@ -187,6 +216,7 @@
 			triggerReels = [];
 			revealedReelCount = 0;
 			rollOutAnchors = new Map();
+			rollOutOffsets = new Map();
 			presentationOwner = 'overlay';
 			phase = 'hidden';
 			context.stateGame.rollerClearedCells = [];
@@ -200,18 +230,20 @@
 					const symbol =
 						context.stateGame.board[roller.reel]?.reelState.symbols[roller.triggerRow + 1];
 					if (!symbol) return [];
-					return [[roller.reel, { symbolY: symbol.symbolY, startY: symbol.symbolY() }] as const];
+					return [[roller.reel, { symbolY: symbol.symbolY, lastY: symbol.symbolY() }] as const];
 				}),
 			);
+			rollOutOffsets = new Map(triggerReels.map((roller) => [roller.reel, 0]));
 			sequenceActive = false;
 			phase = 'rollingOut';
-			// Reveal the live reel below the departing feature. Each full-reel overlay now rides the exact
-			// same transform as the symbols under it instead of running a separate global tween.
+			// Reveal the live reel below the departing feature. Accumulated downward reel travel keeps the
+			// overlay synced while filtering out the padding strip's instantaneous wrap back to the top.
 			context.stateGame.rollerClearedCells = [];
 			await waitForRollOut();
 			triggerReels = [];
 			revealedReelCount = 0;
 			rollOutAnchors = new Map();
+			rollOutOffsets = new Map();
 			presentationOwner = 'overlay';
 			phase = 'hidden';
 		},

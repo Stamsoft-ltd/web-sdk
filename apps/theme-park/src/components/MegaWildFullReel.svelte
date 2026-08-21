@@ -11,6 +11,7 @@
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { onMount, untrack } from 'svelte';
+	import { stateBet } from 'state-shared';
 
 	import { getContext } from '../game/context';
 	import { BOARD_SIZES, CELL_H, CELL_W } from '../game/constants';
@@ -39,7 +40,16 @@
 	const fakeLabel = $derived(`${props.fakeMultiplier ?? props.multiplier}X`);
 	// Another 30% slower than the previous 1 / 1.3 pass.
 	const INTRO_TIME_SCALE = 0.7 / 1.3;
+	// Turbo keeps the former shared turbo/super-turbo playback. Super turbo compresses the complete
+	// expansion + cart/plaque pass to 20% of that duration instead of deleting the animation.
+	const SUPER_TURBO_INTRO_FACTOR = 0.2;
+	const introTimeScale = $derived(
+		stateBet.isSuperTurbo ? INTRO_TIME_SCALE / SUPER_TURBO_INTRO_FACTOR : INTRO_TIME_SCALE,
+	);
 	const EXPAND_MS = 338;
+	const expandMs = $derived(
+		stateBet.isSuperTurbo ? EXPAND_MS * SUPER_TURBO_INTRO_FACTOR : EXPAND_MS,
+	);
 	// Exact grid-line-to-grid-line width. The shared rounded board mask and top border contain edge
 	// reels; per-reel shrinking made reels 1/5 look off-centre and changed the authored proportions.
 	const REEL_RENDER_WIDTH = CELL_W;
@@ -79,8 +89,8 @@
 	onMount(() => {
 		if (animationName !== 'intro') return;
 		void Promise.all([
-			revealScaleY.set(1, { duration: EXPAND_MS, easing: cubicOut }),
-			revealOffsetY.set(0, { duration: EXPAND_MS, easing: cubicOut }),
+			revealScaleY.set(1, { duration: expandMs, easing: cubicOut }),
+			revealOffsetY.set(0, { duration: expandMs, easing: cubicOut }),
 		]);
 	});
 </script>
@@ -112,7 +122,7 @@
 					trackIndex={0}
 					animationName={spineAnimationName}
 					loop={animationName !== 'intro'}
-					timeScale={animationName === 'intro' ? INTRO_TIME_SCALE : 1}
+					timeScale={animationName === 'intro' ? introTimeScale : 1}
 				/>
 				{#if animationName === 'idle'}
 					<SpineBone boneName="plaque" scaleX={plaquePulse} scaleY={plaquePulse} />

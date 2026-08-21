@@ -74,7 +74,11 @@ type ReelCreateOptions<TRawSymbol extends object, TSymbolState extends string> =
 export type SpinningReelCreateOptions<
 	TRawSymbol extends object,
 	TSymbolState extends string,
-> = ReelCreateOptions<TRawSymbol, TSymbolState>;
+> = ReelCreateOptions<TRawSymbol, TSymbolState> & {
+	// Opt-in for games where super turbo should settle an already-running pre-spin exactly like
+	// turbo. Default false preserves older games that intentionally play one final fast strip.
+	skipSuperTurboSlideWhenPreSpinning?: boolean;
+};
 
 export type CascadingReelCreateOptions<
 	TRawSymbol extends object,

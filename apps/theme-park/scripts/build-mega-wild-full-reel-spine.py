@@ -7,12 +7,19 @@ import json
 import math
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter, ImageOps
+from PIL import Image, ImageOps
 
 
 APP = Path(__file__).resolve().parents[1]
 ART = APP / "art" / "concepts"
-FULL_REEL_SOURCE = ART / "mega-wild-full-reel-background-no-plaque-v2.png"
+CLEAN_SOURCE = (
+    APP
+    / "source-assets-unused"
+    / "assets"
+    / "theme-park"
+    / "mega-wild-clean"
+)
+FULL_REEL_SOURCE = CLEAN_SOURCE / "track-clean.png"
 PLAQUE_SOURCE = ART / "mega-wild-plaque-standalone-v1.png"
 PLAQUE_TOP_35_SOURCE = ART / "mega-wild-plaque-top-35-v1.png"
 PLAQUE_TOP_60_SOURCE = ART / "mega-wild-plaque-top-60-v1.png"
@@ -20,18 +27,15 @@ PLAQUE_TOP_SIDE_SOURCE = ART / "mega-wild-plaque-top-side-v1.png"
 PLAQUE_BOTTOM_35_SOURCE = ART / "mega-wild-plaque-bottom-35-v1.png"
 PLAQUE_BOTTOM_60_SOURCE = ART / "mega-wild-plaque-bottom-60-v1.png"
 PLAQUE_BOTTOM_SIDE_SOURCE = ART / "mega-wild-plaque-bottom-side-v1.png"
-CART_SOURCE = ART / "mega-wild-cart-plaque-rest-v1-transparent.png"
-CART_STEEP_SOURCE = ART / "mega-wild-cart-semi-vertical-v1.png"
-CART_HIGH_MID_SOURCE = ART / "mega-wild-cart-high-mid-v1.png"
-CART_MID_SOURCE = ART / "mega-wild-cart-mid-pitch-v1.png"
-CART_LOW_MID_SOURCE = ART / "mega-wild-cart-low-mid-v1.png"
+CART_SOURCE = CLEAN_SOURCE / "cart-flat.png"
+CART_STEEP_SOURCE = CLEAN_SOURCE / "cart-steep.png"
+CART_HIGH_MID_SOURCE = CLEAN_SOURCE / "cart-high-mid.png"
+CART_MID_SOURCE = CLEAN_SOURCE / "cart-mid.png"
+CART_LOW_MID_SOURCE = CLEAN_SOURCE / "cart-low-mid.png"
 OUTPUT = APP / "static" / "assets" / "spines" / "megaWildFullReel"
 NAME = "mega_wild_full_reel"
 WIDTH = 256
 HEIGHT = 824
-# Generated source canvas is not compositionally centred: the arch, rails and track share an axis
-# about 24 source pixels left of the bitmap midpoint. Crop around that visual axis, not the canvas.
-BACKGROUND_CENTERING_X = 0.37
 PAGE_WIDTH = 1024
 FRAME_COUNT = 64
 PLAQUE_POSE_COUNT = 128
@@ -45,15 +49,14 @@ ROLL_END_FRAME = 42
 ROLL_FLIPS_FAKE_START = 5
 ROLL_FLIPS_REAL_START = 4
 PLAQUE_EDGE_SCALE = 0.24
-CART_CROP_BOTTOM = 970
-CART_LAYER_SIZE = (194, 245)
-CART_START_SCALE = 0.58
+CART_LAYER_SIZE = (220, 329)
+CART_START_SCALE = 0.5
 CART_VIEWS = ("steep", "high_mid", "mid", "low_mid", "flat")
 CART_VIEW_TRANSITIONS = ((8, 12), (12, 16), (16, 20), (20, 24))
-CART_Y = -205
+CART_Y = -183
 PLAQUE_Y = 0
-# End on the flat bottom track. With the clean cart's visible 215px height, -112 puts its bottom at
-# about -410 inside the -412 rig edge instead of stopping early on the incline.
+# End on the flat bottom track. The aligned transparent cart canvases share one baseline; this
+# position places that baseline at the reel edge without changing size between authored views.
 RIDE_END_Y = -112
 
 
@@ -76,33 +79,19 @@ def contain(image: Image.Image, size: tuple[int, int]) -> Image.Image:
 
 
 def background_layer() -> Image.Image:
-    """Opaque carnival-night reel fill. Prevents board/renderer bars during the duck pass."""
-    return ImageOps.fit(
-        Image.open(FULL_REEL_SOURCE).convert("RGBA"),
-        (WIDTH, HEIGHT),
-        Image.Resampling.LANCZOS,
-        centering=(BACKGROUND_CENTERING_X, 0.5),
+    """Clean opaque reel-sized track. Prevents board/renderer bars during the duck pass."""
+    return Image.open(FULL_REEL_SOURCE).convert("RGBA").resize(
+        (WIDTH, HEIGHT), Image.Resampling.LANCZOS
     )
 
 
 def cart_layer() -> Image.Image:
-    source = trim(Image.open(CART_SOURCE))
-    # The source combines cart + an obsolete plaque. Its gold top jewel starts below row 970.
-    # Crop before it, then retain the prior 194x245 attachment box with transparent bottom padding;
-    # this removes the old ornament without moving or rescaling the visible duck/cart.
-    cart = trim(source.crop((0, 0, source.width, min(source.height, CART_CROP_BOTTOM))))
-    cart = contain(cart, CART_LAYER_SIZE)
-    layer = Image.new("RGBA", CART_LAYER_SIZE)
-    layer.alpha_composite(cart, ((CART_LAYER_SIZE[0] - cart.width) // 2, 0))
-    return layer
+    return cart_perspective_layer(CART_SOURCE)
 
 
 def cart_perspective_layer(source: Path) -> Image.Image:
-    """Place one authored pitch view in the fixed cart attachment box."""
-    cart = contain(trim(Image.open(source)), CART_LAYER_SIZE)
-    layer = Image.new("RGBA", CART_LAYER_SIZE)
-    layer.alpha_composite(cart, ((CART_LAYER_SIZE[0] - cart.width) // 2, 0))
-    return layer
+    """Scale the shared canvases together so view changes cannot resize or shake the cart."""
+    return contain(Image.open(source).convert("RGBA"), CART_LAYER_SIZE)
 
 
 def plaque_layer() -> Image.Image:
@@ -116,13 +105,8 @@ def plaque_side_layer(source: Path) -> Image.Image:
 
 
 def sparkle_layer() -> Image.Image:
-    layer = Image.new("RGBA", (WIDTH, HEIGHT))
-    draw = ImageDraw.Draw(layer)
-    for x, y in ((38, 110), (218, 157), (32, 471), (221, 521), (47, 712), (211, 754)):
-        for radius, alpha in ((13, 15), (8, 32), (4, 126)):
-            draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=(255, 224, 77, alpha))
-        draw.ellipse((x - 2, y - 2, x + 2, y + 2), fill=(255, 255, 220, 255))
-    return layer.filter(ImageFilter.GaussianBlur(0.55))
+    # Retain the slot for backwards-compatible Spine layout, but remove the six side glows.
+    return Image.new("RGBA", (WIDTH, HEIGHT))
 
 
 def pack_atlas(layers: dict[str, Image.Image]) -> tuple[Image.Image, dict[str, tuple[int, int]]]:
@@ -502,7 +486,7 @@ def main() -> None:
     }
     skeleton = {
         "skeleton": {
-            "hash": "theme-park-mega-wild-v22-seeded-start-face",
+            "hash": "theme-park-mega-wild-v26-reference-cart",
             "spine": "4.2.0",
             "x": -WIDTH / 2,
             "y": -HEIGHT / 2,

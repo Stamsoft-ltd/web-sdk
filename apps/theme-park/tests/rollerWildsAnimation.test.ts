@@ -85,6 +85,8 @@ describe('Roller Wild Mega Wild animation contract', () => {
 		const game = readSource('components/Game.svelte');
 
 		expect(overlay).toContain('const INTRO_MS = 1990');
+		expect(overlay).toContain('const SUPER_TURBO_INTRO_FACTOR = 0.2');
+		expect(overlay).toContain('waitForTimeout(introWaitMs())');
 		expect(overlay).toContain('<MegaWildFullReel');
 		expect(overlay).toContain('multiplier={roller.multiplier}');
 		expect(overlay).toContain("animationName={phase === 'revealing' ? 'intro' : 'idle'}");
@@ -170,8 +172,15 @@ describe('Roller Wild Mega Wild animation contract', () => {
 		expect(overlay).toContain('multiplier={roller.multiplier}');
 		expect(overlay).toContain("animationName={phase === 'revealing' ? 'intro' : 'idle'}");
 		expect(overlay).toContain("type: 'rollerWildsRollOut'");
-		expect(overlay).toContain('type RollOutAnchor = { symbolY: () => number; startY: number }');
-		expect(overlay).toContain('anchor.symbolY() - anchor.startY');
+		expect(overlay).toContain('type RollOutAnchor = { symbolY: () => number; lastY: number }');
+		expect(overlay).toContain('let rollOutOffsets = $state(new Map<number, number>())');
+		expect(overlay).toContain('const deltaY = currentY - anchor.lastY');
+		expect(overlay).toContain('if (deltaY > 0)');
+		expect(overlay).toContain('(nextOffsets.get(roller.reel) ?? 0) + deltaY');
+		expect(overlay).not.toContain('anchor.symbolY() - anchor.startY');
+		expect(overlay).not.toMatch(
+			/rollerWildsRollOut:[\s\S]*if \(stateBet\.isTurbo \|\| stateBet\.isSuperTurbo\)[\s\S]*phase = 'hidden'/,
+		);
 		expect(overlay).toContain('y={rollOutOffsetY(roller)}');
 		expect(overlay).not.toContain('rollOutY');
 		expect(overlay).toContain('setClearedReels(triggerReels.slice(0, index + 1))');

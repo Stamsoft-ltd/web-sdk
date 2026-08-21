@@ -1435,7 +1435,7 @@ assert.deepEqual(
 );
 assert.equal(
 	megaWildSpine.skeleton.hash,
-	'theme-park-mega-wild-v22-seeded-start-face',
+	'theme-park-mega-wild-v26-reference-cart',
 	'Combined Mega Wild rig revision',
 );
 assert.equal(

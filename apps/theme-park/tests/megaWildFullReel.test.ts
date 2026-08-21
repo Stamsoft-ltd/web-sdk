@@ -31,7 +31,9 @@ const readableFaceSequence = (animation: typeof skeleton.animations.intro) => {
 
 describe('Duck Power Ride full-reel Mega Wild', () => {
 	it('exports a 64-frame intro with a dense seven-view plaque roll', () => {
-		expect(skeleton.skeleton.hash).toBe('theme-park-mega-wild-v22-seeded-start-face');
+		expect(skeleton.skeleton.hash).toBe(
+			'theme-park-mega-wild-v26-reference-cart',
+		);
 		expect(skeleton.skeleton.spine).toBe('4.2.0');
 		expect(skeleton.skeleton.width).toBe(256);
 		expect(skeleton.skeleton.height).toBe(824);
@@ -53,9 +55,9 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(skeleton.animations.intro.bones.ride.translate[23].y).toBeGreaterThan(0);
 		expect(skeleton.animations.intro.bones.ride.translate[24].y).toBe(0);
 		expect(skeleton.bones.find((bone: { name: string }) => bone.name === 'ride').y).toBe(-112);
-		expect(skeleton.bones.find((bone: { name: string }) => bone.name === 'cart').y).toBe(-205);
+		expect(skeleton.bones.find((bone: { name: string }) => bone.name === 'cart').y).toBe(-183);
 		expect(skeleton.animations.intro.bones.cart.scale).toHaveLength(64);
-		expect(skeleton.animations.intro.bones.cart.scale[0].x).toBe(0.58);
+		expect(skeleton.animations.intro.bones.cart.scale[0].x).toBe(0.5);
 		expect(skeleton.animations.intro.bones.cart.scale.at(-1).x).toBe(1);
 		expect(readableFaceSequence(skeleton.animations.intro)).toEqual([
 			'fake',
@@ -167,9 +169,9 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		);
 
 		expect(atlas).toContain('\nbackground\n');
-		expect(builder).toContain('mega-wild-full-reel-background-no-plaque-v2.png');
-		expect(builder).toContain('BACKGROUND_CENTERING_X = 0.37');
-		expect(builder).toContain('centering=(BACKGROUND_CENTERING_X, 0.5)');
+		expect(builder).toContain('mega-wild-clean');
+		expect(builder).toContain('track-clean.png');
+		expect(builder).not.toContain('BACKGROUND_CENTERING_X');
 		expect(builder).toContain('fallback.alpha_composite(layers["background"])');
 		expect(builder).toContain('mega-wild-plaque-standalone-v1.png');
 		expect(builder).toContain('mega-wild-plaque-top-35-v1.png');
@@ -187,13 +189,14 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(builder).toContain('face_is_real = plaque_face_is_real(');
 		expect(builder).not.toContain('VALUE_SWAP_FRAME');
 		expect(builder).toContain('SLIDE_END_FRAME = 24');
-		expect(builder).toContain('CART_CROP_BOTTOM = 970');
-		expect(builder).toContain('CART_LAYER_SIZE = (194, 245)');
-		expect(builder).toContain('mega-wild-cart-semi-vertical-v1.png');
-		expect(builder).toContain('mega-wild-cart-high-mid-v1.png');
-		expect(builder).toContain('mega-wild-cart-mid-pitch-v1.png');
-		expect(builder).toContain('mega-wild-cart-low-mid-v1.png');
-		expect(builder).toContain('CART_START_SCALE = 0.58');
+		expect(builder).not.toContain('CART_CROP_BOTTOM');
+		expect(builder).toContain('CART_LAYER_SIZE = (220, 329)');
+		expect(builder).toContain('CLEAN_SOURCE / "cart-steep.png"');
+		expect(builder).toContain('CLEAN_SOURCE / "cart-high-mid.png"');
+		expect(builder).toContain('CLEAN_SOURCE / "cart-mid.png"');
+		expect(builder).toContain('CLEAN_SOURCE / "cart-low-mid.png"');
+		expect(builder).toContain('CLEAN_SOURCE / "cart-flat.png"');
+		expect(builder).toContain('CART_START_SCALE = 0.5');
 		expect(builder).toContain('CART_VIEWS = ("steep", "high_mid", "mid", "low_mid", "flat")');
 		expect(builder).toContain('CART_VIEW_TRANSITIONS = ((8, 12), (12, 16), (16, 20), (20, 24))');
 		expect(builder).toContain('RIDE_END_Y = -112');
@@ -224,8 +227,16 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 			"untrack(() => (animationName === 'intro' ? (props.originY ?? 0) - REEL_VERTICAL_OFFSET_Y : 0))",
 		);
 		expect(component).toContain('const INTRO_TIME_SCALE = 0.7 / 1.3');
+		expect(component).toContain('const SUPER_TURBO_INTRO_FACTOR = 0.2');
+		expect(component).toContain(
+			'stateBet.isSuperTurbo ? INTRO_TIME_SCALE / SUPER_TURBO_INTRO_FACTOR : INTRO_TIME_SCALE',
+		);
 		expect(component).toContain('const EXPAND_MS = 338');
-		expect(component).toContain("timeScale={animationName === 'intro' ? INTRO_TIME_SCALE : 1}");
+		expect(component).toContain(
+			'stateBet.isSuperTurbo ? EXPAND_MS * SUPER_TURBO_INTRO_FACTOR : EXPAND_MS',
+		);
+		expect(component).toContain("timeScale={animationName === 'intro' ? introTimeScale : 1}");
+		expect(component).toContain('duration: expandMs');
 		expect(component).toContain('scale={{ x: 1, y: revealScaleY.current }}');
 		expect(overlay).toContain('originY={CELL_H * (roller.triggerRow + 0.5) - REEL_CENTER_Y}');
 	});
@@ -302,7 +313,15 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(overlay).toContain("<Container zIndex={phase === 'settled' ? 0 : 5}>");
 		expect(overlay).toContain("phase = 'revealing'");
 		expect(overlay).toContain("animationName={phase === 'revealing' ? 'intro' : 'idle'}");
-		expect(overlay).toContain('anchor.symbolY() - anchor.startY');
+		expect(overlay).toContain('const deltaY = currentY - anchor.lastY');
+		expect(overlay).toContain('if (deltaY > 0)');
+		expect(overlay).toContain('(nextOffsets.get(roller.reel) ?? 0) + deltaY');
+		expect(overlay).not.toContain('anchor.symbolY() - anchor.startY');
+		expect(overlay).not.toMatch(
+			/rollerWildsRollOut:[\s\S]*if \(stateBet\.isTurbo \|\| stateBet\.isSuperTurbo\)[\s\S]*phase = 'hidden'/,
+		);
+		expect(overlay).toContain('const SUPER_TURBO_INTRO_FACTOR = 0.2');
+		expect(overlay).toContain('waitForTimeout(introWaitMs())');
 		expect(overlay).toContain('y={rollOutOffsetY(roller)}');
 		expect(overlay).not.toContain('rollOutY');
 		expect(overlay).toContain('setClearedReels(triggerReels.slice(0, index + 1))');

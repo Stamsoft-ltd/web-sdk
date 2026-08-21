@@ -40,4 +40,16 @@ describe('Theme Park manual reel stop order', () => {
 		);
 		expect(stopHandler).not.toContain('props.reel.forceStop()');
 	});
+
+	it('does not play a second full reel strip after a Theme Park super-turbo pre-spin', () => {
+		const stateGame = appSource('src/game/stateGame.svelte.ts');
+		const spinningReel = sharedSource('packages/utils-slots/src/createReelForSpinning.svelte.ts');
+		const reelTypes = sharedSource('packages/utils-slots/src/types.ts');
+		expect(stateGame).toContain('skipSuperTurboSlideWhenPreSpinning: true');
+		expect(reelTypes).toContain('skipSuperTurboSlideWhenPreSpinning?: boolean');
+		expect(spinningReel).toContain(
+			'const skipSlide = isSpinning && reelOptions.skipSuperTurboSlideWhenPreSpinning',
+		);
+		expect(spinningReel).toContain('if (!skipSlide) await slideDown()');
+	});
 });

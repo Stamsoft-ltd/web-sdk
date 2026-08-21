@@ -252,7 +252,10 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 		// A: When it's preSpinning(isSpinning) and stop button is clicked(isTurbo) and is noStop is false
 		let forcedStopMode: ForcedStopMode | null = null;
 		if (stateBet.isSuperTurbo) {
-			await slideDown();
+			// Theme Park super turbo already has a live pre-spin strip. Settle its prepared target now,
+			// matching turbo instead of playing another complete fast strip after the reveal arrives.
+			const skipSlide = isSpinning && reelOptions.skipSuperTurboSlideWhenPreSpinning;
+			if (!skipSlide) await slideDown();
 		} else if (noStop) {
 			// noStop reels are normally un-interruptible but can be force-stopped via forceStop().
 			const forcePromise = new Promise<void>((resolve) => {
