@@ -77,14 +77,14 @@ export default {
 	'BET MODE ANTE BUTTON': 'ATIVAR',
 	'BET MODE ANTE TICKER IDLE': 'RECURSO EXTRA ATIVO',
 	'BET MODE ANTE TICKER SPIN': 'BOA SORTE',
-	'BET MODE FSPIN1 TITLE': 'DUCK COLLECT SPIN',
+	'BET MODE FSPIN1 TITLE': 'DUCK COLLECT GIRO',
 	'BET MODE FSPIN1 DIALOG':
 		'Uma rodada paga com pelo menos 1 pato coletado. Até 25 patos podem pousar.',
 	'BET MODE FSPIN1 DESCRIPTION': 'Coleta de pato garantida para aposta de 20x.',
 	'BET MODE FSPIN1 BUTTON': 'ATIVAR',
 	'BET MODE FSPIN1 TICKER IDLE': 'FAÇA SUA APOSTA',
 	'BET MODE FSPIN1 TICKER SPIN': 'DUCK COLLECT',
-	'BET MODE FSPIN2 TITLE': 'ROLLER WILDS SPIN',
+	'BET MODE FSPIN2 TITLE': 'ROLLER WILDS GIRO',
 	'BET MODE FSPIN2 DIALOG':
 		'Uma rodada paga com pelo menos um rolo wild. As placas multiplicadoras podem pousar em qualquer linha e serem adicionadas aos rolos selvagens.',
 	'BET MODE FSPIN2 DESCRIPTION': 'Giro garantido de roller wilds para aposta de 60x.',

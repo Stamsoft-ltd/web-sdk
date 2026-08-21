@@ -84,3 +84,34 @@ export function fitFont(node: HTMLElement, _dep?: unknown) {
 	}
 	return { update: schedule, destroy: () => ro.disconnect() };
 }
+
+// Shrink FONT-SIZE until the wrapping text fits its own fixed-height box, so a long translation shows
+// in full instead of being line-clamped/clipped. Iterative because line count drops non-linearly as
+// the font shrinks; capped by a step count and a floor so it can't loop or vanish. Scales DOWN only —
+// English (which already fits) is untouched.
+export function fitHeight(node: HTMLElement, _dep?: unknown) {
+	void _dep;
+	const fit = () => {
+		node.style.removeProperty('font-size');
+		node.style.removeProperty('line-height');
+		if (node.clientHeight <= 0) return;
+		const cs = getComputedStyle(node);
+		let size = parseFloat(cs.fontSize);
+		// Scale line-height WITH the font (the authored line-height is a fixed px, so without this the
+		// lines stay tall and the text never packs into fewer rows however small the glyphs get).
+		const lhRatio = parseFloat(cs.lineHeight) / size || 1.2;
+		for (let i = 0; i < 18 && node.scrollHeight > node.clientHeight + 1 && size > 4; i += 1) {
+			size *= 0.94;
+			node.style.fontSize = `${size}px`;
+			node.style.lineHeight = `${size * lhRatio}px`;
+		}
+	};
+	const schedule = () => requestAnimationFrame(fit);
+	const ro = new ResizeObserver(schedule);
+	ro.observe(node);
+	schedule();
+	if (typeof document !== 'undefined' && document.fonts?.ready) {
+		document.fonts.ready.then(schedule).catch(() => {});
+	}
+	return { update: schedule, destroy: () => ro.disconnect() };
+}

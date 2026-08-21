@@ -77,14 +77,14 @@ export default {
 	'BET MODE ANTE BUTTON': 'ACTIVER',
 	'BET MODE ANTE TICKER IDLE': 'FONCTION SUPPLÉMENTAIRE ACTIVE',
 	'BET MODE ANTE TICKER SPIN': 'BONNE CHANCE',
-	'BET MODE FSPIN1 TITLE': 'DUCK COLLECT SPIN',
+	'BET MODE FSPIN1 TITLE': 'DUCK COLLECT TOUR',
 	'BET MODE FSPIN1 DIALOG':
 		"Un tour payant avec au moins 1 canard collecté. Jusqu'à 25 canards peuvent atterrir.",
 	'BET MODE FSPIN1 DESCRIPTION': 'Collecte de canard garantie pour une mise de 20x.',
 	'BET MODE FSPIN1 BUTTON': 'ACTIVER',
 	'BET MODE FSPIN1 TICKER IDLE': 'FAITES VOTRE PARI',
 	'BET MODE FSPIN1 TICKER SPIN': 'DUCK COLLECT',
-	'BET MODE FSPIN2 TITLE': 'ROLLER WILDS SPIN',
+	'BET MODE FSPIN2 TITLE': 'ROLLER WILDS TOUR',
 	'BET MODE FSPIN2 DIALOG':
 		'Un tour payant avec au moins un rouleau sauvage. Les plaques multiplicateurs peuvent atterrir sur n’importe quelle rangée et s’ajouter sur les rouleaux sauvages.',
 	'BET MODE FSPIN2 DESCRIPTION': 'Spin Roller Wilds garanti pour une mise de 60x.',

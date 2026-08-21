@@ -105,7 +105,7 @@ export default {
 		'Купите бонус Roller Wilds (10 бесплатных вращений) за ставку 200х.',
 	'BET MODE ROLLER BUTTON': 'КУПИТЬ',
 	'BET MODE ROLLER TICKER IDLE': 'СДЕЛАЙТЕ СТАВКУ',
-	'BET MODE ROLLER TICKER SPIN': 'ЗЗРОЛЛЕРВИЛДСЗЗ АКТИВ',
+	'BET MODE ROLLER TICKER SPIN': 'ROLLER WILDS АКТИВ',
 	'BET MODE COASTER TITLE': 'MEGA COASTER',
 	'BET MODE COASTER DIALOG':
 		'Установка Coaster включает постоянные символы множителя, а затем 10 бесплатных вращений. Повторные попадания удваивают размер плитки до x1024.',

@@ -38,6 +38,7 @@
 	import { stateBet } from 'state-shared';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { templateStakeDerived } from '../state/templateStake.svelte';
+	import { fitFont } from '../lib/fitLabel';
 	import InfoBorderLights from './InfoBorderLights.svelte';
 
 	const t = (key: string) => i18nDerived.translate(key);
@@ -187,7 +188,7 @@
 
 		<div class="info-body">
 			{#if page === 0}
-				<h2 class="info-title info-title--left">{t('INFO PAGE OVERVIEW')}</h2>
+				<h2 class="info-title info-title--left" use:fitFont={t('INFO PAGE OVERVIEW')}>{t('INFO PAGE OVERVIEW')}</h2>
 				<div class="ov">
 					<div class="ov-col ov-desc">
 						<p class="info-p">
@@ -226,7 +227,7 @@
 					</div>
 				</div>
 			{:else if page === 1}
-				<h2 class="info-title">{t('PAYTABLE')}</h2>
+				<h2 class="info-title" use:fitFont={t('PAYTABLE')}>{t('PAYTABLE')}</h2>
 				<div class="pay">
 					<div class="pay-head">
 						<span class="pay-head__sym">{t('INFO PAY SYMBOL')}</span>
@@ -255,7 +256,7 @@
 					{/each}
 				</div>
 			{:else if page === 2}
-				<h2 class="info-title">{t('INFO PAGE FEATURES')}</h2>
+				<h2 class="info-title" use:fitFont={t('INFO PAGE FEATURES')}>{t('INFO PAGE FEATURES')}</h2>
 				<div class="feat-grid">
 					{#each SPIN_BUYS as f (f.name)}
 						<div class="card feat-card">
@@ -272,7 +273,7 @@
 					{/each}
 				</div>
 			{:else if page === 3}
-				<h2 class="info-title">{t('INFO PAGE WAYS TO WIN')}</h2>
+				<h2 class="info-title" use:fitFont={t('INFO PAGE WAYS TO WIN')}>{t('INFO PAGE WAYS TO WIN')}</h2>
 				<div class="wtw">
 					<p class="info-p">
 						{t('INFO WTW LINES')}
@@ -294,7 +295,7 @@
 					</p>
 				</div>
 			{:else if page === 4}
-				<h2 class="info-title">{t('INFO PAGE FEATURE BUY')}</h2>
+				<h2 class="info-title" use:fitFont={t('INFO PAGE FEATURE BUY')}>{t('INFO PAGE FEATURE BUY')}</h2>
 				<div class="feat-grid">
 					{#each SPIN_BUYS as f (f.name)}
 						<div class="card feat-card">
@@ -319,7 +320,7 @@
 					{/each}
 				</div>
 			{:else if page === 5}
-				<h2 class="info-title">{t('INFO PAGE GENERAL INFO')}</h2>
+				<h2 class="info-title" use:fitFont={t('INFO PAGE GENERAL INFO')}>{t('INFO PAGE GENERAL INFO')}</h2>
 				<div class="gi">
 					<div class="card gi-card gi-card--sm">
 						<img class="gi-ic" src={icInterrupted} alt="" />
@@ -336,7 +337,7 @@
 					</div>
 				</div>
 			{:else}
-				<h2 class="info-title">{t('INFO PAGE UI GUIDE')}</h2>
+				<h2 class="info-title" use:fitFont={t('INFO PAGE UI GUIDE')}>{t('INFO PAGE UI GUIDE')}</h2>
 				<div class="guide">
 					{#each GUIDE as g (g.name)}
 						<div class="guide-item">
@@ -358,7 +359,7 @@
 									{#if g.auto}<span class="guide-ic__auto">{t('AUTO')}</span>{/if}
 								</span>
 							{/if}
-							<span class="guide-name">{t(g.name)}</span>
+							<span class="guide-name" use:fitFont={t(g.name)}>{t(g.name)}</span>
 							<span class="guide-desc">{t(g.desc)}</span>
 						</div>
 					{/each}
@@ -767,7 +768,11 @@
 	/* --- UI guide --- */
 	.guide {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		/* minmax(0,1fr) — NOT plain 1fr — so a long unbreakable translated name (fi
+		   "AUTOMAATTIKIERROKSET") can't inflate the track's min-content and shove the 3rd
+		   column off-screen / overflow the body sideways. The track stays a fixed third; the
+		   name is fitted to it below. */
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 16px 8px;
 	}
 	.guide-item {
@@ -776,6 +781,7 @@
 		align-items: center;
 		text-align: center;
 		gap: 6px;
+		min-width: 0;
 	}
 	/* One circle for every control, exactly as the design draws it: a hairline magenta ring over a
 	   disc that fades from deep purple at the bottom to black at the top. */
@@ -836,6 +842,11 @@
 		font-weight: 400;
 		font-size: 0.85rem;
 		letter-spacing: 0.03em;
+		/* Fill the cell so fitFont measures the column width (not the shrink-to-content text width)
+		   and can scale a too-long single word down to fit its third. */
+		display: block;
+		width: 100%;
+		max-width: 100%;
 		background-image: var(--brand-ramp);
 		background-clip: text;
 		-webkit-background-clip: text;
@@ -847,6 +858,9 @@
 		font-size: 0.72rem;
 		line-height: 1.3;
 		color: #fff;
+		max-width: 100%;
+		/* A long word in a description (fi "automaattikierrosten") breaks instead of spilling. */
+		overflow-wrap: break-word;
 	}
 
 	/* --- Nav footer --- */
@@ -1135,12 +1149,14 @@
 		.guide {
 			flex: 1 1 auto;
 			min-height: 0;
-			grid-template-columns: repeat(5, 1fr);
+			grid-template-columns: repeat(5, minmax(0, 1fr));
 			gap: 2.7cqh 4%;
 			align-content: center;
-			/* The last row has two items; the design keeps them left-aligned under the first column
-			   rather than centring them. */
-			justify-items: center;
+			/* The last row has two items; grid's default start-packing keeps them under the first
+			   columns (left) — that's the design. Items stretch to their track (was `center`, which
+			   sized each item to its content and let a long fi name spill past the column); content
+			   stays centred via the glyph's flex-centre + text-align. */
+			justify-items: stretch;
 		}
 		.guide-ic {
 			width: 7.2cqh;

@@ -77,14 +77,14 @@ export default {
 	'BET MODE ANTE BUTTON': 'AKTYWUJ',
 	'BET MODE ANTE TICKER IDLE': 'AKTYWNE FUNKCJE DODATKOWE',
 	'BET MODE ANTE TICKER SPIN': 'Powodzenia',
-	'BET MODE FSPIN1 TITLE': 'DUCK COLLECT SPIN',
+	'BET MODE FSPIN1 TITLE': 'DUCK COLLECT OBRÓT',
 	'BET MODE FSPIN1 DIALOG':
 		'Jeden płatny spin z co najmniej 1 zebraniem kaczki. Może wylądować do 25 kaczek.',
 	'BET MODE FSPIN1 DESCRIPTION': 'Gwarantowane zbieranie kaczek za zakład 20x.',
 	'BET MODE FSPIN1 BUTTON': 'AKTYWUJ',
 	'BET MODE FSPIN1 TICKER IDLE': 'POSTAW SWOJĄ ZAKŁAD',
 	'BET MODE FSPIN1 TICKER SPIN': 'DUCK COLLECT',
-	'BET MODE FSPIN2 TITLE': 'ROLLER WILDS SPIN',
+	'BET MODE FSPIN2 TITLE': 'ROLLER WILDS OBRÓT',
 	'BET MODE FSPIN2 DIALOG':
 		'Jeden płatny spin z co najmniej jednym rolkowym dzikim bębnem. Płytki mnożące mogą wylądować w dowolnym rzędzie i sumować się na dzikich bębnach.',
 	'BET MODE FSPIN2 DESCRIPTION': 'Gwarantowany obrót Wilds Roller dla zakładu 60x.',

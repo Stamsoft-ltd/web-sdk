@@ -77,7 +77,7 @@ export default {
 	'BET MODE ANTE BUTTON': 'ETKİNLEŞTİR',
 	'BET MODE ANTE TICKER IDLE': 'EKSTRA ÖZELLİK AKTİF',
 	'BET MODE ANTE TICKER SPIN': 'İYİ ŞANSLAR',
-	'BET MODE FSPIN1 TITLE': 'DUCK COLLECT SPIN',
+	'BET MODE FSPIN1 TITLE': 'DUCK COLLECT DÖNÜŞ',
 	'BET MODE FSPIN1 DIALOG':
 		'En az 1 toplama ördeği içeren bir ücretli dönüş. En fazla 25 ördek konabilir.',
 	'BET MODE FSPIN1 DESCRIPTION': '20x bahis karşılığında garantili ördek toplama.',
