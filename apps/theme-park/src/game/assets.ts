@@ -4,10 +4,14 @@ import type { Assets } from 'pixi-svelte';
 
 const assets: Assets = {
 	// === BACKGROUND ===
-	// Depth-of-field plaza art: the same scene as the old background.webp, blurred so the reels read
-	// against it. It replaces both that still and the animations/background/base.mp4 loop, which was
-	// the sharp cut and would have painted straight over this one once its deferred load landed.
-	background: { type: 'sprite', src: './assets/theme-park/v2/background-blur.webp' },
+	// The daylight park plaza (Figma 7051:2111), drawn flat to match the symbol set. It ships SHARP,
+	// where the dusk art it replaces had to be blurred to stop its detail fighting the reels: the
+	// middle of this scene is an empty orange path, so there is nothing behind the board to read
+	// through. Cut by scripts/background/build_background.py.
+	background: { type: 'sprite', src: './assets/theme-park/v2/park/plaza.webp' },
+	// The house is its own node in the design and its own sprite here, laid over the smaller one the
+	// plaza has painted into that corner, so <ParkHouse> can light its bulbs and its windows.
+	parkHouse: { type: 'sprite', src: './assets/theme-park/v2/park/house.webp' },
 	// Drifting sky, drawn by <Clouds>. A random subset renders per page load, so all five have to be
 	// loaded — they total ~23 kB, less than a single symbol.
 	cloud1: { type: 'sprite', src: './assets/theme-park/v2/clouds/cloud1.webp' },
@@ -15,42 +19,35 @@ const assets: Assets = {
 	cloud3: { type: 'sprite', src: './assets/theme-park/v2/clouds/cloud3.webp' },
 	cloud4: { type: 'sprite', src: './assets/theme-park/v2/clouds/cloud4.webp' },
 	cloud5: { type: 'sprite', src: './assets/theme-park/v2/clouds/cloud5.webp' },
-	// One of these drifts up through the sky between spins — see <EscapedBalloon>. Only ever one is
-	// on screen, but the colour is re-rolled per flight, so all five have to be here; they total
-	// ~12 kB. Cut from the h3 symbol by scripts/build-escaped-balloon.py.
-	balloonPink: { type: 'sprite', src: './assets/theme-park/v2/balloon/pink.webp' },
-	balloonOrange: { type: 'sprite', src: './assets/theme-park/v2/balloon/orange.webp' },
-	balloonYellow: { type: 'sprite', src: './assets/theme-park/v2/balloon/yellow.webp' },
-	balloonGreen: { type: 'sprite', src: './assets/theme-park/v2/balloon/green.webp' },
-	balloonBlue: { type: 'sprite', src: './assets/theme-park/v2/balloon/blue.webp' },
-	// The pad carries its own 5x5 grid lines, so <Board> no longer strokes them. New filename rather
-	// than a ?v= on the old one, so a cached board.png cannot survive the swap.
-	themeBoard: { type: 'sprite', src: './assets/theme-park/v2/board-lines.webp' },
-	// Borderless runtime board. Grid and opaque board background stay; all light rails are removed.
-	themeBoardBorderless: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/board-lines-borderless.webp',
-	},
+	// These drift up through the sky between spins — see <EscapedBalloon>. The colour is re-rolled per
+	// flight, so all five have to be here; they total ~30 kB. Cut from the h3 symbol, ribbon and all,
+	// by scripts/build-escaped-balloon.py. `-flat` is a new filename rather than a ?v= on the old one:
+	// these used to be rendered art carrying a baked blur, and a cached copy of that survives the swap
+	// and flies a soft blob over a sharp plaza.
+	balloonPink: { type: 'sprite', src: './assets/theme-park/v2/balloon/pink-flat.webp' },
+	balloonOrange: { type: 'sprite', src: './assets/theme-park/v2/balloon/orange-flat.webp' },
+	balloonYellow: { type: 'sprite', src: './assets/theme-park/v2/balloon/yellow-flat.webp' },
+	balloonGreen: { type: 'sprite', src: './assets/theme-park/v2/balloon/green-flat.webp' },
+	balloonBlue: { type: 'sprite', src: './assets/theme-park/v2/balloon/blue-flat.webp' },
+	// The board, cut from one drawing by scripts/board/build_board_frame.py. The reels are drawn
+	// between these two: the grid goes down under them and the rail goes over them, so no part of the
+	// frame can trim an edge reel or the top of a full-reel feature symbol.
+	//
+	// It replaces a rail of 60 painted bulbs and the table of their centres that drove a chase round
+	// them; this drawing has a continuous neon line instead, and nothing on it is a bulb.
 	themeBoardGrid: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/board-grid-backboard.webp',
+		src: './assets/theme-park/v2/board/frame-grid.webp',
 	},
-	// Opaque purple rail/shadow stays below reel content. The matching expanded asset is lights-only
-	// and stays above it, so neither layer changes or visually trims the equal-cell gameplay rect.
-	themeBoardBorderBackdrop: {
+	themeBoardRail: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/board-border-backdrop.png',
+		src: './assets/theme-park/v2/board/frame-rail.webp',
 	},
-	themeBoardBorderExpanded: {
+	// The lit part of the rail on its own, added back over it to pulse. Keyed off brightness, so it
+	// is the neon line and the lip of the bevel — the dark inner face of the frame stays put.
+	themeBoardRailGlow: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/board-border-expanded.png',
-	},
-	// The autoplay pad: same rect and same grid lines, but a clean neon outline in place of the
-	// bulbs, so the lights running round that outline are the only thing moving on the border.
-	themeBoardAuto: { type: 'sprite', src: './assets/theme-park/v2/board-auto.webp' },
-	themeBoardAutoBorderless: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/board-auto-borderless.webp',
+		src: './assets/theme-park/v2/board/frame-glow.webp',
 	},
 	// One white radial glow, tinted per light. Drawing the lights as sprites rather than as a
 	// Graphics rebuilt every frame is what keeps autoplay at 60fps — the geometry rebuild cost 7ms a
@@ -63,11 +60,74 @@ const assets: Assets = {
 	// into the art, the duck/balloons/popcorn by the board's own win pulse. `-marquee` rather than
 	// `-win`: the filename is the cache key on Stake's CDN, and these replaced art that shipped under
 	// the old names.
-	tpH1: { type: 'sprite', src: './assets/theme-park/v2/symbols/h1-coaster-marquee.png' },
+	// The car assembled and flattened, for the spin trail — and for anywhere the symbol is dimmed,
+	// where drawing it in pieces would be wrong: pixi applies a container's alpha per child, so two
+	// overlapping sprites at alpha 0.35 composite to about 0.58 and the arms would darken where they
+	// cross the car. Built by scripts/coaster/build_coaster.py FROM the same table <CoasterCar>
+	// draws from, so the still and the live symbol cannot drift apart.
+	tpH1: { type: 'sprite', src: './assets/theme-park/v2/symbols/h1-coaster-still.png' },
+	// ...and the pieces (Figma 7093:25555 car, 7093:24248/24249 arms). The car ships with both arms
+	// DOWN and the arms come loose, so the two riders in the back row can wave while the board
+	// idles — the symbol used to be one drawing of a car with its arms already up, which meant a
+	// ride that never moved. The speed arcs are baked into the car: they are not attached to
+	// anything that turns.
+	tpCoasterCar: { type: 'sprite', src: './assets/theme-park/v2/symbols/coaster-car.png' },
+	tpCoasterArmFather: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/symbols/coaster-arm-father.png',
+	},
+	tpCoasterArmMother: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/symbols/coaster-arm-mother.png',
+	},
+	// The duck assembled and flattened. Nothing draws it as the settled symbol — <DuckSymbol> builds
+	// the live one out of the pieces below — but the board's spin trail needs a single sprite to
+	// ghost, and a duck streaking past is not glancing about, so at that moment the two are the same
+	// picture.
 	tpH2: { type: 'sprite', src: './assets/theme-park/v2/symbols/h2-duck-marquee.png' },
+	// ...and the pieces (Figma 7063:17957 body, 7057:8004 wing, 7063:17959 and 7063:17960 irises).
+	// They ship apart because this symbol is a BIRD: the irises sit in eye sockets the body art
+	// leaves empty, so they can glance about while the board is idle, and the left wing beats when
+	// the duck wins. The right wing is drawn into the body and does not come apart.
+	tpDuckBody: { type: 'sprite', src: './assets/theme-park/v2/symbols/duck-body.webp' },
+	tpDuckWing: { type: 'sprite', src: './assets/theme-park/v2/symbols/duck-wing-flank.webp' },
+	tpDuckIrisLeft: { type: 'sprite', src: './assets/theme-park/v2/symbols/duck-iris-left.webp' },
+	tpDuckIrisRight: { type: 'sprite', src: './assets/theme-park/v2/symbols/duck-iris-right.webp' },
+	// The bunch assembled and flattened. Nothing draws it as the settled symbol — <BalloonBunch>
+	// builds the live one out of the four balloons below — but the board's spin trail needs a single
+	// sprite to ghost, and balloons streaking past are not bobbing, so the two are the same picture
+	// at that moment.
 	tpH3: { type: 'sprite', src: './assets/theme-park/v2/symbols/h3-balloons-marquee.png' },
+	// ...and the balloons (Figma 7080:21571 orange, 7080:21572 pink, 7080:21573 blue, 7080:21574
+	// green). Four drawings, six balloons in the bunch: the blue and the orange each hang twice, at
+	// different sizes and angles. They ship apart because they MOVE — nodding on their strings while
+	// the board idles, and letting go and flying when the symbol wins.
+	tpBalloonOrange: { type: 'sprite', src: './assets/theme-park/v2/symbols/balloon-orange.webp' },
+	tpBalloonPink: { type: 'sprite', src: './assets/theme-park/v2/symbols/balloon-pink.webp' },
+	tpBalloonBlue: { type: 'sprite', src: './assets/theme-park/v2/symbols/balloon-blue.webp' },
+	tpBalloonGreen: { type: 'sprite', src: './assets/theme-park/v2/symbols/balloon-green.webp' },
 	tpH4: { type: 'sprite', src: './assets/theme-park/v2/symbols/h4-popcorn-marquee.png' },
+	// The popcorn's loose kernels, apart from the bucket (Figma 7052:7943, 7052:7945 and 7052:7941
+	// next to 7063:17848). They ship separately because they are the part that moves: on a win
+	// <PopcornBurst> throws them out of the heap and lets them fall. Three drawings rather than one,
+	// because the design draws three sizes and a burst of identical kernels reads as a pattern.
+	tpPopcornKernelA: { type: 'sprite', src: './assets/theme-park/v2/symbols/popcorn-kernel-a.webp' },
+	tpPopcornKernelB: { type: 'sprite', src: './assets/theme-park/v2/symbols/popcorn-kernel-b.webp' },
+	tpPopcornKernelC: { type: 'sprite', src: './assets/theme-park/v2/symbols/popcorn-kernel-c.webp' },
+	// The wheel assembled and flattened. Nothing draws it as the symbol — <FerrisWheel> builds the
+	// live one out of the pieces below — but the board's spin trail needs a single sprite to ghost,
+	// and the wheel does not turn mid-spin, so at that moment the two are the same picture.
 	tpH5: { type: 'sprite', src: './assets/theme-park/v2/symbols/h5-ferris-marquee.png' },
+	// ...and the pieces (Figma 7052:7902 rim, 7052:7895 hub, 7052:7904 legs, and the four gondola
+	// colours). They ship apart because the wheel TURNS on a win: the rim spins about the hub and the
+	// gondolas ride round it staying upright, which one flat drawing cannot do.
+	tpWheelRim: { type: 'sprite', src: './assets/theme-park/v2/symbols/wheel-rim.webp' },
+	tpWheelHub: { type: 'sprite', src: './assets/theme-park/v2/symbols/wheel-hub.webp' },
+	tpWheelLegs: { type: 'sprite', src: './assets/theme-park/v2/symbols/wheel-legs.webp' },
+	tpWheelCarBlue: { type: 'sprite', src: './assets/theme-park/v2/symbols/wheel-car-blue.webp' },
+	tpWheelCarPurple: { type: 'sprite', src: './assets/theme-park/v2/symbols/wheel-car-purple.webp' },
+	tpWheelCarGreen: { type: 'sprite', src: './assets/theme-park/v2/symbols/wheel-car-green.webp' },
+	tpWheelCarOrange: { type: 'sprite', src: './assets/theme-park/v2/symbols/wheel-car-orange.webp' },
 	// The gold marquee frame a small win's amount is drawn inside — see <Win>. Same plaque art the
 	// Mega Wild reel carries, so the two read as the same furniture rather than two gold frames.
 	tpSmallWinPlaque: { type: 'sprite', src: './assets/theme-park/v2/wins/small-win-plaque.png' },
@@ -88,6 +148,11 @@ const assets: Assets = {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/wild-mobile-landscape-marquee.png',
 	},
+	// The wild's letter, apart from its plate (Figma 7052:7927 next to 7052:7925). It ships separately
+	// because it is the part that moves: on a win <WildLetter> pops it up from nothing. One asset for
+	// all three layouts — it is drawn at a fraction of whatever size the plate is, so it needs no
+	// per-mode variant the way the plate itself does.
+	tpWildW: { type: 'sprite', src: './assets/theme-park/v2/symbols/wild-w.webp' },
 	tpMegaWildDesktop: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/mega-wild-desktop-marquee.png',
@@ -104,6 +169,10 @@ const assets: Assets = {
 		type: 'sprite',
 		src: './assets/theme-park/v2/symbols/wild-slime.png',
 	},
+	// One cartoon steam cloud (Figma 7057:7989), the companion piece to the Mega Wild's locomotive
+	// plaque: <SymbolSteam> puffs a run of these out of the funnel while the plaque is winning. One
+	// asset rather than a strip, because the puffs differ by scale, drift and fade, not by drawing.
+	tpSteamPuff: { type: 'sprite', src: './assets/theme-park/v2/symbols/steam-puff.webp' },
 
 	// === FEATURE PRESENTERS ===
 	// Full-scene backdrop for the whole Mega Coaster bonus: the blurred night-time coaster POV
@@ -158,6 +227,23 @@ const assets: Assets = {
 		src: './assets/theme-park/v2/animations/features/coaster-car-vomit.webm',
 		defer: true,
 	},
+	// The scatter's two loose wings (Figma 7115:27451 / 7115:27449). They ship apart from the rest of
+	// the symbol so <DuckSign> can beat them on a win; the mode art above them is the same lockup with
+	// these two cut out of it. One size each rather than a set per layout: at 180x159 they are two
+	// fifths of the frame across and about 23KB apiece, so the phone builds would be saving a few
+	// kilobytes for a second pair of files to keep in step. See `duckSignParts.ts` for where they go.
+	//
+	// `-fan` is not decoration: it is what makes a shipped build fetch these at all. The wings these
+	// replace lived at the un-suffixed names, and a cached copy of a blurry gold blob would otherwise
+	// outlive the redraw.
+	tpDuckSignWingLeft: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/symbols/duck-sign-wing-left-fan.png',
+	},
+	tpDuckSignWingRight: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/symbols/duck-sign-wing-right-fan.png',
+	},
 	tpDuckScatterDesktop: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/duck-your-luck-desktop-marquee.png',
@@ -170,37 +256,101 @@ const assets: Assets = {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/duck-your-luck-mobile-landscape-marquee.png',
 	},
+	// ROLLER WILDS ships in two forms and both are needed. `Scatter` is the STILL — every layer
+	// baked into one picture — which is what the board's spin trail ghosts and what a dimmed symbol
+	// falls back to, because pixi fades a container by fading each CHILD and an assembly of
+	// overlapping sprites brightens wherever two of them cross once it is faded. `Sign` is the same
+	// picture with the star and the two words left out, for <RollerWilds> to draw them on live.
+	//
+	// The filenames changed from -marquee to -still with this rebuild, and deliberately: a browser
+	// that had fetched the old art went on serving it, which is how the duck kept a wing it no
+	// longer had through three rebuilds. Renaming is what actually retires a piece of art here.
 	tpRollerScatterDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/roller-wilds-desktop-marquee.png',
+		src: './assets/theme-park/v2/modes/roller-wilds-desktop-still.png',
 	},
 	tpRollerScatterMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/roller-wilds-mobile-marquee.png',
+		src: './assets/theme-park/v2/modes/roller-wilds-mobile-still.png',
 	},
 	tpRollerScatterLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/roller-wilds-mobile-landscape-marquee.png',
+		src: './assets/theme-park/v2/modes/roller-wilds-mobile-landscape-still.png',
 	},
+	tpRollerSignDesktop: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/modes/roller-wilds-desktop-sign.png',
+	},
+	tpRollerSignMobile: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/modes/roller-wilds-mobile-sign.png',
+	},
+	tpRollerSignLandscape: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/modes/roller-wilds-mobile-landscape-sign.png',
+	},
+	// The three loose parts. One size each rather than a set per layout: between them they are a
+	// fifth of the frame, so a second pair of files to keep in step would be saving a few kilobytes.
+	tpRollerStar: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/symbols/roller-wilds-star.png',
+	},
+	tpRollerWordRoller: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/symbols/roller-wilds-word-roller.png',
+	},
+	tpRollerWordWilds: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/symbols/roller-wilds-word-wilds.png',
+	},
+	// MEGA COASTER, the same way round as ROLLER WILDS above: `Scatter` is the whole symbol in one
+	// piece, for the spin trail and for a dimmed cell, and `House` is the pavilion with no sign on
+	// it, for <MegaCoaster> to bolt the live marquee to. New filenames rather than a ?v= on the old
+	// ones, for the reason given up there.
 	tpCoasterScatterDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-coaster-desktop-marquee.png',
+		src: './assets/theme-park/v2/modes/mega-coaster-desktop-still.png',
 	},
 	tpCoasterScatterMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-coaster-mobile-marquee.png',
+		src: './assets/theme-park/v2/modes/mega-coaster-mobile-still.png',
 	},
 	tpCoasterScatterLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-coaster-mobile-landscape-marquee.png',
+		src: './assets/theme-park/v2/modes/mega-coaster-mobile-landscape-still.png',
+	},
+	tpCoasterHouseDesktop: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/modes/mega-coaster-desktop-house.png',
+	},
+	tpCoasterHouseMobile: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/modes/mega-coaster-mobile-house.png',
+	},
+	tpCoasterHouseLandscape: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/modes/mega-coaster-mobile-landscape-house.png',
+	},
+	tpCoasterSign: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/symbols/mega-coaster-sign.png',
+	},
+	tpCoasterWordMega: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/symbols/mega-coaster-word-mega.png',
+	},
+	tpCoasterWordCoaster: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/symbols/mega-coaster-word-coaster.png',
 	},
 
 	// === WIN BOARDS ===
-	// The congratulations screens' marquees: the TALL one for bonus won (Figma 7033:24761) and the
-	// WIDE cloud for bonus complete (7032:19821). Just the frames — the amount well, the medallion
-	// and the gold P that used to be built into this art are gone; <CongratsPanel> draws the well and
-	// puts the bonus's own scatter symbol where the medallion was. Deferred, because these only show
-	// once a bonus has run; until they land the flat `bonusPanel` below holds the place.
+	// The congratulations screens' signs: the TALL marquee for bonus won (Figma 7033:24761, cut by
+	// scripts/congrats/) and, for bonus complete, the shared marquee PAD the big-win cards sit on
+	// (scripts/pad/). Just the frames — the amount well, the medallion and the gold P that used to be
+	// built into this art are gone; <CongratsPanel> draws the well and puts the bonus's own scatter
+	// symbol where the medallion was. Deferred, because these only show once a bonus has run; until
+	// they land the flat `bonusPanel` below holds the place.
 	congratsMarqueeTall: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/popup/congrats/marquee-tall.webp',
@@ -217,8 +367,8 @@ const assets: Assets = {
 	// Figma 6682:5285 — the gift, popcorn and coin pile, without the coaster car the first pass used.
 	bonusPrize: { type: 'sprite', src: './assets/theme-park/v2/wins/bonus-prize-gift.webp' },
 	// The marquee win card (Figma 7013:9117), shipped as the loose pieces <WinCard> animates apart:
-	// the bulb-lit tent plate, one wordmark per tier, the gold star that flies onto each shoulder, and
-	// the confetti fan cut into its fifteen scraps. The scraps are the card's burst AND the falling
+	// the marquee pad, one wordmark per tier, the gold star that flies onto each shoulder, and the
+	// confetti fan cut into its fifteen scraps. The scraps are the card's burst AND the falling
 	// rain behind it (<WinConfettiRain>), so the screen has one vocabulary of paper.
 	//
 	// This replaced the previous card entirely — five flat 1 MB tier cards plus panel/ring/badge/coin
@@ -227,7 +377,7 @@ const assets: Assets = {
 	// Deferred at priority 0, so they are the first thing to stream in once the game is interactive:
 	// there is no flat fallback card any more, and a big win can land within a couple of spins. The
 	// amount plate is drawn rather than loaded, so even a card whose art has not arrived still shows
-	// the number. Placement lives in game/winCardMarquee.ts.
+	// the number. Placement lives in game/winCardMarquee.ts, and the pad's own in game/padMarquee.ts.
 	winMarqueePlate: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/wins/marquee/plate.webp',

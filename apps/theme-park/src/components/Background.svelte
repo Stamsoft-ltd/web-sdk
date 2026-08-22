@@ -5,7 +5,7 @@
 	import { onMount } from 'svelte';
 
 	import { getContext } from '../game/context';
-	import { BACKGROUND_Z, backgroundCover } from '../game/sceneBackground';
+	import { BACKGROUND_Z, COASTER_Z, POND_Z, backgroundCover } from '../game/sceneBackground';
 
 	const context = getContext();
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
@@ -74,7 +74,7 @@
 	/>
 {/if}
 {#if coasterReady && coasterFade.current > 0}
-	<!-- One step above the plaza art, still below the clouds and everything else. -->
+	<!-- Above the plaza and its house, still below the clouds and everything else. -->
 	<Sprite
 		key="coasterBackground"
 		x={canvas.width * 0.5 + driftX}
@@ -83,7 +83,7 @@
 		width={sceneCover.width}
 		height={sceneCover.height}
 		alpha={0.98 * coasterFade.current}
-		zIndex={BACKGROUND_Z + 1}
+		zIndex={COASTER_Z}
 	/>
 {/if}
 {#if pondReady && pondFade.current > 0}
@@ -97,7 +97,7 @@
 		width={sceneCover.width}
 		height={sceneCover.height}
 		alpha={0.98 * pondFade.current}
-		zIndex={BACKGROUND_Z + 2}
+		zIndex={POND_Z}
 	/>
 {/if}
 <Rectangle {...canvas} backgroundColor={0x050407} alpha={0.2} zIndex={BACKGROUND_Z - 2} />

@@ -4,6 +4,10 @@ export default {
 	BET: 'BET',
 	'TOTAL COST': 'TOTAL COST',
 	MODE: 'MODE',
+	// The control bar's feature button, which the redesign (Figma 7033:25229) labels with the
+	// single word. Separate from 'BUY BONUS', which still titles the dialog it opens — there the
+	// verb is the point, and there is room for it.
+	BONUS: 'BONUS',
 	'BUY BONUS': 'BUY BONUS',
 	PAYTABLE: 'PAYTABLE',
 	'GAME RULES': 'GAME RULES',

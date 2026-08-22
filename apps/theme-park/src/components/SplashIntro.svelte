@@ -1,5 +1,6 @@
 <script lang="ts" module>
 	import { ap } from '../lib/preloadArt';
+	import { SPLASH_CLOUDS } from '../game/splashClouds';
 
 	// Splash art, Figma 7027:12708 (2026-08-19 redesign). Every piece is cut by
 	// scripts/splash/build_splash_art.py. The background is shipped at the exposure the design
@@ -14,11 +15,61 @@
 	// only by generation noise (mean 2/255), so the middle one is cut out and drawn three times —
 	// which is also what lets each panel arrive on its own beat.
 	const cardSrc = ap('/assets/theme-park/v2/splash/feature-card.webp');
+	/**
+	 * The park's lamps, cut out of the background into three circuits by
+	 * scripts/splash/build_splash_bulbs.py, so they can be blinked.
+	 *
+	 * They have to be IMAGES rather than positioned dots: `.bg` is `object-fit: cover`, so the box
+	 * the browser gives that element is not the box the picture is painted in and there is no CSS
+	 * unit for the difference. Another image of the same aspect, cover-fit the same way, lands
+	 * exactly on top of it. See the script for why there are three of them and not one.
+	 */
+	const bulbSrcs = [1, 2, 3].map((circuit) =>
+		ap(`/assets/theme-park/v2/splash/bulbs-${circuit}.webp`),
+	);
+	/**
+	 * The drifting clouds, drawn straight over the park.
+	 *
+	 * They used to drift inside a cut-out of the sky, so the coaster and the wheel would occlude
+	 * them. That looked worse than no occlusion at all: the coaster is a lattice, so the cut-out
+	 * combed the cloud into a picket fence of vertical slivers wherever the two met. They are placed
+	 * on open gradient instead, by scripts/splash/build_splash_clouds.py, which is what lets them sit
+	 * on top of everything without ever landing on something they would need cutting around.
+	 */
+	const cloudSrc = (key: string) => ap(`/assets/theme-park/v2/splash/${key}.webp`);
+
+	/**
+	 * Where the clouds are this time round.
+	 *
+	 * A fresh sky on every load. The table gives each cloud a REGION rather than a spot — every point
+	 * of which the builder has already proved clear of the rails, the treeline and the lockup at both
+	 * ends of both of its drifts — so drawing from it freely is safe in a way that jittering a fixed
+	 * position would not be. The two animation delays are drawn too, so the clouds are not merely
+	 * somewhere else, they are also somewhere else in their travel.
+	 *
+	 * They can and do overlap. Four clouds whose combined span is wider than the sky they have to fit
+	 * in cannot all miss each other, and two soft ones on top of each other read as a bank of cloud,
+	 * which is what this stretch of sky wants anyway.
+	 */
+	const between = (lo: number, hi: number) => lo + Math.random() * (hi - lo);
+	const scatter = () =>
+		SPLASH_CLOUDS.map((cloud) => ({
+			cloud,
+			x: between(cloud.xMin, cloud.xMax),
+			y: between(cloud.yMin, cloud.yMax),
+			delay: -Math.random() * cloud.seconds,
+			riseDelay: -Math.random() * cloud.riseSeconds,
+		}));
 </script>
 
 <script lang="ts">
 	import { stateI18nDerived } from 'state-shared';
 	import { innerWidth, innerHeight } from 'svelte/reactivity/window';
+
+	// Drawn once, when the splash mounts, and deliberately NOT reactive: the sky is allowed to be
+	// different every time the game loads, but not to rearrange itself under someone reading the
+	// cards because the window was resized.
+	const clouds = scatter();
 
 	import { fitFont } from '../lib/fitLabel';
 
@@ -122,6 +173,26 @@
 		<div class="stage">
 			<img class="bg" src={bgSrc} alt="" />
 
+			<!-- Landscape only. The portrait splash crops the same art hard to the central path, so a
+			     percentage inside this box would not land where the picture is; the lamp circuits below are
+			     full-frame images and so are correct in both. -->
+			{#each clouds as { cloud, x, y, delay, riseDelay } (cloud.key)}
+				<img
+					class="cloud"
+					style={`left:${x * 100}%;top:${y * 100}%;width:${cloud.width * 100}%;` +
+						`--drift:${(cloud.drift / cloud.width) * 100}%;` +
+						`--rise:${(cloud.rise / cloud.height) * 100}%;` +
+						`animation-duration:${cloud.seconds}s,${cloud.riseSeconds}s;` +
+						`animation-delay:${delay}s,${riseDelay}s`}
+					src={cloudSrc(cloud.key)}
+					alt=""
+				/>
+			{/each}
+
+			{#each bulbSrcs as src, circuit (src)}
+				<img class="bg bulbs" style={`animation-delay:${circuit * -0.9}s`} {src} alt="" />
+			{/each}
+
 			<img class="press-play" src={pressPlaySrc} alt="Press Play" />
 
 			<!-- The cards arrive one at a time, left to right, after the logo has landed. Panel and copy
@@ -168,6 +239,9 @@
 		<!-- PORTRAIT splash: dedicated vertical layout that fills the phone screen. -->
 		<div class="splash-pt">
 			<img class="pt-bg" src={bgSrc} alt="" />
+			{#each bulbSrcs as src, circuit (src)}
+				<img class="pt-bg bulbs" style={`animation-delay:${circuit * -0.9}s`} {src} alt="" />
+			{/each}
 			<div class="pt-scrim"></div>
 			<img class="pt-pp" src={pressPlaySrc} alt="Press Play" />
 			<img class="pt-logo" src={logoSrc} alt={t('GAME TITLE')} />
@@ -272,6 +346,94 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+
+	/*
+	 * Two animations per cloud, on two different periods, and that is the whole reason these read as
+	 * weather rather than as a carousel: sideways on `seconds`, sinking on `riseSeconds`. One period
+	 * would retrace the same line for ever. Two that do not divide into each other never close, so no
+	 * pass is quite like the last one and the four clouds never fall into step with each other.
+	 *
+	 * They are separate CSS properties on purpose — `transform` and `translate` are independent, and
+	 * both composite, so this stays off the layout path. Two animations can't both drive `transform`.
+	 *
+	 * Both amounts are percentages of the CLOUD, not of the frame, because that is what a translate
+	 * percentage resolves against; the table's frame-relative numbers are divided by the cloud's own
+	 * width and height where they are set. Each duration is one full there-and-back, which is why the
+	 * keyframes turn round at 50%.
+	 */
+	.cloud {
+		position: absolute;
+		height: auto;
+		pointer-events: none;
+		animation-name: splash-cloud-x, splash-cloud-y;
+		animation-timing-function: ease-in-out;
+		animation-iteration-count: infinite;
+		will-change: transform, translate;
+	}
+
+	@keyframes splash-cloud-x {
+		0%,
+		100% {
+			transform: translateX(0);
+		}
+		50% {
+			transform: translateX(var(--drift));
+		}
+	}
+
+	@keyframes splash-cloud-y {
+		0%,
+		100% {
+			translate: 0 0;
+		}
+		50% {
+			translate: 0 var(--rise);
+		}
+	}
+
+	/* The clouds stay where they are painted — they are part of the picture, the drift is not. */
+	@media (prefers-reduced-motion: reduce) {
+		.cloud {
+			animation: none;
+		}
+	}
+
+	/*
+	 * The lamps. Each circuit rides on top of the background it was cut from, sharing its class so it
+	 * is laid out and cropped identically — that is the whole reason this works.
+	 *
+	 * `screen` and not plain alpha: these are LIGHT. Screened, a circuit at low opacity leaves the
+	 * lamp looking exactly as the artist painted it and can only ever brighten from there, so the
+	 * bottom of the breath is the artwork rather than a grey wash over it.
+	 *
+	 * The three peak 0.9s apart on a 2.7s cycle, which is one full turn of the chase per cycle. Slow
+	 * enough to be a park at dusk rather than a fruit machine.
+	 */
+	.bulbs {
+		mix-blend-mode: screen;
+		pointer-events: none;
+		animation: splash-bulbs 2.7s ease-in-out infinite;
+		will-change: opacity;
+	}
+
+	@keyframes splash-bulbs {
+		0%,
+		100% {
+			opacity: 0.18;
+		}
+		50% {
+			opacity: 1;
+		}
+	}
+
+	/* Still lit, just not blinking: the park with the lights on is the picture, the chase is the
+	   flourish. Held at the middle of the breath rather than at either end. */
+	@media (prefers-reduced-motion: reduce) {
+		.bulbs {
+			animation: none;
+			opacity: 0.6;
+		}
 	}
 
 	/* Press Play studio mark — group box 112.5181 x 36.4013, centred at (600.3, 96.2). */

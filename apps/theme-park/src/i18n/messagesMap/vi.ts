@@ -5,6 +5,7 @@ export default {
 	BET: 'CƯỢC',
 	'TOTAL COST': 'TỔNG CHI PHÍ',
 	MODE: 'CHẾ ĐỘ',
+	BONUS: 'THƯỞNG',
 	'BUY BONUS': 'MUA THƯỞNG',
 	PAYTABLE: 'BẢNG THƯỞNG',
 	'GAME RULES': 'LUẬT CHƠI',

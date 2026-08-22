@@ -24,10 +24,9 @@
 	import { Container, Graphics, Sprite, Text, PIXI } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
+	import { PAD_BULB, PAD_BULBS, PAD_PLATE } from '../game/padMarquee';
 	import {
 		MARQUEE_AMOUNT,
-		MARQUEE_BULBS,
-		MARQUEE_PLATE,
 		MARQUEE_STAR,
 		MARQUEE_TEXT,
 		type MarqueeTier,
@@ -36,6 +35,12 @@
 	import WinCardLights from './WinCardLights.svelte';
 
 	// The big-win card: a circus marquee that gets hit.
+	//
+	// The sign it is built on is the shared PAD (game/padMarquee.ts) — the same art the
+	// bonus-complete screen sits on. It is flat: its bulbs are unlit cream discs, and every one of
+	// them is lit by <WinCardLights> rather than by the art. Everything else — the wordmark, the
+	// stars, the amount — is measured against the Figma card in game/winCardMarquee.ts, and the pad
+	// is placed so its field lands where that card's field was.
 	//
 	// The choreography IS the design (Figma 7013:9117), in this order:
 	//
@@ -160,13 +165,16 @@
 		y: lerp(0.66, 1, plateIn) * (1 - plateSquash),
 	});
 	/**
-	 * A second copy of the plate drawn additively. Additive blending scales with source brightness,
-	 * so this blooms the bulbs and the gold frame and leaves the dark purple field alone — the whole
-	 * card breathes light for the cost of one sprite, and unlike the per-bulb glows it cannot land in
-	 * the wrong place. It spikes on impact, then settles to a slow pulse.
+	 * A second copy of the plate drawn additively: the whole sign surging, for the cost of one
+	 * sprite. It spikes on impact, then settles to a slow pulse.
+	 *
+	 * Held lower than the rendered sign this replaced needed. Additive blending scales with source
+	 * brightness, and on flat art every pixel of the rail is the SAME brightness — so where the old
+	 * sign only bloomed the highlights already painted into it, this lifts the whole rail at once
+	 * and gets there on much less alpha.
 	 */
 	const plateBloom = $derived(
-		(0.09 + 0.06 * Math.sin(elapsed * 2.2)) * clamp01(at(BULBS)) + impactDecay * 0.55,
+		(0.06 + 0.045 * Math.sin(elapsed * 2.2)) * clamp01(at(BULBS)) + impactDecay * 0.42,
 	);
 
 	// === WORDMARK ===
@@ -204,8 +212,16 @@
 	);
 
 	// === AMOUNT ===
+	/**
+	 * The design hangs the amount plate just under the sign's foot — 0.0165 card widths of daylight
+	 * between them (Figma: plate foot 0.27087, amount top 0.28733). Measured off the pad's foot
+	 * rather than pinned to the Figma card's y, because the pad is a different shape from the sign
+	 * that y was measured against and a fixed number left the plate floating in a gap.
+	 */
+	const AMOUNT_GAP = 0.0165;
+	const amountRest = PAD_PLATE.y + PAD_PLATE.h / 2 + AMOUNT_GAP + MARQUEE_AMOUNT.h / 2;
 	const amountIn = $derived(outCubic(at(AMOUNT)));
-	const amountY = $derived(lerp(MARQUEE_AMOUNT.y + 0.08, MARQUEE_AMOUNT.y, amountIn) * cardWidth);
+	const amountY = $derived(lerp(amountRest + 0.08, amountRest, amountIn) * cardWidth);
 	const amountW = $derived(MARQUEE_AMOUNT.w * cardWidth);
 	const amountH = $derived(MARQUEE_AMOUNT.h * cardWidth);
 	/** Figma: 64px type on a 120px plate, so the plate's height is what sets the size. */
@@ -246,31 +262,32 @@
 <Container x={shake.x} y={shake.y}>
 	<Container alpha={plateReady ? 1 : 0}>
 		<Container
-			x={MARQUEE_PLATE.x * cardWidth}
-			y={MARQUEE_PLATE.y * cardWidth}
+			x={PAD_PLATE.x * cardWidth}
+			y={PAD_PLATE.y * cardWidth}
 			scale={plateScale}
 			alpha={plateAlpha}
 		>
 			<Sprite
 				key="winMarqueePlate"
 				anchor={0.5}
-				width={MARQUEE_PLATE.w * cardWidth}
-				height={MARQUEE_PLATE.h * cardWidth}
+				width={PAD_PLATE.w * cardWidth}
+				height={PAD_PLATE.h * cardWidth}
 			/>
 			<Sprite
 				key="winMarqueePlate"
 				anchor={0.5}
 				blendMode="add"
-				width={MARQUEE_PLATE.w * cardWidth}
-				height={MARQUEE_PLATE.h * cardWidth}
+				width={PAD_PLATE.w * cardWidth}
+				height={PAD_PLATE.h * cardWidth}
 				alpha={plateBloom}
 			/>
+			<!-- Mounted inside the plate's own container, so the lights inherit its entrance scale
+			     and the squash of the landing instead of having to repeat them. -->
 			<WinCardLights
-				bulbs={MARQUEE_BULBS}
-				size={cardWidth}
-				origin={{ x: MARQUEE_PLATE.x, y: MARQUEE_PLATE.y }}
-				colour={0xffcf7a}
-				radius={0.036}
+				bulbs={PAD_BULBS}
+				size={PAD_PLATE.w * cardWidth}
+				colour={PAD_BULB.colour}
+				bulb={PAD_BULB.size}
 				cycles={3}
 				speed={0.34}
 				floor={0.2}

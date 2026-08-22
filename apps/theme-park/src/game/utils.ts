@@ -44,7 +44,9 @@ export type SpecialSymbolVisual =
 	| 'megaWild'
 	| 'duckScatter'
 	| 'rollerScatter'
-	| 'coasterScatter';
+	| 'rollerSign'
+	| 'coasterScatter'
+	| 'coasterHouse';
 
 const specialSymbolKeys = {
 	wild: {
@@ -67,10 +69,24 @@ const specialSymbolKeys = {
 		portrait: 'tpRollerScatterMobile',
 		landscape: 'tpRollerScatterLandscape',
 	},
+	// The same sign with the star and the two words left out, for <RollerWilds> to draw them on
+	// itself. It follows the layout variants for the same reason the still does — it is the same
+	// picture minus three small parts, so it costs the same texture.
+	rollerSign: {
+		desktop: 'tpRollerSignDesktop',
+		portrait: 'tpRollerSignMobile',
+		landscape: 'tpRollerSignLandscape',
+	},
 	coasterScatter: {
 		desktop: 'tpCoasterScatterDesktop',
 		portrait: 'tpCoasterScatterMobile',
 		landscape: 'tpCoasterScatterLandscape',
+	},
+	/** The same pavilion with no sign on it, for <MegaCoaster> to hang the live one on. */
+	coasterHouse: {
+		desktop: 'tpCoasterHouseDesktop',
+		portrait: 'tpCoasterHouseMobile',
+		landscape: 'tpCoasterHouseLandscape',
 	},
 } as const;
 

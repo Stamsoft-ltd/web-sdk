@@ -34,6 +34,9 @@ those bulbs are not ink at all — they are holes punched through the rim arcs.
 
     python3 scripts/build-symbol-bulbs.py ~/Downloads
 
+Some symbols have been re-drawn in Figma since that batch and their sources are checked in under
+`scripts/symbol-sources/`, which overrides whatever the given directory holds under the same name.
+
 Sources must be a whole fraction of the 448x360 frame every symbol in this game is authored in — the
 `-draw-high` exports are 448x360 exactly, so nothing is resampled. An earlier half-scale set worked
 too (a uniform upscale lands each symbol where the artist put it, with no re-centring and no
@@ -51,6 +54,11 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
+# Sources that came from Figma rather than from the artist's batch, checked in because there is
+# nowhere else for them to live: they have no `-draw-high` original in anyone's Downloads folder, and
+# a re-run pointed at the batch would silently put the old drawing back. Anything here wins over the
+# same filename in the source directory given on the command line.
+OVERRIDE_DIR = Path(__file__).resolve().parent / "symbol-sources"
 SYMBOL_DIR = ROOT / "static/assets/theme-park/v2/symbols"
 MODES_DIR = ROOT / "static/assets/theme-park/v2/modes"
 TABLE = ROOT / "src/game/symbolBulbs.ts"
@@ -69,34 +77,55 @@ MODE_VARIANTS = [("desktop", 448), ("mobile", 184), ("mobile-landscape", 216)]
 # stem = output filename stem. source = the artist's own filename stem (theirs, not ours: the royals
 # arrived as Cyrillic А/К, the coaster car as "car", the balloons misspelt). name = the board symbol
 # whose bulbs get measured, or None to install the art and detect nothing. variants = ships one file
-# per layout under modes/ instead of a single frame under symbols/.
+# per layout under modes/ instead of a single frame under symbols/. lamps = this symbol carries N big
+# LAMPS rather than a run of marquee bulbs, so measure it with `find_lamps` instead (see there).
 SYMBOLS = [
     dict(stem="l1-a", source="А", name="L1", label="A"),
     dict(stem="l2-k", source="К", name="L2", label="K"),
     dict(stem="l3-q", source="Q", name="L3", label="Q"),
     dict(stem="l4-j", source="J", name="L4", label="J"),
     dict(stem="l5-10", source="10", name="L5", label="10"),
-    dict(stem="h5-ferris", source="wheel", name="H5", label="ferris wheel"),
-    # The wilds and the feature facades are all marquee signs thick with bulbs, and all ship one file
-    # per layout. Bulb coordinates are fractions of the frame, so one table serves all three sizes.
-    dict(stem="wild", source="WILD", name="W", label="wild", variants=True),
+    # The ferris wheel is not here any more. It was redrawn as a rig that comes apart — rim, hub,
+    # legs and five gondolas (Figma 7052:7879) — and it wins by TURNING rather than by lighting the
+    # 97 bulbs the old drawing carried. See scripts/wheel/build_wheel.py, which writes its art and
+    # `wheelParts.ts`.
+    # The feature facades are marquee signs thick with bulbs, and they ship one file per layout. Bulb
+    # coordinates are fractions of the frame, so one table serves all three sizes.
+    #
+    # The wild is not here any more. It was redrawn as a bare gold plate (Figma 7052:7925) carrying no
+    # bulbs at all, with its letter shipping as a second sprite so a win can pop it — see
+    # scripts/wild/build_wild.py, which writes its art and `wildParts.ts`.
     # The Mega Wild is not a board symbol — it is a full-reel plaque drawn by <MegaWildFullReel> — so
-    # its bulbs cannot live in a table keyed by SymbolName. It gets its own export instead.
+    # its bulbs cannot live in a table keyed by SymbolName. It gets its own export instead. The
+    # locomotive plaque it now carries has no marquee run at all: it has the loco's two headlamps.
     dict(stem="mega-wild", source="mega wild", export="MEGA_WILD_BULBS", label="mega wild",
-         variants=True),
+         variants=True, lamps=2),
     dict(stem="mega-coaster", source="mega coaster", name="S_COASTER", label="mega coaster",
          variants=True),
     dict(stem="roller-wilds", source="roller wilds", name="S_ROLLER", label="roller wilds",
          variants=True),
-    dict(stem="duck-your-luck", source="duckyourluck", name="S_DUCK", label="duck your luck",
-         variants=True),
+    # DUCK YOUR LUCK is not here any more. It was redrawn as a duck holding a sign (Figma 7057:7971)
+    # with no bulbs anywhere on it, and it ships in pieces so its wings can beat — see
+    # scripts/duck-sign/build_duck_sign.py, which writes its art and `duckSignParts.ts`.
+    # The coaster car has no marquee run either, but it does have two headlights, and they are what
+    # its win presentation lights.
+    dict(stem="h1-coaster", source="car", name="H1", label="coaster car", lamps=2),
     # name None = install the art, detect nothing. Flat cartoons from the same batch, but nothing on
     # them is a marquee bulb, so a detector would only invent coordinates out of the balloons' dots
     # and the popcorn's highlights.
-    dict(stem="h1-coaster", source="car", name=None, label="coaster car"),
-    dict(stem="h2-duck", source="duck", name=None, label="duck"),
-    dict(stem="h3-balloons", source="baloons", name=None, label="balloons"),
-    dict(stem="h4-popcorn", source="popcorn", name=None, label="popcorn"),
+    # The duck is not here any more. It was re-cut into a body with empty eye sockets, two irises and
+    # a loose wing (Figma 7063:17957 and friends) so that it can glance about and beat a wing — see
+    # scripts/duck/build_duck.py, which writes its art and `duckParts.ts`. Its marquee still is
+    # ASSEMBLED FROM THOSE PIECES, so re-installing the artist's flat drawing here would put the
+    # spin trail's ghost out of step with the live symbol.
+    # Nor are the balloons. They were re-cut into the six balloons the bunch is made of (Figma
+    # 7080:21576 and the four drawings under it) so that they can bob and fly — see
+    # scripts/balloons/build_balloons.py, which writes their art and `balloonParts.ts`. Their
+    # marquee still is ASSEMBLED FROM THOSE PIECES, so re-installing the flat drawing here would put
+    # the spin trail's ghost out of step with the live symbol.
+    # The popcorn is not here any more either. It was redrawn as a bucket with nothing flying around
+    # it (Figma 7063:17848) plus three loose kernel drawings a win throws — see
+    # scripts/popcorn/build_popcorn.py, which writes its art and `popcornParts.ts`.
 ]
 
 
@@ -184,7 +213,12 @@ def round_blobs(mask, scale):
         # The lower bound is deliberately loose. It used to be 0.012 of the symbol, tuned on the
         # royals where a dozen fat bulbs fill a letter; the facades pack a couple of hundred small
         # ones along their ribbons and that bound rejected every single one of them.
-        if not 0.005 * scale <= radius <= 0.16 * scale:
+        #
+        # The upper bound is measured rather than guessed. Across every symbol in this set the
+        # fattest real bulb is the Q's, at 0.0396 of the symbol; MEGA COASTER's gold letters have
+        # bowls in them that come back at 0.0615 and up, and there are four of a size, so the
+        # population cull below waves them through. 0.05 sits in the gap.
+        if not 0.005 * scale <= radius <= 0.05 * scale:
             continue
         cy, cx = pts.mean(axis=0)
         out.append((float(cx), float(cy), float(radius)))
@@ -249,6 +283,70 @@ def find_bulbs(image):
     return [b for b in bulbs if sum(abs(other - b[2]) <= 0.2 * b[2] for other in radii) >= 3]
 
 
+def matched_set(mask, scale, count):
+    """The biggest round, solid blob in `mask` and up to `count-1` others of that same size."""
+    found = []
+    for pts in components(mask):
+        (y0, x0), (y1, x1) = pts.min(axis=0), pts.max(axis=0)
+        bw, bh = x1 - x0 + 1, y1 - y0 + 1
+        if bw < 5 or bh < 5:
+            continue
+        # Tighter than `round_blobs` on both counts, because there is no population cull behind this
+        # to catch what a loose filter drags in — a pair cannot be confirmed by its own repetition.
+        if not 0.85 <= bw / bh <= 1.2:
+            continue
+        if len(pts) / (bw * bh) < 0.65:
+            continue
+        radius = (bw + bh) / 4
+        if radius < 0.02 * scale:
+            continue
+        cy, cx = pts.mean(axis=0)
+        found.append((float(cx), float(cy), float(radius)))
+    found.sort(key=lambda t: -t[2])
+    if not found:
+        return []
+    # A lamp's partner is the same lamp drawn again, so size is what picks the set out of the field.
+    return [f for f in found if abs(f[2] - found[0][2]) <= 0.15 * found[0][2]][:count]
+
+
+def find_lamps(image, count):
+    """The `count` big round lamps on a symbol that has lamps instead of a marquee run.
+
+    The coaster car has two headlights and the Mega Wild locomotive has two headlamps, and neither
+    symbol has a bulb run anywhere on it. `find_bulbs` cannot measure them: its last filter throws
+    out anything fewer than three of its size, which is exactly right for a marquee (a design repeats
+    a bulb dozens of times, so a lone round blob is a jewel or a highlight) and exactly wrong for a
+    pair.
+
+    So the pair is confirmed the other way round: not by how many share its size, but by being the
+    BIGGEST round solid blob on the symbol and having a twin. That holds on both — the car's
+    headlights are the largest round things on it that are not a face, and the loco's lamps are the
+    largest gold discs on the plaque.
+
+    Two colour rules again, because a lamp is not drawn the same way twice: the car's are pale cream
+    inside a gold rim, the loco's are saturated gold with a pale highlight inside them. When both
+    rules find a full set the LARGER one wins, which is what stops the loco returning the highlights
+    sitting inside its lamps instead of the lamps.
+    """
+    a = np.asarray(image).astype(np.float32)
+    rgb, alpha = a[..., :3], a[..., 3]
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    value = rgb.max(axis=2) / 255.0
+
+    ink = np.argwhere(alpha > 16)
+    (iy0, ix0), (iy1, ix1) = ink.min(axis=0), ink.max(axis=0)
+    scale = min(ix1 - ix0 + 1, iy1 - iy0 + 1)
+
+    pale = closed((alpha > 200) & (value > 0.88) & (rgb.min(axis=2) / 255.0 > 0.62), alpha)
+    gold = closed((alpha > 200) & (value > 0.80) & (r >= g) & (g > b) & ((r - b) > 40), alpha)
+
+    sets = [s for s in (matched_set(m, scale, count) for m in (pale, gold)) if s]
+    if not sets:
+        return []
+    sets.sort(key=lambda s: (len(s), s[0][2]))
+    return sets[-1]
+
+
 def num(value):
     """Four decimal places with trailing zeros trimmed — what Prettier would leave behind.
 
@@ -262,7 +360,11 @@ def main():
     blocks, extras = [], []
     for entry in SYMBOLS:
         stem, label = entry["stem"], entry["label"]
-        image = Image.open(source_dir / f'{entry["source"]}{SOURCE_SUFFIX}.png').convert("RGBA")
+        name = f'{entry["source"]}{SOURCE_SUFFIX}.png'
+        source = OVERRIDE_DIR / name
+        if not source.exists():
+            source = source_dir / name
+        image = Image.open(source).convert("RGBA")
         if FRAME[0] % image.width or FRAME[1] % image.height:
             raise SystemExit(f"{stem}: {image.size} is not a whole fraction of {FRAME}")
         if entry.get("variants"):
@@ -277,11 +379,15 @@ def main():
             print(f"{stem}: {image.size} -> {FRAME}, art only")
             continue
 
-        bulbs = find_bulbs(image)
+        lamps = entry.get("lamps")
+        bulbs = find_lamps(image, lamps) if lamps else find_bulbs(image)
+        if lamps and len(bulbs) != lamps:
+            raise SystemExit(f"{stem}: wanted {lamps} lamps, found {len(bulbs)}")
         # Top-to-bottom then left-to-right, which is the order the chase runs in.
         bulbs.sort(key=lambda b: (round(b[1] / image.height, 2), b[0]))
-        print(f"{stem}: {image.size} -> {FRAME}, {len(bulbs)} bulbs")
+        print(f"{stem}: {image.size} -> {FRAME}, {len(bulbs)} {'lamps' if lamps else 'bulbs'}")
 
+        noun = "lamps" if lamps else "bulbs"
         indent = "\t" if entry.get("name") else ""
         rows = "\n".join(
             f"{indent}\t{{ x: {num(x / image.width)}, y: {num(y / image.height)}, "
@@ -289,10 +395,10 @@ def main():
             for x, y, r in bulbs
         )
         if entry.get("name"):
-            blocks.append(f'\t// {label} — {len(bulbs)} bulbs\n\t{entry["name"]}: [\n{rows}\n\t],')
+            blocks.append(f'\t// {label} — {len(bulbs)} {noun}\n\t{entry["name"]}: [\n{rows}\n\t],')
         else:
             extras.append(
-                f'\n/** {label} — {len(bulbs)} bulbs. */\n'
+                f'\n/** {label} — {len(bulbs)} {noun}. */\n'
                 f'export const {entry["export"]}: SymbolBulb[] = [\n{rows}\n];\n'
             )
 

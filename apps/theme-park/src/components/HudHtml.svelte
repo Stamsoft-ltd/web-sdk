@@ -23,18 +23,22 @@
 	const navTurboSolid = ap('/assets/theme-park/v2/hud/turbo-1.webp');
 	const navTurboDouble = ap('/assets/theme-park/v2/hud/turbo-2.webp');
 	const navTurboOutline = ap('/assets/theme-park/v2/hud/turbo-3.webp');
-	// The sparkle-free plate (scripts/build-hud-bar-plain.py). The five points painted onto the
-	// original never moved, and <PopupBorderLights> now runs real ones along the same line.
-	const barPlate = ap('/assets/theme-park/v2/hud/bar_plate-clean.webp');
-	const buyPlate = ap('/assets/theme-park/v2/hud/buy_plate.webp');
-	// The spin button is a rotatable marquee ring plus a static glyph on top, NOT one flat composite
-	// (see scripts/spin-button/build_spin_button.py). The ring is identical in every state — only the
-	// glyph changes — so one background serves all of them and can keep spinning across a state swap.
+	// The desktop bar's plate, its BUY pill and its spin ring used to be three pieces of neon marquee
+	// art (bar_plate-clean.webp, buy_plate.webp, spin-bg.webp). The redesign (Figma 7033:25229) draws
+	// all three as flat shapes — a filled rounded rectangle, a gradient pill, a gradient ring — so
+	// they are CSS now and the art is gone from this row. Only the portrait bar still loads the old
+	// pieces, because portrait has its own layout that the redesign does not cover.
+	//
+	// The spin ring is still a separate element from the glyph on top of it, for the same reason it
+	// always was: the ring is identical in every state and keeps spinning across a glyph swap.
 	const navSpinBg = ap('/assets/theme-park/v2/controls/spin-bg.webp');
 	const navSpinArrow = ap('/assets/theme-park/v2/controls/spin-arrow.webp');
 	const navSpinStopGlyph = ap('/assets/theme-park/v2/controls/spin-stop-glyph.webp');
 	const navCoins = ap('/assets/theme-park/v2/hud/icon_coin.svg');
-	const gameLogo = ap('/assets/theme-park/v2/logo.png');
+	// The redrawn lockup (Figma 7033:25250), and the SAME file the splash, the info modal and the
+	// max-win card already load — the old rendered logo it replaced was a second copy of the title
+	// with a coaster car bolted to its left end, and nothing in the redesign has that car.
+	const gameLogo = ap('/assets/theme-park/v2/splash/logo.webp');
 	const pressPlayLogo = ap('/assets/theme-park/v2/press-play.webp');
 	// Same mark the splash uses (Figma 6612:4340 places it at the scene's top right too). Desktop and
 	// landscape only — portrait shows the larger pressPlayLogo inside its own logo stack instead.
@@ -60,8 +64,10 @@
 	// bet setter, stretched to fill this box so the two match.
 	const ptBetBox = ap('/assets/theme-park/v2/hud/neon-frame.png');
 	// Portrait nav bar — bar_plate cropped tight + vertically symmetric, so the visible bar nearly
-	// fills its box and the (bigger) buttons sit centred inside it. Sparkle-free, like the desktop
-	// plate above (scripts/build-hud-bar-plain.py); <PopupBorderLights> runs real ones on it.
+	// fills its box and the (bigger) buttons sit centred inside it. Sparkle-free
+	// (scripts/build-hud-bar-plain.py); <PopupBorderLights> runs real ones on it. The desktop row
+	// used to be backed by the same art and is not any more — portrait is the last thing on it,
+	// because the redesign does not cover the portrait layout.
 	const ptNavBar = ap('/assets/theme-park/v2/controls/nav-bar-clean.png');
 </script>
 
@@ -212,7 +218,9 @@
 			: null,
 	);
 	const isAnyModeActive = $derived(activeToggleMode !== null);
-	const buyLabel = $derived(isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.buyBonus());
+	// One word, not "BUY BONUS" — the redesign labels this button BONUS (Figma 7033:25229) and every
+	// message map carries the key. 'BUY BONUS' is still the title of the dialog the button opens.
+	const buyLabel = $derived(isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.bonus());
 	const isInBonus = $derived(
 		context.stateGame.bonusMode !== null ||
 			context.stateGame.bonusType !== null ||
@@ -556,7 +564,9 @@
 				aria-label={i18nDerived.translate('SPIN')}
 				disabled={canInteract && !hasAuto && !canAffordBet}
 			>
-				<img src={navSpinBg} alt="" class="spin-btn__img spin-btn__img--bg" />
+				<span class="spin-btn__img spin-btn__ring" aria-hidden="true">
+					<span class="spin-btn__disc"></span>
+				</span>
 				{#if isSpinStop}
 					<img src={navSpinStopGlyph} alt="" class="spin-btn__img spin-btn__img--stopglyph" />
 				{:else}
@@ -606,16 +616,11 @@
 	</div>
 	{:else if !isPortrait}
 	<div class="hud-bottom">
-		<!-- The bar itself is art (1126x107 neon pill), not CSS chrome. It is a sibling rather than a
-		     background-image because the spin button overhangs the plate top and bottom, so the plate
-		     has to sit BEHIND the row at its own smaller height while the row keeps the taller box. -->
-		<img class="hud-plate" src={barPlate} alt="" />
-		<!-- The dialogs' running lights, on the bar's own neon line. Same box as the plate so the
-		     path lands on the painted edge; the scale pulls the glow back to the size it is on a
-		     popup, which the bar's 10:1 box would otherwise blow up (see <PopupBorderLights>). -->
-		<div class="hud-plate-lights">
-			<PopupBorderLights variant="bar" scale={0.55} />
-		</div>
+		<!-- The bar. Still a sibling rather than a background on the row, because the spin button
+		     overhangs it top and bottom: the plate has to sit BEHIND the row at its own smaller height
+		     while the row keeps the taller box. It used to be neon art with running lights along its
+		     edge; the redesign has neither, so it is a plain rounded rectangle now. -->
+		<div class="hud-plate" aria-hidden="true"></div>
 		<div class="hud-left">
 			<div class="hud-system">
 				<button
@@ -629,9 +634,9 @@
 				>
 					<img src={menuOpen ? navClose : navMenu} alt="" />
 				</button>
-				<button class="nav-btn nav-btn--sound" type="button" onclick={toggleSound} aria-label={i18nDerived.translate('SOUND')}>
-					<img src={navSound} alt="" class:is-muted={isMuted} />
-				</button>
+				<!-- The redesign puts one button on this end of the bar, not two. The sound toggle that
+				     used to sit beside the burger is still reachable — it is the first item in the menu
+				     the burger opens, next to MUSIC and INFO. -->
 
 				{#if menuOpen}
 					<div class="hud-menu" role="menu">
@@ -661,7 +666,6 @@
 					onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
 					aria-label={buyLabel}
 				>
-					<img class="buy-btn__plate" src={buyPlate} alt="" />
 					<span class="buy-btn__label" use:fitLabel={{ dep: buyLabel, maxFraction: 0.9 }}>{buyLabel}</span>
 				</button>
 			</div>
@@ -752,8 +756,12 @@
 					disabled={canInteract && !hasAuto && !canAffordBet}
 				>
 					<!-- Mounted unconditionally so the ring's rotation survives the glyph swapping between
-					     arrow and stop — remounting it would restart the animation from 0deg and snap. -->
-					<img src={navSpinBg} alt="" class="spin-btn__img spin-btn__img--bg" />
+					     arrow and stop — remounting it would restart the animation from 0deg and snap.
+					     Two elements because the ring is a gradient and the disc inside it is not: the
+					     outer box IS the ring's colour and the inner one covers all but its edge. -->
+					<span class="spin-btn__img spin-btn__ring" aria-hidden="true">
+						<span class="spin-btn__disc"></span>
+					</span>
 					{#if isSpinStop}
 						<img src={navSpinStopGlyph} alt="" class="spin-btn__img spin-btn__img--stopglyph" />
 					{:else}
@@ -1014,15 +1022,18 @@
 	   blurred art the reels already read against, and the bar plate carries its own dark fill, so the
 	   scene runs to the bottom edge as it does in Figma 6281-1791. */
 
-	/* Figma 6612:4356 — 456 wide, centred (372 + 228 = the 1200 frame's midpoint), with its art
-	   starting 10 down. --hud-u is one design pixel of that same frame, so this is the design's own
-	   number rather than a viewport guess; it works out ~1.7x the clamp(190px, 22vw, 330px) it
-	   replaced, which is why the logo now overlaps the top of the board the way the design shows. */
+	/* Figma 7033:25250 — the redrawn lockup, 282 wide and centred, its box starting 2 down inside a
+	   1197 frame. --hud-u is 93.8vw/1126, which works out at one design pixel of that frame to within
+	   a quarter of a percent, so these are the design's own numbers rather than a viewport guess.
+	   The 7 is the art's own top: the design box is 94 tall and the drawing is 83.7 in it, centred.
+
+	   It was 388 wide for the logo this replaced — that one was a wider lockup with a coaster car on
+	   its left end, and carrying its width over made the new one tower over the board. */
 	.game-logo {
 		position: absolute;
 		left: 50%;
-		top: calc(var(--hud-u) * 10);
-		width: calc(var(--hud-u) * 388);
+		top: calc(var(--hud-u) * 7);
+		width: calc(var(--hud-u) * 282);
 		height: auto;
 		transform: translateX(-50%);
 		filter: drop-shadow(0 6px 11px rgba(0, 0, 0, 0.7));
@@ -1063,16 +1074,22 @@
 		z-index: 6;
 		align-self: center;
 		margin-top: auto;
-		/* Plate width; the row inside it totals 1063.72 in the design, so the ~31 units of slack on
-		   each side come out of centring rather than out of padding. */
-		width: calc(var(--hud-u) * 1126);
+		/* Plate width. The row inside it totals 1063.72 in the design, so the ~16 units of slack on
+		   each side come out of centring rather than out of padding — which is what the design does
+		   too: it leaves 16.5 between the plate's edge and the burger's. */
+		width: calc(var(--hud-u) * 1095);
 		height: calc(var(--hud-u) * 118.538);
 		box-sizing: border-box;
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		/* Pushed to the ends rather than bunched in the middle: the burger and BONUS sit against the
+		   plate's left edge, the spin cluster against its right, and everything left over goes to the
+		   BALANCE / WIN / BET block between them. That block is the only part of the row whose content
+		   is not a fixed size — a ten-figure balance has to shrink to fit its box, and the room the
+		   ends give up is room it does not have to shrink by. */
+		justify-content: space-between;
 		gap: calc(var(--hud-u) * 16);
-		padding: 0;
+		padding: 0 calc(var(--hud-u) * 16);
 		background: none;
 		border: 0;
 		border-radius: 0;
@@ -1080,27 +1097,38 @@
 		font-family: 'Inter', sans-serif;
 	}
 
-	/* The plate is only 107 tall against the row's 118.538 — the spin button is what makes the row
+	/* The plate is only 77 tall against the row's 118.538 — the spin button is what makes the row
 	   taller — so it sits behind rather than stretched to fit.
 
-	   The +4 is not a fudge: the pill drawn inside this 1126x107 export occupies y 6..92, so its
-	   optical centre is 4 units ABOVE the centre of the image box. Centring the box therefore lands
-	   every control 4 units BELOW the middle of the pill, which is what read as "not centred". The
-	   design does the same correction — it places the plate 3.23 below the row centre rather than on
-	   it. Pushing the image down by 4 puts the pill's centre on the row's centre instead. */
-	.hud-plate,
-	.hud-plate-lights {
+	   Every number here is measured off Figma 7033:25229, whose bar node is 1096 x 120 with the plate
+	   in it at y 25.5..102.5 and a corner radius of 14.34. The 1.6 is the design's own offset: it
+	   centres the plate at y 64.5 while the controls sit on y 62.9, so the plate rides fractionally
+	   low and the spin circle overhangs its top more than its bottom.
+
+	   The border reads as one purple line but is really a ramp across its 5.5 units — dark at the
+	   outside, #66169c through the middle, dark again at the inside. A single flat stroke that
+	   thick comes out either too heavy or, averaged, too muddy, so the two dark edges are drawn as
+	   their own hairlines and only the middle carries the colour. */
+	.hud-plate {
 		position: absolute;
 		left: 0;
 		top: 50%;
-		transform: translateY(calc(-50% + var(--hud-u) * 4));
+		transform: translateY(calc(-50% + var(--hud-u) * 1.6));
 		width: 100%;
-		height: calc(var(--hud-u) * 107);
+		height: calc(var(--hud-u) * 77);
+		box-sizing: border-box;
+		background: #1d013c;
+		border: calc(var(--hud-u) * 3) solid #64159a;
+		border-radius: calc(var(--hud-u) * 13);
+		box-shadow:
+			0 0 0 calc(var(--hud-u) * 1.3) #2e0166,
+			inset 0 0 0 calc(var(--hud-u) * 1.2) #240050,
+			0 calc(var(--hud-u) * 4) calc(var(--hud-u) * 10) rgba(0, 0, 0, 0.45);
 		z-index: 0;
 		pointer-events: none;
 	}
 
-	.hud-bottom > *:not(.hud-plate, .hud-plate-lights) {
+	.hud-bottom > *:not(.hud-plate) {
 		position: relative;
 		z-index: 1;
 	}
@@ -1129,7 +1157,8 @@
 		align-items: center;
 		justify-content: center;
 		gap: calc(var(--hud-u) * 12);
-		flex: 0 0 auto;
+		/* Takes the slack the two button groups leave, and hands it to the balance and win boxes. */
+		flex: 1 1 auto;
 		min-width: 0;
 	}
 
@@ -1160,19 +1189,24 @@
 		background: rgba(189, 70, 198, 0.8);
 	}
 
-	/* 130.333 x 46.667 with 6.667 side padding (node 6589:4363). */
+	/* 130.333 x 46.667 with 6.667 side padding (node 6589:4363) — but that width is a FLOOR now, not
+	   the box. Both of these grow into whatever .hud-stats has spare, because their contents are the
+	   only ones in the row that can be any length: a ten-figure balance in a 130-unit box is legible
+	   only because fitText shrinks it, and every unit it gains here is a unit it does not shrink by.
+	   overflow stays hidden so a value that still will not fit is clipped rather than pushing the row
+	   apart. */
 	.value-pill--balance {
 		height: calc(var(--hud-u) * 46.667);
 		padding: 0 calc(var(--hud-u) * 6.667);
-		flex: 0 0 auto;
-		width: calc(var(--hud-u) * 130.333);
+		flex: 1 1 auto;
+		min-width: calc(var(--hud-u) * 130.333);
 		overflow: hidden;
 	}
 
-	/* 66 wide (node 6589:4367) — the value is fitText-shrunk rather than allowed to push the row. */
+	/* 66 wide (node 6589:4367), again as a floor. */
 	.value-pill--win {
-		flex: 0 0 auto;
-		width: calc(var(--hud-u) * 66);
+		flex: 1 1 auto;
+		min-width: calc(var(--hud-u) * 66);
 		overflow: hidden;
 	}
 
@@ -1270,14 +1304,21 @@
 		padding-top: 0;
 	}
 
-	/* 48 circle, 1px #d836fc hairline, near-black fill lifting to #1a0535 at the bottom
-	   (component "Icon buttons"). No gold anywhere in this design. */
+	/* 48 circle, near-black fill lifting to #1a0535 at the bottom (component "Icon buttons"). No gold
+	   anywhere in this design.
+
+	   The rim is a 1.5-unit gradient, not the flat #d836fc hairline it was: in the redesign every
+	   round button is lit magenta on its top-left shoulder and cold blue on its bottom-right, the
+	   same sweep the spin ring and the BONUS pill run. Two backgrounds do it — the fill clipped to
+	   the padding box, the rim colour to the border box, with the border itself transparent. */
 	.nav-btn {
 		width: calc(var(--hud-u) * 48);
 		height: calc(var(--hud-u) * 48);
-		border: 1px solid #d836fc;
+		border: calc(var(--hud-u) * 1.5) solid transparent;
 		border-radius: 9999px;
-		background: linear-gradient(0deg, #1a0535 0%, #000 100%);
+		background:
+			linear-gradient(0deg, #1a0535 0%, #000 100%) padding-box,
+			linear-gradient(135deg, #b435f5 0%, #7c30dd 50%, #4429c6 100%) border-box;
 		padding: 0;
 		outline: none;
 		cursor: pointer;
@@ -1519,22 +1560,24 @@
 		color: #fff;
 	}
 
-	/* The button is a stack: one marquee ring (spin-bg) with a glyph centred on it. The ring art is
-	   square and centred on its own circle, so `rotate()` turns about the circle's centre with no
-	   transform-origin correction — that squareness is the whole reason the build script crops the
-	   way it does.
+	/* The button is a stack: one ring with a glyph centred on it. Every piece is height-driven off
+	   .spin-btn and placed in percentages, so the mobile layouts — which resize .spin-btn rather than
+	   restyling it — keep the same relationship for free.
 
-	   Every variant below is sized and nudged so the RING — not the image frame — lands in exactly
-	   the place the old flat composites put it; the numbers are printed by
-	   scripts/spin-button/build_spin_button.py, which derives them FROM those composites. All values
-	   are percentages so the mobile layouts, which resize .spin-btn, keep the same relationship. */
+	   The numbers come from Figma 7033:25229, measured in its own 120-tall bar node: the ring is
+	   105.75 across, the glyph inside it 60.5 tall, and both are centred on y 59.25 — 4.75 ABOVE the
+	   line the rest of the controls sit on, which is why the circle clears the plate's top edge by
+	   twice what it clears the bottom by. The negative --art-dy is that 4.75.
+
+	   These replace numbers that scripts/spin-button/build_spin_button.py derived from the old flat
+	   marquee composites. Those composites are not what the button looks like any more, so the script
+	   no longer has anything to say about this block. */
 	.spin-btn__img {
 		position: absolute;
 		left: 50%;
 		top: 50%;
 		/* Height-driven with an auto width so the source aspect is preserved no matter what aspect
-		   .spin-btn itself has — portrait overrides it to a square. --art-h is what makes the ring
-		   88.58% of the button height (105 of 118.538) in every state. */
+		   .spin-btn itself has — portrait overrides it to a square. */
 		width: auto;
 		height: var(--art-h);
 		transform: translate(calc(-50% + var(--art-dx)), calc(-50% + var(--art-dy)));
@@ -1545,27 +1588,51 @@
 		filter: drop-shadow(0 0 12px rgba(255, 79, 216, 0.35));
 	}
 
-	.spin-btn__img--bg {
-		--art-h: 88.115%;
+	/* 105.75 of 118.538, offset up by 4.75 of its own 105.75. The ring IS this box: the gradient is
+	   its background and .spin-btn__disc covers everything but the 4.5-unit edge. aspect-ratio is
+	   what gives an auto-width absolute box its width back once the height is set. */
+	.spin-btn__ring {
+		--art-h: 89.21%;
 		--art-dx: 0%;
-		--art-dy: 4.44%;
+		--art-dy: -4.49%;
+		aspect-ratio: 1;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #c236ff 0%, #a72bf3 28%, #5132ee 100%);
+		filter: drop-shadow(0 0 10px rgba(180, 53, 245, 0.4));
 	}
 
+	/* 4.5 of the ring's 105.75 — a percentage inset rather than a border, so it scales with the ring
+	   instead of with --hud-u, which the mobile layouts do not size the button by. */
+	.spin-btn__disc {
+		position: absolute;
+		inset: 4.26%;
+		border-radius: 50%;
+		background: radial-gradient(circle at 50% 34%, #46076f 0%, #37065f 72%);
+	}
+
+	/* --art-dy is a percentage of the element's OWN size, so each glyph needs its own number for what
+	   is the same 4.75-unit lift: 4.75 of a 60.5-tall arrow is 7.85%, of a 32-tall stop 14.84%. */
 	.spin-btn__img--arrow {
-		--art-h: 34.591%;
-		--art-dx: -0.676%;
-		--art-dy: 9.284%;
+		--art-h: 51.04%;
+		--art-dx: 0%;
+		--art-dy: -7.85%;
 	}
 
+	/* No stop state in the design. Sized by eye against the arrow rather than to its box: a filled
+	   square at the arrow's own height reads much heavier than the open C does. */
 	.spin-btn__img--stopglyph {
-		--art-h: 19.633%;
-		--art-dx: -1.786%;
-		--art-dy: 23.501%;
+		--art-h: 27%;
+		--art-dx: 0%;
+		--art-dy: -14.84%;
 	}
 
-	/* The marquee spins whenever the player engages the button — pointer, keyboard focus, the press
-	   itself — and keeps spinning for as long as the round is running. Keyed off .spin-btn rather
-	   than the image so the glyph swap at spin-start doesn't interrupt it.
+	/* The ring turns whenever the player engages the button — pointer, keyboard focus, the press
+	   itself — and keeps turning for as long as the round is running. Keyed off .spin-btn rather than
+	   the ring so the glyph swap at spin-start doesn't interrupt it.
+
+	   The circle is round, so what actually reads as motion is its GRADIENT: the magenta shoulder
+	   travels round the rim. That is why the ring's colour is on the outer box and not painted into a
+	   conic that would have to be re-derived every frame.
 
 	   translate() is repeated in the keyframes because the element's placement lives in the same
 	   `transform` property; dropping it here would fling the ring to the button's top-left. */
@@ -1578,29 +1645,28 @@
 		}
 	}
 
-	.spin-btn:not(:disabled):hover .spin-btn__img--bg,
-	.spin-btn:not(:disabled):focus-visible .spin-btn__img--bg,
-	.spin-btn:not(:disabled):active .spin-btn__img--bg,
-	.spin-btn.is-spinning .spin-btn__img--bg {
+	.spin-btn:not(:disabled):hover .spin-btn__ring,
+	.spin-btn:not(:disabled):focus-visible .spin-btn__ring,
+	.spin-btn:not(:disabled):active .spin-btn__ring,
+	.spin-btn.is-spinning .spin-btn__ring {
 		animation: spin-btn-ring 2.4s linear infinite;
 	}
 
 	/* Faster while the reels are actually turning, so the button reads as "running" rather than just
 	   "hovered". */
-	.spin-btn.is-spinning .spin-btn__img--bg {
+	.spin-btn.is-spinning .spin-btn__ring {
 		animation-duration: 1.1s;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.spin-btn .spin-btn__img--bg {
+		.spin-btn .spin-btn__ring {
 			animation: none;
 		}
 	}
 
-	/* The old press state swapped in a separate export whose only real difference was a bigger outer
-	   glow (its ring measured the same 377px). A filter reproduces that without a second download —
-	   and without the 16% size jump that export actually introduced. */
-	.spin-btn:not(:disabled):active .spin-btn__img--bg {
+	/* The press state is a brighter bloom off the rim, nothing more — the design has no second, larger
+	   circle for it. */
+	.spin-btn:not(:disabled):active .spin-btn__ring {
 		filter: drop-shadow(0 0 14px rgba(209, 0, 255, 0.75)) brightness(1.06);
 	}
 
@@ -1643,19 +1709,22 @@
 		font-size: 1.5rem;
 	}
 
-	/* 159 x 48 hit box (node 4169:27091). The marquee plate art is 178 x 59 and is deliberately
-	   BIGGER than the box — the design lets the gold frame and its glow bleed out on all four sides
-	   (inset -5.97% horizontally, -11.46% vertically) rather than fitting it inside. */
+	/* A fully rounded gradient pill, 48 tall, lit magenta at its top-left and cold blue at its
+	   bottom-right (Figma 7033:25229). It replaces a 178 x 59 marquee plate that was deliberately
+	   drawn BIGGER than its own hit box so the gold frame and glow could bleed out of it; there is no
+	   frame and no glow now, so the button and the shape it draws are the same box.
+
+	   119 x 48, the design's own box, now that the label is the single word BONUS. It was 159 for the
+	   two-word BUY BONUS this replaced. */
 	.buy-btn {
-		width: calc(var(--hud-u) * 159);
-		/* aspect-ratio rather than a fixed height: the mobile layouts override only the width, and a
-		   fixed height would squash the marquee plate. */
-		aspect-ratio: 159 / 48;
+		width: calc(var(--hud-u) * 119);
+		/* aspect-ratio rather than a fixed height: the mobile layouts override only the width. */
+		aspect-ratio: 119 / 48;
 		height: auto;
 		border: 0;
-		border-radius: 0;
-		background: none;
-		box-shadow: none;
+		border-radius: 9999px;
+		background: linear-gradient(135deg, #cf36ff 0%, #a833f2 32%, #3d2edf 100%);
+		box-shadow: 0 calc(var(--hud-u) * 3) calc(var(--hud-u) * 8) rgba(0, 0, 0, 0.45);
 		padding: 0;
 		outline: none;
 		cursor: pointer;
@@ -1669,15 +1738,6 @@
 			filter 0.12s ease;
 	}
 
-	.buy-btn__plate {
-		position: absolute;
-		left: -5.97%;
-		top: -11.46%;
-		width: 111.94%;
-		height: 122.92%;
-		pointer-events: none;
-	}
-
 	.buy-btn:not(:disabled):hover {
 		transform: translateY(-1px);
 		filter: brightness(1.1);
@@ -1687,11 +1747,13 @@
 		transform: translateY(1px) scale(0.95);
 	}
 
-	/* Lilita One 12 / 1.4 tracking / 20 line box, white (node 6004:4333). */
+	/* Lilita One 17 / 1.4 tracking / 20 line box, white. 17 rather than the 12 of node 6004:4333: the
+	   label was sized for the two-word BUY BONUS and kept that size when it became the single word
+	   BONUS, which left the pill mostly empty. */
 	.buy-btn__label {
 		position: relative;
 		font-family: 'Lilita One', sans-serif;
-		font-size: calc(var(--hud-u) * 12);
+		font-size: calc(var(--hud-u) * 17);
 		font-weight: 400;
 		color: #fff;
 		letter-spacing: calc(var(--hud-u) * 1.4);
@@ -1742,7 +1804,8 @@
 	}
 
 	.hud-shell[data-layout='landscape'] .buy-btn__label {
-		font-size: 0.52rem;
+		/* The same 12 -> 17 step the desktop label took, kept in this layout's own rem scale. */
+		font-size: 0.74rem;
 	}
 
 	.hud-shell[data-layout='landscape'] .hud-stats {
@@ -1810,16 +1873,15 @@
 	   only the complete group reflows. The old desktop row was uniformly
 	   shrunk to ~27% on portrait, making turbo effectively disappear. */
 	/* ── Mobile layouts ──────────────────────────────────────────────────────────────────────────
-	   Figma 6281-1791 specifies the DESKTOP bar only: one row, 1126 wide, backed by the neon plate
-	   art. Landscape floats the same controls over the board, so it cannot use a 1126x107 pill: it
-	   takes the design's palette, glyphs and type but keeps its own geometry — hence the plate is
-	   dropped and the row height goes back to auto here. Without this the fixed row height and the
-	   stretched plate wrecked it. Portrait no longer renders .hud-bottom at all — it has its own
-	   .pt-hud marquee below — but the rules stay keyed to both so the fallback is safe. */
+	   Figma 7033:25229 specifies the DESKTOP bar only: one row, 1095 wide, on a 77-tall plate.
+	   Landscape floats the same controls over the board, so it cannot use a 1095x77 pill: it takes
+	   the design's palette, glyphs and type but keeps its own geometry — hence the plate is dropped
+	   and the row height goes back to auto here. Without this the fixed row height and the stretched
+	   plate wrecked it. Portrait no longer renders .hud-bottom at all — it has its own .pt-hud
+	   marquee below, still on the older neon art — but the rules stay keyed to both so the fallback
+	   is safe. */
 	.hud-shell[data-layout='portrait'] .hud-plate,
-	.hud-shell[data-layout='landscape'] .hud-plate,
-	.hud-shell[data-layout='portrait'] .hud-plate-lights,
-	.hud-shell[data-layout='landscape'] .hud-plate-lights {
+	.hud-shell[data-layout='landscape'] .hud-plate {
 		display: none;
 	}
 

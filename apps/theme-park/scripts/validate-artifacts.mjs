@@ -211,9 +211,9 @@ for (const relativePath of [
 	'assets/spines/coasterVomit/coaster_vomit.png',
 	'assets/theme-park/v2/features/coaster-rig-happy.png',
 	'assets/theme-park/v2/features/coaster-rig-vomit.png',
-	'assets/theme-park/v2/board-border-backdrop.png',
-	'assets/theme-park/v2/board-border-expanded.png',
-	'assets/theme-park/v2/board-grid-backboard.webp',
+	'assets/theme-park/v2/board/frame-grid.webp',
+	'assets/theme-park/v2/board/frame-rail.webp',
+	'assets/theme-park/v2/board/frame-glow.webp',
 	'assets/spines/megaWildFullReel/mega_wild_full_reel.atlas',
 	'assets/spines/megaWildFullReel/mega_wild_full_reel.json',
 	'assets/spines/megaWildFullReel/mega_wild_full_reel.png',
@@ -339,7 +339,14 @@ assert.doesNotMatch(
 	/props\.prize\?\.value \?\? 0\}x/,
 	'Flat Duck additions must never be labelled as multipliers',
 );
-assert.match(duckSpineSource, /text="ALL"/, 'Multiply-all ducks need an ALL discriminator');
+// Was /text="ALL"/ — a literal, until the localization pass turned every user-facing string in this
+// component into a message-map lookup. The discriminator still has to be there; it just is not a
+// string in the source any more.
+assert.match(
+	duckSpineSource,
+	/text=\{stateI18nDerived\.translate\('ALL'\)\}/,
+	'Multiply-all ducks need an ALL discriminator',
+);
 
 const duckCollectSource = fs.readFileSync(
 	path.join(root, 'src', 'components', 'DuckCollectPresenter.svelte'),
@@ -509,9 +516,11 @@ assert.doesNotMatch(
 const assetsSource = fs.readFileSync(path.join(root, 'src', 'game', 'assets.ts'), 'utf8');
 assert.match(assetsSource, /duckPondTurn:/, 'Duck turn Spine must be registered');
 assert.doesNotMatch(assetsSource, /duckPresentSpine:/, 'Old duck present Spine must not load');
+// The three files gained a `-marquee` suffix when the scatter was redrawn as a lockup; this check
+// was still naming the pre-redesign ones and had been failing ever since.
 assert.match(
 	assetsSource,
-	/duck-your-luck-desktop\.png[\s\S]*duck-your-luck-mobile\.png[\s\S]*duck-your-luck-mobile-landscape\.png/,
+	/duck-your-luck-desktop-marquee\.png[\s\S]*duck-your-luck-mobile-marquee\.png[\s\S]*duck-your-luck-mobile-landscape-marquee\.png/,
 	'Duck Your Luck scatter must reuse every responsive bonus-buy asset',
 );
 
@@ -878,10 +887,14 @@ assert.doesNotMatch(
 	/BoardGridOverlay/,
 	'Game must use only the authored BoardFrame grid',
 );
+// This used to demand a rect PER CELL, each one held back from the grid lines by
+// GRID_LINE_CLEARANCE. The grid is now drawn BEHIND the reel contents rather than over them, and
+// clearing a gutter around every cell would cut a symbol at every internal line for nothing. One
+// rect for the whole board, inset only where the board's own opening is.
 assert.match(
 	boardSource,
-	/const drawBoardContentMask =[\s\S]*reel === 0 \? BOARD_SIDE_CONTENT_INSET : GRID_LINE_CLEARANCE[\s\S]*CELL_W - leftInset - rightInset[\s\S]*<Graphics isMask draw=\{drawBoardContentMask\} \/>/,
-	'Board symbols must use equal edge and internal grid clearance',
+	/const drawBoardContentMask =[\s\S]*BOARD_SIDE_CONTENT_INSET,[\s\S]*CELL_W \* BOARD_DIMENSIONS\.x - BOARD_SIDE_CONTENT_INSET \* 2[\s\S]*<Graphics isMask draw=\{drawBoardContentMask\} \/>/,
+	'Board symbols must be clipped only at the board opening, not at every internal grid line',
 );
 assert.doesNotMatch(
 	rollerOverlaySource,
@@ -903,9 +916,12 @@ assert.doesNotMatch(
 	/totalAlpha\.set\(0/,
 	'Combined reel totals must remain visible through the persistent-state handoff',
 );
+// The wait used to be `waitForTimeout(INTRO_MS)` literally. Super turbo now scales it through
+// introWaitMs(), so INTRO_MS is the unscaled length rather than the number passed. What this guards
+// is unchanged: one awaited wait between going to 'revealing' and the reveal, so a skip can cut it.
 assert.match(
 	rollerOverlaySource,
-	/const INTRO_MS = 1990;[\s\S]*phase = 'revealing'[\s\S]*waitForTimeout\(INTRO_MS\)/,
+	/const INTRO_MS = 1990;[\s\S]*phase = 'revealing'[\s\S]*waitForTimeout\(introWaitMs\(\)\)/,
 	'Combined 64-frame Roller intro must run as one skippable timeline',
 );
 assert.match(
@@ -1382,9 +1398,13 @@ assert.doesNotMatch(
 	/coverTopEdge|coverBottomEdge|hasTileAt/,
 	'Persistent Mega Coaster Wilds must not bridge adjacent cells over the grid',
 );
+// The normal Wild used to win by swapping to 'tpWildAnim' and playing a sheet. It was redrawn as a
+// marquee that wins by lighting its bulbs, so what this now checks is that it still resolves to the
+// per-layout wild sprite and that the sprite still rides winPulse — the pop is the part that has to
+// survive, not the sheet that used to carry it.
 assert.match(
 	boardSource,
-	/return 'tpWildAnim'[\s\S]*width=\{SYMBOL_W \* \(isWin \? winPulse : 1\)\}/,
+	/return getSpecialSymbolKey\('wild', layoutType\)[\s\S]*width=\{SYMBOL_W \* \(isWin \? winPulse : 1\)\}/,
 	'Normal Wilds must pop with other winning symbols',
 );
 assert.match(
@@ -1451,7 +1471,9 @@ assert.ok(
 const parkedRideBone = megaWildSpine.bones.find(({ name }) => name === 'ride');
 const parkedCartBone = megaWildSpine.bones.find(({ name }) => name === 'cart');
 assert.equal(parkedRideBone.y, -112, 'Duck cart ride bone must stop on the flat bottom track');
-assert.equal(parkedCartBone.y, -205, 'Duck cart local position must preserve its authored rail alignment');
+// Was -205, until `feat(theme-park): refresh mega wild sequence` re-authored the pass and lifted the
+// cart 22px on its rail. The number is a transcription of the art, so it moves when the art does.
+assert.equal(parkedCartBone.y, -183, 'Duck cart local position must preserve its authored rail alignment');
 assert.equal(
 	megaWildSpine.animations.intro.bones.cart.scale.length,
 	64,
@@ -1548,8 +1570,8 @@ const boardFrameSource = fs.readFileSync(
 	'utf8',
 );
 const boardArtSource = fs.readFileSync(path.join(root, 'src', 'game', 'boardArt.ts'), 'utf8');
-const boardBorderBuilderSource = fs.readFileSync(
-	path.join(root, 'scripts', 'build-board-border-layer.py'),
+const boardFrameBuilderSource = fs.readFileSync(
+	path.join(root, 'scripts', 'board', 'build_board_frame.py'),
 	'utf8',
 );
 assert.match(
@@ -1559,13 +1581,13 @@ assert.match(
 );
 assert.match(
 	boardFrameSource,
-	/key="themeBoardBorderBackdrop"/,
-	'BoardFrame must render the opaque authored rail below reel content',
+	/key="themeBoardRail"/,
+	'BoardFrame must render the frame above reel content',
 );
 assert.match(
 	boardFrameSource,
-	/key="themeBoardBorderExpanded"/,
-	'BoardFrame must render the transparent authored light overlay',
+	/key="themeBoardRailGlow"/,
+	'BoardFrame must render the additive neon pulse over the frame',
 );
 assert.doesNotMatch(
 	boardFrameSource,
@@ -1582,46 +1604,30 @@ assert.match(
 	/type Props = \{ layer\?: 'base' \| 'border' \}/,
 	'BoardFrame must split immutable base geometry from the top border overlay',
 );
-assert.match(
-	boardArtSource,
-	/ART_RAIL = \{ left: 21, top: 16, right: 1425, bottom: 958 \}/,
-	'Backboard geometry must derive from the exact authored light/glow bounds',
-);
 for (const pattern of [
-	/LIGHT_PATH_LEFT = 33\.8404/,
-	/LIGHT_PATH_RIGHT = 1411\.7267/,
-	/DIVIDERS_X = \(300, 584, 868, 1152\)/,
-	/TARGET_GRID_LEFT = 16/,
-	/TARGET_GRID_RIGHT = 1436/,
-	/backdrop = warp_border_x\(backdrop\)/,
-	/bright_alpha = strongest\.point\(/,
-	/lights = warp_border_x\(lights\)/,
+	/GENERATED by scripts\/board\/build_board_frame\.py/,
+	/rail_pixels\[inside\] = 0/,
+	/COLUMNS = 5/,
+	/ROWS = 5/,
 ]) {
 	assert.match(
-		boardBorderBuilderSource,
+		boardFrameBuilderSource,
 		pattern,
-		'Border assets must share the equal-cell warp and split dark underlay from top lights',
+		'The frame must be cut around its own opening, with the grid drawn at exact fifths of it',
 	);
 }
+assert.match(assetsSource, /board\/frame-grid\.webp/, 'Board grid/backboard must be registered');
+assert.match(assetsSource, /board\/frame-rail\.webp/, 'Board frame rail must be registered');
+assert.match(assetsSource, /board\/frame-glow\.webp/, 'Board frame pulse must be registered');
 assert.match(
-	assetsSource,
-	/board-border-backdrop\.png/,
-	'Opaque board-frame underlay must be registered',
-);
-assert.match(
-	assetsSource,
-	/board-border-expanded\.png/,
-	'Transparent bulb-only top layer must be registered',
-);
-assert.match(
-	assetsSource,
-	/board-grid-backboard\.webp/,
-	'Tightly cropped equal-cell grid/backboard must be registered',
+	boardArtSource,
+	/GENERATED by scripts\/board\/build_board_frame\.py/,
+	'Board geometry must come out of the cutting pipeline, not be hand-typed',
 );
 assert.match(
 	boardArtSource,
-	/ART_GRID = \{ left: 16, top: 41\.5, right: 1436, bottom: 941\.5 \}/,
-	'Board border must sit outside five equal 284px cells',
+	/GRID_RADIUS = 0\.0\d+/,
+	'The grid clip must be the drawn corner cut, or the park shows through the board corners',
 );
 assert.doesNotMatch(boardFrameSource, /drawFrameMask/, 'BoardFrame must not crop through border lights');
 assert.doesNotMatch(
@@ -1629,10 +1635,15 @@ assert.doesNotMatch(
 	/borderPoint|key="spark"/,
 	'BoardFrame must not restore the old per-spark autoplay path',
 );
+assert.doesNotMatch(
+	boardFrameSource,
+	/BOARD_BULBS/,
+	'The frame has no painted bulbs to chase; its neon line pulses as one',
+);
 assert.match(
 	boardFrameSource,
-	/BOARD_BULBS[\s\S]*alpha=\{hotGlowAlpha\}[\s\S]*alpha=\{coolGlowAlpha\}/,
-	'BoardFrame must restore the original alternating authored-bulb halo',
+	/blendMode="add"[\s\S]*alpha=\{glowAlpha\}/,
+	'BoardFrame must add the pulse over the frame rather than tinting the frame itself',
 );
 assert.match(
 	gameSource,

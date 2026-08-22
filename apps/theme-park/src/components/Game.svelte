@@ -6,7 +6,7 @@
 	import { EnableHotkey } from 'components-shared';
 	import { MainContainer } from 'components-layout';
 	import { App, Container } from 'pixi-svelte';
-	import { stateMeta, stateUi } from 'state-shared';
+	import { stateMeta, stateModal, stateUi } from 'state-shared';
 
 	import { Modals } from 'components-ui-html';
 
@@ -24,6 +24,7 @@
 	import Clouds from './Clouds.svelte';
 	import EscapedBalloon from './EscapedBalloon.svelte';
 	import LampGlow from './LampGlow.svelte';
+	import ParkHouse from './ParkHouse.svelte';
 	import LoadingScreen from './LoadingScreen.svelte';
 	import BoardFrame from './BoardFrame.svelte';
 	import Board from './Board.svelte';
@@ -63,7 +64,7 @@
 		sound.players?.music.play({ name: 'bgm_main' });
 	};
 
-	const heroArt = './assets/theme-park/v2/background-blur.webp';
+	const heroArt = './assets/theme-park/v2/park/plaza.webp';
 	const bonusArt = './assets/theme-park/coaster-bonus.webp';
 	const scatterArt = './assets/theme-park/symbols-concept.webp';
 	const uiRefArt = './assets/components/reference/controls_reference.png';
@@ -428,8 +429,18 @@
 	});
 </script>
 
+<!--
+	A MODAL TAKES THE SCREEN AWAY FROM THE GAME. `Popup` lays a backdrop over everything, but a
+	backdrop only stops what it happens to be above: it spends its first 300ms with
+	`pointer-events: none` so its own open animation cannot eat the click that opened it, and in
+	that window a tap meant for the bet menu went straight through to the HUD underneath — reaching
+	SPIN, or the very stepper the player was aiming at. Taking pointer events off the shell removes
+	the question. Hotkeys are already refused while `stateModal.modal` is set; this is the same rule
+	for the mouse.
+-->
 <div
 	class="game-shell"
+	class:is-modal={stateModal.modal !== null}
 	data-layout={context.stateLayoutDerived.layoutType()}
 	style={`--game-shell-bg:url('${heroArtBackdrop}')`}
 >
@@ -445,6 +456,7 @@
 			<Background />
 			<!-- Straight after the backdrop and before every <MainContainer>: they all sort at zIndex
 			     0, so insertion order is what keeps the sky behind the board. -->
+			<ParkHouse />
 			<LampGlow />
 			<Clouds />
 			<EscapedBalloon />
@@ -561,6 +573,10 @@
 		height: 100dvh;
 		background: #081008;
 		overflow: hidden;
+	}
+
+	.game-shell.is-modal {
+		pointer-events: none;
 	}
 
 	.game-shell::before,

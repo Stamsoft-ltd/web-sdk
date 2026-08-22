@@ -5,6 +5,7 @@ export default {
 	BET: 'दांव',
 	'TOTAL COST': 'कुल लागत',
 	MODE: 'मोड',
+	BONUS: 'बोनस',
 	'BUY BONUS': 'बोनस खरीदें',
 	PAYTABLE: 'भुगतान तालिका',
 	'GAME RULES': 'खेल के नियम',

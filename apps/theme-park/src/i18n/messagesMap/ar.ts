@@ -5,6 +5,7 @@ export default {
 	BET: 'الرهان',
 	'TOTAL COST': 'التكلفة الإجمالية',
 	MODE: 'الوضع',
+	BONUS: 'المكافأة',
 	'BUY BONUS': 'شراء المكافأة',
 	PAYTABLE: 'جدول الأرباح',
 	'GAME RULES': 'قواعد اللعبة',

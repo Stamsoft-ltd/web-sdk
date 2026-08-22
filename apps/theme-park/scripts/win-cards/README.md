@@ -8,6 +8,11 @@ layout table the game assembles them from.
 | tiered big win        | `build_marquee.py`  | `v2/wins/marquee/`                  | `src/game/winCardMarquee.ts` | `<WinCard>`      |
 | MAX WIN (>= 25,000x)  | `build_maxwin.py`   | `v2/wins/maxwin/`                   | `src/game/maxWinCard.ts`  | `<MaxWinCard>`   |
 
+The tiered card's PLATE is not cut here. It is the shared marquee **pad** — the same sign the
+bonus-complete screen sits on — so it has its own pipeline in `scripts/pad/`, and its rect and bulb
+table live in `src/game/padMarquee.ts`. What is still measured here is the plate's box on the design
+canvas, because it is the unit every other piece of the card is a fraction of.
+
 Both use the same CARD SPACE: fractions of the PLATE width, origin at the plate's centre, so one
 number in the game sizes the whole assembly.
 
@@ -23,7 +28,7 @@ File `Aw2jKodPiSHlDLcYjaNjbo` (Theme Park Slot).
 | ----------------------------- | ---------- |
 | the whole card ("sweet win")  | 7013:9117  |
 | plate + confetti composite    | 7013:9920  |
-| plate alone                   | 7013:10594 |
+| plate alone                   | 7013:10594 (superseded by `scripts/pad/`) |
 | confetti alone                | 7013:10597 |
 | SWEET wordmark                | 7013:9921  |
 | MYTHIC / EPIC / WILD wordmark | 7013:9953 / 9954 / 9955 |
@@ -58,10 +63,7 @@ Look at `verify_marquee.png` and compare it against the Figma render of 7013:911
 inside it by correlation rather than read off node boxes — a part that is 2% out looks fine alone
 and obviously wrong once the card is on screen.
 
-`build_marquee.py` also finds the plate's marquee bulbs by brightness peak. The field is flat dark
-purple so brightness alone separates them; the only thing excluded by region is the tent flag's
-gold knob (`FLAG_BELOW`). Do NOT reintroduce a rectangular field mask — the marquee's frame passes
-through the middle of its own bounding box, so one swallows the whole top arch.
+The plate's bulbs are found by `scripts/pad/build_pad.py`, on the pad's own art.
 
 ## The MAX WIN card
 

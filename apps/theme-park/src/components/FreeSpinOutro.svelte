@@ -20,10 +20,9 @@
 	import { stateI18nDerived } from 'state-shared';
 
 	import { POPUP_SCRIM_ALPHA } from '../game/constants';
-	import { CONGRATS_MARQUEES } from '../game/congratsPanelParts';
 	import { getContext } from '../game/context';
 	import { popupPanelLimits } from '../game/utils';
-	import CongratsPanel from './CongratsPanel.svelte';
+	import CongratsPanel, { WIDE_ASSEMBLY_ASPECT, WIDE_CENTRE_Y } from './CongratsPanel.svelte';
 	import PressToContinue from './PressToContinue.svelte';
 	import WinConfettiRain, { confettiForMultiplier } from './WinConfettiRain.svelte';
 
@@ -45,18 +44,11 @@
 	// popupPanelLimits. The grid rule is what reproduces the design on its own frame; the caps are
 	// what stop it on a squarish window, where the grid itself fills the frame — see the helper.
 	const OVER_GRID_HEIGHT = 532 / 457;
-	/**
-	 * The well hangs BELOW the marquee, so the screen is taller than the art: the assembly runs from
-	 * the marquee's top edge to the well's bottom, 460 of the design's frame against the 377-tall
-	 * art. The height cap has to be against THAT, or the well is what gets pushed off a short window.
-	 */
-	const ASSEMBLY_ASPECT = CONGRATS_MARQUEES.wide.aspect / (460.1 / 377);
-	/**
-	 * And the assembly's own middle is not the art's: it sits 47.9px above the design frame's centre,
-	 * which is what keeps the well clear of the HUD bar. As a fraction of the marquee's width it
-	 * holds at every size.
-	 */
-	const CENTRE_Y = -47.9 / 532;
+	// The well hangs BELOW the sign, so the screen is taller than the art and sits lower than it.
+	// <CongratsPanel> works both figures out from the pad it draws and the well it lays out, rather
+	// than either being restated here against a marquee this screen no longer uses.
+	const ASSEMBLY_ASPECT = WIDE_ASSEMBLY_ASPECT;
+	const CENTRE_Y = WIDE_CENTRE_Y;
 
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const board = $derived(context.stateGameDerived.boardLayout());

@@ -88,7 +88,7 @@
 		MAXWIN_WORD_BULBS,
 	} from '../game/maxWinCard';
 	import { AMOUNT_GOLD } from '../game/winCardText';
-	import WinCardLights from './WinCardLights.svelte';
+	import WinCardLights, { LIGHT_SPREAD } from './WinCardLights.svelte';
 
 	type Props = {
 		winId: number;
@@ -259,7 +259,7 @@
 					bulbs={MAXWIN_PLATE_BULBS}
 					size={cardWidth}
 					colour={0xffcf7a}
-					radius={0.03}
+					bulb={0.03 / LIGHT_SPREAD}
 					cycles={3}
 					speed={0.34}
 					floor={0.2}
@@ -290,7 +290,7 @@
 					size={cardWidth}
 					origin={{ x: MAXWIN_PARTS.word.x, y: MAXWIN_PARTS.word.y }}
 					colour={0xfff0c0}
-					radius={0.022}
+					bulb={0.022 / LIGHT_SPREAD}
 					cycles={4}
 					speed={0.5}
 					floor={0.12}

@@ -20,6 +20,8 @@ export const i18nDerived = {
 	realCost: () => stateI18nDerived.translate('REAL COST'),
 	mode: () => stateI18nDerived.translate('MODE'),
 	buyBonus: () => stateI18nDerived.translate('BUY BONUS'),
+	/** The control bar's feature button. One word — see the BONUS entry in the message maps. */
+	bonus: () => stateI18nDerived.translate('BONUS'),
 	paytable: () => stateI18nDerived.translate('PAYTABLE'),
 	gameRules: () => stateI18nDerived.translate('GAME RULES'),
 	autoplayLabel: () => stateI18nDerived.translate('AUTOPLAY'),

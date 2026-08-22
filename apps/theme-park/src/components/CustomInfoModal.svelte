@@ -86,7 +86,7 @@
 		{ img: 'h4-popcorn-marquee', name: 'INFO SYM POPCORN', pays: ['0.5', '2.5', '5'] },
 		{ img: 'h2-duck-marquee', name: 'INFO SYM DUCK', pays: ['1', '5', '10'] },
 		{ img: 'h3-balloons-marquee', name: 'INFO SYM BALLOONS', pays: ['1', '5', '10'] },
-		{ img: 'h1-coaster-marquee', name: 'INFO SYM COASTER', pays: ['2', '10', '20'] },
+		{ img: 'h1-coaster-still', name: 'INFO SYM COASTER', pays: ['2', '10', '20'] },
 		{ wild: true, name: 'INFO SYM WILD', pays: ['-', '-', '20'] },
 	];
 
@@ -107,13 +107,13 @@
 			mult: 100,
 		},
 		{
-			img: 'roller-wilds-desktop-marquee',
+			img: 'roller-wilds-desktop-still',
 			name: 'BET MODE ROLLER TITLE',
 			desc: 'BET MODE ROLLER DIALOG',
 			mult: 200,
 		},
 		{
-			img: 'mega-coaster-desktop-marquee',
+			img: 'mega-coaster-desktop-still',
 			name: 'BET MODE COASTER TITLE',
 			desc: 'BET MODE COASTER DIALOG',
 			mult: 500,

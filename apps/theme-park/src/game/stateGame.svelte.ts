@@ -186,6 +186,18 @@ const DESIGN_GRID = {
 	centreY: (86 + 457 / 2) / 670,
 };
 
+/**
+ * How far the board is lifted off the design's own placement, as a fraction of the canvas height.
+ *
+ * The design is drawn at 1.79 and the fractions above land it exactly there. Away from that ratio
+ * the board keeps its size but the room around it does not divide the way the drawing assumed — on
+ * an almost-square window the whole surplus collects above it and the board ends up sitting on the
+ * control bar with a band of sky over the logo. This hands a little of that back. It is small on
+ * purpose: past about 0.03 the board starts to crowd the logo on a wide screen, where there was
+ * never a problem to fix.
+ */
+const DESIGN_GRID_LIFT = 0.022;
+
 // The Forest Gang frame constants that used to drive the desktop board (_FRAME_MARGIN,
 // _FRAME_INNER_W_FRAC, _FRAME_ASPECT_H_W, _FRAME_ANCHOR_Y, _FRAME_EXTRA_SCALE) are gone with it —
 // they described that game's frame art, not this one's, and nothing else read them.
@@ -314,7 +326,7 @@ const boardLayout = () => {
 
 	return {
 		x: toMainX(DESIGN_GRID.centreX),
-		y: toMainY(DESIGN_GRID.centreY),
+		y: toMainY(DESIGN_GRID.centreY - DESIGN_GRID_LIFT),
 		frameTopY: 0,
 		frameCx: 0,
 		frameCy: 0,

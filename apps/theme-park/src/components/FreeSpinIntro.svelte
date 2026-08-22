@@ -64,13 +64,25 @@
 	//
 	// Sized off the REEL GRID (the design's 524-wide marquee against its 457-tall grid), capped by
 	// popupPanelLimits — see that helper for why a fixed frame share cannot do the capping.
-	const OVER_GRID_HEIGHT = 524 / 457;
+	//
+	// Drawn LARGER than the design's own ratio, because this is the fullest screen in the game and
+	// it was the one screen the caps never got near: the marquee came out about three fifths of the
+	// canvas with a hand's width of empty board all round it, and seven lines of copy inside it at
+	// that size are small. Asking for more here does not risk anything — popupPanelLimits still
+	// stops it at two thirds of the width, so on a wide canvas this simply reaches the cap instead
+	// of stopping short of it, and on a narrow one nothing changes.
+	const OVER_GRID_HEIGHT = 1.3;
 	// The design sits the marquee above the frame's centre, which lifts its bottom edge clear of the
 	// HUD bar: its box spans y 1..601 of the 670 frame, so the middle of it is 34px up. As a fraction
 	// of the marquee's width that holds at every size.
 	const CENTRE_Y = -34 / 524;
-	/** The badge art is 448x360, fitted to this share of the marquee at its own aspect. */
-	const BADGE_WIDTH = 0.3;
+	/**
+	 * The badge art is 448x360, fitted to this share of the marquee at its own aspect.
+	 *
+	 * Trimmed from 0.3: this is the biggest thing in the column and the column is full — see the
+	 * `tall` layout block in <CongratsPanel> for what had to come out of where.
+	 */
+	const BADGE_WIDTH = 0.27;
 	const BADGE_ASPECT = 448 / 360;
 	/** Scraps falling behind the board. A fixed handful: nothing has been won here yet but a bonus. */
 	const CONFETTI = 40;

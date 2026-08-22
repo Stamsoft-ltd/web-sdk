@@ -40,14 +40,46 @@
 	import LandingSquish from './LandingSquish.svelte';
 	import LoopingAssetSprite from './LoopingAssetSprite.svelte';
 	import MegaWildFullReel from './MegaWildFullReel.svelte';
+	import BalloonBunch from './BalloonBunch.svelte';
+	import DuckSign from './DuckSign.svelte';
+	import RollerWilds from './RollerWilds.svelte';
+	import MegaCoaster from './MegaCoaster.svelte';
+	import CoasterCar from './CoasterCar.svelte';
+	import DuckSymbol from './DuckSymbol.svelte';
+	import FerrisWheel from './FerrisWheel.svelte';
+	import PopcornBurst from './PopcornBurst.svelte';
 	import SymbolBulbs from './SymbolBulbs.svelte';
-	import { MEGA_WILD_BULBS, SYMBOL_BULBS } from '../game/symbolBulbs';
+	import SymbolSparks from './SymbolSparks.svelte';
+	import SymbolSteam from './SymbolSteam.svelte';
+	import WildLetter from './WildLetter.svelte';
+	import { MEGA_WILD_BULBS } from '../game/megaWildBulbs';
+	import { SYMBOL_BULBS } from '../game/symbolBulbs';
+	import { WHEEL_BULBS } from '../game/wheelParts';
 
 	const LOW_SYMBOLS_SET = new Set<SymbolName>(['L1', 'L2', 'L3', 'L4', 'L5']);
+	/**
+	 * The symbols that animate at rest under their own steam, and so sit out the board's idle rattle.
+	 *
+	 * Kept as the symbols that MOVE rather than as the symbols that shake, so that giving a sixth
+	 * symbol an idle animation is one entry here instead of a rule that quietly stops being true.
+	 */
+	const SELF_MOVING = new Set<SymbolName>([
+		'H1',
+		'H2',
+		'H3',
+		'H4',
+		'H5',
+		'S_ROLLER',
+		'S_COASTER',
+	]);
 	const DUCK_SYMBOL_SIZE = Math.min(SYMBOL_W, SYMBOL_H) * 1.04;
-	// Keep reel pixels off the grid dividers. The one authored grid in BoardFrame then remains visible
-	// through these narrow gaps without drawing a second set of lines above the board.
-	const GRID_LINE_CLEARANCE = 1.4;
+	// The grid the board is drawn on runs UNDER its contents. It used to be the other way about: the
+	// mask below carved a rect per cell and left a hair of clearance around each, so the authored
+	// dividers showed through and no symbol pixel ever crossed one. That reads as a table with
+	// pictures set into it rather than as a lit playfield — every symbol boxed in by a line it is
+	// not allowed to touch. The mask is now one rect for the whole playfield, so a symbol, a win
+	// pulse or a full-reel feature crosses the dividers and the grid sits behind the lot.
+
 	// Nothing wins by video any more. The whole symbol set was redrawn as flat cartoons, which left
 	// every *-win.webm animating art that is no longer on the board — a win would have snapped the
 	// symbol from cartoon back to the old photoreal render. Wins are now <SymbolBulbs> lighting the
@@ -65,20 +97,16 @@
 	const activeMap = $derived(context.stateGame.bonusMode ? bonusSpriteKeyByName : spriteKeyByName);
 	const getX = getBoardCellCenterX;
 	const drawBoardContentMask = (graphics: PIXI.Graphics) => {
-		for (let reel = 0; reel < BOARD_DIMENSIONS.x; reel += 1) {
-			const leftInset = reel === 0 ? BOARD_SIDE_CONTENT_INSET : GRID_LINE_CLEARANCE;
-			const rightInset =
-				reel === BOARD_DIMENSIONS.x - 1 ? BOARD_SIDE_CONTENT_INSET : GRID_LINE_CLEARANCE;
-			for (let row = 0; row < BOARD_DIMENSIONS.y; row += 1) {
-				graphics.rect(
-					CELL_W * reel + leftInset,
-					CELL_H * row + GRID_LINE_CLEARANCE,
-					CELL_W - leftInset - rightInset,
-					CELL_H - GRID_LINE_CLEARANCE * 2,
-				);
-			}
-		}
-		graphics.fill(0xffffff);
+		// The outer inset stays: that edge is the board's own opening, and a symbol running past it
+		// would be trimmed by the rail instead of by the mask, which is a harder edge and a worse one.
+		graphics
+			.rect(
+				BOARD_SIDE_CONTENT_INSET,
+				0,
+				CELL_W * BOARD_DIMENSIONS.x - BOARD_SIDE_CONTENT_INSET * 2,
+				CELL_H * BOARD_DIMENSIONS.y,
+			)
+			.fill(0xffffff);
 	};
 	const coasterCellSet = $derived(
 		new Set(context.stateGame.coasterTiles.map(({ reel, row }) => `${reel},${row}`)),
@@ -171,14 +199,18 @@
 	 * The bulb pattern to light over `spriteKey`, if there is one.
 	 *
 	 * Gated on the SPRITE and not just the symbol, because 'W' is drawn three different ways — the
-	 * marquee wild, the Mega Wild plaque on a roller trigger, and the Coaster Wild tile — each with
-	 * its own bulbs or, in the tile's case, none. Keying on the symbol alone would scatter the W's
-	 * pattern across the other two.
+	 * wild plate, the Mega Wild plaque on a roller trigger, and the Coaster Wild tile — and only the
+	 * plaque has anything to light: its two headlamps. The plate wins by popping its letter instead
+	 * (<WildLetter>) and the tile does nothing, so keying on the symbol alone would put the plaque's
+	 * two lamps on all three.
 	 */
 	const bulbsFor = (name: SymbolName, spriteKey: string) => {
+		// The wheel's bulbs come from its own table rather than SYMBOL_BULBS, because the wheel is the
+		// one sign here that is not a flat drawing: build-symbol-bulbs.py cannot see it, and the six
+		// live on the legs, which are the only part of the rig that stands still.
+		if (name === 'H5') return WHEEL_BULBS;
 		if (name !== 'W') return SYMBOL_BULBS[name];
-		if (spriteKey.startsWith('tpMegaWild')) return MEGA_WILD_BULBS;
-		return spriteKey.startsWith('tpWild') ? SYMBOL_BULBS.W : undefined;
+		return spriteKey.startsWith('tpMegaWild') ? MEGA_WILD_BULBS : undefined;
 	};
 	const getAnimationKey = (
 		rawSymbol: RawSymbol,
@@ -292,11 +324,35 @@
 	let landShakePhase = 0;
 	const seenLandingSequence = new Array<number>(BOARD_DIMENSIONS.x).fill(-1);
 
+	/**
+	 * Whether a cell is one the rattle is allowed to pick up.
+	 *
+	 * The shake was written when every symbol on this board was a still drawing, and it is the only
+	 * thing that made a settled board look inhabited. Five of them animate on their own now — the
+	 * coaster car's riders wave, the duck glances and breathes, the balloons sway, the bucket drops
+	 * popcorn, the wheel turns — and rocking those as well reads as two unrelated motions fighting
+	 * over one sprite rather than as a sign swinging on its hook. So the rattle is now for the
+	 * symbols that have nothing else: the five royals, the wilds and the scatters.
+	 */
+	const rattles = (reel: number, row: number) => {
+		const name = board[reel]?.reelState.symbols[row + 1]?.rawSymbol.name;
+		return name !== undefined && !SELF_MOVING.has(name);
+	};
+
 	const pickShakeGroup = () => {
-		const reel = Math.floor(Math.random() * BOARD_DIMENSIONS.x);
-		const row = Math.floor(Math.random() * BOARD_DIMENSIONS.y);
-		const wanted = 3 + Math.floor(Math.random() * 3);
+		// Seeded from a cell that qualifies, rather than from anywhere and filtered afterwards: on a
+		// board with a wheel and a duck on it, most random seeds would grow a clump that was mostly
+		// holes, and a good few would come back empty and skip the rattle entirely.
+		const eligible: [number, number][] = [];
+		for (let r = 0; r < BOARD_DIMENSIONS.x; r += 1) {
+			for (let w = 0; w < BOARD_DIMENSIONS.y; w += 1) {
+				if (rattles(r, w)) eligible.push([r, w]);
+			}
+		}
 		const group = new Map<string, number>();
+		if (eligible.length === 0) return group;
+		const [reel, row] = eligible[Math.floor(Math.random() * eligible.length)];
+		const wanted = 3 + Math.floor(Math.random() * 3);
 		// Ordered so the clump grows outward from the chosen cell and stays contiguous.
 		for (const [dReel, dRow] of [
 			[0, 0],
@@ -310,6 +366,7 @@
 			const r = reel + dReel;
 			const w = row + dRow;
 			if (r < 0 || r >= BOARD_DIMENSIONS.x || w < 0 || w >= BOARD_DIMENSIONS.y) continue;
+			if (!rattles(r, w)) continue;
 			group.set(`${r},${w}`, group.size * SHAKE_STAGGER);
 		}
 		return group;
@@ -502,8 +559,9 @@
 		scale={layout.boardScale}
 	>
 		<Graphics isMask draw={drawBoardContentMask} />
-		<!-- The 5x5 grid exists only in board-lines.webp. The cell mask above leaves its exact dividers
-		     and outer edges unobstructed instead of repainting a second grid at a higher layer. -->
+		<!-- The 5x5 grid exists only in the board's own art (board/frame-grid.webp). The cell mask above
+		     leaves its exact dividers and outer edges unobstructed instead of repainting a second grid
+		     at a higher layer. -->
 		{#each board as reel, reelIndex (reelIndex)}
 			{#if !hiddenReels.has(reelIndex)}
 				{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
@@ -556,6 +614,63 @@
 											: 1}
 									/>
 								{/if}
+							{:else if reelSymbol.rawSymbol.name === 'S_ROLLER' && !(hasWinState && !isWin)}
+								<!-- Assembled live rather than drawn, because this sign TALKS: its star turns
+								     while the board idles and its two words pop against each other when it
+								     wins. Dimmed it falls back to the still, for the reason given at the H3
+								     branch above. -->
+								<RollerWilds
+									x={getX(reelIndex)}
+									{y}
+									rotation={shake}
+									tint={idle}
+									width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+									height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+									alpha={1 - SPIN_FADE * blur}
+									signKey={getSpecialSymbolKey('rollerSign', layoutType)}
+									baseKey={fallbackKey}
+									clock={winClock}
+									{idleClock}
+									{blur}
+									phase={reelIndex * 0.71 + (symbolIndex - 1) * 1.13}
+									win={isWin}
+								/>
+							{:else if reelSymbol.rawSymbol.name === 'S_COASTER' && !(hasWinState && !isWin)}
+								<!-- Assembled live rather than drawn, because a building cannot do anything
+								     else: the marquee bolted to its face rocks while the board idles and its
+								     two words zoom when it wins. Dimmed it falls back to the still, for the
+								     reason given at the H3 branch above. -->
+								<MegaCoaster
+									x={getX(reelIndex)}
+									{y}
+									rotation={shake}
+									tint={idle}
+									width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+									height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+									alpha={1 - SPIN_FADE * blur}
+									houseKey={getSpecialSymbolKey('coasterHouse', layoutType)}
+									baseKey={fallbackKey}
+									clock={winClock}
+									{idleClock}
+									{blur}
+									phase={reelIndex * 1.09 + (symbolIndex - 1) * 0.67}
+									win={isWin}
+								/>
+							{:else if reelSymbol.rawSymbol.name === 'S_DUCK'}
+								<!-- Its own component, because it is the one symbol on this board that MOVES
+								     when it wins: the duck beats the two wings that ship apart from the rest
+								     of its art, and rocks the sign it is holding. -->
+								<DuckSign
+									x={getX(reelIndex)}
+									{y}
+									rotation={shake}
+									width={SYMBOL_W * (isWin ? winPulse : 1)}
+									height={SYMBOL_H * (isWin ? winPulse : 1)}
+									baseKey={fallbackKey}
+									clock={winClock}
+									win={isWin}
+									alpha={hasWinState && !isWin ? 0.35 : 1}
+								/>
 							{:else if reelSymbol.rawSymbol.name === 'DC'}
 								<DuckPondDuck
 									x={getX(reelIndex)}
@@ -598,17 +713,174 @@
 										/>
 									{/each}
 								{/if}
-								<Sprite
-									key={fallbackKey}
-									x={getX(reelIndex)}
-									{y}
-									anchor={{ x: 0.5, y: 0.5 }}
-									rotation={shake}
-									tint={idle}
-									width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
-									height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
-									alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
-								/>
+								<!--
+									DIMMED SYMBOLS FALL BACK TO THEIR ONE-PIECE STILL, and it is not an optimisation.
+
+									A symbol assembled from parts is a container of overlapping sprites, and pixi
+									fades a container by fading each CHILD — it does not render the group and fade
+									that. So at 35% the duck's wing showed through its body at 58%, a bright patch
+									exactly the shape of the tuck; the balloons did it wherever two of them crossed
+									and the wheel wherever a gondola lay over the rim. Compositing the group to a
+									texture would fix it and costs a filter per dimmed cell, which is not worth
+									paying to animate something the player is being told to ignore. The still is the
+									same picture, and it fades like every other dimmed symbol on the board.
+								-->
+								{@const dimmed = hasWinState && !isWin}
+								{#if reelSymbol.rawSymbol.name === 'H3' && !dimmed}
+									<!-- Assembled live rather than drawn, because these are BALLOONS: they nod on
+									     their strings while the board idles and fly when the symbol wins. Same box
+									     as the sprite it stands in for, so it ghosts, squeezes and breathes with
+									     the rest of the board. -->
+									<BalloonBunch
+										x={getX(reelIndex)}
+										{y}
+										rotation={shake}
+										tint={idle}
+										width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+										height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+										alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
+										baseKey={fallbackKey}
+										clock={winClock}
+										{idleClock}
+										{blur}
+										win={isWin}
+									/>
+								{:else if reelSymbol.rawSymbol.name === 'H1' && !dimmed}
+									<!-- Assembled live rather than drawn, because there are PEOPLE in it: the two
+									     riders in the back row wave, slowly at rest and harder when it wins. The
+									     art it stands in for had both arms frozen up mid-cheer, which is the pose
+									     a photograph of a wave has. Same box as the sprite, so it ghosts, squeezes
+									     and breathes with the rest of the board. -->
+									<CoasterCar
+										x={getX(reelIndex)}
+										{y}
+										rotation={shake}
+										tint={idle}
+										width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+										height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+										alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
+										carKey="tpCoasterCar"
+										baseKey={fallbackKey}
+										clock={winClock}
+										{idleClock}
+										{blur}
+										phase={reelIndex * 0.83 + (symbolIndex - 1) * 1.27}
+										win={isWin}
+									/>
+								{:else if reelSymbol.rawSymbol.name === 'H2' && !dimmed}
+									<!-- Assembled live rather than drawn, because this one is a BIRD: its eyes
+									     glance about while it sits there and its wing beats when it wins. Same
+									     box as the sprite it stands in for, so it ghosts, squeezes and breathes
+									     with the rest of the board. -->
+									<DuckSymbol
+										x={getX(reelIndex)}
+										{y}
+										rotation={shake}
+										tint={idle}
+										width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+										height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+										alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
+										baseKey={fallbackKey}
+										clock={winClock}
+										{idleClock}
+										{blur}
+										win={isWin}
+									/>
+								{:else if reelSymbol.rawSymbol.name === 'H5' && !dimmed}
+									<!-- Assembled live rather than drawn, because this one TURNS: slowly all the
+									     time, and fast while it wins. Same box as the sprite it stands in for, so
+									     it ghosts, squeezes and breathes with the rest of the board. -->
+									<FerrisWheel
+										x={getX(reelIndex)}
+										{y}
+										rotation={shake}
+										tint={idle}
+										width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+										height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+										alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
+										clock={winClock}
+										{idleClock}
+										win={isWin}
+									/>
+								{:else}
+									<Sprite
+										key={fallbackKey}
+										x={getX(reelIndex)}
+										{y}
+										anchor={{ x: 0.5, y: 0.5 }}
+										rotation={shake}
+										tint={idle}
+										width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+										height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+										alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
+									/>
+								{/if}
+								{#if fallbackKey.startsWith('tpWild')}
+									<!-- The wild's letter, which its plate art deliberately does not carry: it is a
+									     sprite of its own so that a win can pop it up from nothing. Sized and faded
+									     exactly like the plate underneath, so it rides the same spin trail. -->
+									<WildLetter
+										x={getX(reelIndex)}
+										{y}
+										rotation={shake}
+										width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+										height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+										clock={winClock}
+										win={isWin}
+										alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
+									/>
+								{/if}
+								{#if reelSymbol.rawSymbol.name === 'H4' && (isWin || (blur < 0.02 && !hasWinState))}
+									<!-- The one loose-part effect that also runs at rest: winning it pops the
+									     whole heap, and a settled board drops a single kernel over the side of
+									     the bucket every few seconds. Skipped mid-spin, where the bucket is a
+									     ghost, and while another symbol is winning, where it would compete with
+									     the presentation. -->
+									<PopcornBurst
+										x={getX(reelIndex)}
+										{y}
+										rotation={shake}
+										width={SYMBOL_W * (isWin ? winPulse : 1)}
+										height={SYMBOL_H * (isWin ? winPulse : 1)}
+										clock={winClock}
+										win={isWin}
+										{idleClock}
+										phase={reelIndex * 0.23 + (symbolIndex - 1) * 0.41}
+									/>
+								{/if}
+								{#if isWin && reelSymbol.rawSymbol.name === 'H1'}
+									<!-- What the coaster car does instead of lighting a marquee run: sparks off
+									     the rail under its back wheels. Behind the bulbs and in front of the
+									     art. Win-only — a board of idling engines would be noise, and unlike
+									     the Mega Wild below there can be a dozen of these on screen at once. -->
+									<SymbolSparks
+										x={getX(reelIndex)}
+										{y}
+										rotation={shake}
+										width={SYMBOL_W * winPulse}
+										height={SYMBOL_H * winPulse}
+										clock={winClock}
+										phase={reelIndex * 0.17 + (symbolIndex - 1) * 0.29}
+									/>
+								{/if}
+								{#if fallbackKey.startsWith('tpMegaWild') && (isWin || blur < 0.02)}
+									<!-- The locomotive plaque steams out of its funnel, WINNING OR NOT. It is
+									     the rarest thing the base game puts on the reels — one cell, on a roller
+									     trigger — so there is never a row of them to turn into noise, and a
+									     stopped engine is the one thing on this board that reads as broken
+									     rather than as still. <SymbolSteam> thins the resting plume itself.
+									     Skipped mid-spin, where the plaque is a ghost the puffs cannot follow. -->
+									<SymbolSteam
+										x={getX(reelIndex)}
+										{y}
+										rotation={shake}
+										width={SYMBOL_W * (isWin ? winPulse : 1)}
+										height={SYMBOL_H * (isWin ? winPulse : 1)}
+										clock={isWin ? winClock : idleClock}
+										idle={!isWin}
+										alpha={hasWinState && !isWin ? 0.35 : 1}
+									/>
+								{/if}
 								{#if isWin || blur < 0.02}
 									{@const bulbs = bulbsFor(reelSymbol.rawSymbol.name, fallbackKey)}
 									<!-- Over the symbol, so the lit bulbs sit on the unlit ones drawn into it. A

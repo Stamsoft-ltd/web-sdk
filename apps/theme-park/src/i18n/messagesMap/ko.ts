@@ -5,6 +5,7 @@ export default {
 	BET: '베팅',
 	'TOTAL COST': '총 비용',
 	MODE: '모드',
+	BONUS: '보너스',
 	'BUY BONUS': '보너스 구매',
 	PAYTABLE: '배당표',
 	'GAME RULES': '게임 규칙',

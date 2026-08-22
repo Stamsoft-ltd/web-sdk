@@ -1,12 +1,60 @@
 <script lang="ts" module>
+	import { PAD_ASPECT, PAD_BULB, PAD_BULBS, PAD_FIELD_CENTRE } from '../game/padMarquee';
+	import { CONGRATS_MARQUEES, type MarqueeArt } from '../game/congratsPanelParts';
+
 	export type CongratsVariant = 'tall' | 'wide';
+
+	/**
+	 * The bonus-complete screen's art is the shared marquee PAD — the same sign the big-win cards
+	 * sit on — rather than a second congratulations marquee of its own.
+	 */
+	const WIDE_ART: MarqueeArt = {
+		aspect: PAD_ASPECT,
+		bulbColour: PAD_BULB.colour,
+		bulb: PAD_BULB.size,
+		bulbs: PAD_BULBS,
+	};
+	const ART: Record<CongratsVariant, MarqueeArt> = {
+		tall: CONGRATS_MARQUEES.tall,
+		wide: WIDE_ART,
+	};
+
+	/** A width-unit offset from the art's centre, as the fraction-of-HEIGHT the layout speaks in. */
+	const fromWidth = (offset: number) => 0.5 + offset * PAD_ASPECT;
+
+	// === WHERE THE BONUS-COMPLETE COPY SITS ===
+	// Off the pad's field rather than off the design frame's numbers: the pad is a different shape
+	// from the marquee the design drew this screen on, so a fraction-of-height measured there lands
+	// somewhere else on this sign. What transfers is the RELATIONSHIP the design has — the headline
+	// on the field's centre line, YOU WON a fixed distance under it, the well tucked just below the
+	// sign's foot — and those are widths, which do transfer.
+	/** YOU WON below the headline, in pad widths. Figma 7032:19821: 457.4px under 382.3 on a 532 frame. */
+	const WIDE_SUBTITLE_DROP = 0.07313;
+	/** Daylight between the sign's foot and the top of the well. Figma: a hair over a pixel per 100. */
+	const WIDE_WELL_GAP = 0.01347;
+	const WIDE_WELL_HEIGHT = 0.225836;
+	const WIDE_PAD_FOOT = 0.5 / PAD_ASPECT;
+	const WIDE_WELL_CENTRE = WIDE_PAD_FOOT + WIDE_WELL_GAP + WIDE_WELL_HEIGHT / 2;
+
+	/**
+	 * The assembly is the sign PLUS the well hanging below it, and <FreeSpinOutro> has to cap its
+	 * height against that — cap against the art alone and the well is what a short window pushes off
+	 * the bottom.
+	 */
+	export const WIDE_ASSEMBLY_ASPECT =
+		1 / (WIDE_PAD_FOOT + WIDE_WELL_CENTRE + WIDE_WELL_HEIGHT / 2);
+	/**
+	 * And the assembly's middle is not the sign's, which is the point this component is positioned
+	 * by. Lifted a little further still (the design's own nudge, 0.012 of the width) to keep the well
+	 * clear of the HUD bar.
+	 */
+	export const WIDE_CENTRE_Y = -((WIDE_WELL_CENTRE + WIDE_WELL_HEIGHT / 2 - WIDE_PAD_FOOT) / 2 + 0.012);
 </script>
 
 <script lang="ts">
 	import { Container, FillGradient, Graphics, Sprite, Text, PIXI } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
-	import { CONGRATS_MARQUEES } from '../game/congratsPanelParts';
 	import WinCardLights from './WinCardLights.svelte';
 
 	// The congratulations marquee, shared by both bonus screens.
@@ -28,9 +76,14 @@
 	// NOT drawn: the design's static confetti, on either screen. <WinConfettiRain> falls the same
 	// scraps down the whole canvas instead (design ask, 2026-08-18) — the screens mount it, not this.
 	//
+	// The two are no longer the same piece of art: `tall` is still the design's own marquee
+	// (game/congratsPanelParts.ts), `wide` is the shared PAD the big-win cards sit on
+	// (game/padMarquee.ts). Both are flat-rail signs lit the same way, and both are placed by the
+	// same fractions, so the component does not care which it is drawing.
+	//
 	// Sizes: `size` is the marquee's rendered WIDTH. Sizes below are fractions of that width; Y
-	// positions are fractions of its HEIGHT, which is no longer the same number — the old panel was
-	// square to within 0.2% and these are 0.87 and 1.41.
+	// positions are fractions of its HEIGHT, which is not the same number — the old panel was square
+	// to within 0.2% and these are 0.87 and 1.83.
 
 	type Props = {
 		variant: CongratsVariant;
@@ -77,7 +130,7 @@
 
 	const context = getContext();
 
-	const art = $derived(CONGRATS_MARQUEES[variant]);
+	const art = $derived(ART[variant]);
 	const artKey = $derived(variant === 'tall' ? 'congratsMarqueeTall' : 'congratsMarqueeWide');
 	/** The marquees are deferred; until they land the old flat panel holds the place. */
 	const artReady = $derived(!!context.stateApp.loadedAssets?.[artKey]);
@@ -89,14 +142,29 @@
 	const GOLD = 0xffba3e;
 	const LAYOUT = {
 		tall: {
-			// Box 348,1 524x600 in frame 7033:24761.
+			// Box 348,1 524x600 in frame 7033:24761 — but re-pinned down the column against the
+			// marquee's OWN field, which is not the design frame's.
+			//
+			// THE FIELD IS SHORTER THAN THE FRAME THE COPY WAS LAID OUT ON. The purple runs from
+			// 0.30 of the art's height to 0.887 (measured off marquee-tall.webp; below that is the
+			// bulb rail), and this screen is the fullest one in the game — headline, YOU WON, the
+			// bonus's name, a three-line blurb, its symbol, the well and a caption, seven things in
+			// 0.59 of a height. Laid out on the design's taller frame the stack ran 0.04 long, and
+			// what ran off the end was FREE SPINS, sitting across the bottom rail with its
+			// descenders cut off by the bulbs.
+			//
+			// So the bottom half is pulled up and the middle trimmed to pay for it, rather than the
+			// sign being drawn bigger: every size here is a fraction of the marquee, so a bigger
+			// marquee is a bigger overflow. The gaps are down to about 0.012 of the height and there
+			// is no more to give — anything else this screen has to say needs the blurb shortened,
+			// not the numbers nudged again.
 			title: { y: 0.26, size: 0.09958, fill: GOLD, width: 0.78 },
 			subtitle: { y: 0.3375, size: 0.041872, fill: GOLD },
-			name: { y: 0.408333, size: 0.053435, width: 0.72 },
-			desc: { y: 0.49, size: 0.026718, width: 0.73855, maxHeight: 0.11 },
-			centre: { y: 0.635 },
+			name: { y: 0.402, size: 0.05, width: 0.72 },
+			desc: { y: 0.47, size: 0.0245, width: 0.73855, maxHeight: 0.1 },
+			centre: { y: 0.615 },
 			well: {
-				y: 0.806667,
+				y: 0.775,
 				height: 0.118321,
 				radius: 0.022901,
 				text: 0.076336,
@@ -106,18 +174,25 @@
 				border: 0xb65df3,
 				at: 1080,
 			},
-			label: { y: 0.903333, size: 0.053435, width: 0.72 },
+			label: { y: 0.865, size: 0.048, width: 0.72 },
 		},
 		wide: {
-			// Box 337,57 532x377 in frame 7032:19821.
-			title: { y: 0.526525, size: 0.073649, fill: 0xffffff, width: 0.7 },
-			subtitle: { y: 0.629973, size: 0.041242, fill: 0xffffff },
+			// Figma 7032:19821, re-pinned to the pad's field — see the module block.
+			// GOLD, like the bonus-won board — not the white the first pass took from the design
+			// render. The design's own spec for both lines is #FFBA3E; white was legible on the
+			// purple field but it made the two congratulations screens look like different games.
+			title: { y: fromWidth(PAD_FIELD_CENTRE), size: 0.073649, fill: GOLD, width: 0.7 },
+			subtitle: {
+				y: fromWidth(PAD_FIELD_CENTRE + WIDE_SUBTITLE_DROP),
+				size: 0.041242,
+				fill: GOLD,
+			},
 			name: undefined,
 			desc: undefined,
 			centre: undefined,
 			well: {
-				y: 1.061194,
-				height: 0.225836,
+				y: fromWidth(WIDE_WELL_CENTRE),
+				height: WIDE_WELL_HEIGHT,
 				radius: 0.033457,
 				text: 0.111524,
 				padX: 0.066915,
@@ -375,9 +450,8 @@
 		<WinCardLights
 			bulbs={art.bulbs}
 			{size}
-			origin={art.centre}
 			colour={art.bulbColour}
-			radius={0.028}
+			bulb={art.bulb}
 			cycles={4}
 			speed={CHASE_SPEED}
 			intensity={artReady ? lightsIn : 0}

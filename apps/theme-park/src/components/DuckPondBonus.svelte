@@ -414,16 +414,16 @@
 			pivot={layout.pivot}
 			scale={layout.boardScale}
 		>
-			<!-- The pool: water fills the frame's actual opening, measured off board-lines.webp — the
-			     bulb rails sit INSIDE the grid's outer edge horizontally (art x 30/1415 of the
-			     15.5..1435.5 grid rect) and OUTSIDE it vertically (art y 25/949), so the rect is
-			     narrower than the grid but taller. Rounded corners are baked into the art. -->
+			<!-- The pool fills the frame's opening, which IS the grid rect: the frame is cut around its
+			     own opening and scaled so the two coincide. The insets this used to carry were for a
+			     rail that overlapped the first and last cells; there is no such overlap now. Rounded
+			     corners are baked into the art. -->
 			<Sprite
 				key="duckPondWater"
-				x={17}
+				x={0}
 				y={0}
-				width={BOARD_SIZES.width - 37}
-				height={BOARD_SIZES.height - 5}
+				width={BOARD_SIZES.width}
+				height={BOARD_SIZES.height}
 			/>
 
 			<!-- 25 interactive ducks occupy the exact 5×5 reel cells. -->

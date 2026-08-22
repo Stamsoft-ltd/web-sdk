@@ -5,6 +5,7 @@ export default {
 	BET: '投注',
 	'TOTAL COST': '总费用',
 	MODE: '模式',
+	BONUS: '奖励',
 	'BUY BONUS': '购买奖励',
 	PAYTABLE: '赔付表',
 	'GAME RULES': '游戏规则',

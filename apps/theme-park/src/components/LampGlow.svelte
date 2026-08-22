@@ -5,6 +5,7 @@
 	import { cubicInOut } from 'svelte/easing';
 
 	import { getContext } from '../game/context';
+	import { PARK_LAMPS } from '../game/parkScene';
 	import { LAMPS_Z, backgroundCover } from '../game/sceneBackground';
 
 	/**
@@ -21,21 +22,16 @@
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 	const cover = $derived(backgroundCover(canvas));
 
-	// Measured off background-blur.webp, on the glass of each lantern. `size` is the lantern's size
-	// relative to the big one at the front left — the two near lamps carry a real halo, the ones down
-	// the avenue only a spark, which is what sells the distance.
-	const LAMPS = [
-		{ x: 0.1789, y: 0.3652, size: 1.0 },
-		{ x: 0.3199, y: 0.4405, size: 0.6 },
-		{ x: 0.4352, y: 0.495, size: 0.3 },
-		{ x: 0.5846, y: 0.5008, size: 0.3 },
-		{ x: 0.6679, y: 0.5083, size: 0.28 },
-		{ x: 0.6873, y: 0.4066, size: 0.85 },
-	];
+	// Found on the glass of each lantern by scripts/background/build_background.py, which also rings
+	// them on its verify sheet — a "lamp" that is really a flower bed is a glow hanging in the
+	// shrubbery, and that is not visible in the table. `size` is the lantern's glass relative to the
+	// biggest: the near pair carry a real halo, the two down the avenue only a spark, which is what
+	// sells the distance.
+	const LAMPS = PARK_LAMPS;
 
 	/** Halo and hot-centre diameters at size 1, as fractions of the backdrop's drawn width. */
 	const HALO = 0.075;
-	const CORE = 0.026;
+	const CORE = 0.022;
 
 	// Brightness at rest, and how much of it the breath takes away at the bottom of the cycle. Low on
 	// both counts: this is a lamp in daylight, and an additive glow that pumps is a warning light.

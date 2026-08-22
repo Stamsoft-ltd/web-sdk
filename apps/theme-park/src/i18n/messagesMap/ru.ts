@@ -5,6 +5,7 @@ export default {
 	BET: 'СТАВКА',
 	'TOTAL COST': 'ОБЩАЯ СТОИМОСТЬ',
 	MODE: 'РЕЖИМ',
+	BONUS: 'БОНУС',
 	'BUY BONUS': 'КУПИТЬ БОНУС',
 	PAYTABLE: 'ТАБЛИЦА ВЫПЛАТ',
 	'GAME RULES': 'ПРАВИЛА ИГРЫ',

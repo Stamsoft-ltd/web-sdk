@@ -19,6 +19,10 @@ Three things are worth knowing before touching this:
 * Every source is an AI render with soft edges, so each piece is trimmed on its own alpha rather
   than on the node box. The Figma node boxes here are padding around the ink, not placements — the
   placements in <SplashIntro> were fitted against the design render instead.
+* The background is the CLOUDLESS render of the park. Its sky is an unbroken gradient because the
+  clouds are drawn separately and drift across it at runtime — see build_splash_clouds.py. The
+  version with clouds painted in left almost nowhere legal to put a drifting one, since a cloud may
+  not sit on top of a painted one and may not spend its whole life behind the THEME PARK lockup.
 """
 
 from pathlib import Path
@@ -76,7 +80,7 @@ def main() -> None:
 	OUT.mkdir(parents=True, exist_ok=True)
 
 	# Full frame, no trim and no grade — this is the whole picture on both screens.
-	save(Image.open(SRC / 'park-dusk.png').convert('RGB'), 'background.webp')
+	save(Image.open(SRC / 'park-dusk-clear.png').convert('RGB'), 'background.webp')
 
 	# Drawn at 649 of the 1200-wide design frame, so ~1040px on a 1920 stage; 1300 leaves headroom
 	# for a 2x display without shipping the 2172px master.

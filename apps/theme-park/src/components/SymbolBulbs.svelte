@@ -91,6 +91,36 @@
 	 * brightness and by the flash and chase.
 	 */
 	const IDLE_HALO = HALO;
+
+	/**
+	 * How white each ring of the ramp above is, on the way in from the outermost to the core.
+	 *
+	 * Read off HALO rather than chosen: taking each ring's colour as its outermost one mixed some way
+	 * toward white gives 0, 0.35, 0.72 and 0.96, near enough the same amount in both of the channels
+	 * that are free to move. So the ramp is not four colours, it is ONE colour and a fade to white —
+	 * which is the only reason a bulb of some other colour can be built from it at all.
+	 */
+	const WHITEN = [0, 0.35, 0.72, 0.96];
+
+	/** `colour` mixed `amount` of the way to white. */
+	const whiten = (colour: number, amount: number) => {
+		const mix = (channel: number) => Math.round(channel + (255 - channel) * amount);
+		return (
+			(mix((colour >> 16) & 255) << 16) | (mix((colour >> 8) & 255) << 8) | mix(colour & 255)
+		);
+	};
+
+	/**
+	 * The rings for one bulb.
+	 *
+	 * A bulb with no colour of its own gets the amber ramp EXACTLY as authored, not a reconstruction
+	 * of it — every royal, the wheel and both wilds are lit by that ramp and none of them should shift
+	 * because the Mega Wild's jewels needed a different one.
+	 */
+	const ringsFor = (colour: number | undefined, rings: typeof HALO) =>
+		colour === undefined
+			? rings
+			: rings.map((ring, index) => ({ ...ring, colour: whiten(colour, WHITEN[index]) }));
 </script>
 
 <script lang="ts">
@@ -156,7 +186,7 @@
 	const draw = (graphics: InstanceType<typeof PIXI.Graphics>) => {
 		if (bulbs.length === 0) return;
 		const { width, height, win } = props;
-		const rings = win ? HALO : IDLE_HALO;
+		const ramp = win ? HALO : IDLE_HALO;
 		const gain = win ? 1 : IDLE_GAIN;
 		for (const [index, bulb] of bulbs.entries()) {
 			const brightness = win ? winLevel(index) : idleLevel(index);
@@ -164,7 +194,7 @@
 			const cx = (bulb.x - 0.5) * width;
 			const cy = (bulb.y - 0.5) * height;
 			const radius = bulb.r * width * (1 - BLOOM + BLOOM * brightness);
-			for (const ring of rings) {
+			for (const ring of ringsFor(bulb.colour, ramp)) {
 				graphics
 					.circle(cx, cy, radius * ring.scale)
 					.fill({ color: ring.colour, alpha: ring.alpha * lit });
