@@ -44,8 +44,10 @@
 		// Coil (L3): like the lightning, the Version2 export sits smaller on the shared canvas (241px
 		// wide against the old art's 293), so its fit is raised to keep the row consistent.
 		{ img: sym('low/coil.webp'), fit: 1.45, v: ['0.1x', '0.2x', '0.4x', '0.8x', '1.6x', '3x', '6x', '15x', '40x', '80x', '150x', '300x'] },
-		{ img: sym('low/energy_screw.webp'), fit: 1.19, v: ['0.08x', '0.1x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '12x', '30x', '60x', '120x', '250x'] },
+		{ img: sym('low/energy_screw.webp'), fit: 1.19, v: ['0.08x', '0.15x', '0.3x', '0.6x', '1.2x', '2.5x', '5x', '12x', '30x', '60x', '120x', '250x'] },
 	];
+	// Page 5 (Feature Buy) — Extra Chance uses the same chip art as its buy-menu card.
+	const chipIcon = sym('low/energy_screw.webp');
 	const wild = sym('special/wild.webp');
 	const wildX10 = sym('special/wild_x10.webp');
 	const scatter = sym('special/scatter.webp');
@@ -261,6 +263,15 @@
 					<h2 class="page-title">{t('INFO FEATURE BUY')}</h2>
 					<p class="fb-sub">{t('INFO FB SUB')}</p>
 					<div class="fb-grid">
+						<div class="card feat-card">
+							<!-- Extra Chance reuses the buy-menu card's own title/description keys (already
+							     translated in every locale) so the rules page and the mode card cannot drift. -->
+							<h3 class="feat-h">{t('BUY EXTRA CHANCE TITLE')}</h3>
+							<p class="feat-p">{t('BUY EXTRA CHANCE DESC')}</p>
+							<img class="feat-ic" src={chipIcon} alt="Extra Chance" />
+							<div class="fb-meta"><span class="fb-k">{t('INFO COST')}</span><span class="fb-v">{cost('2x')}</span></div>
+							<div class="fb-meta"><span class="fb-k">{t('INFO RTP')}</span><span class="fb-v">{RTP_SHORT}</span></div>
+						</div>
 						<div class="card feat-card">
 							<h3 class="feat-h">{t('INFO FB EXTRA TITLE')}</h3>
 							<p class="feat-p">{t('INFO FB EXTRA TEXT')}</p>
@@ -801,23 +812,27 @@
 		gap: clamp(10px, 2cqmin, 22px);
 		min-height: 0;
 	}
-	/* The two stacked cards split the column into two exactly-equal halves (min-height:0 removes the
-	   content floor). Their spacing + icon are sized so the content fits inside each half. */
+	/* The two stacked cards share the column height in proportion to their COPY (flex-basis auto),
+	   not as two exactly-equal halves: the Wild explanation is roughly twice the length of the
+	   Multiplier Wild one, so an even split pushed the Wild art through the lower frame (measured
+	   54px past it at 1600x900) while the other card sat with slack. */
 	.feat-grid .feat-col-small .feat-card {
-		flex: 1 1 0;
+		flex: 1 1 auto;
 		min-height: 0;
 		overflow: hidden;
-		gap: clamp(3px, 0.9cqmin, 9px);
-		padding: clamp(12px, 2.4cqmin, 22px) clamp(10px, 2cqmin, 18px) clamp(8px, 1.8cqmin, 16px);
+		gap: clamp(2px, 0.6cqmin, 6px);
+		padding: clamp(10px, 2cqmin, 16px) clamp(10px, 2cqmin, 18px) clamp(8px, 1.8cqmin, 14px);
 	}
+	/* Smaller than the tall cards' art on purpose — these two cards are half-height and carry the
+	   longest copy on the page, so the magnet has to give way to the text, not the other way round. */
 	.feat-grid .feat-col-small .feat-ic {
-		width: clamp(44px, 9.5cqmin, 76px);
+		width: clamp(30px, 6.2cqmin, 36px);
 		margin: 0;
 	}
 	/* The approved Magnetic Wild explanation is substantially longer than the other feature copy.
 	   Keep it inside the half-height card without pushing the Wild art through the lower frame. */
 	.feat-grid .feat-col-small .feat-card--wild .feat-p {
-		font-size: clamp(9px, 1.65cqmin, 15px);
+		font-size: clamp(8px, 1.4cqmin, 12px);
 		line-height: 1.3;
 		letter-spacing: 0.015em;
 	}
@@ -926,12 +941,13 @@
 		flex: 1;
 		min-height: 0;
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		/* Figma 4453:7151: three 200px cards + two 34px gaps = 668 of the 965 inner panel, CENTRED.
-		   Stretching the row edge to edge made each card ~50% wider than the design, which left the
-		   copy floating in an over-wide box. The wider gap is part of the same proportion. */
-		gap: clamp(8px, 3cqmin, 30px);
-		max-width: 72%;
+		grid-template-columns: repeat(4, 1fr);
+		/* Figma 4453:7151 sized three 200px cards + two 34px gaps = 668 of the 965 inner panel, CENTRED.
+		   The row now carries a fourth card (Extra Chance), so the band widens to 4x200 + 3x34 = 902 of
+		   965 — the CARD width is unchanged from the design, only the band it sits in grows. Stretching
+		   the row edge to edge would make each card wider than the design and leave the copy floating. */
+		gap: clamp(6px, 2.4cqmin, 26px);
+		max-width: 94%;
 		margin-inline: auto;
 		width: 100%;
 	}
@@ -951,7 +967,14 @@
 	/* Page 5 (Feature Buy): a bit larger than before, but the group must still fit (the card height is
 	   fixed), so keep it modest and centred. */
 	.fb-grid .feat-h {
-		font-size: clamp(15px, 3cqmin, 29px);
+		/* Four cards across (Extra Chance joined the row), so each is ~a quarter of the band rather
+		   than a third: heading, copy and icons all step down a notch. Measured, not guessed — at the
+		   previous sizes cards 2-4 overflowed their fixed-height frame art by 10-21px at 16:9 in
+		   English and by up to 33px in Russian (the wordiest locale). These coefficients measure 0px
+		   overflow in en/de/ru at 1600x900, 1280x720, 1024x768 and mobile landscape. The MAXIMA matter
+		   as much as the coefficients: 16:9 desktop is wide enough that the clamp max is what renders
+		   (measured 15px of a 1.7cqmin/15px description there), so raising them re-broke Russian. */
+		font-size: clamp(13px, 2.5cqmin, 23px);
 		color: #2391c1;
 	}
 	.fb-grid .feat-p {
@@ -960,7 +983,7 @@
 		   card — the description is the only variable-height element here. */
 		/* Figma is 14px in a 176px-wide text column; the cards are now that narrow too, so the same
 		   size wraps the same way. Was 1.6cqmin (~11px), shrunk back when the cards were full-width. */
-		font-size: clamp(9px, 2.05cqmin, 17px);
+		font-size: clamp(9px, 1.7cqmin, 13px);
 		line-height: 1.3;
 		color: #d7d7d7;
 	}
@@ -968,14 +991,14 @@
 		/* Desktop (base) W icon — the Extra-Feature card has the longest copy, so this is the largest that
 		   fits without clipping COST/RTP on the tightest (16:9) desktop panels, even in the wordiest
 		   locale (Russian). cqmin scales it. */
-		width: clamp(54px, 10.3cqmin, 96px);
+		width: clamp(38px, 6.6cqmin, 56px);
 	}
 	.fb-grid .feat-trigger img {
 		/* Scatter cards have shorter copy → the scatter can be a bit bigger. */
-		width: clamp(56px, 12.2cqmin, 116px);
+		width: clamp(40px, 8cqmin, 66px);
 	}
 	.fb-grid .feat-x {
-		font-size: clamp(24px, 5cqmin, 50px);
+		font-size: clamp(17px, 3.4cqmin, 32px);
 	}
 	.fb-meta {
 		display: flex;
@@ -1329,21 +1352,24 @@
 
 		/* Page 5 — Feature buy: everything bigger (the cards have spare height). */
 		.fb-sub { font-size: 12px; }
-		/* Wider than the desktop row's 72%: the landscape canvas is only 850px across, so the same
-		   percentage left the cards narrow enough to wrap the Extra-Feature copy an extra line. */
-		.fb-grid { gap: 16px; max-width: 84%; }
-		/* Spread each card's rows top-to-bottom (title → text → icon → COST → RTP) to fill the card height.
-		   Padding/gap kept tight and the Extra-Feature wild icon modest so the longest card's RTP still fits. */
-		.fb-grid .feat-card { gap: 8px; padding: 14px; justify-content: space-between; }
-		.fb-grid .feat-h { font-size: 17px; }
+		/* Wider than the desktop row's band: the landscape canvas is only 850px across, so the same
+		   percentage left the cards narrow enough to wrap the Extra-Feature copy an extra line. With
+		   four cards the row uses the full width and a tighter gap to keep each card readable. */
+		.fb-grid { gap: 10px; max-width: 100%; }
+		/* Centre each card's rows as ONE block (title → text → icon → COST → RTP). This was
+		   space-between, which spread three cards over a tall card nicely; with four narrower cards
+		   in a popout window it left ~40px voids between every row. Measured at 700x460: the block
+		   now spans 53-187px of a 241px card instead of 7-234px. */
+		.fb-grid .feat-card { gap: clamp(4px, 1.5cqmin, 10px); padding: 10px; justify-content: center; }
+		.fb-grid .feat-h { font-size: 15px; }
 		/* 1px under the other landscape body copy: at 15px the longest card (Extra Feature) wrapped to
 		   five lines and pushed COST/RTP past the frame art's bottom edge in both popout sizes. */
-		.fb-grid .feat-p { font-size: 12px; }
+		.fb-grid .feat-p { font-size: 11px; }
 		/* Short landscape viewports (this @container fires ≤490px tall, e.g. mobile landscape): the panel is
 		   only ~half height, so keep the icons modest or they clip the card's COST/RTP. */
-		.fb-grid .feat-ic { width: 84px; }
-		.fb-grid .feat-trigger img { width: 88px; }
-		.fb-grid .feat-x { font-size: 27px; }
+		.fb-grid .feat-ic { width: 68px; }
+		.fb-grid .feat-trigger img { width: 72px; }
+		.fb-grid .feat-x { font-size: 23px; }
 		.fb-k { font-size: 13px; }
 		.fb-v { font-size: 13px; }
 
@@ -1510,9 +1536,20 @@
 		.feat-grid .feat-col-small .feat-card {
 			flex: 0 0 auto;
 			min-height: auto;
+			/* The frame art's lower rail is 23 of its 551px = 4.2% of the rendered card height, and
+			   the base rule's 8-16px bottom padding is thinner than that at portrait sizes — which is
+			   why the Wild magnet sat ON the rail. Clear it with room to spare. */
+			padding: clamp(16px, 4cqmin, 30px) clamp(18px, 4.4cqmin, 34px) clamp(20px, 5cqmin, 34px);
+			gap: clamp(6px, 1.6cqmin, 14px);
 		}
-		/* Stack the three buy cards vertically — and drop the centred max-width, which only applies
-		   to the three-across desktop row. */
+		/* The base cap on this art exists only because the two cards share a SHORT column on desktop.
+		   Portrait stacks them at natural height, so the magnet can be legible again — still well
+		   under the tall cards' scatter, which is the visual hierarchy the page wants. */
+		.feat-grid .feat-col-small .feat-ic {
+			width: clamp(56px, 13cqmin, 96px);
+		}
+		/* Stack the four buy cards vertically — and drop the centred max-width, which only applies
+		   to the four-across desktop row. */
 		.fb-grid {
 			grid-template-columns: 1fr;
 			max-width: none;
