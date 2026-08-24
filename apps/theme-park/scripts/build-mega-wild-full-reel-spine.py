@@ -7,32 +7,37 @@ import json
 import math
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter, ImageOps
+from PIL import Image, ImageOps
 
 
 APP = Path(__file__).resolve().parents[1]
-HANDDRAWN = (
-    APP / "source-assets-unused" / "assets" / "theme-park" / "mega-wild-handdrawn"
+ART = APP / "art" / "concepts"
+CLEAN_SOURCE = (
+    APP
+    / "source-assets-unused"
+    / "assets"
+    / "theme-park"
+    / "mega-wild-clean"
 )
-FULL_REEL_SOURCE = HANDDRAWN / "full-reel-background-v2.png"
-PLAQUE_SOURCE = HANDDRAWN / "plaque-front-v1.png"
-PLAQUE_TOP_35_SOURCE = HANDDRAWN / "plaque-top-35-v1.png"
-PLAQUE_TOP_60_SOURCE = HANDDRAWN / "plaque-top-60-v1.png"
-PLAQUE_TOP_SIDE_SOURCE = HANDDRAWN / "plaque-top-side-v1.png"
-PLAQUE_BOTTOM_35_SOURCE = HANDDRAWN / "plaque-bottom-35-v1.png"
-PLAQUE_BOTTOM_60_SOURCE = HANDDRAWN / "plaque-bottom-60-v1.png"
-PLAQUE_BOTTOM_SIDE_SOURCE = HANDDRAWN / "plaque-bottom-side-v1.png"
-CART_SOURCE = HANDDRAWN / "cart-flat-v1.png"
-CART_STEEP_SOURCE = HANDDRAWN / "cart-steep-v1.png"
-CART_HIGH_MID_SOURCE = HANDDRAWN / "cart-high-mid-v1.png"
-CART_MID_SOURCE = HANDDRAWN / "cart-mid-v1.png"
-CART_LOW_MID_SOURCE = HANDDRAWN / "cart-low-mid-v1.png"
+FULL_REEL_SOURCE = CLEAN_SOURCE / "track-clean.png"
+# The gold marquee plaque this rig shipped with was replaced by the flat neon card of Figma
+# 7100:26891 (2026-08-24). The design draws it as one portrait card squashed into a landscape box,
+# with the Roller Wilds star straddling its top rail -- so a single piece of art plus the star the
+# sign lockup already ships is the whole plaque now, and the six authored perspective poses
+# (mega-wild-plaque-{top,bottom}-*-v1.png, still in art/concepts/) are no longer used.
+PLAQUE_SOURCE = ART / "mega-wild-plaque-neon-v2.png"
+PLAQUE_STAR_SOURCE = (
+    APP / "static" / "assets" / "theme-park" / "v2" / "symbols" / "roller-wilds-star.png"
+)
+CART_SOURCE = CLEAN_SOURCE / "cart-flat.png"
+CART_STEEP_SOURCE = CLEAN_SOURCE / "cart-steep.png"
+CART_HIGH_MID_SOURCE = CLEAN_SOURCE / "cart-high-mid.png"
+CART_MID_SOURCE = CLEAN_SOURCE / "cart-mid.png"
+CART_LOW_MID_SOURCE = CLEAN_SOURCE / "cart-low-mid.png"
 OUTPUT = APP / "static" / "assets" / "spines" / "megaWildFullReel"
 NAME = "mega_wild_full_reel"
 WIDTH = 256
 HEIGHT = 824
-# New hand-drawn source is authored symmetrically around the reel axis.
-BACKGROUND_CENTERING_X = 0.5
 PAGE_WIDTH = 1024
 FRAME_COUNT = 64
 PLAQUE_POSE_COUNT = 128
@@ -46,15 +51,36 @@ ROLL_END_FRAME = 42
 ROLL_FLIPS_FAKE_START = 5
 ROLL_FLIPS_REAL_START = 4
 PLAQUE_EDGE_SCALE = 0.24
-CART_VISUAL_TARGET_WIDTH = 180
-CART_LAYER_SIZE = (194, 280)
-CART_START_SCALE = 0.58
+PLAQUE_WIDTH = 244
+# The design's own box: 118 x 67.23 in Figma. The card art is portrait, so honouring this is a
+# deliberate squash, not a fit -- that is how the composed screen draws it.
+PLAQUE_ASPECT = 118.0 / 67.23255673265089
+# Star size and how far it rises above the top rail, both as fractions of the card's own height,
+# measured off the composed design.
+PLAQUE_STAR_HEIGHT = 0.2696
+PLAQUE_STAR_RISE = 0.0609
+# Perspective poses, as a fraction of the front layer's height. These are the ratios the authored
+# gold poses had, kept so the roll foreshortens exactly as much as it always has. They are on top of
+# the vertical squash `plaque_pose` already applies to the bone, which is why they overshoot cosine.
+PLAQUE_POSE_RATIOS = {
+    "top_35": 116 / 163,
+    "top_60": 68 / 163,
+    "top_side": 41 / 163,
+    "bottom_35": 129 / 163,
+    "bottom_60": 80 / 163,
+    "bottom_side": 54 / 163,
+}
+# Render the card at 4x and downsample once. The squash plus the star's diagonals alias badly when
+# each is resized straight to its final size.
+PLAQUE_SUPERSAMPLE = 4
+CART_LAYER_SIZE = (220, 329)
+CART_START_SCALE = 0.5
 CART_VIEWS = ("steep", "high_mid", "mid", "low_mid", "flat")
 CART_VIEW_TRANSITIONS = ((8, 12), (12, 16), (16, 20), (20, 24))
-CART_Y = -187.5
+CART_Y = -183
 PLAQUE_Y = 0
-# End on the flat bottom track. With the clean cart's visible 215px height, -112 puts its bottom at
-# about -410 inside the -412 rig edge instead of stopping early on the incline.
+# End on the flat bottom track. The aligned transparent cart canvases share one baseline; this
+# position places that baseline at the reel edge without changing size between authored views.
 RIDE_END_Y = -112
 
 
@@ -77,65 +103,60 @@ def contain(image: Image.Image, size: tuple[int, int]) -> Image.Image:
 
 
 def background_layer() -> Image.Image:
-    """Opaque carnival-night reel fill. Prevents board/renderer bars during the duck pass."""
-    return ImageOps.fit(
-        Image.open(FULL_REEL_SOURCE).convert("RGBA"),
-        (WIDTH, HEIGHT),
-        Image.Resampling.LANCZOS,
-        centering=(BACKGROUND_CENTERING_X, 0.5),
+    """Clean opaque reel-sized track. Prevents board/renderer bars during the duck pass."""
+    return Image.open(FULL_REEL_SOURCE).convert("RGBA").resize(
+        (WIDTH, HEIGHT), Image.Resampling.LANCZOS
     )
-
-
-def cart_source_scale() -> float:
-    """Match Mega Coaster's 180px cart width and retain one scale across all pitch views."""
-    flat = trim(Image.open(CART_SOURCE))
-    return CART_VISUAL_TARGET_WIDTH / flat.width
-
-
-def cart_layer_from(source: Path) -> Image.Image:
-    cart = trim(Image.open(source))
-    scale = cart_source_scale()
-    cart = cart.resize(
-        (round(cart.width * scale), round(cart.height * scale)), Image.Resampling.LANCZOS
-    )
-    if cart.width > CART_LAYER_SIZE[0] or cart.height > CART_LAYER_SIZE[1]:
-        raise ValueError(f"Cart view {source.name} exceeds fixed attachment box: {cart.size}")
-    layer = Image.new("RGBA", CART_LAYER_SIZE)
-    # One bottom baseline and one scale remove the apparent size pop between authored perspectives.
-    layer.alpha_composite(
-        cart,
-        ((CART_LAYER_SIZE[0] - cart.width) // 2, CART_LAYER_SIZE[1] - cart.height),
-    )
-    return layer
 
 
 def cart_layer() -> Image.Image:
-    return cart_layer_from(CART_SOURCE)
+    return cart_perspective_layer(CART_SOURCE)
 
 
 def cart_perspective_layer(source: Path) -> Image.Image:
-    """Place one authored pitch view in the fixed cart attachment box."""
-    return cart_layer_from(source)
+    """Scale the shared canvases together so view changes cannot resize or shake the cart."""
+    return contain(Image.open(source).convert("RGBA"), CART_LAYER_SIZE)
 
 
 def plaque_layer() -> Image.Image:
-    # True standalone art: complete closed gold frame and bottom jewel, no track/background crop.
-    return contain(trim(Image.open(PLAQUE_SOURCE)), (244, 190))
+    """The neon card with the star sitting on its top rail, as one piece.
+
+    The star is baked in rather than mounted on its own bone so it foreshortens with the card
+    through the roll -- a star that stayed round while the card turned edge-on would read as a
+    sticker floating in front of it.
+    """
+    card = trim(Image.open(PLAQUE_SOURCE))
+    star = trim(Image.open(PLAQUE_STAR_SOURCE))
+    width = PLAQUE_WIDTH * PLAQUE_SUPERSAMPLE
+    height = round(width / PLAQUE_ASPECT)
+    rise = round(height * PLAQUE_STAR_RISE)
+    star_height = round(height * PLAQUE_STAR_HEIGHT)
+    star_width = round(star_height * star.width / star.height)
+    canvas = Image.new("RGBA", (width, height + rise))
+    canvas.alpha_composite(card.resize((width, height), Image.Resampling.LANCZOS), (0, rise))
+    canvas.alpha_composite(
+        star.resize((star_width, star_height), Image.Resampling.LANCZOS),
+        ((width - star_width) // 2, 0),
+    )
+    return canvas.resize(
+        (PLAQUE_WIDTH, round(canvas.height / PLAQUE_SUPERSAMPLE)), Image.Resampling.LANCZOS
+    )
 
 
-def plaque_side_layer(source: Path) -> Image.Image:
-    # Authored extreme-perspective poses already contain their depth; keep their natural aspect.
-    return contain(trim(Image.open(source)), (244, 190))
+def plaque_pose_layer(front: Image.Image, ratio: float) -> Image.Image:
+    """One perspective pose, squashed out of the front layer.
+
+    The gold plaque shipped seven separately drawn poses because it had a rim with real depth to
+    show. The neon card is flat, so a turned card is the front face and nothing else.
+    """
+    return front.resize(
+        (front.width, max(1, round(front.height * ratio))), Image.Resampling.LANCZOS
+    )
 
 
 def sparkle_layer() -> Image.Image:
-    layer = Image.new("RGBA", (WIDTH, HEIGHT))
-    draw = ImageDraw.Draw(layer)
-    for x, y in ((38, 110), (218, 157), (32, 471), (221, 521), (47, 712), (211, 754)):
-        for radius, alpha in ((13, 15), (8, 32), (4, 126)):
-            draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=(255, 224, 77, alpha))
-        draw.ellipse((x - 2, y - 2, x + 2, y + 2), fill=(255, 255, 220, 255))
-    return layer.filter(ImageFilter.GaussianBlur(0.55))
+    # Retain the slot for backwards-compatible Spine layout, but remove the six side glows.
+    return Image.new("RGBA", (WIDTH, HEIGHT))
 
 
 def pack_atlas(layers: dict[str, Image.Image]) -> tuple[Image.Image, dict[str, tuple[int, int]]]:
@@ -396,6 +417,10 @@ def intro_animation(initial_real: bool) -> dict:
 
 def main() -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
+    plaque_front = plaque_layer()
+    # The star rides above the card, so the layer's centre -- which is where the multiplier bone
+    # sits -- is above the card's. Push the text back down onto the card's own middle.
+    multiplier_y = -round(plaque_front.height * PLAQUE_STAR_RISE / (2 + 2 * PLAQUE_STAR_RISE), 3)
     layers = {
         "background": background_layer(),
         "cart_steep": cart_perspective_layer(CART_STEEP_SOURCE),
@@ -403,13 +428,11 @@ def main() -> None:
         "cart_mid": cart_perspective_layer(CART_MID_SOURCE),
         "cart_low_mid": cart_perspective_layer(CART_LOW_MID_SOURCE),
         "cart": cart_layer(),
-        "plaque": plaque_layer(),
-        "plaque_top_35": plaque_side_layer(PLAQUE_TOP_35_SOURCE),
-        "plaque_top_60": plaque_side_layer(PLAQUE_TOP_60_SOURCE),
-        "plaque_top_side": plaque_side_layer(PLAQUE_TOP_SIDE_SOURCE),
-        "plaque_bottom_35": plaque_side_layer(PLAQUE_BOTTOM_35_SOURCE),
-        "plaque_bottom_60": plaque_side_layer(PLAQUE_BOTTOM_60_SOURCE),
-        "plaque_bottom_side": plaque_side_layer(PLAQUE_BOTTOM_SIDE_SOURCE),
+        "plaque": plaque_front,
+        **{
+            f"plaque_{pose}": plaque_pose_layer(plaque_front, ratio)
+            for pose, ratio in PLAQUE_POSE_RATIOS.items()
+        },
         "sparkles": sparkle_layer(),
         "fake_multiplier_slot": Image.new("RGBA", (1, 1)),
         "multiplier_slot": Image.new("RGBA", (1, 1)),
@@ -515,7 +538,7 @@ def main() -> None:
     }
     skeleton = {
         "skeleton": {
-            "hash": "theme-park-mega-wild-v24-mega-coaster-style",
+            "hash": "theme-park-mega-wild-v27-neon-plaque",
             "spine": "4.2.0",
             "x": -WIDTH / 2,
             "y": -HEIGHT / 2,
@@ -531,8 +554,8 @@ def main() -> None:
             # Fixed in reel/world space. Never inherits the duck slide.
             {"name": "plaque", "parent": "root", "y": PLAQUE_Y},
             {"name": "plaque_edge", "parent": "root", "y": PLAQUE_Y},
-            {"name": "fake_multiplier", "parent": "plaque"},
-            {"name": "multiplier", "parent": "plaque"},
+            {"name": "fake_multiplier", "parent": "plaque", "y": multiplier_y},
+            {"name": "multiplier", "parent": "plaque", "y": multiplier_y},
             {"name": "sparkles", "parent": "root"},
         ],
         "slots": [

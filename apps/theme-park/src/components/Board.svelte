@@ -500,8 +500,15 @@
 				? REEL_SKIP_GAP_MS.fast
 				: REEL_SKIP_GAP_MS.normal;
 	const stopReelsForSkip = () => {
+		// Keep the force-stop decision sticky for the rest of this reveal. The anticipation overlay
+		// fades before the ordered reel-stop timers have all fired; deriving `force` only from the
+		// overlay state let a repeated/forwarded stop downgrade the remaining noStop reels to a plain
+		// stop, which cannot release them and left the final reel spinning forever.
+		const forceAnticipationStop =
+			context.stateGame.anticipationSkipped || hasActiveAnticipation();
+		if (forceAnticipationStop) context.stateGame.anticipationSkipped = true;
 		context.stateGameDerived.enhancedBoard.stopSequentially({
-			force: hasActiveAnticipation(),
+			force: forceAnticipationStop,
 			delayMs: reelSkipGap(),
 		});
 	};

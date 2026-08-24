@@ -27,7 +27,13 @@ describe('Theme Park manual reel stop order', () => {
 		const boardSpin = sharedSource('packages/utils-slots/src/createEnhanceBoardSpin.ts');
 		const spinningReel = sharedSource('packages/utils-slots/src/createReelForSpinning.svelte.ts');
 		expect(board.match(/stopSequentially/g)?.length).toBeGreaterThanOrEqual(2);
-		expect(events).toContain('stateGameDerived.enhancedBoard.stopSequentially({ delayMs })');
+		expect(board).toContain(
+			'context.stateGame.anticipationSkipped || hasActiveAnticipation()',
+		);
+		expect(board).toContain('if (forceAnticipationStop) context.stateGame.anticipationSkipped = true');
+		expect(board).toContain('force: forceAnticipationStop');
+		expect(events).toContain('if (hasAnticipation) stateGame.anticipationSkipped = true');
+		expect(events).toContain('force: !!hasAnticipation');
 		expect(events).toContain('onWaitingForReady: () =>');
 		expect(events).toContain('onPrepared: () =>');
 		expect(board).toContain('reel.finishPreSpin()');

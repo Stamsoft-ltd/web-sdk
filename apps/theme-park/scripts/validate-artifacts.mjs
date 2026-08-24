@@ -1460,7 +1460,7 @@ assert.deepEqual(
 );
 assert.equal(
 	megaWildSpine.skeleton.hash,
-	'theme-park-mega-wild-v24-mega-coaster-style',
+	'theme-park-mega-wild-v27-neon-plaque',
 	'Combined Mega Wild rig revision',
 );
 assert.equal(
@@ -1478,7 +1478,7 @@ const parkedCartBone = megaWildSpine.bones.find(({ name }) => name === 'cart');
 assert.equal(parkedRideBone.y, -112, 'Duck cart ride bone must stop on the flat bottom track');
 assert.equal(
 	parkedCartBone.y,
-	-187.5,
+	-183,
 	'Duck cart local position must preserve its authored rail alignment',
 );
 assert.equal(

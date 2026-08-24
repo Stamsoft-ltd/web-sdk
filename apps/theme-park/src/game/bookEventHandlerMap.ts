@@ -137,7 +137,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 					: stateBet.isTurbo
 						? REEL_SKIP_GAP_MS.fast
 						: REEL_SKIP_GAP_MS.normal;
-				stateGameDerived.enhancedBoard.stopSequentially({ delayMs });
+				// The click arrived before the reveal was prepared. Once its target is known, an
+				// anticipation reveal must force-stop every noStop reel; a plain stop only interrupts the
+				// ordinary reels and leaves the anticipated tail running indefinitely.
+				if (hasAnticipation) stateGame.anticipationSkipped = true;
+				stateGameDerived.enhancedBoard.stopSequentially({
+					force: !!hasAnticipation,
+					delayMs,
+				});
 			},
 		});
 		await Promise.all([spinPromise, rollerRollOutPromise]);
