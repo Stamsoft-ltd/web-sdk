@@ -42,22 +42,26 @@ APP = pathlib.Path(__file__).resolve().parents[2]
 OUT_DIR = APP / 'static/assets/theme-park/v2/popup/congrats'
 OUT_TS = APP / 'src/game/congratsPanelParts.ts'
 
-#: The band to take out of the rail, in source pixels. Both edges sit in a GAP between bulbs, six
-#: bulbs apart, inside the straight run — see the module docstring. Run with `--measure` to list
-#: every candidate and what aspect each leaves; do not nudge these by eye.
-SEAM = (620, 1129)
-
-#: Where the sign has to LAND, measured off the marquee this replaced: the canvas aspect, and the
-#: box the drawing occupies inside it, as fractions of the canvas.
+#: The band to take out of the rail, in source pixels. Both edges sit in a GAP between bulbs, TWO
+#: bulbs apart, inside the straight run — see the module docstring. Run with `--measure N` to list
+#: every candidate that removes N bulbs and what aspect each leaves; do not nudge these by eye.
 #:
-#: Every number in <CongratsPanel>'s `tall` layout is a fraction of the marquee sprite's box, so the
-#: headline, the blurb, the badge and the well all sit where they do because the rail sat where it
-#: did. Matching the old geometry here is what lets the art be replaced without re-deriving a dozen
-#: Figma-measured constants — and it is why the residual 1.2% of vertical give (the shortened
-#: drawing comes out at 0.8701 against the old 0.8593) is taken as a stretch rather than argued
-#: away. That is a pixel on a bulb, where fitting the WHOLE drawing to the panel's aspect — which is
-#: what the art this replaces was doing — was 16%, and is why its bulbs were ovals.
-CANVAS_ASPECT = 0.87298
+#: It used to take out six bulbs (620, 1129), which left the sign at 0.873 and the field too short
+#: for what this screen has to say: CONGRATS! did not fit inside the purple and sat across the top
+#: rail (2026-08-24). Two bulbs leaves the canvas at 0.744 — a quarter more height for the same
+#: width, all of it field — which is what it takes to stand seven things up the column with gaps
+#: that read as gaps. The copy is laid out inside it in <CongratsPanel>'s `tall` block.
+SEAM = (620, 787)
+
+#: The transparent margin around the drawing, as fractions of the canvas — the padding the marquee
+#: this replaced carried, kept so the sprite's box is not the ink's box (the glow and the flag need
+#: room outside the rail).
+#:
+#: The canvas ASPECT is no longer a constant. It used to be pinned to the marquee this replaced so
+#: that <CongratsPanel>'s Figma-measured fractions kept working, at the cost of a residual 1.2%
+#: vertical stretch. The sign is now deliberately a different shape from that one, so there is
+#: nothing left to match: the height is derived from the drawing so the drawing is never stretched
+#: at all, and the layout is re-pinned against the field this produces.
 INK_BOX = (0.04980, 0.03581, 0.95020, 0.95055)
 
 #: Rendered width to ship the marquee at. It is drawn a little over 500 of the design's 1200 frame,
@@ -139,8 +143,9 @@ def to_panel(img):
     ys, xs = np.nonzero(ink)
     drawing = img.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
 
-    height = round(WIDTH / CANVAS_ASPECT)
     x0, y0, x1, y1 = INK_BOX
+    # Derived, not pinned: the ink box keeps the drawing's own aspect, so nothing is stretched.
+    height = round(WIDTH * (x1 - x0) * drawing.height / drawing.width / (y1 - y0))
     box = (round(x0 * WIDTH), round(y0 * height), round(x1 * WIDTH), round(y1 * height))
     canvas = Image.new('RGBA', (WIDTH, height), (0, 0, 0, 0))
     canvas.paste(drawing.resize((box[2] - box[0], box[3] - box[1]), Image.LANCZOS), box[:2])
@@ -358,8 +363,12 @@ export type MarqueeArt = {
     OUT_TS.write_text('\n'.join(body))
 
 
-def measure(img):
-    """Print what SEAM has to be derived from: the straight run, and the bulbs down the left rail."""
+def measure(img, removed=6):
+    """Print what SEAM has to be derived from: the straight run, and the bulbs down the left rail.
+
+    `removed` is how many bulbs the band takes out — the knob that sets how TALL the sign ends up,
+    since every bulb of rail left in is another ~86 source rows of purple field to write in.
+    """
     ink = np.asarray(img)[..., 3] > 8
     edges = {}
     for y in range(img.height):
@@ -383,9 +392,9 @@ def measure(img):
     gaps = np.diff(bulbs)
     print(f'{len(bulbs)} bulbs down x={column}, pitch {np.median(gaps):.0f} '
           f'({gaps.min()}..{gaps.max()})')
-    print('SEAM candidates removing six bulbs, from gap to gap inside the straight run:')
-    for i in range(len(bulbs) - 7):
-        lo, hi = (bulbs[i] + bulbs[i + 1]) // 2, (bulbs[i + 6] + bulbs[i + 7]) // 2
+    print(f'SEAM candidates removing {removed} bulbs, from gap to gap inside the straight run:')
+    for i in range(len(bulbs) - removed - 1):
+        lo, hi = (bulbs[i] + bulbs[i + 1]) // 2, (bulbs[i + removed] + bulbs[i + removed + 1]) // 2
         if lo < rows[0] or hi > rows[-1]:
             continue
         tall = img.height - (hi - lo)
@@ -397,7 +406,8 @@ if __name__ == '__main__':
     import sys
 
     if '--measure' in sys.argv:
-        measure(load('tall'))
+        n = sys.argv[sys.argv.index('--measure') + 1] if len(sys.argv) > sys.argv.index('--measure') + 1 else '6'
+        measure(load('tall'), removed=int(n))
         raise SystemExit
 
     marquees = {}

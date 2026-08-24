@@ -8,12 +8,6 @@
 	// facade — unlike <CustomInfoModal>, which also lists art that never went through the redraw.
 	const modeAsset = (icon: string, variant: 'desktop' | 'mobile' | 'mobile-landscape') =>
 		ap(`/assets/theme-park/v2/modes/${icon}-${variant}-marquee.png`);
-	// Neon gradient frame (download "S pad") — the glowing card border from the design, and the plate
-	// behind the bet stepper. The design stretches this one image to fill each box and lets its own
-	// rounded corners do the shaping, so the neon line stays proportional to the card at any size.
-	// The de-lit variant (scripts/info/build_neon_frame.py): this screen runs real marching lights
-	// round the same line, and the blobs painted into the original read as bulbs stuck on.
-	const neonFrame = ap('/assets/theme-park/v2/hud/neon-frame-plain.png');
 	// Stepper glyphs and coin — the very same SVGs the main HUD's bet row uses, so the lifted stepper
 	// reads as that row rather than as a second, different control.
 	const iconMinus = ap('/assets/theme-park/v2/hud/icon_minus.svg');
@@ -34,7 +28,6 @@
 	import { templateStakeDerived } from '../state/templateStake.svelte';
 	import PopupFrame from './PopupFrame.svelte';
 	import PopupCloseButton from './PopupCloseButton.svelte';
-	import InfoBorderLights from './InfoBorderLights.svelte';
 	import type { BetMode } from '../game/types';
 
 	type ToggleMode = Extract<BetMode, 'ANTE' | 'FSPIN1' | 'FSPIN2'>;
@@ -52,12 +45,6 @@
 	const t = (key: string) => i18nDerived.translate(key);
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 
-	// The marching lights are a canvas, so their radius and glow have to be real pixels rather than
-	// the stylesheet's --u. A 100-unit-wide ruler element is measured instead of hard-coding the
-	// relationship: --u is defined differently in landscape and portrait, and the ruler is right in
-	// both without this file having to know which.
-	let rulerWidth = $state(0);
-	const u = $derived(rulerWidth / 100);
 
 	const betAmount = $derived(stateBet.betAmount);
 	const canAfford = (multiplier: number) => stateBet.balanceAmount >= betAmount * multiplier;
@@ -217,16 +204,11 @@
 		aria-label={t('BUY BONUS')}
 		onclick={(e) => e.stopPropagation()}
 	>
-		<span class="unit-ruler" aria-hidden="true" bind:clientWidth={rulerWidth}></span>
 		<h2 class="title">{t('BUY BONUS')}</h2>
 
 		<div class="grid">
 			{#each FEATURE_CARDS as card (card.mode)}
 				<div class="card card--toggle">
-					<img class="card-bg" src={neonFrame} alt="" aria-hidden="true" />
-					{#if u}
-						<InfoBorderLights radius={21 * u} inset={0} pad={14 * u} glow={7 * u} />
-					{/if}
 					<span class="card-title" use:fitLabel={{ dep: t(card.title) }}>{t(card.title)}</span>
 					<span class="card-desc" use:fitHeight={t(card.desc)}>{t(card.desc)}</span>
 					<span class="card-price">{cost(card.costMultiplier)} {t('PER SPIN')}</span>
@@ -243,10 +225,6 @@
 
 			{#each BUY_CARDS as card (card.mode)}
 				<div class="card card--buy">
-					<img class="card-bg" src={neonFrame} alt="" aria-hidden="true" />
-					{#if u}
-						<InfoBorderLights radius={24 * u} inset={0} pad={14 * u} glow={7 * u} />
-					{/if}
 					<span class="card-title" use:fitLabel={{ dep: t(card.title) }}>{t(card.title)}</span>
 					<span class="card-desc" use:fitHeight={t(card.desc)}>{t(card.desc)}</span>
 					<picture class="mode-art">
@@ -272,10 +250,6 @@
 		     own bet readout flanked by its two stepper circles, on the neon plate. The bar underneath
 		     is dimmed by HudHtml for the duration, so this is the only live control down there. -->
 		<div class="betrow">
-			<img class="card-bg" src={neonFrame} alt="" aria-hidden="true" />
-			{#if u}
-				<InfoBorderLights radius={12 * u} inset={0} pad={12 * u} glow={6 * u} />
-			{/if}
 			<button
 				class="bet-step"
 				type="button"
@@ -360,17 +334,6 @@
 		height: calc(var(--u) * 670);
 	}
 
-	/* Measured, never seen: 100 design units wide and nothing tall, so `u` in the script is whatever
-	   --u currently resolves to. */
-	.unit-ruler {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: calc(var(--u) * 100);
-		height: 0;
-		pointer-events: none;
-	}
-
 	/* Node 6695:4860 — 26px Lilita One, white, centred, 27 down. White rather than the brand gradient
 	   because it lands on the game logo, which the gradient disappeared into. */
 	.title {
@@ -390,26 +353,28 @@
 		text-shadow: 0 calc(var(--u) * 2) calc(var(--u) * 8) rgba(0, 0, 0, 0.75);
 	}
 
-	/* Node 6695:4874 — 1041x453 at (80, 91), two rows of three with a 12 gutter. The rows are
-	   deliberately unequal: the buys are taller because they carry a logo. */
+	/* Node 7058:10362/10381 — 1041 wide at x 80, two rows of three with a 12 gutter, the block
+	   centred 17u above the frame's middle: 202-tall spin cards over 259-tall buy cards, i.e. 473
+	   of height running 81.5..554.5. The rows are deliberately unequal: the buys are taller because
+	   they carry a logo. */
 	.grid {
 		position: absolute;
 		left: calc(var(--u) * 80);
-		/* Start below the close button when it (floored) reaches lower than the design's 91u top, so the
+		/* Start below the close button when it (floored) reaches lower than the design's top, so the
 		   top-right card never sits under it. Pinned by top+bottom (not height) with proportional rows,
 		   so the cards simply shrink to the room that leaves instead of overrunning the bet row. */
-		top: max(calc(var(--u) * 91), var(--close-clear));
-		bottom: calc(var(--u) * 126);
+		top: max(calc(var(--u) * 81.5), var(--close-clear));
+		bottom: calc(var(--u) * 115.5);
 		width: calc(var(--u) * 1041);
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		grid-template-rows: 1fr 1.27fr;
+		grid-template-rows: 1fr 1.282fr;
 		gap: calc(var(--u) * 12);
 	}
 
-	/* The card is the neon frame stretched to fill, exactly as the design places it — so the glow
-	   line stays proportional to the card instead of being a fixed pixel thickness that swamps it on
-	   a small screen. The art carries its own dark interior and transparent corners. */
+	/* A flat plate — the redesign (7058:10255) drops the neon frame art and the marching lights this
+	   screen used to run round it: #270544 inside a 1px #5e4374 line, radius 13. Drawn rather than
+	   an image, so there is no art to stretch and nothing to crop. */
 	.card {
 		position: relative;
 		box-sizing: border-box;
@@ -417,83 +382,61 @@
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
-		/* The backdrop below is absolutely positioned, and a positioned element paints ABOVE static
-		   inline content however early it sits in the DOM — without a stacking context of its own the
-		   card art buried its own title, copy and price. Isolating keeps the two z-indexes local. */
-		isolation: isolate;
+		background: #270544;
+		border: 1px solid #5e4374;
+		border-radius: calc(var(--u) * 13);
 	}
 
-	/* The art does NOT fill its own canvas: measured against neon-frame.png (615x309) the neon line
-	   peaks at x 21..590 and y 18..270, i.e. dead margin of 3.4/3.9% at the sides, 5.8% at the top and
-	   12.3% at the bottom. Simply stretching it to the card box therefore drew the card ~7% narrower
-	   and ~18% shorter than the box, which turned the design's 12px gutter into a ~70px canyon and
-	   squashed every card's aspect. The design crops that margin off (its own image is placed at
-	   104.78%/105.87% and clipped); these numbers are the same crop computed for THIS file, so the
-	   neon line lands exactly on the card's edge. Left unclipped on purpose — the little bloom that
-	   spills into the gutter is what the design shows between cards. */
-	.card-bg {
-		position: absolute;
-		left: -3.691%; /* -21 / 569 */
-		top: -7.143%; /* -18 / 252 */
-		width: 108.084%; /* 615 / 569 */
-		height: 122.619%; /* 309 / 252 */
-		object-fit: fill;
-		pointer-events: none;
-		z-index: 0;
-	}
-
-	.card > :not(.card-bg, canvas) {
-		position: relative;
-		z-index: 1;
-	}
-
-	/* Paddings and the margins below add up to the design's exact stack:
-	   toggle 16+29+5+48+4+19+9+44+20 = 194; buy 16+29+5+45+5+55+5+19+8+44+16 = 247. */
+	/* Paddings and the margins below add up to the design's stack inside its 202 / 259 cards:
+	   toggle 12+26+4+44+6+36+8+50+12 = 198; buy 12+26+4+42+5+55+5+36+8+50+12 = 255. */
 	.card--toggle {
-		padding: calc(var(--u) * 16) calc(var(--u) * 20) calc(var(--u) * 20);
+		padding: calc(var(--u) * 12) calc(var(--u) * 16);
 	}
 	.card--buy {
-		padding: calc(var(--u) * 16) calc(var(--u) * 20) calc(var(--u) * 16);
+		padding: calc(var(--u) * 12) calc(var(--u) * 16);
 	}
 
-	/* 24px Lilita One on the brand ramp (nodes 6695:4879 etc). */
+	/* 21.9px Lilita One in the sign gold (nodes 7063:18660 etc). Flat gold, not the brand ramp the
+	   old cards used: the redesign puts every card title in #ffba3e, the same gold as the marquee
+	   headlines, and a gradient that fades to blue at the baseline was the least legible thing on
+	   the screen at card size. Still uppercase — the design types these in title case, but the
+	   titles are i18n strings shared with the HUD and the info modal in 18 locales. */
 	.card-title {
 		font-family: 'Lilita One', sans-serif;
-		font-size: calc(var(--u) * 24);
-		line-height: calc(var(--u) * 29);
+		font-size: calc(var(--u) * 21.9);
+		line-height: calc(var(--u) * 26);
 		font-weight: 400;
-		letter-spacing: calc(var(--u) * 0.72);
+		letter-spacing: calc(var(--u) * 0.66);
 		text-transform: uppercase;
-		background-image: linear-gradient(171deg, #d836fc 0%, #272fdd 100%);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: transparent;
+		color: #ffba3e;
 		white-space: nowrap;
 		max-width: 100%;
 		overflow: hidden;
 	}
 
-	/* 12px Nunito Sans #d7d7d7 (nodes 6695:4880 etc). The height is fixed so a long description can
-	   never push its card taller than its row-mates; three lines is what the design allows. */
+	/* Nunito #e6e3e9 (nodes 7063:18659 etc) — 11px on the spin cards, 12 on the taller buy cards,
+	   which is how the design sets them. The height is fixed so a long description can never push
+	   its card taller than its row-mates; three lines is what the design allows. */
 	.card-desc {
-		margin-top: calc(var(--u) * 5);
-		font-size: calc(var(--u) * 12);
-		/* 14.8, not Nunito's ~16.4 default: the design fits three lines into a 45-tall box, and at the
-		   browser's own leading the third line was clipped in half. */
-		line-height: calc(var(--u) * 14.8);
-		letter-spacing: calc(var(--u) * 0.36);
-		color: #d7d7d7;
+		margin-top: calc(var(--u) * 4);
+		/* Leading close under the font's own, so three lines land inside the box below rather than
+		   having the third clipped in half. */
+		line-height: 1.24;
+		color: #e6e3e9;
 		display: -webkit-box;
 		-webkit-line-clamp: 3;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
 	.card--toggle .card-desc {
-		height: calc(var(--u) * 48);
+		font-size: calc(var(--u) * 11);
+		letter-spacing: calc(var(--u) * 0.33);
+		height: calc(var(--u) * 44);
 	}
 	.card--buy .card-desc {
-		height: calc(var(--u) * 45);
+		font-size: calc(var(--u) * 12);
+		letter-spacing: calc(var(--u) * 0.36);
+		height: calc(var(--u) * 42);
 	}
 
 	/* 55x55 logo box (nodes 6695:5007 etc). */
@@ -529,35 +472,42 @@
 		}
 	}
 
-	/* 16px Lilita One white (nodes 6695:4881 etc). */
+	/* The price is a CHIP in the redesign (nodes 7063:18657 etc), not a bare line: Lilita One white
+	   on a #341451 plate, radius 7, 10 of padding all round. */
 	.card-price {
 		font-family: 'Lilita One', sans-serif;
-		font-size: calc(var(--u) * 16);
-		line-height: calc(var(--u) * 19);
 		font-weight: 400;
 		color: #fff;
 		white-space: nowrap;
+		background: #341451;
+		border-radius: calc(var(--u) * 7);
+		padding: calc(var(--u) * 8) calc(var(--u) * 14);
 	}
 	.card--toggle .card-price {
-		margin-top: calc(var(--u) * 4);
+		margin-top: calc(var(--u) * 6);
+		font-size: calc(var(--u) * 15);
+		line-height: calc(var(--u) * 18);
 	}
 	.card--buy .card-price {
 		margin-top: calc(var(--u) * 5);
+		font-size: calc(var(--u) * 16);
+		line-height: calc(var(--u) * 19);
 	}
 
-	/* 300x44 button, radius 12, 1px #b65df3 (nodes 6695:4878 etc). The toggles are the dark fill and
-	   the buys the brand gradient; an armed toggle takes the gradient too, to read as "on". */
+	/* 50-tall button, radius 12 (nodes 7063:18656 / 18718 etc). The toggles are a flat #21013d
+	   inside a #63307d line; the buys keep the brand gradient, now edged in #d836fc. An armed
+	   toggle takes the gradient too, to read as "on". */
 	.card-btn {
-		width: calc(var(--u) * 300);
-		height: calc(var(--u) * 44);
+		width: 100%;
+		height: calc(var(--u) * 50);
 		box-sizing: border-box;
 		padding: 0;
-		border: 1px solid #b65df3;
+		border: 1px solid #63307d;
 		border-radius: calc(var(--u) * 12);
-		background-image: linear-gradient(0deg, #1a0535 0%, #000 100%);
+		background: #21013d;
+		background-image: none;
 		color: #fff;
 		font-family: 'Lilita One', sans-serif;
-		font-size: calc(var(--u) * 14);
 		line-height: calc(var(--u) * 20);
 		font-weight: 400;
 		letter-spacing: calc(var(--u) * 1.4);
@@ -567,14 +517,17 @@
 		transition: filter 0.2s;
 	}
 	.card--toggle .card-btn {
-		margin-top: calc(var(--u) * 9);
+		margin-top: calc(var(--u) * 8);
+		font-size: calc(var(--u) * 16);
 	}
 	.card--buy .card-btn {
 		margin-top: calc(var(--u) * 8);
+		font-size: calc(var(--u) * 18);
 	}
 	.card-btn--active,
 	.card-btn--primary {
-		background-image: linear-gradient(171.66deg, #d836fc 0%, #272fdd 100%);
+		border-color: #d836fc;
+		background-image: linear-gradient(170.57deg, #d836fc 0%, #272fdd 100%);
 	}
 	.card-btn:not(:disabled):hover {
 		filter: brightness(1.14);
@@ -591,19 +544,16 @@
 		top: calc(var(--u) * 568);
 		transform: translateX(-50%);
 		box-sizing: border-box;
-		width: calc(var(--u) * 287);
-		height: calc(var(--u) * 83);
+		width: calc(var(--u) * 268);
+		height: calc(var(--u) * 75);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: calc(var(--u) * 14);
-		/* Cropped the same way the cards are, so its own marching lights ride the neon line. */
-		isolation: isolate;
-	}
-
-	.betrow > :not(.card-bg, canvas) {
-		position: relative;
-		z-index: 1;
+		gap: calc(var(--u) * 12);
+		/* Flat, like the cards: #1d013c inside the same #5e4374 line (node 7058:10349). */
+		background: #1d013c;
+		border: 1px solid #5e4374;
+		border-radius: calc(var(--u) * 7.3);
 	}
 
 	/* 48.696 circles carrying the HUD's own -/+ glyphs at their designed sizes. */
@@ -723,10 +673,9 @@
 			grid-template-rows: none;
 			grid-auto-rows: min-content;
 			/* overflow-y:auto makes overflow-x compute to auto too, so the scroll column CLIPS sideways
-			   at its padding edge. The card's neon frame (card-bg) and its InfoBorderLights glow each
-			   extend ~14u past the card, so without side padding the right (and left) border was sliced
-			   off — this reserves the room the glow needs inside the clip. */
-			padding: calc(var(--u) * 2) calc(var(--u) * 16);
+			   at its padding edge. Kept as breathing room round the cards now that the frame they used
+			   to carry (and the glow that spilled past it) is gone. */
+			padding: calc(var(--u) * 2) calc(var(--u) * 8);
 			/* Drop the first full-width card clear of the floored close button (the title above the grid
 			   already accounts for ~60u of the clearance). */
 			margin-top: max(0px, calc(var(--close-clear) - var(--u) * 60));

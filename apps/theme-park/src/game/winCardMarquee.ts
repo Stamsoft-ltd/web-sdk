@@ -28,11 +28,12 @@ export const MARQUEE_TEXT = {
 /**
  * The right-hand star. The left one is its mirror — see <WinCard>.
  *
- * `y` is the pad's field centre rather than the design canvas's star box: the composed screen puts
- * these level with the lower word and the design's render of the finished card puts them on the
- * field's centre line, level with the seam. See STAR_Y in the build script.
+ * `y` is the design canvas's own — level with the lower of the two words, a fifth of a wordmark
+ * below its middle. It used to be forced to the pad's field centre (0.06109), which sat the stars
+ * up level with the seam between the words; that is not where the design's composed screen has
+ * them (2026-08-24).
  */
-export const MARQUEE_STAR: PartRect = { x: 0.34654, y: 0.06109, w: 0.06914, h: 0.06851 };
+export const MARQUEE_STAR: PartRect = { x: 0.34654, y: 0.13818, w: 0.06914, h: 0.06851 };
 
 /** The amount plate hanging below the card. Drawn, not an image: it is a rounded rect. */
 export const MARQUEE_AMOUNT: PartRect = { x: 0.00076, y: 0.37923, w: 0.61047, h: 0.18381 };

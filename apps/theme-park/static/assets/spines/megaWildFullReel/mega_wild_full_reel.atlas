@@ -1,5 +1,5 @@
 mega_wild_full_reel.png
-size: 1024,2106
+size: 1024,2094
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
@@ -48,69 +48,69 @@ cart
 plaque
   rotate: false
   xy: 440, 824
-  size: 244, 163
-  orig: 244, 163
+  size: 244, 148
+  orig: 244, 148
   offset: 0, 0
   index: -1
 plaque_top_35
   rotate: false
   xy: 684, 824
-  size: 244, 116
-  orig: 244, 116
+  size: 244, 105
+  orig: 244, 105
   offset: 0, 0
   index: -1
 plaque_top_60
   rotate: false
   xy: 0, 1153
-  size: 244, 68
-  orig: 244, 68
+  size: 244, 62
+  orig: 244, 62
   offset: 0, 0
   index: -1
 plaque_top_side
   rotate: false
   xy: 244, 1153
-  size: 244, 41
-  orig: 244, 41
+  size: 244, 37
+  orig: 244, 37
   offset: 0, 0
   index: -1
 plaque_bottom_35
   rotate: false
   xy: 488, 1153
-  size: 244, 129
-  orig: 244, 129
+  size: 244, 117
+  orig: 244, 117
   offset: 0, 0
   index: -1
 plaque_bottom_60
   rotate: false
   xy: 732, 1153
-  size: 244, 80
-  orig: 244, 80
+  size: 244, 73
+  orig: 244, 73
   offset: 0, 0
   index: -1
 plaque_bottom_side
   rotate: false
-  xy: 0, 1282
-  size: 244, 54
-  orig: 244, 54
+  xy: 0, 1270
+  size: 244, 49
+  orig: 244, 49
   offset: 0, 0
   index: -1
 sparkles
   rotate: false
-  xy: 244, 1282
+  xy: 244, 1270
   size: 256, 824
   orig: 256, 824
   offset: 0, 0
   index: -1
 fake_multiplier_slot
   rotate: false
-  xy: 500, 1282
+  xy: 500, 1270
   size: 1, 1
   orig: 1, 1
   offset: 0, 0
   index: -1
 multiplier_slot
   rotate: false
-  xy: 501, 1282
+  xy: 501, 1270
   size: 1, 1
   orig: 1, 1
   offset: 0, 0

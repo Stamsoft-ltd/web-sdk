@@ -57,14 +57,15 @@ STAR_BOXES = ((339, 307, 66, 56), (792, 307, 66, 56))
 # ...but the stars are NOT placed at the height those boxes give, which is why this exists.
 #
 # The composed screen draws them at y=335 on a wordmark running 117..451, i.e. a fifth of a
-# wordmark below its middle — level with the lower of the two words. On the design's own render of
-# the finished card they sit a good deal higher, on the field's centre line, level with the seam
-# between the words, and that is the version the game is being reviewed against.
+# wordmark below its middle — level with the lower of the two words. That IS the placement the
+# design is asking for (2026-08-24), so the stars are placed from their own boxes like every other
+# piece and there is no override.
 #
-# So the y comes from the PAD instead: `PAD_FIELD_CENTRE` in game/padMarquee.ts, the centre of the
-# purple field measured down the sign's centre column. Copied rather than imported because this
-# script writes a table that does not know about the pad — if that number moves, move this one.
-STAR_Y = 0.06109
+# A previous pass took the y from the PAD instead (`PAD_FIELD_CENTRE`, 0.06109, the centre of the
+# purple field down the sign's centre column), on the reading that the design's render of the
+# finished card sat them level with the seam between the words. It put them visibly too high, and
+# 0.06109 was in any case never converted through PAD_PLATE, so it was not the field's centre in
+# CARD space either (that would be 0.01945).
 AMOUNT_BOX = (401, 430.43, 399, 120.14)
 
 # Export widths.
@@ -235,7 +236,7 @@ def main():
     span = (abs(stars[0]['x']) + abs(stars[1]['x'])) / 2
     layout['star'] = {
         'x': round(span, 5),
-        'y': STAR_Y,  # NOT the design canvas's — see STAR_BOXES
+        'y': round((stars[0]['y'] + stars[1]['y']) / 2, 5),
         'w': stars[0]['w'],
         'h': stars[0]['h'],
     }

@@ -145,26 +145,30 @@
 			// Box 348,1 524x600 in frame 7033:24761 — but re-pinned down the column against the
 			// marquee's OWN field, which is not the design frame's.
 			//
-			// THE FIELD IS SHORTER THAN THE FRAME THE COPY WAS LAID OUT ON. The purple runs from
-			// 0.30 of the art's height to 0.887 (measured off marquee-tall.webp; below that is the
-			// bulb rail), and this screen is the fullest one in the game — headline, YOU WON, the
-			// bonus's name, a three-line blurb, its symbol, the well and a caption, seven things in
-			// 0.59 of a height. Laid out on the design's taller frame the stack ran 0.04 long, and
-			// what ran off the end was FREE SPINS, sitting across the bottom rail with its
-			// descenders cut off by the bulbs.
+			// THE SIGN WAS MADE TALLER TO HOLD THIS (2026-08-24). This is the fullest screen in the
+			// game — headline, YOU WON, the bonus's name, a three-line blurb, its symbol, the well
+			// and a caption, seven things in one column — and on the old 0.873 sign they did not
+			// fit: the stack ran long, and the first thing off the end was CONGRATS! itself, drawn
+			// across the top rail instead of inside the purple. Trimming gaps had already been
+			// tried and there was nothing left to take.
 			//
-			// So the bottom half is pulled up and the middle trimmed to pay for it, rather than the
-			// sign being drawn bigger: every size here is a fraction of the marquee, so a bigger
-			// marquee is a bigger overflow. The gaps are down to about 0.012 of the height and there
-			// is no more to give — anything else this screen has to say needs the blurb shortened,
-			// not the numbers nudged again.
-			title: { y: 0.26, size: 0.09958, fill: GOLD, width: 0.78 },
-			subtitle: { y: 0.3375, size: 0.041872, fill: GOLD },
-			name: { y: 0.402, size: 0.05, width: 0.72 },
-			desc: { y: 0.47, size: 0.0245, width: 0.73855, maxHeight: 0.1 },
-			centre: { y: 0.615 },
+			// So `scripts/congrats/build_congrats.py` now cuts a two-bulb band out of the rail
+			// instead of a six-bulb one, which leaves the canvas at 0.742 — a quarter more height
+			// for the same width, all of it field. Every size below is still a fraction of the
+			// marquee's WIDTH, so nothing grew; the extra height went entirely into the gaps.
+			//
+			// The stack is laid out against the FULL-WIDTH band of the field — 0.2833..0.8978 of
+			// the art's height, i.e. 0.3818..1.2099 in width units, measured off marquee-tall.webp
+			// (above 0.2833 the field is the arch's shoulders, which are too narrow for a line of
+			// copy). Boxes total 0.686 of a width; the 0.142 left over is a 0.022 top margin, gaps
+			// of 0.018-0.020 between the pieces and 0.014 under the well.
+			title: { y: 0.33859, size: 0.09958, fill: GOLD, width: 0.74 },
+			subtitle: { y: 0.40723, size: 0.041872, fill: GOLD },
+			name: { y: 0.4562, size: 0.05, width: 0.72 },
+			desc: { y: 0.52594, size: 0.0245, width: 0.73855, maxHeight: 0.1 },
+			centre: { y: 0.65839 },
 			well: {
-				y: 0.775,
+				y: 0.79761,
 				height: 0.118321,
 				radius: 0.022901,
 				text: 0.076336,
@@ -174,7 +178,7 @@
 				border: 0xb65df3,
 				at: 1080,
 			},
-			label: { y: 0.865, size: 0.048, width: 0.72 },
+			label: { y: 0.87046, size: 0.048, width: 0.72 },
 		},
 		wide: {
 			// Figma 7032:19821, re-pinned to the pad's field — see the module block.

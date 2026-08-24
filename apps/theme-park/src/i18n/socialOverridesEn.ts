@@ -46,7 +46,9 @@ export const socialOverridesEn: Record<string, string> = {
 	// ── Info modal ───────────────────────────────────────────────────────────
 	'INFO PAGE FEATURE BUY': 'GET FEATURE',
 	'INFO OV INTRO': 'Theme Park is a 5×5 high-volatility video slot played on 15 fixed win lines.',
-	'INFO OV BET': 'play',
+	// Renders as the tail of "Maximum Win: 25,000× …". The bet->play mapping alone gives
+	// "25,000× play", which reads as a typo; the full phrase is what the table actually maps to.
+	'INFO OV BET': 'play amount',
 	'INFO OV DUCK DESC':
 		'Special Ducks reveal coin additions or multiply-all values that multiply the collected prize.',
 	'INFO WTW LINES': 'Theme Park is played on 15 fixed win lines.',
