@@ -1,12 +1,11 @@
 import _ from 'lodash';
 
 import { stateBet } from 'state-shared';
-import { checkIsMultipleRevealEvents } from 'utils-book';
 import { createPrimaryMachines, createIntermediateMachines, createGameActor } from 'utils-xstate';
 
 import type { Bet } from './typesBookEvent';
 import { stateXstateDerived } from './stateXstate';
-import { playBet, convertTorResumableBet } from './utils';
+import { playBet, convertTorResumableBet, shouldDeferEndRound } from './utils';
 import { stateGame, stateGameDerived } from './stateGame.svelte';
 import { eventEmitter } from './eventEmitter';
 import config from './config';
@@ -50,7 +49,7 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		}
 		await playBet(bet);
 	},
-	checkIsBonusGame: (bet) => checkIsMultipleRevealEvents({ bookEvents: bet.state }),
+	checkIsBonusGame: shouldDeferEndRound,
 });
 
 const intermediateMachines = createIntermediateMachines(primaryMachines);

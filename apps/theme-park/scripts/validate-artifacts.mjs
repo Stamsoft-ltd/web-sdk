@@ -242,7 +242,7 @@ assert.match(duckPondSource, /const POND_SIZE = 25/, 'Duck pond must render 25 d
 assert.match(duckPondSource, /<DuckPondDuck/, 'Duck picks must use the front-to-rear Spine rig');
 assert.match(
 	duckPondSource,
-	/variant: duckVariantForIndex\(eventId, index\)[\s\S]*look: duckLookForIndex\(eventId, index\)[\s\S]*ducks = emptyPond\(event\.seed\)[\s\S]*look=\{duck\.look\}/,
+	/POND_ACCESSORIES_ENABLED \? duckLookForIndex\(eventId, index\) : 0[\s\S]*variant: duckVariantForIndex\(eventId, index\)[\s\S]*look: pondLook\(eventId, index\)[\s\S]*ducks = emptyPond\(event\.seed\)[\s\S]*look=\{duck\.look\}/,
 	'Duck pond must derive and preserve each Duck look from its event seed',
 );
 assert.doesNotMatch(
@@ -252,7 +252,7 @@ assert.doesNotMatch(
 );
 assert.match(
 	duckVisualSource,
-	/DUCK_SOLID_VARIANTS = \[1, 5, 7, 8\][\s\S]*seededDuckValue[\s\S]*duckLookForIndex[\s\S]*duckVariantForIndex/,
+	/DUCK_SOLID_VARIANTS = \[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16\][\s\S]*seededDuckValue[\s\S]*duckLookForIndex[\s\S]*duckVariantForIndex/,
 	'Duck style selection must use solid floaties and the deterministic event-index mixer',
 );
 assert.doesNotMatch(
@@ -267,8 +267,13 @@ assert.match(
 );
 assert.match(
 	duckPondSource,
-	/onrevealcomplete=\{\(\) => finishDuckReveal\(index\)\}/,
+	/onrevealcomplete=\{\(\) => \{[\s\S]*finishDuckReveal\(index\);[\s\S]*finishFinalDuckReveal\(index\);/,
 	'Pond book playback must resume from the Spine completion callback',
+);
+assert.match(
+	duckPondSource,
+	/const fakePrizes = prizePool\.slice\(totalPicks\)[\s\S]*finalRevealIndices = hiddenIndices[\s\S]*await waitForResolve\(\(resolve\) => \(resolveFinalReveal = resolve\)\)[\s\S]*await waitForTimeout\(2000\)/,
+	'Unpicked pond Ducks must reveal fake prizes together, complete their turns, then hold for two seconds',
 );
 assert.match(
 	duckPondSource,
@@ -577,8 +582,8 @@ const duckBuilderSource = fs.readFileSync(
 	path.join(root, 'scripts', 'build-duck-turn-spine.py'),
 	'utf8',
 );
-const duckAccessoryBuilderSource = fs.readFileSync(
-	path.join(root, 'scripts', 'build-duck-accessories.py'),
+const duckAssetProcessSource = fs.readFileSync(
+	path.join(root, 'scripts', 'process-duck-handdrawn-assets.py'),
 	'utf8',
 );
 const duckAtlasPng = fs.readFileSync(
@@ -592,13 +597,13 @@ const duckPoseTimes = Array.from({ length: 64 }, (_, pose) =>
 assert.equal(duckSpine.skeleton.spine, '4.2.0', 'Duck rig Spine version');
 assert.equal(
 	duckSpine.skeleton.hash,
-	'duck-your-luck-turn-v19-solid-floaties',
+	'duck-your-luck-turn-v40-front-rear-accessory-fit',
 	'Duck 2.5D rig version',
 );
 assert.match(
 	duckBuilderSource,
-	/SOURCE_POSE_COUNT = 32[\s\S]*POSE_COUNT = 64[\s\S]*minterpolate=fps=2:mi_mode=mci:mc_mode=aobmc:/,
-	'Duck turn must motion-interpolate 32 authored poses into 64 smooth frames',
+	/SOURCE_POSE_COUNT = 16[\s\S]*POSE_COUNT = 64[\s\S]*minterpolate=fps=\{POSE_COUNT - 1\}\/\{SOURCE_POSE_COUNT - 1\}:mi_mode=mci:mc_mode=aobmc:/,
+	'Duck turn must motion-interpolate 16 coherent Mega Coaster-style poses into 64 smooth frames',
 );
 assert.match(
 	duckBuilderSource,
@@ -607,12 +612,12 @@ assert.match(
 );
 assert.match(
 	duckBuilderSource,
-	/ACCESSORY_COLOR_COUNT = len\(HAT_SOURCES\)[\s\S]*DUCK_LOOK_COUNT = 1 \+ ACCESSORY_COLOR_COUNT \* 2 \+ ACCESSORY_COLOR_COUNT\*\*2/,
+	/ACCESSORY_COLOR_COUNT = len\(HAT_FRONT_SOURCES\)[\s\S]*DUCK_LOOK_COUNT = 1 \+ ACCESSORY_COLOR_COUNT \* 2 \+ ACCESSORY_COLOR_COUNT\*\*2/,
 	'Duck looks must cover standard, four approved glasses, four approved hats, and independent combinations',
 );
 assert.match(
 	duckBuilderSource,
-	/HAT_SOURCES = \[SOURCE_DIR \/ f"party_hat_combo_\{index\}\.png"[\s\S]*GLASSES_SOURCES = \[SOURCE_DIR \/ f"sunglasses_combo_\{index\}\.png"[\s\S]*GLASSES_FRONT_SOURCES = \[[\s\S]*sunglasses_front_combo_[\s\S]*GLASSES_REAR_SOURCES = \[[\s\S]*sunglasses_rear_combo_[\s\S]*"hat_bone"[\s\S]*"glasses_bone"[\s\S]*"glasses_rear_bone"/,
+	/SOURCE_DIR[\s\S]*HAT_FRONT_SOURCES = \[[\s\S]*party_hat_front_combo_[\s\S]*HAT_REAR_SOURCES = \[[\s\S]*party_hat_rear_combo_[\s\S]*GLASSES_SOURCES = \[[\s\S]*sunglasses_combo_[\s\S]*GLASSES_FRONT_SOURCES = \[[\s\S]*sunglasses_front_combo_[\s\S]*GLASSES_REAR_SOURCES = \[[\s\S]*sunglasses_rear_combo_[\s\S]*"hat_bone"[\s\S]*"glasses_bone"[\s\S]*"glasses_rear_bone"/,
 	'Duck accessories must be authored assets animated by Spine bones',
 );
 assert.doesNotMatch(
@@ -622,22 +627,27 @@ assert.doesNotMatch(
 );
 assert.match(
 	duckBuilderSource,
-	/HAT_BASE_HEIGHT = 86[\s\S]*HAT_SCALE_X = 1\.50[\s\S]*HAT_SCALE_Y = 1\.50[\s\S]*GLASSES_BASE_WIDTH = 145[\s\S]*GLASSES_BASE_HEIGHT = 52[\s\S]*GLASSES_CENTER_OFFSET_X = 31[\s\S]*GLASSES_SCALE_X = 1\.20[\s\S]*GLASSES_SCALE_Y = 1\.20[\s\S]*GLASSES_PERSPECTIVE_REDUCTION = 80[\s\S]*GLASSES_REAR_BASE_WIDTH = 148[\s\S]*GLASSES_REAR_BASE_HEIGHT = 34[\s\S]*GLASSES_REAR_SHOW_POSE = 48/,
-	'Duck hats must fit the head and glasses must swap from depth split to rear view',
+	/HAT_BASE_WIDTH = 68[\s\S]*HAT_BASE_HEIGHT = 86[\s\S]*HAT_SCALE_X = 1\.1156[\s\S]*HAT_SCALE_Y = 1\.1156[\s\S]*HAT_Y_OFFSET = 11[\s\S]*HAT_FRONT_X_OFFSET = -8[\s\S]*HAT_REAR_X_OFFSET = 0[\s\S]*HAT_REAR_SHOW_POSE = 44[\s\S]*GLASSES_BASE_WIDTH = 145[\s\S]*GLASSES_BASE_HEIGHT = 52[\s\S]*GLASSES_CENTER_OFFSET_X = 31[\s\S]*GLASSES_SCALE_X = 1\.05[\s\S]*GLASSES_SCALE_Y = 1\.05[\s\S]*GLASSES_FRONT_X_OFFSET = -29[\s\S]*GLASSES_FRONT_Y_OFFSET = 18[\s\S]*GLASSES_ROTATION = -8[\s\S]*GLASSES_PERSPECTIVE_REDUCTION = 80[\s\S]*GLASSES_REAR_BASE_WIDTH = 148[\s\S]*GLASSES_REAR_SCALE = 0\.875[\s\S]*GLASSES_REAR_X_OFFSET = 0[\s\S]*GLASSES_REAR_Y_OFFSET = 0[\s\S]*GLASSES_REAR_SHOW_POSE = 48/,
+	'Duck hats and glasses must use the reduced fitted scale and perspective tracks',
 );
 assert.match(
-	duckAccessoryBuilderSource,
-	/GLASSES_FAR_TEMPLE_POLYGON =[\s\S]*GLASSES_REAR_ARM_SPREAD = 18[\s\S]*ImageDraw\.Draw\(mask\)\.polygon[\s\S]*def spread_rear_arms/,
+	duckAssetProcessSource,
+	/party_hat_\{view\}_combo_\{index\}[\s\S]*Expected back frame, front frame, and rear arms/,
 	'Duck glasses must hide the far front-view temple and spread rear arms outside the head',
 );
+assert.deepEqual(
+	duckSpine.bones.find(({ name }) => name === 'duck'),
+	{ name: 'duck', parent: 'float', y: -6 },
+	'Duck must sit lower inside the floatie so its tail stays behind the front ring',
+);
 assert.doesNotMatch(
-	duckAccessoryBuilderSource,
-	/GLASSES_FRONT_CUT_X/,
+	duckAssetProcessSource,
+	/striped/,
 	'Duck glasses must not hide the long near-side temple',
 );
 assert.match(
 	duckBuilderSource,
-	/1: \{"hue": None, "star": True, "striped": False[\s\S]*2: \{"hue": 77, "star": False, "striped": False[\s\S]*3: \{"hue": 238, "star": True, "striped": False/,
+	/1: \{"hue": None, "star": True, "striped": False[\s\S]*2: \{"hue": None, "star": False, "striped": False[\s\S]*16: \{"hue": 39, "star": False, "striped": False/,
 	'Duck rings must keep colour and star variety without stripes',
 );
 assert.doesNotMatch(duckBuilderSource, /"striped": True/, 'Duck floaties must not use stripes');
@@ -654,23 +664,17 @@ assert.ok(
 );
 assert.match(
 	duckBuilderSource,
-	/if pose_index == 0:\s+pose = pose\.transpose\(Image\.Transpose\.FLIP_LEFT_RIGHT\)/,
-	'Duck turn must preserve its current mirrored opening frame, then follow the short-side direction',
-);
-assert.equal(
-	(duckBuilderSource.match(/pose = pose\.transpose\(Image\.Transpose\.FLIP_LEFT_RIGHT\)/g) ?? [])
-		.length,
-	1,
-	'Duck turn must not mirror the remaining authored perspective frames',
+	/DUCK_ART_SCALE = 0\.95[\s\S]*placed = placed\.transpose\(Image\.Transpose\.FLIP_LEFT_RIGHT\)/,
+	'Duck must be five percent smaller and mirror toward its authored accessories',
 );
 assert.equal(
 	Object.keys(duckSpine.skins[0].attachments.ring_back).length,
-	8,
+	16,
 	'Duck rear ring arcs',
 );
 assert.equal(
 	Object.keys(duckSpine.skins[0].attachments.ring_front).length,
-	8,
+	16,
 	'Duck front ring arcs',
 );
 assert.deepEqual(
@@ -694,8 +698,8 @@ assert.deepEqual(
 );
 assert.equal(
 	Object.keys(duckSpine.skins[0].attachments.hat).length,
-	4,
-	'Four party-hat Spine variants',
+	8,
+	'Four front and four rear party-hat Spine variants',
 );
 assert.equal(
 	Object.keys(duckSpine.skins[0].attachments.glasses_back).length,
@@ -713,14 +717,19 @@ assert.equal(
 	'Four rear-view sunglasses variants',
 );
 assert.deepEqual(
-	duckSpine.skins[0].attachments.hat.hat_0,
-	{ path: 'party_hat_0', width: 88, height: 149 },
-	'Party hats must use approved tall glossy combination assets',
+	duckSpine.skins[0].attachments.hat.hat_front_0,
+	{ path: 'party_hat_front_0', width: 88, height: 149 },
+	'Party hats must use the approved legacy-fit asset',
+);
+assert.deepEqual(
+	duckSpine.skins[0].attachments.hat.hat_rear_0,
+	{ path: 'party_hat_rear_0', width: 88, height: 149 },
+	'Party hats must preserve the approved fit in rear view',
 );
 assert.deepEqual(
 	duckSpine.skins[0].attachments.glasses_back.glasses_back_3,
 	{ path: 'sunglasses_3', width: 153, height: 60 },
-	'Sunglasses back layer must use the complete approved glossy model',
+	'Sunglasses back layer must restore the approved behind-head shape',
 );
 assert.deepEqual(
 	duckSpine.skins[0].attachments.glasses_front.glasses_front_3,
@@ -751,7 +760,7 @@ assert.equal(
 	'glasses_rear_0',
 	'Sunglasses must remain visible in back idle',
 );
-for (let variant = 1; variant <= 8; variant += 1) {
+for (let variant = 1; variant <= 16; variant += 1) {
 	for (const phase of ['idle', 'turn', 'back_idle']) {
 		assert.ok(duckSpine.animations[`${phase}_${variant}`], `missing duck ${phase}_${variant}`);
 	}
@@ -1001,7 +1010,9 @@ const finalWinHandlerSource = bookHandlerSource.slice(
 	bookHandlerSource.indexOf('finalWin: async'),
 	bookHandlerSource.indexOf('freeSpinTrigger: async'),
 );
-const resetBonusStateSource = gameStateSource.slice(gameStateSource.indexOf('const resetBonusState'));
+const resetBonusStateSource = gameStateSource.slice(
+	gameStateSource.indexOf('const resetBonusState'),
+);
 assert.doesNotMatch(
 	finalWinHandlerSource,
 	/stateGame\.paylineWins = \[\]/,
@@ -1176,7 +1187,7 @@ const coasterSpine = JSON.parse(
 assert.equal(coasterSpine.skeleton.spine, '4.2.0', 'Mega Coaster Spine version');
 assert.equal(
 	coasterSpine.skeleton.hash,
-	'theme-park-mega-coaster-vomit-v28-trimmed-atlas-128frame',
+	'theme-park-mega-coaster-vomit-v29-handdrawn-128frame',
 	'Mega Coaster Spine revision',
 );
 assert.deepEqual(
@@ -1230,34 +1241,36 @@ assert.ok(
 			'source-assets-unused',
 			'assets',
 			'theme-park',
-			'coaster-vomit',
-			'regenerated-16.png',
+			'coaster-vomit-handdrawn',
+			'empty-cart.png',
 		),
 	),
-	'Mega Coaster regenerated 4x4 source sheet',
+	'Mega Coaster hand-drawn empty cart',
 );
-assert.ok(
-	fs.existsSync(
-		path.join(
-			root,
-			'source-assets-unused',
-			'assets',
-			'theme-park',
-			'coaster-vomit',
-			'regenerated-empty-cart.png',
+for (let index = 0; index < 8; index += 1) {
+	assert.ok(
+		fs.existsSync(
+			path.join(
+				root,
+				'source-assets-unused',
+				'assets',
+				'theme-park',
+				'coaster-vomit-handdrawn',
+				`duck-key-${String(index).padStart(2, '0')}.png`,
+			),
 		),
-	),
-	'Mega Coaster clean empty cart source',
-);
+		`Mega Coaster hand-drawn duck key ${index}`,
+	);
+}
 assert.match(
 	coasterBuilderSource,
-	/def build_fixed_cart\([\s\S]*def build_cart_front\([\s\S]*motion_interpolate_poses\(\[\*dynamic_source_poses, dynamic_source_poses\[0\]\]\)[\s\S]*build_atlas\(poses, fixed_cart, cart_front\)/,
+	/def normalize_cart\([\s\S]*def build_cart_front\([\s\S]*motion_interpolate_poses\(\[\*timeline, duck_keys\[0\]\]\)[\s\S]*build_atlas\(poses, fixed_cart, cart_front\)/,
 	'Mega Coaster must layer one immutable cart around an exact-endpoint motion-flow loop',
 );
 assert.match(
 	coasterBuilderSource,
-	/hand_core = remove_small_components_mask\([\s\S]*hand_pixels = alpha & dilate_mask\(hand_core, 3\) & hand_zone[\s\S]*def motion_interpolate_poses\([\s\S]*minterpolate=fps=7\.9375:mi_mode=mci:mc_mode=aobmc:[\s\S]*subprocess\.run\(/,
-	'Mega Coaster must keep wheel-touching hands opaque and use motion-compensated in-betweens',
+	/def normalize_duck_keys\([\s\S]*DUCK_BASELINE[\s\S]*def motion_interpolate_poses\([\s\S]*minterpolate=fps=7\.9375:mi_mode=mci:mc_mode=aobmc:[\s\S]*subprocess\.run\(/,
+	'Mega Coaster must register hand-drawn keys and use motion-compensated in-betweens',
 );
 assert.doesNotMatch(
 	coasterBuilderSource,
@@ -1269,39 +1282,31 @@ assert.doesNotMatch(
 	/seat_fade/,
 	'Mega Coaster duck must stay opaque where the fixed cart foreground begins',
 );
-assert.match(
-	coasterBuilderSource,
-	/steering_pixels = remove_small_components_mask\([\s\S]*steering_luma < 115[\s\S]*current\[steering_pixels\] = canonical\[steering_pixels\]/,
-	'Mega Coaster must restore one fixed complete steering assembly',
-);
-assert.match(
-	coasterBuilderSource,
-	/x <= round\(FRAME_SIZE \* 0\.52\)[\s\S]*y < round\(FRAME_SIZE \* 0\.72\)/,
-	'Mega Coaster duck body must reach the cockpit rim without a transparent cutout',
-);
-assert.match(
-	coasterBuilderSource,
-	/SOURCE_FRAME_COUNT = 16[\s\S]*REGENERATED_SHEET = SOURCE \/ "regenerated-16\.png"[\s\S]*EMPTY_CART_SOURCE = SOURCE \/ "regenerated-empty-cart\.png"[\s\S]*SICK_TINT_AMOUNTS = \(0\.0, 0\.1, 0\.3, 0\.55[\s\S]*def extract_regenerated_frames\(\)[\s\S]*row, col = divmod\(index, 4\)[\s\S]*def regenerated_scale\([\s\S]*def validate_regenerated_registration\([\s\S]*def apply_sick_tint\([\s\S]*sick_rgb\[:, :, 0\] \*= 0\.65[\s\S]*sick_rgb\[:, :, 1\] \*= 0\.95[\s\S]*sick_rgb\[:, :, 2\] \*= 1\.05[\s\S]*validate_regenerated_registration\(frames\)[\s\S]*normalize_pose\(frame, scale, reference_left, reference_ground\) for frame in frames[\s\S]*empty_cart = Image\.open\(EMPTY_CART_SOURCE\)[\s\S]*fixed_cart = build_fixed_cart\(normalized_cart\)[\s\S]*dynamic_source_poses = apply_sick_tint\([\s\S]*apply_dynamic_masks\(normalized_poses, source_masks\)/,
-	'Mega Coaster must use one regenerated registered sheet and one global transform',
-);
-assert.match(
-	coasterBuilderSource,
-	/VERTICAL_SCALE_CORRECTION = 1\.0[\s\S]*y_scale = x_scale \* VERTICAL_SCALE_CORRECTION/,
-	'Mega Coaster regenerated poses must retain their generated aspect ratio',
-);
+for (const authoredSourcePattern of [
+	/SOURCE = APP \/ "source-assets-unused\/assets\/theme-park\/coaster-vomit-handdrawn"/,
+	/SOURCE_KEY_COUNT = 8/,
+	/TIMELINE_KEY_COUNT = 16/,
+	/EMPTY_CART_SOURCE = SOURCE \/ "empty-cart\.png"/,
+	/DUCK_KEY_PATTERN = "duck-key-\{index:02d\}\.png"/,
+	/TIMELINE_KEYS = \(0, 0, 1, 1, 2, 3, 4, 5, 5, 5, 5, 4, 6, 6, 7, 0\)/,
+	/def normalize_cart\(/,
+	/def normalize_duck_keys\(/,
+	/timeline = \[duck_keys\[index\] for index in TIMELINE_KEYS\]/,
+]) {
+	assert.match(
+		coasterBuilderSource,
+		authoredSourcePattern,
+		'Mega Coaster must use the hand-drawn cart and eight authored duck keys',
+	);
+}
 assert.doesNotMatch(
 	coasterBuilderSource,
 	/lock_upper_pose|stabilize_torso|STABLE_SHEETS|sheet_scales/,
 	'Mega Coaster must not repair or reposition the old shaking source frames',
 );
-assert.match(
-	coasterBuilderSource,
-	/def build_fixed_cart\(empty_cart_pose: Image\.Image\)[\s\S]*return empty_cart_pose\.copy\(\)/,
-	'Mega Coaster must use the clean empty cart directly without cut repairs',
-);
 assert.doesNotMatch(
 	coasterBuilderSource,
-	/seat_opening|back_seam|np\.array\(\[28, 13, 6, 255\]/,
+	/seat_opening|back_seam|np\.array\(\[28, 13, 6, 255\]|apply_sick_tint/,
 	'Mega Coaster must never cut or paint the cockpit/hood behind the duck',
 );
 assert.match(
@@ -1455,7 +1460,7 @@ assert.deepEqual(
 );
 assert.equal(
 	megaWildSpine.skeleton.hash,
-	'theme-park-mega-wild-v26-reference-cart',
+	'theme-park-mega-wild-v24-mega-coaster-style',
 	'Combined Mega Wild rig revision',
 );
 assert.equal(
@@ -1471,9 +1476,11 @@ assert.ok(
 const parkedRideBone = megaWildSpine.bones.find(({ name }) => name === 'ride');
 const parkedCartBone = megaWildSpine.bones.find(({ name }) => name === 'cart');
 assert.equal(parkedRideBone.y, -112, 'Duck cart ride bone must stop on the flat bottom track');
-// Was -205, until `feat(theme-park): refresh mega wild sequence` re-authored the pass and lifted the
-// cart 22px on its rail. The number is a transcription of the art, so it moves when the art does.
-assert.equal(parkedCartBone.y, -183, 'Duck cart local position must preserve its authored rail alignment');
+assert.equal(
+	parkedCartBone.y,
+	-187.5,
+	'Duck cart local position must preserve its authored rail alignment',
+);
 assert.equal(
 	megaWildSpine.animations.intro.bones.cart.scale.length,
 	64,
@@ -1491,7 +1498,10 @@ assert.equal(
 	0,
 	'Duck cart intro must finish exactly at its parked setup pose',
 );
-assert.ok(!megaWildSpine.animations.win, 'Win pulse must not swap Spine animations during paylines');
+assert.ok(
+	!megaWildSpine.animations.win,
+	'Win pulse must not swap Spine animations during paylines',
+);
 const fixedPlaqueBone = megaWildSpine.bones.find(({ name }) => name === 'plaque');
 assert.equal(fixedPlaqueBone.parent, 'root', 'Multiplier plaque must stay fixed above the rails');
 assert.equal(fixedPlaqueBone.y, 0, 'Multiplier plaque must remain at exact reel centre');
@@ -1629,7 +1639,11 @@ assert.match(
 	/GRID_RADIUS = 0\.0\d+/,
 	'The grid clip must be the drawn corner cut, or the park shows through the board corners',
 );
-assert.doesNotMatch(boardFrameSource, /drawFrameMask/, 'BoardFrame must not crop through border lights');
+assert.doesNotMatch(
+	boardFrameSource,
+	/drawFrameMask/,
+	'BoardFrame must not crop through border lights',
+);
 assert.doesNotMatch(
 	boardFrameSource,
 	/borderPoint|key="spark"/,

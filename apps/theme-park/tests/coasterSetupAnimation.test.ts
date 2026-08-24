@@ -19,7 +19,7 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		const attachments = Object.keys(skeleton.skins[0].attachments.duck_pose);
 
 		expect(skeleton.skeleton.spine).toBe('4.2.0');
-		expect(skeleton.skeleton.hash).toBe('theme-park-mega-coaster-vomit-v28-trimmed-atlas-128frame');
+		expect(skeleton.skeleton.hash).toBe('theme-park-mega-coaster-vomit-v29-handdrawn-128frame');
 		expect(Object.keys(skeleton.animations)).toEqual(['idle', 'vomit']);
 		expect(skeleton.slots.map(({ name }: { name: string }) => name)).toEqual([
 			'cart_back',
@@ -46,50 +46,24 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(atlas).toMatch(/offset: (?!0, 0)\d+, \d+/);
 	});
 
-	it('uses one regenerated rigid sheet with no per-frame shake correction', () => {
+	it('uses fixed-cart hand-drawn keys with one registered baseline', () => {
 		const builder = fs.readFileSync(
 			path.join(appRoot, 'scripts', 'build-coaster-vomit-spine.py'),
 			'utf8',
 		);
 
 		expect(builder).toContain('FRAME_SIZE = 256');
-		expect(builder).toContain('CART_VISUAL_TARGET_WIDTH = 175');
-		expect(builder).toContain('CART_LEFT = 20');
-		expect(builder).toContain('GROUND_BASELINE = 235');
-		expect(builder).toContain('SOURCE_FRAME_COUNT = 16');
-		expect(builder).toContain('REGENERATED_SHEET = SOURCE / "regenerated-16.png"');
-		expect(builder).toContain('EMPTY_CART_SOURCE = SOURCE / "regenerated-empty-cart.png"');
-		expect(builder).toContain('def extract_regenerated_frames()');
-		expect(builder).toContain('row, col = divmod(index, 4)');
-		expect(builder).toContain('def regenerated_scale(frames: list[Image.Image]) -> float:');
+		expect(builder).toContain('SOURCE_KEY_COUNT = 8');
+		expect(builder).toContain('TIMELINE_KEY_COUNT = 16');
 		expect(builder).toContain(
-			'return CART_VISUAL_TARGET_WIDTH / cart_visual_metrics(frames[0])[1]',
+			'SOURCE = APP / "source-assets-unused/assets/theme-park/coaster-vomit-handdrawn"',
 		);
-		expect(builder).toContain('VERTICAL_SCALE_CORRECTION = 1.0');
-		expect(builder).toContain('def validate_regenerated_registration(frames: list[Image.Image])');
-		expect(builder).toContain('validate_regenerated_registration(frames)');
-		expect(builder).toContain('Mega Coaster regenerated duck drifts in source frame');
-		expect(builder).toContain('y_scale = x_scale * VERTICAL_SCALE_CORRECTION');
-		expect(builder).toContain(
-			'normalize_pose(frame, scale, reference_left, reference_ground) for frame in frames',
-		);
-		expect(builder).toContain('SICK_TINT_AMOUNTS = (0.0, 0.1, 0.3, 0.55');
-		expect(builder).toContain('def apply_sick_tint(poses: list[Image.Image])');
-		expect(builder).toContain('dynamic_source_poses = apply_sick_tint(');
-		expect(builder).toContain('apply_dynamic_masks(normalized_poses, source_masks)');
-		expect(builder).toContain('sick_rgb[:, :, 0] *= 0.65');
-		expect(builder).toContain('sick_rgb[:, :, 1] *= 0.95');
-		expect(builder).toContain('sick_rgb[:, :, 2] *= 1.05');
-		expect(builder).not.toContain('def lock_upper_pose');
-		expect(builder).not.toContain('def stabilize_torso');
-		expect(builder).not.toContain('STABLE_SHEETS');
-		expect(builder).not.toContain('sheet_scales');
-		expect(builder).toContain('return empty_cart_pose.copy()');
-		expect(builder).not.toContain('seat_opening');
-		expect(builder).not.toContain('back_seam');
-		expect(builder).not.toContain('np.array([28, 13, 6, 255]');
-		expect(builder).toContain('for index in range(SOURCE_FRAME_COUNT):');
-		expect(builder).toContain('def remove_stray_components(image: Image.Image)');
+		expect(builder).toContain('EMPTY_CART_SOURCE = SOURCE / "empty-cart.png"');
+		expect(builder).toContain('DUCK_KEY_PATTERN = "duck-key-{index:02d}.png"');
+		expect(builder).toContain('def normalize_cart(image: Image.Image)');
+		expect(builder).toContain('def normalize_duck_keys(keys: list[Image.Image])');
+		expect(builder).toContain('DUCK_BASELINE = 216');
+		expect(builder).toContain('DUCK_CELL_LEFT = 47');
 		expect(builder).toContain('FRAME_COUNT = 128');
 		expect(builder).toContain('ATLAS_MAX_WIDTH = 2048');
 		expect(builder).toContain('ATLAS_TRIM_PADDING = 2');
@@ -98,51 +72,29 @@ describe('Mega Coaster screen-wide setup animation', () => {
 			'sorted(regions, key=lambda item: item["crop"].height, reverse=True)',
 		);
 		expect(builder).toContain('Mega Coaster trimmed atlas changed region');
-		expect(builder).toContain('hand_core = remove_small_components_mask(');
-		expect(builder).toContain('hand_pixels = alpha & dilate_mask(hand_core, 3) & hand_zone');
 		expect(builder).toContain('def motion_interpolate_poses(source_poses: list[Image.Image])');
 		expect(builder).toContain('minterpolate=fps=7.9375:mi_mode=mci:mc_mode=aobmc:');
 		expect(builder).toContain('subprocess.run(');
 		expect(builder).not.toContain('def alpha_interpolate_poses');
-		expect(builder).toContain('def build_fixed_cart(');
 		expect(builder).toContain('def build_cart_front(');
-		expect(builder).toContain('steering_pixels = remove_small_components_mask(');
-		expect(builder).toContain('(steering_luma < 115)');
-		expect(builder).toContain('(x <= round(FRAME_SIZE * 0.52))');
-		expect(builder).toContain('(y < round(FRAME_SIZE * 0.72))');
-		expect(builder).not.toContain('current[steering_base] = 0');
-		expect(builder).toContain('def dynamic_layer_masks(');
 		expect(builder).not.toContain('seat_fade');
-		expect(builder).toContain(
-			'poses = motion_interpolate_poses([*dynamic_source_poses, dynamic_source_poses[0]])',
-		);
+		expect(builder).toContain('poses = motion_interpolate_poses([*timeline, duck_keys[0]])');
 		expect(builder).toContain('build_atlas(poses, fixed_cart, cart_front)');
 		expect(builder).toContain('ATLAS_IMAGE = "coaster_vomit.png"');
 		expect(builder).toContain('transparent RGB zeroed');
-		expect(
-			fs.existsSync(
-				path.join(
-					appRoot,
-					'source-assets-unused',
-					'assets',
-					'theme-park',
-					'coaster-vomit',
-					'regenerated-16.png',
-				),
-			),
-		).toBe(true);
-		expect(
-			fs.existsSync(
-				path.join(
-					appRoot,
-					'source-assets-unused',
-					'assets',
-					'theme-park',
-					'coaster-vomit',
-					'regenerated-empty-cart.png',
-				),
-			),
-		).toBe(true);
+		const sourceRoot = path.join(
+			appRoot,
+			'source-assets-unused',
+			'assets',
+			'theme-park',
+			'coaster-vomit-handdrawn',
+		);
+		expect(fs.existsSync(path.join(sourceRoot, 'empty-cart.png'))).toBe(true);
+		for (let index = 0; index < 8; index += 1) {
+			expect(
+				fs.existsSync(path.join(sourceRoot, `duck-key-${String(index).padStart(2, '0')}.png`)),
+			).toBe(true);
+		}
 	});
 
 	it('does not leave the temporary top-left QA duck mounted', () => {
@@ -159,6 +111,8 @@ describe('Mega Coaster screen-wide setup animation', () => {
 
 		expect(presenter).toContain('const MIN_CART_COUNT = 15');
 		expect(presenter).toContain('const MAX_EXTRA_CARTS = 7');
+		expect(presenter).toContain('const COASTER_SETUP_Z = 7');
+		expect(presenter).toContain('<FadeContainer {show} zIndex={COASTER_SETUP_Z}>');
 		expect(presenter).toContain('ROWS.flatMap((row) =>');
 		expect(presenter).toContain('return impacts.map((impact, lane) =>');
 		expect(presenter).toContain('return { row, launchDelayUnits, impact }');
@@ -313,9 +267,9 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(game).not.toContain('BoardGridOverlay');
 		expect(board).toContain('const drawBoardContentMask =');
 		expect(board).toContain('<Graphics isMask draw={drawBoardContentMask} />');
-		expect(board).toContain('reel === 0 ? BOARD_SIDE_CONTENT_INSET : GRID_LINE_CLEARANCE');
-		expect(board).toContain('CELL_W - leftInset - rightInset');
-		expect(board).toContain('CELL_H - GRID_LINE_CLEARANCE * 2');
+		expect(board).toContain('CELL_W * BOARD_DIMENSIONS.x - BOARD_SIDE_CONTENT_INSET * 2');
+		expect(board).toContain('CELL_H * BOARD_DIMENSIONS.y');
+		expect(board).not.toContain('GRID_LINE_CLEARANCE');
 		expect(board).toContain('!coasterCellSet.has(`${reelIndex},${symbolIndex - 1}`)');
 		expect(constants).toContain('export const BOARD_SIDE_CONTENT_INSET = 1.4');
 		expect(constants).toContain('export const COASTER_WILD_GRID_INSET = 2.5');

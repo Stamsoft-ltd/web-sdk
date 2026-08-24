@@ -31,9 +31,7 @@ const readableFaceSequence = (animation: typeof skeleton.animations.intro) => {
 
 describe('Duck Power Ride full-reel Mega Wild', () => {
 	it('exports a 64-frame intro with a dense seven-view plaque roll', () => {
-		expect(skeleton.skeleton.hash).toBe(
-			'theme-park-mega-wild-v26-reference-cart',
-		);
+		expect(skeleton.skeleton.hash).toBe('theme-park-mega-wild-v24-mega-coaster-style');
 		expect(skeleton.skeleton.spine).toBe('4.2.0');
 		expect(skeleton.skeleton.width).toBe(256);
 		expect(skeleton.skeleton.height).toBe(824);
@@ -55,9 +53,9 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(skeleton.animations.intro.bones.ride.translate[23].y).toBeGreaterThan(0);
 		expect(skeleton.animations.intro.bones.ride.translate[24].y).toBe(0);
 		expect(skeleton.bones.find((bone: { name: string }) => bone.name === 'ride').y).toBe(-112);
-		expect(skeleton.bones.find((bone: { name: string }) => bone.name === 'cart').y).toBe(-183);
+		expect(skeleton.bones.find((bone: { name: string }) => bone.name === 'cart').y).toBe(-187.5);
 		expect(skeleton.animations.intro.bones.cart.scale).toHaveLength(64);
-		expect(skeleton.animations.intro.bones.cart.scale[0].x).toBe(0.5);
+		expect(skeleton.animations.intro.bones.cart.scale[0].x).toBe(0.58);
 		expect(skeleton.animations.intro.bones.cart.scale.at(-1).x).toBe(1);
 		expect(readableFaceSequence(skeleton.animations.intro)).toEqual([
 			'fake',
@@ -169,17 +167,18 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		);
 
 		expect(atlas).toContain('\nbackground\n');
-		expect(builder).toContain('mega-wild-clean');
-		expect(builder).toContain('track-clean.png');
-		expect(builder).not.toContain('BACKGROUND_CENTERING_X');
+		expect(builder).toContain('mega-wild-handdrawn');
+		expect(builder).toContain('full-reel-background-v2.png');
+		expect(builder).toContain('BACKGROUND_CENTERING_X = 0.5');
+		expect(builder).toContain('centering=(BACKGROUND_CENTERING_X, 0.5)');
 		expect(builder).toContain('fallback.alpha_composite(layers["background"])');
-		expect(builder).toContain('mega-wild-plaque-standalone-v1.png');
-		expect(builder).toContain('mega-wild-plaque-top-35-v1.png');
-		expect(builder).toContain('mega-wild-plaque-top-60-v1.png');
-		expect(builder).toContain('mega-wild-plaque-top-side-v1.png');
-		expect(builder).toContain('mega-wild-plaque-bottom-35-v1.png');
-		expect(builder).toContain('mega-wild-plaque-bottom-60-v1.png');
-		expect(builder).toContain('mega-wild-plaque-bottom-side-v1.png');
+		expect(builder).toContain('plaque-front-v1.png');
+		expect(builder).toContain('plaque-top-35-v1.png');
+		expect(builder).toContain('plaque-top-60-v1.png');
+		expect(builder).toContain('plaque-top-side-v1.png');
+		expect(builder).toContain('plaque-bottom-35-v1.png');
+		expect(builder).toContain('plaque-bottom-60-v1.png');
+		expect(builder).toContain('plaque-bottom-side-v1.png');
 		expect(builder).toContain('return contain(trim(Image.open(PLAQUE_SOURCE)), (244, 190))');
 		expect(builder).toContain('PLAQUE_POSE_COUNT = 128');
 		expect(builder).toContain('ROLL_START_FRAME = 12');
@@ -190,13 +189,15 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(builder).not.toContain('VALUE_SWAP_FRAME');
 		expect(builder).toContain('SLIDE_END_FRAME = 24');
 		expect(builder).not.toContain('CART_CROP_BOTTOM');
-		expect(builder).toContain('CART_LAYER_SIZE = (220, 329)');
-		expect(builder).toContain('CLEAN_SOURCE / "cart-steep.png"');
-		expect(builder).toContain('CLEAN_SOURCE / "cart-high-mid.png"');
-		expect(builder).toContain('CLEAN_SOURCE / "cart-mid.png"');
-		expect(builder).toContain('CLEAN_SOURCE / "cart-low-mid.png"');
-		expect(builder).toContain('CLEAN_SOURCE / "cart-flat.png"');
-		expect(builder).toContain('CART_START_SCALE = 0.5');
+		expect(builder).toContain('CART_VISUAL_TARGET_WIDTH = 180');
+		expect(builder).toContain('CART_LAYER_SIZE = (194, 280)');
+		expect(builder).toContain('return CART_VISUAL_TARGET_WIDTH / flat.width');
+		expect(builder).toContain('cart-steep-v1.png');
+		expect(builder).toContain('cart-high-mid-v1.png');
+		expect(builder).toContain('cart-mid-v1.png');
+		expect(builder).toContain('cart-low-mid-v1.png');
+		expect(builder).toContain('cart-flat-v1.png');
+		expect(builder).toContain('CART_START_SCALE = 0.58');
 		expect(builder).toContain('CART_VIEWS = ("steep", "high_mid", "mid", "low_mid", "flat")');
 		expect(builder).toContain('CART_VIEW_TRANSITIONS = ((8, 12), (12, 16), (16, 20), (20, 24))');
 		expect(builder).toContain('RIDE_END_Y = -112');

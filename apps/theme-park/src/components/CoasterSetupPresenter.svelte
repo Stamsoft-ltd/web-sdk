@@ -92,6 +92,9 @@
 	const CART_GAP_VARIANCE_UNITS = 0.35;
 	const MIN_CART_COUNT = 15;
 	const MAX_EXTRA_CARTS = 7;
+	// Above BoardFrame's z6 rail: this presenter's dimmer darkens the border/lights too, while its
+	// rails, carts and impacts remain bright inside the same layer.
+	const COASTER_SETUP_Z = 7;
 	// Initial setup reveal only. Free-spin reel timing is owned elsewhere and remains unchanged.
 	// Previous setup boost was 1.3; apply the requested further 1.3x increase (1.3 * 1.3).
 	const SETUP_SPEED_BOOST = 1.69;
@@ -398,7 +401,7 @@
 		state === 'vomit' ? 'coasterRigVomit' : 'coasterRigHappy';
 </script>
 
-<FadeContainer {show}>
+<FadeContainer {show} zIndex={COASTER_SETUP_Z}>
 	<CanvasSizeRectangle backgroundColor={0x11021b} backgroundAlpha={0.72} />
 	<MainContainer>
 		<Container

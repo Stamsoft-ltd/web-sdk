@@ -28,6 +28,8 @@
 		revealing: boolean;
 		turned?: boolean;
 		batch?: boolean;
+		/** Unpicked fake duck: darkened once it has turned so it reads as "not yours". */
+		dimmed?: boolean;
 		alpha?: number;
 		onrevealcomplete?: () => void;
 	};
@@ -77,6 +79,11 @@
 	/** How big the prize badge reads on the duck, against the size the spine slot was laid out at. */
 	const PRIZE_SCALE = 2;
 
+	// Multiply tint for unpicked ducks. Pixi tints the whole rig, prize badge included, so this is
+	// deliberately a soft shade rather than a heavy one: the decoy prizes must stay readable.
+	const DIM_TINT = 0x8d88a4;
+	const tint = $derived(props.dimmed ? DIM_TINT : 0xffffff);
+
 	const prizeFill = new FillGradient({
 		type: 'linear',
 		start: { x: 0, y: 0 },
@@ -113,6 +120,7 @@
 		key="duckPondTurn"
 		height={props.size}
 		alpha={props.alpha ?? 1}
+		{tint}
 	>
 		<SpineTrack
 			trackIndex={0}
@@ -195,5 +203,6 @@
 		width={props.size * 0.97}
 		height={props.size}
 		alpha={props.alpha ?? 1}
+		{tint}
 	/>
 {/if}

@@ -13,8 +13,8 @@ const buildScript = fs.readFileSync(
 	path.join(appRoot, 'scripts', 'build-duck-turn-spine.py'),
 	'utf8',
 );
-const accessoryBuildScript = fs.readFileSync(
-	path.join(appRoot, 'scripts', 'build-duck-accessories.py'),
+const assetProcessScript = fs.readFileSync(
+	path.join(appRoot, 'scripts', 'process-duck-handdrawn-assets.py'),
 	'utf8',
 );
 const poseTimes = Array.from({ length: 64 }, (_, pose) =>
@@ -46,19 +46,18 @@ describe('Duck Your Luck Spine rig', () => {
 
 	it('exports sixty-four short-side turn frames and separate depth layers for every ring', () => {
 		expect(skeleton.skeleton.spine).toBe('4.2.0');
-		expect(skeleton.skeleton.hash).toBe('duck-your-luck-turn-v19-solid-floaties');
+		expect(skeleton.skeleton.hash).toBe('duck-your-luck-turn-v40-front-rear-accessory-fit');
 		expect(buildScript).toContain('if pose_index == 0:');
 		expect(buildScript).toContain('Duck turn opening frame changed');
 		expect(buildScript).toContain('def motion_interpolate_poses(source_poses: list[Image.Image])');
-		expect(buildScript).toContain('minterpolate=fps=2:mi_mode=mci:mc_mode=aobmc:');
-		expect(buildScript).toContain('SOURCE_POSE_COUNT = 32');
+		expect(buildScript).toContain('minterpolate=fps={POSE_COUNT - 1}/{SOURCE_POSE_COUNT - 1}');
+		expect(buildScript).toContain('SOURCE_POSE_COUNT = 16');
 		expect(buildScript).toContain('POSE_COUNT = 64');
 		expect(buildScript).toContain('TURN_SPEED_BOOST = 2.16');
-		expect(
-			buildScript.match(/pose = pose\.transpose\(Image\.Transpose\.FLIP_LEFT_RIGHT\)/g),
-		).toHaveLength(1);
-		expect(Object.keys(skeleton.skins[0].attachments.ring_back)).toHaveLength(8);
-		expect(Object.keys(skeleton.skins[0].attachments.ring_front)).toHaveLength(8);
+		expect(buildScript).toContain('DUCK_ART_SCALE = 0.95');
+		expect(buildScript).toContain('placed = placed.transpose(Image.Transpose.FLIP_LEFT_RIGHT)');
+		expect(Object.keys(skeleton.skins[0].attachments.ring_back)).toHaveLength(16);
+		expect(Object.keys(skeleton.skins[0].attachments.ring_front)).toHaveLength(16);
 		expect(Object.keys(skeleton.skins[0].attachments.duck_pose)).toEqual(
 			Array.from({ length: 64 }, (_, pose) => `pose_${pose}`),
 		);
@@ -82,8 +81,11 @@ describe('Duck Your Luck Spine rig', () => {
 				'prize',
 			]),
 		);
+		expect(skeleton.bones.find((bone: { name: string }) => bone.name === 'duck')).toMatchObject({
+			y: -6,
+		});
 
-		for (let variant = 1; variant <= 8; variant += 1) {
+		for (let variant = 1; variant <= 16; variant += 1) {
 			expect(skeleton.animations).toHaveProperty(`idle_${variant}`);
 			expect(skeleton.animations).toHaveProperty(`turn_${variant}`);
 			expect(skeleton.animations[`turn_batch_${variant}`]).toEqual(
@@ -94,7 +96,7 @@ describe('Duck Your Luck Spine rig', () => {
 	});
 
 	it('turns through every perspective and ends on the rear pose with the rump socket visible', () => {
-		for (let variant = 1; variant <= 8; variant += 1) {
+		for (let variant = 1; variant <= 16; variant += 1) {
 			const turn = skeleton.animations[`turn_${variant}`];
 			expect(animationDuration(turn)).toBeCloseTo(0.14444);
 			expect(turn.slots.ring_back.attachment[0]).toMatchObject({
@@ -117,12 +119,17 @@ describe('Duck Your Luck Spine rig', () => {
 
 	it('offers standard, sunglasses, party-hat, and combined looks from approved style assets', () => {
 		const skin = skeleton.skins[0].attachments;
-		expect(Object.keys(skin.hat)).toHaveLength(4);
+		expect(Object.keys(skin.hat)).toHaveLength(8);
 		expect(Object.keys(skin.glasses_back)).toHaveLength(4);
 		expect(Object.keys(skin.glasses_front)).toHaveLength(4);
 		expect(Object.keys(skin.glasses_rear)).toHaveLength(4);
-		expect(skin.hat.hat_0).toMatchObject({
-			path: 'party_hat_0',
+		expect(skin.hat.hat_front_0).toMatchObject({
+			path: 'party_hat_front_0',
+			width: 88,
+			height: 149,
+		});
+		expect(skin.hat.hat_rear_0).toMatchObject({
+			path: 'party_hat_rear_0',
 			width: 88,
 			height: 149,
 		});
@@ -141,32 +148,45 @@ describe('Duck Your Luck Spine rig', () => {
 			width: 174,
 			height: 42,
 		});
-		expect(buildScript).toContain('HAT_SOURCES = [');
-		expect(buildScript).toContain('party_hat_combo_{index}.png');
+		expect(buildScript).toContain('HAT_FRONT_SOURCES = [');
+		expect(buildScript).toContain('SOURCE_DIR / f"party_hat_front_combo_{index}.png"');
+		expect(buildScript).toContain('HAT_REAR_SOURCES = [');
+		expect(buildScript).toContain('SOURCE_DIR / f"party_hat_rear_combo_{index}.png"');
 		expect(buildScript).toContain('GLASSES_SOURCES = [');
 		expect(buildScript).toContain('sunglasses_combo_{index}.png');
 		expect(buildScript).toContain('GLASSES_FRONT_SOURCES = [');
 		expect(buildScript).toContain('sunglasses_front_combo_{index}.png');
 		expect(buildScript).toContain('GLASSES_REAR_SOURCES = [');
 		expect(buildScript).toContain('sunglasses_rear_combo_{index}.png');
-		expect(buildScript).toContain('HAT_SCALE_X = 1.50');
-		expect(buildScript).toContain('HAT_SCALE_Y = 1.50');
+		expect(buildScript).not.toContain('LEGACY_ACCESSORY_DIR');
+		expect(buildScript).toContain('HAT_BASE_WIDTH = 68');
+		expect(buildScript).toContain('HAT_BASE_HEIGHT = 86');
+		expect(buildScript).toContain('HAT_SCALE_X = 1.1156');
+		expect(buildScript).toContain('HAT_SCALE_Y = 1.1156');
+		expect(buildScript).toContain('HAT_Y_OFFSET = 11');
+		expect(buildScript).toContain('HAT_FRONT_X_OFFSET = -8');
+		expect(buildScript).toContain('HAT_REAR_X_OFFSET = 0');
+		expect(buildScript).toContain('HAT_REAR_SHOW_POSE = 44');
 		expect(buildScript).toContain('GLASSES_BASE_WIDTH = 145');
 		expect(buildScript).toContain('GLASSES_BASE_HEIGHT = 52');
 		expect(buildScript).toContain('GLASSES_CENTER_OFFSET_X = 31');
-		expect(buildScript).toContain('GLASSES_SCALE_X = 1.20');
-		expect(buildScript).toContain('GLASSES_SCALE_Y = 1.20');
+		expect(buildScript).toContain('GLASSES_SCALE_X = 1.05');
+		expect(buildScript).toContain('GLASSES_SCALE_Y = 1.05');
+		expect(buildScript).toContain('GLASSES_FRONT_X_OFFSET = -29');
+		expect(buildScript).toContain('GLASSES_FRONT_Y_OFFSET = 18');
+		expect(buildScript).toContain('GLASSES_ROTATION = -8');
 		expect(buildScript).toContain('GLASSES_PERSPECTIVE_REDUCTION = 80');
-		expect(buildScript).toContain('base_scale * HAT_SCALE_X');
-		expect(buildScript).toContain('base_scale * HAT_SCALE_Y');
 		expect(buildScript).toContain('GLASSES_REAR_BASE_WIDTH = 148');
-		expect(buildScript).toContain('GLASSES_REAR_BASE_HEIGHT = 34');
+		expect(buildScript).toContain('GLASSES_REAR_SCALE = 0.875');
+		expect(buildScript).toContain('GLASSES_REAR_X_OFFSET = 0');
+		expect(buildScript).toContain('GLASSES_REAR_Y_OFFSET = 0');
 		expect(buildScript).toContain('GLASSES_REAR_SHOW_POSE = 48');
-		expect(accessoryBuildScript).toContain('GLASSES_FAR_TEMPLE_POLYGON =');
-		expect(accessoryBuildScript).toContain('ImageDraw.Draw(mask).polygon');
-		expect(accessoryBuildScript).not.toContain('GLASSES_FRONT_CUT_X');
-		expect(accessoryBuildScript).toContain('GLASSES_REAR_ARM_SPREAD = 18');
-		expect(accessoryBuildScript).toContain('def spread_rear_arms(image: Image.Image)');
+		expect(buildScript).toContain('center_y = head_top + 73 + GLASSES_REAR_Y_OFFSET');
+		expect(assetProcessScript).toContain('decorated.height * 0.60');
+		expect(assetProcessScript).toContain('party_hat_{view}_combo_{index}.png');
+		expect(assetProcessScript).toContain('sunglasses_rear_combo_{index}.png');
+		expect(assetProcessScript).toContain('Expected back frame, front frame, and rear arms');
+		expect(assetProcessScript).toContain('"rear": fit_legacy_hat(front)');
 		expect(buildScript).not.toMatch(/build_hat_overlay|build_glasses_overlay|accessory_canvas/);
 
 		for (let look = 0; look < 25; look += 1) {
@@ -187,11 +207,11 @@ describe('Duck Your Luck Spine rig', () => {
 		expect(named(skeleton.animations.look_turn_1.slots.glasses_back.attachment)).toHaveLength(1);
 		expect(named(skeleton.animations.look_turn_1.slots.glasses_front.attachment)).toHaveLength(1);
 		expect(named(skeleton.animations.look_turn_1.slots.glasses_rear.attachment)).toHaveLength(2);
-		expect(named(skeleton.animations.look_turn_5.slots.hat.attachment)).toHaveLength(2);
+		expect(named(skeleton.animations.look_turn_5.slots.hat.attachment)).toHaveLength(3);
 		expect(named(skeleton.animations.look_turn_5.slots.glasses_back.attachment)).toHaveLength(0);
 		expect(named(skeleton.animations.look_turn_5.slots.glasses_front.attachment)).toHaveLength(0);
 		expect(named(skeleton.animations.look_turn_5.slots.glasses_rear.attachment)).toHaveLength(0);
-		expect(named(skeleton.animations.look_turn_9.slots.hat.attachment)).toHaveLength(2);
+		expect(named(skeleton.animations.look_turn_9.slots.hat.attachment)).toHaveLength(3);
 		expect(named(skeleton.animations.look_turn_9.slots.glasses_back.attachment)).toHaveLength(1);
 		expect(named(skeleton.animations.look_turn_9.slots.glasses_front.attachment)).toHaveLength(1);
 		expect(named(skeleton.animations.look_turn_9.slots.glasses_rear.attachment)).toHaveLength(2);
@@ -234,7 +254,7 @@ describe('Duck Your Luck Spine rig', () => {
 	it('uses only solid floaties and overlaps both depth arcs without a moving seam', () => {
 		expect(buildScript).toMatch(/1: \{"hue": None, "star": True, "striped": False/);
 		expect(buildScript).not.toContain('"striped": True');
-		expect(buildScript).toContain('def remove_star_badge(ring: Image.Image)');
+		expect(buildScript).toContain('RING_NO_STAR_SOURCE = SOURCE_DIR / "ring_no_star.png"');
 		expect(buildScript).toContain('depth_overlap = 2');
 		expect(buildScript).toContain('if y < boundary + depth_overlap:');
 		expect(buildScript).toContain('if y >= boundary - depth_overlap:');
@@ -283,13 +303,14 @@ describe('Duck Your Luck Spine rig', () => {
 			expect(atlas).toContain(`\npose_${pose}\n`);
 		}
 		for (let combo = 0; combo < 4; combo += 1) {
-			expect(atlas).toContain(`\nparty_hat_${combo}\n`);
+			expect(atlas).toContain(`\nparty_hat_front_${combo}\n`);
+			expect(atlas).toContain(`\nparty_hat_rear_${combo}\n`);
 			expect(atlas).toContain(`\nsunglasses_${combo}\n`);
 			expect(atlas).toContain(`\nsunglasses_front_${combo}\n`);
 			expect(atlas).toContain(`\nsunglasses_rear_${combo}\n`);
 		}
 		expect(atlas).not.toMatch(/\nhat_pose_|\nglasses_pose_/);
-		for (let variant = 1; variant <= 8; variant += 1) {
+		for (let variant = 1; variant <= 16; variant += 1) {
 			expect(atlas).toContain(`\nring_back_${variant}\n`);
 			expect(atlas).toContain(`\nring_front_${variant}\n`);
 		}
@@ -304,7 +325,12 @@ describe('Duck Your Luck Spine rig', () => {
 		const visual = readSource('game/duckVisual.ts');
 		const handler = readSource('game/bookEventHandlerMap.ts');
 		expect(source).toContain('<DuckPondDuck');
-		expect(source).toContain('onrevealcomplete={() => finishDuckReveal(index)}');
+		expect(source).toContain('finishDuckReveal(index);');
+		expect(source).toContain('finishFinalDuckReveal(index);');
+		expect(source).toContain('const fakePrizes = prizePool.slice(totalPicks)');
+		expect(source).toContain('finalRevealIndices = hiddenIndices');
+		expect(source).toContain('await waitForResolve((resolve) => (resolveFinalReveal = resolve))');
+		expect(source).toContain('await waitForTimeout(2000)');
 		expect(source).toContain('skipAllowedAt = performance.now() + 140');
 		expect(source).toContain('if (performance.now() < skipAllowedAt) return');
 		expect(source).toContain('bookEventAmountToCurrencyString(runningTotal)');
@@ -313,14 +339,18 @@ describe('Duck Your Luck Spine rig', () => {
 		expect(duck).toMatch(/<SpineTrack[\s\S]*?\{animationName\}/);
 		expect(duck).toContain('trackIndex={1}');
 		expect(duck).toContain('animationName={lookAnimationName}');
-		expect(source).toContain('look: duckLookForIndex(eventId, index)');
+		expect(source).toContain('const POND_ACCESSORIES_ENABLED = false');
+		expect(source).toContain('POND_ACCESSORIES_ENABLED ? duckLookForIndex(eventId, index) : 0');
+		expect(source).toContain('look: pondLook(eventId, index)');
 		expect(source).toContain('variant: duckVariantForIndex(eventId, index)');
 		expect(source).toContain('ducks = emptyPond(event.seed)');
 		expect(source).toContain('look={duck.look}');
 		expect(source).not.toContain('Math.random');
 		expect(visual).toContain('seededDuckValue');
 		expect(visual).toContain('duckLookForIndex = (eventId: number, duckIndex: number)');
-		expect(visual).toContain('DUCK_SOLID_VARIANTS = [1, 5, 7, 8]');
+		expect(visual).toContain(
+			'DUCK_SOLID_VARIANTS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]',
+		);
 		expect(visual).not.toContain('Math.random');
 		expect(handler).toContain('seed: bookEvent.index');
 		expect(duck).toContain('bookEventAmountToCurrencyString((props.prize?.value ?? 0) * 100)');
@@ -433,8 +463,12 @@ describe('Duck Your Luck Spine rig', () => {
 		expect(handler).toContain('duckLook: duckLookForPosition(position, bookEvent.index)');
 		expect(board).not.toMatch(/revealedDuckCollectCellSet|underDuckCollect/);
 		expect(board).not.toContain("assetKey: 'duckPresentSpine'");
-		expect(assets).toContain("src: './assets/theme-park/v2/modes/duck-your-luck-desktop-marquee.png'");
-		expect(assets).toContain("src: './assets/theme-park/v2/modes/duck-your-luck-mobile-marquee.png'");
+		expect(assets).toContain(
+			"src: './assets/theme-park/v2/modes/duck-your-luck-desktop-marquee.png'",
+		);
+		expect(assets).toContain(
+			"src: './assets/theme-park/v2/modes/duck-your-luck-mobile-marquee.png'",
+		);
 		expect(assets).toContain(
 			"src: './assets/theme-park/v2/modes/duck-your-luck-mobile-landscape-marquee.png'",
 		);

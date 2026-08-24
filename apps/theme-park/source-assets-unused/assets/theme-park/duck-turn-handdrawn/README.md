@@ -1,0 +1,1 @@
+Mega Coaster-style Duck Your Luck sources: corrected compact wings, solid floaties in eight hues with optional star badges, fitted front/rear party hats, and split front/back sunglasses layers. Generated concepts live in apps/theme-park/art/concepts; rebuild with scripts/process-duck-handdrawn-assets.py.

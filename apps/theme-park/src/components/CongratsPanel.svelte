@@ -41,14 +41,16 @@
 	 * height against that — cap against the art alone and the well is what a short window pushes off
 	 * the bottom.
 	 */
-	export const WIDE_ASSEMBLY_ASPECT =
-		1 / (WIDE_PAD_FOOT + WIDE_WELL_CENTRE + WIDE_WELL_HEIGHT / 2);
+	export const WIDE_ASSEMBLY_ASPECT = 1 / (WIDE_PAD_FOOT + WIDE_WELL_CENTRE + WIDE_WELL_HEIGHT / 2);
 	/**
 	 * And the assembly's middle is not the sign's, which is the point this component is positioned
 	 * by. Lifted a little further still (the design's own nudge, 0.012 of the width) to keep the well
 	 * clear of the HUD bar.
 	 */
-	export const WIDE_CENTRE_Y = -((WIDE_WELL_CENTRE + WIDE_WELL_HEIGHT / 2 - WIDE_PAD_FOOT) / 2 + 0.012);
+	export const WIDE_CENTRE_Y = -(
+		(WIDE_WELL_CENTRE + WIDE_WELL_HEIGHT / 2 - WIDE_PAD_FOOT) / 2 +
+		0.012
+	);
 </script>
 
 <script lang="ts">
@@ -442,25 +444,30 @@
      rather than the frame swelling around pieces that sit still. -->
 <Container scale={panelBreathe}>
 	<Container scale={panelScale} alpha={artReady ? 1 : 0}>
-		<Sprite key={artKey} anchor={0.5} width={size} {height} alpha={panelAlpha} />
-		<Sprite
-			key={artKey}
-			anchor={0.5}
-			blendMode="add"
-			width={size}
-			{height}
-			alpha={panelBloom * panelAlpha}
-		/>
-		<WinCardLights
-			bulbs={art.bulbs}
-			{size}
-			colour={art.bulbColour}
-			bulb={art.bulb}
-			cycles={4}
-			speed={CHASE_SPEED}
-			intensity={artReady ? lightsIn : 0}
-			{elapsed}
-		/>
+		<!-- Alpha does not prevent <Sprite> from resolving its key. Keep the deferred art unmounted
+		     until AssetsLoader publishes it; otherwise the fallback works visually but Sprite logs a
+		     false missing-key error during the deferred-load window. -->
+		{#if artReady}
+			<Sprite key={artKey} anchor={0.5} width={size} {height} alpha={panelAlpha} />
+			<Sprite
+				key={artKey}
+				anchor={0.5}
+				blendMode="add"
+				width={size}
+				{height}
+				alpha={panelBloom * panelAlpha}
+			/>
+			<WinCardLights
+				bulbs={art.bulbs}
+				{size}
+				colour={art.bulbColour}
+				bulb={art.bulb}
+				cycles={4}
+				speed={CHASE_SPEED}
+				intensity={lightsIn}
+				{elapsed}
+			/>
+		{/if}
 	</Container>
 
 	{#if L.name && name}

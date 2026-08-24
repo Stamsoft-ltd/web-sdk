@@ -1,9 +1,8 @@
 import { BOARD_DIMENSIONS } from './constants';
 import type { Position } from './types';
 
-// Only solid floaties: authored variants 1, 5, 7, 8. Variant 1/5/7 retain their optional star;
-// striped 2/3/4/6 never enter runtime selection.
-export const DUCK_SOLID_VARIANTS = [1, 5, 7, 8] as const;
+// Eight solid floatie hues, each authored with and without the star badge. No stripes.
+export const DUCK_SOLID_VARIANTS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] as const;
 export const DUCK_ACCESSORY_COLOR_COUNT = 4;
 export const DUCK_LOOK_COUNT = 1 + DUCK_ACCESSORY_COLOR_COUNT * 2 + DUCK_ACCESSORY_COLOR_COUNT ** 2;
 
@@ -16,8 +15,12 @@ const seededDuckValue = (eventId: number, duckIndex: number, salt: number) => {
 	return (value ^ (value >>> 16)) >>> 0;
 };
 
-export const seededEventChoice = (eventId: number, duckIndex: number, salt: number, count: number) =>
-	seededDuckValue(eventId, duckIndex, salt) % count;
+export const seededEventChoice = (
+	eventId: number,
+	duckIndex: number,
+	salt: number,
+	count: number,
+) => seededDuckValue(eventId, duckIndex, salt) % count;
 
 /**
  * 0 standard; 1-4 glasses; 5-8 party hat; 9-24 both. Hat/glasses colors are
@@ -34,9 +37,7 @@ export const duckLookForIndex = (eventId: number, duckIndex: number) => {
 };
 
 export const duckVariantForIndex = (eventId: number, duckIndex: number) =>
-	DUCK_SOLID_VARIANTS[
-		seededEventChoice(eventId, duckIndex, 4, DUCK_SOLID_VARIANTS.length)
-	]!;
+	DUCK_SOLID_VARIANTS[seededEventChoice(eventId, duckIndex, 4, DUCK_SOLID_VARIANTS.length)]!;
 
 const positionIndex = ({ reel, row }: Position) => reel * BOARD_DIMENSIONS.y + Math.max(0, row);
 

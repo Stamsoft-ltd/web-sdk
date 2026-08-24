@@ -1,5 +1,5 @@
 mega_wild_full_reel.png
-size: 1024,2094
+size: 1024,2070
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
@@ -13,104 +13,104 @@ background
 cart_steep
   rotate: false
   xy: 256, 0
-  size: 220, 329
-  orig: 220, 329
+  size: 194, 280
+  orig: 194, 280
   offset: 0, 0
   index: -1
 cart_high_mid
   rotate: false
-  xy: 476, 0
-  size: 220, 329
-  orig: 220, 329
+  xy: 450, 0
+  size: 194, 280
+  orig: 194, 280
   offset: 0, 0
   index: -1
 cart_mid
   rotate: false
-  xy: 696, 0
-  size: 220, 329
-  orig: 220, 329
+  xy: 644, 0
+  size: 194, 280
+  orig: 194, 280
   offset: 0, 0
   index: -1
 cart_low_mid
   rotate: false
   xy: 0, 824
-  size: 220, 329
-  orig: 220, 329
+  size: 194, 280
+  orig: 194, 280
   offset: 0, 0
   index: -1
 cart
   rotate: false
-  xy: 220, 824
-  size: 220, 329
-  orig: 220, 329
+  xy: 194, 824
+  size: 194, 280
+  orig: 194, 280
   offset: 0, 0
   index: -1
 plaque
   rotate: false
-  xy: 440, 824
-  size: 244, 148
-  orig: 244, 148
+  xy: 388, 824
+  size: 244, 171
+  orig: 244, 171
   offset: 0, 0
   index: -1
 plaque_top_35
   rotate: false
-  xy: 684, 824
-  size: 244, 105
-  orig: 244, 105
+  xy: 632, 824
+  size: 244, 141
+  orig: 244, 141
   offset: 0, 0
   index: -1
 plaque_top_60
   rotate: false
-  xy: 0, 1153
-  size: 244, 62
-  orig: 244, 62
+  xy: 0, 1104
+  size: 244, 103
+  orig: 244, 103
   offset: 0, 0
   index: -1
 plaque_top_side
   rotate: false
-  xy: 244, 1153
-  size: 244, 37
-  orig: 244, 37
+  xy: 244, 1104
+  size: 244, 49
+  orig: 244, 49
   offset: 0, 0
   index: -1
 plaque_bottom_35
   rotate: false
-  xy: 488, 1153
-  size: 244, 117
-  orig: 244, 117
+  xy: 488, 1104
+  size: 244, 142
+  orig: 244, 142
   offset: 0, 0
   index: -1
 plaque_bottom_60
   rotate: false
-  xy: 732, 1153
-  size: 244, 73
-  orig: 244, 73
+  xy: 732, 1104
+  size: 244, 100
+  orig: 244, 100
   offset: 0, 0
   index: -1
 plaque_bottom_side
   rotate: false
-  xy: 0, 1270
+  xy: 0, 1246
   size: 244, 49
   orig: 244, 49
   offset: 0, 0
   index: -1
 sparkles
   rotate: false
-  xy: 244, 1270
+  xy: 244, 1246
   size: 256, 824
   orig: 256, 824
   offset: 0, 0
   index: -1
 fake_multiplier_slot
   rotate: false
-  xy: 500, 1270
+  xy: 500, 1246
   size: 1, 1
   orig: 1, 1
   offset: 0, 0
   index: -1
 multiplier_slot
   rotate: false
-  xy: 501, 1270
+  xy: 501, 1246
   size: 1, 1
   orig: 1, 1
   offset: 0, 0

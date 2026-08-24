@@ -1,5 +1,5 @@
 import { stateBet } from 'state-shared';
-import { createPlayBookUtils } from 'utils-book';
+import { checkIsMultipleRevealEvents, createPlayBookUtils } from 'utils-book';
 
 import { bookEventHandlerMap } from './bookEventHandlerMap';
 import { eventEmitter } from './eventEmitter';
@@ -104,6 +104,15 @@ export const getSymbolInfo = ({ rawSymbol, state }: { rawSymbol: RawSymbol; stat
 export const getSymbolX = (reelIndex: number): number => getBoardCellCenterX(reelIndex);
 
 export const { playBookEvent, playBookEvents } = createPlayBookUtils({ bookEventHandlerMap });
+
+/**
+ * Pick/collect rounds can contain one reel reveal, so the generic multiple-reveal check sees them
+ * as ordinary wins and prefetches `/wallet/end-round` before their Duck animations. Treat their
+ * interactive animation events as bonus playback so settlement runs only after the book finishes.
+ */
+export const shouldDeferEndRound = (bet: Pick<Bet, 'state'>) =>
+	checkIsMultipleRevealEvents({ bookEvents: bet.state }) ||
+	bet.state.some(({ type }) => type === 'duckPickStart' || type === 'duckCollectStart');
 
 export const playBet = async (bet: Bet) => {
 	stateBet.winBookEventAmount = 0;

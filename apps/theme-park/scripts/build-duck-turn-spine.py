@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the Duck Your Luck 2.5D front-to-back Spine 4.2 rig.
 
-The duck and swim ring are separate layers. Thirty-two authored perspective frames plus
+The duck and swim ring are separate layers. Sixteen coherent high-resolution authored anchors plus
 motion-compensated fillers
 swap on one always-opaque slot while the duck bobs and turns inside a ring that
 keeps its depth, squash, and waterline. Outputs are deterministic and runtime-ready:
@@ -22,21 +22,25 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image
-from PIL import ImageDraw, ImageFilter
+from PIL import ImageFilter
 
 
 APP_ROOT = Path(__file__).resolve().parents[1]
-SOURCE_DIR = APP_ROOT / "source-assets-unused/assets/theme-park/duck-turn"
+SOURCE_DIR = APP_ROOT / "source-assets-unused/assets/theme-park/duck-turn-handdrawn"
 OUTPUT_DIR = APP_ROOT / "static/assets/spines/duckTurn"
 
 POSE_SHEET = SOURCE_DIR / "duck_pose_sheet.png"
-INBETWEEN_SHEET = SOURCE_DIR / "duck_inbetweens.png"
-MIDPOSE_SHEET = SOURCE_DIR / "duck_midposes.png"
-QUARTERPOSE_SHEET = SOURCE_DIR / "duck_quarterposes.png"
-EIGHTHPOSE_SHEET = SOURCE_DIR / "duck_eighthposes.png"
 RING_SOURCE = SOURCE_DIR / "ring.png"
-HAT_SOURCES = [SOURCE_DIR / f"party_hat_combo_{index}.png" for index in range(4)]
-GLASSES_SOURCES = [SOURCE_DIR / f"sunglasses_combo_{index}.png" for index in range(4)]
+RING_NO_STAR_SOURCE = SOURCE_DIR / "ring_no_star.png"
+HAT_FRONT_SOURCES = [
+    SOURCE_DIR / f"party_hat_front_combo_{index}.png" for index in range(4)
+]
+HAT_REAR_SOURCES = [
+    SOURCE_DIR / f"party_hat_rear_combo_{index}.png" for index in range(4)
+]
+GLASSES_SOURCES = [
+    SOURCE_DIR / f"sunglasses_combo_{index}.png" for index in range(4)
+]
 GLASSES_FRONT_SOURCES = [
     SOURCE_DIR / f"sunglasses_front_combo_{index}.png" for index in range(4)
 ]
@@ -48,16 +52,13 @@ FRAME_SIZE = 384
 ATLAS_MAX_WIDTH = 2048
 ATLAS_TRIM_PADDING = 2
 ATLAS_REGION_GAP = 2
-KEY_POSE_COUNT = 5
-INBETWEEN_COUNT = 4
-MIDPOSE_COUNT = 7
-QUARTERPOSE_COUNT = 8
-EIGHTHPOSE_COUNT = 8
-SOURCE_POSE_COUNT = 32
+KEY_POSE_COUNT = 16
+SOURCE_POSE_COUNT = 16
 POSE_COUNT = 64
-OPENING_FRAME_SHA256 = "9cab54246464718cb0abb0d826e441102de028dd6078a8d4e5761f7f19b3fc42"
-DUCK_MAX_WIDTH = 276
-DUCK_MAX_HEIGHT = 286
+OPENING_FRAME_SHA256 = "4e9674e992f1a54b5bf88e9fdabad0b5dc131946567cb426be47477993d1ddb5"
+DUCK_ART_SCALE = 0.95
+DUCK_MAX_WIDTH = 276 * DUCK_ART_SCALE
+DUCK_MAX_HEIGHT = 286 * DUCK_ART_SCALE
 DUCK_BASELINE = 318
 RING_WIDTH = 372
 RING_BASELINE = 376
@@ -76,37 +77,56 @@ POSE_TIMES = [
     for index in range(POSE_COUNT)
 ]
 
-ACCESSORY_COLOR_COUNT = len(HAT_SOURCES)
+ACCESSORY_COLOR_COUNT = len(HAT_FRONT_SOURCES)
 DUCK_LOOK_COUNT = 1 + ACCESSORY_COLOR_COUNT * 2 + ACCESSORY_COLOR_COUNT**2
-HAT_X_TRACK = [(0, 182), (8, 187), (16, 178.5), (24, 179), (32, 179.5), (40, 187), (48, 191), (63, 191)]
-GLASSES_X_TRACK = [(0, 136.5), (8, 145.5), (16, 130), (24, 111.5), (32, 107.5), (40, 107), (46, 104)]
-GLASSES_Y_TRACK = [(0, 106), (8, 104), (16, 102), (24, 105), (32, 105), (40, 100), (46, 105)]
+# Preserve the approved pre-restyle motion tracks, translated onto the new Duck's head anchor.
+HAT_X_TRACK = [(0, 196), (8, 201), (16, 192.5), (24, 193), (32, 193.5), (40, 201), (48, 205), (63, 205)]
 HAT_BASE_WIDTH = 68
 HAT_BASE_HEIGHT = 86
 HAT_BASE_ANGLE = math.degrees(math.atan2(-0.09 * HAT_BASE_WIDTH, HAT_BASE_HEIGHT))
-HAT_SCALE_X = 1.50
-HAT_SCALE_Y = 1.50
+HAT_SCALE_X = 1.1156
+HAT_SCALE_Y = 1.1156
+HAT_Y_OFFSET = 11
+HAT_FRONT_X_OFFSET = -8
+HAT_REAR_X_OFFSET = 0
+HAT_REAR_SHOW_POSE = 44
+GLASSES_X_TRACK = [(0, 174.5), (8, 183.5), (16, 168), (24, 149.5), (32, 145.5), (40, 145), (46, 142)]
+GLASSES_Y_TRACK = [(0, 106), (8, 104), (16, 102), (24, 105), (32, 105), (40, 100), (46, 105)]
 GLASSES_BASE_WIDTH = 145
 GLASSES_BASE_HEIGHT = 52
 GLASSES_CENTER_OFFSET_X = 31
-GLASSES_SCALE_X = 1.20
-GLASSES_SCALE_Y = 1.20
+GLASSES_SCALE_X = 1.05
+GLASSES_SCALE_Y = 1.05
+GLASSES_FRONT_X_OFFSET = -29
+GLASSES_FRONT_Y_OFFSET = 18
+GLASSES_ROTATION = -8
 GLASSES_PERSPECTIVE_REDUCTION = 80
 GLASSES_REAR_BASE_WIDTH = 148
-GLASSES_REAR_BASE_HEIGHT = 34
+GLASSES_REAR_SCALE = 0.875
+GLASSES_REAR_X_OFFSET = 0
+GLASSES_REAR_Y_OFFSET = 0
 GLASSES_REAR_SHOW_POSE = 48
 
 # Hue values use Pillow's 0..255 HSV range. None keeps the authored purple.
 RING_VARIANTS = {
     1: {"hue": None, "star": True, "striped": False, "value": 1.0, "saturation": 0},
-    2: {"hue": 77, "star": False, "striped": False, "value": 1.10, "saturation": 190},
-    3: {"hue": 238, "star": True, "striped": False, "value": 1.08, "saturation": 175},
-    4: {"hue": 2, "star": False, "striped": False, "value": 1.16, "saturation": 210},
-    5: {"hue": 76, "star": True, "striped": False, "value": 1.20, "saturation": 210},
-    6: {"hue": 153, "star": True, "striped": False, "value": 1.12, "saturation": 190},
-    7: {"hue": 18, "star": True, "striped": False, "value": 1.35, "saturation": 225},
-    8: {"hue": 1, "star": False, "striped": False, "value": 1.22, "saturation": 220},
+    2: {"hue": None, "star": False, "striped": False, "value": 1.0, "saturation": 0},
+    3: {"hue": 170, "star": True, "striped": False, "value": 1.0, "saturation": 195},
+    4: {"hue": 170, "star": False, "striped": False, "value": 1.0, "saturation": 195},
+    5: {"hue": 132, "star": True, "striped": False, "value": 1.0, "saturation": 195},
+    6: {"hue": 132, "star": False, "striped": False, "value": 1.0, "saturation": 195},
+    7: {"hue": 224, "star": True, "striped": False, "value": 1.0, "saturation": 195},
+    8: {"hue": 224, "star": False, "striped": False, "value": 1.0, "saturation": 195},
+    9: {"hue": 0, "star": True, "striped": False, "value": 1.0, "saturation": 210},
+    10: {"hue": 0, "star": False, "striped": False, "value": 1.0, "saturation": 210},
+    11: {"hue": 18, "star": True, "striped": False, "value": 1.0, "saturation": 215},
+    12: {"hue": 18, "star": False, "striped": False, "value": 1.0, "saturation": 215},
+    13: {"hue": 85, "star": True, "striped": False, "value": 1.0, "saturation": 205},
+    14: {"hue": 85, "star": False, "striped": False, "value": 1.0, "saturation": 205},
+    15: {"hue": 39, "star": True, "striped": False, "value": 1.0, "saturation": 205},
+    16: {"hue": 39, "star": False, "striped": False, "value": 1.0, "saturation": 205},
 }
+RING_VARIANT_COUNT = len(RING_VARIANTS)
 
 
 def opaque_x_spans(image: Image.Image, threshold: int = 16) -> list[tuple[int, int]]:
@@ -153,7 +173,7 @@ def place_on_frame(
 
 
 def motion_interpolate_poses(source_poses: list[Image.Image]) -> list[Image.Image]:
-    """Insert one motion-compensated filler after every authored pose.
+    """Expand the coherent authored anchors into sixty-four motion-compensated poses.
 
     RGB is premultiplied and alpha is interpolated separately. This prevents the transparent
     hands/eyes produced by straight RGBA crossfades. Exact start/rear drawings are restored after
@@ -181,7 +201,7 @@ def motion_interpolate_poses(source_poses: list[Image.Image]) -> list[Image.Imag
             Image.fromarray(alpha_rgb, "RGB").save(alpha_input / f"{index:03d}.png")
 
         filter_graph = (
-            "minterpolate=fps=2:mi_mode=mci:mc_mode=aobmc:"
+            f"minterpolate=fps={POSE_COUNT - 1}/{SOURCE_POSE_COUNT - 1}:mi_mode=mci:mc_mode=aobmc:"
             "me_mode=bidir:vsbmc=1"
         )
         for input_dir, output_dir in (
@@ -226,7 +246,11 @@ def motion_interpolate_poses(source_poses: list[Image.Image]) -> list[Image.Imag
             rgba[alpha[:, :, 0] <= 3] = 0
             poses.append(Image.fromarray(rgba, "RGBA"))
 
-    poses[0] = source_poses[0].copy()
+    # Restore every authored key at its exact runtime sample. Optical flow supplies only the
+    # in-betweens; it must not ghost eyes, beak, wings, hats, or glasses at key poses.
+    for source_index, source_pose in enumerate(source_poses):
+        target_index = round(source_index * (POSE_COUNT - 1) / (SOURCE_POSE_COUNT - 1))
+        poses[target_index] = source_pose.copy()
     poses[-2] = source_poses[-1].copy()
     poses[-1] = source_poses[-1].copy()
     return poses
@@ -235,68 +259,44 @@ def motion_interpolate_poses(source_poses: list[Image.Image]) -> list[Image.Imag
 def build_pose_frames() -> dict[str, Image.Image]:
     def extract(sheet_path: Path, expected: int) -> list[Image.Image]:
         sheet = Image.open(sheet_path).convert("RGBA")
-        spans = opaque_x_spans(sheet)
+        raw_spans = opaque_x_spans(sheet)
+        spans: list[tuple[int, int]] = []
+        # Side/rear hand-drawn poses can have a genuine clear column between the beak and body.
+        # Generated source sheets use >=120px between frames, so merge only smaller internal gaps.
+        for left, right in raw_spans:
+            if spans and left - spans[-1][1] < 100:
+                spans[-1] = (spans[-1][0], right)
+            else:
+                spans.append((left, right))
         if len(spans) != expected:
             raise ValueError(f"Expected {expected} Duck poses in {sheet_path}, found {len(spans)}")
         return [sheet.crop((left, 0, right, sheet.height)) for left, right in spans]
 
-    key_poses = extract(POSE_SHEET, KEY_POSE_COUNT)
-    inbetweens = extract(INBETWEEN_SHEET, INBETWEEN_COUNT)
-    midposes = extract(MIDPOSE_SHEET, MIDPOSE_COUNT)
-    quarterposes = extract(QUARTERPOSE_SHEET, QUARTERPOSE_COUNT)
-    eighthposes = extract(EIGHTHPOSE_SHEET, EIGHTHPOSE_COUNT)
-    # Correct the prior deep-rear/three-quarter ordering, then insert the newly
-    # authored midpoint for every adjacent pair. The unused direct-front drawing
-    # becomes the opening frame, yielding 16 monotonic front-to-back poses.
-    base_poses = [
-        key_poses[0],
-        key_poses[1],
-        inbetweens[1],
-        key_poses[2],
-        key_poses[3],
-        inbetweens[2],
-        inbetweens[3],
-        key_poses[4],
-    ]
-    sixteen_poses = [inbetweens[0]]
-    for pose_index, pose in enumerate(base_poses):
-        sixteen_poses.append(pose)
-        if pose_index < MIDPOSE_COUNT:
-            sixteen_poses.append(midposes[pose_index])
-
-    # Interleave both eight-frame refinement passes around the sixteen-pose base.
-    # The last eighth-pose is the authored rear endpoint. Preserve the shipped
-    # mirrored opening drawing, then keep the authored direction: the duck now
-    # turns toward the side it already faces instead of taking the long way around.
-    ordered: list[Image.Image] = []
-    for pose_index, pose in enumerate(sixteen_poses):
-        ordered.append(pose)
-        refinement_index = pose_index // 2
-        ordered.append(
-            quarterposes[refinement_index]
-            if pose_index % 2 == 0
-            else eighthposes[refinement_index]
-        )
+    # Sixteen coherent anchors from the approved Mega Coaster-style generation pass. Optical-flow
+    # fillers provide the 64 runtime samples without mixing independent art styles or contours.
+    ordered = extract(POSE_SHEET, KEY_POSE_COUNT)
 
     if len(ordered) != SOURCE_POSE_COUNT:
         raise ValueError("Duck turn authored pose count mismatch")
 
     authored: list[Image.Image] = []
     for pose_index, pose in enumerate(ordered):
-        if pose_index == 0:
-            pose = pose.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        # The authored sheet already starts beak-right and takes the short route to the rear.
         placed = place_on_frame(
             pose,
             max_width=DUCK_MAX_WIDTH,
             max_height=DUCK_MAX_HEIGHT,
             baseline=DUCK_BASELINE,
         )
-        if (
-            pose_index == 0
-            and hashlib.sha256(placed.tobytes()).hexdigest()
-            != OPENING_FRAME_SHA256
-        ):
-            raise ValueError("Duck turn opening frame changed")
+        # Accessory art faces the opposite short-side direction. Mirror only the Duck; the ring,
+        # hats and glasses keep their authored direction and Spine transforms.
+        placed = placed.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        if pose_index == 0:
+            opening_hash = hashlib.sha256(placed.tobytes()).hexdigest()
+            if opening_hash != OPENING_FRAME_SHA256:
+                raise ValueError(
+                    f"Duck turn opening frame changed: {opening_hash}"
+                )
         authored.append(placed)
 
     poses = motion_interpolate_poses(authored)
@@ -305,8 +305,8 @@ def build_pose_frames() -> dict[str, Image.Image]:
     return {f"pose_{pose_index}": pose for pose_index, pose in enumerate(poses)}
 
 
-def build_ring_frame() -> Image.Image:
-    ring = Image.open(RING_SOURCE).convert("RGBA")
+def build_ring_frame(source_path: Path) -> Image.Image:
+    ring = Image.open(source_path).convert("RGBA")
     bbox = ring.getchannel("A").getbbox()
     if not bbox:
         raise ValueError("Ring source has no opaque pixels")
@@ -324,24 +324,9 @@ def build_ring_frame() -> Image.Image:
     return frame
 
 
-def remove_star_badge(ring: Image.Image) -> Image.Image:
-    """Recover clean vinyl for stripe-only rings from the symmetric right-hand surface.
-
-    The soft ellipse includes the badge shadow. Feathering avoids the rectangular patch edge that
-    previously appeared as a line while the ring squashed and rotated.
-    """
-    mirrored = ring.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-    mask = Image.new("L", ring.size)
-    ImageDraw.Draw(mask).ellipse((82, 276, 168, 360), fill=255)
-    mask = mask.filter(ImageFilter.GaussianBlur(8))
-    return Image.composite(mirrored, ring, mask)
-
-
 def recolour_ring(ring: Image.Image, variant: int) -> Image.Image:
     """Recolour only the purple torus, retaining dimensional light and shade."""
     config = RING_VARIANTS[variant]
-    if not config["star"]:
-        ring = remove_star_badge(ring)
     if config["hue"] is None:
         return ring.copy()
 
@@ -352,34 +337,18 @@ def recolour_ring(ring: Image.Image, variant: int) -> Image.Image:
     star_exclusion = np.zeros((FRAME_SIZE, FRAME_SIZE), dtype=bool)
     if config["star"]:
         pixels = np.asarray(rgba)
-        yy, xx = np.indices((FRAME_SIZE, FRAME_SIZE))
+        yy, _ = np.indices((FRAME_SIZE, FRAME_SIZE))
         yellow_core = (
-            (xx >= 82)
-            & (xx <= 168)
-            & (yy >= 276)
-            & (yy <= 360)
+            (yy >= round(FRAME_SIZE * 0.52))
             & (pixels[:, :, 3] > 8)
-            & (pixels[:, :, 0] > 140)
-            & (pixels[:, :, 1] > 45)
-            & (pixels[:, :, 2] < 150)
-            & (pixels[:, :, 0] > pixels[:, :, 1] * 1.12)
+            & (pixels[:, :, 0] > 150)
+            & (pixels[:, :, 1] > 75)
+            & (pixels[:, :, 2] < 180)
+            & (pixels[:, :, 0] > pixels[:, :, 1] * 1.05)
         )
-        core_mask = Image.fromarray((yellow_core * 255).astype(np.uint8), "L")
-        near_core = np.asarray(core_mask.filter(ImageFilter.MaxFilter(5))) > 0
-        star_detail = near_core & (
-            (
-                (pixels[:, :, 0] > 175)
-                & (pixels[:, :, 1] > 160)
-                & (pixels[:, :, 2] > 130)
-            )
-            | (
-                (pixels[:, :, 0] > 55)
-                & (pixels[:, :, 0] > pixels[:, :, 1] * 1.15)
-                & (pixels[:, :, 2] < 100)
-            )
-        )
-        star_mask = Image.fromarray(((yellow_core | star_detail) * 255).astype(np.uint8), "L")
-        star_exclusion = np.asarray(star_mask.filter(ImageFilter.MaxFilter(3))) > 0
+        # Black contour remains black under hue replacement. Excluding only the warm painted
+        # pixels preserves the yellow badge without leaving a square of unrecoloured vinyl.
+        star_exclusion = yellow_core
 
     for y in range(FRAME_SIZE):
         for x in range(FRAME_SIZE):
@@ -516,16 +485,19 @@ def load_accessory_asset(path: Path) -> Image.Image:
 
 def build_frames() -> dict[str, Image.Image]:
     frames = build_pose_frames()
-    for combo, path in enumerate(HAT_SOURCES):
-        frames[f"party_hat_{combo}"] = load_accessory_asset(path)
+    for combo, path in enumerate(HAT_FRONT_SOURCES):
+        frames[f"party_hat_front_{combo}"] = load_accessory_asset(path)
+    for combo, path in enumerate(HAT_REAR_SOURCES):
+        frames[f"party_hat_rear_{combo}"] = load_accessory_asset(path)
     for combo, path in enumerate(GLASSES_SOURCES):
         frames[f"sunglasses_{combo}"] = load_accessory_asset(path)
     for combo, path in enumerate(GLASSES_FRONT_SOURCES):
         frames[f"sunglasses_front_{combo}"] = load_accessory_asset(path)
     for combo, path in enumerate(GLASSES_REAR_SOURCES):
         frames[f"sunglasses_rear_{combo}"] = load_accessory_asset(path)
-    base_ring = build_ring_frame()
-    for variant in range(1, 9):
+    for variant in range(1, RING_VARIANT_COUNT + 1):
+        source = RING_SOURCE if RING_VARIANTS[variant]["star"] else RING_NO_STAR_SOURCE
+        base_ring = build_ring_frame(source)
         ring = recolour_ring(base_ring, variant)
         back, front = split_ring_depth(ring)
         frames[f"ring_back_{variant}"] = back
@@ -832,14 +804,18 @@ def accessory_name(kind: str, color: int | None) -> str | None:
 
 
 def hat_transform(pose: Image.Image, pose_index: int) -> tuple[float, float, float, float, float]:
-    """Return Spine bone x/y/scale/rotation for the single party-hat asset."""
-    _, head_top, head_width = head_metrics(pose)
+    """Use the approved pre-restyle hat sizing and authored perspective track."""
+    head_center, head_top, head_width = head_metrics(pose)
     progress = pose_index / (POSE_COUNT - 1)
     base_width = max(44, min(HAT_BASE_WIDTH, head_width * 0.58))
     lean = (-0.09 + progress * 0.16) * base_width
     angle = math.degrees(math.atan2(lean, HAT_BASE_HEIGHT)) - HAT_BASE_ANGLE
-    center_x = sample_track(HAT_X_TRACK, pose_index)
-    center_y = head_top + 8
+    center_x = (
+        head_center + HAT_REAR_X_OFFSET
+        if pose_index >= HAT_REAR_SHOW_POSE
+        else sample_track(HAT_X_TRACK, pose_index) + HAT_FRONT_X_OFFSET
+    )
+    center_y = head_top + HAT_Y_OFFSET
     base_scale = base_width / HAT_BASE_WIDTH
     return (
         center_x - FRAME_SIZE * 0.5,
@@ -859,14 +835,18 @@ def glasses_transform(pose_index: int) -> tuple[float, float, float, float, floa
     perspective = total_width / GLASSES_BASE_WIDTH
     height = max(15, GLASSES_BASE_HEIGHT * (0.76 + perspective * 0.24))
     eye_x = sample_track(GLASSES_X_TRACK, pose_index)
-    eye_y = sample_track(GLASSES_Y_TRACK, pose_index)
-    center_x = eye_x + GLASSES_CENTER_OFFSET_X * perspective * GLASSES_SCALE_X
+    eye_y = sample_track(GLASSES_Y_TRACK, pose_index) + GLASSES_FRONT_Y_OFFSET
+    center_x = (
+        eye_x
+        + GLASSES_CENTER_OFFSET_X * perspective * GLASSES_SCALE_X
+        + GLASSES_FRONT_X_OFFSET
+    )
     return (
         center_x - FRAME_SIZE * 0.5,
         FRAME_SIZE * 0.5 - eye_y,
         perspective * GLASSES_SCALE_X,
         height / GLASSES_BASE_HEIGHT * GLASSES_SCALE_Y,
-        0,
+        GLASSES_ROTATION,
     )
 
 
@@ -875,10 +855,10 @@ def rear_glasses_transform(
 ) -> tuple[float, float, float, float, float]:
     """Fit the authored rear temple arms to the current round head silhouette."""
     head_center, head_top, head_width = head_metrics(pose)
-    scale = head_width / GLASSES_REAR_BASE_WIDTH
-    center_y = head_top + 73
+    scale = head_width / GLASSES_REAR_BASE_WIDTH * GLASSES_REAR_SCALE
+    center_y = head_top + 73 + GLASSES_REAR_Y_OFFSET
     return (
-        head_center - FRAME_SIZE * 0.5,
+        head_center - FRAME_SIZE * 0.5 + GLASSES_REAR_X_OFFSET,
         FRAME_SIZE * 0.5 - center_y,
         scale,
         scale,
@@ -920,7 +900,7 @@ def accessory_idle_animation(
 ) -> dict[str, object]:
     hat_color, glasses_color = duck_look(look)
     pose_index = POSE_COUNT - 1 if back else 0
-    hat = accessory_name("hat", hat_color)
+    hat = accessory_name("hat_rear" if back else "hat_front", hat_color)
     glasses_back = None if back else accessory_name("glasses_back", glasses_color)
     glasses_front = None if back else accessory_name("glasses_front", glasses_color)
     glasses_rear = accessory_name("glasses_rear", glasses_color) if back else None
@@ -949,7 +929,8 @@ def accessory_idle_animation(
 
 def accessory_turn_animation(look: int, poses: list[Image.Image]) -> dict[str, object]:
     hat_color, glasses_color = duck_look(look)
-    hat = accessory_name("hat", hat_color)
+    hat_front = accessory_name("hat_front", hat_color)
+    hat_rear = accessory_name("hat_rear", hat_color)
     glasses_back = accessory_name("glasses_back", glasses_color)
     glasses_front = accessory_name("glasses_front", glasses_color)
     glasses_rear = accessory_name("glasses_rear", glasses_color)
@@ -961,10 +942,17 @@ def accessory_turn_animation(look: int, poses: list[Image.Image]) -> dict[str, o
     glasses_transforms.append(glasses_transforms[-1])
     rear_glasses_transforms.append(rear_glasses_transforms[-1])
     glasses_swap_time = POSE_TIMES[GLASSES_REAR_SHOW_POSE]
+    hat_swap_time = POSE_TIMES[HAT_REAR_SHOW_POSE]
 
     return {
         "slots": {
-            "hat": {"attachment": [attachment(hat), attachment(hat, TURN_DURATION)]},
+            "hat": {
+                "attachment": [
+                    attachment(hat_front),
+                    attachment(hat_rear, hat_swap_time),
+                    attachment(hat_rear, TURN_DURATION),
+                ]
+            },
             "glasses_back": {
                 "attachment": [
                     attachment(glasses_back),
@@ -1014,14 +1002,20 @@ def build_skeleton(frames: dict[str, Image.Image]) -> None:
             "height": FRAME_SIZE,
         }
     for combo in range(ACCESSORY_COLOR_COUNT):
-        hat_asset = frames[f"party_hat_{combo}"]
+        hat_front_asset = frames[f"party_hat_front_{combo}"]
+        hat_rear_asset = frames[f"party_hat_rear_{combo}"]
         glasses_asset = frames[f"sunglasses_{combo}"]
         glasses_front_asset = frames[f"sunglasses_front_{combo}"]
         glasses_rear_asset = frames[f"sunglasses_rear_{combo}"]
-        attachments["hat"][f"hat_{combo}"] = {
-            "path": f"party_hat_{combo}",
-            "width": hat_asset.width,
-            "height": hat_asset.height,
+        attachments["hat"][f"hat_front_{combo}"] = {
+            "path": f"party_hat_front_{combo}",
+            "width": hat_front_asset.width,
+            "height": hat_front_asset.height,
+        }
+        attachments["hat"][f"hat_rear_{combo}"] = {
+            "path": f"party_hat_rear_{combo}",
+            "width": hat_rear_asset.width,
+            "height": hat_rear_asset.height,
         }
         attachments["glasses_back"][f"glasses_back_{combo}"] = {
             "path": f"sunglasses_{combo}",
@@ -1038,7 +1032,7 @@ def build_skeleton(frames: dict[str, Image.Image]) -> None:
             "width": glasses_rear_asset.width,
             "height": glasses_rear_asset.height,
         }
-    for variant in range(1, 9):
+    for variant in range(1, RING_VARIANT_COUNT + 1):
         attachments["ring_back"][f"ring_back_{variant}"] = {
             "width": FRAME_SIZE,
             "height": FRAME_SIZE,
@@ -1049,7 +1043,7 @@ def build_skeleton(frames: dict[str, Image.Image]) -> None:
         }
 
     animations: dict[str, object] = {}
-    for variant in range(1, 9):
+    for variant in range(1, RING_VARIANT_COUNT + 1):
         animations[f"idle_{variant}"] = idle_animation(variant, back=False)
         animations[f"turn_{variant}"] = turn_animation(variant)
         # Alias restarts an already-turning duck on the same frame when a normal
@@ -1076,7 +1070,7 @@ def build_skeleton(frames: dict[str, Image.Image]) -> None:
 
     skeleton = {
         "skeleton": {
-            "hash": "duck-your-luck-turn-v19-solid-floaties",
+            "hash": "duck-your-luck-turn-v40-front-rear-accessory-fit",
             "spine": "4.2.0",
             "x": -FRAME_SIZE / 2,
             "y": -FRAME_SIZE / 2,
@@ -1088,7 +1082,7 @@ def build_skeleton(frames: dict[str, Image.Image]) -> None:
             {"name": "root"},
             {"name": "float", "parent": "root"},
             {"name": "ring", "parent": "float"},
-            {"name": "duck", "parent": "float"},
+            {"name": "duck", "parent": "float", "y": -6},
             {"name": "hat_bone", "parent": "duck"},
             {"name": "glasses_bone", "parent": "duck"},
             {"name": "glasses_rear_bone", "parent": "duck"},

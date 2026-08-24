@@ -53,13 +53,24 @@
 	const turnReady = $derived(!!context.stateApp.loadedAssets?.duckPondTurn);
 	let show = $state(false);
 	let totalPicks = $state(10);
+	let prizePool = $state<DuckPondPrize[]>([]);
 	let ducks = $state<PondDuck[]>([]);
 	let pendingPick = $state<PendingPick | null>(null);
 	let revealingPick = $state<PendingPick | null>(null);
 	let revealingIndex = $state<number | null>(null);
+	let finalRevealIndices = $state<number[]>([]);
 	let runningTotal = $state(0);
 	let resolveSelection: () => void = () => {};
+	let resolveFinalReveal: () => void = () => {};
 	let skipAllowedAt = 0;
+
+	// Party hats and sunglasses are shelved for the pond bonus. Look 0 is the bare duck in every
+	// view the rig plays here (front idle, turn, back idle), so the accessory slots stay empty
+	// without touching the rig, atlas or the accessory build scripts: flip this back to true to
+	// restore the authored looks.
+	const POND_ACCESSORIES_ENABLED = false;
+	const pondLook = (eventId: number, index: number) =>
+		POND_ACCESSORIES_ENABLED ? duckLookForIndex(eventId, index) : 0;
 
 	const emptyPond = (eventId: number) =>
 		Array.from(
@@ -69,7 +80,7 @@
 				selected: false,
 				// Event-seeded variety stays unchanged for the complete bonus and replay.
 				variant: duckVariantForIndex(eventId, index),
-				look: duckLookForIndex(eventId, index),
+				look: pondLook(eventId, index),
 			}),
 		);
 
@@ -78,17 +89,28 @@
 		resolveSelection = () => {};
 		resolve();
 	};
+	const releaseFinalReveal = () => {
+		const resolve = resolveFinalReveal;
+		resolveFinalReveal = () => {};
+		resolve();
+	};
 
-	onDestroy(releasePending);
+	onDestroy(() => {
+		releasePending();
+		releaseFinalReveal();
+	});
 
 	context.eventEmitter.subscribeOnMount({
 		duckPondShow: (event) => {
 			releasePending();
+			releaseFinalReveal();
 			totalPicks = event.totalPicks;
+			prizePool = [...event.pool];
 			ducks = emptyPond(event.seed);
 			pendingPick = null;
 			revealingPick = null;
 			revealingIndex = null;
+			finalRevealIndices = [];
 			runningTotal = 0;
 			show = true;
 		},
@@ -97,20 +119,44 @@
 			pendingPick = { ...event };
 			await waitForResolve((resolve) => (resolveSelection = resolve));
 		},
-		// The unpicked ducks stay face-forward — no end-of-bonus reveal of what they held (removed
-		// by request, for now).
 		duckPondFinish: async (event) => {
 			runningTotal = event.amount;
+			const hiddenIndices = ducks.flatMap((duck, index) => (duck.selected ? [] : [index]));
+			const fakePrizes = prizePool.slice(totalPicks);
+			let fakeIndex = 0;
+			ducks = ducks.map((duck) =>
+				duck.selected
+					? duck
+					: {
+							...duck,
+							prize: fakePrizes[fakeIndex++] ??
+								prizePool[(totalPicks + fakeIndex - 1) % prizePool.length] ?? {
+									kind: 'mult',
+									value: 0,
+								},
+						},
+			);
+			finalRevealIndices = hiddenIndices;
 			context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_duck_land' });
-			await waitForTimeout(1800);
+			if (hiddenIndices.length > 0 && turnReady) {
+				await waitForResolve((resolve) => (resolveFinalReveal = resolve));
+			} else if (hiddenIndices.length > 0) {
+				await waitForTimeout(400);
+				finalRevealIndices = [];
+			}
+			// Let the complete fake board read before the normal win/outro sequence takes over.
+			await waitForTimeout(2000);
 		},
 		duckPondHide: () => {
 			releasePending();
+			releaseFinalReveal();
 			show = false;
+			prizePool = [];
 			ducks = [];
 			pendingPick = null;
 			revealingPick = null;
 			revealingIndex = null;
+			finalRevealIndices = [];
 		},
 	});
 
@@ -151,6 +197,12 @@
 		revealingPick = null;
 		revealingIndex = null;
 		releasePending();
+	}
+
+	function finishFinalDuckReveal(pondIndex: number) {
+		if (!finalRevealIndices.includes(pondIndex)) return;
+		finalRevealIndices = finalRevealIndices.filter((index) => index !== pondIndex);
+		if (finalRevealIndices.length === 0) releaseFinalReveal();
 	}
 
 	const skipDuckReveal = () => {
@@ -394,6 +446,11 @@
 	// Sized off the reference: the duck-and-ring art takes ~85% of the row pitch, leaving open water
 	// between rows. (The desktop mock's nominal 1.2× pitch reads far too big against real art.)
 	const DUCK_SIZE = SYMBOL_H * 1;
+	// A duck the player never picked, already landed on its rear pose: the fake prize is on show but
+	// the duck reads as somebody else's. Ducks mid-flip stay bright so the turn itself is not muddied.
+	const isUnpicked = (duck: PondDuck, index: number) =>
+		!!duck.prize && !duck.selected && !finalRevealIndices.includes(index);
+	const SPLASH_DIM_TINT = 0x8d88a4;
 	// Ducks padded inside the plate: duck size comes FROM the row — N ducks plus their gaps fill
 	// COUNTER_ROW_SPAN of the plate's length — so neighbours never touch, whatever N is.
 	const miniRow = $derived.by(() => {
@@ -440,6 +497,7 @@
 						{@const duckSize = DUCK_SIZE * (pressed ? 0.94 : hovered && !duck.selected ? 1.06 : 1)}
 						<!-- Splash stays in world space while Spine squashes/swaps the duck front to back. -->
 						{@const splashW = duckSize * 1.28}
+						{@const unpicked = isUnpicked(duck, index)}
 						<Sprite
 							key="duckPondSplash"
 							x={center.x}
@@ -447,6 +505,7 @@
 							anchor={0.5}
 							width={splashW}
 							height={splashW / 1.484}
+							tint={unpicked ? SPLASH_DIM_TINT : 0xffffff}
 						/>
 						<DuckPondDuck
 							x={center.x}
@@ -455,8 +514,13 @@
 							variant={duck.variant}
 							look={duck.look}
 							prize={duck.prize}
-							revealing={revealingIndex === index}
-							onrevealcomplete={() => finishDuckReveal(index)}
+							revealing={revealingIndex === index || finalRevealIndices.includes(index)}
+							batch={finalRevealIndices.includes(index)}
+							dimmed={unpicked}
+							onrevealcomplete={() => {
+								finishDuckReveal(index);
+								finishFinalDuckReveal(index);
+							}}
 						/>
 					{/snippet}
 				</Button>
