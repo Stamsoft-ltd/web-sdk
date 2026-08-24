@@ -1460,7 +1460,7 @@ assert.deepEqual(
 );
 assert.equal(
 	megaWildSpine.skeleton.hash,
-	'theme-park-mega-wild-v27-neon-plaque',
+	'theme-park-mega-wild-v28-shared-gold-plaque',
 	'Combined Mega Wild rig revision',
 );
 assert.equal(

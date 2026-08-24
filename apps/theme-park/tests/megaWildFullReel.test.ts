@@ -31,7 +31,7 @@ const readableFaceSequence = (animation: typeof skeleton.animations.intro) => {
 
 describe('Duck Power Ride full-reel Mega Wild', () => {
 	it('exports a 64-frame intro with a dense seven-view plaque roll', () => {
-		expect(skeleton.skeleton.hash).toBe('theme-park-mega-wild-v27-neon-plaque');
+		expect(skeleton.skeleton.hash).toBe('theme-park-mega-wild-v28-shared-gold-plaque');
 		expect(skeleton.skeleton.spine).toBe('4.2.0');
 		expect(skeleton.skeleton.width).toBe(256);
 		expect(skeleton.skeleton.height).toBe(824);
@@ -171,10 +171,17 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(builder).toContain('track-clean.png');
 		expect(builder).not.toContain('BACKGROUND_CENTERING_X');
 		expect(builder).toContain('fallback.alpha_composite(layers["background"])');
-		expect(builder).toContain('mega-wild-plaque-neon-v2.png');
-		expect(builder).toContain('roller-wilds-star.png');
-		expect(builder).toContain('PLAQUE_POSE_RATIOS');
-		expect(builder).toContain('def plaque_pose_layer(front: Image.Image, ratio: float)');
+		expect(builder).toContain('small-win-plaque.png');
+		expect(builder).toContain('mega-wild-plaque-top-35-v1.png');
+		expect(builder).toContain('mega-wild-plaque-top-60-v1.png');
+		expect(builder).toContain('mega-wild-plaque-top-side-v1.png');
+		expect(builder).toContain('mega-wild-plaque-bottom-35-v1.png');
+		expect(builder).toContain('mega-wild-plaque-bottom-60-v1.png');
+		expect(builder).toContain('mega-wild-plaque-bottom-side-v1.png');
+		expect(builder).toContain('return Image.open(PLAQUE_SOURCE).convert("RGBA")');
+		expect(builder).toContain('def plaque_side_layer(source: Path)');
+		expect(builder).not.toContain('mega-wild-plaque-neon-v2.png');
+		expect(builder).not.toContain('roller-wilds-star.png');
 		expect(builder).toContain('PLAQUE_POSE_COUNT = 128');
 		expect(builder).toContain('ROLL_START_FRAME = 12');
 		expect(builder).toContain('ROLL_END_FRAME = 42');
@@ -196,6 +203,12 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(builder).toContain('RIDE_END_Y = -112');
 		expect(builder).not.toContain('split_cart_plaque');
 		expect(builder).not.toContain('plaque.putalpha(alpha)');
+		const win = source('components/Win.svelte');
+		expect(win).toContain('<Sprite key="tpSmallWinPlaque"');
+		const assets = source('game/assets.ts');
+		expect(assets).toContain(
+			"tpSmallWinPlaque: { type: 'sprite', src: './assets/theme-park/v2/wins/small-win-plaque.png' }",
+		);
 		for (const view of [
 			'plaque',
 			'plaque_top_35',
