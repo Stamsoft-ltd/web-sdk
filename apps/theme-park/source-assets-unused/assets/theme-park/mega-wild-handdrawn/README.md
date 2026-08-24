@@ -1,12 +1,17 @@
 # Mega Wild hand-drawn rig sources
 
-Production sources for `scripts/build-mega-wild-full-reel-spine.py`.
+Hand-drawn plaque sources for `scripts/build-mega-wild-full-reel-spine.py`.
 
-- `full-reel-background-v2.png`: Mega-Coaster-style full-height track/backdrop.
-- `cart-five-view-sheet-v2.png`: Mega-Coaster-style five-pitch cart master.
-- `plaque-seven-view-sheet-v2.png`: Mega-Coaster-style seven-view plaque master.
-- `cart-*-v1.png`, `plaque-*-v1.png`: transparent extracts created by
+- `plaque-seven-view-sheet-redrawn-v3.png`: high-resolution, from-scratch seven-view plaque master
+  with true alpha and no screenshot/checker matte.
+- `plaque-*-redrawn-v3.png`: transparent, halo-safe production extracts created by
   `scripts/process-mega-wild-handdrawn-assets.py`.
+
+The builder writes the same clean processed front plaque into both the Mega Wild Spine atlas and
+`static/assets/theme-park/v2/wins/small-win-plaque.png`.
+
+Runtime 35°/60° poses derive from that exact front silhouette. Only the true edge-on pose uses
+separate depth art. This removes sideways perspective drift between generated drawings.
 
 Rebuild:
 

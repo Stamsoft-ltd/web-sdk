@@ -31,7 +31,7 @@ const readableFaceSequence = (animation: typeof skeleton.animations.intro) => {
 
 describe('Duck Power Ride full-reel Mega Wild', () => {
 	it('exports a 64-frame intro with a dense seven-view plaque roll', () => {
-		expect(skeleton.skeleton.hash).toBe('theme-park-mega-wild-v28-shared-gold-plaque');
+		expect(skeleton.skeleton.hash).toBe('theme-park-mega-wild-v33-no-wobble-plaque-roll');
 		expect(skeleton.skeleton.spine).toBe('4.2.0');
 		expect(skeleton.skeleton.width).toBe(256);
 		expect(skeleton.skeleton.height).toBe(824);
@@ -41,6 +41,26 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(skeleton.animations.intro.bones.plaque.rotate).toHaveLength(128);
 		expect(skeleton.animations.intro.bones.plaque_edge.scale).toHaveLength(128);
 		expect(skeleton.animations.intro.bones.plaque_edge.rotate).toHaveLength(128);
+		expect(
+			skeleton.animations.intro.bones.plaque.rotate.every(
+				(key: { value: number }) => key.value === 0,
+			),
+		).toBe(true);
+		expect(
+			skeleton.animations.intro.bones.plaque_edge.rotate.every(
+				(key: { value: number }) => key.value === 0,
+			),
+		).toBe(true);
+		for (const view of [
+			'plaque_top_35',
+			'plaque_top_60',
+			'plaque_top_side',
+			'plaque_bottom_35',
+			'plaque_bottom_60',
+			'plaque_bottom_side',
+		]) {
+			expect(skeleton.animations.intro.bones[view].scale).toHaveLength(128);
+		}
 		expect(
 			Math.min(...skeleton.animations.intro.bones.plaque.scale.map((key: { y: number }) => key.y)),
 		).toBeGreaterThanOrEqual(0.24);
@@ -94,7 +114,10 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 			'plaque_bottom_60',
 			'plaque_bottom_side',
 		]) {
-			expect(slots[view].bone).toBe('plaque_edge');
+			expect(slots[view].bone).toBe(view);
+			expect(skeleton.bones.find((bone: { name: string }) => bone.name === view).parent).toBe(
+				'plaque_edge',
+			);
 		}
 		expect(skeleton.animations.intro.bones.plaque).not.toHaveProperty('translate');
 		expect(skeleton.animations.intro.bones).not.toHaveProperty('multiplier');
@@ -171,15 +194,21 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(builder).toContain('track-clean.png');
 		expect(builder).not.toContain('BACKGROUND_CENTERING_X');
 		expect(builder).toContain('fallback.alpha_composite(layers["background"])');
-		expect(builder).toContain('small-win-plaque.png');
-		expect(builder).toContain('mega-wild-plaque-top-35-v1.png');
-		expect(builder).toContain('mega-wild-plaque-top-60-v1.png');
-		expect(builder).toContain('mega-wild-plaque-top-side-v1.png');
-		expect(builder).toContain('mega-wild-plaque-bottom-35-v1.png');
-		expect(builder).toContain('mega-wild-plaque-bottom-60-v1.png');
-		expect(builder).toContain('mega-wild-plaque-bottom-side-v1.png');
-		expect(builder).toContain('return Image.open(PLAQUE_SOURCE).convert("RGBA")');
-		expect(builder).toContain('def plaque_side_layer(source: Path)');
+		expect(builder).toContain('mega-wild-handdrawn');
+		expect(builder).toContain('plaque-front-redrawn-v3.png');
+		expect(builder).toContain('plaque-top-35-redrawn-v3.png');
+		expect(builder).toContain('plaque-top-60-redrawn-v3.png');
+		expect(builder).toContain('plaque-top-side-redrawn-v3.png');
+		expect(builder).toContain('plaque-bottom-35-redrawn-v3.png');
+		expect(builder).toContain('plaque-bottom-60-redrawn-v3.png');
+		expect(builder).toContain('plaque-bottom-side-redrawn-v3.png');
+		expect(builder).toContain('PLAQUE_FRONT_SIZE = (244, 171)');
+		expect(builder).toContain('return trim(Image.open(PLAQUE_SOURCE)).resize(');
+		expect(builder).toContain('height = max(2, round(PLAQUE_FRONT_SIZE[1] * plaque_projected_scale(angle)))');
+		expect(builder).toContain('def plaque_view_correction_keys(');
+		expect(builder).toContain('def plaque_side_layer(source: Path, angle: float)');
+		expect(builder).toContain('image_source = source if angle == 90 else PLAQUE_SOURCE');
+		expect(builder).toContain('plaque_front.save(WIN_PLAQUE_OUTPUT, optimize=True)');
 		expect(builder).not.toContain('mega-wild-plaque-neon-v2.png');
 		expect(builder).not.toContain('roller-wilds-star.png');
 		expect(builder).toContain('PLAQUE_POSE_COUNT = 128');
@@ -205,6 +234,7 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(builder).not.toContain('plaque.putalpha(alpha)');
 		const win = source('components/Win.svelte');
 		expect(win).toContain('<Sprite key="tpSmallWinPlaque"');
+		expect(win).toContain('const PLAQUE_ASPECT = 244 / 171');
 		const assets = source('game/assets.ts');
 		expect(assets).toContain(
 			"tpSmallWinPlaque: { type: 'sprite', src: './assets/theme-park/v2/wins/small-win-plaque.png' }",

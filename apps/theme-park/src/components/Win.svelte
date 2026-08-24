@@ -159,7 +159,7 @@
 	 * it the one piece of art in this game that cannot be stretched: 3-slicing it would space out the
 	 * bulbs running along its edges and put a second gem in the wrong place.
 	 */
-	const PLAQUE_ASPECT = 244 / 163;
+	const PLAQUE_ASPECT = 244 / 171;
 	const PLAQUE_H = SYMBOL_SIZE * 1.5;
 	const PLAQUE_W = PLAQUE_H * PLAQUE_ASPECT;
 	/**

@@ -11,7 +11,6 @@ from PIL import Image, ImageOps
 
 
 APP = Path(__file__).resolve().parents[1]
-ART = APP / "art" / "concepts"
 CLEAN_SOURCE = (
     APP
     / "source-assets-unused"
@@ -19,18 +18,21 @@ CLEAN_SOURCE = (
     / "theme-park"
     / "mega-wild-clean"
 )
+HANDDRAWN_SOURCE = (
+    APP / "source-assets-unused" / "assets" / "theme-park" / "mega-wild-handdrawn"
+)
 FULL_REEL_SOURCE = CLEAN_SOURCE / "track-clean.png"
-# One exact front plaque for both the reel multiplier and the regular-win amount screen. The six
-# authored side views preserve that same gold frame/gem design while it turns in 3D.
-PLAQUE_SOURCE = (
+# One clean, newly drawn plaque family for the reel multiplier and regular-win amount screen.
+PLAQUE_SOURCE = HANDDRAWN_SOURCE / "plaque-front-redrawn-v3.png"
+PLAQUE_TOP_35_SOURCE = HANDDRAWN_SOURCE / "plaque-top-35-redrawn-v3.png"
+PLAQUE_TOP_60_SOURCE = HANDDRAWN_SOURCE / "plaque-top-60-redrawn-v3.png"
+PLAQUE_TOP_SIDE_SOURCE = HANDDRAWN_SOURCE / "plaque-top-side-redrawn-v3.png"
+PLAQUE_BOTTOM_35_SOURCE = HANDDRAWN_SOURCE / "plaque-bottom-35-redrawn-v3.png"
+PLAQUE_BOTTOM_60_SOURCE = HANDDRAWN_SOURCE / "plaque-bottom-60-redrawn-v3.png"
+PLAQUE_BOTTOM_SIDE_SOURCE = HANDDRAWN_SOURCE / "plaque-bottom-side-redrawn-v3.png"
+WIN_PLAQUE_OUTPUT = (
     APP / "static" / "assets" / "theme-park" / "v2" / "wins" / "small-win-plaque.png"
 )
-PLAQUE_TOP_35_SOURCE = ART / "mega-wild-plaque-top-35-v1.png"
-PLAQUE_TOP_60_SOURCE = ART / "mega-wild-plaque-top-60-v1.png"
-PLAQUE_TOP_SIDE_SOURCE = ART / "mega-wild-plaque-top-side-v1.png"
-PLAQUE_BOTTOM_35_SOURCE = ART / "mega-wild-plaque-bottom-35-v1.png"
-PLAQUE_BOTTOM_60_SOURCE = ART / "mega-wild-plaque-bottom-60-v1.png"
-PLAQUE_BOTTOM_SIDE_SOURCE = ART / "mega-wild-plaque-bottom-side-v1.png"
 CART_SOURCE = CLEAN_SOURCE / "cart-flat.png"
 CART_STEEP_SOURCE = CLEAN_SOURCE / "cart-steep.png"
 CART_HIGH_MID_SOURCE = CLEAN_SOURCE / "cart-high-mid.png"
@@ -53,6 +55,7 @@ ROLL_END_FRAME = 42
 ROLL_FLIPS_FAKE_START = 5
 ROLL_FLIPS_REAL_START = 4
 PLAQUE_EDGE_SCALE = 0.24
+PLAQUE_FRONT_SIZE = (244, 171)
 CART_LAYER_SIZE = (220, 329)
 CART_START_SCALE = 0.5
 CART_VIEWS = ("steep", "high_mid", "mid", "low_mid", "flat")
@@ -99,13 +102,22 @@ def cart_perspective_layer(source: Path) -> Image.Image:
 
 
 def plaque_layer() -> Image.Image:
-    # Do not resample: this is the exact 244x163 sprite used behind regular-win amounts.
-    return Image.open(PLAQUE_SOURCE).convert("RGBA")
+    # Keep the proven in-game footprint while replacing the old low-res screenshot extraction.
+    return trim(Image.open(PLAQUE_SOURCE)).resize(PLAQUE_FRONT_SIZE, Image.Resampling.LANCZOS)
 
 
-def plaque_side_layer(source: Path) -> Image.Image:
-    # These are separately drawn top/bottom views, not vertically squashed copies of the front.
-    return contain(trim(Image.open(source)), (244, 190))
+def plaque_projected_scale(angle: float) -> float:
+    return PLAQUE_EDGE_SCALE + (1 - PLAQUE_EDGE_SCALE) * abs(math.cos(math.radians(angle)))
+
+
+def plaque_side_layer(source: Path, angle: float) -> Image.Image:
+    # Generated oblique drawings contained a subtle left/right perspective twist. Use the exact
+    # centred front drawing for every broad face and reserve authored depth art for edge-on only.
+    # This keeps every ornament on one vertical axis instead of morphing sideways while spinning.
+    image_source = source if angle == 90 else PLAQUE_SOURCE
+    image = trim(Image.open(image_source))
+    height = max(2, round(PLAQUE_FRONT_SIZE[1] * plaque_projected_scale(angle)))
+    return image.resize((PLAQUE_FRONT_SIZE[0], height), Image.Resampling.LANCZOS)
 
 
 def sparkle_layer() -> Image.Image:
@@ -168,7 +180,7 @@ def cart_scale_keys() -> list[dict[str, float]]:
 
 
 def plaque_pose(frame: float, roll_flips: int) -> tuple[float, float, float, float, float]:
-    """Return x scale, y scale, bank, tilt degrees and signed top/bottom facing."""
+    """Return x scale, y scale, centred rotation, tilt and signed top/bottom facing."""
     if not ROLL_START_FRAME <= frame <= ROLL_END_FRAME:
         return 1.0, 1.0, 0.0, 0.0, 0.0
     phase = (frame - ROLL_START_FRAME) / (ROLL_END_FRAME - ROLL_START_FRAME)
@@ -179,7 +191,8 @@ def plaque_pose(frame: float, roll_flips: int) -> tuple[float, float, float, flo
     edge = 1 - projection
     scale_x = 1 + 0.055 * edge
     scale_y = PLAQUE_EDGE_SCALE + (1 - PLAQUE_EDGE_SCALE) * projection
-    rotation = facing * 2.4 * (1 - phase * 0.35)
+    # No sideways bank: the plaque must flip on its exact horizontal centre axis.
+    rotation = 0.0
     tilt = math.degrees(math.asin(min(1.0, abs(facing))))
     return scale_x, scale_y, rotation, tilt, facing
 
@@ -265,7 +278,7 @@ def plaque_spin_keys(roll_flips: int) -> dict[str, list[dict[str, float]]]:
 
 
 def plaque_edge_spin_keys(roll_flips: int) -> dict[str, list[dict[str, float]]]:
-    """Side art is already foreshortened, so it banks and widens but never gets squashed twice."""
+    """Side art is already foreshortened, so it widens but never gets squashed twice."""
     scale: list[dict[str, float]] = []
     rotate: list[dict[str, float]] = []
     for sample in range(PLAQUE_POSE_COUNT):
@@ -274,6 +287,23 @@ def plaque_edge_spin_keys(roll_flips: int) -> dict[str, list[dict[str, float]]]:
         scale.append({"time": frame_time(frame), "x": round(scale_x, 5), "y": 1.0})
         rotate.append({"time": frame_time(frame), "value": round(rotation, 5)})
     return {"scale": scale, "rotate": rotate}
+
+
+def plaque_view_correction_keys(view_angle: float, roll_flips: int) -> list[dict[str, float]]:
+    """Keep both drawings in each crossfade on the same projected outer bounds."""
+    authored_scale = plaque_projected_scale(view_angle)
+    keys: list[dict[str, float]] = []
+    for sample in range(PLAQUE_POSE_COUNT):
+        frame = plaque_sample_frame(sample)
+        _, current_scale, _, _, _ = plaque_pose(frame, roll_flips)
+        keys.append(
+            {
+                "time": frame_time(frame),
+                "x": 1.0,
+                "y": round(current_scale / authored_scale, 5),
+            }
+        )
+    return keys
 
 
 def rgba(alpha: float) -> str:
@@ -338,6 +368,12 @@ def intro_animation(initial_real: bool) -> dict:
             "cart": {"scale": cart_scale_keys()},
             "plaque": plaque_spin_keys(roll_flips),
             "plaque_edge": plaque_edge_spin_keys(roll_flips),
+            "plaque_top_35": {"scale": plaque_view_correction_keys(35, roll_flips)},
+            "plaque_top_60": {"scale": plaque_view_correction_keys(60, roll_flips)},
+            "plaque_top_side": {"scale": plaque_view_correction_keys(90, roll_flips)},
+            "plaque_bottom_35": {"scale": plaque_view_correction_keys(35, roll_flips)},
+            "plaque_bottom_60": {"scale": plaque_view_correction_keys(60, roll_flips)},
+            "plaque_bottom_side": {"scale": plaque_view_correction_keys(90, roll_flips)},
         },
         "slots": {
             "cart_steep": {"rgba": cart_view_colors("steep")},
@@ -372,6 +408,10 @@ def intro_animation(initial_real: bool) -> dict:
 def main() -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     plaque_front = plaque_layer()
+    # The regular-win screen and Spine atlas receive the same processed pixels, not two similar
+    # plaque exports that can drift apart again.
+    WIN_PLAQUE_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    plaque_front.save(WIN_PLAQUE_OUTPUT, optimize=True)
     layers = {
         "background": background_layer(),
         "cart_steep": cart_perspective_layer(CART_STEEP_SOURCE),
@@ -380,12 +420,12 @@ def main() -> None:
         "cart_low_mid": cart_perspective_layer(CART_LOW_MID_SOURCE),
         "cart": cart_layer(),
         "plaque": plaque_front,
-        "plaque_top_35": plaque_side_layer(PLAQUE_TOP_35_SOURCE),
-        "plaque_top_60": plaque_side_layer(PLAQUE_TOP_60_SOURCE),
-        "plaque_top_side": plaque_side_layer(PLAQUE_TOP_SIDE_SOURCE),
-        "plaque_bottom_35": plaque_side_layer(PLAQUE_BOTTOM_35_SOURCE),
-        "plaque_bottom_60": plaque_side_layer(PLAQUE_BOTTOM_60_SOURCE),
-        "plaque_bottom_side": plaque_side_layer(PLAQUE_BOTTOM_SIDE_SOURCE),
+        "plaque_top_35": plaque_side_layer(PLAQUE_TOP_35_SOURCE, 35),
+        "plaque_top_60": plaque_side_layer(PLAQUE_TOP_60_SOURCE, 60),
+        "plaque_top_side": plaque_side_layer(PLAQUE_TOP_SIDE_SOURCE, 90),
+        "plaque_bottom_35": plaque_side_layer(PLAQUE_BOTTOM_35_SOURCE, 35),
+        "plaque_bottom_60": plaque_side_layer(PLAQUE_BOTTOM_60_SOURCE, 60),
+        "plaque_bottom_side": plaque_side_layer(PLAQUE_BOTTOM_SIDE_SOURCE, 90),
         "sparkles": sparkle_layer(),
         "fake_multiplier_slot": Image.new("RGBA", (1, 1)),
         "multiplier_slot": Image.new("RGBA", (1, 1)),
@@ -491,7 +531,7 @@ def main() -> None:
     }
     skeleton = {
         "skeleton": {
-            "hash": "theme-park-mega-wild-v28-shared-gold-plaque",
+            "hash": "theme-park-mega-wild-v33-no-wobble-plaque-roll",
             "spine": "4.2.0",
             "x": -WIDTH / 2,
             "y": -HEIGHT / 2,
@@ -507,6 +547,12 @@ def main() -> None:
             # Fixed in reel/world space. Never inherits the duck slide.
             {"name": "plaque", "parent": "root", "y": PLAQUE_Y},
             {"name": "plaque_edge", "parent": "root", "y": PLAQUE_Y},
+            {"name": "plaque_top_35", "parent": "plaque_edge"},
+            {"name": "plaque_top_60", "parent": "plaque_edge"},
+            {"name": "plaque_top_side", "parent": "plaque_edge"},
+            {"name": "plaque_bottom_35", "parent": "plaque_edge"},
+            {"name": "plaque_bottom_60", "parent": "plaque_edge"},
+            {"name": "plaque_bottom_side", "parent": "plaque_edge"},
             {"name": "fake_multiplier", "parent": "plaque"},
             {"name": "multiplier", "parent": "plaque"},
             {"name": "sparkles", "parent": "root"},
@@ -541,37 +587,37 @@ def main() -> None:
             {"name": "plaque", "bone": "plaque", "attachment": "plaque"},
             {
                 "name": "plaque_top_35",
-                "bone": "plaque_edge",
+                "bone": "plaque_top_35",
                 "attachment": "plaque_top_35",
                 "color": "ffffff00",
             },
             {
                 "name": "plaque_top_60",
-                "bone": "plaque_edge",
+                "bone": "plaque_top_60",
                 "attachment": "plaque_top_60",
                 "color": "ffffff00",
             },
             {
                 "name": "plaque_top_side",
-                "bone": "plaque_edge",
+                "bone": "plaque_top_side",
                 "attachment": "plaque_top_side",
                 "color": "ffffff00",
             },
             {
                 "name": "plaque_bottom_35",
-                "bone": "plaque_edge",
+                "bone": "plaque_bottom_35",
                 "attachment": "plaque_bottom_35",
                 "color": "ffffff00",
             },
             {
                 "name": "plaque_bottom_60",
-                "bone": "plaque_edge",
+                "bone": "plaque_bottom_60",
                 "attachment": "plaque_bottom_60",
                 "color": "ffffff00",
             },
             {
                 "name": "plaque_bottom_side",
-                "bone": "plaque_edge",
+                "bone": "plaque_bottom_side",
                 "attachment": "plaque_bottom_side",
                 "color": "ffffff00",
             },

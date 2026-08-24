@@ -24,11 +24,52 @@ PLAQUE_NAMES = (
 )
 
 
+def clear_transparent_rgb(image: Image.Image) -> Image.Image:
+    """Use transparent black outside sprites so later Lanczos scaling cannot create white halos."""
+    rgba = np.asarray(image.convert("RGBA")).copy()
+    rgba[rgba[:, :, 3] == 0, :3] = 0
+    return Image.fromarray(rgba, "RGBA")
+
+
+def remove_white_edge_matte(image: Image.Image, band_pixels: int = 4) -> Image.Image:
+    """Recover soft black-outline alpha from the generator's baked pale checker edge."""
+    rgba = np.asarray(image.convert("RGBA")).copy()
+    visible = rgba[:, :, 3] > 0
+    near_transparent = ~visible
+    for _ in range(band_pixels):
+        expanded = near_transparent.copy()
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                if dx == 0 and dy == 0:
+                    continue
+                source = near_transparent[
+                    max(0, -dy) : near_transparent.shape[0] - max(0, dy),
+                    max(0, -dx) : near_transparent.shape[1] - max(0, dx),
+                ]
+                target = expanded[
+                    max(0, dy) : expanded.shape[0] - max(0, -dy),
+                    max(0, dx) : expanded.shape[1] - max(0, -dx),
+                ]
+                target |= source
+        near_transparent = expanded
+
+    rgb = rgba[:, :, :3].astype(np.float32)
+    low = rgb.min(axis=2)
+    high = rgb.max(axis=2)
+    luminance = rgb.mean(axis=2)
+    neutral_edge = visible & near_transparent & ((high - low) < 30)
+    recovered_alpha = np.clip((1 - luminance / 248) * 255, 0, 255).astype(np.uint8)
+    rgba[neutral_edge, 3] = np.minimum(rgba[neutral_edge, 3], recovered_alpha[neutral_edge])
+    rgba[neutral_edge, :3] = 0
+    rgba[rgba[:, :, 3] == 0, :3] = 0
+    return Image.fromarray(rgba, "RGBA")
+
+
 def remove_generated_checker(image: Image.Image) -> Image.Image:
     """Remove only edge-connected neutral checker pixels; preserve enclosed eye highlights."""
     rgba_source = image.convert("RGBA")
     if rgba_source.getchannel("A").getextrema()[0] < 255:
-        return rgba_source
+        return clear_transparent_rgb(rgba_source)
     rgb = np.asarray(image.convert("RGB"))
     lo = rgb.min(axis=2)
     hi = rgb.max(axis=2)
@@ -51,10 +92,16 @@ def remove_generated_checker(image: Image.Image) -> Image.Image:
     connected = np.asarray(connectivity)
     alpha = np.where(connected == 128, 0, 255).astype(np.uint8)
     rgba = np.dstack((rgb, alpha))
-    return Image.fromarray(rgba, "RGBA")
+    return clear_transparent_rgb(Image.fromarray(rgba, "RGBA"))
 
 
-def extract_components(sheet_name: str, names: tuple[str, ...], prefix: str) -> None:
+def extract_components(
+    sheet_name: str,
+    names: tuple[str, ...],
+    prefix: str,
+    version: str = "v1",
+    clean_edge_matte: bool = False,
+) -> None:
     sheet = remove_generated_checker(Image.open(SOURCE / sheet_name))
     alpha = np.asarray(sheet.getchannel("A"))
     occupied = np.count_nonzero(alpha, axis=0) >= 8
@@ -95,16 +142,25 @@ def extract_components(sheet_name: str, names: tuple[str, ...], prefix: str) -> 
         right = min(sheet.width, right + pad)
         bottom = min(sheet.height, bottom_y + pad)
         crop = rgba[top:bottom, left:right].copy()
-        Image.fromarray(crop, "RGBA").save(SOURCE / f"{prefix}-{name}-v1.png", optimize=True)
+        sprite = clear_transparent_rgb(Image.fromarray(crop, "RGBA"))
+        if clean_edge_matte:
+            sprite = remove_white_edge_matte(sprite)
+        sprite.save(SOURCE / f"{prefix}-{name}-{version}.png", optimize=True)
 
 
 def main() -> None:
     extract_components("cart-five-view-sheet-v2.png", CART_NAMES, "cart")
-    extract_components("plaque-seven-view-sheet-v2.png", PLAQUE_NAMES, "plaque")
+    extract_components(
+        "plaque-seven-view-sheet-redrawn-v3.png",
+        PLAQUE_NAMES,
+        "plaque",
+        "redrawn-v3",
+        True,
+    )
     # A true edge-on pose has no visible face direction. Reuse that authored state for the lower
     # half of the end-over-end flip rather than inventing a mismatched second edge thickness.
-    Image.open(SOURCE / "plaque-top-side-v1.png").save(
-        SOURCE / "plaque-bottom-side-v1.png", optimize=True
+    Image.open(SOURCE / "plaque-top-side-redrawn-v3.png").save(
+        SOURCE / "plaque-bottom-side-redrawn-v3.png", optimize=True
     )
     print(f"Processed hand-drawn Mega Wild sources in {SOURCE}")
 

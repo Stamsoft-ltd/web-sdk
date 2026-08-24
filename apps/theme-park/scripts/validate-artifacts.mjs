@@ -1460,7 +1460,7 @@ assert.deepEqual(
 );
 assert.equal(
 	megaWildSpine.skeleton.hash,
-	'theme-park-mega-wild-v28-shared-gold-plaque',
+	'theme-park-mega-wild-v33-no-wobble-plaque-roll',
 	'Combined Mega Wild rig revision',
 );
 assert.equal(
@@ -1512,13 +1512,32 @@ assert.ok(
 assert.equal(
 	megaWildSpine.animations.intro.bones.plaque.rotate.length,
 	128,
-	'Plaque wind roll must contain 128 smooth bank poses',
+	'Plaque wind roll must contain 128 centred rotation poses',
+);
+assert.ok(
+	megaWildSpine.animations.intro.bones.plaque.rotate.every(({ value }) => value === 0) &&
+		megaWildSpine.animations.intro.bones.plaque_edge.rotate.every(({ value }) => value === 0),
+	'Plaque must not bank sideways while flipping around its horizontal centre',
 );
 assert.equal(
 	megaWildSpine.animations.intro.bones.plaque_edge.scale.length,
 	128,
 	'Plaque side-view rig must contain 128 perspective poses',
 );
+for (const plaqueView of [
+	'plaque_top_35',
+	'plaque_top_60',
+	'plaque_top_side',
+	'plaque_bottom_35',
+	'plaque_bottom_60',
+	'plaque_bottom_side',
+]) {
+	assert.equal(
+		megaWildSpine.animations.intro.bones[plaqueView].scale.length,
+		128,
+		`${plaqueView} must correct every crossfade pose to the active projected bounds`,
+	);
+}
 for (const plaqueView of [
 	'plaque',
 	'plaque_top_35',
