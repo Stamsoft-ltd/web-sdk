@@ -1,11 +1,8 @@
 <script lang="ts" module>
 	import { ap } from '../lib/preloadArt';
 
-	// Neon-edged panel art, one per shape: 453x248 behind the 459x241.249 confirm dialogs (the
-	// buy-bonus confirm and the resume-round prompt) and 640x502 behind the 685x537 settings panel.
-	// They stay separate assets because the corner radius and edge weight are drawn for their own
-	// proportions rather than stretched from one another — each is within 0.1% of its box's aspect.
-	const artConfirm = ap('/assets/theme-park/v2/popup/confirm_panel_neon.webp');
+	// Neon-edged panel art, 640x502 behind the 685x537 settings panel. The confirm dialogs used to
+	// have one of these too; they are drawn now — see the `confirm` plate rules below.
 	const artWide = ap('/assets/theme-park/v2/popup/wide_panel_neon.webp');
 </script>
 
@@ -16,7 +13,7 @@
 	import PopupCloseButton from './PopupCloseButton.svelte';
 
 	type Props = {
-		/** 'confirm' = 459x241.249 two-button dialog; 'wide' = 685x537 settings panel. */
+		/** 'confirm' = 467x225 two-button dialog; 'wide' = 685x537 settings panel. */
 		variant?: 'confirm' | 'wide';
 		/**
 		 * Clicking the scrim or the top-right close button. Omit to make both inert — a dialog with
@@ -28,8 +25,6 @@
 	};
 	const { variant = 'confirm', ondismiss, dismissLabel, children }: Props = $props();
 	const label = $derived(dismissLabel ?? i18nDerived.translate('CLOSE'));
-
-	const art = $derived(variant === 'wide' ? artWide : artConfirm);
 </script>
 
 <div class="tp-popup-overlay" data-variant={variant}>
@@ -37,8 +32,14 @@
 		<button class="tp-popup-scrim" type="button" aria-label={label} onclick={ondismiss}></button>
 	{/if}
 	<div class="tp-popup" data-variant={variant} role="dialog" aria-modal="true">
-		<img class="tp-popup__art" src={art} alt="" />
-		<PopupBorderLights {variant} />
+		{#if variant === 'wide'}
+			<img class="tp-popup__art" src={artWide} alt="" />
+			<PopupBorderLights {variant} />
+		{:else}
+			<!-- Two flat plates and a hairline, drawn rather than painted — the confirm dialog has no
+			     glow to carry and no lights to run, so there is nothing left for an export to hold. -->
+			<div class="tp-popup__plate" aria-hidden="true"></div>
+		{/if}
 		<div class="tp-popup__content">{@render children()}</div>
 	</div>
 	<!-- Inside the overlay so it inherits the popup's stacking context and disappears with it. -->
@@ -70,7 +71,7 @@
 
 	/* Every size inside a popup is expressed in cqw — a fraction of the panel's own width — so the
 	   whole composition scales as one unit off this single clamp. The clamp is what keeps the design
-	   size on desktop while staying readable on a phone, where 459 design px would be unusably small
+	   size on desktop while staying readable on a phone, where 467 design px would be unusably small
 	   at the HUD's scale factor. */
 	.tp-popup {
 		position: relative;
@@ -80,14 +81,14 @@
 
 	/* --pop-w is the panel's width IN DESIGN UNITS. Every shared rule below divides a Figma pixel by
 	   it, so one set of :global rules renders at the right size in both panels — a bare cqw would
-	   make a 14px button caption 21px once it landed in the 685-wide panel instead of the 459. */
+	   make a 14px button caption 21px once it landed in the 685-wide panel instead of the 467. */
 	/* min-height rather than aspect-ratio: the design's title is "CONFIRM ALL IN", but the real ones
 	   include "CONFIRM DUCK YOUR LUCK", which wraps to two lines. With a locked height and absolutely
 	   positioned rows the wrapped title ran straight through the body text. The panel now grows to
 	   fit and holds the design's proportions whenever the content fits — which is the common case. */
 	.tp-popup[data-variant='confirm'] {
-		--pop-w: 459;
-		width: clamp(300px, 46vw, 459px);
+		--pop-w: 467;
+		width: clamp(300px, 46vw, 467px);
 	}
 
 	.tp-popup[data-variant='wide'] {
@@ -105,9 +106,32 @@
 		pointer-events: none;
 	}
 
+	/* The confirm dialog, Figma 7063:18550: a #63307d plate with a #21003D one inset 4 inside it and
+	   a #5E4374 hairline around that. It replaces a neon-edged export — a painted glow with running
+	   bulbs down its border — which was the only thing in the popup layer still lit that way. Drawn
+	   rather than exported because there is nothing here a raster holds better than two rounded
+	   rectangles, and the radii then follow the panel's clamp instead of stretching with it. */
+	.tp-popup[data-variant='confirm'] .tp-popup__plate {
+		position: absolute;
+		inset: 0;
+		border-radius: calc(14 / var(--pop-w) * 100cqw);
+		background: #63307d;
+		pointer-events: none;
+	}
+
+	.tp-popup[data-variant='confirm'] .tp-popup__plate::after {
+		content: '';
+		position: absolute;
+		inset: calc(4 / var(--pop-w) * 100cqw);
+		border: 1px solid #5e4374;
+		border-radius: calc(13 / var(--pop-w) * 100cqw);
+		background: #21003d;
+	}
+
 	/* In flow (not absolute) so the panel's height follows the content. Padding is the design's own
-	   inset: confirm has its title at 38 from the top and its 409-wide button row centred in 459,
-	   i.e. 25 each side, with 32 left below. */
+	   inset: confirm has its title at 35 from the top and its 409-wide button row centred in 467,
+	   i.e. 29 each side, with 25 left below. The 28 top is 35 less the 7 of empty leading Lilita One
+	   carries above its caps at 32/1.15 — the design measures ink, the padding places a line box. */
 	/* The design height lives here, NOT on .tp-popup: an element with container-type establishes the
 	   container for its DESCENDANTS, so a cqw on .tp-popup itself resolves against the viewport
 	   instead of against the panel — which stretched the wide panel to 941px tall. .tp-popup takes
@@ -121,9 +145,9 @@
 	}
 
 	.tp-popup[data-variant='confirm'] .tp-popup__content {
-		min-height: calc(241.249 / var(--pop-w) * 100cqw);
-		padding: calc(38 / var(--pop-w) * 100cqw) calc(25 / var(--pop-w) * 100cqw)
-			calc(32.13 / var(--pop-w) * 100cqw);
+		min-height: calc(225 / var(--pop-w) * 100cqw);
+		padding: calc(28 / var(--pop-w) * 100cqw) calc(29 / var(--pop-w) * 100cqw)
+			calc(25 / var(--pop-w) * 100cqw);
 	}
 
 	/* Wide: rows start 94 down, the 494-wide column is centred (95.5 each side), 83 left below. */
@@ -137,7 +161,10 @@
 	   :global because these are used by the dialogs that mount inside `children`, and Svelte scopes
 	   styles to the file that declares the markup. One source of truth for the design language. */
 
-	/* Lilita One 32 / 0.96 tracking, magenta-to-blue gradient (node 6401:2082). */
+	/* Lilita One 32 / 0.96 tracking, white (node 7063:18552). It used to be the magenta-to-blue
+	   gradient the buttons still wear; the redesign keeps the gradient for the one control it wants
+	   the eye to land on and leaves the heading plain. Only the two confirm dialogs use this class —
+	   the wide panel labels its rows with .tp-popup__label instead. */
 	:global(.tp-popup__title) {
 		margin: 0;
 		font-family: 'Lilita One', sans-serif;
@@ -147,10 +174,7 @@
 		line-height: 1.15;
 		text-align: center;
 		text-transform: uppercase;
-		background-image: linear-gradient(173.06deg, #d836fc 0%, #272fdd 100%);
-		background-clip: text;
-		-webkit-background-clip: text;
-		color: transparent;
+		color: #fff;
 	}
 
 	/* Nunito Sans Regular 20 / 0.6 tracking, white (node 6401:2083). */
@@ -219,6 +243,34 @@
 	:global(.tp-popup__btn:disabled) {
 		opacity: 0.45;
 		cursor: default;
+	}
+
+	/* The confirm dialog's own buttons (nodes 7063:18554-18557): taller at 50, caption up to 16, and
+	   the two states told apart by their fill rather than by a shared dark fill and a shared lilac
+	   hairline. Cancel is the inner plate's colour with the outer plate's colour as its edge, so it
+	   reads as part of the panel; confirm keeps the gradient and edges itself in the gradient's own
+	   magenta. Neither casts a shadow — nothing else on this panel does.
+
+	   Scoped to the variant because .tp-popup__btn is also the wide panel's START AUTOPLAY button,
+	   which the redesign leaves alone. */
+	:global(.tp-popup[data-variant='confirm'] .tp-popup__btn) {
+		height: calc(50 / var(--pop-w) * 100cqw);
+		border-color: #63307d;
+		background-image: none;
+		background-color: #21013d;
+		filter: none;
+		font-size: calc(16 / var(--pop-w) * 100cqw);
+		/* 1.4px at 16, i.e. 0.0875em — stated in design units so it tracks the panel, not the font. */
+		letter-spacing: calc(1.4 / var(--pop-w) * 100cqw);
+	}
+
+	:global(.tp-popup[data-variant='confirm'] .tp-popup__btn--primary) {
+		border-color: #d836fc;
+		background-image: linear-gradient(165.72deg, #d836fc 0%, #272fdd 100%);
+	}
+
+	:global(.tp-popup[data-variant='confirm'] .tp-popup__btn:not(:disabled):hover) {
+		filter: brightness(1.12);
 	}
 
 	/* 62 x 33.214 pill. ON is the magenta-to-blue gradient with no border; OFF is the dark gradient

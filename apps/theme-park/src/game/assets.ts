@@ -229,16 +229,6 @@ const assets: Assets = {
 			scale: 1,
 		},
 	},
-	coasterCarSickAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/features/coaster-car-sick.webm',
-		defer: true,
-	},
-	coasterCarVomitAnim: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/animations/features/coaster-car-vomit.webm',
-		defer: true,
-	},
 	// The scatter's two loose wings (Figma 7115:27451 / 7115:27449). They ship apart from the rest of
 	// the symbol so <DuckSign> can beat them on a win; the mode art above them is the same lockup with
 	// these two cut out of it. One size each rather than a set per layout: at 180x159 they are two
@@ -377,7 +367,6 @@ const assets: Assets = {
 	// PICK / TOTAL WIN plates and used as the congratulations panel's fallback.
 	bonusPanel: { type: 'sprite', src: './assets/theme-park/v2/popup/square_panel_neon.webp' },
 	// Figma 6682:5285 — the gift, popcorn and coin pile, without the coaster car the first pass used.
-	bonusPrize: { type: 'sprite', src: './assets/theme-park/v2/wins/bonus-prize-gift.webp' },
 	// The marquee win card (Figma 7013:9117), shipped as the loose pieces <WinCard> animates apart:
 	// the marquee pad, one wordmark per tier, the gold star that flies onto each shoulder, and the
 	// confetti fan cut into its fifteen scraps. The scraps are the card's burst AND the falling
@@ -620,9 +609,11 @@ const assets: Assets = {
 	},
 	// === DUCK YOUR LUCK POND (Figma 6471:6288 desktop / 6692:4403 portrait / 6449:3212 landscape) ===
 	// The pick screen dresses the reel area as a pool: water fills the grid, the 25 picks are rubber
-	// ducks on swim rings (8 art variants, randomised per pond), and the chrome around the board is
+	// ducks on swim rings (16 art variants, randomised per pond), and the chrome around the board is
 	// the logo, the pick counter strip and the PICK/TOTAL WIN neon panels. All processed from the
 	// Figma raws into trimmed webps (scratchpad duckpond/process.py).
+	// The PICK / TOTAL WIN plates and the counter strip have no art: <PondPanel> draws the design's
+	// flat inset plate (Figma 7032:19188) at whatever aspect each one needs.
 	// The pool water is the Figma node EXPORT (6471:6310), not the raw source image — the raw is a
 	// far more saturated blue than the design actually shows. Rounded corners are baked in.
 	duckPondWater: {
@@ -664,39 +655,92 @@ const assets: Assets = {
 		src: './assets/theme-park/v2/duckpond/duck_mini_gray.webp',
 		defer: true,
 	},
-	// The PICK / TOTAL WIN plates draw the shared `bonusPanel` art with <PanelBorderLights> instead
-	// of the mock's static panel exports, so the pond chrome animates like the confirm dialogs.
+	// The rig's own sixteen ring variants, as stills: `duckPondDuck<n>` is what the pond pick,
+	// the Duck Collect cell and the counter draw before `duckPondTurn` has loaded. Cut FROM the
+	// rig by scripts/build-duck-pond-stills.py, so the fallback cannot drift from the art it
+	// stands in for — and all sixteen exist, where only eight used to.
+	// Deferred, unlike the eight they replace: a still is only ever shown while `duckPondTurn`
+	// is still loading, and that rig is itself startup-gated, so nothing here can be wanted at
+	// startup. The pond's own readiness gate gets them with the rest of the pond art.
 	duckPondDuck1: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/duckpond/duck_1.webp',
+		defer: true,
 	},
 	duckPondDuck2: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/duckpond/duck_2.webp',
+		defer: true,
 	},
 	duckPondDuck3: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/duckpond/duck_3.webp',
+		defer: true,
 	},
 	duckPondDuck4: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/duckpond/duck_4.webp',
+		defer: true,
 	},
 	duckPondDuck5: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/duckpond/duck_5.webp',
+		defer: true,
 	},
 	duckPondDuck6: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/duckpond/duck_6.webp',
+		defer: true,
 	},
 	duckPondDuck7: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/duckpond/duck_7.webp',
+		defer: true,
 	},
 	duckPondDuck8: {
 		type: 'sprite',
 		src: './assets/theme-park/v2/duckpond/duck_8.webp',
+		defer: true,
+	},
+	duckPondDuck9: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_9.webp',
+		defer: true,
+	},
+	duckPondDuck10: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_10.webp',
+		defer: true,
+	},
+	duckPondDuck11: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_11.webp',
+		defer: true,
+	},
+	duckPondDuck12: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_12.webp',
+		defer: true,
+	},
+	duckPondDuck13: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_13.webp',
+		defer: true,
+	},
+	duckPondDuck14: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_14.webp',
+		defer: true,
+	},
+	duckPondDuck15: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_15.webp',
+		defer: true,
+	},
+	duckPondDuck16: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/duckpond/duck_16.webp',
+		defer: true,
 	},
 	// The sign that lights up around a reel still spinning on a scatter (Figma 7142:29286). Its
 	// middle is open, so the live symbols show through, and its bulbs are drawn UNLIT — <Anticipation>

@@ -73,7 +73,24 @@
 		'S_ROLLER',
 		'S_COASTER',
 	]);
-	const DUCK_SYMBOL_SIZE = Math.min(SYMBOL_W, SYMBOL_H) * 1.04;
+	/**
+	 * The Duck Collect cell, as a share of the shorter side of a symbol. The rig is square and
+	 * <SpineProvider height> scales it by the skeleton's declared 384, so this is the side of the
+	 * square the whole duck-in-a-ring is drawn into; its ink fills 372x324 of that in all sixteen
+	 * variants.
+	 *
+	 * TRIMMED FROM 1.04 (2026-08-24). At 1.04 the duck measured 103.8 x 90.4 board units, which made
+	 * it the widest ink on the board — the rest of the set runs 63 to 93 wide (10 royal 92.7, ferris
+	 * 82.7, the paying duck 69.8) — inside a cell only 128 across. It is also the one symbol drawn
+	 * wider than it is tall, so it was the only thing on the reel reaching for the dividers, and
+	 * next to a column of portrait symbols it read as a sticker laid on the cell rather than as a
+	 * symbol standing in it. Nothing about the drawing was off: its outline weight and the flatness
+	 * of its fills both measure mid-pack against the set. It was only ever too big.
+	 *
+	 * 0.932 puts it at 93.0 x 81.0 — the 10 royal's width and the A royal's height, so it is joint
+	 * widest rather than outright widest, which is the room a feature symbol is entitled to.
+	 */
+	const DUCK_SYMBOL_SIZE = Math.min(SYMBOL_W, SYMBOL_H) * 0.932;
 	// The grid the board is drawn on runs UNDER its contents. It used to be the other way about: the
 	// mask below carved a rect per cell and left a hair of clearance around each, so the authored
 	// dividers showed through and no symbol pixel ever crossed one. That reads as a table with

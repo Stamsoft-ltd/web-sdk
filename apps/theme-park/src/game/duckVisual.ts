@@ -23,10 +23,24 @@ export const seededEventChoice = (
 ) => seededDuckValue(eventId, duckIndex, salt) % count;
 
 /**
+ * Party hats and sunglasses are shelved. Look 0 is the bare duck in every view the rig plays —
+ * front idle, turn, back idle — so the accessory slots stay empty without touching the rig, its
+ * atlas or the accessory build scripts. Flip this back to true to restore the authored looks.
+ *
+ * It lives here, and not on the pond, because the SAME duck shows up in three places: the pond
+ * picks, the Duck Collect cell on the base board, and the look baked onto the raw symbol by
+ * `bookEventHandlerMap`. Gating only the pond left the board's ducks in hats and shades next to a
+ * pond full of bare ones.
+ */
+export const DUCK_ACCESSORIES_ENABLED = false;
+
+/**
  * 0 standard; 1-4 glasses; 5-8 party hat; 9-24 both. Hat/glasses colors are
  * independently random for the combined look.
  */
+
 export const duckLookForIndex = (eventId: number, duckIndex: number) => {
+	if (!DUCK_ACCESSORIES_ENABLED) return 0;
 	const style = seededEventChoice(eventId, duckIndex, 1, 4);
 	const firstColor = seededEventChoice(eventId, duckIndex, 2, DUCK_ACCESSORY_COLOR_COUNT);
 	const secondColor = seededEventChoice(eventId, duckIndex, 3, DUCK_ACCESSORY_COLOR_COUNT);

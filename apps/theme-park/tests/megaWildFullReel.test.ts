@@ -283,7 +283,7 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 	it('startup-loads both rig and matching static fallback', () => {
 		const assets = source('game/assets.ts');
 		const start = assets.indexOf('megaWildFullReelFallback:');
-		const end = assets.indexOf('coasterCarSickAnim:', start);
+		const end = assets.indexOf('tpDuckSignWingLeft:', start);
 		const block = assets.slice(start, end);
 		expect(block).toContain('mega_wild_full_reel_fallback.png');
 		expect(block).toContain('mega_wild_full_reel.atlas');

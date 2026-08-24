@@ -64,14 +64,6 @@
 	let resolveFinalReveal: () => void = () => {};
 	let skipAllowedAt = 0;
 
-	// Party hats and sunglasses are shelved for the pond bonus. Look 0 is the bare duck in every
-	// view the rig plays here (front idle, turn, back idle), so the accessory slots stay empty
-	// without touching the rig, atlas or the accessory build scripts: flip this back to true to
-	// restore the authored looks.
-	const POND_ACCESSORIES_ENABLED = false;
-	const pondLook = (eventId: number, index: number) =>
-		POND_ACCESSORIES_ENABLED ? duckLookForIndex(eventId, index) : 0;
-
 	const emptyPond = (eventId: number) =>
 		Array.from(
 			{ length: POND_SIZE },
@@ -80,7 +72,7 @@
 				selected: false,
 				// Event-seeded variety stays unchanged for the complete bonus and replay.
 				variant: duckVariantForIndex(eventId, index),
-				look: pondLook(eventId, index),
+				look: duckLookForIndex(eventId, index),
 			}),
 		);
 
@@ -244,13 +236,33 @@
 			(14 * ((BOARD_DIMENSIONS.x - 1) / 2 - col)) / ((BOARD_DIMENSIONS.x - 1) / 2)
 		);
 	};
-	// Rows lift progressively toward the bottom (top row stays on its cell centre, the last row
-	// rises ~26% of a cell) so the bottom ducks — splash included — float with open water below
-	// them instead of clipping the frame's bottom rail, per the reference board.
-	const cellY = (index: number) => {
-		const row = Math.floor(index / BOARD_DIMENSIONS.x);
-		return SYMBOL_H * (row + 0.5) - SYMBOL_H * 0.26 * (row / (BOARD_DIMENSIONS.y - 1));
-	};
+	// Sized off the reference: the duck-and-ring art takes ~85% of the row pitch, leaving open water
+	// between rows. (The desktop mock's nominal 1.2× pitch reads far too big against real art.)
+	const DUCK_SIZE = SYMBOL_H * 1;
+	// Splash disc, as fractions of the duck: how far its centre sits below the duck's, how wide it
+	// is drawn and the aspect it is drawn at. Named because the grid below has to know how far the
+	// pond's ink reaches, and the splash — not the ring — is its lowest point.
+	const SPLASH_DROP = 0.28;
+	const SPLASH_WIDTH = 1.28;
+	const SPLASH_ASPECT = 1.484;
+
+	// Where the pond's ink sits against a duck's own centre, in duck-sizes. The rig is a 384 square
+	// and the bird is NOT centred in it: its crown is 142/384 above the middle, while the splash
+	// reaches further below than the swim ring does.
+	const DUCK_RISE = (192 - 50) / 384;
+	const DUCK_DROP = SPLASH_DROP + SPLASH_WIDTH / SPLASH_ASPECT / 2;
+
+	// Rows sit on their own pitch, centred as one block on the board — not on the reel grid's cell
+	// centres. Two things used to push the pond up: the rows were laid out on SYMBOL_H (the art
+	// size) rather than the board's taller row pitch, and a lift then raised each successive row up
+	// to a further ~26% of a cell to keep the bottom splash off the frame's rail. Together they left
+	// a band of empty water along the bottom roughly five times the gap at the top. Centring the ink
+	// gives the bottom row that clearance on its own, and gives the top row the same.
+	const GRID_PITCH = SYMBOL_H;
+	const GRID_TOP = (BOARD_SIZES.height -
+		((BOARD_DIMENSIONS.y - 1) * GRID_PITCH + (DUCK_RISE + DUCK_DROP) * DUCK_SIZE)) / 2;
+	const cellY = (index: number) =>
+		GRID_TOP + DUCK_RISE * DUCK_SIZE + GRID_PITCH * Math.floor(index / BOARD_DIMENSIONS.x);
 
 	// ── Figma chrome layout ────────────────────────────────────────────────────────────────────────
 	//
@@ -443,14 +455,14 @@
 			!!context.stateApp.loadedAssets?.duckPondLogo,
 	);
 
-	// Sized off the reference: the duck-and-ring art takes ~85% of the row pitch, leaving open water
-	// between rows. (The desktop mock's nominal 1.2× pitch reads far too big against real art.)
-	const DUCK_SIZE = SYMBOL_H * 1;
 	// A duck the player never picked, already landed on its rear pose: the fake prize is on show but
 	// the duck reads as somebody else's. Ducks mid-flip stay bright so the turn itself is not muddied.
 	const isUnpicked = (duck: PondDuck, index: number) =>
 		!!duck.prize && !duck.selected && !finalRevealIndices.includes(index);
 	const SPLASH_DIM_TINT = 0x8d88a4;
+	// The pip is the rig's bird with no ring around it (scripts/build-duck-pond-stills.py), which
+	// is a good deal narrower than the ringed duck the counter used to reuse.
+	const MINI_DUCK_ASPECT = 104 / 128;
 	// Ducks padded inside the plate: duck size comes FROM the row — N ducks plus their gaps fill
 	// COUNTER_ROW_SPAN of the plate's length — so neighbours never touch, whatever N is.
 	const miniRow = $derived.by(() => {
@@ -496,15 +508,15 @@
 					{#snippet children({ center, hovered, pressed })}
 						{@const duckSize = DUCK_SIZE * (pressed ? 0.94 : hovered && !duck.selected ? 1.06 : 1)}
 						<!-- Splash stays in world space while Spine squashes/swaps the duck front to back. -->
-						{@const splashW = duckSize * 1.28}
+						{@const splashW = duckSize * SPLASH_WIDTH}
 						{@const unpicked = isUnpicked(duck, index)}
 						<Sprite
 							key="duckPondSplash"
 							x={center.x}
-							y={center.y + duckSize * 0.28}
+							y={center.y + duckSize * SPLASH_DROP}
 							anchor={0.5}
 							width={splashW}
-							height={splashW / 1.484}
+							height={splashW / SPLASH_ASPECT}
 							tint={unpicked ? SPLASH_DIM_TINT : 0xffffff}
 						/>
 						<DuckPondDuck
@@ -526,7 +538,10 @@
 				</Button>
 			{/each}
 
-			<!-- DUCK YOUR LUCK logo. -->
+			<!-- DUCK YOUR LUCK logo: the same drawing the scatter symbol wears (Figma 7057:7971),
+			     rebuilt at this size by scripts/duck-sign/build_duck_pond_logo.py. It replaces a
+			     bulb-lit, coin-stacked lockup carrying the pre-redraw duck, which opened the bonus on
+			     a duck that matched none of the twenty-five bobbing below it. -->
 			<Sprite
 				key="duckPondLogo"
 				x={ui.logo.x}
@@ -547,12 +562,12 @@
 					x={miniRow.vertical ? miniRow.x : miniRow.start + index * miniRow.pitch}
 					y={miniRow.vertical ? miniRow.start + index * miniRow.pitch : miniRow.y}
 					anchor={0.5}
-					width={miniRow.mini * 0.98}
+					width={miniRow.mini * MINI_DUCK_ASPECT}
 					height={miniRow.mini}
 				/>
 			{/each}
 
-			<!-- PICK N DUCKS panel: the design's rounded plate with the dialogs' running lights. -->
+			<!-- PICK N DUCKS panel: the design's flat inset plate (Figma 7032:19188). -->
 			<Container x={ui.pick.x} y={ui.pick.y}>
 				<PondPanel width={ui.pick.w} height={ui.pick.h} />
 			</Container>

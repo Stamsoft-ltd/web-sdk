@@ -95,6 +95,9 @@ export const POPUP_BORDERS: Record<'confirm' | 'wide' | 'square' | 'bar' | 'navB
 			0x5a35ff, 0x6833ff, 0x742fff, 0x7f2eff, 0x8b2eff, 0x972fff,
 		],
 	},
+	// The confirm dialog is drawn now, with no neon edge and no lights (see <PopupFrame>), so nothing
+	// traces this geometry any more. The entry stays for its RAMP, which is the pink→blue ring
+	// <InfoBorderLights> runs by default on the info modal and its cards.
 	confirm: {
 		left: 0.00221,
 		top: 0.00806,

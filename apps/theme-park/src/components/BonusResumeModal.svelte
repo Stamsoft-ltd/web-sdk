@@ -36,10 +36,10 @@
 </PopupFrame>
 
 <style>
-	/* Spacing is the Figma nodes' own, converted to flow: the title box ends at 75 and the body
-	   starts at 91 (a 16 gap); the button row sits at 165.12, which `margin-top: auto` reproduces
-	   against the panel's min-height while letting a wrapped title push it down instead of
-	   overlapping (nodes 6401:2082-2084). Both text blocks are 303.899 of the 459 panel. */
+	/* Spacing is the Figma nodes' own, converted to flow: the body starts 16 below the title, and the
+	   button row sits at 150, which `margin-top: auto` reproduces against the panel's min-height while
+	   letting a wrapped title push it down instead of overlapping (node 7063:18550). Both text blocks
+	   are 303.899 of the 467 panel's 409 content box. */
 	.resume__title,
 	.resume__body {
 		width: 74.303%; /* 303.899 of the 409 content box */

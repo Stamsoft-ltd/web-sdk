@@ -5,8 +5,8 @@
 	import { rampCss, roundedRectPoint } from '../lib/roundedRectPath';
 
 	// Marching border lights for a plain CSS rounded-rect box (a card or the modal frame), rather
-	// than the painted panel art PopupBorderLights traces. Same look as the confirm dialog — a
-	// mirrored pair leaving the top middle, one down each side, meeting at the bottom middle.
+	// than the painted panel art PopupBorderLights traces. Same run either way — a mirrored pair
+	// leaving the top middle, one down each side, meeting at the bottom middle.
 	type Props = {
 		/** Corner radius of the ring, in CSS px. */
 		radius?: number;
@@ -23,7 +23,7 @@
 		glow?: number;
 		/** Seconds for a light to drift from top middle to bottom middle. */
 		runSeconds?: number;
-		/** Colour ramp round the ring; defaults to the confirm dialog's pink→blue neon. */
+		/** Colour ramp round the ring; defaults to the popup neon's pink→blue (POPUP_BORDERS.confirm). */
 		ramp?: readonly number[];
 	};
 	const {

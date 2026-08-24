@@ -195,12 +195,15 @@
 		</SpineEventEmitterProvider>
 	</SpineProvider>
 {:else}
+	<!-- Drawn as the rig's own square, not the art's aspect: the stills are saved untrimmed at
+	     the skeleton's 384x384 (scripts/build-duck-pond-stills.py), so filling that square puts
+	     the duck exactly where <SpineProvider height={size}> puts it and the swap is invisible. -->
 	<Sprite
 		key={`duckPondDuck${props.variant}`}
 		x={props.x}
 		y={props.y}
 		anchor={0.5}
-		width={props.size * 0.97}
+		width={props.size}
 		height={props.size}
 		alpha={props.alpha ?? 1}
 		{tint}

@@ -339,9 +339,12 @@ describe('Duck Your Luck Spine rig', () => {
 		expect(duck).toMatch(/<SpineTrack[\s\S]*?\{animationName\}/);
 		expect(duck).toContain('trackIndex={1}');
 		expect(duck).toContain('animationName={lookAnimationName}');
-		expect(source).toContain('const POND_ACCESSORIES_ENABLED = false');
-		expect(source).toContain('POND_ACCESSORIES_ENABLED ? duckLookForIndex(eventId, index) : 0');
-		expect(source).toContain('look: pondLook(eventId, index)');
+		// The accessory switch sits in duckVisual, not on the pond: the Duck Collect cell on the base
+		// board draws the same rig, and gating only the pond left it in hats and shades.
+		expect(source).not.toContain('POND_ACCESSORIES_ENABLED');
+		expect(visual).toContain('export const DUCK_ACCESSORIES_ENABLED = false');
+		expect(visual).toContain('if (!DUCK_ACCESSORIES_ENABLED) return 0;');
+		expect(source).toContain('look: duckLookForIndex(eventId, index)');
 		expect(source).toContain('variant: duckVariantForIndex(eventId, index)');
 		expect(source).toContain('ducks = emptyPond(event.seed)');
 		expect(source).toContain('look={duck.look}');

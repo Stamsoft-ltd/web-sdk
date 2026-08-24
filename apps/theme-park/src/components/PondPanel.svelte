@@ -1,66 +1,57 @@
 <script lang="ts">
-	import { FillGradient, Graphics } from 'pixi-svelte';
+	import { Graphics } from 'pixi-svelte';
 
-	import { POPUP_BORDERS } from '../lib/popupBorder';
-	import PanelBorderLights from './PanelBorderLights.svelte';
-
-	// The Duck Your Luck chrome plate, drawn to the pick-panel design (Figma 6471:6346 family):
-	// a dark indigo rounded rect with a thin blue-to-pink neon stroke and the confirm dialogs'
-	// running border lights. Procedural rather than art because the pond needs it at three very
-	// different aspects (pick, total, and the 5:1 counter strip) and stretching the panel exports
-	// smeared their painted edges.
+	// The Duck Your Luck chrome plate, drawn to Figma 7032:19188: a flat deep-purple rounded rect
+	// with a second, slightly smaller plate inset inside it, outlined in a thin orchid keyline.
+	// Two flat fills and one hairline — no gradient, and no running border lights.
+	//
+	// It replaces a neon-gradient stroke with the confirm dialogs' chasing lights on it. The design
+	// asks for a plate that sits still behind the copy, and the pond already has plenty moving on
+	// it: 25 bobbing ducks and their splashes.
+	//
+	// Procedural rather than art because the pond needs it at three very different aspects (pick,
+	// total, and the 5:1 counter strip) and stretching a panel export smears its painted edges.
 
 	type Props = { width: number; height: number };
 	const props: Props = $props();
 
-	/** Corner radius fraction of the short side — the design's plate is visibly rounder than the
-	 * congrats card. */
-	const RADIUS_FRACTION = 0.13;
-	const STROKE = 2.5;
+	// The design's plate is 241x110: a 14px outer radius, the inner plate inset ~3.5px with its own
+	// 13px radius and a 1px keyline. Held against the SHORT side so the counter strip — five times
+	// longer than the pick panel is — gets the same corner and the same border weight, rather than
+	// a corner scaled off its length.
+	const OUTER_RADIUS_FRACTION = 14 / 110;
+	const INNER_RADIUS_FRACTION = 13 / 110;
+	const INSET_FRACTION = 3.5 / 110;
+	const KEYLINE_FRACTION = 1 / 110;
 
-	const radius = $derived(Math.min(props.width, props.height) * RADIUS_FRACTION);
+	const OUTER_FILL = 0x310463;
+	const INNER_FILL = 0x1d013c;
+	const KEYLINE = 0xbd46c6;
 
-	// Left-to-right blue → purple → pink, like the painted edge on the popup arts.
-	const strokeFill = new FillGradient({
-		type: 'linear',
-		start: { x: 0, y: 0.5 },
-		end: { x: 1, y: 0.5 },
-		colorStops: [
-			{ offset: 0, color: 0x3f74ff },
-			{ offset: 0.5, color: 0x9a3cff },
-			{ offset: 1, color: 0xff4fd0 },
-		],
-		textureSpace: 'local',
-	});
-	const plateFill = new FillGradient({
-		type: 'linear',
-		start: { x: 0.5, y: 0 },
-		end: { x: 0.5, y: 1 },
-		colorStops: [
-			{ offset: 0, color: 0x261149 },
-			{ offset: 1, color: 0x170833 },
-		],
-		textureSpace: 'local',
-	});
-
-	// Where the lights run: on the stroke, with the same corner rounding as the plate.
-	const lightsBorder = $derived({
-		left: 0.004,
-		top: 0.006,
-		right: 0.996,
-		bottom: 0.994,
-		rx: radius / props.width,
-		ry: radius / props.height,
-		ramp: POPUP_BORDERS.square.ramp,
-	});
+	const short = $derived(Math.min(props.width, props.height));
+	const outerRadius = $derived(short * OUTER_RADIUS_FRACTION);
+	const innerRadius = $derived(short * INNER_RADIUS_FRACTION);
+	const inset = $derived(short * INSET_FRACTION);
+	// Never allowed to thin out below a pixel: at the counter strip's height the design's 1px would
+	// come out fainter than a hairline and the inner plate would lose its edge entirely.
+	const keyline = $derived(Math.max(1, short * KEYLINE_FRACTION));
 </script>
 
 <Graphics
 	draw={(graphics) => {
+		const halfW = props.width / 2;
+		const halfH = props.height / 2;
 		graphics
-			.roundRect(-props.width / 2, -props.height / 2, props.width, props.height, radius)
-			.fill({ fill: plateFill, alpha: 0.97 })
-			.stroke({ fill: strokeFill, width: STROKE });
+			.roundRect(-halfW, -halfH, props.width, props.height, outerRadius)
+			.fill({ color: OUTER_FILL })
+			.roundRect(
+				-halfW + inset,
+				-halfH + inset,
+				props.width - inset * 2,
+				props.height - inset * 2,
+				innerRadius,
+			)
+			.fill({ color: INNER_FILL })
+			.stroke({ color: KEYLINE, width: keyline, alignment: 0.5 });
 	}}
 />
-<PanelBorderLights width={props.width} height={props.height} border={lightsBorder} />

@@ -17,7 +17,7 @@
 		width: number;
 		height: number;
 		variant?: keyof typeof POPUP_BORDERS;
-		/** Custom geometry+ramp for panels that are not one of the measured arts (<PondPanel>). */
+		/** Custom geometry+ramp for panels that are not one of the measured arts. */
 		border?: PopupBorder;
 	};
 	const props: Props = $props();

@@ -242,8 +242,21 @@ assert.match(duckPondSource, /const POND_SIZE = 25/, 'Duck pond must render 25 d
 assert.match(duckPondSource, /<DuckPondDuck/, 'Duck picks must use the front-to-rear Spine rig');
 assert.match(
 	duckPondSource,
-	/POND_ACCESSORIES_ENABLED \? duckLookForIndex\(eventId, index\) : 0[\s\S]*variant: duckVariantForIndex\(eventId, index\)[\s\S]*look: pondLook\(eventId, index\)[\s\S]*ducks = emptyPond\(event\.seed\)[\s\S]*look=\{duck\.look\}/,
+	/variant: duckVariantForIndex\(eventId, index\)[\s\S]*look: duckLookForIndex\(eventId, index\)[\s\S]*ducks = emptyPond\(event\.seed\)[\s\S]*look=\{duck\.look\}/,
 	'Duck pond must derive and preserve each Duck look from its event seed',
+);
+// The accessory switch belongs to the shared helper, not to the pond. The same duck is drawn in
+// three places — the pond picks, the Duck Collect cell on the base board and the look baked onto
+// the raw symbol — and gating it on the pond alone put hats and shades on the board's ducks only.
+assert.match(
+	duckVisualSource,
+	/export const DUCK_ACCESSORIES_ENABLED[\s\S]*duckLookForIndex = \([^)]*\) => \{\n\tif \(!DUCK_ACCESSORIES_ENABLED\) return 0;/,
+	'Duck accessories must be gated inside duckLookForIndex so every duck agrees',
+);
+assert.doesNotMatch(
+	duckPondSource,
+	/POND_ACCESSORIES_ENABLED/,
+	'Duck pond must not carry its own accessory switch',
 );
 assert.doesNotMatch(
 	duckPondSource,
@@ -1439,8 +1452,10 @@ assert.doesNotMatch(
 	'Mega Coaster vomit Spine must load before first use',
 );
 
+// Anchored on the entry's own closing brace rather than on whichever key happens to follow it:
+// the neighbour this used to name was a dead registration, and deleting it broke this check.
 const megaWildAssetBlock = assetsSource.match(
-	/megaWildFullReelSpine:\s*\{[\s\S]*?\n\t\},\n\tcoasterCarSickAnim:/,
+	/megaWildFullReelSpine:\s*\{[\s\S]*?\n\t\},\n/,
 )?.[0];
 assert.ok(megaWildAssetBlock, 'Combined full-reel Mega Wild Spine must be registered');
 assert.doesNotMatch(

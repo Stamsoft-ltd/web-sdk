@@ -142,6 +142,13 @@
 	// top; everything else is a fraction of its width. The well's `y` on `wide` is past 1 because the
 	// design hangs it below the art.
 	const GOLD = 0xffba3e;
+	/**
+	 * Line spacing for the blurb, as a multiple of its own size. 1.35 when the blurb was two lines
+	 * of small type and the leading was what kept it from looking like a solid block; 1.2 now that
+	 * it is three lines of larger type, where the leading is what the type grew out of. See the
+	 * `desc` entry below.
+	 */
+	const DESC_LEAD = 1.2;
 	const LAYOUT = {
 		tall: {
 			// Box 348,1 524x600 in frame 7033:24761 — but re-pinned down the column against the
@@ -169,15 +176,39 @@
 			// The bonus's name and its blurb are set LARGER than the rest of the column was laid out
 			// for (design ask, 2026-08-24): they carry what the player actually needs to read off
 			// this screen, and at the design's own ratio the blurb in particular came out as the
-			// smallest type in the game. Name +14%, blurb +16%.
+			// smallest type in the game. Name +14%.
 			//
 			// The room for that comes out of the two gaps around them, not out of anything else in
 			// the column: the stack between YOU WON and the symbol is re-pinned so the blurb, the
 			// name and the two gaps split that band evenly. Nothing above the name or below the
-			// blurb moved. `maxHeight` is three lines at the new size, so it still catches a
-			// translation that runs longer than the English does rather than capping the English.
+			// blurb moved.
 			name: { y: 0.45647, size: 0.057, width: 0.72 },
-			desc: { y: 0.52987, size: 0.02849, width: 0.73855, maxHeight: 0.11538 },
+			// THE BLURB AGAIN (design ask, 2026-08-24): +23% on top of that, and it goes to three
+			// lines — it cannot stay at two and read bigger, because the first line was already at
+			// 90% of its measure. It is still the smallest type on the screen and it is the only
+			// line that says what the bonus actually does, so it was the one worth spending the
+			// column's remaining slack on.
+			//
+			// The slack was its OWN two gaps. Measured off the shipped screen, every gap in this
+			// column runs 12-25px — except the two around the blurb, which were 31 and 26, the two
+			// widest in the stack. That is the even split above showing: it handed the blurb a
+			// name-sized share of the band when the blurb is the taller of the two. Nothing else in
+			// the column moves; the type grows into those two gaps and into its own leading, which
+			// is why DESC_LEAD came down with it.
+			//
+			// `maxHeight` IS A HEIGHT, NOT A LINE COUNT, and that is what keeps the other two bonus
+			// screens whole. The three blurbs are not the same length — Roller Wilds' is two thirds
+			// longer than Duck Your Luck's — so a size that sets Duck in three lines sets Roller in
+			// four, and a cap of "three lines at this size" would have scaled Roller's copy down to
+			// SMALLER than it ships at today. This is instead the band between the name and the
+			// symbol less the clearance the rest of the column keeps: Duck and Mega Coaster come in
+			// under it at three lines and get the full +23%, and Roller's four lines are scaled to
+			// fill it, which lands on exactly the size it has now. Nothing regresses.
+			//
+			// Measured against the real font at panel widths from 300 to 1000px: same line counts,
+			// same breaks, and the longest line of the three (Mega Coaster's, 0.713) still clears
+			// the bulb rail by the 0.018 the rest of the column is inset by.
+			desc: { y: 0.5287, size: 0.035, width: 0.72, maxHeight: 0.1368 },
 			centre: { y: 0.65839 },
 			well: {
 				y: 0.79761,
@@ -519,7 +550,7 @@
 					fill: 0xffffff,
 					align: 'center',
 					letterSpacing: size * L.desc.size * 0.03,
-					lineHeight: size * L.desc.size * 1.35,
+					lineHeight: size * L.desc.size * DESC_LEAD,
 					wordWrap: true,
 					wordWrapWidth: size * L.desc.width,
 				}}

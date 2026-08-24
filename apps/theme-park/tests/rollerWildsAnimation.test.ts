@@ -150,7 +150,9 @@ describe('Roller Wild Mega Wild animation contract', () => {
 	it('startup-gates the combined full-reel rig', () => {
 		const assets = readSource('game/assets.ts');
 		const rigStart = assets.indexOf('megaWildFullReelSpine:');
-		const rigEnd = assets.indexOf('coasterCarSickAnim:', rigStart);
+		// Ends at the next real entry, not at the dead `coasterCarSickAnim` registration this used
+		// to name: that key pointed at a WebM nothing drew and has been deleted.
+		const rigEnd = assets.indexOf('tpDuckSignWingLeft:', rigStart);
 		const rigRegistration = assets.slice(rigStart, rigEnd);
 
 		expect(rigStart).toBeGreaterThan(-1);
