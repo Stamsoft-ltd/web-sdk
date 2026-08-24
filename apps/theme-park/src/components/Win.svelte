@@ -151,24 +151,25 @@
 	const SMALL_HOLD_MS = 750;
 
 	/**
-	 * The gold marquee plaque the amount sits inside, drawn at its authored aspect.
+	 * The neon plate the amount sits inside, drawn at its authored aspect — Figma 7100:26891, built
+	 * by `scripts/win-plate/build_win_plate.py`.
 	 *
 	 * It replaces a stack of dark ellipses that did the same job — separate the number from the lit
 	 * reels behind it — but read as a smudge rather than as part of the park. Aspect is fixed and the
-	 * TEXT is what shrinks to fit, because the frame's corner scrollwork and its two centred gems make
-	 * it the one piece of art in this game that cannot be stretched: 3-slicing it would space out the
-	 * bulbs running along its edges and put a second gem in the wrong place.
+	 * TEXT is what shrinks to fit: the star seated on the top rail rules out stretching the plate.
 	 */
-	const PLAQUE_ASPECT = 244 / 171;
+	const PLAQUE_ASPECT = 244 / 148;
 	const PLAQUE_H = SYMBOL_SIZE * 1.5;
 	const PLAQUE_W = PLAQUE_H * PLAQUE_ASPECT;
 	/**
-	 * How much of the plaque the amount may fill. Well inside the flat purple: the frame's inner edge
-	 * curves in at the corners and the gems bite into the top and bottom centre, so the largest
-	 * genuinely clear rectangle is much smaller than the purple region's bounding box.
+	 * How much of the plate the amount may fill, and where its middle is. Measured off the art: the
+	 * flat field runs y 14..140 of 148, and the star bites down to y 31 — so the biggest rectangle
+	 * centred in the field that still clears the star is roughly half the plate's height. The field's
+	 * own centre sits below the layer's, because the star adds height above the card's top rail.
 	 */
-	const PLAQUE_TEXT_W = 0.62;
-	const PLAQUE_TEXT_H = 0.4;
+	const PLAQUE_TEXT_W = 0.85;
+	const PLAQUE_TEXT_H = 0.5;
+	const PLAQUE_TEXT_Y = (77 - 148 / 2) / 148;
 
 	const smallPop = new Tween(1, { duration: SMALL_POP_MS, easing: backOut });
 	const smallHoldDuration = () => SMALL_HOLD_MS * turboFactor();
@@ -340,7 +341,7 @@
 								<Sprite key="tpSmallWinPlaque" anchor={0.5} width={PLAQUE_W} height={PLAQUE_H} />
 								<!-- Scaled rather than re-sized: dropping fontSize per amount re-rasterises the
 								     glyphs, which makes the number crawl as it counts up. -->
-								<Container scale={textFit}>
+								<Container scale={textFit} y={PLAQUE_H * PLAQUE_TEXT_Y}>
 									<Text
 										anchor={0.5}
 										onresize={(size) => (smallWinSize = size)}

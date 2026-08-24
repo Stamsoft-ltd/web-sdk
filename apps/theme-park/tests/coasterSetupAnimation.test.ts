@@ -214,8 +214,12 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(presenter).toContain('{multiplier}');
 		expect(persistent).toContain('<CoasterWildTile');
 		expect(persistent).toContain('multiplier={tile.multiplier}');
-		expect(tile).toContain('width={SYMBOL_W * 0.82}');
-		expect(tile).toContain('height={SYMBOL_H * 0.82}');
+		// Drawn at the splat's own proportions, not squeezed into the symbol frame: this art is a
+		// sign laid over a cell rather than a reel symbol, and the frame is a different shape.
+		expect(tile).toContain('const SLIME_ASPECT = 512 / 391;');
+		expect(tile).toContain('const SLIME_H = SYMBOL_H * 0.82;');
+		expect(tile).toContain('width={SLIME_W}');
+		expect(tile).toContain('height={SLIME_H}');
 		expect(tile).toContain('scale={props.contentScale ?? 1}');
 		expect(presenter).toContain('contentScale={tileScales[key]?.current ?? 1}');
 		expect(persistent).toContain('contentScale={cellPulse(tile.reel, tile.row)}');
@@ -236,8 +240,13 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(tile).toContain('stroke: { color: 0x4d1d00');
 		expect(tile).toContain('color: 0x062900');
 		expect(tile).not.toContain('<BitmapText');
-		expect(background).toContain("import { Graphics } from 'pixi-svelte'");
-		expect(background).not.toContain('<Sprite');
+		// The cover is a cut of the board's OWN grid art, not a flat colour: the field is a radial
+		// gradient, so no one colour sits right in twenty-five different cells and a flat fill read
+		// as a black box behind the slime. One texture frame per Wild, and still no stencil.
+		expect(background).toContain("import { BaseSprite, Graphics, PIXI, getContextApp } from 'pixi-svelte'");
+		expect(background).toContain('loadedAssets?.themeBoardGrid');
+		expect(background).toContain('new PIXI.Texture({');
+		expect(background).toContain('<BaseSprite');
 		expect(background).not.toContain('isMask');
 	});
 
@@ -267,6 +276,9 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(game).not.toContain('BoardGridOverlay');
 		expect(board).toContain('const drawBoardContentMask =');
 		expect(board).toContain('<Graphics isMask draw={drawBoardContentMask} />');
+		// The board's own mask is ONE rect across the whole opening, not a cell each. Only the outer
+		// inset is held back, so nothing of the authored grid is trimmed between adjacent cells —
+		// the per-cell insets belong to the Wilds that cover a cell, not to the board.
 		expect(board).toContain('CELL_W * BOARD_DIMENSIONS.x - BOARD_SIDE_CONTENT_INSET * 2');
 		expect(board).toContain('CELL_H * BOARD_DIMENSIONS.y');
 		expect(board).not.toContain('GRID_LINE_CLEARANCE');

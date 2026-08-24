@@ -66,6 +66,18 @@ PLATE_W = 0.97985
 #: Every other piece of the card is measured off this, so it is what the pad is pinned to.
 FIELD_CENTRE_Y = 0.01945
 
+#: How far out the card sets its two gold stars, in card widths from the plate's centre. From the
+#: Figma card, same as everything else in `winCardMarquee.ts` — it is the one number of the star's
+#: the design can still be trusted for, because it is what clears the wordmark.
+#:
+#: THEIR HEIGHT CANNOT COME FROM THE DESIGN THE WAY THEIR x DOES, which is the whole reason this
+#: measurement exists. Pinning the pad by its field centre lines the two signs up down the CENTRE
+#: COLUMN and nowhere else; out at the shoulders the pad's pocket is a different shape from the one
+#: those numbers were measured against, and the design's y sat the star hard against the pocket's
+#: bottom rail with a lobe's worth of empty purple above it (rejected on sight, 2026-08-24). So the
+#: star is seated by measuring the pocket THIS art draws, at that column.
+STAR_X = 0.34654
+
 # ── The art's own colours ───────────────────────────────────────────────────────────────────────
 #
 # Flat art, so these are exact rather than thresholds around a gradient. The one that needs care is
@@ -179,7 +191,73 @@ def field_span(rgba):
     }
 
 
-def emit(aspect, bulbs, diameter, colour, field, plate):
+#: The measurement is run on the art scaled down by this much. A chamfer pass is a per-pixel Python
+#: loop and the source is 2660px wide; a half-size mask puts the answer within a pad-unit thousandth
+#: of the full-size one, which is a third of a pixel on the biggest the sign is ever drawn.
+SEAT_SCALE = 2
+
+
+def clearance(mask):
+    """Distance from every set pixel to the nearest clear one, in pixels (3-4 chamfer, two passes)."""
+    h, w = mask.shape
+    far = 10**6
+    d = np.where(mask, far, 0).astype(np.int32)
+    for y in range(h):
+        row = d[y]
+        above = d[y - 1] if y else None
+        for x in range(w):
+            if not row[x]:
+                continue
+            best = row[x]
+            if above is not None:
+                best = min(best, above[x] + 3)
+                if x:
+                    best = min(best, above[x - 1] + 4)
+                if x < w - 1:
+                    best = min(best, above[x + 1] + 4)
+            if x:
+                best = min(best, row[x - 1] + 3)
+            row[x] = best
+    for y in range(h - 1, -1, -1):
+        row = d[y]
+        below = d[y + 1] if y < h - 1 else None
+        for x in range(w - 1, -1, -1):
+            if not row[x]:
+                continue
+            best = row[x]
+            if below is not None:
+                best = min(best, below[x] + 3)
+                if x:
+                    best = min(best, below[x - 1] + 4)
+                if x < w - 1:
+                    best = min(best, below[x + 1] + 4)
+            if x < w - 1:
+                best = min(best, row[x + 1] + 3)
+            row[x] = best
+    return d / 3.0
+
+
+def star_seat(rgba, plate_w):
+    """Where a star sits in the shoulder pocket, in pad units from the pad's centre.
+
+    THE ROW WITH THE MOST ROOM, not the middle of the field's run at that column. The pocket is a
+    lobe: its top edge curves in from the rail while its bottom runs flat, so the run's midpoint is
+    not where the most clearance is, and it is clearance the star wants — it is a wide piece of art
+    and the two are a good few pixels apart.
+
+    Returned in pad units on both axes, like everything else here, so the card converts it through
+    `PAD_PLATE` exactly as it converts a bulb.
+    """
+    small = FIELD(rgba[:: SEAT_SCALE, :: SEAT_SCALE])
+    h, w = small.shape
+    room = clearance(small)
+    # The star's column, converted card widths -> pad units -> pixels.
+    column = int(round((STAR_X / plate_w + 0.5) * w))
+    row = int(np.argmax(room[:, column]))
+    return (row - h / 2) / w, room[row, column] / w
+
+
+def emit(aspect, bulbs, diameter, colour, field, plate, seat):
     def point(x, y):
         return f'{x:.5f},{y:.5f}'
 
@@ -234,6 +312,17 @@ export const PAD_BULBS: [number, number][] = points(
  * the wordmark, the stars and the amount — all measured against that card — where they were.
  */
 export const PAD_PLATE = {{ x: 0, y: {plate['y']:.5f}, w: {plate['w']:.5f}, h: {plate['h']:.5f} }};
+
+/**
+ * Where <WinCard>'s gold stars sit: the middle of a shoulder pocket, as pad units below the pad's
+ * centre. Their SIDEWAYS place is the design's (`MARQUEE_STAR.x`); this is the height.
+ *
+ * Measured here rather than taken from the Figma card because the card was measured against a
+ * different sign. Pinning by the field centre lines the two up down the middle column only, and at
+ * the shoulders the design's height put the star hard against the bottom rail with a lobe of empty
+ * purple over it. The row with the most room in the pocket this art actually draws is the seat.
+ */
+export const PAD_STAR_SEAT = {seat:.5f};
 '''
     OUT_TS.write_text(text)
 
@@ -267,6 +356,8 @@ def main():
         'y': FIELD_CENTRE_Y - field['centre'] * PLATE_W,
     }
 
+    seat, room = star_seat(rgba, PLATE_W)
+
     for path, out_width in OUTPUTS:
         path.parent.mkdir(parents=True, exist_ok=True)
         art.resize((out_width, round(out_width / aspect)), Image.LANCZOS).save(
@@ -274,10 +365,11 @@ def main():
         )
         print(f'{out_width:5d}px  {path.stat().st_size // 1024:4d} KB  {path.relative_to(APP)}')
 
-    emit(aspect, bulbs, diameter / width, colour, field, plate)
+    emit(aspect, bulbs, diameter / width, colour, field, plate, seat)
     print(f'aspect {aspect:.4f}  bulbs {len(bulbs)}  disc {diameter / width:.5f}w  #{colour:06x}')
     print(f"field  y {field['top']:+.4f} .. {field['bottom']:+.4f}  (centre {field['centre']:+.4f})")
     print(f"plate  y {plate['y']:+.5f}  h {plate['h']:.5f}")
+    print(f'star   seat y {seat:+.5f} pad units, {room:.5f}w of clear pocket around it')
     print(f'-> {OUT_TS.relative_to(APP)}')
 
     preview = Image.new('RGBA', art.size, (18, 5, 32, 255))
@@ -289,6 +381,12 @@ def main():
     for edge in ('top', 'bottom'):
         y = span[edge] * height
         draw.line([0, y, width, y], fill=(255, 80, 200, 255), width=4)
+    # The two star seats, at the size <WinCard> draws a star: what the pocket has to hold.
+    star = 0.06914 / PLATE_W * width / 2
+    for side in (-1, 1):
+        x = (side * STAR_X / PLATE_W + 0.5) * width
+        y = seat * width + height / 2
+        draw.ellipse([x - star, y - star, x + star, y + star], outline=(255, 220, 60, 255), width=5)
     preview.convert('RGB').resize((1200, round(1200 / aspect))).save(BASE / 'verify_pad.png')
 
 

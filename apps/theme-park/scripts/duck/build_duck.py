@@ -9,8 +9,8 @@ eyes can glance about while the symbol just sits there, and the wing can beat wh
 Two things about the art decide the whole build, and both were measured, not assumed:
 
   1. The body ALREADY CARRIES ITS RIGHT WING, drawn raised and fanned out to the viewer's right, and
-     carries NOTHING on its left: that flank is bare from the shoulder down. So the duck needs
-     exactly one loose wing, and the one it needs is `wing-a` (7057:8004), AS DRAWN.
+     carries NOTHING on its left: that flank is bare from the shoulder down. So only ONE of the two
+     loose wing drawings is a part, and it is `wing-a` (7057:8004), AS DRAWN.
 
      The two drawings are a matched PAIR, not one wing and its mirror. `wing-b` fans up and to the
      right and is the wing already baked into the body; `wing-a` is smaller, fans down and to the
@@ -22,6 +22,12 @@ Two things about the art decide the whole build, and both were measured, not ass
      threw it out, and shipped `wing-b` mirrored instead — which gives the bird two raised wings and
      is what the duck went out with. The fit below settles it: `wing-a`, unmirrored, lands on the
      wing in the reference at 0.96 IoU, and no placement of `wing-b` comes close.
+
+     The far wing being PAINTED ON is what shipped the duck with one wing beating and one wing
+     riding along, and rolling the whole body to fake the second beat never read as a flap. So this
+     build now CUTS the painted wing off the body and repairs the torso underneath — see
+     `split_far_wing`. `wing-b` is still not the part: it is the same drawing, but re-fitting it
+     costs a scale and an angle that the body's own pixels already know exactly.
 
   2. The sockets are eye WHITES, not holes. A border flood cannot reach them (they are enclosed by
      the head), which is what keeps them white — and white is what they are supposed to be.
@@ -40,7 +46,7 @@ the range the component is allowed to use.
     python3 scripts/duck/build_duck.py
 
 Writes symbols/h2-duck-marquee.png (the rest pose, which is also what the board's spin trail
-ghosts), the four loose pieces as webp, src/game/duckParts.ts, and verify_duck.png to eyeball.
+ghosts), the five loose pieces as webp, src/game/duckParts.ts, and verify_duck.png to eyeball.
 """
 
 from collections import deque
@@ -48,7 +54,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from lib.pixi_place import sprite_place  # noqa: E402
@@ -94,6 +100,78 @@ SPILL = 0.10
 # so the pairing is forced: the big iris only fits the big socket.
 EYES = [("left", "iris-small"), ("right", "iris-big")]
 
+# ---------------------------------------------------------------------------------------------
+# Taking the far wing off the body. All of these are in the TRIMMED, UNSCALED body's own pixels
+# (226x309), which is the space the drawing was measured in; BODY_SCALE is applied afterwards.
+#
+# The cut is TRACED rather than found, and it has to be, because the artist did not draw a line to
+# find: the wing's fan is outlined all the way round, but its root blends straight into the belly
+# with no keyline at all — a flood fill of the torso runs into the wing and back out again.
+#
+# The trace does not have to find the wing's real edge, though, because FAR_WING_FEATHER fades that
+# side of it out rather than cutting it. What it does have to do is contain the wing: anything of it
+# left outside the polygon hangs in the sky once the torso underneath is rebuilt.
+# It also has to clear the wing's ROOT on the inside, by more than the fade below is wide. The root
+# feather is outlined like the rest of the fan, and a trace that runs down the middle of it takes the
+# outline off and hands the fade a drawn edge to dissolve — the wing came back with its base blurred
+# away the first time this was traced tight.
+FAR_WING_CUT = [
+    (212, 130), (226, 130), (226, 252), (196, 254), (182, 242), (170, 226), (159, 207), (151, 188),
+    (156, 172), (163, 169), (166, 166), (170, 163), (176, 160), (189, 157), (195, 151), (200, 145),
+    (204, 142), (208, 138),
+]
+
+# The body is erased over a WIDER region than the wing is taken from, by this many pixels inward,
+# from this row down. A feather curl left a pixel inside the trace reads as a scar on the belly.
+# Widening only the erase — not the cut — keeps the wing sprite the wing's size; stopping the
+# widening above the belly keeps it off the head, whose edge is a few pixels further in up there.
+FAR_WING_ERASE, FAR_WING_ERASE_FROM = 6, 182
+
+# How far the wing's ROOT fades out, in pixels.
+#
+# The far wing is drawn IN FRONT of the body, because that is where the artist drew it: over the
+# belly, with only its fan clear of the torso. Behind, the way the near wing goes, the rebuilt flank
+# swallows everything but the feather tips and the bird ends up with a stub.
+#
+# In front, though, the traced edge at the root is a real edge, and it sweeps across the belly every
+# beat. So it is faded instead of cut: a few pixels of ramp, over a join between two nearly identical
+# yellows, and there is no edge there to catch at any angle. At rest the ramp lands back on the belly
+# it was lifted from and cannot be seen at all.
+FAR_WING_FEATHER = 6
+
+# The rebuilt torso.
+#
+# ITS OUTLINE IS THE BIRD'S OWN LEFT FLANK, MIRRORED. That flank is bare from the shoulder down, so
+# it is a complete, unoccluded drawing of the curve the wing hides, and the mirror is checked rather
+# than assumed: `torso_axis` fits the axis on the rows BELOW the wing, where both flanks show, and
+# it lands within a pixel or two down that whole stretch.
+#
+# Only the outline, though. The bird is lit from the upper left, so mirroring the left flank's
+# COLOUR would carry its rim light across onto the shadow side and hang a bright crescent where the
+# wing used to be. The colour is diffused in from the belly the cut leaves behind instead, with a
+# falloff toward the new edge, and then the keyline is drawn on.
+#
+# Above the chest line the mirror stops meaning anything — over there the left silhouette is the
+# BEAK — so the torso is capped by a quarter-ellipse shoulder that runs from the neck down to where
+# the flank takes over: x, y of the neck end, then the half-axes out to the flank.
+TORSO_SHOULDER = (156, 168, 40, 24)
+# How the rebuilt flank darkens toward its edge: over this many pixels, down to this much of the
+# diffused colour. Both are eyeballed against the belly's own shadow rim on the row below the wing.
+TORSO_RIM, TORSO_RIM_SHADE = 9.0, 0.55
+# The duck's keyline and the pale halo the Figma export leaves outside it, both sampled off the
+# body's own left edge. Drawn along the rebuilt outline, since nothing in the art supplies one.
+TORSO_KEYLINE, TORSO_HALO = (3, 3, 3, 255), (86, 85, 83, 255)
+
+# The far wing's shoulder: the point it beats about, in the same body pixels. Chosen at the root
+# rather than fitted — the root is a blend, so there is no overlap to take a centroid of — and what
+# fixes it is the sweep rather than the rest pose: hung from here the wing folds down behind the
+# belly and fans back up over the shoulder, and hung much further out it swings off the bird.
+FAR_SHOULDER = (170, 186)
+# What the far wing's throw is, as a fraction of the near wing's. It is FAR_FLAP / FLAP in
+# <DuckSymbol>, and it is here only so the verify sheet swings both wings the way the game will.
+# Under about half, and the far wing disappears behind the belly for half of every beat.
+FAR_SHARE = 0.425
+
 
 def keyed(path):
     """Load a Figma export and drop its paper, reaching in from the border only.
@@ -125,11 +203,16 @@ def keyed(path):
     return Image.fromarray(np.dstack([rgb, alpha]).astype(np.uint8), "RGBA")
 
 
-def trimmed(part):
-    """The drawing without the export's transparent margin, which is not part of the art."""
+def trimmed_box(part):
+    """The box the drawing actually occupies, without the export's transparent margin."""
     ink = np.asarray(part)[..., 3] > 0
     ys, xs = np.nonzero(ink)
-    return part.crop((xs.min(), ys.min(), xs.max() + 1, ys.max() + 1))
+    return (int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1)
+
+
+def trimmed(part):
+    """The drawing without the export's transparent margin, which is not part of the art."""
+    return part.crop(trimmed_box(part))
 
 
 def scaled(part, factor):
@@ -163,12 +246,161 @@ def runs(mask):
 
 
 
-def draw_duck(canvas, wing, body, eyes, ax, ay, shoulder, beat=0.0, glance=(0, 0)):
-    """One duck, drawn exactly as <DuckSymbol> draws it: wing behind, body, then the irises."""
+def grown(mask, radius):
+    """`mask` spread by `radius` pixels, 4-connected."""
+    out = mask.copy()
+    for _ in range(radius):
+        step = out.copy()
+        step[1:] |= out[:-1]
+        step[:-1] |= out[1:]
+        step[:, 1:] |= out[:, :-1]
+        step[:, :-1] |= out[:, 1:]
+        out = step
+    return out
+
+
+def polygon(points, shape):
+    mask = Image.new("L", (shape[1], shape[0]), 0)
+    ImageDraw.Draw(mask).polygon([(float(x), float(y)) for x, y in points], fill=255)
+    return np.asarray(mask) > 0
+
+
+def rim_depth(mask):
+    """How many pixels each pixel of `mask` is from falling off it — 99 where it is not."""
+    depth = np.full(mask.shape, 99.0)
+    left = mask.copy()
+    for step in range(60):
+        if not left.any():
+            break
+        padded = np.pad(left, 1)
+        edge = left & ~(padded[:-2, 1:-1] & padded[2:, 1:-1] & padded[1:-1, :-2] & padded[1:-1, 2:])
+        depth[edge] = step
+        left = left & ~edge
+    return depth
+
+
+def steps_from(seed, region, limit):
+    """How many 4-connected steps inside `region` each pixel is from `seed`, capped at `limit`."""
+    reached = seed & region
+    steps = np.where(reached, 0.0, float(limit))
+    for step in range(1, limit + 1):
+        found = grown(reached, 1) & region & ~reached
+        steps[found] = step
+        reached = reached | found
+    return steps
+
+
+def torso_axis(ink):
+    """Twice the x the torso is symmetric about, fitted where BOTH flanks are on show.
+
+    Only the rows below the wing qualify, which is the point: they are the one stretch of this
+    drawing where the answer can be checked rather than asserted, and the fit comes out flat across
+    all of them. An integer so that mirroring is an index flip and invents no pixels.
+    """
+    rows = range(236, 266)
+    best = None
+    for candidate in range(190, 230):
+        miss = np.mean([
+            abs((candidate - np.nonzero(ink[y])[0].min()) - np.nonzero(ink[y])[0].max())
+            for y in rows
+        ])
+        if best is None or miss < best[0]:
+            best = (miss, candidate)
+    return best[1], best[0]
+
+
+def split_far_wing(body):
+    """The body with its painted wing taken off and the torso closed up, and the wing itself.
+
+    Returns `(core, wing)` on the body's own canvas, so every number measured against the body still
+    means what it meant. See FAR_WING_CUT and TORSO_SHOULDER for what each step is standing on.
+    """
+    art = np.asarray(body).astype(np.float64)
+    ink = art[..., 3] > 128
+    shape = ink.shape
+
+    axis2, miss = torso_axis(ink)
+    print(f"torso mirrors about x={axis2 / 2:.1f} — the flank below the wing lands {miss:.1f} px out")
+
+    cut = polygon(FAR_WING_CUT, shape)
+    below = np.arange(shape[0])[:, None] >= FAR_WING_ERASE_FROM
+    erase = grown(cut, 3) | (polygon([(x - FAR_WING_ERASE, y) for x, y in FAR_WING_CUT], shape) & below)
+
+    columns = axis2 - np.arange(shape[1])
+    inside = (columns >= 0) & (columns < shape[1])
+    mirrored = np.zeros_like(art)
+    mirrored[:, inside] = art[:, columns[inside]]
+
+    sx, sy, sa, sb = TORSO_SHOULDER
+    arc = [(sx + sa * np.sin(t), sy + sb - sb * np.cos(t)) for t in np.linspace(0, np.pi / 2, 24)]
+    cap = polygon(
+        [(sx - 90, sy)] + arc + [(sx + sa + 60, sy + sb), (sx + sa + 60, shape[0]), (sx - 90, shape[0])],
+        shape,
+    )
+
+    rebuilt = (mirrored[..., 3] > 128) & erase & cap
+    kept = ink & ~erase
+    torso = rebuilt | kept
+
+    # Colour, diffused in from the belly that is left. The outer edge is deliberately NOT a boundary
+    # condition: pinning it to the keyline pulls the whole repair dark and the flank comes out as a
+    # smear. It is a free edge here, and the falloff below is what puts the shadow back.
+    colour = np.where(kept[..., None], art, 0.0)
+    colour[rebuilt] = art[kept].mean(axis=0)
+    weight = torso.astype(np.float64)
+    for _ in range(4000):
+        total = np.zeros_like(colour)
+        count = np.zeros(shape)
+        total[1:] += colour[:-1] * weight[:-1][..., None]
+        count[1:] += weight[:-1]
+        total[:-1] += colour[1:] * weight[1:][..., None]
+        count[:-1] += weight[1:]
+        total[:, 1:] += colour[:, :-1] * weight[:, :-1][..., None]
+        count[:, 1:] += weight[:, :-1]
+        total[:, :-1] += colour[:, 1:] * weight[:, 1:][..., None]
+        count[:, :-1] += weight[:, 1:]
+        colour[rebuilt] = (total / np.maximum(count, 1)[..., None])[rebuilt]
+
+    depth = rim_depth(torso)
+    shade = TORSO_RIM_SHADE + (1 - TORSO_RIM_SHADE) * np.clip(depth / TORSO_RIM, 0, 1)
+    colour[rebuilt] = (colour * shade[..., None])[rebuilt]
+
+    keyline = torso & grown(~torso, 2) & grown(erase, 1)
+    halo = ~torso & grown(torso, 1) & grown(erase, 2)
+    colour[keyline] = TORSO_KEYLINE
+    colour[halo] = TORSO_HALO
+    colour[..., 3] = np.where(torso | halo, 255.0, 0.0)
+
+    wing = np.zeros_like(art)
+    wing[cut] = art[cut]
+    # Fade the root rather than ending it. The root is every cut pixel that had more body beyond it;
+    # the fan's own outline had nothing beyond it and is left alone.
+    root = cut & grown(ink & ~cut, 1)
+    wing[..., 3] *= np.clip(steps_from(root, cut, FAR_WING_FEATHER) / FAR_WING_FEATHER, 0, 1)
+
+    print(f"far wing {int(cut.sum())} px cut, {int(root.sum())} px of it faded at the root; "
+          f"torso rebuilt over {int(rebuilt.sum())} px")
+    return (Image.fromarray(np.clip(colour, 0, 255).astype(np.uint8), "RGBA"),
+            Image.fromarray(np.clip(wing, 0, 255).astype(np.uint8), "RGBA"))
+
+
+def draw_duck(canvas, wing, far, far_at, body, eyes, ax, ay, shoulder, beat=0.0, glance=(0, 0)):
+    """One duck, drawn exactly as <DuckSymbol> draws it.
+
+    Near wing behind, then the body, then the far wing OVER it, then the irises — which is the order
+    the artist drew them in. The far wing lies across the belly and only its fan is clear of the
+    torso, so putting it behind leaves a stub.
+
+    `beat` is the NEAR wing's swing in radians. The far one takes FAR_SHARE of it and takes it the
+    other way round, because that wing is raised and the near one hangs: turning them both the same
+    way drops one while the other lifts, and the bird rows instead of flying.
+    """
     sprite_place(canvas, wing, cx=shoulder[0], cy=shoulder[1],
                  width=wing.width, height=wing.height, anchor=(ax, ay),
                  rotation=-np.radians(WING_ANGLE) + beat)
     sprite_place(canvas, body, cx=BODY_AT[0] + body.width / 2, cy=BODY_AT[1] + body.height / 2)
+    sprite_place(canvas, far, cx=far_at["x"], cy=far_at["y"], width=far.width, height=far.height,
+                 anchor=(far_at["ax"], far_at["ay"]), rotation=-FAR_SHARE * beat)
     for eye in eyes:
         sprite_place(canvas, eye["iris"],
                      cx=eye["x"] + glance[0] * eye["reach_x"],
@@ -226,7 +458,21 @@ def main():
     parts = {stem: trimmed(keyed(SOURCE / f"{stem}.png")) for stem in
              ("body", "wing-a", "iris-big", "iris-small")}
 
-    body = scaled(parts["body"], BODY_SCALE)
+    core, far_art = split_far_wing(parts["body"])
+    # The core keeps the body's canvas rather than being re-trimmed, so BODY_AT and every eye
+    # socket measured against the original drawing still land where they landed.
+    body = scaled(core, BODY_SCALE)
+    far_box = trimmed_box(far_art)
+    far = scaled(far_art.crop(far_box), BODY_SCALE)
+    far_at = {
+        "x": BODY_AT[0] + FAR_SHOULDER[0] * BODY_SCALE,
+        "y": BODY_AT[1] + FAR_SHOULDER[1] * BODY_SCALE,
+        "ax": (FAR_SHOULDER[0] - far_box[0]) / (far_box[2] - far_box[0]),
+        "ay": (FAR_SHOULDER[1] - far_box[1]) / (far_box[3] - far_box[1]),
+    }
+    print(f"far wing {far.width}x{far.height}, shoulder at "
+          f"({far_at['ax']:.4f}, {far_at['ay']:.4f}) of it")
+
     wing = scaled(parts["wing-a"], WING_SCALE)
     turned = wing.rotate(WING_ANGLE, resample=Image.BICUBIC, expand=True)
     wing_at = (WING_AT[0] - (turned.width - wing.width) // 2,
@@ -288,16 +534,19 @@ def main():
     # if the table is wrong the still is wrong in the same way, visibly, here, instead of the game
     # being the only place the mistake shows.
     frame = Image.new("RGBA", FRAME, (0, 0, 0, 0))
-    draw_duck(frame, wing, body, eyes, ax, ay, shoulder)
+    draw_duck(frame, wing, far, far_at, body, eyes, ax, ay, shoulder)
     frame.save(SYMBOL_DIR / "h2-duck-marquee.png")
 
     # The loose pieces, saved UNROTATED and UNPLACED — the component does both, every frame.
-    body.save(SYMBOL_DIR / "duck-body.webp", quality=92, method=6, alpha_quality=100)
-    # A new NAME each time this drawing changes identity, and the rename is the point. Two previous
+    #
+    # A new NAME each time a drawing changes identity, and the rename is the point. Two previous
     # wings have shipped under two previous names; a browser holding either went on serving it, so
     # the duck kept whichever wing it had while the still beside it showed the new one. Same URL,
     # same cache entry, and a ?v= query does not survive the way this game's assets are fetched.
+    # `duck-torso` is the wingless body under that rule: `duck-body.webp` still had a wing on it.
+    body.save(SYMBOL_DIR / "duck-torso.webp", quality=92, method=6, alpha_quality=100)
     wing.save(SYMBOL_DIR / "duck-wing-flank.webp", quality=92, method=6, alpha_quality=100)
+    far.save(SYMBOL_DIR / "duck-wing-shoulder.webp", quality=92, method=6, alpha_quality=100)
     for eye in eyes:
         eye["iris"].save(SYMBOL_DIR / f"duck-iris-{eye['side']}.webp",
                          quality=92, method=6, alpha_quality=100)
@@ -306,12 +555,12 @@ def main():
     lines = [
         "// GENERATED by scripts/duck/build_duck.py — edit that, not this.",
         "//",
-        "// The duck symbol in pieces, so it can blink about and beat a wing. Every number is a",
+        "// The duck symbol in pieces, so it can blink about and beat its wings. Every number is a",
         "// fraction of the 448x360 symbol frame, which is what makes one table serve every size the",
         "// board draws a symbol at.",
         "//",
-        "// The duck's RIGHT wing is not here: it is drawn into the body, raised and fanned, and only",
-        "// the left one came loose. See the script for how that was established.",
+        "// DUCK_BODY is the bird with NEITHER wing on it. The far one was painted into the drawing",
+        "// and had to be cut off it, torso and all — see the script.",
         "",
         "export type DuckPiece = {",
         "\t/** Centre, as a fraction of the symbol frame. */",
@@ -347,9 +596,19 @@ def main():
         f"y: {(BODY_AT[1] + body.height / 2) / fh:.4f}, "
         f"width: {body.width / fw:.4f}, height: {body.height / fh:.4f} }};",
         "",
+        "/** The near wing, tucked at the flank nearest the viewer. */",
         f"export const DUCK_WING: DuckWing = {{ x: {shoulder[0] / fw:.4f}, y: {shoulder[1] / fh:.4f}, "
         f"width: {wing.width / fw:.4f}, height: {wing.height / fh:.4f}, "
         f"anchorX: {ax:.4f}, anchorY: {ay:.4f}, rest: {-np.radians(WING_ANGLE):.4f} }};",
+        "",
+        "/**",
+        " * The far wing, raised and fanned over the far shoulder. Cut out of the body drawing, so it",
+        " * is stored exactly as the artist left it and hangs at no angle of its own.",
+        " */",
+        f"export const DUCK_WING_FAR: DuckWing = {{ x: {far_at['x'] / fw:.4f}, "
+        f"y: {far_at['y'] / fh:.4f}, "
+        f"width: {far.width / fw:.4f}, height: {far.height / fh:.4f}, "
+        f"anchorX: {far_at['ax']:.4f}, anchorY: {far_at['ay']:.4f}, rest: 0 }};",
         "",
         "export const DUCK_EYES: DuckEye[] = [",
     ]
@@ -364,7 +623,8 @@ def main():
     print(f"wrote {TABLE.relative_to(ROOT)}")
 
     # Eyeball it: the rest pose, then the eyes driven to the corners of their measured range, then
-    # the wing at the top and bottom of a beat. If the pupils spill or the wing detaches, it is here.
+    # the wings at the top and bottom of a beat. If the pupils spill, a wing detaches, or the rebuilt
+    # flank shows a seam where the far wing has swung off it, it is here.
     poses = [(0, 0, 0.0), (-1, -1, 0.5), (1, 1, -0.5), (1, -1, 0.9)]
     # A head crop under each pose, at double size: a glance is a handful of pixels, and at symbol
     # size the difference between a lively eye and a frozen one is invisible without it.
@@ -373,7 +633,7 @@ def main():
     sheet = Image.new("RGBA", (fw * len(poses), fh + crop_h), (26, 26, 34, 255))
     for i, (dx, dy, beat) in enumerate(poses):
         pose = Image.new("RGBA", FRAME, (0, 0, 0, 0))
-        draw_duck(pose, wing, body, eyes, ax, ay, shoulder, beat=beat, glance=(dx, dy))
+        draw_duck(pose, wing, far, far_at, body, eyes, ax, ay, shoulder, beat=beat, glance=(dx, dy))
         sheet.alpha_composite(pose, (fw * i, 0))
         sheet.alpha_composite(pose.crop(head).resize((crop_w, crop_h), Image.NEAREST), (fw * i, fh))
     sheet.save(VERIFY)

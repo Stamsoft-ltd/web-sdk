@@ -51,6 +51,11 @@ export const BOARD_SIDE_CONTENT_INSET = 1.4;
 // Opaque Mega Coaster Wild cells need more clearance than transparent reel symbols. This exposes
 // the one grid authored into BoardFrame instead of drawing a second grid above the feature.
 export const COASTER_WILD_GRID_INSET = 2.5;
+// The screen-wide dim <CoasterSetupPresenter> lays over the whole game while the carts stamp their
+// Wilds. It is shared because the Wild cells are drawn ABOVE it: each one covers the reel with a cut
+// of the board's own grid art, and that cut has to be dimmed by the same amount as the board around
+// it or every stamped cell reads as a lit hole in the dimmed screen.
+export const COASTER_SETUP_SCRIM = { color: 0x11021b, alpha: 0.72 };
 export const getBoardCellCenterX = (reelIndex: number) => CELL_W * (reelIndex + 0.5);
 
 export const BOARD_GRID_OFFSET_Y = 0;

@@ -234,11 +234,13 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(builder).not.toContain('plaque.putalpha(alpha)');
 		const win = source('components/Win.svelte');
 		expect(win).toContain('<Sprite key="tpSmallWinPlaque"');
-		expect(win).toContain('const PLAQUE_ASPECT = 244 / 171');
+		// The regular-win plate is the flat NEON card (Figma 7100:26891), which this rig has no
+		// perspective poses of — so the two are separate pieces of art and the win screen must not be
+		// pointed back at the plaque this rig packs. The aspect <Win> pins is guarded against the
+		// plate's own PNG in validate-artifacts, not against this rig's plaque region.
 		const assets = source('game/assets.ts');
-		expect(assets).toContain(
-			"tpSmallWinPlaque: { type: 'sprite', src: './assets/theme-park/v2/wins/small-win-plaque.png' }",
-		);
+		expect(assets).toContain("src: './assets/theme-park/v2/wins/small-win-plate-neon-v1.png'");
+		expect(assets).not.toContain('wins/small-win-plaque.png');
 		for (const view of [
 			'plaque',
 			'plaque_top_35',

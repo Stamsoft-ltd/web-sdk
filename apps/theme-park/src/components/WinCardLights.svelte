@@ -52,6 +52,16 @@
 		 * bulb it is lighting.
 		 */
 		bulb?: number;
+		/**
+		 * Each bulb's place in the run, 0-1, when the caller knows the order the chase should go in.
+		 *
+		 * Without it the order is each bulb's ANGLE about `origin`, which is right for a sign roughly
+		 * as wide as it is tall and wrong for a long thin one: on a reel-high frame nearly every bulb
+		 * is at some angle near straight up or straight down, so the two long rails light as two
+		 * lumps rather than the front running round the sign. A generated table that knows the
+		 * perimeter — game/anticipationFrame.ts — passes the real distance travelled instead.
+		 */
+		places?: readonly number[];
 		/** How many light fronts are running at once. */
 		cycles?: number;
 		/** Laps per second. */
@@ -83,6 +93,7 @@
 		colour,
 		coreColour = colour,
 		origin = { x: 0, y: 0 },
+		places,
 		bulb = 0.0155,
 		cycles = 4,
 		speed = 0.42,
@@ -124,7 +135,7 @@
 			const y = (fy - origin.y) * size;
 			// Angle about the centre, 0-1. The rails are straight in places, so this compresses a
 			// little at the corners; at four fronts running it is not readable as uneven.
-			const angle = (Math.atan2(y, x) / TAU + 1) % 1;
+			const along = places?.[index] ?? (Math.atan2(y, x) / TAU + 1) % 1;
 			// A deterministic nudge per bulb. Without it the fronts are too clean and the sign reads
 			// as a rotating gradient rather than as a few dozen separate bulbs.
 			const jitter = (((index * 2654435761) % 1000) / 1000 - 0.5) * 0.06;
@@ -132,7 +143,7 @@
 				id: index,
 				x,
 				y,
-				phase: angle * cycles + jitter,
+				phase: along * cycles + jitter,
 				// Its own blink: a rate somewhere in the range, and a start anywhere in that cycle.
 				blinkRate:
 					1 / (BLINK_SECONDS.min + (BLINK_SECONDS.max - BLINK_SECONDS.min) * hash(index, 1)),

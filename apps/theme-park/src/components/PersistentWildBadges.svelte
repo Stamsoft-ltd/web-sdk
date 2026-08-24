@@ -118,6 +118,7 @@
 				>
 					<CoasterWildTile
 						reel={tile.reel}
+						row={tile.row}
 						multiplier={tile.multiplier}
 						contentScale={cellPulse(tile.reel, tile.row)}
 					/>

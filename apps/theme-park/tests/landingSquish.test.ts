@@ -40,10 +40,27 @@ describe('Theme Park reel landing squash', () => {
 	it('starts every symbol squash from its own reel token at the physical bounce duration', () => {
 		const board = source('components/Board.svelte');
 		const squish = source('components/LandingSquish.svelte');
-		expect(board).toContain('trigger={reel.reelState.landingSequence}');
+		expect(board).toContain(
+			'trigger={showsReelImpact() ? reel.reelState.landingSequence : 0}',
+		);
 		expect(board).toContain('(CELL_H * options.reelBounceSizeMulti) / options.reelBounceBackSpeed');
 		expect(board).not.toContain("reel.reelState.motion === 'bouncing'");
 		expect(squish).toContain('if (trigger === seenTrigger) return');
 		expect(squish).toContain('if (trigger > 0) void play()');
+	});
+
+	it('drops the whole landing impact in turbo and super turbo', () => {
+		const impact = source('game/reelImpact.ts');
+		expect(impact).toContain('!stateBet.isTurbo && !stateBet.isSuperTurbo');
+
+		// All three parts of the impact — the board's jolt, the sparks, the squash — read the same
+		// rule, so a mode can never get one of them without the others.
+		const board = source('components/Board.svelte');
+		expect(board).toContain("import { showsReelImpact } from '../game/reelImpact'");
+		expect(board).toContain('if (!first && showsReelImpact()) {');
+
+		const bursts = source('components/ReelLandBursts.svelte');
+		expect(bursts).toContain("import { showsReelImpact } from '../game/reelImpact'");
+		expect(bursts).toContain('if (!first && showsReelImpact()) elapsed[reel] = 0;');
 	});
 });

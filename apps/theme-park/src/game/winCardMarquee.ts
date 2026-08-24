@@ -28,10 +28,9 @@ export const MARQUEE_TEXT = {
 /**
  * The right-hand star. The left one is its mirror — see <WinCard>.
  *
- * `y` is the design canvas's own — level with the lower of the two words, a fifth of a wordmark
- * below its middle. It used to be forced to the pad's field centre (0.06109), which sat the stars
- * up level with the seam between the words; that is not where the design's composed screen has
- * them (2026-08-24).
+ * ONLY x, w AND h ARE USED. The height comes from `PAD_STAR_SEAT` instead: this y was
+ * measured against a plate the game no longer draws, and on the pad it seats the star
+ * against the pocket's bottom rail. See the note by STAR_BOXES in build_marquee.py.
  */
 export const MARQUEE_STAR: PartRect = { x: 0.34654, y: 0.13818, w: 0.06914, h: 0.06851 };
 

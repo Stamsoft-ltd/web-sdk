@@ -1,17 +1,34 @@
 <script lang="ts">
 	import { Container, FillGradient, Sprite, Text } from 'pixi-svelte';
 
-	import { SYMBOL_W, SYMBOL_H } from '../game/constants';
+	import { SYMBOL_H } from '../game/constants';
 	import CoasterWildBackground from './CoasterWildBackground.svelte';
 
 	type Props = {
 		reel?: number;
+		row?: number;
+		/** True while <CoasterSetupPresenter> owns this tile, i.e. it is drawn above the setup dim. */
+		underScrim?: boolean;
 		multiplier: number;
 		contentScale?: number;
 	};
 	const props: Props = $props();
 
-	// Sampled from the WILD lettering baked into wild-slime.png: pale bevel highlight -> vivid
+	/**
+	 * The splat's own proportions (512x391), so it is never squeezed into the symbol frame's box: this
+	 * art is not a reel symbol, it is a sign laid over one, and the frame is a different shape.
+	 */
+	const SLIME_ASPECT = 512 / 391;
+	const SLIME_H = SYMBOL_H * 0.82;
+	const SLIME_W = SLIME_H * SLIME_ASPECT;
+	/**
+	 * Where the multiplier goes, measured off the art: WILD occupies its upper half and the clear
+	 * green below runs to about four fifths of the way down. Both are fractions of SYMBOL_H, and both
+	 * move if the splat is re-drawn a different shape — so re-measure rather than nudge.
+	 */
+	const MULTIPLIER_Y = (0.793 - 0.5) * SLIME_H;
+
+	// Sampled from the WILD lettering baked into the splat: pale bevel highlight -> vivid
 	// yellow -> amber base. The brown keyline and deep-green shadow match its outer edge.
 	const multiplierFill = new FillGradient({
 		type: 'linear',
@@ -31,11 +48,11 @@
 </script>
 
 <!-- Setup and persistent phases share this exact presentation. No handoff size pop. -->
-<CoasterWildBackground reel={props.reel} />
+<CoasterWildBackground reel={props.reel} row={props.row} underScrim={props.underScrim} />
 <!-- Pop only the Wild and its multiplier. The opaque reel cover must remain cell-sized. -->
 <Container scale={props.contentScale ?? 1}>
-	<Sprite key="tpCoasterWild" anchor={0.5} width={SYMBOL_W * 0.82} height={SYMBOL_H * 0.82} />
-	<Container y={SYMBOL_H * 0.18}>
+	<Sprite key="tpCoasterWild" anchor={0.5} width={SLIME_W} height={SLIME_H} />
+	<Container y={MULTIPLIER_Y}>
 		<Text
 			anchor={{ x: 0.5, y: 0.5 }}
 			text={`${props.multiplier}X`}

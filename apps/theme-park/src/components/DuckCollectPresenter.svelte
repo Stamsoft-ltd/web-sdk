@@ -17,27 +17,18 @@
 
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { BitmapText, Container } from 'pixi-svelte';
-	import { MainContainer } from 'components-layout';
-	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve, waitForTimeout } from 'utils-shared/wait';
-	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 	import { stateBet } from 'state-shared';
 
-	import NeonPlaque from './NeonPlaque.svelte';
 	import { getContext } from '../game/context';
-	import { stripEmptyCurrencyDecimals } from '../game/currency';
 
 	type DuckPrize = { kind: DuckKind; value: number };
 	type ActiveReveal = DuckPrize & { position: Position; runningTotal: number };
 
 	const context = getContext();
-	const layout = $derived(context.stateGameDerived.boardLayout());
 	const turnReady = $derived(!!context.stateApp.loadedAssets?.duckPondTurn);
 
 	let show = $state(false);
-	let runningTotal = $state(0);
-	let finalAmount = $state<number | null>(null);
 	let active = $state<ActiveReveal | null>(null);
 	let positions = $state<Position[]>([]);
 	let batchMode = false;
@@ -61,7 +52,6 @@
 
 	const finishDuckReveal = (key: string) => {
 		if (!active || positionKey(active.position) !== key) return;
-		runningTotal = active.runningTotal;
 		active = null;
 		if (!batchMode) context.stateGame.duckRevealPositions = [];
 		releaseReveal();
@@ -131,8 +121,6 @@
 	context.eventEmitter.subscribeOnMount({
 		duckCollectShow: (event) => {
 			releaseReveal();
-			runningTotal = 0;
-			finalAmount = null;
 			active = null;
 			positions = [...event.positions];
 			batchMode = false;
@@ -146,12 +134,9 @@
 			if (stateBet.isTurbo || stateBet.isSuperTurbo) startBatchReveal();
 		},
 		// Board owns the DC component for its full front-to-rear lifecycle. This presenter only
-		// coordinates book playback and the running-total banner.
+		// coordinates book playback; the collected total is read off the HUD's WIN field.
 		duckCollectReveal: async (event) => {
-			if (batchMode) {
-				runningTotal = event.runningTotal;
-				return;
-			}
+			if (batchMode) return;
 			active = { ...event };
 			skipAllowedAt = performance.now() + 140;
 			context.stateGame.duckRevealPositions = [event.position];
@@ -169,15 +154,12 @@
 			await waitForResolve((resolve) => (resolveReveal = resolve));
 		},
 		duckCollectRevealComplete: (event) => finishTurn(event.position),
-		duckCollectFinish: async (event) => {
-			finalAmount = event.amount;
-			runningTotal = event.amount;
+		duckCollectFinish: async () => {
 			await waitForTimeout(1400);
 		},
 		duckCollectHide: () => {
 			releaseReveal();
 			show = false;
-			finalAmount = null;
 			active = null;
 			positions = [];
 			batchMode = false;
@@ -189,25 +171,18 @@
 		},
 	});
 
-	const bannerY = $derived(layout.y - (layout.height / 2) * layout.boardScale - 46);
 </script>
 
-<FadeContainer {show}>
-	<MainContainer>
-		<Container x={layout.x} y={bannerY}>
-			<NeonPlaque key="bonusBannerPlate" width={500} height={96} />
-			<BitmapText
-				anchor={{ x: 0.5, y: 0.5 }}
-				y={-16}
-				text={finalAmount !== null ? 'DUCKS COLLECTED!' : 'DUCK COLLECT'}
-				style={{ fontFamily: 'gold', fontSize: 24 }}
-			/>
-			<BitmapText
-				anchor={{ x: 0.5, y: 0.5 }}
-				y={16}
-				text={stripEmptyCurrencyDecimals(bookEventAmountToCurrencyString(runningTotal))}
-				style={{ fontFamily: 'silver', fontSize: 28 }}
-			/>
-		</Container>
-	</MainContainer>
-</FadeContainer>
+<!--
+	NOTHING IS DRAWN HERE.
+
+	This used to raise a neon plaque above the board reading DUCK COLLECT with the running total under
+	it, which was a Forest Gang leftover: the plate was the HUD's own bar art and the heading was set
+	in the `gold` bitmap font, which in this font set renders GREEN. On a Theme Park board it landed
+	on top of the THEME PARK sign as a green-on-dark slab (design ask, 2026-08-24 -- remove it).
+	Nothing was lost with it: the collected total is the WIN field in the HUD, which counts up as each
+	duck turns.
+
+	The component stays because it owns the REVEAL: it drives duckRevealPositions / duckTurnedPositions
+	on the board, holds book playback open while a duck turns, and handles the click-to-skip.
+-->

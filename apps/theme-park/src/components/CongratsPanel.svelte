@@ -166,8 +166,18 @@
 			// of 0.018-0.020 between the pieces and 0.014 under the well.
 			title: { y: 0.33859, size: 0.09958, fill: GOLD, width: 0.74 },
 			subtitle: { y: 0.40723, size: 0.041872, fill: GOLD },
-			name: { y: 0.4562, size: 0.05, width: 0.72 },
-			desc: { y: 0.52594, size: 0.0245, width: 0.73855, maxHeight: 0.1 },
+			// The bonus's name and its blurb are set LARGER than the rest of the column was laid out
+			// for (design ask, 2026-08-24): they carry what the player actually needs to read off
+			// this screen, and at the design's own ratio the blurb in particular came out as the
+			// smallest type in the game. Name +14%, blurb +16%.
+			//
+			// The room for that comes out of the two gaps around them, not out of anything else in
+			// the column: the stack between YOU WON and the symbol is re-pinned so the blurb, the
+			// name and the two gaps split that band evenly. Nothing above the name or below the
+			// blurb moved. `maxHeight` is three lines at the new size, so it still catches a
+			// translation that runs longer than the English does rather than capping the English.
+			name: { y: 0.45647, size: 0.057, width: 0.72 },
+			desc: { y: 0.52987, size: 0.02849, width: 0.73855, maxHeight: 0.11538 },
 			centre: { y: 0.65839 },
 			well: {
 				y: 0.79761,

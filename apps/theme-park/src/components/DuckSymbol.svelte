@@ -5,12 +5,13 @@
 	 * The design ships this one in pieces rather than as a picture (Figma 7063:17957 and friends): a
 	 * body with EMPTY EYE SOCKETS, an iris to drop into each, and the loose left wing that tucks at
 	 * its near flank. That is what lets it do the two things the flat art cannot — glance about while it is just sitting on the board,
-	 * and beat a wing when it wins. Where every piece goes is measured off the artist's own assembled
-	 * duck by `scripts/duck/build_duck.py` into `duckParts.ts`.
+	 * and beat its wings when it wins. Where every piece goes is measured off the artist's own
+	 * assembled duck by `scripts/duck/build_duck.py` into `duckParts.ts`.
 	 *
-	 * The duck's RIGHT wing is drawn into the body, raised and fanned, and does not come apart. So one
-	 * wing beats and the other rides the hop, which is why the hop is here at all: it is what keeps the
-	 * far side of the bird from looking nailed down.
+	 * The FAR wing was not loose: it was painted onto the body, raised and fanned. It is cut off there
+	 * now, and the flank it was covering rebuilt, so both wings beat. Before that only the near one
+	 * moved and the body rolled a tenth of a radian to carry the painted one along with it, which read
+	 * as a bird waving one wing while the other rode.
 	 *
 	 * A SETTLED DUCK IS STILL DOING BOTH, quietly: the eyes glance about and the wing breathes. It can
 	 * afford to where the marquee signs cannot — they hold still because a drifting sprite is
@@ -21,7 +22,7 @@
 	 * then sits there for the best part of a second. That is how an eye actually moves, and it means
 	 * the iris is stationary for the large majority of frames rather than crawling across the socket.
 	 */
-	import { DUCK_BODY, DUCK_EYES, DUCK_WING } from '../game/duckParts';
+	import { DUCK_BODY, DUCK_EYES, DUCK_WING, DUCK_WING_FAR } from '../game/duckParts';
 
 	const TAU = Math.PI * 2;
 
@@ -43,17 +44,26 @@
 	const FLAP = 0.8;
 
 	/**
-	 * How far the BODY rolls on the beat, in radians. NEGATIVE, and that is the whole trick.
+	 * And the FAR wing's throw, which is smaller and goes the other way.
 	 *
-	 * The duck's other wing is painted into its body and does not come apart, so it cannot be beaten
-	 * on its own — but it can be rolled with the body it is drawn on. That wing is raised out to the
-	 * viewer's right, so turning the body anticlockwise lifts its tip, which is the same instant the
-	 * loose wing on the near side is lifting. Both wings go up together, and the bird reads as
-	 * flapping rather than as one wing waving next to a passenger.
+	 * The other way because the two wings are drawn in opposite poses: the near one hangs down and
+	 * to the left of its shoulder and the far one is raised up and to the right of its own, so one
+	 * rotation lifts one and drops the other. Turning them the same way makes the bird row.
 	 *
-	 * Small on purpose: the painted wing is long, so a tenth of a radian is already several pixels
-	 * at its tip, and much past that stops being a bird putting its shoulders into a flap and starts
-	 * being a bird falling over.
+	 * Smaller because of where the far wing starts. It is already up, and it swings across the belly
+	 * rather than out into the open, so the near wing's throw carries it behind the body for half of
+	 * every beat and the duck flickers down to one wing again. This is about as far as it goes while
+	 * staying a wing the whole way round; the pair still read as one flap because they share `beat`.
+	 */
+	const FAR_FLAP = 0.34;
+
+	/**
+	 * How far the BODY rolls on the beat, in radians. NEGATIVE: it turns anticlockwise as the wings
+	 * come up, which is the bird putting its shoulders into the beat.
+	 *
+	 * This used to be the far wing's ENTIRE animation, back when that wing was painted onto the body
+	 * and could only be moved by moving the body. It is decoration now, and small on purpose —
+	 * much past a tenth of a radian and the duck stops flapping and starts falling over.
 	 */
 	const BODY_ROLL = -0.1;
 	/** Eased in rather than switched on, so a win does not start mid-beat. */
@@ -187,6 +197,10 @@
 		-->
 		<Container x={pivotX} y={pivotY} rotation={roll}>
 			{@const wing = about((DUCK_WING.x - 0.5) * props.width, (DUCK_WING.y - 0.5) * props.height)}
+			{@const far = about(
+				(DUCK_WING_FAR.x - 0.5) * props.width,
+				(DUCK_WING_FAR.y - 0.5) * props.height,
+			)}
 			<!-- Behind the body, which is where the artist drew it: only the span of the wing shows. -->
 			<Sprite
 				key="tpDuckWing"
@@ -199,12 +213,28 @@
 				tint={props.tint}
 			/>
 			<Sprite
-				key="tpDuckBody"
+				key="tpDuckTorso"
 				anchor={0.5}
 				x={0}
 				y={0}
 				width={DUCK_BODY.width * props.width}
 				height={DUCK_BODY.height * props.height}
+				tint={props.tint}
+			/>
+			<!--
+				OVER the body, unlike the near wing, because that is how it was drawn: this one lies
+				across the belly with only its fan clear of the torso, so behind the body it is a stub.
+				Its root is faded out in the art rather than cut, so the join it sweeps over the belly
+				every beat has no edge to catch on.
+			-->
+			<Sprite
+				key="tpDuckWingFar"
+				anchor={{ x: DUCK_WING_FAR.anchorX, y: DUCK_WING_FAR.anchorY }}
+				x={far.x}
+				y={far.y}
+				width={DUCK_WING_FAR.width * props.width}
+				height={DUCK_WING_FAR.height * props.height}
+				rotation={DUCK_WING_FAR.rest - FAR_FLAP * beat - settle}
 				tint={props.tint}
 			/>
 			{#each eyes as eye (eye.id)}

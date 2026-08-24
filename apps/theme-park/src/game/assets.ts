@@ -87,10 +87,13 @@ const assets: Assets = {
 	tpH2: { type: 'sprite', src: './assets/theme-park/v2/symbols/h2-duck-marquee.png' },
 	// ...and the pieces (Figma 7063:17957 body, 7057:8004 wing, 7063:17959 and 7063:17960 irises).
 	// They ship apart because this symbol is a BIRD: the irises sit in eye sockets the body art
-	// leaves empty, so they can glance about while the board is idle, and the left wing beats when
-	// the duck wins. The right wing is drawn into the body and does not come apart.
-	tpDuckBody: { type: 'sprite', src: './assets/theme-park/v2/symbols/duck-body.webp' },
+	// leaves empty, so they can glance about while the board is idle, and both wings beat when the
+	// duck wins. Only one of those wings arrived loose; the far one was painted onto the body, and
+	// `scripts/duck/build_duck.py` cuts it off and rebuilds the flank it was covering — which is why
+	// the torso has its own filename rather than being the body art the design handed over.
+	tpDuckTorso: { type: 'sprite', src: './assets/theme-park/v2/symbols/duck-torso.webp' },
 	tpDuckWing: { type: 'sprite', src: './assets/theme-park/v2/symbols/duck-wing-flank.webp' },
+	tpDuckWingFar: { type: 'sprite', src: './assets/theme-park/v2/symbols/duck-wing-shoulder.webp' },
 	tpDuckIrisLeft: { type: 'sprite', src: './assets/theme-park/v2/symbols/duck-iris-left.webp' },
 	tpDuckIrisRight: { type: 'sprite', src: './assets/theme-park/v2/symbols/duck-iris-right.webp' },
 	// The bunch assembled and flattened. Nothing draws it as the settled symbol — <BalloonBunch>
@@ -128,9 +131,14 @@ const assets: Assets = {
 	tpWheelCarPurple: { type: 'sprite', src: './assets/theme-park/v2/symbols/wheel-car-purple.webp' },
 	tpWheelCarGreen: { type: 'sprite', src: './assets/theme-park/v2/symbols/wheel-car-green.webp' },
 	tpWheelCarOrange: { type: 'sprite', src: './assets/theme-park/v2/symbols/wheel-car-orange.webp' },
-	// The gold marquee frame a small win's amount is drawn inside — see <Win>. Same plaque art the
-	// Mega Wild reel carries, so the two read as the same furniture rather than two gold frames.
-	tpSmallWinPlaque: { type: 'sprite', src: './assets/theme-park/v2/wins/small-win-plaque.png' },
+	// The neon plate a small win's amount is drawn inside — see <Win>. Not merely the same design as
+	// the flat neon card of Figma 7100:26891 with the Roller Wilds star on its top rail, composed by
+	// `scripts/win-plate/build_win_plate.py`. Never hand-edit it. It is NOT the Mega Wild reel's
+	// plaque: that rig draws the authored gold card and its six perspective poses (c312551).
+	tpSmallWinPlaque: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/wins/small-win-plate-neon-v1.png',
+	},
 	tpL1: { type: 'sprite', src: './assets/theme-park/v2/symbols/l1-a-marquee.png' },
 	tpL2: { type: 'sprite', src: './assets/theme-park/v2/symbols/l2-k-marquee.png' },
 	tpL3: { type: 'sprite', src: './assets/theme-park/v2/symbols/l3-q-marquee.png' },
@@ -165,9 +173,13 @@ const assets: Assets = {
 		type: 'sprite',
 		src: './assets/theme-park/v2/modes/mega-wild-mobile-landscape-marquee.png',
 	},
+	// The persistent Mega Coaster Wild (Figma 7033:20535; master kept at
+	// art/concepts/coaster-wild-slime-v2.png). WILD sits in the upper half of the splat and the empty
+	// lower half is where <CoasterWildTile> puts the multiplier — so the art is drawn at its own
+	// aspect, never squeezed into the square-ish symbol frame the reel symbols use.
 	tpCoasterWild: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/wild-slime.png',
+		src: './assets/theme-park/v2/symbols/wild-slime.webp',
 	},
 	// One cartoon steam cloud (Figma 7057:7989), the companion piece to the Mega Wild's locomotive
 	// plaque: <SymbolSteam> puffs a run of these out of the funnel while the plaque is winning. One
@@ -596,15 +608,6 @@ const assets: Assets = {
 
 	// === FRAMES / UI ===
 	symbolPad: { type: 'sprite', src: './assets/components/frames/symbol_pad.png' },
-	// Backs the in-board bonus banners. The HUD's own navigation bar art, sparkle-free: a plain neon
-	// tube, uniform along its length, which is what lets <NeonPlaque> 3-slice it to any width — the
-	// painted sparkles it used to carry stretched with the slice. It replaces a 1.73MB
-	// lossless carve-wood sign left over from Forest Gang — wrong game, wrong theme, and 150x the
-	// bytes for something drawn 500x96.
-	bonusBannerPlate: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/hud/bar_plate-clean.webp',
-	},
 	// Temporary production placeholders copied from Magnetic. Replace with final
 	// Theme Park lock art without changing the component contract.
 	lockedCell: {
@@ -695,11 +698,14 @@ const assets: Assets = {
 		type: 'sprite',
 		src: './assets/theme-park/v2/duckpond/duck_8.webp',
 	},
-	// Full-reel Theme Park marquee. The clear centre leaves live symbols visible while its separate
-	// Pixi light chase/glow layers animate the generated frame around all four sides.
+	// The sign that lights up around a reel still spinning on a scatter (Figma 7142:29286). Its
+	// middle is open, so the live symbols show through, and its bulbs are drawn UNLIT — <Anticipation>
+	// lights them with <WinCardLights> off game/anticipationFrame.ts. Drawn rather than exported
+	// (scripts/anticipation/), because the design's frame is far wider for its height than a reel is
+	// and stretching it to fit would oval every bulb on it.
 	anticipationFrame: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/features/anticipation-frame-v2.webp',
+		src: './assets/theme-park/v2/features/anticipation-marquee.webp',
 	},
 
 	// Forest Gang's production intro/idle panel. Reused for free-spin intro/outro

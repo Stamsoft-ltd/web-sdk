@@ -29,14 +29,17 @@ describe('Theme Park anticipation presentation', () => {
 		expect(anticipations).toContain('.fill(0x05000f)');
 	});
 
-	it('wraps the active reel in an animated four-sided Theme Park marquee', () => {
+	it('wraps the active reel in the bulb marquee, lit by the shared light layer', () => {
 		const anticipation = source('Anticipation.svelte');
-		expect(anticipation).toContain('const CHASE_SPEED = 0.075');
-		expect(anticipation).toContain('const drawMotion = $derived.by');
 		expect(anticipation).toContain('key="anticipationFrame"');
-		expect(anticipation).toContain('height={baseHeight * board.boardScale}');
-		expect(anticipation).toContain('Bright bulbs chase around all four sides');
-		expect(anticipation).toContain('blendMode="add"');
+		// The sign's height comes from the ART's aspect, never from the board: a frame stretched to
+		// the board's height would draw every bulb on it as an oval.
+		expect(anticipation).toContain('frameWidth / ANTICIPATION_ASPECT');
+		expect(anticipation).toContain('<WinCardLights');
+		expect(anticipation).toContain('places={ANTICIPATION_PLACES}');
+		expect(anticipation).toContain('bulb={ANTICIPATION_BULB}');
+		// The bespoke neon chase the marquee replaced.
+		expect(anticipation).not.toContain('drawMotion');
 		expect(anticipation).toContain(
 			'if (context.stateGame.scatterCounter < MAX_SCATTERS) return false',
 		);
@@ -45,5 +48,21 @@ describe('Theme Park anticipation presentation', () => {
 			anticipation.indexOf('let fading = $state'),
 		);
 		expect(scatterCapHandler).not.toContain('props.reel.forceStop()');
+	});
+
+	it('runs the chase around the frame rather than by angle about its centre', () => {
+		const lights = source('WinCardLights.svelte');
+		// A reel-high frame has nearly every bulb at some angle near straight up or straight down, so
+		// the default ordering would light the two long rails as two lumps.
+		expect(lights).toContain('const along = places?.[index] ??');
+		expect(lights).toContain('phase: along * cycles + jitter');
+
+		const table = fs.readFileSync(
+			path.join(appRoot, 'src', 'game', 'anticipationFrame.ts'),
+			'utf8',
+		);
+		expect(table).toContain('export const ANTICIPATION_PLACES');
+		expect(table).toContain('export const ANTICIPATION_ASPECT');
+		expect(table).toContain('export const ANTICIPATION_BULB');
 	});
 });

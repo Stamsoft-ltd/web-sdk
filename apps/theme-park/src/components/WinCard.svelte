@@ -24,7 +24,7 @@
 	import { Container, Graphics, Sprite, Text, PIXI } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
-	import { PAD_BULB, PAD_BULBS, PAD_PLATE } from '../game/padMarquee';
+	import { PAD_BULB, PAD_BULBS, PAD_PLATE, PAD_STAR_SEAT } from '../game/padMarquee';
 	import {
 		MARQUEE_AMOUNT,
 		MARQUEE_STAR,
@@ -192,6 +192,17 @@
 	// === STARS ===
 	// In from off the sides, spinning, landing on the plate's shoulders with a flare.
 	const STAR_FROM = 1.6; // card widths out from the centre
+	/**
+	 * How far down a star sits, in card widths — from the PAD rather than from the Figma card.
+	 *
+	 * Everything else here is a Figma number, and the star's x is too. Its height is not, because
+	 * the card was measured against a sign this is not: the pad is pinned to it down the centre
+	 * column only (`PAD_PLATE`), and out at the shoulders the pocket is a different shape, so the
+	 * design's height seated the star against the pocket's bottom rail with a lobe of empty purple
+	 * over it. `PAD_STAR_SEAT` is the row with the most room in the pocket THIS art draws, measured
+	 * by scripts/pad/build_pad.py, in pad units — converted here the same way a bulb is.
+	 */
+	const starY = PAD_PLATE.y + PAD_STAR_SEAT * PAD_PLATE.w;
 	const starIn = $derived(softBack(at(STARS)));
 	const starProgress = $derived(at(STARS));
 	const starSettled = $derived(clamp01(starProgress * 4 - 3));
@@ -199,7 +210,7 @@
 		[-1, 1].map((side) => ({
 			side,
 			x: lerp(side * STAR_FROM, side * MARQUEE_STAR.x, starIn) * cardWidth,
-			y: MARQUEE_STAR.y * cardWidth,
+			y: starY * cardWidth,
 			// Twinkle once landed: the star is one flat piece of art, so a slow breath and a slight
 			// counter-rotation is what keeps it from reading as a sticker.
 			scale:

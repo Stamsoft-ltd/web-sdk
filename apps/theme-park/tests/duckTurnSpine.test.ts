@@ -362,9 +362,10 @@ describe('Duck Your Luck Spine rig', () => {
 		expect(source).toMatch(
 			/stripEmptyCurrencyDecimals\(bookEventAmountToCurrencyString\(runningTotal\)\)/,
 		);
-		expect(collect).toMatch(
-			/stripEmptyCurrencyDecimals\(bookEventAmountToCurrencyString\(runningTotal\)\)/,
-		);
+		// The Duck Collect presenter draws nothing at all now — its running-total banner landed on
+		// the THEME PARK sign and came out. The collected total is the HUD's WIN field.
+		expect(collect).not.toContain('bookEventAmountToCurrencyString');
+		expect(collect).not.toContain('NeonPlaque');
 		expect(currency).toContain("value.replace(/([.,])00(?=\\D*$)/, '')");
 		expect(duck).not.toMatch(/props\.prize\?\.value \?\? 0\}x/);
 		expect(source).not.toMatch(/centerPrize|duckPresent|SPIN_PLAYBACK/);
@@ -435,7 +436,7 @@ describe('Duck Your Luck Spine rig', () => {
 		expect(presenter).toContain('context.stateGame.duckRevealBatch = true');
 		expect(presenter).toContain("event.code !== 'Space' || !show || batchStarted");
 		expect(presenter).toContain('if (!show || batchStarted) return');
-		expect(presenter).toMatch(/if \(batchMode\) \{[\s\S]*?runningTotal = event\.runningTotal/);
+		expect(presenter).toContain('if (batchMode) return;');
 		expect(presenter).toContain('skipAllowedAt = performance.now() + 140');
 		expect(presenter).toContain('if (performance.now() < skipAllowedAt) return');
 		expect(presenter).not.toMatch(/duckPresent|AnimatedSprite|PRESENT_MS/);

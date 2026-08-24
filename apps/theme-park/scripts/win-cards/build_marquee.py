@@ -54,18 +54,23 @@ PLATE_IN_COMPOSITE = (0.0700, 0.0068, 0.8600, 0.9661)  # x, y, w, h — measured
 CONFETTI_IN_COMPOSITE = (0.0, 0.0, 1.0, 0.9842)
 WORDMARK_BOX = (338, 117, 534, 334)  # the SWEET wordmark; every tier is fitted into its ink
 STAR_BOXES = ((339, 307, 66, 56), (792, 307, 66, 56))
-# ...but the stars are NOT placed at the height those boxes give, which is why this exists.
+# ...but ONLY THE x OF THOSE BOXES SURVIVES INTO THE GAME. The y is measured elsewhere — see
+# `PAD_STAR_SEAT` in scripts/pad/build_pad.py, which is what <WinCard> actually places a star by.
 #
-# The composed screen draws them at y=335 on a wordmark running 117..451, i.e. a fifth of a
-# wordmark below its middle — level with the lower of the two words. That IS the placement the
-# design is asking for (2026-08-24), so the stars are placed from their own boxes like every other
-# piece and there is no override.
+# The reason is that the plate this card is drawn on is no longer the plate these boxes were
+# measured against. The game builds the card on the shared marquee PAD, pinned to the design by its
+# FIELD CENTRE — which lines the two signs up down the centre column and nowhere else. Out at the
+# shoulders the pad's pocket is a different shape, and the design's y (0.1382 of a card width below
+# the plate's centre, level with the lower of the two words) seats the star hard against the
+# pocket's bottom rail with a lobe's worth of empty purple above it. Rejected on sight, 2026-08-24.
 #
-# A previous pass took the y from the PAD instead (`PAD_FIELD_CENTRE`, 0.06109, the centre of the
-# purple field down the sign's centre column), on the reading that the design's render of the
-# finished card sat them level with the seam between the words. It put them visibly too high, and
-# 0.06109 was in any case never converted through PAD_PLATE, so it was not the field's centre in
-# CARD space either (that would be 0.01945).
+# The x is kept because it is not a fact about the plate at all: it is how far out a star has to be
+# to clear the wordmark, and the wordmark is unchanged.
+#
+# An earlier pass had the y at `PAD_FIELD_CENTRE` (0.06109) instead, which was too high AND wrong
+# twice over — it was never converted through PAD_PLATE, so it was not the field's centre in CARD
+# space either (that would be 0.01945), and the field's centre is measured down the centre column,
+# which is not where a star sits.
 AMOUNT_BOX = (401, 430.43, 399, 120.14)
 
 # Export widths.
@@ -178,7 +183,13 @@ def emit_ts(layout):
     lines += [
         '} as const satisfies Record<string, PartRect>;',
         '',
-        '/** The right-hand star. The left one is its mirror — see <WinCard>. */',
+        '/**',
+        ' * The right-hand star. The left one is its mirror — see <WinCard>.',
+        ' *',
+        ' * ONLY x, w AND h ARE USED. The height comes from `PAD_STAR_SEAT` instead: this y was',
+        ' * measured against a plate the game no longer draws, and on the pad it seats the star',
+        " * against the pocket's bottom rail. See the note by STAR_BOXES in build_marquee.py.",
+        ' */',
         f'export const MARQUEE_STAR: PartRect = {rect_ts(layout["star"])};',
         '',
         '/** The amount plate hanging below the card. Drawn, not an image: it is a rounded rect. */',

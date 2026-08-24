@@ -16,6 +16,7 @@
 	import { onMount } from 'svelte';
 
 	import { boardShake } from '../game/boardShake.svelte';
+	import { showsReelImpact } from '../game/reelImpact';
 	import { getContext } from '../game/context';
 	import {
 		CELL_W,
@@ -408,8 +409,9 @@
 				if (sequence !== seenLandingSequence[reel]) {
 					const first = seenLandingSequence[reel] === -1;
 					seenLandingSequence[reel] = sequence;
-					// Skipped on the very first render, where every reel reports its starting sequence.
-					if (!first) {
+					// Skipped on the very first render, where every reel reports its starting sequence,
+					// and in the fast modes, which do not get the impact at all (game/reelImpact.ts).
+					if (!first && showsReelImpact()) {
 						const last = reel === BOARD_DIMENSIONS.x - 1;
 						landShakeEnergy += last ? LAND_SHAKE.lastImpulse : LAND_SHAKE.impulse;
 						// Restart the swing on every hit so each impulse begins by driving downward.
@@ -597,8 +599,10 @@
 						<!-- Settled Roller cells are the multiplier itself, not a Mega Wild symbol with a
 						     badge over it. This lives inside the moving reel symbol loop, so the unchanged
 						     plaques roll out naturally on the following spin. -->
+						<!-- Trigger 0 is <LandingSquish>'s own "do not play": the fast modes drop the
+						     squash along with the rest of the landing impact (game/reelImpact.ts). -->
 						<LandingSquish
-							trigger={reel.reelState.landingSequence}
+							trigger={showsReelImpact() ? reel.reelState.landingSequence : 0}
 							x={getX(reelIndex)}
 							{y}
 							durationMs={reelBounceDurationMs(reelIndex)}

@@ -357,20 +357,18 @@ const duckCollectSource = fs.readFileSync(
 	path.join(root, 'src', 'components', 'DuckCollectPresenter.svelte'),
 	'utf8',
 );
-assert.match(
-	duckCollectSource,
-	/stripEmptyCurrencyDecimals\(bookEventAmountToCurrencyString\(runningTotal\)\)/,
-	'Duck Collect total must hide empty decimal suffixes',
-);
 assert.doesNotMatch(
 	duckCollectSource,
 	/DuckPondDuck/,
 	'Duck Collect presenter must not remount Board-owned duck Spine instances',
 );
-assert.match(
+// The presenter is a COORDINATOR, not a screen. Its DUCK COLLECT banner sat on top of the THEME
+// PARK sign and was removed; the collected total is the HUD's WIN field, which counts up as each
+// duck turns. Guard that nothing gets drawn from here again by accident.
+assert.doesNotMatch(
 	duckCollectSource,
-	/<NeonPlaque key="bonusBannerPlate"/,
-	'Duck Collect banner must use the sliced neon plate, not a Forest Gang plaque',
+	/<(BitmapText|Sprite|NeonPlaque|Container|MainContainer|FadeContainer)\b/,
+	'Duck Collect presenter must not draw anything',
 );
 assert.match(
 	duckCollectSource,
@@ -1347,7 +1345,11 @@ assert.match(
 	/<CoasterWildTile[\s\S]*multiplier=\{tile\.multiplier\}/,
 	'Persistent Mega Coaster Wild must use the same shared tile',
 );
-assert.match(coasterWildTileSource, /width=\{SYMBOL_W \* 0\.82\}/, 'Mega Coaster Wild width');
+// The splat is a sign laid over a cell, not a reel symbol, so it is drawn at its own proportions
+// rather than squeezed into the symbol frame — and the multiplier is seated off the same height.
+assert.match(coasterWildTileSource, /const SLIME_ASPECT = 512 \/ 391;/, 'Mega Coaster Wild aspect');
+assert.match(coasterWildTileSource, /const SLIME_H = SYMBOL_H \* 0\.82;/, 'Mega Coaster Wild height');
+assert.match(coasterWildTileSource, /width=\{SLIME_W\}\s+height=\{SLIME_H\}/, 'Mega Coaster Wild size');
 assert.match(
 	coasterWildTileSource,
 	/scale=\{props\.contentScale \?\? 1\}/,
@@ -1588,6 +1590,32 @@ for (const attachment of [
 		`Combined Mega Wild rig missing ${attachment} attachment`,
 	);
 }
+
+// A regular win's amount is drawn inside the flat neon plate of Figma 7100:26891 — the card art
+// with the Roller Wilds star composited onto its top rail. It is NOT the Mega Wild reel's plaque:
+// that rig draws the authored gold card and its six perspective poses. Guard the plate against its
+// OWN generator instead, because <Win> pins an aspect that only that one layer has, and a plate
+// rebuilt at another size would show up on screen as an amount sitting off its centre.
+const winPlateBuilderSource = fs.readFileSync(
+	path.join(root, 'scripts', 'win-plate', 'build_win_plate.py'),
+	'utf8',
+);
+for (const source of ['mega-wild-plaque-neon-v2.png', 'roller-wilds-star.png']) {
+	assert.ok(
+		winPlateBuilderSource.includes(source),
+		`Small-win plate builder must compose ${source}`,
+	);
+}
+const smallWinPlatePng = fs.readFileSync(
+	path.join(root, 'static', 'assets', 'theme-park', 'v2', 'wins', 'small-win-plate-neon-v1.png'),
+);
+const platePixels = [smallWinPlatePng.readUInt32BE(16), smallWinPlatePng.readUInt32BE(20)];
+const winSource = fs.readFileSync(path.join(root, 'src', 'components', 'Win.svelte'), 'utf8');
+assert.match(
+	winSource,
+	new RegExp(`PLAQUE_ASPECT = ${platePixels[0]} / ${platePixels[1]}`),
+	'Win must draw the small-win plate at the plate art own aspect',
+);
 
 const rollerMultiplierTextSource = fs.readFileSync(
 	path.join(root, 'src', 'components', 'RollerMultiplierText.svelte'),

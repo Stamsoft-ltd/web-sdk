@@ -21,6 +21,7 @@
 		getBoardCellCenterX,
 	} from '../game/constants';
 	import { boardShake } from '../game/boardShake.svelte';
+	import { showsReelImpact } from '../game/reelImpact';
 	import { getContext } from '../game/context';
 
 	const context = getContext();
@@ -55,8 +56,9 @@
 			if (sequence === seenLanding[reel]) continue;
 			const first = seenLanding[reel] === -1;
 			seenLanding[reel] = sequence;
-			// Skip the initial render: every reel reports its starting sequence before anything spins.
-			if (!first) elapsed[reel] = 0;
+			// Skip the initial render, where every reel reports its starting sequence before anything
+			// spins, and the fast modes, which land without any impact at all (game/reelImpact.ts).
+			if (!first && showsReelImpact()) elapsed[reel] = 0;
 		}
 	});
 

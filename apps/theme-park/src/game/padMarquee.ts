@@ -48,3 +48,14 @@ export const PAD_BULBS: [number, number][] = points(
  * the wordmark, the stars and the amount — all measured against that card — where they were.
  */
 export const PAD_PLATE = { x: 0, y: -0.04041, w: 0.97985, h: 0.53413 };
+
+/**
+ * Where <WinCard>'s gold stars sit: the middle of a shoulder pocket, as pad units below the pad's
+ * centre. Their SIDEWAYS place is the design's (`MARQUEE_STAR.x`); this is the height.
+ *
+ * Measured here rather than taken from the Figma card because the card was measured against a
+ * different sign. Pinning by the field centre lines the two up down the middle column only, and at
+ * the shoulders the design's height put the star hard against the bottom rail with a lobe of empty
+ * purple over it. The row with the most room in the pocket this art actually draws is the seat.
+ */
+export const PAD_STAR_SEAT = 0.13571;

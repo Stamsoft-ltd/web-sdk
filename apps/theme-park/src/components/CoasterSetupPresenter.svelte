@@ -27,6 +27,7 @@
 		BOARD_DIMENSIONS,
 		BOARD_GRID_OFFSET_Y,
 		BOARD_SIDE_CONTENT_INSET,
+		COASTER_SETUP_SCRIM,
 		COASTER_WILD_GRID_INSET,
 		getBoardCellCenterX,
 	} from '../game/constants';
@@ -402,7 +403,10 @@
 </script>
 
 <FadeContainer {show} zIndex={COASTER_SETUP_Z}>
-	<CanvasSizeRectangle backgroundColor={0x11021b} backgroundAlpha={0.72} />
+	<CanvasSizeRectangle
+		backgroundColor={COASTER_SETUP_SCRIM.color}
+		backgroundAlpha={COASTER_SETUP_SCRIM.alpha}
+	/>
 	<MainContainer>
 		<Container
 			x={layout.x}
@@ -432,6 +436,8 @@
 					<Container x={cellX(position.reel)} y={cellY(position.row)}>
 						<CoasterWildTile
 							reel={position.reel}
+							row={position.row}
+							underScrim
 							{multiplier}
 							contentScale={tileScales[key]?.current ?? 1}
 						/>
