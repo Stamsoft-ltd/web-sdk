@@ -3,30 +3,32 @@
 
 	// Paytable symbol art (premium symbols and royals).
 	const symImg = (name: string) => ap(`/assets/theme-park/v2/symbols/${name}.png`);
-	// Feature / mode logos (reused from the buy-bonus modes set).
-	// Full stem, not a prefix: only the redrawn facades carry the -marquee cache-bust suffix, so a
-	// shared template here would have to guess which ones have been through the flat redraw.
-	const modeImg = (stem: string) => ap(`/assets/theme-park/v2/modes/${stem}.png`);
-	// The WILD row's symbol is the game's own marquee W — the same art the reels drop.
-	const wildImg = ap('/assets/theme-park/v2/modes/wild-desktop-marquee.png');
+	// Paytable art (design update): the complete WILD (gold frame + colourful W, as it reads on the
+	// reels once the W is dropped in) and the redrawn balloon cluster. The reel textures are separate.
+	const wildImg = ap('/assets/theme-park/v2/info/pay-wild.png');
+	const payBalloons = ap('/assets/theme-park/v2/info/pay-balloons.png');
 
 	// Landscape (desktop) tutorial box: neon gradient frame, the duck-on-coaster hero, and the logo.
-	const tutorialBg = ap('/assets/theme-park/v2/info/tutorial-bg.webp');
-	const rollerDuck = ap('/assets/theme-park/v2/info/roller-duck.webp');
+	// The duck-in-car-on-coaster art in the overview's bottom-left corner. Desktop uses the wide
+	// framing; portrait uses the design's rotated "climbing" framing.
+	const bottomDuck = ap('/assets/theme-park/v2/info/bottom-duck.png');
+	const bottomDuckMobile = ap('/assets/theme-park/v2/info/bottom-duck-mobile.png');
 	const gameLogo = ap('/assets/theme-park/v2/splash/logo.webp');
-	// Ways-to-win: the finished 15-payline diagram (downloads).
-	const waysToWin = ap('/assets/theme-park/v2/info/ways-to-win.svg');
+	// Ways-to-win: the finished 15-payline diagram (design update).
+	const waysToWin = ap('/assets/theme-park/v2/info/ways-to-win-new.png');
 
-	// General-info card icons, straight from the design (Figma 6445:10589) — marquee-styled, unlike
-	// the flat blue clip-art they replace.
-	const icInterrupted = ap('/assets/theme-park/v2/info/ic-interrupted.webp');
-	const icLegal = ap('/assets/theme-park/v2/info/ic-legal.webp');
+	// General-info card icons (design update): rotate arrow + legal-notice scales.
+	const icInterrupted = ap('/assets/theme-park/v2/info/ic-interrupted.png');
+	const icLegal = ap('/assets/theme-park/v2/info/ic-legal.png');
+
+	// Premium feature logos for the Features / Feature-Buy bonus cards (design update).
+	const featDuck = ap('/assets/theme-park/v2/info/feat-duck.png');
+	const featRoller = ap('/assets/theme-park/v2/info/feat-roller.png');
+	const featCoaster = ap('/assets/theme-park/v2/info/feat-coaster.png');
 
 	// UI-guide glyphs, exported from the design's own icon-button component (Figma 6445:10828) rather
 	// than scavenged from the HUD's button art. The HUD buttons carry their own baked circles at
 	// assorted sizes, which is exactly why the old guide looked like a set of mismatched icons.
-	const guideSpinBg = ap('/assets/theme-park/v2/controls/spin-bg.webp');
-	const guideSpinArrow = ap('/assets/theme-park/v2/controls/spin-arrow.webp');
 	const uiIcon = (name: string) => ap(`/assets/theme-park/v2/info/ui/${name}`);
 	// Modal chrome: close-X and nav arrows.
 	const iconClose = ap('/assets/theme-park/v2/hud/icon_close.svg');
@@ -34,12 +36,10 @@
 </script>
 
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { stateBet } from 'state-shared';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { templateStakeDerived } from '../state/templateStake.svelte';
 	import { fitFont } from '../lib/fitLabel';
-	import InfoBorderLights from './InfoBorderLights.svelte';
 
 	const t = (key: string) => i18nDerived.translate(key);
 
@@ -47,17 +47,6 @@
 	const props: Props = $props();
 	// Wide (landscape) box on desktop/landscape; the tall portrait card on phones in portrait.
 	const wide = $derived(props.layoutType !== 'portrait');
-
-	// Very short landscape (e.g. 400×225): the frame is small, so its marching dots read as too big.
-	// Track it with matchMedia (a viewport condition, not a box size) so only that case shrinks them.
-	let smallLandscape = $state(false);
-	onMount(() => {
-		const mq = window.matchMedia('(max-height: 300px)');
-		smallLandscape = mq.matches;
-		const onChange = (e: MediaQueryListEvent) => (smallLandscape = e.matches);
-		mq.addEventListener('change', onChange);
-		return () => mq.removeEventListener('change', onChange);
-	});
 
 	// Page count only — each page renders its own translated title, so this list holds no copy.
 	const PAGES = 7;
@@ -79,16 +68,27 @@
 	const ROYALS = ['l4-j-marquee', 'l1-a-marquee', 'l2-k-marquee', 'l5-10-marquee', 'l3-q-marquee'];
 	// `name` is an i18n KEY, not display copy — the each-block keys on it, so it must stay stable
 	// across a locale switch, which a translated string would not.
-	type PayRow = { img?: string; royals?: boolean; wild?: boolean; name: string; pays: string[] };
-	const PAY_ROWS: PayRow[] = [
-		{ royals: true, name: 'INFO SYM ROYALS', pays: ['0.1', '0.5', '1'] },
+	// `payImg` (optional) overrides the symbols/ lookup with a direct paytable-only asset.
+	type PayRow = { img?: string; payImg?: string; royals?: boolean; royal?: boolean; wild?: boolean; name: string; pays: string[] };
+	// The non-royal symbols, shared by both layouts.
+	const PAY_ROWS_TAIL: PayRow[] = [
 		{ img: 'h5-ferris-marquee', name: 'INFO SYM FERRIS', pays: ['0.5', '2.5', '5'] },
 		{ img: 'h4-popcorn-marquee', name: 'INFO SYM POPCORN', pays: ['0.5', '2.5', '5'] },
 		{ img: 'h2-duck-marquee', name: 'INFO SYM DUCK', pays: ['1', '5', '10'] },
-		{ img: 'h3-balloons-marquee', name: 'INFO SYM BALLOONS', pays: ['1', '5', '10'] },
+		{ img: 'h3-balloons-marquee', payImg: payBalloons, name: 'INFO SYM BALLOONS', pays: ['1', '5', '10'] },
 		{ img: 'h1-coaster-still', name: 'INFO SYM COASTER', pays: ['2', '10', '20'] },
 		{ wild: true, name: 'INFO SYM WILD', pays: ['-', '-', '20'] },
 	];
+	// Portrait gives each same-paying royal its OWN row (five tiles are cramped in one narrow cell);
+	// landscape keeps them on a single shared row, as each layout's design draws it.
+	const PAY_ROWS: PayRow[] = $derived([
+		...(wide
+			? [{ royals: true, name: 'INFO SYM ROYALS', pays: ['0.1', '0.5', '1'] } as PayRow]
+			: ROYALS.map(
+					(r): PayRow => ({ img: r, royal: true, name: 'INFO SYM ROYALS', pays: ['0.1', '0.5', '1'] }),
+				)),
+		...PAY_ROWS_TAIL,
+	]);
 
 	// FEATURES and FEATURE BUY share these six. Top row = paid single-spin options; bottom row =
 	// the three bonus features (with logo art). `mult` is the cost as a multiple of the bet.
@@ -101,19 +101,19 @@
 	];
 	const BONUS_BUYS = [
 		{
-			img: 'duck-your-luck-desktop-marquee',
+			logo: featDuck,
 			name: 'BET MODE DUCK TITLE',
 			desc: 'BET MODE DUCK DIALOG',
 			mult: 100,
 		},
 		{
-			img: 'roller-wilds-desktop-still',
+			logo: featRoller,
 			name: 'BET MODE ROLLER TITLE',
 			desc: 'BET MODE ROLLER DIALOG',
 			mult: 200,
 		},
 		{
-			img: 'mega-coaster-desktop-still',
+			logo: featCoaster,
 			name: 'BET MODE COASTER TITLE',
 			desc: 'BET MODE COASTER DIALOG',
 			mult: 500,
@@ -172,59 +172,50 @@
 <svelte:window onkeydown={onKey} />
 
 <div class="info-overlay" class:is-wide={wide} role="presentation" onclick={props.onclose}>
-	<div class="info-card" role="dialog" aria-modal="true" onclick={(e) => e.stopPropagation()}>
-		<!-- Landscape (desktop) frame art; hidden in the portrait card, which keeps its CSS neon border. -->
-		<img class="info-bg" src={tutorialBg} alt="" aria-hidden="true" />
-		<!-- Marching border lights round the frame, like the confirm dialog. -->
-		<InfoBorderLights
-			radius={wide ? 30 : 22}
-			inset={smallLandscape ? 3 : wide ? 6 : 2}
-			pad={smallLandscape ? 12 : wide ? 26 : 16}
-			glow={smallLandscape ? 4.5 : wide ? 10 : 8}
-		/>
+	<div class="info-card" class:info-card--ov={page === 0} role="dialog" aria-modal="true" onclick={(e) => e.stopPropagation()}>
 		<button class="info-x" type="button" aria-label={t('CLOSE')} onclick={props.onclose}>
 			<img src={iconClose} alt="" />
 		</button>
 
-		<div class="info-body">
+		<div class="info-body" class:info-body--ov={page === 0} class:info-body--pay={page === 1}>
 			{#if page === 0}
-				<h2 class="info-title info-title--left" use:fitFont={t('INFO PAGE OVERVIEW')}>{t('INFO PAGE OVERVIEW')}</h2>
+				<h2 class="info-title" use:fitFont={t('INFO PAGE OVERVIEW')}>{t('INFO PAGE OVERVIEW')}</h2>
+				<img class="ov-logo" src={gameLogo} alt="Theme Park" />
 				<div class="ov">
-					<div class="ov-col ov-desc">
+					<div class="ov-intro">
 						<p class="info-p">
 							{t('INFO OV INTRO')}
-							<br />{t('INFO OV WINS')}
+							{t('INFO OV WINS')}
+							{t('INFO OV FEATURES')}
 						</p>
-						<p class="info-p">{t('INFO OV FEATURES')}</p>
-						<p class="ov-max">
+						<p class="ov-stat">
 							<span>{t('INFO OV MAX WIN')}</span>
-							<b>{MAX_WIN}</b>
-							<span>{t('INFO OV BET')}</span>
+							<b class="ov-stat__val">{MAX_WIN} {t('INFO OV BET')}</b>
 						</p>
-						<p class="info-p">{t('INFO OV RTP')} {RTP}</p>
+						<p class="ov-stat">
+							<span>{t('INFO OV RTP')}</span>
+							<b class="ov-stat__pill">{RTP}</b>
+						</p>
 					</div>
-					<div class="ov-col ov-feats">
-						<div class="ov-feat">
-							<h4 class="ov-feat__name">{t('DUCK COLLECT')}</h4>
-							<p class="info-p">{t('INFO OV DUCK DESC')}</p>
+					<div class="ov-cards">
+						<div class="card ov-card">
+							<h4 class="ov-card__name">{t('DUCK COLLECT')}</h4>
+							<p class="ov-card__p">{t('INFO OV DUCK DESC')}</p>
 						</div>
-						<div class="ov-feat">
-							<h4 class="ov-feat__name">{t('ROLLER WILDS')}</h4>
-							<p class="info-p">{t('INFO OV ROLLER DESC')}</p>
+						<div class="card ov-card">
+							<h4 class="ov-card__name">{t('ROLLER WILDS')}</h4>
+							<p class="ov-card__p">{t('INFO OV ROLLER DESC')}</p>
 						</div>
-						<div class="ov-feat">
-							<h4 class="ov-feat__name">{t('MEGA COASTER')}</h4>
-							<p class="info-p">{t('INFO OV COASTER DESC')}</p>
+						<div class="card ov-card">
+							<h4 class="ov-card__name">{t('MEGA COASTER')}</h4>
+							<p class="ov-card__p">{t('INFO OV COASTER DESC')}</p>
 						</div>
-						<div class="ov-feat">
-							<h4 class="ov-feat__name">{t('INFO OV BONUS TITLE')}</h4>
-							<p class="info-p">{t('INFO OV BONUS DESC')}</p>
+						<div class="card ov-card">
+							<h4 class="ov-card__name">{t('INFO OV BONUS TITLE')}</h4>
+							<p class="ov-card__p">{t('INFO OV BONUS DESC')}</p>
 						</div>
 					</div>
-					<div class="ov-col ov-art">
-						<img class="ov-logo" src={gameLogo} alt="Theme Park" />
-						<img class="ov-duck" src={rollerDuck} alt="" />
-					</div>
+					<img class="ov-duck" src={wide ? bottomDuck : bottomDuckMobile} alt="" />
 				</div>
 			{:else if page === 1}
 				<h2 class="info-title" use:fitFont={t('PAYTABLE')}>{t('PAYTABLE')}</h2>
@@ -235,18 +226,26 @@
 						<span>{t('INFO PAY 4')}</span>
 						<span>{t('INFO PAY 5')}</span>
 					</div>
-					{#each PAY_ROWS as row (row.name)}
+					<div class="pay-body">
+						{#each PAY_ROWS as row (row.img ?? row.name)}
 						<div class="pay-row">
 							<div class="pay-sym">
 								{#if row.royals}
-									<!-- The royals all pay the same, so the design gives them one shared row. -->
+									<!-- Landscape: the royals all pay the same, so they share one row. -->
 									{#each ROYALS as r (r)}
 										<img class="pay-img pay-img--royal" src={symImg(r)} alt={r} />
 									{/each}
 								{:else if row.wild}
 									<img class="pay-img" src={wildImg} alt={t(row.name)} />
 								{:else if row.img}
-									<img class="pay-img" src={symImg(row.img)} alt={t(row.name)} />
+									<!-- A single symbol per row (incl. each portrait royal). `payImg` overrides with a
+									     paytable-only asset (e.g. the redrawn balloons). -->
+									<img
+										class="pay-img"
+										class:pay-img--single-royal={row.royal}
+										src={row.payImg ?? symImg(row.img)}
+										alt=""
+									/>
 								{/if}
 							</div>
 							{#each row.pays as v, i (i)}
@@ -254,6 +253,7 @@
 							{/each}
 						</div>
 					{/each}
+					</div>
 				</div>
 			{:else if page === 2}
 				<h2 class="info-title" use:fitFont={t('INFO PAGE FEATURES')}>{t('INFO PAGE FEATURES')}</h2>
@@ -268,7 +268,7 @@
 						<div class="card feat-card feat-card--logo">
 							<h3 class="feat-h">{t(f.name)}</h3>
 							<p class="feat-p">{t(f.desc)}</p>
-							<img class="feat-logo" src={modeImg(f.img)} alt="" />
+							<img class="feat-logo" src={f.logo} alt="" />
 						</div>
 					{/each}
 				</div>
@@ -311,7 +311,7 @@
 						<div class="card feat-card feat-card--logo">
 							<h3 class="feat-h">{t(f.name)}</h3>
 							<p class="feat-p">{t(f.desc)}</p>
-							<img class="feat-logo feat-logo--sm" src={modeImg(f.img)} alt="" />
+							<img class="feat-logo feat-logo--sm" src={f.logo} alt="" />
 							<div class="buy-foot">
 								<span class="buy-cost">{cost(f.mult)}</span>
 								<span class="buy-rtp"><i>{t('RTP')}</i><b>{RTP_SHORT}</b></span>
@@ -342,12 +342,9 @@
 					{#each GUIDE as g (g.name)}
 						<div class="guide-item">
 							{#if g.spin}
-								<!-- Not a glyph in a circle: the design shows the actual button, which is the ring
-								     art with its arrow on top. -->
-								<span class="guide-spin">
-									<img class="guide-spin__bg" src={guideSpinBg} alt="" />
-									<img class="guide-spin__arrow" src={guideSpinArrow} alt="" />
-								</span>
+								<!-- Redesigned spin icon (a complete icon button), sized to match the other guide
+								     circles. -->
+								<img class="guide-spin" src={uiIcon('ui-spin.png')} alt="" />
 							{:else}
 								<span class="guide-ic" class:guide-ic--auto={g.auto}>
 									<img
@@ -359,8 +356,10 @@
 									{#if g.auto}<span class="guide-ic__auto">{t('AUTO')}</span>{/if}
 								</span>
 							{/if}
-							<span class="guide-name" use:fitFont={t(g.name)}>{t(g.name)}</span>
-							<span class="guide-desc">{t(g.desc)}</span>
+							<span class="guide-text">
+								<span class="guide-name" use:fitFont={t(g.name)}>{t(g.name)}</span>
+								<span class="guide-desc">{t(g.desc)}</span>
+							</span>
 						</div>
 					{/each}
 				</div>
@@ -414,17 +413,10 @@
 		display: flex;
 		flex-direction: column;
 		border-radius: 22px;
-		border: 2px solid transparent;
-		background-origin: border-box;
-		background-clip: padding-box, border-box;
-		background-image:
-			linear-gradient(180deg, rgba(24, 10, 46, 0.98), rgba(9, 5, 24, 0.99)),
-			linear-gradient(140deg, #3aa0ff 0%, #8b3cff 48%, #ff4fd8 100%);
-		box-shadow:
-			0 0 26px rgba(130, 70, 255, 0.4),
-			0 20px 50px rgba(0, 0, 0, 0.6);
-		/* Visible so the marching border lights can bleed past the edge (the body clips its own
-		   scroll independently). */
+		/* Flat muted-purple frame per the design — no neon gradient / marching lights. */
+		border: 1px solid #5e4374;
+		background: #1d023a;
+		box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
 		overflow: visible;
 	}
 
@@ -456,11 +448,36 @@
 		position: relative;
 		z-index: 1;
 	}
+	/* Overview (portrait): flex-column so .ov fills the body and the duck drops to the bottom. The nav
+	   floats (below) so the body reaches the modal's bottom edge and the duck can sit all the way down;
+	   overflow:hidden crops the duck's bottom/left bleed without a scrollbar (overview copy always fits).
+	   (Wide overrides these in the .is-wide block.) */
+	.info-body--ov {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		padding-bottom: 0;
+	}
+	.info-card--ov .info-nav {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 4px;
+		z-index: 4;
+	}
+	/* Paytable (portrait): fill the body so the table spans the modal like it does on desktop,
+	   instead of sitting compact at the top with dead space below. */
+	.info-body--pay {
+		display: flex;
+		flex-direction: column;
+	}
 
-	/* The design sets every page title, card heading and guide label in this one magenta→blue ramp
-	   (Figma reports it as 171.32deg), so it lives in a single custom property. */
+	/* Card headings and guide labels use this magenta→blue ramp (Figma 171.32deg). The new design
+	   sets the PAGE TITLES in the game's brand gold instead (the same gold-ramp the splash titles
+	   use), so that lives in its own property and only .info-title reads it. */
 	.info-body {
 		--brand-ramp: linear-gradient(171deg, #d836fc 0%, #272fdd 100%);
+		--gold-ramp: linear-gradient(181.3deg, #f1eea5 7.45%, #e79a17 28.07%, #d7880c 63.58%, #a16202 93.75%);
 	}
 
 	.info-title {
@@ -469,12 +486,12 @@
 		font-weight: 400;
 		/* Portrait: shrink long/translated titles with the viewport so "GEWINNTABELLE" et al. never grow
 		   into the close button, and reserve its top-right corner so the centred title clears it. */
-		font-size: min(1.9rem, 6.5cqw);
+		font-size: min(2.3rem, 8cqw);
 		line-height: 1;
 		letter-spacing: 0.03em;
 		text-align: center;
 		padding: 0 44px;
-		background-image: var(--brand-ramp);
+		background-image: var(--gold-ramp);
 		background-clip: text;
 		-webkit-background-clip: text;
 		color: transparent;
@@ -516,99 +533,193 @@
 	   rather than as the one accent the frame is meant to be. */
 	.card {
 		position: relative;
-		border-radius: 18px;
-		border: 2px solid transparent;
-		background-origin: border-box;
-		background-clip: padding-box, border-box;
-		background-image:
-			linear-gradient(160deg, rgba(30, 8, 66, 0.95), rgba(11, 3, 30, 0.98)),
-			linear-gradient(140deg, #2f7bff 0%, #8b3cff 46%, #ff4fd8 100%);
-		box-shadow:
-			0 0 16px rgba(120, 60, 255, 0.3),
-			inset 0 0 26px rgba(80, 30, 170, 0.25);
+		border-radius: 14px;
+		/* Flat card per the design: muted-purple hairline border over a slightly-lighter fill. */
+		border: 1px solid #5e4374;
+		background: #230741;
 	}
 
-	/* OVERVIEW: stacked in portrait, side-by-side in landscape. */
+	/* OVERVIEW — portrait: a centred intro (copy + max-win/RTP) with the duck art beneath it, matching
+	   the design's mobile page. The four feature cards are a desktop-only bottom row (see .is-wide). */
 	.ov {
-		display: block;
-	}
-	.ov-art {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 10px;
-		margin-top: 14px;
+		/* Fill the body (portrait) so the duck can drop to the bottom-left corner. */
+		flex: 1 1 auto;
+		min-height: 0;
 	}
-	.ov-logo {
-		width: 56%;
-		max-width: 200px;
-		height: auto;
+	.ov-intro {
+		width: 100%;
 	}
-	.ov-duck {
-		width: 82%;
-		max-width: 270px;
-		height: auto;
-		filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.55));
+	/* More breathing room between the intro copy and the Max-Win / RTP rows (mobile). */
+	.ov-intro .info-p {
+		margin-bottom: 24px;
 	}
-	.ov-feat__name {
-		margin: 14px 0 4px;
-		font-family: 'Nunito Sans', sans-serif;
-		font-weight: 700;
-		font-size: 0.92rem;
-		letter-spacing: 0.04em;
-		text-align: center;
-		color: #fff;
-	}
-	/* "Maximum Win: 25,000× bet" — the number is the headline, the words around it are not. */
-	.ov-max {
-		margin: 0 0 10px;
+	/* "Maximum Win: 25,000× bet" / "Theoretical RTP: 96.10%" — label white, value highlighted (gold
+	   for the win, a magenta pill for the RTP), as the design draws them. */
+	.ov-stat {
+		margin: 0 0 6px;
 		display: flex;
-		align-items: baseline;
+		align-items: center;
 		flex-wrap: wrap;
 		gap: 0 8px;
 		justify-content: center;
-		font-size: 0.86rem;
+		font-family: 'Nunito Sans', sans-serif;
+		font-weight: 600;
+		font-size: 0.9rem;
 		color: #fff;
 	}
-	.ov-max b {
+	.ov-stat__val {
 		font-family: 'Lilita One', sans-serif;
 		font-weight: 400;
-		font-size: 2rem;
-		line-height: 1;
+		font-size: 1.05rem;
 		letter-spacing: 0.01em;
+		background-image: var(--gold-ramp);
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+	}
+	.ov-stat__pill {
+		font-weight: 800;
 		color: #fff;
+		padding: 6px 20px;
+		border-radius: 8px;
+		background: #341451;
+	}
+	/* Feature cards: hidden in portrait (design shows them on desktop only); a 4-across row on wide. */
+	.ov-cards {
+		display: none;
+	}
+	.ov-card {
+		padding: 10px 12px 12px;
+		text-align: center;
+	}
+	.ov-card__name {
+		margin: 0 0 5px;
+		font-family: 'Lilita One', sans-serif;
+		font-weight: 400;
+		font-size: 0.94rem;
+		letter-spacing: 0.03em;
+		color: #fff;
+	}
+	.ov-card__p {
+		margin: 0;
+		font-family: 'Nunito Sans', sans-serif;
+		font-weight: 500;
+		font-size: 0.76rem;
+		line-height: 1.4;
+		color: #d9cff2;
+	}
+	.ov-logo {
+		display: none;
+	}
+	.ov-duck {
+		/* Portrait "climbing" framing (the dedicated mobile asset — already oriented, no mirror),
+		   dropped into the bottom-left corner; the body clips its left bleed. */
+		align-self: flex-start;
+		margin-top: auto;
+		margin-left: -16px;
+		width: 62%;
+		max-width: 240px;
+		height: auto;
+		filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.55));
 	}
 
 	/* --- Paytable: a real table, one row per symbol --- */
 	.pay {
 		display: flex;
 		flex-direction: column;
+		/* Fill the body when it is a flex column (portrait --pay / desktop), so the rows share the
+		   height and the table spans the modal. */
+		flex: 1 1 auto;
+		min-height: 0;
+	}
+	/* The framed table BODY — the outer border wraps only the rows, ending before (and leaving a gap
+	   for) the detached header pill above it. */
+	.pay-body {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
+		border: 1px solid #5e4374;
+		border-radius: 12px;
+		overflow: hidden;
 	}
 	.pay-head,
 	.pay-row {
 		display: grid;
-		/* The symbol cell is widest because the royals row lines five tiles up inside it. */
-		grid-template-columns: 2.1fr 1fr 1fr 1fr;
+		/* The symbol cell is widest because the royals row lines five tiles up inside it — but not so
+		   wide that the value columns squeeze "3 In a Line" onto two lines on a narrow phone. */
+		grid-template-columns: 1.7fr 1fr 1fr 1fr;
+		/* Stretch (not centre) + no gap so the column separator borders run the full cell height and
+		   sit cleanly on the column edges. */
+		align-items: stretch;
+		gap: 0;
+		padding: 0 12px;
+	}
+	/* Centre every value cell (header + body). */
+	.pay-val,
+	.pay-head > span:not(.pay-head__sym) {
+		display: flex;
 		align-items: center;
-		gap: 4px;
+		justify-content: center;
+	}
+	/* Vertical padding lives on the header cells (not the .pay-head) so the column gap borders run the
+	   FULL height of the pill. */
+	.pay-head > span {
+		padding-top: 9px;
+		padding-bottom: 9px;
+	}
+	/* Real full-height gaps between the header columns — a wide dark slit (the modal bg) that splits the
+	   #341451 pill top-to-bottom, on the same column edges as the body's vertical lines. Drawn as an
+	   over-extended pseudo-element clipped by the pill (`overflow:hidden`) so it always spans 100%. */
+	.pay-head > span:not(.pay-head__sym) {
+		position: relative;
+	}
+	.pay-head > span:not(.pay-head__sym)::before {
+		content: '';
+		position: absolute;
+		left: -2px;
+		top: -40px;
+		bottom: -40px;
+		width: 4px;
+		background: #1d023a;
+	}
+	/* Solid vertical column separators — body only; the header is a detached bar above. */
+	.pay-val {
+		border-left: 1px solid #5e4374;
 	}
 	.pay-head {
-		padding-bottom: 8px;
 		font-family: 'Nunito Sans', sans-serif;
 		font-weight: 700;
-		font-size: 0.72rem;
-		letter-spacing: 0.02em;
+		/* Scale with the viewport so "3 In a Line" stays on ONE line down to the tightest phones. */
+		font-size: clamp(0.56rem, 2.6cqw, 0.68rem);
+		letter-spacing: 0.01em;
 		text-align: center;
-		color: #d836fc;
+		color: #fff;
+		background: #341451;
+		/* Detached header bar — a rounded pill with a gap before the body, not fused to the first row. */
+		border-radius: 8px;
+		margin-bottom: 6px;
+		/* Clip the over-extended column-gap pseudo-elements to the pill so they read as full-height. */
+		overflow: hidden;
 	}
 	.pay-head__sym {
-		text-align: left;
-		padding-left: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 	.pay-row {
-		/* The design separates rows with a hairline rule rather than boxing each symbol in a card. */
-		border-top: 1px solid rgba(190, 160, 255, 0.22);
-		min-height: 44px;
+		/* Smaller floor so all 11 portrait rows (5 split royals + 6) fit even on a 360px phone. */
+		min-height: 36px;
+		/* Share the leftover height so the table fills the box (portrait --pay body / desktop). */
+		flex: 1 1 0;
+	}
+	/* Solid rules BETWEEN body rows (not above the first — the detached header already sits apart). */
+	.pay-row + .pay-row {
+		border-top: 1px solid #5e4374;
 	}
 	.pay-sym {
 		display: flex;
@@ -617,8 +728,8 @@
 		min-width: 0;
 	}
 	.pay-img {
-		width: 40px;
-		height: 40px;
+		width: 34px;
+		height: 34px;
 		object-fit: contain;
 		flex: 0 0 auto;
 	}
@@ -657,10 +768,8 @@
 		font-size: 1.02rem;
 		letter-spacing: 0.02em;
 		text-align: center;
-		background-image: var(--brand-ramp);
-		background-clip: text;
-		-webkit-background-clip: text;
-		color: transparent;
+		/* White card titles (design update). */
+		color: #fff;
 	}
 	.feat-p {
 		margin: 0;
@@ -692,31 +801,35 @@
 		align-items: center;
 		gap: 2px;
 	}
+	/* Price sits in a filled pill (design update): #341451 box, white text. */
 	.buy-cost {
 		font-family: 'Nunito Sans', sans-serif;
 		font-weight: 800;
-		font-size: 1rem;
+		font-size: 0.95rem;
 		color: #fff;
+		background: #341451;
+		padding: 4px 14px;
+		border-radius: 8px;
 	}
+	/* RTP label + percent on ONE white row, beneath the price box. */
 	.buy-rtp {
 		display: flex;
-		flex-direction: column;
-		align-items: center;
+		flex-direction: row;
+		align-items: baseline;
+		gap: 5px;
 		line-height: 1.2;
+		margin-top: 6px;
 	}
 	.buy-rtp i {
 		font-style: normal;
-		font-size: 0.7rem;
+		font-size: 0.75rem;
 		font-weight: 700;
-		letter-spacing: 0.06em;
-		background-image: var(--brand-ramp);
-		background-clip: text;
-		-webkit-background-clip: text;
-		color: transparent;
+		letter-spacing: 0.04em;
+		color: #fff;
 	}
 	.buy-rtp b {
 		font-size: 0.8rem;
-		font-weight: 600;
+		font-weight: 700;
 		color: #fff;
 	}
 
@@ -759,29 +872,47 @@
 		/* The title carries the design's forced line break as \n in the catalogue, so a locale whose
 		   wording splits differently can move it instead of inheriting an English <br />. */
 		white-space: pre-line;
-		background-image: var(--brand-ramp);
-		background-clip: text;
-		-webkit-background-clip: text;
-		color: transparent;
+		/* White card titles (design update). */
+		color: #fff;
 	}
 
 	/* --- UI guide --- */
+	/* Portrait (the new design): a single-column LIST — each control is one full-width row, its icon
+	   on the left and name-over-description on the right. Full width per row means long translated
+	   names/descriptions (fi "AUTOMAATTIKIERROKSET") always have room, so nothing overflows or has to
+	   be squeezed into a narrow third. The desktop/.is-wide layout below overrides this back to the
+	   5-across grid the design draws for the wide box. */
 	.guide {
-		display: grid;
-		/* minmax(0,1fr) — NOT plain 1fr — so a long unbreakable translated name (fi
-		   "AUTOMAATTIKIERROKSET") can't inflate the track's min-content and shove the 3rd
-		   column off-screen / overflow the body sideways. The track stays a fixed third; the
-		   name is fitted to it below. */
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 16px 8px;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
 	}
 	.guide-item {
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
 		align-items: center;
-		text-align: center;
-		gap: 6px;
+		text-align: left;
+		gap: 12px;
 		min-width: 0;
+		/* Boxed rows (design update): muted-purple border over a slightly-lighter fill. */
+		border: 1px solid #5e4374;
+		border-radius: 12px;
+		background: #230741;
+		padding: 8px 12px;
+	}
+	/* Name over description — the right-hand block of a list row (portrait) or the stack under the
+	   icon (wide). */
+	.guide-text {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 2px;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.guide-ic,
+	.guide-spin {
+		flex: 0 0 auto;
 	}
 	/* One circle for every control, exactly as the design draws it: a hairline magenta ring over a
 	   disc that fades from deep purple at the bottom to black at the top. */
@@ -813,29 +944,11 @@
 		letter-spacing: -0.2px;
 		color: #fff;
 	}
-	/* SPIN is the real button, so it is the ring art with the arrow centred on it — the same two
-	   layers the HUD stacks. */
+	/* Redesigned spin icon — a complete icon button, sized to match the .guide-ic circles. */
 	.guide-spin {
-		position: relative;
-		width: 56px;
-		height: 56px;
-		display: block;
-	}
-	.guide-spin__bg,
-	.guide-spin__arrow {
-		position: absolute;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
+		width: 48px;
+		height: 48px;
 		object-fit: contain;
-	}
-	.guide-spin__bg {
-		width: 100%;
-		height: 100%;
-	}
-	.guide-spin__arrow {
-		width: 39%;
-		height: 39%;
 	}
 	.guide-name {
 		font-family: 'Lilita One', sans-serif;
@@ -847,10 +960,8 @@
 		display: block;
 		width: 100%;
 		max-width: 100%;
-		background-image: var(--brand-ramp);
-		background-clip: text;
-		-webkit-background-clip: text;
-		color: transparent;
+		/* White guide labels (design update). */
+		color: #fff;
 	}
 	.guide-desc {
 		font-family: 'Nunito Sans', sans-serif;
@@ -913,31 +1024,22 @@
 	/* ─── LANDSCAPE (desktop / mobile-landscape) ─────────────────────────────────────────────────
 	   Keyed off the game's own layoutType (via .is-wide) rather than a media/container query, because
 	   the modal lives in the game's portrait logical space so aspect queries can't see the real
-	   orientation. The popup becomes the wide neon box (tutorial-bg.webp) and pages reflow wider.
+	   orientation. The popup becomes the wide flat box and pages reflow wider.
 
 	   Sizes below are in cqh so every page scales with the box rather than with the root font — the
 	   design is a fixed 1200x670 frame, and cqh is what maps its pixel sizes onto any screen. */
 	.info-overlay.is-wide {
 		.info-card {
-			/* Almost the whole screen: the largest 1484:750 (tightly-cropped frame-art) box that fits. */
+			/* Almost the whole screen: the largest 1484:750 box that fits. */
 			width: min(97cqw, calc(95cqh * 1.979), 1620px);
 			height: auto;
 			aspect-ratio: 1484 / 750;
-			border: none;
-			background: none;
+			/* Flat muted-purple frame (same as portrait) — the neon frame image is gone. */
+			border: 1px solid #5e4374;
+			background: #1d023a;
 			box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
 			border-radius: 26px;
 			overflow: visible; /* let the close-X sit outside the box */
-		}
-		.info-bg {
-			display: block;
-			position: absolute;
-			inset: 0;
-			width: 100%;
-			height: 100%;
-			object-fit: fill;
-			z-index: 0;
-			pointer-events: none;
 		}
 		.info-body {
 			position: relative;
@@ -962,62 +1064,106 @@
 			margin-bottom: 1.6cqh;
 		}
 
-		/* OVERVIEW → three columns: description | features | logo + duck. */
+		/* OVERVIEW → centred intro up top, a four-card feature row pinned to the bottom, the duck art in
+		   the bottom-left corner and the game logo top-right (both absolute, over the empty mid-band). */
 		.ov {
-			display: flex;
-			gap: 4%;
-			align-items: stretch;
-			flex: 1 1 auto;
-			min-height: 0;
-		}
-		.ov-col {
-			min-width: 0;
-		}
-		.ov-desc {
-			flex: 1 1 34%;
-		}
-		.ov-feats {
-			flex: 1 1 34%;
-			display: flex;
-			flex-direction: column;
-			justify-content: flex-start;
-			gap: 2.4cqh;
-		}
-		.ov .info-p {
-			text-align: left;
-		}
-		.ov-max {
-			justify-content: flex-start;
-			font-size: 1.9cqh;
-			margin-bottom: 1.6cqh;
-		}
-		.ov-max b {
-			font-size: 5.4cqh;
-		}
-		.ov-feat__name {
-			margin: 0 0 0.4cqh;
-			font-size: 1.95cqh;
-			text-align: left;
-		}
-		.ov-feat .info-p {
-			margin-bottom: 0;
-		}
-		.ov-art {
-			flex: 0 0 26%;
+			position: relative;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
+			flex: 1 1 auto;
+			min-height: 0;
+		}
+		.ov-intro {
+			/* Copy sits up near the title; the duck art fills the band beneath it, so the page reads full
+			   without the copy overlapping the car. */
+			flex: 0 0 auto;
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start;
+			width: 82%;
+			text-align: center;
+			margin-top: 1cqh;
+		}
+		.ov .info-p {
+			text-align: center;
+			font-size: 2.05cqh;
+			margin-bottom: 2cqh;
+		}
+		.ov-stat {
 			justify-content: center;
-			gap: 3cqh;
-			margin-top: 0;
+			font-size: 2.3cqh;
+			margin-bottom: 0.8cqh;
+		}
+		.ov-stat__val {
+			font-size: 3.3cqh;
+		}
+		.ov-stat__pill {
+			font-size: 2.1cqh;
+			padding: 0.4cqh 1.8cqh;
+		}
+		.ov-cards {
+			display: grid;
+			/* minmax(0,1fr) so a long card description can't inflate a track and overflow the row. */
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: 1.6%;
+			width: 100%;
+			box-sizing: border-box;
+			flex: 0 0 auto;
+			margin-top: auto;
+			position: relative;
+			z-index: 2;
+			/* Lift off the bottom edge so the coaster track shows in a band beneath the cards. */
+			margin-bottom: 4.5cqh;
+			/* Clear the duck's car, which pokes up in the bottom-left over the track. */
+			padding-left: 13%;
+		}
+		.ov-card {
+			padding: 16px 16px 18px;
+			min-width: 0;
+			/* Taller boxes per the design — content centred in the added height. */
+			min-height: 155px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+		}
+		.ov-card__name {
+			/* Design spec: Lilita One 400, 18px, line-height 100%, letter-spacing 3%, centred. */
+			font-size: 18px;
+			line-height: 1;
+			letter-spacing: 0.03em;
+			margin-bottom: 10px;
+		}
+		.ov-card__p {
+			/* Design spec: Nunito 400, 12px, line-height 100%, letter-spacing 3%, centred. */
+			font-size: 12px;
+			line-height: 1;
+			letter-spacing: 0.03em;
 		}
 		.ov-logo {
-			width: 92%;
-			max-width: 300px;
+			display: block;
+			position: absolute;
+			/* Inset from the frame so the logo doesn't collide with the border / close-X. */
+			top: 3%;
+			right: 3.5%;
+			width: 17%;
+			max-width: 270px;
+			height: auto;
 		}
+		/* Wide duck-on-coaster tucked into the bottom-LEFT corner, mirrored (car faces into the page). */
 		.ov-duck {
-			width: 100%;
-			max-width: 340px;
+			position: absolute;
+			/* Pushed into the very bottom-left corner so the body's overflow:hidden crops its
+			   bottom-left a little; the car (right of the mirrored art) reaches up to slightly overlap
+			   the first card. */
+			left: -10%;
+			bottom: -42%;
+			width: 32%;
+			max-width: 450px;
+			height: auto;
+			margin-top: 0;
+			transform: scaleX(-1);
+			z-index: 3;
 		}
 
 		/* PAYTABLE → the table fills the box; rows share the height that is left. */
@@ -1026,7 +1172,7 @@
 			min-height: 0;
 		}
 		.pay-head {
-			padding: 0 2% 1.4cqh;
+			padding: 1.3cqh 2%;
 			font-size: 2cqh;
 		}
 		.pay-row {
@@ -1145,8 +1291,10 @@
 			margin-bottom: 2cqh;
 		}
 
-		/* UI GUIDE → five across, as the design lays it out. */
+		/* UI GUIDE → five across, as the design lays it out. Wide reverts the portrait list back to a
+		   grid of vertical cells (icon on top, name+desc centred below). */
 		.guide {
+			display: grid;
 			flex: 1 1 auto;
 			min-height: 0;
 			grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1158,13 +1306,23 @@
 			   stays centred via the glyph's flex-centre + text-align. */
 			justify-items: stretch;
 		}
+		.guide-item {
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+			gap: 0.9cqh;
+		}
+		.guide-text {
+			align-items: center;
+			width: 100%;
+		}
 		.guide-ic {
 			width: 7.2cqh;
 			height: 7.2cqh;
 		}
 		.guide-spin {
-			width: 8.4cqh;
-			height: 8.4cqh;
+			width: 7.2cqh;
+			height: 7.2cqh;
 		}
 		.guide-ic__auto {
 			font-size: 1.2cqh;
