@@ -1,0 +1,18 @@
+export default {
+	HOME: 'HOME',
+	'CARD CHANCE TITLE': 'Extra Chance',
+	'CARD CHANCE DESC': 'Increase the chance of reaching the bonus.',
+	'CARD FEATURE TITLE': 'Lock Feature Spin',
+	'CARD FEATURE DESC': 'Guarantees a paying spin and starts Lock & Re-Spin.',
+	'CARD DEALIT DESC': 'Enter the Normal Bonus with three scatters.',
+	'CARD ALLIN DESC': 'Enter the Super Bonus with four scatters.',
+	'CONFIRM TEXT': 'Buy %mode% for %cost%?',
+	'NORMAL BONUS': 'Normal Bonus',
+	'SUPER BONUS': 'Super Bonus',
+	'AUTO SPIN': 'AUTO SPIN',
+	'TURBO SPIN': 'TURBO SPIN',
+	'SUPER TURBO SPIN': 'SUPER TURBO SPIN',
+	'LOCK FEATURE SPIN': '20X LOCK FEATURE',
+	'NUMBER OF SPINS': 'NUMBER OF SPINS',
+	'START AUTOPLAY': 'START AUTOPLAY',
+};

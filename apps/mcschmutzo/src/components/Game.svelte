@@ -1,0 +1,259 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+
+	import { EnablePixiExtension } from 'components-pixi';
+	import { EnableHotkey } from 'components-shared';
+	import { MainContainer } from 'components-layout';
+	import { App } from 'pixi-svelte';
+	import { stateBet, stateMeta, stateModal } from 'state-shared';
+
+	import { GameVersion, Modals } from 'components-ui-html';
+
+	import { getContext } from '../game/context';
+	import EnableSound from './EnableSound.svelte';
+	import EnableGameActor from './EnableGameActor.svelte';
+	import ResumeBet from './ResumeBet.svelte';
+	import Sound from './Sound.svelte';
+	import Background from './Background.svelte';
+	import LoadingScreen from './LoadingScreen.svelte';
+	import BoardFrame from './BoardFrame.svelte';
+	import Board from './Board.svelte';
+	import Anticipations from './Anticipations.svelte';
+	import Win from './Win.svelte';
+	import FreeSpinIntro from './FreeSpinIntro.svelte';
+	import FreeSpinCounter from './FreeSpinCounter.svelte';
+	import FreeSpinOutro from './FreeSpinOutro.svelte';
+	import Transition from './Transition.svelte';
+	import FeatureOverlay from './FeatureOverlay.svelte';
+	import PaylineOverlay from './PaylineOverlay.svelte';
+	import HudHtml from './HudHtml.svelte';
+	import { warmArt } from '../lib/preloadArt';
+
+	const context = getContext();
+	const modeImage = './assets/mcschmutzo/background-base.png';
+	const symbolImage = (name: string) => `./assets/mcschmutzo/symbols/${name}.png`;
+
+	const modeMeta = (
+		mode: string,
+		costMultiplier: number,
+		type: 'default' | 'activate' | 'buy',
+		title: string,
+	) => ({
+		mode,
+		costMultiplier,
+		type,
+		parent: '',
+		children: '',
+		assets: {
+			icon: '',
+			volatility: '',
+			button: '',
+			dialogImage: modeImage,
+			dialogVolatility: modeImage,
+		},
+		text: {
+			title,
+			dialog: title,
+			description: title,
+			button: type === 'buy' ? 'BUY' : type === 'activate' ? 'ACTIVATE' : 'PLAY',
+			tickerIdle: title,
+			tickerSpin: title,
+		},
+		maxWin: 25000,
+	});
+
+	$effect(() => {
+		stateMeta.betModeMeta = {
+			BASE: modeMeta('base', 1, 'default', 'BASE GAME'),
+			ENHANCER1: modeMeta('enhancer1', 2, 'activate', 'EXTRA CHANCE'),
+			FEATURESPIN: modeMeta('featureSpin', 20, 'activate', 'LOCK FEATURE SPIN'),
+			BONUS1: modeMeta('bonus1', 100, 'buy', 'NORMAL BONUS'),
+			BONUS2: modeMeta('bonus2', 500, 'buy', 'SUPER BONUS'),
+		};
+		stateMeta.gameRuleMeta = {
+			gameRules: [
+				{
+					title: 'HOW TO PLAY',
+					rows: 4,
+					columns: 1,
+					containers: [
+						{
+							title: 'BASE GAME',
+							text: 'Wins pay left to right on 50 fixed paylines. The same paytable applies in every mode. Maximum win is 25,000x.',
+							image: modeImage,
+							row: 0,
+							column: 0,
+							imagePosition: 'left',
+						},
+						{
+							title: 'LOCK & RE-SPIN',
+							text: 'Every spin with at least one paying line locks its winning symbol and starts the re-spin feature. New matching wins add locked positions.',
+							image: './assets/mcschmutzo/lock-respin.png',
+							row: 1,
+							column: 0,
+							imagePosition: 'left',
+						},
+						{
+							title: 'NORMAL BONUS',
+							text: 'Three Scatter symbols trigger the Normal Bonus. It can also be bought for 100x bet.',
+							image: symbolImage('S'),
+							row: 2,
+							column: 0,
+							imagePosition: 'left',
+						},
+						{
+							title: 'SUPER BONUS',
+							text: 'Four Scatter symbols trigger the Super Bonus. No spin can land more than four Scatters. It can also be bought for 500x bet.',
+							image: './assets/mcschmutzo/bonus-wheel.png',
+							row: 3,
+							column: 0,
+							imagePosition: 'left',
+						},
+					],
+				},
+			],
+			payTable: [
+				{
+					title: 'PAYTABLE',
+					rows: 6,
+					columns: 2,
+					containers: [
+						...[
+							['H1', '5: 5x · 4: 2x · 3: 0.5x'],
+							['H2', '5: 2.5x · 4: 1x · 3: 0.3x'],
+							['H3', '5: 2.5x · 4: 1x · 3: 0.3x'],
+							['H4', '5: 2x · 4: 0.8x · 3: 0.2x'],
+							['H5', '5: 2x · 4: 0.8x · 3: 0.2x'],
+							['L1', '5: 1x · 4: 0.4x · 3: 0.1x'],
+							['L2', '5: 1x · 4: 0.4x · 3: 0.1x'],
+							['L3', '5: 1x · 4: 0.4x · 3: 0.1x'],
+							['L4', '5: 1x · 4: 0.4x · 3: 0.1x'],
+							['L5', '5: 1x · 4: 0.4x · 3: 0.1x'],
+							['W', 'Wild substitutes for regular paying symbols.'],
+							['S', 'Three Scatters trigger Normal Bonus; four trigger Super Bonus.'],
+						].map(([name, text], index) => ({
+							title: name,
+							text,
+							image: symbolImage(name),
+							row: Math.floor(index / 2),
+							column: index % 2,
+							imagePosition: 'left' as const,
+						})),
+					],
+				},
+			],
+			splashScreen: [],
+			infoPages: [],
+			infoAssets: {
+				navArrowLeft: '',
+				navArrowRight: '',
+				navButton: '',
+				statCard: '',
+				featureCard: '',
+				specialFrame: '',
+			},
+		};
+	});
+
+	$effect(() => {
+		if (stateBet.activeBetModeKey === 'BASE') stateBet.activeBetModeKey = 'base';
+	});
+
+	onMount(() => {
+		context.stateLayout.showLoadingScreen = true;
+		warmArt();
+	});
+
+	context.eventEmitter.subscribeOnMount({
+		buyBonusConfirm: () => {
+			stateModal.modal = { name: 'buyBonusConfirm' };
+		},
+	});
+</script>
+
+<div
+	class="mcschmutzo-shell"
+	data-layout={context.stateLayoutDerived.layoutType()}
+	style={`--mcschmutzo-shell-bg:url('${modeImage}')`}
+>
+	<div class="mcschmutzo-stage">
+		<App preloadWebFont={false} maxResolution={2} antialias={false} rendererPreference="webgl">
+			<EnableSound />
+			<EnableHotkey />
+			<EnableGameActor />
+			<EnablePixiExtension />
+
+			<Background />
+
+			{#if context.stateLayout.showLoadingScreen}
+				<LoadingScreen onloaded={() => (context.stateLayout.showLoadingScreen = false)} />
+			{:else}
+				<ResumeBet />
+				<Sound />
+
+				<MainContainer>
+					<BoardFrame />
+				</MainContainer>
+
+				<MainContainer>
+					<Board />
+					<Anticipations />
+					<FeatureOverlay />
+					{#if context.stateGame.paylineWins.length > 0}
+						<PaylineOverlay wins={context.stateGame.paylineWins} />
+					{/if}
+				</MainContainer>
+
+				<Win />
+				<FreeSpinIntro />
+				{#if ['desktop', 'landscape'].includes(context.stateLayoutDerived.layoutType())}
+					<FreeSpinCounter />
+				{/if}
+				<FreeSpinOutro />
+				<Transition />
+			{/if}
+		</App>
+
+		{#if !context.stateLayout.showLoadingScreen}
+			<HudHtml />
+		{/if}
+	</div>
+</div>
+
+<Modals>
+	{#snippet version()}
+		<GameVersion version="0.1.0" />
+	{/snippet}
+</Modals>
+
+<style>
+	.mcschmutzo-shell {
+		position: relative;
+		width: 100%;
+		height: 100dvh;
+		overflow: hidden;
+		background: #190a04;
+	}
+
+	.mcschmutzo-shell::before {
+		content: '';
+		position: absolute;
+		inset: -6%;
+		background: var(--mcschmutzo-shell-bg) center / cover no-repeat;
+		filter: blur(18px) brightness(0.38) saturate(0.9);
+		transform: scale(1.12);
+		opacity: 0.95;
+	}
+
+	.mcschmutzo-stage {
+		position: relative;
+		z-index: 1;
+		width: 100%;
+		height: 100%;
+	}
+
+	:global(html),
+	:global(body) {
+		overflow: hidden;
+	}
+</style>
