@@ -26,11 +26,10 @@
 		SYMBOL_H,
 		BOARD_DIMENSIONS,
 		BOARD_GRID_OFFSET_Y,
-		BOARD_SIDE_CONTENT_INSET,
 		COASTER_SETUP_SCRIM,
-		COASTER_WILD_GRID_INSET,
 		getBoardCellCenterX,
 	} from '../game/constants';
+	import { getCoasterWildRect, toCoasterCellKeys } from '../game/coasterWildCells';
 	import CoasterWildTile from './CoasterWildTile.svelte';
 	import LoopingSpineSprite from './LoopingSpineSprite.svelte';
 
@@ -101,9 +100,14 @@
 	const SETUP_SPEED_BOOST = 1.69;
 	// Keep duck playback readable, but ease cart travel by 15% versus the previous route speed.
 	const SEQUENCE_SPEED = 0.9 * SETUP_SPEED_BOOST * 0.85;
-	const DUCK_PLAYBACK_SPEED = 4.5 * SETUP_SPEED_BOOST;
+	// The 128-frame clip tells a three-beat story: yellow duck, duck turning green, then the vomit
+	// itself (the stream is out from about 41% to 65% of the clip). Playing it inside 0.6s gave each
+	// beat ~130ms and the whole thing read as one green flicker, so the window is now timed off the
+	// story instead of off the cart: 1.9s leaves every beat around 0.4s and still fits in the ~2.7
+	// cells of track the cart covers while it plays.
 	const VOMIT_SOURCE_MS = 4500;
-	const VOMIT_CLIP_MS = Math.round(VOMIT_SOURCE_MS / DUCK_PLAYBACK_SPEED);
+	const VOMIT_CLIP_MS = 1900;
+	const DUCK_PLAYBACK_SPEED = VOMIT_SOURCE_MS / VOMIT_CLIP_MS;
 	const CART_SIZE = SYMBOL_H * 1.7;
 	const TRACK_HEIGHT = SYMBOL_H * 0.18;
 	const SCREEN_OVERSCAN = CART_SIZE * 0.72;
@@ -120,21 +124,20 @@
 	);
 	const trackWidth = $derived(trackRight - trackLeft);
 	const trackCenterX = $derived((trackLeft + trackRight) * 0.5);
+	const parseKey = (key: string) => {
+		const [reel, row] = key.split(',').map(Number);
+		return { reel, row };
+	};
+
+	const stampedCells = $derived(Object.keys(tilesMap).map(parseKey));
+	const occupiedCells = $derived(toCoasterCellKeys(stampedCells));
 	// Clip only the added Wild tiles, using the same cell-cut approach as Mega Wilds. Rails and carts
 	// stay screen-wide while the authored BoardFrame grid and both side rails remain above the fill.
+	// Neighbouring Wilds share one opening so the board never shows through the divider between them.
 	const drawWildContentMask = (graphics: PIXI.Graphics) => {
-		for (let reel = 0; reel < BOARD_DIMENSIONS.x; reel += 1) {
-			const leftInset = reel === 0 ? BOARD_SIDE_CONTENT_INSET : COASTER_WILD_GRID_INSET;
-			const rightInset =
-				reel === BOARD_DIMENSIONS.x - 1 ? BOARD_SIDE_CONTENT_INSET : COASTER_WILD_GRID_INSET;
-			for (const row of ROWS) {
-				graphics.rect(
-					CELL_W * reel + leftInset,
-					CELL_H * row + COASTER_WILD_GRID_INSET,
-					CELL_W - leftInset - rightInset,
-					CELL_H - COASTER_WILD_GRID_INSET * 2,
-				);
-			}
+		for (const { reel, row } of stampedCells) {
+			const { x, y, width, height } = getCoasterWildRect(reel, row, occupiedCells);
+			graphics.rect(x, y, width, height);
 		}
 		graphics.fill(0xffffff);
 	};
@@ -394,10 +397,6 @@
 		},
 	});
 
-	const parseKey = (key: string) => {
-		const [reel, row] = key.split(',').map(Number);
-		return { reel, row };
-	};
 	const rigFallback = (state: CartState) =>
 		state === 'vomit' ? 'coasterRigVomit' : 'coasterRigHappy';
 </script>
@@ -438,6 +437,7 @@
 							reel={position.reel}
 							row={position.row}
 							underScrim
+							occupied={occupiedCells}
 							{multiplier}
 							contentScale={tileScales[key]?.current ?? 1}
 						/>

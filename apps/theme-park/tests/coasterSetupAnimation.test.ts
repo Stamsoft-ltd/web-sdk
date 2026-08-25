@@ -4,6 +4,9 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { CELL_H, COASTER_WILD_GRID_INSET } from '../src/game/constants';
+import { getCoasterWildRect, toCoasterCellKeys } from '../src/game/coasterWildCells';
+
 const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rigRoot = path.join(appRoot, 'static', 'assets', 'spines', 'coasterVomit');
 const skeleton = JSON.parse(fs.readFileSync(path.join(rigRoot, 'coaster_vomit.json'), 'utf8'));
@@ -174,11 +177,8 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(presenter).toContain('Initial setup reveal only');
 		expect(presenter).toContain('Free-spin reel timing is owned elsewhere and remains unchanged');
 		expect(presenter).toContain('const SEQUENCE_SPEED = 0.9 * SETUP_SPEED_BOOST * 0.85');
-		expect(presenter).toContain('const DUCK_PLAYBACK_SPEED = 4.5 * SETUP_SPEED_BOOST');
 		expect(presenter).toContain('const VOMIT_SOURCE_MS = 4500');
-		expect(presenter).toContain(
-			'const VOMIT_CLIP_MS = Math.round(VOMIT_SOURCE_MS / DUCK_PLAYBACK_SPEED)',
-		);
+		expect(presenter).toContain('const DUCK_PLAYBACK_SPEED = VOMIT_SOURCE_MS / VOMIT_CLIP_MS');
 		expect(presenter).toContain('vomitTimeScale: DUCK_PLAYBACK_SPEED / timing.factor');
 		expect(presenter).toContain('cell: Math.round((900 / SEQUENCE_SPEED) * factor)');
 		expect(presenter).toContain('stagger: Math.round((940 / SEQUENCE_SPEED) * factor)');
@@ -186,6 +186,19 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(presenter).toContain('outro: Math.round((380 / SETUP_SPEED_BOOST) * factor)');
 		expect(presenter).toContain('pulseUp: Math.round((220 / SETUP_SPEED_BOOST) * factor)');
 		expect(presenter).toContain('pulseDown: Math.round((170 / SETUP_SPEED_BOOST) * factor)');
+	});
+
+	it('gives the duck clip room for all three beats instead of fitting it to the cart', () => {
+		const presenter = source('components/CoasterSetupPresenter.svelte');
+		const clipMs = Number(/const VOMIT_CLIP_MS = (\d+)/.exec(presenter)?.[1]);
+
+		// The 128 frames are a three-beat story — yellow duck, duck turning green, then the vomit.
+		// Derived from the cart's speed the window was 592ms, about 130ms a beat, and the whole clip
+		// read as one green flicker. It is now timed off the story, so keep every beat above ~400ms.
+		expect(clipMs).toBeGreaterThanOrEqual(1500);
+		expect(clipMs / 3).toBeGreaterThanOrEqual(400);
+		// Still a clip, not the whole 4.5s source: the cart would otherwise be green end to end.
+		expect(clipMs).toBeLessThan(4500);
 	});
 
 	it('fast-forwards the shared cart timeline per vomit and skips after the final one', () => {
@@ -225,7 +238,6 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(persistent).toContain('contentScale={cellPulse(tile.reel, tile.row)}');
 		expect(presenter).not.toContain('scale={tileScales[key]?.current ?? 1}');
 		expect(persistent).not.toContain('scale={cellPulse(tile.reel, tile.row)}');
-		expect(persistent).toContain('BOARD_SIDE_CONTENT_INSET');
 		expect(persistent).toContain('const drawWildContentMask =');
 		expect(persistent).toContain('<Graphics isMask draw={drawWildContentMask} />');
 		expect(persistent).toContain('reel={tile.reel}');
@@ -250,6 +262,25 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(background).not.toContain('isMask');
 	});
 
+	it('closes the divider between two Wilds and keeps a lone Wild off the grid', () => {
+		const stacked = toCoasterCellKeys([
+			{ reel: 4, row: 0 },
+			{ reel: 4, row: 1 },
+		]);
+		const top = getCoasterWildRect(4, 0, stacked);
+		const bottom = getCoasterWildRect(4, 1, stacked);
+		const alone = getCoasterWildRect(2, 2, toCoasterCellKeys([{ reel: 2, row: 2 }]));
+
+		// The reported bug: a stack of Wilds left a lit slot between each pair, and the reel went on
+		// scrolling through it in full view. Neighbours have to meet exactly on the cell boundary.
+		expect(top.y + top.height).toBe(bottom.y);
+		expect(bottom.y).toBe(CELL_H);
+		// Free edges are unchanged, so a Wild on its own still leaves the authored grid visible.
+		expect(top.y).toBe(COASTER_WILD_GRID_INSET);
+		expect(alone.y).toBe(CELL_H * 2 + COASTER_WILD_GRID_INSET);
+		expect(alone.height).toBe(CELL_H - COASTER_WILD_GRID_INSET * 2);
+	});
+
 	it('preserves the single authored grid between adjacent Wilds and pops Wild content on wins', () => {
 		const presenter = source('components/CoasterSetupPresenter.svelte');
 		const persistent = source('components/PersistentWildBadges.svelte');
@@ -259,14 +290,15 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		const board = source('components/Board.svelte');
 		const constants = source('game/constants.ts');
 
-		expect(background).toContain('COASTER_WILD_GRID_INSET');
-		expect(background).toContain('const EDGE_LOCAL_INSET = BOARD_SIDE_CONTENT_INSET * 0.5');
-		expect(background).toContain('CELL_W - leftInset - rightInset');
-		expect(background).toContain('CELL_H - COASTER_WILD_GRID_INSET * 2');
+		expect(background).toContain(
+			"import { getCoasterWildRect, type CoasterCellKey } from '../game/coasterWildCells'",
+		);
+		expect(background).toContain('getCoasterWildRect(reel, row, props.occupied ?? EMPTY_CELLS)');
+		expect(background).toContain('rect.x - CELL_W * (reel + 0.5)');
+		expect(background).toContain('rect.y - CELL_H * (row + 0.5)');
 		expect(background).not.toContain('EDGE_OVERLAP');
 		expect(background).not.toContain('coverTopEdge');
 		expect(background).not.toContain('coverBottomEdge');
-		expect(background).toContain('-CELL_W * 0.5');
 		expect(tile).not.toContain('coverTopEdge');
 		expect(tile).not.toContain('coverBottomEdge');
 		expect(presenter).not.toContain('coverTopEdge');
@@ -288,9 +320,16 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(constants).toContain('export const getBoardCellCenterX =');
 		expect(constants).toContain('CELL_W * (reelIndex + 0.5)');
 		expect(constants).not.toContain('? BOARD_SIDE_CONTENT_INSET * 0.5');
-		expect(persistent).toContain('for (let reel = 0; reel < BOARD_DIMENSIONS.x; reel += 1)');
-		expect(persistent).toContain('for (let row = 0; row < BOARD_DIMENSIONS.y; row += 1)');
-		expect(presenter).toContain('for (const row of ROWS)');
+		// Both masks cut the Wilds that are actually on the board, not all twenty-five cells, so the
+		// opening for two neighbours is one shape and the reel cannot scroll through the divider.
+		expect(persistent).toContain('const occupiedCells = $derived(toCoasterCellKeys(coasterTiles))');
+		expect(persistent).toContain('for (const { reel, row } of coasterTiles)');
+		expect(persistent).toContain('getCoasterWildRect(reel, row, occupiedCells)');
+		expect(persistent).toContain('occupied={occupiedCells}');
+		expect(presenter).toContain('const occupiedCells = $derived(toCoasterCellKeys(stampedCells))');
+		expect(presenter).toContain('for (const { reel, row } of stampedCells)');
+		expect(presenter).toContain('getCoasterWildRect(reel, row, occupiedCells)');
+		expect(presenter).toContain('occupied={occupiedCells}');
 
 		// The Wild plays no video any more — it is a flat marquee sign whose bulbs are lit by
 		// <SymbolBulbs>, gated per sprite so the pattern never lands on the Coaster Wild tile.

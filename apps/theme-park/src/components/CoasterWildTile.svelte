@@ -2,6 +2,7 @@
 	import { Container, FillGradient, Sprite, Text } from 'pixi-svelte';
 
 	import { SYMBOL_H } from '../game/constants';
+	import type { CoasterCellKey } from '../game/coasterWildCells';
 	import CoasterWildBackground from './CoasterWildBackground.svelte';
 
 	type Props = {
@@ -9,6 +10,8 @@
 		row?: number;
 		/** True while <CoasterSetupPresenter> owns this tile, i.e. it is drawn above the setup dim. */
 		underScrim?: boolean;
+		/** Every cell currently carrying a Wild, so this cover closes against its neighbours. */
+		occupied?: ReadonlySet<CoasterCellKey>;
 		multiplier: number;
 		contentScale?: number;
 	};
@@ -48,7 +51,12 @@
 </script>
 
 <!-- Setup and persistent phases share this exact presentation. No handoff size pop. -->
-<CoasterWildBackground reel={props.reel} row={props.row} underScrim={props.underScrim} />
+<CoasterWildBackground
+	reel={props.reel}
+	row={props.row}
+	underScrim={props.underScrim}
+	occupied={props.occupied}
+/>
 <!-- Pop only the Wild and its multiplier. The opaque reel cover must remain cell-sized. -->
 <Container scale={props.contentScale ?? 1}>
 	<Sprite key="tpCoasterWild" anchor={0.5} width={SLIME_W} height={SLIME_H} />

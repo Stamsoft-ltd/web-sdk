@@ -23,15 +23,14 @@
 	const navTurboSolid = ap('/assets/theme-park/v2/hud/turbo-1.webp');
 	const navTurboDouble = ap('/assets/theme-park/v2/hud/turbo-2.webp');
 	const navTurboOutline = ap('/assets/theme-park/v2/hud/turbo-3.webp');
-	// The desktop bar's plate, its BUY pill and its spin ring used to be three pieces of neon marquee
-	// art (bar_plate-clean.webp, buy_plate.webp, spin-bg.webp). The redesign (Figma 7033:25229) draws
-	// all three as flat shapes — a filled rounded rectangle, a gradient pill, a gradient ring — so
-	// they are CSS now and the art is gone from this row. Only the portrait bar still loads the old
-	// pieces, because portrait has its own layout that the redesign does not cover.
+	// The bar's plate, its BUY pill and its spin ring used to be three pieces of neon marquee art
+	// (bar_plate-clean.webp, buy_plate.webp, spin-bg.webp). The redesign draws all three as flat
+	// shapes — a filled rounded rectangle, a gradient pill, a gradient ring — so they are CSS now
+	// and none of that art is loaded any more: Figma 7033:25229 retired it on desktop, 7063:17249
+	// on portrait, which was the last layout still carrying the old pieces.
 	//
 	// The spin ring is still a separate element from the glyph on top of it, for the same reason it
 	// always was: the ring is identical in every state and keeps spinning across a glyph swap.
-	const navSpinBg = ap('/assets/theme-park/v2/controls/spin-bg.webp');
 	const navSpinArrow = ap('/assets/theme-park/v2/controls/spin-arrow.webp');
 	const navSpinStopGlyph = ap('/assets/theme-park/v2/controls/spin-stop-glyph.webp');
 	const navCoins = ap('/assets/theme-park/v2/hud/icon_coin.svg');
@@ -50,6 +49,10 @@
 	const ptSoundMuted = ap('/assets/theme-park/v2/controls/btn-sound-muted.png');
 	// Landscape control-dock box art (neon-edged vertical panel behind the right-hand buttons).
 	const lsNavBox = ap('/assets/theme-park/v2/controls/nav-box-landscape.svg');
+	// Mobile landscape's speed button (portrait and desktop use the turbo-1/2/3 webps above). One
+	// bolt per step: OFF is the outlined bolt, turbo is one solid bolt, super turbo is two. The three
+	// files used to hold that art rotated by one — btn-turbo.png carried a solid bolt, so the button
+	// read as "turbo on" while turbo was off.
 	const ptTurbo = ap('/assets/theme-park/v2/controls/btn-turbo.png');
 	const ptTurboFast = ap('/assets/theme-park/v2/controls/btn-turbo-fast.png');
 	const ptTurboSuper = ap('/assets/theme-park/v2/controls/btn-turbo-super.png');
@@ -63,12 +66,6 @@
 	// Bet box plate — the same glowing neon gradient frame ("S pad") used by the buy-bonus popup's
 	// bet setter, stretched to fill this box so the two match.
 	const ptBetBox = ap('/assets/theme-park/v2/hud/neon-frame.png');
-	// Portrait nav bar — bar_plate cropped tight + vertically symmetric, so the visible bar nearly
-	// fills its box and the (bigger) buttons sit centred inside it. Sparkle-free
-	// (scripts/build-hud-bar-plain.py); <PopupBorderLights> runs real ones on it. The desktop row
-	// used to be backed by the same art and is not any more — portrait is the last thing on it,
-	// because the redesign does not cover the portrait layout.
-	const ptNavBar = ap('/assets/theme-park/v2/controls/nav-bar-clean.png');
 </script>
 
 <script lang="ts">
@@ -84,7 +81,6 @@
 	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
 	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
 	import CustomInfoModal from './CustomInfoModal.svelte';
-	import PopupBorderLights from './PopupBorderLights.svelte';
 
 	const context = getContext();
 
@@ -220,7 +216,9 @@
 	const isAnyModeActive = $derived(activeToggleMode !== null);
 	// One word, not "BUY BONUS" — the redesign labels this button BONUS (Figma 7033:25229) and every
 	// message map carries the key. 'BUY BONUS' is still the title of the dialog the button opens.
-	const buyLabel = $derived(isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.bonus());
+	const buyLabel = $derived(
+		isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.bonus(),
+	);
 	const isInBonus = $derived(
 		context.stateGame.bonusMode !== null ||
 			context.stateGame.bonusType !== null ||
@@ -377,7 +375,8 @@
 			stateModal.modal !== null ||
 			context.stateGame.resumeModalOpen ||
 			congratsBlocking
-		) return;
+		)
+			return;
 		if (hasAuto) {
 			if (context.stateXstateDerived.isIdle()) return;
 			context.eventEmitter.broadcast({ type: 'soundPressBet' });
@@ -493,272 +492,89 @@
 		<img class="press-play-mark" src={pressPlayMark} alt="Press Play" />
 	{/if}
 	{#if isLandscapeMobile}
-	<!-- MOBILE-LANDSCAPE HUD — two side columns flanking the board, matching the design. Left: balance
+		<!-- MOBILE-LANDSCAPE HUD — two side columns flanking the board, matching the design. Left: balance
 	     + bet stepper. Right: menu · sound · SPIN · turbo · auto stack, with BUY BONUS + WIN beside it. -->
-	<div
-		class="ls-hud"
-		style:--ls-left-x="{landscapeColumns?.left ?? 0}px"
-		style:--ls-buy-x="{landscapeColumns?.buy ?? 0}px"
-		style:--ls-buy-size="{landscapeColumns?.buySize ?? 66}px"
-	>
-		<div class="ls-left">
-			<div class="ls-pill ls-pill--balance">
-				<span class="ls-pill__label">{i18nDerived.balance()}</span>
-				<span class="ls-pill__value" use:fitText={formattedBalance}>{formattedBalance}</span>
-			</div>
-			<div class="ls-bet">
-				<img class="ls-bet__bg" src={ptBetBox} alt="" aria-hidden="true" />
-				<button
-					class="ls-step"
-					type="button"
-					onpointerdown={(event) =>
-						startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
-					onpointerup={clearHoldRepeat}
-					onpointercancel={clearHoldRepeat}
-					onpointerleave={clearHoldRepeat}
-					onclick={(event) => maybeRunClickAction(event, onDecrease)}
-					disabled={disableDecrease}
-					aria-label={i18nDerived.translate('DECREASE BET')}
-				>
-					<img src={disableDecrease ? ptMinusDisabled : ptMinus} alt="" />
-				</button>
-				<div
-					class="ls-bet__values"
-					role="button"
-					tabindex="0"
-					onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
-					onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
-				>
-					<span class="ls-pill__value ls-bet__value" use:fitText={formattedBet}>{formattedBet}</span>
-				</div>
-				<button
-					class="ls-step"
-					type="button"
-					onpointerdown={(event) =>
-						startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
-					onpointerup={clearHoldRepeat}
-					onpointercancel={clearHoldRepeat}
-					onpointerleave={clearHoldRepeat}
-					onclick={(event) => maybeRunClickAction(event, onIncrease)}
-					disabled={disableIncrease}
-					aria-label={i18nDerived.translate('INCREASE BET')}
-				>
-					<img src={disableIncrease ? ptPlusDisabled : ptPlus} alt="" />
-				</button>
-			</div>
-		</div>
-
-		<div class="ls-actions" bind:clientWidth={lsDockWidth}>
-			<img class="ls-actions__bg" src={lsNavBox} alt="" aria-hidden="true" />
-			<button class="ls-btn" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
-				<img src={ptMenu} alt="" />
-			</button>
-			<button class="ls-btn" type="button" onclick={toggleSound} aria-label={i18nDerived.translate('SOUND')}>
-				<img src={isMuted ? ptSoundMuted : ptSound} alt="" />
-			</button>
-			<button
-				class="spin-btn ls-spin"
-				class:is-spinning={isSpinStop}
-				type="button"
-				onclick={onSpinButton}
-				aria-label={i18nDerived.translate('SPIN')}
-				disabled={canInteract && !hasAuto && !canAffordBet}
-			>
-				<span class="spin-btn__img spin-btn__ring" aria-hidden="true">
-					<span class="spin-btn__disc"></span>
-				</span>
-				{#if isSpinStop}
-					<img src={navSpinStopGlyph} alt="" class="spin-btn__img spin-btn__img--stopglyph" />
-				{:else}
-					<img src={navSpinArrow} alt="" class="spin-btn__img spin-btn__img--arrow" />
-				{/if}
-				{#if hasAuto}
-					<span class="spin-btn__count">{autoSpinsRemainingText}</span>
-				{/if}
-			</button>
-			<button
-				class="ls-btn"
-				data-speed={speedMode}
-				type="button"
-				onclick={onTurbo}
-				aria-label={i18nDerived.turboLabel()}
-				title={`${i18nDerived.turboLabel()}: ${speedMode}`}
-			>
-				<img src={ptTurboImg} alt="" />
-			</button>
-			<button
-				class="ls-btn"
-				class:active={hasAuto}
-				type="button"
-				onclick={onAuto}
-				disabled={disableAuto}
-				aria-label={i18nDerived.autoplayLabel()}
-			>
-				<img src={disableAuto && !hasAuto ? ptAutoDisabled : ptAuto} alt="" />
-			</button>
-		</div>
-
-		<button
-			class="ls-buy"
-			type="button"
-			disabled={disableBuy}
-			onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
-			aria-label={buyLabel}
+		<div
+			class="ls-hud"
+			style:--ls-left-x="{landscapeColumns?.left ?? 0}px"
+			style:--ls-buy-x="{landscapeColumns?.buy ?? 0}px"
+			style:--ls-buy-size="{landscapeColumns?.buySize ?? 66}px"
 		>
-			<img src={ptBuy} alt="" />
-			<span class="ls-buy__label" use:fitLabel={{ dep: buyLabel, maxFraction: 0.82 }}>{buyLabel}</span>
-		</button>
-
-		<div class="ls-pill ls-pill--win">
-			<span class="ls-pill__label">{i18nDerived.win()}</span>
-			<span class="ls-pill__value" use:fitText={formattedWin}>{formattedWin}</span>
-		</div>
-	</div>
-	{:else if !isPortrait}
-	<div class="hud-bottom">
-		<!-- The bar. Still a sibling rather than a background on the row, because the spin button
-		     overhangs it top and bottom: the plate has to sit BEHIND the row at its own smaller height
-		     while the row keeps the taller box. It used to be neon art with running lights along its
-		     edge; the redesign has neither, so it is a plain rounded rectangle now. -->
-		<div class="hud-plate" aria-hidden="true"></div>
-		<div class="hud-left">
-			<div class="hud-system">
-				<button
-					class="nav-btn nav-btn--menu"
-					class:is-open={menuOpen}
-					type="button"
-					onclick={toggleMenu}
-					aria-haspopup="true"
-					aria-expanded={menuOpen}
-					aria-label={i18nDerived.translate('MENU')}
-				>
-					<img src={menuOpen ? navClose : navMenu} alt="" />
-				</button>
-				<!-- The redesign puts one button on this end of the bar, not two. The sound toggle that
-				     used to sit beside the burger is still reachable — it is the first item in the menu
-				     the burger opens, next to MUSIC and INFO. -->
-
-				{#if menuOpen}
-					<div class="hud-menu" role="menu">
-						<button class="hud-menu__item" class:is-off={isMuted} type="button" role="menuitem" onclick={toggleSound}>
-							<span class="hud-menu__badge"><span class="hud-menu__glyph" style={`--icon:url('${menuIconSound}')`}></span></span>
-							<span class="hud-menu__label">{i18nDerived.translate('SOUND')}</span>
-						</button>
-						<div class="hud-menu__divider"></div>
-						<button class="hud-menu__item" class:is-off={musicMuted} type="button" role="menuitem" onclick={toggleMusic}>
-							<span class="hud-menu__badge"><span class="hud-menu__glyph" style={`--icon:url('${menuIconMusic}')`}></span></span>
-							<span class="hud-menu__label">{i18nDerived.translate('MUSIC')}</span>
-						</button>
-						<div class="hud-menu__divider"></div>
-						<button class="hud-menu__item" type="button" role="menuitem" onclick={openInfo}>
-							<span class="hud-menu__badge"><span class="hud-menu__glyph" style={`--icon:url('${menuIconInfo}')`}></span></span>
-							<span class="hud-menu__label">{i18nDerived.translate('INFO')}</span>
-						</button>
+			<div class="ls-left">
+				<div class="ls-pill ls-pill--balance">
+					<span class="ls-pill__label">{i18nDerived.balance()}</span>
+					<span class="ls-pill__value" use:fitText={formattedBalance}>{formattedBalance}</span>
+				</div>
+				<div class="ls-bet">
+					<img class="ls-bet__bg" src={ptBetBox} alt="" aria-hidden="true" />
+					<button
+						class="ls-step"
+						type="button"
+						onpointerdown={(event) =>
+							startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
+						onpointerup={clearHoldRepeat}
+						onpointercancel={clearHoldRepeat}
+						onpointerleave={clearHoldRepeat}
+						onclick={(event) => maybeRunClickAction(event, onDecrease)}
+						disabled={disableDecrease}
+						aria-label={i18nDerived.translate('DECREASE BET')}
+					>
+						<img src={disableDecrease ? ptMinusDisabled : ptMinus} alt="" />
+					</button>
+					<div
+						class="ls-bet__values"
+						role="button"
+						tabindex="0"
+						onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
+						onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
+					>
+						<span class="ls-pill__value ls-bet__value" use:fitText={formattedBet}
+							>{formattedBet}</span
+						>
 					</div>
-				{/if}
-			</div>
-
-			<div class="hud-buy">
-				<button
-					class="buy-btn"
-					type="button"
-					disabled={disableBuy}
-					onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
-					aria-label={buyLabel}
-				>
-					<span class="buy-btn__label" use:fitLabel={{ dep: buyLabel, maxFraction: 0.9 }}>{buyLabel}</span>
-				</button>
-			</div>
-		</div>
-
-		<div class="hud-stats">
-			<div class="value-pill value-pill--balance">
-				<div class="label label--balance">
-					<span class="label-text">{i18nDerived.balance()}</span>
-				</div>
-				<span class="value" use:fitText={formattedBalance}>{formattedBalance}</span>
-			</div>
-
-			<!-- 1px x 49 rule between BALANCE and WIN (design node 6589:4366). -->
-			<span class="stats-divider" aria-hidden="true"></span>
-
-			<div class="value-pill value-pill--win">
-				<div class="label">
-					<span class="label-text">{i18nDerived.win()}</span>
-				</div>
-				<span class="value" use:fitText={formattedWin}>{formattedWin}</span>
-			</div>
-
-			<div
-				class="value-pill value-pill--bet bet-pill"
-				role="button"
-				tabindex="0"
-				onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
-				onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
-			>
-				<span class="bet-coin" aria-hidden="true">
-					<img src={navCoins} alt="" />
-				</span>
-				<div class="bet-values">
-					<span class="label">{i18nDerived.betLabel()}</span>
-					<span class="value" use:fitText={formattedBet}>{formattedBet}</span>
-				</div>
-			</div>
-		</div>
-
-		<div class="hud-controls">
-			<div class="stepper">
-				{#if isLandscapeMobile}
-					<button class="nav-btn nav-btn--menu" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
-						<img src={navMenu} alt="" />
+					<button
+						class="ls-step"
+						type="button"
+						onpointerdown={(event) =>
+							startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
+						onpointerup={clearHoldRepeat}
+						onpointercancel={clearHoldRepeat}
+						onpointerleave={clearHoldRepeat}
+						onclick={(event) => maybeRunClickAction(event, onIncrease)}
+						disabled={disableIncrease}
+						aria-label={i18nDerived.translate('INCREASE BET')}
+					>
+						<img src={disableIncrease ? ptPlusDisabled : ptPlus} alt="" />
 					</button>
-					<button class="nav-btn nav-btn--sound" type="button" onclick={toggleSound} aria-label={i18nDerived.translate('SOUND')}>
-						<img src={navSound} alt="" class:is-muted={isMuted} />
-					</button>
-				{/if}
-				<button
-					class="nav-btn nav-btn--step"
-					type="button"
-					onpointerdown={(event) =>
-						startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
-					onpointerup={clearHoldRepeat}
-					onpointercancel={clearHoldRepeat}
-					onpointerleave={clearHoldRepeat}
-					onclick={(event) => maybeRunClickAction(event, onDecrease)}
-					disabled={disableDecrease}
-					aria-label={i18nDerived.translate('DECREASE BET')}
-				>
-					<img class="step-glyph step-glyph--minus" src={navMinus} alt="" />
-				</button>
-				<button
-					class="nav-btn nav-btn--step"
-					type="button"
-					onpointerdown={(event) =>
-						startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
-					onpointerup={clearHoldRepeat}
-					onpointercancel={clearHoldRepeat}
-					onpointerleave={clearHoldRepeat}
-					onclick={(event) => maybeRunClickAction(event, onIncrease)}
-					disabled={disableIncrease}
-					aria-label={i18nDerived.translate('INCREASE BET')}
-				>
-					<img class="step-glyph step-glyph--plus" src={navPlus} alt="" />
-				</button>
+				</div>
 			</div>
 
-			<div class="play-cluster">
+			<div class="ls-actions" bind:clientWidth={lsDockWidth}>
+				<img class="ls-actions__bg" src={lsNavBox} alt="" aria-hidden="true" />
 				<button
-					class="spin-btn"
+					class="ls-btn"
+					type="button"
+					onclick={openRules}
+					aria-label={i18nDerived.gameRules()}
+				>
+					<img src={ptMenu} alt="" />
+				</button>
+				<button
+					class="ls-btn"
+					type="button"
+					onclick={toggleSound}
+					aria-label={i18nDerived.translate('SOUND')}
+				>
+					<img src={isMuted ? ptSoundMuted : ptSound} alt="" />
+				</button>
+				<button
+					class="spin-btn ls-spin"
 					class:is-spinning={isSpinStop}
 					type="button"
 					onclick={onSpinButton}
 					aria-label={i18nDerived.translate('SPIN')}
 					disabled={canInteract && !hasAuto && !canAffordBet}
 				>
-					<!-- Mounted unconditionally so the ring's rotation survives the glyph swapping between
-					     arrow and stop — remounting it would restart the animation from 0deg and snap.
-					     Two elements because the ring is a gradient and the disc inside it is not: the
-					     outer box IS the ring's colour and the inner one covers all but its edge. -->
 					<span class="spin-btn__img spin-btn__ring" aria-hidden="true">
 						<span class="spin-btn__disc"></span>
 					</span>
@@ -768,18 +584,380 @@
 						<img src={navSpinArrow} alt="" class="spin-btn__img spin-btn__img--arrow" />
 					{/if}
 					{#if hasAuto}
-						<span
-							class="spin-btn__count"
-							aria-label={i18nDerived.translateVars('REMAINING AUTO SPINS', {
-								count: autoSpinsRemainingText,
-							})}
-							>{autoSpinsRemainingText}</span
-						>
+						<span class="spin-btn__count">{autoSpinsRemainingText}</span>
 					{/if}
+				</button>
+				<button
+					class="ls-btn"
+					data-speed={speedMode}
+					type="button"
+					onclick={onTurbo}
+					aria-label={i18nDerived.turboLabel()}
+					title={`${i18nDerived.turboLabel()}: ${speedMode}`}
+				>
+					<img src={ptTurboImg} alt="" />
+				</button>
+				<button
+					class="ls-btn"
+					class:active={hasAuto}
+					type="button"
+					onclick={onAuto}
+					disabled={disableAuto}
+					aria-label={i18nDerived.autoplayLabel()}
+				>
+					<img src={disableAuto && !hasAuto ? ptAutoDisabled : ptAuto} alt="" />
 				</button>
 			</div>
 
-			<div class="action-cluster">
+			<button
+				class="ls-buy"
+				type="button"
+				disabled={disableBuy}
+				onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
+				aria-label={buyLabel}
+			>
+				<img src={ptBuy} alt="" />
+				<span class="ls-buy__label" use:fitLabel={{ dep: buyLabel, maxFraction: 0.82 }}
+					>{buyLabel}</span
+				>
+			</button>
+
+			<div class="ls-pill ls-pill--win">
+				<span class="ls-pill__label">{i18nDerived.win()}</span>
+				<span class="ls-pill__value" use:fitText={formattedWin}>{formattedWin}</span>
+			</div>
+		</div>
+	{:else if !isPortrait}
+		<div class="hud-bottom">
+			<!-- The bar. Still a sibling rather than a background on the row, because the spin button
+		     overhangs it top and bottom: the plate has to sit BEHIND the row at its own smaller height
+		     while the row keeps the taller box. It used to be neon art with running lights along its
+		     edge; the redesign has neither, so it is a plain rounded rectangle now. -->
+			<div class="hud-plate" aria-hidden="true"></div>
+			<div class="hud-left">
+				<div class="hud-system">
+					<button
+						class="nav-btn nav-btn--menu"
+						class:is-open={menuOpen}
+						type="button"
+						onclick={toggleMenu}
+						aria-haspopup="true"
+						aria-expanded={menuOpen}
+						aria-label={i18nDerived.translate('MENU')}
+					>
+						<img src={menuOpen ? navClose : navMenu} alt="" />
+					</button>
+					<!-- The redesign puts one button on this end of the bar, not two. The sound toggle that
+				     used to sit beside the burger is still reachable — it is the first item in the menu
+				     the burger opens, next to MUSIC and INFO. -->
+
+					{#if menuOpen}
+						<div class="hud-menu" role="menu">
+							<button
+								class="hud-menu__item"
+								class:is-off={isMuted}
+								type="button"
+								role="menuitem"
+								onclick={toggleSound}
+							>
+								<span class="hud-menu__badge"
+									><span class="hud-menu__glyph" style={`--icon:url('${menuIconSound}')`}
+									></span></span
+								>
+								<span class="hud-menu__label">{i18nDerived.translate('SOUND')}</span>
+							</button>
+							<div class="hud-menu__divider"></div>
+							<button
+								class="hud-menu__item"
+								class:is-off={musicMuted}
+								type="button"
+								role="menuitem"
+								onclick={toggleMusic}
+							>
+								<span class="hud-menu__badge"
+									><span class="hud-menu__glyph" style={`--icon:url('${menuIconMusic}')`}
+									></span></span
+								>
+								<span class="hud-menu__label">{i18nDerived.translate('MUSIC')}</span>
+							</button>
+							<div class="hud-menu__divider"></div>
+							<button class="hud-menu__item" type="button" role="menuitem" onclick={openInfo}>
+								<span class="hud-menu__badge"
+									><span class="hud-menu__glyph" style={`--icon:url('${menuIconInfo}')`}
+									></span></span
+								>
+								<span class="hud-menu__label">{i18nDerived.translate('INFO')}</span>
+							</button>
+						</div>
+					{/if}
+				</div>
+
+				<div class="hud-buy">
+					<button
+						class="buy-btn"
+						type="button"
+						disabled={disableBuy}
+						onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
+						aria-label={buyLabel}
+					>
+						<span class="buy-btn__label" use:fitLabel={{ dep: buyLabel, maxFraction: 0.9 }}
+							>{buyLabel}</span
+						>
+					</button>
+				</div>
+			</div>
+
+			<div class="hud-stats">
+				<div class="value-pill value-pill--balance">
+					<div class="label label--balance">
+						<span class="label-text">{i18nDerived.balance()}</span>
+					</div>
+					<span class="value" use:fitText={formattedBalance}>{formattedBalance}</span>
+				</div>
+
+				<!-- 1px x 49 rule between BALANCE and WIN (design node 6589:4366). -->
+				<span class="stats-divider" aria-hidden="true"></span>
+
+				<div class="value-pill value-pill--win">
+					<div class="label">
+						<span class="label-text">{i18nDerived.win()}</span>
+					</div>
+					<span class="value" use:fitText={formattedWin}>{formattedWin}</span>
+				</div>
+
+				<div
+					class="value-pill value-pill--bet bet-pill"
+					role="button"
+					tabindex="0"
+					onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
+					onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
+				>
+					<span class="bet-coin" aria-hidden="true">
+						<img src={navCoins} alt="" />
+					</span>
+					<div class="bet-values">
+						<span class="label">{i18nDerived.betLabel()}</span>
+						<span class="value" use:fitText={formattedBet}>{formattedBet}</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="hud-controls">
+				<div class="stepper">
+					{#if isLandscapeMobile}
+						<button
+							class="nav-btn nav-btn--menu"
+							type="button"
+							onclick={openRules}
+							aria-label={i18nDerived.gameRules()}
+						>
+							<img src={navMenu} alt="" />
+						</button>
+						<button
+							class="nav-btn nav-btn--sound"
+							type="button"
+							onclick={toggleSound}
+							aria-label={i18nDerived.translate('SOUND')}
+						>
+							<img src={navSound} alt="" class:is-muted={isMuted} />
+						</button>
+					{/if}
+					<button
+						class="nav-btn nav-btn--step"
+						type="button"
+						onpointerdown={(event) =>
+							startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
+						onpointerup={clearHoldRepeat}
+						onpointercancel={clearHoldRepeat}
+						onpointerleave={clearHoldRepeat}
+						onclick={(event) => maybeRunClickAction(event, onDecrease)}
+						disabled={disableDecrease}
+						aria-label={i18nDerived.translate('DECREASE BET')}
+					>
+						<img class="step-glyph step-glyph--minus" src={navMinus} alt="" />
+					</button>
+					<button
+						class="nav-btn nav-btn--step"
+						type="button"
+						onpointerdown={(event) =>
+							startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
+						onpointerup={clearHoldRepeat}
+						onpointercancel={clearHoldRepeat}
+						onpointerleave={clearHoldRepeat}
+						onclick={(event) => maybeRunClickAction(event, onIncrease)}
+						disabled={disableIncrease}
+						aria-label={i18nDerived.translate('INCREASE BET')}
+					>
+						<img class="step-glyph step-glyph--plus" src={navPlus} alt="" />
+					</button>
+				</div>
+
+				<div class="play-cluster">
+					<button
+						class="spin-btn"
+						class:is-spinning={isSpinStop}
+						type="button"
+						onclick={onSpinButton}
+						aria-label={i18nDerived.translate('SPIN')}
+						disabled={canInteract && !hasAuto && !canAffordBet}
+					>
+						<!-- Mounted unconditionally so the ring's rotation survives the glyph swapping between
+					     arrow and stop — remounting it would restart the animation from 0deg and snap.
+					     Two elements because the ring is a gradient and the disc inside it is not: the
+					     outer box IS the ring's colour and the inner one covers all but its edge. -->
+						<span class="spin-btn__img spin-btn__ring" aria-hidden="true">
+							<span class="spin-btn__disc"></span>
+						</span>
+						{#if isSpinStop}
+							<img src={navSpinStopGlyph} alt="" class="spin-btn__img spin-btn__img--stopglyph" />
+						{:else}
+							<img src={navSpinArrow} alt="" class="spin-btn__img spin-btn__img--arrow" />
+						{/if}
+						{#if hasAuto}
+							<span
+								class="spin-btn__count"
+								aria-label={i18nDerived.translateVars('REMAINING AUTO SPINS', {
+									count: autoSpinsRemainingText,
+								})}>{autoSpinsRemainingText}</span
+							>
+						{/if}
+					</button>
+				</div>
+
+				<div class="action-cluster">
+					<button
+						class="nav-btn nav-btn--turbo"
+						class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
+						class:turbo-super={stateBet.isSuperTurbo}
+						data-speed={speedMode}
+						type="button"
+						onclick={onTurbo}
+						aria-label={i18nDerived.turboLabel()}
+						title={`${i18nDerived.turboLabel()}: ${speedMode}`}
+					>
+						<img
+							class="turbo-glyph"
+							src={stateBet.isSuperTurbo
+								? navTurboDouble
+								: stateBet.isTurbo
+									? navTurboSolid
+									: navTurboOutline}
+							alt=""
+						/>
+					</button>
+					<button
+						class="nav-btn nav-btn--auto"
+						class:active={hasAuto}
+						type="button"
+						onclick={onAuto}
+						disabled={disableAuto}
+						aria-label={i18nDerived.autoplayLabel()}
+					>
+						<img class="auto-glyph" src={navAuto} alt="" />
+						<span class="auto-label">{i18nDerived.translate('AUTO')}</span>
+					</button>
+				</div>
+			</div>
+		</div>
+	{:else}
+		<!-- PORTRAIT HUD — Figma 7063:17249. Two rows on one 349-unit width: a drawn control plate
+	     (menu · BONUS · spin · turbo · auto) and a balance | bet | win strip below it. Every control
+	     is the SAME component the desktop bar draws — .nav-btn, .buy-btn, .spin-btn — at the portrait
+	     size, so this row is no longer the last consumer of the old marquee art (nav-bar-clean.png,
+	     the round btn-*.png set, spin-bg.webp, the neon-frame bet plate). The burger now opens the
+	     shared SOUND · MUSIC · INFO menu instead of jumping straight to the rules, which is also how
+	     portrait gets a sound toggle back: the design gives this end of the bar one button, not two. -->
+		<div class="pt-hud">
+			<div class="pt-controls">
+				<div class="pt-plate" aria-hidden="true"></div>
+
+				<div class="hud-system">
+					<button
+						class="nav-btn nav-btn--menu"
+						class:is-open={menuOpen}
+						type="button"
+						onclick={toggleMenu}
+						aria-haspopup="true"
+						aria-expanded={menuOpen}
+						aria-label={i18nDerived.translate('MENU')}
+					>
+						<img src={menuOpen ? navClose : navMenu} alt="" />
+					</button>
+
+					{#if menuOpen}
+						<div class="hud-menu" role="menu">
+							<button
+								class="hud-menu__item"
+								class:is-off={isMuted}
+								type="button"
+								role="menuitem"
+								onclick={toggleSound}
+							>
+								<span class="hud-menu__badge"
+									><span class="hud-menu__glyph" style={`--icon:url('${menuIconSound}')`}
+									></span></span
+								>
+								<span class="hud-menu__label">{i18nDerived.translate('SOUND')}</span>
+							</button>
+							<div class="hud-menu__divider"></div>
+							<button
+								class="hud-menu__item"
+								class:is-off={musicMuted}
+								type="button"
+								role="menuitem"
+								onclick={toggleMusic}
+							>
+								<span class="hud-menu__badge"
+									><span class="hud-menu__glyph" style={`--icon:url('${menuIconMusic}')`}
+									></span></span
+								>
+								<span class="hud-menu__label">{i18nDerived.translate('MUSIC')}</span>
+							</button>
+							<div class="hud-menu__divider"></div>
+							<button class="hud-menu__item" type="button" role="menuitem" onclick={openInfo}>
+								<span class="hud-menu__badge"
+									><span class="hud-menu__glyph" style={`--icon:url('${menuIconInfo}')`}
+									></span></span
+								>
+								<span class="hud-menu__label">{i18nDerived.translate('INFO')}</span>
+							</button>
+						</div>
+					{/if}
+				</div>
+
+				<button
+					class="buy-btn"
+					type="button"
+					disabled={disableBuy}
+					onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
+					aria-label={buyLabel}
+				>
+					<span class="buy-btn__label" use:fitLabel={{ dep: buyLabel, maxFraction: 0.9 }}
+						>{buyLabel}</span
+					>
+				</button>
+
+				<button
+					class="spin-btn pt-spin"
+					class:is-spinning={isSpinStop}
+					type="button"
+					onclick={onSpinButton}
+					aria-label={i18nDerived.translate('SPIN')}
+					disabled={canInteract && !hasAuto && !canAffordBet}
+				>
+					<span class="spin-btn__img spin-btn__ring" aria-hidden="true">
+						<span class="spin-btn__disc"></span>
+					</span>
+					{#if isSpinStop}
+						<img src={navSpinStopGlyph} alt="" class="spin-btn__img spin-btn__img--stopglyph" />
+					{:else}
+						<img src={navSpinArrow} alt="" class="spin-btn__img spin-btn__img--arrow" />
+					{/if}
+					{#if hasAuto}
+						<span class="spin-btn__count">{autoSpinsRemainingText}</span>
+					{/if}
+				</button>
+
 				<button
 					class="nav-btn nav-btn--turbo"
 					class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
@@ -800,6 +978,7 @@
 						alt=""
 					/>
 				</button>
+
 				<button
 					class="nav-btn nav-btn--auto"
 					class:active={hasAuto}
@@ -812,134 +991,61 @@
 					<span class="auto-label">{i18nDerived.translate('AUTO')}</span>
 				</button>
 			</div>
-		</div>
-	</div>
-	{:else}
-	<!-- PORTRAIT HUD — dedicated 2-row marquee layout. Controls row (menu · buy · spin · turbo ·
-	     auto) on top, balance | bet(-/+) | win strip below. Real neon button art. -->
-	<div class="pt-hud">
-		<div class="pt-controls">
-			<img class="pt-bar-bg" src={ptNavBar} alt="" aria-hidden="true" />
-			<!-- The dialogs' running lights, on the portrait bar's own neon line. -->
-			<div class="pt-bar-lights">
-				<PopupBorderLights variant="navBar" scale={0.55} />
-			</div>
-			<div class="pt-side pt-side--left">
-				<button class="pt-btn" type="button" onclick={openRules} aria-label={i18nDerived.gameRules()}>
-					<img src={ptMenu} alt="" />
-				</button>
 
-				<button
-					class="pt-btn pt-buy"
-					type="button"
-					disabled={disableBuy}
-					onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
-					aria-label={buyLabel}
-				>
-					<img src={ptBuy} alt="" />
-					<span class="pt-buy__label" use:fitLabel={{ dep: buyLabel, maxFraction: 0.86 }}>{buyLabel}</span>
-				</button>
-			</div>
-
-			<button
-				class="pt-spin"
-				class:is-spinning={isSpinStop}
-				type="button"
-				onclick={onSpinButton}
-				aria-label={i18nDerived.translate('SPIN')}
-				disabled={canInteract && !hasAuto && !canAffordBet}
-			>
-				<img src={navSpinBg} alt="" class="pt-spin__img pt-spin__img--bg" />
-				{#if isSpinStop}
-					<img src={navSpinStopGlyph} alt="" class="pt-spin__img pt-spin__img--stopglyph" />
-				{:else}
-					<img src={navSpinArrow} alt="" class="pt-spin__img pt-spin__img--arrow" />
-				{/if}
-				{#if hasAuto}
-					<span class="pt-spin__count">{autoSpinsRemainingText}</span>
-				{/if}
-			</button>
-
-			<div class="pt-side pt-side--right">
-				<button
-					class="pt-btn pt-turbo"
-					data-speed={speedMode}
-					type="button"
-					onclick={onTurbo}
-					aria-label={i18nDerived.turboLabel()}
-					title={`${i18nDerived.turboLabel()}: ${speedMode}`}
-				>
-					<img src={ptTurboImg} alt="" />
-				</button>
-
-				<button
-					class="pt-btn"
-					class:active={hasAuto}
-					type="button"
-					onclick={onAuto}
-					disabled={disableAuto}
-					aria-label={i18nDerived.autoplayLabel()}
-				>
-					<img src={disableAuto && !hasAuto ? ptAutoDisabled : ptAuto} alt="" />
-				</button>
-			</div>
-		</div>
-
-		<div class="pt-stats">
-			<div class="pt-pill">
-				<span class="pt-pill__label">{i18nDerived.balance()}</span>
-				<span class="pt-pill__value" use:fitText={formattedBalance}>{formattedBalance}</span>
-			</div>
-
-			<div class="pt-bet">
-				<img class="pt-bet__bg" src={ptBetBox} alt="" aria-hidden="true" />
-				<button
-					class="pt-step"
-					type="button"
-					onpointerdown={(event) =>
-						startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
-					onpointerup={clearHoldRepeat}
-					onpointercancel={clearHoldRepeat}
-					onpointerleave={clearHoldRepeat}
-					onclick={(event) => maybeRunClickAction(event, onDecrease)}
-					disabled={disableDecrease}
-					aria-label={i18nDerived.translate('DECREASE BET')}
-				>
-					<img src={disableDecrease ? ptMinusDisabled : ptMinus} alt="" />
-				</button>
-
-				<div
-					class="pt-bet__values"
-					role="button"
-					tabindex="0"
-					onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
-					onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
-				>
-					<span class="pt-pill__value" use:fitText={formattedBet}>{formattedBet}</span>
+			<div class="pt-stats">
+				<div class="pt-pill">
+					<span class="pt-pill__label">{i18nDerived.balance()}</span>
+					<span class="pt-pill__value" use:fitText={formattedBalance}>{formattedBalance}</span>
 				</div>
 
-				<button
-					class="pt-step"
-					type="button"
-					onpointerdown={(event) =>
-						startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
-					onpointerup={clearHoldRepeat}
-					onpointercancel={clearHoldRepeat}
-					onpointerleave={clearHoldRepeat}
-					onclick={(event) => maybeRunClickAction(event, onIncrease)}
-					disabled={disableIncrease}
-					aria-label={i18nDerived.translate('INCREASE BET')}
-				>
-					<img src={disableIncrease ? ptPlusDisabled : ptPlus} alt="" />
-				</button>
-			</div>
+				<div class="pt-bet">
+					<button
+						class="nav-btn nav-btn--step"
+						type="button"
+						onpointerdown={(event) =>
+							startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
+						onpointerup={clearHoldRepeat}
+						onpointercancel={clearHoldRepeat}
+						onpointerleave={clearHoldRepeat}
+						onclick={(event) => maybeRunClickAction(event, onDecrease)}
+						disabled={disableDecrease}
+						aria-label={i18nDerived.translate('DECREASE BET')}
+					>
+						<img class="step-glyph step-glyph--minus" src={navMinus} alt="" />
+					</button>
 
-			<div class="pt-pill">
-				<span class="pt-pill__label">{i18nDerived.win()}</span>
-				<span class="pt-pill__value" use:fitText={formattedWin}>{formattedWin}</span>
+					<div
+						class="pt-bet__values"
+						role="button"
+						tabindex="0"
+						onkeydown={(e) => e.key === 'Enter' && (stateModal.modal = { name: 'betAmountMenu' })}
+						onclick={() => (stateModal.modal = { name: 'betAmountMenu' })}
+					>
+						<span class="pt-bet__value" use:fitText={formattedBet}>{formattedBet}</span>
+					</div>
+
+					<button
+						class="nav-btn nav-btn--step"
+						type="button"
+						onpointerdown={(event) =>
+							startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
+						onpointerup={clearHoldRepeat}
+						onpointercancel={clearHoldRepeat}
+						onpointerleave={clearHoldRepeat}
+						onclick={(event) => maybeRunClickAction(event, onIncrease)}
+						disabled={disableIncrease}
+						aria-label={i18nDerived.translate('INCREASE BET')}
+					>
+						<img class="step-glyph step-glyph--plus" src={navPlus} alt="" />
+					</button>
+				</div>
+
+				<div class="pt-pill">
+					<span class="pt-pill__label">{i18nDerived.win()}</span>
+					<span class="pt-pill__value" use:fitText={formattedWin}>{formattedWin}</span>
+				</div>
 			</div>
 		</div>
-	</div>
 	{/if}
 </div>
 
@@ -1877,9 +1983,8 @@
 	   Landscape floats the same controls over the board, so it cannot use a 1095x77 pill: it takes
 	   the design's palette, glyphs and type but keeps its own geometry — hence the plate is dropped
 	   and the row height goes back to auto here. Without this the fixed row height and the stretched
-	   plate wrecked it. Portrait no longer renders .hud-bottom at all — it has its own .pt-hud
-	   marquee below, still on the older neon art — but the rules stay keyed to both so the fallback
-	   is safe. */
+	   plate wrecked it. Portrait no longer renders .hud-bottom at all — it has its own .pt-hud two-row
+	   block below (node 7063:17249) — but the rules stay keyed to both so the fallback is safe. */
 	.hud-shell[data-layout='portrait'] .hud-plate,
 	.hud-shell[data-layout='landscape'] .hud-plate {
 		display: none;
@@ -2205,8 +2310,13 @@
 		}
 	}
 
-	/* ===== PORTRAIT HUD — dedicated 2-row marquee layout ===== */
+	/* ===== PORTRAIT HUD — dedicated 2-row layout ===== */
 	.hud-shell[data-layout='portrait'] {
+		/* The design's phone frame is 358 wide and puts both HUD rows on 349 of it. --pt-w is that
+		   349, capped so the bar keeps phone proportions on a tall tablet, and --pt-u is one design
+		   pixel of it — every portrait size below is written in those units. */
+		--pt-w: min(97vw, 460px);
+		--pt-u: calc(var(--pt-w) / 349);
 		/* MUST carry a unit. The desktop value is a length (a vw/px expression over 1126), so every
 		   `calc(var(--hud-u) * N)` below resolves to a length. A bare `1` here made those unitless,
 		   which silently dropped the width/height/font-size declarations and — because a unitless
@@ -2227,37 +2337,12 @@
 		bottom: 0;
 		z-index: 5;
 		pointer-events: none;
-		height: 230px;
-		/* translucent so the park scene shows through behind the HUD (design), still aids legibility */
-		background: linear-gradient(
-			to top,
-			rgba(8, 4, 20, 0.74) 0%,
-			rgba(8, 4, 20, 0.5) 52%,
-			rgba(8, 4, 20, 0) 100%
-		);
-	}
-
-	/* Portrait draws its own pill in CSS since the plate art cannot back a three-row stack. Colours
-	   are the design's: near-black lifting to #1a0535, hairline #d836fc. */
-	.hud-shell[data-layout='portrait'] .hud-bottom {
-		width: min(97vw, 440px);
-		display: flex;
-		flex-direction: column;
-		gap: 5px;
-		padding: 6px 10px;
-		border-radius: 30px;
-		background: linear-gradient(0deg, #1a0535 0%, #05010c 100%);
-		border: 1px solid #d836fc;
-		box-shadow:
-			0 0 18px rgba(216, 54, 252, 0.25),
-			0 12px 26px rgba(0, 0, 0, 0.45);
-	}
-
-	.hud-shell[data-layout='portrait'] .hud-controls {
-		order: 0;
-		width: 100%;
-		justify-content: center;
-		gap: 8px;
+		/* 118 units of black lifting to nothing (node 7063:17253) — the park scene still reads
+		   through it. The design also backdrop-blurs this strip; that is deliberately left off,
+		   because a live blur over the WebGL canvas forces a full re-composite every frame on
+		   mobile, which is exactly the cost this game has spent two rounds removing. */
+		height: calc(var(--pt-u) * 118);
+		background: linear-gradient(to top, rgba(0, 0, 0, 0.57) 7%, rgba(0, 0, 0, 0) 100%);
 	}
 
 	/* Portrait logo stack: Press Play mark stacked above the THEME PARK logo; the stack's bottom
@@ -2285,319 +2370,211 @@
 		filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.55));
 	}
 
+	/* ===== PORTRAIT HUD — Figma 7063:17249 =======================================================
+	   One --pt-u is one pixel of the design's phone frame, in which the control plate and the stats
+	   strip are both 349 wide — so every number below is read straight off the design and the whole
+	   HUD scales as one block.
+
+	   The shared button components (.nav-btn, .buy-btn, .spin-btn) are sized in --hud-u, and this
+	   design draws the round ones at 36 where the desktop bar draws 48. Re-basing --hud-u to three
+	   quarters of a portrait unit is therefore the whole port: every glyph, caption and stepper
+	   inside those components follows, with no second table of numbers to keep in step. */
 	.pt-hud {
 		pointer-events: auto;
 		position: relative;
 		z-index: 6;
 		align-self: center;
-		/* Lifted off the very bottom edge ("move to the top a bit"). */
 		margin-top: auto;
-		margin-bottom: 22px;
-		width: min(97vw, 460px);
+		/* The strip clears the viewport bottom by 14 in the design; the shell contributes 8 of it. */
+		margin-bottom: calc(var(--pt-u) * 6);
+		width: var(--pt-w);
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 22px;
+		/* 602.5 -> 611 between the two rows. */
+		gap: calc(var(--pt-u) * 8.5);
+		--hud-u: calc(var(--pt-u) * 0.75);
 		font-family: 'Lilita One', sans-serif;
 	}
 
-	/* --- Controls row: the Navigation plate art (bar_plate) is the bar background; the buttons sit
-	   on top. Buy bonus = 100% bar height, spin exceeds it, menu/turbo/auto smaller & inside. --- */
-	/* 3-column grid: [left group | spin | right group]. The 1fr side columns are equal, so the
-	   spin (auto centre column) is always dead-centre; each side spreads its two buttons. */
+	/* 349 x 62: an outer #310463 shell with a #1d013c panel inset in it, the panel edged #5f1484 and
+	   glowing magenta. The controls sit on top, spread across the row the way the design spaces
+	   them; the spin button is the only one that breaks the panel's line, by being taller than it. */
 	.pt-controls {
 		position: relative;
-		width: 94%;
-		height: 62px;
-		display: grid;
-		grid-template-columns: 1fr auto 1fr;
-		grid-template-rows: 100%;
-		column-gap: 12px;
-		align-items: center;
-		align-content: center;
-		padding: 0 10px;
-		overflow: visible;
-	}
-	.pt-bar-bg,
-	.pt-bar-lights {
-		position: absolute;
-		inset: 0;
 		width: 100%;
-		height: 100%;
-		object-fit: fill;
-		z-index: 0;
-		pointer-events: none;
-	}
-	.pt-controls > :not(.pt-bar-bg, .pt-bar-lights) {
-		position: relative;
-		z-index: 1;
-	}
-	.pt-side {
+		height: calc(var(--pt-u) * 62);
+		box-sizing: border-box;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		padding: 0 calc(var(--pt-u) * 11);
+		border-radius: calc(var(--pt-u) * 14);
+		background: #310463;
 	}
 
-	.pt-btn {
-		flex: 0 0 auto;
-		/* Cap at the design px but scale down with the viewport, so the whole control row shrinks
-		   together on a narrow portrait rather than staying phone-sized on a 320px screen. */
-		width: min(34px, 9vw);
-		height: min(34px, 9vw);
-		padding: 0;
-		border: 0;
-		background: transparent;
-		cursor: pointer;
-		display: grid;
-		place-items: center;
-		transition:
-			transform 0.12s ease,
-			filter 0.12s ease;
-	}
-	.pt-btn img {
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-		display: block;
-	}
-	.pt-btn:active {
-		transform: scale(0.92);
-	}
-	.pt-btn:disabled {
-		opacity: 0.5;
-		cursor: default;
-	}
-	.pt-btn.active img,
-	.pt-turbo[data-speed='fast'] img,
-	.pt-turbo[data-speed='super'] img {
-		filter: drop-shadow(0 0 7px rgba(120, 200, 255, 0.9));
+	.pt-plate {
+		position: absolute;
+		inset: calc(var(--pt-u) * 4) calc(var(--pt-u) * 4.5);
+		border-radius: calc(var(--pt-u) * 13);
+		background: #1d013c;
+		border: 1px solid #5f1484;
+		box-shadow: 0 0 calc(var(--pt-u) * 5) #b335f5;
+		pointer-events: none;
 	}
 
-	/* Buy bonus — round purple button, bigger than the small buttons, centered in the bar. */
-	.pt-buy {
+	.pt-controls > :not(.pt-plate) {
 		position: relative;
-		width: min(58px, 15vw);
-		height: min(58px, 15vw);
-		align-self: center;
-	}
-	.pt-buy__label {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-weight: 800;
-		font-size: 0.48rem;
-		line-height: 1.05;
-		letter-spacing: 0.01em;
-		color: #fff;
-		text-transform: uppercase;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
-		text-align: center;
-		overflow-wrap: break-word;
-		pointer-events: none;
-		/* narrow enough that "BUY BONUS" wraps to two lines inside the round button */
-		padding: 0 16px;
+		z-index: 1;
 	}
 
-	/* Spin — the largest button of the row, centered and sitting inside the bar. (The art has ~13%
-	   transparent padding, so the visible ring is smaller than the box and stays inside the bar.) */
-	.pt-spin {
-		flex: 0 0 auto;
-		position: relative;
-		align-self: center;
-		/* Was a flat 98px that dwarfed the bar on small portrait screens — cap smaller and scale it with
-		   the viewport so it stays the biggest control without swallowing a 320px-wide row. */
-		width: min(86px, 22.5vw);
-		height: min(86px, 22.5vw);
-		margin: 0;
-		padding: 0;
-		border: 0;
-		background: transparent;
-		cursor: pointer;
-		display: grid;
-		place-items: center;
-		transition: transform 0.12s ease;
-		z-index: 2;
-	}
-	/* Same two-layer stack as the landscape button. The ring art is square and centred on its own
-	   circle, so a plain 100% box puts the ring exactly where the old composite had it and lets the
-	   ring rotate without drifting. The glyph percentages are the design's glyph-to-ring ratios. */
-	.pt-spin__img {
-		position: absolute;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		object-fit: contain;
-		display: block;
-		pointer-events: none;
-	}
-	.pt-spin__img--bg {
-		width: 100%;
-		height: 100%;
-		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
-	}
-	.pt-spin__img--arrow {
-		width: 39.3%;
-		height: 39.3%;
-		transform: translate(calc(-50% - 0.27%), calc(-50% - 0.8%));
-	}
-	.pt-spin__img--stopglyph {
-		width: 22.3%;
-		height: 22.3%;
-		transform: translate(calc(-50% - 0.4%), calc(-50% + 0.9%));
+	/* 87 x 40 with a 13.6 label — the same pill the desktop bar draws at 119 x 48 / 17. */
+	.pt-controls .buy-btn {
+		width: calc(var(--pt-u) * 87);
+		aspect-ratio: 87 / 40;
 	}
 
-	@keyframes pt-spin-ring {
-		from {
-			transform: translate(-50%, -50%) rotate(0deg);
-		}
-		to {
-			transform: translate(-50%, -50%) rotate(360deg);
-		}
+	.pt-controls .buy-btn__label {
+		font-size: calc(var(--pt-u) * 13.6);
+		letter-spacing: calc(var(--pt-u) * 1.12);
+		line-height: calc(var(--pt-u) * 16);
 	}
 
-	.pt-spin:not(:disabled):hover .pt-spin__img--bg,
-	.pt-spin:not(:disabled):focus-visible .pt-spin__img--bg,
-	.pt-spin:not(:disabled):active .pt-spin__img--bg,
-	.pt-spin.is-spinning .pt-spin__img--bg {
-		animation: pt-spin-ring 2.4s linear infinite;
-	}
-	.pt-spin.is-spinning .pt-spin__img--bg {
-		animation-duration: 1.1s;
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.pt-spin .pt-spin__img--bg {
-			animation: none;
-		}
-	}
-	.pt-spin:active {
-		transform: scale(0.94);
-	}
-	.pt-spin:disabled {
-		opacity: 0.6;
-		cursor: default;
-	}
-	.pt-spin__count {
-		position: absolute;
-		inset: 0;
-		display: grid;
-		place-items: center;
-		font-weight: 800;
-		font-size: 1.15rem;
-		color: #fff;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
-		pointer-events: none;
+	/* 76 square and centred on the row — the desktop button is 134 x 118.5 and rides 4.75 units
+	   high, and neither applies here, so the ring and both glyphs re-declare their percentages.
+	   The stack itself is unchanged: the design's Ellipse 11 IS .spin-btn__ring (a #37065F disc
+	   behind a 2.17 gradient rim, glowing #d100ff), and its arrow is spin-arrow.webp. */
+	.pt-spin.spin-btn {
+		width: calc(var(--pt-u) * 76);
+		height: calc(var(--pt-u) * 76);
 	}
 
-	/* --- Stats strip: balance | bet(-/+) | win --- */
+	.pt-spin .spin-btn__ring {
+		--art-h: 100%;
+		--art-dy: 0%;
+		filter: drop-shadow(0 0 calc(var(--pt-u) * 14) rgba(209, 0, 255, 0.55));
+	}
+
+	/* 2.17 of the ring's 76. */
+	.pt-spin .spin-btn__disc {
+		inset: 2.86%;
+	}
+
+	/* The arrow stands 43.9 tall inside that 76 ring in the design; the stop square keeps the
+	   arrow-to-stop ratio the desktop button uses. */
+	.pt-spin .spin-btn__img--arrow {
+		--art-h: 57.8%;
+		--art-dy: 0%;
+	}
+
+	.pt-spin .spin-btn__img--stopglyph {
+		--art-h: 30.6%;
+		--art-dy: 0%;
+	}
+
+	.pt-spin .spin-btn__count {
+		font-size: calc(var(--pt-u) * 18);
+	}
+
+	/* --- Stats strip: 90 | 160.8 | 90 with 4-unit gutters, i.e. the plate's own 349 across. The two
+	   value boxes take up any slack on a wider screen; the bet box holds the design's width because
+	   the two stepper circles inside it do. --- */
 	.pt-stats {
 		width: 100%;
 		display: flex;
 		align-items: stretch;
 		justify-content: center;
-		gap: 7px;
+		gap: calc(var(--pt-u) * 4);
 	}
-	/* balance / win — black, semi-transparent box */
+
 	.pt-pill {
 		flex: 1 1 0;
 		min-width: 0;
+		height: calc(var(--pt-u) * 45);
+		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
+		align-items: flex-start;
 		justify-content: center;
-		gap: 1px;
-		padding: 5px 8px;
-		border-radius: 14px;
-		background: rgba(0, 0, 0, 0.42);
-		border: 1px solid rgba(255, 255, 255, 0.08);
+		padding: 0 calc(var(--pt-u) * 6.667);
+		border-radius: calc(var(--pt-u) * 4);
+		background: rgba(0, 6, 22, 0.78);
+		border: 1px solid rgba(255, 255, 255, 0.09);
+		box-shadow: 0 calc(var(--pt-u) * 2) calc(var(--pt-u) * 10) rgba(0, 0, 0, 0.55);
 		overflow: hidden;
 	}
+
 	.pt-pill__label {
-		font-size: 0.55rem;
-		font-weight: 700;
-		letter-spacing: 0.06em;
+		font-family: 'Poppins', sans-serif;
+		font-weight: 500;
+		font-size: calc(var(--pt-u) * 11);
+		letter-spacing: calc(var(--pt-u) * 0.33);
 		text-transform: uppercase;
 		color: #fff;
 		white-space: nowrap;
-		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
 	}
+
 	.pt-pill__value {
 		max-width: 100%;
-		font-size: 0.92rem;
-		font-weight: 700;
+		font-family: 'Poppins', sans-serif;
+		font-weight: 500;
+		font-size: calc(var(--pt-u) * 14);
+		letter-spacing: calc(var(--pt-u) * 0.42);
 		color: #fff;
 		white-space: nowrap;
 		overflow: hidden;
-		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 	}
-	/* bet — the purple box art (Variant8) fills the cell; −, value and + sit inside it. */
+
+	/* 160.8 x 45: a 1.2 rim of #63307d around a #21003d panel, the shared stepper circles at each
+	   end and the amount between them. */
 	.pt-bet {
 		position: relative;
-		flex: 1.5 1 0;
+		flex: 0 1 calc(var(--pt-u) * 160.8);
 		min-width: 0;
-		height: min(50px, 13vw);
+		height: calc(var(--pt-u) * 45);
+		box-sizing: border-box;
 		display: flex;
 		align-items: center;
-		justify-content: center;
-		/* Scale the −/+ margins with the viewport so the value keeps most of the box on a narrow screen —
-		   fixed 12/18px overhead is what crushed "$1.00" to a few px at 320. */
-		gap: min(11px, 3vw);
-		padding: 0 min(16px, 4.2vw);
+		justify-content: space-between;
+		padding: 0 calc(var(--pt-u) * 3.5);
+		border-radius: calc(var(--pt-u) * 4);
+		background: #63307d;
 	}
-	.pt-bet__bg {
+
+	.pt-bet::before {
+		content: '';
 		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: fill;
-		z-index: 0;
+		inset: calc(var(--pt-u) * 1.2);
+		border-radius: calc(var(--pt-u) * 4.389);
+		background: #21003d;
+		border: 1px solid #5e4374;
 		pointer-events: none;
 	}
-	.pt-bet > :not(.pt-bet__bg) {
+
+	.pt-bet > * {
 		position: relative;
 		z-index: 1;
 	}
-	/* small step buttons that fit inside the bet box with clear margin */
-	.pt-bet .pt-step {
-		width: min(27px, 7vw);
-		height: min(27px, 7vw);
-	}
+
 	.pt-bet__values {
 		flex: 1 1 0;
 		min-width: 0;
 		display: flex;
-		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 1px;
 		cursor: pointer;
 		overflow: hidden;
 	}
-	.pt-step {
-		flex: 0 0 auto;
-		width: 40px;
-		height: 40px;
-		padding: 0;
-		border: 0;
-		background: transparent;
-		cursor: pointer;
-		display: grid;
-		place-items: center;
-		transition: transform 0.1s ease;
-	}
-	.pt-step img {
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-		display: block;
-	}
-	.pt-step:active {
-		transform: scale(0.9);
-	}
-	.pt-step:disabled {
-		opacity: 0.5;
-		cursor: default;
+
+	.pt-bet__value {
+		max-width: 100%;
+		font-family: 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: calc(var(--pt-u) * 14);
+		line-height: calc(var(--pt-u) * 16.5);
+		color: #fff;
+		white-space: nowrap;
+		overflow: hidden;
 	}
 </style>

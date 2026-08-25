@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import zlib from 'node:zlib';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const modes = ['BASE', 'ANTE', 'FSPIN1', 'FSPIN2', 'DUCK', 'ROLLER', 'COASTER'];
@@ -1146,8 +1147,22 @@ assert.match(
 );
 assert.match(
 	coasterPresenterSource,
-	/Initial setup reveal only[\s\S]*Free-spin reel timing is owned elsewhere and remains unchanged[\s\S]*const SETUP_SPEED_BOOST = 1\.69;[\s\S]*const SEQUENCE_SPEED = 0\.9 \* SETUP_SPEED_BOOST \* 0\.85;[\s\S]*const DUCK_PLAYBACK_SPEED = 4\.5 \* SETUP_SPEED_BOOST;[\s\S]*const VOMIT_CLIP_MS = Math\.round\(VOMIT_SOURCE_MS \/ DUCK_PLAYBACK_SPEED\);/,
-	'Mega Coaster cart movement must be fifteen percent slower without changing duck playback',
+	/Initial setup reveal only[\s\S]*Free-spin reel timing is owned elsewhere and remains unchanged[\s\S]*const SETUP_SPEED_BOOST = 1\.69;[\s\S]*const SEQUENCE_SPEED = 0\.9 \* SETUP_SPEED_BOOST \* 0\.85;/,
+	'Mega Coaster cart movement must be fifteen percent slower than the boosted route speed',
+);
+assert.match(
+	coasterPresenterSource,
+	/const VOMIT_SOURCE_MS = 4500;[\s\S]*const VOMIT_CLIP_MS = (\d+);[\s\S]*const DUCK_PLAYBACK_SPEED = VOMIT_SOURCE_MS \/ VOMIT_CLIP_MS;/,
+	'Mega Coaster duck playback must be derived from the clip window, not from the cart speed',
+);
+// The 128 frames are three beats — yellow duck, duck turning green, then the vomit. Fitted to the
+// cart the window was 592ms, about 130ms a beat, and the clip read as one green flicker.
+const coasterVomitClipMs = Number(
+	/const VOMIT_CLIP_MS = (\d+);/.exec(coasterPresenterSource)?.[1] ?? 0,
+);
+assert.ok(
+	coasterVomitClipMs >= 1500 && coasterVomitClipMs < 4500,
+	'Mega Coaster vomit clip must be long enough to read all three beats and short enough to stay a clip',
 );
 assert.doesNotMatch(
 	coasterPresenterSource,
@@ -1340,12 +1355,90 @@ assert.ok(
 	coasterAtlasWidth * coasterAtlasHeight < 3_000_000,
 	'Mega Coaster atlas must not retain its former transparent 4096x2304 allocation',
 );
+/**
+ * White glyph pixels in an 8-bit RGBA PNG — enough to tell the three turbo bolts apart by weight
+ * (outline < one solid < two solid) without pinning a hash that any legitimate re-export would break.
+ */
+const countWhitePixels = (file) => {
+	const png = fs.readFileSync(file);
+	assert.equal(png.readUInt8(24), 8, `${path.basename(file)} must be an 8-bit PNG`);
+	assert.equal(png.readUInt8(25), 6, `${path.basename(file)} must be RGBA`);
+	assert.equal(png.readUInt8(28), 0, `${path.basename(file)} must not be interlaced`);
+	const width = png.readUInt32BE(16);
+	const height = png.readUInt32BE(20);
+	const chunks = [];
+	for (let at = 8; at + 8 <= png.length; ) {
+		const length = png.readUInt32BE(at);
+		const type = png.toString('ascii', at + 4, at + 8);
+		if (type === 'IDAT') chunks.push(png.subarray(at + 8, at + 8 + length));
+		at += length + 12;
+	}
+	const raw = zlib.inflateSync(Buffer.concat(chunks));
+	const stride = width * 4;
+	const previous = Buffer.alloc(stride);
+	const line = Buffer.alloc(stride);
+	let white = 0;
+	for (let row = 0; row < height; row += 1) {
+		const filter = raw[row * (stride + 1)];
+		raw.copy(line, 0, row * (stride + 1) + 1, row * (stride + 1) + 1 + stride);
+		for (let index = 0; index < stride; index += 1) {
+			const left = index >= 4 ? line[index - 4] : 0;
+			const up = previous[index];
+			const upLeft = index >= 4 ? previous[index - 4] : 0;
+			let add = 0;
+			if (filter === 1) add = left;
+			else if (filter === 2) add = up;
+			else if (filter === 3) add = (left + up) >> 1;
+			else if (filter === 4) {
+				const p = left + up - upLeft;
+				const dLeft = Math.abs(p - left);
+				const dUp = Math.abs(p - up);
+				const dUpLeft = Math.abs(p - upLeft);
+				add = dLeft <= dUp && dLeft <= dUpLeft ? left : dUp <= dUpLeft ? up : upLeft;
+			}
+			line[index] = (line[index] + add) & 0xff;
+		}
+		for (let index = 0; index < stride; index += 4) {
+			if (
+				line[index + 3] > 200 &&
+				line[index] > 200 &&
+				line[index + 1] > 200 &&
+				line[index + 2] > 200
+			)
+				white += 1;
+		}
+		line.copy(previous);
+	}
+	return white;
+};
+
+// The mobile turbo button is one file per speed step, and the art used to sit in them rotated by
+// one: the OFF button carried a solid bolt, so a player who had never pressed turbo saw the same
+// glyph as a player running it. Weight tells them apart — outlined bolt, one solid, two solid.
+const turboArt = (name) =>
+	countWhitePixels(path.join(root, 'static', 'assets', 'theme-park', 'v2', 'controls', name));
+const turboOffWhite = turboArt('btn-turbo.png');
+const turboFastWhite = turboArt('btn-turbo-fast.png');
+const turboSuperWhite = turboArt('btn-turbo-super.png');
+assert.ok(
+	turboOffWhite < turboFastWhite && turboFastWhite < turboSuperWhite,
+	`Turbo button art must go outlined -> one bolt -> two bolts (got ${turboOffWhite}, ${turboFastWhite}, ${turboSuperWhite} white pixels)`,
+);
+assert.ok(
+	turboFastWhite > turboOffWhite * 1.5,
+	'Turbo-off art must be the outlined bolt, not a solid one',
+);
+
 const coasterWildTileSource = fs.readFileSync(
 	path.join(root, 'src', 'components', 'CoasterWildTile.svelte'),
 	'utf8',
 );
 const coasterWildBackgroundSource = fs.readFileSync(
 	path.join(root, 'src', 'components', 'CoasterWildBackground.svelte'),
+	'utf8',
+);
+const coasterWildCellsSource = fs.readFileSync(
+	path.join(root, 'src', 'game', 'coasterWildCells.ts'),
 	'utf8',
 );
 assert.match(
@@ -1390,13 +1483,13 @@ assert.doesNotMatch(
 );
 assert.match(
 	persistentWildSource,
-	/const drawWildContentMask =[\s\S]*for \(let reel = 0; reel < BOARD_DIMENSIONS\.x; reel \+= 1\)[\s\S]*for \(let row = 0; row < BOARD_DIMENSIONS\.y; row \+= 1\)[\s\S]*<Graphics isMask draw=\{drawWildContentMask\} \/>/,
-	'Persistent Mega Coaster Wilds must use cell-cut masks below the grid and side rails',
+	/const drawWildContentMask =[\s\S]*for \(const \{ reel, row \} of coasterTiles\)[\s\S]*getCoasterWildRect\(reel, row, occupiedCells\)[\s\S]*<Graphics isMask draw=\{drawWildContentMask\} \/>/,
+	'Persistent Mega Coaster Wilds must cut the mask from the Wilds on the board, below the grid and side rails',
 );
 assert.match(
 	coasterPresenterSource,
-	/const drawWildContentMask =[\s\S]*for \(let reel = 0; reel < BOARD_DIMENSIONS\.x; reel \+= 1\)[\s\S]*for \(const row of ROWS\)[\s\S]*<Graphics isMask draw=\{drawWildContentMask\} \/>/,
-	'Mega Coaster setup Wilds must use the same cell-cut border mask',
+	/const drawWildContentMask =[\s\S]*for \(const \{ reel, row \} of stampedCells\)[\s\S]*getCoasterWildRect\(reel, row, occupiedCells\)[\s\S]*<Graphics isMask draw=\{drawWildContentMask\} \/>/,
+	'Mega Coaster setup Wilds must use the same Wild-cut border mask',
 );
 assert.doesNotMatch(
 	coasterWildBackgroundSource,
@@ -1405,18 +1498,25 @@ assert.doesNotMatch(
 );
 assert.match(
 	coasterWildBackgroundSource,
-	/COASTER_WILD_GRID_INSET[\s\S]*EDGE_LOCAL_INSET = BOARD_SIDE_CONTENT_INSET \* 0\.5[\s\S]*CELL_W - leftInset - rightInset[\s\S]*CELL_H - COASTER_WILD_GRID_INSET \* 2/,
-	'Mega Coaster Wild backgrounds must leave every equal grid cell divider visible',
+	/getCoasterWildRect\(reel, row, props\.occupied \?\? EMPTY_CELLS\)[\s\S]*rect\.x - CELL_W \* \(reel \+ 0\.5\)[\s\S]*rect\.y - CELL_H \* \(row \+ 0\.5\)/,
+	'Mega Coaster Wild backgrounds must take the same rect as the mask that clips them',
+);
+// A free edge keeps the divider visible; an edge shared with the next Wild closes flush against it,
+// because two inset covers left a slot open and the reel scrolled through it in plain sight.
+assert.match(
+	coasterWildCellsSource,
+	/const left = edgeOrGridInset\(reel === 0, shares\(-1, 0\)\)[\s\S]*const top = shares\(0, -1\) \? 0 : COASTER_WILD_GRID_INSET;[\s\S]*const bottom = shares\(0, 1\) \? 0 : COASTER_WILD_GRID_INSET;/,
+	'Mega Coaster Wild covers must close on edges shared with another Wild and stay inset elsewhere',
 );
 assert.doesNotMatch(
 	coasterPresenterSource,
 	/coverTopEdge|coverBottomEdge|hasTileAt/,
-	'Mega Coaster setup must not bridge adjacent Wild cells over the grid',
+	'Mega Coaster setup must close adjacent Wild cells through the shared rect, not ad-hoc cover flags',
 );
 assert.doesNotMatch(
 	persistentWildSource,
 	/coverTopEdge|coverBottomEdge|hasTileAt/,
-	'Persistent Mega Coaster Wilds must not bridge adjacent cells over the grid',
+	'Persistent Mega Coaster Wilds must close adjacent cells through the shared rect, not ad-hoc cover flags',
 );
 // The normal Wild used to win by swapping to 'tpWildAnim' and playing a sheet. It was redrawn as a
 // marquee that wins by lighting its bulbs, so what this now checks is that it still resolves to the

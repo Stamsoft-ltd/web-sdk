@@ -11,15 +11,8 @@
 	import { MainContainer } from 'components-layout';
 
 	import { getContext } from '../game/context';
-	import {
-		BOARD_DIMENSIONS,
-		BOARD_GRID_OFFSET_Y,
-		BOARD_SIDE_CONTENT_INSET,
-		CELL_W,
-		CELL_H,
-		COASTER_WILD_GRID_INSET,
-		getBoardCellCenterX,
-	} from '../game/constants';
+	import { BOARD_GRID_OFFSET_Y, CELL_H, getBoardCellCenterX } from '../game/constants';
+	import { getCoasterWildRect, toCoasterCellKeys } from '../game/coasterWildCells';
 	import CoasterWildTile from './CoasterWildTile.svelte';
 
 	const context = getContext();
@@ -77,23 +70,15 @@
 	const cellY = (row: number) => CELL_H * (row + 0.5);
 	const cellPulse = (reel: number, row: number) =>
 		(pulsingKeys.includes(`${reel},${row}`) ? 1.14 : 1) * (isCellWinning(reel, row) ? winPulse : 1);
+	const occupiedCells = $derived(toCoasterCellKeys(coasterTiles));
 	// Same cell-cut pattern as Mega Wilds: the existing BoardFrame remains visible through every
-	// divider and side rail while this later overlay supplies only Wild content.
+	// divider and side rail while this later overlay supplies only Wild content. The cut follows the
+	// Wilds actually on the board, so two neighbours share one opening and no reel scrolls between
+	// them; the mask reads coasterTiles inside the draw call, so it is rebuilt as tiles land.
 	const drawWildContentMask = (graphics: PIXI.Graphics) => {
-		for (let reel = 0; reel < BOARD_DIMENSIONS.x; reel += 1) {
-			const leftInset = reel === 0 ? BOARD_SIDE_CONTENT_INSET : COASTER_WILD_GRID_INSET;
-			const rightInset =
-				reel === BOARD_DIMENSIONS.x - 1
-					? BOARD_SIDE_CONTENT_INSET
-					: COASTER_WILD_GRID_INSET;
-			for (let row = 0; row < BOARD_DIMENSIONS.y; row += 1) {
-				graphics.rect(
-					CELL_W * reel + leftInset,
-					CELL_H * row + COASTER_WILD_GRID_INSET,
-					CELL_W - leftInset - rightInset,
-					CELL_H - COASTER_WILD_GRID_INSET * 2,
-				);
-			}
+		for (const { reel, row } of coasterTiles) {
+			const { x, y, width, height } = getCoasterWildRect(reel, row, occupiedCells);
+			graphics.rect(x, y, width, height);
 		}
 		graphics.fill(0xffffff);
 	};
@@ -119,6 +104,7 @@
 					<CoasterWildTile
 						reel={tile.reel}
 						row={tile.row}
+						occupied={occupiedCells}
 						multiplier={tile.multiplier}
 						contentScale={cellPulse(tile.reel, tile.row)}
 					/>

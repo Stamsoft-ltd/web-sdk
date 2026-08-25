@@ -4,32 +4,27 @@
 	// texture type comes from pixi-svelte's own re-export instead (never from a direct pixi.js dep).
 	import type { Texture } from 'pixi-svelte';
 
-	import {
-		BOARD_DIMENSIONS,
-		BOARD_SIDE_CONTENT_INSET,
-		BOARD_SIZES,
-		CELL_W,
-		CELL_H,
-		COASTER_SETUP_SCRIM,
-		COASTER_WILD_GRID_INSET,
-	} from '../game/constants';
+	import { BOARD_SIZES, CELL_W, CELL_H, COASTER_SETUP_SCRIM } from '../game/constants';
+	import { getCoasterWildRect, type CoasterCellKey } from '../game/coasterWildCells';
 
-	type Props = { reel?: number; row?: number; underScrim?: boolean };
+	type Props = {
+		reel?: number;
+		row?: number;
+		/** True while <CoasterSetupPresenter> owns this tile, i.e. it is drawn above the setup dim. */
+		underScrim?: boolean;
+		/** Every cell currently carrying a Wild, so shared edges close instead of leaving a slot. */
+		occupied?: ReadonlySet<CoasterCellKey>;
+	};
 	const props: Props = $props();
 
-	// Edge reel centres move inward by half the shared side reserve. Match that here so this local
-	// fill still ends exactly at the wider board-content edge during the setup overlay.
-	const EDGE_LOCAL_INSET = BOARD_SIDE_CONTENT_INSET * 0.5;
-	const leftInset = $derived(
-		props.reel === 0 ? EDGE_LOCAL_INSET : COASTER_WILD_GRID_INSET,
-	);
-	const rightInset = $derived(
-		props.reel === BOARD_DIMENSIONS.x - 1 ? EDGE_LOCAL_INSET : COASTER_WILD_GRID_INSET,
-	);
-	const cellLeft = $derived(-CELL_W * 0.5 + leftInset);
-	const cellTop = -CELL_H * 0.5 + COASTER_WILD_GRID_INSET;
-	const cellWidth = $derived(CELL_W - leftInset - rightInset);
-	const cellHeight = CELL_H - COASTER_WILD_GRID_INSET * 2;
+	const EMPTY_CELLS: ReadonlySet<CoasterCellKey> = new Set<CoasterCellKey>();
+	const reel = $derived(props.reel ?? 0);
+	const row = $derived(props.row ?? 0);
+	// Board-unit rect shared with the layer's clip mask, so cover and mask always agree.
+	const rect = $derived(getCoasterWildRect(reel, row, props.occupied ?? EMPTY_CELLS));
+	// This tile draws at its cell centre, so the shared rect has to come back to local units.
+	const cellLeft = $derived(rect.x - CELL_W * (reel + 0.5));
+	const cellTop = $derived(rect.y - CELL_H * (row + 0.5));
 
 	const context = getContextApp();
 	const gridTexture = $derived(context.stateApp.loadedAssets?.themeBoardGrid as Texture | undefined);
@@ -54,22 +49,23 @@
 		return new PIXI.Texture({
 			source: gridTexture.source,
 			frame: new PIXI.Rectangle(
-				x + (CELL_W * (props.reel ?? 0) + leftInset) * perUnitX,
-				y + (CELL_H * (props.row ?? 0) + COASTER_WILD_GRID_INSET) * perUnitY,
-				cellWidth * perUnitX,
-				cellHeight * perUnitY,
+				x + rect.x * perUnitX,
+				y + rect.y * perUnitY,
+				rect.width * perUnitX,
+				rect.height * perUnitY,
 			),
 		});
 	});
 </script>
 
-<!-- Opaque cell fill hides the reel symbols scrolling behind a persistent Wild. Every edge stays
-     inset so adjacent Wilds never cover the one grid painted into BoardFrame or spill through the
-     board's side border. The flat rect stays underneath as the floor for the one frame before the
-     board art has loaded — never let the reel show through here. -->
+<!-- Opaque cell fill hides the reel symbols scrolling behind a persistent Wild. Free edges stay
+     inset so a Wild never covers the one grid painted into BoardFrame or spills through the board's
+     side border, while an edge shared with the next Wild closes flush against it. The flat rect
+     stays underneath as the floor for the one frame before the board art has loaded — never let the
+     reel show through here. -->
 <Graphics
 	draw={(graphics) => {
-		graphics.rect(cellLeft, cellTop, cellWidth, cellHeight);
+		graphics.rect(cellLeft, cellTop, rect.width, rect.height);
 		graphics.fill({ color: 0x15002f, alpha: 1 });
 	}}
 />
@@ -79,8 +75,8 @@
 		anchor={{ x: 0, y: 0 }}
 		x={cellLeft}
 		y={cellTop}
-		width={cellWidth}
-		height={cellHeight}
+		width={rect.width}
+		height={rect.height}
 	/>
 {/if}
 {#if props.underScrim}
@@ -88,7 +84,7 @@
 	     same dim the board around it is taking. Without this every stamped cell is a lit hole. -->
 	<Graphics
 		draw={(graphics) => {
-			graphics.rect(cellLeft, cellTop, cellWidth, cellHeight);
+			graphics.rect(cellLeft, cellTop, rect.width, rect.height);
 			graphics.fill({ color: COASTER_SETUP_SCRIM.color, alpha: COASTER_SETUP_SCRIM.alpha });
 		}}
 	/>

@@ -38,7 +38,19 @@ describe('shared frontend completeness guards', () => {
 		const hud = source('src/components/HudHtml.svelte');
 		expect(hud).toContain('data-speed={speedMode}');
 		expect(hud).toContain('--hud-u: calc(min(93.8vw, 1400px) / 1126)');
-		expect(hud).toContain(".pt-turbo[data-speed='fast']");
+		// Every bar shows the speed as art, one bolt per step, so OFF can never read as turbo-on:
+		// the outlined bolt, one solid bolt, two solid bolts. Both the desktop row and the portrait
+		// row pick between the same three files; landscape does the same with its own PNG set.
+		expect(hud).toContain('turbo-1.webp');
+		expect(hud).toContain('turbo-2.webp');
+		expect(hud).toContain('turbo-3.webp');
+		const turboPicks = hud.match(
+			/stateBet\.isSuperTurbo\s*\?\s*navTurboDouble\s*:\s*stateBet\.isTurbo\s*\?\s*navTurboSolid\s*:\s*navTurboOutline/g,
+		);
+		expect(turboPicks?.length).toBe(2);
+		expect(hud).toContain(
+			'stateBet.isSuperTurbo ? ptTurboSuper : stateBet.isTurbo ? ptTurboFast : ptTurbo',
+		);
 	});
 
 	it('shrinks long HUD currency values in layout instead of paint-only transforms', () => {
