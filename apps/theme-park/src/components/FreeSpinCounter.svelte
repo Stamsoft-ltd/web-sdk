@@ -8,13 +8,14 @@
 <script lang="ts">
 	import { MainContainer } from 'components-layout';
 	import { FadeContainer } from 'components-pixi';
-	import { Container, Graphics, Text } from 'pixi-svelte';
+	import { Container, Graphics, PIXI, Text } from 'pixi-svelte';
 	import { stateBet, stateI18nDerived } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 	import { Tween } from 'svelte/motion';
 	import { backOut } from 'svelte/easing';
 
 	import { getContext } from '../game/context';
+	import { BOARD_SIZES, BOARD_GRID_OFFSET_Y } from '../game/constants';
 
 	const context = getContext();
 
@@ -146,6 +147,35 @@
 		totalWinWidth > plateWidth * 0.82 ? (plateWidth * 0.82) / totalWinWidth : 1,
 	);
 
+	// ── PORTRAIT ─────────────────────────────────────────────────────────────────────────────────
+	//
+	// A full-bleed board has no side gutter, so the desktop/landscape stack would ride over the reels.
+	// Portrait instead lays the two plates in a ROW *below* the board — the same board-local band the
+	// duck-pond bonus puts its PICK / TOTAL WIN boxes in (DuckPondBonus `y: BH + …`), so the two
+	// bonuses line up and the row always clears the control bar. Units here are the board's own
+	// (0..BW, 0..BH), rendered through the board's transform.
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	const BW = BOARD_SIZES.width;
+	const BH = BOARD_SIZES.height;
+	const PT_PLATE = { w: 372, h: 150, y: BH + 140 };
+	// Two plates centred under the board with a small gap between them.
+	const PT_GAP = 34;
+	const PT_LEFT_X = BW / 2 - PT_GAP / 2 - PT_PLATE.w / 2;
+	const PT_RIGHT_X = BW / 2 + PT_GAP / 2 + PT_PLATE.w / 2;
+	const PT_LABEL_SIZE = Math.round(PT_PLATE.h * LABEL.size);
+	const PT_VALUE_SIZE = Math.round(PT_PLATE.h * VALUE.size);
+	// Fit long currency strings to the portrait plate width (board-local units, matching the Text's
+	// own font units) rather than the desktop plateWidth.
+	const ptTotalWinFit = $derived(
+		totalWinWidth > PT_PLATE.w * 0.82 ? (PT_PLATE.w * 0.82) / totalWinWidth : 1,
+	);
+	const drawPtPlate = (graphics: InstanceType<typeof PIXI.Graphics>) => {
+		graphics
+			.roundRect(-PT_PLATE.w / 2, -PT_PLATE.h / 2, PT_PLATE.w, PT_PLATE.h, PT_PLATE.h * RADIUS)
+			.fill({ color: PLATE_FILL })
+			.stroke({ width: Math.max(1, PT_PLATE.h * 0.02), color: PLATE_STROKE, alpha: 0.9 });
+	};
+
 	context.eventEmitter.subscribeOnMount({
 		freeSpinCounterShow: () => {
 			show = false;
@@ -167,78 +197,135 @@
 
 <MainContainer>
 	<FadeContainer {show}>
-		{@const labelSize = Math.round(plateHeight * LABEL.size)}
-		{@const valueSize = Math.round(plateHeight * VALUE.size)}
-		<Container x={plateX} y={board.y + gridWidth * PLATE.freeSpinsY}>
-			<Graphics
-				draw={(graphics) => {
-					graphics
-						.roundRect(
-							-plateWidth / 2,
-							-plateHeight / 2,
-							plateWidth,
-							plateHeight,
-							plateHeight * RADIUS,
-						)
-						.fill({ color: PLATE_FILL })
-						.stroke({ width: Math.max(1, plateHeight * 0.02), color: PLATE_STROKE, alpha: 0.9 });
-				}}
-			/>
-			<Text
-				anchor={0.5}
-				y={plateHeight * LABEL.y}
-				text={stateI18nDerived.translate('FREE SPINS')}
-				style={textStyle(labelSize, LABEL_FILL)}
-			/>
-			{@const lineWidth = numWidth + restWidth}
-			<Container y={plateHeight * VALUE.y}>
-				<Container x={-lineWidth / 2 + numWidth / 2} scale={valuePop.current}>
+		{#if isPortrait}
+			<!-- Portrait: two plates in a row below the board, rendered through the board's transform so
+			     they sit in the same band as the duck-pond bonus boxes. -->
+			<Container
+				x={board.x}
+				y={board.y + BOARD_GRID_OFFSET_Y}
+				pivot={board.pivot}
+				scale={board.boardScale}
+			>
+				<Container x={PT_LEFT_X} y={PT_PLATE.y}>
+					<Graphics draw={drawPtPlate} />
 					<Text
 						anchor={0.5}
-						text={`${current}`}
-						onresize={({ width }) => (numWidth = width)}
+						y={PT_PLATE.h * LABEL.y}
+						text={stateI18nDerived.translate('FREE SPINS')}
+						style={textStyle(PT_LABEL_SIZE, LABEL_FILL)}
+					/>
+					{@const lineWidth = numWidth + restWidth}
+					<Container y={PT_PLATE.h * VALUE.y}>
+						<Container x={-lineWidth / 2 + numWidth / 2} scale={valuePop.current}>
+							<Text
+								anchor={0.5}
+								text={`${current}`}
+								onresize={({ width }) => (numWidth = width)}
+								style={textStyle(PT_VALUE_SIZE, VALUE_FILL)}
+							/>
+						</Container>
+						<Text
+							anchor={{ x: 0, y: 0.5 }}
+							x={-lineWidth / 2 + numWidth}
+							text={` ${stateI18nDerived.translate('OF')} ${total}`}
+							onresize={({ width }) => (restWidth = width)}
+							style={textStyle(PT_VALUE_SIZE, VALUE_FILL)}
+						/>
+					</Container>
+				</Container>
+
+				<Container x={PT_RIGHT_X} y={PT_PLATE.y}>
+					<Graphics draw={drawPtPlate} />
+					<Text
+						anchor={0.5}
+						y={PT_PLATE.h * LABEL.y}
+						text={stateI18nDerived.translate('TOTAL WIN')}
+						style={textStyle(PT_LABEL_SIZE, LABEL_FILL)}
+					/>
+					<Container y={PT_PLATE.h * VALUE.y} scale={ptTotalWinFit}>
+						<Text
+							anchor={0.5}
+							onresize={({ width }) => (totalWinWidth = width)}
+							text={totalWinText}
+							style={textStyle(PT_VALUE_SIZE, VALUE_FILL)}
+						/>
+					</Container>
+				</Container>
+			</Container>
+		{:else}
+			{@const labelSize = Math.round(plateHeight * LABEL.size)}
+			{@const valueSize = Math.round(plateHeight * VALUE.size)}
+			<Container x={plateX} y={board.y + gridWidth * PLATE.freeSpinsY}>
+				<Graphics
+					draw={(graphics) => {
+						graphics
+							.roundRect(
+								-plateWidth / 2,
+								-plateHeight / 2,
+								plateWidth,
+								plateHeight,
+								plateHeight * RADIUS,
+							)
+							.fill({ color: PLATE_FILL })
+							.stroke({ width: Math.max(1, plateHeight * 0.02), color: PLATE_STROKE, alpha: 0.9 });
+					}}
+				/>
+				<Text
+					anchor={0.5}
+					y={plateHeight * LABEL.y}
+					text={stateI18nDerived.translate('FREE SPINS')}
+					style={textStyle(labelSize, LABEL_FILL)}
+				/>
+				{@const lineWidth = numWidth + restWidth}
+				<Container y={plateHeight * VALUE.y}>
+					<Container x={-lineWidth / 2 + numWidth / 2} scale={valuePop.current}>
+						<Text
+							anchor={0.5}
+							text={`${current}`}
+							onresize={({ width }) => (numWidth = width)}
+							style={textStyle(valueSize, VALUE_FILL)}
+						/>
+					</Container>
+					<Text
+						anchor={{ x: 0, y: 0.5 }}
+						x={-lineWidth / 2 + numWidth}
+						text={` ${stateI18nDerived.translate('OF')} ${total}`}
+						onresize={({ width }) => (restWidth = width)}
 						style={textStyle(valueSize, VALUE_FILL)}
 					/>
 				</Container>
-				<Text
-					anchor={{ x: 0, y: 0.5 }}
-					x={-lineWidth / 2 + numWidth}
-					text={` ${stateI18nDerived.translate('OF')} ${total}`}
-					onresize={({ width }) => (restWidth = width)}
-					style={textStyle(valueSize, VALUE_FILL)}
-				/>
 			</Container>
-		</Container>
 
-		<Container x={plateX} y={board.y + gridWidth * PLATE.totalWinY}>
-			<Graphics
-				draw={(graphics) => {
-					graphics
-						.roundRect(
-							-plateWidth / 2,
-							-plateHeight / 2,
-							plateWidth,
-							plateHeight,
-							plateHeight * RADIUS,
-						)
-						.fill({ color: PLATE_FILL })
-						.stroke({ width: Math.max(1, plateHeight * 0.02), color: PLATE_STROKE, alpha: 0.9 });
-				}}
-			/>
-			<Text
-				anchor={0.5}
-				y={plateHeight * LABEL.y}
-				text={stateI18nDerived.translate('TOTAL WIN')}
-				style={textStyle(labelSize, LABEL_FILL)}
-			/>
-			<Container y={plateHeight * VALUE.y} scale={totalWinFit}>
+			<Container x={plateX} y={board.y + gridWidth * PLATE.totalWinY}>
+				<Graphics
+					draw={(graphics) => {
+						graphics
+							.roundRect(
+								-plateWidth / 2,
+								-plateHeight / 2,
+								plateWidth,
+								plateHeight,
+								plateHeight * RADIUS,
+							)
+							.fill({ color: PLATE_FILL })
+							.stroke({ width: Math.max(1, plateHeight * 0.02), color: PLATE_STROKE, alpha: 0.9 });
+					}}
+				/>
 				<Text
 					anchor={0.5}
-					onresize={({ width }) => (totalWinWidth = width)}
-					text={totalWinText}
-					style={textStyle(valueSize, VALUE_FILL)}
+					y={plateHeight * LABEL.y}
+					text={stateI18nDerived.translate('TOTAL WIN')}
+					style={textStyle(labelSize, LABEL_FILL)}
 				/>
+				<Container y={plateHeight * VALUE.y} scale={totalWinFit}>
+					<Text
+						anchor={0.5}
+						onresize={({ width }) => (totalWinWidth = width)}
+						text={totalWinText}
+						style={textStyle(valueSize, VALUE_FILL)}
+					/>
+				</Container>
 			</Container>
-		</Container>
+		{/if}
 	</FadeContainer>
 </MainContainer>

@@ -523,9 +523,9 @@
 				<Container zIndex={PRESENTATION_Z}>
 					<Win />
 					<FreeSpinIntro />
-					{#if ['desktop', 'landscape'].includes(context.stateLayoutDerived.layoutType())}
-						<FreeSpinCounter />
-					{/if}
+					<!-- FreeSpinCounter renders in every layout: portrait lays the plates in a row below the
+					     board (its own branch), desktop/landscape stack them in the side gutter. -->
+					<FreeSpinCounter />
 					<FreeSpinOutro />
 					<Transition />
 				</Container>

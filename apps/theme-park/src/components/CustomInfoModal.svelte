@@ -334,6 +334,7 @@
 						<p class="info-p">{t('INFO GI LEGAL MALFUNCTION')}</p>
 						<p class="info-p">{t('INFO GI LEGAL RETURN')}</p>
 						<p class="info-p">{t('INFO GI LEGAL SETTLE')}</p>
+						<p class="info-p gi-tm">{t('INFO GI LEGAL TM')}</p>
 					</div>
 				</div>
 			{:else}
@@ -414,7 +415,7 @@
 		flex-direction: column;
 		border-radius: 22px;
 		/* Flat muted-purple frame per the design — no neon gradient / marching lights. */
-		border: 1px solid #5e4374;
+		border: 2px solid #5e4374;
 		background: #1d023a;
 		box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
 		overflow: visible;
@@ -875,6 +876,12 @@
 		/* White card titles (design update). */
 		color: #fff;
 	}
+	/* Small muted copyright / trademark line at the foot of the legal card. */
+	.gi-tm {
+		margin-top: 8px;
+		font-size: 0.72rem;
+		opacity: 0.7;
+	}
 
 	/* --- UI guide --- */
 	/* Portrait (the new design): a single-column LIST — each control is one full-width row, its icon
@@ -1000,7 +1007,9 @@
 			opacity 0.1s ease;
 	}
 	.nav-arrow img {
-		width: 44%;
+		/* Bigger glyph inside the circle — the arrow SVG carries padding, so 44% read as an almost
+		   invisible dot on small landscape. */
+		width: 58%;
 		height: auto;
 	}
 	.nav-arrow:active {
@@ -1035,7 +1044,7 @@
 			height: auto;
 			aspect-ratio: 1484 / 750;
 			/* Flat muted-purple frame (same as portrait) — the neon frame image is gone. */
-			border: 1px solid #5e4374;
+			border: 2px solid #5e4374;
 			background: #1d023a;
 			box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
 			border-radius: 26px;
@@ -1119,24 +1128,26 @@
 			padding-left: 13%;
 		}
 		.ov-card {
-			padding: 16px 16px 18px;
+			padding: min(16px, 2.3cqh);
 			min-width: 0;
-			/* Taller boxes per the design — content centred in the added height. */
-			min-height: 155px;
+			/* Taller boxes per the design; capped in px, scaling with cqh so they never overflow the
+			   short/small landscape modal (800×450, 400×225). */
+			min-height: min(155px, 21.5cqh);
 			display: flex;
 			flex-direction: column;
 			justify-content: center;
 		}
 		.ov-card__name {
-			/* Design spec: Lilita One 400, 18px, line-height 100%, letter-spacing 3%, centred. */
-			font-size: 18px;
+			/* Design spec: Lilita One 400, 18px, line-height 100%, letter-spacing 3% — capped at 18px on
+			   desktop, scaling with cqh below the design size so it never clips on small landscape. */
+			font-size: min(18px, 2.5cqh);
 			line-height: 1;
 			letter-spacing: 0.03em;
-			margin-bottom: 10px;
+			margin-bottom: min(10px, 1.4cqh);
 		}
 		.ov-card__p {
-			/* Design spec: Nunito 400, 12px, line-height 100%, letter-spacing 3%, centred. */
-			font-size: 12px;
+			/* Design spec: Nunito 400, 12px, line-height 100%, letter-spacing 3% (px-capped, cqh-scaled). */
+			font-size: min(12px, 1.7cqh);
 			line-height: 1;
 			letter-spacing: 0.03em;
 		}
@@ -1311,6 +1322,9 @@
 			align-items: center;
 			text-align: center;
 			gap: 0.9cqh;
+			/* Scale the box padding down on short/small landscape so the 3 guide rows don't overflow
+			   (which pushed the title off the top at 400×225). */
+			padding: min(8px, 1.6cqh) min(12px, 2cqh);
 		}
 		.guide-text {
 			align-items: center;
@@ -1362,6 +1376,37 @@
 			right: clamp(-34px, -8.7vh, -16px);
 			width: clamp(24px, 11.3vh, 46px);
 			height: clamp(24px, 11.3vh, 46px);
+		}
+
+		/* Very short landscape (e.g. 400x225). cqh scales fonts with the viewport, but the flex-shared
+		   paytable rows and the fixed-px pill paddings shrink faster than cqh does, so a few things read
+		   as cramped/oversized only here. Trim those specifically — desktop and 800x450 are untouched. */
+		@container (max-height: 340px) {
+			/* Symbols were filling the ~18px rows edge-to-edge; give them breathing room. */
+			.pay-img {
+				width: 6cqh;
+				height: 6cqh;
+			}
+			.pay-img--royal {
+				width: 5cqh;
+				height: 5cqh;
+			}
+			/* Feature-buy price pill: fixed 4px/14px padding was huge relative to the tiny card. */
+			.buy-cost {
+				padding: 2px 8px;
+				border-radius: 5px;
+			}
+			.feat-card {
+				padding: 1.4cqh 3%;
+			}
+			.feat-logo {
+				max-height: 11cqh;
+			}
+			/* The circle is fine, but the thin line-arrow inside was a barely-visible speck at ~11px.
+			   Fill most of the circle so the glyph actually reads at this size. */
+			.nav-arrow img {
+				width: 80%;
+			}
 		}
 	}
 </style>

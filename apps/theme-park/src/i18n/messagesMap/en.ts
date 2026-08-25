@@ -275,11 +275,12 @@ export default {
 		'All valid wagers and potential winnings remain active until the round is fully completed.',
 	'INFO GI LEGAL TITLE': 'LEGAL NOTICE',
 	'INFO GI LEGAL MALFUNCTION':
-		'Malfunction voids all pays and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.',
+		'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds.',
 	'INFO GI LEGAL RETURN':
-		'The expected return is calculated over a large number of plays. The game display is for visual and entertainment purposes only and does not represent any physical gaming device.',
+		'The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only.',
 	'INFO GI LEGAL SETTLE':
-		'All winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.',
+		'Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser.',
+	'INFO GI LEGAL TM': 'TM and © 2026 Stake Engine.',
 	// User interface guide page. SPIN/TURBO/INFO/SOUND/CLOSE/MENU/MUSIC reuse the HUD keys above.
 	'INFO UI AUTO SPINS': 'AUTO SPINS',
 	'INFO UI BET PLUS': 'BET +',
