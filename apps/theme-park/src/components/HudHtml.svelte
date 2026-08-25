@@ -2429,6 +2429,14 @@
 		z-index: 1;
 	}
 
+	/* The shared menu hangs off the burger by the DESKTOP bar's frame inset, which is wider than this
+	   bar's own padding — on a 390 phone that pushed the panel 1.7px off the left edge. Re-anchor it
+	   to the lit plate's inner edge instead: the bar's 11 of padding less the plate's 4.5 inset. */
+	.pt-hud .hud-menu {
+		left: calc(var(--pt-u) * -6.5);
+		bottom: calc(100% + var(--pt-u) * 14);
+	}
+
 	/* 87 x 40 with a 13.6 label — the same pill the desktop bar draws at 119 x 48 / 17. */
 	.pt-controls .buy-btn {
 		width: calc(var(--pt-u) * 87);
