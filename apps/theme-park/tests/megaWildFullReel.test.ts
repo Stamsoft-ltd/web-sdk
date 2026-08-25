@@ -194,23 +194,22 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(builder).toContain('track-clean.png');
 		expect(builder).not.toContain('BACKGROUND_CENTERING_X');
 		expect(builder).toContain('fallback.alpha_composite(layers["background"])');
-		expect(builder).toContain('mega-wild-handdrawn');
-		expect(builder).toContain('plaque-front-redrawn-v3.png');
-		expect(builder).toContain('plaque-top-35-redrawn-v3.png');
-		expect(builder).toContain('plaque-top-60-redrawn-v3.png');
-		expect(builder).toContain('plaque-top-side-redrawn-v3.png');
-		expect(builder).toContain('plaque-bottom-35-redrawn-v3.png');
-		expect(builder).toContain('plaque-bottom-60-redrawn-v3.png');
-		expect(builder).toContain('plaque-bottom-side-redrawn-v3.png');
-		expect(builder).toContain('PLAQUE_FRONT_SIZE = (244, 171)');
+		// The reel hangs the SAME flat neon plate a regular win's amount is drawn inside, read from the
+		// finished file rather than recomposed, so the two cannot drift. The authored gold plaque and
+		// its six perspective poses are retired: a flat card has no depth to draw, so every view here
+		// is the front squashed, edge-on included.
+		expect(builder).toContain('"wins" / "small-win-plate-neon-v1.png"');
+		expect(builder).not.toContain('redrawn-v3.png');
+		expect(builder).not.toContain('mega-wild-handdrawn"');
+		expect(builder).not.toContain('WIN_PLAQUE_OUTPUT');
+		expect(builder).toContain('PLAQUE_FRONT_SIZE = (244, 148)');
 		expect(builder).toContain('return trim(Image.open(PLAQUE_SOURCE)).resize(');
-		expect(builder).toContain('height = max(2, round(PLAQUE_FRONT_SIZE[1] * plaque_projected_scale(angle)))');
+		expect(builder).toContain(
+			'height = max(2, round(PLAQUE_FRONT_SIZE[1] * plaque_projected_scale(angle)))',
+		);
 		expect(builder).toContain('def plaque_view_correction_keys(');
-		expect(builder).toContain('def plaque_side_layer(source: Path, angle: float)');
-		expect(builder).toContain('image_source = source if angle == 90 else PLAQUE_SOURCE');
-		expect(builder).toContain('plaque_front.save(WIN_PLAQUE_OUTPUT, optimize=True)');
-		expect(builder).not.toContain('mega-wild-plaque-neon-v2.png');
-		expect(builder).not.toContain('roller-wilds-star.png');
+		expect(builder).toContain('def plaque_side_layer(angle: float)');
+		expect(builder).toContain('image = trim(Image.open(PLAQUE_SOURCE))');
 		expect(builder).toContain('PLAQUE_POSE_COUNT = 128');
 		expect(builder).toContain('ROLL_START_FRAME = 12');
 		expect(builder).toContain('ROLL_END_FRAME = 42');
@@ -234,10 +233,9 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(builder).not.toContain('plaque.putalpha(alpha)');
 		const win = source('components/Win.svelte');
 		expect(win).toContain('<Sprite key="tpSmallWinPlaque"');
-		// The regular-win plate is the flat NEON card (Figma 7100:26891), which this rig has no
-		// perspective poses of — so the two are separate pieces of art and the win screen must not be
-		// pointed back at the plaque this rig packs. The aspect <Win> pins is guarded against the
-		// plate's own PNG in validate-artifacts, not against this rig's plaque region.
+		// Both screens point at the plate's own file, built by `scripts/win-plate/build_win_plate.py`.
+		// This rig reads it; the win screen draws it. The aspect <Win> pins is guarded against that
+		// PNG's real dimensions in validate-artifacts.
 		const assets = source('game/assets.ts');
 		expect(assets).toContain("src: './assets/theme-park/v2/wins/small-win-plate-neon-v1.png'");
 		expect(assets).not.toContain('wins/small-win-plaque.png');

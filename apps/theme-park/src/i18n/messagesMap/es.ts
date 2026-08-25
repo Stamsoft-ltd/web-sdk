@@ -50,7 +50,8 @@ export default {
 	UNLIMITED: 'ILIMITADO',
 	'PRESS TO CONTINUE': 'PULSE PARA CONTINUAR',
 	'SPLASH FEATURE 1': 'BIENVENIDO\nAL PARQUE',
-	'SPLASH FEATURE 1 BODY': 'Luces brillantes, atracciones salvajes\ny grandes sorpresas\nen cada esquina.',
+	'SPLASH FEATURE 1 BODY':
+		'Luces brillantes, atracciones salvajes\ny grandes sorpresas\nen cada esquina.',
 	'SPLASH FEATURE 2': '3 BONOS\nÚNICOS',
 	'SPLASH FEATURE 2 BODY': 'Elige los patos\nMonta los comodines\nSobrevive a la montaña rusa',
 	'SPLASH FEATURE 3': 'GANANCIA MÁX. DE',
@@ -261,6 +262,7 @@ export default {
 		'El retorno esperado se calcula sobre un gran número de jugadas. La presentación del juego es solo visual y de entretenimiento y no representa ningún dispositivo de juego físico.',
 	'INFO GI LEGAL SETTLE':
 		'Todas las ganancias se liquidan según el resultado recibido del Remote Game Server, no según las animaciones o eventos mostrados en el navegador.',
+	'INFO GI LEGAL TM': 'TM y © 2026 Stake Engine.',
 	'INFO UI AUTO SPINS': 'GIROS AUTOMÁTICOS',
 	'INFO UI BET PLUS': 'APUESTA +',
 	'INFO UI BET MINUS': 'APUESTA -',

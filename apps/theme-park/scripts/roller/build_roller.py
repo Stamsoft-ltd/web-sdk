@@ -73,13 +73,20 @@ SAME = 24
 LAYERS = ("emblem", "banner", "roller", "wilds", "star")
 # The three that move at runtime. The other two are the sign they move on, and ship baked together.
 LOOSE = ("star", "roller", "wilds")
+# The one layer whose enclosed paper is background rather than drawing — see `keyed`.
+HOLED = ("emblem",)
 
 
-def keyed(path):
+def keyed(path, holes=False):
     """The export with its paper knocked out.
 
     Flooded in from the border rather than keyed by colour everywhere, so the star's specular
     highlight and the words' white outlines stay part of the drawing.
+
+    `holes` keys the paper the flood cannot reach as well — the gaps a drawing encloses. The emblem
+    is a knot of loops with about twenty of them, and left opaque they shipped as white patches
+    hanging inside the symbol on a purple board. It is off by default because for every other layer
+    an enclosed white IS the drawing: the star's highlight, and the counters of the words' letters.
     """
     rgb = np.asarray(Image.open(path).convert("RGB")).astype(int)
     h, w, _ = rgb.shape
@@ -99,7 +106,7 @@ def keyed(path):
             if 0 <= ny < h and 0 <= nx < w and paper[ny, nx] and not seen[ny, nx]:
                 seen[ny, nx] = True
                 queue.append((ny, nx))
-    return np.dstack([rgb, np.where(seen, 0, 255)]).astype(int)
+    return np.dstack([rgb, np.where(paper if holes else seen, 0, 255)]).astype(int)
 
 
 def locate(composition, part):
@@ -136,7 +143,7 @@ def main():
 
     placed = {}
     for name in LAYERS:
-        part = keyed(SOURCE / f"layer-{name}.png")
+        part = keyed(SOURCE / f"layer-{name}.png", holes=name in HOLED)
         x, y, share = locate(composition, part)
         placed[name] = (part, x, y)
         print(f"{name}: {part.shape[1]}x{part.shape[0]} at ({x}, {y}) in the x4 group, "

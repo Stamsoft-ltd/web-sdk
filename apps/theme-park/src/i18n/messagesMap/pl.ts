@@ -50,7 +50,8 @@ export default {
 	UNLIMITED: 'NIEOGRANICZONE',
 	'PRESS TO CONTINUE': 'NACIŚNIJ, ABY KONTYNUOWAĆ',
 	'SPLASH FEATURE 1': 'WITAJ\nW PARKU',
-	'SPLASH FEATURE 1 BODY': 'Jasne światła, szalone przejażdżki\ni wielkie niespodzianki\nna każdym kroku.',
+	'SPLASH FEATURE 1 BODY':
+		'Jasne światła, szalone przejażdżki\ni wielkie niespodzianki\nna każdym kroku.',
 	'SPLASH FEATURE 2': '3 WYJĄTKOWE\nBONUSY',
 	'SPLASH FEATURE 2 BODY': 'Wybierz kaczki\nUjeżdżaj Wildy\nPrzetrwaj kolejkę górską',
 	'SPLASH FEATURE 3': 'MAKS. WYGRANA',
@@ -254,6 +255,7 @@ export default {
 		'Oczekiwany zwrot jest obliczany na podstawie dużej liczby gier. Wyświetlanie gry służy wyłącznie celom wizualnym i rozrywkowym i nie przedstawia żadnego fizycznego urządzenia do gry.',
 	'INFO GI LEGAL SETTLE':
 		'Wszystkie wygrane są rozliczane zgodnie z wynikiem otrzymanym z Remote Game Server, a nie na podstawie animacji lub zdarzeń wyświetlanych w przeglądarce.',
+	'INFO GI LEGAL TM': 'TM i © 2026 Stake Engine.',
 	'INFO UI AUTO SPINS': 'AUTOMATYCZNE SPINY',
 	'INFO UI BET PLUS': 'ZAKŁAD +',
 	'INFO UI BET MINUS': 'ZAKŁAD -',

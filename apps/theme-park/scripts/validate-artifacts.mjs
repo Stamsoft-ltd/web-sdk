@@ -1454,8 +1454,16 @@ assert.match(
 // The splat is a sign laid over a cell, not a reel symbol, so it is drawn at its own proportions
 // rather than squeezed into the symbol frame — and the multiplier is seated off the same height.
 assert.match(coasterWildTileSource, /const SLIME_ASPECT = 512 \/ 391;/, 'Mega Coaster Wild aspect');
-assert.match(coasterWildTileSource, /const SLIME_H = SYMBOL_H \* 0\.82;/, 'Mega Coaster Wild height');
-assert.match(coasterWildTileSource, /width=\{SLIME_W\}\s+height=\{SLIME_H\}/, 'Mega Coaster Wild size');
+assert.match(
+	coasterWildTileSource,
+	/const SLIME_H = SYMBOL_H \* 0\.82;/,
+	'Mega Coaster Wild height',
+);
+assert.match(
+	coasterWildTileSource,
+	/width=\{SLIME_W\}\s+height=\{SLIME_H\}/,
+	'Mega Coaster Wild size',
+);
 assert.match(
 	coasterWildTileSource,
 	/scale=\{props\.contentScale \?\? 1\}/,
@@ -1554,9 +1562,7 @@ assert.doesNotMatch(
 
 // Anchored on the entry's own closing brace rather than on whichever key happens to follow it:
 // the neighbour this used to name was a dead registration, and deleting it broke this check.
-const megaWildAssetBlock = assetsSource.match(
-	/megaWildFullReelSpine:\s*\{[\s\S]*?\n\t\},\n/,
-)?.[0];
+const megaWildAssetBlock = assetsSource.match(/megaWildFullReelSpine:\s*\{[\s\S]*?\n\t\},\n/)?.[0];
 assert.ok(megaWildAssetBlock, 'Combined full-reel Mega Wild Spine must be registered');
 assert.doesNotMatch(
 	megaWildAssetBlock,
@@ -1707,10 +1713,12 @@ for (const attachment of [
 }
 
 // A regular win's amount is drawn inside the flat neon plate of Figma 7100:26891 — the card art
-// with the Roller Wilds star composited onto its top rail. It is NOT the Mega Wild reel's plaque:
-// that rig draws the authored gold card and its six perspective poses. Guard the plate against its
-// OWN generator instead, because <Win> pins an aspect that only that one layer has, and a plate
-// rebuilt at another size would show up on screen as an amount sitting off its centre.
+// with the Roller Wilds star composited onto its top rail. The Mega Wild reel hangs its multiplier
+// on THE SAME FILE: the reel rig used to pack an authored gold plaque with six perspective poses of
+// its own, and that card belonged to no other screen in the game. Guard the plate against its OWN
+// generator, because <Win> pins an aspect that only that one layer has and a plate rebuilt at
+// another size would show up on screen as an amount sitting off its centre — and guard that the
+// reel rig is still reading the finished plate rather than a plaque of its own.
 const winPlateBuilderSource = fs.readFileSync(
 	path.join(root, 'scripts', 'win-plate', 'build_win_plate.py'),
 	'utf8',
@@ -1721,6 +1729,18 @@ for (const source of ['mega-wild-plaque-neon-v2.png', 'roller-wilds-star.png']) 
 		`Small-win plate builder must compose ${source}`,
 	);
 }
+const megaWildBuilderSource = fs.readFileSync(
+	path.join(root, 'scripts', 'build-mega-wild-full-reel-spine.py'),
+	'utf8',
+);
+assert.ok(
+	megaWildBuilderSource.includes('"wins" / "small-win-plate-neon-v1.png"'),
+	'Mega Wild reel must hang the small-win plate, not a plaque of its own',
+);
+assert.ok(
+	!/plaque-(front|top|bottom)-[a-z0-9-]*redrawn-v3\.png/.test(megaWildBuilderSource),
+	'Mega Wild reel must not read the retired gold plaque poses',
+);
 const smallWinPlatePng = fs.readFileSync(
 	path.join(root, 'static', 'assets', 'theme-park', 'v2', 'wins', 'small-win-plate-neon-v1.png'),
 );

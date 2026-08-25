@@ -253,6 +253,7 @@ export default {
 		'期待還元率は多数のプレイにわたって算出されます。ゲーム表示は視覚的・娯楽的な目的のみであり、実在の遊技機を表すものではありません。',
 	'INFO GI LEGAL SETTLE':
 		'すべての配当は、ブラウザ内で表示されるアニメーションやイベントではなく、Remote Game Serverから受信した結果に基づいて確定されます。',
+	'INFO GI LEGAL TM': 'TM および © 2026 Stake Engine.',
 	'INFO UI AUTO SPINS': 'オートスピン',
 	'INFO UI BET PLUS': 'ベット +',
 	'INFO UI BET MINUS': 'ベット -',

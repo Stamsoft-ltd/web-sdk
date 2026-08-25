@@ -18,20 +18,18 @@ CLEAN_SOURCE = (
     / "theme-park"
     / "mega-wild-clean"
 )
-HANDDRAWN_SOURCE = (
-    APP / "source-assets-unused" / "assets" / "theme-park" / "mega-wild-handdrawn"
-)
 FULL_REEL_SOURCE = CLEAN_SOURCE / "track-clean.png"
-# One clean, newly drawn plaque family for the reel multiplier and regular-win amount screen.
-PLAQUE_SOURCE = HANDDRAWN_SOURCE / "plaque-front-redrawn-v3.png"
-PLAQUE_TOP_35_SOURCE = HANDDRAWN_SOURCE / "plaque-top-35-redrawn-v3.png"
-PLAQUE_TOP_60_SOURCE = HANDDRAWN_SOURCE / "plaque-top-60-redrawn-v3.png"
-PLAQUE_TOP_SIDE_SOURCE = HANDDRAWN_SOURCE / "plaque-top-side-redrawn-v3.png"
-PLAQUE_BOTTOM_35_SOURCE = HANDDRAWN_SOURCE / "plaque-bottom-35-redrawn-v3.png"
-PLAQUE_BOTTOM_60_SOURCE = HANDDRAWN_SOURCE / "plaque-bottom-60-redrawn-v3.png"
-PLAQUE_BOTTOM_SIDE_SOURCE = HANDDRAWN_SOURCE / "plaque-bottom-side-redrawn-v3.png"
-WIN_PLAQUE_OUTPUT = (
-    APP / "static" / "assets" / "theme-park" / "v2" / "wins" / "small-win-plaque.png"
+# The multiplier card is the SAME flat neon plate a regular win's amount is drawn inside — the one
+# `scripts/win-plate/build_win_plate.py` composes from Figma 7100:26891 and the Roller Wilds star.
+# The reel used to hang an authored gold plaque here, drawn with six perspective poses of its own,
+# and it was the one card in the game that belonged to no other screen. Reading the finished plate
+# rather than rebuilding it from the card and the star keeps the two literally one file: run that
+# script first if the plate itself changes.
+#
+# The retired gold plaque family is left where it was drawn, under source-assets-unused, unread:
+# it is the only copy of that art.
+PLAQUE_SOURCE = (
+    APP / "static" / "assets" / "theme-park" / "v2" / "wins" / "small-win-plate-neon-v1.png"
 )
 CART_SOURCE = CLEAN_SOURCE / "cart-flat.png"
 CART_STEEP_SOURCE = CLEAN_SOURCE / "cart-steep.png"
@@ -55,7 +53,9 @@ ROLL_END_FRAME = 42
 ROLL_FLIPS_FAKE_START = 5
 ROLL_FLIPS_REAL_START = 4
 PLAQUE_EDGE_SCALE = 0.24
-PLAQUE_FRONT_SIZE = (244, 171)
+# The plate's own authored size. It is SHORTER than the gold plaque this replaced (171), which is
+# what keeps the neon card from being stretched into a footprint drawn for a different piece of art.
+PLAQUE_FRONT_SIZE = (244, 148)
 CART_LAYER_SIZE = (220, 329)
 CART_START_SCALE = 0.5
 CART_VIEWS = ("steep", "high_mid", "mid", "low_mid", "flat")
@@ -110,12 +110,11 @@ def plaque_projected_scale(angle: float) -> float:
     return PLAQUE_EDGE_SCALE + (1 - PLAQUE_EDGE_SCALE) * abs(math.cos(math.radians(angle)))
 
 
-def plaque_side_layer(source: Path, angle: float) -> Image.Image:
-    # Generated oblique drawings contained a subtle left/right perspective twist. Use the exact
-    # centred front drawing for every broad face and reserve authored depth art for edge-on only.
-    # This keeps every ornament on one vertical axis instead of morphing sideways while spinning.
-    image_source = source if angle == 90 else PLAQUE_SOURCE
-    image = trim(Image.open(image_source))
+def plaque_side_layer(angle: float) -> Image.Image:
+    # Every view is the front drawing squashed to its projected height, edge-on included. The gold
+    # plaque this replaced had authored depth art for the 90-degree poses; a flat neon card has no
+    # depth to draw, and borrowing the gold edges would flash a different plaque mid-roll.
+    image = trim(Image.open(PLAQUE_SOURCE))
     height = max(2, round(PLAQUE_FRONT_SIZE[1] * plaque_projected_scale(angle)))
     return image.resize((PLAQUE_FRONT_SIZE[0], height), Image.Resampling.LANCZOS)
 
@@ -408,10 +407,6 @@ def intro_animation(initial_real: bool) -> dict:
 def main() -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     plaque_front = plaque_layer()
-    # The regular-win screen and Spine atlas receive the same processed pixels, not two similar
-    # plaque exports that can drift apart again.
-    WIN_PLAQUE_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    plaque_front.save(WIN_PLAQUE_OUTPUT, optimize=True)
     layers = {
         "background": background_layer(),
         "cart_steep": cart_perspective_layer(CART_STEEP_SOURCE),
@@ -420,12 +415,12 @@ def main() -> None:
         "cart_low_mid": cart_perspective_layer(CART_LOW_MID_SOURCE),
         "cart": cart_layer(),
         "plaque": plaque_front,
-        "plaque_top_35": plaque_side_layer(PLAQUE_TOP_35_SOURCE, 35),
-        "plaque_top_60": plaque_side_layer(PLAQUE_TOP_60_SOURCE, 60),
-        "plaque_top_side": plaque_side_layer(PLAQUE_TOP_SIDE_SOURCE, 90),
-        "plaque_bottom_35": plaque_side_layer(PLAQUE_BOTTOM_35_SOURCE, 35),
-        "plaque_bottom_60": plaque_side_layer(PLAQUE_BOTTOM_60_SOURCE, 60),
-        "plaque_bottom_side": plaque_side_layer(PLAQUE_BOTTOM_SIDE_SOURCE, 90),
+        "plaque_top_35": plaque_side_layer(35),
+        "plaque_top_60": plaque_side_layer(60),
+        "plaque_top_side": plaque_side_layer(90),
+        "plaque_bottom_35": plaque_side_layer(35),
+        "plaque_bottom_60": plaque_side_layer(60),
+        "plaque_bottom_side": plaque_side_layer(90),
         "sparkles": sparkle_layer(),
         "fake_multiplier_slot": Image.new("RGBA", (1, 1)),
         "multiplier_slot": Image.new("RGBA", (1, 1)),

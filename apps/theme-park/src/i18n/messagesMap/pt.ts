@@ -50,7 +50,8 @@ export default {
 	UNLIMITED: 'ILIMITADO',
 	'PRESS TO CONTINUE': 'PRESSIONE PARA CONTINUAR',
 	'SPLASH FEATURE 1': 'BEM-VINDO\nAO PARQUE',
-	'SPLASH FEATURE 1 BODY': 'Luzes brilhantes, brinquedos radicais\ne grandes surpresas\nem cada esquina.',
+	'SPLASH FEATURE 1 BODY':
+		'Luzes brilhantes, brinquedos radicais\ne grandes surpresas\nem cada esquina.',
 	'SPLASH FEATURE 2': '3 BÔNUS\nÚNICOS',
 	'SPLASH FEATURE 2 BODY': 'Escolha os patos\nDomine os curingas\nSobreviva à montanha-russa',
 	'SPLASH FEATURE 3': 'GANHO MÁX. DE',
@@ -258,6 +259,7 @@ export default {
 		'O retorno esperado é calculado sobre um grande número de jogadas. A exibição do jogo é apenas visual e de entretenimento e não representa nenhum dispositivo físico de jogo.',
 	'INFO GI LEGAL SETTLE':
 		'Todos os ganhos são liquidados conforme o resultado recebido do Remote Game Server, e não pelas animações ou eventos mostrados no navegador.',
+	'INFO GI LEGAL TM': 'TM e © 2026 Stake Engine.',
 	'INFO UI AUTO SPINS': 'GIROS AUTOMÁTICOS',
 	'INFO UI BET PLUS': 'APOSTA +',
 	'INFO UI BET MINUS': 'APOSTA -',

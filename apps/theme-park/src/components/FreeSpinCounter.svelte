@@ -16,6 +16,7 @@
 
 	import { getContext } from '../game/context';
 	import { BOARD_SIZES, BOARD_GRID_OFFSET_Y } from '../game/constants';
+	import { FRAME_OVER_GRID_X, GRID_OFFSET_X } from '../game/boardArt';
 
 	const context = getContext();
 
@@ -55,10 +56,12 @@
 	/** Clearance kept between the stack and the edge of the screen, as a fraction of grid width. */
 	const EDGE_MARGIN = 0.02;
 	/**
-	 * Share of the gutter the stack may take in the landscape layout. The gutter there is wider
-	 * relative to the grid than the design's is, so filling it draws plates far bigger than the design
-	 * ever shows — they end up competing with the reels for attention on the smallest screen the game
-	 * runs on.
+	 * Share of the gutter the stack may take, on either side.
+	 *
+	 * A gutter is not a slot to fill: a plate drawn edge to edge in it reads as a second panel bolted
+	 * to the board rather than as a card floating beside it, and on a narrow desktop window that is
+	 * far bigger than the design ever shows — the pair end up competing with the reels. Leaving a
+	 * margin of gutter on both sides is also what lets the stack be CENTRED in it.
 	 */
 	const GUTTER_SHARE = 0.72;
 
@@ -84,31 +87,43 @@
 	 */
 	const onLeft = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
 
-	// Measured to the FRAME's edge, not the grid's: the frame is the wider of the two and it is what
-	// the plates must not run under.
-	const frameLeft = $derived(board.frameCx - board.frameW * 0.5);
-	const gutter = $derived(
-		onLeft ? frameLeft - viewLeft : viewRight - (board.x + gridWidth * 0.5),
-	);
-	// Portrait's board is full-bleed, so it has no gutter at all and the plates ride over the reels as
-	// they always have; sizing them against a gutter of zero would shrink them away to nothing.
+	/**
+	 * The board's DRAWN edges, which is what the plates must not run under — the frame is wider than
+	 * the grid inside it.
+	 *
+	 * Derived the way <BoardFrame> derives what it paints (the grid blown up by FRAME_OVER_GRID_X,
+	 * shifted by the art's off-centre opening), NOT from boardLayout's frameCx/frameW: the desktop
+	 * layout leaves frameCx at 0, so reading it there puts the board's centre at the origin and the
+	 * gutter comes out meaningless.
+	 */
+	const frameWidth = $derived(gridWidth * FRAME_OVER_GRID_X);
+	const frameCx = $derived(board.x + frameWidth * GRID_OFFSET_X);
+	const frameLeft = $derived(frameCx - frameWidth * 0.5);
+	const frameRight = $derived(frameCx + frameWidth * 0.5);
+	const gutter = $derived(onLeft ? frameLeft - viewLeft : viewRight - frameRight);
+	// A window narrow enough to leave no gutter falls back to the design's own offset over the reels:
+	// sizing the plates against a gutter of zero would shrink them away to nothing. Portrait never
+	// reaches this — it lays its own row below the board (see PORTRAIT further down).
 	const hasGutter = $derived(gutter > gridWidth * 0.12);
 	const plateWidth = $derived(
-		hasGutter
-			? Math.min(
-					gridWidth * PLATE.width,
-					onLeft ? gutter * GUTTER_SHARE : gutter - gridWidth * EDGE_MARGIN,
-				)
-			: gridWidth * PLATE.width,
+		hasGutter ? Math.min(gridWidth * PLATE.width, gutter * GUTTER_SHARE) : gridWidth * PLATE.width,
 	);
 	const plateHeight = $derived(plateWidth * (PLATE.height / PLATE.width));
-	// Held inside the visible screen: a canvas narrower than the design's 1.79 leaves less gutter than
-	// the design assumes, and the stack would otherwise run off the edge.
+	/**
+	 * Centred in whichever gutter the stack is in, on both sides.
+	 *
+	 * The design's own x (471 of 691) is a measurement of ITS canvas, where the grid leaves exactly
+	 * one plate's worth of room to the right. Every other window shape leaves a different gutter, and
+	 * pinning to that x put the pair hard against the screen edge with all the slack between them and
+	 * the board. Halfway between the frame and the edge of what the player can see is the placement
+	 * the design is describing, and it holds at any width.
+	 *
+	 * With no gutter to centre in, the stack keeps the design's offset over the reels, clamped to stay
+	 * on screen.
+	 */
 	const plateX = $derived(
-		onLeft
-			? // Centred on the gutter — the same axis <HudHtml> puts the balance and bet pills on, so the
-				// four stack up as one column down the side of the board.
-				(viewLeft + frameLeft) * 0.5
+		hasGutter
+			? (onLeft ? viewLeft + frameLeft : frameRight + viewRight) * 0.5
 			: Math.min(
 					board.x + gridWidth * PLATE.x,
 					viewRight - plateWidth * 0.5 - gridWidth * EDGE_MARGIN,
