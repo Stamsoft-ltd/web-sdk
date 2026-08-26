@@ -27,9 +27,19 @@
 	import FeatureOverlay from './FeatureOverlay.svelte';
 	import PaylineOverlay from './PaylineOverlay.svelte';
 	import HudHtml from './HudHtml.svelte';
-	import { warmArt } from '../lib/preloadArt';
+	import SplashIntro from './SplashIntro.svelte';
+	import { fade } from 'svelte/transition';
+	import { warmArt, ap } from '../lib/preloadArt';
+
+	// Press Play studio wordmark — shown on the (dark) loading screen while assets stream in.
+	const pressPlayLogo = ap('/assets/components/ui/press_play_logo.webp');
 
 	const context = getContext();
+
+	// The designed splash (logo + character + feature cards) shows once assets are ready; pressing it
+	// runs the loading screen's proceed handler (transition → game).
+	let splashIntroVisible = $state(false);
+	let splashPressHandler = $state<(() => void) | undefined>(undefined);
 	const modeImage = './assets/mcschmutzo/background-base.png';
 	const symbolImage = (name: string) => `./assets/mcschmutzo/symbols/${name}.png`;
 
@@ -186,7 +196,13 @@
 			<Background />
 
 			{#if context.stateLayout.showLoadingScreen}
-				<LoadingScreen onloaded={() => (context.stateLayout.showLoadingScreen = false)} />
+				<LoadingScreen
+					onloaded={() => (context.stateLayout.showLoadingScreen = false)}
+					oncanproceed={(handler) => {
+						splashPressHandler = handler;
+						splashIntroVisible = true;
+					}}
+				/>
 			{:else}
 				<ResumeBet />
 				<Sound />
@@ -213,6 +229,21 @@
 				<Transition />
 			{/if}
 		</App>
+
+		{#if context.stateLayout.showLoadingScreen}
+			<img class="pp-loading-mark" src={pressPlayLogo} alt="Press Play" />
+		{/if}
+
+		{#if splashIntroVisible}
+			<div transition:fade={{ duration: 350 }} style="position:absolute;inset:0;z-index:10;">
+				<SplashIntro
+					onpress={() => {
+						splashIntroVisible = false;
+						splashPressHandler?.();
+					}}
+				/>
+			</div>
+		{/if}
 
 		{#if !context.stateLayout.showLoadingScreen}
 			<HudHtml />
@@ -250,6 +281,28 @@
 		z-index: 1;
 		width: 100%;
 		height: 100%;
+	}
+
+	/* Press Play studio wordmark on the loading screen — white mark on the dark loader bg. */
+	.pp-loading-mark {
+		position: absolute;
+		left: 50%;
+		bottom: 5%;
+		transform: translateX(-50%);
+		width: min(190px, 24%);
+		height: auto;
+		z-index: 11;
+		pointer-events: none;
+		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+		animation: pp-fade-in 0.6s ease-out;
+	}
+	@keyframes pp-fade-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
 	}
 
 	:global(html),

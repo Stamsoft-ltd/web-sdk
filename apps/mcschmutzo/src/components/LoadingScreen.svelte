@@ -5,16 +5,27 @@
 
 	import { getContext } from '../game/context';
 	import TransitionAnimation from './TransitionAnimation.svelte';
-	import PressToContinue from './PressToContinue.svelte';
 
 	type Props = {
 		onloaded: () => void;
+		/** Fired once assets are ready; the host shows the HTML splash and calls the handler on press. */
+		oncanproceed?: (onpress: () => void) => void;
 	};
 
 	const props: Props = $props();
 	const context = getContext();
 
 	let loadingType = $state<'start' | 'transition'>('start');
+
+	// When loading finishes, hand a "proceed" callback to the host (Game) so its HTML SplashIntro can
+	// drive the press-to-continue; pressing it runs the same transition → onloaded flow.
+	let notified = false;
+	$effect(() => {
+		if (context.stateApp.loaded && !notified) {
+			notified = true;
+			props.oncanproceed?.(() => (loadingType = 'transition'));
+		}
+	});
 </script>
 
 <!-- logo and loading progress -->
@@ -42,11 +53,6 @@
 			{/if}
 		</Container>
 	</MainContainer>
-</FadeContainer>
-
-<!-- press to continue -->
-<FadeContainer show={loadingType === 'start' && context.stateApp.loaded}>
-	<PressToContinue onpress={() => (loadingType = 'transition')} />
 </FadeContainer>
 
 <!-- transition between the loading screen and the game -->
