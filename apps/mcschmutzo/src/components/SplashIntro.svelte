@@ -128,7 +128,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 2.4cqw;
+		gap: 4.2cqw;
 	}
 
 	.card {
@@ -173,31 +173,35 @@
 		padding: 13% 12% 12%;
 	}
 
+	/* Titles = Bowlby One 32px @ design (cqh is a fraction of the CARD's height, so it scales with
+	   the card in any orientation: a 367px-tall desktop card → ~32px). */
 	.card-title {
 		margin: 0;
-		font-weight: 800;
-		text-transform: uppercase;
-		line-height: 1.05;
-		letter-spacing: 0.01em;
-		/* cqh here is a fraction of the CARD's height (see container-type on .card). */
-		font-size: 6cqh;
+		font-family: 'Bowlby One', sans-serif;
+		font-weight: 400;
+		line-height: 1.39;
+		letter-spacing: 0.03em;
+		font-size: 8.7cqh;
 	}
 	.card--red .card-title {
-		color: #c0392b;
+		color: #c41e0a;
 	}
 	.card--yellow .card-title {
-		color: #e0a200;
+		color: #e2b700;
 	}
 	.card--green .card-title {
-		color: #5f9d2e;
+		color: #75ac10;
 	}
 
+	/* Description = Nunito 20px @ design. */
 	.card-body {
 		margin-top: 2.7cqh;
-		color: #3a2a1a;
+		font-family: 'Nunito', sans-serif;
+		color: #232323;
 		font-weight: 500;
-		font-size: 3.7cqh;
-		line-height: 1.32;
+		font-size: 5.45cqh;
+		line-height: 1;
+		letter-spacing: 0.03em;
 	}
 	.card-body p {
 		margin: 0;
@@ -240,21 +244,14 @@
 			left: 50%;
 			top: 44%;
 			transform: translate(-50%, -50%);
-			width: 96%;
+			width: 98%;
 			height: auto;
-			gap: 2.5%;
+			gap: 4%;
 		}
 		.card {
 			height: auto;
 			flex: 1 1 0;
 			min-width: 0;
-		}
-		.card-title {
-			font-size: 8.5cqh;
-		}
-		.card-body {
-			margin-top: 3.5cqh;
-			font-size: 5cqh;
 		}
 		.man {
 			height: 30%;

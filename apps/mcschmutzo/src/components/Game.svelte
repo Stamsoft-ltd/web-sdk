@@ -230,7 +230,7 @@
 			{/if}
 		</App>
 
-		{#if context.stateLayout.showLoadingScreen}
+		{#if context.stateLayout.showLoadingScreen && !splashIntroVisible}
 			<img class="pp-loading-mark" src={pressPlayLogo} alt="Press Play" />
 		{/if}
 
