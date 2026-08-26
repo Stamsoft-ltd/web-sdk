@@ -1,68 +1,88 @@
 """
-The neon card a REGULAR win's amount is drawn inside — Figma 7100:26891.
+The neon plate a REGULAR win's amount is drawn inside — see `<Win>`.
 
-The design is one portrait card art squashed into a landscape box, with the Roller Wilds star from
-the sign lockup straddling its top rail. So the plate is not a single exported image: the star has
-to be composited into it here, because the card is what the amount is centred in and the star hangs
-outside that box.
+    python3 scripts/win-plate/build_win_plate.py
 
-WHY THIS IS ITS OWN SCRIPT. The same card is the Mega Wild reel's plaque, and for a while one
-builder — `build-mega-wild-full-reel-spine.py` — wrote both from one layer so they could not drift.
-That rig has since been put back on the authored GOLD plaque and its six drawn perspective poses
-(c312551), which the flat neon card has no equivalent of. The two are genuinely different pieces of
-art now, so this plate is built and named on its own rather than taken out of the reel rig.
+## What changed, and why this stopped being a compositor
 
-Run: python3 scripts/win-plate/build_win_plate.py
+v1 was assembled here: the flat neon card of Figma 7100:26891 squashed into a landscape box, with
+the Roller Wilds star from the sign lockup composited onto its top rail, because the amount is
+centred in the card and the star hangs outside that box.
+
+v2 is one authored drawing (`art/concepts/small-win-plate-neon-v2.png`) — a plain neon lozenge, no
+star — so there is nothing left to composite and this only CUTS it: crop to the art's own extent and
+ship it at the width the game draws it. The crop matters. The drawing carries a wide violet halo
+faded out to nothing on a canvas that is wider still, and shipping the canvas would put the plate's
+centre off the amount's centre and waste a third of the pixels on transparency.
+
+The measurements it prints are the ones `<Win>` places the amount with (PLAQUE_ASPECT and the
+PLAQUE_TEXT_* family). Re-run it after re-drawing the art and carry them across — the number is
+centred in the FIELD, which is not the same rect as the image.
 """
 
 from pathlib import Path
 
+import numpy as np
 from PIL import Image
 
 APP = Path(__file__).resolve().parents[2]
-CARD_SOURCE = APP / "art" / "concepts" / "mega-wild-plaque-neon-v2.png"
-STAR_SOURCE = APP / "static" / "assets" / "theme-park" / "v2" / "symbols" / "roller-wilds-star.png"
-OUTPUT = APP / "static" / "assets" / "theme-park" / "v2" / "wins" / "small-win-plate-neon-v1.png"
+SOURCE = APP / "art" / "concepts" / "small-win-plate-neon-v2.png"
+OUTPUT = APP / "static" / "assets" / "theme-park" / "v2" / "wins" / "small-win-plate-neon-v2.png"
 
-WIDTH = 244
-# The design's own box: 118 x 67.23 in Figma. The card art is PORTRAIT, so honouring this is a
-# deliberate squash rather than a fit — that is how the composed design draws it.
-ASPECT = 118.0 / 67.23255673265089
-# The star's height and how far it rises above the card's top rail, both as fractions of the card's
-# own height, measured off the composed design.
-STAR_HEIGHT = 0.2696
-STAR_RISE = 0.0609
-# Composed large and reduced once. The card is being squashed and the star carries a thin gold
-# outline; doing either at final size frays the outline into the purple behind it.
-SUPERSAMPLE = 4
+#: The plate is drawn ~258 design units wide (SYMBOL_SIZE * 1.5 * aspect) on a 1200-unit frame, so
+#: it lands near 500px once the stage is scaled up to a desktop canvas. v1 shipped 244 and was soft.
+WIDTH = 512
+
+#: The dark field inside the magenta keyline — where the amount has to land. The keyline and the
+#: violet halo around it are far more RED than the field is, which is the test.
+FIELD = lambda a: (a[..., 3] > 200) & (a[..., 0] < 90) & (a[..., 2] > 60)
+
+
+def run_through(mask):
+    """The CONTIGUOUS run of `mask` containing its middle, as (start, end-exclusive).
+
+    Not `nonzero().min()..max()`: the keyline is bordered on BOTH sides by dark purple, so the thin
+    ring outside it passes the field test too, and a min/max would hand back a rect a keyline's
+    width too big on every side and let the amount sit on the neon.
+    """
+    middle = len(mask) // 2
+    start = middle
+    while start > 0 and mask[start - 1]:
+        start -= 1
+    end = middle
+    while end < len(mask) - 1 and mask[end + 1]:
+        end += 1
+    return start, end + 1
+
+
+def field_rect(rgba):
+    """The field's edges as fractions of the art, scanned down/across the middle of the plate."""
+    mask = FIELD(rgba)
+    h, w = mask.shape
+    top, bottom = run_through(mask[:, w // 2 - 2 : w // 2 + 3].all(1))
+    left, right = run_through(mask[h // 2 - 2 : h // 2 + 3, :].all(0))
+    return {
+        "top": top / h,
+        "bottom": bottom / h,
+        "left": left / w,
+        "right": right / w,
+    }
 
 
 def main() -> None:
-    width = WIDTH * SUPERSAMPLE
-    card_height = round(width / ASPECT)
-    rise = round(card_height * STAR_RISE)
-    star_height = round(card_height * STAR_HEIGHT)
+    art = Image.open(SOURCE).convert("RGBA")
+    art = art.crop(art.getbbox())
+    field = field_rect(np.asarray(art).astype(int))
 
-    star_art = Image.open(STAR_SOURCE).convert("RGBA")
-    star = star_art.resize(
-        (round(star_height * star_art.width / star_art.height), star_height), Image.LANCZOS
-    )
-    card = Image.open(CARD_SOURCE).convert("RGBA").resize((width, card_height), Image.LANCZOS)
-
-    plate = Image.new("RGBA", (width, card_height + rise), (0, 0, 0, 0))
-    plate.alpha_composite(card, (0, rise))
-    # Centred on the card, hung from the top of the canvas: the canvas is exactly as much taller
-    # than the card as the star rises, so this seats the star on the rail by construction.
-    plate.alpha_composite(star, ((width - star.width) // 2, 0))
-
-    out = plate.resize(
-        (WIDTH, round(plate.height / SUPERSAMPLE)),
-        Image.LANCZOS,
-    )
+    out = art.resize((WIDTH, round(WIDTH * art.height / art.width)), Image.LANCZOS)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     out.save(OUTPUT, optimize=True)
-    print(f"card {WIDTH}x{card_height // SUPERSAMPLE} star {star_height // SUPERSAMPLE}")
-    print(f"{OUTPUT.relative_to(APP)} {out.width}x{out.height} {OUTPUT.stat().st_size // 1024} KB")
+
+    print(f"{OUTPUT.relative_to(APP)}  {out.width}x{out.height}  {OUTPUT.stat().st_size // 1024} KB")
+    print(f"PLAQUE_ASPECT   {art.width / art.height:.4f}  ({art.width}x{art.height} cut)")
+    print(f"field x {field['left']:.4f}..{field['right']:.4f}  y {field['top']:.4f}..{field['bottom']:.4f}")
+    print(f"field w {field['right'] - field['left']:.4f}  h {field['bottom'] - field['top']:.4f}")
+    print(f"field centre y {(field['top'] + field['bottom']) / 2 - 0.5:+.4f} of the plate's height")
 
 
 if __name__ == "__main__":

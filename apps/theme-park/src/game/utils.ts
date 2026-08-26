@@ -168,11 +168,27 @@ export const convertTorResumableBet = (betToResume: Bet) => {
 // Returned in main-layout units, which is what the popups lay out in; the shares themselves are
 // applied to the CANVAS, because mainLayout's width/height are fixed per layout type and do not
 // follow the window's real shape.
+//
+// RAISED ABOUT A TWELFTH ON REQUEST (2026-08-26), AND ANOTHER TENTH LATER THE SAME DAY. The
+// bonus-won screen was still coming up smaller than it wanted to be — the caps are what it lands
+// on, so this is the only place growing it can come from — and the band it sits in has the room:
+// the render these were matched to left a good deal of clear board above the marquee and below it.
+//
+// Both raises are what answer "the blurb should be a bigger font": every size in <CongratsPanel>
+// is a fraction of the marquee's WIDTH, so the column cannot give the blurb more without taking it
+// off something else — but the whole card growing hands every line of it more pixels at once, the
+// blurb included, and moves nothing.
+//
+// 0.75 is the ceiling HERE because of the HUD bar: <FreeSpinOutro>'s assembly runs to the edges of
+// its box, so at this share its foot lands at 0.839 of the canvas and the bar's top edge is at
+// 0.843. <FreeSpinIntro> supersedes this cap with a larger one of its own — its marquee art has
+// transparent margins inside its box, so the same share leaves it visibly smaller than the outro.
+// See CARD_HEIGHT_SHARE there.
 export const popupPanelLimits = (canvas: { width: number; height: number }, mainScale: number) => {
 	const ratio = canvas.width / canvas.height;
-	const heightShare = Math.min(0.63, Math.max(0.5, 0.44 * ratio));
+	const heightShare = Math.min(0.75, Math.max(0.6, 0.52 * ratio));
 	return {
-		maxWidth: (canvas.width / mainScale) * 0.66,
+		maxWidth: (canvas.width / mainScale) * 0.78,
 		maxHeight: (canvas.height / mainScale) * heightShare,
 	};
 };

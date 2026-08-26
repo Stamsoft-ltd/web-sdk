@@ -12,7 +12,7 @@ const points = (packed: string): [number, number][] =>
 	});
 
 /** Width / height of the art, so neither screen has to stretch it. */
-export const PAD_ASPECT = 1.83448;
+export const PAD_ASPECT = 1.78066;
 
 /**
  * The purple field inside the rail — where copy has to land. Measured down the CENTRE COLUMN, not
@@ -20,26 +20,26 @@ export const PAD_ASPECT = 1.83448;
  * bbox would promise height that nothing can be written in.
  */
 export const PAD_FIELD = {
-	top: -0.09398,
-	bottom: 0.21617,
-	left: -0.45451,
-	right: 0.45451,
+	top: -0.10885,
+	bottom: 0.22901,
+	left: -0.49598,
+	right: 0.49698,
 };
 
 /** Half the field's usable height, and its middle — the two figures every screen places copy from. */
-export const PAD_FIELD_CENTRE = 0.06109;
-export const PAD_FIELD_HEIGHT = 0.31015;
+export const PAD_FIELD_CENTRE = 0.06008;
+export const PAD_FIELD_HEIGHT = 0.33786;
 
 /**
  * The bulb as the art draws it: an unlit cream disc. `size` is its diameter, so a glow can be sized
  * off the thing it is lighting rather than off a number that has to be re-tuned whenever the sign
  * is re-exported at a different width.
  */
-export const PAD_BULB = { size: 0.01535, colour: 0xffc177 };
+export const PAD_BULB = { size: 0.01604, colour: 0xffefa4 };
 
 /** Every disc's centre. Nothing in the art is lit — <WinCardLights> is the lighting. */
 export const PAD_BULBS: [number, number][] = points(
-	'-0.00168,-0.10959 -0.05363,-0.10781 0.04915,-0.10760 -0.10331,-0.10357 0.09974,-0.10336 -0.15028,-0.09701 0.14810,-0.09690 -0.19642,-0.08750 0.19538,-0.08735 -0.23780,-0.07292 0.23679,-0.07292 -0.25358,-0.03780 0.25240,-0.03770 -0.28848,-0.01893 0.28765,-0.01903 -0.32868,-0.00847 0.32796,-0.00841 -0.33955,0.02848 0.33864,0.02862 -0.36564,0.05444 0.36526,0.05461 -0.40181,0.06660 0.40168,0.06669 -0.43811,0.07739 0.43809,0.07749 -0.46440,0.10297 0.46437,0.10299 -0.47400,0.13705 0.47344,0.13705 -0.45997,0.16975 0.45917,0.16999 -0.42591,0.18982 0.42471,0.19020 -0.11652,0.21325 0.11541,0.21360 -0.15700,0.21623 -0.07766,0.21548 0.07445,0.21563 0.15711,0.21686 -0.19844,0.22054 0.19874,0.22113 -0.40254,0.22544 -0.24068,0.22528 0.24067,0.22575 0.40152,0.22568 -0.28314,0.23182 0.28422,0.23238 -0.02981,0.23683 0.02850,0.23611 -0.32565,0.23863 0.32637,0.23929 -0.36851,0.24532 0.36868,0.24563',
+	'-0.09106,-0.13266 -0.04804,-0.13555 -0.00289,-0.13688 0.04036,-0.13576 0.08341,-0.13308 -0.13251,-0.12689 0.12843,-0.12723 -0.17292,-0.12101 0.17091,-0.12148 -0.21241,-0.11343 0.21136,-0.11408 -0.25022,-0.10275 0.25069,-0.10371 0.26627,-0.06779 -0.26546,-0.06649 -0.29835,-0.04914 0.29795,-0.04980 -0.33451,-0.03788 0.33476,-0.03907 -0.34338,-0.00317 0.34357,-0.00567 0.36574,0.02263 -0.36488,0.02434 -0.39877,0.03667 0.39895,0.03519 -0.43417,0.04786 0.43427,0.04721 -0.46263,0.07828 0.46195,0.07736 -0.47205,0.11791 0.47061,0.11610 0.45429,0.15261 -0.45537,0.15459 -0.42186,0.17715 0.41861,0.17669 -0.39483,0.21136 0.39276,0.21076 -0.13645,0.21860 -0.09763,0.21652 0.09750,0.21664 0.13740,0.21883 -0.17604,0.22240 0.17563,0.22346 -0.21545,0.22716 -0.06044,0.22536 0.06038,0.22470 0.21401,0.22833 -0.25401,0.23268 0.25280,0.23377 -0.29253,0.23879 0.29092,0.23973 0.36897,0.24346 -0.36835,0.24507 -0.32943,0.24619 -0.02434,0.24527 0.02357,0.24508 0.32951,0.24671',
 );
 
 /**
@@ -47,7 +47,7 @@ export const PAD_BULBS: [number, number][] = points(
  * centre. Pinned so the pad's field centre lands where the Figma card put it, which is what keeps
  * the wordmark, the stars and the amount — all measured against that card — where they were.
  */
-export const PAD_PLATE = { x: 0, y: -0.04041, w: 0.97985, h: 0.53413 };
+export const PAD_PLATE = { x: 0, y: -0.03942, w: 0.97985, h: 0.55027 };
 
 /**
  * Where <WinCard>'s gold stars sit: the middle of a shoulder pocket, as pad units below the pad's
@@ -58,4 +58,4 @@ export const PAD_PLATE = { x: 0, y: -0.04041, w: 0.97985, h: 0.53413 };
  * the shoulders the design's height put the star hard against the bottom rail with a lobe of empty
  * purple over it. The row with the most room in the pocket this art actually draws is the seat.
  */
-export const PAD_STAR_SEAT = 0.13571;
+export const PAD_STAR_SEAT = 0.11407;

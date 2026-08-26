@@ -151,25 +151,26 @@
 	const SMALL_HOLD_MS = 750;
 
 	/**
-	 * The neon plate the amount sits inside, drawn at its authored aspect — Figma 7100:26891, built
-	 * by `scripts/win-plate/build_win_plate.py`.
+	 * The neon plate the amount sits inside, drawn at its authored aspect — cut by
+	 * `scripts/win-plate/build_win_plate.py`.
 	 *
 	 * It replaces a stack of dark ellipses that did the same job — separate the number from the lit
 	 * reels behind it — but read as a smudge rather than as part of the park. Aspect is fixed and the
-	 * TEXT is what shrinks to fit: the star seated on the top rail rules out stretching the plate.
+	 * TEXT is what shrinks to fit: stretching a neon keyline to the width of a long amount would
+	 * thin the tube out along the top and bottom rails and thicken it up the sides.
 	 */
-	const PLAQUE_ASPECT = 244 / 148;
+	const PLAQUE_ASPECT = 512 / 307;
 	const PLAQUE_H = SYMBOL_SIZE * 1.5;
 	const PLAQUE_W = PLAQUE_H * PLAQUE_ASPECT;
 	/**
-	 * How much of the plate the amount may fill, and where its middle is. Measured off the art: the
-	 * flat field runs y 14..140 of 148, and the star bites down to y 31 — so the biggest rectangle
-	 * centred in the field that still clears the star is roughly half the plate's height. The field's
-	 * own centre sits below the layer's, because the star adds height above the card's top rail.
+	 * How much of the plate the amount may fill, and where its middle is — the numbers the builder
+	 * prints. The field inside the keyline is 0.928 x 0.902 of the plate and is centred on it, so
+	 * the amount is centred too (PLAQUE_TEXT_Y 0, where the starred v1 card had to sit low to clear
+	 * the star), and these leave a margin of field showing on all four sides of the number.
 	 */
-	const PLAQUE_TEXT_W = 0.85;
-	const PLAQUE_TEXT_H = 0.5;
-	const PLAQUE_TEXT_Y = (77 - 148 / 2) / 148;
+	const PLAQUE_TEXT_W = 0.86;
+	const PLAQUE_TEXT_H = 0.58;
+	const PLAQUE_TEXT_Y = 0;
 
 	const smallPop = new Tween(1, { duration: SMALL_POP_MS, easing: backOut });
 	const smallHoldDuration = () => SMALL_HOLD_MS * turboFactor();

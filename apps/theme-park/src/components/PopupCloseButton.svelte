@@ -45,20 +45,39 @@
 		height: calc(var(--close-u) * 48.696);
 		padding: 0;
 		box-sizing: border-box;
-		border: 1px solid #d836fc;
+		/* Rim, not a hairline: the "Icon buttons" component strokes itself with the brand sweep —
+		   magenta on the top-left shoulder, cold blue on the bottom-right (Figma 7057:9389, whose
+		   SVG export gives the stops verbatim). The fill stays the same near-black lifting to
+		   #1a0535 at the bottom. Two backgrounds do it, the fill clipped to the padding box and the
+		   rim to the border box with the border itself transparent — the same trick <HudHtml>'s
+		   .nav-btn uses, so every round button in the game is lit from the same corner. */
+		border: 1px solid transparent;
 		border-radius: 9999px;
-		background-image: linear-gradient(0deg, #1a0535 0%, #000 100%);
-		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+		background:
+			linear-gradient(0deg, #1a0535 0%, #000 100%) padding-box,
+			linear-gradient(135deg, #d836fc 0%, #272fdd 100%) border-box;
+		/* Drop shadow to lift it off the art, plus the same resting rim glow every other round button
+		   in the game now carries (design ask, 2026-08-26) — see .nav-btn in <HudHtml>. */
+		box-shadow:
+			0 4px 14px rgba(0, 0, 0, 0.55),
+			0 0 calc(var(--close-u) * 5) calc(var(--close-u) * 0.5) rgba(197, 106, 255, 0.5),
+			0 0 calc(var(--close-u) * 14) calc(var(--close-u) * 2) rgba(124, 48, 221, 0.32);
 		display: grid;
 		place-items: center;
 		cursor: pointer;
 		transition:
 			transform 0.12s ease,
-			filter 0.12s ease;
+			filter 0.12s ease,
+			box-shadow 0.12s ease;
 	}
 
-	.popup-close:hover {
-		filter: brightness(1.2);
+	@media (hover: hover) {
+		.popup-close:hover {
+			filter: brightness(1.2);
+			box-shadow:
+				0 4px 14px rgba(0, 0, 0, 0.55),
+				0 0 calc(var(--close-u) * 9) calc(var(--close-u) * 1.5) rgba(160, 96, 246, 0.85);
+		}
 	}
 
 	.popup-close:active {

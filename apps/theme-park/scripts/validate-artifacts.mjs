@@ -1712,37 +1712,35 @@ for (const attachment of [
 	);
 }
 
-// A regular win's amount is drawn inside the flat neon plate of Figma 7100:26891 — the card art
-// with the Roller Wilds star composited onto its top rail. The Mega Wild reel hangs its multiplier
-// on THE SAME FILE: the reel rig used to pack an authored gold plaque with six perspective poses of
-// its own, and that card belonged to no other screen in the game. Guard the plate against its OWN
-// generator, because <Win> pins an aspect that only that one layer has and a plate rebuilt at
-// another size would show up on screen as an amount sitting off its centre — and guard that the
-// reel rig is still reading the finished plate rather than a plaque of its own.
+// A regular win's amount is drawn inside an authored neon lozenge — v2, one drawing, cut to its own
+// extent by its builder. It used to be v1: the flat card of Figma 7100:26891 with the Roller Wilds
+// star composited onto its top rail, and the Mega Wild reel hung its multiplier on THAT SAME FILE.
+// The two have since parted — v2 has no star and the reel's plaque was not part of the redraw — so
+// v1 stays in the tree as the reel rig's plate and only the small win moved. Guard the plate against
+// its OWN generator, because <Win> pins an aspect that only that one layer has and a plate rebuilt
+// at another size would show up on screen as an amount sitting off its centre.
 const winPlateBuilderSource = fs.readFileSync(
 	path.join(root, 'scripts', 'win-plate', 'build_win_plate.py'),
 	'utf8',
 );
-for (const source of ['mega-wild-plaque-neon-v2.png', 'roller-wilds-star.png']) {
-	assert.ok(
-		winPlateBuilderSource.includes(source),
-		`Small-win plate builder must compose ${source}`,
-	);
-}
+assert.ok(
+	winPlateBuilderSource.includes('small-win-plate-neon-v2.png'),
+	'Small-win plate builder must cut the v2 lozenge',
+);
 const megaWildBuilderSource = fs.readFileSync(
 	path.join(root, 'scripts', 'build-mega-wild-full-reel-spine.py'),
 	'utf8',
 );
 assert.ok(
 	megaWildBuilderSource.includes('"wins" / "small-win-plate-neon-v1.png"'),
-	'Mega Wild reel must hang the small-win plate, not a plaque of its own',
+	'Mega Wild reel must hang the v1 plate, not a plaque of its own',
 );
 assert.ok(
 	!/plaque-(front|top|bottom)-[a-z0-9-]*redrawn-v3\.png/.test(megaWildBuilderSource),
 	'Mega Wild reel must not read the retired gold plaque poses',
 );
 const smallWinPlatePng = fs.readFileSync(
-	path.join(root, 'static', 'assets', 'theme-park', 'v2', 'wins', 'small-win-plate-neon-v1.png'),
+	path.join(root, 'static', 'assets', 'theme-park', 'v2', 'wins', 'small-win-plate-neon-v2.png'),
 );
 const platePixels = [smallWinPlatePng.readUInt32BE(16), smallWinPlatePng.readUInt32BE(20)];
 const winSource = fs.readFileSync(path.join(root, 'src', 'components', 'Win.svelte'), 'utf8');

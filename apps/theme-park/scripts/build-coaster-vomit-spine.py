@@ -20,7 +20,6 @@ from PIL import Image
 
 APP = Path(__file__).resolve().parents[1]
 SOURCE = APP / "source-assets-unused/assets/theme-park/coaster-vomit-handdrawn"
-LEGACY_SOURCE = APP / "source-assets-unused/assets/theme-park/coaster-vomit"
 FEATURES = APP / "static/assets/theme-park/v2/features"
 OUTPUT = APP / "static/assets/spines/coasterVomit"
 
@@ -254,17 +253,6 @@ def build_runtime_stills_and_rail(
 		composite_rig_pose(poses[pose_index], fixed_cart, cart_front).save(
 			FEATURES / output_name, optimize=True
 		)
-
-	rail = Image.open(LEGACY_SOURCE / "rail-source.png").convert("RGBA")
-	bbox = visible_bbox(rail)
-	padding = 4
-	bbox = (
-		max(0, bbox[0] - padding),
-		max(0, bbox[1] - padding),
-		min(rail.width, bbox[2] + padding),
-		min(rail.height, bbox[3] + padding),
-	)
-	rail.crop(bbox).save(FEATURES / "coaster-track.png", optimize=True)
 
 
 def build_atlas(

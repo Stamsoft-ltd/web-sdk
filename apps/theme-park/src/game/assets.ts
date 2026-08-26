@@ -131,13 +131,12 @@ const assets: Assets = {
 	tpWheelCarPurple: { type: 'sprite', src: './assets/theme-park/v2/symbols/wheel-car-purple.webp' },
 	tpWheelCarGreen: { type: 'sprite', src: './assets/theme-park/v2/symbols/wheel-car-green.webp' },
 	tpWheelCarOrange: { type: 'sprite', src: './assets/theme-park/v2/symbols/wheel-car-orange.webp' },
-	// The neon plate a small win's amount is drawn inside — see <Win>. Not merely the same design as
-	// the flat neon card of Figma 7100:26891 with the Roller Wilds star on its top rail, composed by
-	// `scripts/win-plate/build_win_plate.py`. Never hand-edit it. It is NOT the Mega Wild reel's
-	// plaque: that rig draws the authored gold card and its six perspective poses (c312551).
+	// The neon plate a small win's amount is drawn inside — see <Win>. An authored lozenge, cut to
+	// its own extent by `scripts/win-plate/build_win_plate.py`. Never hand-edit it. It is NOT the
+	// Mega Wild reel's plaque, which still hangs the starred v1 card this replaced.
 	tpSmallWinPlaque: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/small-win-plate-neon-v1.png',
+		src: './assets/theme-park/v2/wins/small-win-plate-neon-v2.png',
 	},
 	tpL1: { type: 'sprite', src: './assets/theme-park/v2/symbols/l1-a-marquee.png' },
 	tpL2: { type: 'sprite', src: './assets/theme-park/v2/symbols/l2-k-marquee.png' },
@@ -195,9 +194,14 @@ const assets: Assets = {
 		src: './assets/theme-park/v2/features/coaster-bg.webp',
 		defer: true,
 	},
+	// The rail the carts run along. The FLAT drawing of Figma 7033:20310 — a magenta bar with its
+	// bulbs, the posts under it and the gold rail they stand on — cut to its own ink out of the
+	// transparent master kept at art/concepts/coaster-track-flat-v1.png. It replaces a glossy
+	// rendered rail that belonged to the art this game shipped before the flat redraw. New filename
+	// rather than a ?v=, like the mode stills.
 	coasterTrack: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/features/coaster-track.png',
+		src: './assets/theme-park/v2/features/coaster-track-flat.png',
 	},
 	coasterRigHappy: {
 		type: 'sprite',

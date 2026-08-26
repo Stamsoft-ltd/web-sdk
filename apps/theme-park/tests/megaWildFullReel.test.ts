@@ -233,11 +233,12 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		expect(builder).not.toContain('plaque.putalpha(alpha)');
 		const win = source('components/Win.svelte');
 		expect(win).toContain('<Sprite key="tpSmallWinPlaque"');
-		// Both screens point at the plate's own file, built by `scripts/win-plate/build_win_plate.py`.
-		// This rig reads it; the win screen draws it. The aspect <Win> pins is guarded against that
-		// PNG's real dimensions in validate-artifacts.
+		// The two plates have diverged: this rig still bakes the v1 starred card into its atlas, while
+		// the win screen draws the authored v2 lozenge that `scripts/win-plate/build_win_plate.py`
+		// cuts. The aspect <Win> pins is guarded against that PNG's real dimensions in
+		// validate-artifacts; the file this rig reads is guarded there too.
 		const assets = source('game/assets.ts');
-		expect(assets).toContain("src: './assets/theme-park/v2/wins/small-win-plate-neon-v1.png'");
+		expect(assets).toContain("src: './assets/theme-park/v2/wins/small-win-plate-neon-v2.png'");
 		expect(assets).not.toContain('wins/small-win-plaque.png');
 		for (const view of [
 			'plaque',

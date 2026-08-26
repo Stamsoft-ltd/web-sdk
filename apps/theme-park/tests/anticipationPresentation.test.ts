@@ -20,6 +20,10 @@ describe('Theme Park anticipation presentation', () => {
 		expect(anticipations).toContain('const NORMAL_POST_CAP_SPIN_MS = 420');
 		expect(anticipations).toContain('postCapSpinMs + SPIN_OPTIONS_DEFAULT.reelSpinDelay * index');
 		expect(anticipations).toContain('reel.reelState.anticipating = false');
+		// The cap releases the REELS only. Clearing the flag on every reel tore the marquee off
+		// whichever reel was still spinning, and the third scatter nearly always lands on the reel
+		// before the last one — so the last reel's sign used to live ~150ms, under its own fade-in.
+		expect(anticipations).not.toContain('for (const reel of context.stateGame.board)');
 		expect(anticipations).toContain('if (anticipatingReels.has(reel)) continue');
 		expect(anticipations).toContain('const GRID_CLEARANCE = 1.5');
 		expect(anticipations).toContain('reel * CELL_W + GRID_CLEARANCE');
@@ -48,6 +52,12 @@ describe('Theme Park anticipation presentation', () => {
 			anticipation.indexOf('let fading = $state'),
 		);
 		expect(scatterCapHandler).not.toContain('props.reel.forceStop()');
+		// The cap may stop a tease STARTING, never a tease already on screen: onMount is its only
+		// caller. A live sign ends when its own reel lands, through the fade below.
+		expect(anticipation.match(/stopAtScatterCap\(\)/g)).toHaveLength(1);
+		expect(anticipation).toContain(
+			"$effect(() => {\n\t\tif (props.reel.reelState.motion === 'stopped') fading = 'out';\n\t});",
+		);
 	});
 
 	it('runs the chase around the frame rather than by angle about its centre', () => {

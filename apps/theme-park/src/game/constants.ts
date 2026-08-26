@@ -55,7 +55,18 @@ export const COASTER_WILD_GRID_INSET = 2.5;
 // Wilds. It is shared because the Wild cells are drawn ABOVE it: each one covers the reel with a cut
 // of the board's own grid art, and that cut has to be dimmed by the same amount as the board around
 // it or every stamped cell reads as a lit hole in the dimmed screen.
-export const COASTER_SETUP_SCRIM = { color: 0x11021b, alpha: 0.72 };
+//
+// 0.15, down from 0.72 and then 0.3 (design ask, 2026-08-26). The design render of this feature does
+// not dim the game AT ALL — the park behind the rails is as bright there as on any other spin — and
+// at 0.72 the board, the backdrop and the symbols still on the reels had all gone to near-black.
+// It is not dropped to zero because it is still what settles the reels behind the carts and the
+// Wilds they stamp, but at 0.15 the marquee bulbs on the letter symbols read as lit, which is the
+// thing the heavier values were taking away.
+//
+// NOTE for the next time this screen looks too dark: most of what is left is NOT this. The Mega
+// Coaster bonus swaps in its own NIGHT backdrop (`coasterBackground` in <Background>) and that art
+// is dark on purpose — this scrim only covers what sits on top of it.
+export const COASTER_SETUP_SCRIM = { color: 0x11021b, alpha: 0.15 };
 export const getBoardCellCenterX = (reelIndex: number) => CELL_W * (reelIndex + 0.5);
 
 export const BOARD_GRID_OFFSET_Y = 0;

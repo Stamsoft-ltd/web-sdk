@@ -28,7 +28,7 @@ import {
 	INITIAL_SYMBOL_STATE,
 } from './constants';
 import type { SoundEffectName } from './sound';
-import { FRAME_OVER_GRID_X } from './boardArt';
+import { ART, ART_GRID, FRAME_OVER_GRID_X } from './boardArt';
 
 // Each scatter carries its own feature's landing sting (the three features sound distinct as they
 // build). A symbol not in this map is not a scatter, so it also gates the counter increment.
@@ -198,6 +198,36 @@ const DESIGN_GRID = {
  */
 const DESIGN_GRID_LIFT = 0.022;
 
+// ── Keeping the board off the spin button ────────────────────────────────────────────────────────
+//
+// The fractions above place the board against the DESIGN's frame, which does not leave the bar any
+// clearance: at the design's own 1200x670 the frame's bottom rail lands about six pixels below the
+// spin button's top edge, and any window a little shorter than 1.79 presses them together harder.
+// The button is the tallest thing in the bar and it overhangs the plate, so it is what the corner
+// of the board actually meets.
+//
+// So the placement above is a starting point that gets clamped: the board is lifted by however much
+// it takes to leave CLEARANCE between its bottom rail and that button, and by nothing at all when
+// there is already room. These four numbers are <HudHtml>'s own — `--hud-u` is
+// `min(93.8vw, 1400px) / 1126`, `.hud-bottom` is 118.538 of those units tall, and `.hud-shell`'s
+// 8px padding is all that sits under it. Keep them in step with that stylesheet.
+const HUD_UNIT_PER_CANVAS_W = 0.938 / 1126;
+const HUD_UNIT_MAX = 1400 / 1126;
+const HUD_BAR_UNITS = 118.538;
+const HUD_SHELL_PADDING = 8;
+/** In hud units, so the gap keeps its proportion to the button it is holding the board off. */
+const DESKTOP_BAR_CLEARANCE_UNITS = 6;
+/** How far the frame's bottom rail reaches past the grid opening, as a fraction of grid height. */
+const FRAME_UNDER_GRID = (ART.height - ART_GRID.bottom) / (ART_GRID.bottom - ART_GRID.top);
+
+const desktopSpinButtonTop = (canvasWidth: number, canvasHeight: number) => {
+	const hudUnit = Math.min(canvasWidth * HUD_UNIT_PER_CANVAS_W, HUD_UNIT_MAX);
+	return {
+		top: canvasHeight - HUD_SHELL_PADDING - HUD_BAR_UNITS * hudUnit,
+		clearance: DESKTOP_BAR_CLEARANCE_UNITS * hudUnit,
+	};
+};
+
 // The Forest Gang frame constants that used to drive the desktop board (_FRAME_MARGIN,
 // _FRAME_INNER_W_FRAC, _FRAME_ASPECT_H_W, _FRAME_ANCHOR_Y, _FRAME_EXTRA_SCALE) are gone with it —
 // they described that game's frame art, not this one's, and nothing else read them.
@@ -324,9 +354,18 @@ const boardLayout = () => {
 	const toMainY = (fraction: number) =>
 		mainLayout.height * 0.5 + (canvasSizes.height * (fraction - 0.5)) / scale;
 
+	// Design placement first, then held off the spin button — see desktopSpinButtonTop.
+	const gridHeightPx = BOARD_SIZES.height * boardScale * scale;
+	const railBelowCentrePx = gridHeightPx * (0.5 + FRAME_UNDER_GRID);
+	const button = desktopSpinButtonTop(canvasSizes.width, canvasSizes.height);
+	const centreYPx = Math.min(
+		canvasSizes.height * (DESIGN_GRID.centreY - DESIGN_GRID_LIFT),
+		button.top - button.clearance - railBelowCentrePx,
+	);
+
 	return {
 		x: toMainX(DESIGN_GRID.centreX),
-		y: toMainY(DESIGN_GRID.centreY - DESIGN_GRID_LIFT),
+		y: toMainY(centreYPx / canvasSizes.height),
 		frameTopY: 0,
 		frameCx: 0,
 		frameCy: 0,

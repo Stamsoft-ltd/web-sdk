@@ -8,6 +8,8 @@
 	// gradient `.vignette` already draws below it, and the LOADING screen is the same picture
 	// multiplied by 0.4 (LoadingScreen's BACKDROP_LEVEL, Figma 7028:15400).
 	const bgSrc = ap('/assets/theme-park/v2/splash/background.webp');
+	/* Pre-blurred/darkened copy for the letterbox margins, 1.8 KB — see the note on .backdrop. */
+	const bgBlurredSrc = ap('/assets/theme-park/v2/splash/background_backdrop.webp');
 	const logoSrc = ap('/assets/theme-park/v2/splash/logo.webp');
 	const pressPlaySrc = ap('/assets/theme-park/v2/splash/press_play_mark.svg');
 	const arrowSrc = ap('/assets/theme-park/v2/splash/arrow.svg');
@@ -167,7 +169,7 @@
 	<!-- Cover-scaled, blurred copy of the same art. It only shows in the letterbox margins the
 	     contain-fit stage leaves on narrow viewports, so those bars read as part of the scene
 	     instead of as dead space. -->
-	<div class="backdrop" style={`background-image:url('${bgSrc}')`}></div>
+	<div class="backdrop" style={`background-image:url('${bgBlurredSrc}')`}></div>
 
 	{#if !isPortrait}
 		<div class="stage">
@@ -307,7 +309,9 @@
 		background-position: center;
 		background-size: cover;
 		background-repeat: no-repeat;
-		filter: blur(26px) brightness(0.26) saturate(0.85);
+		/* Baked into the image (scripts/backdrop/build_backdrop.py) rather than filtered here: a
+		   viewport-sized large-radius blur is one of the few things WebKit is markedly slower at
+		   than Blink, and this one sits under the splash's own animation. */
 		transform: scale(1.12);
 	}
 

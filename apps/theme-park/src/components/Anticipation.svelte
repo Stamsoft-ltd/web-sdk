@@ -57,6 +57,12 @@
 		props.oncomplete();
 	};
 
+	/**
+	 * Never START a tease the board has already settled. Checked at mount only — a sign that is
+	 * already up is not cut when the cap arrives, because the third scatter usually lands on the reel
+	 * before the last one and cutting there killed the last reel's marquee 150ms after it appeared.
+	 * A live sign ends the ordinary way instead: its reel lands, and it fades out. See <Anticipations>.
+	 */
 	const stopAtScatterCap = () => {
 		if (context.stateGame.scatterCounter < MAX_SCATTERS) return false;
 		complete();
@@ -76,7 +82,6 @@
 	});
 
 	$effect(() => {
-		if (stopAtScatterCap()) return;
 		if (props.reel.reelState.motion === 'stopped') fading = 'out';
 	});
 

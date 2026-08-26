@@ -80,14 +80,26 @@ STAR_X = 0.34654
 
 # ── The art's own colours ───────────────────────────────────────────────────────────────────────
 #
-# Flat art, so these are exact rather than thresholds around a gradient. The one that needs care is
-# the field against the outline: both are purple and they differ mainly in RED (field 44-54, outline
-# 24), which is why the test is on that channel rather than on brightness.
-FIELD = lambda a: (a[..., 3] > 200) & (a[..., 0] >= 36) & (a[..., 0] < 90) & (a[..., 2] > 110)
+# The sign is drawn in two purples — a dark field with brighter rays fanned across it — inside a
+# near-black outline, with a gold rail around that. So the field test is a BAND on red wide enough
+# to hold both purples (dark 53, ray 106) while still clearing the outline below it (0-30), and
+# green and blue do the rest: the field is blue-dominant with green at nothing, which is what
+# separates it from every warm thing on the sign.
+#
+# The bulb is the reverse: a near-white disc set in a yellow socket. Blue is the channel that
+# separates the two — the disc runs 170-250 and the socket 40-75 — so the test leans on it rather
+# than on brightness, which the socket has just as much of.
+FIELD = lambda a: (
+    (a[..., 3] > 200)
+    & (a[..., 0] >= 36)
+    & (a[..., 0] < 150)
+    & (a[..., 1] < 60)
+    & (a[..., 2] > 110)
+)
 BULB = lambda a: (a[..., 3] > 128) & (a[..., 0] > 225) & (a[..., 1] > 215) & (a[..., 2] > 170)
 
-#: A cream disc is ~1350px at this size. The tent's white stripes pass the colour test too and are
-#: ~10000px, so area alone would nearly do it; roundness is kept as the check that actually says
+#: A cream disc is ~790px at this size. The tent's white stripes pass the colour test too and are
+#: ~4500px, so area alone would nearly do it; roundness is kept as the check that actually says
 #: "disc", so a future edit to the tent cannot quietly add four bulbs to the rail.
 BULB_AREA = (400, 4000)
 BULB_RATIO = (0.6, 1.6)

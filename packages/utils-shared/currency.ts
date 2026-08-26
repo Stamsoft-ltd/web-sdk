@@ -148,6 +148,27 @@ export const fractionDigitsForAmount = (value: number, min: number) => {
 };
 
 /**
+ * `new Intl.NumberFormat(...)` is expensive — expensive enough to matter here, because this runs on
+ * every tick of every count-up (the PIXI win text, the HUD win readout and the styles all read it at
+ * frame rate). JavaScriptCore pays far more per construction than V8 does, and the allocation churn
+ * was showing up on Safari as 100-200ms GC pauses in the middle of win presentations. There are only
+ * ever a handful of (min, max) pairs in play, so build each formatter once.
+ */
+const groupingFormatters = new Map<string, Intl.NumberFormat>();
+const groupingFormatter = (min: number, max: number) => {
+	const key = `${min}:${max}`;
+	let formatter = groupingFormatters.get(key);
+	if (!formatter) {
+		formatter = new Intl.NumberFormat('en-US', {
+			minimumFractionDigits: min,
+			maximumFractionDigits: max,
+		});
+		groupingFormatters.set(key, formatter);
+	}
+	return formatter;
+};
+
+/**
  * Format an amount for display using the documented symbol, decimals and placement.
  * `minFractionDigits` overrides the currency's default decimal count when a caller needs more.
  */
@@ -163,9 +184,6 @@ export const formatCurrencyAmount = (
 	const sign = value < 0 ? '-' : '';
 	// Group the digits (Intl for the NUMBER only) and attach the symbol ourselves, so the currency
 	// rendering stays exactly as specified rather than however Intl localises that code.
-	const body = new Intl.NumberFormat('en-US', {
-		minimumFractionDigits: min,
-		maximumFractionDigits: digits,
-	}).format(Math.abs(value));
+	const body = groupingFormatter(min, digits).format(Math.abs(value));
 	return meta.symbolAfter ? `${sign}${body} ${meta.symbol}` : `${sign}${meta.symbol}${body}`;
 };

@@ -5,80 +5,10 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const rigRoot = path.join(appRoot, 'static', 'assets', 'sprites', 'rollerCar');
-const skeleton = JSON.parse(fs.readFileSync(path.join(rigRoot, 'roller_car_spine.json'), 'utf8'));
-const atlas = fs.readFileSync(path.join(rigRoot, 'roller_car.atlas'), 'utf8');
 const readSource = (relativePath: string) =>
 	fs.readFileSync(path.join(appRoot, 'src', relativePath), 'utf8');
 
-const animationDuration = (value: unknown): number => {
-	if (Array.isArray(value)) {
-		return value.reduce((max, item) => Math.max(max, animationDuration(item)), 0);
-	}
-	if (!value || typeof value !== 'object') return 0;
-
-	const record = value as Record<string, unknown>;
-	const ownTime = typeof record.time === 'number' ? record.time : 0;
-	return Object.values(record).reduce(
-		(max, item) => Math.max(max, animationDuration(item)),
-		ownTime,
-	);
-};
-
-const animationAttachmentNames = (value: unknown, names = new Set<string>()): Set<string> => {
-	if (Array.isArray(value)) {
-		for (const item of value) animationAttachmentNames(item, names);
-		return names;
-	}
-	if (!value || typeof value !== 'object') return names;
-
-	const record = value as Record<string, unknown>;
-	if (typeof record.name === 'string' && record.name.startsWith('roller_car_')) {
-		names.add(record.name);
-	}
-	for (const item of Object.values(record)) animationAttachmentNames(item, names);
-	return names;
-};
-
 describe('Roller Wild Mega Wild animation contract', () => {
-	it('exports one fast 48-frame frontal-to-vertical Spine ride', () => {
-		expect(skeleton.skeleton.spine).toBe('4.2.0');
-		expect(skeleton.skeleton.hash).toBe(
-			'theme-park-roller-car-v6-frontal-to-vertical-arms-48frame-fast',
-		);
-		expect(Object.keys(skeleton.animations).sort()).toEqual(['idle', 'ride']);
-		expect(animationDuration(skeleton.animations.idle)).toBe(0);
-		expect(animationDuration(skeleton.animations.ride)).toBe(0.48);
-	});
-
-	it('uses 48 monotonic registered pose swaps with no invisible handoff', () => {
-		const frames = skeleton.animations.ride.slots.art.attachment;
-		expect(frames).toHaveLength(48);
-		expect(frames.map(({ time }: { time: number }) => time)).toEqual(
-			[...frames].map(({ time }: { time: number }) => time).sort((a: number, b: number) => a - b),
-		);
-		expect(frames.map(({ name }: { name: string }) => name)).toEqual(
-			Array.from({ length: 48 }, (_, index) => `roller_car_ride_${String(index).padStart(3, '0')}`),
-		);
-		expect(frames[0].time).toBe(0);
-		expect(frames.at(-1).time).toBe(0.48);
-		expect(JSON.stringify(skeleton.animations.ride)).not.toContain('rgba');
-		expect(skeleton.slots).toHaveLength(1);
-	});
-
-	it('resolves every registered perspective frame through the skin and atlas', () => {
-		const animatedNames = animationAttachmentNames(skeleton.animations);
-		const skinNames = new Set(Object.keys(skeleton.skins[0].attachments.art));
-
-		expect(animatedNames).toHaveLength(48);
-		expect(skinNames).toHaveLength(48);
-		for (const name of animatedNames) {
-			expect(skinNames, `${name} missing from the Spine skin`).toContain(name);
-			expect(atlas, `${name} missing from the atlas`).toContain(`\n${name}\n`);
-		}
-		expect(fs.statSync(path.join(rigRoot, 'roller_car_ride.webp')).size).toBeLessThan(1400 * 1024);
-	});
-
 	it('uses one 64-frame rig per affected reel with no separate cart or row stack', () => {
 		const overlay = readSource('components/RollerWildsOverlay.svelte');
 		const board = readSource('components/Board.svelte');

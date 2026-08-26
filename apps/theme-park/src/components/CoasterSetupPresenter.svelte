@@ -109,12 +109,26 @@
 	const VOMIT_CLIP_MS = 1900;
 	const DUCK_PLAYBACK_SPEED = VOMIT_SOURCE_MS / VOMIT_CLIP_MS;
 	const CART_SIZE = SYMBOL_H * 1.7;
-	const TRACK_HEIGHT = SYMBOL_H * 0.18;
+	// MEASURED off what Figma 7033:20310 actually paints, not off the node box: the rail image's box
+	// is 34 tall but the art inside only inks 19 of a 91.4 row — magenta bar 9, posts 7, gold rail 4.
+	// Taking the box for the drawing is what made the rail read twice as heavy as the design's.
+	// 0.232 of a symbol is that 19 plus the transparent rows the PNG carries above and below it.
+	const TRACK_HEIGHT = SYMBOL_H * 0.232;
+	/**
+	 * Where the GOLD RAIL sits in that art, as a fraction of its height — rows 32..39 of 41.
+	 *
+	 * The design lands that rail on the row boundary and hangs everything else off it, so that is
+	 * what the sprite is anchored on; `trackY` is the boundary. The magenta bar then floats where
+	 * the design has it instead of being placed itself and dragging the rail below the cell.
+	 */
+	const TRACK_RAIL_ANCHOR_Y = 35.5 / 41;
 	const SCREEN_OVERSCAN = CART_SIZE * 0.72;
 
 	const cellX = getBoardCellCenterX;
 	const cellY = (row: number) => CELL_H * (row + 0.5);
 	const railY = (row: number) => cellY(row) + CELL_H * 0.42;
+	/** The row boundary the design's gold rail sits on. */
+	const trackY = (row: number) => cellY(row) + CELL_H * 0.5;
 	const cartY = (row: number) => railY(row) - SYMBOL_H * 0.62;
 	const rowDirection = (row: number): -1 | 1 => (row % 2 === 0 ? 1 : -1);
 	const boardScale = $derived(layout.boardScale || 1);
@@ -419,9 +433,9 @@
 				<Sprite
 					key="coasterTrack"
 					x={trackCenterX}
-					y={railY(row)}
+					y={trackY(row)}
 					zIndex={20}
-					anchor={0.5}
+					anchor={{ x: 0.5, y: TRACK_RAIL_ANCHOR_Y }}
 					width={trackWidth}
 					height={TRACK_HEIGHT}
 					alpha={0.96}

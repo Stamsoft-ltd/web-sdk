@@ -4,8 +4,10 @@
 The bar art ships with bright points baked onto its border. They never move, so on a bar that sits
 on screen for the whole session they read as dirt on the glass rather than as lights — and they
 cannot coexist with the running lights the popups use, because a light passing a painted one looks
-like it stopped. This removes them and prints the geometry and colour ramp `POPUP_BORDERS` needs so
-<PopupBorderLights> can run real ones along the same line.
+like it stopped. This removes them, and also prints a geometry/colour-ramp table for running real lights along the
+same line. Only the REPAIRED PLATES are still used: the running-lights components and the
+`POPUP_BORDERS` table they fed were deleted 2026-08-26 as dead code (recover from git if they come
+back). Nothing consumes what the table half of this script prints.
 
 Two plates carry the same painted bar: hud/bar_plate.webp behind the desktop control row, and
 controls/nav-bar.png — the same art cropped tight and made vertically symmetric — behind the

@@ -17,9 +17,10 @@
 	const context = getContext();
 	const MAX_SCATTERS = 3;
 	const layout = $derived(context.stateGameDerived.boardLayout());
+	// Follows the signs themselves, cap or no cap: a sign that is still lit on a reel that is still
+	// spinning must keep its reel picked out, or the board brightens back up under a live marquee.
 	const hasAnticipation = $derived(
-		context.stateGame.scatterCounter < MAX_SCATTERS &&
-			context.stateGame.board.some((reel) => reel.reelState.anticipating),
+		context.stateGame.board.some((reel) => reel.reelState.anticipating),
 	);
 	const anticipatingReels = $derived(
 		new Set(
@@ -36,6 +37,17 @@
 	// reel back to a short normal landing, staggered by the regular reel-stop gap. Merely clearing
 	// `anticipating` leaves the already-prepared 16x padding running and caused the final reels to
 	// spin for several extra seconds.
+	//
+	// This releases the REELS and nothing else. It used to clear `anticipating` on all of them too,
+	// which tore down the sign on whichever reel was still spinning — and the third scatter almost
+	// always lands on the reel BEFORE the last one, so the last reel's marquee was mounted and
+	// destroyed inside ~150ms, less than its own 0.18s fade-in. That is the reported "I don't see
+	// the animation on the last reel": it was drawn, at partial alpha, for nine frames.
+	//
+	// A sign that is already up now runs to its own reel's landing and fades out there. A sign that
+	// has NOT started yet still never appears: <Anticipation> checks the cap in onMount and completes
+	// on the spot, which clears the flag through `oncomplete`. So the cap stops the game teasing a
+	// decided outcome without also cutting the tease the player is in the middle of watching.
 	$effect(() => {
 		if (context.stateGame.scatterCounter < MAX_SCATTERS) return;
 		return untrack(() => {
@@ -51,10 +63,6 @@
 					postCapSpinMs + SPIN_OPTIONS_DEFAULT.reelSpinDelay * index,
 				),
 			);
-			for (const reel of context.stateGame.board) {
-				reel.reelState.anticipating = false;
-			}
-
 			return () => timers.forEach(clearTimeout);
 		});
 	});

@@ -144,11 +144,11 @@
 	const GOLD = 0xffba3e;
 	/**
 	 * Line spacing for the blurb, as a multiple of its own size. 1.35 when the blurb was two lines
-	 * of small type and the leading was what kept it from looking like a solid block; 1.2 now that
-	 * it is three lines of larger type, where the leading is what the type grew out of. See the
-	 * `desc` entry below.
+	 * of small type and the leading was what kept it from looking like a solid block; 1.2, then 1.13,
+	 * as it grew to three lines of larger type, where the leading is what the type grew out of. See
+	 * the `desc` entry below.
 	 */
-	const DESC_LEAD = 1.2;
+	const DESC_LEAD = 1.1;
 	const LAYOUT = {
 		tall: {
 			// Box 348,1 524x600 in frame 7033:24761 — but re-pinned down the column against the
@@ -172,7 +172,10 @@
 			// copy). Boxes total 0.686 of a width; the 0.142 left over is a 0.022 top margin, gaps
 			// of 0.018-0.020 between the pieces and 0.014 under the well.
 			title: { y: 0.33859, size: 0.09958, fill: GOLD, width: 0.74 },
-			subtitle: { y: 0.40723, size: 0.041872, fill: GOLD },
+			// YOU WON, +15% (design ask, 2026-08-26). It is the line that says what the screen is
+			// and it was set smaller than the bonus's own name under it; the gaps either side of it
+			// were the two roomiest above the blurb, and this is drawn from them.
+			subtitle: { y: 0.40723, size: 0.048, fill: GOLD },
 			// The bonus's name and its blurb are set LARGER than the rest of the column was laid out
 			// for (design ask, 2026-08-24): they carry what the player actually needs to read off
 			// this screen, and at the design's own ratio the blurb in particular came out as the
@@ -182,34 +185,40 @@
 			// the column: the stack between YOU WON and the symbol is re-pinned so the blurb, the
 			// name and the two gaps split that band evenly. Nothing above the name or below the
 			// blurb moved.
-			name: { y: 0.45647, size: 0.057, width: 0.72 },
-			// THE BLURB AGAIN (design ask, 2026-08-24): +23% on top of that, and it goes to three
-			// lines — it cannot stay at two and read bigger, because the first line was already at
-			// 90% of its measure. It is still the smallest type on the screen and it is the only
-			// line that says what the bonus actually does, so it was the one worth spending the
-			// column's remaining slack on.
 			//
-			// The slack was its OWN two gaps. Measured off the shipped screen, every gap in this
-			// column runs 12-25px — except the two around the blurb, which were 31 and 26, the two
-			// widest in the stack. That is the even split above showing: it handed the blurb a
-			// name-sized share of the band when the blurb is the taller of the two. Nothing else in
-			// the column moves; the type grows into those two gaps and into its own leading, which
-			// is why DESC_LEAD came down with it.
+			// AND AGAIN, +12% (design ask, 2026-08-26), together with the blurb below it. The column
+			// was already flush — the line BOXES of the stack touch, and the 12-25px of daylight the
+			// note below describes is between the glyphs inside them, not between the boxes — so the
+			// only place this could come from was the symbol again, and the three y's below are
+			// re-pinned to split the band evenly at the new sizes. Nothing outside the band moves.
+			name: { y: 0.46692, size: 0.0638, width: 0.78 },
+			// THE BLURB (design ask, 2026-08-24, and again 2026-08-26). It is the smallest type on the
+			// screen and the only line that says what the bonus actually does, so it is the one
+			// worth spending the column's slack on. It has been raised repeatedly; what finally
+			// made it read was not the font size at all.
 			//
-			// `maxHeight` IS A HEIGHT, NOT A LINE COUNT, and that is what keeps the other two bonus
-			// screens whole. The three blurbs are not the same length — Roller Wilds' is two thirds
-			// longer than Duck Your Luck's — so a size that sets Duck in three lines sets Roller in
-			// four, and a cap of "three lines at this size" would have scaled Roller's copy down to
-			// SMALLER than it ships at today. This is instead the band between the name and the
-			// symbol less the clearance the rest of the column keeps: Duck and Mega Coaster come in
-			// under it at three lines and get the full +23%, and Roller's four lines are scaled to
-			// fill it, which lands on exactly the size it has now. Nothing regresses.
+			// `maxHeight` IS WHAT WAS MAKING IT SMALL. It is a HEIGHT, not a line count, and the
+			// blurb is scaled DOWN to fit it — so once the copy wrapped to one more line than the
+			// box was cut for, every raise to `size` was cancelled by a matching scale-down and the
+			// type on screen did not move. Measured on the shipped screen: Mega Coaster's blurb ran
+			// to four lines against a box cut for three, so it rendered at 0.75 of its own size,
+			// i.e. 0.031 of the marquee width when the value here said 0.041.
 			//
-			// Measured against the real font at panel widths from 300 to 1000px: same line counts,
-			// same breaks, and the longest line of the three (Mega Coaster's, 0.713) still clears
-			// the bulb rail by the 0.018 the rest of the column is inset by.
-			desc: { y: 0.5287, size: 0.035, width: 0.72, maxHeight: 0.1368 },
-			centre: { y: 0.65839 },
+			// So the box is now cut for FOUR lines and the size is what it says it is. That is
+			// worth about a third on screen for both of the blurbs that have to wrap: Mega Coaster
+			// and Roller Wilds each come in at exactly four lines and neither is scaled at all.
+			// Duck Your Luck's is shorter and has always fitted.
+			//
+			// The room came out of the SYMBOL — `BADGE_WIDTH` in <FreeSpinIntro>, 0.24 down to 0.18
+			// — and out of the blurb's own leading, DESC_LEAD 1.2 down to 1.1. There was nothing
+			// else left: the line boxes of this stack touch, and the 12-25px of daylight between
+			// the pieces is between the glyphs inside those boxes, not between the boxes.
+			//
+			// `width` is 0.78 rather than 0.72 because the field has the room — the bulb rail's
+			// inner edges measure 0.808 apart on the render — and a wider measure is what keeps
+			// these two blurbs at four lines instead of five.
+			desc: { y: 0.57111, size: 0.0421, width: 0.78, maxHeight: 0.18524 },
+			centre: { y: 0.69677 },
 			well: {
 				y: 0.79761,
 				height: 0.118321,
@@ -277,9 +286,9 @@
 	let elapsed = $state(0);
 	let seenRunId = -1;
 
-	// Off the application ticker rather than a private rAF, for the same reason as
-	// <PanelBorderLights>: a private rAF runs out of phase with the frames <SceneAnimationDriver>
-	// actually renders, and the panel would judder against everything else on screen.
+	// Off the application ticker rather than a private rAF: a private rAF runs out of phase with the
+	// frames <SceneAnimationDriver> actually renders, and the panel would judder against everything
+	// else on screen.
 	$effect(() => {
 		const app = context.stateApp.pixiApplication;
 		if (!app) return;

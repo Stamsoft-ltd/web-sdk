@@ -1,3 +1,7 @@
+<script lang="ts" module>
+	let registeredPrepare = false;
+</script>
+
 <script lang="ts">
 	import * as PIXI from 'pixi.js';
 	import { onMount, onDestroy, type Snippet } from 'svelte';
@@ -5,6 +9,19 @@
 
 	import { getContextApp } from '../context.svelte';
 	import { preloadFont } from '../utils.svelte';
+
+	// PIXI 8.8.1 NEVER REGISTERS PrepareSystem, so `renderer.prepare` is undefined and every
+	// prewarm in <AssetsLoader> silently no-ops — see the guard there. pixi's own entry point
+	// imports `prepare/index.mjs`, which only re-exports the classes; the `extensions.add` call
+	// lives in `prepare/init.mjs`, which nothing imports. The symptom is textures uploading to the
+	// GPU the first time they are DRAWN, which for art that appears mid-round (the anticipation
+	// sign, a bonus screen) is a stall in the middle of a spin.
+	//
+	// Registered once per module rather than per <App>: `extensions.add` does not de-duplicate.
+	if (!registeredPrepare) {
+		registeredPrepare = true;
+		PIXI.extensions.add(PIXI.PrepareSystem);
+	}
 
 	type Props = {
 		children: Snippet;
@@ -22,6 +39,12 @@
 		maxResolution?: number;
 		antialias?: boolean;
 		rendererPreference?: 'webgpu' | 'webgl';
+		//  - textureGCActive: pixi unloads any texture that has not been DRAWN for
+		//    `textureGCMaxIdle` frames — 3600, i.e. a minute at 60fps — and re-uploads it the next
+		//    time it is drawn. For art that only appears occasionally (an anticipation sign, a
+		//    bonus card) that guarantees the re-upload lands mid-round, undoing the prewarm above.
+		//    Pass false on a game whose whole atlas set is meant to stay resident.
+		textureGCActive?: boolean;
 	};
 
 	const props: Props = $props();
@@ -49,6 +72,7 @@
 			powerPreference: 'high-performance',
 			resolution: Math.min(devicePixelRatio.current || 1, props.maxResolution ?? Infinity),
 			resizeTo: wrap,
+			textureGCActive: props.textureGCActive ?? true,
 		});
 
 		app.stage.sortableChildren = true;

@@ -71,30 +71,51 @@
 	// that size are small. Asking for more here does not risk anything — popupPanelLimits still
 	// stops it at two thirds of the width, so on a wide canvas this simply reaches the cap instead
 	// of stopping short of it, and on a narrow one nothing changes.
-	const OVER_GRID_HEIGHT = 1.3;
+	const OVER_GRID_HEIGHT = 1.4;
 	// The design sits the marquee above the frame's centre, which lifts its bottom edge clear of the
-	// HUD bar: its box spans y 1..601 of the 670 frame, so the middle of it is 34px up. As a fraction
-	// of the marquee's width that holds at every size.
-	const CENTRE_Y = -34 / 524;
+	// HUD bar: its box spans y 1..601 of the 670 frame, so the middle of it is 34px up — -34/524 as
+	// a fraction of the marquee's width, which holds at every size.
+	//
+	// Lifted further (2026-08-26) to buy the card the height below. The marquee art is not flush
+	// with its own box: measured on the render, the flag starts 3.3% of the art's height below its
+	// top edge and the gold rail's foot stops 5.9% above its bottom, so the box is a good deal
+	// taller than the ink. The design's own lift centres the BOX, which spends that slack as a fat
+	// empty margin under the sign and a thin one over it; this centres the INK instead, and the
+	// margin that frees up at the top is what CARD_HEIGHT_SHARE below turns into a bigger card.
+	const CENTRE_Y = -0.088;
+	/**
+	 * How much of the canvas height the marquee's BOX may take, superseding popupPanelLimits'
+	 * shared cap for this one screen.
+	 *
+	 * The shared 0.75 is set for <FreeSpinOutro>, whose assembly runs right to the edges of its box.
+	 * This card's box carries the margins described above, so at 0.75 its lowest ink sat at 0.794 of
+	 * the canvas with the HUD bar's top edge at 0.843 — half a HUD bar of daylight that read as the
+	 * card being too small. With the ink centred by CENTRE_Y, 0.86 puts the rail's foot at 0.823 and
+	 * the flag's tip at 0.043, i.e. a real margin at both ends and none of it wasted.
+	 */
+	const CARD_HEIGHT_SHARE = 0.86;
 	/**
 	 * The badge art is 448x360, fitted to this share of the marquee at its own aspect.
 	 *
-	 * Trimmed from 0.3: this is the biggest thing in the column and the column is full — see the
-	 * `tall` layout block in <CongratsPanel> for what had to come out of where.
+	 * Trimmed from 0.3, then 0.24, then 0.18 (2026-08-26): this is the biggest thing in the column
+	 * and the column is full — see the `tall` layout block in <CongratsPanel> for what had to come
+	 * out of where. The last trim is what let the blurb have a box the size it actually needs; see
+	 * `desc.maxHeight` there for why that, rather than its font size, was what made it small.
 	 */
-	const BADGE_WIDTH = 0.27;
+	const BADGE_WIDTH = 0.18;
 	const BADGE_ASPECT = 448 / 360;
 	/** Scraps falling behind the board. A fixed handful: nothing has been won here yet but a bonus. */
 	const CONFETTI = 40;
 
 	const main = $derived(context.stateLayoutDerived.mainLayout());
 	const board = $derived(context.stateGameDerived.boardLayout());
-	const limits = $derived(popupPanelLimits(context.stateLayoutDerived.canvasSizes(), main.scale));
+	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
+	const limits = $derived(popupPanelLimits(canvas, main.scale));
 	const panelWidth = $derived(
 		Math.min(
 			board.height * board.boardScale * OVER_GRID_HEIGHT,
 			limits.maxWidth,
-			limits.maxHeight * CONGRATS_MARQUEES.tall.aspect,
+			(canvas.height / main.scale) * CARD_HEIGHT_SHARE * CONGRATS_MARQUEES.tall.aspect,
 		),
 	);
 

@@ -24,18 +24,50 @@
 	// sprite clock. Without it the win animations freeze on their first frame, idle blinks stop, and
 	// every Spine holds its setup pose (the free-spin CONGRATULATIONS board never plays its intro).
 
-	// One cadence for update and render together. The `maxFPS` setter writes `Ticker._minElapsedMS`,
-	// and `Ticker.update()` returns BEFORE running any listener when the frame is early
-	// (Ticker.mjs:245-250) — so this single assignment throttles the scene walk and PIXI's render
-	// listener as one. That is the property the old component's comment claimed and could not
-	// deliver, because it owned only one of the two loops and the app ticker rendered uncapped at
-	// panel rate (~120/s on ProMotion).
+	// ── The cap, and why there usually isn't one ─────────────────────────────────────────────────
 	//
-	// 60 rather than an idle drop to 30: at 30 Hz `deltaTime` is 2.0, and none of the current
-	// `animationSpeed` values divide into it evenly (0.28 alternates 33 ms / 67 ms holds, 44% under
-	// the mean on the short one), which reads as a stutter. The cap belongs with the clip cadences —
-	// plan 13 picks it once each clip's frame time is measured.
-	const MAX_FPS = 60;
+	// The `maxFPS` setter writes `Ticker._minElapsedMS`, and `Ticker.update()` returns BEFORE running
+	// any listener when the frame is early — so one assignment throttles the scene walk and PIXI's
+	// render listener together. The catch is HOW it decides a frame is early: it truncates the
+	// elapsed time to whole milliseconds first, `currentTime - this._lastFrame | 0`, and compares
+	// that against `1000 / maxFPS`. At maxFPS 60 the threshold is 16.667 while a real vsync frame
+	// truncates to 16, so the frame is DROPPED — and a drop is a DOUBLED frame, not a missing one,
+	// because `_lastFrame` is not advanced on the early return. That is the Safari judder: WebKit
+	// quantises rAF timestamps to whole milliseconds, so its 60 Hz frames arrive as an alternating
+	// 16/17 and land on the wrong side of the threshold constantly. rAF is running at a flawless
+	// 60 while the ticker rejects a fifth of what it hands over, and the rejects come back paired.
+	//
+	// So: no cap at all on a 60 Hz panel. vsync IS the cap there — 60 is what we want and what rAF
+	// already delivers — and an uncapped ticker cannot drop or double anything. The cap exists only
+	// to stop a 120 Hz ProMotion panel rendering the whole scene twice per displayed frame for
+	// nothing, so it is applied only when the panel is actually fast, and at 62 rather than 60: any
+	// value clear of the truncation behaves the same, and 60 does not clear it.
+	//
+	// The panel is measured rather than guessed (`screen.refreshRate` does not exist on the web):
+	// a short burst of rAF deltas at mount, median taken so one janky frame during boot cannot
+	// decide it. Median of a 120 Hz panel is ~8.3ms, of 60 Hz ~16.7ms.
+	const HIGH_REFRESH_MAX_FPS = 62;
+	const HIGH_REFRESH_HZ = 70;
+	const REFRESH_SAMPLE_FRAMES = 13;
+
+	/** Resolves with the panel's measured refresh rate in Hz, or 0 if it could not be measured. */
+	const measureRefreshHz = () =>
+		new Promise<number>((resolve) => {
+			const deltas: number[] = [];
+			let previous = 0;
+			const sample = (now: number) => {
+				if (previous) deltas.push(now - previous);
+				previous = now;
+				if (deltas.length < REFRESH_SAMPLE_FRAMES) {
+					requestAnimationFrame(sample);
+					return;
+				}
+				deltas.sort((a, b) => a - b);
+				const median = deltas[deltas.length >> 1];
+				resolve(median > 0 ? 1000 / median : 0);
+			};
+			requestAnimationFrame(sample);
+		});
 
 	// The walk itself lives in ../game/sceneAnimation.ts: same code, but importable by a test that
 	// drives it with a fixed delta instead of the ticker's (plan 14's deterministic clock).
@@ -47,7 +79,13 @@
 		PIXI.Ticker.shared.autoStart = false;
 		PIXI.Ticker.shared.stop();
 
-		app.ticker.maxFPS = MAX_FPS;
+		// Uncapped until proven otherwise, so a 60 Hz panel never meets the truncation bug above.
+		app.ticker.maxFPS = 0;
+		let disposed = false;
+		measureRefreshHz().then((hz) => {
+			if (disposed || hz <= HIGH_REFRESH_HZ) return;
+			app.ticker.maxFPS = HIGH_REFRESH_MAX_FPS;
+		});
 
 		const tick = () => {
 			if (!app.stage) return;
@@ -74,6 +112,7 @@
 		document.addEventListener('visibilitychange', onVisibilityChange);
 
 		return () => {
+			disposed = true;
 			document.removeEventListener('visibilitychange', onVisibilityChange);
 			app.ticker.remove(tick, null);
 		};

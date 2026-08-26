@@ -563,15 +563,24 @@
 		height: calc(var(--u) * 48.696);
 		padding: 0;
 		box-sizing: border-box;
-		border: 1px solid #d836fc;
+		/* The same rim its twin in <CustomAutoSpinModal> wears — one control, two panels, and it was
+		   the only one still on a flat magenta hairline. */
+		border: 1px solid transparent;
 		border-radius: 9999px;
-		background-image: linear-gradient(0deg, #1a0535 0%, #000 100%);
+		background:
+			linear-gradient(0deg, #1a0535 0%, #000 100%) padding-box,
+			linear-gradient(135deg, #d836fc 0%, #272fdd 100%) border-box;
+		/* Resting rim glow (design ask, 2026-08-26); see .nav-btn in <HudHtml>. */
+		box-shadow:
+			0 0 calc(var(--u) * 5) calc(var(--u) * 0.5) rgba(197, 106, 255, 0.5),
+			0 0 calc(var(--u) * 14) calc(var(--u) * 2) rgba(124, 48, 221, 0.32);
 		display: grid;
 		place-items: center;
 		cursor: pointer;
 		transition:
 			transform 0.12s ease,
-			filter 0.12s ease;
+			filter 0.12s ease,
+			box-shadow 0.12s ease;
 	}
 	.bet-step__glyph {
 		display: block;
@@ -589,8 +598,12 @@
 		cursor: default;
 		opacity: 0.45;
 	}
-	.bet-step:not(:disabled):hover {
-		filter: brightness(1.2);
+	@media (hover: hover) {
+		.bet-step:not(:disabled):hover {
+			filter: brightness(1.2);
+			box-shadow:
+				0 0 calc(var(--u) * 9) calc(var(--u) * 1.5) rgba(160, 96, 246, 0.85);
+		}
 	}
 	.bet-step:not(:disabled):active {
 		transform: translateY(1px) scale(0.96);

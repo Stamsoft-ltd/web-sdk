@@ -40,7 +40,6 @@ Always eyeball verify_coaster_sign.png: it puts the rebuild beside the flat symb
 the poses either end of both animations.
 """
 
-from collections import deque
 from pathlib import Path
 
 import numpy as np
@@ -64,6 +63,13 @@ TARGET_INK_H = 305
 # Figma exports are always opaque, and this file's paper is #f5f5f5.
 PAPER = np.array([245, 245, 245])
 PAPER_TOLERANCE = 10
+#: How far in from the paper the key is FEATHERED, in pixels.
+#:
+#: The flood alone gives a hard, binary alpha, and the export is anti-aliased: the one-to-two pixel
+#: blend between the ink and the paper is not paper enough to be flooded, so it shipped OPAQUE and
+#: nearly white. On the navy sign that read as a ragged pale rim tracing every letter of MEGA
+#: COASTER, which is exactly what it was — the paper, still there, cut out around the type.
+FEATHER = 2
 
 # How wide the WIDER of the two words is set, as a fraction of the navy field it sits in. The rest is
 # breathing room; at 1.0 the type would touch the bulbs.
@@ -73,34 +79,70 @@ WORD_GAP = 0.06
 
 
 def keyed(path):
-    """The export with its paper knocked out, flooded in from the border.
+    """The export with its paper knocked out, anti-aliasing and letter counters included.
 
-    Flooded rather than keyed by colour everywhere: the bulbs have white-hot centres and the words
-    have white outlines, and a blanket key would eat both.
+    This used to flood the paper in from the border, so that a white-hot bulb centre could not be
+    keyed away with it. The bulbs on this sign are amber — across all four layers the drawings hold
+    under a hundred pixels of near-white ink between them, all of it anti-aliasing against the paper
+    itself — and the flood could not reach the paper CLOSED INSIDE a letter, so the counters of every
+    O, A, G and R in MEGA COASTER shipped as opaque white blobs. Key the colour everywhere instead;
+    a redraw that puts real white in one of these layers has to go back to a flood.
+
+    The feather is the other half. The export is anti-aliased, so the one-to-two pixel blend between
+    ink and paper is not paper enough to be keyed and shipped OPAQUE and nearly white — a ragged
+    pale rim tracing every letter, which is what it was: the paper, cut out around the type.
+    Coverage there is read against the ink just inside the rim rather than against a fixed range,
+    because the two are only as far apart as that ink is from #f5f5f5, and the paper is then lifted
+    back out of the colour so the rim is the ink at low alpha rather than the ink mixed with paper.
     """
     rgb = np.asarray(Image.open(path).convert("RGB")).astype(int)
-    h, w, _ = rgb.shape
     paper = np.abs(rgb - PAPER).max(axis=2) <= PAPER_TOLERANCE
-    seen = np.zeros((h, w), bool)
-    queue = deque()
-    for y, x in [(y, x) for y in range(h) for x in (0, w - 1)] + [
-        (y, x) for x in range(w) for y in (0, h - 1)
-    ]:
-        if paper[y, x] and not seen[y, x]:
-            seen[y, x] = True
-            queue.append((y, x))
-    while queue:
-        y, x = queue.popleft()
-        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            ny, nx = y + dy, x + dx
-            if 0 <= ny < h and 0 <= nx < w and paper[ny, nx] and not seen[ny, nx]:
-                seen[ny, nx] = True
-                queue.append((ny, nx))
-    return np.dstack([rgb, np.where(seen, 0, 255)]).astype(int)
+
+    distance = np.abs(rgb - PAPER).max(axis=2).astype(float)
+    alpha = np.where(paper, 0.0, 1.0)
+    rim = spread(paper, FEATHER) & ~paper
+    # The largest distance anywhere near the pixel: on a rim pixel that is the INK it is a blend
+    # of, which is the scale its own distance is a fraction of. Sampling only pixels far enough in
+    # to be pure ink reads better on paper and collapses in practice — the strokes here are thinner
+    # than the exclusion is wide, so the reference came back 0 and every rim pixel snapped opaque.
+    reference = window_max(distance, FEATHER + 2)
+    alpha[rim] = np.clip(distance / np.maximum(reference, 1.0), 0.0, 1.0)[rim]
+
+    out = rgb.astype(float)
+    share = alpha[..., None]
+    lifted = (rgb - (1 - share) * PAPER) / np.maximum(share, 0.02)
+    out[rim] = np.where(share > 0.02, lifted, rgb)[rim]
+    return np.dstack([np.clip(out, 0, 255), alpha * 255]).astype(int)
+
+
+def spread(mask, radius):
+    """`mask` grown by `radius` pixels."""
+    for _ in range(radius):
+        grown = mask.copy()
+        grown[1:, :] |= mask[:-1, :]
+        grown[:-1, :] |= mask[1:, :]
+        grown[:, 1:] |= mask[:, :-1]
+        grown[:, :-1] |= mask[:, 1:]
+        mask = grown
+    return mask
+
+
+def window_max(values, radius):
+    """The largest value within `radius` pixels of each pixel."""
+    for _ in range(radius):
+        grown = values.copy()
+        np.maximum(grown[1:, :], values[:-1, :], out=grown[1:, :])
+        np.maximum(grown[:-1, :], values[1:, :], out=grown[:-1, :])
+        np.maximum(grown[:, 1:], values[:, :-1], out=grown[:, 1:])
+        np.maximum(grown[:, :-1], values[:, 1:], out=grown[:, :-1])
+        values = grown
+    return values
 
 
 def ink_box(layer):
-    ys, xs = np.nonzero(layer[..., 3] > 0)
+    # Past the feather, so the box is where the drawing IS and not where its anti-aliasing peters
+    # out — every placement in this script is measured from these edges.
+    ys, xs = np.nonzero(layer[..., 3] > 96)
     return xs.min(), ys.min(), xs.max() + 1, ys.max() + 1
 
 
@@ -136,14 +178,14 @@ def biggest(mask):
 def red_sign(layer):
     """The marquee's red ring: where the sign sits in a drawing that also contains a building."""
     rgb = layer[..., :3]
-    on = (layer[..., 3] > 0) & (rgb[..., 0] > 140) & (rgb[..., 1] < 95) & (rgb[..., 2] < 95)
+    on = (layer[..., 3] > 96) & (rgb[..., 0] > 140) & (rgb[..., 1] < 95) & (rgb[..., 2] < 95)
     return biggest(on)
 
 
 def navy_field(layer):
     """The dark panel inside the ring — the only part of the sign type may be written on."""
     rgb = layer[..., :3]
-    on = (layer[..., 3] > 0) & (rgb[..., 2] > rgb[..., 0] + 20) & (rgb.max(axis=2) < 150)
+    on = (layer[..., 3] > 96) & (rgb[..., 2] > rgb[..., 0] + 20) & (rgb.max(axis=2) < 150)
     return biggest(on)
 
 
@@ -151,9 +193,26 @@ def rgba(array):
     return Image.fromarray(array.astype(np.uint8), "RGBA")
 
 
+def resized(image, size):
+    """LANCZOS, in PREMULTIPLIED alpha.
+
+    PIL resamples the four channels independently, so a plain resize averages the COLOUR of fully
+    transparent pixels into their opaque neighbours. Every transparent pixel in these layers is
+    keyed paper — #f5f5f5 — and that is where the pale rim tracing MEGA COASTER really came from:
+    not the key, but every resize after it mixing the paper back in around the type.
+    """
+    array = np.asarray(image.convert("RGBA")).astype(float)
+    share = array[..., 3:4] / 255.0
+    premultiplied = Image.fromarray(
+        np.dstack([array[..., :3] * share, array[..., 3]]).astype(np.uint8), "RGBA"
+    )
+    out = np.asarray(premultiplied.resize(size, Image.LANCZOS)).astype(float)
+    colour = np.clip(out[..., :3] / np.maximum(out[..., 3:4] / 255.0, 1e-6), 0, 255)
+    return Image.fromarray(np.dstack([colour, out[..., 3]]).astype(np.uint8), "RGBA")
+
+
 def scaled(image, factor):
-    return image.resize((max(1, round(image.width * factor)), max(1, round(image.height * factor))),
-                        Image.LANCZOS)
+    return resized(image, (max(1, round(image.width * factor)), max(1, round(image.height * factor))))
 
 
 def num(value):
@@ -238,10 +297,8 @@ def main():
 
     for suffix, width in MODE_VARIANTS:
         height = round(width * FRAME[1] / FRAME[0])
-        house_only.resize((width, height), Image.LANCZOS).save(
-            MODES_DIR / f"mega-coaster-{suffix}-house.png")
-        still.resize((width, height), Image.LANCZOS).save(
-            MODES_DIR / f"mega-coaster-{suffix}-still.png")
+        resized(house_only, (width, height)).save(MODES_DIR / f"mega-coaster-{suffix}-house.png")
+        resized(still, (width, height)).save(MODES_DIR / f"mega-coaster-{suffix}-still.png")
 
     sign_art.save(SYMBOL_DIR / "mega-coaster-sign.png")
     rows = []

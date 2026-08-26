@@ -8,10 +8,14 @@
 	const navMenu = ap('/assets/theme-park/v2/hud/icon_menu.svg');
 	const navClose = ap('/assets/theme-park/v2/hud/icon_close.svg');
 	const navSound = ap('/assets/theme-park/v2/hud/icon_sound.svg');
+	// Muted is its own GLYPH, not the same glyph dimmed. A dimmed speaker says "this control is
+	// unavailable"; the slashed one says "sound is off", which is what the button is reporting.
+	const navSoundMuted = ap('/assets/theme-park/v2/hud/icon_sound_muted.svg');
 
 	// Settings-menu glyphs — existing icon assets, used as CSS masks so icon AND label recolour
 	// together on hover (see .hud-menu__glyph { background: currentColor }).
 	const menuIconSound = ap('/assets/theme-park/v2/hud/menu_sound.svg');
+	const menuIconSoundMuted = ap('/assets/theme-park/v2/hud/menu_sound_muted.svg');
 	const menuIconMusic = ap('/assets/theme-park/v2/hud/menu_music.svg');
 	const menuIconInfo = ap('/assets/theme-park/v2/hud/menu_info.svg');
 	const navMinus = ap('/assets/theme-park/v2/hud/icon_minus.svg');
@@ -192,7 +196,35 @@
 		const target = context.stateGame.roundWin;
 		winTween.set(target, { duration: target === 0 ? 0 : 650 });
 	});
-	const formattedWin = $derived(bookEventAmountToCurrencyString(winTween.current));
+
+	/**
+	 * What the DOM sees, at ~15 Hz rather than the tween's 60.
+	 *
+	 * `formattedWin` is rendered by THREE simultaneously-mounted layout variants, each behind a
+	 * `fitText` action that measures the element — so every tween tick cost three forced layouts plus
+	 * three text writes, sixty times a second, for the whole count-up. WebKit charges far more for
+	 * that than Blink does and it was one of the measurable win-presentation stalls on Safari.
+	 *
+	 * The tween itself is untouched (anything reading `winTween.current` for logic still gets every
+	 * frame); only the rendered value is coarsened. Both ENDPOINTS are exact — a count-up that
+	 * stopped one sample short of the real total would be a wrong number on screen, not a dropped
+	 * frame — so the throttle applies to the middle of the run and nothing else.
+	 */
+	const WIN_DISPLAY_HZ = 15;
+	let winDisplayAmount = $state(0);
+	let winDisplayAt = 0;
+	$effect(() => {
+		const current = winTween.current;
+		if (current === context.stateGame.roundWin || current === 0) {
+			winDisplayAmount = current;
+			return;
+		}
+		const now = performance.now();
+		if (now - winDisplayAt < 1000 / WIN_DISPLAY_HZ) return;
+		winDisplayAt = now;
+		winDisplayAmount = current;
+	});
+	const formattedWin = $derived(bookEventAmountToCurrencyString(winDisplayAmount));
 	const autoSpinsRemainingText = $derived(
 		stateBet.autoSpinsCounter === Infinity ? '∞' : `${stateBet.autoSpinsCounter}`,
 	);
@@ -661,7 +693,9 @@
 								onclick={toggleSound}
 							>
 								<span class="hud-menu__badge"
-									><span class="hud-menu__glyph" style={`--icon:url('${menuIconSound}')`}
+									><span
+										class="hud-menu__glyph"
+										style={`--icon:url('${isMuted ? menuIconSoundMuted : menuIconSound}')`}
 									></span></span
 								>
 								<span class="hud-menu__label">{i18nDerived.translate('SOUND')}</span>
@@ -759,7 +793,7 @@
 							onclick={toggleSound}
 							aria-label={i18nDerived.translate('SOUND')}
 						>
-							<img src={navSound} alt="" class:is-muted={isMuted} />
+							<img src={isMuted ? navSoundMuted : navSound} alt="" class:is-muted={isMuted} />
 						</button>
 					{/if}
 					<button
@@ -894,7 +928,9 @@
 								onclick={toggleSound}
 							>
 								<span class="hud-menu__badge"
-									><span class="hud-menu__glyph" style={`--icon:url('${menuIconSound}')`}
+									><span
+										class="hud-menu__glyph"
+										style={`--icon:url('${isMuted ? menuIconSoundMuted : menuIconSound}')`}
 									></span></span
 								>
 								<span class="hud-menu__label">{i18nDerived.translate('SOUND')}</span>
@@ -1425,6 +1461,13 @@
 		background:
 			linear-gradient(0deg, #1a0535 0%, #000 100%) padding-box,
 			linear-gradient(135deg, #b435f5 0%, #7c30dd 50%, #4429c6 100%) border-box;
+		/* The rim glows at rest, not only under the pointer (design ask, 2026-08-26). Two shadows:
+		   a tight bright one that reads as the rim itself being lit, and a wide dim one that throws
+		   the light onto the bar behind it. Both in --hud-u so the halo keeps its proportion to the
+		   circle at every layout, and both far below the hover bloom so hover still answers. */
+		box-shadow:
+			0 0 calc(var(--hud-u) * 5) calc(var(--hud-u) * 0.5) rgba(197, 106, 255, 0.5),
+			0 0 calc(var(--hud-u) * 14) calc(var(--hud-u) * 2) rgba(124, 48, 221, 0.32);
 		padding: 0;
 		outline: none;
 		cursor: pointer;
@@ -1543,8 +1586,10 @@
 		cursor: default;
 	}
 
+	/* Only a nudge now that muted is a slashed glyph of its own — the old 0.4 was the whole signal
+	   and left the icon barely legible against the bar. */
 	.nav-btn img.is-muted {
-		opacity: 0.4;
+		opacity: 0.72;
 	}
 
 	.nav-btn.active {
@@ -1629,11 +1674,20 @@
 		border-radius: 50%;
 		border: 1px solid rgba(160, 96, 246, 0.6);
 		background: linear-gradient(to top, #1a0a38, #05010c);
+		/* Same resting halo as .nav-btn, at this badge's fixed 32px scale. */
+		box-shadow:
+			0 0 4px 0 rgba(197, 106, 255, 0.42),
+			0 0 10px 1px rgba(124, 48, 221, 0.26);
 		transition: box-shadow 0.14s ease;
 	}
 	.hud-menu__item:hover .hud-menu__badge {
 		box-shadow: 0 0 6px 1px rgba(160, 96, 246, 0.85);
 	}
+	/* A square box for glyphs that are not all square — the speaker is 18.28x13.07. `contain` is what
+	   keeps it in proportion, so every glyph SVG behind --icon has to let it: menu_sound.svg shipped
+	   with preserveAspectRatio="none" and was stretched 40% taller than it is drawn, which is why it
+	   stopped matching its own muted twin. (menu_info/menu_music are square, so the attribute was
+	   harmless there.) */
 	.hud-menu__glyph {
 		width: 16px;
 		height: 16px;

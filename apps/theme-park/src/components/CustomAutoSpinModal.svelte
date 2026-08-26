@@ -112,12 +112,12 @@
 </PopupFrame>
 
 <style>
-	/* Spacing is the Figma frame's own (6365:6210), converted from absolute positions to flow so a
+	/* Spacing is the Figma frame's own (7063:18400), converted from absolute positions to flow so a
 	   wrapped row label or a long "START AUTOPLAY" caption pushes the layout instead of overlapping
-	   it. PopupFrame supplies the 94 / 95.5 / 83 padding that puts the first row where the design
-	   has it. */
+	   it. PopupFrame supplies the 42 / 69.5 / 36 padding that puts the first row where the design
+	   has it; the panel has no heading. */
 
-	/* Toggle rows: 494 wide (of 685), 16 apart (node 6045:4619). */
+	/* Toggle rows: 494 wide (of 633), 16 apart (node 7063:18402). */
 	.auto__rows {
 		width: 100%;
 		display: flex;
@@ -138,40 +138,60 @@
 		flex: 0 1 49.595%;
 	}
 
-	/* NUMBER OF SPINS sits 48.36 below the last row (rows end 225.64, label top 274). */
+	/* NUMBER OF SPINS: its caps sit at 231 and the rows end at 173.64. Nunito Sans at 20/normal
+	   carries 6.1 of leading above its caps, so the line box starts at 224.9 — 51.26 down. */
 	.auto__spins-label {
-		margin-top: calc(48.36 / var(--pop-w) * 100cqw);
+		margin-top: calc(51.26 / var(--pop-w) * 100cqw);
 		text-align: center;
 	}
 
-	/* Stepper: two 48.696 circles 89.3 apart (left edges 248 and 386), centred, with the count
-	   between them (nodes 6045:4617, 6045:4633-4634). */
+	/* Stepper: two 48.696 circles 89.3 apart, centred, with the count between them (node
+	   7063:18416). Its top is 275, i.e. 22.8 below the label's 27.28-tall line box. */
 	.auto__stepper {
-		margin-top: calc(24 / var(--pop-w) * 100cqw);
+		margin-top: calc(22.8 / var(--pop-w) * 100cqw);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		gap: calc(16.65 / var(--pop-w) * 100cqw);
 	}
 
-	/* Same chrome as the HUD's icon buttons. */
+	/* Same chrome as the HUD's icon buttons, rim included: the "Icon buttons" component strokes
+	   itself with the brand sweep rather than a flat hairline — see <PopupCloseButton>. */
 	.auto__step {
 		flex: 0 0 auto;
 		width: calc(48.696 / var(--pop-w) * 100cqw);
 		height: calc(48.696 / var(--pop-w) * 100cqw);
 		padding: 0;
 		box-sizing: border-box;
-		border: 1px solid #d836fc;
+		border: 1px solid transparent;
 		border-radius: 9999px;
-		background-image: linear-gradient(0deg, #1a0535 0%, #000 100%);
+		background:
+			linear-gradient(0deg, #1a0535 0%, #000 100%) padding-box,
+			linear-gradient(135deg, #d836fc 0%, #272fdd 100%) border-box;
+		/* Resting rim glow, the same one .nav-btn carries in the HUD (design ask, 2026-08-26), in
+		   the panel's own design unit so the halo scales with the button. */
+		box-shadow:
+			0 0 calc(5 / var(--pop-w) * 100cqw) calc(0.5 / var(--pop-w) * 100cqw)
+				rgba(197, 106, 255, 0.5),
+			0 0 calc(14 / var(--pop-w) * 100cqw) calc(2 / var(--pop-w) * 100cqw)
+				rgba(124, 48, 221, 0.32);
 		display: grid;
 		place-items: center;
 		cursor: pointer;
-		transition: filter 0.12s ease;
+		transition:
+			filter 0.12s ease,
+			box-shadow 0.12s ease;
 	}
 
-	.auto__step:not(:disabled):hover {
-		filter: brightness(1.2);
+	/* Behind `hover: hover`: a touch tap latches :hover on whatever it hit, and a latched bloom
+	   reads as a stuck selection. Same reasoning as .nav-btn's hover rule. */
+	@media (hover: hover) {
+		.auto__step:not(:disabled):hover {
+			filter: brightness(1.2);
+			box-shadow:
+				0 0 calc(9 / var(--pop-w) * 100cqw) calc(1.5 / var(--pop-w) * 100cqw)
+					rgba(160, 96, 246, 0.85);
+		}
 	}
 
 	.auto__step:disabled {
@@ -189,7 +209,7 @@
 		height: calc(13.854 / var(--pop-w) * 100cqw);
 	}
 
-	/* Inter Bold 32 (node 6045:4617). Fixed width so stepping 5 -> 500 does not shuffle the buttons. */
+	/* Inter Bold 32 (node 7063:18419). Fixed width so stepping 5 -> 500 does not shuffle the buttons. */
 	.auto__count {
 		flex: 0 0 auto;
 		min-width: calc(56 / var(--pop-w) * 100cqw);
@@ -203,7 +223,7 @@
 		white-space: nowrap;
 	}
 
-	/* Full-width action, 494 of 685 (node 6045:4632). */
+	/* Full-width action, 494 of 633 (node 7063:18415). */
 	.auto__start {
 		margin-top: auto;
 		width: 100%;

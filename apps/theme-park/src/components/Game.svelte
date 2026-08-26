@@ -69,7 +69,10 @@
 	const scatterArt = './assets/theme-park/symbols-concept.webp';
 	const uiRefArt = './assets/components/reference/controls_reference.png';
 	const paylinesArt = './assets/components/reference/paylines_reference.png';
-	const heroArtBackdrop = heroArt;
+	// Pre-blurred/darkened copy of the plaza, 2.3 KB. The CSS filter that used to do this ran on a
+	// viewport-sized layer underneath a canvas that repaints every frame — see
+	// scripts/backdrop/build_backdrop.py.
+	const heroArtBackdrop = './assets/theme-park/v2/park/plaza_backdrop.webp';
 
 	const MAX_WIN = 25000;
 
@@ -445,7 +448,17 @@
 	style={`--game-shell-bg:url('${heroArtBackdrop}')`}
 >
 	<div class="game-stage">
-		<App preloadWebFont={false} maxResolution={2} antialias={false} rendererPreference="webgl">
+		<!-- textureGCActive={false}: this game's art is meant to stay resident once loaded. pixi
+		     unloads any texture it has not drawn for a minute and re-uploads it on the next draw,
+		     which for the anticipation sign and the bonus screens means the re-upload always lands
+		     mid-round — the tease stall. See <InitialiseApplication> in pixi-svelte. -->
+		<App
+			preloadWebFont={false}
+			maxResolution={2}
+			antialias={false}
+			rendererPreference="webgl"
+			textureGCActive={false}
+		>
 			<SceneAnimationDriver />
 			<EnableSound />
 			<EnableHotkey />
@@ -587,9 +600,9 @@
 		pointer-events: none;
 	}
 
+	/* The blur/brightness/saturate is baked into the image itself; nothing is filtered at runtime. */
 	.game-shell::before {
 		background: var(--game-shell-bg) center 22% / cover no-repeat;
-		filter: blur(20px) brightness(0.28) saturate(0.8);
 		transform: scale(1.12);
 		opacity: 0.95;
 	}

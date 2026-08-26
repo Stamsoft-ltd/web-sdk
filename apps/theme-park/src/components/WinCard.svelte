@@ -90,9 +90,9 @@
 	let elapsed = $state(0);
 	let seenWinId = -1;
 
-	// One clock for the whole card, off the application ticker rather than a private rAF — the same
-	// reason <PanelBorderLights> does: a private rAF runs out of phase with the frames
-	// <SceneAnimationDriver> actually renders, and the card would judder against everything else.
+	// One clock for the whole card, off the application ticker rather than a private rAF: a private
+	// rAF runs out of phase with the frames <SceneAnimationDriver> actually renders, and the card
+	// would judder against everything else.
 	$effect(() => {
 		const app = context.stateApp.pixiApplication;
 		if (!app) return;
