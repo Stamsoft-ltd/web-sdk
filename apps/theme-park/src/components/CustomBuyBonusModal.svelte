@@ -367,7 +367,9 @@
 		bottom: calc(var(--u) * 115.5);
 		width: calc(var(--u) * 1041);
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		/* minmax(0,1fr) — not 1fr — so a long nowrap title (localized) can't inflate a track past its
+		   share and push the card off-screen; the title is then bounded and fitLabel shrinks it. */
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 		grid-template-rows: 1fr 1.282fr;
 		gap: calc(var(--u) * 12);
 	}
@@ -378,6 +380,10 @@
 	.card {
 		position: relative;
 		box-sizing: border-box;
+		/* Let the card shrink to its grid track instead of being held open by a nowrap child (the
+		   title): without this a long localized title inflates the 1fr track and the card runs off
+		   the screen edge (e.g. ru "ДОПОЛНИТЕЛЬНАЯ ФУНКЦИЯ"). Pairs with minmax(0,1fr) on the grid. */
+		min-width: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -410,7 +416,10 @@
 		text-transform: uppercase;
 		color: #ffba3e;
 		white-space: nowrap;
-		max-width: 100%;
+		/* No max-width: the box hugs the full (nowrap) title so fitLabel's transform shrinks the WHOLE
+		   string to fit the card. With max-width:100% the text was truncated at the card edge first —
+		   a Cyrillic/fallback title like ru "ДОПОЛНИТЕЛЬНАЯ ФУНКЦИЯ" lost its tail. overflow:hidden
+		   stays (keeps the title's grid-track min-content at 0 so it can't re-inflate the column). */
 		overflow: hidden;
 	}
 
@@ -682,7 +691,7 @@
 			height: auto;
 			min-height: 0;
 			overflow-y: auto;
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
 			grid-template-rows: none;
 			grid-auto-rows: min-content;
 			/* overflow-y:auto makes overflow-x compute to auto too, so the scroll column CLIPS sideways
