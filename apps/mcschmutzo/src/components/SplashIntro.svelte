@@ -124,11 +124,11 @@
 		left: 51%;
 		top: 52%;
 		transform: translate(-50%, -50%);
-		height: 51%;
+		height: 58%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 4.2cqw;
+		gap: 2.6cqw;
 	}
 
 	.card {
