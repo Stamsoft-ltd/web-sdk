@@ -1,3 +1,4 @@
+import { untrack } from 'svelte';
 import type { PixiPoint, Sizes } from './types';
 
 export const REM = 16;
@@ -114,6 +115,41 @@ export const preloadFont = () =>
 		}
 	});
 
+/**
+ * Re-applies `width`/`height` whenever the texture under a sprite changes.
+ *
+ * pixi turns `width` into a SCALE against whatever texture the object was holding when it was set.
+ * A sprite sized while its art is still `Texture.EMPTY` — a deferred asset, a sheet that merges into
+ * `loadedAssets` after mount — therefore keeps a scale of ONE PIXEL, and renders at the full pixel
+ * size of the art the moment it arrives.
+ *
+ * This used to happen by accident: `propsSyncEffect` was a single effect over every prop, so a
+ * texture change re-ran the whole body and re-wrote the size on the way past. Per-key effects do
+ * not, so the coupling has to be stated rather than inherited.
+ */
+export function textureSizeSyncEffect<TTarget extends { width: number; height: number }>({
+	props,
+	target,
+	texture,
+}: {
+	props: { width?: number; height?: number };
+	target: TTarget;
+	texture: () => unknown;
+}) {
+	let applied: unknown;
+	$effect(() => {
+		const next = texture();
+		if (next === applied) return;
+		applied = next;
+		// Untracked: this effect exists to follow the TEXTURE. Subscribing it to the size props
+		// too would run it on every frame of a win pop only to fall out of the guard above.
+		untrack(() => {
+			if (props.width !== undefined) target.width = props.width;
+			if (props.height !== undefined) target.height = props.height;
+		});
+	});
+}
+
 export function propsSyncEffect<TProps extends object, TTarget>({
 	props,
 	target,
@@ -123,19 +159,40 @@ export function propsSyncEffect<TProps extends object, TTarget>({
 	target?: TTarget | (() => TTarget);
 	ignore?: (keyof TProps)[];
 }) {
-	$effect(() => {
-		// The whole thing is wrapped inside an $effect
-		// and because of ”props[key]“，it will react with every single props updated.
-		let targetInstance = target instanceof Function ? target() : target;
-		if (targetInstance) {
-			(Object.keys(props) as (keyof TProps)[])
-				.filter((key) => (ignore ? !ignore.includes(key) : true))
-				.forEach((key) => {
-					if (props[key] !== undefined) {
-						// @ts-ignore
-						targetInstance[key] = props[key];
-					}
-				});
-		}
-	});
+	// ONE EFFECT PER PROP, and the key list read once at mount.
+	//
+	// This used to be a single effect that walked `Object.keys(props)` and read every `props[key]`
+	// inside it. Reading them all is what subscribed it to them all, so ANY one prop changing re-ran
+	// the whole body: a full `ownKeys` + `getOwnPropertyDescriptor` walk of the props proxy, a `get`
+	// trap per prop, and a write of every prop back onto the pixi object — each write dirtying that
+	// object's transform whether or not the value had moved.
+	//
+	// With a few hundred display objects on screen that was the hottest thing in the game: measured
+	// on a desktop Chrome spin, this function plus the proxy traps it drove came to roughly a third
+	// of all main-thread time. JSC pays several times more per proxy trap than V8 does, which is why
+	// it showed up as Safari-only stutter — the work was always there.
+	//
+	// Split per key, a prop change runs exactly one effect: one `get`, one write, no key walk.
+	//
+	// The constraint this takes on: a component's prop NAMES are fixed at mount. That is how these
+	// components are used — `<Sprite x={} y={} key={} />` and rest-spreads of the same — but a caller
+	// that spreads a conditionally-shaped object (`{...(cond ? { tint } : {})}`) would find the late
+	// key never syncs. Pass the prop with `undefined` instead of omitting it.
+	const keys = (Object.keys(props) as (keyof TProps)[]).filter((key) =>
+		ignore ? !ignore.includes(key) : true,
+	);
+
+	for (const key of keys) {
+		$effect(() => {
+			const targetInstance = target instanceof Function ? target() : target;
+			if (!targetInstance) return;
+			const value = props[key];
+			// Deliberately no `targetInstance[key] === value` guard: pixi's getters are not all cheap
+			// (`width`/`height` compute from bounds), so reading to avoid a write can cost more than
+			// the write.
+			if (value === undefined) return;
+			// @ts-ignore
+			targetInstance[key] = value;
+		});
+	}
 }

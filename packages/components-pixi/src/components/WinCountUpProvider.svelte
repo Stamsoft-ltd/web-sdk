@@ -25,6 +25,17 @@
 			[
 				{
 					countUpAmount: number;
+					/**
+					 * The same climb, sampled at ~15Hz with the endpoints exact.
+					 *
+					 * RENDER from this and keep threshold logic on `countUpAmount`. A pixi `Text`
+					 * re-rasterises its canvas on every text change and re-uploads it to the GPU, so a
+					 * count-up bound to the raw 60Hz tween pushes a full texture upload every frame —
+					 * measured at a 512x256 upload per frame for the whole of a win presentation. Safari
+					 * is several times slower at that upload than Chrome, which is what turns it into a
+					 * visible freeze mid-spin.
+					 */
+					countUpDisplayAmount: number;
 					startCountUp: () => Promise<void>;
 					finishCountUp: () => void;
 					countUpCompleted: boolean;
@@ -38,6 +49,25 @@
 	const interruptible = createInterruptible();
 
 	let countUpCompleted = $state(false);
+
+	/** Text redraws a second. Fast enough to read as counting, slow enough not to cost a frame. */
+	const DISPLAY_HZ = 15;
+	let displayAmount = $state(0);
+	let displayAt = 0;
+
+	$effect(() => {
+		const current = countUpAmount.current;
+		// The ends are never throttled: a dropped final tick would leave the win reading a hair short
+		// of what was paid, and a dropped first one would start the climb from a stale figure.
+		if (current === props.amount || current === 0) {
+			displayAmount = current;
+			return;
+		}
+		const now = performance.now();
+		if (now - displayAt < 1000 / DISPLAY_HZ) return;
+		displayAt = now;
+		displayAmount = current;
+	});
 
 	const countUp = () =>
 		countUpAmount.set(props.amount, { duration: props.duration, easing: props.easing });
@@ -67,6 +97,7 @@
 
 {@render props.children({
 	countUpAmount: countUpAmount.current,
+	countUpDisplayAmount: displayAmount,
 	startCountUp,
 	finishCountUp,
 	countUpCompleted,

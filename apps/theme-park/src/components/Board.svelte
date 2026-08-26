@@ -642,7 +642,7 @@
 											: 1}
 									/>
 								{/if}
-							{:else if reelSymbol.rawSymbol.name === 'S_ROLLER' && !(hasWinState && !isWin)}
+							{:else if reelSymbol.rawSymbol.name === 'S_ROLLER' && !(hasWinState && !isWin) && blur < 0.02}
 								<!-- Assembled live rather than drawn, because this sign TALKS: its star turns
 								     while the board idles and its two words pop against each other when it
 								     wins. Dimmed it falls back to the still, for the reason given at the H3
@@ -663,7 +663,7 @@
 									phase={reelIndex * 0.71 + (symbolIndex - 1) * 1.13}
 									win={isWin}
 								/>
-							{:else if reelSymbol.rawSymbol.name === 'S_COASTER' && !(hasWinState && !isWin)}
+							{:else if reelSymbol.rawSymbol.name === 'S_COASTER' && !(hasWinState && !isWin) && blur < 0.02}
 								<!-- Assembled live rather than drawn, because a building cannot do anything
 								     else: the marquee bolted to its face rocks while the board idles and its
 								     two words zoom when it wins. Dimmed it falls back to the still, for the
@@ -754,7 +754,21 @@
 									same picture, and it fades like every other dimmed symbol on the board.
 								-->
 								{@const dimmed = hasWinState && !isWin}
-								{#if reelSymbol.rawSymbol.name === 'H3' && !dimmed}
+								<!--
+									AND MID-SPIN FALLS BACK TO THE STILL FOR THE SAME REASON THE DIMMED ONE DOES.
+
+									A blurred symbol is drawn squeezed, stretched, faded and trailing ghosts, so
+									none of what a loose-part symbol is FOR survives the trip: the balloons cannot
+									be seen nodding and the wheel cannot be seen turning at reel speed. What it
+									costs is the whole reason the board freezes when a spin starts. A spinning reel
+									carries its padding as well as its five cells, so the strip is about a hundred
+									and thirty symbols; assembling every one of them from parts built ~2,450 display
+									objects and their components in a single frame, measured as two back-to-back
+									240ms frames on desktop Chrome at the moment of the click. As stills the same
+									strip is one sprite a symbol, and the parts are assembled per reel as it lands.
+								-->
+								{@const assembled = !dimmed && blur < 0.02}
+								{#if reelSymbol.rawSymbol.name === 'H3' && assembled}
 									<!-- Assembled live rather than drawn, because these are BALLOONS: they nod on
 									     their strings while the board idles and fly when the symbol wins. Same box
 									     as the sprite it stands in for, so it ghosts, squeezes and breathes with
@@ -773,7 +787,7 @@
 										{blur}
 										win={isWin}
 									/>
-								{:else if reelSymbol.rawSymbol.name === 'H1' && !dimmed}
+								{:else if reelSymbol.rawSymbol.name === 'H1' && assembled}
 									<!-- Assembled live rather than drawn, because there are PEOPLE in it: the two
 									     riders in the back row wave, slowly at rest and harder when it wins. The
 									     art it stands in for had both arms frozen up mid-cheer, which is the pose
@@ -795,7 +809,7 @@
 										phase={reelIndex * 0.83 + (symbolIndex - 1) * 1.27}
 										win={isWin}
 									/>
-								{:else if reelSymbol.rawSymbol.name === 'H2' && !dimmed}
+								{:else if reelSymbol.rawSymbol.name === 'H2' && assembled}
 									<!-- Assembled live rather than drawn, because this one is a BIRD: its eyes
 									     glance about while it sits there and its wing beats when it wins. Same
 									     box as the sprite it stands in for, so it ghosts, squeezes and breathes
@@ -814,7 +828,7 @@
 										{blur}
 										win={isWin}
 									/>
-								{:else if reelSymbol.rawSymbol.name === 'H5' && !dimmed}
+								{:else if reelSymbol.rawSymbol.name === 'H5' && assembled}
 									<!-- Assembled live rather than drawn, because this one TURNS: slowly all the
 									     time, and fast while it wins. Same box as the sprite it stands in for, so
 									     it ghosts, squeezes and breathes with the rest of the board. -->

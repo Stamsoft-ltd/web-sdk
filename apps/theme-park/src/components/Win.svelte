@@ -284,7 +284,7 @@
 				}
 			}}
 		>
-			{#snippet children({ countUpAmount, finishCountUp, countUpCompleted })}
+			{#snippet children({ countUpDisplayAmount, finishCountUp, countUpCompleted })}
 				{#if isBigWin}
 					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.42} />
 				{/if}
@@ -318,7 +318,7 @@
 										active={show}
 										{winId}
 										{cardWidth}
-										amountText={bookEventAmountToCurrencyString(countUpAmount)}
+										amountText={bookEventAmountToCurrencyString(countUpDisplayAmount)}
 									/>
 								{:else}
 									<WinCard
@@ -326,7 +326,7 @@
 										active={show}
 										{winId}
 										{cardWidth}
-										amountText={bookEventAmountToCurrencyString(countUpAmount)}
+										amountText={bookEventAmountToCurrencyString(countUpDisplayAmount)}
 									/>
 								{/if}
 							</Container>
@@ -346,7 +346,7 @@
 									<Text
 										anchor={0.5}
 										onresize={(size) => (smallWinSize = size)}
-										text={bookEventAmountToCurrencyString(countUpAmount)}
+										text={bookEventAmountToCurrencyString(countUpDisplayAmount)}
 										style={{
 											fontFamily: 'Lilita One',
 											fontWeight: '400',
