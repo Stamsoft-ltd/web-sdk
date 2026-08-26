@@ -128,28 +128,22 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 2.6cqw;
+		gap: 0.6cqw;
 	}
 
 	.card {
 		position: relative;
 		height: 100%;
+		/* All three frames are cropped to the same 470×690 box, so one aspect ratio → equal width &
+		   height for every card (and the gap between them stays equal). */
+		aspect-ratio: 470 / 690;
 		background-size: 100% 100%;
 		background-repeat: no-repeat;
 		background-position: center;
+		filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.22));
 		/* Each card is its own query container so the copy scales with the card in ANY orientation
 		   (on portrait the row shrinks the cards, and the text has to follow). */
 		container-type: size;
-	}
-	/* Aspect ratios come straight from the trimmed frame art. */
-	.card--red {
-		aspect-ratio: 629 / 700;
-	}
-	.card--yellow {
-		aspect-ratio: 542 / 700;
-	}
-	.card--green {
-		aspect-ratio: 474 / 700;
 	}
 
 	/* Copy sits inside the cream interior; insets tuned per frame (red carries the shadow margin). */
@@ -162,15 +156,8 @@
 		justify-content: flex-start;
 		text-align: center;
 		font-family: 'Poppins', sans-serif;
-	}
-	.card--red .card-inner {
-		padding: 19% 19% 14%;
-	}
-	.card--yellow .card-inner {
-		padding: 18% 17% 14%;
-	}
-	.card--green .card-inner {
-		padding: 16% 16% 14%;
+		/* Uniform now that every frame is the same box; top clears the drip on the red/yellow cards. */
+		padding: 17% 15% 14%;
 	}
 
 	/* Titles = Bowlby One 32px @ design (cqh is a fraction of the CARD's height, so it scales with
