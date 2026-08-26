@@ -8,7 +8,7 @@ import { winLevelMap, type WinLevel, type WinLevelData } from './winLevelMap';
 import { stateGame, stateGameDerived } from './stateGame.svelte';
 import type { BookEvent, BookEventContext, BookEventOfType } from './typesBookEvent';
 import type { ClusterSeriesSnapshot, Position } from './types';
-import { getSuperSeriesPreviewAmount } from './bonusWin';
+import { capBookWinAmount, getSeriesPreviewAmount } from './bonusWin';
 import { logMagneticDiagnostic } from '../utils/magneticDiagnostics';
 
 // An out-of-range server winLevel must not yield undefined winLevelData — Win.svelte only
@@ -277,6 +277,25 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			magnetTargetSymbol: bookEvent.magnetTargetSymbol,
 			totalMultiplier: bookEvent.totalMultiplier,
 		});
+
+		// clusterSeriesResolved/winInfo arrive only after the whole respin chain. Preview the
+		// currently locked cluster after every growth step so WIN/TOTAL WIN advances between
+		// respins instead of remaining frozen until the next normal spin.
+		const previewAmount = getSeriesPreviewAmount(bookEvent.series);
+		if (stateGame.bonusMode === 'superspin') {
+			superSeriesPreviewAmount = previewAmount;
+			presentedBonusWinAmount = Math.max(
+				presentedBonusWinAmount,
+				capBookWinAmount(bonusCarryWinAmount + previewAmount),
+			);
+			stateBet.winBookEventAmount = presentedBonusWinAmount;
+		} else if (stateGame.bonusMode === 'freegame' || stateGame.bonusMode === 'feature') {
+			// Keep the settled total untouched. Each update replaces the active spin preview;
+			// growing snapshots must not be added repeatedly.
+			stateBet.winBookEventAmount = capBookWinAmount(presentedBonusWinAmount + previewAmount);
+		} else {
+			stateBet.winBookEventAmount = previewAmount;
+		}
 	},
 	clusterSeriesResolved: async () => {
 		// marker event for replay readability; no extra UI step in proto build.
@@ -287,10 +306,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			magnetTargetSymbol: bookEvent.magnetTargetSymbol,
 			totalMultiplier: bookEvent.totalMultiplier,
 		});
-		superSeriesPreviewAmount = getSuperSeriesPreviewAmount(bookEvent.series);
+		superSeriesPreviewAmount = getSeriesPreviewAmount(bookEvent.series);
 		presentedBonusWinAmount = Math.max(
 			presentedBonusWinAmount,
-			bonusCarryWinAmount + superSeriesPreviewAmount,
+			capBookWinAmount(bonusCarryWinAmount + superSeriesPreviewAmount),
 		);
 		stateBet.winBookEventAmount = presentedBonusWinAmount;
 	},
@@ -301,7 +320,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// whole-board flash on no-growth spins. Keep only the final cluster win-state pass.
 		if (stateGame.bonusMode === 'superspin' && !isSuperFinal) return;
 		if (stateGame.bonusMode === 'freegame' || stateGame.bonusMode === 'feature') {
-			presentedBonusWinAmount += bookEvent.totalWin;
+			presentedBonusWinAmount = capBookWinAmount(presentedBonusWinAmount + bookEvent.totalWin);
 			stateBet.winBookEventAmount = presentedBonusWinAmount;
 		}
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_cluster_win' });
