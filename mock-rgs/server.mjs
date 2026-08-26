@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { getRoundForMode as getForestRoundForMode, getReplayRound as getForestReplayRound } from './math/forest-gang.mjs';
 import { getRoundForMode as getMagneticRoundForMode, getReplayRound as getMagneticReplayRound } from './math/magnetic.mjs';
 import { getRoundForMode as getThemeParkRoundForMode, getReplayRound as getThemeParkReplayRound } from './math/theme-park.mjs';
+import { getRoundForMode as getMcschmutzoRoundForMode, getReplayRound as getMcschmutzoReplayRound } from './math/mcschmutzo.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8787);
@@ -109,6 +110,31 @@ const GAME_REGISTRY = {
       jurisdiction: buildJurisdiction(),
     }),
   },
+  mcschmutzo: {
+    slug: 'mcschmutzo',
+    gameID: '0_0_mcschmutzo',
+    modeCostMultipliers: { base: 1, enhancer1: 2, featureSpin: 20, bonus1: 100, bonus2: 500 },
+    getRoundForMode: getMcschmutzoRoundForMode,
+    getReplayRound: getMcschmutzoReplayRound,
+    booksDir: process.env.MCSCHMUTZO_MATH_SDK_BOOKS_DIR || path.resolve(__dirname, '../apps/mcschmutzo/library/books'),
+    lookupDir: process.env.MCSCHMUTZO_MATH_SDK_LOOKUPS_DIR || path.resolve(__dirname, '../apps/mcschmutzo/library/publish_files'),
+    buildConfig: () => ({
+      gameID: '0_0_mcschmutzo',
+      minBet: 1 * API_AMOUNT_MULTIPLIER,
+      maxBet: 100 * API_AMOUNT_MULTIPLIER,
+      stepBet: 1 * API_AMOUNT_MULTIPLIER,
+      defaultBetLevel: 1 * API_AMOUNT_MULTIPLIER,
+      betLevels: [1, 2, 5, 10, 20, 50, 100].map((value) => value * API_AMOUNT_MULTIPLIER),
+      betModes: {
+        base: { type: 'default' },
+        enhancer1: { type: 'activate' },
+        featureSpin: { type: 'activate' },
+        bonus1: { type: 'buy' },
+        bonus2: { type: 'buy' },
+      },
+      jurisdiction: buildJurisdiction(),
+    }),
+  },
 };
 
 const send = (res, code, body) => {
@@ -139,6 +165,10 @@ const getRouteContext = (pathname) => {
   if (pathname === '/theme-park' || pathname.startsWith('/theme-park/')) {
     const stripped = pathname.replace(/^\/theme-park/, '') || '/';
     return { game: GAME_REGISTRY.themePark, pathname: stripped.startsWith('/') ? stripped : `/${stripped}` };
+  }
+  if (pathname === '/mcschmutzo' || pathname.startsWith('/mcschmutzo/')) {
+    const stripped = pathname.replace(/^\/mcschmutzo/, '') || '/';
+    return { game: GAME_REGISTRY.mcschmutzo, pathname: stripped.startsWith('/') ? stripped : `/${stripped}` };
   }
   if (pathname === '/magnetic' || pathname.startsWith('/magnetic/')) {
     const stripped = pathname.replace(/^\/magnetic/, '') || '/';
