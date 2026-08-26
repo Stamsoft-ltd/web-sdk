@@ -164,13 +164,13 @@
 		font-family: 'Poppins', sans-serif;
 	}
 	.card--red .card-inner {
-		padding: 16% 15% 12%;
+		padding: 19% 19% 14%;
 	}
 	.card--yellow .card-inner {
-		padding: 15% 13% 12%;
+		padding: 18% 17% 14%;
 	}
 	.card--green .card-inner {
-		padding: 13% 12% 12%;
+		padding: 16% 16% 14%;
 	}
 
 	/* Titles = Bowlby One 32px @ design (cqh is a fraction of the CARD's height, so it scales with
@@ -200,7 +200,7 @@
 		color: #232323;
 		font-weight: 500;
 		font-size: 5.45cqh;
-		line-height: 1;
+		line-height: 1.4;
 		letter-spacing: 0.03em;
 	}
 	.card-body p {
