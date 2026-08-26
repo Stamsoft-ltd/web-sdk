@@ -52,7 +52,7 @@
 	const ptSound = ap('/assets/theme-park/v2/controls/btn-sound.png');
 	const ptSoundMuted = ap('/assets/theme-park/v2/controls/btn-sound-muted.png');
 	// Landscape control-dock box art (neon-edged vertical panel behind the right-hand buttons).
-	const lsNavBox = ap('/assets/theme-park/v2/controls/nav-box-landscape.svg');
+	const lsNavBox = ap('/assets/theme-park/v2/controls/nav-box-landscape.webp');
 	// Mobile landscape's speed button (portrait and desktop use the turbo-1/2/3 webps above). One
 	// bolt per step: OFF is the outlined bolt, turbo is one solid bolt, super turbo is two. The three
 	// files used to hold that art rotated by one — btn-turbo.png carried a solid bolt, so the button
