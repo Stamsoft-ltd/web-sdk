@@ -1434,7 +1434,8 @@
 		box-sizing: border-box;
 		transition:
 			transform 0.12s ease,
-			filter 0.12s ease;
+			filter 0.12s ease,
+			box-shadow 0.12s ease;
 	}
 
 	/* Each glyph carries its own designed size below; this is only the shared reset. */
@@ -1518,6 +1519,19 @@
 	.nav-btn:not(:disabled):hover {
 		transform: translateY(-1px);
 		filter: brightness(1.12);
+	}
+
+	/* Hovering blooms the rim, which is the same purple lift the burger menu's own round badges take
+	   (`.hud-menu__item:hover .hud-menu__badge`) — one shared rule, so the stepper, turbo, auto,
+	   sound and menu circles all answer the pointer the same way.
+
+	   Behind `hover: hover` unlike the lift above it: a touch tap leaves :hover latched on whatever
+	   it hit until the next tap elsewhere, and a latched GLOW reads as a stuck selection where a
+	   latched 1px lift goes unnoticed. */
+	@media (hover: hover) {
+		.nav-btn:not(:disabled):hover {
+			box-shadow: 0 0 calc(var(--hud-u) * 9) calc(var(--hud-u) * 1.5) rgba(160, 96, 246, 0.85);
+		}
 	}
 
 	.nav-btn:not(:disabled):active {
