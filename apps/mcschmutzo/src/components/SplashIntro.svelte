@@ -168,7 +168,8 @@
 		font-weight: 400;
 		line-height: 1.39;
 		letter-spacing: 0.03em;
-		font-size: 8.7cqh;
+		/* cqw (card WIDTH) not cqh, so a wide word like "SCHMUTZO" fits the frame at any card size. */
+		font-size: 10.5cqw;
 	}
 	.card--red .card-title {
 		color: #c41e0a;
