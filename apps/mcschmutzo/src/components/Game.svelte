@@ -31,8 +31,10 @@
 	import { fade } from 'svelte/transition';
 	import { warmArt, ap } from '../lib/preloadArt';
 
-	// Press Play studio wordmark — shown on the (dark) loading screen while assets stream in.
+	// Press Play studio wordmark + McSchmutzo logo — shown on the (dark) loading screen while assets
+	// stream in (the leftover template title-screen spine was removed).
 	const pressPlayLogo = ap('/assets/components/ui/press_play_logo.webp');
+	const loadingLogo = ap('/assets/mcschmutzo/splash/logo.webp');
 
 	const context = getContext();
 
@@ -231,6 +233,7 @@
 		</App>
 
 		{#if context.stateLayout.showLoadingScreen && !splashIntroVisible}
+			<img class="mcs-loading-logo" src={loadingLogo} alt="McSchmutzo" />
 			<img class="pp-loading-mark" src={pressPlayLogo} alt="Press Play" />
 		{/if}
 
@@ -281,6 +284,19 @@
 		z-index: 1;
 		width: 100%;
 		height: 100%;
+	}
+
+	/* McSchmutzo logo on the loading screen — sits above the (pixi) progress bar. */
+	.mcs-loading-logo {
+		position: absolute;
+		left: 50%;
+		top: 30%;
+		transform: translate(-50%, -50%);
+		width: min(420px, 46%);
+		height: auto;
+		z-index: 11;
+		pointer-events: none;
+		filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.5));
 	}
 
 	/* Press Play studio wordmark on the loading screen — white mark on the dark loader bg. */

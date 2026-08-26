@@ -83,13 +83,15 @@
 	});
 </script>
 
+<!-- Board logo: sized as a fraction of the board width so it never overflows a narrow board
+     (was a fixed 430×144). Keeps the art's 430:144 aspect. -->
 <Sprite
 	key="mcschmutzoLogo"
 	x={board.x}
 	y={board.y - board.height * 0.5 + 42}
 	anchor={{ x: 0.5, y: 1 }}
-	width={430}
-	height={144}
+	width={board.width * 0.52}
+	height={(board.width * 0.52 * 144) / 430}
 />
 
 {#if context.stateGame.gameType === 'freegame' || context.stateGame.globalMultiplier > 1}
