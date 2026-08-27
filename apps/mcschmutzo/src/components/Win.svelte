@@ -16,7 +16,7 @@
 	import { OnMount } from 'components-shared';
 
 	import WinCoins from './WinCoins.svelte';
-	import WinAnimation from './WinAnimation.svelte';
+	import WinPad from './WinPad.svelte';
 	import PressToContinue from './PressToContinue.svelte';
 	import { SYMBOL_SIZE } from '../game/constants';
 	import { getContext } from '../game/context';
@@ -63,21 +63,21 @@
 						x={context.stateGameDerived.boardLayout().x}
 						y={context.stateGameDerived.boardLayout().y}
 					>
-						{#if winLevelData?.animation}
-							<WinAnimation animationMap={winLevelData.animation}>
+						{#if winLevelData?.pad}
+							<WinPad padKey={winLevelData.pad}>
 								<ResponsiveBitmapText
 									anchor={0.5}
-									maxWidth={2130}
+									maxWidth={context.stateGameDerived.boardLayout().width * 0.42}
 									text={bookEventAmountToCurrencyString(countUpAmount)}
 									style={{
 										fontFamily: 'gold',
-										fontSize: SYMBOL_SIZE * 3.6,
+										fontSize: SYMBOL_SIZE * 1.9,
 										align: 'center',
 										fontWeight: 'bold',
 										letterSpacing: 0,
 									}}
 								/>
-							</WinAnimation>
+							</WinPad>
 						{:else}
 							<ResponsiveBitmapText
 								anchor={0.5}

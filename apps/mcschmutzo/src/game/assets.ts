@@ -158,6 +158,26 @@ export default {
 			scale: 2,
 		},
 	},
+	winPadSweet: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/win/pad-sweet.webp', import.meta.url).href,
+	},
+	winPadLegendary: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/win/pad-legendary.webp', import.meta.url).href,
+	},
+	winPadEpic: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/win/pad-epic.webp', import.meta.url).href,
+	},
+	winPadWild: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/win/pad-wild.webp', import.meta.url).href,
+	},
+	winPadMythic: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/win/pad-mythic.webp', import.meta.url).href,
+	},
 	globalMultiplier: {
 		type: 'spine',
 		src: {
