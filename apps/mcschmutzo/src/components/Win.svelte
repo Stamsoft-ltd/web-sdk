@@ -63,10 +63,10 @@
 	// ── Dev-only tier preview: press 1–5 to force SWEET/LEGENDARY/EPIC/WILD/MYTHIC ────────────────
 	onMount(() => {
 		if (!import.meta.env.DEV) return;
-		// Tier + a representative amount (2 sub-1000 to show the smaller font, 3 above).
+		// Tier + a representative amount spanning the 3 font sizes (<100, <1000, above).
 		const keyToPreview: Record<string, { level: WinLevel; amount: number }> = {
-			Digit1: { level: 6, amount: 41200 }, // ~420
-			Digit2: { level: 7, amount: 89400 }, // ~894
+			Digit1: { level: 6, amount: 8500 }, // ~85
+			Digit2: { level: 7, amount: 41200 }, // ~412
 			Digit3: { level: 8, amount: 137400 }, // ~1,374
 			Digit4: { level: 9, amount: 154300 }, // ~1,543
 			Digit5: { level: 10, amount: 812500 }, // ~8,125
@@ -110,9 +110,9 @@
 						y={context.stateGameDerived.boardLayout().y}
 					>
 						{#if winLevelData?.pad}
-							<!-- Size off the FINAL win value (stable through the count-up); shrink a touch
-							     under 1000 so short amounts don't dwarf the longer 4-digit ones. -->
-							{@const isSub1k = bookEventAmountToNormalisedAmount(amount) < 1000}
+							<!-- Size off the FINAL win value (stable through the count-up); step the font
+							     down for shorter amounts (<100, <1000) so they don't dwarf the 4-digit ones. -->
+							{@const winValue = bookEventAmountToNormalisedAmount(amount)}
 							<WinPad padKey={winLevelData.pad}>
 								<ResponsiveBitmapText
 									anchor={0.5}
@@ -120,7 +120,7 @@
 									text={bookEventAmountToCurrencyString(countUpAmount)}
 									style={{
 										fontFamily: 'gold',
-										fontSize: SYMBOL_SIZE * (isSub1k ? 1.05 : 1.25),
+										fontSize: SYMBOL_SIZE * (winValue < 100 ? 0.9 : winValue < 1000 ? 1.05 : 1.25),
 										align: 'center',
 										fontWeight: 'bold',
 										letterSpacing: 0,
