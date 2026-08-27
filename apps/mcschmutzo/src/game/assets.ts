@@ -178,6 +178,10 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/win/pad-mythic.webp', import.meta.url).href,
 	},
+	winBox: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/win/wooden-board.webp', import.meta.url).href,
+	},
 	globalMultiplier: {
 		type: 'spine',
 		src: {

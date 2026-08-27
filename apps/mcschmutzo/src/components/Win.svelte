@@ -89,6 +89,9 @@
 					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
 				{/if}
 
+				<!-- Coins first so they render BEHIND the pad/amount box. -->
+				<WinCoins emit={!countUpCompleted} levelAlias={winLevelData?.alias} />
+
 				<OnMount
 					onmount={async () => {
 						await startCountUp();
@@ -106,11 +109,11 @@
 							<WinPad padKey={winLevelData.pad}>
 								<ResponsiveBitmapText
 									anchor={0.5}
-									maxWidth={context.stateGameDerived.boardLayout().width * 0.42}
+									maxWidth={context.stateGameDerived.boardLayout().width * 0.34}
 									text={bookEventAmountToCurrencyString(countUpAmount)}
 									style={{
 										fontFamily: 'gold',
-										fontSize: SYMBOL_SIZE * 1.9,
+										fontSize: SYMBOL_SIZE * 1.55,
 										align: 'center',
 										fontWeight: 'bold',
 										letterSpacing: 0,
@@ -134,8 +137,6 @@
 						{/if}
 					</Container>
 				</MainContainer>
-
-				<WinCoins emit={!countUpCompleted} levelAlias={winLevelData?.alias} />
 
 				{#if isBigWin}
 					<MainContainer>
