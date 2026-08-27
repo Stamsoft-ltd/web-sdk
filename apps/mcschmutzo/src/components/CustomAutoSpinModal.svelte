@@ -297,12 +297,13 @@
 
 	/* Middle counter box per spec: thin white border + inset shadow on #292624. */
 	.ap-counter-box {
-		flex: 1 1 auto;
+		flex: 0 0 auto;
+		width: clamp(112px, 33%, 165px);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		min-width: 0;
-		padding: clamp(8px, 1.8vmin, 15px) clamp(14px, 3vmin, 24px);
+		padding: clamp(8px, 1.8vmin, 15px) clamp(12px, 2.4vmin, 20px);
 		border: 0.44px solid #ffffff;
 		border-radius: 12px;
 		background: #292624;
@@ -330,9 +331,11 @@
 	}
 	.ap-row__label {
 		color: #fff;
+		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(0.72rem, 2.1vmin, 0.95rem);
-		letter-spacing: 0.02em;
+		font-size: clamp(0.9rem, 3vmin, 1.25rem); /* 20px @ design */
+		line-height: 1;
+		letter-spacing: 0.03em; /* 3% */
 		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
 	}
 
@@ -371,7 +374,8 @@
 
 	/* START AUTOPLAY button (Figma art). */
 	.ap-start {
-		width: 100%;
+		width: 66%;
+		align-self: center;
 		aspect-ratio: 317 / 50;
 		margin-top: clamp(2px, 0.8vmin, 6px);
 		padding: 0;
