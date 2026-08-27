@@ -10,12 +10,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Container, Graphics, PIXI } from 'pixi-svelte';
-	import { FadeContainer, WinCountUpProvider, ResponsiveBitmapText, Button } from 'components-pixi';
-	import { waitForResolve, waitForTimeout } from 'utils-shared/wait';
 	import {
-		bookEventAmountToCurrencyString,
-		bookEventAmountToNormalisedAmount,
-	} from 'utils-shared/amount';
+		FadeContainer,
+		WinCountUpProvider,
+		ResponsiveBitmapText,
+		ResponsiveText,
+		Button,
+	} from 'components-pixi';
+	import { waitForResolve, waitForTimeout } from 'utils-shared/wait';
+	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
 	import { OnMount } from 'components-shared';
 
@@ -110,24 +113,23 @@
 						y={context.stateGameDerived.boardLayout().y}
 					>
 						{#if winLevelData?.pad}
-							<!-- The amount always exceeds maxWidth and is scaled down to fill it, so maxWidth
-							     (not fontSize) sets the rendered size. Fewer digits filling the same width = taller
-							     text, so grow maxWidth with the digit count to keep a constant height that fits the
-							     box (short amounts end up narrower/smaller). Keyed off the FINAL win value so it
-							     stays stable through the count-up. -->
-							{@const winValue = bookEventAmountToNormalisedAmount(amount)}
+							<!-- Amount in the wooden box: Maven Pro Medium, cream. Fixed size so every tier
+							     renders the SAME size (short or long); maxWidth only scales down the very longest
+							     amounts to keep them inside the box. -->
+							{@const amountFontSize = SYMBOL_SIZE * 0.48}
 							<WinPad padKey={winLevelData.pad}>
-								<ResponsiveBitmapText
+								<ResponsiveText
 									anchor={0.5}
-									maxWidth={context.stateGameDerived.boardLayout().width *
-										(winValue < 10 ? 0.2 : winValue < 100 ? 0.24 : winValue < 1000 ? 0.28 : 0.31)}
+									y={-amountFontSize * 0.1}
+									maxWidth={context.stateGameDerived.boardLayout().width * 0.4}
 									text={bookEventAmountToCurrencyString(countUpAmount)}
 									style={{
-										fontFamily: 'gold',
-										fontSize: SYMBOL_SIZE * 1.4,
+										fontFamily: 'Maven Pro',
+										fontWeight: '500',
+										fill: 0xfff1cf,
+										fontSize: amountFontSize,
+										letterSpacing: amountFontSize * 0.003,
 										align: 'center',
-										fontWeight: 'bold',
-										letterSpacing: 0,
 									}}
 								/>
 							</WinPad>
