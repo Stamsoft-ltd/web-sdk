@@ -116,11 +116,11 @@
 							<WinPad padKey={winLevelData.pad}>
 								<ResponsiveBitmapText
 									anchor={0.5}
-									maxWidth={context.stateGameDerived.boardLayout().width * 0.34}
+									maxWidth={context.stateGameDerived.boardLayout().width * 0.27}
 									text={bookEventAmountToCurrencyString(countUpAmount)}
 									style={{
 										fontFamily: 'gold',
-										fontSize: SYMBOL_SIZE * (isSub1k ? 1.4 : 1.55),
+										fontSize: SYMBOL_SIZE * (isSub1k ? 1.05 : 1.25),
 										align: 'center',
 										fontWeight: 'bold',
 										letterSpacing: 0,
