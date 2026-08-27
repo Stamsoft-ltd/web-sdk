@@ -111,29 +111,31 @@
 			{/each}
 		</div>
 
-		<p class="ap-spins-label">{i18nDerived.translate('NUMBER OF SPINS')}</p>
-		<div class="ap-counter">
-			<button
-				class="ap-step"
-				type="button"
-				style={`background-image:url('${minusArt}')`}
-				onclick={() => step(-1)}
-				disabled={stopIndex === 0}
-				aria-label="Fewer spins"
-			></button>
+		<div class="ap-counter-group">
+			<p class="ap-spins-label">{i18nDerived.translate('NUMBER OF SPINS')}</p>
+			<div class="ap-counter">
+				<button
+					class="ap-step"
+					type="button"
+					style={`background-image:url('${minusArt}')`}
+					onclick={() => step(-1)}
+					disabled={stopIndex === 0}
+					aria-label="Fewer spins"
+				></button>
 
-			<div class="ap-counter-box">
-				<span class="ap-count">{countLabel}</span>
+				<div class="ap-counter-box">
+					<span class="ap-count">{countLabel}</span>
+				</div>
+
+				<button
+					class="ap-step"
+					type="button"
+					style={`background-image:url('${plusArt}')`}
+					onclick={() => step(1)}
+					disabled={stopIndex === STOPS.length - 1}
+					aria-label="More spins"
+				></button>
 			</div>
-
-			<button
-				class="ap-step"
-				type="button"
-				style={`background-image:url('${plusArt}')`}
-				onclick={() => step(1)}
-				disabled={stopIndex === STOPS.length - 1}
-				aria-label="More spins"
-			></button>
 		</div>
 
 		<button
@@ -176,8 +178,8 @@
 		position: relative;
 		display: flex;
 		flex-direction: column;
-		gap: clamp(8px, 1.6vmin, 15px);
-		padding: clamp(40px, 8vmin, 56px) clamp(16px, 3.4vmin, 28px) clamp(18px, 3.4vmin, 28px);
+		gap: clamp(12px, 2.6vmin, 22px);
+		padding: clamp(44px, 8.5vmin, 60px) clamp(18px, 3.8vmin, 32px) clamp(22px, 4vmin, 34px);
 		max-height: 94dvh;
 		overflow-y: auto;
 		border: 3px solid #444444;
@@ -253,6 +255,14 @@
 		margin-bottom: clamp(2px, 0.8vmin, 6px);
 	}
 
+	/* Label + counter kept tight together, with extra breathing room around the whole block. */
+	.ap-counter-group {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(9px, 2vmin, 16px);
+		margin: clamp(6px, 1.8vmin, 14px) 0;
+	}
+
 	.ap-spins-label {
 		margin: 0;
 		text-align: center;
@@ -321,7 +331,7 @@
 	.ap-toggles {
 		display: flex;
 		flex-direction: column;
-		gap: clamp(7px, 1.5vmin, 13px);
+		gap: clamp(10px, 2vmin, 17px);
 	}
 	.ap-row {
 		display: flex;
