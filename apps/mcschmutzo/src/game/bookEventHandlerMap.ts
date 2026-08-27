@@ -14,6 +14,39 @@ import type { Position } from './types';
 import { BOARD_DIMENSIONS } from './constants';
 import config from './config';
 
+const getWinLevelData = (winLevel: number): WinLevelData => {
+	const clamped = Math.min(10, Math.max(1, Math.round(winLevel))) as WinLevel;
+	return winLevelMap[clamped];
+};
+
+// Pick the win screen from the win AMOUNT (bet multiplier), so bigger wins escalate
+// through the pads (SWEET → LEGENDARY → EPIC → WILD → MYTHIC) — same ladder as the
+// previous games. Levels 1–5 have no pad, so small wins just count up in place.
+const getWinLevelDataForAmount = (amount: number): WinLevelData => {
+	const multiplier = amount / 100;
+	const level =
+		multiplier <= 0
+			? 1
+			: multiplier < 2
+				? 2
+				: multiplier < 5
+					? 3
+					: multiplier < 10
+						? 4
+						: multiplier < 20
+							? 5
+							: multiplier < 50
+								? 6
+								: multiplier < 100
+									? 7
+									: multiplier < 250
+										? 8
+										: multiplier < 1000
+											? 9
+											: 10;
+	return getWinLevelData(level);
+};
+
 const winLevelSoundsPlay = ({ winLevelData }: { winLevelData: WinLevelData }) => {
 	if (winLevelData?.alias === 'max') eventEmitter.broadcastAsync({ type: 'uiHide' });
 	if (winLevelData?.sound?.sfx) {
@@ -149,7 +182,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateUi.freeSpinCounterTotal = bookEvent.total;
 	},
 	freeSpinEnd: async (bookEvent: BookEventOfType<'freeSpinEnd'>) => {
-		const winLevelData = winLevelMap[1];
+		const winLevelData = getWinLevelDataForAmount(bookEvent.amount);
 
 		await eventEmitter.broadcastAsync({ type: 'uiHide' });
 		stateGame.gameType = 'basegame';
@@ -179,7 +212,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		eventEmitter.broadcast({ type: 'drawerButtonHide' });
 	},
 	setWin: async (bookEvent: BookEventOfType<'setWin'>) => {
-		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
+		const winLevelData = getWinLevelDataForAmount(bookEvent.amount);
 
 		eventEmitter.broadcast({ type: 'winShow' });
 		winLevelSoundsPlay({ winLevelData });

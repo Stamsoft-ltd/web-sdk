@@ -12,7 +12,10 @@
 	import { Container, Graphics, PIXI } from 'pixi-svelte';
 	import { FadeContainer, WinCountUpProvider, ResponsiveBitmapText, Button } from 'components-pixi';
 	import { waitForResolve, waitForTimeout } from 'utils-shared/wait';
-	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
+	import {
+		bookEventAmountToCurrencyString,
+		bookEventAmountToNormalisedAmount,
+	} from 'utils-shared/amount';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
 	import { OnMount } from 'components-shared';
 
@@ -60,18 +63,19 @@
 	// ── Dev-only tier preview: press 1–5 to force SWEET/LEGENDARY/EPIC/WILD/MYTHIC ────────────────
 	onMount(() => {
 		if (!import.meta.env.DEV) return;
-		const keyToLevel: Record<string, WinLevel> = {
-			Digit1: 6,
-			Digit2: 7,
-			Digit3: 8,
-			Digit4: 9,
-			Digit5: 10,
+		// Tier + a representative amount (2 sub-1000 to show the smaller font, 3 above).
+		const keyToPreview: Record<string, { level: WinLevel; amount: number }> = {
+			Digit1: { level: 6, amount: 41200 }, // ~420
+			Digit2: { level: 7, amount: 89400 }, // ~894
+			Digit3: { level: 8, amount: 137400 }, // ~1,374
+			Digit4: { level: 9, amount: 154300 }, // ~1,543
+			Digit5: { level: 10, amount: 812500 }, // ~8,125
 		};
 		const onKey = (e: KeyboardEvent) => {
-			const level = keyToLevel[e.code];
-			if (!level) return;
-			winLevelData = winLevelMap[level];
-			amount = 154300;
+			const preview = keyToPreview[e.code];
+			if (!preview) return;
+			winLevelData = winLevelMap[preview.level];
+			amount = preview.amount;
 			show = true;
 		};
 		window.addEventListener('keydown', onKey);
@@ -106,6 +110,9 @@
 						y={context.stateGameDerived.boardLayout().y}
 					>
 						{#if winLevelData?.pad}
+							<!-- Size off the FINAL win value (stable through the count-up); shrink a touch
+							     under 1000 so short amounts don't dwarf the longer 4-digit ones. -->
+							{@const isSub1k = bookEventAmountToNormalisedAmount(amount) < 1000}
 							<WinPad padKey={winLevelData.pad}>
 								<ResponsiveBitmapText
 									anchor={0.5}
@@ -113,7 +120,7 @@
 									text={bookEventAmountToCurrencyString(countUpAmount)}
 									style={{
 										fontFamily: 'gold',
-										fontSize: SYMBOL_SIZE * 1.55,
+										fontSize: SYMBOL_SIZE * (isSub1k ? 1.4 : 1.55),
 										align: 'center',
 										fontWeight: 'bold',
 										letterSpacing: 0,
