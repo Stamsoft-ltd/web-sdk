@@ -120,7 +120,7 @@
 							<WinPad padKey={winLevelData.pad}>
 								<ResponsiveText
 									anchor={0.5}
-									y={-amountFontSize * 0.1}
+									y={amountFontSize * 0.03}
 									maxWidth={context.stateGameDerived.boardLayout().width * 0.4}
 									text={bookEventAmountToCurrencyString(countUpAmount)}
 									style={{
