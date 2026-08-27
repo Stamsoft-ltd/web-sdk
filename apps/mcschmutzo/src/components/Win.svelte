@@ -65,7 +65,7 @@
 		if (!import.meta.env.DEV) return;
 		// Tier + a representative amount spanning the 3 font sizes (<100, <1000, above).
 		const keyToPreview: Record<string, { level: WinLevel; amount: number }> = {
-			Digit1: { level: 6, amount: 8500 }, // ~85
+			Digit1: { level: 6, amount: 1500 }, // ~15 (<20)
 			Digit2: { level: 7, amount: 41200 }, // ~412
 			Digit3: { level: 8, amount: 137400 }, // ~1,374
 			Digit4: { level: 9, amount: 154300 }, // ~1,543
@@ -120,7 +120,9 @@
 									text={bookEventAmountToCurrencyString(countUpAmount)}
 									style={{
 										fontFamily: 'gold',
-										fontSize: SYMBOL_SIZE * (winValue < 100 ? 0.9 : winValue < 1000 ? 1.05 : 1.25),
+										fontSize:
+											SYMBOL_SIZE *
+											(winValue < 20 ? 0.78 : winValue < 100 ? 0.9 : winValue < 1000 ? 1.05 : 1.25),
 										align: 'center',
 										fontWeight: 'bold',
 										letterSpacing: 0,
