@@ -2,7 +2,12 @@
 	// Module scope so the art preloads during the loading screen (the modal mounts on demand).
 	import { ap } from '../lib/preloadArt';
 
-	const panelBg = ap('/assets/components/ui/autoplay_panel.webp');
+	const hatArt = ap('/assets/mcschmutzo/autoplay/hat.webp');
+	const minusArt = ap('/assets/mcschmutzo/autoplay/minus.svg');
+	const plusArt = ap('/assets/mcschmutzo/autoplay/plus-icon.svg');
+	const activeArt = ap('/assets/mcschmutzo/autoplay/active.svg');
+	const inactiveArt = ap('/assets/mcschmutzo/autoplay/inactive.svg');
+	const startArt = ap('/assets/mcschmutzo/autoplay/autoplay.svg');
 </script>
 
 <script lang="ts">
@@ -14,12 +19,18 @@
 	const props: Props = $props();
 	const context = getContext();
 
-	// Spin-count slider stops (last = unlimited)
+	// Spin-count stops (last = unlimited); the −/+ buttons step through them.
 	const STOPS: Array<number> = [10, 25, 50, 100, 250, 500, Infinity];
 	let stopIndex = $state(3); // default 100
 	const count = $derived(STOPS[stopIndex]);
 	const countLabel = $derived(count === Infinity ? '∞' : `${count}`);
-	const fillPct = $derived((stopIndex / (STOPS.length - 1)) * 100);
+
+	const step = (dir: number) => {
+		const next = stopIndex + dir;
+		if (next < 0 || next > STOPS.length - 1) return;
+		stopIndex = next;
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+	};
 
 	// Live game-state toggles (mirror the HUD)
 	const isTurbo = $derived(stateBet.isTurbo && !stateBet.isSuperTurbo);
@@ -59,6 +70,12 @@
 		props.onclose();
 		context.eventEmitter.broadcast({ type: 'autoBet' });
 	};
+
+	const TOGGLES = $derived([
+		{ label: i18nDerived.translate('TURBO SPIN'), on: isTurbo, onclick: toggleTurbo },
+		{ label: i18nDerived.translate('SUPER TURBO SPIN'), on: isSuperTurbo, onclick: toggleSuperTurbo },
+		{ label: i18nDerived.translate('LOCK FEATURE SPIN'), on: isFeature, onclick: toggleFeature },
+	]);
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
@@ -67,51 +84,59 @@
 <button class="ap-close" type="button" onclick={props.onclose} aria-label="Close">✕</button>
 
 <div class="ap-root" role="dialog" aria-modal="true">
-	<div class="ap-panel" style={`background-image:url('${panelBg}')`}>
-		<div class="ap-content">
-			<p class="ap-title">{i18nDerived.translate('AUTO SPIN')}</p>
+	<div class="ap-popup">
+		<p class="ap-title">{i18nDerived.translate('AUTO SPIN')}</p>
 
-			<div class="ap-toggles">
-				<div class="ap-row">
-					<span class="ap-row__label">{i18nDerived.translate('TURBO SPIN')}</span>
-					<button class="ap-switch" class:on={isTurbo} type="button" onclick={toggleTurbo} aria-pressed={isTurbo}>
-						<span class="ap-switch__thumb"></span>
-					</button>
-				</div>
-				<div class="ap-row">
-					<span class="ap-row__label">{i18nDerived.translate('SUPER TURBO SPIN')}</span>
-					<button class="ap-switch" class:on={isSuperTurbo} type="button" onclick={toggleSuperTurbo} aria-pressed={isSuperTurbo}>
-						<span class="ap-switch__thumb"></span>
-					</button>
-				</div>
-				<div class="ap-row">
-					<span class="ap-row__label">{i18nDerived.translate('LOCK FEATURE SPIN')}</span>
-					<button class="ap-switch" class:on={isFeature} type="button" onclick={toggleFeature} aria-pressed={isFeature}>
-						<span class="ap-switch__thumb"></span>
-					</button>
-				</div>
+		<p class="ap-spins-label">{i18nDerived.translate('NUMBER OF SPINS')}</p>
+
+		<div class="ap-counter">
+			<button
+				class="ap-step"
+				type="button"
+				style={`background-image:url('${minusArt}')`}
+				onclick={() => step(-1)}
+				disabled={stopIndex === 0}
+				aria-label="Fewer spins"
+			></button>
+
+			<div class="ap-counter-box">
+				<img class="ap-hat" src={hatArt} alt="" draggable="false" />
+				<span class="ap-count">{countLabel}</span>
 			</div>
 
-			<p class="ap-spins-label">{i18nDerived.translate('NUMBER OF SPINS')}</p>
-
-			<div class="ap-slider">
-				<input
-					class="ap-range"
-					type="range"
-					min="0"
-					max={STOPS.length - 1}
-					step="1"
-					bind:value={stopIndex}
-					style={`--fill:${fillPct}%`}
-					aria-label="Number of spins"
-				/>
-				<span class="ap-slider__value">{countLabel}</span>
-			</div>
-
-			<button class="ap-start" type="button" onclick={start}>
-				{i18nDerived.translate('START AUTOPLAY')} ({countLabel})
-			</button>
+			<button
+				class="ap-step"
+				type="button"
+				style={`background-image:url('${plusArt}')`}
+				onclick={() => step(1)}
+				disabled={stopIndex === STOPS.length - 1}
+				aria-label="More spins"
+			></button>
 		</div>
+
+		<div class="ap-toggles">
+			{#each TOGGLES as t (t.label)}
+				<div class="ap-row">
+					<span class="ap-row__label">{t.label}</span>
+					<button
+						class="ap-switch"
+						type="button"
+						style={`background-image:url('${t.on ? activeArt : inactiveArt}')`}
+						onclick={t.onclick}
+						aria-pressed={t.on}
+						aria-label={t.label}
+					></button>
+				</div>
+			{/each}
+		</div>
+
+		<button
+			class="ap-start"
+			type="button"
+			style={`background-image:url('${startArt}')`}
+			onclick={start}
+			aria-label={i18nDerived.translate('START AUTOPLAY')}
+		></button>
 	</div>
 </div>
 
@@ -130,198 +155,171 @@
 		left: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 59;
-		width: min(620px, 94vw);
-		font-family: 'Cinzel', serif;
+		width: min(500px, 92vw);
+		font-family: 'Poppins', sans-serif;
 	}
 
-	/* Round wood close button, pinned to the top-right end of the screen */
+	/* Dark pop-up per spec: 3px #444444 border. */
+	.ap-popup {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(10px, 2vw, 18px);
+		padding: clamp(18px, 3.4vw, 30px) clamp(16px, 3vw, 28px) clamp(20px, 3.6vw, 30px);
+		border: 3px solid #444444;
+		border-radius: 20px;
+		background: linear-gradient(180deg, #241f1c 0%, #171412 100%);
+		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+	}
+
 	.ap-close {
 		position: fixed;
 		top: 22px;
 		right: 22px;
 		z-index: 60;
-		width: 52px;
-		height: 52px;
+		width: 48px;
+		height: 48px;
 		border-radius: 50%;
-		border: 2px solid rgba(217, 133, 3, 0.7);
-		background: radial-gradient(circle at 50% 35%, #3a2a16, #140d06);
-		color: #e8c878;
-		font-size: 1.1rem;
+		border: 3px solid #444444;
+		background: #201d1b;
+		color: #fff1cf;
+		font-size: 1.05rem;
 		font-weight: 700;
 		cursor: pointer;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 		display: grid;
 		place-items: center;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 		transition: filter 0.12s ease;
 	}
-	.ap-close:hover { filter: brightness(1.2); }
-
-	/* Wooden panel background (Figma art), fixed aspect */
-	.ap-panel {
-		aspect-ratio: 1402 / 1122;
-		background-size: 100% 100%;
-		background-repeat: no-repeat;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 17% 19%;
-		box-sizing: border-box;
-	}
-
-	.ap-content {
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-		gap: clamp(8px, 1.6vw, 16px);
+	.ap-close:hover {
+		filter: brightness(1.25);
 	}
 
 	.ap-title {
-		margin: 0 0 clamp(2px, 0.6vw, 6px);
+		margin: 0;
 		text-align: center;
-		font-weight: 900;
-		font-size: clamp(1.1rem, 2.4vw, 1.5rem);
-		letter-spacing: 0.08em;
-		background: linear-gradient(180deg, #ffd84a 10%, #ffa90e 60%, #d18005 95%);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+		color: #fff1cf;
+		font-weight: 800;
+		font-size: clamp(1.15rem, 2.8vw, 1.6rem);
+		letter-spacing: 0.06em;
+		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+	}
+
+	.ap-spins-label {
+		margin: 0;
+		text-align: center;
+		color: #c9beb0;
+		font-weight: 600;
+		font-size: clamp(0.72rem, 1.6vw, 0.92rem);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	/* Counter row: −  [ hat + count ]  + */
+	.ap-counter {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(12px, 2.4vw, 22px);
+	}
+
+	.ap-step {
+		flex: 0 0 auto;
+		width: clamp(44px, 8vw, 58px);
+		height: clamp(44px, 8vw, 58px);
+		padding: 0;
+		border: none;
+		background: transparent center / contain no-repeat;
+		cursor: pointer;
+		transition: filter 0.12s ease, transform 0.08s ease;
+	}
+	.ap-step:hover {
+		filter: brightness(1.15);
+	}
+	.ap-step:active {
+		transform: scale(0.92);
+	}
+	.ap-step:disabled {
+		opacity: 0.35;
+		cursor: default;
+		filter: none;
+	}
+
+	/* Middle counter box per spec. */
+	.ap-counter-box {
+		flex: 1 1 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(8px, 1.8vw, 16px);
+		min-width: 0;
+		padding: clamp(8px, 1.5vw, 14px) clamp(14px, 2.6vw, 24px);
+		border: 1px solid #ffffff;
+		border-radius: 12px;
+		background: #292624;
+		box-shadow: 0px 0px 6px 0px #000000 inset;
+	}
+	.ap-hat {
+		height: clamp(30px, 5.6vw, 46px);
+		width: auto;
+		flex: 0 0 auto;
+		filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+	}
+	.ap-count {
+		color: #fff1cf;
+		font-weight: 800;
+		font-size: clamp(1.5rem, 4vw, 2.2rem);
+		line-height: 1;
+		letter-spacing: 0.02em;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
 	}
 
 	.ap-toggles {
 		display: flex;
 		flex-direction: column;
-		gap: clamp(6px, 1.3vw, 14px);
+		gap: clamp(8px, 1.5vw, 14px);
 	}
-
 	.ap-row {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 10px;
-	}
-
-	.ap-row__label {
-		color: #fff;
-		font-weight: 900;
-		font-size: clamp(0.72rem, 1.5vw, 0.95rem);
-		letter-spacing: 0.04em;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
-	}
-
-	/* Green toggle switch */
-	.ap-switch {
-		flex: 0 0 auto;
-		position: relative;
-		width: 52px;
-		height: 27px;
-		border-radius: 999px;
-		border: 1px solid rgba(0, 0, 0, 0.4);
-		background: linear-gradient(180deg, #2c2c2c, #1a1a1a);
-		cursor: pointer;
-		padding: 0;
-		transition: background 0.2s ease;
-	}
-	.ap-switch.on {
-		background: linear-gradient(180deg, #7ec23a, #4e8f1d);
-	}
-	.ap-switch__thumb {
-		position: absolute;
-		top: 50%;
-		left: 3px;
-		transform: translateY(-50%);
-		width: 21px;
-		height: 21px;
-		border-radius: 50%;
-		background: #fff;
-		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-		transition: left 0.2s ease;
-	}
-	.ap-switch.on .ap-switch__thumb { left: calc(100% - 24px); }
-
-	.ap-spins-label {
-		margin: 0;
-		text-align: center;
-		font-weight: 900;
-		font-size: clamp(0.8rem, 1.7vw, 1.05rem);
-		letter-spacing: 0.06em;
-		background: linear-gradient(180deg, #ffa90e 15%, #ee960b 70%, #d18005 93%);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-	}
-
-	/* Slider */
-	.ap-slider {
-		display: flex;
-		align-items: center;
 		gap: 12px;
 	}
-
-	.ap-range {
-		flex: 1 1 auto;
-		-webkit-appearance: none;
-		appearance: none;
-		height: 12px;
-		border-radius: 6px;
-		background: linear-gradient(
-			to right,
-			#6fb22f 0%,
-			#6fb22f var(--fill, 50%),
-			rgba(0, 0, 0, 0.55) var(--fill, 50%),
-			rgba(0, 0, 0, 0.55) 100%
-		);
-		border: 1px solid rgba(0, 0, 0, 0.5);
-		outline: none;
-		cursor: pointer;
-	}
-	.ap-range::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 26px;
-		height: 26px;
-		border-radius: 6px;
-		background: radial-gradient(circle at 50% 35%, #6b4a25, #3a2611);
-		border: 2px solid #d98503;
-		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-		cursor: pointer;
-	}
-	.ap-range::-moz-range-thumb {
-		width: 26px;
-		height: 26px;
-		border-radius: 6px;
-		background: radial-gradient(circle at 50% 35%, #6b4a25, #3a2611);
-		border: 2px solid #d98503;
-		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-		cursor: pointer;
-	}
-
-	.ap-slider__value {
-		flex: 0 0 auto;
-		min-width: 42px;
-		text-align: center;
+	.ap-row__label {
 		color: #fff;
-		font-weight: 900;
-		font-size: clamp(0.85rem, 1.7vw, 1.05rem);
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+		font-weight: 700;
+		font-size: clamp(0.74rem, 1.6vw, 0.95rem);
+		letter-spacing: 0.02em;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
 	}
-
-	/* Gold start button */
-	.ap-start {
-		width: 100%;
-		padding: clamp(8px, 1.6vw, 13px);
+	.ap-switch {
+		flex: 0 0 auto;
+		width: clamp(50px, 9vw, 64px);
+		aspect-ratio: 62 / 34;
+		padding: 0;
 		border: none;
-		border-radius: 9px;
-		background: linear-gradient(180deg, #ffa90e 15%, #ee960b 70%, #d18005 93%);
-		color: #452b01;
-		font-family: 'Cinzel', serif;
-		font-weight: 900;
-		font-size: clamp(0.78rem, 1.6vw, 1rem);
-		letter-spacing: 0.04em;
+		background: transparent center / contain no-repeat;
 		cursor: pointer;
-		box-shadow: 0 0 4px #d98503, 0 4px 10px rgba(0, 0, 0, 0.5);
 		transition: filter 0.12s ease;
 	}
-	.ap-start:hover { filter: brightness(1.06); }
-	.ap-start:active { filter: brightness(0.95); }
+	.ap-switch:hover {
+		filter: brightness(1.1);
+	}
+
+	/* START AUTOPLAY button (Figma art). */
+	.ap-start {
+		width: 100%;
+		aspect-ratio: 317 / 50;
+		margin-top: clamp(2px, 0.6vw, 6px);
+		padding: 0;
+		border: none;
+		background: transparent center / contain no-repeat;
+		cursor: pointer;
+		transition: filter 0.12s ease, transform 0.08s ease;
+	}
+	.ap-start:hover {
+		filter: brightness(1.06);
+	}
+	.ap-start:active {
+		transform: scale(0.98);
+	}
 </style>
