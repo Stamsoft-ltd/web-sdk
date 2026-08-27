@@ -5,7 +5,7 @@
 </script>
 
 <script lang="ts">
-	import { Container, Rectangle } from 'pixi-svelte';
+	import { Container, Sprite, Rectangle } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
 	import { BOARD_DIMENSIONS, SYMBOL_SIZE, SYMBOL_WIDTH } from '../game/constants';
@@ -17,40 +17,34 @@
 			context.stateGame.lockedPositions.map(({ reel, row }) => `${reel}:${row - 1}`),
 		),
 	);
+
+	// board.webp bakes a 5x5 grid inside a beveled frame. Its playable grid occupies
+	// 0.9588 x 0.9548 of the image (inset ~0.0206 x 0.0224), so upscale the sprite to map
+	// that grid onto the board playable area and let the frame overhang the edges.
+	const bgWidth = $derived(board.width * 1.043);
+	const bgHeight = $derived(board.height * 1.0473);
+	const bgX = $derived(-board.width * 0.0206);
+	const bgY = $derived(-board.height * 0.0224);
 </script>
 
 <Container x={board.x} y={board.y} pivot={board.pivot} zIndex={-1}>
-	<Rectangle
-		x={-12}
-		y={-12}
-		width={board.width + 24}
-		height={board.height + 24}
-		borderRadius={14}
-		backgroundColor={0x141414}
-		borderColor={0x292929}
-		borderWidth={6}
-	/>
-	<Rectangle
-		x={-5}
-		y={-5}
-		width={board.width + 10}
-		height={board.height + 10}
-		borderRadius={8}
-		backgroundColor={0x202020}
-	/>
+	<Sprite key="boardBg" anchor={{ x: 0, y: 0 }} x={bgX} y={bgY} width={bgWidth} height={bgHeight} />
+
+	<!-- Locked cells keep their golden highlight, drawn over the board art (behind symbols). -->
 	{#each Array(BOARD_DIMENSIONS.x) as _, reel}
 		{#each Array(BOARD_DIMENSIONS.y) as _, row}
-			{@const isLocked = lockedPositionKeys.has(`${reel}:${row}`)}
-			<Rectangle
-				x={reel * SYMBOL_WIDTH + 2}
-				y={row * SYMBOL_SIZE + 2}
-				width={SYMBOL_WIDTH - 4}
-				height={SYMBOL_SIZE - 4}
-				borderRadius={isLocked ? 3 : 2}
-				backgroundColor={isLocked ? 0xe8b574 : 0x292929}
-				borderColor={isLocked ? 0xffc383 : 0x222222}
-				borderWidth={isLocked ? 4 : 2}
-			/>
+			{#if lockedPositionKeys.has(`${reel}:${row}`)}
+				<Rectangle
+					x={reel * SYMBOL_WIDTH + 2}
+					y={row * SYMBOL_SIZE + 2}
+					width={SYMBOL_WIDTH - 4}
+					height={SYMBOL_SIZE - 4}
+					borderRadius={3}
+					backgroundColor={0xe8b574}
+					borderColor={0xffc383}
+					borderWidth={4}
+				/>
+			{/if}
 		{/each}
 	{/each}
 </Container>
