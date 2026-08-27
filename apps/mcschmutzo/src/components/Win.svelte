@@ -9,7 +9,7 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Container, Graphics, PIXI } from 'pixi-svelte';
+	import { Container, Sprite } from 'pixi-svelte';
 	import {
 		FadeContainer,
 		WinCountUpProvider,
@@ -53,15 +53,6 @@
 	const closeX = $derived(main.width * 0.5 + canvas.width / (2 * (main.scale || 1)));
 	const closeYtop = $derived(main.height * 0.5 - canvas.height / (2 * (main.scale || 1)));
 	const closeSize = $derived(Math.min(main.width, main.height) * 0.07);
-	const drawClose = (g: InstanceType<typeof PIXI.Graphics>, s: number) => {
-		g.circle(0, 0, s * 0.5).fill({ color: 0x000000, alpha: 0.4 });
-		const a = s * 0.2;
-		g.moveTo(-a, -a)
-			.lineTo(a, a)
-			.moveTo(a, -a)
-			.lineTo(-a, a)
-			.stroke({ width: s * 0.1, color: 0xffffff, cap: 'round' });
-	};
 
 	// ── Dev-only tier preview: press 1–5 to force SWEET/LEGENDARY/EPIC/WILD/MYTHIC ────────────────
 	onMount(() => {
@@ -162,7 +153,7 @@
 						>
 							{#snippet children({ center })}
 								<Container x={center.x} y={center.y}>
-									<Graphics draw={(graphics) => drawClose(graphics, closeSize)} />
+									<Sprite key="closeButton" anchor={0.5} width={closeSize} height={closeSize} />
 								</Container>
 							{/snippet}
 						</Button>

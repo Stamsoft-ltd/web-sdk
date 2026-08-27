@@ -186,6 +186,10 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/board.webp', import.meta.url).href,
 	},
+	closeButton: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/win/x-button.webp', import.meta.url).href,
+	},
 	globalMultiplier: {
 		type: 'spine',
 		src: {
