@@ -314,7 +314,9 @@
 		justify-content: center;
 		min-width: 0;
 		padding: clamp(8px, 1.8vmin, 15px) clamp(12px, 2.4vmin, 20px);
-		border: 0.44px solid #ffffff;
+		/* Crisp bright-white frame — reads clearly white so it doesn't blend with the muted
+		   #605554 rings on the −/+ buttons. */
+		border: 1px solid #ffffff;
 		border-radius: 12px;
 		background: #292624;
 		box-shadow: 0px 0px 6px 0px #000000 inset;
