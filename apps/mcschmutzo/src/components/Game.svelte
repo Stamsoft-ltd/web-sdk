@@ -21,6 +21,7 @@
 	import Anticipations from './Anticipations.svelte';
 	import Win from './Win.svelte';
 	import FreeSpinIntroHtml from './FreeSpinIntroHtml.svelte';
+	import WheelBonus from './WheelBonus.svelte';
 	import FreeSpinCounter from './FreeSpinCounter.svelte';
 	import FreeSpinOutro from './FreeSpinOutro.svelte';
 	import Transition from './Transition.svelte';
@@ -250,6 +251,7 @@
 		{#if !context.stateLayout.showLoadingScreen}
 			<HudHtml />
 			<FreeSpinIntroHtml />
+			<WheelBonus />
 		{/if}
 	</div>
 </div>

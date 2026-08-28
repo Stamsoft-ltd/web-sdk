@@ -32,4 +32,7 @@ export default {
 		'%count% free spins with random expanding symbol and multiplier start at 2x and doubles on every connection',
 	'FREE SPINS': 'FREE SPINS',
 	'PRESS TO CONTINUE': 'PRESS TO CONTINUE',
+	'FREE GAMES': 'FREE GAMES',
+	STEPS: 'STEPS',
+	SPIN: 'SPIN',
 };

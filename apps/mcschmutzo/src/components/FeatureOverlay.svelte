@@ -113,7 +113,8 @@
 	</Container>
 {/if}
 
-{#if context.stateGame.wheel}
+{#if false && context.stateGame.wheel}
+	<!-- Replaced by the HTML WheelBonus overlay (new designed wheel). -->
 	<Container x={board.x} y={board.y} alpha={overlayAlpha.current}>
 		<Rectangle
 			x={-345}
