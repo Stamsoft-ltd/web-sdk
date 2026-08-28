@@ -79,14 +79,17 @@ const animateSymbols = async ({ positions }: { positions: Position[] }) => {
 };
 
 const scatterOnlyAnticipation = (bookEvent: BookEventOfType<'reveal'>) => {
-	if (bookEvent.gameType !== 'basegame') return bookEvent.anticipation.map(() => 0);
+	// Free-game / bought-bonus reveals may omit `anticipation`; fall back to a per-reel zero array.
+	const zeros = bookEvent.board.map(() => 0);
+	const anticipation = bookEvent.anticipation ?? zeros;
+	if (bookEvent.gameType !== 'basegame') return zeros;
 
 	const visibleScatterCount = bookEvent.board.reduce((total, reel) => {
 		const visibleSymbols = reel.length === BOARD_DIMENSIONS.y + 2 ? reel.slice(1, -1) : reel;
 		return total + visibleSymbols.filter((symbol) => symbol.name === 'S').length;
 	}, 0);
 
-	return visibleScatterCount >= 2 ? bookEvent.anticipation : bookEvent.anticipation.map(() => 0);
+	return visibleScatterCount >= 2 ? anticipation : zeros;
 };
 
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
