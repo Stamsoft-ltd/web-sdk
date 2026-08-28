@@ -277,13 +277,7 @@
 		max-height: 94dvh;
 		overflow-y: auto;
 		box-sizing: border-box;
-		padding: clamp(18px, 3vmin, 30px) clamp(16px, 2.6vmin, 28px) clamp(18px, 2.6vmin, 26px);
-		border: 3px solid #444444;
-		border-radius: 22px;
-		background: linear-gradient(180deg, #241f1c 0%, #171412 100%);
-		box-shadow:
-			0 0 0 4px #181818,
-			0 22px 60px rgba(0, 0, 0, 0.65);
+		padding: clamp(10px, 2vmin, 22px);
 		font-family: 'Poppins', sans-serif;
 	}
 
@@ -391,28 +385,27 @@
 		font-size: clamp(0.6rem, 1.3vmin, 0.85rem);
 	}
 
-	/* Amount box in the counter style. */
+	/* Amount chip — small, borderless. */
 	.bb-amount {
 		display: flex;
 		align-items: baseline;
 		justify-content: center;
-		gap: 8px;
-		padding: clamp(6px, 1.1vmin, 10px) clamp(8px, 1.4vmin, 14px);
-		border-radius: 10px;
-		border: 1px solid rgba(255, 255, 255, 0.14);
+		gap: 6px;
+		align-self: center;
+		padding: clamp(3px, 0.6vmin, 6px) clamp(8px, 1.4vmin, 14px);
+		border-radius: 8px;
 		background: #292624;
-		box-shadow: 0 0 0 0 #000;
 	}
 	.bb-mult {
 		color: #ffc264;
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(0.78rem, 1.5vmin, 1.02rem);
+		font-size: clamp(0.68rem, 1.3vmin, 0.9rem);
 	}
 	.bb-cost {
 		color: #ffffff;
 		font-weight: 700;
-		font-size: clamp(0.72rem, 1.4vmin, 0.95rem);
+		font-size: clamp(0.64rem, 1.2vmin, 0.84rem);
 	}
 
 	/* Buttons — dark ACTIVATE / red BUY (shared with the confirm dialog). */
@@ -487,16 +480,18 @@
 		opacity: 0.35;
 		cursor: default;
 	}
+	/* Bet value in a square counter box (same style as the auto-spin/congrats box). */
 	.bb-bet {
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		min-width: clamp(110px, 18vmin, 150px);
+		min-width: clamp(96px, 16vmin, 140px);
 		justify-content: center;
-		padding: clamp(6px, 1vmin, 10px) clamp(14px, 2vmin, 22px);
-		border-radius: 999px;
-		border: 1px solid rgba(255, 255, 255, 0.12);
+		padding: clamp(8px, 1.3vmin, 13px) clamp(14px, 2vmin, 22px);
+		border-radius: 12px;
+		border: 1px solid #ffffff;
 		background: #292624;
+		box-shadow: 0px 0px 6px 0px #000000 inset;
 		color: #ffffff;
 		font-weight: 700;
 		font-size: clamp(0.9rem, 1.8vmin, 1.15rem);
