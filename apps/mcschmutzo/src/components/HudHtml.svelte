@@ -63,6 +63,7 @@
 	import { mcschmutzoStakeDerived } from '../state/mcschmutzoStake.svelte';
 	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
 	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
+	import CustomConfirmModal from './CustomConfirmModal.svelte';
 
 	const context = getContext();
 
@@ -269,6 +270,33 @@
 		showBuyModal = true;
 	};
 
+	// ── Unfinished Round prompt (ResumeBet sets context.stateGame.resumeModalOpen on load) ──────────
+	const resumeMessage = $derived.by(() => {
+		const mode = stateBet.betToResume?.mode;
+		const bonus =
+			mode === 'bonus1' ? 'Normal' : mode === 'bonus2' ? 'Super' : mode === 'featureSpin' ? 'Feature' : '';
+		return bonus
+			? i18nDerived.translateVars('ACTIVE BONUS IN PROGRESS', { bonus })
+			: i18nDerived.translate('ACTIVE ROUND IN PROGRESS');
+	});
+	// Both actions settle the round through the single resume path the engine exposes; PLAY ROUND is
+	// the primary "continue" action, END ROUND the secondary. (No separate settle-only event exists.)
+	const resumeRound = () => {
+		if (stateBet.betToResume?.active && stateBet.betToResume.mode) {
+			stateBet.activeBetModeKey = stateBet.betToResume.mode;
+		}
+		context.stateGame.resumeModalOpen = false;
+		context.eventEmitter.broadcast({ type: 'resumeBet' });
+	};
+	const playRound = () => {
+		context.eventEmitter.broadcast({ type: 'soundPressBet' });
+		resumeRound();
+	};
+	const endRound = () => {
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		resumeRound();
+	};
+
 	const stepBet = (direction: -1 | 1, { playSound = true } = {}) => {
 		if (direction < 0 && disableDecrease) return;
 		if (direction > 0 && disableIncrease) return;
@@ -412,7 +440,8 @@
 			if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_SLOP_PX) return;
 			if (!(event.target instanceof HTMLCanvasElement)) return;
 			// Dialogs don't always cover the whole screen — ignore canvas showing beside one.
-			if (stateModal.modal || menuOpen || showAutoModal || showBuyModal) return;
+			if (stateModal.modal || menuOpen || showAutoModal || showBuyModal || context.stateGame.resumeModalOpen)
+				return;
 			onTapSkip();
 		};
 		// Capture phase so this still sees the tap if something downstream stops propagation.
@@ -994,6 +1023,17 @@
 
 {#if showAutoModal}
 	<CustomAutoSpinModal onclose={() => (showAutoModal = false)} />
+{/if}
+
+{#if context.stateGame.resumeModalOpen}
+	<CustomConfirmModal
+		title={i18nDerived.translate('UNFINISHED ROUND')}
+		message={resumeMessage}
+		cancelLabel={i18nDerived.translate('END ROUND')}
+		confirmLabel={i18nDerived.translate('PLAY ROUND')}
+		oncancel={endRound}
+		onconfirm={playRound}
+	/>
 {/if}
 
 <style>

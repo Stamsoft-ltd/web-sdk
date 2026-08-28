@@ -15,4 +15,13 @@ export default {
 	'LOCK FEATURE SPIN': '50X BONUS FEATURE',
 	'NUMBER OF SPINS': 'NUMBER OF SPINS',
 	'START AUTOPLAY': 'START AUTOPLAY',
+	'CONFIRM IT ALL': 'CONFIRM IT ALL',
+	'BUY ALL IN': 'Buy All in for %cost%',
+	CONFIRM: 'CONFIRM',
+	CANCEL: 'CANCEL',
+	'UNFINISHED ROUND': 'UNFINISHED ROUND',
+	'ACTIVE BONUS IN PROGRESS': 'You have an active %bonus% bonus in progress.',
+	'ACTIVE ROUND IN PROGRESS': 'You have an active bonus in progress.',
+	'END ROUND': 'END ROUND',
+	'PLAY ROUND': 'PLAY ROUND',
 };

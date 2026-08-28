@@ -20,6 +20,7 @@
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { fitLabel } from '../lib/fitLabel';
 	import { mcschmutzoStakeDerived } from '../state/mcschmutzoStake.svelte';
+	import CustomConfirmModal from './CustomConfirmModal.svelte';
 
 	type ModeId = 'enhancer1' | 'featureSpin' | 'bonus1' | 'bonus2';
 	type Mode = {
@@ -233,16 +234,15 @@
 </section>
 
 {#if confirmMode}
-	<button class="backdrop backdrop--confirm" type="button" aria-label="Cancel" onclick={closeConfirm}></button>
-	<section class="confirm-panel" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-		<span class="confirm-kicker">CONFIRM PURCHASE</span>
-		<h2 id="confirm-title">{confirmLabel}</h2>
-		<p>This round costs <strong>{confirmCost}</strong>.</p>
-		<div class="confirm-actions">
-			<button type="button" class="confirm-cancel" onclick={closeConfirm}>{i18nDerived.cancel()}</button>
-			<button type="button" class="confirm-accept" onclick={confirmAccept}>{i18nDerived.confirm()}</button>
-		</div>
-	</section>
+	<CustomConfirmModal
+		title={i18nDerived.translate('CONFIRM IT ALL')}
+		message={i18nDerived.translateVars('BUY ALL IN', { cost: confirmCost })}
+		cancelLabel={i18nDerived.translate('CANCEL')}
+		confirmLabel={i18nDerived.translate('CONFIRM')}
+		oncancel={closeConfirm}
+		onconfirm={confirmAccept}
+		onclose={closeConfirm}
+	/>
 {/if}
 
 <style>
