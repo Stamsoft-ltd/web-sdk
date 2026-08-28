@@ -3,8 +3,10 @@
 	import { ap } from '../lib/preloadArt';
 
 	const plaqueArt = ap('/assets/mcschmutzo/congrats.webp');
-	const splashYellow = ap('/assets/mcschmutzo/congrats-splash-yellow.webp');
-	const splashRed = ap('/assets/mcschmutzo/congrats-splash-red.webp');
+	const sauceYellowBig = ap('/assets/mcschmutzo/congrats-sauce-yellow-big.webp');
+	const sauceRedBig = ap('/assets/mcschmutzo/congrats-sauce-red-big.webp');
+	const sauceYellowSmall = ap('/assets/mcschmutzo/congrats-sauce-yellow-small.webp');
+	const sauceRedSmall = ap('/assets/mcschmutzo/congrats-sauce-red-small.webp');
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
 
 	const STAR_SVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1.5l3.09 6.26 6.91 1-5 4.87 1.18 6.87L12 17.27 5.82 20.5 7 13.63l-5-4.87 6.91-1z" fill="#FFCB33" stroke="#E39B1A" stroke-width="1.1" stroke-linejoin="round"/></svg>`;
@@ -72,8 +74,11 @@
 		></button>
 
 		<div class="fs-stage" role="dialog" aria-modal="true">
-			<img class="fs-splash fs-splash--yellow" src={splashYellow} alt="" draggable="false" />
-			<img class="fs-splash fs-splash--red" src={splashRed} alt="" draggable="false" />
+			<!-- Bigger sauces bleed out of the top corners, smaller ones at the middle sides. -->
+			<img class="fs-sauce fs-sauce--yellow-top" src={sauceYellowBig} alt="" draggable="false" />
+			<img class="fs-sauce fs-sauce--red-top" src={sauceRedBig} alt="" draggable="false" />
+			<img class="fs-sauce fs-sauce--red-mid" src={sauceRedSmall} alt="" draggable="false" />
+			<img class="fs-sauce fs-sauce--yellow-mid" src={sauceYellowSmall} alt="" draggable="false" />
 
 			<div class="fs-plaque" style={`background-image:url('${plaqueArt}')`}>
 				<span class="fs-star fs-star--left">{@html STAR_SVG}</span>
@@ -136,23 +141,33 @@
 		font-family: 'Poppins', sans-serif;
 	}
 
-	/* Sauce splashes bleeding out from behind the top corners of the plaque. */
-	.fs-splash {
+	/* Sauces peeking out from behind the plaque: bigger at the top corners, smaller at the sides. */
+	.fs-sauce {
 		position: absolute;
-		width: 34%;
 		height: auto;
 		z-index: 0;
 		pointer-events: none;
 		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
 	}
-	.fs-splash--yellow {
-		top: -6%;
-		left: 2%;
-		transform: scaleX(-1);
+	.fs-sauce--yellow-top {
+		width: 38%;
+		top: -12%;
+		left: -4%;
 	}
-	.fs-splash--red {
-		top: -8%;
-		right: 1%;
+	.fs-sauce--red-top {
+		width: 38%;
+		top: -14%;
+		right: -4%;
+	}
+	.fs-sauce--yellow-mid {
+		width: 17%;
+		top: 46%;
+		left: -9%;
+	}
+	.fs-sauce--red-mid {
+		width: 17%;
+		top: 44%;
+		right: -9%;
 	}
 
 	.fs-plaque {
