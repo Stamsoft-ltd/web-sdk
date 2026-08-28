@@ -8,7 +8,7 @@
 	const artSuperBonus = ap('/assets/mcschmutzo/buybonus/super-bonus.webp');
 	const minusArt = ap('/assets/mcschmutzo/autoplay/minus.svg');
 	const plusArt = ap('/assets/mcschmutzo/autoplay/plus-icon.svg');
-	const iconCoins = ap('/assets/hud/icon-coins.webp');
+	const moneyArt = ap('/assets/mcschmutzo/buybonus/money.webp');
 	const activateArt = ap('/assets/mcschmutzo/buybonus/activate.svg');
 	const buyArt = ap('/assets/mcschmutzo/buybonus/buy.svg');
 </script>
@@ -212,7 +212,11 @@
 				aria-label={decBetLabel}
 				onclick={() => stepBet(-1)}
 			></button>
-			<div class="bb-bet"><img src={iconCoins} alt="" /><strong>{formattedBet}</strong></div>
+			<div class="bb-bet">
+				<img class="bb-bet-coin" src={moneyArt} alt="" />
+				<span class="bb-bet-label">{i18nDerived.translate('BET')}</span>
+				<strong class="bb-bet-amount">{formattedBet}</strong>
+			</div>
 			<button
 				class="bb-step"
 				type="button"
@@ -289,9 +293,9 @@
 		color: #ffffff;
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
 		font-weight: 400;
-		font-size: clamp(1.4rem, 4vmin, 2.2rem);
+		font-size: clamp(1.75rem, 5vmin, 2.9rem);
 		line-height: 1;
-		letter-spacing: 1.4px;
+		letter-spacing: 1.6px;
 		text-transform: uppercase;
 		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 	}
@@ -450,14 +454,17 @@
 	.bb-betbar {
 		display: flex;
 		justify-content: center;
-		margin-top: clamp(14px, 2.4vmin, 24px);
+		margin-top: clamp(24px, 4vmin, 42px);
 	}
 	.bb-betbox {
 		display: flex;
 		align-items: center;
-		gap: clamp(8px, 1.4vmin, 16px);
-		padding: clamp(6px, 1vmin, 10px) clamp(10px, 1.6vmin, 16px);
-		border-radius: 14px;
+		justify-content: space-between;
+		gap: clamp(10px, 1.8vmin, 20px);
+		width: min(278px, 80vw);
+		min-height: 64px;
+		padding: clamp(6px, 1vmin, 10px) clamp(12px, 1.8vmin, 18px);
+		border-radius: 8.13px;
 		border: 2.03px solid #605553;
 		background: #181818;
 	}
@@ -484,19 +491,30 @@
 		cursor: default;
 	}
 	.bb-bet {
+		flex: 1 1 auto;
 		display: flex;
 		align-items: center;
-		gap: 8px;
-		min-width: clamp(84px, 14vmin, 120px);
 		justify-content: center;
-		color: #ffffff;
-		font-weight: 700;
-		font-size: clamp(0.9rem, 1.8vmin, 1.15rem);
+		gap: clamp(6px, 1.2vmin, 12px);
 	}
-	.bb-bet img {
-		width: clamp(20px, 3vmin, 28px);
+	.bb-bet-coin {
+		width: clamp(22px, 3.4vmin, 30px);
 		height: auto;
 		object-fit: contain;
+	}
+	.bb-bet-label {
+		color: #d88200;
+		font-family: 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: clamp(0.62rem, 1.2vmin, 0.75rem); /* 12px @ design */
+		line-height: 1;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+	}
+	.bb-bet-amount {
+		color: #ffffff;
+		font-weight: 700;
+		font-size: clamp(0.95rem, 1.9vmin, 1.2rem);
 	}
 
 	@media (max-width: 900px) {
