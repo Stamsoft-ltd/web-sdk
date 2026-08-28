@@ -46,7 +46,7 @@
 		{
 			id: 'enhancer1',
 			multiplier: 2,
-			title: 'EXTRA CHANCE',
+			title: 'EXTRA\nCHANCE',
 			description: 'Activate to increase 3 times the chance of trigger a bonus round',
 			action: 'activate',
 			art: artExtraChance,
@@ -55,7 +55,7 @@
 		{
 			id: 'featureSpin',
 			multiplier: 20,
-			title: 'LOCK FEATURE SPIN',
+			title: 'LOCK FEATURE\nSPIN',
 			description: 'Guaranteed paying spin followed by Lock & Re-Spin.',
 			action: 'activate',
 			art: artLockSpin,
@@ -64,7 +64,7 @@
 		{
 			id: 'bonus1',
 			multiplier: 100,
-			title: 'NORMAL BONUS',
+			title: 'NORMAL\nBONUS',
 			description: 'Enter the bonus with three Scatter symbols.',
 			action: 'buy',
 			art: artNormalBonus,
@@ -73,7 +73,7 @@
 		{
 			id: 'bonus2',
 			multiplier: 500,
-			title: 'SUPER BONUS',
+			title: 'SUPER\nBONUS',
 			description: 'Enter the Super Bonus with four Scatter symbols.',
 			action: 'buy',
 			art: artSuperBonus,
@@ -338,15 +338,16 @@
 
 	.bb-card-title {
 		margin: 0;
-		min-height: 2.2em;
+		min-height: 2.5em;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		white-space: pre-line; /* explicit two-row breaks in the title strings */
 		color: #ffffff;
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
 		font-weight: 400;
-		font-size: clamp(0.8rem, 1.7vmin, 1.125rem); /* 18px @ design */
-		line-height: 1;
+		font-size: clamp(1.05rem, 2.4vmin, 1.6rem);
+		line-height: 1.12;
 		letter-spacing: 1.4px;
 		text-transform: uppercase;
 	}
