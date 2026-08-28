@@ -9,6 +9,8 @@
 	const minusArt = ap('/assets/mcschmutzo/autoplay/minus.svg');
 	const plusArt = ap('/assets/mcschmutzo/autoplay/plus-icon.svg');
 	const iconCoins = ap('/assets/hud/icon-coins.webp');
+	const activateArt = ap('/assets/mcschmutzo/buybonus/activate.svg');
+	const buyArt = ap('/assets/mcschmutzo/buybonus/buy.svg');
 </script>
 
 <script lang="ts">
@@ -190,36 +192,36 @@
 
 				<button
 					class="bb-btn"
-					class:bb-btn--buy={mode.action === 'buy' && !isActive(mode.id)}
-					class:bb-btn--activate={!(mode.action === 'buy' && !isActive(mode.id))}
+					style={`background-image:url('${mode.action === 'buy' ? buyArt : activateArt}')`}
 					type="button"
 					disabled={isDisabled(mode)}
 					onclick={() => chooseMode(mode.id)}
-				>
-					{buttonLabel(mode)}
-				</button>
+					aria-label={buttonLabel(mode)}
+				></button>
 			</article>
 		{/each}
 	</div>
 
 	<footer class="bb-betbar">
-		<button
-			class="bb-step"
-			type="button"
-			style={`background-image:url('${minusArt}')`}
-			disabled={!canDec}
-			aria-label={decBetLabel}
-			onclick={() => stepBet(-1)}
-		></button>
-		<div class="bb-bet"><img src={iconCoins} alt="" /><strong>{formattedBet}</strong></div>
-		<button
-			class="bb-step"
-			type="button"
-			style={`background-image:url('${plusArt}')`}
-			disabled={!canInc}
-			aria-label={incBetLabel}
-			onclick={() => stepBet(1)}
-		></button>
+		<div class="bb-betbox">
+			<button
+				class="bb-step"
+				type="button"
+				style={`background-image:url('${minusArt}')`}
+				disabled={!canDec}
+				aria-label={decBetLabel}
+				onclick={() => stepBet(-1)}
+			></button>
+			<div class="bb-bet"><img src={iconCoins} alt="" /><strong>{formattedBet}</strong></div>
+			<button
+				class="bb-step"
+				type="button"
+				style={`background-image:url('${plusArt}')`}
+				disabled={!canInc}
+				aria-label={incBetLabel}
+				onclick={() => stepBet(1)}
+			></button>
+		</div>
 	</footer>
 </section>
 
@@ -300,34 +302,46 @@
 		gap: clamp(10px, 1.6vmin, 18px);
 	}
 
+	/* Card is the outer box (bg + radius); ::before is a #605553 border inset a few px,
+	   so the card bg shows as padding around it (same bg, same rounded corners). */
 	.bb-card {
+		position: relative;
 		display: grid;
 		grid-template-rows: auto auto minmax(38px, auto) 1fr auto auto;
 		gap: clamp(6px, 1.2vmin, 12px);
 		min-width: 0;
-		padding: clamp(12px, 1.8vmin, 20px) clamp(10px, 1.6vmin, 16px);
-		border: 1px solid #3b3532;
+		padding: clamp(16px, 2.4vmin, 26px) clamp(14px, 2vmin, 20px);
 		border-radius: 16px;
 		background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
 		text-align: center;
 	}
-	.bb-card--active {
+	.bb-card::before {
+		content: '';
+		position: absolute;
+		inset: 6px;
+		border: 2.03px solid #605553;
+		border-radius: 12px;
+		pointer-events: none;
+	}
+	.bb-card--active::before {
 		border-color: #e8b574;
+	}
+	.bb-card--active {
 		box-shadow: 0 0 16px rgba(232, 181, 116, 0.25);
 	}
 
 	.bb-card-title {
 		margin: 0;
-		min-height: 2.4em;
+		min-height: 2.2em;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		color: #ffffff;
-		font-family: 'Inter', sans-serif;
-		font-weight: 700;
-		font-size: clamp(0.78rem, 1.5vmin, 1.05rem);
-		line-height: 1.1;
-		letter-spacing: 0.02em;
+		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
+		font-weight: 400;
+		font-size: clamp(0.8rem, 1.7vmin, 1.125rem); /* 18px @ design */
+		line-height: 1;
+		letter-spacing: 1.4px;
 		text-transform: uppercase;
 	}
 
@@ -385,14 +399,15 @@
 		font-size: clamp(0.6rem, 1.3vmin, 0.85rem);
 	}
 
-	/* Amount chip — small, borderless. */
+	/* Amount chip — small, borderless, sized to content (~half the card). */
 	.bb-amount {
 		display: flex;
 		align-items: baseline;
 		justify-content: center;
 		gap: 6px;
 		align-self: center;
-		padding: clamp(3px, 0.6vmin, 6px) clamp(8px, 1.4vmin, 14px);
+		justify-self: center;
+		padding: clamp(3px, 0.6vmin, 6px) clamp(10px, 1.8vmin, 18px);
 		border-radius: 8px;
 		background: #292624;
 	}
@@ -408,17 +423,13 @@
 		font-size: clamp(0.64rem, 1.2vmin, 0.84rem);
 	}
 
-	/* Buttons — dark ACTIVATE / red BUY (shared with the confirm dialog). */
+	/* Buttons use the provided ACTIVATE / BUY art. */
 	.bb-btn {
 		width: 100%;
-		padding: clamp(9px, 1.5vmin, 14px) 8px;
-		border-radius: 10px;
-		font-family: 'Inter', sans-serif;
-		font-weight: 700;
-		font-size: clamp(0.72rem, 1.4vmin, 0.95rem);
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		color: #ffffff;
+		aspect-ratio: 215 / 50;
+		padding: 0;
+		border: none;
+		background: transparent center / contain no-repeat;
 		cursor: pointer;
 		transition:
 			filter 0.12s ease,
@@ -434,29 +445,21 @@
 		opacity: 0.4;
 		cursor: default;
 	}
-	.bb-btn--activate {
-		background: linear-gradient(180deg, #322c29 0%, #241f1d 100%);
-		border: 1px solid #4a4340;
-		box-shadow:
-			0 1px 0 rgba(255, 255, 255, 0.06) inset,
-			0 3px 8px rgba(0, 0, 0, 0.4);
-	}
-	.bb-btn--buy {
-		background: linear-gradient(180deg, #d5240f 0%, #a5170a 100%);
-		border: 1px solid #6d0f05;
-		box-shadow:
-			0 1px 0 rgba(255, 255, 255, 0.22) inset,
-			0 0 0 1px rgba(255, 120, 100, 0.25) inset,
-			0 3px 10px rgba(0, 0, 0, 0.45);
-	}
 
-	/* Bet stepper pill. */
+	/* Bet stepper — a single #181818 box (2.03px #605553 border) holding − value +. */
 	.bb-betbar {
 		display: flex;
-		align-items: center;
 		justify-content: center;
-		gap: clamp(10px, 1.8vmin, 18px);
 		margin-top: clamp(14px, 2.4vmin, 24px);
+	}
+	.bb-betbox {
+		display: flex;
+		align-items: center;
+		gap: clamp(8px, 1.4vmin, 16px);
+		padding: clamp(6px, 1vmin, 10px) clamp(10px, 1.6vmin, 16px);
+		border-radius: 14px;
+		border: 2.03px solid #605553;
+		background: #181818;
 	}
 	.bb-step {
 		flex: 0 0 auto;
@@ -480,18 +483,12 @@
 		opacity: 0.35;
 		cursor: default;
 	}
-	/* Bet value in a square counter box (same style as the auto-spin/congrats box). */
 	.bb-bet {
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		min-width: clamp(96px, 16vmin, 140px);
+		min-width: clamp(84px, 14vmin, 120px);
 		justify-content: center;
-		padding: clamp(8px, 1.3vmin, 13px) clamp(14px, 2vmin, 22px);
-		border-radius: 12px;
-		border: 1px solid #ffffff;
-		background: #292624;
-		box-shadow: 0px 0px 6px 0px #000000 inset;
 		color: #ffffff;
 		font-weight: 700;
 		font-size: clamp(0.9rem, 1.8vmin, 1.15rem);
