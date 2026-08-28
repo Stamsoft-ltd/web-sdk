@@ -214,8 +214,10 @@
 			></button>
 			<div class="bb-bet">
 				<img class="bb-bet-coin" src={moneyArt} alt="" />
-				<span class="bb-bet-label">{i18nDerived.translate('BET')}</span>
-				<strong class="bb-bet-amount">{formattedBet}</strong>
+				<span class="bb-bet-vals">
+					<span class="bb-bet-label">{i18nDerived.translate('BET')}</span>
+					<strong class="bb-bet-amount">{formattedBet}</strong>
+				</span>
 			</div>
 			<button
 				class="bb-step"
@@ -460,10 +462,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: clamp(10px, 1.8vmin, 20px);
-		width: min(278px, 80vw);
-		min-height: 64px;
-		padding: clamp(6px, 1vmin, 10px) clamp(12px, 1.8vmin, 18px);
+		gap: clamp(8px, 1.4vmin, 14px);
+		width: min(210px, 74vw);
+		padding: clamp(4px, 0.7vmin, 7px) clamp(9px, 1.4vmin, 14px);
 		border-radius: 8.13px;
 		border: 2.03px solid #605553;
 		background: #181818;
@@ -495,26 +496,34 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: clamp(6px, 1.2vmin, 12px);
+		gap: clamp(6px, 1.1vmin, 10px);
 	}
 	.bb-bet-coin {
-		width: clamp(22px, 3.4vmin, 30px);
+		width: clamp(20px, 3vmin, 26px);
 		height: auto;
 		object-fit: contain;
+	}
+	/* BET label above the amount. */
+	.bb-bet-vals {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		line-height: 1;
 	}
 	.bb-bet-label {
 		color: #d88200;
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(0.62rem, 1.2vmin, 0.75rem); /* 12px @ design */
+		font-size: clamp(0.58rem, 1.1vmin, 0.7rem); /* ~12px @ design */
 		line-height: 1;
 		letter-spacing: 2px;
 		text-transform: uppercase;
 	}
 	.bb-bet-amount {
+		margin-top: 2px;
 		color: #ffffff;
 		font-weight: 700;
-		font-size: clamp(0.95rem, 1.9vmin, 1.2rem);
+		font-size: clamp(0.85rem, 1.7vmin, 1.05rem);
 	}
 
 	@media (max-width: 900px) {
