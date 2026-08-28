@@ -24,4 +24,12 @@ export default {
 	'ACTIVE ROUND IN PROGRESS': 'You have an active bonus in progress.',
 	'END ROUND': 'END ROUND',
 	'PLAY ROUND': 'PLAY ROUND',
+	CONGRATS: 'CONGRATS!',
+	'YOU WON': 'YOU WON',
+	'ALL IN BONUS TITLE': 'ALL IN BONUS',
+	'NORMAL BONUS TITLE': 'NORMAL BONUS',
+	'BONUS BLURB':
+		'%count% free spins with random expanding symbol and multiplier start at 2x and doubles on every connection',
+	'FREE SPINS': 'FREE SPINS',
+	'PRESS TO CONTINUE': 'PRESS TO CONTINUE',
 };

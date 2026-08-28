@@ -20,7 +20,7 @@
 	import Board from './Board.svelte';
 	import Anticipations from './Anticipations.svelte';
 	import Win from './Win.svelte';
-	import FreeSpinIntro from './FreeSpinIntro.svelte';
+	import FreeSpinIntroHtml from './FreeSpinIntroHtml.svelte';
 	import FreeSpinCounter from './FreeSpinCounter.svelte';
 	import FreeSpinOutro from './FreeSpinOutro.svelte';
 	import Transition from './Transition.svelte';
@@ -223,7 +223,6 @@
 				</MainContainer>
 
 				<Win />
-				<FreeSpinIntro />
 				{#if ['desktop', 'landscape'].includes(context.stateLayoutDerived.layoutType())}
 					<FreeSpinCounter />
 				{/if}
@@ -250,6 +249,7 @@
 
 		{#if !context.stateLayout.showLoadingScreen}
 			<HudHtml />
+			<FreeSpinIntroHtml />
 		{/if}
 	</div>
 </div>
