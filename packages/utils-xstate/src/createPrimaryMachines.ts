@@ -33,6 +33,11 @@ const handleRequestBet = async ({ onError }: { onError: () => void }) => {
 	} catch (error) {
 		onError();
 		stateBet.autoSpinsCounter = 0;
+		// A held-spin/super-turbo loop can otherwise issue another play request as soon as the
+		// failed actor settles. Stop the loop on rate limiting; keep the selected speed preference.
+		if ((error as { status?: number } | null)?.status === 429) {
+			stateBet.isSpaceHold = false;
+		}
 		stateModal.modal = { name: 'error', error };
 		console.error(error);
 		throw error;
@@ -40,7 +45,7 @@ const handleRequestBet = async ({ onError }: { onError: () => void }) => {
 };
 
 const handleRequestEndRound = async () => {
-	if(stateUrlDerived.replay()) return;
+	if (stateUrlDerived.replay()) return;
 
 	try {
 		const data = await requestEndRound({

@@ -12,7 +12,10 @@ import { stateGame, stateGameDerived } from './stateGame.svelte';
 const primaryMachines = createPrimaryMachines<Bet>({
 	onResumeGameActive: (betToResume) => convertTorResumableBet(betToResume),
 	onResumeGameInactive: (betToResume) => {
-		const lastRevealEvent = _.findLast(betToResume.state, (bookEvent) => bookEvent?.type === 'reveal');
+		const lastRevealEvent = _.findLast(
+			betToResume.state,
+			(bookEvent) => bookEvent?.type === 'reveal',
+		);
 		if (lastRevealEvent) stateGameDerived.setBoardFromRaw({ rawBoard: lastRevealEvent.board });
 	},
 	onNewGameStart: async () => {
@@ -29,7 +32,10 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		stateGameDerived.beginSpin();
 	},
 	onNewGameError: () => {
-		stateGame.boardSpinning = false;
+		// The request can fail after beginSpin has already started dropping the old board out.
+		// Restore that authoritative settled board so a 429/network error leaves a playable screen
+		// behind the modal instead of an empty or half-fallen grid.
+		stateGameDerived.setBoardFromRaw({ rawBoard: stateGameDerived.boardRaw() });
 	},
 	onPlayGame: async (bet) => {
 		if (stateGame.endRoundOnly) {

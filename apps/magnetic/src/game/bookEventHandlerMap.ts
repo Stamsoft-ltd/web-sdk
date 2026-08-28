@@ -1,5 +1,5 @@
 import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap } from 'utils-book';
-import { stateBet, stateBetDerived, stateUi } from 'state-shared';
+import { stateBet, stateUi } from 'state-shared';
 import { waitForTimeout } from 'utils-shared/wait';
 
 import { eventEmitter } from './eventEmitter';
@@ -349,17 +349,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateBet.autoSpinsCounter = 0;
 		}
 		if (!isFeatureSpin) {
-			// Entering a bonus always drops back to normal speed. The bonus is the presentation the
-			// player has been waiting for — its intro, its sign, its coins — and turbo exists to skip
-			// exactly that. Cleared through updateIsTurbo(persistent) as well as the flag, because
-			// hold-to-spin arms a persistent turbo LOCK (see HudHtml's beginSpinHold) that would
-			// otherwise survive; the player is free to turn it straight back on.
-			//
-			// A FEATURE spin is deliberately excluded — it is one base-game spin with a guaranteed
-			// magnet, with no intro and no counter, so there is nothing to slow down for.
-			stateBet.isSuperTurbo = false;
-			stateBetDerived.updateIsTurbo(false, { persistent: true });
-
+			// Speed is a player preference, not round state. Keep turbo/super-turbo unchanged when
+			// entering the bonus; resetting it here made a super-turbo trigger continue at normal speed.
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_trigger' });
 			await animateSymbols({ positions: bookEvent.positions });
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_transition' });
