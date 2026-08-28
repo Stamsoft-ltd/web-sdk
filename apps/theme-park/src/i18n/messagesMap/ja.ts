@@ -101,7 +101,7 @@ export default {
 	'BET MODE DUCK TICKER SPIN': 'DUCK YOUR LUCK',
 	'BET MODE ROLLER TITLE': 'ROLLER WILDS',
 	'BET MODE ROLLER DIALOG':
-		'フリースピン10回。ワイルドに着地すると、スピン後にリールが変形する可能性があります。行マルチプライヤー プラークは、各ワイルド リールおよび複数のワイルド リールにわたって追加されます。',
+		'Roller Wild シンボルが増量されたフリースピン10回。ワイルドに着地すると、スピン後にリールが変形する可能性があります。行マルチプライヤー プラークは、各ワイルド リールおよび複数のワイルド リールにわたって追加されます。',
 	'BET MODE ROLLER DESCRIPTION':
 		'Roller Wilds ボーナス (フリースピン 10 回) を 200 倍のベットで購入します。',
 	'BET MODE ROLLER BUTTON': '買う',

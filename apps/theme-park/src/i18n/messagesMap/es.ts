@@ -104,7 +104,7 @@ export default {
 	'BET MODE DUCK TICKER SPIN': 'DUCK YOUR LUCK',
 	'BET MODE ROLLER TITLE': 'ROLLER WILDS',
 	'BET MODE ROLLER DIALOG':
-		'10 giros gratis. Un comodín que aterriza puede transformar su carrete después del giro. Las placas multiplicadoras de filas se agregan en cada carrete comodín y en múltiples carretes comodín.',
+		'10 giros gratis, cargados con más símbolos Roller Wild. Un comodín que aterriza puede transformar su carrete después del giro. Las placas multiplicadoras de filas se agregan en cada carrete comodín y en múltiples carretes comodín.',
 	'BET MODE ROLLER DESCRIPTION':
 		'Compre el bono Roller Wilds (10 giros gratis) por una apuesta de 200x.',
 	'BET MODE ROLLER BUTTON': 'COMPRAR',

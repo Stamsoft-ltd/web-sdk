@@ -85,11 +85,11 @@ export const WHEEL_MOUNT: WheelMount = {
 
 export const WHEEL_CARS: WheelCar[] = [
 	{ key: 'tpWheelCarOrange', angle: 0.7898, width: 0.1295, height: 0.1778 },
-	{ key: 'tpWheelCarPurple', angle: 1.5773, width: 0.125, height: 0.1778 },
+	{ key: 'tpWheelCarPurple', angle: 1.5708, width: 0.125, height: 0.1778 },
 	{ key: 'tpWheelCarGreen', angle: 2.3606, width: 0.1272, height: 0.1806 },
-	{ key: 'tpWheelCarBlue', angle: 3.1525, width: 0.1205, height: 0.1694 },
-	{ key: 'tpWheelCarOrange', angle: 3.9379, width: 0.1295, height: 0.1778 },
-	{ key: 'tpWheelCarPurple', angle: 4.7058, width: 0.125, height: 0.1778 },
-	{ key: 'tpWheelCarGreen', angle: 5.476, width: 0.1272, height: 0.1806 },
-	{ key: 'tpWheelCarBlue', angle: 6.2723, width: 0.1205, height: 0.1694 },
+	{ key: 'tpWheelCarBlue', angle: 3.1481, width: 0.1205, height: 0.1694 },
+	{ key: 'tpWheelCarOrange', angle: 3.9401, width: 0.1295, height: 0.1778 },
+	{ key: 'tpWheelCarPurple', angle: 4.7124, width: 0.125, height: 0.1778 },
+	{ key: 'tpWheelCarGreen', angle: 5.4738, width: 0.1272, height: 0.1806 },
+	{ key: 'tpWheelCarBlue', angle: 6.2766, width: 0.1205, height: 0.1694 },
 ];

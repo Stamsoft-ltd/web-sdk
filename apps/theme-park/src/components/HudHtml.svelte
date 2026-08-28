@@ -17,6 +17,10 @@
 	const menuIconSound = ap('/assets/theme-park/v2/hud/menu_sound.svg');
 	const menuIconSoundMuted = ap('/assets/theme-park/v2/hud/menu_sound_muted.svg');
 	const menuIconMusic = ap('/assets/theme-park/v2/hud/menu_music.svg');
+	// Same construction as the muted speaker beside it (Figma 7257:7010): the note itself, with a
+	// diagonal knocked out of it by a mask and the slash then drawn back in thinner, so the stroke
+	// reads as a cut rather than a line laid over the glyph.
+	const menuIconMusicMuted = ap('/assets/theme-park/v2/hud/menu_music_muted.svg');
 	const menuIconInfo = ap('/assets/theme-park/v2/hud/menu_info.svg');
 	const navMinus = ap('/assets/theme-park/v2/hud/icon_minus.svg');
 	const navPlus = ap('/assets/theme-park/v2/hud/icon_plus.svg');
@@ -51,8 +55,6 @@
 	const ptMenu = ap('/assets/theme-park/v2/controls/btn-menu.png');
 	const ptSound = ap('/assets/theme-park/v2/controls/btn-sound.png');
 	const ptSoundMuted = ap('/assets/theme-park/v2/controls/btn-sound-muted.png');
-	// Landscape control-dock box art (neon-edged vertical panel behind the right-hand buttons).
-	const lsNavBox = ap('/assets/theme-park/v2/controls/nav-box-landscape.webp');
 	// Mobile landscape's speed button (portrait and desktop use the turbo-1/2/3 webps above). One
 	// bolt per step: OFF is the outlined bolt, turbo is one solid bolt, super turbo is two. The three
 	// files used to hold that art rotated by one — btn-turbo.png carried a solid bolt, so the button
@@ -66,7 +68,6 @@
 	const ptPlusDisabled = ap('/assets/theme-park/v2/controls/btn-plus-disabled.png');
 	const ptMinus = ap('/assets/theme-park/v2/controls/btn-minus.png');
 	const ptMinusDisabled = ap('/assets/theme-park/v2/controls/btn-minus-disabled.png');
-	const ptBuy = ap('/assets/theme-park/v2/controls/btn-buy-mobile.png');
 	// Bet box plate — the same glowing neon gradient frame ("S pad") used by the buy-bonus popup's
 	// bet setter, stretched to fill this box so the two match.
 	const ptBetBox = ap('/assets/theme-park/v2/hud/neon-frame.png');
@@ -108,18 +109,14 @@
 	});
 
 	/**
-	 * The two x positions the landscape HUD cannot get from CSS, in canvas px: the centre of the gutter
-	 * left of the board (which the balance/bet column shares with the free-spin plates, so the two line
-	 * up in one column) and the centre of the gap between the board and the action dock (where BUY
-	 * BONUS goes). Both edges belong to the board, which is drawn on the canvas.
+	 * The one x position the landscape HUD cannot get from CSS, in canvas px: the centre of the gutter
+	 * left of the board, which the balance/bet column shares with the free-spin plates so the two line
+	 * up in one column. That edge belongs to the board, which is drawn on the canvas.
+	 *
+	 * This used to measure a second column too — the gap between the board and the dock, where BUY
+	 * BONUS floated, sized to whatever that gap could spare. BUY BONUS is a pill inside the dock now
+	 * (Figma 7239:2826), so the gap no longer has to be measured, and neither does the dock's width.
 	 */
-	/**
-	 * The dock's rendered width, measured rather than recomputed. Its box is as wide as its widest
-	 * child, which is the spin button and not the small round ones, and every attempt to mirror that
-	 * arithmetic here goes stale the moment one of the clamps changes.
-	 */
-	let lsDockWidth = $state(0);
-
 	const landscapeColumns = $derived.by(() => {
 		if (!isLandscapeMobile) return null;
 		const canvas = context.stateLayoutDerived.canvasSizes();
@@ -127,25 +124,7 @@
 		const board = context.stateGameDerived.boardLayout();
 		const toCss = (x: number) => canvas.width / 2 + (x - main.width / 2) * main.scale;
 		const frameLeft = toCss(board.frameCx - board.frameW / 2);
-		const frameRight = toCss(board.frameCx + board.frameW / 2);
-		const clamp = (min: number, value: number, max: number) => Math.min(max, Math.max(min, value));
-		const vh = canvas.height / 100;
-		// 1.8% mirrors the dock's own `right` in CSS — it has to, or the gap is measured to the wrong
-		// edge and the button drifts into the dock.
-		const dockLeft = canvas.width - canvas.width * 0.018 - lsDockWidth;
-		// Centring BUY BONUS in the gap is only half the job: on the narrower popouts the gap is smaller
-		// than the button, and a centred button that does not fit overlaps BOTH edges. So it is sized to
-		// the gap as well, keeping a margin off the board's rail and the dock's border. The margin is
-		// small because the gap is the scarce thing here — the board's neon rail and the dock's border
-		// both fade out at their edges, so a few pixels read as clearance already.
-		const BUY_MARGIN = 3;
-		return {
-			left: Math.round(frameLeft / 2),
-			buy: Math.round((frameRight + dockLeft) / 2),
-			buySize: Math.round(
-				clamp(52, Math.min(dockLeft - frameRight - BUY_MARGIN * 2, 18 * vh), 104),
-			),
-		};
+		return { left: Math.round(frameLeft / 2) };
 	});
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
 	const congratsBlocking = $derived(context.stateGame.freeSpinPopupShowing);
@@ -330,7 +309,10 @@
 		if (!menuOpen) return;
 		const onDown = (event: PointerEvent) => {
 			const target = event.target as HTMLElement | null;
-			if (target?.closest('.hud-menu') || target?.closest('.nav-btn--menu')) return;
+			// `.is-menu-trigger` rather than `.nav-btn--menu`: landscape's burger is an `.ls-btn`, so
+			// matching on the desktop/portrait class alone let this handler fire on the very click that
+			// opened the menu there — it toggled open, then closed again before the frame ended.
+			if (target?.closest('.hud-menu') || target?.closest('.is-menu-trigger')) return;
 			closeMenu();
 		};
 		document.addEventListener('pointerdown', onDown, true);
@@ -503,6 +485,53 @@
 	onpress={onSpinHotkey}
 />
 
+<!-- SOUND · MUSIC · INFO, the panel every burger opens. One definition for all three layouts: this
+     markup was duplicated verbatim between desktop and portrait, and landscape needed it too, at
+     which point a third copy would have been three places to keep a menu item in step. Only the
+     PANEL differs between layouts, so that is all `variant` changes — the items are identical. -->
+{#snippet settingsMenu(variant: string)}
+	<div class="hud-menu {variant}" role="menu">
+		<button
+			class="hud-menu__item"
+			class:is-off={isMuted}
+			type="button"
+			role="menuitem"
+			onclick={toggleSound}
+		>
+			<span class="hud-menu__badge"
+				><span
+					class="hud-menu__glyph"
+					style={`--icon:url('${isMuted ? menuIconSoundMuted : menuIconSound}')`}
+				></span></span
+			>
+			<span class="hud-menu__label">{i18nDerived.translate('SOUND')}</span>
+		</button>
+		<div class="hud-menu__divider"></div>
+		<button
+			class="hud-menu__item"
+			class:is-off={musicMuted}
+			type="button"
+			role="menuitem"
+			onclick={toggleMusic}
+		>
+			<span class="hud-menu__badge"
+				><span
+					class="hud-menu__glyph"
+					style={`--icon:url('${musicMuted ? menuIconMusicMuted : menuIconMusic}')`}
+				></span></span
+			>
+			<span class="hud-menu__label">{i18nDerived.translate('MUSIC')}</span>
+		</button>
+		<div class="hud-menu__divider"></div>
+		<button class="hud-menu__item" type="button" role="menuitem" onclick={openInfo}>
+			<span class="hud-menu__badge"
+				><span class="hud-menu__glyph" style={`--icon:url('${menuIconInfo}')`}></span></span
+			>
+			<span class="hud-menu__label">{i18nDerived.translate('INFO')}</span>
+		</button>
+	</div>
+{/snippet}
+
 <div
 	class="hud-shell"
 	class:hud-shell--blocked={congratsBlocking}
@@ -529,8 +558,6 @@
 		<div
 			class="ls-hud"
 			style:--ls-left-x="{landscapeColumns?.left ?? 0}px"
-			style:--ls-buy-x="{landscapeColumns?.buy ?? 0}px"
-			style:--ls-buy-size="{landscapeColumns?.buySize ?? 66}px"
 		>
 			<div class="ls-left">
 				<div class="ls-pill ls-pill--balance">
@@ -581,23 +608,45 @@
 				</div>
 			</div>
 
-			<div class="ls-actions" bind:clientWidth={lsDockWidth}>
-				<img class="ls-actions__bg" src={lsNavBox} alt="" aria-hidden="true" />
+			<div class="ls-actions">
+				<!-- Drawn, not art. This dock was the LAST holder of the old neon marquee plate
+				     (controls/nav-box-landscape.webp): desktop retired that look in Figma 7033:25229
+				     and portrait in 7063:17249, both to a flat filled rectangle, and this one was
+				     simply missed. Its art also carried painted sparkles along the rim, which is the
+				     thing the redesign is getting rid of everywhere — they never move, so on a dock
+				     that is on screen all session they read as dirt on the glass. -->
+				<div class="ls-actions__bg" aria-hidden="true"></div>
+				<!-- The burger opens SOUND · MUSIC · INFO here too now (Figma 7239:2826). It used to jump
+				     straight to the rules, which left landscape the only layout where the menu was not a
+				     menu — and left the sound toggle taking a slot in the dock. The design spends that
+				     slot on BUY BONUS instead and moves sound into the panel, the same trade desktop and
+				     portrait already made. -->
 				<button
-					class="ls-btn"
+					class="ls-btn is-menu-trigger"
+					class:is-open={menuOpen}
 					type="button"
-					onclick={openRules}
-					aria-label={i18nDerived.gameRules()}
+					onclick={toggleMenu}
+					aria-haspopup="true"
+					aria-expanded={menuOpen}
+					aria-label={i18nDerived.translate('MENU')}
 				>
 					<img src={ptMenu} alt="" />
 				</button>
+				{#if menuOpen}
+					{@render settingsMenu('hud-menu--ls')}
+				{/if}
+				<!-- BUY BONUS, as the dock's own pill rather than a round button floating in the gap
+				     between the board and the dock. That gap is the scarcest space on this layout — it is
+				     a few pixels wide on the small popouts — so the button that lived there had to be
+				     clamped down to fit and still crowded the board's rail. -->
 				<button
-					class="ls-btn"
+					class="ls-bonus"
 					type="button"
-					onclick={toggleSound}
-					aria-label={i18nDerived.translate('SOUND')}
+					disabled={disableBuy}
+					onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
+					aria-label={buyLabel}
 				>
-					<img src={isMuted ? ptSoundMuted : ptSound} alt="" />
+					<span class="ls-bonus__label">{i18nDerived.translate('BONUS')}</span>
 				</button>
 				<button
 					class="spin-btn ls-spin"
@@ -619,16 +668,7 @@
 						<span class="spin-btn__count">{autoSpinsRemainingText}</span>
 					{/if}
 				</button>
-				<button
-					class="ls-btn"
-					data-speed={speedMode}
-					type="button"
-					onclick={onTurbo}
-					aria-label={i18nDerived.turboLabel()}
-					title={`${i18nDerived.turboLabel()}: ${speedMode}`}
-				>
-					<img src={ptTurboImg} alt="" />
-				</button>
+				<!-- AUTO above turbo, which is the order the design stacks them in. -->
 				<button
 					class="ls-btn"
 					class:active={hasAuto}
@@ -639,20 +679,17 @@
 				>
 					<img src={disableAuto && !hasAuto ? ptAutoDisabled : ptAuto} alt="" />
 				</button>
-			</div>
-
-			<button
-				class="ls-buy"
-				type="button"
-				disabled={disableBuy}
-				onclick={isAnyModeActive ? deactivateMode : openBuyBonus}
-				aria-label={buyLabel}
-			>
-				<img src={ptBuy} alt="" />
-				<span class="ls-buy__label" use:fitLabel={{ dep: buyLabel, maxFraction: 0.82 }}
-					>{buyLabel}</span
+				<button
+					class="ls-btn"
+					data-speed={speedMode}
+					type="button"
+					onclick={onTurbo}
+					aria-label={i18nDerived.turboLabel()}
+					title={`${i18nDerived.turboLabel()}: ${speedMode}`}
 				>
-			</button>
+					<img src={ptTurboImg} alt="" />
+				</button>
+			</div>
 
 			<div class="ls-pill ls-pill--win">
 				<span class="ls-pill__label">{i18nDerived.win()}</span>
@@ -669,7 +706,7 @@
 			<div class="hud-left">
 				<div class="hud-system">
 					<button
-						class="nav-btn nav-btn--menu"
+						class="nav-btn nav-btn--menu is-menu-trigger"
 						class:is-open={menuOpen}
 						type="button"
 						onclick={toggleMenu}
@@ -684,45 +721,7 @@
 				     the burger opens, next to MUSIC and INFO. -->
 
 					{#if menuOpen}
-						<div class="hud-menu" role="menu">
-							<button
-								class="hud-menu__item"
-								class:is-off={isMuted}
-								type="button"
-								role="menuitem"
-								onclick={toggleSound}
-							>
-								<span class="hud-menu__badge"
-									><span
-										class="hud-menu__glyph"
-										style={`--icon:url('${isMuted ? menuIconSoundMuted : menuIconSound}')`}
-									></span></span
-								>
-								<span class="hud-menu__label">{i18nDerived.translate('SOUND')}</span>
-							</button>
-							<div class="hud-menu__divider"></div>
-							<button
-								class="hud-menu__item"
-								class:is-off={musicMuted}
-								type="button"
-								role="menuitem"
-								onclick={toggleMusic}
-							>
-								<span class="hud-menu__badge"
-									><span class="hud-menu__glyph" style={`--icon:url('${menuIconMusic}')`}
-									></span></span
-								>
-								<span class="hud-menu__label">{i18nDerived.translate('MUSIC')}</span>
-							</button>
-							<div class="hud-menu__divider"></div>
-							<button class="hud-menu__item" type="button" role="menuitem" onclick={openInfo}>
-								<span class="hud-menu__badge"
-									><span class="hud-menu__glyph" style={`--icon:url('${menuIconInfo}')`}
-									></span></span
-								>
-								<span class="hud-menu__label">{i18nDerived.translate('INFO')}</span>
-							</button>
-						</div>
+						{@render settingsMenu('hud-menu--dk')}
 					{/if}
 				</div>
 
@@ -907,7 +906,7 @@
 
 				<div class="hud-system">
 					<button
-						class="nav-btn nav-btn--menu"
+						class="nav-btn nav-btn--menu is-menu-trigger"
 						class:is-open={menuOpen}
 						type="button"
 						onclick={toggleMenu}
@@ -919,45 +918,7 @@
 					</button>
 
 					{#if menuOpen}
-						<div class="hud-menu" role="menu">
-							<button
-								class="hud-menu__item"
-								class:is-off={isMuted}
-								type="button"
-								role="menuitem"
-								onclick={toggleSound}
-							>
-								<span class="hud-menu__badge"
-									><span
-										class="hud-menu__glyph"
-										style={`--icon:url('${isMuted ? menuIconSoundMuted : menuIconSound}')`}
-									></span></span
-								>
-								<span class="hud-menu__label">{i18nDerived.translate('SOUND')}</span>
-							</button>
-							<div class="hud-menu__divider"></div>
-							<button
-								class="hud-menu__item"
-								class:is-off={musicMuted}
-								type="button"
-								role="menuitem"
-								onclick={toggleMusic}
-							>
-								<span class="hud-menu__badge"
-									><span class="hud-menu__glyph" style={`--icon:url('${menuIconMusic}')`}
-									></span></span
-								>
-								<span class="hud-menu__label">{i18nDerived.translate('MUSIC')}</span>
-							</button>
-							<div class="hud-menu__divider"></div>
-							<button class="hud-menu__item" type="button" role="menuitem" onclick={openInfo}>
-								<span class="hud-menu__badge"
-									><span class="hud-menu__glyph" style={`--icon:url('${menuIconInfo}')`}
-									></span></span
-								>
-								<span class="hud-menu__label">{i18nDerived.translate('INFO')}</span>
-							</button>
-						</div>
+						{@render settingsMenu('hud-menu--pt')}
 					{/if}
 				</div>
 
@@ -1624,8 +1585,10 @@
 		position: absolute;
 		/* Align the panel's left edge with the nav bar's left frame edge (the menu button is inset
 		   from it), and lift it clear of the bar so the two never overlap. Both offsets track the bar
-		   via --hud-u. */
-		left: calc(var(--hud-u) * -24);
+		   via --hud-u. -24 overshot the edge by a measured 8.2 units — 9.9px at 1600x900, 8.5px at
+		   1280x720, the same figure in both, which is what identified it as a unit offset rather than
+		   anything about the viewport. */
+		left: calc(var(--hud-u) * -15.8);
 		bottom: calc(100% + var(--hud-u) * 24);
 		z-index: 30;
 		display: flex;
@@ -2193,12 +2156,18 @@
 		gap: clamp(3px, 2.4vh, 16px);
 		padding: clamp(6px, 3.35vh, 22px) clamp(3px, 1.55vh, 12px);
 	}
+	/* The same plate .pt-plate draws in portrait — flat fill, hairline edge, one soft bloom — so the
+	   two mobile layouts read as one design. The corner keeps the retired art's silhouette: its
+	   border ran a 39px radius across a 259px-wide box, i.e. 0.151 of the width, and the dock here
+	   is one button plus its padding wide (8.7vh + 2 x 1.55vh), which puts that same fraction at
+	   1.8vh. Clamped on the same rails as the buttons it wraps. */
 	.ls-actions__bg {
 		position: absolute;
 		inset: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: fill;
+		border-radius: clamp(3px, 1.8vh, 11px);
+		background: #1d013c;
+		border: 1px solid #5f1484;
+		box-shadow: 0 0 clamp(3px, 1vh, 8px) #b335f5;
 		pointer-events: none;
 		z-index: 0;
 	}
@@ -2240,65 +2209,326 @@
 		font-size: clamp(0.5rem, 2.87vh, 1rem);
 	}
 
-	/* BUY BONUS — round button, seated left of the action dock near the bottom. Bigger so the
-	   two-word label fits inside the circle. */
-	/* BUY BONUS — bottom aligned with the dock's end, centred in the gap between the board's right edge
-	   and the dock. It used to be placed by a fixed offset off the right edge, which put it on the
-	   board's neon rail once the board grew; centring keeps it off both sides whatever the window does.
-	   A size down as well, because that gap is narrow on the site's small popout windows. */
-	.ls-buy {
+	/* BUY BONUS — the dock's own pill (Figma 7239:2826): 36.111 x 65 in a 62 x 290 dock, i.e. 0.582
+	   of the dock's width and 0.224 of its height, with fully rounded ends (the design's 22.75 radius
+	   is wider than the pill is half-wide). Sized off the dock rather than the viewport so it keeps
+	   that ratio at every landscape size, including the tiny popouts.
+
+	   The gradient runs along the pill's TR-BL diagonal — measured off the design render, where the
+	   top-left and bottom-right corners come back the same colour, which is what fixes the axis. */
+	.ls-bonus {
+		position: relative;
+		z-index: 1;
+		width: 58.2%;
+		aspect-ratio: 36.111 / 65;
+		border: 0;
+		padding: 0;
+		cursor: pointer;
+		border-radius: 9999px;
+		background: linear-gradient(45deg, #272fdd 0%, #d836fc 100%);
+		display: grid;
+		place-items: center;
+		/* Its own container, so the stacked label can be sized off the PILL rather than off the
+		   viewport: the pill is a fraction of the dock, which is a fraction of the screen, and a vh
+		   rail had to be re-tuned per breakpoint to stay in step with it. One rule now serves every
+		   landscape size. */
+		container-type: size;
+	}
+	/* Upright letters stacked down the pill, not a rotated word: the design sets each glyph on its own
+	   line the right way up, so it stays readable without tilting the head. `writing-mode` would rotate
+	   the glyphs instead, which is the other thing entirely. */
+	.ls-bonus__label {
+		font-family: 'Lilita One', sans-serif;
+		font-weight: 400;
+		/* Measured off the design's own pill (Figma 7239:2826, rendered at 4x): the letters are set
+		   on a 37.5px pitch in a 225px pill at a 37.8px size, so the five lines take 83% of the pill
+		   and leave the rest as the air at its ends. A 1.18 line-height stretched that block to the
+		   full 100%, which read as loose letters with no top or bottom padding — the two halves of
+		   the same number. letter-spacing does nothing here but nudge each glyph off centre: it is
+		   TRACKING, and every line holds one character. */
+		font-size: 16.8cqh;
+		line-height: 0.99;
+		text-transform: uppercase;
+		color: #fff;
+		/* One character per line, centred — the width is a single glyph's worth. */
+		width: 1ch;
+		text-align: center;
+		word-break: break-all;
+	}
+	.ls-bonus:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+
+	/* The MOBILE settings panel (Figma 7239:3217) — landscape AND portrait. Same items as every
+	   other layout's menu; this only restyles the PANEL, which the design draws as a small flat card
+	   matching the dock plate rather than the tall glowing one desktop uses. Portrait rendered the
+	   desktop panel until 2026-08-27, which is why the "make it narrower, give the rows air" pass on
+	   the landscape one changed nothing on a phone: the two layouts were drawing different panels.
+
+	   --menu-u is one design pixel of it. Both mobile frames are the same device turned over — 800x360
+	   landscape, 349-wide portrait — so one design px means the same thing in both, and the geometry
+	   below is shared. Only the unit rail and the anchor differ. */
+	.hud-menu--ls,
+	.hud-menu--pt,
+	.hud-menu--dk {
+		min-width: 0;
+		/* 100 x 126 is the panel's OUTER box in the design, so the padding and that 2.35 border have to
+		   live inside it — content-box added them on top and the panel came out 15% wide, which is
+		   what made it read as a different shape from the design's. */
+		box-sizing: border-box;
+		width: calc(var(--menu-u) * 100);
+		/* No padding of its own: in the design the air above the first badge and below the last is
+		   the ITEM's padding, the same 6.2 that separates the badges from each other. One number sets
+		   the whole vertical rhythm, and the panel's 126 height then falls out of it. */
+		padding: 0 calc(var(--menu-u) * 4.85);
+		gap: 0;
+		border-radius: calc(var(--menu-u) * 5);
+		background: #1d013c;
+		border: max(1px, calc(var(--menu-u) * 2.35)) solid #310463;
+		box-shadow: 0 calc(var(--menu-u) * 2) calc(var(--menu-u) * 8) rgba(0, 0, 0, 0.55);
+	}
+	/* Landscape: the card is 126 tall on a 360-tall screen, so a design px is 0.278vh. Clamped at both
+	   ends — a floor so it survives a 225px-tall popout, a ceiling so it does not balloon on a tall
+	   landscape window. */
+	.hud-menu--ls {
+		--menu-u: clamp(0.6px, 0.278vh, 1.9px);
+		/* Beside the dock, not above it, and top-aligned with it — measured off the design's own
+		   landscape frame (7239:2826, rendered at 800x360, where --menu-u resolves to 1px): the
+		   panel's right edge stands 13 clear of the dock's left, and its top sits 2 below the dock's.
+		   It cannot go above the dock instead: the dock is ~280 units of a 360-unit screen, so a
+		   127-tall panel stacked over it lands off the top of the viewport.
+		   `right: 100%` is the dock's own left edge, so none of this needs measuring at runtime. */
 		position: absolute;
-		/* Centred in the gap, which means knowing where the board's edge is — see landscapeColumns. */
-		left: var(--ls-buy-x);
+		right: calc(100% + var(--menu-u) * 13);
+		left: auto;
+		bottom: auto;
+		top: calc(var(--menu-u) * 2);
+	}
+	/* Portrait: the bar is already written in design px, so the panel just borrows its unit. It keeps
+	   the base .hud-menu anchor (above the bar) — see `.pt-hud .hud-menu` for the left edge. */
+	.hud-menu--pt {
+		--menu-u: var(--pt-u);
+	}
+	/* Desktop. The panel scales with the bar rather than staying a fixed size, which is how every
+	   other control on this row already behaves — but NOT at --hud-u itself: that made it far too
+	   small (design ask, 2026-08-27). The design's own scale is legible from a relationship rather
+	   than from a number, and holds however the reference is cropped: the menu's badge is the same
+	   circle as the bar's round buttons. .nav-btn is 48.02 of the bar's units, the badge is 28.235 of
+	   the panel's, so a panel unit is 1.7 bar units — 211 x 266 at 1600x900, with a 59.7 badge that
+	   matches the bar's buttons to the pixel. */
+	.hud-menu--dk {
+		--menu-u: calc(var(--hud-u) * 1.7);
+	}
+	/* Badge centres sit on a 41.25 pitch in the design (measured off the rendered frame: 22.8, 63.8,
+	   105.3). A 28.235 badge with a 0.6 divider between rows leaves 6.2 of padding above and below
+	   each one — the rows were on a 35 pitch before, which is the crowding. */
+	.hud-menu--ls .hud-menu__item,
+	.hud-menu--pt .hud-menu__item,
+	.hud-menu--dk .hud-menu__item {
+		gap: calc(var(--menu-u) * 11.8);
+		padding: calc(var(--menu-u) * 6.2) 0;
+	}
+	.hud-menu--ls .hud-menu__badge,
+	.hud-menu--pt .hud-menu__badge,
+	.hud-menu--dk .hud-menu__badge {
+		/* 28.235 is the circle's OUTER diameter in the design. Content-box put the (floored, so at
+		   these sizes over-thick) rim outside it, which made every badge ~2 units fat and stretched
+		   the row pitch past the 41.25 the dividers are placed for. */
+		box-sizing: border-box;
+		width: calc(var(--menu-u) * 28.235);
+		height: calc(var(--menu-u) * 28.235);
+		border-width: max(1px, calc(var(--menu-u) * 0.59));
+		box-shadow: none;
+	}
+	.hud-menu--ls .hud-menu__glyph,
+	.hud-menu--pt .hud-menu__glyph,
+	.hud-menu--dk .hud-menu__glyph {
+		width: calc(var(--menu-u) * 14);
+		height: calc(var(--menu-u) * 14);
+	}
+	/* The design sets these in a bold grotesque, not the display face the desktop menu uses — at this
+	   size Lilita One's tight forms close up and MUSIC/SOUND stop being separable at a glance. */
+	.hud-menu--ls .hud-menu__label,
+	.hud-menu--pt .hud-menu__label,
+	.hud-menu--dk .hud-menu__label {
+		font-family: 'Poppins', sans-serif;
+		font-weight: 700;
+		font-size: calc(var(--menu-u) * 9.4);
+		letter-spacing: 0.02em;
+	}
+	.hud-menu--ls .hud-menu__divider,
+	.hud-menu--pt .hud-menu__divider,
+	.hud-menu--dk .hud-menu__divider {
+		margin: 0;
+		background: rgba(160, 96, 246, 0.42);
+	}
+
+	.ls-pill {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1px;
+		padding: 3px 9px;
+		border-radius: 8px;
+		border: none;
+		border-top: 1px solid #9f0ac0;
+		background: rgba(22, 7, 46, 0.82);
+		box-shadow: 0px 2px 10px 0px #0000008c;
+		backdrop-filter: blur(4px);
+		box-sizing: border-box;
+	}
+	/* Balance: label + value on one row. */
+	.ls-pill--balance {
+		flex-direction: row;
+		align-items: baseline;
+		justify-content: center;
+		gap: 6px;
+		padding: 4px 10px;
+	}
+	.ls-pill__label {
+		font-size: clamp(0.28rem, 1.56vh, 0.5rem);
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: #b79ae6;
+		line-height: 1.1;
+	}
+	.ls-pill__value {
+		font-size: clamp(0.4rem, 2.3vh, 0.76rem);
+		font-weight: 800;
+		color: #fff;
+		white-space: nowrap;
+		line-height: 1.1;
+	}
+
+	/* Left column: balance above the bet stepper, pinned to the bottom and centred on the gutter left
+	   of the board — the same axis the free-spin plates use, so the four read as one column. */
+	.ls-left {
+		position: absolute;
+		left: var(--ls-left-x, 2.4%);
 		transform: translateX(-50%);
-		bottom: 15%;
-		width: var(--ls-buy-size);
-		height: var(--ls-buy-size);
+		bottom: 5%;
+		display: flex;
+		flex-direction: column;
+		gap: clamp(4px, 1.1vh, 8px);
+		/* Held inside the left gutter as well as sized off the viewport. --ls-left-x is the gutter's
+		   MIDPOINT, so twice it is the gutter; without the cap the column kept its viewport width and
+		   ran off the left edge of the screen once the board moved left to make room for BUY BONUS. */
+		width: min(clamp(94px, 15vw, 134px), calc(var(--ls-left-x, 100px) * 2 - 8px));
+	}
+	.ls-bet {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 5px;
+		/* Roomier now that it shows only the value (no BET label). */
+		padding: clamp(3px, 1.55vh, 11px) clamp(4px, 2.05vh, 14px);
+	}
+	.ls-bet__bg {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: fill;
+		pointer-events: none;
+	}
+	.ls-bet__values {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		cursor: pointer;
+		min-width: 0;
+	}
+	.ls-bet__value {
+		font-size: clamp(0.5rem, 3.05vh, 1rem);
+	}
+	.ls-step {
+		position: relative;
+		flex: 0 0 auto;
+		width: clamp(11px, 6.15vh, 32px);
+		height: clamp(11px, 6.15vh, 32px);
 		border: 0;
 		padding: 0;
 		background: none;
 		cursor: pointer;
-		display: grid;
-		place-items: center;
 	}
-	/* btn-buy-mobile.png is a 174x174 export in which the disc itself is only the middle 119px — the
-	   rest is transparent margin around the glow. Drawn at `inset: 0` the button therefore rendered a
-	   disc 68% of its own declared size, so the box was reserving 65px of gap to paint 44px of button
-	   and the label, sized against the box, ran straight off the rim. Blowing the image up by 174/119
-	   makes the declared size and the visible disc the same thing, which is what every measurement
-	   here (the gap arithmetic, the label ratio below) already assumed. */
-	.ls-buy img {
-		position: absolute;
-		left: -23.1%;
-		top: -23.1%;
-		width: 146.2%;
-		height: 146.2%;
+	.ls-step img {
+		width: 100%;
+		height: 100%;
 		object-fit: contain;
-		/* The blown-up box now hangs past the button on every side, and a child does not get clipped to
-		   its parent — without this it would swallow clicks meant for the dock next to it. */
-		pointer-events: none;
+		display: block;
 	}
-	.ls-buy__label {
-		position: relative;
-		z-index: 2;
-		/* Narrow enough that "BUY BONUS" wraps onto two rows, as the design shows. */
-		max-width: 80%;
-		/* Sized off the BUTTON, not the viewport. A vh-based size ignores the fact that the button is
-		   itself clamped to the gap beside the board, so on the small popouts the disc shrank to its
-		   floor while the label did not, and "BONUS" ran out past the rim. The ratio is set by the
-		   longer of the two rows: "BONUS" runs about 4.1 times the font size, so anything above ~0.19
-		   is wider than the disc's flat centre. */
-		font-size: calc(var(--ls-buy-size, 66px) * 0.16);
-		font-weight: 800;
-		line-height: 1.08;
-		letter-spacing: 0.02em;
-		text-transform: uppercase;
-		text-align: center;
-		color: #fff;
-	}
-	.ls-buy:disabled {
-		opacity: 0.5;
+	.ls-step:disabled {
+		opacity: 0.4;
 		cursor: default;
+	}
+
+	/* Right column: menu · sound · SPIN · turbo · auto inside the neon dock box art, pinned to the
+	   right edge and bottom-anchored so its end lines up with BUY BONUS. Taller now (roomier gaps). */
+	.ls-actions {
+		position: absolute;
+		right: 1.8%;
+		bottom: 15%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: clamp(3px, 2.4vh, 16px);
+		padding: clamp(6px, 3.35vh, 22px) clamp(3px, 1.55vh, 12px);
+	}
+	/* The same plate .pt-plate draws in portrait — flat fill, hairline edge, one soft bloom — so the
+	   two mobile layouts read as one design. The corner keeps the retired art's silhouette: its
+	   border ran a 39px radius across a 259px-wide box, i.e. 0.151 of the width, and the dock here
+	   is one button plus its padding wide (8.7vh + 2 x 1.55vh), which puts that same fraction at
+	   1.8vh. Clamped on the same rails as the buttons it wraps. */
+	.ls-actions__bg {
+		position: absolute;
+		inset: 0;
+		border-radius: clamp(3px, 1.8vh, 11px);
+		background: #1d013c;
+		border: 1px solid #5f1484;
+		box-shadow: 0 0 clamp(3px, 1vh, 8px) #b335f5;
+		pointer-events: none;
+		z-index: 0;
+	}
+	.ls-actions > button {
+		position: relative;
+		z-index: 1;
+	}
+	.ls-btn {
+		width: clamp(15px, 8.7vh, 46px);
+		height: clamp(15px, 8.7vh, 46px);
+		border: 0;
+		padding: 0;
+		background: none;
+		cursor: pointer;
+		display: block;
+	}
+	.ls-btn img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		display: block;
+	}
+	.ls-btn:disabled {
+		opacity: 0.45;
+		cursor: default;
+	}
+	/* The turn button — taller than it is wide so the dock stays narrow (leaving room for BUY BONUS)
+	   while the ring still reads as the biggest control. The ring art is height-driven, so it fills
+	   the taller box and slightly overhangs the narrow width, which reads as it popping out. */
+	.ls-spin.spin-btn {
+		width: clamp(26px, 14.4vh, 84px);
+		height: clamp(42px, 22.6vh, 132px);
+	}
+	.ls-spin .spin-btn__count {
+		position: relative;
+		z-index: 4;
+		font-weight: 800;
+		color: #fff;
+		font-size: clamp(0.5rem, 2.87vh, 1rem);
 	}
 
 	/* WIN — bottom-right corner, label + value on a single row. Kept narrow: the board's bottom-right
@@ -2324,20 +2554,12 @@
 	}
 
 	/* Very small landscape (e.g. 400×225): the board takes most of the width, leaving a tiny gap and
-	   narrow corners. Shrink BUY BONUS and centre it in that gap, trim the balance/win boxes so they
-	   don't crowd the board. Only fires well below phone size, so the normal layout is untouched. */
+	   narrow corners. Trim the balance/win boxes so they don't crowd the board, and pull the dock's
+	   own controls down. Only fires well below phone size, so the normal layout is untouched.
+
+	   BUY BONUS no longer needs a rule here at all: as a pill inside the dock it is sized off the
+	   dock's width, so it follows the dock down on its own. */
 	@media (max-height: 300px) {
-		.ls-buy {
-			width: clamp(18px, 13.3vh, 34px);
-			height: clamp(18px, 13.3vh, 34px);
-			/* The gap is tiny here, so bias toward the dock (onto its edge, like on phones) to gain
-			   size while the left edge still clears the board. */
-			right: 11%;
-		}
-		.ls-buy__label {
-			font-size: clamp(0.26rem, 1.7vh, 0.42rem);
-			max-width: 78%;
-		}
 		.ls-left {
 			/* Reclaim a few px of the narrow gutter (the board is only ~2px off the column here) so the
 			   stepper value and balance aren't crushed. */

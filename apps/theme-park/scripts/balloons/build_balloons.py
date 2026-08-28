@@ -175,11 +175,33 @@ def fit():
 
 # ── Building ────────────────────────────────────────────────────────────────────────────────────
 
+def centring(masters):
+    """How far to slide the whole bunch so its ink sits in the middle of the frame.
+
+    The board maps a symbol's WHOLE 448x360 canvas onto the cell, so where the ink sits in the
+    canvas is where it sits in the cell — there is no per-symbol nudge to correct it with. The
+    design's own composition hangs this bunch high (13px of air over it, 51 under), which put it
+    38px — a tenth of the cell — above every other symbol on the board, and it read as a mistake
+    next to them. Measured, not typed in, so it follows PLACEMENTS if the bunch is ever refitted.
+    """
+    frame = Image.new("RGBA", FRAME, (0, 0, 0, 0))
+    for colour, x, y, _width, height, degrees in PLACEMENTS:
+        image, _ = drawn(masters[colour], height, degrees)
+        frame.alpha_composite(image, (x, y))
+    left, top, right, bottom = frame.getchannel("A").point(lambda a: 255 if a > 8 else 0).getbbox()
+    return (FRAME[0] - right - left) // 2, (FRAME[1] - bottom - top) // 2
+
+
 def assemble(masters):
     """The bunch at rest, and where each balloon's string ends — the point it bobs about."""
     frame = Image.new("RGBA", FRAME, (0, 0, 0, 0))
     knots = []
-    for colour, x, y, width, height, degrees in PLACEMENTS:
+    # Applied to the placements themselves, not to the finished picture: the knots are derived from
+    # them and the table below is derived from the knots, so the live balloons stay registered with
+    # the flat drawing the spin trail ghosts.
+    shift_x, shift_y = centring(masters)
+    for colour, px, py, width, height, degrees in PLACEMENTS:
+        x, y = px + shift_x, py + shift_y
         image, _ = drawn(masters[colour], height, degrees)
         frame.alpha_composite(image, (x, y))
 

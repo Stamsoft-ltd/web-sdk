@@ -331,6 +331,16 @@
 	 */
 	const IDLE_BULB_STEPS = 10;
 	const idleBulbClock = $derived(Math.round(idleClock * IDLE_BULB_STEPS) / IDLE_BULB_STEPS);
+	/**
+	 * The breath's own clock, quantised, for the same reason the bulbs' is.
+	 *
+	 * `idleTint` is a {@const} on EVERY cell, so reading the free-running clock re-executed all
+	 * thirty-odd of them on every frame to track something moving at IDLE_TINT_HZ. Rounded, the
+	 * clock's VALUE only changes a few times a second, and a derived whose value has not changed
+	 * stops propagating there — so between steps the cells are not touched at all.
+	 */
+	const IDLE_TINT_STEPS = 12;
+	const idleTintClock = $derived(Math.round(idleClock * IDLE_TINT_STEPS) / IDLE_TINT_STEPS);
 	let idleAmount = $state(0);
 	let spinBlur = $state<number[]>(new Array(BOARD_DIMENSIONS.x).fill(0));
 	/** Cell key -> its delay into the current rattle. Empty between events. */
@@ -487,7 +497,7 @@
 		// A rattling symbol comes up to full brightness — the bulbs flare as it is jolted.
 		if (shakeCells.has(`${reel},${row}`)) return NO_IDLE;
 		const phase = reel * 0.83 + row * 1.37;
-		const dip = 0.5 + 0.5 * Math.cos(idleClock * IDLE_TINT_HZ * TAU + phase);
+		const dip = 0.5 + 0.5 * Math.cos(idleTintClock * IDLE_TINT_HZ * TAU + phase);
 		const level = Math.round(255 * (1 - dip * IDLE_TINT * idleAmount));
 		return (level << 16) | (level << 8) | level;
 	};
@@ -593,7 +603,23 @@
 				{#each reel.reelState.symbols as reelSymbol, symbolIndex (symbolIndex)}
 					{@const y = reelSymbol.symbolY()}
 					{@const isWin = reelSymbol.symbolState === 'win'}
-					{#if !rollerClearedSet.has(`${reelIndex},${symbolIndex - 1}`) && !coasterCellSet.has(`${reelIndex},${symbolIndex - 1}`)}
+					<!--
+						NOTHING IS BUILT FOR A SYMBOL THAT IS OUTSIDE THE BOARD'S OPENING.
+
+						A spinning reel carries a long padded strip — about twenty-six symbols where five
+						are on show — and every one of them used to be built, transformed and then thrown
+						away by the content mask, unseen. Measured in real Safari, the frame that starts a
+						spin created 640 display objects and took 220ms; Chrome does the same work in about
+						30ms, which is why this only ever read as a Safari problem.
+
+						The band is a cell and a half past each end of the opening, which covers the ghost
+						trail's half-symbol offsets and the landing bounce's overshoot. Symbols mount as
+						they scroll in, which spreads the same work over the whole spin instead of spending
+						it all in the frame the strip appears.
+					-->
+					{@const onBoard =
+						y > -CELL_H * 1.5 && y < CELL_H * (BOARD_DIMENSIONS.y + 1.5)}
+					{#if onBoard && !rollerClearedSet.has(`${reelIndex},${symbolIndex - 1}`) && !coasterCellSet.has(`${reelIndex},${symbolIndex - 1}`)}
 						{@const position = boardPosition(reelIndex, symbolIndex - 1)}
 						{@const duckPrize = getDuckCollectPrize(reelIndex, symbolIndex - 1)}
 						{@const idle = isWin ? NO_IDLE : idleTint(reelIndex, symbolIndex - 1)}

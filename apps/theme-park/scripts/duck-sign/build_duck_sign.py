@@ -27,6 +27,19 @@ It writes:
   src/game/duckSignParts.ts
   scripts/duck-sign/verify_duck_sign.png
 
+ITS MARQUEE OUTPUT IS STALE — RESTORE IT AFTER RUNNING
+
+The three duck-your-luck-*-marquee.png are no longer what ships. What ships is the painted
+mega-style lockup that came out of the hand-drawn pass; source/composition.png here is the earlier
+flat drawing, so a run of this script silently replaces the painted sign with the old flat one. The
+wings and the table it writes ARE current and reproduce byte for byte, which is why the script is
+still the way to rebuild those:
+
+    python3 scripts/duck-sign/build_duck_sign.py
+    git checkout -- static/assets/theme-park/v2/modes/duck-your-luck-*-marquee.png
+
+Re-export the composition from the shipping design and this note goes away.
+
 WHY IT IS BUILT THIS WAY
 
 The design frame is 112x90 and every symbol in this game is drawn in a 448x360 one — the same
@@ -53,11 +66,14 @@ Always eyeball verify_duck_sign.png. It puts the rebuilt symbol beside the desig
 layer an inch out shows up as a difference rather than as a number that looks fine.
 """
 
-from collections import deque
+import sys
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lib.figma_paper import keyed  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -71,39 +87,9 @@ FRAME = (448, 360)
 # full-size texture on a phone. Heights come from the frame aspect, so no variant is squeezed.
 MODE_VARIANTS = [("desktop", 448), ("mobile", 184), ("mobile-landscape", 216)]
 
-# Figma exports are always opaque, and this file's paper is #f5f5f5.
-PAPER = np.array([245, 245, 245])
-PAPER_TOLERANCE = 10
 # How close two pixels have to be to count as the same drawing, summed over the three channels.
 # Generous enough to absorb the exports' own resampling, tight enough that gold does not match gold.
 SAME = 24
-
-
-def keyed(path):
-    """The export with its paper knocked out.
-
-    Flooded in from the border rather than keyed by colour everywhere, so a near-white specular
-    highlight inside the drawing — and both wings have one — stays part of the drawing.
-    """
-    rgb = np.asarray(Image.open(path).convert("RGB")).astype(int)
-    h, w, _ = rgb.shape
-    paper = np.abs(rgb - PAPER).max(axis=2) <= PAPER_TOLERANCE
-    seen = np.zeros((h, w), bool)
-    queue = deque()
-    for y, x in [(y, x) for y in range(h) for x in (0, w - 1)] + [
-        (y, x) for x in range(w) for y in (0, h - 1)
-    ]:
-        if paper[y, x] and not seen[y, x]:
-            seen[y, x] = True
-            queue.append((y, x))
-    while queue:
-        y, x = queue.popleft()
-        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            ny, nx = y + dy, x + dx
-            if 0 <= ny < h and 0 <= nx < w and paper[ny, nx] and not seen[ny, nx]:
-                seen[ny, nx] = True
-                queue.append((ny, nx))
-    return np.dstack([rgb, np.where(seen, 0, 255)]).astype(int)
 
 
 def locate(composition, part):

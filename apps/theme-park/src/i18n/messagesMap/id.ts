@@ -101,7 +101,7 @@ export default {
 	'BET MODE DUCK TICKER SPIN': 'DUCK YOUR LUCK',
 	'BET MODE ROLLER TITLE': 'ROLLER WILDS',
 	'BET MODE ROLLER DIALOG':
-		'10 putaran gratis. Pendaratan liar dapat mengubah gulungannya setelah putaran. Plakat pengganda baris ditambahkan di setiap gulungan liar dan di beberapa gulungan liar.',
+		'10 putaran gratis, dengan lebih banyak simbol Roller Wild. Pendaratan liar dapat mengubah gulungannya setelah putaran. Plakat pengganda baris ditambahkan di setiap gulungan liar dan di beberapa gulungan liar.',
 	'BET MODE ROLLER DESCRIPTION': 'Beli bonus Roller Wilds (10 putaran gratis) untuk taruhan 200x.',
 	'BET MODE ROLLER BUTTON': 'MEMBELI',
 	'BET MODE ROLLER TICKER IDLE': 'TEMPATKAN TARUHAN ANDA',

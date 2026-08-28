@@ -1,13 +1,23 @@
 <script lang="ts" module>
 	import { ap } from '../lib/preloadArt';
-	import { fitLabel, fitHeight } from '../lib/fitLabel';
+	import { fitLabel, fitHeight, fitFont } from '../lib/fitLabel';
 
-	// `-marquee` is the cache-bust suffix the flat redraws of these three facades ship under; the
-	// filename is the cache key on Stake's CDN and they replaced art that shipped under the old
-	// names. Safe to bake into the template here because every card on this screen is a redrawn
-	// facade — unlike <CustomInfoModal>, which also lists art that never went through the redraw.
+	// The suffix is the CACHE-BUST, and the three facades are NOT on the same one. Renaming is how
+	// art is retired here — the filename is the cache key on Stake's CDN, so a browser holding the
+	// old file goes on serving it — and Roller Wilds and Mega Coaster were redrawn and moved from
+	// `-marquee` to `-still` (see game/assets.ts, which does the same for their in-game sprites)
+	// while Duck Your Luck never went through that rebuild and still ships as `-marquee`.
+	//
+	// This screen asked all three for `-marquee`, so the two that had moved requested files that do
+	// not exist and drew an empty 55x55 box at EVERY breakpoint — the <picture> below points all
+	// three of its sources at the same basename. Hence one suffix per facade, not one for the set.
+	const MODE_ART_SUFFIX: Record<string, string> = {
+		'duck-your-luck': 'marquee',
+		'roller-wilds': 'still',
+		'mega-coaster': 'still',
+	};
 	const modeAsset = (icon: string, variant: 'desktop' | 'mobile' | 'mobile-landscape') =>
-		ap(`/assets/theme-park/v2/modes/${icon}-${variant}-marquee.png`);
+		ap(`/assets/theme-park/v2/modes/${icon}-${variant}-${MODE_ART_SUFFIX[icon]}.png`);
 	// Stepper glyphs and coin — the very same SVGs the main HUD's bet row uses, so the lifted stepper
 	// reads as that row rather than as a second, different control.
 	const iconMinus = ap('/assets/theme-park/v2/hud/icon_minus.svg');
@@ -44,7 +54,6 @@
 	const context = getContext();
 	const t = (key: string) => i18nDerived.translate(key);
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
-
 
 	const betAmount = $derived(stateBet.betAmount);
 	const canAfford = (multiplier: number) => stateBet.balanceAmount >= betAmount * multiplier;
@@ -211,7 +220,9 @@
 				<div class="card card--toggle">
 					<span class="card-title" use:fitLabel={{ dep: t(card.title) }}>{t(card.title)}</span>
 					<span class="card-desc" use:fitHeight={t(card.desc)}>{t(card.desc)}</span>
-					<span class="card-price">{cost(card.costMultiplier)} {t('PER SPIN')}</span>
+					<span class="card-price" use:fitFont={`${cost(card.costMultiplier)} ${t('PER SPIN')}`}
+						>{cost(card.costMultiplier)} {t('PER SPIN')}</span
+					>
 					<button
 						class="card-btn"
 						class:card-btn--active={props.activeToggleMode === card.mode}
@@ -235,7 +246,9 @@
 						<source media="(max-width: 900px)" srcset={modeAsset(card.icon, 'mobile')} />
 						<img src={modeAsset(card.icon, 'desktop')} alt="" />
 					</picture>
-					<span class="card-price">{cost(card.costMultiplier)}</span>
+					<span class="card-price" use:fitFont={cost(card.costMultiplier)}
+						>{cost(card.costMultiplier)}</span
+					>
 					<button
 						class="card-btn card-btn--primary"
 						type="button"
@@ -262,8 +275,10 @@
 			<div class="bet-mid">
 				<span class="bet-coin"><img src={coinIcon} alt="" /></span>
 				<div class="bet-readout">
-					<span class="bet-readout__label">{i18nDerived.betLabel()}</span>
-					<span class="bet-readout__value">{formattedBet}</span>
+					<span class="bet-readout__label" use:fitFont={i18nDerived.betLabel()}
+						>{i18nDerived.betLabel()}</span
+					>
+					<span class="bet-readout__value" use:fitFont={formattedBet}>{formattedBet}</span>
 				</div>
 			</div>
 			<button
@@ -307,6 +322,12 @@
 <style>
 	/* The overlay fills the game frame (not the viewport): the frame is what the design's 1200x670
 	   maps onto, and container-type makes cqw/cqh mean "of that frame". */
+	@media (pointer: coarse) {
+		.buy-overlay {
+			--close-clear: calc(max(min(100vw / 1200, 100vh / 670, 1.25px), 0.8214px) * 73);
+		}
+	}
+
 	.buy-overlay {
 		position: absolute;
 		inset: 0;
@@ -314,11 +335,14 @@
 		container-type: size;
 		background: rgba(4, 1, 12, 0.8);
 		font-family: 'Nunito Sans', sans-serif;
-		/* The shared close button sits in the viewport's top-right corner and is floored to a 40px tap
-		   target, so on small screens it is proportionally BIGGER than the --u-scaled modal and drops
-		   over the top-right card. This is the y its bottom edge reaches (its own formula × 84 ≈ bottom
-		   + a small gap); the grid keeps its top row clear of it. */
-		--close-clear: calc(clamp(0.8214px, 100vw / 1200, 1.25px) * 84);
+		/* The shared close button sits in the viewport's top-right corner, and on a touch screen it is
+		   floored to a 40px tap target — proportionally BIGGER than the --u-scaled modal, dropping over
+		   the top-right card. This is the y its bottom edge reaches (its own formula × 84 ≈ bottom + a
+		   small gap, now that the button sits at 18 rather than 29); the grid keeps its top row clear of
+		   it. Keep the expression identical to
+		   <PopupCloseButton>'s --close-u, floor included: with a mouse it now scales with this modal and
+		   the clearance collapses to almost nothing on its own. */
+		--close-clear: calc(min(100vw / 1200, 100vh / 670, 1.25px) * 73);
 	}
 
 	/* One design pixel. `min` fits the 1200x670 frame inside whatever shape the game has — the game
@@ -364,13 +388,19 @@
 		   top-right card never sits under it. Pinned by top+bottom (not height) with proportional rows,
 		   so the cards simply shrink to the room that leaves instead of overrunning the bet row. */
 		top: max(calc(var(--u) * 81.5), var(--close-clear));
-		bottom: calc(var(--u) * 115.5);
+		/* 100.5, not the design's 115.5: the bet row below sat 27u clear of the stage floor doing
+		   nothing while the buy cards had 1px of slack in them, so 15u of that band comes up here and
+		   the row moves down to match. The row still keeps 12u under it. */
+		bottom: calc(var(--u) * 100.5);
 		width: calc(var(--u) * 1041);
 		display: grid;
 		/* minmax(0,1fr) — not 1fr — so a long nowrap title (localized) can't inflate a track past its
 		   share and push the card off-screen; the title is then bounded and fitLabel shrinks it. */
 		grid-template-columns: repeat(3, minmax(0, 1fr));
-		grid-template-rows: 1fr 1.282fr;
+		/* 1.362, up from 1.282: the 15u above is handed to the BUY row alone. The toggle cards are
+		   already the size their content wants — measured at 3.8px of slack — so growing them would
+		   only open a gap under their button. */
+		grid-template-rows: 1fr 1.362fr;
 		gap: calc(var(--u) * 12);
 	}
 
@@ -398,8 +428,10 @@
 	.card--toggle {
 		padding: calc(var(--u) * 12) calc(var(--u) * 16);
 	}
+	/* Tighter than the toggle cards' 12: this card carries a block more than they do (the emblem),
+	   and the 2u top and bottom go to the description below. */
 	.card--buy {
-		padding: calc(var(--u) * 12) calc(var(--u) * 16);
+		padding: calc(var(--u) * 10) calc(var(--u) * 16);
 	}
 
 	/* 21.9px Lilita One in the sign gold (nodes 7063:18660 etc). Flat gold, not the brand ramp the
@@ -423,9 +455,10 @@
 		overflow: hidden;
 	}
 
-	/* Nunito #e6e3e9 (nodes 7063:18659 etc) — 11px on the spin cards, 12 on the taller buy cards,
-	   which is how the design sets them. The height is fixed so a long description can never push
-	   its card taller than its row-mates; three lines is what the design allows. */
+	/* Nunito #e6e3e9 (nodes 7063:18659 etc). The design sets 11px on the spin cards and 12 on the
+	   taller buy cards; both run a step over that, because at the design sizes this copy reads small
+	   against its own title. The height is fixed so a long description can never push its card
+	   taller than its row-mates — see the box heights below for what that costs. */
 	.card-desc {
 		margin-top: calc(var(--u) * 4);
 		/* Leading close under the font's own, so three lines land inside the box below rather than
@@ -437,20 +470,32 @@
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
+	/* 46u, not the design's 44: three lines of 12u type at this leading measure 44.6u, so the
+	   authored box clipped its own third line and `fitHeight` shrank any description that ran the
+	   full width. 46u is every pixel these cards have spare — measured at 3.7px of slack under the
+	   button at 1600x900. The portrait column below has no such ceiling: its box is auto. */
 	.card--toggle .card-desc {
-		font-size: calc(var(--u) * 11);
-		letter-spacing: calc(var(--u) * 0.33);
-		height: calc(var(--u) * 44);
-	}
-	.card--buy .card-desc {
 		font-size: calc(var(--u) * 12);
 		letter-spacing: calc(var(--u) * 0.36);
-		height: calc(var(--u) * 42);
+		height: calc(var(--u) * 46);
+	}
+	/* 70u — four lines of 13.5u type — where the design draws 42, and a fourth line where it allows
+	   three. The longest description in the game (ROLLER, ~200 characters) is four lines wide at card
+	   type, and in the old box `fitHeight` shrank it to 12.4px beside neighbours at 18. The room came
+	   from the 15u of dead band under the bet row, handed to this row alone by the row ratio above,
+	   plus 9u off this card's own paddings and margins. It now renders at 16.9px, one shrink step off
+	   full size; the clamp matches the box, so a translation longer still is scaled rather than cut. */
+	.card--buy .card-desc {
+		margin-top: calc(var(--u) * 3);
+		font-size: calc(var(--u) * 13.5);
+		letter-spacing: calc(var(--u) * 0.4);
+		height: calc(var(--u) * 70);
+		-webkit-line-clamp: 4;
 	}
 
 	/* 55x55 logo box (nodes 6695:5007 etc). */
 	.mode-art {
-		margin-top: calc(var(--u) * 5);
+		margin-top: calc(var(--u) * 4);
 		width: calc(var(--u) * 55);
 		height: calc(var(--u) * 55);
 		display: grid;
@@ -483,11 +528,17 @@
 
 	/* The price is a CHIP in the redesign (nodes 7063:18657 etc), not a bare line: Lilita One white
 	   on a #341451 plate, radius 7, 10 of padding all round. */
+	/* The pill hugs its text, but never past the card: a long currency ("RUB 50 000.00 / SPIN")
+	   would otherwise widen it straight through the card's border. Capped here and shrunk by
+	   fitFont, so the price stays readable and the pill keeps its designed padding and height. */
 	.card-price {
 		font-family: 'Lilita One', sans-serif;
 		font-weight: 400;
 		color: #fff;
 		white-space: nowrap;
+		box-sizing: border-box;
+		max-width: 100%;
+		overflow: hidden;
 		background: #341451;
 		border-radius: calc(var(--u) * 7);
 		padding: calc(var(--u) * 8) calc(var(--u) * 14);
@@ -498,7 +549,7 @@
 		line-height: calc(var(--u) * 18);
 	}
 	.card--buy .card-price {
-		margin-top: calc(var(--u) * 5);
+		margin-top: calc(var(--u) * 4);
 		font-size: calc(var(--u) * 16);
 		line-height: calc(var(--u) * 19);
 	}
@@ -530,7 +581,7 @@
 		font-size: calc(var(--u) * 16);
 	}
 	.card--buy .card-btn {
-		margin-top: calc(var(--u) * 8);
+		margin-top: calc(var(--u) * 6);
 		font-size: calc(var(--u) * 18);
 	}
 	.card-btn--active,
@@ -550,7 +601,8 @@
 	.betrow {
 		position: absolute;
 		left: 50%;
-		top: calc(var(--u) * 568);
+		/* 583, down from the design's 568, by the 15u the grid above took. */
+		top: calc(var(--u) * 583);
 		transform: translateX(-50%);
 		box-sizing: border-box;
 		width: calc(var(--u) * 268);
@@ -558,6 +610,11 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		/* The steppers are inset from the plate's line rather than pressed against it (design ask,
+		   2026-08-27). It has to be padding, not slack: the readout between them is a `flex: 1 1 0`
+		   slot that takes whatever is left, so any gap left to chance closes the moment the bet is a
+		   long one — which is exactly when the row is most crowded. */
+		padding: 0 calc(var(--u) * 10);
 		gap: calc(var(--u) * 12);
 		/* Flat, like the cards: #1d013c inside the same #5e4374 line (node 7058:10349). */
 		background: #1d013c;
@@ -610,17 +667,23 @@
 	@media (hover: hover) {
 		.bet-step:not(:disabled):hover {
 			filter: brightness(1.2);
-			box-shadow:
-				0 0 calc(var(--u) * 9) calc(var(--u) * 1.5) rgba(160, 96, 246, 0.85);
+			box-shadow: 0 0 calc(var(--u) * 9) calc(var(--u) * 1.5) rgba(160, 96, 246, 0.85);
 		}
 	}
 	.bet-step:not(:disabled):active {
 		transform: translateY(1px) scale(0.96);
 	}
 
+	/* `flex: 1 1 0` rather than a content width: the slot is then exactly the room the two stepper
+	   circles leave, whatever the readout says, and `justify-content: center` keeps the coin and the
+	   readout where the design centres them. A content-sized slot is what let "RUB 100.00" run out
+	   of the plate and under the + button — and it is also what makes a font-shrinking fitter
+	   oscillate, since the slot would grow back the moment the text shrank to fit it. */
 	.bet-mid {
 		display: flex;
+		flex: 1 1 0;
 		align-items: center;
+		justify-content: center;
 		gap: calc(var(--u) * 12);
 		min-width: 0;
 	}
@@ -638,13 +701,20 @@
 		height: calc(var(--u) * 24);
 		object-fit: contain;
 	}
+	/* Stretch, not flex-start: the label and the value have to inherit this box's width for fitFont
+	   to have anything to measure against — flex-start would size each of them to its own text and
+	   let it hang out of the plate. They keep the design's left alignment by text-align. */
 	.bet-readout {
 		display: flex;
+		flex: 0 1 auto;
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: stretch;
+		text-align: left;
 		min-width: 0;
+		overflow: hidden;
 	}
 	.bet-readout__label {
+		white-space: nowrap;
 		font-size: calc(var(--u) * 10);
 		line-height: calc(var(--u) * 15);
 		letter-spacing: calc(var(--u) * 2);

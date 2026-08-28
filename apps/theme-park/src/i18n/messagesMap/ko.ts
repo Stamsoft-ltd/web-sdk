@@ -101,7 +101,7 @@ export default {
 	'BET MODE DUCK TICKER SPIN': 'DUCK YOUR LUCK',
 	'BET MODE ROLLER TITLE': 'ROLLER WILDS',
 	'BET MODE ROLLER DIALOG':
-		'10번의 프리스핀. 착륙 야생은 회전 후 릴을 변형시킬 수 있습니다. 행 승수 플라크는 각 와일드 릴과 여러 와일드 릴에 걸쳐 추가됩니다.',
+		'Roller Wild 심볼이 더 많이 등장하는 10번의 프리스핀. 착륙 야생은 회전 후 릴을 변형시킬 수 있습니다. 행 승수 플라크는 각 와일드 릴과 여러 와일드 릴에 걸쳐 추가됩니다.',
 	'BET MODE ROLLER DESCRIPTION': '200x 베팅으로 Roller Wilds 보너스(무료 스핀 10회)를 구매하세요.',
 	'BET MODE ROLLER BUTTON': '구매',
 	'BET MODE ROLLER TICKER IDLE': '베팅하세요',

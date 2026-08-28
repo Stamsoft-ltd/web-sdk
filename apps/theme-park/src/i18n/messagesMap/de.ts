@@ -102,7 +102,7 @@ export default {
 	'BET MODE DUCK TICKER SPIN': 'DUCK YOUR LUCK',
 	'BET MODE ROLLER TITLE': 'ROLLER WILDS',
 	'BET MODE ROLLER DIALOG':
-		'10 Freispiele. Ein Landing-Wild kann seine Walze nach der Drehung verändern. Reihenmultiplikatortafeln addieren sich über jede Wild-Walze und über mehrere Wild-Walzen hinweg.',
+		'10 Freispiele mit mehr Roller-Wild-Symbolen. Ein Landing-Wild kann seine Walze nach der Drehung verändern. Reihenmultiplikatortafeln addieren sich über jede Wild-Walze und über mehrere Wild-Walzen hinweg.',
 	'BET MODE ROLLER DESCRIPTION':
 		'Kaufen Sie den Roller Wilds-Bonus (10 Freispiele) für das 200-fache Ihres Einsatzes.',
 	'BET MODE ROLLER BUTTON': 'KAUFEN',

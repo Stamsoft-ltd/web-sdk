@@ -101,7 +101,7 @@ export default {
 	'BET MODE DUCK TICKER SPIN': 'DUCK YOUR LUCK',
 	'BET MODE ROLLER TITLE': 'ROLLER WILDS',
 	'BET MODE ROLLER DIALOG':
-		'10 bedava dönüş. Bir iniş vahşisi, dönüşten sonra makarasını dönüştürebilir. Satır çarpanı plakları, her bir wild makaraya ve birden fazla wild makaraya eklenir.',
+		'Daha fazla Roller Wild sembolüyle 10 bedava dönüş. Bir iniş vahşisi, dönüşten sonra makarasını dönüştürebilir. Satır çarpanı plakları, her bir wild makaraya ve birden fazla wild makaraya eklenir.',
 	'BET MODE ROLLER DESCRIPTION':
 		'200x bahis için Roller Wilds bonusunu (10 bedava döndürme) satın alın.',
 	'BET MODE ROLLER BUTTON': 'SATIN AL',

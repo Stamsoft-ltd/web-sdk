@@ -66,13 +66,19 @@ export function fitFont(node: HTMLElement, _dep?: unknown) {
 	const fit = () => {
 		node.style.removeProperty('font-size'); // back to the authored cqw size before measuring
 		const cs = getComputedStyle(node);
-		const avail = node.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+		const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+		const avail = node.clientWidth - padX;
 		if (avail <= 0) return;
 		const base = parseFloat(cs.fontSize);
 		const range = document.createRange();
 		range.selectNodeContents(node);
+		// The Range's per-line rects are the TEXT's width. scrollWidth is not comparable to `avail`
+		// — it counts the padding `avail` just subtracted — so it is only the fallback for when there
+		// are no rects to measure, and it gives the padding back when it is used. Comparing the two
+		// directly shrank every PADDED box by its own padding ratio: the price pills came out a fifth
+		// too small in English, where nothing was overflowing at all.
 		const lineWidths = Array.from(range.getClientRects(), (r) => r.width);
-		const full = Math.max(node.scrollWidth, ...lineWidths, 0);
+		const full = lineWidths.length ? Math.max(...lineWidths) : node.scrollWidth - padX;
 		if (full > avail) node.style.fontSize = `${Math.max(1, (base * avail) / full)}px`;
 	};
 	const schedule = () => requestAnimationFrame(fit);

@@ -22,10 +22,10 @@ export type Balloon = {
 };
 
 export const BALLOONS: Balloon[] = [
-	{ key: 'tpBalloonBlue', x: 0.4509, y: 0.5958, width: 0.2098, height: 0.4778, rest: -0.5236 },
-	{ key: 'tpBalloonBlue', x: 0.4877, y: 0.8485, width: 0.2455, height: 0.5611, rest: -0.5236 },
-	{ key: 'tpBalloonGreen', x: 0.5946, y: 0.6221, width: 0.2254, height: 0.5139, rest: 0.3316 },
-	{ key: 'tpBalloonOrange', x: 0.4904, y: 0.6138, width: 0.2522, height: 0.5778, rest: 0.0175 },
-	{ key: 'tpBalloonOrange', x: 0.5078, y: 0.8613, width: 0.2522, height: 0.5778, rest: 0.5236 },
-	{ key: 'tpBalloonPink', x: 0.4978, y: 0.8583, width: 0.2902, height: 0.6611, rest: -0.0000 },
+	{ key: 'tpBalloonBlue', x: 0.4464, y: 0.6486, width: 0.2098, height: 0.4778, rest: -0.5236 },
+	{ key: 'tpBalloonBlue', x: 0.4833, y: 0.9013, width: 0.2455, height: 0.5611, rest: -0.5236 },
+	{ key: 'tpBalloonGreen', x: 0.5901, y: 0.6749, width: 0.2254, height: 0.5139, rest: 0.3316 },
+	{ key: 'tpBalloonOrange', x: 0.4859, y: 0.6666, width: 0.2522, height: 0.5778, rest: 0.0175 },
+	{ key: 'tpBalloonOrange', x: 0.5033, y: 0.9141, width: 0.2522, height: 0.5778, rest: 0.5236 },
+	{ key: 'tpBalloonPink', x: 0.4933, y: 0.9111, width: 0.2902, height: 0.6611, rest: -0.0000 },
 ];

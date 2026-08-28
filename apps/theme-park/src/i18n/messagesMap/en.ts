@@ -121,7 +121,7 @@ export default {
 	'BET MODE DUCK TICKER SPIN': 'DUCK YOUR LUCK',
 	'BET MODE ROLLER TITLE': 'ROLLER WILDS',
 	'BET MODE ROLLER DIALOG':
-		'10 free spins. A landing wild can transform its reel after the spin. Row multiplier plaques add across each wild reel and across multiple wild reels.',
+		'10 free spins, loaded with more Roller Wild symbols. A landing Wild can transform its reel after the spin. Row multiplier plaques add across each Wild reel and across multiple Wild reels.',
 	'BET MODE ROLLER DESCRIPTION': 'Buy the Roller Wilds bonus (10 free spins) for 200x bet.',
 	'BET MODE ROLLER BUTTON': 'BUY',
 	'BET MODE ROLLER TICKER IDLE': 'PLACE YOUR BET',

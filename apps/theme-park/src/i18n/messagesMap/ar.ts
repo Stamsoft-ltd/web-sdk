@@ -101,7 +101,7 @@ export default {
 	'BET MODE DUCK TICKER SPIN': 'DUCK YOUR LUCK',
 	'BET MODE ROLLER TITLE': 'ROLLER WILDS',
 	'BET MODE ROLLER DIALOG':
-		'10 دورات مجانية. يمكن للهبوط البري أن يحول بكرته بعد الدوران. يتم إضافة اللوحات المضاعفة للصفوف عبر كل بكرة برية وعبر بكرات برية متعددة.',
+		'10 دورات مجانية، مع مزيد من رموز Roller Wild. يمكن للهبوط البري أن يحول بكرته بعد الدوران. يتم إضافة اللوحات المضاعفة للصفوف عبر كل بكرة برية وعبر بكرات برية متعددة.',
 	'BET MODE ROLLER DESCRIPTION': 'قم بشراء مكافأة Roller Wilds (10 دورات مجانية) مقابل رهان 200x.',
 	'BET MODE ROLLER BUTTON': 'شراء',
 	'BET MODE ROLLER TICKER IDLE': 'ضع رهانك',

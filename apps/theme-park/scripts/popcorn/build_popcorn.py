@@ -39,10 +39,14 @@ it is. Nothing about it is typed in.
 """
 
 from collections import deque
+import sys
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lib.figma_paper import keyed  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -56,9 +60,6 @@ FRAME = (448, 360)
 # frame the bucket belongs.
 COMPOSITION_AT = (64, 16)
 
-PAPER = np.array([245, 245, 245])
-PAPER_TOLERANCE = 10
-
 # How far down the bucket to cut when measuring the crown of the heap, as a share of the bucket's
 # height. Chosen off the heap's own profile: the drawing is 8px wide at its very top and does not
 # reach the width of the tub until 35% down, so a cut any higher would throw every kernel out of a
@@ -68,29 +69,6 @@ MOUTH_DEPTH = 0.15
 # stem -> the design node it came from, for the generated comment. Order is the order they are
 # emitted in, which is what makes the burst read as mixed sizes rather than as three separate runs.
 KERNELS = [("a", "7052:7943"), ("b", "7052:7945"), ("c", "7052:7941")]
-
-
-def keyed(path):
-    """The export with its paper flooded out from the border."""
-    rgb = np.asarray(Image.open(path).convert("RGB")).astype(int)
-    h, w, _ = rgb.shape
-    paper = np.abs(rgb - PAPER).max(axis=2) <= PAPER_TOLERANCE
-    seen = np.zeros((h, w), bool)
-    queue = deque()
-    for y, x in [(y, x) for y in range(h) for x in (0, w - 1)] + [
-        (y, x) for x in range(w) for y in (0, h - 1)
-    ]:
-        if paper[y, x] and not seen[y, x]:
-            seen[y, x] = True
-            queue.append((y, x))
-    while queue:
-        y, x = queue.popleft()
-        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            ny, nx = y + dy, x + dx
-            if 0 <= ny < h and 0 <= nx < w and paper[ny, nx] and not seen[ny, nx]:
-                seen[ny, nx] = True
-                queue.append((ny, nx))
-    return np.dstack([rgb, np.where(seen, 0, 255)]).astype(int)
 
 
 def largest_run(mask):

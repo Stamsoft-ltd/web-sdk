@@ -101,7 +101,7 @@ export default {
 	'BET MODE DUCK TICKER SPIN': 'DUCK YOUR LUCK',
 	'BET MODE ROLLER TITLE': 'ROLLER WILDS',
 	'BET MODE ROLLER DIALOG':
-		'10 ilmaiskierrosta. Laskeutuva villi voi muuttaa kelaansa pyöräytyksen jälkeen. Rivikerroinplaketit lisätään jokaiselle villikelalle ja useille villirullille.',
+		'10 ilmaiskierrosta, joissa on enemmän Roller Wild -symboleja. Laskeutuva villi voi muuttaa kelaansa pyöräytyksen jälkeen. Rivikerroinplaketit lisätään jokaiselle villikelalle ja useille villirullille.',
 	'BET MODE ROLLER DESCRIPTION':
 		'Osta Roller Wilds -bonus (10 ilmaispyöräytystä) 200-kertaisella panoksella.',
 	'BET MODE ROLLER BUTTON': 'OSTA',

@@ -25,9 +25,11 @@ top MIDDLE. Those boxes are pre-transform origins. Every layer is LOCATED instea
 export slid over the x4 export of the whole group until the most of it matches pixel for pixel —
 which is exact here because both come out of the same renderer at the same scale.
 
-The layers come back OPAQUE, on Figma's #f5f5f5 paper, so each one is keyed by flooding in from its
-border. Flooding rather than keying every near-white pixel: the star has a white specular highlight
-and the words have white outlines, and a blanket key would eat both.
+The layers come back OPAQUE, on Figma's #f5f5f5 paper, so each one is cut off it by
+`lib/figma_paper.keyed` — a border flood rather than a near-white key, because the star has a white
+specular highlight and the words have white outlines and a blanket key would eat both, and with the
+rim un-matted rather than thresholded, because a hard key ships this symbol's antialiasing as an
+opaque pale fringe around its black outline.
 
 THE TWO WORDS ARE MEASURED, NOT THE BANNER THEY SIT ON. What a popping word needs is its own centre
 to scale about, and that is the centre of its INK, not of its export box — the exports carry several
@@ -39,11 +41,14 @@ the poses either end of both animations, so a layer an inch out reads as a diffe
 a number that looks reasonable.
 """
 
-from collections import deque
+import sys
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lib.figma_paper import keyed  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -62,9 +67,6 @@ MODE_VARIANTS = [("desktop", 448), ("mobile", 184), ("mobile-landscape", 216)]
 # made, and this rebuild is not the place to change it.
 TARGET_INK_H = 296
 
-# Figma exports are always opaque, and this file's paper is #f5f5f5.
-PAPER = np.array([245, 245, 245])
-PAPER_TOLERANCE = 10
 # How close two pixels have to be to count as the same drawing, summed over the three channels.
 # Generous enough to absorb the exports' own resampling, tight enough that gold does not match gold.
 SAME = 24
@@ -73,40 +75,8 @@ SAME = 24
 LAYERS = ("emblem", "banner", "roller", "wilds", "star")
 # The three that move at runtime. The other two are the sign they move on, and ship baked together.
 LOOSE = ("star", "roller", "wilds")
-# The one layer whose enclosed paper is background rather than drawing — see `keyed`.
+# The one layer whose enclosed paper is background rather than drawing — see `lib/figma_paper`.
 HOLED = ("emblem",)
-
-
-def keyed(path, holes=False):
-    """The export with its paper knocked out.
-
-    Flooded in from the border rather than keyed by colour everywhere, so the star's specular
-    highlight and the words' white outlines stay part of the drawing.
-
-    `holes` keys the paper the flood cannot reach as well — the gaps a drawing encloses. The emblem
-    is a knot of loops with about twenty of them, and left opaque they shipped as white patches
-    hanging inside the symbol on a purple board. It is off by default because for every other layer
-    an enclosed white IS the drawing: the star's highlight, and the counters of the words' letters.
-    """
-    rgb = np.asarray(Image.open(path).convert("RGB")).astype(int)
-    h, w, _ = rgb.shape
-    paper = np.abs(rgb - PAPER).max(axis=2) <= PAPER_TOLERANCE
-    seen = np.zeros((h, w), bool)
-    queue = deque()
-    for y, x in [(y, x) for y in range(h) for x in (0, w - 1)] + [
-        (y, x) for x in range(w) for y in (0, h - 1)
-    ]:
-        if paper[y, x] and not seen[y, x]:
-            seen[y, x] = True
-            queue.append((y, x))
-    while queue:
-        y, x = queue.popleft()
-        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            ny, nx = y + dy, x + dx
-            if 0 <= ny < h and 0 <= nx < w and paper[ny, nx] and not seen[ny, nx]:
-                seen[ny, nx] = True
-                queue.append((ny, nx))
-    return np.dstack([rgb, np.where(paper if holes else seen, 0, 255)]).astype(int)
 
 
 def locate(composition, part):

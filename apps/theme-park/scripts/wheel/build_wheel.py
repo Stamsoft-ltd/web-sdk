@@ -43,10 +43,14 @@ turn mid-spin, so at that moment the two are the same picture.
 
 import math
 from collections import deque
+import sys
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lib.figma_paper import keyed  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -55,9 +59,6 @@ TABLE = ROOT / "src/game/wheelParts.ts"
 VERIFY = Path(__file__).resolve().parent / "verify_wheel.png"
 
 FRAME = (448, 360)
-PAPER = np.array([245, 245, 245])
-PAPER_TOLERANCE = 10
-
 # How far either way to slide a part when checking its stated position, and how much of it has to
 # match exactly before the placement is believed. The bar is high because these parts ARE the pixels
 # of the assembled export — anything below it means the wrong node was downloaded.
@@ -69,7 +70,8 @@ CONFIDENCE = 0.9
 # threshold reads as a fifth of the legs being in the wrong place.
 SAME = 24
 
-# The parts whose middle is background rather than drawing — see `keyed`. Only the rim: it is a ring
+# The parts whose middle is background rather than drawing — see `lib/figma_paper`. Only the rim:
+# it is a ring
 # with spokes, and the twelve sectors between them are meant to show the board through.
 HOLLOW = {"rim"}
 
@@ -86,38 +88,6 @@ PARTS = [
     ("legs", "7052:7904", (30, 41)),
     ("hub", "7052:7895", (50, 32)),
 ]
-
-
-def keyed(path, hollow=False):
-    """The export with its paper flooded out from the border.
-
-    `hollow` drops EVERY paper pixel instead, for a part whose middle is meant to be see-through. The
-    border flood cannot reach the inside of a ring: the rim encloses its own centre, so the wheel
-    came out as a solid white disc with the board's purple nowhere in sight. The flood is still the
-    default because it is what keeps a white highlight that happens to sit inside a drawing — this
-    part has none, which is the only reason a blanket colour key is safe on it.
-    """
-    rgb = np.asarray(Image.open(path).convert("RGB")).astype(int)
-    h, w, _ = rgb.shape
-    paper = np.abs(rgb - PAPER).max(axis=2) <= PAPER_TOLERANCE
-    if hollow:
-        return np.dstack([rgb, np.where(paper, 0, 255)]).astype(int)
-    seen = np.zeros((h, w), bool)
-    queue = deque()
-    for y, x in [(y, x) for y in range(h) for x in (0, w - 1)] + [
-        (y, x) for x in range(w) for y in (0, h - 1)
-    ]:
-        if paper[y, x] and not seen[y, x]:
-            seen[y, x] = True
-            queue.append((y, x))
-    while queue:
-        y, x = queue.popleft()
-        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            ny, nx = y + dy, x + dx
-            if 0 <= ny < h and 0 <= nx < w and paper[ny, nx] and not seen[ny, nx]:
-                seen[ny, nx] = True
-                queue.append((ny, nx))
-    return np.dstack([rgb, np.where(seen, 0, 255)]).astype(int)
 
 
 def ink_box(part):
@@ -295,7 +265,7 @@ def main():
     covered = np.zeros((FRAME[1], FRAME[0]), bool)
     for stem, node, box in reversed(PARTS):
         if stem not in parts:
-            parts[stem] = keyed(SOURCE / f"{stem}.png", hollow=stem in HOLLOW)
+            parts[stem] = keyed(SOURCE / f"{stem}.png", holes=stem in HOLLOW)
         art = parts[stem]
         guess = (round(box[0] * 4), round(box[1] * 4))
         share, x, y = settle(composition, covered, art, guess)

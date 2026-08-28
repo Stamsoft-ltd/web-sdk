@@ -302,7 +302,9 @@
 							<h3 class="feat-h">{t(f.name)}</h3>
 							<p class="feat-p">{t(f.desc)}</p>
 							<div class="buy-foot">
-								<span class="buy-cost">{cost(f.mult)} {t('PER SPIN')}</span>
+								<span class="buy-cost" use:fitFont={`${cost(f.mult)} ${t('PER SPIN')}`}
+								>{cost(f.mult)} {t('PER SPIN')}</span
+							>
 								<span class="buy-rtp"><i>{t('RTP')}</i><b>{RTP_SHORT}</b></span>
 							</div>
 						</div>
@@ -313,7 +315,7 @@
 							<p class="feat-p">{t(f.desc)}</p>
 							<img class="feat-logo feat-logo--sm" src={f.logo} alt="" />
 							<div class="buy-foot">
-								<span class="buy-cost">{cost(f.mult)}</span>
+								<span class="buy-cost" use:fitFont={cost(f.mult)}>{cost(f.mult)}</span>
 								<span class="buy-rtp"><i>{t('RTP')}</i><b>{RTP_SHORT}</b></span>
 							</div>
 						</div>
@@ -426,8 +428,11 @@
 		top: 12px;
 		right: 12px;
 		z-index: 4;
-		width: 34px;
-		height: 34px;
+		/* The diameter is a variable because the glows below are fractions of it — see the shared
+		   `.info-x, .nav-arrow` block. The wide breakpoint re-declares it. */
+		--chrome-d: 34px;
+		width: var(--chrome-d);
+		height: var(--chrome-d);
 		display: grid;
 		place-items: center;
 		border-radius: 50%;
@@ -605,13 +610,20 @@
 		letter-spacing: 0.03em;
 		color: #fff;
 	}
+	/* Design spec (2026-08-27): Nunito 400, 12px, line-height normal, letter-spacing 0.36px = 3%,
+	   #D7D7D7, centred. Nunito Sans is the shipped cut of that face — the app self-hosts no plain
+	   Nunito, and every other body string in the game is set in it. `normal` is also where the
+	   earlier "line height 16" ask lands on its own: Nunito at 12px has a ~16.4px natural line box,
+	   where the 1 this carried in the wide breakpoint was 12. */
 	.ov-card__p {
 		margin: 0;
 		font-family: 'Nunito Sans', sans-serif;
-		font-weight: 500;
-		font-size: 0.76rem;
-		line-height: 1.4;
-		color: #d9cff2;
+		font-weight: 400;
+		font-size: 12px;
+		line-height: normal;
+		letter-spacing: 0.03em;
+		color: #d7d7d7;
+		text-align: center;
 	}
 	.ov-logo {
 		display: none;
@@ -772,13 +784,18 @@
 		/* White card titles (design update). */
 		color: #fff;
 	}
+	/* Design spec (2026-08-27): Nunito 400, 12px, line-height normal, letter-spacing 0.36px = 3%,
+	   #D7D7D7. Nunito Sans is the shipped cut of that face — the app self-hosts no plain Nunito, and
+	   every other body string in the game is set in it. `normal` is where the earlier "line height 16"
+	   ask lands on its own: Nunito at 12px has a ~16.4px natural line box. */
 	.feat-p {
 		margin: 0;
 		font-family: 'Nunito Sans', sans-serif;
-		font-weight: 500;
-		font-size: 0.8rem;
-		line-height: 1.4;
-		color: #fff;
+		font-weight: 400;
+		font-size: 12px;
+		line-height: normal;
+		letter-spacing: 0.03em;
+		color: #d7d7d7;
 		text-align: center;
 	}
 	/* Contain within a capped box so the logo never spills past the card's neon border. */
@@ -803,7 +820,13 @@
 		gap: 2px;
 	}
 	/* Price sits in a filled pill (design update): #341451 box, white text. */
+	/* Same cap as <CustomBuyBonusModal>'s .card-price: the pill may hug its text but not outgrow
+	   the card it sits in, and fitFont shrinks the price rather than letting it spill. */
 	.buy-cost {
+		box-sizing: border-box;
+		max-width: 100%;
+		overflow: hidden;
+		white-space: nowrap;
 		font-family: 'Nunito Sans', sans-serif;
 		font-weight: 800;
 		font-size: 0.95rem;
@@ -931,8 +954,14 @@
 		align-items: center;
 		justify-content: center;
 		border-radius: 50%;
-		border: 1px solid #d836fc;
-		background-image: linear-gradient(0deg, #1a0535 0%, #000 100%);
+		/* The brand sweep, not the flat magenta hairline these were drawn with: this page is a
+		   picture of the game's controls, and every round button in the game — .nav-btn, .bet-step,
+		   .popup-close — is now rimmed magenta at the top-left shoulder into cold blue at the
+		   bottom-right. Fill clipped to the padding box, rim to the border box, border transparent. */
+		border: 1px solid transparent;
+		background:
+			linear-gradient(0deg, #1a0535 0%, #000 100%) padding-box,
+			linear-gradient(135deg, #d836fc 0%, #272fdd 100%) border-box;
 		overflow: hidden;
 	}
 	.guide-glyph {
@@ -994,17 +1023,15 @@
 		z-index: 2;
 	}
 	.nav-arrow {
-		width: 40px;
-		height: 40px;
+		--chrome-d: 40px;
+		width: var(--chrome-d);
+		height: var(--chrome-d);
 		display: grid;
 		place-items: center;
 		border-radius: 50%;
 		border: 1.5px solid rgba(180, 130, 240, 0.6);
 		background: rgba(10, 4, 24, 0.9);
 		cursor: pointer;
-		transition:
-			transform 0.1s ease,
-			opacity 0.1s ease;
 	}
 	.nav-arrow img {
 		/* Bigger glyph inside the circle — the arrow SVG carries padding, so 44% read as an almost
@@ -1012,12 +1039,49 @@
 		width: 58%;
 		height: auto;
 	}
-	.nav-arrow:active {
-		transform: scale(0.9);
-	}
 	.nav-arrow:disabled {
 		opacity: 0.35;
 		cursor: default;
+	}
+
+	/* This modal's chrome — the close X and the two page arrows — answers the pointer exactly as
+	   every round button in the game does: a resting rim halo, a bloom and a 1px lift on hover, a
+	   press on click. They were the last circles still sitting inert, which is what made them read
+	   as decoration rather than controls next to .nav-btn and .popup-close.
+
+	   Written as fractions of --chrome-d rather than fixed px because these two are not the same
+	   size as each other and the X itself resizes with the window: the ratios are lifted from
+	   <PopupCloseButton>, where the halo is 0.103/0.288 of the diameter and the hover bloom 0.185.
+
+	   The bloom is behind `hover: hover` and the lift is not, for the reason <HudHtml> gives on the
+	   same pair of rules: a touch tap leaves :hover latched, and a latched GLOW reads as a stuck
+	   selection where a latched 1px lift goes unnoticed. */
+	.info-x,
+	.nav-arrow {
+		transition:
+			transform 0.12s ease,
+			filter 0.12s ease,
+			box-shadow 0.14s ease,
+			opacity 0.1s ease;
+		box-shadow:
+			0 0 calc(var(--chrome-d) * 0.103) 0 rgba(197, 106, 255, 0.5),
+			0 0 calc(var(--chrome-d) * 0.288) calc(var(--chrome-d) * 0.041) rgba(124, 48, 221, 0.32);
+	}
+	.info-x:not(:disabled):hover,
+	.nav-arrow:not(:disabled):hover {
+		transform: translateY(-1px);
+		filter: brightness(1.12);
+	}
+	@media (hover: hover) {
+		.info-x:not(:disabled):hover,
+		.nav-arrow:not(:disabled):hover {
+			box-shadow: 0 0 calc(var(--chrome-d) * 0.185) calc(var(--chrome-d) * 0.031)
+				rgba(160, 96, 246, 0.85);
+		}
+	}
+	.info-x:not(:disabled):active,
+	.nav-arrow:not(:disabled):active {
+		transform: translateY(1px) scale(0.94);
 	}
 	.nav-page {
 		position: absolute;
@@ -1146,10 +1210,10 @@
 			margin-bottom: min(10px, 1.4cqh);
 		}
 		.ov-card__p {
-			/* Design spec: Nunito 400, 12px, line-height 100%, letter-spacing 3% (px-capped, cqh-scaled). */
+			/* Capped at the design's 12px, shrinking with the card below it. Leading stays `normal` —
+			   the 100% this used to set came from reading Figma's line-height box rather than the
+			   text's own, and packed the three-line blurbs solid. */
 			font-size: min(12px, 1.7cqh);
-			line-height: 1;
-			letter-spacing: 0.03em;
 		}
 		.ov-logo {
 			display: block;
@@ -1222,7 +1286,9 @@
 			margin-bottom: 1cqh;
 		}
 		.feat-p {
-			font-size: 1.85cqh;
+			/* Capped at the design's 12px, shrinking with the card below it — the same px-capped cqh
+			   rail the OVERVIEW cards use. */
+			font-size: min(12px, 1.85cqh);
 		}
 		/* Fill the space under the text but cap the height (cqh, so it scales with the card) and leave
 		   a gap below — the logo never reaches the neon border, at any screen size. */
@@ -1371,11 +1437,26 @@
 			font-size: clamp(0.46rem, 3.35vh, 0.86rem);
 		}
 		.info-x {
-			/* Clear of the frame — sits in the gap beyond the rounded top-right corner, not on it. */
-			top: clamp(-30px, -7.7vh, -14px);
-			right: clamp(-34px, -8.7vh, -16px);
-			width: clamp(24px, 11.3vh, 46px);
-			height: clamp(24px, 11.3vh, 46px);
+			/* Clear of the frame — in the gap beyond the rounded top-right corner, not ON it. The
+			   offsets are fractions of the button's OWN diameter, not fixed px: the old clamps bottomed
+			   out at their floors (-30/-34) at every wide size tested, which left the disc cutting
+			   ~4px into the card's 22px corner arc. 0.95 up clears the card's top edge outright; 0.62
+			   out is all the room there is — at an 800x470 popout only 37px separates the card from
+			   the window, so a bigger sideways push would take the button off-screen. Together they
+			   put the disc's edge just outside the corner arc (measured tangent gap 1.5px at
+			   800x470/1600x900, 2.1px at 844x390). The diameter came down 46 -> 40 for the same
+			   reason: the room is sideways, and a smaller disc needs less of it. */
+			--chrome-d: clamp(22px, 9vh, 40px);
+			/* Pushed further out again (design ask, 2026-08-27). Both axes are guarded against the
+			   window, because the room around the card is not the same at every size: the card sits
+			   ~9.1vh below the top and ~4.6vw in from the side, so on a short landscape window the
+			   diagonal the button wants would take it off-screen entirely. Whichever of the two the
+			   viewport can actually afford wins — measured, that is the button's own diagonal at
+			   1600x900 and the window guard at 800x470 and 844x390. */
+			top: max(calc(var(--chrome-d) * -1.15), calc(4px - 9.1vh));
+			right: max(calc(var(--chrome-d) * -0.85), calc(4px - 4.6vw));
+			width: var(--chrome-d);
+			height: var(--chrome-d);
 		}
 
 		/* Very short landscape (e.g. 400x225). cqh scales fonts with the viewport, but the flex-shared

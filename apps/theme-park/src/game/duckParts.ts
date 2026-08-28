@@ -40,7 +40,7 @@ export type DuckEye = DuckPiece & {
 export const DUCK_BODY: DuckPiece = { x: 0.5413, y: 0.5375, width: 0.4933, height: 0.8417 };
 
 /** The near wing, tucked at the flank nearest the viewer. */
-export const DUCK_WING: DuckWing = { x: 0.3623, y: 0.6836, width: 0.1786, height: 0.2500, anchorX: 0.6584, anchorY: 0.6074, rest: 0.0349 };
+export const DUCK_WING: DuckWing = { x: 0.3624, y: 0.6835, width: 0.1786, height: 0.2500, anchorX: 0.6590, anchorY: 0.6069, rest: 0.0349 };
 
 /**
  * The far wing, raised and fanned over the far shoulder. Cut out of the body drawing, so it

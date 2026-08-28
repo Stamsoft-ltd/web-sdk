@@ -30,16 +30,31 @@
 	   — while the dialog itself is centred far below it. Every popup shows the same one in the same
 	   place, so it does not move as panels change size.
 
-	   --close-u is that frame's design unit, 100vw / 1200, clamped at both ends: below the floor
-	   (a 40px button) the target stops being tappable on a phone, and above the ceiling the button
-	   would keep growing on a wide monitor when the design's proportions no longer apply. The inset
-	   is measured from the viewport edge, not from the HUD's centred column, so it stays in the
-	   screen's corner at every width. */
+	   --close-u is that frame's design unit. It fits the WHOLE 1200x670 frame inside the window,
+	   `min(100vw / 1200, 100vh / 670)`, which is the same expression <CustomBuyBonusModal>'s .stage
+	   uses for its own --u — so the button scales with the panel it closes instead of drifting away
+	   from it. Sizing it off the width alone was the bug: a popout is short and wide, so the game
+	   scaled itself by height while this scaled by width, and at 800x470 the X came out 1.4x too big
+	   for its cards (at 420x240, 2.6x). The ceiling stops it growing on a wide monitor once the
+	   design's proportions no longer apply.
+
+	   The 40px floor that used to sit under it is a FINGER measurement, so it now applies only where
+	   there is a finger. On a phone it still wins — 100vw/1200 there is ~0.33, a 16px target — and
+	   the button is knowingly out of proportion with the modal, which is what --close-clear in
+	   <CustomBuyBonusModal> reserves room for. With a mouse there is nothing to floor: a popout
+	   window is a desktop surface, and the pointer hits a 17px target as happily as a 40px one.
+
+	   The inset is measured from the viewport edge, not from the HUD's centred column, so it stays in
+	   the screen's corner at every width. */
 	.popup-close {
-		--close-u: clamp(0.8214px, 100vw / 1200, 1.25px);
+		--close-fit: min(100vw / 1200, 100vh / 670, 1.25px);
+		--close-u: var(--close-fit);
 		position: fixed;
-		top: calc(var(--close-u) * 29);
-		right: calc(var(--close-u) * 33.3);
+		/* The design's own inset is (29, 33.3); pulled in to (18, 22) on 2026-08-27 because the button
+		   was landing on the top-right corner of the panel below it rather than beside it. Still far
+		   enough off the two edges that no browser's own chrome can crop it. */
+		top: calc(var(--close-u) * 18);
+		right: calc(var(--close-u) * 22);
 		z-index: 62;
 		width: calc(var(--close-u) * 48.696);
 		height: calc(var(--close-u) * 48.696);
@@ -69,6 +84,12 @@
 			transform 0.12s ease,
 			filter 0.12s ease,
 			box-shadow 0.12s ease;
+	}
+
+	@media (pointer: coarse) {
+		.popup-close {
+			--close-u: max(var(--close-fit), 0.8214px);
+		}
 	}
 
 	@media (hover: hover) {

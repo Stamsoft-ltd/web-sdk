@@ -11,7 +11,16 @@ const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const rigRoot = path.join(appRoot, 'static', 'assets', 'spines', 'coasterVomit');
 const skeleton = JSON.parse(fs.readFileSync(path.join(rigRoot, 'coaster_vomit.json'), 'utf8'));
 const atlas = fs.readFileSync(path.join(rigRoot, 'coaster_vomit.atlas'), 'utf8');
-const atlasImage = fs.readFileSync(path.join(rigRoot, 'coaster_vomit.png'));
+// The page's NAME and SIZE both come out of the atlas rather than off disk or out of image-header
+// bytes. This rig's page was a PNG until 6e64189 converted every spine atlas to WebP, and the
+// dimension checks below read it at the PNG IHDR offsets — so the format change turned them into
+// reads of unrelated bytes. The atlas's own `size:` line is what Spine maps UVs against, which
+// makes it the number that actually has to stay under the cap, and it survives the next conversion.
+const atlasPage = atlas.match(/^(\S+\.\w+)\s*$/m)![1];
+const [pageWidth, pageHeight] = atlas
+	.match(/size:\s*(\d+)\s*,\s*(\d+)/)!
+	.slice(1)
+	.map(Number);
 const source = (relativePath: string) =>
 	fs.readFileSync(path.join(appRoot, 'src', relativePath), 'utf8');
 
@@ -44,8 +53,11 @@ describe('Mega Coaster screen-wide setup animation', () => {
 			});
 			expect(atlas).toContain(`\n${name}\n`);
 		}
-		expect(atlasImage.readUInt32BE(16)).toBeLessThanOrEqual(2048);
-		expect(atlasImage.readUInt32BE(16) * atlasImage.readUInt32BE(20)).toBeLessThan(3_000_000);
+		// The page the atlas names must actually be there: a rig whose atlas points at a file that
+		// was renamed out from under it loads as an invisible skeleton, with nothing thrown.
+		expect(fs.existsSync(path.join(rigRoot, atlasPage)), atlasPage).toBe(true);
+		expect(pageWidth).toBeLessThanOrEqual(2048);
+		expect(pageWidth * pageHeight).toBeLessThan(3_000_000);
 		expect(atlas).toMatch(/offset: (?!0, 0)\d+, \d+/);
 	});
 

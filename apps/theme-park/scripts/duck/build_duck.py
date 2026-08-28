@@ -49,7 +49,6 @@ Writes symbols/h2-duck-marquee.png (the rest pose, which is also what the board'
 ghosts), the five loose pieces as webp, src/game/duckParts.ts, and verify_duck.png to eyeball.
 """
 
-from collections import deque
 import sys
 from pathlib import Path
 
@@ -57,6 +56,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lib.figma_paper import keyed as keyed_array  # noqa: E402
 from lib.pixi_place import sprite_place  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -66,10 +66,6 @@ TABLE = ROOT / "src/game/duckParts.ts"
 VERIFY = Path(__file__).resolve().parent / "verify_duck.png"
 
 FRAME = (448, 360)
-
-# Figma's export paper. Always opaque, always this grey.
-PAPER = np.array([245, 245, 245])
-PAPER_TOL = 10
 
 # Where the artist's own assembled duck puts each piece, found by fitting the loose drawings into it
 # (see the module docstring). Body: scale, then top-left in the frame.
@@ -174,33 +170,8 @@ FAR_SHARE = 0.425
 
 
 def keyed(path):
-    """Load a Figma export and drop its paper, reaching in from the border only.
-
-    Flooding from the border is what saves the eye sockets: they are white, but they are enclosed by
-    the head, so the flood never gets to them. A blanket white key would delete the duck's eyes.
-    """
-    rgb = np.asarray(Image.open(path).convert("RGB")).astype(int)
-    h, w, _ = rgb.shape
-    paper = np.abs(rgb - PAPER).max(axis=2) <= PAPER_TOL
-
-    seen = np.zeros((h, w), bool)
-    queue = deque()
-    border = [(y, x) for y in range(h) for x in (0, w - 1)]
-    border += [(y, x) for x in range(w) for y in (0, h - 1)]
-    for y, x in border:
-        if paper[y, x] and not seen[y, x]:
-            seen[y, x] = True
-            queue.append((y, x))
-    while queue:
-        y, x = queue.popleft()
-        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            ny, nx = y + dy, x + dx
-            if 0 <= ny < h and 0 <= nx < w and paper[ny, nx] and not seen[ny, nx]:
-                seen[ny, nx] = True
-                queue.append((ny, nx))
-
-    alpha = np.where(seen, 0, 255)
-    return Image.fromarray(np.dstack([rgb, alpha]).astype(np.uint8), "RGBA")
+    """One export off its paper, as a PIL image — the rest of this script works in PIL."""
+    return Image.fromarray(keyed_array(path).astype(np.uint8), "RGBA")
 
 
 def trimmed_box(part):

@@ -102,7 +102,7 @@ export default {
 	'BET MODE DUCK TICKER SPIN': 'DUCK YOUR LUCK',
 	'BET MODE ROLLER TITLE': 'ROLLER WILDS',
 	'BET MODE ROLLER DIALOG':
-		'10 darmowych spinów. Landing Wild może przekształcić swój bęben po zakręceniu. Płytki mnożnika rzędów dodają się na każdym dzikim bębnie i na wielu dzikich bębnach.',
+		'10 darmowych spinów z większą liczbą symboli Roller Wild. Landing Wild może przekształcić swój bęben po zakręceniu. Płytki mnożnika rzędów dodają się na każdym dzikim bębnie i na wielu dzikich bębnach.',
 	'BET MODE ROLLER DESCRIPTION': 'Kup bonus Roller Wilds (10 darmowych spinów) za zakład 200x.',
 	'BET MODE ROLLER BUTTON': 'KUP',
 	'BET MODE ROLLER TICKER IDLE': 'POSTAW SWOJĄ ZAKŁAD',

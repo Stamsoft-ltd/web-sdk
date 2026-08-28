@@ -102,7 +102,7 @@ export default {
 	'BET MODE DUCK TICKER SPIN': 'DUCK YOUR LUCK',
 	'BET MODE ROLLER TITLE': 'ROLLER WILDS',
 	'BET MODE ROLLER DIALOG':
-		'10 vòng quay miễn phí. Một con hoang dã hạ cánh có thể biến đổi guồng của nó sau khi quay. Các mảng nhân hàng thêm vào trên mỗi cuộn phim hoang dã và trên nhiều cuộn phim hoang dã.',
+		'10 vòng quay miễn phí, với nhiều biểu tượng Roller Wild hơn. Một con hoang dã hạ cánh có thể biến đổi guồng của nó sau khi quay. Các mảng nhân hàng thêm vào trên mỗi cuộn phim hoang dã và trên nhiều cuộn phim hoang dã.',
 	'BET MODE ROLLER DESCRIPTION':
 		'Mua phần thưởng Roller Wilds (10 vòng quay miễn phí) để đặt cược 200 lần.',
 	'BET MODE ROLLER BUTTON': 'MUA',

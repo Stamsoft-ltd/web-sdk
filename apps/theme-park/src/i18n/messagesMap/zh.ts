@@ -99,7 +99,7 @@ export default {
 	'BET MODE DUCK TICKER SPIN': 'DUCK YOUR LUCK',
 	'BET MODE ROLLER TITLE': 'ROLLER WILDS',
 	'BET MODE ROLLER DIALOG':
-		'10 次免费旋转。落地狂野可以在旋转后改变其卷轴。行乘数板在每个百搭卷轴和多个百搭卷轴上添加。',
+		'10 次免费旋转，包含更多 Roller Wild 符号。落地狂野可以在旋转后改变其卷轴。行乘数板在每个百搭卷轴和多个百搭卷轴上添加。',
 	'BET MODE ROLLER DESCRIPTION': '以 200 倍赌注购买 Roller Wilds 奖金（10 次免费旋转）。',
 	'BET MODE ROLLER BUTTON': '买入',
 	'BET MODE ROLLER TICKER IDLE': '下注',
