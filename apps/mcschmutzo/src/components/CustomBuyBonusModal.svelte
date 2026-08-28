@@ -462,9 +462,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: clamp(8px, 1.4vmin, 14px);
-		width: min(210px, 74vw);
-		padding: clamp(4px, 0.7vmin, 7px) clamp(9px, 1.4vmin, 14px);
+		gap: clamp(10px, 1.7vmin, 18px);
+		width: min(240px, 78vw);
+		padding: clamp(8px, 1.3vmin, 13px) clamp(13px, 2vmin, 20px);
 		border-radius: 8.13px;
 		border: 2.03px solid #605553;
 		background: #181818;
@@ -496,10 +496,10 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: clamp(6px, 1.1vmin, 10px);
+		gap: clamp(11px, 2vmin, 18px);
 	}
 	.bb-bet-coin {
-		width: clamp(20px, 3vmin, 26px);
+		width: clamp(22px, 3.2vmin, 28px);
 		height: auto;
 		object-fit: contain;
 	}
@@ -520,10 +520,10 @@
 		text-transform: uppercase;
 	}
 	.bb-bet-amount {
-		margin-top: 2px;
+		margin-top: 3px;
 		color: #ffffff;
 		font-weight: 700;
-		font-size: clamp(0.85rem, 1.7vmin, 1.05rem);
+		font-size: clamp(1.05rem, 2.2vmin, 1.4rem);
 	}
 
 	@media (max-width: 900px) {
