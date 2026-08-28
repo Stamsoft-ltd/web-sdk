@@ -3,7 +3,7 @@
 
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
 	const artExtraChance = ap('/assets/mcschmutzo/buybonus/extra-chance.webp');
-	const artLockSpin = ap('/assets/mcschmutzo/buybonus/lock-spin.webp');
+	const artLockSpin = ap('/assets/mcschmutzo/buybonus/burger.svg');
 	const artNormalBonus = ap('/assets/mcschmutzo/buybonus/normal-bonus.webp');
 	const artSuperBonus = ap('/assets/mcschmutzo/buybonus/super-bonus.webp');
 	const minusArt = ap('/assets/mcschmutzo/autoplay/minus.svg');
@@ -463,7 +463,7 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: clamp(10px, 1.7vmin, 18px);
-		width: min(240px, 78vw);
+		width: min(196px, 70vw);
 		padding: clamp(8px, 1.3vmin, 13px) clamp(13px, 2vmin, 20px);
 		border-radius: 8.13px;
 		border: 2.03px solid #605553;
