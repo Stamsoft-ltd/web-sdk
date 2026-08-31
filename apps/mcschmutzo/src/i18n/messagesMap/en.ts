@@ -24,6 +24,8 @@ export default {
 	'ACTIVE ROUND IN PROGRESS': 'You have an active bonus in progress.',
 	'END ROUND': 'END ROUND',
 	'PLAY ROUND': 'PLAY ROUND',
+	BONUS: 'BONUS',
+	AUTO: 'AUTO',
 	CONGRATS: 'CONGRATS!',
 	'YOU WON': 'YOU WON',
 	'ALL IN BONUS TITLE': 'ALL IN BONUS',

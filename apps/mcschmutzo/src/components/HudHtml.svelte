@@ -848,9 +848,9 @@
 					class="nav-btn nav-btn--framed"
 					type="button"
 					onclick={openRules}
-					aria-label="Game rules"
+					aria-label="Menu"
 				>
-					<img class="nav-icon" src={iconMenu} alt="menu" />
+					<img class="nav-icon" src={iconMenuBars} alt="menu" />
 				</button>
 				<button
 					class="nav-btn nav-btn--framed"
@@ -870,7 +870,7 @@
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Disable' : i18nDerived.buyBonus()}
 				>
-					<span class="buy-btn__label" use:fitLabel={isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
+					<span class="buy-btn__label" use:fitLabel={isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.translate('BONUS')}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.translate('BONUS')}</span>
 				</button>
 			</div>
 		</div>
@@ -887,12 +887,12 @@
 
 			<!-- WIN readout next to BALANCE (same behavior as portrait): current spin win / running
 			     bonus total, cleared on the next spin. Keeps its slot while hidden so nothing shifts. -->
-			<div class="value-pill value-pill--win" class:value-pill--win-hidden={!hasWin}>
+			<div class="value-pill value-pill--win">
 				<div class="label label--balance">
 					<span class="label-text">{i18nDerived.win()}</span>
 				</div>
 				<div class="value-fit">
-					<span class="value" style={desktopValueFontStyle(winValue)}>{hasWin ? winValue : ''}</span>
+					<span class="value" style={desktopValueFontStyle(winValue)}>{winValue}</span>
 				</div>
 			</div>
 
@@ -1005,6 +1005,7 @@
 					aria-label={i18nDerived.autoplayLabel()}
 				>
 					<img class="nav-icon" src={iconAuto} alt="auto" />
+					<span class="auto-label">{i18nDerived.translate('AUTO')}</span>
 				</button>
 			</div>
 		</div>
@@ -1501,15 +1502,51 @@
 		pointer-events: none;
 	}
 
-	/* Round wooden frame behind utility buttons */
+	/* Dark round utility buttons: flat disc + grey ring + white icon (Figma HUD). */
 	.nav-btn--framed {
-		background: var(--btn-round-bg) center / contain no-repeat;
+		background: radial-gradient(circle at 50% 32%, #2b2622, #17130f);
+		border: 2px solid #4c433d;
+		border-radius: 50%;
+		box-sizing: border-box;
 	}
 
-	/* Gold icon sized to sit inside the frame */
+	/* White icon sized to sit inside the disc. */
 	.nav-btn--framed .nav-icon {
-		width: 46%;
-		height: 46%;
+		width: 44%;
+		height: 44%;
+		filter: brightness(0) invert(1);
+	}
+
+	/* AUTO button: icon nudged up, "AUTO" caption underneath. */
+	.nav-btn--auto {
+		position: relative;
+	}
+	.nav-btn--auto .nav-icon {
+		width: 38%;
+		height: 38%;
+		transform: translateY(-14%);
+	}
+	.auto-label {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 17%;
+		text-align: center;
+		color: #ffffff;
+		font-family: 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: calc(var(--nav-s) * 0.19);
+		letter-spacing: 0.06em;
+		line-height: 1;
+		pointer-events: none;
+	}
+
+	/* Thin dividers between the BALANCE / WIN / BET readouts. */
+	.hud-bottom .value-pill--win,
+	.hud-bottom .value-pill--bet {
+		border-left: 2px solid rgba(255, 255, 255, 0.12);
+		padding-left: calc(var(--u) * 16);
+		margin-left: calc(var(--u) * 4);
 	}
 
 	.nav-btn:not(:disabled):hover {
@@ -1701,6 +1738,7 @@
 		object-fit: contain;
 		display: block;
 		pointer-events: none;
+		filter: brightness(0) invert(1); /* white refresh icon (Figma) */
 		/* Centre the icon on the green disc of btn_bg_spin.png (disc centre ≈ 53% of the box). */
 		transform: translateY(4%);
 	}
