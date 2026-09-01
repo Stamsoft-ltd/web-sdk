@@ -53,8 +53,8 @@
 					the same game round.
 				</p>
 
+				<img class="tu-guy" src={guyArt} alt="" draggable="false" />
 				<div class="tu-lower">
-					<img class="tu-guy" src={guyArt} alt="" draggable="false" />
 					<div class="tu-stats">
 						<div class="tu-stat">
 							<span class="tu-stat-label">Maximum Win:</span>
@@ -174,23 +174,24 @@
 		line-height: 1.5;
 	}
 
-	/* Guy bottom-left, stats centred to the right of him. */
+	/* Guy tucked into the popup's bottom-left corner, stats centred to his right. */
 	.tu-lower {
 		position: relative;
 		width: 100%;
 		margin-top: clamp(18px, 3vmin, 36px);
-		min-height: clamp(200px, 34vmin, 300px);
+		min-height: clamp(220px, 36vmin, 320px);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 	}
 	.tu-guy {
 		position: absolute;
-		left: clamp(-24px, -3vmin, -16px);
-		bottom: clamp(-70px, -10vmin, -96px);
-		width: clamp(180px, 26vmin, 300px);
+		left: 0;
+		bottom: 0;
+		width: clamp(240px, 36vmin, 400px);
 		height: auto;
 		pointer-events: none;
+		z-index: 1;
 		filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
 	}
 
@@ -215,7 +216,7 @@
 		color: #f0a112;
 		font-family: 'Lilita One', sans-serif;
 		font-weight: 400;
-		font-size: clamp(1.3rem, 3.4vmin, 2.1rem);
+		font-size: clamp(1.7rem, 4.4vmin, 2.8rem);
 		letter-spacing: 0.01em;
 	}
 	.tu-pill {
