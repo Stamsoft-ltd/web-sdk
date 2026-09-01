@@ -83,6 +83,14 @@
 				font-display: swap;
 				src: url('%sveltekit.assets%/fonts/web/inter-700.ttf') format('truetype');
 			}
+			/* Tutorial modal yellow buttons/values. */
+			@font-face {
+				font-family: 'Lilita One';
+				font-style: normal;
+				font-weight: 400;
+				font-display: swap;
+				src: url('%sveltekit.assets%/fonts/web/lilita-one.ttf') format('truetype');
+			}
 			/* Fill the FULL dynamic viewport so the canvas (and its background) always reaches the
 			   bottom edge on mobile — 100% chains break when the browser URL bar shows/hides, leaving
 			   the black body visible below the game. 100dvh tracks the visible viewport. */
@@ -112,6 +120,11 @@
 			aria-hidden="true"
 			style="position: absolute; left: -9999px; top: 0; font-family: 'Inter'; font-weight: 700"
 			>TURBO SPIN</span
+		>
+		<span
+			aria-hidden="true"
+			style="position: absolute; left: -9999px; top: 0; font-family: 'Lilita One'; font-weight: 400"
+			>0123456789×%</span
 		>
 		<div>%sveltekit.body%</div>
 	</body>

@@ -64,6 +64,7 @@
 	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
 	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
 	import CustomConfirmModal from './CustomConfirmModal.svelte';
+	import CustomTutorialModal from './CustomTutorialModal.svelte';
 
 	const context = getContext();
 
@@ -214,7 +215,7 @@
 	const openRules = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		menuOpen = false;
-		stateModal.modal = { name: 'gameRules' };
+		showTutorial = true;
 	};
 
 	// Portrait WIN readout: this spin's win (per round) — during a bonus it shows each round's win,
@@ -258,6 +259,7 @@
 
 	let showBuyModal = $state(false);
 	let showAutoModal = $state(false);
+	let showTutorial = $state(false);
 	// Mirror the Buy Bonus modal state to shared game state so the board can freeze its animations
 	// behind the blurred backdrop while the dialog is open.
 	$effect(() => {
@@ -440,7 +442,14 @@
 			if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_SLOP_PX) return;
 			if (!(event.target instanceof HTMLCanvasElement)) return;
 			// Dialogs don't always cover the whole screen — ignore canvas showing beside one.
-			if (stateModal.modal || menuOpen || showAutoModal || showBuyModal || context.stateGame.resumeModalOpen)
+			if (
+				stateModal.modal ||
+				menuOpen ||
+				showAutoModal ||
+				showBuyModal ||
+				showTutorial ||
+				context.stateGame.resumeModalOpen
+			)
 				return;
 			onTapSkip();
 		};
@@ -1024,6 +1033,10 @@
 
 {#if showAutoModal}
 	<CustomAutoSpinModal onclose={() => (showAutoModal = false)} />
+{/if}
+
+{#if showTutorial}
+	<CustomTutorialModal onclose={() => (showTutorial = false)} />
 {/if}
 
 {#if context.stateGame.resumeModalOpen}

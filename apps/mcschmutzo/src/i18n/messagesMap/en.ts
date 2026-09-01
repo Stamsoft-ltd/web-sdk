@@ -37,4 +37,5 @@ export default {
 	'FREE GAMES': 'FREE GAMES',
 	STEPS: 'STEPS',
 	SPIN: 'SPIN',
+	OVERVIEW: 'OVERVIEW',
 };
