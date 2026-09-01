@@ -3,9 +3,8 @@
 
 	const guyArt = ap('/assets/mcschmutzo/tutorial/overview-guy.webp');
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
-
-	const ARROW_L = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 5l-7 7 7 7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-	const ARROW_R = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 5l7 7-7 7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+	const arrowLeftArt = ap('/assets/mcschmutzo/tutorial/arrow-left.svg');
+	const arrowRightArt = ap('/assets/mcschmutzo/tutorial/arrow-right.svg');
 
 	const TOTAL_PAGES = 7;
 </script>
@@ -75,18 +74,22 @@
 		{/if}
 
 		<div class="tu-nav">
-			<button class="tu-arrow" type="button" onclick={prev} disabled={page === 1} aria-label="Previous">
-				{@html ARROW_L}
-			</button>
+			<button
+				class="tu-arrow"
+				type="button"
+				onclick={prev}
+				disabled={page === 1}
+				aria-label="Previous"
+				style={`background-image:url('${arrowLeftArt}')`}
+			></button>
 			<button
 				class="tu-arrow"
 				type="button"
 				onclick={next}
 				disabled={page === TOTAL_PAGES}
 				aria-label="Next"
-			>
-				{@html ARROW_R}
-			</button>
+				style={`background-image:url('${arrowRightArt}')`}
+			></button>
 			<span class="tu-page-num">Page {page}/{TOTAL_PAGES}</span>
 		</div>
 	</div>
@@ -251,20 +254,12 @@
 		width: clamp(44px, 6vmin, 58px);
 		aspect-ratio: 1;
 		padding: 0;
-		display: grid;
-		place-items: center;
-		border: 2px solid #4c433d;
-		border-radius: 50%;
-		background: radial-gradient(circle at 50% 32%, #2b2622, #17130f);
+		border: none;
+		background: transparent center / contain no-repeat;
 		cursor: pointer;
 		transition:
 			filter 0.12s ease,
 			transform 0.08s ease;
-	}
-	.tu-arrow :global(svg) {
-		width: 42%;
-		height: 42%;
-		display: block;
 	}
 	.tu-arrow:hover:not(:disabled) {
 		filter: brightness(1.2);
