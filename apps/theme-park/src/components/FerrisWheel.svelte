@@ -25,6 +25,15 @@
 	 * so deriving it from the win clock meant the wheel jumped back the better part of a turn at the
 	 * moment `winClock` reset — on a symbol the player is looking straight at. Integrating makes any
 	 * change in speed continuous in angle by construction, in both directions, for free.
+	 *
+	 * AND THAT HISTORY OUTLIVES THE COMPONENT, which is why it is kept in `HISTORY` below rather than
+	 * in the instance. <Board> only assembles this wheel while its reel is SETTLED — mid-spin the cell
+	 * is drawn as the still, for the cost reason given at that branch — so every spin unmounted the
+	 * wheel and the next one mounted a fresh instance with `angle = 0`. The wheel snapped back to its
+	 * starting pose on every single spin, which is the one thing an integrator exists to prevent. The
+	 * angle now belongs to the CELL: the wheel that lands where a wheel just was picks up where that
+	 * one left off, and goes on creeping through the spin it was not drawn for. A cell that has never
+	 * drawn one is not started at zero either — see `ambient`.
 	 */
 	import {
 		WHEEL_AXLE,
@@ -61,6 +70,45 @@
 	const MAX_STEP = 0.1;
 
 	/**
+	 * Every cell's wheel angle, so it survives the component being torn down and rebuilt each spin.
+	 *
+	 * Keyed by BOARD CELL rather than by symbol, which is what makes it right rather than merely
+	 * persistent: the thing that must not jump is a wheel at a fixed place on the screen, and a wheel
+	 * landing where a wheel just was is, to the eye, the same wheel still turning. Bounded by the
+	 * padded strip — five reels of about twenty-eight rows — so it never needs pruning.
+	 */
+	const HISTORY = new Map<string, { angle: number; speed: number; at: number }>();
+
+	/**
+	 * Where a wheel that had been turning all along would be right now, for a cell that has never
+	 * drawn one.
+	 *
+	 * A fresh cell used to start at zero, and a wheel lands on a DIFFERENT cell almost every spin —
+	 * so the remembered angle almost never applied and what the player saw was the wheel jumping back
+	 * to its starting pose on nearly every spin (reviewer, 2026-08-28). The history was right about
+	 * the cell being the thing that must not jump; it was wrong that a cell with no history has
+	 * nothing to inherit. The board's creep is a pure function of time, so a first-time cell can
+	 * simply be told where that creep has got to, plus an offset off its own coordinates so that two
+	 * wheels on one board are not a matched pair.
+	 */
+	const ambient = (cellKey: string, clock: number) => {
+		const [reel, row] = cellKey.split(',').map(Number);
+		return (REST_HZ * TAU * clock + reel * 1.37 + row * 0.61) % TAU;
+	};
+
+	/** This cell's angle and speed, remembered from the last time it drew a wheel or seeded fresh. */
+	const entryFor = (cellKey: string, clock: number) => {
+		const existing = HISTORY.get(cellKey);
+		if (existing) return existing;
+		const fresh = { angle: ambient(cellKey, clock), speed: REST_HZ * TAU, at: clock };
+		HISTORY.set(cellKey, fresh);
+		return fresh;
+	};
+
+	/** How far up the wind-up a given speed is: 0 while it creeps, 1 at full win speed. */
+	const rideOf = (speed: number) => Math.max(0, (speed / TAU - REST_HZ) / (WIN_HZ - REST_HZ));
+
+	/**
 	 * How far a gondola swings at FULL speed, and how often. Enough to hang, not enough to spill.
 	 * The swing is scaled by how fast the wheel is actually going, so at rest it is all but still.
 	 */
@@ -83,6 +131,11 @@
 		win: boolean;
 		/** The board's own clock, which never stops. What the wheel is integrated against. */
 		idleClock: number;
+		/**
+		 * Which board cell this is, as `reel,row`. The key its angle is remembered under while the reel
+		 * spins and this component does not exist — see `HISTORY`.
+		 */
+		cellKey: string;
 		alpha?: number;
 		/** The board's idle breath, which the settled symbol rides the same as any other sprite. */
 		tint?: number;
@@ -93,32 +146,48 @@
 	const props: Props = $props();
 
 	/**
-	 * The wheel's angle and its current speed, in radians and radians per second.
+	 * This CELL's angle and speed, in radians and radians per second, and the `idleClock` they were
+	 * last advanced to.
 	 *
-	 * The only state in any of this game's symbols, and the reason for it is in the module comment:
-	 * an angle is a history, not a pose.
+	 * The only state in any of this game's symbols, and the reason it lives in a module map rather
+	 * than in the instance is in the module comment: an angle is a history, and this component is
+	 * torn down and rebuilt on every spin.
 	 *
-	 * The integrator's own variables are plain `let`s and only the two values that RENDER are
-	 * `$state`. That split is load-bearing rather than tidiness: an effect that reads a rune it also
-	 * writes re-triggers itself, so accumulating straight into `turn` is an infinite loop.
+	 * Only the two values that RENDER are `$state`. That split is load-bearing rather than tidiness:
+	 * an effect that reads a rune it also writes re-triggers itself, so accumulating straight into
+	 * `turn` is an infinite loop.
 	 */
-	let angle = 0;
-	let speed = REST_HZ * TAU;
-	let previous = 0;
+	const history = $derived(entryFor(props.cellKey, props.idleClock));
 
-	let turn = $state(0);
+	/**
+	 * Seeded from the entry rather than from zero, and that is not a micro-optimisation.
+	 *
+	 * An effect runs AFTER the frame that mounted the component, so a wheel whose remembered angle
+	 * was half a turn drew one frame at zero and snapped to it on the next — a flicker on every
+	 * spin, which is the same restart the history exists to prevent, just one frame long.
+	 */
+	let turn = $state(entryFor(props.cellKey, props.idleClock).angle);
 	/** 0 while it creeps, 1 at full speed. What the gondolas swing on. */
-	let ride = $state(0);
+	let ride = $state(rideOf(entryFor(props.cellKey, props.idleClock).speed));
 
 	$effect(() => {
-		const step = Math.min(MAX_STEP, Math.max(0, props.idleClock - previous));
-		previous = props.idleClock;
+		const entry = history;
+		// The gap since this cell last drew a wheel — a whole spin of it, usually. Wound on at REST
+		// speed rather than integrated, because nothing was WATCHING it: the point is only that a wheel
+		// coming back after four seconds has moved on by four seconds' creep instead of resuming frozen.
+		// `idleClock` is itself accumulated from clamped deltas by <Board>, so this gap is play time and
+		// a backgrounded tab cannot inflate it.
+		const gap = Math.max(0, props.idleClock - entry.at);
+		if (gap > MAX_STEP) entry.angle = (entry.angle + REST_HZ * TAU * gap) % TAU;
+		const step = Math.min(MAX_STEP, gap);
+		entry.at = props.idleClock;
+
 		const target = (props.win ? WIN_HZ : REST_HZ) * TAU;
 		// Framerate-independent: the same fraction of the remaining gap per SECOND, not per frame.
-		speed += (target - speed) * (1 - Math.exp(-step / SPIN_UP));
-		angle = (angle + speed * step) % TAU;
-		turn = angle;
-		ride = Math.max(0, (speed / TAU - REST_HZ) / (WIN_HZ - REST_HZ));
+		entry.speed += (target - entry.speed) * (1 - Math.exp(-step / SPIN_UP));
+		entry.angle = (entry.angle + entry.speed * step) % TAU;
+		turn = entry.angle;
+		ride = rideOf(entry.speed);
 	});
 
 	/** The axle, in draw space. Everything that goes round, goes round this. */
@@ -158,12 +227,7 @@
 	});
 </script>
 
-<Container
-	x={props.x}
-	y={props.y}
-	rotation={props.rotation ?? 0}
-	alpha={props.alpha ?? 1}
->
+<Container x={props.x} y={props.y} rotation={props.rotation ?? 0} alpha={props.alpha ?? 1}>
 	<!-- The rim is concentric with its own box, and the axle IS that centre, so it turns in place. -->
 	<Sprite
 		key={WHEEL_RIM.key}

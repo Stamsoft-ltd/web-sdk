@@ -70,4 +70,32 @@ export const socialOverridesEn: Record<string, string> = {
 	'INFO UI BET MINUS': 'PLAY -',
 	'INFO UI BET PLUS DESC': 'Increases your total play.',
 	'INFO UI BET MINUS DESC': 'Decreases your total play.',
+
+	// The RULES pages and the WIN TABLE, which are the two screens a jurisdiction reviewer reads end
+	// to end. `pay` -> `win` is matched as a SUBSTRING, so `payline`, `paytable`, `pays` and `paying`
+	// all fail on it even though none of them is on the list literally — that is precisely what the
+	// 2026-07-28 rejection was for. `cash` -> `coins` and `buy`/`buy bonus` -> `play`/`get bonus`
+	// come from the same table.
+	'RULE GAME TEXT':
+		'5x5 slot with 15 fixed win lines. Wins are awarded left to right, 3+ consecutive symbols from reel 1. Max win 25,000x play amount.',
+	'RULE WILD TEXT':
+		'Wild substitutes for all winning symbols (not scatters or ducks). Line multipliers on wilds SUM along a winning line.',
+	'RULE BUY TITLE': 'GET BONUS',
+	'RULE BUY TEXT':
+		'Features can be played for 20x to 500x play amount in the Get Bonus menu.',
+	'FEATURE DUCK COLLECT TEXT':
+		'At least 1 collect duck is guaranteed; up to all 25 positions can be ducks. Each reveals a coin addition or a multiply-all duck; the collected total is awarded as a lump sum.',
+	'FEATURE DUCK LUCK TEXT':
+		'10 duck picks at the pond. Coin ducks add to the total; multiply-all ducks multiply the running total. Capped at 25,000x.',
+	'PAYTABLE PREMIUM TITLE': 'HIGH WIN',
+	'PAYTABLE LOW TITLE': 'LOW WIN',
+	'PAYTABLE H1_H2':
+		'COASTER CAR wins 2 / 10 / 20x. RUBBER DUCK and BALLOON win 1 / 5 / 10x for 3 / 4 / 5 of a kind.',
+	'PAYTABLE H3_H5': 'POPCORN and FERRIS WHEEL win 0.5 / 2.5 / 5x for 3 / 4 / 5 of a kind.',
+	'PAYTABLE LOWS': 'A, K, Q, J and 10 win 0.1 / 0.5 / 1x for 3 / 4 / 5 of a kind.',
+	'PAYTABLE SPECIAL_TEXT':
+		'WILD substitutes all winning symbols; a pure wild line wins as Coaster Car. Ducks and scatters award features.',
+	'PAYTABLE TITLE PAYLINES': 'WIN LINES',
+	'PAYTABLE TEXT PAYLINES': '15 fixed win lines, left to right.',
+	'PAYTABLE BUY TITLE': 'PLAY',
 };

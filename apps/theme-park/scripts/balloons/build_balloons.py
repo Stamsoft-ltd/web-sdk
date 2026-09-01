@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Cut the balloon symbol into the six balloons it is made of, and measure where each one hangs.
 
+Every balloon's highlight is repainted on the way in — see `lib/balloon_gloss` for why a #f5f5f5
+oval is a hole rather than a highlight, and what it did on screen.
+
 The design draws this symbol as a bunch (Figma 7080:21576) and also ships the four balloons it is
 built from — orange 7080:21571, pink 7080:21572, blue 7080:21573, green 7080:21574 — which is what
 lets the bunch be alive: the balloons can bob on their strings while the board idles, and strain and
@@ -33,7 +36,7 @@ turns about its middle slides sideways, where one that turns about the end of it
     python3 scripts/balloons/build_balloons.py            # build from the constants
     python3 scripts/balloons/build_balloons.py --fit      # re-derive them and print them
 
-Writes symbols/h3-balloons-marquee.png (the rest pose, which is what the board's spin trail ghosts),
+Writes symbols/h3-balloons-marquee.webp (the rest pose, which is what the board's spin trail ghosts),
 the four balloons as webp, src/game/balloonParts.ts, and verify_balloons.png to eyeball.
 """
 
@@ -43,6 +46,10 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lib.balloon_gloss import soften  # noqa: E402
+from lib.web_image import save_web  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -86,6 +93,14 @@ def load(colour):
     """
     path = SOURCE / f"balloon-{MASTERS[colour]}.png"
     image = Image.open(path).convert("RGBA")
+    # And with its highlight repainted as gloss rather than left as the hole the artist punched
+    # through to the page — see `lib/balloon_gloss`. Done HERE, on the master, so the symbol art and
+    # the four loose balloons all inherit it from the one place, and at the master's own resolution,
+    # which is safe because the feather is a share of the highlight rather than a pixel count.
+    glossed = soften(image)
+    if glossed:
+        image, area, body = glossed
+        print(f"{colour}: highlight {area}px repainted over rgb{tuple(int(v) for v in body)}")
     ys, xs = np.nonzero(np.asarray(image)[..., 3] > 8)
     return image.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
 
@@ -219,7 +234,7 @@ def assemble(masters):
 def main():
     masters = {colour: load(colour) for colour in PALETTE}
     frame, knots = assemble(masters)
-    frame.save(SYMBOL_DIR / "h3-balloons-marquee.png")
+    save_web(frame, SYMBOL_DIR / "h3-balloons-marquee.webp")
 
     # One file per drawing, at the biggest it is ever drawn plus headroom.
     biggest = {}

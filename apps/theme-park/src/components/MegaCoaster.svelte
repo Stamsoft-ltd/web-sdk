@@ -16,8 +16,16 @@
 	 * It is a small angle on purpose. The sign is nearly as wide as the building, so a couple of
 	 * degrees swings its corners several pixels at the size a symbol is actually drawn — this is a
 	 * sign settling on its mountings, not a sign swinging from a hook.
+	 *
+	 * AND THE THREE FLAGS FLY. The rock alone was not enough: on the board this symbol still read as
+	 * a static picture (reviewer, 2026-08-28), because two degrees on a sign that is 90px wide is a
+	 * couple of pixels at the corners and nothing at all in the middle. The flags are the opposite —
+	 * small shapes with a long lever arm, so the same few pixels of travel is a large fraction of the
+	 * cloth and plainly reads as movement. They are cut off the pavilion by
+	 * `scripts/coaster-sign/build_coaster_sign.py`; the MASTS stay on the building, so what flies is
+	 * the cloth alone, about the seam where it meets its mast.
 	 */
-	import { COASTER_SIGN_PARTS } from '../game/coasterSignParts';
+	import { COASTER_FLAGS, COASTER_SIGN_PARTS } from '../game/coasterSignParts';
 
 	const TAU = Math.PI * 2;
 
@@ -32,6 +40,27 @@
 	const POP_HZ = 1.7;
 	/** Eased in rather than switched on, so a win does not start mid-pop. */
 	const SPIN_UP = 0.2;
+
+	/** How far a flag swings either side of its rest pose, in radians, and how long a sweep takes. */
+	const FLY = 0.15;
+	const FLY_SECONDS = 1.75;
+	/**
+	 * How much shorter the cloth gets across that sweep — a flag seen side-on foreshortens as the
+	 * ripple runs out of it, and without this the swing reads as a rigid flap rather than as cloth.
+	 * On its own beat, and one that does not divide into the swing, so the two never resynchronise.
+	 */
+	const FURL = 0.12;
+	const FURL_SECONDS = 1.13;
+	/** And a stiffer breeze while it wins. Amplitude only, for the reason given at ROCK_WIN. */
+	const FLY_WIN = 1.5;
+	/** Each flag's offset into the beat, in cycles. Three masts in one wind, not three metronomes. */
+	const FLAG_PHASE = { left: 0, centre: 0.43, right: 0.79 } as const;
+
+	const FLAG_KEY = {
+		left: 'tpCoasterFlagLeft',
+		centre: 'tpCoasterFlagCentre',
+		right: 'tpCoasterFlagRight',
+	} as const;
 </script>
 
 <script lang="ts">
@@ -80,6 +109,30 @@
 	const pivotX = $derived((COASTER_SIGN_PARTS.sign.x - 0.5) * props.width);
 	const pivotY = $derived((COASTER_SIGN_PARTS.sign.y - 0.5) * props.height);
 
+	/**
+	 * One flag at this instant: where its seam is, how far it has swung, and how much of its length
+	 * is showing. Positioned against the symbol's own centre, not against the sign's pivot — a flag
+	 * is bolted to the building, and rocking with the sign is exactly what it must not do.
+	 */
+	const flag = (side: keyof typeof FLAG_PHASE) => {
+		const part = COASTER_FLAGS[side];
+		const beat = props.idleClock + (props.phase ?? 0);
+		const own = FLAG_PHASE[side];
+		const gain = 1 + (FLY_WIN - 1) * strength;
+		return {
+			key: FLAG_KEY[side],
+			x: (part.x - 0.5) * props.width,
+			y: (part.y - 0.5) * props.height,
+			width:
+				part.width *
+				props.width *
+				(1 - FURL * (0.5 + 0.5 * Math.sin(TAU * (beat / FURL_SECONDS + own)))),
+			height: part.height * props.height,
+			anchor: { x: part.anchorX, y: part.anchorY },
+			rotation: FLY * gain * Math.sin(TAU * (beat / FLY_SECONDS + own)),
+		};
+	};
+
 	/** A part, positioned relative to that pivot rather than to the symbol's centre. */
 	const piece = (part: typeof COASTER_SIGN_PARTS.sign, scale: number) => ({
 		x: (part.x - COASTER_SIGN_PARTS.sign.x) * props.width,
@@ -97,6 +150,20 @@
 	alpha={props.alpha ?? 1}
 >
 	{#if assembled}
+		<!-- Under the pavilion, so a mast stays in front of the cloth flying off it. -->
+		{#each ['left', 'centre', 'right'] as const as side (side)}
+			{@const cloth = flag(side)}
+			<Sprite
+				key={cloth.key}
+				anchor={cloth.anchor}
+				x={cloth.x}
+				y={cloth.y}
+				width={cloth.width}
+				height={cloth.height}
+				rotation={cloth.rotation}
+				tint={props.tint}
+			/>
+		{/each}
 		<Sprite
 			key={props.houseKey}
 			anchor={0.5}

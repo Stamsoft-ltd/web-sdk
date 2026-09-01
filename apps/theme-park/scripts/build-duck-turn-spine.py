@@ -6,7 +6,7 @@ motion-compensated fillers
 swap on one always-opaque slot while the duck bobs and turns inside a ring that
 keeps its depth, squash, and waterline. Outputs are deterministic and runtime-ready:
 
-    static/assets/spines/duckTurn/duck_turn.{json,atlas,png}
+    static/assets/spines/duckTurn/duck_turn.{json,atlas,webp}
 """
 
 from __future__ import annotations
@@ -23,6 +23,10 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 from PIL import ImageFilter
+
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib.web_image import save_web  # noqa: E402
 
 
 APP_ROOT = Path(__file__).resolve().parents[1]
@@ -553,10 +557,10 @@ def build_atlas(frames: dict[str, Image.Image]) -> None:
         restored.alpha_composite(region["crop"], (region["left"], region["top"]))
         if not np.array_equal(np.asarray(restored), np.asarray(region["source"])):
             raise ValueError(f"Duck turn trimmed atlas changed region: {region['name']}")
-    atlas_image.save(OUTPUT_DIR / "duck_turn.png", "PNG", optimize=True)
+    save_web(atlas_image, OUTPUT_DIR / "duck_turn.webp", lossless=True)
 
     lines = [
-        "duck_turn.png",
+        "duck_turn.webp",
         f"size: {atlas_width},{atlas_height}",
         "format: RGBA8888",
         "filter: Linear,Linear",

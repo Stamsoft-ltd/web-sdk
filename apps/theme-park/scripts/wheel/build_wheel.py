@@ -12,7 +12,7 @@ staying upright, which is what a ferris wheel does and what a single sprite cann
 
 It writes:
 
-  static/assets/theme-park/v2/symbols/h5-ferris-marquee.png   (the whole rig, assembled, at rest)
+  static/assets/theme-park/v2/symbols/h5-ferris-marquee.webp   (the whole rig, assembled, at rest)
   static/assets/theme-park/v2/symbols/wheel-{rim,hub,legs}.webp
   static/assets/theme-park/v2/symbols/wheel-car-{blue,purple,green,orange}.webp
   src/game/wheelParts.ts
@@ -50,7 +50,8 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from lib.figma_paper import keyed  # noqa: E402
+from lib.figma_paper import keyed, turned  # noqa: E402
+from lib.web_image import save_web  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -282,8 +283,8 @@ def main():
     base = Image.new("RGBA", FRAME, (0, 0, 0, 0))
     for _, x, y, art in placed:
         base.alpha_composite(rgba(art), (x, y))
-    base.save(SYMBOL_DIR / "h5-ferris-marquee.png")
-    print("wrote symbols/h5-ferris-marquee.png")
+    save_web(base, SYMBOL_DIR / "h5-ferris-marquee.webp")
+    print("wrote symbols/h5-ferris-marquee.webp")
 
     # Each part ships trimmed to its ink, with its placement moved to match — the export margins are
     # an accident of how Figma bounded each node and there is no reason to pay for them twice.
@@ -452,15 +453,15 @@ def main():
     # spokes and the right one is a white disc. That difference is the point, not a fault: the
     # board's purple is meant to show through, and the gondolas' white windows survive on both.
     check = Image.new("RGBA", (FRAME[0] * 2 + 24, FRAME[1]), (26, 26, 34, 255))
-    turned = Image.new("RGBA", FRAME, (0, 0, 0, 0))
+    ridden = Image.new("RGBA", FRAME, (0, 0, 0, 0))
     rim = Image.open(SYMBOL_DIR / "wheel-rim.webp")
     rx, ry, rw, rh = frame_box("rim", *next((p[1], p[2]) for p in placed if p[0] == "rim"))
-    spun = rim.rotate(-120, resample=Image.BICUBIC, expand=True)
-    turned.alpha_composite(spun, (round(rx - spun.width / 2), round(ry - spun.height / 2)))
+    spun = turned(rim, -120)
+    ridden.alpha_composite(spun, (round(rx - spun.width / 2), round(ry - spun.height / 2)))
     for colour, angle, w, h in cars:
         car = Image.open(SYMBOL_DIR / f"wheel-car-{colour}.webp")
         a = angle + math.radians(120)
-        turned.alpha_composite(
+        ridden.alpha_composite(
             car,
             (
                 round(axle_x + mount * math.cos(a) - w / 2),
@@ -470,10 +471,10 @@ def main():
     for stem in ("legs", "hub"):
         entry = next(p for p in placed if p[0] == stem)
         px, py, pw, ph = frame_box(stem, entry[1], entry[2])
-        turned.alpha_composite(
+        ridden.alpha_composite(
             Image.open(SYMBOL_DIR / f"wheel-{stem}.webp"), (round(px - pw / 2), round(py - ph / 2))
         )
-    check.alpha_composite(turned, (0, 0))
+    check.alpha_composite(ridden, (0, 0))
     check.alpha_composite(rgba(composition), (FRAME[0] + 24, 0))
     check.save(VERIFY)
     print(f"wrote {VERIFY.relative_to(ROOT)}")

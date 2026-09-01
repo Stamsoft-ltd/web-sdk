@@ -443,4 +443,21 @@ const handcraftedBooks: StoryBook[] = [
 // Real rounds sampled from the simulated math engine come first.
 const books: StoryBook[] = [...realBooks, ...handcraftedBooks];
 
+/**
+ * The hand-crafted book for one feature, by name.
+ *
+ * The named stories used to index into `books` directly, and every one of them played the wrong
+ * round: `realBooks` was prepended to the front of this list afterwards and nobody moved the
+ * indices, so "mega coaster bonus" ran a roller and "wincap" ran the coaster. Looking the book up
+ * by what it IS cannot drift when the list in front of it changes length.
+ *
+ * Searched from the back so it finds the hand-crafted book rather than a sampled round that happens
+ * to share its criteria — the deterministic one is what a named story wants.
+ */
+export const bookFor = (criteria: StoryBook['criteria']): StoryBook => {
+	const found = [...books].reverse().find((book) => book.criteria === criteria);
+	if (!found) throw new Error(`no story book with criteria '${criteria}'`);
+	return found;
+};
+
 export default books;

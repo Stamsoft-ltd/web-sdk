@@ -1,7 +1,7 @@
 import { stateBet, stateI18nDerived, stateModal, stateUi, stateUrlDerived } from 'state-shared';
 import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import type { BaseBet } from 'utils-bet';
-import { formatCurrencyAmountForCurrency, normalizeCurrency } from '../lib/utils/currency';
+import { formatWalletAmount, formatWinAmount } from '../lib/utils/currency';
 import { logDiagnostic } from '../utils/diagnostics';
 
 type BootStatus = 'booting' | 'ready' | 'error';
@@ -165,8 +165,14 @@ const replayPayoutMultiplier = () => {
 	return cost > 0 ? replayWinAmount() / cost : 0;
 };
 
-const formatCurrencyAmount = (amount: number, fractionDigits = 2) =>
-	formatCurrencyAmountForCurrency(normalizeCurrency(stateBet.currency), safeAmount(amount), fractionDigits);
+/**
+ * The two money contracts, in this game's currency. Never one function with a digit count — that
+ * optional argument is exactly how a balance grew a third decimal past review (R-01).
+ */
+/** Balance, bet, buy prices, replay cost: the currency's own decimals, no expansion. */
+const formatWallet = (amount: number) => formatWalletAmount(stateBet.currency, safeAmount(amount));
+/** Anything the player WON: the exact settled value, expanding past those decimals when needed. */
+const formatWin = (amount: number) => formatWinAmount(stateBet.currency, safeAmount(amount));
 
 const t = (key: string) => stateI18nDerived.translate(key);
 
@@ -195,6 +201,7 @@ export const templateStakeDerived = {
 	replayPayoutAmount,
 	replayPayoutMultiplier,
 	replayWinAmount,
-	formatCurrencyAmount,
+	formatWallet,
+	formatWin,
 	t,
 };

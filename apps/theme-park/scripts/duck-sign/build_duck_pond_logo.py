@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the DUCK YOUR LUCK lockup the bonus screen wears, from the layers it is drawn in.
+"""Build the DUCK YOUR LUCK lockup the bonus screen wears, from the scatter's own arrangement.
 
     python3 scripts/duck-sign/build_duck_pond_logo.py
 
@@ -8,115 +8,83 @@ It writes:
   static/assets/theme-park/v2/duckpond/logo.webp
   scripts/duck-sign/verify_duck_pond_logo.png
 
-The bonus screen used to wear the old lockup: bulb-lit letters on a purple slab, fanned stacks of
-gold coins behind it, a jewelled top hat and a jewelled bow tie. Nothing else in this game is drawn
-that way any more — the symbols, the signs and the frame were all redrawn flat — and it was also the
-last place the OLD duck appeared, so the bonus opened on a duck that looked nothing like the
-twenty-five bobbing in the pond below it. Figma 7057:7971 is the replacement, and it is the same
-drawing the scatter symbol already ships: a top-hatted duck holding a gold-edged DUCK YOUR LUCK
-sign, a gold wing fanned out either side of it.
+THE SAME LOCKUP, NOT A SECOND ONE. The bonus screen and the scatter symbol are the same brand seen
+at two sizes, and for as long as each was built from its own table of boxes they were free to drift
+— which is exactly what happened: the scatter was redrawn from the painted Figma layers on
+2026-08-28 and the bonus screen was left wearing the older flat drawing, so the feature opened on a
+duck that did not match the one that had just triggered it. There is no layout in this file any
+more. It calls `build_duck_sign.compose()`, which is the arrangement the symbol ships, and the two
+cannot disagree because there is only one of them.
 
-BUILT FROM THE LAYERS, NOT FROM A FLAT EXPORT, because the flat export of that frame is 448x360 and
-the bonus draws this lockup about as wide as the whole board is tall. Blown up to the ~640px the
-screen wants it is visibly softer than the symbols sitting next to it. The layers under source/logo/
-are the same drawings at their own resolution, so the composition can be laid out at 14px per frame
-unit and brought down to size, which is sharper than any amount of upscaling.
+WITH THE WINGS IN IT, unlike the symbol's base. On the reel the wings are separate sprites so a win
+can beat them; here the lockup is a still and they are simply part of the picture.
 
-They are lossless WebP rather than PNG only because that is half the bytes for the same pixels, and
-each one is stored no larger than SUPERSAMPLE places it — there is no point carrying resolution the
-build throws away.
+BUILT BIG AND BROUGHT DOWN. The bonus draws this about as wide as the whole board is tall, so it is
+composed at SUPERSAMPLE times the symbol's frame — where the painted masters are still being
+downsampled rather than blown up — and resized once to HEIGHT. That is sharper than any amount of
+upscaling of the 448px symbol, which is what building it from the symbol's own PNG would have been.
 
-PLACED FROM THE FIGMA BOXES, and that is safe here in a way it was not for `build_duck_sign.py`'s
-wings: those two are rotated, so their node boxes are pre-rotation origins that do not say where the
-art lands. Every box below belongs to an unrotated layer. `verify()` proves it — it rebuilds at the
-flat export's own 4px per unit and compares, and the only thing that differs is the one-pixel
-antialiased rim, which the flat export lost when its paper was keyed out.
-
-Always eyeball verify_duck_pond_logo.png: the rebuild beside the design's own render.
+Always eyeball verify_duck_pond_logo.png: the logo this writes beside the scatter it has to match,
+brought to the same height. They are the same drawing, so anything that separates them is a bug.
 """
 
+import sys
 from pathlib import Path
 
-import numpy as np
 from PIL import Image
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from build_duck_sign import FRAME, compose  # noqa: E402
+from lib.figma_paper import resized  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = Path(__file__).resolve().parent / "source"
-LAYERS = SOURCE / "logo"
 OUT = ROOT / "static/assets/theme-park/v2/duckpond/logo.webp"
 VERIFY = Path(__file__).resolve().parent / "verify_duck_pond_logo.png"
+SYMBOL = ROOT / "static/assets/theme-park/v2/modes/duck-your-luck-desktop-marquee.webp"
 
-# The design frame, in the units every box below is written in.
-FRAME = (112.0, 90.0)
-# The flat export in source/ is that frame at x4, and is what verify() checks against.
-FLAT = SOURCE / "composition.png"
-FLAT_SCALE = 4
-# Figma exports are opaque and this file's paper is #f5f5f5.
+# Times the symbol's 448x360 frame. At 4 the sign is laid out across ~1250px against a master with
+# about 1390px of ink in it, so every layer is still being reduced. Raising this past about 4.4
+# starts upscaling the sign, which buys nothing.
+SUPERSAMPLE = 4
+# The height the old lockup shipped at, and the height the three <DuckPondBonus> layouts are sized
+# against — nothing on the screen has to move.
+HEIGHT = 640
+# The paper the design is drawn on, for the verify sheet only. Nothing that ships is opaque.
 PAPER = (245, 245, 245)
 
-# Laid out at 14px per frame unit and brought down, so every edge in the lockup is resolved by more
-# than one output pixel. 640 is the height the old lockup shipped at and the height the three
-# <DuckPondBonus> layouts are sized against, so nothing on the screen has to move.
-SUPERSAMPLE = 14
-HEIGHT = 640
 
-# name, left, top, width, height (frame units) and whether Figma mirrors it, back to front, exactly
-# as node 7057:7971 stacks them. Both wings are one drawing; so are both gripping wingtips.
-PLACEMENTS = (
-    ("wing", 56.02, 36.61, 44.977, 39.747, True),
-    ("duck", 13.14, 0.0, 84.724, 97.276, False),
-    ("wing", 10.0, 36.61, 44.977, 39.747, False),
-    ("sign", 25.44, 41.11, 61.161, 44.971, False),
-    ("wingtip", 35.34, 36.61, 15.29, 10.793, False),
-    ("wingtip", 63.22, 36.61, 15.29, 10.793, False),
-)
+def logo():
+    """The lockup, trimmed to its own ink and brought down to the height the screen wants."""
+    art = compose(SUPERSAMPLE)
+    art = art.crop(art.getbbox())
+    return resized(art, (round(art.width * HEIGHT / art.height), HEIGHT))
 
 
-def compose(scale):
-    """The lockup on a transparent frame, at `scale` pixels per frame unit."""
-    canvas = Image.new("RGBA", (round(FRAME[0] * scale), round(FRAME[1] * scale)), (0, 0, 0, 0))
-    for name, x, y, width, height, mirror in PLACEMENTS:
-        art = Image.open(LAYERS / f"{name}.webp").convert("RGBA")
-        if mirror:
-            art = art.transpose(Image.FLIP_LEFT_RIGHT)
-        art = art.resize((round(width * scale), round(height * scale)), Image.LANCZOS)
-        canvas.alpha_composite(art, (round(x * scale), round(y * scale)))
-    return canvas
-
-
-def verify():
-    """How much of a rebuild at the flat export's scale lands on the flat export, pixel for pixel."""
-    flat = Image.open(FLAT).convert("RGB")
-    rebuilt = Image.new("RGB", flat.size, PAPER)
-    layered = compose(FLAT_SCALE)
-    rebuilt.paste(layered, (0, 0), layered)
-    difference = np.abs(np.asarray(rebuilt, int) - np.asarray(flat, int)).sum(axis=2)
-    return rebuilt, (difference < 24).mean()
+def on_paper(art, height):
+    """`art` at `height`, over the design's paper, so a sheet shows its rim rather than eating it."""
+    shown = resized(art, (round(art.width * height / art.height), height))
+    sheet = Image.new("RGB", shown.size, PAPER)
+    sheet.paste(shown, (0, 0), shown)
+    return sheet
 
 
 def main():
-    rebuilt, share = verify()
-    print(f"rebuild matches the design's own render on {share:.1%} of the frame")
-    if share < 0.85:
-        raise SystemExit("layers no longer land on the design — check source/logo against Figma")
+    art = logo()
+    art.save(OUT, quality=88, method=6)
+    print(f"wrote {OUT.relative_to(ROOT)} ({art.width}x{art.height}, {OUT.stat().st_size:,}B)")
 
-    lockup = compose(SUPERSAMPLE)
-    lockup = lockup.crop(lockup.getbbox())
-    width = round(lockup.width * HEIGHT / lockup.height)
-    lockup = lockup.resize((width, HEIGHT), Image.LANCZOS)
-    lockup.save(OUT, quality=88, method=6)
-    print(f"wrote {OUT.relative_to(ROOT)} ({lockup.width}x{lockup.height}, {OUT.stat().st_size:,}B)")
-
-    flat = Image.open(FLAT).convert("RGB")
-    check = Image.new("RGB", (flat.width * 3 + 48, flat.height), (26, 26, 34))
-    shown = lockup.resize((round(flat.height * lockup.width / lockup.height), flat.height))
-    paper = Image.new("RGB", shown.size, PAPER)
-    paper.paste(shown, (0, 0), shown)
-    check.paste(paper, (0, 0))
-    check.paste(rebuilt, (flat.width + 24, 0))
-    check.paste(flat, (flat.width * 2 + 48, 0))
+    # The scatter with its wings put back on, which is what this logo is a large copy of.
+    symbol = resized(compose(), FRAME)
+    shipped = Image.open(SYMBOL).convert("RGBA")
+    panels = [on_paper(art, 360), on_paper(symbol, 360), on_paper(shipped, 360)]
+    width = sum(panel.width for panel in panels) + 24 * (len(panels) - 1)
+    check = Image.new("RGB", (width, 360), (26, 26, 34))
+    at = 0
+    for panel in panels:
+        check.paste(panel, (at, 0))
+        at += panel.width + 24
     check.save(VERIFY)
-    print(f"wrote {VERIFY.relative_to(ROOT)}")
+    print(f"wrote {VERIFY.relative_to(ROOT)}  — the logo, the same lockup at symbol size, the symbol")
 
 
 if __name__ == "__main__":

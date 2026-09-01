@@ -46,3 +46,37 @@ export const COASTER_SIGN_PARTS: Record<'sign' | 'mega' | 'coaster', CoasterSign
 		anchorY: 0.5011,
 	},
 };
+
+/**
+ * The three flags flying from the pavilion's towers, cut off it so they can fly.
+ *
+ * `x`/`y` are the SEAM — the middle of the cloth where it meets its mast — because that is the one
+ * point of a flag that does not move, and `anchorX`/`anchorY` put a sprite's origin there. The mast
+ * itself stays on the building.
+ */
+export const COASTER_FLAGS: Record<'left' | 'centre' | 'right', CoasterSignPiece> = {
+	left: {
+		x: 0.2746,
+		y: 0.2625,
+		width: 0.0536,
+		height: 0.0806,
+		anchorX: 0,
+		anchorY: 0.431,
+	},
+	centre: {
+		x: 0.529,
+		y: 0.1319,
+		width: 0.0737,
+		height: 0.0889,
+		anchorX: 0,
+		anchorY: 0.4219,
+	},
+	right: {
+		x: 0.7701,
+		y: 0.2625,
+		width: 0.0558,
+		height: 0.0806,
+		anchorX: 0,
+		anchorY: 0.431,
+	},
+};

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { CELL_H, COASTER_WILD_GRID_INSET } from '../src/game/constants';
+import { BOARD_SIDE_CONTENT_INSET, CELL_H } from '../src/game/constants';
 import { getCoasterWildRect, toCoasterCellKeys } from '../src/game/coasterWildCells';
 
 const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -95,8 +95,11 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(builder).not.toContain('seat_fade');
 		expect(builder).toContain('poses = motion_interpolate_poses([*timeline, duck_keys[0]])');
 		expect(builder).toContain('build_atlas(poses, fixed_cart, cart_front)');
-		expect(builder).toContain('ATLAS_IMAGE = "coaster_vomit.png"');
-		expect(builder).toContain('transparent RGB zeroed');
+		expect(builder).toContain('ATLAS_IMAGE = "coaster_vomit.webp"');
+		// The page ships as WebP now, so what keeps the hidden RGB zeroed is the encoder being
+		// LOSSLESS rather than the format being PNG.
+		expect(builder).toContain('save_web(atlas, OUTPUT / ATLAS_IMAGE, lossless=True)');
+		expect(builder).toContain('transparent RGB has to');
 		const sourceRoot = path.join(
 			appRoot,
 			'source-assets-unused',
@@ -171,7 +174,13 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(presenter).toContain('cart.x = route.startX +');
 		expect(presenter).not.toContain('x: cellX(reel)');
 		expect(presenter).toContain('assetKey="coasterVomitSpine"');
-		expect(presenter).toContain("animationName={cart.state === 'vomit' ? 'vomit' : 'idle'}");
+		// Parked on the vomit clip rather than on `idle`, and held there by timeScale alone. A Spine
+		// only reposes on its own update, so a rig switched off `idle` at the same moment it is shown
+		// renders one full-strength frame of that dead pose on the beat the duck turns green. Pose 0
+		// of this clip is the yellow duck the loose rig was fitted to, so there is nothing stale to
+		// show.
+		expect(presenter).toContain('animationName="vomit"');
+		expect(presenter).not.toContain("'vomit' : 'idle'");
 		expect(presenter).toContain("timeScale={cart.state === 'vomit' ? cart.vomitTimeScale : 0}");
 		expect(presenter).toContain('loop={true}');
 		expect(presenter).not.toContain('key="coasterCartFixed"');
@@ -240,12 +249,18 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(persistent).toContain('<CoasterWildTile');
 		expect(persistent).toContain('multiplier={tile.multiplier}');
 		// Drawn at the splat's own proportions, not squeezed into the symbol frame: this art is a
-		// sign laid over a cell rather than a reel symbol, and the frame is a different shape.
-		expect(tile).toContain('const SLIME_ASPECT = 512 / 391;');
-		expect(tile).toContain('const SLIME_H = SYMBOL_H * 0.82;');
+		// sign laid over a cell rather than a reel symbol, and the frame is a different shape. Sized
+		// off the CELL and not off the symbol: <SlimeSplat> sizes its box against the furthest a lobe
+		// ever reaches, so at a symbol's width the blob a player sees was a small stain in a large
+		// cell.
+		expect(tile).toContain('const SLIME_ASPECT = 1.309;');
+		expect(tile).toContain('const SLIME_H = CELL_H * 0.97;');
 		expect(tile).toContain('width={SLIME_W}');
 		expect(tile).toContain('height={SLIME_H}');
-		expect(tile).toContain('scale={props.contentScale ?? 1}');
+		// The handoff pulse still drives BOTH axes and nothing else does — the idle wobble rides on
+		// top of it as a factor, so the two presentations stay the same size at the same pulse.
+		expect(tile).toContain('x: (props.contentScale ?? 1) * (1 + wobble),');
+		expect(tile).toContain('y: (props.contentScale ?? 1) * (1 - wobble),');
 		expect(presenter).toContain('contentScale={tileScales[key]?.current ?? 1}');
 		expect(persistent).toContain('contentScale={cellPulse(tile.reel, tile.row)}');
 		expect(presenter).not.toContain('scale={tileScales[key]?.current ?? 1}');
@@ -261,13 +276,19 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(tile).toContain('{ offset: 0, color: 0xfff7a0 }');
 		expect(tile).toContain('{ offset: 0.5, color: 0xffe607 }');
 		expect(tile).toContain('{ offset: 1, color: 0xdf9700 }');
-		expect(tile).toContain('stroke: { color: 0x4d1d00');
-		expect(tile).toContain('color: 0x062900');
+		// No plaque behind the multiplier: the purple field read as a foreign object dropped on the
+		// sign. The brown keyline and the near-black shadow are what hold the gold apart from the
+		// green in its place, matching <RollerMultiplierText> and the WILD baked into the splat.
+		expect(tile).toContain('stroke: { color: 0x4b1700');
+		expect(tile).toContain('dropShadow: {');
+		expect(tile).not.toContain('tpMultiplierPad');
 		expect(tile).not.toContain('<BitmapText');
 		// The cover is a cut of the board's OWN grid art, not a flat colour: the field is a radial
 		// gradient, so no one colour sits right in twenty-five different cells and a flat fill read
 		// as a black box behind the slime. One texture frame per Wild, and still no stencil.
-		expect(background).toContain("import { BaseSprite, Graphics, PIXI, getContextApp } from 'pixi-svelte'");
+		expect(background).toContain(
+			"import { BaseSprite, Graphics, PIXI, getContextApp } from 'pixi-svelte'",
+		);
 		expect(background).toContain('loadedAssets?.themeBoardGrid');
 		expect(background).toContain('new PIXI.Texture({');
 		expect(background).toContain('<BaseSprite');
@@ -287,10 +308,11 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		// scrolling through it in full view. Neighbours have to meet exactly on the cell boundary.
 		expect(top.y + top.height).toBe(bottom.y);
 		expect(bottom.y).toBe(CELL_H);
-		// Free edges are unchanged, so a Wild on its own still leaves the authored grid visible.
-		expect(top.y).toBe(COASTER_WILD_GRID_INSET);
-		expect(alone.y).toBe(CELL_H * 2 + COASTER_WILD_GRID_INSET);
-		expect(alone.height).toBe(CELL_H - COASTER_WILD_GRID_INSET * 2);
+		// And a free edge holds nothing back either: the cover is a cut of the board's own grid art,
+		// so covering a grid line repaints it. Anything it gave back showed the reel scrolling.
+		expect(top.y).toBe(BOARD_SIDE_CONTENT_INSET);
+		expect(alone.y).toBe(CELL_H * 2);
+		expect(alone.height).toBe(CELL_H);
 	});
 
 	it('preserves the single authored grid between adjacent Wilds and pops Wild content on wins', () => {
@@ -328,7 +350,6 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(board).not.toContain('GRID_LINE_CLEARANCE');
 		expect(board).toContain('!coasterCellSet.has(`${reelIndex},${symbolIndex - 1}`)');
 		expect(constants).toContain('export const BOARD_SIDE_CONTENT_INSET = 1.4');
-		expect(constants).toContain('export const COASTER_WILD_GRID_INSET = 2.5');
 		expect(constants).toContain('export const getBoardCellCenterX =');
 		expect(constants).toContain('CELL_W * (reelIndex + 0.5)');
 		expect(constants).not.toContain('? BOARD_SIDE_CONTENT_INSET * 0.5');
@@ -348,7 +369,10 @@ describe('Mega Coaster screen-wide setup animation', () => {
 		expect(board).not.toContain('tpWildAnim');
 		expect(board).toContain('const bulbsFor = (name: SymbolName, spriteKey: string)');
 		// Settled full-reel Roller rig, and persistent Coaster Wild content pulse.
-		expect(board).toContain('width={SYMBOL_W * (isWin ? winPulse : 1)}');
+		// `symW`, not SYMBOL_W: <Board> sizes every symbol through the per-symbol art scale, so a
+		// symbol drawn tight in its frame is corrected for its parts and bulbs as well as its sprite.
+		expect(board).toContain('width={symW * (isWin ? winPulse : 1)}');
+		expect(board).toContain('{@const symW = SYMBOL_W * artScale}');
 		expect(board).toContain('<MegaWildFullReel');
 		expect(board).toContain('animationName={!reelSymbol.rawSymbol.rollerExpanded');
 		expect(board).toContain(': isRollerReelWinning(');
@@ -383,7 +407,7 @@ describe('Mega Coaster screen-wide setup animation', () => {
 					'theme-park',
 					'v2',
 					'features',
-					'coaster-rig-happy.png',
+					'coaster-rig-happy.webp',
 				),
 			),
 		).toBe(true);

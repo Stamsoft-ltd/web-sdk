@@ -198,7 +198,7 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		// finished file rather than recomposed, so the two cannot drift. The authored gold plaque and
 		// its six perspective poses are retired: a flat card has no depth to draw, so every view here
 		// is the front squashed, edge-on included.
-		expect(builder).toContain('"wins" / "small-win-plate-neon-v1.png"');
+		expect(builder).toContain('"wins" / "small-win-plate-neon-v1.webp"');
 		expect(builder).not.toContain('redrawn-v3.png');
 		expect(builder).not.toContain('mega-wild-handdrawn"');
 		expect(builder).not.toContain('WIN_PLAQUE_OUTPUT');
@@ -238,7 +238,7 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		// cuts. The aspect <Win> pins is guarded against that PNG's real dimensions in
 		// validate-artifacts; the file this rig reads is guarded there too.
 		const assets = source('game/assets.ts');
-		expect(assets).toContain("src: './assets/theme-park/v2/wins/small-win-plate-neon-v2.png'");
+		expect(assets).toContain("src: './assets/theme-park/v2/wins/small-win-plate-neon-v2.webp'");
 		expect(assets).not.toContain('wins/small-win-plaque.png');
 		for (const view of [
 			'plaque',
@@ -284,7 +284,7 @@ describe('Duck Power Ride full-reel Mega Wild', () => {
 		const start = assets.indexOf('megaWildFullReelFallback:');
 		const end = assets.indexOf('tpDuckSignWingLeft:', start);
 		const block = assets.slice(start, end);
-		expect(block).toContain('mega_wild_full_reel_fallback.png');
+		expect(block).toContain('mega_wild_full_reel_fallback.webp');
 		expect(block).toContain('mega_wild_full_reel.atlas');
 		expect(block).toContain('mega_wild_full_reel.json');
 		expect(block).not.toContain('defer: true');

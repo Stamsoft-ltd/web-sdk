@@ -53,6 +53,9 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib.web_image import save_web  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 # Sources that came from Figma rather than from the artist's batch, checked in because there is
 # nowhere else for them to live: they have no `-draw-high` original in anyone's Downloads folder, and
@@ -370,11 +373,12 @@ def main():
         if entry.get("variants"):
             for suffix, width in MODE_VARIANTS:
                 height = round(width * FRAME[1] / FRAME[0])
-                image.resize((width, height), Image.LANCZOS).save(
-                    MODES_DIR / f"{stem}-{suffix}-marquee.png"
+                save_web(
+                    image.resize((width, height), Image.LANCZOS),
+                    MODES_DIR / f"{stem}-{suffix}-marquee.webp",
                 )
         else:
-            image.resize(FRAME, Image.LANCZOS).save(SYMBOL_DIR / f"{stem}-marquee.png")
+            save_web(image.resize(FRAME, Image.LANCZOS), SYMBOL_DIR / f"{stem}-marquee.webp")
         if not entry.get("name") and not entry.get("export"):
             print(f"{stem}: {image.size} -> {FRAME}, art only")
             continue

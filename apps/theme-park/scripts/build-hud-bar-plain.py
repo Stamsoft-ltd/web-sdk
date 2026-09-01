@@ -10,10 +10,10 @@ same line. Only the REPAIRED PLATES are still used: the running-lights component
 back). Nothing consumes what the table half of this script prints.
 
 Two plates carry the same painted bar: hud/bar_plate.webp behind the desktop control row, and
-controls/nav-bar.png — the same art cropped tight and made vertically symmetric — behind the
+controls/nav-bar.webp — the same art cropped tight and made vertically symmetric — behind the
 portrait one. They have different borders, so each is measured and repaired on its own.
 
-Same idea as hud/neon-frame-plain.png, which was made from neon-frame.png for the popup frame.
+Same idea as hud/neon-frame-plain.webp, which was made from neon-frame.webp for the popup frame.
 
 The repair works in the border's own (t, offset) space rather than in x/y: a sparkle is erased by
 interpolating along the line between the clean stretches either side of it, at every depth through
@@ -27,6 +27,10 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib.web_image import save_web  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -82,8 +86,8 @@ PLATES = [
 	# and 89 with a smaller corner. Same x as the desktop plate — it was not cropped horizontally.
 	Plate(
 		name="navBar",
-		source=ROOT / "static/assets/theme-park/v2/controls/nav-bar.png",
-		output=ROOT / "static/assets/theme-park/v2/controls/nav-bar-clean.png",
+		source=ROOT / "static/assets/theme-park/v2/controls/nav-bar.webp",
+		output=ROOT / "static/assets/theme-park/v2/controls/nav-bar-clean.webp",
 		left=8.0,
 		top=4.0,
 		right=1114.0,
@@ -410,10 +414,7 @@ def build_plate(plate: Plate) -> None:
 		)
 		plain = repair(plate, plain, spans)
 
-	if plate.output.suffix == ".png":
-		plain.save(plate.output, "PNG", optimize=True)
-	else:
-		plain.save(plate.output, "WEBP", quality=94, method=6, lossless=False)
+	save_web(plain, plate.output)
 	print(f"{plate.output.relative_to(ROOT)}  {plain.width}x{plain.height}")
 
 	width, height = plain.size

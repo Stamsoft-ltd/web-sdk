@@ -9,7 +9,7 @@ v1 was assembled here: the flat neon card of Figma 7100:26891 squashed into a la
 the Roller Wilds star from the sign lockup composited onto its top rail, because the amount is
 centred in the card and the star hangs outside that box.
 
-v2 is one authored drawing (`art/concepts/small-win-plate-neon-v2.png`) — a plain neon lozenge, no
+v2 is one authored drawing (`art/concepts/small-win-plate-neon-v2.webp`) — a plain neon lozenge, no
 star — so there is nothing left to composite and this only CUTS it: crop to the art's own extent and
 ship it at the width the game draws it. The crop matters. The drawing carries a wide violet halo
 faded out to nothing on a canvas that is wider still, and shipping the canvas would put the plate's
@@ -26,8 +26,8 @@ import numpy as np
 from PIL import Image
 
 APP = Path(__file__).resolve().parents[2]
-SOURCE = APP / "art" / "concepts" / "small-win-plate-neon-v2.png"
-OUTPUT = APP / "static" / "assets" / "theme-park" / "v2" / "wins" / "small-win-plate-neon-v2.png"
+SOURCE = APP / "art" / "concepts" / "small-win-plate-neon-v2.webp"
+OUTPUT = APP / "static" / "assets" / "theme-park" / "v2" / "wins" / "small-win-plate-neon-v2.webp"
 
 #: The plate is drawn ~258 design units wide (SYMBOL_SIZE * 1.5 * aspect) on a 1200-unit frame, so
 #: it lands near 500px once the stage is scaled up to a desktop canvas. v1 shipped 244 and was soft.

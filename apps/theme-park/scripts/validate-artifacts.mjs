@@ -7,6 +7,34 @@ import zlib from 'node:zlib';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const modes = ['BASE', 'ANTE', 'FSPIN1', 'FSPIN2', 'DUCK', 'ROLLER', 'COASTER'];
 
+/**
+ * How big an image is, straight out of its header, for a PNG or a WebP.
+ *
+ * The spine atlas pages this file measures used to be PNGs and were read as `readUInt32BE(16)`.
+ * They ship as WebP now — the pages are among the heaviest things the game downloads — and a WebP
+ * keeps its canvas size in one of three places depending on how it was encoded, so the check has to
+ * read all three or it silently measures whatever bytes happen to sit at offset 16.
+ */
+const imageSize = (file) => {
+	const bytes = fs.readFileSync(file);
+	if (bytes.toString('ascii', 1, 4) === 'PNG') {
+		return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+	}
+	assert.equal(bytes.toString('ascii', 0, 4), 'RIFF', `${path.basename(file)} is not a PNG or WebP`);
+	assert.equal(bytes.toString('ascii', 8, 12), 'WEBP', `${path.basename(file)} is not a WebP`);
+	const chunk = bytes.toString('ascii', 12, 16);
+	// VP8X carries the canvas size as two 24-bit little-endian minus-ones; VP8L packs both into 28
+	// bits of one word; plain lossy VP8 keeps them 14 bits each after its start code.
+	if (chunk === 'VP8X') {
+		return { width: bytes.readUIntLE(24, 3) + 1, height: bytes.readUIntLE(27, 3) + 1 };
+	}
+	if (chunk === 'VP8L') {
+		const packed = bytes.readUInt32LE(21);
+		return { width: (packed & 0x3fff) + 1, height: ((packed >> 14) & 0x3fff) + 1 };
+	}
+	return { width: bytes.readUInt16LE(26) & 0x3fff, height: bytes.readUInt16LE(28) & 0x3fff };
+};
+
 for (const mode of modes) {
 	const booksPath = path.join(root, 'library', 'books', `books_${mode}.jsonl`);
 	const lookupPath = path.join(root, 'library', 'publish_files', `lookUpTable_${mode}_0.csv`);
@@ -201,26 +229,23 @@ for (const mode of modes) {
 }
 
 for (const relativePath of [
-	'assets/spines/anticipation/anticipation.atlas',
-	'assets/spines/anticipation/anticipation.json',
-	'assets/spines/anticipation/anticipation.webp',
 	'assets/spines/duckTurn/duck_turn.atlas',
 	'assets/spines/duckTurn/duck_turn.json',
-	'assets/spines/duckTurn/duck_turn.png',
+	'assets/spines/duckTurn/duck_turn.webp',
 	'assets/spines/coasterVomit/coaster_vomit.atlas',
 	'assets/spines/coasterVomit/coaster_vomit.json',
-	'assets/spines/coasterVomit/coaster_vomit.png',
-	'assets/theme-park/v2/features/coaster-rig-happy.png',
-	'assets/theme-park/v2/features/coaster-rig-vomit.png',
+	'assets/spines/coasterVomit/coaster_vomit.webp',
+	'assets/theme-park/v2/features/coaster-rig-happy.webp',
+	'assets/theme-park/v2/features/coaster-rig-vomit.webp',
 	'assets/theme-park/v2/board/frame-grid.webp',
 	'assets/theme-park/v2/board/frame-rail.webp',
 	'assets/theme-park/v2/board/frame-glow.webp',
 	'assets/spines/megaWildFullReel/mega_wild_full_reel.atlas',
 	'assets/spines/megaWildFullReel/mega_wild_full_reel.json',
-	'assets/spines/megaWildFullReel/mega_wild_full_reel.png',
-	'assets/spines/megaWildFullReel/mega_wild_full_reel_fallback.png',
-	'assets/components/frames/magnetic/cell_box.png',
-	'assets/components/frames/magnetic/cell_box_win.png',
+	'assets/spines/megaWildFullReel/mega_wild_full_reel.webp',
+	'assets/spines/megaWildFullReel/mega_wild_full_reel_fallback.webp',
+	'assets/components/frames/magnetic/cell_box.webp',
+	'assets/components/frames/magnetic/cell_box_win.webp',
 ]) {
 	assert.ok(
 		fs.existsSync(path.join(root, 'static', relativePath)),
@@ -537,7 +562,7 @@ assert.doesNotMatch(assetsSource, /duckPresentSpine:/, 'Old duck present Spine m
 // was still naming the pre-redesign ones and had been failing ever since.
 assert.match(
 	assetsSource,
-	/duck-your-luck-desktop-marquee\.png[\s\S]*duck-your-luck-mobile-marquee\.png[\s\S]*duck-your-luck-mobile-landscape-marquee\.png/,
+	/duck-your-luck-desktop-marquee\.webp[\s\S]*duck-your-luck-mobile-marquee\.webp[\s\S]*duck-your-luck-mobile-landscape-marquee\.webp/,
 	'Duck Your Luck scatter must reuse every responsive bonus-buy asset',
 );
 
@@ -583,7 +608,7 @@ assert.match(
 );
 assert.match(
 	constantsSource,
-	/BOARD_SIDE_CONTENT_INSET = 1\.4[\s\S]*COASTER_WILD_GRID_INSET = 2\.5[\s\S]*getBoardCellCenterX = \(reelIndex: number\) => CELL_W \* \(reelIndex \+ 0\.5\)/,
+	/BOARD_SIDE_CONTENT_INSET = 1\.4[\s\S]*getBoardCellCenterX = \(reelIndex: number\) => CELL_W \* \(reelIndex \+ 0\.5\)/,
 	'Every reel must use one equal grid-line-to-grid-line width without edge shifts',
 );
 
@@ -598,11 +623,9 @@ const duckAssetProcessSource = fs.readFileSync(
 	path.join(root, 'scripts', 'process-duck-handdrawn-assets.py'),
 	'utf8',
 );
-const duckAtlasPng = fs.readFileSync(
-	path.join(root, 'static', 'assets', 'spines', 'duckTurn', 'duck_turn.png'),
+const { width: duckAtlasWidth, height: duckAtlasHeight } = imageSize(
+	path.join(root, 'static', 'assets', 'spines', 'duckTurn', 'duck_turn.webp'),
 );
-const duckAtlasWidth = duckAtlasPng.readUInt32BE(16);
-const duckAtlasHeight = duckAtlasPng.readUInt32BE(20);
 const duckPoseTimes = Array.from({ length: 64 }, (_, pose) =>
 	Number(((pose * 0.12639) / 63).toFixed(5)),
 );
@@ -1132,8 +1155,8 @@ assert.match(
 );
 assert.match(
 	coasterPresenterSource,
-	/assetKey="coasterVomitSpine"[\s\S]*animationName=\{cart\.state === 'vomit' \? 'vomit' : 'idle'\}[\s\S]*timeScale=\{cart\.state === 'vomit' \? cart\.vomitTimeScale : 0\}[\s\S]*loop=\{true\}/,
-	'Mega Coaster must use one layered Spine rig and freeze static idle timelines',
+	/assetKey="coasterVomitSpine"[\s\S]*animationName="vomit"[\s\S]*startTime=\{VOMIT_LEAD_SECONDS\}[\s\S]*timeScale=\{cart\.state === 'vomit' \? cart\.vomitTimeScale : 0\}[\s\S]*loop=\{true\}/,
+	'Mega Coaster must park one layered Spine rig on the vomit clip, past its held lead-in, and hold it with timeScale',
 );
 assert.doesNotMatch(
 	coasterPresenterSource,
@@ -1196,7 +1219,7 @@ const coasterWildTextSource = fs.readFileSync(
 );
 assert.match(
 	coasterWildTextSource,
-	/multiplierFill = new FillGradient[\s\S]*0xfff7a0[\s\S]*0xffe607[\s\S]*0xdf9700[\s\S]*<Text[\s\S]*fontFamily: 'Cinzel'[\s\S]*fill: multiplierFill[\s\S]*stroke: \{ color: 0x4d1d00[\s\S]*color: 0x062900/,
+	/multiplierFill = new FillGradient[\s\S]*0xfff7a0[\s\S]*0xffe607[\s\S]*0xdf9700[\s\S]*<Text[\s\S]*fontFamily: 'Cinzel'[\s\S]*fill: multiplierFill[\s\S]*stroke: \{ color: 0x4b1700[\s\S]*color: 0x130018/,
 	'Mega Coaster multipliers must match the Wild art gold bevel, brown keyline, and green shadow',
 );
 assert.doesNotMatch(
@@ -1337,19 +1360,17 @@ assert.doesNotMatch(
 );
 assert.match(
 	coasterBuilderSource,
-	/ATLAS_IMAGE = "coaster_vomit\.png"[\s\S]*transparent RGB zeroed/,
-	'Mega Coaster atlas must preserve zeroed transparent RGB without WebP fringes',
+	/ATLAS_IMAGE = "coaster_vomit\.webp"[\s\S]*transparent RGB has to\n\t# stay zeroed/,
+	'Mega Coaster atlas must ship lossless so transparent RGB stays zeroed and cannot fringe',
 );
 assert.match(
 	coasterBuilderSource,
 	/ATLAS_MAX_WIDTH = 2048[\s\S]*ATLAS_TRIM_PADDING = 2[\s\S]*ATLAS_REGION_GAP = 2[\s\S]*sorted\(regions, key=lambda item: item\["crop"\]\.height, reverse=True\)[\s\S]*Mega Coaster trimmed atlas changed region/,
 	'Mega Coaster atlas must trim transparent pixels and verify exact reconstruction',
 );
-const coasterAtlasPng = fs.readFileSync(
-	path.join(root, 'static', 'assets', 'spines', 'coasterVomit', 'coaster_vomit.png'),
+const { width: coasterAtlasWidth, height: coasterAtlasHeight } = imageSize(
+	path.join(root, 'static', 'assets', 'spines', 'coasterVomit', 'coaster_vomit.webp'),
 );
-const coasterAtlasWidth = coasterAtlasPng.readUInt32BE(16);
-const coasterAtlasHeight = coasterAtlasPng.readUInt32BE(20);
 assert.ok(coasterAtlasWidth <= 2048, 'Mega Coaster atlas must fit mobile texture limits');
 assert.ok(
 	coasterAtlasWidth * coasterAtlasHeight < 3_000_000,
@@ -1453,11 +1474,11 @@ assert.match(
 );
 // The splat is a sign laid over a cell, not a reel symbol, so it is drawn at its own proportions
 // rather than squeezed into the symbol frame — and the multiplier is seated off the same height.
-assert.match(coasterWildTileSource, /const SLIME_ASPECT = 512 \/ 391;/, 'Mega Coaster Wild aspect');
+assert.match(coasterWildTileSource, /const SLIME_ASPECT = 1\.309;/, 'Mega Coaster Wild aspect');
 assert.match(
 	coasterWildTileSource,
-	/const SLIME_H = SYMBOL_H \* 0\.82;/,
-	'Mega Coaster Wild height',
+	/const SLIME_H = CELL_H \* 0\.97;/,
+	'Mega Coaster Wild must fill its CELL, not 0.82 of a symbol frame',
 );
 assert.match(
 	coasterWildTileSource,
@@ -1466,7 +1487,7 @@ assert.match(
 );
 assert.match(
 	coasterWildTileSource,
-	/scale=\{props\.contentScale \?\? 1\}/,
+	/x: \(props\.contentScale \?\? 1\) \* \(1 \+ wobble\),\s*\n\s*y: \(props\.contentScale \?\? 1\) \* \(1 - wobble\),/,
 	'Mega Coaster win pulse must scale only the Wild art and multiplier content',
 );
 assert.match(
@@ -1509,12 +1530,14 @@ assert.match(
 	/getCoasterWildRect\(reel, row, props\.occupied \?\? EMPTY_CELLS\)[\s\S]*rect\.x - CELL_W \* \(reel \+ 0\.5\)[\s\S]*rect\.y - CELL_H \* \(row \+ 0\.5\)/,
 	'Mega Coaster Wild backgrounds must take the same rect as the mask that clips them',
 );
-// A free edge keeps the divider visible; an edge shared with the next Wild closes flush against it,
-// because two inset covers left a slot open and the reel scrolled through it in plain sight.
+// A Wild cover closes flush on EVERY interior edge, shared or free. The old rule held a free edge
+// back so the cover would not paint over the grid line authored into <BoardFrame>; the cover is now
+// cut from that same grid art, so holding back only left a slot with the reel scrolling through it.
+// The one inset left is the board's outer rail, which is <Board>'s own.
 assert.match(
 	coasterWildCellsSource,
-	/const left = edgeOrGridInset\(reel === 0, shares\(-1, 0\)\)[\s\S]*const top = shares\(0, -1\) \? 0 : COASTER_WILD_GRID_INSET;[\s\S]*const bottom = shares\(0, 1\) \? 0 : COASTER_WILD_GRID_INSET;/,
-	'Mega Coaster Wild covers must close on edges shared with another Wild and stay inset elsewhere',
+	/const railInset = \(isBoardEdge: boolean\) => \(isBoardEdge \? BOARD_SIDE_CONTENT_INSET : 0\);[\s\S]*const top = railInset\(row === 0\);[\s\S]*const bottom = railInset\(row === BOARD_DIMENSIONS\.y - 1\);/,
+	'Mega Coaster Wild covers must close flush on every interior edge',
 );
 assert.doesNotMatch(
 	coasterPresenterSource,
@@ -1532,7 +1555,7 @@ assert.doesNotMatch(
 // survive, not the sheet that used to carry it.
 assert.match(
 	boardSource,
-	/return getSpecialSymbolKey\('wild', layoutType\)[\s\S]*width=\{SYMBOL_W \* \(isWin \? winPulse : 1\)\}/,
+	/return getSpecialSymbolKey\('wild', layoutType\)[\s\S]*width=\{symW \* \(isWin \? winPulse : 1\)/,
 	'Normal Wilds must pop with other winning symbols',
 );
 assert.match(
@@ -1724,7 +1747,7 @@ const winPlateBuilderSource = fs.readFileSync(
 	'utf8',
 );
 assert.ok(
-	winPlateBuilderSource.includes('small-win-plate-neon-v2.png'),
+	winPlateBuilderSource.includes('small-win-plate-neon-v2.webp'),
 	'Small-win plate builder must cut the v2 lozenge',
 );
 const megaWildBuilderSource = fs.readFileSync(
@@ -1732,17 +1755,17 @@ const megaWildBuilderSource = fs.readFileSync(
 	'utf8',
 );
 assert.ok(
-	megaWildBuilderSource.includes('"wins" / "small-win-plate-neon-v1.png"'),
+	megaWildBuilderSource.includes('"wins" / "small-win-plate-neon-v1.webp"'),
 	'Mega Wild reel must hang the v1 plate, not a plaque of its own',
 );
 assert.ok(
 	!/plaque-(front|top|bottom)-[a-z0-9-]*redrawn-v3\.png/.test(megaWildBuilderSource),
 	'Mega Wild reel must not read the retired gold plaque poses',
 );
-const smallWinPlatePng = fs.readFileSync(
-	path.join(root, 'static', 'assets', 'theme-park', 'v2', 'wins', 'small-win-plate-neon-v2.png'),
+const smallWinPlate = imageSize(
+	path.join(root, 'static', 'assets', 'theme-park', 'v2', 'wins', 'small-win-plate-neon-v2.webp'),
 );
-const platePixels = [smallWinPlatePng.readUInt32BE(16), smallWinPlatePng.readUInt32BE(20)];
+const platePixels = [smallWinPlate.width, smallWinPlate.height];
 const winSource = fs.readFileSync(path.join(root, 'src', 'components', 'Win.svelte'), 'utf8');
 assert.match(
 	winSource,

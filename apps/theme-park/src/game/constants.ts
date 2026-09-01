@@ -20,6 +20,35 @@ export const SYMBOL_H = 103;
 export const SYMBOL_W = SYMBOL_H * (SYMBOL_FRAME.width / SYMBOL_FRAME.height);
 export const SYMBOL_SIZE = SYMBOL_H;
 
+/**
+ * How big a symbol's ART is drawn, where the frame alone does not get it right.
+ *
+ * Every symbol is authored in the same 448x360 frame and drawn into the same box, which makes the
+ * frame — not the drawing — the thing that is uniform. What a player actually compares is the INK,
+ * and the ink of this set is not uniform at all. Measured across the ten reel symbols, as the
+ * geometric mean of the ink's width and height in board units:
+ *
+ *     H1 coaster 90.8   H5 ferris 85.9   L5 ten 84.3   H3 balloons 80.9
+ *     H2 duck    77.8   L3 queen  75.7   L1 ace  71.6   L2 king 70.0   H4 popcorn 73.7   L4 jack 67.0
+ *
+ * The duck and the popcorn are the two PREMIUMS drawn smaller than a royal — the 10 outsized both
+ * of them — which is what a reviewer sees as "some symbols should be a bit bigger" (2026-08-28).
+ * The royals are meant to read smaller and do; the two premiums were simply drawn tighter in their
+ * frames than the rest of the set.
+ *
+ * So this is a correction to the DRAWING, not a style: only the two that measure wrong are listed,
+ * and each is scaled to land on the premiums' middle (the balloons' 80.9) without its ink running
+ * past 92 board units tall — the room the 108.2 row pitch leaves before two stacked symbols start
+ * to crowd. That puts the duck at 74.3x92.3 and the popcorn at 70.0x92.3.
+ *
+ * It is applied by <Board> to the whole symbol — art, assembled parts, bulbs and ghosts alike —
+ * which works because every parts table in this game is written in fractions of the frame.
+ */
+export const SYMBOL_ART_SCALE: Partial<Record<SymbolName, number>> = {
+	H2: 1.06,
+	H4: 1.09,
+};
+
 // One shared contract for the landed Roller trigger and the moving track car. The authored frame
 // includes generous transparent margins, so 1.55 cells tall keeps the visible car readable without
 // spilling across a full neighbouring reel.
@@ -48,9 +77,6 @@ export const BOARD_CORNER_RADIUS = CELL_H * 0.22;
 // Borderless board: every reel owns the same exact grid-line-to-grid-line width. Edge content only
 // leaves the same narrow divider clearance as internal cells; edge reel centres never shift.
 export const BOARD_SIDE_CONTENT_INSET = 1.4;
-// Opaque Mega Coaster Wild cells need more clearance than transparent reel symbols. This exposes
-// the one grid authored into BoardFrame instead of drawing a second grid above the feature.
-export const COASTER_WILD_GRID_INSET = 2.5;
 // The screen-wide dim <CoasterSetupPresenter> lays over the whole game while the carts stamp their
 // Wilds. It is shared because the Wild cells are drawn ABOVE it: each one covers the reel with a cut
 // of the board's own grid art, and that cut has to be dimmed by the same amount as the board around
@@ -72,7 +98,7 @@ export const getBoardCellCenterX = (reelIndex: number) => CELL_W * (reelIndex + 
 export const BOARD_GRID_OFFSET_Y = 0;
 
 // SYMBOL_INFO_MAP — defines how each symbol is rendered
-// type 'sprite' = static PNG (no animation)
+// type 'sprite' = a still image (no animation)
 // type 'spine' = Spine animation
 // type 'spineIntroLoop' = Spine with intro→loop transition
 export type SymbolInfo =

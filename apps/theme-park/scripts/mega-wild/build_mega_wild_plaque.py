@@ -48,6 +48,10 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageFilter
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lib.web_image import save_web  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
 MODES_DIR = ROOT / "static/assets/theme-park/v2/modes"
@@ -55,7 +59,7 @@ VERIFY = Path(__file__).resolve().parent / "verify_mega_wild_plaque.png"
 
 FRAME = (448, 360)
 # Same widths the rest of the symbol set ships at; heights follow the frame aspect, so no variant is
-# squeezed. These are the sizes the three marquee PNGs already have.
+# squeezed. These are the sizes the three marquee files already have.
 MODE_VARIANTS = [("desktop", 448), ("mobile", 184), ("mobile-landscape", 216)]
 
 # The shipped plaque's ink box in the 448x360 frame; the empty face is scaled onto it so the two
@@ -153,8 +157,8 @@ def main() -> int:
     plaque = build()
     for name, width in MODE_VARIANTS:
         height = round(width * FRAME[1] / FRAME[0])
-        out = MODES_DIR / f"mega-wild-{name}-marquee.png"
-        plaque.resize((width, height), Image.LANCZOS).save(out, optimize=True)
+        out = MODES_DIR / f"mega-wild-{name}-marquee.webp"
+        save_web(plaque.resize((width, height), Image.LANCZOS), out)
         print(f"wrote {out.relative_to(ROOT)}  {width}x{height}")
 
     sheet = Image.new("RGBA", (FRAME[0] * 2 + 60, FRAME[1] + 40), (42, 11, 79, 255))

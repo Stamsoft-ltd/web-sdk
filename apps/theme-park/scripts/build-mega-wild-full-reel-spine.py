@@ -9,6 +9,10 @@ from pathlib import Path
 
 from PIL import Image, ImageOps
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib.web_image import save_web  # noqa: E402
+
 
 APP = Path(__file__).resolve().parents[1]
 CLEAN_SOURCE = (
@@ -29,7 +33,7 @@ FULL_REEL_SOURCE = CLEAN_SOURCE / "track-clean.png"
 # The retired gold plaque family is left where it was drawn, under source-assets-unused, unread:
 # it is the only copy of that art.
 PLAQUE_SOURCE = (
-    APP / "static" / "assets" / "theme-park" / "v2" / "wins" / "small-win-plate-neon-v1.png"
+    APP / "static" / "assets" / "theme-park" / "v2" / "wins" / "small-win-plate-neon-v1.webp"
 )
 CART_SOURCE = CLEAN_SOURCE / "cart-flat.png"
 CART_STEEP_SOURCE = CLEAN_SOURCE / "cart-steep.png"
@@ -426,7 +430,9 @@ def main() -> None:
         "multiplier_slot": Image.new("RGBA", (1, 1)),
     }
     page, placements = pack_atlas(layers)
-    page.save(OUTPUT / f"{NAME}.png", optimize=True)
+    # The atlas page is LOSSLESS: a lossy encoder rewrites the RGB hidden under transparent
+    # pixels, and pixi filters that rewritten colour out from under a region's edge as a fringe.
+    save_web(page, OUTPUT / f"{NAME}.webp", lossless=True)
 
     # Static fallback: rails + fixed centre plaque. The passing duck has exited below the reel.
     fallback = Image.new("RGBA", (WIDTH, HEIGHT))
@@ -434,10 +440,10 @@ def main() -> None:
     plaque = layers["plaque"]
     fallback.alpha_composite(plaque, ((WIDTH - plaque.width) // 2, (HEIGHT - plaque.height) // 2))
     fallback.alpha_composite(layers["sparkles"])
-    fallback.save(OUTPUT / f"{NAME}_fallback.png", optimize=True)
+    save_web(fallback, OUTPUT / f"{NAME}_fallback.webp")
 
     atlas_lines = [
-        f"{NAME}.png",
+        f"{NAME}.webp",
         f"size: {page.width},{page.height}",
         "format: RGBA8888",
         "filter: Linear,Linear",

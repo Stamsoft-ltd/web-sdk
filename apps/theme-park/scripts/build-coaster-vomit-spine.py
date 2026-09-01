@@ -17,6 +17,10 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib.web_image import save_web  # noqa: E402
+
 
 APP = Path(__file__).resolve().parents[1]
 SOURCE = APP / "source-assets-unused/assets/theme-park/coaster-vomit-handdrawn"
@@ -38,7 +42,7 @@ DUCK_CELL_LEFT = 47
 DUCK_BASELINE = 216
 POSE_END = 4.46
 VOMIT_DURATION = 4.5
-ATLAS_IMAGE = "coaster_vomit.png"
+ATLAS_IMAGE = "coaster_vomit.webp"
 FRAME_PREFIX = "coaster_vomit"
 CART_BACK_ATTACHMENT = "coaster_cart_back"
 CART_FRONT_ATTACHMENT = "coaster_cart_front"
@@ -247,12 +251,10 @@ def build_runtime_stills_and_rail(
 	cart_front: Image.Image,
 ) -> None:
 	for pose_index, output_name in (
-		(0, "coaster-rig-happy.png"),
-		(FRAME_COUNT // 2, "coaster-rig-vomit.png"),
+		(0, "coaster-rig-happy.webp"),
+		(FRAME_COUNT // 2, "coaster-rig-vomit.webp"),
 	):
-		composite_rig_pose(poses[pose_index], fixed_cart, cart_front).save(
-			FEATURES / output_name, optimize=True
-		)
+		save_web(composite_rig_pose(poses[pose_index], fixed_cart, cart_front), FEATURES / output_name)
 
 
 def build_atlas(
@@ -309,8 +311,10 @@ def build_atlas(
 		restored.alpha_composite(region["crop"], (region["left"], region["top"]))
 		if not np.array_equal(np.asarray(restored), np.asarray(region["source"])):
 			raise ValueError(f"Mega Coaster trimmed atlas changed region: {region['name']}")
-	# Keep transparent RGB zeroed. WebP rewrites hidden RGB and causes Pixi linear-filter fringes.
-	atlas.save(OUTPUT / ATLAS_IMAGE, "PNG", optimize=True)
+	# LOSSLESS, and `exact`, which is what `save_web(lossless=True)` passes: transparent RGB has to
+	# stay zeroed. A lossy encoder rewrites the colour hidden under alpha 0, and pixi's linear
+	# filter drags that rewritten colour out from under the edge of a region as a fringe.
+	save_web(atlas, OUTPUT / ATLAS_IMAGE, lossless=True)
 
 	lines = [
 		ATLAS_IMAGE,

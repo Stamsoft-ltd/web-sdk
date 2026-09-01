@@ -52,9 +52,9 @@
 	const pressPlayMark = ap('/assets/theme-park/v2/splash/press_play_mark.svg');
 
 	// Real marquee button art (portrait + landscape HUD). Round neon-rim buttons.
-	const ptMenu = ap('/assets/theme-park/v2/controls/btn-menu.png');
-	const ptSound = ap('/assets/theme-park/v2/controls/btn-sound.png');
-	const ptSoundMuted = ap('/assets/theme-park/v2/controls/btn-sound-muted.png');
+	const ptMenu = ap('/assets/theme-park/v2/controls/btn-menu.webp');
+	const ptSound = ap('/assets/theme-park/v2/controls/btn-sound.webp');
+	const ptSoundMuted = ap('/assets/theme-park/v2/controls/btn-sound-muted.webp');
 	// Mobile landscape's speed button (portrait and desktop use the turbo-1/2/3 webps above). One
 	// bolt per step: OFF is the outlined bolt, turbo is one solid bolt, super turbo is two. The three
 	// files used to hold that art rotated by one — btn-turbo.png carried a solid bolt, so the button
@@ -62,15 +62,15 @@
 	const ptTurbo = ap('/assets/theme-park/v2/controls/btn-turbo.png');
 	const ptTurboFast = ap('/assets/theme-park/v2/controls/btn-turbo-fast.png');
 	const ptTurboSuper = ap('/assets/theme-park/v2/controls/btn-turbo-super.png');
-	const ptAuto = ap('/assets/theme-park/v2/controls/btn-auto.png');
-	const ptAutoDisabled = ap('/assets/theme-park/v2/controls/btn-auto-disabled.png');
-	const ptPlus = ap('/assets/theme-park/v2/controls/btn-plus.png');
-	const ptPlusDisabled = ap('/assets/theme-park/v2/controls/btn-plus-disabled.png');
-	const ptMinus = ap('/assets/theme-park/v2/controls/btn-minus.png');
-	const ptMinusDisabled = ap('/assets/theme-park/v2/controls/btn-minus-disabled.png');
+	const ptAuto = ap('/assets/theme-park/v2/controls/btn-auto.webp');
+	const ptAutoDisabled = ap('/assets/theme-park/v2/controls/btn-auto-disabled.webp');
+	const ptPlus = ap('/assets/theme-park/v2/controls/btn-plus.webp');
+	const ptPlusDisabled = ap('/assets/theme-park/v2/controls/btn-plus-disabled.webp');
+	const ptMinus = ap('/assets/theme-park/v2/controls/btn-minus.webp');
+	const ptMinusDisabled = ap('/assets/theme-park/v2/controls/btn-minus-disabled.webp');
 	// Bet box plate — the same glowing neon gradient frame ("S pad") used by the buy-bonus popup's
 	// bet setter, stretched to fill this box so the two match.
-	const ptBetBox = ap('/assets/theme-park/v2/hud/neon-frame.png');
+	const ptBetBox = ap('/assets/theme-park/v2/hud/neon-frame.webp');
 </script>
 
 <script lang="ts">
@@ -165,10 +165,10 @@
 		({ ANTE: 3, FSPIN1: 20, FSPIN2: 60 } as Record<string, number>)[stateBet.activeBetModeKey] ?? 1,
 	);
 	const formattedBalance = $derived(
-		templateStakeDerived.formatCurrencyAmount(stateBet.balanceAmount),
+		templateStakeDerived.formatWallet(stateBet.balanceAmount),
 	);
 	const formattedBet = $derived(
-		templateStakeDerived.formatCurrencyAmount(stateBet.betAmount * activeCostMultiplier),
+		templateStakeDerived.formatWallet(stateBet.betAmount * activeCostMultiplier),
 	);
 	const winTween = new Tween(0);
 	$effect(() => {
@@ -896,7 +896,7 @@
 		<!-- PORTRAIT HUD — Figma 7063:17249. Two rows on one 349-unit width: a drawn control plate
 	     (menu · BONUS · spin · turbo · auto) and a balance | bet | win strip below it. Every control
 	     is the SAME component the desktop bar draws — .nav-btn, .buy-btn, .spin-btn — at the portrait
-	     size, so this row is no longer the last consumer of the old marquee art (nav-bar-clean.png,
+	     size, so this row is no longer the last consumer of the old marquee art (nav-bar-clean.webp,
 	     the round btn-*.png set, spin-bg.webp, the neon-frame bet plate). The burger now opens the
 	     shared SOUND · MUSIC · INFO menu instead of jumping straight to the rules, which is also how
 	     portrait gets a sound toggle back: the design gives this end of the bar one button, not two. -->

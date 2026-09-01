@@ -72,15 +72,27 @@
 	/**
 	 * And the resting wing, which lifts and settles instead of hanging: radians, and seconds a breath.
 	 *
-	 * A fifth of `FLAP` and six hundred times slower, so the two never read as the same motion. What
+	 * A fifth of `FLAP` and hundreds of times slower, so the two never read as the same motion. What
 	 * fixes the size is the wingtip rather than the angle: a symbol is drawn about 128 pixels across
-	 * and the wing reaches roughly a fifth of that from its shoulder, so this is a pixel and a half
-	 * of travel at the tip — the least that is still motion. It wants re-checking whenever the wing
-	 * art changes size, since the same angle on a shorter wing is less travel: this went back up by
-	 * a third when the duck stopped wearing the raised wing mirrored and got its own tucked one.
+	 * and the wing reaches roughly an eighth of that from its shoulder, so this is a couple of pixels
+	 * either side at the tip. It wants re-checking whenever the wing art changes size, since the same
+	 * angle on a shorter wing is less travel.
+	 *
+	 * "THE LEAST THAT IS STILL MOTION" WAS TOO LITTLE. The previous pair of numbers put a pixel and a
+	 * half of travel at the tip across three and a half seconds, which is under half a pixel a second
+	 * — below what anyone notices without being told to look, and the duck read as a still (reviewer,
+	 * 2026-08-28). Doubled and quickened it is about five pixels of travel across a breath, which is
+	 * still far short of the beat: a bird sitting there breathing, not a bird about to take off.
 	 */
-	const SETTLE = 0.08;
-	const SETTLE_SECONDS = 3.6;
+	const SETTLE = 0.17;
+	const SETTLE_SECONDS = 2.8;
+	/**
+	 * How far behind the near wing's breath the far one runs, in cycles.
+	 *
+	 * Not in step, because two wings breathing as one mirrored pair is a mechanism. Small — an eighth
+	 * of a breath — so they still read as one bird rather than as two independently animated wings.
+	 */
+	const SETTLE_LAG = 0.13;
 
 	/** The hop, as a fraction of the symbol's height, and how much of a beat it lags behind the wing. */
 	const HOP = 0.09;
@@ -136,9 +148,10 @@
 	const strength = $derived(props.win ? Math.min(1, props.clock / SPIN_UP) : 0);
 	const beat = $derived(props.win ? Math.sin(TAU * FLAP_HZ * props.clock) * strength : 0);
 	/** Handed over rather than added to the beat, so a winning wing does not breathe as well. */
-	const settle = $derived(
-		SETTLE * Math.sin((TAU * props.idleClock) / SETTLE_SECONDS) * (1 - strength),
-	);
+	const breath = (lag: number) =>
+		SETTLE * Math.sin(TAU * (props.idleClock / SETTLE_SECONDS + lag)) * (1 - strength);
+	const settle = $derived(breath(0));
+	const settleFar = $derived(breath(SETTLE_LAG));
 	/** The body's share of the beat, which is what moves the wing painted onto it. */
 	const roll = $derived(BODY_ROLL * beat);
 
@@ -234,7 +247,7 @@
 				y={far.y}
 				width={DUCK_WING_FAR.width * props.width}
 				height={DUCK_WING_FAR.height * props.height}
-				rotation={DUCK_WING_FAR.rest - FAR_FLAP * beat - settle}
+				rotation={DUCK_WING_FAR.rest - FAR_FLAP * beat - settleFar}
 				tint={props.tint}
 			/>
 			{#each eyes as eye (eye.id)}

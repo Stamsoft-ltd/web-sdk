@@ -17,7 +17,8 @@ bad still, in the build output, instead of a bug that only exists in the browser
 """
 
 import numpy as np
-from PIL import Image
+
+from lib.figma_paper import resized, turned
 
 
 def sprite_place(canvas, art, *, cx, cy, width=None, height=None, anchor=(0.5, 0.5), rotation=0.0):
@@ -30,19 +31,25 @@ def sprite_place(canvas, art, *, cx, cy, width=None, height=None, anchor=(0.5, 0
 	negation below. In y-down image coordinates PIL carries a point by [cos, sin; -sin, cos], so a
 	script recovering an anchor from a placement has to come back the other way, by
 	[cos, -sin; sin, cos]. Getting that inverse backwards is the duck bug above.
+
+	Both resamples go through `figma_paper`, PREMULTIPLIED. A part arrives here straight out of
+	`keyed`, which sets the paper's ALPHA to zero and leaves the paper's COLOUR where it was, and
+	Pillow mixes that colour into every edge it touches — so scaling a part to its drawn size here
+	is the last place the paper gets a chance to come back as a pale rim. See the note in that
+	module.
 	"""
-	scaled = art.resize((max(1, round(width if width else art.width)),
-	                     max(1, round(height if height else art.height))), Image.LANCZOS)
+	drawn = resized(art, (max(1, round(width if width else art.width)),
+	                      max(1, round(height if height else art.height))))
 	theta = -rotation
-	turned = scaled.rotate(np.degrees(theta), resample=Image.BICUBIC, expand=True)
+	spun = turned(drawn, np.degrees(theta))
 
 	# Where the anchor ended up once expand=True grew the box around it.
-	ox = (anchor[0] - 0.5) * scaled.width
-	oy = (anchor[1] - 0.5) * scaled.height
+	ox = (anchor[0] - 0.5) * drawn.width
+	oy = (anchor[1] - 0.5) * drawn.height
 	px = ox * np.cos(theta) + oy * np.sin(theta)
 	py = -ox * np.sin(theta) + oy * np.cos(theta)
-	canvas.alpha_composite(turned, (round(cx - turned.width / 2 - px),
-	                                round(cy - turned.height / 2 - py)))
+	canvas.alpha_composite(spun, (round(cx - spun.width / 2 - px),
+	                              round(cy - spun.height / 2 - py)))
 
 
 def unrotate(point, *, centre, rotation):

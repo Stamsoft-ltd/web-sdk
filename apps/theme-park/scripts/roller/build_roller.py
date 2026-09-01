@@ -48,7 +48,8 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from lib.figma_paper import keyed  # noqa: E402
+from lib.figma_paper import keyed, resized  # noqa: E402
+from lib.web_image import save_web  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -76,7 +77,12 @@ LAYERS = ("emblem", "banner", "roller", "wilds", "star")
 # The three that move at runtime. The other two are the sign they move on, and ship baked together.
 LOOSE = ("star", "roller", "wilds")
 # The one layer whose enclosed paper is background rather than drawing — see `lib/figma_paper`.
-HOLED = ("emblem",)
+# Every layer that encloses background rather than white ink. The two WORDS belong here as much as
+# the emblem does: the counter of the O, the gap between the D and the S and the pocket each letter's
+# drop shadow closes against its neighbour are all paper a border flood cannot reach, and they
+# shipped as white slivers between the letters (reviewer, 2026-08-28). Neither word has any white ink
+# in it to lose — they are yellow on a dark shadow — which is what makes clearing them safe.
+HOLED = ("emblem", "roller", "wilds")
 
 
 def locate(composition, part):
@@ -139,7 +145,7 @@ def main():
         part, x, y = placed[name]
         width = max(1, round(part.shape[1] * scale))
         height = max(1, round(part.shape[0] * scale))
-        return (rgba(part).resize((width, height), Image.LANCZOS),
+        return (resized(rgba(part), (width, height)),
                 round(x * scale + offset_x),
                 round(y * scale + offset_y))
 
@@ -157,15 +163,13 @@ def main():
 
     for suffix, width in MODE_VARIANTS:
         height = round(width * FRAME[1] / FRAME[0])
-        still.resize((width, height), Image.LANCZOS).save(
-            MODES_DIR / f"roller-wilds-{suffix}-still.png")
-        sign.resize((width, height), Image.LANCZOS).save(
-            MODES_DIR / f"roller-wilds-{suffix}-sign.png")
+        save_web(resized(still, (width, height)), MODES_DIR / f"roller-wilds-{suffix}-still.webp")
+        save_web(resized(sign, (width, height)), MODES_DIR / f"roller-wilds-{suffix}-sign.webp")
 
     rows = []
     for name in LOOSE:
         art, x, y = into_frame(name)
-        art.save(SYMBOL_DIR / f"roller-wilds-{'star' if name == 'star' else f'word-{name}'}.png")
+        save_web(art, SYMBOL_DIR / f"roller-wilds-{'star' if name == 'star' else f'word-{name}'}.webp")
         # The INK's centre, not the box's: what a part scales and turns about has to be the middle
         # of the drawing, and these exports carry a different margin each.
         ays, axs = np.nonzero(np.asarray(art)[..., 3] > 0)
@@ -191,8 +195,8 @@ def main():
     sheet = Image.new("RGBA", (FRAME[0] * (len(poses) + 1) + 24 * len(poses), FRAME[1]),
                       (26, 26, 34, 255))
     reference = rgba(composition)
-    reference = reference.resize(
-        (round(reference.width * scale), round(reference.height * scale)), Image.LANCZOS)
+    reference = resized(
+        reference, (round(reference.width * scale), round(reference.height * scale)))
     sheet.alpha_composite(reference, (round(offset_x), round(offset_y)))
     for index, (_, turn, roller_pop, wilds_pop) in enumerate(poses):
         pane = sign.copy()

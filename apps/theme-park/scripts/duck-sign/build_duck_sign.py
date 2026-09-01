@@ -1,23 +1,6 @@
 #!/usr/bin/env python3
 """Build the DUCK YOUR LUCK symbol out of its layers, so its wings can flap.
 
-The redesigned scatter (Figma 7057:7971) is a duck in a top hat holding a DUCK YOUR LUCK sign, with
-a wing sticking out either side of it. Its win presentation is the lockup rocking and those two
-wings beating, which means they cannot ship baked into one PNG — the runtime needs the wings as
-their own sprites, and it needs to know where they sit and what they turn about.
-
-THE WINGS WERE REDRAWN, and that is what this last pass is about. The first set were the duck's own
-wings, spread and then all but covered by the sign: 141px blobs of flat gold with the feathers
-pointing DOWN and out, soft at the edges and, at the size a symbol is drawn, more of a smudge either
-side of the sign than a pair of wings. The replacements (7115:27451 and 7115:27449, one drawing and
-its mirror) are a proper fanned wing with drawn primaries and a hard outline, and they sweep UP and
-out to the sign's top corners, which is the pose a bird holds when it is showing something off. They
-arrive four times the resolution of what they replace.
-
-Nothing else changed. The duck (7115:27450) and the sign with its two gripping wingtips
-(7115:27452) are the same drawings, re-exported from the same frame so that every layer still shares
-one coordinate system.
-
     python3 scripts/duck-sign/build_duck_sign.py
 
 It writes:
@@ -27,43 +10,40 @@ It writes:
   src/game/duckSignParts.ts
   scripts/duck-sign/verify_duck_sign.png
 
-ITS MARQUEE OUTPUT IS STALE — RESTORE IT AFTER RUNNING
+WHY IT WAS REBUILT (2026-08-28)
 
-The three duck-your-luck-*-marquee.png are no longer what ships. What ships is the painted
-mega-style lockup that came out of the hand-drawn pass; source/composition.png here is the earlier
-flat drawing, so a run of this script silently replaces the painted sign with the old flat one. The
-wings and the table it writes ARE current and reproduce byte for byte, which is why the script is
-still the way to rebuild those:
+The scatter's flap looked, in the reviewer's words, stupid, and the cause was not the animation. The
+lockup that shipped was ONE painted picture with the wings already in it, and <DuckSign> drew two
+more wings behind it — so a win swung a second pair of wings out from behind a pair that never
+moved. No timing change could have fixed that. What was missing was the lockup as LAYERS.
 
-    python3 scripts/duck-sign/build_duck_sign.py
-    git checkout -- static/assets/theme-park/v2/modes/duck-your-luck-*-marquee.png
+Those layers are what this now builds from. `source/painted-{duck,wing,sign}.png` are the design's
+own pieces (Figma 7115:27433 the duck, 7115:27434 and :27435 the wing, 7063:17878 the sign), and the
+symbol is composed here rather than exported flat:
 
-Re-export the composition from the shipping design and this note goes away.
+* the BASE — the duck and the sign it holds — is what ships as the three marquee files, and it has no
+  wings in it at all, so the only wings on screen are the two that move;
+* the two WINGS ship as their own sprites, drawn behind the base at the placements written into
+  `duckSignParts.ts`.
 
-WHY IT IS BUILT THIS WAY
+ONE WING, MIRRORED. The two wing nodes are the same drawing — byte for byte, checked — so the right
+wing is the left one flipped. They are also stored ALREADY ROTATED to their rest pose: the runtime
+adds the beat on top of `REST_TURN`, and a sprite that has to be turned 15 degrees before it is even
+at rest cannot be turned about its root by a single rotation.
 
-The design frame is 112x90 and every symbol in this game is drawn in a 448x360 one — the same
-aspect, so a x4 export of the frame lands on our frame exactly, with no re-centring and no fudge.
-Everything under source/ is such an export: the whole composition, and then the three layers it is
-made of — the loose wings, the duck, and the sign with the two wingtips gripping it.
+A WING STARTS AT A SHOULDER. Each wing is placed by the one point on it that means anything — the
+rounded mass at its lower right, which is the end that meets a bird — and it is turned about that
+same point, because a wing turning about its root beats and one turning about its centre swims.
 
-Nothing is placed from the node coordinates in Figma's metadata. Those are pre-rotation origins: the
-left wing's box is at y=204 where the design renders it at 182, and the right wing's runs past the
-bottom of the frame entirely. Each layer is LOCATED instead — slid over the composition until the
-most of it matches pixel for pixel. Every one lands at its metadata x to the pixel, which is what
-says the search found the real placement and not a lookalike.
+That shoulder is put BEHIND the sign, low enough to be on the duck's body. It was on the duck's HEAD
+until 2026-08-28: the wings were placed by their middles at the sign's top edge, so what showed above
+the sign was the whole inner half of each wing, sprouting either side of the hat (reviewer). Most of
+a wing placed honestly is hidden — the duck is holding a sign in front of itself — and what is left
+above the line is the fan, which is the part that reads as a wing anyway.
 
-Assembled rather than subtracted, and that was the second attempt. Cutting the wings back out of the
-flattened composition looked like it should work — the wings are the backmost layer, so wherever one
-shows there is nothing behind it — but the frame export and the node export resample a hair
-differently, enough that flat gold matched and thin black outlines did not. What came out was a base
-with the wings' outlines still ghosted into it. Compositing the layers has no such seam.
-
-Each wing's PIVOT is the middle of the part of it the duck covers: the root, where it goes behind
-the body. A wing turning about its root beats; one turning about its centre swims.
-
-Always eyeball verify_duck_sign.png. It puts the rebuilt symbol beside the design's own render, so a
-layer an inch out shows up as a difference rather than as a number that looks fine.
+THE LAYOUT IS THE ONE THING TUNED BY LOOKING. Everything else follows from it. Always eyeball
+verify_duck_sign.png: it shows the symbol assembled at rest and at both ends of the beat, so a wing
+that swings out of the frame or unroots itself shows up as a picture rather than as a number.
 """
 
 import sys
@@ -73,7 +53,8 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from lib.figma_paper import keyed  # noqa: E402
+from lib.figma_paper import resized, turned  # noqa: E402
+from lib.web_image import save_web  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -87,34 +68,68 @@ FRAME = (448, 360)
 # full-size texture on a phone. Heights come from the frame aspect, so no variant is squeezed.
 MODE_VARIANTS = [("desktop", 448), ("mobile", 184), ("mobile-landscape", 216)]
 
-# How close two pixels have to be to count as the same drawing, summed over the three channels.
-# Generous enough to absorb the exports' own resampling, tight enough that gold does not match gold.
-SAME = 24
+#: Where the two fixed pieces sit: centre x, centre y and width, all as fractions of the frame.
+#: Picked against rendered candidates rather than derived — the design supplies the pieces and not an
+#: arrangement of them. The constraints that decided it: the sign has to clear the bottom edge, and
+#: the duck's head and hat have to clear the sign's top.
+LAYOUT = {
+    "duck": (0.5, 0.358, 0.32),
+    "sign": (0.5, 0.657, 0.7),
+}
+#: The wing's shoulder, as a fraction of the wing DRAWING: the rounded mass at its lower right. The
+#: feathers fan up and away from it, so this is the end a bird would be on.
+WING_SHOULDER = (0.88, 0.72)
+#: Where that shoulder goes on the FRAME, for the left wing; the right one mirrors it. Below the
+#: sign's top edge (0.42 against 0.32) on purpose — see the note on shoulders above.
+WING_ROOT = (0.4, 0.42)
+#: How wide the wing is drawn, as a fraction of the frame. Wide enough that a shoulder hidden this
+#: far down still puts the fan clear of the sign's sides.
+WING_WIDTH = 0.36
+#: The wings' rest pose, in degrees out from the drawing. Baked into the sprites — see the note on
+#: mirroring above.
+#:
+#: NEGATIVE, and that is the whole difference between a duck and a badge. The drawing's feathers fan
+#: up and away from the shoulder, so turning the left wing anti-clockwise about that shoulder swings
+#: the fan DOWN: what came out was a pair of wings lying flat along the sign's top rail with their
+#: tips drooping outward, which is emblem heraldry and not a bird (reviewer, 2026-08-28). Turned the
+#: other way the fan lifts, the tips clear the hat, and the two wings make a V whose lines meet
+#: somewhere behind the sign — which is exactly where the duck's body is.
+REST_TURN = -20
+#: Room around the frame for a wing to be turned in without the rotation clipping it. Only ever used
+#: while composing; nothing this wide ships.
+PAD = 160
+#: How far <DuckSign> swings a wing either side of that. Only used here, to check at build time that
+#: a wing at full beat still lands inside the frame; the component holds its own copy in radians.
+FLAP = 13
 
 
-def locate(composition, part):
-    """Where `part` sits in `composition`, and how much of it shows there.
+def trimmed(name):
+    """One source layer, cropped to its ink.
 
-    Scored on how much of the part matches EXACTLY rather than on mean difference: most of a wing is
-    hidden behind the duck, and an average taken over the hidden half is dominated by whatever is
-    covering it. What identifies the placement is the sliver that lines up perfectly.
+    Cropped rather than used whole because the exports carry different amounts of empty margin, and
+    a placement is only meaningful against the drawing itself.
     """
-    ph, pw, _ = part.shape
-    ink = part[..., 3] > 0
-    best = None
-    for y in range(composition.shape[0] - ph + 1):
-        for x in range(composition.shape[1] - pw + 1):
-            difference = np.abs(composition[y : y + ph, x : x + pw, :3] - part[..., :3]).sum(axis=2)
-            share = (difference[ink] < SAME).mean()
-            if best is None or share > best[0]:
-                best = (share, x, y)
-    share, x, y = best
-    difference = np.abs(composition[y : y + ph, x : x + pw, :3] - part[..., :3]).sum(axis=2)
-    return x, y, share, ink & (difference < SAME)
+    image = Image.open(SOURCE / f"painted-{name}.png").convert("RGBA")
+    ys, xs = np.nonzero(np.asarray(image)[..., 3] > 8)
+    return image.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
 
 
-def rgba(array):
-    return Image.fromarray(array.astype(np.uint8), "RGBA")
+def scaled(art, width, scale, mirror=False):
+    """`art` at `width` of the frame, optionally flipped."""
+    piece = art.transpose(Image.FLIP_LEFT_RIGHT) if mirror else art
+    pixels = round(FRAME[0] * scale * width)
+    # Resampled premultiplied. Pillow mixes the colour under a zero alpha into every edge it touches,
+    # so a straight-alpha scale of a cut-out drawing darkens its own outline — see the note in
+    # lib/figma_paper.py.
+    return resized(piece, (pixels, round(pixels * piece.height / piece.width)))
+
+
+def corner(piece, centre_x, centre_y, scale):
+    """Top-left of `piece` when its middle is put at (`centre_x`, `centre_y`) of the frame."""
+    return (
+        round(FRAME[0] * scale * centre_x - piece.width / 2),
+        round(FRAME[1] * scale * centre_y - piece.height / 2),
+    )
 
 
 def num(value):
@@ -122,59 +137,142 @@ def num(value):
     return f"{value:.4f}".rstrip("0").rstrip(".") or "0"
 
 
-def main():
-    composition = keyed(SOURCE / "composition.png")
-    if composition.shape[:2] != (FRAME[1], FRAME[0]):
-        raise SystemExit(f"composition is {composition.shape[1::-1]}, expected {FRAME}")
+def build(scale=1):
+    """The two fixed layers at `scale` times the frame: the piece, and where its top-left goes."""
+    placed = {}
+    for name, (centre_x, centre_y, width) in LAYOUT.items():
+        piece = scaled(trimmed(name), width, scale)
+        placed[name] = (piece, corner(piece, centre_x, centre_y, scale))
+    return placed
 
-    layers = {}
-    for name in ("wing-left", "wing-right", "duck", "sign"):
-        part = keyed(SOURCE / f"{name}.png")
-        x, y, share, visible = locate(composition, part)
-        layers[name] = (part, x, y, visible)
-        print(f"{name}: {part.shape[1]}x{part.shape[0]} at ({x}, {y}), {share:.0%} of it shows")
 
-    # The base is everything that does not move, in the design's own order: the duck, then the sign
-    # and the wingtips gripping it. The wings go behind it at runtime.
-    base = Image.new("RGBA", FRAME, (0, 0, 0, 0))
+def winged(scale=1, beat=0):
+    """Both wings at rest (or `beat` degrees off it): the sprite, its top-left, and its root.
+
+    Turned about the ROOT rather than about the sprite's middle, and turned on a padded frame rather
+    than with trigonometry: the root then lands on exactly the frame coordinate `WING_ROOT` asked
+    for, and the sprite is whatever ink is left around it. That matters because the same root is
+    written into the parts table for <DuckSign> to beat about — a pivot derived twice, once here and
+    once by arithmetic, is a pivot that can disagree with itself.
+    """
+    art = scaled(trimmed("wing"), WING_WIDTH, scale)
+    pad = round(PAD * scale)
+    width, height = round(FRAME[0] * scale), round(FRAME[1] * scale)
+    placed = {}
+    for side in ("left", "right"):
+        mirror = side == "right"
+        piece = art.transpose(Image.FLIP_LEFT_RIGHT) if mirror else art
+        shoulder = (
+            (1 - WING_SHOULDER[0] if mirror else WING_SHOULDER[0]) * piece.width,
+            WING_SHOULDER[1] * piece.height,
+        )
+        root = ((1 - WING_ROOT[0] if mirror else WING_ROOT[0]) * width, WING_ROOT[1] * height)
+        canvas = Image.new("RGBA", (width + pad * 2, height + pad * 2), (0, 0, 0, 0))
+        canvas.alpha_composite(
+            piece, (round(pad + root[0] - shoulder[0]), round(pad + root[1] - shoulder[1]))
+        )
+        turn = REST_TURN + beat
+        canvas = turned(
+            canvas, -turn if mirror else turn, expand=False, centre=(pad + root[0], pad + root[1])
+        )
+        box = canvas.getbbox()
+        placed[side] = (canvas.crop(box), (box[0] - pad, box[1] - pad), root)
+    return placed
+
+
+def compose(scale=1, wings=True):
+    """The whole lockup on a transparent frame, or just the part of it that never moves.
+
+    `wings=False` is the symbol's BASE — see the note at the top on why the wings must not be in it.
+    `scale` is what lets the bonus screen wear the same lockup at four times the size without a
+    second layout to keep in step with this one: <DuckPondBonus>'s logo is this call, and the two
+    cannot drift apart because there is only one arrangement.
+    """
+    pad = round(PAD * scale)
+    width, height = round(FRAME[0] * scale), round(FRAME[1] * scale)
+    # Composed with the padding still on, and cropped to the frame at the end: a wing placed by its
+    # shoulder can reach outside the frame, and `alpha_composite` cannot be given a negative corner.
+    canvas = Image.new("RGBA", (width + pad * 2, height + pad * 2), (0, 0, 0, 0))
+    if wings:
+        # Behind the bird that owns them.
+        for piece, (left, top), _ in winged(scale).values():
+            canvas.alpha_composite(piece, (pad + left, pad + top))
+    placed = build(scale)
     for name in ("duck", "sign"):
-        part, x, y, _ = layers[name]
-        base.alpha_composite(rgba(part), (x, y))
+        piece, (left, top) = placed[name]
+        canvas.alpha_composite(piece, (pad + left, pad + top))
+    return canvas.crop((pad, pad, pad + width, pad + height))
+
+
+def main():
+    # The base is what does not move, in the design's own order: the duck, then the sign it holds in
+    # front of itself. No wings — that is the whole point of this rebuild.
+    base = compose(wings=False)
     for suffix, width in MODE_VARIANTS:
         height = round(width * FRAME[1] / FRAME[0])
-        base.resize((width, height), Image.LANCZOS).save(
-            MODES_DIR / f"duck-your-luck-{suffix}-marquee.png"
-        )
+        out = MODES_DIR / f"duck-your-luck-{suffix}-marquee.webp"
+        save_web(resized(base, (width, height)), out)
+        print(f"wrote {out.relative_to(ROOT)}  {width}x{height}")
+
+    # A wing has to be ON the duck. The shoulder is placed by hand, so the one thing worth checking
+    # is that the hand was not wrong: the pixels the duck covers are what makes this a bird with
+    # wings rather than a sign with wings.
+    duck_piece, duck_at = build()["duck"]
+    duck_mask = np.zeros(FRAME[::-1], bool)
+    stamp = np.asarray(duck_piece)[..., 3] > 8
+    duck_mask[duck_at[1] : duck_at[1] + stamp.shape[0], duck_at[0] : duck_at[0] + stamp.shape[1]] = (
+        stamp
+    )
 
     rows = []
-    for side in ("left", "right"):
-        part, x, y, visible = layers[f"wing-{side}"]
-        rgba(part).save(SYMBOL_DIR / f"duck-sign-wing-{side}-fan.png")
-        # The root: the middle of the part the duck covers.
-        ys, xs = np.nonzero((part[..., 3] > 0) & ~visible)
+    roots = {}
+    for side, (piece, (left, top), root) in winged().items():
+        out = SYMBOL_DIR / f"duck-sign-wing-{side}-fan.webp"
+        save_web(piece, out)
+        roots[side] = root
+        wing_mask = np.zeros(FRAME[::-1], bool)
+        ink = np.asarray(piece)[..., 3] > 8
+        window = (slice(max(top, 0), top + ink.shape[0]), slice(max(left, 0), left + ink.shape[1]))
+        wing_mask[window] = ink[: window[0].stop - window[0].start, : window[1].stop - window[1].start]
+        rooted = (wing_mask & duck_mask).sum()
+        if not rooted:
+            raise SystemExit(f"{side} wing does not reach the duck — it is a sign with wings")
+        print(
+            f"wrote {out.relative_to(ROOT)}  {piece.width}x{piece.height} at ({left}, {top}), "
+            f"root ({root[0]:.0f}, {root[1]:.0f}), {rooted}px of it on the duck"
+        )
         rows.append(
             f"\t{side}: {{\n"
-            f"\t\tx: {num(x / FRAME[0])},\n"
-            f"\t\ty: {num(y / FRAME[1])},\n"
-            f"\t\twidth: {num(part.shape[1] / FRAME[0])},\n"
-            f"\t\theight: {num(part.shape[0] / FRAME[1])},\n"
-            f"\t\tpivotX: {num((x + xs.mean()) / FRAME[0])},\n"
-            f"\t\tpivotY: {num((y + ys.mean()) / FRAME[1])},\n"
+            f"\t\tx: {num(left / FRAME[0])},\n"
+            f"\t\ty: {num(top / FRAME[1])},\n"
+            f"\t\twidth: {num(piece.width / FRAME[0])},\n"
+            f"\t\theight: {num(piece.height / FRAME[1])},\n"
+            f"\t\tpivotX: {num(root[0] / FRAME[0])},\n"
+            f"\t\tpivotY: {num(root[1] / FRAME[1])},\n"
             f"\t}},"
         )
     TABLE.write_text(HEADER + "\n".join(rows) + "\n};\n")
     print(f"wrote {TABLE.relative_to(ROOT)}")
 
-    rebuilt = Image.new("RGBA", FRAME, (0, 0, 0, 0))
-    for side in ("left", "right"):
-        _, x, y, _ = layers[f"wing-{side}"]
-        rebuilt.alpha_composite(Image.open(SYMBOL_DIR / f"duck-sign-wing-{side}-fan.png"), (x, y))
-    rebuilt.alpha_composite(base)
-    check = Image.new("RGBA", (FRAME[0] * 2 + 24, FRAME[1]), (26, 26, 34, 255))
-    check.alpha_composite(rebuilt, (0, 0))
-    check.alpha_composite(Image.open(SOURCE / "composition.png").convert("RGBA"), (FRAME[0] + 24, 0))
-    check.save(VERIFY)
-    print(f"wrote {VERIFY.relative_to(ROOT)}")
+    # The sheet: the symbol at rest and at both ends of the beat, each wing turned about the root
+    # just written — which is the same arithmetic <DuckSign> does, so a wing that leaves the frame
+    # or slides off its root is visible here before it is visible on a board.
+    panels = []
+    for beat in (0, 1, -1):
+        panel = Image.new("RGBA", FRAME, (30, 24, 48, 255))
+        for side, (piece, (left, top), _) in winged(beat=FLAP * beat).items():
+            whole = Image.new("RGBA", FRAME, (0, 0, 0, 0))
+            box = (max(left, 0), max(top, 0))
+            whole.alpha_composite(piece.crop((box[0] - left, box[1] - top, piece.width, piece.height)), box)
+            panel.alpha_composite(whole)
+        panel.alpha_composite(base)
+        panels.append(panel)
+    sheet = Image.new("RGBA", (FRAME[0] * 3 + 40, FRAME[1] + 20), (30, 24, 48, 255))
+    for index, panel in enumerate(panels):
+        sheet.alpha_composite(panel, (10 + (FRAME[0] + 10) * index, 10))
+    sheet.save(VERIFY)
+    print(f"wrote {VERIFY.relative_to(ROOT)}  — at rest, and at both ends of the beat")
+    return 0
 
 
 HEADER = """/**
@@ -182,12 +280,13 @@ HEADER = """/**
  * it beats about.
  *
  * GENERATED by `scripts/duck-sign/build_duck_sign.py` — edit that, not this. The symbol ships as a
- * base (the duck, the sign and the wingtips gripping it) plus these two wings, so that a win can
- * flap them; drawing them at these coordinates behind the base reproduces the design exactly.
- * See <DuckSign>.
+ * base with NO wings in it — just the duck and the sign it holds — plus these two, so that the only
+ * wings on screen are the ones that move. Drawing them at these coordinates behind the base
+ * reproduces the design. See <DuckSign>.
  *
  * All six numbers are fractions of the symbol FRAME, origin top-left, so they survive any change to
- * how big the symbol is drawn. `pivotX`/`pivotY` are in the same frame space, not in the wing's.
+ * how big the symbol is drawn. `pivotX`/`pivotY` are in the same frame space, not in the wing's, and
+ * each is that wing's SHOULDER — the point where it meets the duck, which the sign hides.
  */
 export type DuckSignWing = {
 \tx: number;
@@ -202,4 +301,5 @@ export const DUCK_SIGN_WINGS: Record<'left' | 'right', DuckSignWing> = {
 """
 
 
-main()
+if __name__ == "__main__":
+    raise SystemExit(main())

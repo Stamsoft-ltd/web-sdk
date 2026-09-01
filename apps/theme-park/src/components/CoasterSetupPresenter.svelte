@@ -31,6 +31,7 @@
 	} from '../game/constants';
 	import { getCoasterWildRect, toCoasterCellKeys } from '../game/coasterWildCells';
 	import CoasterWildTile from './CoasterWildTile.svelte';
+	import CoasterDriver from './CoasterDriver.svelte';
 	import LoopingSpineSprite from './LoopingSpineSprite.svelte';
 
 	type CoasterImpact = { reel: number; row: number; multiplier: number };
@@ -48,6 +49,8 @@
 		direction: -1 | 1;
 		visible: boolean;
 		vomitTimeScale: number;
+		/** How far it has come, which is what <CoasterDriver> rolls its wheels off. */
+		travelled: number;
 	};
 	type TimedRoute = CoasterRoute & {
 		startX: number;
@@ -108,7 +111,43 @@
 	const VOMIT_SOURCE_MS = 4500;
 	const VOMIT_CLIP_MS = 1900;
 	const DUCK_PLAYBACK_SPEED = VOMIT_SOURCE_MS / VOMIT_CLIP_MS;
+	/**
+	 * THE CLIP'S DEAD LEAD-IN, skipped.
+	 *
+	 * Its first nine of 128 poses are one frame held: measured off the atlas, every pair inside that
+	 * run differs by less than the encoder's own noise, and real motion starts at pose 9. Handing
+	 * over at pose 0 therefore parked a frozen duck on screen for the first ~130ms of the clip — and
+	 * it froze on the beat the cart stopped driving, so the one thing that had been moving stopped at
+	 * the same moment. That is the stuck frame (reported 2026-08-31).
+	 *
+	 * So the swap waits out that hold and the clip starts at pose 9, already moving. `vomitStartAt`
+	 * below is pushed back by exactly the same amount, which is what keeps the stream landing on the
+	 * authored impact: the duck drives for longer, it does not vomit any sooner.
+	 */
+	const VOMIT_LEAD = 9 / 128;
+	const VOMIT_LEAD_SECONDS = (VOMIT_SOURCE_MS / 1000) * VOMIT_LEAD;
 	const CART_SIZE = SYMBOL_H * 1.7;
+	/** How far above the gold rail the cart's own middle sits. */
+	const CART_ABOVE_RAIL = SYMBOL_H * 0.62;
+	/**
+	 * THE RIDE, which the rig has none of: `idle` in coaster_vomit.json is one held frame — the
+	 * duck's 128 poses all belong to the vomit clip. So a cart crossing the board on its way to a
+	 * Wild was a photograph being slid sideways (reviewer, 2026-08-28).
+	 *
+	 * It is the WHEELS that carry the ride now, and nothing else. The cart used to hop over sleepers
+	 * and rock about the rail as well, on the theory that a jostled cart reads as a moving one; on
+	 * screen it read as a toy being shaken, because a car on a rail does not leave the rail. What is
+	 * left is a car that glides — see <CoasterDriver> for the wheels that turn under it and for the
+	 * only thing that still moves on top of it.
+	 *
+	 * One rail joint of track, which is the beat the driver feels through the floor. It stays a
+	 * DISTANCE rather than a time: a cart that has slowed feels the joints slowly, because what it
+	 * is passing over is the track. Run off a timer every cart would shudder at one rate no matter
+	 * how fast it was going, which is the thing that reads as an animation played on a sprite.
+	 */
+	const RAIL_JOINT = SYMBOL_H * 0.62;
+	/** A cart's own offset into that beat, so five of them on five rails are never in step. */
+	const RIDE_STAGGER = 0.37;
 	// MEASURED off what Figma 7033:20310 actually paints, not off the node box: the rail image's box
 	// is 34 tall but the art inside only inks 19 of a 91.4 row — magenta bar 9, posts 7, gold rail 4.
 	// Taking the box for the drawing is what made the rail read twice as heavy as the design's.
@@ -129,7 +168,7 @@
 	const railY = (row: number) => cellY(row) + CELL_H * 0.42;
 	/** The row boundary the design's gold rail sits on. */
 	const trackY = (row: number) => cellY(row) + CELL_H * 0.5;
-	const cartY = (row: number) => railY(row) - SYMBOL_H * 0.62;
+	const cartY = (row: number) => railY(row) - CART_ABOVE_RAIL;
 	const rowDirection = (row: number): -1 | 1 => (row % 2 === 0 ? 1 : -1);
 	const boardScale = $derived(layout.boardScale || 1);
 	const trackLeft = $derived((0 - layout.x) / boardScale + layout.pivot.x - SCREEN_OVERSCAN);
@@ -301,9 +340,12 @@
 				launchAt: route.launchDelayUnits * timing.stagger,
 				movementDuration,
 				impactAt,
-				vomitStartAt: route.impact ? Math.max(0, impactAt - clipPlaybackMs * 0.5) : 0,
+				vomitStartAt: route.impact
+					? Math.max(0, impactAt - clipPlaybackMs * (0.5 - VOMIT_LEAD))
+					: 0,
 				vomitEndAt: route.impact
-					? Math.max(0, impactAt - clipPlaybackMs * 0.5) + clipPlaybackMs
+					? Math.max(0, impactAt - clipPlaybackMs * (0.5 - VOMIT_LEAD)) +
+						clipPlaybackMs * (1 - VOMIT_LEAD)
 					: 0,
 				impactIndex: -1,
 			};
@@ -347,6 +389,7 @@
 				}
 				cart.visible = true;
 				cart.x = route.startX + (route.endX - route.startX) * (routeTime / route.movementDuration);
+				cart.travelled = Math.abs(cart.x - route.startX);
 				cart.state =
 					route.impact && routeTime >= route.vomitStartAt && routeTime < route.vomitEndAt
 						? 'vomit'
@@ -382,6 +425,7 @@
 				direction: rowDirection(route.row),
 				visible: false,
 				vomitTimeScale: DUCK_PLAYBACK_SPEED / timing.factor,
+				travelled: 0,
 			}));
 			await waitForTimeout(timing.intro);
 			if (run !== animationRun) return;
@@ -461,22 +505,48 @@
 
 			{#each carts as cart (cart.id)}
 				{#if cart.visible}
-					<Container
-						x={cart.x}
-						y={cart.y}
-						scale={{ x: cart.direction, y: 1 }}
-						zIndex={30 + cart.id}
-					>
-						<!-- One rig: immutable cart back/front slots, moving duck between them. -->
-						<LoopingSpineSprite
-							assetKey="coasterVomitSpine"
-							animationName={cart.state === 'vomit' ? 'vomit' : 'idle'}
-							fallbackKey={rigFallback(cart.state)}
-							width={CART_SIZE}
-							height={CART_SIZE}
-							timeScale={cart.state === 'vomit' ? cart.vomitTimeScale : 0}
-							loop={true}
-						/>
+					<Container x={cart.x} y={cart.y} zIndex={30 + cart.id}>
+						<Container scale={{ x: cart.direction, y: 1 }}>
+							<!-- Being SICK is the Spine rig's: 128 authored poses, and the only ones it
+							     has. DRIVING is <CoasterDriver>'s, because `idle` there is a single held
+							     frame and a cart crossing the board on it was a photograph being slid
+							     sideways. The two are built into the same 256 frame at the same width on
+							     the same ground line, so the handover does not move the cart.
+							     The rig stays mounted through both and is only hidden, rather than being
+							     created at the moment a duck turns green — a Spine built mid-feature is a
+							     hitch on the beat the feature is about.
+
+							     IT IS PARKED ON `vomit`, NOT ON `idle`, and that is the whole trick. A
+							     Spine only repose on its own update, so switching the animation and the
+							     alpha in the same breath showed one frame of whatever it had been holding
+							     — `idle`, the dead frame — full-strength, right on the beat the duck turns
+							     green (reported 2026-08-31). Held at timeScale 0 on the vomit clip it is
+							     already posed at pose 0 of it, which is the yellow duck the loose rig was
+							     fitted to in the first place (see build-coaster-vomit-spine.py, where
+							     coaster-rig-happy.webp IS pose 0). There is nothing stale left to show:
+							     the clip simply starts moving. Each cart is sick once per route, so the
+							     clip never needs rewinding. -->
+							<LoopingSpineSprite
+								assetKey="coasterVomitSpine"
+								animationName="vomit"
+								fallbackKey={rigFallback(cart.state)}
+								width={CART_SIZE}
+								height={CART_SIZE}
+								alpha={cart.state === 'vomit' ? 1 : 0}
+								startTime={VOMIT_LEAD_SECONDS}
+								timeScale={cart.state === 'vomit' ? cart.vomitTimeScale : 0}
+								loop={true}
+							/>
+							{#if cart.state !== 'vomit'}
+								<CoasterDriver
+									width={CART_SIZE}
+									height={CART_SIZE}
+									travel={cart.travelled}
+									joint={RAIL_JOINT}
+									phase={cart.id * RIDE_STAGGER}
+								/>
+							{/if}
+						</Container>
 					</Container>
 				{/if}
 			{/each}

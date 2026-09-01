@@ -23,6 +23,7 @@
 		CELL_H,
 		SYMBOL_W,
 		SYMBOL_H,
+		SYMBOL_ART_SCALE,
 		BOARD_DIMENSIONS,
 		BOARD_GRID_OFFSET_Y,
 		BOARD_SIDE_CONTENT_INSET,
@@ -64,15 +65,7 @@
 	 * Kept as the symbols that MOVE rather than as the symbols that shake, so that giving a sixth
 	 * symbol an idle animation is one entry here instead of a rule that quietly stops being true.
 	 */
-	const SELF_MOVING = new Set<SymbolName>([
-		'H1',
-		'H2',
-		'H3',
-		'H4',
-		'H5',
-		'S_ROLLER',
-		'S_COASTER',
-	]);
+	const SELF_MOVING = new Set<SymbolName>(['H1', 'H2', 'H3', 'H4', 'H5', 'S_ROLLER', 'S_COASTER']);
 	/**
 	 * The Duck Collect cell, as a share of the shorter side of a symbol. The rig is square and
 	 * <SpineProvider height> scales it by the skeleton's declared 384, so this is the side of the
@@ -199,8 +192,13 @@
 	) => {
 		const { name } = rawSymbol;
 		if (name === 'W') {
-			if (rawSymbol.persistent || coasterCellSet.has(`${reelIndex},${rowIndex}`))
-				return 'tpCoasterWild';
+			// A persistent Wild's own presentation is <CoasterWildTile>, and this loop does not draw it
+			// — `coasterCellSet` cells are skipped outright and <PersistentWildBadges> owns them. The
+			// only way one reaches here is the gap between a board that already carries `persistent`
+			// and a `coasterTiles` that has not been set from the book event yet, which is defensive
+			// rather than a state the game is ever seen in. So it falls through to the ordinary plate:
+			// the splat is DRAWN now (see <SlimeSplat>), and the still it used to fall back to is the
+			// retired art, which would put an old splat on the board beside the new ones.
 			if (isInitialRollerTriggerCell(rawSymbol, reelIndex, rowIndex))
 				return getSpecialSymbolKey('megaWild', layoutType);
 			return getSpecialSymbolKey('wild', layoutType);
@@ -533,8 +531,7 @@
 		// fades before the ordered reel-stop timers have all fired; deriving `force` only from the
 		// overlay state let a repeated/forwarded stop downgrade the remaining noStop reels to a plain
 		// stop, which cannot release them and left the final reel spinning forever.
-		const forceAnticipationStop =
-			context.stateGame.anticipationSkipped || hasActiveAnticipation();
+		const forceAnticipationStop = context.stateGame.anticipationSkipped || hasActiveAnticipation();
 		if (forceAnticipationStop) context.stateGame.anticipationSkipped = true;
 		context.stateGameDerived.enhancedBoard.stopSequentially({
 			force: forceAnticipationStop,
@@ -617,8 +614,7 @@
 						they scroll in, which spreads the same work over the whole spin instead of spending
 						it all in the frame the strip appears.
 					-->
-					{@const onBoard =
-						y > -CELL_H * 1.5 && y < CELL_H * (BOARD_DIMENSIONS.y + 1.5)}
+					{@const onBoard = y > -CELL_H * 1.5 && y < CELL_H * (BOARD_DIMENSIONS.y + 1.5)}
 					{#if onBoard && !rollerClearedSet.has(`${reelIndex},${symbolIndex - 1}`) && !coasterCellSet.has(`${reelIndex},${symbolIndex - 1}`)}
 						{@const position = boardPosition(reelIndex, symbolIndex - 1)}
 						{@const duckPrize = getDuckCollectPrize(reelIndex, symbolIndex - 1)}
@@ -637,6 +633,12 @@
 							reelIndex,
 							symbolIndex - 1,
 						)}
+						<!-- The size this symbol's ART is drawn at. Everything below sizes off these two
+						     rather than off SYMBOL_W/SYMBOL_H directly, so a symbol drawn tight in its frame
+						     is corrected once, for its parts and its bulbs as well as for its sprite. -->
+						{@const artScale = SYMBOL_ART_SCALE[reelSymbol.rawSymbol.name] ?? 1}
+						{@const symW = SYMBOL_W * artScale}
+						{@const symH = SYMBOL_H * artScale}
 						<!-- Keep one DC component mounted for front idle -> turn -> rear idle. No
 						     Board/presenter swap, so variant, scale and timeline stay continuous. -->
 						<!-- Settled Roller cells are the multiplier itself, not a Mega Wild symbol with a
@@ -678,8 +680,8 @@
 									{y}
 									rotation={shake}
 									tint={idle}
-									width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
-									height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+									width={symW * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+									height={symH * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
 									alpha={1 - SPIN_FADE * blur}
 									signKey={getSpecialSymbolKey('rollerSign', layoutType)}
 									baseKey={fallbackKey}
@@ -699,8 +701,8 @@
 									{y}
 									rotation={shake}
 									tint={idle}
-									width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
-									height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+									width={symW * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+									height={symH * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
 									alpha={1 - SPIN_FADE * blur}
 									houseKey={getSpecialSymbolKey('coasterHouse', layoutType)}
 									baseKey={fallbackKey}
@@ -718,8 +720,8 @@
 									x={getX(reelIndex)}
 									{y}
 									rotation={shake}
-									width={SYMBOL_W * (isWin ? winPulse : 1)}
-									height={SYMBOL_H * (isWin ? winPulse : 1)}
+									width={symW * (isWin ? winPulse : 1)}
+									height={symH * (isWin ? winPulse : 1)}
 									baseKey={fallbackKey}
 									clock={winClock}
 									win={isWin}
@@ -747,8 +749,8 @@
 									x={getX(reelIndex)}
 									{y}
 									anchor={{ x: 0.5, y: 0.5 }}
-									width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
-									height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+									width={symW * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+									height={symH * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
 									alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
 								/>
 							{:else}
@@ -759,10 +761,10 @@
 										<Sprite
 											key={fallbackKey}
 											x={getX(reelIndex)}
-											y={y + ghost.offset * SYMBOL_H * blur}
+											y={y + ghost.offset * symH * blur}
 											anchor={{ x: 0.5, y: 0.5 }}
-											width={SYMBOL_W * (1 - SPIN_SQUEEZE * blur)}
-											height={SYMBOL_H * (1 + SPIN_STRETCH * blur)}
+											width={symW * (1 - SPIN_SQUEEZE * blur)}
+											height={symH * (1 + SPIN_STRETCH * blur)}
 											alpha={ghost.alpha * blur}
 										/>
 									{/each}
@@ -794,6 +796,18 @@
 									strip is one sprite a symbol, and the parts are assembled per reel as it lands.
 								-->
 								{@const assembled = !dimmed && blur < 0.02}
+								<!--
+									THE WILD IS THE ONE SYMBOL WHOSE PLATE DOES NOT TAKE THE WIN PULSE.
+
+									Every other sign here is one drawing, so swelling the whole thing is the only
+									move available to it. The wild is two: a gold oval frame and the tri-colour W
+									standing in it. Pulsing both together just made the frame breathe with the
+									letter locked inside it, which reads as the picture being scaled rather than as
+									anything happening on the sign. Holding the frame still and zooming only the
+									letter gives the frame something to be measured against — see <WildLetter>.
+								-->
+								{@const wildPlate = fallbackKey.startsWith('tpWild')}
+								{@const pulse = isWin && !wildPlate ? winPulse : 1}
 								{#if reelSymbol.rawSymbol.name === 'H3' && assembled}
 									<!-- Assembled live rather than drawn, because these are BALLOONS: they nod on
 									     their strings while the board idles and fly when the symbol wins. Same box
@@ -804,8 +818,8 @@
 										{y}
 										rotation={shake}
 										tint={idle}
-										width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
-										height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+										width={symW * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+										height={symH * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
 										alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
 										baseKey={fallbackKey}
 										clock={winClock}
@@ -824,8 +838,8 @@
 										{y}
 										rotation={shake}
 										tint={idle}
-										width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
-										height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+										width={symW * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+										height={symH * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
 										alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
 										carKey="tpCoasterCar"
 										baseKey={fallbackKey}
@@ -845,8 +859,8 @@
 										{y}
 										rotation={shake}
 										tint={idle}
-										width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
-										height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+										width={symW * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+										height={symH * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
 										alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
 										baseKey={fallbackKey}
 										clock={winClock}
@@ -861,10 +875,11 @@
 									<FerrisWheel
 										x={getX(reelIndex)}
 										{y}
+										cellKey={`${reelIndex},${symbolIndex - 1}`}
 										rotation={shake}
 										tint={idle}
-										width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
-										height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+										width={symW * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
+										height={symH * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
 										alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
 										clock={winClock}
 										{idleClock}
@@ -878,21 +893,22 @@
 										anchor={{ x: 0.5, y: 0.5 }}
 										rotation={shake}
 										tint={idle}
-										width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
-										height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+										width={symW * pulse * (1 - SPIN_SQUEEZE * blur)}
+										height={symH * pulse * (1 + SPIN_STRETCH * blur)}
 										alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
 									/>
 								{/if}
-								{#if fallbackKey.startsWith('tpWild')}
+								{#if wildPlate}
 									<!-- The wild's letter, which its plate art deliberately does not carry: it is a
-									     sprite of its own so that a win can pop it up from nothing. Sized and faded
-									     exactly like the plate underneath, so it rides the same spin trail. -->
+									     sprite of its own so that a win can zoom it in and out inside the frame that
+									     stays put. Faded and squeezed like the plate underneath, so it rides the
+									     same spin trail. -->
 									<WildLetter
 										x={getX(reelIndex)}
 										{y}
 										rotation={shake}
-										width={SYMBOL_W * (isWin ? winPulse : 1) * (1 - SPIN_SQUEEZE * blur)}
-										height={SYMBOL_H * (isWin ? winPulse : 1) * (1 + SPIN_STRETCH * blur)}
+										width={symW * pulse * (1 - SPIN_SQUEEZE * blur)}
+										height={symH * pulse * (1 + SPIN_STRETCH * blur)}
 										clock={winClock}
 										win={isWin}
 										alpha={(hasWinState && !isWin ? 0.35 : 1) * (1 - SPIN_FADE * blur)}
@@ -908,8 +924,8 @@
 										x={getX(reelIndex)}
 										{y}
 										rotation={shake}
-										width={SYMBOL_W * (isWin ? winPulse : 1)}
-										height={SYMBOL_H * (isWin ? winPulse : 1)}
+										width={symW * (isWin ? winPulse : 1)}
+										height={symH * (isWin ? winPulse : 1)}
 										clock={winClock}
 										win={isWin}
 										{idleClock}
@@ -925,8 +941,8 @@
 										x={getX(reelIndex)}
 										{y}
 										rotation={shake}
-										width={SYMBOL_W * winPulse}
-										height={SYMBOL_H * winPulse}
+										width={symW * winPulse}
+										height={symH * winPulse}
 										clock={winClock}
 										phase={reelIndex * 0.17 + (symbolIndex - 1) * 0.29}
 									/>
@@ -942,8 +958,8 @@
 										x={getX(reelIndex)}
 										{y}
 										rotation={shake}
-										width={SYMBOL_W * (isWin ? winPulse : 1)}
-										height={SYMBOL_H * (isWin ? winPulse : 1)}
+										width={symW * (isWin ? winPulse : 1)}
+										height={symH * (isWin ? winPulse : 1)}
 										clock={isWin ? winClock : idleClock}
 										idle={!isWin}
 										alpha={hasWinState && !isWin ? 0.35 : 1}
@@ -963,8 +979,8 @@
 											x={getX(reelIndex)}
 											{y}
 											rotation={shake}
-											width={SYMBOL_W * (isWin ? winPulse : 1)}
-											height={SYMBOL_H * (isWin ? winPulse : 1)}
+											width={symW * (isWin ? winPulse : 1)}
+											height={symH * (isWin ? winPulse : 1)}
 											win={isWin}
 											clock={isWin ? winClock : idleBulbClock}
 											phase={reelIndex * 0.83 + (symbolIndex - 1) * 1.37}

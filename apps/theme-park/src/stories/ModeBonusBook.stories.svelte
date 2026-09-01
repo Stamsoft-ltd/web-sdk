@@ -19,7 +19,7 @@
 	import { setContext } from '../game/context';
 	import { playBet } from '../game/utils';
 	import type { Bet } from '../game/typesBookEvent';
-	import books from './data/bonus_books';
+	import books, { bookFor } from './data/bonus_books';
 
 	setContext();
 
@@ -59,7 +59,7 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: {},
-		action: async () => await playBook(books[0]),
+		action: async () => await playBook(bookFor('duck')),
 	})}
 	{template}
 />
@@ -69,7 +69,7 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: {},
-		action: async () => await playBook(books[1]),
+		action: async () => await playBook(bookFor('roller')),
 	})}
 	{template}
 />
@@ -79,7 +79,7 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: {},
-		action: async () => await playBook(books[2]),
+		action: async () => await playBook(bookFor('coaster')),
 	})}
 	{template}
 />
@@ -89,7 +89,7 @@
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: {},
-		action: async () => await playBook(books[3]),
+		action: async () => await playBook(bookFor('wincap')),
 	})}
 	{template}
 />

@@ -38,7 +38,9 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lib.figma_paper import resized  # noqa: E402
 from lib.pixi_place import sprite_place  # noqa: E402
+from lib.web_image import save_web  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -119,7 +121,8 @@ def arm_landmarks(art):
 
 def main():
 	car = trimmed(Image.open(SOURCE / "car.png").convert("RGBA"))
-	car = car.resize((round(car.width * CAR_SCALE), round(car.height * CAR_SCALE)), Image.LANCZOS)
+	# Premultiplied, like every resample here — see the note in lib/figma_paper.py.
+	car = resized(car, (round(car.width * CAR_SCALE), round(car.height * CAR_SCALE)))
 
 	# The car's speed arcs, which the armless drawing does not carry. Lifted out of the flat symbol
 	# once (everything outside the car's silhouette, past the riders) and kept as a source file, so
@@ -129,7 +132,7 @@ def main():
 	plate = Image.new("RGBA", FRAME, (0, 0, 0, 0))
 	plate.alpha_composite(car, CAR_AT)
 	plate.alpha_composite(swoosh)
-	plate.save(SYMBOL_DIR / "coaster-car.png")
+	save_web(plate, SYMBOL_DIR / "coaster-car.webp")
 	print(f"car {car.width}x{car.height} at {CAR_AT}, speed arcs baked in")
 
 	fw, fh = FRAME
@@ -183,7 +186,7 @@ def main():
 	# serving it from the same URL for as long as it likes — which is how the duck kept a wing it no
 	# longer had through three rebuilds. Renaming is the only reliable way to retire art here; a
 	# ?v= query does not survive the way this game's assets are fetched.
-	still.save(SYMBOL_DIR / "h1-coaster-still.png")
+	save_web(still, SYMBOL_DIR / "h1-coaster-still.webp")
 	print("wrote the still from the exported table")
 
 	lines = [

@@ -50,7 +50,7 @@ describe('shared frontend completeness guards', () => {
 		expect(suffixes.length).toBe(3);
 		for (const [, icon, suffix] of suffixes) {
 			for (const variant of ['desktop', 'mobile', 'mobile-landscape']) {
-				const file = `static/assets/theme-park/v2/modes/${icon}-${variant}-${suffix}.png`;
+				const file = `static/assets/theme-park/v2/modes/${icon}-${variant}-${suffix}.webp`;
 				expect(existsSync(resolve(import.meta.dirname, '..', file)), file).toBe(true);
 			}
 		}
@@ -64,12 +64,16 @@ describe('shared frontend completeness guards', () => {
 		const close = source('src/components/PopupCloseButton.svelte');
 		const fit = close.match(/--close-fit:\s*([^;]+);/)?.[1];
 		expect(fit).toBe('min(100vw / 1200, 100vh / 670, 1.25px)');
-		expect(close).toMatch(/@media \(pointer: coarse\) \{[\s\S]*?--close-u: max\(var\(--close-fit\), 0\.8214px\);/);
+		expect(close).toMatch(
+			/@media \(pointer: coarse\) \{[\s\S]*?--close-u: max\(var\(--close-fit\), 0\.8214px\);/,
+		);
 		// The buy screen reserves headroom with a copy of that formula; a drifted copy puts the cards
 		// back under the button.
 		const modal = source('src/components/CustomBuyBonusModal.svelte');
 		expect(modal).toContain(`--close-clear: calc(${fit} * 73);`);
-		expect(modal).toContain('--close-clear: calc(max(min(100vw / 1200, 100vh / 670, 1.25px), 0.8214px) * 73);');
+		expect(modal).toContain(
+			'--close-clear: calc(max(min(100vw / 1200, 100vh / 670, 1.25px), 0.8214px) * 73);',
+		);
 	});
 
 	it('centres the balloon bunch in its symbol frame', () => {
@@ -240,8 +244,17 @@ it('portrait and landscape draw the same design settings popout', () => {
 	// No layout may fall back to the old desktop panel by rendering the menu with no variant.
 	expect(hud).not.toContain("settingsMenu('')");
 	// Every design rule below has to name both variants, or one layout drifts back to the desktop panel.
-	for (const part of ['', ' .hud-menu__item', ' .hud-menu__badge', ' .hud-menu__glyph', ' .hud-menu__label', ' .hud-menu__divider']) {
-		expect(hud).toContain(`.hud-menu--ls${part},\n\t.hud-menu--pt${part},\n\t.hud-menu--dk${part} {`);
+	for (const part of [
+		'',
+		' .hud-menu__item',
+		' .hud-menu__badge',
+		' .hud-menu__glyph',
+		' .hud-menu__label',
+		' .hud-menu__divider',
+	]) {
+		expect(hud).toContain(
+			`.hud-menu--ls${part},\n\t.hud-menu--pt${part},\n\t.hud-menu--dk${part} {`,
+		);
 	}
 	expect(hud).toContain('--menu-u: var(--pt-u);');
 	expect(hud).toContain('--menu-u: calc(var(--hud-u) * 1.7);');
@@ -282,7 +295,11 @@ it('the music menu item has its own muted glyph', () => {
 	const hud = source('src/components/HudHtml.svelte');
 	expect(hud).toContain('menu_music_muted.svg');
 	expect(hud).toContain('musicMuted ? menuIconMusicMuted : menuIconMusic');
-	expect(existsSync(resolve(import.meta.dirname, '..', 'static/assets/theme-park/v2/hud/menu_music_muted.svg'))).toBe(true);
+	expect(
+		existsSync(
+			resolve(import.meta.dirname, '..', 'static/assets/theme-park/v2/hud/menu_music_muted.svg'),
+		),
+	).toBe(true);
 });
 
 // Six build scripts each carried their own copy of the paper key, and every copy returned a hard
@@ -297,7 +314,10 @@ it('the build scripts key Figma paper through the shared un-matting keyer', () =
 		'scripts/popcorn/build_popcorn.py',
 		'scripts/wild/build_wild.py',
 		'scripts/duck/build_duck.py',
-		'scripts/duck-sign/build_duck_sign.py',
+		// NOT build_duck_sign.py. Its three sources are the design's own layers pulled straight out
+		// of Figma as RGBA, so they arrive with real antialiasing and no paper behind them at all —
+		// about 1% of the duck's pixels are partial alpha. Running the keyer over a drawing that was
+		// never on paper is what would damage that rim, not what would save it.
 	]) {
 		const text = source(script);
 		expect(text, script).toContain('from lib.figma_paper import keyed');

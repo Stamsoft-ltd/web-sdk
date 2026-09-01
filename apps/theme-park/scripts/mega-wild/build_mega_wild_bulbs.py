@@ -47,7 +47,7 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-PLAQUE = ROOT / "static/assets/theme-park/v2/modes/mega-wild-desktop-marquee.png"
+PLAQUE = ROOT / "static/assets/theme-park/v2/modes/mega-wild-desktop-marquee.webp"
 TABLE = ROOT / "src/game/megaWildBulbs.ts"
 VERIFY = Path(__file__).resolve().parent / "verify_mega_wild_bulbs.png"
 

@@ -67,8 +67,8 @@
 	const heroArt = './assets/theme-park/v2/park/plaza.webp';
 	const bonusArt = './assets/theme-park/coaster-bonus.webp';
 	const scatterArt = './assets/theme-park/symbols-concept.webp';
-	const uiRefArt = './assets/components/reference/controls_reference.png';
-	const paylinesArt = './assets/components/reference/paylines_reference.png';
+	const uiRefArt = './assets/components/reference/controls_reference.webp';
+	const paylinesArt = './assets/components/reference/paylines_reference.webp';
 	// Pre-blurred/darkened copy of the plaza, 2.3 KB. The CSS filter that used to do this ran on a
 	// viewport-sized layer underneath a canvas that repaints every frame — see
 	// scripts/backdrop/build_backdrop.py.

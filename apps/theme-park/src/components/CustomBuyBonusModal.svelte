@@ -17,7 +17,7 @@
 		'mega-coaster': 'still',
 	};
 	const modeAsset = (icon: string, variant: 'desktop' | 'mobile' | 'mobile-landscape') =>
-		ap(`/assets/theme-park/v2/modes/${icon}-${variant}-${MODE_ART_SUFFIX[icon]}.png`);
+		ap(`/assets/theme-park/v2/modes/${icon}-${variant}-${MODE_ART_SUFFIX[icon]}.webp`);
 	// Stepper glyphs and coin — the very same SVGs the main HUD's bet row uses, so the lifted stepper
 	// reads as that row rather than as a second, different control.
 	const iconMinus = ap('/assets/theme-park/v2/hud/icon_minus.svg');
@@ -33,6 +33,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { stateBet, stateBetDerived, stateConfig } from 'state-shared';
+	import config from '../game/config';
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { templateStakeDerived } from '../state/templateStake.svelte';
@@ -56,6 +57,11 @@
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 
 	const betAmount = $derived(stateBet.betAmount);
+	// Prices come off the same `config.betModes` table the RGS is told about, never typed here — a
+	// price on a card that disagrees with what the player is charged is R-03 in
+	// STAKE_REVIEW_LESSONS.md, and it reached review once already.
+	const costOf = (mode: BetMode) => config.betModes[mode].cost;
+
 	const canAfford = (multiplier: number) => stateBet.balanceAmount >= betAmount * multiplier;
 
 	// Bet +/- stepper (mirrors the main HUD) so the player can retune the stake — and every card's
@@ -75,7 +81,7 @@
 	});
 	const disableDecrease = $derived(stateBet.betAmount === smallestBet);
 	const disableIncrease = $derived(stateBet.betAmount === biggestBet);
-	const formattedBet = $derived(templateStakeDerived.formatCurrencyAmount(betAmount));
+	const formattedBet = $derived(templateStakeDerived.formatWallet(betAmount));
 	const stepBet = (direction: -1 | 1) => {
 		if (direction < 0 && disableDecrease) return;
 		if (direction > 0 && disableIncrease) return;
@@ -95,19 +101,19 @@
 	}[] = [
 		{
 			mode: 'ANTE',
-			costMultiplier: 3,
+			costMultiplier: costOf('ANTE'),
 			title: 'BET MODE ANTE TITLE',
 			desc: 'BET MODE ANTE DIALOG',
 		},
 		{
 			mode: 'FSPIN1',
-			costMultiplier: 20,
+			costMultiplier: costOf('FSPIN1'),
 			title: 'BET MODE FSPIN1 TITLE',
 			desc: 'BET MODE FSPIN1 DIALOG',
 		},
 		{
 			mode: 'FSPIN2',
-			costMultiplier: 60,
+			costMultiplier: costOf('FSPIN2'),
 			title: 'BET MODE FSPIN2 TITLE',
 			desc: 'BET MODE FSPIN2 DIALOG',
 		},
@@ -123,21 +129,21 @@
 	}[] = [
 		{
 			mode: 'DUCK',
-			costMultiplier: 100,
+			costMultiplier: costOf('DUCK'),
 			title: 'BET MODE DUCK TITLE',
 			desc: 'BET MODE DUCK DIALOG',
 			icon: 'duck-your-luck',
 		},
 		{
 			mode: 'ROLLER',
-			costMultiplier: 200,
+			costMultiplier: costOf('ROLLER'),
 			title: 'BET MODE ROLLER TITLE',
 			desc: 'BET MODE ROLLER DIALOG',
 			icon: 'roller-wilds',
 		},
 		{
 			mode: 'COASTER',
-			costMultiplier: 500,
+			costMultiplier: costOf('COASTER'),
 			title: 'BET MODE COASTER TITLE',
 			desc: 'BET MODE COASTER DIALOG',
 			icon: 'mega-coaster',
@@ -145,7 +151,7 @@
 	];
 
 	const cost = (multiplier: number) =>
-		templateStakeDerived.formatCurrencyAmount(betAmount * multiplier);
+		templateStakeDerived.formatWallet(betAmount * multiplier);
 
 	let confirmMode = $state<null | ConfirmMode>(null);
 	const confirmCard = $derived(

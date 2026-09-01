@@ -3,7 +3,7 @@
 
     python3 scripts/build-escaped-balloon.py
 
-The front balloon of `symbols/h3-balloons-marquee.png` is the only one in that bunch nothing overlaps,
+The front balloon of `symbols/h3-balloons-marquee.webp` is the only one in that bunch nothing overlaps,
 so it is the one shape in the project that can be lifted whole — body, knot and its curly ribbon.
 
 The ribbon comes WITH it rather than being drawn at runtime. A drawn one can lag behind the balloon's
@@ -46,7 +46,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "static/assets/theme-park/v2/symbols/h3-balloons-marquee.png"
+SOURCE = ROOT / "static/assets/theme-park/v2/symbols/h3-balloons-marquee.webp"
 OUTPUT_DIR = ROOT / "static/assets/theme-park/v2/balloon"
 VERIFY = Path(__file__).resolve().parent / "verify-escaped-balloon.png"
 

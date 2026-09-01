@@ -65,26 +65,26 @@ const assets: Assets = {
 	// overlapping sprites at alpha 0.35 composite to about 0.58 and the arms would darken where they
 	// cross the car. Built by scripts/coaster/build_coaster.py FROM the same table <CoasterCar>
 	// draws from, so the still and the live symbol cannot drift apart.
-	tpH1: { type: 'sprite', src: './assets/theme-park/v2/symbols/h1-coaster-still.png' },
+	tpH1: { type: 'sprite', src: './assets/theme-park/v2/symbols/h1-coaster-still.webp' },
 	// ...and the pieces (Figma 7093:25555 car, 7093:24248/24249 arms). The car ships with both arms
 	// DOWN and the arms come loose, so the two riders in the back row can wave while the board
 	// idles — the symbol used to be one drawing of a car with its arms already up, which meant a
 	// ride that never moved. The speed arcs are baked into the car: they are not attached to
 	// anything that turns.
-	tpCoasterCar: { type: 'sprite', src: './assets/theme-park/v2/symbols/coaster-car.png' },
+	tpCoasterCar: { type: 'sprite', src: './assets/theme-park/v2/symbols/coaster-car.webp' },
 	tpCoasterArmFather: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/coaster-arm-father.png',
+		src: './assets/theme-park/v2/symbols/coaster-arm-father.webp',
 	},
 	tpCoasterArmMother: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/coaster-arm-mother.png',
+		src: './assets/theme-park/v2/symbols/coaster-arm-mother.webp',
 	},
 	// The duck assembled and flattened. Nothing draws it as the settled symbol — <DuckSymbol> builds
 	// the live one out of the pieces below — but the board's spin trail needs a single sprite to
 	// ghost, and a duck streaking past is not glancing about, so at that moment the two are the same
 	// picture.
-	tpH2: { type: 'sprite', src: './assets/theme-park/v2/symbols/h2-duck-marquee.png' },
+	tpH2: { type: 'sprite', src: './assets/theme-park/v2/symbols/h2-duck-marquee.webp' },
 	// ...and the pieces (Figma 7063:17957 body, 7057:8004 wing, 7063:17959 and 7063:17960 irises).
 	// They ship apart because this symbol is a BIRD: the irises sit in eye sockets the body art
 	// leaves empty, so they can glance about while the board is idle, and both wings beat when the
@@ -100,7 +100,7 @@ const assets: Assets = {
 	// builds the live one out of the four balloons below — but the board's spin trail needs a single
 	// sprite to ghost, and balloons streaking past are not bobbing, so the two are the same picture
 	// at that moment.
-	tpH3: { type: 'sprite', src: './assets/theme-park/v2/symbols/h3-balloons-marquee.png' },
+	tpH3: { type: 'sprite', src: './assets/theme-park/v2/symbols/h3-balloons-marquee.webp' },
 	// ...and the balloons (Figma 7080:21571 orange, 7080:21572 pink, 7080:21573 blue, 7080:21574
 	// green). Four drawings, six balloons in the bunch: the blue and the orange each hang twice, at
 	// different sizes and angles. They ship apart because they MOVE — nodding on their strings while
@@ -109,7 +109,7 @@ const assets: Assets = {
 	tpBalloonPink: { type: 'sprite', src: './assets/theme-park/v2/symbols/balloon-pink.webp' },
 	tpBalloonBlue: { type: 'sprite', src: './assets/theme-park/v2/symbols/balloon-blue.webp' },
 	tpBalloonGreen: { type: 'sprite', src: './assets/theme-park/v2/symbols/balloon-green.webp' },
-	tpH4: { type: 'sprite', src: './assets/theme-park/v2/symbols/h4-popcorn-marquee.png' },
+	tpH4: { type: 'sprite', src: './assets/theme-park/v2/symbols/h4-popcorn-marquee.webp' },
 	// The popcorn's loose kernels, apart from the bucket (Figma 7052:7943, 7052:7945 and 7052:7941
 	// next to 7063:17848). They ship separately because they are the part that moves: on a win
 	// <PopcornBurst> throws them out of the heap and lets them fall. Three drawings rather than one,
@@ -120,7 +120,7 @@ const assets: Assets = {
 	// The wheel assembled and flattened. Nothing draws it as the symbol — <FerrisWheel> builds the
 	// live one out of the pieces below — but the board's spin trail needs a single sprite to ghost,
 	// and the wheel does not turn mid-spin, so at that moment the two are the same picture.
-	tpH5: { type: 'sprite', src: './assets/theme-park/v2/symbols/h5-ferris-marquee.png' },
+	tpH5: { type: 'sprite', src: './assets/theme-park/v2/symbols/h5-ferris-marquee.webp' },
 	// ...and the pieces (Figma 7052:7902 rim, 7052:7895 hub, 7052:7904 legs, and the four gondola
 	// colours). They ship apart because the wheel TURNS on a win: the rim spins about the hub and the
 	// gondolas ride round it staying upright, which one flat drawing cannot do.
@@ -136,24 +136,24 @@ const assets: Assets = {
 	// Mega Wild reel's plaque, which still hangs the starred v1 card this replaced.
 	tpSmallWinPlaque: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/wins/small-win-plate-neon-v2.png',
+		src: './assets/theme-park/v2/wins/small-win-plate-neon-v2.webp',
 	},
-	tpL1: { type: 'sprite', src: './assets/theme-park/v2/symbols/l1-a-marquee.png' },
-	tpL2: { type: 'sprite', src: './assets/theme-park/v2/symbols/l2-k-marquee.png' },
-	tpL3: { type: 'sprite', src: './assets/theme-park/v2/symbols/l3-q-marquee.png' },
-	tpL4: { type: 'sprite', src: './assets/theme-park/v2/symbols/l4-j-marquee.png' },
-	tpL5: { type: 'sprite', src: './assets/theme-park/v2/symbols/l5-10-marquee.png' },
+	tpL1: { type: 'sprite', src: './assets/theme-park/v2/symbols/l1-a-marquee.webp' },
+	tpL2: { type: 'sprite', src: './assets/theme-park/v2/symbols/l2-k-marquee.webp' },
+	tpL3: { type: 'sprite', src: './assets/theme-park/v2/symbols/l3-q-marquee.webp' },
+	tpL4: { type: 'sprite', src: './assets/theme-park/v2/symbols/l4-j-marquee.webp' },
+	tpL5: { type: 'sprite', src: './assets/theme-park/v2/symbols/l5-10-marquee.webp' },
 	tpWildDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/wild-desktop-marquee.png',
+		src: './assets/theme-park/v2/modes/wild-desktop-marquee.webp',
 	},
 	tpWildMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/wild-mobile-marquee.png',
+		src: './assets/theme-park/v2/modes/wild-mobile-marquee.webp',
 	},
 	tpWildLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/wild-mobile-landscape-marquee.png',
+		src: './assets/theme-park/v2/modes/wild-mobile-landscape-marquee.webp',
 	},
 	// The wild's letter, apart from its plate (Figma 7052:7927 next to 7052:7925). It ships separately
 	// because it is the part that moves: on a win <WildLetter> pops it up from nothing. One asset for
@@ -162,24 +162,20 @@ const assets: Assets = {
 	tpWildW: { type: 'sprite', src: './assets/theme-park/v2/symbols/wild-w.webp' },
 	tpMegaWildDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-wild-desktop-marquee.png',
+		src: './assets/theme-park/v2/modes/mega-wild-desktop-marquee.webp',
 	},
 	tpMegaWildMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-wild-mobile-marquee.png',
+		src: './assets/theme-park/v2/modes/mega-wild-mobile-marquee.webp',
 	},
 	tpMegaWildLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-wild-mobile-landscape-marquee.png',
+		src: './assets/theme-park/v2/modes/mega-wild-mobile-landscape-marquee.webp',
 	},
-	// The persistent Mega Coaster Wild (Figma 7033:20535; master kept at
-	// art/concepts/coaster-wild-slime-v2.png). WILD sits in the upper half of the splat and the empty
-	// lower half is where <CoasterWildTile> puts the multiplier — so the art is drawn at its own
-	// aspect, never squeezed into the square-ish symbol frame the reel symbols use.
-	tpCoasterWild: {
-		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/wild-slime.webp',
-	},
+	// The gold WILD the persistent Mega Coaster Wild carries (Figma 7033:20535). The splat itself is no longer an asset at all — <SlimeSplat>
+	// draws it, because a picture of slime can only be moved and slime has to churn — so this is the
+	// one piece of that sign that is still art. Built by scripts/coaster-wild/build_coaster_wild.py.
+	tpWildWord: { type: 'sprite', src: './assets/theme-park/v2/symbols/wild-word.webp' },
 	// One cartoon steam cloud (Figma 7057:7989), the companion piece to the Mega Wild's locomotive
 	// plaque: <SymbolSteam> puffs a run of these out of the funnel while the plaque is winning. One
 	// asset rather than a strip, because the puffs differ by scale, drift and fade, not by drawing.
@@ -201,15 +197,30 @@ const assets: Assets = {
 	// rather than a ?v=, like the mode stills.
 	coasterTrack: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/features/coaster-track-flat.png',
+		src: './assets/theme-park/v2/features/coaster-track-flat.webp',
 	},
 	coasterRigHappy: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/features/coaster-rig-happy.png',
+		src: './assets/theme-park/v2/features/coaster-rig-happy.webp',
+	},
+	// The driving duck in pieces, so its head can bob and its wheels can roll while it crosses the
+	// board — the Spine rig's `idle` is one held frame. Cut and placed into the same 256 frame that
+	// rig is packed into by scripts/coaster-driver/build_coaster_driver.py.
+	coasterDriverBody: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/features/coaster-driver-body.webp',
+	},
+	coasterDriverHead: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/features/coaster-driver-head.webp',
+	},
+	coasterDriverWheel: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/features/coaster-driver-wheel.webp',
 	},
 	coasterRigVomit: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/features/coaster-rig-vomit.png',
+		src: './assets/theme-park/v2/features/coaster-rig-vomit.webp',
 	},
 	// Startup-gated: one layered rig owns the immutable cart and looping duck motion.
 	coasterVomitSpine: {
@@ -222,7 +233,7 @@ const assets: Assets = {
 	},
 	megaWildFullReelFallback: {
 		type: 'sprite',
-		src: './assets/spines/megaWildFullReel/mega_wild_full_reel_fallback.png',
+		src: './assets/spines/megaWildFullReel/mega_wild_full_reel_fallback.webp',
 	},
 	// Combined Mega Wild: empty rails, then one duck/cart/plaque slide and multiplier roll.
 	megaWildFullReelSpine: {
@@ -244,23 +255,23 @@ const assets: Assets = {
 	// outlive the redraw.
 	tpDuckSignWingLeft: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/duck-sign-wing-left-fan.png',
+		src: './assets/theme-park/v2/symbols/duck-sign-wing-left-fan.webp',
 	},
 	tpDuckSignWingRight: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/duck-sign-wing-right-fan.png',
+		src: './assets/theme-park/v2/symbols/duck-sign-wing-right-fan.webp',
 	},
 	tpDuckScatterDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/duck-your-luck-desktop-marquee.png',
+		src: './assets/theme-park/v2/modes/duck-your-luck-desktop-marquee.webp',
 	},
 	tpDuckScatterMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/duck-your-luck-mobile-marquee.png',
+		src: './assets/theme-park/v2/modes/duck-your-luck-mobile-marquee.webp',
 	},
 	tpDuckScatterLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/duck-your-luck-mobile-landscape-marquee.png',
+		src: './assets/theme-park/v2/modes/duck-your-luck-mobile-landscape-marquee.webp',
 	},
 	// ROLLER WILDS ships in two forms and both are needed. `Scatter` is the STILL — every layer
 	// baked into one picture — which is what the board's spin trail ghosts and what a dimmed symbol
@@ -273,41 +284,41 @@ const assets: Assets = {
 	// longer had through three rebuilds. Renaming is what actually retires a piece of art here.
 	tpRollerScatterDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/roller-wilds-desktop-still.png',
+		src: './assets/theme-park/v2/modes/roller-wilds-desktop-still.webp',
 	},
 	tpRollerScatterMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/roller-wilds-mobile-still.png',
+		src: './assets/theme-park/v2/modes/roller-wilds-mobile-still.webp',
 	},
 	tpRollerScatterLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/roller-wilds-mobile-landscape-still.png',
+		src: './assets/theme-park/v2/modes/roller-wilds-mobile-landscape-still.webp',
 	},
 	tpRollerSignDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/roller-wilds-desktop-sign.png',
+		src: './assets/theme-park/v2/modes/roller-wilds-desktop-sign.webp',
 	},
 	tpRollerSignMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/roller-wilds-mobile-sign.png',
+		src: './assets/theme-park/v2/modes/roller-wilds-mobile-sign.webp',
 	},
 	tpRollerSignLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/roller-wilds-mobile-landscape-sign.png',
+		src: './assets/theme-park/v2/modes/roller-wilds-mobile-landscape-sign.webp',
 	},
 	// The three loose parts. One size each rather than a set per layout: between them they are a
 	// fifth of the frame, so a second pair of files to keep in step would be saving a few kilobytes.
 	tpRollerStar: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/roller-wilds-star.png',
+		src: './assets/theme-park/v2/symbols/roller-wilds-star.webp',
 	},
 	tpRollerWordRoller: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/roller-wilds-word-roller.png',
+		src: './assets/theme-park/v2/symbols/roller-wilds-word-roller.webp',
 	},
 	tpRollerWordWilds: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/roller-wilds-word-wilds.png',
+		src: './assets/theme-park/v2/symbols/roller-wilds-word-wilds.webp',
 	},
 	// MEGA COASTER, the same way round as ROLLER WILDS above: `Scatter` is the whole symbol in one
 	// piece, for the spin trail and for a dimmed cell, and `House` is the pavilion with no sign on
@@ -315,39 +326,53 @@ const assets: Assets = {
 	// ones, for the reason given up there.
 	tpCoasterScatterDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-coaster-desktop-still.png',
+		src: './assets/theme-park/v2/modes/mega-coaster-desktop-still.webp',
 	},
 	tpCoasterScatterMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-coaster-mobile-still.png',
+		src: './assets/theme-park/v2/modes/mega-coaster-mobile-still.webp',
 	},
 	tpCoasterScatterLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-coaster-mobile-landscape-still.png',
+		src: './assets/theme-park/v2/modes/mega-coaster-mobile-landscape-still.webp',
 	},
 	tpCoasterHouseDesktop: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-coaster-desktop-house.png',
+		src: './assets/theme-park/v2/modes/mega-coaster-desktop-house.webp',
 	},
 	tpCoasterHouseMobile: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-coaster-mobile-house.png',
+		src: './assets/theme-park/v2/modes/mega-coaster-mobile-house.webp',
 	},
 	tpCoasterHouseLandscape: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/modes/mega-coaster-mobile-landscape-house.png',
+		src: './assets/theme-park/v2/modes/mega-coaster-mobile-landscape-house.webp',
 	},
 	tpCoasterSign: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/mega-coaster-sign.png',
+		src: './assets/theme-park/v2/symbols/mega-coaster-sign.webp',
 	},
 	tpCoasterWordMega: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/mega-coaster-word-mega.png',
+		src: './assets/theme-park/v2/symbols/mega-coaster-word-mega.webp',
 	},
 	tpCoasterWordCoaster: {
 		type: 'sprite',
-		src: './assets/theme-park/v2/symbols/mega-coaster-word-coaster.png',
+		src: './assets/theme-park/v2/symbols/mega-coaster-word-coaster.webp',
+	},
+	// The three flags cut off the pavilion's towers, so <MegaCoaster> can fly them. The masts stay
+	// on the building — see the note in scripts/coaster-sign/build_coaster_sign.py.
+	tpCoasterFlagLeft: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/symbols/mega-coaster-flag-left.webp',
+	},
+	tpCoasterFlagCentre: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/symbols/mega-coaster-flag-centre.webp',
+	},
+	tpCoasterFlagRight: {
+		type: 'sprite',
+		src: './assets/theme-park/v2/symbols/mega-coaster-flag-right.webp',
 	},
 
 	// === WIN BOARDS ===
@@ -600,16 +625,15 @@ const assets: Assets = {
 	},
 
 	// === FRAMES / UI ===
-	symbolPad: { type: 'sprite', src: './assets/components/frames/symbol_pad.png' },
 	// Temporary production placeholders copied from Magnetic. Replace with final
 	// Theme Park lock art without changing the component contract.
 	lockedCell: {
 		type: 'sprite',
-		src: './assets/components/frames/magnetic/cell_box.png',
+		src: './assets/components/frames/magnetic/cell_box.webp',
 	},
 	lockedCellWin: {
 		type: 'sprite',
-		src: './assets/components/frames/magnetic/cell_box_win.png',
+		src: './assets/components/frames/magnetic/cell_box_win.webp',
 	},
 	// === DUCK YOUR LUCK POND (Figma 6471:6288 desktop / 6692:4403 portrait / 6449:3212 landscape) ===
 	// The pick screen dresses the reel area as a pool: water fills the grid, the 25 picks are rubber

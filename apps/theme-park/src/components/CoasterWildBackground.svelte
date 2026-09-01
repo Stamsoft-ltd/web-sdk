@@ -26,6 +26,17 @@
 	const cellLeft = $derived(rect.x - CELL_W * (reel + 0.5));
 	const cellTop = $derived(rect.y - CELL_H * (row + 0.5));
 
+	/**
+	 * EXPERIMENT, asked for on 2026-08-31: the Wild's cell cover, OFF, so the splat sits straight on
+	 * the board and we can see what an animated Wild would look like there.
+	 *
+	 * Everything below it stays exactly as it was — flip this back to `true` and the cover returns.
+	 * It is a switch rather than a deletion because the cover is not decoration: a Wild persists
+	 * across spins, and with nothing under it the reels scroll THROUGH the gaps in the splat. That is
+	 * the thing to look for while this is off.
+	 */
+	const COVER_CELL = false;
+
 	const context = getContextApp();
 	const gridTexture = $derived(context.stateApp.loadedAssets?.themeBoardGrid as Texture | undefined);
 
@@ -63,23 +74,27 @@
      side border, while an edge shared with the next Wild closes flush against it. The flat rect
      stays underneath as the floor for the one frame before the board art has loaded — never let the
      reel show through here. -->
-<Graphics
-	draw={(graphics) => {
-		graphics.rect(cellLeft, cellTop, rect.width, rect.height);
-		graphics.fill({ color: 0x15002f, alpha: 1 });
-	}}
-/>
-{#if cellTexture}
-	<BaseSprite
-		texture={cellTexture}
-		anchor={{ x: 0, y: 0 }}
-		x={cellLeft}
-		y={cellTop}
-		width={rect.width}
-		height={rect.height}
+{#if COVER_CELL}
+	<Graphics
+		draw={(graphics) => {
+			graphics.rect(cellLeft, cellTop, rect.width, rect.height);
+			graphics.fill({ color: 0x15002f, alpha: 1 });
+		}}
 	/>
+	{#if cellTexture}
+		<BaseSprite
+			texture={cellTexture}
+			anchor={{ x: 0, y: 0 }}
+			x={cellLeft}
+			y={cellTop}
+			width={rect.width}
+			height={rect.height}
+		/>
+	{/if}
 {/if}
-{#if props.underScrim}
+<!-- Only over a cover of our own: with the cell open, what shows through is the board itself, which
+     has already taken the dim. -->
+{#if props.underScrim && COVER_CELL}
 	<!-- Setup draws these tiles above its screen-wide dim, so the cut of board art has to take the
 	     same dim the board around it is taking. Without this every stamped cell is a lit hole. -->
 	<Graphics

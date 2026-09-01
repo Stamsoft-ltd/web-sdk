@@ -2,29 +2,29 @@
 	import { ap } from '../lib/preloadArt';
 
 	// Paytable symbol art (premium symbols and royals).
-	const symImg = (name: string) => ap(`/assets/theme-park/v2/symbols/${name}.png`);
+	const symImg = (name: string) => ap(`/assets/theme-park/v2/symbols/${name}.webp`);
 	// Paytable art (design update): the complete WILD (gold frame + colourful W, as it reads on the
 	// reels once the W is dropped in) and the redrawn balloon cluster. The reel textures are separate.
-	const wildImg = ap('/assets/theme-park/v2/info/pay-wild.png');
-	const payBalloons = ap('/assets/theme-park/v2/info/pay-balloons.png');
+	const wildImg = ap('/assets/theme-park/v2/info/pay-wild.webp');
+	const payBalloons = ap('/assets/theme-park/v2/info/pay-balloons.webp');
 
 	// Landscape (desktop) tutorial box: neon gradient frame, the duck-on-coaster hero, and the logo.
 	// The duck-in-car-on-coaster art in the overview's bottom-left corner. Desktop uses the wide
 	// framing; portrait uses the design's rotated "climbing" framing.
-	const bottomDuck = ap('/assets/theme-park/v2/info/bottom-duck.png');
-	const bottomDuckMobile = ap('/assets/theme-park/v2/info/bottom-duck-mobile.png');
+	const bottomDuck = ap('/assets/theme-park/v2/info/bottom-duck.webp');
+	const bottomDuckMobile = ap('/assets/theme-park/v2/info/bottom-duck-mobile.webp');
 	const gameLogo = ap('/assets/theme-park/v2/splash/logo.webp');
 	// Ways-to-win: the finished 15-payline diagram (design update).
-	const waysToWin = ap('/assets/theme-park/v2/info/ways-to-win-new.png');
+	const waysToWin = ap('/assets/theme-park/v2/info/ways-to-win-new.webp');
 
 	// General-info card icons (design update): rotate arrow + legal-notice scales.
-	const icInterrupted = ap('/assets/theme-park/v2/info/ic-interrupted.png');
-	const icLegal = ap('/assets/theme-park/v2/info/ic-legal.png');
+	const icInterrupted = ap('/assets/theme-park/v2/info/ic-interrupted.webp');
+	const icLegal = ap('/assets/theme-park/v2/info/ic-legal.webp');
 
 	// Premium feature logos for the Features / Feature-Buy bonus cards (design update).
-	const featDuck = ap('/assets/theme-park/v2/info/feat-duck.png');
-	const featRoller = ap('/assets/theme-park/v2/info/feat-roller.png');
-	const featCoaster = ap('/assets/theme-park/v2/info/feat-coaster.png');
+	const featDuck = ap('/assets/theme-park/v2/info/feat-duck.webp');
+	const featRoller = ap('/assets/theme-park/v2/info/feat-roller.webp');
+	const featCoaster = ap('/assets/theme-park/v2/info/feat-coaster.webp');
 
 	// UI-guide glyphs, exported from the design's own icon-button component (Figma 6445:10828) rather
 	// than scavenged from the HUD's button art. The HUD buttons carry their own baked circles at
@@ -37,6 +37,8 @@
 
 <script lang="ts">
 	import { stateBet } from 'state-shared';
+	import config from '../game/config';
+	import type { BetMode } from '../game/types';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { templateStakeDerived } from '../state/templateStake.svelte';
 	import { fitFont } from '../lib/fitLabel';
@@ -50,9 +52,11 @@
 
 	// Page count only — each page renders its own translated title, so this list holds no copy.
 	const PAGES = 7;
-	const RTP = '96.10%';
-	const RTP_SHORT = '96.1%';
-	const MAX_WIN = '25,000×';
+	// Off the math config, like the pay figures and the buy prices below it. A screen that quotes an
+	// RTP or a max win the game is not built to is the same class of drift (R-03).
+	const RTP = `${(config.rtp * 100).toFixed(2)}%`;
+	const RTP_SHORT = `${Number((config.rtp * 100).toFixed(2))}%`;
+	const MAX_WIN = `${config.wincap.toLocaleString('en-US')}×`;
 
 	let page = $state(0);
 	const total = PAGES;
@@ -61,62 +65,85 @@
 
 	// Cost is a multiple of the current bet; format it in the player's currency, like the HUD does.
 	const bet = $derived(stateBet.betAmount);
-	const cost = (mult: number) => templateStakeDerived.formatCurrencyAmount(bet * mult);
+	const cost = (mult: number) => templateStakeDerived.formatWallet(bet * mult);
 
 	// Paytable — one row per symbol, values in 3/4/5-in-a-line order, × the line bet. Ordered
 	// cheapest first, like the design; the royals all pay the same and share a single row.
 	const ROYALS = ['l4-j-marquee', 'l1-a-marquee', 'l2-k-marquee', 'l5-10-marquee', 'l3-q-marquee'];
+	/**
+	 * One symbol's three figures, READ OFF THE MATH rather than typed in here.
+	 *
+	 * These used to be literal arrays next to the art, and a hand-typed paytable cell drifts from the
+	 * math the moment either moves — that cost magnetic a review cycle (R-03 in
+	 * STAKE_REVIEW_LESSONS.md), where a screen said one number and the game paid another. `config.ts`
+	 * carries the contract the math is built to, so it is the only place these can honestly come
+	 * from; nothing below can disagree with it because nothing below knows them.
+	 *
+	 * The math stores them 5-first and this screen reads 3-first, which is the whole conversion.
+	 */
+	const paysFor = (symbol: 'H1' | 'H2' | 'H3' | 'H4' | 'H5' | 'L1'): string[] => {
+		const table = config.symbols[symbol].paytable;
+		if (!table) throw new Error(`no paytable for ${symbol}`);
+		return [table[2]['3'], table[1]['4'], table[0]['5']].map(String);
+	};
 	// `name` is an i18n KEY, not display copy — the each-block keys on it, so it must stay stable
 	// across a locale switch, which a translated string would not.
 	// `payImg` (optional) overrides the symbols/ lookup with a direct paytable-only asset.
 	type PayRow = { img?: string; payImg?: string; royals?: boolean; royal?: boolean; wild?: boolean; name: string; pays: string[] };
 	// The non-royal symbols, shared by both layouts.
 	const PAY_ROWS_TAIL: PayRow[] = [
-		{ img: 'h5-ferris-marquee', name: 'INFO SYM FERRIS', pays: ['0.5', '2.5', '5'] },
-		{ img: 'h4-popcorn-marquee', name: 'INFO SYM POPCORN', pays: ['0.5', '2.5', '5'] },
-		{ img: 'h2-duck-marquee', name: 'INFO SYM DUCK', pays: ['1', '5', '10'] },
-		{ img: 'h3-balloons-marquee', payImg: payBalloons, name: 'INFO SYM BALLOONS', pays: ['1', '5', '10'] },
-		{ img: 'h1-coaster-still', name: 'INFO SYM COASTER', pays: ['2', '10', '20'] },
-		{ wild: true, name: 'INFO SYM WILD', pays: ['-', '-', '20'] },
+		{ img: 'h5-ferris-marquee', name: 'INFO SYM FERRIS', pays: paysFor('H5') },
+		{ img: 'h4-popcorn-marquee', name: 'INFO SYM POPCORN', pays: paysFor('H4') },
+		{ img: 'h2-duck-marquee', name: 'INFO SYM DUCK', pays: paysFor('H2') },
+		{ img: 'h3-balloons-marquee', payImg: payBalloons, name: 'INFO SYM BALLOONS', pays: paysFor('H3') },
+		{ img: 'h1-coaster-still', name: 'INFO SYM COASTER', pays: paysFor('H1') },
+		// A pure wild line settles as the top symbol, so the wild's only figure is H1's five-of-a-kind
+		// — taken from H1 rather than restated, for the same reason as the rest of this table.
+		{ wild: true, name: 'INFO SYM WILD', pays: ['-', '-', paysFor('H1')[2]] },
 	];
 	// Portrait gives each same-paying royal its OWN row (five tiles are cramped in one narrow cell);
 	// landscape keeps them on a single shared row, as each layout's design draws it.
 	const PAY_ROWS: PayRow[] = $derived([
 		...(wide
-			? [{ royals: true, name: 'INFO SYM ROYALS', pays: ['0.1', '0.5', '1'] } as PayRow]
+			? [{ royals: true, name: 'INFO SYM ROYALS', pays: paysFor('L1') } as PayRow]
 			: ROYALS.map(
-					(r): PayRow => ({ img: r, royal: true, name: 'INFO SYM ROYALS', pays: ['0.1', '0.5', '1'] }),
+					(r): PayRow => ({ img: r, royal: true, name: 'INFO SYM ROYALS', pays: paysFor('L1') }),
 				)),
 		...PAY_ROWS_TAIL,
 	]);
 
 	// FEATURES and FEATURE BUY share these six. Top row = paid single-spin options; bottom row =
-	// the three bonus features (with logo art). `mult` is the cost as a multiple of the bet.
-	// `name`/`desc` are i18n keys. They are the SAME keys the buy-bonus modal renders, so the two
-	// screens describe a feature identically in every locale and the social overrides reach both.
+	// the three bonus features (with logo art). `name`/`desc` are i18n keys — the SAME keys the
+	// buy-bonus modal renders, so the two screens describe a feature identically in every locale and
+	// the social overrides reach both.
+	//
+	// The price comes off `config.betModes`, the same table the RGS is told about, for the reason the
+	// pay figures above do: a price typed on a screen is a price that can disagree with what the
+	// player is charged.
+	const costOf = (mode: BetMode) => config.betModes[mode].cost;
 	const SPIN_BUYS = [
-		{ name: 'BET MODE ANTE TITLE', desc: 'BET MODE ANTE DIALOG', mult: 3 },
-		{ name: 'BET MODE FSPIN1 TITLE', desc: 'BET MODE FSPIN1 DIALOG', mult: 20 },
-		{ name: 'BET MODE FSPIN2 TITLE', desc: 'BET MODE FSPIN2 DIALOG', mult: 60 },
+		{ name: 'BET MODE ANTE TITLE', desc: 'BET MODE ANTE DIALOG', mult: costOf('ANTE') },
+		{ name: 'BET MODE FSPIN1 TITLE', desc: 'BET MODE FSPIN1 DIALOG', mult: costOf('FSPIN1') },
+		{ name: 'BET MODE FSPIN2 TITLE', desc: 'BET MODE FSPIN2 DIALOG', mult: costOf('FSPIN2') },
 	];
 	const BONUS_BUYS = [
 		{
 			logo: featDuck,
 			name: 'BET MODE DUCK TITLE',
 			desc: 'BET MODE DUCK DIALOG',
-			mult: 100,
+			mult: costOf('DUCK'),
 		},
 		{
 			logo: featRoller,
 			name: 'BET MODE ROLLER TITLE',
 			desc: 'BET MODE ROLLER DIALOG',
-			mult: 200,
+			mult: costOf('ROLLER'),
 		},
 		{
 			logo: featCoaster,
 			name: 'BET MODE COASTER TITLE',
 			desc: 'BET MODE COASTER DIALOG',
-			mult: 500,
+			mult: costOf('COASTER'),
 		},
 	];
 
@@ -347,7 +374,7 @@
 							{#if g.spin}
 								<!-- Redesigned spin icon (a complete icon button), sized to match the other guide
 								     circles. -->
-								<img class="guide-spin" src={uiIcon('ui-spin.png')} alt="" />
+								<img class="guide-spin" src={uiIcon('ui-spin.webp')} alt="" />
 							{:else}
 								<span class="guide-ic" class:guide-ic--auto={g.auto}>
 									<img

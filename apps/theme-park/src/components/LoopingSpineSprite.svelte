@@ -13,6 +13,12 @@
 		width: number;
 		height: number;
 		alpha?: number;
+		/**
+		 * Seconds into the clip to start from, for clips that open on a held frame. Re-applied
+		 * whenever the track's other props change, so a rig parked at timeScale 0 and then released
+		 * always starts from here rather than from wherever it was left.
+		 */
+		startTime?: number;
 		timeScale?: number;
 		loop?: boolean;
 		restartKey?: string | number;
@@ -55,6 +61,7 @@
 				trackIndex={0}
 				animationName={props.animationName}
 				loop={props.loop ?? true}
+				trackTime={props.startTime ?? 0}
 				timeScale={props.timeScale ?? 1}
 			/>
 		{/key}

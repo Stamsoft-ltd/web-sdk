@@ -45,7 +45,7 @@ the range the component is allowed to use.
 
     python3 scripts/duck/build_duck.py
 
-Writes symbols/h2-duck-marquee.png (the rest pose, which is also what the board's spin trail
+Writes symbols/h2-duck-marquee.webp (the rest pose, which is also what the board's spin trail
 ghosts), the five loose pieces as webp, src/game/duckParts.ts, and verify_duck.png to eyeball.
 """
 
@@ -57,7 +57,9 @@ from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from lib.figma_paper import keyed as keyed_array  # noqa: E402
+from lib.figma_paper import resized, turned  # noqa: E402
 from lib.pixi_place import sprite_place  # noqa: E402
+from lib.web_image import save_web  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -187,7 +189,13 @@ def trimmed(part):
 
 
 def scaled(part, factor):
-    return part.resize((round(part.width * factor), round(part.height * factor)), Image.LANCZOS)
+    """`part` at `factor` of its size, resampled premultiplied.
+
+    Premultiplied because these parts come out of `keyed`, which takes the paper's alpha away and
+    leaves its colour behind — a straight-alpha resample stirs it back into every edge and ships the
+    pale rim the keyer exists to remove. See the note in lib/figma_paper.py.
+    """
+    return resized(part, (round(part.width * factor), round(part.height * factor)))
 
 
 def runs(mask):
@@ -445,9 +453,9 @@ def main():
           f"({far_at['ax']:.4f}, {far_at['ay']:.4f}) of it")
 
     wing = scaled(parts["wing-a"], WING_SCALE)
-    turned = wing.rotate(WING_ANGLE, resample=Image.BICUBIC, expand=True)
-    wing_at = (WING_AT[0] - (turned.width - wing.width) // 2,
-               WING_AT[1] - (turned.height - wing.height) // 2)
+    swung = turned(wing, WING_ANGLE)
+    wing_at = (WING_AT[0] - (swung.width - wing.width) // 2,
+               WING_AT[1] - (swung.height - wing.height) // 2)
 
     print(f"body {body.width}x{body.height} at {BODY_AT}")
     print(f"wing {wing.width}x{wing.height} at {WING_AT}, hung at {WING_ANGLE} degrees")
@@ -458,8 +466,8 @@ def main():
     body_ink[BODY_AT[1]:BODY_AT[1] + body.height,
              BODY_AT[0]:BODY_AT[0] + body.width] = np.asarray(body)[..., 3] > 128
     wing_ink = np.zeros(FRAME[::-1], bool)
-    wing_ink[wing_at[1]:wing_at[1] + turned.height,
-             wing_at[0]:wing_at[0] + turned.width] = np.asarray(turned)[..., 3] > 128
+    wing_ink[wing_at[1]:wing_at[1] + swung.height,
+             wing_at[0]:wing_at[0] + swung.width] = np.asarray(swung)[..., 3] > 128
     tucked = body_ink & wing_ink
     ys, xs = np.nonzero(tucked)
     shoulder = (xs.mean(), ys.mean())
@@ -475,8 +483,8 @@ def main():
     # and the wing hung off a point 70 degrees around the drawing from its shoulder. That is the
     # whole "duck with one wing" bug. Nothing else about the fit was ever wrong.
     angle = np.radians(WING_ANGLE)
-    ox = shoulder[0] - (wing_at[0] + turned.width / 2)
-    oy = shoulder[1] - (wing_at[1] + turned.height / 2)
+    ox = shoulder[0] - (wing_at[0] + swung.width / 2)
+    oy = shoulder[1] - (wing_at[1] + swung.height / 2)
     ax = (ox * np.cos(angle) - oy * np.sin(angle)) / wing.width + 0.5
     ay = (ox * np.sin(angle) + oy * np.cos(angle)) / wing.height + 0.5
     print(f"wing anchor ({ax:.4f}, {ay:.4f})")
@@ -506,7 +514,7 @@ def main():
     # being the only place the mistake shows.
     frame = Image.new("RGBA", FRAME, (0, 0, 0, 0))
     draw_duck(frame, wing, far, far_at, body, eyes, ax, ay, shoulder)
-    frame.save(SYMBOL_DIR / "h2-duck-marquee.png")
+    save_web(frame, SYMBOL_DIR / "h2-duck-marquee.webp")
 
     # The loose pieces, saved UNROTATED and UNPLACED — the component does both, every frame.
     #

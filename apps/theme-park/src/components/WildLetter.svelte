@@ -4,11 +4,17 @@
 	 *
 	 * The redesigned wild (Figma 7052:7925) is a gold oval plate with nothing on it; the tri-colour
 	 * letter (7052:7927) is a second drawing, and the two ship apart on purpose, because the letter is
-	 * what moves. On a win it pops up from nothing to full size with a little overshoot, which is the
-	 * whole win presentation for this symbol — the plate carries no marquee bulbs to chase, unlike
-	 * every other sign on this board.
+	 * what moves. On a win it zooms in and out inside the frame, over and over for as long as the win
+	 * is on screen — that is the whole win presentation for this symbol, which carries no marquee
+	 * bulbs to chase unlike every other sign on this board.
 	 *
-	 * Drawn on top of the plate rather than baked into it, so it stays a separate sprite the pop can
+	 * IT IS THE ONLY THING ON THE SIGN THAT MOVES, and that is the point. <Board> holds the plate out
+	 * of the board-wide win pulse for this symbol alone, so the gold oval stands still while the W
+	 * breathes in it. Swelling both together was the version this replaces, and with the letter
+	 * locked at a fixed fraction of a growing frame there was nothing to measure the zoom against: it
+	 * read as the whole picture being scaled rather than as the letter doing anything.
+	 *
+	 * Drawn on top of the plate rather than baked into it, so it stays a separate sprite the zoom can
 	 * scale on its own. Where and how big it goes is measured off the plate's purple field by
 	 * `scripts/wild/build_wild.py` into `WILD_LETTER`, so re-drawing the plate moves the letter with
 	 * it instead of leaving it floating.
@@ -17,20 +23,17 @@
 	 * board symbol, and a plate with no letter on it does not read as a wild.
 	 */
 
-	/** How long the pop takes. Long enough to see it land, short enough to be over before the win is. */
-	const POP = 0.42;
+	/** One in-and-out, in seconds. Slow enough to read as breathing rather than as a flicker. */
+	const ZOOM_SECONDS = 0.78;
 	/**
-	 * How hard it overshoots on the way out — the classic ease-out-back, with its constant tuned up
-	 * from the textbook 1.7 so the letter visibly springs past full size rather than easing into it.
+	 * How far it swings either side of full size. The letter has to stay clear of the oval's inner
+	 * gold at its widest, and the plate is standing still now, so this is bounded by the art rather
+	 * than by taste — `WILD_LETTER` is measured into the purple field with little room over.
 	 */
-	const OVERSHOOT = 1.9;
+	const ZOOM = 0.11;
 
-	/** 0 at rest, 1 at full size, briefly past 1 in between. */
-	const pop = (t: number) => {
-		if (t >= 1) return 1;
-		const back = t - 1;
-		return 1 + (OVERSHOOT + 1) * back * back * back + OVERSHOOT * back * back;
-	};
+	/** 1 at the start of a win, then in and out about it forever. Starts at 1, so nothing jumps. */
+	const zoom = (seconds: number) => 1 + ZOOM * Math.sin((seconds / ZOOM_SECONDS) * Math.PI * 2);
 </script>
 
 <script lang="ts">
@@ -55,7 +58,7 @@
 
 	const props: Props = $props();
 
-	const scale = $derived(props.win ? pop(props.clock / POP) : 1);
+	const scale = $derived(props.win ? zoom(props.clock) : 1);
 	// Offset from the symbol's centre, turned with the plate so the letter stays on it while the
 	// board rattles. Same rotation, same centre, so the two never come apart.
 	const offsetX = $derived((WILD_LETTER.x - 0.5) * props.width);

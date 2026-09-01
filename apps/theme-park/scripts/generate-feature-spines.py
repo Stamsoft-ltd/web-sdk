@@ -20,6 +20,10 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib.web_image import save_web  # noqa: E402
+
 
 APP = Path(__file__).resolve().parents[1]
 STATIC = APP / "static" / "assets"
@@ -389,7 +393,7 @@ def main() -> None:
 	poses = build_poses()
 	build_atlas(poses)
 	build_skeleton()
-	poses[0].save(STATIC / "theme-park" / "v2" / "modes" / "mega-wild-car.png", optimize=True)
+	save_web(poses[0], STATIC / "theme-park" / "v2" / "modes" / "mega-wild-car.webp")
 	print(
 		f"Built Roller Wilds: frontal release -> vertical drop, {FRAME_COUNT} registered frames, "
 		f"{RIDE_DURATION:.2f}s -> {OUTPUT_DIR}"

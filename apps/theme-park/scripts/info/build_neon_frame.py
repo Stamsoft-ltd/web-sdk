@@ -13,8 +13,8 @@ straight run.
 
     python3 scripts/info/build_neon_frame.py
 
-Reads static/assets/theme-park/v2/hud/neon-frame.png (still shipped — the HUD uses the lit version)
-and writes neon-frame-plain.png beside it.
+Reads static/assets/theme-park/v2/hud/neon-frame.webp (still shipped — the HUD uses the lit version)
+and writes neon-frame-plain.webp beside it.
 """
 
 from __future__ import annotations
@@ -26,8 +26,8 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / 'static/assets/theme-park/v2/hud/neon-frame.png'
-OUT = ROOT / 'static/assets/theme-park/v2/hud/neon-frame-plain.png'
+SOURCE = ROOT / 'static/assets/theme-park/v2/hud/neon-frame.webp'
+OUT = ROOT / 'static/assets/theme-park/v2/hud/neon-frame-plain.webp'
 
 # Where the neon line sits, and how far its glow reaches to either side of it.
 LINE = {'left': 21, 'right': 590, 'top': 18, 'bottom': 270}

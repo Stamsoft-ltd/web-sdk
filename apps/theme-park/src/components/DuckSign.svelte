@@ -2,7 +2,7 @@
 	/**
 	 * The DUCK YOUR LUCK scatter, and what it does when it lands in a win.
 	 *
-	 * The symbol is a duck in a top hat holding a sign, with a wing out either side (Figma 7057:7971).
+	 * The symbol is a duck in a top hat holding a DUCK YOUR LUCK sign, with a wing out either side.
 	 * Every other symbol on this board wins by standing still and lighting up — it is a marquee, and
 	 * marquees do not move. This one is a bird, and a bird that holds perfectly still while it pays out
 	 * three scatters reads as a sticker. So it beats its wings and rocks the sign it is holding.
@@ -12,6 +12,12 @@
 	 * behind the duck's body — so what moves is the span of the wing and not the whole shape sliding.
 	 * Beating them in opposite phase would look like a bird trying to take off; they beat TOGETHER,
 	 * which is the duck flapping in place.
+	 *
+	 * `baseKey` MUST BE A LOCKUP WITH NO WINGS IN IT. That is not a preference, it is what makes the
+	 * flap read at all: the art that shipped until 2026-08-28 was one painted picture with the wings
+	 * already in it, so a win swung these two out from behind a pair that never moved, and the whole
+	 * thing read as a mistake rather than as a bird. `scripts/duck-sign/build_duck_sign.py` composes
+	 * the base from the design's loose layers now and deliberately leaves the wings out of it.
 	 *
 	 * Nothing here runs while the symbol is idle. The board's settled symbols carry a tint breath and
 	 * deliberately no movement — a drifting sprite is resampled every frame, which is what made the
@@ -23,13 +29,14 @@
 	/** Beats a second. Fast enough to read as a flap rather than as a sway. */
 	const FLAP_HZ = 3.1;
 	/**
-	 * How far a wing swings, in radians — about 13 degrees each way.
+	 * How far a wing swings, in radians — 13 degrees each way, which is the `FLAP` the build script
+	 * checks the frame against: at this much a wing at full beat still lands inside the symbol.
 	 *
 	 * Turn only. Stretching the wing along its span as it beats was tried and taken out: the sprite is
 	 * pinned by its ROOT, so growing it moves the tip toward the pivot on one side and away on the
 	 * other, and the two wings stopped being mirror images at the extremes of the beat.
 	 */
-	const FLAP = 0.23;
+	const FLAP = 0.227;
 
 	/** The sign rocks with the beat and half as fast, so the two are never quite in step. */
 	const ROCK = 0.035;

@@ -12,6 +12,7 @@ It writes:
   static/assets/theme-park/v2/modes/mega-coaster-{desktop,mobile,mobile-landscape}-still.png
   static/assets/theme-park/v2/modes/mega-coaster-{desktop,mobile,mobile-landscape}-house.png
   static/assets/theme-park/v2/symbols/mega-coaster-{sign,word-mega,word-coaster}.png
+  static/assets/theme-park/v2/symbols/mega-coaster-flag-{left,centre,right}.png
   src/game/coasterSignParts.ts
   scripts/coaster-sign/verify_coaster_sign.png
 
@@ -36,6 +37,16 @@ they keep the size relationship they were drawn with, and stacked on the field's
 Sizing them off the sign's outer box instead would push both words onto the bulbs, because the ring
 is thick and it is thicker at the top than at the sides.
 
+THE FLAGS COME OFF THE BUILDING. Three of them fly from the towers, and they were the only part of
+this symbol that could plausibly move on its own — the scatter otherwise sat on the board doing
+nothing but rocking its sign a couple of degrees, which is not enough to read as alive (reviewer,
+2026-08-28). Each cloth is cut out of the pavilion and shipped loose, so <MegaCoaster> can fly it.
+
+The cut is a RECTANGLE, and it starts at the first column of the flag that is cloth and nothing else
+— clear of the pole, which has to stay on the building or the whole mast would wave. The few pixels
+of cloth that pass behind the pole stay behind with it; they are three pixels wide at the size the
+board draws this, and the pole covers them.
+
 Always eyeball verify_coaster_sign.png: it puts the rebuild beside the flat symbol it replaces, then
 the poses either end of both animations.
 """
@@ -44,6 +55,10 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from lib.web_image import save_web  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -76,6 +91,15 @@ FEATHER = 2
 WORD_FILL = 0.84
 # The gap between the two words, as a fraction of the field's height.
 WORD_GAP = 0.06
+
+#: The three flags, as boxes in the pavilion drawing's own pixels: left, top, right, bottom. Each
+#: box holds one cloth and nothing else — see the note on the cut above. Measured by walking the
+#: columns out from each mast and taking the first one whose ink stops before the pole's foot.
+FLAG_BOXES = {
+    "left": (69, 68, 94, 98),
+    "centre": (186, 19, 219, 52),
+    "right": (296, 68, 321, 98),
+}
 
 
 def keyed(path):
@@ -284,12 +308,31 @@ def main():
         top += ink_h + gap
         print(f"  {name} {art.width}x{art.height}, ink centre ({centre[0]:.0f}, {centre[1]:.0f})")
 
-    # The house on its own, for <MegaCoaster> to hang the live sign on...
+    # The flags, lifted off the towers. Cut from the SCALED pavilion rather than from the drawing and
+    # scaled after, so a flag lands back on its own mast to the pixel rather than to the rounding.
+    flags = {}
+    stripped = np.asarray(house_art).copy()
+    for name, box in FLAG_BOXES.items():
+        x0, y0, x1, y1 = (round(edge * house_scale) for edge in box)
+        cloth = stripped[y0:y1, x0:x1].copy()
+        if not (cloth[..., 3] > 8).any():
+            raise SystemExit(f"the {name} flag's box is empty — the drawing has moved under it")
+        # The seam: the middle of the cloth where it meets the mast, which is what it flies about.
+        seam = np.nonzero(cloth[:, 0, 3] > 8)[0]
+        pivot = (house_at[0] + x0, house_at[1] + y0 + (seam.min() + seam.max() + 1) / 2)
+        flags[name] = (rgba(cloth), (house_at[0] + x0, house_at[1] + y0), pivot)
+        stripped[y0:y1, x0:x1, 3] = 0
+        print(f"  flag {name} {x1 - x0}x{y1 - y0}, seam at ({pivot[0]:.0f}, {pivot[1]:.0f})")
+    house_art = rgba(stripped)
+
+    # The house on its own, for <MegaCoaster> to hang the live sign and the three flags on...
     house_only = Image.new("RGBA", FRAME, (0, 0, 0, 0))
     house_only.alpha_composite(house_art, house_at)
     # ...and everything, for the spin trail and for a dimmed symbol. Assembled sprites fade wrong:
     # pixi fades a container by fading each CHILD, so overlaps brighten.
     still = house_only.copy()
+    for art, at, _ in flags.values():
+        still.alpha_composite(art, at)
     still.alpha_composite(sign_art, sign_at)
     for name in ("mega", "coaster"):
         art, at, _ = placed[name]
@@ -297,18 +340,24 @@ def main():
 
     for suffix, width in MODE_VARIANTS:
         height = round(width * FRAME[1] / FRAME[0])
-        resized(house_only, (width, height)).save(MODES_DIR / f"mega-coaster-{suffix}-house.png")
-        resized(still, (width, height)).save(MODES_DIR / f"mega-coaster-{suffix}-still.png")
+        save_web(resized(house_only, (width, height)), MODES_DIR / f"mega-coaster-{suffix}-house.webp")
+        save_web(resized(still, (width, height)), MODES_DIR / f"mega-coaster-{suffix}-still.webp")
 
-    sign_art.save(SYMBOL_DIR / "mega-coaster-sign.png")
+    save_web(sign_art, SYMBOL_DIR / "mega-coaster-sign.webp")
     rows = []
     sign_ink = ((gx0 + gx1) / 2 * sign_scale + sign_at[0], (gy0 + gy1) / 2 * sign_scale + sign_at[1])
     rows.append(entry("sign", sign_art, sign_at, sign_ink))
     for name in ("mega", "coaster"):
         art, at, centre = placed[name]
-        art.save(SYMBOL_DIR / f"mega-coaster-word-{name}.png")
+        save_web(art, SYMBOL_DIR / f"mega-coaster-word-{name}.webp")
         rows.append(entry(name, art, at, centre))
-    TABLE.write_text(HEADER + "\n".join(rows) + "\n};\n")
+    flag_rows = []
+    for name, (art, at, pivot) in flags.items():
+        save_web(art, SYMBOL_DIR / f"mega-coaster-flag-{name}.webp")
+        flag_rows.append(entry(name, art, at, pivot))
+    TABLE.write_text(
+        HEADER + "\n".join(rows) + "\n};\n" + FLAG_HEADER + "\n".join(flag_rows) + "\n};\n"
+    )
     print(f"wrote {TABLE.relative_to(ROOT)}")
 
     # The verify sheet: the flat symbol it replaces, the rebuild, and both animations at full throw.
@@ -332,6 +381,14 @@ def main():
         if turn:
             group = group.rotate(turn, resample=Image.BICUBIC, center=sign_ink)
         pane = house_only.copy()
+        # The flags at the same throw as the sign, about their seams: this is the sheet that says
+        # whether a flying flag comes off its mast.
+        for art, at, pivot in flags.values():
+            flown = Image.new("RGBA", FRAME, (0, 0, 0, 0))
+            flown.alpha_composite(art, at)
+            if turn:
+                flown = flown.rotate(turn * 3, resample=Image.BICUBIC, center=pivot)
+            pane.alpha_composite(flown)
         pane.alpha_composite(group)
         sheet.alpha_composite(pane, ((FRAME[0] + 24) * (index + 1), 0))
     sheet.save(VERIFY)
@@ -374,6 +431,17 @@ export type CoasterSignPiece = {
 };
 
 export const COASTER_SIGN_PARTS: Record<'sign' | 'mega' | 'coaster', CoasterSignPiece> = {
+"""
+
+FLAG_HEADER = """
+/**
+ * The three flags flying from the pavilion's towers, cut off it so they can fly.
+ *
+ * `x`/`y` are the SEAM — the middle of the cloth where it meets its mast — because that is the one
+ * point of a flag that does not move, and `anchorX`/`anchorY` put a sprite's origin there. The mast
+ * itself stays on the building.
+ */
+export const COASTER_FLAGS: Record<'left' | 'centre' | 'right', CoasterSignPiece> = {
 """
 
 

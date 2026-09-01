@@ -168,9 +168,62 @@ const groupingFormatter = (min: number, max: number) => {
 	return formatter;
 };
 
+/** The documented symbol, decimals and placement, around a number already grouped to (min, max). */
+const render = (currency: string, amount: number, min: number, max: number) => {
+	const meta = metaFor(currency);
+	const value = Number.isFinite(amount) ? amount : 0;
+	const sign = value < 0 ? '-' : '';
+	// Group the digits (Intl for the NUMBER only) and attach the symbol ourselves, so the currency
+	// rendering stays exactly as specified rather than however Intl localises that code.
+	const body = groupingFormatter(min, max).format(Math.abs(value));
+	return meta.symbolAfter ? `${sign}${body} ${meta.symbol}` : `${sign}${meta.symbol}${body}`;
+};
+
 /**
- * Format an amount for display using the documented symbol, decimals and placement.
- * `minFractionDigits` overrides the currency's default decimal count when a caller needs more.
+ * Money on screen splits into two classes that format DIFFERENTLY, and one function cannot serve
+ * both — that is the whole finding behind R-01 in STAKE_REVIEW_LESSONS.md.
+ *
+ * A wallet value must show exactly the currency's decimal count and never grow a digit because the
+ * float underneath is precise: a balance of 999.946 reads `$999.95`. A win value must show the
+ * EXACT settled amount, expanding past those decimals when it has to, or a genuine 0.16x at a 0.01
+ * bet renders as `$0.00`. Both of those were reviewer rejections, on two different games.
+ *
+ * They are two named functions on purpose. The version this replaces was one
+ * `formatCurrencyAmount(currency, amount, minFractionDigits?)` whose optional third argument chose
+ * the contract, so every call site that forgot it silently inherited the expanding behaviour — and
+ * that is exactly how the balance grew its third decimal. There is no way to forget an argument
+ * here; there is only a wrong function name, which reads wrong at the call site.
+ */
+const WIN_MAX_FRACTION_DIGITS = 4;
+
+/** Wallet money: balance, bet, buy prices, autoplay limits. The currency's decimals, exactly. */
+export const formatWalletAmount = (currency: string, amount: number) => {
+	const { decimals } = metaFor(currency);
+	return render(currency, amount, decimals, decimals);
+};
+
+/**
+ * Win money: spin and round wins, countups, accumulators. The currency's decimals as a MINIMUM,
+ * expanding up to four when the exact value needs them.
+ *
+ * The cap yields to the rule it exists inside: a win that is not zero must never print as zero, so
+ * a value finer than four decimals keeps expanding until its first significant digit appears rather
+ * than rendering `$0.0000`. `fractionDigitsForAmount` already returns that count; the cap only
+ * applies while it is still showing something.
+ */
+export const formatWinAmount = (currency: string, amount: number) => {
+	const { decimals } = metaFor(currency);
+	// The digit count at which this value stops rounding to zero. Four is the ceiling everywhere it
+	// is enough; where it is not, it yields, because a non-zero win printing as zero is the older and
+	// more serious of the two rejections this function answers.
+	const exact = fractionDigitsForAmount(amount, decimals);
+	const max = exact > WIN_MAX_FRACTION_DIGITS ? exact : WIN_MAX_FRACTION_DIGITS;
+	return render(currency, amount, decimals, max);
+};
+
+/**
+ * @deprecated Pick `formatWalletAmount` or `formatWinAmount` — see the note above. Kept only for
+ * the games that have not been moved across yet.
  */
 export const formatCurrencyAmount = (
 	currency: string,
@@ -180,10 +233,5 @@ export const formatCurrencyAmount = (
 	const meta = metaFor(currency);
 	const value = Number.isFinite(amount) ? amount : 0;
 	const min = minFractionDigits ?? meta.decimals;
-	const digits = fractionDigitsForAmount(value, min);
-	const sign = value < 0 ? '-' : '';
-	// Group the digits (Intl for the NUMBER only) and attach the symbol ourselves, so the currency
-	// rendering stays exactly as specified rather than however Intl localises that code.
-	const body = groupingFormatter(min, digits).format(Math.abs(value));
-	return meta.symbolAfter ? `${sign}${body} ${meta.symbol}` : `${sign}${meta.symbol}${body}`;
+	return render(currency, value, min, fractionDigitsForAmount(value, min));
 };

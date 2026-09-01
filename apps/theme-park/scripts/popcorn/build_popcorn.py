@@ -12,7 +12,7 @@ symbol instead of hanging in the air where the artist parked them.
 
 It writes:
 
-  static/assets/theme-park/v2/symbols/h4-popcorn-marquee.png
+  static/assets/theme-park/v2/symbols/h4-popcorn-marquee.webp
   static/assets/theme-park/v2/symbols/popcorn-kernel-{a,b,c}.webp
   src/game/popcornParts.ts
   scripts/popcorn/verify_popcorn.png
@@ -47,6 +47,7 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from lib.figma_paper import keyed  # noqa: E402
+from lib.web_image import save_web  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -135,8 +136,8 @@ def main():
     at = (round(target[0] - bx0 - bucket_w / 2), round(target[1] - by0 - bucket_h / 2))
     base = Image.new("RGBA", FRAME, (0, 0, 0, 0))
     base.alpha_composite(rgba(bucket), at)
-    base.save(SYMBOL_DIR / "h4-popcorn-marquee.png")
-    print(f"placed at {at}, wrote symbols/h4-popcorn-marquee.png")
+    save_web(base, SYMBOL_DIR / "h4-popcorn-marquee.webp")
+    print(f"placed at {at}, wrote symbols/h4-popcorn-marquee.webp")
 
     # The crown of the heap, in frame coordinates: where the kernels are thrown from and how wide a
     # band they come out of.
@@ -152,7 +153,7 @@ def main():
         kx0, ky0, kx1, ky1 = ink_box(kernel)
         ink = rgba(kernel[ky0 : ky1 + 1, kx0 : kx1 + 1])
         # webp: these are three tiny sprites drawn dozens at a time, and at 92 they are a fifth of
-        # the PNG with nothing visible lost at the size they are drawn.
+        # the master with nothing visible lost at the size they are drawn.
         ink.save(SYMBOL_DIR / f"popcorn-kernel-{stem}.webp", quality=92, method=6, alpha_quality=100)
         sizes.append((stem, node, ink.width, ink.height))
         print(f"kernel {stem}: {ink.width}x{ink.height} of ink ({node})")

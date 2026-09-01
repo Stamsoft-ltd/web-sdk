@@ -1,7 +1,7 @@
 import { BOOK_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import { stateBet } from 'state-shared';
 
-import { formatCurrencyAmount, metaFor } from './currency';
+import { formatWinAmount } from './currency';
 
 // bookEventAmount: is the amount or win numbers in the events of books, e.g. the amount in setTotalWin bookEvent
 // {
@@ -33,8 +33,12 @@ export { fractionDigitsForAmount } from './currency';
 // win shows the same symbol, decimal count and symbol placement as the balance. Previously only
 // XGC/XSC were special-cased here and every other code went through Intl, which disagreed with the
 // spec for ~20 currencies (e.g. "PLN 10.00" instead of "10.00 zł") and omitted XEC entirely.
-export const numberToCurrencyString = (value: number) =>
-	formatCurrencyAmount(stateBet.currency, value, metaFor(stateBet.currency).decimals);
+//
+// Everything that reaches this function is WIN money — it is fed from book-event amounts — so it
+// takes the win contract: the currency's decimals as a floor, expanding to show the exact settled
+// value. See `formatWinAmount`, and R-01 in STAKE_REVIEW_LESSONS.md for why the two classes of
+// money cannot share one formatter.
+export const numberToCurrencyString = (value: number) => formatWinAmount(stateBet.currency, value);
 
 export const bookEventAmountToCurrencyString = (bookEventAmount: number) => {
 	const normalisedAmount = bookEventAmountToNormalisedAmount(bookEventAmount);

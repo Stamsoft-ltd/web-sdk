@@ -38,7 +38,8 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from lib.figma_paper import keyed  # noqa: E402
+from lib.figma_paper import keyed, resized  # noqa: E402
+from lib.web_image import save_web  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path(__file__).resolve().parent / "source"
@@ -115,13 +116,13 @@ def main():
     plate = keyed(SOURCE / "plate.png")
     letter = keyed(SOURCE / "w.png")
 
-    # The plate is the whole base art — the mode PNGs are it and nothing else, because the W is now a
+    # The plate is the whole base art — the mode files are it and nothing else, because the W is now a
     # separate sprite the runtime draws on top.
     base = Image.new("RGBA", FRAME, (0, 0, 0, 0))
     base.alpha_composite(rgba(plate), PLACEMENT)
     for suffix, width in MODE_VARIANTS:
         height = round(width * FRAME[1] / FRAME[0])
-        base.resize((width, height), Image.LANCZOS).save(MODES_DIR / f"wild-{suffix}-marquee.png")
+        save_web(resized(base, (width, height)), MODES_DIR / f"wild-{suffix}-marquee.webp")
     print(f"plate: {plate.shape[1]}x{plate.shape[0]} at {PLACEMENT}, {len(MODE_VARIANTS)} modes written")
 
     fx0, fy0, fx1, fy1 = field_of(plate)
@@ -133,9 +134,7 @@ def main():
     # that margin decide how big the W is drawn.
     ix0, iy0, ix1, iy1 = ink_box(letter)
     ink = rgba(letter[iy0 : iy1 + 1, ix0 : ix1 + 1])
-    # webp, unlike the plate: this one is a flat three-colour letter, so lossy-at-92 is indis-
-    # tinguishable from the PNG and a third of the weight, and it loads on every spin.
-    ink.save(SYMBOL_DIR / "wild-w.webp", quality=92, method=6, alpha_quality=100)
+    save_web(ink, SYMBOL_DIR / "wild-w.webp")
     print(f"W: {ink.width}x{ink.height} of ink, trimmed from {letter.shape[1]}x{letter.shape[0]}")
 
     width = LETTER_SHARE * field_w
@@ -156,7 +155,7 @@ def main():
     # The right half is the design's own wild, so a glance says whether the W landed where the artist
     # drew it and is drawn the size they drew it.
     rebuilt = base.copy()
-    placed = ink.resize((round(width), round(height)), Image.LANCZOS)
+    placed = resized(ink, (round(width), round(height)))
     rebuilt.alpha_composite(placed, (round(x - width / 2), round(y - height / 2)))
     check = Image.new("RGBA", (FRAME[0] * 2 + 24, FRAME[1]), (26, 26, 34, 255))
     check.alpha_composite(rebuilt, (0, 0))

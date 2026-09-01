@@ -15,12 +15,12 @@
 	const replayRunning = $derived(templateStakeState.replayRunning);
 	const replayHasPlayed = $derived(templateStakeState.replayHasPlayed);
 	const replayError = $derived(templateStakeState.bootStatus === 'error' ? templateStakeState.bootError : '');
-	const replayBetText = $derived(templateStakeDerived.formatCurrencyAmount(templateStakeDerived.replayBetAmount()));
-	const replayCostText = $derived(templateStakeDerived.formatCurrencyAmount(templateStakeDerived.replayCostAmount()));
+	const replayBetText = $derived(templateStakeDerived.formatWallet(templateStakeDerived.replayBetAmount()));
+	const replayCostText = $derived(templateStakeDerived.formatWallet(templateStakeDerived.replayCostAmount()));
 	const replayCostMultiplierText = $derived(`${templateStakeDerived.replayCostMultiplier()}x`);
 	const replayPayoutMultiplierText = $derived(`${templateStakeDerived.replayPayoutMultiplier().toFixed(2).replace(/\.?0+$/, '')}x`);
 	const replayWinText = $derived(
-		templateStakeDerived.formatCurrencyAmount(templateStakeDerived.replayWinAmount()),
+		templateStakeDerived.formatWin(templateStakeDerived.replayWinAmount()),
 	);
 
 	const replayValueStyle = (text: string) => {
