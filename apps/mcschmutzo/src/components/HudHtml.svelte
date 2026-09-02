@@ -35,6 +35,9 @@
 	const iconMinus = ap('/assets/mcschmutzo/ui-icons/hud-minus.svg');
 	const iconPlus = ap('/assets/mcschmutzo/ui-icons/hud-plus.svg');
 	const iconAuto = ap('/assets/mcschmutzo/ui-icons/hud-auto.svg');
+	// Full auto button art (disc + arrows + "AUTO"), used as-is (its AUTO is white-on-dark,
+	// so it must NOT go through the white-recolour filter).
+	const iconAutoFull = ap('/assets/mcschmutzo/ui-icons/auto.svg');
 	const iconSpin = ap('/assets/hud/icon-spin.png');
 	const iconStop = ap('/assets/hud/icon-stop.png');
 	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.png');
@@ -1006,15 +1009,14 @@
 					<img class="nav-icon" src={turboIcon} alt="turbo" />
 				</button>
 				<button
-					class="nav-btn nav-btn--framed nav-btn--auto"
+					class="nav-btn nav-btn--auto"
 					class:active={hasAuto}
 					type="button"
 					onclick={onAuto}
 					disabled={disableAuto}
 					aria-label={i18nDerived.autoplayLabel()}
 				>
-					<img class="nav-icon" src={iconAuto} alt="auto" />
-					<span class="auto-label">{i18nDerived.translate('AUTO')}</span>
+					<img class="nav-btn__auto-full" src={iconAutoFull} alt="auto" />
 				</button>
 			</div>
 		</div>
@@ -1531,27 +1533,16 @@
 	}
 
 	/* AUTO button: icon nudged up, "AUTO" caption underneath. */
+	/* AUTO button: the full design button art (disc + arrows + "AUTO") fills the slot; no
+	   framed disc, no white filter (its AUTO is white-on-dark and would be erased by it). */
 	.nav-btn--auto {
 		position: relative;
 	}
-	.nav-btn--auto .nav-icon {
-		width: 26%;
-		height: 26%;
-		transform: translateY(-18%);
-	}
-	.auto-label {
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 17%;
-		text-align: center;
-		color: #ffffff;
-		font-family: 'Inter', sans-serif;
-		font-weight: 700;
-		font-size: calc(var(--nav-s) * 0.19);
-		letter-spacing: 0.06em;
-		line-height: 1;
-		pointer-events: none;
+	.nav-btn__auto-full {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		display: block;
 	}
 
 	/* Thin dividers between the BALANCE / WIN / BET readouts. */
