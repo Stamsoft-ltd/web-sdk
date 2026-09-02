@@ -38,4 +38,9 @@ export default {
 	STEPS: 'STEPS',
 	SPIN: 'SPIN',
 	OVERVIEW: 'OVERVIEW',
+	PAYTABLE: 'PAYTABLE',
+	SYMBOL: 'SYMBOL',
+	'3 OF A KIND': '3 OF A KIND',
+	'4 OF A KIND': '4 OF A KIND',
+	'5 OF A KIND': '5 OF A KIND',
 };

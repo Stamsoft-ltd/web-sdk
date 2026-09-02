@@ -7,6 +7,18 @@
 	const arrowRightArt = ap('/assets/mcschmutzo/tutorial/arrow-right.svg');
 
 	const TOTAL_PAGES = 7;
+
+	const symArt = (name: string) => ap(`/assets/mcschmutzo/symbols/${name}.png`);
+
+	// Paytable (values per matching-symbol count), ordered low → high as in the design.
+	const PAY_ROWS: { syms: string[]; pays: [string, string, string] }[] = [
+		{ syms: ['L1', 'L2', 'L3', 'L4', 'L5'], pays: ['0.1', '0.4', '1'] },
+		{ syms: ['H5'], pays: ['0.2', '0.8', '2'] },
+		{ syms: ['H4'], pays: ['0.2', '0.8', '2'] },
+		{ syms: ['H3'], pays: ['0.3', '1', '2.5'] },
+		{ syms: ['M'], pays: ['0.3', '1', '2.5'] },
+		{ syms: ['H1'], pays: ['0.5', '2', '5'] },
+	];
 </script>
 
 <script lang="ts">
@@ -63,6 +75,34 @@
 							<span class="tu-stat-label">Theoretical RTP:</span>
 							<span class="tu-pill">96.10%</span>
 						</div>
+					</div>
+				</div>
+			</div>
+		{:else if page === 2}
+			<div class="tu-page">
+				<h2 class="tu-title">{i18nDerived.translate('PAYTABLE')}</h2>
+
+				<div class="pt-table">
+					<div class="pt-head">
+						<div class="pt-hcell">{i18nDerived.translate('SYMBOL')}</div>
+						<div class="pt-hcell">{i18nDerived.translate('3 OF A KIND')}</div>
+						<div class="pt-hcell">{i18nDerived.translate('4 OF A KIND')}</div>
+						<div class="pt-hcell">{i18nDerived.translate('5 OF A KIND')}</div>
+					</div>
+
+					<div class="pt-body">
+						{#each PAY_ROWS as row}
+							<div class="pt-row">
+								<div class="pt-sym" class:pt-sym--multi={row.syms.length > 1}>
+									{#each row.syms as s}
+										<img src={symArt(s)} alt="" draggable="false" />
+									{/each}
+								</div>
+								<div class="pt-val">{row.pays[0]} x</div>
+								<div class="pt-val">{row.pays[1]} x</div>
+								<div class="pt-val">{row.pays[2]} x</div>
+							</div>
+						{/each}
 					</div>
 				</div>
 			</div>
@@ -175,6 +215,62 @@
 		font-weight: 600;
 		font-size: clamp(0.9rem, 2.1vmin, 1.28rem);
 		line-height: 1.5;
+	}
+
+	/* Page 2 — paytable. Shared column template keeps header cells and body columns aligned. */
+	.pt-table {
+		width: 100%;
+		margin-top: clamp(12px, 2.2vmin, 24px);
+		--pt-cols: 1.5fr 1fr 1fr 1fr;
+	}
+	.pt-head {
+		display: grid;
+		grid-template-columns: var(--pt-cols);
+		gap: clamp(5px, 0.9vmin, 9px);
+		margin-bottom: clamp(4px, 0.8vmin, 9px);
+	}
+	.pt-hcell {
+		padding: clamp(8px, 1.5vmin, 14px) clamp(4px, 1vmin, 10px);
+		border-radius: 8px;
+		background: #e9a02a;
+		color: #fff;
+		text-align: center;
+		white-space: nowrap;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
+		font-size: clamp(0.68rem, 1.65vmin, 1.02rem);
+		letter-spacing: 0.02em;
+	}
+	.pt-body {
+		border-top: 1px solid rgba(255, 255, 255, 0.09);
+	}
+	.pt-row {
+		display: grid;
+		grid-template-columns: var(--pt-cols);
+		align-items: center;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+	}
+	.pt-sym {
+		display: flex;
+		align-items: center;
+		gap: clamp(2px, 0.6vmin, 6px);
+		padding: clamp(4px, 0.9vmin, 9px) clamp(8px, 1.6vmin, 18px);
+	}
+	.pt-sym img {
+		height: clamp(36px, 6.4vmin, 66px);
+		width: auto;
+		object-fit: contain;
+	}
+	.pt-sym--multi img {
+		height: clamp(30px, 5.2vmin, 54px);
+	}
+	.pt-val {
+		padding: clamp(6px, 1.2vmin, 14px) 0;
+		border-left: 1px solid rgba(255, 255, 255, 0.09);
+		text-align: center;
+		color: #efe8d8;
+		font-weight: 700;
+		font-size: clamp(1rem, 2.5vmin, 1.55rem);
 	}
 
 	/* Guy tucked into the popup's bottom-left corner, stats centred to his right. */
