@@ -45,4 +45,5 @@ export default {
 	'5 OF A KIND': '5 OF A KIND',
 	FEATURES: 'FEATURES',
 	'FEATURE BUY': 'FEATURE BUY',
+	'GENERAL INFO': 'GENERAL INFO',
 };

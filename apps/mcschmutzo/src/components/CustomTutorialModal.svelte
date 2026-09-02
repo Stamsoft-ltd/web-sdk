@@ -14,6 +14,10 @@
 	const wildArt = symArt('W');
 	const respinArt = ap('/assets/mcschmutzo/buybonus/burger.svg');
 	const multArt = ap('/assets/mcschmutzo/tutorial/mult-x2.webp');
+
+	// Page 7 (general info) icons.
+	const reloadArt = ap('/assets/mcschmutzo/tutorial/reload.webp');
+	const scalesArt = ap('/assets/mcschmutzo/tutorial/scales.webp');
 	const MULT_LADDER = [
 		'1x', '2x', '3x', '4x', '5x', '6x', '8x', '10x', '12x', '15x', '20x', '25x', '30x', '35x',
 		'40x', '50x', '60x', '70x', '80x', '120x', '150x', '200x', '250x', '300x', '350x', '400x',
@@ -205,6 +209,30 @@
 							<div class="fb-rtp">RTP: {fb.rtp}</div>
 						</div>
 					{/each}
+				</div>
+			</div>
+		{:else if page === 7}
+			<div class="tu-page">
+				<h2 class="tu-title">{i18nDerived.translate('GENERAL INFO')}</h2>
+
+				<div class="gi-grid">
+					<div class="gi-card">
+						<img class="gi-icon" src={reloadArt} alt="" draggable="false" />
+						<div class="gi-body">
+							<p>If a game round is interrupted, it will continue when the game is reloaded, where possible.</p>
+							<p>All valid wagers and potential winnings remain active until the round is fully completed.</p>
+						</div>
+					</div>
+
+					<div class="gi-card">
+						<img class="gi-icon" src={scalesArt} alt="" draggable="false" />
+						<div class="gi-body">
+							<p>Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds.</p>
+							<p>The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only.</p>
+							<p>Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser.</p>
+							<p>TM and © 2026 Stake Engine.</p>
+						</div>
+					</div>
 				</div>
 			</div>
 		{:else}
@@ -512,6 +540,45 @@
 		color: #c9c0b2;
 		font-weight: 600;
 		font-size: clamp(0.72rem, 1.5vmin, 0.95rem);
+	}
+
+	/* Page 7 — general info. Icon pinned near the top, body centred in the remaining space. */
+	.gi-grid {
+		width: 100%;
+		margin-top: clamp(14px, 2.6vmin, 28px);
+		display: grid;
+		grid-template-columns: 1fr 1.4fr;
+		gap: clamp(10px, 1.8vmin, 20px);
+	}
+	.gi-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		min-height: clamp(280px, 44vmin, 420px);
+		padding: clamp(18px, 3vmin, 34px) clamp(16px, 2.4vmin, 30px);
+		border: 2px solid #605553;
+		border-radius: 14px;
+		background: rgba(255, 255, 255, 0.015);
+	}
+	.gi-icon {
+		height: clamp(52px, 8.5vmin, 92px);
+		width: auto;
+		object-fit: contain;
+		margin-top: clamp(6px, 1.4vmin, 14px);
+	}
+	.gi-body {
+		margin: auto 0;
+		color: #cfc6b7;
+		font-weight: 600;
+		font-size: clamp(0.68rem, 1.5vmin, 0.92rem);
+		line-height: 1.5;
+	}
+	.gi-body p {
+		margin: 0 0 clamp(10px, 1.6vmin, 16px);
+	}
+	.gi-body p:last-child {
+		margin-bottom: 0;
 	}
 
 	/* Guy tucked into the popup's bottom-left corner, stats centred to his right. */
