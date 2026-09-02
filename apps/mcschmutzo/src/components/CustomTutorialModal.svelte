@@ -105,14 +105,6 @@
 
 <div class="tu-root" role="dialog" aria-modal="true">
 	<div class="tu-popup">
-		<button
-			class="tu-close"
-			type="button"
-			style={`background-image:url('${closeArt}')`}
-			onclick={props.onclose}
-			aria-label="Close"
-		></button>
-
 		{#if page === 1}
 			<div class="tu-page">
 				<h2 class="tu-title">{i18nDerived.translate('OVERVIEW')}</h2>
@@ -294,6 +286,13 @@
 			<span class="tu-page-num">Page {page}/{TOTAL_PAGES}</span>
 		</div>
 	</div>
+	<button
+		class="tu-close"
+		type="button"
+		style={`background-image:url('${closeArt}')`}
+		onclick={props.onclose}
+		aria-label="Close"
+	></button>
 </div>
 
 <style>
@@ -328,12 +327,15 @@
 		overflow: hidden;
 	}
 
+	/* Sits on the popup's top-right corner, mostly outside it (the button is a child of
+	   .tu-root, not the overflow-hidden popup, so it isn't clipped). */
 	.tu-close {
+		--x-size: clamp(40px, 5.4vmin, 52px);
 		position: absolute;
-		top: clamp(12px, 2vmin, 20px);
-		right: clamp(12px, 2vmin, 20px);
-		z-index: 3;
-		width: clamp(40px, 5.4vmin, 52px);
+		top: calc(var(--x-size) / -2);
+		right: calc(var(--x-size) / -2);
+		z-index: 60;
+		width: var(--x-size);
 		aspect-ratio: 1;
 		padding: 0;
 		border: none;
