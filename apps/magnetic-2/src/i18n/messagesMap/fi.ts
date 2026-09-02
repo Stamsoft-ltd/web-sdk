@@ -1,0 +1,300 @@
+export default {
+	'INFO OVERVIEW': 'YLEISKATSAUS',
+	'INFO PAYTABLE': 'VOITTOTAULUKKO',
+	'INFO FEATURES': 'OMINAISUUDET',
+	'INFO CLUSTER WIN': 'RYHMÄVOITTO',
+	'INFO FEATURE BUY': 'OSTA OMINAISUUS',
+	'INFO GENERAL INFO': 'YLEISTIEDOT',
+	'INFO UI GUIDE': 'KÄYTTÖLIITTYMÄOPAS',
+	'INFO OV TEXT 1':
+		'Magnetic on 7x7-ryhmävoittopeli, jossa voitot muodostuvat samanlaisten symbolien ryhmistä. Voita saamalla 5 tai useampi samanlainen symboli yhteen vaaka- tai pystysuunnassa.',
+	'INFO OV TEXT 2':
+		'Magneticin ominaisuudet voivat vetää samanlaisia symboleja yhteen, mikä auttaa luomaan suurempia ryhmiä ja vahvempia voittoja.',
+	'INFO OV MAXWIN': 'Enimmäisvoitto: %value% panos.',
+	'INFO STAT REELS': 'RULLAT',
+	'INFO STAT CLUSTER': 'RYHMÄ',
+	'INFO STAT PAYS': 'MAKSAA',
+	'INFO STAT MAXWIN': 'MAKS. VOITTO',
+	'INFO STAT RTP': 'RTP',
+	'INFO SYMBOL RANK': 'SYMBOLIN ARVO',
+	'INFO WILD VALUES': 'Kerroin-Wild-arvot',
+	'INFO WILD STANDARD': 'Vakiokerroin-Wild-arvot:',
+	'INFO WILD RARE': 'Harvinaiset kerroin-Wild-arvot (pääasiassa Magnetic Mega Chain -tilassa):',
+	'INFO FEAT WILD TITLE': 'Wild-symboli',
+	'INFO FEAT WILD TEXT':
+		'Korvaa kaikki maksavat symbolit paitsi Scatterin. Aktivoituessaan Magnetic Wild valitsee satunnaisesti yhden ruudukossa olevan tavallisen maksavan symbolin ja vetää kaikki vastaavat symbolit yhteen. Wildeja ja Scattereita ei voi valita. Magnetic Wild aktivoituu vain laskeutuessaan, eikä se aktivoidu uudelleen siitä seuraavan uusintapyöräytyksen aikana.',
+	'INFO FEAT MWILD TITLE': 'Kerroin-Wild',
+	'INFO FEAT MWILD TEXT':
+		'Korvaa kuten Wild ja nostaa aktiivista bonuskerrointa ominaisuuden loppuun asti.',
+	'INFO FEAT DROP TITLE': 'Drop-O-Magnet-ilmaiskierrokset',
+	'INFO FEAT DROP TEXT':
+		'Käynnistyy 3 Scatter-symbolilla ja antaa 10 ilmaiskierrosta. Kun Magnetic Wild osuu, se valitsee kohteen samalla näkyvien sijaintien säännöllä ja vetää vastaavat symbolit yhteen.',
+	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain -ilmaiskierrokset',
+	'INFO FEAT MEGA TEXT':
+		'Käynnistyy 4 Scatterilla. Antaa 10 ilmaiskierrosta. Magneettiset ryhmät voivat pysyä lukittuina ja kasvaa koko ominaisuuden ajan.',
+	'INFO CW 1': 'Magnetic käyttää ryhmävoittoja voittolinjojen sijaan.',
+	'INFO CW 2':
+		'Voitto syntyy, kun 5 tai useampi samanlainen symboli koskettaa toisiaan vaaka- tai pystysuunnassa.',
+	'INFO CW 3': 'Vinottaisia yhteyksiä ei lasketa.',
+	'INFO CW 4':
+		'Voittavien symbolien ei tarvitse muodostaa suoraa linjaa. Niiden täytyy vain olla yhteydessä yhtenä ryhmänä.',
+	'INFO CW 5': 'Suuremmat ryhmät antavat suurempia voittoja.',
+	'INFO FB SUB':
+		'Ominaisuuden osto -vaihtoehdot ovat käytettävissä vain siellä, missä se on sallittua. Kaikki Ominaisuuden osto- ja Bonuksen osto -vaihtoehdot maksetaan valitun panoksen kerrannaisena.',
+	'INFO FB EXTRA TITLE': 'Lisäominaisuus',
+	'INFO FB EXTRA TEXT':
+		'Ostaa erikoiskierroksen, jossa on taattu magneettinen yhteys ja mahdollisuus saada Kerroin-Wildejä.',
+	'INFO FB FEATURE TITLE': 'Ominaisuuden osto',
+	'INFO FB FEATURE TEXT': 'Ostaa suoran pääsyn Drop-O-Magnet-ilmaiskierroksiin.',
+	'INFO FB BONUS TITLE': 'Bonuksen osto',
+	'INFO FB BONUS TEXT':
+		'Ostaa suoran pääsyn vahvempaan Magnetic Mega Chain -ilmaiskierrosten ominaisuuteen.',
+	'INFO COST': 'HINTA',
+	'INFO RTP': 'RTP',
+	'INFO GI INTERRUPTED TITLE': 'Keskeytyneet kierrokset',
+	'INFO GI INTERRUPTED 1':
+		'Jos pelikierros keskeytyy, se jatkuu pelin uudelleenlatauksen yhteydessä, mikäli mahdollista.',
+	'INFO GI INTERRUPTED 2':
+		'Kaikki voimassa olevat panokset ja mahdolliset voitot pysyvät aktiivisina, kunnes kierros on täysin suoritettu.',
+	'INFO GI LEGAL TITLE': 'Oikeudellinen huomautus',
+	'INFO GI LEGAL 1':
+		'Toimintahäiriö mitätöi kaikki maksut ja pelit. Vakaa internetyhteys vaaditaan. Jos yhteys katkeaa, lataa peli uudelleen suorittaaksesi keskeneräiset kierrokset loppuun.',
+	'INFO GI LEGAL 2':
+		'Odotettu palautus lasketaan suuren pelimäärän perusteella. Pelinäkymä on tarkoitettu vain visuaalisiin ja viihdetarkoituksiin, eikä se edusta mitään fyysistä pelilaitetta.',
+	'INFO GI LEGAL 3':
+		'Kaikki voitot maksetaan etäpelipalvelimelta saadun tuloksen mukaan, ei verkkoselaimessa näytettyjen animaatioiden tai tapahtumien perusteella.',
+	'DISCLAIMER TEXT':
+		'Toimintahäiriö mitätöi kaikki voitot ja pelit. Vakaa internetyhteys vaaditaan. Yhteyden katketessa lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset. Odotettu palautus lasketaan monien pelien yli. Pelinäyttö ei edusta mitään fyysistä laitetta ja on tarkoitettu vain havainnollistaviin tarkoituksiin. Voitot maksetaan etäpelipalvelimelta saadun summan mukaan, ei verkkoselaimen sisäisten tapahtumien perusteella. TM ja © 2026 Stake Engine.',
+	'INFO CTRL SPIN': 'Pyöräytä',
+	'INFO CTRL SPIN DESC': 'Aloita pelikierros valitsemallasi panoksella.',
+	'INFO CTRL AUTO': 'Automaattipeli',
+	'INFO CTRL AUTO DESC': 'Pelaa tietty määrä kierroksia automaattisesti.',
+	'INFO CTRL TURBO': 'Turbo',
+	'INFO CTRL TURBO DESC': 'Nopeuta jokaista pelikierrosta.',
+	'INFO CTRL PLUS': 'Lisää panosta',
+	'INFO CTRL PLUS DESC': 'Nosta kokonaispanostasi.',
+	'INFO CTRL MINUS': 'Vähennä panosta',
+	'INFO CTRL MINUS DESC': 'Laske kokonaispanostasi.',
+	'INFO CTRL INFO': 'Tiedot',
+	'INFO CTRL INFO DESC': 'Näytä pelin säännöt ja voittotaulukko.',
+	'INFO CTRL SOUND': 'Ääni',
+	'INFO CTRL SOUND DESC': 'Kytke ääniefektit päälle tai pois.',
+	'INFO CTRL PREV': 'Edellinen',
+	'INFO CTRL PREV DESC': 'Siirry edelliselle sivulle.',
+	'INFO CTRL NEXT': 'Seuraava',
+	'INFO CTRL NEXT DESC': 'Siirry seuraavalle sivulle.',
+	'INFO CTRL CLOSE': 'Sulje',
+	'INFO CTRL CLOSE DESC': 'Sulje tämä ikkuna.',
+	'INFO CTRL MENU': 'Valikko',
+	'INFO CTRL MENU DESC': 'Avaa asetukset ja pelivaihtoehdot.',
+	'INFO CTRL MUSIC': 'Musiikki',
+	'INFO CTRL MUSIC DESC': 'Kytke taustamusiikki päälle tai pois.',
+	'INFO PAGE': 'Sivu',
+	HOME: 'KOTI',
+	'NOT TRANSLATED': 'EI KÄÄNNETTY',
+	'GAME TITLE': 'MAGNETIC',
+	'SPLASH EXP TITLE': 'LAAJENEVAT\nKELAT',
+	'SPLASH MEGA TITLE': 'MEGAKETJU',
+	'SPLASH EPIC TITLE': 'EEPPISET\nVOITOT',
+	'SPLASH WITH UP TO': 'jopa',
+	'SPLASH MULTIPLIER': 'kerroin',
+	'SPLASH PRESS': 'PAINA JATKAAKSESI',
+	'SPLASH BONUS TITLE': 'BONUSPELIT',
+	'SPLASH SCATTERS FOR': '%count% Scatter-symbolia',
+	'SPLASH MMC': 'MAGNEETTINEN MEGAKETJU',
+	'SPLASH MEGA BUILD': 'Rakenna',
+	'SPLASH MEGA CHAIN': 'ketju',
+	'SPLASH MEGA REST': 'kertoimilla, jotka kertovat toisiaan',
+	'SPLASH MAX TITLE': 'MAKS. VOITTO',
+	'SPLASH UP TO': 'jopa',
+	BALANCE: 'SALDO',
+	BET: 'PANOS',
+	'TOTAL COST': 'KOKONAISKUSTANNUS',
+	'REAL COST': 'TODELLINEN KUSTANNUS',
+	MODE: 'TILA',
+	'BUY BONUS': 'OSTA BONUS',
+	'BONUS': 'BONUS',
+	PAYTABLE: 'VOITTOTAULUKKO',
+	'GAME RULES': 'PELISÄÄNNÖT',
+	AUTOPLAY: 'AUTOMAATTI',
+	'AUTO': 'AUTO',
+	TURBO: 'TURBO',
+	REPLAY: 'TOISTO',
+	'START REPLAY': 'ALOITA TOISTO',
+	'PLAY AGAIN': 'PELAA UUDELLEEN',
+	'RETRY RESUME': 'YRITÄ KIERROSTA UUDELLEEN',
+	'RECOVERY TITLE': 'KESKEN JÄÄNYT KIERROS HAVAITTU',
+	'RECOVERY BODY':
+		'Edellistä kierrosta ei voitu palauttaa automaattisesti. Yritä uudelleen viimeistelläksesi alkuperäisen kierroksen ennen uuden aloittamista.',
+	EVENT: 'TAPAHTUMA',
+	PAYOUT: 'MAKSU',
+	WIN: 'VOITTO',
+	'BET SIZE': 'PANOKSEN KOKO',
+	'REPLAY ERROR GENERIC': 'Toisto ei ole käytettävissä. Yritä uudelleen.',
+	SOUND: 'ÄÄNI',
+	MUSIC: 'MUSIIKKI',
+	INFO: 'TIEDOT',
+	DEACTIVATE: 'POISTA KÄYTÖSTÄ',
+	ACTIVATE: 'OTA KÄYTTÖÖN',
+	BUY: 'OSTA',
+	CONFIRM: 'VAHVISTA',
+	CANCEL: 'PERUUTA',
+	'PER SPIN': '/ kierros',
+	'CONFIRM TITLE': 'VAHVISTA %name%',
+	'BUY CONFIRM': 'OSTA %name% hintaan %cost%?',
+	'BUY EXTRA CHANCE TITLE': 'Lisämahdollisuus',
+	'BUY EXTRA CHANCE DESC':
+		'Aktivoi kolminkertaistaaksesi bonuskierroksen laukaisemisen mahdollisuuden.',
+	'BUY FEATURE SPINS TITLE': 'Ominaisuuskierrokset',
+	'BUY FEATURE SPINS DESC':
+		'Ostaa erikoiskierroksen, jossa on taattu magneettinen yhteys ja mahdollisuus saada Kerroin-Wildejä.',
+	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP DESC':
+		'10 ilmaiskierrosta myönnetään. Yksi satunnainen symboli muuttuu magneettiseksi joka kierroksella. Vastaavat symbolit yhdistyvät automaattisesti toisiinsa. Multiplier Wildit kasvattavat bonuskerrointa pysyvästi.',
+	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA DESC':
+		'10 ilmaiskierrosta myönnetään. Yksi satunnainen symboli muuttuu magneettiseksi ja pysyy yhdistettynä kierrosten välillä. Magneettinen ryhmä säilyy ja kasvaa koko ominaisuuden ajan kertoimien jatkaessa kasautumista.',
+	'AUTO TURBO': 'TURBOKIERROS',
+	'AUTO SUPER TURBO': 'SUPERTURBOKIERROS',
+	'AUTO FEATURE': '50X BONUSOMINAISUUS',
+	'AUTO NUM SPINS': 'KIERROSTEN MÄÄRÄ',
+	'AUTO START': 'ALOITA AUTOMAATTIPELI',
+	'YOU WON': 'VOITIT',
+	'FREE SPINS': 'ILMAISKIERROKSET',
+	CONGRATULATIONS: 'ONNITTELUT',
+	'PRESS ANYWHERE': 'PAINA MITÄ TAHANSA JATKAAKSESI',
+	'TOTAL WIN': 'KOKONAISVOITTO',
+	'ALL WINS': 'KAIKKI VOITOT',
+	RESPIN: 'UUSI PYÖRÄYTYS',
+	'UNFINISHED ROUND': 'KESKEN JÄÄNYT KIERROS',
+	'RESUME BODY': 'Sinulla on aktiivinen %mode%-bonus käynnissä.',
+	'PLAY ROUND': 'PELAA KIERROS',
+	'END ROUND': 'LOPETA KIERROS',
+
+	// Approved shared translations reused from Forest Gang.
+	'BET MODE BASE TITLE': 'PERUS',
+	'BET MODE BASE BUTTON': 'PELAA',
+	'BET MODE BASE TICKER SPIN': 'ONNEA MATKAAN',
+	'BET MODE BONUS BUTTON': 'OSTA',
+	'BET MODE BONUS TICKER IDLE': 'ASETA PANOKSESI',
+	'BET MODE CHANCE TITLE': 'MAHDOLLISUUSKIERROS',
+	'BET MODE CHANCE DESCRIPTION':
+		'Aktivoi mahdollisuuskierros hintaan 2x valitusta panoksestasi kierrosta kohti.',
+	'BET MODE CHANCE BUTTON': 'AKTIVOI',
+	'BET MODE CHANCE TICKER IDLE': 'MAHDOLLISUUSKIERROS AKTIIVINEN',
+	'BET MODE CHANCE TICKER SPIN': 'ONNEA MATKAAN',
+	'BET MODE SUPER BUTTON': 'OSTA',
+	'BET MODE SUPER TICKER IDLE': 'ASETA PANOKSESI',
+	'BET MODE FEATURE TITLE': 'OMINAISUUSKIERROS',
+	'BET MODE FEATURE BUTTON': 'AKTIVOI',
+	'BET MODE FEATURE TICKER IDLE': 'OMINAISUUSKIERROS AKTIIVINEN',
+	'BET MODE FEATURE TICKER SPIN': 'OMINAISUUSKIERROS AKTIIVINEN',
+	'RULE SECTION GAME INFO': 'PELITIEDOT',
+	'RULE SECTION FEATURES': 'OMINAISUUDET',
+	'RULE SECTION HOW TO PLAY': 'MITEN PELATA',
+	'RULE SECTION DISCLAIMER': 'YLEINEN VASTUUVAPAUSLAUSEKE',
+	'RULE WILD TITLE': 'WILD',
+	'RULE SCATTER TITLE': 'SCATTER',
+	'RULE BUY TITLE': 'OSTO- / AKTIVOINTITILAT',
+	'HOWTO SPIN TITLE': 'PYÖRÄYTÄ / PYSÄYTÄ',
+	'HOWTO BET TITLE': 'PANOKSEN VALITSIN',
+	'HOWTO BET TEXT':
+		'Käytä + ja - painikkeita tai avaa panosvalikko muuttaaksesi näytettyä panosmäärää ennen kierroksen alkua.',
+	'HOWTO BUY TITLE': 'OSTA BONUS',
+	'HOWTO TURBO TITLE': 'TURBO',
+	'HOWTO TURBO TEXT': 'Turbo lyhentää tiettyjä kierrosaikoja nopeampaa peliä varten.',
+	'HOWTO AUTOPLAY TITLE': 'AUTOMAATTIPELI',
+	'HOWTO AUTOPLAY TEXT':
+		'Automaattipeli toistaa kierroksia automaattisesti kunnes valittu pysäytysehto tai laskuri päättyy.',
+	'HOWTO REPLAY TITLE': 'TOISTOTILA',
+	'PAYTABLE PREMIUM TITLE': 'PREMIUM-SYMBOLIT',
+	'PAYTABLE LOW TITLE': 'MATALAT SYMBOLIT',
+	'PAYTABLE SPECIAL TITLE': 'ERIKOISSYMBOLIT',
+	'PAYTABLE BUY TITLE': 'OSTOTILAT',
+	'PAYTABLE MAX TITLE': 'MAKSIMIVOITTO',
+
+	// Magnetic-specific rules, replay, modes, and paytable.
+	'BET REPLAY': 'PANOKSEN TOISTO',
+	'REPLAY EVENT': 'TOISTA TAPAHTUMA',
+	'BASE BET': 'PERUSPANOS',
+	'COST MULTIPLIER': 'KUSTANNUSKERROIN',
+	'TOTAL BET COST': 'PANOKSEN KOKONAISKUSTANNUS',
+	'PAYOUT MULTIPLIER': 'VOITTOKERROIN',
+	'REPLAY DISCLAIMER': 'Tämä on aiemman panoskierroksen toisto. Uusia panoksia ei aseteta.',
+	'DEAL IT': 'Drop-O-Magnet',
+	'ALL IN': 'MEGAKETJU',
+	'BET MODE BASE DIALOG':
+		'Magnetic on 7x7-ryhmävoittopeli, jossa voitot muodostuvat samanlaisten symbolien ryhmistä. Voita saamalla 5 tai useampi samanlainen symboli yhteen vaaka- tai pystysuunnassa.',
+	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
+	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS DIALOG': '10 ilmaiskierrosta erittäin suurella magneettitodennäköisyydellä.',
+	'BET MODE BONUS DESCRIPTION':
+		'Osta 10 ilmaiskierrosta suuremmalla magneettitodennäköisyydellä hintaan 100x valittu panos.',
+	'BET MODE BONUS TICKER SPIN': 'BONUS AKTIIVINEN',
+	'BET MODE CHANCE DIALOG':
+		'Chance Spin pysyy aktiivisena, kunnes se poistetaan käytöstä. Jokainen kierros maksaa 2x panoksen ja kolminkertaistaa bonuksen käynnistymistodennäköisyyden.',
+	'BET MODE SUPER TITLE': 'MEGAKETJU',
+	'BET MODE SUPER DIALOG':
+		'10 ilmaiskierrosta, joista ensimmäisellä on taattu magneetti. Kohdesymboli, kerätty klusteri ja yhdistetty kerroin säilyvät koko bonuksen ajan.',
+	'BET MODE SUPER DESCRIPTION': 'Osta pysyvä superbonus hintaan 500x valittu panos.',
+	'BET MODE SUPER TICKER SPIN': 'SUPER AKTIIVINEN',
+	'BET MODE FEATURE DIALOG':
+		'Feature Spin pysyy aktiivisena, kunnes se poistetaan käytöstä. Jokainen kierros maksaa 50x panoksen ja takaa yhden maksullisen magneettikierroksen.',
+	'BET MODE FEATURE DESCRIPTION': 'Aktivoi Feature Spin hintaan 50x valittu panos kierrosta kohti.',
+	'RULE GAME TITLE': 'MAGNETIC',
+	'RULE GAME TEXT':
+		'Magnetic on 7x7-ryhmävoittopeli, jossa voitot muodostuvat samanlaisten symbolien ryhmistä. Voita saamalla 5 tai useampi samanlainen symboli yhteen vaaka- tai pystysuunnassa. Vinottaisia yhteyksiä ei lasketa.',
+	'RULE WILD TEXT':
+		'Perustilassa Magnetic Wild valitsee satunnaisesti yhden näkyvän tavallisen symbolin sijainnin. Jokaisella näkyvällä sijainnilla on sama mahdollisuus, joten useammin näkyvät symbolityypit valitaan todennäköisemmin. Se vetää sitten kaikki kyseisen tyypin näkyvät symbolit puoleensa. Kohde pysyy samana aktiivisen magneettisarjan ajan.',
+	'RULE SCATTER TEXT':
+		'3 Scatter-symbolia käynnistää Drop-O-Magnetin. 4 Scatter-symbolia käynnistää Mega Chainin. Scatter ei maksa yksinään.',
+	'RULE DEAL IT TITLE': 'KLUSTERIN UUDELLEENPYÖRÄYTYKSET',
+	'RULE DEAL IT TEXT':
+		'Luonnolliset hyväksytyt klusterit lukitaan paikalleen. Kaikki muut ruudut pyörivät uudelleen. Jos uusia vastaavia symboleita osuu aktiiviseen klusteriin, ne liittyvät siihen ja seuraa uusi pyöräytys.',
+	'RULE ALL IN TITLE': 'MEGAKETJU',
+	'RULE ALL IN TEXT':
+		'Ensimmäisellä Super-ilmaiskierroksella magneetti on taattu. Valittu kohdesymboli, kerätty klusteri ja sarjan kerrottu arvo säilyvät kaikilla 10 ilmaiskierroksella ja ratkaistaan lopuksi.',
+	'RULE BUY TEXT':
+		'Drop-O-Magnet maksaa 100x panoksen. Mega Chain maksaa 500x. Chance Spin maksaa 2x kierrokselta. Feature Spin maksaa 50x kierrokselta. Enimmäisvoitto: 20 000x. Tavoite-RTP: 96,1 %.',
+	'FEATURE SELECTED SYMBOL TITLE': 'MAGNEETIN KOHDE',
+	'FEATURE SELECTED SYMBOL TEXT':
+		'Magnetic Wild valitsee satunnaisesti yhden näkyvän tavallisen symbolin sijainnin. Jokaisella sijainnilla on sama mahdollisuus, joten symbolityypit, joilla on enemmän näkyviä sijainteja, ovat todennäköisempiä. Kaikki valitun tyypin näkyvät symbolit vedetään puoleen, eivätkä lisämagneetit vaihda kohdetta sarjan aikana.',
+	'FEATURE DEAL IT MULTIPLIER TITLE': 'KERROIN-WILD',
+	'FEATURE DEAL IT MULTIPLIER TEXT':
+		'Multiplier Wild -arvot kerrotaan keskenään yhden aktiivisen magneettisarjan sisällä. Esimerkki: 2x × 3x × 4x = yhteensä 24x.',
+	'FEATURE ALL IN_MULTIPLIER TITLE': 'PYSYVÄ SUPERSARJA',
+	'FEATURE ALL IN_MULTIPLIER TEXT':
+		'Superbonuksessa kohdesymboli, kerätyt ruudut ja sarjan kerrottu arvo säilyvät kaikilla 10 ilmaiskierroksella lopullisen palkinnon ratkaisuun asti.',
+	'HOWTO SPIN TEXT':
+		'Aloita kierros painamalla Pyöräytä. Paina uudelleen sarjan aikana pyytääksesi pysäytystä, jos se on käytettävissä.',
+	'HOWTO BUY TEXT':
+		'Avaa Osta bonus ja valitse Drop-O-Magnet, Mega Chain, Chance Spin tai Feature Spin. Ostetut bonukset on vahvistettava. Aktivointitilat voidaan ottaa käyttöön tai poistaa käytöstä.',
+	'HOWTO REPLAY TEXT':
+		'Toisto lataa päättyneen tapahtuman ja näyttää alkuperäisen panoksen, kokonaiskustannuksen, voitonmaksun ja voittotiedot.',
+	'PAYTABLE TITLE PAYLINES': 'RYHMÄ',
+	'PAYTABLE TEXT PAYLINES':
+		'Voitto syntyy, kun 5 tai useampi samanlainen symboli koskettaa toisiaan vaaka- tai pystysuunnassa. Vinottaisia yhteyksiä ei lasketa.',
+	'PAYTABLE FOX':
+		'HEVOSENKENKÄMAGNEETTI (H1)\n5 = 0.5x\n6 = 1x\n7 = 2x\n8 = 4x\n9 = 8x\n10-11 = 15x\n12-14 = 30x\n15-19 = 80x\n20-24 = 200x\n25-29 = 500x\n30-32 = 1000x\n33+ = 2000x',
+	'PAYTABLE WOLF':
+		'PLASMAPORA (H2)\n5 = 0.4x\n6 = 0.8x\n7 = 1.5x\n8 = 3x\n9 = 6x\n10-11 = 12x\n12-14 = 25x\n15-19 = 60x\n20-24 = 150x\n25-29 = 350x\n30-32 = 750x\n33+ = 1500x',
+	'PAYTABLE BEAR':
+		'MAGNEETTINEN YDINKUUTIO (H3)\n5 = 0.3x\n6 = 0.6x\n7 = 1.2x\n8 = 2.5x\n9 = 5x\n10-11 = 10x\n12-14 = 20x\n15-19 = 50x\n20-24 = 120x\n25-29 = 280x\n30-32 = 600x\n33+ = 1200x',
+	'PAYTABLE RABBIT':
+		'SÄHKÖMAGNEETTINEN LAITE (H4)\n5 = 0.25x\n6 = 0.5x\n7 = 1x\n8 = 2x\n9 = 4x\n10-11 = 8x\n12-14 = 16x\n15-19 = 35x\n20-24 = 90x\n25-29 = 220x\n30-32 = 450x\n33+ = 900x',
+	'PAYTABLE SQUIRREL':
+		'PULTTI (L1)\n5 = 0.2x\n6 = 0.4x\n7 = 0.8x\n8 = 1.6x\n9 = 3.2x\n10-11 = 6x\n12-14 = 12x\n15-19 = 30x\n20-24 = 75x\n25-29 = 180x\n30-32 = 350x\n33+ = 500x',
+	'PAYTABLE LOWS_1':
+		'MUTTERI (L2)\n5 = 0.12x\n6 = 0.25x\n7 = 0.5x\n8 = 1x\n9 = 2x\n10-11 = 4x\n12-14 = 8x\n15-19 = 20x\n20-24 = 50x\n25-29 = 100x\n30-32 = 200x\n33+ = 400x\n\nALUSLEVY (L3)\n5 = 0.1x\n6 = 0.2x\n7 = 0.4x\n8 = 0.8x\n9 = 1.6x\n10-11 = 3x\n12-14 = 6x\n15-19 = 15x\n20-24 = 40x\n25-29 = 80x\n30-32 = 150x\n33+ = 300x',
+	'PAYTABLE LOWS_2':
+		'ENERGIARUUVI (L4)\n5 = 0.08x\n6 = 0.16x\n7 = 0.32x\n8 = 0.64x\n9 = 1.28x\n10-11 = 2.5x\n12-14 = 5x\n15-19 = 12x\n20-24 = 30x\n25-29 = 60x\n30-32 = 120x\n33+ = 250x',
+	'PAYTABLE SPECIAL_TEXT':
+		'Magneetti aloittaa magneettisarjan. Wild korvaa tavalliset symbolit. Multiplier Wildit kertovat aktiivisen sarjan. Scatter käynnistää vain bonuksia.',
+	'PAYTABLE BUY_TEXT':
+		'Drop-O-Magnet: 100x panos.\nMega Chain: 500x panos.\nChance Spin: 2x panos kierrokselta.\nFeature Spin: 50x panos kierrokselta.',
+	'PAYTABLE MAX_TEXT': 'Ilmoitettu enimmäisvoitto on 20 000x valittu panos.',
+	'NO BALANCE TITLE': 'SALDO EI RIITÄ',
+	'NO BALANCE BODY':
+		'Saldosi on liian pieni tälle panokselle. Pienennä panostasoa jatkaaksesi pelaamista.',
+	OK: 'OK',
+};

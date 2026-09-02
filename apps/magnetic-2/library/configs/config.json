@@ -1,0 +1,143 @@
+{
+    "workingName": "Magnetic 2",
+    "frontendConfig": {
+        "file": "fe_config.json",
+        "sha256": "61224696f2ce65188a206de92e185d5026835acca6311cfd7ef24e36c32444f4"
+    },
+    "gameID": "0_0_magnetic_2",
+    "rtp": 96.1,
+    "betDenomination": 1000,
+    "minDenomination": 10,
+    "providerNumber": 0,
+    "standardForceFile": {
+        "file": "force.json",
+        "sha256": "645e71de1038aea394e5bea224a068adabe2e9ddfc561c03883b96bce4aafee9"
+    },
+    "bookShelfConfig": [
+        {
+            "name": "BASE",
+            "tables": [
+                {
+                    "file": "lookUpTable_BASE_0.csv",
+                    "sha256": "72e0127108c4ff5bcd3fa75965a7ea87e782fcd51ce456924707b2d65579c2bf"
+                }
+            ],
+            "cost": 1.0,
+            "rtp": 0.961,
+            "std": 4.99,
+            "bookLength": 20,
+            "feature": true,
+            "autoEndRoundDisabled": false,
+            "buyBonus": false,
+            "maxWin": 20000.0,
+            "booksFile": {
+                "file": "books_BASE.jsonl.zst",
+                "sha256": "18834fad113c1ac59718b3af9fda28ac7b4a339499a9a5f307d779865aff7620"
+            },
+            "forceFile": {
+                "file": "force_record_BASE.json",
+                "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            }
+        },
+        {
+            "name": "CHANCE",
+            "tables": [
+                {
+                    "file": "lookUpTable_CHANCE_0.csv",
+                    "sha256": "a3f7cc5fcd8f00d08f1cdf1c6ea9a2ebbfc4cc1fcf0ca40f300a3782928b81ee"
+                }
+            ],
+            "cost": 2.0,
+            "rtp": 0.961,
+            "std": 2.51,
+            "bookLength": 20,
+            "feature": true,
+            "autoEndRoundDisabled": false,
+            "buyBonus": false,
+            "maxWin": 20000.0,
+            "booksFile": {
+                "file": "books_CHANCE.jsonl.zst",
+                "sha256": "3d6591e6da7f98cda88d69cc83fa0fa5de31e47c19a3f1338242952947605259"
+            },
+            "forceFile": {
+                "file": "force_record_CHANCE.json",
+                "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            }
+        },
+        {
+            "name": "FEATURE",
+            "tables": [
+                {
+                    "file": "lookUpTable_FEATURE_0.csv",
+                    "sha256": "cf8aeb55d7dbb1342bd011e719acceca1d3c640ccdc0353e09d8718fcef121f9"
+                }
+            ],
+            "cost": 50.0,
+            "rtp": 0.961,
+            "std": 1.8,
+            "bookLength": 10,
+            "feature": false,
+            "autoEndRoundDisabled": false,
+            "buyBonus": true,
+            "maxWin": 20000.0,
+            "booksFile": {
+                "file": "books_FEATURE.jsonl.zst",
+                "sha256": "3ca0023ec93ce48ccee480a87f4f883706e455915b704e9bcb31a5bc0652f1c8"
+            },
+            "forceFile": {
+                "file": "force_record_FEATURE.json",
+                "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            }
+        },
+        {
+            "name": "BONUS",
+            "tables": [
+                {
+                    "file": "lookUpTable_BONUS_0.csv",
+                    "sha256": "e4388ee83656ec08c3590f2780776adde85964d716afb909115255e928188ceb"
+                }
+            ],
+            "cost": 100.0,
+            "rtp": 0.961,
+            "std": 2.41,
+            "bookLength": 10,
+            "feature": false,
+            "autoEndRoundDisabled": false,
+            "buyBonus": true,
+            "maxWin": 20000.0,
+            "booksFile": {
+                "file": "books_BONUS.jsonl.zst",
+                "sha256": "4573ca73814eeca207fb1445788aa0a0a1d246e7b5e36bb3466b47b4b71c1071"
+            },
+            "forceFile": {
+                "file": "force_record_BONUS.json",
+                "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            }
+        },
+        {
+            "name": "SUPER",
+            "tables": [
+                {
+                    "file": "lookUpTable_SUPER_0.csv",
+                    "sha256": "83549ea98d520e483afcc823607b55106cfa1fdf100a0c8e1dc80c3474208cda"
+                }
+            ],
+            "cost": 500.0,
+            "rtp": 0.961,
+            "std": 0.84,
+            "bookLength": 10,
+            "feature": false,
+            "autoEndRoundDisabled": false,
+            "buyBonus": true,
+            "maxWin": 20000.0,
+            "booksFile": {
+                "file": "books_SUPER.jsonl.zst",
+                "sha256": "5773f268e5d4df71df2f8dcf3ff68ad7ebbdb5427ff285555cb3a71be1fd2ef8"
+            },
+            "forceFile": {
+                "file": "force_record_SUPER.json",
+                "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+            }
+        }
+    ]
+}

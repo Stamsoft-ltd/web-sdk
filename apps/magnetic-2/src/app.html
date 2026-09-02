@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+		<!-- Fonts are SELF-HOSTED (static/fonts/web) — Stake Engine requires all assets to load from
+		     the game's own CDN paths with no external runtime requests. The previous Google Fonts and
+		     Typekit @imports rendered system-font fallbacks wherever external hosts are blocked, and
+		     the Typekit one was additionally awaited by pixi's InitialiseApplication, stalling app
+		     boot on a request that can never succeed there. See <App preloadWebFont={false}>. -->
+		<link rel="stylesheet" href="%sveltekit.assets%/fonts/web/fonts.css" />
+		<!-- The room art is the loading screen's backdrop AND the splash's, so it is the very first
+		     thing the player sees. Everything else waits on <Authenticate>'s round-trip before its
+		     component can even mount and request it; starting it here overlaps that window. 56KB. -->
+		<link
+			rel="preload"
+			as="image"
+			href="%sveltekit.assets%/assets/components/splash/room.webp"
+			type="image/webp"
+		/>
+		<!-- PIXI rasterises Text to canvas once and does NOT redraw when a webfont arrives later, so a
+		     face that is only ever used from canvas can miss its first paint and fall back. @font-face
+		     alone does not fetch — the browser needs a consumer. Warm the win-amount face explicitly. -->
+		<script>
+			document.fonts?.load('900 128px Orbitron');
+		</script>
+		<style>
+			/* Fill the FULL dynamic viewport so the canvas (and its background) always reaches the
+			   bottom edge on mobile — 100% chains break when the browser URL bar shows/hides, leaving
+			   the black body visible below the game. 100dvh tracks the visible viewport. */
+			html,
+			body {
+				height: 100%;
+			}
+			body > div {
+				width: 100%;
+				height: 100dvh;
+			}
+		</style>
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, shrink-to-fit=no"
+		/>
+		%sveltekit.head%
+	</head>
+	<!-- Branded dark background so the first paint is never a jarring pitch-black screen. This now
+	     covers the whole pre-render window: <Authenticate> renders nothing until the auth round-trip
+	     resolves, and the Stake Engine loader that used to sit over that gap has been removed. -->
+	<body style="margin: 0; padding: 0; overflow: hidden; background-color: #041721">
+		<div>%sveltekit.body%</div>
+	</body>
+</html>

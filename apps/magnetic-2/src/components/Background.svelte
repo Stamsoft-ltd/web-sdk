@@ -1,0 +1,446 @@
+<script lang="ts">
+	import { Container, Graphics, Sprite } from 'pixi-svelte';
+	import { Tween } from 'svelte/motion';
+	import { cubicInOut, cubicOut } from 'svelte/easing';
+
+	import { getContext } from '../game/context';
+	import { BACKGROUND_LIGHTS } from '../game/backgroundLights';
+	import { PORTRAIT_BACKGROUND_RATIO } from '../game/constants';
+
+	const props: {
+		/** True once the splash is out of the way and the player is actually looking at the room —
+		 *  the cue for the ship's arrival flight. */
+		revealed?: boolean;
+	} = $props();
+
+	const context = getContext();
+	const DESKTOP_ASPECT = 1920 / 1080;
+	// Must match the art scripts/build-room-art.py emits (1242x2208), because `aspect` below sizes
+	// the SPRITE — art of any other shape is stretched to it, not letterboxed. This read 1440/3200
+	// while the portrait art was already 1242x2208, which squeezed every portrait room to 80% width.
+	const MOBILE_ASPECT = PORTRAIT_BACKGROUND_RATIO;
+	// Portrait uses the mobile (tall) backgrounds; the two special bonuses still swap:
+	// SUPER (superspin), BONUS (freegame), else base.
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	const bgKey = $derived(
+		context.stateGame.bonusMode === 'superspin'
+			? isPortrait
+				? 'bgMobileSuper'
+				: 'bgSuper'
+			: context.stateGame.bonusMode === 'freegame'
+				? isPortrait
+					? 'bgMobileBonus'
+					: 'bgBonus'
+				: isPortrait
+					? 'bgMobileBase'
+					: 'bgBase',
+	);
+	const aspect = $derived(isPortrait ? MOBILE_ASPECT : DESKTOP_ASPECT);
+
+	// ── Room change cross-fade ──
+	// bgKey flips the instant bonusMode is set, which used to swap the whole room in one frame —
+	// the buy-bonus hand-off read as a glitch rather than as walking into another part of the lab.
+	// The outgoing room is held underneath and the incoming one dissolves over it.
+	//
+	// Orientation changes are exempt: the two layouts use different art at a different aspect, so
+	// cross-fading them would dissolve a portrait corridor into a landscape room mid-rotate.
+	//
+	// So is the way OUT of a bonus. freeSpinEnd resets bonusMode BEFORE it plays the wipe, so a
+	// fade there leaves the green/purple bonus room visibly hanging under the wipe for the better
+	// part of a second — it read as a green flash after the total-win panel. Entering a bonus has
+	// the opposite order (bonusMode is set after the wipe finishes), which is exactly where the
+	// dissolve belongs. Hence: fade INTO a bonus room, snap back to base.
+	const CROSSFADE_MS = 900;
+	const isLoaded = (key: string) => !!context.stateApp.loadedAssets?.[key];
+	const isBonusRoom = (key: string) => key.endsWith('Super') || key.endsWith('Bonus');
+	// '' until the first background resolves, so the initial paint is not treated as a change.
+	let displayedKey = $state('');
+	let outgoingKey = $state<string | null>(null);
+	let lastPortrait = false;
+	const fade = new Tween(1, { duration: CROSSFADE_MS, easing: cubicInOut });
+	let fadeTimer = 0;
+
+	$effect(() => {
+		const next = bgKey;
+		const nextPortrait = isPortrait;
+		if (next === displayedKey) return;
+		const first = displayedKey === '';
+		const previous = displayedKey;
+		const rotated = !first && nextPortrait !== lastPortrait;
+		lastPortrait = nextPortrait;
+		displayedKey = next;
+		clearTimeout(fadeTimer);
+		// Only cross-fade between rooms we can actually paint: a deferred background that has not
+		// landed yet would dissolve in from an empty texture.
+		if (first || rotated || !isBonusRoom(next) || !isLoaded(previous) || !isLoaded(next)) {
+			outgoingKey = null;
+			fade.set(1, { duration: 0 });
+			return;
+		}
+		outgoingKey = previous;
+		fade.set(0, { duration: 0 });
+		fade.set(1);
+		fadeTimer = setTimeout(() => (outgoingKey = null), CROSSFADE_MS + 60) as unknown as number;
+	});
+
+	$effect(() => () => clearTimeout(fadeTimer));
+	// This component mounts before the gating asset pass finishes (it sits outside the loading-screen
+	// branch in Game.svelte), and the portrait/landscape backgrounds are additionally deferred on the
+	// layout the session did not start in. Drawing a key that isn't in loadedAssets yet logs an error
+	// and paints an empty texture, so wait for it — the loading screen covers the stage meanwhile,
+	// and after a rotate the previous background simply holds until the deferred one lands.
+	const hasBg = $derived(!!displayedKey && isLoaded(displayedKey));
+	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
+	const cover = $derived.by(() => {
+		const width = canvas.width;
+		const height = canvas.height;
+		const canvasAspect = width / height;
+
+		if (canvasAspect > aspect) {
+			return { width, height: width / aspect };
+		}
+
+		return { width: height * aspect, height };
+	});
+
+	// ── Room life ──
+	// The room art is a still photograph, which is most of why the game reads as dead between spins.
+	// Two things move now, both free of new assets:
+	//   * a very slow BREATH on the sprite itself (a fraction of a percent of scale over ~24s), which
+	//     the eye reads as air/heat rather than as a zoom;
+	//   * the machines' own lamps, lit with the recipe the congratulations frame and the win-sign
+	//     tubes use — a stacked-falloff halo, an irregular ballast flicker, and a hotspot drifting
+	//     inside each lamp. Positions are MEASURED off the art (game/backgroundLights.ts).
+	// One persistent rAF drives both, and the lamps are drawn imperatively into a captured Graphics
+	// so a 60fps glow never re-renders the scene graph.
+	const lights = $derived(BACKGROUND_LIGHTS[displayedKey] ?? []);
+	const outgoingLights = $derived(outgoingKey ? (BACKGROUND_LIGHTS[outgoingKey] ?? []) : []);
+	let clock = $state(0);
+	type G = {
+		destroyed: boolean;
+		clear: () => void;
+		roundRect: (x: number, y: number, w: number, h: number, r: number) => unknown;
+		ellipse: (x: number, y: number, rx: number, ry: number) => unknown;
+		poly: (points: number[]) => unknown;
+		fill: (s: object) => void;
+	};
+	let lampG: G | null = null;
+	// The ship runs on its own clock. The room's is deliberately throttled to ~10fps (see below),
+	// which is fine for a breath but turns a tremble into a stutter.
+	let shipClock = $state(0);
+
+	const BREATH_S = 24;
+	const breath = $derived(1 + 0.006 * Math.sin((clock / BREATH_S) * Math.PI * 2));
+
+	// ── The ship ──
+	// Assembled from the designer's own loose parts (scripts/build-ufo-art.py prints every constant
+	// below): the saucer, the antenna standing on it, and a tractor beam that is DRAWN rather than a
+	// sprite, so it can switch on, breathe, sweep and haul motes up into the hull.
+	//
+	// The design hangs it top-right, running off the frame edge — that column used to hold the magnet
+	// capsule, which is gone with the redesign, so the ship gets it back at full size. Note WHERE
+	// that is: dead centre of the room's right window, i.e. the ship is outside, in the sky.
+	//
+	// Everything is sized off the HULL's width and its own art aspect. The parts were exported at
+	// unrelated scales, so sizing them against each other's pixel dimensions draws the antenna 21%
+	// too large — the antenna's size comes from the ratio measured in the designer's composite.
+	const UFO = {
+		cx: 0.888,
+		cy: 0.1635,
+		/** Hull width, as a fraction of the background. */
+		w: 0.2143,
+		hullAspect: 1.9389,
+		antennaAspect: 0.5,
+		/** Antenna ball width as a fraction of the hull's width. */
+		antennaOfHull: 0.1,
+		/** How far the stem sinks into the dome, as a fraction of the antenna's height. */
+		antennaOverlap: 0.06,
+	};
+	/** The lit opening on the saucer's underside, in HULL fractions — the beam hangs off this. */
+	const EMITTER = { cx: 0.498, w: 0.2047, bottom: 0.9237 };
+	// Beam reach, as fractions of the background. The SPREAD is the design's own (its beam art went
+	// from the emitter's 0.0439 to 0.2022 over 0.4757 of the height); the cone is simply cut where
+	// the ground is. The design's full reach carried the light across the window's inner sill —
+	// measured at 0.579 of the height in this column — and pooled it on the interior wall IN FRONT
+	// of the frame, which reads as a mistake once you notice the ship is hanging outside the room.
+	const BEAM = { w: 0.132, h: 0.256 };
+
+	const shipLoaded = $derived(
+		!!context.stateApp.loadedAssets?.ufoHull && !!context.stateApp.loadedAssets?.ufoAntenna,
+	);
+	// Landscape only: portrait crops to the centre panel, so there is no window for it to hang in.
+	const shipShown = $derived(!isPortrait && shipLoaded && hasBg);
+
+	const hullW = $derived(UFO.w * cover.width);
+	const hullH = $derived(hullW / UFO.hullAspect);
+	const antennaW = $derived(hullW * UFO.antennaOfHull);
+	const antennaH = $derived(antennaW / UFO.antennaAspect);
+	// Local coordinates inside the ship container, whose origin is the whole assembly's centre.
+	const assemblyH = $derived(hullH + antennaH * (1 - UFO.antennaOverlap));
+	const hullY = $derived(assemblyH / 2 - hullH / 2);
+	const antennaY = $derived(-assemblyH / 2 + antennaH / 2);
+
+	// ── Arrival ──
+	// The room's first impression: the ship comes in from deep in the window's sky, tiny, growing as
+	// it closes, brakes over its spot and settles into a tremble. Scale is PROJECTIVE —
+	// 1/(1 + k·distance) — so it barely grows over the first half of the run and then rushes the
+	// camera, which is what sells "far away"; a linear ramp just reads as a zoom. Screen position is
+	// interpolated by that same growth rather than by time, so the whole thing tracks one object
+	// moving in a straight line towards the viewer.
+	const FAR = { cx: 0.845, cy: 0.315, scale: 0.05 };
+	const FLIGHT_MS = 2300;
+	const FLIGHT_DELAY_MS = 220;
+	const approach = new Tween(0, { duration: FLIGHT_MS, easing: cubicOut });
+	let arriveTimer = 0;
+	$effect(() => {
+		if (!props.revealed || !shipShown) return;
+		clearTimeout(arriveTimer);
+		arriveTimer = setTimeout(() => approach.set(1), FLIGHT_DELAY_MS) as unknown as number;
+		return () => clearTimeout(arriveTimer);
+	});
+
+	const K = 1 / FAR.scale - 1;
+	const shipScale = $derived(1 / (1 + K * (1 - approach.current)));
+	/** 0 while it is a speck in the sky, 1 once it is parked. */
+	const near = $derived((shipScale - FAR.scale) / (1 - FAR.scale));
+
+	// Tremble. It starts as a hard shudder the moment the ship stops — the brake — and decays into
+	// the idle vibration it keeps for the rest of the session. Frequencies are deliberately not
+	// harmonically related, so the jitter never settles into a visible loop.
+	let arrivedAt = $state<number | null>(null);
+	$effect(() => {
+		if (near > 0.985 && arrivedAt === null) arrivedAt = shipClock;
+	});
+	const brake = $derived(arrivedAt === null ? 0 : Math.exp(-(shipClock - arrivedAt) * 2.4));
+	const shake = $derived(hullW * (0.0026 + 0.017 * brake) * near);
+	const shipX = $derived(
+		canvas.width * 0.5 +
+			(FAR.cx + (UFO.cx - FAR.cx) * near - 0.5) * cover.width +
+			(Math.sin(shipClock * 37.1) + 0.6 * Math.sin(shipClock * 23.7 + 2.1)) * shake,
+	);
+	const shipY = $derived(
+		canvas.height * 0.5 +
+			(FAR.cy + (UFO.cy - FAR.cy) * near - 0.5) * cover.height +
+			// A shallow rise over the run, so the approach curves instead of sliding up a wire.
+			-Math.sin(Math.PI * near) * cover.height * 0.035 +
+			Math.sin(shipClock * 41.3 + 1.7) * shake * 0.8 +
+			// Idle hover, once it is parked.
+			Math.sin(shipClock * 0.52) * canvas.height * 0.008 * near,
+	);
+	// Banked while it closes, level once it parks, then a hair of roll in the tremble.
+	const shipRotation = $derived(
+		-0.16 * (1 - near) + Math.sin(shipClock * 19.4) * 0.0035 * (1 + brake * 5) * near,
+	);
+
+	// ── The tractor beam ──
+	// Switches on once the ship has stopped: it is the punchline of the arrival, and a beam dragged
+	// across the sky during the flight would read as a searchlight rather than an abduction.
+	const beamOn = new Tween(0, { duration: 620, easing: cubicOut });
+	$effect(() => {
+		if (arrivedAt !== null) beamOn.set(1);
+	});
+	// Colours sampled from the design's own beam art.
+	const BEAM_FILL = 0xd7a1fa;
+	const BEAM_RIM = 0xf1a8fa;
+	const BEAM_POOL = 0xf7c0fc;
+	const MOTES = 11;
+	/** Seconds between grabs — the beam flares and something is hauled up the cone. */
+	const GRAB_PERIOD = 8.5;
+	let beamG: G | null = null;
+
+	const drawBeam = (g: G, t: number) => {
+		g.clear();
+		const on = beamOn.current;
+		if (on <= 0.004 || hullW <= 0) return;
+		const x0 = (EMITTER.cx - 0.5) * hullW;
+		// Start a touch inside the opening, so the hull always covers the beam's mouth.
+		const y0 = hullY - hullH / 2 + (EMITTER.bottom - 0.04) * hullH;
+		const rTop = (EMITTER.w * hullW) / 2;
+		const rBot = (BEAM.w * cover.width) / 2;
+		const len = BEAM.h * cover.height * on;
+		const radAt = (s: number) => rTop + (rBot - rTop) * s;
+		/** A slice of the cone between two fractions of its length, widened by `k`. */
+		const slab = (a: number, b: number, k: number) => {
+			const ya = y0 + len * a;
+			const yb = y0 + len * b;
+			const ra = radAt(a) * k;
+			const rb = radAt(b) * k;
+			g.poly([x0 - ra, ya, x0 + ra, ya, x0 + rb, yb, x0 - rb, yb]);
+		};
+
+		const grabPhase = (t % GRAB_PERIOD) / GRAB_PERIOD;
+		const grab = Math.max(0, Math.sin(grabPhase * Math.PI * 1.6)) ** 8;
+		const flare = (0.86 + 0.14 * Math.sin(t * 1.7) + 0.45 * grab) * on;
+
+		slab(0, 1, 1.15 + 0.05 * grab);
+		g.fill({ color: BEAM_FILL, alpha: 0.12 * flare });
+		slab(0, 1, 1);
+		g.fill({ color: BEAM_FILL, alpha: 0.58 * flare });
+		slab(0, 1, 0.55);
+		g.fill({ color: BEAM_POOL, alpha: 0.2 * flare });
+
+		// Bright edges. The art has them, and without them the cone has no shape against a lit wall.
+		const rim = Math.max(2, hullW * 0.015);
+		for (const side of [-1, 1]) {
+			g.poly([
+				x0 + side * rTop - rim / 2, y0,
+				x0 + side * rTop + rim / 2, y0,
+				x0 + side * rBot + rim / 2, y0 + len,
+				x0 + side * rBot - rim / 2, y0 + len,
+			]);
+			g.fill({ color: BEAM_RIM, alpha: 0.9 * flare });
+		}
+
+		// A pulse of light running down the cone.
+		const scan = (t * 0.33) % 1.35;
+		if (scan < 1) {
+			slab(scan, Math.min(1, scan + 0.16), 0.98);
+			g.fill({ color: BEAM_POOL, alpha: 0.16 * on });
+		}
+
+		// The pool it throws on whatever is under it.
+		g.ellipse(x0, y0 + len, rBot, rBot * 0.26);
+		g.fill({ color: BEAM_POOL, alpha: 0.55 * flare });
+		g.ellipse(x0, y0 + len, rBot * 0.66, rBot * 0.17);
+		g.fill({ color: 0xffffff, alpha: 0.3 * flare });
+
+		// Motes drifting UP the cone — the abduction. Phases are derived from the index rather than
+		// stored, so this stays a pure function of the clock and survives any re-mount unchanged.
+		for (let i = 0; i < MOTES; i++) {
+			const seed = Math.sin(i * 12.9898) * 43758.5453;
+			const jitter = seed - Math.floor(seed);
+			const speed = 0.16 + 0.13 * jitter + 0.5 * grab;
+			const rise = (t * speed + i / MOTES) % 1;
+			const s = 1 - rise;
+			const r = radAt(s);
+			const drift = Math.sin(t * (0.7 + jitter) + i * 2.4) * 0.22;
+			const size = hullW * (0.008 + 0.007 * jitter) * (0.6 + 0.4 * (1 - s));
+			g.ellipse(x0 + (jitter * 1.4 - 0.7 + drift) * r, y0 + len * s, size, size);
+			// Fade in off the ground and out into the hull, so nothing pops at either end.
+			g.fill({ color: 0xffffff, alpha: Math.sin(Math.PI * rise) ** 0.7 * 0.7 * on });
+		}
+	};
+
+	// `master` rides the room cross-fade so the outgoing room's lamps dim out with its art instead
+	// of blinking off the instant bonusMode flips.
+	const paintLamps = (g: G, t: number, set: typeof lights, master: number) => {
+		if (!set.length || master <= 0.002) return;
+		const W = cover.width;
+		const H = cover.height;
+		const ox = canvas.width * 0.5;
+		const oy = canvas.height * 0.5;
+		for (let i = 0; i < set.length; i++) {
+			const l = set[i];
+			const x = ox + (l.cx - 0.5) * W;
+			const y = oy + (l.cy - 0.5) * H;
+			const w = l.w * W;
+			const h = l.h * H;
+			const p = i * 1.7;
+			// Slow breathe with sparse, sharp dips — a lamp stuttering, not a smooth fade.
+			const base = 0.82 + 0.18 * Math.sin(t * 0.9 + p);
+			const dip =
+				0.2 * Math.max(0, Math.sin(t * 17.3 + p * 3)) ** 12 +
+				0.12 * Math.max(0, Math.sin(t * 5.1 + p * 1.7)) ** 8;
+			const level = Math.max(0.3, base - dip);
+			const cr = (l.color >> 16) & 0xff;
+			const cg = (l.color >> 8) & 0xff;
+			const cb = l.color & 0xff;
+			const LAYERS = 5;
+			for (let k = 0; k < LAYERS; k++) {
+				const f = k / (LAYERS - 1);
+				const grow = f ** 1.5;
+				const gw = w * (1 + 1.7 * grow);
+				const gh = h * (1 + 1.7 * grow);
+				const m = 1 - f;
+				// Only part-way to white at the core: these sit BEHIND a dim room, and a white core
+				// turns every lamp into the same grey blob.
+				const mix = (c: number) => Math.round(c + (255 - c) * 0.35 * m ** 1.8);
+				g.roundRect(x - gw / 2, y - gh / 2, gw, gh, Math.min(gw, gh) / 2);
+				g.fill({
+					color: (mix(cr) << 16) | (mix(cg) << 8) | mix(cb),
+					alpha: (0.012 + 0.05 * m ** 2.2) * level * master,
+				});
+			}
+		}
+	};
+
+	const drawLamps = (g: G, t: number) => {
+		g.clear();
+		paintLamps(g, t, outgoingLights, 1 - fade.current);
+		paintLamps(g, t, lights, fade.current);
+	};
+
+	$effect(() => {
+		let raf = 0;
+		const t0 = performance.now();
+		const tick = (now: number) => {
+			raf = requestAnimationFrame(tick);
+			const t = (now - t0) / 1000;
+			// The breath is reactive (it scales a Sprite); throttle it to ~10fps so the whole scene
+			// graph is not diffed 60 times a second for a 0.6% drift nobody can see move.
+			if (Math.abs(t - clock) > 0.1) clock = t;
+			// The ship's transform is reactive too, but it is ONE container — the hull, the antenna
+			// and the beam are its children and ride along untouched — so it can afford ~30fps.
+			if (t - shipClock > 0.032) shipClock = t;
+			if (lampG?.destroyed) lampG = null;
+			if (lampG) drawLamps(lampG, t);
+			if (beamG?.destroyed) beamG = null;
+			// The beam is drawn imperatively at the full frame rate: its motes and sweep are the only
+			// things here fast enough to show 30fps, and drawing into a captured Graphics never
+			// re-renders the scene graph.
+			if (beamG) drawBeam(beamG, t);
+		};
+		raf = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(raf);
+	});
+</script>
+
+{#if hasBg}
+	<!-- Outgoing room, held at full strength underneath while the new one dissolves over it.
+	     BOTH sprites stay mounted for the life of the component, and that is load-bearing: stage
+	     layering in this game is MOUNT ORDER (see Game.svelte), so a sprite mounted on demand is
+	     appended to the TOP of the stage. Gating this one on `outgoingKey` put the old room above
+	     the bonus hand-off veil for the length of the fade, and it read as the base game flashing
+	     back on right as the congratulations arrived. With no outgoing room this simply holds a
+	     second copy of the current one, invisible under the sprite below it. -->
+	<Sprite
+		key={outgoingKey ?? displayedKey}
+		x={canvas.width * 0.5}
+		y={canvas.height * 0.5}
+		anchor={0.5}
+		width={cover.width * breath}
+		height={cover.height * breath}
+		alpha={0.96}
+	/>
+	<Sprite
+		key={displayedKey}
+		x={canvas.width * 0.5}
+		y={canvas.height * 0.5}
+		anchor={0.5}
+		width={cover.width * breath}
+		height={cover.height * breath}
+		alpha={0.96 * fade.current}
+	/>
+	<!-- Lamp glow rides ON the room art. -->
+	<Graphics blendMode="add" draw={(gr) => (lampG = gr as unknown as G)} />
+
+	<!-- The ship, hanging in the room's right-hand window. ONE container carries the whole assembly
+	     so the arrival flight, the hover and the tremble are a single transform: the hull, the
+	     antenna and the beam are children in local coordinates and never move against each other.
+	     Mount order inside it is the stacking order — beam first so the hull covers its mouth, then
+	     the antenna so the dome covers the stem's foot. -->
+	{#if shipShown}
+		<Container x={shipX} y={shipY} scale={shipScale} rotation={shipRotation}>
+			<Graphics draw={(gr) => (beamG = gr as unknown as G)} />
+			<Sprite
+				key="ufoAntenna"
+				anchor={0.5}
+				x={0}
+				y={antennaY}
+				width={antennaW}
+				height={antennaH}
+			/>
+			<Sprite key="ufoHull" anchor={0.5} x={0} y={hullY} width={hullW} height={hullH} />
+		</Container>
+	{/if}
+{/if}

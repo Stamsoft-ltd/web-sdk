@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getRoundForMode as getForestRoundForMode, getReplayRound as getForestReplayRound } from './math/forest-gang.mjs';
 import { getRoundForMode as getMagneticRoundForMode, getReplayRound as getMagneticReplayRound } from './math/magnetic.mjs';
+import { getRoundForMode as getMagnetic2RoundForMode, getReplayRound as getMagnetic2ReplayRound } from './math/magnetic-2.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8787);
@@ -81,6 +82,31 @@ const GAME_REGISTRY = {
       jurisdiction: buildJurisdiction(),
     }),
   },
+  magnetic2: {
+    slug: 'magnetic-2',
+    gameID: '0_0_magnetic_2',
+    modeCostMultipliers: { BASE: 1, CHANCE: 2, FEATURE: 50, BONUS: 100, SUPER: 500 },
+    getRoundForMode: getMagnetic2RoundForMode,
+    getReplayRound: getMagnetic2ReplayRound,
+    booksDir: process.env.MAGNETIC_2_MATH_SDK_BOOKS_DIR || path.resolve(__dirname, '__disabled__/magnetic-2/books'),
+    lookupDir: process.env.MAGNETIC_2_MATH_SDK_LOOKUPS_DIR || path.resolve(__dirname, '__disabled__/magnetic-2/publish_files'),
+    buildConfig: () => ({
+      gameID: '0_0_magnetic_2',
+      minBet: 1 * API_AMOUNT_MULTIPLIER,
+      maxBet: 100 * API_AMOUNT_MULTIPLIER,
+      stepBet: 1 * API_AMOUNT_MULTIPLIER,
+      defaultBetLevel: 1 * API_AMOUNT_MULTIPLIER,
+      betLevels: [1, 2, 5, 10, 20, 50, 100].map((value) => value * API_AMOUNT_MULTIPLIER),
+      betModes: {
+        BASE: { type: 'default' },
+        CHANCE: { type: 'activate' },
+        FEATURE: { type: 'activate' },
+        BONUS: { type: 'buy' },
+        SUPER: { type: 'buy' },
+      },
+      jurisdiction: buildJurisdiction(),
+    }),
+  },
 };
 
 const send = (res, code, body) => {
@@ -107,10 +133,19 @@ const readJson = (req) =>
     req.on('error', reject);
   });
 
+// Every game except forest is reached under /<slug>. Longest slug first, so
+// /magnetic-2/... can never be captured by the shorter /magnetic prefix.
+const ROUTED_GAMES = Object.values(GAME_REGISTRY)
+  .filter((entry) => entry !== GAME_REGISTRY.forest)
+  .sort((a, b) => b.slug.length - a.slug.length);
+
 const getRouteContext = (pathname) => {
-  if (pathname === '/magnetic' || pathname.startsWith('/magnetic/')) {
-    const stripped = pathname.replace(/^\/magnetic/, '') || '/';
-    return { game: GAME_REGISTRY.magnetic, pathname: stripped.startsWith('/') ? stripped : `/${stripped}` };
+  for (const entry of ROUTED_GAMES) {
+    const prefix = `/${entry.slug}`;
+    if (pathname === prefix || pathname.startsWith(`${prefix}/`)) {
+      const stripped = pathname.slice(prefix.length) || '/';
+      return { game: entry, pathname: stripped.startsWith('/') ? stripped : `/${stripped}` };
+    }
   }
   return { game: GAME_REGISTRY.forest, pathname };
 };
@@ -275,7 +310,7 @@ const server = https.createServer(
 
     if (req.method === 'GET' && pathname.startsWith('/bet/replay/')) {
       const [, , , routeGame, version, mode, event] = pathname.split('/');
-      const replayGame = routeGame === '0_0_magnetic' ? GAME_REGISTRY.magnetic : game;
+      const replayGame = Object.values(GAME_REGISTRY).find((entry) => entry.gameID === routeGame) || game;
       const stored = replayStore.get(`${replayGame.slug}:${event}`);
       const replaySeed = Number(url.searchParams.get('seed') || Date.now());
       const fallback = getRoundFromGeneratedBooks(replayGame, mode, replaySeed) || replayGame.getReplayRound({ mode, seed: replaySeed });
@@ -312,5 +347,6 @@ server.listen(PORT, HOST, () => {
   console.log(`mock-rgs https://localhost:${PORT}`);
   console.log(`health     https://localhost:${PORT}/health`);
   console.log(`magnetic   https://localhost:${PORT}/magnetic/health`);
+  console.log(`magnetic-2 https://localhost:${PORT}/magnetic-2/health`);
   console.log('accept self-signed cert in browser first');
 });
