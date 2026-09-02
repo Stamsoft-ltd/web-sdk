@@ -30,8 +30,8 @@
 	// Gold icons layered over the button backgrounds
 	const iconMenu = ap('/assets/hud/icon-info.png');
 	const iconMenuBars = ap('/assets/hud/icon-menu.png'); // hamburger — opens the portrait sound/info menu
-	const iconSound = ap('/assets/hud/icon-volume.png');
-	const iconSoundMuted = ap('/assets/hud/icon-volume-muted.png');
+	const iconSound = ap('/assets/mcschmutzo/ui-icons/hud-sound.svg');
+	const iconSoundMuted = ap('/assets/mcschmutzo/ui-icons/hud-sound-muted.svg');
 	const iconMinus = ap('/assets/hud/icon-minus.webp');
 	const iconPlus = ap('/assets/hud/icon-plus.webp');
 	const iconAuto = ap('/assets/hud/icon-autoplay.png');
