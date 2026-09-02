@@ -10,6 +10,16 @@
 
 	const symArt = (name: string) => ap(`/assets/mcschmutzo/symbols/${name}.png`);
 
+	// Page 3 (features) icons + the win-multiplier ladder shown in the design.
+	const wildArt = symArt('W');
+	const respinArt = ap('/assets/mcschmutzo/buybonus/burger.svg');
+	const multArt = ap('/assets/mcschmutzo/tutorial/mult-x2.webp');
+	const MULT_LADDER = [
+		'1x', '2x', '3x', '4x', '5x', '6x', '8x', '10x', '12x', '15x', '20x', '25x', '30x', '35x',
+		'40x', '50x', '60x', '70x', '80x', '120x', '150x', '200x', '250x', '300x', '350x', '400x',
+		'500x', '600x', '800x', '1000x',
+	];
+
 	// Paytable (values per matching-symbol count), ordered low → high as in the design.
 	const PAY_ROWS: { syms: string[]; pays: [string, string, string] }[] = [
 		{ syms: ['L1', 'L2', 'L3', 'L4', 'L5'], pays: ['0.1', '0.4', '1'] },
@@ -103,6 +113,54 @@
 								<div class="pt-val">{row.pays[2]} x</div>
 							</div>
 						{/each}
+					</div>
+				</div>
+			</div>
+		{:else if page === 3}
+			<div class="tu-page">
+				<h2 class="tu-title">{i18nDerived.translate('FEATURES')}</h2>
+
+				<div class="ft-grid">
+					<div class="ft-card ft-card--wild">
+						<div class="ft-head">
+							<img class="ft-icon" src={wildArt} alt="" draggable="false" />
+							<h3 class="ft-title">WILD SYMBOL</h3>
+						</div>
+						<div class="ft-body ft-body--center">
+							<p>The WILD symbol substitutes for all regular paying symbols. When a Wild contributes to a winning combination, it substitutes for the required paying symbol and is counted as part of that win.</p>
+							<p>The Wild does not substitute for the Scatter / Bonus symbol.</p>
+						</div>
+					</div>
+
+					<div class="ft-card ft-card--respin">
+						<div class="ft-head">
+							<img class="ft-icon" src={respinArt} alt="" draggable="false" />
+							<h3 class="ft-title">RE-SPIN FEATURE</h3>
+						</div>
+						<div class="ft-body ft-body--center">
+							<p>Whenever a qualifying winning connection is formed, the winning symbols automatically lock in position and a Re-Spin is triggered. The lock is guaranteed whenever the required winning connection occurs. Only the highest-value qualifying winning symbol is selected to lock when multiple eligible symbol types are involved. During the Re-Spin, the locked symbols remain in position while the remaining reel positions spin again.</p>
+							<p>If additional matching symbols land and extend the locked winning combination, those matching symbols are also locked and another Re-Spin is awarded. The Re-Spin sequence continues for as long as new matching symbols are added to the locked combination. A Re-Spin sequence ends when no additional matching symbols are added during a Re-Spin, or when all available reel positions become filled with the selected matching symbol.</p>
+							<p>All wins created during the Re-Spin sequence are added to the current game-round win.</p>
+						</div>
+					</div>
+
+					<div class="ft-card ft-card--mult">
+						<div class="ft-head">
+							<img class="ft-icon" src={multArt} alt="" draggable="false" />
+							<h3 class="ft-title">WIN MULTIPLIER</h3>
+						</div>
+						<div class="ft-body">
+							<p>During the Re-Spin Feature, McSchmutzo symbols may appear and increase the Win Multiplier. Each qualifying McSchmutzo symbol can add Win Multiplier steps. The Win Multiplier begins at 1x. The multiplier progresses through the following levels:</p>
+							<div class="ft-ladder">
+								{#each MULT_LADDER as m, i}
+									<span class="ft-step">
+										<span class="ft-chip">{m}</span>
+										{#if i < MULT_LADDER.length - 1}<span class="ft-arrow">→</span>{/if}
+									</span>
+								{/each}
+							</div>
+							<p>The current Win Multiplier is applied according to the game mathematics and remains active throughout the current Re-Spin sequence.</p>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -271,6 +329,93 @@
 		color: #efe8d8;
 		font-weight: 700;
 		font-size: clamp(1rem, 2.5vmin, 1.55rem);
+	}
+
+	/* Page 3 — features. Two cards on top (wild | re-spin), full-width multiplier card below. */
+	.ft-grid {
+		width: 100%;
+		margin-top: clamp(10px, 2vmin, 20px);
+		display: grid;
+		grid-template-columns: 1fr 2.1fr;
+		grid-template-areas: 'wild respin' 'mult mult';
+		gap: clamp(8px, 1.5vmin, 16px);
+	}
+	.ft-card--wild {
+		grid-area: wild;
+	}
+	.ft-card--respin {
+		grid-area: respin;
+	}
+	.ft-card--mult {
+		grid-area: mult;
+	}
+	.ft-card {
+		padding: clamp(10px, 1.8vmin, 20px) clamp(12px, 2vmin, 24px);
+		border: 2px solid #605553;
+		border-radius: 14px;
+		background: rgba(255, 255, 255, 0.015);
+	}
+	.ft-head {
+		display: flex;
+		align-items: center;
+		gap: clamp(6px, 1.2vmin, 12px);
+		margin-bottom: clamp(6px, 1.2vmin, 12px);
+	}
+	.ft-icon {
+		height: clamp(26px, 4vmin, 42px);
+		width: auto;
+		object-fit: contain;
+	}
+	.ft-title {
+		margin: 0;
+		color: #f0a112;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
+		font-size: clamp(0.85rem, 1.9vmin, 1.2rem);
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+	}
+	.ft-body {
+		color: #c9c0b2;
+		font-weight: 600;
+		font-size: clamp(0.62rem, 1.45vmin, 0.9rem);
+		line-height: 1.42;
+	}
+	.ft-body p {
+		margin: 0 0 clamp(6px, 1vmin, 10px);
+	}
+	.ft-body p:last-child {
+		margin-bottom: 0;
+	}
+	.ft-body--center {
+		text-align: center;
+	}
+	.ft-ladder {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(3px, 0.6vmin, 6px) clamp(2px, 0.4vmin, 5px);
+		margin: clamp(6px, 1.2vmin, 12px) 0;
+	}
+	.ft-step {
+		display: inline-flex;
+		align-items: center;
+		gap: clamp(2px, 0.4vmin, 5px);
+	}
+	.ft-chip {
+		padding: clamp(2px, 0.5vmin, 5px) clamp(6px, 1vmin, 10px);
+		border-radius: 6px;
+		background: #1b1917;
+		border: 1px solid rgba(255, 255, 255, 0.07);
+		color: #ece2cd;
+		font-weight: 700;
+		font-size: clamp(0.58rem, 1.35vmin, 0.82rem);
+		white-space: nowrap;
+	}
+	.ft-arrow {
+		color: #8a8177;
+		font-size: clamp(0.55rem, 1.2vmin, 0.78rem);
 	}
 
 	/* Guy tucked into the popup's bottom-left corner, stats centred to his right. */
