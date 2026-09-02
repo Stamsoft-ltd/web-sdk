@@ -20,6 +20,34 @@
 		'500x', '600x', '800x', '1000x',
 	];
 
+	// Page 5 (feature buy) — four purchasable modes with cost + RTP.
+	const FEATURE_BUYS: { title: string; body: string; cost: string; rtp: string }[] = [
+		{
+			title: 'ENHANCED MODE 1',
+			body: 'For a cost of 2× the Base Bet, the chance of triggering Free Games is increased by 4×. All other game mechanics remain unchanged.',
+			cost: '2× the Base Bet',
+			rtp: '96.1%',
+		},
+		{
+			title: 'ENHANCED MODE 2',
+			body: 'For a cost of 10× the Base Bet, the chance of triggering Free Games is increased by 4×, with the enhanced mode configured toward the Super Bonus / maximum entry condition. All other game mechanics remain unchanged.',
+			cost: '10× the Base Bet',
+			rtp: '96.1%',
+		},
+		{
+			title: 'NORMAL BONUS',
+			body: 'For a cost of 100× the Base Bet, the player directly enters the Normal Bonus. The Normal Bonus is played using its standard Free Games entry configuration.',
+			cost: '100× the Base Bet',
+			rtp: '96.1%',
+		},
+		{
+			title: 'SUPER BONUS',
+			body: 'For a cost of 500× the Base Bet, the player directly enters the Super Bonus. The Super Bonus begins using its enhanced / maximum Free Games entry configuration.',
+			cost: '500× the Base Bet',
+			rtp: '96.1%',
+		},
+	];
+
 	// Paytable (values per matching-symbol count), ordered low → high as in the design.
 	const PAY_ROWS: { syms: string[]; pays: [string, string, string] }[] = [
 		{ syms: ['L1', 'L2', 'L3', 'L4', 'L5'], pays: ['0.1', '0.4', '1'] },
@@ -162,6 +190,21 @@
 							<p>The current Win Multiplier is applied according to the game mathematics and remains active throughout the current Re-Spin sequence.</p>
 						</div>
 					</div>
+				</div>
+			</div>
+		{:else if page === 5}
+			<div class="tu-page">
+				<h2 class="tu-title">{i18nDerived.translate('FEATURE BUY')}</h2>
+
+				<div class="fb-grid">
+					{#each FEATURE_BUYS as fb}
+						<div class="fb-card">
+							<h3 class="fb-title">{fb.title}</h3>
+							<p class="fb-body">{fb.body}</p>
+							<div class="fb-cost">{fb.cost}</div>
+							<div class="fb-rtp">RTP: {fb.rtp}</div>
+						</div>
+					{/each}
 				</div>
 			</div>
 		{:else}
@@ -416,6 +459,59 @@
 	.ft-arrow {
 		color: #8a8177;
 		font-size: clamp(0.55rem, 1.2vmin, 0.78rem);
+	}
+
+	/* Page 5 — feature buy. Four equal cost cards; cost chip + RTP pinned to the card bottom. */
+	.fb-grid {
+		width: 100%;
+		margin-top: clamp(12px, 2.4vmin, 26px);
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: clamp(8px, 1.5vmin, 16px);
+	}
+	.fb-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		min-height: clamp(280px, 44vmin, 420px);
+		padding: clamp(14px, 2.4vmin, 26px) clamp(10px, 1.6vmin, 18px);
+		border: 2px solid #605553;
+		border-radius: 14px;
+		background: rgba(255, 255, 255, 0.015);
+	}
+	.fb-title {
+		margin: 0 0 clamp(10px, 1.8vmin, 18px);
+		color: #f0a112;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
+		font-size: clamp(0.8rem, 1.75vmin, 1.1rem);
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+	}
+	.fb-body {
+		margin: 0;
+		color: #c9c0b2;
+		font-weight: 600;
+		font-size: clamp(0.66rem, 1.5vmin, 0.92rem);
+		line-height: 1.45;
+	}
+	.fb-cost {
+		margin-top: auto;
+		margin-bottom: clamp(8px, 1.4vmin, 14px);
+		padding: clamp(6px, 1.1vmin, 11px) clamp(10px, 1.8vmin, 18px);
+		border-radius: 8px;
+		background: #1b1917;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		color: #fff;
+		font-weight: 800;
+		font-size: clamp(0.72rem, 1.55vmin, 0.98rem);
+		white-space: nowrap;
+	}
+	.fb-rtp {
+		color: #c9c0b2;
+		font-weight: 600;
+		font-size: clamp(0.72rem, 1.5vmin, 0.95rem);
 	}
 
 	/* Guy tucked into the popup's bottom-left corner, stats centred to his right. */
