@@ -1535,9 +1535,9 @@
 		position: relative;
 	}
 	.nav-btn--auto .nav-icon {
-		width: 38%;
-		height: 38%;
-		transform: translateY(-14%);
+		width: 26%;
+		height: 26%;
+		transform: translateY(-18%);
 	}
 	.auto-label {
 		position: absolute;
