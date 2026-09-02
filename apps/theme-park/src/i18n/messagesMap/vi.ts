@@ -236,12 +236,18 @@ export default {
 	'INFO WTW WILD':
 		'Biểu tượng Wild thay thế mọi biểu tượng trả thưởng thông thường, trừ biểu tượng Scatter.',
 	'INFO WTW SCATTER':
-		'Biểu tượng Scatter không cần theo dòng trả thưởng và được dùng để kích hoạt các tính năng thưởng tương ứng.',
+		'Biểu tượng Scatter không cần nằm trên dòng trả thưởng và có thể xuất hiện ở bất kỳ vị trí nào trên các cuộn.',
 	'INFO WTW HIGHEST':
 		'Chỉ tổ hợp thắng cao nhất cho mỗi biểu tượng trên mỗi dòng trả thưởng được trả.',
 	'INFO WTW MULTIPLES':
 		'Mọi khoản trả thưởng hiển thị đều được tính theo bội số của tổng tiền cược.',
 	'INFO WTW DIAGRAM ALT': '15 dòng trả thưởng',
+	'INFO WTW FREE TITLE': 'VÒNG QUAY MIỄN PHÍ',
+	'INFO WTW FREE TRIGGER':
+		'Khi 3 biểu tượng Scatter đúng loại xuất hiện, tính năng Vòng Quay Miễn Phí được kích hoạt và trao 10 vòng quay miễn phí.',
+	'INFO WTW FREE MAX':
+		'Chỉ có thể xuất hiện 3 biểu tượng Scatter hợp lệ, nên không có phần thưởng bổ sung khi có hơn 3 Scatter.',
+	'INFO WTW FREE RETRIGGER': 'Vòng Quay Miễn Phí không thể được kích hoạt lại.',
 	'INFO WTW MULT TITLE': 'HỆ SỐ NHÂN CUỘN WILD',
 	'INFO WTW MULT BODY':
 		'Khi một Roller Wild biến đổi một cuộn, toàn bộ cuộn trở thành Wild và nhận hệ số nhân:',

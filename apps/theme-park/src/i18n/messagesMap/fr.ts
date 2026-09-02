@@ -237,11 +237,17 @@ export default {
 	'INFO WTW WILD':
 		'Les symboles Wild remplacent tous les symboles payants ordinaires, sauf les symboles Scatter.',
 	'INFO WTW SCATTER':
-		"Les symboles Scatter n'ont pas besoin de suivre une ligne de paiement et servent à déclencher les fonctions bonus associées.",
+		'Les symboles Scatter n\'ont pas besoin de tomber sur une ligne de paiement et peuvent apparaître n\'importe où sur les rouleaux.',
 	'INFO WTW HIGHEST':
 		'Seule la combinaison gagnante la plus élevée par symbole et par ligne de paiement est payée.',
 	'INFO WTW MULTIPLES': 'Tous les paiements affichés sont exprimés en multiples de la mise totale.',
 	'INFO WTW DIAGRAM ALT': '15 lignes de paiement',
+	'INFO WTW FREE TITLE': 'PARTIES GRATUITES',
+	'INFO WTW FREE TRIGGER':
+		'Obtenir 3 symboles Scatter du type requis déclenche la fonction Parties Gratuites et octroie 10 tours gratuits.',
+	'INFO WTW FREE MAX':
+		'Seuls 3 symboles Scatter qualifiants sont possibles, il n\'y a donc aucune récompense supplémentaire au-delà de 3 Scatters.',
+	'INFO WTW FREE RETRIGGER': 'Les Parties Gratuites ne peuvent pas être redéclenchées.',
 	'INFO WTW MULT TITLE': 'MULTIPLICATEURS DE ROULEAU WILD',
 	'INFO WTW MULT BODY':
 		"Lorsqu'un Roller Wild transforme un rouleau, le rouleau entier devient Wild et reçoit un multiplicateur de :",

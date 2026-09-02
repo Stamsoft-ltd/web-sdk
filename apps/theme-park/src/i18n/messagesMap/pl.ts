@@ -232,12 +232,18 @@ export default {
 	'INFO WTW WILD':
 		'Dzikie symbole zastępują wszystkie zwykłe symbole wypłacające, z wyjątkiem symboli Scatter.',
 	'INFO WTW SCATTER':
-		'Symbole Scatter nie muszą układać się wzdłuż linii wypłat i służą do uruchamiania powiązanych z nimi funkcji bonusowych.',
+		'Symbole Scatter nie muszą trafiać na linię wypłat i mogą pojawić się w dowolnym miejscu na bębnach.',
 	'INFO WTW HIGHEST':
 		'Wypłacana jest tylko najwyższa wygrywająca kombinacja dla danego symbolu na danej linii wypłat.',
 	'INFO WTW MULTIPLES':
 		'Wszystkie wyświetlane wypłaty są wyrażone jako wielokrotności całkowitego zakładu.',
 	'INFO WTW DIAGRAM ALT': '15 linii wypłat',
+	'INFO WTW FREE TITLE': 'DARMOWE GRY',
+	'INFO WTW FREE TRIGGER':
+		'Wylosowanie 3 symboli Scatter wymaganego typu uruchamia funkcję Darmowych Gier i przyznaje 10 darmowych spinów.',
+	'INFO WTW FREE MAX':
+		'Możliwe są tylko 3 kwalifikujące się symbole Scatter, więc za więcej niż 3 nie ma dodatkowych nagród.',
+	'INFO WTW FREE RETRIGGER': 'Darmowych Gier nie można uruchomić ponownie.',
 	'INFO WTW MULT TITLE': 'MNOŻNIKI DZIKICH BĘBNÓW',
 	'INFO WTW MULT BODY':
 		'Gdy Roller Wild przekształci bęben, cały bęben staje się dziki i otrzymuje mnożnik:',

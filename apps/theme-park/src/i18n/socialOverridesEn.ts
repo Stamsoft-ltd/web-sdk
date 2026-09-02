@@ -58,7 +58,7 @@ export const socialOverridesEn: Record<string, string> = {
 		'Wins are evaluated after the reels stop and are awarded according to the Win Table.',
 	'INFO WTW WILD': 'Wild symbols substitute for all regular winning symbols except Scatter symbols.',
 	'INFO WTW SCATTER':
-		'Scatter symbols do not need to follow a win line and are used to trigger their associated bonus features.',
+		'Scatter symbols do not need to land on a win line and can appear anywhere on the reels.',
 	'INFO WTW HIGHEST': 'Only the highest winning combination per symbol per win line is awarded.',
 	'INFO WTW MULTIPLES': 'All displayed wins are expressed as multiples of the total play.',
 	'INFO WTW DIAGRAM ALT': '15 win lines',

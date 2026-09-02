@@ -315,6 +315,12 @@
 					</p>
 					<img class="wtw-paylines" src={waysToWin} alt={t('INFO WTW DIAGRAM ALT')} />
 					<p class="info-p">
+						<b>{t('INFO WTW FREE TITLE')}</b>
+						<br />{t('INFO WTW FREE TRIGGER')}
+						<br />{t('INFO WTW FREE MAX')}
+						<br />{t('INFO WTW FREE RETRIGGER')}
+					</p>
+					<p class="info-p">
 						<b>{t('INFO WTW MULT TITLE')}</b>
 						<br />{t('INFO WTW MULT BODY')}
 						<br />{WILD_MULTS}
@@ -890,7 +896,7 @@
 		width: 100%;
 		max-width: 460px;
 		height: auto;
-		margin: 12px auto;
+		margin: 8px auto;
 	}
 
 	/* --- General info cards --- */
@@ -1352,21 +1358,26 @@
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			justify-content: center;
+			/* `safe` matters: plain `center` on a column that outgrows its box overflows in BOTH
+			   directions, so the first line slid up UNDER the page title and could not be scrolled
+			   back to. Safe centring falls back to start-alignment the moment the copy overflows. */
+			justify-content: safe center;
 		}
 		.wtw .info-p {
 			max-width: 92%;
 			font-size: 1.85cqh;
-			/* The design breaks the two blocks apart with a clear blank line; without this they run
+			/* The design breaks the blocks apart with a clear blank line; without this they run
 			   together into one wall of centred text. */
-			margin-bottom: 2.4cqh;
+			margin-bottom: 1.7cqh;
 		}
 		.wtw .info-p:last-of-type {
 			margin-bottom: 0;
 		}
 		.wtw-paylines {
 			max-width: min(40%, 470px);
-			margin: 2.6cqh auto;
+			/* Tight to the copy above/below it — the page carries three text blocks plus the diagram
+			   now, and the old 2.6cqh gutters were the difference between fitting and overflowing. */
+			margin: 1.1cqh auto;
 		}
 
 		/* GENERAL INFO → the narrow interrupted card beside the wider legal card. */

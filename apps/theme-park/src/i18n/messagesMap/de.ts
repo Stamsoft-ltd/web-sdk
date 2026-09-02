@@ -237,11 +237,17 @@ export default {
 		'Gewinne werden nach dem Stillstand der Walzen ermittelt und gemäß der Gewinntabelle ausgezahlt.',
 	'INFO WTW WILD': 'Wild-Symbole ersetzen alle regulären Gewinnsymbole außer Scatter-Symbolen.',
 	'INFO WTW SCATTER':
-		'Scatter-Symbole müssen keiner Gewinnlinie folgen und lösen die zugehörigen Bonusfunktionen aus.',
+		'Scatter-Symbole müssen nicht auf einer Gewinnlinie landen und können überall auf den Walzen erscheinen.',
 	'INFO WTW HIGHEST':
 		'Pro Symbol und Gewinnlinie wird nur die höchste Gewinnkombination ausgezahlt.',
 	'INFO WTW MULTIPLES': 'Alle angezeigten Auszahlungen sind Vielfache des Gesamteinsatzes.',
 	'INFO WTW DIAGRAM ALT': '15 Gewinnlinien',
+	'INFO WTW FREE TITLE': 'FREISPIELE',
+	'INFO WTW FREE TRIGGER':
+		'Wenn 3 Scatter-Symbole des erforderlichen Typs landen, wird die Freispiel-Funktion ausgelöst und es werden 10 Freispiele vergeben.',
+	'INFO WTW FREE MAX':
+		'Es sind nur 3 qualifizierende Scatter-Symbole möglich, daher gibt es keine zusätzlichen Belohnungen für mehr als 3 Scatter.',
+	'INFO WTW FREE RETRIGGER': 'Freispiele können nicht erneut ausgelöst werden.',
 	'INFO WTW MULT TITLE': 'WILD-WALZEN-MULTIPLIKATOREN',
 	'INFO WTW MULT BODY':
 		'Wenn ein Roller Wild eine Walze verwandelt, wird die gesamte Walze wild und erhält einen Multiplikator von:',

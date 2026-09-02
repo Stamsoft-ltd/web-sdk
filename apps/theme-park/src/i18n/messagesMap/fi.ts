@@ -235,10 +235,16 @@ export default {
 	'INFO WTW WILD':
 		'Wild-symbolit korvaavat kaikki tavalliset voittavat symbolit Scatter-symboleja lukuun ottamatta.',
 	'INFO WTW SCATTER':
-		'Scatter-symbolien ei tarvitse noudattaa voittolinjaa, ja niitä käytetään niihin liittyvien bonusominaisuuksien käynnistämiseen.',
+		'Scatter-symbolien ei tarvitse osua voittolinjalle, ja ne voivat ilmestyä mihin tahansa kohtaan rullia.',
 	'INFO WTW HIGHEST': 'Vain korkein voittoyhdistelmä symbolia ja voittolinjaa kohti maksetaan.',
 	'INFO WTW MULTIPLES': 'Kaikki näytetyt voitot ilmaistaan kokonaispanoksen kerrannaisina.',
 	'INFO WTW DIAGRAM ALT': '15 voittolinjaa',
+	'INFO WTW FREE TITLE': 'ILMAISPELIT',
+	'INFO WTW FREE TRIGGER':
+		'Kolmen vaaditun tyyppisen Scatter-symbolin osuminen käynnistää ilmaispelitoiminnon ja antaa 10 ilmaiskierrosta.',
+	'INFO WTW FREE MAX':
+		'Kelvollisia Scatter-symboleita voi olla vain 3, joten yli 3 Scatterista ei anneta lisäpalkintoja.',
+	'INFO WTW FREE RETRIGGER': 'Ilmaispelejä ei voi käynnistää uudelleen.',
 	'INFO WTW MULT TITLE': 'WILD-RULLIEN KERTOIMET',
 	'INFO WTW MULT BODY':
 		'Kun Roller Wild muuttaa rullan, koko rullasta tulee Wild ja se saa kertoimen:',

@@ -258,10 +258,16 @@ export default {
 		'Wins are evaluated after the reels stop and are paid according to the Paytable.',
 	'INFO WTW WILD': 'Wild symbols substitute for all regular paying symbols except Scatter symbols.',
 	'INFO WTW SCATTER':
-		'Scatter symbols do not need to follow a payline and are used to trigger their associated bonus features.',
+		'Scatter symbols do not need to land on a payline and can appear anywhere on the reels.',
 	'INFO WTW HIGHEST': 'Only the highest winning combination per symbol per payline is paid.',
 	'INFO WTW MULTIPLES': 'All displayed payouts are expressed as multiples of the total bet.',
 	'INFO WTW DIAGRAM ALT': '15 paylines',
+	'INFO WTW FREE TITLE': 'FREE GAMES',
+	'INFO WTW FREE TRIGGER':
+		'Landing 3 Scatter symbols of the required type triggers the Free Games feature and awards 10 Free Spins.',
+	'INFO WTW FREE MAX':
+		'Only 3 qualifying Scatter symbols are possible, so there are no additional rewards for landing more than 3 Scatters.',
+	'INFO WTW FREE RETRIGGER': 'Free Games cannot be retriggered.',
 	'INFO WTW MULT TITLE': 'WILD REEL MULTIPLIERS',
 	'INFO WTW MULT BODY':
 		'When a Roller Wild transforms a reel, the entire reel becomes Wild and receives a multiplier of:',

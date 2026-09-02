@@ -18,7 +18,11 @@
 	const replayBetText = $derived(templateStakeDerived.formatWallet(templateStakeDerived.replayBetAmount()));
 	const replayCostText = $derived(templateStakeDerived.formatWallet(templateStakeDerived.replayCostAmount()));
 	const replayCostMultiplierText = $derived(`${templateStakeDerived.replayCostMultiplier()}x`);
-	const replayPayoutMultiplierText = $derived(`${templateStakeDerived.replayPayoutMultiplier().toFixed(2).replace(/\.?0+$/, '')}x`);
+	// Trim to 4 decimals and let Number drop the trailing zeros, so an exact multiplier prints exact
+	// (50 -> "50x") instead of being clamped to 2 decimals that no longer multiply back to the win.
+	const replayPayoutMultiplierText = $derived(
+		`${Number(templateStakeDerived.replayPayoutMultiplier().toFixed(4))}x`,
+	);
 	const replayWinText = $derived(
 		templateStakeDerived.formatWin(templateStakeDerived.replayWinAmount()),
 	);

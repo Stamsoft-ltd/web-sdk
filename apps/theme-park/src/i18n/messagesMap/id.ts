@@ -233,12 +233,18 @@ export default {
 		'Kemenangan dihitung setelah gulungan berhenti dan dibayarkan sesuai tabel bayaran.',
 	'INFO WTW WILD': 'Simbol Wild menggantikan semua simbol pembayaran biasa kecuali simbol Scatter.',
 	'INFO WTW SCATTER':
-		'Simbol Scatter tidak perlu mengikuti garis bayaran dan digunakan untuk memicu fitur bonus terkait.',
+		'Simbol Scatter tidak perlu mendarat di garis bayaran dan dapat muncul di mana saja pada gulungan.',
 	'INFO WTW HIGHEST':
 		'Hanya kombinasi kemenangan tertinggi per simbol per garis bayaran yang dibayarkan.',
 	'INFO WTW MULTIPLES':
 		'Semua pembayaran yang ditampilkan dinyatakan sebagai kelipatan dari total taruhan.',
 	'INFO WTW DIAGRAM ALT': '15 garis bayaran',
+	'INFO WTW FREE TITLE': 'PERMAINAN GRATIS',
+	'INFO WTW FREE TRIGGER':
+		'Mendaratkan 3 simbol Scatter dengan jenis yang diperlukan memicu fitur Permainan Gratis dan memberikan 10 putaran gratis.',
+	'INFO WTW FREE MAX':
+		'Hanya 3 simbol Scatter yang memenuhi syarat yang mungkin muncul, sehingga tidak ada hadiah tambahan untuk lebih dari 3 Scatter.',
+	'INFO WTW FREE RETRIGGER': 'Permainan Gratis tidak dapat dipicu ulang.',
 	'INFO WTW MULT TITLE': 'PENGGANDA GULUNGAN WILD',
 	'INFO WTW MULT BODY':
 		'Saat Roller Wild mengubah sebuah gulungan, seluruh gulungan menjadi Wild dan menerima pengganda:',

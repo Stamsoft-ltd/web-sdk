@@ -453,13 +453,45 @@
 			// A transform only changes paint size; the unscaled text still expands flex layout. Reset to
 			// the authored size, measure the full line, then change the real font size so layout also fits.
 			node.style.removeProperty('font-size');
+			node.style.removeProperty('letter-spacing');
 			const style = getComputedStyle(slot);
+			// Siblings on the SAME line share the row's width. The balance pill sets its "BALANCE"
+			// label beside the value, and measuring against the whole pill let a six-figure balance
+			// overflow the box and push the label off the left edge of the viewport in popout windows.
+			// Only same-line siblings count: once the pill wraps, the value owns a full line again.
+			const nodeRect = node.getBoundingClientRect();
+			const gap = parseFloat(style.columnGap) || 0;
+			let siblingWidth = 0;
+			for (const child of Array.from(slot.children)) {
+				if (child === node) continue;
+				const rect = child.getBoundingClientRect();
+				const sharesLine = rect.top < nodeRect.bottom && rect.bottom > nodeRect.top;
+				if (sharesLine) siblingWidth += rect.width + gap;
+			}
 			const available =
-				slot.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-			const baseSize = parseFloat(getComputedStyle(node).fontSize);
-			const full = node.scrollWidth;
-			const scale = full > available && available > 0 ? available / full : 1;
-			if (scale < 1) node.style.fontSize = `${Math.max(1, baseSize * scale)}px`;
+				slot.clientWidth -
+				parseFloat(style.paddingLeft) -
+				parseFloat(style.paddingRight) -
+				siblingWidth;
+			if (available <= 0) return;
+			// One linear guess is not enough. Width is only proportional to font-size if EVERY
+			// contribution scales with it, and `letter-spacing` here is a fixed length — across the
+			// 18 characters of "$10,000,000,000.00" that is ~9px which survives the scale-down, so
+			// the fitted text still overflowed its box by 4px and the portrait balance clipped its
+			// last digits. Re-measure and correct; three passes land inside a pixel.
+			let size = parseFloat(getComputedStyle(node).fontSize);
+			// Pin letter-spacing to the font before scaling. Authored as a fixed length it stays put
+			// while the glyphs shrink, so width stops being proportional to font-size and the
+			// correction below converges by ever-smaller steps — it was still a pixel over after
+			// three passes, which is a clipped final digit. In `em` the whole run scales together.
+			const spacing = parseFloat(getComputedStyle(node).letterSpacing);
+			if (Number.isFinite(spacing) && spacing !== 0 && size > 0) {
+				node.style.letterSpacing = `${spacing / size}em`;
+			}
+			for (let pass = 0; pass < 3 && node.scrollWidth > available; pass += 1) {
+				size = Math.max(1, size * (available / node.scrollWidth));
+				node.style.fontSize = `${size}px`;
+			}
 		};
 		const schedule = () => {
 			cancelAnimationFrame(frame);
@@ -2063,6 +2095,11 @@
 		justify-content: center;
 		gap: 6px;
 		padding: 4px 10px;
+		/* The landscape gutter is ~92px wide, which fits "BALANCE $896.16" and nothing longer. Wrapping
+		   drops a long balance onto its own full-width line instead of overflowing the pill — which is
+		   how a $100,000.00 balance ended up clipped by the left edge of a popout window. */
+		flex-wrap: wrap;
+		row-gap: 0;
 	}
 	.ls-pill__label {
 		font-size: clamp(0.28rem, 1.56vh, 0.5rem);
@@ -2100,9 +2137,11 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 5px;
-		/* Roomier now that it shows only the value (no BET label). */
-		padding: clamp(3px, 1.55vh, 11px) clamp(4px, 2.05vh, 14px);
+		gap: 3px;
+		/* Padding and gap are the only slack in this row, and on a popout there is none to spare:
+		   at 700x460 the column is 92px and two 28px steppers plus the old 9.4px padding left the
+		   bet value FIVE pixels, which fitText duly honoured by rendering "$1.00" at 2px. */
+		padding: clamp(3px, 1.55vh, 11px) clamp(2px, 1.1vh, 10px);
 	}
 	.ls-bet__bg {
 		position: absolute;
@@ -2119,6 +2158,11 @@
 		align-items: center;
 		cursor: pointer;
 		min-width: 0;
+		/* MUST grow. Sized to its content it fed fitText a slot whose width depended on the very font
+		   size fitText was setting: each shrink narrowed the slot, which re-fired the ResizeObserver,
+		   which shrank it again, latching "$1.00" at 2px. Taking the row's leftover width makes the
+		   measurement independent of the result. */
+		flex: 1 1 auto;
 	}
 	.ls-bet__value {
 		font-size: clamp(0.5rem, 3.05vh, 1rem);
@@ -2126,8 +2170,12 @@
 	.ls-step {
 		position: relative;
 		flex: 0 0 auto;
-		width: clamp(11px, 6.15vh, 32px);
-		height: clamp(11px, 6.15vh, 32px);
+		/* Sized off viewport height like every other control, but never more than a quarter of the
+		   row it shares with the bet value. Height alone does not know how narrow the gutter is: a
+		   short-AND-wide popout gives 6.15vh a perfectly reasonable 28px inside a 92px column. */
+		width: min(clamp(11px, 6.15vh, 32px), 25%);
+		height: min(clamp(11px, 6.15vh, 32px), 25%);
+		aspect-ratio: 1;
 		border: 0;
 		padding: 0;
 		background: none;
@@ -2149,12 +2197,16 @@
 	.ls-actions {
 		position: absolute;
 		right: 1.8%;
-		bottom: 15%;
+		/* The dock is bottom-anchored and grows upward, so its height sets how far up the screen its
+		   top edge reaches. At 15% with the old padding it reached y=22.7 on a 700x460 popout and
+		   covered the bottom 3-10px of .press-play-mark, which is pinned to this same corner. Lower
+		   anchor + tighter box move the top clear without touching the button order. */
+		bottom: 12%;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: clamp(3px, 2.4vh, 16px);
-		padding: clamp(6px, 3.35vh, 22px) clamp(3px, 1.55vh, 12px);
+		gap: clamp(3px, 2.15vh, 14px);
+		padding: clamp(5px, 2.9vh, 19px) clamp(3px, 1.25vh, 10px);
 	}
 	/* The same plate .pt-plate draws in portrait — flat fill, hairline edge, one soft bloom — so the
 	   two mobile layouts read as one design. The corner keeps the retired art's silhouette: its
@@ -2198,8 +2250,8 @@
 	   while the ring still reads as the biggest control. The ring art is height-driven, so it fills
 	   the taller box and slightly overhangs the narrow width, which reads as it popping out. */
 	.ls-spin.spin-btn {
-		width: clamp(26px, 14.4vh, 84px);
-		height: clamp(42px, 22.6vh, 132px);
+		width: clamp(26px, 13vh, 78px);
+		height: clamp(42px, 21vh, 122px);
 	}
 	.ls-spin .spin-btn__count {
 		position: relative;
@@ -2422,9 +2474,11 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 5px;
-		/* Roomier now that it shows only the value (no BET label). */
-		padding: clamp(3px, 1.55vh, 11px) clamp(4px, 2.05vh, 14px);
+		gap: 3px;
+		/* Padding and gap are the only slack in this row, and on a popout there is none to spare:
+		   at 700x460 the column is 92px and two 28px steppers plus the old 9.4px padding left the
+		   bet value FIVE pixels, which fitText duly honoured by rendering "$1.00" at 2px. */
+		padding: clamp(3px, 1.55vh, 11px) clamp(2px, 1.1vh, 10px);
 	}
 	.ls-bet__bg {
 		position: absolute;
@@ -2441,6 +2495,11 @@
 		align-items: center;
 		cursor: pointer;
 		min-width: 0;
+		/* MUST grow. Sized to its content it fed fitText a slot whose width depended on the very font
+		   size fitText was setting: each shrink narrowed the slot, which re-fired the ResizeObserver,
+		   which shrank it again, latching "$1.00" at 2px. Taking the row's leftover width makes the
+		   measurement independent of the result. */
+		flex: 1 1 auto;
 	}
 	.ls-bet__value {
 		font-size: clamp(0.5rem, 3.05vh, 1rem);
@@ -2448,8 +2507,12 @@
 	.ls-step {
 		position: relative;
 		flex: 0 0 auto;
-		width: clamp(11px, 6.15vh, 32px);
-		height: clamp(11px, 6.15vh, 32px);
+		/* Sized off viewport height like every other control, but never more than a quarter of the
+		   row it shares with the bet value. Height alone does not know how narrow the gutter is: a
+		   short-AND-wide popout gives 6.15vh a perfectly reasonable 28px inside a 92px column. */
+		width: min(clamp(11px, 6.15vh, 32px), 25%);
+		height: min(clamp(11px, 6.15vh, 32px), 25%);
+		aspect-ratio: 1;
 		border: 0;
 		padding: 0;
 		background: none;
@@ -2471,12 +2534,16 @@
 	.ls-actions {
 		position: absolute;
 		right: 1.8%;
-		bottom: 15%;
+		/* The dock is bottom-anchored and grows upward, so its height sets how far up the screen its
+		   top edge reaches. At 15% with the old padding it reached y=22.7 on a 700x460 popout and
+		   covered the bottom 3-10px of .press-play-mark, which is pinned to this same corner. Lower
+		   anchor + tighter box move the top clear without touching the button order. */
+		bottom: 12%;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: clamp(3px, 2.4vh, 16px);
-		padding: clamp(6px, 3.35vh, 22px) clamp(3px, 1.55vh, 12px);
+		gap: clamp(3px, 2.15vh, 14px);
+		padding: clamp(5px, 2.9vh, 19px) clamp(3px, 1.25vh, 10px);
 	}
 	/* The same plate .pt-plate draws in portrait — flat fill, hairline edge, one soft bloom — so the
 	   two mobile layouts read as one design. The corner keeps the retired art's silhouette: its
@@ -2520,8 +2587,8 @@
 	   while the ring still reads as the biggest control. The ring art is height-driven, so it fills
 	   the taller box and slightly overhangs the narrow width, which reads as it popping out. */
 	.ls-spin.spin-btn {
-		width: clamp(26px, 14.4vh, 84px);
-		height: clamp(42px, 22.6vh, 132px);
+		width: clamp(26px, 13vh, 78px);
+		height: clamp(42px, 21vh, 122px);
 	}
 	.ls-spin .spin-btn__count {
 		position: relative;

@@ -235,11 +235,17 @@ export default {
 	'INFO WTW WILD':
 		'Wild semboller, Scatter semboller dışındaki tüm normal ödeme yapan sembollerin yerine geçer.',
 	'INFO WTW SCATTER':
-		'Scatter sembollerin bir ödeme çizgisini takip etmesi gerekmez ve ilgili bonus özelliklerini tetiklemek için kullanılır.',
+		'Scatter sembollerinin bir ödeme çizgisine denk gelmesi gerekmez ve makaralarda herhangi bir yerde görünebilir.',
 	'INFO WTW HIGHEST':
 		'Her sembol ve her ödeme çizgisi için yalnızca en yüksek kazanan kombinasyon ödenir.',
 	'INFO WTW MULTIPLES': 'Gösterilen tüm ödemeler toplam bahsin katları olarak ifade edilir.',
 	'INFO WTW DIAGRAM ALT': '15 ödeme çizgisi',
+	'INFO WTW FREE TITLE': 'BEDAVA OYUNLAR',
+	'INFO WTW FREE TRIGGER':
+		'Gerekli türden 3 Scatter sembolünün gelmesi Bedava Oyunlar özelliğini tetikler ve 10 bedava dönüş kazandırır.',
+	'INFO WTW FREE MAX':
+		'Yalnızca 3 geçerli Scatter sembolü mümkündür, bu nedenle 3\'ten fazla Scatter için ek ödül verilmez.',
+	'INFO WTW FREE RETRIGGER': 'Bedava Oyunlar yeniden tetiklenemez.',
 	'INFO WTW MULT TITLE': 'WILD MAKARA ÇARPANLARI',
 	'INFO WTW MULT BODY':
 		'Bir Roller Wild bir makarayı dönüştürdüğünde, makaranın tamamı Wild olur ve şu çarpanı alır:',

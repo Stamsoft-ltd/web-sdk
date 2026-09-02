@@ -1,6 +1,7 @@
 import { stateBet, stateI18nDerived, stateModal, stateUi, stateUrlDerived } from 'state-shared';
 import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import type { BaseBet } from 'utils-bet';
+import { bookEventAmountToNormalisedAmount } from 'utils-shared/amount';
 import { formatWalletAmount, formatWinAmount } from '../lib/utils/currency';
 import { logDiagnostic } from '../utils/diagnostics';
 
@@ -157,12 +158,22 @@ const replayPayoutAmount = () => {
 
 const replayWinAmount = () => {
 	const payout = replayPayoutAmount();
-	return payout > 0 ? payout : safeAmount(stateBet.winBookEventAmount);
+	if (payout > 0) return payout;
+	// winBookEventAmount is a BOOK amount (100 = one times the wagered bet), not currency. Handing
+	// it straight to a money formatter printed a 50.01x win as "$5,001.00".
+	return safeAmount(bookEventAmountToNormalisedAmount(safeAmount(stateBet.winBookEventAmount)));
 };
 
 const replayPayoutMultiplier = () => {
-	const cost = replayCostAmount();
-	return cost > 0 ? replayWinAmount() / cost : 0;
+	// The RGS reports payoutMultiplier as payout / amount, so it reconciles exactly against the
+	// base bet and the settled payout. Deriving it from win / total-cost instead yields repeating
+	// decimals — a $50.00 win on a $3.00 ANTE cost reads 16.67x, and 16.67 x 3 is $50.01, not
+	// $50.00 — which is how this reached review as a wrong payout.
+	const raw = (templateStakeState.replaySnapshot as { payoutMultiplier?: number })?.payoutMultiplier;
+	if (raw != null && Number.isFinite(Number(raw))) return safeAmount(raw);
+
+	const bet = replayBetAmount();
+	return bet > 0 ? replayWinAmount() / bet : 0;
 };
 
 /**

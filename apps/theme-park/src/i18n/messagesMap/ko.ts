@@ -231,10 +231,16 @@ export default {
 	'INFO WTW EVAL': '당첨은 릴이 멈춘 후 판정되며 배당표에 따라 지급됩니다.',
 	'INFO WTW WILD': '와일드 심볼은 스캐터 심볼을 제외한 모든 일반 배당 심볼을 대체합니다.',
 	'INFO WTW SCATTER':
-		'스캐터 심볼은 페이라인을 따를 필요가 없으며 연관된 보너스 기능을 발동하는 데 사용됩니다.',
+		'스캐터 심볼은 페이라인에 놓일 필요가 없으며 릴의 어느 위치에나 나타날 수 있습니다.',
 	'INFO WTW HIGHEST': '심볼별, 페이라인별로 가장 높은 당첨 조합만 지급됩니다.',
 	'INFO WTW MULTIPLES': '표시된 모든 배당은 총 베팅액의 배수로 표시됩니다.',
 	'INFO WTW DIAGRAM ALT': '15개 페이라인',
+	'INFO WTW FREE TITLE': '무료 게임',
+	'INFO WTW FREE TRIGGER':
+		'필요한 종류의 스캐터 심볼 3개가 나오면 무료 게임 기능이 발동되어 10회의 무료 스핀이 지급됩니다.',
+	'INFO WTW FREE MAX':
+		'조건을 충족하는 스캐터 심볼은 3개까지만 가능하므로 3개를 초과해도 추가 보상은 없습니다.',
+	'INFO WTW FREE RETRIGGER': '무료 게임은 재발동할 수 없습니다.',
 	'INFO WTW MULT TITLE': '와일드 릴 배수',
 	'INFO WTW MULT BODY':
 		'Roller Wild가 릴을 변환하면 해당 릴 전체가 와일드가 되고 다음 배수를 받습니다:',
