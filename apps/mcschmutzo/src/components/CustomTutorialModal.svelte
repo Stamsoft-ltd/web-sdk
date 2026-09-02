@@ -15,9 +15,41 @@
 	const respinArt = ap('/assets/mcschmutzo/buybonus/burger.svg');
 	const multArt = ap('/assets/mcschmutzo/tutorial/mult-x2.webp');
 
-	// Page 7 (general info) icons.
+	// Page 6 (general info) icons.
 	const reloadArt = ap('/assets/mcschmutzo/tutorial/reload.webp');
 	const scalesArt = ap('/assets/mcschmutzo/tutorial/scales.webp');
+
+	// Page 7 (user interface guide) — real HUD icons (recoloured white) + inline glyphs.
+	const hudIcon = (n: string) => ap(`/assets/hud/${n}`);
+	const spinBtnBg = ap('/assets/mcschmutzo/spin-button.png');
+	const spinCIcon = hudIcon('icon-spin.png');
+	const UG_ARROW_L = `<svg viewBox="0 0 24 24" fill="none"><path d="M20 12H4M4 12l6-6M4 12l6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+	const UG_ARROW_R = `<svg viewBox="0 0 24 24" fill="none"><path d="M4 12h16M20 12l-6-6M20 12l-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+	const UG_CLOSE = `<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+	const UG_NOTE = `<svg viewBox="0 0 24 24" fill="none"><circle cx="7" cy="18" r="2.6" fill="#fff"/><circle cx="17" cy="16" r="2.6" fill="#fff"/><path d="M9.6 18V6l10-2v12" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+	type UgItem = {
+		label: string;
+		desc: string;
+		img?: string;
+		svg?: string;
+		spin?: boolean;
+		auto?: boolean;
+	};
+	const UI_ITEMS: UgItem[] = [
+		{ label: 'SPIN', desc: 'Starts a new game round.', spin: true },
+		{ label: 'AUTO SPINS', desc: 'Opens the Auto Spins menu.', img: hudIcon('icon-autoplay.png'), auto: true },
+		{ label: 'TURBO', desc: 'Enables faster reel spins.', img: hudIcon('icon-lightning-2.png') },
+		{ label: 'BET +', desc: 'Increases your total bet.', img: hudIcon('icon-plus.webp') },
+		{ label: 'BET -', desc: 'Decreases your total bet.', img: hudIcon('icon-minus.webp') },
+		{ label: 'INFO', desc: 'Opens the game information.', img: hudIcon('icon-info.png') },
+		{ label: 'SOUND', desc: 'Turns game sound on or off.', img: hudIcon('icon-volume.png') },
+		{ label: 'PREVIOUS', desc: 'Goes to the previous page.', svg: UG_ARROW_L },
+		{ label: 'NEXT', desc: 'Goes to the next page.', svg: UG_ARROW_R },
+		{ label: 'CLOSE', desc: 'Closes the current window.', svg: UG_CLOSE },
+		{ label: 'MENU', desc: 'Opens game menu.', img: hudIcon('icon-menu.png') },
+		{ label: 'MUSIC', desc: 'Turns game music on or off.', svg: UG_NOTE },
+	];
 	const MULT_LADDER = [
 		'1x', '2x', '3x', '4x', '5x', '6x', '8x', '10x', '12x', '15x', '20x', '25x', '30x', '35x',
 		'40x', '50x', '60x', '70x', '80x', '120x', '150x', '200x', '250x', '300x', '350x', '400x',
@@ -211,7 +243,7 @@
 					{/each}
 				</div>
 			</div>
-		{:else if page === 7}
+		{:else if page === 6}
 			<div class="tu-page">
 				<h2 class="tu-title">{i18nDerived.translate('GENERAL INFO')}</h2>
 
@@ -233,6 +265,33 @@
 							<p>TM and © 2026 Stake Engine.</p>
 						</div>
 					</div>
+				</div>
+			</div>
+		{:else if page === 7}
+			<div class="tu-page">
+				<h2 class="tu-title">{i18nDerived.translate('USER INTERFACE GUIDE')}</h2>
+
+				<div class="ug-grid">
+					{#each UI_ITEMS as it}
+						<div class="ug-item">
+							{#if it.spin}
+								<div class="ug-disc ug-disc--spin" style={`background-image:url('${spinBtnBg}')`}>
+									<img class="ug-spin-c" src={spinCIcon} alt="" draggable="false" />
+								</div>
+							{:else}
+								<div class="ug-disc">
+									{#if it.img}
+										<img src={it.img} alt="" draggable="false" />
+									{:else if it.svg}
+										{@html it.svg}
+									{/if}
+									{#if it.auto}<span class="ug-disc-auto">AUTO</span>{/if}
+								</div>
+							{/if}
+							<span class="ug-label">{it.label}</span>
+							<span class="ug-desc">{it.desc}</span>
+						</div>
+					{/each}
 				</div>
 			</div>
 		{:else}
@@ -579,6 +638,83 @@
 	}
 	.gi-body p:last-child {
 		margin-bottom: 0;
+	}
+
+	/* Page 7 — user interface guide. 5-column icon reference grid. */
+	.ug-grid {
+		width: 100%;
+		margin-top: clamp(14px, 2.6vmin, 30px);
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		gap: clamp(16px, 3vmin, 34px) clamp(8px, 1.5vmin, 16px);
+	}
+	.ug-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		gap: clamp(6px, 1.1vmin, 11px);
+	}
+	.ug-disc {
+		position: relative;
+		width: clamp(44px, 6.6vmin, 66px);
+		aspect-ratio: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1px;
+		border: 2px solid #4c433d;
+		border-radius: 50%;
+		background: radial-gradient(circle at 50% 35%, #2b2723, #17130f);
+	}
+	.ug-disc img,
+	.ug-disc :global(svg) {
+		width: 46%;
+		height: 46%;
+		object-fit: contain;
+	}
+	/* Recolour the gold HUD icons to white to match the design. */
+	.ug-disc img {
+		filter: brightness(0) invert(1);
+	}
+	.ug-disc-auto {
+		color: #fff;
+		font-family: 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: clamp(0.34rem, 0.9vmin, 0.5rem);
+		letter-spacing: 0.04em;
+		line-height: 1;
+	}
+	.ug-disc:has(.ug-disc-auto) img {
+		width: 40%;
+		height: 40%;
+	}
+	/* SPIN uses the real red spin-button art with the white centre icon. */
+	.ug-disc--spin {
+		border: none;
+		background: center / contain no-repeat;
+	}
+	.ug-spin-c {
+		width: 40% !important;
+		height: 40% !important;
+		filter: brightness(0) invert(1);
+	}
+	.ug-label {
+		color: #f2ead9;
+		font-family: 'Nunito', sans-serif;
+		font-weight: 800;
+		font-size: clamp(0.78rem, 1.7vmin, 1.05rem);
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+	}
+	.ug-desc {
+		max-width: 16ch;
+		color: #b3a99c;
+		font-family: 'Nunito', sans-serif;
+		font-weight: 600;
+		font-size: clamp(0.62rem, 1.4vmin, 0.85rem);
+		line-height: 1.35;
 	}
 
 	/* Guy tucked into the popup's bottom-left corner, stats centred to his right. */
