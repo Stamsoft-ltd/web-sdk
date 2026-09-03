@@ -187,7 +187,7 @@ export default {
 	'PAYTABLE H3_H5': 'POPCORN and FERRIS WHEEL pay 0.5 / 2.5 / 5x for 3 / 4 / 5 of a kind.',
 	'PAYTABLE LOWS': 'A, K, Q, J and 10 pay 0.1 / 0.5 / 1x for 3 / 4 / 5 of a kind.',
 	'PAYTABLE SPECIAL_TEXT':
-		'WILD does not pay by itself. It substitutes regular symbols, and its multiplier applies to the completed winning symbol. Ducks and scatters award features. Highest paying symbol per line wins.',
+		'Five Wilds on a line award 20x before any Wild multiplier. Wilds substitute regular symbols, and their multipliers apply to completed line wins. Ducks and scatters award features. Highest paying symbol per line wins.',
 	'PAYTABLE TITLE PAYLINES': 'PAYLINES',
 	'PAYTABLE TEXT PAYLINES': '15 fixed paylines, left to right.',
 	'PAYTABLE BUY TITLE': 'BUY',
@@ -257,7 +257,7 @@ export default {
 	'INFO WTW EVAL':
 		'Wins are evaluated after the reels stop and are paid according to the Paytable.',
 	'INFO WTW WILD':
-		'Wild symbols do not pay by themselves. They substitute for regular symbols, and their multipliers apply to the completed winning symbol.',
+		'Five Wilds on a line award 20x before any Wild multiplier. Shorter Wild runs substitute for regular symbols, and their multipliers apply to the completed line win.',
 	'INFO WTW SCATTER':
 		'Scatter symbols do not need to land on a payline and can appear anywhere on the reels.',
 	'INFO WTW DUCK':

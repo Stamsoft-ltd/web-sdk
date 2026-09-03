@@ -30,8 +30,12 @@ describe('shared frontend completeness guards', () => {
 	it('states that the highest-paying symbol wins each line', () => {
 		const en = source('src/i18n/messagesMap/en.ts');
 		const social = source('src/i18n/socialOverridesEn.ts');
+		const modal = source('src/components/CustomInfoModal.svelte');
 		expect(en).toContain("'INFO WTW HIGHEST': 'Highest paying symbol per line wins.'");
 		expect(social).toContain("'INFO WTW HIGHEST': 'Highest awarding symbol per line wins.'");
+		expect(modal).toContain("pays: ['-', '-', paysFor('H1')[2]]");
+		expect(en).toContain('Five Wilds on a line award 20x');
+		expect(social).toContain('Five Wilds on a line award 20x');
 	});
 
 	it('uses the Engine legal mark without legacy Stake branding', async () => {

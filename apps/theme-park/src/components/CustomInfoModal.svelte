@@ -97,8 +97,8 @@
 		{ img: 'h2-duck-marquee', name: 'INFO SYM DUCK', pays: paysFor('H2') },
 		{ img: 'h3-balloons-marquee', payImg: payBalloons, name: 'INFO SYM BALLOONS', pays: paysFor('H3') },
 		{ img: 'h1-coaster-still', name: 'INFO SYM COASTER', pays: paysFor('H1') },
-		// Wilds do not pay by themselves; their multiplier applies to the completed regular-symbol win.
-		{ wild: true, name: 'INFO SYM WILD', pays: ['-', '-', '-'] },
+		// Five Wilds form the special 20x line; shorter Wild runs need a regular symbol to complete.
+		{ wild: true, name: 'INFO SYM WILD', pays: ['-', '-', paysFor('H1')[2]] },
 	];
 	// Portrait gives each same-paying royal its OWN row (five tiles are cramped in one narrow cell);
 	// landscape keeps them on a single shared row, as each layout's design draws it.
