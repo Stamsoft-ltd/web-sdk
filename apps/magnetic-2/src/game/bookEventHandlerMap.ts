@@ -194,7 +194,15 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	polarityShift: async (bookEvent: BookEventOfType<'polarityShift'>) => {
 		stateGame.polarityDirection = bookEvent.direction;
 		stateGame.polarityPulse += 1;
-		await waitForTimeout(600);
+		// Direction reveal first; only then slam math's existing cells to their exact destinations.
+		await waitForTimeout(stateBet.isTurbo || stateBet.isSuperTurbo ? 170 : 520);
+		await stateGameDerived.animatePolarityShift({
+			moves: bookEvent.moves,
+			shifterPositions: bookEvent.shifterPositions,
+			rawBoard: bookEvent.board,
+			series: bookEvent.series,
+			magnetTargetSymbol: bookEvent.symbol,
+		});
 	},
 	mysteryBonusReveal: async (bookEvent: BookEventOfType<'mysteryBonusReveal'>) => {
 		// Math resolves the 70/25/5 choice before the freeSpinTrigger. Keep it until that
@@ -203,6 +211,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		await waitForTimeout(450);
 	},
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
+		// A newly landed shifter starts neutral. The polarityShift event colours only its chosen arrow.
+		stateGame.polarityDirection = null;
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
 		const revealMode = stateGame.nextRevealMode;
 		// Clear the RESPIN indicator on normal reveals only — during a chain of consecutive

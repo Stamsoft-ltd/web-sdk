@@ -1013,6 +1013,104 @@ const animateClusterFormation = async ({
 	stateGame.forceFastAnimations = false;
 };
 
+// Polarity does not spawn symbols. It moves the exact existing `kind: symbol` cells supplied by
+// math, then snaps to math's authoritative board. `kind: filler` moves only describe how vacated
+// spaces are refilled and must not be presented as extra copies of the selected symbol.
+const animatePolarityShift = async ({
+	moves,
+	shifterPositions,
+	rawBoard,
+	series,
+	magnetTargetSymbol,
+}: {
+	moves: Array<{ from: Position; to: Position; kind: 'symbol' | 'filler' }>;
+	shifterPositions: Position[];
+	rawBoard: RawSymbol[][];
+	series: ClusterSeriesSnapshot[];
+	magnetTargetSymbol: PaySymbolName;
+}) => {
+	const symbolMoves = moves.filter(
+		(move) =>
+			move.kind === 'symbol' && (move.from.reel !== move.to.reel || move.from.row !== move.to.row),
+	);
+	const fast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
+	const dimMs = fast ? 35 : 120;
+	const flyMs = fast ? 230 : 720;
+	const impactHoldMs = fast ? 30 : 110;
+	const movingKeys = new Set(symbolMoves.map((move) => posKey(move.from)));
+	const shifterKeys = new Set(shifterPositions.map(posKey));
+
+	if (!symbolMoves.length) {
+		settleBoardInstant({ rawBoard, series, magnetTargetSymbol });
+		setSeriesSnapshots({
+			series,
+			magnetTargetSymbol,
+			totalMultiplier: stateGame.seriesTotalMultiplier,
+		});
+		stateGame.polarityDirection = null;
+		return;
+	}
+
+	// Hold the shifter and travelling cluster bright while the rest of the chamber drops back.
+	await Promise.all(
+		stateGame.board
+			.flat()
+			.map((cell) =>
+				cell.displayAlpha.set(
+					movingKeys.has(posKey(cell.position)) || shifterKeys.has(posKey(cell.position))
+						? 1
+						: 0.16,
+					{ duration: dimMs },
+				),
+			),
+	);
+	eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_magnet_pull', forcePlay: true });
+
+	const movingCells = symbolMoves.flatMap((move) => {
+		const cell = stateGame.board[move.from.reel]?.[move.from.row];
+		return cell ? [{ cell, move }] : [];
+	});
+	for (const { cell } of movingCells) {
+		// Existing cluster cells normally render in the fixed locked layer. Release them into the
+		// moving layer for this flight; the authoritative series locks the destinations again.
+		cell.locked = false;
+		cell.symbolState = 'static';
+		cell.pulling = true;
+		cell.displayAlpha.set(1, { duration: 0 });
+		cell.displayScale.set(1.06, { duration: 0 });
+	}
+
+	const completed = await awaitMotionOrTimeout(
+		Promise.all(
+			movingCells.flatMap(({ cell, move }) => [
+				cell.displayX.set((move.to.reel - move.from.reel) * SYMBOL_W, {
+					duration: flyMs,
+					easing: cubicIn,
+				}),
+				cell.displayY.set(getTargetY(move.to.row), { duration: flyMs, easing: cubicIn }),
+				cell.displayScale.set(0.94, { duration: flyMs, easing: cubicIn }),
+			]),
+		),
+		flyMs + 750,
+		'polarity_shift_slam',
+	);
+	if (!completed) forceSettleBoardMotion();
+
+	bumpBoardThump();
+	eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_chain_grow', forcePlay: true });
+	if (impactHoldMs) await waitForTimeout(impactHoldMs);
+
+	// Never infer or clone the result client-side: math owns the final board and connected series.
+	settleBoardInstant({ rawBoard, series, magnetTargetSymbol });
+	setSeriesSnapshots({
+		series,
+		magnetTargetSymbol,
+		totalMultiplier: stateGame.seriesTotalMultiplier,
+	});
+	stateGame.polarityDirection = null;
+	stateGame.forceFastAnimations = false;
+};
+
 const getCurrentLockedKeys = () =>
 	new Set(stateGame.activeSeries.flatMap((e) => e.lockedPositions.map(posKey)));
 
@@ -1677,6 +1775,7 @@ export const stateGameDerived = {
 	setBoardFromRaw,
 	setSeriesSnapshots,
 	animateClusterFormation,
+	animatePolarityShift,
 	animateWinningPositions,
 	clearWinCellStates,
 	applyReveal,

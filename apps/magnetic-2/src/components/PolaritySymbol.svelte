@@ -3,43 +3,61 @@
 
 	type Direction = 'LEFT' | 'RIGHT' | 'UP' | 'DOWN';
 	type Props = {
-		x: number; y: number; width: number; height: number; alpha?: number; zIndex?: number;
-		direction: Direction | null; pulse: number; phase?: number;
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+		alpha?: number;
+		zIndex?: number;
+		direction: Direction | null;
+		pulse: number;
+		phase?: number;
 	};
 	const props: Props = $props();
-	const arrowKeys: Record<Direction, string> = {
-		LEFT: 'polarityArrowLeft', RIGHT: 'polarityArrowRight', UP: 'polarityArrowUp', DOWN: 'polarityArrowDown',
+	const directionKeys: Record<Direction, string> = {
+		LEFT: 'polarityLeft',
+		RIGHT: 'polarityRight',
+		UP: 'polarityUp',
+		DOWN: 'polarityDown',
 	};
-	let scale = $state(0.78);
-	let opacity = $state(0.35);
+	let scale = $state(0.92);
+	let offsetX = $state(0);
+	let offsetY = $state(0);
 	$effect(() => {
+		if (props.pulse === 0) return;
 		const started = performance.now();
 		const pulse = props.pulse;
 		let raf = 0;
 		const tick = () => {
 			const elapsed = (performance.now() - started) / 1000;
-			const t = Math.min(1, elapsed / 0.6);
+			const t = Math.min(1, elapsed / 0.52);
 			const eased = 1 - Math.pow(1 - t, 3);
-			scale = 0.78 + Math.sin(eased * Math.PI) * 0.22;
-			opacity = 0.35 + Math.sin(eased * Math.PI) * 0.65;
+			const charge = Math.sin(eased * Math.PI);
+			const shake = Math.sin(t * Math.PI * 12) * (1 - t) * 3;
+			scale = 0.92 + charge * 0.18;
+			offsetX = props.direction === 'LEFT' || props.direction === 'RIGHT' ? shake : 0;
+			offsetY = props.direction === 'UP' || props.direction === 'DOWN' ? shake : 0;
 			if (t < 1 && pulse === props.pulse) raf = requestAnimationFrame(tick);
 		};
 		tick();
-		return () => cancelAnimationFrame(raf);
+		return () => {
+			cancelAnimationFrame(raf);
+			scale = 0.92;
+			offsetX = 0;
+			offsetY = 0;
+		};
 	});
 	const direction = $derived(props.direction);
-	const key = $derived(direction ? arrowKeys[direction] : null);
+	const key = $derived(direction ? directionKeys[direction] : 'polarityNeutral');
 </script>
 
-{#if key}
 <Sprite
 	{key}
-	x={props.x}
-	y={props.y}
+	x={props.x + offsetX}
+	y={props.y + offsetY}
 	anchor={{ x: 0.5, y: 0.5 }}
 	width={props.width * scale}
 	height={props.height * scale}
-	alpha={(props.alpha ?? 1) * opacity}
+	alpha={props.alpha ?? 1}
 	zIndex={props.zIndex}
 />
-{/if}

@@ -134,6 +134,8 @@ type BookEventPolarityShift = {
 	symbol: PaySymbolName;
 	shifterPositions: Position[];
 	moves: Array<{ from: Position; to: Position; kind: 'symbol' | 'filler' }>;
+	board: RawSymbol[][];
+	series: ClusterSeriesSnapshot[];
 };
 
 type BookEventMysteryBonusReveal = {
