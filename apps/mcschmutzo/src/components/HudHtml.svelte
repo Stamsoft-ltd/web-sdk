@@ -2457,27 +2457,17 @@
 		width: var(--u);
 		/* Slightly squashed vs the art's native 1372×256 — matches the design's slimmer bar. */
 		height: calc(var(--u) * 0.138);
-		/* 3-column grid (1fr | auto | 1fr): the SPIN sits at the exact centre — matching the bet pad
-		   below — regardless of the (unequal) side groups. align-items centres buttons on the wood
-		   (the art's visible wood is centred in its box). */
-		display: grid;
-		grid-template-columns: 1fr auto 1fr;
-		/* Even gap flanking the centred spin. */
-		column-gap: calc(var(--u) * 0.022);
-		/* Row locked to the bar height — otherwise the taller spin stretches the implicit row past
-		   the bar's bottom and every button centres 10px low (halfway out of the wood). With the row
-		   fixed, buttons centre ON the wood and the spin's leaves overflow evenly above/below. */
-		grid-template-rows: 100%;
+		/* All five buttons on one row, evenly spaced (equal gaps between every button and the bar
+		   ends). The groups are flattened with display:contents so each button spaces individually. */
+		display: flex;
 		align-items: center;
-		padding: 0 calc(var(--u) * 0.045);
+		justify-content: space-evenly;
+		padding: 0 calc(var(--u) * 0.03);
 		box-sizing: border-box;
 		/* Desktop nav bar art (hud-bar.png), scaled down to the portrait bar. */
 		background: var(--menu-bar-bg) center / 100% 100% no-repeat;
 	}
-	/* Outer buttons (menu / auto) at the bar ends, inner buttons (BONUS / turbo) flanking the spin
-	   with the shared column-gap, so the spin sits symmetric between its neighbours. */
-	.pt-controls > .pt-grp { width: 100%; justify-content: space-between; }
-	.pt-grp { display: flex; align-items: center; }
+	.pt-grp { display: contents; }
 
 	/* Dark disc utility buttons (matches the desktop nav discs); replaces the old gold-ring art. */
 	.pt-round {
