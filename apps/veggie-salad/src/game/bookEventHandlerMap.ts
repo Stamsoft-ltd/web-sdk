@@ -274,6 +274,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 		stateGame.featureLabel = '';
 		stateGame.bonusTier = null;
+		// Return visual/runtime mode with the bonus, rather than waiting for the next BASE reveal.
+		// Otherwise the post-bonus idle screen keeps the previous tier's background grading.
+		stateGame.gameType = 'basegame';
 		stateGame.freeSpinCurrent = 0;
 		stateGame.freeSpinTotal = 0;
 		stateGame.bonusSpinStartTotal = 0;

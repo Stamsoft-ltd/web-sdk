@@ -113,12 +113,15 @@
 	// On a bonus-entry spin the scatter COUNT is the announcement of which bonus was won, so it
 	// gets its own read-out under the board.
 	const scatterCount = $derived(stateGame.scatterPositions.length);
+	// Visual theme follows the active bonus, not the last reveal's gameType. The latter remains the
+	// bonus type until the next base reveal, which previously left the base garden colour-graded
+	// after the bonus outro had closed.
 	const theme = $derived(
-		stateGame.gameType === 'hidden'
+		stateGame.bonusTier === 'hidden'
 			? 'rainbow'
-			: stateGame.gameType === 'super'
+			: stateGame.bonusTier === 'super'
 				? 'night'
-				: stateGame.gameType === 'normal'
+				: stateGame.bonusTier === 'normal'
 					? 'sunset'
 					: 'day',
 	);
@@ -413,7 +416,14 @@
 	class:bonus-hidden={stateGame.bonusTier === 'hidden'}
 	style="--pixel-background:url('./assets/veggie-salad/pixel/background.png');--bonus-normal-background:url('./assets/veggie-salad/pixel/background-bonus-normal.png');--bonus-super-background:url('./assets/veggie-salad/pixel/background-bonus-super.png');--bonus-hidden-background:url('./assets/veggie-salad/pixel/background-bonus-hidden.png');--hud-button:url('./assets/veggie-salad/pixel/hud-button.png');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud-button-pressed.png')"
 >
-	<div class="pixel-background" aria-hidden="true"></div>
+	<!-- Background images cannot interpolate. Persistent layers can: entering a bonus fades its
+	     garden over BASE; leaving fades it away and reveals the exact same BASE layer underneath. -->
+	<div class="pixel-background-stack" aria-hidden="true">
+		<div class="pixel-background background-base"></div>
+		<div class="pixel-background background-bonus background-normal"></div>
+		<div class="pixel-background background-bonus background-super"></div>
+		<div class="pixel-background background-bonus background-hidden"></div>
+	</div>
 	<div class="sun-moon" aria-hidden="true"></div>
 	<div class="rainbow" aria-hidden="true"></div>
 	<div class="cloud cloud-a" aria-hidden="true"></div>
@@ -3050,6 +3060,12 @@
 		background: #16a9ed;
 		image-rendering: pixelated;
 	}
+	.pixel-background-stack {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+	}
 	.pixel-background {
 		position: absolute;
 		inset: 0;
@@ -3057,6 +3073,9 @@
 		background: var(--pixel-background) center bottom / 100% auto no-repeat;
 		image-rendering: pixelated;
 		pointer-events: none;
+	}
+	.background-bonus {
+		opacity: 0;
 	}
 	.sun-moon,
 	.rainbow,
@@ -3102,13 +3121,13 @@
 	.scene.theme-rainbow {
 		background: #bde8f4;
 	}
-	.theme-sunset .pixel-background {
+	.theme-sunset .background-base {
 		filter: sepia(0.18) saturate(1.12) brightness(0.88);
 	}
-	.theme-night .pixel-background {
+	.theme-night .background-base {
 		filter: brightness(0.48) saturate(0.85) hue-rotate(34deg);
 	}
-	.theme-rainbow .pixel-background {
+	.theme-rainbow .background-base {
 		filter: saturate(1.3) brightness(1.08);
 	}
 	.brand {
@@ -3876,10 +3895,18 @@
 
 	/* Bonus garden variants. Same source art and geometry; restrained grading + one soft light
 	   layer makes each tier readable without looking like a different game. */
+	.scene {
+		transition: background-color 850ms ease-in-out;
+	}
 	.pixel-background {
 		transition:
-			filter 650ms ease,
+			opacity 850ms ease-in-out,
+			filter 850ms ease-in-out,
 			background-position 650ms ease;
+	}
+	.corner-foliage::before,
+	.corner-foliage::after {
+		transition: filter 850ms ease-in-out;
 	}
 
 	.scene.bonus-normal {
@@ -3907,42 +3934,51 @@
 			background 650ms ease;
 	}
 
-	.scene.bonus-normal .pixel-background {
+	.background-normal {
 		background-image: var(--bonus-normal-background);
 		background-position: center;
 		background-size: cover;
 		filter: none;
 	}
+	.scene.bonus-normal .background-normal {
+		opacity: 1;
+	}
 
-	.scene.bonus-normal .pixel-background::after {
+	.background-normal::after {
 		background:
 			radial-gradient(circle at 24% 22%, rgb(255 220 105 / 34%), transparent 34%),
 			linear-gradient(rgb(255 170 54 / 10%), transparent 58%);
 		opacity: 0.72;
 	}
 
-	.scene.bonus-super .pixel-background {
+	.background-super {
 		background-image: var(--bonus-super-background);
 		background-position: center;
 		background-size: cover;
 		filter: none;
 	}
+	.scene.bonus-super .background-super {
+		opacity: 1;
+	}
 
-	.scene.bonus-super .pixel-background::after {
+	.background-super::after {
 		background:
 			radial-gradient(circle at 74% 20%, rgb(112 204 255 / 30%), transparent 33%),
 			linear-gradient(rgb(28 65 137 / 20%), rgb(15 92 95 / 8%));
 		opacity: 0.78;
 	}
 
-	.scene.bonus-hidden .pixel-background {
+	.background-hidden {
 		background-image: var(--bonus-hidden-background);
 		background-position: center;
 		background-size: cover;
 		filter: none;
 	}
+	.scene.bonus-hidden .background-hidden {
+		opacity: 1;
+	}
 
-	.scene.bonus-hidden .pixel-background::after {
+	.background-hidden::after {
 		background:
 			radial-gradient(circle at 18% 28%, rgb(202 124 255 / 26%), transparent 31%),
 			radial-gradient(circle at 82% 24%, rgb(99 255 197 / 24%), transparent 32%),
