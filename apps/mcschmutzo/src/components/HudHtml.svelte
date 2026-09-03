@@ -1910,15 +1910,13 @@
 		   the button doesn't stretch the background. Aspect keeps the 300/126 art. */
 		height: calc(var(--u) * 100);
 		width: auto;
-		aspect-ratio: 1354 / 528;
+		/* Match the bonus-button.svg art (179 x 71) so it fills without letterboxing. */
+		aspect-ratio: 179 / 71;
 		border: 0;
 		background: var(--buy-btn-bg) center / contain no-repeat;
-		/* Leaves sit along the bottom of the new art, so the green body centre is above the element
-		   centre — pad the bottom to lift the flex-centred label onto the body (scales with the button). */
-		padding: 0 14px 7% 14px;
-		/* Optical vertical centring: the art's leafy bottom makes the element read high on the
-		   bar, so nudge the whole button down a touch (position-relative, layout unaffected). */
-		top: clamp(2px, 0.45vw, 7px);
+		/* Horizontal inset keeps the label inside the red plate; the plate is vertically centred
+		   in the art, so the flex-centred label needs no top/bottom offset. */
+		padding: 0 13%;
 		outline: none;
 		cursor: pointer;
 		position: relative;
