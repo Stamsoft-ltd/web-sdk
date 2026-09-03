@@ -369,6 +369,13 @@
 									<span class="feat-x">4x</span><img src={scatter} alt="Scatter" />
 								</div>
 							</div>
+							<div class="card feat-card feat-tall">
+								<h3 class="feat-h">{t('SPLASH ZERO POINT')}</h3>
+								<p class="feat-p">5 scatters trigger the hidden bonus. Its first spin starts with a guaranteed multiplier magnet.</p>
+								<div class="feat-trigger">
+									<span class="feat-x">5x</span><img src={scatter} alt="Scatter" />
+								</div>
+							</div>
 						</div>
 					</div>
 				{:else if page === 4}
@@ -996,7 +1003,7 @@
 		flex: 1;
 		min-height: 0;
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(4, 1fr);
 		gap: clamp(10px, 2cqmin, 22px);
 	}
 	.feat-col-small {

@@ -97,7 +97,7 @@
 			const betStep = clampNum(24, betW * 0.17, 52);
 			// Five bonus cards now share the row. Keep the full set inside the panel instead of
 			// sizing for four and letting the first/last cards clip behind the viewport edges.
-			const cardCount = 6;
+			const cardCount = 5;
 			const widthBudget = (Math.min(w, 1860) - 2 * padX - (cardCount - 1) * gap) / cardCount;
 			const heightBudget = h - padTop - padBot - vGap - betH;
 			// Version2 plate is a near-square (556x551 art) — height follows the art's own aspect.
@@ -341,17 +341,6 @@
 			>
 		</div>
 
-		<!-- ZERO POINT PROTOCOL: 5-scatter hidden outcome; no direct HIDDEN bet mode. -->
-		<div class="card card--trigger-only" style={`background-image:url('${cardPanel}')`}>
-			<span class="card-title">ZERO POINT PROTOCOL</span>
-			<span class="card-desc">5 scatters trigger the hidden bonus with a starting multiplier magnet.</span>
-			<div class="card-icon-slot">
-				<span class="card-mult">5x</span>
-				<img class="card-icon card-icon--brief" src={iconBrief} alt="" />
-			</div>
-			<span class="card-price">5 SCATTERS</span>
-			<button class="card-btn card-btn--buy" type="button" disabled aria-label="Triggered by five scatters">{t('BUY')}</button>
-		</div>
 	</div>
 
 	<!-- Bet selector -->
@@ -519,7 +508,8 @@
 		transform: rotate(-45deg);
 	}
 
-	/* Six cards in a row — square, kept compact so the complete bonus set stays visible. */
+	/* Five purchasable/activatable cards in a row. Zero Point stays rules-only because it is
+	   triggered by five scatters, not exposed as a separate bet mode. */
 	.grid {
 		display: flex;
 		gap: clamp(10px, 1.2vw, 24px);
