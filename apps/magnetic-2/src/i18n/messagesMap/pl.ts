@@ -63,7 +63,7 @@ export default {
 	'INFO GI LEGAL 3':
 		'Wszystkie wygrane są rozliczane zgodnie z wynikiem otrzymanym ze Zdalnego Serwera Gry, a nie na podstawie animacji lub zdarzeń pokazywanych w przeglądarce internetowej.',
 	'DISCLAIMER TEXT':
-		'Awaria unieważnia wszystkie wygrane i gry. Wymagane jest stabilne połączenie internetowe. W przypadku utraty połączenia przeładuj grę, aby dokończyć niezakończone rundy. Oczekiwany zwrot obliczany jest na podstawie wielu gier. Wyświetlanie gry nie odpowiada żadnemu fizycznemu urządzeniu i służy wyłącznie celom ilustracyjnym. Wygrane rozliczane są zgodnie z kwotą otrzymaną z Zdalnego Serwera Gry, a nie ze zdarzeń w przeglądarce internetowej. TM oraz © 2026 Stake Engine.',
+		'Awaria unieważnia wszystkie wygrane i gry. Wymagane jest stabilne połączenie internetowe. W przypadku utraty połączenia przeładuj grę, aby dokończyć niezakończone rundy. Oczekiwany zwrot obliczany jest na podstawie wielu gier. Wyświetlanie gry nie odpowiada żadnemu fizycznemu urządzeniu i służy wyłącznie celom ilustracyjnym. Wygrane rozliczane są zgodnie z kwotą otrzymaną z Zdalnego Serwera Gry, a nie ze zdarzeń w przeglądarce internetowej. TM oraz © 2026 Engine.',
 	'INFO CTRL SPIN': 'Zakręć',
 	'INFO CTRL SPIN DESC': 'Rozpocznij rundę z wybranym zakładem.',
 	'INFO CTRL AUTO': 'Autogra',
@@ -108,7 +108,8 @@ export default {
 	'SPLASH CORE OVERLOAD': 'PRZECIĄŻENIE RDZENIA',
 	'SPLASH ZERO POINT': 'PROTOKÓŁ PUNKTU ZERO',
 	'SPLASH POLARITY TITLE': 'ZMIENIACZ\nPOLARYZACJI',
-	'SPLASH POLARITY BODY': 'Ciska wszystkie symbole w jedną ścianę — w lewo, w prawo, w górę lub w dół!',
+	'SPLASH POLARITY BODY':
+		'Ciska wszystkie symbole w jedną ścianę — w lewo, w prawo, w górę lub w dół!',
 	'SPLASH MAX TITLE': 'MAKS.\nWYGRANA',
 	'SPLASH UP TO': 'do',
 	BALANCE: 'SALDO',
@@ -117,11 +118,11 @@ export default {
 	'REAL COST': 'RZECZYWISTY KOSZT',
 	MODE: 'TRYB',
 	'BUY BONUS': 'KUP BONUS',
-	'BONUS': 'BONUS',
+	BONUS: 'BONUS',
 	PAYTABLE: 'TABELA WYPŁAT',
 	'GAME RULES': 'ZASADY GRY',
 	AUTOPLAY: 'AUTOGRA',
-	'AUTO': 'AUTO',
+	AUTO: 'AUTO',
 	TURBO: 'TURBO',
 	REPLAY: 'POWTÓRKA',
 	'START REPLAY': 'ROZPOCZNIJ POWTÓRKĘ',

@@ -2,20 +2,24 @@
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
 	// Version2 panels (Figma 4040-4075): steel chamfered card frame + compact bet plate, keyed off
 	// the export's white backdrop with the shared saturation flood fill (scratchpad/key_panel.py).
-	const cardPanel      = ap('/assets/components/ui/bb_card_panel_v2.webp?v=20260810');
-	const betPanel       = ap('/assets/components/ui/bb_bet_panel_v2.webp?v=20260810');
-	const coinIcon       = ap('/assets/components/ui/bb_coin.svg?v=20260708c');
+	const cardPanel = ap('/assets/components/ui/bb_card_panel_v2.webp?v=20260810');
+	const betPanel = ap('/assets/components/ui/bb_bet_panel_v2.webp?v=20260810');
+	const coinIcon = ap('/assets/components/ui/bb_coin.svg?v=20260708c');
 
 	// Card icons — the Version2 design pictures the REEL SYMBOL art on every card: the green chip
 	// for Extra Chance, the compass for Feature Spins, and the scatter capsule (with the 3x/4x
 	// badge) for both bought bonuses. This replaced the old bespoke icon set AND the earlier
 	// wild-symbol substitution on FEATURE — the design's own choice wins now.
-	const iconChance  = ap('/assets/components/symbols/magnetic/low/energy_screw_full.webp?v=20260902');
+	const iconChance = ap(
+		'/assets/components/symbols/magnetic/low/energy_screw_full.webp?v=20260902',
+	);
 	// Both point at the FLATTENED composites from scripts/build-paytable-symbols.py, not at the
 	// board's own textures: the compass and the scatter are assembled from loose parts now, so their
 	// base files alone are a bezel with no needle and a capsule with no alien.
-	const iconFeature = ap('/assets/components/symbols/magnetic/premium/compass_full.webp?v=20260902');
-	const iconBrief   = ap('/assets/components/symbols/magnetic/special/scatter_full.webp?v=20260902');
+	const iconFeature = ap(
+		'/assets/components/symbols/magnetic/premium/compass_full.webp?v=20260902',
+	);
+	const iconBrief = ap('/assets/components/symbols/magnetic/special/scatter_full.webp?v=20260902');
 
 	// For LoadingController's HTML-image pass — built from the consts above so path/?v= edits stay in sync.
 	export const BUY_BONUS_MODAL_IMAGES = [
@@ -46,7 +50,8 @@
 	} from './confirmDialog';
 
 	const t = (k: string) => i18nDerived.translate(k);
-	const tv = (k: string, vars: Record<string, string | number>) => i18nDerived.translateVars(k, vars);
+	const tv = (k: string, vars: Record<string, string | number>) =>
+		i18nDerived.translateVars(k, vars);
 
 	type Props = {
 		onclose: () => void;
@@ -107,19 +112,19 @@
 		return () => ro.disconnect();
 	});
 
-	const betAmount   = $derived(stateBet.betAmount);
-	const chanceCost  = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 2));
-	const bonusCost   = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 100));
-	const superCost   = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 500));
+	const betAmount = $derived(stateBet.betAmount);
+	const chanceCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 2));
+	const bonusCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 100));
+	const superCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 500));
 	const featureCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 50));
-	const betDisplay  = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount));
-	const canBuy      = $derived(stateBetDerived.isBetCostAvailable());
+	const betDisplay = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount));
+	const canBuy = $derived(stateBetDerived.isBetCostAvailable());
 
 	// Bet selector (mirrors the HUD bet stepper).
-	const betOptions      = $derived(stateConfig.betAmountOptions);
+	const betOptions = $derived(stateConfig.betAmountOptions);
 	const currentBetIndex = $derived(Math.max(0, betOptions.indexOf(betAmount)));
-	const disableDec      = $derived(currentBetIndex <= 0);
-	const disableInc      = $derived(currentBetIndex >= betOptions.length - 1);
+	const disableDec = $derived(currentBetIndex <= 0);
+	const disableInc = $derived(currentBetIndex >= betOptions.length - 1);
 	const stepBet = (dir: -1 | 1) => {
 		const i = Math.min(betOptions.length - 1, Math.max(0, currentBetIndex + dir));
 		const next = betOptions[i];
@@ -132,20 +137,34 @@
 	// one-click. Deactivating never costs anything and never asks.
 	let confirmMode = $state<null | 'BONUS' | 'SUPER' | 'FEATURE'>(null);
 
-	const buyMode      = (mode: 'BONUS' | 'SUPER') => {
+	const buyMode = (mode: 'BONUS' | 'SUPER') => {
 		// If the machine isn't idle the 'bet' event would be dropped but the mode
 		// assignment would stick — every later (auto-)spin would then bet at buy cost.
-		if (!context.stateXstateDerived.isIdle()) { props.onclose(); return; }
-		stateBet.activeBetModeKey = mode; props.onclose(); context.eventEmitter.broadcast({ type: 'bet' });
+		if (!context.stateXstateDerived.isIdle()) {
+			props.onclose();
+			return;
+		}
+		stateBet.activeBetModeKey = mode;
+		props.onclose();
+		context.eventEmitter.broadcast({ type: 'bet' });
 	};
-	const openConfirm  = (mode: 'BONUS' | 'SUPER' | 'FEATURE') => { confirmMode = mode; };
-	const closeConfirm = () => { confirmMode = null; };
-	const toggleActivateMode = (toggle: () => void) => { toggle(); props.onclose(); };
+	const openConfirm = (mode: 'BONUS' | 'SUPER' | 'FEATURE') => {
+		confirmMode = mode;
+	};
+	const closeConfirm = () => {
+		confirmMode = null;
+	};
+	const toggleActivateMode = (toggle: () => void) => {
+		toggle();
+		props.onclose();
+	};
 
 	const confirmLabel = $derived(
-		confirmMode === 'SUPER' ? 'MAGNETIC MEGA CHAIN'
-		: confirmMode === 'FEATURE' ? t('BUY FEATURE SPINS TITLE')
-		: 'DROP-O-MAGNET',
+		confirmMode === 'SUPER'
+			? 'MAGNETIC MEGA CHAIN'
+			: confirmMode === 'FEATURE'
+				? t('BUY FEATURE SPINS TITLE')
+				: 'DROP-O-MAGNET',
 	);
 	const confirmCost = $derived(
 		confirmMode === 'SUPER' ? superCost : confirmMode === 'FEATURE' ? featureCost : bonusCost,
@@ -184,14 +203,19 @@
 	);
 	// FEATURE is an activation toggle, not a one-shot purchase, so its confirm runs the toggle.
 	const acceptConfirm = () => {
-		if (confirmMode === 'FEATURE') { closeConfirm(); toggleActivateMode(props.onToggleFeature); return; }
+		if (confirmMode === 'FEATURE') {
+			closeConfirm();
+			toggleActivateMode(props.onToggleFeature);
+			return;
+		}
 		buyMode(confirmMode as 'BONUS' | 'SUPER');
 	};
 
 	onMount(() => {
 		const onKeyDown = (e: KeyboardEvent) => {
 			if (e.key !== 'Escape') return;
-			if (confirmMode) closeConfirm(); else props.onclose();
+			if (confirmMode) closeConfirm();
+			else props.onclose();
 		};
 		window.addEventListener('keydown', onKeyDown);
 		return () => window.removeEventListener('keydown', onKeyDown);
@@ -199,12 +223,22 @@
 </script>
 
 <!-- Backdrop -->
-<button class="backdrop" type="button" aria-label="Close" tabindex="-1" onclick={props.onclose}></button>
+<button class="backdrop" type="button" aria-label="Close" tabindex="-1" onclick={props.onclose}
+></button>
 
 <!-- Panel -->
-<div class="panel" class:portrait={isPortrait} bind:this={panelEl} style={isPortrait ? '' : landscapeVars} role="dialog" aria-modal="true">
+<div
+	class="panel"
+	class:portrait={isPortrait}
+	bind:this={panelEl}
+	style={isPortrait ? '' : landscapeVars}
+	role="dialog"
+	aria-modal="true"
+>
 	<h2 class="title">{t('BUY BONUS')}</h2>
-	<button class="close-btn" type="button" onclick={props.onclose} aria-label="Close"><span class="glyph glyph--close"></span></button>
+	<button class="close-btn" type="button" onclick={props.onclose} aria-label="Close"
+		><span class="glyph glyph--close"></span></button
+	>
 
 	<div class="grid">
 		<!-- Extra Chance -->
@@ -220,7 +254,8 @@
 				class:card-btn--active={props.isChanceActive}
 				type="button"
 				onclick={() => toggleActivateMode(props.onToggleChance)}
-			>{props.isChanceActive ? t('DEACTIVATE') : t('ACTIVATE')}</button>
+				>{props.isChanceActive ? t('DEACTIVATE') : t('ACTIVATE')}</button
+			>
 		</div>
 
 		<!-- Feature Spins -->
@@ -235,8 +270,12 @@
 				class="card-btn card-btn--activate"
 				class:card-btn--active={props.isFeatureActive}
 				type="button"
-				onclick={() => (props.isFeatureActive ? toggleActivateMode(props.onToggleFeature) : openConfirm('FEATURE'))}
-			>{props.isFeatureActive ? t('DEACTIVATE') : t('ACTIVATE')}</button>
+				onclick={() =>
+					props.isFeatureActive
+						? toggleActivateMode(props.onToggleFeature)
+						: openConfirm('FEATURE')}
+				>{props.isFeatureActive ? t('DEACTIVATE') : t('ACTIVATE')}</button
+			>
 		</div>
 
 		<!-- DROP-O-MAGNET (freegame / BONUS mode) -->
@@ -248,7 +287,12 @@
 				<img class="card-icon card-icon--brief" src={iconBrief} alt="" />
 			</div>
 			<span class="card-price">{bonusCost}</span>
-			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('BONUS')}>{t('BUY')}</button>
+			<button
+				class="card-btn card-btn--buy"
+				type="button"
+				disabled={!canBuy}
+				onclick={() => openConfirm('BONUS')}>{t('BUY')}</button
+			>
 		</div>
 
 		<!-- MAGNETIC MEGA CHAIN (superspin / SUPER mode) -->
@@ -260,13 +304,24 @@
 				<img class="card-icon card-icon--brief" src={iconBrief} alt="" />
 			</div>
 			<span class="card-price">{superCost}</span>
-			<button class="card-btn card-btn--buy" type="button" disabled={!canBuy} onclick={() => openConfirm('SUPER')}>{t('BUY')}</button>
+			<button
+				class="card-btn card-btn--buy"
+				type="button"
+				disabled={!canBuy}
+				onclick={() => openConfirm('SUPER')}>{t('BUY')}</button
+			>
 		</div>
 	</div>
 
 	<!-- Bet selector -->
 	<div class="bet" style={`background-image:url('${betPanel}')`}>
-		<button class="bet-step" type="button" disabled={disableDec} onclick={() => stepBet(-1)} aria-label={`Decrease ${i18nDerived.betLabel()}`}><span class="glyph"></span></button>
+		<button
+			class="bet-step"
+			type="button"
+			disabled={disableDec}
+			onclick={() => stepBet(-1)}
+			aria-label={`Decrease ${i18nDerived.betLabel()}`}><span class="glyph"></span></button
+		>
 		<div class="bet-center">
 			<img class="bet-coin" src={coinIcon} alt="" />
 			<div class="bet-value">
@@ -274,13 +329,26 @@
 				<span class="bet-amount">{betDisplay}</span>
 			</div>
 		</div>
-		<button class="bet-step" type="button" disabled={disableInc} onclick={() => stepBet(1)} aria-label={`Increase ${i18nDerived.betLabel()}`}><span class="glyph glyph--plus"></span></button>
+		<button
+			class="bet-step"
+			type="button"
+			disabled={disableInc}
+			onclick={() => stepBet(1)}
+			aria-label={`Increase ${i18nDerived.betLabel()}`}
+			><span class="glyph glyph--plus"></span></button
+		>
 	</div>
 </div>
 
 <!-- Confirm -->
 {#if confirmMode}
-	<button class="backdrop backdrop--z2" type="button" aria-label="Close" tabindex="-1" onclick={closeConfirm}></button>
+	<button
+		class="backdrop backdrop--z2"
+		type="button"
+		aria-label="Close"
+		tabindex="-1"
+		onclick={closeConfirm}
+	></button>
 	<button class="confirm-close" type="button" onclick={closeConfirm} aria-label="Close">
 		<span class="confirm-close__glyph"></span>
 	</button>
@@ -289,8 +357,12 @@
 			<div class="confirm-title">{confirmTitleText}</div>
 			<div class="confirm-text">{confirmBodyText}</div>
 			<div class="confirm-row">
-				<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}>{t('CANCEL')}</button>
-				<button class="confirm-btn confirm-btn--ok" type="button" onclick={acceptConfirm}>{t('CONFIRM')}</button>
+				<button class="confirm-btn confirm-btn--cancel" type="button" onclick={closeConfirm}
+					>{t('CANCEL')}</button
+				>
+				<button class="confirm-btn confirm-btn--ok" type="button" onclick={acceptConfirm}
+					>{t('CONFIRM')}</button
+				>
 			</div>
 		</div>
 	</div>
@@ -299,16 +371,23 @@
 <style>
 	/* Backdrops */
 	.backdrop {
-		position: fixed; inset: 0; z-index: 60;
+		position: fixed;
+		inset: 0;
+		z-index: 60;
 		background: rgba(0, 0, 0, 0.72);
 		backdrop-filter: blur(5px);
-		border: 0; padding: 0; cursor: pointer;
+		border: 0;
+		padding: 0;
+		cursor: pointer;
 	}
-	.backdrop--z2 { z-index: 70; }
+	.backdrop--z2 {
+		z-index: 70;
+	}
 
 	/* Full-screen panel container */
 	.panel {
-		position: fixed; inset: 0;
+		position: fixed;
+		inset: 0;
 		z-index: 61;
 		display: flex;
 		flex-direction: column;
@@ -321,7 +400,9 @@
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		pointer-events: none;
 	}
-	.panel > * { pointer-events: auto; }
+	.panel > * {
+		pointer-events: auto;
+	}
 
 	/* Figma: IBM Plex Sans Condensed Bold, #FFF, 18px / 0.54px, centered on the close-button's
 	   vertical centre (close-btn = top:22px, 48px tall → centre at 46px). */
@@ -344,16 +425,25 @@
 
 	/* Version2 icon button (Figma "Icon buttons"): #22365B circle, 1px #2391C1, white glyph. */
 	.close-btn {
-		position: fixed; top: 22px; right: 22px; z-index: 63;
-		width: 48px; height: 48px; border-radius: 50%;
+		position: fixed;
+		top: 22px;
+		right: 22px;
+		z-index: 63;
+		width: 48px;
+		height: 48px;
+		border-radius: 50%;
 		border: 1px solid #2391c1;
 		background: #22365b;
 		font-size: 16px;
 		padding: 0;
-		cursor: pointer; display: grid; place-items: center;
+		cursor: pointer;
+		display: grid;
+		place-items: center;
 		transition: filter 0.12s ease;
 	}
-	.close-btn:hover { filter: brightness(1.35); }
+	.close-btn:hover {
+		filter: brightness(1.35);
+	}
 
 	/* Glyphs are drawn, not imported — the design's are plain 2.13px white strokes (same pattern
 	   as CustomAutoSpinModal). Sized in em off the button's font-size. */
@@ -374,10 +464,19 @@
 		border-radius: inherit;
 		background: #fff;
 	}
-	.glyph--plus::after { transform: rotate(90deg); }
-	.glyph--close { width: 1.155em; background: none; }
-	.glyph--close::before { transform: rotate(45deg); }
-	.glyph--close::after { transform: rotate(-45deg); }
+	.glyph--plus::after {
+		transform: rotate(90deg);
+	}
+	.glyph--close {
+		width: 1.155em;
+		background: none;
+	}
+	.glyph--close::before {
+		transform: rotate(45deg);
+	}
+	.glyph--close::after {
+		transform: rotate(-45deg);
+	}
 
 	/* Four cards in a row — square, kept compact so they don't dominate the screen. */
 	.grid {
@@ -462,7 +561,9 @@
 	}
 	/* Briefcase art (ALL IN / DEAL IT) — make it bigger to match the reference; it overflows the slot
 	   a touch, which is fine since the icon row is centred. */
-	.card-icon--brief { height: 128%; }
+	.card-icon--brief {
+		height: 128%;
+	}
 
 	/* Multiplier badge — sits to the LEFT of the briefcase, vertically aligned with the case's
 	   "M" plate (which sits at ~47% of the case art, slightly above the slot centre). */
@@ -515,7 +616,10 @@
 		filter: brightness(1.12) drop-shadow(0 0 6px #4a94ff);
 		border-color: #60a5fa;
 	}
-	.card-btn:disabled { opacity: 0.45; cursor: default; }
+	.card-btn:disabled {
+		opacity: 0.45;
+		cursor: default;
+	}
 	/* Buy — Version2 flat primary (#28A6DE), like the confirm dialogs. */
 	.card-btn--buy {
 		background: #28a6de;
@@ -552,12 +656,18 @@
 		background: #22365b;
 		font-size: clamp(13px, 1.15vw, 18px);
 		padding: 0;
-		display: grid; place-items: center;
+		display: grid;
+		place-items: center;
 		cursor: pointer;
 		transition: filter 0.12s ease;
 	}
-	.bet-step:hover:not(:disabled) { filter: brightness(1.35); }
-	.bet-step:disabled { opacity: 0.4; cursor: default; }
+	.bet-step:hover:not(:disabled) {
+		filter: brightness(1.35);
+	}
+	.bet-step:disabled {
+		opacity: 0.4;
+		cursor: default;
+	}
 	.bet-center {
 		display: flex;
 		align-items: center;
@@ -576,13 +686,16 @@
 	}
 	.bet-label {
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-size: clamp(8px, 0.72vw, 11px); font-weight: 700;
-		letter-spacing: 0.2em; text-transform: uppercase;
+		font-size: clamp(8px, 0.72vw, 11px);
+		font-weight: 700;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
 		color: rgba(96, 165, 250, 0.85);
 	}
 	.bet-amount {
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-size: clamp(17px, 1.7vw, 26px); font-weight: 700;
+		font-size: clamp(17px, 1.7vw, 26px);
+		font-weight: 700;
 		color: #ffffff;
 		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
 	}
@@ -618,11 +731,23 @@
 		gap: calc(var(--bb-card) * 0.015);
 		padding: calc(var(--bb-card) * 0.115) calc(var(--bb-card) * 0.08) calc(var(--bb-card) * 0.075);
 	}
-	.panel:not(.portrait) .card-title  { font-size: calc(var(--bb-card) * 0.064); }
-	.panel:not(.portrait) .card-desc   { font-size: calc(var(--bb-card) * 0.042); min-height: calc(var(--bb-card) * 0.27); }
-	.panel:not(.portrait) .card-icon-slot { height: calc(var(--bb-card) * 0.15); margin-top: calc(var(--bb-card) * 0.01); }
-	.panel:not(.portrait) .card-mult   { font-size: calc(var(--bb-card) * 0.062); }
-	.panel:not(.portrait) .card-price  { font-size: calc(var(--bb-card) * 0.047); }
+	.panel:not(.portrait) .card-title {
+		font-size: calc(var(--bb-card) * 0.064);
+	}
+	.panel:not(.portrait) .card-desc {
+		font-size: calc(var(--bb-card) * 0.042);
+		min-height: calc(var(--bb-card) * 0.27);
+	}
+	.panel:not(.portrait) .card-icon-slot {
+		height: calc(var(--bb-card) * 0.15);
+		margin-top: calc(var(--bb-card) * 0.01);
+	}
+	.panel:not(.portrait) .card-mult {
+		font-size: calc(var(--bb-card) * 0.062);
+	}
+	.panel:not(.portrait) .card-price {
+		font-size: calc(var(--bb-card) * 0.047);
+	}
 	.panel:not(.portrait) .card-btn {
 		font-size: calc(var(--bb-card) * 0.048);
 		padding: calc(var(--bb-card) * 0.03) calc(var(--bb-card) * 0.1);
@@ -640,15 +765,23 @@
 		height: var(--bb-bet-step);
 		font-size: calc(var(--bb-bet-step) * 0.34);
 	}
-	.panel:not(.portrait) .bet-center { gap: calc(var(--bb-bet-w) * 0.03); }
+	.panel:not(.portrait) .bet-center {
+		gap: calc(var(--bb-bet-w) * 0.03);
+	}
 	.panel:not(.portrait) .bet-coin {
 		width: calc(var(--bb-bet-w) * 0.075);
 		height: calc(var(--bb-bet-w) * 0.075);
 	}
-	.panel:not(.portrait) .bet-label { font-size: calc(var(--bb-bet-w) * 0.033); }
-	.panel:not(.portrait) .bet-amount { font-size: calc(var(--bb-bet-w) * 0.075); }
+	.panel:not(.portrait) .bet-label {
+		font-size: calc(var(--bb-bet-w) * 0.033);
+	}
+	.panel:not(.portrait) .bet-amount {
+		font-size: calc(var(--bb-bet-w) * 0.075);
+	}
 	/* Space the BET label off the value so they don't sit on top of each other. */
-	.panel:not(.portrait) .bet-value { gap: calc(var(--bb-bet-w) * 0.025); }
+	.panel:not(.portrait) .bet-value {
+		gap: calc(var(--bb-bet-w) * 0.025);
+	}
 	/* Title + close button scale with the container (X was way too big on small screens). */
 	.panel:not(.portrait) .title {
 		font-size: var(--bb-title);
@@ -672,7 +805,7 @@
 	}
 	.panel.portrait .grid {
 		position: absolute;
-		top: 84px;    /* clear the BUY BONUS title */
+		top: 84px; /* clear the BUY BONUS title */
 		bottom: 20px; /* extend the scroll area almost to the bottom (bet pill floats over it — OK) */
 		left: 4vw;
 		right: 4vw;
@@ -732,45 +865,70 @@
 	}
 	@media (max-width: 372px) {
 		.panel.portrait .card,
-		.panel.portrait .bet { width: 300px; }
-		.panel.portrait .card-desc { max-width: 264px; }
+		.panel.portrait .bet {
+			width: 300px;
+		}
+		.panel.portrait .card-desc {
+			max-width: 264px;
+		}
 	}
 	@media (max-width: 332px) {
 		.panel.portrait .card,
-		.panel.portrait .bet { width: 270px; }
-		.panel.portrait .card-desc { max-width: 234px; }
+		.panel.portrait .bet {
+			width: 270px;
+		}
+		.panel.portrait .card-desc {
+			max-width: 234px;
+		}
 	}
 
-	/* ---- Confirm dialog — Version2 (Figma 4036-3584, art node 7002:11406) ----
-	   Identical to BonusResumeModal's .resume block; keep the two in sync. The art box is
-	   507.33 x 283 design px, so with container-type:inline-size 1cqw == 1% of the design
-	   width and every number below is the design's own measurement. */
+	/* ---- Confirm dialog — see the plate note on .confirm-panel below ---- */
 
 	/* Design 4036:3584: a 46px #494A9B circle with a white CSS glyph, no ring. */
 	.confirm-close {
-		position: fixed; top: 22px; right: 22px; z-index: 73;
-		width: 46px; height: 46px; border-radius: 50%;
+		position: fixed;
+		top: 22px;
+		right: 22px;
+		z-index: 73;
+		width: 46px;
+		height: 46px;
+		border-radius: 50%;
 		border: none;
 		background: #494a9b;
 		padding: 0;
-		cursor: pointer; display: grid; place-items: center;
+		cursor: pointer;
+		display: grid;
+		place-items: center;
 		transition: filter 0.12s ease;
 	}
-	.confirm-close:hover { filter: brightness(1.35); }
+	.confirm-close:hover {
+		filter: brightness(1.35);
+	}
 	.confirm-close__glyph {
-		position: relative; display: block;
-		width: 18.5px; height: 2.13px;
+		position: relative;
+		display: block;
+		width: 18.5px;
+		height: 2.13px;
 	}
 	.confirm-close__glyph::before,
 	.confirm-close__glyph::after {
-		content: ''; position: absolute; inset: 0;
-		border-radius: 2.13px; background: #fff;
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: 2.13px;
+		background: #fff;
 	}
-	.confirm-close__glyph::before { transform: rotate(45deg); }
-	.confirm-close__glyph::after { transform: rotate(-45deg); }
+	.confirm-close__glyph::before {
+		transform: rotate(45deg);
+	}
+	.confirm-close__glyph::after {
+		transform: rotate(-45deg);
+	}
 
 	.confirm {
-		position: fixed; left: 50%; top: 50%;
+		position: fixed;
+		left: 50%;
+		top: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 71;
 		/* Same sizing as BonusResumeModal .resume — the two share this plate and the cqw scale, so
@@ -781,42 +939,49 @@
 		container-type: inline-size;
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
-	/* The plate is DRAWN, not art: a flat rounded rectangle, exactly what the design is. It also
-	   stopped being a fixed-aspect box — the three dialogs that wear it hold one nowrap line, a
-	   wrapping sentence and a single button respectively, and an `aspect-ratio` plate sized for one
-	   of them clips or strands the other two. Flow layout at the design's own paddings instead.
-	   Design 4036:3584: plate 458x215, radius 14, fill #3A3981 over a #2D2C69 edge. */
+	/* MOTHERSHIP confirm popup — plate node 9076:28671 inside the design's "confirm popup" frame
+	   (Figma 4036:3584, SECTION 9078:18631 POPUPS). Three dialogs wear this plate — the buy
+	   confirmation, the unfinished-round dialog and the insufficient-funds notice — and they must
+	   stay identical; the metrics the text fitter needs live in confirmDialog.ts.
+	   
+	   Re-measured 2026-09-03 off 9076:28671, which REPLACED the 4036-era plate the old numbers came
+	   from. What changed: the faces (Audiowide title / Poppins body, not Chakra Petch throughout),
+	   a 4px #2D2C69 edge with a #5E4374 hairline inside it, and 196.5x50 buttons on radius 12.
+	   The outer plate is 467 design px wide, so with container-type:inline-size 1cqw == 1% of it
+	   and every number below is the design's own measurement divided by 467. */
 	.confirm-panel {
 		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 6.3cqw;
-		padding: 6.33cqw 5.5cqw 4.37cqw;
+		gap: 5.7cqw;
+		padding: 4.71cqw 5.35cqw 4.26cqw;
 		background: #3a3981;
-		border: 0.44cqw solid #2d2c69;
-		border-radius: 3.06cqw;
-		box-shadow: 0 1.6cqw 3.6cqw rgba(0, 0, 0, 0.5);
+		border: 0.86cqw solid #2d2c69;
+		border-radius: 3cqw;
+		/* The design's inner plate carries its own 1px #5E4374 hairline inside the #2D2C69 edge. */
+		box-shadow:
+			inset 0 0 0 0.21cqw #5e4374,
+			0 1.6cqw 3.6cqw rgba(0, 0, 0, 0.5);
 	}
-	/* Design 4036:3584 — Chakra Petch Bold 30/458 of the plate, WHITE (the Version2 plate set this
-	   in #2391C1; the MOTHERSHIP design does not). */
 	.confirm-title {
 		text-align: center;
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-weight: 700;
-		font-size: calc(6.55cqw * var(--confirm-title-fit, 1));
+		/* 32/467, AUDIOWIDE — Regular is the family's only weight, so 700 here would be synthesised. */
+		font-family: 'Audiowide', 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 400;
+		font-size: calc(6.85cqw * var(--confirm-title-fit, 1));
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
 		line-height: 1;
 		white-space: nowrap;
 		color: #ffffff;
 	}
-	/* Design 4036:3584 — 20/458 of the plate, white. */
 	.confirm-text {
 		text-align: center;
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-size: calc(4.37cqw * var(--confirm-text-fit, 1));
-		font-weight: 600;
+		/* 20/467, POPPINS Regular. */
+		font-family: 'Poppins', 'Chakra Petch', 'Inter', sans-serif;
+		font-size: calc(4.28cqw * var(--confirm-text-fit, 1));
+		font-weight: 400;
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
 		color: #fff;
@@ -824,22 +989,24 @@
 		/* One line, like the design — the fitter above shrinks it instead of wrapping. */
 		white-space: nowrap;
 	}
-	/* Design 4036:3584 — two 196x48 buttons, 17 apart, spanning 89.3% of the plate. */
+	/* 9076:28675 — two 196.5x50 buttons 16 apart, spanning 89% of the plate. */
 	.confirm-row {
 		display: flex;
-		gap: 3.71cqw;
+		gap: 3.43cqw;
 		justify-content: center;
 	}
 	.confirm-btn {
-		height: 10.48cqw;
-		min-width: 42.79cqw;
+		height: 10.71cqw;
+		min-width: 42.08cqw;
 		padding: 0 3cqw;
-		border: 0.22cqw solid #a88eff;
-		border-radius: 1.75cqw;
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-size: 3.28cqw;
-		font-weight: 700;
-		letter-spacing: 0.1em;
+		/* The design's primary is a flat #A88EFF with NO stroke — which is what this ring already is
+		   once the fill matches it, so both variants keep the same box. */
+		border: 0.21cqw solid #a88eff;
+		border-radius: 2.57cqw;
+		font-family: 'Audiowide', 'Chakra Petch', 'Inter', sans-serif;
+		font-size: 3.43cqw;
+		font-weight: 400;
+		letter-spacing: 0.0875em;
 		text-transform: uppercase;
 		white-space: nowrap;
 		color: #ffffff;

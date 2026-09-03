@@ -1107,6 +1107,13 @@ export const stateGame = $state({
 	boardMode: 'settle' as 'spin' | 'settle',
 	gameType: 'basegame' as GameType,
 	bonusMode: null as 'freegame' | 'superspin' | 'feature' | null,
+	// WHICH bonus room the player is standing in, which is finer-grained than bonusMode: the design
+	// names three bought bonuses and paints a sky for each (Figma "Background 2/3/4"), and they are
+	// told apart by the SCATTER COUNT that triggered them -- 3 Gravity Breach, 4 Core Overload,
+	// 5+ Zero Point Protocol -- where bonusMode collapses the last two into 'superspin' because the
+	// math has one bet mode for both. Read by Background.svelte and nothing else, so a new room is
+	// a background swap and never a change to how the bonus plays.
+	bonusRoom: null as 'bonus' | 'super' | 'zero' | null,
 	globalMultiplier: 1,
 	seriesTotalMultiplier: 1,
 	magnetTargetSymbol: null as PaySymbolName | null,
@@ -1629,6 +1636,7 @@ const resetBonusState = () => {
 		syncSpinBoardFromSettledBoard();
 	}
 	stateGame.bonusMode = null;
+	stateGame.bonusRoom = null;
 	stateGame.globalMultiplier = 1;
 	stateGame.seriesTotalMultiplier = 1;
 	stateGame.magnetTargetSymbol = null;

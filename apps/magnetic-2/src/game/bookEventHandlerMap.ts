@@ -134,7 +134,7 @@ const shouldSkipNoGrowthNormalSuperRespin = (bookEvent: BookEvent, bookEvents: B
 		for (let i = previousRevealIndex - 1; i >= 0; i -= 1) {
 			const event = bookEvents[i];
 			// A carry with no cluster arrives as series: null — same as "no carry".
-			if (event.type === 'superSeriesCarry') return event.series ?? [];
+			if (event.type === 'superSeriesCarry') return seriesOf(event.series);
 			if (event.type === 'updateFreeSpin' || event.type === 'reveal') return [];
 		}
 		return [];
@@ -157,8 +157,27 @@ const shouldSkipNoGrowthNormalSuperRespin = (bookEvent: BookEvent, bookEvents: B
 	return !!normalUpdate && !didSeriesGrow(carry, normalUpdate);
 };
 
+// What a series-carrying event actually hands over, normalised.
+//
+// Two shapes have shipped besides the array the types promise: `null` for a spin with nothing to
+// carry, and a BARE SNAPSHOT for a carry of exactly one cluster. Either one reaching
+// getSeriesPreviewAmount threw (`reduce` of null / not a function) straight out of playGame, which
+// aborts the ROUND — a bought MEGA CHAIN stopped advancing its free spins and never ran its outro.
+// stateGameDerived.setSeriesSnapshots has normalised the same two shapes for a while; this is the
+// other half of that guard, for the readers that take the event's value directly.
+const seriesOf = (
+	series: ClusterSeriesSnapshot[] | ClusterSeriesSnapshot | null | undefined,
+): ClusterSeriesSnapshot[] => (series ? (Array.isArray(series) ? series : [series]) : []);
+
 const getBonusModeFromScatters = (positions: Position[]) =>
 	positions.length >= 4 ? 'superspin' : 'freegame';
+
+// Which of the design's three bonus ROOMS the trigger opens. The math has two bought bonus modes
+// and the design names three bonuses, each with its own painted sky (Figma "Background 2/3/4"), so
+// the room is taken from the scatter count itself rather than from the mode: 3 = Gravity Breach,
+// 4 = Core Overload, 5+ = Zero Point Protocol. Purely cosmetic — see stateGame.bonusRoom.
+const getBonusRoomFromScatters = (positions: Position[]) =>
+	positions.length >= 5 ? 'zero' : positions.length >= 4 ? 'super' : 'bonus';
 
 let pendingMagnetActivationPositions: Position[] = [];
 let bonusCarryWinAmount = 0;
@@ -281,7 +300,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// clusterSeriesResolved/winInfo arrive only after the whole respin chain. Preview the
 		// currently locked cluster after every growth step so WIN/TOTAL WIN advances between
 		// respins instead of remaining frozen until the next normal spin.
-		const previewAmount = getSeriesPreviewAmount(bookEvent.series);
+		const previewAmount = getSeriesPreviewAmount(seriesOf(bookEvent.series));
 		if (stateGame.bonusMode === 'superspin') {
 			superSeriesPreviewAmount = previewAmount;
 			presentedBonusWinAmount = Math.max(
@@ -301,12 +320,13 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// marker event for replay readability; no extra UI step in proto build.
 	},
 	superSeriesCarry: async (bookEvent: BookEventOfType<'superSeriesCarry'>) => {
+		const series = seriesOf(bookEvent.series);
 		stateGameDerived.setSeriesSnapshots({
-			series: bookEvent.series,
+			series,
 			magnetTargetSymbol: bookEvent.magnetTargetSymbol,
 			totalMultiplier: bookEvent.totalMultiplier,
 		});
-		superSeriesPreviewAmount = getSeriesPreviewAmount(bookEvent.series);
+		superSeriesPreviewAmount = getSeriesPreviewAmount(series);
 		presentedBonusWinAmount = Math.max(
 			presentedBonusWinAmount,
 			capBookWinAmount(bonusCarryWinAmount + superSeriesPreviewAmount),
@@ -342,6 +362,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	freeSpinTrigger: async (bookEvent: BookEventOfType<'freeSpinTrigger'>) => {
 		const isFeatureSpin = bookEvent.totalFs === 1;
 		const bonusMode = isFeatureSpin ? 'feature' : getBonusModeFromScatters(bookEvent.positions);
+		const bonusRoom = isFeatureSpin ? null : getBonusRoomFromScatters(bookEvent.positions);
 		bonusCarryWinAmount = stateBet.winBookEventAmount;
 		presentedBonusWinAmount = bonusCarryWinAmount;
 		superSeriesPreviewAmount = 0;
@@ -367,6 +388,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			// pick the bonus title (DROP-O-MAGNET vs MAGNETIC MEGA CHAIN).
 			stateGame.gameType = bonusMode;
 			stateGame.bonusMode = bonusMode;
+			stateGame.bonusRoom = bonusRoom;
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_intro' });
 			eventEmitter.broadcast({ type: 'soundMusic', name: bonusMusicFor(bonusMode) });
@@ -377,6 +399,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		} else {
 			stateGame.gameType = bonusMode;
 			stateGame.bonusMode = bonusMode;
+			stateGame.bonusRoom = bonusRoom;
 		}
 		if (!isFeatureSpin) eventEmitter.broadcast({ type: 'freeSpinIntroHide' });
 		// The bonus is fully in place behind the veil by now; dropping it here is what reveals it.
@@ -437,6 +460,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.gameType = 'basegame';
 		if (isFeatureSpin) {
 			stateGame.bonusMode = null;
+			stateGame.bonusRoom = null;
 			stateUi.freeSpinCounterShow = false;
 			await eventEmitter.broadcastAsync({ type: 'uiShow' });
 		} else {

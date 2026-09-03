@@ -3,6 +3,7 @@
 	import { Tween } from 'svelte/motion';
 	import { cubicInOut, cubicOut } from 'svelte/easing';
 
+	import SkyClouds from './SkyClouds.svelte';
 	import { getContext } from '../game/context';
 	import { BACKGROUND_LIGHTS } from '../game/backgroundLights';
 	import { PORTRAIT_BACKGROUND_RATIO } from '../game/constants';
@@ -19,21 +20,23 @@
 	// the SPRITE — art of any other shape is stretched to it, not letterboxed. This read 1440/3200
 	// while the portrait art was already 1242x2208, which squeezed every portrait room to 80% width.
 	const MOBILE_ASPECT = PORTRAIT_BACKGROUND_RATIO;
-	// Portrait uses the mobile (tall) backgrounds; the two special bonuses still swap:
-	// SUPER (superspin), BONUS (freegame), else base.
+	// Portrait uses the mobile (tall) backgrounds. Four rooms: the base terrace plus one sky per
+	// bought bonus — Gravity Breach, Core Overload and Zero Point Protocol, which is what
+	// stateGame.bonusRoom names (bonusMode cannot: the math folds the last two into 'superspin').
+	// A Feature Spin leaves bonusRoom null and therefore stays outside in the base sky, which is
+	// right — it is one spin of the base game, not a trip somewhere else.
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	const ROOM_KEY = {
+		bonus: ['bgBonus', 'bgMobileBonus'],
+		super: ['bgSuper', 'bgMobileSuper'],
+		zero: ['bgZero', 'bgMobileZero'],
+	} as const;
 	const bgKey = $derived(
-		context.stateGame.bonusMode === 'superspin'
-			? isPortrait
-				? 'bgMobileSuper'
-				: 'bgSuper'
-			: context.stateGame.bonusMode === 'freegame'
-				? isPortrait
-					? 'bgMobileBonus'
-					: 'bgBonus'
-				: isPortrait
-					? 'bgMobileBase'
-					: 'bgBase',
+		context.stateGame.bonusRoom
+			? ROOM_KEY[context.stateGame.bonusRoom][isPortrait ? 1 : 0]
+			: isPortrait
+				? 'bgMobileBase'
+				: 'bgBase',
 	);
 	const aspect = $derived(isPortrait ? MOBILE_ASPECT : DESKTOP_ASPECT);
 
@@ -46,13 +49,13 @@
 	// cross-fading them would dissolve a portrait corridor into a landscape room mid-rotate.
 	//
 	// So is the way OUT of a bonus. freeSpinEnd resets bonusMode BEFORE it plays the wipe, so a
-	// fade there leaves the green/purple bonus room visibly hanging under the wipe for the better
-	// part of a second — it read as a green flash after the total-win panel. Entering a bonus has
+	// fade there leaves the bonus room's sky visibly hanging under the wipe for the better part of
+	// a second — it read as a coloured flash after the total-win panel. Entering a bonus has
 	// the opposite order (bonusMode is set after the wipe finishes), which is exactly where the
 	// dissolve belongs. Hence: fade INTO a bonus room, snap back to base.
 	const CROSSFADE_MS = 900;
 	const isLoaded = (key: string) => !!context.stateApp.loadedAssets?.[key];
-	const isBonusRoom = (key: string) => key.endsWith('Super') || key.endsWith('Bonus');
+	const isBonusRoom = (key: string) => key !== 'bgBase' && key !== 'bgMobileBase';
 	// '' until the first background resolves, so the initial paint is not treated as a change.
 	let displayedKey = $state('');
 	let outgoingKey = $state<string | null>(null);
@@ -102,6 +105,16 @@
 
 		return { width: height * aspect, height };
 	});
+
+	// Clouds drift in the DAYLIT rooms. Core Overload is the exception: its sky is a clear starlit
+	// night, and these sprites are pale — lit cloud against a dark sky reads as a smear, not as
+	// weather. The other three are all open sky with nothing painted in it (Zero Point has a few
+	// wisps of its own, which these join). They ride the same cross-fade as the art, so entering a
+	// bonus takes the weather with it.
+	const skyKeys = ['bgBase', 'bgMobileBase', 'bgBonus', 'bgMobileBonus', 'bgZero', 'bgMobileZero'];
+	const cloudsShown = $derived(
+		hasBg && skyKeys.includes(displayedKey) && !!context.stateApp.loadedAssets?.skyCloudA,
+	);
 
 	// ── Room life ──
 	// The room art is a still photograph, which is most of why the game reads as dead between spins.
@@ -298,10 +311,14 @@
 		const rim = Math.max(2, hullW * 0.015);
 		for (const side of [-1, 1]) {
 			g.poly([
-				x0 + side * rTop - rim / 2, y0,
-				x0 + side * rTop + rim / 2, y0,
-				x0 + side * rBot + rim / 2, y0 + len,
-				x0 + side * rBot - rim / 2, y0 + len,
+				x0 + side * rTop - rim / 2,
+				y0,
+				x0 + side * rTop + rim / 2,
+				y0,
+				x0 + side * rBot + rim / 2,
+				y0 + len,
+				x0 + side * rBot - rim / 2,
+				y0 + len,
 			]);
 			g.fill({ color: BEAM_RIM, alpha: 0.9 * flare });
 		}
@@ -436,6 +453,17 @@
 		height={cover.height * breath}
 		alpha={0.96 * fade.current}
 	/>
+	<!-- Weather, over the sky and under everything else in the scene. -->
+	{#if cloudsShown}
+		<SkyClouds
+			coverW={cover.width * breath}
+			coverH={cover.height * breath}
+			canvasW={canvas.width}
+			canvasH={canvas.height}
+			alpha={0.96 * fade.current}
+		/>
+	{/if}
+
 	<!-- Lamp glow rides ON the room art. -->
 	<Graphics blendMode="add" draw={(gr) => (lampG = gr as unknown as G)} />
 
@@ -447,14 +475,7 @@
 	{#if shipShown}
 		<Container x={shipX} y={shipY} scale={shipScale} rotation={shipRotation}>
 			<Graphics draw={(gr) => (beamG = gr as unknown as G)} />
-			<Sprite
-				key="ufoAntenna"
-				anchor={0.5}
-				x={0}
-				y={antennaY}
-				width={antennaW}
-				height={antennaH}
-			/>
+			<Sprite key="ufoAntenna" anchor={0.5} x={0} y={antennaY} width={antennaW} height={antennaH} />
 			<Sprite key="ufoHull" anchor={0.5} x={0} y={hullY} width={hullW} height={hullH} />
 		</Container>
 	{/if}

@@ -65,7 +65,7 @@ export default {
 	'INFO GI LEGAL 3':
 		'Tous les gains sont réglés selon le résultat reçu du serveur de jeu distant, et non selon les animations ou événements affichés dans le navigateur web.',
 	'DISCLAIMER TEXT':
-		"Un dysfonctionnement annule tous les gains et jeux. Une connexion Internet stable est requise. En cas de déconnexion, rechargez le jeu pour terminer les tours inachevés. Le retour attendu est calculé sur de nombreuses parties. L'affichage du jeu ne représente aucun appareil physique et n'est fourni qu'à titre illustratif. Les gains sont réglés selon le montant reçu du Remote Game Server et non selon les événements du navigateur web. TM et © 2026 Stake Engine.",
+		"Un dysfonctionnement annule tous les gains et jeux. Une connexion Internet stable est requise. En cas de déconnexion, rechargez le jeu pour terminer les tours inachevés. Le retour attendu est calculé sur de nombreuses parties. L'affichage du jeu ne représente aucun appareil physique et n'est fourni qu'à titre illustratif. Les gains sont réglés selon le montant reçu du Remote Game Server et non selon les événements du navigateur web. TM et © 2026 Engine.",
 	'INFO CTRL SPIN': 'Tourner',
 	'INFO CTRL SPIN DESC': 'Lancez une partie avec votre mise sélectionnée.',
 	'INFO CTRL AUTO': 'Autoplay',
@@ -110,7 +110,8 @@ export default {
 	'SPLASH CORE OVERLOAD': 'SURCHARGE DU NOYAU',
 	'SPLASH ZERO POINT': 'PROTOCOLE POINT ZÉRO',
 	'SPLASH POLARITY TITLE': 'INVERSEUR DE\nPOLARITÉ',
-	'SPLASH POLARITY BODY': 'Projette tous les symboles contre un mur — gauche, droite, haut ou bas !',
+	'SPLASH POLARITY BODY':
+		'Projette tous les symboles contre un mur — gauche, droite, haut ou bas !',
 	'SPLASH MAX TITLE': 'GAIN\nMAX.',
 	'SPLASH UP TO': "jusqu'à",
 	BALANCE: 'SOLDE',
@@ -119,11 +120,11 @@ export default {
 	'REAL COST': 'COÛT RÉEL',
 	MODE: 'MODE',
 	'BUY BONUS': 'ACHETER BONUS',
-	'BONUS': 'BONUS',
+	BONUS: 'BONUS',
 	PAYTABLE: 'TABLE DE GAINS',
 	'GAME RULES': 'RÈGLES DU JEU',
 	AUTOPLAY: 'AUTOPLAY',
-	'AUTO': 'AUTO',
+	AUTO: 'AUTO',
 	TURBO: 'TURBO',
 	REPLAY: 'REPLAY',
 	'START REPLAY': 'LANCER LE REPLAY',

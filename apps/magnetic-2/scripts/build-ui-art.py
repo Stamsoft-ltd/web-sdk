@@ -12,6 +12,12 @@ are NOT trimmed: each one is drawn inside a box the design sizes against the sta
 sits off-centre in that box on purpose (the trophy and the horseshoe both hang low). Trimming would
 throw the box away and every icon would then need its own hand-tuned offset to sit right again.
 
+COMPOSE — the rules page-4 cluster examples (MOTHERSHIP design 4453:7579). The design keeps each
+wordmark and its board as two separate nodes; page 4 renders ONE image per side, so they are stacked
+here at the design's own offsets. Both sides are cut from the SAME vertical band (the design starts
+the WIN wordmark 3px lower than NO WIN), which is what keeps the two images the same height when the
+page lays them out side by side off a shared max-height.
+
 RECOLOUR — art the MOTHERSHIP redesign did not replace, still painted for the old blue-tech palette.
 A hue ROTATION, not a tint: these plates are near-monochrome blue over neutral metal, and rotating
 hue leaves anything unsaturated where it is, so the housing stays grey while the glass and trim
@@ -42,6 +48,20 @@ TARGETS = ["win_plaque"]
 # Rules-carousel icons: Figma renders at 3x the design's box, kept whole (see the header).
 INFO_SRC = ROOT / "art-src" / "info"
 INFO_TARGETS = ["ov_ic_reels", "ov_ic_cluster", "ov_ic_maxwin", "ov_ic_rtp"]
+
+# Page-4 cluster examples. Design-space geometry, straight off the Figma boxes (frame 4453:7579
+# origin 4939,8732); the PNGs beside them are the same nodes rendered at 3x.
+#   NO WIN  label 9133:10739 (526,201)  board 9078:18145 (533,245)
+#   WIN     label 9079:29334 (790,204)  board 9078:18146 (787,246)
+# The band is shared: top = the higher of the two wordmarks, bottom = the boards' common baseline.
+CW_FIG_SCALE = 3
+CW_BAND = (201, 494)
+CW_PAIRS = {
+    "info_nowin": {"label": (526, 201), "grid": (533, 245)},
+    "info_win": {"label": (790, 204), "grid": (787, 246)},
+}
+# Ship at 2x the design's 242-wide slot: the modal never draws these above ~330 CSS px.
+CW_OUT_SCALE = 2
 
 # The old art clusters near hue 211-218; the HUD accent (#A88EFF) is 256. Empty since the info box
 # stopped being a bitmap — kept because the next Version2 leftover will want exactly this treatment.
@@ -107,6 +127,35 @@ def main() -> None:
         im = Image.open(src).convert("RGBA")
         im.save(OUT / f"{name}.webp", **WEBP)
         print(f"  {name}.webp {im.size} {(OUT / f'{name}.webp').stat().st_size // 1024}KB")
+
+    for name, parts in CW_PAIRS.items():
+        layers = {}
+        for kind, (dx, dy) in parts.items():
+            src = INFO_SRC / f"{name.replace('info_', 'p4_')}_{kind}.png"
+            if not src.exists():
+                sys.exit(f"build-ui-art: missing {src.relative_to(ROOT)}")
+            layers[kind] = (Image.open(src).convert("RGBA"), dx, dy)
+        x0 = min(dx for _, dx, _ in layers.values())
+        x1 = max(dx + im.width / CW_FIG_SCALE for im, dx, _ in layers.values())
+        top, bottom = CW_BAND
+        canvas = Image.new(
+            "RGBA",
+            (round((x1 - x0) * CW_FIG_SCALE), round((bottom - top) * CW_FIG_SCALE)),
+            (0, 0, 0, 0),
+        )
+        for im, dx, dy in layers.values():
+            canvas.alpha_composite(
+                im, (round((dx - x0) * CW_FIG_SCALE), round((dy - top) * CW_FIG_SCALE))
+            )
+        out = canvas.resize(
+            (
+                round(canvas.width * CW_OUT_SCALE / CW_FIG_SCALE),
+                round(canvas.height * CW_OUT_SCALE / CW_FIG_SCALE),
+            ),
+            Image.LANCZOS,
+        )
+        out.save(OUT / f"{name}.webp", **WEBP)
+        print(f"  {name}.webp {out.size} {(OUT / f'{name}.webp').stat().st_size // 1024}KB")
 
     for rel, degrees in RECOLOUR.items():
         path = ROOT / rel

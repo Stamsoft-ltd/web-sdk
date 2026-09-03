@@ -64,7 +64,7 @@ export default {
 	'INFO GI LEGAL 3':
 		'Alle Gewinne werden gemäß dem vom Remote-Game-Server erhaltenen Ergebnis abgerechnet, nicht anhand von Animationen oder Ereignissen, die im Webbrowser angezeigt werden.',
 	'DISCLAIMER TEXT':
-		'Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Im Falle einer Verbindungsunterbrechung lade das Spiel neu, um unvollständige Runden abzuschließen. Die erwartete Rendite wird über viele Spiele berechnet. Die Spielanzeige ist nicht repräsentativ für ein physisches Gerät und dient nur zur Veranschaulichung. Gewinne werden gemäß dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht anhand von Ereignissen im Webbrowser. TM und © 2026 Stake Engine.',
+		'Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Im Falle einer Verbindungsunterbrechung lade das Spiel neu, um unvollständige Runden abzuschließen. Die erwartete Rendite wird über viele Spiele berechnet. Die Spielanzeige ist nicht repräsentativ für ein physisches Gerät und dient nur zur Veranschaulichung. Gewinne werden gemäß dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht anhand von Ereignissen im Webbrowser. TM und © 2026 Engine.',
 	'INFO CTRL SPIN': 'Drehen',
 	'INFO CTRL SPIN DESC': 'Starte eine Spielrunde mit deinem gewählten Einsatz.',
 	'INFO CTRL AUTO': 'Autoplay',
@@ -118,11 +118,11 @@ export default {
 	'REAL COST': 'ECHTE KOSTEN',
 	MODE: 'MODUS',
 	'BUY BONUS': 'BONUS KAUFEN',
-	'BONUS': 'BONUS',
+	BONUS: 'BONUS',
 	PAYTABLE: 'GEWINNTABELLE',
 	'GAME RULES': 'SPIELREGELN',
 	AUTOPLAY: 'AUTOPLAY',
-	'AUTO': 'AUTO',
+	AUTO: 'AUTO',
 	TURBO: 'TURBO',
 	REPLAY: 'REPLAY',
 	'START REPLAY': 'REPLAY STARTEN',

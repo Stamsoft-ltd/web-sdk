@@ -64,7 +64,7 @@ export default {
 	'INFO GI LEGAL 3':
 		'Semua kemenangan diselesaikan berdasarkan hasil yang diterima dari Remote Game Server, bukan dari animasi atau peristiwa yang ditampilkan di dalam peramban web.',
 	'DISCLAIMER TEXT':
-		'Kerusakan membatalkan semua kemenangan dan permainan. Koneksi internet yang stabil diperlukan. Jika terjadi pemutusan koneksi, muat ulang permainan untuk menyelesaikan ronde yang belum selesai. Pengembalian yang diharapkan dihitung dari banyak permainan. Tampilan permainan tidak mewakili perangkat fisik apa pun dan hanya untuk tujuan ilustrasi. Kemenangan diselesaikan sesuai jumlah yang diterima dari Remote Game Server dan bukan dari event di dalam peramban web. TM dan © 2026 Stake Engine.',
+		'Kerusakan membatalkan semua kemenangan dan permainan. Koneksi internet yang stabil diperlukan. Jika terjadi pemutusan koneksi, muat ulang permainan untuk menyelesaikan ronde yang belum selesai. Pengembalian yang diharapkan dihitung dari banyak permainan. Tampilan permainan tidak mewakili perangkat fisik apa pun dan hanya untuk tujuan ilustrasi. Kemenangan diselesaikan sesuai jumlah yang diterima dari Remote Game Server dan bukan dari event di dalam peramban web. TM dan © 2026 Engine.',
 	'INFO CTRL SPIN': 'Putar',
 	'INFO CTRL SPIN DESC': 'Mulai ronde permainan dengan taruhan yang Anda pilih.',
 	'INFO CTRL AUTO': 'Putar Otomatis',
@@ -109,7 +109,8 @@ export default {
 	'SPLASH CORE OVERLOAD': 'BEBAN LEBIH INTI',
 	'SPLASH ZERO POINT': 'PROTOKOL TITIK NOL',
 	'SPLASH POLARITY TITLE': 'PENGUBAH\nPOLARITAS',
-	'SPLASH POLARITY BODY': 'Menghempaskan semua simbol ke satu dinding — kiri, kanan, atas, atau bawah!',
+	'SPLASH POLARITY BODY':
+		'Menghempaskan semua simbol ke satu dinding — kiri, kanan, atas, atau bawah!',
 	'SPLASH MAX TITLE': 'MENANG\nMAKS',
 	'SPLASH UP TO': 'hingga',
 	BALANCE: 'SALDO',
@@ -118,11 +119,11 @@ export default {
 	'REAL COST': 'BIAYA NYATA',
 	MODE: 'MODE',
 	'BUY BONUS': 'BELI BONUS',
-	'BONUS': 'BONUS',
+	BONUS: 'BONUS',
 	PAYTABLE: 'TABEL PEMBAYARAN',
 	'GAME RULES': 'ATURAN GAME',
 	AUTOPLAY: 'OTOMATIS',
-	'AUTO': 'OTOMATIS',
+	AUTO: 'OTOMATIS',
 	TURBO: 'TURBO',
 	REPLAY: 'ULANGI',
 	'START REPLAY': 'MULAI PUTAR ULANG',

@@ -64,7 +64,7 @@ export default {
 	'INFO GI LEGAL 3':
 		'Todas las ganancias se liquidan según el resultado recibido del Servidor de Juego Remoto, no según las animaciones o eventos mostrados dentro del navegador web.',
 	'DISCLAIMER TEXT':
-		'Un mal funcionamiento anula todas las ganancias y jugadas. Se requiere una conexión a internet estable. En caso de desconexión, recarga el juego para finalizar cualquier ronda incompleta. El retorno esperado se calcula sobre muchas jugadas. La pantalla del juego no representa ningún dispositivo físico y es solo con fines ilustrativos. Las ganancias se liquidan según el importe recibido del Remote Game Server y no según los eventos dentro del navegador web. TM y © 2026 Stake Engine.',
+		'Un mal funcionamiento anula todas las ganancias y jugadas. Se requiere una conexión a internet estable. En caso de desconexión, recarga el juego para finalizar cualquier ronda incompleta. El retorno esperado se calcula sobre muchas jugadas. La pantalla del juego no representa ningún dispositivo físico y es solo con fines ilustrativos. Las ganancias se liquidan según el importe recibido del Remote Game Server y no según los eventos dentro del navegador web. TM y © 2026 Engine.',
 	'INFO CTRL SPIN': 'Girar',
 	'INFO CTRL SPIN DESC': 'Inicia una ronda de juego con tu apuesta seleccionada.',
 	'INFO CTRL AUTO': 'Autoplay',
@@ -109,7 +109,8 @@ export default {
 	'SPLASH CORE OVERLOAD': 'SOBRECARGA DEL NÚCLEO',
 	'SPLASH ZERO POINT': 'PROTOCOLO PUNTO CERO',
 	'SPLASH POLARITY TITLE': 'CAMBIADOR DE\nPOLARIDAD',
-	'SPLASH POLARITY BODY': '¡Lanza todos los símbolos hacia una pared: izquierda, derecha, arriba o abajo!',
+	'SPLASH POLARITY BODY':
+		'¡Lanza todos los símbolos hacia una pared: izquierda, derecha, arriba o abajo!',
 	'SPLASH MAX TITLE': 'GANANCIA\nMÁX.',
 	'SPLASH UP TO': 'hasta',
 	BALANCE: 'SALDO',
@@ -118,11 +119,11 @@ export default {
 	'REAL COST': 'COSTE REAL',
 	MODE: 'MODO',
 	'BUY BONUS': 'COMPRAR BONO',
-	'BONUS': 'BONO',
+	BONUS: 'BONO',
 	PAYTABLE: 'TABLA DE PAGOS',
 	'GAME RULES': 'REGLAS DEL JUEGO',
 	AUTOPLAY: 'AUTOPLAY',
-	'AUTO': 'AUTO',
+	AUTO: 'AUTO',
 	TURBO: 'TURBO',
 	REPLAY: 'REPLAY',
 	'START REPLAY': 'INICIAR REPLAY',

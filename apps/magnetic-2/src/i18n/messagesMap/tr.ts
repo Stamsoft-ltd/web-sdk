@@ -64,7 +64,7 @@ export default {
 	'INFO GI LEGAL 3':
 		'Tüm kazançlar, web tarayıcısında gösterilen animasyonlara veya olaylara göre değil, Uzak Oyun Sunucusundan alınan sonuca göre ödenir.',
 	'DISCLAIMER TEXT':
-		'Arıza tüm kazançları ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilmesi durumunda, tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı herhangi bir fiziksel cihazı temsil etmez ve yalnızca gösterim amaçlıdır. Kazançlar web tarayıcısındaki olaylara göre değil, Uzak Oyun Sunucusundan alınan tutara göre ödenir. TM ve © 2026 Stake Engine.',
+		'Arıza tüm kazançları ve oyunları geçersiz kılar. Kararlı bir internet bağlantısı gereklidir. Bağlantı kesilmesi durumunda, tamamlanmamış turları bitirmek için oyunu yeniden yükleyin. Beklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun ekranı herhangi bir fiziksel cihazı temsil etmez ve yalnızca gösterim amaçlıdır. Kazançlar web tarayıcısındaki olaylara göre değil, Uzak Oyun Sunucusundan alınan tutara göre ödenir. TM ve © 2026 Engine.',
 	'INFO CTRL SPIN': 'Döndür',
 	'INFO CTRL SPIN DESC': 'Seçtiğiniz bahisle bir oyun turu başlatın.',
 	'INFO CTRL AUTO': 'Otomatik Oyun',
@@ -118,11 +118,11 @@ export default {
 	'REAL COST': 'GERÇEK MALİYET',
 	MODE: 'MOD',
 	'BUY BONUS': 'BONUS AL',
-	'BONUS': 'BONUS',
+	BONUS: 'BONUS',
 	PAYTABLE: 'ÖDEME TABLOSU',
 	'GAME RULES': 'OYUN KURALLARI',
 	AUTOPLAY: 'OTOMATİK',
-	'AUTO': 'OTO',
+	AUTO: 'OTO',
 	TURBO: 'TURBO',
 	REPLAY: 'TEKRAR',
 	'START REPLAY': 'TEKRARI BAŞLAT',

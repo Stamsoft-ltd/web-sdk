@@ -1,32 +1,38 @@
 #!/usr/bin/env python3
-"""Cut the Version2 MOTHERSHIP room (Figma 9032:23054) into every background the game needs.
+"""Cut the MOTHERSHIP paintings into every background the game needs.
 
-Figma supplies ONE landscape painting of the room (1536x1024) plus the ship and the logo as loose
-transparent rasters. The game needs six backgrounds -- landscape and portrait, in three moods -- so
-the portrait crops and the two bonus moods are derived here rather than hand-painted.
+Figma supplies whole landscape paintings plus the ship and the logo as loose transparent rasters.
+The game needs eight backgrounds -- landscape and portrait for four rooms -- so the portrait
+rebuilds are derived here rather than hand-painted.
 
-    bg_base.webp / bg_mobile_base.webp     the room as designed
-    bg_bonus.webp / bg_mobile_bonus.webp   the same room lit magenta   (freegame)
-    bg_super.webp / bg_mobile_super.webp   the same room lit green     (superspin)
-    (the ship is NOT built here any more -- see scripts/build-ufo-art.py)
+    bg_base.webp  / bg_mobile_base.webp    the base game        (Figma 9164:12153 "Background 1")
+    bg_bonus.webp / bg_mobile_bonus.webp   GRAVITY BREACH       (Figma 9164:12399 "Background 2")
+    bg_super.webp / bg_mobile_super.webp   CORE OVERLOAD        (Figma 9164:12644 "Background 3")
+    bg_zero.webp  / bg_mobile_zero.webp    ZERO POINT PROTOCOL  (Figma 9164:12890 "Background 4")
     logo_plate.webp                        MAGNETIC 2 MOTHERSHIP
+    (the ship is NOT built here any more -- see scripts/build-ufo-art.py)
 
-Two things here are derived, not measured, and are the first places to look if a room reads wrong:
+FOUR paintings, one per room. The game moved outdoors on 2026-09-03: every room is now the same
+terrace over the same alien valley, repainted for the hour and the weather -- lilac dusk for the
+base game, a deeper violet for Gravity Breach, a starlit night under a moon for Core Overload, and
+a green-gold morning for Zero Point Protocol. Background.svelte cross-fades between them, so the
+bonus hand-off reads as the sky changing rather than as a different place.
 
-  * PORTRAIT. The source is landscape (1.5), the target is 0.5625, so roughly a third of the
-    portrait canvas has no source pixels at all. The room is rebuilt: the wall above the octagon is
-    extended with its own flat ceiling colour (rows 0..30 measure std 3.5, i.e. effectively flat, so
-    stretching them is invisible), and the floor is stretched from the floor line down. The floor
-    stretch is the visible compromise -- the tiles get longer the further the target is from 1.5.
-    The portrait HUD covers most of it.
+That retired the two things the old interior LAB needed and these do not: the mood GRADE (both
+bonus rooms used to be the base room multiplied by a coloured lamp, magenta and green) and the
+octagon-anchored portrait rebuild. Nothing is tinted here any more -- every room is its own
+painting -- and every portrait is built the one way, by growing sky.
 
-  * MOODS. bonus/super are the base room under a coloured lamp (an RGB multiply), matched to the
-    association the game already ships (bgBonus = magenta, bgSuper = green -- verified against the
-    old art's mean RGB, NOT guessed from the node names, which read the other way round).
+Two things are still derived, not measured, and are the first places to look if a room reads wrong:
 
-Unlike the old blue-lab set, NOTHING is blurred or pre-dimmed here. The design shows the room at
-full brightness and the board now carries its own opaque plate, so Background.svelte's two dim
-rectangles came off at the same time as this landed.
+  * PORTRAIT. The sources are landscape (~1.6) and the target is 0.5625, so roughly half the
+    portrait canvas has no source pixels at all. Everything from the design crop's top row down is
+    kept at its own proportions and placed against the bottom edge; the gap above is filled by
+    CONTINUING the sky's own per-column gradient upward. Only SKY is ever invented, which is why
+    the valley, the horizon and the landing pad keep their shape exactly.
+
+  * BLUR. All four nodes carry the design's own LAYER_BLUR radius 7 -- depth of field, so the
+    valley does not compete with the symbols.
 
 Run:  python3 scripts/build-room-art.py
 """
@@ -37,7 +43,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "art-src" / "room"
@@ -53,40 +59,68 @@ LAND_W, LAND_H = 1600, 900
 # PORTRAIT_BACKGROUND_RATIO in game/constants.ts already describes.
 PORT_W, PORT_H = 1242, 2208
 
-# The design places the room node at (-27,-37) sized 1275x850 inside a 1200x670 frame, so this much
-# of the painting is what the design actually shows. Everything else is cropped by the frame.
-DESIGN_NODE = (1275.0, 850.0)
-DESIGN_OFFSET = (27.0, 37.0)
+# Every design frame in this file is 1200x670.
 DESIGN_FRAME = (1200.0, 670.0)
 
-# Measured off the painting (see the analysis in this file's history): the flat ceiling band, the
-# floor line, and the centre octagon the board sits over.
-CEILING_BAND = (0, 30)
-FLOOR_ROW = 873
-OCTAGON = {"x0": 455, "x1": 1067, "y0": 199, "y1": 847}
+# Where each painting sits inside its design frame: the node's size, and how far its top-left is
+# OUTSIDE the frame. Every painting is hung larger than the frame and cropped by it, so this is what
+# says which part of it the design actually shows -- and the four differ, so it cannot be assumed.
+#
+# `blur` is the Figma LAYER_BLUR on the node, in design px. All four carry radius 7 (on the base the
+# designer stacked two identical copies of the painting -- identical and opaque, so the result is a
+# single blur, not a double one). It is depth of field, not softness for its own sake: the board and
+# its symbols sit on top of this and the valley must not compete with them.
+#
+# Core Overload's frame has the base painting UNDER its own, fully covered by it. Only the top
+# layer is listed, because only the top layer is ever visible.
+ROOMS = {
+    "base": {  # 9164:12153 "Background 1" -- lilac dusk
+        "file": "vista.png",
+        "node": (1522.0, 1012.0),
+        "offset": (130.0, 189.0),
+        "blur": 7.0,
+    },
+    "bonus": {  # 9164:12399 "Background 2" -- GRAVITY BREACH, deep violet
+        "file": "gravity_breach.png",
+        "node": (1578.0, 971.0),
+        "offset": (169.0, 189.0),
+        "blur": 7.0,
+    },
+    "super": {  # 9164:12644 "Background 3" -- CORE OVERLOAD, starlit night under a moon
+        "file": "core_overload.png",
+        "node": (1467.0, 902.0),
+        "offset": (166.0, 156.0),
+        "blur": 7.0,
+    },
+    "zero": {  # 9164:12890 "Background 4" -- ZERO POINT PROTOCOL, green-gold morning
+        "file": "zero_point.png",
+        "node": (1599.0, 984.0),
+        "offset": (179.5, 189.0),
+        "blur": 7.0,
+    },
+}
+
+# Portrait framing. VIEW_W is how many source pixels of WIDTH the phone shows; everything from the
+# design crop's top row down to the bottom of the PAINTING is kept (the sources carry more terrace
+# below the design frame, and a phone has room for it), placed against the bottom edge. The gap left
+# above is filled by CONTINUING the sky's own vertical gradient upward, per column.
+#
+# Stretching a band of sky instead leaves a hard seam, and it is worth being clear why: any band
+# starting below the crop's first row ends on a colour that is not the crop's first row, so the two
+# never meet. Extrapolation joins exactly by construction. SKY_SLOPE_ROWS is how many rows of real
+# sky the trend is measured over (the design crops away everything above, and the nearest mountain
+# peak is a good 200 rows below it, so a 120-row block under the crop is sky and nothing else).
+# SKY_EXTEND_MAX caps the extrapolation at that many blocks' worth of darkening -- the gap is six
+# blocks tall, and a straight line over six would run the sky to black.
+PORTRAIT_VIEW_W = 900
+SKY_SLOPE_ROWS = 120
+SKY_EXTEND_MAX = 1.5
+# How many columns the per-column slope is averaged over before it is extrapolated -- see extend_sky.
+SLOPE_SMOOTH_PX = 81
 
 # Where the design hangs the ship, in design-frame coordinates. It deliberately runs off the right
 # edge (x + w = 1226 > 1200), which is why the placements this script prints exceed 1.0 there.
 UFO_NODE = (898.0, 20.0, 328.0, 492.0)
-
-# Portrait framing. VIEW_W is how many source pixels of WIDTH the portrait shows: smaller = the
-# octagon fills more of the phone, but more floor has to be stretched to reach the bottom.
-PORTRAIT_VIEW_W = 780
-# Where the octagon's centre lands down the portrait canvas. The board sits slightly above centre.
-PORTRAIT_OCTAGON_CY = 0.455
-
-# Mood grades: an RGB MULTIPLY, i.e. the room lit by a coloured lamp, plus an overall dim.
-#
-# Not a hue rotation. Rotating hue drags the alien landscape through the windows along with the
-# walls, so the planet and the foliage change species between rooms; multiplying keeps every
-# object's own relationship to the light and just changes what is lighting them.
-#
-# Which mood is which colour is taken from the art the game ALREADY ships (bg_bonus mean RGB is
-# magenta, bg_super's is green), not from the Figma node names, which read the other way round.
-MOODS = {
-    "bonus": ((1.00, 0.42, 0.96), 0.94),  # magenta -- the freegame room
-    "super": ((0.46, 1.00, 0.58), 0.94),  # green   -- the superspin room
-}
 
 WEBP = dict(quality=88, method=6)
 
@@ -110,11 +144,11 @@ def die(msg: str) -> None:
     sys.exit(f"build-room-art: {msg}")
 
 
-def design_crop(room: Image.Image) -> Image.Image:
+def design_crop(room: Image.Image, spec: dict) -> Image.Image:
     """The part of the painting the design frame actually shows, trimmed to the output aspect."""
     w, h = room.size
-    sx, sy = w / DESIGN_NODE[0], h / DESIGN_NODE[1]
-    x0, y0 = DESIGN_OFFSET[0] * sx, DESIGN_OFFSET[1] * sy
+    sx, sy = w / spec["node"][0], h / spec["node"][1]
+    x0, y0 = spec["offset"][0] * sx, spec["offset"][1] * sy
     x1, y1 = x0 + DESIGN_FRAME[0] * sx, y0 + DESIGN_FRAME[1] * sy
     # Trim to the output aspect around the same centre so nothing is stretched.
     want = LAND_W / LAND_H
@@ -130,79 +164,100 @@ def design_crop(room: Image.Image) -> Image.Image:
     return room.crop((round(x0), round(y0), round(x1), round(y1)))
 
 
-def build_portrait(room: Image.Image) -> Image.Image:
-    """Rebuild the room for a 0.5625 canvas by extending the ceiling and the floor.
+def build_portrait(vista: Image.Image, spec: dict) -> Image.Image:
+    """Rebuild a room for a 0.5625 canvas by growing its SKY.
 
-    The source is landscape, so this cannot be a crop -- about a third of the portrait canvas has no
-    source pixels. The octagon is placed first (it is what the board sits over) and the wall and
-    floor are grown outward from it.
+    Nothing is stretched except sky: the valley, the horizon and the landing pad keep their
+    proportions exactly, and the extra 1000-odd rows a phone needs come out of a vertical gradient
+    where a stretch is invisible. The pad ends up low on the canvas, mostly under the portrait HUD,
+    and the board floats over the valley -- which is where the landscape design puts it too.
     """
-    w, h = room.size
-    scale = PORT_W / PORTRAIT_VIEW_W
-    oct_cx = (OCTAGON["x0"] + OCTAGON["x1"]) / 2
-    oct_cy = (OCTAGON["y0"] + OCTAGON["y1"]) / 2
-
-    x0 = round(oct_cx - PORTRAIT_VIEW_W / 2)
+    w, h = vista.size
+    sy = h / spec["node"][1]
+    top = round(spec["offset"][1] * sy)  # the design crop's first row
+    cx = w / 2
+    x0 = round(cx - PORTRAIT_VIEW_W / 2)
     x1 = x0 + PORTRAIT_VIEW_W
     if x0 < 0 or x1 > w:
-        die(f"portrait view {PORTRAIT_VIEW_W}px does not fit the {w}px painting around the octagon")
+        die(f"portrait view {PORTRAIT_VIEW_W}px does not fit the {w}px painting")
 
-    # Walls: everything from the top of the painting down to the floor line.
-    walls = room.crop((x0, 0, x1, FLOOR_ROW)).resize(
-        (PORT_W, round(FLOOR_ROW * scale)), Image.LANCZOS
-    )
-    top_gap = round(PORTRAIT_OCTAGON_CY * PORT_H - oct_cy * scale)
-    if top_gap < 0:
-        die("octagon target sits above the canvas -- raise PORTRAIT_OCTAGON_CY or VIEW_W")
-    floor_top = top_gap + walls.height
-    floor_h = PORT_H - floor_top
-    if floor_h <= 0:
-        die("no room left for the floor -- lower PORTRAIT_OCTAGON_CY or raise PORTRAIT_VIEW_W")
+    scale = PORT_W / PORTRAIT_VIEW_W
+    body = vista.crop((x0, top, x1, h))
+    body = body.resize((PORT_W, round(body.height * scale)), Image.LANCZOS)
+    sky_h = PORT_H - body.height
+    if sky_h < 0:
+        die("portrait: the painting is already taller than the canvas -- raise VIEW_W")
 
     out = Image.new("RGB", (PORT_W, PORT_H))
-    # Ceiling extension: the top band measures flat, so stretching it reads as more wall rather
-    # than as a smeared panel.
-    ceiling = room.crop((x0, CEILING_BAND[0], x1, CEILING_BAND[1]))
-    out.paste(ceiling.resize((PORT_W, max(1, top_gap)), Image.LANCZOS), (0, 0))
-    out.paste(walls, (0, top_gap))
-    # Floor: stretched from the floor line to the bottom edge. This is the one visible compromise --
-    # the tiles get longer the taller the canvas is.
-    floor = room.crop((x0, FLOOR_ROW, x1, h))
-    out.paste(floor.resize((PORT_W, floor_h), Image.LANCZOS), (0, floor_top))
-
-    stretch = floor_h / (floor.height * scale)
-    print(f"  portrait: scale {scale:.3f}, ceiling fill {top_gap}px, floor stretch {stretch:.2f}x")
+    out.paste(body, (0, sky_h))
+    if sky_h > 0:
+        out.paste(Image.fromarray(extend_sky(vista, x0, x1, top, sky_h, scale)), (0, 0))
+    print(
+        f"  portrait: scale {scale:.3f}, sky extended {sky_h}px"
+        f" ({sky_h / scale / SKY_SLOPE_ROWS:.1f} slope blocks)"
+    )
     return out
 
 
-def grade(im: Image.Image, tint: tuple[float, float, float], dim: float) -> Image.Image:
-    """Light the room with a coloured lamp: multiply by `tint`, then dim."""
-    a = np.asarray(im.convert("RGB")).astype(np.float32)
-    a = a * np.array(tint, dtype=np.float32) * dim
-    return Image.fromarray(np.clip(a, 0, 255).round().astype(np.uint8), "RGB")
+def extend_sky(vista: Image.Image, x0: int, x1: int, top: int, out_h: int, scale: float):
+    """Grow the sky UPWARD from row `top`, following its own per-column gradient."""
+    band = np.asarray(vista.crop((x0, top, x1, top + SKY_SLOPE_ROWS))).astype(np.float32)
+    join = band[0]  # the row the extension has to meet exactly
+    below = band[-4:].mean(axis=0)  # the same columns, one block further down
+    step = join - below  # per column, per channel: one block's worth of "going up"
+    # Smooth the SLOPE across columns, never the join. A column's slope is a difference of two
+    # painted rows, so it carries their noise, and the extrapolation multiplies it by up to
+    # SKY_EXTEND_MAX blocks -- unsmoothed, a couple of levels' difference between neighbouring
+    # columns opens into visible vertical banding at the top of the canvas. `join` is left exactly
+    # as painted because it is what the seam has to meet.
+    k = np.ones(SLOPE_SMOOTH_PX, dtype=np.float32) / SLOPE_SMOOTH_PX
+    pad = SLOPE_SMOOTH_PX // 2
+    step = np.stack(
+        [
+            np.convolve(np.pad(step[:, c], pad, mode="edge"), k, mode="valid")
+            for c in range(step.shape[1])
+        ],
+        axis=1,
+    )
+    # Rows are generated from the join upward, so row out_h-1 is the join itself.
+    t = (np.arange(out_h - 1, -1, -1, dtype=np.float32) + 0.5) / scale / SKY_SLOPE_ROWS
+    f = SKY_EXTEND_MAX * (1 - np.exp(-t / SKY_EXTEND_MAX))
+    sky = join[None, :, :] + f[:, None, None] * step[None, :, :]
+    sky = np.clip(sky, 0, 255).round().astype(np.uint8)
+    return np.asarray(
+        Image.fromarray(sky).resize((PORT_W, out_h), Image.LANCZOS)
+    )
 
 
-# Blob area bounds, as fractions of the image. The upper bound is load-bearing: the alien FLORA
-# through the windows is painted the same magenta as the ship's light strips, so no colour key can
-# tell them apart -- but the smallest plant is 5x the area of the largest strip, and lighting a
-# bush would spill a halo across the landscape. Measured margin: strips top out near 0.0008, plants
-# start near 0.0042.
-LAMP_AREA = (0.0001, 0.002)
+# Where lamps may be found, as a fraction of the image HEIGHT, and how big they may be, as a
+# fraction of its AREA.
+#
+# The region is load-bearing. The magenta key alone also matches the rim light along the mountain
+# crests -- moonlight on rock, hundreds of pixels of it, up in the valley -- and lighting those
+# put a pulsing halo on a mountain. Everything that actually emits in these paintings is ON THE
+# TERRACE: the landing pad's core and the sill strips of the consoles at either side.
+#
+# The area cap is 2%, not the 0.2% an earlier interior room used. Out here the pad's glowing core
+# IS one blob, ~1.4-1.9% of the frame, and in Core Overload's tighter crop it is the ONLY emissive
+# thing in shot -- capping below it left that room with no lamps at all and therefore dead still.
+LAMP_REGION = 0.55
+LAMP_AREA = (0.00005, 0.02)
 
 
 def find_lamps(im: Image.Image, limit: int = 9):
     """Locate the room's emissive strips so Background.svelte can light them.
 
-    The old blue-lab table was measured with a local-brightness key because those lamps were painted
-    flat and blurred. This room needs no such trick: every emissive element is one saturated magenta,
-    unique in a lavender room, so a colour key plus the area bounds above finds them exactly.
-    Returned as fractions of THIS image, which is why detection runs on the finished background and
-    not on the painting.
+    An older blue-lab table was measured with a local-brightness key because those lamps were
+    painted flat and blurred. The terrace needs no such trick: its sill lights and pad ring are one
+    saturated magenta, unique in a lilac landscape, so a colour key plus the area bounds above finds
+    them exactly. Returned as fractions of THIS image, which is why detection runs on the finished
+    background and not on the painting.
     """
     a = np.asarray(im.convert("RGB")).astype(int)
     r, g, b = a[..., 0], a[..., 1], a[..., 2]
     mask = (r - g > 45) & (b - g > 45) & (r > 190)
     h, w = mask.shape
+    mask[: int(h * LAMP_REGION)] = False  # sky and valley: see LAMP_REGION
     lo_px, hi_px = LAMP_AREA[0] * h * w, LAMP_AREA[1] * h * w
     seen = np.zeros_like(mask)
     blobs = []
@@ -255,21 +310,30 @@ def write_lights(tables: dict[str, list[dict]]) -> None:
         "// that nothing in the scene moves between spins).",
         "//",
         "// GENERATED by scripts/build-room-art.py -- do not hand-edit. The lamps are keyed by colour",
-        "// (every emissive element in this room is the same saturated magenta, unique against the",
-        "// lavender walls) and measured on the FINISHED background, so the fractions stay valid for",
-        "// whatever crop that script produces. The bonus/super tables are the same strips under each",
-        "// room's coloured lamp.",
+        "// (the terrace's sill lights are one saturated magenta, unique in a lilac landscape) and",
+        "// measured on the FINISHED background, so the fractions stay valid for whatever crop that",
+        "// script produces. Each room is keyed on its own painting -- they are four different",
+        "// paintings of the same terrace, not four tints of one.",
         "export type BackgroundLight = { cx: number; cy: number; w: number; h: number; color: number };",
         "",
         "export const BACKGROUND_LIGHTS: Record<string, BackgroundLight[]> = {",
     ]
+    def entry(l: dict) -> str:
+        return (
+            f"{{ cx: {l['cx']}, cy: {l['cy']}, w: {l['w']}, h: {l['h']},"
+            f" color: 0x{l['color']:06x} }}"
+        )
+
     for key, lamps in tables.items():
+        # A one-lamp room is written on ONE line, because that is what prettier does to it and this
+        # file is checked -- a room that finds a single lamp would otherwise fail the format check
+        # every time it is regenerated.
+        if len(lamps) == 1:
+            lines.append(f"\t{key}: [{entry(lamps[0])}],")
+            continue
         lines.append(f"\t{key}: [")
         for l in lamps:
-            lines.append(
-                f"\t\t{{ cx: {l['cx']}, cy: {l['cy']}, w: {l['w']}, h: {l['h']},"
-                f" color: 0x{l['color']:06x} }},"
-            )
+            lines.append(f"\t\t{entry(l)},")
         lines.append("\t],")
     lines.append("};")
     (ROOT / "src" / "game" / "backgroundLights.ts").write_text("\n".join(lines) + "\n")
@@ -367,53 +431,49 @@ def split_ufo(ufo: Image.Image) -> tuple[Image.Image, Image.Image]:
 
 
 def main() -> None:
-    for name in ("room.png", "ufo.png", "logo.png"):
+    for name in [spec["file"] for spec in ROOMS.values()] + ["ufo.png", "logo.png"]:
         if not (SRC / name).exists():
             die(f"missing source art-src/room/{name}")
 
-    room = Image.open(SRC / "room.png").convert("RGB")
     BG.mkdir(parents=True, exist_ok=True)
     UI.mkdir(parents=True, exist_ok=True)
     SPLASH.mkdir(parents=True, exist_ok=True)
 
     print("rooms:")
-    land = design_crop(room).resize((LAND_W, LAND_H), Image.LANCZOS)
-    port = build_portrait(room)
-
-    variants = {"base": (land, port)}
-    for mood, (tint, dim) in MOODS.items():
-        variants[mood] = (grade(land, tint, dim), grade(port, tint, dim))
-
-    for mood, (l_im, p_im) in variants.items():
-        l_im.save(BG / f"bg_{mood}.webp", **WEBP)
-        p_im.save(BG / f"bg_mobile_{mood}.webp", **WEBP)
+    variants: dict[str, tuple[Image.Image, Image.Image]] = {}
+    for key, spec in ROOMS.items():
+        src = Image.open(SRC / spec["file"]).convert("RGB")
+        land = design_crop(src, spec).resize((LAND_W, LAND_H), Image.LANCZOS)
+        port = build_portrait(src, spec)
+        # The design's LAYER_BLUR is quoted in DESIGN px, so it is applied after the resize and
+        # scaled to the output. Figma's radius is about twice the equivalent Gaussian sigma.
+        if spec["blur"]:
+            sigma = spec["blur"] / 2
+            land = land.filter(ImageFilter.GaussianBlur(sigma * LAND_W / DESIGN_FRAME[0]))
+            port = port.filter(ImageFilter.GaussianBlur(sigma * PORT_W / DESIGN_FRAME[0]))
+        variants[key] = (land, port)
+        land.save(BG / f"bg_{key}.webp", **WEBP)
+        port.save(BG / f"bg_mobile_{key}.webp", **WEBP)
         print(
-            f"  bg_{mood}.webp {l_im.size} {(BG / f'bg_{mood}.webp').stat().st_size // 1024}KB"
-            f"   bg_mobile_{mood}.webp {p_im.size}"
-            f" {(BG / f'bg_mobile_{mood}.webp').stat().st_size // 1024}KB"
+            f"  bg_{key}.webp {land.size} {(BG / f'bg_{key}.webp').stat().st_size // 1024}KB"
+            f"   bg_mobile_{key}.webp {port.size}"
+            f" {(BG / f'bg_mobile_{key}.webp').stat().st_size // 1024}KB"
         )
 
-    # Lamp table. The strips are in the same place in every mood, so they are located ONCE on the
-    # base art and then re-coloured per room -- keying the tinted rooms would find the same blobs
-    # more slowly, and a magenta room defeats a magenta key outright.
-    land_lamps, port_lamps = find_lamps(land), find_lamps(port)
-    tables = {"bgBase": land_lamps, "bgMobileBase": port_lamps}
-    for mood, (tint, _dim) in MOODS.items():
-        name = mood.capitalize()
-        for key, lamps in (("bg" + name, land_lamps), ("bgMobile" + name, port_lamps)):
-            tables[key] = [
-                {
-                    **l,
-                    "color": (
-                        (min(255, int(((l["color"] >> 16) & 0xFF) * tint[0])) << 16)
-                        | (min(255, int(((l["color"] >> 8) & 0xFF) * tint[1])) << 8)
-                        | min(255, int((l["color"] & 0xFF) * tint[2]))
-                    ),
-                }
-                for l in lamps
-            ]
+    # Lamp table. Every room is its own painting now, so every one is keyed on its own finished
+    # background -- there is no longer a single set of strips shared between tinted copies of one
+    # room. The key is the terrace's magenta sill lights, which all four paintings carry.
+    tables: dict[str, list[dict]] = {}
+    for key, (land, port) in variants.items():
+        name = key.capitalize()
+        tables["bg" + name] = find_lamps(land)
+        tables["bgMobile" + name] = find_lamps(port)
     write_lights(tables)
-    print(f"lamps: {len(land_lamps)} landscape, {len(port_lamps)} portrait -> src/game/backgroundLights.ts")
+    print(
+        "lamps: "
+        + ", ".join(f"{k} {len(tables['bg' + k.capitalize()])}" for k in variants)
+        + " -> src/game/backgroundLights.ts"
+    )
 
     # The ship's ART now comes from the designer's loose parts (scripts/build-ufo-art.py) and its
     # beam is drawn in Background.svelte, so nothing is saved here. The split still runs, because
@@ -431,7 +491,7 @@ def main() -> None:
 
     # --- preview ---------------------------------------------------------------------------------
     tiles = []
-    for mood, (l_im, p_im) in variants.items():
+    for _key, (l_im, p_im) in variants.items():
         tiles.append(l_im.resize((480, 270), Image.LANCZOS).convert("RGBA"))
         ph = 270
         tiles.append(p_im.resize((round(PORT_W * ph / PORT_H), ph), Image.LANCZOS).convert("RGBA"))

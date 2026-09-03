@@ -1,5 +1,6 @@
 /**
- * Shared constants for the confirm popup (Figma 4036-3584).
+ * Shared constants for the confirm popup — plate node 9076:28671 inside Figma's "confirm popup"
+ * frame 4036:3584 (SECTION 9078:18631 POPUPS).
  *
  * THREE dialogs wear this plate — CustomBuyBonusModal's buy confirmation, BonusResumeModal and
  * InsufficientFundsModal — and they must stay identical, so the type metrics the text fitter needs
@@ -11,23 +12,28 @@
  * fixed-aspect bitmap. The old `confirm_panel.webp` was a blue steel frame from the Version2 theme
  * and looked like a different game next to the MOTHERSHIP art.
  *
- * The plate is 458 design px wide; every fraction below is of that WIDTH.
+ * The plate is 467 design px wide; every fraction below is of that WIDTH.
+ *
+ * Re-measured 2026-09-03: 9076:28671 replaced the 4036-era plate these numbers used to come from,
+ * and it changed the FACES as well as the sizes — Audiowide for the title, Poppins for the body,
+ * where the old plate was Chakra Petch throughout.
  */
 
-/** Title: Chakra Petch Bold 30px (30 / 458). */
-export const CONFIRM_TITLE_FONT_F = 0.0655;
-/** Body: Chakra Petch SemiBold 20px (20 / 458). */
-export const CONFIRM_TEXT_FONT_F = 0.0437;
+/** Title: Audiowide Regular 32px (32 / 467). */
+export const CONFIRM_TITLE_FONT_F = 0.0685;
+/** Body: Poppins Regular 20px (20 / 467). */
+export const CONFIRM_TEXT_FONT_F = 0.0428;
 
 /** Line widths available inside the frame's bevel, as fractions of the plate width. */
 export const CONFIRM_TITLE_FIT_W = 0.86;
 export const CONFIRM_TEXT_FIT_W = 0.84;
 
-// These are NOT decorative: both dialogs measure their strings offscreen with these to compute the
+// These are NOT decorative: the dialogs measure their strings offscreen with these to compute the
 // shrink-to-fit factor (--confirm-title-fit / --confirm-text-fit), and the title renders `nowrap`.
-// They MUST track the <style> blocks exactly — measuring in Inter while rendering Chakra Petch
-// yields a fit factor for the wrong glyph widths, and the title silently overflows the plate.
-export const CONFIRM_TITLE_FAMILY = "'Chakra Petch', 'Inter', sans-serif";
-export const CONFIRM_TEXT_FAMILY = "'Chakra Petch', 'Inter', sans-serif";
-/** Body weight, matching `.confirm-text` in both components (Chakra Petch has no 500 face). */
-export const CONFIRM_TEXT_WEIGHT = 600;
+// They MUST track the <style> blocks exactly — measuring in Chakra Petch while rendering Audiowide
+// yields a fit factor for the wrong glyph widths (Audiowide is far wider), and the title silently
+// overflows the plate.
+export const CONFIRM_TITLE_FAMILY = "'Audiowide', 'Chakra Petch', 'Inter', sans-serif";
+export const CONFIRM_TEXT_FAMILY = "'Poppins', 'Chakra Petch', 'Inter', sans-serif";
+/** Body weight, matching `.confirm-text` — Regular, as the design sets it. */
+export const CONFIRM_TEXT_WEIGHT = 400;

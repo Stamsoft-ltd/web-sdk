@@ -99,6 +99,16 @@
 	// A pending timer would otherwise resolve a stale `oncomplete` after teardown.
 	$effect(() => clearDismissTimer);
 
+	// Dim the HTML HUD while a big-win card is up. The card is drawn in the pixi canvas and the HUD
+	// is an HTML overlay ON TOP of it, so without this the opaque bottom bar cuts the amount plaque
+	// in half — the design's own win screens (Figma SECTION 4013:920) show the bar darkened under
+	// the scrim, which is exactly what `celebrationActive` already does for the congrats panel.
+	$effect(() => {
+		if (!show || !winLevelData?.animation) return;
+		context.stateGame.celebrationActive = true;
+		return () => (context.stateGame.celebrationActive = false);
+	});
+
 	// Continuous board shake — the popup never sits still: a low rumble the whole time it's up
 	// plus a sharp "electric jolt" every ~1.35s in a pseudo-random direction. Stronger while the
 	// amount is counting up, calmer (but still alive) once the count settles.
@@ -193,8 +203,14 @@
 									context.stateLayoutDerived.canvasSizes().height / (mainLayout.scale || 1)}
 								<!-- One board for the whole presentation, chosen from the SETTLED total
 								     (`amount`), while the text counts up (`countUpAmount`). -->
+								<!-- Round only the IN-FLIGHT tween value — same reason as the plaque below:
+								     a fractional book amount formats as a jittering 7-digit string
+								     ("$608.8582") while it counts, and rounding the SETTLED amount
+								     would truncate the win. -->
 								<WinBoard
-									amount={countUpAmount}
+									amount={Math.abs(countUpAmount - amount) < 0.5
+										? amount
+										: Math.round(countUpAmount)}
 									tierAmount={amount}
 									{screenW}
 									{screenH}

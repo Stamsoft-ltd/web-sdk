@@ -33,11 +33,11 @@ export default {
 	'REAL COST': 'REAL COST',
 	MODE: 'MODE',
 	'BUY BONUS': 'BUY BONUS',
-	'BONUS': 'BONUS',
+	BONUS: 'BONUS',
 	PAYTABLE: 'PAYTABLE',
 	'GAME RULES': 'GAME RULES',
 	AUTOPLAY: 'AUTOPLAY',
-	'AUTO': 'AUTO',
+	AUTO: 'AUTO',
 	TURBO: 'TURBO',
 	REPLAY: 'REPLAY',
 	'BET REPLAY': 'Bet Replay',
@@ -168,8 +168,14 @@ export default {
 	'PAYTABLE BUY_TEXT':
 		'Drop-O-Magnet: 100x bet.\nMega Chain: 500x bet.\nChance Spin: 2x bet per round.\nFeature Spin: 50x bet per round.',
 	'PAYTABLE MAX_TEXT': 'Advertised max win is 20,000x the selected bet.',
+	// General Game Disclaimer. This is Stake Engine's OWN template, verbatim:
+	//   https://stake-engine.com/docs/approval-guidelines/general-disclaimer
+	// A submission may use the template or its own wording "so long as the same message is
+	// clearly conveyed" — use the template, because a reviewer can diff it. Note the closing
+	// sentence is "TM and © 2026 Engine.", NOT "Stake Engine"; the other locales carry their
+	// own wording of that one sentence. See STAKE_REVIEW_LESSONS.md.
 	'DISCLAIMER TEXT':
-		'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
+		'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Engine.',
 
 	// ── Info / rules popup (CustomInfoModal.svelte). Numeric values (7X7, 20,000, 96.10%, 2x…) stay as
 	//    constants in the component; only the copy below is translated. %value% placeholders are left

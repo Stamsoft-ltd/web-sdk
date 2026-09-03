@@ -126,18 +126,21 @@
 	const wildX10 = sym('special/wild_x10_full.webp');
 	const scatter = sym('special/scatter_full.webp');
 
-	// Cluster-win illustration (page 4): finished WIN / NO WIN grid art (label baked in).
+	// Cluster-win illustration (page 4): the MOTHERSHIP boards with their wordmark stacked on top
+	// (scripts/build-ui-art.py composes each pair from the design's two separate nodes).
 	const winImg = ap('/assets/components/ui/info_win.webp');
 	const noWinImg = ap('/assets/components/ui/info_nowin.webp');
 	// General-info icons (page 6).
 	const icRotate = ap('/assets/components/ui/info_ic_charge_arrow.webp');
 	const icLegal = ap('/assets/components/ui/info_ic_legal.webp');
 
-	// Game controls (page 7) — the finished round-button icon set (designer export), in file order.
-	// name/desc are i18n keys, translated reactively in the template.
+	// Game controls (page 7) — the MOTHERSHIP round-button set (Figma 4725:11860), in design order.
+	// Every one is an SVG: a flat #49489B disc under a white glyph, with an #A88EFF hairline — the
+	// same --btn / --btn-edge this modal already uses. SPIN is the odd one out, a FILLED #A88EFF disc,
+	// which is why it keeps `big`. name/desc are i18n keys, translated reactively in the template.
 	const controls = [
 		{
-			img: ap('/assets/components/navbar/btn_spin.webp'),
+			img: ap('/assets/components/ui/ctrl_spin.svg'),
 			nameKey: 'INFO CTRL SPIN',
 			descKey: 'INFO CTRL SPIN DESC',
 			big: true,
@@ -148,7 +151,7 @@
 			descKey: 'INFO CTRL AUTO DESC',
 		},
 		{
-			img: ap('/assets/components/navbar/icons/turbo3.webp'),
+			img: ap('/assets/components/ui/ctrl_turbo.svg'),
 			nameKey: 'INFO CTRL TURBO',
 			descKey: 'INFO CTRL TURBO DESC',
 		},
@@ -380,8 +383,9 @@
 								<p>{t('INFO CW 5')}</p>
 							</div>
 							<div class="cw-grids">
-								<img class="cw-img" src={winImg} alt="Winning cluster example" />
+								<!-- NO WIN first: the design (4453:7579) puts the counter-example on the left. -->
 								<img class="cw-img" src={noWinImg} alt="No-win example" />
+								<img class="cw-img" src={winImg} alt="Winning cluster example" />
 							</div>
 						</div>
 					</div>
@@ -1085,8 +1089,11 @@
 		flex: 1;
 		min-height: 0;
 		display: grid;
-		grid-template-columns: 1fr 1.15fr;
-		gap: clamp(14px, 3cqmin, 40px);
+		/* Figma 4453:7579 — copy 313 and boards 506 with 40 between, in an 859-wide band that the
+		   panel's own padding already provides. The columns used to be 1fr / 1.15fr, which gave the
+		   copy half the page and left the two boards well short of the size the design draws them. */
+		grid-template-columns: 313fr 506fr;
+		gap: clamp(10px, 4.6cqmin, 47px);
 		align-items: center;
 	}
 	.cw-text {
@@ -1104,15 +1111,17 @@
 		line-height: 1.5;
 		color: #fff;
 	}
-	/* Finished WIN / NO WIN grid art (label baked in) — side by side, matched height. */
+	/* WIN / NO WIN board art with its wordmark composed in — side by side, matched height. */
 	.cw-grids {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: clamp(8px, 2cqmin, 26px);
+		gap: clamp(4px, 1.4cqmin, 14px);
 	}
+	/* 242 x 293 design units each, which the panel's own scale puts at 284 x 344 CSS px — the two
+	   caps below bind at roughly the same moment, so neither axis crops the other's proportion. */
 	.cw-img {
-		max-height: clamp(170px, 46cqmin, 330px);
+		max-height: clamp(170px, 48cqmin, 344px);
 		max-width: 49%;
 		height: auto;
 		display: block;
@@ -1322,8 +1331,12 @@
 		/* Always five per row (→ 5 + 4 for the nine controls); cells shrink to fit on smaller screens.
 		   Left-aligned by nature — the incomplete last row fills columns from the left. Portrait → two. */
 		grid-template-columns: repeat(5, minmax(0, 1fr));
-		/* Row gap kept modest so the three rows (twelve controls) fit without crowding the title. */
-		gap: clamp(5px, 1.5cqmin, 18px) clamp(4px, 1.2cqmin, 14px);
+		/* Figma 4725:11860 — 767-wide band of five 111.4 cells (52.5 between) in a 954 panel, rows
+		   10.7 apart. Everything below is that geometry scaled by the panel's own 1120/954, which is
+		   why the maxima look like odd numbers. The set used to run ~25% oversized: three rows then
+		   needed 536px of the 452 the page has, and the grid overflowed UP under the title. */
+		gap: clamp(5px, 1.57cqmin, 13px) clamp(4px, 7.69cqmin, 62px);
+		padding-inline: clamp(0px, 5.87cqmin, 47px);
 		align-content: center;
 	}
 	.ctrl {
@@ -1331,29 +1344,31 @@
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
-		gap: clamp(2px, 0.7cqmin, 8px);
-		padding: clamp(2px, 0.7cqmin, 8px);
+		/* The design leaves the same 7.2 between icon and name as between name and description. */
+		gap: clamp(3px, 1.06cqmin, 9px);
+		padding: 0;
 	}
 	.ctrl-ic {
-		width: clamp(36px, 7.8cqmin, 70px);
-		height: clamp(36px, 7.8cqmin, 70px);
+		width: clamp(30px, 7.04cqmin, 56px);
+		height: clamp(30px, 7.04cqmin, 56px);
 		object-fit: contain;
 	}
-	/* The 3D spin button art (btn_spin.webp) is non-square with an outer metallic frame, so object-fit
-	   :contain renders its visible disc smaller than the flat round icons. Keep the SAME layout box as the
-	   others (so the row + labels stay aligned) and scale it up VISUALLY only, from its centre. */
+	/* SPIN is the one button the design draws bigger: 52 square against the other twelve's 48
+	   (Figma 9078:18586 vs 4725:12175). It used to be a 1.32 visual scale, which was correcting the
+	   old 3D art's metallic frame rather than following the design, and would over-size the flat
+	   disc that replaced it. */
 	.ctrl-ic--lg {
-		transform: scale(1.32);
+		width: clamp(33px, 7.62cqmin, 61px);
+		height: clamp(33px, 7.62cqmin, 61px);
 	}
-	/* Figma 4725:11940 — Poppins 700 / 14.5px, white. NOT the display face: page 7 is the one page
-	   whose item titles the design leaves in the text family. */
+	/* Figma 4725:11940 — Poppins 700 / 14.5px / lh 21.7, white. NOT the display face: page 7 is the
+	   one page whose item titles the design leaves in the text family. */
 	.ctrl-name {
-		/* Extra breathing room between the icon and its title (on top of the cell's base gap). */
-		margin: clamp(4px, 1.1cqmin, 12px) 0 0;
+		margin: 0;
 		font-family: var(--text);
 		font-weight: 700;
 		text-transform: uppercase;
-		font-size: clamp(9px, 2.15cqmin, 19px);
+		font-size: clamp(9px, 2.12cqmin, 17px);
 		letter-spacing: 0.03em;
 		line-height: 1.5;
 		color: #fff;
@@ -1363,7 +1378,7 @@
 		margin: 0;
 		font-family: var(--text);
 		font-weight: 500;
-		font-size: clamp(8px, 1.5cqmin, 13px);
+		font-size: clamp(8px, 1.46cqmin, 12px);
 		letter-spacing: 0.03em;
 		line-height: 1.5;
 		color: #fff;
@@ -1680,8 +1695,8 @@
 			height: 47px;
 		}
 		.ctrl-ic--lg {
-			width: 55px;
-			height: 55px;
+			width: 51px;
+			height: 51px;
 		}
 		.ctrl-name {
 			font-size: 15px;
@@ -1881,7 +1896,7 @@
 			width: clamp(50px, 13cqmin, 68px);
 		}
 		.ctrl-ic--lg {
-			width: clamp(54px, 14cqmin, 72px);
+			width: clamp(54px, 14.1cqmin, 74px);
 		}
 		.ctrl-name {
 			grid-column: 2;

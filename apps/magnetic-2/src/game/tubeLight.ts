@@ -1,6 +1,7 @@
-// Shared "lit gas tube" renderer for the celebration frame (WonPanel) and every big-win sign
-// (WinSign). Both screens paint their tubes FLAT in the art and light them here, and they had
-// drifted into two near-identical copies of the recipe — so one tube now has one implementation.
+// "Lit gas tube" renderer for the celebration frame (WonPanel), whose art paints its tubes FLAT.
+// It was shared with the big-win sign until the MOTHERSHIP card replaced that sign (2026-09-03),
+// and is kept as its own module because the recipe below is what makes a tube read as lit —
+// it had already drifted into two near-identical copies once.
 //
 // What makes a tube read as lit rather than as a painted white stripe:
 //

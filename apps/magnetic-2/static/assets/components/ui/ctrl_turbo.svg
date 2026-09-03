@@ -1,0 +1,8 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- MOTHERSHIP 4725:12183. Figma exports this one's bolt as a 1254px PNG pattern (175KB); the
+     outline is a straight-edged ring, so it is traced here as two 8-vertex polygons drawn
+     even-odd - same shape, 1/500th the bytes, and it stays sharp at any size. -->
+<path d="M24 0.5C36.9787 0.5 47.5 11.0213 47.5 24C47.5 36.9787 36.9787 47.5 24 47.5C11.0213 47.5 0.5 36.9787 0.5 24C0.5 11.0213 11.0213 0.5 24 0.5Z" fill="#49489B"/>
+<path d="M24 0.5C36.9787 0.5 47.5 11.0213 47.5 24C47.5 36.9787 36.9787 47.5 24 47.5C11.0213 47.5 0.5 36.9787 0.5 24C0.5 11.0213 11.0213 0.5 24 0.5Z" stroke="#A88EFF"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M23.24 11.30L29.69 11.30L25.53 19.49L25.25 20.25L30.73 20.32L18.52 37.60L22.61 24.28L17.83 24.14ZM23.79 12.07L28.44 12.07L24.00 21.02L29.20 21.16L20.60 33.44L23.65 23.51L19.00 23.44L19.00 23.31Z" fill="white"/>
+</svg>

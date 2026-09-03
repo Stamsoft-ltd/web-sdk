@@ -5,7 +5,7 @@
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	// The amount readout for an ORDINARY win — the one the player sees on most paying spins, as
-	// opposed to the assembled big-win sign in WinSign.svelte.
+	// opposed to the assembled big-win card in WinCard.svelte.
 	//
 	// MOTHERSHIP redesign: this is the design's own violet plate (art-src/ui/win_plaque.png, built by
 	// scripts/build-ui-art.py) with the amount in plain white Chakra Petch. It replaces a plate that

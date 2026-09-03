@@ -64,7 +64,7 @@ export default {
 	'INFO GI LEGAL 3':
 		'Kaikki voitot maksetaan etäpelipalvelimelta saadun tuloksen mukaan, ei verkkoselaimessa näytettyjen animaatioiden tai tapahtumien perusteella.',
 	'DISCLAIMER TEXT':
-		'Toimintahäiriö mitätöi kaikki voitot ja pelit. Vakaa internetyhteys vaaditaan. Yhteyden katketessa lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset. Odotettu palautus lasketaan monien pelien yli. Pelinäyttö ei edusta mitään fyysistä laitetta ja on tarkoitettu vain havainnollistaviin tarkoituksiin. Voitot maksetaan etäpelipalvelimelta saadun summan mukaan, ei verkkoselaimen sisäisten tapahtumien perusteella. TM ja © 2026 Stake Engine.',
+		'Toimintahäiriö mitätöi kaikki voitot ja pelit. Vakaa internetyhteys vaaditaan. Yhteyden katketessa lataa peli uudelleen viimeistelläksesi keskeneräiset kierrokset. Odotettu palautus lasketaan monien pelien yli. Pelinäyttö ei edusta mitään fyysistä laitetta ja on tarkoitettu vain havainnollistaviin tarkoituksiin. Voitot maksetaan etäpelipalvelimelta saadun summan mukaan, ei verkkoselaimen sisäisten tapahtumien perusteella. TM ja © 2026 Engine.',
 	'INFO CTRL SPIN': 'Pyöräytä',
 	'INFO CTRL SPIN DESC': 'Aloita pelikierros valitsemallasi panoksella.',
 	'INFO CTRL AUTO': 'Automaattipeli',
@@ -109,7 +109,8 @@ export default {
 	'SPLASH CORE OVERLOAD': 'YTIMEN YLIKUORMA',
 	'SPLASH ZERO POINT': 'NOLLAPISTEPROTOKOLLA',
 	'SPLASH POLARITY TITLE': 'NAPAISUUDEN\nVAIHTAJA',
-	'SPLASH POLARITY BODY': 'Iskee kaikki symbolit yhtä seinää kohti — vasemmalle, oikealle, ylös tai alas!',
+	'SPLASH POLARITY BODY':
+		'Iskee kaikki symbolit yhtä seinää kohti — vasemmalle, oikealle, ylös tai alas!',
 	'SPLASH MAX TITLE': 'MAKS.\nVOITTO',
 	'SPLASH UP TO': 'jopa',
 	BALANCE: 'SALDO',
@@ -118,11 +119,11 @@ export default {
 	'REAL COST': 'TODELLINEN KUSTANNUS',
 	MODE: 'TILA',
 	'BUY BONUS': 'OSTA BONUS',
-	'BONUS': 'BONUS',
+	BONUS: 'BONUS',
 	PAYTABLE: 'VOITTOTAULUKKO',
 	'GAME RULES': 'PELISÄÄNNÖT',
 	AUTOPLAY: 'AUTOMAATTI',
-	'AUTO': 'AUTO',
+	AUTO: 'AUTO',
 	TURBO: 'TURBO',
 	REPLAY: 'TOISTO',
 	'START REPLAY': 'ALOITA TOISTO',

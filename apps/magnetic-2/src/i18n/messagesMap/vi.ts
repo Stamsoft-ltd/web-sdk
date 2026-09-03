@@ -65,7 +65,7 @@ export default {
 	'INFO GI LEGAL 3':
 		'Tất cả tiền thắng được quyết toán theo kết quả nhận được từ Máy Chủ Trò Chơi Từ Xa, không phải từ hoạt ảnh hoặc sự kiện hiển thị bên trong trình duyệt web.',
 	'DISCLAIMER TEXT':
-		'Sự cố sẽ làm vô hiệu tất cả tiền thắng và lượt chơi. Cần có kết nối internet ổn định. Trong trường hợp mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành. Lợi nhuận kỳ vọng được tính trên nhiều lượt chơi. Màn hình trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ nhằm mục đích minh họa. Tiền thắng được thanh toán theo số tiền nhận từ Remote Game Server chứ không phải từ các sự kiện trong trình duyệt web. TM và © 2026 Stake Engine.',
+		'Sự cố sẽ làm vô hiệu tất cả tiền thắng và lượt chơi. Cần có kết nối internet ổn định. Trong trường hợp mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành. Lợi nhuận kỳ vọng được tính trên nhiều lượt chơi. Màn hình trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ nhằm mục đích minh họa. Tiền thắng được thanh toán theo số tiền nhận từ Remote Game Server chứ không phải từ các sự kiện trong trình duyệt web. TM và © 2026 Engine.',
 	'INFO CTRL SPIN': 'Quay',
 	'INFO CTRL SPIN DESC': 'Bắt đầu một vòng chơi với mức cược bạn đã chọn.',
 	'INFO CTRL AUTO': 'Tự Động Quay',
@@ -119,11 +119,11 @@ export default {
 	'REAL COST': 'CHI PHÍ THỰC',
 	MODE: 'CHẾ ĐỘ',
 	'BUY BONUS': 'MUA THƯỞNG',
-	'BONUS': 'THƯỞNG',
+	BONUS: 'THƯỞNG',
 	PAYTABLE: 'BẢNG TRẢ THƯỞNG',
 	'GAME RULES': 'LUẬT CHƠI',
 	AUTOPLAY: 'TỰ ĐỘNG',
-	'AUTO': 'TỰ ĐỘNG',
+	AUTO: 'TỰ ĐỘNG',
 	TURBO: 'TURBO',
 	REPLAY: 'PHÁT LẠI',
 	'START REPLAY': 'BẮT ĐẦU PHÁT LẠI',

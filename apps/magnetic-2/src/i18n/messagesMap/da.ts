@@ -66,7 +66,7 @@ export default {
 	'INFO GI LEGAL 3':
 		'Alle gevinster afregnes i henhold til resultatet modtaget fra Remote Game Server, ikke fra animationer eller begivenheder vist i webbrowseren.',
 	'DISCLAIMER TEXT':
-		'En fejlfunktion annullerer alle gevinster og spil. En stabil internetforbindelse er påkrævet. I tilfælde af afbrydelse skal du genindlæse spillet for at afslutte uafsluttede runder. Det forventede afkast beregnes over mange spil. Spilvisningen er ikke repræsentativ for nogen fysisk enhed og er kun til illustrative formål. Gevinster afregnes i henhold til det beløb, der modtages fra Remote Game Server, og ikke fra begivenheder i webbrowseren. TM og © 2026 Stake Engine.',
+		'En fejlfunktion annullerer alle gevinster og spil. En stabil internetforbindelse er påkrævet. I tilfælde af afbrydelse skal du genindlæse spillet for at afslutte uafsluttede runder. Det forventede afkast beregnes over mange spil. Spilvisningen er ikke repræsentativ for nogen fysisk enhed og er kun til illustrative formål. Gevinster afregnes i henhold til det beløb, der modtages fra Remote Game Server, og ikke fra begivenheder i webbrowseren. TM og © 2026 Engine.',
 	'INFO CTRL SPIN': 'Spin',
 	'INFO CTRL SPIN DESC': 'Start en spilrunde med din valgte indsats.',
 	'INFO CTRL AUTO': 'Autoplay',
@@ -120,11 +120,11 @@ export default {
 	'REAL COST': 'REEL PRIS',
 	MODE: 'TILSTAND',
 	'BUY BONUS': 'KØB BONUS',
-	'BONUS': 'BONUS',
+	BONUS: 'BONUS',
 	PAYTABLE: 'GEVINSTTABEL',
 	'GAME RULES': 'SPILLEREGLER',
 	AUTOPLAY: 'AUTOPLAY',
-	'AUTO': 'AUTO',
+	AUTO: 'AUTO',
 	TURBO: 'TURBO',
 	REPLAY: 'GENAFSPILNING',
 	'START REPLAY': 'START GENAFSPILNING',
