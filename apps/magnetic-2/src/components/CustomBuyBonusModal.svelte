@@ -95,7 +95,10 @@
 			const betW = clampNum(120, w * 0.24, 380);
 			const betH = (betW * 107) / 298;
 			const betStep = clampNum(24, betW * 0.17, 52);
-			const widthBudget = (Math.min(w, 1860) - 2 * padX - 3 * gap) / 4;
+			// Five bonus cards now share the row. Keep the full set inside the panel instead of
+			// sizing for four and letting the first/last cards clip behind the viewport edges.
+			const cardCount = 5;
+			const widthBudget = (Math.min(w, 1860) - 2 * padX - (cardCount - 1) * gap) / cardCount;
 			const heightBudget = h - padTop - padBot - vGap - betH;
 			// Version2 plate is a near-square (556x551 art) — height follows the art's own aspect.
 			const cardHRatio = 551 / 556;
@@ -504,7 +507,7 @@
 		transform: rotate(-45deg);
 	}
 
-	/* Four cards in a row — square, kept compact so they don't dominate the screen. */
+	/* Five cards in a row — square, kept compact so the complete bonus set stays visible. */
 	.grid {
 		display: flex;
 		gap: clamp(10px, 1.2vw, 24px);
