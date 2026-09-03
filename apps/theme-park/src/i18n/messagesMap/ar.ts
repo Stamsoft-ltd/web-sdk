@@ -256,7 +256,7 @@ export default {
 		'يُحتسب العائد المتوقع على عدد كبير من الجولات. عرض اللعبة لأغراض بصرية وترفيهية فقط ولا يمثل أي جهاز ألعاب مادي.',
 	'INFO GI LEGAL SETTLE':
 		'تُسوّى جميع الأرباح وفقًا للنتيجة الواردة من Remote Game Server، وليس بناءً على الرسوم المتحركة أو الأحداث المعروضة داخل المتصفح.',
-	'INFO GI LEGAL TM': 'TM و© 2026 Stake Engine.',
+	'INFO GI LEGAL TM': 'TM و© 2026 Engine.',
 	'INFO UI AUTO SPINS': 'اللفات التلقائية',
 	'INFO UI BET PLUS': 'الرهان +',
 	'INFO UI BET MINUS': 'الرهان -',

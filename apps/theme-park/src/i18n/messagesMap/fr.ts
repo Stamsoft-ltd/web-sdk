@@ -265,7 +265,7 @@ export default {
 		"Le retour attendu est calculé sur un grand nombre de parties. L'affichage du jeu est uniquement visuel et récréatif et ne représente aucun appareil de jeu physique.",
 	'INFO GI LEGAL SETTLE':
 		'Tous les gains sont réglés selon le résultat reçu du Remote Game Server, et non selon les animations ou événements affichés dans le navigateur.',
-	'INFO GI LEGAL TM': 'TM et © 2026 Stake Engine.',
+	'INFO GI LEGAL TM': 'TM et © 2026 Engine.',
 	'INFO UI AUTO SPINS': 'TOURS AUTOMATIQUES',
 	'INFO UI BET PLUS': 'MISE +',
 	'INFO UI BET MINUS': 'MISE -',

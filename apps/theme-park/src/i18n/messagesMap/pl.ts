@@ -261,7 +261,7 @@ export default {
 		'Oczekiwany zwrot jest obliczany na podstawie dużej liczby gier. Wyświetlanie gry służy wyłącznie celom wizualnym i rozrywkowym i nie przedstawia żadnego fizycznego urządzenia do gry.',
 	'INFO GI LEGAL SETTLE':
 		'Wszystkie wygrane są rozliczane zgodnie z wynikiem otrzymanym z Remote Game Server, a nie na podstawie animacji lub zdarzeń wyświetlanych w przeglądarce.',
-	'INFO GI LEGAL TM': 'TM i © 2026 Stake Engine.',
+	'INFO GI LEGAL TM': 'TM i © 2026 Engine.',
 	'INFO UI AUTO SPINS': 'AUTOMATYCZNE SPINY',
 	'INFO UI BET PLUS': 'ZAKŁAD +',
 	'INFO UI BET MINUS': 'ZAKŁAD -',

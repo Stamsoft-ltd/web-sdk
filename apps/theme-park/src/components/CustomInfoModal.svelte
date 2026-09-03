@@ -97,9 +97,8 @@
 		{ img: 'h2-duck-marquee', name: 'INFO SYM DUCK', pays: paysFor('H2') },
 		{ img: 'h3-balloons-marquee', payImg: payBalloons, name: 'INFO SYM BALLOONS', pays: paysFor('H3') },
 		{ img: 'h1-coaster-still', name: 'INFO SYM COASTER', pays: paysFor('H1') },
-		// A pure wild line settles as the top symbol, so the wild's only figure is H1's five-of-a-kind
-		// — taken from H1 rather than restated, for the same reason as the rest of this table.
-		{ wild: true, name: 'INFO SYM WILD', pays: ['-', '-', paysFor('H1')[2]] },
+		// Wilds use the highest-paying symbol's payout, so they carry the full H1 row here.
+		{ wild: true, name: 'INFO SYM WILD', pays: paysFor('H1') },
 	];
 	// Portrait gives each same-paying royal its OWN row (five tiles are cramped in one narrow cell);
 	// landscape keeps them on a single shared row, as each layout's design draws it.
@@ -310,6 +309,7 @@
 					<p class="info-p">
 						{t('INFO WTW WILD')}
 						<br />{t('INFO WTW SCATTER')}
+						<br />{t('INFO WTW DUCK')}
 						<br />{t('INFO WTW HIGHEST')}
 						<br />{t('INFO WTW MULTIPLES')}
 					</p>

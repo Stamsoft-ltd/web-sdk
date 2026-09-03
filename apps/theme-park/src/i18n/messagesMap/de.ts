@@ -265,7 +265,7 @@ export default {
 		'Die erwartete Rückzahlung wird über eine große Anzahl von Spielen berechnet. Die Spieldarstellung dient nur der visuellen Unterhaltung und stellt kein physisches Spielgerät dar.',
 	'INFO GI LEGAL SETTLE':
 		'Alle Gewinne werden anhand des Ergebnisses vom Remote Game Server abgerechnet, nicht anhand der im Browser gezeigten Animationen oder Ereignisse.',
-	'INFO GI LEGAL TM': 'TM und © 2026 Stake Engine.',
+	'INFO GI LEGAL TM': 'TM und © 2026 Engine.',
 	'INFO UI AUTO SPINS': 'AUTO-SPINS',
 	'INFO UI BET PLUS': 'EINSATZ +',
 	'INFO UI BET MINUS': 'EINSATZ -',

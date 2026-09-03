@@ -98,7 +98,10 @@ const setBootError = (message: string) => {
 
 const captureReplaySnapshot = (bet: BaseBet | null) => {
 	if (!bet) return;
-	const snapshot = cloneReplayBet(bet);
+	// Replay responses may wrap the round under `round`; normalize before rendering the
+	// pre-replay total so the HUD does not wait for the final setTotalWin event.
+	const source = ((bet as unknown as { round?: BaseBet }).round ?? bet) as BaseBet;
+	const snapshot = cloneReplayBet(source);
 	if (!snapshot) {
 		setBootError(t('REPLAY ERROR GENERIC'));
 		return;
@@ -152,13 +155,33 @@ const replayCostAmount = () => replayBetAmount() * modeCostMultiplier(replayMode
 const replayCostMultiplier = () => modeCostMultiplier(replayModeKey());
 
 const replayPayoutAmount = () => {
-	const raw = (templateStakeState.replaySnapshot as { payout?: number })?.payout;
+	const replay = templateStakeState.replaySnapshot as {
+		payout?: number;
+		totalWin?: number;
+		finalWin?: number;
+	};
+	const raw = replay?.payout ?? replay?.totalWin ?? replay?.finalWin;
 	return raw != null ? safeAmount(raw / API_AMOUNT_MULTIPLIER) : 0;
+};
+
+const replayBookTotalWin = () => {
+	const events = (templateStakeState.replaySnapshot as { state?: unknown[] })?.state;
+	if (!Array.isArray(events)) return 0;
+	const terminalTypes = new Set(['finalWin', 'setTotalWin', 'freeSpinEnd', 'duckPickEnd', 'duckCollectEnd', 'setWin']);
+	for (let i = events.length - 1; i >= 0; i -= 1) {
+		const event = events[i] as { type?: string; amount?: number };
+		if (event && terminalTypes.has(event.type ?? '') && Number.isFinite(Number(event.amount))) {
+			return safeAmount(event.amount);
+		}
+	}
+	return 0;
 };
 
 const replayWinAmount = () => {
 	const payout = replayPayoutAmount();
 	if (payout > 0) return payout;
+	const bookTotal = replayBookTotalWin();
+	if (bookTotal > 0) return safeAmount(bookEventAmountToNormalisedAmount(bookTotal));
 	// winBookEventAmount is a BOOK amount (100 = one times the wagered bet), not currency. Handing
 	// it straight to a money formatter printed a 50.01x win as "$5,001.00".
 	return safeAmount(bookEventAmountToNormalisedAmount(safeAmount(stateBet.winBookEventAmount)));

@@ -50,7 +50,7 @@ export const socialOverridesEn: Record<string, string> = {
 	// "25,000× play", which reads as a typo; the full phrase is what the table actually maps to.
 	'INFO OV BET': 'play amount',
 	'INFO OV DUCK DESC':
-		'Special Ducks reveal coin additions or multiply-all values that multiply the collected prize.',
+		'Collectible Ducks reveal 2x–500x base-play additions. Multiply All Ducks reveal 2x–100x multipliers and multiply the running total collected before them; later Ducks add normally.',
 	'INFO WTW LINES': 'Theme Park is played on 15 fixed win lines.',
 	'INFO WTW COMBO':
 		'A standard winning combination is formed when 3 or more matching symbols land on consecutive reels from left to right, starting from Reel 1, on one of the fixed win lines.',
@@ -59,7 +59,9 @@ export const socialOverridesEn: Record<string, string> = {
 	'INFO WTW WILD': 'Wild symbols substitute for all regular winning symbols except Scatter symbols.',
 	'INFO WTW SCATTER':
 		'Scatter symbols do not need to land on a win line and can appear anywhere on the reels.',
-	'INFO WTW HIGHEST': 'Only the highest winning combination per symbol per win line is awarded.',
+	'INFO WTW DUCK':
+		'Collectible Ducks award their revealed value as a base-play multiple. Multiply All Ducks multiply the running Duck total collected before them; Ducks revealed afterward are added normally.',
+	'INFO WTW HIGHEST': 'Highest awarding symbol per line wins.',
 	'INFO WTW MULTIPLES': 'All displayed wins are expressed as multiples of the total play.',
 	'INFO WTW DIAGRAM ALT': '15 win lines',
 	'INFO GI INTERRUPTED HOLD':
@@ -94,7 +96,7 @@ export const socialOverridesEn: Record<string, string> = {
 	'PAYTABLE H3_H5': 'POPCORN and FERRIS WHEEL win 0.5 / 2.5 / 5x for 3 / 4 / 5 of a kind.',
 	'PAYTABLE LOWS': 'A, K, Q, J and 10 win 0.1 / 0.5 / 1x for 3 / 4 / 5 of a kind.',
 	'PAYTABLE SPECIAL_TEXT':
-		'WILD substitutes all winning symbols; a pure wild line wins as Coaster Car. Ducks and scatters award features.',
+		'WILD substitutes all winning symbols and wins as the highest-paying symbol on the line (Coaster Car: 2 / 10 / 20x for 3 / 4 / 5). Ducks and scatters award features. Highest awarding symbol per line wins.',
 	'PAYTABLE TITLE PAYLINES': 'WIN LINES',
 	'PAYTABLE TEXT PAYLINES': '15 fixed win lines, left to right.',
 	'PAYTABLE BUY TITLE': 'PLAY',

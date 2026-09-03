@@ -187,7 +187,7 @@ export default {
 	'PAYTABLE H3_H5': 'POPCORN and FERRIS WHEEL pay 0.5 / 2.5 / 5x for 3 / 4 / 5 of a kind.',
 	'PAYTABLE LOWS': 'A, K, Q, J and 10 pay 0.1 / 0.5 / 1x for 3 / 4 / 5 of a kind.',
 	'PAYTABLE SPECIAL_TEXT':
-		'WILD substitutes all paying symbols; a pure wild line pays as Coaster Car. Ducks and scatters award features.',
+		'WILD substitutes all paying symbols and pays as the highest-paying symbol on the line (Coaster Car: 2 / 10 / 20x for 3 / 4 / 5). Ducks and scatters award features. Highest paying symbol per line wins.',
 	'PAYTABLE TITLE PAYLINES': 'PAYLINES',
 	'PAYTABLE TEXT PAYLINES': '15 fixed paylines, left to right.',
 	'PAYTABLE BUY TITLE': 'BUY',
@@ -230,7 +230,7 @@ export default {
 	'INFO OV BET': 'bet',
 	'INFO OV RTP': 'Theoretical RTP:',
 	'INFO OV DUCK DESC':
-		'Special Ducks reveal cash additions or multiply-all values that multiply the collected prize.',
+		'Collectible Ducks reveal 2x–500x base-play additions. Multiply All Ducks reveal 2x–100x multipliers and multiply the running total collected before them; later Ducks add normally.',
 	'INFO OV ROLLER DESC':
 		'Roller coaster ducks can transform entire reels into Wild reels with multipliers up to ×100.',
 	'INFO OV COASTER DESC':
@@ -259,7 +259,9 @@ export default {
 	'INFO WTW WILD': 'Wild symbols substitute for all regular paying symbols except Scatter symbols.',
 	'INFO WTW SCATTER':
 		'Scatter symbols do not need to land on a payline and can appear anywhere on the reels.',
-	'INFO WTW HIGHEST': 'Only the highest winning combination per symbol per payline is paid.',
+	'INFO WTW DUCK':
+		'Collectible Ducks award their revealed value as a base-play multiple. Multiply All Ducks multiply the running Duck total collected before them; Ducks revealed afterward are added normally.',
+	'INFO WTW HIGHEST': 'Highest paying symbol per line wins.',
 	'INFO WTW MULTIPLES': 'All displayed payouts are expressed as multiples of the total bet.',
 	'INFO WTW DIAGRAM ALT': '15 paylines',
 	'INFO WTW FREE TITLE': 'FREE GAMES',
@@ -286,7 +288,7 @@ export default {
 		'The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only.',
 	'INFO GI LEGAL SETTLE':
 		'Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser.',
-	'INFO GI LEGAL TM': 'TM and © 2026 Stake Engine.',
+	'INFO GI LEGAL TM': 'TM and © 2026.',
 	// User interface guide page. SPIN/TURBO/INFO/SOUND/CLOSE/MENU/MUSIC reuse the HUD keys above.
 	'INFO UI AUTO SPINS': 'AUTO SPINS',
 	'INFO UI BET PLUS': 'BET +',
