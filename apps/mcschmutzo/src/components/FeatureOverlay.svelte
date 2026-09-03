@@ -83,15 +83,16 @@
 	});
 </script>
 
-<!-- Board logo: sized as a fraction of the board width so it never overflows a narrow board
-     (was a fixed 430×144). Keeps the art's 430:144 aspect. -->
+<!-- Board logo: sized as a fraction of the board width so it never overflows a narrow board.
+     Keeps the new art's 302:84 aspect. Sits mostly above the board, dipping just slightly over
+     the top edge. -->
 <Sprite
 	key="mcschmutzoLogo"
 	x={board.x}
-	y={board.y - board.height * 0.5 + 42}
+	y={board.y - board.height * 0.5 + 14}
 	anchor={{ x: 0.5, y: 1 }}
-	width={board.width * 0.52}
-	height={(board.width * 0.52 * 144) / 430}
+	width={board.width * 0.4}
+	height={(board.width * 0.4 * 84) / 302}
 />
 
 {#if context.stateGame.gameType === 'freegame' || context.stateGame.globalMultiplier > 1}
@@ -172,7 +173,7 @@
 					</Container>
 				{/each}
 			</Container>
-			<Sprite key="mcschmutzoLogo" anchor={0.5} width={132} height={27} />
+			<Sprite key="mcschmutzoLogo" anchor={0.5} width={132} height={(132 * 84) / 302} />
 			<Sprite
 				key="bonusWheelPointer"
 				anchor={{ x: 0.5, y: 0.1 }}
