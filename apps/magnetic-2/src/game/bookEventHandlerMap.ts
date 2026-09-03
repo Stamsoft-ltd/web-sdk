@@ -180,6 +180,7 @@ const getBonusRoomFromScatters = (positions: Position[]) =>
 	positions.length >= 5 ? 'zero' : positions.length >= 4 ? 'super' : 'bonus';
 
 let pendingMagnetActivationPositions: Position[] = [];
+let pendingMysteryMode: 'BONUS' | 'SUPER' | 'HIDDEN' | null = null;
 let bonusCarryWinAmount = 0;
 let presentedBonusWinAmount = 0;
 let superSeriesPreviewAmount = 0;
@@ -195,8 +196,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.polarityPulse += 1;
 		await waitForTimeout(600);
 	},
-	mysteryBonusReveal: async () => {
-		// Selection is resolved by math; bonus playback follows immediately.
+	mysteryBonusReveal: async (bookEvent: BookEventOfType<'mysteryBonusReveal'>) => {
+		// Math resolves the 70/25/5 choice before the freeSpinTrigger. Keep it until that
+		// trigger arrives; scatter count alone cannot distinguish a Mystery HIDDEN result.
+		pendingMysteryMode = bookEvent.mode;
+		await waitForTimeout(450);
 	},
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
@@ -369,8 +373,24 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	},
 	freeSpinTrigger: async (bookEvent: BookEventOfType<'freeSpinTrigger'>) => {
 		const isFeatureSpin = bookEvent.totalFs === 1;
-		const bonusMode = isFeatureSpin ? 'feature' : getBonusModeFromScatters(bookEvent.positions);
-		const bonusRoom = isFeatureSpin ? null : getBonusRoomFromScatters(bookEvent.positions);
+		const mysteryMode = pendingMysteryMode;
+		pendingMysteryMode = null;
+		const bonusMode = isFeatureSpin
+			? 'feature'
+			: mysteryMode === 'BONUS'
+				? 'freegame'
+				: mysteryMode === 'SUPER' || mysteryMode === 'HIDDEN'
+					? 'superspin'
+					: getBonusModeFromScatters(bookEvent.positions);
+		const bonusRoom = isFeatureSpin
+			? null
+			: mysteryMode === 'HIDDEN'
+				? 'zero'
+				: mysteryMode === 'SUPER'
+					? 'super'
+					: mysteryMode === 'BONUS'
+						? 'bonus'
+						: getBonusRoomFromScatters(bookEvent.positions);
 		bonusCarryWinAmount = stateBet.winBookEventAmount;
 		presentedBonusWinAmount = bonusCarryWinAmount;
 		superSeriesPreviewAmount = 0;
