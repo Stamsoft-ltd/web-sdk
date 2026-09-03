@@ -15,7 +15,7 @@
 	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.webp'); // wooden round — utility buttons
 	const btnSpinBg = ap('/assets/mcschmutzo/spin-button.png');
 	const btnSpinHoverBg = btnSpinBg;
-	const btnWideBg = ap('/assets/mcschmutzo/buy-bonus-button.png');
+	const btnWideBg = ap('/assets/mcschmutzo/buy-bonus-button.svg');
 	const btnWideHoverBg = btnWideBg;
 	// Portrait/mobile pads (Figma 2792-4133)
 	// Mobile-landscape HUD art (Figma 2682-3639)
@@ -47,7 +47,7 @@
 	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.png');
 	const iconTurbo2 = ap('/assets/hud/icon-lightning-2.png');
 	const iconTurbo3 = ap('/assets/hud/icon-lightning-3.png');
-	const iconCoins = ap('/assets/hud/icon-coins.webp');
+	const iconCoins = ap('/assets/mcschmutzo/buybonus/money.webp');
 
 	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
 	const hudFrame = ap('/assets/components/frames/hud_frame.webp');
@@ -1944,19 +1944,15 @@
 	}
 
 	.buy-btn__label {
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Bowlby One SC', 'Poppins', sans-serif;
 		/* Scales with the bar's design unit; fitLabel shrinks it further only when a
 		   translation runs long. */
-		font-size: calc(var(--u) * 24);
-		font-weight: 600;
-		letter-spacing: 0.03em;
+		font-size: calc(var(--u) * 22);
+		font-weight: 400;
+		letter-spacing: 0.01em;
 		white-space: nowrap;
-		/* Golden gradient clipped to the BUY BONUS text */
-		background: linear-gradient(184deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
-		background-clip: text;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: transparent;
+		/* White label to match the design's baked "BONUS" text. */
+		color: #ffffff;
 		filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.75));
 		line-height: 1;
 		pointer-events: none;
