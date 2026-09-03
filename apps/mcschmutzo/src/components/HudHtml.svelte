@@ -2462,22 +2462,21 @@
 		   (the art's visible wood is centred in its box). */
 		display: grid;
 		grid-template-columns: 1fr auto 1fr;
+		/* Even gap flanking the centred spin. */
+		column-gap: calc(var(--u) * 0.022);
 		/* Row locked to the bar height — otherwise the taller spin stretches the implicit row past
 		   the bar's bottom and every button centres 10px low (halfway out of the wood). With the row
 		   fixed, buttons centre ON the wood and the spin's leaves overflow evenly above/below. */
 		grid-template-rows: 100%;
 		align-items: center;
-		padding: 0 calc(var(--u) * 0.04);
+		padding: 0 calc(var(--u) * 0.045);
 		box-sizing: border-box;
-		/* Dark charcoal bar (design) instead of the wooden nav pad. */
-		border: 2px solid #453b34;
-		border-radius: calc(var(--u) * 0.055);
-		background: linear-gradient(180deg, #26221f 0%, #17130f 100%);
-		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+		/* Desktop nav bar art (hud-bar.png), scaled down to the portrait bar. */
+		background: var(--menu-bar-bg) center / 100% 100% no-repeat;
 	}
-	/* Side groups fill their halves and spread evenly — balanced like the design, clear of the
-	   rounded bar ends and of the spin. */
-	.pt-controls > .pt-grp { width: 100%; justify-content: space-evenly; }
+	/* Outer buttons (menu / auto) at the bar ends, inner buttons (BONUS / turbo) flanking the spin
+	   with the shared column-gap, so the spin sits symmetric between its neighbours. */
+	.pt-controls > .pt-grp { width: 100%; justify-content: space-between; }
 	.pt-grp { display: flex; align-items: center; }
 
 	/* Dark disc utility buttons (matches the desktop nav discs); replaces the old gold-ring art. */
@@ -2614,7 +2613,7 @@
 	/* Flat red BONUS button (mobile design) — no framed plate. */
 	.pt-buy {
 		flex: 0 0 auto;
-		width: calc(var(--u) * 0.235); height: calc(var(--u) * 0.088);
+		width: calc(var(--u) * 0.205); height: calc(var(--u) * 0.088);
 		padding: 0 calc(var(--u) * 0.02); cursor: pointer;
 		border: 2px solid #8f130b;
 		border-radius: calc(var(--u) * 0.016);
@@ -2636,7 +2635,7 @@
 		white-space: nowrap;
 	}
 	/* Buy bonus placed in the control row, left of spin. */
-	.pt-buy--controls { width: calc(var(--u) * 0.235); height: calc(var(--u) * 0.088); }
+	.pt-buy--controls { width: calc(var(--u) * 0.205); height: calc(var(--u) * 0.088); }
 
 	/* WIN readout — mirrors the balance block, pinned to the right of the stats row. */
 	.pt-win {
