@@ -27,6 +27,13 @@ describe('shared frontend completeness guards', () => {
 		);
 	});
 
+	it('states that the highest-paying symbol wins each line', () => {
+		const en = source('src/i18n/messagesMap/en.ts');
+		const social = source('src/i18n/socialOverridesEn.ts');
+		expect(en).toContain("'INFO WTW HIGHEST': 'Highest paying symbol per line wins.'");
+		expect(social).toContain("'INFO WTW HIGHEST': 'Highest awarding symbol per line wins.'");
+	});
+
 	it('caps the desktop logo against the real board top on short screens', () => {
 		const hud = source('src/components/HudHtml.svelte');
 		expect(hud).toContain('const gameLogoWidth = $derived.by');
