@@ -1,14 +1,5 @@
 <svg width="76" height="70" viewBox="0 0 76 70" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g opacity="0.9">
-<mask id="mask0_8260_2410" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="75" height="69">
-<path d="M5.83888 1.42285L1.42383 5.3331V65.2484L5.83888 67.506H70.7402L73.2892 63.5957V5.3331L70.7402 1.42285H5.83888Z" fill="#A38C73" stroke="#D7B180" stroke-width="1.42308"/>
-</mask>
-<g mask="url(#mask0_8260_2410)">
-<rect x="-0.923528" y="-5.71943" width="82.8462" height="82.8462" fill="#E8B574" stroke="#D7B180" stroke-width="0.711538"/>
-</g>
-<path d="M5.67533 0.711426L0.711914 5.24531V66.2467L5.67533 68.3076H72.0046L74.7119 64.1859V5.24531L72.0046 0.711426H5.67533Z" stroke="#D4BFAA" stroke-width="1.42308"/>
-<path d="M5.67533 0.711426L0.711914 5.24531V66.2467L5.67533 68.3076H72.0046L74.7119 64.1859V5.24531L72.0046 0.711426H5.67533Z" stroke="#A38C73" stroke-width="0.711538"/>
-<path d="M5.67533 0.711426L0.711914 5.24531V66.2467L5.67533 68.3076H72.0046L74.7119 64.1859V5.24531L72.0046 0.711426H5.67533Z" stroke="#806F56" stroke-width="0.355769"/>
 <rect x="0.894531" y="5.72266" width="72.5769" height="56.9231" fill="url(#pattern0_8260_2410)"/>
 <rect x="26.0719" y="41.5728" width="22.9347" height="22.9347" rx="11.4674" fill="#EAC08A"/>
 <rect x="26.0719" y="41.5728" width="22.9347" height="22.9347" rx="11.4674" stroke="black" stroke-width="0.546064"/>

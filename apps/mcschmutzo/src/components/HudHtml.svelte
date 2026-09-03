@@ -2466,10 +2466,14 @@
 	.pt-controls > .pt-grp { width: 100%; justify-content: space-evenly; }
 	.pt-grp { display: flex; align-items: center; }
 
+	/* Dark disc utility buttons (matches the desktop nav discs); replaces the old gold-ring art. */
 	.pt-round {
 		width: calc(var(--u) * 0.085); height: calc(var(--u) * 0.085);
-		border: 0; padding: 0; cursor: pointer;
-		background: var(--btn-round-bg) center / contain no-repeat;
+		padding: 0; cursor: pointer;
+		border: 2px solid #4c433d;
+		border-radius: 50%;
+		box-sizing: border-box;
+		background: radial-gradient(circle at 50% 32%, #2b2622, #17130f);
 		display: grid; place-items: center;
 		flex: 0 0 auto;
 		transition: transform 0.12s ease, filter 0.12s ease;
@@ -2479,7 +2483,8 @@
 	.pt-round:not(:disabled):active { transform: translateY(1px) scale(0.94); }
 	.pt-round:disabled { opacity: 0.45; cursor: default; }
 	.pt-round.active { filter: drop-shadow(0 0 6px rgba(120,220,90,0.85)); }
-	.pt-icon { width: 52%; height: 52%; object-fit: contain; pointer-events: none; }
+	/* White icons to match the design (the source art is gold). */
+	.pt-icon { width: 52%; height: 52%; object-fit: contain; pointer-events: none; filter: brightness(0) invert(1); }
 	.pt-icon.is-muted { opacity: 0.4; }
 	.pt-round--turbo.turbo-fast { filter: drop-shadow(0 0 5px rgba(255,210,80,0.85)); }
 	.pt-round--turbo.turbo-super { filter: drop-shadow(0 0 7px rgba(120,220,90,0.95)); }
