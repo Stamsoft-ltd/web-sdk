@@ -34,8 +34,8 @@
 
 	// Press Play studio wordmark + McSchmutzo logo — shown on the (dark) loading screen while assets
 	// stream in (the leftover template title-screen spine was removed).
-	const pressPlayLogo = ap('/assets/components/ui/press_play_logo.webp');
-	const loadingLogo = ap('/assets/mcschmutzo/splash/logo.webp');
+	const pressPlayLogo = ap('/assets/mcschmutzo/press-play.svg');
+	const loadingLogo = ap('/assets/mcschmutzo/splash/logo.svg');
 
 	const context = getContext();
 

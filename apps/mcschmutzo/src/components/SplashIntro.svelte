@@ -1,12 +1,14 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { ap } from '../lib/preloadArt';
 
 	type Props = { onpress: () => void };
 	const props: Props = $props();
 
 	const bg = ap('/assets/mcschmutzo/splash/bg.webp');
-	const logo = ap('/assets/mcschmutzo/splash/logo.webp');
+	const logo = ap('/assets/mcschmutzo/splash/logo.svg');
 	const man = ap('/assets/mcschmutzo/splash/man.webp');
+	const pressPlay = ap('/assets/mcschmutzo/press-play.svg');
 	const cardRed = ap('/assets/mcschmutzo/splash/card-red.webp');
 	const cardYellow = ap('/assets/mcschmutzo/splash/card-yellow.webp');
 	const cardGreen = ap('/assets/mcschmutzo/splash/card-green.webp');
@@ -39,9 +41,26 @@
 	const onKey = (e: KeyboardEvent) => {
 		if (e.code === 'Space' || e.code === 'Enter') press();
 	};
+
+	// Portrait (mobile): show the feature cards one at a time and auto-advance every 3s, with dot
+	// indicators — matching the other games. Landscape/desktop keeps all three cards in a row.
+	let isPortrait = $state(false);
+	let slide = $state(0);
+	const SLIDE_COUNT = CARDS.length;
+	const currentCard = $derived(CARDS[slide]);
+	const updateOrientation = () => (isPortrait = window.innerWidth < window.innerHeight);
+	onMount(updateOrientation);
+	$effect(() => {
+		if (!isPortrait) {
+			slide = 0;
+			return;
+		}
+		const id = setInterval(() => (slide = (slide + 1) % SLIDE_COUNT), 3000);
+		return () => clearInterval(id);
+	});
 </script>
 
-<svelte:window onkeydown={onKey} />
+<svelte:window onkeydown={onKey} onresize={updateOrientation} />
 
 <div
 	class="splash-intro"
@@ -54,19 +73,37 @@
 	<div class="stage" style={`background-image:url('${bg}')`}>
 		<img class="logo" src={logo} alt="McSchmutzo" draggable="false" />
 		<img class="man" src={man} alt="" draggable="false" />
+		<!-- Mobile only: replaces the logo + character with the Press Play wordmark. -->
+		<img class="pp-mark" src={pressPlay} alt="Press Play" draggable="false" />
 
-		<div class="cards">
-			{#each CARDS as card (card.cls)}
-				<div class="card {card.cls}" style={`background-image:url('${card.art}')`}>
-					<div class="card-inner">
-						<h3 class="card-title">{card.title}</h3>
-						<div class="card-body">
-							{#each card.body as line (line)}<p>{line}</p>{/each}
-						</div>
+		{#snippet cardEl(card: (typeof CARDS)[number])}
+			<div class="card {card.cls}" style={`background-image:url('${card.art}')`}>
+				<div class="card-inner">
+					<h3 class="card-title">{card.title}</h3>
+					<div class="card-body">
+						{#each card.body as line (line)}<p>{line}</p>{/each}
 					</div>
 				</div>
-			{/each}
+			</div>
+		{/snippet}
+
+		<div class="cards" class:cards--single={isPortrait}>
+			{#if isPortrait}
+				{@render cardEl(currentCard)}
+			{:else}
+				{#each CARDS as card (card.cls)}
+					{@render cardEl(card)}
+				{/each}
+			{/if}
 		</div>
+
+		{#if isPortrait}
+			<div class="dots">
+				{#each CARDS as _, i (i)}
+					<span class="dot" class:dot--on={slide === i}></span>
+				{/each}
+			</div>
+		{/if}
 
 		<p class="press-label">PRESS TO CONTINUE&nbsp;→</p>
 	</div>
@@ -116,6 +153,11 @@
 		height: 63%;
 		width: auto;
 		object-fit: contain;
+	}
+
+	/* Press Play wordmark — mobile only (see portrait media query); hidden on desktop. */
+	.pp-mark {
+		display: none;
 	}
 
 	/* Three cards centred in the lower half, clear of the character on the left. */
@@ -195,6 +237,27 @@
 		margin: 0;
 	}
 
+	/* Carousel dot indicators (portrait only). */
+	.dots {
+		position: absolute;
+		left: 50%;
+		bottom: 8.5%;
+		transform: translateX(-50%);
+		z-index: 2;
+		display: flex;
+		gap: 10px;
+	}
+	.dot {
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.4);
+		transition: background 0.2s ease;
+	}
+	.dot--on {
+		background: #ffffff;
+	}
+
 	.press-label {
 		position: absolute;
 		left: 50%;
@@ -224,13 +287,25 @@
 			background-size: cover;
 			background-position: center 22%;
 		}
-		.logo {
-			top: 4%;
-			width: 84%;
+		/* Mobile: drop the character + big logo, show just the Press Play wordmark at the top. */
+		.logo,
+		.man {
+			display: none;
+		}
+		.pp-mark {
+			display: block;
+			position: absolute;
+			left: 50%;
+			top: 5.5%;
+			transform: translateX(-50%);
+			width: min(38%, 150px);
+			height: auto;
+			object-fit: contain;
+			filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
 		}
 		.cards {
 			left: 50%;
-			top: 44%;
+			top: 46%;
 			transform: translate(-50%, -50%);
 			width: 98%;
 			height: auto;
@@ -240,6 +315,14 @@
 			height: auto;
 			flex: 1 1 0;
 			min-width: 0;
+		}
+		/* One card at a time on mobile: a single, larger centred card. */
+		.cards--single {
+			width: auto;
+		}
+		.cards--single .card {
+			flex: 0 0 auto;
+			width: min(66vw, 340px);
 		}
 		.man {
 			height: 30%;
