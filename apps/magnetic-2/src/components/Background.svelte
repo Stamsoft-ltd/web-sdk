@@ -158,12 +158,16 @@
 	};
 	/** The lit opening on the saucer's underside, in HULL fractions — the beam hangs off this. */
 	const EMITTER = { cx: 0.498, w: 0.2047, bottom: 0.9237 };
-	// Beam reach, as fractions of the background. The SPREAD is the design's own (its beam art went
-	// from the emitter's 0.0439 to 0.2022 over 0.4757 of the height); the cone is simply cut where
-	// the ground is. The design's full reach carried the light across the window's inner sill —
-	// measured at 0.579 of the height in this column — and pooled it on the interior wall IN FRONT
-	// of the frame, which reads as a mistake once you notice the ship is hanging outside the room.
-	const BEAM = { w: 0.132, h: 0.256 };
+	// Beam reach, as fractions of the background: the design's OWN spread, its art running from the
+	// emitter's 0.0439 to 0.2022 over 0.4757 of the height.
+	//
+	// This was cut back to 0.132 x 0.256 at first so the cone stopped at the window's inner sill —
+	// measured at 0.579 of the height in this column — because the full reach pools light on the
+	// interior wall IN FRONT of the frame, and the ship is hanging OUTSIDE, in the sky. Restored to
+	// the design's figures on request: the reference the user matched it against shows the beam
+	// carrying past the sill and down over the room, so the sill crossing is now intended. If the
+	// light ever reads as landing on the wrong side of the glass, this is the trade that did it.
+	const BEAM = { w: 0.2022, h: 0.4757 };
 
 	const shipLoaded = $derived(
 		!!context.stateApp.loadedAssets?.ufoHull && !!context.stateApp.loadedAssets?.ufoAntenna,
@@ -204,32 +208,37 @@
 	/** 0 while it is a speck in the sky, 1 once it is parked. */
 	const near = $derived((shipScale - FAR.scale) / (1 - FAR.scale));
 
-	// Tremble. It starts as a hard shudder the moment the ship stops — the brake — and decays into
-	// the idle vibration it keeps for the rest of the session. Frequencies are deliberately not
+	// Tremble. It starts as a shudder the moment the ship stops — the brake — and decays into the
+	// idle vibration it keeps for the rest of the session. Frequencies are deliberately not
 	// harmonically related, so the jitter never settles into a visible loop.
+	//
+	// Amplitudes AND frequencies were both cut hard (idle 0.0026 -> 0.0007 of the hull width, and
+	// roughly a third of the old rates) because the ship read as distracting on screen. Amplitude
+	// alone was not the problem: a small displacement at 37 rad/s is a buzz, and the eye catches
+	// the rate long before it judges the distance. Slower and smaller together reads as a hover.
 	let arrivedAt = $state<number | null>(null);
 	$effect(() => {
 		if (near > 0.985 && arrivedAt === null) arrivedAt = shipClock;
 	});
 	const brake = $derived(arrivedAt === null ? 0 : Math.exp(-(shipClock - arrivedAt) * 2.4));
-	const shake = $derived(hullW * (0.0026 + 0.017 * brake) * near);
+	const shake = $derived(hullW * (0.0007 + 0.009 * brake) * near);
 	const shipX = $derived(
 		canvas.width * 0.5 +
 			(FAR.cx + (UFO.cx - FAR.cx) * near - 0.5) * cover.width +
-			(Math.sin(shipClock * 37.1) + 0.6 * Math.sin(shipClock * 23.7 + 2.1)) * shake,
+			(Math.sin(shipClock * 13.9) + 0.6 * Math.sin(shipClock * 8.9 + 2.1)) * shake,
 	);
 	const shipY = $derived(
 		canvas.height * 0.5 +
 			(FAR.cy + (UFO.cy - FAR.cy) * near - 0.5) * cover.height +
 			// A shallow rise over the run, so the approach curves instead of sliding up a wire.
 			-Math.sin(Math.PI * near) * cover.height * 0.035 +
-			Math.sin(shipClock * 41.3 + 1.7) * shake * 0.8 +
+			Math.sin(shipClock * 11.3 + 1.7) * shake * 0.8 +
 			// Idle hover, once it is parked.
 			Math.sin(shipClock * 0.52) * canvas.height * 0.008 * near,
 	);
 	// Banked while it closes, level once it parks, then a hair of roll in the tremble.
 	const shipRotation = $derived(
-		-0.16 * (1 - near) + Math.sin(shipClock * 19.4) * 0.0035 * (1 + brake * 5) * near,
+		-0.16 * (1 - near) + Math.sin(shipClock * 7.2) * 0.0011 * (1 + brake * 5) * near,
 	);
 
 	// ── The tractor beam ──
@@ -239,7 +248,13 @@
 	$effect(() => {
 		if (arrivedAt !== null) beamOn.set(1);
 	});
-	// Colours sampled from the design's own beam art.
+	// Colours sampled from the design's own beam art. BEAM_CORE is NOT from the art: the art's
+	// lilac at any workable alpha lands around rgb(215,196,239) over the room's pale interior wall,
+	// which is a white haze rather than a beam. Sampled down the axis of the reference the user
+	// matched this against, the cone interior is rgb(148,122,216) -- a mid violet -- so the main
+	// slab is filled with a colour chosen to composite TO that, and the lilac stays on the halo
+	// and the rim where it belongs.
+	const BEAM_CORE = 0x7d5ecb;
 	const BEAM_FILL = 0xd7a1fa;
 	const BEAM_RIM = 0xf1a8fa;
 	const BEAM_POOL = 0xf7c0fc;
@@ -273,11 +288,11 @@
 		const flare = (0.86 + 0.14 * Math.sin(t * 1.7) + 0.45 * grab) * on;
 
 		slab(0, 1, 1.15 + 0.05 * grab);
-		g.fill({ color: BEAM_FILL, alpha: 0.12 * flare });
+		g.fill({ color: BEAM_FILL, alpha: 0.16 * flare });
 		slab(0, 1, 1);
-		g.fill({ color: BEAM_FILL, alpha: 0.58 * flare });
+		g.fill({ color: BEAM_CORE, alpha: 0.62 * flare });
 		slab(0, 1, 0.55);
-		g.fill({ color: BEAM_POOL, alpha: 0.2 * flare });
+		g.fill({ color: BEAM_POOL, alpha: 0.14 * flare });
 
 		// Bright edges. The art has them, and without them the cone has no shape against a lit wall.
 		const rim = Math.max(2, hullW * 0.015);

@@ -9,7 +9,6 @@
 	import { BUY_BONUS_MODAL_IMAGES } from './CustomBuyBonusModal.svelte';
 	import { AUTOSPIN_MODAL_IMAGES } from './CustomAutoSpinModal.svelte';
 	import { GAME_DIALOG_IMAGES } from './Game.svelte';
-	import { CONFIRM_PANEL_BG } from './confirmDialog';
 
 	// Headless: this component owns WHEN the game may start and HOW FAR the download has got, but it
 	// paints nothing. The loading screen itself is the splash overlay's `loading` phase
@@ -47,7 +46,6 @@
 			...BUY_BONUS_MODAL_IMAGES,
 			...AUTOSPIN_MODAL_IMAGES,
 			...GAME_DIALOG_IMAGES,
-			CONFIRM_PANEL_BG,
 		]),
 	];
 	const HTML_LOAD_TIMEOUT_MS = 15000;

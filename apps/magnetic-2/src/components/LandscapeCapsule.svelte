@@ -10,6 +10,7 @@
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import { getContext } from '../game/context';
+	import { INFO_BOX_ASPECT } from '../game/constants';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import InfoBox from './InfoBox.svelte';
 
@@ -78,12 +79,11 @@
 	);
 
 	// TOTAL WIN / FREE SPINS boxes — left gutter, stacked. Version2: the same wide steel InfoBox
-	// the desktop rail uses (781/335 art), sized to the gutter so it cannot reach the board.
-	const BOX_ASPECT = 781 / 335;
+	// the desktop rail uses, sized to the gutter so it cannot reach the board.
 	const boardLeftX = $derived(board.x - gridHalfW);
 	// 0.62/0.92 -> 0.55/0.84: the three gutter boxes read too wide on popout S (user pass 2026-08-10).
 	const boxW = $derived(Math.min(gridHalfW * 0.55, (boardLeftX - canvasLeftX) * 0.84));
-	const boxH = $derived(boxW / BOX_ASPECT);
+	const boxH = $derived(boxW / INFO_BOX_ASPECT);
 	const boxX = $derived((canvasLeftX + boardLeftX) * 0.5);
 	const boxGap = $derived(boxH * 0.24);
 	// Stack the bonus boxes from the TOP (just below the logo) instead of centring them on the board, so
@@ -94,7 +94,6 @@
 	// now come from stateGame — RespinPanel reads the SAME function, so the two can no longer drift
 	// apart, and the offset tightens on popout S where there is least vertical room.
 	const stackTopY = $derived(context.stateGameDerived.landscapeStackTopY());
-
 </script>
 
 {#if isLandscape}
@@ -102,7 +101,13 @@
 		<!-- TOTAL WIN + FREE SPINS boxes, left gutter — only during a bonus. Version2 InfoBox
 		     (same art/typography as the desktop rail). -->
 		{#if isBonus}
-			<InfoBox x={boxX} y={stackTopY + boxH * 0.5} width={boxW} label={i18nDerived.translate('TOTAL WIN')} value={totalWin} />
+			<InfoBox
+				x={boxX}
+				y={stackTopY + boxH * 0.5}
+				width={boxW}
+				label={i18nDerived.translate('TOTAL WIN')}
+				value={totalWin}
+			/>
 			<InfoBox
 				x={boxX}
 				y={stackTopY + boxH * 1.5 + boxGap}

@@ -49,17 +49,6 @@ const assets = {
 		type: 'sprite',
 		src: './assets/components/ui/small_pad_mobile.webp?v=20260709'
 	},
-	// Circular-arrow icon for the RESPIN indicator panel (left rail, Figma 4504-3588).
-	respinIcon: {
-		type: 'sprite',
-		src: './assets/components/ui/respin_icon.webp?v=20260713'
-	},
-	// Version2 left-rail info box (RESPIN / FREE SPINS / TOTAL WIN) — steel frame with chamfered
-	// corners over a navy gradient — the REAL design art, extracted from Figma node 7002:11384.
-	infoBox: {
-		type: 'sprite',
-		src: './assets/components/frames/info_box.webp?v=20260901c'
-	},
 	// Backdrop for BOTH congratulations screens (Version2, Figma 7022-6844 / 7069-9311). Cropped
 	// straight out of the artist's source PNG, which already carries real alpha — no keying, and
 	// no purple arcs: the design mock composites those from a separate layer and the user asked for
@@ -89,22 +78,45 @@ const assets = {
 	// Win-state flipbook sheets are gone: winning cells now play the procedural <SymbolWinFx>
 	// choreography over the hi-res static win art. The 9–10 frame sheets looped at ~14fps with no
 	// real object motion — the Stake review's "poor animations".
-	aTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260806' },
-	aWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260806' },
-	aTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_mobile.webp?v=20260806' },
-	aWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_mobile.webp?v=20260806' },
-	kTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil.webp?v=20260812' },
-	kWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil.webp?v=20260812' },
-	kTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil_mobile.webp?v=20260812' },
-	kWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil_mobile.webp?v=20260812' },
-	qTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260806' },
-	qWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260806' },
-	qTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw_mobile.webp?v=20260806' },
-	qWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw_mobile.webp?v=20260806' },
-	wildTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild.webp?v=20260806' },
-	wildWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild.webp?v=20260806' },
-	wildTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mobile.webp?v=20260806' },
-	wildWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mobile.webp?v=20260806' },
+	aTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260902' },
+	// The magnet's loose layers: the antennae shake, the face breathes, and the win state arcs
+	// electricity between the caps -- see MagnetSymbol.svelte and scripts/build-magnet-art.py.
+	magnetFace: { type: 'sprite', src: './assets/components/symbols/magnetic/low/magnet_face.webp?v=20260902' },
+	magnetAntennaL: { type: 'sprite', src: './assets/components/symbols/magnetic/low/magnet_antenna_l.webp?v=20260902' },
+	magnetAntennaR: { type: 'sprite', src: './assets/components/symbols/magnetic/low/magnet_antenna_r.webp?v=20260902' },
+	magnetHandL: { type: 'sprite', src: './assets/components/symbols/magnetic/low/magnet_hand_l.webp?v=20260902' },
+	magnetHandR: { type: 'sprite', src: './assets/components/symbols/magnetic/low/magnet_hand_r.webp?v=20260902' },
+	aWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260902' },
+	aTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_mobile.webp?v=20260902' },
+	aWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut_mobile.webp?v=20260902' },
+	kTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil.webp?v=20260902' },
+	kWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil.webp?v=20260902' },
+	kTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil_mobile.webp?v=20260902' },
+	kWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil_mobile.webp?v=20260902' },
+	// The astronaut's HEAD and its two eyes, loose so <CoilSymbol> can zoom and shake the head and
+	// let the eyes look around inside it. The helmet stays baked into the base, and the head texture
+	// has its eye sockets painted over in the face's own green so a drifting eye never exposes a
+	// hole. See scripts/build-coil-art.py.
+	coilHead: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil_head.webp?v=20260902' },
+	coilEyeL: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil_eye_l.webp?v=20260902' },
+	coilEyeR: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil_eye_r.webp?v=20260902' },
+	// The alien on the circuit chip -- its face plate, its mouth, one eye (used twice) -- plus the two
+	// slime blobs, loose so <CircuitSymbol> can ooze the slime, blink and grin. The mouth is cut OFF
+	// the face plate and its hole filled with the plate's own green, because the art ships only a
+	// neutral mouth and the win has to grow it into a grin. See scripts/build-circuit-art.py.
+	circuitFace: { type: 'sprite', src: './assets/components/symbols/magnetic/low/circuit_face.webp?v=20260902' },
+	circuitMouth: { type: 'sprite', src: './assets/components/symbols/magnetic/low/circuit_mouth.webp?v=20260902' },
+	circuitEye: { type: 'sprite', src: './assets/components/symbols/magnetic/low/circuit_eye.webp?v=20260902' },
+	circuitSlimeA: { type: 'sprite', src: './assets/components/symbols/magnetic/low/circuit_slime_a.webp?v=20260902' },
+	circuitSlimeB: { type: 'sprite', src: './assets/components/symbols/magnetic/low/circuit_slime_b.webp?v=20260902' },
+	qTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260902' },
+	qWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260902' },
+	qTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw_mobile.webp?v=20260902' },
+	qWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw_mobile.webp?v=20260902' },
+	wildTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild.webp?v=20260902' },
+	wildWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild.webp?v=20260902' },
+	wildTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mobile.webp?v=20260902' },
+	wildWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mobile.webp?v=20260902' },
 	wild2xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x2.webp?v=20260806' },
 	wild3xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x3.webp?v=20260806' },
 	wild4xTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x4.webp?v=20260806' },
@@ -122,66 +134,113 @@ const assets = {
 	// Radial electric burst played BEHIND every stacked (locked) symbol. 10 independent bursts
 	// rather than a rendered animation, so the cycle is a crackle, not motion — order carries no
 	// meaning. Regenerate with scripts/build-stack-zap-sheet.py <src-dir>.
-	scatterCustom: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260901' },
-	scatterWin: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260901' },
-	scatterCustomMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_mobile.webp?v=20260901' },
-	scatterWinMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_mobile.webp?v=20260901' },
+	scatterCustom: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260902bb' },
+	scatterWin: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260902bb' },
+	scatterCustomMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_mobile.webp?v=20260902bb' },
+	scatterWinMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_mobile.webp?v=20260902bb' },
 	// The capsule's loose layers. scatter.webp is the machine with an EMPTY tube; these two ride on
 	// top so the alien can jump and the eye can blink (see ScatterSymbol.svelte, and
 	// scripts/build-scatter-art.py for how they were cut out of the flat Figma lockup).
-	scatterAlien: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_alien.webp?v=20260901' },
-	scatterEye: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_eye.webp?v=20260901' },
+	scatterAlien: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_alien.webp?v=20260902bb' },
+	scatterEye: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_eye.webp?v=20260902bb' },
 	// The lid, re-drawn IN FRONT of the alien so it can hop up behind it instead of over it.
-	scatterDome: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_dome.webp?v=20260901' },
-	foxTile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass.webp?v=20260901' },
+	scatterDome: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_dome.webp?v=20260902bb' },
+	// The word SCATTER, cut off the plate so the win state can zoom it. A copy scaled on top of a
+	// baked-in original just shows the original poking out -- see scripts/build-scatter-art.py,
+	// which also inpaints the plaque it leaves behind.
+	scatterWord: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter_word.webp?v=20260902b' },
+	foxTile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass.webp?v=20260902' },
 	// Compass loose layers: the needle turns, the alien zooms and the poles pop. The bezel and its
 	// chevrons stay baked in compass.webp -- see scripts/build-compass-art.py, which also owns the
 	// LAYOUT, since Figma has no composed lockup for this symbol.
-	compassNeedle: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_needle.webp?v=20260901' },
-	compassAlien: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_alien.webp?v=20260901' },
-	compassN: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_n.webp?v=20260901' },
-	compassS: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_s.webp?v=20260901' },
-	wolfTile:     { type: 'sprite', src: './assets/components/symbols/magnetic/premium/lightning.webp?v=20260812' },
-	bearTile:     { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube.webp?v=20260806' },
-	rabbitTile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.webp?v=20260806' },
+	// The MOTHERSHIP compass has no needle -- see CompassSymbol.svelte. The alien arrives as a face
+	// plus two loose antennae so they can sway, cut by scripts/build-compass-art.py.
+	compassFace: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_face.webp?v=20260902' },
+	compassAntennaL: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_antenna_l.webp?v=20260902' },
+	compassAntennaR: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_antenna_r.webp?v=20260902' },
+	compassEye: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_eye.webp?v=20260902' },
+	compassN: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_n.webp?v=20260902' },
+	compassS: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_s.webp?v=20260902' },
+	// The electromagnetic device's moving layers. Loose so the antennae can lean on their own
+	// stalks and the eye can flash when the cell discharges -- see EmDeviceSymbol.svelte and
+	// scripts/build-emdevice-art.py.
+	emAntennaL: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/em_antenna_l.webp?v=20260902' },
+	emAntennaR: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/em_antenna_r.webp?v=20260902' },
+	emLens: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/em_lens.webp?v=20260902' },
+	// The wild's moving layers. wild.webp is the magnet WITH its N/S caps re-seated where the
+	// design puts them -- see WildSymbol.svelte and scripts/build-wild-art.py. wildWord is the
+	// plaque masked to its pink letters, used only as an additive glow.
+	wildPlaque: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_plaque.webp?v=20260902' },
+	wildWord: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_word.webp?v=20260902' },
+	wildBlob: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_blob.webp?v=20260902' },
+	wildEye: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_eye.webp?v=20260902' },
+	wildBolt: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_bolt.webp?v=20260902' },
+	// The multiplier wild is the SAME lockup with the bolt swapped for a disc -- both references
+	// line up to within 1px -- so it reuses every wild layer above and only adds these.
+	// scripts/build-wild-mult-art.py. The numbers are set in Chakra Petch: the design's rounded
+	// display face was never delivered, and Chakra Petch is what the rest of the redesigned UI
+	// already uses.
+	wildDisc: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_disc.webp?v=20260902' },
+	wildMultX2: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mult_x2.webp?v=20260902' },
+	wildMultX3: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mult_x3.webp?v=20260902' },
+	wildMultX4: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mult_x4.webp?v=20260902' },
+	wildMultX5: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mult_x5.webp?v=20260902' },
+	wildMultX7: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mult_x7.webp?v=20260902' },
+	wildMultX9: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mult_x9.webp?v=20260902' },
+	wildMultX10: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mult_x10.webp?v=20260902' },
+	wolfTile:     { type: 'sprite', src: './assets/components/symbols/magnetic/premium/lightning.webp?v=20260902' },
+	// The lightning badge's BOLT, loose so <LightningSymbol> can pop and blink it. The badge's
+	// four green corner balls stay baked into the base -- they only ever glow, and a Graphics
+	// halo over the baked art does that without a fifth texture.
+	lightningBolt: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/lightning_bolt.webp?v=20260902' },
+	bearTile:     { type: 'sprite', src: './assets/components/symbols/magnetic/premium/portal.webp?v=20260902' },
+	// The portal's galaxy CORE, its alien head and the alien's two antennae, loose so <PortalSymbol>
+	// can spin the core and flap the antennae. The ring and the four pink pins stay baked into the
+	// base, and the base has the ring's hole punched out of it -- the core is drawn behind it and
+	// shows through. See scripts/build-portal-art.py.
+	portalCore: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/portal_core.webp?v=20260902' },
+	portalHead: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/portal_head.webp?v=20260902' },
+	portalAntennaL: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/portal_antenna_l.webp?v=20260902' },
+	portalAntennaR: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/portal_antenna_r.webp?v=20260902' },
+	rabbitTile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.webp?v=20260902' },
 	magnetTile:   { type: 'sprite', src: './assets/components/ui/magnet_win.webp?v=20260709' },
-	squirrelTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery.webp?v=20260901' },
-	squirrelTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery_mobile.webp?v=20260901' },
+	squirrelTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery.webp?v=20260902' },
+	squirrelTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery_mobile.webp?v=20260902' },
 	// The battery character that sits inside the housing's panel and pops on a win. Loose so the
 	// balloons can drift behind it -- see BatterySymbol.svelte and scripts/build-battery-art.py.
-	batteryCell: { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery_cell.webp?v=20260901' },
+	batteryCell: { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery_cell.webp?v=20260902' },
 	// The battery's WIN variant on the mobile sheet. It was the one hole in the base/Mobile/Land
 	// matrix: utils.ts SYMBOL_WIN_ASSET_MOBILE maps L1 -> 'squirrelWinTileMobile', so in portrait a
 	// winning battery resolved to an undefined key and the cell simply drew nothing.
-	squirrelWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery_mobile.webp?v=20260901' },
+	squirrelWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery_mobile.webp?v=20260902' },
 	// Premium mobile (portrait) symbol art.
-	foxTileMobile:       { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_mobile.webp?v=20260901' },
-	foxWinTileMobile:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_mobile.webp?v=20260901' },
-	wolfTileMobile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/lightning_mobile.webp?v=20260812' },
-	wolfWinTileMobile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/lightning_mobile.webp?v=20260812' },
-	bearTileMobile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube_mobile.webp?v=20260806' },
-	bearWinTileMobile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube_mobile.webp?v=20260806' },
-	rabbitTileMobile:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device_mobile.webp?v=20260806' },
-	rabbitWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device_mobile.webp?v=20260806' },
+	foxTileMobile:       { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_mobile.webp?v=20260902' },
+	foxWinTileMobile:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass_mobile.webp?v=20260902' },
+	wolfTileMobile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/lightning_mobile.webp?v=20260902' },
+	wolfWinTileMobile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/lightning_mobile.webp?v=20260902' },
+	bearTileMobile:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/portal_mobile.webp?v=20260902' },
+	bearWinTileMobile:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/portal_mobile.webp?v=20260902' },
+	rabbitTileMobile:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device_mobile.webp?v=20260902' },
+	rabbitWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device_mobile.webp?v=20260902' },
 	// Landscape (mobile horizontal) symbol art.
-	foxTileLand:       { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass.webp?v=20260901' },
-	foxWinTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass.webp?v=20260901' },
-	wolfTileLand:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/lightning.webp?v=20260812' },
-	wolfWinTileLand:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/lightning.webp?v=20260812' },
-	bearTileLand:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube.webp?v=20260806' },
-	bearWinTileLand:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube.webp?v=20260806' },
-	rabbitTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.webp?v=20260806' },
-	rabbitWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.webp?v=20260806' },
-	squirrelTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery.webp?v=20260901' },
-	squirrelWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery.webp?v=20260901' },
-	aTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260806' },
-	aWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260806' },
-	kTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil.webp?v=20260812' },
-	kWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil.webp?v=20260812' },
-	qTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260806' },
-	qWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260806' },
-	wildTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild.webp?v=20260806' },
-	scatterTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260901' },
+	foxTileLand:       { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass.webp?v=20260902' },
+	foxWinTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass.webp?v=20260902' },
+	wolfTileLand:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/lightning.webp?v=20260902' },
+	wolfWinTileLand:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/lightning.webp?v=20260902' },
+	bearTileLand:      { type: 'sprite', src: './assets/components/symbols/magnetic/premium/portal.webp?v=20260902' },
+	bearWinTileLand:   { type: 'sprite', src: './assets/components/symbols/magnetic/premium/portal.webp?v=20260902' },
+	rabbitTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.webp?v=20260902' },
+	rabbitWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.webp?v=20260902' },
+	squirrelTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery.webp?v=20260902' },
+	squirrelWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery.webp?v=20260902' },
+	aTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260902' },
+	aWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260902' },
+	kTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil.webp?v=20260902' },
+	kWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil.webp?v=20260902' },
+	qTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260902' },
+	qWinTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260902' },
+	wildTileLand:    { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild.webp?v=20260902' },
+	scatterTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/special/scatter.webp?v=20260902bb' },
 	wild2xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x2.webp?v=20260806' },
 	wild3xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x3.webp?v=20260806' },
 	wild4xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x4.webp?v=20260806' },
@@ -189,12 +248,12 @@ const assets = {
 	wild7xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x7.webp?v=20260806' },
 	wild9xTileLand:  { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x9.webp?v=20260806' },
 	wild10xTileLand: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_x10.webp?v=20260806' },
-	foxWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass.webp?v=20260901' },
-	wolfWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/lightning.webp?v=20260812' },
-	bearWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/magnetic_core_cube.webp?v=20260806' },
-	rabbitWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.webp?v=20260806' },
+	foxWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/compass.webp?v=20260902' },
+	wolfWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/lightning.webp?v=20260902' },
+	bearWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/portal.webp?v=20260902' },
+	rabbitWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/premium/electromagnetic_device.webp?v=20260902' },
 	magnetWinTile: { type: 'sprite', src: './assets/components/ui/magnet_win.webp?v=20260709' },
-	squirrelWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery.webp?v=20260901' },
+	squirrelWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/battery.webp?v=20260902' },
 	// Win boards — preloaded so board escalation during count-up doesn't stall
 	// Version2 SWEET WIN sign (Figma 7022:7751) — ships as parts; WinSign.svelte assembles them
 	// (pillars fly in from the sides, magnet drops, title rises) with landing impacts.
@@ -235,17 +294,11 @@ const assets = {
 	winSignMaxPillarR: { type: 'sprite', src: './assets/components/win_boards/sign_max_pillar_right.webp?v=20260811' },
 	winSignMaxMagnet:  { type: 'sprite', src: './assets/components/win_boards/sign_max_magnet.webp?v=20260811' },
 	winSignTextMax:    { type: 'sprite', src: './assets/components/win_boards/sign_text_max.webp?v=20260811' },
-	// Stacked-cluster idle animations (Kling black-bg videos -> 36-frame/12fps looping sheets via
-	// scratchpad build_stack_anims.py): a locked cell of these symbols plays its charging loop
-	// instead of freezing on the static art. Frames share the static symbol's 328x264 canvas
-	// geometry (at 0.75), so the AnimatedSprite is a drop-in at the static Sprite's size props.
-	stackAnimH1: { type: 'spriteSheet', src: './assets/sprites/stackAnims/compass_stack.json' },
-	stackAnimH2: { type: 'spriteSheet', src: './assets/sprites/stackAnims/lightning_stack.json' },
-	stackAnimH3: { type: 'spriteSheet', src: './assets/sprites/stackAnims/vortex_stack.json' },
-	stackAnimH4: { type: 'spriteSheet', src: './assets/sprites/stackAnims/device_stack.json' },
-	stackAnimL1: { type: 'spriteSheet', src: './assets/sprites/stackAnims/battery_stack.json' },
-	stackAnimL3: { type: 'spriteSheet', src: './assets/sprites/stackAnims/coil_stack_v2.json' },
-	stackAnimL4: { type: 'spriteSheet', src: './assets/sprites/stackAnims/chip_stack.json' },
+	// The seven stackAnim* sheets are GONE (2026-09-02). They were 36-frame charging loops built from
+	// Kling videos of the PRE-REBUILD symbols, so once the set was redrawn a locked stack of, say,
+	// astronauts came up as the old blue coil springs. Nothing replaces them: a locked cluster now
+	// draws the same layered art as any other cell, unanimated -- the perimeter electricity is what
+	// marks it. Their files under static/assets/sprites/stackAnims are deleted too (1.7 MB).
 	silverFont: {
 		type: 'font',
 		src: './assets/fonts/silverFont/mm_silver.xml?v=20260611',
@@ -337,6 +390,16 @@ for (const key of ['bgBonus', 'bgSuper', 'bgMobileBonus', 'bgMobileSuper', 'fsWo
 // NOTE: the desktop symbol tiles are deliberately NOT in DESKTOP_ONLY_KEYS. MOBILE_STATIC_KEYS /
 // MOBILE_WIN_KEYS in game/utils.ts are Partial records that fall back to the desktop key, so the
 // desktop set has to be present in every layout.
+//
+// Nor are the LOOSE SYMBOL PARTS -- the scatter's alien/eye/dome/word, the battery cell, and every
+// magnet/compass/em/portal/astronaut/circuit layer. They are layout-independent: <ScatterSymbol>,
+// <BatterySymbol>, <MagnetSymbol>, <CompassSymbol>, <LightningSymbol>, <PortalSymbol>, <CoilSymbol>,
+// <CircuitSymbol> and <EmDeviceSymbol> place
+// them by fractions of the symbol box, so the same crops serve portrait, landscape and desktop
+// alike. Listing them here deferred them on DESKTOP only, and a desktop boot logged a wall of
+// "key ... is not found in loadedAssets" while every layered symbol drew as a bare shell -- a
+// compass with no face, a device with no antennae -- until the background pass caught up. They are
+// ~350KB in total; they belong in the gating pass.
 const MOBILE_ONLY_KEYS: readonly string[] = [
 	'bgMobileBase', 'smallPadMobile',
 	// Portrait symbol art
@@ -348,8 +411,6 @@ const MOBILE_ONLY_KEYS: readonly string[] = [
 	'wild2xTileMobile', 'wild3xTileMobile', 'wild4xTileMobile', 'wild5xTileMobile',
 	'wild7xTileMobile', 'wild9xTileMobile', 'wild10xTileMobile',
 	'scatterCustomMobile', 'scatterWinMobile',
-	'scatterAlien', 'scatterEye', 'scatterDome',
-	'batteryCell', 'compassNeedle', 'compassAlien', 'compassN', 'compassS',
 	// Mobile-landscape symbol art
 	'foxTileLand', 'foxWinTileLand', 'wolfTileLand', 'wolfWinTileLand',
 	'bearTileLand', 'bearWinTileLand', 'rabbitTileLand', 'rabbitWinTileLand',
@@ -363,15 +424,6 @@ const MOBILE_ONLY_KEYS: readonly string[] = [
 // redesign: the board plate is drawn (game/boardStyle.ts) and the magnet capsule was removed, so no
 // layout loads a texture for either.
 const DESKTOP_ONLY_KEYS: readonly string[] = [];
-
-// Stack anims stream in the background pass: a cluster cannot be locked before the first spin
-// resolves, so they never gate playability.
-flag(
-	// L2 (ring magnet) has no sheet: its cluster idle is drawn procedurally (specialIdleFx).
-	['stackAnimH1', 'stackAnimH2', 'stackAnimH3', 'stackAnimH4',
-	 'stackAnimL1', 'stackAnimL3', 'stackAnimL4'],
-	'defer',
-);
 
 if (typeof window !== 'undefined') {
 	const w = window.innerWidth;

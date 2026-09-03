@@ -3,7 +3,6 @@
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { fitTextScale } from '../utils/fitText';
 	import {
-		CONFIRM_PANEL_BG,
 		CONFIRM_TITLE_FONT_F,
 		CONFIRM_TITLE_FIT_W,
 		CONFIRM_TITLE_FAMILY,
@@ -51,7 +50,7 @@
 
 <div class="modal-overlay">
 	<div class="resume" role="dialog" aria-modal="true" bind:this={boxEl} style={`--resume-title-fit:${titleFit}`}>
-		<div class="resume-panel" style={`background-image:url('${CONFIRM_PANEL_BG}')`}>
+		<div class="resume-panel">
 			<div class="resume-title">{title}</div>
 			<div class="resume-text">{bodyParts[0]}<strong>{modeLabel}</strong>{bodyParts[1] ?? ''}</div>
 			<div class="resume-row">
@@ -91,43 +90,42 @@
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
 
-	/* Steel-framed plate; children are absolutely positioned at the design's own % offsets. */
+	/* The plate is DRAWN, not art: a flat rounded rectangle, exactly what the design is. It also
+	   stopped being a fixed-aspect box — the three dialogs that wear it hold one nowrap line, a
+	   wrapping sentence and a single button respectively, and an `aspect-ratio` plate sized for one
+	   of them clips or strands the other two. Flow layout at the design's own paddings instead.
+	   Design 4036:3584: plate 458x215, radius 14, fill #3A3981 over a #2D2C69 edge. */
 	.resume-panel {
 		position: relative;
-		aspect-ratio: 507.33 / 283;
-		background-size: 100% 100%;
-		background-repeat: no-repeat;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6.3cqw;
+		padding: 6.33cqw 5.5cqw 4.37cqw;
+		background: #3a3981;
+		border: 0.44cqw solid #2d2c69;
+		border-radius: 3.06cqw;
+		box-shadow: 0 1.6cqw 3.6cqw rgba(0, 0, 0, 0.5);
 	}
-
-	/* Figma 4154:20115 — IBM Plex Sans Condensed Bold 32px, FLAT #2391C1 (not a gradient). */
+	/* Design 4036:3584 — Chakra Petch Bold 30/458 of the plate, WHITE (the Version2 plate set this
+	   in #2391C1; the MOTHERSHIP design does not). */
 	.resume-title {
-		position: absolute;
-		left: 7%;
-		right: 7%;
-		top: 29.33%;
-		transform: translateY(-50%);
 		text-align: center;
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: calc(6.31cqw * var(--resume-title-fit, 1));
+		font-size: calc(6.55cqw * var(--resume-title-fit, 1));
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
 		line-height: 1;
 		white-space: nowrap;
-		color: #2391c1;
+		color: #ffffff;
 	}
-
-	/* Figma 4036:3614 — Inter Medium 20px, white, 0.6px tracking. Wraps (unlike the buy confirm's
-	   single line) because the resume body is a sentence. */
+	/* Design 4036:3584 — 20/458 of the plate, white. WRAPS (unlike the buy confirm's single line)
+	   because the resume body is a sentence; the plate is flow-sized, so it simply grows. */
 	.resume-text {
-		position: absolute;
-		left: 8%;
-		right: 8%;
-		top: 50.18%;
-		transform: translateY(-50%);
 		text-align: center;
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-size: 3.94cqw;
+		font-size: 4.37cqw;
 		font-weight: 600;
 		letter-spacing: 0.03em;
 		color: #fff;
@@ -135,51 +133,45 @@
 	}
 	.resume-text strong {
 		font-weight: 700;
-		color: #7fdcff;
+		color: #cbb6ff;
 	}
-
-	/* Figma 4036:3615 — two 143.95x44 buttons, 16px apart, centred at 71.38% of the plate. */
+	/* Design 4036:3584 — two 196x48 buttons, 17 apart, spanning 89.3% of the plate. */
 	.resume-row {
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: 71.38%;
-		transform: translateY(-50%);
 		display: flex;
-		gap: 3.15cqw;
+		gap: 3.71cqw;
 		justify-content: center;
 	}
 	.resume-btn {
-		height: 8.67cqw;
-		min-width: 28.37cqw;
-		padding: 0 4.73cqw;
-		border: 1px solid #60a5fa;
-		border-radius: 2.37cqw;
+		height: 10.48cqw;
+		min-width: 42.79cqw;
+		padding: 0 3cqw;
+		border: 0.22cqw solid #a88eff;
+		border-radius: 1.75cqw;
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-size: 2.76cqw;
+		font-size: 3.28cqw;
 		font-weight: 700;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		white-space: nowrap;
-		color: #fff;
+		color: #ffffff;
 		cursor: pointer;
-		filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
+		background: #47468a;
 		transition: filter 0.12s ease;
 	}
 	.resume-btn:hover {
-		filter: brightness(1.12) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
+		filter: brightness(1.18);
 	}
 	.resume-btn:disabled {
 		opacity: 0.5;
 		cursor: default;
 	}
-	/* Play Round — the design's primary: flat #28A6DE */
+	/* Play Round — the design's primary: flat #A88EFF */
 	.resume-btn--ok {
-		background: #28a6de;
+		background: #a88eff;
 	}
-	/* End Round — the design's secondary: near-black navy */
+	/* End Round — the design's secondary: the plate's own lighter purple, outlined */
 	.resume-btn--cancel {
-		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
+		background: #47468a;
 	}
 
 	/* Buttons do NOT inherit font-family: the UA stylesheet hard-sets `font: 400 13.333px Arial` on

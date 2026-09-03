@@ -12,6 +12,7 @@
 
 	import InfoBox from './InfoBox.svelte';
 	import { getContext } from '../game/context';
+	import { INFO_BOX_ASPECT } from '../game/constants';
 	import { i18nDerived } from '../i18n/i18nDerived';
 
 	const context = getContext();
@@ -58,15 +59,13 @@
 		winUpdate: (e) => (runningWin += e.amount),
 	});
 
-
 	// Top row, above the board. The capsule that used to sit between these boxes is gone (removed
 	// with the MOTHERSHIP redesign), so the row is just the boxes now — but they keep the SAME
 	// positions, flanking the space where the tube was, rather than sliding together.
 	const CY = $derived(main.height * 0.168);
-	const BOX_ASPECT = 781 / 335;
 	const spanW = $derived(main.width * 0.59);
 	const boxW = $derived(main.width * 0.175);
-	const boxH = $derived(boxW / BOX_ASPECT);
+	const boxH = $derived(boxW / INFO_BOX_ASPECT);
 	const gap = $derived(main.width * 0.004);
 	const capsuleX = $derived(main.width * 0.5);
 	const leftX = $derived(capsuleX - spanW * 0.5 - gap - boxW * 0.5);
@@ -91,13 +90,19 @@
 				y={CY - boxH * 1.12}
 				width={boxW}
 				label={i18nDerived.translate('RESPIN')}
-				iconKey="respinIcon"
+				icon
 			/>
 		</FadeContainer>
 
 		<!-- TOTAL WIN (running win, counts up each spin) — only during a bonus -->
 		{#if isBonus}
-			<InfoBox x={leftX} y={CY} width={boxW} label={i18nDerived.translate('TOTAL WIN')} value={totalWin} />
+			<InfoBox
+				x={leftX}
+				y={CY}
+				width={boxW}
+				label={i18nDerived.translate('TOTAL WIN')}
+				value={totalWin}
+			/>
 		{/if}
 
 		<!-- FREE SPINS count (remaining) — only during a bonus -->

@@ -8,38 +8,235 @@
 		| { type: 'boardWithAnimateSymbols'; symbolPositions: Position[] };
 </script>
 
+	<!-- One cell's ARTWORK. Lives in a snippet because two places draw it: the falling/settled grid
+	     above, and the locked CLUSTER below. The cluster used to call <SymbolWinFx> with nothing but
+	     the base texture, which gutted every rebuilt symbol -- a portal with a hole where its galaxy
+	     goes, a chip with an empty white screen -- and played the old pop/wobble under it. It gets the
+	     same layered art as any other cell now, and `winning` false, because a cluster already reads
+	     as a win through its perimeter electricity; animating the symbols inside it too is noise. -->
+	{#snippet symbolArt(
+		cell: BoardCell,
+		symbolInfo: ReturnType<typeof getSymbolInfo>,
+		x: number,
+		y: number,
+		width: number,
+		height: number,
+		alpha: number,
+		zIndex: number,
+		winning: boolean,
+	)}
+		{@const isScatterCell = cell.scatter || cell.name === 'SCATTER'}
+		{@const isWildCell = cell.wild || cell.name === 'WILD'}
+		{#if isScatterCell}
+			<!-- Layered capsule: base machine + bubbles + alien + eye + band arcs. It
+			     covers the win state itself, so it replaces <SymbolWinFx> here rather
+			     than stacking with it. -->
+			<ScatterSymbol
+				assetKey={symbolInfo.assetKey}
+				{x}
+				{y}
+				{width}
+				{height}
+				{alpha}
+				{zIndex}
+				phase={keyPhase(cell.key)}
+				{winning}
+			/>
+		{:else if cell.name === 'H1'}
+			<!-- Compass: bezel + turning needle + zooming alien + popping poles. Covers
+			     its own win state, so it stands in for <SymbolWinFx> here. -->
+			<CompassSymbol
+				assetKey={symbolInfo.assetKey}
+				{x}
+				{y}
+				{width}
+				{height}
+				{alpha}
+				{zIndex}
+				phase={keyPhase(cell.key)}
+				{winning}
+			/>
+		{:else if isWildCell}
+			<!-- Wild: magnet + popping bolt + blinking eye + lighting plaque. Covers its own
+			     win state, so it stands in for <SymbolWinFx> here, and the board-wide
+			     wild idle layer is gone for the same reason the scatter left it.
+			     MULTIPLIER wilds come through here too: the design's multiplier lockup is
+			     this same lockup with the bolt swapped for a numbered disc, so the component
+			     takes the multiplier and swaps that one layer. Its assetKey has to be the
+			     PLAIN wild for the current layout, not symbolInfo.assetKey — that still
+			     resolves to the old flat wild_xN texture with the number baked in, which
+			     would show through as a second multiplier behind the disc. -->
+			<WildSymbol
+				assetKey={getSpriteKeyByName({ name: 'WILD', state: 'static' })}
+				multiplier={cell.multiplier}
+				{x}
+				{y}
+				{width}
+				{height}
+				{alpha}
+				{zIndex}
+				phase={keyPhase(cell.key)}
+				{winning}
+			/>
+		{:else if cell.name === 'H2'}
+			<!-- Lightning badge: the bolt pops and blinks and the corner balls chase. Covers its
+			     own win state, so it stands in for <SymbolWinFx> here. -->
+			<LightningSymbol
+				assetKey={symbolInfo.assetKey}
+				{x}
+				{y}
+				{width}
+				{height}
+				{alpha}
+				{zIndex}
+				phase={keyPhase(cell.key)}
+				{winning}
+			/>
+		{:else if cell.name === 'H3'}
+			<!-- Portal: the galaxy in the middle blinks while it is still, and spins up fast
+			     on a win while the alien's antennae flap. Covers its own win state, so it
+			     stands in for <SymbolWinFx> here. -->
+			<PortalSymbol
+				assetKey={symbolInfo.assetKey}
+				{x}
+				{y}
+				{width}
+				{height}
+				{alpha}
+				{zIndex}
+				phase={keyPhase(cell.key)}
+				{winning}
+			/>
+		{:else if cell.name === 'H4'}
+			<!-- Electromagnetic device: drums + shaking antennae, with current arcing between
+			     the balls on a win. Covers its own win state, so it stands in for
+			     <SymbolWinFx> here. -->
+			<EmDeviceSymbol
+				assetKey={symbolInfo.assetKey}
+				{x}
+				{y}
+				{width}
+				{height}
+				{alpha}
+				{zIndex}
+				phase={keyPhase(cell.key)}
+				{winning}
+			/>
+		{:else if cell.name === 'L4'}
+			<!-- Circuit chip: the slime oozes down the board while it sits still, and on a
+			     win the alien zooms and grins while current jumps between the two screws.
+			     Covers its own win state, so it stands in for <SymbolWinFx> here. -->
+			<CircuitSymbol
+				assetKey={symbolInfo.assetKey}
+				{x}
+				{y}
+				{width}
+				{height}
+				{alpha}
+				{zIndex}
+				phase={keyPhase(cell.key)}
+				{winning}
+			/>
+		{:else if cell.name === 'L3'}
+			<!-- Astronaut: the alien's eyes look around while it sits still, and the head
+			     zooms and shakes on a win. Covers its own win state, so it stands in for
+			     <SymbolWinFx> here. -->
+			<CoilSymbol
+				assetKey={symbolInfo.assetKey}
+				{x}
+				{y}
+				{width}
+				{height}
+				{alpha}
+				{zIndex}
+				phase={keyPhase(cell.key)}
+				{winning}
+			/>
+		{:else if cell.name === 'L2'}
+			<!-- Magnet: body + shaking antennae + a terminal arc on a win. Like the
+			     scatter it covers its own win state, so it stands in for
+			     <SymbolWinFx> here. -->
+			<MagnetSymbol
+				assetKey={symbolInfo.assetKey}
+				{x}
+				{y}
+				{width}
+				{height}
+				{alpha}
+				{zIndex}
+				phase={keyPhase(cell.key)}
+				{winning}
+			/>
+		{:else if cell.name === 'L1'}
+			<!-- Battery: housing + balloons + the popping cell. Like the scatter it
+			     covers its own win state, so it stands in for <SymbolWinFx> here. -->
+			<BatterySymbol
+				assetKey={symbolInfo.assetKey}
+				{x}
+				{y}
+				{width}
+				{height}
+				{alpha}
+				{zIndex}
+				phase={keyPhase(cell.key)}
+				{winning}
+			/>
+		{:else if winning}
+			<!-- Winning cell: hi-res static win art with procedural pop/wobble/burst
+			     choreography — see <SymbolWinFx> for why the flipbooks are gone. -->
+			<SymbolWinFx
+				assetKey={symbolInfo.assetKey}
+				{x}
+				{y}
+				{width}
+				{height}
+				{alpha}
+				{zIndex}
+				phase={keyPhase(cell.key)}
+			/>
+		{:else}
+			{@const wig = wiggleFor(cell)}
+			<Sprite
+				key={symbolInfo.assetKey}
+				{x}
+				y={y + (wig?.dy ?? 0)}
+				anchor={{ x: 0.5, y: 0.5 }}
+				rotation={wig?.rot ?? 0}
+				width={width * (wig?.scale ?? 1)}
+				height={height * (wig?.scale ?? 1)}
+				{alpha}
+				tint={0xffffff}
+				{zIndex}
+			/>
+		{/if}
+	{/snippet}
+
 <script lang="ts">
-	import { AnimatedSprite, Container, Graphics, Sprite, type LoadedSpriteSheet } from 'pixi-svelte';
+	import { Container, Graphics, Sprite } from 'pixi-svelte';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 
 	import SymbolWinFx from './SymbolWinFx.svelte';
 	import ScatterSymbol from './ScatterSymbol.svelte';
 	import BatterySymbol from './BatterySymbol.svelte';
+	import MagnetSymbol from './MagnetSymbol.svelte';
 	import CompassSymbol from './CompassSymbol.svelte';
+	import EmDeviceSymbol from './EmDeviceSymbol.svelte';
+	import LightningSymbol from './LightningSymbol.svelte';
+	import PortalSymbol from './PortalSymbol.svelte';
+	import CoilSymbol from './CoilSymbol.svelte';
+	import CircuitSymbol from './CircuitSymbol.svelte';
+	import WildSymbol from './WildSymbol.svelte';
 	import {
 		drawRingMagIdle,
-		drawWildIdle,
 		type SpecialIdleG,
 	} from '../game/specialIdleFx';
 	import { getContext } from '../game/context';
 	import { BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, SYMBOL_H, SYMBOL_W } from '../game/constants';
-	import { drawPad } from '../game/boardStyle';
-	import { getSymbolInfo } from '../game/utils';
+	import { BOARD_COLORS, drawPad } from '../game/boardStyle';
+	import { getSpriteKeyByName, getSymbolInfo } from '../game/utils';
 
 	const context = getContext();
-
-	// Stacked-state idle loops (see assets.ts stackAnim*): symbol name -> spritesheet key.
-	// All eight pay symbols have videos; specials (WILD/MAGNET/SCATTER) keep the static art.
-	const STACK_ANIM_KEYS: Record<string, string> = {
-		H1: 'stackAnimH1',
-		H2: 'stackAnimH2',
-		H3: 'stackAnimH3',
-		H4: 'stackAnimH4',
-		L1: 'stackAnimL1',
-		L3: 'stackAnimL3',
-		L4: 'stackAnimL4',
-	};
 
 	const board = $derived(context.stateGame.board);
 
@@ -50,6 +247,8 @@
 	const flatCells = $derived(board.flatMap((reel) => reel));
 	const lockedCells = $derived(flatCells.filter((cell) => cell.locked));
 	const unlockedCells = $derived(flatCells.filter((cell) => !cell.locked));
+	/** One board cell, as the snippet below and both render passes see it. */
+	type BoardCell = (typeof flatCells)[number];
 	const Z = {
 		grid: 0,
 		reel: 10,
@@ -196,6 +395,26 @@
 	// seconds. Same captured-Graphics pattern — the board is otherwise completely still between
 	// spins, which is the other half of the "poor animations" verdict.
 	let idleG: SpecialIdleG | null = null;
+	/**
+	 * The cluster's electric border, in the MOTHERSHIP's magenta rather than the electric blue it
+	 * was. The four tones are sampled off the UFO in the room art (#e070f0 / #d070f0 for its lit
+	 * lozenges) and laid out as the same ladder the blue used -- a wide dark underglow, a mid body,
+	 * a bright edge and a white core -- so only the hue moves and the arcs keep their shape.
+	 *
+	 * The core stays WHITE. Tinting it magenta too flattens the whole strike into one colour; the
+	 * white is what makes it read as something too hot to have a colour.
+	 */
+	const ARC = {
+		underglow: 0xb43ad6,
+		body: 0xd45ce6,
+		edge: 0xf07ff0,
+		core: 0xffffff,
+		fork: 0xf5aef5,
+	} as const;
+
+	/** Contact shadows + the spin sheen. Below the symbols, above the pads. */
+	let shadowG: SpecialIdleG | null = null;
+	let shadowGDrawn = false;
 	const SWEEP_PERIOD_S = 7.5;
 	const SWEEP_WIDTH = 1.6; // columns the leading edge lights at once
 	const DUST_MS = 380;
@@ -233,6 +452,77 @@
 		}
 		return any;
 	};
+	// Contact shadows, and a sheen that runs down the reels while they spin.
+	//
+	// Both live BELOW the symbols and ABOVE the pads, in one Graphics: they are the only two things
+	// drawn in that gap, and they share a clear/redraw cycle.
+	//
+	// The shadow is what puts a symbol IN its cell rather than on top of the board. It tracks the
+	// cell's live position, so during a drop it stays on the pad the symbol is falling toward while
+	// the symbol is still above it -- and it shrinks and fades with that distance, which is the
+	// whole cue for height. A shadow that simply followed the sprite would just be a dark smear
+	// glued underneath and would read as nothing at all.
+	// Seated LOW and slightly wider than the symbol on purpose. The art fills about 95% of its pad,
+	// so a shadow tucked under the symbol's middle is completely hidden by the symbol itself and the
+	// whole layer renders as nothing; only the rim that clears the art's bottom edge ever reads.
+	const SHADOW_RX = 0.4; // of SYMBOL_W, at rest
+	const SHADOW_RY = 0.075; // of SYMBOL_H, at rest
+	const SHADOW_DY = 0.41; // below the cell centre
+	const SHADOW_ALPHA = 0.38;
+	/** Fall distance, in cells, over which the shadow reaches its smallest. */
+	const SHADOW_LIFT = 1.6;
+	/** Seconds for the sheen to travel the full grid height, and how many rows it lights at once. */
+	const SHEEN_PERIOD_S = 1.15;
+	const SHEEN_ROWS = 1.9;
+
+	const drawShadows = (g: SpecialIdleG, now: number) => {
+		g.clear();
+		let any = false;
+
+		for (const cell of flatCells) {
+			const alpha = (cell.locked ? 1 : cell.displayAlpha.current) * loserAlpha;
+			if (alpha <= 0.02) continue;
+			const restY = getStaticY(cell.position.row);
+			// How far the symbol is ABOVE its pad, in cells. Below the pad (the exit) counts as
+			// zero: an exiting symbol is leaving the cell and its shadow should stay put and fade
+			// with it, not swell as it drops past.
+			const lift = Math.max(0, (restY - cell.displayY.current) / SYMBOL_H);
+			const f = Math.max(0, 1 - lift / SHADOW_LIFT);
+			if (f <= 0.02) continue;
+			any = true;
+			const cx = getX(cell.position.reel) + cell.displayX.current;
+			const cy = restY + SYMBOL_H * SHADOW_DY;
+			// Two ellipses, not one: a wide faint one for the penumbra and a tight one for the
+			// contact patch. A single flat ellipse reads as a painted oval on the pad.
+			const k = 0.55 + 0.45 * f;
+			g.ellipse(cx, cy, SYMBOL_W * SHADOW_RX * k * 1.35, SYMBOL_H * SHADOW_RY * k * 1.5);
+			g.fill({ color: BOARD_COLORS.symbolShadow, alpha: SHADOW_ALPHA * 0.4 * f * alpha });
+			g.ellipse(cx, cy, SYMBOL_W * SHADOW_RX * k, SYMBOL_H * SHADOW_RY * k);
+			g.fill({ color: BOARD_COLORS.symbolShadow, alpha: SHADOW_ALPHA * f * alpha });
+		}
+
+		// The sheen only exists while the reels are actually turning, which is what makes it read as
+		// motion rather than as decoration. It runs DOWN, the way the symbols do.
+		if (context.stateGame.boardSpinning) {
+			const head =
+				((now / 1000 / SHEEN_PERIOD_S) % 1) * (BOARD_DIMENSIONS.y + SHEEN_ROWS) - SHEEN_ROWS;
+			for (let row = 0; row < BOARD_DIMENSIONS.y; row++) {
+				const d = Math.abs(row - head);
+				if (d > SHEEN_ROWS) continue;
+				any = true;
+				const f = (1 - d / SHEEN_ROWS) ** 2;
+				g.ellipse(
+					(SYMBOL_W * BOARD_DIMENSIONS.x) / 2,
+					getStaticY(row),
+					(SYMBOL_W * BOARD_DIMENSIONS.x) / 2,
+					SYMBOL_H * 0.46,
+				);
+				g.fill({ color: 0xffffff, alpha: 0.05 * f });
+			}
+		}
+		return any;
+	};
+
 	// The specials' idle, plus the charge sweep. Runs on the settled board only: during a drop the
 	// symbols are mid-flight and their cells are not where the FX would be drawn.
 	const drawIdle = (g: SpecialIdleG, now: number) => {
@@ -257,35 +547,12 @@
 			}
 		}
 
-		// WILD idle. Locked cells are included: a stacked wild is still a wild.
+		// WILD idle used to be drawn here. It is gone: <WildSymbol> now owns every wild end to end,
+		// idle and win, plain and multiplier, so anything drawn here would double the effect.
 		//
-		// SCATTER is NOT drawn here any more. This layer is one board-wide additive Graphics in
-		// FRONT of every symbol, which was fine for the old flat scatter art but cannot express the
-		// new capsule: its bubbles have to pass BEHIND the alien. <ScatterSymbol> owns that cell
-		// end to end — idle and win — so drawing anything for it here would double the effect.
-		for (const cell of flatCells) {
-			const isWild = cell.wild || cell.name === 'WILD';
-			if (!isWild) continue;
-			if (cell.symbolState === 'win') continue; // SymbolWinFx owns the cell during a win
-			const info = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState });
-			// The SAME alpha the sprite is drawn at. The magnet pull dims every non-target cell to
-			// 0.08 and a win dims the losers to LOSER_DIM, and neither touched this layer — a
-			// scatter caught by either faded out while its electricity kept arcing in the empty
-			// cell. Locked cells are not alpha-tweened, so they take the win dim only.
-			const cellAlpha = (cell.locked ? 1 : cell.displayAlpha.current) * loserAlpha;
-			const o = {
-				x: getX(cell.position.reel) + cell.displayX.current,
-				y: cell.displayY.current,
-				w: SYMBOL_W * info.sizeRatios.width,
-				h: SYMBOL_H * info.sizeRatios.height,
-				t,
-				phase: keyPhase(cell.key),
-				alpha: cellAlpha,
-			};
-			if (cellAlpha <= 0.01) continue;
-			any = true;
-			drawWildIdle(g, o);
-		}
+		// SCATTER left this layer for the same reason. It is one board-wide additive Graphics in FRONT
+		// of every symbol, which was fine for the old flat art but cannot express the new capsule: its
+		// bubbles have to pass BEHIND the alien.
 
 		// RING MAGNET (L2) cluster idle — replaces the `ringmag_stack` flipbook. Scoped to LOCKED
 		// cells like the flipbook it replaces: this is the cluster's charge, not a per-symbol idle,
@@ -401,7 +668,7 @@
 			g.lineTo(loop[0].x, loop[0].y);
 			g.stroke({
 				width: SYMBOL_W * 0.04,
-				color: 0x2fa8ff,
+				color: ARC.body,
 				alpha: 0.22 * flick + 0.1,
 				cap: 'round',
 				join: 'round',
@@ -436,7 +703,7 @@
 				trace();
 				g.stroke({
 					width: SYMBOL_W * 0.085,
-					color: 0x1e8fff,
+					color: ARC.underglow,
 					alpha: 0.6 + surge * 0.3,
 					cap: 'round',
 					join: 'round',
@@ -444,7 +711,7 @@
 				trace();
 				g.stroke({
 					width: SYMBOL_W * 0.038,
-					color: 0x66d4ff,
+					color: ARC.edge,
 					alpha: 0.95,
 					cap: 'round',
 					join: 'round',
@@ -452,7 +719,7 @@
 				trace();
 				g.stroke({
 					width: SYMBOL_W * 0.016,
-					color: 0xffffff,
+					color: ARC.core,
 					alpha: 1,
 					cap: 'round',
 					join: 'round',
@@ -471,7 +738,7 @@
 						g.lineTo(b.x + Math.cos(ang) * len, b.y + Math.sin(ang) * len);
 						g.stroke({
 							width: SYMBOL_W * 0.013,
-							color: 0x9fdcff,
+							color: ARC.fork,
 							alpha: 0.85,
 							cap: 'round',
 							join: 'round',
@@ -480,9 +747,9 @@
 				}
 				// Head spark
 				g.circle(pts[0].x, pts[0].y, SYMBOL_W * 0.055);
-				g.fill({ color: 0x2fa8ff, alpha: 0.4 });
+				g.fill({ color: ARC.body, alpha: 0.4 });
 				g.circle(pts[0].x, pts[0].y, SYMBOL_W * 0.025);
-				g.fill({ color: 0xffffff, alpha: 0.9 });
+				g.fill({ color: ARC.core, alpha: 0.9 });
 			}
 		}
 	};
@@ -503,6 +770,18 @@
 			}
 			if (idleG?.destroyed) idleG = null;
 			if (idleG) drawIdle(idleG, now);
+			if (shadowG?.destroyed) {
+				shadowG = null;
+				shadowGDrawn = false;
+			}
+			if (shadowG) {
+				const drew = drawShadows(shadowG, now);
+				if (drew) shadowGDrawn = true;
+				else if (shadowGDrawn) {
+					shadowG.clear();
+					shadowGDrawn = false;
+				}
+			}
 			if (dustG) {
 				const drew = drawDust(dustG, now);
 				if (drew) dustGDrawn = true;
@@ -678,81 +957,17 @@
 							}}
 						/>
 					{/if}
-					{@const isScatterCell = cell.scatter || cell.name === 'SCATTER'}
-					{#if isScatterCell}
-						<!-- Layered capsule: base machine + bubbles + alien + eye + band arcs. It
-						     covers the win state itself, so it replaces <SymbolWinFx> here rather
-						     than stacking with it. -->
-						<ScatterSymbol
-							assetKey={symbolInfo.assetKey}
-							{x}
-							{y}
-							{width}
-							{height}
-							alpha={cell.displayAlpha.current *
-								(cell.symbolState === 'win' ? 1 : loserAlpha)}
-							zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
-							phase={keyPhase(cell.key)}
-							winning={cell.symbolState === 'win'}
-						/>
-					{:else if cell.name === 'H1'}
-						<!-- Compass: bezel + turning needle + zooming alien + popping poles. Covers
-						     its own win state, so it stands in for <SymbolWinFx> here. -->
-						<CompassSymbol
-							assetKey={symbolInfo.assetKey}
-							{x}
-							{y}
-							{width}
-							{height}
-							alpha={cell.displayAlpha.current *
-								(cell.symbolState === 'win' ? 1 : loserAlpha)}
-							zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
-							phase={keyPhase(cell.key)}
-							winning={cell.symbolState === 'win'}
-						/>
-					{:else if cell.name === 'L1'}
-						<!-- Battery: housing + balloons + the popping cell. Like the scatter it
-						     covers its own win state, so it stands in for <SymbolWinFx> here. -->
-						<BatterySymbol
-							assetKey={symbolInfo.assetKey}
-							{x}
-							{y}
-							{width}
-							{height}
-							alpha={cell.displayAlpha.current *
-								(cell.symbolState === 'win' ? 1 : loserAlpha)}
-							zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
-							phase={keyPhase(cell.key)}
-							winning={cell.symbolState === 'win'}
-						/>
-					{:else if cell.symbolState === 'win'}
-						<!-- Winning cell: hi-res static win art with procedural pop/wobble/burst
-						     choreography — see <SymbolWinFx> for why the flipbooks are gone. -->
-						<SymbolWinFx
-							assetKey={symbolInfo.assetKey}
-							{x}
-							{y}
-							{width}
-							{height}
-							alpha={cell.displayAlpha.current}
-							zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
-							phase={keyPhase(cell.key)}
-						/>
-					{:else}
-						{@const wig = wiggleFor(cell)}
-						<Sprite
-							key={symbolInfo.assetKey}
-							{x}
-							y={y + (wig?.dy ?? 0)}
-							anchor={{ x: 0.5, y: 0.5 }}
-							rotation={wig?.rot ?? 0}
-							width={width * (wig?.scale ?? 1)}
-							height={height * (wig?.scale ?? 1)}
-							alpha={cell.displayAlpha.current * loserAlpha}
-							tint={0xffffff}
-							zIndex={cell.pulling ? Z.pulledSymbol : Z.symbol}
-						/>
-					{/if}
+					{@render symbolArt(
+						cell,
+						symbolInfo,
+						x,
+						y,
+						width,
+						height,
+						cell.displayAlpha.current * (cell.symbolState === 'win' ? 1 : loserAlpha),
+						cell.pulling ? Z.pulledSymbol : Z.symbol,
+						cell.symbolState === 'win',
+					)}
 				{/each}
 			{/if}
 		</Container>
@@ -768,54 +983,30 @@
 			{@const x = getX(cell.position.reel)}
 			{@const y = getStaticY(cell.position.row)}
 			{@const symbolInfo = getSymbolInfo({ rawSymbol: cell, state: cell.symbolState })}
-			{@const safeAssetKey = symbolInfo.assetKey ?? ''}
 			{@const width = SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current}
 			{@const height = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
-			{#if cell.symbolState === 'win'}
-				<SymbolWinFx
-					assetKey={safeAssetKey}
-					{x}
-					{y}
-					{width}
-					{height}
-					zIndex={Z.lockedSymbol}
-					phase={keyPhase(cell.key)}
-				/>
-			{:else}
-				{@const stackTextures = context.stateApp.loadedAssets?.[
-					STACK_ANIM_KEYS[cell.name] ?? ''
-				] as LoadedSpriteSheet | undefined}
-				{#if stackTextures?.length}
-					<!-- Charging idle loop, de-synced per cell so a stack doesn't pulse in lockstep.
-					     0.2 speed = 12fps against the 60fps ticker (the sheets are 36f/3s loops). -->
-					<AnimatedSprite
-						textures={stackTextures}
-						play
-						loop
-						animationSpeed={0.2}
-						startFrame={Math.floor(keyPhase(cell.key) * 36)}
-						{x}
-						{y}
-						anchor={{ x: 0.5, y: 0.5 }}
-						{width}
-						{height}
-						alpha={loserAlpha}
-						zIndex={Z.lockedSymbol}
-					/>
-				{:else}
-					<Sprite
-						key={safeAssetKey}
-						{x}
-						{y}
-						anchor={{ x: 0.5, y: 0.5 }}
-						{width}
-						{height}
-						alpha={loserAlpha}
-						tint={0xffffff}
-						zIndex={Z.lockedSymbol}
-					/>
-				{/if}
-			{/if}
+			<!-- A locked CLUSTER cell, drawn by the same snippet as every other cell. It used to have
+			     two special paths and both showed the wrong thing:
+			       * winning cells went to <SymbolWinFx> with only the base texture, which hollowed
+			         out every rebuilt symbol (a portal missing its galaxy, a chip with a blank white
+			         screen) and played the old pop/wobble over the hole;
+			       * everything else played a `stackAnim*` flipbook, and those sheets are PRE-REBUILD
+			         art -- a stack of astronauts came up as the old blue coil springs.
+			     Being LOCKED is not a win: a cell only animates during the actual win pass, and then
+			     it is its own component's choreography, not the old shared one. The rest of the
+			     respin chain a stack just sits there, which is what stops it reading as a wall of
+			     animation. -->
+			{@render symbolArt(
+				cell,
+				symbolInfo,
+				x,
+				y,
+				width,
+				height,
+				cell.symbolState === 'win' ? 1 : loserAlpha,
+				Z.lockedSymbol,
+				cell.symbolState === 'win',
+			)}
 		{/each}
 
 		<!-- Electric borders around every STACKED (locked) cell: two crawling jagged arc runners per
@@ -834,6 +1025,13 @@
 			blendMode="add"
 			zIndex={Z.symbol - 1}
 			draw={(gr) => (dustG = gr as unknown as LockG)}
+		/>
+
+		<!-- Contact shadows and the spin sheen: below every symbol, above the pads. NORMAL blend, not
+		     additive — a shadow has to darken the pad, and an additive layer can only lighten it. -->
+		<Graphics
+			zIndex={Z.grid + 1}
+			draw={(gr) => (shadowG = gr as unknown as SpecialIdleG)}
 		/>
 
 		<!-- Specials' idle animation + the grid charge sweep. Above the symbols: the wild's field

@@ -10,6 +10,7 @@ quota when this was built):
     planet.png      the small purple planet    -> slow rotation
     panel_a/b/c.png the three feature panels   -> byte-identical, so ONE file ships
     composite.png   the finished design        -> placements are MEASURED off this
+    polarity_icon_raw.png  the POLARITY SHIFTER icon, exported from Figma 9078:18714
 
 The green moon is the one piece that did NOT arrive as an asset, so it is CUT OUT of the composite
 here. The room art carries the same moon, but washed out behind the window's haze -- the composite
@@ -103,6 +104,36 @@ def measure(comp: Image.Image) -> dict:
     return out
 
 
+def unwhite(im: Image.Image) -> Image.Image:
+    """Give a Figma export back its transparency.
+
+    `download_assets` renders every export ONTO WHITE -- the alpha channel comes back solid 255 --
+    so the background has to be keyed off again here. It is keyed by FLOOD FILL from the border, not
+    by "white is background": the polarity icon's alien has a white eye, and a global white key
+    punches a hole straight through its face. Only white the border can reach is background.
+    """
+    a = np.asarray(im.convert("RGB")).astype(np.float32)
+    h, w = a.shape[:2]
+    pale = a.min(axis=2) > 140
+    seen = np.zeros((h, w), bool)
+    stack = [(y, x) for x in range(w) for y in (0, h - 1) if pale[y, x]]
+    stack += [(y, x) for y in range(h) for x in (0, w - 1) if pale[y, x]]
+    for y, x in stack:
+        seen[y, x] = True
+    while stack:
+        y, x = stack.pop()
+        for ny, nx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)):
+            if 0 <= ny < h and 0 <= nx < w and pale[ny, nx] and not seen[ny, nx]:
+                seen[ny, nx] = True
+                stack.append((ny, nx))
+    # Inside the art alpha is 1 and the pixel is untouched; on the keyed background it ramps with
+    # distance from white and the white is divided back out, so the outline keeps no pale fringe.
+    alpha = np.where(seen, np.clip((255 - a.min(axis=2)) / 45.0, 0, 1), 1.0)
+    safe = np.maximum(alpha, 1e-3)[:, :, None]
+    col = np.clip((a - (1 - safe) * 255) / safe, 0, 255)
+    return trim(Image.fromarray(np.dstack([col, alpha * 255]).astype(np.uint8), "RGBA"))
+
+
 def cut_moon(comp: Image.Image, box: dict) -> Image.Image:
     """Key the moon (and its halo) off the sky behind it.
 
@@ -151,7 +182,8 @@ def cut_moon(comp: Image.Image, box: dict) -> Image.Image:
 
 
 def main() -> None:
-    need = ["room.png", "cloud_big.png", "cloud_small.png", "planet.png", "panel_a.png", "composite.png"]
+    need = ["room.png", "cloud_big.png", "cloud_small.png", "planet.png", "panel_a.png",
+            "composite.png", "polarity_icon_raw.png"]
     for n in need:
         if not (SRC / n).exists():
             die(f"missing art-src/splash/{n}")
@@ -183,8 +215,14 @@ def main() -> None:
     moon.save(OUT / "moon.webp", **RGBA_WEBP)
     loose["moon"] = moon
 
+    # The POLARITY SHIFTER card's icon (design 9078:18632). It is the only art the feature panels
+    # carry -- the other two cards are type only.
+    icon = unwhite(Image.open(SRC / "polarity_icon_raw.png"))
+    icon.save(OUT / "polarity.webp", **RGBA_WEBP)
+
     print("\nwritten to", OUT.relative_to(ROOT))
-    for f in ("room.webp", "panel.webp", "cloud_a.webp", "cloud_b.webp", "planet.webp", "moon.webp"):
+    for f in ("room.webp", "panel.webp", "cloud_a.webp", "cloud_b.webp", "planet.webp", "moon.webp",
+              "polarity.webp"):
         p = OUT / f
         print(f"  {f:14s} {Image.open(p).size} {p.stat().st_size // 1024}KB")
 

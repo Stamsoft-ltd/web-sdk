@@ -48,6 +48,14 @@ export const BOARD_COLORS = {
 	/** The design's pad is rgba(180,182,255,0.9) — the plate reads through it. */
 	padAlpha: 0.9,
 	padBorder: 0xa5a7ee,
+	// Depth, which the design does not specify: it draws the pad as one flat rounded rect, and 49
+	// flat rects side by side read as a sheet of paper rather than as a machine with wells in it.
+	// A dark ring just inside the border plus a lighter one along the bottom is the cheapest thing
+	// that reads as recessed — no gradients, no extra textures, two more strokes per pad.
+	padRecess: 0x6f71bd,
+	padBevel: 0xe4e5ff,
+	/** The soft contact shadow a symbol casts on its own pad. */
+	symbolShadow: 0x4a4b92,
 	// The design has no win state for a cell, so this is derived rather than specified: the pad
 	// lights toward the palette's accent (#A88EFF, the same violet as the spin button and the BONUS
 	// pill) instead of inventing a colour the rest of the screen never uses.
@@ -80,7 +88,20 @@ export const drawPlate = (g: Painter, scale = 1) => {
 	g.stroke({ width: b, color: BOARD_COLORS.plateBorder });
 };
 
-/** Draw one cell pad, centred on (cx, cy) in the grid's local units. */
+/** How deep the pad's inner shading reads, as a fraction of the pad's short side. */
+const RECESS_INSET = 0.045;
+const RECESS_ALPHA = 0.3;
+const BEVEL_ALPHA = 0.4;
+
+/**
+ * Draw one cell pad, centred on (cx, cy) in the grid's local units.
+ *
+ * Three passes: the design's flat pad, then a dark ring just inside its border, then a lighter ring
+ * offset DOWNWARD. The offset is what turns two concentric rings into a light direction — the dark
+ * one shows most at the top, the light one most at the bottom, and the cell reads as a well lit
+ * from above. Both are strokes rather than fills, so the pad's own colour is untouched and a win
+ * pad still lights to exactly the specified violet.
+ */
 export const drawPad = (g: Painter, cx: number, cy: number, win: boolean) => {
 	const b = PAD_BORDER * (win ? WIN_BORDER_SCALE : 1);
 	const w = PAD_W - b;
@@ -91,4 +112,17 @@ export const drawPad = (g: Painter, cx: number, cy: number, win: boolean) => {
 		alpha: win ? 1 : BOARD_COLORS.padAlpha,
 	});
 	g.stroke({ width: b, color: win ? BOARD_COLORS.winBorder : BOARD_COLORS.padBorder });
+
+	// A won pad is already carrying a triple-width lit border; shading it as well muddies the very
+	// thing that is meant to read as "this cell paid".
+	if (win) return;
+
+	const inset = PAD_H * RECESS_INSET;
+	const rw = w - inset * 2;
+	const rh = h - inset * 2;
+	const rr = Math.max(0, PAD_RADIUS - b / 2 - inset);
+	g.roundRect(cx - rw / 2, cy - rh / 2, rw, rh, rr);
+	g.stroke({ width: inset, color: BOARD_COLORS.padRecess, alpha: RECESS_ALPHA });
+	g.roundRect(cx - rw / 2, cy - rh / 2 + inset, rw, rh, rr);
+	g.stroke({ width: inset * 0.8, color: BOARD_COLORS.padBevel, alpha: BEVEL_ALPHA });
 };

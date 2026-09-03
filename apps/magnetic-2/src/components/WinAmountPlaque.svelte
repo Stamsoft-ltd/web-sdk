@@ -51,8 +51,10 @@
 			onresize={(s) => (textSizes = s)}
 			text={bookEventAmountToCurrencyString(props.amount)}
 			style={{
-				fontFamily: 'Chakra Petch, Inter, sans-serif',
-				fontWeight: '700',
+				// Audiowide (Figma 9076:28690 — 90.87px, 2.7261 tracking, which is the 0.03em below).
+				// Regular is the family's only weight; 700 here would ask PIXI for a synthesised bold.
+				fontFamily: 'Audiowide, Chakra Petch, Inter, sans-serif',
+				fontWeight: '400',
 				fontSize,
 				fill: 0xffffff,
 				align: 'center',

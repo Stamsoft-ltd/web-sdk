@@ -7,13 +7,19 @@ than it measures and its text lands off-centre.
 
     win_plaque.png -> ui/win_plaque.webp   the small-win amount plate
 
+PASS THROUGH — art-src/info/, the rules carousel's own icons (MOTHERSHIP design 4504:4289). These
+are NOT trimmed: each one is drawn inside a box the design sizes against the stat card, and the art
+sits off-centre in that box on purpose (the trophy and the horseshoe both hang low). Trimming would
+throw the box away and every icon would then need its own hand-tuned offset to sit right again.
+
 RECOLOUR — art the MOTHERSHIP redesign did not replace, still painted for the old blue-tech palette.
 A hue ROTATION, not a tint: these plates are near-monochrome blue over neutral metal, and rotating
 hue leaves anything unsaturated where it is, so the housing stays grey while the glass and trim
 swing violet. IN PLACE, so re-run against pristine art (apps/magnetic ships the originals) rather
 than against this script's own output, or the rotation compounds.
 
-    frames/info_box.webp   RESPIN / TOTAL WIN / FREE SPINS plate
+    (nothing — the only entry, frames/info_box.webp, retired 2026-09-03 when the RESPIN /
+     FREE SPINS / TOTAL WIN plate became a drawn rounded rect in InfoBox.svelte)
 
 Run:  python3 scripts/build-ui-art.py
 """
@@ -33,8 +39,13 @@ OUT = ROOT / "static" / "assets" / "components" / "ui"
 WEBP = dict(quality=90, method=6, alpha_quality=95)
 TARGETS = ["win_plaque"]
 
-# The old art clusters near hue 211-218; the HUD accent (#A88EFF) is 256.
-RECOLOUR = {Path("static/assets/components/frames/info_box.webp"): 40.0}
+# Rules-carousel icons: Figma renders at 3x the design's box, kept whole (see the header).
+INFO_SRC = ROOT / "art-src" / "info"
+INFO_TARGETS = ["ov_ic_reels", "ov_ic_cluster", "ov_ic_maxwin", "ov_ic_rtp"]
+
+# The old art clusters near hue 211-218; the HUD accent (#A88EFF) is 256. Empty since the info box
+# stopped being a bitmap — kept because the next Version2 leftover will want exactly this treatment.
+RECOLOUR: dict[Path, float] = {}
 
 
 def rotate_hue(im: Image.Image, degrees: float) -> Image.Image:
@@ -88,6 +99,14 @@ def main() -> None:
             f"  {name}.webp {art.size} aspect {art.width / art.height:.4f}"
             f" {(OUT / f'{name}.webp').stat().st_size // 1024}KB"
         )
+
+    for name in INFO_TARGETS:
+        src = INFO_SRC / f"{name}.png"
+        if not src.exists():
+            sys.exit(f"build-ui-art: missing art-src/info/{name}.png")
+        im = Image.open(src).convert("RGBA")
+        im.save(OUT / f"{name}.webp", **WEBP)
+        print(f"  {name}.webp {im.size} {(OUT / f'{name}.webp').stat().st_size // 1024}KB")
 
     for rel, degrees in RECOLOUR.items():
         path = ROOT / rel

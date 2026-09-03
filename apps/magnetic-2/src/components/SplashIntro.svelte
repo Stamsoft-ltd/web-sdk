@@ -16,6 +16,7 @@
 	const planetSrc = './assets/components/splash/planet.webp?v=20260901c';
 	const cloudASrc = './assets/components/splash/cloud_a.webp?v=20260901c';
 	const cloudBSrc = './assets/components/splash/cloud_b.webp?v=20260901c';
+	const polaritySrc = './assets/components/splash/polarity.webp?v=20260902';
 	// Same URL (incl. ?v=) as assets.ts so the browser reuses the bytes pixi already downloaded.
 	const brandSrc = './assets/components/ui/press_play_logo.webp?v=20260709';
 
@@ -38,7 +39,6 @@
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { stateI18nDerived } from 'state-shared';
-	import { i18nDerived } from '../i18n/i18nDerived';
 	import LoadingMark from './LoadingMark.svelte';
 	import { getContext } from '../game/context';
 
@@ -73,8 +73,10 @@
 		return {
 			id,
 			big,
-			// Kept in the upper sky: below ~34% the panels and the logo take over.
-			top: 6 + Math.random() * 26,
+			// Kept in the upper sky: above ~9% is the window's top frame (the sky layer is clipped to
+			// the opening, so a cloud placed higher would simply be cut in half), and below ~34% the
+			// panels and the logo take over.
+			top: 9 + Math.random() * 23,
 			// Widths as a % of the frame. The two source shapes differ, so the big one is given less
 			// spread — at the top of its range it starts to read as scenery rather than a cloud.
 			size: big ? 9 + Math.random() * 4 : 4.5 + Math.random() * 3,
@@ -211,6 +213,23 @@
 	function handleKey(e: KeyboardEvent) {
 		if (e.code === 'Space' || e.code === 'Enter') handlePress();
 	}
+
+	/** The BONUS GAMES card's three scatter tiers, in the design's order. */
+	const TIERS = [
+		{ count: 3, key: 'SPLASH GRAVITY BREACH' },
+		{ count: 4, key: 'SPLASH CORE OVERLOAD' },
+		{ count: 5, key: 'SPLASH ZERO POINT' },
+	] as const;
+
+	/**
+	 * "%count% scatters for" with the NUMBER lifted out, so it can take its own colour the way the
+	 * design sets it. Split on the placeholder rather than formatting the string and then hunting
+	 * for the digit: the count does not come first in every locale.
+	 */
+	const scatterLine = (count: number) => {
+		const [before, after] = t('SPLASH SCATTERS FOR').split('%count%');
+		return { before: before ?? '', after: after ?? '' };
+	};
 </script>
 
 <svelte:window onkeydown={handleKey} onresize={updateOrientation} />
@@ -224,28 +243,29 @@
 	onclick={handlePress}
 	onkeydown={handleKey}
 >
-	<!-- Per-panel text content by index (0 = BONUS GAMES, 1 = MEGA CHAIN, 2 = MAX WIN). -->
+	<!-- Per-panel content by index (0 = BONUS GAMES, 1 = POLARITY SHIFTER, 2 = MAX WIN). -->
 	{#snippet panelText(i: number)}
 		{#if i === 0}
-			<div class="f-title f-blue" use:fitTitle={t('SPLASH BONUS TITLE')}>
+			<div class="f-title f-green" use:fitTitle={t('SPLASH BONUS TITLE')}>
 				{t('SPLASH BONUS TITLE')}
 			</div>
-			<div class="f-sub">{i18nDerived.translateVars('SPLASH SCATTERS FOR', { count: 3 })}</div>
-			<div class="f-key f-mega">{t('SPLASH MEGA TITLE')}</div>
-			<div class="f-line"></div>
-			<div class="f-sub">{i18nDerived.translateVars('SPLASH SCATTERS FOR', { count: 4 })}</div>
-			<div class="f-key f-mmc">{t('SPLASH MMC')}</div>
+			{#each TIERS as tier (tier.count)}
+				{@const line = scatterLine(tier.count)}
+				<div class="f-sub">
+					{line.before}<span class="f-count">{tier.count}</span>{line.after}
+				</div>
+				<div class="f-key f-gold">{t(tier.key)}</div>
+			{/each}
 		{:else if i === 1}
-			<div class="f-title f-mega" use:fitTitle={t('SPLASH MEGA TITLE')}>
-				{t('SPLASH MEGA TITLE')}
+			<div class="f-title f-pink" use:fitTitle={t('SPLASH POLARITY TITLE')}>
+				{t('SPLASH POLARITY TITLE')}
 			</div>
-			<div class="f-sub">{t('SPLASH MEGA BUILD')}</div>
-			<div class="f-key f-blue f-chain">{t('SPLASH MEGA CHAIN')}</div>
-			<div class="f-sub">{t('SPLASH MEGA REST')}</div>
+			<img class="f-icon" src={polaritySrc} alt="" draggable="false" />
+			<div class="f-sub">{t('SPLASH POLARITY BODY')}</div>
 		{:else}
-			<div class="f-title f-blue" use:fitTitle={t('SPLASH MAX TITLE')}>{t('SPLASH MAX TITLE')}</div>
+			<div class="f-title f-gold" use:fitTitle={t('SPLASH MAX TITLE')}>{t('SPLASH MAX TITLE')}</div>
 			<div class="f-sub">{t('SPLASH UP TO')}</div>
-			<div class="f-value f-mega">20'000<span class="f-x">X</span></div>
+			<div class="f-value f-pink">20'000X</div>
 			<div class="f-sub">{t('SPLASH MULTIPLIER')}</div>
 		{/if}
 	{/snippet}
@@ -255,21 +275,26 @@
 	     each one gets its own lane, size, speed and start offset. Six clouds from two shapes, with no
 	     two sharing a lane or a period, so the sky never resolves into a visible loop. -->
 	{#snippet sky()}
-		<span class="sky-hold moon-hold">
-			<img class="sky-body moon" src={moonSrc} alt="" draggable="false" />
+		<!-- Everything in here is OUTSIDE, so it is clipped to the window's opening: the room art is a
+		     bulkhead with a hole in it, and a cloud that drifts over the frame's metal reads as a
+		     cloud inside the ship. -->
+		<span class="sky-clip">
+			<span class="sky-hold moon-hold">
+				<img class="sky-body moon" src={moonSrc} alt="" draggable="false" />
+			</span>
+			<span class="sky-hold planet-hold">
+				<img class="sky-body planet" src={planetSrc} alt="" draggable="false" />
+			</span>
+			{#each clouds as c (c.id)}
+				<img
+					class="cloud"
+					src={c.big ? cloudASrc : cloudBSrc}
+					style={`--top:${c.top}%;--size:${c.size}%;--dur:${c.dur}s;--delay:${c.delay}s;--fade:${c.fade}`}
+					alt=""
+					draggable="false"
+				/>
+			{/each}
 		</span>
-		<span class="sky-hold planet-hold">
-			<img class="sky-body planet" src={planetSrc} alt="" draggable="false" />
-		</span>
-		{#each clouds as c (c.id)}
-			<img
-				class="cloud"
-				src={c.big ? cloudASrc : cloudBSrc}
-				style={`--top:${c.top}%;--size:${c.size}%;--dur:${c.dur}s;--delay:${c.delay}s;--fade:${c.fade}`}
-				alt=""
-				draggable="false"
-			/>
-		{/each}
 	{/snippet}
 
 	<!-- ONE stage for both phases. `.stage` owns the geometry (and is the container the cq units in
@@ -492,6 +517,29 @@
 	   at this size anything quicker looks like a spinning coin, not a world. */
 	/* Two layers per body on purpose: the HOLDER drifts and the IMAGE spins. Both are transforms, so
 	   on one element the later animation would simply win and one of the two would never run. */
+	/* The window's opening, as a share of the stage — an octagon: a top edge between the two upper
+	   chamfers, straight sides, and the sill along the bottom. Measured off room.webp.
+	   Portrait keeps only the horizontal edges: `background-size: cover` there scales the art to the
+	   stage HEIGHT and centre-crops the width, so the vertical fractions still hold but the opening's
+	   left and right edges are far outside the viewport. */
+	.sky-clip {
+		position: absolute;
+		inset: 0;
+		display: block;
+		pointer-events: none;
+		clip-path: polygon(
+			12.5% 7.4%,
+			87.5% 7.4%,
+			98.6% 27.6%,
+			98.6% 78%,
+			1.4% 78%,
+			1.4% 27.6%
+		);
+	}
+	.stage--m .sky-clip {
+		clip-path: polygon(0 7.4%, 100% 7.4%, 100% 78%, 0 78%);
+	}
+
 	.sky-hold {
 		position: absolute;
 		display: block;
@@ -642,12 +690,15 @@
 	}
 	.panel-body {
 		position: absolute;
-		inset: 7% 8%;
+		inset: 8% 8%;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		justify-content: center;
-		gap: 0.55cqw;
+		/* space-evenly, not center: the three cards hold wildly different amounts of copy (8 lines,
+		   3 blocks, 4 lines) and the design spreads each set across the SAME plate rather than
+		   stacking it at a fixed rhythm. `gap` is only a floor under that distribution. */
+		justify-content: space-evenly;
+		gap: 0.25cqw;
 		text-align: center;
 		pointer-events: none;
 	}
@@ -663,7 +714,7 @@
 		animation: panel-from-bottom 650ms linear 1050ms both;
 	}
 	.panel-m .panel-body {
-		gap: 1.6cqw;
+		gap: 0.8cqw;
 	}
 
 	/* ------------------------------------------------------------------ panel typography */
@@ -671,19 +722,22 @@
 	.f-title {
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: 2.9cqw;
-		line-height: 1;
+		font-size: 2.65cqw;
+		line-height: 1.12;
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
-		white-space: pre;
-		margin-bottom: 0.5cqw;
+		/* pre-LINE, not pre: the design breaks every title over two lines, and the break has to come
+		   from the copy (some locales are one long word and must stay on one line, shrunk by
+		   fitTitle). fitTitle measures scrollWidth, which on a pre-line block is its widest line, so
+		   the two stay compatible. */
+		white-space: pre-line;
 		filter: drop-shadow(0 0 0.55em rgba(0, 0, 0, 0.55));
 	}
 	.f-sub {
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 400;
-		font-size: 1.4cqw;
-		line-height: 1.3;
+		font-size: 1.32cqw;
+		line-height: 1.25;
 		color: #ffffff;
 		letter-spacing: 0.03em;
 		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
@@ -693,97 +747,71 @@
 	.f-key {
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: 1.75cqw;
-		line-height: 1.12;
+		font-size: 1.3cqw;
+		line-height: 1.15;
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
 		filter: drop-shadow(0 0 0.4em rgba(0, 0, 0, 0.5));
 		max-width: 100%;
 		overflow-wrap: break-word;
 	}
-	/* Inherits .f-key's uppercase — the source strings are lowercase in every locale, and the word
-	   is the feature's NAME, so it is set like one (user pass 2026-08-18). */
-	.f-chain {
-		font-weight: 600;
-		font-size: 2.15cqw;
-	}
 	.f-value {
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: 4cqw;
+		font-size: 3.05cqw;
 		line-height: 1;
 		letter-spacing: 0.03em;
 		filter: drop-shadow(0 0 0.35em rgba(0, 0, 0, 0.5));
 	}
-	.f-x {
-		font-size: 0.72em;
-		margin-left: 0.05em;
+	/* Card ink, sampled off design 9078:18632. The 2026-08 splash set its titles as CLIPPED
+	   GRADIENTS; this design sets them flat, one colour per card, which is also why the type can
+	   carry a text-shadow again — a shadow under `background-clip: text` prints as a smear behind
+	   transparent glyphs. */
+	.f-green {
+		color: #94f051;
 	}
-	.f-line {
-		width: 4.4cqw;
-		height: 1px;
-		margin: 0.5cqw 0;
-		background: rgba(255, 255, 255, 0.45);
+	.f-pink {
+		color: #f782fe;
 	}
-
-	/* Figma feature gradients */
-	.f-blue {
-		background: linear-gradient(
-			180deg,
-			#448af9 0%,
-			#81b9f8 25%,
-			#80bff5 49%,
-			#60a4ec 74%,
-			#005fe1 98%
-		);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: transparent;
+	.f-gold {
+		color: #fece06;
 	}
-	.f-mega {
-		background: linear-gradient(
-			179deg,
-			#ebabdf 14%,
-			#c5aae8 26%,
-			#9fa8f1 37%,
-			#afb6f6 49%,
-			#b64f8e 65%,
-			#d9335c 80%,
-			#fb1629 88%
-		);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: transparent;
+	/* The scatter count is set BIGGER than the line it sits in — 1.6em, measured off the design. Its
+	   line-height is pulled under 1 so the taller glyph does not inflate the line box and push the
+	   card's six lines apart. */
+	.f-count {
+		color: #f782fe;
+		font-weight: 700;
+		font-size: 1.6em;
+		line-height: 0.85;
 	}
-	.f-mmc {
-		background: linear-gradient(180deg, #c84175 0%, #afb6f5 43%, #c2aae9 98%);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: transparent;
+	/* The POLARITY SHIFTER card is the only one carrying art. Sized off the card, not the stage, so
+	   it holds its share of the panel in both layouts. */
+	.f-icon {
+		width: 40%;
+		max-width: 40%;
+		filter: drop-shadow(0 0.25em 0.35em rgba(0, 0, 0, 0.45));
 	}
 
-	/* Portrait panel type — scaled to the wider panel (cqw of a narrow stage). */
+	/* Portrait panel type. NOT the design's card-relative percentages: the portrait plate is WIDER
+	   than it is tall (266x240) while the landscape one is much taller than wide, so type set at the
+	   design's share of the card width overflows the short plate. Sized to fit the tallest card
+	   (POLARITY SHIFTER: two title lines + the icon + three body lines) instead. */
 	.panel-m .f-title {
-		font-size: 8cqw;
+		font-size: 7.2cqw;
 	}
 	.panel-m .f-sub {
-		font-size: 4cqw;
+		font-size: 3.6cqw;
 	}
 	.panel-m .f-key {
-		font-size: 5cqw;
-	}
-	.panel-m .f-chain {
-		font-size: 6cqw;
+		font-size: 3.55cqw;
 	}
 	.panel-m .f-value {
-		font-size: 11.5cqw;
+		font-size: 9cqw;
 	}
-	.panel-m .f-line {
-		width: 12cqw;
-		margin: 1.4cqw 0;
+	.panel-m .f-icon {
+		width: 30%;
+		max-width: 30%;
 	}
 
 	/* ------------------------------------------------------------------ floor parts */

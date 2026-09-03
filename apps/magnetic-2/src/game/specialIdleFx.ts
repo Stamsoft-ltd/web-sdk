@@ -53,6 +53,13 @@ const WILD_HOT = 0xffffff;
 const POLE_DX = 0.19;
 const POLE_DY = 0.2;
 
+/**
+ * UNUSED since <WildSymbol> landed (2026-09-02). It drew cyan arcs across the horseshoe's poles from
+ * a board-wide additive Graphics in front of every symbol, which the MOTHERSHIP wild cannot use: its
+ * eye, bolt and plaque have to layer among each other, and POLE_DX/POLE_DY below were measured off
+ * the OLD wild.webp, whose caps sat lower than the redesign's. Kept only as the reference for what
+ * that arc looked like; delete it once nothing wants it back.
+ */
 export const drawWildIdle = (g: SpecialIdleG, o: Opts) => {
 	const A = o.alpha ?? 1;
 	if (A <= 0.01) return;

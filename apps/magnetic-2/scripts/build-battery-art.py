@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
-"""Cut the Version2 BATTERY (L1) into its animatable layers and measure its panel window.
+"""Cut the BATTERY (L1) into its animatable layers and measure its panel window.
 
-Unlike the scatter, nothing has to be reconstructed here: the Figma housing (node 9012:12051) is
-already drawn with an EMPTY red panel, and the battery cell (9012:12052) is a separate node. So this
-only normalises them onto the shared symbol canvas and measures where the panel window sits, which
-is what the balloons and the cell have to be confined to at runtime.
+Unlike the scatter, nothing has to be reconstructed here: the Figma housing (MOTHERSHIP nodes
+9034:25820 / 9034:26096, which serve the same raster) is already drawn with an EMPTY red panel, and
+the battery cell (9034:26061) is a separate node. So this only normalises them onto the shared
+symbol canvas and measures where the panel window sits, which is what the balloons and the cell
+have to be confined to at runtime.
+
+There is no composed lockup for this symbol -- 9034:26096 returns the bare housing, exactly as the
+compass did -- so the cell's size and position inside the panel are AUTHORED here, not measured.
 
     battery.webp       the housing, empty red panel  (the cell's base sprite)
     battery_cell.webp  the battery character that pops inside it
 
-The balloons are NOT textures. Figma supplies them as 2x2 and 3x3 colour swatches (9012:12109 /
-9012:12111) — that is a palette, not artwork, and the brief calls for random big and small ones. So
-they are drawn procedurally from the two colours printed below.
+The balloons are NOT textures. Figma supplies them as 3x3 and 2x2 SVG circles (9034:26069 /
+9034:26092) -- that is a size and a colour, not artwork, and the brief calls for random big and
+small ones. So they are drawn procedurally from the colour printed below.
 
 Canvas: 328 x 264, portrait content letterboxed to full height, matching every other symbol.
 
@@ -34,10 +38,11 @@ PREVIEW = SRC / "preview_battery_layers.png"
 
 CANVAS_W, CANVAS_H = 328, 264
 
-# Sampled off Figma nodes 9012:12109 (small) and 9012:12111 (large). Kept here so the runtime
-# palette is traceable to the design rather than eyeballed.
-BALLOON_SMALL = (250, 132, 68)
-BALLOON_LARGE = (243, 43, 2)
+# The MOTHERSHIP redesign supplies the balloons as two SVG circles, nodes 9034:26069 (r=1.5) and
+# 9034:26092 (r=1) -- both filled #FD5947. So the design varies SIZE, not colour: what was two
+# swatches in the first pass is one colour in two radii now, and the runtime must not invent a
+# second hue to tell big from small.
+BALLOON = (253, 89, 71)
 
 # The cell is composited at ~55px tall on the board and the win state pops it; 2x leaves headroom.
 CELL_SUPERSAMPLE = 2
@@ -169,10 +174,7 @@ def main() -> None:
         f"w={panel_w:.4f} h={panel_h:.4f}"
     )
     print(f"  {'CELL':6s} w={cell_w:.4f} h={cell_h:.4f}  (centred in the panel)")
-    print(
-        f"  balloons: small rgb{BALLOON_SMALL} = 0x{'%02x%02x%02x' % BALLOON_SMALL}, "
-        f"large rgb{BALLOON_LARGE} = 0x{'%02x%02x%02x' % BALLOON_LARGE}"
-    )
+    print(f"  balloons: rgb{BALLOON} = 0x{'%02x%02x%02x' % BALLOON} (one colour, two radii)")
     print(f"  panel mean rgb {arr[red][:, :3].mean(axis=0).round(1)} -- balloons must read against this")
 
     # --- preview -------------------------------------------------------------------------------

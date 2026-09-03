@@ -20,6 +20,8 @@ import { winLevelMap } from './winLevelMap';
 import {
 	BOARD_DIMENSIONS,
 	BOARD_SIZES,
+	INFO_BOX_ASPECT,
+	INFO_BOX_GAP,
 	INITIAL_BOARD,
 	INITIAL_SYMBOL_STATE,
 	SCATTER_LAND_SOUND_MAP,
@@ -462,8 +464,8 @@ const LANDSCAPE_CAPSULE_VISIBLE_H = 0.94; // opaque height as a fraction of the 
 //   logo image 266x199 at (-1,-6) | boxes 201x90 at x=33, y=193 / 299 / 409
 //   → box width = 201/266 = 0.756 of the logo width, boxes centred on the logo's centre,
 //     stack starts at the logo's bottom, gaps ~18 = 0.2 of a box height.
-// Box aspect = the plate art as the design renders it (789/352 ≈ the 201/90 placement box).
-const RAIL_BOX_ASPECT = 781 / 335;
+// Box aspect and gap now come from game/constants (MOTHERSHIP design: 222x93 plates on a 101px
+// pitch). Design order top to bottom is FREE SPINS / RESPIN / TOTAL WIN — slots 0, 1, 2.
 const desktopRailStack = () => {
 	const main = stateLayoutDerived.mainLayout();
 	const canvas = stateLayoutDerived.canvasSizes();
@@ -477,8 +479,8 @@ const desktopRailStack = () => {
 	// (201 vs 266) compare against the logo IMAGE box, which carries transparent skirt — the
 	// visible plate and the boxes line up edge to edge.
 	const boxW = landscapeLogoWidth();
-	const boxH = boxW / RAIL_BOX_ASPECT;
-	const gap = boxH * 0.2;
+	const boxH = boxW / INFO_BOX_ASPECT;
+	const gap = boxH * INFO_BOX_GAP;
 	// GameLogoFrame draws the plate centred at canvasTop + 0.54·logoH, so its bottom edge is at
 	// 1.04·logoH; the design's logo IMAGE carries some transparent skirt, hence the small offset.
 	const topY = canvasTopY + logoH * 1.04 + boxH * 0.2;

@@ -1,19 +1,23 @@
 /**
- * Shared constants for the Version2 confirm popup (Figma 4036-3584, art node 7002:11406).
+ * Shared constants for the confirm popup (Figma 4036-3584).
  *
- * Two dialogs wear this plate — CustomBuyBonusModal's buy confirmation and BonusResumeModal — and
- * they must stay identical, so the art path and the type metrics the text fitter needs live here
- * rather than being copied into both. The layout percentages themselves stay in each component's
- * <style> block (CSS can't read from here) and are commented with the same design node ids.
+ * THREE dialogs wear this plate — CustomBuyBonusModal's buy confirmation, BonusResumeModal and
+ * InsufficientFundsModal — and they must stay identical, so the type metrics the text fitter needs
+ * live here rather than being copied into all three. The layout numbers themselves stay in each
+ * component's <style> block (CSS can't read from here) and carry the same design node id.
  *
- * The keyed art box is 507.33 x 283 design px; every fraction below is of that WIDTH.
+ * There is no plate ART any more: the design's panel is a flat rounded rectangle, so it is drawn in
+ * CSS and the components lay their contents out in flow rather than at absolute percentages of a
+ * fixed-aspect bitmap. The old `confirm_panel.webp` was a blue steel frame from the Version2 theme
+ * and looked like a different game next to the MOTHERSHIP art.
+ *
+ * The plate is 458 design px wide; every fraction below is of that WIDTH.
  */
-export const CONFIRM_PANEL_BG = './assets/components/ui/confirm_panel.webp?v=20260807b';
 
-/** Title: Chakra Petch Bold 32px (32 / 507.33). */
-export const CONFIRM_TITLE_FONT_F = 0.0631;
-/** Body: Chakra Petch SemiBold 20px (20 / 507.33). */
-export const CONFIRM_TEXT_FONT_F = 0.0394;
+/** Title: Chakra Petch Bold 30px (30 / 458). */
+export const CONFIRM_TITLE_FONT_F = 0.0655;
+/** Body: Chakra Petch SemiBold 20px (20 / 458). */
+export const CONFIRM_TEXT_FONT_F = 0.0437;
 
 /** Line widths available inside the frame's bevel, as fractions of the plate width. */
 export const CONFIRM_TITLE_FIT_W = 0.86;

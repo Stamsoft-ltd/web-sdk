@@ -1333,9 +1333,12 @@
 	   mobile-landscape rules below override font-size only, so fixed px would leave those bars
 	   carrying desktop leading around 0.68rem text. */
 	.value {
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		/* Audiowide, the design's numeral face (Figma 9078:18352 balance, 9078:18354 win/bet).
+		   Weight 400 is not a style choice: Audiowide ships Regular only, and asking for 700 makes
+		   the browser synthesise a smeared bold. The label above each amount stays Chakra Petch. */
+		font-family: 'Audiowide', 'Chakra Petch', 'Inter', sans-serif;
 		font-size: 24px;
-		font-weight: 700;
+		font-weight: 400;
 		line-height: 1.3333;
 		letter-spacing: 0.0029em;
 		color: #fff;
@@ -1908,10 +1911,13 @@
 			filter 0.12s ease;
 	}
 
+	/* Audiowide, matching the design's BONUS pill (Figma 9076:29225) — the same face the HUD's
+	   numerals wear. Audiowide ships Regular only, so 700 here would be a synthesised smear; the
+	   pill's weight comes from the face itself. */
 	.buy-btn__label {
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-family: 'Audiowide', 'Chakra Petch', 'Inter', sans-serif;
 		font-size: 12px;
-		font-weight: 700;
+		font-weight: 400;
 		color: #fff;
 		letter-spacing: 1.4px;
 		line-height: 20px;

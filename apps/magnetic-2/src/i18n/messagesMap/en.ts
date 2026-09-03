@@ -11,13 +11,21 @@ export default {
 	'SPLASH WITH UP TO': 'with up to',
 	'SPLASH MULTIPLIER': 'multiplier',
 	'SPLASH PRESS': 'PRESS TO CONTINUE',
-	'SPLASH BONUS TITLE': 'BONUS GAMES',
+	'SPLASH BONUS TITLE': 'BONUS\nGAMES',
 	'SPLASH SCATTERS FOR': '%count% scatters for',
 	'SPLASH MMC': 'MAGNETIC MEGA CHAIN',
 	'SPLASH MEGA BUILD': 'Build the',
 	'SPLASH MEGA CHAIN': 'chain',
 	'SPLASH MEGA REST': 'with multipliers that multiply each other',
-	'SPLASH MAX TITLE': 'MAX WIN',
+	// The three scatter tiers and the POLARITY SHIFTER card (design 9078:18632, 2026-09-02). These
+	// replaced the MEGA CHAIN copy above on the splash; the MEGA keys are still referenced by the
+	// buy menu and the bonus screens, which have NOT been renamed -- see art-src/REBUILD-QUEUE.md.
+	'SPLASH GRAVITY BREACH': 'GRAVITY BREACH',
+	'SPLASH CORE OVERLOAD': 'CORE OVERLOAD',
+	'SPLASH ZERO POINT': 'ZERO POINT PROTOCOL',
+	'SPLASH POLARITY TITLE': 'POLARITY\nSHIFTER',
+	'SPLASH POLARITY BODY': 'Slams all symbols toward one wall — Left, Right, Up, or Down!',
+	'SPLASH MAX TITLE': 'MAX\nWIN',
 	'SPLASH UP TO': 'up to',
 	BALANCE: 'BALANCE',
 	BET: 'BET',

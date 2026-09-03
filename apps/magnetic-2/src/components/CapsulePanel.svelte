@@ -66,7 +66,8 @@
 		winUpdate: (e) => (runningWin += e.amount),
 	});
 
-	// Left-rail stack (shared with RespinPanel) — FREE SPINS / TOTAL WIN sit in slots 1 and 2.
+	// Left-rail stack (shared with RespinPanel) — FREE SPINS is slot 0 and TOTAL WIN slot 2, with
+	// RESPIN between them, which is the MOTHERSHIP design's order.
 	const rail = $derived(context.stateGameDerived.desktopRailStack());
 </script>
 
@@ -75,13 +76,13 @@
 		<!-- The magnet capsule (the tall glass pillar and the symbol held in its beam) was removed
 		     with the MOTHERSHIP redesign — the design gives that column to the ship instead. What is
 		     left of this panel is the bonus rail below. -->
-		<!-- FREE SPINS / TOTAL WIN live in the LEFT RAIL now (Version2 design): slots 1 and 2 under
-		     RESPIN, same box art and size. They used to cap the capsule's top and bottom on the
+		<!-- FREE SPINS / TOTAL WIN live in the LEFT RAIL now: slots 0 and 2, with RESPIN between.
+		     Same plate and size. They used to cap the capsule's top and bottom on the
 		     right, which the design does not do. Bonus only — in base game the capsule stands alone. -->
 		{#if isBonus}
 			<InfoBox
 				x={rail.x}
-				y={rail.slotY(1)}
+				y={rail.slotY(0)}
 				width={rail.boxW}
 				label={i18nDerived.translate('FREE SPINS')}
 				value={`${fsRemaining}`}

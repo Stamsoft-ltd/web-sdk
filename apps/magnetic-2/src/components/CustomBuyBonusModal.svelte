@@ -10,9 +10,12 @@
 	// for Extra Chance, the compass for Feature Spins, and the scatter capsule (with the 3x/4x
 	// badge) for both bought bonuses. This replaced the old bespoke icon set AND the earlier
 	// wild-symbol substitution on FEATURE — the design's own choice wins now.
-	const iconChance  = ap('/assets/components/symbols/magnetic/low/energy_screw.webp?v=20260806');
-	const iconFeature = ap('/assets/components/symbols/magnetic/premium/horseshoe.webp?v=20260806');
-	const iconBrief   = ap('/assets/components/symbols/magnetic/special/scatter.webp?v=20260806');
+	const iconChance  = ap('/assets/components/symbols/magnetic/low/energy_screw_full.webp?v=20260902');
+	// Both point at the FLATTENED composites from scripts/build-paytable-symbols.py, not at the
+	// board's own textures: the compass and the scatter are assembled from loose parts now, so their
+	// base files alone are a bezel with no needle and a capsule with no alien.
+	const iconFeature = ap('/assets/components/symbols/magnetic/premium/compass_full.webp?v=20260902');
+	const iconBrief   = ap('/assets/components/symbols/magnetic/special/scatter_full.webp?v=20260902');
 
 	// For LoadingController's HTML-image pass — built from the consts above so path/?v= edits stay in sync.
 	export const BUY_BONUS_MODAL_IMAGES = [
@@ -33,7 +36,6 @@
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { fitTextScale } from '../utils/fitText';
 	import {
-		CONFIRM_PANEL_BG,
 		CONFIRM_TITLE_FONT_F,
 		CONFIRM_TEXT_FONT_F,
 		CONFIRM_TITLE_FIT_W,
@@ -283,7 +285,7 @@
 		<span class="confirm-close__glyph"></span>
 	</button>
 	<div class="confirm" role="dialog" aria-modal="true" bind:this={confirmEl} style={confirmVars}>
-		<div class="confirm-panel" style={`background-image:url('${CONFIRM_PANEL_BG}')`}>
+		<div class="confirm-panel">
 			<div class="confirm-title">{confirmTitleText}</div>
 			<div class="confirm-text">{confirmBodyText}</div>
 			<div class="confirm-row">
@@ -744,12 +746,12 @@
 	   507.33 x 283 design px, so with container-type:inline-size 1cqw == 1% of the design
 	   width and every number below is the design's own measurement. */
 
-	/* Version2 icon button: #22365B circle, 1px #2391C1, white 2.13px CSS glyph (no SVG asset). */
+	/* Design 4036:3584: a 46px #494A9B circle with a white CSS glyph, no ring. */
 	.confirm-close {
 		position: fixed; top: 22px; right: 22px; z-index: 73;
-		width: 48px; height: 48px; border-radius: 50%;
-		border: 1px solid #2391c1;
-		background: #22365b;
+		width: 46px; height: 46px; border-radius: 50%;
+		border: none;
+		background: #494a9b;
 		padding: 0;
 		cursor: pointer; display: grid; place-items: center;
 		transition: filter 0.12s ease;
@@ -779,64 +781,80 @@
 		container-type: inline-size;
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
+	/* The plate is DRAWN, not art: a flat rounded rectangle, exactly what the design is. It also
+	   stopped being a fixed-aspect box — the three dialogs that wear it hold one nowrap line, a
+	   wrapping sentence and a single button respectively, and an `aspect-ratio` plate sized for one
+	   of them clips or strands the other two. Flow layout at the design's own paddings instead.
+	   Design 4036:3584: plate 458x215, radius 14, fill #3A3981 over a #2D2C69 edge. */
 	.confirm-panel {
 		position: relative;
-		aspect-ratio: 507.33 / 283;
-		background-size: 100% 100%;
-		background-repeat: no-repeat;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6.3cqw;
+		padding: 6.33cqw 5.5cqw 4.37cqw;
+		background: #3a3981;
+		border: 0.44cqw solid #2d2c69;
+		border-radius: 3.06cqw;
+		box-shadow: 0 1.6cqw 3.6cqw rgba(0, 0, 0, 0.5);
 	}
-	/* Figma 4154:20115 — IBM Plex Sans Condensed Bold 32px, FLAT #2391C1 (not a gradient). */
+	/* Design 4036:3584 — Chakra Petch Bold 30/458 of the plate, WHITE (the Version2 plate set this
+	   in #2391C1; the MOTHERSHIP design does not). */
 	.confirm-title {
-		position: absolute;
-		left: 7%; right: 7%; top: 29.33%;
-		transform: translateY(-50%);
 		text-align: center;
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: calc(6.31cqw * var(--confirm-title-fit, 1));
-		letter-spacing: 0.03em; text-transform: uppercase;
-		line-height: 1; white-space: nowrap;
-		color: #2391c1;
+		font-size: calc(6.55cqw * var(--confirm-title-fit, 1));
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		line-height: 1;
+		white-space: nowrap;
+		color: #ffffff;
 	}
-	/* Figma 4036:3614 — Inter Medium 20px, white, 0.6px tracking. */
+	/* Design 4036:3584 — 20/458 of the plate, white. */
 	.confirm-text {
-		position: absolute;
-		left: 8%; right: 8%; top: 50.18%;
-		transform: translateY(-50%);
 		text-align: center;
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-size: calc(3.94cqw * var(--confirm-text-fit, 1)); font-weight: 600;
-		letter-spacing: 0.03em; text-transform: uppercase;
-		color: #fff; line-height: 1.3;
+		font-size: calc(4.37cqw * var(--confirm-text-fit, 1));
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		color: #fff;
+		line-height: 1.3;
 		/* One line, like the design — the fitter above shrinks it instead of wrapping. */
 		white-space: nowrap;
 	}
-	/* Figma 4036:3615 — two 143.95x44 buttons, 16px apart, centred at 71.38% of the plate. */
+	/* Design 4036:3584 — two 196x48 buttons, 17 apart, spanning 89.3% of the plate. */
 	.confirm-row {
-		position: absolute;
-		left: 0; right: 0; top: 71.38%;
-		transform: translateY(-50%);
-		display: flex; gap: 3.15cqw; justify-content: center;
+		display: flex;
+		gap: 3.71cqw;
+		justify-content: center;
 	}
 	.confirm-btn {
-		height: 8.67cqw;
-		min-width: 28.37cqw;
-		padding: 0 4.73cqw;
-		border: 1px solid #60a5fa;
-		border-radius: 2.37cqw;
-		font-family: 'Chakra Petch', 'Inter', sans-serif; font-size: 2.76cqw; font-weight: 700;
-		letter-spacing: 0.1em; text-transform: uppercase; color: #fff;
+		height: 10.48cqw;
+		min-width: 42.79cqw;
+		padding: 0 3cqw;
+		border: 0.22cqw solid #a88eff;
+		border-radius: 1.75cqw;
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-size: 3.28cqw;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
 		white-space: nowrap;
+		color: #ffffff;
 		cursor: pointer;
-		filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
+		background: #47468a;
 		transition: filter 0.12s ease;
 	}
-	.confirm-btn:hover { filter: brightness(1.12) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25)); }
+	.confirm-btn:hover {
+		filter: brightness(1.18);
+	}
 	.confirm-btn--cancel {
-		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
+		background: #47468a;
 	}
 	.confirm-btn--ok {
-		background: #28a6de;
+		background: #a88eff;
 	}
 
 	/* Buttons do NOT inherit font-family: the UA stylesheet hard-sets `font: 400 13.333px Arial` on

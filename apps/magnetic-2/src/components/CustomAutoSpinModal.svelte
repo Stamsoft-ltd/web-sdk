@@ -1,12 +1,15 @@
 <script lang="ts" module>
-	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	// Version2 steel-framed panel (Figma 4036-2458, art node 7002:11401). The export is the PLACED
-	// node with its white backdrop keyed out and trimmed, so the art box is exactly 632x524 design
-	// px — every position below is a fraction of that box, taken from the design's own child nodes.
-	const panelBg = ap('/assets/components/ui/autospin_panel.webp?v=20260807');
+	// The panel is DRAWN, not art (Figma 4036:2458, plate node 9019:15303): a flat #3A3981 rounded
+	// rectangle, 550x423 design px. Every measurement in the style block below is a fraction of that
+	// WIDTH, expressed in cqw against the plate's own container.
+	//
+	// The old `autospin_panel.webp` was the Version2 blue-steel frame, and once the confirm dialogs
+	// and the HUD moved to the MOTHERSHIP palette it was the last thing in the game still wearing the
+	// previous theme. It is deleted, along with the preload entry it needed.
 
-	// For LoadingController's HTML-image pass — built from the const above so a ?v= bump stays in sync.
-	export const AUTOSPIN_MODAL_IMAGES = [panelBg];
+	// Nothing to preload any more. LoadingController still imports this, so it stays as an empty
+	// list rather than becoming a dangling import.
+	export const AUTOSPIN_MODAL_IMAGES: string[] = [];
 </script>
 
 <script lang="ts">
@@ -71,12 +74,12 @@
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div class="ap-backdrop" onclick={props.onclose}></div>
 
-<button class="ap-close ap-icon-btn" type="button" onclick={props.onclose} aria-label="Close">
+<button class="ap-close" type="button" onclick={props.onclose} aria-label="Close">
 	<span class="glyph glyph--close"></span>
 </button>
 
 <div class="ap-root" role="dialog" aria-modal="true">
-	<div class="ap-panel" style={`background-image:url('${panelBg}')`}>
+	<div class="ap-panel">
 		<div class="ap-toggles">
 			<div class="ap-row">
 				<span class="ap-row__label">{t('AUTO TURBO')}</span>
@@ -125,57 +128,151 @@
 		backdrop-filter: blur(4px);
 	}
 
-	/* Type is sized in em off this width-derived font-size so the whole dialog scales with the
-	   panel art (design art box = 632px wide → 1em = 16px). Positions are % of the panel box.
-	   52.7vw is the panel's share of the design frame (632 of 1200), so on screens wider than the
-	   design the dialog keeps its intended presence instead of shrinking away; 632px is the floor
-	   and 94vw / 104vh keep it inside small or portrait viewports. */
+	/* 550px is the design plate's own width and 45.8vw is its share of the design frame (550 of
+	   1200), so on screens wider than the design the dialog keeps its intended presence instead of
+	   shrinking away; 94vw / 104vh keep it inside small or portrait viewports. */
 	.ap-root {
-		--ap-w: min(94vw, 104vh, max(632px, 52.7vw));
+		--ap-w: min(94vw, 104vh, max(550px, 45.8vw));
 		position: fixed;
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 59;
 		width: var(--ap-w);
-		font-size: calc(var(--ap-w) / 39.5);
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
 
-	/* Steel frame with the navy interior baked in — trimmed to the art, so % positions are exact. */
+	/* The plate. Flow layout at the design's own vertical rhythm rather than absolute percentages of
+	   a fixed-aspect bitmap: the rows, the label, the stepper and the button are a stack, and a
+	   measured stack survives a longer translation without overlapping itself.
+	   Design 4036:2458 / plate 9019:15303 — 550x423, radius 14, fill #3A3981 over a #2D2C69 edge,
+	   which is the same plate the three confirm dialogs wear. */
 	.ap-panel {
+		container-type: inline-size;
 		position: relative;
-		aspect-ratio: 632 / 524;
-		background-size: 100% 100%;
-		background-repeat: no-repeat;
+		display: flex;
+		flex-direction: column;
+		padding: 5.09cqw 5.09cqw 6.36cqw;
+		background: #3a3981;
+		border: 0.44cqw solid #2d2c69;
+		border-radius: 2.55cqw;
+		box-shadow: 0 1.6cqw 3.6cqw rgba(0, 0, 0, 0.5);
 	}
 
-	/* Figma "Icon buttons": 48.696 circle, #22365B fill, 1px #2391C1 border, white glyph. */
+	/* Figma 4036:2490 — three rows 33.214 tall, 16 apart. */
+	.ap-toggles {
+		display: flex;
+		flex-direction: column;
+		gap: 2.91cqw;
+	}
+
+	.ap-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 2cqw;
+		height: 6.04cqw;
+	}
+
+	/* Chakra Petch Bold 20px white (20 / 550). */
+	.ap-row__label {
+		font-weight: 700;
+		font-size: 3.64cqw;
+		letter-spacing: 0.02em;
+		color: #fff;
+		text-transform: uppercase;
+	}
+
+	/* Toggle: 62 x 33.214, radius 999. OFF is near-black, ON is the design's lavender #A88EFF — the
+	   same accent the START button and the confirm dialogs' primary button carry. */
+	.ap-switch {
+		font-size: inherit;
+		flex: 0 0 auto;
+		position: relative;
+		width: 11.27cqw;
+		height: 6.04cqw;
+		border-radius: 999px;
+		border: none;
+		background: #0e1306;
+		cursor: pointer;
+		padding: 0;
+		transition: background 0.2s ease;
+	}
+	.ap-switch.on {
+		background: #a88eff;
+	}
+	.ap-switch__thumb {
+		position: absolute;
+		top: 0.62cqw;
+		left: 0.62cqw;
+		width: 4.8cqw;
+		height: 4.8cqw;
+		border-radius: 50%;
+		background: #fff;
+		transition: left 0.2s ease;
+	}
+	.ap-switch.on .ap-switch__thumb {
+		left: 5.85cqw;
+	}
+
+	/* Figma 4036:2489 — Chakra Petch Bold 20px white, 48.4 design px below the last toggle row. */
+	.ap-spins-label {
+		margin: 8.8cqw 0 0;
+		text-align: center;
+		font-weight: 700;
+		font-size: 3.64cqw;
+		/* The design gives this line a 30px box against a 20px face. Left at the browser's default
+		   the stack comes up ~6 design px short and the plate ends up proportionally wider than
+		   550x423, which shows as a slack margin under the START button. */
+		line-height: 1.5;
+		letter-spacing: 0.02em;
+		color: #fff;
+		text-transform: uppercase;
+	}
+
+	/* − [count] + — 48.696 circles, 138 design px apart centre to centre. */
+	.ap-stepper {
+		margin-top: 3.1cqw;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0;
+	}
+
+	/* Figma "Icon buttons": 48.696 circle, #49489B fill, lavender border, white glyph. The design's
+	   render rings the − button in white rather than lavender because it is drawn at the minimum
+	   spin count — that is the disabled state below, not a second style. */
 	.ap-icon-btn {
 		/* buttons do NOT inherit font-size — without this the em box collapses to Chrome's 13.3px */
 		font-size: inherit;
-		width: 3.0435em;
-		height: 3.0435em;
+		width: 8.85cqw;
+		height: 8.85cqw;
 		flex-shrink: 0;
 		padding: 0;
 		border-radius: 50%;
-		border: 1px solid #2391c1;
-		background: #22365b;
+		border: 0.22cqw solid #a88eff;
+		background: #49489b;
 		display: grid;
 		place-items: center;
 		cursor: pointer;
 		transition: filter 0.12s ease;
 	}
-	.ap-icon-btn:hover:not(:disabled) { filter: brightness(1.35); }
-	.ap-icon-btn:disabled { opacity: 0.4; cursor: default; }
+	.ap-icon-btn:hover:not(:disabled) {
+		filter: brightness(1.35);
+	}
+	.ap-icon-btn:disabled {
+		border-color: rgba(255, 255, 255, 0.5);
+		opacity: 0.55;
+		cursor: default;
+	}
 
-	/* Glyphs are drawn rather than imported: the design's are plain 2.13px white strokes. */
+	/* Glyphs are drawn rather than imported: the design's are plain white strokes. */
 	.glyph {
 		position: relative;
 		display: block;
-		width: 0.866em;
-		height: 0.133em;
-		border-radius: 0.133em;
+		width: 3.1cqw;
+		height: 0.48cqw;
+		border-radius: 0.48cqw;
 		background: #fff;
 	}
 	.glyph--plus::after,
@@ -187,15 +284,66 @@
 		border-radius: inherit;
 		background: inherit;
 	}
-	.glyph--plus::after { transform: rotate(90deg); }
-	.glyph--close { width: 1.155em; background: none; }
-	.glyph--close::before { background: #fff; transform: rotate(45deg); }
-	.glyph--close::after { background: #fff; transform: rotate(-45deg); }
+	.glyph--plus::after {
+		transform: rotate(90deg);
+	}
+	/* The close button sits OUTSIDE the plate, so its glyph cannot use cqw — there is no container
+	   query context out there. It is sized in em off the button's own font-size instead. */
+	.glyph--close {
+		width: 1.155em;
+		height: 0.133em;
+		border-radius: 0.133em;
+		background: none;
+	}
+	.glyph--close::before {
+		background: #fff;
+		transform: rotate(45deg);
+	}
+	.glyph--close::after {
+		background: #fff;
+		transform: rotate(-45deg);
+	}
 
-	/* Design places the close button at the top-right of the whole screen, not on the panel. */
-	/* Size and inset were fixed px, which reads fine on desktop but takes a huge bite out of a phone
-	   screen (user pass 2026-08-10). Scaled against the viewport with the old values as the cap; the
-	   glyph is drawn in `em`, so it follows font-size down with the circle. */
+	/* Figma 4036:2488 — Bold 32px white. The count is a FIXED slot as wide as the design's gap
+	   between the two button edges, so 3-digit values and ∞ never shift the − / + off their marks. */
+	.ap-count {
+		width: 16.2cqw;
+		text-align: center;
+		color: #fff;
+		font-weight: 700;
+		font-size: 5.82cqw;
+		line-height: 1;
+	}
+
+	/* Figma 4036:2503 — flat #A88EFF, radius 8, the content box's full width, 44 tall, 40.3 below the
+	   stepper. Its label is AUDIOWIDE: the design sets it in the same face as the HUD's numerals, and
+	   it is the only text in this dialog that is. Regular is the family's only weight, so asking for
+	   bold here would get a synthesised smear. */
+	.ap-start {
+		margin-top: 7.33cqw;
+		height: 8cqw;
+		border: none;
+		border-radius: 1.45cqw;
+		background: #a88eff;
+		color: #fff;
+		font-family: 'Audiowide', 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 400;
+		font-size: 2.9cqw;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: filter 0.12s ease;
+	}
+	.ap-start:hover {
+		filter: brightness(1.08);
+	}
+	.ap-start:active {
+		filter: brightness(0.94);
+	}
+
+	/* The design places the close button at the top-right of the whole screen, not on the panel.
+	   Sized against the viewport — a fixed-px button takes a huge bite out of a phone screen (user
+	   pass 2026-08-10) — with the design's 48px as the cap. */
 	.ap-close {
 		position: fixed;
 		top: clamp(10px, 3vw, 22px);
@@ -204,140 +352,25 @@
 		width: clamp(32px, 8.5vw, 48px);
 		height: clamp(32px, 8.5vw, 48px);
 		font-size: clamp(10.5px, 2.8vw, 16px);
-	}
-
-	/* Figma 4036:2490 — three rows, 16px apart, inset 10.76% and starting 14.98% down. */
-	.ap-toggles {
-		position: absolute;
-		left: 10.76%;
-		right: 11.08%;
-		top: 14.98%;
-		display: flex;
-		flex-direction: column;
-		gap: 1em;
-	}
-
-	.ap-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.6em;
-		height: 2.076em;
-	}
-
-	/* Figma: IBM Plex Sans Condensed Bold 20px, white, 0.6px tracking */
-	.ap-row__label {
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-weight: 700;
-		font-size: 1.25em;
-		letter-spacing: 0.03em;
-		color: #fff;
-	}
-
-	/* Cyan toggle switch (62 x 33.214 design size) */
-	.ap-switch {
-		font-size: inherit;
-		flex: 0 0 auto;
-		position: relative;
-		width: 3.875em;
-		height: 2.076em;
-		border-radius: 999px;
-		border: 1px solid #556479;
-		/* OFF: near-black at the top fading to blue at the bottom (sampled from the design render) */
-		background: linear-gradient(180deg, #141b1c 0%, #2c5aa4 100%);
-		cursor: pointer;
 		padding: 0;
-		transition: background 0.2s ease, border-color 0.2s ease;
-	}
-	.ap-switch.on {
-		border-color: transparent;
-		background: linear-gradient(180deg, #00fcff 0%, #0046a9 100%);
-	}
-	.ap-switch__thumb {
-		position: absolute;
-		top: 0.277em;
-		left: 7.14%;
-		width: 1.522em;
-		height: 1.522em;
+		border: none;
 		border-radius: 50%;
-		background: #fff;
-		transition: left 0.2s ease;
-	}
-	.ap-switch.on .ap-switch__thumb { left: 53.57%; }
-
-	/* Figma 4036:2489 — IBM Plex Sans Condensed Bold 20px, flat #2391C1, centred at 51.8%. */
-	.ap-spins-label {
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: 51.81%;
-		margin: 0;
-		transform: translateY(-50%);
-		text-align: center;
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-weight: 700;
-		font-size: 1.25em;
-		letter-spacing: 0.03em;
-		color: #2391c1;
-	}
-
-	/* − [count] + row, centred at 63.04% with the buttons 69px either side of centre. */
-	.ap-stepper {
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: 63.04%;
-		transform: translateY(-50%);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0;
-	}
-
-	/* Figma 4036:2488 — Inter Bold 32px white. The count is a FIXED 89.3px slot (the design's gap
-	   between the two button edges) so 3-digit values and ∞ never shift the − / + off their marks. */
-	.ap-count {
-		/* own font-size is 2em, so the 89.3px slot is 89.3 / 32 em here */
-		width: 2.79em;
-		text-align: center;
-		color: #fff;
-		font-weight: 700;
-		font-size: 2em;
-		line-height: 1;
-	}
-
-	/* Figma 4036:2503 — flat #28A6DE, 1px #60A5FA border, radius 12, Inter Bold 14 / 1.4px tracking */
-	.ap-start {
-		position: absolute;
-		left: 10.76%;
-		right: 11.08%;
-		top: 79.49%;
-		/* own font-size is 0.875em → design px ÷ 14 for this element's own metrics */
-		font-size: 0.875em;
-		height: 3.143em;
-		transform: translateY(-50%);
-		border: 1px solid #60a5fa;
-		border-radius: 0.857em;
-		background: #28a6de;
-		color: #fff;
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-weight: 700;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
+		background: #49489b;
+		display: grid;
+		place-items: center;
 		cursor: pointer;
-		filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
 		transition: filter 0.12s ease;
 	}
-	.ap-start:hover { filter: brightness(1.12) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25)); }
-	.ap-start:active { filter: brightness(0.95); }
+	.ap-close:hover {
+		filter: brightness(1.3);
+	}
 
 	/* Buttons do NOT inherit font-family: the UA stylesheet hard-sets `font: 400 13.333px Arial` on
 	   form controls, so every <button> here (and the glyph spans inside them) rendered in Arial no
-	   matter what the container was set to — measured via getComputedStyle, not assumed.
-	   Deliberately NOT scoped to a root element, and set OUTRIGHT rather than to `inherit`: the
-	   confirm dialog in CustomBuyBonusModal is a SIBLING of .panel, so a `.panel button` rule misses
-	   its buttons, and `inherit` on a top-level sibling like .confirm-close resolves against <body>,
-	   not the dialog. Svelte already scopes this to the component. */
+	   matter what the container was set to — measured via getComputedStyle, not assumed. Set
+	   OUTRIGHT rather than to `inherit`: `inherit` on a top-level sibling like .ap-close resolves
+	   against <body>, not the dialog. Svelte scopes this to the component, and .ap-start overrides
+	   it with Audiowide. */
 	button {
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}

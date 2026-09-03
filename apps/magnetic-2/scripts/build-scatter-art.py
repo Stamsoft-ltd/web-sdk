@@ -1,128 +1,86 @@
 #!/usr/bin/env python3
-"""Cut the Version2 SCATTER (containment capsule + alien) into its animatable layers.
+"""Cut the MOTHERSHIP SCATTER into its animatable layers and measure its windows.
 
-The Figma lockup (node 9010:11165, a 79 x 106.24 frame) is a single flat composition: the alien
-sits ON TOP of the glass tube, and the eye on top of the alien. Nothing in it can move. The board
-needs three separate textures so the alien can jump and the eye can blink:
+The redesign supplies the symbol as four separate pieces, which is a far better hand than the first
+pass got. That one had a single flat lockup in which the alien sat ON TOP of the glass, so the tube
+interior had to be RECONSTRUCTED by inpainting the alien out of it, and the word SCATTER had to be
+cut off the plate and the hole behind it filled. Nothing is reconstructed here.
 
-    scatter.webp        the capsule with an EMPTY tube  (the cell's base sprite)
-    scatter_alien.webp  the alien body, no eye
-    scatter_eye.webp    the eye alone
+    art-src/scatter/machine.png   the capsule: EMPTY tube, empty base plaque, two green lamps
+                                  (Figma 9041:26985)
+    art-src/scatter/word.png      the word SCATTER on its own                (9041:27047)
+    art-src/scatter/alien.svg     the alien body, vector                     (9041:27059)
+    art-src/scatter/eye.svg       the eye, vector                            (9041:27051)
 
-Figma cannot export the capsule without the alien -- the alien is a sibling layer in the same
-group, and there is no node that means "everything except that". So the tube interior it covers is
-RECONSTRUCTED here: the tube is near-flat cyan with its highlight streaks at the left/right edges
-and the purple ring crossing it, all of which stay visible either side of the alien. Filling each
-covered scanline by interpolating from its nearest uncovered neighbours therefore rebuilds the real
-gradient rather than guessing it. Verify against preview_scatter_layers.png, not by eye on the board.
+Outputs, all onto the shared 328x264 symbol canvas with the portrait content letterboxed to full
+height, matching every other symbol:
 
-Canvas: 328 x 264 to match every other symbol in the set. The capsule is PORTRAIT, so it is
-letterboxed to full canvas height -- which is what the art it replaces already did (its content
-measured 188 x 263 in the same canvas), so the cell geometry is untouched.
+    scatter.webp        the capsule
+    scatter_mobile.webp half-res
+    scatter_word.webp   the word, sized into the base plaque
+    scatter_alien.webp  the alien, sized into the tube
+    scatter_eye.webp    the eye
+    scatter_dome.webp   the LID, cut a second time as a FRONT occluder
+
+The dome layer is what lets the alien hop at all. The alien fills the tube to within a hair of the
+lid, so any hop worth seeing would draw it over the machine's metal top; redrawn over the alien, the
+same pixels occlude it instead and it rises BEHIND the lid the way it physically would. The script
+prints HOP_LIMIT -- the headroom before that occlusion begins -- so the component's HOP_H can be
+checked against it rather than guessed.
+
+The alien and the eye are VECTORS with no placement rect anywhere in the file, so their size and
+position inside the tube are AUTHORED in the constants below, not measured -- the same situation as
+the compass. Everything else is measured off the capsule AFTER it has been fitted to the canvas, so
+the layers and the base can never drift apart.
 
 Run:  python3 scripts/build-scatter-art.py
+      python3 scripts/measure-green-lights.py   # afterwards: it reads the built plate
 """
 
 from __future__ import annotations
 
+import io
 import sys
-from collections import deque
 from pathlib import Path
 
+import cairosvg
 import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "art-src" / "scatter"
 OUT = ROOT / "static" / "assets" / "components" / "symbols" / "magnetic" / "special"
-PREVIEW = ROOT / "art-src" / "scatter" / "preview_scatter_layers.png"
+PREVIEW = SRC / "preview_scatter_layers.png"
 
-# The Figma frame this was measured in. Every rect below is in these units so the numbers can be
-# read straight off the node inspector.
-FW, FH = 79.0, 106.24137878417969
-
-# Sub-rects of the lockup, in frame units (x, y, w, h), read off the Figma node inspector.
-ALIEN = (21.7927003, 29.9655084, 35.4137917, 43.5862083)
-# The two glowing bands the win state arcs lightning across, and the glass tube the bubbles rise
-# in. Node ids are the vectors these were measured from, so they can be re-checked in Figma.
-DOME_BAND = (29.9225488, 25.4935598, 19.2448406, 5.4556808)   # 9010:11232
-LOWER_BAND = (32.1146283, 73.4705801, 14.9690886, 4.0330729)  # 9010:11209
-TUBE = (16.5226636, 31.3042993, 46.0194855, 38.2985306)       # 9010:11191
-# The eye is a child of the alien frame at +10.8967, +13.6207 -- resolved to frame-absolute here.
-EYE = (ALIEN[0] + 10.8966866, ALIEN[1] + 13.6206684, 13.6206894, 13.6206894)
-
-# Symbol canvas, shared with every other symbol in the set.
 CANVAS_W, CANVAS_H = 328, 264
 
-# Oversample for the loose layers: they are composited at ~88px and ~34px wide on the board, and
-# the win state scales the alien up. 2x leaves headroom without a second texture.
-ALIEN_SUPERSAMPLE = 2
+# Layers the runtime scales UP (the alien squashes, the word zooms ~13%) are rasterised above their
+# on-screen size, or the pop resolves into a soft edge.
+SUPERSAMPLE = 3
 
-BG_TOLERANCE = 18  # flat #f5f5f5 export backdrop
+# --- authored placements ---------------------------------------------------------------------
+# Expressed against the TUBE, not the canvas: the alien lives in the tube, so it should keep its
+# relation to the tube if the capsule art ever changes proportion.
+ALIEN_OF_TUBE_W = 0.62
+"""Alien width as a fraction of the tube's width.
+
+Not larger. At 0.78 the alien stood 107px tall in a 114px tube and HOP_LIMIT came out at 0.0000 --
+its head already touching the lid, so the hop had nowhere to go and every frame of it was eaten by
+the dome occluder. Check HOP_LIMIT in this script's output after changing this."""
+ALIEN_BOTTOM_PAD = 0.06
+"""Gap under the alien as a fraction of the tube's height -- it stands on the tube floor."""
+EYE_OF_ALIEN = 0.42
+"""Eye width as a fraction of the alien's width."""
+EYE_CY_OF_ALIEN = 0.44
+"""Eye centre down the alien's box, 0 = top."""
+
+# The word is INSET in the plaque rather than filling it: the plaque is a bezel, the glyphs need to
+# sit clear of its inner edge, and the win state zooms them without touching it.
+WORD_OF_PLAQUE = 0.82
 
 
 def die(msg: str) -> None:
     sys.exit(f"build-scatter-art: {msg}")
-
-
-def key_backdrop(im: Image.Image) -> Image.Image:
-    """Flood the flat export backdrop to transparent from the corners.
-
-    A global colour key would also punch the white glint in the eye and the white specular on the
-    dome. Flooding only from the border reaches the backdrop and nothing enclosed by the artwork.
-    """
-    im = im.convert("RGBA")
-    a = np.array(im)
-    h, w = a.shape[:2]
-    rgb = a[:, :, :3].astype(np.int16)
-    seed = rgb[0, 0]
-    near = (np.abs(rgb - seed).max(axis=2) <= BG_TOLERANCE)
-
-    out = np.zeros((h, w), dtype=bool)
-    q = deque()
-    for x in range(w):
-        for y in (0, h - 1):
-            if near[y, x] and not out[y, x]:
-                out[y, x] = True
-                q.append((y, x))
-    for y in range(h):
-        for x in (0, w - 1):
-            if near[y, x] and not out[y, x]:
-                out[y, x] = True
-                q.append((y, x))
-    while q:
-        y, x = q.popleft()
-        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            ny, nx = y + dy, x + dx
-            if 0 <= ny < h and 0 <= nx < w and near[ny, nx] and not out[ny, nx]:
-                out[ny, nx] = True
-                q.append((ny, nx))
-
-    a[:, :, 3] = np.where(out, 0, a[:, :, 3])
-    return Image.fromarray(a, "RGBA")
-
-
-def inpaint_rows(im: Image.Image, mask: np.ndarray) -> Image.Image:
-    """Rebuild pixels under `mask` by interpolating across each scanline.
-
-    Horizontal (not vertical) because the tube's structure runs vertically: flat cyan in the
-    middle, highlight streaks down both edges, and the purple ring as horizontal bands. Every one
-    of those is continuous along a row, so a row-wise fill reproduces them; a column-wise fill
-    would smear the ring down the tube.
-    """
-    a = np.array(im).astype(np.float32)
-    h, w = a.shape[:2]
-    for y in range(h):
-        m = mask[y]
-        if not m.any():
-            continue
-        keep = np.flatnonzero(~m)
-        if keep.size == 0:
-            continue  # fully covered row: nothing to interpolate from, leave it
-        idx = np.flatnonzero(m)
-        for c in range(4):
-            a[y, idx, c] = np.interp(idx, keep, a[y, keep, c])
-    return Image.fromarray(a.clip(0, 255).astype(np.uint8), "RGBA")
 
 
 def alpha_bbox(im: Image.Image, thresh: int = 8):
@@ -133,14 +91,7 @@ def alpha_bbox(im: Image.Image, thresh: int = 8):
 
 
 def fit_canvas(content: Image.Image, cw: int, ch: int):
-    """Scale `content` to fill the canvas HEIGHT and centre it. Portrait art, landscape canvas.
-
-    Returns the placed image AND the transform used, because the loose layers have to land on the
-    same grid. Fitting the CONTENT BBOX (not the Figma frame) is deliberate -- it makes the capsule
-    fill the canvas exactly like the art it replaces, whose content measured 263 of 264 rows -- but
-    it means the frame->canvas mapping is only knowable here. Deriving the placements from
-    CANVAS_H/FH instead silently shifts every layer by the frame's internal margin.
-    """
+    """Scale to fill canvas HEIGHT, centre horizontally, and hand back the transform."""
     bb = alpha_bbox(content)
     cropped = content.crop(bb)
     scale = ch / cropped.height
@@ -150,156 +101,177 @@ def fit_canvas(content: Image.Image, cw: int, ch: int):
     x0 = (cw - new.width) // 2
     out = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
     out.alpha_composite(new, (x0, 0))
-    return out, scale, x0, bb
+    return out, scale, x0
+
+
+def render_svg(path: Path, width: int) -> Image.Image:
+    """Rasterise a vector part at an explicit width, preserving its own aspect."""
+    png = cairosvg.svg2png(url=str(path), output_width=max(2, int(width)))
+    im = Image.open(io.BytesIO(png)).convert("RGBA")
+    return im.crop(alpha_bbox(im))
+
+
+def largest_blob(mask: np.ndarray) -> np.ndarray:
+    """Keep only the biggest connected component of `mask`.
+
+    Needed for the base plaque: the dark indigo of the well is also the OUTLINE colour used all
+    over the capsule, so the key returns the well plus a hairline tracing the whole base, and the
+    bounding box of that is the base -- which put the word straight over the two green lamps.
+    The well is the one large blob; the outline is thin and disconnected from it.
+    """
+    h, w = mask.shape
+    seen = np.zeros_like(mask)
+    best = None
+    for y0 in range(h):
+        for x0 in range(w):
+            if not mask[y0, x0] or seen[y0, x0]:
+                continue
+            seen[y0, x0] = True
+            stack = [(y0, x0)]
+            pts = []
+            while stack:
+                y, x = stack.pop()
+                pts.append((y, x))
+                for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    ny, nx = y + dy, x + dx
+                    if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not seen[ny, nx]:
+                        seen[ny, nx] = True
+                        stack.append((ny, nx))
+            if best is None or len(pts) > len(best):
+                best = pts
+    out = np.zeros_like(mask)
+    if best:
+        for y, x in best:
+            out[y, x] = True
+    return out
+
+
+def box_of(mask: np.ndarray, name: str):
+    ys = np.nonzero(mask.any(axis=1))[0]
+    xs = np.nonzero(mask.any(axis=0))[0]
+    if ys.size == 0 or xs.size == 0:
+        die(f"could not locate {name} on the capsule")
+    return int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1
+
+
+def frac(x0, y0, x1, y1):
+    """A pixel box as centre-offset fractions of the symbol box -- what the component multiplies."""
+    return {
+        "dx": (x0 + x1) / 2 / CANVAS_W - 0.5,
+        "dy": (y0 + y1) / 2 / CANVAS_H - 0.5,
+        "w": (x1 - x0) / CANVAS_W,
+        "h": (y1 - y0) / CANVAS_H,
+    }
+
+
+def emit(name: str, f: dict) -> str:
+    return f"  {name:11s} dx={f['dx']:+.4f} dy={f['dy']:+.4f} w={f['w']:.4f} h={f['h']:.4f}"
 
 
 def main() -> None:
-    comp_path = SRC / "composite_4x.png"
-    alien_path = SRC / "alien_body.png"
-    eye_path = SRC / "eye_4x.png"
-    for p in (comp_path, alien_path, eye_path):
+    machine_p, word_p = SRC / "machine.png", SRC / "word.png"
+    alien_p, eye_p = SRC / "alien.svg", SRC / "eye.svg"
+    for p in (machine_p, word_p, alien_p, eye_p):
         if not p.exists():
             die(f"missing source {p.relative_to(ROOT)}")
 
-    comp = key_backdrop(Image.open(comp_path))
-    px_per_unit = comp.width / FW
-    if abs(comp.height / FH - px_per_unit) > 0.02:
-        die("composite aspect does not match the Figma frame")
-
-    # --- alien silhouette, placed exactly where Figma puts it -------------------------------
-    # NOT cropped to its content bbox: Figma maps the WHOLE raster -- transparent margin included
-    # -- into the placement rect. Cropping first scales the visible alien up by its own padding,
-    # which lands it oversized in the tube and drags the eye off its socket.
-    alien_src = Image.open(alien_path).convert("RGBA")
-    ax, ay, aw, ah = ALIEN
-    box = (round(aw * px_per_unit), round(ah * px_per_unit))
-    alien_in_place = Image.new("RGBA", comp.size, (0, 0, 0, 0))
-    alien_in_place.alpha_composite(
-        alien_src.resize(box, Image.LANCZOS), (round(ax * px_per_unit), round(ay * px_per_unit))
-    )
-
-    # Dilate the silhouette: the alien carries a dark outline and a soft contact shadow, and any
-    # surviving fringe of it would read as dirt on the empty tube.
-    m = np.array(alien_in_place.getchannel("A")) > 6
-    for _ in range(3):
-        g = m.copy()
-        g[1:, :] |= m[:-1, :]
-        g[:-1, :] |= m[1:, :]
-        g[:, 1:] |= m[:, :-1]
-        g[:, :-1] |= m[:, 1:]
-        m = g
-
-    base = inpaint_rows(comp, m)
-    # Re-key: interpolation runs across the transparent surround too, which re-tints those pixels.
-    base = key_backdrop(Image.fromarray(np.dstack(
-        [np.array(base)[:, :, :3], np.array(comp.getchannel("A"))]
-    ), "RGBA"))
-
-    # --- write layers ------------------------------------------------------------------------
     OUT.mkdir(parents=True, exist_ok=True)
-    scatter, fit_scale, fit_x0, fit_bb = fit_canvas(base, CANVAS_W, CANVAS_H)
-    scatter.save(OUT / "scatter.webp", lossless=True, method=6)
-
-    # Canvas pixels per Figma frame unit, and where frame-origin lands on the canvas. Every
-    # placement and every loose-layer size below is expressed through these two, so the layers and
-    # the base can never drift apart.
-    art_scale = px_per_unit * fit_scale
-    origin_x = fit_x0 - fit_bb[0] * fit_scale
-    origin_y = -fit_bb[1] * fit_scale
-
-    mob = scatter.resize((CANVAS_W // 2, CANVAS_H // 2), Image.LANCZOS)
-    mob.save(OUT / "scatter_mobile.webp", lossless=True, method=6)
-
-    # The dome, cut again as a FRONT layer. Without it the alien cannot jump at all: it already
-    # fills the tube to within 0.019 of the cell height of the lid, so any hop worth seeing would
-    # draw the alien straight over the machine's metal top. Re-drawn over the alien, the same
-    # pixels occlude it instead, so it rises BEHIND the lid the way it physically would.
-    # The strip is a straight crop of the base at the same position -- nothing is reconstructed,
-    # and at rest it composites pixel-identically over itself.
-    arr_a = np.array(scatter).astype(int)
-    glass = (
-        (arr_a[:, :, 3] > 200)
-        & (arr_a[:, :, 2] > 150)
-        & (arr_a[:, :, 1] > 110)
-        & (arr_a[:, :, 0] < 90)
+    capsule, _scale, _x0 = fit_canvas(Image.open(machine_p).convert("RGBA"), CANVAS_W, CANVAS_H)
+    capsule.save(OUT / "scatter.webp", lossless=True, method=6)
+    capsule.resize((CANVAS_W // 2, CANVAS_H // 2), Image.LANCZOS).save(
+        OUT / "scatter_mobile.webp", lossless=True, method=6
     )
-    gys = np.nonzero(glass.any(axis=1))[0]
-    if gys.size == 0:
-        die("could not find the glass tube -- dome cut needs the cyan interior")
-    dome_cut = int(gys.min())  # first row of glass == bottom of the lid
-    dome = scatter.crop((0, 0, CANVAS_W, dome_cut))
+
+    a = np.array(capsule).astype(int)
+    r, g, b, al = a[:, :, 0], a[:, :, 1], a[:, :, 2], a[:, :, 3]
+    solid = al > 200
+
+    # --- tube: the one large cyan field -------------------------------------------------------
+    tube = box_of(solid & (b > 150) & (g > 110) & (r < 90), "the cyan tube")
+    tx0, ty0, tx1, ty1 = tube
+
+    # --- lid band: the magenta pill on top ----------------------------------------------------
+    dome_band = box_of(solid & (r > 200) & (b > 150) & (g < 110), "the lid's magenta band")
+
+    # --- base plaque: the dark indigo well the word sits in ------------------------------------
+    # Fenced BELOW the tube. That same dark indigo is the outline colour used all over the capsule,
+    # so an unfenced key returns the whole symbol's bounding box instead of the well.
+    plaque_key = solid & (r > 35) & (r < 80) & (g > 30) & (g < 70) & (b > 110) & (b < 170)
+    plaque_key[:ty1, :] = False
+    plaque = box_of(largest_blob(plaque_key), "the base plaque")
+
+    # --- lower band: the collar between the tube's foot and the plaque -------------------------
+    # Authored from the two measured boxes rather than keyed. It is the machine's own body colour,
+    # so there is no colour that isolates it -- but it is exactly the gap between the tube's bottom
+    # and the plaque's top, which are both measured, so deriving it keeps it tied to the art.
+    lower_band = (
+        round(tx0 + (tx1 - tx0) * 0.16), ty1,
+        round(tx1 - (tx1 - tx0) * 0.16), round(ty1 + (plaque[1] - ty1) * 0.55),
+    )
+
+    # --- lid, as a front occluder -------------------------------------------------------------
+    # Cut at the first row of glass: that row IS the bottom of the lid, so nothing is invented and
+    # at rest the strip composites pixel-identically over itself.
+    dome = capsule.crop((0, 0, CANVAS_W, ty0))
     dome.save(OUT / "scatter_dome.webp", lossless=True, method=6)
 
-    alien_out = alien_src.resize(
-        (round(aw * art_scale * ALIEN_SUPERSAMPLE), round(ah * art_scale * ALIEN_SUPERSAMPLE)),
-        Image.LANCZOS,
+    # --- word, sized into the plaque ----------------------------------------------------------
+    word_src = Image.open(word_p).convert("RGBA")
+    word_src = word_src.crop(alpha_bbox(word_src))
+    px0, py0, px1, py1 = plaque
+    word_w = (px1 - px0) * WORD_OF_PLAQUE
+    word_h = word_w * word_src.height / word_src.width
+    if word_h > (py1 - py0) * WORD_OF_PLAQUE:  # a tall plaque: fit by height instead
+        word_h = (py1 - py0) * WORD_OF_PLAQUE
+        word_w = word_h * word_src.width / word_src.height
+    word_out = word_src.resize(
+        (max(1, round(word_w * SUPERSAMPLE)), max(1, round(word_h * SUPERSAMPLE))), Image.LANCZOS
     )
-    alien_out.save(OUT / "scatter_alien.webp", lossless=True, method=6)
+    word_out.save(OUT / "scatter_word.webp", lossless=True, method=6)
+    wcx, wcy = (px0 + px1) / 2, (py0 + py1) / 2
+    word_box = (wcx - word_w / 2, wcy - word_h / 2, wcx + word_w / 2, wcy + word_h / 2)
 
-    eye = key_backdrop(Image.open(eye_path))  # same whole-raster rule as the alien above
-    ew, eh = EYE[2], EYE[3]
-    eye_out = eye.resize(
-        (round(ew * art_scale * ALIEN_SUPERSAMPLE), round(eh * art_scale * ALIEN_SUPERSAMPLE)),
-        Image.LANCZOS,
-    )
-    eye_out.save(OUT / "scatter_eye.webp", lossless=True, method=6)
+    # --- alien and eye, authored into the tube -------------------------------------------------
+    tube_w, tube_h = tx1 - tx0, ty1 - ty0
+    alien_w = tube_w * ALIEN_OF_TUBE_W
+    alien_src = render_svg(alien_p, round(alien_w * SUPERSAMPLE))
+    alien_h = alien_w * alien_src.height / alien_src.width
+    alien_src.save(OUT / "scatter_alien.webp", lossless=True, method=6)
+    acx = (tx0 + tx1) / 2
+    acy = ty1 - tube_h * ALIEN_BOTTOM_PAD - alien_h / 2
+    alien_box = (acx - alien_w / 2, acy - alien_h / 2, acx + alien_w / 2, acy + alien_h / 2)
 
-    # --- placement constants, as fractions of the 328x264 canvas -----------------------------
-    def frac(rect):
-        x, y, w, h = rect
-        px, py = origin_x + x * art_scale, origin_y + y * art_scale
-        return {
-            "cx": (px + w * art_scale / 2) / CANVAS_W,
-            "cy": (py + h * art_scale / 2) / CANVAS_H,
-            "w": (w * art_scale) / CANVAS_W,
-            "h": (h * art_scale) / CANVAS_H,
-        }
+    eye_w = alien_w * EYE_OF_ALIEN
+    eye_src = render_svg(eye_p, round(eye_w * SUPERSAMPLE))
+    eye_h = eye_w * eye_src.height / eye_src.width
+    eye_src.save(OUT / "scatter_eye.webp", lossless=True, method=6)
+    ecy = alien_box[1] + alien_h * EYE_CY_OF_ALIEN
+    eye_box = (acx - eye_w / 2, ecy - eye_h / 2, acx + eye_w / 2, ecy + eye_h / 2)
 
+    # --- report --------------------------------------------------------------------------------
     print("layers written to", OUT.relative_to(ROOT))
     for name, im in (
-        ("scatter.webp", scatter),
-        ("scatter_alien.webp", alien_out),
-        ("scatter_eye.webp", eye_out),
+        ("scatter.webp", capsule), ("scatter_word.webp", word_out),
+        ("scatter_alien.webp", alien_src), ("scatter_eye.webp", eye_src),
         ("scatter_dome.webp", dome),
     ):
-        print(f"  {name:22s} {im.size}")
-    ALIEN_F = frac(ALIEN)
-    print("\nplacements (fractions of the 328x264 symbol canvas):")
-    for name, rect in (
-        ("ALIEN", ALIEN),
-        ("EYE", EYE),
-        ("DOME_BAND", DOME_BAND),
-        ("LOWER_BAND", LOWER_BAND),
-        ("TUBE", TUBE),
-    ):
-        f = frac(rect)
-        print(f"  {name:11s} cx={f['cx']:.4f} cy={f['cy']:.4f} w={f['w']:.4f} h={f['h']:.4f}")
+        print(f"  {name:20s} {im.size}")
 
-    # Dome front layer + the headroom it buys, both as fractions of the symbol box.
-    alien_top_pad = np.nonzero((np.array(alien_out)[:, :, 3] > 8).any(axis=1))[0].min() / alien_out.height
-    alien_vis_top = ALIEN_F["cy"] - 0.5 - ALIEN_F["h"] / 2 + alien_top_pad * ALIEN_F["h"]
-    print(f"  {'DOME_FRONT':11s} cy={dome_cut / 2 / CANVAS_H:.4f} h={dome_cut / CANVAS_H:.4f}")
-    print(
-        f"  {'HOP_LIMIT':11s} {alien_vis_top - (dome_cut / CANVAS_H - 0.5):.4f}"
-        f"  (alien visible top {alien_vis_top:.4f} vs lid {dome_cut / CANVAS_H - 0.5:.4f};"
-        f" beyond this the alien is occluded by scatter_dome, which is the point)"
-    )
+    print("\nplacements (fractions of the 328x264 symbol box, offsets from its centre):")
+    print(emit("TUBE", frac(*tube)))
+    print(emit("DOME_BAND", frac(*dome_band)))
+    print(emit("LOWER_BAND", frac(*lower_band)))
+    print(emit("PLAQUE", frac(*plaque)))
+    print(emit("WORD", frac(*[round(v) for v in word_box])))
+    print(emit("ALIEN", frac(*[round(v) for v in alien_box])))
+    print(emit("EYE", frac(*[round(v) for v in eye_box])))
+    print(f"  {'DOME_FRONT':11s} dy={ty0 / 2 / CANVAS_H - 0.5:+.4f} h={ty0 / CANVAS_H:.4f}"
+          "   (top-aligned, full canvas width)")
+    # Headroom before the lid starts eating the hop: how far the alien can rise, as a fraction of
+    # the box, before scatter_dome occludes it -- which is exactly what that layer is there for.
+    print(f"  {'HOP_LIMIT':11s} {(alien_box[1] - ty0) / CANVAS_H:+.4f}")
 
-    # The word SCATTER is baked into the plate, so its glyph box has to be MEASURED off the render
-    # rather than read from Figma: the plate is drawn art, not a text node. Bright green glyphs on a
-    # dark plate key cleanly on green-dominance.
-    arr = np.array(scatter).astype(int)
-    green = (arr[:, :, 3] > 40) & (arr[:, :, 1] > 140) & (arr[:, :, 1] - arr[:, :, 2] > 60)
-    green[: int(CANVAS_H * 0.72), :] = False  # plate only; the alien and blobs are green too
-    ys, xs = np.nonzero(green)
-    if ys.size:
-        print(
-            f"  {'WORD':11s} cx={(xs.min() + xs.max()) / 2 / CANVAS_W:.4f} "
-            f"cy={(ys.min() + ys.max()) / 2 / CANVAS_H:.4f} "
-            f"w={(xs.max() - xs.min()) / CANVAS_W:.4f} h={(ys.max() - ys.min()) / CANVAS_H:.4f}"
-        )
-
-    # --- preview -----------------------------------------------------------------------------
+    # --- preview -------------------------------------------------------------------------------
     def checker(im):
         bg = Image.new("RGBA", im.size, (0, 0, 0, 0))
         for yy in range(0, im.height, 16):
@@ -309,8 +281,23 @@ def main() -> None:
         bg.alpha_composite(im)
         return bg
 
-    tiles = [checker(scatter), checker(alien_out), checker(eye_out.resize((132, 132), Image.NEAREST))]
-    W = sum(t.width for t in tiles) + 40
+    # Fourth tile: everything assembled at rest, drawn in the runtime's own order (alien, eye, then
+    # the dome occluder over them, then the word) so the authored placements can be judged without
+    # booting the game.
+    demo = capsule.copy()
+
+    def place(layer, bx):
+        bw, bh = round(bx[2] - bx[0]), round(bx[3] - bx[1])
+        demo.alpha_composite(layer.resize((max(1, bw), max(1, bh)), Image.LANCZOS),
+                             (round(bx[0]), round(bx[1])))
+
+    place(alien_src, alien_box)
+    place(eye_src, eye_box)
+    demo.alpha_composite(dome, (0, 0))
+    place(word_out, word_box)
+
+    tiles = [checker(capsule), checker(word_out), checker(alien_src), checker(demo)]
+    W = sum(t.width for t in tiles) + 10 + 15 * len(tiles)
     H = max(t.height for t in tiles) + 20
     sheet = Image.new("RGBA", (W, H), (26, 26, 32, 255))
     xoff = 10
