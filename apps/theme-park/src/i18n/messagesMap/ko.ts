@@ -258,7 +258,7 @@ export default {
 		'예상 환급률은 많은 수의 플레이를 기준으로 산출됩니다. 게임 화면은 시각적·오락적 목적일 뿐이며 실제 게임 기기를 나타내지 않습니다.',
 	'INFO GI LEGAL SETTLE':
 		'모든 당첨금은 브라우저에 표시되는 애니메이션이나 이벤트가 아니라 Remote Game Server에서 받은 결과에 따라 정산됩니다.',
-	'INFO GI LEGAL TM': 'TM 및 © 2026 Engine.',
+	'INFO GI LEGAL TM': 'TM 및 © 2026.',
 	'INFO UI AUTO SPINS': '자동 스핀',
 	'INFO UI BET PLUS': '베팅 +',
 	'INFO UI BET MINUS': '베팅 -',

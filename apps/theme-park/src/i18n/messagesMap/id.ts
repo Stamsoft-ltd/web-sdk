@@ -262,7 +262,7 @@ export default {
 		'Pengembalian yang diharapkan dihitung dari sejumlah besar permainan. Tampilan game hanya untuk tujuan visual dan hiburan serta tidak mewakili perangkat permainan fisik apa pun.',
 	'INFO GI LEGAL SETTLE':
 		'Semua kemenangan diselesaikan berdasarkan hasil yang diterima dari Remote Game Server, bukan dari animasi atau peristiwa yang ditampilkan di browser.',
-	'INFO GI LEGAL TM': 'TM dan © 2026 Engine.',
+	'INFO GI LEGAL TM': 'TM dan © 2026.',
 	'INFO UI AUTO SPINS': 'PUTARAN OTOMATIS',
 	'INFO UI BET PLUS': 'TARUHAN +',
 	'INFO UI BET MINUS': 'TARUHAN -',

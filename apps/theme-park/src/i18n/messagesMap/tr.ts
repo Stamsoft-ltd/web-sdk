@@ -263,7 +263,7 @@ export default {
 		'Beklenen getiri çok sayıda oyun üzerinden hesaplanır. Oyun görüntüsü yalnızca görsel ve eğlence amaçlıdır ve fiziksel bir oyun cihazını temsil etmez.',
 	'INFO GI LEGAL SETTLE':
 		"Tüm kazançlar, tarayıcıda gösterilen animasyon veya olaylara göre değil, Remote Game Server'dan alınan sonuca göre hesaplanır.",
-	'INFO GI LEGAL TM': 'TM ve © 2026 Engine.',
+	'INFO GI LEGAL TM': 'TM ve © 2026.',
 	'INFO UI AUTO SPINS': 'OTOMATİK DÖNÜŞLER',
 	'INFO UI BET PLUS': 'BAHİS +',
 	'INFO UI BET MINUS': 'BAHİS -',

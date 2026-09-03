@@ -262,7 +262,7 @@ export default {
 		'Odotettu palautus lasketaan suuren pelimäärän perusteella. Pelinäkymä on vain visuaalista ja viihteellistä tarkoitusta varten eikä esitä mitään fyysistä pelilaitetta.',
 	'INFO GI LEGAL SETTLE':
 		'Kaikki voitot maksetaan Remote Game Serveriltä saadun tuloksen mukaan, ei selaimessa näytettyjen animaatioiden tai tapahtumien perusteella.',
-	'INFO GI LEGAL TM': 'TM ja © 2026 Engine.',
+	'INFO GI LEGAL TM': 'TM ja © 2026.',
 	'INFO UI AUTO SPINS': 'AUTOMAATTIKIERROKSET',
 	'INFO UI BET PLUS': 'PANOS +',
 	'INFO UI BET MINUS': 'PANOS -',

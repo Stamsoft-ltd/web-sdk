@@ -246,7 +246,7 @@ export default {
 		'预期回报基于大量游戏局数计算。游戏画面仅供视觉与娱乐用途，不代表任何实体游戏设备。',
 	'INFO GI LEGAL SETTLE':
 		'所有奖金均依据 Remote Game Server 返回的结果结算，而非浏览器中显示的动画或事件。',
-	'INFO GI LEGAL TM': 'TM 和 © 2026 Engine.',
+	'INFO GI LEGAL TM': 'TM 和 © 2026.',
 	'INFO UI AUTO SPINS': '自动旋转',
 	'INFO UI BET PLUS': '投注 +',
 	'INFO UI BET MINUS': '投注 -',
