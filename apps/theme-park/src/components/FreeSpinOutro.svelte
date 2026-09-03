@@ -12,7 +12,7 @@
 	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
 	import {
 		bookEventAmountToBetAmountMultiplier,
-		bookEventAmountToCurrencyString,
+		bookEventAmountToCurrencyStringAtTargetPrecision,
 	} from 'utils-shared/amount';
 	import { waitForResolve } from 'utils-shared/wait';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
@@ -114,7 +114,10 @@
 							{runId}
 							title={stateI18nDerived.translate('CONGRATS!')}
 							subtitle={stateI18nDerived.translate('YOU WON')}
-							wellText={bookEventAmountToCurrencyString(countUpAmount).toUpperCase()}
+							wellText={bookEventAmountToCurrencyStringAtTargetPrecision(
+								countUpAmount,
+								amount,
+							).toUpperCase()}
 						/>
 					</Container>
 				</MainContainer>

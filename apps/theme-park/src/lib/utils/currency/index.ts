@@ -16,6 +16,7 @@
 export {
 	formatWalletAmount,
 	formatWinAmount,
+	formatWinAmountAtTargetPrecision,
 	metaFor,
 	normalizeCurrency,
 	SUPPORTED_CURRENCIES,

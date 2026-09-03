@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatWalletAmount, formatWinAmount } from '../src/lib/utils/currency';
+import {
+	formatWalletAmount,
+	formatWinAmount,
+	formatWinAmountAtTargetPrecision,
+} from '../src/lib/utils/currency';
 
 /**
  * R-01 in STAKE_REVIEW_LESSONS.md, as executable assertions.
@@ -52,6 +56,11 @@ describe('win money shows the exact settled value', () => {
 
 	it('goes past four rather than print zero, because that rule wins', () => {
 		expect(formatWinAmount('USD', 0.00001)).toBe('$0.00001');
+	});
+
+	it('locks count-up precision to the settled result', () => {
+		expect(formatWinAmountAtTargetPrecision('USD', 1.001, 50)).toBe('$1.00');
+		expect(formatWinAmountAtTargetPrecision('USD', 1.001, 1.002)).toBe('$1.001');
 	});
 
 	it('runs the whole book-amount range at the smallest bet without a zero', () => {

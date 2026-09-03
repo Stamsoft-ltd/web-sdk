@@ -125,13 +125,19 @@ export const SUPPORTED_CURRENCIES = Object.keys(CURRENCY_META) as Currency[];
 const CURRENCY_SET = new Set<string>(SUPPORTED_CURRENCIES);
 
 export const isSupportedCurrency = (raw: unknown): raw is Currency =>
-	CURRENCY_SET.has(String(raw ?? '').trim().toUpperCase());
+	CURRENCY_SET.has(
+		String(raw ?? '')
+			.trim()
+			.toUpperCase(),
+	);
 
 /** Uppercase the code and keep it as-is. Unknown codes are NOT coerced to USD — showing "$" for a
  *  currency we do not recognise misstates the player's balance; `metaFor` renders the raw code
  *  after the amount instead, exactly as the RGS spec's reference `DisplayBalance` does. */
 export const normalizeCurrency = (raw: unknown): string =>
-	String(raw ?? '').trim().toUpperCase() || 'USD';
+	String(raw ?? '')
+		.trim()
+		.toUpperCase() || 'USD';
 
 export const metaFor = (currency: string): CurrencyMeta =>
 	CURRENCY_META[currency as Currency] ?? { symbol: currency, decimals: 2, symbolAfter: true };
@@ -219,6 +225,27 @@ export const formatWinAmount = (currency: string, amount: number) => {
 	const exact = fractionDigitsForAmount(amount, decimals);
 	const max = exact > WIN_MAX_FRACTION_DIGITS ? exact : WIN_MAX_FRACTION_DIGITS;
 	return render(currency, amount, decimals, max);
+};
+
+/**
+ * Count-up win money using the precision required by the FINAL amount.
+ *
+ * Intermediate tween values must not expand to a third/fourth decimal when the settled win only
+ * needs two. A genuinely finer final result (for example 1.002) keeps the extra precision for the
+ * whole count-up, so the display never changes decimal shape mid-animation.
+ */
+export const formatWinAmountAtTargetPrecision = (
+	currency: string,
+	amount: number,
+	targetAmount: number,
+) => {
+	const { decimals } = metaFor(currency);
+	const target = Number.isFinite(targetAmount)
+		? Number(targetAmount.toFixed(MAX_FRACTION_DIGITS))
+		: 0;
+	const targetText = String(target);
+	const targetDecimals = targetText.includes('.') ? targetText.split('.')[1].length : 0;
+	return render(currency, amount, decimals, Math.max(decimals, targetDecimals));
 };
 
 /**

@@ -76,7 +76,7 @@
 	import { stateBet, stateBetDerived, stateConfig, stateModal, stateSound } from 'state-shared';
 	import { onDestroy } from 'svelte';
 	import { Tween } from 'svelte/motion';
-	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
+	import { bookEventAmountToCurrencyStringAtTargetPrecision } from 'utils-shared/amount';
 
 	import { getContext } from '../game/context';
 	import { FRAME_OVER_GRID_Y, GRID_OFFSET_Y } from '../game/boardArt';
@@ -219,7 +219,9 @@
 		winDisplayAt = now;
 		winDisplayAmount = current;
 	});
-	const formattedWin = $derived(bookEventAmountToCurrencyString(winDisplayAmount));
+	const formattedWin = $derived(
+		bookEventAmountToCurrencyStringAtTargetPrecision(winDisplayAmount, context.stateGame.roundWin),
+	);
 	const autoSpinsRemainingText = $derived(
 		stateBet.autoSpinsCounter === Infinity ? '∞' : `${stateBet.autoSpinsCounter}`,
 	);

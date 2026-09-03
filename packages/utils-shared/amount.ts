@@ -1,7 +1,7 @@
 import { BOOK_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import { stateBet } from 'state-shared';
 
-import { formatWinAmount } from './currency';
+import { formatWinAmount, formatWinAmountAtTargetPrecision } from './currency';
 
 // bookEventAmount: is the amount or win numbers in the events of books, e.g. the amount in setTotalWin bookEvent
 // {
@@ -44,3 +44,14 @@ export const bookEventAmountToCurrencyString = (bookEventAmount: number) => {
 	const normalisedAmount = bookEventAmountToNormalisedAmount(bookEventAmount);
 	return numberToCurrencyString(normalisedAmount);
 };
+
+/** Count-up formatter: use the settled book amount to lock decimal precision for the whole tween. */
+export const bookEventAmountToCurrencyStringAtTargetPrecision = (
+	bookEventAmount: number,
+	targetBookEventAmount: number,
+) =>
+	formatWinAmountAtTargetPrecision(
+		stateBet.currency,
+		bookEventAmountToNormalisedAmount(bookEventAmount),
+		bookEventAmountToNormalisedAmount(targetBookEventAmount),
+	);

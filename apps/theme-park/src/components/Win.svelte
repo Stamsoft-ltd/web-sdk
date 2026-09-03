@@ -16,7 +16,7 @@
 	import { backOut } from 'svelte/easing';
 	import {
 		bookEventAmountToBetAmountMultiplier,
-		bookEventAmountToCurrencyString,
+		bookEventAmountToCurrencyStringAtTargetPrecision,
 	} from 'utils-shared/amount';
 	import { waitForResolve } from 'utils-shared/wait';
 
@@ -126,6 +126,8 @@
 		const u = (t - EASE_T) / (1 - EASE_T);
 		return EASE_V + (1 - EASE_V) * u * (2 - u);
 	};
+	const formatCountUpAmount = (value: number) =>
+		bookEventAmountToCurrencyStringAtTargetPrecision(value, amount);
 
 	// One climb time for EVERY big win (design ask, matching Forest Gang): the count rate scales
 	// with the amount instead of the time, so 50x and 5000x both land in the same beat. Only the
@@ -318,7 +320,7 @@
 										active={show}
 										{winId}
 										{cardWidth}
-										amountText={bookEventAmountToCurrencyString(countUpDisplayAmount)}
+										amountText={formatCountUpAmount(countUpDisplayAmount)}
 									/>
 								{:else}
 									<WinCard
@@ -326,7 +328,7 @@
 										active={show}
 										{winId}
 										{cardWidth}
-										amountText={bookEventAmountToCurrencyString(countUpDisplayAmount)}
+										amountText={formatCountUpAmount(countUpDisplayAmount)}
 									/>
 								{/if}
 							</Container>
@@ -346,7 +348,7 @@
 									<Text
 										anchor={0.5}
 										onresize={(size) => (smallWinSize = size)}
-										text={bookEventAmountToCurrencyString(countUpDisplayAmount)}
+										text={formatCountUpAmount(countUpDisplayAmount)}
 										style={{
 											fontFamily: 'Lilita One',
 											fontWeight: '400',
