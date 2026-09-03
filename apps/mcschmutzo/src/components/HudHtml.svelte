@@ -38,6 +38,10 @@
 	// Full auto button art (disc + arrows + "AUTO"), used as-is (its AUTO is white-on-dark,
 	// so it must NOT go through the white-recolour filter).
 	const iconAutoFull = ap('/assets/mcschmutzo/ui-icons/auto.svg');
+	// System menu popup — the design's circular icon buttons (disc + white glyph).
+	const menuIcSound = ap('/assets/mcschmutzo/ui-icons/sound.svg');
+	const menuIcMusic = ap('/assets/mcschmutzo/ui-icons/music.svg');
+	const menuIcInfo = ap('/assets/mcschmutzo/ui-icons/info.svg');
 	const iconSpin = ap('/assets/hud/icon-spin.png');
 	const iconStop = ap('/assets/hud/icon-stop.png');
 	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.png');
@@ -192,6 +196,12 @@
 	const toggleSound = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		stateSound.volumeValueMaster = stateSound.volumeValueMaster === 0 ? 50 : 0;
+	};
+
+	const isMusicMuted = $derived(stateSound.volumeValueMusic === 0);
+	const toggleMusic = () => {
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		stateSound.volumeValueMusic = stateSound.volumeValueMusic === 0 ? 50 : 0;
 	};
 
 	// Portrait: the menu (☰) button opens a small popup holding Sound + Info instead of those
@@ -856,14 +866,46 @@
 	<div class="hud-bottom">
 		<div class="hud-left">
 			<div class="hud-system">
-				<button
-					class="nav-btn nav-btn--framed"
-					type="button"
-					onclick={openRules}
-					aria-label="Menu"
-				>
-					<img class="nav-icon" src={iconMenuBars} alt="menu" />
-				</button>
+				<div class="menu-wrap">
+					{#if menuOpen}
+						<div class="hud-menu-pop" role="menu" bind:this={menuPopEl}>
+							<button
+								class="hud-menu-item"
+								class:muted={isMuted}
+								type="button"
+								role="menuitem"
+								onclick={toggleSound}
+							>
+								<img class="hud-menu-item__ic" src={menuIcSound} alt="" />
+								<span class="hud-menu-item__label">{i18nDerived.translate('SOUND')}</span>
+							</button>
+							<button
+								class="hud-menu-item"
+								class:muted={isMusicMuted}
+								type="button"
+								role="menuitem"
+								onclick={toggleMusic}
+							>
+								<img class="hud-menu-item__ic" src={menuIcMusic} alt="" />
+								<span class="hud-menu-item__label">{i18nDerived.translate('MUSIC')}</span>
+							</button>
+							<button class="hud-menu-item" type="button" role="menuitem" onclick={openRules}>
+								<img class="hud-menu-item__ic" src={menuIcInfo} alt="" />
+								<span class="hud-menu-item__label">{i18nDerived.translate('INFO')}</span>
+							</button>
+						</div>
+					{/if}
+					<button
+						class="nav-btn nav-btn--framed"
+						type="button"
+						onclick={toggleMenu}
+						aria-label="Menu"
+						aria-expanded={menuOpen}
+						bind:this={menuBtnEl}
+					>
+						<img class="nav-icon" src={iconMenuBars} alt="menu" />
+					</button>
+				</div>
 				<button
 					class="nav-btn nav-btn--framed"
 					type="button"
@@ -1589,6 +1631,65 @@
 		align-items: center;
 		gap: calc(var(--u) * 10);
 		flex: 0 0 auto;
+	}
+
+	/* System menu popup (☰ → SOUND / MUSIC / INFO), floating above the menu button. */
+	.menu-wrap {
+		position: relative;
+		display: inline-flex;
+		flex: 0 0 auto;
+	}
+	.hud-menu-pop {
+		position: absolute;
+		bottom: calc(100% + var(--nav-s) * 0.28);
+		left: 0;
+		z-index: 45;
+		display: flex;
+		flex-direction: column;
+		min-width: calc(var(--nav-s) * 3.4);
+		padding: calc(var(--nav-s) * 0.12) calc(var(--nav-s) * 0.34);
+		border: 2px solid #3d3733;
+		border-radius: calc(var(--nav-s) * 0.28);
+		background: #1b1917;
+		box-shadow: 0 calc(var(--nav-s) * 0.2) calc(var(--nav-s) * 0.5) rgba(0, 0, 0, 0.55);
+	}
+	.hud-menu-item {
+		display: flex;
+		align-items: center;
+		gap: calc(var(--nav-s) * 0.24);
+		padding: calc(var(--nav-s) * 0.2) 0;
+		border: none;
+		background: none;
+		cursor: pointer;
+		transition:
+			filter 0.12s ease,
+			transform 0.08s ease;
+	}
+	.hud-menu-item + .hud-menu-item {
+		border-top: 1px solid rgba(255, 255, 255, 0.09);
+	}
+	.hud-menu-item:hover {
+		filter: brightness(1.14);
+	}
+	.hud-menu-item:active {
+		transform: scale(0.98);
+	}
+	.hud-menu-item__ic {
+		width: calc(var(--nav-s) * 0.62);
+		height: calc(var(--nav-s) * 0.62);
+		object-fit: contain;
+		flex: 0 0 auto;
+		transition: opacity 0.12s ease;
+	}
+	.hud-menu-item.muted .hud-menu-item__ic {
+		opacity: 0.38;
+	}
+	.hud-menu-item__label {
+		color: #ffffff;
+		font-family: 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: calc(var(--nav-s) * 0.26);
+		letter-spacing: 0.04em;
 	}
 
 	.btn-icon {
