@@ -1,0 +1,19 @@
+{
+	"frames": {
+		"coin.png": {
+			"frame": { "x": 0, "y": 0, "w": 1254, "h": 1254 },
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": { "x": 0, "y": 0, "w": 1254, "h": 1254 },
+			"sourceSize": { "w": 1254, "h": 1254 }
+		}
+	},
+	"meta": {
+		"app": "Veggie Salad",
+		"version": "1.0",
+		"image": "coin.png",
+		"format": "RGBA8888",
+		"size": { "w": 1254, "h": 1254 },
+		"scale": "1"
+	}
+}

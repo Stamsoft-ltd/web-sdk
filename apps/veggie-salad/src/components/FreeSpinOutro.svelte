@@ -87,7 +87,7 @@
 										fontFamily: 'gold',
 										fontSize: sizes.width * 0.15,
 									}}
-									text={bookEventAmountToCurrencyString(countUpAmount)}
+									text={bookEventAmountToCurrencyString(countUpAmount, amount)}
 									maxWidth={sizes.width}
 								/>
 							</SpineSlot>

@@ -1,0 +1,40 @@
+import source from './magneticCommon/fi';
+import { createLocale } from './createLocale';
+
+export default createLocale(source, {
+	bonus: 'BONUS',
+	bonuses: 'BONUKSET',
+	earned: 'KERÄTTY',
+	garden: 'PUUTARHA',
+	welcome: 'TERVETULOA',
+	gameBoard: 'Veggie Salad -pelilauta',
+	clusterPayouts: 'RYHMÄVOITOT',
+	vegetables: [
+		'PARSAKAALI',
+		'MAISSI',
+		'TOMAATTI',
+		'MUNAKOISO',
+		'PORKKANA',
+		'KUKKAKAALI',
+		'RETIISI',
+	],
+	normalBonus: 'NORMAALI BONUS',
+	superBonus: 'SUPERBONUS',
+	hiddenBonus: 'PIILOBONUS',
+	mysteryBonus: 'MYSTEERIBONUS',
+	featureSpin: 'OMINAISUUSPYÖRÄYTYS',
+	guaranteedCluster: 'TAATTU VOITTORYHMÄ',
+	bonusChance: 'BONUSMAHDOLLISUUS',
+	active: 'AKTIIVINEN',
+	harvest: 'VALITSE SATOSI',
+	skip: 'OHITA',
+	toggle: 'VAIHDA',
+	tumbleTitle: 'PUDOTUKSET',
+	tumbleText: 'Voittavat symbolit poistetaan ja uusia putoaa, kunnes uutta ryhmää ei synny.',
+	multiplierTitle: 'KERTOIMET',
+	multiplierText: 'Voittoryhmän kaikki kertoimet kerrotaan keskenään ja sovelletaan voittoon.',
+	bonusRule:
+		'3 scatteria käynnistää normaalin bonuksen, 4 superbonuksen; piilobonus käyttää 10×10-ruudukkoa.',
+	controls: 'OHJAIMET',
+	splashGarden: 'Muodosta ryhmiä, pudota vihanneksia ja löydä puutarhan yllätykset.',
+});

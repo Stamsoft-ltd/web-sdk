@@ -1,0 +1,31 @@
+import source from './magneticCommon/ar';
+import { createLocale } from './createLocale';
+
+export default createLocale(source, {
+	bonus: 'مكافأة',
+	bonuses: 'المكافآت',
+	earned: 'المجموع',
+	garden: 'الحديقة',
+	welcome: 'مرحبًا بك في',
+	gameBoard: 'لوحة لعبة Veggie Salad',
+	clusterPayouts: 'أرباح المجموعات',
+	vegetables: ['بروكلي', 'ذرة', 'طماطم', 'باذنجان', 'جزر', 'قرنبيط', 'فجل'],
+	normalBonus: 'المكافأة العادية',
+	superBonus: 'المكافأة الخارقة',
+	hiddenBonus: 'المكافأة المخفية',
+	mysteryBonus: 'المكافأة الغامضة',
+	featureSpin: 'دورة مميزة',
+	guaranteedCluster: 'مجموعة رابحة مضمونة',
+	bonusChance: 'فرصة المكافأة',
+	active: 'مفعّل',
+	harvest: 'اختر حصادك',
+	skip: 'تخطي',
+	toggle: 'تبديل',
+	tumbleTitle: 'السقوط المتتابع',
+	tumbleText: 'تُزال الرموز الرابحة وتسقط رموز جديدة حتى لا تتكوّن مجموعة جديدة.',
+	multiplierTitle: 'المضاعفات',
+	multiplierText: 'تتضاعف جميع المضاعفات داخل المجموعة الرابحة وتُطبّق على ربحها.',
+	bonusRule: '3 رموز مبعثرة تمنح المكافأة العادية، و4 تمنح الخارقة، والمخفية تستخدم شبكة 10×10.',
+	controls: 'عناصر التحكم',
+	splashGarden: 'كوّن مجموعات، وأسقط الخضروات، واكتشف مفاجآت الحديقة.',
+});

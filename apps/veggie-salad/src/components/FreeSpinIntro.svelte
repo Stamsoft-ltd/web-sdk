@@ -7,21 +7,17 @@
 
 <script lang="ts">
 	import { CanvasSizeRectangle } from 'components-layout';
-	import { stateUrlDerived } from 'state-shared';
 	import { FadeContainer } from 'components-pixi';
 	import { waitForResolve } from 'utils-shared/wait';
-	import { BitmapText, SpineProvider, SpineSlot, SpineTrack, Sprite } from 'pixi-svelte';
+	import { Container, Rectangle, Text } from 'pixi-svelte';
+	import { MainContainer } from 'components-layout';
 
 	import { getContext } from '../game/context';
 	import PressToContinue from './PressToContinue.svelte';
-	import FreeSpinAnimation from './FreeSpinAnimation.svelte';
-
-	type AnimationName = 'intro' | 'idle';
 
 	const context = getContext();
 
 	let show = $state(false);
-	let animationName = $state<AnimationName>('intro');
 	let freeSpinsFromEvent = $state(0);
 	let oncomplete = $state(() => {});
 
@@ -42,40 +38,40 @@
 <FadeContainer {show}>
 	<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
 
-	<FreeSpinAnimation>
-		{#snippet children({ sizes })}
-			<Sprite
-				anchor={{ x: 0.5, y: 1.2 }}
-				width={500 * 2.2}
-				height={156 * 2.2}
-				key="freespins_{stateUrlDerived.lang()}.png"
+	<MainContainer>
+		<Container
+			x={context.stateLayoutDerived.mainLayout().width * 0.5}
+			y={context.stateLayoutDerived.mainLayout().height * 0.5}
+		>
+			<Rectangle x={-360} y={-190} width={720} height={380} backgroundColor={0x6d2b12} />
+			<Rectangle x={-348} y={-178} width={696} height={356} backgroundColor={0xd69a2d} />
+			<Rectangle x={-336} y={-166} width={672} height={332} backgroundColor={0x315318} />
+			<Text
+				anchor={0.5}
+				y={-90}
+				text="BONUS ENTER"
+				style={{
+					fontFamily: 'monospace',
+					fontSize: 58,
+					fontWeight: '900',
+					fill: 0xffe24e,
+					stroke: { color: 0x4c2008, width: 8 },
+				}}
 			/>
-
-			<SpineProvider key="fsIntroNumber" width={sizes.width * 0.4}>
-				<SpineTrack
-					trackIndex={0}
-					{animationName}
-					loop={animationName === 'idle'}
-					listener={{
-						complete: () => (animationName = 'idle'),
-					}}
-				/>
-				<SpineSlot slotName="slot_number">
-					<BitmapText
-						anchor={{ x: 0.5, y: 0.5 }}
-						text={freeSpinsFromEvent}
-						style={{
-							fontFamily: 'gold',
-							fontSize: sizes.width * 0.15,
-							fontWeight: 'bold',
-						}}
-					/>
-				</SpineSlot>
-			</SpineProvider>
-
-			<Sprite anchor={{ x: 0.5, y: -3 }} width={183 * 2.2} height={42 * 2.2} key="freespins.png" />
-		{/snippet}
-	</FreeSpinAnimation>
+			<Text
+				anchor={0.5}
+				y={18}
+				text={`${freeSpinsFromEvent} FREE SPINS`}
+				style={{
+					fontFamily: 'monospace',
+					fontSize: 48,
+					fontWeight: '900',
+					fill: 0xffffff,
+					stroke: { color: 0x4c2008, width: 7 },
+				}}
+			/>
+		</Container>
+	</MainContainer>
 
 	<PressToContinue onpress={() => oncomplete()} />
 </FadeContainer>

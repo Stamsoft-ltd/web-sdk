@@ -1,0 +1,31 @@
+import source from './magneticCommon/pl';
+import { createLocale } from './createLocale';
+
+export default createLocale(source, {
+	bonus: 'BONUS',
+	bonuses: 'BONUSY',
+	earned: 'ZDOBYTO',
+	garden: 'OGRÓD',
+	welcome: 'WITAJ W',
+	gameBoard: 'Plansza Veggie Salad',
+	clusterPayouts: 'WYGRANE KLASTROWE',
+	vegetables: ['BROKUŁ', 'KUKURYDZA', 'POMIDOR', 'BAKŁAŻAN', 'MARCHEW', 'KALAFIOR', 'RZODKIEWKA'],
+	normalBonus: 'ZWYKŁY BONUS',
+	superBonus: 'SUPER BONUS',
+	hiddenBonus: 'UKRYTY BONUS',
+	mysteryBonus: 'TAJEMNICZY BONUS',
+	featureSpin: 'SPIN FUNKCJI',
+	guaranteedCluster: 'GWARANTOWANY KLASTER WYGRYWAJĄCY',
+	bonusChance: 'SZANSA NA BONUS',
+	active: 'AKTYWNY',
+	harvest: 'WYBIERZ ZBIORY',
+	skip: 'POMIŃ',
+	toggle: 'PRZEŁĄCZ',
+	tumbleTitle: 'KASKADY',
+	tumbleText: 'Wygrywające symbole są usuwane, a nowe spadają, aż nie powstanie kolejny klaster.',
+	multiplierTitle: 'MNOŻNIKI',
+	multiplierText: 'Wszystkie mnożniki w wygrywającym klastrze są mnożone i stosowane do wygranej.',
+	bonusRule: '3 scatter uruchamiają Zwykły Bonus, 4 Super Bonus; Ukryty Bonus używa planszy 10×10.',
+	controls: 'STEROWANIE',
+	splashGarden: 'Twórz klastry, zrzucaj warzywa i odkrywaj ogrodowe niespodzianki.',
+});

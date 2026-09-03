@@ -125,47 +125,110 @@ export const SUPPORTED_CURRENCIES = Object.keys(CURRENCY_META) as Currency[];
 const CURRENCY_SET = new Set<string>(SUPPORTED_CURRENCIES);
 
 export const isSupportedCurrency = (raw: unknown): raw is Currency =>
-	CURRENCY_SET.has(String(raw ?? '').trim().toUpperCase());
+	CURRENCY_SET.has(
+		String(raw ?? '')
+			.trim()
+			.toUpperCase(),
+	);
 
 /** Uppercase the code and keep it as-is. Unknown codes are NOT coerced to USD — showing "$" for a
  *  currency we do not recognise misstates the player's balance; `metaFor` renders the raw code
  *  after the amount instead, exactly as the RGS spec's reference `DisplayBalance` does. */
 export const normalizeCurrency = (raw: unknown): string =>
-	String(raw ?? '').trim().toUpperCase() || 'USD';
+	String(raw ?? '')
+		.trim()
+		.toUpperCase() || 'USD';
 
 export const metaFor = (currency: string): CurrencyMeta =>
 	CURRENCY_META[currency as Currency] ?? { symbol: currency, decimals: 2, symbolAfter: true };
 
-// Sub-cent payouts must never render as a flat "0.00" — a genuine non-zero win has to show a
-// non-zero figure. Grow the fraction digits until it does, capped so no trailing noise appears.
+// Sub-cent payouts must preserve the exact settled amount, not merely round to a non-zero value.
+// API amounts carry 6 decimal places and book multipliers carry 2, so 8 fraction digits cover the
+// complete precision of their product. Find the first decimal width that round-trips the value.
 const MAX_FRACTION_DIGITS = 8;
 export const fractionDigitsForAmount = (value: number, min: number) => {
 	const abs = Math.abs(value);
 	if (abs === 0) return min;
-	let digits = min;
-	while (digits < MAX_FRACTION_DIGITS && Number(abs.toFixed(digits)) === 0) digits += 1;
-	return digits;
+	const minimum = Math.min(MAX_FRACTION_DIGITS, Math.max(0, Math.trunc(min)));
+	const tolerance = Math.max(Number.EPSILON * Math.max(1, abs) * 8, 1e-12);
+	for (let digits = minimum; digits < MAX_FRACTION_DIGITS; digits += 1) {
+		if (Math.abs(Number(abs.toFixed(digits)) - abs) <= tolerance) return digits;
+	}
+	return MAX_FRACTION_DIGITS;
+};
+
+const render = (currency: string, amount: number, min: number, max: number) => {
+	const meta = metaFor(currency);
+	const value = Number.isFinite(amount) ? amount : 0;
+	const sign = value < 0 ? '-' : '';
+	// Group the digits (Intl for the NUMBER only) and attach the symbol ourselves, so the currency
+	// rendering stays exactly as specified rather than however Intl localises that code.
+	const body = new Intl.NumberFormat('en-US', {
+		minimumFractionDigits: min,
+		maximumFractionDigits: Math.max(min, max),
+	}).format(Math.abs(value));
+	return meta.symbolAfter ? `${sign}${body} ${meta.symbol}` : `${sign}${meta.symbol}${body}`;
 };
 
 /**
  * Format an amount for display using the documented symbol, decimals and placement.
  * `minFractionDigits` overrides the currency's default decimal count when a caller needs more.
+ *
+ * @deprecated Money on screen has two incompatible display contracts, and this single function
+ * cannot express both — it always expands precision, which is correct for wins and wrong for the
+ * wallet (Stake rejected magnetic 2026-08-20 for a `$999.946` balance). Use `formatWalletAmount`
+ * for balance/bet/costs and `formatWinAmount` for wins. Kept only for apps not yet migrated; the
+ * optional `minFractionDigits` argument is exactly how the wrong contract spread, because every
+ * caller that omitted it silently inherited the expanding behaviour.
  */
 export const formatCurrencyAmount = (
 	currency: string,
 	amount: number,
 	minFractionDigits?: number,
 ) => {
-	const meta = metaFor(currency);
 	const value = Number.isFinite(amount) ? amount : 0;
-	const min = minFractionDigits ?? meta.decimals;
-	const digits = fractionDigitsForAmount(value, min);
-	const sign = value < 0 ? '-' : '';
-	// Group the digits (Intl for the NUMBER only) and attach the symbol ourselves, so the currency
-	// rendering stays exactly as specified rather than however Intl localises that code.
-	const body = new Intl.NumberFormat('en-US', {
-		minimumFractionDigits: min,
-		maximumFractionDigits: digits,
-	}).format(Math.abs(value));
-	return meta.symbolAfter ? `${sign}${body} ${meta.symbol}` : `${sign}${meta.symbol}${body}`;
+	const min = minFractionDigits ?? metaFor(currency).decimals;
+	return render(currency, value, min, fractionDigitsForAmount(value, min));
+};
+
+// Stake requires in-game win values to show the exact settled amount with "up to 4 decimal places
+// when necessary". Wallet values get no such allowance — they are fixed at the currency's own
+// decimal count.
+export const WIN_MAX_FRACTION_DIGITS = 4;
+
+/**
+ * Wallet money: balance, bet, total cost, buy-bonus prices, autoplay limits.
+ *
+ * Fixed at the currency's decimal count — 2 for most, 0 for JPY/KRW/IDR, 3 for the Gulf dinars.
+ * Never expands: a balance of 999.946 renders "$999.95", not "$999.946".
+ */
+export const formatWalletAmount = (currency: string, amount: number) => {
+	const decimals = metaFor(currency).decimals;
+	return render(currency, amount, decimals, decimals);
+};
+
+/**
+ * Win money: spin/round/total wins, countups, win animations, replay payout.
+ *
+ * The currency's decimals are the MINIMUM; precision expands up to 4 digits so a genuine sub-cent
+ * payout shows its exact value (a 0.16x win on a 0.01 bet must read "$0.0016", never "$0.00").
+ *
+ * The 4-digit ceiling never overrides that: if a value is non-zero but rounds to all-zeros at 4
+ * decimals, we keep expanding to the exact width instead. Displaying a real win as "$0.0000" is
+ * the precise failure the requirement exists to prevent, so the cap must not re-introduce it.
+ */
+export const formatWinAmount = (currency: string, amount: number, targetAmount = amount) => {
+	const decimals = metaFor(currency).decimals;
+	const value = Number.isFinite(amount) ? amount : 0;
+	const target = Number.isFinite(targetAmount) ? targetAmount : value;
+	// During a count-up, format against the FINAL settled value. Otherwise arbitrary tween frames
+	// such as 12.345678 showed 4+ decimals even when the result was exactly 20.00. A <=2-decimal
+	// target therefore stays at its normal currency precision for the whole animation; genuine
+	// sub-cent targets still opt into the exact extra precision they require.
+	const targetExact = fractionDigitsForAmount(target, decimals);
+	const exact = Math.min(fractionDigitsForAmount(value, decimals), targetExact);
+	const capped = Math.min(exact, WIN_MAX_FRACTION_DIGITS);
+	const targetVanishes =
+		target !== 0 && Number(Math.abs(target).toFixed(Math.min(targetExact, capped))) === 0;
+	return render(currency, value, decimals, targetVanishes ? targetExact : capped);
 };

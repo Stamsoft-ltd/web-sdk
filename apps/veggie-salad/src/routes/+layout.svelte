@@ -1,11 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { GlobalStyle } from 'components-ui-html';
-	import { Authenticate, LoaderStakeEngine, LoadI18n } from 'components-shared';
+	import { Authenticate, LoadI18n } from 'components-shared';
 
 	import Game from '../components/Game.svelte';
 	import { setContext } from '../game/context';
 	import messagesMap from '../i18n/messagesMap';
+	import SocialI18nSync from '../components/SocialI18nSync.svelte';
 
 	type Props = { children: Snippet };
 	const props: Props = $props();
@@ -16,11 +17,10 @@
 <GlobalStyle>
 	<Authenticate>
 		<LoadI18n {messagesMap}>
+			<SocialI18nSync />
 			<Game />
 		</LoadI18n>
 	</Authenticate>
 </GlobalStyle>
-
-<LoaderStakeEngine src="./stake-engine-loader.gif" />
 
 {@render props.children()}

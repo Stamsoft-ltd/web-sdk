@@ -48,7 +48,9 @@ export type BookEvent =
 			scatterCount: number;
 			spinsAdded: number;
 			total: number;
-	  })
+			// Current books provide exact landed scatter cells. Optional keeps old replay books valid.
+			positions?: Position[];
+		  })
 	| (Indexed & {
 			type: 'freeSpinEnd';
 			tier: BonusTier;
@@ -72,6 +74,7 @@ export type BookEvent =
 			gridSize: 7 | 8 | 9 | 10;
 			gameType: GameType;
 			totalWin: number;
+			spinStartTotal: number;
 			freeSpinCurrent: number;
 			freeSpinTotal: number;
 			tier: BonusTier | null;

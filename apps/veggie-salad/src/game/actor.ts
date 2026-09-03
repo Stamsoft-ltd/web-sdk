@@ -6,7 +6,7 @@ import { createPrimaryMachines, createIntermediateMachines, createGameActor } fr
 import type { Bet, BookEventOfType } from './typesBookEvent';
 import { stateXstateDerived } from './stateXstate';
 import { playBet, convertToResumableBet } from './utils';
-import { stateGameDerived } from './stateGame.svelte';
+import { stateGame, stateGameDerived } from './stateGame.svelte';
 
 const primaryMachines = createPrimaryMachines<Bet>({
 	onResumeGameActive: (betToResume) => convertToResumableBet(betToResume),
@@ -26,7 +26,15 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		await stateGameDerived.waitMotion(() => stateGameDerived.exitDurationMs() * 0.75);
 	},
 	onNewGameError: () => stateGameDerived.settle(),
-	onPlayGame: async (bet) => await playBet(bet),
+	onPlayGame: async (bet) => {
+		// Never call requestEndRound outside the machine. A pending bonus the player chooses to end
+		// resumes through the normal state path, skips only book playback, then reaches endGame.
+		if (stateGame.endRoundOnly) {
+			stateGame.endRoundOnly = false;
+			return;
+		}
+		await playBet(bet);
+	},
 	checkIsBonusGame: (bet) =>
 		bet.state.some(
 			(event) =>

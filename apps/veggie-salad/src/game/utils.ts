@@ -30,6 +30,14 @@ export const convertToResumableBet = (betToResume: Bet): Bet => {
 	const trigger = _.findLast(before, (event) => event.type === 'freeSpinTrigger') as
 		| BookEventOfType<'freeSpinTrigger'>
 		| undefined;
+	const spinStartTotal = lastFreeSpin
+		? ((
+				_.findLast(
+					before,
+					(event) => event.type === 'setTotalWin' && event.index < lastFreeSpin.index,
+				) as BookEventOfType<'setTotalWin'> | undefined
+			)?.amount ?? 0)
+		: 0;
 
 	const snapshot: BookEventOfType<'restoreSnapshot'> = {
 		index: -1,
@@ -38,6 +46,7 @@ export const convertToResumableBet = (betToResume: Bet): Bet => {
 		gridSize: lastReveal?.gridSize ?? trigger?.gridSize ?? 7,
 		gameType: lastReveal?.gameType ?? trigger?.tier ?? 'basegame',
 		totalWin: lastTotalWin?.amount ?? 0,
+		spinStartTotal,
 		freeSpinCurrent: lastFreeSpin ? Math.min(lastFreeSpin.amount + 1, lastFreeSpin.total) : 0,
 		freeSpinTotal: lastFreeSpin?.total ?? trigger?.totalFs ?? 0,
 		tier: lastFreeSpin?.tier ?? trigger?.tier ?? null,

@@ -8,17 +8,15 @@
 </script>
 
 <script lang="ts">
-	import { Container } from 'pixi-svelte';
-	import { FadeContainer, WinCountUpProvider, ResponsiveBitmapText } from 'components-pixi';
+	import { Container, Rectangle, Text } from 'pixi-svelte';
+	import { FadeContainer, WinCountUpProvider } from 'components-pixi';
 	import { waitForResolve, waitForTimeout } from 'utils-shared/wait';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
 	import { OnMount } from 'components-shared';
 
 	import WinCoins from './WinCoins.svelte';
-	import WinAnimation from './WinAnimation.svelte';
 	import PressToContinue from './PressToContinue.svelte';
-	import { SYMBOL_SIZE } from '../game/constants';
 	import { getContext } from '../game/context';
 
 	const context = getContext();
@@ -28,6 +26,7 @@
 	let winLevelData = $state<WinLevelData>();
 	let oncomplete = $state(() => {});
 	let onCountUpComplete = $state(() => {});
+	const pixelTitle = $derived(winLevelData?.text ?? 'CONGRATS!');
 
 	context.eventEmitter.subscribeOnMount({
 		winShow: () => (show = true),
@@ -60,39 +59,47 @@
 
 				<MainContainer>
 					<Container
-						x={context.stateGameDerived.boardLayout().x}
-						y={context.stateGameDerived.boardLayout().y}
+						x={context.stateLayoutDerived.mainLayout().width * 0.5}
+						y={context.stateLayoutDerived.mainLayout().height * 0.5}
 					>
-						{#if winLevelData?.animation}
-							<WinAnimation animationMap={winLevelData.animation}>
-								<ResponsiveBitmapText
-									anchor={0.5}
-									maxWidth={2130}
-									text={bookEventAmountToCurrencyString(countUpAmount)}
-									style={{
-										fontFamily: 'gold',
-										fontSize: SYMBOL_SIZE * 3.6,
-										align: 'center',
-										fontWeight: 'bold',
-										letterSpacing: 0,
-									}}
-								/>
-							</WinAnimation>
-						{:else}
-							<ResponsiveBitmapText
-								anchor={0.5}
-								maxWidth={context.stateLayoutDerived.canvasSizes().width /
-									context.stateLayoutDerived.mainLayout().scale}
-								text={bookEventAmountToCurrencyString(countUpAmount)}
-								style={{
-									fontFamily: 'gold',
-									fontSize: SYMBOL_SIZE,
-									align: 'center',
-									fontWeight: 'bold',
-									letterSpacing: 0,
-								}}
-							/>
-						{/if}
+						<!-- Pixel plaque: Pixi primitives, no HTML/CSS overlay, no legacy Spine win art. -->
+						<Rectangle x={-360} y={-190} width={720} height={380} backgroundColor={0x6d2b12} />
+						<Rectangle x={-348} y={-178} width={696} height={356} backgroundColor={0xd69a2d} />
+						<Rectangle
+							x={-336}
+							y={-166}
+							width={672}
+							height={332}
+							backgroundColor={winLevelData.alias === 'max'
+								? 0x8d1d16
+								: winLevelData.alias === 'epic'
+									? 0x4f2078
+									: 0x315318}
+						/>
+						<Text
+							anchor={0.5}
+							y={-92}
+							text={pixelTitle}
+							style={{
+								fontFamily: 'monospace',
+								fontSize: 58,
+								fontWeight: '900',
+								fill: 0xffe24e,
+								stroke: { color: 0x4c2008, width: 8 },
+							}}
+						/>
+						<Text
+							anchor={0.5}
+							y={34}
+							text={bookEventAmountToCurrencyString(countUpAmount, amount)}
+							style={{
+								fontFamily: 'monospace',
+								fontSize: 62,
+								fontWeight: '900',
+								fill: 0xffffff,
+								stroke: { color: 0x4c2008, width: 7 },
+							}}
+						/>
 					</Container>
 				</MainContainer>
 

@@ -15,6 +15,16 @@ type Overlay = null | {
 	kind: 'mystery' | 'bonus' | 'retrigger' | 'win';
 	title: string;
 	detail: string;
+	// Bonus intro/outro share one crisp Pixi board but present different live content. Keeping text
+	// out of the raster art makes the screen sharp at every scale and keeps it localizable.
+	bonusPresentation?: 'start' | 'end';
+	freeSpins?: number;
+	gridSize?: number;
+	tier?: BonusTier;
+	// Snapshot the presented value. Reading the live HUD value made a bonus-spin win jump to the
+	// cumulative bonus total as the next event arrived underneath the presentation.
+	amount?: number;
+	countDurationMs?: number;
 };
 
 const INITIAL_NAMES = [
@@ -32,6 +42,9 @@ const makeInitialBoard = (): RawSymbol[][] =>
 	);
 
 export const stateGame = $state({
+	// Pending-round "End round" still has to travel through RESUME_BET -> play -> endGame so the
+	// RGS round is settled exactly once. The actor consumes this flag instead of replaying events.
+	endRoundOnly: false,
 	board: makeInitialBoard() as (RawSymbol | null)[][],
 	gridSize: 7 as 7 | 8 | 9 | 10,
 	gameType: 'basegame' as GameType,
@@ -47,8 +60,18 @@ export const stateGame = $state({
 	spinClusterWins: [] as ClusterWin[],
 	freeSpinCurrent: 0,
 	freeSpinTotal: 0,
+	// During a bonus these values have deliberately different jobs:
+	// - roundWin: this free spin only (HUD WIN + per-spin win presentation)
+	// - bonusTotalWin: cumulative amount earned by the feature (separate TOTAL WIN board)
+	// - bonusSpinStartTotal: cumulative checkpoint used to derive the current spin from the book's
+	//   authoritative cumulative setTotalWin events; no payout is recalculated client-side.
 	roundWin: 0,
+	bonusTotalWin: 0,
+	bonusSpinStartTotal: 0,
 	overlay: null as Overlay,
+	// Full-screen acknowledgement gate. Bonus intro/outro never auto-advance; the event handler
+	// remains suspended until the player clicks/taps anywhere (or presses Enter/Space).
+	continueGate: null as null | { id: number },
 	// Scatters being celebrated on a bonus-entry spin — the cells pulse, and the COUNT is what tells
 	// the player which bonus they are going into (3 normal, 4 super, 5 hidden).
 	scatterPositions: [] as Position[],
@@ -95,8 +118,8 @@ export const FALL_MOTION = {
 	exitReelDelayMs: 10,
 	exitJitterMs: 26,
 	// Cluster harvest (win symbols leaving), plus the per-cell jitter spread on it.
-	removeMs: 300,
-	removeJitterMs: 70,
+	removeMs: 420,
+	removeJitterMs: 55,
 } as const;
 
 // Fast profile. Turbo, super turbo and a skip press all switch to THIS instead of scaling every
@@ -114,8 +137,8 @@ export const FALL_MOTION_FAST = {
 	exitRowStaggerMs: 7,
 	exitReelDelayMs: 3,
 	exitJitterMs: 10,
-	removeMs: 130,
-	removeJitterMs: 24,
+	removeMs: 180,
+	removeJitterMs: 20,
 } as const;
 
 // Scatters a tier needs to trigger. The paytable states 3 → normal (8×8) and 4 → super (9×9);
@@ -332,6 +355,33 @@ const wait = async (milliseconds: number, options: { min?: number } = {}) =>
 // turbo and skip, so it must not be scaled a second time.
 const waitMotion = async (getMs: () => number) => await waitFor(getMs);
 
+let continueGateId = 0;
+let continueResolver: (() => void) | null = null;
+
+const cancelContinueGate = () => {
+	const resolve = continueResolver;
+	continueResolver = null;
+	resolve?.();
+	stateGame.continueGate = null;
+};
+
+const waitForContinue = () => {
+	// Defensive: never strand an older event if malformed book playback opens two gates.
+	cancelContinueGate();
+	const id = ++continueGateId;
+	stateGame.continueGate = { id };
+	return new Promise<void>((resolve) => {
+		continueResolver = () => {
+			if (stateGame.continueGate?.id !== id) return;
+			continueResolver = null;
+			stateGame.continueGate = null;
+			resolve();
+		};
+	});
+};
+
+const continuePresentation = () => continueResolver?.();
+
 // ── bonus-entry spin ──────────────────────────────────────────────────────────
 // A bought bonus (and a mystery pick) used to cut straight to the placard, which read as the game
 // skipping the part the player paid for. It now plays one ordinary base-game spin first, landing
@@ -410,9 +460,12 @@ const playBonusEntrySpin = async ({
 };
 
 const resetRound = () => {
+	cancelContinueGate();
 	clearSkip();
 	stateGame.spinClusterWins = [];
 	stateGame.roundWin = 0;
+	stateGame.bonusTotalWin = 0;
+	stateGame.bonusSpinStartTotal = 0;
 	stateGame.overlay = null;
 	stateGame.featureLabel = '';
 	stateGame.pendingRemovedPositions = [];
@@ -446,6 +499,9 @@ export const stateGameDerived = {
 	exitDistance,
 	clearSkip,
 	waitMotion,
+	waitForContinue,
+	continuePresentation,
+	cancelContinueGate,
 	revealDurationMs,
 	exitDurationMs,
 	clearWinningState,

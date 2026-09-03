@@ -3,7 +3,8 @@
 
 	import { requestAuthenticate, requestReplay } from 'rgs-requests';
 	import { stateUrlDerived, stateBet, stateConfig, stateModal, stateUi } from 'state-shared';
-	import { API_AMOUNT_MULTIPLIER, MOST_USED_BET_INDEXES } from 'constants-shared/bet';
+	import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
+	import { normalizeRgsBetConfig } from '../betConfig';
 
 	type Props = { children: Snippet };
 
@@ -60,27 +61,23 @@
 				// 	}
 				// }
 				stateConfig.jurisdiction = authenticateData?.config?.jurisdiction;
-				stateConfig.betAmountOptions = (authenticateData.config?.betLevels || []).map(
-					(level) => level / API_AMOUNT_MULTIPLIER,
+				const normalizedBetConfig = normalizeRgsBetConfig(
+					authenticateData.config,
+					stateConfig.betAmountOptions,
 				);
-				stateConfig.betMenuOptions = stateConfig.betAmountOptions.filter((_, index) =>
-					MOST_USED_BET_INDEXES.includes(index),
-				);
-				const defaultBetAmount =
-					Number(authenticateData.config?.defaultBetLevel || 0) / API_AMOUNT_MULTIPLIER;
-				if (defaultBetAmount > 0 && stateConfig.betAmountOptions.includes(defaultBetAmount)) {
-					stateBet.betAmount = defaultBetAmount;
-					stateBet.wageredBetAmount = defaultBetAmount;
-				} else if (!stateConfig.betAmountOptions.includes(stateBet.betAmount)) {
-					const fallbackBetAmount = stateConfig.betAmountOptions[0] ?? stateBet.betAmount;
-					stateBet.betAmount = fallbackBetAmount;
-					stateBet.wageredBetAmount = fallbackBetAmount;
-				}
+				stateConfig.betAmountOptions = normalizedBetConfig.betAmountOptions;
+				stateConfig.betMenuOptions = normalizedBetConfig.betMenuOptions;
+				stateConfig.minBetAmount = normalizedBetConfig.minBetAmount;
+				stateConfig.maxBetAmount = normalizedBetConfig.maxBetAmount;
+				stateConfig.stepBetAmount = normalizedBetConfig.stepBetAmount;
+				stateConfig.defaultBetAmount = normalizedBetConfig.defaultBetAmount;
+				stateBet.betAmount = normalizedBetConfig.defaultBetAmount;
+				stateBet.wageredBetAmount = normalizedBetConfig.defaultBetAmount;
 			}
 
 			// round
 			if (authenticateData?.round) {
-				// Example of authenticateData.round 
+				// Example of authenticateData.round
 				// {
 				// 	"betID": 62277967,
 				// 	"amount": 1000000,
@@ -92,12 +89,12 @@
 				// 	"event": null
 				// }
 
-				if(authenticateData.round?.state) {
+				if (authenticateData.round?.state) {
 					// @ts-ignore
-					stateBet.betToResume =  authenticateData.round;
+					stateBet.betToResume = authenticateData.round;
 				}
 
-				if(authenticateData.round?.amount) {
+				if (authenticateData.round?.amount) {
 					const betAmountValue =
 						authenticateData.round.amount > 0
 							? authenticateData.round.amount / API_AMOUNT_MULTIPLIER
@@ -108,7 +105,7 @@
 
 				if (authenticateData.round?.mode) {
 					stateBet.activeBetModeKey = authenticateData.round.mode;
-				};
+				}
 			}
 		} catch (error) {
 			console.error(error);
@@ -117,43 +114,51 @@
 	};
 
 	const handleReplay = async () => {
-		if (stateUrlDerived.currency()) stateBet.currency = stateUrlDerived.currency();
-		stateBet.betAmount = (stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER) || 0;
-		stateBet.wageredBetAmount = (stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER) || 0;
-		stateBet.activeBetModeKey = stateUrlDerived.mode();
+		try {
+			if (stateUrlDerived.currency()) stateBet.currency = stateUrlDerived.currency();
+			stateBet.betAmount = stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER || 0;
+			stateBet.wageredBetAmount = stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER || 0;
+			stateBet.activeBetModeKey = stateUrlDerived.mode();
 
-		const data = await requestReplay({
-			rgsUrl: stateUrlDerived.rgsUrl(),
-			game: stateUrlDerived.game(),
-			mode: stateUrlDerived.mode(),
-			version: stateUrlDerived.version(),
-			event: stateUrlDerived.event(),
-			language: stateUrlDerived.lang(),
-		});
+			const data = await requestReplay({
+				rgsUrl: stateUrlDerived.rgsUrl(),
+				game: stateUrlDerived.game(),
+				mode: stateUrlDerived.mode(),
+				version: stateUrlDerived.version(),
+				event: stateUrlDerived.event(),
+				language: stateUrlDerived.lang(),
+			});
 
-		if(data) {
-			const replayCurrency = data?.balance?.currency || data?.currency;
+			if (!data || data.error) throw data || new Error('Replay unavailable. Please retry.');
+
+			const replayCurrency = data.balance?.currency || data.currency;
 			if (replayCurrency) stateBet.currency = replayCurrency;
-			// @ts-ignore
+			// @ts-ignore replay endpoint is not part of the generated RGS schema yet.
 			stateBet.betToResume = {
 				...data,
 				event: '0',
 				active: true,
 				mode: stateUrlDerived.mode(),
 			};
+		} catch (error) {
+			console.error(error);
+			stateModal.modal = { name: 'error', error };
 		}
 	};
 
 	onMount(async () => {
-		if(stateUrlDerived.replay()) {
-			stateUi.config.mode = 'replay';
-			await handleReplay();
-		} else {
-			stateUi.config.mode = 'default';
-			await authenticate();
-		};
-
-		authenticated = true;
+		try {
+			if (stateUrlDerived.replay()) {
+				stateUi.config.mode = 'replay';
+				await handleReplay();
+			} else {
+				stateUi.config.mode = 'default';
+				await authenticate();
+			}
+		} finally {
+			// Failed replay requests must still mount the app so its replay error/retry UI can render.
+			authenticated = true;
+		}
 	});
 </script>
 

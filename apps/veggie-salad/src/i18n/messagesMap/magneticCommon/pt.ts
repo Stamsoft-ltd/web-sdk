@@ -1,0 +1,297 @@
+export default {
+	'INFO OVERVIEW': 'VISÃO GERAL',
+	'INFO PAYTABLE': 'PAGAMENTOS',
+	'INFO FEATURES': 'RECURSOS',
+	'INFO CLUSTER WIN': 'GANHO EM CLUSTER',
+	'INFO FEATURE BUY': 'COMPRA DE RECURSO',
+	'INFO GENERAL INFO': 'INFO GERAL',
+	'INFO UI GUIDE': 'GUIA DA INTERFACE',
+	'INFO OV TEXT 1':
+		'Magnetic é um slot de pagamento em cluster 7x7 onde os ganhos são formados por grupos de símbolos iguais. Acerte 5 ou mais símbolos iguais conectados na horizontal ou na vertical para ganhar.',
+	'INFO OV TEXT 2':
+		'Os recursos do Magnetic podem atrair símbolos iguais, ajudando a criar clusters maiores e ganhos mais fortes.',
+	'INFO OV MAXWIN': 'Ganho máximo: %value% da aposta.',
+	'INFO STAT REELS': 'ROLOS',
+	'INFO STAT CLUSTER': 'CLUSTER',
+	'INFO STAT PAYS': 'PAGA',
+	'INFO STAT MAXWIN': 'GANHO MÁX.',
+	'INFO STAT RTP': 'RTP',
+	'INFO SYMBOL RANK': 'CLASSE DO SÍMBOLO',
+	'INFO WILD VALUES': 'Valores do Wild Multiplicador',
+	'INFO WILD STANDARD': 'Valores padrão do wild multiplicador:',
+	'INFO WILD RARE': 'Valores raros do wild multiplicador (principalmente na Magnetic Mega Chain):',
+	'INFO FEAT WILD TITLE': 'Símbolo Wild',
+	'INFO FEAT WILD TEXT':
+		'Substitui todos os símbolos de pagamento, exceto o Scatter. Quando ativado, o Wild Magnético seleciona aleatoriamente um símbolo regular de pagamento presente na grade e atrai todos os símbolos iguais. Wilds e Scatters não podem ser selecionados. Um Wild Magnético só é ativado quando aparece e não é reativado durante o respin resultante.',
+	'INFO FEAT MWILD TITLE': 'Wild Multiplicador',
+	'INFO FEAT MWILD TEXT':
+		'Substitui como um Wild e aumenta o multiplicador de bônus ativo pelo resto do recurso.',
+	'INFO FEAT DROP TITLE': 'Rodadas Grátis Drop-O-Magnet',
+	'INFO FEAT DROP TEXT':
+		'Ativado por 3 Scatters e concede 10 rodadas grátis. Quando um Wild Magnético cai, ele escolhe um alvo usando a mesma regra de posições visíveis e atrai símbolos iguais.',
+	'INFO FEAT MEGA TITLE': 'Rodadas Grátis Magnetic Mega Chain',
+	'INFO FEAT MEGA TEXT':
+		'Ativado por 4 Scatters. Concede 10 Rodadas Grátis. Os clusters magnéticos podem permanecer travados e crescer ao longo do recurso.',
+	'INFO CW 1': 'Magnetic usa ganhos em cluster em vez de linhas de pagamento.',
+	'INFO CW 2':
+		'Um ganho é formado quando 5 ou mais símbolos iguais se tocam na horizontal ou na vertical.',
+	'INFO CW 3': 'Conexões diagonais não contam.',
+	'INFO CW 4':
+		'Os símbolos vencedores não precisam formar uma linha reta. Basta estarem conectados como um único grupo.',
+	'INFO CW 5': 'Clusters maiores concedem ganhos maiores.',
+	'INFO FB SUB':
+		'As opções de Compra de Recurso estão disponíveis apenas onde permitido. Todas as opções de Compra de Recurso e Compra de Bônus são pagas como um múltiplo da aposta selecionada.',
+	'INFO FB EXTRA TITLE': 'Recurso Extra',
+	'INFO FB EXTRA TEXT':
+		'Compra uma rodada especial com conexão magnética garantida e chance de acertar Wilds Multiplicadores.',
+	'INFO FB FEATURE TITLE': 'Compra de Recurso',
+	'INFO FB FEATURE TEXT': 'Compra acesso direto ao recurso de Rodadas Grátis Drop-O-Magnet.',
+	'INFO FB BONUS TITLE': 'Compra de Bônus',
+	'INFO FB BONUS TEXT':
+		'Compra acesso direto ao recurso mais forte de Rodadas Grátis Magnetic Mega Chain.',
+	'INFO COST': 'CUSTO',
+	'INFO RTP': 'RTP',
+	'INFO GI INTERRUPTED TITLE': 'Rodadas Interrompidas',
+	'INFO GI INTERRUPTED 1':
+		'Se uma rodada do jogo for interrompida, ela continuará quando o jogo for recarregado, quando possível.',
+	'INFO GI INTERRUPTED 2':
+		'Todas as apostas válidas e possíveis ganhos permanecem ativos até a rodada ser totalmente concluída.',
+	'INFO GI LEGAL TITLE': 'Aviso Legal',
+	'INFO GI LEGAL 1':
+		'Um mau funcionamento anula todos os pagamentos e jogadas. É necessária uma conexão de internet estável. Se a conexão for perdida, recarregue o jogo para concluir as rodadas não finalizadas.',
+	'INFO GI LEGAL 2':
+		'O retorno esperado é calculado com base em um grande número de jogadas. A exibição do jogo tem fins apenas visuais e de entretenimento e não representa nenhum dispositivo físico de jogo.',
+	'INFO GI LEGAL 3':
+		'Todos os ganhos são liquidados de acordo com o resultado recebido do Servidor de Jogo Remoto, e não com base em animações ou eventos mostrados no navegador.',
+	'DISCLAIMER TEXT':
+		'Mau funcionamento anula todos os ganhos e jogadas. É necessária uma conexão de internet estável. Em caso de desconexão, recarregue o jogo para concluir quaisquer rodadas não finalizadas. O retorno esperado é calculado ao longo de muitas jogadas. A exibição do jogo não representa nenhum dispositivo físico e é apenas para fins ilustrativos. Os ganhos são liquidados de acordo com o valor recebido do Servidor de Jogo Remoto e não a partir de eventos dentro do navegador web. TM e © 2026 Stake Engine.',
+	'INFO CTRL SPIN': 'Girar',
+	'INFO CTRL SPIN DESC': 'Inicie uma rodada com a aposta selecionada.',
+	'INFO CTRL AUTO': 'Auto',
+	'INFO CTRL AUTO DESC': 'Jogue um número definido de rodadas automaticamente.',
+	'INFO CTRL TURBO': 'Turbo',
+	'INFO CTRL TURBO DESC': 'Acelere todas as rodadas do jogo.',
+	'INFO CTRL PLUS': 'Aumentar Aposta',
+	'INFO CTRL PLUS DESC': 'Aumente sua aposta total.',
+	'INFO CTRL MINUS': 'Diminuir Aposta',
+	'INFO CTRL MINUS DESC': 'Reduza sua aposta total.',
+	'INFO CTRL INFO': 'Info',
+	'INFO CTRL INFO DESC': 'Veja as regras do jogo e a tabela de pagamentos.',
+	'INFO CTRL SOUND': 'Som',
+	'INFO CTRL SOUND DESC': 'Ative ou desative os efeitos sonoros.',
+	'INFO CTRL PREV': 'Anterior',
+	'INFO CTRL PREV DESC': 'Ir para a página anterior.',
+	'INFO CTRL NEXT': 'Próximo',
+	'INFO CTRL NEXT DESC': 'Ir para a próxima página.',
+	'INFO CTRL CLOSE': 'Fechar',
+	'INFO CTRL CLOSE DESC': 'Feche esta janela.',
+	'INFO CTRL MENU': 'Menu',
+	'INFO CTRL MENU DESC': 'Abra as configurações e opções do jogo.',
+	'INFO CTRL MUSIC': 'Música',
+	'INFO CTRL MUSIC DESC': 'Ative ou desative a música de fundo.',
+	'INFO PAGE': 'Página',
+	HOME: 'INÍCIO',
+	'NOT TRANSLATED': 'NÃO TRADUZIDO',
+	'GAME TITLE': 'MAGNETIC',
+	'SPLASH EXP TITLE': 'ROLOS\nEXPANSÍVEIS',
+	'SPLASH MEGA TITLE': 'MEGA CORRENTE',
+	'SPLASH EPIC TITLE': 'GANHOS\nÉPICOS',
+	'SPLASH WITH UP TO': 'com até',
+	'SPLASH MULTIPLIER': 'multiplicador',
+	'SPLASH PRESS': 'PRESSIONE PARA CONTINUAR',
+	'SPLASH BONUS TITLE': 'JOGOS BÔNUS',
+	'SPLASH SCATTERS FOR': '%count% Scatters para',
+	'SPLASH MMC': 'MEGA CORRENTE MAGNÉTICA',
+	'SPLASH MEGA BUILD': 'Construa a',
+	'SPLASH MEGA CHAIN': 'corrente',
+	'SPLASH MEGA REST': 'com multiplicadores que se multiplicam entre si',
+	'SPLASH MAX TITLE': 'GANHO MÁX.',
+	'SPLASH UP TO': 'até',
+	BALANCE: 'SALDO',
+	BET: 'APOSTA',
+	'TOTAL COST': 'CUSTO TOTAL',
+	'REAL COST': 'CUSTO REAL',
+	MODE: 'MODO',
+	'BUY BONUS': 'COMPRAR BÔNUS',
+	PAYTABLE: 'TABELA',
+	'GAME RULES': 'REGRAS DO JOGO',
+	AUTOPLAY: 'AUTOMÁTICO',
+	TURBO: 'TURBO',
+	REPLAY: 'REPETIR',
+	'START REPLAY': 'INICIAR REPETIÇÃO',
+	'PLAY AGAIN': 'JOGAR NOVAMENTE',
+	'RETRY RESUME': 'REPETIR RODADA',
+	'RECOVERY TITLE': 'RODADA NÃO FINALIZADA DETECTADA',
+	'RECOVERY BODY':
+		'A rodada anterior não pôde ser restaurada automaticamente. Repita para concluir a rodada original antes de iniciar uma nova.',
+	EVENT: 'EVENTO',
+	PAYOUT: 'PAGAMENTO',
+	WIN: 'GANHO',
+	'BET SIZE': 'VALOR DA APOSTA',
+	'REPLAY ERROR GENERIC': 'Repetição indisponível. Tente novamente.',
+	SOUND: 'SOM',
+	MUSIC: 'MÚSICA',
+	INFO: 'INFO',
+	DEACTIVATE: 'DESATIVAR',
+	ACTIVATE: 'ATIVAR',
+	BUY: 'COMPRAR',
+	CONFIRM: 'CONFIRMAR',
+	CANCEL: 'CANCELAR',
+	'PER SPIN': '/ giro',
+	'CONFIRM TITLE': 'CONFIRMAR %name%',
+	'BUY CONFIRM': 'COMPRAR %name% POR %cost%?',
+	'BUY EXTRA CHANCE TITLE': 'Chance Extra',
+	'BUY EXTRA CHANCE DESC': 'Ative para triplicar a chance de acionar uma rodada de bônus.',
+	'BUY FEATURE SPINS TITLE': 'Giros de Recurso',
+	'BUY FEATURE SPINS DESC':
+		'Compra uma rodada especial com conexão magnética garantida e chance de acertar Wilds Multiplicadores.',
+	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP DESC':
+		'10 giros grátis concedidos. Um símbolo aleatório torna-se magnético a cada giro. Símbolos iguais conectam-se automaticamente. Os Curingas Multiplicadores aumentam o multiplicador do bônus permanentemente.',
+	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA DESC':
+		'10 giros grátis concedidos. Um símbolo aleatório torna-se magnético e permanece conectado entre os giros. O agrupamento magnético persiste e cresce ao longo do recurso enquanto os multiplicadores continuam acumulando.',
+	'AUTO TURBO': 'GIRO TURBO',
+	'AUTO SUPER TURBO': 'GIRO SUPER TURBO',
+	'AUTO FEATURE': 'RECURSO BÔNUS 50X',
+	'AUTO NUM SPINS': 'NÚMERO DE GIROS',
+	'AUTO START': 'INICIAR AUTOMÁTICO',
+	'YOU WON': 'VOCÊ GANHOU',
+	'FREE SPINS': 'GIROS GRÁTIS',
+	CONGRATULATIONS: 'PARABÉNS',
+	'PRESS ANYWHERE': 'PRESSIONE EM QUALQUER LUGAR PARA CONTINUAR',
+	'TOTAL WIN': 'GANHO TOTAL',
+	'ALL WINS': 'TODOS OS GANHOS',
+	RESPIN: 'REGIRO',
+	'UNFINISHED ROUND': 'RODADA NÃO FINALIZADA',
+	'RESUME BODY': 'Você tem um bônus %mode% ativo em andamento.',
+	'PLAY ROUND': 'JOGAR RODADA',
+	'END ROUND': 'ENCERRAR RODADA',
+
+	// Approved shared translations reused from Forest Gang.
+	'BET MODE BASE TITLE': 'BASE',
+	'BET MODE BASE BUTTON': 'JOGAR',
+	'BET MODE BASE TICKER SPIN': 'BOA SORTE',
+	'BET MODE BONUS BUTTON': 'COMPRAR',
+	'BET MODE BONUS TICKER IDLE': 'FAÇA SUA APOSTA',
+	'BET MODE CHANCE TITLE': 'GIRO CHANCE',
+	'BET MODE CHANCE DESCRIPTION': 'Ative o Giro Chance por 2x sua aposta selecionada por rodada.',
+	'BET MODE CHANCE BUTTON': 'ATIVAR',
+	'BET MODE CHANCE TICKER IDLE': 'GIRO CHANCE ESTÁ ATIVO',
+	'BET MODE CHANCE TICKER SPIN': 'BOA SORTE',
+	'BET MODE SUPER BUTTON': 'COMPRAR',
+	'BET MODE SUPER TICKER IDLE': 'FAÇA SUA APOSTA',
+	'BET MODE FEATURE TITLE': 'GIRO RECURSO',
+	'BET MODE FEATURE BUTTON': 'ATIVAR',
+	'BET MODE FEATURE TICKER IDLE': 'GIRO RECURSO ESTÁ ATIVO',
+	'BET MODE FEATURE TICKER SPIN': 'GIRO RECURSO ATIVO',
+	'RULE SECTION GAME INFO': 'INFO DO JOGO',
+	'RULE SECTION FEATURES': 'RECURSOS',
+	'RULE SECTION HOW TO PLAY': 'COMO JOGAR',
+	'RULE SECTION DISCLAIMER': 'AVISO GERAL',
+	'RULE WILD TITLE': 'WILD',
+	'RULE SCATTER TITLE': 'SCATTER',
+	'RULE BUY TITLE': 'MODOS COMPRAR / ATIVAR',
+	'HOWTO SPIN TITLE': 'GIRAR / PARAR',
+	'HOWTO BET TITLE': 'SELETOR DE APOSTA',
+	'HOWTO BET TEXT':
+		'Use os botões + e - ou abra o menu de aposta para alterar o valor da aposta exibido antes de uma rodada começar.',
+	'HOWTO BUY TITLE': 'COMPRAR BÔNUS',
+	'HOWTO TURBO TITLE': 'TURBO',
+	'HOWTO TURBO TEXT': 'O Turbo encurta certos tempos da rodada para um jogo mais rápido.',
+	'HOWTO AUTOPLAY TITLE': 'AUTOMÁTICO',
+	'HOWTO AUTOPLAY TEXT':
+		'O automático repete as rodadas automaticamente até a condição de parada selecionada ou o contador terminar.',
+	'HOWTO REPLAY TITLE': 'MODO REPETIÇÃO',
+	'PAYTABLE PREMIUM TITLE': 'SÍMBOLOS PREMIUM',
+	'PAYTABLE LOW TITLE': 'SÍMBOLOS BAIXOS',
+	'PAYTABLE SPECIAL TITLE': 'SÍMBOLOS ESPECIAIS',
+	'PAYTABLE BUY TITLE': 'MODOS DE COMPRA',
+	'PAYTABLE MAX TITLE': 'GANHO MÁXIMO',
+
+	// Magnetic-specific rules, replay, modes, and paytable.
+	'BET REPLAY': 'REPETIÇÃO DA APOSTA',
+	'REPLAY EVENT': 'REPETIR EVENTO',
+	'BASE BET': 'APOSTA BASE',
+	'COST MULTIPLIER': 'MULTIPLICADOR DE CUSTO',
+	'TOTAL BET COST': 'CUSTO TOTAL DA APOSTA',
+	'PAYOUT MULTIPLIER': 'MULTIPLICADOR DE PAGAMENTO',
+	'REPLAY DISCLAIMER':
+		'Esta é a repetição de uma rodada de aposta anterior. Nenhuma aposta será feita.',
+	'DEAL IT': 'Drop-O-Magnet',
+	'ALL IN': 'MEGA CORRENTE',
+	'BET MODE BASE DIALOG':
+		'Magnetic é um slot de pagamento em cluster 7x7 onde os ganhos são formados por grupos de símbolos iguais. Acerte 5 ou mais símbolos iguais conectados na horizontal ou na vertical para ganhar.',
+	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
+	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS DIALOG': '10 rodadas grátis com chance de ímã muito aumentada.',
+	'BET MODE BONUS DESCRIPTION':
+		'Compre 10 rodadas grátis com maior chance de ímã por 100x a aposta selecionada.',
+	'BET MODE BONUS TICKER SPIN': 'BÔNUS ATIVO',
+	'BET MODE CHANCE DIALOG':
+		'Chance Spin permanece ativo até ser desativado. Cada rodada custa 2x a aposta e triplica a chance de ativar o bônus.',
+	'BET MODE SUPER TITLE': 'MEGA CORRENTE',
+	'BET MODE SUPER DIALOG':
+		'10 rodadas grátis com um ímã garantido na primeira rodada. O símbolo-alvo, o cluster coletado e o multiplicador combinado permanecem durante todo o bônus.',
+	'BET MODE SUPER DESCRIPTION': 'Compre o superbônus persistente por 500x a aposta selecionada.',
+	'BET MODE SUPER TICKER SPIN': 'SUPER ATIVO',
+	'BET MODE FEATURE DIALOG':
+		'Feature Spin permanece ativo até ser desativado. Cada rodada custa 50x a aposta e garante uma rodada paga com ímã.',
+	'BET MODE FEATURE DESCRIPTION': 'Ative Feature Spin por 50x a aposta selecionada por rodada.',
+	'RULE GAME TITLE': 'MAGNETIC',
+	'RULE GAME TEXT':
+		'Magnetic é um slot de pagamento em cluster 7x7 onde os ganhos são formados por grupos de símbolos iguais. Acerte 5 ou mais símbolos iguais conectados na horizontal ou na vertical para ganhar. Conexões diagonais não contam.',
+	'RULE WILD TEXT':
+		'No modo base, um Wild Magnético seleciona aleatoriamente uma posição visível com um símbolo normal. Cada posição visível tem a mesma chance; tipos exibidos mais vezes têm maior probabilidade de seleção. Depois, ele atrai todos os símbolos visíveis desse tipo. O alvo permanece fixo durante a série magnética ativa.',
+	'RULE SCATTER TEXT':
+		'3 Scatters ativam Drop-O-Magnet. 4 Scatters ativam Mega Chain. O Scatter não paga sozinho.',
+	'RULE DEAL IT TITLE': 'RESPINS DE CLUSTER',
+	'RULE DEAL IT TEXT':
+		'Clusters naturais qualificados ficam bloqueados. Todas as outras células giram novamente. Se novos símbolos iguais caírem tocando o cluster ativo, eles se juntam a ele e ocorre outro respin.',
+	'RULE ALL IN TITLE': 'MEGA CORRENTE',
+	'RULE ALL IN TEXT':
+		'Na primeira rodada grátis Super, um ímã é garantido. O símbolo-alvo, o cluster coletado e o valor multiplicado da série permanecem durante as 10 rodadas grátis e são resolvidos no final.',
+	'RULE BUY TEXT':
+		'Drop-O-Magnet custa 100x a aposta. Mega Chain custa 500x. Chance Spin custa 2x por rodada. Feature Spin custa 50x por rodada. Ganho máximo: 20.000x. RTP-alvo: 96,1%.',
+	'FEATURE SELECTED SYMBOL TITLE': 'ALVO DO ÍMÃ',
+	'FEATURE SELECTED SYMBOL TEXT':
+		'Um Wild Magnético seleciona aleatoriamente uma posição visível com um símbolo normal. Cada posição tem a mesma chance; tipos com mais posições visíveis são mais prováveis. Todos os símbolos visíveis do tipo escolhido são atraídos, e ímãs extras nunca mudam o alvo durante a série.',
+	'FEATURE DEAL IT MULTIPLIER TITLE': 'WILD MULTIPLICADOR',
+	'FEATURE DEAL IT MULTIPLIER TEXT':
+		'Os valores dos Wilds Multiplicadores são multiplicados entre si dentro de uma série magnética ativa. Exemplo: 2x × 3x × 4x = 24x no total.',
+	'FEATURE ALL IN_MULTIPLIER TITLE': 'SÉRIE SUPER PERSISTENTE',
+	'FEATURE ALL IN_MULTIPLIER TEXT':
+		'No Superbônus, o símbolo-alvo, as células coletadas e o valor multiplicado da série permanecem durante as 10 rodadas grátis até o prêmio final ser resolvido.',
+	'HOWTO SPIN TEXT':
+		'Pressione Girar para iniciar uma rodada. Pressione novamente durante uma sequência para solicitar a parada quando disponível.',
+	'HOWTO BUY TEXT':
+		'Abra Comprar bônus para escolher Drop-O-Magnet, Mega Chain, Chance Spin ou Feature Spin. Bônus comprados exigem confirmação. Modos de ativação podem ser ligados ou desligados.',
+	'HOWTO REPLAY TEXT':
+		'A repetição carrega um evento concluído e exibe a aposta original, o custo total, o pagamento e as informações de ganho.',
+	'PAYTABLE TITLE PAYLINES': 'CLUSTER',
+	'PAYTABLE TEXT PAYLINES':
+		'Um ganho é formado quando 5 ou mais símbolos iguais se tocam na horizontal ou na vertical. Conexões diagonais não contam.',
+	'PAYTABLE FOX':
+		'ÍMÃ DE FERRADURA (H1)\n5 = 0.5x\n6 = 1x\n7 = 2x\n8 = 4x\n9 = 8x\n10-11 = 15x\n12-14 = 30x\n15-19 = 80x\n20-24 = 200x\n25-29 = 500x\n30-32 = 1000x\n33+ = 2000x',
+	'PAYTABLE WOLF':
+		'BROCA DE PLASMA (H2)\n5 = 0.4x\n6 = 0.8x\n7 = 1.5x\n8 = 3x\n9 = 6x\n10-11 = 12x\n12-14 = 25x\n15-19 = 60x\n20-24 = 150x\n25-29 = 350x\n30-32 = 750x\n33+ = 1500x',
+	'PAYTABLE BEAR':
+		'CUBO DE NÚCLEO MAGNÉTICO (H3)\n5 = 0.3x\n6 = 0.6x\n7 = 1.2x\n8 = 2.5x\n9 = 5x\n10-11 = 10x\n12-14 = 20x\n15-19 = 50x\n20-24 = 120x\n25-29 = 280x\n30-32 = 600x\n33+ = 1200x',
+	'PAYTABLE RABBIT':
+		'DISPOSITIVO ELETROMAGNÉTICO (H4)\n5 = 0.25x\n6 = 0.5x\n7 = 1x\n8 = 2x\n9 = 4x\n10-11 = 8x\n12-14 = 16x\n15-19 = 35x\n20-24 = 90x\n25-29 = 220x\n30-32 = 450x\n33+ = 900x',
+	'PAYTABLE SQUIRREL':
+		'PARAFUSO (L1)\n5 = 0.2x\n6 = 0.4x\n7 = 0.8x\n8 = 1.6x\n9 = 3.2x\n10-11 = 6x\n12-14 = 12x\n15-19 = 30x\n20-24 = 75x\n25-29 = 180x\n30-32 = 350x\n33+ = 500x',
+	'PAYTABLE LOWS_1':
+		'PORCA (L2)\n5 = 0.12x\n6 = 0.25x\n7 = 0.5x\n8 = 1x\n9 = 2x\n10-11 = 4x\n12-14 = 8x\n15-19 = 20x\n20-24 = 50x\n25-29 = 100x\n30-32 = 200x\n33+ = 400x\n\nARRUELA (L3)\n5 = 0.1x\n6 = 0.2x\n7 = 0.4x\n8 = 0.8x\n9 = 1.6x\n10-11 = 3x\n12-14 = 6x\n15-19 = 15x\n20-24 = 40x\n25-29 = 80x\n30-32 = 150x\n33+ = 300x',
+	'PAYTABLE LOWS_2':
+		'PARAFUSO DE ENERGIA (L4)\n5 = 0.08x\n6 = 0.16x\n7 = 0.32x\n8 = 0.64x\n9 = 1.28x\n10-11 = 2.5x\n12-14 = 5x\n15-19 = 12x\n20-24 = 30x\n25-29 = 60x\n30-32 = 120x\n33+ = 250x',
+	'PAYTABLE SPECIAL_TEXT':
+		'O Ímã inicia séries magnéticas. O Wild substitui símbolos normais. Wilds Multiplicadores multiplicam a série ativa. O Scatter apenas ativa bônus.',
+	'PAYTABLE BUY_TEXT':
+		'Drop-O-Magnet: 100x a aposta.\nMega Chain: 500x a aposta.\nChance Spin: 2x a aposta por rodada.\nFeature Spin: 50x a aposta por rodada.',
+	'PAYTABLE MAX_TEXT': 'O ganho máximo anunciado é 20.000x a aposta selecionada.',
+	'NO BALANCE TITLE': 'SALDO INSUFICIENTE',
+	'NO BALANCE BODY':
+		'Seu saldo é baixo demais para esta aposta. Reduza o nível da aposta para continuar jogando.',
+	OK: 'OK',
+};

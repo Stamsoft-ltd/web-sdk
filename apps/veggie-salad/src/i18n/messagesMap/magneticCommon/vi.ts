@@ -1,0 +1,297 @@
+export default {
+	'INFO OVERVIEW': 'TỔNG QUAN',
+	'INFO PAYTABLE': 'BẢNG TRẢ THƯỞNG',
+	'INFO FEATURES': 'TÍNH NĂNG',
+	'INFO CLUSTER WIN': 'THẮNG CỤM',
+	'INFO FEATURE BUY': 'MUA TÍNH NĂNG',
+	'INFO GENERAL INFO': 'THÔNG TIN CHUNG',
+	'INFO UI GUIDE': 'HƯỚNG DẪN GIAO DIỆN',
+	'INFO OV TEXT 1':
+		'Magnetic là trò chơi slot trả thưởng theo cụm 7x7, nơi các chiến thắng được tạo ra bởi các nhóm biểu tượng giống nhau. Ghép 5 biểu tượng giống nhau trở lên nối liền theo chiều ngang hoặc chiều dọc để thắng.',
+	'INFO OV TEXT 2':
+		'Các tính năng của Magnetic có thể hút các biểu tượng giống nhau lại với nhau, giúp tạo ra các cụm lớn hơn và chiến thắng mạnh hơn.',
+	'INFO OV MAXWIN': 'Thắng tối đa: %value% tiền cược.',
+	'INFO STAT REELS': 'TRỤC QUAY',
+	'INFO STAT CLUSTER': 'CỤM',
+	'INFO STAT PAYS': 'TRẢ THƯỞNG',
+	'INFO STAT MAXWIN': 'THẮNG TỐI ĐA',
+	'INFO STAT RTP': 'RTP',
+	'INFO SYMBOL RANK': 'HẠNG BIỂU TƯỢNG',
+	'INFO WILD VALUES': 'Giá Trị Wild Nhân',
+	'INFO WILD STANDARD': 'Giá trị wild nhân tiêu chuẩn:',
+	'INFO WILD RARE': 'Giá trị wild nhân hiếm (chủ yếu trong Magnetic Mega Chain):',
+	'INFO FEAT WILD TITLE': 'Biểu Tượng Wild',
+	'INFO FEAT WILD TEXT':
+		'Thay thế cho tất cả biểu tượng trả thưởng ngoại trừ Scatter. Khi được kích hoạt, Wild Nam Châm chọn ngẫu nhiên một biểu tượng trả thưởng thường đang có trên lưới và hút tất cả biểu tượng khớp lại với nhau. Không thể chọn Wild hoặc Scatter. Wild Nam Châm chỉ kích hoạt khi xuất hiện và không kích hoạt lại trong lượt quay lại phát sinh.',
+	'INFO FEAT MWILD TITLE': 'Wild Nhân',
+	'INFO FEAT MWILD TEXT':
+		'Thay thế như một Wild và tăng hệ số nhân thưởng đang hoạt động trong phần còn lại của tính năng.',
+	'INFO FEAT DROP TITLE': 'Vòng Quay Miễn Phí Drop-O-Magnet',
+	'INFO FEAT DROP TEXT':
+		'Được kích hoạt bởi 3 Scatter và trao 10 lượt quay miễn phí. Khi Wild Nam Châm xuất hiện, nó chọn mục tiêu theo cùng quy tắc vị trí hiển thị và hút các biểu tượng khớp lại.',
+	'INFO FEAT MEGA TITLE': 'Vòng Quay Miễn Phí Magnetic Mega Chain',
+	'INFO FEAT MEGA TEXT':
+		'Được kích hoạt bởi 4 Scatter. Trao 10 Vòng Quay Miễn Phí. Các cụm từ tính có thể giữ nguyên khóa và lớn dần trong suốt tính năng.',
+	'INFO CW 1': 'Magnetic sử dụng chiến thắng theo cụm thay vì các dòng trả thưởng.',
+	'INFO CW 2':
+		'Một chiến thắng được tạo ra khi 5 biểu tượng giống nhau trở lên chạm nhau theo chiều ngang hoặc chiều dọc.',
+	'INFO CW 3': 'Các kết nối theo đường chéo không được tính.',
+	'INFO CW 4':
+		'Các biểu tượng thắng không cần tạo thành một đường thẳng. Chúng chỉ cần được kết nối thành một nhóm.',
+	'INFO CW 5': 'Cụm càng lớn thì thưởng càng lớn.',
+	'INFO FB SUB':
+		'Các tùy chọn Mua Tính Năng chỉ khả dụng ở nơi được cho phép. Tất cả tùy chọn Mua Tính Năng và Mua Thưởng được thanh toán bằng bội số của mức cược đã chọn.',
+	'INFO FB EXTRA TITLE': 'Tính Năng Bổ Sung',
+	'INFO FB EXTRA TEXT':
+		'Mua một vòng quay đặc biệt với kết nối từ tính được đảm bảo và cơ hội nhận được Wild Nhân.',
+	'INFO FB FEATURE TITLE': 'Mua Tính Năng',
+	'INFO FB FEATURE TEXT':
+		'Mua quyền truy cập trực tiếp vào tính năng Vòng Quay Miễn Phí Drop-O-Magnet.',
+	'INFO FB BONUS TITLE': 'Mua Thưởng',
+	'INFO FB BONUS TEXT':
+		'Mua quyền truy cập trực tiếp vào tính năng Vòng Quay Miễn Phí Magnetic Mega Chain mạnh hơn.',
+	'INFO COST': 'CHI PHÍ',
+	'INFO RTP': 'RTP',
+	'INFO GI INTERRUPTED TITLE': 'Vòng Chơi Bị Gián Đoạn',
+	'INFO GI INTERRUPTED 1':
+		'Nếu một vòng chơi bị gián đoạn, nó sẽ tiếp tục khi trò chơi được tải lại, nếu có thể.',
+	'INFO GI INTERRUPTED 2':
+		'Tất cả các khoản cược hợp lệ và tiền thắng tiềm năng vẫn có hiệu lực cho đến khi vòng chơi hoàn tất hoàn toàn.',
+	'INFO GI LEGAL TITLE': 'Thông Báo Pháp Lý',
+	'INFO GI LEGAL 1':
+		'Sự cố sẽ hủy tất cả các khoản trả thưởng và lượt chơi. Cần có kết nối internet ổn định. Nếu mất kết nối, hãy tải lại trò chơi để hoàn thành các vòng chơi còn dang dở.',
+	'INFO GI LEGAL 2':
+		'Tỷ lệ hoàn trả kỳ vọng được tính trên một số lượng lớn lượt chơi. Màn hình trò chơi chỉ nhằm mục đích hình ảnh và giải trí và không đại diện cho bất kỳ thiết bị chơi game vật lý nào.',
+	'INFO GI LEGAL 3':
+		'Tất cả tiền thắng được quyết toán theo kết quả nhận được từ Máy Chủ Trò Chơi Từ Xa, không phải từ hoạt ảnh hoặc sự kiện hiển thị bên trong trình duyệt web.',
+	'DISCLAIMER TEXT':
+		'Sự cố sẽ làm vô hiệu tất cả tiền thắng và lượt chơi. Cần có kết nối internet ổn định. Trong trường hợp mất kết nối, hãy tải lại trò chơi để hoàn thành các ván chưa hoàn thành. Lợi nhuận kỳ vọng được tính trên nhiều lượt chơi. Màn hình trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ nhằm mục đích minh họa. Tiền thắng được thanh toán theo số tiền nhận từ Remote Game Server chứ không phải từ các sự kiện trong trình duyệt web. TM và © 2026 Stake Engine.',
+	'INFO CTRL SPIN': 'Quay',
+	'INFO CTRL SPIN DESC': 'Bắt đầu một vòng chơi với mức cược bạn đã chọn.',
+	'INFO CTRL AUTO': 'Tự Động Quay',
+	'INFO CTRL AUTO DESC': 'Chơi tự động một số vòng nhất định.',
+	'INFO CTRL TURBO': 'Turbo',
+	'INFO CTRL TURBO DESC': 'Tăng tốc mọi vòng chơi.',
+	'INFO CTRL PLUS': 'Tăng Cược',
+	'INFO CTRL PLUS DESC': 'Tăng tổng tiền cược của bạn.',
+	'INFO CTRL MINUS': 'Giảm Cược',
+	'INFO CTRL MINUS DESC': 'Giảm tổng tiền cược của bạn.',
+	'INFO CTRL INFO': 'Thông Tin',
+	'INFO CTRL INFO DESC': 'Xem quy tắc trò chơi và bảng trả thưởng.',
+	'INFO CTRL SOUND': 'Âm Thanh',
+	'INFO CTRL SOUND DESC': 'Bật hoặc tắt hiệu ứng âm thanh.',
+	'INFO CTRL PREV': 'Trước',
+	'INFO CTRL PREV DESC': 'Chuyển đến trang trước.',
+	'INFO CTRL NEXT': 'Tiếp',
+	'INFO CTRL NEXT DESC': 'Chuyển đến trang tiếp theo.',
+	'INFO CTRL CLOSE': 'Đóng',
+	'INFO CTRL CLOSE DESC': 'Đóng cửa sổ này.',
+	'INFO CTRL MENU': 'Menu',
+	'INFO CTRL MENU DESC': 'Mở cài đặt và tùy chọn trò chơi.',
+	'INFO CTRL MUSIC': 'Nhạc',
+	'INFO CTRL MUSIC DESC': 'Bật hoặc tắt nhạc nền.',
+	'INFO PAGE': 'Trang',
+	HOME: 'TRANG CHỦ',
+	'NOT TRANSLATED': 'CHƯA DỊCH',
+	'GAME TITLE': 'MAGNETIC',
+	'SPLASH EXP TITLE': 'CUỘN QUAY\nMỞ RỘNG',
+	'SPLASH MEGA TITLE': 'CHUỖI MEGA',
+	'SPLASH EPIC TITLE': 'CHIẾN THẮNG\nSỬ THI',
+	'SPLASH WITH UP TO': 'với tối đa',
+	'SPLASH MULTIPLIER': 'hệ số nhân',
+	'SPLASH PRESS': 'NHẤN ĐỂ TIẾP TỤC',
+	'SPLASH BONUS TITLE': 'TRÒ CHƠI THƯỞNG',
+	'SPLASH SCATTERS FOR': '%count% Scatter cho',
+	'SPLASH MMC': 'CHUỖI MEGA TỪ TÍNH',
+	'SPLASH MEGA BUILD': 'Xây dựng',
+	'SPLASH MEGA CHAIN': 'chuỗi',
+	'SPLASH MEGA REST': 'với các hệ số nhân nhân với nhau',
+	'SPLASH MAX TITLE': 'THẮNG TỐI ĐA',
+	'SPLASH UP TO': 'lên đến',
+	BALANCE: 'SỐ DƯ',
+	BET: 'CƯỢC',
+	'TOTAL COST': 'TỔNG CHI PHÍ',
+	'REAL COST': 'CHI PHÍ THỰC',
+	MODE: 'CHẾ ĐỘ',
+	'BUY BONUS': 'MUA THƯỞNG',
+	PAYTABLE: 'BẢNG TRẢ THƯỞNG',
+	'GAME RULES': 'LUẬT CHƠI',
+	AUTOPLAY: 'TỰ ĐỘNG',
+	TURBO: 'TURBO',
+	REPLAY: 'PHÁT LẠI',
+	'START REPLAY': 'BẮT ĐẦU PHÁT LẠI',
+	'PLAY AGAIN': 'CHƠI LẠI',
+	'RETRY RESUME': 'THỬ LẠI VÁN',
+	'RECOVERY TITLE': 'PHÁT HIỆN VÁN CHƯA HOÀN THÀNH',
+	'RECOVERY BODY':
+		'Không thể tự động khôi phục ván trước. Hãy thử lại để hoàn thành ván gốc trước khi bắt đầu ván mới.',
+	EVENT: 'SỰ KIỆN',
+	PAYOUT: 'TRẢ THƯỞNG',
+	WIN: 'THẮNG',
+	'BET SIZE': 'MỨC CƯỢC',
+	'REPLAY ERROR GENERIC': 'Không thể phát lại. Vui lòng thử lại.',
+	SOUND: 'ÂM THANH',
+	MUSIC: 'NHẠC',
+	INFO: 'THÔNG TIN',
+	DEACTIVATE: 'HỦY KÍCH HOẠT',
+	ACTIVATE: 'KÍCH HOẠT',
+	BUY: 'MUA',
+	CONFIRM: 'XÁC NHẬN',
+	CANCEL: 'HỦY',
+	'PER SPIN': '/ lượt',
+	'CONFIRM TITLE': 'XÁC NHẬN %name%',
+	'BUY CONFIRM': 'MUA %name% VỚI GIÁ %cost%?',
+	'BUY EXTRA CHANCE TITLE': 'Cơ Hội Thêm',
+	'BUY EXTRA CHANCE DESC': 'Kích hoạt để tăng gấp ba cơ hội kích hoạt vòng thưởng.',
+	'BUY FEATURE SPINS TITLE': 'Vòng Quay Tính Năng',
+	'BUY FEATURE SPINS DESC':
+		'Mua một vòng quay đặc biệt với kết nối từ tính được đảm bảo và cơ hội nhận được Wild Nhân.',
+	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP DESC':
+		'10 lượt quay miễn phí được trao. Một biểu tượng ngẫu nhiên trở nên có từ tính mỗi lượt quay. Các biểu tượng trùng khớp tự động kết nối với nhau. Multiplier Wild tăng hệ số nhân thưởng vĩnh viễn.',
+	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA DESC':
+		'10 lượt quay miễn phí được trao. Một biểu tượng ngẫu nhiên trở nên có từ tính và vẫn kết nối giữa các lượt quay. Cụm từ tính tồn tại và phát triển trong suốt tính năng trong khi các hệ số nhân tiếp tục tích lũy.',
+	'AUTO TURBO': 'QUAY TURBO',
+	'AUTO SUPER TURBO': 'QUAY SIÊU TURBO',
+	'AUTO FEATURE': 'TÍNH NĂNG THƯỞNG 50X',
+	'AUTO NUM SPINS': 'SỐ LƯỢT QUAY',
+	'AUTO START': 'BẮT ĐẦU TỰ ĐỘNG',
+	'YOU WON': 'BẠN THẮNG',
+	'FREE SPINS': 'VÒNG QUAY MIỄN PHÍ',
+	CONGRATULATIONS: 'CHÚC MỪNG',
+	'PRESS ANYWHERE': 'NHẤN VÀO BẤT KỲ ĐÂU ĐỂ TIẾP TỤC',
+	'TOTAL WIN': 'TỔNG THẮNG',
+	'ALL WINS': 'TẤT CẢ THẮNG',
+	RESPIN: 'QUAY LẠI',
+	'UNFINISHED ROUND': 'VÁN CHƯA HOÀN THÀNH',
+	'RESUME BODY': 'Bạn có một vòng thưởng %mode% đang diễn ra.',
+	'PLAY ROUND': 'CHƠI VÁN',
+	'END ROUND': 'KẾT THÚC VÁN',
+
+	// Approved shared translations reused from Forest Gang.
+	'BET MODE BASE TITLE': 'CƠ BẢN',
+	'BET MODE BASE BUTTON': 'CHƠI',
+	'BET MODE BASE TICKER SPIN': 'CHÚC MAY MẮN',
+	'BET MODE BONUS BUTTON': 'MUA',
+	'BET MODE BONUS TICKER IDLE': 'ĐẶT CƯỢC CỦA BẠN',
+	'BET MODE CHANCE TITLE': 'QUAY CƠ HỘI',
+	'BET MODE CHANCE DESCRIPTION': 'Kích hoạt Quay Cơ Hội với giá 2x mức cược đã chọn mỗi ván.',
+	'BET MODE CHANCE BUTTON': 'KÍCH HOẠT',
+	'BET MODE CHANCE TICKER IDLE': 'QUAY CƠ HỘI ĐANG HOẠT ĐỘNG',
+	'BET MODE CHANCE TICKER SPIN': 'CHÚC MAY MẮN',
+	'BET MODE SUPER BUTTON': 'MUA',
+	'BET MODE SUPER TICKER IDLE': 'ĐẶT CƯỢC CỦA BẠN',
+	'BET MODE FEATURE TITLE': 'QUAY TÍNH NĂNG',
+	'BET MODE FEATURE BUTTON': 'KÍCH HOẠT',
+	'BET MODE FEATURE TICKER IDLE': 'QUAY TÍNH NĂNG ĐANG HOẠT ĐỘNG',
+	'BET MODE FEATURE TICKER SPIN': 'QUAY TÍNH NĂNG HOẠT ĐỘNG',
+	'RULE SECTION GAME INFO': 'THÔNG TIN GAME',
+	'RULE SECTION FEATURES': 'TÍNH NĂNG',
+	'RULE SECTION HOW TO PLAY': 'CÁCH CHƠI',
+	'RULE SECTION DISCLAIMER': 'MIỄN TRỪ CHUNG',
+	'RULE WILD TITLE': 'WILD',
+	'RULE SCATTER TITLE': 'SCATTER',
+	'RULE BUY TITLE': 'CHẾ ĐỘ MUA / KÍCH HOẠT',
+	'HOWTO SPIN TITLE': 'QUAY / DỪNG',
+	'HOWTO BET TITLE': 'CHỌN MỨC CƯỢC',
+	'HOWTO BET TEXT':
+		'Dùng nút + và - hoặc mở menu cược để thay đổi mức cược hiển thị trước khi ván bắt đầu.',
+	'HOWTO BUY TITLE': 'MUA THƯỞNG',
+	'HOWTO TURBO TITLE': 'TURBO',
+	'HOWTO TURBO TEXT': 'Turbo rút ngắn một số thời gian ván để chơi nhanh hơn.',
+	'HOWTO AUTOPLAY TITLE': 'TỰ ĐỘNG',
+	'HOWTO AUTOPLAY TEXT':
+		'Tự động lặp lại các ván tự động cho đến khi điều kiện dừng đã chọn hoặc bộ đếm kết thúc.',
+	'HOWTO REPLAY TITLE': 'CHẾ ĐỘ PHÁT LẠI',
+	'PAYTABLE PREMIUM TITLE': 'BIỂU TƯỢNG PREMIUM',
+	'PAYTABLE LOW TITLE': 'BIỂU TƯỢNG THẤP',
+	'PAYTABLE SPECIAL TITLE': 'BIỂU TƯỢNG ĐẶC BIỆT',
+	'PAYTABLE BUY TITLE': 'CHẾ ĐỘ MUA',
+	'PAYTABLE MAX TITLE': 'THẮNG TỐI ĐA',
+
+	// Magnetic-specific rules, replay, modes, and paytable.
+	'BET REPLAY': 'PHÁT LẠI CƯỢC',
+	'REPLAY EVENT': 'PHÁT LẠI SỰ KIỆN',
+	'BASE BET': 'CƯỢC CƠ BẢN',
+	'COST MULTIPLIER': 'HỆ SỐ CHI PHÍ',
+	'TOTAL BET COST': 'TỔNG CHI PHÍ CƯỢC',
+	'PAYOUT MULTIPLIER': 'HỆ SỐ TRẢ THƯỞNG',
+	'REPLAY DISCLAIMER':
+		'Đây là bản phát lại của một vòng cược trước. Không có cược mới nào được đặt.',
+	'DEAL IT': 'Drop-O-Magnet',
+	'ALL IN': 'CHUỖI MEGA',
+	'BET MODE BASE DIALOG':
+		'Magnetic là trò chơi slot trả thưởng theo cụm 7x7, nơi các chiến thắng được tạo ra bởi các nhóm biểu tượng giống nhau. Ghép 5 biểu tượng giống nhau trở lên nối liền theo chiều ngang hoặc chiều dọc để thắng.',
+	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
+	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS DIALOG': '10 lượt quay miễn phí với cơ hội nam châm tăng mạnh.',
+	'BET MODE BONUS DESCRIPTION':
+		'Mua 10 lượt quay miễn phí có cơ hội nam châm cao hơn với giá 100x mức cược đã chọn.',
+	'BET MODE BONUS TICKER SPIN': 'BONUS ĐANG BẬT',
+	'BET MODE CHANCE DIALOG':
+		'Chance Spin duy trì cho đến khi tắt. Mỗi vòng tốn 2x mức cược và tăng gấp ba cơ hội kích hoạt bonus.',
+	'BET MODE SUPER TITLE': 'CHUỖI MEGA',
+	'BET MODE SUPER DIALOG':
+		'10 lượt quay miễn phí với nam châm đảm bảo ở lượt đầu. Biểu tượng mục tiêu, cụm đã thu thập và hệ số kết hợp được giữ trong suốt bonus.',
+	'BET MODE SUPER DESCRIPTION': 'Mua super bonus duy trì với giá 500x mức cược đã chọn.',
+	'BET MODE SUPER TICKER SPIN': 'SUPER ĐANG BẬT',
+	'BET MODE FEATURE DIALOG':
+		'Feature Spin duy trì cho đến khi tắt. Mỗi vòng tốn 50x mức cược và đảm bảo một lượt quay nam châm trả phí.',
+	'BET MODE FEATURE DESCRIPTION': 'Kích hoạt Feature Spin với giá 50x mức cược đã chọn mỗi vòng.',
+	'RULE GAME TITLE': 'MAGNETIC',
+	'RULE GAME TEXT':
+		'Magnetic là trò chơi slot trả thưởng theo cụm 7x7, nơi các chiến thắng được tạo ra bởi các nhóm biểu tượng giống nhau. Ghép 5 biểu tượng giống nhau trở lên nối liền theo chiều ngang hoặc chiều dọc để thắng. Các kết nối theo đường chéo không được tính.',
+	'RULE WILD TEXT':
+		'Ở chế độ cơ bản, Magnetic Wild chọn ngẫu nhiên một vị trí biểu tượng thường đang hiển thị. Mỗi vị trí có cơ hội như nhau, nên loại biểu tượng xuất hiện nhiều hơn dễ được chọn hơn. Sau đó nó hút tất cả biểu tượng đang hiển thị cùng loại. Mục tiêu giữ nguyên trong chuỗi nam châm đang hoạt động.',
+	'RULE SCATTER TEXT':
+		'3 Scatter kích hoạt Drop-O-Magnet. 4 Scatter kích hoạt Mega Chain. Scatter không tự trả thưởng.',
+	'RULE DEAL IT TITLE': 'QUAY LẠI CỤM',
+	'RULE DEAL IT TEXT':
+		'Các cụm tự nhiên đủ điều kiện được khóa tại chỗ. Tất cả ô khác quay lại. Nếu biểu tượng khớp mới rơi chạm cụm đang hoạt động, chúng nhập vào cụm và một lượt quay lại khác bắt đầu.',
+	'RULE ALL IN TITLE': 'CHUỖI MEGA',
+	'RULE ALL IN TEXT':
+		'Ở lượt quay miễn phí Super đầu tiên, một nam châm được đảm bảo. Biểu tượng mục tiêu, cụm đã thu thập và giá trị chuỗi đã nhân được giữ qua cả 10 lượt quay miễn phí và được tính ở cuối.',
+	'RULE BUY TEXT':
+		'Drop-O-Magnet tốn 100x cược. Mega Chain tốn 500x. Chance Spin tốn 2x mỗi vòng. Feature Spin tốn 50x mỗi vòng. Thắng tối đa: 20.000x. RTP mục tiêu: 96,1%.',
+	'FEATURE SELECTED SYMBOL TITLE': 'MỤC TIÊU NAM CHÂM',
+	'FEATURE SELECTED SYMBOL TEXT':
+		'Magnetic Wild chọn ngẫu nhiên một vị trí biểu tượng thường đang hiển thị. Mỗi vị trí có cơ hội như nhau, nên loại có nhiều vị trí hiển thị hơn dễ được chọn hơn. Tất cả biểu tượng đang hiển thị của loại được chọn bị hút vào, và nam châm bổ sung không đổi mục tiêu trong chuỗi.',
+	'FEATURE DEAL IT MULTIPLIER TITLE': 'WILD NHÂN',
+	'FEATURE DEAL IT MULTIPLIER TEXT':
+		'Giá trị Multiplier Wild được nhân với nhau trong một chuỗi nam châm đang hoạt động. Ví dụ: 2x × 3x × 4x = tổng 24x.',
+	'FEATURE ALL IN_MULTIPLIER TITLE': 'CHUỖI SUPER DUY TRÌ',
+	'FEATURE ALL IN_MULTIPLIER TEXT':
+		'Trong Super Bonus, biểu tượng mục tiêu, các ô đã thu thập và giá trị chuỗi đã nhân được giữ qua cả 10 lượt quay miễn phí cho đến khi giải thưởng cuối được tính.',
+	'HOWTO SPIN TEXT':
+		'Nhấn Quay để bắt đầu vòng. Nhấn lại trong khi chuỗi đang chạy để yêu cầu dừng khi có thể.',
+	'HOWTO BUY TEXT':
+		'Mở Mua Bonus để chọn Drop-O-Magnet, Mega Chain, Chance Spin hoặc Feature Spin. Bonus mua cần xác nhận. Các chế độ kích hoạt có thể bật hoặc tắt.',
+	'HOWTO REPLAY TEXT':
+		'Phát lại tải một sự kiện đã hoàn tất và hiển thị mức cược ban đầu, tổng chi phí, tiền trả thưởng và thông tin thắng.',
+	'PAYTABLE TITLE PAYLINES': 'CỤM',
+	'PAYTABLE TEXT PAYLINES':
+		'Một chiến thắng được tạo ra khi 5 biểu tượng giống nhau trở lên chạm nhau theo chiều ngang hoặc chiều dọc. Các kết nối theo đường chéo không được tính.',
+	'PAYTABLE FOX':
+		'NAM CHÂM MÓNG NGỰA (H1)\n5 = 0.5x\n6 = 1x\n7 = 2x\n8 = 4x\n9 = 8x\n10-11 = 15x\n12-14 = 30x\n15-19 = 80x\n20-24 = 200x\n25-29 = 500x\n30-32 = 1000x\n33+ = 2000x',
+	'PAYTABLE WOLF':
+		'MŨI KHOAN PLASMA (H2)\n5 = 0.4x\n6 = 0.8x\n7 = 1.5x\n8 = 3x\n9 = 6x\n10-11 = 12x\n12-14 = 25x\n15-19 = 60x\n20-24 = 150x\n25-29 = 350x\n30-32 = 750x\n33+ = 1500x',
+	'PAYTABLE BEAR':
+		'KHỐI LÕI TỪ TÍNH (H3)\n5 = 0.3x\n6 = 0.6x\n7 = 1.2x\n8 = 2.5x\n9 = 5x\n10-11 = 10x\n12-14 = 20x\n15-19 = 50x\n20-24 = 120x\n25-29 = 280x\n30-32 = 600x\n33+ = 1200x',
+	'PAYTABLE RABBIT':
+		'THIẾT BỊ ĐIỆN TỪ (H4)\n5 = 0.25x\n6 = 0.5x\n7 = 1x\n8 = 2x\n9 = 4x\n10-11 = 8x\n12-14 = 16x\n15-19 = 35x\n20-24 = 90x\n25-29 = 220x\n30-32 = 450x\n33+ = 900x',
+	'PAYTABLE SQUIRREL':
+		'BU LÔNG (L1)\n5 = 0.2x\n6 = 0.4x\n7 = 0.8x\n8 = 1.6x\n9 = 3.2x\n10-11 = 6x\n12-14 = 12x\n15-19 = 30x\n20-24 = 75x\n25-29 = 180x\n30-32 = 350x\n33+ = 500x',
+	'PAYTABLE LOWS_1':
+		'ĐAI ỐC (L2)\n5 = 0.12x\n6 = 0.25x\n7 = 0.5x\n8 = 1x\n9 = 2x\n10-11 = 4x\n12-14 = 8x\n15-19 = 20x\n20-24 = 50x\n25-29 = 100x\n30-32 = 200x\n33+ = 400x\n\nVÒNG ĐỆM (L3)\n5 = 0.1x\n6 = 0.2x\n7 = 0.4x\n8 = 0.8x\n9 = 1.6x\n10-11 = 3x\n12-14 = 6x\n15-19 = 15x\n20-24 = 40x\n25-29 = 80x\n30-32 = 150x\n33+ = 300x',
+	'PAYTABLE LOWS_2':
+		'VÍT NĂNG LƯỢNG (L4)\n5 = 0.08x\n6 = 0.16x\n7 = 0.32x\n8 = 0.64x\n9 = 1.28x\n10-11 = 2.5x\n12-14 = 5x\n15-19 = 12x\n20-24 = 30x\n25-29 = 60x\n30-32 = 120x\n33+ = 250x',
+	'PAYTABLE SPECIAL_TEXT':
+		'Nam châm bắt đầu chuỗi từ tính. Wild thay thế biểu tượng thường. Multiplier Wild nhân chuỗi đang hoạt động. Scatter chỉ kích hoạt bonus.',
+	'PAYTABLE BUY_TEXT':
+		'Drop-O-Magnet: 100x cược.\nMega Chain: 500x cược.\nChance Spin: 2x cược mỗi vòng.\nFeature Spin: 50x cược mỗi vòng.',
+	'PAYTABLE MAX_TEXT': 'Mức thắng tối đa được công bố là 20.000x mức cược đã chọn.',
+	'NO BALANCE TITLE': 'KHÔNG ĐỦ SỐ DƯ',
+	'NO BALANCE BODY': 'Số dư của bạn quá thấp cho mức cược này. Hãy giảm mức cược để tiếp tục chơi.',
+	OK: 'OK',
+};

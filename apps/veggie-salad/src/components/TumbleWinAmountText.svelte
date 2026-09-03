@@ -52,7 +52,7 @@
 				fontFamily: 'gold',
 				fontSize: 0.65 * SYMBOL_SIZE,
 			}}
-			text={bookEventAmountToCurrencyString(amount.current)}
+			text={bookEventAmountToCurrencyString(amount.current, props.amount)}
 			maxWidth={props.width}
 		/>
 	</SpineSlot>

@@ -1,3 +1,31 @@
-export default {
-	HOME: '主页',
-};
+import source from './magneticCommon/zh';
+import { createLocale } from './createLocale';
+
+export default createLocale(source, {
+	bonus: '奖励',
+	bonuses: '奖励游戏',
+	earned: '累计赢分',
+	garden: '蔬菜花园',
+	welcome: '欢迎来到',
+	gameBoard: '蔬菜沙拉游戏盘',
+	clusterPayouts: '集群赢分',
+	vegetables: ['西兰花', '玉米', '番茄', '茄子', '胡萝卜', '花椰菜', '萝卜'],
+	normalBonus: '普通奖励',
+	superBonus: '超级奖励',
+	hiddenBonus: '隐藏奖励',
+	mysteryBonus: '神秘奖励',
+	featureSpin: '特色旋转',
+	guaranteedCluster: '保证中奖集群',
+	bonusChance: '奖励机会',
+	active: '已启用',
+	harvest: '选择收获模式',
+	skip: '跳过',
+	toggle: '切换',
+	tumbleTitle: '连消下落',
+	tumbleText: '中奖符号会被移除，新符号持续下落，直到不再形成新的集群。',
+	multiplierTitle: '倍数',
+	multiplierText: '中奖集群中的所有倍数相乘，并应用于该集群赢分。',
+	bonusRule: '3个分散符号触发普通奖励，4个触发超级奖励；隐藏奖励使用10×10棋盘。',
+	controls: '操作说明',
+	splashGarden: '组成集群，让蔬菜下落并发现花园惊喜。',
+});
