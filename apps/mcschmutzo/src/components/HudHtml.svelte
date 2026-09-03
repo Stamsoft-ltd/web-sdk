@@ -634,15 +634,29 @@
 						<!-- Sound / Info popup — anchored directly above the ☰ menu button. -->
 						{#if menuOpen}
 							<div class="pt-menu-pop" role="menu" bind:this={menuPopEl}>
-								<button class="pt-menu-item" type="button" role="menuitem" onclick={toggleSound}>
-									<span class="pt-menu-item__ic">
-										<img src={isMuted ? iconSoundMuted : iconSound} alt="" class:is-muted={isMuted} />
-									</span>
-									<span class="pt-menu-item__label">SOUND</span>
+								<button
+									class="pt-menu-item"
+									class:muted={isMuted}
+									type="button"
+									role="menuitem"
+									onclick={toggleSound}
+								>
+									<img class="pt-menu-item__ic" src={menuIcSound} alt="" />
+									<span class="pt-menu-item__label">{i18nDerived.translate('SOUND')}</span>
+								</button>
+								<button
+									class="pt-menu-item"
+									class:muted={isMusicMuted}
+									type="button"
+									role="menuitem"
+									onclick={toggleMusic}
+								>
+									<img class="pt-menu-item__ic" src={menuIcMusic} alt="" />
+									<span class="pt-menu-item__label">{i18nDerived.translate('MUSIC')}</span>
 								</button>
 								<button class="pt-menu-item" type="button" role="menuitem" onclick={openRules}>
-									<span class="pt-menu-item__ic"><img src={iconMenu} alt="" /></span>
-									<span class="pt-menu-item__label">INFO</span>
+									<img class="pt-menu-item__ic" src={menuIcInfo} alt="" />
+									<span class="pt-menu-item__label">{i18nDerived.translate('INFO')}</span>
 								</button>
 							</div>
 						{/if}
@@ -2670,42 +2684,38 @@
 	   so both its position AND its %-paddings resolve against the bar. */
 	.pt-menu-wrap { display: inline-flex; flex: 0 0 auto; }
 
-	/* Sound / Info popup — the wooden plaque from Figma (border baked into the art). Sits just above
-	   the bar, aligned to its left edge (like the design). All insets are fractions of the bar width
-	   (% padding resolves against the containing block = the bar = --u). */
+	/* SOUND / MUSIC / INFO popup — same dark menu as desktop, scaled to the mobile bar.
+	   Sits just above the bar, aligned to its left edge. */
 	.pt-menu-pop {
 		position: absolute;
 		left: calc(var(--u) * -0.04);
-		bottom: calc(100% - 25px); /* almost touching the bar */
+		bottom: calc(100% + var(--u) * 0.02);
 		z-index: 8;
-		width: calc(var(--u) * 0.5);
-		aspect-ratio: 1431 / 1099;
-		box-sizing: border-box;
 		display: flex; flex-direction: column;
-		align-items: flex-start; justify-content: center;
-		gap: calc(var(--u) * 0.035);
-		padding: 5.5% 4% 6.5% 9%;
-		background: var(--menu-popup-bg) center / 100% 100% no-repeat;
+		min-width: calc(var(--u) * 0.42);
+		padding: calc(var(--u) * 0.012) calc(var(--u) * 0.03);
+		border: 2px solid #3d3733;
+		border-radius: calc(var(--u) * 0.03);
+		background: #1b1917;
+		box-shadow: 0 calc(var(--u) * 0.02) calc(var(--u) * 0.05) rgba(0, 0, 0, 0.55);
 	}
 	.pt-menu-item {
-		display: flex; align-items: center; gap: calc(var(--u) * 0.03);
-		border: 0; padding: 0; cursor: pointer;
+		display: flex; align-items: center; gap: calc(var(--u) * 0.024);
+		border: 0; padding: calc(var(--u) * 0.016) 0; cursor: pointer;
 		background: transparent;
-		transition: filter 0.12s ease, transform 0.12s ease;
+		transition: filter 0.12s ease, transform 0.08s ease;
 	}
-	.pt-menu-item:hover { filter: brightness(1.12); }
-	.pt-menu-item:active { transform: scale(0.97); }
+	.pt-menu-item + .pt-menu-item { border-top: 1px solid rgba(255, 255, 255, 0.09); }
+	.pt-menu-item:hover { filter: brightness(1.14); }
+	.pt-menu-item:active { transform: scale(0.98); }
 	.pt-menu-item__ic {
-		width: calc(var(--u) * 0.095); height: calc(var(--u) * 0.095);
-		flex: 0 0 auto;
-		display: grid; place-items: center;
-		border-radius: 50%;
-		background: var(--btn-round-bg) center / contain no-repeat;
+		width: calc(var(--u) * 0.11); height: calc(var(--u) * 0.11);
+		object-fit: contain; flex: 0 0 auto;
+		transition: opacity 0.12s ease;
 	}
-	.pt-menu-item__ic img { width: 52%; height: 52%; object-fit: contain; }
-	.pt-menu-item__ic img.is-muted { opacity: 0.4; }
+	.pt-menu-item.muted .pt-menu-item__ic { opacity: 0.38; }
 	.pt-menu-item__label {
-		font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 12px;
-		font-style: normal; line-height: normal; color: #fff;
+		font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px;
+		letter-spacing: 0.03em; color: #fff;
 	}
 </style>
