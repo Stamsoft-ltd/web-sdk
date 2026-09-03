@@ -127,6 +127,22 @@ type BookEventCreateBonusSnapshot = {
 	bookEvents: BookEvent[];
 };
 
+type BookEventPolarityShift = {
+	index: number;
+	type: 'polarityShift';
+	direction: 'LEFT' | 'RIGHT' | 'UP' | 'DOWN';
+	symbol: PaySymbolName;
+	shifterPositions: Position[];
+	moves: Array<{ from: Position; to: Position; kind: 'symbol' | 'filler' }>;
+};
+
+type BookEventMysteryBonusReveal = {
+	index: number;
+	type: 'mysteryBonusReveal';
+	mode: 'BONUS' | 'SUPER' | 'HIDDEN';
+	label: string;
+};
+
 export type BookEvent =
 	| BookEventReveal
 	| BookEventWinInfo
@@ -141,7 +157,9 @@ export type BookEvent =
 	| BookEventClusterSeriesUpdate
 	| BookEventClusterSeriesResolved
 	| BookEventSuperSeriesCarry
-	| BookEventCreateBonusSnapshot;
+	| BookEventCreateBonusSnapshot
+	| BookEventMysteryBonusReveal
+	| BookEventPolarityShift;
 
 export type Bet = BetType<BookEvent>;
 export type BookEventOfType<T> = Extract<BookEvent, { type: T }>;

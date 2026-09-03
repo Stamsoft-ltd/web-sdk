@@ -18,9 +18,11 @@ export default {
 		CHANCE: { cost: 2.0, feature: true, buyBonus: false, rtp: 0.961, max_win: 20000 },
 		FEATURE: { cost: 50.0, feature: true, buyBonus: false, rtp: 0.961, max_win: 20000 },
 		BONUS: { cost: 100.0, feature: false, buyBonus: true, rtp: 0.961, max_win: 20000 },
+		MYSTERY: { cost: 300.0, feature: false, buyBonus: true, rtp: 0.961, max_win: 20000 },
 		SUPER: { cost: 500.0, feature: false, buyBonus: true, rtp: 0.961, max_win: 20000 },
 	},
 	symbols: {
+		POLARITY: { paytable: {} },
 		H1: {
 			paytable: makeTierPaytable([
 				[5, 5, 0.5],

@@ -190,6 +190,14 @@ const nextBookEventAfter = (bookEvent: BookEvent, bookEvents: BookEvent[]) => {
 };
 
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
+	polarityShift: async (bookEvent: BookEventOfType<'polarityShift'>) => {
+		stateGame.polarityDirection = bookEvent.direction;
+		stateGame.polarityPulse += 1;
+		await waitForTimeout(600);
+	},
+	mysteryBonusReveal: async () => {
+		// Selection is resolved by math; bonus playback follows immediately.
+	},
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
 		const revealMode = stateGame.nextRevealMode;

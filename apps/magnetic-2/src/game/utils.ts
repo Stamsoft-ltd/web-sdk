@@ -28,6 +28,7 @@ const DESKTOP_STATIC_KEYS: Record<SymbolName, string> = {
 	WILD: 'wildTile',
 	MAGNET: 'magnetTile',
 	SCATTER: 'scatterCustom',
+	POLARITY: 'polarityArrowRight',
 };
 
 const MOBILE_STATIC_KEYS: Partial<Record<SymbolName, string>> = {

@@ -116,6 +116,7 @@
 	const chanceCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 2));
 	const bonusCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 100));
 	const superCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 500));
+	const mysteryCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 300));
 	const featureCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 50));
 	const betDisplay = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount));
 	const canBuy = $derived(stateBetDerived.isBetCostAvailable());
@@ -135,9 +136,9 @@
 	// more than 2x a normal round, and Feature Spin costs 50x PER ROUND — it was previously a
 	// one-click toggle. Chance Spin is exactly 2x, which the rule does not cover, so it stays
 	// one-click. Deactivating never costs anything and never asks.
-	let confirmMode = $state<null | 'BONUS' | 'SUPER' | 'FEATURE'>(null);
+	let confirmMode = $state<null | 'BONUS' | 'MYSTERY' | 'SUPER' | 'FEATURE'>(null);
 
-	const buyMode = (mode: 'BONUS' | 'SUPER') => {
+	const buyMode = (mode: 'BONUS' | 'MYSTERY' | 'SUPER') => {
 		// If the machine isn't idle the 'bet' event would be dropped but the mode
 		// assignment would stick — every later (auto-)spin would then bet at buy cost.
 		if (!context.stateXstateDerived.isIdle()) {
@@ -148,7 +149,7 @@
 		props.onclose();
 		context.eventEmitter.broadcast({ type: 'bet' });
 	};
-	const openConfirm = (mode: 'BONUS' | 'SUPER' | 'FEATURE') => {
+	const openConfirm = (mode: 'BONUS' | 'MYSTERY' | 'SUPER' | 'FEATURE') => {
 		confirmMode = mode;
 	};
 	const closeConfirm = () => {
@@ -164,10 +165,18 @@
 			? 'MAGNETIC MEGA CHAIN'
 			: confirmMode === 'FEATURE'
 				? t('BUY FEATURE SPINS TITLE')
+				: confirmMode === 'MYSTERY'
+					? 'MYSTERY BONUS'
 				: 'DROP-O-MAGNET',
 	);
 	const confirmCost = $derived(
-		confirmMode === 'SUPER' ? superCost : confirmMode === 'FEATURE' ? featureCost : bonusCost,
+		confirmMode === 'SUPER'
+			? superCost
+			: confirmMode === 'MYSTERY'
+				? mysteryCost
+				: confirmMode === 'FEATURE'
+					? featureCost
+					: bonusCost,
 	);
 	// The design's title/body are ONE nowrap line each ("CONFIRM ALL IN" / "BUY ALL IN FOR 400.00?").
 	// Our mode names and localized strings run longer, so each line shrinks to fit the plate instead
@@ -208,7 +217,7 @@
 			toggleActivateMode(props.onToggleFeature);
 			return;
 		}
-		buyMode(confirmMode as 'BONUS' | 'SUPER');
+		buyMode(confirmMode as 'BONUS' | 'MYSTERY' | 'SUPER');
 	};
 
 	onMount(() => {
@@ -292,6 +301,23 @@
 				type="button"
 				disabled={!canBuy}
 				onclick={() => openConfirm('BONUS')}>{t('BUY')}</button
+			>
+		</div>
+
+		<!-- MAGNETIC MEGA CHAIN (superspin / SUPER mode) -->
+		<div class="card" style={`background-image:url('${cardPanel}')`}>
+			<span class="card-title">MYSTERY BONUS</span>
+			<span class="card-desc">Randomly selects Drop-O-Magnet or Mega Chain.</span>
+			<div class="card-icon-slot">
+				<span class="card-mult">?</span>
+				<img class="card-icon card-icon--brief" src={iconBrief} alt="" />
+			</div>
+			<span class="card-price">{mysteryCost}</span>
+			<button
+				class="card-btn card-btn--buy"
+				type="button"
+				disabled={!canBuy}
+				onclick={() => openConfirm('MYSTERY')}>{t('BUY')}</button
 			>
 		</div>
 

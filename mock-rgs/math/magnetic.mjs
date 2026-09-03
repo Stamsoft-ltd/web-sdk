@@ -1320,6 +1320,20 @@ export function generateRoundForMode({ mode = 'BASE', seed = Date.now() } = {}) 
 	const rng = mulberry32(typeof seed === 'number' ? seed : Number(seed) || Date.now());
 
 	if (normalizedMode === 'FEATURE') return { seed, ...buildFeatureSequence({ rng }) };
+	if (normalizedMode === 'MYSTERY') {
+		const selectedMode = rng() < 0.7 ? 'BONUS' : 'SUPER';
+		const bonus = buildBonusSequence({ rng, mode: selectedMode, runningTotal: 0, fromBaseTrigger: false });
+		const revealIndex = bonus.events.findIndex((event) => event.type === 'reveal');
+		bonus.events.splice(revealIndex + 1, 0, {
+			index: 0,
+			type: 'mysteryBonusReveal',
+			mode: selectedMode,
+			label: selectedMode === 'SUPER' ? 'CORE OVERLOAD' : 'GRAVITY BREACH',
+		});
+		bonus.events.forEach((event, index) => { event.index = index; });
+		emitFinalWin(bonus.events, bonus.finalAmount);
+		return { seed, payoutMultiplier: bonus.finalAmount / 100, events: bonus.events };
+	}
 	if (normalizedMode === 'BONUS' || normalizedMode === 'SUPER') {
 		const bonus = buildBonusSequence({
 			rng,

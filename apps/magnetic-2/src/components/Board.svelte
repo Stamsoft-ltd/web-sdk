@@ -27,7 +27,9 @@
 	)}
 		{@const isScatterCell = cell.scatter || cell.name === 'SCATTER'}
 		{@const isWildCell = cell.wild || cell.name === 'WILD'}
-		{#if isScatterCell}
+		{#if cell.name === 'POLARITY' || cell.polarity}
+			<PolaritySymbol x={x} y={y} {width} {height} {alpha} {zIndex} direction={stateGame.polarityDirection} pulse={stateGame.polarityPulse} phase={keyPhase(cell.key)} />
+		{:else if isScatterCell}
 			<!-- Layered capsule: base machine + bubbles + alien + eye + band arcs. It
 			     covers the win state itself, so it replaces <SymbolWinFx> here rather
 			     than stacking with it. -->
@@ -227,6 +229,7 @@
 	import CoilSymbol from './CoilSymbol.svelte';
 	import CircuitSymbol from './CircuitSymbol.svelte';
 	import WildSymbol from './WildSymbol.svelte';
+	import PolaritySymbol from './PolaritySymbol.svelte';
 	import {
 		drawRingMagIdle,
 		type SpecialIdleG,
@@ -237,6 +240,7 @@
 	import { getSpriteKeyByName, getSymbolInfo } from '../game/utils';
 
 	const context = getContext();
+	const { stateGame } = context;
 
 	const board = $derived(context.stateGame.board);
 

@@ -220,6 +220,7 @@ const updateCellRaw = (cell: BoardCell, raw: RawSymbol) => {
 	cell.multiplier = raw.multiplier;
 	cell.scatter = raw.scatter;
 	cell.magnet = raw.magnet || raw.name === 'MAGNET';
+	cell.polarity = raw.polarity || raw.name === 'POLARITY';
 	cell.wild = raw.wild && !cell.magnet;
 };
 
@@ -1134,6 +1135,8 @@ export const stateGame = $state({
 	// Whole-board landing thump, 0..1 — Board reads it as a decaying knock on the symbol layer.
 	boardThump: new Tween(0),
 	forceFastAnimations: false,
+	polarityDirection: null as 'LEFT' | 'RIGHT' | 'UP' | 'DOWN' | null,
+	polarityPulse: 0,
 	// Set true when the player chooses "End" on the unfinished-round dialog: the end flows through the
 	// xstate machine (RESUME_BET) but onPlayGame skips the animation so endGame just ends the round +
 	// credits balance. Ending the round outside the machine leaves it active on the RGS.

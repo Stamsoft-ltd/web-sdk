@@ -2,7 +2,7 @@ import type config from './config';
 import type { Tween } from 'svelte/motion';
 
 export type SymbolName = keyof typeof config.symbols | 'MAGNET';
-export type PaySymbolName = Exclude<SymbolName, 'SCATTER' | 'WILD' | 'MAGNET'>;
+export type PaySymbolName = Exclude<SymbolName, 'SCATTER' | 'WILD' | 'MAGNET' | 'POLARITY'>;
 export type BetMode = keyof typeof config.betModes;
 export type GameType = 'basegame' | 'freegame' | 'superspin' | 'feature';
 export type SeriesKind = 'natural' | 'magnet' | 'super';
@@ -13,6 +13,7 @@ export type RawSymbol = {
 	scatter?: boolean;
 	magnet?: boolean;
 	wild?: boolean;
+	polarity?: boolean;
 };
 
 export const SYMBOL_STATES = ['static', 'spin', 'land', 'win', 'locked', 'magnet'] as const;
