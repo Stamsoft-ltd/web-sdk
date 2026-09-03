@@ -131,12 +131,12 @@ const assets = {
 	qWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw.webp?v=20260902' },
 	qTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw_mobile.webp?v=20260902' },
 	qWinTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/energy_screw_mobile.webp?v=20260902' },
-	// Full shifter: neutral greys all arrows; triggered variants keep only the selected one coloured.
-	polarityNeutral: { type: 'sprite', src: './assets/components/symbols/magnetic/special/polarity_neutral.webp?v=20260903b' },
-	polarityRight: { type: 'sprite', src: './assets/components/symbols/magnetic/special/polarity_right.webp?v=20260903b' },
-	polarityLeft: { type: 'sprite', src: './assets/components/symbols/magnetic/special/polarity_left.webp?v=20260903b' },
-	polarityUp: { type: 'sprite', src: './assets/components/symbols/magnetic/special/polarity_up.webp?v=20260903b' },
-	polarityDown: { type: 'sprite', src: './assets/components/symbols/magnetic/special/polarity_down.webp?v=20260903b' },
+	// Full-colour shifter plus one bright-highlight variant per active arrow.
+	polarityNeutral: { type: 'sprite', src: './assets/components/symbols/magnetic/special/polarity_neutral.webp?v=20260903c' },
+	polarityRight: { type: 'sprite', src: './assets/components/symbols/magnetic/special/polarity_right.webp?v=20260903c' },
+	polarityLeft: { type: 'sprite', src: './assets/components/symbols/magnetic/special/polarity_left.webp?v=20260903c' },
+	polarityUp: { type: 'sprite', src: './assets/components/symbols/magnetic/special/polarity_up.webp?v=20260903c' },
+	polarityDown: { type: 'sprite', src: './assets/components/symbols/magnetic/special/polarity_down.webp?v=20260903c' },
 	wildTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild.webp?v=20260902' },
 	wildWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild.webp?v=20260902' },
 	wildTileMobile: { type: 'sprite', src: './assets/components/symbols/magnetic/special/wild_mobile.webp?v=20260902' },
