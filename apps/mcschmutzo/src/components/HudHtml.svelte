@@ -1642,22 +1642,24 @@
 	.hud-menu-pop {
 		position: absolute;
 		bottom: calc(100% + var(--nav-s) * 0.28);
+		/* Left edge flush with the menu button — i.e. the start of the nav. */
 		left: 0;
 		z-index: 45;
 		display: flex;
 		flex-direction: column;
-		min-width: calc(var(--nav-s) * 3.4);
-		padding: calc(var(--nav-s) * 0.12) calc(var(--nav-s) * 0.34);
+		width: max-content;
+		min-width: calc(var(--nav-s) * 2.2);
+		padding: calc(var(--nav-s) * 0.1) calc(var(--nav-s) * 0.22);
 		border: 2px solid #3d3733;
-		border-radius: calc(var(--nav-s) * 0.28);
+		border-radius: calc(var(--nav-s) * 0.24);
 		background: #1b1917;
 		box-shadow: 0 calc(var(--nav-s) * 0.2) calc(var(--nav-s) * 0.5) rgba(0, 0, 0, 0.55);
 	}
 	.hud-menu-item {
 		display: flex;
 		align-items: center;
-		gap: calc(var(--nav-s) * 0.24);
-		padding: calc(var(--nav-s) * 0.2) 0;
+		gap: calc(var(--nav-s) * 0.18);
+		padding: calc(var(--nav-s) * 0.16) 0;
 		border: none;
 		background: none;
 		cursor: pointer;
@@ -1675,8 +1677,8 @@
 		transform: scale(0.98);
 	}
 	.hud-menu-item__ic {
-		width: calc(var(--nav-s) * 0.62);
-		height: calc(var(--nav-s) * 0.62);
+		width: calc(var(--nav-s) * 0.52);
+		height: calc(var(--nav-s) * 0.52);
 		object-fit: contain;
 		flex: 0 0 auto;
 		transition: opacity 0.12s ease;
@@ -1688,8 +1690,8 @@
 		color: #ffffff;
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: calc(var(--nav-s) * 0.26);
-		letter-spacing: 0.04em;
+		font-size: calc(var(--nav-s) * 0.22);
+		letter-spacing: 0.03em;
 	}
 
 	.btn-icon {
