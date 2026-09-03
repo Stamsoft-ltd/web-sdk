@@ -187,7 +187,7 @@ export default {
 	'PAYTABLE H3_H5': 'POPCORN and FERRIS WHEEL pay 0.5 / 2.5 / 5x for 3 / 4 / 5 of a kind.',
 	'PAYTABLE LOWS': 'A, K, Q, J and 10 pay 0.1 / 0.5 / 1x for 3 / 4 / 5 of a kind.',
 	'PAYTABLE SPECIAL_TEXT':
-		'WILD substitutes all paying symbols and pays as the highest-paying symbol on the line (Coaster Car: 2 / 10 / 20x for 3 / 4 / 5). Ducks and scatters award features. Highest paying symbol per line wins.',
+		'WILD does not pay by itself. It substitutes regular symbols, and its multiplier applies to the completed winning symbol. Ducks and scatters award features.',
 	'PAYTABLE TITLE PAYLINES': 'PAYLINES',
 	'PAYTABLE TEXT PAYLINES': '15 fixed paylines, left to right.',
 	'PAYTABLE BUY TITLE': 'BUY',
@@ -256,12 +256,12 @@ export default {
 		'A standard winning combination is formed when 3 or more matching symbols land on consecutive reels from left to right, starting from Reel 1, on one of the fixed paylines.',
 	'INFO WTW EVAL':
 		'Wins are evaluated after the reels stop and are paid according to the Paytable.',
-	'INFO WTW WILD': 'Wild symbols substitute for all regular paying symbols except Scatter symbols.',
+	'INFO WTW WILD': 'Wild symbols do not pay by themselves. They substitute for regular symbols, and their multipliers apply to the completed winning symbol.',
 	'INFO WTW SCATTER':
 		'Scatter symbols do not need to land on a payline and can appear anywhere on the reels.',
 	'INFO WTW DUCK':
 		'Collectible Ducks award their revealed value as a base-play multiple. Multiply All Ducks multiply the running Duck total collected before them; Ducks revealed afterward are added normally.',
-	'INFO WTW HIGHEST': 'Highest paying symbol per line wins.',
+	'INFO WTW HIGHEST': 'Only one winning combination per fixed payline is paid.',
 	'INFO WTW MULTIPLES': 'All displayed payouts are expressed as multiples of the total bet.',
 	'INFO WTW DIAGRAM ALT': '15 paylines',
 	'INFO WTW FREE TITLE': 'FREE GAMES',

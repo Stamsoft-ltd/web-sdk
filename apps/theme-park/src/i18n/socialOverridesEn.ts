@@ -56,12 +56,12 @@ export const socialOverridesEn: Record<string, string> = {
 		'A standard winning combination is formed when 3 or more matching symbols land on consecutive reels from left to right, starting from Reel 1, on one of the fixed win lines.',
 	'INFO WTW EVAL':
 		'Wins are evaluated after the reels stop and are awarded according to the Win Table.',
-	'INFO WTW WILD': 'Wild symbols substitute for all regular winning symbols except Scatter symbols.',
+	'INFO WTW WILD': 'Wild symbols do not pay by themselves. They substitute for regular symbols, and their multipliers apply to the completed winning symbol.',
 	'INFO WTW SCATTER':
 		'Scatter symbols do not need to land on a win line and can appear anywhere on the reels.',
 	'INFO WTW DUCK':
 		'Collectible Ducks award their revealed value as a base-play multiple. Multiply All Ducks multiply the running Duck total collected before them; Ducks revealed afterward are added normally.',
-	'INFO WTW HIGHEST': 'Highest awarding symbol per line wins.',
+	'INFO WTW HIGHEST': 'Only one winning combination per fixed win line is awarded.',
 	'INFO WTW MULTIPLES': 'All displayed wins are expressed as multiples of the total play.',
 	'INFO WTW DIAGRAM ALT': '15 win lines',
 	'INFO GI INTERRUPTED HOLD':
@@ -96,7 +96,7 @@ export const socialOverridesEn: Record<string, string> = {
 	'PAYTABLE H3_H5': 'POPCORN and FERRIS WHEEL win 0.5 / 2.5 / 5x for 3 / 4 / 5 of a kind.',
 	'PAYTABLE LOWS': 'A, K, Q, J and 10 win 0.1 / 0.5 / 1x for 3 / 4 / 5 of a kind.',
 	'PAYTABLE SPECIAL_TEXT':
-		'WILD substitutes all winning symbols and wins as the highest-paying symbol on the line (Coaster Car: 2 / 10 / 20x for 3 / 4 / 5). Ducks and scatters award features. Highest awarding symbol per line wins.',
+		'WILD does not win by itself. It substitutes winning symbols, and its multiplier applies to the completed winning symbol. Ducks and scatters award features.',
 	'PAYTABLE TITLE PAYLINES': 'WIN LINES',
 	'PAYTABLE TEXT PAYLINES': '15 fixed win lines, left to right.',
 	'PAYTABLE BUY TITLE': 'PLAY',
