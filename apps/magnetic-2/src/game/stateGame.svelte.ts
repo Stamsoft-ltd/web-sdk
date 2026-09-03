@@ -1013,9 +1013,9 @@ const animateClusterFormation = async ({
 	stateGame.forceFastAnimations = false;
 };
 
-// Polarity does not spawn symbols. It moves the exact existing `kind: symbol` cells supplied by
-// math, then snaps to math's authoritative board. `kind: filler` moves only describe how vacated
-// spaces are refilled and must not be presented as extra copies of the selected symbol.
+// Polarity does not spawn symbols. It moves both existing `cluster` cells and loose matching
+// `symbol` cells supplied by math, then snaps to math's authoritative board. `filler` moves only
+// describe refills and must not be presented as extra symbol copies.
 const animatePolarityShift = async ({
 	moves,
 	shifterPositions,
@@ -1023,7 +1023,7 @@ const animatePolarityShift = async ({
 	series,
 	magnetTargetSymbol,
 }: {
-	moves: Array<{ from: Position; to: Position; kind: 'symbol' | 'filler' }>;
+	moves: Array<{ from: Position; to: Position; kind: 'cluster' | 'symbol' | 'filler' }>;
 	shifterPositions: Position[];
 	rawBoard: RawSymbol[][];
 	series: ClusterSeriesSnapshot[];
@@ -1031,7 +1031,7 @@ const animatePolarityShift = async ({
 }) => {
 	const symbolMoves = moves.filter(
 		(move) =>
-			move.kind === 'symbol' && (move.from.reel !== move.to.reel || move.from.row !== move.to.row),
+			move.kind !== 'filler' && (move.from.reel !== move.to.reel || move.from.row !== move.to.row),
 	);
 	const fast = stateBet.isTurbo || stateBet.isSuperTurbo || stateGame.forceFastAnimations;
 	const dimMs = fast ? 35 : 120;

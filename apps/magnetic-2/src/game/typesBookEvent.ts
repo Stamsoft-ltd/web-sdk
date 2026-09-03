@@ -133,7 +133,7 @@ type BookEventPolarityShift = {
 	direction: 'LEFT' | 'RIGHT' | 'UP' | 'DOWN';
 	symbol: PaySymbolName;
 	shifterPositions: Position[];
-	moves: Array<{ from: Position; to: Position; kind: 'symbol' | 'filler' }>;
+	moves: Array<{ from: Position; to: Position; kind: 'cluster' | 'symbol' | 'filler' }>;
 	board: RawSymbol[][];
 	series: ClusterSeriesSnapshot[];
 };
