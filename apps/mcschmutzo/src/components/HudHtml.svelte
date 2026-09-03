@@ -98,7 +98,7 @@
 	// The buy button's caption, in one place: the portrait badge splits it per word for its
 	// two-line layout, so it needs the string itself rather than the inline ternary.
 	const buyLabelText = $derived(
-		isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(),
+		isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.translate('BONUS'),
 	);
 	// Buying a bonus is not allowed while a multi-spin bonus round is in progress.
 	// Feature mode keeps its selected-symbol badge after the round, but should not lock the HUD.
@@ -727,6 +727,7 @@
 					>
 						<img class="pt-icon" src={iconMinus} alt="minus" />
 					</button>
+					<span class="pt-bet__label">{i18nDerived.betLabel()}</span>
 					<span
 						class="pt-bet__value"
 						class:value--feature={isAnyModeActive}
@@ -2551,8 +2552,9 @@
 		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);
 	}
 
-	/* Bet pill: dark rounded pad with − value + (no BET label, per Figma) */
+	/* Bet pill: dark rounded pad with − value +, and a small "BET" caption floated above it. */
 	.pt-bet {
+		position: relative;
 		flex: 0 0 auto;
 		display: flex; align-items: center; justify-content: space-between;
 		gap: 4px;
@@ -2560,6 +2562,18 @@
 		padding: 0 calc(var(--u) * 0.018);
 		box-sizing: border-box;
 		background: var(--pt-betpad) center / 100% 100% no-repeat;
+	}
+	.pt-bet__label {
+		position: absolute;
+		bottom: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		margin-bottom: calc(var(--u) * 0.012);
+		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 10px;
+		letter-spacing: 0.06em; white-space: nowrap; pointer-events: none;
+		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
+		-webkit-background-clip: text; background-clip: text;
+		-webkit-text-fill-color: transparent; color: transparent;
 	}
 	.pt-bet__value {
 		flex: 1 1 auto; text-align: center;
