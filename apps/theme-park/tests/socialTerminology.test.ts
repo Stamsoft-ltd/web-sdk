@@ -37,25 +37,13 @@ const RESTRICTED = [
 	'place your bets',
 ];
 
-/**
- * The only strings allowed to trip the scan. Both carry "Stake Engine", which is the required legal
- * mark rather than a terminology slip — it is the one place the word has to stay.
- *
- * Anything else that shows up here is a real hit. Adding a key to this list is a decision about
- * what a reviewer will accept, so it wants a reason next to it, not just an entry.
- */
-const EXPECTED_HITS: Record<string, string> = {
-	'DISCLAIMER TEXT': '"Stake Engine" is the required legal mark',
-	'INFO GI LEGAL TM': '"Stake Engine" is the required legal mark',
-};
-
 describe('social mode carries no restricted terminology', () => {
 	const merged: Record<string, string> = { ...en, ...socialOverridesEn };
 
 	it('has a clean merged English map', () => {
 		const dirty: string[] = [];
 		for (const [key, value] of Object.entries(merged)) {
-			if (typeof value !== 'string' || key in EXPECTED_HITS) continue;
+			if (typeof value !== 'string') continue;
 			const low = value.toLowerCase();
 			const found = RESTRICTED.filter((word) => low.includes(word));
 			if (found.length) dirty.push(`${key} [${found.join(', ')}]: ${value}`);

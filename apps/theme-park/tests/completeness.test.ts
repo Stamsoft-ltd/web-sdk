@@ -34,6 +34,31 @@ describe('shared frontend completeness guards', () => {
 		expect(social).toContain("'INFO WTW HIGHEST': 'Highest awarding symbol per line wins.'");
 	});
 
+	it('uses the Engine legal mark without legacy Stake branding', async () => {
+		for (const locale of [
+			'ar',
+			'de',
+			'en',
+			'es',
+			'fi',
+			'fr',
+			'hi',
+			'id',
+			'ja',
+			'ko',
+			'pl',
+			'pt',
+			'ru',
+			'tr',
+			'vi',
+			'zh',
+		]) {
+			const catalog = (await import(`../src/i18n/messagesMap/${locale}.ts`)).default;
+			expect(catalog['INFO GI LEGAL TM'], locale).toContain('© 2026 Engine.');
+			expect(catalog['INFO GI LEGAL TM'], locale).not.toContain('Stake');
+		}
+	});
+
 	it('caps the desktop logo against the real board top on short screens', () => {
 		const hud = source('src/components/HudHtml.svelte');
 		expect(hud).toContain('const gameLogoWidth = $derived.by');

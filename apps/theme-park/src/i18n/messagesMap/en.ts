@@ -289,7 +289,7 @@ export default {
 		'The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only.',
 	'INFO GI LEGAL SETTLE':
 		'Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser.',
-	'INFO GI LEGAL TM': 'TM and © 2026.',
+	'INFO GI LEGAL TM': 'TM and © 2026 Engine.',
 	// User interface guide page. SPIN/TURBO/INFO/SOUND/CLOSE/MENU/MUSIC reuse the HUD keys above.
 	'INFO UI AUTO SPINS': 'AUTO SPINS',
 	'INFO UI BET PLUS': 'BET +',

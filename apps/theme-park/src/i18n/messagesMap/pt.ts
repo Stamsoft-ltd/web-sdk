@@ -267,7 +267,7 @@ export default {
 		'O retorno esperado é calculado sobre um grande número de jogadas. A exibição do jogo é apenas visual e de entretenimento e não representa nenhum dispositivo físico de jogo.',
 	'INFO GI LEGAL SETTLE':
 		'Todos os ganhos são liquidados conforme o resultado recebido do Remote Game Server, e não pelas animações ou eventos mostrados no navegador.',
-	'INFO GI LEGAL TM': 'TM e © 2026.',
+	'INFO GI LEGAL TM': 'TM e © 2026 Engine.',
 	'INFO UI AUTO SPINS': 'GIROS AUTOMÁTICOS',
 	'INFO UI BET PLUS': 'APOSTA +',
 	'INFO UI BET MINUS': 'APOSTA -',

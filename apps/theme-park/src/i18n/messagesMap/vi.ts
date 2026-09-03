@@ -267,7 +267,7 @@ export default {
 		'Tỷ lệ hoàn trả kỳ vọng được tính trên số lượng lớn lượt chơi. Hình ảnh game chỉ mang tính trực quan và giải trí, không đại diện cho bất kỳ thiết bị chơi game vật lý nào.',
 	'INFO GI LEGAL SETTLE':
 		'Mọi khoản thắng được quyết toán theo kết quả nhận từ Remote Game Server, không theo hoạt ảnh hay sự kiện hiển thị trong trình duyệt.',
-	'INFO GI LEGAL TM': 'TM và © 2026.',
+	'INFO GI LEGAL TM': 'TM và © 2026 Engine.',
 	'INFO UI AUTO SPINS': 'QUAY TỰ ĐỘNG',
 	'INFO UI BET PLUS': 'CƯỢC +',
 	'INFO UI BET MINUS': 'CƯỢC -',
