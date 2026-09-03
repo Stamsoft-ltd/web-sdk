@@ -727,12 +727,14 @@
 					>
 						<img class="pt-icon" src={iconMinus} alt="minus" />
 					</button>
-					<span class="pt-bet__label">{i18nDerived.betLabel()}</span>
-					<span
-						class="pt-bet__value"
-						class:value--feature={isAnyModeActive}
-						use:fitText={formattedBet}
-					>{formattedBet}</span>
+					<span class="pt-bet__mid">
+						<span class="pt-bet__label">{i18nDerived.betLabel()}</span>
+						<span
+							class="pt-bet__value"
+							class:value--feature={isAnyModeActive}
+							use:fitText={formattedBet}
+						>{formattedBet}</span>
+					</span>
 					<button
 						class="pt-round pt-round--sm"
 						type="button"
@@ -2552,23 +2554,26 @@
 		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);
 	}
 
-	/* Bet pill: dark rounded pad with − value +, and a small "BET" caption floated above it. */
+	/* Bet pill: clean dark rounded pill (matches BALANCE / WIN) — − [ BET / value ] +. */
 	.pt-bet {
-		position: relative;
 		flex: 0 0 auto;
 		display: flex; align-items: center; justify-content: space-between;
-		gap: 4px;
-		width: calc(var(--u) * 0.46); height: calc(var(--u) * 0.132);
-		padding: 0 calc(var(--u) * 0.018);
+		gap: calc(var(--u) * 0.008);
+		width: calc(var(--u) * 0.46); height: calc(var(--u) * 0.14);
+		padding: 0 calc(var(--u) * 0.012);
 		box-sizing: border-box;
-		background: var(--pt-betpad) center / 100% 100% no-repeat;
+		border-radius: 12px;
+		background: rgba(17, 12, 10, 0.72);
+		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
+		backdrop-filter: blur(4px);
+	}
+	.pt-bet__mid {
+		flex: 1 1 auto; min-width: 0;
+		display: flex; flex-direction: column;
+		align-items: center; justify-content: center;
+		gap: 1px;
 	}
 	.pt-bet__label {
-		position: absolute;
-		bottom: 100%;
-		left: 50%;
-		transform: translateX(-50%);
-		margin-bottom: calc(var(--u) * 0.012);
 		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 10px;
 		letter-spacing: 0.06em; white-space: nowrap; pointer-events: none;
 		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
@@ -2576,8 +2581,8 @@
 		-webkit-text-fill-color: transparent; color: transparent;
 	}
 	.pt-bet__value {
-		flex: 1 1 auto; text-align: center;
-		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 18px;
+		text-align: center;
+		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 17px;
 		font-style: normal; line-height: normal; letter-spacing: 0.54px; color: #fff;
 		white-space: nowrap; cursor: pointer; transform-origin: center;
 		text-shadow: 0 1px 2px rgba(0,0,0,0.6);
@@ -2585,35 +2590,32 @@
 	.pt-bet__value.value--feature { color: #ffd84a; }
 
 	/* Buy bonus: McSchmutzo red/gold plate with 2-line label inside. */
+	/* Flat red BONUS button (mobile design) — no framed plate. */
 	.pt-buy {
 		flex: 0 0 auto;
-		width: calc(var(--u) * 0.21); height: calc(var(--u) * 0.082);
-		border: 0; padding: 0; cursor: pointer;
-		background: var(--pt-buybonus) center / contain no-repeat;
+		width: calc(var(--u) * 0.235); height: calc(var(--u) * 0.088);
+		padding: 0 calc(var(--u) * 0.02); cursor: pointer;
+		border: 2px solid #8f130b;
+		border-radius: calc(var(--u) * 0.016);
+		background: linear-gradient(180deg, #e5372a 0%, #c61d12 100%);
+		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 		display: grid; place-items: center;
 		transition: filter 0.12s ease, transform 0.12s ease;
 	}
 	.pt-buy:hover { filter: brightness(1.1); }
 	.pt-buy:active { transform: scale(0.95); }
 	.pt-buy__label {
-		/* fitLabel shrinks long translations into the plate's clear red centre. */
-		font-family: 'Cinzel', serif; font-weight: 900; font-size: 13px; line-height: 1.05;
-		letter-spacing: 0.01em; text-align: center;
-		/* Each word is its own block line (.pt-buy__line), so nothing has to wrap: the box spans
-		   the full button and text-align:center centres every line. The previous single nowrap
-		   line is what forced the shrink-to-illegible on small phones. */
+		font-family: 'Bowlby One SC', 'Cinzel', serif; font-weight: 400;
+		font-size: 13px; line-height: 1.05; letter-spacing: 0.02em; text-align: center;
 		max-width: 100%;
-		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
-		-webkit-background-clip: text; background-clip: text;
-		-webkit-text-fill-color: transparent; color: transparent;
-		filter: drop-shadow(0 1px 1px rgba(0,0,0,0.7));
+		color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 	}
 	.pt-buy__line {
 		display: block;
 		white-space: nowrap;
 	}
 	/* Buy bonus placed in the control row, left of spin. */
-	.pt-buy--controls { width: calc(var(--u) * 0.21); height: calc(var(--u) * 0.082); }
+	.pt-buy--controls { width: calc(var(--u) * 0.235); height: calc(var(--u) * 0.088); }
 
 	/* WIN readout — mirrors the balance block, pinned to the right of the stats row. */
 	.pt-win {
