@@ -236,6 +236,8 @@ export default {
 		'Wild-symbolit korvaavat kaikki tavalliset voittavat symbolit Scatter-symboleja lukuun ottamatta.',
 	'INFO WTW SCATTER':
 		'Scatter-symbolien ei tarvitse osua voittolinjalle, ja ne voivat ilmestyä mihin tahansa kohtaan rullia.',
+	'INFO WTW DUCK':
+		'Kerättävät ankat antavat paljastetun arvonsa peruspelin kertoimena. Multiply All Ducks kertoo ennen sitä kerätyn ankkojen juoksevan summan; sen jälkeen paljastetut ankat lisätään normaalisti.',
 	'INFO WTW HIGHEST': 'Vain korkein voittoyhdistelmä symbolia ja voittolinjaa kohti maksetaan.',
 	'INFO WTW MULTIPLES': 'Kaikki näytetyt voitot ilmaistaan kokonaispanoksen kerrannaisina.',
 	'INFO WTW DIAGRAM ALT': '15 voittolinjaa',

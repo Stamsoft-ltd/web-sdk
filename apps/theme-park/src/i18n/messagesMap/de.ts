@@ -238,6 +238,8 @@ export default {
 	'INFO WTW WILD': 'Wild-Symbole ersetzen alle regulären Gewinnsymbole außer Scatter-Symbolen.',
 	'INFO WTW SCATTER':
 		'Scatter-Symbole müssen nicht auf einer Gewinnlinie landen und können überall auf den Walzen erscheinen.',
+	'INFO WTW DUCK':
+		'Sammel-Enten vergeben ihren aufgedeckten Wert als Basisspiel-Multiplikator. Multiply All Ducks multipliziert die laufende, zuvor gesammelte Entensumme; danach aufgedeckte Enten werden normal addiert.',
 	'INFO WTW HIGHEST':
 		'Pro Symbol und Gewinnlinie wird nur die höchste Gewinnkombination ausgezahlt.',
 	'INFO WTW MULTIPLES': 'Alle angezeigten Auszahlungen sind Vielfache des Gesamteinsatzes.',

@@ -222,16 +222,15 @@ export default {
 		'当 3 个或更多相同符号从第 1 卷轴开始、由左至右落在连续卷轴上，并处于其中一条固定赔付线上时，即构成标准中奖组合。',
 	'INFO WTW EVAL': '卷轴停止后结算赢奖，并按赔付表派彩。',
 	'INFO WTW WILD': '百搭符号可替代除分散符号外的所有常规赔付符号。',
-	'INFO WTW SCATTER':
-		'分散符号无需落在赔付线上，可出现在卷轴的任意位置。',
+	'INFO WTW SCATTER': '分散符号无需落在赔付线上，可出现在卷轴的任意位置。',
+	'INFO WTW DUCK':
+		'收集鸭会以基础游戏倍数形式奖励其揭示的数值。Multiply All Ducks 会乘算它出现前已收集鸭子的当前总和；之后揭示的鸭子按正常方式相加。',
 	'INFO WTW HIGHEST': '每个符号在每条赔付线上仅派发最高的中奖组合。',
 	'INFO WTW MULTIPLES': '所有显示的赔付均以总投注的倍数表示。',
 	'INFO WTW DIAGRAM ALT': '15 条赔付线',
 	'INFO WTW FREE TITLE': '免费游戏',
-	'INFO WTW FREE TRIGGER':
-		'当所需类型的分散符号出现3个时，将触发免费游戏功能并奖励10次免费旋转。',
-	'INFO WTW FREE MAX':
-		'符合条件的分散符号最多只有3个，因此出现超过3个不会获得额外奖励。',
+	'INFO WTW FREE TRIGGER': '当所需类型的分散符号出现3个时，将触发免费游戏功能并奖励10次免费旋转。',
+	'INFO WTW FREE MAX': '符合条件的分散符号最多只有3个，因此出现超过3个不会获得额外奖励。',
 	'INFO WTW FREE RETRIGGER': '免费游戏无法再次触发。',
 	'INFO WTW MULT TITLE': '百搭卷轴倍数',
 	'INFO WTW MULT BODY': '当 Roller Wild 转换某条卷轴时，整条卷轴变为百搭并获得以下倍数：',

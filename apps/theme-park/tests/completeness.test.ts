@@ -9,9 +9,30 @@ const source = (path: string) => readFileSync(resolve(import.meta.dirname, '..',
 describe('shared frontend completeness guards', () => {
 	it('converts replay API units and exposes replay multipliers', () => {
 		const replay = source('src/state/templateStake.svelte.ts');
+		const replayHud = source('src/components/replay/ReplayHud.svelte');
 		expect(replay).toContain('API_AMOUNT_MULTIPLIER');
 		expect(replay).toContain('replayCostMultiplier');
 		expect(replay).toContain('replayPayoutMultiplier');
+		expect(replayHud).toContain('replayPayoutMultiplier().toFixed(2)');
+		expect(replayHud).not.toContain('replayPayoutMultiplier().toFixed(4)');
+	});
+
+	it('holds Space to chain spins until release or insufficient balance', () => {
+		const hud = source('src/components/HudHtml.svelte');
+		expect(hud).toContain('onhold={beginSpaceHold}');
+		expect(hud).toContain('onholdend={endSpaceHold}');
+		expect(hud).toContain('stateBet.isSpaceHold = true');
+		expect(hud).toContain(
+			'if (stateBet.isSpaceHold && !stateBetDerived.isBetCostAvailable()) endSpaceHold()',
+		);
+	});
+
+	it('caps the desktop logo against the real board top on short screens', () => {
+		const hud = source('src/components/HudHtml.svelte');
+		expect(hud).toContain('const gameLogoWidth = $derived.by');
+		expect(hud).toContain('board.height * board.boardScale * FRAME_OVER_GRID_Y');
+		expect(hud).toContain('Math.min(authoredWidth, availableHeight * (1300 / 386))');
+		expect(hud).toContain('style={gameLogoWidth != null ? `width:${gameLogoWidth}px` : undefined}');
 	});
 
 	it('isolates replay HUD from live controls', () => {

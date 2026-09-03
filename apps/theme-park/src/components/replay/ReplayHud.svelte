@@ -14,14 +14,20 @@
 	const replayReady = $derived(Boolean(templateStakeState.replaySnapshot));
 	const replayRunning = $derived(templateStakeState.replayRunning);
 	const replayHasPlayed = $derived(templateStakeState.replayHasPlayed);
-	const replayError = $derived(templateStakeState.bootStatus === 'error' ? templateStakeState.bootError : '');
-	const replayBetText = $derived(templateStakeDerived.formatWallet(templateStakeDerived.replayBetAmount()));
-	const replayCostText = $derived(templateStakeDerived.formatWallet(templateStakeDerived.replayCostAmount()));
+	const replayError = $derived(
+		templateStakeState.bootStatus === 'error' ? templateStakeState.bootError : '',
+	);
+	const replayBetText = $derived(
+		templateStakeDerived.formatWallet(templateStakeDerived.replayBetAmount()),
+	);
+	const replayCostText = $derived(
+		templateStakeDerived.formatWallet(templateStakeDerived.replayCostAmount()),
+	);
 	const replayCostMultiplierText = $derived(`${templateStakeDerived.replayCostMultiplier()}x`);
-	// Trim to 4 decimals and let Number drop the trailing zeros, so an exact multiplier prints exact
-	// (50 -> "50x") instead of being clamped to 2 decimals that no longer multiply back to the win.
+	// Replay payout multipliers are supplied with at most two meaningful fractional digits. Keep the
+	// display to that contract and let Number drop trailing zeros (50 -> "50x", not "50.00x").
 	const replayPayoutMultiplierText = $derived(
-		`${Number(templateStakeDerived.replayPayoutMultiplier().toFixed(4))}x`,
+		`${Number(templateStakeDerived.replayPayoutMultiplier().toFixed(2))}x`,
 	);
 	const replayWinText = $derived(
 		templateStakeDerived.formatWin(templateStakeDerived.replayWinAmount()),
@@ -79,7 +85,9 @@
 					<span class="replay-chip">{selectedMode}</span>
 				{/if}
 				{#if templateStakeState.replayEventId}
-					<span class="replay-chip">{templateStakeDerived.t('EVENT')} {templateStakeState.replayEventId}</span>
+					<span class="replay-chip"
+						>{templateStakeDerived.t('EVENT')} {templateStakeState.replayEventId}</span
+					>
 				{/if}
 			</div>
 		</div>
@@ -105,7 +113,9 @@
 					</div>
 					<div class="replay-stat">
 						<span>{templateStakeDerived.t('TOTAL WIN')}</span>
-						<strong class="replay-win" style={replayValueStyle(replayWinText)}>{replayWinText}</strong>
+						<strong class="replay-win" style={replayValueStyle(replayWinText)}
+							>{replayWinText}</strong
+						>
 					</div>
 				</div>
 
@@ -115,9 +125,17 @@
 							<p>{replayError}</p>
 						</div>
 					{:else if replayReady && !replayRunning}
-						<button class="replay-primary" type="button" onclick={replayHasPlayed ? replayAgain : startReplay}>
+						<button
+							class="replay-primary"
+							type="button"
+							onclick={replayHasPlayed ? replayAgain : startReplay}
+						>
 							<span class="replay-play-icon">▶</span>
-							<span>{replayHasPlayed ? templateStakeDerived.t('REPLAY EVENT') : templateStakeDerived.t('START REPLAY')}</span>
+							<span
+								>{replayHasPlayed
+									? templateStakeDerived.t('REPLAY EVENT')
+									: templateStakeDerived.t('START REPLAY')}</span
+							>
 						</button>
 					{/if}
 				</div>
@@ -125,7 +143,6 @@
 		</div>
 	</div>
 {/if}
-
 
 <style>
 	.replay-hud {
@@ -188,7 +205,9 @@
 		backdrop-filter: blur(12px);
 		padding: 10px;
 		pointer-events: auto;
-		box-shadow: 0 14px 34px rgba(0, 0, 0, 0.36), inset 0 0 0 1px rgba(255, 235, 170, 0.06);
+		box-shadow:
+			0 14px 34px rgba(0, 0, 0, 0.36),
+			inset 0 0 0 1px rgba(255, 235, 170, 0.06);
 		overflow: auto;
 	}
 

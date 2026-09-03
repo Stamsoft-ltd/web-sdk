@@ -241,6 +241,8 @@ export default {
 		'Los símbolos Wild sustituyen a todos los símbolos de pago normales excepto los Scatter.',
 	'INFO WTW SCATTER':
 		'Los símbolos Scatter no necesitan caer en una línea de pago y pueden aparecer en cualquier lugar de los carretes.',
+	'INFO WTW DUCK':
+		'Los Patos Coleccionables otorgan su valor revelado como multiplicador del juego base. Multiply All Ducks multiplica el total acumulado de Patos recogidos antes de aparecer; los Patos revelados después se suman normalmente.',
 	'INFO WTW HIGHEST':
 		'Solo se paga la combinación ganadora más alta por símbolo y por línea de pago.',
 	'INFO WTW MULTIPLES': 'Todos los pagos mostrados se expresan como múltiplos de la apuesta total.',

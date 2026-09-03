@@ -237,6 +237,8 @@ export default {
 		'Biểu tượng Wild thay thế mọi biểu tượng trả thưởng thông thường, trừ biểu tượng Scatter.',
 	'INFO WTW SCATTER':
 		'Biểu tượng Scatter không cần nằm trên dòng trả thưởng và có thể xuất hiện ở bất kỳ vị trí nào trên các cuộn.',
+	'INFO WTW DUCK':
+		'Vịt Sưu Tầm trao giá trị được tiết lộ dưới dạng hệ số nhân của lượt chơi cơ bản. Multiply All Ducks nhân tổng Vịt đang có đã thu thập trước đó; các Vịt được tiết lộ sau đó được cộng như bình thường.',
 	'INFO WTW HIGHEST':
 		'Chỉ tổ hợp thắng cao nhất cho mỗi biểu tượng trên mỗi dòng trả thưởng được trả.',
 	'INFO WTW MULTIPLES':

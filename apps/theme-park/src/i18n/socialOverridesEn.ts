@@ -30,7 +30,8 @@ export const socialOverridesEn: Record<string, string> = {
 	'INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.':
 		'NOT ENOUGH BALANCE. GET MORE COINS OR LOWER YOUR PLAY LEVEL.',
 	// ── Bet-mode strings that reach the buy-bonus modal and the info modal's feature cards ──
-	'BET MODE FSPIN1 DIALOG': 'One single spin with at least 1 collect duck. Up to 25 ducks can land.',
+	'BET MODE FSPIN1 DIALOG':
+		'One single spin with at least 1 collect duck. Up to 25 ducks can land.',
 	'BET MODE FSPIN2 DIALOG':
 		'One single spin with at least one roller wild reel. Multiplier plaques can land on any row and add across wild reels.',
 	'BET MODE DUCK DIALOG':
@@ -56,7 +57,8 @@ export const socialOverridesEn: Record<string, string> = {
 		'A standard winning combination is formed when 3 or more matching symbols land on consecutive reels from left to right, starting from Reel 1, on one of the fixed win lines.',
 	'INFO WTW EVAL':
 		'Wins are evaluated after the reels stop and are awarded according to the Win Table.',
-	'INFO WTW WILD': 'Wild symbols do not pay by themselves. They substitute for regular symbols, and their multipliers apply to the completed winning symbol.',
+	'INFO WTW WILD':
+		'Wild symbols do not award wins by themselves. They substitute for regular symbols, and their multipliers apply to the completed winning symbol.',
 	'INFO WTW SCATTER':
 		'Scatter symbols do not need to land on a win line and can appear anywhere on the reels.',
 	'INFO WTW DUCK':
@@ -83,8 +85,7 @@ export const socialOverridesEn: Record<string, string> = {
 	'RULE WILD TEXT':
 		'Wild substitutes for all winning symbols (not scatters or ducks). Line multipliers on wilds SUM along a winning line.',
 	'RULE BUY TITLE': 'GET BONUS',
-	'RULE BUY TEXT':
-		'Features can be played for 20x to 500x play amount in the Get Bonus menu.',
+	'RULE BUY TEXT': 'Features can be played for 20x to 500x play amount in the Get Bonus menu.',
 	'FEATURE DUCK COLLECT TEXT':
 		'At least 1 collect duck is guaranteed; up to all 25 positions can be ducks. Each reveals a coin addition or a multiply-all duck; the collected total is awarded as a lump sum.',
 	'FEATURE DUCK LUCK TEXT':

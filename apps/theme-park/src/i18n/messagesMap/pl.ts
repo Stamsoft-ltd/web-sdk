@@ -233,6 +233,8 @@ export default {
 		'Dzikie symbole zastępują wszystkie zwykłe symbole wypłacające, z wyjątkiem symboli Scatter.',
 	'INFO WTW SCATTER':
 		'Symbole Scatter nie muszą trafiać na linię wypłat i mogą pojawić się w dowolnym miejscu na bębnach.',
+	'INFO WTW DUCK':
+		'Kolekcjonerskie Kaczki przyznają ujawnioną wartość jako mnożnik gry podstawowej. Multiply All Ducks mnoży bieżącą sumę Kaczek zebranych wcześniej; Kaczki ujawnione później są dodawane normalnie.',
 	'INFO WTW HIGHEST':
 		'Wypłacana jest tylko najwyższa wygrywająca kombinacja dla danego symbolu na danej linii wypłat.',
 	'INFO WTW MULTIPLES':

@@ -53,8 +53,6 @@
 
 	// Real marquee button art (portrait + landscape HUD). Round neon-rim buttons.
 	const ptMenu = ap('/assets/theme-park/v2/controls/btn-menu.webp');
-	const ptSound = ap('/assets/theme-park/v2/controls/btn-sound.webp');
-	const ptSoundMuted = ap('/assets/theme-park/v2/controls/btn-sound-muted.webp');
 	// Mobile landscape's speed button (portrait and desktop use the turbo-1/2/3 webps above). One
 	// bolt per step: OFF is the outlined bolt, turbo is one solid bolt, super turbo is two. The three
 	// files used to hold that art rotated by one — btn-turbo.png carried a solid bolt, so the button
@@ -81,6 +79,7 @@
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import { getContext } from '../game/context';
+	import { FRAME_OVER_GRID_Y, GRID_OFFSET_Y } from '../game/boardArt';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { templateStakeDerived } from '../state/templateStake.svelte';
 	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
@@ -106,6 +105,25 @@
 		const boardTopCss = canvas.height / 2 + (board.frameTopY - main.height / 2) * main.scale;
 		// logo BOTTOM anchored just above the board frame — small gap so it nearly touches
 		return Math.max(6, Math.round(boardTopCss + 10));
+	});
+
+	// Desktop normally sizes the logo from viewport width. On a short window the board is lifted to
+	// clear the controls, but that old width-only logo stayed large and covered the first reel row.
+	// Cap it by the real outer-frame top, preserving the authored size whenever the normal headroom
+	// exists and allowing only the same small overlap seen in the full-height design.
+	const gameLogoWidth = $derived.by(() => {
+		if (isPortrait) return null;
+		const canvas = context.stateLayoutDerived.canvasSizes();
+		const main = context.stateLayoutDerived.mainLayout();
+		const board = context.stateGameDerived.boardLayout();
+		const frameHeight = board.height * board.boardScale * FRAME_OVER_GRID_Y;
+		const frameTop = board.y + frameHeight * GRID_OFFSET_Y - frameHeight / 2;
+		const frameTopCss = canvas.height / 2 + (frameTop - main.height / 2) * main.scale;
+		const hudUnit = Math.min((canvas.width * 0.938) / 1126, 1400 / 1126);
+		const authoredWidth = hudUnit * 282;
+		const logoTop = hudUnit * 7;
+		const availableHeight = Math.max(36, frameTopCss + 28 - logoTop);
+		return Math.round(Math.min(authoredWidth, availableHeight * (1300 / 386)));
 	});
 
 	/**
@@ -164,9 +182,7 @@
 	const activeCostMultiplier = $derived(
 		({ ANTE: 3, FSPIN1: 20, FSPIN2: 60 } as Record<string, number>)[stateBet.activeBetModeKey] ?? 1,
 	);
-	const formattedBalance = $derived(
-		templateStakeDerived.formatWallet(stateBet.balanceAmount),
-	);
+	const formattedBalance = $derived(templateStakeDerived.formatWallet(stateBet.balanceAmount));
 	const formattedBet = $derived(
 		templateStakeDerived.formatWallet(stateBet.betAmount * activeCostMultiplier),
 	);
@@ -386,6 +402,7 @@
 		if (
 			showBuyModal ||
 			showAutoModal ||
+			showInfoModal ||
 			stateModal.modal !== null ||
 			context.stateGame.resumeModalOpen ||
 			congratsBlocking
@@ -414,6 +431,43 @@
 		}
 	};
 
+	// A held Space uses the platform's continuous-bet contract. The current round completes, then
+	// createIntermediateMachineBet immediately requests the next one while this flag remains set.
+	const beginSpaceHold = () => {
+		if (
+			hasAuto ||
+			stateBet.isSpaceHold ||
+			!stateBetDerived.isBetCostAvailable() ||
+			showBuyModal ||
+			showAutoModal ||
+			showInfoModal ||
+			stateModal.modal !== null ||
+			context.stateGame.resumeModalOpen ||
+			congratsBlocking
+		)
+			return;
+
+		stateBet.isSpaceHold = true;
+		stateBetDerived.updateIsTurbo(true, { persistent: true });
+		// A very fast round can finish before OnHotkey's 400ms hold threshold. Restart from idle so the
+		// hold still becomes continuous rather than waiting for another key press.
+		if (context.stateXstateDerived.isIdle()) {
+			stateBet.activeBetModeKey = spinModeKey();
+			context.eventEmitter.broadcast({ type: 'bet' });
+		}
+	};
+
+	const endSpaceHold = () => {
+		if (!stateBet.isSpaceHold) return;
+		stateBet.isSpaceHold = false;
+		stateBetDerived.updateIsTurbo(false, { persistent: true });
+	};
+
+	// Stop safely when funds run out. Otherwise the bet machine would keep trying to refetch rounds.
+	$effect(() => {
+		if (stateBet.isSpaceHold && !stateBetDerived.isBetCostAvailable()) endSpaceHold();
+	});
+
 	const onTurbo = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		if (!stateBet.isTurbo && !stateBet.isSuperTurbo) {
@@ -441,6 +495,7 @@
 
 	onDestroy(() => {
 		clearHoldRepeat();
+		endSpaceHold();
 	});
 
 	function fitText(node: HTMLElement, _value: unknown) {
@@ -511,10 +566,14 @@
 	}
 </script>
 
+<svelte:window onblur={endSpaceHold} />
+
 <OnHotkey
 	hotkey="Space"
 	disabled={!stateConfig.jurisdiction ? false : stateConfig.jurisdiction.disabledSpacebar}
 	onpress={onSpinHotkey}
+	onhold={beginSpaceHold}
+	onholdend={endSpaceHold}
 />
 
 <!-- SOUND · MUSIC · INFO, the panel every burger opens. One definition for all three layouts: this
@@ -581,16 +640,18 @@
 			<img class="pt-themelogo" src={gameLogo} alt={i18nDerived.gameTitle()} />
 		</div>
 	{:else}
-		<img class="game-logo" src={gameLogo} alt={i18nDerived.gameTitle()} />
+		<img
+			class="game-logo"
+			src={gameLogo}
+			alt={i18nDerived.gameTitle()}
+			style={gameLogoWidth != null ? `width:${gameLogoWidth}px` : undefined}
+		/>
 		<img class="press-play-mark" src={pressPlayMark} alt="Press Play" />
 	{/if}
 	{#if isLandscapeMobile}
 		<!-- MOBILE-LANDSCAPE HUD — two side columns flanking the board, matching the design. Left: balance
 	     + bet stepper. Right: menu · sound · SPIN · turbo · auto stack, with BUY BONUS + WIN beside it. -->
-		<div
-			class="ls-hud"
-			style:--ls-left-x="{landscapeColumns?.left ?? 0}px"
-		>
+		<div class="ls-hud" style:--ls-left-x="{landscapeColumns?.left ?? 0}px">
 			<div class="ls-left">
 				<div class="ls-pill ls-pill--balance">
 					<span class="ls-pill__label">{i18nDerived.balance()}</span>

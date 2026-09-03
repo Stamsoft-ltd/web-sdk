@@ -234,6 +234,8 @@ export default {
 	'INFO WTW WILD': 'Simbol Wild menggantikan semua simbol pembayaran biasa kecuali simbol Scatter.',
 	'INFO WTW SCATTER':
 		'Simbol Scatter tidak perlu mendarat di garis bayaran dan dapat muncul di mana saja pada gulungan.',
+	'INFO WTW DUCK':
+		'Bebek Koleksi memberikan nilai yang terungkap sebagai pengganda permainan dasar. Multiply All Ducks mengalikan total berjalan Bebek yang terkumpul sebelumnya; Bebek yang terungkap setelahnya ditambahkan secara normal.',
 	'INFO WTW HIGHEST':
 		'Hanya kombinasi kemenangan tertinggi per simbol per garis bayaran yang dibayarkan.',
 	'INFO WTW MULTIPLES':

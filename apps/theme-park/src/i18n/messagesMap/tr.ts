@@ -236,6 +236,8 @@ export default {
 		'Wild semboller, Scatter semboller dışındaki tüm normal ödeme yapan sembollerin yerine geçer.',
 	'INFO WTW SCATTER':
 		'Scatter sembollerinin bir ödeme çizgisine denk gelmesi gerekmez ve makaralarda herhangi bir yerde görünebilir.',
+	'INFO WTW DUCK':
+		'Koleksiyonluk Ördekler, açığa çıkan değerlerini temel oyun çarpanı olarak kazandırır. Multiply All Ducks, kendisinden önce toplanan Ördeklerin mevcut toplamını çarpar; daha sonra açığa çıkan Ördekler normal şekilde eklenir.',
 	'INFO WTW HIGHEST':
 		'Her sembol ve her ödeme çizgisi için yalnızca en yüksek kazanan kombinasyon ödenir.',
 	'INFO WTW MULTIPLES': 'Gösterilen tüm ödemeler toplam bahsin katları olarak ifade edilir.',
@@ -244,7 +246,7 @@ export default {
 	'INFO WTW FREE TRIGGER':
 		'Gerekli türden 3 Scatter sembolünün gelmesi Bedava Oyunlar özelliğini tetikler ve 10 bedava dönüş kazandırır.',
 	'INFO WTW FREE MAX':
-		'Yalnızca 3 geçerli Scatter sembolü mümkündür, bu nedenle 3\'ten fazla Scatter için ek ödül verilmez.',
+		"Yalnızca 3 geçerli Scatter sembolü mümkündür, bu nedenle 3'ten fazla Scatter için ek ödül verilmez.",
 	'INFO WTW FREE RETRIGGER': 'Bedava Oyunlar yeniden tetiklenemez.',
 	'INFO WTW MULT TITLE': 'WILD MAKARA ÇARPANLARI',
 	'INFO WTW MULT BODY':

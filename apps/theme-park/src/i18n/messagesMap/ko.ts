@@ -232,6 +232,8 @@ export default {
 	'INFO WTW WILD': '와일드 심볼은 스캐터 심볼을 제외한 모든 일반 배당 심볼을 대체합니다.',
 	'INFO WTW SCATTER':
 		'스캐터 심볼은 페이라인에 놓일 필요가 없으며 릴의 어느 위치에나 나타날 수 있습니다.',
+	'INFO WTW DUCK':
+		'수집형 오리는 공개된 값을 기본 플레이 배수로 지급합니다. Multiply All Ducks는 그전에 수집된 오리의 누적 합계를 배수로 곱하며, 이후 공개되는 오리는 정상적으로 더해집니다.',
 	'INFO WTW HIGHEST': '심볼별, 페이라인별로 가장 높은 당첨 조합만 지급됩니다.',
 	'INFO WTW MULTIPLES': '표시된 모든 배당은 총 베팅액의 배수로 표시됩니다.',
 	'INFO WTW DIAGRAM ALT': '15개 페이라인',
