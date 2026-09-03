@@ -2453,11 +2453,13 @@
 		   fixed, buttons centre ON the wood and the spin's leaves overflow evenly above/below. */
 		grid-template-rows: 100%;
 		align-items: center;
-		/* Slight top padding: the wood art's visible surface centre sits a touch below the box centre
-		   (thicker bottom rail), so the buttons need a small downward nudge to look centred ON it. */
-		padding: calc(var(--u) * 0.012) calc(var(--u) * 0.04) 0;
+		padding: 0 calc(var(--u) * 0.04);
 		box-sizing: border-box;
-		background: var(--pt-navpad) center / 100% 100% no-repeat;
+		/* Dark charcoal bar (design) instead of the wooden nav pad. */
+		border: 2px solid #453b34;
+		border-radius: calc(var(--u) * 0.055);
+		background: linear-gradient(180deg, #26221f 0%, #17130f 100%);
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 	}
 	/* Side groups fill their halves and spread evenly — balanced like the design, clear of the
 	   rounded bar ends and of the spin. */
