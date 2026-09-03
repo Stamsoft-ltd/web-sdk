@@ -1642,8 +1642,9 @@
 	.hud-menu-pop {
 		position: absolute;
 		bottom: calc(100% + var(--nav-s) * 0.28);
-		/* Left edge flush with the menu button — i.e. the start of the nav. */
-		left: 0;
+		/* Pull the left edge out to the bar's start (cancel the bar's 74u side padding that
+		   insets the menu button), so the popup begins where the nav bar begins. */
+		left: calc(var(--u) * -74);
 		z-index: 45;
 		display: flex;
 		flex-direction: column;
