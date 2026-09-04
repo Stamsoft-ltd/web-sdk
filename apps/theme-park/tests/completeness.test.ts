@@ -76,6 +76,15 @@ describe('shared frontend completeness guards', () => {
 		expect(game).toContain("stateUi.config.mode !== 'replay'");
 	});
 
+	it('scales the replay panel into short popout viewports', () => {
+		const replayHud = source('src/components/replay/ReplayHud.svelte');
+		expect(replayHud).toContain('--replay-panel-scale: clamp(');
+		expect(replayHud).toContain('transform: scale(var(--replay-panel-scale));');
+		expect(replayHud).toContain('transform-origin: 100% 100%;');
+		expect(replayHud).toContain('transform-origin: 0 100%;');
+		expect(replayHud).not.toContain('overflow: auto;');
+	});
+
 	it('recognises every one-shot Theme Park bonus during recovery', () => {
 		const resume = source('src/components/ResumeBet.svelte');
 		for (const mode of ['DUCK', 'ROLLER', 'COASTER'])

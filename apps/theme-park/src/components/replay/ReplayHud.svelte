@@ -190,13 +190,20 @@
 	}
 
 	.replay-panel {
+		/* Keep the 860px design layout, then scale the whole panel to the actual popout viewport.
+		   The old max-height clipped the two-row mobile layout and exposed a scrollbar in small
+		   replay windows. */
+		--replay-panel-scale: clamp(
+			0.35,
+			min(calc((100dvw - 16px) * 0.00116279), calc((100dvh - 24px) * 0.00462963)),
+			1
+		);
 		position: absolute;
 		left: auto;
 		right: 18px;
 		top: auto;
 		bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-		width: min(860px, calc(100vw - 36px));
-		max-height: min(32vh, 180px);
+		width: 860px;
 		border-radius: 18px;
 		border: 1px solid rgba(231, 196, 112, 0.32);
 		background:
@@ -208,7 +215,9 @@
 		box-shadow:
 			0 14px 34px rgba(0, 0, 0, 0.36),
 			inset 0 0 0 1px rgba(255, 235, 170, 0.06);
-		overflow: auto;
+		transform: scale(var(--replay-panel-scale));
+		transform-origin: 100% 100%;
+		overflow: visible;
 	}
 
 	.replay-body {
@@ -312,9 +321,8 @@
 			right: 10px;
 			top: auto;
 			bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-			width: min(760px, calc(100vw - 20px));
+			width: 860px;
 			padding: 9px;
-			max-height: min(34vh, 180px);
 		}
 
 		.replay-stats {
@@ -338,12 +346,12 @@
 
 		.replay-panel {
 			left: 8px;
-			right: 8px;
+			right: auto;
 			top: auto;
 			bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-			width: auto;
-			max-height: min(28vh, 170px);
+			width: 860px;
 			padding: 7px 7px 6px;
+			transform-origin: 0 100%;
 		}
 
 		.replay-body {
