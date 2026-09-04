@@ -66,7 +66,9 @@
 	] as const;
 
 	const modeIconAsset = (icon: string) =>
-		icon === 'onion' ? VEGGIE_SYMBOL_ASSETS.SCATTER : `/assets/veggie-salad/pixel/${icon}.png`;
+		icon === 'onion'
+			? `.${VEGGIE_SYMBOL_ASSETS.SCATTER}`
+			: `./assets/veggie-salad/pixel/${icon}.png`;
 
 	let showBuyMenu = $state(false);
 	let pendingMode = $state<(typeof modeCards)[number] | null>(null);
