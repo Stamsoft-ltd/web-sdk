@@ -31,7 +31,7 @@ describe('shared frontend completeness guards', () => {
 		const actor = source('src/game/actor.ts');
 		const events = source('src/game/bookEventHandlerMap.ts');
 		const buy = source('src/components/CustomBuyBonusModal.svelte');
-		const stateBet = source('../../../packages/state-shared/src/stateBet.svelte.ts');
+		const stateBet = source('../../packages/state-shared/src/stateBet.svelte.ts');
 		expect(stateBet).toContain('const setNormalSpeed = () =>');
 		expect(actor).toContain('if (shouldDeferEndRound(bet)) stateBetDerived.setNormalSpeed();');
 		expect(events).toContain('stateBetDerived.setNormalSpeed();');
@@ -87,12 +87,12 @@ describe('shared frontend completeness guards', () => {
 		expect(game).toContain("stateUi.config.mode !== 'replay'");
 	});
 
-	it('scales the replay panel into short popout viewports', () => {
+	it('fits the replay panel into short popout viewports', () => {
 		const replayHud = source('src/components/replay/ReplayHud.svelte');
-		expect(replayHud).toContain('--replay-panel-scale: clamp(');
-		expect(replayHud).toContain('transform: scale(var(--replay-panel-scale));');
-		expect(replayHud).toContain('transform-origin: 100% 100%;');
-		expect(replayHud).toContain('transform-origin: 0 100%;');
+		expect(replayHud).toContain('@media (orientation: landscape) and (max-height: 520px)');
+		expect(replayHud).toContain('width: min(760px, calc(100vw - 32px));');
+		expect(replayHud).toContain('grid-template-columns: repeat(3, minmax(0, 1fr));');
+		expect(replayHud).toContain('grid-template-columns: 1fr;');
 		expect(replayHud).not.toContain('overflow: auto;');
 	});
 

@@ -190,20 +190,14 @@
 	}
 
 	.replay-panel {
-		/* Keep the 860px design layout, then scale the whole panel to the actual popout viewport.
-		   The old max-height clipped the two-row mobile layout and exposed a scrollbar in small
-		   replay windows. */
-		--replay-panel-scale: clamp(
-			0.35,
-			min(calc((100dvw - 16px) * 0.00116279), calc((100dvh - 24px) * 0.00462963)),
-			1
-		);
 		position: absolute;
 		left: auto;
 		right: 18px;
 		top: auto;
 		bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-		width: 860px;
+		width: min(860px, calc(100vw - 36px));
+		max-height: none;
+		box-sizing: border-box;
 		border-radius: 18px;
 		border: 1px solid rgba(231, 196, 112, 0.32);
 		background:
@@ -215,8 +209,6 @@
 		box-shadow:
 			0 14px 34px rgba(0, 0, 0, 0.36),
 			inset 0 0 0 1px rgba(255, 235, 170, 0.06);
-		transform: scale(var(--replay-panel-scale));
-		transform-origin: 100% 100%;
 		overflow: visible;
 	}
 
@@ -309,6 +301,49 @@
 		word-break: break-word;
 	}
 
+	/* Popout S is short landscape, not mobile. Keep the panel compact and let all five values plus
+	   the action button fit in one readable two-row composition. */
+	@media (orientation: landscape) and (max-height: 520px) {
+		.replay-panel {
+			right: 12px;
+			bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+			width: min(760px, calc(100vw - 32px));
+			padding: 8px;
+		}
+
+		.replay-body {
+			gap: 8px;
+		}
+
+		.replay-stats {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 6px;
+		}
+
+		.replay-stat {
+			padding: 6px 7px;
+			gap: 2px;
+		}
+
+		.replay-stat span {
+			font-size: 8px;
+		}
+
+		.replay-stat strong {
+			--replay-value-base-size: 15px;
+		}
+
+		.replay-action {
+			flex-basis: 132px;
+		}
+
+		.replay-primary {
+			padding: 8px;
+			font-size: 11px;
+			min-height: 0;
+		}
+	}
+
 	@media (max-width: 720px) {
 		.replay-topbar {
 			top: calc(10px + env(safe-area-inset-top, 0px));
@@ -321,7 +356,7 @@
 			right: 10px;
 			top: auto;
 			bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-			width: 860px;
+			width: min(760px, calc(100vw - 20px));
 			padding: 9px;
 		}
 
@@ -346,15 +381,16 @@
 
 		.replay-panel {
 			left: 8px;
-			right: auto;
+			right: 8px;
 			top: auto;
 			bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-			width: 860px;
+			width: auto;
 			padding: 7px 7px 6px;
-			transform-origin: 0 100%;
 		}
 
 		.replay-body {
+			display: grid;
+			grid-template-columns: 1fr;
 			gap: 6px;
 		}
 
@@ -364,7 +400,7 @@
 		}
 
 		.replay-action {
-			flex-basis: 112px;
+			min-height: 52px;
 		}
 
 		.replay-stat {
