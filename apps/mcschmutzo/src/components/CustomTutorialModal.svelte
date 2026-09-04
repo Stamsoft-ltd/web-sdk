@@ -397,7 +397,9 @@
 	.pt-table {
 		width: 100%;
 		margin-top: clamp(12px, 2.2vmin, 24px);
-		--pt-cols: 1.5fr 1fr 1fr 1fr;
+		/* minmax(0, …) lets the columns shrink to the popup width instead of the header/symbol
+		   content forcing the table wider (which cut the last column off on narrow phones). */
+		--pt-cols: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
 	}
 	.pt-head {
 		display: grid;
@@ -406,15 +408,18 @@
 		margin-bottom: clamp(4px, 0.8vmin, 9px);
 	}
 	.pt-hcell {
-		padding: clamp(8px, 1.5vmin, 14px) clamp(4px, 1vmin, 10px);
+		min-width: 0;
+		padding: clamp(7px, 1.4vmin, 14px) clamp(3px, 0.8vmin, 10px);
 		border-radius: 8px;
 		background: #e9a02a;
 		color: #fff;
 		text-align: center;
-		white-space: nowrap;
+		/* Wrap "X OF A KIND" instead of clipping when the column is narrow. */
+		white-space: normal;
+		line-height: 1.1;
 		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
-		font-size: clamp(0.68rem, 1.65vmin, 1.02rem);
+		font-size: clamp(0.62rem, 1.55vmin, 1.02rem);
 		letter-spacing: 0.02em;
 	}
 	.pt-body {
@@ -427,26 +432,31 @@
 		border-bottom: 1px solid rgba(255, 255, 255, 0.09);
 	}
 	.pt-sym {
+		min-width: 0;
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
+		justify-content: center;
 		gap: clamp(2px, 0.6vmin, 6px);
-		padding: clamp(4px, 0.9vmin, 9px) clamp(8px, 1.6vmin, 18px);
+		padding: clamp(4px, 0.9vmin, 9px) clamp(4px, 1vmin, 14px);
 	}
 	.pt-sym img {
-		height: clamp(36px, 6.4vmin, 66px);
+		height: clamp(30px, 6.4vmin, 66px);
+		max-width: 100%;
 		width: auto;
 		object-fit: contain;
 	}
 	.pt-sym--multi img {
-		height: clamp(30px, 5.2vmin, 54px);
+		height: clamp(24px, 4.4vmin, 42px);
 	}
 	.pt-val {
+		min-width: 0;
 		padding: clamp(6px, 1.2vmin, 14px) 0;
 		border-left: 1px solid rgba(255, 255, 255, 0.09);
 		text-align: center;
 		color: #efe8d8;
 		font-weight: 700;
-		font-size: clamp(1rem, 2.5vmin, 1.55rem);
+		font-size: clamp(0.9rem, 2.5vmin, 1.55rem);
 	}
 
 	/* Page 3 — features. Two cards on top (wild | re-spin), full-width multiplier card below. */
