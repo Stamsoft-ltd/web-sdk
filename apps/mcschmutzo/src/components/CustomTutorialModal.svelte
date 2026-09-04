@@ -116,8 +116,8 @@
 					the same game round.
 				</p>
 
-				<img class="tu-guy" src={guyArt} alt="" draggable="false" />
 				<div class="tu-lower">
+					<img class="tu-guy" src={guyArt} alt="" draggable="false" />
 					<div class="tu-stats">
 						<div class="tu-stat">
 							<span class="tu-stat-label">Maximum Win:</span>
@@ -333,20 +333,20 @@
 		box-sizing: border-box;
 		min-height: min(560px, 90dvh);
 		padding: clamp(24px, 4vmin, 44px) clamp(28px, 5vmin, 60px) clamp(70px, 10vmin, 96px);
-		border: 2px solid #4a4340;
+		border: 1.91px solid #605553;
 		border-radius: 22px;
-		background: linear-gradient(180deg, #262322 0%, #201d1b 100%);
+		background: #181818;
 		box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
 		overflow: hidden;
 	}
 
-	/* Sits on the popup's top-right corner, mostly outside it (the button is a child of
-	   .tu-root, not the overflow-hidden popup, so it isn't clipped). */
+	/* Sits fully ABOVE the popup's top-right corner (the button is a child of .tu-root, not the
+	   overflow-hidden popup, so it isn't clipped). */
 	.tu-close {
 		--x-size: clamp(40px, 5.4vmin, 52px);
 		position: absolute;
-		top: calc(var(--x-size) / -2);
-		right: calc(var(--x-size) / -2);
+		top: calc(-1 * var(--x-size) - clamp(4px, 1.4vmin, 10px));
+		right: clamp(0px, 1vmin, 6px);
 		z-index: 60;
 		width: var(--x-size);
 		aspect-ratio: 1;
@@ -684,54 +684,54 @@
 		line-height: 1.35;
 	}
 
-	/* Guy tucked into the popup's bottom-left corner, stats centred to his right. */
+	/* Guy on the left, stats stacked to his right — one row (matches design). */
 	.tu-lower {
-		position: relative;
 		width: 100%;
-		margin-top: clamp(18px, 3vmin, 36px);
-		min-height: clamp(220px, 36vmin, 320px);
+		margin-top: clamp(14px, 2.6vmin, 32px);
 		display: flex;
+		flex-direction: row;
 		align-items: center;
 		justify-content: center;
+		gap: clamp(6px, 2.5vw, 34px);
 	}
 	.tu-guy {
-		position: absolute;
-		left: 0;
-		bottom: 0;
-		width: clamp(240px, 36vmin, 400px);
+		flex: 0 0 auto;
+		align-self: flex-end;
+		width: clamp(150px, 42%, 300px);
 		height: auto;
 		pointer-events: none;
-		z-index: 1;
 		filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
 	}
-
 	.tu-stats {
-		display: grid;
-		grid-template-columns: auto auto;
+		flex: 0 1 auto;
+		display: flex;
+		flex-direction: column;
 		align-items: center;
-		gap: clamp(10px, 1.8vmin, 18px) clamp(14px, 2.6vmin, 28px);
-		margin-left: clamp(120px, 22vmin, 240px);
+		gap: clamp(16px, 3.4vmin, 34px);
 	}
+	/* Each stat: label above the value (design). */
 	.tu-stat {
-		display: contents;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: clamp(4px, 1vmin, 10px);
 	}
 	.tu-stat-label {
-		justify-self: end;
 		color: #ece2cd;
 		font-weight: 600;
 		font-size: clamp(0.95rem, 2.3vmin, 1.4rem);
+		white-space: nowrap;
 	}
 	.tu-stat-big {
-		justify-self: start;
 		color: #f0a112;
 		font-family: 'Lilita One', sans-serif;
 		font-weight: 400;
-		font-size: clamp(1.7rem, 4.4vmin, 2.8rem);
+		font-size: clamp(1.5rem, 4.4vmin, 2.8rem);
 		letter-spacing: 0.01em;
+		white-space: nowrap;
 	}
 	.tu-pill {
-		justify-self: start;
-		padding: clamp(4px, 0.8vmin, 8px) clamp(12px, 2vmin, 20px);
+		padding: clamp(4px, 0.8vmin, 8px) clamp(14px, 2.4vmin, 24px);
 		border-radius: 8px;
 		background: #f0a112;
 		color: #241f1c;
@@ -799,7 +799,8 @@
 			display: flex;
 			flex-direction: column;
 			min-height: 0;
-			max-height: 94dvh;
+			/* Leave headroom above the popup so the close button clears its top edge (design). */
+			max-height: 84dvh;
 			padding: clamp(16px, 4.5vw, 30px) clamp(14px, 4vw, 26px) 0;
 			overflow: hidden;
 		}
@@ -829,20 +830,10 @@
 	/* ── Narrow (portrait) ──────────────────────────────────────────────────────────────────────
 	   No horizontal room for the multi-column pages → stack every column one under another. */
 	@media (max-width: 680px) {
-		/* OVERVIEW: guy + stats stop overlapping — guy centres above the centred stat rows. */
-		.tu-lower {
-			min-height: auto;
-			margin-top: clamp(10px, 3vw, 20px);
-		}
+		/* OVERVIEW keeps its guy-left / stats-right row from the base rules; just tighten the
+		   guy so the row fits a narrow screen. */
 		.tu-guy {
-			position: static;
-			width: min(58%, 220px);
-			margin: 0 auto clamp(10px, 3vw, 18px);
-		}
-		.tu-stats {
-			margin-left: 0;
-			justify-content: center;
-			gap: clamp(6px, 2vw, 12px) clamp(10px, 3vw, 20px);
+			width: clamp(130px, 40%, 200px);
 		}
 		/* FEATURES: wild / re-spin / multiplier stacked. */
 		.ft-grid {
