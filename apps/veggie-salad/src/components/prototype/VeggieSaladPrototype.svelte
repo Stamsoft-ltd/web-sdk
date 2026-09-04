@@ -82,6 +82,7 @@
 	const activeMode = $derived(stateBet.activeBetModeKey.toUpperCase());
 	const chanceActive = $derived(activeMode === 'CHANCE');
 	const featureActive = $derived(activeMode === 'FEATURE');
+	const persistentModeActive = $derived(chanceActive || featureActive);
 	const betOptions = $derived(stateConfig.betAmountOptions);
 	const betIndex = $derived(Math.max(0, betOptions.indexOf(stateBet.betAmount)));
 	const smallestBet = $derived(betOptions[0] ?? stateBet.betAmount);
@@ -295,6 +296,16 @@
 			return;
 		}
 		pendingMode = mode;
+	};
+
+	const handleBonusButton = () => {
+		if (!canInteract) return;
+		if (persistentModeActive) {
+			stateBet.activeBetModeKey = 'BASE';
+			showBuyMenu = false;
+			return;
+		}
+		showBuyMenu = true;
 	};
 
 	const confirmBuyMode = () => {
@@ -709,10 +720,17 @@
 					<button
 						type="button"
 						class="bonus-button"
+						class:deactivate={persistentModeActive}
+						aria-label={persistentModeActive ? t('DEACTIVATE') : t('BONUS FEATURES')}
 						disabled={!canInteract}
-						onclick={() => (showBuyMenu = true)}
+						onclick={handleBonusButton}
 					>
-						<span>{t('BONUS')}</span><small>{t('FEATURES')}</small>
+						{#if persistentModeActive}
+							<span>{t('DEACTIVATE')}</span>
+							<small>{chanceActive ? t('CHANCE') : t('FEATURES')}</small>
+						{:else}
+							<span>{t('BONUS')}</span><small>{t('FEATURES')}</small>
+						{/if}
 					</button>
 				{/if}
 			</div>
@@ -1517,6 +1535,13 @@
 	.chance small {
 		font-size: 7px;
 		letter-spacing: 0.08em;
+	}
+	.bonus-button.deactivate {
+		background: linear-gradient(#ff9440, #b93412);
+		border-color: #ffd071 !important;
+		box-shadow:
+			inset 0 2px #ffcf83,
+			0 0 10px rgb(255 118 33 / 42%);
 	}
 	.metrics {
 		display: grid;

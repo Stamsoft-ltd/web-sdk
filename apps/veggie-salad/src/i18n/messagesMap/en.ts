@@ -99,6 +99,7 @@ export default {
 	'TOGGLE COST NOTE': 'This mode stays active and charges the shown cost on every spin.',
 	CANCEL: 'CANCEL',
 	ACTIVATE: 'ACTIVATE',
+	DEACTIVATE: 'DEACTIVATE',
 	CONFIRM: 'CONFIRM',
 	'MODE CHANCE TITLE': 'EXTRA CHANCE',
 	'MODE CHANCE TAG': '3× HIGHER BONUS CHANCE',
