@@ -206,6 +206,11 @@
 					</div>
 				</div>
 			</div>
+		{:else if page === 4}
+			<div class="tu-page tu-page--placeholder">
+				<h2 class="tu-title">{i18nDerived.translate('WAYS TO WIN')}</h2>
+				<p class="tu-body">Coming soon.</p>
+			</div>
 		{:else if page === 5}
 			<div class="tu-page">
 				<h2 class="tu-title">{i18nDerived.translate('FEATURE BUY')}</h2>
@@ -227,7 +232,10 @@
 
 				<div class="gi-grid">
 					<div class="gi-card">
-						<img class="gi-icon" src={reloadArt} alt="" draggable="false" />
+						<div class="gi-head">
+							<img class="gi-icon" src={reloadArt} alt="" draggable="false" />
+							<h3 class="gi-title">{i18nDerived.translate('INTERRUPTED ROUNDS')}</h3>
+						</div>
 						<div class="gi-body">
 							<p>If a game round is interrupted, it will continue when the game is reloaded, where possible.</p>
 							<p>All valid wagers and potential winnings remain active until the round is fully completed.</p>
@@ -235,7 +243,10 @@
 					</div>
 
 					<div class="gi-card">
-						<img class="gi-icon" src={scalesArt} alt="" draggable="false" />
+						<div class="gi-head">
+							<img class="gi-icon" src={scalesArt} alt="" draggable="false" />
+							<h3 class="gi-title">{i18nDerived.translate('LEGAL NOTICE')}</h3>
+						</div>
 						<div class="gi-body">
 							<p>Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds.</p>
 							<p>The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only.</p>
@@ -253,8 +264,10 @@
 					{#each UI_ITEMS as it}
 						<div class="ug-item">
 							<img class="ug-btn" src={it.icon} alt="" draggable="false" />
-							<span class="ug-label">{it.label}</span>
-							<span class="ug-desc">{it.desc}</span>
+							<span class="ug-text">
+								<span class="ug-label">{it.label}</span>
+								<span class="ug-desc">{it.desc}</span>
+							</span>
 						</div>
 					{/each}
 				</div>
@@ -576,7 +589,7 @@
 		font-size: clamp(0.72rem, 1.5vmin, 0.95rem);
 	}
 
-	/* Page 7 — general info. Icon pinned near the top, body centred in the remaining space. */
+	/* Page 6 — general info. Two titled sections (icon + heading, then body). */
 	.gi-grid {
 		width: 100%;
 		margin-top: clamp(14px, 2.6vmin, 28px);
@@ -589,20 +602,33 @@
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
-		min-height: clamp(280px, 44vmin, 420px);
-		padding: clamp(18px, 3vmin, 34px) clamp(16px, 2.4vmin, 30px);
+		padding: clamp(14px, 2.4vmin, 26px) clamp(16px, 2.4vmin, 30px);
 		border: 2px solid #605553;
 		border-radius: 14px;
 		background: rgba(255, 255, 255, 0.015);
 	}
+	.gi-head {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(6px, 1.2vmin, 12px);
+		margin-bottom: clamp(8px, 1.6vmin, 16px);
+	}
 	.gi-icon {
-		height: clamp(52px, 8.5vmin, 92px);
+		height: clamp(24px, 3.6vmin, 40px);
 		width: auto;
 		object-fit: contain;
-		margin-top: clamp(6px, 1.4vmin, 14px);
+	}
+	.gi-title {
+		margin: 0;
+		color: #f3e7cb;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
+		font-size: clamp(0.85rem, 1.9vmin, 1.2rem);
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
 	}
 	.gi-body {
-		margin: auto 0;
 		color: #cfc6b7;
 		font-weight: 600;
 		font-size: clamp(0.68rem, 1.5vmin, 0.92rem);
@@ -615,40 +641,46 @@
 		margin-bottom: 0;
 	}
 
-	/* Page 7 — user interface guide. 5-column icon reference grid. */
+	/* Page 7 — user interface guide. Icon-left reference rows (design), 2-up on desktop. */
 	.ug-grid {
 		width: 100%;
 		margin-top: clamp(14px, 2.6vmin, 30px);
 		display: grid;
-		grid-template-columns: repeat(5, 1fr);
-		gap: clamp(16px, 3vmin, 34px) clamp(8px, 1.5vmin, 16px);
+		grid-template-columns: repeat(2, 1fr);
+		gap: clamp(12px, 2vmin, 22px) clamp(16px, 3vmin, 40px);
 	}
 	.ug-item {
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
 		align-items: center;
-		text-align: center;
-		gap: clamp(6px, 1.1vmin, 11px);
+		text-align: left;
+		gap: clamp(10px, 1.6vmin, 18px);
 	}
 	.ug-btn {
-		width: clamp(46px, 7vmin, 70px);
-		height: clamp(46px, 7vmin, 70px);
+		flex: 0 0 auto;
+		width: clamp(42px, 6vmin, 60px);
+		height: clamp(42px, 6vmin, 60px);
 		object-fit: contain;
+	}
+	.ug-text {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(2px, 0.4vmin, 5px);
+		min-width: 0;
 	}
 	.ug-label {
 		color: #f2ead9;
 		font-family: 'Nunito', sans-serif;
 		font-weight: 800;
-		font-size: clamp(0.78rem, 1.7vmin, 1.05rem);
+		font-size: clamp(0.82rem, 1.7vmin, 1.05rem);
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
 	}
 	.ug-desc {
-		max-width: 16ch;
 		color: #b3a99c;
 		font-family: 'Nunito', sans-serif;
 		font-weight: 600;
-		font-size: clamp(0.62rem, 1.4vmin, 0.85rem);
+		font-size: clamp(0.66rem, 1.4vmin, 0.85rem);
 		line-height: 1.35;
 	}
 
@@ -831,9 +863,9 @@
 		.gi-card {
 			min-height: auto;
 		}
-		/* USER INTERFACE GUIDE: 5-up → 2-up so labels/descriptions stay legible. */
+		/* USER INTERFACE GUIDE: single-column icon-left list (design). */
 		.ug-grid {
-			grid-template-columns: repeat(2, 1fr);
+			grid-template-columns: 1fr;
 		}
 	}
 </style>
