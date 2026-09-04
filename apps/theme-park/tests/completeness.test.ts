@@ -89,10 +89,14 @@ describe('shared frontend completeness guards', () => {
 
 	it('fits the replay panel into short popout viewports', () => {
 		const replayHud = source('src/components/replay/ReplayHud.svelte');
-		expect(replayHud).toContain('@media (orientation: landscape) and (max-height: 520px)');
-		expect(replayHud).toContain('width: min(760px, calc(100vw - 32px));');
+		expect(replayHud).toContain('position: absolute;');
+		expect(replayHud).toContain('container-type: size;');
+		expect(replayHud).toContain('@container (orientation: landscape) and (max-height: 520px)');
+		expect(replayHud).toContain('width: min(760px, calc(100% - 32px));');
 		expect(replayHud).toContain('grid-template-columns: repeat(3, minmax(0, 1fr));');
 		expect(replayHud).toContain('grid-template-columns: 1fr;');
+		expect(replayHud).not.toContain('100vw');
+		expect(replayHud).not.toContain('100vh');
 		expect(replayHud).not.toContain('overflow: auto;');
 	});
 

@@ -146,8 +146,12 @@
 
 <style>
 	.replay-hud {
-		position: fixed;
+		/* Absolute, not fixed: the host scales/resizes .game-stage for popout previews. A fixed child
+		   escapes that box and keeps desktop dimensions, which is why Popout S/L overflowed. */
+		position: absolute;
 		inset: 0;
+		container-type: size;
+		overflow: hidden;
 		pointer-events: none;
 		z-index: 80;
 		color: #f9f1d2;
@@ -195,7 +199,9 @@
 		right: 18px;
 		top: auto;
 		bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-		width: min(860px, calc(100vw - 36px));
+		width: min(860px, calc(100% - 36px));
+		max-width: calc(100% - 16px);
+		max-height: calc(100% - 16px);
 		max-height: none;
 		box-sizing: border-box;
 		border-radius: 18px;
@@ -209,7 +215,7 @@
 		box-shadow:
 			0 14px 34px rgba(0, 0, 0, 0.36),
 			inset 0 0 0 1px rgba(255, 235, 170, 0.06);
-		overflow: visible;
+		overflow: hidden;
 	}
 
 	.replay-body {
@@ -301,13 +307,13 @@
 		word-break: break-word;
 	}
 
-	/* Popout S is short landscape, not mobile. Keep the panel compact and let all five values plus
+	/* Popout S/L are short landscape, not desktop. Keep the panel compact and let all five values plus
 	   the action button fit in one readable two-row composition. */
-	@media (orientation: landscape) and (max-height: 520px) {
+	@container (orientation: landscape) and (max-height: 520px) {
 		.replay-panel {
 			right: 12px;
 			bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-			width: min(760px, calc(100vw - 32px));
+			width: min(760px, calc(100% - 32px));
 			padding: 8px;
 		}
 
@@ -344,7 +350,7 @@
 		}
 	}
 
-	@media (max-width: 720px) {
+	@container (max-width: 720px) {
 		.replay-topbar {
 			top: calc(10px + env(safe-area-inset-top, 0px));
 			right: 10px;
@@ -356,7 +362,7 @@
 			right: 10px;
 			top: auto;
 			bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-			width: min(760px, calc(100vw - 20px));
+			width: min(760px, calc(100% - 20px));
 			padding: 9px;
 		}
 
@@ -374,7 +380,7 @@
 		}
 	}
 
-	@media (max-width: 540px), (orientation: portrait) and (max-width: 768px) {
+	@container (max-width: 540px), (orientation: portrait) and (max-width: 768px) {
 		.replay-topbar {
 			align-items: flex-start;
 		}
