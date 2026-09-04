@@ -212,18 +212,20 @@
 	// Portrait: the menu (☰) button opens a small popup holding Sound + Info instead of those
 	// living on the bottom bar. Toggles to an ✕ while open.
 	let menuOpen = $state(false);
-	let menuPopEl = $state<HTMLElement | undefined>();
-	let menuBtnEl = $state<HTMLElement | undefined>();
 	const toggleMenu = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		menuOpen = !menuOpen;
 	};
 	// Close the popup on any interaction outside it (including pressing Spin — which then also spins).
+	// Match by SELECTOR, not a bound node: the portrait (.pt-menu-pop) and desktop (.hud-menu-pop)
+	// popups (and their ☰ buttons) both exist in the DOM at once — a single bind:this would point at
+	// the wrong (hidden) one, making a tap on the visible popup read as "outside" and close the menu
+	// before the item's click could fire (so INFO never opened).
 	$effect(() => {
 		if (!menuOpen) return;
 		const onDown = (event: PointerEvent) => {
-			const t = event.target as Node | null;
-			if ((t && menuPopEl?.contains(t)) || (t && menuBtnEl?.contains(t))) return;
+			const t = event.target as Element | null;
+			if (t?.closest?.('.pt-menu-pop, .hud-menu-pop, [data-menu-toggle]')) return;
 			menuOpen = false;
 		};
 		window.addEventListener('pointerdown', onDown, true);
@@ -643,7 +645,7 @@
 					<div class="pt-menu-wrap">
 						<!-- Sound / Info popup — anchored directly above the ☰ menu button. -->
 						{#if menuOpen}
-							<div class="pt-menu-pop" role="menu" bind:this={menuPopEl}>
+							<div class="pt-menu-pop" role="menu">
 								<button
 									class="pt-menu-item"
 									class:muted={isMuted}
@@ -670,7 +672,7 @@
 								</button>
 							</div>
 						{/if}
-						<button class="pt-round" type="button" onclick={toggleMenu} aria-label="Menu" aria-expanded={menuOpen} bind:this={menuBtnEl}>
+						<button class="pt-round" type="button" onclick={toggleMenu} aria-label="Menu" aria-expanded={menuOpen} data-menu-toggle>
 							{#if menuOpen}
 								<span class="pt-round__x">✕</span>
 							{:else}
@@ -895,7 +897,7 @@
 			<div class="hud-system">
 				<div class="menu-wrap">
 					{#if menuOpen}
-						<div class="hud-menu-pop" role="menu" bind:this={menuPopEl}>
+						<div class="hud-menu-pop" role="menu">
 							<button
 								class="hud-menu-item"
 								class:muted={isMuted}
@@ -928,7 +930,7 @@
 						onclick={toggleMenu}
 						aria-label="Menu"
 						aria-expanded={menuOpen}
-						bind:this={menuBtnEl}
+						data-menu-toggle
 					>
 						<img class="nav-icon" src={iconMenuBars} alt="menu" />
 					</button>
