@@ -92,6 +92,7 @@ describe('shared frontend completeness guards', () => {
 		expect(replayHud).toContain('position: absolute;');
 		expect(replayHud).toContain('container-type: size;');
 		expect(replayHud).toContain('@container (orientation: landscape) and (max-height: 520px)');
+		expect(replayHud).toContain('@container (orientation: landscape) and (max-width: 540px)');
 		expect(replayHud).toContain('width: min(760px, calc(100% - 32px));');
 		expect(replayHud).toContain('grid-template-columns: repeat(3, minmax(0, 1fr));');
 		expect(replayHud).toContain('grid-template-columns: 1fr;');

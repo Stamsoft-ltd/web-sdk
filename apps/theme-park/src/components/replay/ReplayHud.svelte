@@ -435,4 +435,57 @@
 			font-size: 9px;
 		}
 	}
+
+	/* Popout S can match the mobile-width breakpoint while still being landscape. Keep its compact
+	   landscape composition; the portrait stack is too tall and pushes the panel above the viewport. */
+	@container (orientation: landscape) and (max-width: 540px) {
+		.replay-panel {
+			left: 8px;
+			right: 8px;
+			bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+			width: auto;
+			max-height: calc(100% - 16px);
+			padding: 5px;
+		}
+
+		.replay-body {
+			display: flex;
+			gap: 4px;
+		}
+
+		.replay-stats {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 3px;
+		}
+
+		.replay-stat {
+			padding: 4px 5px;
+			gap: 1px;
+		}
+
+		.replay-stat span {
+			font-size: 6.5px;
+			letter-spacing: 0.04em;
+		}
+
+		.replay-stat strong {
+			--replay-value-base-size: 12px;
+		}
+
+		.replay-action {
+			flex: 0 0 92px;
+			min-height: 0;
+		}
+
+		.replay-primary {
+			padding: 5px;
+			font-size: 8px;
+			gap: 3px;
+			min-height: 40px;
+		}
+
+		.replay-play-icon {
+			font-size: 11px;
+		}
+	}
 </style>
