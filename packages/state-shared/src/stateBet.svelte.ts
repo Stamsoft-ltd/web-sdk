@@ -66,6 +66,13 @@ const updateIsTurbo = (value: boolean, options: { persistent: boolean }) => {
 	stateBet.isTurbo = value;
 };
 
+// Bonus playback always uses normal speed. Clear the persistent lock too, so a bonus hit during
+// Space hold cannot restore turbo on the following round.
+const setNormalSpeed = () => {
+	updateIsTurbo(false, { persistent: true });
+	stateBet.isSuperTurbo = false;
+};
+
 const activeBetMode = () => stateMeta.betModeMeta?.[stateBet.activeBetModeKey.toUpperCase()]
 	?? stateMeta.betModeMeta?.[stateBet.activeBetModeKey.toLowerCase()]
 	?? null;
@@ -83,6 +90,7 @@ export const stateBetDerived = {
 	setBetAmount,
 	updateBetAmount,
 	updateIsTurbo,
+	setNormalSpeed,
 	activeBetMode,
 	isContinuousBet,
 	timeScale,

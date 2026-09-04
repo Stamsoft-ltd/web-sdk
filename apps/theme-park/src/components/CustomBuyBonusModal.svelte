@@ -166,6 +166,7 @@
 			props.onclose();
 			return;
 		}
+		stateBetDerived.setNormalSpeed();
 		stateBet.activeBetModeKey = mode;
 		props.onclose();
 		context.eventEmitter.broadcast({ type: 'bet' });

@@ -27,6 +27,17 @@ describe('shared frontend completeness guards', () => {
 		);
 	});
 
+	it('runs triggered and bought bonuses at normal speed', () => {
+		const actor = source('src/game/actor.ts');
+		const events = source('src/game/bookEventHandlerMap.ts');
+		const buy = source('src/components/CustomBuyBonusModal.svelte');
+		const stateBet = source('../../../packages/state-shared/src/stateBet.svelte.ts');
+		expect(stateBet).toContain('const setNormalSpeed = () =>');
+		expect(actor).toContain('if (shouldDeferEndRound(bet)) stateBetDerived.setNormalSpeed();');
+		expect(events).toContain('stateBetDerived.setNormalSpeed();');
+		expect(buy).toContain('stateBetDerived.setNormalSpeed();');
+	});
+
 	it('states that the highest-paying symbol wins each line', () => {
 		const en = source('src/i18n/messagesMap/en.ts');
 		const social = source('src/i18n/socialOverridesEn.ts');

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { stateBet } from 'state-shared';
+import { stateBet, stateBetDerived } from 'state-shared';
 import { createPrimaryMachines, createIntermediateMachines, createGameActor } from 'utils-xstate';
 
 import type { Bet } from './typesBookEvent';
@@ -43,6 +43,8 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		stateGameDerived.enhancedBoard.settle();
 	},
 	onPlayGame: async (bet) => {
+		// Switch before the trigger reveal, not only when the later bonus event arrives.
+		if (shouldDeferEndRound(bet)) stateBetDerived.setNormalSpeed();
 		if (stateGame.endRoundOnly) {
 			stateGame.endRoundOnly = false;
 			return; // skip animation — endGame calls handleRequestEndRound and credits balance

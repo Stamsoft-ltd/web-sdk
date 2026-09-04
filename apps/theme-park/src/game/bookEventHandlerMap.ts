@@ -1,4 +1,4 @@
-import { stateBet } from 'state-shared';
+import { stateBet, stateBetDerived } from 'state-shared';
 import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap } from 'utils-book';
 import { waitForTimeout } from 'utils-shared/wait';
 import { SECOND } from 'constants-shared/time';
@@ -232,6 +232,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	// Reel bonuses use freeSpinTrigger. Duck Your Luck celebrates its landed scatters in
 	// duckPickStart because it transitions directly into the pond instead of free spins.
 	freeSpinTrigger: async (bookEvent: BookEventOfType<'freeSpinTrigger'>) => {
+		stateBetDerived.setNormalSpeed();
 		if (stateGame.stopAutoOnBonus && stateBet.autoSpinsCounter > 0) {
 			stateBet.autoSpinsCounter = 0;
 		}
@@ -369,6 +370,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 	// ── Duck Your Luck bonus (pond pick screen) ───────────────────────────────
 	duckPickStart: async (bookEvent: BookEventOfType<'duckPickStart'>) => {
+		stateBetDerived.setNormalSpeed();
 		if (stateGame.stopAutoOnBonus && stateBet.autoSpinsCounter > 0) {
 			stateBet.autoSpinsCounter = 0;
 		}
