@@ -2716,20 +2716,22 @@
 	   Sits just above the bar, aligned to its left edge. */
 	.pt-menu-pop {
 		position: absolute;
-		left: calc(var(--u) * -0.04);
-		bottom: calc(100% + var(--u) * 0.02);
+		/* Align the popup's left edge with the bar's inner content edge (was -0.04u, which pushed
+		   it off the left of the screen). */
+		left: calc(var(--u) * 0.03);
+		bottom: calc(100% + var(--u) * 0.025);
 		z-index: 8;
 		display: flex; flex-direction: column;
-		min-width: calc(var(--u) * 0.42);
-		padding: calc(var(--u) * 0.012) calc(var(--u) * 0.03);
-		border: 2px solid #3d3733;
-		border-radius: calc(var(--u) * 0.03);
+		min-width: calc(var(--u) * 0.33);
+		padding: calc(var(--u) * 0.006) calc(var(--u) * 0.022);
+		border: 1.5px solid #3d3733;
+		border-radius: calc(var(--u) * 0.022);
 		background: #1b1917;
-		box-shadow: 0 calc(var(--u) * 0.02) calc(var(--u) * 0.05) rgba(0, 0, 0, 0.55);
+		box-shadow: 0 calc(var(--u) * 0.018) calc(var(--u) * 0.045) rgba(0, 0, 0, 0.55);
 	}
 	.pt-menu-item {
-		display: flex; align-items: center; gap: calc(var(--u) * 0.024);
-		border: 0; padding: calc(var(--u) * 0.016) 0; cursor: pointer;
+		display: flex; align-items: center; gap: calc(var(--u) * 0.016);
+		border: 0; padding: calc(var(--u) * 0.011) 0; cursor: pointer;
 		background: transparent;
 		transition: filter 0.12s ease, transform 0.08s ease;
 	}
@@ -2737,13 +2739,13 @@
 	.pt-menu-item:hover { filter: brightness(1.14); }
 	.pt-menu-item:active { transform: scale(0.98); }
 	.pt-menu-item__ic {
-		width: calc(var(--u) * 0.11); height: calc(var(--u) * 0.11);
+		width: calc(var(--u) * 0.082); height: calc(var(--u) * 0.082);
 		object-fit: contain; flex: 0 0 auto;
 		transition: opacity 0.12s ease;
 	}
 	.pt-menu-item.muted .pt-menu-item__ic { opacity: 0.38; }
 	.pt-menu-item__label {
-		font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px;
+		font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px;
 		letter-spacing: 0.03em; color: #fff;
 	}
 </style>
