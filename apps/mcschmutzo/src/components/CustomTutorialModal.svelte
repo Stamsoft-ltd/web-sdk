@@ -753,4 +753,87 @@
 		font-weight: 600;
 		font-size: clamp(0.8rem, 1.8vmin, 1rem);
 	}
+
+	/* ── Mobile / short viewports ───────────────────────────────────────────────────────────────
+	   Turn the fixed desktop card into a scaled, scrollable panel: the page body scrolls and the
+	   nav becomes a footer that stays put, so no content is ever clipped. (Also catches short
+	   landscape windows, where height — not width — is the constraint.) */
+	@media (max-width: 680px), (max-height: 560px) {
+		.tu-root {
+			width: 94vw;
+			max-height: 94dvh;
+		}
+		.tu-popup {
+			display: flex;
+			flex-direction: column;
+			min-height: 0;
+			max-height: 94dvh;
+			padding: clamp(16px, 4.5vw, 30px) clamp(14px, 4vw, 26px) 0;
+			overflow: hidden;
+		}
+		/* The page content is the scroll area; the nav sits below it as a static footer. */
+		.tu-page {
+			flex: 1 1 auto;
+			min-height: 0;
+			width: 100%;
+			overflow-y: auto;
+			overflow-x: hidden;
+			padding-bottom: clamp(8px, 2vw, 14px);
+			-webkit-overflow-scrolling: touch;
+		}
+		.tu-nav {
+			position: relative;
+			flex: 0 0 auto;
+			left: auto;
+			right: auto;
+			bottom: auto;
+			padding: clamp(8px, 2vw, 12px) 0 clamp(12px, 3vw, 18px);
+		}
+		.tu-page-num {
+			right: clamp(4px, 2vw, 12px);
+		}
+	}
+
+	/* ── Narrow (portrait) ──────────────────────────────────────────────────────────────────────
+	   No horizontal room for the multi-column pages → stack every column one under another. */
+	@media (max-width: 680px) {
+		/* OVERVIEW: guy + stats stop overlapping — guy centres above the centred stat rows. */
+		.tu-lower {
+			min-height: auto;
+			margin-top: clamp(10px, 3vw, 20px);
+		}
+		.tu-guy {
+			position: static;
+			width: min(58%, 220px);
+			margin: 0 auto clamp(10px, 3vw, 18px);
+		}
+		.tu-stats {
+			margin-left: 0;
+			justify-content: center;
+			gap: clamp(6px, 2vw, 12px) clamp(10px, 3vw, 20px);
+		}
+		/* FEATURES: wild / re-spin / multiplier stacked. */
+		.ft-grid {
+			grid-template-columns: 1fr;
+			grid-template-areas: 'wild' 'respin' 'mult';
+		}
+		/* FEATURE BUY: four cost cards stacked, no forced tall min-height. */
+		.fb-grid {
+			grid-template-columns: 1fr;
+		}
+		.fb-card {
+			min-height: auto;
+		}
+		/* GENERAL INFO: two cards stacked. */
+		.gi-grid {
+			grid-template-columns: 1fr;
+		}
+		.gi-card {
+			min-height: auto;
+		}
+		/* USER INTERFACE GUIDE: 5-up → 2-up so labels/descriptions stay legible. */
+		.ug-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
 </style>

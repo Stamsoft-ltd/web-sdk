@@ -2574,6 +2574,8 @@
 		flex: 0 0 auto;
 		/* Fixed width so BALANCE and WIN read as matching boxes (fitText scales long values to fit). */
 		width: calc(var(--u) * 0.235);
+		/* Same height as the BET pill so all three bottom boxes are equally tall. */
+		height: calc(var(--u) * 0.14);
 		box-sizing: border-box;
 		display: flex; flex-direction: column;
 		align-items: center; justify-content: center;
@@ -2670,6 +2672,7 @@
 	.pt-win {
 		flex: 0 0 auto;
 		width: calc(var(--u) * 0.235);
+		height: calc(var(--u) * 0.14);
 		box-sizing: border-box;
 		display: flex; flex-direction: column;
 		align-items: center; justify-content: center;
