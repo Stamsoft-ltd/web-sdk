@@ -18,16 +18,16 @@ export default {
 	'INFO SYMBOL RANK': '符号等级',
 	'INFO WILD VALUES': '倍数百搭数值',
 	'INFO WILD STANDARD': '标准倍数百搭数值：',
-	'INFO WILD RARE': '稀有倍数百搭数值（主要出现在 Magnetic Mega Chain 中）：',
+	'INFO WILD RARE': '稀有倍数百搭数值（主要出现在 Core Overload 中）：',
 	'INFO FEAT WILD TITLE': '百搭符号',
 	'INFO FEAT WILD TEXT':
 		'可替代除分散符号以外的所有赔付符号。 激活后，磁力百搭符号会从当前网格上的普通派彩符号中随机选择一种，并将所有相同符号吸到一起。Wild和Scatter不能被选中。磁力百搭仅在落下时激活，并且不会在由此触发的重转中再次激活。',
 	'INFO FEAT MWILD TITLE': '倍数百搭',
 	'INFO FEAT MWILD TEXT': '像百搭一样替代符号，并在特色功能剩余期间提升当前生效的奖励倍数。',
-	'INFO FEAT DROP TITLE': 'Drop-O-Magnet 免费旋转',
+	'INFO FEAT DROP TITLE': 'Gravity Breach 免费旋转',
 	'INFO FEAT DROP TEXT':
 		'由3个Scatter触发并获得10次免费旋转。当磁力百搭符号落下时，它会按相同的可见位置规则选择目标，并将相同符号吸到一起。',
-	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain 免费旋转',
+	'INFO FEAT MEGA TITLE': 'Core Overload 免费旋转',
 	'INFO FEAT MEGA TEXT':
 		'由 4 个分散符号触发。奖励 10 次免费旋转。磁性连群可保持锁定并在整个特色功能期间不断增长。',
 	'INFO CW 1': 'Magnetic 采用连群获胜而非赔付线。',
@@ -40,9 +40,9 @@ export default {
 	'INFO FB EXTRA TITLE': '额外特色',
 	'INFO FB EXTRA TEXT': '购买一次特别旋转，保证出现磁性连接，并有机会获得倍数百搭。',
 	'INFO FB FEATURE TITLE': '购买特色',
-	'INFO FB FEATURE TEXT': '购买直接进入 Drop-O-Magnet 免费旋转特色功能。',
+	'INFO FB FEATURE TEXT': '购买直接进入 Gravity Breach 免费旋转特色功能。',
 	'INFO FB BONUS TITLE': '购买奖励',
-	'INFO FB BONUS TEXT': '购买直接进入更强大的 Magnetic Mega Chain 免费旋转特色功能。',
+	'INFO FB BONUS TEXT': '购买直接进入更强大的 Core Overload 免费旋转特色功能。',
 	'INFO COST': '费用',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': '中断的回合',
@@ -142,12 +142,19 @@ export default {
 	'BUY EXTRA CHANCE DESC': '启用后，触发奖励回合的几率提高三倍。',
 	'BUY FEATURE SPINS TITLE': '特色旋转',
 	'BUY FEATURE SPINS DESC': '购买一次特别旋转，保证出现磁性连接，并有机会获得倍数百搭。',
-	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP TITLE': 'Gravity Breach',
 	'BUY DROP DESC':
 		'赠送10次免费旋转。每次旋转随机一个符号变为磁性符号。相同符号自动连接在一起。乘数百搭永久提升奖励乘数。',
-	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'赠送10次免费旋转。随机一个符号变为磁性符号并在旋转之间保持连接。磁性符号群在整个功能期间持续存在并不断扩大，乘数也持续累加。',
+	'MYSTERY WON GRAVITY': '10 次免费旋转，带磁性连接与倍数磁铁。',
+	'MYSTERY WON CORE': '10 次免费旋转，磁性簇持续保留并在奖励中不断变大。',
+	'MYSTERY WON ZERO': '10 次免费旋转，首次旋转必定出现倍数磁铁。',
+	'BUY ZERO TITLE': '零点协议',
+	'BUY ZERO DESC': '赠送 10 次免费旋转，首次旋转必定出现倍数磁铁。',
+	'BUY MYSTERY TITLE': '神秘奖励',
+	'BUY MYSTERY DESC': '随机获得三种奖励回合之一：%a%、%b% 或 %c%。',
 	'AUTO TURBO': '极速旋转',
 	'AUTO SUPER TURBO': '超级极速旋转',
 	'AUTO FEATURE': '50X 奖励功能',
@@ -212,12 +219,12 @@ export default {
 	'TOTAL BET COST': '总投注成本',
 	'PAYOUT MULTIPLIER': '派彩倍数',
 	'REPLAY DISCLAIMER': '这是先前投注回合的重播，不会进行新的投注。',
-	'DEAL IT': 'Drop-O-Magnet',
+	'DEAL IT': 'Gravity Breach',
 	'ALL IN': '超级连锁',
 	'BET MODE BASE DIALOG':
 		'Magnetic 是一款 7x7 连群赔付老虎机，获胜由成组的相同符号构成。让 5 个或更多相同符号在横向或纵向上相连即可获胜。',
 	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
-	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS TITLE': 'Gravity Breach',
 	'BET MODE BONUS DIALOG': '10次免费旋转，磁铁出现概率大幅提升。',
 	'BET MODE BONUS DESCRIPTION': '以所选投注的100x购买10次磁铁概率提升的免费旋转。',
 	'BET MODE BONUS TICKER SPIN': '奖励已启用',
@@ -236,7 +243,8 @@ export default {
 		'Magnetic 是一款 7x7 连群赔付老虎机，获胜由成组的相同符号构成。让 5 个或更多相同符号在横向或纵向上相连即可获胜。 对角线连接不计入。',
 	'RULE WILD TEXT':
 		'在基础模式中，Magnetic Wild会从可见的普通符号位置中随机选择一个。每个可见位置的概率相同，因此出现次数较多的符号类型更容易被选中。随后它会吸引该类型的所有可见符号。在当前磁力系列期间，目标保持不变。',
-	'RULE SCATTER TEXT': '3个Scatter触发Drop-O-Magnet，4个Scatter触发Mega Chain。Scatter本身不派彩。',
+	'RULE SCATTER TEXT':
+		'3个Scatter触发Gravity Breach，4个Scatter触发Core Overload。Scatter本身不派彩。',
 	'RULE DEAL IT TITLE': '集群重转',
 	'RULE DEAL IT TEXT':
 		'自然形成且符合条件的集群会锁定在原位，其他所有格子重新旋转。如果新的相同符号落在当前集群旁并与之相连，它们会加入集群并再次重转。',
@@ -244,7 +252,7 @@ export default {
 	'RULE ALL IN TEXT':
 		'首次Super免费旋转保证出现磁铁。选中的目标符号、已收集集群和系列相乘后的数值会在全部10次免费旋转中保留，并在最后结算。',
 	'RULE BUY TEXT':
-		'Drop-O-Magnet费用为投注的100x，Mega Chain为500x，Chance Spin每回合为2x，Feature Spin每回合为50x。最高赢取：20,000x。目标RTP：96.1%。',
+		'Gravity Breach费用为投注的100x，Core Overload为500x，Chance Spin每回合为2x，Feature Spin每回合为50x。最高赢取：20,000x。目标RTP：96.1%。',
 	'FEATURE SELECTED SYMBOL TITLE': '磁铁目标',
 	'FEATURE SELECTED SYMBOL TEXT':
 		'Magnetic Wild会从可见的普通符号位置中随机选择一个。每个位置的概率相同，因此可见位置更多的符号类型更容易被选中。所选类型的全部可见符号都会被吸引，额外磁铁不会在系列中途改变目标。',
@@ -256,7 +264,7 @@ export default {
 		'在Super Bonus中，目标符号、已收集格子和系列相乘后的数值会在全部10次免费旋转中保留，直到最终奖励结算。',
 	'HOWTO SPIN TEXT': '按下Spin开始回合。在动画序列进行时再次按下，可在支持时请求停止。',
 	'HOWTO BUY TEXT':
-		'打开Buy Bonus，选择Drop-O-Magnet、Mega Chain、Chance Spin或Feature Spin。购买奖励需要确认，启用模式可以开启或关闭。',
+		'打开Buy Bonus，选择Gravity Breach、Core Overload、Chance Spin或Feature Spin。购买奖励需要确认，启用模式可以开启或关闭。',
 	'HOWTO REPLAY TEXT': '重播会加载已完成的事件，并显示原始投注、总成本、派彩和赢取信息。',
 	'PAYTABLE TITLE PAYLINES': '连群',
 	'PAYTABLE TEXT PAYLINES':
@@ -278,7 +286,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT':
 		'Magnet会启动磁力系列。Wild替代普通符号。Multiplier Wild会乘算当前系列。Scatter仅触发奖励。',
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet：投注100x。\nMega Chain：投注500x。\nChance Spin：每回合投注2x。\nFeature Spin：每回合投注50x。',
+		'Gravity Breach：投注100x。\nCore Overload：投注500x。\nChance Spin：每回合投注2x。\nFeature Spin：每回合投注50x。',
 	'PAYTABLE MAX_TEXT': '公布的最高赢取为所选投注的20,000x。',
 	'NO BALANCE TITLE': '余额不足',
 	'NO BALANCE BODY': '您的余额不足以进行此投注。请降低投注级别以继续游戏。',

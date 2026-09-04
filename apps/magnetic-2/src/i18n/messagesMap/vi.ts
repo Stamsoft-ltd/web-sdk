@@ -19,17 +19,17 @@ export default {
 	'INFO SYMBOL RANK': 'HẠNG BIỂU TƯỢNG',
 	'INFO WILD VALUES': 'Giá Trị Wild Nhân',
 	'INFO WILD STANDARD': 'Giá trị wild nhân tiêu chuẩn:',
-	'INFO WILD RARE': 'Giá trị wild nhân hiếm (chủ yếu trong Magnetic Mega Chain):',
+	'INFO WILD RARE': 'Giá trị wild nhân hiếm (chủ yếu trong Core Overload):',
 	'INFO FEAT WILD TITLE': 'Biểu Tượng Wild',
 	'INFO FEAT WILD TEXT':
 		'Thay thế cho tất cả biểu tượng trả thưởng ngoại trừ Scatter. Khi được kích hoạt, Wild Nam Châm chọn ngẫu nhiên một biểu tượng trả thưởng thường đang có trên lưới và hút tất cả biểu tượng khớp lại với nhau. Không thể chọn Wild hoặc Scatter. Wild Nam Châm chỉ kích hoạt khi xuất hiện và không kích hoạt lại trong lượt quay lại phát sinh.',
 	'INFO FEAT MWILD TITLE': 'Wild Nhân',
 	'INFO FEAT MWILD TEXT':
 		'Thay thế như một Wild và tăng hệ số nhân thưởng đang hoạt động trong phần còn lại của tính năng.',
-	'INFO FEAT DROP TITLE': 'Vòng Quay Miễn Phí Drop-O-Magnet',
+	'INFO FEAT DROP TITLE': 'Vòng Quay Miễn Phí Gravity Breach',
 	'INFO FEAT DROP TEXT':
 		'Được kích hoạt bởi 3 Scatter và trao 10 lượt quay miễn phí. Khi Wild Nam Châm xuất hiện, nó chọn mục tiêu theo cùng quy tắc vị trí hiển thị và hút các biểu tượng khớp lại.',
-	'INFO FEAT MEGA TITLE': 'Vòng Quay Miễn Phí Magnetic Mega Chain',
+	'INFO FEAT MEGA TITLE': 'Vòng Quay Miễn Phí Core Overload',
 	'INFO FEAT MEGA TEXT':
 		'Được kích hoạt bởi 4 Scatter. Trao 10 Vòng Quay Miễn Phí. Các cụm từ tính có thể giữ nguyên khóa và lớn dần trong suốt tính năng.',
 	'INFO CW 1': 'Magnetic sử dụng chiến thắng theo cụm thay vì các dòng trả thưởng.',
@@ -46,10 +46,10 @@ export default {
 		'Mua một vòng quay đặc biệt với kết nối từ tính được đảm bảo và cơ hội nhận được Wild Nhân.',
 	'INFO FB FEATURE TITLE': 'Mua Tính Năng',
 	'INFO FB FEATURE TEXT':
-		'Mua quyền truy cập trực tiếp vào tính năng Vòng Quay Miễn Phí Drop-O-Magnet.',
+		'Mua quyền truy cập trực tiếp vào tính năng Vòng Quay Miễn Phí Gravity Breach.',
 	'INFO FB BONUS TITLE': 'Mua Thưởng',
 	'INFO FB BONUS TEXT':
-		'Mua quyền truy cập trực tiếp vào tính năng Vòng Quay Miễn Phí Magnetic Mega Chain mạnh hơn.',
+		'Mua quyền truy cập trực tiếp vào tính năng Vòng Quay Miễn Phí Core Overload mạnh hơn.',
 	'INFO COST': 'CHI PHÍ',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': 'Vòng Chơi Bị Gián Đoạn',
@@ -153,12 +153,20 @@ export default {
 	'BUY FEATURE SPINS TITLE': 'Vòng Quay Tính Năng',
 	'BUY FEATURE SPINS DESC':
 		'Mua một vòng quay đặc biệt với kết nối từ tính được đảm bảo và cơ hội nhận được Wild Nhân.',
-	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP TITLE': 'Gravity Breach',
 	'BUY DROP DESC':
 		'10 lượt quay miễn phí được trao. Một biểu tượng ngẫu nhiên trở nên có từ tính mỗi lượt quay. Các biểu tượng trùng khớp tự động kết nối với nhau. Multiplier Wild tăng hệ số nhân thưởng vĩnh viễn.',
-	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 lượt quay miễn phí được trao. Một biểu tượng ngẫu nhiên trở nên có từ tính và vẫn kết nối giữa các lượt quay. Cụm từ tính tồn tại và phát triển trong suốt tính năng trong khi các hệ số nhân tiếp tục tích lũy.',
+	'MYSTERY WON GRAVITY': '10 vòng quay miễn phí với kết nối từ tính và Nam Châm Nhân.',
+	'MYSTERY WON CORE': '10 vòng quay miễn phí với cụm từ tính bền vững lớn dần suốt vòng thưởng.',
+	'MYSTERY WON ZERO': '10 vòng quay miễn phí với Nam Châm Nhân đảm bảo ở vòng quay đầu tiên.',
+	'BUY ZERO TITLE': 'Giao Thức Điểm Không',
+	'BUY ZERO DESC':
+		'Trao 10 vòng quay miễn phí với Nam Châm Nhân đảm bảo ngay ở vòng quay đầu tiên.',
+	'BUY MYSTERY TITLE': 'Thưởng Bí Ẩn',
+	'BUY MYSTERY DESC': 'Một trong ba vòng thưởng được trao ngẫu nhiên: %a%, %b% hoặc %c%.',
 	'AUTO TURBO': 'QUAY TURBO',
 	'AUTO SUPER TURBO': 'QUAY SIÊU TURBO',
 	'AUTO FEATURE': 'TÍNH NĂNG THƯỞNG 50X',
@@ -226,12 +234,12 @@ export default {
 	'PAYOUT MULTIPLIER': 'HỆ SỐ TRẢ THƯỞNG',
 	'REPLAY DISCLAIMER':
 		'Đây là bản phát lại của một vòng cược trước. Không có cược mới nào được đặt.',
-	'DEAL IT': 'Drop-O-Magnet',
+	'DEAL IT': 'Gravity Breach',
 	'ALL IN': 'CHUỖI MEGA',
 	'BET MODE BASE DIALOG':
 		'Magnetic là trò chơi slot trả thưởng theo cụm 7x7, nơi các chiến thắng được tạo ra bởi các nhóm biểu tượng giống nhau. Ghép 5 biểu tượng giống nhau trở lên nối liền theo chiều ngang hoặc chiều dọc để thắng.',
 	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
-	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS TITLE': 'Gravity Breach',
 	'BET MODE BONUS DIALOG': '10 lượt quay miễn phí với cơ hội nam châm tăng mạnh.',
 	'BET MODE BONUS DESCRIPTION':
 		'Mua 10 lượt quay miễn phí có cơ hội nam châm cao hơn với giá 100x mức cược đã chọn.',
@@ -252,7 +260,7 @@ export default {
 	'RULE WILD TEXT':
 		'Ở chế độ cơ bản, Magnetic Wild chọn ngẫu nhiên một vị trí biểu tượng thường đang hiển thị. Mỗi vị trí có cơ hội như nhau, nên loại biểu tượng xuất hiện nhiều hơn dễ được chọn hơn. Sau đó nó hút tất cả biểu tượng đang hiển thị cùng loại. Mục tiêu giữ nguyên trong chuỗi nam châm đang hoạt động.',
 	'RULE SCATTER TEXT':
-		'3 Scatter kích hoạt Drop-O-Magnet. 4 Scatter kích hoạt Mega Chain. Scatter không tự trả thưởng.',
+		'3 Scatter kích hoạt Gravity Breach. 4 Scatter kích hoạt Core Overload. Scatter không tự trả thưởng.',
 	'RULE DEAL IT TITLE': 'QUAY LẠI CỤM',
 	'RULE DEAL IT TEXT':
 		'Các cụm tự nhiên đủ điều kiện được khóa tại chỗ. Tất cả ô khác quay lại. Nếu biểu tượng khớp mới rơi chạm cụm đang hoạt động, chúng nhập vào cụm và một lượt quay lại khác bắt đầu.',
@@ -260,7 +268,7 @@ export default {
 	'RULE ALL IN TEXT':
 		'Ở lượt quay miễn phí Super đầu tiên, một nam châm được đảm bảo. Biểu tượng mục tiêu, cụm đã thu thập và giá trị chuỗi đã nhân được giữ qua cả 10 lượt quay miễn phí và được tính ở cuối.',
 	'RULE BUY TEXT':
-		'Drop-O-Magnet tốn 100x cược. Mega Chain tốn 500x. Chance Spin tốn 2x mỗi vòng. Feature Spin tốn 50x mỗi vòng. Thắng tối đa: 20.000x. RTP mục tiêu: 96,1%.',
+		'Gravity Breach tốn 100x cược. Core Overload tốn 500x. Chance Spin tốn 2x mỗi vòng. Feature Spin tốn 50x mỗi vòng. Thắng tối đa: 20.000x. RTP mục tiêu: 96,1%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'MỤC TIÊU NAM CHÂM',
 	'FEATURE SELECTED SYMBOL TEXT':
 		'Magnetic Wild chọn ngẫu nhiên một vị trí biểu tượng thường đang hiển thị. Mỗi vị trí có cơ hội như nhau, nên loại có nhiều vị trí hiển thị hơn dễ được chọn hơn. Tất cả biểu tượng đang hiển thị của loại được chọn bị hút vào, và nam châm bổ sung không đổi mục tiêu trong chuỗi.',
@@ -273,7 +281,7 @@ export default {
 	'HOWTO SPIN TEXT':
 		'Nhấn Quay để bắt đầu vòng. Nhấn lại trong khi chuỗi đang chạy để yêu cầu dừng khi có thể.',
 	'HOWTO BUY TEXT':
-		'Mở Mua Bonus để chọn Drop-O-Magnet, Mega Chain, Chance Spin hoặc Feature Spin. Bonus mua cần xác nhận. Các chế độ kích hoạt có thể bật hoặc tắt.',
+		'Mở Mua Bonus để chọn Gravity Breach, Core Overload, Chance Spin hoặc Feature Spin. Bonus mua cần xác nhận. Các chế độ kích hoạt có thể bật hoặc tắt.',
 	'HOWTO REPLAY TEXT':
 		'Phát lại tải một sự kiện đã hoàn tất và hiển thị mức cược ban đầu, tổng chi phí, tiền trả thưởng và thông tin thắng.',
 	'PAYTABLE TITLE PAYLINES': 'CỤM',
@@ -296,7 +304,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT':
 		'Nam châm bắt đầu chuỗi từ tính. Wild thay thế biểu tượng thường. Multiplier Wild nhân chuỗi đang hoạt động. Scatter chỉ kích hoạt bonus.',
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet: 100x cược.\nMega Chain: 500x cược.\nChance Spin: 2x cược mỗi vòng.\nFeature Spin: 50x cược mỗi vòng.',
+		'Gravity Breach: 100x cược.\nCore Overload: 500x cược.\nChance Spin: 2x cược mỗi vòng.\nFeature Spin: 50x cược mỗi vòng.',
 	'PAYTABLE MAX_TEXT': 'Mức thắng tối đa được công bố là 20.000x mức cược đã chọn.',
 	'NO BALANCE TITLE': 'KHÔNG ĐỦ SỐ DƯ',
 	'NO BALANCE BODY': 'Số dư của bạn quá thấp cho mức cược này. Hãy giảm mức cược để tiếp tục chơi.',

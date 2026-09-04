@@ -18,8 +18,8 @@ import { createSound } from 'utils-sound';
 // looping music_*.{ogg,mp3} Howls. Only the two short layers below come out of the sprite.
 export type MusicName =
 	| 'music_base' // base game ambience
-	| 'music_bonus' // Drop-O-Magnet / free spins
-	| 'music_super' // Magnetic Mega Chain (super spin)
+	| 'music_bonus' // Gravity Breach / free spins
+	| 'music_super' // Core Overload (super spin)
 	| 'music_scatter_tease' // scatter anticipation bed — declared, not yet wired
 	| 'music_bigwin'; // bed under the big-win board count-up
 
@@ -72,12 +72,12 @@ export type SoundEffectName =
 	| 'sfx_scatter_trigger' // enough scatters — bonus is won
 	| 'sfx_bonus_transition' // wipe into the bonus
 	| 'sfx_scatter_004'
-	// ── bonus intro / outro (Drop-O-Magnet) ──
+	// ── bonus intro / outro (Gravity Breach) ──
 	| 'sfx_bonus_intro' // free-spin intro panel
 	| 'sfx_bonus_outro' // free-spin outro panel
 	| 'sfx_dropomagnet_002'
 	| 'sfx_dropomagnet_003'
-	// ── Magnetic Mega Chain ──
+	// ── Core Overload ──
 	| 'sfx_megachain_idle_loop' // idle hum during the chain
 	| 'sfx_megachain_001'
 	| 'sfx_megachain_002'

@@ -40,6 +40,16 @@ export type WinCardTier = {
 	ink?: number;
 };
 
+/**
+ * The slab inside the plate ART, as fractions of the sprite's own box.
+ *
+ * `plate` above is the sprite's bounding box, and that box carries the saucer's belly baked into
+ * its top — so its top edge sits ~100 design units ABOVE the purple slab you can see. Anything that
+ * has to land ON the plate's border (the slime) needs the slab, not the box. Measured off
+ * winCardPlate.webp's alpha: rows with >=70% horizontal coverage, columns with >=25% vertical.
+ */
+export const WIN_CARD_PLATE_SLAB = { left: 0.035, right: 0.99, top: 0.248, bottom: 0.874 };
+
 /** The plaque's lilac, and the frame the rects above are measured in. */
 export const WIN_CARD_INK = 0xafb1fb;
 export const WIN_CARD_FRAME = { w: 1200, h: 670 };

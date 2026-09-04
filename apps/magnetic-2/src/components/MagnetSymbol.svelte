@@ -47,10 +47,17 @@
 	const SPARK_HOT = 0xffffff;
 
 	/** Antenna sway, radians at the extremes, and the two base periods in seconds. */
-	const SWAY_IDLE = 0.035;
+	const SWAY_IDLE = 0.11;
 	const SWAY_WIN = 0.2;
 	const SWAY_P_L = 2.9;
 	const SWAY_P_R = 3.6;
+	/** Idle antennae are a MOOD, not a metronome. A permanent low-amplitude sine reads as a nervous
+	 *  jitter — the cell never sits still and never does anything either. Instead they REST, and
+	 *  every few seconds give one short, gently decaying happy wiggle. `phase` staggers the cells,
+	 *  so a board of them ripples rather than twitching in unison. */
+	const IDLE_EVERY = 6.2;
+	const IDLE_DUR = 1.15;
+	const IDLE_HZ = 3.1;
 	/** How much faster the antennae run on a win. */
 	const WIN_RATE = 4.2;
 	/** Arc: strikes per second, how long a strike lasts, and how many kinks it has. */
@@ -71,6 +78,8 @@
 	};
 	let frontG = $state<G | null>(null);
 
+	/** 0..1, the live value of the idle happy-wiggle — the face rides it too. */
+	let idleWiggle = $state(0);
 	let swayL = $state(0);
 	let swayR = $state(0);
 	let faceScale = $state(1);
@@ -153,15 +162,28 @@
 			const win = props.winning === true;
 
 			const rate = win ? WIN_RATE : 1;
+			// The win phases keep advancing even while idle, so a cell that flips into its win
+			// state picks the sway up mid-stroke instead of snapping to zero.
 			phaseL += (dt / SWAY_P_L) * rate * Math.PI * 2;
 			phaseR += (dt / SWAY_P_R) * rate * Math.PI * 2;
-			const amp = win ? SWAY_WIN : SWAY_IDLE;
-			swayL = amp * Math.sin(phaseL + P * 6.28);
-			swayR = -amp * Math.sin(phaseR + P * 5.1);
+			if (win) {
+				swayL = SWAY_WIN * Math.sin(phaseL + P * 6.28);
+				swayR = -SWAY_WIN * Math.sin(phaseR + P * 5.1);
+			} else {
+				const since = ((t / IDLE_EVERY + P) % 1) * IDLE_EVERY;
+				const wiggle =
+					since < IDLE_DUR ? Math.exp(-since * 2.6) * Math.sin(since * IDLE_HZ * Math.PI * 2) : 0;
+				swayL = SWAY_IDLE * wiggle;
+				swayR = -SWAY_IDLE * wiggle * 0.78;
+				idleWiggle = wiggle;
+			}
 
+			// The face rides the same wiggle — the antennae twitching on their own reads as a fault,
+			// the two together read as the thing being pleased with itself. `Math.abs` so the beat
+			// is a pop rather than a squash on the downswing.
 			faceScale = win
 				? 1 + 0.05 * Math.abs(Math.sin(t * 6 + P * 6.28))
-				: 1 + 0.012 * Math.sin(t * 1.4 + P * 6.28);
+				: 1 + 0.012 * Math.sin(t * 1.4 + P * 6.28) + 0.04 * Math.abs(idleWiggle);
 
 			if (frontG?.destroyed) frontG = null;
 			if (frontG) {

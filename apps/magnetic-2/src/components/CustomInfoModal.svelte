@@ -125,6 +125,8 @@
 	const wild = sym('special/wild_full.webp');
 	const wildX10 = sym('special/wild_x10_full.webp');
 	const scatter = sym('special/scatter_full.webp');
+	// ...and the Mystery buy uses the same "?" dome its buy-menu card does.
+	const mysteryIcon = ap('/assets/components/ui/bb_ic_mystery.webp?v=20260904');
 
 	// Cluster-win illustration (page 4): the MOTHERSHIP boards with their wordmark stacked on top
 	// (scripts/build-ui-art.py composes each pair from the design's two separate nodes).
@@ -230,6 +232,8 @@
 
 	// Shorthand: reactive translate + interpolating translate (re-runs on locale change).
 	const t = (key: string) => i18nDerived.translate(key);
+	const tv = (key: string, vars: Record<string, string | number>) =>
+		i18nDerived.translateVars(key, vars);
 
 	// Feature-buy cost value. Normally "50x BET"; in social the COST label is already "PLAY AMOUNT"
 	// and BET translates to "PLAY", which stacked up as "PLAY AMOUNT / 50x PLAY" — so drop the unit
@@ -371,7 +375,10 @@
 							</div>
 							<div class="card feat-card feat-tall">
 								<h3 class="feat-h">{t('SPLASH ZERO POINT')}</h3>
-								<p class="feat-p">5 scatters trigger the hidden bonus. Its first spin starts with a guaranteed multiplier magnet.</p>
+								<p class="feat-p">
+									5 scatters trigger the hidden bonus. Its first spin starts with a guaranteed
+									multiplier magnet.
+								</p>
 								<div class="feat-trigger">
 									<span class="feat-x">5x</span><img src={scatter} alt="Scatter" />
 								</div>
@@ -446,6 +453,40 @@
 								</div>
 								<div class="fb-meta">
 									<span class="fb-k">{t('INFO COST')}</span><span class="fb-v">{cost('500x')}</span>
+								</div>
+								<div class="fb-meta">
+									<span class="fb-k">{t('INFO RTP')}</span><span class="fb-v">{RTP_SHORT}</span>
+								</div>
+							</div>
+							<!-- Zero Point Protocol. Reuses the buy-menu card's keys, same as the rows above.
+							     No COST row: the math has not published a bet mode for it (index.json ships
+							     BASE/CHANCE/FEATURE/BONUS/SUPER), so the only truthful thing to state here is
+							     how it triggers — 5 scatters. Add the row when the mode ships. -->
+							<div class="card feat-card">
+								<h3 class="feat-h">{t('BUY ZERO TITLE')}</h3>
+								<p class="feat-p">{t('BUY ZERO DESC')}</p>
+								<div class="feat-trigger">
+									<span class="feat-x">5x</span><img src={scatter} alt="Scatter" />
+								</div>
+								<div class="fb-meta">
+									<span class="fb-k">{t('INFO RTP')}</span><span class="fb-v">{RTP_SHORT}</span>
+								</div>
+							</div>
+							<!-- Mystery buy. Same title/description keys as its buy-menu card, and the three
+							     outcomes are named from the splash screen's own tier keys, so all three
+							     surfaces stay in step. -->
+							<div class="card feat-card">
+								<h3 class="feat-h">{t('BUY MYSTERY TITLE')}</h3>
+								<p class="feat-p">
+									{tv('BUY MYSTERY DESC', {
+										a: t('SPLASH GRAVITY BREACH'),
+										b: t('SPLASH CORE OVERLOAD'),
+										c: t('SPLASH ZERO POINT'),
+									})}
+								</p>
+								<img class="feat-ic" src={mysteryIcon} alt="" />
+								<div class="fb-meta">
+									<span class="fb-k">{t('INFO COST')}</span><span class="fb-v">{cost('300x')}</span>
 								</div>
 								<div class="fb-meta">
 									<span class="fb-k">{t('INFO RTP')}</span><span class="fb-v">{RTP_SHORT}</span>
@@ -1151,13 +1192,14 @@
 		flex: 1;
 		min-height: 0;
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
+		grid-template-columns: repeat(6, 1fr);
 		/* Figma 4453:7151 sized three 200px cards + two 34px gaps = 668 of the 965 inner panel, CENTRED.
-		   The row now carries a fourth card (Extra Chance), so the band widens to 4x200 + 3x34 = 902 of
-		   965 — the CARD width is unchanged from the design, only the band it sits in grows. Stretching
-		   the row edge to edge would make each card wider than the design and leave the copy floating. */
-		gap: clamp(6px, 2.4cqmin, 26px);
-		max-width: 94%;
+		   The row carries every purchasable mode, so it has grown twice since — Extra Chance, then the
+		   Mystery buy, then Zero Point — and the band now fills the panel's full inner width. The cards
+		   are narrower than the design's 200 as a result; the alternative, wrapping to a second row,
+		   halves the height each card has and costs more than the width does. */
+		gap: clamp(5px, 1.8cqmin, 20px);
+		max-width: 99%;
 		margin-inline: auto;
 		width: 100%;
 	}
@@ -1191,15 +1233,18 @@
 		   Sized so even the longest-copy locale (Russian Extra-Feature card) keeps COST/RTP inside the
 		   card — the description is the only variable-height element here. */
 		/* Figma is 14px in a 176px-wide text column; the cards are now that narrow too, so the same
-		   size wraps the same way. Was 1.6cqmin (~11px), shrunk back when the cards were full-width. */
-		font-size: clamp(9px, 1.8cqmin, 14px);
-		line-height: 1.5;
+		   size wraps the same way. Was 1.6cqmin (~11px), shrunk back when the cards were full-width.
+		   Down again from 1.8cqmin when the Mystery buy made it five cards: the longest card is now
+		   Mystery, whose copy names all three outcomes, and in Russian — where those three names are
+		   long — it ran 14px past the card and clipped its RTP. */
+		font-size: clamp(9px, 1.5cqmin, 14px);
+		line-height: 1.45;
 	}
 	.fb-grid .feat-ic {
-		/* Desktop (base) W icon — the Extra-Feature card has the longest copy, so this is the largest that
+		/* Desktop (base) W icon — the Mystery card has the longest copy, so this is the largest that
 		   fits without clipping COST/RTP on the tightest (16:9) desktop panels, even in the wordiest
 		   locale (Russian). cqmin scales it. */
-		width: clamp(38px, 6.6cqmin, 56px);
+		width: clamp(34px, 5.9cqmin, 56px);
 	}
 	.fb-grid .feat-trigger img {
 		/* Scatter cards have shorter copy → the scatter can be a bit bigger. */
@@ -1626,15 +1671,17 @@
 		.fb-grid .feat-h {
 			font-size: 15px;
 		}
-		/* 1px under the other landscape body copy: at 15px the longest card (Extra Feature) wrapped to
-		   five lines and pushed COST/RTP past the frame art's bottom edge in both popout sizes. */
+		/* Under the other landscape body copy: at 15px the longest card wrapped to five lines and
+		   pushed COST/RTP past the frame art's bottom edge in both popout sizes. 10px, not 11, since
+		   the Mystery buy joined the row — in Russian its copy (which names all three outcomes) was
+		   the one running past the card. */
 		.fb-grid .feat-p {
-			font-size: 11px;
+			font-size: 10px;
 		}
 		/* Short landscape viewports (this @container fires ≤490px tall, e.g. mobile landscape): the panel is
 		   only ~half height, so keep the icons modest or they clip the card's COST/RTP. */
 		.fb-grid .feat-ic {
-			width: 68px;
+			width: 60px;
 		}
 		.fb-grid .feat-trigger img {
 			width: 72px;

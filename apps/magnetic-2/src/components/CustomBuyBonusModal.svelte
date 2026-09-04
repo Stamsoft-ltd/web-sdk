@@ -1,40 +1,38 @@
 <script lang="ts" module>
 	const ap = (p: string) => `./${p.startsWith('/') ? p.slice(1) : p}`;
-	// Version2 panels (Figma 4040-4075): steel chamfered card frame + compact bet plate, keyed off
-	// the export's white backdrop with the shared saturation flood fill (scratchpad/key_panel.py).
-	const cardPanel = ap('/assets/components/ui/bb_card_panel_v2.webp?v=20260810');
-	const betPanel = ap('/assets/components/ui/bb_bet_panel_v2.webp?v=20260810');
-	const coinIcon = ap('/assets/components/ui/bb_coin.svg?v=20260708c');
 
-	// Card icons — the Version2 design pictures the REEL SYMBOL art on every card: the green chip
-	// for Extra Chance, the compass for Feature Spins, and the scatter capsule (with the 3x/4x
-	// badge) for both bought bonuses. This replaced the old bespoke icon set AND the earlier
-	// wild-symbol substitution on FEATURE — the design's own choice wins now.
+	// MOTHERSHIP buy menu — Figma 9164:11722 "Bonus menu" (SECTION 9078:18631 POPUPS). Everything
+	// here is DRAWN now: the card is a flat #3A3981 plate on a #2D2C69 edge, and so is the bet
+	// selector, which retired the Version2 steel bitmaps (bb_card_panel_v2 / bb_bet_panel_v2) and
+	// the coin that used to sit in the bet plate — the design's plate has no coin in it.
+	//
+	// Card icons. Two of the five are reel symbols the game already ships; the design draws its own
+	// art for the bought bonuses and the Mystery buy (scripts/build-bonus-menu-icons.py).
 	const iconChance = ap(
 		'/assets/components/symbols/magnetic/low/energy_screw_full.webp?v=20260902',
 	);
-	// Both point at the FLATTENED composites from scripts/build-paytable-symbols.py, not at the
-	// board's own textures: the compass and the scatter are assembled from loose parts now, so their
-	// base files alone are a bezel with no needle and a capsule with no alien.
-	const iconFeature = ap(
-		'/assets/components/symbols/magnetic/premium/compass_full.webp?v=20260902',
-	);
-	const iconBrief = ap('/assets/components/symbols/magnetic/special/scatter_full.webp?v=20260902');
+	// The design pictures the WILD on Feature Spins — it is the thing the spin is bought for. It
+	// used to be the compass, which is only the top-paying symbol and says nothing about the mode.
+	// (Flattened composite from scripts/build-paytable-symbols.py, not the board's own texture: the
+	// wild is assembled from loose parts, so its base file alone is a horseshoe with no plaque.)
+	const iconFeature = ap('/assets/components/symbols/magnetic/special/wild_full.webp?v=20260904');
+	const iconBonus = ap('/assets/components/ui/bb_ic_gravity.webp?v=20260904');
+	const iconSuper = ap('/assets/components/ui/bb_ic_core.webp?v=20260904');
+	const iconMystery = ap('/assets/components/ui/bb_ic_mystery.webp?v=20260904');
 
 	// For LoadingController's HTML-image pass — built from the consts above so path/?v= edits stay in sync.
 	export const BUY_BONUS_MODAL_IMAGES = [
-		cardPanel,
-		betPanel,
-		coinIcon,
 		iconChance,
 		iconFeature,
-		iconBrief,
+		iconBonus,
+		iconSuper,
+		iconMystery,
 	];
 </script>
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { stateBet, stateBetDerived, stateConfig } from 'state-shared';
+	import { stateBet, stateBetDerived, stateConfig, stateMeta } from 'state-shared';
 	import { getContext } from '../game/context';
 	import { magneticStakeDerived } from '../state/magneticStake.svelte';
 	import { i18nDerived } from '../i18n/i18nDerived';
@@ -64,50 +62,88 @@
 	const props: Props = $props();
 	const context = getContext();
 
-	// Portrait (mobile) uses a single vertical scrollable column of cards (Figma 4137-16084);
-	// landscape/desktop keeps the 4-in-a-row layout.
+	// Portrait (mobile) uses a single vertical scrollable column of cards; landscape/desktop lays
+	// them out the way the design does, 3 across in two rows.
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 
 	// Landscape/desktop card sizing. The modal is rendered inside the (often CSS-scaled) game
 	// container, NOT the browser window — so vw/vh don't map to the real box and cards ended up
-	// clipped/oversized. Instead we MEASURE the panel and size each card as the largest square
-	// that fits both the row width and the leftover height, then feed everything to CSS as px vars.
+	// clipped/oversized. Instead we MEASURE the panel and size the card off both the row width and
+	// the leftover height, then feed everything to CSS as px vars.
 	const clampNum = (min: number, val: number, max: number) => Math.max(min, Math.min(val, max));
+	const LANDSCAPE_VARS = [
+		'--bb-card',
+		'--bb-gap',
+		'--bb-pad-x',
+		'--bb-pad-top',
+		'--bb-pad-bot',
+		'--bb-vgap',
+		'--bb-bet-w',
+		'--bb-close',
+		'--bb-title',
+	];
+	/** The design's card block is 1048 wide on a 1200 frame, with 6 between cards. */
+	const GRID_W_FRACTION = 1048 / 1200;
+	const CARD_GAP_FRACTION = 6 / 1200;
+	/** Card box 345.3x243.3. Our descriptions run a line longer than the design's, so the card is
+	 *  allowed to grow past that 0.70 ratio — the budget reserves the taller box so two rows plus
+	 *  the bet plate still fit inside the panel. */
+	const CARD_H_BUDGET = 0.83;
 	let panelEl = $state<HTMLDivElement>();
-	let landscapeVars = $state('');
+	let gridEl = $state<HTMLDivElement>();
 	$effect(() => {
-		if (isPortrait || !panelEl) return;
 		const el = panelEl;
+		if (!el) return;
+		if (isPortrait) {
+			// Portrait sizes the card from its own breakpoints; leaving landscape's vars behind would
+			// override them.
+			for (const name of LANDSCAPE_VARS) el.style.removeProperty(name);
+			return;
+		}
 		const measure = () => {
 			const w = el.clientWidth;
 			const h = el.clientHeight;
 			if (!w || !h) return;
 			// Chrome (title / close button) scales down on small containers so it doesn't dominate.
-			const uiScale = clampNum(0.6, Math.min(w, h) / 520, 1);
-			const closePx = 48 * uiScale;
-			const titlePx = 18 * uiScale;
-			const gap = clampNum(8, w * 0.011, 22);
+			const closePx = clampNum(30, (w * 48.7) / 1200, 56);
+			const titlePx = clampNum(15, (w * 32) / 1200, 38);
+			const gap = Math.max(6, w * CARD_GAP_FRACTION);
 			const padX = clampNum(8, w * 0.008, 32);
-			const padTop = clampNum(46, closePx * 1.4, 132);
-			const padBot = clampNum(10, h * 0.04, 40);
-			const vGap = clampNum(8, h * 0.024, 28);
-			// Bet bar shrinks with the container; its − / + and text derive from its width.
-			const betW = clampNum(120, w * 0.24, 380);
-			const betH = (betW * 107) / 298;
-			const betStep = clampNum(24, betW * 0.17, 52);
-			// Five bonus cards now share the row. Keep the full set inside the panel instead of
-			// sizing for four and letting the first/last cards clip behind the viewport edges.
-			const cardCount = 5;
-			const widthBudget = (Math.min(w, 1860) - 2 * padX - (cardCount - 1) * gap) / cardCount;
-			const heightBudget = h - padTop - padBot - vGap - betH;
-			// Version2 plate is a near-square (556x551 art) — height follows the art's own aspect.
-			const cardHRatio = 551 / 556;
-			const card = Math.min(widthBudget, Math.max(56, heightBudget) / cardHRatio, 420);
-			const cardH = card * cardHRatio;
-			landscapeVars =
-				`--bb-card:${card}px;--bb-card-h:${cardH}px;--bb-gap:${gap}px;--bb-pad-x:${padX}px;` +
-				`--bb-pad-top:${padTop}px;--bb-pad-bot:${padBot}px;--bb-vgap:${vGap}px;` +
-				`--bb-bet-w:${betW}px;--bb-bet-step:${betStep}px;--bb-close:${closePx}px;--bb-title:${titlePx}px`;
+			// The design starts its card block at 74 of 670.
+			const padTop = clampNum(44, h * 0.11, 100);
+			const padBot = clampNum(8, h * 0.03, 32);
+			const vGap = clampNum(8, h * 0.03, 30);
+			// Bet plate 271.7x67, shrinking with the container.
+			const betW = clampNum(180, (w * 271.7) / 1200, 340);
+			const betH = (betW * 67) / 271.7;
+			const widthBudget = (Math.min(w, 1860) * GRID_W_FRACTION - 2 * gap) / 3;
+			const heightBudget = (h - padTop - padBot - betH - vGap - gap) / 2;
+			let card = clampNum(
+				56,
+				Math.min(widthBudget, heightBudget / CARD_H_BUDGET, 420),
+				widthBudget,
+			);
+			el.style.setProperty('--bb-gap', `${gap}px`);
+			el.style.setProperty('--bb-pad-x', `${padX}px`);
+			el.style.setProperty('--bb-pad-top', `${padTop}px`);
+			el.style.setProperty('--bb-pad-bot', `${padBot}px`);
+			el.style.setProperty('--bb-vgap', `${vGap}px`);
+			el.style.setProperty('--bb-bet-w', `${betW}px`);
+			el.style.setProperty('--bb-close', `${closePx}px`);
+			el.style.setProperty('--bb-title', `${titlePx}px`);
+			el.style.setProperty('--bb-card', `${card}px`);
+			// Second pass. CARD_H_BUDGET is only an estimate of the card's height — what actually
+			// settles it is where the DESCRIPTION wraps, and in the wordiest locales (Russian,
+			// Finnish, German) it runs a line longer than the reserve, which left the two rows
+			// scrolling inside the grid. Shrink the card until they fit. Written straight to the
+			// element rather than through a reactive style string so each pass can read the new
+			// layout back immediately; it converges in one or two rounds.
+			const grid = gridEl;
+			if (!grid) return;
+			for (let pass = 0; pass < 3 && grid.scrollHeight > grid.clientHeight + 1; pass += 1) {
+				card = Math.max(56, card * (grid.clientHeight / grid.scrollHeight));
+				el.style.setProperty('--bb-card', `${card}px`);
+			}
 		};
 		measure();
 		const ro = new ResizeObserver(measure);
@@ -116,13 +152,24 @@
 	});
 
 	const betAmount = $derived(stateBet.betAmount);
-	const chanceCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 2));
-	const bonusCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 100));
-	const superCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 500));
-	const mysteryCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 300));
-	const featureCost = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount * 50));
 	const betDisplay = $derived(magneticStakeDerived.formatCurrencyAmount(betAmount));
-	const canBuy = $derived(stateBetDerived.isBetCostAvailable());
+
+	// Costs come from the bet-mode table Game.svelte publishes, not from literals copied out of it:
+	// the math has already moved the bought bonuses once (BONUS 150 -> 100, SUPER 400 -> 500) and a
+	// second copy of those numbers is a second place to forget.
+	const costMultiplier = (key: string) => {
+		const meta = stateMeta.betModeMeta?.[key];
+		return typeof meta?.costMultiplier === 'number' ? meta.costMultiplier : 0;
+	};
+	const modeCost = (key: string) =>
+		magneticStakeDerived.formatCurrencyAmount(betAmount * costMultiplier(key));
+	/** Per-CARD affordability. isBetCostAvailable() only answers for the mode that happens to be
+	 *  active, which greyed out every buy button together — a balance that covers Gravity Breach at
+	 *  100x does not cover Core Overload at 500x. */
+	const canAfford = (key: string) => {
+		const cost = betAmount * costMultiplier(key);
+		return cost > 0 && cost <= stateBet.balanceAmount;
+	};
 
 	// Bet selector (mirrors the HUD bet stepper).
 	const betOptions = $derived(stateConfig.betAmountOptions);
@@ -139,9 +186,11 @@
 	// more than 2x a normal round, and Feature Spin costs 50x PER ROUND — it was previously a
 	// one-click toggle. Chance Spin is exactly 2x, which the rule does not cover, so it stays
 	// one-click. Deactivating never costs anything and never asks.
-	let confirmMode = $state<null | 'BONUS' | 'MYSTERY' | 'SUPER' | 'FEATURE'>(null);
+	type BuyMode = 'BONUS' | 'MYSTERY' | 'SUPER';
+	type ConfirmMode = BuyMode | 'FEATURE';
+	let confirmMode = $state<null | ConfirmMode>(null);
 
-	const buyMode = (mode: 'BONUS' | 'MYSTERY' | 'SUPER') => {
+	const buyMode = (mode: BuyMode) => {
 		// If the machine isn't idle the 'bet' event would be dropped but the mode
 		// assignment would stick — every later (auto-)spin would then bet at buy cost.
 		if (!context.stateXstateDerived.isIdle()) {
@@ -152,7 +201,7 @@
 		props.onclose();
 		context.eventEmitter.broadcast({ type: 'bet' });
 	};
-	const openConfirm = (mode: 'BONUS' | 'MYSTERY' | 'SUPER' | 'FEATURE') => {
+	const openConfirm = (mode: ConfirmMode) => {
 		confirmMode = mode;
 	};
 	const closeConfirm = () => {
@@ -163,27 +212,96 @@
 		props.onclose();
 	};
 
+	// The five cards, in the design's reading order: the two activate modes, then the two bought
+	// bonuses, then the Mystery buy. (The design draws a SIXTH — Zero Point Protocol — and it was
+	// built here on 2026-09-04, then removed the same day at the user's request: no bet mode buys
+	// it, so its card could only ever show a dash and a dead BUY button. Zero Point stays on rules
+	// page 5, where its 5-scatter trigger is the whole story. Put the card back — icon, i18n keys
+	// BUY ZERO TITLE/DESC and the HIDDEN mode key are all still here — when the math ships it.)
+	const cards = $derived([
+		{
+			key: 'CHANCE',
+			title: t('BUY EXTRA CHANCE TITLE'),
+			desc: t('BUY EXTRA CHANCE DESC'),
+			icon: iconChance,
+			perSpin: true,
+			active: props.isChanceActive,
+			buy: false,
+			// Exactly 2x a normal round, which Stake's confirmation rule does not cover.
+			press: () => toggleActivateMode(props.onToggleChance),
+		},
+		{
+			key: 'FEATURE',
+			title: t('BUY FEATURE SPINS TITLE'),
+			desc: t('BUY FEATURE SPINS DESC'),
+			icon: iconFeature,
+			perSpin: true,
+			active: props.isFeatureActive,
+			buy: false,
+			press: () =>
+				props.isFeatureActive ? toggleActivateMode(props.onToggleFeature) : openConfirm('FEATURE'),
+		},
+		{
+			key: 'BONUS',
+			title: t('BUY DROP TITLE'),
+			desc: t('BUY DROP DESC'),
+			icon: iconBonus,
+			perSpin: false,
+			active: false,
+			buy: true,
+			press: () => openConfirm('BONUS'),
+		},
+		{
+			key: 'SUPER',
+			title: t('BUY MEGA TITLE'),
+			desc: t('BUY MEGA DESC'),
+			icon: iconSuper,
+			perSpin: false,
+			active: false,
+			buy: true,
+			press: () => openConfirm('SUPER'),
+		},
+		{
+			key: 'MYSTERY',
+			title: t('BUY MYSTERY TITLE'),
+			// The three outcomes are named from the SAME keys the splash screen's bonus tiers use,
+			// so the card can never drift from what the game calls them elsewhere.
+			desc: tv('BUY MYSTERY DESC', {
+				a: t('SPLASH GRAVITY BREACH'),
+				b: t('SPLASH CORE OVERLOAD'),
+				c: t('SPLASH ZERO POINT'),
+			}),
+			icon: iconMystery,
+			perSpin: false,
+			active: false,
+			buy: true,
+			press: () => openConfirm('MYSTERY'),
+		},
+	]);
+
+	// FEATURE is an activation toggle, not a one-shot purchase, so its confirm runs the toggle.
+	const acceptConfirm = () => {
+		if (confirmMode === 'FEATURE') {
+			closeConfirm();
+			toggleActivateMode(props.onToggleFeature);
+			return;
+		}
+		buyMode(confirmMode as BuyMode);
+	};
+
 	const confirmLabel = $derived(
 		confirmMode === 'SUPER'
-			? 'MAGNETIC MEGA CHAIN'
+			? t('BUY MEGA TITLE')
 			: confirmMode === 'FEATURE'
 				? t('BUY FEATURE SPINS TITLE')
 				: confirmMode === 'MYSTERY'
-					? 'MYSTERY BONUS'
-				: 'DROP-O-MAGNET',
+					? t('BUY MYSTERY TITLE')
+					: t('BUY DROP TITLE'),
 	);
-	const confirmCost = $derived(
-		confirmMode === 'SUPER'
-			? superCost
-			: confirmMode === 'MYSTERY'
-				? mysteryCost
-				: confirmMode === 'FEATURE'
-					? featureCost
-					: bonusCost,
-	);
+	const confirmCost = $derived(confirmMode ? modeCost(confirmMode) : '');
 	// The design's title/body are ONE nowrap line each ("CONFIRM ALL IN" / "BUY ALL IN FOR 400.00?").
 	// Our mode names and localized strings run longer, so each line shrinks to fit the plate instead
-	// of spilling past it — measured for real (see fitText), since uppercase "MAGNETIC MEGA CHAIN"
+	// of spilling past it — measured for real (see fitText), since uppercase "CORE OVERLOAD"
 	// is far wider per character than the design's placeholder copy.
 	const confirmTitleText = $derived(tv('CONFIRM TITLE', { name: confirmLabel }));
 	const confirmBodyText = $derived(tv('BUY CONFIRM', { name: confirmLabel, cost: confirmCost }));
@@ -213,15 +331,6 @@
 				letterSpacingEm: 0.03,
 			})}`,
 	);
-	// FEATURE is an activation toggle, not a one-shot purchase, so its confirm runs the toggle.
-	const acceptConfirm = () => {
-		if (confirmMode === 'FEATURE') {
-			closeConfirm();
-			toggleActivateMode(props.onToggleFeature);
-			return;
-		}
-		buyMode(confirmMode as 'BONUS' | 'MYSTERY' | 'SUPER');
-	};
 
 	onMount(() => {
 		const onKeyDown = (e: KeyboardEvent) => {
@@ -239,112 +348,48 @@
 ></button>
 
 <!-- Panel -->
-<div
-	class="panel"
-	class:portrait={isPortrait}
-	bind:this={panelEl}
-	style={isPortrait ? '' : landscapeVars}
-	role="dialog"
-	aria-modal="true"
->
+<div class="panel" class:portrait={isPortrait} bind:this={panelEl} role="dialog" aria-modal="true">
 	<h2 class="title">{t('BUY BONUS')}</h2>
 	<button class="close-btn" type="button" onclick={props.onclose} aria-label="Close"
 		><span class="glyph glyph--close"></span></button
 	>
 
-	<div class="grid">
-		<!-- Extra Chance -->
-		<div class="card" style={`background-image:url('${cardPanel}')`}>
-			<span class="card-title">{t('BUY EXTRA CHANCE TITLE')}</span>
-			<span class="card-desc">{t('BUY EXTRA CHANCE DESC')}</span>
-			<div class="card-icon-slot">
-				<img class="card-icon" src={iconChance} alt="" />
+	<div class="grid" bind:this={gridEl}>
+		{#each cards as card (card.key)}
+			<div class="card">
+				<span class="card-title">{card.title}</span>
+				<span class="card-desc">{card.desc}</span>
+				<div class="card-icon-slot">
+					<img class="card-icon" src={card.icon} alt="" />
+				</div>
+				<!-- A mode the RGS has not published has no price to state — show a dash rather than a
+				     confident "$0.00", which reads as free. -->
+				<span class="card-price"
+					>{costMultiplier(card.key) > 0
+						? `${modeCost(card.key)}${card.perSpin ? ` ${t('PER SPIN')}` : ''}`
+						: '—'}</span
+				>
+				{#if card.buy}
+					<button
+						class="card-btn card-btn--buy"
+						type="button"
+						disabled={!canAfford(card.key)}
+						onclick={card.press}>{t('BUY')}</button
+					>
+				{:else}
+					<button
+						class="card-btn card-btn--activate"
+						class:card-btn--active={card.active}
+						type="button"
+						onclick={card.press}>{card.active ? t('DEACTIVATE') : t('ACTIVATE')}</button
+					>
+				{/if}
 			</div>
-			<span class="card-price">{chanceCost} {t('PER SPIN')}</span>
-			<button
-				class="card-btn card-btn--activate"
-				class:card-btn--active={props.isChanceActive}
-				type="button"
-				onclick={() => toggleActivateMode(props.onToggleChance)}
-				>{props.isChanceActive ? t('DEACTIVATE') : t('ACTIVATE')}</button
-			>
-		</div>
-
-		<!-- Feature Spins -->
-		<div class="card" style={`background-image:url('${cardPanel}')`}>
-			<span class="card-title">{t('BUY FEATURE SPINS TITLE')}</span>
-			<span class="card-desc">{t('BUY FEATURE SPINS DESC')}</span>
-			<div class="card-icon-slot">
-				<img class="card-icon" src={iconFeature} alt="" />
-			</div>
-			<span class="card-price">{featureCost} {t('PER SPIN')}</span>
-			<button
-				class="card-btn card-btn--activate"
-				class:card-btn--active={props.isFeatureActive}
-				type="button"
-				onclick={() =>
-					props.isFeatureActive
-						? toggleActivateMode(props.onToggleFeature)
-						: openConfirm('FEATURE')}
-				>{props.isFeatureActive ? t('DEACTIVATE') : t('ACTIVATE')}</button
-			>
-		</div>
-
-		<!-- DROP-O-MAGNET (freegame / BONUS mode) -->
-		<div class="card" style={`background-image:url('${cardPanel}')`}>
-			<span class="card-title">{t('BUY DROP TITLE')}</span>
-			<span class="card-desc">{t('BUY DROP DESC')}</span>
-			<div class="card-icon-slot">
-				<span class="card-mult">3x</span>
-				<img class="card-icon card-icon--brief" src={iconBrief} alt="" />
-			</div>
-			<span class="card-price">{bonusCost}</span>
-			<button
-				class="card-btn card-btn--buy"
-				type="button"
-				disabled={!canBuy}
-				onclick={() => openConfirm('BONUS')}>{t('BUY')}</button
-			>
-		</div>
-
-		<!-- MAGNETIC MEGA CHAIN (superspin / SUPER mode) -->
-		<div class="card" style={`background-image:url('${cardPanel}')`}>
-			<span class="card-title">MYSTERY BONUS</span>
-			<span class="card-desc">Randomly selects Drop-O-Magnet or Mega Chain.</span>
-			<div class="card-icon-slot">
-				<span class="card-mult">?</span>
-				<img class="card-icon card-icon--brief" src={iconBrief} alt="" />
-			</div>
-			<span class="card-price">{mysteryCost}</span>
-			<button
-				class="card-btn card-btn--buy"
-				type="button"
-				disabled={!canBuy}
-				onclick={() => openConfirm('MYSTERY')}>{t('BUY')}</button
-			>
-		</div>
-
-		<!-- MAGNETIC MEGA CHAIN (superspin / SUPER mode) -->
-		<div class="card" style={`background-image:url('${cardPanel}')`}>
-			<span class="card-title">{t('BUY MEGA TITLE')}</span>
-			<span class="card-desc">{t('BUY MEGA DESC')}</span>
-			<div class="card-icon-slot">
-				<span class="card-mult">4x</span>
-				<img class="card-icon card-icon--brief" src={iconBrief} alt="" />
-			</div>
-			<span class="card-price">{superCost}</span>
-			<button
-				class="card-btn card-btn--buy"
-				type="button"
-				disabled={!canBuy}
-				onclick={() => openConfirm('SUPER')}>{t('BUY')}</button
-			>
-		</div>
-
+		{/each}
 	</div>
 
 	<!-- Bet selector -->
-	<div class="bet" style={`background-image:url('${betPanel}')`}>
+	<div class="bet">
 		<button
 			class="bet-step"
 			type="button"
@@ -352,12 +397,9 @@
 			onclick={() => stepBet(-1)}
 			aria-label={`Decrease ${i18nDerived.betLabel()}`}><span class="glyph"></span></button
 		>
-		<div class="bet-center">
-			<img class="bet-coin" src={coinIcon} alt="" />
-			<div class="bet-value">
-				<span class="bet-label">{t('BET')}</span>
-				<span class="bet-amount">{betDisplay}</span>
-			</div>
+		<div class="bet-value">
+			<span class="bet-label">{t('BET')}</span>
+			<span class="bet-amount">{betDisplay}</span>
 		</div>
 		<button
 			class="bet-step"
@@ -404,8 +446,8 @@
 		position: fixed;
 		inset: 0;
 		z-index: 60;
-		background: rgba(0, 0, 0, 0.72);
-		backdrop-filter: blur(5px);
+		/* Design 9164:11750 — a flat 70% black over the game, no blur. */
+		background: rgba(0, 0, 0, 0.7);
 		border: 0;
 		padding: 0;
 		cursor: pointer;
@@ -423,10 +465,6 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 3vh;
-		/* top-heavy padding nudges the centred cards + bet selector down from the title */
-		padding: 12vh 1vw 4vh;
-		box-sizing: border-box;
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		pointer-events: none;
 	}
@@ -434,37 +472,37 @@
 		pointer-events: auto;
 	}
 
-	/* Figma: IBM Plex Sans Condensed Bold, #FFF, 18px / 0.54px, centered on the close-button's
-	   vertical centre (close-btn = top:22px, 48px tall → centre at 46px). */
+	/* Design 9164:11751 — AUDIOWIDE 32px / 0.96px on the 1200-wide frame, centred on the close
+	   button's vertical centre. Audiowide ships Regular only; 700 here would be synthesised. */
 	.title {
 		position: absolute;
-		top: 46px;
+		top: calc(var(--bb-close, 48px) * 0.83);
 		left: 50%;
 		transform: translate(-50%, -50%);
 		margin: 0;
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-weight: 700;
-		font-size: 18px;
+		font-family: 'Audiowide', 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 400;
+		font-size: var(--bb-title, 24px);
 		line-height: normal;
-		letter-spacing: 0.54px;
+		letter-spacing: 0.03em;
 		text-align: center;
 		text-transform: uppercase;
 		color: #ffffff;
 		text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
 	}
 
-	/* Version2 icon button (Figma "Icon buttons"): #22365B circle, 1px #2391C1, white glyph. */
+	/* Design 9164:11763 "Icon buttons" — a #49489B circle ringed white, with a drawn glyph. */
 	.close-btn {
 		position: fixed;
-		top: 22px;
-		right: 22px;
+		top: 16px;
+		right: 16px;
 		z-index: 63;
-		width: 48px;
-		height: 48px;
+		width: var(--bb-close, 48px);
+		height: var(--bb-close, 48px);
 		border-radius: 50%;
-		border: 1px solid #2391c1;
-		background: #22365b;
-		font-size: 16px;
+		border: 1px solid #ffffff;
+		background: #49489b;
+		font-size: calc(var(--bb-close, 48px) * 0.34);
 		padding: 0;
 		cursor: pointer;
 		display: grid;
@@ -475,8 +513,8 @@
 		filter: brightness(1.35);
 	}
 
-	/* Glyphs are drawn, not imported — the design's are plain 2.13px white strokes (same pattern
-	   as CustomAutoSpinModal). Sized in em off the button's font-size. */
+	/* Glyphs are drawn, not imported — the design's are plain white strokes (same pattern as
+	   CustomAutoSpinModal). Sized in em off the button's font-size. */
 	.glyph {
 		position: relative;
 		display: block;
@@ -508,184 +546,174 @@
 		transform: rotate(-45deg);
 	}
 
-	/* Five purchasable/activatable cards in a row. Zero Point stays rules-only because it is
-	   triggered by five scatters, not exposed as a separate bet mode. */
+	/* Five cards, three to a row (design 9164:11764 — two rows of three, 6 apart). The last row is
+	   short by one because Zero Point Protocol is rules-only; wrapping + centring is what puts the
+	   remaining two under the middle of the block instead of hard against the left edge. */
 	.grid {
 		display: flex;
-		gap: clamp(10px, 1.2vw, 24px);
+		flex-wrap: wrap;
+		gap: var(--bb-gap, 12px);
 		justify-content: center;
-		align-items: center;
+		/* stretch, not flex-start: a locale whose copy wraps one line longer on ONE card would
+		   otherwise leave that card taller than its row-mates and ragged along the bottom. */
+		align-items: stretch;
 		width: 100%;
-		max-width: 1860px;
 	}
 
-	/* Card = the Version2 steel chamfered panel (556x551 keyed art), near-square.
-	   Sized with clamp()/vw (reliable in the scaled game env, unlike cqw). Big Figma-scale fonts +
-	   compact gaps keep the content filling the square without overflowing it. */
+	/* Card = design 9164:11766 — a flat #3A3981 plate, #2D2C69 edge, radius 8, 345.3x243.3.
+	   `container-type: inline-size` makes 1cqw == 1% of the card's CONTENT box for everything
+	   INSIDE it, so both orientations share one set of numbers: each is the design's own
+	   measurement divided by that content width, 345.3 - 2x12 padding - 2x3.6 edge = 314.1.
+	   The card's OWN box cannot use cqw — a container never queries itself, and those lengths
+	   silently fell back to the viewport (a 3.6px edge came out 13px wide on desktop) — so the
+	   plate's padding/edge/radius are calc()ed off the same --bb-card that sets its width. */
 	.card {
-		flex: 1 1 0;
-		min-width: 0;
-		max-width: 400px;
-		aspect-ratio: 556 / 551;
-		background-size: 100% 100%;
-		background-repeat: no-repeat;
+		container-type: inline-size;
+		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		justify-content: center;
-		gap: clamp(2px, 0.35vh, 6px);
 		text-align: center;
-		padding: 2% 3% 2%;
-		box-sizing: border-box;
+		width: var(--bb-card);
+		background: #3a3981;
+		border: max(1px, calc(var(--bb-card) * 0.0104)) solid #2d2c69;
+		border-radius: calc(var(--bb-card) * 0.0232);
+		padding: calc(var(--bb-card) * 0.0463) calc(var(--bb-card) * 0.0348);
+		gap: calc(var(--bb-card) * 0.0116);
 	}
 
-	/* Children never shrink (keeps the icon full-size); the desc reserves a fixed height so the
-	   icon / price / button line up across all four cards regardless of description length. */
-	/* Figma 4040:4138 — IBM Plex Sans Condensed Bold 18px, FLAT #2391C1, 0.54px tracking. */
+	/* 9164:11767 — AUDIOWIDE 16.45px / 0.49px, white, one line. */
 	.card-title {
 		flex-shrink: 0;
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-weight: 700;
-		font-size: clamp(14px, 1.32vw, 23px);
+		width: 100%;
+		font-family: 'Audiowide', 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 400;
+		font-size: 5.24cqw;
+		line-height: 1.28;
 		letter-spacing: 0.03em;
+		color: #ffffff;
+		/* The names run longer than the design's placeholders in several locales — shrink the glyphs
+		   rather than wrap, which would push the icon row out of line across the cards. */
 		white-space: nowrap;
-		color: #2391c1;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
-	/* Figma: Inter Regular, #d7d7d7 — big & readable. `width: 100%` is essential: without it the span
-	   shrink-to-fits under `align-items: center` and wraps into a narrow column (tall cards). Full width
-	   lets the description use the whole card, wrapping to fewer/wider lines so the card stays square. */
+	/* 9164:11768 — POPPINS Regular 11px / 0.33px, white, centred. The design reserves three lines;
+	   our descriptions run to four, and the box is fixed at that so the icon, price and button line
+	   up across every card regardless of how long each description is. */
 	.card-desc {
 		flex-shrink: 0;
 		width: 100%;
-		/* Reserve the SAME height on every card (enough for the longest 4-line description) and centre
-		   the text in it, so all four cards are the same height regardless of description length.
-		   `grid` (not flex) is used so the wrapping text still fills the width instead of overflowing. */
-		min-height: 5.2em;
+		min-height: 21cqw;
 		display: flex;
 		flex-direction: column;
-		justify-content: center; /* vertical centre; align-items:stretch (default) lets text wrap to full width */
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		justify-content: center;
+		font-family: 'Poppins', 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 400;
-		font-size: clamp(11px, 0.98vw, 16px);
-		line-height: 1.26;
-		letter-spacing: 0.02em;
-		color: #d7d7d7;
+		font-size: 3.5cqw;
+		line-height: 1.5;
+		letter-spacing: 0.03em;
+		color: #ffffff;
 	}
 
-	/* Fixed-height icon row so the magnet / cube / (badge + briefcase) all line up. */
+	/* Fixed-height icon row (69 of 345.3) so all five icons sit on one line whatever their own
+	   aspect is — the design draws them at five different widths. */
 	.card-icon-slot {
 		flex-shrink: 0;
-		position: relative;
-		height: clamp(54px, 5.2vw, 94px);
-		margin-top: clamp(4px, 0.9vh, 12px); /* breathe below the description */
+		height: 21.97cqw;
+		margin-top: 1.27cqw;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0.15em;
 	}
 	.card-icon {
 		height: 100%;
 		width: auto;
 		object-fit: contain;
-		filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.6));
-	}
-	/* Briefcase art (ALL IN / DEAL IT) — make it bigger to match the reference; it overflows the slot
-	   a touch, which is fine since the icon row is centred. */
-	.card-icon--brief {
-		height: 128%;
+		filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.45));
 	}
 
-	/* Multiplier badge — sits to the LEFT of the briefcase, vertically aligned with the case's
-	   "M" plate (which sits at ~47% of the case art, slightly above the slot centre). */
-	.card-mult {
-		position: relative;
-		top: -0.12em; /* nudge up so the badge centre matches the M plate centre */
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-weight: 700;
-		font-size: clamp(18px, 1.7vw, 30px);
-		letter-spacing: 0.03em;
-		color: #ffffff;
-		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
-		line-height: 1;
-	}
-
-	/* Figma: IBM Plex Sans Condensed Bold, white, "X.XX $". */
+	/* 9164:11770 — POPPINS Bold 9.36px, white. */
 	.card-price {
 		flex-shrink: 0;
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		margin-top: 2.5cqw;
+		font-family: 'Poppins', 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(14px, 1.3vw, 21px);
+		font-size: 2.98cqw;
 		letter-spacing: 0.02em;
 		white-space: nowrap;
 		color: #ffffff;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
 	}
 
-	/* Buttons — uniform WIDE width (BUY matches ACTIVATE), Figma padding/rounding. */
+	/* 9164:11771 "Button" — 300x50 on radius 12, AUDIOWIDE 12.79px / 1.28px. The auto margin pins
+	   every card's button to a shared baseline. */
 	.card-btn {
 		flex-shrink: 0;
-		min-width: 74%;
-		/* Taller = rectangular (not pill). Moderate radius keeps rounded corners with straight sides. */
-		padding: clamp(11px, 1.15vw, 18px) clamp(22px, 2.2vw, 40px);
-		/* Pin the button to the card bottom so ALL cards' buttons share one baseline (the auto
-		   margin absorbs whatever free space each card's content leaves). */
 		margin-top: auto;
-		border: 1px solid #60a5fa;
-		border-radius: 14px;
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-size: clamp(14px, 1.3vw, 21px);
-		font-weight: 700;
-		letter-spacing: 0.08em;
+		width: 95.5cqw;
+		height: 15.92cqw;
+		padding: 0 3cqw;
+		border-radius: 3.82cqw;
+		font-family: 'Audiowide', 'Chakra Petch', 'Inter', sans-serif;
+		font-size: 4.07cqw;
+		font-weight: 400;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
+		white-space: nowrap;
 		color: #fff;
 		cursor: pointer;
-		filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
 		transition: filter 0.12s ease;
 	}
 	.card-btn:hover:not(:disabled) {
-		filter: brightness(1.12) drop-shadow(0 0 6px #4a94ff);
-		border-color: #60a5fa;
+		filter: brightness(1.18);
 	}
 	.card-btn:disabled {
 		opacity: 0.45;
 		cursor: default;
 	}
-	/* Buy — Version2 flat primary (#28A6DE), like the confirm dialogs. */
+	/* Buy — the design's primary: flat #A88EFF ringed in #47468A. */
 	.card-btn--buy {
-		background: #28a6de;
+		background: #a88eff;
+		border: 1px solid #47468a;
 	}
-	/* Activate — Figma 4040:4142: bottom-lit navy (#0F2053 -> black). */
+	/* Activate — the secondary of the same pair, the two fills swapped. */
 	.card-btn--activate {
-		background: linear-gradient(0deg, #0f2053 0%, #000000 100%);
+		background: #47468a;
+		border: 1px solid #a88eff;
 	}
-	/* Active state — the flat primary, to signal it's on. */
+	/* Active state — wear the primary fill, so an armed mode reads as "on". */
 	.card-btn--active {
-		background: #28a6de;
+		background: #a88eff;
+		border-color: #47468a;
 	}
 
-	/* Bet selector — Figma: cyan-bordered steppers, coin + BET label + big value. */
+	/* Bet selector — design 9164:11752: the card's own plate at 271.7x67 on radius 12, a round
+	   stepper at each end and the label/value stack between them. cqw is the PLATE here. */
 	.bet {
+		container-type: inline-size;
+		box-sizing: border-box;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		width: clamp(280px, 27vw, 440px);
-		aspect-ratio: 577 / 220;
-		background-size: 100% 100%;
-		background-repeat: no-repeat;
-		padding: 0 3.5%; /* small side padding so − / + sit near the panel ends */
-		margin-top: clamp(10px, 2.2vh, 34px); /* nudge the whole bet board down from the cards */
-		box-sizing: border-box;
+		width: var(--bb-bet-w, 272px);
+		height: calc(var(--bb-bet-w, 272px) * 67 / 271.7);
+		/* Own box off --bb-bet-w for the same reason the card's is off --bb-card; the children
+		   below are cqw of this plate's content box, 271.7 - 2x6 - 2x2 = 255.7. */
+		padding: 0 calc(var(--bb-bet-w, 272px) * 0.0221);
+		background: #3a3981;
+		border: max(1px, calc(var(--bb-bet-w, 272px) * 0.00736)) solid #2d2c69;
+		border-radius: calc(var(--bb-bet-w, 272px) * 0.0442);
 	}
-	/* Version2 icon button, same as the close button / HUD circles. font-size drives the glyph. */
+	/* 9164:11761 — a #49489B circle at 48.7 of the plate's 271.7. */
 	.bet-step {
-		width: clamp(38px, 3.4vw, 54px);
-		height: clamp(38px, 3.4vw, 54px);
+		width: 19.05cqw;
+		height: 19.05cqw;
 		flex-shrink: 0;
 		border-radius: 50%;
-		border: 1px solid #2391c1;
-		background: #22365b;
-		font-size: clamp(13px, 1.15vw, 18px);
+		border: 1px solid #a88eff;
+		background: #49489b;
+		font-size: 6.26cqw;
 		padding: 0;
 		display: grid;
 		place-items: center;
@@ -699,217 +727,121 @@
 		opacity: 0.4;
 		cursor: default;
 	}
-	.bet-center {
-		display: flex;
-		align-items: center;
-		gap: clamp(6px, 0.7vw, 12px);
-	}
-	.bet-coin {
-		width: clamp(20px, 1.9vw, 30px);
-		height: clamp(20px, 1.9vw, 30px);
-		object-fit: contain;
-	}
 	.bet-value {
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: center;
+		gap: 1.6cqw;
 		line-height: 1;
 	}
+	/* 9164:11758 — INTER Bold 10px / 2px, white. */
 	.bet-label {
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-size: clamp(8px, 0.72vw, 11px);
+		font-family: 'Inter', 'Chakra Petch', sans-serif;
+		font-size: 3.91cqw;
 		font-weight: 700;
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
-		color: rgba(96, 165, 250, 0.85);
+		color: rgba(255, 255, 255, 0.8);
 	}
+	/* 9164:11760 — INTER Bold 24px, white. */
 	.bet-amount {
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-size: clamp(17px, 1.7vw, 26px);
+		font-family: 'Inter', 'Chakra Petch', sans-serif;
+		font-size: 9.39cqw;
 		font-weight: 700;
 		color: #ffffff;
-		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
 	}
 
-	/* ---- Landscape / desktop: size every card as ONE square that fits both the row width and the
-	   screen height, then scale the card's contents to that square so 4-in-a-row never overflows
-	   (fixes tall cards on mobile-landscape and the total breakdown on very small screens). All
-	   dimensions derive from --bb-card, so shrinking the square shrinks the text/icons with it. ---- */
+	/* ---- Landscape / desktop: the card width is measured in JS from the panel's real box (see the
+	   $effect) and set inline; the values here are only fallbacks for the first frame / no-JS. ---- */
 	.panel:not(.portrait) {
-		/* All --bb-* vars are measured in JS from the panel's real box (see the $effect) and set
-		   inline; the values here are only fallbacks for the first frame / no-JS. */
 		--bb-card: 300px;
-		--bb-gap: 16px;
+		--bb-gap: 12px;
 		--bb-pad-x: 12px;
 		--bb-pad-top: 90px;
 		--bb-pad-bot: 24px;
 		--bb-vgap: 20px;
-		--bb-bet-w: 300px;
+		--bb-bet-w: 272px;
 		gap: var(--bb-vgap);
 		padding: var(--bb-pad-top) var(--bb-pad-x) var(--bb-pad-bot);
+		box-sizing: border-box;
 	}
 	.panel:not(.portrait) .grid {
-		gap: var(--bb-gap);
-		max-width: none;
-		overflow: auto; /* scroll rather than overlap if a tiny screen can't fit the floored squares */
+		max-width: calc(var(--bb-card) * 3 + var(--bb-gap) * 2);
+		/* scroll rather than overlap if a tiny screen can't fit the floored cards */
+		overflow: auto;
 	}
 	.panel:not(.portrait) .card {
 		flex: 0 0 auto;
-		width: var(--bb-card);
-		height: var(--bb-card-h, var(--bb-card));
-		aspect-ratio: auto;
-		max-width: none;
-		gap: calc(var(--bb-card) * 0.015);
-		padding: calc(var(--bb-card) * 0.115) calc(var(--bb-card) * 0.08) calc(var(--bb-card) * 0.075);
-	}
-	.panel:not(.portrait) .card-title {
-		font-size: calc(var(--bb-card) * 0.064);
-	}
-	.panel:not(.portrait) .card-desc {
-		font-size: calc(var(--bb-card) * 0.042);
-		min-height: calc(var(--bb-card) * 0.27);
-	}
-	.panel:not(.portrait) .card-icon-slot {
-		height: calc(var(--bb-card) * 0.15);
-		margin-top: calc(var(--bb-card) * 0.01);
-	}
-	.panel:not(.portrait) .card-mult {
-		font-size: calc(var(--bb-card) * 0.062);
-	}
-	.panel:not(.portrait) .card-price {
-		font-size: calc(var(--bb-card) * 0.047);
-	}
-	.panel:not(.portrait) .card-btn {
-		font-size: calc(var(--bb-card) * 0.048);
-		padding: calc(var(--bb-card) * 0.03) calc(var(--bb-card) * 0.1);
-		margin-top: auto; /* keep the shared bottom baseline in landscape too */
-		border-radius: calc(var(--bb-card) * 0.035);
-	}
-	.panel:not(.portrait) .bet {
-		width: var(--bb-bet-w);
-		margin-top: var(--bb-vgap);
-		padding: 0 calc(var(--bb-bet-w) * 0.09); /* keep − / + inside the frame's side brackets */
-	}
-	/* Bet controls scale with the bar width so they shrink on small containers. */
-	.panel:not(.portrait) .bet-step {
-		width: var(--bb-bet-step);
-		height: var(--bb-bet-step);
-		font-size: calc(var(--bb-bet-step) * 0.34);
-	}
-	.panel:not(.portrait) .bet-center {
-		gap: calc(var(--bb-bet-w) * 0.03);
-	}
-	.panel:not(.portrait) .bet-coin {
-		width: calc(var(--bb-bet-w) * 0.075);
-		height: calc(var(--bb-bet-w) * 0.075);
-	}
-	.panel:not(.portrait) .bet-label {
-		font-size: calc(var(--bb-bet-w) * 0.033);
-	}
-	.panel:not(.portrait) .bet-amount {
-		font-size: calc(var(--bb-bet-w) * 0.075);
-	}
-	/* Space the BET label off the value so they don't sit on top of each other. */
-	.panel:not(.portrait) .bet-value {
-		gap: calc(var(--bb-bet-w) * 0.025);
-	}
-	/* Title + close button scale with the container (X was way too big on small screens). */
-	.panel:not(.portrait) .title {
-		font-size: var(--bb-title);
-		top: calc(var(--bb-close) * 0.92);
-	}
-	.panel:not(.portrait) .close-btn {
-		width: var(--bb-close);
-		height: var(--bb-close);
-		top: calc(var(--bb-close) * 0.42);
-		right: calc(var(--bb-close) * 0.42);
-		font-size: calc(var(--bb-close) * 0.34);
+		/* The design's card is 0.705 of its width; ours reserves a fourth description line, so it
+		   settles nearer 0.82 — CARD_H_BUDGET in the measuring effect reserves exactly that, and
+		   min-height (not height) means a longer locale grows the card and scrolls the grid rather
+		   than spilling its copy out of the plate. */
+		min-height: calc(var(--bb-card) * 0.82);
 	}
 
-	/* ---- Mobile portrait (Figma 4137-16084): BUY BONUS title fixed at top, the four cards in a
-	   vertical scrollable column starting at the FIRST card, and the bet selector as a compact pill
-	   pinned floating at the bottom. Landscape/desktop keeps the 4-in-a-row layout above.
-	   The grid + bet are absolutely positioned (not flex children) so the scroll region has a
-	   DEFINITE height and reliably starts at the top card — flex sizing was hiding the first card. */
+	/* ---- Mobile portrait: BUY BONUS title fixed at top, the cards in a vertical scrollable column
+	   starting at the FIRST card, and the bet selector as a compact plate pinned floating at the
+	   bottom. The grid + bet are absolutely positioned (not flex children) so the scroll region has
+	   a DEFINITE height and reliably starts at the top card — flex sizing was hiding the first
+	   card. Portrait has no MOTHERSHIP design of its own; it wears the landscape card verbatim,
+	   which is what cqw metrics buy us. ---- */
 	.panel.portrait {
 		padding: 0;
 	}
+	.panel.portrait .title {
+		top: 42px;
+		font-size: 22px;
+	}
+	.panel.portrait .close-btn {
+		width: 42px;
+		height: 42px;
+		font-size: 14px;
+	}
 	.panel.portrait .grid {
 		position: absolute;
-		top: 84px; /* clear the BUY BONUS title */
-		bottom: 20px; /* extend the scroll area almost to the bottom (bet pill floats over it — OK) */
+		top: 74px; /* clear the BUY BONUS title */
+		bottom: 20px; /* extend the scroll area almost to the bottom (bet plate floats over it — OK) */
 		left: 4vw;
 		right: 4vw;
 		width: auto;
-		max-width: none;
 		flex-direction: column;
+		flex-wrap: nowrap;
 		align-items: center;
 		justify-content: flex-start; /* always start at the first card */
 		overflow-y: auto;
 		overflow-x: hidden;
 		gap: clamp(12px, 2.2vh, 26px);
-		/* room at the end so the last card can scroll fully clear of the floating bet pill */
+		/* room at the end so the last card can scroll fully clear of the floating bet plate */
 		padding-bottom: 110px;
 	}
 	/* The card needs a DEFINITE (px) width in this scrolling column — vw/% widths didn't let the
 	   description wrap. Fixed widths + a couple of breakpoints keep it fitting on narrow phones. */
 	.panel.portrait .card {
 		flex: 0 0 auto;
-		width: 336px;
-		aspect-ratio: auto; /* height follows content in portrait */
-		height: auto;
-		padding: 34px 22px 26px; /* px (not %): % padding mis-resolved and let the description overflow */
+		--bb-card: 336px;
 	}
-	/* Bet selector: floating pill pinned to the bottom, centred (matches Figma). */
+	/* Bet plate: floating, pinned to the bottom, centred. */
 	.panel.portrait .bet {
 		position: absolute;
 		bottom: 18px;
 		left: 50%;
 		transform: translateX(-50%);
-		width: 260px; /* smaller frame than the cards */
-		margin: 0;
-		padding: 0 7%; /* − / + sit near the frame ends */
-	}
-	.panel.portrait .bet-step {
-		width: 50px;
-		height: 50px;
-		font-size: 17px;
-	}
-	/* Coin and BET / value need clear separation in the compact portrait pill. */
-	.panel.portrait .bet-center {
-		gap: 12px;
-	}
-	.panel.portrait .bet-coin {
-		width: 24px;
-		height: 24px;
-	}
-	/* Space the BET label off the value so they don't sit on top of each other. */
-	.panel.portrait .bet-value {
-		gap: 4px;
-	}
-	/* Plain block + explicit px max-width so the description reliably wraps in portrait. (The landscape
-	   flex-column centring didn't wrap here; a block always wraps at its max-width.) */
-	.panel.portrait .card-desc {
-		display: block;
-		max-width: 300px;
-		margin-inline: auto;
+		--bb-bet-w: 260px;
 	}
 	@media (max-width: 372px) {
-		.panel.portrait .card,
-		.panel.portrait .bet {
-			width: 300px;
+		.panel.portrait .card {
+			--bb-card: 300px;
 		}
-		.panel.portrait .card-desc {
-			max-width: 264px;
+		.panel.portrait .bet {
+			--bb-bet-w: 234px;
 		}
 	}
 	@media (max-width: 332px) {
-		.panel.portrait .card,
-		.panel.portrait .bet {
-			width: 270px;
+		.panel.portrait .card {
+			--bb-card: 270px;
 		}
-		.panel.portrait .card-desc {
-			max-width: 234px;
+		.panel.portrait .bet {
+			--bb-bet-w: 210px;
 		}
 	}
 
@@ -974,7 +906,7 @@
 	   (Figma 4036:3584, SECTION 9078:18631 POPUPS). Three dialogs wear this plate — the buy
 	   confirmation, the unfinished-round dialog and the insufficient-funds notice — and they must
 	   stay identical; the metrics the text fitter needs live in confirmDialog.ts.
-	   
+
 	   Re-measured 2026-09-03 off 9076:28671, which REPLACED the 4036-era plate the old numbers came
 	   from. What changed: the faces (Audiowide title / Poppins body, not Chakra Petch throughout),
 	   a 4px #2D2C69 edge with a #5E4374 hairline inside it, and 196.5x50 buttons on radius 12.

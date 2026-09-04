@@ -18,7 +18,7 @@
 
 	const mode = $derived(stateBet.betToResume?.mode ?? '');
 	const modeLabel = $derived(
-		mode === 'SUPER' ? 'Mega Chain' : mode === 'BONUS' ? 'Drop-O-Magnet' : 'Bonus',
+		mode === 'SUPER' ? 'Core Overload' : mode === 'BONUS' ? 'Gravity Breach' : 'Bonus',
 	);
 	// Split the localized body around %mode% so the mode name stays bold in any language.
 	const bodyParts = $derived(t('RESUME BODY').split('%mode%'));

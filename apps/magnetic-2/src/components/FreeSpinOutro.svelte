@@ -18,8 +18,8 @@
 	import PressToContinue from './PressToContinue.svelte';
 	import WonPanel from './WonPanel.svelte';
 
-	// Bonus-end screen — Version2 (Figma node 7069-9311). Same popup as the free-spins intro (see
-	// WonPanel) with the design's black/violet amount plate in place of the bare spin count.
+	// Bonus-end screen — MOTHERSHIP (Figma node 9185-13975). Same popup as the free-spins intro (see
+	// WonPanel); passing no `caption` is what selects the amount layout over the spin-count one.
 	const context = getContext();
 
 	// Hidden until freeSpinOutroShow — starting true meant the entry $effect never
@@ -75,7 +75,7 @@
 				<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.88} />
 
 				<MainContainer>
-					<WonPanel {show} plate big={bookEventAmountToCurrencyString(countUpAmount)} />
+					<WonPanel {show} big={bookEventAmountToCurrencyString(countUpAmount)} />
 				</MainContainer>
 
 				<PressToContinue onpress={() => (countUpCompleted ? dismiss() : finishCountUp())} />

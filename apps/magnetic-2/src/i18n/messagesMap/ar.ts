@@ -19,16 +19,16 @@ export default {
 	'INFO SYMBOL RANK': 'ترتيب الرموز',
 	'INFO WILD VALUES': 'قيم الوايلد المضاعف',
 	'INFO WILD STANDARD': 'قيم الوايلد المضاعف القياسية:',
-	'INFO WILD RARE': 'قيم الوايلد المضاعف النادرة (بشكل رئيسي في Magnetic Mega Chain):',
+	'INFO WILD RARE': 'قيم الوايلد المضاعف النادرة (بشكل رئيسي في Core Overload):',
 	'INFO FEAT WILD TITLE': 'رمز الوايلد',
 	'INFO FEAT WILD TEXT':
 		'يحلّ محل جميع رموز الدفع باستثناء السكاتر. عند تفعيله، يختار Magnetic Wild عشوائيًا رمز دفع عاديًا واحدًا موجودًا حاليًا على الشبكة ويجذب جميع الرموز المطابقة معًا. لا يمكن اختيار Wild أو Scatter. لا يتم تفعيل Magnetic Wild إلا عند هبوطه، ولا يُعاد تفعيله أثناء إعادة الدوران الناتجة.',
 	'INFO FEAT MWILD TITLE': 'الوايلد المضاعف',
 	'INFO FEAT MWILD TEXT': 'يحلّ محل الرموز مثل الوايلد ويزيد مضاعف المكافأة النشط لبقية الميزة.',
-	'INFO FEAT DROP TITLE': 'دورات Drop-O-Magnet المجانية',
+	'INFO FEAT DROP TITLE': 'دورات Gravity Breach المجانية',
 	'INFO FEAT DROP TEXT':
 		'تُفعّل بواسطة 3 رموز Scatter وتمنح 10 دورات مجانية. عند ظهور Magnetic Wild، يختار هدفًا باستخدام قاعدة المواضع الظاهرة نفسها ويجذب الرموز المطابقة معًا.',
-	'INFO FEAT MEGA TITLE': 'دورات Magnetic Mega Chain المجانية',
+	'INFO FEAT MEGA TITLE': 'دورات Core Overload المجانية',
 	'INFO FEAT MEGA TEXT':
 		'تُفعّل بواسطة 4 رموز سكاتر. تمنح 10 دورات مجانية. يمكن أن تبقى العناقيد المغناطيسية مثبّتة وتنمو طوال الميزة.',
 	'INFO CW 1': 'تستخدم Magnetic أرباح العناقيد بدلاً من خطوط الدفع.',
@@ -41,9 +41,9 @@ export default {
 	'INFO FB EXTRA TITLE': 'ميزة إضافية',
 	'INFO FB EXTRA TEXT': 'يشتري دورة خاصة باتصال مغناطيسي مضمون وفرصة للحصول على وايلدات مضاعفة.',
 	'INFO FB FEATURE TITLE': 'شراء الميزة',
-	'INFO FB FEATURE TEXT': 'يشتري وصولاً مباشراً إلى ميزة دورات Drop-O-Magnet المجانية.',
+	'INFO FB FEATURE TEXT': 'يشتري وصولاً مباشراً إلى ميزة دورات Gravity Breach المجانية.',
 	'INFO FB BONUS TITLE': 'شراء المكافأة',
-	'INFO FB BONUS TEXT': 'يشتري وصولاً مباشراً إلى ميزة دورات Magnetic Mega Chain المجانية الأقوى.',
+	'INFO FB BONUS TEXT': 'يشتري وصولاً مباشراً إلى ميزة دورات Core Overload المجانية الأقوى.',
 	'INFO COST': 'التكلفة',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': 'الجولات المتوقفة',
@@ -147,12 +147,19 @@ export default {
 	'BUY FEATURE SPINS TITLE': 'دورات الميزة',
 	'BUY FEATURE SPINS DESC':
 		'يشتري دورة خاصة باتصال مغناطيسي مضمون وفرصة للحصول على وايلدات مضاعفة.',
-	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP TITLE': 'Gravity Breach',
 	'BUY DROP DESC':
 		'يتم منح 10 دورات مجانية. يصبح رمز عشوائي واحد مغناطيسياً في كل دورة. تتصل الرموز المتطابقة معاً تلقائياً. تزيد رموز Multiplier Wild من مضاعف المكافأة بشكل دائم.',
-	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'يتم منح 10 دورات مجانية. يصبح رمز عشوائي واحد مغناطيسياً ويبقى متصلاً بين الدورات. تستمر المجموعة المغناطيسية وتنمو طوال الميزة بينما تواصل المضاعفات التراكم.',
+	'MYSTERY WON GRAVITY': '10 لفات مجانية مع وصلات مغناطيسية ومغانط مضاعِفة.',
+	'MYSTERY WON CORE': '10 لفات مجانية مع عناقيد مغناطيسية ثابتة تنمو طوال الجولة.',
+	'MYSTERY WON ZERO': '10 لفات مجانية مع مغناطيس مضاعِف مضمون في اللفة الأولى.',
+	'BUY ZERO TITLE': 'بروتوكول نقطة الصفر',
+	'BUY ZERO DESC': 'تُمنح 10 لفات مجانية مع مغناطيس مضاعِف مضمون في اللفة الأولى.',
+	'BUY MYSTERY TITLE': 'المكافأة الغامضة',
+	'BUY MYSTERY DESC': 'تُمنح إحدى جولات المكافآت الثلاث بشكل عشوائي: %a% أو %b% أو %c%.',
 	'AUTO TURBO': 'دورة تيربو',
 	'AUTO SUPER TURBO': 'دورة سوبر تيربو',
 	'AUTO FEATURE': 'ميزة مكافأة 50X',
@@ -219,12 +226,12 @@ export default {
 	'TOTAL BET COST': 'إجمالي تكلفة الرهان',
 	'PAYOUT MULTIPLIER': 'مضاعف العائد',
 	'REPLAY DISCLAIMER': 'هذه إعادة عرض لجولة رهان سابقة. لن يتم وضع أي رهانات جديدة.',
-	'DEAL IT': 'Drop-O-Magnet',
+	'DEAL IT': 'Gravity Breach',
 	'ALL IN': 'سلسلة ميجا',
 	'BET MODE BASE DIALOG':
 		'Magnetic هي لعبة سلوت بنظام دفع العناقيد بحجم 7x7 حيث تتكوّن الأرباح من مجموعات من الرموز المتطابقة. اجمع 5 رموز متطابقة أو أكثر متصلة أفقياً أو عمودياً للفوز.',
 	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
-	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS TITLE': 'Gravity Breach',
 	'BET MODE BONUS DIALOG': '10 دورات مجانية مع زيادة كبيرة في فرصة ظهور المغناطيس.',
 	'BET MODE BONUS DESCRIPTION':
 		'اشترِ 10 دورات مجانية بفرصة مغناطيس أعلى مقابل 100x من الرهان المحدد.',
@@ -245,7 +252,7 @@ export default {
 	'RULE WILD TEXT':
 		'في الوضع الأساسي، يختار Magnetic Wild عشوائيًا موضعًا ظاهرًا يحتوي على رمز عادي. لكل موضع ظاهر فرصة متساوية، لذلك تكون أنواع الرموز الأكثر ظهورًا أكثر احتمالًا للاختيار. ثم يجذب جميع الرموز الظاهرة من ذلك النوع. يبقى الهدف ثابتًا طوال السلسلة المغناطيسية النشطة.',
 	'RULE SCATTER TEXT':
-		'تشغّل 3 رموز Scatter ميزة Drop-O-Magnet، وتشغّل 4 رموز Scatter ميزة Mega Chain. لا يمنح Scatter عائدًا بمفرده.',
+		'تشغّل 3 رموز Scatter ميزة Gravity Breach، وتشغّل 4 رموز Scatter ميزة Core Overload. لا يمنح Scatter عائدًا بمفرده.',
 	'RULE DEAL IT TITLE': 'إعادات دوران المجموعة',
 	'RULE DEAL IT TEXT':
 		'تُثبّت المجموعات الطبيعية المؤهلة في مكانها. تعاد دورة جميع الخانات الأخرى. إذا هبطت رموز مطابقة جديدة ملامسة للمجموعة النشطة، تنضم إليها وتبدأ إعادة دوران أخرى.',
@@ -253,7 +260,7 @@ export default {
 	'RULE ALL IN TEXT':
 		'يُضمن مغناطيس في أول دورة Super مجانية. يستمر الرمز المستهدف المختار والمجموعة المجمعة وقيمة السلسلة المضاعفة خلال الدورات المجانية العشر، وتُحسب في النهاية.',
 	'RULE BUY TEXT':
-		'تكلف Drop-O-Magnet مقدار 100x من الرهان، وMega Chain مقدار 500x، وChance Spin مقدار 2x لكل جولة، وFeature Spin مقدار 50x لكل جولة. الحد الأقصى للفوز: 20,000x. نسبة RTP المستهدفة: 96.1%.',
+		'تكلف Gravity Breach مقدار 100x من الرهان، وCore Overload مقدار 500x، وChance Spin مقدار 2x لكل جولة، وFeature Spin مقدار 50x لكل جولة. الحد الأقصى للفوز: 20,000x. نسبة RTP المستهدفة: 96.1%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'هدف المغناطيس',
 	'FEATURE SELECTED SYMBOL TEXT':
 		'يختار Magnetic Wild عشوائيًا موضعًا ظاهرًا يحتوي على رمز عادي. لكل موضع فرصة متساوية، لذلك تكون الأنواع ذات المواضع الظاهرة الأكثر أكثر احتمالًا. تُجذب جميع الرموز الظاهرة من النوع المختار، ولا تغيّر المغناطيسات الإضافية الهدف أثناء السلسلة.',
@@ -266,7 +273,7 @@ export default {
 	'HOWTO SPIN TEXT':
 		'اضغط دوران لبدء جولة. اضغط مرة أخرى أثناء التسلسل لطلب الإيقاف عندما يكون ذلك متاحًا.',
 	'HOWTO BUY TEXT':
-		'افتح شراء البونص لاختيار Drop-O-Magnet أو Mega Chain أو Chance Spin أو Feature Spin. تتطلب البونصات المشتراة تأكيدًا. يمكن تشغيل أو إيقاف أوضاع التنشيط.',
+		'افتح شراء البونص لاختيار Gravity Breach أو Core Overload أو Chance Spin أو Feature Spin. تتطلب البونصات المشتراة تأكيدًا. يمكن تشغيل أو إيقاف أوضاع التنشيط.',
 	'HOWTO REPLAY TEXT':
 		'تحمّل إعادة العرض حدثًا مكتملًا وتعرض الرهان الأصلي والتكلفة الإجمالية والعائد ومعلومات الفوز.',
 	'PAYTABLE TITLE PAYLINES': 'عنقود',
@@ -289,7 +296,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT':
 		'يبدأ المغناطيس السلاسل المغناطيسية. يحل Wild محل الرموز العادية. تضاعف Multiplier Wilds السلسلة النشطة. يشغّل Scatter البونصات فقط.',
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet: رهان 100x.\nMega Chain: رهان 500x.\nChance Spin: رهان 2x لكل جولة.\nFeature Spin: رهان 50x لكل جولة.',
+		'Gravity Breach: رهان 100x.\nCore Overload: رهان 500x.\nChance Spin: رهان 2x لكل جولة.\nFeature Spin: رهان 50x لكل جولة.',
 	'PAYTABLE MAX_TEXT': 'الحد الأقصى المعلن للفوز هو 20,000x من الرهان المحدد.',
 	'NO BALANCE TITLE': 'الرصيد غير كافٍ',
 	'NO BALANCE BODY': 'رصيدك منخفض جدًا لهذا الرهان. خفّض مستوى الرهان لمتابعة اللعب.',

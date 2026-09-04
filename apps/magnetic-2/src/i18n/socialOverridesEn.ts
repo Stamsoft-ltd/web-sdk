@@ -46,18 +46,18 @@ export const socialOverridesEn: Record<string, string> = {
 	// ── Rules / paytable ─────────────────────────────────────────────────────────
 	'RULE BUY TITLE': 'PLAY / ACTIVATE MODES',
 	'RULE BUY TEXT':
-		'Drop-O-Magnet can be played for 100x your play amount. Mega Chain can be played for 500x. Chance Spin can be played for 2x per round. Feature Spin can be played for 50x per round. Max win is 20,000x. Target RTP is 96.1%.',
+		'Gravity Breach can be played for 100x your play amount. Core Overload can be played for 500x. Chance Spin can be played for 2x per round. Feature Spin can be played for 50x per round. Max win is 20,000x. Target RTP is 96.1%.',
 	'HOWTO BET TITLE': 'PLAY AMOUNT SELECTOR',
 	'HOWTO BET TEXT':
 		'Use the + and - buttons or open the menu to change the displayed play amount before a round starts.',
 	'HOWTO BUY TITLE': 'GET BONUS',
 	'HOWTO BUY TEXT':
-		'Open Get Bonus to choose Drop-O-Magnet, Mega Chain, Chance Spin or Feature Spin. Instantly triggered bonuses require confirmation. Activate modes can be toggled on or off.',
+		'Open Get Bonus to choose Gravity Breach, Core Overload, Chance Spin or Feature Spin. Instantly triggered bonuses require confirmation. Activate modes can be toggled on or off.',
 	'HOWTO REPLAY TEXT':
 		'Replay loads a previously completed event and displays the original play amount, total play amount and win information.',
 	'PAYTABLE BUY TITLE': 'PLAY MODES',
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet: 100x play amount.\nMega Chain: 500x play amount.\nChance Spin: 2x play amount per round.\nFeature Spin: 50x play amount per round.',
+		'Gravity Breach: 100x play amount.\nCore Overload: 500x play amount.\nChance Spin: 2x play amount per round.\nFeature Spin: 50x play amount per round.',
 	'PAYTABLE MAX_TEXT': 'Advertised max win is 20,000x the selected play amount.',
 
 	// ── Info modal ───────────────────────────────────────────────────────────────
@@ -72,8 +72,8 @@ export const socialOverridesEn: Record<string, string> = {
 	// `bought -> instantly triggered` gives the wording for the two direct-access cards.
 	'INFO FB EXTRA TEXT':
 		'Plays a special spin with a guaranteed magnetic connection and a chance to land Multiplier Wilds.',
-	'INFO FB FEATURE TEXT': 'Instantly triggers the Drop-O-Magnet Free Spins feature.',
-	'INFO FB BONUS TEXT': 'Instantly triggers the stronger Magnetic Mega Chain Free Spins feature.',
+	'INFO FB FEATURE TEXT': 'Instantly triggers the Gravity Breach Free Spins feature.',
+	'INFO FB BONUS TEXT': 'Instantly triggers the stronger Core Overload Free Spins feature.',
 	'INFO CTRL SPIN DESC': 'Start a game round with your selected play amount.',
 	'INFO CTRL PLUS': 'Increase Play Amount',
 	'INFO CTRL PLUS DESC': 'Raise your total play amount.',
@@ -108,7 +108,7 @@ export const socialOverridesEn: Record<string, string> = {
 	'RULE GAME TEXT':
 		'Magnetic is a 7x7 cluster-win slot. Wins form when 5 or more matching symbols touch horizontally or vertically. Diagonal connections do not count.',
 	'RULE SCATTER TEXT':
-		'3 scatters trigger Drop-O-Magnet. 4 scatters trigger Mega Chain. Scatter does not win by itself.',
+		'3 scatters trigger Gravity Breach. 4 scatters trigger Core Overload. Scatter does not win by itself.',
 	'INFO OV TEXT 1':
 		'Magnetic is a 7x7 cluster-win slot where wins are created by groups of matching symbols. Land 5 or more matching symbols connected horizontally or vertically to win.',
 	'INFO GI INTERRUPTED 2':

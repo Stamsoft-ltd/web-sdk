@@ -1137,3 +1137,317 @@ on-state's own aspect puts the two speakers at exactly the same size and lets th
 Squaring the box after the fact is what forced `menu_music_off`'s 0.895 CSS correction; this one
 needs none. The SOUND row now uses the same mask glyph MUSIC does (so it also picks up the row's
 hover colour), and the bar's mute buttons swap art instead of dimming.
+
+## 26. BUY BONUS MENU — `9164:11722` — DONE 2026-09-04
+
+The last screen still wearing the Version2 steel skin. Everything around it — the rules carousel,
+the autoplay modal, the unfinished-round dialog, the HUD, the board — had already moved to the
+MOTHERSHIP language, so the buy menu was the one place the player met the old game.
+
+**The plate is drawn now.** Card = flat #3A3981 on a #2D2C69 edge, radius 8, 345.3x243.3; bet
+selector = the same plate at 271.7x67 with a round #49489B stepper at each end. That retired
+`bb_card_panel_v2.webp`, `bb_bet_panel_v2.webp` and `bb_coin.svg` (the design's bet plate has no
+coin in it) — 26KB of art deleted, not just unreferenced.
+
+**Trap: a container never queries itself.** `.card` sets `container-type: inline-size` so its
+children can be sized in cqw, but the card's OWN padding/edge/radius in cqw do not resolve against
+the card — they fall back to the viewport. A 3.6px edge came out 13px wide and a 16px padding 59px,
+which is why the first pass rendered cards a third taller than the design with borders you could
+land a ship on. The card's own box is `calc(var(--bb-card) * k)`; only its children are cqw. And
+cqw resolves against the container's CONTENT box, so every child metric is the design's measurement
+over 314.1 (345.3 minus its own padding and edge), not over 345.3.
+
+**Two rows of three, and the second row is short by one.** The design draws six cards; Zero Point
+Protocol is a 5-scatter outcome with no bet mode behind it, so it stays in the rules rather than
+wearing a BUY button that could never be pressed (S-Hristov, 2026-09-03). Wrapping + centring is
+what puts the remaining two under the middle of the block.
+
+**The card height is measured, not assumed.** CARD_H_BUDGET (0.83) is only an estimate — what
+settles the card is where the DESCRIPTION wraps, and our copy runs a line longer than the design's
+in English and two longer in Russian/Finnish/German. The effect writes `--bb-card` straight to the
+element and then shrinks it until `grid.scrollHeight` fits `clientHeight`, which it does in one or
+two passes; `align-items: stretch` keeps a row level when one card's copy wraps longer than its
+neighbours'. Verified at 1920x1080, 1280x720, 850x460, 740x360 and 360x577, in en/de/fi/ru/pl/vi/ar.
+
+### the cards themselves
+
+- **Costs come from `stateMeta.betModeMeta`**, not from literals. The math has already moved the
+  bought bonuses once (BONUS 150 -> 100, SUPER 400 -> 500) and a second copy of those numbers is a
+  second place to forget. Affordability is per CARD too: `isBetCostAvailable()` only answers for the
+  mode that happens to be active, so a balance that covers Drop-O-Magnet at 100x used to grey out
+  every buy button together — or none.
+- **Feature Spins pictures the WILD** (design 9164:13667), not the compass. The compass is only the
+  top-paying symbol; the wild is what the spin is bought for.
+- **The two bought bonuses and the Mystery buy get their own art** — the design draws a ringed
+  planet, a molecule and a "?" dome that exist nowhere else in the game
+  (`scripts/build-bonus-menu-icons.py`, sources in `art-src/bonusmenu/`). They are NOT trimmed: each
+  is drawn inside a box the design sized against the card, and the card CSS gives every icon the
+  same height and lets the width follow. The 3x / 4x scatter badges are gone — the design dropped
+  them once each bonus had its own icon.
+- **MYSTERY BONUS is a real card now**, not the hardcoded English placeholder it was: `BUY MYSTERY
+  TITLE` / `BUY MYSTERY DESC` in all 17 locales, and the three outcomes it names are interpolated
+  from the SAME `SPLASH GRAVITY BREACH` / `SPLASH CORE OVERLOAD` / `SPLASH ZERO POINT` keys the
+  splash screen's bonus tiers use, so the card can never drift from what the game calls them.
+  The design quotes the weights (70 / 25 / 5) in that sentence; ours does not, because no shipped
+  math has a MYSTERY mode to confirm them against yet — see the note below.
+
+### rules page 5 (Feature Buy) — same round
+
+The page listed four of the five purchasable modes. Mystery is on it now at 300x, using the buy
+card's own keys. Five columns, not four, so the copy came down 1.8 -> 1.5cqmin (desktop) and 11 ->
+10px (landscape): in Russian the Mystery card — the one whose copy names all three outcomes — ran
+14px past the card and clipped its RTP.
+
+### NOT done, and why
+
+- **MYSTERY has no math.** `library/publish_files/index.json` publishes five modes — BASE 1,
+  CHANCE 2, FEATURE 50, BONUS 100, SUPER 500 — and there is no MYSTERY lookup table. The frontend
+  (config.ts, Game.svelte, the mystery reveal handler) is fully wired for it and the mock RGS now
+  charges 300x and resolves 70/25/5 including the HIDDEN (Zero Point) branch, but until the math
+  ships the mode the card cannot be bought against a real RGS.
+- **The design renames the bought bonuses** — Gravity Breach (3 scatters) and Core Overload (4), the
+  names the splash screen and the bonus rooms already use. The buy cards and every rules string
+  still say Drop-O-Magnet / Magnetic Mega Chain, which is 288 occurrences across the 17 locale files
+  plus the social overrides, most of them inside translated prose. Renaming only the cards would
+  make the app less consistent, not more, so it is left as one deliberate sweep to schedule.
+
+## 27. MYSTERY BONUS REVEAL + "YOU WON" SCREENS — `9185:18451` / `9185:18982` / `9185:19244` / `9185:19506` — DONE 2026-09-04
+
+The Mystery buy used to resolve invisibly: `mysteryBonusReveal` stored the mode, waited 450ms and
+handed straight to the ordinary free-spins trigger, so a 300x purchase looked exactly like a 100x
+one. It now plays the design's two beats, in `src/components/MysteryReveal.svelte`:
+
+1. **The orb** (`9185:18451`) — the machine holds a "?" that rocks (±0.22rad, two incommensurate
+   sines so it never repeats the same arc) while the draw resolves. 2.7s, the 2.5–3s the user asked
+   for; turbo compresses it to 1.1s rather than skipping it, because this screen IS what the buy
+   bought.
+2. **The congratulations** (`9185:18982` gravity / `9185:19244` core / `9185:19506` zero) — one
+   layout, three badges. Choreographed in the order the user specified: the pad is already there,
+   CONGRATULATIONS! drops in from above, YOU WON pops from 0.04 scale, the well fades in under it,
+   and one of the two aliens slides in from a randomly dealt edge.
+
+**Every position in the file is a design-frame coordinate.** `px`/`py`/`s` map the design's own
+1200x670 numbers into main-container units through a uniform fit, so the constants can be read
+straight off the Figma node list and the composition never stretches. The design has no portrait
+mock for these screens; fitting is what keeps the pad honest there.
+
+### Traps
+
+- **A design frame's `Rectangle 336` is not opaque.** It reports `#000000 a1.00` on its fill and
+  carries the dim as node opacity, which the fill list does not show. The scrim is 70% black, same
+  as the buy menu's backdrop — measured in-game as a 0.29x drop on the room behind it.
+- **Use `CanvasSizeRectangle`, not a hand-drawn full-screen rect.** Win / FreeSpinOutro /
+  BonusHandoffVeil all dim with that one component; a second way to draw the same rectangle is a
+  second thing to keep in step.
+- **The reveal draws bonus art BEFORE the trigger that announces it**, so `mysteryBonusReveal` had
+  to join `BONUS_ART_EVENTS` in `game/utils.ts` in its own right. Gating only on `freeSpinTrigger`
+  would have the orb paint from an empty texture cache on the first Mystery buy of a session.
+- **Pick the alien and its edge once per reveal, not per frame.** Both are `Math.random()`; rolling
+  them inside a `$derived` made it flicker between four positions.
+
+### The copy is NOT the buy menu's copy
+
+The well is 520x135 — two lines at 24px. The buy-menu descriptions run three lines, so three short
+keys were added in all 17 locales (`MYSTERY WON GRAVITY` / `CORE` / `ZERO`), taken from the design's
+own text on the three screens. The bonus NAME reuses the splash tier keys (`SPLASH GRAVITY BREACH`
+etc.) so the reveal can never drift from what the rest of the game calls them.
+
+### Assets
+
+`scripts/build-mystery-screens.py` — 10 pieces, 323KB total, all `defer` + `deferDemand` priority 2
+alongside the rest of the bonus art. Nothing is trimmed: every piece is placed from the design's own
+frame coordinates, so the exported box IS the placement.
+
+## 28. BONUS RENAME — Drop-O-Magnet -> Gravity Breach, Magnetic Mega Chain -> Core Overload — DONE 2026-09-04
+
+The design has called them Gravity Breach and Core Overload since the splash tier cards went in
+(`SPLASH GRAVITY BREACH` / `SPLASH CORE OVERLOAD`, 2026-09-02), but the buy menu, the rules pages,
+the bet-mode metadata and every locale still said Drop-O-Magnet / Magnetic Mega Chain. 229 value
+strings across 17 locales + `socialOverridesEn.ts`, plus the hardcoded English in `Game.svelte`'s
+bet-mode table and `BonusResumeModal.svelte`, plus every comment that named a mode.
+
+Mapping (confirmed against the design's own descriptions on `9164:11764`):
+
+| old | new | mode | cost |
+| --- | --- | --- | --- |
+| Drop-O-Magnet | Gravity Breach | BONUS | 100x |
+| Magnetic Mega Chain / Mega Chain | Core Overload | SUPER | 500x |
+
+### Traps
+
+- **Do not run a plain find-and-replace over the locale files.** `'SPLASH MEGA CHAIN'` is a KEY, and
+  rewriting it orphans the entry in all 17 files. The sweep rewrites the VALUE side only — a literal
+  followed by `:` is a key and is skipped.
+- **Not every locale quotes with `'`.** fr and tr switch to `"..."` whenever the copy contains an
+  apostrophe (`d'activation`, `Mega Chain'i`). A single-quote scanner reads the Turkish suffix
+  apostrophe as a string terminator and renames half a sentence — tr ended up with
+  "3 Scatter Gravity Breach'i, 4 Scatter Mega Chain'i" before the scanner was taught both styles.
+- **Longest brand first.** "Magnetic Mega Chain" has to be consumed before "Mega Chain", or the
+  result is "Magnetic Core Overload".
+- The i18n KEYS keep their old names (`BUY DROP TITLE`, `BUY MEGA TITLE`, `INFO FEAT MEGA TITLE`,
+  `DEAL IT`, `ALL IN`). They are internal identifiers; renaming them would touch every locale and
+  every consumer for no player-visible gain. The values are what ships.
+- The `SPLASH MEGA*` keys are dead copy (nothing references them) kept so no locale loses an entry.
+- Neither new name contains a prohibited social-mode substring, so `socialOverridesEn.ts` needed the
+  same value rewrite and nothing more.
+
+Verified in-game: all seven info pages report 0 occurrences of either old name and the new names on
+pages 2, 3 and 5; the buy menu reads Extra Chance / Feature Spins / Gravity Breach / Core Overload /
+Mystery Bonus.
+
+## 29. IDLE ANTENNAE — the magnet (L2) and the EM device (H4) — DONE 2026-09-04
+
+Both cells shook their antennae with a permanent low-amplitude sine (0.035 / 0.028 rad on ~3s
+periods). At rest that reads as a nervous jitter — the cell never sits still and never does anything
+either — and the user called it buggy. They now REST, and every few seconds give one short decaying
+happy wiggle (magnet 6.2s, EM device 7.4s), staggered per cell by `keyPhase(cell.key)`. Amplitude
+went up (0.11 / 0.095) because it is now an occasional peak rather than a permanent offset. The
+magnet's face pops on the same beat, so the two read as one gesture rather than a fault.
+
+The win choreography is untouched, and its sway phases keep advancing while idle, so a cell that
+flips into its win state picks the stroke up mid-swing instead of snapping to zero.
+
+NOT measured at board level: another symbol's idle dominates the frame-to-frame pixel change
+(the same ~19% periodic spikes appear with these antennae frozen), so a board-wide diff cannot
+isolate this.
+
+## 30. Congratulations family rebuilt on the pad (2026-09-04)
+
+The user rejected the Version2 machine frame ("congratulations screen is old one") and pointed at
+three new 1200x670 frames, all drawn on the same purple pad:
+
+    9185:13916   free spins won        "YOU WON / 10 FREE SPINS"
+    9185:13975   bonus total           "YOU WON / $1,234.00"
+    9185:14033   mystery congratulations  name + description beside the spin count, badge on top
+
+`src/game/designFrame.ts` now holds the shared 1200x670 -> screen mapping so WonPanel and
+MysteryReveal place off the same numbers. `fsWonFrame` and its four cyan tube lights are no longer
+drawn by anything (the asset is still shipped).
+
+New art: `my_blob` (9185:13954, the slime on the value box's top-right corner) via
+`scripts/build-mystery-screens.py`. Everything else reuses the mystery set.
+
+The free-spin COUNT on the mystery plate is read forward out of the book — `mysteryBonusReveal`
+scans ahead for the `freeSpinTrigger` and takes its `totalFs` — rather than printing the design's
+placeholder 10.
+
+## 31. Bonus HUD plates: Audiowide (2026-09-04)
+
+`InfoBox.svelte` (FREE SPINS / RESPIN / TOTAL WIN) was Poppins 700 white throughout. The design's
+own text nodes were re-specced (9185:19792/19793/19795/19798): Audiowide 400 for both lines, and
+the VALUE line is #A88EFF, not white. Audiowide ships Regular only, so the weight is 400.
+
+The value's shrink-to-fit no longer uses the old 0.58em advance constant — that was fitted to
+Poppins 700 and Audiowide is far wider — it measures the real face through `utils/fitText`.
+
+## 32. Slime drips (2026-09-04)
+
+`src/game/slimeDrip.ts` draws slime running off a blob: a pendant drop that swells, necks, pinches,
+snaps and stretches as it falls, plus the artist's specular. It is GEOMETRY because a falling drop
+changes shape and a sprite can only be moved. Colours are sampled off the art (#9EF916 / #012037 /
+highlight). Used by the value box's corner blob (WonPanel) and both badge blobs (MysteryReveal).
+
+Two traps: the outline closes with a straight line across its top, so the drop has to START inside
+the blob sprite that is drawn over it; and each blob's launch point is its LOWEST INK, scanned out
+of the art's alpha (my_blob 0.596/0.933, my_slime_a 0.477/0.799, my_slime_b 0.275/0.868) — placing
+it at the box centre detaches drops from thin air beside the blob.
+
+The BLOBS themselves stay as art. A fully drawn replacement (offset outline around a spine) was
+written and reverted the same day: it produced a thin sausage with a self-crossing edge, nothing
+like the artist's drape. Only motion that CHANGES SHAPE is worth drawing; a static silhouette is
+better shipped as the sprite the designer drew.
+
+## 33. Win card scaled down (2026-09-04)
+
+The user reported the win-screen texts as too big. It was NOT a fit bug: measured off a 1600x900
+capture the mythic wordmark spanned 45.3% of the screen against the design render's 45.7%. WinCard
+now carries an explicit `CARD_FIT = 0.85` — a deliberate step down from the design, applied to the
+whole lockup so every part keeps its relationship to every other.
+
+
+## 34. Pad bulbs, the 3D "?" and the beam loop (2026-09-04)
+
+`src/game/padBulbs.ts` holds the four bulb centres and their light. The first pass stacked three
+wide additive circles, which over the pad's light violet saturated into flat GREY discs with hard
+edges — additive light on an already-bright surface has nowhere to go. It now uses nine thin steps
+with an alpha ~ (1-u)^2.4 falloff, a small hot filament, and a marquee CHASE (top-left, top-right,
+bottom-right, bottom-left) so the bulbs blink in turn instead of breathing in unison.
+
+The mystery orb's "?" is EXTRUDED, not flipped. Scaling x by cos(angle) does turn a sprite — it
+goes edge-on and comes out mirrored, which is what the back of a "?" looks like — but it also goes
+paper thin half way round. It is now drawn as 11 slices through a slab: slice at depth z lands at
+x += z*sin(angle) with the face's own scale.x = cos(angle), sorted back-to-front by z*cos(angle),
+with everything but the near face tinted dark.
+
+The symbol in the tractor beam is a LOOP, not an arrival: it enters at the cone's mouth small and
+is drawn up the beam getting bigger, then dissolves into the hull and the next trip starts at the
+bottom. Growing is what sells the depth. Two earlier cuts were rejected — one parked it half way
+down at a fixed size, one let it climb once and hold.
+
+## 35. Win-card slime, generated (2026-09-04)
+
+`game/winSlime.ts` + `drawSlimeCluster` in `game/slimeDrip.ts`, drawn by `components/WinCard.svelte`.
+The four static `winBlob*` rotations are no longer rendered (still registered in `assets.ts`, 44KB).
+
+The amount of slime is the win-level cue: `WIN_SLIME_TIERS` runs 2 splats at 20u for SWEET up to 11
+at 32u for MAX, with a per-tier share of them dripping. One `Math.random()` seed per card instance
+feeds a mulberry32, so a card is fixed while it is up and different next time.
+
+Shape is read off the MAX render (7103:5231): a splat is a CLOVER of two to four fat round lobes,
+thin dark outline, one or two small pale beads — not a drape. Two drape cuts were built and thrown
+away first: pointed outward from the plate's rim they read as tentacles, pointed straight down as
+green bars. `drawSlimeCluster` takes the lobes explicitly rather than resampling a spine, because a
+spine smooths the radius between control points and rounds the clover off into a sausage.
+
+Placement: splats CATCH ON THE PLATE'S BORDER and straddle it, about a third outside. Free-floating
+lumps ringing the lockup were rejected on sight — they read as stickers. The border is sampled at 240
+points, corners walk inward with the plate's angled ends (it is a hexagon, not a rectangle), and
+candidates inside the plaque or the saucer are dropped before an even stride picks `count` of them.
+
+Two measurements make it work. The border is the SLAB, not `tier.plate`: that rect is the plate
+sprite's bounding box and the art bakes the saucer's belly into its top, so the box's top edge sits
+~100 design units above the purple slab — `WIN_CARD_PLATE_SLAB` in `winCardTiers.ts` holds the
+fractions, read off the sprite's alpha. And the wordmark guard takes NEGATIVE clearance: on MAX its
+box is as tall as the plate itself, so honouring it outright leaves only the two side edges free and
+the slime lines up in two caterpillar columns.
+
+Two rendering rules the first cut got wrong: the outline width scales with the SPLAT (`r * 0.13`),
+not the card — a flat 3-design-unit edge vanishes on a big splat; and `drawSlimeDrips` caps its
+stroke at `R * 0.4` and skips the residual bead once it is thinner than the stroke, or the bead left
+behind after a snap shrinks into a black ring. Drop size comes off the SPLAT, not the lobe it hangs
+from, for the same reason.
+
+`drawSlimeCluster` also takes a `sag`: every lobe below the top one creeps down and back on its own
+slow cycle. Without it the splat is a still shape with a drip attached, which is exactly what read as
+"stuck" — slime has to run.
+
+
+## 36. Everything green moves, and the ship runs (2026-09-04)
+
+Every blob on every MOTHERSHIP screen is now DRAWN and never still.
+
+- `MysteryReveal.svelte`'s badge slime was still the `mySlimeA` / `mySlimeB` sprites with drawn drops
+  underneath — art that cannot move with a drip bolted on, which is exactly what read as stuck. The
+  lobes are now FITTED to those sprites (largest inscribed circle, mask it out, repeat, in box
+  fractions) so the silhouette is still the artist's, and `drawSlimeCluster` draws it.
+  `mySlimeA` / `mySlimeB` / `myBlob` are unreferenced now (32KB, still registered in `assets.ts`).
+- `drawSlimeBlob` gained the cluster's creep: a slow wave travels down the chain, gathering and
+  thinning as it goes, on top of a bigger radius wobble. `WonPanel` passes `sag: D.s(26)`.
+- Measured over a 3s window in storybook: the WonPanel corner changes 18.2% of its pixels, the badge
+  slime 5.3%.
+
+The ship (`Background.svelte`) got its life back — its idle had been cut to a third some sessions ago
+because it read as distracting, and the cut left it parked:
+
+- Hover is now two slow sines that do not divide into each other (0.52 and 0.23 Hz) plus a lazy
+  sideways drift at 0.31 Hz, and the drift BANKS — a saucer sliding sideways dead level reads as a
+  cursor. All of it still slow; the old problem was rate, not amplitude.
+- `game/ufoLamps.ts` lights the seven magenta lamps the hull art paints flat. Positions are the
+  magenta ink's own flood-filled bounding boxes in hull fractions — six rim slots that chase on a
+  3.6s lap with a floor so none goes dark, and the tractor emitter pulsing separately. Same
+  `(1-u)^2.4` falloff as the pad bulbs; additive, or it is a sticker. The antenna ball beacons
+  off-phase.
+- Measured: 44.9% of the ship's pixels change over ~2.7s.
+
+The alien on the congratulations screens hovers too (bob, roll, breath on three phases). It gets no
+running lights — it is a character, not a ship.

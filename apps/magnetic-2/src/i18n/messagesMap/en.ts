@@ -6,20 +6,21 @@ export default {
 	// Splash intro feature boards (see SplashIntro.svelte). The big multiplier values are
 	// set as constants in the component; only the surrounding copy is translated here.
 	'SPLASH EXP TITLE': 'EXPANDING\nREELS',
-	'SPLASH MEGA TITLE': 'MEGA CHAIN',
+	'SPLASH MEGA TITLE': 'CORE OVERLOAD',
 	'SPLASH EPIC TITLE': 'EPIC WINS',
 	'SPLASH WITH UP TO': 'with up to',
 	'SPLASH MULTIPLIER': 'multiplier',
 	'SPLASH PRESS': 'PRESS TO CONTINUE',
 	'SPLASH BONUS TITLE': 'BONUS\nGAMES',
 	'SPLASH SCATTERS FOR': '%count% scatters for',
-	'SPLASH MMC': 'MAGNETIC MEGA CHAIN',
+	'SPLASH MMC': 'CORE OVERLOAD',
 	'SPLASH MEGA BUILD': 'Build the',
 	'SPLASH MEGA CHAIN': 'chain',
 	'SPLASH MEGA REST': 'with multipliers that multiply each other',
 	// The three scatter tiers and the POLARITY SHIFTER card (design 9078:18632, 2026-09-02). These
-	// replaced the MEGA CHAIN copy above on the splash; the MEGA keys are still referenced by the
-	// buy menu and the bonus screens, which have NOT been renamed -- see art-src/REBUILD-QUEUE.md.
+	// replaced the old MEGA CHAIN copy above on the splash. The whole game now uses the design's
+	// names -- Gravity Breach and Core Overload (2026-09-04 rename, see art-src/REBUILD-QUEUE.md) --
+	// so the SPLASH MEGA* keys above are dead copy kept only so no locale loses an entry.
 	'SPLASH GRAVITY BREACH': 'GRAVITY BREACH',
 	'SPLASH CORE OVERLOAD': 'CORE OVERLOAD',
 	'SPLASH ZERO POINT': 'ZERO POINT PROTOCOL',
@@ -57,15 +58,15 @@ export default {
 	PAYOUT: 'PAYOUT',
 	WIN: 'WIN',
 	'BET SIZE': 'BET SIZE',
-	'DEAL IT': 'DROP-O-MAGNET',
-	'ALL IN': 'MEGA CHAIN',
+	'DEAL IT': 'GRAVITY BREACH',
+	'ALL IN': 'CORE OVERLOAD',
 	'REPLAY ERROR GENERIC': 'Replay unavailable. Please retry.',
 	'BET MODE BASE TITLE': 'BASE',
 	'BET MODE BASE DIALOG': '7x7 cluster-pay base game with natural clusters and random magnets.',
 	'BET MODE BASE BUTTON': 'PLAY',
 	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
 	'BET MODE BASE TICKER SPIN': 'GOOD LUCK',
-	'BET MODE BONUS TITLE': 'DROP-O-MAGNET',
+	'BET MODE BONUS TITLE': 'GRAVITY BREACH',
 	'BET MODE BONUS DIALOG': '10 free spins with heavily boosted magnet chance.',
 	'BET MODE BONUS DESCRIPTION':
 		'Buy 10 free spins with boosted magnet odds for 100x your selected bet.',
@@ -79,7 +80,7 @@ export default {
 	'BET MODE CHANCE BUTTON': 'ACTIVATE',
 	'BET MODE CHANCE TICKER IDLE': 'CHANCE SPIN IS ACTIVE',
 	'BET MODE CHANCE TICKER SPIN': 'GOOD LUCK',
-	'BET MODE SUPER TITLE': 'MEGA CHAIN',
+	'BET MODE SUPER TITLE': 'CORE OVERLOAD',
 	'BET MODE SUPER DIALOG':
 		'10 free spins with a guaranteed first-spin magnet. The target symbol, collected cluster and combined multiplier persist for the full bonus.',
 	'BET MODE SUPER DESCRIPTION': 'Buy the persistent super bonus for 500x your selected bet.',
@@ -105,16 +106,16 @@ export default {
 		'In base mode, a Magnetic Wild randomly selects one visible regular-symbol position. Every visible position has the same chance, so symbol types shown more often are more likely to be selected. It then attracts all visible symbols of that type. The target stays fixed for the active magnetic series.',
 	'RULE SCATTER TITLE': 'SCATTER',
 	'RULE SCATTER TEXT':
-		'3 scatters trigger Drop-O-Magnet. 4 scatters trigger Mega Chain. Scatter does not pay by itself.',
+		'3 scatters trigger Gravity Breach. 4 scatters trigger Core Overload. Scatter does not pay by itself.',
 	'RULE DEAL IT TITLE': 'CLUSTER RESPINS',
 	'RULE DEAL IT TEXT':
 		'Natural qualifying clusters lock in place. All other cells respin. If new matching symbols land touching the active cluster, they join it and another respin follows.',
-	'RULE ALL IN TITLE': 'MEGA CHAIN',
+	'RULE ALL IN TITLE': 'CORE OVERLOAD',
 	'RULE ALL IN TEXT':
 		'On the first super free spin a magnet is guaranteed. The chosen target symbol, collected cluster and multiplied series value persist through all 10 free spins and resolve at the end.',
 	'RULE BUY TITLE': 'BUY / ACTIVATE MODES',
 	'RULE BUY TEXT':
-		'Drop-O-Magnet costs 100x bet. Mega Chain costs 500x bet. Chance Spin costs 2x bet per round. Feature Spin costs 50x bet per round. Max win is 20,000x. Target RTP is 96.1%.',
+		'Gravity Breach costs 100x bet. Core Overload costs 500x bet. Chance Spin costs 2x bet per round. Feature Spin costs 50x bet per round. Max win is 20,000x. Target RTP is 96.1%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'MAGNET TARGET',
 	'FEATURE SELECTED SYMBOL TEXT':
 		'A Magnetic Wild randomly selects one visible regular-symbol position. Each position has equal chance, so symbol types with more visible positions are more likely. All visible symbols of the selected type are attracted, and extra magnets never change the target mid-series.',
@@ -132,7 +133,7 @@ export default {
 		'Use the + and - buttons or open the bet menu to change the displayed bet amount before a round starts.',
 	'HOWTO BUY TITLE': 'BUY BONUS',
 	'HOWTO BUY TEXT':
-		'Open Buy Bonus to choose Drop-O-Magnet, Mega Chain, Chance Spin or Feature Spin. Bought bonuses require confirmation. Activate modes can be toggled on or off.',
+		'Open Buy Bonus to choose Gravity Breach, Core Overload, Chance Spin or Feature Spin. Bought bonuses require confirmation. Activate modes can be toggled on or off.',
 	'HOWTO TURBO TITLE': 'TURBO',
 	'HOWTO TURBO TEXT': 'Turbo shortens certain round timings for faster play.',
 	'HOWTO AUTOPLAY TITLE': 'AUTOPLAY',
@@ -166,7 +167,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT':
 		'Magnet starts magnetic series. Wild substitutes for regular symbols. Multiplier Wilds multiply the active series. Scatter triggers bonuses only.',
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet: 100x bet.\nMega Chain: 500x bet.\nChance Spin: 2x bet per round.\nFeature Spin: 50x bet per round.',
+		'Gravity Breach: 100x bet.\nCore Overload: 500x bet.\nChance Spin: 2x bet per round.\nFeature Spin: 50x bet per round.',
 	'PAYTABLE MAX_TEXT': 'Advertised max win is 20,000x the selected bet.',
 	// General Game Disclaimer. This is Stake Engine's OWN template, verbatim:
 	//   https://stake-engine.com/docs/approval-guidelines/general-disclaimer
@@ -203,7 +204,7 @@ export default {
 	'INFO SYMBOL RANK': 'SYMBOL RANK',
 	'INFO WILD VALUES': 'Multiplier Wild Values',
 	'INFO WILD STANDARD': 'Standard multiplier wild values:',
-	'INFO WILD RARE': 'Rare multiplier wild values (mainly in Magnetic Mega Chain):',
+	'INFO WILD RARE': 'Rare multiplier wild values (mainly in Core Overload):',
 	// Features
 	'INFO FEAT WILD TITLE': 'Wild Symbol',
 	'INFO FEAT WILD TEXT':
@@ -211,10 +212,10 @@ export default {
 	'INFO FEAT MWILD TITLE': 'Multiplier Wild',
 	'INFO FEAT MWILD TEXT':
 		'Substitutes like a Wild and increases the active bonus multiplier for the rest of the feature.',
-	'INFO FEAT DROP TITLE': 'Drop-O-Magnet Free Spins',
+	'INFO FEAT DROP TITLE': 'Gravity Breach Free Spins',
 	'INFO FEAT DROP TEXT':
 		'Triggered by 3 Scatters. Awards 10 Free Spins. When a Magnetic Wild lands, it selects a target using the same visible-position rule and pulls matching symbols together.',
-	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain Free Spins',
+	'INFO FEAT MEGA TITLE': 'Core Overload Free Spins',
 	'INFO FEAT MEGA TEXT':
 		'Triggered by 4 Scatters. Awards 10 Free Spins. Magnetic clusters can remain locked and grow across the feature.',
 	// Cluster win
@@ -232,10 +233,9 @@ export default {
 	'INFO FB EXTRA TEXT':
 		'Buys a special spin with a guaranteed magnetic connection and a chance to land Multiplier Wilds.',
 	'INFO FB FEATURE TITLE': 'Feature Buy',
-	'INFO FB FEATURE TEXT': 'Buys direct access to the Drop-O-Magnet Free Spins feature.',
+	'INFO FB FEATURE TEXT': 'Buys direct access to the Gravity Breach Free Spins feature.',
 	'INFO FB BONUS TITLE': 'Bonus Buy',
-	'INFO FB BONUS TEXT':
-		'Buys direct access to the stronger Magnetic Mega Chain Free Spins feature.',
+	'INFO FB BONUS TEXT': 'Buys direct access to the stronger Core Overload Free Spins feature.',
 	'INFO COST': 'COST',
 	'INFO RTP': 'RTP',
 	// General info
@@ -280,8 +280,8 @@ export default {
 	'INFO PAGE': 'Page',
 
 	// ── HUD, menus, modals, win screens (rest of the app). %name%/%mode%/%cost% are left intact by
-	//    translators and substituted at render time. Feature/brand names (Drop-O-Magnet, Magnetic Mega
-	//    Chain) stay verbatim. ──
+	//    translators and substituted at render time. Feature/brand names (Gravity Breach, Core
+	//    Overload) stay verbatim. ──
 	SOUND: 'SOUND',
 	MUSIC: 'MUSIC',
 	INFO: 'INFO',
@@ -299,12 +299,21 @@ export default {
 	'BUY FEATURE SPINS TITLE': 'Feature Spins',
 	'BUY FEATURE SPINS DESC':
 		'Buys a special spin with a guaranteed magnetic connection and a chance to land Multiplier Wilds.',
-	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP TITLE': 'Gravity Breach',
 	'BUY DROP DESC':
 		'10 free spins awarded. One random symbol becomes magnetic every spin. Matching symbols connect together automatically. Multiplier Wilds increase the bonus multiplier permanently.',
-	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 free spins awarded. One random symbol becomes magnetic and remains connected between spins. The magnetic cluster persists and grows throughout the feature while multipliers continue stacking.',
+	'MYSTERY WON GRAVITY': '10 free spins with Magnetic connections and Multiplier Magnets.',
+	'MYSTERY WON CORE':
+		'10 free spins with persistent Magnetic clusters that can grow throughout the bonus.',
+	'MYSTERY WON ZERO': '10 free spins with a guaranteed Multiplier Magnet on the first spin.',
+	'BUY ZERO TITLE': 'Zero Point Protocol',
+	'BUY ZERO DESC':
+		'10 free spins awarded with a guaranteed Multiplier Magnet on the very first spin.',
+	'BUY MYSTERY TITLE': 'Mystery Bonus',
+	'BUY MYSTERY DESC': 'One of the three bonus rounds is awarded at random: %a%, %b% or %c%.',
 	// Autoplay modal
 	'AUTO TURBO': 'TURBO SPIN',
 	'AUTO SUPER TURBO': 'SUPER TURBO SPIN',

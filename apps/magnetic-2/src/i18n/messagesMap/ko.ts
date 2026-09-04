@@ -19,16 +19,16 @@ export default {
 	'INFO SYMBOL RANK': '심볼 등급',
 	'INFO WILD VALUES': '멀티플라이어 와일드 배율',
 	'INFO WILD STANDARD': '일반 멀티플라이어 와일드 배율:',
-	'INFO WILD RARE': '희귀 멀티플라이어 와일드 배율 (주로 Magnetic Mega Chain에서 등장):',
+	'INFO WILD RARE': '희귀 멀티플라이어 와일드 배율 (주로 Core Overload에서 등장):',
 	'INFO FEAT WILD TITLE': '와일드 심볼',
 	'INFO FEAT WILD TEXT':
 		'스캐터를 제외한 모든 배당 심볼을 대체합니다. 활성화되면 Magnetic Wild는 현재 그리드에 있는 일반 배당 심볼 하나를 무작위로 선택하고 일치하는 모든 심볼을 끌어당깁니다. Wild와 Scatter는 선택될 수 없습니다. Magnetic Wild는 착지할 때만 활성화되며, 그 결과 발생한 리스핀 중에는 다시 활성화되지 않습니다.',
 	'INFO FEAT MWILD TITLE': '멀티플라이어 와일드',
 	'INFO FEAT MWILD TEXT': '와일드처럼 대체하며, 기능이 진행되는 동안 활성 보너스 배율을 높입니다.',
-	'INFO FEAT DROP TITLE': 'Drop-O-Magnet 프리 스핀',
+	'INFO FEAT DROP TITLE': 'Gravity Breach 프리 스핀',
 	'INFO FEAT DROP TEXT':
 		'Scatter 3개로 발동하며 프리스핀 10회를 제공합니다. Magnetic Wild가 착지하면 동일한 표시 위치 규칙으로 목표를 선택하고 일치하는 심볼을 끌어당깁니다.',
-	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain 프리 스핀',
+	'INFO FEAT MEGA TITLE': 'Core Overload 프리 스핀',
 	'INFO FEAT MEGA TEXT':
 		'스캐터 4개로 발동됩니다. 프리 스핀 10회를 지급합니다. 자성 클러스터는 고정된 채로 기능 내내 계속 커질 수 있습니다.',
 	'INFO CW 1': 'Magnetic은 페이라인 대신 클러스터 당첨을 사용합니다.',
@@ -42,10 +42,10 @@ export default {
 	'INFO FB EXTRA TEXT':
 		'자성 연결이 보장되고 멀티플라이어 와일드가 등장할 기회가 있는 특별 스핀을 구매합니다.',
 	'INFO FB FEATURE TITLE': '기능 구매',
-	'INFO FB FEATURE TEXT': 'Drop-O-Magnet 프리 스핀 기능에 바로 접근할 수 있도록 구매합니다.',
+	'INFO FB FEATURE TEXT': 'Gravity Breach 프리 스핀 기능에 바로 접근할 수 있도록 구매합니다.',
 	'INFO FB BONUS TITLE': '보너스 구매',
 	'INFO FB BONUS TEXT':
-		'더 강력한 Magnetic Mega Chain 프리 스핀 기능에 바로 접근할 수 있도록 구매합니다.',
+		'더 강력한 Core Overload 프리 스핀 기능에 바로 접근할 수 있도록 구매합니다.',
 	'INFO COST': '비용',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': '중단된 라운드',
@@ -149,12 +149,19 @@ export default {
 	'BUY FEATURE SPINS TITLE': '피처 스핀',
 	'BUY FEATURE SPINS DESC':
 		'자성 연결이 보장되고 멀티플라이어 와일드가 등장할 기회가 있는 특별 스핀을 구매합니다.',
-	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP TITLE': 'Gravity Breach',
 	'BUY DROP DESC':
 		'무료 스핀 10회 지급. 매 스핀마다 무작위 심볼 하나가 자석이 됩니다. 일치하는 심볼은 자동으로 서로 연결됩니다. 멀티플라이어 와일드는 보너스 배수를 영구적으로 증가시킵니다.',
-	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'무료 스핀 10회 지급. 무작위 심볼 하나가 자석이 되어 스핀 사이에도 연결을 유지합니다. 자석 클러스터는 피처 내내 지속되고 성장하며 멀티플라이어는 계속 쌓입니다.',
+	'MYSTERY WON GRAVITY': '마그네틱 연결과 배수 마그넷이 등장하는 프리 스핀 10회.',
+	'MYSTERY WON CORE': '보너스 내내 성장하는 지속형 마그네틱 클러스터가 등장하는 프리 스핀 10회.',
+	'MYSTERY WON ZERO': '첫 스핀에서 배수 마그넷이 확정되는 프리 스핀 10회.',
+	'BUY ZERO TITLE': '제로 포인트 프로토콜',
+	'BUY ZERO DESC': '프리 스핀 10회가 지급되며 첫 스핀에서 배수 마그넷이 확정 등장합니다.',
+	'BUY MYSTERY TITLE': '미스터리 보너스',
+	'BUY MYSTERY DESC': '세 가지 보너스 라운드 중 하나가 무작위로 지급됩니다: %a%, %b%, %c%.',
 	'AUTO TURBO': '터보 스핀',
 	'AUTO SUPER TURBO': '슈퍼 터보 스핀',
 	'AUTO FEATURE': '50X 보너스 피처',
@@ -221,12 +228,12 @@ export default {
 	'TOTAL BET COST': '총 베팅 비용',
 	'PAYOUT MULTIPLIER': '지급 배수',
 	'REPLAY DISCLAIMER': '이전 베팅 라운드의 리플레이입니다. 새로운 베팅은 진행되지 않습니다.',
-	'DEAL IT': 'Drop-O-Magnet',
+	'DEAL IT': 'Gravity Breach',
 	'ALL IN': '메가 체인',
 	'BET MODE BASE DIALOG':
 		'Magnetic은 일치하는 심볼 그룹으로 당첨이 이루어지는 7x7 클러스터 배당 슬롯입니다. 일치하는 심볼이 가로 또는 세로로 5개 이상 연결되면 당첨됩니다.',
 	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
-	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS TITLE': 'Gravity Breach',
 	'BET MODE BONUS DIALOG': '자석 등장 확률이 크게 증가한 프리스핀 10회.',
 	'BET MODE BONUS DESCRIPTION':
 		'선택한 베팅의 100x로 자석 확률이 증가한 프리스핀 10회를 구매합니다.',
@@ -247,7 +254,7 @@ export default {
 	'RULE WILD TEXT':
 		'기본 모드에서 Magnetic Wild는 화면에 보이는 일반 심볼 위치 하나를 무작위로 선택합니다. 각 위치의 확률은 같으므로 더 많이 보이는 심볼 종류가 선택될 가능성이 높습니다. 이후 해당 종류의 모든 심볼을 끌어당깁니다. 활성 자석 시리즈 동안 목표는 바뀌지 않습니다.',
 	'RULE SCATTER TEXT':
-		'Scatter 3개는 Drop-O-Magnet을, 4개는 Mega Chain을 발동합니다. Scatter 자체에는 지급금이 없습니다.',
+		'Scatter 3개는 Gravity Breach을, 4개는 Core Overload을 발동합니다. Scatter 자체에는 지급금이 없습니다.',
 	'RULE DEAL IT TITLE': '클러스터 리스핀',
 	'RULE DEAL IT TEXT':
 		'조건을 충족한 자연 클러스터는 제자리에 고정됩니다. 나머지 셀은 모두 다시 회전합니다. 새 일치 심볼이 활성 클러스터에 닿아 착지하면 합류하고 또 한 번 리스핀이 진행됩니다.',
@@ -255,7 +262,7 @@ export default {
 	'RULE ALL IN TEXT':
 		'첫 Super 프리스핀에는 자석이 보장됩니다. 선택한 목표 심볼, 수집된 클러스터, 곱해진 시리즈 값은 프리스핀 10회 전체에 유지되고 마지막에 정산됩니다.',
 	'RULE BUY TEXT':
-		'Drop-O-Magnet은 베팅의 100x, Mega Chain은 500x, Chance Spin은 라운드당 2x, Feature Spin은 라운드당 50x입니다. 최대 당첨: 20,000x. 목표 RTP: 96.1%.',
+		'Gravity Breach은 베팅의 100x, Core Overload은 500x, Chance Spin은 라운드당 2x, Feature Spin은 라운드당 50x입니다. 최대 당첨: 20,000x. 목표 RTP: 96.1%.',
 	'FEATURE SELECTED SYMBOL TITLE': '자석 목표',
 	'FEATURE SELECTED SYMBOL TEXT':
 		'Magnetic Wild는 화면에 보이는 일반 심볼 위치 하나를 무작위로 선택합니다. 각 위치의 확률은 같으므로 보이는 위치가 많은 종류일수록 선택될 가능성이 높습니다. 선택된 종류의 모든 심볼을 끌어당기며 추가 자석은 시리즈 도중 목표를 변경하지 않습니다.',
@@ -268,7 +275,7 @@ export default {
 	'HOWTO SPIN TEXT':
 		'Spin을 눌러 라운드를 시작합니다. 시퀀스 중 다시 누르면 가능한 경우 정지를 요청합니다.',
 	'HOWTO BUY TEXT':
-		'Buy Bonus를 열어 Drop-O-Magnet, Mega Chain, Chance Spin 또는 Feature Spin을 선택합니다. 구매 보너스는 확인이 필요합니다. 활성화 모드는 켜거나 끌 수 있습니다.',
+		'Buy Bonus를 열어 Gravity Breach, Core Overload, Chance Spin 또는 Feature Spin을 선택합니다. 구매 보너스는 확인이 필요합니다. 활성화 모드는 켜거나 끌 수 있습니다.',
 	'HOWTO REPLAY TEXT':
 		'리플레이는 완료된 이벤트를 불러와 원래 베팅, 총비용, 지급금 및 당첨 정보를 표시합니다.',
 	'PAYTABLE TITLE PAYLINES': '클러스터',
@@ -291,7 +298,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT':
 		'Magnet은 자석 시리즈를 시작합니다. Wild는 일반 심볼을 대체합니다. Multiplier Wild는 활성 시리즈를 곱합니다. Scatter는 보너스만 발동합니다.',
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet: 베팅 100x.\nMega Chain: 베팅 500x.\nChance Spin: 라운드당 베팅 2x.\nFeature Spin: 라운드당 베팅 50x.',
+		'Gravity Breach: 베팅 100x.\nCore Overload: 베팅 500x.\nChance Spin: 라운드당 베팅 2x.\nFeature Spin: 라운드당 베팅 50x.',
 	'PAYTABLE MAX_TEXT': '공개된 최대 당첨은 선택한 베팅의 20,000x입니다.',
 	'NO BALANCE TITLE': '잔액 부족',
 	'NO BALANCE BODY':

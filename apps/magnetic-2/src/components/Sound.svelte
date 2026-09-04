@@ -34,8 +34,14 @@
 	const MUSIC_TRACKS: MusicTrack[] = ['base', 'bonus', 'super'];
 	const MUSIC_SRC: Record<MusicTrack, string[]> = {
 		base: ['./assets/audio/music_base.ogg?v=20260730', './assets/audio/music_base.mp3?v=20260730'],
-		bonus: ['./assets/audio/music_bonus.ogg?v=20260730', './assets/audio/music_bonus.mp3?v=20260730'],
-		super: ['./assets/audio/music_super.ogg?v=20260730', './assets/audio/music_super.mp3?v=20260730'],
+		bonus: [
+			'./assets/audio/music_bonus.ogg?v=20260730',
+			'./assets/audio/music_bonus.mp3?v=20260730',
+		],
+		super: [
+			'./assets/audio/music_super.ogg?v=20260730',
+			'./assets/audio/music_super.mp3?v=20260730',
+		],
 	};
 	// Per-track mix level (tune to taste). Master + music-channel mutes are honoured separately.
 	// bonus/super deviate from the old shared 0.36 because the new stems are mastered at very
@@ -51,11 +57,13 @@
 	let musicUnlocked = false;
 
 	// Which track a fresh page load should open on, from the bet mode restored into state:
-	// SUPER buys Mega Chain, BONUS buys Drop-O-Magnet, anything else is the base game.
+	// SUPER buys Core Overload, BONUS buys Gravity Breach, anything else is the base game.
 	const trackForBetMode = (): MusicTrack =>
-		stateBet.activeBetModeKey === 'SUPER' ? 'super'
-		: stateBet.activeBetModeKey === 'BONUS' ? 'bonus'
-		: 'base';
+		stateBet.activeBetModeKey === 'SUPER'
+			? 'super'
+			: stateBet.activeBetModeKey === 'BONUS'
+				? 'bonus'
+				: 'base';
 
 	const musicAudible = () =>
 		stateSound.volumeValueMaster !== 0 && stateSound.volumeValueMusic !== 0;
@@ -134,8 +142,8 @@
 			if (betModeKey === 'SUPER') {
 				sound.players.once.play({ name: 'sfx_bet_mode_super' });
 				await waitForTimeout(SECOND);
-				// SUPER buys Magnetic Mega Chain, so preview THAT theme (this used to start the
-				// Drop-O-Magnet track, which is what BONUS buys).
+				// SUPER buys Core Overload, so preview THAT theme (this used to start the
+				// Gravity Breach track, which is what BONUS buys).
 				playTrack('super');
 			} else {
 				playTrack('base');
@@ -152,7 +160,8 @@
 		soundLoop: ({ name }) => sound.players.loop.play({ name }),
 		soundOnce: ({ name, forcePlay }) => sound.players.once.play({ name, forcePlay }),
 		soundStop: ({ name }) => {
-			if (name === 'music_base' || name === 'music_bonus' || name === 'music_super') stopMusicTracks();
+			if (name === 'music_base' || name === 'music_bonus' || name === 'music_super')
+				stopMusicTracks();
 			sound.stop({ name });
 		},
 		soundFade: async ({ name, duration, from, to }) => await sound.fade({ name, duration, from, to }), // prettier-ignore

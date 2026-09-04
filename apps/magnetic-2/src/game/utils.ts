@@ -231,12 +231,16 @@ export const shouldShowMultiplierText = (rawSymbol: RawSymbol) =>
 // transition spine (freeSpinTrigger / freeSpinEnd), the free-spins popups (both fire off
 // freeSpinTrigger), and a resumed round, which replays all of those inside itself
 // (createBonusSnapshot). Between them they cover every entry path into the bonus — natural
-// scatter, a bought DROP-O-MAGNET / MEGA CHAIN round, an activated FEATURE round, and resume —
+// scatter, a bought GRAVITY BREACH / CORE OVERLOAD round, an activated FEATURE round, and resume —
 // because the gate is on the event that draws, not on how the round was entered.
 const BONUS_ART_EVENTS: ReadonlySet<string> = new Set([
 	'freeSpinTrigger',
 	'freeSpinEnd',
 	'createBonusSnapshot',
+	// The Mystery draw runs BEFORE the trigger it announces, and it draws its own art (the orb and
+	// the three "you won" plates), so it needs the gate in its own right — waiting only on the
+	// trigger would have the orb try to paint from an empty texture cache.
+	'mysteryBonusReveal',
 ]);
 
 // Gating the handlers rather than playBet itself keeps the spin start instant: playBet kicks the

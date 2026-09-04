@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PaySymbolName, RawSymbol } from '../game/types';
+	import { SYMBOL_H, SYMBOL_W } from '../game/constants';
 	import { getSymbolInfo } from '../game/utils';
 
 	import CompassSymbol from './CompassSymbol.svelte';
@@ -26,7 +27,8 @@
 		name: PaySymbolName;
 		x: number;
 		y: number;
-		/** The box the artwork is fitted into; the symbol's own size ratios apply within it. */
+		/** The WIDTH of the box the artwork is fitted into; the symbol's own size ratios apply
+		 *  within it, and the height follows the board cell's aspect. */
 		cell: number;
 		alpha?: number;
 		zIndex?: number;
@@ -39,8 +41,13 @@
 	const info = $derived(
 		getSymbolInfo({ rawSymbol: { name: props.name } as RawSymbol, state: 'static' }),
 	);
+	// The board draws a symbol into SYMBOL_W x SYMBOL_H (114 x 94 — the 328x264 art's own aspect),
+	// so applying the square `sizeRatios` to ONE `cell` for both axes squeezed the artwork 18%
+	// horizontally: the alien in the beam came out taller and narrower than the same alien on the
+	// board. Carry the board's aspect through and the shape is identical in both places.
+	const CELL_ASPECT = SYMBOL_H / SYMBOL_W;
 	const width = $derived(props.cell * info.sizeRatios.width * (props.scale ?? 1));
-	const height = $derived(props.cell * info.sizeRatios.height * (props.scale ?? 1));
+	const height = $derived(props.cell * CELL_ASPECT * info.sizeRatios.height * (props.scale ?? 1));
 	const common = $derived({
 		assetKey: info.assetKey,
 		x: props.x,

@@ -19,17 +19,17 @@ export default {
 	'INFO SYMBOL RANK': 'PERINGKAT SIMBOL',
 	'INFO WILD VALUES': 'Nilai Wild Pengganda',
 	'INFO WILD STANDARD': 'Nilai wild pengganda standar:',
-	'INFO WILD RARE': 'Nilai wild pengganda langka (terutama di Magnetic Mega Chain):',
+	'INFO WILD RARE': 'Nilai wild pengganda langka (terutama di Core Overload):',
 	'INFO FEAT WILD TITLE': 'Simbol Wild',
 	'INFO FEAT WILD TEXT':
 		'Menggantikan semua simbol pembayaran kecuali Scatter. Saat diaktifkan, Wild Magnetik memilih secara acak satu simbol pembayaran reguler yang sedang ada di grid dan menarik semua simbol yang cocok. Wild dan Scatter tidak dapat dipilih. Wild Magnetik hanya aktif saat mendarat dan tidak aktif kembali selama respin yang dihasilkan.',
 	'INFO FEAT MWILD TITLE': 'Wild Pengganda',
 	'INFO FEAT MWILD TEXT':
 		'Menggantikan seperti Wild dan meningkatkan pengganda bonus aktif untuk sisa fitur.',
-	'INFO FEAT DROP TITLE': 'Putaran Gratis Drop-O-Magnet',
+	'INFO FEAT DROP TITLE': 'Putaran Gratis Gravity Breach',
 	'INFO FEAT DROP TEXT':
 		'Dipicu oleh 3 Scatter dan memberikan 10 Putaran Gratis. Saat Wild Magnetik mendarat, ia memilih target dengan aturan posisi terlihat yang sama dan menarik simbol yang cocok.',
-	'INFO FEAT MEGA TITLE': 'Putaran Gratis Magnetic Mega Chain',
+	'INFO FEAT MEGA TITLE': 'Putaran Gratis Core Overload',
 	'INFO FEAT MEGA TEXT':
 		'Dipicu oleh 4 Scatter. Memberikan 10 Putaran Gratis. Kluster magnetis dapat tetap terkunci dan tumbuh sepanjang fitur.',
 	'INFO CW 1': 'Magnetic menggunakan kemenangan kluster alih-alih garis pembayaran.',
@@ -45,10 +45,10 @@ export default {
 	'INFO FB EXTRA TEXT':
 		'Membeli putaran khusus dengan koneksi magnetis terjamin dan peluang mendapatkan Wild Pengganda.',
 	'INFO FB FEATURE TITLE': 'Beli Fitur',
-	'INFO FB FEATURE TEXT': 'Membeli akses langsung ke fitur Putaran Gratis Drop-O-Magnet.',
+	'INFO FB FEATURE TEXT': 'Membeli akses langsung ke fitur Putaran Gratis Gravity Breach.',
 	'INFO FB BONUS TITLE': 'Beli Bonus',
 	'INFO FB BONUS TEXT':
-		'Membeli akses langsung ke fitur Putaran Gratis Magnetic Mega Chain yang lebih kuat.',
+		'Membeli akses langsung ke fitur Putaran Gratis Core Overload yang lebih kuat.',
 	'INFO COST': 'BIAYA',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': 'Ronde Terputus',
@@ -154,12 +154,21 @@ export default {
 	'BUY FEATURE SPINS TITLE': 'Putaran Fitur',
 	'BUY FEATURE SPINS DESC':
 		'Membeli putaran khusus dengan koneksi magnetis terjamin dan peluang mendapatkan Wild Pengganda.',
-	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP TITLE': 'Gravity Breach',
 	'BUY DROP DESC':
 		'10 putaran gratis diberikan. Satu simbol acak menjadi magnetis setiap putaran. Simbol yang cocok terhubung secara otomatis. Multiplier Wild meningkatkan pengali bonus secara permanen.',
-	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 putaran gratis diberikan. Satu simbol acak menjadi magnetis dan tetap terhubung antar putaran. Klaster magnetis bertahan dan tumbuh sepanjang fitur sementara pengali terus bertumpuk.',
+	'MYSTERY WON GRAVITY': '10 putaran gratis dengan koneksi magnetis dan Magnet Pengganda.',
+	'MYSTERY WON CORE':
+		'10 putaran gratis dengan klaster magnetis permanen yang terus tumbuh selama bonus.',
+	'MYSTERY WON ZERO': '10 putaran gratis dengan Magnet Pengganda terjamin pada putaran pertama.',
+	'BUY ZERO TITLE': 'Protokol Titik Nol',
+	'BUY ZERO DESC':
+		'10 putaran gratis diberikan dengan Magnet Pengganda terjamin pada putaran pertama.',
+	'BUY MYSTERY TITLE': 'Bonus Misteri',
+	'BUY MYSTERY DESC': 'Salah satu dari tiga ronde bonus diberikan secara acak: %a%, %b%, atau %c%.',
 	'AUTO TURBO': 'PUTARAN TURBO',
 	'AUTO SUPER TURBO': 'PUTARAN SUPER TURBO',
 	'AUTO FEATURE': 'FITUR BONUS 50X',
@@ -228,12 +237,12 @@ export default {
 	'PAYOUT MULTIPLIER': 'PENGALI PEMBAYARAN',
 	'REPLAY DISCLAIMER':
 		'Ini adalah ulangan ronde taruhan sebelumnya. Tidak ada taruhan baru yang dipasang.',
-	'DEAL IT': 'Drop-O-Magnet',
+	'DEAL IT': 'Gravity Breach',
 	'ALL IN': 'RANTAI MEGA',
 	'BET MODE BASE DIALOG':
 		'Magnetic adalah slot cluster-pay 7x7 di mana kemenangan dibentuk oleh kelompok simbol yang cocok. Dapatkan 5 atau lebih simbol yang cocok dan terhubung secara horizontal atau vertikal untuk menang.',
 	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
-	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS TITLE': 'Gravity Breach',
 	'BET MODE BONUS DIALOG': '10 putaran gratis dengan peluang magnet yang sangat ditingkatkan.',
 	'BET MODE BONUS DESCRIPTION':
 		'Beli 10 putaran gratis dengan peluang magnet lebih tinggi seharga 100x taruhan pilihan Anda.',
@@ -255,7 +264,7 @@ export default {
 	'RULE WILD TEXT':
 		'Dalam mode dasar, Magnetic Wild memilih secara acak satu posisi simbol reguler yang terlihat. Setiap posisi terlihat memiliki peluang yang sama, sehingga jenis simbol yang muncul lebih sering lebih mungkin dipilih. Lalu, semua simbol terlihat dari jenis tersebut ditarik. Target tetap sama selama seri magnetik aktif.',
 	'RULE SCATTER TEXT':
-		'3 Scatter memicu Drop-O-Magnet. 4 Scatter memicu Mega Chain. Scatter tidak membayar dengan sendirinya.',
+		'3 Scatter memicu Gravity Breach. 4 Scatter memicu Core Overload. Scatter tidak membayar dengan sendirinya.',
 	'RULE DEAL IT TITLE': 'RESPIN KLASTER',
 	'RULE DEAL IT TEXT':
 		'Klaster alami yang memenuhi syarat dikunci. Semua sel lain berputar ulang. Jika simbol cocok baru mendarat menyentuh klaster aktif, simbol itu bergabung dan respin berikutnya dimulai.',
@@ -263,7 +272,7 @@ export default {
 	'RULE ALL IN TEXT':
 		'Pada putaran gratis Super pertama, magnet dijamin. Simbol target, klaster terkumpul, dan nilai seri yang dikalikan bertahan selama 10 putaran gratis dan diselesaikan pada akhir.',
 	'RULE BUY TEXT':
-		'Drop-O-Magnet berbiaya 100x taruhan. Mega Chain 500x. Chance Spin 2x per ronde. Feature Spin 50x per ronde. Kemenangan maksimum: 20.000x. RTP target: 96,1%.',
+		'Gravity Breach berbiaya 100x taruhan. Core Overload 500x. Chance Spin 2x per ronde. Feature Spin 50x per ronde. Kemenangan maksimum: 20.000x. RTP target: 96,1%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'TARGET MAGNET',
 	'FEATURE SELECTED SYMBOL TEXT':
 		'Magnetic Wild memilih secara acak satu posisi simbol reguler yang terlihat. Setiap posisi memiliki peluang yang sama, sehingga jenis dengan lebih banyak posisi terlihat lebih mungkin dipilih. Semua simbol terlihat dari jenis terpilih ditarik, dan magnet tambahan tidak mengubah target selama seri.',
@@ -276,7 +285,7 @@ export default {
 	'HOWTO SPIN TEXT':
 		'Tekan Putar untuk memulai ronde. Tekan lagi saat rangkaian berlangsung untuk meminta berhenti jika tersedia.',
 	'HOWTO BUY TEXT':
-		'Buka Beli Bonus untuk memilih Drop-O-Magnet, Mega Chain, Chance Spin, atau Feature Spin. Bonus yang dibeli memerlukan konfirmasi. Mode aktivasi dapat diaktifkan atau dinonaktifkan.',
+		'Buka Beli Bonus untuk memilih Gravity Breach, Core Overload, Chance Spin, atau Feature Spin. Bonus yang dibeli memerlukan konfirmasi. Mode aktivasi dapat diaktifkan atau dinonaktifkan.',
 	'HOWTO REPLAY TEXT':
 		'Ulangan memuat event yang telah selesai dan menampilkan taruhan awal, total biaya, pembayaran, serta informasi kemenangan.',
 	'PAYTABLE TITLE PAYLINES': 'KLUSTER',
@@ -299,7 +308,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT':
 		'Magnet memulai seri magnetik. Wild menggantikan simbol reguler. Multiplier Wild mengalikan seri aktif. Scatter hanya memicu bonus.',
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet: 100x taruhan.\nMega Chain: 500x taruhan.\nChance Spin: 2x taruhan per ronde.\nFeature Spin: 50x taruhan per ronde.',
+		'Gravity Breach: 100x taruhan.\nCore Overload: 500x taruhan.\nChance Spin: 2x taruhan per ronde.\nFeature Spin: 50x taruhan per ronde.',
 	'PAYTABLE MAX_TEXT': 'Kemenangan maksimum yang diiklankan adalah 20.000x taruhan pilihan.',
 	'NO BALANCE TITLE': 'SALDO TIDAK CUKUP',
 	'NO BALANCE BODY':

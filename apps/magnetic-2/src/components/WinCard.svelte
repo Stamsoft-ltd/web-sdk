@@ -5,7 +5,14 @@
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import SparkBurst from './SparkBurst.svelte';
-	import { WIN_CARD_FRAME, WIN_CARD_INK, type WinCardTier } from '../game/winCardTiers';
+	import { drawSlimeCluster, drawSlimeDrips } from '../game/slimeDrip';
+	import { buildWinSlime, makeRng } from '../game/winSlime';
+	import {
+		WIN_CARD_FRAME,
+		WIN_CARD_INK,
+		WIN_CARD_PLATE_SLAB,
+		type WinCardTier,
+	} from '../game/winCardTiers';
 
 	// MOTHERSHIP big-win card, built to the assembled design screens (Figma SECTION 4013:920
 	// "Types of wins" — one 1200x670 frame per tier).
@@ -18,7 +25,14 @@
 	//
 	// The choreography is the brief the design was handed over with: the plate comes up from the
 	// bottom, the texts drop in from the top, and then the saucer flies in from far away.
-	const props: { tier: WinCardTier; amount: number; screenW: number; screenH: number } = $props();
+	const props: {
+		tier: WinCardTier;
+		/** Which tier this is — the slime table is keyed by it (game/winSlime.ts). */
+		tierKey: string;
+		amount: number;
+		screenW: number;
+		screenH: number;
+	} = $props();
 
 	// ── Fit ───────────────────────────────────────────────────────────────────
 	// Landscape fits the design frame itself, so the card lands exactly where the design puts it.
@@ -33,6 +47,12 @@
 			props.screenH / WIN_CARD_FRAME.h,
 		) * (isPortrait ? 0.98 : 1),
 	);
+	// Product pass 2026-09-04: the WORDMARK read as too big. Measured off a 1600x900 capture the
+	// card itself was already at the design's proportions (plate 53.6% of the screen against the
+	// design render's 53.8%, plate/word 1.185 against 1.179), so the first fix — shrinking the whole
+	// lockup — made the plate too small without fixing what was actually complained about. Only the
+	// mark steps down now, which is also what widens the plate around it.
+	const WORD_FIT = 0.86;
 
 	const tier = $derived(props.tier);
 	const ink = $derived(tier.ink ?? WIN_CARD_INK);
@@ -79,6 +99,37 @@
 		raf = requestAnimationFrame(tick);
 		return () => cancelAnimationFrame(raf);
 	});
+
+	// One roll per card instance: `seed` is captured at init and the generator is pure, so the slime
+	// is fixed for as long as the card is up but different the next time one appears.
+	// The visible slab, not the plate sprite's box — see WIN_CARD_PLATE_SLAB.
+	const slab = $derived({
+		cx:
+			tier.plate.cx +
+			((WIN_CARD_PLATE_SLAB.left + WIN_CARD_PLATE_SLAB.right) / 2 - 0.5) * tier.plate.w,
+		cy:
+			tier.plate.cy +
+			((WIN_CARD_PLATE_SLAB.top + WIN_CARD_PLATE_SLAB.bottom) / 2 - 0.5) * tier.plate.h,
+		w: (WIN_CARD_PLATE_SLAB.right - WIN_CARD_PLATE_SLAB.left) * tier.plate.w,
+		h: (WIN_CARD_PLATE_SLAB.bottom - WIN_CARD_PLATE_SLAB.top) * tier.plate.h,
+	});
+
+	const seed = Math.random();
+	const splats = $derived(
+		buildWinSlime({
+			tierKey: props.tierKey,
+			ring: slab,
+			guards: [
+				// NEGATIVE clearance on the mark: its bounding box is as tall as the plate itself on MAX,
+				// so honouring the box outright leaves only the two side edges free and the slime lines
+				// up in two caterpillar columns. The ink is what matters, and it is well inside the box.
+				{ rect: tier.word, pad: -1.2 },
+				{ rect: tier.plaque, pad: 1 },
+				{ rect: tier.saucer, pad: 0.9 },
+			],
+			rng: makeRng(seed),
+		}),
+	);
 
 	const L_PLATE = PLATE_MS / 1000;
 	const L_WORD = (WORD_DELAY + TEXT_MS) / 1000;
@@ -186,15 +237,55 @@
 		y={tier.word.cy * S + fromAbove * (1 - wordDrop.current)}
 		scale={{ x: wordBreathe * (1 + 0.09 * wordHit), y: wordBreathe * (1 - 0.12 * wordHit) }}
 	>
-		<Sprite key={tier.word.key} anchor={0.5} width={tier.word.w * S} height={tier.word.h * S} />
+		<Sprite
+			key={tier.word.key}
+			anchor={0.5}
+			width={tier.word.w * S * WORD_FIT}
+			height={tier.word.h * S * WORD_FIT}
+		/>
 	</Container>
 
-	<!-- Slime, last on top. Each splat pops on its own beat so they arrive as a spatter. -->
-	{#each tier.blobs as blob, i (i)}
-		{@const t = Math.min(1, Math.max(0, blobPop.current * (tier.blobs.length + 1) - i))}
-		<Container x={blob.cx * S} y={blob.cy * S} alpha={t} scale={t}>
-			<Sprite key={blob.key} anchor={0.5} width={blob.w * S} height={blob.h * S} />
-		</Container>
+	<!-- Slime, last on top. It is DRAWN and generated per showing (game/winSlime.ts) rather than the
+	     four fixed `winBlob*` rotations: the amount of it is a win-level cue, so it has to scale with
+	     the tier, and a drop that falls has to change shape as it goes. Each splat lands on its own
+	     beat so they arrive as a spatter. -->
+	{#each splats as splat, i (i)}
+		{@const t = Math.min(1, Math.max(0, blobPop.current * (splats.length + 1) - i))}
+		{#if t > 0.002}
+			<Container scale={t} alpha={t}>
+				<Graphics
+					draw={(g) => {
+						g.clear();
+						// The outline scales with the SPLAT, not the card: a flat 3px edge disappears on a
+						// big splat and swamps a small one.
+						const big = Math.max(...splat.lobes.map((lobe) => lobe.r));
+						const edge = Math.max(1, big * S * 0.13);
+						if (splat.drip) {
+							drawSlimeDrips(g, {
+								x: splat.drip.x * S,
+								y: splat.drip.y * S,
+								r: splat.drip.r * S,
+								fall: 150 * S,
+								edge,
+								clock,
+								period: splat.period,
+							});
+						}
+						drawSlimeCluster(g, {
+							lobes: splat.lobes.map((lobe) => ({
+								x: lobe.x * S,
+								y: lobe.y * S,
+								r: lobe.r * S,
+							})),
+							edge,
+							clock: clock + i * 1.7,
+							highlights: splat.highlights,
+							sag: 0.5,
+						});
+					}}
+				/>
+			</Container>
+		{/if}
 	{/each}
 
 	<!-- Amount plaque: up from below with the plate, a beat behind it. -->

@@ -55,5 +55,5 @@
 <!-- The assembled card, centred on the SCREEN like the design frame. WinCard owns its whole
      entrance (plate up from the bottom, texts down from the top, saucer in from far away). -->
 <Container x={maxOffX} y={maxOffY}>
-	<WinCard tier={WIN_CARD_TIERS[targetKey]} {amount} {screenW} {screenH} />
+	<WinCard tier={WIN_CARD_TIERS[targetKey]} tierKey={targetKey} {amount} {screenW} {screenH} />
 </Container>

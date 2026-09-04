@@ -21,17 +21,17 @@ export default {
 	'INFO SYMBOL RANK': 'SYMBOLRANG',
 	'INFO WILD VALUES': 'Multiplikator-Wild-værdier',
 	'INFO WILD STANDARD': 'Standard multiplikator-Wild-værdier:',
-	'INFO WILD RARE': 'Sjældne multiplikator-Wild-værdier (hovedsageligt i Magnetic Mega Chain):',
+	'INFO WILD RARE': 'Sjældne multiplikator-Wild-værdier (hovedsageligt i Core Overload):',
 	'INFO FEAT WILD TITLE': 'Wild-symbol',
 	'INFO FEAT WILD TEXT':
 		'Erstatter alle udbetalende symboler undtagen Scatter. Når den aktiveres, vælger Magnetic Wild tilfældigt ét almindeligt gevinstsymbol, der aktuelt findes på spillefeltet, og trækker alle matchende symboler sammen. Wilds og Scatters kan ikke vælges. Et Magnetic Wild aktiveres kun, når det lander, og aktiveres ikke igen under det efterfølgende respin.',
 	'INFO FEAT MWILD TITLE': 'Multiplikator-Wild',
 	'INFO FEAT MWILD TEXT':
 		'Erstatter som en Wild og hæver den aktive bonusmultiplikator for resten af funktionen.',
-	'INFO FEAT DROP TITLE': 'Drop-O-Magnet gratis spins',
+	'INFO FEAT DROP TITLE': 'Gravity Breach gratis spins',
 	'INFO FEAT DROP TEXT':
 		'Udløses af 3 Scatter og giver 10 gratis spins. Når en Magnetic Wild lander, vælger den et mål efter samme regel for synlige positioner og trækker matchende symboler sammen.',
-	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain gratis spins',
+	'INFO FEAT MEGA TITLE': 'Core Overload gratis spins',
 	'INFO FEAT MEGA TEXT':
 		'Udløses af 4 Scatter. Giver 10 gratis spins. Magnetiske klynger kan forblive låst og vokse gennem hele funktionen.',
 	'INFO CW 1': 'Magnetic bruger klyngegevinster i stedet for gevinstlinjer.',
@@ -47,10 +47,10 @@ export default {
 	'INFO FB EXTRA TEXT':
 		'Køber et særligt spin med en garanteret magnetisk forbindelse og en chance for at lande Multiplikator-Wilds.',
 	'INFO FB FEATURE TITLE': 'Funktionskøb',
-	'INFO FB FEATURE TEXT': 'Køber direkte adgang til Drop-O-Magnet gratis spins-funktionen.',
+	'INFO FB FEATURE TEXT': 'Køber direkte adgang til Gravity Breach gratis spins-funktionen.',
 	'INFO FB BONUS TITLE': 'Bonuskøb',
 	'INFO FB BONUS TEXT':
-		'Køber direkte adgang til den stærkere Magnetic Mega Chain gratis spins-funktion.',
+		'Køber direkte adgang til den stærkere Core Overload gratis spins-funktion.',
 	'INFO COST': 'PRIS',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': 'Afbrudte runder',
@@ -154,12 +154,21 @@ export default {
 	'BUY FEATURE SPINS TITLE': 'Funktionsspins',
 	'BUY FEATURE SPINS DESC':
 		'Køber et særligt spin med en garanteret magnetisk forbindelse og en chance for at lande Multiplikator-Wilds.',
-	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP TITLE': 'Gravity Breach',
 	'BUY DROP DESC':
 		'Der gives 10 gratis spins. Ved hvert spin bliver et tilfældigt symbol magnetisk. Matchende symboler forbindes automatisk. Multiplikator-Wilds hæver bonusmultiplikatoren permanent.',
-	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'Der gives 10 gratis spins. Et tilfældigt symbol bliver magnetisk og forbliver forbundet mellem spins. Den magnetiske klynge fortsætter og vokser gennem hele funktionen, mens multiplikatorerne fortsætter med at stable sig.',
+	'MYSTERY WON GRAVITY': '10 gratis spins med magnetiske forbindelser og multiplikatormagneter.',
+	'MYSTERY WON CORE':
+		'10 gratis spins med vedvarende magnetiske klynger, der kan vokse gennem bonussen.',
+	'MYSTERY WON ZERO': '10 gratis spins med en garanteret multiplikatormagnet på første spin.',
+	'BUY ZERO TITLE': 'Nulpunkt-protokol',
+	'BUY ZERO DESC':
+		'10 gratis spins tildeles med en garanteret multiplikatormagnet på allerførste spin.',
+	'BUY MYSTERY TITLE': 'Mysteriebonus',
+	'BUY MYSTERY DESC': 'En af de tre bonusrunder tildeles tilfældigt: %a%, %b% eller %c%.',
 	'AUTO TURBO': 'TURBOSPIN',
 	'AUTO SUPER TURBO': 'SUPER TURBOSPIN',
 	'AUTO FEATURE': '50X BONUSFUNKTION',
@@ -227,12 +236,12 @@ export default {
 	'PAYOUT MULTIPLIER': 'UDBETALINGSMULTIPLIKATOR',
 	'REPLAY DISCLAIMER':
 		'Dette er en genafspilning af en tidligere indsatsrunde. Der placeres ingen indsatser.',
-	'DEAL IT': 'Drop-O-Magnet',
+	'DEAL IT': 'Gravity Breach',
 	'ALL IN': 'MEGA-KÆDE',
 	'BET MODE BASE DIALOG':
 		'Magnetic er en 7x7 klyngeudbetalings-slot, hvor gevinster skabes af grupper af matchende symboler. Få 5 eller flere matchende symboler forbundet vandret eller lodret for at vinde.',
 	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
-	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS TITLE': 'Gravity Breach',
 	'BET MODE BONUS DIALOG': '10 gratis spins med kraftigt forhøjet magnetchance.',
 	'BET MODE BONUS DESCRIPTION':
 		'Køb 10 gratis spins med forhøjet magnetchance for 100x din valgte indsats.',
@@ -253,7 +262,7 @@ export default {
 	'RULE WILD TEXT':
 		'I basistilstand vælger en Magnetic Wild tilfældigt én synlig position med et almindeligt symbol. Hver synlig position har samme chance, så symboltyper, der vises oftere, har større sandsynlighed for at blive valgt. Derefter tiltrækker den alle synlige symboler af denne type. Målet forbliver fast under den aktive magnetserie.',
 	'RULE SCATTER TEXT':
-		'3 Scatter udløser Drop-O-Magnet. 4 Scatter udløser Mega Chain. Scatter giver ikke gevinst alene.',
+		'3 Scatter udløser Gravity Breach. 4 Scatter udløser Core Overload. Scatter giver ikke gevinst alene.',
 	'RULE DEAL IT TITLE': 'KLYNGE-RESPINS',
 	'RULE DEAL IT TEXT':
 		'Naturlige kvalificerende klynger låses fast. Alle andre felter spinner igen. Hvis nye matchende symboler lander ved siden af den aktive klynge, slutter de sig til den, og endnu et respin følger.',
@@ -261,7 +270,7 @@ export default {
 	'RULE ALL IN TEXT':
 		'På det første Super-gratisspin er en magnet garanteret. Det valgte målsymbol, den samlede klynge og seriens multiplicerede værdi bevares gennem alle 10 gratis spins og afgøres til sidst.',
 	'RULE BUY TEXT':
-		'Drop-O-Magnet koster 100x indsatsen. Mega Chain koster 500x. Chance Spin koster 2x pr. runde. Feature Spin koster 50x pr. runde. Maksimal gevinst: 20.000x. Mål-RTP: 96,1 %.',
+		'Gravity Breach koster 100x indsatsen. Core Overload koster 500x. Chance Spin koster 2x pr. runde. Feature Spin koster 50x pr. runde. Maksimal gevinst: 20.000x. Mål-RTP: 96,1 %.',
 	'FEATURE SELECTED SYMBOL TITLE': 'MAGNETMÅL',
 	'FEATURE SELECTED SYMBOL TEXT':
 		'En Magnetic Wild vælger tilfældigt én synlig position med et almindeligt symbol. Hver position har samme chance, så typer med flere synlige positioner er mere sandsynlige. Alle synlige symboler af den valgte type tiltrækkes, og ekstra magneter ændrer aldrig målet under serien.',
@@ -274,7 +283,7 @@ export default {
 	'HOWTO SPIN TEXT':
 		'Tryk på Spin for at starte en runde. Tryk igen under en sekvens for at anmode om stop, hvor det er muligt.',
 	'HOWTO BUY TEXT':
-		'Åbn Køb bonus for at vælge Drop-O-Magnet, Mega Chain, Chance Spin eller Feature Spin. Købte bonusser kræver bekræftelse. Aktiveringstilstande kan slås til eller fra.',
+		'Åbn Køb bonus for at vælge Gravity Breach, Core Overload, Chance Spin eller Feature Spin. Købte bonusser kræver bekræftelse. Aktiveringstilstande kan slås til eller fra.',
 	'HOWTO REPLAY TEXT':
 		'Genafspilning indlæser en afsluttet hændelse og viser den oprindelige indsats, samlede omkostning, udbetaling og gevinstinformation.',
 	'PAYTABLE TITLE PAYLINES': 'KLYNGE',
@@ -297,7 +306,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT':
 		'Magnet starter magnetserier. Wild erstatter almindelige symboler. Multiplier Wilds multiplicerer den aktive serie. Scatter udløser kun bonusser.',
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet: 100x indsats.\nMega Chain: 500x indsats.\nChance Spin: 2x indsats pr. runde.\nFeature Spin: 50x indsats pr. runde.',
+		'Gravity Breach: 100x indsats.\nCore Overload: 500x indsats.\nChance Spin: 2x indsats pr. runde.\nFeature Spin: 50x indsats pr. runde.',
 	'PAYTABLE MAX_TEXT': 'Den annoncerede maksimale gevinst er 20.000x den valgte indsats.',
 	'NO BALANCE TITLE': 'IKKE NOK SALDO',
 	'NO BALANCE BODY':

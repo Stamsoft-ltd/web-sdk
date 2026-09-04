@@ -19,17 +19,17 @@ export default {
 	'INFO SYMBOL RANK': 'SEMBOL SIRASI',
 	'INFO WILD VALUES': 'Çarpan Wild Değerleri',
 	'INFO WILD STANDARD': 'Standart çarpan wild değerleri:',
-	'INFO WILD RARE': "Nadir çarpan wild değerleri (çoğunlukla Magnetic Mega Chain'de):",
+	'INFO WILD RARE': "Nadir çarpan wild değerleri (çoğunlukla Core Overload'de):",
 	'INFO FEAT WILD TITLE': 'Wild Sembol',
 	'INFO FEAT WILD TEXT':
 		'Scatter dışındaki tüm ödeme sembollerinin yerine geçer. Etkinleştirildiğinde Manyetik Wild, ızgarada bulunan bir normal ödeme sembolünü rastgele seçer ve eşleşen tüm sembolleri bir araya çeker. Wild ve Scatter seçilemez. Manyetik Wild yalnızca geldiğinde etkinleşir ve bunun sonucunda oluşan yeniden çevrim sırasında tekrar etkinleşmez.',
 	'INFO FEAT MWILD TITLE': 'Çarpan Wild',
 	'INFO FEAT MWILD TEXT':
 		'Bir Wild gibi yerine geçer ve özelliğin geri kalanı boyunca aktif bonus çarpanını artırır.',
-	'INFO FEAT DROP TITLE': 'Drop-O-Magnet Bedava Dönüşler',
+	'INFO FEAT DROP TITLE': 'Gravity Breach Bedava Dönüşler',
 	'INFO FEAT DROP TEXT':
 		'3 Scatter ile tetiklenir ve 10 bedava dönüş verir. Manyetik Wild geldiğinde aynı görünür konum kuralıyla bir hedef seçer ve eşleşen sembolleri bir araya çeker.',
-	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain Bedava Dönüşler',
+	'INFO FEAT MEGA TITLE': 'Core Overload Bedava Dönüşler',
 	'INFO FEAT MEGA TEXT':
 		'4 Scatter ile tetiklenir. 10 Bedava Dönüş verir. Manyetik kümeler kilitli kalabilir ve özellik boyunca büyüyebilir.',
 	'INFO CW 1': 'Magnetic, ödeme çizgileri yerine küme kazançları kullanır.',
@@ -45,10 +45,10 @@ export default {
 	'INFO FB EXTRA TEXT':
 		'Garantili manyetik bağlantı ve Çarpan Wild düşürme şansı içeren özel bir dönüş satın alır.',
 	'INFO FB FEATURE TITLE': 'Özellik Satın Al',
-	'INFO FB FEATURE TEXT': 'Drop-O-Magnet Bedava Dönüşler özelliğine doğrudan erişim satın alır.',
+	'INFO FB FEATURE TEXT': 'Gravity Breach Bedava Dönüşler özelliğine doğrudan erişim satın alır.',
 	'INFO FB BONUS TITLE': 'Bonus Satın Al',
 	'INFO FB BONUS TEXT':
-		'Daha güçlü Magnetic Mega Chain Bedava Dönüşler özelliğine doğrudan erişim satın alır.',
+		'Daha güçlü Core Overload Bedava Dönüşler özelliğine doğrudan erişim satın alır.',
 	'INFO COST': 'MALİYET',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': 'Kesintiye Uğrayan Turlar',
@@ -152,12 +152,19 @@ export default {
 	'BUY FEATURE SPINS TITLE': 'Özellik Dönüşleri',
 	'BUY FEATURE SPINS DESC':
 		'Garantili manyetik bağlantı ve Çarpan Wild düşürme şansı içeren özel bir dönüş satın alır.',
-	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP TITLE': 'Gravity Breach',
 	'BUY DROP DESC':
 		"10 bedava dönüş verilir. Her dönüşte rastgele bir sembol manyetik hale gelir. Eşleşen semboller otomatik olarak birbirine bağlanır. Multiplier Wild'lar bonus çarpanını kalıcı olarak artırır.",
-	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 bedava dönüş verilir. Rastgele bir sembol manyetik hale gelir ve dönüşler arasında bağlı kalır. Manyetik küme özellik boyunca kalıcı olur ve büyür, çarpanlar ise istiflenmeye devam eder.',
+	'MYSTERY WON GRAVITY': 'Manyetik bağlantılar ve Çarpan Mıknatısları ile 10 ücretsiz dönüş.',
+	'MYSTERY WON CORE': 'Bonus boyunca büyüyen kalıcı manyetik kümelerle 10 ücretsiz dönüş.',
+	'MYSTERY WON ZERO': 'İlk dönüşte garantili Çarpan Mıknatısı ile 10 ücretsiz dönüş.',
+	'BUY ZERO TITLE': 'Sıfır Nokta Protokolü',
+	'BUY ZERO DESC': 'İlk dönüşte garantili Çarpan Mıknatısı ile 10 ücretsiz dönüş verilir.',
+	'BUY MYSTERY TITLE': 'Gizemli Bonus',
+	'BUY MYSTERY DESC': 'Üç bonus turundan biri rastgele verilir: %a%, %b% veya %c%.',
 	'AUTO TURBO': 'TURBO DÖNÜŞ',
 	'AUTO SUPER TURBO': 'SÜPER TURBO DÖNÜŞ',
 	'AUTO FEATURE': '50X BONUS ÖZELLİĞİ',
@@ -225,12 +232,12 @@ export default {
 	'TOTAL BET COST': 'TOPLAM BAHİS MALİYETİ',
 	'PAYOUT MULTIPLIER': 'ÖDEME ÇARPANI',
 	'REPLAY DISCLAIMER': 'Bu, önceki bir bahis turunun tekrarıdır. Yeni bahis oynanmayacaktır.',
-	'DEAL IT': 'Drop-O-Magnet',
+	'DEAL IT': 'Gravity Breach',
 	'ALL IN': 'MEGA ZİNCİR',
 	'BET MODE BASE DIALOG':
 		'Magnetic, kazançların eşleşen sembol gruplarıyla oluşturulduğu 7x7 küme ödemeli bir slottur. Kazanmak için yatay veya dikey olarak bağlı 5 veya daha fazla eşleşen sembol düşürün.',
 	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
-	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS TITLE': 'Gravity Breach',
 	'BET MODE BONUS DIALOG': 'Mıknatıs şansı büyük ölçüde artırılmış 10 bedava dönüş.',
 	'BET MODE BONUS DESCRIPTION':
 		'Seçtiğiniz bahsin 100 katına artırılmış mıknatıs şanslı 10 bedava dönüş satın alın.',
@@ -252,7 +259,7 @@ export default {
 	'RULE WILD TEXT':
 		'Temel modda Magnetic Wild, görünür normal sembol konumlarından birini rastgele seçer. Her görünür konumun şansı aynıdır; bu yüzden daha çok görünen sembol türlerinin seçilme ihtimali daha yüksektir. Ardından bu türdeki tüm görünür sembolleri çeker. Hedef, aktif manyetik seri boyunca sabit kalır.',
 	'RULE SCATTER TEXT':
-		"3 Scatter Drop-O-Magnet'i, 4 Scatter Mega Chain'i tetikler. Scatter tek başına ödeme yapmaz.",
+		"3 Scatter Gravity Breach'i, 4 Scatter Core Overload'i tetikler. Scatter tek başına ödeme yapmaz.",
 	'RULE DEAL IT TITLE': 'KÜME YENİDEN DÖNÜŞLERİ',
 	'RULE DEAL IT TEXT':
 		'Doğal uygun kümeler kilitlenir. Diğer tüm hücreler yeniden döner. Aktif kümeye temas eden yeni eşleşen semboller gelirse kümeye katılır ve bir yeniden dönüş daha başlar.',
@@ -260,7 +267,7 @@ export default {
 	'RULE ALL IN TEXT':
 		'İlk Süper bedava dönüşte bir mıknatıs garantidir. Seçilen hedef sembol, toplanan küme ve serinin çarpılmış değeri 10 bedava dönüşün tamamında korunur ve sonunda sonuçlandırılır.',
 	'RULE BUY TEXT':
-		'Drop-O-Magnet 100x bahis, Mega Chain 500x bahis, Chance Spin tur başına 2x bahis ve Feature Spin tur başına 50x bahis tutarındadır. Maksimum kazanç: 20.000x. Hedef RTP: %96,1.',
+		'Gravity Breach 100x bahis, Core Overload 500x bahis, Chance Spin tur başına 2x bahis ve Feature Spin tur başına 50x bahis tutarındadır. Maksimum kazanç: 20.000x. Hedef RTP: %96,1.',
 	'FEATURE SELECTED SYMBOL TITLE': 'MIKNATIS HEDEFİ',
 	'FEATURE SELECTED SYMBOL TEXT':
 		'Magnetic Wild görünür normal sembol konumlarından birini rastgele seçer. Her konumun şansı aynıdır; daha fazla görünür konumu olan türler daha olasıdır. Seçilen türdeki tüm görünür semboller çekilir ve ek mıknatıslar seri sırasında hedefi değiştirmez.',
@@ -273,7 +280,7 @@ export default {
 	'HOWTO SPIN TEXT':
 		"Bir tur başlatmak için Döndür'e basın. Bir dizi çalışırken, mümkün olduğunda durdurma istemek için tekrar basın.",
 	'HOWTO BUY TEXT':
-		"Drop-O-Magnet, Mega Chain, Chance Spin veya Feature Spin seçmek için Bonus Satın Al'ı açın. Satın alınan bonuslar onay gerektirir. Etkinleştirme modları açılıp kapatılabilir.",
+		"Gravity Breach, Core Overload, Chance Spin veya Feature Spin seçmek için Bonus Satın Al'ı açın. Satın alınan bonuslar onay gerektirir. Etkinleştirme modları açılıp kapatılabilir.",
 	'HOWTO REPLAY TEXT':
 		'Tekrar, tamamlanmış bir etkinliği yükler ve ilk bahis, toplam maliyet, ödeme ve kazanç bilgilerini gösterir.',
 	'PAYTABLE TITLE PAYLINES': 'KÜME',
@@ -296,7 +303,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT':
 		"Mıknatıs manyetik serileri başlatır. Wild normal sembollerin yerine geçer. Çarpan Wild'lar aktif seriyi çarpar. Scatter yalnızca bonusları tetikler.",
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet: 100x bahis.\nMega Chain: 500x bahis.\nChance Spin: tur başına 2x bahis.\nFeature Spin: tur başına 50x bahis.',
+		'Gravity Breach: 100x bahis.\nCore Overload: 500x bahis.\nChance Spin: tur başına 2x bahis.\nFeature Spin: tur başına 50x bahis.',
 	'PAYTABLE MAX_TEXT': 'Duyurulan maksimum kazanç seçilen bahsin 20.000 katıdır.',
 	'NO BALANCE TITLE': 'YETERSİZ BAKİYE',
 	'NO BALANCE BODY':

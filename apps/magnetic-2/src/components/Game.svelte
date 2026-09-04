@@ -36,6 +36,7 @@
 	import GameLogoFrame from './GameLogoFrame.svelte';
 	import Win from './Win.svelte';
 	import FreeSpinIntro from './FreeSpinIntro.svelte';
+	import MysteryReveal from './MysteryReveal.svelte';
 	import FreeSpinCounter from './FreeSpinCounter.svelte';
 	import FreeSpinOutro from './FreeSpinOutro.svelte';
 	import Transition from './Transition.svelte';
@@ -165,10 +166,10 @@
 					dialogVolatility: scatterArt,
 				},
 				text: {
-					title: 'DROP-O-MAGNET',
+					title: 'GRAVITY BREACH',
 					dialog:
 						'10 free spins. Magnet chance is boosted; any magnet selects one target symbol for that active series.',
-					description: 'Play the 10-spin Drop-O-Magnet bonus for 100x the selected play amount.',
+					description: 'Play the 10-spin Gravity Breach bonus for 100x the selected play amount.',
 					button: 'PLAY',
 					tickerIdle: 'COME AND PLAY',
 					tickerSpin: 'BONUS ACTIVE',
@@ -212,11 +213,10 @@
 					dialogVolatility: scatterArt,
 				},
 				text: {
-					title: 'MEGA CHAIN',
+					title: 'CORE OVERLOAD',
 					dialog:
 						'10 free spins. First spin guarantees a magnet, and the same target cluster persists across the whole bonus.',
-					description:
-						'Play the persistent Magnetic Mega Chain bonus for 500x the selected play amount.',
+					description: 'Play the persistent Core Overload bonus for 500x the selected play amount.',
 					button: 'PLAY',
 					tickerIdle: 'COME AND PLAY',
 					tickerSpin: 'SUPER ACTIVE',
@@ -266,7 +266,7 @@
 						},
 						{
 							title: 'BONUSES',
-							text: '3 scatters trigger Drop-O-Magnet with 10 free spins and boosted magnet chance. 4 scatters trigger Magnetic Mega Chain where the first spin guarantees a magnet and the target cluster persists across the full bonus.',
+							text: '3 scatters trigger Gravity Breach with 10 free spins and boosted magnet chance. 4 scatters trigger Core Overload where the first spin guarantees a magnet and the target cluster persists across the full bonus.',
 							image: bonusArt,
 							row: 4,
 							column: 0,
@@ -315,15 +315,15 @@
 						},
 						{
 							title: 'PLAY MODES',
-							text: 'Drop-O-Magnet: 100x\nMagnetic Mega Chain: 500x\nFeature Spin: 50x / spin\nChance Spin: 2x / spin',
+							text: 'Gravity Breach: 100x\nCore Overload: 500x\nFeature Spin: 50x / spin\nChance Spin: 2x / spin',
 							image: bonusArt,
 							row: 2,
 							column: 0,
 							imagePosition: 'left',
 						},
 						{
-							title: 'MEGA CHAIN',
-							text: 'The persistent Mega Chain bonus locks the chosen magnetic symbol type, keeps its cluster on the grid, and awards the final large cluster result at the end of the 10-spin feature.',
+							title: 'CORE OVERLOAD',
+							text: 'The persistent Core Overload bonus locks the chosen magnetic symbol type, keeps its cluster on the grid, and awards the final large cluster result at the end of the 10-spin feature.',
 							image: heroArt,
 							row: 2,
 							column: 1,
@@ -396,6 +396,9 @@
 				     cover the room/board it is hiding the swap of, and the congrats has to sit on it. -->
 				<BonusHandoffVeil />
 				<FreeSpinIntro />
+				<!-- The Mystery draw plays BEFORE the free-spins congratulations it announces, and
+				     over the same veil, so it mounts alongside it rather than inside it. -->
+				<MysteryReveal />
 				<CapsulePanel />
 				<RespinPanel />
 				<PressPlayMark />

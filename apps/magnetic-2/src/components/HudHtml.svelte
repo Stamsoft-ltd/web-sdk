@@ -462,6 +462,11 @@
 	// components-shared/OnHotkey, so holding the button and holding Space feel identical.
 	const SPIN_HOLD_MS = 400;
 	let spinHoldTimeout: ReturnType<typeof setTimeout> | null = null;
+	// The hold forces turbo on for its duration, so the player's OWN turbo setting has to be put
+	// back when they let go. Releasing used to write `false` unconditionally, which silently
+	// demoted a TURBO player to normal speed every time they held the button or Space — the hold
+	// was stealing a setting it only borrowed.
+	let turboBeforeHold: boolean | null = null;
 	// A hold consumes the click that pointerup would otherwise deliver — without this the release
 	// immediately fires onSpinButton, which reads as a STOP press and kills the round just started.
 	let spinHoldConsumedClick = false;
@@ -473,6 +478,7 @@
 		if (hasAuto || !stateBetDerived.isBetCostAvailable()) return;
 		// Re-entry guard: OnHotkey delivers onhold twice (callback + its isHolding effect).
 		if (stateBet.isSpaceHold) return;
+		turboBeforeHold = stateBet.isTurbo;
 		// The click to consume and the press sound only exist on the pointer path — a Space hold has
 		// no click event, and its keydown already played the press sound via onSpinHotkey.
 		if (fromPointer) {
@@ -503,7 +509,10 @@
 		}
 		if (!stateBet.isSpaceHold) return;
 		stateBet.isSpaceHold = false;
-		stateBetDerived.updateIsTurbo(false, { persistent: true });
+		// `isSuperTurbo` is never touched by the hold, so restoring `isTurbo` restores all three
+		// speeds exactly as the player left them.
+		stateBetDerived.updateIsTurbo(turboBeforeHold ?? false, { persistent: true });
+		turboBeforeHold = null;
 	};
 
 	const onSpinPointerDown = (event: PointerEvent) => {

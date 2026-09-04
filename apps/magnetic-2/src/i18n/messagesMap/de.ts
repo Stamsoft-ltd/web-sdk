@@ -19,17 +19,17 @@ export default {
 	'INFO SYMBOL RANK': 'SYMBOL-RANG',
 	'INFO WILD VALUES': 'Multiplikator-Wild-Werte',
 	'INFO WILD STANDARD': 'Standard-Multiplikator-Wild-Werte:',
-	'INFO WILD RARE': 'Seltene Multiplikator-Wild-Werte (hauptsächlich in Magnetic Mega Chain):',
+	'INFO WILD RARE': 'Seltene Multiplikator-Wild-Werte (hauptsächlich in Core Overload):',
 	'INFO FEAT WILD TITLE': 'Wild-Symbol',
 	'INFO FEAT WILD TEXT':
 		'Ersetzt alle Gewinnsymbole außer dem Scatter. Bei Aktivierung wählt das Magnetic Wild zufällig ein reguläres Gewinnsymbol aus, das sich aktuell im Raster befindet, und zieht alle passenden Symbole zusammen. Wilds und Scatter können nicht ausgewählt werden. Ein Magnetic Wild wird nur aktiviert, wenn es landet, und während des daraus entstehenden Respins nicht erneut aktiviert.',
 	'INFO FEAT MWILD TITLE': 'Multiplikator-Wild',
 	'INFO FEAT MWILD TEXT':
 		'Ersetzt wie ein Wild und erhöht den aktiven Bonus-Multiplikator für den Rest der Funktion.',
-	'INFO FEAT DROP TITLE': 'Drop-O-Magnet Freispiele',
+	'INFO FEAT DROP TITLE': 'Gravity Breach Freispiele',
 	'INFO FEAT DROP TEXT':
 		'Wird durch 3 Scatter ausgelöst und vergibt 10 Freispiele. Wenn ein Magnetic Wild landet, wählt es nach derselben Regel für sichtbare Positionen ein Ziel und zieht passende Symbole zusammen.',
-	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain Freispiele',
+	'INFO FEAT MEGA TITLE': 'Core Overload Freispiele',
 	'INFO FEAT MEGA TEXT':
 		'Wird durch 4 Scatter ausgelöst. Vergibt 10 Freispiele. Magnetische Cluster können gesperrt bleiben und über die gesamte Funktion hinweg wachsen.',
 	'INFO CW 1': 'Magnetic verwendet Cluster-Gewinne anstelle von Gewinnlinien.',
@@ -45,10 +45,9 @@ export default {
 	'INFO FB EXTRA TEXT':
 		'Kauft einen speziellen Spin mit garantierter magnetischer Verbindung und einer Chance auf Multiplikator-Wilds.',
 	'INFO FB FEATURE TITLE': 'Feature-Kauf',
-	'INFO FB FEATURE TEXT': 'Kauft direkten Zugang zur Drop-O-Magnet Freispiel-Funktion.',
+	'INFO FB FEATURE TEXT': 'Kauft direkten Zugang zur Gravity Breach Freispiel-Funktion.',
 	'INFO FB BONUS TITLE': 'Bonus-Kauf',
-	'INFO FB BONUS TEXT':
-		'Kauft direkten Zugang zur stärkeren Magnetic Mega Chain Freispiel-Funktion.',
+	'INFO FB BONUS TEXT': 'Kauft direkten Zugang zur stärkeren Core Overload Freispiel-Funktion.',
 	'INFO COST': 'KOSTEN',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': 'Unterbrochene Runden',
@@ -152,12 +151,20 @@ export default {
 	'BUY FEATURE SPINS TITLE': 'Feature-Spins',
 	'BUY FEATURE SPINS DESC':
 		'Kauft einen speziellen Spin mit garantierter magnetischer Verbindung und einer Chance auf Multiplikator-Wilds.',
-	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP TITLE': 'Gravity Breach',
 	'BUY DROP DESC':
 		'10 Freispiele werden vergeben. Bei jedem Spin wird ein zufälliges Symbol magnetisch. Übereinstimmende Symbole verbinden sich automatisch. Multiplikator-Wilds erhöhen den Bonus-Multiplikator dauerhaft.',
-	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 Freispiele werden vergeben. Ein zufälliges Symbol wird magnetisch und bleibt zwischen den Spins verbunden. Der magnetische Cluster bleibt bestehen und wächst während des gesamten Features, während sich die Multiplikatoren weiter stapeln.',
+	'MYSTERY WON GRAVITY': '10 Freispiele mit magnetischen Verbindungen und Multiplikator-Magneten.',
+	'MYSTERY WON CORE': '10 Freispiele mit dauerhaften Magnet-Clustern, die im Bonus weiterwachsen.',
+	'MYSTERY WON ZERO': '10 Freispiele mit einem garantierten Multiplikator-Magneten im ersten Spin.',
+	'BUY ZERO TITLE': 'Nullpunkt-Protokoll',
+	'BUY ZERO DESC':
+		'10 Freispiele mit einem garantierten Multiplikator-Magneten im allerersten Spin.',
+	'BUY MYSTERY TITLE': 'Mystery-Bonus',
+	'BUY MYSTERY DESC': 'Eine der drei Bonusrunden wird zufällig vergeben: %a%, %b% oder %c%.',
 	'AUTO TURBO': 'TURBO-SPIN',
 	'AUTO SUPER TURBO': 'SUPER-TURBO-SPIN',
 	'AUTO FEATURE': '50X BONUS-FEATURE',
@@ -225,12 +232,12 @@ export default {
 	'PAYOUT MULTIPLIER': 'AUSZAHLUNGSMULTIPLIKATOR',
 	'REPLAY DISCLAIMER':
 		'Dies ist eine Wiederholung einer früheren Einsatzrunde. Es werden keine Einsätze platziert.',
-	'DEAL IT': 'Drop-O-Magnet',
+	'DEAL IT': 'Gravity Breach',
 	'ALL IN': 'MEGA-KETTE',
 	'BET MODE BASE DIALOG':
 		'Magnetic ist ein 7x7 Cluster-Pays-Slot, bei dem Gewinne durch Gruppen übereinstimmender Symbole entstehen. Lande 5 oder mehr übereinstimmende Symbole, die horizontal oder vertikal verbunden sind, um zu gewinnen.',
 	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
-	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS TITLE': 'Gravity Breach',
 	'BET MODE BONUS DIALOG': '10 Freispiele mit stark erhöhter Magnet-Chance.',
 	'BET MODE BONUS DESCRIPTION':
 		'Kaufe 10 Freispiele mit erhöhter Magnet-Chance für das 100-Fache deines gewählten Einsatzes.',
@@ -253,7 +260,7 @@ export default {
 	'RULE WILD TEXT':
 		'Im Basismodus wählt ein Magnetic Wild zufällig eine sichtbare Position mit einem regulären Symbol. Jede sichtbare Position hat die gleiche Chance; häufiger sichtbare Symbolarten werden daher eher gewählt. Anschließend zieht es alle sichtbaren Symbole dieser Art an. Das Ziel bleibt während der aktiven Magnetserie unverändert.',
 	'RULE SCATTER TEXT':
-		'3 Scatter lösen Drop-O-Magnet aus. 4 Scatter lösen Mega Chain aus. Scatter zahlen selbst keinen Gewinn.',
+		'3 Scatter lösen Gravity Breach aus. 4 Scatter lösen Core Overload aus. Scatter zahlen selbst keinen Gewinn.',
 	'RULE DEAL IT TITLE': 'CLUSTER-RESPINS',
 	'RULE DEAL IT TEXT':
 		'Natürliche qualifizierende Cluster werden fixiert. Alle anderen Felder respinnen. Landen neue passende Symbole neben dem aktiven Cluster, schließen sie sich an und ein weiterer Respin folgt.',
@@ -261,7 +268,7 @@ export default {
 	'RULE ALL IN TEXT':
 		'Im ersten Super-Freispiel ist ein Magnet garantiert. Das gewählte Zielsymbol, der gesammelte Cluster und der multiplizierte Serienwert bleiben über alle 10 Freispiele bestehen und werden am Ende ausgewertet.',
 	'RULE BUY TEXT':
-		'Drop-O-Magnet kostet den 100-fachen Einsatz. Mega Chain kostet den 500-fachen Einsatz. Chance Spin kostet den 2-fachen Einsatz pro Runde. Feature Spin kostet den 50-fachen Einsatz pro Runde. Maximalgewinn: 20.000x. Ziel-RTP: 96,1 %.',
+		'Gravity Breach kostet den 100-fachen Einsatz. Core Overload kostet den 500-fachen Einsatz. Chance Spin kostet den 2-fachen Einsatz pro Runde. Feature Spin kostet den 50-fachen Einsatz pro Runde. Maximalgewinn: 20.000x. Ziel-RTP: 96,1 %.',
 	'FEATURE SELECTED SYMBOL TITLE': 'MAGNETZIEL',
 	'FEATURE SELECTED SYMBOL TEXT':
 		'Ein Magnetic Wild wählt zufällig eine sichtbare Position mit einem regulären Symbol. Jede Position hat die gleiche Chance; Symbolarten mit mehr sichtbaren Positionen werden daher eher gewählt. Alle sichtbaren Symbole der gewählten Art werden angezogen, und zusätzliche Magnete ändern das Ziel während der Serie nicht.',
@@ -274,7 +281,7 @@ export default {
 	'HOWTO SPIN TEXT':
 		'Drücke Spin, um eine Runde zu starten. Drücke während einer laufenden Sequenz erneut, um – sofern verfügbar – einen Stopp anzufordern.',
 	'HOWTO BUY TEXT':
-		'Öffne Bonus kaufen, um Drop-O-Magnet, Mega Chain, Chance Spin oder Feature Spin zu wählen. Gekaufte Boni müssen bestätigt werden. Aktivierungsmodi können ein- und ausgeschaltet werden.',
+		'Öffne Bonus kaufen, um Gravity Breach, Core Overload, Chance Spin oder Feature Spin zu wählen. Gekaufte Boni müssen bestätigt werden. Aktivierungsmodi können ein- und ausgeschaltet werden.',
 	'HOWTO REPLAY TEXT':
 		'Replay lädt ein zuvor abgeschlossenes Ereignis und zeigt ursprünglichen Einsatz, Gesamtkosten, Auszahlung und Gewinninformationen.',
 	'PAYTABLE TITLE PAYLINES': 'CLUSTER',
@@ -297,7 +304,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT':
 		'Magnet startet Magnetserien. Wild ersetzt reguläre Symbole. Multiplikator-Wilds multiplizieren die aktive Serie. Scatter lösen nur Boni aus.',
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet: 100x Einsatz.\nMega Chain: 500x Einsatz.\nChance Spin: 2x Einsatz pro Runde.\nFeature Spin: 50x Einsatz pro Runde.',
+		'Gravity Breach: 100x Einsatz.\nCore Overload: 500x Einsatz.\nChance Spin: 2x Einsatz pro Runde.\nFeature Spin: 50x Einsatz pro Runde.',
 	'PAYTABLE MAX_TEXT':
 		'Der angegebene Maximalgewinn beträgt das 20.000-Fache des gewählten Einsatzes.',
 	'NO BALANCE TITLE': 'NICHT GENUG GUTHABEN',

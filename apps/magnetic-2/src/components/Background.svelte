@@ -5,9 +5,11 @@
 
 	import SkyClouds from './SkyClouds.svelte';
 	import BeamSymbol from './BeamSymbol.svelte';
+	import { drawUfoLamps } from '../game/ufoLamps';
 	import { getContext } from '../game/context';
 	import { BACKGROUND_LIGHTS } from '../game/backgroundLights';
-	import { PORTRAIT_BACKGROUND_RATIO } from '../game/constants';
+	import { PORTRAIT_BACKGROUND_RATIO, SYMBOL_H, SYMBOL_W } from '../game/constants';
+	import { BOARD_SIZES } from '../game/constants';
 
 	const props: {
 		/** True once the splash is out of the way and the player is actually looking at the room —
@@ -268,7 +270,9 @@
 	const shipX = $derived(
 		canvas.width * 0.5 +
 			(FAR.cx + (UFO.cx - FAR.cx) * near - 0.5) * cover.width +
-			(Math.sin(shipClock * 13.9) + 0.6 * Math.sin(shipClock * 8.9 + 2.1)) * shake,
+			(Math.sin(shipClock * 13.9) + 0.6 * Math.sin(shipClock * 8.9 + 2.1)) * shake +
+			// A lazy sideways drift to go with the hover: a ship that only moves up and down is a lift.
+			Math.sin(shipClock * 0.31 + 0.9) * cover.width * 0.006 * near,
 	);
 	const shipY = $derived(
 		canvas.height * 0.5 +
@@ -276,12 +280,18 @@
 			// A shallow rise over the run, so the approach curves instead of sliding up a wire.
 			-Math.sin(Math.PI * near) * cover.height * 0.035 +
 			Math.sin(shipClock * 11.3 + 1.7) * shake * 0.8 +
-			// Idle hover, once it is parked.
-			Math.sin(shipClock * 0.52) * canvas.height * 0.008 * near,
+			// Idle hover, once it is parked. Two slow sines that do not divide into each other, so the
+			// ship never repeats a path — one sine alone reads as a sprite on a spring.
+			(Math.sin(shipClock * 0.52) * 0.011 + Math.sin(shipClock * 0.23 + 2.2) * 0.005) *
+				canvas.height *
+				near,
 	);
 	// Banked while it closes, level once it parks, then a hair of roll in the tremble.
 	const shipRotation = $derived(
-		-0.16 * (1 - near) + Math.sin(shipClock * 7.2) * 0.0011 * (1 + brake * 5) * near,
+		-0.16 * (1 - near) +
+			Math.sin(shipClock * 7.2) * 0.0011 * (1 + brake * 5) * near +
+			// The hover has to bank, or the saucer slides sideways dead level like a cursor.
+			Math.sin(shipClock * 0.31 + 0.9 + Math.PI / 2) * 0.02 * near,
 	);
 
 	/** Seconds between grabs — the beam flares and whatever it is holding is hauled up the cone. */
@@ -296,15 +306,80 @@
 	// `magnetTargetSymbol` is the cluster's own symbol and is null whenever there is no cluster, so
 	// this appears and clears with the cluster rather than needing its own bookkeeping.
 	const beamSymbol = $derived(context.stateGame.magnetTargetSymbol);
-	/** Where it settles down the cone, and how much of the cone's width the artwork fills there. */
-	const BEAM_SYMBOL = { hold: 0.55, fill: 0.7 };
+	/**
+	 * `enter` / `top` are positions down the cone (0 = the emitter, 1 = the cone's mouth), `fill` is
+	 * how much of the cone's width at `top` the artwork spans, and `min`/`max` are the size it grows
+	 * through on the way up.
+	 *
+	 * SUCTION IS A LOOP, not an arrival. The symbol enters at the cone's mouth SMALL, is drawn up
+	 * the beam getting BIGGER as it closes on the ship, and vanishes into the hull — then the next
+	 * one starts at the bottom. Two earlier cuts got this wrong: the first parked it half way down
+	 * the cone at a fixed size (a thing in a light, not a thing being taken), the second let it
+	 * climb once and then hold. Growing is what sells the depth — it is coming towards the ship.
+	 */
+	const BEAM_SYMBOL = { enter: 0.95, top: 0.16, fill: 0.52, min: 0.42, max: 1.2 };
 	const BEAM_SYMBOL_MS = 900;
-	// It ENTERS from the bottom of the cone and rides up to the hold point — the "sucked up" read.
-	// Starting at rest instead just popped it into existence half way down the beam.
+	/** The one-off flight out of the board cell into the cone's mouth. */
 	const lift = new Tween(0, { duration: BEAM_SYMBOL_MS, easing: cubicOut });
+	/** Seconds per trip up the cone. */
+	const SUCK_CYCLE = 3.4;
+	/** `shipClock` when the loop took over from the flight — null while the flight is still running. */
+	let suckT0 = $state<number | null>(null);
 	$effect(() => {
+		if (beamSymbol && !flightArmed) {
+			flightArmed = true;
+			// Board -> ship-local, because <BeamSymbol> is a child of the ship's own container.
+			// The ship's rotation is a fraction of a degree of hover tilt, so it is ignored here;
+			// including it would rotate the launch point by less than a pixel.
+			const board = context.stateGameDerived.boardLayout();
+			const at = firstTargetCell();
+			if (at) {
+				const scale = board.boardScale || 1;
+				const worldX = board.x + (SYMBOL_W * (at.reel + 0.5) - BOARD_SIZES.width / 2) * scale;
+				const worldY = board.y + (SYMBOL_H * (at.row + 0.5) - BOARD_SIZES.height / 2) * scale;
+				const ship = shipScale || 1;
+				flightFrom = {
+					x: (worldX - shipX) / ship,
+					y: (worldY - shipY) / ship,
+					cell: (SYMBOL_W * scale) / ship,
+				};
+			}
+		}
+		if (!beamSymbol) flightArmed = false;
 		lift.set(beamSymbol ? 1 : 0, beamSymbol ? undefined : { duration: 260 });
+		if (!beamSymbol) {
+			suckT0 = null;
+			return;
+		}
+		// The loop takes over the moment the flight lands. `shipClock` is read inside the timer, not
+		// in the effect body, so this does not re-subscribe the effect to every frame.
+		suckT0 = null;
+		const timer = setTimeout(() => (suckT0 = shipClock), BEAM_SYMBOL_MS);
+		return () => clearTimeout(timer);
 	});
+
+	// ── Where it flies FROM ────────────────────────────────────────────────────────────────────
+	// The symbol is not conjured in the beam any more: it LEAVES ITS CELL and is hauled up the cone.
+	// The source is captured once, when the target symbol appears, and held for the whole flight —
+	// read live it would jump between cells the moment the board re-settles under it (every cell of
+	// the target symbol carries `target`, and which one comes first changes on every reveal).
+	const firstTargetCell = () => {
+		const name = context.stateGame.magnetTargetSymbol;
+		if (!name) return null;
+		const board = context.stateGame.board;
+		for (let reel = 0; reel < board.length; reel += 1) {
+			const column = board[reel];
+			for (let row = 0; row < column.length; row += 1) {
+				if (column[row]?.name === name) return { reel, row };
+			}
+		}
+		return null;
+	};
+	let flightFrom = $state<{ x: number; y: number; cell: number } | null>(null);
+	/** Only the null -> symbol EDGE launches a flight. The effect below reads the board, so it also
+	 *  re-runs on every settle; without this the launch point would be recaptured mid-flight and the
+	 *  symbol would jump back down to a cell it had already left. */
+	let flightArmed = false;
 
 	const beamAxisX = $derived((EMITTER.cx - 0.5) * hullW);
 	const beamTopY = $derived(hullY - hullH / 2 + (EMITTER.bottom - 0.04) * hullH);
@@ -313,22 +388,78 @@
 		const rTop = (EMITTER.w * hullW) / 2;
 		return rTop + ((BEAM.wOfHull * hullW) / 2 - rTop) * s;
 	};
-	/** Fraction down the cone the symbol currently sits at: enters at the mouth, rises to hold. */
-	const beamSymbolS = $derived(1.02 - (1.02 - BEAM_SYMBOL.hold) * lift.current);
-	const beamSymbolCell = $derived(2 * beamRadAt(BEAM_SYMBOL.hold) * BEAM_SYMBOL.fill);
+	/** 0..1 through the current trip up the cone. */
+	const suckU = $derived(
+		suckT0 === null
+			? 0
+			: ((((shipClock - suckT0) % SUCK_CYCLE) + SUCK_CYCLE) % SUCK_CYCLE) / SUCK_CYCLE,
+	);
+	/** Where it is down the cone right now. The exponent makes it slow at the mouth and quick at the
+	 *  end — a beam that has hold of something pulls harder the closer it gets. */
+	const beamSymbolS = $derived(
+		suckT0 === null
+			? BEAM_SYMBOL.enter
+			: BEAM_SYMBOL.enter + (BEAM_SYMBOL.top - BEAM_SYMBOL.enter) * suckU ** 1.5,
+	);
+	/** Its box is measured at `top`, once — the live growth is a scale (see `bodyScale`), so the
+	 *  artwork is rasterised at one size instead of being re-fitted every frame. */
+	const beamSymbolCell = $derived(2 * beamRadAt(BEAM_SYMBOL.top) * BEAM_SYMBOL.fill);
 	// Held, not parked: it sways across the cone, bobs, turns a little, and swells on the same grab
 	// pulse the beam flares on — all off the ship's own clock, so nothing here keeps its own state.
 	const beamGrab = $derived(
 		Math.max(0, Math.sin(((shipClock % GRAB_PERIOD) / GRAB_PERIOD) * Math.PI * 1.6)) ** 8,
 	);
+	/** The beam's own axis, with a gentle sway across it. */
+	const holdX = $derived(
+		beamAxisX + Math.sin(shipClock * 0.62 + 1.1) * beamRadAt(beamSymbolS) * 0.12,
+	);
+	// The RATCHET, riding on top of the long climb: hauled up quickly over the first 40% of the
+	// cycle, then slipping back a little over the remaining 60% while the beam takes another bite.
+	// A symmetric sine bob here would read as a hover. The grab flare adds a harder tug on top, so
+	// the two pulses reinforce each other. Both are pure Y offsets: nothing here scales an axis, so
+	// the artwork's shape never changes.
+	const SUCK_PERIOD = 2.4;
+	/** 0..1 — how far up the tug currently has it. */
+	const suck = $derived.by(() => {
+		const phase = (shipClock % SUCK_PERIOD) / SUCK_PERIOD;
+		return phase < 0.4 ? 1 - (1 - phase / 0.4) ** 3 : (1 - (phase - 0.4) / 0.6) ** 2;
+	});
+	const holdY = $derived(
+		beamTopY +
+			beamLen * beamSymbolS -
+			suck * beamSymbolCell * 0.12 -
+			beamGrab * beamSymbolCell * 0.2,
+	);
+
+	// ── The flight ─────────────────────────────────────────────────────────────────────────────
+	// `lift` (900ms, cubicOut) carries it from its cell to the cone's mouth. The path is not a
+	// straight line: the beam BENDS it — it is pulled sideways onto the cone's axis faster than it
+	// rises, so it arrives travelling up the beam rather than sliding in diagonally. That is the
+	// whole read of "the ship is taking it".
+	const flightT = $derived(lift.current);
+	/** X snaps onto the beam axis first (t^0.65), Y trails it (t^1.35). */
 	const beamSymbolX = $derived(
-		beamAxisX + Math.sin(shipClock * 0.62 + 1.1) * beamRadAt(BEAM_SYMBOL.hold) * 0.12,
+		flightFrom ? flightFrom.x + (holdX - flightFrom.x) * flightT ** 0.65 : holdX,
 	);
 	const beamSymbolY = $derived(
-		beamTopY + beamLen * beamSymbolS + Math.sin(shipClock * 0.9) * beamSymbolCell * 0.05,
+		flightFrom ? flightFrom.y + (holdY - flightFrom.y) * flightT ** 1.35 : holdY,
 	);
+	/** Size. During the flight it goes from its board cell to the loop's STARTING size, so the
+	 *  hand-off is seamless; after that the loop owns it and it grows all the way up the cone. */
+	const startRatio = $derived(
+		flightFrom && beamSymbolCell > 0 ? flightFrom.cell / beamSymbolCell : BEAM_SYMBOL.min,
+	);
+	const suckScale = $derived(BEAM_SYMBOL.min + (BEAM_SYMBOL.max - BEAM_SYMBOL.min) * suckU ** 0.85);
+	const bodyScale = $derived(
+		suckT0 === null ? startRatio + (BEAM_SYMBOL.min - startRatio) * flightT : suckScale,
+	);
+	/** It fades up out of the cone's mouth and dissolves into the hull at the top of each trip. */
+	const suckAlpha = $derived(
+		suckT0 === null ? lift.current : Math.min(1, suckU / 0.08) * Math.min(1, (1 - suckU) / 0.14),
+	);
+	// Tumbles a little on the way up and settles into the resting sway.
 	const beamSymbolRotation = $derived(
-		Math.sin(shipClock * 0.45) * 0.07 - (1 - lift.current) * 0.25,
+		Math.sin(shipClock * 0.45) * 0.07 + (1 - flightT) * Math.sin(flightT * Math.PI * 2) * 0.3,
 	);
 
 	// ── The tractor beam ──
@@ -552,18 +683,41 @@
 			<Graphics draw={(gr) => (beamG = gr as unknown as G)} />
 			<!-- In FRONT of the cone and BEHIND the hull, so a symbol riding all the way up passes
 			     under the saucer rather than over it. -->
-			{#if beamSymbol && lift.current > 0.002}
+			{#if beamSymbol && suckAlpha > 0.002}
 				<Container
 					x={beamSymbolX}
 					y={beamSymbolY}
 					rotation={beamSymbolRotation}
-					scale={1 + 0.06 * beamGrab}
+					scale={bodyScale * (1 + 0.06 * beamGrab)}
 				>
-					<BeamSymbol name={beamSymbol} x={0} y={0} cell={beamSymbolCell} alpha={lift.current} />
+					<BeamSymbol name={beamSymbol} x={0} y={0} cell={beamSymbolCell} alpha={suckAlpha} />
 				</Container>
 			{/if}
 			<Sprite key="ufoAntenna" anchor={0.5} x={0} y={antennaY} width={antennaW} height={antennaH} />
 			<Sprite key="ufoHull" anchor={0.5} x={0} y={hullY} width={hullW} height={hullH} />
+			<!-- Running lights over the hull's own painted lamps (game/ufoLamps.ts). The art paints
+			     them flat; this is the light. -->
+			<Graphics
+				blendMode="add"
+				draw={(gr) => {
+					gr.clear();
+					drawUfoLamps(gr, {
+						hullX: 0,
+						hullY,
+						hullW,
+						hullH,
+						clock: shipClock,
+						level: near,
+					});
+					// The antenna's ball is a beacon: a slow blink, off-phase from the rim chase.
+					const beacon = 0.5 + 0.5 * Math.sin(shipClock * 1.15);
+					for (let i = 0; i < 7; i += 1) {
+						const u = i / 6;
+						gr.circle(0, antennaY - antennaH * 0.34, antennaW * (0.18 + u * 0.75));
+						gr.fill({ color: 0xff6be0, alpha: 0.1 * (1 - u) ** 2.2 * beacon * near });
+					}
+				}}
+			/>
 		</Container>
 	{/if}
 {/if}

@@ -17,10 +17,10 @@ import { logMagneticDiagnostic } from '../utils/magneticDiagnostics';
 const getWinLevelData = (winLevel: number): WinLevelData =>
 	winLevelMap[winLevel as WinLevel] ?? winLevelMap[2];
 
-// Each bonus has its own theme: Drop-O-Magnet (freegame, 3 scatters / bought BONUS) runs
-// music_bonus, Magnetic Mega Chain (superspin, 4+ scatters / bought SUPER) runs music_super.
-// music_super had a player branch and files on disk but was never broadcast, so Mega Chain used
-// to play the Drop-O-Magnet theme.
+// Each bonus has its own theme: Gravity Breach (freegame, 3 scatters / bought BONUS) runs
+// music_bonus, Core Overload (superspin, 4+ scatters / bought SUPER) runs music_super.
+// music_super had a player branch and files on disk but was never broadcast, so Core Overload used
+// to play the Gravity Breach theme.
 const bonusMusicFor = (mode: string | null) =>
 	mode === 'superspin' ? 'music_super' : 'music_bonus';
 
@@ -162,7 +162,7 @@ const shouldSkipNoGrowthNormalSuperRespin = (bookEvent: BookEvent, bookEvents: B
 // Two shapes have shipped besides the array the types promise: `null` for a spin with nothing to
 // carry, and a BARE SNAPSHOT for a carry of exactly one cluster. Either one reaching
 // getSeriesPreviewAmount threw (`reduce` of null / not a function) straight out of playGame, which
-// aborts the ROUND — a bought MEGA CHAIN stopped advancing its free spins and never ran its outro.
+// aborts the ROUND — a bought CORE OVERLOAD stopped advancing its free spins and never ran its outro.
 // stateGameDerived.setSeriesSnapshots has normalised the same two shapes for a while; this is the
 // other half of that guard, for the readers that take the event's value directly.
 const seriesOf = (
@@ -204,11 +204,38 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			magnetTargetSymbol: bookEvent.symbol,
 		});
 	},
-	mysteryBonusReveal: async (bookEvent: BookEventOfType<'mysteryBonusReveal'>) => {
+	mysteryBonusReveal: async (
+		bookEvent: BookEventOfType<'mysteryBonusReveal'>,
+		{ bookEvents }: BookEventContext,
+	) => {
 		// Math resolves the 70/25/5 choice before the freeSpinTrigger. Keep it until that
 		// trigger arrives; scatter count alone cannot distinguish a Mystery HIDDEN result.
 		pendingMysteryMode = bookEvent.mode;
-		await waitForTimeout(450);
+
+		// The congratulations plate names the spin count as well as the bonus (design 9185:14033),
+		// and the count is not in THIS event — it arrives with the freeSpinTrigger this draw is
+		// about to run into. Read it forward out of the same book rather than printing the design's
+		// placeholder 10, which would be a lie the moment the math awards anything else.
+		const freeSpins = (() => {
+			const at = bookEvents.findIndex((event) => event.index === bookEvent.index);
+			for (const event of bookEvents.slice(at + 1)) {
+				if (event.type === 'freeSpinTrigger') return event.totalFs;
+			}
+			return 0;
+		})();
+
+		// The draw is SHOWN, not just recorded (MysteryReveal.svelte): the orb holds a turning "?"
+		// while it resolves, then the congratulations plate names what came out. The orb beat is the
+		// 2.5-3s the user asked for; turbo compresses both beats rather than skipping them, because
+		// this screen IS the Mystery buy's payoff.
+		const fast = stateBet.isTurbo || stateBet.isSuperTurbo;
+		eventEmitter.broadcast({ type: 'mysteryRevealShow' });
+		await waitForTimeout(fast ? 1100 : 2700);
+		eventEmitter.broadcast({ type: 'mysteryRevealWon', mode: bookEvent.mode, freeSpins });
+		await waitForTimeout(fast ? 1500 : 3000);
+		eventEmitter.broadcast({ type: 'mysteryRevealHide' });
+		// Let the fade finish before the bonus hand-off starts dimming underneath it.
+		await waitForTimeout(360);
 	},
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
 		// A newly landed shifter starts neutral. The polarityShift event colours only its chosen arrow.
@@ -423,7 +450,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			// Dim is fully up, so none of this can be seen changing.
 			stateGameDerived.clearWinCellStates();
 			// Set the mode before the intro mounts its content — it reads bonusMode to
-			// pick the bonus title (DROP-O-MAGNET vs MAGNETIC MEGA CHAIN).
+			// pick the bonus title (GRAVITY BREACH vs CORE OVERLOAD).
 			stateGame.gameType = bonusMode;
 			stateGame.bonusMode = bonusMode;
 			stateGame.bonusRoom = bonusRoom;

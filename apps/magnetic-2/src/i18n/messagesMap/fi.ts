@@ -19,17 +19,17 @@ export default {
 	'INFO SYMBOL RANK': 'SYMBOLIN ARVO',
 	'INFO WILD VALUES': 'Kerroin-Wild-arvot',
 	'INFO WILD STANDARD': 'Vakiokerroin-Wild-arvot:',
-	'INFO WILD RARE': 'Harvinaiset kerroin-Wild-arvot (pääasiassa Magnetic Mega Chain -tilassa):',
+	'INFO WILD RARE': 'Harvinaiset kerroin-Wild-arvot (pääasiassa Core Overload -tilassa):',
 	'INFO FEAT WILD TITLE': 'Wild-symboli',
 	'INFO FEAT WILD TEXT':
 		'Korvaa kaikki maksavat symbolit paitsi Scatterin. Aktivoituessaan Magnetic Wild valitsee satunnaisesti yhden ruudukossa olevan tavallisen maksavan symbolin ja vetää kaikki vastaavat symbolit yhteen. Wildeja ja Scattereita ei voi valita. Magnetic Wild aktivoituu vain laskeutuessaan, eikä se aktivoidu uudelleen siitä seuraavan uusintapyöräytyksen aikana.',
 	'INFO FEAT MWILD TITLE': 'Kerroin-Wild',
 	'INFO FEAT MWILD TEXT':
 		'Korvaa kuten Wild ja nostaa aktiivista bonuskerrointa ominaisuuden loppuun asti.',
-	'INFO FEAT DROP TITLE': 'Drop-O-Magnet-ilmaiskierrokset',
+	'INFO FEAT DROP TITLE': 'Gravity Breach-ilmaiskierrokset',
 	'INFO FEAT DROP TEXT':
 		'Käynnistyy 3 Scatter-symbolilla ja antaa 10 ilmaiskierrosta. Kun Magnetic Wild osuu, se valitsee kohteen samalla näkyvien sijaintien säännöllä ja vetää vastaavat symbolit yhteen.',
-	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain -ilmaiskierrokset',
+	'INFO FEAT MEGA TITLE': 'Core Overload -ilmaiskierrokset',
 	'INFO FEAT MEGA TEXT':
 		'Käynnistyy 4 Scatterilla. Antaa 10 ilmaiskierrosta. Magneettiset ryhmät voivat pysyä lukittuina ja kasvaa koko ominaisuuden ajan.',
 	'INFO CW 1': 'Magnetic käyttää ryhmävoittoja voittolinjojen sijaan.',
@@ -45,10 +45,10 @@ export default {
 	'INFO FB EXTRA TEXT':
 		'Ostaa erikoiskierroksen, jossa on taattu magneettinen yhteys ja mahdollisuus saada Kerroin-Wildejä.',
 	'INFO FB FEATURE TITLE': 'Ominaisuuden osto',
-	'INFO FB FEATURE TEXT': 'Ostaa suoran pääsyn Drop-O-Magnet-ilmaiskierroksiin.',
+	'INFO FB FEATURE TEXT': 'Ostaa suoran pääsyn Gravity Breach-ilmaiskierroksiin.',
 	'INFO FB BONUS TITLE': 'Bonuksen osto',
 	'INFO FB BONUS TEXT':
-		'Ostaa suoran pääsyn vahvempaan Magnetic Mega Chain -ilmaiskierrosten ominaisuuteen.',
+		'Ostaa suoran pääsyn vahvempaan Core Overload -ilmaiskierrosten ominaisuuteen.',
 	'INFO COST': 'HINTA',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': 'Keskeytyneet kierrokset',
@@ -154,12 +154,20 @@ export default {
 	'BUY FEATURE SPINS TITLE': 'Ominaisuuskierrokset',
 	'BUY FEATURE SPINS DESC':
 		'Ostaa erikoiskierroksen, jossa on taattu magneettinen yhteys ja mahdollisuus saada Kerroin-Wildejä.',
-	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP TITLE': 'Gravity Breach',
 	'BUY DROP DESC':
 		'10 ilmaiskierrosta myönnetään. Yksi satunnainen symboli muuttuu magneettiseksi joka kierroksella. Vastaavat symbolit yhdistyvät automaattisesti toisiinsa. Multiplier Wildit kasvattavat bonuskerrointa pysyvästi.',
-	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 ilmaiskierrosta myönnetään. Yksi satunnainen symboli muuttuu magneettiseksi ja pysyy yhdistettynä kierrosten välillä. Magneettinen ryhmä säilyy ja kasvaa koko ominaisuuden ajan kertoimien jatkaessa kasautumista.',
+	'MYSTERY WON GRAVITY': '10 ilmaiskierrosta magneettiyhteyksillä ja kerroinmagneeteilla.',
+	'MYSTERY WON CORE':
+		'10 ilmaiskierrosta pysyvillä magneettirykelmillä, jotka kasvavat bonuksen aikana.',
+	'MYSTERY WON ZERO': '10 ilmaiskierrosta ja taattu kerroinmagneetti ensimmäisellä kierroksella.',
+	'BUY ZERO TITLE': 'Nollapisteprotokolla',
+	'BUY ZERO DESC': '10 ilmaiskierrosta ja taattu kerroinmagneetti heti ensimmäisellä kierroksella.',
+	'BUY MYSTERY TITLE': 'Mysteeribonus',
+	'BUY MYSTERY DESC': 'Yksi kolmesta bonuskierroksesta arvotaan: %a%, %b% tai %c%.',
 	'AUTO TURBO': 'TURBOKIERROS',
 	'AUTO SUPER TURBO': 'SUPERTURBOKIERROS',
 	'AUTO FEATURE': '50X BONUSOMINAISUUS',
@@ -227,12 +235,12 @@ export default {
 	'TOTAL BET COST': 'PANOKSEN KOKONAISKUSTANNUS',
 	'PAYOUT MULTIPLIER': 'VOITTOKERROIN',
 	'REPLAY DISCLAIMER': 'Tämä on aiemman panoskierroksen toisto. Uusia panoksia ei aseteta.',
-	'DEAL IT': 'Drop-O-Magnet',
+	'DEAL IT': 'Gravity Breach',
 	'ALL IN': 'MEGAKETJU',
 	'BET MODE BASE DIALOG':
 		'Magnetic on 7x7-ryhmävoittopeli, jossa voitot muodostuvat samanlaisten symbolien ryhmistä. Voita saamalla 5 tai useampi samanlainen symboli yhteen vaaka- tai pystysuunnassa.',
 	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
-	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS TITLE': 'Gravity Breach',
 	'BET MODE BONUS DIALOG': '10 ilmaiskierrosta erittäin suurella magneettitodennäköisyydellä.',
 	'BET MODE BONUS DESCRIPTION':
 		'Osta 10 ilmaiskierrosta suuremmalla magneettitodennäköisyydellä hintaan 100x valittu panos.',
@@ -253,7 +261,7 @@ export default {
 	'RULE WILD TEXT':
 		'Perustilassa Magnetic Wild valitsee satunnaisesti yhden näkyvän tavallisen symbolin sijainnin. Jokaisella näkyvällä sijainnilla on sama mahdollisuus, joten useammin näkyvät symbolityypit valitaan todennäköisemmin. Se vetää sitten kaikki kyseisen tyypin näkyvät symbolit puoleensa. Kohde pysyy samana aktiivisen magneettisarjan ajan.',
 	'RULE SCATTER TEXT':
-		'3 Scatter-symbolia käynnistää Drop-O-Magnetin. 4 Scatter-symbolia käynnistää Mega Chainin. Scatter ei maksa yksinään.',
+		'3 Scatter-symbolia käynnistää Gravity Breachin. 4 Scatter-symbolia käynnistää Core Overloadin. Scatter ei maksa yksinään.',
 	'RULE DEAL IT TITLE': 'KLUSTERIN UUDELLEENPYÖRÄYTYKSET',
 	'RULE DEAL IT TEXT':
 		'Luonnolliset hyväksytyt klusterit lukitaan paikalleen. Kaikki muut ruudut pyörivät uudelleen. Jos uusia vastaavia symboleita osuu aktiiviseen klusteriin, ne liittyvät siihen ja seuraa uusi pyöräytys.',
@@ -261,7 +269,7 @@ export default {
 	'RULE ALL IN TEXT':
 		'Ensimmäisellä Super-ilmaiskierroksella magneetti on taattu. Valittu kohdesymboli, kerätty klusteri ja sarjan kerrottu arvo säilyvät kaikilla 10 ilmaiskierroksella ja ratkaistaan lopuksi.',
 	'RULE BUY TEXT':
-		'Drop-O-Magnet maksaa 100x panoksen. Mega Chain maksaa 500x. Chance Spin maksaa 2x kierrokselta. Feature Spin maksaa 50x kierrokselta. Enimmäisvoitto: 20 000x. Tavoite-RTP: 96,1 %.',
+		'Gravity Breach maksaa 100x panoksen. Core Overload maksaa 500x. Chance Spin maksaa 2x kierrokselta. Feature Spin maksaa 50x kierrokselta. Enimmäisvoitto: 20 000x. Tavoite-RTP: 96,1 %.',
 	'FEATURE SELECTED SYMBOL TITLE': 'MAGNEETIN KOHDE',
 	'FEATURE SELECTED SYMBOL TEXT':
 		'Magnetic Wild valitsee satunnaisesti yhden näkyvän tavallisen symbolin sijainnin. Jokaisella sijainnilla on sama mahdollisuus, joten symbolityypit, joilla on enemmän näkyviä sijainteja, ovat todennäköisempiä. Kaikki valitun tyypin näkyvät symbolit vedetään puoleen, eivätkä lisämagneetit vaihda kohdetta sarjan aikana.',
@@ -274,7 +282,7 @@ export default {
 	'HOWTO SPIN TEXT':
 		'Aloita kierros painamalla Pyöräytä. Paina uudelleen sarjan aikana pyytääksesi pysäytystä, jos se on käytettävissä.',
 	'HOWTO BUY TEXT':
-		'Avaa Osta bonus ja valitse Drop-O-Magnet, Mega Chain, Chance Spin tai Feature Spin. Ostetut bonukset on vahvistettava. Aktivointitilat voidaan ottaa käyttöön tai poistaa käytöstä.',
+		'Avaa Osta bonus ja valitse Gravity Breach, Core Overload, Chance Spin tai Feature Spin. Ostetut bonukset on vahvistettava. Aktivointitilat voidaan ottaa käyttöön tai poistaa käytöstä.',
 	'HOWTO REPLAY TEXT':
 		'Toisto lataa päättyneen tapahtuman ja näyttää alkuperäisen panoksen, kokonaiskustannuksen, voitonmaksun ja voittotiedot.',
 	'PAYTABLE TITLE PAYLINES': 'RYHMÄ',
@@ -297,7 +305,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT':
 		'Magneetti aloittaa magneettisarjan. Wild korvaa tavalliset symbolit. Multiplier Wildit kertovat aktiivisen sarjan. Scatter käynnistää vain bonuksia.',
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet: 100x panos.\nMega Chain: 500x panos.\nChance Spin: 2x panos kierrokselta.\nFeature Spin: 50x panos kierrokselta.',
+		'Gravity Breach: 100x panos.\nCore Overload: 500x panos.\nChance Spin: 2x panos kierrokselta.\nFeature Spin: 50x panos kierrokselta.',
 	'PAYTABLE MAX_TEXT': 'Ilmoitettu enimmäisvoitto on 20 000x valittu panos.',
 	'NO BALANCE TITLE': 'SALDO EI RIITÄ',
 	'NO BALANCE BODY':

@@ -19,17 +19,17 @@ export default {
 	'INFO SYMBOL RANK': 'CLASSE DO SÍMBOLO',
 	'INFO WILD VALUES': 'Valores do Wild Multiplicador',
 	'INFO WILD STANDARD': 'Valores padrão do wild multiplicador:',
-	'INFO WILD RARE': 'Valores raros do wild multiplicador (principalmente na Magnetic Mega Chain):',
+	'INFO WILD RARE': 'Valores raros do wild multiplicador (principalmente na Core Overload):',
 	'INFO FEAT WILD TITLE': 'Símbolo Wild',
 	'INFO FEAT WILD TEXT':
 		'Substitui todos os símbolos de pagamento, exceto o Scatter. Quando ativado, o Wild Magnético seleciona aleatoriamente um símbolo regular de pagamento presente na grade e atrai todos os símbolos iguais. Wilds e Scatters não podem ser selecionados. Um Wild Magnético só é ativado quando aparece e não é reativado durante o respin resultante.',
 	'INFO FEAT MWILD TITLE': 'Wild Multiplicador',
 	'INFO FEAT MWILD TEXT':
 		'Substitui como um Wild e aumenta o multiplicador de bônus ativo pelo resto do recurso.',
-	'INFO FEAT DROP TITLE': 'Rodadas Grátis Drop-O-Magnet',
+	'INFO FEAT DROP TITLE': 'Rodadas Grátis Gravity Breach',
 	'INFO FEAT DROP TEXT':
 		'Ativado por 3 Scatters e concede 10 rodadas grátis. Quando um Wild Magnético cai, ele escolhe um alvo usando a mesma regra de posições visíveis e atrai símbolos iguais.',
-	'INFO FEAT MEGA TITLE': 'Rodadas Grátis Magnetic Mega Chain',
+	'INFO FEAT MEGA TITLE': 'Rodadas Grátis Core Overload',
 	'INFO FEAT MEGA TEXT':
 		'Ativado por 4 Scatters. Concede 10 Rodadas Grátis. Os clusters magnéticos podem permanecer travados e crescer ao longo do recurso.',
 	'INFO CW 1': 'Magnetic usa ganhos em cluster em vez de linhas de pagamento.',
@@ -45,10 +45,10 @@ export default {
 	'INFO FB EXTRA TEXT':
 		'Compra uma rodada especial com conexão magnética garantida e chance de acertar Wilds Multiplicadores.',
 	'INFO FB FEATURE TITLE': 'Compra de Recurso',
-	'INFO FB FEATURE TEXT': 'Compra acesso direto ao recurso de Rodadas Grátis Drop-O-Magnet.',
+	'INFO FB FEATURE TEXT': 'Compra acesso direto ao recurso de Rodadas Grátis Gravity Breach.',
 	'INFO FB BONUS TITLE': 'Compra de Bônus',
 	'INFO FB BONUS TEXT':
-		'Compra acesso direto ao recurso mais forte de Rodadas Grátis Magnetic Mega Chain.',
+		'Compra acesso direto ao recurso mais forte de Rodadas Grátis Core Overload.',
 	'INFO COST': 'CUSTO',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': 'Rodadas Interrompidas',
@@ -153,12 +153,20 @@ export default {
 	'BUY FEATURE SPINS TITLE': 'Giros de Recurso',
 	'BUY FEATURE SPINS DESC':
 		'Compra uma rodada especial com conexão magnética garantida e chance de acertar Wilds Multiplicadores.',
-	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP TITLE': 'Gravity Breach',
 	'BUY DROP DESC':
 		'10 giros grátis concedidos. Um símbolo aleatório torna-se magnético a cada giro. Símbolos iguais conectam-se automaticamente. Os Curingas Multiplicadores aumentam o multiplicador do bônus permanentemente.',
-	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 giros grátis concedidos. Um símbolo aleatório torna-se magnético e permanece conectado entre os giros. O agrupamento magnético persiste e cresce ao longo do recurso enquanto os multiplicadores continuam acumulando.',
+	'MYSTERY WON GRAVITY': '10 rodadas grátis com conexões magnéticas e Ímãs Multiplicadores.',
+	'MYSTERY WON CORE':
+		'10 rodadas grátis com clusters magnéticos persistentes que crescem durante o bônus.',
+	'MYSTERY WON ZERO': '10 rodadas grátis com um Ímã Multiplicador garantido na primeira rodada.',
+	'BUY ZERO TITLE': 'Protocolo Ponto Zero',
+	'BUY ZERO DESC': '10 rodadas grátis com um Ímã Multiplicador garantido logo na primeira rodada.',
+	'BUY MYSTERY TITLE': 'Bônus Misterioso',
+	'BUY MYSTERY DESC': 'Uma das três rodadas de bônus é concedida aleatoriamente: %a%, %b% ou %c%.',
 	'AUTO TURBO': 'GIRO TURBO',
 	'AUTO SUPER TURBO': 'GIRO SUPER TURBO',
 	'AUTO FEATURE': 'RECURSO BÔNUS 50X',
@@ -226,12 +234,12 @@ export default {
 	'PAYOUT MULTIPLIER': 'MULTIPLICADOR DE PAGAMENTO',
 	'REPLAY DISCLAIMER':
 		'Esta é a repetição de uma rodada de aposta anterior. Nenhuma aposta será feita.',
-	'DEAL IT': 'Drop-O-Magnet',
+	'DEAL IT': 'Gravity Breach',
 	'ALL IN': 'MEGA CORRENTE',
 	'BET MODE BASE DIALOG':
 		'Magnetic é um slot de pagamento em cluster 7x7 onde os ganhos são formados por grupos de símbolos iguais. Acerte 5 ou mais símbolos iguais conectados na horizontal ou na vertical para ganhar.',
 	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
-	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS TITLE': 'Gravity Breach',
 	'BET MODE BONUS DIALOG': '10 rodadas grátis com chance de ímã muito aumentada.',
 	'BET MODE BONUS DESCRIPTION':
 		'Compre 10 rodadas grátis com maior chance de ímã por 100x a aposta selecionada.',
@@ -252,7 +260,7 @@ export default {
 	'RULE WILD TEXT':
 		'No modo base, um Wild Magnético seleciona aleatoriamente uma posição visível com um símbolo normal. Cada posição visível tem a mesma chance; tipos exibidos mais vezes têm maior probabilidade de seleção. Depois, ele atrai todos os símbolos visíveis desse tipo. O alvo permanece fixo durante a série magnética ativa.',
 	'RULE SCATTER TEXT':
-		'3 Scatters ativam Drop-O-Magnet. 4 Scatters ativam Mega Chain. O Scatter não paga sozinho.',
+		'3 Scatters ativam Gravity Breach. 4 Scatters ativam Core Overload. O Scatter não paga sozinho.',
 	'RULE DEAL IT TITLE': 'RESPINS DE CLUSTER',
 	'RULE DEAL IT TEXT':
 		'Clusters naturais qualificados ficam bloqueados. Todas as outras células giram novamente. Se novos símbolos iguais caírem tocando o cluster ativo, eles se juntam a ele e ocorre outro respin.',
@@ -260,7 +268,7 @@ export default {
 	'RULE ALL IN TEXT':
 		'Na primeira rodada grátis Super, um ímã é garantido. O símbolo-alvo, o cluster coletado e o valor multiplicado da série permanecem durante as 10 rodadas grátis e são resolvidos no final.',
 	'RULE BUY TEXT':
-		'Drop-O-Magnet custa 100x a aposta. Mega Chain custa 500x. Chance Spin custa 2x por rodada. Feature Spin custa 50x por rodada. Ganho máximo: 20.000x. RTP-alvo: 96,1%.',
+		'Gravity Breach custa 100x a aposta. Core Overload custa 500x. Chance Spin custa 2x por rodada. Feature Spin custa 50x por rodada. Ganho máximo: 20.000x. RTP-alvo: 96,1%.',
 	'FEATURE SELECTED SYMBOL TITLE': 'ALVO DO ÍMÃ',
 	'FEATURE SELECTED SYMBOL TEXT':
 		'Um Wild Magnético seleciona aleatoriamente uma posição visível com um símbolo normal. Cada posição tem a mesma chance; tipos com mais posições visíveis são mais prováveis. Todos os símbolos visíveis do tipo escolhido são atraídos, e ímãs extras nunca mudam o alvo durante a série.',
@@ -273,7 +281,7 @@ export default {
 	'HOWTO SPIN TEXT':
 		'Pressione Girar para iniciar uma rodada. Pressione novamente durante uma sequência para solicitar a parada quando disponível.',
 	'HOWTO BUY TEXT':
-		'Abra Comprar bônus para escolher Drop-O-Magnet, Mega Chain, Chance Spin ou Feature Spin. Bônus comprados exigem confirmação. Modos de ativação podem ser ligados ou desligados.',
+		'Abra Comprar bônus para escolher Gravity Breach, Core Overload, Chance Spin ou Feature Spin. Bônus comprados exigem confirmação. Modos de ativação podem ser ligados ou desligados.',
 	'HOWTO REPLAY TEXT':
 		'A repetição carrega um evento concluído e exibe a aposta original, o custo total, o pagamento e as informações de ganho.',
 	'PAYTABLE TITLE PAYLINES': 'CLUSTER',
@@ -296,7 +304,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT':
 		'O Ímã inicia séries magnéticas. O Wild substitui símbolos normais. Wilds Multiplicadores multiplicam a série ativa. O Scatter apenas ativa bônus.',
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet: 100x a aposta.\nMega Chain: 500x a aposta.\nChance Spin: 2x a aposta por rodada.\nFeature Spin: 50x a aposta por rodada.',
+		'Gravity Breach: 100x a aposta.\nCore Overload: 500x a aposta.\nChance Spin: 2x a aposta por rodada.\nFeature Spin: 50x a aposta por rodada.',
 	'PAYTABLE MAX_TEXT': 'O ganho máximo anunciado é 20.000x a aposta selecionada.',
 	'NO BALANCE TITLE': 'SALDO INSUFICIENTE',
 	'NO BALANCE BODY':

@@ -85,7 +85,10 @@ const GAME_REGISTRY = {
   magnetic2: {
     slug: 'magnetic-2',
     gameID: '0_0_magnetic_2',
-    modeCostMultipliers: { BASE: 1, CHANCE: 2, FEATURE: 50, BONUS: 100, SUPER: 500 },
+    // MYSTERY is the design's 300x random-bonus buy (Figma 9164:11722). Without it here the mode
+    // still played -- the fallback multiplier is 1 -- so a 300x buy was silently charged 1x and
+    // every affordability check in the client passed when it should not have.
+    modeCostMultipliers: { BASE: 1, CHANCE: 2, FEATURE: 50, BONUS: 100, MYSTERY: 300, SUPER: 500 },
     getRoundForMode: getMagnetic2RoundForMode,
     getReplayRound: getMagnetic2ReplayRound,
     booksDir: process.env.MAGNETIC_2_MATH_SDK_BOOKS_DIR || path.resolve(__dirname, '__disabled__/magnetic-2/books'),
@@ -102,6 +105,7 @@ const GAME_REGISTRY = {
         CHANCE: { type: 'activate' },
         FEATURE: { type: 'activate' },
         BONUS: { type: 'buy' },
+        MYSTERY: { type: 'buy' },
         SUPER: { type: 'buy' },
       },
       jurisdiction: buildJurisdiction(),

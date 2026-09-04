@@ -1321,14 +1321,25 @@ export function generateRoundForMode({ mode = 'BASE', seed = Date.now() } = {}) 
 
 	if (normalizedMode === 'FEATURE') return { seed, ...buildFeatureSequence({ rng }) };
 	if (normalizedMode === 'MYSTERY') {
-		const selectedMode = rng() < 0.7 ? 'BONUS' : 'SUPER';
+		// The design's three outcomes and their weights (9164:11801): 70% Gravity Breach,
+		// 25% Core Overload, 5% Zero Point Protocol. HIDDEN is the third -- the same bonus five
+		// scatters trigger -- and it plays the SUPER sequence with its own room; the client tells
+		// the three apart from THIS event, because the scatter count alone cannot.
+		const roll = rng();
+		const outcome = roll < 0.7 ? 'BONUS' : roll < 0.95 ? 'SUPER' : 'HIDDEN';
+		const selectedMode = outcome === 'BONUS' ? 'BONUS' : 'SUPER';
 		const bonus = buildBonusSequence({ rng, mode: selectedMode, runningTotal: 0, fromBaseTrigger: false });
 		const revealIndex = bonus.events.findIndex((event) => event.type === 'reveal');
 		bonus.events.splice(revealIndex + 1, 0, {
 			index: 0,
 			type: 'mysteryBonusReveal',
-			mode: selectedMode,
-			label: selectedMode === 'SUPER' ? 'CORE OVERLOAD' : 'GRAVITY BREACH',
+			mode: outcome,
+			label:
+				outcome === 'HIDDEN'
+					? 'ZERO POINT PROTOCOL'
+					: outcome === 'SUPER'
+						? 'CORE OVERLOAD'
+						: 'GRAVITY BREACH',
 		});
 		bonus.events.forEach((event, index) => { event.index = index; });
 		emitFinalWin(bonus.events, bonus.finalAmount);

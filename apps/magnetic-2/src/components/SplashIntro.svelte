@@ -344,7 +344,6 @@
 					{/each}
 				</div>
 
-
 				<p class="press-label press-label--m">{t('SPLASH PRESS')} →</p>
 			{:else}
 				<!-- Landscape: the full 1201x671 Figma stage, height-fit and centred. -->
@@ -369,7 +368,6 @@
 						</div>
 					</div>
 				{/each}
-
 
 				<p class="press-label">{t('SPLASH PRESS')} →</p>
 			{/if}
@@ -527,14 +525,7 @@
 		inset: 0;
 		display: block;
 		pointer-events: none;
-		clip-path: polygon(
-			12.5% 7.4%,
-			87.5% 7.4%,
-			98.6% 27.6%,
-			98.6% 78%,
-			1.4% 78%,
-			1.4% 27.6%
-		);
+		clip-path: polygon(12.5% 7.4%, 87.5% 7.4%, 98.6% 27.6%, 98.6% 78%, 1.4% 78%, 1.4% 27.6%);
 	}
 	.stage--m .sky-clip {
 		clip-path: polygon(0 7.4%, 100% 7.4%, 100% 78%, 0 78%);
@@ -651,7 +642,7 @@
 	   266x240 box centred at y 397.5 (59.2cqh). Width/height both set: the art is stretched
 	   exactly like the design squeezes its square source.
 
-	   Entrances: BONUS GAMES slides in from the LEFT, MEGA CHAIN from the BOTTOM, MAX WIN from
+	   Entrances: BONUS GAMES slides in from the LEFT, CORE OVERLOAD from the BOTTOM, MAX WIN from
 	   the RIGHT — accelerating approach, then each skids past its mark with a squash along the
 	   motion axis. All three are home by ~1750ms, which is when stage-slam + the floor hops fire. */
 	/* MEASURED off the design composite, per panel (the middle one's top edge is occluded by the
@@ -885,7 +876,6 @@
 			transform: translate(-50%, -50%) scale(1, 1);
 		}
 	}
-
 
 	/* ------------------------------------------------------------------ press label */
 

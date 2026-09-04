@@ -16,6 +16,7 @@
 	import { Container, Graphics, Text } from 'pixi-svelte';
 
 	import { INFO_BOX_ASPECT } from '../game/constants';
+	import { fitTextScale } from '../utils/fitText';
 
 	// Left-rail info plate — MOTHERSHIP design (Figma 9053:27285: FREE SPINS / RESPIN / TOTAL WIN
 	// stacked under the logo). Three identical 222x93 plates, radius 8, flat #3A3981 over a 4px
@@ -52,6 +53,7 @@
 	const PLATE_EDGE = 0x2d2c68;
 
 	// Type. The design's two sizes and its 0.03em tracking (0.54 on 18, 0.96 on 32).
+	// Audiowide has no bold; 400 IS its only weight.
 	const LABEL_F = 18 / 222;
 	const VALUE_F = 32 / 222;
 	const TRACKING = 0.03;
@@ -68,30 +70,38 @@
 	const ICON_F = 33 / 222;
 
 	// The value has to survive a currency string far longer than the design's "100$" — a 13-character
-	// amount at the design size overruns the plate. Shrink CONTINUOUSLY off an estimated advance
-	// (Poppins 700 digits run ~0.58em, and the separators less) instead of the old three-step ladder,
-	// which jumped a visible size the moment a win crossed 7 or 9 characters mid count-up.
+	// amount at the design size overruns the plate. Shrink CONTINUOUSLY rather than in steps, which
+	// jumped a visible size the moment a win crossed a character count mid count-up. The advance is
+	// MEASURED in the real face instead of assumed: the old 0.58em constant was fitted to Poppins 700,
+	// and Audiowide's glyphs are far wider, so keeping it would have let long totals run off the plate.
 	const VALUE_MAX_W = 0.86;
-	const VALUE_ADVANCE = 0.58;
+	const FAMILY = 'Audiowide, Chakra Petch, Inter, sans-serif';
 	const valueSize = $derived(
 		!props.value
 			? 0
-			: Math.min(W * VALUE_F, (W * VALUE_MAX_W) / (props.value.length * VALUE_ADVANCE)),
+			: W *
+					VALUE_F *
+					fitTextScale(props.value, {
+						fontSizePx: W * VALUE_F,
+						availablePx: W * VALUE_MAX_W,
+						fontWeight: 400,
+						fontFamily: FAMILY,
+						letterSpacingEm: TRACKING,
+						minScale: 0.35,
+					}),
 	);
 	const labelSize = $derived(W * LABEL_F);
 	const labelStyle = $derived({
-		fontFamily: 'Poppins, Chakra Petch, Inter, sans-serif',
-		fontWeight: '700' as const,
+		fontFamily: FAMILY,
 		fontSize: labelSize,
 		fill: 0xffffff,
 		letterSpacing: labelSize * TRACKING,
 		align: 'center' as const,
 	});
 	const valueStyle = $derived({
-		fontFamily: 'Poppins, Chakra Petch, Inter, sans-serif',
-		fontWeight: '700' as const,
+		fontFamily: FAMILY,
 		fontSize: valueSize,
-		fill: 0xffffff,
+		fill: 0xa88eff,
 		letterSpacing: valueSize * TRACKING,
 		align: 'center' as const,
 	});

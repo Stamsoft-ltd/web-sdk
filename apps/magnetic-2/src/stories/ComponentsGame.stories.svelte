@@ -14,6 +14,8 @@
 		templateArgs,
 	} from 'components-storybook';
 
+	import { loadDemandAssets } from 'pixi-svelte';
+
 	import Game from '../components/Game.svelte';
 	import { setContext } from '../game/context';
 	import { eventEmitter } from '../game/eventEmitter';
@@ -157,6 +159,98 @@
 				amount: 25000 * 100,
 				winLevelData: winLevelMap[10],
 			});
+		},
+	})}
+	template={template as any}
+/>
+
+<!-- The MOTHERSHIP congratulations family (WonPanel.svelte + MysteryReveal.svelte, Figma
+     9185:13916 / 9185:13975 / 9185:14033). All three draw `myPad` and its badges, which are
+     deferDemand assets — in the real game a bonus book calls loadDemandAssets() long before these
+     screens appear, so each story has to do the same or the pad renders as nothing. -->
+
+<Story
+	name="emitterEvent: freeSpinIntro (10 FREE SPINS)"
+	args={templateArgs({
+		skipLoadingScreen: true,
+		data: {},
+		action: async () => {
+			await loadDemandAssets();
+			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
+			eventEmitter.broadcast({ type: 'freeSpinIntroUpdate', totalFreeSpins: 10 });
+		},
+	})}
+	template={template as any}
+/>
+
+<Story
+	name="emitterEvent: freeSpinOutro (total)"
+	args={templateArgs({
+		skipLoadingScreen: true,
+		data: {},
+		action: async () => {
+			await loadDemandAssets();
+			eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
+			eventEmitter.broadcast({
+				type: 'freeSpinOutroCountUp',
+				amount: 1234 * 100,
+				winLevelData: winLevelMap[8],
+			});
+		},
+	})}
+	template={template as any}
+/>
+
+<Story
+	name="emitterEvent: mysteryReveal (orb)"
+	args={templateArgs({
+		skipLoadingScreen: true,
+		data: {},
+		action: async () => {
+			await loadDemandAssets();
+			eventEmitter.broadcast({ type: 'mysteryRevealShow' });
+		},
+	})}
+	template={template as any}
+/>
+
+<Story
+	name="emitterEvent: mysteryReveal (won gravity)"
+	args={templateArgs({
+		skipLoadingScreen: true,
+		data: {},
+		action: async () => {
+			await loadDemandAssets();
+			eventEmitter.broadcast({ type: 'mysteryRevealShow' });
+			eventEmitter.broadcast({ type: 'mysteryRevealWon', mode: 'BONUS', freeSpins: 10 });
+		},
+	})}
+	template={template as any}
+/>
+
+<Story
+	name="emitterEvent: mysteryReveal (won core)"
+	args={templateArgs({
+		skipLoadingScreen: true,
+		data: {},
+		action: async () => {
+			await loadDemandAssets();
+			eventEmitter.broadcast({ type: 'mysteryRevealShow' });
+			eventEmitter.broadcast({ type: 'mysteryRevealWon', mode: 'SUPER', freeSpins: 10 });
+		},
+	})}
+	template={template as any}
+/>
+
+<Story
+	name="emitterEvent: mysteryReveal (won zero)"
+	args={templateArgs({
+		skipLoadingScreen: true,
+		data: {},
+		action: async () => {
+			await loadDemandAssets();
+			eventEmitter.broadcast({ type: 'mysteryRevealShow' });
+			eventEmitter.broadcast({ type: 'mysteryRevealWon', mode: 'HIDDEN', freeSpins: 10 });
 		},
 	})}
 	template={template as any}

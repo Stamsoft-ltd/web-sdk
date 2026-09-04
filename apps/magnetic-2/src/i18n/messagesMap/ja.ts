@@ -19,17 +19,17 @@ export default {
 	'INFO SYMBOL RANK': 'シンボルランク',
 	'INFO WILD VALUES': 'マルチプライヤーワイルドの倍率',
 	'INFO WILD STANDARD': '標準のマルチプライヤーワイルド倍率：',
-	'INFO WILD RARE': 'レアなマルチプライヤーワイルド倍率（主にMagnetic Mega Chainで出現）：',
+	'INFO WILD RARE': 'レアなマルチプライヤーワイルド倍率（主にCore Overloadで出現）：',
 	'INFO FEAT WILD TITLE': 'ワイルドシンボル',
 	'INFO FEAT WILD TEXT':
 		'スキャッター以外のすべての配当シンボルの代わりになります。 発動すると、Magnetic Wildは現在グリッド上にある通常の配当シンボルを1種類ランダムに選び、同じシンボルをすべて引き寄せます。WildとScatterは選択されません。Magnetic Wildは停止したときにのみ発動し、その結果発生するリスピン中には再発動しません。',
 	'INFO FEAT MWILD TITLE': 'マルチプライヤーワイルド',
 	'INFO FEAT MWILD TEXT':
 		'ワイルドと同様に代役となり、フィーチャーの残りの間、有効なボーナス倍率を上昇させます。',
-	'INFO FEAT DROP TITLE': 'Drop-O-Magnet フリースピン',
+	'INFO FEAT DROP TITLE': 'Gravity Breach フリースピン',
 	'INFO FEAT DROP TEXT':
 		'Scatterが3個で発動し、フリースピン10回を獲得します。Magnetic Wildが停止すると、同じ表示位置ルールで対象を選び、同種シンボルを引き寄せます。',
-	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain フリースピン',
+	'INFO FEAT MEGA TITLE': 'Core Overload フリースピン',
 	'INFO FEAT MEGA TEXT':
 		'スキャッター4個で発動。フリースピン10回を獲得します。マグネットクラスターはロックされたまま、フィーチャー中に成長し続けることがあります。',
 	'INFO CW 1': 'Magneticはペイラインの代わりにクラスター配当を採用しています。',
@@ -44,10 +44,10 @@ export default {
 	'INFO FB EXTRA TEXT':
 		'マグネット接続が保証され、マルチプライヤーワイルドが出現するチャンスがある特別なスピンを購入します。',
 	'INFO FB FEATURE TITLE': 'フィーチャー購入',
-	'INFO FB FEATURE TEXT': 'Drop-O-Magnet フリースピン フィーチャーへ直接アクセスを購入します。',
+	'INFO FB FEATURE TEXT': 'Gravity Breach フリースピン フィーチャーへ直接アクセスを購入します。',
 	'INFO FB BONUS TITLE': 'ボーナス購入',
 	'INFO FB BONUS TEXT':
-		'より強力なMagnetic Mega Chain フリースピン フィーチャーへ直接アクセスを購入します。',
+		'より強力なCore Overload フリースピン フィーチャーへ直接アクセスを購入します。',
 	'INFO COST': 'コスト',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': '中断されたラウンド',
@@ -151,12 +151,19 @@ export default {
 	'BUY FEATURE SPINS TITLE': 'フィーチャースピン',
 	'BUY FEATURE SPINS DESC':
 		'マグネット接続が保証され、マルチプライヤーワイルドが出現するチャンスがある特別なスピンを購入します。',
-	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP TITLE': 'Gravity Breach',
 	'BUY DROP DESC':
 		'フリースピンを10回獲得。毎スピン、ランダムなシンボル1つがマグネットになります。一致するシンボルは自動的に連結します。マルチプライヤーワイルドはボーナス倍率を永続的に上昇させます。',
-	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'フリースピンを10回獲得。ランダムなシンボル1つがマグネットになり、スピン間も連結を維持します。マグネットクラスターはフィーチャー中ずっと持続して成長し、マルチプライヤーは積み重なり続けます。',
+	'MYSTERY WON GRAVITY': 'マグネット接続と倍率マグネット付きのフリースピン10回。',
+	'MYSTERY WON CORE': 'ボーナス中も成長し続ける持続マグネットクラスター付きのフリースピン10回。',
+	'MYSTERY WON ZERO': '最初のスピンで倍率マグネットが確定するフリースピン10回。',
+	'BUY ZERO TITLE': 'ゼロポイント・プロトコル',
+	'BUY ZERO DESC': 'フリースピン10回。最初のスピンで倍率マグネットが必ず出現します。',
+	'BUY MYSTERY TITLE': 'ミステリーボーナス',
+	'BUY MYSTERY DESC': '3種類のボーナスラウンドのいずれかがランダムで付与されます：%a%、%b%、%c%。',
 	'AUTO TURBO': 'ターボスピン',
 	'AUTO SUPER TURBO': 'スーパーターボスピン',
 	'AUTO FEATURE': '50X ボーナスフィーチャー',
@@ -224,12 +231,12 @@ export default {
 	'TOTAL BET COST': '合計ベットコスト',
 	'PAYOUT MULTIPLIER': '配当倍率',
 	'REPLAY DISCLAIMER': 'これは以前のベットラウンドのリプレイです。新しいベットは行われません。',
-	'DEAL IT': 'Drop-O-Magnet',
+	'DEAL IT': 'Gravity Breach',
 	'ALL IN': 'メガチェイン',
 	'BET MODE BASE DIALOG':
 		'Magneticは7x7のクラスター配当スロットで、同じシンボルのグループによって配当が成立します。同じシンボルが縦または横に5個以上つながると配当が発生します。',
 	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
-	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS TITLE': 'Gravity Breach',
 	'BET MODE BONUS DIALOG': 'マグネット出現率が大幅に上昇したフリースピン10回。',
 	'BET MODE BONUS DESCRIPTION':
 		'選択ベットの100xで、マグネット出現率が上昇したフリースピン10回を購入します。',
@@ -250,7 +257,7 @@ export default {
 	'RULE WILD TEXT':
 		'ベースモードでは、Magnetic Wildが表示中の通常シンボル位置を1つランダムに選びます。各位置の選択確率は同じため、表示数が多いシンボルほど選ばれやすくなります。その種類の表示中シンボルをすべて引き寄せます。対象は有効なマグネットシリーズ中は変わりません。',
 	'RULE SCATTER TEXT':
-		'Scatterが3個でDrop-O-Magnet、4個でMega Chainが発動します。Scatter単体では配当はありません。',
+		'Scatterが3個でGravity Breach、4個でCore Overloadが発動します。Scatter単体では配当はありません。',
 	'RULE DEAL IT TITLE': 'クラスターリスピン',
 	'RULE DEAL IT TEXT':
 		'条件を満たした自然クラスターはその場にロックされ、その他のセルがリスピンします。新しい同種シンボルが有効クラスターに接して停止するとクラスターに加わり、さらにリスピンします。',
@@ -258,7 +265,7 @@ export default {
 	'RULE ALL IN TEXT':
 		'最初のSuperフリースピンではマグネットが保証されます。選ばれた対象シンボル、集めたクラスター、シリーズの乗算値は10回のフリースピンすべてで維持され、最後に精算されます。',
 	'RULE BUY TEXT':
-		'Drop-O-Magnetはベットの100x、Mega Chainは500x、Chance Spinは1ラウンド2x、Feature Spinは1ラウンド50xです。最大配当：20,000x。理論RTP：96.1%。',
+		'Gravity Breachはベットの100x、Core Overloadは500x、Chance Spinは1ラウンド2x、Feature Spinは1ラウンド50xです。最大配当：20,000x。理論RTP：96.1%。',
 	'FEATURE SELECTED SYMBOL TITLE': 'マグネット対象',
 	'FEATURE SELECTED SYMBOL TEXT':
 		'Magnetic Wildが表示中の通常シンボル位置を1つランダムに選びます。各位置の確率は同じため、表示位置が多い種類ほど選ばれやすくなります。選ばれた種類の表示中シンボルはすべて引き寄せられ、追加マグネットがシリーズ途中で対象を変えることはありません。',
@@ -271,7 +278,7 @@ export default {
 	'HOWTO SPIN TEXT':
 		'Spinを押してラウンドを開始します。シーケンス中にもう一度押すと、利用可能な場合は停止を要求します。',
 	'HOWTO BUY TEXT':
-		'Buy Bonusを開き、Drop-O-Magnet、Mega Chain、Chance Spin、Feature Spinから選びます。購入ボーナスは確認が必要です。有効化モードはオンとオフを切り替えられます。',
+		'Buy Bonusを開き、Gravity Breach、Core Overload、Chance Spin、Feature Spinから選びます。購入ボーナスは確認が必要です。有効化モードはオンとオフを切り替えられます。',
 	'HOWTO REPLAY TEXT':
 		'リプレイは完了済みイベントを読み込み、元のベット、合計コスト、配当、獲得情報を表示します。',
 	'PAYTABLE TITLE PAYLINES': 'クラスター',
@@ -294,7 +301,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT':
 		'Magnetはマグネットシリーズを開始します。Wildは通常シンボルの代わりになります。Multiplier Wildは有効なシリーズを乗算します。Scatterはボーナスのみを発動します。',
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet：ベット100x。\nMega Chain：ベット500x。\nChance Spin：1ラウンドにつきベット2x。\nFeature Spin：1ラウンドにつきベット50x。',
+		'Gravity Breach：ベット100x。\nCore Overload：ベット500x。\nChance Spin：1ラウンドにつきベット2x。\nFeature Spin：1ラウンドにつきベット50x。',
 	'PAYTABLE MAX_TEXT': '公表されている最大配当は選択ベットの20,000xです。',
 	'NO BALANCE TITLE': '残高不足',
 	'NO BALANCE BODY':

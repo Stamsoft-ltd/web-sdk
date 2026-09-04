@@ -19,17 +19,17 @@ export default {
 	'INFO SYMBOL RANK': 'प्रतीक रैंक',
 	'INFO WILD VALUES': 'मल्टीप्लायर वाइल्ड मान',
 	'INFO WILD STANDARD': 'मानक मल्टीप्लायर वाइल्ड मान:',
-	'INFO WILD RARE': 'दुर्लभ मल्टीप्लायर वाइल्ड मान (मुख्यतः Magnetic Mega Chain में):',
+	'INFO WILD RARE': 'दुर्लभ मल्टीप्लायर वाइल्ड मान (मुख्यतः Core Overload में):',
 	'INFO FEAT WILD TITLE': 'वाइल्ड प्रतीक',
 	'INFO FEAT WILD TEXT':
 		'Scatter को छोड़कर सभी भुगतान प्रतीकों की जगह लेता है। सक्रिय होने पर Magnetic Wild ग्रिड पर मौजूद एक सामान्य भुगतान सिंबल को रैंडम चुनता है और सभी मेल खाते सिंबल को एक साथ खींचता है। Wild और Scatter नहीं चुने जा सकते। Magnetic Wild केवल उतरने पर सक्रिय होता है और उससे मिलने वाले री-स्पिन के दौरान दोबारा सक्रिय नहीं होता।',
 	'INFO FEAT MWILD TITLE': 'मल्टीप्लायर वाइल्ड',
 	'INFO FEAT MWILD TEXT':
 		'वाइल्ड की तरह जगह लेता है और शेष फ़ीचर के लिए सक्रिय बोनस मल्टीप्लायर को बढ़ाता है।',
-	'INFO FEAT DROP TITLE': 'Drop-O-Magnet फ्री स्पिन',
+	'INFO FEAT DROP TITLE': 'Gravity Breach फ्री स्पिन',
 	'INFO FEAT DROP TEXT':
 		'3 Scatter से ट्रिगर होता है और 10 फ्री स्पिन देता है। Magnetic Wild उतरने पर यह दिखाई देने वाली स्थितियों के उसी नियम से लक्ष्य चुनता है और मेल खाते सिंबल को साथ खींचता है।',
-	'INFO FEAT MEGA TITLE': 'Magnetic Mega Chain फ्री स्पिन',
+	'INFO FEAT MEGA TITLE': 'Core Overload फ्री स्पिन',
 	'INFO FEAT MEGA TEXT':
 		'4 Scatters द्वारा ट्रिगर होता है। 10 फ्री स्पिन देता है। चुंबकीय क्लस्टर लॉक रह सकते हैं और पूरे फ़ीचर के दौरान बढ़ सकते हैं।',
 	'INFO CW 1': 'Magnetic पेलाइन के बजाय क्लस्टर जीत का उपयोग करता है।',
@@ -45,9 +45,9 @@ export default {
 	'INFO FB EXTRA TEXT':
 		'गारंटीड चुंबकीय कनेक्शन और मल्टीप्लायर वाइल्ड लैंड करने के मौके के साथ एक विशेष स्पिन खरीदता है।',
 	'INFO FB FEATURE TITLE': 'फ़ीचर खरीद',
-	'INFO FB FEATURE TEXT': 'Drop-O-Magnet फ्री स्पिन फ़ीचर तक सीधी पहुंच खरीदता है।',
+	'INFO FB FEATURE TEXT': 'Gravity Breach फ्री स्पिन फ़ीचर तक सीधी पहुंच खरीदता है।',
 	'INFO FB BONUS TITLE': 'बोनस खरीद',
-	'INFO FB BONUS TEXT': 'अधिक मजबूत Magnetic Mega Chain फ्री स्पिन फ़ीचर तक सीधी पहुंच खरीदता है।',
+	'INFO FB BONUS TEXT': 'अधिक मजबूत Core Overload फ्री स्पिन फ़ीचर तक सीधी पहुंच खरीदता है।',
 	'INFO COST': 'लागत',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': 'बाधित राउंड',
@@ -151,12 +151,19 @@ export default {
 	'BUY FEATURE SPINS TITLE': 'फीचर स्पिन',
 	'BUY FEATURE SPINS DESC':
 		'गारंटीड चुंबकीय कनेक्शन और मल्टीप्लायर वाइल्ड लैंड करने के मौके के साथ एक विशेष स्पिन खरीदता है।',
-	'BUY DROP TITLE': 'Drop-O-Magnet',
+	'BUY DROP TITLE': 'Gravity Breach',
 	'BUY DROP DESC':
 		'10 फ्री स्पिन दिए जाते हैं। हर स्पिन पर एक यादृच्छिक प्रतीक चुंबकीय बन जाता है। मिलते-जुलते प्रतीक स्वचालित रूप से एक साथ जुड़ जाते हैं। Multiplier Wild बोनस गुणक को स्थायी रूप से बढ़ाते हैं।',
-	'BUY MEGA TITLE': 'Magnetic Mega Chain',
+	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 फ्री स्पिन दिए जाते हैं। एक यादृच्छिक प्रतीक चुंबकीय बन जाता है और स्पिन के बीच जुड़ा रहता है। चुंबकीय समूह पूरे फीचर के दौरान बना रहता है और बढ़ता है जबकि गुणक जमा होते रहते हैं।',
+	'MYSTERY WON GRAVITY': '10 फ्री स्पिन, मैग्नेटिक कनेक्शन और मल्टीप्लायर मैग्नेट के साथ।',
+	'MYSTERY WON CORE': '10 फ्री स्पिन, स्थायी मैग्नेटिक क्लस्टर के साथ जो बोनस भर बढ़ते रहते हैं।',
+	'MYSTERY WON ZERO': '10 फ्री स्पिन, पहले स्पिन पर गारंटीड मल्टीप्लायर मैग्नेट के साथ।',
+	'BUY ZERO TITLE': 'ज़ीरो पॉइंट प्रोटोकॉल',
+	'BUY ZERO DESC': '10 फ्री स्पिन मिलते हैं, पहले ही स्पिन पर गारंटीड मल्टीप्लायर मैग्नेट के साथ।',
+	'BUY MYSTERY TITLE': 'रहस्य बोनस',
+	'BUY MYSTERY DESC': 'तीन बोनस राउंड में से एक यादृच्छिक रूप से दिया जाता है: %a%, %b% या %c%।',
 	'AUTO TURBO': 'टर्बो स्पिन',
 	'AUTO SUPER TURBO': 'सुपर टर्बो स्पिन',
 	'AUTO FEATURE': '50X बोनस फीचर',
@@ -223,12 +230,12 @@ export default {
 	'TOTAL BET COST': 'कुल बेट लागत',
 	'PAYOUT MULTIPLIER': 'भुगतान गुणक',
 	'REPLAY DISCLAIMER': 'यह पिछली बेट राउंड का रीप्ले है। कोई नई बेट नहीं लगाई जाएगी।',
-	'DEAL IT': 'Drop-O-Magnet',
+	'DEAL IT': 'Gravity Breach',
 	'ALL IN': 'मेगा चेन',
 	'BET MODE BASE DIALOG':
 		'Magnetic एक 7x7 क्लस्टर-पे स्लॉट है जहां जीत मिलते-जुलते प्रतीकों के समूहों से बनती है। जीतने के लिए क्षैतिज या ऊर्ध्वाधर रूप से जुड़े हुए 5 या अधिक मिलते-जुलते प्रतीक लैंड करें।',
 	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
-	'BET MODE BONUS TITLE': 'Drop-O-Magnet',
+	'BET MODE BONUS TITLE': 'Gravity Breach',
 	'BET MODE BONUS DIALOG': 'मैग्नेट की बहुत अधिक संभावना के साथ 10 फ्री स्पिन।',
 	'BET MODE BONUS DESCRIPTION':
 		'चुनी गई बेट के 100x में अधिक मैग्नेट संभावना वाले 10 फ्री स्पिन खरीदें।',
@@ -249,7 +256,7 @@ export default {
 	'RULE WILD TEXT':
 		'बेस मोड में Magnetic Wild किसी दिखाई दे रहे सामान्य सिंबल की एक स्थिति को रैंडम चुनता है। हर दिखाई देने वाली स्थिति की संभावना समान है, इसलिए अधिक बार दिखने वाले सिंबल प्रकार के चुने जाने की संभावना अधिक होती है। फिर यह उस प्रकार के सभी दिखाई देने वाले सिंबल खींचता है। सक्रिय मैग्नेटिक सीरीज़ के दौरान लक्ष्य स्थिर रहता है।',
 	'RULE SCATTER TEXT':
-		'3 Scatter Drop-O-Magnet ट्रिगर करते हैं। 4 Scatter Mega Chain ट्रिगर करते हैं। Scatter अकेले कोई भुगतान नहीं देता।',
+		'3 Scatter Gravity Breach ट्रिगर करते हैं। 4 Scatter Core Overload ट्रिगर करते हैं। Scatter अकेले कोई भुगतान नहीं देता।',
 	'RULE DEAL IT TITLE': 'क्लस्टर री-स्पिन',
 	'RULE DEAL IT TEXT':
 		'स्वाभाविक रूप से योग्य क्लस्टर अपनी जगह लॉक हो जाते हैं। बाकी सभी सेल फिर घूमते हैं। यदि नए मेल खाते सिंबल सक्रिय क्लस्टर को छूते हुए उतरते हैं, तो वे उसमें जुड़ जाते हैं और एक और री-स्पिन होता है।',
@@ -257,7 +264,7 @@ export default {
 	'RULE ALL IN TEXT':
 		'पहले Super फ्री स्पिन पर मैग्नेट गारंटीड है। चुना हुआ लक्ष्य सिंबल, इकट्ठा क्लस्टर और सीरीज़ का गुणित मान सभी 10 फ्री स्पिन में बने रहते हैं और अंत में तय होते हैं।',
 	'RULE BUY TEXT':
-		'Drop-O-Magnet की लागत 100x बेट है। Mega Chain की लागत 500x है। Chance Spin की लागत प्रति राउंड 2x है। Feature Spin की लागत प्रति राउंड 50x है। अधिकतम जीत: 20,000x। लक्ष्य RTP: 96.1%।',
+		'Gravity Breach की लागत 100x बेट है। Core Overload की लागत 500x है। Chance Spin की लागत प्रति राउंड 2x है। Feature Spin की लागत प्रति राउंड 50x है। अधिकतम जीत: 20,000x। लक्ष्य RTP: 96.1%।',
 	'FEATURE SELECTED SYMBOL TITLE': 'मैग्नेट लक्ष्य',
 	'FEATURE SELECTED SYMBOL TEXT':
 		'Magnetic Wild किसी दिखाई दे रहे सामान्य सिंबल की एक स्थिति को रैंडम चुनता है। हर स्थिति की संभावना समान है, इसलिए अधिक दिखाई देने वाली स्थितियों वाले प्रकार अधिक संभावित हैं। चुने गए प्रकार के सभी दिखाई देने वाले सिंबल खींचे जाते हैं और अतिरिक्त मैग्नेट सीरीज़ के दौरान लक्ष्य नहीं बदलते।',
@@ -270,7 +277,7 @@ export default {
 	'HOWTO SPIN TEXT':
 		'राउंड शुरू करने के लिए Spin दबाएँ। उपलब्ध होने पर रोकने का अनुरोध करने के लिए सीक्वेंस के दौरान फिर दबाएँ।',
 	'HOWTO BUY TEXT':
-		'Drop-O-Magnet, Mega Chain, Chance Spin या Feature Spin चुनने के लिए Buy Bonus खोलें। खरीदे गए बोनस की पुष्टि आवश्यक है। सक्रिय मोड चालू या बंद किए जा सकते हैं।',
+		'Gravity Breach, Core Overload, Chance Spin या Feature Spin चुनने के लिए Buy Bonus खोलें। खरीदे गए बोनस की पुष्टि आवश्यक है। सक्रिय मोड चालू या बंद किए जा सकते हैं।',
 	'HOWTO REPLAY TEXT':
 		'रीप्ले पूरा हुआ इवेंट लोड करता है और मूल बेट, कुल लागत, भुगतान और जीत की जानकारी दिखाता है।',
 	'PAYTABLE TITLE PAYLINES': 'क्लस्टर',
@@ -293,7 +300,7 @@ export default {
 	'PAYTABLE SPECIAL_TEXT':
 		'Magnet मैग्नेटिक सीरीज़ शुरू करता है। Wild सामान्य सिंबल की जगह लेता है। Multiplier Wild सक्रिय सीरीज़ को गुणा करते हैं। Scatter केवल बोनस ट्रिगर करता है।',
 	'PAYTABLE BUY_TEXT':
-		'Drop-O-Magnet: 100x बेट।\nMega Chain: 500x बेट।\nChance Spin: प्रति राउंड 2x बेट।\nFeature Spin: प्रति राउंड 50x बेट।',
+		'Gravity Breach: 100x बेट।\nCore Overload: 500x बेट।\nChance Spin: प्रति राउंड 2x बेट।\nFeature Spin: प्रति राउंड 50x बेट।',
 	'PAYTABLE MAX_TEXT': 'घोषित अधिकतम जीत चुनी गई बेट की 20,000x है।',
 	'NO BALANCE TITLE': 'पर्याप्त बैलेंस नहीं',
 	'NO BALANCE BODY': 'इस बेट के लिए आपका बैलेंस बहुत कम है। खेलते रहने के लिए बेट स्तर कम करें।',
