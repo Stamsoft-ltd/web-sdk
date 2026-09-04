@@ -544,5 +544,10 @@
 			width: fit-content;
 			margin: 0 auto;
 		}
+		/* Cap the button so a full-width wide card doesn't blow the 215:50 art up too tall. */
+		.bb-btn {
+			width: min(100%, 220px);
+			justify-self: center;
+		}
 	}
 </style>
