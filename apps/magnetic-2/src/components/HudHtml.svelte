@@ -24,13 +24,16 @@
 	// pure CSS now (same #364970 / #4E78B8 language as the bottom bar), no bitmap panel.
 	const iconMenuMusic = ap('/assets/components/navbar/icons/menu_music.svg');
 	const iconMenuInfo = ap('/assets/components/navbar/icons/menu_info.svg');
-	// Disabled state (Figma 4553-9279): slashed note. There is no menu_sound* pair any more — the
-	// SOUND row renders the bottom-bar button art whole (see .menu-row__icon--full).
+	// Disabled state (Figma 4553-9279): slashed note.
 	const iconMenuMusicOff = ap('/assets/components/navbar/icons/menu_music_off.webp');
+	// ...and its speaker twin, which the design never exported — scripts/build-sound-off-icon.py
+	// draws the ON-state SVG with the note's own slash through it. Muted sound used to be signalled
+	// by dimming the speaker to 40%, which does not read as the same state as the struck note
+	// directly below it in the popover.
+	const iconMenuSoundOff = ap('/assets/components/navbar/icons/menu_sound_off.webp');
 	// Version2 flat glyphs (white SVGs / cutout webp) drawn inside the CSS circle buttons — the old
 	// per-state baked-button webps are gone; disabled/muted states are conveyed by CSS dimming.
 	const iconSound = ap('/assets/components/navbar/icons/v2/ic_sound.svg');
-	const iconMute = ap('/assets/components/navbar/icons/v2/ic_sound.svg');
 	const iconMinus = ap('/assets/components/navbar/icons/v2/ic_minus.svg');
 	const iconMinusDisabled = ap('/assets/components/navbar/icons/v2/ic_minus.svg');
 	const iconPlus = ap('/assets/components/navbar/icons/v2/ic_plus.svg');
@@ -44,7 +47,6 @@
 	const iconTurbo1 = ap('/assets/components/ui/ic_thunder_double.webp?v=20260810b');
 	const iconTurbo3 = ap('/assets/components/ui/ic_thunder_outline.webp?v=20260810b');
 	const iconCoins = ap('/assets/components/navbar/coins.webp');
-
 
 	const scatterFrame = ap('/assets/components/frames/scatter_frame.webp');
 	const hudFrame = ap('/assets/components/frames/hud_frame.webp');
@@ -66,6 +68,7 @@
 		iconMenuInfo,
 		iconMenuMusicOff,
 		iconSound,
+		iconMenuSoundOff,
 		iconMinus,
 		iconPlus,
 		iconAuto,
@@ -247,7 +250,9 @@
 	const highestAffordableBet = $derived.by(() => {
 		const costMultiplier = stateBetDerived.betCostMultiplier();
 		if (costMultiplier <= 0) return biggestBet;
-		const affordable = betOptions.filter((option) => option * costMultiplier <= stateBet.balanceAmount);
+		const affordable = betOptions.filter(
+			(option) => option * costMultiplier <= stateBet.balanceAmount,
+		);
 		return affordable.length ? affordable[affordable.length - 1] : smallestBet;
 	});
 	const disableDecrease = $derived(!canInteract || stateBet.betAmount === smallestBet);
@@ -318,8 +323,12 @@
 	};
 	// Menu rows reflect the MASTER mute too — the outside speaker button silences everything,
 	// so both rows read as off while it's engaged.
-	const sfxOff = $derived(stateSound.volumeValueSoundEffect === 0 || stateSound.volumeValueMaster === 0);
-	const musicOff = $derived(stateSound.volumeValueMusic === 0 || stateSound.volumeValueMaster === 0);
+	const sfxOff = $derived(
+		stateSound.volumeValueSoundEffect === 0 || stateSound.volumeValueMaster === 0,
+	);
+	const musicOff = $derived(
+		stateSound.volumeValueMusic === 0 || stateSound.volumeValueMaster === 0,
+	);
 	// Muting BOTH channels from the menu = everything silent, so the master button reflects it.
 	const syncMasterWithChannels = () => {
 		if (stateSound.volumeValueMusic === 0 && stateSound.volumeValueSoundEffect === 0) {
@@ -582,14 +591,21 @@
 			<button class="menu-row" type="button" onclick={toggleSfx}>
 				<!-- SOUND uses the exact bottom-bar sound/mute button art so the two match 1:1. -->
 				<span class="menu-row__icon">
-					<img class="menu-row__fullimg" class:is-muted={sfxOff} src={iconSound} alt="" />
+					<span
+						class="menu-row__glyph"
+						style={`--icon:url('${sfxOff ? iconMenuSoundOff : iconSound}')`}
+					></span>
 				</span>
 				<span class="menu-row__label">{i18nDerived.translate('SOUND')}</span>
 			</button>
 			<div class="menu-divider"></div>
 			<button class="menu-row" type="button" onclick={toggleMusic}>
 				<span class="menu-row__icon">
-					<span class="menu-row__glyph" class:is-off={musicOff} style={`--icon:url('${musicOff ? iconMenuMusicOff : iconMenuMusic}')`}></span>
+					<span
+						class="menu-row__glyph"
+						class:is-off={musicOff}
+						style={`--icon:url('${musicOff ? iconMenuMusicOff : iconMenuMusic}')`}
+					></span>
 				</span>
 				<span class="menu-row__label">{i18nDerived.translate('MUSIC')}</span>
 			</button>
@@ -630,7 +646,13 @@
 				>
 					<!-- Label is the SHORT form; the aria-label keeps the full "buy bonus" wording so the
 					     control still announces what it does. -->
-					<span class="buy-btn__label" use:fitLabel={isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.bonus()}>{isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.bonus()}</span>
+					<span
+						class="buy-btn__label"
+						use:fitLabel={isAnyModeActive
+							? i18nDerived.translate('DEACTIVATE')
+							: i18nDerived.bonus()}
+						>{isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.bonus()}</span
+					>
 				</button>
 			</div>
 
@@ -668,11 +690,21 @@
 
 			<div class="stepper">
 				{#if isLandscapeMobile}
-					<button class="nav-btn nav-btn--framed" type="button" onclick={openRules} aria-label="Game rules">
+					<button
+						class="nav-btn nav-btn--framed"
+						type="button"
+						onclick={openRules}
+						aria-label="Game rules"
+					>
 						<img class="nav-icon" src={iconMenu} alt="menu" />
 					</button>
-					<button class="nav-btn nav-btn--framed" type="button" onclick={toggleSound} aria-label="Sound">
-						<img class="nav-icon" class:is-muted={isMuted} src={iconSound} alt="sound" />
+					<button
+						class="nav-btn nav-btn--framed"
+						type="button"
+						onclick={toggleSound}
+						aria-label="Sound"
+					>
+						<img class="nav-icon" src={isMuted ? iconMenuSoundOff : iconSound} alt="sound" />
 					</button>
 				{/if}
 				<button
@@ -750,7 +782,11 @@
 					<!-- The design captions this one: glyph on top, AUTO beneath it, so it reads as
 					     autoplay at a glance rather than by icon alone. -->
 					<span class="auto-stack">
-						<img class="nav-icon nav-icon--auto" src={disableAuto ? iconAutoDisabled : iconAuto} alt="auto" />
+						<img
+							class="nav-icon nav-icon--auto"
+							src={disableAuto ? iconAutoDisabled : iconAuto}
+							alt="auto"
+						/>
 						<span class="auto-word">{i18nDerived.autoShort()}</span>
 					</span>
 				</button>
@@ -763,7 +799,12 @@
 		<div class="pt-hud">
 			<div class="pt-controls">
 				<div class="pt-grp pt-grp--left">
-					<button class="nav-btn nav-btn--framed" type="button" onclick={toggleMenuPopup} aria-label="Menu">
+					<button
+						class="nav-btn nav-btn--framed"
+						type="button"
+						onclick={toggleMenuPopup}
+						aria-label="Menu"
+					>
 						<img class="nav-icon" src={showMenuPopup ? iconMenuClose : iconMenu} alt="menu" />
 					</button>
 					{#if showMenuPopup}{@render menuPopup()}{/if}
@@ -775,7 +816,11 @@
 							onclick={openBuyBonus}
 							aria-label={i18nDerived.buyBonus()}
 						>
-							<span class="buy-btn__label" use:fitLabel={i18nDerived.buyBonus()}>{i18nDerived.buyBonus()}</span>
+							<!-- Short label, as the design's pill has it and as the desktop bar already does;
+							     the aria-label keeps the full wording so the control still announces itself. -->
+							<span class="buy-btn__label" use:fitLabel={i18nDerived.bonus()}
+								>{i18nDerived.bonus()}</span
+							>
 						</button>
 					</div>
 				</div>
@@ -835,7 +880,8 @@
 					<button
 						class="nav-btn nav-btn--framed pt-step"
 						type="button"
-						onpointerdown={(event) => startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
+						onpointerdown={(event) =>
+							startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
 						onpointerup={clearHoldRepeat}
 						onpointercancel={clearHoldRepeat}
 						onpointerleave={clearHoldRepeat}
@@ -843,7 +889,11 @@
 						disabled={disableDecrease}
 						aria-label={`Decrease ${i18nDerived.betLabel()}`}
 					>
-						<img class="nav-icon" src={disableDecrease ? iconMinusDisabled : iconMinus} alt="minus" />
+						<img
+							class="nav-icon"
+							src={disableDecrease ? iconMinusDisabled : iconMinus}
+							alt="minus"
+						/>
 					</button>
 					<!-- Display-only, like desktop: bet changes go through the − / + steppers. The tap-to-open
 					     bet menu was removed here (user pass 2026-08-10). -->
@@ -853,7 +903,8 @@
 					<button
 						class="nav-btn nav-btn--framed pt-step"
 						type="button"
-						onpointerdown={(event) => startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
+						onpointerdown={(event) =>
+							startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
 						onpointerup={clearHoldRepeat}
 						onpointercancel={clearHoldRepeat}
 						onpointerleave={clearHoldRepeat}
@@ -890,7 +941,8 @@
 					<button
 						class="nav-btn nav-btn--framed ls-step"
 						type="button"
-						onpointerdown={(event) => startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
+						onpointerdown={(event) =>
+							startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
 						onpointerup={clearHoldRepeat}
 						onpointercancel={clearHoldRepeat}
 						onpointerleave={clearHoldRepeat}
@@ -898,13 +950,18 @@
 						disabled={disableDecrease}
 						aria-label={`Decrease ${i18nDerived.betLabel()}`}
 					>
-						<img class="nav-icon" src={disableDecrease ? iconMinusDisabled : iconMinus} alt="minus" />
+						<img
+							class="nav-icon"
+							src={disableDecrease ? iconMinusDisabled : iconMinus}
+							alt="minus"
+						/>
 					</button>
 					<div
 						class="ls-bet-val"
 						role="button"
 						tabindex="0"
-						onkeydown={(e) => e.key === 'Enter' && canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
+						onkeydown={(e) =>
+							e.key === 'Enter' && canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
 						onclick={() => canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
 					>
 						<span class="value" class:value--feature={isAnyModeActive}>{formattedBet}</span>
@@ -912,7 +969,8 @@
 					<button
 						class="nav-btn nav-btn--framed ls-step"
 						type="button"
-						onpointerdown={(event) => startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
+						onpointerdown={(event) =>
+							startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
 						onpointerup={clearHoldRepeat}
 						onpointercancel={clearHoldRepeat}
 						onpointerleave={clearHoldRepeat}
@@ -935,7 +993,9 @@
 					onclick={openBuyBonus}
 					aria-label={i18nDerived.buyBonus()}
 				>
-					<span class="buy-btn__label" use:fitLabel={i18nDerived.buyBonus()}>{i18nDerived.buyBonus()}</span>
+					<span class="buy-btn__label" use:fitLabel={i18nDerived.buyBonus()}
+						>{i18nDerived.buyBonus()}</span
+					>
 				</button>
 			</div>
 			<div class="ls-win">
@@ -948,7 +1008,12 @@
 			</div>
 
 			<div class="ls-nav">
-				<button class="nav-btn nav-btn--framed" type="button" onclick={toggleMenuPopup} aria-label="Menu">
+				<button
+					class="nav-btn nav-btn--framed"
+					type="button"
+					onclick={toggleMenuPopup}
+					aria-label="Menu"
+				>
 					<img class="nav-icon" src={showMenuPopup ? iconMenuClose : iconMenu} alt="menu" />
 				</button>
 				{#if showMenuPopup}{@render menuPopup()}{/if}
@@ -959,7 +1024,7 @@
 					onclick={toggleSound}
 					aria-label="Mute all sound"
 				>
-					<img class="nav-icon" class:is-muted={isMuted} src={iconSound} alt="sound" />
+					<img class="nav-icon" src={isMuted ? iconMenuSoundOff : iconSound} alt="sound" />
 				</button>
 				<button
 					class="spin-btn ls-spin"
@@ -1507,10 +1572,6 @@
 		cursor: default;
 	}
 
-	.nav-btn img.is-muted {
-		opacity: 0.4;
-	}
-
 	.nav-btn.active {
 		filter: drop-shadow(0 0 7px rgba(255, 216, 74, 0.9));
 	}
@@ -1574,7 +1635,9 @@
 		background: var(--hud-control);
 		display: grid;
 		place-items: center;
-		transition: opacity 0.12s ease, filter 0.12s ease;
+		transition:
+			opacity 0.12s ease,
+			filter 0.12s ease;
 	}
 	.menu-row__glyph {
 		width: 20px;
@@ -1584,28 +1647,15 @@
 		-webkit-mask: var(--icon) center / contain no-repeat;
 		transition: background 0.12s ease;
 	}
-	/* SOUND row shows the full bottom-bar button art (its own ring), so drop the wrapper ring/fill. */
-	.menu-row__icon--full {
-		border: none;
-		background: none;
-	}
-	.menu-row__fullimg {
-		width: 52%;
-		height: 52%;
-		object-fit: contain;
-		display: block;
-	}
-	.menu-row__fullimg.is-muted,
-	.nav-icon.is-muted {
-		opacity: 0.4;
-	}
-	/* The "off" (struck-through) icons are .webp exports with no internal padding, so at `contain`
-	   they fill the glyph box where the padded .svg on-state icons only reach ~80% of theirs.
-	   Scale is set against the NOTE, not the bounding box: the off art's box is squared off by the
-	   diagonal slash, which reaches well past the note it crosses, so equalising boxes (0.78-0.80)
-	   shrank the note itself to 87% of the on-state's. Measured off a 400px render of both masks —
-	   note-head diameter 128px on / 143px off — so 128/143 lands the two notes the same size and
-	   lets the slash overhang, which is what the design does. */
+	/* menu_music_off.webp is a Figma export with no internal padding, so at `contain` it fills the
+	   glyph box where the padded .svg on-state only reaches ~80% of its own. Scale is set against
+	   the NOTE, not the bounding box: the off art's box is squared off by the diagonal slash, which
+	   reaches well past the note it crosses, so equalising boxes (0.78-0.80) shrank the note itself
+	   to 87% of the on-state's. Measured off a 400px render of both masks — note-head diameter
+	   128px on / 143px off — so 128/143 lands the two notes the same size and lets the slash
+	   overhang, which is what the design does.
+	   menu_sound_off.webp needs no such correction: it is DRAWN square around the on-state's own
+	   aspect (build-sound-off-icon.py), so both speakers land at the same size on their own. */
 	.menu-row__glyph.is-off {
 		transform: scale(0.895);
 	}
@@ -2137,11 +2187,12 @@
 		gap: clamp(20px, 7vw, 30px);
 		padding: 10px 8px calc(14px + env(safe-area-inset-bottom, 0px));
 	}
-	/* Control row sits on the mobile nav bar (the bg-border) — narrower than the screen. */
+	/* Control row sits on the mobile nav bar (the bg-border). The design (4336:15793) runs it
+	   326 of its 360 wide and 62.5 tall — 90.6% and 17.4vw. */
 	.pt-controls {
 		position: relative;
-		width: min(82%, 332px);
-		height: clamp(54px, 15.5vw, 66px);
+		width: min(90.6%, 372px);
+		height: clamp(54px, 17.4vw, 72px);
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -2152,6 +2203,7 @@
 		position: absolute;
 		inset: 0;
 		background: var(--hud-bar);
+		/* The design's own plate: #3A3981 under a 4px #2D2C69 inside edge, radius 10. */
 		border: 4px solid var(--hud-bar-edge);
 		border-radius: 10px;
 		z-index: -1;
@@ -2199,11 +2251,14 @@
 		font-size: calc(1.05rem * var(--spin-count-scale, 1));
 	}
 
-	/* Balance in its own container asset — left-aligned white label + value, sized to fit content. */
+	/* Balance and WIN. The design (4336:15793, Group 60 / 61) does NOT give these the violet bar
+	   plate the rest of the HUD wears — they are 90x44 panes of #000616 at 78% behind a 1px white
+	   hairline at 9%, radius 8, which is what separates the two readouts from the bet plate sitting
+	   between them (that one IS the violet plate). Left-aligned white label + value, sized to fit. */
 	.pt-balance {
 		flex: 0 0 auto;
-		background: var(--hud-bar);
-		border: 2px solid var(--hud-bar-edge);
+		background: rgba(0, 6, 22, 0.78);
+		border: 1px solid rgba(255, 255, 255, 0.09);
 		border-radius: 8px;
 		align-items: flex-start;
 		justify-content: center;
@@ -2233,9 +2288,12 @@
 		justify-content: center;
 		gap: clamp(4px, 1.6vw, 9px);
 		flex: 0 0 auto;
+		/* The design's bet plate is the SAME card as the control bar above it — #3A3981 under a 4px
+		   #2D2C69 edge, radius 10 — which is what makes the two dark readouts either side read as
+		   set into it rather than as three of a kind. */
 		background: var(--hud-bar);
-		border: 2px solid var(--hud-bar-edge);
-		border-radius: 8px;
+		border: 4px solid var(--hud-bar-edge);
+		border-radius: 10px;
 		padding: clamp(8px, 2.4vw, 12px) clamp(8px, 2.4vw, 12px);
 	}
 	.pt-bet .pt-step {
@@ -2257,51 +2315,36 @@
 		line-height: 1.1;
 		text-shadow: 0 0 6px rgba(80, 190, 255, 0.35);
 	}
-	/* Round buy-bonus badge — larger focal action. */
 	.pt-buy {
 		flex: 0 0 auto;
 	}
-	.pt-buy .buy-btn {
-		width: clamp(68px, 20.5vw, 88px);
-		height: clamp(68px, 20.5vw, 88px);
-		aspect-ratio: 1;
-		background: var(--hud-accent);
-		border: 2px solid var(--hud-accent-rim);
-		border-radius: 50%;
-		padding: 0;
-	}
-	.pt-buy .buy-btn__label {
-		white-space: normal;
-		line-height: 1.05;
-		text-align: center;
-		font-size: clamp(0.52rem, 2.6vw, 0.66rem);
-		max-width: 74%;
-	}
 
-	/* Buy-bonus moved INTO the nav bar (left group), sized to ~100% of the nav height. */
+	/* Buy-bonus in the nav bar (left group). The design draws the SAME violet capsule the desktop
+	   bar wears — 61 x 33 of its 360-wide screen, radius fully round — not the circular badge this
+	   used to be; a disc reading "BUY BONUS" over two lines was the one control on the bar that did
+	   not match the rest of the UI's language. Sizes are the design's fractions. */
 	.pt-buy--nav {
 		flex: 0 0 auto;
 	}
 	.pt-buy--nav .buy-btn {
-		width: clamp(50px, 15vw, 64px);
-		height: clamp(50px, 15vw, 64px);
-		aspect-ratio: 1;
-		background: var(--hud-accent);
-		border: 2px solid var(--hud-accent-rim);
-		border-radius: 50%;
-		padding: 0;
+		width: clamp(52px, 16.9vw, 72px);
+		height: clamp(28px, 9.2vw, 39px);
+		padding: 0 clamp(4px, 1.6vw, 8px);
 	}
 	.pt-buy--nav .buy-btn__label {
-		font-size: clamp(0.4rem, 2vw, 0.52rem);
-		max-width: 78%;
+		font-size: clamp(0.44rem, 2.8vw, 0.63rem);
+		letter-spacing: 0.12em;
+		max-width: 100%;
 	}
-	/* WIN takes the buy-bonus slot in the stats row — mirror the balance pill but right-aligned. */
+	/* WIN takes the buy-bonus slot in the stats row. The design stacks its label over its value on
+	   the same left margin the balance uses (both boxes are the same 90x44 pane, inset 11.7), so it
+	   is NOT mirrored — right-aligning it made the two readouts read as a pair pointing outward. */
 	.pt-win {
-		align-items: flex-end;
-		text-align: right;
+		align-items: flex-start;
+		text-align: left;
 	}
 	.pt-win .label--balance {
-		justify-content: flex-end;
+		justify-content: flex-start;
 	}
 
 	/* ── Landscape (mobile horizontal) HUD: vertical nav bar (right) + balance/bet (bottom-left) ── */

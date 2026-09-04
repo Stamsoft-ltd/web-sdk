@@ -15,7 +15,7 @@ import type {
 	SymbolState,
 } from './types';
 import { stateLayoutDerived } from './stateLayout';
-import { PLATE_H } from './boardStyle';
+import { PLATE_H, PLATE_W } from './boardStyle';
 import { winLevelMap } from './winLevelMap';
 import {
 	BOARD_DIMENSIONS,
@@ -312,10 +312,20 @@ const getBoardScale = () => {
 	);
 };
 
-// Portrait: the board fills most of the width and sits below the logo + ALL WINS/capsule/FREE SPINS
-// top bar; the HTML HUD occupies the space below it.
-const PORTRAIT_FRAME_FILL = 0.94;
-const PORTRAIT_TOP_OFFSET = 372;
+// Portrait: the board is FULL-BLEED. The mobile design (4336:15793) runs its plate the whole width
+// of the screen -- 0..360 of 360 -- and insets the 7x7 grid inside it, so the plate's own edge is
+// the screen's edge and there are no side margins at all.
+//
+// The fill is therefore quoted against the PLATE, not the grid, and against the VISIBLE canvas, not
+// main.width: the virtual box is 800 wide, and at the design's own ~0.62 aspect the player sees
+// ~887 of it, so a fraction of main.width lands the board inboard of where it was measured. Our
+// plate surrounds its grid by 11/84 of a cell each side (boardStyle), which puts the grid at 0.964
+// of the screen against the design's 0.959 -- half a percent, well inside the plate's own border.
+const PORTRAIT_PLATE_FILL = 1;
+// Plate centre as a fraction of the visible height: the design's plate runs y 128..422 of the 577
+// the game actually owns (its frame is 800 tall, but the top 93 is the Stake header and the bottom
+// 130 the nav bar -- neither is ours to draw in).
+const PORTRAIT_BOARD_CY = 0.4766;
 const LANDSCAPE_FRAME_FILL = 0.82;
 // On small landscape screens the HTML HUD sits at its min pixel sizes (proportionally larger), so the
 // board fills LESS of the frame there to keep the gutters (balance/bet left, capsule/nav right) clear.
@@ -500,10 +510,14 @@ const boardLayout = () => {
 	const layoutType = stateLayoutDerived.layoutType();
 
 	if (layoutType === 'portrait') {
-		const boardScale = (mainLayout.width * PORTRAIT_FRAME_FILL) / BOARD_SIZES.width;
+		const mainScale = mainLayout.scale || 1;
+		const visibleW = stateLayoutDerived.canvasSizes().width / mainScale;
+		const visibleH = stateLayoutDerived.canvasSizes().height / mainScale;
+		const canvasTopY = mainLayout.height * 0.5 - visibleH / 2;
+		const boardScale = (visibleW * PORTRAIT_PLATE_FILL) / PLATE_W;
 		return {
 			x: mainLayout.width * 0.5,
-			y: PORTRAIT_TOP_OFFSET + (BOARD_SIZES.height * boardScale) / 2,
+			y: canvasTopY + visibleH * PORTRAIT_BOARD_CY,
 			boardScale,
 			anchor: { x: 0.5, y: 0.5 },
 			pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },

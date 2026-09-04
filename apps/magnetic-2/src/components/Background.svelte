@@ -4,6 +4,7 @@
 	import { cubicInOut, cubicOut } from 'svelte/easing';
 
 	import SkyClouds from './SkyClouds.svelte';
+	import BeamSymbol from './BeamSymbol.svelte';
 	import { getContext } from '../game/context';
 	import { BACKGROUND_LIGHTS } from '../game/backgroundLights';
 	import { PORTRAIT_BACKGROUND_RATIO } from '../game/constants';
@@ -157,7 +158,7 @@
 	// Everything is sized off the HULL's width and its own art aspect. The parts were exported at
 	// unrelated scales, so sizing them against each other's pixel dimensions draws the antenna 21%
 	// too large — the antenna's size comes from the ratio measured in the designer's composite.
-	const UFO = {
+	const UFO_LANDSCAPE = {
 		cx: 0.888,
 		cy: 0.1635,
 		/** Hull width, as a fraction of the background. */
@@ -169,24 +170,48 @@
 		/** How far the stem sinks into the dome, as a fraction of the antenna's height. */
 		antennaOverlap: 0.06,
 	};
+	// PORTRAIT hangs the same ship top-CENTRE, over the logo, with its beam coming down into the gap
+	// above the board (Figma 4336:15793, the mobile design: node 9126:19898 is this same composite at
+	// 113x360 of the frame width, dead centre).
+	//
+	// It is not the design's own y. The design was composed inside a phone MOCK whose Stake header
+	// covers the top 93px, and it hangs the ship half behind that header — in the real game there is
+	// no header there, so the same y would hang half the saucer off the top of the canvas. The ship
+	// is dropped until it is fully in shot instead, which is what the mock shows a player seeing.
+	const UFO_PORTRAIT = {
+		cx: 0.5,
+		cy: 0.075,
+		w: 0.26,
+		hullAspect: 1.9389,
+		antennaAspect: 0.5,
+		antennaOfHull: 0.1,
+		antennaOverlap: 0.06,
+	};
+	const UFO = $derived(isPortrait ? UFO_PORTRAIT : UFO_LANDSCAPE);
 	/** The lit opening on the saucer's underside, in HULL fractions — the beam hangs off this. */
 	const EMITTER = { cx: 0.498, w: 0.2047, bottom: 0.9237 };
-	// Beam reach, as fractions of the background: the design's OWN spread, its art running from the
-	// emitter's 0.0439 to 0.2022 over 0.4757 of the height.
+	// Beam reach, in HULL widths: the design's OWN spread, its art running from the emitter's 0.0439
+	// to 0.2022 of the background over 0.4757 of its height — which, against the landscape hull, is
+	// 0.94 hull widths across and 1.25 hull widths long.
 	//
-	// This was cut back to 0.132 x 0.256 at first so the cone stopped at the window's inner sill —
-	// measured at 0.579 of the height in this column — because the full reach pools light on the
-	// interior wall IN FRONT of the frame, and the ship is hanging OUTSIDE, in the sky. Restored to
-	// the design's figures on request: the reference the user matched it against shows the beam
-	// carrying past the sill and down over the room, so the sill crossing is now intended. If the
-	// light ever reads as landing on the wrong side of the glass, this is the trade that did it.
-	const BEAM = { w: 0.2022, h: 0.4757 };
+	// Quoting it against the HULL rather than against the background is what lets portrait use the
+	// same numbers: the beam then scales with the ship instead of with the canvas, so the cone keeps
+	// the art's own proportions in both orientations. It was cut back to 0.132 x 0.256 of the
+	// background at one point so the cone stopped at the old lab window's inner sill; restored to the
+	// design's figures on request.
+	const BEAM = { wOfHull: 0.9435, lenOfHull: 1.2487 };
+	// Portrait shortens the reach: the board plate starts much closer to the ship there, and a beam
+	// at full length runs behind it and loses its pool — the one part of the cone that says the light
+	// is landing on something. The design stops it just above the board.
+	const BEAM_LEN_OF_HULL = $derived(isPortrait ? 0.78 : BEAM.lenOfHull);
 
 	const shipLoaded = $derived(
 		!!context.stateApp.loadedAssets?.ufoHull && !!context.stateApp.loadedAssets?.ufoAntenna,
 	);
-	// Landscape only: portrait crops to the centre panel, so there is no window for it to hang in.
-	const shipShown = $derived(!isPortrait && shipLoaded && hasBg);
+	// Both orientations now. It used to be landscape-only, back when portrait cropped into an
+	// interior room with no window for the ship to hang in; the mobile design (4336:15793) puts it
+	// top-centre over the logo, which is where UFO_PORTRAIT hangs it.
+	const shipShown = $derived(shipLoaded && hasBg);
 
 	const hullW = $derived(UFO.w * cover.width);
 	const hullH = $derived(hullW / UFO.hullAspect);
@@ -204,7 +229,12 @@
 	// camera, which is what sells "far away"; a linear ramp just reads as a zoom. Screen position is
 	// interpolated by that same growth rather than by time, so the whole thing tracks one object
 	// moving in a straight line towards the viewer.
-	const FAR = { cx: 0.845, cy: 0.315, scale: 0.05 };
+	const FAR_LANDSCAPE = { cx: 0.845, cy: 0.315, scale: 0.05 };
+	// Portrait has no right-hand window to come in from: the ship parks dead centre, so it flies in
+	// from further UP the same column. Coming in sideways there crosses the whole sky and reads as
+	// a fly-past rather than as something arriving over the pad.
+	const FAR_PORTRAIT = { cx: 0.5, cy: 0.2, scale: 0.05 };
+	const FAR = $derived(isPortrait ? FAR_PORTRAIT : FAR_LANDSCAPE);
 	const FLIGHT_MS = 2300;
 	const FLIGHT_DELAY_MS = 220;
 	const approach = new Tween(0, { duration: FLIGHT_MS, easing: cubicOut });
@@ -216,7 +246,7 @@
 		return () => clearTimeout(arriveTimer);
 	});
 
-	const K = 1 / FAR.scale - 1;
+	const K = $derived(1 / FAR.scale - 1);
 	const shipScale = $derived(1 / (1 + K * (1 - approach.current)));
 	/** 0 while it is a speck in the sky, 1 once it is parked. */
 	const near = $derived((shipScale - FAR.scale) / (1 - FAR.scale));
@@ -254,6 +284,53 @@
 		-0.16 * (1 - near) + Math.sin(shipClock * 7.2) * 0.0011 * (1 + brake * 5) * near,
 	);
 
+	/** Seconds between grabs — the beam flares and whatever it is holding is hauled up the cone. */
+	const GRAB_PERIOD = 8.5;
+
+	// ── The symbol in the beam ──
+	// While a cluster is on the board, its symbol hangs in the tractor beam: the ship is holding the
+	// thing the magnet is collecting. The mobile design draws exactly this (Figma 4336:15793 puts one
+	// symbol pad in the cone, under the ship), and it gives the beam something to be FOR — before
+	// this it was a light with nothing in it but motes.
+	//
+	// `magnetTargetSymbol` is the cluster's own symbol and is null whenever there is no cluster, so
+	// this appears and clears with the cluster rather than needing its own bookkeeping.
+	const beamSymbol = $derived(context.stateGame.magnetTargetSymbol);
+	/** Where it settles down the cone, and how much of the cone's width the artwork fills there. */
+	const BEAM_SYMBOL = { hold: 0.55, fill: 0.7 };
+	const BEAM_SYMBOL_MS = 900;
+	// It ENTERS from the bottom of the cone and rides up to the hold point — the "sucked up" read.
+	// Starting at rest instead just popped it into existence half way down the beam.
+	const lift = new Tween(0, { duration: BEAM_SYMBOL_MS, easing: cubicOut });
+	$effect(() => {
+		lift.set(beamSymbol ? 1 : 0, beamSymbol ? undefined : { duration: 260 });
+	});
+
+	const beamAxisX = $derived((EMITTER.cx - 0.5) * hullW);
+	const beamTopY = $derived(hullY - hullH / 2 + (EMITTER.bottom - 0.04) * hullH);
+	const beamLen = $derived(BEAM_LEN_OF_HULL * hullW);
+	const beamRadAt = (s: number) => {
+		const rTop = (EMITTER.w * hullW) / 2;
+		return rTop + ((BEAM.wOfHull * hullW) / 2 - rTop) * s;
+	};
+	/** Fraction down the cone the symbol currently sits at: enters at the mouth, rises to hold. */
+	const beamSymbolS = $derived(1.02 - (1.02 - BEAM_SYMBOL.hold) * lift.current);
+	const beamSymbolCell = $derived(2 * beamRadAt(BEAM_SYMBOL.hold) * BEAM_SYMBOL.fill);
+	// Held, not parked: it sways across the cone, bobs, turns a little, and swells on the same grab
+	// pulse the beam flares on — all off the ship's own clock, so nothing here keeps its own state.
+	const beamGrab = $derived(
+		Math.max(0, Math.sin(((shipClock % GRAB_PERIOD) / GRAB_PERIOD) * Math.PI * 1.6)) ** 8,
+	);
+	const beamSymbolX = $derived(
+		beamAxisX + Math.sin(shipClock * 0.62 + 1.1) * beamRadAt(BEAM_SYMBOL.hold) * 0.12,
+	);
+	const beamSymbolY = $derived(
+		beamTopY + beamLen * beamSymbolS + Math.sin(shipClock * 0.9) * beamSymbolCell * 0.05,
+	);
+	const beamSymbolRotation = $derived(
+		Math.sin(shipClock * 0.45) * 0.07 - (1 - lift.current) * 0.25,
+	);
+
 	// ── The tractor beam ──
 	// Switches on once the ship has stopped: it is the punchline of the arrival, and a beam dragged
 	// across the sky during the flight would read as a searchlight rather than an abduction.
@@ -272,8 +349,6 @@
 	const BEAM_RIM = 0xf1a8fa;
 	const BEAM_POOL = 0xf7c0fc;
 	const MOTES = 11;
-	/** Seconds between grabs — the beam flares and something is hauled up the cone. */
-	const GRAB_PERIOD = 8.5;
 	let beamG: G | null = null;
 
 	const drawBeam = (g: G, t: number) => {
@@ -284,8 +359,8 @@
 		// Start a touch inside the opening, so the hull always covers the beam's mouth.
 		const y0 = hullY - hullH / 2 + (EMITTER.bottom - 0.04) * hullH;
 		const rTop = (EMITTER.w * hullW) / 2;
-		const rBot = (BEAM.w * cover.width) / 2;
-		const len = BEAM.h * cover.height * on;
+		const rBot = (BEAM.wOfHull * hullW) / 2;
+		const len = BEAM_LEN_OF_HULL * hullW * on;
 		const radAt = (s: number) => rTop + (rBot - rTop) * s;
 		/** A slice of the cone between two fractions of its length, widened by `k`. */
 		const slab = (a: number, b: number, k: number) => {
@@ -475,6 +550,18 @@
 	{#if shipShown}
 		<Container x={shipX} y={shipY} scale={shipScale} rotation={shipRotation}>
 			<Graphics draw={(gr) => (beamG = gr as unknown as G)} />
+			<!-- In FRONT of the cone and BEHIND the hull, so a symbol riding all the way up passes
+			     under the saucer rather than over it. -->
+			{#if beamSymbol && lift.current > 0.002}
+				<Container
+					x={beamSymbolX}
+					y={beamSymbolY}
+					rotation={beamSymbolRotation}
+					scale={1 + 0.06 * beamGrab}
+				>
+					<BeamSymbol name={beamSymbol} x={0} y={0} cell={beamSymbolCell} alpha={lift.current} />
+				</Container>
+			{/if}
 			<Sprite key="ufoAntenna" anchor={0.5} x={0} y={antennaY} width={antennaW} height={antennaH} />
 			<Sprite key="ufoHull" anchor={0.5} x={0} y={hullY} width={hullW} height={hullH} />
 		</Container>

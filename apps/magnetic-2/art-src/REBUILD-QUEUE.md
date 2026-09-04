@@ -1054,3 +1054,86 @@ lab is retired. All three are the SAME terrace as the base game, repainted for t
   BARE SNAPSHOT (exactly one cluster) as well as the array the types promise;
   `setSeriesSnapshots` already normalised both, the direct readers did not. `seriesOf()` in
   `bookEventHandlerMap.ts` is the other half of that guard.
+
+## 24. SHIP IN PORTRAIT + THE SYMBOL IN THE BEAM — `4336-15793` — DONE 2026-09-03
+
+The mobile design hangs the same ship top-CENTRE over the logo with its beam coming down into the
+gap above the board, and puts ONE symbol pad inside the cone (`9126:19900`). Both are in.
+
+- **The beam now holds the cluster's symbol.** `stateGame.magnetTargetSymbol` is the cluster's own
+  symbol and is null whenever there is no cluster, so the prop appears and clears with the cluster
+  and needs no bookkeeping of its own. It enters at the mouth of the cone and rides up to a hold
+  point (the "sucked up" read — starting it at rest just popped it into existence half way down),
+  then sways, bobs, turns and swells on the same grab pulse the beam flares on.
+- **It renders through the BOARD's own per-cell components** (`BeamSymbol.svelte` dispatches on the
+  symbol name), not through a texture. The rebuilt symbols are assembled from loose parts, so a base
+  texture alone is a bezel with no alien in it; and going through the components means the symbol in
+  the beam keeps its idle life instead of hanging there as a still. The flat `*_full` composites
+  exist but they are for the HTML paytable and cost a texture each.
+- **The beam is quoted in HULL widths now**, not in fractions of the background (0.94 across,
+  1.25 long). That is the same cone — it is the landscape numbers divided by the landscape hull —
+  but it lets portrait reuse them: the beam scales with the ship rather than with the canvas.
+  Portrait shortens the REACH to 0.78, because the board plate starts much closer to the ship there
+  and a full-length beam runs behind it and loses its pool.
+- **Portrait does NOT use the design's own y for the ship.** The design was composed inside a phone
+  mock whose Stake header covers the top 93px, and it hangs the ship half behind that header. In the
+  real game there is no header there, so the same y would hang half the saucer off the canvas.
+- The rest of this design landed in the round below.
+
+### symbol width cap (same round)
+
+H4's drum read "too big vs the others" (user). It was not padding: the limiting axis is HEIGHT for
+every symbol in this set, so equalising it leaves a symbol drawn on an unusually WIDE silhouette
+matching its class in height and overhanging it across — 0.774 of the cell against 0.70–0.72 for the
+other three premiums. `scripts/measure-symbol-padding.py` now caps any symbol more than 6% wider
+than its class MEDIAN width at that median, which pulls H4 to 0.712 and touches nothing else. Only
+classes with three or more members are capped: a median over two is the mean of a shape the designer
+chose to differ (the scatter capsule is 0.53 wide, the wild horseshoe 0.72, and neither is wrong).
+
+## 25. THE REST OF THE PORTRAIT DESIGN — `4336-15793` — DONE 2026-09-04
+
+Everything §24 left open. The design's own numbers are quoted against the 360x577 the game actually
+owns — its frame is 360x800, but the top 93 is the Stake header and the bottom 130 the nav bar, and
+neither is ours to draw in. That distinction is the whole reason the first pass measured wrong.
+
+- **The board is FULL-BLEED.** The plate runs the entire width, 0..360, and the 7x7 grid is inset
+  inside it, so the scale is quoted against the PLATE and against the VISIBLE canvas — main.width is
+  the virtual 800 box, and at this aspect the player sees ~887 of it, so a fraction of main.width
+  lands the board inboard of where it was measured. Our plate surrounds its grid by 11/84 of a cell
+  each side, which puts the grid at 0.964 of the screen against the design's 0.959: half a percent,
+  inside the plate's own border. `PORTRAIT_FRAME_FILL` / `PORTRAIT_TOP_OFFSET` are gone; the plate's
+  centre is now the design's 0.4766 of the visible height.
+- **The three info plates sit in the top corners**, 90.9 x 38.1 of 360. That aspect is 2.386 against
+  `INFO_BOX_ASPECT`'s 2.387 and its type sizes are the fractions `InfoBox` already draws, so the
+  plates needed a WIDTH and a position and nothing else. Same visible-canvas rule as the board.
+- **The buy-bonus is the design's violet CAPSULE reading "BONUS"**, not a round badge reading "BUY
+  BONUS" over two lines — the one control on the bar that did not speak the rest of the UI's
+  language. `i18nDerived.bonus()` is the short form the desktop bar already uses (each locale's own
+  BUY BONUS with the verb dropped, which also sidesteps the social-mode rename); the aria-label
+  keeps the full wording.
+- **BALANCE and WIN are near-black glass**, #000616 at 78% behind a 1px white hairline at 9%, radius
+  8 — NOT the violet bar plate. That is what sets the two readouts off from the bet plate between
+  them, which is the violet card (with the bar's own 4px #2D2C69 edge and radius 10, not the 2px it
+  had). WIN is left-aligned like BALANCE: mirroring it made the pair read as pointing outward.
+- The control bar is the design's 90.6% x 17.4vw.
+- NOT taken from the design: the portrait logo's size. The design draws it ~21% larger than the live
+  ramp does at 360px wide, but that ramp is a user pass (2026-08-10) — the HTML HUD sits at its
+  minimum PIXEL sizes on small phones and eats proportionally more of the screen there.
+
+### the SOUND icon's off state (same round)
+
+MUSIC has had a struck-through off state since the Version2 art landed; SOUND signalled muted by
+dimming the speaker to 40%. Two rows one above the other, one struck and one merely faded, do not
+read as the same control in two states (user: "make the sound button to be like the music with /").
+
+`scripts/build-sound-off-icon.py` draws `menu_sound_off.webp` from the ON-state SVG plus the note's
+OWN slash, measured off `menu_music_off.webp`: corner to corner, 45 degrees, 8.27% of the box across
+(an 11px horizontal run on a 94px box, over root two). The slash is UNION'd with the glyph — the
+note's is too, there is no gap between the two.
+
+The canvas is SQUARE while `ic_sound.svg` is 22.5 x 16.09, deliberately: both icons are
+`contain`-fitted into the same 20x20 glyph box, so a square off-state whose speaker is drawn at the
+on-state's own aspect puts the two speakers at exactly the same size and lets the slash overhang.
+Squaring the box after the fact is what forced `menu_music_off`'s 0.895 CSS correction; this one
+needs none. The SOUND row now uses the same mask glyph MUSIC does (so it also picks up the row's
+hover colour), and the bar's mute buttons swap art instead of dimming.
