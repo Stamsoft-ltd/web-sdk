@@ -14,19 +14,19 @@
 		phase?: number;
 	};
 	const props: Props = $props();
-	const directionKeys: Record<Direction, string> = {
-		LEFT: 'polarityLeft',
-		RIGHT: 'polarityRight',
-		UP: 'polarityUp',
-		DOWN: 'polarityDown',
+	const glowKeys: Record<Direction, string> = {
+		LEFT: 'polarityGlowLeft',
+		RIGHT: 'polarityGlowRight',
+		UP: 'polarityGlowUp',
+		DOWN: 'polarityGlowDown',
 	};
-	let scale = $state(0.92);
-	let offsetX = $state(0);
-	let offsetY = $state(0);
+	let scale = $state(0.94);
+	let glowAlpha = $state(0);
 	let shownDirection = $state<Direction | null>(null);
 	$effect(() => {
 		if (props.pulse === 0 || !props.direction) {
 			shownDirection = null;
+			glowAlpha = 0;
 			return;
 		}
 		const started = performance.now();
@@ -45,32 +45,42 @@
 					? roulette[Math.min(roulette.length - 1, Math.floor(elapsedMs / stepMs))]
 					: selected;
 			const stepT = (elapsedMs % stepMs) / stepMs;
-			const flash = elapsedMs < rouletteMs ? Math.sin(stepT * Math.PI) : 0;
-			const charge = Math.sin(eased * Math.PI) + flash * 0.45;
-			const shake = Math.sin(t * Math.PI * 12) * (1 - t) * 3;
-			scale = 0.92 + charge * 0.14;
-			offsetX = shownDirection === 'LEFT' || shownDirection === 'RIGHT' ? shake : 0;
-			offsetY = shownDirection === 'UP' || shownDirection === 'DOWN' ? shake : 0;
+			const flash = Math.sin(stepT * Math.PI);
+			const selectedT = Math.max(0, Math.min(1, (elapsedMs - rouletteMs) / 200));
+			glowAlpha =
+				elapsedMs < rouletteMs ? 0.48 + flash * 0.52 : 0.72 + selectedT * 0.28;
+			scale = 0.94 + Math.sin(eased * Math.PI) * 0.05;
 			if (t < 1 && pulse === props.pulse) raf = requestAnimationFrame(tick);
 		};
 		tick();
 		return () => {
 			cancelAnimationFrame(raf);
-			scale = 0.92;
-			offsetX = 0;
-			offsetY = 0;
+			scale = 0.94;
 		};
 	});
-	const key = $derived(shownDirection ? directionKeys[shownDirection] : 'polarityNeutral');
+	const glowKey = $derived(shownDirection ? glowKeys[shownDirection] : null);
 </script>
 
 <Sprite
-	{key}
-	x={props.x + offsetX}
-	y={props.y + offsetY}
+	key="polarityNeutral"
+	x={props.x}
+	y={props.y}
 	anchor={{ x: 0.5, y: 0.5 }}
 	width={props.width * scale}
 	height={props.height * scale}
 	alpha={props.alpha ?? 1}
 	zIndex={props.zIndex}
 />
+{#if glowKey}
+	<Sprite
+		key={glowKey}
+		x={props.x}
+		y={props.y}
+		anchor={{ x: 0.5, y: 0.5 }}
+		width={props.width * scale}
+		height={props.height * scale}
+		alpha={(props.alpha ?? 1) * glowAlpha}
+		blendMode="add"
+		zIndex={(props.zIndex ?? 0) + 1}
+	/>
+{/if}
