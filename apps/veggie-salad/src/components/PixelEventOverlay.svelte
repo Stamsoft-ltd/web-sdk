@@ -13,10 +13,78 @@
 
 	import { stateGame } from '../game/stateGame.svelte';
 	import { getContext } from '../game/context';
-	import PixelLabel from './PixelLabel.svelte';
 
 	type OverlayData = NonNullable<typeof stateGame.overlay>;
 	type ArtKey = 'winSweet' | 'winWild' | 'winEpic' | 'winMythic' | 'winLegendary';
+	type WinPlaqueKey =
+		| 'winPlaqueSweet'
+		| 'winPlaqueWild'
+		| 'winPlaqueEpic'
+		| 'winPlaqueMythic'
+		| 'winPlaqueLegendary';
+	type WinTitleKey =
+		| 'winTitleSweet'
+		| 'winTitleWild'
+		| 'winTitleEpic'
+		| 'winTitleMythic'
+		| 'winTitleLegendary';
+	type WinArt = {
+		plaque: WinPlaqueKey;
+		title: WinTitleKey;
+		plaqueWidth: number;
+		plaqueHeight: number;
+		titleWidth: number;
+		titleHeight: number;
+		dark: number;
+	};
+
+	const WIN_ART: Record<ArtKey, WinArt> = {
+		winSweet: {
+			plaque: 'winPlaqueSweet',
+			title: 'winTitleSweet',
+			plaqueWidth: 900,
+			plaqueHeight: 266,
+			titleWidth: 500,
+			titleHeight: 308,
+			dark: 0x07598f,
+		},
+		winWild: {
+			plaque: 'winPlaqueWild',
+			title: 'winTitleWild',
+			plaqueWidth: 900,
+			plaqueHeight: 274,
+			titleWidth: 470,
+			titleHeight: 330,
+			dark: 0x2d7614,
+		},
+		winEpic: {
+			plaque: 'winPlaqueEpic',
+			title: 'winTitleEpic',
+			plaqueWidth: 900,
+			plaqueHeight: 280,
+			titleWidth: 430,
+			titleHeight: 335,
+			dark: 0x941713,
+		},
+		winMythic: {
+			plaque: 'winPlaqueMythic',
+			title: 'winTitleMythic',
+			plaqueWidth: 900,
+			plaqueHeight: 273,
+			titleWidth: 490,
+			titleHeight: 329,
+			dark: 0x5b197b,
+		},
+		winLegendary: {
+			plaque: 'winPlaqueLegendary',
+			title: 'winTitleLegendary',
+			plaqueWidth: 900,
+			plaqueHeight: 277,
+			titleWidth: 600,
+			titleHeight: 280,
+			dark: 0xa45808,
+		},
+	};
 
 	const context = getContext();
 	const enter = new Tween(0);
@@ -33,6 +101,7 @@
 		const id = ++animationId;
 		if (incoming) {
 			shownOverlay = { ...incoming };
+			clock = 0;
 			const targetAmount = incoming.amount ?? untrack(() => stateGame.roundWin);
 			enter.set(0, { duration: 0 });
 			flash.set(0.9, { duration: 0 });
@@ -100,6 +169,7 @@
 	const isSmallWin = $derived(showAmount && title === 'WIN');
 	const showBackdrop = $derived(!isSmallWin);
 	const smallWinText = $derived(stateI18nDerived.translate('WIN'));
+	const winArt = $derived(artKey ? WIN_ART[artKey] : null);
 
 	const tier = $derived(
 		artKey === 'winLegendary'
@@ -127,18 +197,6 @@
 						? 0xc43cff
 						: 0xffc52c,
 	);
-	const winWord = $derived(title.replace(/\s+WIN$/, ''));
-	const winPalette = $derived(
-		artKey === 'winSweet'
-			? { face: 0x238fc9, dark: 0x07558c, title: 0xfff1a8, titleShade: 0x0870b5 }
-			: artKey === 'winWild'
-				? { face: 0x58b82b, dark: 0x236d13, title: 0xfff0a6, titleShade: 0x277d16 }
-				: artKey === 'winEpic'
-					? { face: 0xdf4939, dark: 0x941b14, title: 0xffefa7, titleShade: 0xb52a1e }
-					: artKey === 'winMythic'
-						? { face: 0x9e4bc5, dark: 0x59227c, title: 0xffefad, titleShade: 0x713096 }
-						: { face: 0xe7a52a, dark: 0x9b4e0c, title: 0xfff6c7, titleShade: 0xc76a13 },
-	);
 	type VeggieKey =
 		| 'pixelBroccoli'
 		| 'pixelCorn'
@@ -158,21 +216,33 @@
 						? ['pixelTomato', 'pixelCorn', 'pixelEggplant', 'pixelCorn', 'pixelTomato']
 						: ['pixelBroccoli', 'pixelCorn', 'pixelTomato', 'pixelCorn', 'pixelBroccoli'],
 	);
-	const winTitlePixelSize = $derived(
-		Math.min(19, Math.floor(710 / Math.max(1, winWord.length * 6))),
+	const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
+	const timeline = (startSeconds: number, durationSeconds: number) =>
+		clamp01((clock - startSeconds) / durationSeconds);
+	const popIn = (startSeconds: number, durationSeconds: number) =>
+		backOut(timeline(startSeconds, durationSeconds));
+	const fadeIn = (startSeconds: number, durationSeconds: number) =>
+		cubicOut(timeline(startSeconds, durationSeconds));
+	const plaqueIn = $derived(popIn(0, 0.48));
+	const titleIn = $derived(popIn(0.12, 0.5));
+	const amountIn = $derived(popIn(0.4, 0.42));
+	const namedWinIdleScale = $derived(1 + Math.sin(clock * (2.25 + tier * 0.1)) * 0.007);
+	const countedWinText = $derived(
+		bookEventAmountToCurrencyString(amount.current, overlay?.amount ?? stateGame.roundWin),
 	);
-	// Pixel-rounded capsule. Several shallow 8–20px steps keep the 16-bit silhouette while
-	// removing the old deep square notches that made the sign look cut from cardboard.
-	const signPath = [
-		-340, -158, 340, -158, 340, -153, 378, -153, 378, -145, 402, -145, 402, -134, 420,
-		-134, 420, -118, 432, -118, 432, -96, 440, -96, 440, 96, 432, 96, 432, 118, 420, 118,
-		420, 134, 402, 134, 402, 145, 378, 145, 378, 153, 340, 153, 340, 158, -340, 158, -340,
-		153, -378, 153, -378, 145, -402, 145, -402, 134, -420, 134, -420, 118, -432, 118, -432,
-		96, -440, 96, -440, -96, -432, -96, -432, -118, -420, -118, -420, -134, -402, -134,
-		-402, -145, -378, -145, -378, -153, -340, -153,
+	const amountFontSize = $derived(
+		Math.max(25, Math.min(43, Math.floor(470 / Math.max(7, countedWinText.length * 0.68)))),
+	);
+	const starSlots = [
+		{ x: -390, y: -92, size: 82, phase: 0.1 },
+		{ x: 390, y: -82, size: 76, phase: 1.4 },
+		{ x: -322, y: 108, size: 54, phase: 2.6 },
+		{ x: 326, y: 112, size: 58, phase: 3.7 },
+		{ x: -220, y: -176, size: 48, phase: 4.8 },
+		{ x: 224, y: -180, size: 52, phase: 5.5 },
+		{ x: 0, y: -206, size: 42, phase: 0.8 },
 	];
-	const scaledSignPath = (scale: number, y = 0) =>
-		signPath.map((value, index) => Math.round(value * scale + (index % 2 ? y : 0)));
+	const visibleStars = $derived(starSlots.slice(0, Math.min(starSlots.length, tier + 2)));
 
 	const breathe = $derived(1 + Math.sin(clock * (2.2 + tier * 0.08)) * (0.006 + tier * 0.002));
 	const mainLayout = $derived(context.stateLayoutDerived.mainLayout());
@@ -195,6 +265,7 @@
 	const plaqueScale = $derived(Math.max(0, enter.current) * breathe * presentationFit);
 	const plaqueRestY = $derived(bonusPresentation === 'start' ? 0 : -44);
 	const plaqueY = $derived(plaqueRestY + (1 - enter.current) * 74 + Math.sin(clock * 2.4) * 3);
+	const namedWinY = $derived(plaqueY + Math.sin(clock * 2.1) * (2 + tier * 0.35));
 	const plaqueRotation = $derived(Math.sin(clock * 1.75) * tier * 0.0009);
 	const plaqueAlpha = $derived(Math.min(1, Math.max(0, enter.current * 2.8)));
 
@@ -491,8 +562,15 @@
 							/>
 						{/if}
 					</Container>
-				{:else if artKey}
-					<Container y={plaqueY} scale={plaqueScale} rotation={plaqueRotation} alpha={plaqueAlpha}>
+				{:else if artKey && winArt}
+					<!-- Supplied tier art is split into independently animated Pixi layers. This keeps the
+					     authored plaque/title intact while giving every part a real entrance, idle loop and exit. -->
+					<Container
+						y={namedWinY}
+						scale={Math.max(0, enter.current) * presentationFit * namedWinIdleScale}
+						rotation={plaqueRotation}
+						alpha={plaqueAlpha}
+					>
 						<Container scale={0.92 + Math.sin(clock * 2.1) * 0.035}>
 							<Graphics
 								blendMode="add"
@@ -519,110 +597,109 @@
 								anchor={0.5}
 								rotation={spark.angle + clock}
 								backgroundColor={index % 3 === 0 ? 0xffffff : glowColor}
-								alpha={(1 - progress) * (0.42 + tier * 0.07)}
+								alpha={(1 - progress) * (0.42 + tier * 0.07) * fadeIn(0.08, 0.4)}
 							/>
 						{/each}
 
-						<!-- True Pixi pixel sign: integer stepped geometry + a hand-drawn 5x7 bitmap font.
-						     The old generated raster looked like a blurred low-resolution cartoon after scaling. -->
+						<!-- Paytable-ranked vegetables rise independently behind the plaque. -->
 						{#each winVeggies as veggie, index}
+							{@const veggieIn = popIn(0.12 + index * 0.055, 0.42)}
+							<Container
+								x={(index - 2) * 164}
+								y={-194 - (index === 2 ? 22 : 0) + (1 - clamp01(veggieIn)) * 86}
+								scale={veggieIn * (1 + Math.sin(clock * 2.7 + index * 0.9) * 0.025)}
+								rotation={(index - 2) * 0.025 + Math.sin(clock * 2.1 + index) * 0.02}
+								alpha={clamp01(veggieIn)}
+							>
+								<Sprite
+									key={veggie}
+									anchor={0.5}
+									width={index === 2 ? 146 : 130}
+									height={index === 2 ? 146 : 130}
+								/>
+							</Container>
+						{/each}
+
+						<!-- Authored plaque: short squash on impact, then a restrained idle float. -->
+						<Container
+							y={-18 + (1 - clamp01(plaqueIn)) * 82}
+							scale={{ x: plaqueIn, y: 0.72 + plaqueIn * 0.28 }}
+							alpha={clamp01(plaqueIn)}
+						>
+							<Graphics
+								y={34}
+								draw={(graphics) =>
+									graphics
+										.ellipse(0, 0, winArt.plaqueWidth * 0.43, winArt.plaqueHeight * 0.42)
+										.fill({ color: 0x130702, alpha: 0.42 })}
+							/>
 							<Sprite
-								key={veggie}
+								key={winArt.plaque}
 								anchor={0.5}
-								x={(index - 2) * 158}
-								y={-205 - (index === 2 ? 18 : 0) + Math.sin(clock * 2.7 + index * 0.9) * 7}
-								width={index === 2 ? 142 : 128}
-								height={index === 2 ? 142 : 128}
-								rotation={(index - 2) * 0.018 + Math.sin(clock * 2.1 + index) * 0.018}
+								width={winArt.plaqueWidth}
+								height={winArt.plaqueHeight}
 							/>
-						{/each}
-						<Graphics draw={(graphics) => graphics.poly(scaledSignPath(1, 14)).fill(0x130702)} />
-						<Graphics draw={(graphics) => graphics.poly(signPath).fill(0x321707)} />
-						<Graphics draw={(graphics) => graphics.poly(scaledSignPath(0.972)).fill(0xd9952d)} />
-						<Graphics draw={(graphics) => graphics.poly(scaledSignPath(0.949)).fill(0xffefc6)} />
-						<Graphics draw={(graphics) => graphics.poly(scaledSignPath(0.918)).fill(0x3a1907)} />
-						<Graphics
-							draw={(graphics) => graphics.poly(scaledSignPath(0.885)).fill(winPalette.face)}
-						/>
-						<!-- Restrained block shading: enough depth to read as a sign, no neon wash behind copy. -->
-						<Rectangle x={-365} y={82} width={730} height={34} backgroundColor={winPalette.dark} />
-						<Rectangle
-							x={-352}
-							y={-112}
-							width={704}
-							height={15}
-							backgroundColor={0xffffff}
-							backgroundAlpha={0.18}
-						/>
-						{#each [-372, 372] as rivetX}
-							<Graphics
-								x={rivetX}
-								draw={(graphics) => {
-									graphics.circle(0, 0, 14).fill(0x2a1004);
-									graphics.circle(0, 0, 9).fill(0xffd76a);
-									graphics.circle(-3, -3, 3).fill(0xffffff);
-								}}
-							/>
-						{/each}
-						<PixelLabel
-							text={winWord}
-							y={-winTitlePixelSize * 7 - 12}
-							pixelSize={winTitlePixelSize}
-							color={winPalette.title}
-							outlineColor={0x261005}
-							extrudeColor={winPalette.titleShade}
-							weight={0.14}
-						/>
-						<PixelLabel
-							text="WIN"
-							y={5}
-							pixelSize={18}
-							color={0xfffbdf}
-							outlineColor={0x261005}
-							extrudeColor={winPalette.dark}
-							weight={0.16}
-						/>
+						</Container>
 
-						{#if overlay.detail && !showAmount}
-							<Rectangle x={-310} y={234} width={620} height={72} backgroundColor={0x3b1b08} />
-							<Rectangle x={-302} y={242} width={604} height={56} backgroundColor={0xe78b00} />
-							<Text
+						<!-- More stars unlock by tier; each has its own pop and twinkle phase. -->
+						{#each visibleStars as star, index}
+							{@const starIn = popIn(0.24 + index * 0.045, 0.34)}
+							<Container
+								x={star.x}
+								y={star.y}
+								scale={starIn * (0.88 + Math.sin(clock * 4.2 + star.phase) * 0.12)}
+								rotation={clock * (index % 2 ? -0.34 : 0.34) + star.phase}
+								alpha={clamp01(starIn) * (0.8 + Math.sin(clock * 5 + star.phase) * 0.2)}
+							>
+								<Sprite key="winStar" anchor={0.5} width={star.size} height={star.size * 0.965} />
+							</Container>
+						{/each}
+
+						<!-- Authored title drops last, overshoots once, then breathes by less than two percent. -->
+						<Container
+							y={-20 - (1 - clamp01(titleIn)) * 104 + Math.sin(clock * 2.8) * 2.5}
+							scale={titleIn * (1 + Math.sin(clock * 2.45 + tier) * (0.005 + tier * 0.0015))}
+							rotation={(1 - clamp01(titleIn)) * -0.035 + Math.sin(clock * 1.8) * 0.003}
+							alpha={clamp01(titleIn)}
+						>
+							<Sprite
+								key={winArt.title}
 								anchor={0.5}
-								y={270}
-								text={overlay.detail}
-								style={{
-									fontFamily: 'monospace',
-									fontSize: 25,
-									fontWeight: '900',
-									fill: 0xffffff,
-								}}
+								width={winArt.titleWidth}
+								height={winArt.titleHeight}
 							/>
-						{/if}
+						</Container>
 
-						{#if showAmount}
+						<!-- Original orange amount ticket retained, rebuilt with cream trim and responsive copy. -->
+						<Container
+							y={194 + (1 - clamp01(amountIn)) * 70}
+							scale={amountIn}
+							alpha={clamp01(amountIn)}
+						>
 							<Graphics
 								draw={(graphics) => {
-									graphics.roundRect(-258, 222, 516, 106, 18).fill(0x2a1004);
-									graphics.roundRect(-248, 232, 496, 86, 13).fill(0xffbd2e);
-									graphics.roundRect(-238, 242, 476, 66, 9).fill(0xe68108);
+									graphics.roundRect(-264, -55, 528, 110, 20).fill(0x241006);
+									graphics.roundRect(-254, -47, 508, 94, 15).fill(0xffedb5);
+									graphics.roundRect(-244, -37, 488, 74, 10).fill(0xe98608);
+									graphics.roundRect(-230, -29, 460, 14, 6).fill({ color: 0xffc335, alpha: 0.72 });
+									for (const rivetX of [-228, 228]) {
+										graphics.circle(rivetX, 0, 8).fill(winArt.dark);
+										graphics.circle(rivetX - 2, -2, 3).fill(0xfff4c8);
+									}
 								}}
 							/>
 							<Text
 								anchor={0.5}
-								y={275}
-								text={bookEventAmountToCurrencyString(
-									amount.current,
-									overlay.amount ?? stateGame.roundWin,
-								)}
+								text={countedWinText}
 								style={{
 									fontFamily: 'monospace',
-									fontSize: 42,
+									fontSize: amountFontSize,
 									fontWeight: '900',
 									fill: 0xffffff,
 									stroke: { color: 0x4c2008, width: 5 },
 								}}
 							/>
-						{/if}
+						</Container>
 					</Container>
 				{:else if isSmallWin}
 					<!-- Under 20×: text-only pixel win. No fullscreen shade, plaque, vegetables, or coins. -->
