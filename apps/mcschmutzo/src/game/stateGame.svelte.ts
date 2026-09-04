@@ -104,13 +104,18 @@ export const stateGame = $state({
 		| undefined,
 });
 
-const boardLayout = () => ({
-	x: stateLayoutDerived.mainLayout().width * 0.494,
-	y: stateLayoutDerived.mainLayout().height * 0.4475,
-	anchor: { x: 0.5, y: 0.5 },
-	pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
-	...BOARD_SIZES,
-});
+const boardLayout = () => {
+	// Portrait sits the board a touch higher so its top tucks under the logo header (which slightly
+	// overlaps it); desktop/landscape keep the original centring.
+	const isPortrait = stateLayoutDerived.layoutType() === 'portrait';
+	return {
+		x: stateLayoutDerived.mainLayout().width * 0.494,
+		y: stateLayoutDerived.mainLayout().height * (isPortrait ? 0.435 : 0.4475),
+		anchor: { x: 0.5, y: 0.5 },
+		pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
+		...BOARD_SIZES,
+	};
+};
 
 const boardRaw = () =>
 	board.map((reel) => reel.reelState.symbols.map((reelSymbol) => reelSymbol.rawSymbol));

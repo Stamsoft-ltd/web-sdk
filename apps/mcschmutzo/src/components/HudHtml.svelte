@@ -2445,14 +2445,16 @@
 	   screen above the reels. Non-interactive (taps fall through to the board). */
 	.pt-top {
 		position: absolute;
-		top: calc(1.6% + env(safe-area-inset-top, 0px));
+		top: calc(2% + env(safe-area-inset-top, 0px));
 		left: 50%;
 		transform: translateX(-50%);
 		z-index: 6;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 1vh;
+		/* Press Play stays near the top; the logo drops down (big gap) so its lower edge slightly
+		   overlaps the top of the reels. */
+		gap: 8.5vh;
 		width: 100%;
 		pointer-events: none;
 	}
@@ -2463,7 +2465,7 @@
 		filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
 	}
 	.pt-top__logo {
-		width: min(74%, 360px);
+		width: min(78%, 380px);
 		height: auto;
 		object-fit: contain;
 		filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
@@ -2545,8 +2547,9 @@
 	.pt-spin:disabled { opacity: 0.5; cursor: default; }
 	/* The green disc in spin_mobile.png sits ~1% right / ~3% above the art centre (leaf border is
 	   heavier at the bottom), so nudge the icons onto the disc's optical centre. */
-	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(2%, 2%); } /* arrow overlay (base has none) */
-	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; transform: translate(2%, 2%); }
+	/* White arrow/stop glyph on the red spin disc (source art is gold → recolour to white). */
+	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(2%, 2%); filter: brightness(0) invert(1); } /* arrow overlay (base has none) */
+	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; transform: translate(2%, 2%); filter: brightness(0) invert(1); }
 	.pt-spin__count {
 		font-family: 'Cinzel', serif; font-weight: 900; font-size: 1.3rem; color: #fff;
 		text-shadow: 0 2px 4px rgba(0,0,0,0.7);
@@ -2561,8 +2564,8 @@
 		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
 		gap: calc(var(--u) * 0.02);
-		/* Nudge the whole BALANCE · bet · WIN row down a touch off the control bar (design ask). */
-		margin-top: calc(var(--u) * 0.022);
+		/* Drop the BALANCE · bet · WIN row well clear of the control bar (extra breathing room). */
+		margin-top: calc(var(--u) * 0.055);
 	}
 	.pt-stats .pt-balance { justify-self: start; margin-left: calc(var(--u) * 0.008); }
 	.pt-stats .pt-win { justify-self: end; margin-right: calc(var(--u) * 0.008); }
