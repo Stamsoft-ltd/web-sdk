@@ -467,11 +467,20 @@
 	.ft-card--mult {
 		grid-area: mult;
 	}
+	/* Boards match the Buy Bonus cards: dark gradient body with an inset #605553 frame (::before). */
 	.ft-card {
-		padding: clamp(10px, 1.8vmin, 20px) clamp(12px, 2vmin, 24px);
-		border: 2px solid #605553;
-		border-radius: 14px;
-		background: rgba(255, 255, 255, 0.015);
+		position: relative;
+		padding: clamp(14px, 2.2vmin, 24px) clamp(16px, 2.2vmin, 26px);
+		border-radius: 16px;
+		background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
+	}
+	.ft-card::before {
+		content: '';
+		position: absolute;
+		inset: 6px;
+		border: 2.03px solid #605553;
+		border-radius: 12px;
+		pointer-events: none;
 	}
 	.ft-head {
 		display: flex;
@@ -545,15 +554,23 @@
 		gap: clamp(8px, 1.5vmin, 16px);
 	}
 	.fb-card {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
 		min-height: clamp(280px, 44vmin, 420px);
-		padding: clamp(14px, 2.4vmin, 26px) clamp(10px, 1.6vmin, 18px);
-		border: 2px solid #605553;
-		border-radius: 14px;
-		background: rgba(255, 255, 255, 0.015);
+		padding: clamp(16px, 2.4vmin, 28px) clamp(16px, 2vmin, 22px);
+		border-radius: 16px;
+		background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
+	}
+	.fb-card::before {
+		content: '';
+		position: absolute;
+		inset: 6px;
+		border: 2.03px solid #605553;
+		border-radius: 12px;
+		pointer-events: none;
 	}
 	.fb-title {
 		margin: 0 0 clamp(10px, 1.8vmin, 18px);
@@ -598,14 +615,22 @@
 		gap: clamp(10px, 1.8vmin, 20px);
 	}
 	.gi-card {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
-		padding: clamp(14px, 2.4vmin, 26px) clamp(16px, 2.4vmin, 30px);
-		border: 2px solid #605553;
-		border-radius: 14px;
-		background: rgba(255, 255, 255, 0.015);
+		padding: clamp(16px, 2.4vmin, 28px) clamp(18px, 2.4vmin, 32px);
+		border-radius: 16px;
+		background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
+	}
+	.gi-card::before {
+		content: '';
+		position: absolute;
+		inset: 6px;
+		border: 2.03px solid #605553;
+		border-radius: 12px;
+		pointer-events: none;
 	}
 	.gi-head {
 		display: flex;
