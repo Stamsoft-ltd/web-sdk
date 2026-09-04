@@ -533,36 +533,16 @@
 		}
 	}
 	@media (max-width: 520px) {
+		/* One full card per row, scrolling (the panel already scrolls). Each bonus keeps its full
+		   vertical form — title, art, amount, button — instead of a compact horizontal row. */
 		.bb-grid {
 			grid-template-columns: 1fr;
 		}
-		.bb-card {
-			grid-template-columns: 96px 1fr;
-			grid-template-rows: auto auto auto auto;
-			align-items: center;
-			text-align: left;
-			gap: 4px 12px;
-		}
-		.bb-card-title {
-			grid-column: 2;
-			min-height: 0;
-			justify-content: flex-start;
-		}
-		.bb-divider {
-			display: none;
-		}
-		.bb-desc {
-			grid-column: 2;
-		}
+		/* Hug the art so the multiplier badge sits on its corner (the card is now wide, so a
+		   full-width art row would float the badge far to the right). */
 		.bb-art {
-			grid-column: 1;
-			grid-row: 1 / span 3;
-		}
-		.bb-amount {
-			grid-column: 2;
-		}
-		.bb-btn {
-			grid-column: 1 / -1;
+			width: fit-content;
+			margin: 0 auto;
 		}
 	}
 </style>
