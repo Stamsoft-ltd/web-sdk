@@ -666,20 +666,33 @@
 		margin-bottom: 0;
 	}
 
-	/* Page 7 — user interface guide. Icon-left reference rows (design), 2-up on desktop. */
+	/* Page 7 — user interface guide. Icon-left reference rows (design), 2-up on desktop.
+	   Each row is a board, matching the Buy Bonus cards. */
 	.ug-grid {
 		width: 100%;
 		margin-top: clamp(14px, 2.6vmin, 30px);
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
-		gap: clamp(12px, 2vmin, 22px) clamp(16px, 3vmin, 40px);
+		gap: clamp(10px, 1.8vmin, 18px) clamp(12px, 2.4vmin, 26px);
 	}
 	.ug-item {
+		position: relative;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		text-align: left;
 		gap: clamp(10px, 1.6vmin, 18px);
+		padding: clamp(10px, 1.6vmin, 18px) clamp(14px, 2vmin, 22px);
+		border-radius: 16px;
+		background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
+	}
+	.ug-item::before {
+		content: '';
+		position: absolute;
+		inset: 6px;
+		border: 2.03px solid #605553;
+		border-radius: 12px;
+		pointer-events: none;
 	}
 	.ug-btn {
 		flex: 0 0 auto;
