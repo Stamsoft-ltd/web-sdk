@@ -234,15 +234,9 @@
 		Math.max(25, Math.min(43, Math.floor(470 / Math.max(7, countedWinText.length * 0.68)))),
 	);
 	const starSlots = [
-		{ x: -390, y: -92, size: 82, phase: 0.1 },
-		{ x: 390, y: -82, size: 76, phase: 1.4 },
-		{ x: -322, y: 108, size: 54, phase: 2.6 },
-		{ x: 326, y: 112, size: 58, phase: 3.7 },
-		{ x: -220, y: -176, size: 48, phase: 4.8 },
-		{ x: 224, y: -180, size: 52, phase: 5.5 },
-		{ x: 0, y: -206, size: 42, phase: 0.8 },
+		{ x: -350, y: -18, size: 68, phase: 0 },
+		{ x: 350, y: -18, size: 68, phase: Math.PI },
 	];
-	const visibleStars = $derived(starSlots.slice(0, Math.min(starSlots.length, tier + 2)));
 
 	const breathe = $derived(1 + Math.sin(clock * (2.2 + tier * 0.08)) * (0.006 + tier * 0.002));
 	const mainLayout = $derived(context.stateLayoutDerived.mainLayout());
@@ -641,15 +635,15 @@
 							/>
 						</Container>
 
-						<!-- More stars unlock by tier; each has its own pop and twinkle phase. -->
-						{#each visibleStars as star, index}
+						<!-- Two fixed plaque stars: symmetric, centred in the authored side panels. -->
+						{#each starSlots as star, index}
 							{@const starIn = popIn(0.24 + index * 0.045, 0.34)}
 							<Container
 								x={star.x}
 								y={star.y}
-								scale={starIn * (0.88 + Math.sin(clock * 4.2 + star.phase) * 0.12)}
-								rotation={clock * (index % 2 ? -0.34 : 0.34) + star.phase}
-								alpha={clamp01(starIn) * (0.8 + Math.sin(clock * 5 + star.phase) * 0.2)}
+								scale={starIn * (0.97 + Math.sin(clock * 4.2 + star.phase) * 0.03)}
+								rotation={Math.sin(clock * 2.7 + star.phase) * 0.035}
+								alpha={clamp01(starIn)}
 							>
 								<Sprite key="winStar" anchor={0.5} width={star.size} height={star.size * 0.965} />
 							</Container>
