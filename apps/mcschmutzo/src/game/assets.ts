@@ -320,6 +320,11 @@ export default {
 		src: new URL('../../assets/mcschmutzo/background-bonus.png', import.meta.url).href,
 		preload: true,
 	},
+	backgroundPortrait: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/background-portrait.webp', import.meta.url).href,
+		preload: true,
+	},
 	bonusWheel: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/bonus-wheel.png', import.meta.url).href,

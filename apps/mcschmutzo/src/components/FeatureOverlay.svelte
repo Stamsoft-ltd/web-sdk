@@ -7,6 +7,9 @@
 
 	const context = getContext();
 	const board = $derived(context.stateGameDerived.boardLayout());
+	// Portrait draws its logo (+ Press Play) as an HTML header above the board (see HudHtml .pt-top),
+	// so the pixi board logo is desktop/landscape only.
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 	const TAU = Math.PI * 2;
 	const SECTOR_ANGLE = TAU / 7;
 	const SPIN_DURATION = 2200;
@@ -85,15 +88,17 @@
 
 <!-- Board logo: sized as a fraction of the board width so it never overflows a narrow board.
      Keeps the new art's 302:84 aspect. Sits mostly above the board, dipping just slightly over
-     the top edge. -->
-<Sprite
-	key="mcschmutzoLogo"
-	x={board.x}
-	y={board.y - board.height * 0.5 + 14}
-	anchor={{ x: 0.5, y: 1 }}
-	width={board.width * 0.4}
-	height={(board.width * 0.4 * 84) / 302}
-/>
+     the top edge. Portrait uses the HTML .pt-top header instead. -->
+{#if !isPortrait}
+	<Sprite
+		key="mcschmutzoLogo"
+		x={board.x}
+		y={board.y - board.height * 0.5 + 14}
+		anchor={{ x: 0.5, y: 1 }}
+		width={board.width * 0.4}
+		height={(board.width * 0.4 * 84) / 302}
+	/>
+{/if}
 
 {#if context.stateGame.gameType === 'freegame' || context.stateGame.globalMultiplier > 1}
 	<Container x={board.x + board.width * 0.5 + 74} y={board.y - board.height * 0.5 + 42}>

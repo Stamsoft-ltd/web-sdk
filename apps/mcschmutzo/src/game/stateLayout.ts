@@ -9,6 +9,9 @@ export const { stateLayout, stateLayoutDerived } = createLayout({
 		desktop: { width: 1422, height: 800 },
 		tablet: { width: 1000, height: 1000 },
 		landscape: { width: 1600, height: 900 },
-		portrait: { width: 800, height: 1422 },
+		// Portrait main width hugs the board (655px) so the reels fill ~93% of the phone width
+		// (little horizontal margin) and scale up taller with it; the extra vertical room is
+		// letterboxed top/bottom for the logo header and the bottom HUD.
+		portrait: { width: 700, height: 1422 },
 	},
 });

@@ -49,6 +49,11 @@
 	const iconTurbo3 = ap('/assets/hud/icon-lightning-3.png');
 	const iconCoins = ap('/assets/mcschmutzo/buybonus/money.webp');
 
+	// Portrait game-screen header: the McSchmutzo wordmark with the Press Play studio mark above it,
+	// pinned to the top over the diner background (mirrors the splash / loading header).
+	const ptLogo = ap('/assets/mcschmutzo/logo.png');
+	const ptPressPlay = ap('/assets/mcschmutzo/press-play.svg');
+
 	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
 	const hudFrame = ap('/assets/components/frames/hud_frame.webp');
 	const smallBtnFrame = ap('/assets/components/frames/lower_hud_button_frame.webp');
@@ -626,6 +631,11 @@
 	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}')`}
 >
 	{#if isPortrait}
+		<!-- Portrait header: Press Play mark + big McSchmutzo logo, pinned above the board. -->
+		<div class="pt-top">
+			<img class="pt-top__pp" src={ptPressPlay} alt="Press Play" draggable="false" />
+			<img class="pt-top__logo" src={ptLogo} alt="McSchmutzo" draggable="false" />
+		</div>
 		<!-- Dedicated portrait HUD (Figma mobile 2792-4133). Desktop/landscape markup below is untouched. -->
 		<div class="pt-hud">
 			<div class="pt-controls">
@@ -760,11 +770,11 @@
 					</button>
 				</div>
 
-				<!-- WIN readout: shows the current spin win / running bonus total; cleared on next spin.
-				     Hidden (but keeps its slot, so the bet stays centred) until there is a win. -->
-				<div class="pt-win" class:pt-win--hidden={!hasWin}>
+				<!-- WIN readout: a permanent box mirroring BALANCE. Shows the current spin win / running
+				     bonus total ($0.00 when idle), cleared on the next spin. -->
+				<div class="pt-win">
 					<span class="pt-win__label">{i18nDerived.win()}</span>
-					<span class="pt-win__value" use:fitText={winValue}>{hasWin ? winValue : ''}</span>
+					<span class="pt-win__value" use:fitText={winValue}>{winValue}</span>
 				</div>
 			</div>
 		</div>
@@ -2431,6 +2441,34 @@
 	.hud-shell[data-layout='portrait'] { padding: 0; }
 	.hud-shell[data-layout='portrait'] .hud-bottom { display: none; }
 
+	/* Portrait header — Press Play mark stacked over the big McSchmutzo logo, at the top of the
+	   screen above the reels. Non-interactive (taps fall through to the board). */
+	.pt-top {
+		position: absolute;
+		top: calc(1.6% + env(safe-area-inset-top, 0px));
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 6;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1vh;
+		width: 100%;
+		pointer-events: none;
+	}
+	.pt-top__pp {
+		width: min(32%, 150px);
+		height: auto;
+		object-fit: contain;
+		filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+	}
+	.pt-top__logo {
+		width: min(74%, 360px);
+		height: auto;
+		object-fit: contain;
+		filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
+	}
+
 	.pt-hud {
 		position: absolute;
 		left: 0; right: 0; bottom: 0;
@@ -2527,20 +2565,20 @@
 		margin-top: calc(var(--u) * 0.022);
 	}
 	.pt-stats .pt-balance { justify-self: start; margin-left: calc(var(--u) * 0.008); }
-	.pt-stats .pt-win { justify-self: end; margin-right: calc(var(--u) * 0.03); }
-	/* Balance: transparent (no pad), centred label + gold value. */
+	.pt-stats .pt-win { justify-self: end; margin-right: calc(var(--u) * 0.008); }
+	/* Balance: dark rounded box, centred white label + white value. WIN mirrors it exactly. */
 	.pt-balance {
 		flex: 0 0 auto;
-		/* Cap to the balance's actual grid column (~0.25·u in the 1fr auto 1fr row, less the
-		   0.03·u margin) so a long balance can't overflow the column into the centre bet pill. */
-		max-width: calc(var(--u) * 0.22);
+		/* Fixed width so BALANCE and WIN read as matching boxes (fitText scales long values to fit). */
+		width: calc(var(--u) * 0.235);
+		box-sizing: border-box;
 		display: flex; flex-direction: column;
 		align-items: center; justify-content: center;
 		gap: 1px;
 		min-width: 0;
 		overflow: hidden;
-		/* Same dark translucent pill as landscape (.ls-balance) so BALANCE reads over the forest. */
-		padding: 3px 10px;
+		/* Same dark translucent pill as landscape (.ls-balance) so BALANCE reads over the diner bg. */
+		padding: 4px 10px;
 		border-radius: 10px;
 		background: rgba(17, 12, 10, 0.72);
 		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
@@ -2549,9 +2587,7 @@
 	.pt-balance__label {
 		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 10px;
 		letter-spacing: 0.04em; white-space: nowrap;
-		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
-		-webkit-background-clip: text; background-clip: text;
-		-webkit-text-fill-color: transparent; color: transparent;
+		color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 	}
 	.pt-balance__value {
 		/* inline-block so fitText's transform:scale actually applies (CSS transforms are ignored on
@@ -2627,31 +2663,26 @@
 	/* Buy bonus placed in the control row, left of spin. */
 	.pt-buy--controls { width: calc(var(--u) * 0.205); height: calc(var(--u) * 0.088); }
 
-	/* WIN readout — mirrors the balance block, pinned to the right of the stats row. */
+	/* WIN readout — a permanent box mirroring .pt-balance exactly, pinned right of the stats row. */
 	.pt-win {
 		flex: 0 0 auto;
-		/* Match .pt-balance: cap to the win column so a big win can't overflow into the bet pill. */
-		max-width: calc(var(--u) * 0.22);
+		width: calc(var(--u) * 0.235);
+		box-sizing: border-box;
 		display: flex; flex-direction: column;
 		align-items: center; justify-content: center;
 		gap: 1px;
 		min-width: 0;
 		overflow: hidden;
-		/* Same dark translucent pill as landscape (.ls-win) — matches .pt-balance. */
-		padding: 3px 10px;
+		padding: 4px 10px;
 		border-radius: 10px;
 		background: rgba(17, 12, 10, 0.72);
 		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
 		backdrop-filter: blur(4px);
 	}
-	/* No win yet → keep the slot (bet stays centred) but show nothing. */
-	.pt-win--hidden { visibility: hidden; }
 	.pt-win__label {
 		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 10px;
 		letter-spacing: 0.04em; white-space: nowrap;
-		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
-		-webkit-background-clip: text; background-clip: text;
-		-webkit-text-fill-color: transparent; color: transparent;
+		color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 	}
 	.pt-win__value {
 		/* inline-block so fitText's transform:scale applies (see .pt-balance__value). */
