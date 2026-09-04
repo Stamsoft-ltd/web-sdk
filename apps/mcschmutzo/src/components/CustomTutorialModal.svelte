@@ -681,8 +681,8 @@
 		flex-direction: row;
 		align-items: center;
 		text-align: left;
-		gap: clamp(10px, 1.6vmin, 18px);
-		padding: clamp(10px, 1.6vmin, 18px) clamp(14px, 2vmin, 22px);
+		gap: clamp(12px, 1.8vmin, 20px);
+		padding: clamp(15px, 2.4vmin, 26px) clamp(20px, 2.8vmin, 32px);
 		border-radius: 16px;
 		background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
 	}
