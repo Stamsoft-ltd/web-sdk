@@ -14,6 +14,7 @@ import type {
 	RollerReel,
 } from './types';
 import { stateLayoutDerived } from './stateLayout';
+import { replayBottomReservePx } from './replayViewport.svelte';
 import { winLevelMap } from './winLevelMap';
 import { eventEmitter } from './eventEmitter';
 import {
@@ -162,6 +163,21 @@ const getBoardViewportPadding = () => {
 	return { top: 108, right: 220, bottom: 172, left: 208 };
 };
 
+/**
+ * A band measured up from the CANVAS bottom edge, expressed in main-space units up from MAIN's
+ * bottom edge.
+ *
+ * The two edges are not the same edge. <MainContainer> draws main-space centred on the canvas at
+ * `mainLayout.scale`, so on any letterboxed window main's bottom sits well above the canvas bottom —
+ * at 700x460 the 1600x900 main space renders 700x394 and leaves 33px of canvas under it. Dividing a
+ * canvas measurement by the scale therefore over-reserves by that whole margin; this maps it.
+ */
+const canvasBottomBandToMainUnits = (px: number) => {
+	const main = stateLayoutDerived.mainLayout();
+	const canvasHeight = stateLayoutDerived.canvasSizes().height;
+	return main.height * 0.5 + (px - canvasHeight * 0.5) / (main.scale || 1);
+};
+
 const getBoardViewportMetrics = () => {
 	const mainLayout = stateLayoutDerived.mainLayout();
 	const canvasSizes = stateLayoutDerived.canvasSizes();
@@ -270,7 +286,14 @@ const boardLayout = () => {
 	if (layoutType === 'landscape') {
 		const main = stateLayoutDerived.mainLayout();
 		const availableWidth = main.width - LS_LEFT_RAIL - LS_RIGHT_RAIL;
-		const availableHeight = main.height - LS_PANEL_TOP - LS_BOTTOM_BAR;
+		// Whichever bottom band is taller: the control bar in play, the replay panel in replay. The fit
+		// here is height-limited, so this is the number that sets the board's size.
+		const bottomBand = Math.max(
+			LS_BOTTOM_BAR,
+			canvasBottomBandToMainUnits(replayBottomReservePx()),
+		);
+		// Floored: a board with a negative scale renders inside out rather than small.
+		const availableHeight = Math.max(1, main.height - LS_PANEL_TOP - bottomBand);
 		const boardScale =
 			Math.min(availableWidth / BOARD_SIZES.width, availableHeight / BOARD_SIZES.height) *
 			LS_PANEL_FILL;
@@ -298,12 +321,6 @@ const boardLayout = () => {
 		// canvas width (not availableCanvasWidth, which reserves 6px side padding) so frameW resolves
 		// to exactly the canvas width; the reels stay inset by MOBILE_FRAME_INNER_W within it.
 		const availableWidth = canvasSizes.width / (mainLayout.scale || 1);
-		// The visible frame is the grid blown up by FRAME_OVER_GRID_X (the decorative border baked into
-		// the board art). Scale so THAT equals the full canvas width — the reels sit inside it — else
-		// the ~3% border leaves a sky margin and the board reads as not-quite full width.
-		const boardScale =
-			(availableWidth * PORTRAIT_FRAME_FILL) / (BOARD_SIZES.width * FRAME_OVER_GRID_X);
-		const frameHeight = (BOARD_SIZES.height * boardScale) / MOBILE_FRAME_INNER_H;
 
 		// Whatever room is left between the board's bottom and the control bar, and the share of it
 		// handed back above the board — see PORTRAIT_SETTLE. MainContainer draws main-space around the
@@ -311,7 +328,26 @@ const boardLayout = () => {
 		const scale = mainLayout.scale || 1;
 		const toMainY = (canvasY: number) =>
 			mainLayout.height * 0.5 + (canvasY - canvasSizes.height * 0.5) / scale;
-		const barTop = toMainY(canvasSizes.height - padding.bottom);
+		const replayReserve = replayBottomReservePx();
+		const barTop = toMainY(canvasSizes.height - Math.max(padding.bottom, replayReserve));
+
+		// The visible frame is the grid blown up by FRAME_OVER_GRID_X (the decorative border baked into
+		// the board art). Scale so THAT equals the full canvas width — the reels sit inside it — else
+		// the ~3% border leaves a sky margin and the board reads as not-quite full width.
+		const fullBleedScale =
+			(availableWidth * PORTRAIT_FRAME_FILL) / (BOARD_SIZES.width * FRAME_OVER_GRID_X);
+		const fullBleedHeight = (BOARD_SIZES.height * fullBleedScale) / MOBILE_FRAME_INNER_H;
+		// Full bleed is a WIDTH rule, so on its own nothing here can react to a band that grows taller
+		// than the control bar — the board would simply keep its size and disappear under it. In replay,
+		// where that band is a measured HTML panel rather than a designed bar, give up the last of the
+		// full bleed rather than the bottom reel row. Never above 1: play mode is untouched.
+		const portraitFit =
+			replayReserve > 0 && fullBleedHeight > 0
+				? Math.min(1, Math.max(0.05, (barTop - PORTRAIT_TOP_OFFSET) / fullBleedHeight))
+				: 1;
+		const boardScale = fullBleedScale * Math.max(portraitFit, 0);
+		const frameHeight = fullBleedHeight * Math.max(portraitFit, 0);
+
 		const slack = Math.max(0, barTop - (PORTRAIT_TOP_OFFSET + frameHeight));
 		const topY = PORTRAIT_TOP_OFFSET + slack * PORTRAIT_SETTLE;
 
@@ -358,9 +394,12 @@ const boardLayout = () => {
 	const gridHeightPx = BOARD_SIZES.height * boardScale * scale;
 	const railBelowCentrePx = gridHeightPx * (0.5 + FRAME_UNDER_GRID);
 	const button = desktopSpinButtonTop(canvasSizes.width, canvasSizes.height);
+	// In replay the spin button is not rendered and the replay panel occupies that band instead, so the
+	// thing the board is held off is whichever of the two is higher up the canvas.
+	const barTopPx = Math.min(button.top, canvasSizes.height - replayBottomReservePx());
 	const centreYPx = Math.min(
 		canvasSizes.height * (DESIGN_GRID.centreY - DESIGN_GRID_LIFT),
-		button.top - button.clearance - railBelowCentrePx,
+		barTopPx - button.clearance - railBelowCentrePx,
 	);
 
 	return {

@@ -64,6 +64,12 @@ const duckTriggerPositionsFromBoard = () =>
 		}),
 	);
 
+// Duck Collect presentation pacing. The reveal itself is already speed-aware — DuckCollectPresenter
+// flips every duck in one batch under turbo — so only the two fixed holds around it needed a factor.
+// Matches Win.svelte's count-up factors so the whole spin reads at one tempo.
+const DUCK_COLLECT_LEAD_IN_MS = 400;
+const duckCollectSpeedFactor = () => (stateBet.isSuperTurbo ? 0.4 : stateBet.isTurbo ? 0.6 : 1);
+
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
 		// WIN is per spin, not the cumulative bonus total.
@@ -341,7 +347,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			});
 		}
 		eventEmitter.broadcast({ type: 'duckCollectShow', positions: bookEvent.positions });
-		await waitForTimeout(400);
+		// Dead beat before the ducks turn, so it scales with the speed setting like every other
+		// presentation pause. Duck Collect keeps turbo now (see shouldForceNormalSpeed), and a fixed
+		// wait would have been the one part of the feature that still ignored it.
+		await waitForTimeout(DUCK_COLLECT_LEAD_IN_MS * duckCollectSpeedFactor());
 	},
 
 	duckReveal: async (bookEvent: BookEventOfType<'duckReveal'>) => {

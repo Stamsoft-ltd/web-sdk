@@ -5,7 +5,12 @@ import { createPrimaryMachines, createIntermediateMachines, createGameActor } fr
 
 import type { Bet } from './typesBookEvent';
 import { stateXstateDerived } from './stateXstate';
-import { playBet, convertTorResumableBet, shouldDeferEndRound } from './utils';
+import {
+	playBet,
+	convertTorResumableBet,
+	shouldDeferEndRound,
+	shouldForceNormalSpeed,
+} from './utils';
 import { stateGame, stateGameDerived } from './stateGame.svelte';
 import { eventEmitter } from './eventEmitter';
 import config from './config';
@@ -43,8 +48,10 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		stateGameDerived.enhancedBoard.settle();
 	},
 	onPlayGame: async (bet) => {
-		// Switch before the trigger reveal, not only when the later bonus event arrives.
-		if (shouldDeferEndRound(bet)) stateBetDerived.setNormalSpeed();
+		// Switch before the trigger reveal, not only when the later bonus event arrives. Note this is
+		// shouldForceNormalSpeed, not shouldDeferEndRound: a spin that merely collects ducks defers its
+		// settlement but stays in turbo. See the two predicates in ./utils.
+		if (shouldForceNormalSpeed(bet)) stateBetDerived.setNormalSpeed();
 		if (stateGame.endRoundOnly) {
 			stateGame.endRoundOnly = false;
 			return; // skip animation — endGame calls handleRequestEndRound and credits balance

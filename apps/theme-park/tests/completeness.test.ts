@@ -27,15 +27,31 @@ describe('shared frontend completeness guards', () => {
 		);
 	});
 
-	it('runs triggered and bought bonuses at normal speed', () => {
+	// Which rounds are slowed is asserted behaviourally in roundSettlement.test.ts, against the real
+	// predicate. What is left here is only what that test cannot see: that the three sites which drop
+	// the player out of turbo still exist, and that Duck Collect is not one of them.
+	it('runs triggered and bought bonuses at normal speed, but not Duck Collect', () => {
 		const actor = source('src/game/actor.ts');
 		const events = source('src/game/bookEventHandlerMap.ts');
 		const buy = source('src/components/CustomBuyBonusModal.svelte');
 		const stateBet = source('../../packages/state-shared/src/stateBet.svelte.ts');
 		expect(stateBet).toContain('const setNormalSpeed = () =>');
-		expect(actor).toContain('if (shouldDeferEndRound(bet)) stateBetDerived.setNormalSpeed();');
-		expect(events).toContain('stateBetDerived.setNormalSpeed();');
+		expect(actor).toContain('if (shouldForceNormalSpeed(bet)) stateBetDerived.setNormalSpeed();');
+		// The bug this replaced: the speed decision read the settlement predicate, which counts a
+		// collect duck as a bonus.
+		expect(actor).not.toContain('if (shouldDeferEndRound(bet)) stateBetDerived.setNormalSpeed();');
+		// freeSpinTrigger and duckPickStart, and nothing else in the book handlers.
+		expect(events.match(/stateBetDerived\.setNormalSpeed\(\);/g)).toHaveLength(2);
 		expect(buy).toContain('stateBetDerived.setNormalSpeed();');
+	});
+
+	it('paces the Duck Collect holds with the speed setting', () => {
+		const events = source('src/game/bookEventHandlerMap.ts');
+		const presenter = source('src/components/DuckCollectPresenter.svelte');
+		expect(events).toContain('DUCK_COLLECT_LEAD_IN_MS * duckCollectSpeedFactor()');
+		expect(presenter).toContain('waitForTimeout(finishHoldMs())');
+		// Floored above the HUD's 650ms WIN tween, so turbo never cuts the collected total mid-count.
+		expect(presenter).toContain('FINISH_HOLD_FLOOR_MS = 750');
 	});
 
 	it('states that the highest-paying symbol wins each line', () => {
@@ -87,18 +103,38 @@ describe('shared frontend completeness guards', () => {
 		expect(game).toContain("stateUi.config.mode !== 'replay'");
 	});
 
-	it('fits the replay panel into short popout viewports', () => {
+	// Whether the panel FITS is measured in tests/replayBoardClearance.test.ts, against the board it
+	// has to stay off. What is left here is only the wiring that test cannot see: that the panel is
+	// measured and published at all, and that its height does not change when the button unmounts.
+	// (An earlier version of this test asserted that the stylesheet contained particular breakpoint
+	// strings. It passed through four broken releases — a spelling check cannot see an overlap.)
+	it('publishes the replay panel band and keeps it stable while replaying', () => {
 		const replayHud = source('src/components/replay/ReplayHud.svelte');
+		expect(replayHud).toContain('stateReplayViewport.bottomReservePx');
+		expect(replayHud).toContain('new ResizeObserver(measure)');
+		// boardLayout() reads the published number, so the effect that writes it must never read it back
+		// — that dependency does not settle and it froze the page on the first measurement.
+		expect(replayHud).toContain("import { untrack } from 'svelte'");
+		expect(replayHud).toMatch(/const measure = \(\) =>\s*\n?\s*untrack\(/);
+		expect(replayHud).toContain("window.addEventListener('resize', measure)");
+		// The play button is unmounted for the duration of the replay, so the panel's height must be
+		// owned by the slot around it, not by the button.
+		expect(replayHud).toMatch(/\.replay-action \{[^}]*min-height: 56px;/);
+		expect(replayHud).not.toMatch(/\.replay-primary \{[^}]*min-height: [1-9]/);
+		// The panel is positioned against the game stage, never the window.
 		expect(replayHud).toContain('position: absolute;');
 		expect(replayHud).toContain('container-type: size;');
-		expect(replayHud).toContain('@container (orientation: landscape) and (max-height: 520px)');
-		expect(replayHud).toContain('@container (orientation: landscape) and (max-width: 540px)');
-		expect(replayHud).toContain('width: min(760px, calc(100% - 32px));');
-		expect(replayHud).toContain('grid-template-columns: repeat(3, minmax(0, 1fr));');
-		expect(replayHud).toContain('grid-template-columns: 1fr;');
 		expect(replayHud).not.toContain('100vw');
 		expect(replayHud).not.toContain('100vh');
 		expect(replayHud).not.toContain('overflow: auto;');
+	});
+
+	it('reserves the replay band in every branch of the board layout', () => {
+		const layout = source('src/game/stateGame.svelte.ts');
+		// One call per layout branch: landscape, portrait, desktop. A branch that forgets it is a
+		// viewport class where the panel lands on the reels again.
+		expect(layout.match(/replayBottomReservePx\(\)/g)?.length).toBeGreaterThanOrEqual(3);
+		expect(layout).toContain('canvasBottomBandToMainUnits');
 	});
 
 	it('recognises every one-shot Theme Park bonus during recovery', () => {

@@ -37,6 +37,21 @@
 	let resolveReveal: () => void = () => {};
 	let skipAllowedAt = 0;
 
+	/**
+	 * How long the turned ducks are held before the board moves on.
+	 *
+	 * Scaled by the speed setting, because Duck Collect keeps turbo now (it is a base-game symbol
+	 * feature, not a bonus — see shouldForceNormalSpeed in game/utils). Floored at 750ms on purpose:
+	 * the HUD's WIN count-up runs a fixed 650ms tween, and a hold shorter than that would cut the
+	 * collected total off mid-count and show a number that was never the real one.
+	 */
+	const FINISH_HOLD_MS = 1400;
+	const FINISH_HOLD_FLOOR_MS = 750;
+	const finishHoldMs = () => {
+		const factor = stateBet.isSuperTurbo ? 0.4 : stateBet.isTurbo ? 0.6 : 1;
+		return Math.max(FINISH_HOLD_FLOOR_MS, FINISH_HOLD_MS * factor);
+	};
+
 	const positionKey = ({ reel, row }: Position) => `${reel},${row}`;
 
 	const releaseReveal = () => {
@@ -155,7 +170,7 @@
 		},
 		duckCollectRevealComplete: (event) => finishTurn(event.position),
 		duckCollectFinish: async () => {
-			await waitForTimeout(1400);
+			await waitForTimeout(finishHoldMs());
 		},
 		duckCollectHide: () => {
 			releaseReveal();

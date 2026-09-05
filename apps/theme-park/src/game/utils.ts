@@ -114,6 +114,28 @@ export const shouldDeferEndRound = (bet: Pick<Bet, 'state'>) =>
 	checkIsMultipleRevealEvents({ bookEvents: bet.state }) ||
 	bet.state.some(({ type }) => type === 'duckPickStart' || type === 'duckCollectStart');
 
+/**
+ * Which rounds are dropped out of turbo before the reels move.
+ *
+ * Deliberately NOT `shouldDeferEndRound`. The two questions look alike and were answered by one
+ * predicate, which is what forced a turbo player back to normal speed every time a collect duck
+ * landed. They differ on Duck Collect:
+ *
+ *   - settlement: DC symbols flip after the reveal and add to the spin's win, so the round must
+ *     stay open until the book ends. Duck Collect DOES defer the end-round call.
+ *   - speed: Duck Collect is a base-game symbol feature, not a bonus. It has no intro, no
+ *     transition and no screen of its own — the FSPIN1 bet mode that guarantees one is even sold as
+ *     "One paid spin with at least 1 collect duck". Duck Collect does NOT force normal speed.
+ *
+ * A real bonus takes the player somewhere: the free-spin games (many reveals) and the Duck Your
+ * Luck pond (`duckPickStart`, which opens an interactive pick screen). Only those play at normal
+ * speed, and `bookEventHandlerMap` re-asserts it when their own trigger event arrives — this call
+ * is only so the TRIGGERING spin's reels are already slow.
+ */
+export const shouldForceNormalSpeed = (bet: Pick<Bet, 'state'>) =>
+	checkIsMultipleRevealEvents({ bookEvents: bet.state }) ||
+	bet.state.some(({ type }) => type === 'duckPickStart');
+
 export const playBet = async (bet: Bet) => {
 	stateBet.winBookEventAmount = 0;
 	await playBookEvents(bet.state);

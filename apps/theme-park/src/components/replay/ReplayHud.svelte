@@ -1,11 +1,20 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { stateBet, stateUi } from 'state-shared';
 
 	import { getContext } from '../../game/context';
+	import { stateReplayViewport } from '../../game/replayViewport.svelte';
 	import { templateStakeDerived, templateStakeState } from '../../state/templateStake.svelte';
 	import { logDiagnostic } from '../../utils/diagnostics';
 
 	const context = getContext();
+
+	// Air left between the panel's top edge and the board's bottom rail.
+	const REPLAY_PANEL_CLEARANCE = 8;
+	// Ceiling on the band the panel may claim, as a share of the viewport height.
+	const MAX_RESERVE_FRACTION = 0.42;
+
+	let panelEl = $state<HTMLDivElement | null>(null);
 
 	const isReplayMode = $derived(stateUi.config.mode === 'replay');
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
@@ -74,6 +83,55 @@
 		});
 		context.eventEmitter.broadcast({ type: 'resumeBet' });
 	};
+
+	// Publish the band this panel occupies so boardLayout() can hold the reels off it. Replay renders
+	// no control bar, so without this the board keeps its full play-mode size and the panel lands on
+	// top of the bottom reel row — which is exactly what it did, invisibly to every check that only
+	// asked whether the panel stayed inside the window. See game/replayViewport.svelte.ts.
+	//
+	// Measured, not derived: the height depends on the container breakpoint, the translated labels and
+	// the currency string. Nothing here feeds back into the panel's own size (its width comes from the
+	// stage, its height from its content), so observing it cannot loop.
+	$effect(() => {
+		const el = panelEl;
+		if (!el) {
+			untrack(() => (stateReplayViewport.bottomReservePx = 0));
+			return;
+		}
+		// untrack, and not as a nicety: boardLayout() reads this number, so publishing it re-renders the
+		// stage — and reading it back to compare would make this effect depend on its own write. It does
+		// not settle. The page froze on the first measurement, which is the same failure mode as R-10's
+		// latched fitter: what you measure must not be produced by the measurement.
+		const measure = () =>
+			untrack(() => {
+				const rect = el.getBoundingClientRect();
+				// A panel that is hidden or has not been laid out yet reports an all-zero rect. Reading
+				// `top: 0` as "the panel starts at the top of the window" reserves the entire viewport and
+				// collapses the board to a sliver — no measurement has to mean no reservation, not a
+				// reservation of everything.
+				const next =
+					rect.height > 0
+						? Math.min(
+								// Backstop: nothing the panel can report may cost the board more than this. A
+								// reservation is a claim on the play area, so it needs a ceiling that does not
+								// depend on the panel being sane.
+								window.innerHeight * MAX_RESERVE_FRACTION,
+								Math.max(0, window.innerHeight - rect.top + REPLAY_PANEL_CLEARANCE),
+							)
+						: 0;
+				if (Math.abs(next - stateReplayViewport.bottomReservePx) > 0.5)
+					stateReplayViewport.bottomReservePx = next;
+			});
+		measure();
+		const observer = new ResizeObserver(measure);
+		observer.observe(el);
+		window.addEventListener('resize', measure);
+		return () => {
+			observer.disconnect();
+			window.removeEventListener('resize', measure);
+			stateReplayViewport.bottomReservePx = 0;
+		};
+	});
 </script>
 
 {#if isReplayMode}
@@ -92,7 +150,7 @@
 			</div>
 		</div>
 
-		<div class="replay-panel">
+		<div class="replay-panel" bind:this={panelEl}>
 			<div class="replay-body">
 				<div class="replay-stats">
 					<div class="replay-stat">
@@ -267,6 +325,10 @@
 		align-items: stretch;
 		justify-content: center;
 		flex: 0 0 160px;
+		/* The height lives on this slot, never on the button. The button is unmounted while the replay
+		   is playing, and the panel's height is what the board reserves — a panel that shrank the
+		   moment you pressed play would resize the board out from under the spinning reels. */
+		min-height: 56px;
 	}
 
 	.replay-primary {
@@ -285,7 +347,7 @@
 		align-items: center;
 		justify-content: center;
 		gap: 8px;
-		min-height: 62px;
+		min-height: 0;
 	}
 
 	.replay-play-icon {
@@ -307,50 +369,12 @@
 		word-break: break-word;
 	}
 
-	/* Popout S/L are short landscape, not desktop. Keep the panel compact and let all five values plus
-	   the action button fit in one readable two-row composition. */
-	@container (orientation: landscape) and (max-height: 520px) {
-		.replay-panel {
-			right: 12px;
-			bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-			width: min(760px, calc(100% - 32px));
-			padding: 8px;
-		}
+	/* Order matters below: these blocks overlap, so the LAST matching one wins. Popout is authored
+	   last on purpose — it is landscape at a width the narrow and portrait rules also match, and it
+	   was those later rules that used to win and stack it into a 111px-tall two-row card. */
 
-		.replay-body {
-			gap: 8px;
-		}
-
-		.replay-stats {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-			gap: 6px;
-		}
-
-		.replay-stat {
-			padding: 6px 7px;
-			gap: 2px;
-		}
-
-		.replay-stat span {
-			font-size: 8px;
-		}
-
-		.replay-stat strong {
-			--replay-value-base-size: 15px;
-		}
-
-		.replay-action {
-			flex-basis: 132px;
-		}
-
-		.replay-primary {
-			padding: 8px;
-			font-size: 11px;
-			min-height: 0;
-		}
-	}
-
-	@container (max-width: 720px) {
+	/* Desktop shrinking towards tablet width: three columns instead of five. */
+	@container (max-width: 720px) and (min-height: 561px) {
 		.replay-topbar {
 			top: calc(10px + env(safe-area-inset-top, 0px));
 			right: 10px;
@@ -358,9 +382,7 @@
 		}
 
 		.replay-panel {
-			left: auto;
 			right: 10px;
-			top: auto;
 			bottom: calc(10px + env(safe-area-inset-bottom, 0px));
 			width: min(760px, calc(100% - 20px));
 			padding: 9px;
@@ -380,7 +402,8 @@
 		}
 	}
 
-	@container (max-width: 540px), (orientation: portrait) and (max-width: 768px) {
+	/* Phone portrait: the panel spans the full width and the button drops below the stats. */
+	@container (orientation: portrait) {
 		.replay-topbar {
 			align-items: flex-start;
 		}
@@ -388,7 +411,6 @@
 		.replay-panel {
 			left: 8px;
 			right: 8px;
-			top: auto;
 			bottom: calc(8px + env(safe-area-inset-bottom, 0px));
 			width: auto;
 			padding: 7px 7px 6px;
@@ -401,32 +423,33 @@
 		}
 
 		.replay-stats {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: 6px;
-		}
-
-		.replay-action {
-			min-height: 52px;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 5px;
 		}
 
 		.replay-stat {
-			padding: 6px 7px;
+			padding: 5px 6px;
 		}
 
 		.replay-stat span {
-			font-size: 8px;
+			font-size: 7.5px;
 		}
 
 		.replay-stat strong {
-			--replay-value-base-size: 16px;
+			--replay-value-base-size: 14px;
+		}
+
+		/* Fixed, and matched by the button rather than the other way round — see .replay-action. */
+		.replay-action {
+			flex: none;
+			min-height: 44px;
 		}
 
 		.replay-primary {
-			padding: 8px 8px;
+			padding: 6px;
 			font-size: 10px;
-			min-height: 58px;
-			flex-direction: column;
-			gap: 4px;
+			gap: 5px;
+			flex-direction: row;
 		}
 
 		.replay-badge,
@@ -436,26 +459,39 @@
 		}
 	}
 
-	/* Popout S can match the mobile-width breakpoint while still being landscape. Keep its compact
-	   landscape composition; the portrait stack is too tall and pushes the panel above the viewport. */
-	@container (orientation: landscape) and (max-width: 540px) {
+	/* Popout S/L: short landscape, whatever its width. All five values and the button belong on ONE
+	   row here — the band this costs is what the board gives up, so every extra row of panel is a reel
+	   row the player loses. */
+	@container (orientation: landscape) and (max-height: 560px) {
+		.replay-topbar {
+			top: calc(8px + env(safe-area-inset-top, 0px));
+			right: 8px;
+			gap: 6px;
+		}
+
+		.replay-badge,
+		.replay-chip {
+			padding: 4px 8px;
+			font-size: 8px;
+		}
+
 		.replay-panel {
 			left: 8px;
 			right: 8px;
 			bottom: calc(8px + env(safe-area-inset-bottom, 0px));
 			width: auto;
-			max-height: calc(100% - 16px);
-			padding: 5px;
+			border-radius: 12px;
+			padding: 6px;
 		}
 
 		.replay-body {
 			display: flex;
-			gap: 4px;
+			gap: 5px;
 		}
 
 		.replay-stats {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-			gap: 3px;
+			grid-template-columns: repeat(5, minmax(0, 1fr));
+			gap: 4px;
 		}
 
 		.replay-stat {
@@ -464,24 +500,23 @@
 		}
 
 		.replay-stat span {
-			font-size: 6.5px;
-			letter-spacing: 0.04em;
+			font-size: 7px;
+			letter-spacing: 0.03em;
 		}
 
 		.replay-stat strong {
-			--replay-value-base-size: 12px;
+			--replay-value-base-size: 13px;
 		}
 
 		.replay-action {
-			flex: 0 0 92px;
+			flex: 0 0 104px;
 			min-height: 0;
 		}
 
 		.replay-primary {
-			padding: 5px;
-			font-size: 8px;
-			gap: 3px;
-			min-height: 40px;
+			padding: 4px 6px;
+			font-size: 9px;
+			gap: 4px;
 		}
 
 		.replay-play-icon {
