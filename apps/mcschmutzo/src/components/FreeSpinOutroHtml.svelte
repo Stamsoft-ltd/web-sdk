@@ -59,6 +59,21 @@
 	const onKey = (e: KeyboardEvent) => {
 		if (show && (e.code === 'Space' || e.code === 'Enter')) proceed();
 	};
+
+	// DEV preview: press 7 to show the total-win congrats with a mock amount.
+	import { onMount } from 'svelte';
+	onMount(() => {
+		if (!import.meta.env.DEV) return;
+		const onDev = (e: KeyboardEvent) => {
+			if (e.code !== 'Digit7') return;
+			show = true;
+			context.stateGame.freeSpinPopupShowing = true;
+			amountTween.set(0, { duration: 0 });
+			amountTween.set(154300);
+		};
+		window.addEventListener('keydown', onDev);
+		return () => window.removeEventListener('keydown', onDev);
+	});
 </script>
 
 <svelte:window onkeydown={onKey} />

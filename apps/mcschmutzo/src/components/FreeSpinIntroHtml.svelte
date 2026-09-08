@@ -48,6 +48,21 @@
 	);
 	const bonusBlurb = $derived(i18nDerived.translateVars('BONUS BLURB', { count: totalFreeSpins }));
 
+	// DEV preview: press 6 to show the free-spin bonus congrats with mock data.
+	import { onMount } from 'svelte';
+	onMount(() => {
+		if (!import.meta.env.DEV) return;
+		const onDev = (e: KeyboardEvent) => {
+			if (e.code !== 'Digit6') return;
+			stateBet.activeBetModeKey = 'bonus2';
+			totalFreeSpins = 10;
+			show = true;
+			context.stateGame.freeSpinPopupShowing = true;
+		};
+		window.addEventListener('keydown', onDev);
+		return () => window.removeEventListener('keydown', onDev);
+	});
+
 	const proceed = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		oncomplete();
