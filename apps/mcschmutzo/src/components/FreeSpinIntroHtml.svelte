@@ -197,7 +197,7 @@
 		place-items: center;
 	}
 
-	/* Burger sits centred on the top edge of the plaque, mostly above it. */
+	/* Burger peeks out from BEHIND the top edge of the plaque (z-index below .fs-plaque). */
 	.fs-burger {
 		position: absolute;
 		left: 50%;
@@ -205,7 +205,7 @@
 		transform: translateX(-50%);
 		width: 21%;
 		height: auto;
-		z-index: 2;
+		z-index: 0;
 		pointer-events: none;
 		filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.4));
 	}
