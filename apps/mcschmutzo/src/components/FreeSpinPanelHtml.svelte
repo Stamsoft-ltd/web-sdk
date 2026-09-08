@@ -64,17 +64,15 @@
 		font-family: 'Poppins', sans-serif;
 	}
 
-	/* Both panels are their own query container so their text scales with their size on any layout. */
 	.fp-fs,
 	.fp-acc {
 		position: absolute;
-		container-type: size;
 	}
 
-	/* FREE SPINS card — the provided dark translucent spins-card. */
+	/* FREE SPINS card — the provided dark translucent spins-card (sizes to its content). */
 	.fp-fs {
-		aspect-ratio: 2 / 1;
 		box-sizing: border-box;
+		padding: clamp(8px, 1vw, 16px) clamp(12px, 1.5vw, 22px);
 		border-radius: 10px;
 		background: rgba(0, 6, 22, 0.78);
 		border: 1.5px solid rgba(255, 255, 255, 0.09);
@@ -83,26 +81,28 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 4cqh;
+		gap: clamp(3px, 0.4vw, 7px);
 	}
-	.fp-fs__label {
-		color: #ffffff;
-		font-weight: 700;
-		font-size: 20cqh;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-		line-height: 1;
-	}
+	.fp-fs__label,
 	.fp-fs__count {
 		color: #ffffff;
-		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
-		font-weight: 400;
-		font-size: 42cqh;
+		font-family: 'Nunito', sans-serif;
+		font-weight: 500;
+		letter-spacing: 0.03em;
+		text-align: center;
 		line-height: 1;
+	}
+	.fp-fs__label {
+		font-size: clamp(9px, 1vw, 14px);
+		text-transform: uppercase;
+	}
+	.fp-fs__count {
+		font-size: clamp(19px, 2vw, 29px);
 	}
 
 	/* Multiplier accordion machine. */
 	.fp-acc {
+		container-type: inline-size;
 		aspect-ratio: 1127 / 794;
 		background-size: 100% 100%;
 		background-repeat: no-repeat;
@@ -116,7 +116,7 @@
 		color: #b3261a;
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
 		font-weight: 400;
-		font-size: 34cqh;
+		font-size: 17cqw;
 		line-height: 1;
 		opacity: 0;
 		transition: opacity 0.15s ease;
@@ -137,15 +137,16 @@
 		width: min(118px, 30%);
 	}
 
-	/* ── Desktop / landscape: stacked to the LEFT of the board (the chef + pot own the right). ── */
-	.fp:not([data-layout='portrait']) .fp-fs {
-		left: 3%;
-		top: 33%;
-		width: clamp(150px, 13vw, 230px);
-	}
+	/* ── Desktop / landscape: stacked to the LEFT of the board (the chef + pot own the right):
+	   accordion on top, the spins card underneath. ── */
 	.fp:not([data-layout='portrait']) .fp-acc {
 		left: 4%;
-		top: 52%;
+		top: 30%;
 		width: clamp(130px, 12vw, 200px);
+	}
+	.fp:not([data-layout='portrait']) .fp-fs {
+		left: 3%;
+		top: 50%;
+		width: clamp(150px, 13vw, 230px);
 	}
 </style>

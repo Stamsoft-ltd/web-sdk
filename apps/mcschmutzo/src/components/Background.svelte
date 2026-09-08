@@ -2,6 +2,7 @@
 	import { Rectangle, Sprite } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
+	import SpecialMascot from './SpecialMascot.svelte';
 
 	const context = getContext();
 	const aspect = 1678 / 937;
@@ -18,11 +19,6 @@
 	const showSpecialMascot = $derived(isFreegame && wideLayout);
 	const mascotHeight = $derived(canvas.height * 0.6);
 	const mascotWidth = $derived(mascotHeight * (1019 / 1336));
-	// Special-game chef + pot (chef behind, pot in front) — placed where the mascot sits.
-	const guyHeight = $derived(canvas.height * 0.62);
-	const guyWidth = $derived(guyHeight * (1113 / 1186));
-	const potWidth = $derived(guyWidth * 1.08);
-	const potHeight = $derived(potWidth * (848 / 1180));
 	const key = $derived(isFreegame ? 'backgroundWideBonus' : 'backgroundBase');
 	const portraitKey = $derived(isFreegame ? 'backgroundPortraitBonus' : 'backgroundPortrait');
 	const cover = $derived.by(() => {
@@ -78,23 +74,5 @@
 	/>
 {/if}
 {#if showSpecialMascot}
-	<!-- Chef (behind) salting the pot (in front). -->
-	<Sprite
-		key="specialGuy"
-		x={canvas.width * 0.84}
-		y={canvas.height * 0.47}
-		anchor={0.5}
-		width={guyWidth}
-		height={guyHeight}
-		zIndex={0}
-	/>
-	<Sprite
-		key="specialPot"
-		x={canvas.width * 0.85}
-		y={canvas.height * 0.76}
-		anchor={0.5}
-		width={potWidth}
-		height={potHeight}
-		zIndex={1}
-	/>
+	<SpecialMascot />
 {/if}
