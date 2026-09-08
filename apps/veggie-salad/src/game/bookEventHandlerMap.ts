@@ -96,7 +96,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.phase = 'idle';
 	},
 	featureSpinStart: async () => {
-		stateGame.featureLabel = 'GUARANTEED CLUSTER';
 		stateGame.gameType = 'feature';
 	},
 	mysterySelect: async (event: BookEventOfType<'mysterySelect'>) => {
@@ -108,6 +107,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		await stateGameDerived.wait(260, { min: 120 });
 	},
 	freeSpinTrigger: async (event: BookEventOfType<'freeSpinTrigger'>) => {
+		// Every bonus starts at NORMAL speed, whether FAST/MAX came from the HUD or a held Space key.
+		stateBet.isTurbo = false;
+		stateBet.isSuperTurbo = false;
 		// The scatters that triggered this bonus get their moment before the placard: a natural
 		// trigger and a buy both land them on the spin right before this event (the math emits a
 		// real entry spin for buys), and a mystery pick has already celebrated them.
@@ -272,7 +274,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if (['BONUS', 'MYSTERY', 'SUPER'].includes(stateBet.activeBetModeKey.toUpperCase())) {
 			stateBet.activeBetModeKey = 'BASE';
 		}
-		stateGame.featureLabel = '';
 		stateGame.bonusTier = null;
 		// Return visual/runtime mode with the bonus, rather than waiting for the next BASE reveal.
 		// Otherwise the post-bonus idle screen keeps the previous tier's background grading.

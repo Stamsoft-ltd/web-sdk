@@ -84,6 +84,8 @@ export type GameInfoPayout = {
 	x3: string;
 	x4: string;
 	x5: string;
+	/** Optional variable-width payout row. Used by cluster games with more than three sizes. */
+	values?: string[];
 };
 
 export type GameInfoPage = {
@@ -108,7 +110,7 @@ export type GameInfoPage = {
 	/** Symbol payout rows (paytable page). */
 	payouts?: GameInfoPayout[];
 	/** Column headers for the paytable grid. */
-	payoutHead?: { symbol: string; cols: [string, string, string] };
+	payoutHead?: { symbol: string; cols: string[] };
 	/** Single illustrative image (paylines page). */
 	image?: string;
 };

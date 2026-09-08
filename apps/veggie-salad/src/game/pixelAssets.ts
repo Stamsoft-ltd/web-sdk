@@ -33,6 +33,8 @@ const assets: Assets = {
 	pixelOnion: { type: 'sprite', src: `${root}/onion.png` },
 	pixelScatter: { type: 'sprite', src: `${root}/scatter.png` },
 	pixelCoinSheet: { type: 'spriteSheet', src: `${root}/coin.json` },
+	bonusStartPlaque: { type: 'sprite', src: `${root}/overlays/bonus-start-plaque.png` },
+	bonusEndPlaque: { type: 'sprite', src: `${root}/overlays/bonus-end-plaque.png` },
 
 	winStar: { type: 'sprite', src: `${wins}/star.png` },
 	winPlaqueSweet: { type: 'sprite', src: `${wins}/plaque-sweet.png` },

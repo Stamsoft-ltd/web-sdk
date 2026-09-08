@@ -139,6 +139,10 @@
 		index = Math.min(Math.max(index + dir, 0), count - 1);
 	};
 
+	const payoutColumns = (value: GameInfoPage) => value.payoutHead?.cols ?? ['3', '4', '5'];
+	const payoutValues = (row: NonNullable<GameInfoPage['payouts']>[number]) =>
+		row.values ?? [row.x3, row.x4, row.x5];
+
 	/** Split `body` into plain/highlighted runs around every occurrence of `hl`.
 	 * Inline `[[...]]` tokens in the text also highlight their content — used where the
 	 * plain substring match would only cover part of a word (e.g. "3 Scatters"). */
@@ -305,12 +309,10 @@
 				{/if}
 			{:else if page.kind === 'paytable'}
 				<h2 class="pinfo-title gold">{page.title}</h2>
-				<div class="ptable">
+				<div class="ptable" class:ptable--dense={payoutColumns(page).length > 5} style={`--payout-cols:${payoutColumns(page).length}`}>
 					<div class="ptable__row ptable__row--head">
 						<span class="gold ptable__symhead">{page.payoutHead?.symbol ?? ''}</span>
-						<span class="gold">{page.payoutHead?.cols?.[0] ?? '3'}</span>
-						<span class="gold">{page.payoutHead?.cols?.[1] ?? '4'}</span>
-						<span class="gold">{page.payoutHead?.cols?.[2] ?? '5'}</span>
+						{#each payoutColumns(page) as column}<span class="gold">{column}</span>{/each}
 					</div>
 					{#each page.payouts ?? [] as row}
 						<div class="ptable__row">
@@ -318,9 +320,7 @@
 								<img class:ptable__icon--round={row.premium} src={row.icon} alt={row.name} />
 								{#if row.premium}<span class="ptable__name">{row.name}</span>{/if}
 							</span>
-							<span>{row.x3}</span>
-							<span>{row.x4}</span>
-							<span>{row.x5}</span>
+							{#each payoutValues(row) as value}<span>{value}</span>{/each}
 						</div>
 					{/each}
 				</div>
@@ -504,12 +504,10 @@
 				<div class="paytable">
 					<h2 class="info-title info-title--center gold">{page.title}</h2>
 					<div class="paytable__grid">
-						<div class="paytable__table">
+						<div class="paytable__table" class:paytable__table--dense={payoutColumns(page).length > 5} style={`--payout-cols:${payoutColumns(page).length}`}>
 							<div class="pay-row pay-row--head">
 								<span class="gold pay-row__symhead">{page.payoutHead?.symbol ?? ''}</span>
-								<span class="gold">{page.payoutHead?.cols?.[0] ?? '3'}</span>
-								<span class="gold">{page.payoutHead?.cols?.[1] ?? '4'}</span>
-								<span class="gold">{page.payoutHead?.cols?.[2] ?? '5'}</span>
+								{#each payoutColumns(page) as column}<span class="gold">{column}</span>{/each}
 							</div>
 							{#each page.payouts ?? [] as row}
 								<div class="pay-row">
@@ -517,9 +515,7 @@
 										<img class:pay-row__icon--round={row.premium} src={row.icon} alt={row.name} />
 										{#if row.premium}<span class="pay-row__name">{row.name}</span>{/if}
 									</span>
-									<span>{row.x3}</span>
-									<span>{row.x4}</span>
-									<span>{row.x5}</span>
+									{#each payoutValues(row) as value}<span>{value}</span>{/each}
 								</div>
 							{/each}
 						</div>
@@ -1010,11 +1006,16 @@
 		border-radius: 0.7cqw;
 		overflow: hidden;
 	}
+	.paytable__grid:has(.paytable__table--dense) { grid-template-columns: 4fr 0.9fr; gap: 1.2cqw; }
+	.paytable__table--dense .pay-row { font-size: 0.82cqw; }
+	.paytable__table--dense .pay-row--head { font-size: 0.78cqw; }
+	.paytable__table--dense .pay-row > span { padding-inline: 0.12cqw; }
+	.paytable__table--dense .pay-row__sym img { left: 0.25cqw; max-width: 2.8cqw; }
 
 	/* Figma: body cells are Poppins 500 16px (1.33cqw), #FFD89C, 0.03em tracking, centered. */
 	.pay-row {
 		display: grid;
-		grid-template-columns: 1.7fr 1fr 1fr 1fr;
+		grid-template-columns: 1.7fr repeat(var(--payout-cols, 3), minmax(0, 1fr));
 		align-items: center;
 		flex: 1 1 0;
 		min-height: 0;
@@ -1548,7 +1549,7 @@
 	}
 	.ptable__row {
 		display: grid;
-		grid-template-columns: 1.7fr 1fr 1fr 1fr;
+		grid-template-columns: 1.7fr repeat(var(--payout-cols, 3), minmax(0, 1fr));
 		align-items: center;
 		color: #ffd89c;
 		font-size: 2.2cqw;
@@ -1556,6 +1557,11 @@
 		letter-spacing: 0.03em;
 		border-bottom: 1px solid rgba(255, 216, 156, 0.16);
 	}
+	.ptable--dense .ptable__row { font-size: 1.45cqw; }
+	.ptable--dense .ptable__row--head { font-size: 1.3cqw; }
+	.ptable--dense .ptable__row > span { padding-inline: 0.15cqw; }
+	.ptable--dense .ptable__sym { gap: 0.35cqw; }
+	.ptable--dense .ptable__sym img { width: 3cqw; height: 3cqw; }
 	.ptable__row:last-child { border-bottom: none; }
 	.ptable__row > span { padding: 0.3cqw 1cqw; text-align: center; border-left: 1px solid rgba(255, 216, 156, 0.16); }
 	.ptable__sym, .ptable__symhead { border-left: none !important; text-align: left !important; }

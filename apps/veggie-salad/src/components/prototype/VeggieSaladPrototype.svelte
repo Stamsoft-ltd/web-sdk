@@ -70,6 +70,58 @@
 			? `.${VEGGIE_SYMBOL_ASSETS.SCATTER}`
 			: `./assets/veggie-salad/pixel/${icon}.png`;
 
+	function randomCloudDrift(node: HTMLElement) {
+		let animation: Animation | undefined;
+		let respawnTimer: ReturnType<typeof setTimeout> | undefined;
+		let destroyed = false;
+		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		node.style.animation = 'none';
+		if (reducedMotion) return { destroy: () => undefined };
+
+		const run = (randomizeInitialPosition = false) => {
+			if (destroyed) return;
+			const field = node.parentElement;
+			const styles = getComputedStyle(node);
+			const width = node.getBoundingClientRect().width;
+			const fieldWidth = field?.clientWidth ?? window.innerWidth;
+			const fieldHeight = field?.clientHeight ?? window.innerHeight;
+			const baseSeconds = Number.parseFloat(styles.getPropertyValue('--cloud-duration')) || 160;
+			const duration = baseSeconds * (0.82 + Math.random() * 0.36) * 1000;
+			const distance = fieldWidth + width * 2;
+			const verticalJitter = (Math.random() * 2 - 1) * Math.min(28, fieldHeight * 0.035);
+
+			animation = node.animate(
+				[
+					{ transform: `translate3d(0, ${verticalJitter}px, 0)` },
+					{ transform: `translate3d(${distance}px, ${verticalJitter}px, 0)` },
+				],
+				{ duration, easing: 'linear', fill: 'forwards' },
+			);
+
+			if (randomizeInitialPosition) animation.currentTime = duration * Math.random() * 0.92;
+
+			animation.finished
+				.then(() => {
+					if (destroyed) return;
+					// Independent random gaps stop clouds respawning as a fixed repeating formation.
+					const gap = Math.random() < 0.3 ? Math.random() * 1200 : 1800 + Math.random() * 11000;
+					respawnTimer = setTimeout(() => run(), gap);
+				})
+				.catch(() => undefined);
+		};
+
+		run(true);
+
+		return {
+			destroy() {
+				destroyed = true;
+				animation?.cancel();
+				if (respawnTimer) clearTimeout(respawnTimer);
+			},
+		};
+	}
+
 	let showBuyMenu = $state(false);
 	let pendingMode = $state<(typeof modeCards)[number] | null>(null);
 	let showAutoMenu = $state(false);
@@ -87,7 +139,6 @@
 	const betIndex = $derived(Math.max(0, betOptions.indexOf(stateBet.betAmount)));
 	const smallestBet = $derived(betOptions[0] ?? stateBet.betAmount);
 	const biggestBet = $derived(betOptions[betOptions.length - 1] ?? stateBet.betAmount);
-	const featureRibbon = $derived(stateGame.featureLabel);
 	const bonusTierLabel = $derived(
 		stateGame.bonusTier ? t(`BONUS TIER ${stateGame.bonusTier.toUpperCase()}`) : '',
 	);
@@ -211,7 +262,9 @@
 				id: cluster.clusterId,
 				left: inset(((centre(reels) + 0.5) / stateGame.gridSize) * 100),
 				top: inset(((centre(rows) + 0.5) / stateGame.gridSize) * 100),
-				text: `${bookWinToCurrency(cluster.amount)}${
+				// The expression reads "base payout × applied multiplier". Using `amount` here
+				// repeated the already-multiplied total on the left and visually multiplied it twice.
+				text: `${bookWinToCurrency(cluster.rawAmount)}${
 					cluster.appliedMultiplier > 1 ? ` X${cluster.appliedMultiplier}` : ''
 				}`,
 			};
@@ -249,6 +302,29 @@
 		}
 		if (hasAuto) return;
 		spinOrSkip();
+	};
+
+	// Holding Space is a temporary FAST override. Restore the player's selected speed on release,
+	// unless another flow (notably bonus entry) deliberately reset both speed flags meanwhile.
+	type SpeedSnapshot = { isTurbo: boolean; isSuperTurbo: boolean };
+	let spaceTurboSnapshot: SpeedSnapshot | null = null;
+	const startSpaceTurbo = () => {
+		if (!canChangeSpeed || spaceTurboSnapshot) return;
+		spaceTurboSnapshot = {
+			isTurbo: stateBet.isTurbo,
+			isSuperTurbo: stateBet.isSuperTurbo,
+		};
+		stateBet.isTurbo = true;
+		stateBet.isSuperTurbo = false;
+	};
+	const stopSpaceTurbo = () => {
+		if (!spaceTurboSnapshot) return;
+		const snapshot = spaceTurboSnapshot;
+		spaceTurboSnapshot = null;
+		// Bonus entry resets to NORMAL. Do not resurrect the pre-hold speed after that reset.
+		if (!stateBet.isTurbo && !stateBet.isSuperTurbo) return;
+		stateBet.isTurbo = snapshot.isTurbo;
+		stateBet.isSuperTurbo = snapshot.isSuperTurbo;
 	};
 
 	const stepBet = (direction: -1 | 1) => {
@@ -419,6 +495,8 @@
 	hotkey="Space"
 	disabled={Boolean(stateConfig.jurisdiction?.disabledSpacebar) || controlsBlocked}
 	onpress={spaceSpinOrSkip}
+	onhold={startSpaceTurbo}
+	onholdend={stopSpaceTurbo}
 />
 <svelte:window onkeydown={closeTopPanel} onclick={handleWindowClick} />
 
@@ -427,12 +505,40 @@
 	class:bonus-normal={stateGame.bonusTier === 'normal'}
 	class:bonus-super={stateGame.bonusTier === 'super'}
 	class:bonus-hidden={stateGame.bonusTier === 'hidden'}
-	style="--pixel-background:url('./assets/veggie-salad/pixel/background.png');--bonus-normal-background:url('./assets/veggie-salad/pixel/background-bonus-normal.png');--bonus-super-background:url('./assets/veggie-salad/pixel/background-bonus-super.png');--bonus-hidden-background:url('./assets/veggie-salad/pixel/background-bonus-hidden.png');--hud-button:url('./assets/veggie-salad/pixel/hud-button.png');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud-button-pressed.png')"
+	style="--base-plain:url('./assets/veggie-salad/pixel/background/base-plain.png');--base-mountains:url('./assets/veggie-salad/pixel/background/base-mountains.png');--base-cloud:url('./assets/veggie-salad/pixel/background/base-cloud.png');--base-bench:url('./assets/veggie-salad/pixel/background/base-bench.png');--board-frame:url('./assets/veggie-salad/pixel/board-frame.png');--bonus-normal-background:url('./assets/veggie-salad/pixel/background-bonus-normal.png');--bonus-super-background:url('./assets/veggie-salad/pixel/background-bonus-super.png');--bonus-hidden-background:url('./assets/veggie-salad/pixel/background-bonus-hidden.png');--hud-button:url('./assets/veggie-salad/pixel/hud-button.png');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud-button-pressed.png')"
 >
 	<!-- Background images cannot interpolate. Persistent layers can: entering a bonus fades its
 	     garden over BASE; leaving fades it away and reveals the exact same BASE layer underneath. -->
 	<div class="pixel-background-stack" aria-hidden="true">
-		<div class="pixel-background background-base"></div>
+		<div class="pixel-background background-base background-base-plain"></div>
+		<div class="base-cloud-field">
+			<span class="cloud-path-guide path-eleven"></span>
+			<span class="cloud-path-guide path-one"></span>
+			<span class="cloud-path-guide path-two"></span>
+			<span class="cloud-path-guide path-three"></span>
+			<span class="cloud-path-guide path-four"></span>
+			<span class="cloud-path-guide path-seven"></span>
+			<div class="drifting-cloud cloud-eleven" use:randomCloudDrift></div>
+			<div class="drifting-cloud cloud-one" use:randomCloudDrift></div>
+			<div class="drifting-cloud cloud-two" use:randomCloudDrift></div>
+			<div class="drifting-cloud cloud-three" use:randomCloudDrift></div>
+			<div class="drifting-cloud cloud-four" use:randomCloudDrift></div>
+			<div class="drifting-cloud cloud-seven" use:randomCloudDrift></div>
+		</div>
+		<div class="pixel-background background-base base-mountains"></div>
+		<div class="base-cloud-field base-cloud-field--front">
+			<span class="cloud-path-guide path-five"></span>
+			<span class="cloud-path-guide path-six"></span>
+			<span class="cloud-path-guide path-eight"></span>
+			<span class="cloud-path-guide path-nine"></span>
+			<span class="cloud-path-guide path-ten"></span>
+			<div class="drifting-cloud cloud-five" use:randomCloudDrift></div>
+			<div class="drifting-cloud cloud-six" use:randomCloudDrift></div>
+			<div class="drifting-cloud cloud-eight" use:randomCloudDrift></div>
+			<div class="drifting-cloud cloud-nine" use:randomCloudDrift></div>
+			<div class="drifting-cloud cloud-ten" use:randomCloudDrift></div>
+		</div>
+		<div class="pixel-background background-base base-bench"></div>
 		<div class="pixel-background background-bonus background-normal"></div>
 		<div class="pixel-background background-bonus background-super"></div>
 		<div class="pixel-background background-bonus background-hidden"></div>
@@ -455,21 +561,20 @@
 		alt="Press Play"
 	/>
 
-	{#if stateGame.freeSpinTotal > 0 && stateGame.bonusTier}
-		<div class="bonus-readouts" aria-live="polite">
-			<div class="bonus-status bonus-readout">
-				<span>{t('FREE SPINS')}</span>
-				<strong>{stateGame.freeSpinCurrent}/{stateGame.freeSpinTotal}</strong>
-				<small>{bonusTierLabel}</small>
-			</div>
-			<div class="bonus-total bonus-readout">
-				<span>{t('EARNED')}</span>
-				<strong style={textFitStyle(bonusTotalText)}>{bonusTotalText}</strong>
-			</div>
-		</div>
-	{/if}
-
 	<section class="game-stage" aria-label={t('VEGGIE SALAD GAME BOARD')}>
+		{#if stateGame.freeSpinTotal > 0 && stateGame.bonusTier}
+			<div class="bonus-readouts" aria-live="polite">
+				<div class="bonus-status bonus-readout">
+					<span>{t('FREE SPINS')}</span>
+					<strong>{stateGame.freeSpinCurrent}/{stateGame.freeSpinTotal}</strong>
+					<small>{bonusTierLabel}</small>
+				</div>
+				<div class="bonus-total bonus-readout">
+					<span>{t('EARNED')}</span>
+					<strong style={textFitStyle(bonusTotalText)}>{bonusTotalText}</strong>
+				</div>
+			</div>
+		{/if}
 		<aside
 			class="cluster-panel"
 			style={`--slots:${CLUSTER_LOG_SIZE}`}
@@ -528,7 +633,7 @@
 													/>
 												{/if}
 												<img
-													class="symbol"
+													class={`symbol symbol-${cell.name.toLowerCase()}`}
 													src={`.${VEGGIE_SYMBOL_ASSETS[cell.name]}`}
 													alt={cell.name.toLowerCase()}
 													draggable="false"
@@ -560,10 +665,6 @@
 					{scatterCount}
 					{scatterCount === 1 ? t('SCATTER') : t('SCATTERS')}
 				</div>
-			{/if}
-
-			{#if featureRibbon}
-				<div class="feature-ribbon">{t(featureRibbon)}</div>
 			{/if}
 		</div>
 	</section>
@@ -1178,12 +1279,22 @@
 	.symbol,
 	.backplate {
 		position: absolute;
-		width: 88%;
-		height: 88%;
+		width: 90%;
+		height: 90%;
 		object-fit: contain;
 		user-select: none;
 		filter: drop-shadow(0 3px 2px rgb(0 0 0 / 42%));
 	}
+	/* Source sprites carry different transparent margins. Per-symbol boxes compensate those
+	   margins so the visible art—not the PNG canvas—occupies about 90% of its cell. */
+	.symbol-broccoli,
+	.symbol-carrot { width: 93%; height: 93%; }
+	.symbol-corn { width: 104%; height: 104%; }
+	.symbol-tomato { width: 117%; height: 117%; }
+	.symbol-eggplant,
+	.symbol-onion { width: 99%; height: 99%; }
+	.symbol-pepper { width: 96%; height: 96%; }
+	.symbol-scatter { width: 97%; height: 97%; }
 	.backplate {
 		width: 96%;
 		height: 96%;
@@ -1408,22 +1519,6 @@
 		letter-spacing: 0.12em;
 		white-space: nowrap;
 		animation: card-in 220ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
-	}
-	.feature-ribbon {
-		position: absolute;
-		z-index: 9;
-		top: 3%;
-		left: 0;
-		transform: translateX(-4%);
-		padding: 6px 14px;
-		border: 2px solid #ffdd65;
-		border-radius: 0 10px 10px 0;
-		background: #4f761a;
-		box-shadow: 0 5px 12px #1d3c0c;
-		font-size: 11px;
-		font-weight: 1000;
-		letter-spacing: 0.08em;
-		white-space: nowrap;
 	}
 	.bonus-status {
 		position: absolute;
@@ -2253,7 +2348,6 @@
 	}
 	.bonus-status,
 	.scatter-tally,
-	.feature-ribbon,
 	.cluster-panel,
 	.hud,
 	.quick-menu,
@@ -2265,8 +2359,7 @@
 		font-family: inherit;
 	}
 	.bonus-status,
-	.scatter-tally,
-	.feature-ribbon {
+	.scatter-tally {
 		border: 3px solid #3c210b;
 		box-shadow: 3px 3px 0 #211107;
 		background: #5c2d0a;
@@ -4542,6 +4635,615 @@
 			width: 26px;
 			height: 26px;
 			font-size: 24px;
+		}
+	}
+
+	/* Final spatial pass: side furniture is sized from the gutter left by the centred board. */
+	@media (min-width: 1180px) {
+		.cluster-panel {
+			left: 2cqw;
+			right: calc(50% + min(50cqw, 62.5cqh) + 2cqw);
+			width: auto;
+			max-width: none;
+		}
+
+		.bonus-readouts {
+			top: 50%;
+			right: 2cqw;
+			left: calc(50% + min(50cqw, 62.5cqh) + 2cqw);
+			width: auto;
+			max-width: none;
+			transform: translateY(-50%);
+		}
+
+		.hud {
+			grid-template-columns: auto clamp(400px, 32vw, 540px) auto;
+			justify-content: space-between;
+		}
+
+		.hud-left {
+			grid-template-columns: clamp(58px, 4.4vw, 76px) clamp(140px, 12vw, 200px);
+			width: auto;
+		}
+
+		.metrics {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+
+		.metric {
+			padding-inline: clamp(8px, 0.8vw, 14px);
+		}
+	}
+
+	@media (min-width: 681px) {
+		.cluster-panel {
+			left: 2cqw;
+			right: calc(50% + min(50cqw, 62.5cqh) + 2cqw);
+			width: auto;
+			max-width: none;
+			padding: clamp(7px, 1.2cqh, 12px);
+		}
+
+		.panel-rows {
+			gap: clamp(4px, 0.8cqh, 8px);
+		}
+
+		.panel-row {
+			min-height: clamp(26px, 4.6cqh, 40px);
+			padding-inline: clamp(5px, 0.8cqw, 10px);
+			font-size: clamp(10px, 1.8cqh, 15px);
+		}
+
+		.panel-row img {
+			width: 1.8em;
+			height: 1.8em;
+		}
+
+		/* HUD-right owns this divider. Removing the metric edge avoids a doubled rule. */
+		.metric:last-child {
+			border-right: 0;
+		}
+
+		.bonus-readouts {
+			top: 50%;
+			right: 2cqw;
+			left: calc(50% + min(50cqw, 62.5cqh) + 2cqw);
+			width: auto;
+			max-width: none;
+			transform: translateY(-50%);
+		}
+
+		.bonus-readout,
+		.bonus-status {
+			min-height: clamp(72px, 12cqh, 108px);
+			padding: clamp(10px, 1.8cqh, 18px) clamp(7px, 0.8cqw, 12px);
+		}
+
+		.bonus-readout span,
+		.bonus-readout small,
+		.bonus-status span,
+		.bonus-status small {
+			font-size: clamp(9px, 1.5cqh, 14px);
+		}
+
+		.bonus-readout strong,
+		.bonus-status strong {
+			font-size: clamp(18px, 3.4cqh, 34px);
+		}
+
+		.hud {
+			--hud-control-gap: clamp(7px, 0.75vw, 12px);
+			width: calc(100vw - 16px);
+			max-width: none;
+			padding-inline: var(--hud-control-gap);
+			column-gap: var(--hud-control-gap);
+		}
+
+		.hud-left,
+		.hud-right,
+		.bet-stepper {
+			gap: var(--hud-control-gap);
+		}
+
+		.hud-right {
+			padding-left: 0;
+		}
+	}
+
+	/* Landscape phones still have real side gutters; centre both side boards inside them. */
+	@media (max-width: 680px) and (min-height: 301px) and (orientation: landscape) {
+		.cluster-panel {
+			left: 2cqw;
+			right: calc(50% + min(50cqw, 62.5cqh) + 2cqw);
+			width: auto;
+			max-width: none;
+		}
+
+		.bonus-readouts {
+			top: 50%;
+			right: 2cqw;
+			left: calc(50% + min(50cqw, 62.5cqh) + 2cqw);
+			width: auto;
+			transform: translateY(-50%);
+		}
+	}
+
+	/* Portrait: reserve a real row for bonus counters. They never cover or escape the board. */
+	@media (max-width: 680px) and (orientation: portrait) {
+		.game-stage:has(.bonus-readouts) {
+			grid-template-rows: auto auto auto;
+		}
+
+		.game-stage:has(.bonus-readouts) .board-wrap {
+			grid-row: 2;
+		}
+
+		.game-stage:has(.bonus-readouts) .cluster-panel {
+			grid-row: 3;
+		}
+
+		.bonus-readouts {
+			position: relative;
+			inset: auto;
+			grid-row: 1;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: clamp(4px, 1.5vw, 8px);
+			width: min(100%, 330px);
+			transform: none;
+		}
+
+		.bonus-readout,
+		.bonus-status {
+			min-height: 42px;
+			padding: 4px 5px;
+			border-width: 3px;
+			box-shadow:
+				inset 0 0 0 2px #d99a32,
+				2px 2px 0 #211107;
+		}
+	}
+
+	/* Popout S: bonus counters use the left dock below metrics; board remains unobstructed. */
+	@media (max-width: 520px) and (max-height: 300px) and (orientation: landscape) {
+		.game-stage {
+			inset: 3px 62px 27px 64px;
+		}
+
+		.brand {
+			left: 2px;
+			width: 60px;
+		}
+
+		.hud::before {
+			width: 58px;
+		}
+
+		.hud-left {
+			right: 3px;
+			width: 54px;
+		}
+
+		.hud-left .utility,
+		.bonus-button {
+			width: 54px;
+		}
+
+		.hud-right {
+			right: 3px;
+			grid-template-columns: 54px;
+			grid-template-rows: 21px 52px 27px 27px;
+			width: 54px;
+			height: 136px;
+		}
+
+		.bet-stepper {
+			width: 54px;
+		}
+
+		.bet-stepper button {
+			width: 26px;
+		}
+
+		.spin {
+			width: 52px;
+			height: 52px;
+		}
+
+		.bonus-readouts {
+			top: 121px;
+			right: auto;
+			left: -62px;
+			gap: 2px;
+			width: 60px;
+			transform: none;
+		}
+
+		.metrics {
+			left: 2px;
+			width: 60px;
+		}
+
+		.metric,
+		.metric.bet {
+			place-content: center;
+			width: 60px;
+			padding-inline: 2px;
+			text-align: center;
+		}
+
+		.bonus-readout,
+		.bonus-status {
+			min-height: 39px;
+			padding: 2px 1px;
+			border-width: 2px;
+			box-shadow: inset 0 0 0 1px #d99a32;
+		}
+
+		.bonus-readout span,
+		.bonus-readout small,
+		.bonus-status span,
+		.bonus-status small {
+			font-size: 5px;
+			letter-spacing: 0;
+		}
+
+		.bonus-readout strong,
+		.bonus-status strong {
+			font-size: 8px;
+		}
+	}
+
+	/* Desktop HUD balance: compact value cells; give the menu/bonus and play controls the room.
+	   Tracks consume the full rail, so no distributed blank space masquerades as part of BET. */
+	@media (min-width: 1180px) {
+		.hud {
+			grid-template-columns: minmax(260px, 28%) minmax(390px, 27%) minmax(450px, 45%);
+			justify-content: stretch;
+			column-gap: 0;
+		}
+
+		.hud-left {
+			grid-template-columns: minmax(58px, 0.42fr) minmax(170px, 1.58fr);
+			gap: var(--hud-control-gap);
+			width: 100%;
+			padding-right: var(--hud-control-gap);
+		}
+
+		.metrics {
+			width: 100%;
+		}
+
+		.metric {
+			padding-inline: clamp(8px, 0.65vw, 12px);
+		}
+
+		.hud-right {
+			grid-template-columns: minmax(150px, 1.6fr) minmax(96px, 1.25fr) minmax(54px, 0.72fr) minmax(
+				54px,
+				0.72fr
+			);
+			justify-items: center;
+			width: 100%;
+			padding-left: var(--hud-control-gap);
+		}
+
+		.bet-stepper {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(46px, 76px));
+			justify-content: space-evenly;
+			width: 100%;
+		}
+
+		.bet-stepper button {
+			width: 100%;
+		}
+	}
+
+	/* Layered BASE garden supplied as separate pixel assets. Bonus backgrounds remain above this
+	   stack and cross-fade normally, so returning from a feature reveals this exact same scene. */
+	.background-base-plain {
+		z-index: 0;
+		background: var(--base-plain) center / cover no-repeat;
+	}
+
+	.background-base,
+	.base-cloud-field {
+		transition: opacity 850ms ease-in-out;
+	}
+
+	.scene.bonus-normal .background-base,
+	.scene.bonus-normal .base-cloud-field,
+	.scene.bonus-super .background-base,
+	.scene.bonus-super .base-cloud-field,
+	.scene.bonus-hidden .background-base,
+	.scene.bonus-hidden .base-cloud-field {
+		opacity: 0;
+	}
+
+	.base-cloud-field {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	.drifting-cloud {
+		--cloud-width: clamp(210px, 24vw, 470px);
+		position: absolute;
+		left: calc(0px - var(--cloud-width));
+		top: var(--cloud-top);
+		width: var(--cloud-width);
+		aspect-ratio: 3 / 1;
+		background: var(--base-cloud) center / contain no-repeat;
+		image-rendering: pixelated;
+		backface-visibility: hidden;
+		will-change: transform;
+		animation: base-cloud-drift var(--cloud-duration) linear infinite;
+		animation-delay: var(--cloud-delay);
+	}
+
+	.cloud-one {
+		--cloud-top: 7%;
+		--cloud-duration: 112s;
+		--cloud-delay: -17s;
+		--cloud-rest-x: 35vw;
+	}
+
+	.cloud-eleven {
+		--cloud-width: clamp(120px, 16vw, 310px);
+		--cloud-top: -2%;
+		--cloud-duration: 205s;
+		--cloud-delay: -132s;
+		--cloud-rest-x: 18vw;
+		opacity: 0.72;
+	}
+
+	.cloud-two {
+		--cloud-width: clamp(150px, 18vw, 350px);
+		--cloud-top: 23%;
+		--cloud-duration: 146s;
+		--cloud-delay: -76s;
+		--cloud-rest-x: 88vw;
+		opacity: 0.82;
+	}
+
+	.cloud-three {
+		--cloud-width: clamp(115px, 13vw, 260px);
+		--cloud-top: 37%;
+		--cloud-duration: 178s;
+		--cloud-delay: -119s;
+		--cloud-rest-x: 128vw;
+		opacity: 0.68;
+	}
+
+	.cloud-four {
+		--cloud-width: clamp(100px, 11vw, 220px);
+		--cloud-top: 51%;
+		--cloud-duration: 136s;
+		--cloud-delay: -101s;
+		--cloud-rest-x: 62vw;
+		opacity: 0.58;
+	}
+
+	.cloud-seven {
+		--cloud-width: clamp(80px, 7.5vw, 150px);
+		--cloud-top: 63%;
+		--cloud-duration: 218s;
+		--cloud-delay: -184s;
+		--cloud-rest-x: 76vw;
+		opacity: 0.42;
+	}
+
+	.base-mountains {
+		z-index: 2;
+		background: var(--base-mountains) center bottom 25% / 100% auto no-repeat;
+	}
+
+	.base-cloud-field--front {
+		z-index: 3;
+	}
+
+	.cloud-path-guide {
+		display: none;
+		position: absolute;
+		left: 0;
+		right: 0;
+		z-index: -1;
+		border-top: 2px dashed #f22626;
+		filter: drop-shadow(0 1px 0 rgb(74 0 0 / 70%));
+		opacity: 0.9;
+	}
+
+	.path-one {
+		top: calc(7% + clamp(35px, 4vw, 78px));
+	}
+	.path-eleven {
+		top: calc(-2% + clamp(20px, 2.67vw, 52px));
+	}
+	.path-two {
+		top: calc(23% + clamp(25px, 3vw, 58px));
+	}
+	.path-three {
+		top: calc(37% + clamp(19px, 2.17vw, 43px));
+	}
+	.path-four {
+		top: calc(51% + clamp(17px, 1.83vw, 37px));
+	}
+	.path-five {
+		top: calc(15% + clamp(21px, 2.5vw, 48px));
+	}
+	.path-six {
+		top: calc(30% + clamp(16px, 1.67vw, 33px));
+	}
+	.path-seven {
+		top: calc(63% + clamp(13px, 1.25vw, 25px));
+	}
+	.path-eight {
+		top: calc(44% + clamp(18px, 2.17vw, 42px));
+	}
+	.path-nine {
+		top: calc(57% + clamp(14px, 1.5vw, 29px));
+	}
+	.path-ten {
+		top: calc(68% + clamp(11px, 1vw, 20px));
+	}
+
+	.cloud-five {
+		--cloud-width: clamp(125px, 15vw, 290px);
+		--cloud-top: 15%;
+		--cloud-duration: 158s;
+		--cloud-delay: -41s;
+		--cloud-rest-x: 48vw;
+		opacity: 0.64;
+	}
+
+	.cloud-six {
+		--cloud-width: clamp(95px, 10vw, 200px);
+		--cloud-top: 30%;
+		--cloud-duration: 196s;
+		--cloud-delay: -153s;
+		--cloud-rest-x: 112vw;
+		opacity: 0.5;
+	}
+
+	.cloud-eight {
+		--cloud-width: clamp(105px, 13vw, 250px);
+		--cloud-top: 44%;
+		--cloud-duration: 184s;
+		--cloud-delay: -92s;
+		--cloud-rest-x: 28vw;
+		opacity: 0.56;
+	}
+
+	.cloud-nine {
+		--cloud-width: clamp(82px, 9vw, 175px);
+		--cloud-top: 57%;
+		--cloud-duration: 224s;
+		--cloud-delay: -57s;
+		--cloud-rest-x: 94vw;
+		opacity: 0.46;
+	}
+
+	.cloud-ten {
+		--cloud-width: clamp(68px, 6vw, 120px);
+		--cloud-top: 68%;
+		--cloud-duration: 242s;
+		--cloud-delay: -211s;
+		--cloud-rest-x: 136vw;
+		opacity: 0.38;
+	}
+
+	.base-bench {
+		z-index: 4;
+		top: auto;
+		right: clamp(22px, 3vw, 72px);
+		left: auto;
+		bottom: calc(clamp(66px, 12vh, 88px) + 15px);
+		width: clamp(120px, 16vw, 280px);
+		height: auto;
+		aspect-ratio: 844 / 440;
+		transform: none;
+		background: var(--base-bench) center bottom / contain no-repeat;
+	}
+
+	.background-bonus {
+		z-index: 10;
+	}
+
+	/* Keep the live grid full-size. The frame asset has a transparent centre and renders above
+	   the board, matching the design without covering symbols or exposing a black fill. */
+	.board-frame {
+		isolation: isolate;
+		padding: 0;
+		border: 0 !important;
+		background: none;
+		box-shadow: none;
+		overflow: visible;
+		image-rendering: pixelated;
+	}
+
+	.board-frame::after,
+	.frame-highlight {
+		display: none;
+	}
+
+	.board-frame::before {
+		display: block;
+		top: -5.2%;
+		right: -4%;
+		bottom: calc(-5.2% + 2px);
+		left: -4%;
+		z-index: 2;
+		border: 0;
+		background: var(--board-frame) center / 100% 100% no-repeat;
+	}
+
+	.board {
+		position: absolute;
+		top: 1.03%;
+		right: 1%;
+		bottom: 0.97%;
+		left: 1%;
+		z-index: 1;
+		width: auto;
+		height: auto;
+		margin: 0;
+	}
+
+	@media (min-width: 681px) {
+		.board-wrap {
+			width: min(95cqw, 118.75cqh);
+			height: min(76cqw, 95cqh);
+		}
+	}
+
+	.board-shadow {
+		inset: 4% 3%;
+		background: rgb(24 11 2 / 52%);
+		filter: blur(8px);
+		transform: translate(8px, 10px);
+	}
+
+	@keyframes base-cloud-drift {
+		from {
+			transform: translate3d(0, 0, 0);
+		}
+		to {
+			transform: translate3d(calc(100vw + var(--cloud-width) + var(--cloud-width)), 0, 0);
+		}
+	}
+
+	@media (max-width: 680px) {
+		.base-mountains {
+			background-position: center bottom 29%;
+			background-size: auto 40%;
+		}
+
+		.base-bench {
+			bottom: clamp(150px, 24vh, 230px);
+			right: -2vw;
+			width: clamp(105px, 42vw, 180px);
+		}
+	}
+
+	@media (max-width: 520px) and (max-height: 300px) and (orientation: landscape) {
+		.base-mountains {
+			background-position: center bottom 18%;
+			background-size: 125% auto;
+		}
+
+		.base-bench {
+			right: 58px;
+			bottom: 28px;
+			width: 24vw;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.drifting-cloud {
+			animation: none;
+			transform: translate3d(var(--cloud-rest-x), 0, 0);
 		}
 	}
 </style>

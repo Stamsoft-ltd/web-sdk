@@ -242,7 +242,7 @@
 	const mainLayout = $derived(context.stateLayoutDerived.mainLayout());
 	const presentationBounds = $derived(
 		bonusPresentation === 'start'
-			? { width: 820, height: 740 }
+			? { width: 600, height: 780 }
 			: bonusPresentation === 'end'
 				? { width: 900, height: 610 }
 				: artKey
@@ -361,23 +361,11 @@
 			? stateI18nDerived.translate(`BONUS INTRO ${overlay.tier.toUpperCase()} TEXT`)
 			: '',
 	);
-	const bonusBoard = $derived(
+	const bonusPlaque = $derived(
 		bonusPresentation === 'start'
-			? { x: -390, y: -350, width: 780, height: 700 }
-			: { x: -440, y: -226, width: 880, height: 472 },
+			? { key: 'bonusStartPlaque', width: 540, height: 746 }
+			: { key: 'bonusEndPlaque', width: 880, height: 340 },
 	);
-	const bonusCorners = $derived([
-		[bonusBoard.x, bonusBoard.y],
-		[bonusBoard.x + bonusBoard.width - 24, bonusBoard.y],
-		[bonusBoard.x, bonusBoard.y + bonusBoard.height - 24],
-		[bonusBoard.x + bonusBoard.width - 24, bonusBoard.y + bonusBoard.height - 24],
-	]);
-	const bonusRivets = $derived([
-		[bonusBoard.x + 70, bonusBoard.y + 76],
-		[bonusBoard.x + bonusBoard.width - 70, bonusBoard.y + 76],
-		[bonusBoard.x + 70, bonusBoard.y + bonusBoard.height - 76],
-		[bonusBoard.x + bonusBoard.width - 70, bonusBoard.y + bonusBoard.height - 76],
-	]);
 </script>
 
 {#if overlay}
@@ -434,123 +422,76 @@
 							<Sprite key="pixelBroccoli" anchor={0.5} x={310} y={-244} width={132} height={132} />
 						{/if}
 
-						<!-- Stepped wood/cream sign. Hard square edges intentionally mirror the game's
-						     16-bit logo and avoid pseudo-HD rounded gradients. -->
-						<Rectangle {...bonusBoard} backgroundColor={0x2a1205} />
-						<Rectangle
-							x={bonusBoard.x + 10}
-							y={bonusBoard.y + 10}
-							width={bonusBoard.width - 20}
-							height={bonusBoard.height - 20}
-							backgroundColor={0x8b4a12}
+						<!-- Supplied start/end plaques. Copy remains live and localized above the art. -->
+						<Sprite
+							key={bonusPlaque.key}
+							anchor={0.5}
+							width={bonusPlaque.width}
+							height={bonusPlaque.height}
 						/>
-						<Rectangle
-							x={bonusBoard.x + 24}
-							y={bonusBoard.y + 24}
-							width={bonusBoard.width - 48}
-							height={bonusBoard.height - 48}
-							backgroundColor={0xffe6a3}
-						/>
-						<Rectangle
-							x={bonusBoard.x + 36}
-							y={bonusBoard.y + 36}
-							width={bonusBoard.width - 72}
-							height={bonusBoard.height - 72}
-							backgroundColor={0x4a210b}
-						/>
-						<Rectangle
-							x={bonusBoard.x + 50}
-							y={bonusBoard.y + 50}
-							width={bonusBoard.width - 100}
-							height={bonusBoard.height - 100}
-							backgroundColor={bonusPresentation === 'start' ? 0x294a17 : 0x4c1e0d}
-						/>
-						<!-- Pixel-cut corners. -->
-						{#each bonusCorners as corner}
-							<Rectangle
-								x={corner[0]}
-								y={corner[1]}
-								width={24}
-								height={24}
-								backgroundColor={0x061006}
-							/>
-						{/each}
-						<!-- Rivets. -->
-						{#each bonusRivets as rivet}
-							<Graphics
-								x={rivet[0]}
-								y={rivet[1]}
-								draw={(graphics) => {
-									graphics.circle(0, 0, 13);
-									graphics.fill(0x2a1205);
-									graphics.circle(-2, -2, 8);
-									graphics.fill(0xffd773);
-								}}
-							/>
-						{/each}
 
 						<Text
 							anchor={0.5}
-							y={bonusPresentation === 'start' ? -270 : -133}
+							y={bonusPresentation === 'start' ? -286 : -108}
 							text={stateI18nDerived.translate('CONGRATULATIONS!')}
-							style={pixelText(bonusPresentation === 'start' ? 44 : 48, 0xffbc32)}
+							style={pixelText(bonusPresentation === 'start' ? 30 : 42, 0xffbc32)}
 						/>
 						<Text
 							anchor={0.5}
-							y={bonusPresentation === 'start' ? -210 : -66}
+							y={bonusPresentation === 'start' ? -232 : -55}
 							text={stateI18nDerived.translate('YOU WON')}
-							style={pixelText(27, 0xffffff)}
+							style={pixelText(bonusPresentation === 'start' ? 23 : 25, 0xffffff)}
 						/>
 
 						{#if bonusPresentation === 'start'}
-							<Text anchor={0.5} y={-155} text={bonusModeText} style={pixelText(40, 0xffd24a)} />
+							<Text anchor={0.5} y={-180} text={bonusModeText} style={pixelText(30, 0xffd24a)} />
 							<Text
 								anchor={0.5}
-								y={-94}
+								y={-124}
 								text={bonusIntroText}
 								style={{
-									...pixelText(20, 0xffffff),
+									...pixelText(17, 0xffffff),
 									wordWrap: true,
-									wordWrapWidth: 600,
-									lineHeight: 28,
+									wordWrapWidth: 400,
+									lineHeight: 23,
 								}}
 							/>
 							<Sprite
 								key="pixelScatter"
 								anchor={0.5}
-								y={42 + Math.sin(clock * 3) * 5}
-								width={150}
-								height={150}
+								y={24 + Math.sin(clock * 3) * 5}
+								width={132}
+								height={132}
 							/>
-							<Rectangle x={-178} y={128} width={356} height={114} backgroundColor={0x2a1205} />
-							<Rectangle x={-166} y={140} width={332} height={90} backgroundColor={0xe78b00} />
+							<Rectangle x={-156} y={112} width={312} height={104} backgroundColor={0x2a1205} />
+							<Rectangle x={-144} y={124} width={288} height={80} backgroundColor={0xe78b00} />
 							<Text
 								anchor={0.5}
-								y={185}
+								y={164}
 								text={overlay.freeSpins ?? 0}
-								style={pixelText(72, 0xffffff, 0x4c2008)}
+								style={pixelText(62, 0xffffff, 0x4c2008)}
 							/>
 							<Text
 								anchor={0.5}
-								y={278}
+								y={266}
 								text={stateI18nDerived.translate('FREE SPINS')}
-								style={pixelText(34, 0xffd678)}
+								style={pixelText(29, 0xffd678)}
 							/>
 						{:else}
-							<Rectangle x={-294} y={1} width={588} height={106} backgroundColor={0x2a1205} />
-							<Rectangle x={-282} y={13} width={564} height={82} backgroundColor={0xe78b00} />
+							<Rectangle x={-270} y={-8} width={540} height={96} backgroundColor={0x2a1205} />
+							<Rectangle x={-258} y={4} width={516} height={72} backgroundColor={0xe78b00} />
 							<Text
 								anchor={0.5}
-								y={54}
+								y={40}
 								text={bookEventAmountToCurrencyString(
 									amount.current,
 									overlay.amount ?? stateGame.roundWin,
 								)}
-								style={pixelText(45, 0xffffff, 0x4c2008)}
+								style={pixelText(amountFontSize, 0xffffff, 0x4c2008)}
 							/>
 							<Text
 								anchor={0.5}
-								y={145}
+								y={127}
 								text={stateI18nDerived.translate('TOTAL WIN')}
 								style={pixelText(31, 0xffd678)}
 							/>

@@ -85,7 +85,6 @@ export const stateGame = $state({
 	// used to retime cells that were already falling, which landed some of them instantly while
 	// their neighbours kept falling — one wave now plays at one speed, start to finish.
 	waveFast: false,
-	featureLabel: '',
 	fallDistances: Array.from({ length: 7 }, () => Array(7).fill(0)) as number[][],
 	// Per-cell random 0..1, re-rolled on every reveal. Multiplied into the drop delay so symbols
 	// never land in grid lockstep — the loose rain look instead of a rigid strip. Kept in state
@@ -467,7 +466,6 @@ const resetRound = () => {
 	stateGame.bonusTotalWin = 0;
 	stateGame.bonusSpinStartTotal = 0;
 	stateGame.overlay = null;
-	stateGame.featureLabel = '';
 	stateGame.pendingRemovedPositions = [];
 	stateGame.fallDistances = zeroFallDistances(stateGame.gridSize);
 	stateGame.fallJitter = rollFallJitter(stateGame.gridSize);
