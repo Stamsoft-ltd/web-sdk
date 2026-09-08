@@ -23,7 +23,7 @@
 	import FreeSpinIntroHtml from './FreeSpinIntroHtml.svelte';
 	import WheelBonus from './WheelBonus.svelte';
 	import FreeSpinCounter from './FreeSpinCounter.svelte';
-	import FreeSpinOutro from './FreeSpinOutro.svelte';
+	import FreeSpinOutroHtml from './FreeSpinOutroHtml.svelte';
 	import Transition from './Transition.svelte';
 	import FeatureOverlay from './FeatureOverlay.svelte';
 	import PaylineOverlay from './PaylineOverlay.svelte';
@@ -227,7 +227,6 @@
 				{#if ['desktop', 'landscape'].includes(context.stateLayoutDerived.layoutType())}
 					<FreeSpinCounter />
 				{/if}
-				<FreeSpinOutro />
 				<Transition />
 			{/if}
 		</App>
@@ -251,6 +250,7 @@
 		{#if !context.stateLayout.showLoadingScreen}
 			<HudHtml />
 			<FreeSpinIntroHtml />
+			<FreeSpinOutroHtml />
 			<WheelBonus />
 		{/if}
 	</div>
