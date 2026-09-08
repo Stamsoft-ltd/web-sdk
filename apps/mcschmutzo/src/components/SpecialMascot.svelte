@@ -23,7 +23,7 @@
 	const grain = $derived(Math.max(2.5, canvas.height * 0.006));
 
 	// Looping fall — each grain is offset in phase so the stream is continuous.
-	const COUNT = 18;
+	const COUNT = 40;
 	let phase = $state(0);
 	$effect(() => {
 		let raf = 0;
