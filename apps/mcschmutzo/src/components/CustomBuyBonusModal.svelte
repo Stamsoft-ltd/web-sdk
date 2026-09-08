@@ -335,6 +335,13 @@
 	.bb-card--active {
 		box-shadow: 0 0 16px rgba(232, 181, 116, 0.25);
 	}
+	/* First box (Extra Chance) keeps the neutral frame even when active — no yellow highlight. */
+	.bb-card:first-child.bb-card--active::before {
+		border-color: #605553;
+	}
+	.bb-card:first-child.bb-card--active {
+		box-shadow: none;
+	}
 
 	.bb-card-title {
 		margin: 0;
