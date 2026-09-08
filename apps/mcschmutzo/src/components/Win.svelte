@@ -22,7 +22,6 @@
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
 	import { OnMount } from 'components-shared';
 
-	import WinCoins from './WinCoins.svelte';
 	import WinPad from './WinPad.svelte';
 	import PressToContinue from './PressToContinue.svelte';
 	import { SYMBOL_SIZE } from '../game/constants';
@@ -86,9 +85,6 @@
 				{#if isBigWin}
 					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
 				{/if}
-
-				<!-- Coins first so they render BEHIND the pad/amount box. -->
-				<WinCoins emit={!countUpCompleted} levelAlias={winLevelData?.alias} />
 
 				<OnMount
 					onmount={async () => {
