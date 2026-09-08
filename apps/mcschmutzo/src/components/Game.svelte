@@ -23,7 +23,6 @@
 	import FreeSpinIntroHtml from './FreeSpinIntroHtml.svelte';
 	import FreeSpinPanelHtml from './FreeSpinPanelHtml.svelte';
 	import WheelBonus from './WheelBonus.svelte';
-	import FreeSpinCounter from './FreeSpinCounter.svelte';
 	import FreeSpinOutroHtml from './FreeSpinOutroHtml.svelte';
 	import Transition from './Transition.svelte';
 	import FeatureOverlay from './FeatureOverlay.svelte';
@@ -225,9 +224,6 @@
 				</MainContainer>
 
 				<Win />
-				{#if ['desktop', 'landscape'].includes(context.stateLayoutDerived.layoutType())}
-					<FreeSpinCounter />
-				{/if}
 				<Transition />
 			{/if}
 		</App>

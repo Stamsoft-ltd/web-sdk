@@ -100,25 +100,6 @@
 	/>
 {/if}
 
-{#if context.stateGame.gameType === 'freegame' || context.stateGame.globalMultiplier > 1}
-	<Container x={board.x + board.width * 0.5 + 74} y={board.y - board.height * 0.5 + 42}>
-		<Rectangle
-			x={-54}
-			y={-35}
-			width={108}
-			height={70}
-			radius={18}
-			backgroundColor={0x3a1404}
-			alpha={0.96}
-		/>
-		<Text
-			anchor={0.5}
-			text={`${context.stateGame.globalMultiplier}x`}
-			style={{ fill: 0xffc21b, fontSize: 34, fontWeight: '900' }}
-		/>
-	</Container>
-{/if}
-
 {#if false && context.stateGame.wheel}
 	<!-- Replaced by the HTML WheelBonus overlay (new designed wheel). -->
 	<Container x={board.x} y={board.y} alpha={overlayAlpha.current}>
