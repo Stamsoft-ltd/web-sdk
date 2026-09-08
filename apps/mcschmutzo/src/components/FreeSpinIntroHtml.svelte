@@ -7,8 +7,6 @@
 	const burgerArt = ap('/assets/mcschmutzo/congrats-burger.webp');
 	const sauceYellowBig = ap('/assets/mcschmutzo/congrats-sauce-yellow-big.webp');
 	const sauceRedBig = ap('/assets/mcschmutzo/congrats-sauce-red-big.webp');
-	const sauceYellowSmall = ap('/assets/mcschmutzo/congrats-sauce-yellow-small.webp');
-	const sauceRedSmall = ap('/assets/mcschmutzo/congrats-sauce-red-small.webp');
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
 </script>
 
@@ -89,11 +87,12 @@
 		></button>
 
 		<div class="fs-stage" role="dialog" aria-modal="true">
-			<!-- Bigger sauces bleed out of the top corners, smaller ones at the middle sides. -->
-			<img class="fs-sauce fs-sauce--yellow-top" src={sauceYellowBig} alt="" draggable="false" />
-			<img class="fs-sauce fs-sauce--red-top" src={sauceRedBig} alt="" draggable="false" />
-			<img class="fs-sauce fs-sauce--red-mid" src={sauceRedSmall} alt="" draggable="false" />
-			<img class="fs-sauce fs-sauce--yellow-mid" src={sauceYellowSmall} alt="" draggable="false" />
+			<!-- Each side is a two-tone pair: the "under" splash (red beneath the yellow, yellow beneath
+			     the red) renders first so the top splash sits over it. -->
+			<img class="fs-sauce fs-sauce--ul" src={sauceRedBig} alt="" draggable="false" />
+			<img class="fs-sauce fs-sauce--ur" src={sauceYellowBig} alt="" draggable="false" />
+			<img class="fs-sauce fs-sauce--tl" src={sauceYellowBig} alt="" draggable="false" />
+			<img class="fs-sauce fs-sauce--tr" src={sauceRedBig} alt="" draggable="false" />
 
 			<!-- Burger perched on the top edge of the plaque. -->
 			<img class="fs-burger" src={burgerArt} alt="" draggable="false" />
@@ -164,25 +163,27 @@
 		pointer-events: none;
 		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
 	}
-	.fs-sauce--yellow-top {
-		width: 38%;
-		top: -12%;
-		left: -4%;
+	/* Top splashes (over): pulled in so they don't overflow the screen. */
+	.fs-sauce--tl {
+		width: 29%;
+		top: -8%;
+		left: 0%;
 	}
-	.fs-sauce--red-top {
-		width: 38%;
-		top: -14%;
-		right: -4%;
+	.fs-sauce--tr {
+		width: 29%;
+		top: -10%;
+		right: 0%;
 	}
-	.fs-sauce--yellow-mid {
-		width: 17%;
-		top: 46%;
-		left: -9%;
+	/* Under splashes: red beneath the left yellow, yellow beneath the right red. */
+	.fs-sauce--ul {
+		width: 23%;
+		top: 26%;
+		left: -3%;
 	}
-	.fs-sauce--red-mid {
-		width: 17%;
-		top: 44%;
-		right: -9%;
+	.fs-sauce--ur {
+		width: 23%;
+		top: 24%;
+		right: -3%;
 	}
 
 	.fs-plaque {

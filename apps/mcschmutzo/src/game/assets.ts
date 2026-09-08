@@ -182,6 +182,11 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/win/wooden-board.webp', import.meta.url).href,
 	},
+	// Red plaque frame (shared with the congrats popups) used for the win amount box.
+	winBoxRed: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/congrats-cover-sm.webp', import.meta.url).href,
+	},
 	boardBg: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/board.webp', import.meta.url).href,

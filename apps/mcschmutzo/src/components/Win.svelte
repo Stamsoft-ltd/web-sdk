@@ -112,7 +112,7 @@
 								<ResponsiveText
 									anchor={0.5}
 									y={amountFontSize * 0.03}
-									maxWidth={context.stateGameDerived.boardLayout().width * 0.4}
+									maxWidth={context.stateGameDerived.boardLayout().width * 0.28}
 									text={bookEventAmountToCurrencyString(countUpAmount)}
 									style={{
 										fontFamily: 'Maven Pro',

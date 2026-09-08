@@ -14,8 +14,6 @@
 	const burgerArt = ap('/assets/mcschmutzo/congrats-burger.webp');
 	const sauceYellowBig = ap('/assets/mcschmutzo/congrats-sauce-yellow-big.webp');
 	const sauceRedBig = ap('/assets/mcschmutzo/congrats-sauce-red-big.webp');
-	const sauceYellowSmall = ap('/assets/mcschmutzo/congrats-sauce-yellow-small.webp');
-	const sauceRedSmall = ap('/assets/mcschmutzo/congrats-sauce-red-small.webp');
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
 </script>
 
@@ -93,11 +91,12 @@
 		></button>
 
 		<div class="fo-stage" role="dialog" aria-modal="true">
-			<!-- Bigger sauces bleed out of the top corners, smaller ones at the middle sides. -->
-			<img class="fo-sauce fo-sauce--yellow-top" src={sauceYellowBig} alt="" draggable="false" />
-			<img class="fo-sauce fo-sauce--red-top" src={sauceRedBig} alt="" draggable="false" />
-			<img class="fo-sauce fo-sauce--red-mid" src={sauceRedSmall} alt="" draggable="false" />
-			<img class="fo-sauce fo-sauce--yellow-mid" src={sauceYellowSmall} alt="" draggable="false" />
+			<!-- Two-tone pairs: the "under" splash (red beneath the yellow, yellow beneath the red)
+			     renders first so the top splash sits over it. -->
+			<img class="fo-sauce fo-sauce--ul" src={sauceRedBig} alt="" draggable="false" />
+			<img class="fo-sauce fo-sauce--ur" src={sauceYellowBig} alt="" draggable="false" />
+			<img class="fo-sauce fo-sauce--tl" src={sauceYellowBig} alt="" draggable="false" />
+			<img class="fo-sauce fo-sauce--tr" src={sauceRedBig} alt="" draggable="false" />
 
 			<!-- Burger perched on the top edge of the plaque. -->
 			<img class="fo-burger" src={burgerArt} alt="" draggable="false" />
@@ -165,25 +164,26 @@
 		pointer-events: none;
 		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
 	}
-	.fo-sauce--yellow-top {
-		width: 34%;
-		top: -20%;
-		left: -3%;
+	.fo-sauce--tl {
+		width: 33%;
+		top: -18%;
+		left: -2%;
 	}
-	.fo-sauce--red-top {
-		width: 34%;
-		top: -24%;
-		right: -3%;
+	.fo-sauce--tr {
+		width: 33%;
+		top: -22%;
+		right: -2%;
 	}
-	.fo-sauce--yellow-mid {
-		width: 16%;
-		top: 42%;
-		left: -8%;
-	}
-	.fo-sauce--red-mid {
-		width: 16%;
+	/* Under splashes: red beneath the left yellow, yellow beneath the right red. */
+	.fo-sauce--ul {
+		width: 22%;
 		top: 40%;
-		right: -8%;
+		left: -6%;
+	}
+	.fo-sauce--ur {
+		width: 22%;
+		top: 36%;
+		right: -6%;
 	}
 
 	/* Burger sits centred on the top edge of the plaque, mostly above it. */
