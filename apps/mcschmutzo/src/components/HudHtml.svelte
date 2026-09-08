@@ -100,11 +100,9 @@
 	const isFeatureActive = $derived(stateBet.activeBetModeKey === 'featureSpin');
 	const isChanceActive = $derived(stateBet.activeBetModeKey === 'enhancer1');
 	const isAnyModeActive = $derived(isFeatureActive || isChanceActive);
-	// The buy button's caption, in one place: the portrait badge splits it per word for its
-	// two-line layout, so it needs the string itself rather than the inline ternary.
-	const buyLabelText = $derived(
-		isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.translate('BONUS'),
-	);
+	// The portrait/landscape BONUS button always just opens the Buy Bonus modal — the deactivate
+	// toggle is desktop-only (it was broken on touch for the activatable modes).
+	const buyLabelText = $derived(i18nDerived.translate('BONUS'));
 	// Buying a bonus is not allowed while a multi-spin bonus round is in progress.
 	// Feature mode keeps its selected-symbol badge after the round, but should not lock the HUD.
 	const isInBonus = $derived(context.stateGame.bonusMode !== null && context.stateGame.bonusMode !== 'feature');
@@ -684,8 +682,8 @@
 						class="pt-buy pt-buy--controls"
 						type="button"
 						disabled={disableBuy}
-						onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
-						aria-label={isAnyModeActive ? 'Disable' : i18nDerived.buyBonus()}
+						onclick={openBuyBonus}
+						aria-label={i18nDerived.buyBonus()}
 					>
 						<!-- One word per line keeps the compact portrait plate legible and translation-safe. -->
 					<span class="pt-buy__label" use:fitLabel={{ dep: buyLabelText, maxFraction: 0.72 }}>
@@ -798,10 +796,10 @@
 				class="ls-buy"
 				type="button"
 				disabled={disableBuy}
-				onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
-				aria-label={isAnyModeActive ? 'Disable' : i18nDerived.buyBonus()}
+				onclick={openBuyBonus}
+				aria-label={i18nDerived.buyBonus()}
 			>
-				<span class="ls-buy__label" use:fitLabel={{ dep: isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus(), maxFraction: 0.82 }}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}</span>
+				<span class="ls-buy__label" use:fitLabel={{ dep: i18nDerived.buyBonus(), maxFraction: 0.82 }}>{i18nDerived.buyBonus()}</span>
 			</button>
 
 			<!-- Bottom-centre bet pad: − value + -->
