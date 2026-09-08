@@ -2,14 +2,14 @@
 	// Module scope so the art preloads during the loading screen (mounts on demand).
 	import { ap } from '../lib/preloadArt';
 
-	const plaqueArt = ap('/assets/mcschmutzo/congrats.webp');
+	// Large plaque (bigger-cover) for the bonus intro; the burger sits on its top edge.
+	const plaqueArt = ap('/assets/mcschmutzo/congrats-cover-lg.webp');
+	const burgerArt = ap('/assets/mcschmutzo/congrats-burger.webp');
 	const sauceYellowBig = ap('/assets/mcschmutzo/congrats-sauce-yellow-big.webp');
 	const sauceRedBig = ap('/assets/mcschmutzo/congrats-sauce-red-big.webp');
 	const sauceYellowSmall = ap('/assets/mcschmutzo/congrats-sauce-yellow-small.webp');
 	const sauceRedSmall = ap('/assets/mcschmutzo/congrats-sauce-red-small.webp');
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
-
-	const STAR_SVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1.5l3.09 6.26 6.91 1-5 4.87 1.18 6.87L12 17.27 5.82 20.5 7 13.63l-5-4.87 6.91-1z" fill="#FFCB33" stroke="#E39B1A" stroke-width="1.1" stroke-linejoin="round"/></svg>`;
 </script>
 
 <script lang="ts">
@@ -80,10 +80,10 @@
 			<img class="fs-sauce fs-sauce--red-mid" src={sauceRedSmall} alt="" draggable="false" />
 			<img class="fs-sauce fs-sauce--yellow-mid" src={sauceYellowSmall} alt="" draggable="false" />
 
-			<div class="fs-plaque" style={`background-image:url('${plaqueArt}')`}>
-				<span class="fs-star fs-star--left">{@html STAR_SVG}</span>
-				<span class="fs-star fs-star--right">{@html STAR_SVG}</span>
+			<!-- Burger perched on the top edge of the plaque. -->
+			<img class="fs-burger" src={burgerArt} alt="" draggable="false" />
 
+			<div class="fs-plaque" style={`background-image:url('${plaqueArt}')`}>
 				<div class="fs-content">
 					<p class="fs-congrats">{i18nDerived.translate('CONGRATS')}</p>
 					<p class="fs-youwon">{i18nDerived.translate('YOU WON')}</p>
@@ -135,9 +135,9 @@
 
 	.fs-stage {
 		position: relative;
-		width: min(680px, 92vw);
-		max-height: 90dvh;
-		aspect-ratio: 900 / 651;
+		width: min(600px, 90vw);
+		max-height: 88dvh;
+		aspect-ratio: 1366 / 989;
 		font-family: 'Poppins', sans-serif;
 	}
 
@@ -181,27 +181,17 @@
 		place-items: center;
 	}
 
-	.fs-star {
+	/* Burger sits centred on the top edge of the plaque, mostly above it. */
+	.fs-burger {
 		position: absolute;
-		z-index: 2;
-		width: 15%;
-		filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4));
-		pointer-events: none;
-	}
-	.fs-star :global(svg) {
-		width: 100%;
+		left: 50%;
+		top: -15%;
+		transform: translateX(-50%);
+		width: 21%;
 		height: auto;
-		display: block;
-	}
-	.fs-star--left {
-		left: 8%;
-		bottom: 20%;
-		transform: rotate(-12deg);
-	}
-	.fs-star--right {
-		right: 10%;
-		top: 22%;
-		transform: rotate(12deg);
+		z-index: 2;
+		pointer-events: none;
+		filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.4));
 	}
 
 	/* Copy sits within the red field of the plaque. */

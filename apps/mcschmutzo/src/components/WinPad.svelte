@@ -18,9 +18,12 @@
 	// Pad art is exported ~1302x455 (plaque centred). Wooden board is 810x243.
 	const PAD_ASPECT = 1302 / 455;
 	const BOX_ASPECT = 810 / 243;
-	const padW = $derived(board.width * 1.4);
+	// Portrait: the board fills almost the whole layout, so the desktop 1.4x board makes the pad
+	// overflow the phone — scale it down to a fraction that reads the same on-screen size.
+	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	const padW = $derived(board.width * (isPortrait ? 0.98 : 1.4));
 	const padH = $derived(padW / PAD_ASPECT);
-	const boxW = $derived(board.width * 0.5);
+	const boxW = $derived(board.width * (isPortrait ? 0.4 : 0.5));
 	const boxH = $derived(boxW / BOX_ASPECT);
 </script>
 
