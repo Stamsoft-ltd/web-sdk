@@ -23,14 +23,14 @@
 	const grain = $derived(Math.max(2.5, canvas.height * 0.006));
 
 	// Looping fall — each grain is offset in phase so the stream is continuous.
-	const COUNT = 12;
+	const COUNT = 18;
 	let phase = $state(0);
 	$effect(() => {
 		let raf = 0;
 		let start = 0;
 		const loop = (ts: number) => {
 			if (!start) start = ts;
-			phase = (((ts - start) / 1100) % 1 + 1) % 1;
+			phase = ((((ts - start) / 1200) % 1) + 1) % 1;
 			raf = requestAnimationFrame(loop);
 		};
 		raf = requestAnimationFrame(loop);
@@ -39,11 +39,16 @@
 	const grains = $derived(
 		Array.from({ length: COUNT }, (_, i) => {
 			const p = (phase + i / COUNT) % 1;
-			// even (linear) stream drifting toward the pot, with a little scatter.
-			const x = saltTopX + (saltBotX - saltTopX) * p + Math.sin(i * 12.9) * grain * 1.3;
-			const y = saltTopY + (saltBotY - saltTopY) * p;
-			const alpha = p < 0.08 ? p / 0.08 : p > 0.92 ? (1 - p) / 0.08 : 1;
-			return { x, y, alpha };
+			// Fine sprinkle: fans out into a cone as it falls + gentle gravity acceleration.
+			const dir = Math.sin(i * 2.3999); // deterministic spread direction (-1..1)
+			const spread = grain * (1 + p * 4.5);
+			const ease = p * (0.5 + 0.5 * p);
+			const x = saltTopX + (saltBotX - saltTopX) * p + dir * spread;
+			const y = saltTopY + (saltBotY - saltTopY) * ease;
+			const size = grain * (0.5 + ((i * 7) % 5) * 0.2); // varied grain sizes
+			const fade = Math.min(1, p / 0.1) * (p > 0.8 ? Math.max(0, (1 - p) / 0.2) : 1);
+			const alpha = fade * (0.6 + (i % 3) * 0.15);
+			return { x, y, size, alpha };
 		}),
 	);
 </script>
@@ -62,11 +67,11 @@
 	<Rectangle
 		x={g.x}
 		y={g.y}
-		width={grain}
-		height={grain}
-		radius={grain * 0.5}
+		width={g.size}
+		height={g.size}
+		radius={g.size * 0.5}
 		backgroundColor={0xfffdf5}
-		alpha={g.alpha * 0.95}
+		alpha={g.alpha}
 		zIndex={1}
 	/>
 {/each}
