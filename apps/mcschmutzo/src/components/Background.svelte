@@ -10,12 +10,14 @@
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isPortrait = $derived(layoutType === 'portrait');
-	const showMascot = $derived(layoutType === 'desktop' || layoutType === 'landscape');
+	// Free games swap to the special (grey kitchen) background.
+	const isFreegame = $derived(context.stateGame.gameType === 'freegame');
+	// The bonus scene is its own room — hide the chef mascot there.
+	const showMascot = $derived(!isFreegame && (layoutType === 'desktop' || layoutType === 'landscape'));
 	const mascotHeight = $derived(canvas.height * 0.6);
 	const mascotWidth = $derived(mascotHeight * (1019 / 1336));
-	const key = $derived(
-		context.stateGame.gameType === 'freegame' ? 'backgroundBonus' : 'backgroundBase',
-	);
+	const key = $derived(isFreegame ? 'backgroundWideBonus' : 'backgroundBase');
+	const portraitKey = $derived(isFreegame ? 'backgroundPortraitBonus' : 'backgroundPortrait');
 	const cover = $derived.by(() => {
 		const canvasAspect = canvas.width / canvas.height;
 		return canvasAspect > aspect
@@ -34,9 +36,10 @@
 
 <Rectangle {...canvas} backgroundColor={0x170905} zIndex={-3} />
 {#if isPortrait}
-	<!-- Mobile portrait: the dedicated diner background, no darkening overlay (matches the splash). -->
+	<!-- Mobile portrait: the dedicated diner background, no darkening overlay (matches the splash).
+	     Swaps to the special grey-kitchen background during free games. -->
 	<Sprite
-		key="backgroundPortrait"
+		key={portraitKey}
 		x={canvas.width * 0.5}
 		y={canvas.height * 0.5}
 		anchor={0.5}

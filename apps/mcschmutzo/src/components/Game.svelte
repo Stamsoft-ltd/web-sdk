@@ -21,6 +21,7 @@
 	import Anticipations from './Anticipations.svelte';
 	import Win from './Win.svelte';
 	import FreeSpinIntroHtml from './FreeSpinIntroHtml.svelte';
+	import FreeSpinPanelHtml from './FreeSpinPanelHtml.svelte';
 	import WheelBonus from './WheelBonus.svelte';
 	import FreeSpinCounter from './FreeSpinCounter.svelte';
 	import FreeSpinOutroHtml from './FreeSpinOutroHtml.svelte';
@@ -251,6 +252,7 @@
 			<HudHtml />
 			<FreeSpinIntroHtml />
 			<FreeSpinOutroHtml />
+			<FreeSpinPanelHtml />
 			<WheelBonus />
 		{/if}
 	</div>

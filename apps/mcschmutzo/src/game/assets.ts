@@ -330,6 +330,17 @@ export default {
 		src: new URL('../../assets/mcschmutzo/background-portrait.webp', import.meta.url).href,
 		preload: true,
 	},
+	// Special bonus-game (free games) backgrounds — the cool grey kitchen.
+	backgroundPortraitBonus: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/special-bg-mobile.webp', import.meta.url).href,
+		preload: true,
+	},
+	backgroundWideBonus: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/special-bg-desktop.webp', import.meta.url).href,
+		preload: true,
+	},
 	bonusWheel: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/bonus-wheel.png', import.meta.url).href,
