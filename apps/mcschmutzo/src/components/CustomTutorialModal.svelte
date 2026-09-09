@@ -331,8 +331,13 @@
 	.tu-popup {
 		position: relative;
 		box-sizing: border-box;
-		min-height: min(560px, 90dvh);
-		padding: clamp(24px, 4vmin, 44px) clamp(28px, 5vmin, 60px) clamp(70px, 10vmin, 96px);
+		display: flex;
+		flex-direction: column;
+		min-height: min(460px, 78dvh);
+		/* Never taller than the screen (leaves headroom for the close button) — the page body
+		   scrolls instead of the popup being cut off. */
+		max-height: 86dvh;
+		padding: clamp(20px, 3.2vmin, 40px) clamp(28px, 5vmin, 60px) 0;
 		border: 1.91px solid #605553;
 		border-radius: 22px;
 		background: #181818;
@@ -365,19 +370,26 @@
 		transform: scale(0.94);
 	}
 
+	/* The page body is the scroll area (flex child of the popup); the nav sits below it. */
 	.tu-page {
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		overflow-y: auto;
+		overflow-x: hidden;
+		padding-bottom: clamp(6px, 1.2vmin, 14px);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 	}
 
 	.tu-title {
-		margin: 0 0 clamp(14px, 2.4vmin, 26px);
+		margin: 0 0 clamp(10px, 1.9vmin, 20px);
 		text-align: center;
 		color: #f3e7cb;
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
 		font-weight: 400;
-		font-size: clamp(1.7rem, 5vmin, 3rem);
+		font-size: clamp(1.5rem, 4.2vmin, 2.5rem);
 		line-height: 1;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
@@ -680,10 +692,10 @@
 	   Each row is a board, matching the Buy Bonus cards. */
 	.ug-grid {
 		width: 100%;
-		margin-top: clamp(14px, 2.6vmin, 30px);
+		margin-top: clamp(10px, 1.8vmin, 20px);
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
-		gap: clamp(10px, 1.8vmin, 18px) clamp(12px, 2.4vmin, 26px);
+		gap: clamp(8px, 1.4vmin, 14px) clamp(12px, 2.4vmin, 26px);
 	}
 	.ug-item {
 		position: relative;
@@ -691,23 +703,23 @@
 		flex-direction: row;
 		align-items: center;
 		text-align: left;
-		gap: clamp(12px, 1.8vmin, 20px);
-		padding: clamp(15px, 2.4vmin, 26px) clamp(20px, 2.8vmin, 32px);
-		border-radius: 16px;
+		gap: clamp(10px, 1.5vmin, 16px);
+		padding: clamp(10px, 1.7vmin, 18px) clamp(16px, 2.4vmin, 28px);
+		border-radius: 14px;
 		background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
 	}
 	.ug-item::before {
 		content: '';
 		position: absolute;
-		inset: 6px;
+		inset: 5px;
 		border: 2.03px solid #605553;
-		border-radius: 12px;
+		border-radius: 11px;
 		pointer-events: none;
 	}
 	.ug-btn {
 		flex: 0 0 auto;
-		width: clamp(42px, 6vmin, 60px);
-		height: clamp(42px, 6vmin, 60px);
+		width: clamp(38px, 5vmin, 52px);
+		height: clamp(38px, 5vmin, 52px);
 		object-fit: contain;
 	}
 	.ug-text {
@@ -735,17 +747,17 @@
 	/* Guy on the left, stats stacked to his right — one row (matches design). */
 	.tu-lower {
 		width: 100%;
-		margin-top: clamp(14px, 2.6vmin, 32px);
+		margin-top: clamp(10px, 1.8vmin, 22px);
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		justify-content: center;
-		gap: clamp(6px, 2.5vw, 34px);
+		gap: clamp(6px, 2.5vw, 30px);
 	}
 	.tu-guy {
 		flex: 0 0 auto;
 		align-self: flex-end;
-		width: clamp(150px, 42%, 300px);
+		width: clamp(120px, 31%, 210px);
 		height: auto;
 		pointer-events: none;
 		filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
@@ -755,7 +767,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: clamp(16px, 3.4vmin, 34px);
+		gap: clamp(12px, 2.6vmin, 26px);
 	}
 	/* Each stat: label above the value (design). */
 	.tu-stat {
@@ -790,20 +802,18 @@
 	}
 
 	.tu-page--placeholder {
-		min-height: min(520px, 82dvh);
 		justify-content: center;
 	}
 
-	/* Nav arrows + page indicator pinned to the bottom. */
+	/* Nav arrows + page indicator — a static footer below the scrolling page. */
 	.tu-nav {
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: clamp(18px, 3vmin, 30px);
+		position: relative;
+		flex: 0 0 auto;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		gap: clamp(12px, 2vmin, 20px);
+		padding: clamp(10px, 1.6vmin, 18px) 0 clamp(14px, 2.4vmin, 26px);
 	}
 	.tu-arrow {
 		width: clamp(44px, 6vmin, 58px);
@@ -835,39 +845,15 @@
 	}
 
 	/* ── Mobile / short viewports ───────────────────────────────────────────────────────────────
-	   Turn the fixed desktop card into a scaled, scrollable panel: the page body scrolls and the
-	   nav becomes a footer that stays put, so no content is ever clipped. (Also catches short
-	   landscape windows, where height — not width — is the constraint.) */
+	   The scroll structure is the default now; here we just widen to the phone and tighten padding. */
 	@media (max-width: 680px), (max-height: 560px) {
 		.tu-root {
 			width: 94vw;
-			max-height: 94dvh;
 		}
 		.tu-popup {
-			display: flex;
-			flex-direction: column;
-			min-height: 0;
-			/* Leave headroom above the popup so the close button clears its top edge (design). */
-			max-height: 84dvh;
 			padding: clamp(16px, 4.5vw, 30px) clamp(14px, 4vw, 26px) 0;
-			overflow: hidden;
-		}
-		/* The page content is the scroll area; the nav sits below it as a static footer. */
-		.tu-page {
-			flex: 1 1 auto;
-			min-height: 0;
-			width: 100%;
-			overflow-y: auto;
-			overflow-x: hidden;
-			padding-bottom: clamp(8px, 2vw, 14px);
-			-webkit-overflow-scrolling: touch;
 		}
 		.tu-nav {
-			position: relative;
-			flex: 0 0 auto;
-			left: auto;
-			right: auto;
-			bottom: auto;
 			padding: clamp(8px, 2vw, 12px) 0 clamp(12px, 3vw, 18px);
 		}
 		.tu-page-num {
