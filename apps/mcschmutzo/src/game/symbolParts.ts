@@ -23,6 +23,15 @@ export type SymbolPartsConfig = {
 	layers: SymbolPartLayer[];
 };
 
+// Symbols that aren't split into parts yet still come alive when locked, via a whole-sprite
+// wiggle (bob + squash + slight tilt) using the flat symbol sprite as a single layer.
+export const fallbackConfig = (assetKey: string): SymbolPartsConfig => ({
+	aspect: 131 / 120, // SYMBOL_WIDTH / SYMBOL_SIZE, so it renders at the normal sprite footprint
+	fit: 1,
+	squash: 0.13,
+	layers: [{ key: assetKey, nx: 0.5, ny: 0.5, nw: 1, nh: 1, dx: 0, dy: -0.05, rot: 0.08 }],
+});
+
 export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 	// Burger — the stack separates (bun up, bottom down, fillings fan out) then reassembles.
 	H1: {

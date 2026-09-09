@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { Container, Rectangle, Sprite } from 'pixi-svelte';
 
-	import Symbol from './Symbol.svelte';
+	import AnimatedSymbol from './AnimatedSymbol.svelte';
 	import { getContext } from '../game/context';
+	import { getSymbolInfo } from '../game/utils';
+	import { SYMBOL_PARTS, fallbackConfig } from '../game/symbolParts';
 	import { SYMBOL_SIZE, SYMBOL_WIDTH } from '../game/constants';
-	import type { RawSymbol } from '../game/types';
 
 	const context = getContext();
 	const board = $derived(context.stateGameDerived.boardLayout());
@@ -13,12 +14,17 @@
 	// stays pinned to its box instead of scrolling with the reel — the light background is opaque and
 	// covers the reel behind it. `lockedPositions.row` is 1-based (grid row = row - 1, and it doubles
 	// as the symbols-array index used to read the held symbol when no single lockSymbol is set).
+	// Configured symbols animate part-by-part; the rest get a whole-sprite fallback wiggle.
 	const cells = $derived(
 		context.stateGame.lockedPositions.map(({ reel, row }) => {
 			const name =
 				context.stateGame.lockSymbol ??
 				context.stateGame.board[reel]?.reelState.symbols[row]?.rawSymbol?.name;
-			return { reel, gridRow: row - 1, name };
+			const info = name ? getSymbolInfo({ rawSymbol: { name }, state: 'static' }) : undefined;
+			const config = name
+				? (SYMBOL_PARTS[name] ?? fallbackConfig(info!.assetKey))
+				: undefined;
+			return { reel, gridRow: row - 1, config, scale: info?.sizeRatios.width ?? 0.92 };
 		}),
 	);
 	const badge = $derived(Math.min(SYMBOL_WIDTH, SYMBOL_SIZE) * 0.34);
@@ -45,7 +51,7 @@
 </script>
 
 <Container x={board.x} y={board.y} pivot={board.pivot} zIndex={5}>
-	{#each cells as { reel, gridRow, name } (`${reel}:${gridRow}`)}
+	{#each cells as { reel, gridRow, config, scale } (`${reel}:${gridRow}`)}
 		{@const cx = reel * SYMBOL_WIDTH + SYMBOL_WIDTH / 2}
 		{@const cy = gridRow * SYMBOL_SIZE + SYMBOL_SIZE / 2}
 		<!-- Full-cell cover in the board's own cell colour, so a spinning reel behind can't show
@@ -69,15 +75,9 @@
 			borderColor={0xffc383}
 			borderWidth={4}
 		/>
-		{#if name}
-			<!-- Held symbol, pinned to the box (plays its come-alive animation once on lock). -->
-			<Symbol
-				x={cx}
-				y={cy}
-				state="static"
-				rawSymbol={{ name } as RawSymbol}
-				winning={true}
-			/>
+		{#if config}
+			<!-- Held symbol, pinned to the box, animating while it stays locked. -->
+			<AnimatedSymbol {config} x={cx} y={cy} {scale} winning={true} />
 		{/if}
 		<Sprite key="lockBadge" x={cx} y={gridRow * SYMBOL_SIZE + SYMBOL_SIZE * 0.62} anchor={0.5} width={badge} height={badge} />
 	{/each}
