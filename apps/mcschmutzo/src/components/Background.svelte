@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Rectangle, Sprite } from 'pixi-svelte';
+	import { stateUi } from 'state-shared';
 
 	import { getContext } from '../game/context';
 	import SpecialMascot from './SpecialMascot.svelte';
@@ -11,8 +12,11 @@
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isPortrait = $derived(layoutType === 'portrait');
-	// Free games swap to the special (grey kitchen) background.
-	const isFreegame = $derived(context.stateGame.gameType === 'freegame');
+	// Free games swap to the special (grey kitchen) background. Keyed off the free-spin counter
+	// (shown for the whole bonus) — the per-spin gameType flips to 'respin'/'basegame' mid-bonus.
+	const isFreegame = $derived(
+		context.stateGame.gameType === 'freegame' || stateUi.freeSpinCounterShow,
+	);
 	const wideLayout = $derived(layoutType === 'desktop' || layoutType === 'landscape');
 	// Base game: the chef with the ketchup bottle. Free games: the chef salting a pot.
 	const showMascot = $derived(!isFreegame && wideLayout);
