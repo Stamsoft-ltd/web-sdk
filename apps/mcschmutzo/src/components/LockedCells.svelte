@@ -34,11 +34,11 @@
 	onMount(() => {
 		if (!import.meta.env.DEV) return;
 		const demo = [
-			{ reel: 0, row: 3 },
-			{ reel: 2, row: 3 },
-			{ reel: 3, row: 3 },
-			{ reel: 4, row: 3 },
-			{ reel: 4, row: 4 },
+			{ reel: 0, row: 3 }, // soup
+			{ reel: 1, row: 3 }, // sausage
+			{ reel: 2, row: 3 }, // cheese
+			{ reel: 3, row: 3 }, // avocado bottle (fallback)
+			{ reel: 4, row: 3 }, // burger
 		];
 		const onDev = (e: KeyboardEvent) => {
 			if (e.code !== 'Digit9') return;

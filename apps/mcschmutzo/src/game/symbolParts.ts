@@ -48,28 +48,28 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'burgerBunTop', nx: 0.5, ny: 0.2396, nw: 0.9685, nh: 0.4793, dy: -0.26, dx: 0, rot: 0.05 },
 		],
 	},
-	// Soup pot — the spoon stirs (big rotation), blobs swirl, steam wafts up.
+	// Soup pot — the spoon sits IN the soup and stirs it (sweeping rotation), blobs swirl, steam wafts.
 	H2: {
 		aspect: 1.162,
 		fit: 0.95,
-		squash: 0.02,
+		squash: 0,
 		layers: [
 			{ key: 'soupSteam', nx: 0.5103, ny: 0.2084, nw: 0.5041, nh: 0.5796, dy: -0.2, dx: 0.06, rot: 0.14 },
 			{ key: 'soupPot', nx: 0.5, ny: 0.6275, nw: 1.0072, nh: 0.8228, dy: 0, dx: 0, rot: 0 },
-			{ key: 'soupBlobs', nx: 0.5309, ny: 0.412, nw: 0.3979, nh: 0.4431, dy: -0.05, dx: 0.06, rot: 0.3 },
-			{ key: 'soupDrips', nx: 0.4845, ny: 0.5796, nw: 0.6454, nh: 0.7329, dy: 0.03, dx: 0, rot: 0.06 },
+			{ key: 'soupBlobs', nx: 0.5309, ny: 0.412, nw: 0.3979, nh: 0.4431, dy: -0.03, dx: 0.05, rot: 0.35 },
+			{ key: 'soupDrips', nx: 0.4845, ny: 0.5796, nw: 0.6454, nh: 0.7329, dy: 0.02, dx: 0, rot: 0.04 },
 			{ key: 'soupLabel', nx: 0.5103, ny: 0.7293, nw: 0.5052, nh: 0.5401, dy: 0, dx: 0, rot: 0 },
-			{ key: 'soupSpoon', nx: 0.8639, ny: 0.3904, nw: 0.2113, nh: 0.279, dy: -0.04, dx: 0.04, rot: 0.6 },
+			{ key: 'soupSpoon', nx: 0.6031, ny: 0.3641, nw: 0.1928, nh: 0.2539, dy: 0.01, dx: 0.05, rot: 0.5 },
 		],
 	},
-	// Sausage — smoke wafts up, banger sizzles.
+	// Sausage — the banger stays put in its box; the smoke curls and wafts up like it's burning.
 	H3: {
 		aspect: 0.906,
-		fit: 0.92,
-		squash: 0.05,
+		fit: 0.88,
+		squash: 0,
 		layers: [
-			{ key: 'sausageSmoke', nx: 0.6156, ny: 0.2706, nw: 0.1455, nh: 0.5412, dy: -0.24, dx: 0.1, rot: 0.2 },
-			{ key: 'sausageBody', nx: 0.4987, ny: 0.6118, nw: 1.0, nh: 0.8871, dy: 0.02, dx: 0.02, rot: 0.14 },
+			{ key: 'sausageSmoke', nx: 0.6156, ny: 0.2706, nw: 0.1455, nh: 0.5412, dy: -0.12, dx: 0.18, rot: 0.4 },
+			{ key: 'sausageBody', nx: 0.4987, ny: 0.6118, nw: 1.0, nh: 0.8871, dy: 0, dx: 0, rot: 0.015 },
 		],
 	},
 	// Onion rings — the two rings tumble/rotate apart then settle.
