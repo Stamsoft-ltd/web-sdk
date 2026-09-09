@@ -1,6 +1,7 @@
 <script lang="ts">
 	import SymbolSpine from './SymbolSpine.svelte';
 	import SymbolSprite from './SymbolSprite.svelte';
+	import AnimatedBurger from './AnimatedBurger.svelte';
 	import { getSymbolInfo } from '../game/utils';
 	import type { SymbolState, RawSymbol } from '../game/types';
 	import { getContext } from '../game/context';
@@ -11,6 +12,7 @@
 		y?: number;
 		state: SymbolState;
 		rawSymbol: RawSymbol;
+		winning?: boolean;
 		oncomplete?: () => void;
 		loop?: boolean;
 	};
@@ -19,9 +21,20 @@
 	const context = getContext();
 	const symbolInfo = $derived(getSymbolInfo({ rawSymbol: props.rawSymbol, state: props.state }));
 	const isSprite = $derived(symbolInfo.type === 'sprite');
+	// The burger (H1) is reassembled from layered parts so it can animate when winning.
+	const isBurger = $derived(isSprite && props.rawSymbol.name === 'H1');
 </script>
 
-{#if isSprite}
+{#if isBurger}
+	<AnimatedBurger
+		x={props.x}
+		y={props.y}
+		scale={symbolInfo.sizeRatios.width}
+		state={props.state}
+		winning={props.winning}
+		oncomplete={props.oncomplete}
+	/>
+{:else if isSprite}
 	<SymbolSprite {symbolInfo} x={props.x} y={props.y} oncomplete={props.oncomplete} />
 {:else}
 	<SymbolSpine

@@ -17,6 +17,7 @@
 	import Background from './Background.svelte';
 	import LoadingScreen from './LoadingScreen.svelte';
 	import BoardFrame from './BoardFrame.svelte';
+	import LockBadges from './LockBadges.svelte';
 	import Board from './Board.svelte';
 	import Anticipations from './Anticipations.svelte';
 	import Win from './Win.svelte';
@@ -216,6 +217,7 @@
 
 				<MainContainer>
 					<Board />
+					<LockBadges />
 					<Anticipations />
 					<FeatureOverlay />
 					{#if context.stateGame.paylineWins.length > 0}

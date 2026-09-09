@@ -426,6 +426,41 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/M.png', import.meta.url).href,
 	},
+	// Burger (H1) split into layers so it can be reassembled and animated part-by-part.
+	burgerBunBottom: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/burger/bun_bottom.webp', import.meta.url)
+			.href,
+	},
+	burgerPatty: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/burger/patty.webp', import.meta.url).href,
+	},
+	burgerCheese: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/burger/cheese.webp', import.meta.url).href,
+	},
+	burgerOnion: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/burger/onion.webp', import.meta.url).href,
+	},
+	burgerTomato: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/burger/tomato.webp', import.meta.url).href,
+	},
+	burgerLettuce: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/burger/lettuce.webp', import.meta.url).href,
+	},
+	burgerBunTop: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/burger/bun_top.webp', import.meta.url).href,
+	},
+	// Lock badge shown over active/locked symbols during free games.
+	lockBadge: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/lock.webp', import.meta.url).href,
+	},
 	sound: {
 		type: 'audio',
 		src: new URL('../../assets/audio/sounds.json', import.meta.url).href,

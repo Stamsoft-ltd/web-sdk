@@ -34,12 +34,13 @@
 	{#each Array(BOARD_DIMENSIONS.x) as _, reel}
 		{#each Array(BOARD_DIMENSIONS.y) as _, row}
 			{#if lockedPositionKeys.has(`${reel}:${row}`)}
+				<!-- Inset the highlight so adjacent locked cells keep a visible gap between them. -->
 				<Rectangle
-					x={reel * SYMBOL_WIDTH + 2}
-					y={row * SYMBOL_SIZE + 2}
-					width={SYMBOL_WIDTH - 4}
-					height={SYMBOL_SIZE - 4}
-					borderRadius={3}
+					x={reel * SYMBOL_WIDTH + 9}
+					y={row * SYMBOL_SIZE + 9}
+					width={SYMBOL_WIDTH - 18}
+					height={SYMBOL_SIZE - 18}
+					borderRadius={10}
 					backgroundColor={0xe8b574}
 					borderColor={0xffc383}
 					borderWidth={4}
