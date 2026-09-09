@@ -77,15 +77,23 @@
 
 	const layers = $derived.by(() => {
 		const p = animStart < 0 ? 1 : (frame - animStart) / DURATION;
+		// Whole-symbol squash-stretch (gives one-piece symbols life): stretch tall / squeeze wide.
+		const sq = (props.config.squash ?? 0) * disp * Math.sin(p * Math.PI * 2 * 1.5);
+		const sx = 1 - sq;
+		const sy = 1 + sq;
+		const cx = props.x ?? 0;
+		const cy = props.y ?? 0;
 		return props.config.layers.map((l) => {
 			const osc = Math.sin(p * Math.PI * 2 * l.freq + l.phase);
 			const wob = disp * osc;
+			const ox = (l.nx - 0.5) * w + l.dx * h * wob;
+			const oy = (l.ny - 0.5) * h - l.dy * h * wob * 3;
 			return {
 				key: l.key,
-				x: (props.x ?? 0) + (l.nx - 0.5) * w + l.dx * h * wob,
-				y: (props.y ?? 0) + (l.ny - 0.5) * h - l.dy * h * wob * 3,
-				width: l.nw * w,
-				height: l.nh * h,
+				x: cx + ox * sx,
+				y: cy + oy * sy,
+				width: l.nw * w * sx,
+				height: l.nh * h * sy,
 				rotation: l.rot * wob * 2,
 			};
 		});

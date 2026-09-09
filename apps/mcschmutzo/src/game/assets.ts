@@ -481,6 +481,20 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/soup/label.webp', import.meta.url).href,
 	},
+	// Sausage (H3) = banger + rising smoke.
+	sausageBody: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/sausage/body.webp', import.meta.url).href,
+	},
+	sausageSmoke: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/sausage/smoke.webp', import.meta.url).href,
+	},
+	// Cheese (H4) = one melty slice.
+	cheeseSlice: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/cheese/slice.webp', import.meta.url).href,
+	},
 	// Lock badge shown over active/locked symbols during free games.
 	lockBadge: {
 		type: 'sprite',
