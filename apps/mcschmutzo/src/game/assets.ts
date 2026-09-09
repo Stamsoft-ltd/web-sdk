@@ -490,6 +490,15 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/sausage/smoke.webp', import.meta.url).href,
 	},
+	// Onion rings (H5) = two leaning rings.
+	onionRing1: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/onion/ring1.webp', import.meta.url).href,
+	},
+	onionRing2: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/onion/ring2.webp', import.meta.url).href,
+	},
 	// Cheese (H4) = one melty slice.
 	cheeseSlice: {
 		type: 'sprite',

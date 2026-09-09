@@ -64,6 +64,16 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'sausageBody', nx: 0.4987, ny: 0.6118, nw: 1.0, nh: 0.8871, dy: 0.012, dx: 0.008, rot: 0.02, freq: 1.6, phase: 2.0 },
 		],
 	},
+	// Onion rings — two rings leaning together, jiggling on the one-shot.
+	H5: {
+		aspect: 1.377,
+		fit: 0.86,
+		squash: 0.03,
+		layers: [
+			{ key: 'onionRing2', nx: 0.4265, ny: 0.4379, nw: 0.8537, nh: 0.8758, dy: 0.02, dx: 0.012, rot: 0.03, freq: 1.6, phase: 0.5 },
+			{ key: 'onionRing1', nx: 0.5648, ny: 0.6082, nw: 0.8697, nh: 0.7826, dy: 0.026, dx: 0.016, rot: 0.04, freq: 1.85, phase: 2.2 },
+		],
+	},
 	// Cheese — one melty slice, so it comes alive with a squash-stretch jiggle.
 	H4: {
 		aspect: 1.259,
