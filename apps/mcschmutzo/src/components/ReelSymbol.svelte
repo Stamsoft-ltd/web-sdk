@@ -16,9 +16,9 @@
 	const symbolInfo = $derived(
 		rawSymbol ? getSymbolInfo({ rawSymbol, state: props.reelSymbol.symbolState }) : undefined,
 	);
-	// A win line over a symbol makes it come alive. Locked cells are pinned + animated separately by
-	// LockedCells.svelte (drawn on top of the board), so the board itself only reacts to wins.
-	const winning = $derived(props.reelSymbol.symbolState === 'win');
+	// The come-alive animation fires only when a symbol becomes "yellow" (locked/active), handled by
+	// LockedCells.svelte on top of the board. The board copy never animates — this game locks every
+	// winning symbol, so animating on the win too would play it twice (win, then lock).
 </script>
 
 {#if symbolInfo && rawSymbol}
@@ -31,7 +31,6 @@
 		<Symbol
 			state={props.reelSymbol.symbolState}
 			{rawSymbol}
-			{winning}
 			oncomplete={() => {
 				if (props.reelSymbol.symbolState === 'win') props.reelSymbol.oncomplete();
 				if (props.reelSymbol.symbolState === 'land') props.reelSymbol.symbolState = 'static';
