@@ -5,18 +5,12 @@
 </script>
 
 <script lang="ts">
-	import { Container, Sprite, Rectangle } from 'pixi-svelte';
+	import { Container, Sprite } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
-	import { BOARD_DIMENSIONS, SYMBOL_SIZE, SYMBOL_WIDTH } from '../game/constants';
 
 	const context = getContext();
 	const board = $derived(context.stateGameDerived.boardLayout());
-	const lockedPositionKeys = $derived(
-		new Set(
-			context.stateGame.lockedPositions.map(({ reel, row }) => `${reel}:${row - 1}`),
-		),
-	);
 
 	// board.webp bakes a 5x5 grid inside a beveled frame. Its playable grid occupies
 	// 0.9588 x 0.9548 of the image (inset ~0.0206 x 0.0224), so upscale the sprite to map
@@ -29,23 +23,6 @@
 
 <Container x={board.x} y={board.y} pivot={board.pivot} zIndex={-1}>
 	<Sprite key="boardBg" anchor={{ x: 0, y: 0 }} x={bgX} y={bgY} width={bgWidth} height={bgHeight} />
-
-	<!-- Locked cells keep their golden highlight, drawn over the board art (behind symbols). -->
-	{#each Array(BOARD_DIMENSIONS.x) as _, reel}
-		{#each Array(BOARD_DIMENSIONS.y) as _, row}
-			{#if lockedPositionKeys.has(`${reel}:${row}`)}
-				<!-- Inset the highlight so adjacent locked cells keep a visible gap between them. -->
-				<Rectangle
-					x={reel * SYMBOL_WIDTH + 9}
-					y={row * SYMBOL_SIZE + 9}
-					width={SYMBOL_WIDTH - 18}
-					height={SYMBOL_SIZE - 18}
-					borderRadius={10}
-					backgroundColor={0xe8b574}
-					borderColor={0xffc383}
-					borderWidth={4}
-				/>
-			{/if}
-		{/each}
-	{/each}
+	<!-- Locked-cell highlight + held symbol are drawn on top of the board by LockedCells.svelte so
+	     the held symbol stays pinned to its box while the reel spins. -->
 </Container>

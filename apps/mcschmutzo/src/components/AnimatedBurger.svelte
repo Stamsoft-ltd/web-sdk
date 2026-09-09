@@ -58,51 +58,49 @@
 		props.oncomplete?.();
 	});
 
-	// Fit the burger into the same box the flat H1 sprite used (SYMBOL_WIDTH×SYMBOL_SIZE × ratio),
-	// preserving its aspect so it reads at the same size as every other symbol.
-	const boxW = $derived(SYMBOL_WIDTH * (props.scale ?? 0.96));
-	const boxH = $derived(SYMBOL_SIZE * (props.scale ?? 0.96));
+	// Fit the burger into the flat H1 sprite's box, then trim a little so it reads a touch smaller
+	// than the cell (the reassembled art has no built-in padding, unlike the other symbol PNGs).
+	const FIT = 0.82;
+	const boxW = $derived(SYMBOL_WIDTH * (props.scale ?? 0.96) * FIT);
+	const boxH = $derived(SYMBOL_SIZE * (props.scale ?? 0.96) * FIT);
 	const h = $derived(Math.min(boxH, boxW / ASPECT));
 	const w = $derived(h * ASPECT);
 
-	// Idle clock + eased amplitude. Kept as plain locals (not $state) so the rAF loop can update them
-	// without retriggering effects; `frame` is the single reactive tick the layer math reads.
-	let t = 0;
-	let amp = 0;
-	let holdUntil = 0;
-	let frame = $state(0);
+	// One-shot "come alive" animation: a damped wobble that plays ONCE each time the symbol becomes
+	// active (a win line lands, or it first locks), then settles to rest — it does not loop.
+	const DURATION = 900; // ms
+	let animStart = -1; // performance.now() of the current play, -1 when idle
+	let frame = $state(0); // reactive tick driving the layer math
+	let disp = 0; // 0..1 current displacement envelope
 
-	// A win line only holds the 'win' state briefly (oncomplete resolves at once), so latch a minimum
-	// animation window whenever `winning` rises. Locked cells keep `winning` true the whole time.
-	// The loop only runs while there's motion to show, so idle burgers cost nothing.
-	let running = $state(false);
+	// Fire on the rising edge of `winning`.
+	let prevWinning = false;
 	$effect(() => {
-		if (props.winning) {
-			holdUntil = performance.now() + 1100;
-			running = true;
-		}
+		const now = props.winning ?? false;
+		if (now && !prevWinning) play();
+		prevWinning = now;
 	});
 
+	let running = $state(false);
+	function play() {
+		animStart = performance.now();
+		if (!running) running = true;
+	}
 	$effect(() => {
 		if (!running) return;
 		let raf = 0;
-		let last = 0;
 		const loop = (ts: number) => {
-			if (!last) last = ts;
-			const dt = Math.min(0.05, (ts - last) / 1000);
-			last = ts;
-			t += dt;
-			const active = props.winning || ts < holdUntil;
-			const target = active ? 1 : 0;
-			const rate = target > amp ? dt * 9 : dt * 3; // quick to wake, slow to settle
-			amp += (target - amp) * Math.min(1, rate);
-			frame = t; // one reactive write per frame drives the layer math
-			if (!active && amp < 0.002) {
-				amp = 0;
-				frame = t;
-				running = false; // settle to rest and stop the loop
+			const p = animStart < 0 ? 1 : (ts - animStart) / DURATION;
+			if (p >= 1) {
+				disp = 0;
+				frame = ts;
+				animStart = -1;
+				running = false; // rest until the next activation
 				return;
 			}
+			// decaying oscillation: a couple of springy bounces that fade out
+			disp = Math.exp(-3.2 * p) * (1 - p);
+			frame = ts;
 			raf = requestAnimationFrame(loop);
 		};
 		raf = requestAnimationFrame(loop);
@@ -110,17 +108,18 @@
 	});
 
 	const layers = $derived.by(() => {
-		const time = frame; // reactive tick — recomputes the layout each animated frame
+		const p = animStart < 0 ? 1 : (frame - animStart) / DURATION;
 		return LAYERS.map((l) => {
-			const wob = amp * Math.sin(time * l.freq + l.phase);
-			const wob2 = amp * Math.sin(time * l.freq * 0.73 + l.phase * 1.3);
+			// each layer oscillates a couple of times over the one-shot, offset by its phase
+			const osc = Math.sin(p * Math.PI * 2 * l.freq + l.phase);
+			const wob = disp * osc;
 			return {
 				key: l.key,
-				x: (props.x ?? 0) + (l.nx - 0.5) * w + l.dx * h * wob2,
-				y: (props.y ?? 0) + (l.ny - 0.5) * h - l.dy * h * wob,
+				x: (props.x ?? 0) + (l.nx - 0.5) * w + l.dx * h * wob,
+				y: (props.y ?? 0) + (l.ny - 0.5) * h - l.dy * h * wob * 3,
 				width: l.nw * w,
 				height: l.nh * h,
-				rotation: l.rot * wob,
+				rotation: l.rot * wob * 2,
 			};
 		});
 	});

@@ -22,7 +22,7 @@
 	const symbolInfo = $derived(getSymbolInfo({ rawSymbol: props.rawSymbol, state: props.state }));
 	const isSprite = $derived(symbolInfo.type === 'sprite');
 	// The burger (H1) is reassembled from layered parts so it can animate when winning.
-	const isBurger = $derived(isSprite && props.rawSymbol.name === 'H1');
+	const isBurger = $derived(isSprite && props.rawSymbol?.name === 'H1');
 </script>
 
 {#if isBurger}
