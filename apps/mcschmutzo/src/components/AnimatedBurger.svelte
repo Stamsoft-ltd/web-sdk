@@ -6,7 +6,7 @@
 	// Layout is baked from the source parts (see scratchpad/assemble.py): the assembled burger's
 	// tight bounding box is `ASPECT` wide-to-tall, and every layer is placed by its normalized
 	// centre (nx, ny) and size (nw, nh) inside that box, drawn back-to-front.
-	const ASPECT = 1.989;
+	const ASPECT = 1.077;
 	type Layer = {
 		key: string;
 		nx: number;
@@ -21,14 +21,15 @@
 		phase: number;
 	};
 	const LAYERS: Layer[] = [
-		// back -> front
-		{ key: 'burgerBunBottom', nx: 0.5006, ny: 0.7523, nw: 0.8879, nh: 0.4906, dy: 0.006, dx: 0, rot: 0, freq: 1.0, phase: 0.0 },
-		{ key: 'burgerPatty', nx: 0.4997, ny: 0.685, nw: 0.8886, nh: 0.6057, dy: 0.012, dx: 0, rot: 0.006, freq: 1.15, phase: 0.6 },
-		{ key: 'burgerCheese', nx: 0.5, ny: 0.7274, nw: 1.0, nh: 0.5451, dy: 0.018, dx: 0.006, rot: 0.01, freq: 1.35, phase: 1.1 },
-		{ key: 'burgerOnion', nx: 0.4985, ny: 0.6935, nw: 0.8752, nh: 0.4094, dy: 0.022, dx: 0.01, rot: 0.014, freq: 1.5, phase: 1.9 },
-		{ key: 'burgerTomato', nx: 0.5003, ny: 0.7159, nw: 0.9068, nh: 0.4712, dy: 0.026, dx: 0.008, rot: 0.012, freq: 1.7, phase: 2.6 },
-		{ key: 'burgerLettuce', nx: 0.5, ny: 0.6075, nw: 0.9659, nh: 0.4361, dy: 0.03, dx: 0.02, rot: 0.02, freq: 2.1, phase: 3.4 },
-		{ key: 'burgerBunTop', nx: 0.5, ny: 0.3713, nw: 0.8118, nh: 0.7426, dy: 0.05, dx: 0.004, rot: 0.01, freq: 1.25, phase: 4.2 },
+		// back -> front. Layout fans the parts into the original burger's visible bands so every
+		// layer shows (bun / lettuce / tomato / onion / cheese / patty / bottom bun).
+		{ key: 'burgerBunBottom', nx: 0.5, ny: 0.8587, nw: 0.9453, nh: 0.2826, dy: 0.004, dx: 0, rot: 0, freq: 1.0, phase: 0.0 },
+		{ key: 'burgerPatty', nx: 0.5, ny: 0.7389, nw: 1.0, nh: 0.3694, dy: 0.008, dx: 0, rot: 0.004, freq: 1.15, phase: 0.6 },
+		{ key: 'burgerCheese', nx: 0.5, ny: 0.662, nw: 0.9435, nh: 0.2786, dy: 0.012, dx: 0.005, rot: 0.008, freq: 1.35, phase: 1.1 },
+		{ key: 'burgerOnion', nx: 0.5, ny: 0.6191, nw: 0.7322, nh: 0.1847, dy: 0.016, dx: 0.008, rot: 0.01, freq: 1.5, phase: 1.9 },
+		{ key: 'burgerTomato', nx: 0.5, ny: 0.5921, nw: 0.8276, nh: 0.2327, dy: 0.018, dx: 0.006, rot: 0.01, freq: 1.7, phase: 2.6 },
+		{ key: 'burgerLettuce', nx: 0.5, ny: 0.5092, nw: 0.8981, nh: 0.2197, dy: 0.024, dx: 0.016, rot: 0.016, freq: 2.1, phase: 3.4 },
+		{ key: 'burgerBunTop', nx: 0.5, ny: 0.2396, nw: 0.9685, nh: 0.4793, dy: 0.03, dx: 0.003, rot: 0.008, freq: 1.2, phase: 4.2 },
 	];
 </script>
 
@@ -57,15 +58,12 @@
 		props.oncomplete?.();
 	});
 
-	// Fit the burger to the cell by width (it's a wide, flat shape); a hair over 1 so it reads as
-	// prominently as the other symbols.
-	const FIT = 1.14;
-	const bw = $derived(SYMBOL_WIDTH * (props.scale ?? 0.96) * FIT);
-	const bh = $derived(bw / ASPECT);
-	// Keep vertical footprint within the cell.
-	const clampScale = $derived(Math.min(1, (SYMBOL_SIZE * (props.scale ?? 0.96)) / bh));
-	const w = $derived(bw * clampScale);
-	const h = $derived(bh * clampScale);
+	// Fit the burger into the same box the flat H1 sprite used (SYMBOL_WIDTH×SYMBOL_SIZE × ratio),
+	// preserving its aspect so it reads at the same size as every other symbol.
+	const boxW = $derived(SYMBOL_WIDTH * (props.scale ?? 0.96));
+	const boxH = $derived(SYMBOL_SIZE * (props.scale ?? 0.96));
+	const h = $derived(Math.min(boxH, boxW / ASPECT));
+	const w = $derived(h * ASPECT);
 
 	// Idle clock + eased amplitude. Kept as plain locals (not $state) so the rAF loop can update them
 	// without retriggering effects; `frame` is the single reactive tick the layer math reads.
