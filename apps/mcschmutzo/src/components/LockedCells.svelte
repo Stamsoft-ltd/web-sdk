@@ -28,10 +28,10 @@
 	onMount(() => {
 		if (!import.meta.env.DEV) return;
 		const demo = [
+			{ reel: 0, row: 3 },
 			{ reel: 2, row: 3 },
 			{ reel: 3, row: 3 },
 			{ reel: 4, row: 3 },
-			{ reel: 3, row: 4 },
 			{ reel: 4, row: 4 },
 		];
 		const onDev = (e: KeyboardEvent) => {

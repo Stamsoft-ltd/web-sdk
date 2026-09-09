@@ -456,6 +456,31 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/burger/bun_top.webp', import.meta.url).href,
 	},
+	// Soup pot (H2) split into layers (pot + soup / blobs / steam / drips / spoon / label).
+	soupPot: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/soup/pot.webp', import.meta.url).href,
+	},
+	soupBlobs: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/soup/blobs.webp', import.meta.url).href,
+	},
+	soupSteam: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/soup/steam.webp', import.meta.url).href,
+	},
+	soupDrips: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/soup/drips.webp', import.meta.url).href,
+	},
+	soupSpoon: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/soup/spoon.webp', import.meta.url).href,
+	},
+	soupLabel: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/soup/label.webp', import.meta.url).href,
+	},
 	// Lock badge shown over active/locked symbols during free games.
 	lockBadge: {
 		type: 'sprite',

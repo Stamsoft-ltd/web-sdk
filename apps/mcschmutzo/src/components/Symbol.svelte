@@ -1,8 +1,9 @@
 <script lang="ts">
 	import SymbolSpine from './SymbolSpine.svelte';
 	import SymbolSprite from './SymbolSprite.svelte';
-	import AnimatedBurger from './AnimatedBurger.svelte';
+	import AnimatedSymbol from './AnimatedSymbol.svelte';
 	import { getSymbolInfo } from '../game/utils';
+	import { SYMBOL_PARTS } from '../game/symbolParts';
 	import type { SymbolState, RawSymbol } from '../game/types';
 	import { getContext } from '../game/context';
 	import { BitmapText } from 'pixi-svelte';
@@ -21,12 +22,13 @@
 	const context = getContext();
 	const symbolInfo = $derived(getSymbolInfo({ rawSymbol: props.rawSymbol, state: props.state }));
 	const isSprite = $derived(symbolInfo.type === 'sprite');
-	// The burger (H1) is reassembled from layered parts so it can animate when winning.
-	const isBurger = $derived(isSprite && props.rawSymbol?.name === 'H1');
+	// Some symbols are reassembled from layered parts so they can animate when winning/locked.
+	const partsConfig = $derived(isSprite ? SYMBOL_PARTS[props.rawSymbol?.name ?? ''] : undefined);
 </script>
 
-{#if isBurger}
-	<AnimatedBurger
+{#if partsConfig}
+	<AnimatedSymbol
+		config={partsConfig}
 		x={props.x}
 		y={props.y}
 		scale={symbolInfo.sizeRatios.width}
