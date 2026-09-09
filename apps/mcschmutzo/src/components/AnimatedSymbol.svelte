@@ -6,10 +6,11 @@
 	import type { SymbolPartsConfig } from '../game/symbolParts';
 	import type { SymbolState } from '../game/types';
 
-	// A symbol reassembled from layered part sprites (see symbolParts.ts). When it becomes active
-	// (locks / wins), it plays a single "come alive" pass — each layer travels out along its own
-	// (dx, dy) offset and rotates by `rot`, then returns (a smooth out-and-back), so e.g. the burger
-	// separates and reassembles, the spoon stirs, a cap/straw rotates. It plays ONCE, then rests.
+	// A symbol reassembled from layered part sprites (see symbolParts.ts). While it is active
+	// (locked / winning — "yellow"), it keeps animating on a loop: each layer travels out along its
+	// own (dx, dy) offset and rotates by `rot`, then back, over and over (burger separates and
+	// reassembles, spoon stirs, cap/straw rotates, rings tumble). It runs until the symbol is no
+	// longer active (the next turn clears the lock), then settles to rest.
 
 	type Props = {
 		config: SymbolPartsConfig;
@@ -34,34 +35,30 @@
 	const h = $derived(Math.min(boxH, boxW / props.config.aspect));
 	const w = $derived(h * props.config.aspect);
 
-	const DURATION = 1150; // ms
+	const PERIOD = 1400; // ms per loop cycle (out and back)
 	// Everything the layer math reads is $state so the render tracks the animation reliably.
 	let clock = $state(0); // rAF timestamp
-	let animStart = $state(-1); // start of the current play (-1 = at rest)
+	let startTime = $state(-1); // when the active loop began (-1 = at rest)
 	let running = $state(false);
-	let prevWinning = false;
 
-	function play() {
-		animStart = performance.now();
-		clock = animStart;
-		running = true;
-	}
-	// Fire once on the rising edge of `winning`.
+	// Run the loop for as long as the symbol is active; stop (settle) when it isn't.
 	$effect(() => {
-		const now = props.winning ?? false;
-		if (now && !prevWinning) play();
-		prevWinning = now;
+		if (props.winning) {
+			if (!running) {
+				startTime = performance.now();
+				clock = startTime;
+				running = true;
+			}
+		} else if (running) {
+			running = false;
+			startTime = -1;
+		}
 	});
 	$effect(() => {
 		if (!running) return;
 		let raf = 0;
 		const loop = (ts: number) => {
 			clock = ts;
-			if (animStart >= 0 && ts - animStart >= DURATION) {
-				animStart = -1; // settle to rest
-				running = false; // stop the loop until the next activation
-				return;
-			}
 			raf = requestAnimationFrame(loop);
 		};
 		raf = requestAnimationFrame(loop);
@@ -69,9 +66,10 @@
 	});
 
 	const layers = $derived.by(() => {
-		const p = animStart < 0 ? 1 : Math.min(1, Math.max(0, (clock - animStart) / DURATION));
-		// Out-and-back: 0 → 1 → 0, with a touch of overshoot near the end so it "clicks" back.
-		const env = animStart < 0 ? 0 : Math.sin(Math.PI * p) * (1 + 0.12 * Math.sin(Math.PI * 2 * p));
+		const active = running && startTime >= 0;
+		const frac = active ? (((clock - startTime) / PERIOD) % 1) : 0;
+		// Smooth loop 0 → 1 → 0 with zero velocity at the seam (no jerk between cycles).
+		const env = active ? (1 - Math.cos(Math.PI * 2 * frac)) / 2 : 0;
 		const sq = (props.config.squash ?? 0) * env;
 		const sx = 1 - sq;
 		const sy = 1 + sq;
