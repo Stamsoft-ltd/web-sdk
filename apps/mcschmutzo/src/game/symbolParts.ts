@@ -32,7 +32,24 @@ export const fallbackConfig = (assetKey: string): SymbolPartsConfig => ({
 	layers: [{ key: assetKey, nx: 0.5, ny: 0.5, nw: 1, nh: 1, dx: 0, dy: -0.05, rot: 0.08 }],
 });
 
+// The five sauce bottles share one structure: body (+ splat + label) with the cap split off at the
+// neck so it can rotate about its base while the bottle gently squeezes.
+const bottle = (n: string): SymbolPartsConfig => ({
+	aspect: 1.0928,
+	fit: 0.84,
+	squash: 0.05,
+	layers: [
+		{ key: `bottle${n}Body`, nx: 0.5, ny: 0.5, nw: 1, nh: 1, dx: 0, dy: 0, rot: 0 },
+		{ key: `bottle${n}Cap`, nx: 0.5, ny: 0.29, nw: 1, nh: 0.58, dx: 0, dy: 0, rot: 0.4 },
+	],
+});
+
 export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
+	L1: bottle('L1'),
+	L2: bottle('L2'),
+	L3: bottle('L3'),
+	L4: bottle('L4'),
+	L5: bottle('L5'),
 	// Burger — the stack separates (bun up, bottom down, fillings fan out) then reassembles.
 	H1: {
 		aspect: 1.077,

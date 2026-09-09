@@ -504,6 +504,17 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/cheese/slice.webp', import.meta.url).href,
 	},
+	// Sauce bottles (L1-L5) = body (+ splat + label) with the cap split off so it can rotate.
+	bottleL1Body: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L1_body.webp', import.meta.url).href },
+	bottleL1Cap: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L1_cap.webp', import.meta.url).href },
+	bottleL2Body: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L2_body.webp', import.meta.url).href },
+	bottleL2Cap: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L2_cap.webp', import.meta.url).href },
+	bottleL3Body: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L3_body.webp', import.meta.url).href },
+	bottleL3Cap: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L3_cap.webp', import.meta.url).href },
+	bottleL4Body: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L4_body.webp', import.meta.url).href },
+	bottleL4Cap: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L4_cap.webp', import.meta.url).href },
+	bottleL5Body: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L5_body.webp', import.meta.url).href },
+	bottleL5Cap: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L5_cap.webp', import.meta.url).href },
 	// Lock badge shown over active/locked symbols during free games.
 	lockBadge: {
 		type: 'sprite',

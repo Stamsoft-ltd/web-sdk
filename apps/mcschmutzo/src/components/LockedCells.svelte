@@ -35,9 +35,9 @@
 		if (!import.meta.env.DEV) return;
 		const demo = [
 			{ reel: 0, row: 3 }, // soup
-			{ reel: 1, row: 3 }, // sausage
+			{ reel: 1, row: 2 }, // mayo bottle
 			{ reel: 2, row: 3 }, // cheese
-			{ reel: 3, row: 3 }, // avocado bottle (fallback)
+			{ reel: 3, row: 2 }, // BBQ bottle
 			{ reel: 4, row: 3 }, // burger
 		];
 		const onDev = (e: KeyboardEvent) => {
