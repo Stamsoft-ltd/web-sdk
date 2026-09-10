@@ -29,7 +29,10 @@
 	);
 	const badge = $derived(Math.min(SYMBOL_WIDTH, SYMBOL_SIZE) * 0.34);
 
-	// DEV preview (key 9): toggle a locked block to inspect the pinned cells + burger animation.
+	// DEV previews:
+	//   key 9 — toggle a small mixed demo row.
+	//   key 0 — "gallery": put one of every symbol type on the board and lock them all, so every
+	//           animation can be checked at once without hunting for symbols.
 	import { onMount } from 'svelte';
 	onMount(() => {
 		if (!import.meta.env.DEV) return;
@@ -41,9 +44,25 @@
 			{ reel: 4, row: 3 }, // burger
 		];
 		const onDev = (e: KeyboardEvent) => {
-			if (e.code !== 'Digit9') return;
-			context.stateGame.lockedPositions =
-				context.stateGame.lockedPositions.length > 0 ? [] : demo;
+			if (e.code === 'Digit9') {
+				context.stateGame.lockedPositions =
+					context.stateGame.lockedPositions.length > 0 ? [] : demo;
+			} else if (e.code === 'Digit0') {
+				if (context.stateGame.lockedPositions.length > 0) {
+					context.stateGame.lockedPositions = [];
+					return;
+				}
+				const types = ['H1', 'H2', 'H3', 'H4', 'H5', 'L1', 'L2', 'L3', 'L4', 'L5', 'W', 'S', 'M'];
+				const all: { reel: number; row: number }[] = [];
+				context.stateGame.lockSymbol = undefined;
+				context.stateGame.board.forEach((reel, r) => {
+					for (let vr = 0; vr < 5; vr++) {
+						reel.reelState.symbols[vr + 1].rawSymbol = { name: types[(r * 5 + vr) % types.length] };
+						all.push({ reel: r, row: vr + 1 });
+					}
+				});
+				context.stateGame.lockedPositions = all;
+			}
 		};
 		window.addEventListener('keydown', onDev);
 		return () => window.removeEventListener('keydown', onDev);

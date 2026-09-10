@@ -23,6 +23,26 @@
 	const showSpecialMascot = $derived(isFreegame && wideLayout);
 	const mascotHeight = $derived(canvas.height * 0.6);
 	const mascotWidth = $derived(mascotHeight * (1019 / 1336));
+
+	// Subtle idle so the chef looks alive: a slow breath, a gentle bob and sway. Runs only while a
+	// mascot is on screen. (No separate eye art, so this is a whole-figure motion.)
+	let idle = $state(0);
+	$effect(() => {
+		if (!showMascot) return;
+		let raf = 0;
+		let start = 0;
+		const loop = (ts: number) => {
+			if (!start) start = ts;
+			idle = (ts - start) / 1000;
+			raf = requestAnimationFrame(loop);
+		};
+		raf = requestAnimationFrame(loop);
+		return () => cancelAnimationFrame(raf);
+	});
+	const breatheW = $derived(1 + 0.008 * Math.sin(idle * 1.7));
+	const breatheH = $derived(1 + 0.016 * Math.sin(idle * 1.7));
+	const mascotBob = $derived(Math.sin(idle * 1.25) * canvas.height * 0.006);
+	const mascotSway = $derived(Math.sin(idle * 0.85) * 0.012);
 	const key = $derived(isFreegame ? 'backgroundWideBonus' : 'backgroundBase');
 	const portraitKey = $derived(isFreegame ? 'backgroundPortraitBonus' : 'backgroundPortrait');
 	const cover = $derived.by(() => {
@@ -70,10 +90,11 @@
 	<Sprite
 		key="mascot"
 		x={canvas.width * 0.86}
-		y={canvas.height * 0.59}
+		y={canvas.height * 0.59 + mascotBob}
 		anchor={0.5}
-		width={mascotWidth}
-		height={mascotHeight}
+		width={mascotWidth * breatheW}
+		height={mascotHeight * breatheH}
+		rotation={mascotSway}
 		zIndex={0}
 	/>
 {/if}

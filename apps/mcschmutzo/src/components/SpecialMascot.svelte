@@ -25,17 +25,24 @@
 	// Looping fall — each grain is offset in phase so the stream is continuous.
 	const COUNT = 40;
 	let phase = $state(0);
+	let idle = $state(0); // seconds — slow idle for the chef's breath/sway
 	$effect(() => {
 		let raf = 0;
 		let start = 0;
 		const loop = (ts: number) => {
 			if (!start) start = ts;
 			phase = ((((ts - start) / 1200) % 1) + 1) % 1;
+			idle = (ts - start) / 1000;
 			raf = requestAnimationFrame(loop);
 		};
 		raf = requestAnimationFrame(loop);
 		return () => cancelAnimationFrame(raf);
 	});
+	// Subtle "alive" idle: a slow breath, gentle bob and sway.
+	const breatheW = $derived(1 + 0.008 * Math.sin(idle * 1.7));
+	const breatheH = $derived(1 + 0.016 * Math.sin(idle * 1.7));
+	const guyBob = $derived(Math.sin(idle * 1.25) * guyHeight * 0.01);
+	const guySway = $derived(Math.sin(idle * 0.85) * 0.013);
 	const grains = $derived(
 		Array.from({ length: COUNT }, (_, i) => {
 			const p = (phase + i / COUNT) % 1;
@@ -57,10 +64,11 @@
 <Sprite
 	key="specialGuy"
 	x={cx}
-	y={guyY}
+	y={guyY + guyBob}
 	anchor={0.5}
-	width={guyWidth}
-	height={guyHeight}
+	width={guyWidth * breatheW}
+	height={guyHeight * breatheH}
+	rotation={guySway}
 	zIndex={0}
 />
 {#each grains as g}
