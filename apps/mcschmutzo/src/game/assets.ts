@@ -384,6 +384,19 @@ export default {
 		src: new URL('../../assets/mcschmutzo/special-pot.webp', import.meta.url).href,
 		preload: true,
 	},
+	// Special chef with pupils removed + movable pupils (eyes dart while he stays still).
+	specialBase: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_base.webp', import.meta.url).href,
+	},
+	specialPupilL: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_pupilL.webp', import.meta.url).href,
+	},
+	specialPupilR: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_pupilR.webp', import.meta.url).href,
+	},
 	mcschmutzoLogo: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/logo.png', import.meta.url).href,

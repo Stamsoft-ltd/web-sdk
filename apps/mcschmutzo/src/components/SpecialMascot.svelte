@@ -2,6 +2,7 @@
 	import { Rectangle, Sprite } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
+	import AnimatedGuy from './AnimatedGuy.svelte';
 
 	const context = getContext();
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
@@ -25,24 +26,22 @@
 	// Looping fall — each grain is offset in phase so the stream is continuous.
 	const COUNT = 40;
 	let phase = $state(0);
-	let idle = $state(0); // seconds — slow idle for the chef's breath/sway
 	$effect(() => {
 		let raf = 0;
 		let start = 0;
 		const loop = (ts: number) => {
 			if (!start) start = ts;
 			phase = ((((ts - start) / 1200) % 1) + 1) % 1;
-			idle = (ts - start) / 1000;
 			raf = requestAnimationFrame(loop);
 		};
 		raf = requestAnimationFrame(loop);
 		return () => cancelAnimationFrame(raf);
 	});
-	// Subtle "alive" idle: a slow breath, gentle bob and sway.
-	const breatheW = $derived(1 + 0.008 * Math.sin(idle * 1.7));
-	const breatheH = $derived(1 + 0.016 * Math.sin(idle * 1.7));
-	const guyBob = $derived(Math.sin(idle * 1.25) * guyHeight * 0.01);
-	const guySway = $derived(Math.sin(idle * 0.85) * 0.013);
+	// Chef stands still; only his eyes move (AnimatedGuy).
+	const specialPupils = [
+		{ key: 'specialPupilL', nx: 0.4259, ny: 0.3212, nw: 0.0593, nh: 0.0624 },
+		{ key: 'specialPupilR', nx: 0.5247, ny: 0.3196, nw: 0.0755, nh: 0.0641 },
+	];
 	const grains = $derived(
 		Array.from({ length: COUNT }, (_, i) => {
 			const p = (phase + i / COUNT) % 1;
@@ -61,15 +60,14 @@
 </script>
 
 <!-- Chef (behind) salting the pot (in front), with a falling stream of salt grains. -->
-<Sprite
-	key="specialGuy"
+<AnimatedGuy
+	baseKey="specialBase"
 	x={cx}
-	y={guyY + guyBob}
-	anchor={0.5}
-	width={guyWidth * breatheW}
-	height={guyHeight * breatheH}
-	rotation={guySway}
+	y={guyY}
+	width={guyWidth}
+	height={guyHeight}
 	zIndex={0}
+	pupils={specialPupils}
 />
 {#each grains as g}
 	<Rectangle
