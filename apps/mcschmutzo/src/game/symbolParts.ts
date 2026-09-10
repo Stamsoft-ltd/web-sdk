@@ -73,16 +73,16 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 	// small circle; bubbles pop on the surface. Draw order: steam, pot, spoon, blobs (over the bowl),
 	// drips, label.
 	H2: {
-		aspect: 1.162,
+		aspect: 1.2565,
 		fit: 0.95,
 		squash: 0,
 		layers: [
-			{ key: 'soupSteam', nx: 0.5103, ny: 0.2084, nw: 0.5041, nh: 0.5796, rise: 0.26, sway: 0.05, grow: 0.5 },
-			{ key: 'soupPot', nx: 0.5, ny: 0.6275, nw: 1.0072, nh: 0.8228 },
-			{ key: 'soupSpoon', nx: 0.5753, ny: 0.424, nw: 0.1773, nh: 0.2347, orbit: 0.03, rot: 0.1 },
-			{ key: 'soupBlobs', nx: 0.5309, ny: 0.412, nw: 0.3979, nh: 0.4431, pop: 0.4, rot: 0.12 },
-			{ key: 'soupDrips', nx: 0.4845, ny: 0.5796, nw: 0.6454, nh: 0.7329, dy: 0.015, rot: 0.03 },
-			{ key: 'soupLabel', nx: 0.5103, ny: 0.7293, nw: 0.5052, nh: 0.5401 },
+			{ key: 'soupSteam', nx: 0.5103, ny: 0.2021, nw: 0.3784, nh: 0.4702, rise: 0.24, sway: 0.05, grow: 0.4 },
+			{ key: 'soupPot', nx: 0.5, ny: 0.5972, nw: 1.0072, nh: 0.8899 },
+			{ key: 'soupSpoon', nx: 0.5732, ny: 0.3873, nw: 0.1773, nh: 0.2539, orbit: 0.03, rot: 0.1 },
+			{ key: 'soupBlobs', nx: 0.5309, ny: 0.364, nw: 0.3979, nh: 0.4793, pop: 0.4, rot: 0.12 },
+			{ key: 'soupDrips', nx: 0.4845, ny: 0.5453, nw: 0.6454, nh: 0.7927, dy: 0.015, rot: 0.03 },
+			{ key: 'soupLabel', nx: 0.5103, ny: 0.7073, nw: 0.5052, nh: 0.5842 },
 		],
 	},
 	// Sausage — the banger stays put in its box; the smoke curls and wafts up like it's burning.
@@ -91,7 +91,7 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		fit: 0.88,
 		squash: 0,
 		layers: [
-			{ key: 'sausageSmoke', nx: 0.6156, ny: 0.2706, nw: 0.1455, nh: 0.5412, rise: 0.28, sway: 0.06, grow: 0.5 },
+			{ key: 'sausageSmoke', nx: 0.6156, ny: 0.32, nw: 0.11, nh: 0.42, rise: 0.24, sway: 0.06, grow: 0.4 },
 			// Sizzles in place — a small jiggle + pulse, kept small so it never leaves the box.
 			{ key: 'sausageBody', nx: 0.4987, ny: 0.6118, nw: 1.0, nh: 0.8871, dy: 0.012, dx: 0.01, rot: 0.03, pop: 0.03 },
 		],
