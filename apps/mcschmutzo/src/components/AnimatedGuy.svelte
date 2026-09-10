@@ -36,12 +36,12 @@
 	// only the dark dot shifts a little — the face isn't disturbed.
 	const KF = [
 		{ t: 0.0, x: 0, y: 0 },
-		{ t: 0.46, x: 0, y: 0 },
-		{ t: 0.51, x: 0.007, y: 0.0015 }, // small glance right
-		{ t: 0.72, x: 0.007, y: 0.0015 },
-		{ t: 0.77, x: -0.003, y: 0.002 }, // small glance left
-		{ t: 0.92, x: -0.003, y: 0.002 },
-		{ t: 0.97, x: 0, y: 0 },
+		{ t: 0.48, x: 0, y: 0 },
+		{ t: 0.53, x: 0.0035, y: 0.001 }, // tiny glance right
+		{ t: 0.73, x: 0.0035, y: 0.001 },
+		{ t: 0.78, x: -0.0015, y: 0.0012 }, // tiny glance left
+		{ t: 0.93, x: -0.0015, y: 0.0012 },
+		{ t: 0.98, x: 0, y: 0 },
 		{ t: 1.0, x: 0, y: 0 },
 	];
 	const glance = $derived.by(() => {
