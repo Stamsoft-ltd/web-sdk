@@ -358,6 +358,21 @@ export default {
 		src: new URL('../../assets/mcschmutzo/mascot.png', import.meta.url).href,
 		preload: true,
 	},
+	// Base chef with the pupils removed (filled white) + the two pupils as movable sprites, so his
+	// eyes can dart while the figure stays still.
+	mascotBase: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mascot_base.webp', import.meta.url).href,
+		preload: true,
+	},
+	mascotPupilL: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mascot_pupilL.webp', import.meta.url).href,
+	},
+	mascotPupilR: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mascot_pupilR.webp', import.meta.url).href,
+	},
 	// Special (free-games) mascot: the chef salting a pot — guy behind, pot in front.
 	specialGuy: {
 		type: 'sprite',

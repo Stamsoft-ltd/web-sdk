@@ -4,6 +4,7 @@
 
 	import { getContext } from '../game/context';
 	import SpecialMascot from './SpecialMascot.svelte';
+	import AnimatedGuy from './AnimatedGuy.svelte';
 
 	const context = getContext();
 	const aspect = 1678 / 937;
@@ -23,26 +24,11 @@
 	const showSpecialMascot = $derived(isFreegame && wideLayout);
 	const mascotHeight = $derived(canvas.height * 0.6);
 	const mascotWidth = $derived(mascotHeight * (1019 / 1336));
-
-	// Subtle idle so the chef looks alive: a slow breath, a gentle bob and sway. Runs only while a
-	// mascot is on screen. (No separate eye art, so this is a whole-figure motion.)
-	let idle = $state(0);
-	$effect(() => {
-		if (!showMascot) return;
-		let raf = 0;
-		let start = 0;
-		const loop = (ts: number) => {
-			if (!start) start = ts;
-			idle = (ts - start) / 1000;
-			raf = requestAnimationFrame(loop);
-		};
-		raf = requestAnimationFrame(loop);
-		return () => cancelAnimationFrame(raf);
-	});
-	const breatheW = $derived(1 + 0.008 * Math.sin(idle * 1.7));
-	const breatheH = $derived(1 + 0.016 * Math.sin(idle * 1.7));
-	const mascotBob = $derived(Math.sin(idle * 1.25) * canvas.height * 0.006);
-	const mascotSway = $derived(Math.sin(idle * 0.85) * 0.012);
+	// The chef stands still; only his eyes move (AnimatedGuy).
+	const mascotPupils = [
+		{ key: 'mascotPupilL', nx: 0.3494, ny: 0.3144, nw: 0.0628, nh: 0.0599 },
+		{ key: 'mascotPupilR', nx: 0.472, ny: 0.3121, nw: 0.0687, nh: 0.0599 },
+	];
 	const key = $derived(isFreegame ? 'backgroundWideBonus' : 'backgroundBase');
 	const portraitKey = $derived(isFreegame ? 'backgroundPortraitBonus' : 'backgroundPortrait');
 	const cover = $derived.by(() => {
@@ -87,15 +73,14 @@
 	<Rectangle {...canvas} backgroundColor={0x180903} alpha={0.16} zIndex={-1} />
 {/if}
 {#if showMascot}
-	<Sprite
-		key="mascot"
+	<AnimatedGuy
+		baseKey="mascotBase"
 		x={canvas.width * 0.86}
-		y={canvas.height * 0.59 + mascotBob}
-		anchor={0.5}
-		width={mascotWidth * breatheW}
-		height={mascotHeight * breatheH}
-		rotation={mascotSway}
+		y={canvas.height * 0.59}
+		width={mascotWidth}
+		height={mascotHeight}
 		zIndex={0}
+		pupils={mascotPupils}
 	/>
 {/if}
 {#if showSpecialMascot}
