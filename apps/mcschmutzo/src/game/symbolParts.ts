@@ -40,11 +40,12 @@ export const fallbackConfig = (assetKey: string): SymbolPartsConfig => ({
 const bottle = (n: string): SymbolPartsConfig => ({
 	aspect: 1.0928,
 	fit: 0.84,
-	squash: 0.05,
+	// The bottle gets squeezed (narrows + rises); no fake 2D cap rotation.
+	squash: 0.11,
 	layers: [
-		{ key: `bottle${n}Body`, nx: 0.5, ny: 0.5, nw: 1, nh: 1, dx: 0, dy: 0, rot: 0 },
-		// Cap turns about its vertical axis (unscrewing) rather than tilting.
-		{ key: `bottle${n}Cap`, nx: 0.5, ny: 0.29, nw: 1, nh: 0.58, spin: 0.9 },
+		{ key: `bottle${n}Body`, nx: 0.5, ny: 0.5, nw: 1, nh: 1 },
+		// Cap rides the squeeze and lifts a touch, as if sauce is pushed out of the nozzle.
+		{ key: `bottle${n}Cap`, nx: 0.5, ny: 0.29, nw: 1, nh: 0.58, dy: -0.05, pop: 0.06 },
 	],
 });
 
