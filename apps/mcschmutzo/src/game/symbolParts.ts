@@ -94,14 +94,14 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'sausageBody', nx: 0.4987, ny: 0.6118, nw: 1.0, nh: 0.8871, dy: 0, dx: 0, rot: 0.015 },
 		],
 	},
-	// Onion rings — the two rings tumble/rotate apart then settle.
+	// Onion rings — the two rings bounce apart and jostle (small tumble), not a flat in-plane spin.
 	H5: {
 		aspect: 1.377,
 		fit: 0.86,
-		squash: 0.03,
+		squash: 0.05,
 		layers: [
-			{ key: 'onionRing2', nx: 0.4265, ny: 0.4379, nw: 0.8537, nh: 0.8758, dy: -0.05, dx: -0.06, rot: 0.35 },
-			{ key: 'onionRing1', nx: 0.5648, ny: 0.6082, nw: 0.8697, nh: 0.7826, dy: 0.06, dx: 0.06, rot: -0.4 },
+			{ key: 'onionRing2', nx: 0.4265, ny: 0.4379, nw: 0.8537, nh: 0.8758, dy: -0.06, dx: -0.035, rot: 0.1, pop: 0.05 },
+			{ key: 'onionRing1', nx: 0.5648, ny: 0.6082, nw: 0.8697, nh: 0.7826, dy: 0.07, dx: 0.04, rot: -0.12, pop: 0.05 },
 		],
 	},
 	// Cheese — the slab jiggles while its melty drips wobble and swell (dripping).
