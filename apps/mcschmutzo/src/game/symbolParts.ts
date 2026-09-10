@@ -79,7 +79,7 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		layers: [
 			{ key: 'soupSteam', nx: 0.5103, ny: 0.2084, nw: 0.5041, nh: 0.5796, rise: 0.26, sway: 0.05, grow: 0.5 },
 			{ key: 'soupPot', nx: 0.5, ny: 0.6275, nw: 1.0072, nh: 0.8228 },
-			{ key: 'soupSpoon', nx: 0.5773, ny: 0.4216, nw: 0.1773, nh: 0.2347, orbit: 0.04, rot: 0.1 },
+			{ key: 'soupSpoon', nx: 0.5691, ny: 0.4383, nw: 0.168, nh: 0.2216, orbit: 0.03, rot: 0.1 },
 			{ key: 'soupBlobs', nx: 0.5309, ny: 0.412, nw: 0.3979, nh: 0.4431, pop: 0.4, rot: 0.12 },
 			{ key: 'soupDrips', nx: 0.4845, ny: 0.5796, nw: 0.6454, nh: 0.7329, dy: 0.015, rot: 0.03 },
 			{ key: 'soupLabel', nx: 0.5103, ny: 0.7293, nw: 0.5052, nh: 0.5401 },
@@ -92,7 +92,8 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		squash: 0,
 		layers: [
 			{ key: 'sausageSmoke', nx: 0.6156, ny: 0.2706, nw: 0.1455, nh: 0.5412, rise: 0.28, sway: 0.06, grow: 0.5 },
-			{ key: 'sausageBody', nx: 0.4987, ny: 0.6118, nw: 1.0, nh: 0.8871, dy: 0, dx: 0, rot: 0.015 },
+			// Sizzles in place — a small jiggle + pulse, kept small so it never leaves the box.
+			{ key: 'sausageBody', nx: 0.4987, ny: 0.6118, nw: 1.0, nh: 0.8871, dy: 0.012, dx: 0.01, rot: 0.03, pop: 0.03 },
 		],
 	},
 	// Onion rings — the two rings bounce apart and jostle (small tumble), not a flat in-plane spin.

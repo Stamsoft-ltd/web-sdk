@@ -94,9 +94,10 @@
 					alpha,
 				};
 			}
-			// Circular path (starts + ends at the rest position so it loops seamlessly).
+			// Circular path (starts + ends at the rest position so it loops seamlessly). Dips DOWN
+			// (into the soup) rather than up, so a stirring spoon stays submerged/hidden.
 			const orbitX = (l.orbit ?? 0) * w * Math.sin(theta);
-			const orbitY = (l.orbit ?? 0) * h * (Math.cos(theta) - 1);
+			const orbitY = (l.orbit ?? 0) * h * (1 - Math.cos(theta));
 			const ox = ((l.nx - 0.5) * w + (l.dx ?? 0) * w * env + orbitX) * sqx;
 			const oy = ((l.ny - 0.5) * h + (l.dy ?? 0) * h * env + orbitY) * sqy;
 			const pop = 1 + (l.pop ?? 0) * env; // uniform pulse
