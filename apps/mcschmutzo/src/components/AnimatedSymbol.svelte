@@ -76,23 +76,38 @@
 		const sqy = 1 + sq;
 		const cx = props.x ?? 0;
 		const cy = props.y ?? 0;
-		return props.config.layers.map((l) => {
-			// Rising smoke/steam: escapes upward off its base, wafting side to side, growing and fading
-			// as it goes — then a fresh puff starts. Visible at rest (alpha 1, at base).
+		const out: Array<{
+			id: string;
+			key: string;
+			x: number;
+			y: number;
+			width: number;
+			height: number;
+			rotation: number;
+			alpha: number;
+		}> = [];
+		for (const l of props.config.layers) {
+			// Rising smoke/steam: a continuous stream — several puffs at staggered phases each form at
+			// the base, rise + waft + grow, and fade out (bell alpha, so 0 at both ends → no visible
+			// reset). Overlapping copies keep the stream unbroken. At rest, one puff sits at the base.
 			if (l.rise) {
-				const fr = active ? frac : 0;
-				const swayX = (l.sway ?? 0) * w * Math.sin(fr * Math.PI * 3);
-				const grow = 1 + (l.grow ?? 0.4) * fr;
-				const alpha = active ? Math.max(0, 1 - fr / 0.82) : 1;
-				return {
-					key: l.key,
-					x: cx + (l.nx - 0.5) * w + swayX,
-					y: cy + (l.ny - 0.5) * h - l.rise * h * fr,
-					width: l.nw * w * grow,
-					height: l.nh * h * grow,
-					rotation: 0,
-					alpha,
-				};
+				const N = 3;
+				for (let i = 0; i < N; i++) {
+					const fr = (frac + i / N) % 1;
+					const swayX = (l.sway ?? 0) * w * Math.sin(fr * Math.PI * 3 + i * 2.1);
+					const grow = 1 + (l.grow ?? 0.4) * fr;
+					out.push({
+						id: `${l.key}-${i}`,
+						key: l.key,
+						x: cx + (l.nx - 0.5) * w + swayX,
+						y: cy + (l.ny - 0.5) * h - l.rise * h * (active ? fr : 0),
+						width: l.nw * w * grow,
+						height: l.nh * h * grow,
+						rotation: 0,
+						alpha: active ? Math.sin(Math.PI * fr) : i === 0 ? 1 : 0,
+					});
+				}
+				continue;
 			}
 			// Circular path (starts + ends at the rest position so it loops seamlessly). Dips DOWN
 			// (into the soup) rather than up, so a stirring spoon stays submerged/hidden.
@@ -102,7 +117,8 @@
 			const oy = ((l.ny - 0.5) * h + (l.dy ?? 0) * h * env + orbitY) * sqy;
 			const pop = 1 + (l.pop ?? 0) * env; // uniform pulse
 			const spin = 1 - (l.spin ?? 0) * env; // horizontal squeeze = turn about vertical axis
-			return {
+			out.push({
+				id: l.key,
 				key: l.key,
 				x: cx + ox,
 				y: cy + oy,
@@ -110,13 +126,14 @@
 				height: l.nh * h * sqy * pop,
 				rotation: (l.rot ?? 0) * env,
 				alpha: 1,
-			};
-		});
+			});
+		}
+		return out;
 	});
 </script>
 
 <Container>
-	{#each layers as l (l.key)}
+	{#each layers as l (l.id)}
 		<Sprite
 			key={l.key}
 			x={l.x}
