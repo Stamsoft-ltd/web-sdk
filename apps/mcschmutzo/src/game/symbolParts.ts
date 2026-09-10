@@ -35,18 +35,13 @@ export const fallbackConfig = (assetKey: string): SymbolPartsConfig => ({
 	layers: [{ key: assetKey, nx: 0.5, ny: 0.5, nw: 1, nh: 1, dx: 0, dy: -0.05, rot: 0.08 }],
 });
 
-// The five sauce bottles share one structure: body (+ splat + label) with the cap split off at the
-// neck so it can rotate about its base while the bottle gently squeezes.
+// The bottle animates as ONE whole sprite (squeeze) — splitting the cap off left a visible seam and
+// showed the background through the gap, so it stays a single piece that narrows + rises.
 const bottle = (n: string): SymbolPartsConfig => ({
-	aspect: 1.0928,
-	fit: 0.84,
-	// The bottle gets squeezed (narrows + rises); no fake 2D cap rotation.
-	squash: 0.11,
-	layers: [
-		{ key: `bottle${n}Body`, nx: 0.5, ny: 0.5, nw: 1, nh: 1 },
-		// Cap rides the squeeze and lifts a touch, as if sauce is pushed out of the nozzle.
-		{ key: `bottle${n}Cap`, nx: 0.5, ny: 0.29, nw: 1, nh: 0.58, dy: -0.05, pop: 0.06 },
-	],
+	aspect: 131 / 120, // the flat sprite's footprint
+	fit: 1,
+	squash: 0.1,
+	layers: [{ key: `mc${n}`, nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.02 }],
 });
 
 export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
@@ -58,7 +53,7 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 	// Burger — the stack separates (bun up, bottom down, fillings fan out) then reassembles.
 	H1: {
 		aspect: 1.077,
-		fit: 0.82,
+		fit: 0.72,
 		squash: 0.03,
 		layers: [
 			{ key: 'burgerBunBottom', nx: 0.5, ny: 0.8587, nw: 0.9453, nh: 0.2826, dy: 0.2, dx: 0, rot: 0 },
@@ -104,14 +99,12 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'onionRing1', nx: 0.5648, ny: 0.6082, nw: 0.8697, nh: 0.7826, dy: 0.07, dx: 0.04, rot: -0.12, pop: 0.05 },
 		],
 	},
-	// Cheese — the slab jiggles while its melty drips wobble and swell (dripping).
+	// Cheese — one whole slice (drips included) that gently jiggles; splitting the drips off left a
+	// visible seam, so it stays a single piece.
 	H4: {
-		aspect: 1.2587,
-		fit: 0.9,
+		aspect: 131 / 120,
+		fit: 1,
 		squash: 0.09,
-		layers: [
-			{ key: 'cheeseSlice', nx: 0.5, ny: 0.5, nw: 1, nh: 1, rot: 0.06 },
-			{ key: 'cheeseDrips', nx: 0.5, ny: 0.5, nw: 1, nh: 1, pop: 0.16, dy: 0.02 },
-		],
+		layers: [{ key: 'mcH4', nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.02 }],
 	},
 };
