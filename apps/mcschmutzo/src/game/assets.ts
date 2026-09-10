@@ -499,10 +499,14 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/onion/ring2.webp', import.meta.url).href,
 	},
-	// Cheese (H4) = one melty slice.
+	// Cheese (H4) = slab + melty drips.
 	cheeseSlice: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/cheese/slice.webp', import.meta.url).href,
+	},
+	cheeseDrips: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/cheese/drips.webp', import.meta.url).href,
 	},
 	// Sauce bottles (L1-L5) = body (+ splat + label) with the cap split off so it can rotate.
 	bottleL1Body: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L1_body.webp', import.meta.url).href },

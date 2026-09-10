@@ -70,20 +70,26 @@
 		const frac = active ? (((clock - startTime) / PERIOD) % 1) : 0;
 		// Smooth loop 0 → 1 → 0 with zero velocity at the seam (no jerk between cycles).
 		const env = active ? (1 - Math.cos(Math.PI * 2 * frac)) / 2 : 0;
+		const theta = Math.PI * 2 * frac; // full turn per cycle — drives circular `orbit`
 		const sq = (props.config.squash ?? 0) * env;
-		const sx = 1 - sq;
-		const sy = 1 + sq;
+		const sqx = 1 - sq;
+		const sqy = 1 + sq;
 		const cx = props.x ?? 0;
 		const cy = props.y ?? 0;
 		return props.config.layers.map((l) => {
-			const ox = (l.nx - 0.5) * w + (l.dx ?? 0) * w * env;
-			const oy = (l.ny - 0.5) * h + (l.dy ?? 0) * h * env;
+			// Circular path (starts + ends at the rest position so it loops seamlessly).
+			const orbitX = (l.orbit ?? 0) * w * Math.sin(theta);
+			const orbitY = (l.orbit ?? 0) * h * (Math.cos(theta) - 1);
+			const ox = ((l.nx - 0.5) * w + (l.dx ?? 0) * w * env + orbitX) * sqx;
+			const oy = ((l.ny - 0.5) * h + (l.dy ?? 0) * h * env + orbitY) * sqy;
+			const pop = 1 + (l.pop ?? 0) * env; // uniform pulse
+			const spin = 1 - (l.spin ?? 0) * env; // horizontal squeeze = turn about vertical axis
 			return {
 				key: l.key,
-				x: cx + ox * sx,
-				y: cy + oy * sy,
-				width: l.nw * w * sx,
-				height: l.nh * h * sy,
+				x: cx + ox,
+				y: cy + oy,
+				width: l.nw * w * sqx * spin * pop,
+				height: l.nh * h * sqy * pop,
 				rotation: (l.rot ?? 0) * env,
 			};
 		});

@@ -13,7 +13,10 @@ export type SymbolPartLayer = {
 	nh: number;
 	dx?: number; // horizontal travel at peak (fraction of symbol width)
 	dy?: number; // vertical travel at peak (fraction of symbol height; +down)
-	rot?: number; // rotation swing at peak (radians)
+	rot?: number; // in-plane tilt swing at peak (radians)
+	spin?: number; // horizontal squeeze at peak — reads as turning about the vertical axis (unscrew)
+	orbit?: number; // radius of a circular path (fraction of symbol size) — e.g. a spoon stirring
+	pop?: number; // uniform scale pulse at peak — e.g. a bubble popping
 };
 
 export type SymbolPartsConfig = {
@@ -40,7 +43,8 @@ const bottle = (n: string): SymbolPartsConfig => ({
 	squash: 0.05,
 	layers: [
 		{ key: `bottle${n}Body`, nx: 0.5, ny: 0.5, nw: 1, nh: 1, dx: 0, dy: 0, rot: 0 },
-		{ key: `bottle${n}Cap`, nx: 0.5, ny: 0.29, nw: 1, nh: 0.58, dx: 0, dy: 0, rot: 0.4 },
+		// Cap turns about its vertical axis (unscrewing) rather than tilting.
+		{ key: `bottle${n}Cap`, nx: 0.5, ny: 0.29, nw: 1, nh: 0.58, spin: 0.9 },
 	],
 });
 
@@ -65,18 +69,18 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'burgerBunTop', nx: 0.5, ny: 0.2396, nw: 0.9685, nh: 0.4793, dy: -0.26, dx: 0, rot: 0.05 },
 		],
 	},
-	// Soup pot — the spoon sits IN the soup and stirs it (sweeping rotation), blobs swirl, steam wafts.
+	// Soup pot — spoon stirs a circle in the soup, bubbles pop on the surface, steam curls & wafts.
 	H2: {
 		aspect: 1.162,
 		fit: 0.95,
 		squash: 0,
 		layers: [
-			{ key: 'soupSteam', nx: 0.5103, ny: 0.2084, nw: 0.5041, nh: 0.5796, dy: -0.2, dx: 0.06, rot: 0.14 },
-			{ key: 'soupPot', nx: 0.5, ny: 0.6275, nw: 1.0072, nh: 0.8228, dy: 0, dx: 0, rot: 0 },
-			{ key: 'soupBlobs', nx: 0.5309, ny: 0.412, nw: 0.3979, nh: 0.4431, dy: -0.03, dx: 0.05, rot: 0.35 },
-			{ key: 'soupDrips', nx: 0.4845, ny: 0.5796, nw: 0.6454, nh: 0.7329, dy: 0.02, dx: 0, rot: 0.04 },
-			{ key: 'soupLabel', nx: 0.5103, ny: 0.7293, nw: 0.5052, nh: 0.5401, dy: 0, dx: 0, rot: 0 },
-			{ key: 'soupSpoon', nx: 0.6031, ny: 0.3641, nw: 0.1928, nh: 0.2539, dy: 0.01, dx: 0.05, rot: 0.5 },
+			{ key: 'soupSteam', nx: 0.5103, ny: 0.2084, nw: 0.5041, nh: 0.5796, dy: -0.05, orbit: 0.035, rot: 0.3 },
+			{ key: 'soupPot', nx: 0.5, ny: 0.6275, nw: 1.0072, nh: 0.8228 },
+			{ key: 'soupBlobs', nx: 0.5309, ny: 0.412, nw: 0.3979, nh: 0.4431, pop: 0.4, rot: 0.12 },
+			{ key: 'soupDrips', nx: 0.4845, ny: 0.5796, nw: 0.6454, nh: 0.7329, dy: 0.015, rot: 0.03 },
+			{ key: 'soupLabel', nx: 0.5103, ny: 0.7293, nw: 0.5052, nh: 0.5401 },
+			{ key: 'soupSpoon', nx: 0.6031, ny: 0.3641, nw: 0.1928, nh: 0.2539, orbit: 0.055, rot: 0.12 },
 		],
 	},
 	// Sausage — the banger stays put in its box; the smoke curls and wafts up like it's burning.
@@ -99,13 +103,14 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'onionRing1', nx: 0.5648, ny: 0.6082, nw: 0.8697, nh: 0.7826, dy: 0.06, dx: 0.06, rot: -0.4 },
 		],
 	},
-	// Cheese — one melty slice, so it comes alive with a squash-stretch + tilt.
+	// Cheese — the slab jiggles while its melty drips wobble and swell (dripping).
 	H4: {
-		aspect: 1.259,
-		fit: 0.84,
-		squash: 0.16,
+		aspect: 1.2587,
+		fit: 0.9,
+		squash: 0.09,
 		layers: [
-			{ key: 'cheeseSlice', nx: 0.5, ny: 0.5, nw: 1.0, nh: 1.0, dy: -0.03, dx: 0, rot: 0.16 },
+			{ key: 'cheeseSlice', nx: 0.5, ny: 0.5, nw: 1, nh: 1, rot: 0.06 },
+			{ key: 'cheeseDrips', nx: 0.5, ny: 0.5, nw: 1, nh: 1, pop: 0.16, dy: 0.02 },
 		],
 	},
 };
