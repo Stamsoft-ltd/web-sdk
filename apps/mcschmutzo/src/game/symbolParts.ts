@@ -79,7 +79,7 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		layers: [
 			{ key: 'soupSteam', nx: 0.5103, ny: 0.2084, nw: 0.5041, nh: 0.5796, rise: 0.26, sway: 0.05, grow: 0.5 },
 			{ key: 'soupPot', nx: 0.5, ny: 0.6275, nw: 1.0072, nh: 0.8228 },
-			{ key: 'soupSpoon', nx: 0.5691, ny: 0.4383, nw: 0.168, nh: 0.2216, orbit: 0.03, rot: 0.1 },
+			{ key: 'soupSpoon', nx: 0.5753, ny: 0.424, nw: 0.1773, nh: 0.2347, orbit: 0.03, rot: 0.1 },
 			{ key: 'soupBlobs', nx: 0.5309, ny: 0.412, nw: 0.3979, nh: 0.4431, pop: 0.4, rot: 0.12 },
 			{ key: 'soupDrips', nx: 0.4845, ny: 0.5796, nw: 0.6454, nh: 0.7329, dy: 0.015, rot: 0.03 },
 			{ key: 'soupLabel', nx: 0.5103, ny: 0.7293, nw: 0.5052, nh: 0.5401 },
