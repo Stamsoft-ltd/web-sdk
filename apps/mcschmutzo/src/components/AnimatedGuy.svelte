@@ -17,7 +17,7 @@
 	};
 	const props: Props = $props();
 
-	const PERIOD = 5600; // ms per glance cycle
+	const PERIOD = 6500; // ms per glance cycle
 	let clock = $state(0);
 	$effect(() => {
 		let raf = 0;
@@ -32,15 +32,16 @@
 	});
 
 	// Keyframed glance (offset as a fraction of the figure w/h). Long holds, fast transitions =
-	// saccades. Small amplitudes so the pupils stay within the sclera.
+	// saccades. Kept SMALL and mostly horizontal (never up, so the dot never hides under the brow) so
+	// only the dark dot shifts a little — the face isn't disturbed.
 	const KF = [
 		{ t: 0.0, x: 0, y: 0 },
-		{ t: 0.4, x: 0, y: 0 },
-		{ t: 0.45, x: 0.016, y: -0.006 }, // quick glance right/up
-		{ t: 0.66, x: 0.016, y: -0.006 },
-		{ t: 0.71, x: 0.007, y: 0.007 }, // glance down a touch
-		{ t: 0.9, x: 0.007, y: 0.007 },
-		{ t: 0.95, x: 0, y: 0 },
+		{ t: 0.46, x: 0, y: 0 },
+		{ t: 0.51, x: 0.007, y: 0.0015 }, // small glance right
+		{ t: 0.72, x: 0.007, y: 0.0015 },
+		{ t: 0.77, x: -0.003, y: 0.002 }, // small glance left
+		{ t: 0.92, x: -0.003, y: 0.002 },
+		{ t: 0.97, x: 0, y: 0 },
 		{ t: 1.0, x: 0, y: 0 },
 	];
 	const glance = $derived.by(() => {
