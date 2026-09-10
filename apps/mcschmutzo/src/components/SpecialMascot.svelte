@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Rectangle, Sprite } from 'pixi-svelte';
+	import { Container, Rectangle, Sprite } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
 	import AnimatedGuy from './AnimatedGuy.svelte';
@@ -7,8 +7,9 @@
 	const context = getContext();
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 
-	// Composition sits on the right, tucked under the board's bottom-right (behind it).
-	const cx = $derived(canvas.width * 0.8);
+	// Composition sits on the right, BEHIND the board — shifted right so the raised salt shaker
+	// clears the board's right edge instead of being hidden behind it.
+	const cx = $derived(canvas.width * 0.85);
 	const guyHeight = $derived(canvas.height * 0.52);
 	const guyWidth = $derived(guyHeight * (1113 / 1186));
 	const guyY = $derived(canvas.height * 0.52);
@@ -59,34 +60,37 @@
 	);
 </script>
 
-<!-- Chef (behind) salting the pot (in front), with a falling stream of salt grains. -->
-<AnimatedGuy
-	baseKey="specialBase"
-	x={cx}
-	y={guyY}
-	width={guyWidth}
-	height={guyHeight}
-	zIndex={0}
-	pupils={specialPupils}
-/>
-{#each grains as g}
-	<Rectangle
-		x={g.x}
-		y={g.y}
-		width={g.size}
-		height={g.size}
-		radius={g.size * 0.5}
-		backgroundColor={0xfffdf5}
-		alpha={g.alpha}
-		zIndex={1}
+<!-- Chef (behind) salting the pot (in front), with a falling stream of salt grains. The whole group
+     sits BEHIND the board (negative zIndex) but in front of the background. -->
+<Container zIndex={-0.5}>
+	<AnimatedGuy
+		baseKey="specialBase"
+		x={cx}
+		y={guyY}
+		width={guyWidth}
+		height={guyHeight}
+		zIndex={0}
+		pupils={specialPupils}
 	/>
-{/each}
-<Sprite
-	key="specialPot"
-	x={cx + guyWidth * 0.02}
-	y={potY}
-	anchor={0.5}
-	width={potWidth}
-	height={potHeight}
-	zIndex={2}
-/>
+	{#each grains as g}
+		<Rectangle
+			x={g.x}
+			y={g.y}
+			width={g.size}
+			height={g.size}
+			radius={g.size * 0.5}
+			backgroundColor={0xfffdf5}
+			alpha={g.alpha}
+			zIndex={1}
+		/>
+	{/each}
+	<Sprite
+		key="specialPot"
+		x={cx + guyWidth * 0.02}
+		y={potY}
+		anchor={0.5}
+		width={potWidth}
+		height={potHeight}
+		zIndex={2}
+	/>
+</Container>
