@@ -77,6 +77,23 @@
 		const cx = props.x ?? 0;
 		const cy = props.y ?? 0;
 		return props.config.layers.map((l) => {
+			// Rising smoke/steam: escapes upward off its base, wafting side to side, growing and fading
+			// as it goes — then a fresh puff starts. Visible at rest (alpha 1, at base).
+			if (l.rise) {
+				const fr = active ? frac : 0;
+				const swayX = (l.sway ?? 0) * w * Math.sin(fr * Math.PI * 3);
+				const grow = 1 + (l.grow ?? 0.4) * fr;
+				const alpha = active ? Math.max(0, 1 - fr / 0.82) : 1;
+				return {
+					key: l.key,
+					x: cx + (l.nx - 0.5) * w + swayX,
+					y: cy + (l.ny - 0.5) * h - l.rise * h * fr,
+					width: l.nw * w * grow,
+					height: l.nh * h * grow,
+					rotation: 0,
+					alpha,
+				};
+			}
 			// Circular path (starts + ends at the rest position so it loops seamlessly).
 			const orbitX = (l.orbit ?? 0) * w * Math.sin(theta);
 			const orbitY = (l.orbit ?? 0) * h * (Math.cos(theta) - 1);
@@ -91,6 +108,7 @@
 				width: l.nw * w * sqx * spin * pop,
 				height: l.nh * h * sqy * pop,
 				rotation: (l.rot ?? 0) * env,
+				alpha: 1,
 			};
 		});
 	});
@@ -106,6 +124,7 @@
 			width={l.width}
 			height={l.height}
 			rotation={l.rotation}
+			alpha={l.alpha}
 		/>
 	{/each}
 </Container>

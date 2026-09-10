@@ -17,6 +17,10 @@ export type SymbolPartLayer = {
 	spin?: number; // horizontal squeeze at peak — reads as turning about the vertical axis (unscrew)
 	orbit?: number; // radius of a circular path (fraction of symbol size) — e.g. a spoon stirring
 	pop?: number; // uniform scale pulse at peak — e.g. a bubble popping
+	// Rising smoke/steam: the layer escapes upward off its base, wafting + growing + fading, looping.
+	rise?: number; // how far up it rises (fraction of symbol height)
+	sway?: number; // horizontal waft amplitude as it rises (fraction of width)
+	grow?: number; // how much it grows by the top (default 0.4)
 };
 
 export type SymbolPartsConfig = {
@@ -65,18 +69,20 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'burgerBunTop', nx: 0.5, ny: 0.2396, nw: 0.9685, nh: 0.4793, dy: -0.26, dx: 0, rot: 0.05 },
 		],
 	},
-	// Soup pot — spoon stirs a circle in the soup, bubbles pop on the surface, steam curls & wafts.
+	// Soup pot — steam escapes upward off the pot; the spoon (dipped in, mostly submerged) stirs a
+	// small circle; bubbles pop on the surface. Draw order: steam, pot, spoon, blobs (over the bowl),
+	// drips, label.
 	H2: {
 		aspect: 1.162,
 		fit: 0.95,
 		squash: 0,
 		layers: [
-			{ key: 'soupSteam', nx: 0.5103, ny: 0.2084, nw: 0.5041, nh: 0.5796, dy: -0.05, orbit: 0.035, rot: 0.3 },
+			{ key: 'soupSteam', nx: 0.5103, ny: 0.2084, nw: 0.5041, nh: 0.5796, rise: 0.26, sway: 0.05, grow: 0.5 },
 			{ key: 'soupPot', nx: 0.5, ny: 0.6275, nw: 1.0072, nh: 0.8228 },
+			{ key: 'soupSpoon', nx: 0.5773, ny: 0.4216, nw: 0.1773, nh: 0.2347, orbit: 0.04, rot: 0.1 },
 			{ key: 'soupBlobs', nx: 0.5309, ny: 0.412, nw: 0.3979, nh: 0.4431, pop: 0.4, rot: 0.12 },
 			{ key: 'soupDrips', nx: 0.4845, ny: 0.5796, nw: 0.6454, nh: 0.7329, dy: 0.015, rot: 0.03 },
 			{ key: 'soupLabel', nx: 0.5103, ny: 0.7293, nw: 0.5052, nh: 0.5401 },
-			{ key: 'soupSpoon', nx: 0.6031, ny: 0.3641, nw: 0.1928, nh: 0.2539, orbit: 0.055, rot: 0.12 },
 		],
 	},
 	// Sausage — the banger stays put in its box; the smoke curls and wafts up like it's burning.
@@ -85,7 +91,7 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		fit: 0.88,
 		squash: 0,
 		layers: [
-			{ key: 'sausageSmoke', nx: 0.6156, ny: 0.2706, nw: 0.1455, nh: 0.5412, dy: -0.12, dx: 0.18, rot: 0.4 },
+			{ key: 'sausageSmoke', nx: 0.6156, ny: 0.2706, nw: 0.1455, nh: 0.5412, rise: 0.28, sway: 0.06, grow: 0.5 },
 			{ key: 'sausageBody', nx: 0.4987, ny: 0.6118, nw: 1.0, nh: 0.8871, dy: 0, dx: 0, rot: 0.015 },
 		],
 	},
