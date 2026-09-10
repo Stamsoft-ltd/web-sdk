@@ -39,8 +39,10 @@
 	// symbols all fill the canvas, which is why they share 1.06 while the old flat art does not.
 	const payRows = [
 		{
-			img: sym('premium/compass_full.webp'),
-			fit: 1.06,
+			// The astronaut is H1 since 2026-09-08 (the compass moved to L3, below); the pay
+			// bands stay with the RANK, which is the math's.
+			img: sym('low/coil_full.webp'),
+			fit: 1.26,
 			v: ['0.5x', '1x', '2x', '4x', '8x', '15x', '30x', '75x', '200x', '500x', '1000x', '2000x'],
 		},
 		{
@@ -94,10 +96,10 @@
 			fit: 1.06,
 			v: ['0.12x', '0.25x', '0.5x', '1x', '2x', '4x', '8x', '20x', '50x', '100x', '200x', '400x'],
 		},
-		// Astronaut (L3): the assembled composite, helmet + head + both eyes.
+		// Compass (L3 since 2026-09-08; the astronaut composite took its H1 row above).
 		{
-			img: sym('low/coil_full.webp'),
-			fit: 1.26,
+			img: sym('premium/compass_full.webp'),
+			fit: 1.06,
 			v: ['0.1x', '0.2x', '0.4x', '0.8x', '1.6x', '3x', '6x', '15x', '40x', '80x', '150x', '300x'],
 		},
 		// Circuit chip (L4): the assembled composite, board + alien + both slime blobs.
@@ -133,8 +135,10 @@
 	const winImg = ap('/assets/components/ui/info_win.webp');
 	const noWinImg = ap('/assets/components/ui/info_nowin.webp');
 	// General-info icons (page 6).
-	const icRotate = ap('/assets/components/ui/info_ic_charge_arrow.webp');
-	const icLegal = ap('/assets/components/ui/info_ic_legal.webp');
+	// General info (MOTHERSHIP design 4214:3232): the spin arrow as a white vector (node
+	// 9185:16280) and the lilac scales of justice (9185:16287, its 1254px source at 3x the box).
+	const icRotate = ap('/assets/components/ui/gi_ic_refresh.svg');
+	const icLegal = ap('/assets/components/ui/gi_ic_legal.webp?v=20260908');
 
 	// Game controls (page 7) — the MOTHERSHIP round-button set (Figma 4725:11860), in design order.
 	// Every one is an SVG: a flat #49489B disc under a white glyph, with an #A88EFF hairline — the
@@ -1338,6 +1342,13 @@
 		height: 100%;
 		object-fit: contain;
 		display: block;
+	}
+	/* The design draws the arrow smaller than the scales (67 vs 89 in the same-height cards) while
+	   the two titles still land level; the boxes stay equal for that alignment and the arrow
+	   shrinks inside its own. */
+	.gi-ic:not(.gi-ic--legal) img {
+		width: 76%;
+		height: 76%;
 	}
 	/* Figma 4214:3264 / 3275 — the only two card titles the design sets in UPPERCASE. */
 	.gi-grid .feat-h {

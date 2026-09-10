@@ -2,9 +2,10 @@
 	import { Container, Graphics, Sprite, Text, type Sizes } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
+	import { holdCelebration } from '../game/celebration';
 	import { designFrame } from '../game/designFrame';
 	import { drawPadBulbGlow } from '../game/padBulbs';
-	import { drawSlimeBlob, drawSlimeDrips } from '../game/slimeDrip';
+	import { DRIP_OFFSETS, drawSlimeCluster, drawSlimeDrips } from '../game/slimeDrip';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { fitTextScale } from '../utils/fitText';
 
@@ -25,8 +26,28 @@
 		big: string;
 		/** Present for the COUNT layout ("FREE SPINS" beside the number); absent for the amount. */
 		caption?: string;
+		/** How many scatters triggered the bonus. When set (and > 0) the scatter badge hangs over
+		 *  the pad's top edge with that count on its pill — Figma 9248:25554 (3x) / 25858 (4x) /
+		 *  26180 (5x). The outro passes nothing and gets no badge. */
+		scatters?: number;
 	};
 	const props: Props = $props();
+
+	// ── The scatter badge (design 9248:25782 + 25786 + 25789, absolute in the same 1200x670) ──
+	// The ring and its two slime blobs are ONE sprite, the design's own group exported at 3x; the
+	// scatter is the paytable's flattened composite so it is the same drawing the board plays; the
+	// "3x" pill is drawn — lime on a thin purple edge, Audiowide, exactly the node's numbers.
+	const BADGE = { x: 478, y: 10, w: 226.03, h: 196 };
+	/** The scatter image box is 130x130 at (554,50); the art inside our composite is 182 of a
+	 *  328-wide canvas, so the sprite is sized by HEIGHT and the canvas width follows. */
+	const BADGE_SCATTER = { cx: 619, cy: 115, h: 130, canvasAspect: 328 / 264 };
+	const PILL = { cx: 552.4, cy: 115.4, w: 48.9, h: 44.9, r: 12.8, edge: 1.42, size: 19.9 };
+	const PILL_FILL = 0x9ff816;
+	const PILL_EDGE = 0x522ea1;
+	const PILL_TEXT = 0x502da0;
+	const T_BADGE = 0.45;
+	const T_PILL = T_BADGE + 0.28;
+	const hasBadge = $derived((props.scatters ?? 0) > 0);
 
 	const context = getContext();
 	const main = $derived(context.stateLayoutDerived.mainLayout());
@@ -47,24 +68,59 @@
 	/**
 	 * The slime draped over the value box's top-right corner. Entirely DRAWN — the `my_blob` sprite
 	 * (design 9185:13954) is gone, because a still blob sitting on top of animated drops read as two
-	 * different materials meeting at a seam. The spine below traces that sprite's own centre-line,
+	 * different materials meeting at a seam. The lobes below sit on that sprite's own centre-line,
 	 * measured off its alpha and mapped back into the design's 1200x670 frame, so the drape lands
-	 * where the design put it; the drops leave its last node.
+	 * where the design put it; the drops leave its last lobe.
+	 *
+	 * It is the same running `drawSlimeCluster` splat as the mystery badge and the win card, not the
+	 * smoothed spine drape used before: that one only wobbled a few percent, and next to the drops
+	 * it still read as a still.
 	 */
-	const BLOB_SPINE = [
-		{ x: 817, y: 349 },
-		{ x: 835, y: 362 },
-		{ x: 838, y: 381 },
-		{ x: 853, y: 395 },
-		{ x: 860, y: 417 },
+	const BLOB_LOBES = [
+		{ x: 818, y: 350, r: 15 },
+		{ x: 834, y: 363, r: 18 },
+		{ x: 840, y: 382, r: 17 },
+		{ x: 852, y: 397, r: 18 },
+		{ x: 859, y: 414, r: 13 },
 	];
-	const BLOB_WIDTHS = [14, 17, 16, 17, 12];
 	const DRIP_X = 860;
 	const DRIP_Y = 421;
-	/** The alien peeking over the top-right corner — mostly off-frame, exactly as the design crops it. */
+	/** The alien peeking over the top-right corner — mostly off-frame, exactly as the design crops
+	 *  it. Drawn ONLY when the bottom row is absent (the amount screen): with the row up, aliens
+	 *  would be arriving from two opposite directions, and the ask (2026-09-09) is that the
+	 *  free-spins-won screen has them come from below only. */
 	const ALIEN = { cx: 1155, cy: 50, w: 482.2, h: 482.2 };
+	/**
+	 * The row of aliens standing up behind the pad's bottom edge — one per triggering scatter, so
+	 * a 3x badge gets three and a 5x badge five — and they HOLD the press hint on a board between
+	 * them (Figma 9273:27091 / the 9273:27398 group, asked for 2026-09-09).
+	 *
+	 * That replaced a row of loose alien HEADS with the hint on a dark pill under it: two objects
+	 * doing one job, and the pill had to sit over their bodies to stay readable. The row is one
+	 * drawing per count now, rebuilt from the design's own vector parts and widened at the gaps
+	 * between aliens (scripts/build-press-aliens.py) — the design only draws the three.
+	 *
+	 * The design's 3-alien group is 558x248 at (321,459) of the 1200x670 frame, i.e. centred on the
+	 * pad with its heads over the pad's bottom edge; every extra alien adds 154.67 to the width and
+	 * nothing to the height. Below 670 the legs run off the design frame, over the dimmed HUD.
+	 */
+	const ALIEN_ROW = { top: 459, h: 248, max: 5, min: 3 };
+	const ALIEN_ROW_W: Record<number, number> = { 3: 558, 4: 712.67, 5: 867.33 };
+	const alienCount = $derived(Math.min(ALIEN_ROW.max, Math.max(0, props.scatters ?? 0)));
+	/** Only 3, 4 and 5 have a drawing — the bonus cannot trigger on fewer, and the outro passes
+	 *  nothing at all, which is what leaves it with the plain line below the pad. */
+	const hasAlienRow = $derived(alienCount >= ALIEN_ROW.min);
+	const alienRowW = $derived(ALIEN_ROW_W[alienCount] ?? ALIEN_ROW_W[ALIEN_ROW.min]);
+	/**
+	 * The board those aliens hold, in the row drawing's own units: the purple runs 90.7 from its
+	 * left edge to 92.7 short of its right one, and 144.7..198.7 down — measured off the built art
+	 * by scripts/build-press-aliens.py, which prints the box. The line sits at its centre, which is
+	 * where the design's own text node sits (9273:27396, Audiowide 18).
+	 */
+	const BOARD = { inset: 90.7 + 92.7, cy: 459 + (144.7 + 198.7) / 2, size: 18 };
 	/** Centred under everything, below the pad entirely (the pad runs 98..613) — the HUD behind it
-	 *  is dimmed for the length of the celebration, so this band is free. */
+	 *  is dimmed for the length of the celebration, so this band is free. Used only when there is
+	 *  no alien row to carry the line. */
 	const PRESS = { cy: 638, size: 18 };
 
 	const LIME = 0x9ff816;
@@ -111,6 +167,14 @@
 	// zero-size text object pixi would have nothing to rasterise for.
 	const youWonScale = $derived(0.04 + 0.96 * youWonT);
 	const boxT = $derived(ease((clock - T_BOX) / 0.4));
+	// The splat OOZES out of the box's top-right corner once the box is there: `drawSlimeCluster`
+	// unfolds it lobe by lobe over this ramp instead of the whole clover appearing at full size.
+	// Its drops run on their own clock, which is zero until it is out — on the panel's clock a
+	// drop was already half fallen on the first frame the slime existed.
+	const T_SLIME = T_BOX + 0.1;
+	const SLIME_GROW = 1.05;
+	const slimeGrow = $derived(clamp01((clock - T_SLIME) / SLIME_GROW));
+	const slimeDripClock = $derived(Math.max(0, clock - T_SLIME - SLIME_GROW));
 	const alienT = $derived(backOut((clock - T_ALIEN) / 0.62));
 	/** It comes from beyond the top-right corner and settles into the design's placement. */
 	const alienX = $derived(D.px(ALIEN.cx) + (1 - alienT) * D.s(ALIEN.w * 0.9));
@@ -121,6 +185,30 @@
 	// only bobs on one sine reads as a sprite on a spring.
 	const alienRoll = $derived(0.03 * alienT * Math.sin(clock * 0.53 + 1.1));
 	const alienBreathe = $derived(1 + 0.016 * alienT * Math.sin(clock * 1.35));
+	// The badge drops onto the pad's top edge right after the title lands, overshooting like the
+	// title does, and then hangs there: a slow bob and a hair of roll on phases that never line up
+	// with the alien's, and the scatter inside it breathes. The pill pops on a beat after it.
+	const badgeT = $derived(backOut((clock - T_BADGE) / 0.5));
+	const badgeY = $derived(-(1 - badgeT) * D.s(260));
+	const badgeBob = $derived(D.s(7) * badgeT * Math.sin(clock * 0.95 + 0.6));
+	const badgeRoll = $derived(0.025 * badgeT * Math.sin(clock * 0.47 + 2.3));
+	const badgeScatterBreathe = $derived(1 + 0.04 * badgeT * Math.sin(clock * 1.6 + 1.0));
+	const pillT = $derived(backOut((clock - T_PILL) / 0.36));
+	const pillScale = $derived(0.04 + 0.96 * pillT);
+	// The alien row carries its board up from behind the pad's bottom edge once the value box is in,
+	// overshooting a little as it lands. It never parks completely: it keeps a slow heave, a hair of
+	// roll and a shallow breath, each on its own phase so the three never line up. `rise` starts it
+	// a full height low, so the heads climb past the pad's edge instead of fading in through it.
+	const T_ALIEN_ROW = 0.7;
+	const alienRowT = $derived(backOut((clock - T_ALIEN_ROW) / 0.62));
+	const alienRowIdle = $derived(clamp01((clock - T_ALIEN_ROW - 0.5) / 0.9));
+	const alienRowY = $derived(
+		D.py(ALIEN_ROW.top + ALIEN_ROW.h / 2) +
+			(1 - alienRowT) * D.s(ALIEN_ROW.h) +
+			D.s(6) * alienRowIdle * Math.sin(clock * 1.05),
+	);
+	const alienRowRoll = $derived(0.012 * alienRowIdle * Math.sin(clock * 0.61 + 0.7));
+	const alienRowBreathe = $derived(1 + 0.012 * alienRowIdle * Math.sin(clock * 1.45));
 	// Two drips on the same cycle, half a period apart, so the blob is never doing nothing and never
 	// doing two identical things at once. Each one swells at the tip, necks out, snaps, and falls.
 	const DRIP_PERIOD = 6.4;
@@ -175,12 +263,26 @@
 	/** Measured width of the press line, so the text and its arrow can be centred as one group. */
 	let pressSizes = $state<Sizes>({ width: 0, height: 0 });
 
+	// The line on the aliens' board. The design writes it at Audiowide 18 across a board that grows
+	// with the row, so a long translation shrinks to the board it is on rather than running out over
+	// the aliens' hands.
+	const boardText = $derived(i18nDerived.translate('PRESS ANYWHERE'));
+	const boardTextSize = $derived(
+		D.s(BOARD.size) *
+			fitTextScale(boardText, {
+				fontSizePx: D.s(BOARD.size),
+				availablePx: D.s((alienRowW - BOARD.inset) * 0.84),
+				fontFamily: 'Audiowide, Chakra Petch, sans-serif',
+				minScale: 0.5,
+			}),
+	);
+
 	// While a celebration is up the HTML HUD must not sit brightly on top of it — it is DOM, so the
 	// pixi dim underneath cannot reach it. HudHtml dims and disables itself off this flag. The two
 	// celebration screens never overlap, so one flag is enough.
 	$effect(() => {
-		context.stateGame.celebrationActive = props.show;
-		return () => (context.stateGame.celebrationActive = false);
+		if (!props.show) return;
+		return holdCelebration(context.stateGame);
 	});
 </script>
 
@@ -204,16 +306,66 @@
 </Container>
 
 <!-- The alien sits over the pad's top-right corner. Drawn before the copy so the headings stay
-     legible if a narrow screen ever pushes them together. -->
-<Container
-	x={alienX}
-	y={alienY + alienBob}
-	rotation={alienRoll}
-	scale={alienBreathe}
-	alpha={Math.min(1, alienT * 1.4)}
->
-	<Sprite key="myAlienB" anchor={0.5} x={0} y={0} width={D.s(ALIEN.w)} height={D.s(ALIEN.h)} />
-</Container>
+     legible if a narrow screen ever pushes them together. Skipped whenever the bottom row is up
+     (the free-spins-won screen), so the only aliens there come from below. -->
+{#if alienCount === 0}
+	<Container
+		x={alienX}
+		y={alienY + alienBob}
+		rotation={alienRoll}
+		scale={alienBreathe}
+		alpha={Math.min(1, alienT * 1.4)}
+	>
+		<Sprite key="myAlienB" anchor={0.5} x={0} y={0} width={D.s(ALIEN.w)} height={D.s(ALIEN.h)} />
+	</Container>
+{/if}
+
+{#if hasBadge}
+	<!-- The scatter badge, hanging over the pad's top edge. The container's origin is the ring's
+	     centre so the bob and the roll turn about it; everything inside is placed by the design's
+	     absolute coordinates minus that centre. -->
+	{@const bx = D.px(BADGE.x + BADGE.w / 2)}
+	{@const by = D.py(BADGE.y + BADGE.h / 2)}
+	<Container
+		x={bx}
+		y={by + badgeY + badgeBob}
+		rotation={badgeRoll}
+		alpha={Math.min(1, badgeT * 1.4)}
+	>
+		<Sprite key="winBadge" anchor={0.5} x={0} y={0} width={D.s(BADGE.w)} height={D.s(BADGE.h)} />
+		<Container
+			x={D.px(BADGE_SCATTER.cx) - bx}
+			y={D.py(BADGE_SCATTER.cy) - by}
+			scale={badgeScatterBreathe}
+		>
+			<Sprite
+				key="winBadgeScatter"
+				anchor={0.5}
+				x={0}
+				y={0}
+				width={D.s(BADGE_SCATTER.h * BADGE_SCATTER.canvasAspect)}
+				height={D.s(BADGE_SCATTER.h)}
+			/>
+		</Container>
+		<Container x={D.px(PILL.cx) - bx} y={D.py(PILL.cy) - by} scale={pillScale}>
+			<Graphics
+				draw={(g) => {
+					g.clear();
+					g.roundRect(-D.s(PILL.w) / 2, -D.s(PILL.h) / 2, D.s(PILL.w), D.s(PILL.h), D.s(PILL.r));
+					g.fill({ color: PILL_FILL });
+					g.stroke({ color: PILL_EDGE, width: Math.max(1, D.s(PILL.edge)) });
+				}}
+			/>
+			<Text
+				text={`${props.scatters}x`}
+				anchor={0.5}
+				x={0}
+				y={0}
+				style={{ ...audiowide(D.s(PILL.size), PILL_TEXT), letterSpacing: D.s(0.6) }}
+			/>
+		</Container>
+	</Container>
+{/if}
 
 <!-- The y offset lives on the CONTAINER and the text sits at its origin, so the pulse scales about
      the heading's own centre instead of sliding it sideways. -->
@@ -285,55 +437,98 @@
 				r: D.s(13),
 				fall: D.s(160),
 				edge,
-				clock,
+				clock: slimeDripClock,
 				period: DRIP_PERIOD,
 			});
-			drawSlimeBlob(g, {
-				spine: BLOB_SPINE.map((pt) => ({ x: D.px(pt.x), y: D.py(pt.y) })),
-				widths: BLOB_WIDTHS.map((w) => D.s(w)),
+			drawSlimeCluster(g, {
+				lobes: BLOB_LOBES.map((lobe) => ({
+					x: D.px(lobe.x),
+					y: D.py(lobe.y),
+					r: D.s(lobe.r),
+				})),
 				edge,
 				clock,
-				sag: D.s(26),
+				grow: slimeGrow,
+				sag: 0.55,
+				// The cluster runs on the panel clock and the drips on the delayed one, so the phase
+				// the feeding lobe swells to is corrected by the difference.
+				drip: {
+					period: DRIP_PERIOD,
+					offsets: DRIP_OFFSETS.map((off) => off - (T_SLIME + SLIME_GROW) / DRIP_PERIOD),
+				},
 				highlights: [
-					{ at: 0.18, size: 0.45 },
-					{ at: 0.55, size: 0.36 },
-					{ at: 0.85, size: 0.3 },
+					{ lobe: 0, size: 0.45 },
+					{ lobe: 2, size: 0.36 },
+					{ lobe: 4, size: 0.3 },
 				],
 			});
 		}}
 	/>
 </Container>
 
-<!-- Press hint. The design has no such line — it shows the real HUD there — so this sits at the
-     bottom of the pad, above where our HTML bar reaches.
+<!-- The alien row, standing up from behind the pad's bottom edge with the press board in its hands
+     — over the pad and the value box. The board is baked EMPTY, so the line is drawn here at the
+     board's own centre and rides with the row (its offset from the row's centre is fixed). -->
+{#if hasAlienRow}
+	{@const boardOffsetY = D.s(BOARD.cy - (ALIEN_ROW.top + ALIEN_ROW.h / 2))}
+	<Container
+		x={D.px(600.5)}
+		y={alienRowY}
+		rotation={alienRowRoll}
+		scale={alienRowBreathe}
+		alpha={Math.min(1, alienRowT * 2)}
+	>
+		<Sprite
+			key={`myPressAliens${alienCount}` as 'myPressAliens3'}
+			anchor={0.5}
+			x={0}
+			y={0}
+			width={D.s(alienRowW)}
+			height={D.s(ALIEN_ROW.h)}
+		/>
+		<Text
+			text={boardText}
+			anchor={0.5}
+			x={0}
+			y={boardOffsetY}
+			style={{ ...audiowide(boardTextSize, 0xffffff), letterSpacing: D.s(0.54) }}
+		/>
+	</Container>
+{/if}
+
+<!-- Press hint, for the screens with no alien row to hold it (the bonus-end amount). The design has
+     no such line there — it shows the real HUD — so this sits at the bottom of the pad, above where
+     our HTML bar reaches.
      TEXT AND ARROW ARE ONE CENTRED GROUP. Anchoring the text to a fixed seam with the arrow after it
      centres the SEAM, not the line, so the pair sat visibly left of centre and moved every time the
      translation changed length. The rendered width is measured instead and the group offset by half
      of it, which holds for any string. -->
-<Container x={D.px(600.5)} y={D.py(PRESS.cy)} alpha={boxT}>
-	{@const gap = D.s(PRESS.size) * 0.5}
-	{@const arrow = D.s(PRESS.size) * 0.944}
-	{@const total = pressSizes.width + gap + arrow}
-	<Text
-		anchor={{ x: 0, y: 0.5 }}
-		x={-total / 2}
-		onresize={(sizes) => (pressSizes = sizes)}
-		text={i18nDerived.translate('PRESS ANYWHERE')}
-		style={poppins(D.s(PRESS.size), 0xffffff)}
-	/>
-	<Graphics
-		draw={(g) => {
-			g.clear();
-			const f = D.s(PRESS.size);
-			const x0 = -total / 2 + pressSizes.width + gap;
-			const x1 = x0 + arrow;
-			const head = f * 0.3;
-			g.moveTo(x0, 0);
-			g.lineTo(x1, 0);
-			g.moveTo(x1 - head, -head * 0.72);
-			g.lineTo(x1, 0);
-			g.lineTo(x1 - head, head * 0.72);
-			g.stroke({ width: Math.max(1, f * 0.1), color: 0xffffff, cap: 'round', join: 'round' });
-		}}
-	/>
-</Container>
+{#if !hasAlienRow}
+	<Container x={D.px(600.5)} y={D.py(PRESS.cy)} alpha={boxT}>
+		{@const gap = D.s(PRESS.size) * 0.5}
+		{@const arrow = D.s(PRESS.size) * 0.944}
+		{@const total = pressSizes.width + gap + arrow}
+		<Text
+			anchor={{ x: 0, y: 0.5 }}
+			x={-total / 2}
+			onresize={(sizes) => (pressSizes = sizes)}
+			text={i18nDerived.translate('PRESS ANYWHERE')}
+			style={poppins(D.s(PRESS.size), 0xffffff)}
+		/>
+		<Graphics
+			draw={(g) => {
+				g.clear();
+				const f = D.s(PRESS.size);
+				const x0 = -total / 2 + pressSizes.width + gap;
+				const x1 = x0 + arrow;
+				const head = f * 0.3;
+				g.moveTo(x0, 0);
+				g.lineTo(x1, 0);
+				g.moveTo(x1 - head, -head * 0.72);
+				g.lineTo(x1, 0);
+				g.lineTo(x1 - head, head * 0.72);
+				g.stroke({ width: Math.max(1, f * 0.1), color: 0xffffff, cap: 'round', join: 'round' });
+			}}
+		/>
+	</Container>
+{/if}

@@ -46,22 +46,19 @@ const assets = {
 	// same ?v= the splash requests, so the two share one download. 6KB for the pair, gating pass.
 	skyCloudA: { type: 'sprite', src: './assets/components/splash/cloud_a.webp?v=20260901c' },
 	skyCloudB: { type: 'sprite', src: './assets/components/splash/cloud_b.webp?v=20260901c' },
-	// Small-win amount plate (design's own art, built by scripts/build-ui-art.py). The plate this
-	// replaced was drawn in WinAmountPlaque itself — a dark bed with a gold hairline.
+	// Small-win amount plate: the MOTHERSHIP hex plate with four lime bulbs (Figma 9185:9638, the
+	// node's own image fill trimmed to its alpha — art-src/small_win/plate_trimmed.png). It replaced
+	// the Version2 navy plate with pink dashes that scripts/build-ui-art.py used to build.
 	winPlaque: {
 		type: 'sprite',
-		src: './assets/components/ui/win_plaque.webp?v=20260901c',
+		src: './assets/components/ui/win_plaque.webp?v=20260908',
 	},
-	// The ship hanging in the room's right-hand window, as the designer's own loose parts (built by
-	// scripts/build-ufo-art.py) so hull and antenna can be animated apart. Its tractor beam is no
-	// longer art at all — Background.svelte draws it.
-	ufoHull: {
+	// The ship hanging in the room's right-hand window: the MOTHERSHIP saucer (Figma 9148:31504) as
+	// one sprite, built by scripts/build-ufo-ship.py. Its tractor beam is not art at all —
+	// Background.svelte draws it.
+	ufoShip: {
 		type: 'sprite',
-		src: './assets/components/ui/ufo_hull.webp?v=20260901d',
-	},
-	ufoAntenna: {
-		type: 'sprite',
-		src: './assets/components/ui/ufo_antenna.webp?v=20260901d',
+		src: './assets/components/ui/ufo_ship.webp?v=20260908',
 	},
 	// Mystery Bonus draw — the orb machine that holds the "?" (9185:18451) and the pieces of the
 	// three "you won" screens (9185:18982 / 19244 / 19506). Built by scripts/build-mystery-screens.py.
@@ -69,6 +66,9 @@ const assets = {
 	// the bonus art; game/utils.ts holds `mysteryBonusReveal` behind that gate.
 	myOrb: { type: 'sprite', src: './assets/components/ui/my_orb.webp?v=20260904' },
 	myQ: { type: 'sprite', src: './assets/components/ui/my_q.webp?v=20260904' },
+	// The sparkle the design scatters through the orb's glass (9185:18616/18622/18624/18626 — one
+	// vector at four sizes), rasterised from its SVG in art-src/mystery/star.svg.
+	myStar: { type: 'sprite', src: './assets/components/ui/my_star.webp?v=20260908' },
 	myPad: { type: 'sprite', src: './assets/components/ui/my_pad.webp?v=20260904' },
 	myBlob: { type: 'sprite', src: './assets/components/ui/my_blob.webp?v=20260904' },
 	myBadgeGravity: {
@@ -81,6 +81,31 @@ const assets = {
 	mySlimeB: { type: 'sprite', src: './assets/components/ui/my_slime_b.webp?v=20260904' },
 	myAlienA: { type: 'sprite', src: './assets/components/ui/my_alien_a.webp?v=20260904' },
 	myAlienB: { type: 'sprite', src: './assets/components/ui/my_alien_b.webp?v=20260904' },
+	// The row of aliens HOLDING the press board on the free-spins congratulations (Figma
+	// 9273:27398): one drawing per triggering scatter count, rebuilt from the design's own vector
+	// parts by scripts/build-press-aliens.py. The board is baked EMPTY — WonPanel writes the
+	// localised line on it.
+	myPressAliens3: {
+		type: 'sprite',
+		src: './assets/components/ui/my_press_aliens_3.webp?v=20260909',
+	},
+	myPressAliens4: {
+		type: 'sprite',
+		src: './assets/components/ui/my_press_aliens_4.webp?v=20260909',
+	},
+	myPressAliens5: {
+		type: 'sprite',
+		src: './assets/components/ui/my_press_aliens_5.webp?v=20260909',
+	},
+	// The scatter badge over the free-spins congratulations (Figma 9248:25554 / 25858 / 26180):
+	// the lime ring with its two slime blobs is the design's own group exported at 3x
+	// (art-src/win_badge/export_3x.png); the scatter in it is the paytable's flattened composite,
+	// and the "3x" pill is drawn (WonPanel.svelte).
+	winBadge: { type: 'sprite', src: './assets/components/ui/win_badge.webp?v=20260908' },
+	winBadgeScatter: {
+		type: 'sprite',
+		src: './assets/components/symbols/magnetic/special/scatter_full.webp?v=20260908',
+	},
 	smallPadMobile: {
 		type: 'sprite',
 		src: './assets/components/ui/small_pad_mobile.webp?v=20260709',
@@ -114,37 +139,37 @@ const assets = {
 	// Win-state flipbook sheets are gone: winning cells now play the procedural <SymbolWinFx>
 	// choreography over the hi-res static win art. The 9–10 frame sheets looped at ~14fps with no
 	// real object motion — the Stake review's "poor animations".
-	aTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260902' },
+	aTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260909' },
 	// The magnet's loose layers: the antennae shake, the face breathes, and the win state arcs
 	// electricity between the caps -- see MagnetSymbol.svelte and scripts/build-magnet-art.py.
 	magnetFace: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/low/magnet_face.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/low/magnet_face.webp?v=20260909',
 	},
 	magnetAntennaL: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/low/magnet_antenna_l.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/low/magnet_antenna_l.webp?v=20260909',
 	},
 	magnetAntennaR: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/low/magnet_antenna_r.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/low/magnet_antenna_r.webp?v=20260909',
 	},
 	magnetHandL: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/low/magnet_hand_l.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/low/magnet_hand_l.webp?v=20260909',
 	},
 	magnetHandR: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/low/magnet_hand_r.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/low/magnet_hand_r.webp?v=20260909',
 	},
-	aWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260902' },
+	aWinTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/nut.webp?v=20260909' },
 	aTileMobile: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/low/nut_mobile.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/low/nut_mobile.webp?v=20260909',
 	},
 	aWinTileMobile: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/low/nut_mobile.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/low/nut_mobile.webp?v=20260909',
 	},
 	kTile: { type: 'sprite', src: './assets/components/symbols/magnetic/low/coil.webp?v=20260902' },
 	kWinTile: {
@@ -595,11 +620,11 @@ const assets = {
 	},
 	aTileLand: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/low/nut.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/low/nut.webp?v=20260909',
 	},
 	aWinTileLand: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/low/nut.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/low/nut.webp?v=20260909',
 	},
 	kTileLand: {
 		type: 'sprite',
@@ -682,11 +707,11 @@ const assets = {
 	// These replace 24 sprites — the five-part sign each of the six tiers carried its own copy of.
 	winCardPlate: {
 		type: 'sprite',
-		src: './assets/components/win_boards/winCardPlate.webp?v=20260903b',
+		src: './assets/components/win_boards/winCardPlate.webp?v=20260908',
 	},
 	winCardSaucer: {
 		type: 'sprite',
-		src: './assets/components/win_boards/winCardSaucer.webp?v=20260903b',
+		src: './assets/components/win_boards/winCardSaucer.webp?v=20260908',
 	},
 	winCardAlien: {
 		type: 'sprite',
@@ -736,7 +761,8 @@ const assets = {
 	},
 	coins: {
 		type: 'spriteSheet',
-		src: './assets/sprites/coin/SD2_Coin.json?v=20260624',
+		// The design's own coin (Figma 9235:19944), built by scripts/build-win-coin.py.
+		src: './assets/sprites/coin/mothership_coin.json?v=20260908',
 	},
 	sound: {
 		type: 'audio',
@@ -798,6 +824,7 @@ flag(
 		'fsWonFrame',
 		'myOrb',
 		'myQ',
+		'myStar',
 		'myPad',
 		'myBlob',
 		'myBadgeGravity',
@@ -807,6 +834,11 @@ flag(
 		'mySlimeB',
 		'myAlienA',
 		'myAlienB',
+		'myPressAliens3',
+		'myPressAliens4',
+		'myPressAliens5',
+		'winBadge',
+		'winBadgeScatter',
 		'transition',
 		'counterFrame',
 	],
@@ -823,6 +855,7 @@ flag(
 		'fsWonFrame',
 		'myOrb',
 		'myQ',
+		'myStar',
 		'myPad',
 		'myBlob',
 		'myBadgeGravity',
@@ -832,6 +865,11 @@ flag(
 		'mySlimeB',
 		'myAlienA',
 		'myAlienB',
+		'myPressAliens3',
+		'myPressAliens4',
+		'myPressAliens5',
+		'winBadge',
+		'winBadgeScatter',
 		'transition',
 		'counterFrame',
 	],
@@ -847,6 +885,7 @@ for (const key of [
 	'fsWonFrame',
 	'myOrb',
 	'myQ',
+	'myStar',
 	'myPad',
 	'myBlob',
 	'myBadgeGravity',
@@ -856,6 +895,11 @@ for (const key of [
 	'mySlimeB',
 	'myAlienA',
 	'myAlienB',
+	'myPressAliens3',
+	'myPressAliens4',
+	'myPressAliens5',
+	'winBadge',
+	'winBadgeScatter',
 	'transition',
 	'counterFrame',
 ]) {

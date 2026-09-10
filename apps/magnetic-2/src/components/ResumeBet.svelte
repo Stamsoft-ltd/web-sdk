@@ -10,7 +10,10 @@
 
 	let showModal = $state(false);
 
-	const isBonusMode = (mode?: string) => mode === 'SUPER' || mode === 'BONUS';
+	// Every bought round that runs a bonus. MYSTERY was missing (2026-09-08): a refresh during a
+	// Mystery buy auto-resumed straight into the round instead of offering play / end like the
+	// other two.
+	const isBonusMode = (mode?: string) => mode === 'SUPER' || mode === 'BONUS' || mode === 'MYSTERY';
 
 	const doResume = () => {
 		showModal = false;

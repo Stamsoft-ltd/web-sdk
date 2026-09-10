@@ -17,13 +17,13 @@ import {
 } from './constants';
 
 const DESKTOP_STATIC_KEYS: Record<SymbolName, string> = {
-	H1: 'foxTile',
+	H1: 'kTile',
 	H2: 'wolfTile',
 	H3: 'bearTile',
 	H4: 'rabbitTile',
 	L1: 'squirrelTile',
 	L2: 'aTile',
-	L3: 'kTile',
+	L3: 'foxTile',
 	L4: 'qTile',
 	WILD: 'wildTile',
 	MAGNET: 'magnetTile',
@@ -32,13 +32,13 @@ const DESKTOP_STATIC_KEYS: Record<SymbolName, string> = {
 };
 
 const MOBILE_STATIC_KEYS: Partial<Record<SymbolName, string>> = {
-	H1: 'foxTileMobile',
+	H1: 'kTileMobile',
 	H2: 'wolfTileMobile',
 	H3: 'bearTileMobile',
 	H4: 'rabbitTileMobile',
 	L1: 'squirrelTileMobile',
 	L2: 'aTileMobile',
-	L3: 'kTileMobile',
+	L3: 'foxTileMobile',
 	L4: 'qTileMobile',
 	WILD: 'wildTileMobile',
 	MAGNET: 'magnetTile',
@@ -46,13 +46,13 @@ const MOBILE_STATIC_KEYS: Partial<Record<SymbolName, string>> = {
 };
 
 const DESKTOP_WIN_KEYS: Record<SymbolName, string> = {
-	H1: 'foxWinTile',
+	H1: 'kWinTile',
 	H2: 'wolfWinTile',
 	H3: 'bearWinTile',
 	H4: 'rabbitWinTile',
 	L1: 'squirrelWinTile',
 	L2: 'aWinTile',
-	L3: 'kWinTile',
+	L3: 'foxWinTile',
 	L4: 'qWinTile',
 	WILD: 'wildWinTile',
 	MAGNET: 'magnetWinTile',
@@ -60,13 +60,13 @@ const DESKTOP_WIN_KEYS: Record<SymbolName, string> = {
 };
 
 const MOBILE_WIN_KEYS: Partial<Record<SymbolName, string>> = {
-	H1: 'foxWinTileMobile',
+	H1: 'kWinTileMobile',
 	H2: 'wolfWinTileMobile',
 	H3: 'bearWinTileMobile',
 	H4: 'rabbitWinTileMobile',
 	L1: 'squirrelWinTileMobile',
 	L2: 'aWinTileMobile',
-	L3: 'kWinTileMobile',
+	L3: 'foxWinTileMobile',
 	L4: 'qWinTileMobile',
 	WILD: 'wildWinTileMobile',
 	MAGNET: 'magnetWinTile',
@@ -95,26 +95,26 @@ const MULTIPLIER_WILD_KEYS_MOBILE: Record<number, string> = {
 
 // Landscape (mobile horizontal) symbol art. Symbols with no landscape variant fall back to desktop.
 const LANDSCAPE_STATIC_KEYS: Partial<Record<SymbolName, string>> = {
-	H1: 'foxTileLand',
+	H1: 'kTileLand',
 	H2: 'wolfTileLand',
 	H3: 'bearTileLand',
 	H4: 'rabbitTileLand',
 	L1: 'squirrelTileLand',
 	L2: 'aTileLand',
-	L3: 'kTileLand',
+	L3: 'foxTileLand',
 	L4: 'qTileLand',
 	WILD: 'wildTileLand',
 	SCATTER: 'scatterTileLand',
 };
 
 const LANDSCAPE_WIN_KEYS: Partial<Record<SymbolName, string>> = {
-	H1: 'foxWinTileLand',
+	H1: 'kWinTileLand',
 	H2: 'wolfWinTileLand',
 	H3: 'bearWinTileLand',
 	H4: 'rabbitWinTileLand',
 	L1: 'squirrelWinTileLand',
 	L2: 'aWinTileLand',
-	L3: 'kWinTileLand',
+	L3: 'foxWinTileLand',
 	L4: 'qWinTileLand',
 };
 

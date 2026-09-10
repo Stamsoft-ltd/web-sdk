@@ -18,7 +18,13 @@
 
 	const mode = $derived(stateBet.betToResume?.mode ?? '');
 	const modeLabel = $derived(
-		mode === 'SUPER' ? 'Core Overload' : mode === 'BONUS' ? 'Gravity Breach' : 'Bonus',
+		mode === 'SUPER'
+			? 'Core Overload'
+			: mode === 'BONUS'
+				? 'Gravity Breach'
+				: mode === 'MYSTERY'
+					? 'Mystery Bonus'
+					: 'Bonus',
 	);
 	// Split the localized body around %mode% so the mode name stays bold in any language.
 	const bodyParts = $derived(t('RESUME BODY').split('%mode%'));
@@ -46,16 +52,8 @@
 	);
 </script>
 
-<!-- The design puts a close button at the SCREEN's top-right on every dismissible popup
-     (9078:18631 POPUPS: 48.7px, #49489B, white glyph — the same one .ap-close draws in the autospin
-     modal), and this dialog was the only one without it.
-
-     It RESUMES rather than ends. There is no third outcome here — the round is open and has to be
-     either played or settled — so the X is wired to the non-destructive one: ending the round
-     settles a bonus the player never gets to see, which is not what an X should do. -->
-<button class="resume-close" type="button" onclick={props.onPlay} aria-label={t('PLAY ROUND')}>
-	<span class="resume-close__glyph"></span>
-</button>
+<!-- No screen-corner X here (user, 2026-09-09 — the buy confirm lost its X the same day):
+     PLAY ROUND and SKIP are the only two outcomes and both are on the plate. -->
 
 <div class="modal-overlay">
 	<div
@@ -100,7 +98,7 @@
 	   vw term shrinks it there while the cap keeps desktop as-is. */
 	.resume {
 		/* Kept in lockstep with CustomBuyBonusModal .confirm — see the note there (2026-08-10 pass). */
-		width: clamp(300px, 54vw, 720px);
+		width: clamp(240px, 38vw, 504px);
 		container-type: inline-size;
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}
@@ -197,51 +195,6 @@
 	/* End Round — the design's secondary: the plate's own lighter purple, outlined */
 	.resume-btn--cancel {
 		background: #47468a;
-	}
-
-	/* 9078:18631 — a 48.7px #49489B circle at the screen's top-right with a white X. Sized against
-	   the VIEWPORT, not the plate: it sits outside the container-query context, and a fixed-px
-	   button takes a huge bite out of a phone screen. The design's 48px is the cap. */
-	.resume-close {
-		position: fixed;
-		top: clamp(10px, 3vw, 22px);
-		right: clamp(10px, 3vw, 22px);
-		z-index: 10000;
-		width: clamp(32px, 8.5vw, 48px);
-		height: clamp(32px, 8.5vw, 48px);
-		font-size: clamp(10.5px, 2.8vw, 16px);
-		padding: 0;
-		border: none;
-		border-radius: 50%;
-		background: #49489b;
-		display: grid;
-		place-items: center;
-		cursor: pointer;
-		transition: filter 0.12s ease;
-	}
-	.resume-close:hover {
-		filter: brightness(1.3);
-	}
-	/* The glyph is two rotated bars, sized in em off the button's own font-size (no cqw out here). */
-	.resume-close__glyph {
-		position: relative;
-		display: block;
-		width: 1.155em;
-		height: 0.133em;
-	}
-	.resume-close__glyph::before,
-	.resume-close__glyph::after {
-		content: '';
-		position: absolute;
-		inset: 0;
-		border-radius: 0.133em;
-		background: #fff;
-	}
-	.resume-close__glyph::before {
-		transform: rotate(45deg);
-	}
-	.resume-close__glyph::after {
-		transform: rotate(-45deg);
 	}
 
 	/* Buttons do NOT inherit font-family: the UA stylesheet hard-sets `font: 400 13.333px Arial` on

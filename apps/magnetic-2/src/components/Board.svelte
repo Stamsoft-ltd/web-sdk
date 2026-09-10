@@ -8,211 +8,6 @@
 		| { type: 'boardWithAnimateSymbols'; symbolPositions: Position[] };
 </script>
 
-	<!-- One cell's ARTWORK. Lives in a snippet because two places draw it: the falling/settled grid
-	     above, and the locked CLUSTER below. The cluster used to call <SymbolWinFx> with nothing but
-	     the base texture, which gutted every rebuilt symbol -- a portal with a hole where its galaxy
-	     goes, a chip with an empty white screen -- and played the old pop/wobble under it. It gets the
-	     same layered art as any other cell now, and `winning` false, because a cluster already reads
-	     as a win through its perimeter electricity; animating the symbols inside it too is noise. -->
-	{#snippet symbolArt(
-		cell: BoardCell,
-		symbolInfo: ReturnType<typeof getSymbolInfo>,
-		x: number,
-		y: number,
-		width: number,
-		height: number,
-		alpha: number,
-		zIndex: number,
-		winning: boolean,
-	)}
-		{@const isScatterCell = cell.scatter || cell.name === 'SCATTER'}
-		{@const isWildCell = cell.wild || cell.name === 'WILD'}
-		{#if cell.name === 'POLARITY' || cell.polarity}
-			<PolaritySymbol x={x} y={y} {width} {height} {alpha} {zIndex} direction={stateGame.polarityDirection} pulse={stateGame.polarityPulse} phase={keyPhase(cell.key)} />
-		{:else if isScatterCell}
-			<!-- Layered capsule: base machine + bubbles + alien + eye + band arcs. It
-			     covers the win state itself, so it replaces <SymbolWinFx> here rather
-			     than stacking with it. -->
-			<ScatterSymbol
-				assetKey={symbolInfo.assetKey}
-				{x}
-				{y}
-				{width}
-				{height}
-				{alpha}
-				{zIndex}
-				phase={keyPhase(cell.key)}
-				{winning}
-			/>
-		{:else if cell.name === 'H1'}
-			<!-- Compass: bezel + turning needle + zooming alien + popping poles. Covers
-			     its own win state, so it stands in for <SymbolWinFx> here. -->
-			<CompassSymbol
-				assetKey={symbolInfo.assetKey}
-				{x}
-				{y}
-				{width}
-				{height}
-				{alpha}
-				{zIndex}
-				phase={keyPhase(cell.key)}
-				{winning}
-			/>
-		{:else if isWildCell}
-			<!-- Wild: magnet + popping bolt + blinking eye + lighting plaque. Covers its own
-			     win state, so it stands in for <SymbolWinFx> here, and the board-wide
-			     wild idle layer is gone for the same reason the scatter left it.
-			     MULTIPLIER wilds come through here too: the design's multiplier lockup is
-			     this same lockup with the bolt swapped for a numbered disc, so the component
-			     takes the multiplier and swaps that one layer. Its assetKey has to be the
-			     PLAIN wild for the current layout, not symbolInfo.assetKey — that still
-			     resolves to the old flat wild_xN texture with the number baked in, which
-			     would show through as a second multiplier behind the disc. -->
-			<WildSymbol
-				assetKey={getSpriteKeyByName({ name: 'WILD', state: 'static' })}
-				multiplier={cell.multiplier}
-				{x}
-				{y}
-				{width}
-				{height}
-				{alpha}
-				{zIndex}
-				phase={keyPhase(cell.key)}
-				{winning}
-			/>
-		{:else if cell.name === 'H2'}
-			<!-- Lightning badge: the bolt pops and blinks and the corner balls chase. Covers its
-			     own win state, so it stands in for <SymbolWinFx> here. -->
-			<LightningSymbol
-				assetKey={symbolInfo.assetKey}
-				{x}
-				{y}
-				{width}
-				{height}
-				{alpha}
-				{zIndex}
-				phase={keyPhase(cell.key)}
-				{winning}
-			/>
-		{:else if cell.name === 'H3'}
-			<!-- Portal: the galaxy in the middle blinks while it is still, and spins up fast
-			     on a win while the alien's antennae flap. Covers its own win state, so it
-			     stands in for <SymbolWinFx> here. -->
-			<PortalSymbol
-				assetKey={symbolInfo.assetKey}
-				{x}
-				{y}
-				{width}
-				{height}
-				{alpha}
-				{zIndex}
-				phase={keyPhase(cell.key)}
-				{winning}
-			/>
-		{:else if cell.name === 'H4'}
-			<!-- Electromagnetic device: drums + shaking antennae, with current arcing between
-			     the balls on a win. Covers its own win state, so it stands in for
-			     <SymbolWinFx> here. -->
-			<EmDeviceSymbol
-				assetKey={symbolInfo.assetKey}
-				{x}
-				{y}
-				{width}
-				{height}
-				{alpha}
-				{zIndex}
-				phase={keyPhase(cell.key)}
-				{winning}
-			/>
-		{:else if cell.name === 'L4'}
-			<!-- Circuit chip: the slime oozes down the board while it sits still, and on a
-			     win the alien zooms and grins while current jumps between the two screws.
-			     Covers its own win state, so it stands in for <SymbolWinFx> here. -->
-			<CircuitSymbol
-				assetKey={symbolInfo.assetKey}
-				{x}
-				{y}
-				{width}
-				{height}
-				{alpha}
-				{zIndex}
-				phase={keyPhase(cell.key)}
-				{winning}
-			/>
-		{:else if cell.name === 'L3'}
-			<!-- Astronaut: the alien's eyes look around while it sits still, and the head
-			     zooms and shakes on a win. Covers its own win state, so it stands in for
-			     <SymbolWinFx> here. -->
-			<CoilSymbol
-				assetKey={symbolInfo.assetKey}
-				{x}
-				{y}
-				{width}
-				{height}
-				{alpha}
-				{zIndex}
-				phase={keyPhase(cell.key)}
-				{winning}
-			/>
-		{:else if cell.name === 'L2'}
-			<!-- Magnet: body + shaking antennae + a terminal arc on a win. Like the
-			     scatter it covers its own win state, so it stands in for
-			     <SymbolWinFx> here. -->
-			<MagnetSymbol
-				assetKey={symbolInfo.assetKey}
-				{x}
-				{y}
-				{width}
-				{height}
-				{alpha}
-				{zIndex}
-				phase={keyPhase(cell.key)}
-				{winning}
-			/>
-		{:else if cell.name === 'L1'}
-			<!-- Battery: housing + balloons + the popping cell. Like the scatter it
-			     covers its own win state, so it stands in for <SymbolWinFx> here. -->
-			<BatterySymbol
-				assetKey={symbolInfo.assetKey}
-				{x}
-				{y}
-				{width}
-				{height}
-				{alpha}
-				{zIndex}
-				phase={keyPhase(cell.key)}
-				{winning}
-			/>
-		{:else if winning}
-			<!-- Winning cell: hi-res static win art with procedural pop/wobble/burst
-			     choreography — see <SymbolWinFx> for why the flipbooks are gone. -->
-			<SymbolWinFx
-				assetKey={symbolInfo.assetKey}
-				{x}
-				{y}
-				{width}
-				{height}
-				{alpha}
-				{zIndex}
-				phase={keyPhase(cell.key)}
-			/>
-		{:else}
-			{@const wig = wiggleFor(cell)}
-			<Sprite
-				key={symbolInfo.assetKey}
-				{x}
-				y={y + (wig?.dy ?? 0)}
-				anchor={{ x: 0.5, y: 0.5 }}
-				rotation={wig?.rot ?? 0}
-				width={width * (wig?.scale ?? 1)}
-				height={height * (wig?.scale ?? 1)}
-				{alpha}
-				tint={0xffffff}
-				{zIndex}
-			/>
-		{/if}
-	{/snippet}
-
 <script lang="ts">
 	import { Container, Graphics, Sprite } from 'pixi-svelte';
 	import { Tween } from 'svelte/motion';
@@ -230,10 +25,7 @@
 	import CircuitSymbol from './CircuitSymbol.svelte';
 	import WildSymbol from './WildSymbol.svelte';
 	import PolaritySymbol from './PolaritySymbol.svelte';
-	import {
-		drawRingMagIdle,
-		type SpecialIdleG,
-	} from '../game/specialIdleFx';
+	import { drawRingMagIdle, type SpecialIdleG } from '../game/specialIdleFx';
 	import { getContext } from '../game/context';
 	import { BOARD_DIMENSIONS, BOARD_GRID_OFFSET_Y, SYMBOL_H, SYMBOL_W } from '../game/constants';
 	import { BOARD_COLORS, drawPad } from '../game/boardStyle';
@@ -243,7 +35,6 @@
 	const { stateGame } = context;
 
 	const board = $derived(context.stateGame.board);
-
 
 	const spinBoard = $derived(context.stateGame.spinBoard);
 	const boardMode = $derived(context.stateGame.boardMode);
@@ -546,7 +337,12 @@
 				const f = (1 - d / SWEEP_WIDTH) ** 2;
 				any = true;
 				const cx = getX(ri);
-				g.ellipse(cx, (SYMBOL_H * BOARD_DIMENSIONS.y) / 2, SYMBOL_W * 0.42, (SYMBOL_H * BOARD_DIMENSIONS.y) / 2);
+				g.ellipse(
+					cx,
+					(SYMBOL_H * BOARD_DIMENSIONS.y) / 2,
+					SYMBOL_W * 0.42,
+					(SYMBOL_H * BOARD_DIMENSIONS.y) / 2,
+				);
 				g.fill({ color: 0x6fc4ff, alpha: 0.09 * f });
 			}
 		}
@@ -648,7 +444,7 @@
 			}
 			if (per < 1) continue;
 			const pointAt = (p: number) => {
-				let d = ((((p % 1) + 1) % 1)) * per;
+				let d = (((p % 1) + 1) % 1) * per;
 				for (let i = 0; i < n; i++) {
 					if (d <= segLen[i]) {
 						const a = loop[i];
@@ -822,6 +618,224 @@
 	});
 </script>
 
+<!-- One cell's ARTWORK. Lives in a snippet because two places draw it: the falling/settled grid
+	     above, and the locked CLUSTER below. The cluster used to call <SymbolWinFx> with nothing but
+	     the base texture, which gutted every rebuilt symbol -- a portal with a hole where its galaxy
+	     goes, a chip with an empty white screen -- and played the old pop/wobble under it. It gets the
+	     same layered art as any other cell now, and `winning` false, because a cluster already reads
+	     as a win through its perimeter electricity; animating the symbols inside it too is noise. -->
+{#snippet symbolArt(
+	cell: BoardCell,
+	symbolInfo: ReturnType<typeof getSymbolInfo>,
+	x: number,
+	y: number,
+	width: number,
+	height: number,
+	alpha: number,
+	zIndex: number,
+	winning: boolean,
+)}
+	{@const isScatterCell = cell.scatter || cell.name === 'SCATTER'}
+	{@const isWildCell = cell.wild || cell.name === 'WILD'}
+	{#if cell.name === 'POLARITY' || cell.polarity}
+		<PolaritySymbol
+			{x}
+			{y}
+			{width}
+			{height}
+			{alpha}
+			{zIndex}
+			direction={stateGame.polarityDirection}
+			pulse={stateGame.polarityPulse}
+			phase={keyPhase(cell.key)}
+		/>
+	{:else if isScatterCell}
+		<!-- Layered capsule: base machine + bubbles + alien + eye + band arcs. It
+			     covers the win state itself, so it replaces <SymbolWinFx> here rather
+			     than stacking with it. -->
+		<ScatterSymbol
+			assetKey={symbolInfo.assetKey}
+			{x}
+			{y}
+			{width}
+			{height}
+			{alpha}
+			{zIndex}
+			phase={keyPhase(cell.key)}
+			{winning}
+		/>
+	{:else if cell.name === 'L3'}
+		<!-- Compass: bezel + turning needle + zooming alien + popping poles. Covers
+			     its own win state, so it stands in for <SymbolWinFx> here.
+			     L3 since 2026-09-08: the compass and the astronaut swapped slots so the alien
+			     is the top-paying symbol. Only the NAME each component answers to changed —
+			     the art, the components and the math's pay bands are untouched. -->
+		<CompassSymbol
+			assetKey={symbolInfo.assetKey}
+			{x}
+			{y}
+			{width}
+			{height}
+			{alpha}
+			{zIndex}
+			phase={keyPhase(cell.key)}
+			{winning}
+		/>
+	{:else if isWildCell}
+		<!-- Wild: magnet + popping bolt + blinking eye + lighting plaque. Covers its own
+			     win state, so it stands in for <SymbolWinFx> here, and the board-wide
+			     wild idle layer is gone for the same reason the scatter left it.
+			     MULTIPLIER wilds come through here too: the design's multiplier lockup is
+			     this same lockup with the bolt swapped for a numbered disc, so the component
+			     takes the multiplier and swaps that one layer. Its assetKey has to be the
+			     PLAIN wild for the current layout, not symbolInfo.assetKey — that still
+			     resolves to the old flat wild_xN texture with the number baked in, which
+			     would show through as a second multiplier behind the disc. -->
+		<WildSymbol
+			assetKey={getSpriteKeyByName({ name: 'WILD', state: 'static' })}
+			multiplier={cell.multiplier}
+			{x}
+			{y}
+			{width}
+			{height}
+			{alpha}
+			{zIndex}
+			phase={keyPhase(cell.key)}
+			{winning}
+		/>
+	{:else if cell.name === 'H2'}
+		<!-- Lightning badge: the bolt pops and blinks and the corner balls chase. Covers its
+			     own win state, so it stands in for <SymbolWinFx> here. -->
+		<LightningSymbol
+			assetKey={symbolInfo.assetKey}
+			{x}
+			{y}
+			{width}
+			{height}
+			{alpha}
+			{zIndex}
+			phase={keyPhase(cell.key)}
+			{winning}
+		/>
+	{:else if cell.name === 'H3'}
+		<!-- Portal: the galaxy in the middle blinks while it is still, and spins up fast
+			     on a win while the alien's antennae flap. Covers its own win state, so it
+			     stands in for <SymbolWinFx> here. -->
+		<PortalSymbol
+			assetKey={symbolInfo.assetKey}
+			{x}
+			{y}
+			{width}
+			{height}
+			{alpha}
+			{zIndex}
+			phase={keyPhase(cell.key)}
+			{winning}
+		/>
+	{:else if cell.name === 'H4'}
+		<!-- Electromagnetic device: drums + shaking antennae, with current arcing between
+			     the balls on a win. Covers its own win state, so it stands in for
+			     <SymbolWinFx> here. -->
+		<EmDeviceSymbol
+			assetKey={symbolInfo.assetKey}
+			{x}
+			{y}
+			{width}
+			{height}
+			{alpha}
+			{zIndex}
+			phase={keyPhase(cell.key)}
+			{winning}
+		/>
+	{:else if cell.name === 'L4'}
+		<!-- Circuit chip: the slime oozes down the board while it sits still, and on a
+			     win the alien zooms and grins while current jumps between the two screws.
+			     Covers its own win state, so it stands in for <SymbolWinFx> here. -->
+		<CircuitSymbol
+			assetKey={symbolInfo.assetKey}
+			{x}
+			{y}
+			{width}
+			{height}
+			{alpha}
+			{zIndex}
+			phase={keyPhase(cell.key)}
+			{winning}
+		/>
+	{:else if cell.name === 'H1'}
+		<!-- Astronaut (H1, the top symbol since 2026-09-08 — see the compass branch): the
+			     alien's eyes look around while it sits still, and the head zooms and shakes on
+			     a win. Covers its own win state, so it stands in for <SymbolWinFx> here. -->
+		<CoilSymbol
+			assetKey={symbolInfo.assetKey}
+			{x}
+			{y}
+			{width}
+			{height}
+			{alpha}
+			{zIndex}
+			phase={keyPhase(cell.key)}
+			{winning}
+		/>
+	{:else if cell.name === 'L2'}
+		<!-- Magnet: body + shaking antennae + a terminal arc on a win. Like the
+			     scatter it covers its own win state, so it stands in for
+			     <SymbolWinFx> here. -->
+		<MagnetSymbol
+			assetKey={symbolInfo.assetKey}
+			{x}
+			{y}
+			{width}
+			{height}
+			{alpha}
+			{zIndex}
+			phase={keyPhase(cell.key)}
+			{winning}
+		/>
+	{:else if cell.name === 'L1'}
+		<!-- Battery: housing + balloons + the popping cell. Like the scatter it
+			     covers its own win state, so it stands in for <SymbolWinFx> here. -->
+		<BatterySymbol
+			assetKey={symbolInfo.assetKey}
+			{x}
+			{y}
+			{width}
+			{height}
+			{alpha}
+			{zIndex}
+			phase={keyPhase(cell.key)}
+			{winning}
+		/>
+	{:else if winning}
+		<!-- Winning cell: hi-res static win art with procedural pop/wobble/burst
+			     choreography — see <SymbolWinFx> for why the flipbooks are gone. -->
+		<SymbolWinFx
+			assetKey={symbolInfo.assetKey}
+			{x}
+			{y}
+			{width}
+			{height}
+			{alpha}
+			{zIndex}
+			phase={keyPhase(cell.key)}
+		/>
+	{:else}
+		{@const wig = wiggleFor(cell)}
+		<Sprite
+			key={symbolInfo.assetKey}
+			{x}
+			y={y + (wig?.dy ?? 0)}
+			anchor={{ x: 0.5, y: 0.5 }}
+			rotation={wig?.rot ?? 0}
+			width={width * (wig?.scale ?? 1)}
+			height={height * (wig?.scale ?? 1)}
+			{alpha}
+			tint={0xffffff}
+			{zIndex}
+		/>
+	{/if}
+{/snippet}
+
 {#if show}
 	<Container
 		x={layout.x}
@@ -861,12 +875,7 @@
 				for (let reelIndex = 0; reelIndex < board.length; reelIndex++) {
 					const reel = board[reelIndex];
 					for (let rowIndex = 0; rowIndex < reel.length; rowIndex++) {
-						drawPad(
-							graphics,
-							getX(reelIndex),
-							getStaticY(rowIndex),
-							reel[rowIndex].highlighted,
-						);
+						drawPad(graphics, getX(reelIndex), getStaticY(rowIndex), reel[rowIndex].highlighted);
 					}
 				}
 			}}
@@ -927,7 +936,10 @@
 					{@const baseH = SYMBOL_H * symbolInfo.sizeRatios.height * cell.displayScale.current}
 					{@const y = cell.displayY.current + baseH * SQUASH_Y * sq * 0.5}
 					{@const width =
-						SYMBOL_W * symbolInfo.sizeRatios.width * cell.displayScale.current * (1 + SQUASH_X * sq)}
+						SYMBOL_W *
+						symbolInfo.sizeRatios.width *
+						cell.displayScale.current *
+						(1 + SQUASH_X * sq)}
 					{@const height = baseH * (1 - SQUASH_Y * sq)}
 					{@const targetY = getStaticY(cell.position.row)}
 					{@const fallDist = targetY - y}
@@ -1033,10 +1045,7 @@
 
 		<!-- Contact shadows and the spin sheen: below every symbol, above the pads. NORMAL blend, not
 		     additive — a shadow has to darken the pad, and an additive layer can only lighten it. -->
-		<Graphics
-			zIndex={Z.grid + 1}
-			draw={(gr) => (shadowG = gr as unknown as SpecialIdleG)}
-		/>
+		<Graphics zIndex={Z.grid + 1} draw={(gr) => (shadowG = gr as unknown as SpecialIdleG)} />
 
 		<!-- Specials' idle animation + the grid charge sweep. Above the symbols: the wild's field
 		     arcs across its poles and the scatter's motes orbit its core, both in front of the art. -->

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { Container, Graphics, Sprite } from 'pixi-svelte';
 
-	// The ASTRONAUT cell (L3), assembled live so the alien inside the helmet can move.
+	// The ASTRONAUT cell (H1 — the top symbol since 2026-09-08, when it swapped slots with the
+	// compass; the file keeps its old name), assembled live so the alien inside the helmet can move.
 	//
 	//   idle — the eyes LOOK AROUND: a fast flick to a new direction, then a long hold.
 	//   win  — the alien JUMPS inside the helmet, on a beat: it stretches on the way up, leans hard
@@ -211,7 +212,14 @@
 	<!-- The visor lighting up: the same helmet drawn again additively. Kept mounted at alpha 0
 	     rather than {#if}-toggled -- it changes every frame of a win, and mounting a Pixi child per
 	     frame costs more than an empty batched draw. -->
-	<Sprite key={props.assetKey} anchor={0.5} blendMode="add" alpha={visorFlash} width={W} height={H} />
+	<Sprite
+		key={props.assetKey}
+		anchor={0.5}
+		blendMode="add"
+		alpha={visorFlash}
+		width={W}
+		height={H}
+	/>
 	<!-- The alien. Everything below moves with this container, which is what keeps the eyes in
 	     their sockets while the head zooms and shakes. -->
 	<Container

@@ -1,6 +1,7 @@
 import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap } from 'utils-book';
 import { stateBet, stateUi } from 'state-shared';
 import { waitForTimeout } from 'utils-shared/wait';
+import { loadDemandAssets } from 'pixi-svelte';
 
 import { eventEmitter } from './eventEmitter';
 import { playBookEvent } from './utils';
@@ -181,6 +182,39 @@ const getBonusRoomFromScatters = (positions: Position[]) =>
 
 let pendingMagnetActivationPositions: Position[] = [];
 let pendingMysteryMode: 'BONUS' | 'SUPER' | 'HIDDEN' | null = null;
+/** True once this book's Mystery draw has been shown, whichever handler got to it first. Reset
+ *  by the freeSpinTrigger that consumes the mode. */
+let mysteryDrawPlayed = false;
+
+/**
+ * The Mystery buy's draw, SHOWN not just recorded (MysteryReveal.svelte): the orb holds a
+ * turning "?" while the draw resolves. It plays once per book, ahead of the first reveal — see
+ * the `reveal` handler — and that is the whole of it: the flow the user settled on (2026-09-08)
+ * is buy, the "?" orb, then the reels land 3, 4 or 5 scatters, then the ordinary free-spins
+ * congratulations names what was won. The orb no longer hands over to its own "YOU WON" plate
+ * (MysteryReveal's `won` beat, still there for the stories); the board answers the question and
+ * the FreeSpinIntro is the congratulations.
+ *
+ * Turbo compresses the beat rather than skipping it, because this screen IS the Mystery buy's
+ * payoff.
+ */
+const playMysteryDraw = async () => {
+	if (mysteryDrawPlayed) return;
+	mysteryDrawPlayed = true;
+	// The orb is demand art. The event's own handler sits behind the bonus-art gate
+	// (game/utils.ts), but the reveal handler that can pull the draw forward does not, so wait
+	// here — loadDemandAssets() is idempotent and normally already resolved.
+	await loadDemandAssets();
+
+	const fast = stateBet.isTurbo || stateBet.isSuperTurbo;
+	eventEmitter.broadcast({ type: 'mysteryRevealShow' });
+	await waitForTimeout(fast ? 1000 : 2000);
+	eventEmitter.broadcast({ type: 'mysteryRevealHide' });
+	// `mysteryRevealHide` starts the orb beat's LEAVE (MysteryReveal's LEAVE_S, 450ms — the aliens
+	// duck back out and the machine shrinks away), and only then does the scrim fade. Both have to
+	// finish before the board settles underneath it.
+	await waitForTimeout(450 + 360);
+};
 let bonusCarryWinAmount = 0;
 let presentedBonusWinAmount = 0;
 let superSeriesPreviewAmount = 0;
@@ -211,33 +245,27 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// Math resolves the 70/25/5 choice before the freeSpinTrigger. Keep it until that
 		// trigger arrives; scatter count alone cannot distinguish a Mystery HIDDEN result.
 		pendingMysteryMode = bookEvent.mode;
-
-		// The congratulations plate names the spin count as well as the bonus (design 9185:14033),
-		// and the count is not in THIS event — it arrives with the freeSpinTrigger this draw is
-		// about to run into. Read it forward out of the same book rather than printing the design's
-		// placeholder 10, which would be a lie the moment the math awards anything else.
-		const freeSpins = (() => {
-			const at = bookEvents.findIndex((event) => event.index === bookEvent.index);
-			for (const event of bookEvents.slice(at + 1)) {
-				if (event.type === 'freeSpinTrigger') return event.totalFs;
-			}
-			return 0;
-		})();
-
-		// The draw is SHOWN, not just recorded (MysteryReveal.svelte): the orb holds a turning "?"
-		// while it resolves, then the congratulations plate names what came out. The orb beat is the
-		// 2.5-3s the user asked for; turbo compresses both beats rather than skipping them, because
-		// this screen IS the Mystery buy's payoff.
-		const fast = stateBet.isTurbo || stateBet.isSuperTurbo;
-		eventEmitter.broadcast({ type: 'mysteryRevealShow' });
-		await waitForTimeout(fast ? 1100 : 2700);
-		eventEmitter.broadcast({ type: 'mysteryRevealWon', mode: bookEvent.mode, freeSpins });
-		await waitForTimeout(fast ? 1500 : 3000);
-		eventEmitter.broadcast({ type: 'mysteryRevealHide' });
-		// Let the fade finish before the bonus hand-off starts dimming underneath it.
-		await waitForTimeout(360);
+		await playMysteryDraw();
 	},
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
+		// A Mystery buy's draw plays BEFORE the scatters that answer it are seen (asked for
+		// 2026-09-08). The mock math already puts the event ahead of the first reveal; this is for
+		// a book that carries it later — the draw is pulled forward to here, and the event's own
+		// handler then finds it already played.
+		if (bookEvent.gameType === 'basegame') {
+			const draw = bookEvents.find(
+				(event): event is BookEventOfType<'mysteryBonusReveal'> =>
+					event.type === 'mysteryBonusReveal',
+			);
+			if (draw) {
+				pendingMysteryMode = draw.mode;
+				await playMysteryDraw();
+			} else {
+				// A book with no draw is a fresh start; this also unsticks the flag should a draw
+				// ever arrive without the freeSpinTrigger that normally resets it.
+				mysteryDrawPlayed = false;
+			}
+		}
 		// A newly landed shifter starts neutral. The polarityShift event colours only its chosen arrow.
 		stateGame.polarityDirection = null;
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
@@ -412,6 +440,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		const isFeatureSpin = bookEvent.totalFs === 1;
 		const mysteryMode = pendingMysteryMode;
 		pendingMysteryMode = null;
+		mysteryDrawPlayed = false;
 		const bonusMode = isFeatureSpin
 			? 'feature'
 			: mysteryMode === 'BONUS'
@@ -460,6 +489,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			await eventEmitter.broadcastAsync({
 				type: 'freeSpinIntroUpdate',
 				totalFreeSpins: bookEvent.totalFs,
+				// The badge over the plate reads "3x" / "4x" / "5x" — the scatters that did it.
+				scatters: bookEvent.positions.length,
 			});
 		} else {
 			stateGame.gameType = bonusMode;

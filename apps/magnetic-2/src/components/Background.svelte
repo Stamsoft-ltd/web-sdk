@@ -10,6 +10,7 @@
 	import { BACKGROUND_LIGHTS } from '../game/backgroundLights';
 	import { PORTRAIT_BACKGROUND_RATIO, SYMBOL_H, SYMBOL_W } from '../game/constants';
 	import { BOARD_SIZES } from '../game/constants';
+	import type { PaySymbolName } from '../game/types';
 
 	const props: {
 		/** True once the splash is out of the way and the player is actually looking at the room —
@@ -139,6 +140,7 @@
 		ellipse: (x: number, y: number, rx: number, ry: number) => unknown;
 		poly: (points: number[]) => unknown;
 		fill: (s: object) => void;
+		stroke: (s: object) => void;
 	};
 	let lampG: G | null = null;
 	// The ship runs on its own clock. The room's is deliberately throttled to ~10fps (see below),
@@ -149,28 +151,26 @@
 	const breath = $derived(1 + 0.006 * Math.sin((clock / BREATH_S) * Math.PI * 2));
 
 	// ── The ship ──
-	// Assembled from the designer's own loose parts (scripts/build-ufo-art.py prints every constant
-	// below): the saucer, the antenna standing on it, and a tractor beam that is DRAWN rather than a
+	// The MOTHERSHIP saucer (Figma 9148:31504), ONE sprite: glass dome, antenna ball, magenta rim
+	// lamps and the emitter oval on its underside, with its own neon halo painted in. It replaced the
+	// loose hull + antenna pair that scripts/build-ufo-art.py assembled; scripts/build-ufo-ship.py
+	// prepares it and prints every constant below. The tractor beam is still DRAWN rather than a
 	// sprite, so it can switch on, breathe, sweep and haul motes up into the hull.
 	//
 	// The design hangs it top-right, running off the frame edge — that column used to hold the magnet
 	// capsule, which is gone with the redesign, so the ship gets it back at full size. Note WHERE
 	// that is: dead centre of the room's right window, i.e. the ship is outside, in the sky.
 	//
-	// Everything is sized off the HULL's width and its own art aspect. The parts were exported at
-	// unrelated scales, so sizing them against each other's pixel dimensions draws the antenna 21%
-	// too large — the antenna's size comes from the ratio measured in the designer's composite.
+	// Everything is sized off the sprite box's WIDTH and its own aspect; the opaque saucer spans
+	// 0.9984 of that box, so `w` is the saucer's width to within a pixel.
 	const UFO_LANDSCAPE = {
 		cx: 0.888,
-		cy: 0.1635,
-		/** Hull width, as a fraction of the background. */
+		// 0.1635 hung the old hull-only box here; this sprite is taller (dome and antenna are in it),
+		// so at the same centre the ball grazed the top of a 16:9 canvas. Dropped by 2% of the height.
+		cy: 0.185,
+		/** Ship width, as a fraction of the background. */
 		w: 0.2143,
-		hullAspect: 1.9389,
-		antennaAspect: 0.5,
-		/** Antenna ball width as a fraction of the hull's width. */
-		antennaOfHull: 0.1,
-		/** How far the stem sinks into the dome, as a fraction of the antenna's height. */
-		antennaOverlap: 0.06,
+		hullAspect: 1.4112,
 	};
 	// PORTRAIT hangs the same ship top-CENTRE, over the logo, with its beam coming down into the gap
 	// above the board (Figma 4336:15793, the mobile design: node 9126:19898 is this same composite at
@@ -184,14 +184,17 @@
 		cx: 0.5,
 		cy: 0.075,
 		w: 0.26,
-		hullAspect: 1.9389,
-		antennaAspect: 0.5,
-		antennaOfHull: 0.1,
-		antennaOverlap: 0.06,
+		hullAspect: 1.4112,
 	};
 	const UFO = $derived(isPortrait ? UFO_PORTRAIT : UFO_LANDSCAPE);
-	/** The lit opening on the saucer's underside, in HULL fractions — the beam hangs off this. */
-	const EMITTER = { cx: 0.498, w: 0.2047, bottom: 0.9237 };
+	/** The emitter oval on the saucer's underside, in sprite-box fractions — the beam hangs off this. */
+	// `cy`/`ry` are the oval itself, read off the sprite's centre column (ufo_ship.webp, 640x454):
+	// outline 0.858-0.958 of the box height, fill 0.863-0.952. The cone leaves the oval's CENTRE,
+	// drawn over the hull's underside — it used to start at the hull's edge, behind it, which read
+	// as a light coming from behind the ship rather than out of its emitter (2026-09-08).
+	const EMITTER = { cx: 0.5008, cy: 0.908, w: 0.3875, ry: 0.05, bottom: 0.9669 };
+	/** The antenna ball, centre-relative box fractions — the beacon glow sits on it. */
+	const BEACON = { x: -0.0012, y: -0.4074, r: 0.0488 };
 	// Beam reach, in HULL widths: the design's OWN spread, its art running from the emitter's 0.0439
 	// to 0.2022 of the background over 0.4757 of its height — which, against the landscape hull, is
 	// 0.94 hull widths across and 1.25 hull widths long.
@@ -207,9 +210,7 @@
 	// is landing on something. The design stops it just above the board.
 	const BEAM_LEN_OF_HULL = $derived(isPortrait ? 0.78 : BEAM.lenOfHull);
 
-	const shipLoaded = $derived(
-		!!context.stateApp.loadedAssets?.ufoHull && !!context.stateApp.loadedAssets?.ufoAntenna,
-	);
+	const shipLoaded = $derived(!!context.stateApp.loadedAssets?.ufoShip);
 	// Both orientations now. It used to be landscape-only, back when portrait cropped into an
 	// interior room with no window for the ship to hang in; the mobile design (4336:15793) puts it
 	// top-centre over the logo, which is where UFO_PORTRAIT hangs it.
@@ -217,12 +218,8 @@
 
 	const hullW = $derived(UFO.w * cover.width);
 	const hullH = $derived(hullW / UFO.hullAspect);
-	const antennaW = $derived(hullW * UFO.antennaOfHull);
-	const antennaH = $derived(antennaW / UFO.antennaAspect);
-	// Local coordinates inside the ship container, whose origin is the whole assembly's centre.
-	const assemblyH = $derived(hullH + antennaH * (1 - UFO.antennaOverlap));
-	const hullY = $derived(assemblyH / 2 - hullH / 2);
-	const antennaY = $derived(-assemblyH / 2 + antennaH / 2);
+	// Local coordinates inside the ship container, whose origin is the sprite's own centre.
+	const hullY = 0;
 
 	// ── Arrival ──
 	// The room's first impression: the ship comes in from deep in the window's sky, tiny, growing as
@@ -267,9 +264,19 @@
 	});
 	const brake = $derived(arrivedAt === null ? 0 : Math.exp(-(shipClock - arrivedAt) * 2.4));
 	const shake = $derived(hullW * (0.0007 + 0.009 * brake) * near);
+	/** Where it parks. The background COVERS the canvas, so on a viewport squarer than the art the
+	 *  cover is wider than the canvas and the design's column runs off the right edge — a 3:2
+	 *  window lost a third of the saucer behind the win card. Keep the whole ship in shot. */
+	const parkX = $derived(
+		Math.min(
+			canvas.width * 0.5 + (UFO.cx - 0.5) * cover.width,
+			canvas.width - hullW * 0.5 - canvas.width * 0.012,
+		),
+	);
+	const farX = $derived(canvas.width * 0.5 + (FAR.cx - 0.5) * cover.width);
 	const shipX = $derived(
-		canvas.width * 0.5 +
-			(FAR.cx + (UFO.cx - FAR.cx) * near - 0.5) * cover.width +
+		farX +
+			(parkX - farX) * near +
 			(Math.sin(shipClock * 13.9) + 0.6 * Math.sin(shipClock * 8.9 + 2.1)) * shake +
 			// A lazy sideways drift to go with the hover: a ship that only moves up and down is a lift.
 			Math.sin(shipClock * 0.31 + 0.9) * cover.width * 0.006 * near,
@@ -303,21 +310,43 @@
 	// symbol pad in the cone, under the ship), and it gives the beam something to be FOR — before
 	// this it was a light with nothing in it but motes.
 	//
-	// `magnetTargetSymbol` is the cluster's own symbol and is null whenever there is no cluster, so
-	// this appears and clears with the cluster rather than needing its own bookkeeping.
-	const beamSymbol = $derived(context.stateGame.magnetTargetSymbol);
+	// `magnetTargetSymbol` is the magnet chain's symbol and is null whenever there is no chain, so
+	// this appears and clears with the chain rather than needing its own bookkeeping.
+	//
+	// A NATURAL chain — one that formed on its own, without the magnet — locks and respins exactly
+	// the same way, but the math sends `magnetTargetSymbol: null` on every one of its series updates
+	// (mock-rgs resolveNaturalSequence does; the beam was empty for exactly those rounds, three
+	// screenshots' worth). The ship holds the biggest chain's own symbol then.
+	const beamSymbol = $derived.by((): PaySymbolName | null => {
+		const target = context.stateGame.magnetTargetSymbol;
+		if (target) return target;
+		const series = context.stateGame.activeSeries;
+		if (!series.length) return null;
+		return series.reduce((a, b) => (b.lockedPositions.length > a.lockedPositions.length ? b : a))
+			.symbol;
+	});
 	/**
-	 * `enter` / `top` are positions down the cone (0 = the emitter, 1 = the cone's mouth), `fill` is
-	 * how much of the cone's width at `top` the artwork spans, and `min`/`max` are the size it grows
-	 * through on the way up.
+	 * `enter` / `top` are positions down the cone (0 = the emitter, 1 = the cone's mouth), and
+	 * `min`/`max` are the size it grows through on the way up, in BOARD CELLS.
 	 *
-	 * SUCTION IS A LOOP, not an arrival. The symbol enters at the cone's mouth SMALL, is drawn up
-	 * the beam getting BIGGER as it closes on the ship, and vanishes into the hull — then the next
-	 * one starts at the bottom. Two earlier cuts got this wrong: the first parked it half way down
-	 * the cone at a fixed size (a thing in a light, not a thing being taken), the second let it
-	 * climb once and then hold. Growing is what sells the depth — it is coming towards the ship.
+	 * SUCTION IS A LOOP, not an arrival. The symbol enters at the cone's mouth at the size it left
+	 * the board, is drawn up the beam getting BIGGER as it closes on the ship, and vanishes into the
+	 * hull — and the next one is already at the mouth by then, so the beam is never empty. Two
+	 * earlier cuts got this wrong: the first parked it half way down the cone at a fixed size (a
+	 * thing in a light, not a thing being taken), the second let it climb once and then hold.
+	 * Growing is what sells the depth — it is coming towards the ship.
+	 *
+	 * `fill` is the box as a fraction of the cone's width at its MOUTH — the one beam measure the
+	 * saucer swap did not move (the new emitter is nearly twice as wide as the old one, so anything
+	 * measured near the top doubled with it). A board-cell-sized cut was tried and thrown out: at
+	 * that size it read as a symbol parked in front of the beam, not a thing being taken.
+	 *
+	 * It used to fade out for the first 8% and last 14% of every trip, so one screenshot in five
+	 * caught an empty beam (measured across three symbols in a headless run, 2026-09-08).
 	 */
-	const BEAM_SYMBOL = { enter: 0.95, top: 0.16, fill: 0.52, min: 0.42, max: 1.2 };
+	const BEAM_SYMBOL = { enter: 0.95, top: 0.16, fill: 0.176, min: 0.42, max: 1.2 };
+	/** The last fraction of a trip, during which the next symbol rides in at the mouth. */
+	const NEXT_IN = 0.06;
 	const BEAM_SYMBOL_MS = 900;
 	/** The one-off flight out of the board cell into the cone's mouth. */
 	const lift = new Tween(0, { duration: BEAM_SYMBOL_MS, easing: cubicOut });
@@ -326,14 +355,20 @@
 	/** `shipClock` when the loop took over from the flight — null while the flight is still running. */
 	let suckT0 = $state<number | null>(null);
 	$effect(() => {
-		if (beamSymbol && !flightArmed) {
-			flightArmed = true;
+		// Wait for the ship to actually be mounted: capturing against shipX/shipY/shipScale from an
+		// unmounted ship locks in bad ship-relative coordinates that never get recomputed once the
+		// ship does mount (flightArmed only re-arms on the null -> symbol edge, not on shipShown).
+		if (beamSymbol && !flightArmed && shipShown) {
 			// Board -> ship-local, because <BeamSymbol> is a child of the ship's own container.
 			// The ship's rotation is a fraction of a degree of hover tilt, so it is ignored here;
 			// including it would rotate the launch point by less than a pixel.
 			const board = context.stateGameDerived.boardLayout();
 			const at = firstTargetCell();
 			if (at) {
+				// Only arm once the source cell actually resolves — arming on a miss (board not yet
+				// settled) would lock out every later retry for this activation and either skip the
+				// flight entirely or reuse a stale `flightFrom` from a previous round.
+				flightArmed = true;
 				const scale = board.boardScale || 1;
 				const worldX = board.x + (SYMBOL_W * (at.reel + 0.5) - BOARD_SIZES.width / 2) * scale;
 				const worldY = board.y + (SYMBOL_H * (at.row + 0.5) - BOARD_SIZES.height / 2) * scale;
@@ -345,7 +380,10 @@
 				};
 			}
 		}
-		if (!beamSymbol) flightArmed = false;
+		if (!beamSymbol) {
+			flightArmed = false;
+			flightFrom = null;
+		}
 		lift.set(beamSymbol ? 1 : 0, beamSymbol ? undefined : { duration: 260 });
 		if (!beamSymbol) {
 			suckT0 = null;
@@ -364,12 +402,14 @@
 	// read live it would jump between cells the moment the board re-settles under it (every cell of
 	// the target symbol carries `target`, and which one comes first changes on every reveal).
 	const firstTargetCell = () => {
-		const name = context.stateGame.magnetTargetSymbol;
+		const name = beamSymbol;
 		if (!name) return null;
 		const board = context.stateGame.board;
 		for (let reel = 0; reel < board.length; reel += 1) {
 			const column = board[reel];
 			for (let row = 0; row < column.length; row += 1) {
+				// Locked cluster cells COUNT: once the chain is complete every copy of the symbol is
+				// locked, and the beam still has to be seen lifting one out of the cluster.
 				if (column[row]?.name === name) return { reel, row };
 			}
 		}
@@ -382,7 +422,7 @@
 	let flightArmed = false;
 
 	const beamAxisX = $derived((EMITTER.cx - 0.5) * hullW);
-	const beamTopY = $derived(hullY - hullH / 2 + (EMITTER.bottom - 0.04) * hullH);
+	const beamTopY = $derived(hullY - hullH / 2 + EMITTER.cy * hullH);
 	const beamLen = $derived(BEAM_LEN_OF_HULL * hullW);
 	const beamRadAt = (s: number) => {
 		const rTop = (EMITTER.w * hullW) / 2;
@@ -401,18 +441,21 @@
 			? BEAM_SYMBOL.enter
 			: BEAM_SYMBOL.enter + (BEAM_SYMBOL.top - BEAM_SYMBOL.enter) * suckU ** 1.5,
 	);
-	/** Its box is measured at `top`, once — the live growth is a scale (see `bodyScale`), so the
-	 *  artwork is rasterised at one size instead of being re-fitted every frame. */
-	const beamSymbolCell = $derived(2 * beamRadAt(BEAM_SYMBOL.top) * BEAM_SYMBOL.fill);
+	/** Its box is measured off the cone's mouth, once — the live growth is a scale (see
+	 *  `bodyScale`), so the artwork is rasterised at one size instead of being re-fitted every
+	 *  frame. */
+	const beamSymbolCell = $derived(2 * beamRadAt(1) * BEAM_SYMBOL.fill);
 	// Held, not parked: it sways across the cone, bobs, turns a little, and swells on the same grab
 	// pulse the beam flares on — all off the ship's own clock, so nothing here keeps its own state.
 	const beamGrab = $derived(
 		Math.max(0, Math.sin(((shipClock % GRAB_PERIOD) / GRAB_PERIOD) * Math.PI * 1.6)) ** 8,
 	);
-	/** The beam's own axis, with a gentle sway across it. */
-	const holdX = $derived(
-		beamAxisX + Math.sin(shipClock * 0.62 + 1.1) * beamRadAt(beamSymbolS) * 0.12,
-	);
+	/** Where a symbol at position `S` down the cone is held: on the beam's own axis with a gentle
+	 *  sway across it, and lifted by the ratchet and the grab flare below. */
+	const holdAt = (S: number) => ({
+		x: beamAxisX + Math.sin(shipClock * 0.62 + 1.1) * beamRadAt(S) * 0.12,
+		y: beamTopY + beamLen * S - suck * beamSymbolCell * 0.12 - beamGrab * beamSymbolCell * 0.2,
+	});
 	// The RATCHET, riding on top of the long climb: hauled up quickly over the first 40% of the
 	// cycle, then slipping back a little over the remaining 60% while the beam takes another bite.
 	// A symmetric sine bob here would read as a hover. The grab flare adds a harder tug on top, so
@@ -424,12 +467,7 @@
 		const phase = (shipClock % SUCK_PERIOD) / SUCK_PERIOD;
 		return phase < 0.4 ? 1 - (1 - phase / 0.4) ** 3 : (1 - (phase - 0.4) / 0.6) ** 2;
 	});
-	const holdY = $derived(
-		beamTopY +
-			beamLen * beamSymbolS -
-			suck * beamSymbolCell * 0.12 -
-			beamGrab * beamSymbolCell * 0.2,
-	);
+	const hold = $derived(holdAt(beamSymbolS));
 
 	// ── The flight ─────────────────────────────────────────────────────────────────────────────
 	// `lift` (900ms, cubicOut) carries it from its cell to the cone's mouth. The path is not a
@@ -439,10 +477,10 @@
 	const flightT = $derived(lift.current);
 	/** X snaps onto the beam axis first (t^0.65), Y trails it (t^1.35). */
 	const beamSymbolX = $derived(
-		flightFrom ? flightFrom.x + (holdX - flightFrom.x) * flightT ** 0.65 : holdX,
+		flightFrom ? flightFrom.x + (hold.x - flightFrom.x) * flightT ** 0.65 : hold.x,
 	);
 	const beamSymbolY = $derived(
-		flightFrom ? flightFrom.y + (holdY - flightFrom.y) * flightT ** 1.35 : holdY,
+		flightFrom ? flightFrom.y + (hold.y - flightFrom.y) * flightT ** 1.35 : hold.y,
 	);
 	/** Size. During the flight it goes from its board cell to the loop's STARTING size, so the
 	 *  hand-off is seamless; after that the loop owns it and it grows all the way up the cone. */
@@ -453,13 +491,18 @@
 	const bodyScale = $derived(
 		suckT0 === null ? startRatio + (BEAM_SYMBOL.min - startRatio) * flightT : suckScale,
 	);
-	/** It fades up out of the cone's mouth and dissolves into the hull at the top of each trip. */
-	const suckAlpha = $derived(
-		suckT0 === null ? lift.current : Math.min(1, suckU / 0.08) * Math.min(1, (1 - suckU) / 0.14),
-	);
+	/** It dissolves into the hull over the last `NEXT_IN` of each trip. There is deliberately NO
+	 *  fade-in: after the flight it is already there at full alpha, and on every later trip the
+	 *  `next` copy below has already brought it in at the mouth. */
+	const suckAlpha = $derived(suckT0 === null ? lift.current : Math.min(1, (1 - suckU) / NEXT_IN));
+	/** The NEXT one, riding in at the cone's mouth while the current one dissolves — at the wrap it
+	 *  is exactly where (and how big) the loop's symbol restarts, so the hand-over is seamless. */
+	const nextAlpha = $derived(suckT0 === null ? 0 : Math.max(0, (suckU - (1 - NEXT_IN)) / NEXT_IN));
+	const nextHold = $derived(holdAt(BEAM_SYMBOL.enter));
+	const restSway = $derived(Math.sin(shipClock * 0.45) * 0.07);
 	// Tumbles a little on the way up and settles into the resting sway.
 	const beamSymbolRotation = $derived(
-		Math.sin(shipClock * 0.45) * 0.07 + (1 - flightT) * Math.sin(flightT * Math.PI * 2) * 0.3,
+		restSway + (1 - flightT) * Math.sin(flightT * Math.PI * 2) * 0.3,
 	);
 
 	// ── The tractor beam ──
@@ -479,83 +522,446 @@
 	const BEAM_FILL = 0xd7a1fa;
 	const BEAM_RIM = 0xf1a8fa;
 	const BEAM_POOL = 0xf7c0fc;
-	const MOTES = 11;
+	/** The shadow shafts: the cone's own violet, deeper, so a dark shaft reads as less light rather
+	 *  than as a stripe of some other colour. */
+	const BEAM_SHADE = 0x4c2f9a;
+	const MOTES = 16;
+	// Light is not uniform in a dusty cone. SHAFTS are brighter (and a couple of darker) wedges that
+	// converge on the emitter, each sliding across the cone and fading in and out on its own
+	// unrelated period; BANDS roll down its length, the slowest and widest of them being the field
+	// itself descending. Together with the pool's swells and the motes' spiral they are what the
+	// user asked for after "too static, only lines": a beam that has volume and is doing something,
+	// instead of three flat trapezoids (2026-09-08). None of them is an OUTLINE — every one is a
+	// soft-edged body of light, because an outline over a beam reads as a line drawn on it.
+	const SHAFTS = 8;
+	/** The field's own descent — one of the BANDS now, not a row of hoops. */
+	const RING_SPEED = 0.23; // cone lengths per second
+	const RIPPLES = 3;
+	/** The cone is drawn in two Graphics: the part BELOW the hull sprite's bottom edge behind the
+	 *  hull (so a symbol riding up passes under the saucer), and the CAP above it — the mouth,
+	 *  from the emitter oval down to that edge — in front, over the underside. Same geometry in
+	 *  both, so the join is invisible. */
 	let beamG: G | null = null;
+	let beamCapG: G | null = null;
 
-	const drawBeam = (g: G, t: number) => {
+	/** A cheap deterministic 0..1 per index — the same trick the motes have always used, so every
+	 *  layer here stays a pure function of the clock and survives any re-mount unchanged. */
+	const hash = (i: number, salt = 0) => {
+		const seed = Math.sin(i * 12.9898 + salt * 78.233) * 43758.5453;
+		return seed - Math.floor(seed);
+	};
+	const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+	/** Channel-wise blend of two packed RGB colours — the pool's core burns out to white by shifting
+	 *  its COLOUR through the stack rather than by laying a white disc over it, which would put an
+	 *  edge back where the disc ends. */
+	const mix = (a: number, b: number, k: number) => {
+		const t = clamp01(k);
+		const ch = (shift: number) => {
+			const va = (a >> shift) & 0xff;
+			const vb = (b >> shift) & 0xff;
+			return Math.round(va + (vb - va) * t) << shift;
+		};
+		return ch(16) | ch(8) | ch(0);
+	};
+
+	const drawBeam = (g: G, t: number, part: 'back' | 'cap') => {
 		g.clear();
 		const on = beamOn.current;
 		if (on <= 0.004 || hullW <= 0) return;
 		const x0 = (EMITTER.cx - 0.5) * hullW;
-		// Start a touch inside the opening, so the hull always covers the beam's mouth.
-		const y0 = hullY - hullH / 2 + (EMITTER.bottom - 0.04) * hullH;
+		// The cone leaves the emitter oval's centre (see EMITTER).
+		const y0 = hullY - hullH / 2 + EMITTER.cy * hullH;
 		const rTop = (EMITTER.w * hullW) / 2;
 		const rBot = (BEAM.wOfHull * hullW) / 2;
 		const len = BEAM_LEN_OF_HULL * hullW * on;
 		const radAt = (s: number) => rTop + (rBot - rTop) * s;
-		/** A slice of the cone between two fractions of its length, widened by `k`. */
+		// Where the hull sprite's bottom edge cuts the cone. The cap owns [0, S0] and is drawn in
+		// front of the hull; the back owns [S0, 1] behind it. Nothing is drawn twice.
+		const S0 = clamp01((hullY + hullH / 2 - y0) / Math.max(len, 1e-6));
+		const sA = part === 'cap' ? 0 : S0;
+		const sB = part === 'cap' ? S0 : 1;
+		if (sB - sA <= 0.0005) return;
+		/** A slice of the cone between two fractions of its length, widened by `k`, clipped to this
+		 *  part's range. Returns false (and draws nothing) when the slice lies outside it. */
 		const slab = (a: number, b: number, k: number) => {
+			a = Math.max(a, sA);
+			b = Math.min(b, sB);
+			if (b <= a) return false;
 			const ya = y0 + len * a;
 			const yb = y0 + len * b;
 			const ra = radAt(a) * k;
 			const rb = radAt(b) * k;
 			g.poly([x0 - ra, ya, x0 + ra, ya, x0 + rb, yb, x0 - rb, yb]);
+			return true;
+		};
+		const slabFill = (a: number, b: number, k: number, style: object) => {
+			if (slab(a, b, k)) g.fill(style);
+		};
+		/** A wedge of the cone between two fractions of its RADIUS (-1..1), over `sStart`..`sEnd` of
+		 *  its length — it converges on the emitter with the cone, which is what makes it a shaft of
+		 *  the light rather than a stripe painted over it. */
+		const wedgeFill = (u0: number, u1: number, style: object, sStart = 0, sEnd = 1) => {
+			const a = Math.max(sA, sStart);
+			const b = Math.min(sB, sEnd);
+			if (b <= a) return;
+			const ra = radAt(a);
+			const rb = radAt(b);
+			const ya = y0 + len * a;
+			const yb = y0 + len * b;
+			g.poly([x0 + u0 * ra, ya, x0 + u1 * ra, ya, x0 + u1 * rb, yb, x0 + u0 * rb, yb]);
+			g.fill(style);
+		};
+		const inPart = (s: number) => s >= sA && s < sB;
+
+		/**
+		 * ── The cone must not START OR END on a straight edge ──
+		 *
+		 * Everything that runs the cone's length used to stop dead at s = 1 — the body slabs, the
+		 * shafts, the Fresnel edges and the two rim lines — and because they all stopped at the same
+		 * y, that was ONE STRAIGHT LINE right across the beam, reported three times now
+		 * (2026-09-10: "still very unrealistic with these solid lines"). It is the last hard edge in
+		 * here.
+		 *
+		 * A filled shape cannot fade along itself, so anything length-spanning is laid down as a
+		 * STACK of progressively shorter, brighter copies instead: the composite is the full alpha
+		 * everywhere above TAIL_FROM and ramps to nothing by the bottom, so the light dies into the
+		 * pool rather than being cut off. Same trick as the pool's own falloff, along the cone
+		 * instead of across it.
+		 */
+		const TAIL_FROM = 0.66;
+		/** ...and it must not START on one either. The mouth is a straight chord across the emitter,
+		 *  drawn in FRONT of the hull, so it showed as a line laid over the saucer's underside
+		 *  (2026-09-10). The light ramps up out of the emitter over this much of the length instead,
+		 *  which puts it at full strength just below the hull's bottom edge. */
+		const HEAD_TO = 0.14;
+		/**
+		 * A BODY OF LIGHT, as a gradient: `steps` coaxial ellipses whose cumulative alpha follows
+		 * `peak * exp(-(u/edge)^5)` — near-uniform inside, rolling off over its last quarter, all
+		 * but gone at the rim. Each ring adds exactly what lifts the composite from the previous
+		 * one's total to its own, and the core burns out to white by shifting the fill COLOUR
+		 * through the stack rather than by laying a white disc on top, which would put an edge back
+		 * where the disc ends.
+		 *
+		 * Both ends of the beam are this: the emitter the light leaves through and the pool it
+		 * lands in. They were three and four nested flat discs, each ending in a hard rim and each
+		 * flatter than the one under it, which is what kept reading as "a line in the circle"
+		 * (2026-09-10).
+		 */
+		const lightPool = (o: {
+			cx: number;
+			cy: number;
+			/** Radius of the OUTERMOST ring; every ring inside keeps the same rx:ry, because a body
+			 *  of light seen from one angle has one foreshortening all the way through. */
+			rx: number;
+			ry: number;
+			peak: number;
+			edge: number;
+			steps: number;
+			/** How far the core wanders off centre; the rim does not move, or the whole thing slides. */
+			drift: number;
+			rim: number;
+			core: number;
+			/** Fraction of the radius inside which the colour starts turning towards `core`. */
+			coreFrom: number;
+			/** Extra alpha per ring — the pool's travelling swells ride in on this. */
+			add?: (u: number) => number;
+		}) => {
+			let have = 0;
+			for (let i = 0; i < o.steps; i++) {
+				const u = 1 - i / o.steps; // 1 at the rim, down to just above 0 at the centre
+				const want = o.peak * Math.exp(-((u / o.edge) ** 5));
+				const step = (want - have) / Math.max(1e-3, 1 - have);
+				have = want;
+				const extra = o.add?.(u) ?? 0;
+				if (step + extra <= 0.001) continue;
+				const k = clamp01((o.coreFrom - u) / o.coreFrom) ** 1.4;
+				g.ellipse(o.cx + o.drift * (1 - u), o.cy, o.rx * u, o.ry * u);
+				g.fill({ color: mix(o.rim, o.core, k), alpha: (step + extra) * flare });
+			}
+		};
+		const feathered = (
+			alpha: number,
+			steps: number,
+			piece: (sStart: number, sEnd: number, a: number) => void,
+		) => {
+			if (alpha <= 0.002) return;
+			// A part that lies entirely in the flat middle is one draw, not a stack of identical
+			// clipped ones.
+			if (sA >= HEAD_TO && sB <= TAIL_FROM) {
+				piece(0, 1, alpha);
+				return;
+			}
+			let have = 0;
+			for (let i = 0; i <= steps; i++) {
+				const f = i / steps;
+				const want = alpha * f ** 1.4;
+				const a = (want - have) / Math.max(1e-3, 1 - have);
+				have = want;
+				// The layers NEST — each is shorter than the last at both ends — so one stack ramps
+				// the head and the tail at once for the price of one.
+				if (a > 0.0015) piece(HEAD_TO * f, 1 - (1 - TAIL_FROM) * f, a);
+			}
 		};
 
 		const grabPhase = (t % GRAB_PERIOD) / GRAB_PERIOD;
 		const grab = Math.max(0, Math.sin(grabPhase * Math.PI * 1.6)) ** 8;
-		const flare = (0.86 + 0.14 * Math.sin(t * 1.7) + 0.45 * grab) * on;
+		// The source itself is never dead steady: a slow swell, plus two fast shimmers on unrelated
+		// rates that are small enough to be felt rather than seen — a lamp, not a painted shape.
+		const flicker = 1 + 0.03 * Math.sin(t * 23.1) + 0.02 * Math.sin(t * 37.7 + 1.3);
+		const flare = (0.86 + 0.14 * Math.sin(t * 1.7) + 0.45 * grab) * on * flicker;
 
-		slab(0, 1, 1.15 + 0.05 * grab);
-		g.fill({ color: BEAM_FILL, alpha: 0.16 * flare });
-		slab(0, 1, 1);
-		g.fill({ color: BEAM_CORE, alpha: 0.62 * flare });
-		slab(0, 1, 0.55);
-		g.fill({ color: BEAM_POOL, alpha: 0.14 * flare });
-
-		// Bright edges. The art has them, and without them the cone has no shape against a lit wall.
-		const rim = Math.max(2, hullW * 0.015);
+		// ── Body ──
+		// Haze outside the cone, two soft steps, then the slab, then the axis lifted towards the
+		// pool colour in nested steps so the cross-section falls off from a bright centre to the
+		// edges instead of being one flat tint. The lift is split down the cone's length and
+		// weakened towards the pool, so the light is strongest where it leaves the emitter.
+		for (const [k, color, alpha] of [
+			[1.45 + 0.06 * grab, BEAM_FILL, 0.05],
+			[1.2 + 0.05 * grab, BEAM_FILL, 0.09],
+			[1, BEAM_CORE, 0.58],
+		] as const) {
+			feathered(alpha * flare, 9, (sStart, sEnd, a) =>
+				slabFill(sStart, sEnd, k, { color, alpha: a }),
+			);
+		}
+		// Ten segments rather than six: the lift's own falloff now has to reach zero inside the
+		// tail, and six made that ramp coarse enough to see as steps.
+		const SEGMENTS = 10;
+		for (const [k, a] of [
+			[0.78, 0.06],
+			[0.55, 0.07],
+			[0.32, 0.08],
+		] as const) {
+			for (let i = 0; i < SEGMENTS; i++) {
+				const s0 = i / SEGMENTS;
+				const mid = s0 + 0.5 / SEGMENTS;
+				const falloff =
+					(1 - 0.5 * mid) *
+					clamp01((1 - mid) / (1 - TAIL_FROM)) ** 1.2 *
+					clamp01(mid / HEAD_TO) ** 1.2;
+				if (falloff <= 0.002) continue;
+				slabFill(s0, (i + 1) / SEGMENTS, k, { color: BEAM_POOL, alpha: a * falloff * flare });
+			}
+		}
+		// Just inside each edge the light bunches up — the Fresnel brightening a glass cone shows —
+		// which is what gives the rim lines a body to sit on instead of floating over the tint.
 		for (const side of [-1, 1]) {
+			for (const [u, alpha] of [
+				[0.84, 0.1],
+				[0.93, 0.12],
+			] as const) {
+				feathered(alpha * flare, 3, (sStart, sEnd, a) =>
+					wedgeFill(side * u, side * 1.0, { color: BEAM_FILL, alpha: a }, sStart, sEnd),
+				);
+			}
+		}
+
+		// ── Shafts ──
+		// Each one is a wedge that slides across the cone and breathes in and out on periods that do
+		// not divide into each other. Two of them are darker: a beam through dust has shadows in it.
+		for (let i = 0; i < SHAFTS; i++) {
+			const j = hash(i, 1);
+			const shade = i % 4 === 3;
+			const u = Math.sin(t * (0.09 + 0.08 * j) + i * 1.9) * 0.72;
+			const w = shade ? 0.05 + 0.05 * j : 0.03 + 0.06 * j;
+			const glow = (0.5 + 0.5 * Math.sin(t * (0.45 + 0.55 * j) + i * 2.3)) ** 2;
+			feathered((shade ? 0.14 : 0.11) * glow * flare, 3, (sStart, sEnd, a) =>
+				wedgeFill(u - w, u + w, { color: shade ? BEAM_SHADE : BEAM_POOL, alpha: a }, sStart, sEnd),
+			);
+		}
+
+		// ── Rim ──
+		// Bright edges. The art has them, and without them the cone has no shape against a lit wall.
+		// Each side flickers on its own phase, so the two never pulse as a pair.
+		const rim = Math.max(2, hullW * 0.015);
+		/** The rim over `sStart`..`sEnd`; `out` widens it outward for the bloom. */
+		const rimPoly = (side: number, sStart: number, sEnd: number, inset: number, out: number) => {
+			const a = Math.max(sA, sStart);
+			const b = Math.min(sB, sEnd);
+			if (b <= a) return false;
+			const rA2 = radAt(a);
+			const rB = radAt(b);
+			const yA = y0 + len * a;
+			const yB = y0 + len * b;
 			g.poly([
-				x0 + side * rTop - rim / 2,
-				y0,
-				x0 + side * rTop + rim / 2,
-				y0,
-				x0 + side * rBot + rim / 2,
-				y0 + len,
-				x0 + side * rBot - rim / 2,
-				y0 + len,
+				x0 + side * rA2 + side * inset,
+				yA,
+				x0 + side * rA2 + side * out,
+				yA,
+				x0 + side * rB + side * out,
+				yB,
+				x0 + side * rB + side * inset,
+				yB,
 			]);
-			g.fill({ color: BEAM_RIM, alpha: 0.9 * flare });
+			return true;
+		};
+		for (const side of [-1, 1]) {
+			const rimLevel = 0.9 + 0.1 * Math.sin(t * 5.3 + side * 1.2) * Math.sin(t * 2.1);
+			// The brightest thing in the whole cone, and it used to start and stop dead — the two
+			// pink lines beginning on the saucer's underside and ending mid-air were half of what
+			// read as the straight cuts at either end.
+			feathered(0.9 * rimLevel * flare, 7, (sStart, sEnd, a) => {
+				if (rimPoly(side, sStart, sEnd, -rim / 2, rim / 2)) {
+					g.fill({ color: BEAM_RIM, alpha: a });
+				}
+			});
+			// A soft glow outside the line, so the edge has a bloom rather than a hard cut-off.
+			feathered(0.2 * rimLevel * flare, 5, (sStart, sEnd, a) => {
+				if (rimPoly(side, sStart, sEnd, -rim * 0.5, rim * 2.2)) {
+					g.fill({ color: BEAM_RIM, alpha: a });
+				}
+			});
 		}
 
-		// A pulse of light running down the cone.
-		const scan = (t * 0.33) % 1.35;
-		if (scan < 1) {
-			slab(scan, Math.min(1, scan + 0.16), 0.98);
-			g.fill({ color: BEAM_POOL, alpha: 0.16 * on });
+		// ── Bands ──
+		// Light rolling down the cone: three pulses on different speeds and widths, each with a soft
+		// leading and trailing edge, so they overtake each other rather than ticking past in step.
+		// The last of them is the FIELD: what used to be three horizontal hoops running down the cone.
+		// A hoop is an ellipse OUTLINE, and an outline over a soft beam is a drawn line however
+		// gently it is stroked — reported twice (2026-09-10). The same descent reads correctly as a
+		// wide, faint swell of light travelling down, which is what the slab bands already are.
+		for (const [speed, width, alpha, cycle, offset] of [
+			[0.33, 0.16, 0.14, 1.35, 0],
+			[0.19, 0.07, 0.1, 1.2, 0.5],
+			[0.55, 0.045, 0.13, 1.7, 0.25],
+			[RING_SPEED, 0.3, 0.1, 1, 0.15],
+		] as const) {
+			const scan = (t * speed + offset) % cycle;
+			if (scan >= 1) continue;
+			// FEATHERED, not two steps. A slab has a straight top and bottom, and a straight edge
+			// across a soft beam is another drawn line; four nested slabs, none of them anywhere
+			// near opaque, ramp the band's brightness up and back down instead of stepping it.
+			// A band dies out with the rest of the cone as it reaches the bottom, or its own clamped
+			// trailing edge would land on the tail as a straight line of its own.
+			const depth = clamp01((1 - scan) / (1 - TAIL_FROM)) ** 1.2 * clamp01(scan / HEAD_TO) ** 1.2;
+			for (const [k, a] of [
+				[2.6, 0.16],
+				[1.9, 0.2],
+				[1.4, 0.24],
+				[1, 0.28],
+			] as const) {
+				slabFill(clamp01(scan - width * 0.6 * k), clamp01(scan + width * 1.6 * k), 0.98, {
+					color: BEAM_POOL,
+					alpha: alpha * a * depth * on,
+				});
+			}
 		}
 
-		// The pool it throws on whatever is under it.
-		g.ellipse(x0, y0 + len, rBot, rBot * 0.26);
-		g.fill({ color: BEAM_POOL, alpha: 0.55 * flare });
-		g.ellipse(x0, y0 + len, rBot * 0.66, rBot * 0.17);
-		g.fill({ color: 0xffffff, alpha: 0.3 * flare });
+		if (part === 'cap') {
+			// ── The emitter ──
+			// The oval on the underside is what the light comes out of, so it is lit — and it is the
+			// SAME kind of thing as the pool at the other end, so it is drawn the same way. It used
+			// to be three nested discs (a bloom at 1.3x1.6, the oval at 1x1, a hot centre at
+			// 0.62x0.6): three hard rims, and three different foreshortenings, so the hot centre sat
+			// on the oval like a separate flatter blob instead of being its middle.
+			const ry = EMITTER.ry * hullH;
+			lightPool({
+				cx: x0,
+				cy: y0,
+				rx: rTop * 1.4,
+				ry: ry * 1.4,
+				peak: 0.62, // what the three discs composited to at the centre
+				edge: 0.66,
+				steps: 24,
+				drift: Math.sin(t * 0.9) * rTop * 0.05,
+				rim: BEAM_FILL,
+				core: 0xffffff,
+				coreFrom: 0.5,
+			});
+			return;
+		}
 
-		// Motes drifting UP the cone — the abduction. Phases are derived from the index rather than
-		// stored, so this stays a pure function of the clock and survives any re-mount unchanged.
+		// ── Pool ──
+		// The pool it throws on whatever is under it, breathing with the source, with ripples
+		// spreading out across the ground from where the axis lands.
+		//
+		// ONE pool with a smooth falloff, not four nested discs. The four each ended in a hard
+		// edge, and the bright one's edge read as a LINE DRAWN INSIDE THE CIRCLE (reported
+		// 2026-09-10) — worse because each disc was flatter than the one under it (0.33 -> 0.26 ->
+		// 0.17 -> 0.075), so the middle looked like a separate squashed blob instead of the centre
+		// of the same pool. Light on a flat floor keeps ONE foreshortening (the hoops' 0.26) all
+		// the way in; only its brightness changes.
+		//
+		// A flat fill cannot carry a gradient, so the falloff is stacked out of POOL_STEPS coaxial
+		// ellipses. Their alphas are not guessed: `want` is the cumulative alpha the pool should
+		// have at that radius, and each step contributes exactly what lifts the composite from the
+		// previous ring's total to its own.
+		//
+		// The profile is a FLAT TOP with a penumbra, not a dome. A dome (the first cut) has no
+		// radius you can point at, so the pool stopped reading as a pool at all — "the circle was
+		// ok just it should have been more realistic" (2026-09-10) — and it also stopped covering
+		// the cone's own flat bottom cut, which then showed as a straight edge across the beam.
+		// A real pool of light is near-uniform inside and rolls off over its last quarter, which is
+		// what exp(-(u/POOL_EDGE)^5) is: 0.85 of full at half radius, 0.37 at POOL_EDGE, and all
+		// but gone by the rim — a pool with a definite size whose edge is still soft everywhere.
+		const POOL_STEPS = 44;
+		const POOL_PEAK = 0.76; // what the four discs composited to at the centre
+		/** Where the penumbra sits, as a fraction of the drawn radius. */
+		const POOL_EDGE = 0.72;
+		const poolBreath = 1 + 0.025 * Math.sin(t * 2.1) + 0.04 * grab;
+		const poolR = rBot * 1.25 * poolBreath;
+		/** The core wanders a little; the rim does not, or the whole pool would slide. */
+		const poolDrift = Math.sin(t * 0.9) * rBot * 0.04;
+		/**
+		 * Swells running out across the floor. They are not rings LYING on the pool — that is what
+		 * they were, and a stroked ellipse is a wire whatever its alpha. Each one is a little extra
+		 * light ADDED to the rings of the pool's own falloff near its radius, so it is made of the
+		 * same feathered steps the pool is and has no more of an edge than the pool does. Each fades
+		 * in as it leaves the centre and out as it reaches the rim, so none starts or ends abruptly.
+		 */
+		const rippleAt = (u: number) => {
+			let sum = 0;
+			for (let i = 0; i < RIPPLES; i++) {
+				const p = (t * 0.42 + i / RIPPLES) % 1;
+				const d = (u - (0.3 + 0.7 * p)) / 0.17;
+				sum += Math.exp(-d * d) * 0.025 * Math.sin(Math.PI * p) ** 0.7;
+			}
+			return sum;
+		};
+		lightPool({
+			cx: x0,
+			cy: y0 + len,
+			rx: poolR,
+			ry: poolR * 0.26,
+			peak: POOL_PEAK,
+			edge: POOL_EDGE,
+			steps: POOL_STEPS,
+			drift: poolDrift,
+			rim: BEAM_POOL,
+			core: 0xffffff,
+			coreFrom: 0.55,
+			add: rippleAt,
+		});
+
+		// ── Motes ──
+		// Dust drifting UP the cone — the abduction. Each one spirals about the axis as it rises
+		// (a tractor field turns what it lifts), carries a soft halo, and stretches into a streak
+		// when the grab hauls it faster. Phases are derived from the index rather than stored.
+		// They stay in the back part: by the time one reaches the mouth it has faded into the hull.
 		for (let i = 0; i < MOTES; i++) {
-			const seed = Math.sin(i * 12.9898) * 43758.5453;
-			const jitter = seed - Math.floor(seed);
-			const speed = 0.16 + 0.13 * jitter + 0.5 * grab;
+			const jitter = hash(i);
+			const soft = hash(i, 2) > 0.55;
+			const speed = 0.14 + 0.13 * jitter + 0.5 * grab;
 			const rise = (t * speed + i / MOTES) % 1;
 			const s = 1 - rise;
+			if (!inPart(s)) continue;
 			const r = radAt(s);
-			const drift = Math.sin(t * (0.7 + jitter) + i * 2.4) * 0.22;
-			const size = hullW * (0.008 + 0.007 * jitter) * (0.6 + 0.4 * (1 - s));
-			g.ellipse(x0 + (jitter * 1.4 - 0.7 + drift) * r, y0 + len * s, size, size);
-			// Fade in off the ground and out into the hull, so nothing pops at either end.
-			g.fill({ color: 0xffffff, alpha: Math.sin(Math.PI * rise) ** 0.7 * 0.7 * on });
+			const orbit = Math.sin(rise * Math.PI * 2 * (1.2 + jitter * 0.8) + i * 2.4);
+			const x = x0 + (jitter * 1.3 - 0.65) * r * 0.6 + orbit * r * 0.5;
+			const y = y0 + len * s;
+			const size = hullW * (soft ? 0.012 + 0.008 * jitter : 0.006 + 0.006 * jitter);
+			const grow = 0.6 + 0.4 * (1 - s);
+			const streak = 1 + 2.5 * grab;
+			// Fade in off the ground and out into the hull, so nothing pops at either end; the
+			// spiral also takes them "behind" the axis on half of each turn, where they dim.
+			const depth = 0.65 + 0.35 * Math.cos(rise * Math.PI * 2 * (1.2 + jitter * 0.8) + i * 2.4);
+			const alpha = Math.sin(Math.PI * rise) ** 0.7 * depth * on;
+			if (soft) {
+				g.ellipse(x, y, size * grow * 2.4, size * grow * 2.4 * streak);
+				g.fill({ color: BEAM_POOL, alpha: 0.16 * alpha });
+			}
+			g.ellipse(x, y, size * grow, size * grow * streak);
+			g.fill({ color: 0xffffff, alpha: (soft ? 0.55 : 0.75) * alpha });
 		}
 	};
 
@@ -626,7 +1032,9 @@
 			// The beam is drawn imperatively at the full frame rate: its motes and sweep are the only
 			// things here fast enough to show 30fps, and drawing into a captured Graphics never
 			// re-renders the scene graph.
-			if (beamG) drawBeam(beamG, t);
+			if (beamG) drawBeam(beamG, t, 'back');
+			if (beamCapG?.destroyed) beamCapG = null;
+			if (beamCapG) drawBeam(beamCapG, t, 'cap');
 		};
 		raf = requestAnimationFrame(tick);
 		return () => cancelAnimationFrame(raf);
@@ -675,9 +1083,8 @@
 
 	<!-- The ship, hanging in the room's right-hand window. ONE container carries the whole assembly
 	     so the arrival flight, the hover and the tremble are a single transform: the hull, the
-	     antenna and the beam are children in local coordinates and never move against each other.
-	     Mount order inside it is the stacking order — beam first so the hull covers its mouth, then
-	     the antenna so the dome covers the stem's foot. -->
+	     lamps and the beam are children in local coordinates and never move against each other.
+	     Mount order inside it is the stacking order — beam first so the hull covers its mouth. -->
 	{#if shipShown}
 		<Container x={shipX} y={shipY} scale={shipScale} rotation={shipRotation}>
 			<Graphics draw={(gr) => (beamG = gr as unknown as G)} />
@@ -693,8 +1100,26 @@
 					<BeamSymbol name={beamSymbol} x={0} y={0} cell={beamSymbolCell} alpha={suckAlpha} />
 				</Container>
 			{/if}
-			<Sprite key="ufoAntenna" anchor={0.5} x={0} y={antennaY} width={antennaW} height={antennaH} />
-			<Sprite key="ufoHull" anchor={0.5} x={0} y={hullY} width={hullW} height={hullH} />
+			{#if beamSymbol && nextAlpha > 0.002}
+				<Container
+					x={nextHold.x}
+					y={nextHold.y}
+					rotation={restSway}
+					scale={BEAM_SYMBOL.min * (1 + 0.06 * beamGrab)}
+				>
+					<BeamSymbol
+						name={beamSymbol}
+						x={0}
+						y={0}
+						cell={beamSymbolCell}
+						alpha={nextAlpha}
+						phase={0.71}
+					/>
+				</Container>
+			{/if}
+			<Sprite key="ufoShip" anchor={0.5} x={0} y={hullY} width={hullW} height={hullH} />
+			<!-- The beam's mouth, over the hull's underside: the light leaves the emitter oval. -->
+			<Graphics draw={(gr) => (beamCapG = gr as unknown as G)} />
 			<!-- Running lights over the hull's own painted lamps (game/ufoLamps.ts). The art paints
 			     them flat; this is the light. -->
 			<Graphics
@@ -713,7 +1138,11 @@
 					const beacon = 0.5 + 0.5 * Math.sin(shipClock * 1.15);
 					for (let i = 0; i < 7; i += 1) {
 						const u = i / 6;
-						gr.circle(0, antennaY - antennaH * 0.34, antennaW * (0.18 + u * 0.75));
+						gr.circle(
+							BEACON.x * hullW,
+							hullY + BEACON.y * hullH,
+							BEACON.r * hullW * (0.4 + u * 1.6),
+						);
 						gr.fill({ color: 0xff6be0, alpha: 0.1 * (1 - u) ** 2.2 * beacon * near });
 					}
 				}}

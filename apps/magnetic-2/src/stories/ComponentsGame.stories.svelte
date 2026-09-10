@@ -62,6 +62,26 @@
      Written out one by one because Storybook's CSF indexer only sees literal <Story> tags — the
      same six wrapped in an {#each} index as nothing at all. -->
 
+<!-- The ordinary-win plate (WinAmountPlaque.svelte, Figma 9185:9638): level 3 has no board
+     animation, so this is the small hex plate over the reels, not the big-win card. 212 book
+     units = $2.12 at a $1.00 bet, the design's own number. -->
+<Story
+	name="emitterEvent: winShow (small plate)"
+	args={templateArgs({
+		skipLoadingScreen: true,
+		data: {},
+		action: async () => {
+			eventEmitter.broadcast({ type: 'winShow' });
+			eventEmitter.broadcast({
+				type: 'winUpdate',
+				amount: 212,
+				winLevelData: winLevelMap[3],
+			});
+		},
+	})}
+	template={template as any}
+/>
+
 <Story
 	name="emitterEvent: winShow (sweet)"
 	args={templateArgs({
@@ -177,7 +197,37 @@
 		action: async () => {
 			await loadDemandAssets();
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
-			eventEmitter.broadcast({ type: 'freeSpinIntroUpdate', totalFreeSpins: 10 });
+			eventEmitter.broadcast({ type: 'freeSpinIntroUpdate', totalFreeSpins: 10, scatters: 3 });
+		},
+	})}
+	template={template as any}
+/>
+
+<!-- The same screen off a 4- and a 5-scatter trigger: the badge's pill and the alien row along
+     the pad's bottom edge both follow the count (Figma 9248:25858 / 9248:26180). -->
+<Story
+	name="emitterEvent: freeSpinIntro (4 scatters)"
+	args={templateArgs({
+		skipLoadingScreen: true,
+		data: {},
+		action: async () => {
+			await loadDemandAssets();
+			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
+			eventEmitter.broadcast({ type: 'freeSpinIntroUpdate', totalFreeSpins: 10, scatters: 4 });
+		},
+	})}
+	template={template as any}
+/>
+
+<Story
+	name="emitterEvent: freeSpinIntro (5 scatters)"
+	args={templateArgs({
+		skipLoadingScreen: true,
+		data: {},
+		action: async () => {
+			await loadDemandAssets();
+			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
+			eventEmitter.broadcast({ type: 'freeSpinIntroUpdate', totalFreeSpins: 10, scatters: 5 });
 		},
 	})}
 	template={template as any}

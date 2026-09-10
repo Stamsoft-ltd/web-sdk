@@ -24,8 +24,10 @@ export type WinCardPart = WinCardRect & { key: string };
 export type WinCardTier = {
 	/** Tier wordmark. Art, so it needs no translation — and it is the only thing that names the tier. */
 	word: WinCardPart;
-	/** The shared lockup. The plate art carries the saucer's belly baked into its top edge, so the
-	    saucer must render BEHIND it (dome above, belly hidden) or the two read as stickers. */
+	/** The shared lockup. The plate is the design's belly-less drawing (Figma 9148:31503), so the
+	    saucer — which carries its own belly — renders OVER it at its design box, alien in the dome.
+	    (The retired plate had the belly baked in and forced the reverse order, which put the alien
+	    on top of a piece of the background.) */
 	plate: WinCardRect;
 	saucer: WinCardRect;
 	alien: WinCardRect;
@@ -43,12 +45,21 @@ export type WinCardTier = {
 /**
  * The slab inside the plate ART, as fractions of the sprite's own box.
  *
- * `plate` above is the sprite's bounding box, and that box carries the saucer's belly baked into
- * its top — so its top edge sits ~100 design units ABOVE the purple slab you can see. Anything that
- * has to land ON the plate's border (the slime) needs the slab, not the box. Measured off
- * winCardPlate.webp's alpha: rows with >=70% horizontal coverage, columns with >=25% vertical.
+ * `plate` above is the sprite's bounding box, which includes the notch tabs on its corners.
+ * Anything that has to land ON the plate's border (the slime) needs the slab, not the box.
+ * Measured off winCardPlate.webp's alpha by scripts/build-win-card.py: rows with >=70% horizontal
+ * coverage, columns with >=25% vertical — and the plate itself is PLACED by this slab (the
+ * belly-less drawing has no node box in a win screen), see the script.
  */
-export const WIN_CARD_PLATE_SLAB = { left: 0.035, right: 0.99, top: 0.248, bottom: 0.874 };
+export const WIN_CARD_PLATE_SLAB = { left: 0.02, right: 0.988, top: 0.121, bottom: 0.857 };
+
+/**
+ * Where the saucer sprite's glass dome ends and its purple belly begins, as a fraction of the
+ * sprite's height (build-win-card.py: first lower-half row whose opaque pixels average purple for
+ * four rows running). WinCard clips the alien here so it sits IN the dome with its body behind
+ * the hull — the retired plate's baked belly used to do that hiding.
+ */
+export const WIN_CARD_SAUCER_BELT = 0.595;
 
 /** The plaque's lilac, and the frame the rects above are measured in. */
 export const WIN_CARD_INK = 0xafb1fb;
@@ -58,45 +69,45 @@ export const WIN_CARD_TIERS: Record<string, WinCardTier> = {
 	sweet: {
 		glow: 0x2ab8ff,
 		word: { key: 'winWordSweet', cx: -1.2, cy: -11.5, w: 512.5, h: 284.0 },
-		plate: { cx: -1.5, cy: -22.0, w: 665.0, h: 313.0 },
-		saucer: { cx: -4.8, cy: -220.8, w: 260.5, h: 183.5 },
-		alien: { cx: -5.0, cy: -192.0, w: 95.0, h: 145.0 },
+		plate: { cx: 4.1, cy: -0.1, w: 657.1, h: 240.5 },
+		saucer: { cx: -4.8, cy: -220.9, w: 260.5, h: 184.8 },
+		alien: { cx: -4.8, cy: -214.4, w: 54.3, h: 82.8 },
 		plaque: { cx: -11.5, cy: 213.0, w: 399.0, h: 120.1 },
 		blobs: [{ key: 'winBlobA15', cx: 298.3, cy: -80.2, w: 142.8, h: 126.8 }],
 	},
 	wild: {
 		glow: 0x94ff2a,
 		word: { key: 'winWordWild', cx: -8.2, cy: -15.5, w: 484.5, h: 312.0 },
-		plate: { cx: -1.5, cy: -22.0, w: 665.0, h: 313.0 },
-		saucer: { cx: -4.8, cy: -220.8, w: 260.5, h: 183.5 },
-		alien: { cx: -5.0, cy: -202.0, w: 95.0, h: 145.0 },
+		plate: { cx: 4.1, cy: -0.1, w: 657.1, h: 240.5 },
+		saucer: { cx: -4.8, cy: -220.9, w: 260.5, h: 184.8 },
+		alien: { cx: -4.8, cy: -214.4, w: 54.3, h: 82.8 },
 		plaque: { cx: -11.5, cy: 213.0, w: 399.0, h: 120.1 },
 		blobs: [{ key: 'winBlobA30', cx: 281.4, cy: -66.4, w: 140.3, h: 142.5 }],
 	},
 	epic: {
 		glow: 0xff2a2a,
 		word: { key: 'winWordEpic', cx: -8.8, cy: -23.0, w: 435.5, h: 279.0 },
-		plate: { cx: -1.5, cy: -22.0, w: 665.0, h: 313.0 },
-		saucer: { cx: -4.8, cy: -220.8, w: 260.5, h: 183.5 },
-		alien: { cx: -5.0, cy: -192.0, w: 95.0, h: 145.0 },
+		plate: { cx: 4.1, cy: -0.1, w: 657.1, h: 240.5 },
+		saucer: { cx: -4.8, cy: -220.9, w: 260.5, h: 184.8 },
+		alien: { cx: -4.8, cy: -214.4, w: 54.3, h: 82.8 },
 		plaque: { cx: -11.5, cy: 213.0, w: 399.0, h: 120.1 },
 		blobs: [{ key: 'winBlobA15', cx: 279.3, cy: -80.2, w: 142.8, h: 126.8 }],
 	},
 	mythic: {
 		glow: 0xff7fe9,
 		word: { key: 'winWordMythic', cx: 3.5, cy: -12.5, w: 520.0, h: 248.0 },
-		plate: { cx: -1.5, cy: -22.0, w: 665.0, h: 313.0 },
-		saucer: { cx: -4.8, cy: -220.8, w: 260.5, h: 183.5 },
-		alien: { cx: -5.0, cy: -192.0, w: 95.0, h: 145.0 },
+		plate: { cx: 4.1, cy: -0.1, w: 657.1, h: 240.5 },
+		saucer: { cx: -4.8, cy: -220.9, w: 260.5, h: 184.8 },
+		alien: { cx: -4.8, cy: -214.4, w: 54.3, h: 82.8 },
 		plaque: { cx: -11.5, cy: 213.0, w: 399.0, h: 120.1 },
 		blobs: [{ key: 'winBlobA15', cx: 293.3, cy: -80.2, w: 142.8, h: 126.8 }],
 	},
 	legendary: {
 		glow: 0xffd400,
 		word: { key: 'winWordLegendary', cx: -9.0, cy: -19.2, w: 577.0, h: 275.5 },
-		plate: { cx: -1.5, cy: -22.0, w: 665.0, h: 313.0 },
-		saucer: { cx: -4.8, cy: -220.8, w: 260.5, h: 183.5 },
-		alien: { cx: -5.0, cy: -192.0, w: 95.0, h: 145.0 },
+		plate: { cx: 4.1, cy: -0.1, w: 657.1, h: 240.5 },
+		saucer: { cx: -4.8, cy: -220.9, w: 260.5, h: 184.8 },
+		alien: { cx: -4.8, cy: -214.4, w: 54.3, h: 82.8 },
 		plaque: { cx: -11.5, cy: 213.0, w: 399.0, h: 120.1 },
 		blobs: [{ key: 'winBlobA30', cx: 305.3, cy: -76.4, w: 140.3, h: 142.5 }],
 	},
@@ -104,9 +115,9 @@ export const WIN_CARD_TIERS: Record<string, WinCardTier> = {
 		glow: 0xaaff00,
 		ink: 0x9bf715,
 		word: { key: 'winWordMax', cx: 0.2, cy: -2.8, w: 565.5, h: 380.5 },
-		plate: { cx: -0.8, cy: -15.1, w: 797.6, h: 375.7 },
-		saucer: { cx: 0.2, cy: -244.8, w: 260.5, h: 183.5 },
-		alien: { cx: 1.0, cy: -216.0, w: 95.0, h: 145.0 },
+		plate: { cx: 5.9, cy: 11.0, w: 788.1, h: 288.5 },
+		saucer: { cx: 0.2, cy: -244.9, w: 260.5, h: 184.8 },
+		alien: { cx: 0.2, cy: -238.4, w: 54.3, h: 82.8 },
 		plaque: { cx: 0.5, cy: 226.0, w: 399.0, h: 120.1 },
 		blobs: [
 			{ key: 'winBlobA30', cx: 341.9, cy: -43.8, w: 208.7, h: 212.5 },

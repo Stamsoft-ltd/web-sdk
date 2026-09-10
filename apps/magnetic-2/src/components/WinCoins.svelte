@@ -19,11 +19,25 @@
 	const extraConfig = $derived(
 		props?.levelAlias ? LEVEL_PARTICLE_COIN_MAP[props.levelAlias] : null,
 	);
-	const boardH = $derived(context.stateGameDerived.boardLayout().height * context.stateGameDerived.boardLayout().boardScale * 0.5);
+	const boardH = $derived(
+		context.stateGameDerived.boardLayout().height *
+			context.stateGameDerived.boardLayout().boardScale *
+			0.5,
+	);
 
+	// The design's coin (Figma 9235:19944) is a gold chip with a purple outline and magenta lugs;
+	// at the shared fountain's 0.3-0.4 scale it was ~45px on a desktop and read as the generic
+	// gold "P" it replaced — twice reported as "the old coin" after the swap. 1.6x makes the
+	// outline and lugs legible. Only the scale is overridden; speed/frequency stay per level.
+	const COIN_SCALE = 1.6;
 	const config = $derived({
 		...baseConfig,
 		...extraConfig,
+		scale: {
+			start: baseConfig.scale.start * COIN_SCALE,
+			end: baseConfig.scale.end * COIN_SCALE,
+			minimumScaleMultiplier: baseConfig.scale.minimumScaleMultiplier,
+		},
 		spawnRect: props.boardMode
 			? { x: -(bs * 280), y: -boardH * 0.55, w: bs * 560, h: bs * 20 }
 			: { x: -(bs * 300), y: -(bs * 250), w: bs * 600, h: bs * 50 },

@@ -105,7 +105,7 @@
 
 	/* Width is shared with the other two dialogs — see the plate note below. */
 	.nb {
-		width: clamp(300px, 54vw, 720px);
+		width: clamp(240px, 38vw, 504px);
 		container-type: inline-size;
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}

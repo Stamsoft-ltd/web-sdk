@@ -11,9 +11,11 @@
 	import { FadeContainer } from 'components-pixi';
 
 	import { getContext } from '../game/context';
+	import { holdCelebration } from '../game/celebration';
 	import { designFrame } from '../game/designFrame';
 	import { drawPadBulbGlow } from '../game/padBulbs';
-	import { drawSlimeCluster, drawSlimeDrips } from '../game/slimeDrip';
+	import { DRIP_OFFSETS, drawSlimeCluster, drawSlimeDrips } from '../game/slimeDrip';
+	import { makeRng } from '../game/winSlime';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { fitTextScale } from '../utils/fitText';
 
@@ -38,18 +40,23 @@
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 	const D = $derived(designFrame(main, canvas));
 
-	let phase = $state<'off' | 'orb' | 'won'>('off');
+	let phase = $state<'off' | 'orb' | 'leaving' | 'won'>('off');
 	let mode = $state<'BONUS' | 'SUPER' | 'HIDDEN'>('BONUS');
 	let freeSpins = $state(0);
 	const show = $derived(phase !== 'off');
 
+	// `leaving` is the orb beat ON ITS WAY OUT — see LEAVE_S. It is the same beat, so it shares the
+	// beat's clock; only `off`, `orb` and `won` start a new one.
+	const beat = $derived(phase === 'leaving' ? 'orb' : phase);
+
 	// One clock per beat: everything below is a pure function of it, so nothing here keeps its own
-	// animation state (the WonPanel pattern). It restarts on each phase change, which is exactly
-	// what the choreography wants — the congratulations entrance replays from zero.
+	// animation state (the WonPanel pattern). It restarts on each beat, which is exactly what the
+	// choreography wants — the congratulations entrance replays from zero.
 	let clock = $state(0);
 	$effect(() => {
-		if (phase === 'off') return;
-		// `phase` is read above, so this effect re-runs (and the clock re-zeros) on each beat.
+		if (beat === 'off') return;
+		// `beat` is read above, so this effect re-runs (and the clock re-zeros) on each beat — and
+		// NOT when the orb beat starts leaving, which would replay its entrance as it goes.
 		clock = 0;
 		let raf = 0;
 		const t0 = performance.now();
@@ -61,16 +68,35 @@
 		return () => cancelAnimationFrame(raf);
 	});
 
-	// The alien that peeks in is picked ONCE per reveal, not per frame: which of the two it is and
-	// which edge it comes from are both random, and re-rolling them every frame would make it
-	// flicker between four positions.
+	// The alien that peeks in is picked ONCE per reveal, not per frame: which edge it comes from is
+	// random, and re-rolling it every frame would make it flicker between four positions.
+	//
+	// The two sprites are PRE-ORIENTED: my_alien_a stands upright (it peeks up over the bottom
+	// edge) and my_alien_b hangs head-down (it peeks down over the top edge, which is how WonPanel
+	// uses it). The key used to be dealt independently of the edge, which put an upright alien's
+	// feet over the top edge half the time; now the edge picks the alien, and only the side edges
+	// — where either reads — stay a coin toss.
 	let alienKey = $state<'myAlienA' | 'myAlienB'>('myAlienA');
 	let alienFrom = $state<'bottom' | 'top' | 'left' | 'right'>('bottom');
+	// Beat 1 has BOTH aliens watching the draw, one over the top edge and one over the bottom, the
+	// way the congratulations screens have one peeking in (asked for 2026-09-08). What is random
+	// there is which corners they take (top-right/bottom-left or the mirror) and who arrives first.
+	let orbMirror = $state(false);
+	let orbBottomLeads = $state(false);
 
 	context.eventEmitter.subscribeOnMount({
 		mysteryRevealShow: () => {
-			alienKey = Math.random() < 0.5 ? 'myAlienA' : 'myAlienB';
 			alienFrom = (['bottom', 'top', 'left', 'right'] as const)[Math.floor(Math.random() * 4)];
+			alienKey =
+				alienFrom === 'top'
+					? 'myAlienB'
+					: alienFrom === 'bottom'
+						? 'myAlienA'
+						: Math.random() < 0.5
+							? 'myAlienA'
+							: 'myAlienB';
+			orbMirror = Math.random() < 0.5;
+			orbBottomLeads = Math.random() < 0.5;
 			phase = 'orb';
 		},
 		mysteryRevealWon: (emitterEvent) => {
@@ -78,7 +104,24 @@
 			freeSpins = emitterEvent.freeSpins;
 			phase = 'won';
 		},
-		mysteryRevealHide: () => (phase = 'off'),
+		mysteryRevealHide: () => {
+			// Not a cut. The orb beat plays itself OUT (see LEAVE_S) and only then goes.
+			if (phase === 'orb') {
+				leaveAt = clock;
+				phase = 'leaving';
+			} else {
+				phase = 'off';
+			}
+		},
+	});
+
+	// The HTML HUD is DOM above the canvas, so the scrim below cannot dim it: without this flag the
+	// bright bottom bar sat on top of the congratulations while the outro's (WonPanel's) was dimmed.
+	// HudHtml dims and disables itself off it; the reveal is book-timed, so losing the HUD's presses
+	// for its length costs nothing.
+	$effect(() => {
+		if (!show) return;
+		return holdCelebration(context.stateGame);
 	});
 
 	// ── Beat 1: the orb ────────────────────────────────────────────────────────────────────────
@@ -128,6 +171,39 @@
 	/** It still rocks a little as it turns, so the spin does not read as a mechanical carousel. */
 	const qRotation = $derived(Math.sin(clock * 1.3) * 0.09);
 	const qScale = $derived(1 + 0.05 * Math.sin(clock * 2.6));
+
+	// The design's sparkles (9185:18616/18622/18624/18626: one vector at 54, 33, 33 and 45px) fall
+	// through the dome while the "?" turns — they are separate layers in the design, and a glass with
+	// nothing moving inside it was the part that read as a frozen frame. Each star is dealt its own
+	// lane, speed, size and spin ONCE per reveal, so the fall never repeats and nothing flickers
+	// between positions. The glass is the ellipse the dome's art spans, measured off my_orb.webp
+	// (x 190..905, y 380..870 of 1106x1150) and put back into the orb's own design box.
+	const GLASS = { cx: 596, cy: 359, rx: 170, ry: 118 };
+	const starRng = makeRng(Math.random());
+	const STARS = Array.from({ length: 9 }, () => ({
+		lane: starRng() * 1.7 - 0.85,
+		period: 2.6 + starRng() * 2.8,
+		phase: starRng(),
+		size: 30 + starRng() * 26,
+		spin: (starRng() - 0.5) * 1.6,
+		sway: 0.6 + starRng() * 1.2,
+		seed: starRng() * Math.PI * 2,
+	}));
+	const starAt = (star: (typeof STARS)[number]) => {
+		const t = (((clock / star.period + star.phase) % 1) + 1) % 1;
+		// How tall the glass is at this lane, so no star fades in or out through the frame.
+		const reach = Math.sqrt(1 - star.lane * star.lane) * 0.86;
+		const u = star.lane + Math.sin(clock * star.sway + star.seed) * 0.06;
+		const at = orbP(GLASS.cx + u * GLASS.rx, GLASS.cy + (t * 2 - 1) * reach * GLASS.ry);
+		const glow = 0.6 + 0.4 * Math.sin(clock * 4.2 + star.seed);
+		return {
+			...at,
+			alpha: orbIn * Math.sin(Math.PI * t) ** 0.7 * glow,
+			rotation: clock * star.spin + star.seed,
+			// A breath on the size as well, so the sparkle twinkles rather than just dims.
+			size: orbS(star.size) * (0.9 + 0.1 * Math.sin(clock * 3.1 + star.seed)),
+		};
+	};
 
 	// ── Beat 2: the congratulations ────────────────────────────────────────────────────────────
 	// The design's three outcomes differ ONLY in the badge emblem and the copy, so one layout with a
@@ -218,6 +294,31 @@
 		const u = clamp01(t) - 1;
 		return u * u * ((c + 1) * u + c) + 1;
 	};
+	/** backOut's mirror: a small lean IN before the move, for anything leaving rather than arriving. */
+	const backIn = (t: number) => {
+		const c = 1.70158;
+		const u = clamp01(t);
+		return u * u * ((c + 1) * u - c);
+	};
+
+	/**
+	 * The machine does not blink out of existence when its time is up: the two aliens duck back out
+	 * of the edges they came in from, and the orb — its "?", its stars and its motes with it —
+	 * leans in a little and then drops away to nothing, the reverse of the drop-in that brought it
+	 * (asked for 2026-09-10; before this the whole `orb` branch unmounted on one frame while the
+	 * FadeContainer was left fading an empty container, which is what read as a snap).
+	 *
+	 * `bookEventHandlerMap.playMysteryDraw` sits out this long plus the fade before it lets the
+	 * board settle underneath.
+	 */
+	const LEAVE_S = 0.45;
+	let leaveAt = $state(0);
+	$effect(() => {
+		if (phase !== 'leaving') return;
+		const id = setTimeout(() => (phase = 'off'), LEAVE_S * 1000);
+		return () => clearTimeout(id);
+	});
+	const leave = $derived(phase === 'leaving' ? clamp01((clock - leaveAt) / LEAVE_S) : 0);
 
 	const padIn = $derived(ease(clock / 0.3));
 	const titleT = $derived(backOut((clock - T_TITLE) / 0.5));
@@ -227,12 +328,20 @@
 	// zero-size text object pixi would have nothing to rasterise for.
 	const youWonScale = $derived(0.04 + 0.96 * youWonT);
 	const boxT = $derived(ease((clock - T_BOX) / 0.4));
+	// The badge's two splats OOZE onto the ring rather than appearing on it: `drawSlimeCluster`
+	// unfolds each one lobe by lobe over this ramp, and their drops only start gathering once
+	// they are out (on the beat's own clock a drop was already half fallen on the first frame).
+	const T_SLIME = 0.35;
+	const SLIME_GROW = 1.0;
+	const slimeGrow = $derived(clamp01((clock - T_SLIME) / SLIME_GROW));
+	const slimeDripClock = $derived(Math.max(0, clock - T_SLIME - SLIME_GROW));
 	const alienT = $derived(backOut((clock - T_ALIEN) / 0.62));
-	/** Off-screen start for the alien, in main-container units, by the edge it was dealt. */
-	const alienOff = $derived.by(() => {
+	type Edge = typeof alienFrom;
+	/** Off-screen start for an alien, in main-container units, by the edge it was dealt. */
+	const offFor = (edge: Edge) => {
 		const w = D.s(ALIEN.w);
 		const h = D.s(ALIEN.h);
-		switch (alienFrom) {
+		switch (edge) {
 			case 'top':
 				return { x: 0, y: -(D.viewH * 0.5 + h) };
 			case 'left':
@@ -242,14 +351,14 @@
 			default:
 				return { x: 0, y: D.viewH * 0.5 + h };
 		}
-	});
+	};
 	/** Where it comes to rest: tucked into the corner nearest the edge it flew in from. */
-	const alienHome = $derived.by(() => {
+	const homeFor = (edge: Edge) => {
 		const w = D.s(ALIEN.w);
 		const h = D.s(ALIEN.h);
 		const x = D.viewW * 0.5 - w * 0.42;
 		const y = D.viewH * 0.5 - h * 0.34;
-		switch (alienFrom) {
+		switch (edge) {
 			case 'top':
 				return { x, y: -y };
 			case 'left':
@@ -259,7 +368,66 @@
 			default:
 				return { x: -x, y };
 		}
-	});
+	};
+	const alienOff = $derived(offFor(alienFrom));
+	const alienHome = $derived(homeFor(alienFrom));
+
+	// Beat 1's pair: the same slide-in and hover as beat 2's alien, in two opposite corners
+	// (top-right and bottom-left, or the mirror of that), the second a beat behind the first and
+	// the hovers on their own phases so the two never move together. They arrive early — the orb
+	// beat is only 1.4s now.
+	const T_ORB_ALIEN = 0.25;
+	const ORB_ALIEN_LAG = 0.16;
+	const orbAliens = $derived([
+		{
+			key: 'myAlienB' as const,
+			edge: 'top' as Edge,
+			mirror: orbMirror,
+			delay: orbBottomLeads ? ORB_ALIEN_LAG : 0,
+			phase: 0,
+		},
+		{
+			key: 'myAlienA' as const,
+			edge: 'bottom' as Edge,
+			mirror: orbMirror,
+			delay: orbBottomLeads ? 0 : ORB_ALIEN_LAG,
+			phase: 2.1,
+		},
+	]);
+	const orbAlienAt = (edge: Edge, mirror: boolean, delay: number, phase: number) => {
+		const at = clock - T_ORB_ALIEN - delay;
+		const tt = backOut(at / 0.62);
+		const idle = clamp01((at - 0.5) / 0.9);
+		const off = offFor(edge);
+		const home = homeFor(edge);
+		if (mirror) home.x = -home.x;
+		const x = main.width * 0.5 + home.x + (1 - tt) * (off.x - home.x);
+		const y =
+			main.height * 0.5 +
+			home.y +
+			(1 - tt) * (off.y - home.y) +
+			D.s(11) * idle * Math.sin(clock * 0.85 + phase);
+		// On the way out they go back the way they came, one leaning in a touch before it ducks —
+		// `backIn` against the same off-screen start the arrival slid from, so the exit is the
+		// entrance run backwards rather than a second, different move.
+		// Staggered by COMPRESSING the second one's run, not by delaying it — a delay would leave it
+		// still half on screen when the beat is taken down.
+		const lag = edge === 'bottom' ? 0.14 : 0;
+		const back = backIn((leave - lag) / (1 - lag));
+		return {
+			x: x + back * (main.width * 0.5 + off.x - x),
+			y: y + back * (main.height * 0.5 + off.y - y),
+			rotation: 0.03 * idle * Math.sin(clock * 0.53 + 1.1 + phase),
+			scale: 1 + 0.016 * idle * Math.sin(clock * 1.35 + phase),
+			alpha: Math.min(1, tt * 1.4),
+		};
+	};
+
+	/** The machine's own exit: a small lean in, then down to nothing. Alpha only joins at the very
+	 *  end — it has to read as going AWAY, and something that fades while it shrinks reads as
+	 *  dissolving on the spot. */
+	const orbLeaveScale = $derived(1 - backIn(leave));
+	const orbLeaveAlpha = $derived(1 - clamp01((leave - 0.74) / 0.26));
 	// The two headings keep breathing once they have landed — the plate waits several seconds before
 	// it hands over, and a completely still one reads as a screenshot. Same treatment as WonPanel.
 	const pulse = (landedAt: number, amount: number, rate: number) =>
@@ -326,53 +494,96 @@
 	     0.29x drop on the room behind it. It is the shared CanvasSizeRectangle rather than a
 	     hand-drawn Graphics rect because every other celebration in this game (Win, FreeSpinOutro,
 	     BonusHandoffVeil) dims with that one component, and a second way to draw the same rectangle
-	     is a second thing to keep in step. -->
-	<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.7} />
+	     is a second thing to keep in step. The congratulations beat deepens it to the 0.88 the
+	     other two celebrations (FreeSpinOutro, BonusHandoffVeil) use, so both congratulations
+	     screens sit on the same black. -->
+	<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={phase === 'won' ? 0.88 : 0.7} />
 
 	<MainContainer>
-		{#if phase === 'orb'}
+		{#if phase === 'orb' || phase === 'leaving'}
 			<!-- Beat 1 — the machine and its "?" -->
 			{@const orbAt = orbP(ORB.x + ORB.w / 2, ORB.y + ORB.h / 2)}
 			{@const qAt = orbP(Q.x + Q.w / 2, Q.y + Q.h / 2)}
-			<Container x={orbAt.x} y={orbAt.y} scale={orbPop}>
-				<Sprite key="myOrb" anchor={0.5} x={0} y={0} width={orbS(ORB.w)} height={orbS(ORB.h)} />
-			</Container>
-			{#each qSliceDepths as z, i (i)}
-				{@const near = Q_SLICES > 1 ? i / (Q_SLICES - 1) : 1}
-				<Container
-					x={qAt.x + orbS(z) * Math.sin(qTurn)}
-					y={qAt.y}
-					rotation={qRotation}
-					scale={{ x: orbPop * qScale * qFlip, y: orbPop * qScale }}
-				>
-					<!-- The slab's interior is the same mark in shadow; only the front face is lit, so
-					     the extrusion reads as depth rather than as a smeared copy. -->
+			<!-- The two aliens watching from opposite corners, mounted first so the machine is never
+			     behind them. -->
+			{#each orbAliens as alien (alien.edge)}
+				{@const a = orbAlienAt(alien.edge, alien.mirror, alien.delay, alien.phase)}
+				<Container x={a.x} y={a.y} rotation={a.rotation} scale={a.scale} alpha={a.alpha}>
 					<Sprite
-						key="myQ"
+						key={alien.key}
 						anchor={0.5}
 						x={0}
 						y={0}
-						width={orbS(Q.w)}
-						height={orbS(Q.h)}
-						tint={near === 1 ? 0xffffff : 0x8a2f6a}
-						alpha={near === 1 ? 1 : 0.55 + 0.45 * near}
+						width={D.s(ALIEN.w)}
+						height={D.s(ALIEN.h)}
 					/>
 				</Container>
 			{/each}
-			<!-- The four cyan motes inside the dome, twinkling out of phase with each other. -->
-			{#each DOTS as dot, i (i)}
-				<Graphics
-					draw={(gr) => {
-						gr.clear();
-						const at = orbP(dot.x + DOT_D / 2, dot.y + DOT_D / 2);
-						gr.circle(at.x, at.y, orbS(DOT_D / 2));
-						gr.fill({
-							color: 0x9ef2fe,
-							alpha: orbIn * (0.45 + 0.55 * (0.5 + 0.5 * Math.sin(clock * 3 + i * 1.7))),
-						});
-					}}
-				/>
-			{/each}
+			<!-- The machine is one thing when it leaves: orb, "?", stars and motes shrink together.
+			     Its parts are placed in the frame's own absolute coordinates (orbP), so instead of
+			     re-centring every one of them the wrapper is OFFSET so that scaling it pivots on the
+			     orb's centre — a child at the pivot stays put whatever the scale is. -->
+			<Container
+				x={orbAt.x * (1 - orbLeaveScale)}
+				y={orbAt.y * (1 - orbLeaveScale)}
+				scale={orbLeaveScale}
+				alpha={orbLeaveAlpha}
+			>
+				<Container x={orbAt.x} y={orbAt.y} scale={orbPop}>
+					<Sprite key="myOrb" anchor={0.5} x={0} y={0} width={orbS(ORB.w)} height={orbS(ORB.h)} />
+				</Container>
+				<!-- The falling stars, inside the glass and behind the "?": each one fades in at the top of
+			     the dome, drifts down its lane and fades out before the rim, twinkling as it goes. -->
+				{#each STARS as star, i (i)}
+					{@const s = starAt(star)}
+					<Sprite
+						key="myStar"
+						anchor={0.5}
+						x={s.x}
+						y={s.y}
+						width={s.size}
+						height={s.size}
+						rotation={s.rotation}
+						alpha={s.alpha}
+					/>
+				{/each}
+				{#each qSliceDepths as z, i (i)}
+					{@const near = Q_SLICES > 1 ? i / (Q_SLICES - 1) : 1}
+					<Container
+						x={qAt.x + orbS(z) * Math.sin(qTurn)}
+						y={qAt.y}
+						rotation={qRotation}
+						scale={{ x: orbPop * qScale * qFlip, y: orbPop * qScale }}
+					>
+						<!-- The slab's interior is the same mark in shadow; only the front face is lit, so
+					     the extrusion reads as depth rather than as a smeared copy. -->
+						<Sprite
+							key="myQ"
+							anchor={0.5}
+							x={0}
+							y={0}
+							width={orbS(Q.w)}
+							height={orbS(Q.h)}
+							tint={near === 1 ? 0xffffff : 0x8a2f6a}
+							alpha={near === 1 ? 1 : 0.55 + 0.45 * near}
+						/>
+					</Container>
+				{/each}
+				<!-- The four cyan motes inside the dome, twinkling out of phase with each other. -->
+				{#each DOTS as dot, i (i)}
+					<Graphics
+						draw={(gr) => {
+							gr.clear();
+							const at = orbP(dot.x + DOT_D / 2, dot.y + DOT_D / 2);
+							gr.circle(at.x, at.y, orbS(DOT_D / 2));
+							gr.fill({
+								color: 0x9ef2fe,
+								alpha: orbIn * (0.45 + 0.55 * (0.5 + 0.5 * Math.sin(clock * 3 + i * 1.7))),
+							});
+						}}
+					/>
+				{/each}
+			</Container>
 		{:else if phase === 'won'}
 			<!-- Beat 2 — the pad, then the copy, then an alien from a random edge -->
 			<Container alpha={padIn}>
@@ -527,7 +738,7 @@
 								r: D.s(blob.box.w * 0.13),
 								fall: D.s(150),
 								edge: Math.max(1, D.s(3)),
-								clock,
+								clock: slimeDripClock,
 								period: blob.period,
 							});
 							drawSlimeCluster(gr, {
@@ -538,7 +749,18 @@
 								})),
 								edge: Math.max(1, D.s(3)),
 								clock: clock + blob.period,
+								grow: slimeGrow,
 								sag: 0.55,
+								// A whole period ahead of the drips' clock (which is itself delayed until the
+								// splat is out), so only that delay has to come off the drop phase.
+								drip: {
+									period: blob.period,
+									// The extra whole period on the cluster's clock has to come off too: it wraps
+									// away mod 1, but not past the `raw < 0` guard that holds the second drop back.
+									offsets: DRIP_OFFSETS.map(
+										(off) => off - (T_SLIME + SLIME_GROW) / blob.period - 1,
+									),
+								},
 								highlights: [
 									{ lobe: 0, size: 0.36 },
 									{ lobe: 2, size: 0.26 },

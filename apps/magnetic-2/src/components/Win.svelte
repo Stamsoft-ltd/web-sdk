@@ -19,6 +19,7 @@
 	import WinAmountPlaque from './WinAmountPlaque.svelte';
 	import PressToContinue from './PressToContinue.svelte';
 	import { getContext } from '../game/context';
+	import { holdCelebration } from '../game/celebration';
 	import { stateBet } from 'state-shared';
 
 	const context = getContext();
@@ -41,10 +42,11 @@
 	// A legendary win goes 5.5s + 8.5s = 14s -> 7s on turbo -> 4.2s on super turbo.
 	const turboSpeed = $derived(stateBet.isSuperTurbo ? 0.3 : stateBet.isTurbo ? 0.5 : 1);
 
-	// Ordinary-win plaque width as a fraction of the visible board width. Wide enough to carry a
-	// seven-figure amount at full size, narrow enough that the winning cluster stays readable
-	// around it — the old bare number spanned the whole board.
-	const PLAQUE_BOARD_FILL = 0.52;
+	// Ordinary-win plaque width as a fraction of the visible board width. The design (Figma
+	// 9185:9638) puts the trimmed plate 427 wide across a 586-wide symbol grid, i.e. 0.73 — it
+	// covers about two and a half of the seven rows and leaves the winning cluster readable around
+	// it; the old bare number spanned the whole board.
+	const PLAQUE_BOARD_FILL = 0.73;
 
 	let show = $state(false);
 	let amount = $state(0);
@@ -105,8 +107,7 @@
 	// the scrim, which is exactly what `celebrationActive` already does for the congrats panel.
 	$effect(() => {
 		if (!show || !winLevelData?.animation) return;
-		context.stateGame.celebrationActive = true;
-		return () => (context.stateGame.celebrationActive = false);
+		return holdCelebration(context.stateGame);
 	});
 
 	// Continuous board shake — the popup never sits still: a low rumble the whole time it's up

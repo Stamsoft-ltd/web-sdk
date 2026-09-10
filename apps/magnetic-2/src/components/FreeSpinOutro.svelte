@@ -15,6 +15,7 @@
 	import { OnMount } from 'components-shared';
 
 	import { getContext } from '../game/context';
+	import { holdCelebration } from '../game/celebration';
 	import PressToContinue from './PressToContinue.svelte';
 	import WonPanel from './WonPanel.svelte';
 
@@ -42,6 +43,14 @@
 		dismissed = true;
 		oncomplete();
 	};
+
+	// The panel's own hold on the HUD dim, taken the moment the outro is shown. WonPanel takes one
+	// too, but only once `winLevelData` has arrived and it has mounted — this covers the fade in
+	// between, where the bright bottom bar would otherwise sit over the opening celebration.
+	$effect(() => {
+		if (!show) return;
+		return holdCelebration(context.stateGame);
+	});
 
 	context.eventEmitter.subscribeOnMount({
 		freeSpinOutroShow: () => (show = true),

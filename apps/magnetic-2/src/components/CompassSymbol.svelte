@@ -3,7 +3,8 @@
 
 	import { GREEN_LIGHTS } from '../game/greenLights';
 
-	// The COMPASS cell (H1), assembled from loose layers so the alien can live in the bezel.
+	// The COMPASS cell (L3 since 2026-09-08, when it swapped slots with the astronaut so the alien
+	// is the top symbol), assembled from loose layers so the alien can live in the bezel.
 	//
 	// The MOTHERSHIP redesign changed what this symbol IS. It used to be a compass — a needle that
 	// turned under an alien pivot cap — and there is no needle anywhere in the new part set. It is a
@@ -239,7 +240,14 @@
 	<!-- The dial flashing on a landing: the same bezel drawn again additively. Kept mounted at
 	     alpha 0 rather than {#if}-toggled -- it changes every frame of a win, and mounting a Pixi
 	     child per frame costs more than an empty batched draw. -->
-	<Sprite key={props.assetKey} anchor={0.5} blendMode="add" alpha={bezelFlash} width={W} height={H} />
+	<Sprite
+		key={props.assetKey}
+		anchor={0.5}
+		blendMode="add"
+		alpha={bezelFlash}
+		width={W}
+		height={H}
+	/>
 	<!-- Antennae BEHIND the face: their stalks run under it, which is exactly how the cut was made.
 	     Anchored at the BOTTOM so the sway pivots where the stalk enters the head — anchored at the
 	     centre the whole antenna slides sideways instead of leaning. -->

@@ -5,7 +5,9 @@ CONVERT — designer PNGs in art-src/ui/. They arrive with transparent margins, 
 every consumer sizes the sprite from its own box, so a plate that ships with margin renders smaller
 than it measures and its text lands off-centre.
 
-    win_plaque.png -> ui/win_plaque.webp   the small-win amount plate
+    (nothing — win_plaque.webp was the last entry; retired 2026-09-08 when the small-win plate
+     became the MOTHERSHIP hex plate, cut straight from the Figma image fill in
+     art-src/small_win/. Re-adding it here would overwrite that plate with the Version2 one.)
 
 PASS THROUGH — art-src/info/, the rules carousel's own icons (MOTHERSHIP design 4504:4289). These
 are NOT trimmed: each one is drawn inside a box the design sizes against the stat card, and the art
@@ -43,7 +45,7 @@ SRC = ROOT / "art-src" / "ui"
 OUT = ROOT / "static" / "assets" / "components" / "ui"
 
 WEBP = dict(quality=90, method=6, alpha_quality=95)
-TARGETS = ["win_plaque"]
+TARGETS: list[str] = []
 
 # Rules-carousel icons: Figma renders at 3x the design's box, kept whole (see the header).
 INFO_SRC = ROOT / "art-src" / "info"

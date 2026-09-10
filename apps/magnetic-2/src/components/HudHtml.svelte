@@ -19,7 +19,6 @@
 	// while the menu popover is open so the button reads as "close".
 	// ?v= because an earlier cut of this file shipped with an opaque white background (Figma's export
 	// flattens onto white), and browsers that already fetched it would keep serving the white box.
-	const iconMenuClose = ap('/assets/components/navbar/icons/menu_close.webp?v=2');
 	// Menu popover (Figma 7041-8978): flat Version2 navy panel with SOUND / MUSIC / INFO rows —
 	// pure CSS now (same #364970 / #4E78B8 language as the bottom bar), no bitmap panel.
 	const iconMenuMusic = ap('/assets/components/navbar/icons/menu_music.svg');
@@ -63,7 +62,6 @@
 		menuBtnFrame,
 		soundBtnFrame,
 		iconMenu,
-		iconMenuClose,
 		iconMenuMusic,
 		iconMenuInfo,
 		iconMenuMusicOff,
@@ -150,6 +148,50 @@
 		requestAnimationFrame(apply);
 		(document as Document).fonts?.ready.then(apply);
 		return { update: apply, destroy: () => ro.disconnect() };
+	}
+
+	// Fit an AMOUNT into its fixed-width pill (desktop balance / win). The pills hold a fixed width
+	// so a count-up never re-lays the bar; what gives instead is the type — a long amount steps its
+	// font down until the text clears the pill's inner width. Unlike fitLabel this watches the TEXT
+	// (MutationObserver): the pill never resizes when its number changes, so a parent
+	// ResizeObserver would never fire, and Svelte 5 does not call an action's update() on a dep
+	// change either.
+	function fitAmount(node: HTMLElement) {
+		const apply = () => {
+			const pill = node.parentElement;
+			if (!pill) return;
+			node.style.fontSize = '';
+			const cs = getComputedStyle(node);
+			const baseSize = parseFloat(cs.fontSize);
+			const pcs = getComputedStyle(pill);
+			const availW =
+				pill.clientWidth - parseFloat(pcs.paddingLeft || '0') - parseFloat(pcs.paddingRight || '0');
+			if (availW <= 0) return;
+			const range = document.createRange();
+			range.selectNodeContents(node);
+			let size = baseSize;
+			let guard = 0;
+			while (
+				guard++ < 48 &&
+				size > baseSize * 0.4 &&
+				range.getBoundingClientRect().width > availW
+			) {
+				size -= 0.5;
+				node.style.fontSize = `${size}px`;
+			}
+		};
+		const ro = new ResizeObserver(apply);
+		if (node.parentElement) ro.observe(node.parentElement);
+		const mo = new MutationObserver(apply);
+		mo.observe(node, { characterData: true, childList: true, subtree: true });
+		requestAnimationFrame(apply);
+		(document as Document).fonts?.ready.then(apply);
+		return {
+			destroy: () => {
+				ro.disconnect();
+				mo.disconnect();
+			},
+		};
 	}
 
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
@@ -633,11 +675,19 @@
 			<div class="hud-system">
 				<button
 					class="nav-btn nav-btn--framed"
+					class:nav-btn--open={showMenuPopup}
 					type="button"
 					onclick={toggleMenuPopup}
 					aria-label="Menu"
 				>
-					<img class="nav-icon" src={showMenuPopup ? iconMenuClose : iconMenu} alt="menu" />
+					{#if showMenuPopup}
+						<!-- Open state (design): the disc fills lilac and a bare white X sits in it. Drawn,
+						     not the old menu_close.webp — that was the previous theme's navy disc with a
+						     cyan ring, which read as a second, smaller button inside this one. -->
+						<span class="nav-close-x" aria-hidden="true"></span>
+					{:else}
+						<img class="nav-icon" src={iconMenu} alt="menu" />
+					{/if}
 				</button>
 				{#if showMenuPopup}{@render menuPopup()}{/if}
 				<!-- No mute button here: the design moves sound INTO the menu popover (which already
@@ -669,7 +719,7 @@
 				<div class="label label--balance">
 					<span class="label-text">{i18nDerived.balance()}</span>
 				</div>
-				<span class="value">{formattedBalance}</span>
+				<span class="value" use:fitAmount>{formattedBalance}</span>
 			</div>
 		</div>
 
@@ -681,7 +731,7 @@
 				<div class="label label--balance">
 					<span class="label-text">{i18nDerived.win()}</span>
 				</div>
-				<span class="value">{formattedWin}</span>
+				<span class="value" use:fitAmount>{formattedWin}</span>
 			</div>
 
 			<div class="hud-divider" aria-hidden="true"></div>
@@ -810,11 +860,19 @@
 				<div class="pt-grp pt-grp--left">
 					<button
 						class="nav-btn nav-btn--framed"
+						class:nav-btn--open={showMenuPopup}
 						type="button"
 						onclick={toggleMenuPopup}
 						aria-label="Menu"
 					>
-						<img class="nav-icon" src={showMenuPopup ? iconMenuClose : iconMenu} alt="menu" />
+						{#if showMenuPopup}
+							<!-- Open state (design): the disc fills lilac and a bare white X sits in it. Drawn,
+						     not the old menu_close.webp — that was the previous theme's navy disc with a
+						     cyan ring, which read as a second, smaller button inside this one. -->
+							<span class="nav-close-x" aria-hidden="true"></span>
+						{:else}
+							<img class="nav-icon" src={iconMenu} alt="menu" />
+						{/if}
 					</button>
 					{#if showMenuPopup}{@render menuPopup()}{/if}
 					<div class="pt-buy pt-buy--nav">
@@ -1019,11 +1077,19 @@
 			<div class="ls-nav">
 				<button
 					class="nav-btn nav-btn--framed"
+					class:nav-btn--open={showMenuPopup}
 					type="button"
 					onclick={toggleMenuPopup}
 					aria-label="Menu"
 				>
-					<img class="nav-icon" src={showMenuPopup ? iconMenuClose : iconMenu} alt="menu" />
+					{#if showMenuPopup}
+						<!-- Open state (design): the disc fills lilac and a bare white X sits in it. Drawn,
+						     not the old menu_close.webp — that was the previous theme's navy disc with a
+						     cyan ring, which read as a second, smaller button inside this one. -->
+						<span class="nav-close-x" aria-hidden="true"></span>
+					{:else}
+						<img class="nav-icon" src={iconMenu} alt="menu" />
+					{/if}
 				</button>
 				{#if showMenuPopup}{@render menuPopup()}{/if}
 				<!-- Sound icon moved here (was buy bonus): master mute for ALL sound + music. -->
@@ -1200,9 +1266,13 @@
 		z-index: 6;
 		align-self: center;
 		margin-top: auto;
-		/* Hug the (now compact) content so the bar frame has no empty ends, capped on narrow screens. */
-		width: fit-content;
-		max-width: calc(100% - 16px);
+		/* A DEFINITE width, not fit-content. The readouts reserve width through a flex basis
+		   (.value-pill--balance), and a basis is only honoured against a real container width: in
+		   a content-hugging bar each group is sized from its text and the pill shrinks straight
+		   back to it. The definite width is also what lets the pills give that reservation up when
+		   the window is tighter than the content, instead of the groups overflowing the plate's
+		   ends. (Used to hug content; the >=1200px rule below sets the wide bar.) */
+		width: min(calc(100% - 16px), 1120px);
 		height: auto;
 		box-sizing: border-box;
 		display: flex;
@@ -1259,12 +1329,16 @@
 		height: 42px;
 	}
 
+	/* Both groups may SHRINK: the bar hugs its content up to the screen, and when that is not
+	   enough the readouts inside give up their reserved width (see .value-pill--balance) instead
+	   of the groups overflowing the bar's ends — which is what put the menu and AUTO buttons half
+	   off the plate on a 1000px laptop. */
 	.hud-stats {
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		gap: 12px;
-		flex: 0 0 auto;
+		flex: 0 1 auto;
 		min-width: 0;
 	}
 
@@ -1280,7 +1354,8 @@
 		align-items: center;
 		justify-content: flex-end;
 		gap: 9px;
-		flex: 0 0 auto;
+		flex: 0 1 auto;
+		min-width: 0;
 		padding-top: 0;
 	}
 
@@ -1308,8 +1383,17 @@
 		flex-direction: column;
 		align-items: flex-start;
 		padding: 0 10px;
+		/* FIXED width, so WIN going "$0.00" -> "$25.00" as a round pays never re-lays the bar (it
+		   used to push the bet stepper and the spin button sideways; a min-width reservation then
+		   pushed the menu and AUTO buttons off a 1000px laptop's bar instead). The number fits the
+		   pill, not the other way round: fitAmount steps the numerals down when an amount is too
+		   long for it. The width itself yields to the window: 130px holds "$1,000.00" at the 24px
+		   numerals, and the bar's other content measures 701px, so below that room the two pills
+		   split what is left (10px guard). Wide bar (>=1200px): 160px, holds six figures. */
 		flex: 0 0 auto;
-		min-width: 96px;
+		width: min(130px, calc((min(100vw - 16px, 1120px) - 711px) / 2));
+		min-width: 0;
+		box-sizing: border-box;
 		border-left: none;
 	}
 
@@ -1320,11 +1404,13 @@
 
 	.value-pill--balance .value {
 		line-height: 1;
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
 	}
-
-	/* WIN pill (between balance and bet) — same look as balance, a touch narrower. */
-	.value-pill--win {
-		min-width: 60px;
+	@media (min-width: 1200px) {
+		.hud-shell[data-layout='desktop'] .value-pill--balance {
+			width: 160px;
+		}
 	}
 
 	.value-pill--bet {
@@ -1549,6 +1635,39 @@
 	.nav-btn--framed .nav-icon {
 		width: 40%;
 		height: 40%;
+	}
+
+	/* Menu button while its popover is open (design, sampled from the reference): the whole disc
+	   fills lilac and the glyph is a bare white X — no ring, no inner disc. */
+	.nav-btn--open,
+	.nav-btn--open:not(:disabled):hover {
+		background: #a08cf8;
+		border-color: #a08cf8;
+	}
+
+	.nav-close-x {
+		position: relative;
+		display: block;
+		width: 36%;
+		height: 36%;
+		pointer-events: none;
+	}
+
+	.nav-close-x::before,
+	.nav-close-x::after {
+		content: '';
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		width: 130%;
+		height: 2.5px;
+		border-radius: 2px;
+		background: #ffffff;
+		transform: translate(-50%, -50%) rotate(45deg);
+	}
+
+	.nav-close-x::after {
+		transform: translate(-50%, -50%) rotate(-45deg);
 	}
 
 	/* Figma glyph sizes vary per icon: the speaker is 22.5/48 ≈ 47% wide where the others sit
@@ -1989,10 +2108,6 @@
 	@media (max-width: 1100px) {
 		.scatter-card {
 			display: none;
-		}
-
-		.hud-bottom {
-			width: min(calc(100% - 16px), 1120px);
 		}
 	}
 

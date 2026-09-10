@@ -7,10 +7,9 @@
 	// The amount readout for an ORDINARY win — the one the player sees on most paying spins, as
 	// opposed to the assembled big-win card in WinCard.svelte.
 	//
-	// MOTHERSHIP redesign: this is the design's own violet plate (art-src/ui/win_plaque.png, built by
-	// scripts/build-ui-art.py) with the amount in plain white Chakra Petch. It replaces a plate that
-	// was DRAWN here — a dark bed with a gold hairline and gold-gradient text — which belonged to the
-	// old palette and was the last gold left on the board.
+	// MOTHERSHIP: the design's purple hex plate with four lime bulbs (Figma 9185:9638, the image
+	// fill trimmed to its alpha) with the amount in white Audiowide. It replaced the Version2 navy
+	// plate with pink dashes, which in turn replaced a plate DRAWN here with a gold hairline.
 	const props: {
 		amount: number;
 		/** Plaque width in main-container units. */
@@ -18,12 +17,14 @@
 	} = $props();
 
 	// The trimmed art's own pixel box, so the sprite is never stretched.
-	const PLATE = { w: 485, h: 287 };
-	// Font size as a fraction of the plate HEIGHT (the design sets the number about a third of the
-	// plate tall), and how much of its width the longest amount may occupy before it is scaled down.
-	const FONT_OF_H = 0.37;
-	// Longest sensible run ("$1,234,567.89") still has to clear the plate's inner border.
-	const TEXT_FILL = 0.7;
+	const PLATE = { w: 1591, h: 663 };
+	// Font size as a fraction of the plate HEIGHT: the design's 90.87px number sits in a plate whose
+	// trimmed art is 177.8 design px tall (the node box is 243.5, but that includes the image's
+	// transparent padding), which is the 0.51 here.
+	const FONT_OF_H = 0.51;
+	// Longest sensible run ("$1,234,567.89") still has to clear the plate's inner bed, which runs
+	// from about 16% to 84% of the trimmed width — the bulbs sit outside it.
+	const TEXT_FILL = 0.66;
 
 	const w = $derived(props.width);
 	const h = $derived((props.width * PLATE.h) / PLATE.w);

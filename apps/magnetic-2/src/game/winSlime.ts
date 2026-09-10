@@ -35,13 +35,14 @@ type Tier = {
 };
 
 export const WIN_SLIME_TIERS: Record<string, Tier> = {
+	// Most splats drip: a splat that only sits there is the part that read as static.
 	sweet: { count: 2, size: 20, dripping: 1 },
-	wild: { count: 3, size: 22, dripping: 0.7 },
-	epic: { count: 4, size: 24, dripping: 0.5 },
-	mythic: { count: 5, size: 26, dripping: 0.5 },
-	legendary: { count: 7, size: 28, dripping: 0.45 },
+	wild: { count: 3, size: 22, dripping: 0.9 },
+	epic: { count: 4, size: 24, dripping: 0.8 },
+	mythic: { count: 5, size: 26, dripping: 0.8 },
+	legendary: { count: 7, size: 28, dripping: 0.7 },
 	// The MAX screen is covered — big splats all round the lockup, not just at its corners.
-	max: { count: 11, size: 32, dripping: 0.35 },
+	max: { count: 11, size: 32, dripping: 0.55 },
 };
 
 /** mulberry32 — a seeded PRNG, so a card's slime is fixed for as long as it is on screen. */
@@ -161,11 +162,55 @@ export const buildWinSlime = (o: {
 	// Walk the free border at an even stride so the splats spread all round it rather than bunching.
 	const step = source.length / tier.count;
 	const start = rng() * source.length;
-	return Array.from({ length: tier.count }, (_, i) => {
-		const spot = source[Math.floor(start + i * step + (rng() - 0.5) * step * 0.5) % source.length];
-		const size = tier.size * (0.7 + rng() * 0.55);
-		// Sitting ON the edge: about a third of the splat outside it, the rest over the plate face.
-		const at = { x: spot.x + spot.nx * size * 0.35, y: spot.y + spot.ny * size * 0.35 };
-		return splat(at, size, rng, rng() < tier.dripping);
-	});
+	/** The stride's jitter can run the index below zero, and a negative index is `undefined`. */
+	const at = (index: number) =>
+		source[((Math.floor(index) % source.length) + source.length) % source.length];
+
+	// AND THEY MUST NOT PILE UP ON EACH OTHER. The stride alone does not guarantee that: it jitters,
+	// the sizes vary by ±30%, and a clover reaches about twice its own `size`, so two neighbours
+	// could land close enough to fuse into one shapeless mass (reported 2026-09-09 — two splats read
+	// as a single green lump the height of the card). Each splat is now rolled at up to TRIES spots
+	// along its own stretch of border and takes the first that clears everything already down; if
+	// none of them does — the border is only so long, and MAX throws eleven at it — the splat is
+	// dropped rather than piled on a neighbour (see the note at the bottom of the loop).
+	const MIN_GAP = 0.86; // of the two reaches summed; a little overlap still fuses handsomely
+	const TRIES = 14;
+	const placed: { x: number; y: number; reach: number }[] = [];
+	const out: SlimeSplat[] = [];
+	for (let i = 0; i < tier.count; i += 1) {
+		let best: { splat: SlimeSplat; x: number; y: number; reach: number } | null = null;
+		let bestScore = -Infinity;
+		for (let attempt = 0; attempt < TRIES; attempt += 1) {
+			const spot = at(start + i * step + (rng() - 0.5) * step * 0.5);
+			const size = tier.size * (0.7 + rng() * 0.55);
+			// Sitting ON the edge: about a third of the splat outside it, the rest over the plate face.
+			const anchor = { x: spot.x + spot.nx * size * 0.35, y: spot.y + spot.ny * size * 0.35 };
+			const candidate = splat(anchor, size, rng, rng() < tier.dripping);
+			// How far the clover actually reaches from its anchor — the lobes are dealt around it, so
+			// this is not `size` and is what two splats have to keep between them.
+			const reach = Math.max(
+				...candidate.lobes.map((lobe) => Math.hypot(lobe.x - anchor.x, lobe.y - anchor.y) + lobe.r),
+			);
+			const score = Math.min(
+				...placed.map(
+					(other) =>
+						Math.hypot(other.x - anchor.x, other.y - anchor.y) - (other.reach + reach) * MIN_GAP,
+				),
+				Infinity,
+			);
+			if (score > bestScore) {
+				bestScore = score;
+				best = { splat: candidate, x: anchor.x, y: anchor.y, reach };
+			}
+			if (score >= 0) break;
+		}
+		// Nothing fits here: DROP this splat rather than dumping it on top of its neighbour. `count`
+		// is what the tier asks for, not a quota — the border only holds so much, and a tier that
+		// asks for more than fits (MAX asks for eleven) simply lands what it can. A card missing one
+		// splat reads as slime; two splats fused into one lump reads as a mistake.
+		if (!best || bestScore < 0) continue;
+		placed.push({ x: best.x, y: best.y, reach: best.reach });
+		out.push(best.splat);
+	}
+	return out;
 };

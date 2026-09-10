@@ -165,19 +165,67 @@ def main() -> None:
     ref_hand_l, ref_hand_r = ref_hands[0], ref_hands[-1]
 
     # --- what each part LOOKS LIKE, from the sheet ---------------------------------------------
-    src_ant_l, src_ant_r = pair([bb(p) for p in blobs(pk["cyan"], 150)], "antennae")
-    src_face = bb(max(blobs(pk["purple"], 400), key=len))
-    src_hands = sorted((bb(p) for p in blobs(pk["green"], 400)), key=lambda b: b[0])
-    src_hand_l, src_hand_r = src_hands[0], src_hands[-1]
+    # The hue keys find each part, but a hue box is NOT the part's outline: the balls' white
+    # highlights and every part's dark outline fail their key, so a crop taken on the hue box cut
+    # the tops off both antenna balls (user, 2026-09-09 — "some parts are not drawn"). The sheet
+    # keeps its five parts as five separate opaque islands, so the crop is the island the hue box
+    # sits in, and the reference target grows by the same margins so the art still lands where the
+    # hue box said it belongs.
+    islands = [bb(p) for p in blobs(np.array(parts)[:, :, 3] > 120, 300)]
+
+    def island_of(box):
+        cx, cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+        hits = [i for i in islands if i[0] <= cx < i[2] and i[1] <= cy < i[3]]
+        if len(hits) != 1:
+            die(f"hue box {box} sits in {len(hits)} opaque islands, expected exactly 1")
+        return hits[0]
+
+    key_ant_l, key_ant_r = pair([bb(p) for p in blobs(pk["cyan"], 150)], "antennae")
+    key_face = bb(max(blobs(pk["purple"], 400), key=len))
+    key_hands = sorted((bb(p) for p in blobs(pk["green"], 400)), key=lambda b: b[0])
+    key_hand_l, key_hand_r = key_hands[0], key_hands[-1]
+    src_ant_l, src_ant_r = island_of(key_ant_l), island_of(key_ant_r)
+    src_face = island_of(key_face)
+    src_hand_l, src_hand_r = island_of(key_hand_l), island_of(key_hand_r)
+
+    def grow(target, key_box, full_box):
+        """Widen a canvas target by the outline/highlight margin the hue key left out, per side.
+        The sheet is the source frame at scale 1, so a sheet margin is a canvas margin times fit."""
+        return (
+            target[0] - (key_box[0] - full_box[0]) * fit,
+            target[1] - (key_box[1] - full_box[1]) * fit,
+            target[2] + (full_box[2] - key_box[2]) * fit,
+            target[3] + (full_box[3] - key_box[3]) * fit,
+        )
 
     # --- fit the ASSEMBLY to the canvas --------------------------------------------------------
     # Not the body. The antennae stand well above the arch, so fitting the body to full canvas
     # height puts them at dy -0.55 -- off the top of the symbol box, where they are simply clipped.
     # What has to fit is the union of the body with every part at its reference position.
     crop = alpha_bbox(body)
+    # The reference boxes are hue boxes too (see the sheet note below), so each is padded by the
+    # margin the sheet's opaque island adds around ITS hue box, converted through the reference
+    # scale — otherwise the fit leaves no room for the antenna balls' tops.
+    def padded_ref(ref_box, key_box, full_box):
+        return (
+            ref_box[0] - (key_box[0] - full_box[0]) / scale,
+            ref_box[1] - (key_box[1] - full_box[1]) / scale,
+            ref_box[2] + (full_box[2] - key_box[2]) / scale,
+            ref_box[3] + (full_box[3] - key_box[3]) / scale,
+        )
+
     content = union(
         crop,
-        *(tuple(to_src(b)) for b in (ref_ant_l, ref_ant_r, ref_face, ref_hand_l, ref_hand_r)),
+        *(
+            tuple(to_src(padded_ref(r, k, f)))
+            for r, k, f in (
+                (ref_ant_l, key_ant_l, src_ant_l),
+                (ref_ant_r, key_ant_r, src_ant_r),
+                (ref_face, key_face, src_face),
+                (ref_hand_l, key_hand_l, src_hand_l),
+                (ref_hand_r, key_hand_r, src_hand_r),
+            )
+        ),
     )
     cw, ch = content[2] - content[0], content[3] - content[1]
     fit = min(CANVAS_H / ch, CANVAS_W / cw)
@@ -215,14 +263,14 @@ def main() -> None:
         }
 
     placed = {}
-    for name, src_box, ref_box_i in (
-        ("antenna_l", src_ant_l, ref_ant_l),
-        ("antenna_r", src_ant_r, ref_ant_r),
-        ("face", src_face, ref_face),
-        ("hand_l", src_hand_l, ref_hand_l),
-        ("hand_r", src_hand_r, ref_hand_r),
+    for name, src_box, key_box, ref_box_i in (
+        ("antenna_l", src_ant_l, key_ant_l, ref_ant_l),
+        ("antenna_r", src_ant_r, key_ant_r, ref_ant_r),
+        ("face", src_face, key_face, ref_face),
+        ("hand_l", src_hand_l, key_hand_l, ref_hand_l),
+        ("hand_r", src_hand_r, key_hand_r, ref_hand_r),
     ):
-        target = to_canvas(to_src(ref_box_i))
+        target = grow(to_canvas(to_src(ref_box_i)), key_box, src_box)
         art = parts.crop(tuple(int(v) for v in src_box))
         art = art.crop(alpha_bbox(art))
         w = max(1, round((target[2] - target[0]) * SUPERSAMPLE))

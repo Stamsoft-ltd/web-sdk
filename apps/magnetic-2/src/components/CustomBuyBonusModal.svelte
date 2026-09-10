@@ -16,18 +16,16 @@
 	// (Flattened composite from scripts/build-paytable-symbols.py, not the board's own texture: the
 	// wild is assembled from loose parts, so its base file alone is a horseshoe with no plaque.)
 	const iconFeature = ap('/assets/components/symbols/magnetic/special/wild_full.webp?v=20260904');
-	const iconBonus = ap('/assets/components/ui/bb_ic_gravity.webp?v=20260904');
-	const iconSuper = ap('/assets/components/ui/bb_ic_core.webp?v=20260904');
+	// The two bought bonuses picture the SCATTER with their trigger count on a lime pill (design
+	// 9248:25536 / 25542, 2026-09-09) — the ringed planet and the molecule they showed before are
+	// gone. Both cards use the one scatter image; the pill is drawn in CSS off `pill` below.
+	const iconScatter = ap(
+		'/assets/components/symbols/magnetic/special/scatter_full.webp?v=20260908',
+	);
 	const iconMystery = ap('/assets/components/ui/bb_ic_mystery.webp?v=20260904');
 
 	// For LoadingController's HTML-image pass — built from the consts above so path/?v= edits stay in sync.
-	export const BUY_BONUS_MODAL_IMAGES = [
-		iconChance,
-		iconFeature,
-		iconBonus,
-		iconSuper,
-		iconMystery,
-	];
+	export const BUY_BONUS_MODAL_IMAGES = [iconChance, iconFeature, iconScatter, iconMystery];
 </script>
 
 <script lang="ts">
@@ -245,7 +243,8 @@
 			key: 'BONUS',
 			title: t('BUY DROP TITLE'),
 			desc: t('BUY DROP DESC'),
-			icon: iconBonus,
+			icon: iconScatter,
+			pill: '3x',
 			perSpin: false,
 			active: false,
 			buy: true,
@@ -255,7 +254,8 @@
 			key: 'SUPER',
 			title: t('BUY MEGA TITLE'),
 			desc: t('BUY MEGA DESC'),
-			icon: iconSuper,
+			icon: iconScatter,
+			pill: '4x',
 			perSpin: false,
 			active: false,
 			buy: true,
@@ -360,7 +360,12 @@
 				<span class="card-title">{card.title}</span>
 				<span class="card-desc">{card.desc}</span>
 				<div class="card-icon-slot">
-					<img class="card-icon" src={card.icon} alt="" />
+					<div class="card-icon-group">
+						<img class="card-icon" src={card.icon} alt="" />
+						{#if 'pill' in card}
+							<span class="card-pill">{card.pill}</span>
+						{/if}
+					</div>
 				</div>
 				<!-- A mode the RGS has not published has no price to state — show a dash rather than a
 				     confident "$0.00", which reads as free. -->
@@ -421,9 +426,6 @@
 		tabindex="-1"
 		onclick={closeConfirm}
 	></button>
-	<button class="confirm-close" type="button" onclick={closeConfirm} aria-label="Close">
-		<span class="confirm-close__glyph"></span>
-	</button>
 	<div class="confirm" role="dialog" aria-modal="true" bind:this={confirmEl} style={confirmVars}>
 		<div class="confirm-panel">
 			<div class="confirm-title">{confirmTitleText}</div>
@@ -627,11 +629,37 @@
 		align-items: center;
 		justify-content: center;
 	}
+	.card-icon-group {
+		position: relative;
+		height: 100%;
+		display: flex;
+		align-items: center;
+	}
 	.card-icon {
 		height: 100%;
 		width: auto;
 		object-fit: contain;
 		filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.45));
+	}
+	/* 9248:25537 — the trigger-count pill: lime on a hairline purple edge, Audiowide 10.45px in
+	   #502DA0, sitting over the scatter's left edge at mid-height (the design's 13.67px overlap on
+	   a 68px scatter whose art fills ~55% of its canvas width). All of the card's width. */
+	.card-pill {
+		position: absolute;
+		left: -0.5cqw;
+		top: 50%;
+		transform: translateY(-50%);
+		padding: 1.3cqw 1.3cqw;
+		border: 0.22cqw solid #522ea1;
+		border-radius: 1.95cqw;
+		background: #9ff816;
+		font-family: 'Audiowide', 'Chakra Petch', 'Inter', sans-serif;
+		font-size: 3.03cqw;
+		line-height: 1.2;
+		letter-spacing: 0.03em;
+		color: #502da0;
+		white-space: nowrap;
+		filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
 	}
 
 	/* 9164:11770 — POPPINS Bold 9.36px, white. */
@@ -847,46 +875,9 @@
 
 	/* ---- Confirm dialog — see the plate note on .confirm-panel below ---- */
 
-	/* Design 4036:3584: a 46px #494A9B circle with a white CSS glyph, no ring. */
-	.confirm-close {
-		position: fixed;
-		top: 22px;
-		right: 22px;
-		z-index: 73;
-		width: 46px;
-		height: 46px;
-		border-radius: 50%;
-		border: none;
-		background: #494a9b;
-		padding: 0;
-		cursor: pointer;
-		display: grid;
-		place-items: center;
-		transition: filter 0.12s ease;
-	}
-	.confirm-close:hover {
-		filter: brightness(1.35);
-	}
-	.confirm-close__glyph {
-		position: relative;
-		display: block;
-		width: 18.5px;
-		height: 2.13px;
-	}
-	.confirm-close__glyph::before,
-	.confirm-close__glyph::after {
-		content: '';
-		position: absolute;
-		inset: 0;
-		border-radius: 2.13px;
-		background: #fff;
-	}
-	.confirm-close__glyph::before {
-		transform: rotate(45deg);
-	}
-	.confirm-close__glyph::after {
-		transform: rotate(-45deg);
-	}
+	/* No screen-corner close button here any more (user, 2026-09-09): CANCEL and the backdrop both
+	   dismiss, and a third control at the top-right of a plate this size read as belonging to the
+	   buy menu underneath. */
 
 	.confirm {
 		position: fixed;
@@ -896,9 +887,10 @@
 		z-index: 71;
 		/* Same sizing as BonusResumeModal .resume — the two share this plate and the cqw scale, so
 		   they must grow/shrink together or the buy confirm would dwarf the resume dialog in a popout.
-		   32vw / 508px read too small at every size (user, 2026-08-10); two passes later it is 54vw with a
-		   300px floor and a 720px cap — the popout ramp is kept, the plate just has real presence now. */
-		width: clamp(300px, 54vw, 720px);
+		   32vw / 508px read too small at every size (user, 2026-08-10); two passes later it was 54vw
+		   with a 300px floor and a 720px cap, and on 2026-09-09 the user asked for "30% smaller":
+		   38vw between 240 and 504px, the same ramp scaled by 0.7. */
+		width: clamp(240px, 38vw, 504px);
 		container-type: inline-size;
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 	}

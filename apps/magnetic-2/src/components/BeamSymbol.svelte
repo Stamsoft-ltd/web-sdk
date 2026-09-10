@@ -62,7 +62,8 @@
 </script>
 
 {#if props.name === 'H1'}
-	<CompassSymbol {...common} />
+	<!-- The astronaut is H1 and the compass L3 since 2026-09-08 (see Board.svelte). -->
+	<CoilSymbol {...common} />
 {:else if props.name === 'H2'}
 	<LightningSymbol {...common} />
 {:else if props.name === 'H3'}
@@ -74,7 +75,7 @@
 {:else if props.name === 'L2'}
 	<MagnetSymbol {...common} />
 {:else if props.name === 'L3'}
-	<CoilSymbol {...common} />
+	<CompassSymbol {...common} />
 {:else if props.name === 'L4'}
 	<CircuitSymbol {...common} />
 {/if}

@@ -1041,19 +1041,31 @@ const resolveMagnetSequence = ({
 	};
 };
 
-const createTriggerBoard = ({ rng, superBonus = false }) => {
-	const scatterPositions = superBonus
-		? [
-				{ reel: 0, row: 1 },
-				{ reel: 2, row: 2 },
-				{ reel: 4, row: 3 },
-				{ reel: 6, row: 4 },
-			]
-		: [
-				{ reel: 0, row: 2 },
-				{ reel: 3, row: 3 },
-				{ reel: 6, row: 1 },
-			];
+// `scatters` overrides the count: the Mystery buy lands 3, 4 or 5 so the board itself says which
+// bonus the draw came out as (3 = Gravity Breach, 4 = Core Overload, 5 = Zero Point Protocol —
+// the client's getBonusRoomFromScatters reads exactly that).
+const createTriggerBoard = ({ rng, superBonus = false, scatters = superBonus ? 4 : 3 }) => {
+	const scatterPositions =
+		scatters >= 5
+			? [
+					{ reel: 0, row: 1 },
+					{ reel: 1, row: 4 },
+					{ reel: 3, row: 2 },
+					{ reel: 5, row: 5 },
+					{ reel: 6, row: 3 },
+				]
+			: scatters === 4
+				? [
+						{ reel: 0, row: 1 },
+						{ reel: 2, row: 2 },
+						{ reel: 4, row: 3 },
+						{ reel: 6, row: 4 },
+					]
+				: [
+						{ reel: 0, row: 2 },
+						{ reel: 3, row: 3 },
+						{ reel: 6, row: 1 },
+					];
 	return forceScatters(createBoard({ rng, mode: 'BASE' }), scatterPositions);
 };
 
@@ -1226,11 +1238,12 @@ function buildBonusSequence({
 	triggerPositions = [],
 	runningTotal = 0,
 	fromBaseTrigger = false,
+	triggerScatters,
 }) {
 	const events = [];
 	const isSuper = mode === 'SUPER';
 	if (!fromBaseTrigger) {
-		const triggerBoard = createTriggerBoard({ rng, superBonus: isSuper });
+		const triggerBoard = createTriggerBoard({ rng, superBonus: isSuper, scatters: triggerScatters });
 		emitReveal(events, triggerBoard, 'basegame');
 	}
 	events.push({
@@ -1328,9 +1341,21 @@ export function generateRoundForMode({ mode = 'BASE', seed = Date.now() } = {}) 
 		const roll = rng();
 		const outcome = roll < 0.7 ? 'BONUS' : roll < 0.95 ? 'SUPER' : 'HIDDEN';
 		const selectedMode = outcome === 'BONUS' ? 'BONUS' : 'SUPER';
-		const bonus = buildBonusSequence({ rng, mode: selectedMode, runningTotal: 0, fromBaseTrigger: false });
+		const bonus = buildBonusSequence({
+			rng,
+			mode: selectedMode,
+			runningTotal: 0,
+			fromBaseTrigger: false,
+			// The reels answer the draw: 3, 4 or 5 scatters land for the three outcomes.
+			triggerScatters: outcome === 'HIDDEN' ? 5 : outcome === 'SUPER' ? 4 : 3,
+		});
+		// The draw is announced BEFORE the first reveal, not after it: the player has paid for a
+		// mystery, so the orb resolves it while the reels are still turning and only then do the
+		// scatters that match land (asked for 2026-09-08 — it used to sit after the reveal, which
+		// gave the answer away on the board before the draw). The client also plays it ahead of
+		// the first reveal on its own if a book carries it later.
 		const revealIndex = bonus.events.findIndex((event) => event.type === 'reveal');
-		bonus.events.splice(revealIndex + 1, 0, {
+		bonus.events.splice(revealIndex, 0, {
 			index: 0,
 			type: 'mysteryBonusReveal',
 			mode: outcome,

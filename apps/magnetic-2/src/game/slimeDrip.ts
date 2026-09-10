@@ -17,6 +17,13 @@ export const SLIME = 0x9ef916;
 export const SLIME_EDGE = 0x012037;
 export const SLIME_LIGHT = 0xd6ff8a;
 
+const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+/** backOut with a small overshoot: a lobe swells past its size as it pushes out, then settles. */
+const emergeEase = (t: number) => {
+	const u = clamp01(t) - 1;
+	return u * u * (2.2 * u + 1.2) + 1;
+};
+
 /** Everything `drawSlimeDrips` needs from a pixi Graphics — which satisfies this structurally. */
 export type SlimeDripTarget = {
 	moveTo(x: number, y: number): unknown;
@@ -42,9 +49,19 @@ export type SlimeDripOptions = {
 	clock: number;
 	/** Seconds per drip. */
 	period: number;
-	/** Phase offsets, one per concurrent drip (e.g. [0, 0.5] for two, half a cycle apart). */
+	/** Phase offsets, one per concurrent drip. Defaults to `DRIP_OFFSETS`. */
 	offsets?: number[];
 };
+
+/**
+ * Two drops, half a cycle apart — and the second one NEGATIVE, so it has not started yet at clock
+ * zero. The callers reset the drip clock to zero the moment their splat has finished oozing out;
+ * with `+0.5` the second drop was already a fully drawn-out teardrop on that first frame, which is
+ * the same "it just appears" artifact the emerge animation was added to remove. A cycle whose phase
+ * is still below zero is skipped entirely (see the `raw < 0` guards), so it simply starts half a
+ * period later instead.
+ */
+export const DRIP_OFFSETS = [0, -0.5];
 
 /** Appends the drips to `g` — the caller owns clear() and anything else in the same Graphics. */
 export const drawSlimeDrips = (g: SlimeDripTarget, o: SlimeDripOptions) => {
@@ -72,8 +89,10 @@ export const drawSlimeDrips = (g: SlimeDripTarget, o: SlimeDripOptions) => {
 		g.closePath();
 	};
 
-	for (const offset of o.offsets ?? [0, 0.5]) {
-		const t = (((o.clock / o.period + offset) % 1) + 1) % 1;
+	for (const offset of o.offsets ?? DRIP_OFFSETS) {
+		const raw = o.clock / o.period + offset;
+		if (raw < 0) continue; // this drop's first cycle has not begun
+		const t = raw % 1;
 		if (t < 0.1) continue; // the tip is still gathering
 		const fade = t > 0.9 ? (1 - t) / 0.1 : 1;
 		let beadY: number;
@@ -193,6 +212,24 @@ export type SlimeClusterOptions = {
 	highlights?: { lobe: number; size: number }[];
 	/** How far the lower lobes creep downward, as a fraction of their own radius. Slime runs. */
 	sag?: number;
+	/**
+	 * The drops this splat sheds — the SAME period/offsets as its `drawSlimeDrips` call — so the
+	 * lobe they leave from swells while each drop gathers and relaxes the moment it snaps. Without
+	 * this the drops fall out of a mass that never reacts to losing them. `lobe` defaults to the
+	 * lowest one.
+	 */
+	drip?: { period: number; offsets?: number[]; lobe?: number };
+	/**
+	 * How far the splat has oozed out, 0..1 — 1, fully formed, is the default.
+	 *
+	 * Slime ARRIVES. A bead pushes through first and the rest of the mass swells out of it lobe by
+	 * lobe, each one overshooting a little as it comes. A splat that simply appears at full size —
+	 * or that scales up as one rigid group, which is the same pop with extra steps — reads as a
+	 * sticker being pasted onto the screen, which is what this replaces.
+	 *
+	 * LOBE 0 IS THE ANCHOR the others grow out of, so list the lobe nearest the surface first.
+	 */
+	grow?: number;
 };
 
 /**
@@ -204,28 +241,112 @@ export type SlimeClusterOptions = {
  * off into a sausage and loses exactly the lumpiness that makes it read as slime.
  */
 export const drawSlimeCluster = (g: SlimeBlobTarget, o: SlimeClusterOptions) => {
-	const rAt = (lobe: { x: number; y: number; r: number }, i: number) =>
-		lobe.r * (1 + 0.045 * Math.sin(o.clock * (0.5 + i * 0.31) + i * 1.7));
-	// Slime RUNS. Every lobe below the top one creeps down and back on its own slow cycle, so the
-	// splat is never the same shape twice and never reads as a sticker pasted on the art.
+	// Slime RUNS. Every lobe below the top one creeps down on its own slow cycle, and as it runs it
+	// STRETCHES — narrower and taller, the way a heavy drop pulls out of a mass — while the top of
+	// the splat keeps its shape as the anchor. The first cut only bobbed the lower lobes up and down
+	// as circles, and a circle that bobs reads as a bubble, not as something wet and heavy.
+	//
+	// The second cut (clean ellipses, one 11-second creep cycle, ±6% pulse) was reported as "the
+	// static part that does not move" next to its own drops. Three things fix that, all of them how
+	// a wet mass actually behaves: it has a BELLY (its underside bulges under gravity — an ellipse is
+	// symmetric, so each lobe carries an extra circle low in the union), its CONTOUR is lumpy and the
+	// lumps roll (small bumps riding the lower rim), and it FEEDS its drops — the lobe a drop leaves
+	// from swells as the drop gathers and snaps back when it goes, which ties the mass to the one
+	// thing on screen the eye already follows.
 	const top = Math.min(...o.lobes.map((lobe) => lobe.y));
-	const yAt = (lobe: { x: number; y: number; r: number }, i: number) =>
-		lobe.y +
-		(o.sag ?? 0) *
-			lobe.r *
-			((lobe.y - top) / (lobe.r + 1e-6)) *
-			(0.5 + 0.5 * Math.sin(o.clock * 0.55 + i * 1.3));
+	const span = Math.max(...o.lobes.map((lobe) => lobe.y + lobe.r)) - top + 1e-6;
 
-	o.lobes.forEach((lobe, i) => g.circle(lobe.x, yAt(lobe, i), rAt(lobe, i) + o.edge));
+	// Emergence: lobe i starts coming out at i * EMERGE_STEP of the ramp and takes EMERGE_SPAN of
+	// it, so the splat unfolds FROM lobe 0 outward — every lobe inflating together is a balloon,
+	// not a mass being pushed through a surface. Each lobe also slides out of the anchor's centre
+	// rather than fading in where it will end up.
+	const grow = clamp01(o.grow ?? 1);
+	const EMERGE_SPAN = 0.62;
+	const emergeStep = o.lobes.length > 1 ? (1 - EMERGE_SPAN) / (o.lobes.length - 1) : 0;
+	const anchor = o.lobes[0];
+
+	// How full the feeding lobe is: 0 at rest, 1 the instant before the drop's waist gives way
+	// (t 0.1 → 0.52 in drawSlimeDrips), then it recoils over the next 0.18 of the cycle.
+	let feed = 0;
+	if (o.drip) {
+		for (const offset of o.drip.offsets ?? DRIP_OFFSETS) {
+			const raw = o.clock / o.drip.period + offset;
+			if (raw < 0) continue; // matches the same guard in drawSlimeDrips
+			const t = raw % 1;
+			const k = t < 0.1 ? 0 : t < 0.52 ? (t - 0.1) / 0.42 : t < 0.7 ? 1 - (t - 0.52) / 0.18 : 0;
+			feed = Math.max(feed, k * k);
+		}
+	}
+	const feedLobe =
+		o.drip?.lobe ??
+		o.lobes.reduce(
+			(best, lobe, i) => (lobe.y + lobe.r > o.lobes[best].y + o.lobes[best].r ? i : best),
+			0,
+		);
+
+	const at = (lobe: { x: number; y: number; r: number }, i: number) => {
+		const down = (lobe.y - top) / span;
+		const run = (o.sag ?? 0) * down * (0.5 + 0.5 * Math.sin(o.clock * 0.55 + i * 1.3));
+		// Two rates per lobe — the slow heave and a quicker jelly quiver on top of it — so the
+		// surface is visibly alive inside a second or two, not only across the creep cycle.
+		const pulse =
+			1 +
+			0.05 * Math.sin(o.clock * (0.7 + i * 0.31) + i * 1.7) +
+			0.035 * Math.sin(o.clock * (1.9 + i * 0.23) + i * 0.9);
+		const swell = i === feedLobe ? feed : 0;
+		const out = grow >= 1 ? 1 : emergeEase((grow - i * emergeStep) / EMERGE_SPAN);
+		const rx = lobe.r * pulse * (1 - 0.22 * run) * (1 + 0.08 * swell) * out;
+		const ry = lobe.r * pulse * (1 + 0.5 * run) * (1 + 0.24 * swell) * out;
+		const x = lobe.x + lobe.r * 0.14 * down * Math.sin(o.clock * 0.42 + i * 2.1);
+		// A feeding lobe hangs lower as it fills: the mass is being pulled toward the drop.
+		const y = lobe.y + lobe.r * run * 1.6 + lobe.r * 0.3 * swell;
+		return {
+			out,
+			x: anchor.x + (x - anchor.x) * out,
+			y: anchor.y + (y - anchor.y) * out,
+			rx,
+			ry,
+			// The belly: a circle low in the lobe, heaving on its own beat, so the underside is
+			// fuller than the top and visibly sags rather than sitting as a symmetric oval.
+			belly: {
+				x: 0,
+				y: ry * (0.38 + 0.08 * Math.sin(o.clock * 0.9 + i * 1.4)) + lobe.r * 0.25 * swell,
+				r: rx * (0.7 + 0.06 * Math.sin(o.clock * 1.1 + i * 0.7)),
+			},
+			// Three lumps on the lower rim, each drifting round its arc and breathing, so the outline
+			// is never the clean union of two ellipses and never the same twice.
+			bumps: [0, 1, 2].map((k) => {
+				const a = Math.PI * (0.22 + 0.28 * k) + 0.32 * Math.sin(o.clock * 0.5 + i * 1.1 + k * 2.1);
+				const d = 0.8 + 0.05 * Math.sin(o.clock * 1.4 + k * 1.9 + i);
+				return {
+					x: Math.cos(a) * d * rx,
+					y: Math.sin(a) * d * ry,
+					r: lobe.r * (0.26 + 0.05 * Math.sin(o.clock * 1.7 + k * 2.4 + i * 0.6)),
+				};
+			}),
+		};
+	};
+	const shaped = o.lobes.map(at);
+
+	const pass = (edge: number) => {
+		for (const s of shaped) {
+			if (s.out <= 0.002) continue;
+			// A full-width outline on a lobe that is still a bead turns it into a dark dot.
+			const e = edge * Math.min(1, 0.35 + 0.65 * s.out);
+			g.ellipse(s.x, s.y, s.rx + e, s.ry + e);
+			g.circle(s.x + s.belly.x, s.y + s.belly.y, s.belly.r + e);
+			for (const b of s.bumps) g.circle(s.x + b.x, s.y + b.y, b.r + e);
+		}
+	};
+	pass(o.edge);
 	g.fill({ color: SLIME_EDGE });
-	o.lobes.forEach((lobe, i) => g.circle(lobe.x, yAt(lobe, i), rAt(lobe, i)));
+	pass(0);
 	g.fill({ color: SLIME });
 
 	for (const hl of o.highlights ?? []) {
-		const lobe = o.lobes[hl.lobe];
-		if (!lobe) continue;
-		const r = rAt(lobe, hl.lobe);
-		g.ellipse(lobe.x - r * 0.26, yAt(lobe, hl.lobe) - r * 0.3, r * hl.size, r * hl.size * 1.45);
+		const s = shaped[hl.lobe];
+		if (!s || s.out <= 0.002) continue;
+		g.ellipse(s.x - s.rx * 0.26, s.y - s.ry * 0.3, s.rx * hl.size, s.ry * hl.size * 1.45);
 		g.fill({ color: SLIME_LIGHT, alpha: 0.9 });
 	}
 };

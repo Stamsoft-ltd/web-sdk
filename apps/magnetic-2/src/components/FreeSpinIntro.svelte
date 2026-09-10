@@ -2,7 +2,12 @@
 	export type EmitterEventFreeSpinIntro =
 		| { type: 'freeSpinIntroShow' }
 		| { type: 'freeSpinIntroHide' }
-		| { type: 'freeSpinIntroUpdate'; totalFreeSpins: number };
+		| {
+				type: 'freeSpinIntroUpdate';
+				totalFreeSpins: number;
+				/** How many scatters triggered the bonus — the "3x" on the badge (Figma 9248:25554). */
+				scatters?: number;
+		  };
 </script>
 
 <script lang="ts">
@@ -21,6 +26,7 @@
 
 	let show = $state(false);
 	let freeSpinsFromEvent = $state(0);
+	let scatters = $state(0);
 	let oncomplete = $state(() => {});
 
 	context.eventEmitter.subscribeOnMount({
@@ -28,6 +34,7 @@
 		freeSpinIntroHide: () => (show = false),
 		freeSpinIntroUpdate: async (emitterEvent) => {
 			freeSpinsFromEvent = emitterEvent.totalFreeSpins;
+			scatters = emitterEvent.scatters ?? 0;
 			await waitForResolve((resolve) => (oncomplete = resolve));
 		},
 	});
@@ -38,7 +45,12 @@
 	     hand-off, and a second full-screen dim would stack with it to ~0.99. -->
 
 	<MainContainer>
-		<WonPanel {show} big={`${freeSpinsFromEvent}`} caption={i18nDerived.translate('FREE SPINS')} />
+		<WonPanel
+			{show}
+			big={`${freeSpinsFromEvent}`}
+			caption={i18nDerived.translate('FREE SPINS')}
+			{scatters}
+		/>
 	</MainContainer>
 
 	<PressToContinue onpress={() => oncomplete()} />
