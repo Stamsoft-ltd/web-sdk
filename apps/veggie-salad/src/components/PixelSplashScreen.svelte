@@ -67,7 +67,7 @@
 		background:
 			var(--splash-background) center / cover no-repeat,
 			linear-gradient(#1598e2 0 58%, #559f2a 58% 100%);
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		font-family: 'Jersey 10', monospace;
 		image-rendering: pixelated;
 		cursor: pointer;
 		outline: none;
@@ -162,7 +162,7 @@
 		}
 	}
 
-	@media (max-width: 520px) and (max-height: 300px) and (orientation: landscape) {
+	@media (max-height: 520px) and (orientation: landscape) {
 		.splash-screen {
 			grid-template-rows: auto auto auto auto;
 			gap: 2px;
@@ -170,13 +170,13 @@
 			place-content: center;
 		}
 		.studio-logo {
-			width: 52px;
+			width: clamp(52px, 15vh, 78px);
 		}
 		.game-logo {
-			width: min(220px, 56vw);
+			width: min(52vw, 56vh);
 		}
 		.splash-panels {
-			width: min(390px, calc(100vw - 8px));
+			width: min(900px, calc(100vw - 16px));
 			border-width: 3px;
 			box-shadow:
 				inset 0 0 0 1px #c98220,
@@ -184,21 +184,21 @@
 		}
 		.splash-panels div {
 			gap: 2px;
-			min-height: 76px;
+			min-height: clamp(66px, 27vh, 140px);
 			padding: 3px 4px;
 			border-left-width: 2px;
 		}
 		.splash-panels strong {
-			font-size: 8px;
+			font-size: clamp(10px, 3vh, 17px);
 			line-height: 1.15;
 		}
 		.splash-panels span {
-			font-size: 5px;
+			font-size: clamp(8px, 2.4vh, 12px);
 			line-height: 1.1;
 		}
 		.continue-label {
 			margin: 1px 0 0;
-			font-size: 6px;
+			font-size: clamp(9px, 3vh, 16px);
 			line-height: 1;
 			text-shadow: 1px 1px 0 #351a07;
 		}

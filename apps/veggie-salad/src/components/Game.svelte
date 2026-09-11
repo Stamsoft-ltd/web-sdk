@@ -684,11 +684,11 @@
 		display: flex;
 		align-items: flex-end;
 		justify-content: center;
-		padding: 0 16px max(24px, 5vh);
+		padding: 0 16px max(8px, 1.5vh);
 		border: 0;
 		background: transparent;
 		color: #fff1a8;
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		font-family: 'Jersey 10', monospace;
 		font-size: clamp(12px, 1.7vw, 24px);
 		font-weight: 900;
 		letter-spacing: 0.1em;

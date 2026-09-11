@@ -1,0 +1,6 @@
+import { Linter } from 'eslint';
+
+declare const config: Array<Linter.Config>;
+
+export { config as default };
+//# sourceMappingURL=flat.d.mts.map

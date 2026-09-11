@@ -150,9 +150,9 @@ export const SCATTER_TRIGGER_COUNTS: Record<BonusTier, number> = {
 	hidden: 5,
 };
 
-// Rows in the side payout panel. The panel reserves this many slots at all times, so it never
-// changes size as a cascade fills it.
-export const CLUSTER_LOG_SIZE = 5;
+// UI history only: six retained payouts at every viewport size.
+// Both layouts reserve their slots even when empty, avoiding shifts during cascades.
+export const CLUSTER_LOG_SIZE = 6;
 
 export type FallMotion = { [Key in keyof typeof FALL_MOTION]: number };
 

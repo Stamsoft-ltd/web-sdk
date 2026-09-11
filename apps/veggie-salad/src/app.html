@@ -4,7 +4,29 @@
 		<meta charset="utf-8" />
 		<title>Veggie Salad</title>
 		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+		<link
+			rel="preload"
+			href="%sveltekit.assets%/fonts/jersey-10-regular.ttf"
+			as="font"
+			type="font/ttf"
+			crossorigin
+		/>
 		<meta name="viewport" content="width=device-width" />
+		<style>
+			@font-face {
+				font-family: 'Jersey 10';
+				src: url('%sveltekit.assets%/fonts/jersey-10-regular.ttf') format('truetype');
+				font-style: normal;
+				font-weight: 400;
+				font-display: block;
+			}
+
+			/* One game-wide typeface, including shared HTML HUD, menus, and info modals. */
+			body,
+			body * {
+				font-family: 'Jersey 10', system-ui, sans-serif !important;
+			}
+		</style>
 		%sveltekit.head%
 	</head>
 	<body style="margin: 0; padding: 0; overflow: hidden; background-color: black">

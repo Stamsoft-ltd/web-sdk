@@ -51,7 +51,7 @@
 				y={-90}
 				text="BONUS ENTER"
 				style={{
-					fontFamily: 'monospace',
+					fontFamily: 'Jersey 10, monospace',
 					fontSize: 58,
 					fontWeight: '900',
 					fill: 0xffe24e,
@@ -63,7 +63,7 @@
 				y={18}
 				text={`${freeSpinsFromEvent} FREE SPINS`}
 				style={{
-					fontFamily: 'monospace',
+					fontFamily: 'Jersey 10, monospace',
 					fontSize: 48,
 					fontWeight: '900',
 					fill: 0xffffff,

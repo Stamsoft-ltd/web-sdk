@@ -41,6 +41,8 @@
 	}
 	.recovery-card {
 		width: min(520px, 94vw);
+		max-height: calc(100svh - 36px);
+		overflow-y: auto;
 		padding: 30px;
 		border: 7px solid #351703;
 		background: #294817;
@@ -48,7 +50,7 @@
 			inset 0 0 0 4px #d99a32,
 			8px 8px 0 #130701;
 		color: #fff;
-		font-family: ui-monospace, monospace;
+		font-family: 'Jersey 10', monospace;
 		text-align: center;
 	}
 	h2 {
@@ -69,7 +71,7 @@
 		background: #ed9300;
 		color: #fff;
 		font:
-			900 15px ui-monospace,
+			900 15px 'Jersey 10',
 			monospace;
 		cursor: pointer;
 	}

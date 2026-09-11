@@ -71,7 +71,7 @@
 			: bookEventAmountToCurrencyString(props.win.result)}
 		anchor={0.5}
 		style={{
-			fontFamily: 'gold',
+			fontFamily: 'Jersey 10, monospace',
 			fontSize: SYMBOL_SIZE * 0.5,
 		}}
 	/>

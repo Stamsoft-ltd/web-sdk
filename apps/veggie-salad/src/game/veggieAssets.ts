@@ -18,8 +18,9 @@ export const VEGGIE_SYMBOL_ASSETS: Record<VeggieDisplaySymbolName, string> = {
 	TOMATO: '/assets/veggie-salad/pixel/tomato.png',
 	EGGPLANT: '/assets/veggie-salad/pixel/eggplant.png',
 	CARROT: '/assets/veggie-salad/pixel/carrot.png',
+	// Historical filenames are reversed: cauliflower.png contains beetroot,
+	// radish.png contains cauliflower. Keep math/paytable slots unchanged.
 	PEPPER: '/assets/veggie-salad/pixel/cauliflower.png',
-	// Supplied art has no literal onion vegetable; radish fills that math slot.
 	ONION: '/assets/veggie-salad/pixel/radish.png',
 	SCATTER: '/assets/veggie-salad/pixel/onion.png',
 };

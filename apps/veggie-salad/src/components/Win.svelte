@@ -81,7 +81,7 @@
 							y={-92}
 							text={pixelTitle}
 							style={{
-								fontFamily: 'monospace',
+								fontFamily: 'Jersey 10, monospace',
 								fontSize: 58,
 								fontWeight: '900',
 								fill: 0xffe24e,
@@ -93,7 +93,7 @@
 							y={34}
 							text={bookEventAmountToCurrencyString(countUpAmount, amount)}
 							style={{
-								fontFamily: 'monospace',
+								fontFamily: 'Jersey 10, monospace',
 								fontSize: 62,
 								fontWeight: '900',
 								fill: 0xffffff,

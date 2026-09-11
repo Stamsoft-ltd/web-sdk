@@ -13,7 +13,11 @@
 	import { bookEventAmountToCurrencyString, numberToCurrencyString } from 'utils-shared/amount';
 
 	import { eventEmitter } from '../../game/eventEmitter';
-	import { CLUSTER_LOG_SIZE, stateGame, stateGameDerived } from '../../game/stateGame.svelte';
+	import {
+		CLUSTER_LOG_SIZE,
+		stateGame,
+		stateGameDerived,
+	} from '../../game/stateGame.svelte';
 	import { stateXstateDerived } from '../../game/stateXstate';
 	import { VEGGIE_SYMBOL_ASSETS } from '../../game/veggieAssets';
 	import type { Position, RawSymbol } from '../../game/types';
@@ -505,7 +509,7 @@
 	class:bonus-normal={stateGame.bonusTier === 'normal'}
 	class:bonus-super={stateGame.bonusTier === 'super'}
 	class:bonus-hidden={stateGame.bonusTier === 'hidden'}
-	style="--base-plain:url('./assets/veggie-salad/pixel/background/base-plain.png');--base-mountains:url('./assets/veggie-salad/pixel/background/base-mountains.png');--base-cloud:url('./assets/veggie-salad/pixel/background/base-cloud.png');--base-bench:url('./assets/veggie-salad/pixel/background/base-bench.png');--board-frame:url('./assets/veggie-salad/pixel/board-frame.png');--bonus-normal-background:url('./assets/veggie-salad/pixel/background-bonus-normal.png');--bonus-super-background:url('./assets/veggie-salad/pixel/background-bonus-super.png');--bonus-hidden-background:url('./assets/veggie-salad/pixel/background-bonus-hidden.png');--hud-button:url('./assets/veggie-salad/pixel/hud-button.png');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud-button-pressed.png')"
+	style="--base-plain:url('./assets/veggie-salad/pixel/background/base-plain.png');--base-mountains:url('./assets/veggie-salad/pixel/background/base-mountains.png');--base-cloud:url('./assets/veggie-salad/pixel/background/base-cloud.png');--base-bench:url('./assets/veggie-salad/pixel/background/base-bench.png');--board-frame:url('./assets/veggie-salad/pixel/board-frame.png');--bonus-normal-sky:url('./assets/veggie-salad/pixel/background/bonus-normal/sky-ground.png');--bonus-normal-mountains:url('./assets/veggie-salad/pixel/background/bonus-normal/mountains.png');--bonus-normal-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/cloud.png');--bonus-normal-tree:url('./assets/veggie-salad/pixel/background/bonus-normal/tree.png');--bonus-normal-oak:url('./assets/veggie-salad/pixel/background/bonus-normal/oak.png');--bonus-super-background:url('./assets/veggie-salad/pixel/background-bonus-super.png');--bonus-hidden-background:url('./assets/veggie-salad/pixel/background-bonus-hidden.png');--hud-button:url('./assets/veggie-salad/pixel/hud-button.png');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud-button-pressed.png')"
 >
 	<!-- Background images cannot interpolate. Persistent layers can: entering a bonus fades its
 	     garden over BASE; leaving fades it away and reveals the exact same BASE layer underneath. -->
@@ -517,29 +521,37 @@
 			<span class="cloud-path-guide path-two"></span>
 			<span class="cloud-path-guide path-three"></span>
 			<span class="cloud-path-guide path-four"></span>
-			<span class="cloud-path-guide path-seven"></span>
 			<div class="drifting-cloud cloud-eleven" use:randomCloudDrift></div>
 			<div class="drifting-cloud cloud-one" use:randomCloudDrift></div>
 			<div class="drifting-cloud cloud-two" use:randomCloudDrift></div>
 			<div class="drifting-cloud cloud-three" use:randomCloudDrift></div>
 			<div class="drifting-cloud cloud-four" use:randomCloudDrift></div>
-			<div class="drifting-cloud cloud-seven" use:randomCloudDrift></div>
 		</div>
 		<div class="pixel-background background-base base-mountains"></div>
 		<div class="base-cloud-field base-cloud-field--front">
 			<span class="cloud-path-guide path-five"></span>
 			<span class="cloud-path-guide path-six"></span>
 			<span class="cloud-path-guide path-eight"></span>
-			<span class="cloud-path-guide path-nine"></span>
-			<span class="cloud-path-guide path-ten"></span>
 			<div class="drifting-cloud cloud-five" use:randomCloudDrift></div>
 			<div class="drifting-cloud cloud-six" use:randomCloudDrift></div>
 			<div class="drifting-cloud cloud-eight" use:randomCloudDrift></div>
-			<div class="drifting-cloud cloud-nine" use:randomCloudDrift></div>
-			<div class="drifting-cloud cloud-ten" use:randomCloudDrift></div>
 		</div>
 		<div class="pixel-background background-base base-bench"></div>
-		<div class="pixel-background background-bonus background-normal"></div>
+		<div class="pixel-background background-bonus background-normal">
+			<span class="normal-bonus-layer normal-bonus-mountains"></span>
+			<span class="normal-bonus-cloud-field">
+				<span class="normal-bonus-path-guide normal-bonus-path-one"></span>
+				<span class="normal-bonus-path-guide normal-bonus-path-two"></span>
+				<span class="normal-bonus-path-guide normal-bonus-path-three"></span>
+				<span class="normal-bonus-cloud normal-bonus-cloud-one" use:randomCloudDrift></span>
+				<span class="normal-bonus-cloud normal-bonus-cloud-two" use:randomCloudDrift></span>
+				<span class="normal-bonus-cloud normal-bonus-cloud-three" use:randomCloudDrift></span>
+			</span>
+			<span class="normal-bonus-layer normal-bonus-fence normal-bonus-fence-left"></span>
+			<span class="normal-bonus-layer normal-bonus-fence normal-bonus-fence-right"></span>
+			<span class="normal-bonus-layer normal-bonus-tree"></span>
+			<span class="normal-bonus-layer normal-bonus-oak"></span>
+		</div>
 		<div class="pixel-background background-bonus background-super"></div>
 		<div class="pixel-background background-bonus background-hidden"></div>
 	</div>
@@ -586,7 +598,10 @@
 				     the panel updating), and so the box keeps its height while it fills. -->
 				{#each Array(CLUSTER_LOG_SIZE) as _, slot (slot)}
 					{@const row = clusterRows[slot]}
-					<div class="panel-row" class:vacant={!row}>
+					<div
+						class="panel-row"
+						class:vacant={!row}
+					>
 						{#if row}
 							<span>{row.size}x</span>
 							<img src={`.${VEGGIE_SYMBOL_ASSETS[row.symbol]}`} alt="" />
@@ -837,7 +852,7 @@
 			</div>
 
 			<div class="metrics">
-				<div class="metric">
+				<div class="metric balance">
 					<span>{t('BALANCE')}</span><strong style={textFitStyle(balanceText)}>{balanceText}</strong
 					>
 				</div>
@@ -950,7 +965,7 @@
 		inset: 0;
 		isolation: isolate;
 		overflow: hidden;
-		font-family: 'Trebuchet MS', 'Arial Rounded MT Bold', system-ui, sans-serif;
+		font-family: 'Jersey 10', system-ui, sans-serif;
 		color: #fff;
 		background: linear-gradient(#48bff0 0 48%, #86c944 70%, #327c2b 100%);
 		transition: background 700ms ease;
@@ -1288,13 +1303,31 @@
 	/* Source sprites carry different transparent margins. Per-symbol boxes compensate those
 	   margins so the visible art—not the PNG canvas—occupies about 90% of its cell. */
 	.symbol-broccoli,
-	.symbol-carrot { width: 93%; height: 93%; }
-	.symbol-corn { width: 104%; height: 104%; }
-	.symbol-tomato { width: 117%; height: 117%; }
+	.symbol-carrot {
+		width: 93%;
+		height: 93%;
+	}
+	.symbol-corn {
+		width: 104%;
+		height: 104%;
+	}
+	.symbol-tomato {
+		width: 117%;
+		height: 117%;
+	}
 	.symbol-eggplant,
-	.symbol-onion { width: 99%; height: 99%; }
-	.symbol-pepper { width: 96%; height: 96%; }
-	.symbol-scatter { width: 97%; height: 97%; }
+	.symbol-onion {
+		width: 99%;
+		height: 99%;
+	}
+	.symbol-pepper {
+		width: 96%;
+		height: 96%;
+	}
+	.symbol-scatter {
+		width: 97%;
+		height: 97%;
+	}
 	.backplate {
 		width: 96%;
 		height: 96%;
@@ -1459,7 +1492,7 @@
 	}
 	.panel-rows {
 		display: grid;
-		grid-template-rows: repeat(var(--slots, 5), 1fr);
+		grid-template-rows: repeat(var(--slots, 6), 1fr);
 		gap: clamp(3px, 0.6cqh, 6px);
 	}
 	.panel-row {
@@ -2160,7 +2193,7 @@
 			grid-template-columns: repeat(3, minmax(0, 1fr));
 		}
 	}
-	@media (max-width: 680px) {
+	@media (max-width: 680px), (orientation: portrait) {
 		.brand {
 			top: 5px;
 			padding: 4px 15px 6px;
@@ -2238,7 +2271,7 @@
 
 	/* Pixel-art skin. Keeps game state, controls, math, and responsive layout unchanged. */
 	.scene {
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		font-family: 'Jersey 10', monospace;
 		background: #148fd5 var(--pixel-background) center / 100% 100% no-repeat;
 		image-rendering: pixelated;
 		transition: none;
@@ -2675,7 +2708,7 @@
 	}
 
 	/* Desktop HUD: measured against supplied 1820×244 reference crop. */
-	@media (min-width: 1180px) {
+	@media (min-width: 1180px) and (orientation: landscape) {
 		.hud {
 			grid-template-columns: clamp(220px, 17vw, 310px) minmax(460px, 1fr) auto;
 			width: min(92vw, 1700px);
@@ -2792,7 +2825,7 @@
 		}
 	}
 
-	@media (min-width: 681px) and (max-width: 1179px) {
+	@media (min-width: 681px) and (max-width: 1179px) and (orientation: landscape) {
 		.hud {
 			grid-template-columns: clamp(130px, 20vw, 180px) minmax(0, 1fr) auto;
 			width: calc(100vw - 16px);
@@ -2877,7 +2910,7 @@
 		}
 	}
 
-	@media (max-width: 680px) {
+	@media (max-width: 680px), (orientation: portrait) {
 		.game-stage {
 			bottom: 124px;
 		}
@@ -2997,7 +3030,7 @@
 	}
 
 	/* Portrait composition: board, payout strip, split control/metric HUD. */
-	@media (max-width: 680px) and (orientation: portrait) {
+	@media (orientation: portrait) {
 		.brand {
 			top: clamp(48px, 7vh, 72px);
 			width: 90vw;
@@ -3020,7 +3053,7 @@
 		}
 		.panel-rows {
 			display: grid;
-			grid-template-columns: repeat(var(--slots, 5), minmax(0, 1fr));
+			grid-template-columns: repeat(var(--slots, 6), minmax(0, 1fr));
 			grid-template-rows: 34px;
 			gap: 3px;
 		}
@@ -3290,7 +3323,7 @@
 	}
 	.hud {
 		bottom: clamp(7px, 1.4vh, 16px) !important;
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		font-family: 'Jersey 10', monospace;
 		image-rendering: pixelated;
 	}
 	.hud button {
@@ -3345,7 +3378,7 @@
 		line-height: 1;
 	}
 
-	@media (min-width: 681px) {
+	@media (min-width: 681px) and (orientation: landscape) {
 		.hud {
 			width: min(91vw, 1450px);
 			min-height: 72px;
@@ -3411,7 +3444,7 @@
 		}
 	}
 
-	@media (min-width: 681px) and (max-width: 1179px) {
+	@media (min-width: 681px) and (max-width: 1179px) and (orientation: landscape) {
 		.hud-left .utility {
 			width: 44px;
 			height: 100%;
@@ -3437,7 +3470,7 @@
 		}
 	}
 
-	@media (max-width: 680px) {
+	@media (max-width: 680px), (orientation: portrait) {
 		.pixel-background {
 			background-size: auto 62%;
 		}
@@ -3546,7 +3579,7 @@
 	}
 
 	/* Reference HUD at tablet widths is a compact 58px rail, not the oversized earlier pass. */
-	@media (min-width: 681px) and (max-width: 1179px) {
+	@media (min-width: 681px) and (max-width: 1179px) and (orientation: landscape) {
 		.hud {
 			grid-template-columns: 120px minmax(0, 1fr) auto;
 			height: 60px;
@@ -3606,7 +3639,7 @@
 		}
 	}
 
-	@media (max-width: 680px) and (orientation: portrait) {
+	@media (orientation: portrait) {
 		.hud-left .utility {
 			width: clamp(42px, 12vw, 58px);
 			height: clamp(42px, 12vw, 58px);
@@ -3631,7 +3664,7 @@
 	/* Mobile composition lock. Keep the five visual bands (logo, board, pays, controls, values)
 	   in normal grid flow. This removes the height-dependent absolute-position drift that made
 	   Mobile M/S bunch at the bottom while leaving a large hole above the board. */
-	@media (max-width: 680px) and (orientation: portrait) {
+	@media (orientation: portrait) {
 		.scene {
 			display: grid;
 			grid-template-rows: auto auto auto;
@@ -3692,7 +3725,7 @@
 		}
 
 		.panel-rows {
-			grid-template-columns: repeat(var(--slots, 5), minmax(0, 1fr));
+			grid-template-columns: repeat(var(--slots, 6), minmax(0, 1fr));
 			grid-template-rows: clamp(32px, 6vh, 40px);
 			gap: clamp(2px, 0.8vw, 4px);
 		}
@@ -3871,7 +3904,7 @@
 
 		.panel-rows {
 			grid-template-columns: 1fr;
-			grid-template-rows: repeat(var(--slots, 5), 1fr);
+			grid-template-rows: repeat(var(--slots, 6), 1fr);
 			gap: 2px;
 		}
 
@@ -4055,20 +4088,119 @@
 	}
 
 	.background-normal {
-		background-image: var(--bonus-normal-background);
-		background-position: center;
-		background-size: cover;
+		background-color: #7568c2;
+		background-image: var(--bonus-normal-sky);
+		background-position: center top;
+		background-size: 100% 128%;
+		background-repeat: no-repeat;
 		filter: none;
+		overflow: hidden;
 	}
 	.scene.bonus-normal .background-normal {
 		opacity: 1;
 	}
 
 	.background-normal::after {
-		background:
-			radial-gradient(circle at 24% 22%, rgb(255 220 105 / 34%), transparent 34%),
-			linear-gradient(rgb(255 170 54 / 10%), transparent 58%);
-		opacity: 0.72;
+		opacity: 0;
+	}
+
+	.normal-bonus-layer,
+	.normal-bonus-cloud-field {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	.normal-bonus-layer {
+		image-rendering: pixelated;
+	}
+
+	.normal-bonus-mountains {
+		z-index: 1;
+		background: var(--bonus-normal-mountains) center top 62% / 100% auto no-repeat;
+	}
+
+	.normal-bonus-cloud-field {
+		z-index: 2;
+		overflow: hidden;
+	}
+
+	.normal-bonus-cloud {
+		--cloud-width: clamp(170px, 19vw, 380px);
+		position: absolute;
+		z-index: 1;
+		left: calc(0px - var(--cloud-width));
+		top: var(--cloud-top);
+		width: var(--cloud-width);
+		aspect-ratio: 3 / 1;
+		background: var(--bonus-normal-cloud) center / contain no-repeat;
+		image-rendering: pixelated;
+		will-change: transform;
+	}
+
+	.normal-bonus-path-guide {
+		display: none;
+		position: absolute;
+		left: 0;
+		right: 0;
+		z-index: 0;
+		border-top: 2px dashed #f22626;
+		filter: drop-shadow(0 1px 0 rgb(74 0 0 / 70%));
+		opacity: 0.9;
+	}
+
+	.normal-bonus-path-one {
+		top: calc(8% + clamp(28px, 3.167vw, 63px));
+	}
+
+	.normal-bonus-path-two {
+		top: calc(21% + clamp(21px, 2.333vw, 47px));
+	}
+
+	.normal-bonus-path-three {
+		top: calc(35% + clamp(18px, 1.833vw, 37px));
+	}
+
+	.normal-bonus-cloud-one {
+		--cloud-top: 8%;
+		--cloud-duration: 168s;
+	}
+
+	.normal-bonus-cloud-two {
+		--cloud-width: clamp(125px, 14vw, 280px);
+		--cloud-top: 21%;
+		--cloud-duration: 214s;
+	}
+
+	.normal-bonus-cloud-three {
+		--cloud-width: clamp(105px, 11vw, 220px);
+		--cloud-top: 35%;
+		--cloud-duration: 246s;
+	}
+
+	.normal-bonus-fence {
+		z-index: 3;
+		background-image: var(--base-bench);
+		background-size: clamp(120px, 12vw, 260px) auto;
+		background-repeat: no-repeat;
+	}
+
+	.normal-bonus-fence-left {
+		background-position: left 3vw bottom 27%;
+	}
+
+	.normal-bonus-fence-right {
+		background-position: right 3vw bottom 27%;
+	}
+
+	.normal-bonus-tree {
+		z-index: 4;
+		background: var(--bonus-normal-tree) left -2vw top / auto 68% no-repeat;
+	}
+
+	.normal-bonus-oak {
+		z-index: 4;
+		background: var(--bonus-normal-oak) left bottom -26vh / auto 68% no-repeat;
 	}
 
 	.background-super {
@@ -4145,7 +4277,7 @@
 		border-radius: 0;
 		background: #3d2009;
 		color: #f3a51d;
-		font-family: 'PixelOperator', monospace;
+		font-family: 'Jersey 10', monospace;
 		font-size: 10px;
 		font-weight: 900;
 		line-height: 1;
@@ -4184,13 +4316,13 @@
 	}
 
 	.quick-menu-icon.info-icon {
-		font-family: Georgia, serif;
+		font-family: 'Jersey 10', serif;
 		font-size: 18px;
 		font-weight: 900;
 	}
 
 	/* Portrait owns the viewport height. Extra room stays inside the game stage, never below HUD. */
-	@media (max-width: 680px) and (orientation: portrait) {
+	@media (orientation: portrait) {
 		.scene {
 			grid-template-rows: auto minmax(0, 1fr) auto;
 			align-content: stretch;
@@ -4280,7 +4412,7 @@
 		}
 
 		.panel-rows {
-			grid-template-columns: repeat(var(--slots, 5), minmax(0, 1fr));
+			grid-template-columns: repeat(var(--slots, 6), minmax(0, 1fr));
 			grid-template-rows: 16px;
 			gap: 1px;
 		}
@@ -4639,7 +4771,7 @@
 	}
 
 	/* Final spatial pass: side furniture is sized from the gutter left by the centred board. */
-	@media (min-width: 1180px) {
+	@media (min-width: 1180px) and (orientation: landscape) {
 		.cluster-panel {
 			left: 2cqw;
 			right: calc(50% + min(50cqw, 62.5cqh) + 2cqw);
@@ -4675,13 +4807,30 @@
 		}
 	}
 
-	@media (min-width: 681px) {
+	@media (min-width: 681px) and (orientation: landscape) {
 		.cluster-panel {
 			left: 2cqw;
 			right: calc(50% + min(50cqw, 62.5cqh) + 2cqw);
 			width: auto;
 			max-width: none;
 			padding: clamp(7px, 1.2cqh, 12px);
+		}
+
+		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .cluster-panel {
+			right: 1cqw;
+			left: calc(50% + min(50cqw, 62.5cqh) + 0.75cqw);
+			height: clamp(274px, 39cqh, 430px);
+			padding: clamp(17px, 2.1cqh, 24px) clamp(15px, 1.2cqw, 22px);
+		}
+
+		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .cluster-panel .panel-rows {
+			height: 100%;
+		}
+
+		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .cluster-panel .panel-row {
+			min-height: 0;
+			padding-inline: clamp(7px, 0.65cqw, 11px);
+			font-size: clamp(11px, 2cqh, 17px);
 		}
 
 		.panel-rows {
@@ -4759,6 +4908,11 @@
 			max-width: none;
 		}
 
+		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .cluster-panel {
+			right: 1cqw;
+			left: calc(50% + min(50cqw, 62.5cqh) + 0.75cqw);
+		}
+
 		.bonus-readouts {
 			top: 50%;
 			right: 2cqw;
@@ -4769,7 +4923,7 @@
 	}
 
 	/* Portrait: reserve a real row for bonus counters. They never cover or escape the board. */
-	@media (max-width: 680px) and (orientation: portrait) {
+	@media (orientation: portrait) {
 		.game-stage:has(.bonus-readouts) {
 			grid-template-rows: auto auto auto;
 		}
@@ -4893,9 +5047,43 @@
 		}
 	}
 
+	/* Reuse the main board frame as one intact overlay. The green fill is inset separately so it
+	   cannot show through the transparent padding around the asset. */
+	.cluster-panel {
+		isolation: isolate;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
+	}
+
+	.cluster-panel::before {
+		content: '';
+		position: absolute;
+		inset: -5px;
+		z-index: 2;
+		background: var(--board-frame) center / 100% 100% no-repeat;
+		image-rendering: pixelated;
+		pointer-events: none;
+	}
+
+	.cluster-panel::after {
+		content: '';
+		position: absolute;
+		inset: 3.5% 4% 4.5%;
+		z-index: 0;
+		background: #24380f;
+		pointer-events: none;
+	}
+
+	.cluster-panel .panel-rows {
+		position: relative;
+		z-index: 1;
+	}
+
 	/* Desktop HUD balance: compact value cells; give the menu/bonus and play controls the room.
 	   Tracks consume the full rail, so no distributed blank space masquerades as part of BET. */
-	@media (min-width: 1180px) {
+	@media (min-width: 1180px) and (orientation: landscape) {
 		.hud {
 			grid-template-columns: minmax(260px, 28%) minmax(390px, 27%) minmax(450px, 45%);
 			justify-content: stretch;
@@ -4919,9 +5107,9 @@
 
 		.hud-right {
 			grid-template-columns: minmax(150px, 1.6fr) minmax(96px, 1.25fr) minmax(54px, 0.72fr) minmax(
-				54px,
-				0.72fr
-			);
+					54px,
+					0.72fr
+				);
 			justify-items: center;
 			width: 100%;
 			padding-left: var(--hud-control-gap);
@@ -5026,18 +5214,9 @@
 		opacity: 0.58;
 	}
 
-	.cloud-seven {
-		--cloud-width: clamp(80px, 7.5vw, 150px);
-		--cloud-top: 63%;
-		--cloud-duration: 218s;
-		--cloud-delay: -184s;
-		--cloud-rest-x: 76vw;
-		opacity: 0.42;
-	}
-
 	.base-mountains {
 		z-index: 2;
-		background: var(--base-mountains) center bottom 25% / 100% auto no-repeat;
+		background: var(--base-mountains) center top 56% / 100% auto no-repeat;
 	}
 
 	.base-cloud-field--front {
@@ -5076,17 +5255,8 @@
 	.path-six {
 		top: calc(30% + clamp(16px, 1.67vw, 33px));
 	}
-	.path-seven {
-		top: calc(63% + clamp(13px, 1.25vw, 25px));
-	}
 	.path-eight {
 		top: calc(44% + clamp(18px, 2.17vw, 42px));
-	}
-	.path-nine {
-		top: calc(57% + clamp(14px, 1.5vw, 29px));
-	}
-	.path-ten {
-		top: calc(68% + clamp(11px, 1vw, 20px));
 	}
 
 	.cloud-five {
@@ -5116,30 +5286,12 @@
 		opacity: 0.56;
 	}
 
-	.cloud-nine {
-		--cloud-width: clamp(82px, 9vw, 175px);
-		--cloud-top: 57%;
-		--cloud-duration: 224s;
-		--cloud-delay: -57s;
-		--cloud-rest-x: 94vw;
-		opacity: 0.46;
-	}
-
-	.cloud-ten {
-		--cloud-width: clamp(68px, 6vw, 120px);
-		--cloud-top: 68%;
-		--cloud-duration: 242s;
-		--cloud-delay: -211s;
-		--cloud-rest-x: 136vw;
-		opacity: 0.38;
-	}
-
 	.base-bench {
 		z-index: 4;
 		top: auto;
-		right: clamp(22px, 3vw, 72px);
-		left: auto;
-		bottom: calc(clamp(66px, 12vh, 88px) + 15px);
+		right: auto;
+		left: clamp(22px, 3vw, 72px);
+		bottom: calc(clamp(66px, 12vh, 88px) + 45px);
 		width: clamp(120px, 16vw, 280px);
 		height: auto;
 		aspect-ratio: 844 / 440;
@@ -5172,7 +5324,7 @@
 		display: block;
 		top: -5.2%;
 		right: -4%;
-		bottom: calc(-5.2% + 2px);
+		bottom: -5.2%;
 		left: -4%;
 		z-index: 2;
 		border: 0;
@@ -5181,17 +5333,22 @@
 
 	.board {
 		position: absolute;
-		top: 1.03%;
-		right: 1%;
-		bottom: 0.97%;
-		left: 1%;
+		/* Frame opening: x 174..2630 / 2804, y 148..2133 / 2280.
+		   Map through the frame outsets, then bleed 0.15% under the wood on every edge. */
+		top: 1.82%;
+		right: 2.55%;
+		bottom: 1.77%;
+		left: 2.55%;
 		z-index: 1;
 		width: auto;
 		height: auto;
 		margin: 0;
+		/* Only internal gaps are grid lines. No fixed-pixel perimeter to leak at small sizes. */
+		padding: 0;
+		border: 0;
 	}
 
-	@media (min-width: 681px) {
+	@media (min-width: 681px) and (orientation: landscape) {
 		.board-wrap {
 			width: min(95cqw, 118.75cqh);
 			height: min(76cqw, 95cqh);
@@ -5214,28 +5371,84 @@
 		}
 	}
 
-	@media (max-width: 680px) {
+	@media (max-width: 680px), (orientation: portrait) {
 		.base-mountains {
-			background-position: center bottom 29%;
+			background-position: center top 56%;
 			background-size: auto 40%;
 		}
 
+		.normal-bonus-mountains {
+			background-position: center top 62%;
+			background-size: auto 28%;
+		}
+
+		.normal-bonus-fence {
+			background-size: clamp(100px, 34vw, 170px) auto;
+		}
+
+		.normal-bonus-fence-left {
+			background-position: left 3vw bottom 27%;
+		}
+
+		.normal-bonus-fence-right {
+			background-position: right 3vw bottom 27%;
+		}
+
+		.normal-bonus-tree {
+			background-position: left -3vw top;
+			background-size: 60vw auto;
+		}
+
+		.normal-bonus-oak {
+			background-position: left bottom -22vh;
+			background-size: 88vw auto;
+		}
+
 		.base-bench {
-			bottom: clamp(150px, 24vh, 230px);
-			right: -2vw;
+			bottom: clamp(155px, 27.5vh, 245px);
+			right: auto;
+			left: -2vw;
 			width: clamp(105px, 42vw, 180px);
 		}
 	}
 
 	@media (max-width: 520px) and (max-height: 300px) and (orientation: landscape) {
 		.base-mountains {
-			background-position: center bottom 18%;
+			background-position: center top 56%;
 			background-size: 125% auto;
 		}
 
+		.normal-bonus-mountains {
+			background-position: center top 59%;
+			background-size: 115% auto;
+		}
+
+		.normal-bonus-fence {
+			background-size: 16vw auto;
+		}
+
+		.normal-bonus-fence-left {
+			background-position: left 3vw bottom 27%;
+		}
+
+		.normal-bonus-fence-right {
+			background-position: right 3vw bottom 27%;
+		}
+
+		.normal-bonus-tree {
+			background-position: left -2vw top;
+			background-size: auto 68%;
+		}
+
+		.normal-bonus-oak {
+			background-position: left bottom -26vh;
+			background-size: auto 68%;
+		}
+
 		.base-bench {
-			right: 58px;
-			bottom: 28px;
+			right: auto;
+			left: 58px;
+			bottom: 42px;
 			width: 24vw;
 		}
 	}
@@ -5246,4 +5459,669 @@
 			transform: translate3d(var(--cloud-rest-x), 0, 0);
 		}
 	}
+
+	/* Responsive scene contract. Raster art always uses uniform scaling, never X/Y stretching. */
+	.background-normal,
+	.background-base-plain {
+		background-image: none;
+	}
+	.background-normal::before,
+	.background-base-plain::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-position: center top;
+		background-size: cover;
+		background-repeat: no-repeat;
+		transform: scale(1.28);
+		transform-origin: center top;
+		pointer-events: none;
+	}
+	.background-normal::before {
+		background-image: var(--bonus-normal-sky);
+	}
+	.background-base-plain::before {
+		background-image: var(--base-plain);
+	}
+	.background-normal::after,
+	.background-base-plain::after {
+		background: #659337;
+		top: 73%;
+		opacity: 1;
+		mix-blend-mode: normal;
+	}
+	.normal-bonus-layer,
+	.normal-bonus-cloud-field {
+		z-index: 1;
+	}
+	.normal-bonus-cloud-field {
+		z-index: 2;
+	}
+	.normal-bonus-fence {
+		z-index: 3;
+	}
+	.normal-bonus-tree,
+	.normal-bonus-oak {
+		z-index: 4;
+	}
+	.background-base-plain {
+		background-size: cover;
+	}
+	.base-mountains,
+	.normal-bonus-mountains {
+		/* Shared horizon. Wide art crops on phones rather than squashing its peaks. */
+		top: auto;
+		bottom: 27%;
+		left: 50%;
+		right: auto;
+		width: max(100%, 120vh);
+		height: auto;
+		transform: translateX(-50%);
+		background-position: center;
+		background-size: contain;
+	}
+	.base-mountains {
+		aspect-ratio: 5028 / 998;
+	}
+	.normal-bonus-mountains {
+		aspect-ratio: 5028 / 1136;
+		/* The source includes 48px of transparent padding below its ground edge. */
+		margin-bottom: calc(-1 * max(100vw, 120vh) * 48 / 5028);
+	}
+	.background-super,
+	.background-hidden {
+		background-size: cover;
+	}
+
+	@media (min-width: 681px) and (orientation: landscape) {
+		/* Compact landscape HUD must retain both bet controls, including 800×450. */
+		.bet-stepper {
+			display: flex;
+		}
+		.brand {
+			top: 3px;
+			width: min(34vw, 420px);
+			height: auto;
+			aspect-ratio: 857 / 140;
+		}
+		.brand img {
+			transform: translateY(-25.658%);
+		}
+	}
+	@media (max-width: 520px) and (max-height: 300px) and (orientation: landscape) {
+		.game-stage {
+			inset: 8px 62px 32px 64px;
+		}
+	}
+
+
+	/* Portrait design: compact identity, 2×3 payout cells beside bonus counters,
+	   full-width board, control rail, then balance / bet / win. One width-based
+	   composition prevents spare viewport height from becoming gaps between bands. */
+	@media (orientation: portrait) {
+		.scene {
+			--portrait-width: min(94vw, calc((100svh - 12px) / 1.78));
+			display: grid;
+			grid-template-columns: var(--portrait-width);
+			grid-template-rows: calc(var(--portrait-width) * 0.16) auto calc(var(--portrait-width) * 0.38);
+			gap: calc(var(--portrait-width) * 0.04);
+			align-content: start;
+			justify-content: center;
+			justify-items: stretch;
+			padding: max(2px, env(safe-area-inset-top, 0px)) 0 0;
+		}
+		.scene .brand {
+			position: relative;
+			inset: auto;
+			display: block;
+			grid-row: 1;
+			align-self: end;
+			justify-self: center;
+			width: 56%;
+			height: auto;
+			min-height: 0;
+			aspect-ratio: 857 / 140;
+			margin: 0;
+			transform: none;
+		}
+		.scene .brand img { transform: translateY(-25.658%); }
+		.scene .studio-mark {
+			position: absolute;
+			inset: auto;
+			grid-column: 1;
+			grid-row: 1;
+			align-self: start;
+			justify-self: center;
+			width: calc(var(--portrait-width) * 0.24);
+			height: calc(var(--portrait-width) * 0.08);
+			transform: none;
+			object-fit: contain;
+		}
+		.scene .game-stage,
+		.scene .game-stage:has(.bonus-readouts) {
+			position: relative;
+			inset: auto;
+			display: grid;
+			grid-row: 2;
+			grid-template-columns: 60% minmax(0, 1fr);
+			grid-template-rows: calc(var(--portrait-width) * 0.26) auto;
+			gap: calc(var(--portrait-width) * 0.04) 0;
+			align-content: start;
+			width: 100%;
+			height: auto;
+			min-height: 0;
+			padding: 0;
+			container-type: inline-size;
+		}
+		.scene .game-stage .cluster-panel,
+		.scene .game-stage:has(.bonus-readouts) .cluster-panel {
+			position: relative;
+			inset: auto;
+			display: block;
+			grid-column: 1;
+			grid-row: 1;
+			width: 100%;
+			height: 100%;
+			padding: clamp(4px, 1.4vw, 7px);
+			border: 3px solid #805014;
+			background: #3e501d;
+			box-shadow: inset 0 0 0 1px #171b08, 0 0 0 1px #241504;
+			transform: none;
+		}
+		.cluster-panel::before,
+		.cluster-panel::after { display: none; }
+		.scene .cluster-panel .panel-rows {
+			height: 100%;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			grid-template-rows: repeat(3, minmax(0, 1fr));
+			gap: 2px;
+		}
+		.scene .cluster-panel .panel-row {
+			display: grid;
+			grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1.7fr);
+			gap: 1px;
+			padding: 1px 2px;
+			min-width: 0;
+			min-height: 0;
+			height: auto;
+			border: 1px solid #758b46;
+			background: #617637;
+			box-shadow: none;
+			font-size: clamp(7px, 2.2vw, 12px);
+			font-weight: 400;
+			text-shadow: none;
+		}
+		.scene .cluster-panel .panel-row.vacant { background: #354b16; border-color: #566d2d; }
+		.scene .cluster-panel .panel-row img { width: 100%; height: min(4vw, 18px); object-fit: contain; }
+		.scene .cluster-panel .panel-row span,
+		.scene .cluster-panel .panel-row strong { display: block; min-width: 0; font-size: inherit; text-shadow: none; }
+		.scene .game-stage .board-wrap,
+		.scene .game-stage:has(.bonus-readouts) .board-wrap {
+			position: relative;
+			inset: auto;
+			grid-row: 2;
+			grid-column: 1 / -1;
+			width: 100%;
+			height: auto;
+			aspect-ratio: 1.25;
+			transform: none;
+		}
+		.scene .bonus-readouts {
+			position: relative;
+			inset: auto;
+			display: grid;
+			grid-column: 2;
+			grid-row: 1;
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: repeat(2, minmax(0, 1fr));
+			gap: 0;
+			width: 100%;
+			height: 100%;
+			transform: none;
+		}
+		.scene .bonus-readout,
+		.scene .bonus-status {
+			position: static;
+			min-height: 0;
+			padding: 2px;
+			align-content: center;
+			border: 2px solid #805014;
+			border-radius: 0;
+			background: #321c03;
+			box-shadow: none;
+			text-shadow: none;
+		}
+		.scene .bonus-readout small { display: none; }
+		.scene .bonus-readout span { color: #fff8df; font-size: clamp(10px, 3.8vw, 18px); line-height: 1; letter-spacing: 0; font-weight: 400; }
+		.scene .bonus-readout strong { color: #eea000; font-size: clamp(18px, 5.5vw, 28px); line-height: 1; font-weight: 400; }
+		.scene .hud {
+			position: relative;
+			inset: auto !important;
+			display: grid;
+			grid-row: 3;
+			grid-template-areas: none;
+			grid-template-columns: 12% 20% 28% 20% 12%;
+			grid-template-rows: calc(var(--portrait-width) * 0.14);
+			justify-content: space-between;
+			align-content: start;
+			align-items: center;
+			align-self: start;
+			gap: 0;
+			width: 98%;
+			height: calc(var(--portrait-width) * 0.32) !important;
+			min-height: 0;
+			margin: calc(var(--portrait-width) * 0.06) auto 0;
+			padding: 0 2%;
+			border: 0;
+			background: none;
+			box-shadow: none;
+			transform: none;
+		}
+		.scene .hud::before {
+			inset: 0 0 auto;
+			height: calc(var(--portrait-width) * 0.14);
+			border: 2px solid #805014;
+			background: #321c03;
+			box-shadow: none;
+		}
+		.scene .hud-left,
+		.scene .hud-right { display: contents; }
+		.scene .hud .utility,
+		.scene .hud .bonus-button {
+			position: relative;
+			inset: auto;
+			grid-row: 1;
+			width: 100%;
+			height: calc(var(--portrait-width) * 0.105);
+			min-width: 0;
+			min-height: 0;
+			padding: 0;
+			margin: 0;
+			clip-path: none !important;
+		}
+		.scene .hud-left .utility { grid-column: 1; }
+		.scene .hud .bonus-button { grid-column: 2; border: 2px solid #ce8700 !important; background: #e89600 !important; box-shadow: none !important; }
+		.scene .hud .bonus-button span { font-size: clamp(10px, 3vw, 16px); }
+		.scene .hud .spin {
+			position: relative;
+			inset: auto;
+			grid-column: 3;
+			grid-row: 1;
+			justify-self: center;
+			width: calc(var(--portrait-width) * 0.23);
+			height: calc(var(--portrait-width) * 0.23);
+			margin: 0;
+		}
+		.scene .hud .turbo { grid-column: 4; width: 65%; justify-self: center; }
+		.scene .hud .auto { grid-column: 5; }
+		.scene .hud .metrics {
+			position: absolute;
+			inset: auto 0 0;
+			display: grid;
+			grid-template-areas: 'balance bet win';
+			grid-template-columns: 28% 40% 28%;
+			grid-template-rows: minmax(0, 1fr);
+			justify-content: space-between;
+			gap: 0;
+			width: 100%;
+			height: calc(var(--portrait-width) * 0.12);
+		}
+		.scene .hud .metric {
+			position: static;
+			inset: auto;
+			display: grid;
+			width: 100%;
+			height: 100%;
+			min-width: 0;
+			padding: 1% 6%;
+			gap: 0;
+			align-content: center;
+			border: 0;
+			background: #321c03;
+			box-shadow: none;
+			text-align: left;
+		}
+		.scene .hud .metric.balance { grid-area: balance; }
+		.scene .hud .metric.win { grid-area: win; }
+		.scene .hud .metric.bet { grid-area: bet; padding-inline: 24%; text-align: center; }
+		.scene .hud .metric span { color: #fff8df; font-size: clamp(7px, 2.3vw, 11px); letter-spacing: 0; font-weight: 400; text-shadow: none; }
+		.scene .hud .metric strong { color: #fff8df; font-size: clamp(10px, min(3.5vw, calc(170cqw / var(--chars, 8))), 20px) !important; font-weight: 400; text-shadow: none; }
+		.scene .hud .metric.bet span { display: none; }
+		.scene .hud .bet-stepper {
+			position: absolute;
+			inset: auto 30% 0;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			width: auto;
+			height: calc(var(--portrait-width) * 0.12);
+			padding: 1%;
+			border: 0;
+			background: none;
+		}
+		.scene .hud .bet-stepper button { width: 20%; height: 70%; padding: 0; font-size: clamp(12px, 3vw, 18px); clip-path: none !important; }
+		.scene .hud .utility,
+		.scene .hud .bet-stepper button { border: 2px solid #8c601a !important; background: #321c03 !important; box-shadow: none !important; }
+		.scene .hud .utility:active,
+		.scene .hud .utility.pressed-flash,
+		.scene .hud .bet-stepper button:active { background: #65400c !important; }
+		.scene .quick-menu { inset: auto 4% calc(var(--portrait-width) * 0.36) auto; max-height: 60svh; overflow-y: auto; }
+		.scene .modal-layer { padding: 8px; }
+		.scene .buy-panel,
+		.scene .auto-panel,
+		.scene .confirm-panel {
+			min-width: 0;
+			width: min(100%, 620px);
+			max-width: 100%;
+			max-height: calc(100svh - 16px);
+			overflow-y: auto;
+		}
+	}
+
+	/* Landscape reference: left identity/readouts/history/balance, centred board,
+	   right control rail with a separate bet stepper and bottom win readout.
+	   Touch phones and Popout S. Desktop/tablet keep their existing horizontal HUD.
+	   All furniture uses the live viewport, never a fixed desktop design size. */
+	@media (orientation: landscape) and (pointer: coarse) and (max-height: 600px),
+		(orientation: landscape) and (max-width: 520px) and (max-height: 300px) {
+		.scene {
+			--land-left: 22vw;
+			--land-hud-border: clamp(3px, 0.45vw, 5px);
+			--land-control-border: clamp(2px, 0.3vw, 3px);
+			--land-right: 20vw;
+			display: block;
+			padding: 0;
+		}
+		.brand {
+			position: absolute;
+			inset: 6% auto auto 1.6%;
+			display: block;
+			width: 20%;
+			height: auto;
+			min-height: 0;
+			aspect-ratio: 857 / 140;
+			margin: 0;
+			transform: none;
+		}
+		.brand img { transform: translateY(-25.658%); }
+		.studio-mark {
+			display: block;
+			inset: 1.4% 1.6% auto auto;
+			width: 10%;
+			height: auto;
+			object-fit: contain;
+			transform: none;
+		}
+		.game-stage,
+		.game-stage:has(.bonus-readouts) {
+			position: absolute;
+			inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+				env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+			display: block;
+			width: auto;
+			height: auto;
+			padding: 0;
+			container-type: size;
+		}
+		.board-wrap,
+		.game-stage:has(.bonus-readouts) .board-wrap {
+			position: absolute;
+			inset: 50% auto auto 52%;
+			width: min(53cqw, 116cqh);
+			height: min(42.4cqw, 92.8cqh);
+			grid-area: auto;
+			transform: translate(-50%, -50%);
+		}
+		.scene .game-stage .cluster-panel,
+		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .game-stage .cluster-panel {
+			position: absolute;
+			inset: 46% auto 12.5% 2.8%;
+			display: block;
+			width: 16.4%;
+			max-width: none;
+			height: auto;
+			padding: clamp(5px, 0.8vw, 12px);
+			border: clamp(2px, 0.28vw, 4px) solid #241906;
+			background: #354818;
+			box-shadow: inset 0 0 0 clamp(2px, 0.4vw, 6px) #82500c,
+				inset 0 0 0 clamp(4px, 0.65vw, 10px) #a4772b;
+			clip-path: polygon(4% 0, 96% 0, 100% 4%, 100% 96%, 96% 100%, 4% 100%, 0 96%, 0 4%);
+			transform: none;
+		}
+		.cluster-panel::before,
+		.cluster-panel::after { display: none; }
+		.scene .game-stage .cluster-panel .panel-rows,
+		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .game-stage .cluster-panel .panel-rows {
+			height: 100%;
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: repeat(var(--slots, 6), minmax(0, 1fr));
+			gap: clamp(1px, 0.25vh, 3px);
+		}
+		.scene .game-stage .cluster-panel .panel-row,
+		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .game-stage .cluster-panel .panel-row {
+			grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1.6fr);
+			gap: clamp(1px, 0.3vw, 4px);
+			min-width: 0;
+			min-height: 0;
+			height: auto;
+			padding: clamp(1px, 0.22vw, 3px);
+			border: 1px solid #708741;
+			font-size: clamp(7px, 1.3vw, 20px);
+			font-weight: 400;
+			text-shadow: none;
+			background: #617637;
+			box-shadow: none;
+		}
+		.scene .game-stage .cluster-panel .panel-row.vacant { background: #354818; border-color: #53672a; }
+		.cluster-panel .panel-row img {
+			width: 100%;
+			height: min(4.6vh, 2.3vw);
+			object-fit: contain;
+		}
+		.cluster-panel .panel-row span,
+		.cluster-panel .panel-row strong { display: block; font-size: inherit; }
+		.cluster-panel .panel-row span { padding: 1px 3px; border: 1px solid #9cad73; }
+		.cluster-panel .panel-row strong { min-width: 0; color: #ffc022; text-shadow: none; }
+		.bonus-readouts {
+			position: absolute;
+			inset: 17% auto auto 2.8%;
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: repeat(2, minmax(0, 1fr));
+			width: 16.4%;
+			max-width: none;
+			height: 26.5%;
+			gap: 1.4vh;
+			transform: none;
+		}
+		.bonus-readout,
+		.bonus-status {
+			position: static;
+			min-height: 0;
+			padding: 0.5vh 0.4vw;
+			align-content: center;
+			border: var(--land-hud-border) solid #8c601a;
+			background: #321c03;
+			box-shadow: none;
+		}
+		.bonus-readout span { color: #fff8df; font-size: clamp(8px, 1.65vw, 24px); letter-spacing: 0; }
+		.bonus-readout strong { color: #eea000; font-size: clamp(12px, 2.2vw, 32px); line-height: 1; }
+		.bonus-readout small { display: none; }
+		.scene .hud {
+			position: fixed;
+			inset: 10.4% 2.6% 12% auto !important;
+			display: grid;
+			grid-template-areas: none;
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: 1fr 1fr 2.2fr 1fr 1fr;
+			gap: 1vh;
+			align-items: center;
+			justify-items: center;
+			width: 7.6%;
+			height: auto !important;
+			min-height: 0;
+			padding: 1.8vh 0;
+			border: var(--land-hud-border) solid #8c601a;
+			background: #321c03;
+			box-shadow: none;
+			transform: none;
+			overflow: visible;
+			pointer-events: auto;
+		}
+		.hud::before { display: none; }
+		.hud-left,
+		.hud-right,
+		.hud .metrics { display: contents; }
+		.scene .hud .utility,
+		.scene .hud .bonus-button,
+		.scene .hud .spin {
+			position: relative;
+			inset: auto;
+			grid-column: 1;
+			min-width: 0;
+			min-height: 0;
+			padding: 0;
+			margin: 0;
+			transform: none;
+		}
+		.scene .hud .utility {
+			width: min(4.4vw, 9.4vh);
+			height: min(4.4vw, 9.4vh);
+			clip-path: none !important;
+		}
+		.hud-left .utility { grid-row: 1; }
+		.scene .hud .bonus-button {
+			grid-row: 2;
+			width: 86%;
+			height: 8vh;
+			clip-path: none !important;
+			border: 0 !important;
+			background: #e89600 !important;
+			box-shadow: none !important;
+		}
+		.hud .bonus-button span { font-size: clamp(9px, 1.45vw, 22px); }
+		.hud .bonus-button small { display: none; }
+		.scene .hud .spin {
+			grid-row: 3;
+			align-self: center;
+			justify-self: center;
+			width: min(9.6vw, 22vh);
+			height: min(9.6vw, 22vh);
+			border-width: clamp(3px, 0.4vw, 6px) !important;
+		}
+		.scene .hud .turbo { grid-row: 4; }
+		.scene .hud .auto { grid-row: 5; }
+		.scene .hud .utility svg { width: 58%; height: 58%; }
+		.scene .hud .auto small { font-size: clamp(6px, 0.9vw, 14px); }
+		.scene .hud .bet-stepper {
+			position: fixed;
+			inset: auto 11.6% 12% auto;
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: repeat(3, minmax(0, 1fr));
+			justify-items: center;
+			align-items: center;
+			gap: 0;
+			width: 4.4vw;
+			height: 29vh;
+			padding: 0.8vh 0.35vw;
+			border: var(--land-hud-border) solid #8c601a;
+			background: #321c03;
+		}
+		.scene .hud .bet-stepper button {
+			width: 100%;
+			height: 80%;
+			min-height: 0;
+			padding: 0;
+			font-size: clamp(10px, 1.6vw, 24px);
+			transform: none;
+			clip-path: none !important;
+		}
+		.hud .bet-stepper button:first-child { grid-column: 1; grid-row: 3; }
+		.hud .bet-stepper button:last-child { grid-column: 1; grid-row: 1; }
+		.scene .hud .utility,
+		.scene .hud .bet-stepper button { background: #321c03 !important; border: var(--land-control-border) solid #8c601a !important; box-shadow: none !important; }
+		.scene .hud .utility:active,
+		.scene .hud .utility.pressed-flash,
+		.scene .hud .bet-stepper button:active { background: #65400c !important; }
+		.hud .metric {
+			position: fixed;
+			inset: auto auto 1.6% 2.8%;
+			display: grid;
+			grid-template-columns: auto minmax(0, 1fr);
+			grid-area: auto;
+			align-items: center;
+			gap: 0.6vw;
+			width: 17.2vw;
+			height: 8vh;
+			min-height: 0;
+			padding: 0.4vh 0.5vw;
+			border: var(--land-hud-border) solid #76521c;
+			background: #321c03;
+			box-shadow: none;
+			text-align: left;
+		}
+		.hud .metric.win { inset: auto 2.6% 1.6% auto; }
+		.hud .metric span { display: block; color: #fff8df; font-size: clamp(7px, 1.3vw, 20px); letter-spacing: 0; text-shadow: none; }
+		.hud .metric strong { font-size: clamp(9px, min(2.2vw, calc(110cqw / var(--chars, 8))), 32px) !important; text-align: right; text-shadow: none; }
+		.hud .metric.bet {
+			inset: auto 11.6% 21.65% auto;
+			z-index: 2;
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			width: 4.4vw;
+			height: 9.7vh;
+			padding: 0;
+			border: 0;
+			background: none;
+			pointer-events: none;
+		}
+		.hud .metric.bet span { display: none; }
+		.hud .metric.bet strong { font-size: clamp(7px, calc(150cqw / var(--chars, 8)), 22px) !important; text-align: center; }
+		.quick-menu { inset: 10.4% 11.6% auto auto; max-height: 80svh; overflow-y: auto; }
+		.modal-layer { padding: 6px; }
+		.buy-panel,
+		.auto-panel,
+		.confirm-panel { max-height: calc(100svh - 12px); overflow-y: auto; }
+		:global(.pop-up-wrap .info-stage) {
+			width: min(calc(100vw - 24px), calc((100svh - 80px) * 1.49));
+		}
+	}
+
+	/* Popout S: use narrow gutters and nearly the entire height for the board.
+	   Controls grow independently of the tiny viewport width. */
+	@media (orientation: landscape) and (max-width: 520px) and (max-height: 300px) {
+		.scene .brand { inset: 2% auto auto 1%; width: 17%; }
+		.scene .studio-mark { inset: 0 0 auto auto; width: 12%; }
+		.scene .game-stage .board-wrap,
+		.scene .game-stage:has(.bonus-readouts) .board-wrap {
+			left: 50%;
+			width: min(60cqw, 117cqh);
+			height: min(48cqw, 93.6cqh);
+		}
+		.scene .game-stage .cluster-panel,
+		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .game-stage .cluster-panel {
+			inset: 14% auto 12% 1%;
+			width: 17%;
+			padding: 4px;
+		}
+		.scene .game-stage:has(.bonus-readouts) .cluster-panel { top: 44%; }
+		.scene .bonus-readouts { inset: 13% auto auto 1%; width: 17%; height: 28%; gap: 2px; }
+		.scene .hud {
+			inset: 8% 1% 12% auto !important;
+			width: 10.5%;
+			padding: 2px 0;
+			gap: 2px;
+			grid-template-rows: 1fr 1fr 1.8fr 1fr 1fr;
+		}
+		.scene .hud .utility { width: min(7vw, 12vh); height: min(7vw, 12vh); }
+		.scene .hud .bonus-button { width: 94%; height: 11vh; }
+		.scene .hud .spin { width: min(13vw, 23vh); height: min(13vw, 23vh); }
+		.scene .hud .bet-stepper { right: 12.2%; bottom: 12%; width: 5.8vw; height: 36vh; padding: 1px; }
+		.scene .hud .metric.bet { right: 12.2%; bottom: 24%; width: 5.8vw; height: 12vh; }
+		.scene .hud .metric.balance { left: 1%; width: 17vw; }
+		.scene .hud .metric.win { right: 1%; width: 17vw; }
+		.scene .quick-menu { inset: 4px 12% auto auto; }
+	}
+
 </style>

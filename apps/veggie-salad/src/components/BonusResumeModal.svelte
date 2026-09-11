@@ -52,6 +52,8 @@
 	}
 	.resume-card {
 		width: min(620px, 94vw);
+		max-height: calc(100svh - 36px);
+		overflow-y: auto;
 		padding: clamp(24px, 5vw, 48px);
 		border: 8px solid #321304;
 		background: #31521c;
@@ -60,7 +62,7 @@
 			inset 0 0 0 10px #6d3510,
 			8px 8px 0 rgb(16 6 1 / 72%);
 		color: #fff;
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		font-family: 'Jersey 10', monospace;
 		text-align: center;
 		image-rendering: pixelated;
 	}
@@ -92,7 +94,7 @@
 		border-radius: 0;
 		color: #fff;
 		font:
-			900 clamp(12px, 2vw, 18px) ui-monospace,
+			900 clamp(12px, 2vw, 18px) 'Jersey 10',
 			monospace;
 		cursor: pointer;
 	}

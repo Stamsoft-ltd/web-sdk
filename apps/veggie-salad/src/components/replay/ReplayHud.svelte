@@ -84,7 +84,7 @@
 	}
 	.replay-card {
 		width: min(430px, 96vw);
-		max-height: 94vh;
+		max-height: calc(100svh - 28px);
 		overflow: auto;
 		padding: 20px;
 		border: 6px solid #3a1b05;
@@ -93,7 +93,7 @@
 			inset 0 0 0 3px #d99a32,
 			7px 7px 0 #140b04;
 		color: #fff;
-		font-family: ui-monospace, monospace;
+		font-family: 'Jersey 10', monospace;
 	}
 	header {
 		display: flex;
@@ -142,7 +142,7 @@
 		background: #ec9200;
 		color: #fff;
 		font:
-			900 14px ui-monospace,
+			900 14px 'Jersey 10',
 			monospace;
 		cursor: pointer;
 	}

@@ -3,8 +3,17 @@
 	import { backOut, cubicIn, cubicOut } from 'svelte/easing';
 	import { Tween } from 'svelte/motion';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
+	import { ResponsiveBitmapText } from 'components-pixi';
 	import { fountain as fountainConfig } from 'constants-shared/particleConfig';
-	import { Container, Graphics, ParticleEmitter, Rectangle, Sprite, Text } from 'pixi-svelte';
+	import {
+		BitmapText,
+		Container,
+		Graphics,
+		ParticleEmitter,
+		Rectangle,
+		Sprite,
+		Text,
+	} from 'pixi-svelte';
 	import {
 		bookEventAmountToBetAmountMultiplier,
 		bookEventAmountToCurrencyString,
@@ -17,72 +26,78 @@
 	type OverlayData = NonNullable<typeof stateGame.overlay>;
 	type ArtKey = 'winSweet' | 'winWild' | 'winEpic' | 'winMythic' | 'winLegendary';
 	type WinPlaqueKey =
-		| 'winPlaqueSweet'
-		| 'winPlaqueWild'
-		| 'winPlaqueEpic'
-		| 'winPlaqueMythic'
-		| 'winPlaqueLegendary';
+		| 'winPlaqueSweetV2'
+		| 'winPlaqueWildV2'
+		| 'winPlaqueEpicV2'
+		| 'winPlaqueMythicV2'
+		| 'winPlaqueLegendaryV2';
 	type WinTitleKey =
-		| 'winTitleSweet'
-		| 'winTitleWild'
-		| 'winTitleEpic'
-		| 'winTitleMythic'
-		| 'winTitleLegendary';
+		| 'winTitleSweetTopV2'
+		| 'winTitleWildV2'
+		| 'winTitleEpicV2'
+		| 'winTitleMythicV2'
+		| 'winTitleLegendaryV2';
+	type WinAmountKey =
+		| 'winAmountSweetV2'
+		| 'winAmountWildV2'
+		| 'winAmountEpicV2'
+		| 'winAmountMythicV2'
+		| 'winAmountLegendaryV2';
 	type WinArt = {
 		plaque: WinPlaqueKey;
-		title: WinTitleKey;
+		titleTop: WinTitleKey;
+		amountPlaque: WinAmountKey;
 		plaqueWidth: number;
 		plaqueHeight: number;
-		titleWidth: number;
-		titleHeight: number;
-		dark: number;
+		titleTopWidth: number;
+		titleTopHeight: number;
 	};
 
 	const WIN_ART: Record<ArtKey, WinArt> = {
 		winSweet: {
-			plaque: 'winPlaqueSweet',
-			title: 'winTitleSweet',
-			plaqueWidth: 900,
-			plaqueHeight: 266,
-			titleWidth: 500,
-			titleHeight: 308,
-			dark: 0x07598f,
+			plaque: 'winPlaqueSweetV2',
+			titleTop: 'winTitleSweetTopV2',
+			amountPlaque: 'winAmountSweetV2',
+			plaqueWidth: 920,
+			plaqueHeight: 321,
+			titleTopWidth: 590,
+			titleTopHeight: 211,
 		},
 		winWild: {
-			plaque: 'winPlaqueWild',
-			title: 'winTitleWild',
-			plaqueWidth: 900,
-			plaqueHeight: 274,
-			titleWidth: 470,
-			titleHeight: 330,
-			dark: 0x2d7614,
+			plaque: 'winPlaqueWildV2',
+			titleTop: 'winTitleWildV2',
+			amountPlaque: 'winAmountWildV2',
+			plaqueWidth: 920,
+			plaqueHeight: 321,
+			titleTopWidth: 540,
+			titleTopHeight: 202,
 		},
 		winEpic: {
-			plaque: 'winPlaqueEpic',
-			title: 'winTitleEpic',
-			plaqueWidth: 900,
-			plaqueHeight: 280,
-			titleWidth: 430,
-			titleHeight: 335,
-			dark: 0x941713,
+			plaque: 'winPlaqueEpicV2',
+			titleTop: 'winTitleEpicV2',
+			amountPlaque: 'winAmountEpicV2',
+			plaqueWidth: 920,
+			plaqueHeight: 321,
+			titleTopWidth: 510,
+			titleTopHeight: 223,
 		},
 		winMythic: {
-			plaque: 'winPlaqueMythic',
-			title: 'winTitleMythic',
-			plaqueWidth: 900,
-			plaqueHeight: 273,
-			titleWidth: 490,
-			titleHeight: 329,
-			dark: 0x5b197b,
+			plaque: 'winPlaqueMythicV2',
+			titleTop: 'winTitleMythicV2',
+			amountPlaque: 'winAmountMythicV2',
+			plaqueWidth: 920,
+			plaqueHeight: 321,
+			titleTopWidth: 600,
+			titleTopHeight: 199,
 		},
 		winLegendary: {
-			plaque: 'winPlaqueLegendary',
-			title: 'winTitleLegendary',
-			plaqueWidth: 900,
-			plaqueHeight: 277,
-			titleWidth: 600,
-			titleHeight: 280,
-			dark: 0xa45808,
+			plaque: 'winPlaqueLegendaryV2',
+			titleTop: 'winTitleLegendaryV2',
+			amountPlaque: 'winAmountLegendaryV2',
+			plaqueWidth: 920,
+			plaqueHeight: 321,
+			titleTopWidth: 690,
+			titleTopHeight: 209,
 		},
 	};
 
@@ -93,6 +108,7 @@
 	let shownOverlay = $state<OverlayData | null>(null);
 	let clock = $state(0);
 	let animationId = 0;
+	let presentationStartedAt = 0;
 
 	// Keep the outgoing overlay mounted until its shrink/fade finishes. State handlers can clear the
 	// overlay immediately; the presentation still gets a real exit instead of one hard-cut frame.
@@ -102,17 +118,34 @@
 		if (incoming) {
 			shownOverlay = { ...incoming };
 			clock = 0;
+			presentationStartedAt = 0;
 			const targetAmount = incoming.amount ?? untrack(() => stateGame.roundWin);
 			enter.set(0, { duration: 0 });
-			flash.set(0.9, { duration: 0 });
+			flash.set(0, { duration: 0 });
 			amount.set(0, { duration: 0 });
-			enter.set(1, { duration: 480, easing: backOut });
-			flash.set(0, { duration: 420, easing: cubicOut });
-			if (incoming.kind === 'win')
-				amount.set(targetAmount, {
-					duration: incoming.countDurationMs ?? 1050,
-					easing: cubicOut,
-				});
+
+			const startPresentation = () => {
+				if (id !== animationId) return;
+				presentationStartedAt = performance.now();
+				clock = 0;
+				flash.set(0.9, { duration: 0 });
+				enter.set(1, { duration: 480, easing: backOut });
+				flash.set(0, { duration: 420, easing: cubicOut });
+				if (incoming.kind === 'win')
+					amount.set(targetAmount, {
+						duration: incoming.countDurationMs ?? 1050,
+						easing: cubicOut,
+					});
+			};
+
+			const isNamedWin =
+				incoming.kind === 'win' && !incoming.bonusPresentation && incoming.title !== 'WIN';
+			if (isNamedWin) {
+				const timer = window.setTimeout(startPresentation, 180);
+				return () => window.clearTimeout(timer);
+			}
+
+			startPresentation();
 			return;
 		}
 
@@ -135,9 +168,8 @@
 	$effect(() => {
 		if (!shownOverlay) return;
 		let raf = 0;
-		const started = performance.now();
 		const tick = (now: number) => {
-			clock = (now - started) / 1000;
+			clock = presentationStartedAt ? (now - presentationStartedAt) / 1000 : 0;
 			raf = requestAnimationFrame(tick);
 		};
 		raf = requestAnimationFrame(tick);
@@ -207,15 +239,22 @@
 		| 'pixelRadish';
 	const winVeggies = $derived<VeggieKey[]>(
 		artKey === 'winSweet'
-			? ['pixelRadish', 'pixelCauliflower', 'pixelCarrot', 'pixelCauliflower', 'pixelRadish']
+			? ['pixelEggplant', 'pixelCarrot', 'pixelCauliflower', 'pixelRadish']
 			: artKey === 'winWild'
-				? ['pixelCarrot', 'pixelEggplant', 'pixelCauliflower', 'pixelEggplant', 'pixelCarrot']
+				? ['pixelRadish', 'pixelCarrot', 'pixelEggplant', 'pixelTomato']
 				: artKey === 'winEpic'
-					? ['pixelEggplant', 'pixelTomato', 'pixelCarrot', 'pixelTomato', 'pixelEggplant']
+					? ['pixelCarrot', 'pixelEggplant', 'pixelTomato', 'pixelCorn']
 					: artKey === 'winMythic'
-						? ['pixelTomato', 'pixelCorn', 'pixelEggplant', 'pixelCorn', 'pixelTomato']
-						: ['pixelBroccoli', 'pixelCorn', 'pixelTomato', 'pixelCorn', 'pixelBroccoli'],
+						? ['pixelEggplant', 'pixelTomato', 'pixelCorn', 'pixelBroccoli']
+						: ['pixelBroccoli', 'pixelCorn', 'pixelTomato', 'pixelBroccoli'],
 	);
+	const bonusEndVeggies: VeggieKey[] = [
+		'pixelBroccoli',
+		'pixelCorn',
+		'pixelTomato',
+		'pixelBroccoli',
+	];
+	const bonusEndVeggieX = [-220, -96, 96, 220];
 	const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 	const timeline = (startSeconds: number, durationSeconds: number) =>
 		clamp01((clock - startSeconds) / durationSeconds);
@@ -223,9 +262,21 @@
 		backOut(timeline(startSeconds, durationSeconds));
 	const fadeIn = (startSeconds: number, durationSeconds: number) =>
 		cubicOut(timeline(startSeconds, durationSeconds));
+	// Vegetables launch clear of the plaque once, then settle with only their heads visible.
+	const veggieJumpOffset = (startSeconds: number) => {
+		const progress = timeline(startSeconds, 0.76);
+		if (progress < 0.44) return 84 - cubicOut(progress / 0.44) * 188;
+		return -104 + cubicOut((progress - 0.44) / 0.56) * 104;
+	};
 	const plaqueIn = $derived(popIn(0, 0.48));
-	const titleIn = $derived(popIn(0.12, 0.5));
+	const titleTopIn = $derived(popIn(0.12, 0.5));
+	const titleBottomIn = $derived(popIn(0.23, 0.46));
 	const amountIn = $derived(popIn(0.4, 0.42));
+	const bonusPlaqueIn = $derived(popIn(0, 0.44));
+	const bonusTitleIn = $derived(popIn(0.1, 0.48));
+	const bonusCopyIn = $derived(fadeIn(0.2, 0.38));
+	const bonusSymbolIn = $derived(popIn(0.36, 0.44));
+	const bonusTicketIn = $derived(popIn(0.5, 0.4));
 	const namedWinIdleScale = $derived(1 + Math.sin(clock * (2.25 + tier * 0.1)) * 0.007);
 	const countedWinText = $derived(
 		bookEventAmountToCurrencyString(amount.current, overlay?.amount ?? stateGame.roundWin),
@@ -234,17 +285,17 @@
 		Math.max(25, Math.min(43, Math.floor(470 / Math.max(7, countedWinText.length * 0.68)))),
 	);
 	const starSlots = [
-		{ x: -350, y: -18, size: 68, phase: 0 },
-		{ x: 350, y: -18, size: 68, phase: Math.PI },
+		{ x: -383, y: 20, size: 68, phase: 0 },
+		{ x: 383, y: 20, size: 68, phase: Math.PI },
 	];
 
 	const breathe = $derived(1 + Math.sin(clock * (2.2 + tier * 0.08)) * (0.006 + tier * 0.002));
 	const mainLayout = $derived(context.stateLayoutDerived.mainLayout());
 	const presentationBounds = $derived(
 		bonusPresentation === 'start'
-			? { width: 600, height: 780 }
+			? { width: 600, height: 820 }
 			: bonusPresentation === 'end'
-				? { width: 900, height: 610 }
+				? { width: 980, height: 610 }
 				: artKey
 					? { width: 960, height: 650 }
 					: { width: 760, height: 470 },
@@ -343,14 +394,16 @@
 	}));
 
 	const pixelText = (fontSize: number, fill = 0xffffff, stroke = 0x321505) => ({
-		fontFamily: 'monospace',
+		fontFamily: 'Jersey 10, monospace',
 		fontSize,
-		fontWeight: '900' as const,
+		fontWeight: '400' as const,
 		fill,
 		align: 'center' as const,
-		stroke: { color: stroke, width: Math.max(3, Math.round(fontSize * 0.1)) },
-		letterSpacing: Math.max(1, Math.round(fontSize * 0.035)),
+		stroke: { color: stroke, width: Math.max(3, Math.round(fontSize * 0.075)) },
+		letterSpacing: 0,
 	});
+	const localizedStartTitle = $derived(stateI18nDerived.translate('CONGRATS!'));
+	const localizedEndTitle = $derived(stateI18nDerived.translate('CONGRATULATIONS!'));
 	const bonusModeText = $derived(
 		overlay?.tier
 			? stateI18nDerived.translate(`BONUS TIER ${overlay.tier.toUpperCase()}`)
@@ -360,11 +413,6 @@
 		overlay?.tier
 			? stateI18nDerived.translate(`BONUS INTRO ${overlay.tier.toUpperCase()} TEXT`)
 			: '',
-	);
-	const bonusPlaque = $derived(
-		bonusPresentation === 'start'
-			? { key: 'bonusStartPlaque', width: 540, height: 746 }
-			: { key: 'bonusEndPlaque', width: 880, height: 340 },
 	);
 </script>
 
@@ -401,100 +449,174 @@
 				{/if}
 
 				{#if bonusPresentation}
-					<!-- Bonus intro/outro: built from integer-aligned Pixi primitives + native pixel
-					     symbols. No soft generated board and no baked copy: sharp, responsive, localizable. -->
+					<!-- Bonus intro/outro: authored pixel art split into independently animated plaque,
+					     title, symbol/veggies, stars, ticket and live-copy layers. -->
 					<Container y={plaqueY} scale={plaqueScale} alpha={plaqueAlpha}>
-						{#if bonusPresentation === 'end'}
-							<!-- Veggies rise behind the total-win board. The entry board instead uses the
-							     selected feature symbol, matching the supplied reference hierarchy. -->
-							<Sprite
-								key="pixelRadish"
-								anchor={0.5}
-								x={-310}
-								y={-244 + Math.sin(clock * 3.1) * 7}
-								width={126}
-								height={126}
-								rotation={-0.04 + Math.sin(clock * 2.4) * 0.025}
-							/>
-							<Sprite key="pixelCarrot" anchor={0.5} x={-165} y={-278} width={134} height={134} />
-							<Sprite key="pixelTomato" anchor={0.5} x={0} y={-292} width={142} height={142} />
-							<Sprite key="pixelCorn" anchor={0.5} x={165} y={-278} width={138} height={138} />
-							<Sprite key="pixelBroccoli" anchor={0.5} x={310} y={-244} width={132} height={132} />
-						{/if}
-
-						<!-- Supplied start/end plaques. Copy remains live and localized above the art. -->
-						<Sprite
-							key={bonusPlaque.key}
-							anchor={0.5}
-							width={bonusPlaque.width}
-							height={bonusPlaque.height}
-						/>
-
-						<Text
-							anchor={0.5}
-							y={bonusPresentation === 'start' ? -286 : -108}
-							text={stateI18nDerived.translate('CONGRATULATIONS!')}
-							style={pixelText(bonusPresentation === 'start' ? 30 : 42, 0xffbc32)}
-						/>
-						<Text
-							anchor={0.5}
-							y={bonusPresentation === 'start' ? -232 : -55}
-							text={stateI18nDerived.translate('YOU WON')}
-							style={pixelText(bonusPresentation === 'start' ? 23 : 25, 0xffffff)}
-						/>
-
 						{#if bonusPresentation === 'start'}
-							<Text anchor={0.5} y={-180} text={bonusModeText} style={pixelText(30, 0xffd24a)} />
-							<Text
-								anchor={0.5}
-								y={-124}
-								text={bonusIntroText}
-								style={{
-									...pixelText(17, 0xffffff),
-									wordWrap: true,
-									wordWrapWidth: 400,
-									lineHeight: 23,
-								}}
-							/>
-							<Sprite
-								key="pixelScatter"
-								anchor={0.5}
-								y={24 + Math.sin(clock * 3) * 5}
-								width={132}
-								height={132}
-							/>
-							<Rectangle x={-156} y={112} width={312} height={104} backgroundColor={0x2a1205} />
-							<Rectangle x={-144} y={124} width={288} height={80} backgroundColor={0xe78b00} />
-							<Text
-								anchor={0.5}
-								y={164}
-								text={overlay.freeSpins ?? 0}
-								style={pixelText(62, 0xffffff, 0x4c2008)}
-							/>
-							<Text
-								anchor={0.5}
-								y={266}
-								text={stateI18nDerived.translate('FREE SPINS')}
-								style={pixelText(29, 0xffd678)}
-							/>
+							<Container scale={0.92 + bonusPlaqueIn * 0.08} alpha={clamp01(bonusPlaqueIn)}>
+								<Sprite key="bonusStartPlaqueV2" anchor={0.5} width={500} height={764} />
+							</Container>
+
+							<Container
+								y={-286 - (1 - clamp01(bonusTitleIn)) * 46}
+								scale={bonusTitleIn}
+								rotation={Math.sin(clock * 2.15) * 0.006}
+								alpha={clamp01(bonusTitleIn)}
+							>
+								<!-- Bitmap title stays live: language changes never require replacement art. -->
+								<ResponsiveBitmapText
+									anchor={0.5}
+									y={7}
+									maxWidth={440}
+									text={localizedStartTitle}
+									style={pixelText(70, 0x7d230d, 0x1c0903)}
+								/>
+								<ResponsiveBitmapText
+									anchor={0.5}
+									maxWidth={440}
+									text={localizedStartTitle}
+									style={pixelText(70, 0xffb632, 0x321505)}
+								/>
+							</Container>
+
+							<Container alpha={bonusCopyIn} y={(1 - bonusCopyIn) * 18}>
+								<BitmapText
+									anchor={0.5}
+									y={-210}
+									text={stateI18nDerived.translate('YOU WON')}
+									style={pixelText(36, 0xffbd34)}
+								/>
+								<ResponsiveBitmapText
+									anchor={0.5}
+									y={-154}
+									maxWidth={430}
+									text={bonusModeText}
+									style={pixelText(46, 0xffffff)}
+								/>
+								<BitmapText
+									anchor={0.5}
+									y={-82}
+									text={bonusIntroText}
+									style={{
+										...pixelText(25, 0xffffff),
+										wordWrap: true,
+										wordWrapWidth: 430,
+										lineHeight: 32,
+									}}
+								/>
+							</Container>
+
+							<Container
+								y={62 + (1 - clamp01(bonusSymbolIn)) * 54 + Math.sin(clock * 3) * 5}
+								scale={bonusSymbolIn * (1 + Math.sin(clock * 2.6) * 0.018)}
+								rotation={Math.sin(clock * 2.2) * 0.025}
+								alpha={clamp01(bonusSymbolIn)}
+							>
+								<!-- Actual feature scatter. Never baked into the plaque. -->
+								<Sprite key="pixelScatter" anchor={0.5} width={138} height={138} />
+							</Container>
+
+							<Container
+								y={190 + (1 - clamp01(bonusTicketIn)) * 48}
+								scale={bonusTicketIn}
+								alpha={clamp01(bonusTicketIn)}
+							>
+								<Sprite key="bonusStartTicketV2" anchor={0.5} width={260} height={106} />
+								<BitmapText
+									anchor={0.5}
+									y={-2}
+									text={overlay.freeSpins ?? 0}
+									style={pixelText(78, 0xffffff, 0x4c2008)}
+								/>
+								<ResponsiveBitmapText
+									anchor={0.5}
+									y={106}
+									maxWidth={430}
+									text={stateI18nDerived.translate('FREE SPINS')}
+									style={pixelText(43, 0xffbd34)}
+								/>
+							</Container>
 						{:else}
-							<Rectangle x={-270} y={-8} width={540} height={96} backgroundColor={0x2a1205} />
-							<Rectangle x={-258} y={4} width={516} height={72} backgroundColor={0xe78b00} />
-							<Text
+							{#each bonusEndVeggies as veggie, index}
+								{@const veggieStart = 0.08 + index * 0.06}
+								{@const veggieIn = popIn(veggieStart, 0.38)}
+								{@const veggieRestY = -126 - (index === 1 || index === 2 ? 8 : 0)}
+								<Container
+									x={bonusEndVeggieX[index]}
+									y={veggieRestY +
+										veggieJumpOffset(veggieStart) +
+										Math.sin(clock * 2.7 + index) * 5}
+									scale={veggieIn * (1 + Math.sin(clock * 2.3 + index) * 0.02)}
+									rotation={(index - 1.5) * 0.02 + Math.sin(clock * 2 + index) * 0.018}
+									alpha={clamp01(veggieIn)}
+								>
+									<Sprite key={veggie} anchor={0.5} width={132} height={132} />
+								</Container>
+							{/each}
+
+							<Container scale={0.9 + bonusPlaqueIn * 0.1} alpha={clamp01(bonusPlaqueIn)}>
+								<Sprite key="bonusEndPlaqueV2" anchor={0.5} width={750} height={262} />
+							</Container>
+
+							{#each starSlots as star, index}
+								{@const starIn = popIn(0.25 + index * 0.08, 0.36)}
+								<Container
+									x={star.x * 0.82}
+									y={13}
+									scale={starIn * (1 + Math.sin(clock * 3.2 + star.phase) * 0.08)}
+									rotation={(index ? 1 : -1) * 0.1 + Math.sin(clock * 2.4 + index) * 0.05}
+									alpha={clamp01(starIn)}
+								>
+									<Sprite key="winStarSweetV2" anchor={0.5} width={60} height={58} />
+								</Container>
+							{/each}
+
+							<Container
+								y={-33 - (1 - clamp01(bonusTitleIn)) * 44}
+								scale={bonusTitleIn}
+								rotation={Math.sin(clock * 1.9) * 0.006}
+								alpha={clamp01(bonusTitleIn)}
+							>
+								<ResponsiveBitmapText
+									anchor={0.5}
+									y={7}
+									maxWidth={610}
+									text={localizedEndTitle}
+									style={pixelText(63, 0x7d230d, 0x1c0903)}
+								/>
+								<ResponsiveBitmapText
+									anchor={0.5}
+									maxWidth={610}
+									text={localizedEndTitle}
+									style={pixelText(63, 0xffb632, 0x321505)}
+								/>
+							</Container>
+
+							<BitmapText
 								anchor={0.5}
-								y={40}
-								text={bookEventAmountToCurrencyString(
-									amount.current,
-									overlay.amount ?? stateGame.roundWin,
-								)}
-								style={pixelText(amountFontSize, 0xffffff, 0x4c2008)}
+								y={20 + (1 - bonusCopyIn) * 16}
+								alpha={bonusCopyIn}
+								text={stateI18nDerived.translate('YOU WON')}
+								style={pixelText(42, 0xffffff)}
 							/>
-							<Text
-								anchor={0.5}
-								y={127}
-								text={stateI18nDerived.translate('TOTAL WIN')}
-								style={pixelText(31, 0xffd678)}
-							/>
+
+							<Container
+								y={118 + (1 - clamp01(bonusTicketIn)) * 44}
+								scale={bonusTicketIn}
+								alpha={clamp01(bonusTicketIn)}
+							>
+								<Sprite key="winAmountLegendaryV2" anchor={0.5} width={410} height={139} />
+								<ResponsiveBitmapText
+									anchor={0.5}
+									y={-5}
+									maxWidth={330}
+									text={bookEventAmountToCurrencyString(
+										amount.current,
+										overlay.amount ?? stateGame.roundWin,
+									)}
+									style={pixelText(amountFontSize + 34, 0xffffff, 0x4c2008)}
+								/>
+							</Container>
 						{/if}
 					</Container>
 				{:else if artKey && winArt}
@@ -538,20 +660,18 @@
 
 						<!-- Paytable-ranked vegetables rise independently behind the plaque. -->
 						{#each winVeggies as veggie, index}
-							{@const veggieIn = popIn(0.12 + index * 0.055, 0.42)}
+							{@const veggieStart = 0.1 + index * 0.055}
+							{@const veggieIn = popIn(veggieStart, 0.38)}
+							{@const veggieX = [-300, -105, 105, 300][index]}
+							{@const veggieRestY = -189 - (index === 1 || index === 2 ? 12 : 0)}
 							<Container
-								x={(index - 2) * 164}
-								y={-194 - (index === 2 ? 22 : 0) + (1 - clamp01(veggieIn)) * 86}
+								x={veggieX}
+								y={veggieRestY + veggieJumpOffset(veggieStart)}
 								scale={veggieIn * (1 + Math.sin(clock * 2.7 + index * 0.9) * 0.025)}
 								rotation={(index - 2) * 0.025 + Math.sin(clock * 2.1 + index) * 0.02}
 								alpha={clamp01(veggieIn)}
 							>
-								<Sprite
-									key={veggie}
-									anchor={0.5}
-									width={index === 2 ? 146 : 130}
-									height={index === 2 ? 146 : 130}
-								/>
+								<Sprite key={veggie} anchor={0.5} width={142} height={142} />
 							</Container>
 						{/each}
 
@@ -586,85 +706,71 @@
 								rotation={Math.sin(clock * 2.7 + star.phase) * 0.035}
 								alpha={clamp01(starIn)}
 							>
-								<Sprite key="winStar" anchor={0.5} width={star.size} height={star.size * 0.965} />
+								<Sprite
+									key="winStarSweetV2"
+									anchor={0.5}
+									width={star.size}
+									height={star.size * 0.965}
+								/>
 							</Container>
 						{/each}
 
-						<!-- Authored title drops last, overshoots once, then breathes by less than two percent. -->
+						<!-- Tier word and WIN land separately so every named screen shares one motion language. -->
 						<Container
-							y={-20 - (1 - clamp01(titleIn)) * 104 + Math.sin(clock * 2.8) * 2.5}
-							scale={titleIn * (1 + Math.sin(clock * 2.45 + tier) * (0.005 + tier * 0.0015))}
-							rotation={(1 - clamp01(titleIn)) * -0.035 + Math.sin(clock * 1.8) * 0.003}
-							alpha={clamp01(titleIn)}
+							y={-50 - (1 - clamp01(titleTopIn)) * 104 + Math.sin(clock * 2.8) * 2.5}
+							scale={titleTopIn * (1 + Math.sin(clock * 2.45 + tier) * 0.0065)}
+							rotation={(1 - clamp01(titleTopIn)) * -0.035 + Math.sin(clock * 1.8) * 0.003}
+							alpha={clamp01(titleTopIn)}
 						>
 							<Sprite
-								key={winArt.title}
+								key={winArt.titleTop}
 								anchor={0.5}
-								width={winArt.titleWidth}
-								height={winArt.titleHeight}
+								width={winArt.titleTopWidth}
+								height={winArt.titleTopHeight}
 							/>
 						</Container>
-
-						<!-- Original orange amount ticket retained, rebuilt with cream trim and responsive copy. -->
 						<Container
-							y={194 + (1 - clamp01(amountIn)) * 70}
+							y={91 + (1 - clamp01(titleBottomIn)) * 76 + Math.sin(clock * 2.55 + 0.7) * 2}
+							scale={titleBottomIn * (1 + Math.sin(clock * 2.3 + 0.8) * 0.006)}
+							rotation={(1 - clamp01(titleBottomIn)) * 0.03 - Math.sin(clock * 1.9) * 0.0025}
+							alpha={clamp01(titleBottomIn)}
+						>
+							<Sprite key="winTitleSweetBottomV2" anchor={0.5} width={390} height={165} />
+						</Container>
+
+						<!-- Amount ticket is a detached layer: no connector plank. -->
+						<Container
+							y={270 + (1 - clamp01(amountIn)) * 70}
 							scale={amountIn}
 							alpha={clamp01(amountIn)}
 						>
-							<Graphics
-								draw={(graphics) => {
-									graphics.roundRect(-264, -55, 528, 110, 20).fill(0x241006);
-									graphics.roundRect(-254, -47, 508, 94, 15).fill(0xffedb5);
-									graphics.roundRect(-244, -37, 488, 74, 10).fill(0xe98608);
-									graphics.roundRect(-230, -29, 460, 14, 6).fill({ color: 0xffc335, alpha: 0.72 });
-									for (const rivetX of [-228, 228]) {
-										graphics.circle(rivetX, 0, 8).fill(winArt.dark);
-										graphics.circle(rivetX - 2, -2, 3).fill(0xfff4c8);
-									}
-								}}
-							/>
-							<Text
+							<Sprite key={winArt.amountPlaque} anchor={0.5} width={459} height={155} />
+							<ResponsiveBitmapText
 								anchor={0.5}
+								y={-6}
+								maxWidth={369}
 								text={countedWinText}
-								style={{
-									fontFamily: 'monospace',
-									fontSize: amountFontSize,
-									fontWeight: '900',
-									fill: 0xffffff,
-									stroke: { color: 0x4c2008, width: 5 },
-								}}
+								style={pixelText(amountFontSize + 30, 0xffffff, 0x4c2008)}
 							/>
 						</Container>
 					</Container>
 				{:else if isSmallWin}
 					<!-- Under 20×: text-only pixel win. No fullscreen shade, plaque, vegetables, or coins. -->
 					<Container y={plaqueY + 20} scale={plaqueScale} alpha={plaqueAlpha}>
-						<Text
+						<BitmapText
 							anchor={0.5}
 							y={-34}
 							text={smallWinText}
-							style={{
-								fontFamily: 'monospace',
-								fontSize: 48,
-								fontWeight: '900',
-								fill: 0xffdf3f,
-								stroke: { color: 0x2b1605, width: 8 },
-							}}
+							style={pixelText(48, 0xffdf3f, 0x2b1605)}
 						/>
-						<Text
+						<BitmapText
 							anchor={0.5}
 							y={38}
 							text={bookEventAmountToCurrencyString(
 								amount.current,
 								overlay.amount ?? stateGame.roundWin,
 							)}
-							style={{
-								fontFamily: 'monospace',
-								fontSize: 54,
-								fontWeight: '900',
-								fill: 0xffffff,
-								stroke: { color: 0x17380d, width: 8 },
-							}}
+							style={pixelText(54, 0xffffff, 0x17380d)}
 						/>
 					</Container>
 				{:else}
@@ -678,9 +784,9 @@
 							y={-62}
 							text={title}
 							style={{
-								fontFamily: 'monospace',
+								fontFamily: 'Jersey 10, monospace',
 								fontSize: 50,
-								fontWeight: '900',
+								fontWeight: '400',
 								fill: 0xffdf3f,
 								stroke: { color: 0x2b0c38, width: 7 },
 							}}
@@ -690,9 +796,9 @@
 							y={48}
 							text={overlay.detail}
 							style={{
-								fontFamily: 'monospace',
+								fontFamily: 'Jersey 10, monospace',
 								fontSize: 27,
-								fontWeight: '900',
+								fontWeight: '400',
 								fill: 0xffffff,
 								stroke: { color: 0x2b0c38, width: 5 },
 							}}

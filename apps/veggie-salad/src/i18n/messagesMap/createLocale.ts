@@ -96,6 +96,7 @@ export const createLocale = (source: Record<string, string>, terms: LocaleTerms)
 		...exact,
 		'BONUS TOTAL': `${terms.bonus} · ${s('TOTAL WIN', en['TOTAL WIN'])}`,
 		EARNED: terms.earned,
+		'CONGRATS!': s('CONGRATULATIONS', en['CONGRATS!']),
 		'CONGRATULATIONS!': s('CONGRATULATIONS', en['CONGRATULATIONS!']),
 		'CLICK ANYWHERE TO CONTINUE': s('PRESS ANYWHERE', en['CLICK ANYWHERE TO CONTINUE']),
 		BONUS: terms.bonus,

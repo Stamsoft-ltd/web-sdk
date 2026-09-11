@@ -41,7 +41,7 @@
 	<Text
 		x={context.stateLayoutDerived.canvasSizes().width}
 		anchor={{ x: 1, y: 0 }}
-		style={{ fill: 0xffffff }}
+		style={{ fill: 0xffffff, fontFamily: 'Jersey 10, monospace' }}
 		text={JSON.stringify(context.stateXstate.value, undefined, 2)}
 	/>
 {/if}

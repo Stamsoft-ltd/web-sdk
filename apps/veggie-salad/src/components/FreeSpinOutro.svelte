@@ -84,7 +84,7 @@
 								<ResponsiveBitmapText
 									anchor={{ x: 0.5, y: 0.5 }}
 									style={{
-										fontFamily: 'gold',
+										fontFamily: 'Jersey 10, monospace',
 										fontSize: sizes.width * 0.15,
 									}}
 									text={bookEventAmountToCurrencyString(countUpAmount, amount)}
