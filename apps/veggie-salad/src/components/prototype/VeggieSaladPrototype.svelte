@@ -509,7 +509,7 @@
 	class:bonus-normal={stateGame.bonusTier === 'normal'}
 	class:bonus-super={stateGame.bonusTier === 'super'}
 	class:bonus-hidden={stateGame.bonusTier === 'hidden'}
-	style="--base-plain:url('./assets/veggie-salad/pixel/background/base-plain.png');--base-mountains:url('./assets/veggie-salad/pixel/background/base-mountains.png');--base-cloud:url('./assets/veggie-salad/pixel/background/base-cloud.png');--base-bench:url('./assets/veggie-salad/pixel/background/base-bench.png');--board-frame:url('./assets/veggie-salad/pixel/board-frame.png');--bonus-normal-sky:url('./assets/veggie-salad/pixel/background/bonus-normal/sky-ground.png');--bonus-normal-mountains:url('./assets/veggie-salad/pixel/background/bonus-normal/mountains.png');--bonus-normal-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/cloud.png');--bonus-normal-tree:url('./assets/veggie-salad/pixel/background/bonus-normal/tree.png');--bonus-normal-oak:url('./assets/veggie-salad/pixel/background/bonus-normal/oak.png');--bonus-super-background:url('./assets/veggie-salad/pixel/background-bonus-super.png');--bonus-hidden-background:url('./assets/veggie-salad/pixel/background-bonus-hidden.png');--hud-button:url('./assets/veggie-salad/pixel/hud-button.png');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud-button-pressed.png')"
+	style="--base-plain:url('./assets/veggie-salad/pixel/background/base-plain.png');--base-mountains:url('./assets/veggie-salad/pixel/background/base-mountains.png');--base-cloud:url('./assets/veggie-salad/pixel/background/base-cloud.png');--base-bench:url('./assets/veggie-salad/pixel/background/base-bench.png');--board-frame:url('./assets/veggie-salad/pixel/board-frame.png');--bonus-normal-sky:url('./assets/veggie-salad/pixel/background/bonus-normal/sky-ground.png');--bonus-normal-mountains:url('./assets/veggie-salad/pixel/background/bonus-normal/mountains.png');--bonus-normal-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/cloud.png');--bonus-normal-tree:url('./assets/veggie-salad/pixel/background/bonus-normal/tree.png');--bonus-normal-oak:url('./assets/veggie-salad/pixel/background/bonus-normal/oak.png');--bonus-super-sky:url('./assets/veggie-salad/pixel/background/bonus-super/sky-ground.png');--bonus-super-mountains:url('./assets/veggie-salad/pixel/background/bonus-super/mountains.png');--bonus-super-cloud:url('./assets/veggie-salad/pixel/background/bonus-super/cloud.png');--bonus-super-moon:url('./assets/veggie-salad/pixel/background/bonus-super/moon.png');--bonus-super-fence:url('./assets/veggie-salad/pixel/background/bonus-super/fence.png');--bonus-super-oak:url('./assets/veggie-salad/pixel/background/bonus-super/oak.png');--bonus-super-star-bright:url('./assets/veggie-salad/pixel/background/bonus-super/star-bright.png');--bonus-super-star-dim:url('./assets/veggie-salad/pixel/background/bonus-super/star-dim.png');--bonus-hidden-background:url('./assets/veggie-salad/pixel/background-bonus-hidden.png');--hud-button:url('./assets/veggie-salad/pixel/hud-button.png');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud-button-pressed.png')"
 >
 	<!-- Background images cannot interpolate. Persistent layers can: entering a bonus fades its
 	     garden over BASE; leaving fades it away and reveals the exact same BASE layer underneath. -->
@@ -552,7 +552,28 @@
 			<span class="normal-bonus-layer normal-bonus-tree"></span>
 			<span class="normal-bonus-layer normal-bonus-oak"></span>
 		</div>
-		<div class="pixel-background background-bonus background-super"></div>
+		<div class="pixel-background background-bonus background-super">
+			<span class="super-bonus-layer super-bonus-moon"></span>
+			<span class="super-bonus-star-field">
+				<span class="super-bonus-star star-bright super-bonus-star-one"></span>
+				<span class="super-bonus-star star-dim super-bonus-star-two"></span>
+				<span class="super-bonus-star star-bright super-bonus-star-three"></span>
+				<span class="super-bonus-star star-dim super-bonus-star-four"></span>
+				<span class="super-bonus-star star-bright super-bonus-star-five"></span>
+				<span class="super-bonus-star star-dim super-bonus-star-six"></span>
+				<span class="super-bonus-star star-bright super-bonus-star-seven"></span>
+				<span class="super-bonus-star star-dim super-bonus-star-eight"></span>
+				<span class="super-bonus-star star-bright super-bonus-star-nine"></span>
+			</span>
+			<span class="super-bonus-cloud-field">
+				<span class="super-bonus-cloud super-bonus-cloud-one" use:randomCloudDrift></span>
+				<span class="super-bonus-cloud super-bonus-cloud-two" use:randomCloudDrift></span>
+				<span class="super-bonus-cloud super-bonus-cloud-three" use:randomCloudDrift></span>
+			</span>
+			<span class="super-bonus-layer super-bonus-mountains"></span>
+			<span class="super-bonus-layer super-bonus-fence"></span>
+			<span class="super-bonus-layer super-bonus-oak"></span>
+		</div>
 		<div class="pixel-background background-bonus background-hidden"></div>
 	</div>
 	<div class="sun-moon" aria-hidden="true"></div>
@@ -1463,7 +1484,7 @@
 		top: 50%;
 		z-index: 7;
 		display: none;
-		width: clamp(128px, 25cqh, 196px);
+		width: clamp(142px, 27cqh, 214px);
 		padding: clamp(5px, 0.9cqh, 9px);
 		border: clamp(3px, 0.6cqh, 6px) solid #744313;
 		border-radius: 14px;
@@ -1495,19 +1516,21 @@
 		grid-template-rows: repeat(var(--slots, 6), 1fr);
 		gap: clamp(3px, 0.6cqh, 6px);
 	}
+	/* The cluster log is read mid-cascade, at a glance, from across the board. Type and symbol are
+	   sized for that read rather than for how many rows fit - the row count is fixed at --slots. */
 	.panel-row {
 		display: grid;
-		grid-template-columns: auto 1.5em auto 1fr;
+		grid-template-columns: auto 1.9em auto 1fr;
 		align-items: center;
 		gap: 4px;
-		min-height: clamp(19px, 3.4cqh, 28px);
+		min-height: clamp(23px, 4.1cqh, 34px);
 		padding: 2px 6px;
 		border: 2px solid #9ec652;
 		border-radius: 999px;
 		background: linear-gradient(#568c22, #23480f);
 		box-shadow: inset 0 2px 0 rgb(255 244 164 / 22%);
 		color: #f4ffdf;
-		font-size: clamp(8px, 1.5cqh, 12px);
+		font-size: clamp(10px, 1.9cqh, 15px);
 		font-weight: 1000;
 	}
 	.panel-row.vacant {
@@ -1516,8 +1539,8 @@
 		box-shadow: none;
 	}
 	.panel-row img {
-		width: 1.5em;
-		height: 1.5em;
+		width: 1.9em;
+		height: 1.9em;
 		object-fit: contain;
 		filter: drop-shadow(0 1px 1px rgb(0 0 0 / 45%));
 	}
@@ -4203,21 +4226,179 @@
 		background: var(--bonus-normal-oak) left bottom -26vh / auto 68% no-repeat;
 	}
 
+	/* SUPER is the night garden: the same horizon as BASE and NORMAL, lit by a moon instead of
+	   the sun. Built from separate layers for the same reason NORMAL is — a single flat image
+	   cannot hold a drifting cloud or keep its horizon on the board's edge across aspect ratios. */
 	.background-super {
-		background-image: var(--bonus-super-background);
-		background-position: center;
-		background-size: cover;
+		background-color: #0b2265;
+		background-image: var(--bonus-super-sky);
+		background-position: center top;
+		background-size: 100% 128%;
+		background-repeat: no-repeat;
 		filter: none;
+		overflow: hidden;
 	}
 	.scene.bonus-super .background-super {
 		opacity: 1;
 	}
 
+	/* ::after is the ground band under the responsive contract below, not a tint. The moon carries
+	   its own glow so the scene does not need a wash over the whole chamber. */
 	.background-super::after {
-		background:
-			radial-gradient(circle at 74% 20%, rgb(112 204 255 / 30%), transparent 33%),
-			linear-gradient(rgb(28 65 137 / 20%), rgb(15 92 95 / 8%));
-		opacity: 0.78;
+		opacity: 0;
+	}
+
+	.super-bonus-layer,
+	.super-bonus-cloud-field,
+	.super-bonus-star-field {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	.super-bonus-layer {
+		image-rendering: pixelated;
+	}
+
+	.super-bonus-mountains {
+		z-index: 1;
+		background: var(--bonus-super-mountains) center top 62% / 100% auto no-repeat;
+	}
+
+	.super-bonus-moon {
+		z-index: 1;
+		background: var(--bonus-super-moon) left 12% top 9% / clamp(52px, 5.5vw, 118px) auto
+			no-repeat;
+		filter: drop-shadow(0 0 clamp(10px, 1.6vw, 26px) rgb(255 244 186 / 45%));
+	}
+
+	.super-bonus-star-field {
+		z-index: 1;
+		overflow: hidden;
+	}
+
+	/* Stars are 44×44 single-colour source squares, so they are sized in whole pixels and never
+	   interpolated - a half-pixel star reads as a smudge at this art scale. */
+	.super-bonus-star {
+		position: absolute;
+		width: 4px;
+		height: 4px;
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
+		image-rendering: pixelated;
+		opacity: 0.85;
+		animation: super-star-twinkle 5.5s ease-in-out infinite;
+	}
+
+	.super-bonus-star.star-bright {
+		background-image: var(--bonus-super-star-bright);
+	}
+
+	.super-bonus-star.star-dim {
+		background-image: var(--bonus-super-star-dim);
+		opacity: 0.7;
+	}
+
+	.super-bonus-star-one {
+		left: 6%;
+		top: 6%;
+	}
+	.super-bonus-star-two {
+		left: 19%;
+		top: 21%;
+		animation-delay: 1.4s;
+	}
+	.super-bonus-star-three {
+		left: 27%;
+		top: 4%;
+		animation-delay: 2.9s;
+	}
+	.super-bonus-star-four {
+		left: 38%;
+		top: 14%;
+		animation-delay: 0.7s;
+	}
+	.super-bonus-star-five {
+		left: 52%;
+		top: 7%;
+		animation-delay: 3.6s;
+	}
+	.super-bonus-star-six {
+		left: 63%;
+		top: 18%;
+		animation-delay: 2.1s;
+	}
+	.super-bonus-star-seven {
+		left: 74%;
+		top: 5%;
+		animation-delay: 4.3s;
+	}
+	.super-bonus-star-eight {
+		left: 83%;
+		top: 23%;
+		animation-delay: 1.1s;
+	}
+	.super-bonus-star-nine {
+		left: 92%;
+		top: 11%;
+		animation-delay: 3.2s;
+	}
+
+	@keyframes super-star-twinkle {
+		0%,
+		100% {
+			opacity: 0.32;
+		}
+		50% {
+			opacity: 0.95;
+		}
+	}
+
+	.super-bonus-cloud-field {
+		z-index: 2;
+		overflow: hidden;
+	}
+
+	.super-bonus-cloud {
+		--cloud-width: clamp(150px, 17vw, 340px);
+		position: absolute;
+		z-index: 1;
+		left: calc(0px - var(--cloud-width));
+		top: var(--cloud-top);
+		width: var(--cloud-width);
+		aspect-ratio: 3 / 1;
+		background: var(--bonus-super-cloud) center / contain no-repeat;
+		image-rendering: pixelated;
+		opacity: 0.85;
+		will-change: transform;
+	}
+
+	.super-bonus-cloud-one {
+		--cloud-top: 9%;
+		--cloud-duration: 182s;
+	}
+
+	.super-bonus-cloud-two {
+		--cloud-width: clamp(115px, 13vw, 260px);
+		--cloud-top: 22%;
+		--cloud-duration: 228s;
+	}
+
+	.super-bonus-cloud-three {
+		--cloud-width: clamp(98px, 10vw, 205px);
+		--cloud-top: 33%;
+		--cloud-duration: 260s;
+	}
+
+	.super-bonus-fence {
+		z-index: 3;
+		background: var(--bonus-super-fence) left 4vw bottom 27% / clamp(120px, 12vw, 260px) auto
+			no-repeat;
+	}
+
+	.super-bonus-oak {
+		z-index: 4;
+		background: var(--bonus-super-oak) left bottom -26vh / auto 68% no-repeat;
 	}
 
 	.background-hidden {
@@ -4830,7 +5011,7 @@
 		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .cluster-panel .panel-row {
 			min-height: 0;
 			padding-inline: clamp(7px, 0.65cqw, 11px);
-			font-size: clamp(11px, 2cqh, 17px);
+			font-size: clamp(13px, 2.3cqh, 20px);
 		}
 
 		.panel-rows {
@@ -4838,14 +5019,14 @@
 		}
 
 		.panel-row {
-			min-height: clamp(26px, 4.6cqh, 40px);
+			min-height: clamp(30px, 5.1cqh, 44px);
 			padding-inline: clamp(5px, 0.8cqw, 10px);
-			font-size: clamp(10px, 1.8cqh, 15px);
+			font-size: clamp(12px, 2.2cqh, 18px);
 		}
 
 		.panel-row img {
-			width: 1.8em;
-			height: 1.8em;
+			width: 2em;
+			height: 2em;
 		}
 
 		/* HUD-right owns this divider. Removing the metric edge avoids a doubled rule. */
@@ -5458,14 +5639,22 @@
 			animation: none;
 			transform: translate3d(var(--cloud-rest-x), 0, 0);
 		}
+		/* Stars hold their lit state rather than pulsing. randomCloudDrift already opts the
+		   drifting clouds out by itself. */
+		.super-bonus-star {
+			animation: none;
+			opacity: 0.85;
+		}
 	}
 
 	/* Responsive scene contract. Raster art always uses uniform scaling, never X/Y stretching. */
 	.background-normal,
+	.background-super,
 	.background-base-plain {
 		background-image: none;
 	}
 	.background-normal::before,
+	.background-super::before,
 	.background-base-plain::before {
 		content: '';
 		position: absolute;
@@ -5480,12 +5669,23 @@
 	.background-normal::before {
 		background-image: var(--bonus-normal-sky);
 	}
+	.background-super::before {
+		background-image: var(--bonus-super-sky);
+	}
 	.background-base-plain::before {
 		background-image: var(--base-plain);
 	}
 	.background-normal::after,
 	.background-base-plain::after {
 		background: #659337;
+		top: 73%;
+		opacity: 1;
+		mix-blend-mode: normal;
+	}
+	/* Night ground, sampled from the source art either side of its horizon so the band and the
+	   scaled sky meet in one colour instead of a seam. */
+	.background-super::after {
+		background: linear-gradient(#29703b, #165d39);
 		top: 73%;
 		opacity: 1;
 		mix-blend-mode: normal;
@@ -5504,11 +5704,26 @@
 	.normal-bonus-oak {
 		z-index: 4;
 	}
+	.super-bonus-layer,
+	.super-bonus-star-field,
+	.super-bonus-cloud-field {
+		z-index: 1;
+	}
+	.super-bonus-cloud-field {
+		z-index: 2;
+	}
+	.super-bonus-fence {
+		z-index: 3;
+	}
+	.super-bonus-oak {
+		z-index: 4;
+	}
 	.background-base-plain {
 		background-size: cover;
 	}
 	.base-mountains,
-	.normal-bonus-mountains {
+	.normal-bonus-mountains,
+	.super-bonus-mountains {
 		/* Shared horizon. Wide art crops on phones rather than squashing its peaks. */
 		top: auto;
 		bottom: 27%;
@@ -5528,7 +5743,12 @@
 		/* The source includes 48px of transparent padding below its ground edge. */
 		margin-bottom: calc(-1 * max(100vw, 120vh) * 48 / 5028);
 	}
-	.background-super,
+	.super-bonus-mountains {
+		aspect-ratio: 4816 / 1060;
+		/* Source art is opaque rows 81-1027, so 32px of padding sit below its ground edge. The
+		   compensation is measured against the same width expression the layer is sized by. */
+		margin-bottom: calc(-1 * max(100%, 120vh) * 32 / 4816);
+	}
 	.background-hidden {
 		background-size: cover;
 	}
