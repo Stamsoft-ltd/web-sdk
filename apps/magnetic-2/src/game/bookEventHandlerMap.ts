@@ -98,7 +98,7 @@ const didSeriesGrow = (previous: ClusterSeriesSnapshot[], next: ClusterSeriesSna
 	return next.some((entry) => previousSizes.get(entry.id) !== entry.lockedPositions.length);
 };
 
-const isFinalSuperWinInfo = (bookEvent: BookEvent, bookEvents: BookEvent[]) => {
+const isFinalSuperAwardEvent = (bookEvent: BookEvent, bookEvents: BookEvent[]) => {
 	const currentIndex = bookEvents.findIndex((event) => event.index === bookEvent.index);
 	if (currentIndex < 0) return false;
 	for (const event of bookEvents.slice(currentIndex + 1)) {
@@ -218,7 +218,6 @@ const playMysteryDraw = async () => {
 };
 let bonusCarryWinAmount = 0;
 let presentedBonusWinAmount = 0;
-let superSeriesPreviewAmount = 0;
 
 const nextBookEventAfter = (bookEvent: BookEvent, bookEvents: BookEvent[]) => {
 	const currentIndex = bookEvents.findIndex((event) => event.index === bookEvent.index);
@@ -382,18 +381,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			totalMultiplier: bookEvent.totalMultiplier,
 		});
 
-		// clusterSeriesResolved/winInfo arrive only after the whole respin chain. Preview the
-		// currently locked cluster after every growth step so WIN/TOTAL WIN advances between
-		// respins instead of remaining frozen until the next normal spin.
+		// Do not pay/display persistent SUPER/HIDDEN growth. Those modes award the finished
+		// cluster once at feature end.
 		const previewAmount = getSeriesPreviewAmount(seriesOf(bookEvent.series));
-		if (stateGame.bonusMode === 'superspin') {
-			superSeriesPreviewAmount = previewAmount;
-			presentedBonusWinAmount = Math.max(
-				presentedBonusWinAmount,
-				capBookWinAmount(bonusCarryWinAmount + previewAmount),
-			);
-			stateBet.winBookEventAmount = presentedBonusWinAmount;
-		} else if (stateGame.bonusMode === 'freegame' || stateGame.bonusMode === 'feature') {
+		if (stateGame.bonusMode === 'freegame' || stateGame.bonusMode === 'feature') {
 			// Keep the settled total untouched. Each update replaces the active spin preview;
 			// growing snapshots must not be added repeatedly.
 			stateBet.winBookEventAmount = capBookWinAmount(presentedBonusWinAmount + previewAmount);
@@ -411,16 +402,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			magnetTargetSymbol: bookEvent.magnetTargetSymbol,
 			totalMultiplier: bookEvent.totalMultiplier,
 		});
-		superSeriesPreviewAmount = getSeriesPreviewAmount(series);
-		presentedBonusWinAmount = Math.max(
-			presentedBonusWinAmount,
-			capBookWinAmount(bonusCarryWinAmount + superSeriesPreviewAmount),
-		);
-		stateBet.winBookEventAmount = presentedBonusWinAmount;
 	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>, { bookEvents }: BookEventContext) => {
 		const isSuperFinal =
-			stateGame.bonusMode === 'superspin' && isFinalSuperWinInfo(bookEvent, bookEvents);
+			stateGame.bonusMode === 'superspin' && isFinalSuperAwardEvent(bookEvent, bookEvents);
 		// Super bonus pays at outro; per-spin winInfo badges/anim cause green number overlays and
 		// whole-board flash on no-growth spins. Keep only the final cluster win-state pass.
 		if (stateGame.bonusMode === 'superspin' && !isSuperFinal) return;
@@ -436,13 +421,17 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		eventEmitter.broadcast({ type: 'boardShow' });
 		void stateGameDerived.animateWinningPositions(bookEvent.wins.flatMap((win) => win.positions));
 	},
-	setTotalWin: async (bookEvent: BookEventOfType<'setTotalWin'>) => {
-		const authoritativeAmount =
-			stateGame.bonusMode === 'superspin'
-				? Math.max(bookEvent.amount, bonusCarryWinAmount + superSeriesPreviewAmount)
-				: bookEvent.amount;
-		presentedBonusWinAmount = authoritativeAmount;
-		stateBet.winBookEventAmount = authoritativeAmount;
+	setTotalWin: async (
+		bookEvent: BookEventOfType<'setTotalWin'>,
+		{ bookEvents }: BookEventContext,
+	) => {
+		if (
+			stateGame.bonusMode === 'superspin' &&
+			!isFinalSuperAwardEvent(bookEvent, bookEvents)
+		)
+			return;
+		presentedBonusWinAmount = bookEvent.amount;
+		stateBet.winBookEventAmount = bookEvent.amount;
 	},
 	freeSpinTrigger: async (bookEvent: BookEventOfType<'freeSpinTrigger'>) => {
 		const isFeatureSpin = bookEvent.totalFs === 1;
@@ -467,7 +456,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 						: getBonusRoomFromScatters(bookEvent.positions);
 		bonusCarryWinAmount = stateBet.winBookEventAmount;
 		presentedBonusWinAmount = bonusCarryWinAmount;
-		superSeriesPreviewAmount = 0;
 		if (!isFeatureSpin && stateGame.stopAutoOnBonus && stateBet.autoSpinsCounter > 0) {
 			stateBet.autoSpinsCounter = 0;
 		}
@@ -542,7 +530,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateUi.freeSpinCounterCurrent = bookEvent.amount + 1;
 		stateUi.freeSpinCounterTotal = bookEvent.total;
 	},
-	setWin: async (bookEvent: BookEventOfType<'setWin'>) => {
+	setWin: async (bookEvent: BookEventOfType<'setWin'>, { bookEvents }: BookEventContext) => {
+		if (
+			stateGame.bonusMode === 'superspin' &&
+			!isFinalSuperAwardEvent(bookEvent, bookEvents)
+		)
+			return;
 		const winLevelData = getWinLevelData(bookEvent.winLevel);
 		eventEmitter.broadcast({ type: 'winShow' });
 		winLevelSoundsPlay({ winLevelData });
@@ -604,7 +597,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateBet.winBookEventAmount = bookEvent.amount;
 		bonusCarryWinAmount = 0;
 		presentedBonusWinAmount = bookEvent.amount;
-		superSeriesPreviewAmount = 0;
 		logMagneticDiagnostic('info', 'round_finalized', {
 			amount: bookEvent.amount,
 			bonusMode: stateGame.bonusMode,
