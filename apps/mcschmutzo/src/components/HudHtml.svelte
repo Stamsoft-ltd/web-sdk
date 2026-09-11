@@ -2082,7 +2082,7 @@
 	.ls-right-bottom {
 		position: absolute;
 		/* Clear the vertical control rail (its width + a margin) so WIN sits to its left. */
-		right: calc(clamp(48px, 15.5vh, 130px) + clamp(14px, 3vw, 32px));
+		right: calc(clamp(54px, 18vh, 150px) + clamp(14px, 3vw, 32px));
 		bottom: var(--ls-corner-bottom);
 		width: max-content;
 		max-width: 32%;
@@ -2162,7 +2162,7 @@
 		.ls-balance__value,
 		.ls-win__value { font-size: clamp(8px, 2.6vh, 13px); }
 		/* Roomier window → a slightly wider rail (everything else scales off --ls-rail-w). */
-		.ls-right { --ls-rail-w: clamp(54px, 17vh, 145px); }
+		.ls-right { --ls-rail-w: clamp(60px, 19.5vh, 160px); }
 	}
 
 	/* BET stepper — same small #1F1F1F pill as BALANCE, stacked under it: − value + */
@@ -2217,7 +2217,7 @@
 		/* --ls-rail-w = the slim dark bar's width. Every control is a fraction of it and sits INSIDE
 		   the bar: the turn disc nearly fills the width (focal) and the menu/turbo/auto/BONUS are much
 		   smaller, so the turn dominates without spilling past the edges. */
-		--ls-rail-w: clamp(48px, 15.5vh, 130px);
+		--ls-rail-w: clamp(54px, 18vh, 150px);
 		width: var(--ls-rail-w);
 		box-sizing: border-box;
 		display: flex;
@@ -2282,8 +2282,8 @@
 	.ls-spin {
 		/* The focal button — bigger than the bar's inner width, but the art's transparent padding
 		   around the gold frame keeps the visible disc inside the bar edges. */
-		width: calc(var(--ls-rail-w) * 1.12);
-		height: calc(var(--ls-rail-w) * 1.12);
+		width: calc(var(--ls-rail-w) * 1.15);
+		height: calc(var(--ls-rail-w) * 1.15);
 		border: 0;
 		/* The real turn-button disc art. */
 		background: var(--ls-turn) center / contain no-repeat;
