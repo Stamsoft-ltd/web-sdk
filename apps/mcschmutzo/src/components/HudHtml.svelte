@@ -2236,8 +2236,8 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: clamp(6px, 2.3vh, 18px);
-		padding: clamp(6px, 2vh, 16px) 0;
+		gap: clamp(8px, 3.4vh, 26px);
+		padding: clamp(8px, 3.2vh, 24px) 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
