@@ -129,8 +129,8 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 	// Smutz cup — one whole sprite (straw included) that gives a soft squeeze + bob; splitting the
 	// straw off left it poking out broken from behind the lid, so it stays a single piece.
 	M: {
-		aspect: 190 / 316,
-		fit: 0.82,
+		aspect: 131 / 120, // the flat sprite's padded footprint — matches the normal cup size exactly
+		fit: 1,
 		squash: 0.09,
 		layers: [{ key: 'mcM', nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.02 }],
 	},
