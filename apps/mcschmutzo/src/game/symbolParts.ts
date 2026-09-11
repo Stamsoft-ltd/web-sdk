@@ -106,6 +106,36 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'onionRing1', nx: 0.5648, ny: 0.6082, nw: 0.8697, nh: 0.7826, dy: 0.07, dx: 0.04, rot: -0.12, pop: 0.05 },
 		],
 	},
+	// Wild — the WILD text bounces/pops while the red splat pulses behind it.
+	W: {
+		aspect: 1.361,
+		fit: 0.82,
+		squash: 0,
+		layers: [
+			{ key: 'wildSplat', nx: 0.5, ny: 0.5, nw: 1.0, nh: 1.0, pop: 0.1, rot: 0.04 },
+			{ key: 'wildText', nx: 0.5, ny: 0.5, nw: 0.7889, nh: 0.6704, pop: 0.13, dy: -0.03, rot: 0.05 },
+		],
+	},
+	// Scatter — the stand gives a gentle bob while its SCATTER sign sways like a hanging shingle.
+	S: {
+		aspect: 0.999,
+		fit: 0.86,
+		squash: 0.03,
+		layers: [
+			{ key: 'scatterStand', nx: 0.5, ny: 0.4996, nw: 1.0, nh: 1.0 },
+			{ key: 'scatterBanner', nx: 0.5, ny: 0.1626, nw: 0.8221, nh: 0.2418, rot: 0.07, dy: -0.01 },
+		],
+	},
+	// Smutz cup — the straw stirs (gentle sway) while the drink cup gives a soft squeeze.
+	M: {
+		aspect: 0.588,
+		fit: 0.92,
+		squash: 0.03,
+		layers: [
+			{ key: 'cupStraw', nx: 0.5266, ny: 0.2974, nw: 0.4246, nh: 0.647, rot: 0.16 },
+			{ key: 'cupBody', nx: 0.5, ny: 0.6087, nw: 1.0, nh: 0.9017 },
+		],
+	},
 	// Cheese — one whole slice (drips included) that gently jiggles; splitting the drips off left a
 	// visible seam, so it stays a single piece.
 	H4: {

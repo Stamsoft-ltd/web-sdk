@@ -509,6 +509,33 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/soup/label.webp', import.meta.url).href,
 	},
+	// Wild (W) = red splat + WILD text.
+	wildSplat: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/wild/splat.webp', import.meta.url).href,
+	},
+	wildText: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/wild/text.webp', import.meta.url).href,
+	},
+	// Scatter (S) = stand + SCATTER banner.
+	scatterStand: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/scatter/stand.webp', import.meta.url).href,
+	},
+	scatterBanner: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/scatter/banner.webp', import.meta.url).href,
+	},
+	// Smutz cup (M) = cup + straw.
+	cupBody: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/cup/body.webp', import.meta.url).href,
+	},
+	cupStraw: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/cup/straw.webp', import.meta.url).href,
+	},
 	// Sausage (H3) = banger + rising smoke.
 	sausageBody: {
 		type: 'sprite',
