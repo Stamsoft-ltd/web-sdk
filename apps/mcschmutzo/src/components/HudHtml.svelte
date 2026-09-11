@@ -2050,7 +2050,7 @@
 	/* Vertical BONUS button in the right rail — the bonus-landscape art (red button, "BONUS" baked
 	   in). Sits between the menu and the spin disc (design). Aspect 31:66. */
 	.ls-buy-rail {
-		width: calc(var(--ls-rail-w) * 0.5);
+		width: calc(var(--ls-rail-w) * 0.58);
 		aspect-ratio: 31 / 66;
 		flex: 0 0 auto;
 		border: 0;
@@ -2081,8 +2081,8 @@
 	   with the BALANCE/BET stack opposite it. */
 	.ls-right-bottom {
 		position: absolute;
-		/* Clear the vertical control rail (its width + a margin) so WIN sits to its left. */
-		right: calc(clamp(60px, 20vh, 175px) + clamp(12px, 2.4vw, 26px));
+		/* Clear the vertical control rail incl. the overflowing turn disc, so WIN sits to its left. */
+		right: calc(clamp(44px, 14vh, 120px) * 1.5 + clamp(14px, 3vw, 32px));
 		bottom: var(--ls-corner-bottom);
 		width: max-content;
 		max-width: 32%;
@@ -2162,7 +2162,7 @@
 		.ls-balance__value,
 		.ls-win__value { font-size: clamp(8px, 2.6vh, 13px); }
 		/* Roomier window → a slightly wider rail (everything else scales off --ls-rail-w). */
-		.ls-right { --ls-rail-w: clamp(68px, 22vh, 190px); }
+		.ls-right { --ls-rail-w: clamp(50px, 15.5vh, 132px); }
 	}
 
 	/* BET stepper — same small #1F1F1F pill as BALANCE, stacked under it: − value + */
@@ -2211,28 +2211,29 @@
 	   overflowing the pill's sides. */
 	.ls-right {
 		position: absolute;
-		right: clamp(6px, 1.6vw, 18px);
+		/* Enough right margin that the (overflowing) turn disc clears the viewport edge. */
+		right: clamp(12px, 3vw, 30px);
 		top: 50%;
 		transform: translateY(-50%);
-		/* The rail's width drives everything: the dark bar (nav_bg.svg) fills the element box, and
-		   every control is sized as a fraction of --ls-rail-w so they all sit INSIDE the bar (the spin
-		   disc used to be ~2× the bar and spilled out both sides). */
-		--ls-rail-w: clamp(60px, 20vh, 175px);
+		/* --ls-rail-w = the slim dark bar's width; the menu/turbo/auto/BONUS are sized as fractions of
+		   it so they sit inside the bar, while the focal turn disc is a larger multiple that overflows
+		   the bar's sides (matches the design — the decorated disc extends past the slim rail). */
+		--ls-rail-w: clamp(44px, 14vh, 120px);
 		width: var(--ls-rail-w);
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: calc(var(--ls-rail-w) * 0.14);
-		padding: calc(var(--ls-rail-w) * 0.2) 0;
+		gap: calc(var(--ls-rail-w) * 0.16);
+		padding: calc(var(--ls-rail-w) * 0.22) 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
 	   icon), sized as a fraction of the rail width so they sit inside the bar. */
 	.ls-round {
-		width: calc(var(--ls-rail-w) * 0.58);
-		height: calc(var(--ls-rail-w) * 0.58);
+		width: calc(var(--ls-rail-w) * 0.66);
+		height: calc(var(--ls-rail-w) * 0.66);
 		box-sizing: border-box;
 		border: 2px solid #4c433d;
 		border-radius: 50%;
@@ -2278,9 +2279,9 @@
 	}
 
 	.ls-spin {
-		/* The focal button — fills the bar width (slightly larger than the round buttons). */
-		width: calc(var(--ls-rail-w) * 1.02);
-		height: calc(var(--ls-rail-w) * 1.02);
+		/* The focal button — notably bigger than the bar; its decorated disc overflows the slim rail. */
+		width: calc(var(--ls-rail-w) * 1.5);
+		height: calc(var(--ls-rail-w) * 1.5);
 		border: 0;
 		/* The real turn-button disc art. */
 		background: var(--ls-turn) center / contain no-repeat;
