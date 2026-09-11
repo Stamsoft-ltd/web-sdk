@@ -320,6 +320,13 @@ export default {
 		src: new URL('../../assets/mcschmutzo/background-base.png', import.meta.url).href,
 		preload: true,
 	},
+	// Mobile-landscape diner (a wide crop of the base diner — lamp + shelf, no floor, no chef).
+	// Used for BOTH base and free games in landscape (no special grey-kitchen swap there).
+	backgroundLandscape: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/background-landscape.webp', import.meta.url).href,
+		preload: true,
+	},
 	backgroundBonus: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/background-bonus.png', import.meta.url).href,

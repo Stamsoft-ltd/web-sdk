@@ -13,15 +13,24 @@
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isPortrait = $derived(layoutType === 'portrait');
+	const isLandscape = $derived(layoutType === 'landscape');
 	// Free games swap to the special (grey kitchen) background. Keyed off the free-spin counter
 	// (shown for the whole bonus) — the per-spin gameType flips to 'respin'/'basegame' mid-bonus.
 	const isFreegame = $derived(
 		context.stateGame.gameType === 'freegame' || stateUi.freeSpinCounterShow,
 	);
-	const wideLayout = $derived(layoutType === 'desktop' || layoutType === 'landscape');
-	// Base game: the chef with the ketchup bottle. Free games: the chef salting a pot.
-	const showMascot = $derived(!isFreegame && wideLayout);
-	const showSpecialMascot = $derived(isFreegame && wideLayout);
+	// The chef mascots (base + salting) and the special grey-kitchen bg are DESKTOP-only. Landscape
+	// uses its own clean wide diner background with no chef (design ask).
+	const showMascot = $derived(!isFreegame && layoutType === 'desktop');
+	const showSpecialMascot = $derived(isFreegame && layoutType === 'desktop');
+	// Landscape diner (wide crop; aspect matches background-landscape.webp: 1585×713).
+	const landscapeAspect = 1585 / 713;
+	const landscapeCover = $derived.by(() => {
+		const canvasAspect = canvas.width / canvas.height;
+		return canvasAspect > landscapeAspect
+			? { width: canvas.width, height: canvas.width / landscapeAspect }
+			: { width: canvas.height * landscapeAspect, height: canvas.height };
+	});
 	const mascotHeight = $derived(canvas.height * 0.6);
 	const mascotWidth = $derived(mascotHeight * (1019 / 1336));
 	// The chef stands still; only his eyes move (AnimatedGuy).
@@ -48,7 +57,18 @@
 </script>
 
 <Rectangle {...canvas} backgroundColor={0x170905} zIndex={-3} />
-{#if isPortrait}
+{#if isLandscape}
+	<!-- Mobile-landscape: dedicated wide diner background (no chef, no special-bg swap). -->
+	<Sprite
+		key="backgroundLandscape"
+		x={canvas.width * 0.5}
+		y={canvas.height * 0.5}
+		anchor={0.5}
+		width={landscapeCover.width}
+		height={landscapeCover.height}
+		zIndex={-2}
+	/>
+{:else if isPortrait}
 	<!-- Mobile portrait: the dedicated diner background, no darkening overlay (matches the splash).
 	     Swaps to the special grey-kitchen background during free games. -->
 	<Sprite

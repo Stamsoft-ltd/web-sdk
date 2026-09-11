@@ -22,6 +22,8 @@
 	const lsRightBar = ap('/assets/components/symbols/landscape/right_bar.webp?v=20260715'); // vertical control bar
 	const lsBetPad = ap('/assets/components/symbols/landscape/stepper_pad.png'); // − value + bottom pad
 	const lsBuyBonus = ap('/assets/components/symbols/landscape/buy_bonus.png'); // round green badge
+	const lsNavBox = ap('/assets/components/symbols/landscape/nav_box.webp'); // dark neon vertical rail box
+	const lsBonus = ap('/assets/components/symbols/landscape/bonus.svg'); // red vertical BONUS button (text baked in)
 	const navPadMobile = ap('/assets/components/navbar/nav_pad_mobile.webp'); // control-bar pill
 	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.png'); // − value + pill
 	const buyBonusMobile = btnWideBg;
@@ -628,7 +630,7 @@
 	class="hud-shell"
 	class:hud-shell--blocked={congratsBlocking}
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}')`}
+	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}');--ls-navbox:url('${lsNavBox}');--ls-bonus:url('${lsBonus}')`}
 >
 	{#if isPortrait}
 		<!-- Portrait header: Press Play mark + big McSchmutzo logo, pinned above the board. -->
@@ -847,9 +849,7 @@
 					disabled={disableBuy}
 					onclick={openBuyBonus}
 					aria-label={i18nDerived.buyBonus()}
-				>
-					<span class="ls-buy-rail__label">{i18nDerived.translate('BONUS')}</span>
-				</button>
+				></button>
 
 				<button
 					class="ls-spin"
@@ -2046,49 +2046,34 @@
 		gap: clamp(4px, 1.5vh, 11px);
 	}
 	.pt-buy:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
-	/* Vertical BONUS button in the right rail (red, rotated label) — replaces the old bottom-centre
-	   wide buy button. Sits between the menu and the spin disc (design). */
+	/* Vertical BONUS button in the right rail — the bonus-landscape art (red button, "BONUS" baked
+	   in). Sits between the menu and the spin disc (design). Aspect 31:66. */
 	.ls-buy-rail {
-		width: clamp(24px, 8vh, 72px);
-		height: clamp(46px, 15.5vh, 140px);
+		width: clamp(26px, 8.6vh, 78px);
+		aspect-ratio: 31 / 66;
 		flex: 0 0 auto;
 		border: 0;
-		border-radius: clamp(6px, 1.7vh, 15px);
-		background: linear-gradient(180deg, #e3453a 0%, #c0271c 55%, #931910 100%);
-		box-shadow: 0 3px 8px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.28),
-			inset 0 -2px 4px rgba(0, 0, 0, 0.35);
-		cursor: pointer;
 		padding: 0;
-		display: grid;
-		place-items: center;
+		background: var(--ls-bonus) center / contain no-repeat;
+		cursor: pointer;
 		transition: filter 0.12s ease;
 	}
 	.ls-buy-rail:not(:disabled):hover { filter: brightness(1.08); }
 	.ls-buy-rail:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
-	.ls-buy-rail__label {
-		writing-mode: vertical-rl;
-		transform: rotate(180deg);
-		font-family: 'Poppins', sans-serif;
-		font-weight: 800;
-		font-size: clamp(9px, 3vh, 22px);
-		letter-spacing: 0.08em;
-		color: #fff;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
-	}
 	.ls-balance {
 		display: flex;
 		align-items: baseline;
-		gap: 8px;
+		gap: 6px;
 		/* max-content so fitPill can see the pill's true unwrapped width vs the column's capped width. */
 		width: max-content;
 		max-width: none;
 		box-sizing: border-box;
-		/* Same dark translucent pill as the WIN readout — keeps the text readable over the forest. */
-		padding: 3px 10px;
-		border-radius: 10px;
-		background: rgba(17, 12, 10, 0.72);
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
-		backdrop-filter: blur(4px);
+		/* Smaller dark pill: #1F1F1F body with a lighter top bevel (design ask). */
+		padding: clamp(1px, 0.5vh, 3px) clamp(4px, 1vh, 9px);
+		border-radius: 7px;
+		background: #1f1f1f;
+		border-top: 1.28px solid #605553;
+		box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
 	}
 	/* Bottom-right corner — the mirror of .ls-left, holding the WIN readout. Its right offset clears
 	   the vertical control rail (rail width + a margin) so WIN sits to the LEFT of the rail, level
@@ -2108,17 +2093,17 @@
 	.ls-win {
 		display: flex;
 		align-items: baseline;
-		gap: 8px;
-		/* Same reasoning as .ls-balance: max-content so fitPill can see the true unwrapped width,
-		   border-box so the padding is inside it. */
+		gap: 6px;
+		/* Same reasoning as .ls-balance: max-content so fitPill can see the true unwrapped width. */
 		width: max-content;
 		max-width: none;
 		box-sizing: border-box;
-		padding: 3px 10px;
-		border-radius: 10px;
-		background: rgba(17, 12, 10, 0.72);
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
-		backdrop-filter: blur(4px);
+		/* Matches .ls-balance: smaller #1F1F1F pill with a lighter top bevel. */
+		padding: clamp(1px, 0.5vh, 3px) clamp(4px, 1vh, 9px);
+		border-radius: 7px;
+		background: #1f1f1f;
+		border-top: 1.28px solid #605553;
+		box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
 	}
 	/* No win yet → keep the slot but show nothing (matches the portrait WIN behavior). */
 	.ls-win--hidden {
@@ -2126,7 +2111,7 @@
 	}
 	.ls-win__label {
 		font-family: 'Poppins', sans-serif;
-		font-size: clamp(7px, 2.4vh, 11px);
+		font-size: clamp(6px, 2vh, 10px);
 		font-style: normal;
 		font-weight: 500;
 		line-height: normal;
@@ -2139,7 +2124,7 @@
 	.ls-win__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 600;
-		font-size: clamp(8px, 2.6vh, 12px);
+		font-size: clamp(7px, 2.2vh, 11px);
 		color: #fff;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
 	}
@@ -2149,7 +2134,7 @@
 		   format with spaces ("5 000 592,00 kr") would otherwise wrap to a second line inside the
 		   fixed-height pill instead of letting fitText scale them down. */
 		white-space: nowrap;
-		font-size: clamp(7px, 2.4vh, 11px);
+		font-size: clamp(6px, 2vh, 10px);
 		font-style: normal;
 		font-weight: 500;
 		line-height: normal;
@@ -2163,7 +2148,7 @@
 		font-family: 'Poppins', sans-serif;
 		font-weight: 600;
 		white-space: nowrap;
-		font-size: clamp(8px, 2.6vh, 12px);
+		font-size: clamp(7px, 2.2vh, 11px);
 		color: #fff;
 	}
 
@@ -2175,11 +2160,11 @@
 		   which is already viewport-driven, so a fixed bottom would pull them back off the BUY BONUS
 		   centre line. */
 		.ls-balance,
-		.ls-win { padding: 5px 14px; border-radius: 12px; }
+		.ls-win { padding: clamp(2px, 0.8vh, 5px) clamp(6px, 1.4vh, 12px); border-radius: 8px; }
 		.ls-balance__label,
-		.ls-win__label { font-size: clamp(9px, 3.1vh, 15px); }
+		.ls-win__label { font-size: clamp(7px, 2.3vh, 12px); }
 		.ls-balance__value,
-		.ls-win__value { font-size: clamp(10px, 3.4vh, 17px); }
+		.ls-win__value { font-size: clamp(8px, 2.6vh, 13px); }
 
 		/* Right rail runs ~20% bigger in the roomier popout L window. */
 		.ls-right {
@@ -2197,17 +2182,17 @@
 		}
 	}
 
-	/* BET stepper — a dark pill (matching BALANCE) sitting under it in the left column: − value + */
+	/* BET stepper — same small #1F1F1F pill as BALANCE, stacked under it: − value + */
 	.ls-bet {
 		display: flex;
 		align-items: center;
 		gap: clamp(3px, 1vh, 8px);
 		box-sizing: border-box;
-		padding: clamp(2px, 0.7vh, 5px) clamp(5px, 1.2vh, 11px);
-		border-radius: 12px;
-		background: rgba(17, 12, 10, 0.72);
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
-		backdrop-filter: blur(4px);
+		padding: clamp(1px, 0.5vh, 4px) clamp(5px, 1.2vh, 11px);
+		border-radius: 7px;
+		background: #1f1f1f;
+		border-top: 1.28px solid #605553;
+		box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
 	}
 	.ls-bet__value {
 		font-family: 'Poppins', sans-serif;
@@ -2251,11 +2236,10 @@
 		justify-content: center;
 		gap: clamp(3px, 1.2vh, 11px);
 		padding: clamp(4px, 1.2vh, 11px) 0;
-		/* The pill art is painted at a FIXED width (~2.1× the round buttons, per Figma) instead of
-		   the element box — the element is as wide as the spin disc, and sizing the art to it made
-		   the pill swallow the spin. This way the buttons nearly fill the pill and the bigger spin
-		   overflows its sides. */
-		background: var(--ls-rightbar) center / clamp(31px, 10.6vh, 95px) 100% no-repeat;
+		/* The nav-box art (dark neon bar) is painted at a FIXED width (narrower than the element, which
+		   is as wide as the spin disc) and full height, so the buttons nearly fill the bar and the
+		   bigger spin disc overflows its sides. */
+		background: var(--ls-navbox) center / clamp(31px, 10.6vh, 95px) 100% no-repeat;
 	}
 	.ls-round {
 		width: clamp(22px, 7.2vh, 65px);
