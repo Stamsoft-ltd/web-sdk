@@ -2050,7 +2050,7 @@
 	/* Vertical BONUS button in the right rail — the bonus-landscape art (red button, "BONUS" baked
 	   in). Sits between the menu and the spin disc (design). Aspect 31:66. */
 	.ls-buy-rail {
-		width: clamp(26px, 8.6vh, 78px);
+		width: calc(var(--ls-rail-w) * 0.5);
 		aspect-ratio: 31 / 66;
 		flex: 0 0 auto;
 		border: 0;
@@ -2081,7 +2081,8 @@
 	   with the BALANCE/BET stack opposite it. */
 	.ls-right-bottom {
 		position: absolute;
-		right: calc(clamp(31px, 10.6vh, 95px) + clamp(12px, 2.4vw, 26px));
+		/* Clear the vertical control rail (its width + a margin) so WIN sits to its left. */
+		right: calc(clamp(52px, 17vh, 150px) + clamp(12px, 2.4vw, 26px));
 		bottom: var(--ls-corner-bottom);
 		width: max-content;
 		max-width: 32%;
@@ -2160,21 +2161,8 @@
 		.ls-win__label { font-size: clamp(7px, 2.3vh, 12px); }
 		.ls-balance__value,
 		.ls-win__value { font-size: clamp(8px, 2.6vh, 13px); }
-
-		/* Right rail runs ~20% bigger in the roomier popout L window. */
-		.ls-right {
-			gap: clamp(4px, 1.6vh, 14px);
-			padding: clamp(5px, 1.6vh, 14px) 0;
-			background-size: clamp(37px, 12.7vh, 114px) 100%;
-		}
-		.ls-round {
-			width: clamp(26px, 8.6vh, 78px);
-			height: clamp(26px, 8.6vh, 78px);
-		}
-		.ls-spin {
-			width: clamp(67px, 26vh, 235px);
-			height: clamp(67px, 26vh, 235px);
-		}
+		/* Roomier window → a slightly wider rail (everything else scales off --ls-rail-w). */
+		.ls-right { --ls-rail-w: clamp(60px, 19vh, 165px); }
 	}
 
 	/* BET stepper — same small #1F1F1F pill as BALANCE, stacked under it: − value + */
@@ -2223,24 +2211,28 @@
 	   overflowing the pill's sides. */
 	.ls-right {
 		position: absolute;
-		right: 6px;
+		right: clamp(6px, 1.6vw, 18px);
 		top: 50%;
 		transform: translateY(-50%);
+		/* The rail's width drives everything: the dark bar (nav_bg.svg) fills the element box, and
+		   every control is sized as a fraction of --ls-rail-w so they all sit INSIDE the bar (the spin
+		   disc used to be ~2× the bar and spilled out both sides). */
+		--ls-rail-w: clamp(52px, 17vh, 150px);
+		width: var(--ls-rail-w);
+		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: clamp(3px, 1.2vh, 11px);
-		padding: clamp(4px, 1.2vh, 11px) 0;
-		/* The nav-box art (dark neon bar) is painted at a FIXED width (narrower than the element, which
-		   is as wide as the spin disc) and full height, so the buttons nearly fill the bar and the
-		   bigger spin disc overflows its sides. */
-		background: var(--ls-navbox) center / clamp(31px, 10.6vh, 95px) 100% no-repeat;
+		gap: calc(var(--ls-rail-w) * 0.14);
+		padding: calc(var(--ls-rail-w) * 0.2) 0;
+		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
-	/* Menu / turbo / auto — plain white glyphs on the dark bar (no wooden button chrome). */
+	/* Menu / turbo / auto — plain white glyphs on the dark bar (no wooden button chrome). Sized as a
+	   fraction of the rail width so they stay inside the bar. */
 	.ls-round {
-		width: clamp(22px, 7.2vh, 65px);
-		height: clamp(22px, 7.2vh, 65px);
+		width: calc(var(--ls-rail-w) * 0.56);
+		height: calc(var(--ls-rail-w) * 0.56);
 		border: 0;
 		background: none;
 		padding: 0;
@@ -2280,10 +2272,10 @@
 	}
 
 	.ls-spin {
-		width: clamp(62px, 23vh, 210px);
-		height: clamp(62px, 23vh, 210px);
+		width: calc(var(--ls-rail-w) * 0.9);
+		height: calc(var(--ls-rail-w) * 0.9);
 		border: 0;
-		/* The real turn-button disc art. */
+		/* The real turn-button disc art, sized to sit inside the bar. */
 		background: var(--ls-turn) center / contain no-repeat;
 		padding: 0;
 		cursor: pointer;
