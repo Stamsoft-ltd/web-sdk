@@ -2280,10 +2280,10 @@
 	}
 
 	.ls-spin {
-		/* The focal button — nearly fills the bar width (so it dominates the small icons) while still
-		   sitting inside it. */
-		width: calc(var(--ls-rail-w) * 0.88);
-		height: calc(var(--ls-rail-w) * 0.88);
+		/* The focal button — bigger than the bar's inner width, but the art's transparent padding
+		   around the gold frame keeps the visible disc inside the bar edges. */
+		width: calc(var(--ls-rail-w) * 1.12);
+		height: calc(var(--ls-rail-w) * 1.12);
 		border: 0;
 		/* The real turn-button disc art. */
 		background: var(--ls-turn) center / contain no-repeat;
