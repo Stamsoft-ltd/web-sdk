@@ -2225,8 +2225,10 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: calc(var(--ls-rail-w) * 0.16);
-		padding: calc(var(--ls-rail-w) * 0.22) 0;
+		gap: calc(var(--ls-rail-w) * 0.18);
+		/* Generous top/bottom inset so the outer buttons (menu, AUTO) don't touch the bar's rounded
+		   ends — noticeably larger than the inter-button gap. */
+		padding: calc(var(--ls-rail-w) * 0.42) 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
@@ -2294,12 +2296,23 @@
 	}
 	.ls-spin:not(:disabled):hover { filter: brightness(1.06); }
 	.ls-spin:disabled { opacity: 0.5; cursor: default; }
-	/* Arrow forced white (source glyph is gold). */
-	.ls-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(1.5%, 3%); filter: brightness(0) invert(1); }
+	/* Arrow forced white (source glyph is gold) and absolutely centred on the turn-button DISC
+	   (its centre sits at ~51.4%/48.5% of the square, not the box centre, because the art has a
+	   gold frame + ketchup drip offsetting it). */
+	.ls-spin__icon {
+		position: absolute;
+		left: 51.4%;
+		top: 48.5%;
+		width: 40%;
+		height: 40%;
+		object-fit: contain;
+		transform: translate(-50%, -50%);
+		filter: brightness(0) invert(1);
+	}
 	.ls-spin__stop {
 		position: absolute;
-		top: 50%;
-		left: 51%;
+		top: 48.5%;
+		left: 51.4%;
 		width: 22%;
 		aspect-ratio: 1;
 		transform: translate(-50%, -50%);
