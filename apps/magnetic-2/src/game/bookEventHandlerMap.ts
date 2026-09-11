@@ -10,6 +10,7 @@ import { stateGame, stateGameDerived } from './stateGame.svelte';
 import type { BookEvent, BookEventContext, BookEventOfType } from './typesBookEvent';
 import type { ClusterSeriesSnapshot, Position } from './types';
 import { capBookWinAmount, getSeriesPreviewAmount } from './bonusWin';
+import { resolveMagnetActivationPositions } from './magnetActivation';
 import { logMagneticDiagnostic } from '../utils/magneticDiagnostics';
 
 // An out-of-range server winLevel must not yield undefined winLevelData — Win.svelte only
@@ -329,7 +330,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		bookEvent: BookEventOfType<'magnetActivated'>,
 		{ bookEvents }: BookEventContext,
 	) => {
-		pendingMagnetActivationPositions = bookEvent.positions;
+		// Old books can carry pre-Polarity magnet coordinates when both specials fire in
+		// one step. Trust the settled board's actual Magnet cells so ordinary symbols at
+		// stale coordinates are never promoted into extra magnets by the presentation.
+		const activationPositions = resolveMagnetActivationPositions({
+			eventPositions: bookEvent.positions,
+			board: stateGameDerived.boardRaw(),
+		});
+		pendingMagnetActivationPositions = activationPositions;
 		stateGame.selectedBonusSymbol = bookEvent.symbol;
 		stateGame.magnetTargetSymbol = bookEvent.symbol;
 		stateGame.globalMultiplier = bookEvent.totalMultiplier;
@@ -341,7 +349,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_magnet_pull' });
 		if (bookEvent.multiplier > 1)
 			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_hit' });
-		await stateGameDerived.activateMagnetPulse(bookEvent.positions);
+		await stateGameDerived.activateMagnetPulse(activationPositions);
 		if (nextBookEventAfter(bookEvent, bookEvents)?.type !== 'clusterSeriesUpdate') {
 			stateGame.forceFastAnimations = false;
 			pendingMagnetActivationPositions = [];
