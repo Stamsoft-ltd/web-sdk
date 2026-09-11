@@ -23,14 +23,6 @@
 	// uses its own clean wide diner background with no chef (design ask).
 	const showMascot = $derived(!isFreegame && layoutType === 'desktop');
 	const showSpecialMascot = $derived(isFreegame && layoutType === 'desktop');
-	// Landscape diner (wide crop; aspect matches background-landscape.webp: 1585×713).
-	const landscapeAspect = 1585 / 713;
-	const landscapeCover = $derived.by(() => {
-		const canvasAspect = canvas.width / canvas.height;
-		return canvasAspect > landscapeAspect
-			? { width: canvas.width, height: canvas.width / landscapeAspect }
-			: { width: canvas.height * landscapeAspect, height: canvas.height };
-	});
 	const mascotHeight = $derived(canvas.height * 0.6);
 	const mascotWidth = $derived(mascotHeight * (1019 / 1336));
 	// The chef stands still; only his eyes move (AnimatedGuy).
@@ -58,16 +50,18 @@
 
 <Rectangle {...canvas} backgroundColor={0x170905} zIndex={-3} />
 {#if isLandscape}
-	<!-- Mobile-landscape: dedicated wide diner background (no chef, no special-bg swap). -->
+	<!-- Mobile-landscape: the real full diner background (same art as desktop, cover-scaled), just
+	     without the chef and without the special grey-kitchen swap in free games. -->
 	<Sprite
-		key="backgroundLandscape"
+		key="backgroundBase"
 		x={canvas.width * 0.5}
 		y={canvas.height * 0.5}
 		anchor={0.5}
-		width={landscapeCover.width}
-		height={landscapeCover.height}
+		width={cover.width}
+		height={cover.height}
 		zIndex={-2}
 	/>
+	<Rectangle {...canvas} backgroundColor={0x180903} alpha={0.16} zIndex={-1} />
 {:else if isPortrait}
 	<!-- Mobile portrait: the dedicated diner background, no darkening overlay (matches the splash).
 	     Swaps to the special grey-kitchen background during free games. -->

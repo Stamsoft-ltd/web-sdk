@@ -22,8 +22,9 @@
 	const lsRightBar = ap('/assets/components/symbols/landscape/right_bar.webp?v=20260715'); // vertical control bar
 	const lsBetPad = ap('/assets/components/symbols/landscape/stepper_pad.png'); // − value + bottom pad
 	const lsBuyBonus = ap('/assets/components/symbols/landscape/buy_bonus.png'); // round green badge
-	const lsNavBox = ap('/assets/components/symbols/landscape/nav_box.webp'); // dark neon vertical rail box
+	const lsNavBox = ap('/assets/components/symbols/landscape/nav_bg.svg'); // flat dark vertical rail box
 	const lsBonus = ap('/assets/components/symbols/landscape/bonus.svg'); // red vertical BONUS button (text baked in)
+	const lsTurn = ap('/assets/components/symbols/landscape/turn_button.svg'); // red spin/turn disc
 	const navPadMobile = ap('/assets/components/navbar/nav_pad_mobile.webp'); // control-bar pill
 	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.png'); // − value + pill
 	const buyBonusMobile = btnWideBg;
@@ -630,7 +631,7 @@
 	class="hud-shell"
 	class:hud-shell--blocked={congratsBlocking}
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}');--ls-navbox:url('${lsNavBox}');--ls-bonus:url('${lsBonus}')`}
+	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}');--ls-navbox:url('${lsNavBox}');--ls-bonus:url('${lsBonus}');--ls-turn:url('${lsTurn}')`}
 >
 	{#if isPortrait}
 		<!-- Portrait header: Press Play mark + big McSchmutzo logo, pinned above the board. -->
@@ -2116,10 +2117,7 @@
 		font-weight: 500;
 		line-height: normal;
 		letter-spacing: 0.36px;
-		background: var(--golden-gradient, linear-gradient(184deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%));
-		background-clip: text;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
+		color: #fff;
 	}
 	.ls-win__value {
 		font-family: 'Poppins', sans-serif;
@@ -2139,10 +2137,7 @@
 		font-weight: 500;
 		line-height: normal;
 		letter-spacing: 0.36px;
-		background: var(--golden-gradient, linear-gradient(184deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%));
-		background-clip: text;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
+		color: #fff;
 	}
 	.ls-balance__value {
 		font-family: 'Poppins', sans-serif;
@@ -2204,22 +2199,23 @@
 		white-space: nowrap;
 		text-align: center;
 	}
-	/* Round − / + buttons (wooden disc art), sized to sit inside the bet pill. */
+	/* − / + steppers — plain white glyphs (no button chrome), sitting inside the dark bet pill. */
 	.ls-step {
-		width: clamp(18px, 5.6vh, 46px);
-		height: clamp(18px, 5.6vh, 46px);
+		width: clamp(16px, 5vh, 40px);
+		height: clamp(16px, 5vh, 40px);
 		flex: 0 0 auto;
 		border: 0;
-		background: var(--btn-round-bg) center / contain no-repeat;
+		background: none;
 		padding: 0;
 		cursor: pointer;
 		display: grid;
 		place-items: center;
-		transition: filter 0.12s ease;
+		transition: filter 0.12s ease, opacity 0.12s ease;
 	}
-	.ls-step:not(:disabled):hover { filter: brightness(1.1); }
-	.ls-step:disabled { opacity: 0.45; cursor: default; }
-	.ls-step .ls-icon { width: 44%; height: 44%; object-fit: contain; }
+	.ls-step:not(:disabled):hover { filter: brightness(1.2); }
+	.ls-step:disabled { opacity: 0.4; cursor: default; }
+	/* Force the glyphs white (the source icons are gold). */
+	.ls-step .ls-icon { width: 78%; height: 78%; object-fit: contain; filter: brightness(0) invert(1); }
 
 	/* Right rail: menu, sound, spin, turbo, autospin (vertical bar).
 	   Figma 3451-2143: the dark pill hugs the buttons (pill ≈ 1.25× button width), the buttons
@@ -2241,20 +2237,22 @@
 		   bigger spin disc overflows its sides. */
 		background: var(--ls-navbox) center / clamp(31px, 10.6vh, 95px) 100% no-repeat;
 	}
+	/* Menu / turbo / auto — plain white glyphs on the dark bar (no wooden button chrome). */
 	.ls-round {
 		width: clamp(22px, 7.2vh, 65px);
 		height: clamp(22px, 7.2vh, 65px);
 		border: 0;
-		background: var(--btn-round-bg) center / contain no-repeat;
+		background: none;
 		padding: 0;
 		cursor: pointer;
 		display: grid;
 		place-items: center;
-		transition: filter 0.12s ease, transform 0.12s ease;
+		transition: filter 0.12s ease, transform 0.12s ease, opacity 0.12s ease;
 	}
-	.ls-round:not(:disabled):hover { filter: brightness(1.1); }
+	.ls-round:not(:disabled):hover { filter: brightness(1.2); }
 	.ls-round:disabled { opacity: 0.5; cursor: default; }
-	.ls-round .ls-icon { width: 46%; height: 46%; object-fit: contain; }
+	/* Glyphs forced white (source icons are gold), a touch larger now that there's no button disc. */
+	.ls-round .ls-icon { width: 60%; height: 60%; object-fit: contain; filter: brightness(0) invert(1); }
 	.ls-round .ls-icon.is-muted { opacity: 1; }
 
 	/* Menu (☰) wrapper — anchors the SOUND/MUSIC/INFO popup, which opens to the LEFT of the rail. */
@@ -2285,7 +2283,8 @@
 		width: clamp(62px, 23vh, 210px);
 		height: clamp(62px, 23vh, 210px);
 		border: 0;
-		background: var(--ls-spin) center / contain no-repeat;
+		/* The real turn-button disc art. */
+		background: var(--ls-turn) center / contain no-repeat;
 		padding: 0;
 		cursor: pointer;
 		position: relative;
@@ -2293,19 +2292,19 @@
 		place-items: center;
 		transition: filter 0.12s ease, transform 0.12s ease;
 	}
-	.ls-spin:not(:disabled):hover { background-image: var(--ls-spin-hover); }
+	.ls-spin:not(:disabled):hover { filter: brightness(1.06); }
 	.ls-spin:disabled { opacity: 0.5; cursor: default; }
-	.ls-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(1.5%, 3%); }
+	/* Arrow forced white (source glyph is gold). */
+	.ls-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(1.5%, 3%); filter: brightness(0) invert(1); }
 	.ls-spin__stop {
 		position: absolute;
-		/* Same disc-centre anchor as the desktop .spin-btn__stop — the art is identical
-		   (btn_bg_spin.webp), and the old 53%/51.2% sat visibly low-right of the disc. */
 		top: 50%;
 		left: 51%;
 		width: 22%;
 		aspect-ratio: 1;
 		transform: translate(-50%, -50%);
 		object-fit: contain;
+		filter: brightness(0) invert(1);
 	}
 	.ls-spin__count {
 		position: absolute;
