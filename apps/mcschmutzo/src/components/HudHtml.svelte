@@ -2174,8 +2174,6 @@
 		.ls-win__label { font-size: clamp(7px, 2.3vh, 12px); }
 		.ls-balance__value,
 		.ls-win__value { font-size: clamp(8px, 2.6vh, 13px); }
-		/* Roomier window → a slightly wider rail (everything else scales off --ls-rail-w). */
-		.ls-right { --ls-rail-w: clamp(46px, 14.5vh, 120px); }
 	}
 
 	/* BET stepper — same small #1F1F1F pill as BALANCE, stacked under it: − value + */
@@ -2229,8 +2227,8 @@
 		/* Anchored between a top band (for the Press Play mark) and the bottom edge, rather than a
 		   fixed height. So the bar is as TALL as the viewport allows and can NEVER exceed it — the
 		   buttons (heights derived from the width) always have room and never spill past the ends. */
-		top: clamp(24px, 8.5vh, 60px);
-		bottom: clamp(4px, 3vh, 24px);
+		top: clamp(20px, 6.5vh, 48px);
+		bottom: clamp(4px, 2vh, 18px);
 		/* --ls-rail-w = the TIGHT dark bar's width. The menu/turbo/auto/BONUS nearly fill it; only the
 		   focal turn disc is bigger and overflows the bar's left + right sides (design look). */
 		--ls-rail-w: clamp(36px, 13vh, 108px);
