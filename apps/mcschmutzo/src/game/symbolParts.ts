@@ -57,7 +57,7 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 	// Burger — the stack separates (bun up, bottom down, fillings fan out) then reassembles.
 	H1: {
 		aspect: 1.077,
-		fit: 0.72,
+		fit: 0.64,
 		squash: 0.03,
 		layers: [
 			{ key: 'burgerBunBottom', nx: 0.5, ny: 0.8587, nw: 0.9453, nh: 0.2826, dy: 0.2, dx: 0, rot: 0 },
@@ -126,15 +126,13 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'scatterBanner', nx: 0.5, ny: 0.1626, nw: 0.8221, nh: 0.2418, rot: 0.07, dy: -0.01 },
 		],
 	},
-	// Smutz cup — the straw stirs (gentle sway) while the drink cup gives a soft squeeze.
+	// Smutz cup — one whole sprite (straw included) that gives a soft squeeze + bob; splitting the
+	// straw off left it poking out broken from behind the lid, so it stays a single piece.
 	M: {
-		aspect: 0.588,
-		fit: 0.92,
-		squash: 0.03,
-		layers: [
-			{ key: 'cupStraw', nx: 0.5266, ny: 0.2974, nw: 0.4246, nh: 0.647, rot: 0.16 },
-			{ key: 'cupBody', nx: 0.5, ny: 0.6087, nw: 1.0, nh: 0.9017 },
-		],
+		aspect: 190 / 316,
+		fit: 0.82,
+		squash: 0.09,
+		layers: [{ key: 'mcM', nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.02 }],
 	},
 	// Cheese — one whole slice (drips included) that gently jiggles; splitting the drips off left a
 	// visible seam, so it stays a single piece.
