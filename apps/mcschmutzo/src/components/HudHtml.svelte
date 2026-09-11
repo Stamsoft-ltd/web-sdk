@@ -2224,11 +2224,10 @@
 		position: absolute;
 		/* Right margin leaves room for the turn disc to bulge past the bar's right side. */
 		right: clamp(16px, 3vw, 34px);
-		/* Anchored between a top band (for the Press Play mark) and the bottom edge, rather than a
-		   fixed height. So the bar is as TALL as the viewport allows and can NEVER exceed it — the
-		   buttons (heights derived from the width) always have room and never spill past the ends. */
-		top: clamp(20px, 6.5vh, 48px);
-		bottom: clamp(4px, 2vh, 18px);
+		/* Anchored just BELOW the Press Play mark and NOT given a fixed height — the bar hugs its
+		   buttons (content height) with modest gaps, so they always sit snugly INSIDE it (no
+		   space-between spreading the outer two off the ends). */
+		top: clamp(24px, 8vh, 56px);
 		/* --ls-rail-w = the TIGHT dark bar's width. The menu/turbo/auto/BONUS nearly fill it; only the
 		   focal turn disc is bigger and overflows the bar's left + right sides (design look). */
 		--ls-rail-w: clamp(36px, 13vh, 108px);
@@ -2237,8 +2236,8 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		justify-content: space-between;
-		padding: clamp(4px, 1.6vh, 14px) 0;
+		gap: clamp(6px, 2.3vh, 18px);
+		padding: clamp(6px, 2vh, 16px) 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
