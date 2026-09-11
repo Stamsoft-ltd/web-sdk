@@ -223,7 +223,7 @@
 		if (!menuOpen) return;
 		const onDown = (event: PointerEvent) => {
 			const t = event.target as Element | null;
-			if (t?.closest?.('.pt-menu-pop, .hud-menu-pop, [data-menu-toggle]')) return;
+			if (t?.closest?.('.pt-menu-pop, .hud-menu-pop, .ls-menu-pop, [data-menu-toggle]')) return;
 			menuOpen = false;
 		};
 		window.addEventListener('pointerdown', onDown, true);
@@ -780,63 +780,77 @@
 		</div>
 	{/if}
 	{#if isLandscapeMobile}
-		<!-- Dedicated mobile-landscape HUD (Figma 2682-3639). Desktop markup below is untouched
-		     and hidden via CSS in landscape. -->
+		<!-- Dedicated mobile-landscape HUD: a big centred board flanked by a bottom-left BALANCE+BET
+		     stack and a right control rail (menu · BONUS · spin · turbo · auto), WIN bottom-right.
+		     Everything scales with viewport height (vh) so it shrinks together on smaller landscapes. -->
 		<div class="ls-hud">
-			<!-- Left rail: BALANCE only (logo is drawn separately by GameLogoFrame) -->
+			<!-- Left column: BALANCE over the BET stepper, bottom-left -->
 			<div class="ls-left">
 				<div class="ls-balance" use:fitPill={{ dep: formattedBalance, align: 'left' }}>
 					<span class="ls-balance__label">{i18nDerived.balance()}</span>
 					<span class="ls-balance__value">{formattedBalance}</span>
 				</div>
+				<div class="ls-bet">
+					<button
+						class="ls-step"
+						type="button"
+						onclick={onDecrease}
+						disabled={disableDecrease}
+						aria-label={decBetLabel}
+					>
+						<img class="ls-icon" src={iconMinus} alt="minus" />
+					</button>
+					<span
+						class="ls-bet__value"
+						class:value--feature={isAnyModeActive}
+						use:fitText={formattedBet}
+					>{formattedBet}</span>
+					<button
+						class="ls-step"
+						type="button"
+						onclick={onIncrease}
+						disabled={disableIncrease}
+						aria-label={incBetLabel}
+					>
+						<img class="ls-icon" src={iconPlus} alt="plus" />
+					</button>
+				</div>
 			</div>
 
-			<!-- BUY BONUS: bottom-centre, just left of the bet pad (Figma design) -->
-			<button
-				class="ls-buy"
-				type="button"
-				disabled={disableBuy}
-				onclick={openBuyBonus}
-				aria-label={i18nDerived.buyBonus()}
-			>
-				<span class="ls-buy__label" use:fitLabel={{ dep: i18nDerived.buyBonus(), maxFraction: 0.82 }}>{i18nDerived.buyBonus()}</span>
-			</button>
-
-			<!-- Bottom-centre bet pad: − value + -->
-			<div class="ls-bet">
-				<button
-					class="ls-step"
-					type="button"
-					onclick={onDecrease}
-					disabled={disableDecrease}
-					aria-label={decBetLabel}
-				>
-					<img class="ls-icon" src={iconMinus} alt="minus" />
-				</button>
-				<span
-					class="ls-bet__value"
-					class:value--feature={isAnyModeActive}
-					use:fitText={formattedBet}
-				>{formattedBet}</span>
-				<button
-					class="ls-step"
-					type="button"
-					onclick={onIncrease}
-					disabled={disableIncrease}
-					aria-label={incBetLabel}
-				>
-					<img class="ls-icon" src={iconPlus} alt="plus" />
-				</button>
-			</div>
-
-			<!-- Right rail: menu, sound, spin, turbo, autospin -->
+			<!-- Right rail: menu, BONUS (vertical), spin, turbo, autospin -->
 			<div class="ls-right">
-				<button class="ls-round" type="button" onclick={openRules} aria-label="Game rules">
-					<img class="ls-icon" src={iconMenu} alt="menu" />
+				<div class="ls-menu-wrap">
+					{#if menuOpen}
+						<div class="ls-menu-pop" role="menu">
+							<button class="pt-menu-item" class:muted={isMuted} type="button" role="menuitem" onclick={toggleSound}>
+								<img class="pt-menu-item__ic" src={menuIcSound} alt="" />
+								<span class="pt-menu-item__label">{i18nDerived.translate('SOUND')}</span>
+							</button>
+							<button class="pt-menu-item" class:muted={isMusicMuted} type="button" role="menuitem" onclick={toggleMusic}>
+								<img class="pt-menu-item__ic" src={menuIcMusic} alt="" />
+								<span class="pt-menu-item__label">{i18nDerived.translate('MUSIC')}</span>
+							</button>
+							<button class="pt-menu-item" type="button" role="menuitem" onclick={openRules}>
+								<img class="pt-menu-item__ic" src={menuIcInfo} alt="" />
+								<span class="pt-menu-item__label">{i18nDerived.translate('INFO')}</span>
+							</button>
+						</div>
+					{/if}
+					<button class="ls-round" type="button" onclick={toggleMenu} aria-label="Menu" aria-expanded={menuOpen} data-menu-toggle>
+						<img class="ls-icon" src={iconMenuBars} alt="menu" />
+					</button>
+				</div>
+
+				<button
+					class="ls-buy-rail"
+					type="button"
+					disabled={disableBuy}
+					onclick={openBuyBonus}
+					aria-label={i18nDerived.buyBonus()}
+				>
+					<span class="ls-buy-rail__label">{i18nDerived.translate('BONUS')}</span>
 				</button>
-				<button class="ls-round" type="button" onclick={toggleSound} aria-label="Sound">
-					<img class="ls-icon" src={isMuted ? iconSoundMuted : iconSound} alt="sound" class:is-muted={isMuted} />
-				</button>
+
 				<button
 					class="ls-spin"
 					type="button"
@@ -875,9 +889,8 @@
 				</button>
 			</div>
 
-			<!-- WIN readout, bottom-right — mirrors the BALANCE block bottom-left. Same behavior as
-			     portrait: current spin win / running bonus total, cleared on the next spin; keeps its
-			     slot while hidden so nothing shifts. -->
+			<!-- WIN readout, bottom-right — mirrors the BALANCE block bottom-left. Current spin win /
+			     running bonus total, cleared on the next spin; keeps its slot while hidden. -->
 			<div class="ls-right-bottom">
 				<div
 					class="ls-win"
@@ -2009,109 +2022,64 @@
 		pointer-events: none;
 		z-index: 20;
 		font-family: 'Cinzel', serif;
-		/* How far the bottom controls (bet pad + BUY BONUS) drop toward the bottom edge. Both use
-		   this so they stay vertically centre-aligned with each other. */
-		--ls-drop: -1px;
-		/* The bottom controls' shared centre line, measured up from the bottom edge. BUY BONUS puts
-		   its own centre here (bottom + translateY(50%)), and the BALANCE rail centres its pill on it
-		   too, so the two read as one row. Single source of truth — they cannot drift apart. */
-		--ls-controls-center: calc(clamp(28px, 13.5vh, 116px) / 2 - var(--ls-drop) - 7px);
-		/* Floor on how close the BALANCE / WIN pills may come to the bottom edge. On short windows
-		   the controls centre line itself sits only ~14px up, so centring the pills on it left them
-		   almost touching the edge; this lifts them just enough to breathe, and only when the centred
-		   position would be tighter than this (see the max() in the rails' bottom). */
-		--ls-readout-bottom-min: clamp(5px, 1.8vh, 12px);
+		/* Bottom inset shared by the BALANCE/BET stack (bottom-left) and the WIN pill (bottom-right)
+		   so the two readouts sit level in their corners. Scales with viewport height. */
+		--ls-corner-bottom: clamp(8px, 4vh, 30px);
 	}
 	.ls-hud button,
 	.ls-hud .ls-bet__value {
 		pointer-events: auto;
 	}
 
-	/* Left rail: BUY BONUS + BALANCE, bottom-left */
+	/* Left column: BALANCE over the BET stepper, bottom-left corner. width:max-content lets fitPill
+	   see the pills' true width; max-width caps a giant balance so it shrinks instead of reaching the
+	   board. The corner is clear of the board (the board doesn't extend full-width to the bottom). */
 	.ls-left {
 		position: absolute;
-		left: 16px;
-		/* Centre the pill on the BUY BONUS centre line rather than parking it in the bottom corner.
-		   The rail is bottom-anchored and the pill sits on the rail's bottom edge, so dropping the
-		   rail by half the pill's RENDERED height puts the pill's centre exactly on the line.
-		   --ls-pill-h is that rendered height (layout height × fitPill's scale), published by fitPill;
-		   before it runs the fallback 0px just leaves the pill a half-height high for one frame.
-		   Doing it this way, rather than translating the pill, keeps the pill inside the rail's box
-		   so overflow:hidden stays a usable horizontal backstop. The max() is the bottom-edge floor:
-		   on short windows the centred position would leave the pill a few px off the edge, so it
-		   gives up exact centring only as far as it must to keep that clearance. */
-		bottom: max(
-			var(--ls-readout-bottom-min),
-			calc(var(--ls-controls-center) - var(--ls-pill-h, 0px) / 2)
-		);
-		/* Definite rail width that stops WELL before the BUY BONUS button (centred at 37%). It must
-		   be a real width, not just max-width: the balance pill is width:max-content and fitPill
-		   scales it down against THIS width, so a giant balance ($10,000,000,000.00) shrinks instead
-		   of crowding the button. 32% (button centre 37% minus a ~5% clear gap) minus the button's
-		   own half-width leaves visible air before BUY BONUS. overflow:hidden is the safety clip;
-		   flex-start keeps the pill left-anchored. */
-		width: calc(32% - clamp(48px, 9vh, 84px));
+		left: clamp(8px, 2vw, 22px);
+		bottom: var(--ls-corner-bottom);
+		width: max-content;
+		max-width: 34%;
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: 8px;
-		overflow: hidden;
+		gap: clamp(4px, 1.5vh, 11px);
 	}
-	.ls-buy {
-		/* Wide green desktop-style button (btn_bg_wide.png, 730×267), scaled down for landscape.
-		   Sits at the bottom centre, just left of the bet pad. */
-		position: absolute;
-		/* Anchor the button's bottom edge to the bet pad's vertical centre (pad: bottom 0, height
-		   clamp(70px,10.5vh,88px)), then translateY(50%) drops it by half its own height so the two
-		   centres line up regardless of the button's rendered height. The extra -5px drops it a
-		   touch lower so its leaves clear the board frame on short popup viewports. */
-		bottom: var(--ls-controls-center);
-		left: 37%;
-		transform: translate(-50%, 50%);
-		box-sizing: border-box;
-		width: clamp(72px, 27.5vh, 265px);
-		height: auto;
-		aspect-ratio: 1354 / 528;
-		border: 0;
-		padding: 0;
-		cursor: pointer;
-		background: var(--buy-btn-bg) center / contain no-repeat;
-		transition: filter 0.12s ease, transform 0.12s ease;
-	}
-	.ls-buy:not(:disabled):hover { background-image: var(--buy-btn-hover-bg); transform: translate(-50%, calc(50% - 1px)); }
-	.ls-buy:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
 	.pt-buy:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
-	.ls-buy__label {
-		/* Centred on the green body: the button art has leaves along the bottom, so the body centre is
-		   above the element centre. NO transform-based centering here — the fitLabel action overwrites
-		   `transform` with its down-scale, which silently removed a translate(-50%,-50%) and shoved the
-		   label off the button. Block-level + text-align centers horizontally; em offset vertically. */
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: calc(43% - 0.55em);
+	/* Vertical BONUS button in the right rail (red, rotated label) — replaces the old bottom-centre
+	   wide buy button. Sits between the menu and the spin disc (design). */
+	.ls-buy-rail {
+		width: clamp(24px, 8vh, 72px);
+		height: clamp(46px, 15.5vh, 140px);
+		flex: 0 0 auto;
+		border: 0;
+		border-radius: clamp(6px, 1.7vh, 15px);
+		background: linear-gradient(180deg, #e3453a 0%, #c0271c 55%, #931910 100%);
+		box-shadow: 0 3px 8px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.28),
+			inset 0 -2px 4px rgba(0, 0, 0, 0.35);
+		cursor: pointer;
+		padding: 0;
+		display: grid;
+		place-items: center;
+		transition: filter 0.12s ease;
+	}
+	.ls-buy-rail:not(:disabled):hover { filter: brightness(1.08); }
+	.ls-buy-rail:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
+	.ls-buy-rail__label {
+		writing-mode: vertical-rl;
+		transform: rotate(180deg);
 		font-family: 'Poppins', sans-serif;
-		font-size: clamp(9px, 2.7vh, 15px);
-		font-weight: 600;
-		line-height: 1;
-		letter-spacing: 0.03em;
-		white-space: nowrap;
-		text-align: center;
-		background: linear-gradient(184deg, #ffd84a 10%, #ffa90e 60%, #d18005 95%);
-		background-clip: text;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.75));
+		font-weight: 800;
+		font-size: clamp(9px, 3vh, 22px);
+		letter-spacing: 0.08em;
+		color: #fff;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
 	}
 	.ls-balance {
 		display: flex;
 		align-items: baseline;
 		gap: 8px;
-		/* max-content, NOT 100% and NOT shrink-to-fit: the pill hugs its own single-line width even
-		   when that is wider than the rail, which is exactly what fitPill measures to compute the
-		   down-scale. A shrink-to-fit width (the flex default) would clamp to the rail instead, and
-		   the overflow fitPill needs to see would never appear. .ls-left's overflow:hidden is the
-		   safety clip if a fit is ever missed. */
+		/* max-content so fitPill can see the pill's true unwrapped width vs the column's capped width. */
 		width: max-content;
 		max-width: none;
 		box-sizing: border-box;
@@ -2122,28 +2090,18 @@
 		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
 		backdrop-filter: blur(4px);
 	}
-	/* Bottom-right rail — the mirror of .ls-left, holding the WIN readout. It exists so WIN has a
-	   DEFINITE slot to be fitted against: as a bare right:16px pill it just grew leftward with the
-	   amount and drew straight over the bet pad on small landscape windows (a $5,000,592.00 win
-	   overlapped the pad by ~20px at 407×300, ~17px at 640×420), while its use:fitText could never
-	   help — a pill that hugs its own text makes the measured slot equal to the text.
-	   Width runs from the bet pad's right edge to the viewport edge: the pad is centred on 61% and
-	   is clamp(90px,46vh,390px) wide, so 39% minus half the pad minus the margins is the free band.
-	   It may extend under .ls-right because that rail is vertically CENTRED — the bottom corner it
-	   occupies is clear of the buttons. */
+	/* Bottom-right corner — the mirror of .ls-left, holding the WIN readout. Its right offset clears
+	   the vertical control rail (rail width + a margin) so WIN sits to the LEFT of the rail, level
+	   with the BALANCE/BET stack opposite it. */
 	.ls-right-bottom {
 		position: absolute;
-		right: 6px;
-		/* Same centre line + bottom-edge floor as .ls-left, so the two readouts stay level. */
-		bottom: max(
-			var(--ls-readout-bottom-min),
-			calc(var(--ls-controls-center) - var(--ls-pill-h, 0px) / 2)
-		);
-		width: calc(39% - clamp(90px, 46vh, 390px) / 2 - 14px);
+		right: calc(clamp(31px, 10.6vh, 95px) + clamp(12px, 2.4vw, 26px));
+		bottom: var(--ls-corner-bottom);
+		width: max-content;
+		max-width: 32%;
 		display: flex;
 		flex-direction: column;
 		align-items: flex-end;
-		overflow: hidden;
 	}
 	/* WIN readout — mirrors the BALANCE block bottom-left, same pill and same fitPill scaling.
 	   Dark translucent pill keeps the text readable over the bright forest art. */
@@ -2239,39 +2197,32 @@
 		}
 	}
 
-	/* Bottom-centre bet pad: − value + */
+	/* BET stepper — a dark pill (matching BALANCE) sitting under it in the left column: − value + */
 	.ls-bet {
-		position: absolute;
-		/* Shifted right of centre; BUY BONUS sits to its left (Figma design). */
-		left: 61%;
-		bottom: calc(-1 * var(--ls-drop) - 4px);
-		transform: translateX(-50%);
 		display: flex;
 		align-items: center;
-		/* Pad wraps the (bigger) − / + buttons with clear wood margin around them. */
-		height: clamp(28px, 13.5vh, 116px);
-		width: clamp(90px, 46vh, 390px);
-		padding: 0 1.0%;
+		gap: clamp(3px, 1vh, 8px);
 		box-sizing: border-box;
-		border: 0;
-		background: var(--ls-betpad) center / 100% 100% no-repeat;
+		padding: clamp(2px, 0.7vh, 5px) clamp(5px, 1.2vh, 11px);
+		border-radius: 12px;
+		background: rgba(17, 12, 10, 0.72);
+		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
+		backdrop-filter: blur(4px);
 	}
 	.ls-bet__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 700;
-		font-size: clamp(11px, 3.9vh, 23px);
+		font-size: clamp(10px, 3vh, 20px);
 		color: #fff;
-		/* Auto side margins centre the value and push the two buttons to the pill ends. */
-		margin: 0 auto;
+		min-width: clamp(40px, 12vh, 108px);
 		flex: 0 0 auto;
 		white-space: nowrap;
 		text-align: center;
 	}
-	/* Same technique as .ls-round (which renders as a proper circle): normal-flow square button.
-	   The absolute-positioning version was rendering as an oval. */
+	/* Round − / + buttons (wooden disc art), sized to sit inside the bet pill. */
 	.ls-step {
-		width: clamp(21px, 10.5vh, 84px);
-		height: clamp(21px, 10.5vh, 84px);
+		width: clamp(18px, 5.6vh, 46px);
+		height: clamp(18px, 5.6vh, 46px);
 		flex: 0 0 auto;
 		border: 0;
 		background: var(--btn-round-bg) center / contain no-repeat;
@@ -2321,6 +2272,30 @@
 	.ls-round:disabled { opacity: 0.5; cursor: default; }
 	.ls-round .ls-icon { width: 46%; height: 46%; object-fit: contain; }
 	.ls-round .ls-icon.is-muted { opacity: 1; }
+
+	/* Menu (☰) wrapper — anchors the SOUND/MUSIC/INFO popup, which opens to the LEFT of the rail. */
+	.ls-menu-wrap {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex: 0 0 auto;
+	}
+	.ls-menu-pop {
+		position: absolute;
+		right: calc(100% + clamp(6px, 1.4vw, 12px));
+		top: 50%;
+		transform: translateY(-50%);
+		display: flex;
+		flex-direction: column;
+		gap: clamp(3px, 0.8vh, 7px);
+		padding: clamp(5px, 1vh, 9px);
+		border-radius: 12px;
+		background: rgba(20, 14, 11, 0.96);
+		box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+		pointer-events: auto;
+		z-index: 30;
+	}
 
 	.ls-spin {
 		width: clamp(62px, 23vh, 210px);
