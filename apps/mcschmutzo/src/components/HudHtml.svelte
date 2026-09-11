@@ -787,6 +787,9 @@
 		     stack and a right control rail (menu · BONUS · spin · turbo · auto), WIN bottom-right.
 		     Everything scales with viewport height (vh) so it shrinks together on smaller landscapes. -->
 		<div class="ls-hud">
+			<!-- Press Play studio mark, centred above the right control rail. -->
+			<img class="ls-pp" src={ptPressPlay} alt="Press Play" draggable="false" />
+
 			<!-- Left column: BALANCE over the BET stepper, bottom-left -->
 			<div class="ls-left">
 				<div class="ls-balance" use:fitPill={{ dep: formattedBalance, align: 'left' }}>
@@ -2028,6 +2031,19 @@
 		pointer-events: auto;
 	}
 
+	/* Press Play mark, in the top band above the control rail, horizontally centred on the rail
+	   (rail right margin + half the rail width). */
+	.ls-pp {
+		position: absolute;
+		top: clamp(3px, 1.6vh, 14px);
+		right: calc(clamp(16px, 3vw, 34px) + clamp(40px, 13vh, 108px) / 2);
+		transform: translateX(50%);
+		width: clamp(56px, 13vh, 116px);
+		height: auto;
+		pointer-events: none;
+		filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
+	}
+
 	/* Left column: BALANCE over the BET stepper, bottom-left corner. width:max-content lets fitPill
 	   see the pills' true width; max-width caps a giant balance so it shrinks instead of reaching the
 	   board. The corner is clear of the board (the board doesn't extend full-width to the bottom). */
@@ -2216,15 +2232,17 @@
 		   focal turn disc is bigger and overflows the bar's left + right sides (design look). */
 		--ls-rail-w: clamp(40px, 13vh, 108px);
 		width: var(--ls-rail-w);
+		/* Height is driven by the VIEWPORT (not the width) so tightening the bar doesn't also make it
+		   short. The buttons distribute down the tall bar via space-between; the padding keeps the
+		   outer two (menu, AUTO) inset from the rounded ends. Leaves a top band for the Press Play
+		   mark that sits above the bar. */
+		height: clamp(176px, 85vh, 580px);
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		justify-content: center;
-		gap: calc(var(--ls-rail-w) * 0.18);
-		/* Generous top/bottom inset so the outer buttons (menu, AUTO) don't touch the bar's rounded
-		   ends — noticeably larger than the inter-button gap. */
-		padding: calc(var(--ls-rail-w) * 0.42) 0;
+		justify-content: space-between;
+		padding: clamp(8px, 3.2vh, 26px) 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
