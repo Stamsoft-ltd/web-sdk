@@ -879,14 +879,14 @@
 					<img class="ls-icon" src={turboIcon} alt="turbo" />
 				</button>
 				<button
-					class="ls-round"
+					class="ls-round ls-round--auto"
 					class:active={hasAuto}
 					type="button"
 					onclick={onAuto}
 					disabled={disableAuto}
 					aria-label={i18nDerived.autoplayLabel()}
 				>
-					<img class="ls-icon" src={iconAuto} alt="auto" />
+					<img class="ls-icon ls-icon--auto" src={iconAutoFull} alt="auto" />
 				</button>
 			</div>
 
@@ -2082,7 +2082,7 @@
 	.ls-right-bottom {
 		position: absolute;
 		/* Clear the vertical control rail (its width + a margin) so WIN sits to its left. */
-		right: calc(clamp(52px, 17vh, 150px) + clamp(12px, 2.4vw, 26px));
+		right: calc(clamp(60px, 20vh, 175px) + clamp(12px, 2.4vw, 26px));
 		bottom: var(--ls-corner-bottom);
 		width: max-content;
 		max-width: 32%;
@@ -2162,7 +2162,7 @@
 		.ls-balance__value,
 		.ls-win__value { font-size: clamp(8px, 2.6vh, 13px); }
 		/* Roomier window → a slightly wider rail (everything else scales off --ls-rail-w). */
-		.ls-right { --ls-rail-w: clamp(60px, 19vh, 165px); }
+		.ls-right { --ls-rail-w: clamp(68px, 22vh, 190px); }
 	}
 
 	/* BET stepper — same small #1F1F1F pill as BALANCE, stacked under it: − value + */
@@ -2217,7 +2217,7 @@
 		/* The rail's width drives everything: the dark bar (nav_bg.svg) fills the element box, and
 		   every control is sized as a fraction of --ls-rail-w so they all sit INSIDE the bar (the spin
 		   disc used to be ~2× the bar and spilled out both sides). */
-		--ls-rail-w: clamp(52px, 17vh, 150px);
+		--ls-rail-w: clamp(60px, 20vh, 175px);
 		width: var(--ls-rail-w);
 		box-sizing: border-box;
 		display: flex;
@@ -2228,13 +2228,15 @@
 		padding: calc(var(--ls-rail-w) * 0.2) 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
-	/* Menu / turbo / auto — plain white glyphs on the dark bar (no wooden button chrome). Sized as a
-	   fraction of the rail width so they stay inside the bar. */
+	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
+	   icon), sized as a fraction of the rail width so they sit inside the bar. */
 	.ls-round {
-		width: calc(var(--ls-rail-w) * 0.56);
-		height: calc(var(--ls-rail-w) * 0.56);
-		border: 0;
-		background: none;
+		width: calc(var(--ls-rail-w) * 0.58);
+		height: calc(var(--ls-rail-w) * 0.58);
+		box-sizing: border-box;
+		border: 2px solid #4c433d;
+		border-radius: 50%;
+		background: radial-gradient(circle at 50% 32%, #2b2622, #17130f);
 		padding: 0;
 		cursor: pointer;
 		display: grid;
@@ -2243,9 +2245,13 @@
 	}
 	.ls-round:not(:disabled):hover { filter: brightness(1.2); }
 	.ls-round:disabled { opacity: 0.5; cursor: default; }
-	/* Glyphs forced white (source icons are gold), a touch larger now that there's no button disc. */
-	.ls-round .ls-icon { width: 60%; height: 60%; object-fit: contain; filter: brightness(0) invert(1); }
+	/* White icon sitting inside the disc (source icons are gold). */
+	.ls-round .ls-icon { width: 46%; height: 46%; object-fit: contain; filter: brightness(0) invert(1); }
 	.ls-round .ls-icon.is-muted { opacity: 1; }
+	/* AUTO uses the full design art (disc + arrows + "AUTO") — no frame, no white filter (its "AUTO"
+	   is white-on-dark and the filter would erase it), exactly like the desktop AUTO button. */
+	.ls-round--auto { border: 0; background: none; }
+	.ls-round--auto .ls-icon--auto { width: 100%; height: 100%; filter: none; }
 
 	/* Menu (☰) wrapper — anchors the SOUND/MUSIC/INFO popup, which opens to the LEFT of the rail. */
 	.ls-menu-wrap {
@@ -2272,10 +2278,11 @@
 	}
 
 	.ls-spin {
-		width: calc(var(--ls-rail-w) * 0.9);
-		height: calc(var(--ls-rail-w) * 0.9);
+		/* The focal button — fills the bar width (slightly larger than the round buttons). */
+		width: calc(var(--ls-rail-w) * 1.02);
+		height: calc(var(--ls-rail-w) * 1.02);
 		border: 0;
-		/* The real turn-button disc art, sized to sit inside the bar. */
+		/* The real turn-button disc art. */
 		background: var(--ls-turn) center / contain no-repeat;
 		padding: 0;
 		cursor: pointer;
