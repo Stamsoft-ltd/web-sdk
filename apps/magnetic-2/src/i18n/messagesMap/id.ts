@@ -22,7 +22,7 @@ export default {
 		'Saat aktif, Pengubah Polaritas menghempaskan seluruh klaster ke dinding yang ditunjukkan panah. Simbol baru dengan jenis yang sama lalu ditambahkan di sepanjang dinding itu, membentuk klaster yang lebih besar.',
 	'INFO WILD VALUES': 'Nilai Wild Pengganda',
 	'INFO WILD STANDARD': 'Nilai wild pengganda standar:',
-	'INFO WILD RARE': 'Nilai wild pengganda langka (terutama di Core Overload):',
+	'INFO WILD RARE': 'Nilai wild pengganda langka:',
 	'INFO FEAT WILD TITLE': 'Simbol Wild',
 	'INFO FEAT WILD TEXT':
 		'Menggantikan semua simbol pembayaran kecuali Scatter. Saat diaktifkan, Wild Magnetik memilih secara acak satu simbol pembayaran reguler yang sedang ada di grid dan menarik semua simbol yang cocok. Wild dan Scatter tidak dapat dipilih. Wild Magnetik hanya aktif saat mendarat dan tidak aktif kembali selama respin yang dihasilkan.',
@@ -35,6 +35,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Putaran Gratis Core Overload',
 	'INFO FEAT MEGA TEXT':
 		'Dipicu oleh 4 Scatter. Memberikan 10 Putaran Gratis. Kluster magnetis dapat tetap terkunci dan tumbuh sepanjang fitur.',
+	'INFO FEAT ZERO TEXT':
+		'Dipicu oleh 5 Scatter. Memberikan 10 Putaran Gratis. Mempertahankan mekanik Core Overload: kluster magnetis dapat tetap terkunci dan tumbuh sepanjang fitur. Magnet Pengganda dijamin pada putaran pertama.',
 	'INFO FEAT RETRIGGER':
 		'Free Spin tidak dapat dipicu ulang. Scatter yang muncul selama putaran bonus tidak memberikan spin tambahan.',
 	'INFO CW 1': 'Magnetic menggunakan kemenangan kluster alih-alih garis pembayaran.',
@@ -145,7 +147,8 @@ export default {
 	'MYSTERY WON GRAVITY': '%count% putaran gratis dengan koneksi magnetis dan Magnet Pengganda.',
 	'MYSTERY WON CORE':
 		'%count% putaran gratis dengan klaster magnetis permanen yang terus tumbuh selama bonus.',
-	'MYSTERY WON ZERO': '%count% putaran gratis dengan Magnet Pengganda terjamin pada putaran pertama.',
+	'MYSTERY WON ZERO':
+		'%count% putaran gratis dengan Magnet Pengganda terjamin pada putaran pertama.',
 	'BUY ZERO TITLE': 'Protokol Titik Nol',
 	'BUY ZERO DESC':
 		'10 putaran gratis diberikan dengan Magnet Pengganda terjamin pada putaran pertama.',

@@ -636,7 +636,13 @@
 	winning: boolean,
 )}
 	{@const isScatterCell = cell.scatter || cell.name === 'SCATTER'}
-	{@const isWildCell = cell.wild || cell.name === 'WILD'}
+	<!-- Wild-ness is a matter of NAME. `cell.wild` used to be enough, but math also sets wild/magnet
+	     on the pay symbols it pulls into a magnet cluster, and `settleBoardInstant` copies those
+	     flags straight onto the board — so an H1 in the cluster drew the wild lockup after a
+	     Polarity shift. MAGNET joins the branch because the magnet device IS this lockup: the client
+	     already renames its own magnet anchors to WILD (markMagnetPositions), so a raw MAGNET cell
+	     from math fell through every branch to the bare sprite and lost its multiplier disc. -->
+	{@const isWildCell = cell.name === 'WILD' || cell.name === 'MAGNET'}
 	{#if cell.name === 'POLARITY' || cell.polarity}
 		<PolaritySymbol
 			{x}

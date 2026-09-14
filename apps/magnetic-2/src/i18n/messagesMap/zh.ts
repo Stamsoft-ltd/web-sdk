@@ -21,7 +21,7 @@ export default {
 		'启动后，极性转换器会将整个连块撞向箭头所指的那面墙。随后会沿着那面墙补充相同类型的新符号，形成更大的连块。',
 	'INFO WILD VALUES': '倍数百搭数值',
 	'INFO WILD STANDARD': '标准倍数百搭数值：',
-	'INFO WILD RARE': '稀有倍数百搭数值（主要出现在 Core Overload 中）：',
+	'INFO WILD RARE': '稀有倍数百搭数值：',
 	'INFO FEAT WILD TITLE': '百搭符号',
 	'INFO FEAT WILD TEXT':
 		'可替代除分散符号以外的所有赔付符号。 激活后，磁力百搭符号会从当前网格上的普通派彩符号中随机选择一种，并将所有相同符号吸到一起。Wild和Scatter不能被选中。磁力百搭仅在落下时激活，并且不会在由此触发的重转中再次激活。',
@@ -33,8 +33,9 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Core Overload 免费旋转',
 	'INFO FEAT MEGA TEXT':
 		'由 4 个分散符号触发。奖励 10 次免费旋转。磁性连群可保持锁定并在整个特色功能期间不断增长。',
-	'INFO FEAT RETRIGGER':
-		'免费旋转无法再次触发。奖励回合中出现的分散符号不会赠送额外旋转次数。',
+	'INFO FEAT ZERO TEXT':
+		'由 5 个分散符号触发。奖励 10 次免费旋转。保留 Core Overload 机制，磁性连群可保持锁定并在整个特色功能期间不断增长。首次旋转必定出现倍数磁铁。',
+	'INFO FEAT RETRIGGER': '免费旋转无法再次触发。奖励回合中出现的分散符号不会赠送额外旋转次数。',
 	'INFO CW 1': 'Magnetic 采用连群获胜而非赔付线。',
 	'INFO CW 2': '当 5 个或更多相同符号在横向或纵向上彼此相邻时即形成获胜。',
 	'INFO CW 3': '对角线连接不计入。',

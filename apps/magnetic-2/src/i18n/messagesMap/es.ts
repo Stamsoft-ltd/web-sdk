@@ -22,7 +22,7 @@ export default {
 		'Al activarse, el Cambiador de Polaridad lanza todo el clúster hacia la pared que indica la flecha. Después se añaden nuevos símbolos del mismo tipo a lo largo de esa pared, creando un clúster más grande.',
 	'INFO WILD VALUES': 'Valores del Wild multiplicador',
 	'INFO WILD STANDARD': 'Valores estándar del Wild multiplicador:',
-	'INFO WILD RARE': 'Valores raros del Wild multiplicador (principalmente en Core Overload):',
+	'INFO WILD RARE': 'Valores raros del Wild multiplicador:',
 	'INFO FEAT WILD TITLE': 'Símbolo Wild',
 	'INFO FEAT WILD TEXT':
 		'Sustituye a todos los símbolos de pago excepto al Scatter. Al activarse, el Wild Magnético selecciona al azar un símbolo normal de pago presente en la cuadrícula y atrae todos los símbolos iguales. Los Wilds y Scatters no pueden seleccionarse. Un Wild Magnético solo se activa cuando cae y no vuelve a activarse durante el respin resultante.',
@@ -35,6 +35,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Giros Gratis Core Overload',
 	'INFO FEAT MEGA TEXT':
 		'Se activa con 4 Scatters. Otorga 10 Giros Gratis. Los clústeres magnéticos pueden permanecer bloqueados y crecer a lo largo de la función.',
+	'INFO FEAT ZERO TEXT':
+		'Se activa con 5 Scatters. Otorga 10 Giros Gratis. Mantiene la mecánica Core Overload: los clústeres magnéticos pueden permanecer bloqueados y crecer a lo largo de la función. Un Imán Multiplicador está garantizado en el primer giro.',
 	'INFO FEAT RETRIGGER':
 		'Las Tiradas Gratis no se pueden volver a activar. Los Scatters que aparezcan durante una ronda de bonus no otorgan tiradas adicionales.',
 	'INFO CW 1': 'Magnetic usa ganancias por clúster en lugar de líneas de pago.',
@@ -145,7 +147,8 @@ export default {
 	'MYSTERY WON GRAVITY': '%count% giros gratis con conexiones magnéticas e Imanes Multiplicadores.',
 	'MYSTERY WON CORE':
 		'%count% giros gratis con grupos magnéticos persistentes que crecen durante la bonificación.',
-	'MYSTERY WON ZERO': '%count% giros gratis con un Imán Multiplicador garantizado en el primer giro.',
+	'MYSTERY WON ZERO':
+		'%count% giros gratis con un Imán Multiplicador garantizado en el primer giro.',
 	'BUY ZERO TITLE': 'Protocolo Punto Cero',
 	'BUY ZERO DESC':
 		'Se otorgan 10 giros gratis con un Imán Multiplicador garantizado en el primer giro.',

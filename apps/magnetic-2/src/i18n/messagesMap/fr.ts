@@ -22,8 +22,7 @@ export default {
 		"Une fois activé, l'Inverseur de Polarité projette tout le cluster contre le mur indiqué par la flèche. De nouveaux symboles du même type sont ensuite ajoutés le long de ce mur, formant un cluster plus grand.",
 	'INFO WILD VALUES': 'Valeurs des Wilds à multiplicateur',
 	'INFO WILD STANDARD': 'Valeurs standard des Wilds à multiplicateur :',
-	'INFO WILD RARE':
-		'Valeurs rares des Wilds à multiplicateur (principalement dans Core Overload) :',
+	'INFO WILD RARE': 'Valeurs rares des Wilds à multiplicateur :',
 	'INFO FEAT WILD TITLE': 'Symbole Wild',
 	'INFO FEAT WILD TEXT':
 		'Remplace tous les symboles de gain sauf le Scatter. Lorsqu’il est activé, le Wild Magnétique sélectionne au hasard un symbole payant normal présent sur la grille et attire tous les symboles identiques. Les Wilds et les Scatters ne peuvent pas être sélectionnés. Un Wild Magnétique ne s’active que lorsqu’il atterrit et ne se réactive pas pendant le respin qui en résulte.',
@@ -36,6 +35,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Tours Gratuits Core Overload',
 	'INFO FEAT MEGA TEXT':
 		'Déclenché par 4 Scatters. Octroie 10 Tours Gratuits. Les clusters magnétiques peuvent rester verrouillés et grandir tout au long de la fonction.',
+	'INFO FEAT ZERO TEXT':
+		'Déclenché par 5 Scatters. Octroie 10 Tours Gratuits. Conserve la mécanique Core Overload : les clusters magnétiques peuvent rester verrouillés et grandir tout au long de la fonction. Un Aimant Multiplicateur est garanti dès le tout premier tour.',
 	'INFO FEAT RETRIGGER':
 		'Les Tours Gratuits ne peuvent pas être redéclenchés. Les Scatters obtenus pendant un tour bonus n’octroient pas de tours supplémentaires.',
 	'INFO CW 1': 'Magnetic utilise des gains en cluster au lieu de lignes de paiement.',
@@ -146,7 +147,8 @@ export default {
 		'%count% tours gratuits avec connexions magnétiques et Aimants Multiplicateurs.',
 	'MYSTERY WON CORE':
 		'%count% tours gratuits avec des grappes magnétiques persistantes qui grandissent pendant le bonus.',
-	'MYSTERY WON ZERO': '%count% tours gratuits avec un Aimant Multiplicateur garanti au premier tour.',
+	'MYSTERY WON ZERO':
+		'%count% tours gratuits avec un Aimant Multiplicateur garanti au premier tour.',
 	'BUY ZERO TITLE': 'Protocole Point Zéro',
 	'BUY ZERO DESC':
 		'10 tours gratuits avec un Aimant Multiplicateur garanti dès le tout premier tour.',

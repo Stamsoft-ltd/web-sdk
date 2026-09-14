@@ -22,7 +22,7 @@ export default {
 		'Etkinleştiğinde Kutup Değiştirici tüm kümeyi okun gösterdiği duvara savurur. Ardından o duvar boyunca aynı türden yeni semboller eklenerek daha büyük bir küme oluşur.',
 	'INFO WILD VALUES': 'Çarpan Wild Değerleri',
 	'INFO WILD STANDARD': 'Standart çarpan wild değerleri:',
-	'INFO WILD RARE': "Nadir çarpan wild değerleri (çoğunlukla Core Overload'de):",
+	'INFO WILD RARE': 'Nadir çarpan wild değerleri:',
 	'INFO FEAT WILD TITLE': 'Wild Sembol',
 	'INFO FEAT WILD TEXT':
 		'Scatter dışındaki tüm ödeme sembollerinin yerine geçer. Etkinleştirildiğinde Manyetik Wild, ızgarada bulunan bir normal ödeme sembolünü rastgele seçer ve eşleşen tüm sembolleri bir araya çeker. Wild ve Scatter seçilemez. Manyetik Wild yalnızca geldiğinde etkinleşir ve bunun sonucunda oluşan yeniden çevrim sırasında tekrar etkinleşmez.',
@@ -35,6 +35,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Core Overload Bedava Dönüşler',
 	'INFO FEAT MEGA TEXT':
 		'4 Scatter ile tetiklenir. 10 Bedava Dönüş verir. Manyetik kümeler kilitli kalabilir ve özellik boyunca büyüyebilir.',
+	'INFO FEAT ZERO TEXT':
+		'5 Scatter ile tetiklenir. 10 Bedava Dönüş verir. Core Overload mekaniğini korur: manyetik kümeler kilitli kalabilir ve özellik boyunca büyüyebilir. İlk dönüşte Çarpan Mıknatısı garantilidir.',
 	'INFO FEAT RETRIGGER':
 		'Bedava Dönüşler yeniden tetiklenemez. Bonus turu sırasında gelen Scatter sembolleri ek dönüş kazandırmaz.',
 	'INFO CW 1': 'Magnetic, ödeme çizgileri yerine küme kazançları kullanır.',

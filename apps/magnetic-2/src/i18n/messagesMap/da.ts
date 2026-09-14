@@ -24,7 +24,7 @@ export default {
 		'Når den aktiveres, slynger Polaritetsskifteren hele klyngen mod den væg, pilen viser. Derefter tilføjes nye symboler af samme type langs den væg, så der opstår en større klynge.',
 	'INFO WILD VALUES': 'Multiplikator-Wild-værdier',
 	'INFO WILD STANDARD': 'Standard multiplikator-Wild-værdier:',
-	'INFO WILD RARE': 'Sjældne multiplikator-Wild-værdier (hovedsageligt i Core Overload):',
+	'INFO WILD RARE': 'Sjældne multiplikator-Wild-værdier:',
 	'INFO FEAT WILD TITLE': 'Wild-symbol',
 	'INFO FEAT WILD TEXT':
 		'Erstatter alle udbetalende symboler undtagen Scatter. Når den aktiveres, vælger Magnetic Wild tilfældigt ét almindeligt gevinstsymbol, der aktuelt findes på spillefeltet, og trækker alle matchende symboler sammen. Wilds og Scatters kan ikke vælges. Et Magnetic Wild aktiveres kun, når det lander, og aktiveres ikke igen under det efterfølgende respin.',
@@ -37,6 +37,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Core Overload gratis spins',
 	'INFO FEAT MEGA TEXT':
 		'Udløses af 4 Scatter. Giver 10 gratis spins. Magnetiske klynger kan forblive låst og vokse gennem hele funktionen.',
+	'INFO FEAT ZERO TEXT':
+		'Udløses af 5 Scatter. Giver 10 gratis spins. Bevarer Core Overload-mekanikken: magnetiske klynger kan forblive låst og vokse gennem hele funktionen. En multiplikatormagnet er garanteret på allerførste spin.',
 	'INFO FEAT RETRIGGER':
 		'Free Spins kan ikke genudløses. Scatters, der lander under en bonusrunde, giver ikke ekstra spins.',
 	'INFO CW 1': 'Magnetic bruger klyngegevinster i stedet for gevinstlinjer.',
@@ -142,7 +144,8 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'Der gives 10 gratis spins. Et tilfældigt symbol bliver magnetisk og forbliver forbundet mellem spins. Den magnetiske klynge fortsætter og vokser gennem hele funktionen, mens multiplikatorerne fortsætter med at stable sig.',
-	'MYSTERY WON GRAVITY': '%count% gratis spins med magnetiske forbindelser og multiplikatormagneter.',
+	'MYSTERY WON GRAVITY':
+		'%count% gratis spins med magnetiske forbindelser og multiplikatormagneter.',
 	'MYSTERY WON CORE':
 		'%count% gratis spins med vedvarende magnetiske klynger, der kan vokse gennem bonussen.',
 	'MYSTERY WON ZERO': '%count% gratis spins med en garanteret multiplikatormagnet på første spin.',

@@ -22,7 +22,7 @@ export default {
 		'Po aktywacji Zmieniacz Polaryzacji ciska cały klaster w ścianę wskazaną przez strzałkę. Następnie wzdłuż tej ściany dokładane są nowe symbole tego samego typu, tworząc większy klaster.',
 	'INFO WILD VALUES': 'Wartości Wilda z Mnożnikiem',
 	'INFO WILD STANDARD': 'Standardowe wartości wilda z mnożnikiem:',
-	'INFO WILD RARE': 'Rzadkie wartości wilda z mnożnikiem (głównie w Core Overload):',
+	'INFO WILD RARE': 'Rzadkie wartości wilda z mnożnikiem:',
 	'INFO FEAT WILD TITLE': 'Symbol Wild',
 	'INFO FEAT WILD TEXT':
 		'Zastępuje wszystkie symbole wypłacające z wyjątkiem Scattera. Po aktywacji Magnetic Wild losowo wybiera jeden zwykły symbol wypłacający znajdujący się obecnie na siatce i przyciąga wszystkie pasujące symbole. Wildy i Scattery nie mogą zostać wybrane. Magnetic Wild aktywuje się tylko wtedy, gdy wyląduje, i nie aktywuje się ponownie podczas wynikającego z tego respinu.',
@@ -34,6 +34,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Darmowe Spiny Core Overload',
 	'INFO FEAT MEGA TEXT':
 		'Uruchamiane przez 4 Scattery. Przyznaje 10 Darmowych Spinów. Magnetyczne klastry mogą pozostać zablokowane i rosnąć przez całą funkcję.',
+	'INFO FEAT ZERO TEXT':
+		'Uruchamiane przez 5 Scatterów. Przyznaje 10 Darmowych Spinów. Zachowuje mechanikę Core Overload: magnetyczne klastry mogą pozostać zablokowane i rosnąć przez całą funkcję. Magnes Mnożnika jest gwarantowany już w pierwszym spinie.',
 	'INFO FEAT RETRIGGER':
 		'Darmowych Spinów nie można ponownie aktywować. Symbole Scatter, które wypadną podczas rundy bonusowej, nie przyznają dodatkowych spinów.',
 	'INFO CW 1': 'Magnetic używa wygranych klastrowych zamiast linii wypłat.',
@@ -140,10 +142,12 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'Przyznane 10 darmowych spinów. Jeden losowy symbol staje się magnetyczny i pozostaje połączony między spinami. Magnetyczny klaster utrzymuje się i rośnie przez całą funkcję, podczas gdy mnożniki wciąż się kumulują.',
-	'MYSTERY WON GRAVITY': '%count% darmowych spinów z magnetycznymi połączeniami i Magnesami Mnożnika.',
+	'MYSTERY WON GRAVITY':
+		'%count% darmowych spinów z magnetycznymi połączeniami i Magnesami Mnożnika.',
 	'MYSTERY WON CORE':
 		'%count% darmowych spinów z trwałymi klastrami magnetycznymi, które rosną przez cały bonus.',
-	'MYSTERY WON ZERO': '%count% darmowych spinów z gwarantowanym Magnesem Mnożnika w pierwszym spinie.',
+	'MYSTERY WON ZERO':
+		'%count% darmowych spinów z gwarantowanym Magnesem Mnożnika w pierwszym spinie.',
 	'BUY ZERO TITLE': 'Protokół Punktu Zero',
 	'BUY ZERO DESC': '10 darmowych spinów z gwarantowanym Magnesem Mnożnika już w pierwszym spinie.',
 	'BUY MYSTERY TITLE': 'Tajemniczy Bonus',

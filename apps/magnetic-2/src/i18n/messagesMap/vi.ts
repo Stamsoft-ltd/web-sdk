@@ -22,7 +22,7 @@ export default {
 		'Khi được kích hoạt, Bộ đổi cực tính đẩy toàn bộ cụm về phía bức tường mà mũi tên chỉ. Sau đó, các biểu tượng mới cùng loại được thêm dọc theo bức tường ấy, tạo nên một cụm lớn hơn.',
 	'INFO WILD VALUES': 'Giá Trị Wild Nhân',
 	'INFO WILD STANDARD': 'Giá trị wild nhân tiêu chuẩn:',
-	'INFO WILD RARE': 'Giá trị wild nhân hiếm (chủ yếu trong Core Overload):',
+	'INFO WILD RARE': 'Giá trị wild nhân hiếm:',
 	'INFO FEAT WILD TITLE': 'Biểu Tượng Wild',
 	'INFO FEAT WILD TEXT':
 		'Thay thế cho tất cả biểu tượng trả thưởng ngoại trừ Scatter. Khi được kích hoạt, Wild Nam Châm chọn ngẫu nhiên một biểu tượng trả thưởng thường đang có trên lưới và hút tất cả biểu tượng khớp lại với nhau. Không thể chọn Wild hoặc Scatter. Wild Nam Châm chỉ kích hoạt khi xuất hiện và không kích hoạt lại trong lượt quay lại phát sinh.',
@@ -35,6 +35,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Vòng Quay Miễn Phí Core Overload',
 	'INFO FEAT MEGA TEXT':
 		'Được kích hoạt bởi 4 Scatter. Trao 10 Vòng Quay Miễn Phí. Các cụm từ tính có thể giữ nguyên khóa và lớn dần trong suốt tính năng.',
+	'INFO FEAT ZERO TEXT':
+		'Được kích hoạt bởi 5 Scatter. Trao 10 Vòng Quay Miễn Phí. Giữ nguyên cơ chế Core Overload: các cụm từ tính có thể giữ nguyên khóa và lớn dần trong suốt tính năng. Nam Châm Nhân được đảm bảo ngay ở vòng quay đầu tiên.',
 	'INFO FEAT RETRIGGER':
 		'Vòng Quay Miễn Phí không thể được kích hoạt lại. Các biểu tượng Scatter xuất hiện trong vòng thưởng không trao thêm lượt quay.',
 	'INFO CW 1': 'Magnetic sử dụng chiến thắng theo cụm thay vì các dòng trả thưởng.',
@@ -141,7 +143,8 @@ export default {
 	'BUY MEGA DESC':
 		'10 lượt quay miễn phí được trao. Một biểu tượng ngẫu nhiên trở nên có từ tính và vẫn kết nối giữa các lượt quay. Cụm từ tính tồn tại và phát triển trong suốt tính năng trong khi các hệ số nhân tiếp tục tích lũy.',
 	'MYSTERY WON GRAVITY': '%count% vòng quay miễn phí với kết nối từ tính và Nam Châm Nhân.',
-	'MYSTERY WON CORE': '%count% vòng quay miễn phí với cụm từ tính bền vững lớn dần suốt vòng thưởng.',
+	'MYSTERY WON CORE':
+		'%count% vòng quay miễn phí với cụm từ tính bền vững lớn dần suốt vòng thưởng.',
 	'MYSTERY WON ZERO': '%count% vòng quay miễn phí với Nam Châm Nhân đảm bảo ở vòng quay đầu tiên.',
 	'BUY ZERO TITLE': 'Giao Thức Điểm Không',
 	'BUY ZERO DESC':

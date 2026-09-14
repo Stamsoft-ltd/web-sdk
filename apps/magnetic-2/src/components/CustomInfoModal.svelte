@@ -388,11 +388,12 @@
 									<span class="feat-x">4x</span><img src={scatter} alt="Scatter" />
 								</div>
 							</div>
-							<!-- Was a hardcoded English paragraph and the splash's all-caps wordmark; both are
-						     now the buy-menu card's own keys, like every other card here and on page 5. -->
+							<!-- Title is the buy menu's own key (identical wording); the body is this page's, because
+						     a buy card cannot say "Triggered by 5 Scatters" and this one has to, like its two
+						     siblings — trigger, reward, and what the room keeps from Core Overload. -->
 							<div class="card feat-card feat-tall">
 								<h3 class="feat-h">{t('BUY ZERO TITLE')}</h3>
-								<p class="feat-p">{t('BUY ZERO DESC')}</p>
+								<p class="feat-p">{t('INFO FEAT ZERO TEXT')}</p>
 								<div class="feat-trigger">
 									<span class="feat-x">5x</span><img src={scatter} alt="Scatter" />
 								</div>
@@ -1126,6 +1127,11 @@
 		min-height: 0;
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
+		/* The implicit row defaults to `auto`, which sizes to the TALLEST card and happily grows past
+		   the grid's own `flex: 1` box — the cards then ran 41px (measured, 1280x720) through the
+		   re-trigger note underneath them. Cap the row at the grid instead; the cards below take the
+		   `overflow: hidden` that the half-height cards have always had. */
+		grid-template-rows: minmax(0, 1fr);
 		gap: clamp(10px, 2cqmin, 22px);
 	}
 	/* The re-trigger rule, under the grid. `flex: 0 0 auto` so it takes its own height off the
@@ -1211,12 +1217,34 @@
 		justify-content: center;
 		gap: clamp(10px, 2.4cqmin, 26px);
 	}
+	/* The three trigger cards carry the longest copy on the page — Zero Point Protocol names its
+	   trigger, its reward, what it keeps from Core Overload AND its guaranteed magnet — under the
+	   page's biggest scatter art. Tighter than the shared feature paragraph, the same way the
+	   Magnetic Wild card is, so the copy fits the capped row without shrinking the art. */
+	.feat-grid .feat-tall {
+		min-height: 0;
+		overflow: hidden;
+		gap: clamp(8px, 1.8cqmin, 20px);
+	}
+	.feat-grid .feat-tall .feat-p {
+		font-size: clamp(9px, 1.72cqmin, 15px);
+		line-height: 1.4;
+	}
 	.feat-grid .feat-ic {
 		width: clamp(84px, 17.5cqmin, 176px);
 		margin: 0;
 	}
+	/* The three trigger cards are equal-height grid items, so the 3x / 4x / 5x rows only line up if
+	   they sit on the card's own bottom edge. Under `justify-content: center` alone each row floats
+	   wherever its paragraph happens to end, and the three paragraphs differ by a line or two.
+	   An auto margin on the heading AND on the trigger splits the slack evenly between them: the
+	   trigger lands on the bottom padding edge in every card, and the heading+copy block stays
+	   optically centred in what is left instead of jumping to the top. */
+	.feat-grid .feat-tall .feat-h {
+		margin-top: auto;
+	}
 	.feat-grid .feat-trigger {
-		margin: 0;
+		margin: auto 0 0;
 	}
 	.feat-grid .feat-trigger img {
 		width: clamp(72px, 14.5cqmin, 146px);

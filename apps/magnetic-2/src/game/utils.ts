@@ -150,7 +150,19 @@ export const getSpriteKeyByName = ({
 	multiplier?: number;
 	magnet?: boolean;
 }) => {
-	const visualName: SymbolName = magnet && name !== 'WILD' ? 'MAGNET' : name;
+	// The magnet plate is chosen by the symbol's NAME, never by the `magnet` flag alone.
+	//
+	// This used to be `magnet && name !== 'WILD' ? 'MAGNET' : name`, which handed the magnet
+	// texture to ANY cell carrying `magnet: true` — including an H1 or an L4 that math tagged as a
+	// member of the magnet's cluster. Nothing in the client ever produced such a cell (the pull
+	// clears `magnet` on every destination, and the anchor is renamed WILD), so it only surfaced
+	// through `settleBoardInstant`, which re-instates math's raw flags verbatim on all 49 cells —
+	// and `polarityShift` is the one event that settles a raw board mid-round. That is the reported
+	// "after the shifter pushes them, the symbols turn into magnets", in base and in bonus alike.
+	//
+	// `updateCellRaw` already folds `name === 'MAGNET'` into the flag, so a real magnet still lands
+	// here as MAGNET and nothing else changes.
+	const visualName: SymbolName = name === 'MAGNET' ? 'MAGNET' : name;
 	const variant = layoutVariant();
 	const staticMap =
 		variant === 'mobile' ? MOBILE_STATIC_KEYS : variant === 'land' ? LANDSCAPE_STATIC_KEYS : null;

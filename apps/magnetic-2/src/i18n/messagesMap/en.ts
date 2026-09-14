@@ -94,7 +94,7 @@ export default {
 		'When activated, the Polarity Shifter slams the whole cluster toward the wall shown by the arrow. New symbols of the same type are then added along that wall, creating a larger cluster.',
 	'INFO WILD VALUES': 'Multiplier Wild Values',
 	'INFO WILD STANDARD': 'Standard multiplier wild values:',
-	'INFO WILD RARE': 'Rare multiplier wild values (mainly in Core Overload):',
+	'INFO WILD RARE': 'Rare multiplier wild values:',
 	// Features
 	'INFO FEAT WILD TITLE': 'Wild Symbol',
 	'INFO FEAT WILD TEXT':
@@ -108,6 +108,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Core Overload Free Spins',
 	'INFO FEAT MEGA TEXT':
 		'Triggered by 4 Scatters. Awards 10 Free Spins. Magnetic clusters can remain locked and grow across the feature.',
+	'INFO FEAT ZERO TEXT':
+		'Triggered by 5 Scatters. Awards 10 Free Spins. Keeps the Core Overload mechanic, allowing Magnetic clusters to remain locked and grow across the feature. A Multiplier Magnet is guaranteed on the very first spin.',
 	'INFO FEAT RETRIGGER':
 		'Free Spins cannot be re-triggered. Scatters landing during a bonus round do not award extra spins.',
 	// Cluster win

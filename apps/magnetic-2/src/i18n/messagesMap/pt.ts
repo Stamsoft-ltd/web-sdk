@@ -22,7 +22,7 @@ export default {
 		'Quando ativado, o Alterador de Polaridade lança todo o cluster contra a parede indicada pela seta. Em seguida, novos símbolos do mesmo tipo são acrescentados ao longo dessa parede, criando um cluster maior.',
 	'INFO WILD VALUES': 'Valores do Wild Multiplicador',
 	'INFO WILD STANDARD': 'Valores padrão do wild multiplicador:',
-	'INFO WILD RARE': 'Valores raros do wild multiplicador (principalmente na Core Overload):',
+	'INFO WILD RARE': 'Valores raros do wild multiplicador:',
 	'INFO FEAT WILD TITLE': 'Símbolo Wild',
 	'INFO FEAT WILD TEXT':
 		'Substitui todos os símbolos de pagamento, exceto o Scatter. Quando ativado, o Wild Magnético seleciona aleatoriamente um símbolo regular de pagamento presente na grade e atrai todos os símbolos iguais. Wilds e Scatters não podem ser selecionados. Um Wild Magnético só é ativado quando aparece e não é reativado durante o respin resultante.',
@@ -35,6 +35,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Rodadas Grátis Core Overload',
 	'INFO FEAT MEGA TEXT':
 		'Ativado por 4 Scatters. Concede 10 Rodadas Grátis. Os clusters magnéticos podem permanecer travados e crescer ao longo do recurso.',
+	'INFO FEAT ZERO TEXT':
+		'Ativado por 5 Scatters. Concede 10 Rodadas Grátis. Mantém a mecânica Core Overload: os clusters magnéticos podem permanecer travados e crescer ao longo do recurso. Um Ímã Multiplicador é garantido logo na primeira rodada.',
 	'INFO FEAT RETRIGGER':
 		'As Rodadas Grátis não podem ser reativadas. Os Scatters que aparecerem durante uma rodada de bônus não concedem rodadas extras.',
 	'INFO CW 1': 'Magnetic usa ganhos em cluster em vez de linhas de pagamento.',
@@ -144,7 +146,8 @@ export default {
 	'MYSTERY WON GRAVITY': '%count% rodadas grátis com conexões magnéticas e Ímãs Multiplicadores.',
 	'MYSTERY WON CORE':
 		'%count% rodadas grátis com clusters magnéticos persistentes que crescem durante o bônus.',
-	'MYSTERY WON ZERO': '%count% rodadas grátis com um Ímã Multiplicador garantido na primeira rodada.',
+	'MYSTERY WON ZERO':
+		'%count% rodadas grátis com um Ímã Multiplicador garantido na primeira rodada.',
 	'BUY ZERO TITLE': 'Protocolo Ponto Zero',
 	'BUY ZERO DESC': '10 rodadas grátis com um Ímã Multiplicador garantido logo na primeira rodada.',
 	'BUY MYSTERY TITLE': 'Bônus Misterioso',

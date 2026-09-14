@@ -22,7 +22,7 @@ export default {
 		'Bei Aktivierung schleudert der Polaritätswechsler den gesamten Cluster gegen die vom Pfeil angezeigte Wand. Anschließend werden entlang dieser Wand neue Symbole desselben Typs ergänzt, sodass ein größerer Cluster entsteht.',
 	'INFO WILD VALUES': 'Multiplikator-Wild-Werte',
 	'INFO WILD STANDARD': 'Standard-Multiplikator-Wild-Werte:',
-	'INFO WILD RARE': 'Seltene Multiplikator-Wild-Werte (hauptsächlich in Core Overload):',
+	'INFO WILD RARE': 'Seltene Multiplikator-Wild-Werte:',
 	'INFO FEAT WILD TITLE': 'Wild-Symbol',
 	'INFO FEAT WILD TEXT':
 		'Ersetzt alle Gewinnsymbole außer dem Scatter. Bei Aktivierung wählt das Magnetic Wild zufällig ein reguläres Gewinnsymbol aus, das sich aktuell im Raster befindet, und zieht alle passenden Symbole zusammen. Wilds und Scatter können nicht ausgewählt werden. Ein Magnetic Wild wird nur aktiviert, wenn es landet, und während des daraus entstehenden Respins nicht erneut aktiviert.',
@@ -35,6 +35,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Core Overload Freispiele',
 	'INFO FEAT MEGA TEXT':
 		'Wird durch 4 Scatter ausgelöst. Vergibt 10 Freispiele. Magnetische Cluster können gesperrt bleiben und über die gesamte Funktion hinweg wachsen.',
+	'INFO FEAT ZERO TEXT':
+		'Wird durch 5 Scatter ausgelöst. Vergibt 10 Freispiele. Behält die Core-Overload-Mechanik bei: Magnetische Cluster können gesperrt bleiben und über die gesamte Funktion hinweg wachsen. Ein Multiplikator-Magnet ist im allerersten Spin garantiert.',
 	'INFO FEAT RETRIGGER':
 		'Free Spins können nicht erneut ausgelöst werden. Scatter, die während einer Bonusrunde landen, gewähren keine zusätzlichen Spins.',
 	'INFO CW 1': 'Magnetic verwendet Cluster-Gewinne anstelle von Gewinnlinien.',
@@ -140,9 +142,12 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 Freispiele werden vergeben. Ein zufälliges Symbol wird magnetisch und bleibt zwischen den Spins verbunden. Der magnetische Cluster bleibt bestehen und wächst während des gesamten Features, während sich die Multiplikatoren weiter stapeln.',
-	'MYSTERY WON GRAVITY': '%count% Freispiele mit magnetischen Verbindungen und Multiplikator-Magneten.',
-	'MYSTERY WON CORE': '%count% Freispiele mit dauerhaften Magnet-Clustern, die im Bonus weiterwachsen.',
-	'MYSTERY WON ZERO': '%count% Freispiele mit einem garantierten Multiplikator-Magneten im ersten Spin.',
+	'MYSTERY WON GRAVITY':
+		'%count% Freispiele mit magnetischen Verbindungen und Multiplikator-Magneten.',
+	'MYSTERY WON CORE':
+		'%count% Freispiele mit dauerhaften Magnet-Clustern, die im Bonus weiterwachsen.',
+	'MYSTERY WON ZERO':
+		'%count% Freispiele mit einem garantierten Multiplikator-Magneten im ersten Spin.',
 	'BUY ZERO TITLE': 'Nullpunkt-Protokoll',
 	'BUY ZERO DESC':
 		'10 Freispiele mit einem garantierten Multiplikator-Magneten im allerersten Spin.',

@@ -22,7 +22,7 @@ export default {
 		'Aktivoituessaan Napaisuuden vaihtaja iskee koko rykelmän nuolen osoittamaa seinää kohti. Sen jälkeen saman tyypin uusia symboleja lisätään tuota seinää pitkin, jolloin syntyy suurempi rykelmä.',
 	'INFO WILD VALUES': 'Kerroin-Wild-arvot',
 	'INFO WILD STANDARD': 'Vakiokerroin-Wild-arvot:',
-	'INFO WILD RARE': 'Harvinaiset kerroin-Wild-arvot (pääasiassa Core Overload -tilassa):',
+	'INFO WILD RARE': 'Harvinaiset kerroin-Wild-arvot:',
 	'INFO FEAT WILD TITLE': 'Wild-symboli',
 	'INFO FEAT WILD TEXT':
 		'Korvaa kaikki maksavat symbolit paitsi Scatterin. Aktivoituessaan Magnetic Wild valitsee satunnaisesti yhden ruudukossa olevan tavallisen maksavan symbolin ja vetää kaikki vastaavat symbolit yhteen. Wildeja ja Scattereita ei voi valita. Magnetic Wild aktivoituu vain laskeutuessaan, eikä se aktivoidu uudelleen siitä seuraavan uusintapyöräytyksen aikana.',
@@ -35,6 +35,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Core Overload -ilmaiskierrokset',
 	'INFO FEAT MEGA TEXT':
 		'Käynnistyy 4 Scatterilla. Antaa 10 ilmaiskierrosta. Magneettiset ryhmät voivat pysyä lukittuina ja kasvaa koko ominaisuuden ajan.',
+	'INFO FEAT ZERO TEXT':
+		'Käynnistyy 5 Scatterilla. Antaa 10 ilmaiskierrosta. Säilyttää Core Overload -mekaniikan: magneettiset ryhmät voivat pysyä lukittuina ja kasvaa koko ominaisuuden ajan. Kerroinmagneetti on taattu heti ensimmäisellä kierroksella.',
 	'INFO FEAT RETRIGGER':
 		'Ilmaiskierroksia ei voi laukaista uudelleen. Bonuskierroksen aikana osuvat Scatter-symbolit eivät anna lisäkierroksia.',
 	'INFO CW 1': 'Magnetic käyttää ryhmävoittoja voittolinjojen sijaan.',
@@ -145,7 +147,8 @@ export default {
 	'MYSTERY WON GRAVITY': '%count% ilmaiskierrosta magneettiyhteyksillä ja kerroinmagneeteilla.',
 	'MYSTERY WON CORE':
 		'%count% ilmaiskierrosta pysyvillä magneettirykelmillä, jotka kasvavat bonuksen aikana.',
-	'MYSTERY WON ZERO': '%count% ilmaiskierrosta ja taattu kerroinmagneetti ensimmäisellä kierroksella.',
+	'MYSTERY WON ZERO':
+		'%count% ilmaiskierrosta ja taattu kerroinmagneetti ensimmäisellä kierroksella.',
 	'BUY ZERO TITLE': 'Nollapisteprotokolla',
 	'BUY ZERO DESC': '10 ilmaiskierrosta ja taattu kerroinmagneetti heti ensimmäisellä kierroksella.',
 	'BUY MYSTERY TITLE': 'Mysteeribonus',

@@ -22,7 +22,7 @@ export default {
 		'발동하면 극성 시프터가 클러스터 전체를 화살표가 가리키는 벽으로 밀어붙입니다. 이후 그 벽을 따라 같은 종류의 새 심볼이 추가되어 더 큰 클러스터가 만들어집니다.',
 	'INFO WILD VALUES': '멀티플라이어 와일드 배율',
 	'INFO WILD STANDARD': '일반 멀티플라이어 와일드 배율:',
-	'INFO WILD RARE': '희귀 멀티플라이어 와일드 배율 (주로 Core Overload에서 등장):',
+	'INFO WILD RARE': '희귀 멀티플라이어 와일드 배율:',
 	'INFO FEAT WILD TITLE': '와일드 심볼',
 	'INFO FEAT WILD TEXT':
 		'스캐터를 제외한 모든 배당 심볼을 대체합니다. 활성화되면 Magnetic Wild는 현재 그리드에 있는 일반 배당 심볼 하나를 무작위로 선택하고 일치하는 모든 심볼을 끌어당깁니다. Wild와 Scatter는 선택될 수 없습니다. Magnetic Wild는 착지할 때만 활성화되며, 그 결과 발생한 리스핀 중에는 다시 활성화되지 않습니다.',
@@ -34,6 +34,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Core Overload 프리 스핀',
 	'INFO FEAT MEGA TEXT':
 		'스캐터 4개로 발동됩니다. 프리 스핀 10회를 지급합니다. 자성 클러스터는 고정된 채로 기능 내내 계속 커질 수 있습니다.',
+	'INFO FEAT ZERO TEXT':
+		'스캐터 5개로 발동됩니다. 프리 스핀 10회를 지급합니다. Core Overload 메커니즘이 유지되어 자성 클러스터는 고정된 채로 기능 내내 계속 커질 수 있습니다. 첫 스핀에서 배수 마그넷이 확정 등장합니다.',
 	'INFO FEAT RETRIGGER':
 		'프리 스핀은 재트리거되지 않습니다. 보너스 라운드 중에 등장하는 스캐터는 추가 스핀을 제공하지 않습니다.',
 	'INFO CW 1': 'Magnetic은 페이라인 대신 클러스터 당첨을 사용합니다.',
@@ -138,7 +140,8 @@ export default {
 	'BUY MEGA DESC':
 		'무료 스핀 10회 지급. 무작위 심볼 하나가 자석이 되어 스핀 사이에도 연결을 유지합니다. 자석 클러스터는 피처 내내 지속되고 성장하며 멀티플라이어는 계속 쌓입니다.',
 	'MYSTERY WON GRAVITY': '마그네틱 연결과 배수 마그넷이 등장하는 프리 스핀 %count%회.',
-	'MYSTERY WON CORE': '보너스 내내 성장하는 지속형 마그네틱 클러스터가 등장하는 프리 스핀 %count%회.',
+	'MYSTERY WON CORE':
+		'보너스 내내 성장하는 지속형 마그네틱 클러스터가 등장하는 프리 스핀 %count%회.',
 	'MYSTERY WON ZERO': '첫 스핀에서 배수 마그넷이 확정되는 프리 스핀 %count%회.',
 	'BUY ZERO TITLE': '제로 포인트 프로토콜',
 	'BUY ZERO DESC': '프리 스핀 10회가 지급되며 첫 스핀에서 배수 마그넷이 확정 등장합니다.',

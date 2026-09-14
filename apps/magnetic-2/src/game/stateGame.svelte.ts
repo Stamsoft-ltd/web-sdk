@@ -224,8 +224,20 @@ const updateCellRaw = (cell: BoardCell, raw: RawSymbol) => {
 	cell.wild = raw.wild && !cell.magnet;
 };
 
-const shouldKeepWildInCluster = (cell: RawSymbol) =>
-	cell.wild || cell.magnet || cell.name === 'WILD' || cell.name === 'MAGNET';
+// Whether a cell inside a cluster keeps its wild lockup instead of being stamped with the
+// cluster's pay symbol. Decided by the NAME alone.
+//
+// It used to also accept `cell.wild || cell.magnet`. Those flags are membership markers that math
+// puts on the pay symbols it pulls into a magnet cluster, so every locked cell carrying one was
+// rewritten to `name: 'WILD'` by setSeriesSnapshots and drew the magnet lockup. The client's own
+// paths never produced that — animateMagnetCluster clears `magnet` on each destination and renames
+// only the anchor — so it needed a raw board to be settled mid-round, which is exactly what
+// `polarityShift` does before calling setSeriesSnapshots. Hence "a magnet plus a shifter turns the
+// symbols into magnets", in base and bonus alike.
+//
+// A genuine wild always arrives named WILD (markMagnetPositions, and math's own wild/multiplier-
+// wild cells), so nothing that should stay wild stops staying wild.
+const shouldKeepWildInCluster = (cell: RawSymbol) => cell.name === 'WILD' || cell.name === 'MAGNET';
 
 // `highlighted` OUTRANKS `locked`. It used to be the other way round, which made a stacked cell
 // unable to ever show its win animation: animateWinningPositions sets symbolState = 'win' directly,
@@ -615,7 +627,6 @@ const desktopRailStack = () => {
 		slotY: (i: number) => topY + boxH * 0.5 + i * (boxH + gap),
 	};
 };
-
 
 const boardLayout = () => {
 	const mainLayout = stateLayoutDerived.mainLayout();
@@ -1093,6 +1104,64 @@ const animateClusterFormation = async ({
 // Polarity does not spawn symbols. It moves both existing `cluster` cells and loose matching
 // `symbol` cells supplied by math, then snaps to math's authoritative board. `filler` moves only
 // describe refills and must not be presented as extra symbol copies.
+/**
+ * A Multiplier Wild's own multiplier, carried across a Polarity shift.
+ *
+ * THE BUG THIS FIXES: a magnet/wild carrying an xN disc lost the disc the moment a Polarity Shifter
+ * fired. The win still paid the multiplier — math keeps it — but the board stopped drawing it, so
+ * the player could not see what they were playing for.
+ *
+ * WHY THE BOARD LOSES IT: every board write goes through `updateCellRaw`, which copies
+ * `raw.multiplier` verbatim, and `settleBoardInstant` rewrites EVERY cell from the event's board.
+ * So whenever the `polarityShift` payload's board omits the multiplier on the wild it just moved,
+ * the disc is gone — nothing downstream can put it back, because `setSeriesSnapshots` only ever
+ * clears multipliers (on non-wild cluster cells), never restores them.
+ *
+ * WHY CARRYING IT IS NOT CLIENT-SIDE INVENTION: the value carried here is one math already sent us,
+ * on a wild math itself is moving — `moves` says where that same symbol lands. We re-seat it on the
+ * destination and ONLY when three things hold: math sent no multiplier of its own for that cell
+ * (theirs always wins), the settled cell is still a wild/magnet, and the cell is the destination of
+ * a move we were given. A pay symbol can never pick one up this way.
+ *
+ * The restore is logged, because a payload that had to be patched is worth seeing: if the
+ * `polarity_multiplier_restored` line stops appearing, math started sending it and this can go.
+ */
+const collectWildMultipliersAcrossMoves = (
+	moves: Array<{ from: Position; to: Position; kind: 'cluster' | 'symbol' | 'filler' }>,
+) => {
+	const destinationByFromKey = new Map(
+		moves.filter((move) => move.kind !== 'filler').map((move) => [posKey(move.from), move.to]),
+	);
+	const carried = new Map<string, number>();
+	for (const reel of stateGame.board) {
+		for (const cell of reel) {
+			if (!cell.multiplier || cell.multiplier <= 1) continue;
+			if (!shouldKeepWildInCluster(cell)) continue;
+			// A wild that does not move keeps its own cell as the destination.
+			const destination = destinationByFromKey.get(posKey(cell.position)) ?? cell.position;
+			carried.set(posKey(destination), cell.multiplier);
+		}
+	}
+	return carried;
+};
+
+const restoreWildMultipliers = (carried: Map<string, number>) => {
+	if (!carried.size) return;
+	const restored: Array<{ position: string; multiplier: number }> = [];
+	for (const reel of stateGame.board) {
+		for (const cell of reel) {
+			const key = posKey(cell.position);
+			const multiplier = carried.get(key);
+			// Math's own value wins wherever it sent one.
+			if (!multiplier || cell.multiplier) continue;
+			if (!shouldKeepWildInCluster(cell)) continue;
+			cell.multiplier = multiplier;
+			restored.push({ position: key, multiplier });
+		}
+	}
+	if (restored.length) logMagneticDiagnostic('warn', 'polarity_multiplier_restored', { restored });
+};
+
 const animatePolarityShift = async ({
 	moves,
 	shifterPositions,
@@ -1116,6 +1185,9 @@ const animatePolarityShift = async ({
 	const impactHoldMs = fast ? 30 : 110;
 	const movingKeys = new Set(symbolMoves.map((move) => posKey(move.from)));
 	const shifterKeys = new Set(shifterPositions.map(posKey));
+	// Read BEFORE anything mutates the board: settleBoardInstant below overwrites every cell from
+	// math's own board, and a multiplier the payload omits is unrecoverable after that.
+	const carriedMultipliers = collectWildMultipliersAcrossMoves(moves);
 
 	if (!symbolMoves.length) {
 		settleBoardInstant({ rawBoard, series, magnetTargetSymbol });
@@ -1124,6 +1196,7 @@ const animatePolarityShift = async ({
 			magnetTargetSymbol,
 			totalMultiplier: stateGame.seriesTotalMultiplier,
 		});
+		restoreWildMultipliers(carriedMultipliers);
 		stateGame.polarityDirection = null;
 		return;
 	}
@@ -1184,6 +1257,7 @@ const animatePolarityShift = async ({
 		magnetTargetSymbol,
 		totalMultiplier: stateGame.seriesTotalMultiplier,
 	});
+	restoreWildMultipliers(carriedMultipliers);
 	stateGame.polarityDirection = null;
 	stateGame.forceFastAnimations = false;
 };
@@ -1367,6 +1441,18 @@ const settleBoardInstant = ({
 		}
 		stateGame.spinBoard[ri].setSymbolsWithRawSymbols(makeSpinSymbols(rawBoard[ri]));
 	}
+	// The only place math's raw wild/magnet flags reach the board mid-round. If they ride along on
+	// pay symbols, the rules above now ignore them rather than drawing 49 magnets — but it is still
+	// worth seeing in the console, because it means the payload and the renderer disagree.
+	const flaggedPaySymbols = rawBoard.flatMap((reel, ri) =>
+		reel.flatMap((raw, rowi) =>
+			(raw.wild || raw.magnet) && raw.name !== 'WILD' && raw.name !== 'MAGNET'
+				? [{ position: `${ri}:${rowi}`, name: raw.name, wild: !!raw.wild, magnet: !!raw.magnet }]
+				: [],
+		),
+	);
+	if (flaggedPaySymbols.length)
+		logMagneticDiagnostic('warn', 'raw_board_flags_on_pay_symbol', { flaggedPaySymbols });
 	applySeriesDecorations({ board: stateGame.board, series, magnetTargetSymbol });
 	stateGame.boardSpinning = false;
 	stateGame.boardMode = 'settle';

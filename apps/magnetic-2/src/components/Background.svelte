@@ -1018,7 +1018,14 @@
 		for (let i = 0; i < MOTES; i++) {
 			const jitter = hash(i);
 			const soft = hash(i, 2) > 0.55;
-			const speed = 0.14 + 0.13 * jitter + 0.5 * grab;
+			// ONE SPEED, and a slow one (user, 2026-09-14: the beam must not change gear).
+			// This used to be `0.14 + 0.13 * jitter + 0.5 * grab`: a near-2x spread between the
+			// slowest and fastest mote, and on every grab the whole field jumped to ~0.77 — nearly
+			// four times the resting speed — for about a second, then dropped back. Read as the beam
+			// changing speed rather than as dust in a light.
+			// The 0.03 that remains is only enough to stop sixteen motes rising in visible lockstep;
+			// the fastest one is now 0.16 against the old peak of 0.77.
+			const speed = 0.13 + 0.03 * jitter;
 			const rise = (t * speed + i / MOTES) % 1;
 			const s = 1 - rise;
 			if (!inPart(s)) continue;
@@ -1028,7 +1035,10 @@
 			const y = y0 + len * s;
 			const size = hullW * (soft ? 0.012 + 0.008 * jitter : 0.006 + 0.006 * jitter);
 			const grow = 0.6 + 0.4 * (1 - s);
-			const streak = 1 + 2.5 * grab;
+			// A streak is motion blur, so it has to follow the speed: with the grab no longer hauling
+			// the motes, a 3.5x stretch would be drawing speed that is not there. What is left is a
+			// hint of a tug, in step with the flare the grab still puts through the cone's light.
+			const streak = 1 + 0.15 * grab;
 			// Fade in off the ground and out into the hull, so nothing pops at either end; the
 			// spiral also takes them "behind" the axis on half of each turn, where they dim.
 			const depth = 0.65 + 0.35 * Math.cos(rise * Math.PI * 2 * (1.2 + jitter * 0.8) + i * 2.4);
