@@ -828,7 +828,7 @@
 		padding: clamp(10px, 1.6vmin, 18px) 0 clamp(14px, 2.4vmin, 26px);
 	}
 	.tu-arrow {
-		width: clamp(44px, 6vmin, 58px);
+		width: clamp(30px, 5vmin, 48px);
 		aspect-ratio: 1;
 		padding: 0;
 		border: none;
@@ -921,6 +921,13 @@
 		.tu-body {
 			font-size: clamp(0.7rem, 6vmin, 1rem);
 			line-height: 1.32;
+		}
+		.tu-arrow {
+			width: clamp(24px, 11dvh, 38px);
+		}
+		.tu-nav {
+			gap: clamp(8px, 3vmin, 14px);
+			padding: clamp(4px, 1.5vmin, 10px) 0 clamp(6px, 2vmin, 12px);
 		}
 	}
 </style>
