@@ -1156,7 +1156,7 @@
 		justify-content: space-between;
 		padding: 8px;
 		z-index: 20;
-		font-family: 'Cinzel', serif;
+		font-family: 'Poppins', sans-serif;
 		/* Fluid desktop-bar sizing: the bar and everything on it scale with viewport width
 		   (growing until ~1900px, then capped) so wide screens get the chunky redesign bar
 		   instead of sizes frozen at the 1200px breakpoint. Min sizes stay near the old
@@ -1207,14 +1207,14 @@
 	}
 
 	.scatter-card__title {
-		font-family: 'Cinzel', serif;
+		font-family: 'Poppins', sans-serif;
 		font-size: 1.15rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
 	}
 
 	.scatter-card__text {
-		font-family: 'Cinzel', serif;
+		font-family: 'Poppins', sans-serif;
 		font-size: 0.8rem;
 		font-weight: 700;
 		line-height: 1.3;
@@ -1924,7 +1924,7 @@
 		border-radius: 50%;
 		background: radial-gradient(circle, rgba(20, 48, 8, 0.96) 60%, rgba(20, 48, 8, 0) 100%);
 		color: #fff;
-		font-family: Cinzel, serif;
+		font-family: 'Poppins', sans-serif;
 		font-weight: 900;
 		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
 		pointer-events: none;
@@ -2025,7 +2025,7 @@
 		inset: 0;
 		pointer-events: none;
 		z-index: 20;
-		font-family: 'Cinzel', serif;
+		font-family: 'Poppins', sans-serif;
 		/* Bottom inset shared by the BALANCE/BET stack (bottom-left) and the WIN pill (bottom-right)
 		   so the two readouts sit level in their corners. Scales with viewport height. */
 		--ls-corner-bottom: clamp(4px, 1.8dvh, 14px);
@@ -2274,7 +2274,8 @@
 		height: clamp(19px, 8.8dvh, 46px);
 		flex: 0 0 auto;
 		box-sizing: border-box;
-		border: 2px solid #4c433d;
+		/* No ring/glow on the burger + lightning (design ask) — just the dark disc + white icon. */
+		border: none;
 		border-radius: 50%;
 		background: radial-gradient(circle at 50% 32%, #2b2622, #17130f);
 		padding: 0;
@@ -2293,19 +2294,15 @@
 	.ls-round--auto { border: 0; background: none; }
 	.ls-round--auto .ls-icon--auto { width: 100%; height: 100%; filter: none; }
 
-	/* Menu (☰) wrapper — anchors the SOUND/MUSIC/INFO popup, which opens to the LEFT of the rail.
-	   It owns the burger's height slot (% of the rail); the button fills it. */
+	/* Menu (☰) wrapper. Deliberately NOT a positioning context (static) so the SOUND/MUSIC/INFO popup
+	   anchors to the rail (.ls-right) instead of the burger button — its top:0 then lines up with the
+	   nav bar's top edge and its right:100% clears the whole bar width (so it never covers the rail). */
 	.ls-menu-wrap {
-		position: relative;
+		position: static;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		flex: 0 0 auto;
-	}
-	/* The burger button is smaller than the other rail controls (it's a secondary action). */
-	.ls-menu-wrap .ls-round {
-		width: clamp(15px, 6.8dvh, 37px);
-		height: clamp(15px, 6.8dvh, 37px);
 	}
 	.ls-menu-pop {
 		position: absolute;
@@ -2569,7 +2566,7 @@
 	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(2%, 2%); filter: brightness(0) invert(1); } /* arrow overlay (base has none) */
 	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; transform: translate(2%, 2%); filter: brightness(0) invert(1); }
 	.pt-spin__count {
-		font-family: 'Cinzel', serif; font-weight: 900; font-size: 1.3rem; color: #fff;
+		font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.3rem; color: #fff;
 		text-shadow: 0 2px 4px rgba(0,0,0,0.7);
 	}
 
@@ -2674,7 +2671,7 @@
 	.pt-buy:hover { filter: brightness(1.1); }
 	.pt-buy:active { transform: scale(0.95); }
 	.pt-buy__label {
-		font-family: 'Bowlby One SC', 'Cinzel', serif; font-weight: 400;
+		font-family: 'Bowlby One SC', 'Poppins', sans-serif; font-weight: 400;
 		font-size: 13px; line-height: 1.05; letter-spacing: 0.02em; text-align: center;
 		max-width: 100%;
 		color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
@@ -2719,7 +2716,7 @@
 
 	/* ☰ menu button open state: gold ✕ glyph in place of the hamburger icon. */
 	.pt-round__x {
-		font-family: 'Cinzel', serif; font-weight: 900; font-size: calc(var(--u) * 0.048);
+		font-family: 'Poppins', sans-serif; font-weight: 900; font-size: calc(var(--u) * 0.048);
 		line-height: 1; color: #f1c14a; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.7));
 	}
 
@@ -2763,5 +2760,19 @@
 	.pt-menu-item__label {
 		font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px;
 		letter-spacing: 0.03em; color: #fff;
+	}
+
+	/* Smallest landscape popouts (~400x225, <=300px tall): the burger (☰) menu items are sized off
+	   --u (≈97vw, width-based) with a fixed 12px label, so the SOUND/MUSIC/INFO popup is ~72% of the
+	   short screen's height. Shrink it in dvh, scoped to the landscape popup so portrait/desktop menus
+	   are untouched. Placed LAST so it wins over the base .pt-menu-item rules. */
+	@media (max-height: 300px) {
+		.ls-menu-pop { gap: 2px; padding: 4px; border-radius: 8px; }
+		.ls-menu-pop .pt-menu-item { gap: 5px; padding: 3px 0; }
+		.ls-menu-pop .pt-menu-item__ic {
+			width: clamp(12px, 7dvh, 22px);
+			height: clamp(12px, 7dvh, 22px);
+		}
+		.ls-menu-pop .pt-menu-item__label { font-size: clamp(8px, 4dvh, 11px); }
 	}
 </style>
