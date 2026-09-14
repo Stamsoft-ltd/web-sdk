@@ -2036,7 +2036,7 @@
 	.ls-pp {
 		position: absolute;
 		top: clamp(3px, 1.6vh, 14px);
-		right: calc(clamp(16px, 3vw, 34px) + clamp(40px, 13vh, 108px) / 2);
+		right: calc(clamp(16px, 3vw, 34px) + clamp(36px, 13dvh, 108px) / 2);
 		transform: translateX(50%);
 		width: clamp(56px, 13vh, 116px);
 		height: auto;
@@ -2055,7 +2055,8 @@
 		max-width: 34%;
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
+		/* stretch so BALANCE and BET share the same width (the wider one — BALANCE — sets it). */
+		align-items: stretch;
 		gap: clamp(4px, 1.5vh, 11px);
 	}
 	.pt-buy:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
@@ -2083,7 +2084,7 @@
 		box-sizing: border-box;
 		/* Smaller dark pill: #1F1F1F body with a lighter top bevel (design ask). */
 		padding: clamp(1px, 0.5vh, 3px) clamp(4px, 1vh, 9px);
-		border-radius: 7px;
+		border-radius: 4.21px;
 		background: #1f1f1f;
 		border-top: 1.28px solid #605553;
 		box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
@@ -2095,7 +2096,7 @@
 		position: absolute;
 		/* Clear the vertical control rail + its right margin (the turn disc overflow sits above WIN,
 		   not at the bottom corner, so only the bar width matters here). */
-		right: calc(clamp(40px, 13vh, 108px) + clamp(16px, 3vw, 34px) + clamp(8px, 1.5vw, 18px));
+		right: calc(clamp(36px, 13dvh, 108px) + clamp(16px, 3vw, 34px) + clamp(8px, 1.5vw, 18px));
 		bottom: var(--ls-corner-bottom);
 		width: max-content;
 		max-width: 32%;
@@ -2107,15 +2108,18 @@
 	   Dark translucent pill keeps the text readable over the bright forest art. */
 	.ls-win {
 		display: flex;
-		align-items: baseline;
-		gap: 6px;
-		/* Same reasoning as .ls-balance: max-content so fitPill can see the true unwrapped width. */
+		/* Two rows: WIN label over the value (design ask). */
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1px;
 		width: max-content;
 		max-width: none;
 		box-sizing: border-box;
 		/* Matches .ls-balance: smaller #1F1F1F pill with a lighter top bevel. */
-		padding: clamp(1px, 0.5vh, 3px) clamp(4px, 1vh, 9px);
-		border-radius: 7px;
+		padding: clamp(2px, 0.7vh, 5px) clamp(6px, 1.4vh, 12px);
+		border-radius: 4.21px;
+		text-align: center;
 		background: #1f1f1f;
 		border-top: 1.28px solid #605553;
 		box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
@@ -2169,21 +2173,23 @@
 		   which is already viewport-driven, so a fixed bottom would pull them back off the BUY BONUS
 		   centre line. */
 		.ls-balance,
-		.ls-win { padding: clamp(2px, 0.8vh, 5px) clamp(6px, 1.4vh, 12px); border-radius: 8px; }
+		.ls-win { padding: clamp(2px, 0.8vh, 5px) clamp(6px, 1.4vh, 12px); border-radius: 4.21px; }
 		.ls-balance__label,
 		.ls-win__label { font-size: clamp(7px, 2.3vh, 12px); }
 		.ls-balance__value,
 		.ls-win__value { font-size: clamp(8px, 2.6vh, 13px); }
 	}
 
-	/* BET stepper — same small #1F1F1F pill as BALANCE, stacked under it: − value + */
+	/* BET stepper — same small #1F1F1F pill as BALANCE, stretched to BALANCE's width and stacked under
+	   it: − value + spread across the width. */
 	.ls-bet {
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
 		gap: clamp(3px, 1vh, 8px);
 		box-sizing: border-box;
 		padding: clamp(1px, 0.5vh, 4px) clamp(5px, 1.2vh, 11px);
-		border-radius: 7px;
+		border-radius: 4.21px;
 		background: #1f1f1f;
 		border-top: 1.28px solid #605553;
 		box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
@@ -2227,17 +2233,19 @@
 		/* Anchored just BELOW the Press Play mark and NOT given a fixed height — the bar hugs its
 		   buttons (content height) with modest gaps, so they always sit snugly INSIDE it (no
 		   space-between spreading the outer two off the ends). */
-		top: clamp(16px, 5.5vh, 42px);
+		top: clamp(16px, 5dvh, 42px);
 		/* --ls-rail-w = the TIGHT dark bar's width. The menu/turbo/auto/BONUS nearly fill it; only the
-		   focal turn disc is bigger and overflows the bar's left + right sides (design look). */
-		--ls-rail-w: clamp(36px, 13vh, 108px);
+		   focal turn disc is bigger and overflows the bar's left + right sides (design look). Sized in
+		   dvh (dynamic viewport height) so the bar fits the ACTUALLY-visible area on mobile — plain vh
+		   is the full viewport behind the browser chrome, which made the bar spill past the bottom. */
+		--ls-rail-w: clamp(36px, 13dvh, 108px);
 		width: var(--ls-rail-w);
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: clamp(4px, 1.7vh, 13px);
-		padding: clamp(18px, 8vh, 52px) 0;
+		gap: clamp(4px, 1.6dvh, 12px);
+		padding: clamp(10px, 4dvh, 30px) 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
