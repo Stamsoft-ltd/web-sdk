@@ -2121,8 +2121,8 @@
 		width: max-content;
 		max-width: none;
 		box-sizing: border-box;
-		/* Smaller than BALANCE — #1F1F1F pill with a lighter top bevel. */
-		padding: clamp(1px, 0.5vh, 3px) clamp(4px, 1vh, 8px);
+		/* #1F1F1F pill with a lighter top bevel (WIN readout). */
+		padding: clamp(3px, 0.9vh, 6px) clamp(7px, 1.6vh, 14px);
 		border-radius: 4.21px;
 		text-align: center;
 		background: #1f1f1f;
@@ -2135,7 +2135,7 @@
 	}
 	.ls-win__label {
 		font-family: 'Poppins', sans-serif;
-		font-size: clamp(5px, 1.5vh, 8px);
+		font-size: clamp(7px, 2.3vh, 12px);
 		font-style: normal;
 		font-weight: 500;
 		line-height: normal;
@@ -2145,7 +2145,7 @@
 	.ls-win__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 600;
-		font-size: clamp(6px, 1.8vh, 9px);
+		font-size: clamp(9px, 2.9vh, 15px);
 		color: #fff;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
 	}
@@ -2180,10 +2180,9 @@
 		.ls-balance { padding: clamp(2px, 0.8vh, 5px) clamp(6px, 1.4vh, 12px); border-radius: 4.21px; }
 		.ls-balance__label { font-size: clamp(7px, 2.3vh, 12px); }
 		.ls-balance__value { font-size: clamp(8px, 2.6vh, 13px); }
-		/* WIN kept clearly smaller than BALANCE. */
-		.ls-win { padding: clamp(1px, 0.6vh, 4px) clamp(5px, 1.1vh, 9px); border-radius: 4.21px; }
-		.ls-win__label { font-size: clamp(6px, 1.7vh, 9px); }
-		.ls-win__value { font-size: clamp(6px, 2vh, 10px); }
+		.ls-win { padding: clamp(3px, 1vh, 6px) clamp(7px, 1.6vh, 14px); border-radius: 4.21px; }
+		.ls-win__label { font-size: clamp(8px, 2.6vh, 13px); }
+		.ls-win__value { font-size: clamp(10px, 3.3vh, 17px); }
 	}
 
 	/* BET stepper — same small #1F1F1F pill as BALANCE, stretched to BALANCE's width and stacked under
@@ -2236,25 +2235,19 @@
 		position: absolute;
 		/* Right margin leaves room for the turn disc to bulge past the bar's right side. */
 		right: clamp(16px, 3vw, 34px);
-		/* Anchored from just below Press Play down to near the bottom edge → a TALL bar that, because
-		   it's pinned top+bottom, can never be taller than the space it has. All heights are in
-		   --ls-vh (the engine's MEASURED viewport 1vh) so the buttons track the real visible area and
-		   never overflow (plain vh counts the space behind mobile browser chrome). */
+		/* CONTENT-HEIGHT bar anchored just below Press Play — its height is exactly the buttons + gaps
+		   + padding, so the dark bar HUGS the controls and the first/last (menu, AUTO) are inside it BY
+		   DEFINITION; they can never spill out the ends. The gap is what makes the bar tall (runs down
+		   near the WIN border); dvh keeps it tracking the real visible viewport. */
 		top: 3.5dvh;
-		/* Bottom aligned to the WIN pill's bottom border (same var), so the rail runs all the way down
-		   to it — now near the screen bottom. */
-		bottom: var(--ls-corner-bottom);
 		--ls-rail-w: clamp(34px, 13dvh, 104px);
 		width: var(--ls-rail-w);
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		/* The buttons' HEIGHTS are % of THIS rail (see below); they sum to well under 100%, so they can
-		   never overflow the ends regardless of viewport/chrome. space-between spreads the slack as
-		   small even gaps; the padding insets the first/last off the rounded ends. */
-		justify-content: space-between;
-		padding: 1.5% 0;
+		gap: clamp(10px, 6.4dvh, 44px);
+		padding: clamp(8px, 2.6dvh, 18px) 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
