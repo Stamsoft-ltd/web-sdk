@@ -13,7 +13,7 @@
 
 	// Button backgrounds (icon-less frames) — icons are layered on top in markup
 	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.webp'); // wooden round — utility buttons
-	const btnSpinBg = ap('/assets/mcschmutzo/spin-button.png');
+	const btnSpinBg = ap('/assets/mcschmutzo/ui-icons/turn-button-bg.svg'); // hi-res red turn disc (bg)
 	const btnSpinHoverBg = btnSpinBg;
 	const btnWideBg = ap('/assets/mcschmutzo/buy-bonus-button.svg');
 	const btnWideHoverBg = btnWideBg;
@@ -24,7 +24,7 @@
 	const lsBuyBonus = ap('/assets/components/symbols/landscape/buy_bonus.png'); // round green badge
 	const lsNavBox = ap('/assets/components/symbols/landscape/nav_bg.svg'); // flat dark vertical rail box
 	const lsBonus = ap('/assets/components/symbols/landscape/bonus.svg'); // red vertical BONUS button (text baked in)
-	const lsTurn = ap('/assets/components/symbols/landscape/turn_button.svg'); // red spin/turn disc
+	const lsTurn = ap('/assets/mcschmutzo/ui-icons/turn-button-bg.svg'); // hi-res red turn disc (bg)
 	const navPadMobile = ap('/assets/components/navbar/nav_pad_mobile.webp'); // control-bar pill
 	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.png'); // − value + pill
 	const buyBonusMobile = btnWideBg;
@@ -46,7 +46,7 @@
 	const menuIcSound = ap('/assets/mcschmutzo/ui-icons/sound.svg');
 	const menuIcMusic = ap('/assets/mcschmutzo/ui-icons/music.svg');
 	const menuIcInfo = ap('/assets/mcschmutzo/ui-icons/info.svg');
-	const iconSpin = ap('/assets/hud/icon-spin.png');
+	const iconSpin = ap('/assets/mcschmutzo/ui-icons/turn-button-arrow.svg'); // hi-res white spin arrow
 	const iconStop = ap('/assets/hud/icon-stop.png');
 	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.png');
 	const iconTurbo2 = ap('/assets/hud/icon-lightning-2.png');
