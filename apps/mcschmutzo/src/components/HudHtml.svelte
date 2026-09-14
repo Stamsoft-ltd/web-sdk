@@ -84,6 +84,10 @@
 	const context = getContext();
 
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
+	// 1% of the game's ACTUAL viewport height (the canvas height the engine sees), exposed as a CSS
+	// var so the landscape rail sizes off the real visible area — plain `vh` counts the space behind
+	// mobile browser chrome, which pushed the rail's bottom off-screen.
+	const lsVh = $derived((context.stateLayoutDerived.canvasSizes().height || 1) / 100);
 	const isPortrait = $derived(layoutType === 'portrait');
 	const isLandscapeMobile = $derived(layoutType === 'landscape');
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
@@ -631,7 +635,7 @@
 	class="hud-shell"
 	class:hud-shell--blocked={congratsBlocking}
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}');--ls-navbox:url('${lsNavBox}');--ls-bonus:url('${lsBonus}');--ls-turn:url('${lsTurn}')`}
+	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}');--ls-navbox:url('${lsNavBox}');--ls-bonus:url('${lsBonus}');--ls-turn:url('${lsTurn}');--ls-vh:${lsVh}px`}
 >
 	{#if isPortrait}
 		<!-- Portrait header: Press Play mark + big McSchmutzo logo, pinned above the board. -->
@@ -2036,7 +2040,7 @@
 	.ls-pp {
 		position: absolute;
 		top: clamp(3px, 1.6vh, 14px);
-		right: calc(clamp(16px, 3vw, 34px) + clamp(36px, 13dvh, 108px) / 2);
+		right: calc(clamp(16px, 3vw, 34px) + clamp(34px, calc(14.5 * var(--ls-vh)), 112px) / 2);
 		transform: translateX(50%);
 		width: clamp(56px, 13vh, 116px);
 		height: auto;
@@ -2096,7 +2100,7 @@
 		position: absolute;
 		/* Clear the vertical control rail + its right margin (the turn disc overflow sits above WIN,
 		   not at the bottom corner, so only the bar width matters here). */
-		right: calc(clamp(36px, 13dvh, 108px) + clamp(16px, 3vw, 34px) + clamp(8px, 1.5vw, 18px));
+		right: calc(clamp(34px, calc(14.5 * var(--ls-vh)), 112px) + clamp(16px, 3vw, 34px) + clamp(8px, 1.5vw, 18px));
 		bottom: var(--ls-corner-bottom);
 		width: max-content;
 		max-width: 32%;
@@ -2230,22 +2234,22 @@
 		position: absolute;
 		/* Right margin leaves room for the turn disc to bulge past the bar's right side. */
 		right: clamp(16px, 3vw, 34px);
-		/* Anchored just BELOW the Press Play mark and NOT given a fixed height — the bar hugs its
-		   buttons (content height) with modest gaps, so they always sit snugly INSIDE it (no
-		   space-between spreading the outer two off the ends). */
-		top: clamp(16px, 5dvh, 42px);
-		/* --ls-rail-w = the TIGHT dark bar's width. The menu/turbo/auto/BONUS nearly fill it; only the
-		   focal turn disc is bigger and overflows the bar's left + right sides (design look). Sized in
-		   dvh (dynamic viewport height) so the bar fits the ACTUALLY-visible area on mobile — plain vh
-		   is the full viewport behind the browser chrome, which made the bar spill past the bottom. */
-		--ls-rail-w: clamp(36px, 13dvh, 108px);
+		/* Anchored from just below Press Play down to near the bottom edge → a TALL bar that, because
+		   it's pinned top+bottom, can never be taller than the space it has. All heights are in
+		   --ls-vh (the engine's MEASURED viewport 1vh) so the buttons track the real visible area and
+		   never overflow (plain vh counts the space behind mobile browser chrome). */
+		top: calc(7 * var(--ls-vh));
+		bottom: calc(3 * var(--ls-vh));
+		--ls-rail-w: clamp(34px, calc(14.5 * var(--ls-vh)), 112px);
 		width: var(--ls-rail-w);
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: clamp(4px, 1.6dvh, 12px);
-		padding: clamp(10px, 4dvh, 30px) 0;
+		/* space-between fills the tall bar; the buttons are sized (rail-w) so their total nearly fills
+		   it → the gaps stay small. Padding insets the outer two off the rounded ends. */
+		justify-content: space-between;
+		padding: calc(2 * var(--ls-vh)) 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
