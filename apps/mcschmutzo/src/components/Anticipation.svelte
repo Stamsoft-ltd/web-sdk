@@ -1,10 +1,5 @@
 <script lang="ts">
-	import { SpineProvider, SpineTrack } from 'pixi-svelte';
-	import { stateBetDerived } from 'state-shared';
-
-	import { getContext } from '../game/context';
 	import type { Reel } from '../game/stateGame.svelte';
-	import { BOARD_SIZES, REEL_PADDING, SYMBOL_WIDTH } from '../game/constants';
 
 	type Props = {
 		reel: Reel;
@@ -12,43 +7,13 @@
 	};
 
 	const props: Props = $props();
-	const context = getContext();
 
-	type AnimationName = 'anticipation_intro' | 'anticipation_loop' | 'anticipation_out';
-
-	let animationName = $state<AnimationName>('anticipation_intro');
-
+	// The per-reel anticipation SPINE (a glowing radial frame with rocks + sparks + dust) was a
+	// leftover from the source mining/lava template and clashed with the diner theme — it lit up the
+	// last reels ("4th/5th row") when scatters were landing. The visual is removed at every resolution;
+	// we keep only the lifecycle so `anticipating` still clears once the reel stops (which also stops
+	// the anticipation sound in Anticipations.svelte). No overlay is drawn.
 	$effect(() => {
-		if (props.reel.reelState.motion === 'stopped') {
-			animationName = 'anticipation_out';
-		}
+		if (props.reel.reelState.motion === 'stopped') props.oncomplete();
 	});
 </script>
-
-<SpineProvider
-	key="anticipation"
-	width={SYMBOL_WIDTH}
-	height={BOARD_SIZES.height}
-	x={context.stateGameDerived.boardLayout().x -
-		context.stateGameDerived.boardLayout().width * 0.5 +
-		(props.reel.reelIndex + REEL_PADDING) * SYMBOL_WIDTH}
-	y={context.stateGameDerived.boardLayout().y + 4}
->
-	<SpineTrack
-		trackIndex={0}
-		{animationName}
-		loop={animationName === 'anticipation_loop'}
-		timeScale={stateBetDerived.timeScale()}
-		listener={{
-			complete: () => {
-				if (animationName === 'anticipation_intro') {
-					animationName = 'anticipation_loop';
-				}
-
-				if (animationName === 'anticipation_out') {
-					props.oncomplete();
-				}
-			},
-		}}
-	/>
-</SpineProvider>
