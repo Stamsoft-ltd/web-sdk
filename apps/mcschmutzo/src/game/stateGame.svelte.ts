@@ -115,7 +115,7 @@ const boardLayout = () => {
 		x: stateLayoutDerived.mainLayout().width * (isLandscape ? 0.47 : 0.494),
 		// Landscape drops the board toward the bottom so the title logo (drawn just above the board
 		// top by FeatureOverlay) has clear space at the top instead of clipping off-screen.
-		y: stateLayoutDerived.mainLayout().height * (isPortrait ? 0.435 : isLandscape ? 0.53 : 0.4475),
+		y: stateLayoutDerived.mainLayout().height * (isPortrait ? 0.435 : isLandscape ? 0.53 : 0.42),
 		anchor: { x: 0.5, y: 0.5 },
 		pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
 		...BOARD_SIZES,

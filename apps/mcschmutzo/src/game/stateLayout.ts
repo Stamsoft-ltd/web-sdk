@@ -6,7 +6,7 @@ export const { stateLayout, stateLayoutDerived } = createLayout({
 		portrait: 937 / 1678,
 	},
 	mainSizesMap: {
-		desktop: { width: 1422, height: 800 },
+		desktop: { width: 1500, height: 844 },
 		tablet: { width: 1000, height: 1000 },
 		// Landscape main is sized so the 655×600 board fills ~80% of the height (design ask: a big
 		// centred board flanked by the balance/bet gutter (left) and the control rail (right)). The

@@ -260,11 +260,11 @@
 	// so instead we compute the font size straight from the value's characters — tabular figures are
 	// uniform width, so the estimate is reliable — and set it inline. This keeps the slot fixed (the
 	// steppers / spin never move off the wooden bar) while long values shrink to stay inside it.
-	const DESKTOP_VALUE_BASE_U = 26; // matches .value font-size: calc(var(--u) * 26)
+	const DESKTOP_VALUE_BASE_U = 32; // matches .value font-size: calc(var(--u) * 32)
 	// Every value that shrinks renders at ~BASE·CAP px, so the safety factor (not the per-glyph
 	// weights) sets the final width. 0.88 targets ~111u inside the 126u slot — ~12% headroom for
 	// glyph-estimate error so a big balance/win ($5,000,000.00, $10,000,000,000.00) never clips.
-	const DESKTOP_VALUE_CAP_EM = (126 / DESKTOP_VALUE_BASE_U) * 0.88;
+	const DESKTOP_VALUE_CAP_EM = (150 / DESKTOP_VALUE_BASE_U) * 0.88;
 	const glyphEm = (c: string) => {
 		if (c >= '0' && c <= '9') return 0.6; // tabular figure
 		if (c === ',' || c === '.' || c === ' ') return 0.32;
@@ -1232,7 +1232,7 @@
 		   (node 3406-4596) where the whole bar scales as one unit. */
 		--u: calc(min(93vw, 1860px) / 1860);
 		--nav-s: calc(var(--u) * 104);
-		--spin-s: calc(var(--u) * 210);
+		--spin-s: calc(var(--u) * 262);
 		width: calc(var(--u) * 1860);
 		height: auto;
 		box-sizing: border-box;
@@ -1357,7 +1357,7 @@
 	   background; the transform-based fitText scaler never applied on this element, so the font is
 	   sized from the value's own characters instead.) */
 	.value-pill--balance .value-fit {
-		width: calc(var(--u) * 126);
+		width: calc(var(--u) * 142);
 	}
 
 	.value-fit--bet {
@@ -1449,8 +1449,8 @@
 
 	.label {
 		font-family: 'Poppins', sans-serif;
-		font-size: calc(var(--u) * 18);
-		font-weight: 500;
+		font-size: calc(var(--u) * 22);
+		font-weight: 700;
 		letter-spacing: 0.03em;
 		/* Golden gradient clipped to the BALANCE / BET label text */
 		background: linear-gradient(184deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
@@ -1476,8 +1476,8 @@
 
 	.value {
 		font-family: 'Poppins', sans-serif;
-		font-size: calc(var(--u) * 26);
-		font-weight: 500;
+		font-size: calc(var(--u) * 32);
+		font-weight: 700;
 		letter-spacing: 0.03em; /* 0.54px @ 18px */
 		/* Uniform digit widths so the fixed ch-sized balance/bet slots line up exactly
 		   and single-digit changes can't jog the text inside the slot. */
@@ -1857,7 +1857,10 @@
 		/* Negative vertical margins make the disc contribute exactly one nav-button height to the
 		   bar (it protrudes above/below as the focal control); the auto side margins split the
 		   free bar space equally, centering the disc between the + stepper and the turbo button. */
-		margin: calc((var(--nav-s) - var(--spin-s)) / 2) auto;
+		/* Shifted up: the (bigger) disc protrudes further into the room freed above the bar instead of
+		   off the bottom of the screen — top margin more negative, bottom less, by the same 20u. */
+		margin: calc((var(--nav-s) - var(--spin-s)) / 2 - var(--u) * 20) auto
+			calc((var(--nav-s) - var(--spin-s)) / 2 + var(--u) * 20);
 		border: none;
 		background: var(--btn-spin-bg) center / contain no-repeat;
 		padding: 0;
