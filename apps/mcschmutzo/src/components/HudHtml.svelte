@@ -2068,7 +2068,7 @@
 	   in). Sits between the menu and the spin disc (design). Aspect 31:66. */
 	.ls-buy-rail {
 		/* Height as a % of the rail (its width follows from the aspect) → guaranteed to fit. */
-		height: 25%;
+		height: 26%;
 		width: auto;
 		aspect-ratio: 31 / 66;
 		flex: 0 0 auto;
@@ -2122,8 +2122,8 @@
 		width: max-content;
 		max-width: none;
 		box-sizing: border-box;
-		/* Matches .ls-balance: smaller #1F1F1F pill with a lighter top bevel. */
-		padding: clamp(2px, 0.7vh, 5px) clamp(6px, 1.4vh, 12px);
+		/* Smaller than BALANCE — #1F1F1F pill with a lighter top bevel. */
+		padding: clamp(1px, 0.5vh, 3px) clamp(4px, 1vh, 8px);
 		border-radius: 4.21px;
 		text-align: center;
 		background: #1f1f1f;
@@ -2136,7 +2136,7 @@
 	}
 	.ls-win__label {
 		font-family: 'Poppins', sans-serif;
-		font-size: clamp(6px, 2vh, 10px);
+		font-size: clamp(5px, 1.5vh, 8px);
 		font-style: normal;
 		font-weight: 500;
 		line-height: normal;
@@ -2146,7 +2146,7 @@
 	.ls-win__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 600;
-		font-size: clamp(7px, 2.2vh, 11px);
+		font-size: clamp(6px, 1.8vh, 9px);
 		color: #fff;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
 	}
@@ -2178,12 +2178,13 @@
 		/* .ls-left / .ls-right-bottom are NOT nudged here any more: both ride --ls-controls-center,
 		   which is already viewport-driven, so a fixed bottom would pull them back off the BUY BONUS
 		   centre line. */
-		.ls-balance,
-		.ls-win { padding: clamp(2px, 0.8vh, 5px) clamp(6px, 1.4vh, 12px); border-radius: 4.21px; }
-		.ls-balance__label,
-		.ls-win__label { font-size: clamp(7px, 2.3vh, 12px); }
-		.ls-balance__value,
-		.ls-win__value { font-size: clamp(8px, 2.6vh, 13px); }
+		.ls-balance { padding: clamp(2px, 0.8vh, 5px) clamp(6px, 1.4vh, 12px); border-radius: 4.21px; }
+		.ls-balance__label { font-size: clamp(7px, 2.3vh, 12px); }
+		.ls-balance__value { font-size: clamp(8px, 2.6vh, 13px); }
+		/* WIN kept clearly smaller than BALANCE. */
+		.ls-win { padding: clamp(1px, 0.6vh, 4px) clamp(5px, 1.1vh, 9px); border-radius: 4.21px; }
+		.ls-win__label { font-size: clamp(6px, 1.7vh, 9px); }
+		.ls-win__value { font-size: clamp(6px, 2vh, 10px); }
 	}
 
 	/* BET stepper — same small #1F1F1F pill as BALANCE, stretched to BALANCE's width and stacked under
@@ -2244,7 +2245,7 @@
 		/* Bottom aligned to the WIN pill's bottom border (same var), so the rail runs all the way down
 		   to it — now near the screen bottom. */
 		bottom: var(--ls-corner-bottom);
-		--ls-rail-w: clamp(40px, 17dvh, 132px);
+		--ls-rail-w: clamp(34px, 13dvh, 104px);
 		width: var(--ls-rail-w);
 		box-sizing: border-box;
 		display: flex;
@@ -2254,14 +2255,14 @@
 		   never overflow the ends regardless of viewport/chrome. space-between spreads the slack as
 		   small even gaps; the padding insets the first/last off the rounded ends. */
 		justify-content: space-between;
-		padding: 2.5% 0;
+		padding: 1.5% 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
 	   icon), sized as a fraction of the rail width so they sit inside the bar. */
 	.ls-round {
 		/* Height as a % of the rail (width follows, square) → the column can't overflow the ends. */
-		height: 12.5%;
+		height: 13%;
 		width: auto;
 		aspect-ratio: 1;
 		flex: 0 0 auto;
@@ -2293,7 +2294,7 @@
 		align-items: center;
 		justify-content: center;
 		flex: 0 0 auto;
-		height: 10.5%;
+		height: 11%;
 	}
 	/* The burger button is smaller than the other rail controls (it's a secondary action). */
 	.ls-menu-wrap .ls-round {
@@ -2322,7 +2323,7 @@
 	.ls-spin {
 		/* The focal button — its height is a % of the rail; being wider than the bar, its disc bulges
 		   out the left + right sides (the only control that overflows — horizontally, by design). */
-		height: 32%;
+		height: 30%;
 		width: auto;
 		aspect-ratio: 1;
 		flex: 0 0 auto;
