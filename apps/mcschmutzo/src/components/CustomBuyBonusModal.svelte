@@ -557,4 +557,17 @@
 			justify-self: center;
 		}
 	}
+
+	/* Short viewports (mobile landscape): the modal otherwise fills the whole screen — scale the whole
+	   panel down. Placed last so it wins over the base .bb-panel transform. */
+	@media (max-height: 500px) {
+		.bb-panel {
+			transform: translate(-50%, -50%) scale(0.8);
+		}
+		.bb-close {
+			width: clamp(32px, 5vmin, 42px);
+			top: 10px;
+			right: 10px;
+		}
+	}
 </style>

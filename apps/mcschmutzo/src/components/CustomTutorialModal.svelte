@@ -369,6 +369,18 @@
 	.tu-close:active {
 		transform: scale(0.94);
 	}
+	/* Short viewports (mobile landscape): the popup fills the height, so the close button placed ABOVE
+	   it lands off the top of the screen. Tuck it INSIDE the top-right corner instead. */
+	@media (max-height: 500px) {
+		.tu-root {
+			width: min(760px, 92vw);
+		}
+		.tu-close {
+			--x-size: clamp(28px, 7vmin, 40px);
+			top: clamp(6px, 1.6vmin, 14px);
+			right: clamp(6px, 1.6vmin, 14px);
+		}
+	}
 
 	/* The page body is the scroll area (flex child of the popup); the nav sits below it. */
 	.tu-page {

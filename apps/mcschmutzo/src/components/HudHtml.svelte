@@ -2285,11 +2285,18 @@
 		justify-content: center;
 		flex: 0 0 auto;
 	}
+	/* The burger button is smaller than the other rail controls (it's a secondary action). */
+	.ls-menu-wrap .ls-round {
+		width: calc(var(--ls-rail-w) * 0.56);
+		height: calc(var(--ls-rail-w) * 0.56);
+	}
 	.ls-menu-pop {
 		position: absolute;
 		right: calc(100% + clamp(6px, 1.4vw, 12px));
-		top: 50%;
-		transform: translateY(-50%);
+		/* Drop DOWN from the button's top (the burger sits near the top of the rail, so a vertically
+		   centred popup got clipped off the top of the screen). */
+		top: 0;
+		transform: none;
 		display: flex;
 		flex-direction: column;
 		gap: clamp(3px, 0.8vh, 7px);
