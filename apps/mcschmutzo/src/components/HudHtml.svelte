@@ -2317,11 +2317,10 @@
 	}
 
 	.ls-spin {
-		/* The focal button, in dvh — smaller than before (it was eating too much vertical space and
-		   pushing the outer buttons off the ends). Still a touch wider than the bar so its disc bulges
-		   out the left + right sides (the only control that overflows — horizontally, by design). */
-		width: clamp(36px, 17dvh, 92px);
-		height: clamp(36px, 17dvh, 92px);
+		/* The focal button, in dvh — a bit bigger than the bar width so its disc bulges out the left +
+		   right sides (the only control that overflows — horizontally, by design). */
+		width: clamp(42px, 21dvh, 108px);
+		height: clamp(42px, 21dvh, 108px);
 		flex: 0 0 auto;
 		border: 0;
 		/* The real turn-button disc art. */
