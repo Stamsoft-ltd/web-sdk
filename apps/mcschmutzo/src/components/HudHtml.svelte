@@ -1224,7 +1224,9 @@
 		z-index: 6;
 		align-self: center;
 		margin-top: auto;
-		margin-bottom: 5px;
+		/* Lifted off the screen bottom so the vertically-centred (bigger) spin disc protrudes below the
+		   bar without being cut by the screen edge. */
+		margin-bottom: calc(var(--u) * 36);
 		/* The bar is one fixed 1860px-wide design scaled uniformly: --u is the design-px
 		   unit (1px at ≥1917px viewports, proportionally smaller below). Every size inside
 		   the bar is a design px × --u, so laptops and the Stake iframe render the exact
@@ -1858,14 +1860,12 @@
 		/* Negative vertical margins make the disc contribute exactly one nav-button height to the
 		   bar (it protrudes above/below as the focal control); the auto side margins split the
 		   free bar space equally, centering the disc between the + stepper and the turbo button. */
-		/* Shifted up: the (bigger) disc protrudes further into the room freed above the bar instead of
-		   off the bottom of the screen — top margin more negative, bottom less, by the same 20u.
-		   Negative side margins (~-11% of the box) cancel the transparent drip-margin around the disc
-		   (the visible disc is ~78% of its square box), so the disc's visible left/right gaps match the
-		   gaps between the other bar items instead of looking bigger. */
-		margin: calc((var(--nav-s) - var(--spin-s)) / 2 - var(--u) * 20)
-			calc(var(--spin-s) * -0.11)
-			calc((var(--nav-s) - var(--spin-s)) / 2 + var(--u) * 20);
+		/* Symmetric top/bottom margin so the disc is vertically CENTRED on the button row (same centre
+		   as menu/turbo/auto), protruding equally above and below the bar; the bar is lifted
+		   (margin-bottom below) so the lower protrusion stays on-screen. Negative side margins (~-11%
+		   of the box) cancel the transparent drip-margin around the disc (the visible disc is ~78% of
+		   its square box) so its left/right gaps match the gaps between the other bar items. */
+		margin: calc((var(--nav-s) - var(--spin-s)) / 2) calc(var(--spin-s) * -0.11);
 		border: none;
 		background: var(--btn-spin-bg) center / contain no-repeat;
 		padding: 0;
