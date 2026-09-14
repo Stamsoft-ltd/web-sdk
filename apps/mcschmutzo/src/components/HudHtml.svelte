@@ -1231,6 +1231,7 @@
 		   desktop bar, just scaled — no per-breakpoint reflow, matching the Figma reference
 		   (node 3406-4596) where the whole bar scales as one unit. */
 		--u: calc(min(93vw, 1860px) / 1860);
+		/* Round nav buttons scale with the bar; all use --nav-s so they stay equal to each other. */
 		--nav-s: calc(var(--u) * 104);
 		--spin-s: calc(var(--u) * 262);
 		width: calc(var(--u) * 1860);
@@ -2261,10 +2262,10 @@
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
 	   icon), sized as a fraction of the rail width so they sit inside the bar. */
 	.ls-round {
-		/* Sized in dvh (viewport height) so they fit the fixed-height bar; the rail width (7vw) only
-		   sets the bar, not these. */
-		width: clamp(19px, 8.8dvh, 46px);
-		height: clamp(19px, 8.8dvh, 46px);
+		/* 36x36 on mobile (design ask); sized in dvh so they fit the fixed-height bar and scale down on
+		   tiny popouts, capped at 36. */
+		width: clamp(22px, 9.6dvh, 36px);
+		height: clamp(22px, 9.6dvh, 36px);
 		flex: 0 0 auto;
 		box-sizing: border-box;
 		/* No ring/glow on the burger + lightning (design ask) — just the dark disc + white icon. */
