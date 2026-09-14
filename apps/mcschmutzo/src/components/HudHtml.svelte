@@ -2068,7 +2068,7 @@
 	   in). Sits between the menu and the spin disc (design). Aspect 31:66. */
 	.ls-buy-rail {
 		/* Height as a % of the rail (its width follows from the aspect) → guaranteed to fit. */
-		height: 22%;
+		height: 25%;
 		width: auto;
 		aspect-ratio: 31 / 66;
 		flex: 0 0 auto;
@@ -2244,7 +2244,7 @@
 		/* Bottom aligned to the WIN pill's bottom border (same var), so the rail runs all the way down
 		   to it — now near the screen bottom. */
 		bottom: var(--ls-corner-bottom);
-		--ls-rail-w: clamp(34px, 14dvh, 112px);
+		--ls-rail-w: clamp(40px, 17dvh, 132px);
 		width: var(--ls-rail-w);
 		box-sizing: border-box;
 		display: flex;
@@ -2261,7 +2261,7 @@
 	   icon), sized as a fraction of the rail width so they sit inside the bar. */
 	.ls-round {
 		/* Height as a % of the rail (width follows, square) → the column can't overflow the ends. */
-		height: 11%;
+		height: 12.5%;
 		width: auto;
 		aspect-ratio: 1;
 		flex: 0 0 auto;
@@ -2293,7 +2293,7 @@
 		align-items: center;
 		justify-content: center;
 		flex: 0 0 auto;
-		height: 9%;
+		height: 10.5%;
 	}
 	/* The burger button is smaller than the other rail controls (it's a secondary action). */
 	.ls-menu-wrap .ls-round {
@@ -2322,7 +2322,7 @@
 	.ls-spin {
 		/* The focal button — its height is a % of the rail; being wider than the bar, its disc bulges
 		   out the left + right sides (the only control that overflows — horizontally, by design). */
-		height: 27%;
+		height: 32%;
 		width: auto;
 		aspect-ratio: 1;
 		flex: 0 0 auto;
