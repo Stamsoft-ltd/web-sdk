@@ -1859,8 +1859,12 @@
 		   bar (it protrudes above/below as the focal control); the auto side margins split the
 		   free bar space equally, centering the disc between the + stepper and the turbo button. */
 		/* Shifted up: the (bigger) disc protrudes further into the room freed above the bar instead of
-		   off the bottom of the screen — top margin more negative, bottom less, by the same 20u. */
-		margin: calc((var(--nav-s) - var(--spin-s)) / 2 - var(--u) * 20) auto
+		   off the bottom of the screen — top margin more negative, bottom less, by the same 20u.
+		   Negative side margins (~-11% of the box) cancel the transparent drip-margin around the disc
+		   (the visible disc is ~78% of its square box), so the disc's visible left/right gaps match the
+		   gaps between the other bar items instead of looking bigger. */
+		margin: calc((var(--nav-s) - var(--spin-s)) / 2 - var(--u) * 20)
+			calc(var(--spin-s) * -0.11)
 			calc((var(--nav-s) - var(--spin-s)) / 2 + var(--u) * 20);
 		border: none;
 		background: var(--btn-spin-bg) center / contain no-repeat;
@@ -1885,8 +1889,8 @@
 		display: block;
 		pointer-events: none;
 		filter: brightness(0) invert(1); /* white refresh icon (Figma) */
-		/* Centre the icon on the green disc of btn_bg_spin.png (disc centre ≈ 53% of the box). */
-		transform: translateY(4%);
+		/* Centre on the new turn-button disc (measured centre 48.35% / 48.97% of the square button). */
+		transform: translate(-1.65%, -1.03%);
 	}
 
 	.spin-btn:not(:disabled):hover {
@@ -2343,8 +2347,8 @@
 	   gold frame + ketchup drip offsetting it). */
 	.ls-spin__icon {
 		position: absolute;
-		left: 51.4%;
-		top: 48.5%;
+		left: 48.35%;
+		top: 48.97%;
 		width: 40%;
 		height: 40%;
 		object-fit: contain;
@@ -2561,7 +2565,7 @@
 	/* The green disc in spin_mobile.png sits ~1% right / ~3% above the art centre (leaf border is
 	   heavier at the bottom), so nudge the icons onto the disc's optical centre. */
 	/* White arrow/stop glyph on the red spin disc (source art is gold → recolour to white). */
-	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(2%, 2%); filter: brightness(0) invert(1); } /* arrow overlay (base has none) */
+	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(-1.65%, -1.03%); filter: brightness(0) invert(1); } /* arrow overlay, centred on the new disc */
 	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; transform: translate(2%, 2%); filter: brightness(0) invert(1); }
 	.pt-spin__count {
 		font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.3rem; color: #fff;
