@@ -562,12 +562,23 @@
 	   panel down. Placed last so it wins over the base .bb-panel transform. */
 	@media (max-height: 500px) {
 		.bb-panel {
-			transform: translate(-50%, -50%) scale(0.8);
+			transform: translate(-50%, -50%) scale(0.78);
 		}
 		.bb-close {
 			width: clamp(32px, 5vmin, 42px);
 			top: 10px;
 			right: 10px;
+		}
+		/* Keep all four cards in ONE row (the wide landscape has room across but not down), so they
+		   don't stack into 2x2 and overflow the short height. Overrides the max-width:900px 2-col rule. */
+		.bb-grid {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: clamp(6px, 1.2vmin, 12px);
+		}
+		/* Reset the 1-per-row art/button tweaks that the max-width breakpoints may have applied. */
+		.bb-art {
+			width: auto;
+			margin: 0;
 		}
 	}
 </style>
