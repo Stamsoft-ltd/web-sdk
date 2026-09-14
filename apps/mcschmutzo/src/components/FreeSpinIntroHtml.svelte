@@ -312,4 +312,9 @@
 			opacity: 0.5;
 		}
 	}
+
+	/* Tiny popouts (~400x225): shrink the close (X) so it doesn't dominate the small screen. */
+	@media (max-height: 300px) {
+		.fs-close { width: clamp(20px, 9dvh, 30px); top: 6px; right: 6px; }
+	}
 </style>

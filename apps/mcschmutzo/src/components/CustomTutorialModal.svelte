@@ -929,5 +929,10 @@
 			gap: clamp(8px, 3vmin, 14px);
 			padding: clamp(4px, 1.5vmin, 10px) 0 clamp(6px, 2vmin, 12px);
 		}
+		.tu-close {
+			--x-size: clamp(20px, 9dvh, 30px);
+			top: 5px;
+			right: 5px;
+		}
 	}
 </style>

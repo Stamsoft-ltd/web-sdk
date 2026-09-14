@@ -299,9 +299,9 @@
 			max-height: none;
 		}
 		.fo-close {
-			width: clamp(30px, 7vmin, 44px);
-			top: 8px;
-			right: 8px;
+			width: clamp(20px, 9dvh, 30px);
+			top: 6px;
+			right: 6px;
 		}
 		.fo-continue {
 			bottom: 5px;

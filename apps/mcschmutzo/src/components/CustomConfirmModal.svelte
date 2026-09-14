@@ -184,4 +184,9 @@
 			0 0 0 1px rgba(255, 120, 100, 0.25) inset,
 			0 3px 10px rgba(0, 0, 0, 0.45);
 	}
+
+	/* Tiny popouts (~400x225): shrink the close (X) so it doesn't dominate the small screen. */
+	@media (max-height: 300px) {
+		.cf-close { width: clamp(20px, 9dvh, 30px); top: 6px; right: 6px; }
+	}
 </style>
