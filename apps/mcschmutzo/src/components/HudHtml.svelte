@@ -2067,9 +2067,8 @@
 	/* Vertical BONUS button in the right rail — the bonus-landscape art (red button, "BONUS" baked
 	   in). Sits between the menu and the spin disc (design). Aspect 31:66. */
 	.ls-buy-rail {
-		/* Height as a % of the rail (its width follows from the aspect) → guaranteed to fit. */
-		height: 26%;
-		width: auto;
+		/* Fixed size off the rail width (original) — a taller rail leaves more gap, not a bigger button. */
+		width: calc(var(--ls-rail-w) * 0.66);
 		aspect-ratio: 31 / 66;
 		flex: 0 0 auto;
 		border: 0;
@@ -2261,10 +2260,9 @@
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
 	   icon), sized as a fraction of the rail width so they sit inside the bar. */
 	.ls-round {
-		/* Height as a % of the rail (width follows, square) → the column can't overflow the ends. */
-		height: 13%;
-		width: auto;
-		aspect-ratio: 1;
+		/* Fixed size off the rail width (original). A taller rail just spreads them further apart. */
+		width: calc(var(--ls-rail-w) * 0.72);
+		height: calc(var(--ls-rail-w) * 0.72);
 		flex: 0 0 auto;
 		box-sizing: border-box;
 		border: 2px solid #4c433d;
@@ -2294,13 +2292,11 @@
 		align-items: center;
 		justify-content: center;
 		flex: 0 0 auto;
-		height: 11%;
 	}
 	/* The burger button is smaller than the other rail controls (it's a secondary action). */
 	.ls-menu-wrap .ls-round {
-		height: 100%;
-		width: auto;
-		aspect-ratio: 1;
+		width: calc(var(--ls-rail-w) * 0.56);
+		height: calc(var(--ls-rail-w) * 0.56);
 	}
 	.ls-menu-pop {
 		position: absolute;
@@ -2321,11 +2317,10 @@
 	}
 
 	.ls-spin {
-		/* The focal button — its height is a % of the rail; being wider than the bar, its disc bulges
-		   out the left + right sides (the only control that overflows — horizontally, by design). */
-		height: 30%;
-		width: auto;
-		aspect-ratio: 1;
+		/* The focal button — fixed size off the rail width (original), wider than the bar so its disc
+		   bulges out the left + right sides (the only control that overflows — horizontally, by design). */
+		width: calc(var(--ls-rail-w) * 1.6);
+		height: calc(var(--ls-rail-w) * 1.6);
 		flex: 0 0 auto;
 		border: 0;
 		/* The real turn-button disc art. */
