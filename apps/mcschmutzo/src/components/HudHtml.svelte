@@ -2028,7 +2028,7 @@
 		font-family: 'Cinzel', serif;
 		/* Bottom inset shared by the BALANCE/BET stack (bottom-left) and the WIN pill (bottom-right)
 		   so the two readouts sit level in their corners. Scales with viewport height. */
-		--ls-corner-bottom: clamp(8px, 4dvh, 30px);
+		--ls-corner-bottom: clamp(4px, 1.8dvh, 14px);
 	}
 	.ls-hud button,
 	.ls-hud .ls-bet__value {
@@ -2240,9 +2240,9 @@
 		   it's pinned top+bottom, can never be taller than the space it has. All heights are in
 		   --ls-vh (the engine's MEASURED viewport 1vh) so the buttons track the real visible area and
 		   never overflow (plain vh counts the space behind mobile browser chrome). */
-		top: 5dvh;
+		top: 3.5dvh;
 		/* Bottom aligned to the WIN pill's bottom border (same var), so the rail runs all the way down
-		   to it. */
+		   to it — now near the screen bottom. */
 		bottom: var(--ls-corner-bottom);
 		--ls-rail-w: clamp(34px, 14dvh, 112px);
 		width: var(--ls-rail-w);
