@@ -2246,8 +2246,10 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: clamp(10px, 6.4dvh, 44px);
-		padding: clamp(8px, 2.6dvh, 18px) 0;
+		gap: clamp(4px, 3dvh, 22px);
+		/* Generous top/bottom padding squeezes the first/last (burger, AUTO) well inside the bar's
+		   rounded ends; the moderate gap keeps the whole content clear of the screen edges. */
+		padding: clamp(14px, 5dvh, 34px) 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
