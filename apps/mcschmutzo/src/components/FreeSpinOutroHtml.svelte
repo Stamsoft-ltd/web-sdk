@@ -287,4 +287,25 @@
 			opacity: 0.5;
 		}
 	}
+
+	/* Smallest landscape popouts (~400x225, <=300px tall): the plaque is sized by width, so on a very
+	   short screen the burger + sauce that overhang the top edge clip off the top and PRESS TO CONTINUE
+	   collides with it. Cap the stage by viewport HEIGHT (dvh) so the whole composition — burger, plaque
+	   and splashes — fits, and tuck the close + continue in tighter. Placed LAST so it wins over the base
+	   rules. 812x375 (height 375) is unaffected. */
+	@media (max-height: 300px) {
+		.fo-stage {
+			width: min(560px, 92vw, 126dvh);
+			max-height: none;
+		}
+		.fo-close {
+			width: clamp(30px, 7vmin, 44px);
+			top: 8px;
+			right: 8px;
+		}
+		.fo-continue {
+			bottom: 5px;
+			font-size: clamp(9px, 4vmin, 13px);
+		}
+	}
 </style>
