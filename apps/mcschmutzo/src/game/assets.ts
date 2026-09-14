@@ -187,6 +187,11 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/congrats-cover-sm.webp', import.meta.url).href,
 	},
+	// The dedicated win-amount plaque (red panel + gold frame + ketchup/mustard splashes).
+	winBoxAmount: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/win/win-box-amount.png', import.meta.url).href,
+	},
 	boardBg: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/board.webp', import.meta.url).href,

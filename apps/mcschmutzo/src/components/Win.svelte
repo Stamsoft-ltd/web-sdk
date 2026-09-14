@@ -100,19 +100,18 @@
 						y={context.stateGameDerived.boardLayout().y}
 					>
 						{#if winLevelData?.pad}
-							<!-- Amount in the wooden box: Maven Pro Medium, cream. Fixed size so every tier
-							     renders the SAME size (short or long); maxWidth only scales down the very longest
-							     amounts to keep them inside the box. -->
+							<!-- Amount in the win-box-amount plaque: Poppins bold, cream. Fixed base size so every
+							     tier renders the SAME size (short or long); maxWidth scales the longest amounts
+							     down so even large values stay inside the red panel. -->
 							{@const amountFontSize = SYMBOL_SIZE * 0.48}
 							<WinPad padKey={winLevelData.pad}>
 								<ResponsiveText
 									anchor={0.5}
-									y={amountFontSize * 0.03}
-									maxWidth={context.stateGameDerived.boardLayout().width * 0.28}
+									maxWidth={context.stateGameDerived.boardLayout().width * 0.4}
 									text={bookEventAmountToCurrencyString(countUpAmount)}
 									style={{
-										fontFamily: 'Maven Pro',
-										fontWeight: '500',
+										fontFamily: 'Poppins',
+										fontWeight: '700',
 										fill: 0xfff1cf,
 										fontSize: amountFontSize,
 										letterSpacing: amountFontSize * 0.003,

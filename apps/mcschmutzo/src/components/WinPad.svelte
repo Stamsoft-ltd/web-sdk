@@ -15,17 +15,20 @@
 	const context = getContext();
 	const board = $derived(context.stateGameDerived.boardLayout());
 
-	// Pad art is exported ~1302x455 (plaque centred). The amount now sits in the red plaque frame
-	// (congrats-cover-sm, 1241x623) instead of the gold wooden board.
+	// Pad art is exported ~1302x455 (plaque centred). The amount sits in the dedicated win-box-amount
+	// plaque (1536x1024 art; red panel + gold frame + ketchup/mustard splashes).
 	const PAD_ASPECT = 1302 / 455;
-	const BOX_ASPECT = 1241 / 623;
+	const BOX_ASPECT = 1536 / 1024;
 	// Portrait: the board fills almost the whole layout, so the desktop banner multiplier makes the
 	// pad overflow the phone — use a smaller fraction that still reads big.
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
 	const padW = $derived(board.width * (isPortrait ? 1.15 : 1.5));
 	const padH = $derived(padW / PAD_ASPECT);
-	const boxW = $derived(board.width * (isPortrait ? 0.46 : 0.5));
+	// The visible plaque is ~88% of the art width, so scale the box up a touch to keep it prominent.
+	const boxW = $derived(board.width * (isPortrait ? 0.52 : 0.57));
 	const boxH = $derived(boxW / BOX_ASPECT);
+	// Red panel centre measured at ~(50.3%, 46%) of the art → nudge the amount up from the box centre.
+	const amountY = $derived(-boxH * 0.04);
 </script>
 
 <Container>
@@ -38,9 +41,11 @@
 		y={-padH * 0.2}
 	/>
 
-	<!-- Red plaque amount box with the count-up amount centred inside its red interior. -->
+	<!-- Win-amount plaque with the count-up amount centred inside its red panel. -->
 	<Container y={padH * 0.44}>
-		<Sprite key="winBoxRed" anchor={{ x: 0.5, y: 0.5 }} width={boxW} height={boxH} />
-		{@render props.children()}
+		<Sprite key="winBoxAmount" anchor={{ x: 0.5, y: 0.5 }} width={boxW} height={boxH} />
+		<Container y={amountY}>
+			{@render props.children()}
+		</Container>
 	</Container>
 </Container>
