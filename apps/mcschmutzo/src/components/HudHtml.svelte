@@ -2251,6 +2251,9 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: space-evenly;
+		/* Extra top/bottom padding so the outer buttons (burger, AUTO) keep clear space from the bar's
+		   rounded ends — it stacks on top of the space-evenly gap, so the outer margin > the gaps. */
+		padding: clamp(12px, 4.5dvh, 30px) 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
