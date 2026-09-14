@@ -10,6 +10,8 @@
 	const aspect = 1678 / 937;
 	// Portrait diner background (mobile-bg): its own 9:16-ish raster, cover-scaled to the phone.
 	const portraitAspect = 941 / 1672;
+	// Landscape SPECIAL (free-games) grey kitchen — its own wide crop (special-bg-landscape.webp).
+	const specialLandscapeAspect = 1590 / 716;
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isPortrait = $derived(layoutType === 'portrait');
@@ -38,6 +40,13 @@
 			? { width: canvas.width, height: canvas.width / aspect }
 			: { width: canvas.height * aspect, height: canvas.height };
 	});
+	// Cover for the wide landscape special crop (free games only).
+	const specialLandscapeCover = $derived.by(() => {
+		const canvasAspect = canvas.width / canvas.height;
+		return canvasAspect > specialLandscapeAspect
+			? { width: canvas.width, height: canvas.width / specialLandscapeAspect }
+			: { width: canvas.height * specialLandscapeAspect, height: canvas.height };
+	});
 	// Cover-scale the portrait bg: the phone is usually narrower than the art, so height fills the
 	// screen and the sides overhang (lamp + shelf stay in view).
 	const portraitCover = $derived.by(() => {
@@ -50,15 +59,15 @@
 
 <Rectangle {...canvas} backgroundColor={0x170905} zIndex={-3} />
 {#if isLandscape}
-	<!-- Mobile-landscape: the real full diner background (same art as desktop, cover-scaled), just
-	     without the chef and without the special grey-kitchen swap in free games. -->
+	<!-- Mobile-landscape: the real full diner (cover-scaled) for the base game, swapping to the
+	     dedicated wide grey-kitchen crop for free games. No chef in landscape (design ask). -->
 	<Sprite
-		key="backgroundBase"
+		key={isFreegame ? 'backgroundLandscapeBonus' : 'backgroundBase'}
 		x={canvas.width * 0.5}
 		y={canvas.height * 0.5}
 		anchor={0.5}
-		width={cover.width}
-		height={cover.height}
+		width={isFreegame ? specialLandscapeCover.width : cover.width}
+		height={isFreegame ? specialLandscapeCover.height : cover.height}
 		zIndex={-2}
 	/>
 	<Rectangle {...canvas} backgroundColor={0x180903} alpha={0.16} zIndex={-1} />

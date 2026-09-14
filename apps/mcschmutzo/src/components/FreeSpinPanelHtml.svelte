@@ -156,20 +156,22 @@
 		width: min(118px, 30%);
 	}
 
-	/* ── Desktop / landscape: FREE SPINS + TOTAL WIN stacked on the LEFT of the board, accordion above. ── */
+	/* ── Desktop / landscape: FREE SPINS + TOTAL WIN stacked on the LEFT of the board, accordion above.
+	   Sized in vmin (short side) so the pills shrink on tiny popouts (400x225) and clear the board's
+	   left column, while staying full-size on normal mobile-landscape. ── */
 	.fp:not([data-layout='portrait']) .fp-acc {
 		left: 4%;
-		top: 20%;
-		width: clamp(110px, 11vw, 180px);
+		top: 18%;
+		width: clamp(70px, 22vmin, 180px);
 	}
 	.fp:not([data-layout='portrait']) .fp-fs {
 		left: 3.5%;
-		top: 45%;
-		min-width: clamp(130px, 12vw, 210px);
+		top: 44%;
+		min-width: clamp(84px, 28vmin, 210px);
 	}
 	.fp:not([data-layout='portrait']) .fp-total {
 		left: 3.5%;
 		top: 62%;
-		min-width: clamp(130px, 12vw, 210px);
+		min-width: clamp(84px, 28vmin, 210px);
 	}
 </style>

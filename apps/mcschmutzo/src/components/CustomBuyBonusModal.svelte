@@ -558,31 +558,43 @@
 		}
 	}
 
-	/* Short viewports (mobile landscape): the modal otherwise fills the whole screen — scale the whole
-	   panel down. Placed last so it wins over the base .bb-panel transform. */
+	/* Short viewports (mobile landscape, incl. tiny 400x225 popouts): lay the panel out at a FIXED
+	   design size (so the four cards get real room and nothing clips), then transform-scale the whole
+	   thing down to fit whichever viewport dimension is tighter. Placed last so it wins over the base
+	   .bb-panel rule. transform-origin stays centred, so translate(-50%,-50%) still centres it. */
 	@media (max-height: 500px) {
 		.bb-panel {
-			/* Lift the height cap so the cards aren't cut (the panel is transform-scaled to fit the
-			   screen anyway), and scale up to use the spare space below. */
-			transform: translate(-50%, -50%) scale(0.86);
+			width: 880px;
+			max-width: none;
 			max-height: none;
-			overflow-y: visible;
+			overflow: visible;
+			padding: 14px;
+			/* 880x470 design box → fit into 96vw x 92vh, min() picks the limiting axis. */
+			transform: translate(-50%, -50%)
+				scale(min(calc(96vw / 880px), calc(92vh / 470px)));
+		}
+		.bb-title {
+			margin-bottom: 16px;
+			font-size: 2.6rem;
 		}
 		.bb-close {
-			width: clamp(32px, 5vmin, 42px);
+			width: clamp(34px, 7vmin, 46px);
 			top: 10px;
 			right: 10px;
 		}
 		/* Keep all four cards in ONE row (the wide landscape has room across but not down), so they
-		   don't stack into 2x2 and overflow the short height. Overrides the max-width:900px 2-col rule. */
+		   don't stack into 2x2. Overrides the max-width:900px/520px rules. */
 		.bb-grid {
 			grid-template-columns: repeat(4, minmax(0, 1fr));
-			gap: clamp(6px, 1.2vmin, 12px);
+			gap: 16px;
 		}
 		/* Reset the 1-per-row art/button tweaks that the max-width breakpoints may have applied. */
 		.bb-art {
 			width: auto;
 			margin: 0;
+		}
+		.bb-btn {
+			width: 100%;
 		}
 	}
 </style>

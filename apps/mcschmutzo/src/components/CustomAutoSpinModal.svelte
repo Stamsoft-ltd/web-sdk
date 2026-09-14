@@ -404,4 +404,28 @@
 	.ap-start:active {
 		transform: scale(0.98);
 	}
+
+	/* Short viewports (mobile landscape, incl. tiny 400x225 popouts): the content is taller than the
+	   screen, so it would scroll and hide the spin-count + START. Lay it out at a FIXED design size and
+	   transform-scale the whole popup to fit, keeping every control visible. Placed LAST so it wins over
+	   the base .ap-root / .ap-popup rules. Centred origin → translate(-50%,-50%) still centres it. */
+	@media (max-height: 500px) {
+		.ap-root {
+			width: 430px;
+			max-width: none;
+			max-height: none;
+			/* 430x380 design box → fit into 94vw x 94vh, min() picks the limiting axis. */
+			transform: translate(-50%, -50%)
+				scale(min(calc(94vw / 430px), calc(94vh / 380px)));
+		}
+		.ap-popup {
+			max-height: none;
+			overflow: visible;
+		}
+		.ap-close {
+			top: 10px;
+			right: 10px;
+			width: clamp(30px, 7vmin, 44px);
+		}
+	}
 </style>

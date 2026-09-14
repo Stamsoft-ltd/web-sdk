@@ -905,4 +905,22 @@
 			grid-template-columns: 1fr;
 		}
 	}
+
+	/* Tiny popouts (~400x225): the default text is large enough that only a couple of lines fit
+	   before the page-nav — shrink the type + chrome so a page reads with less scrolling. Placed
+	   LAST so it wins over the base .tu-title/.tu-body rules (equal specificity → later wins). */
+	@media (max-height: 300px) {
+		.tu-popup {
+			min-height: 0;
+			padding: clamp(10px, 4vmin, 20px) clamp(14px, 5vmin, 28px) 0;
+		}
+		.tu-title {
+			font-size: clamp(1rem, 8vmin, 1.6rem);
+			margin-bottom: 6px;
+		}
+		.tu-body {
+			font-size: clamp(0.7rem, 6vmin, 1rem);
+			line-height: 1.32;
+		}
+	}
 </style>
