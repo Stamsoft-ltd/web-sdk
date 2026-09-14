@@ -2235,22 +2235,20 @@
 		position: absolute;
 		/* Right margin leaves room for the turn disc to bulge past the bar's right side. */
 		right: clamp(16px, 3vw, 34px);
-		/* CONTENT-HEIGHT bar anchored just below Press Play — its height is exactly the buttons + gaps
-		   + padding, so the dark bar HUGS the controls and the first/last (menu, AUTO) are inside it BY
-		   DEFINITION; they can never spill out the ends. The gap is what makes the bar tall (runs down
-		   near the WIN border); dvh keeps it tracking the real visible viewport. */
+		/* FIXED tall height: anchored from just below Press Play to the WIN border, so the bar is tall
+		   AND, being pinned top+bottom, its height is always viewport-minus-insets — it can never
+		   exceed the screen. The buttons (65dvh total) sit well under that, and space-evenly gives
+		   EQUAL space above the first, between each, and below the last — so the burger + AUTO get
+		   breathing room from the ends instead of hanging on the edge. */
 		top: 3.5dvh;
+		bottom: var(--ls-corner-bottom);
 		--ls-rail-w: clamp(34px, 13dvh, 104px);
 		width: var(--ls-rail-w);
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		/* Smaller gaps pack the buttons closer so the whole content stays well within the screen
-		   (big bottom margin); the top/bottom padding keeps the first/last (burger, AUTO) inset inside
-		   the bar's ends. */
-		gap: clamp(4px, 2.2dvh, 16px);
-		padding: clamp(12px, 4dvh, 28px) 0;
+		justify-content: space-evenly;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
