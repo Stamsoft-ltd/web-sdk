@@ -562,7 +562,11 @@
 	   panel down. Placed last so it wins over the base .bb-panel transform. */
 	@media (max-height: 500px) {
 		.bb-panel {
-			transform: translate(-50%, -50%) scale(0.78);
+			/* Lift the height cap so the cards aren't cut (the panel is transform-scaled to fit the
+			   screen anyway), and scale up to use the spare space below. */
+			transform: translate(-50%, -50%) scale(0.86);
+			max-height: none;
+			overflow-y: visible;
 		}
 		.bb-close {
 			width: clamp(32px, 5vmin, 42px);
