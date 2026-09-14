@@ -196,11 +196,18 @@
 		.wb-wheel {
 			width: min(480px, 86vw, 82dvh);
 		}
-		/* On the tiniest wheels (~185px on a 400x225 popout) the step chip is too narrow for
-		   "+15 STEPS" at the 7px floor — drop the floor a touch and tighten padding so it fits. */
+		/* On the tiniest wheels (~185px on a 400x225 popout) the text hits its floor and overflows the
+		   narrow inner part of each wedge. Drop the floors so the number, "FREE GAMES" and the
+		   "+N STEPS" chip all sit comfortably inside their segment. */
+		.wb-fg-num {
+			font-size: clamp(11px, 4.4cqw, 30px);
+		}
+		.wb-fg-text {
+			font-size: clamp(5px, 2cqw, 13px);
+		}
 		.wb-steps {
-			font-size: clamp(5px, 1.9cqw, 12px);
-			padding: 3% 5%;
+			font-size: clamp(4px, 1.9cqw, 12px);
+			padding: 2% 4%;
 		}
 	}
 </style>
