@@ -955,14 +955,7 @@
 						<img class="nav-icon" src={iconMenuBars} alt="menu" />
 					</button>
 				</div>
-				<button
-					class="nav-btn nav-btn--framed"
-					type="button"
-					onclick={toggleSound}
-					aria-label="Sound"
-				>
-					<img class="nav-icon" src={isMuted ? iconSoundMuted : iconSound} alt="sound" class:is-muted={isMuted} />
-				</button>
+<!-- Sound toggle lives only inside the ☰ menu (SOUND item) now — the standalone nav audio icon was removed. -->
 			</div>
 
 			<div class="hud-buy">
@@ -1023,14 +1016,6 @@
 						aria-label="Game rules"
 					>
 						<img class="nav-icon" src={iconMenu} alt="menu" />
-					</button>
-					<button
-						class="nav-btn nav-btn--framed"
-						type="button"
-						onclick={toggleSound}
-						aria-label="Sound"
-					>
-						<img class="nav-icon" src={isMuted ? iconSoundMuted : iconSound} alt="sound" class:is-muted={isMuted} />
 					</button>
 				{/if}
 				<button
