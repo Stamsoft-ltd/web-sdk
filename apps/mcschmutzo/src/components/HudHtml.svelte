@@ -2067,8 +2067,9 @@
 	/* Vertical BONUS button in the right rail — the bonus-landscape art (red button, "BONUS" baked
 	   in). Sits between the menu and the spin disc (design). Aspect 31:66. */
 	.ls-buy-rail {
-		/* Fixed size off the rail width (original) — a taller rail leaves more gap, not a bigger button. */
-		width: calc(var(--ls-rail-w) * 0.66);
+		/* Height in dvh (width follows the 31:66 aspect) so it fits the fixed-height bar. */
+		height: clamp(30px, 15dvh, 78px);
+		width: auto;
 		aspect-ratio: 31 / 66;
 		flex: 0 0 auto;
 		border: 0;
@@ -2234,16 +2235,17 @@
 	.ls-right {
 		position: absolute;
 		/* Right margin leaves room for the turn disc to bulge past the bar's right side. */
-		right: clamp(16px, 3vw, 34px);
-		/* FIXED tall height: anchored from just below Press Play to the WIN border, so the bar is tall
-		   AND, being pinned top+bottom, its height is always viewport-minus-insets — it can never
-		   exceed the screen. The buttons (65dvh total) sit well under that, and space-evenly gives
-		   EQUAL space above the first, between each, and below the last — so the burger + AUTO get
+		right: clamp(16px, 4vw, 40px);
+		/* Figma bar spec (59×302 at top 50 in an ~812×375 frame) as viewport ratios: top 13dvh, height
+		   ~81dvh (bottom 6dvh), width 7vw — matching the previous games' rail. Pinned top+bottom so it
+		   can never exceed the screen. Controls are sized in dvh (below) so they fit this fixed height;
+		   space-evenly gives EQUAL space above the first (burger) and below the last (AUTO), so they get
 		   breathing room from the ends instead of hanging on the edge. */
-		top: 3.5dvh;
-		bottom: var(--ls-corner-bottom);
-		--ls-rail-w: clamp(34px, 13dvh, 104px);
+		top: 13dvh;
+		bottom: 6dvh;
+		--ls-rail-w: clamp(40px, 7.3vw, 70px);
 		width: var(--ls-rail-w);
+		border-radius: 2.86px;
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
@@ -2254,9 +2256,10 @@
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
 	   icon), sized as a fraction of the rail width so they sit inside the bar. */
 	.ls-round {
-		/* Fixed size off the rail width (original). A taller rail just spreads them further apart. */
-		width: calc(var(--ls-rail-w) * 0.72);
-		height: calc(var(--ls-rail-w) * 0.72);
+		/* Sized in dvh (viewport height) so they fit the fixed-height bar; the rail width (7vw) only
+		   sets the bar, not these. */
+		width: clamp(20px, 9.5dvh, 50px);
+		height: clamp(20px, 9.5dvh, 50px);
 		flex: 0 0 auto;
 		box-sizing: border-box;
 		border: 2px solid #4c433d;
@@ -2289,8 +2292,8 @@
 	}
 	/* The burger button is smaller than the other rail controls (it's a secondary action). */
 	.ls-menu-wrap .ls-round {
-		width: calc(var(--ls-rail-w) * 0.56);
-		height: calc(var(--ls-rail-w) * 0.56);
+		width: clamp(16px, 7.5dvh, 40px);
+		height: clamp(16px, 7.5dvh, 40px);
 	}
 	.ls-menu-pop {
 		position: absolute;
@@ -2311,10 +2314,11 @@
 	}
 
 	.ls-spin {
-		/* The focal button — fixed size off the rail width (original), wider than the bar so its disc
-		   bulges out the left + right sides (the only control that overflows — horizontally, by design). */
-		width: calc(var(--ls-rail-w) * 1.6);
-		height: calc(var(--ls-rail-w) * 1.6);
+		/* The focal button, in dvh — smaller than before (it was eating too much vertical space and
+		   pushing the outer buttons off the ends). Still a touch wider than the bar so its disc bulges
+		   out the left + right sides (the only control that overflows — horizontally, by design). */
+		width: clamp(38px, 19dvh, 100px);
+		height: clamp(38px, 19dvh, 100px);
 		flex: 0 0 auto;
 		border: 0;
 		/* The real turn-button disc art. */
