@@ -2228,6 +2228,15 @@
 	/* Force the glyphs white (the source icons are gold). */
 	.ls-step .ls-icon { width: 78%; height: 78%; object-fit: contain; filter: brightness(0) invert(1); }
 
+	/* Smallest landscape popouts (~400x225, ≤300px tall): shrink the BET stepper so the bottom-left
+	   stack stays compact. BALANCE keeps its size — fitPill already scales a big balance down to the
+	   rail, so it never breaks. 812x375 (height 375) is unaffected. */
+	@media (max-height: 300px) {
+		.ls-bet { padding: 1px 4px; gap: 2px; }
+		.ls-bet__value { font-size: clamp(7px, 3.4vmin, 11px); min-width: clamp(22px, 11vmin, 40px); }
+		.ls-step { width: clamp(11px, 5.5vmin, 18px); height: clamp(11px, 5.5vmin, 18px); }
+	}
+
 	/* Right rail: menu, sound, spin, turbo, autospin (vertical bar).
 	   Figma 3451-2143: the dark pill hugs the buttons (pill ≈ 1.25× button width), the buttons
 	   are large (≈8.3% of viewport height), and the leafy spin disc is ~2.2× the buttons,

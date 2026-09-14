@@ -174,4 +174,33 @@
 		top: 62%;
 		min-width: clamp(84px, 28vmin, 210px);
 	}
+
+	/* Smallest landscape popouts (~400x225, ≤300px tall): shrink the FREE SPINS / TOTAL WIN pills and
+	   the multiplier accordion so they don't dominate the tiny screen. Placed LAST so it wins over the
+	   base rules (equal specificity → later wins). 812x375 (height 375) is unaffected. */
+	@media (max-height: 300px) {
+		.fp:not([data-layout='portrait']) .fp-acc {
+			top: 15%;
+			width: clamp(46px, 19vmin, 120px);
+		}
+		.fp:not([data-layout='portrait']) .fp-fs {
+			top: 42%;
+			min-width: clamp(56px, 22vmin, 150px);
+		}
+		.fp:not([data-layout='portrait']) .fp-total {
+			top: 60%;
+			min-width: clamp(56px, 22vmin, 150px);
+		}
+		.fp-card {
+			padding: 3px 7px;
+			gap: 1px;
+			border-radius: 3px;
+		}
+		.fp-card__label {
+			font-size: clamp(6px, 3vmin, 9px);
+		}
+		.fp-card__value {
+			font-size: clamp(11px, 5vmin, 16px);
+		}
+	}
 </style>
