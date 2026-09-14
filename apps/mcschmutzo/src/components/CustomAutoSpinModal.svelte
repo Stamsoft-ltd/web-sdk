@@ -414,9 +414,9 @@
 			width: 430px;
 			max-width: none;
 			max-height: none;
-			/* 430x380 design box → fit into 94vw x 94vh, min() picks the limiting axis. */
+			/* 430x380 design box → fit into 87vw x 87vh (slightly smaller), min() picks the limiting axis. */
 			transform: translate(-50%, -50%)
-				scale(min(calc(94vw / 430px), calc(94vh / 380px)));
+				scale(min(calc(87vw / 430px), calc(87vh / 380px)));
 		}
 		.ap-popup {
 			max-height: none;

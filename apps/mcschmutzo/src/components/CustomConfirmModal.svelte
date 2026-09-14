@@ -185,8 +185,16 @@
 			0 3px 10px rgba(0, 0, 0, 0.45);
 	}
 
-	/* Tiny popouts (~400x225): shrink the close (X) so it doesn't dominate the small screen. */
+	/* Tiny popouts (~400x225): lay the dialog out at a fixed design width and scale the whole thing to
+	   fit, so it stays compact on the short screen. Shrink the close (X) too. */
 	@media (max-height: 300px) {
+		.cf-root {
+			width: 420px;
+			max-width: none;
+			max-height: none;
+			transform: translate(-50%, -50%)
+				scale(min(calc(88vw / 420px), calc(86vh / 250px)));
+		}
 		.cf-close { width: clamp(20px, 9dvh, 30px); top: 6px; right: 6px; }
 	}
 </style>

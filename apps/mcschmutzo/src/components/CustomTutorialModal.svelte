@@ -912,7 +912,14 @@
 	@media (max-height: 300px) {
 		.tu-popup {
 			min-height: 0;
+			/* Keep the popup short enough that the close (X) can sit ABOVE it, outside, without
+			   clipping off the top of the screen. */
+			max-height: 74dvh;
 			padding: clamp(10px, 4vmin, 20px) clamp(14px, 5vmin, 28px) 0;
+		}
+		/* Narrower so there's a clear margin around the popup for the outside X. */
+		.tu-root {
+			width: min(760px, 84vw);
 		}
 		.tu-title {
 			font-size: clamp(1rem, 8vmin, 1.6rem);
@@ -929,10 +936,12 @@
 			gap: clamp(8px, 3vmin, 14px);
 			padding: clamp(4px, 1.5vmin, 10px) 0 clamp(6px, 2vmin, 12px);
 		}
+		/* Put the X back OUTSIDE, just above the popup's top-right corner (like the other modals) — the
+		   shorter popup above leaves room so it no longer clips off the top. */
 		.tu-close {
 			--x-size: clamp(20px, 9dvh, 30px);
-			top: 5px;
-			right: 5px;
+			top: calc(-1 * var(--x-size) - 5px);
+			right: 2px;
 		}
 	}
 </style>
