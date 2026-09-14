@@ -835,9 +835,16 @@
 
 	/* ------------------------------------------------------------------ panel typography */
 
+	/* FACES, off the design's own text nodes (9078:18632): Audiowide 400 carries the card headings
+	   and the max-win numeral, Poppins the running text under them. Chakra Petch — which this whole
+	   block used to be set in — is the HUD's face, not the splash's; it reads narrower and squarer
+	   than the design's wide geometric headings, which is what made the splash look wrong next to
+	   every other MOTHERSHIP screen.
+	   AUDIOWIDE SHIPS 400 ONLY (see static/fonts/web/fonts.css), so the weight is pinned: asking for
+	   700 gets a synthesised smear, not a bolder cut. */
 	.f-title {
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-weight: 700;
+		font-family: 'Audiowide', 'Chakra Petch', sans-serif;
+		font-weight: 400;
 		font-size: 2.65cqw;
 		line-height: 1.12;
 		letter-spacing: 0.03em;
@@ -849,8 +856,10 @@
 		white-space: pre-line;
 		filter: drop-shadow(0 0 0.55em rgba(0, 0, 0, 0.55));
 	}
+	/* Body copy: Poppins Regular 16px in the design (9078:18661 / 18667), which is 1.33cqw of the
+	   1200-wide stage. The bold scatter counts inside it are .f-count below. */
 	.f-sub {
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-family: 'Poppins', 'Inter', sans-serif;
 		font-weight: 400;
 		font-size: 1.32cqw;
 		line-height: 1.25;
@@ -860,8 +869,10 @@
 		max-width: 100%;
 		overflow-wrap: break-word;
 	}
+	/* The bonus names under each scatter count: Poppins Bold 16px uppercase (9078:18672 / 18675 /
+	   18692) — the same face as the line above them, one weight up. */
 	.f-key {
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-family: 'Poppins', 'Inter', sans-serif;
 		font-weight: 700;
 		font-size: 1.3cqw;
 		line-height: 1.15;
@@ -871,9 +882,11 @@
 		max-width: 100%;
 		overflow-wrap: break-word;
 	}
+	/* The max-win numeral: Audiowide 400 at 36px (9078:18663) = 3.0cqw. Same face as the headings —
+	   it is the one number on this screen and the design sets every big numeral in Audiowide. */
 	.f-value {
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-weight: 700;
+		font-family: 'Audiowide', 'Chakra Petch', sans-serif;
+		font-weight: 400;
 		font-size: 3.05cqw;
 		line-height: 1;
 		letter-spacing: 0.03em;
@@ -1013,8 +1026,10 @@
 		transform: translate(-50%, -50%);
 		margin: 0;
 		white-space: nowrap;
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-weight: 700;
+		/* The design node for this screen has no press line, so the face comes from the same string on
+		   its sibling screen — the free-spins-won board (9276:31989), Audiowide 400 with 0.03em. */
+		font-family: 'Audiowide', 'Chakra Petch', sans-serif;
+		font-weight: 400;
 		font-size: clamp(14px, 1.5cqw, 22px);
 		letter-spacing: 0.06em;
 		color: #ffffff;

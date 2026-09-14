@@ -142,10 +142,10 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 giros gratis otorgados. Un símbolo aleatorio se vuelve magnético y permanece conectado entre giros. El clúster magnético persiste y crece durante toda la función mientras los multiplicadores siguen acumulándose.',
-	'MYSTERY WON GRAVITY': '10 giros gratis con conexiones magnéticas e Imanes Multiplicadores.',
+	'MYSTERY WON GRAVITY': '%count% giros gratis con conexiones magnéticas e Imanes Multiplicadores.',
 	'MYSTERY WON CORE':
-		'10 giros gratis con grupos magnéticos persistentes que crecen durante la bonificación.',
-	'MYSTERY WON ZERO': '10 giros gratis con un Imán Multiplicador garantizado en el primer giro.',
+		'%count% giros gratis con grupos magnéticos persistentes que crecen durante la bonificación.',
+	'MYSTERY WON ZERO': '%count% giros gratis con un Imán Multiplicador garantizado en el primer giro.',
 	'BUY ZERO TITLE': 'Protocolo Punto Cero',
 	'BUY ZERO DESC':
 		'Se otorgan 10 giros gratis con un Imán Multiplicador garantizado en el primer giro.',

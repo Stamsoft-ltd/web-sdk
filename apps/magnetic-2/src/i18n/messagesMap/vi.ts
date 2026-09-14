@@ -140,9 +140,9 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 lượt quay miễn phí được trao. Một biểu tượng ngẫu nhiên trở nên có từ tính và vẫn kết nối giữa các lượt quay. Cụm từ tính tồn tại và phát triển trong suốt tính năng trong khi các hệ số nhân tiếp tục tích lũy.',
-	'MYSTERY WON GRAVITY': '10 vòng quay miễn phí với kết nối từ tính và Nam Châm Nhân.',
-	'MYSTERY WON CORE': '10 vòng quay miễn phí với cụm từ tính bền vững lớn dần suốt vòng thưởng.',
-	'MYSTERY WON ZERO': '10 vòng quay miễn phí với Nam Châm Nhân đảm bảo ở vòng quay đầu tiên.',
+	'MYSTERY WON GRAVITY': '%count% vòng quay miễn phí với kết nối từ tính và Nam Châm Nhân.',
+	'MYSTERY WON CORE': '%count% vòng quay miễn phí với cụm từ tính bền vững lớn dần suốt vòng thưởng.',
+	'MYSTERY WON ZERO': '%count% vòng quay miễn phí với Nam Châm Nhân đảm bảo ở vòng quay đầu tiên.',
 	'BUY ZERO TITLE': 'Giao Thức Điểm Không',
 	'BUY ZERO DESC':
 		'Trao 10 vòng quay miễn phí với Nam Châm Nhân đảm bảo ngay ở vòng quay đầu tiên.',

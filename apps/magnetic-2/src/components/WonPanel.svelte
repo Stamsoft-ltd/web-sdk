@@ -7,13 +7,18 @@
 	import { drawPadBulbGlow } from '../game/padBulbs';
 	import { DRIP_OFFSETS, drawSlimeCluster, drawSlimeDrips } from '../game/slimeDrip';
 	import { i18nDerived } from '../i18n/i18nDerived';
-	import { fitTextScale } from '../utils/fitText';
+	import { fitTextScale, fitWrappedTextScale } from '../utils/fitText';
 
 	// The MOTHERSHIP congratulations panel, shared by BOTH celebration screens:
-	//   * FreeSpinIntro  — "CONGRATULATIONS! / YOU WON / 10 FREE SPINS"   (Figma 9185:13916)
+	//   * FreeSpinIntro  — "CONGRATULATIONS! / YOU WON / Gravity Breach + its rule"
+	//                      (Figma 9276:31244 3x, 9276:31553 4x, 9276:31806 5x)
 	//   * FreeSpinOutro  — "CONGRATULATIONS! / YOU WON / $1,234.00"       (Figma 9185:13975)
-	// One layout: the same pad, the same two headings and the same lime-edged value box. The only
-	// difference is what goes IN the box — a count beside its caption, or a bare amount.
+	// One layout: the same pad, the same two headings and the same value box. The only difference is
+	// what goes IN the box — the bonus's NAME over its one-line rule, or a bare amount.
+	//
+	// The name layout replaced a lime-edged box holding "10" beside a "FREE SPINS" caption
+	// (Figma 9185:13916, superseded). The count is now inside the rule's own sentence, so the screen
+	// says WHICH bonus the player is going into rather than only how long it lasts.
 	//
 	// This replaced the Version2 machine frame (7022-6844 / 7069-9311, the `fsWonFrame` sprite with
 	// its four cyan tube lights). The new design is the purple pad the whole MOTHERSHIP popup family
@@ -22,10 +27,14 @@
 	type Props = {
 		/** Drives the entry animation; the parent still owns the fade and the press handling. */
 		show: boolean;
-		/** The large value: a free-spin count, or the bonus total. */
-		big: string;
-		/** Present for the COUNT layout ("FREE SPINS" beside the number); absent for the amount. */
-		caption?: string;
+		/** AMOUNT layout: the bonus total, already formatted. Mutually exclusive with `name`. */
+		big?: string;
+		/** NAME layout: the bonus's own name, in its own colour, over the rule below. */
+		name?: string;
+		/** The name's colour — one per bonus, straight off the design (see FreeSpinIntro). */
+		nameColor?: number;
+		/** The rule under the name. Wrapped, and shrunk if a translation runs past two lines. */
+		desc?: string;
 		/** How many scatters triggered the bonus. When set (and > 0) the scatter badge hangs over
 		 *  the pad's top edge with that count on its pill — Figma 9248:25554 (3x) / 25858 (4x) /
 		 *  26180 (5x). The outro passes nothing and gets no badge. */
@@ -59,12 +68,24 @@
 	const TITLE = { cx: 600.5, cy: 252.5, size: 48 }; // Audiowide 400, #FFF
 	const YOUWON = { cx: 600.5, cy: 319, size: 24 }; // Poppins 700, #FFF
 	const BOX = { x: 342, y: 356, w: 520, h: 133, r: 12 }; // #492792 on a 3px #9FF816 edge
-	/** Count layout: the number and its caption sit either side of the box's centre seam. */
-	const COUNT = { size: 97.52, cy: 422 }; // Audiowide 400, #9FF816
-	const COUNT_CAPTION = { size: 24, cy: 440 }; // Poppins 700, #9FF816
-	const SEAM = 602; // the design's gap between the two, and the box's own centre
 	/** Amount layout: one centred line. */
 	const AMOUNT = { cx: 601.5, cy: 426.5, size: 63.52 }; // Audiowide 400, #9FF816
+	/**
+	 * Name layout (Figma 9276:31413 and its 4x/5x twins). A DIFFERENT box from the amount's: wider
+	 * corners, and a thin lavender edge instead of the lime one — the lime now belongs to the money
+	 * screen alone, which is what tells the two celebrations apart at a glance.
+	 *
+	 * Figma auto-sizes this box to its copy (135px on the design's two-line rule). We hold it at that
+	 * height and shrink a long translation into the same two lines instead, because the alien row
+	 * stands in FRONT of the box's bottom edge from y=459 — a box that grew downward would put its
+	 * last line behind their heads.
+	 */
+	const NAME_BOX = { x: 340.5, y: 351, w: 520, h: 135, r: 18 }; // #492792 on a 1px #7E58D7 edge
+	const NAME_BOX_EDGE = 0x7e58d7;
+	const NAME = { cx: 600.5, cy: 391, size: 36.45, w: 454 }; // Audiowide 400, tracking 0.03em
+	const DESC = { cx: 600.5, cy: 445.5, size: 16, w: 454, line: 24 }; // Poppins 400, #FFF, 0.03em
+	/** The design's tracking, identical on both: 1.0935/36.45 and 0.48/16 are both 0.03em. */
+	const TRACK_EM = 0.03;
 	/**
 	 * The slime draped over the value box's top-right corner. Entirely DRAWN — the `my_blob` sprite
 	 * (design 9185:13954) is gone, because a still blob sitting on top of animated drops read as two
@@ -222,42 +243,64 @@
 	const titlePulse = $derived(pulse(T_TITLE + 0.5, 0.035, 2.4));
 	const youWonPulse = $derived(pulse(T_YOUWON + 0.42, 0.05, 2.9));
 
+	const AUDIOWIDE_FAMILY = 'Audiowide, Chakra Petch, sans-serif';
+	const POPPINS_FAMILY = 'Poppins, Inter, sans-serif';
+
 	const audiowide = (fontSize: number, fill: number) => ({
-		fontFamily: 'Audiowide, Chakra Petch, sans-serif',
+		fontFamily: AUDIOWIDE_FAMILY,
 		fontSize,
 		fill,
 		align: 'center' as const,
 	});
-	const poppins = (fontSize: number, fill: number) => ({
-		fontFamily: 'Poppins, Inter, sans-serif',
-		fontWeight: '700' as const,
+	const poppins = (fontSize: number, fill: number, fontWeight: '400' | '700' = '700') => ({
+		fontFamily: POPPINS_FAMILY,
+		fontWeight,
 		fontSize,
 		fill,
 		align: 'center' as const,
 	});
 
-	// The design's value is "10" / "$1,234.00". A 3-digit count or a long currency string shrinks to
-	// the room it has instead of running out through the box's lime edge.
-	const bigDesignSize = $derived(props.caption ? COUNT.size : AMOUNT.size);
-	const bigAvail = $derived(BOX.w * (props.caption ? 0.42 : 0.86));
+	/** Which box is up. `name` wins if both are somehow passed — the intro is the newer screen. */
+	const isNameLayout = $derived(Boolean(props.name));
+
+	// The design's value is "$1,234.00". A long currency string shrinks to the room it has instead
+	// of running out through the box's lime edge.
 	const bigSize = $derived(
-		D.s(bigDesignSize) *
-			fitTextScale(props.big, {
-				fontSizePx: D.s(bigDesignSize),
-				availablePx: D.s(bigAvail),
-				fontFamily: 'Audiowide, Chakra Petch, sans-serif',
+		D.s(AMOUNT.size) *
+			fitTextScale(props.big ?? '', {
+				fontSizePx: D.s(AMOUNT.size),
+				availablePx: D.s(BOX.w * 0.86),
+				fontFamily: AUDIOWIDE_FAMILY,
 				minScale: 0.4,
 			}),
 	);
-	const captionText = $derived(props.caption ?? '');
-	const captionSize = $derived(
-		D.s(COUNT_CAPTION.size) *
-			fitTextScale(captionText, {
-				fontSizePx: D.s(COUNT_CAPTION.size),
-				availablePx: D.s(BOX.w * 0.42),
-				fontFamily: 'Poppins, Inter, sans-serif',
-				minScale: 0.45,
+
+	// "Zero Point Protocol" is the design's own longest name and it fits; translations of it do not
+	// all fit, so the name shrinks on one line the way every other heading in this game does.
+	const nameSize = $derived(
+		D.s(NAME.size) *
+			fitTextScale(props.name ?? '', {
+				fontSizePx: D.s(NAME.size),
+				availablePx: D.s(NAME.w),
+				fontFamily: AUDIOWIDE_FAMILY,
+				letterSpacingEm: TRACK_EM,
+				minScale: 0.5,
 			}),
+	);
+	// The rule is a PARAGRAPH, so it is fitted by line count rather than by advance — see
+	// fitWrappedTextScale. Two lines is what the design's box holds; German and Russian need ~0.9.
+	const descScale = $derived(
+		fitWrappedTextScale(props.desc ?? '', {
+			fontSizePx: D.s(DESC.size),
+			// A hair under the renderer's own wrap width, so a line that measures as "just fits"
+			// here cannot come out one pixel long in pixi and take a third line.
+			wrapWidthPx: D.s(DESC.w) * 0.98,
+			maxLines: 2,
+			fontFamily: POPPINS_FAMILY,
+			fontWeight: 400,
+			letterSpacingEm: TRACK_EM,
+			minScale: 0.62,
+		}),
 	);
 
 	/** Measured width of the press line, so the text and its arrow can be centred as one group. */
@@ -389,33 +432,54 @@
 </Container>
 
 <Container alpha={boxT}>
-	<Graphics
-		draw={(g) => {
-			g.clear();
-			g.roundRect(D.px(BOX.x), D.py(BOX.y), D.s(BOX.w), D.s(BOX.h), D.s(BOX.r));
-			g.fill({ color: 0x492792 });
-			g.stroke({ color: LIME, width: Math.max(1, D.s(3)) });
-		}}
-	/>
-
-	{#if props.caption}
-		<!-- Count layout: the number is RIGHT-anchored to the box's centre seam and the caption starts
-		     just after it, so the design's gap holds however many digits the count runs to. -->
-		<Text
-			text={props.big}
-			anchor={{ x: 1, y: 0.5 }}
-			x={D.px(SEAM - 8)}
-			y={D.py(COUNT.cy)}
-			style={audiowide(bigSize, LIME)}
+	{#if isNameLayout}
+		<!-- Name layout: the bonus you are going into, named in its own colour, over its one rule. -->
+		<Graphics
+			draw={(g) => {
+				g.clear();
+				g.roundRect(
+					D.px(NAME_BOX.x),
+					D.py(NAME_BOX.y),
+					D.s(NAME_BOX.w),
+					D.s(NAME_BOX.h),
+					D.s(NAME_BOX.r),
+				);
+				g.fill({ color: 0x492792 });
+				g.stroke({ color: NAME_BOX_EDGE, width: Math.max(1, D.s(1)) });
+			}}
 		/>
 		<Text
-			text={captionText}
-			anchor={{ x: 0, y: 0.5 }}
-			x={D.px(SEAM)}
-			y={D.py(COUNT_CAPTION.cy)}
-			style={poppins(captionSize, LIME)}
+			text={props.name}
+			anchor={0.5}
+			x={D.px(NAME.cx)}
+			y={D.py(NAME.cy)}
+			style={{
+				...audiowide(nameSize, props.nameColor ?? 0xffffff),
+				letterSpacing: nameSize * TRACK_EM,
+			}}
+		/>
+		<Text
+			text={props.desc}
+			anchor={0.5}
+			x={D.px(DESC.cx)}
+			y={D.py(DESC.cy)}
+			style={{
+				...poppins(D.s(DESC.size) * descScale, 0xffffff, '400'),
+				letterSpacing: D.s(DESC.size) * descScale * TRACK_EM,
+				wordWrap: true,
+				wordWrapWidth: D.s(DESC.w),
+				lineHeight: D.s(DESC.line) * descScale,
+			}}
 		/>
 	{:else}
+		<Graphics
+			draw={(g) => {
+				g.clear();
+				g.roundRect(D.px(BOX.x), D.py(BOX.y), D.s(BOX.w), D.s(BOX.h), D.s(BOX.r));
+				g.fill({ color: 0x492792 });
+				g.stroke({ color: LIME, width: Math.max(1, D.s(3)) });
+			}}
+		/>
 		<Text
 			text={props.big}
 			anchor={0.5}
@@ -423,47 +487,48 @@
 			y={D.py(AMOUNT.cy)}
 			style={audiowide(bigSize, LIME)}
 		/>
-	{/if}
 
-	<!-- The corner slime and its drops, drawn as ONE piece of material: the drops go down first so
-	     the drape's outline closes over where each one leaves it. -->
-	<Graphics
-		draw={(g) => {
-			g.clear();
-			const edge = Math.max(1, D.s(3));
-			drawSlimeDrips(g, {
-				x: D.px(DRIP_X),
-				y: D.py(DRIP_Y),
-				r: D.s(13),
-				fall: D.s(160),
-				edge,
-				clock: slimeDripClock,
-				period: DRIP_PERIOD,
-			});
-			drawSlimeCluster(g, {
-				lobes: BLOB_LOBES.map((lobe) => ({
-					x: D.px(lobe.x),
-					y: D.py(lobe.y),
-					r: D.s(lobe.r),
-				})),
-				edge,
-				clock,
-				grow: slimeGrow,
-				sag: 0.55,
-				// The cluster runs on the panel clock and the drips on the delayed one, so the phase
-				// the feeding lobe swells to is corrected by the difference.
-				drip: {
+		<!-- The corner slime and its drops, drawn as ONE piece of material: the drops go down first so
+		     the drape's outline closes over where each one leaves it. The name box has none — the
+		     design drapes slime on the money box only. -->
+		<Graphics
+			draw={(g) => {
+				g.clear();
+				const edge = Math.max(1, D.s(3));
+				drawSlimeDrips(g, {
+					x: D.px(DRIP_X),
+					y: D.py(DRIP_Y),
+					r: D.s(13),
+					fall: D.s(160),
+					edge,
+					clock: slimeDripClock,
 					period: DRIP_PERIOD,
-					offsets: DRIP_OFFSETS.map((off) => off - (T_SLIME + SLIME_GROW) / DRIP_PERIOD),
-				},
-				highlights: [
-					{ lobe: 0, size: 0.45 },
-					{ lobe: 2, size: 0.36 },
-					{ lobe: 4, size: 0.3 },
-				],
-			});
-		}}
-	/>
+				});
+				drawSlimeCluster(g, {
+					lobes: BLOB_LOBES.map((lobe) => ({
+						x: D.px(lobe.x),
+						y: D.py(lobe.y),
+						r: D.s(lobe.r),
+					})),
+					edge,
+					clock,
+					grow: slimeGrow,
+					sag: 0.55,
+					// The cluster runs on the panel clock and the drips on the delayed one, so the phase
+					// the feeding lobe swells to is corrected by the difference.
+					drip: {
+						period: DRIP_PERIOD,
+						offsets: DRIP_OFFSETS.map((off) => off - (T_SLIME + SLIME_GROW) / DRIP_PERIOD),
+					},
+					highlights: [
+						{ lobe: 0, size: 0.45 },
+						{ lobe: 2, size: 0.36 },
+						{ lobe: 4, size: 0.3 },
+					],
+				});
+			}}
+		/>
+	{/if}
 </Container>
 
 <!-- The alien row, standing up from behind the pad's bottom edge with the press board in its hands

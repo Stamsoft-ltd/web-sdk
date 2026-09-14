@@ -141,10 +141,10 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 giros grátis concedidos. Um símbolo aleatório torna-se magnético e permanece conectado entre os giros. O agrupamento magnético persiste e cresce ao longo do recurso enquanto os multiplicadores continuam acumulando.',
-	'MYSTERY WON GRAVITY': '10 rodadas grátis com conexões magnéticas e Ímãs Multiplicadores.',
+	'MYSTERY WON GRAVITY': '%count% rodadas grátis com conexões magnéticas e Ímãs Multiplicadores.',
 	'MYSTERY WON CORE':
-		'10 rodadas grátis com clusters magnéticos persistentes que crescem durante o bônus.',
-	'MYSTERY WON ZERO': '10 rodadas grátis com um Ímã Multiplicador garantido na primeira rodada.',
+		'%count% rodadas grátis com clusters magnéticos persistentes que crescem durante o bônus.',
+	'MYSTERY WON ZERO': '%count% rodadas grátis com um Ímã Multiplicador garantido na primeira rodada.',
 	'BUY ZERO TITLE': 'Protocolo Ponto Zero',
 	'BUY ZERO DESC': '10 rodadas grátis com um Ímã Multiplicador garantido logo na primeira rodada.',
 	'BUY MYSTERY TITLE': 'Bônus Misterioso',

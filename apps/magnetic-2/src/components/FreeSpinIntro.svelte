@@ -20,14 +20,29 @@
 	import PressToContinue from './PressToContinue.svelte';
 	import WonPanel from './WonPanel.svelte';
 
-	// Free-spins-won screen — Version2 (Figma node 7022-6844). The popup itself lives in WonPanel,
-	// which the bonus-end screen (FreeSpinOutro, node 7069-9311) shares.
+	// Free-spins-won screen — Figma 9276:31244 (3x) / 9276:31553 (4x) / 9276:31806 (5x). The popup
+	// itself lives in WonPanel, which the bonus-end screen (FreeSpinOutro) shares.
+	//
+	// The screen names the bonus now instead of only counting its spins: one of three, each in its
+	// own colour, with its rule underneath. Which one is `stateGame.bonusRoom`, NOT the scatter count
+	// — a Mystery buy sets the room from the drawn mode, and its scatter count need not be the 3/4/5
+	// that would otherwise pick the same room. Taking the room means the name on this screen and the
+	// sky behind the bonus can never disagree.
+	const ROOM = {
+		bonus: { name: 'BUY DROP TITLE', desc: 'MYSTERY WON GRAVITY', color: 0xfb6cba },
+		super: { name: 'BUY MEGA TITLE', desc: 'MYSTERY WON CORE', color: 0x1cb2fd },
+		zero: { name: 'BUY ZERO TITLE', desc: 'MYSTERY WON ZERO', color: 0x91f835 },
+	} as const;
+
 	const context = getContext();
 
 	let show = $state(false);
 	let freeSpinsFromEvent = $state(0);
 	let scatters = $state(0);
 	let oncomplete = $state(() => {});
+
+	/** The room is set before `freeSpinIntroShow` fires, so it is already right when this mounts. */
+	const room = $derived(ROOM[context.stateGame.bonusRoom ?? 'bonus']);
 
 	context.eventEmitter.subscribeOnMount({
 		freeSpinIntroShow: () => (show = true),
@@ -47,8 +62,9 @@
 	<MainContainer>
 		<WonPanel
 			{show}
-			big={`${freeSpinsFromEvent}`}
-			caption={i18nDerived.translate('FREE SPINS')}
+			name={i18nDerived.translate(room.name)}
+			nameColor={room.color}
+			desc={i18nDerived.translateVars(room.desc, { count: freeSpinsFromEvent })}
 			{scatters}
 		/>
 	</MainContainer>

@@ -140,10 +140,10 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'Przyznane 10 darmowych spinów. Jeden losowy symbol staje się magnetyczny i pozostaje połączony między spinami. Magnetyczny klaster utrzymuje się i rośnie przez całą funkcję, podczas gdy mnożniki wciąż się kumulują.',
-	'MYSTERY WON GRAVITY': '10 darmowych spinów z magnetycznymi połączeniami i Magnesami Mnożnika.',
+	'MYSTERY WON GRAVITY': '%count% darmowych spinów z magnetycznymi połączeniami i Magnesami Mnożnika.',
 	'MYSTERY WON CORE':
-		'10 darmowych spinów z trwałymi klastrami magnetycznymi, które rosną przez cały bonus.',
-	'MYSTERY WON ZERO': '10 darmowych spinów z gwarantowanym Magnesem Mnożnika w pierwszym spinie.',
+		'%count% darmowych spinów z trwałymi klastrami magnetycznymi, które rosną przez cały bonus.',
+	'MYSTERY WON ZERO': '%count% darmowych spinów z gwarantowanym Magnesem Mnożnika w pierwszym spinie.',
 	'BUY ZERO TITLE': 'Protokół Punktu Zero',
 	'BUY ZERO DESC': '10 darmowych spinów z gwarantowanym Magnesem Mnożnika już w pierwszym spinie.',
 	'BUY MYSTERY TITLE': 'Tajemniczy Bonus',

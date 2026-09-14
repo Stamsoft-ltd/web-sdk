@@ -184,10 +184,10 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 free spins awarded. One random symbol becomes magnetic and remains connected between spins. The magnetic cluster persists and grows throughout the feature while multipliers continue stacking.',
-	'MYSTERY WON GRAVITY': '10 free spins with Magnetic connections and Multiplier Magnets.',
+	'MYSTERY WON GRAVITY': '%count% free spins with Magnetic connections and Multiplier Magnets.',
 	'MYSTERY WON CORE':
-		'10 free spins with persistent Magnetic clusters that can grow throughout the bonus.',
-	'MYSTERY WON ZERO': '10 free spins with a guaranteed Multiplier Magnet on the first spin.',
+		'%count% free spins with persistent Magnetic clusters that can grow throughout the bonus.',
+	'MYSTERY WON ZERO': '%count% free spins with a guaranteed Multiplier Magnet on the first spin.',
 	'BUY ZERO TITLE': 'Zero Point Protocol',
 	'BUY ZERO DESC':
 		'10 free spins awarded with a guaranteed Multiplier Magnet on the very first spin.',

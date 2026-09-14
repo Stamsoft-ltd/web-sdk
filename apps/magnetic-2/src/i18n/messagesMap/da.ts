@@ -142,10 +142,10 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'Der gives 10 gratis spins. Et tilfældigt symbol bliver magnetisk og forbliver forbundet mellem spins. Den magnetiske klynge fortsætter og vokser gennem hele funktionen, mens multiplikatorerne fortsætter med at stable sig.',
-	'MYSTERY WON GRAVITY': '10 gratis spins med magnetiske forbindelser og multiplikatormagneter.',
+	'MYSTERY WON GRAVITY': '%count% gratis spins med magnetiske forbindelser og multiplikatormagneter.',
 	'MYSTERY WON CORE':
-		'10 gratis spins med vedvarende magnetiske klynger, der kan vokse gennem bonussen.',
-	'MYSTERY WON ZERO': '10 gratis spins med en garanteret multiplikatormagnet på første spin.',
+		'%count% gratis spins med vedvarende magnetiske klynger, der kan vokse gennem bonussen.',
+	'MYSTERY WON ZERO': '%count% gratis spins med en garanteret multiplikatormagnet på første spin.',
 	'BUY ZERO TITLE': 'Nulpunkt-protokol',
 	'BUY ZERO DESC':
 		'10 gratis spins tildeles med en garanteret multiplikatormagnet på allerførste spin.',

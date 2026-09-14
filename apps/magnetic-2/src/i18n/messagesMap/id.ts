@@ -142,10 +142,10 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 putaran gratis diberikan. Satu simbol acak menjadi magnetis dan tetap terhubung antar putaran. Klaster magnetis bertahan dan tumbuh sepanjang fitur sementara pengali terus bertumpuk.',
-	'MYSTERY WON GRAVITY': '10 putaran gratis dengan koneksi magnetis dan Magnet Pengganda.',
+	'MYSTERY WON GRAVITY': '%count% putaran gratis dengan koneksi magnetis dan Magnet Pengganda.',
 	'MYSTERY WON CORE':
-		'10 putaran gratis dengan klaster magnetis permanen yang terus tumbuh selama bonus.',
-	'MYSTERY WON ZERO': '10 putaran gratis dengan Magnet Pengganda terjamin pada putaran pertama.',
+		'%count% putaran gratis dengan klaster magnetis permanen yang terus tumbuh selama bonus.',
+	'MYSTERY WON ZERO': '%count% putaran gratis dengan Magnet Pengganda terjamin pada putaran pertama.',
 	'BUY ZERO TITLE': 'Protokol Titik Nol',
 	'BUY ZERO DESC':
 		'10 putaran gratis diberikan dengan Magnet Pengganda terjamin pada putaran pertama.',

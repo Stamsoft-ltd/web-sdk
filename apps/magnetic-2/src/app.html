@@ -25,6 +25,9 @@
 			document.fonts?.load('900 128px Orbitron');
 			document.fonts?.load('400 128px Audiowide');
 			document.fonts?.load('700 128px Poppins');
+			// The splash's body copy is Poppins REGULAR and the splash is the first screen drawn, so
+			// warm 400 too — without it the cards' first paint falls back to Inter and swaps.
+			document.fonts?.load('400 128px Poppins');
 			document.fonts?.load('400 128px "Lilita One"');
 		</script>
 		<style>

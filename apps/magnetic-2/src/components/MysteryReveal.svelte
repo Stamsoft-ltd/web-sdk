@@ -677,7 +677,7 @@
 					style={audiowide(nameSize, 0x1cb2fd)}
 				/>
 				<Text
-					text={t(won.desc)}
+					text={i18nDerived.translateVars(won.desc, { count: freeSpins })}
 					anchor={0.5}
 					x={D.px(DESC.cx)}
 					y={D.py(DESC.cy)}

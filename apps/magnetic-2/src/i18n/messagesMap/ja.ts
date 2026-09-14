@@ -139,9 +139,9 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'フリースピンを10回獲得。ランダムなシンボル1つがマグネットになり、スピン間も連結を維持します。マグネットクラスターはフィーチャー中ずっと持続して成長し、マルチプライヤーは積み重なり続けます。',
-	'MYSTERY WON GRAVITY': 'マグネット接続と倍率マグネット付きのフリースピン10回。',
-	'MYSTERY WON CORE': 'ボーナス中も成長し続ける持続マグネットクラスター付きのフリースピン10回。',
-	'MYSTERY WON ZERO': '最初のスピンで倍率マグネットが確定するフリースピン10回。',
+	'MYSTERY WON GRAVITY': 'マグネット接続と倍率マグネット付きのフリースピン%count%回。',
+	'MYSTERY WON CORE': 'ボーナス中も成長し続ける持続マグネットクラスター付きのフリースピン%count%回。',
+	'MYSTERY WON ZERO': '最初のスピンで倍率マグネットが確定するフリースピン%count%回。',
 	'BUY ZERO TITLE': 'ゼロポイント・プロトコル',
 	'BUY ZERO DESC': 'フリースピン10回。最初のスピンで倍率マグネットが必ず出現します。',
 	'BUY MYSTERY TITLE': 'ミステリーボーナス',

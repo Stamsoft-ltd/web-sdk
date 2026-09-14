@@ -132,9 +132,9 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'赠送10次免费旋转。随机一个符号变为磁性符号并在旋转之间保持连接。磁性符号群在整个功能期间持续存在并不断扩大，乘数也持续累加。',
-	'MYSTERY WON GRAVITY': '10 次免费旋转，带磁性连接与倍数磁铁。',
-	'MYSTERY WON CORE': '10 次免费旋转，磁性簇持续保留并在奖励中不断变大。',
-	'MYSTERY WON ZERO': '10 次免费旋转，首次旋转必定出现倍数磁铁。',
+	'MYSTERY WON GRAVITY': '%count% 次免费旋转，带磁性连接与倍数磁铁。',
+	'MYSTERY WON CORE': '%count% 次免费旋转，磁性簇持续保留并在奖励中不断变大。',
+	'MYSTERY WON ZERO': '%count% 次免费旋转，首次旋转必定出现倍数磁铁。',
 	'BUY ZERO TITLE': '零点协议',
 	'BUY ZERO DESC': '赠送 10 次免费旋转，首次旋转必定出现倍数磁铁。',
 	'BUY MYSTERY TITLE': '神秘奖励',

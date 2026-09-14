@@ -20,7 +20,7 @@
 	// 9248:25536 / 25542, 2026-09-09) — the ringed planet and the molecule they showed before are
 	// gone. Both cards use the one scatter image; the pill is drawn in CSS off `pill` below.
 	const iconScatter = ap(
-		'/assets/components/symbols/magnetic/special/scatter_full.webp?v=20260908',
+		'/assets/components/symbols/magnetic/special/scatter_full.webp?v=20260914',
 	);
 	const iconMystery = ap('/assets/components/ui/bb_ic_mystery.webp?v=20260904');
 

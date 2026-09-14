@@ -143,10 +143,10 @@ export default {
 	'BUY MEGA DESC':
 		"10 tours gratuits offerts. Un symbole aléatoire devient magnétique et reste connecté entre les tours. Le cluster magnétique persiste et grandit tout au long de la fonctionnalité pendant que les multiplicateurs continuent de s'accumuler.",
 	'MYSTERY WON GRAVITY':
-		'10 tours gratuits avec connexions magnétiques et Aimants Multiplicateurs.',
+		'%count% tours gratuits avec connexions magnétiques et Aimants Multiplicateurs.',
 	'MYSTERY WON CORE':
-		'10 tours gratuits avec des grappes magnétiques persistantes qui grandissent pendant le bonus.',
-	'MYSTERY WON ZERO': '10 tours gratuits avec un Aimant Multiplicateur garanti au premier tour.',
+		'%count% tours gratuits avec des grappes magnétiques persistantes qui grandissent pendant le bonus.',
+	'MYSTERY WON ZERO': '%count% tours gratuits avec un Aimant Multiplicateur garanti au premier tour.',
 	'BUY ZERO TITLE': 'Protocole Point Zéro',
 	'BUY ZERO DESC':
 		'10 tours gratuits avec un Aimant Multiplicateur garanti dès le tout premier tour.',

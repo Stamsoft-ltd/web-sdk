@@ -140,9 +140,9 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 Freispiele werden vergeben. Ein zufälliges Symbol wird magnetisch und bleibt zwischen den Spins verbunden. Der magnetische Cluster bleibt bestehen und wächst während des gesamten Features, während sich die Multiplikatoren weiter stapeln.',
-	'MYSTERY WON GRAVITY': '10 Freispiele mit magnetischen Verbindungen und Multiplikator-Magneten.',
-	'MYSTERY WON CORE': '10 Freispiele mit dauerhaften Magnet-Clustern, die im Bonus weiterwachsen.',
-	'MYSTERY WON ZERO': '10 Freispiele mit einem garantierten Multiplikator-Magneten im ersten Spin.',
+	'MYSTERY WON GRAVITY': '%count% Freispiele mit magnetischen Verbindungen und Multiplikator-Magneten.',
+	'MYSTERY WON CORE': '%count% Freispiele mit dauerhaften Magnet-Clustern, die im Bonus weiterwachsen.',
+	'MYSTERY WON ZERO': '%count% Freispiele mit einem garantierten Multiplikator-Magneten im ersten Spin.',
 	'BUY ZERO TITLE': 'Nullpunkt-Protokoll',
 	'BUY ZERO DESC':
 		'10 Freispiele mit einem garantierten Multiplikator-Magneten im allerersten Spin.',

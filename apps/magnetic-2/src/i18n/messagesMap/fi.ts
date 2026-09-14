@@ -142,10 +142,10 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 ilmaiskierrosta myönnetään. Yksi satunnainen symboli muuttuu magneettiseksi ja pysyy yhdistettynä kierrosten välillä. Magneettinen ryhmä säilyy ja kasvaa koko ominaisuuden ajan kertoimien jatkaessa kasautumista.',
-	'MYSTERY WON GRAVITY': '10 ilmaiskierrosta magneettiyhteyksillä ja kerroinmagneeteilla.',
+	'MYSTERY WON GRAVITY': '%count% ilmaiskierrosta magneettiyhteyksillä ja kerroinmagneeteilla.',
 	'MYSTERY WON CORE':
-		'10 ilmaiskierrosta pysyvillä magneettirykelmillä, jotka kasvavat bonuksen aikana.',
-	'MYSTERY WON ZERO': '10 ilmaiskierrosta ja taattu kerroinmagneetti ensimmäisellä kierroksella.',
+		'%count% ilmaiskierrosta pysyvillä magneettirykelmillä, jotka kasvavat bonuksen aikana.',
+	'MYSTERY WON ZERO': '%count% ilmaiskierrosta ja taattu kerroinmagneetti ensimmäisellä kierroksella.',
 	'BUY ZERO TITLE': 'Nollapisteprotokolla',
 	'BUY ZERO DESC': '10 ilmaiskierrosta ja taattu kerroinmagneetti heti ensimmäisellä kierroksella.',
 	'BUY MYSTERY TITLE': 'Mysteeribonus',

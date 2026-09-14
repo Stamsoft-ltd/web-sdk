@@ -137,9 +137,9 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'무료 스핀 10회 지급. 무작위 심볼 하나가 자석이 되어 스핀 사이에도 연결을 유지합니다. 자석 클러스터는 피처 내내 지속되고 성장하며 멀티플라이어는 계속 쌓입니다.',
-	'MYSTERY WON GRAVITY': '마그네틱 연결과 배수 마그넷이 등장하는 프리 스핀 10회.',
-	'MYSTERY WON CORE': '보너스 내내 성장하는 지속형 마그네틱 클러스터가 등장하는 프리 스핀 10회.',
-	'MYSTERY WON ZERO': '첫 스핀에서 배수 마그넷이 확정되는 프리 스핀 10회.',
+	'MYSTERY WON GRAVITY': '마그네틱 연결과 배수 마그넷이 등장하는 프리 스핀 %count%회.',
+	'MYSTERY WON CORE': '보너스 내내 성장하는 지속형 마그네틱 클러스터가 등장하는 프리 스핀 %count%회.',
+	'MYSTERY WON ZERO': '첫 스핀에서 배수 마그넷이 확정되는 프리 스핀 %count%회.',
 	'BUY ZERO TITLE': '제로 포인트 프로토콜',
 	'BUY ZERO DESC': '프리 스핀 10회가 지급되며 첫 스핀에서 배수 마그넷이 확정 등장합니다.',
 	'BUY MYSTERY TITLE': '미스터리 보너스',

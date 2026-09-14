@@ -104,7 +104,7 @@ const assets = {
 	winBadge: { type: 'sprite', src: './assets/components/ui/win_badge.webp?v=20260908' },
 	winBadgeScatter: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/special/scatter_full.webp?v=20260908',
+		src: './assets/components/symbols/magnetic/special/scatter_full.webp?v=20260914',
 	},
 	smallPadMobile: {
 		type: 'sprite',

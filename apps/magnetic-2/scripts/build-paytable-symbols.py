@@ -161,15 +161,21 @@ SYMBOLS = [
         "special/scatter_full",
         "ScatterSymbol.svelte",
         "scatterCustom",
-        # Only the ALIEN and its EYE are missing from the base -- the component's own comments record
-        # that the lid and the word composite back pixel-identically at rest, and they do, so they
-        # are already in the plate. The lid is redrawn here anyway because it is what the alien hops
-        # BEHIND: leave it off and the alien's head sits over the machine's metal top.
+        # The base plate is the EMPTY machine: no alien, no eye, and NO WORD. An earlier version of
+        # this row left the word off, reading the component's "composites back pixel-identically at
+        # rest" comment as meaning the word was already painted into the plate. It is not -- that
+        # comment is about the word's own zoom returning to scale 1, not about the plate containing
+        # it -- so every flat scatter this script produced was the board's symbol with its SCATTER
+        # band missing: the paytable row, the buy menu's icon, and the badge over the
+        # free-spins-won screen, which the design (9276:31244) draws WITH the band.
+        # The lid is redrawn on top because it is what the alien hops BEHIND: leave it off and the
+        # alien's head sits over the machine's metal top.
         [
             ("scatterAlien", "ALIEN"),
             ("scatterEye", "EYE"),
             # x={0} width={W} in the markup, so DOME_FRONT carries only dy and h.
             ("scatterDome", "DOME_FRONT", {"dx": 0.0, "w": 1.0}),
+            ("scatterWord", "WORD"),
         ],
     ),
     (

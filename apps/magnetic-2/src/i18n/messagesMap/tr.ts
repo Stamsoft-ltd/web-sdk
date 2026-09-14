@@ -140,9 +140,9 @@ export default {
 	'BUY MEGA TITLE': 'Core Overload',
 	'BUY MEGA DESC':
 		'10 bedava dönüş verilir. Rastgele bir sembol manyetik hale gelir ve dönüşler arasında bağlı kalır. Manyetik küme özellik boyunca kalıcı olur ve büyür, çarpanlar ise istiflenmeye devam eder.',
-	'MYSTERY WON GRAVITY': 'Manyetik bağlantılar ve Çarpan Mıknatısları ile 10 ücretsiz dönüş.',
-	'MYSTERY WON CORE': 'Bonus boyunca büyüyen kalıcı manyetik kümelerle 10 ücretsiz dönüş.',
-	'MYSTERY WON ZERO': 'İlk dönüşte garantili Çarpan Mıknatısı ile 10 ücretsiz dönüş.',
+	'MYSTERY WON GRAVITY': 'Manyetik bağlantılar ve Çarpan Mıknatısları ile %count% ücretsiz dönüş.',
+	'MYSTERY WON CORE': 'Bonus boyunca büyüyen kalıcı manyetik kümelerle %count% ücretsiz dönüş.',
+	'MYSTERY WON ZERO': 'İlk dönüşte garantili Çarpan Mıknatısı ile %count% ücretsiz dönüş.',
 	'BUY ZERO TITLE': 'Sıfır Nokta Protokolü',
 	'BUY ZERO DESC': 'İlk dönüşte garantili Çarpan Mıknatısı ile 10 ücretsiz dönüş verilir.',
 	'BUY MYSTERY TITLE': 'Gizemli Bonus',

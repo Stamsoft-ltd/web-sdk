@@ -19,6 +19,7 @@
 	import Game from '../components/Game.svelte';
 	import { setContext } from '../game/context';
 	import { eventEmitter } from '../game/eventEmitter';
+	import { stateGame } from '../game/stateGame.svelte';
 	import { winLevelMap } from '../game/winLevelMap';
 
 	setContext();
@@ -185,17 +186,22 @@
 />
 
 <!-- The MOTHERSHIP congratulations family (WonPanel.svelte + MysteryReveal.svelte, Figma
-     9185:13916 / 9185:13975 / 9185:14033). All three draw `myPad` and its badges, which are
+     9276:31244 / 9185:13975 / 9185:14033). All three draw `myPad` and its badges, which are
      deferDemand assets — in the real game a bonus book calls loadDemandAssets() long before these
-     screens appear, so each story has to do the same or the pad renders as nothing. -->
+     screens appear, so each story has to do the same or the pad renders as nothing.
+
+     The intro also reads `stateGame.bonusRoom` for the name, colour and rule it prints — the live
+     handler sets that before it broadcasts, so each story sets it too. Without it all three would
+     show Gravity Breach and the 4x/5x stories would prove nothing. -->
 
 <Story
-	name="emitterEvent: freeSpinIntro (10 FREE SPINS)"
+	name="emitterEvent: freeSpinIntro (3 scatters — Gravity Breach)"
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: {},
 		action: async () => {
 			await loadDemandAssets();
+			stateGame.bonusRoom = 'bonus';
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
 			eventEmitter.broadcast({ type: 'freeSpinIntroUpdate', totalFreeSpins: 10, scatters: 3 });
 		},
@@ -203,15 +209,17 @@
 	template={template as any}
 />
 
-<!-- The same screen off a 4- and a 5-scatter trigger: the badge's pill and the alien row along
-     the pad's bottom edge both follow the count (Figma 9248:25858 / 9248:26180). -->
+<!-- The same screen off a 4- and a 5-scatter trigger: the badge's pill, the alien row along the
+     pad's bottom edge and the bonus named in the box all follow the trigger (Figma 9276:31553 /
+     9276:31806). -->
 <Story
-	name="emitterEvent: freeSpinIntro (4 scatters)"
+	name="emitterEvent: freeSpinIntro (4 scatters — Core Overload)"
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: {},
 		action: async () => {
 			await loadDemandAssets();
+			stateGame.bonusRoom = 'super';
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
 			eventEmitter.broadcast({ type: 'freeSpinIntroUpdate', totalFreeSpins: 10, scatters: 4 });
 		},
@@ -220,12 +228,13 @@
 />
 
 <Story
-	name="emitterEvent: freeSpinIntro (5 scatters)"
+	name="emitterEvent: freeSpinIntro (5 scatters — Zero Point Protocol)"
 	args={templateArgs({
 		skipLoadingScreen: true,
 		data: {},
 		action: async () => {
 			await loadDemandAssets();
+			stateGame.bonusRoom = 'zero';
 			eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
 			eventEmitter.broadcast({ type: 'freeSpinIntroUpdate', totalFreeSpins: 10, scatters: 5 });
 		},
