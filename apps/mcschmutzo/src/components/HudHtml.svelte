@@ -2246,10 +2246,11 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		/* Gap makes the bar tall (runs down near the bottom); the generous top/bottom padding still
-		   keeps the first/last (burger, AUTO) well inside the bar's rounded ends. */
-		gap: clamp(6px, 5dvh, 34px);
-		padding: clamp(14px, 5dvh, 34px) 0;
+		/* Smaller gaps pack the buttons closer so the whole content stays well within the screen
+		   (big bottom margin); the top/bottom padding keeps the first/last (burger, AUTO) inset inside
+		   the bar's ends. */
+		gap: clamp(4px, 2.2dvh, 16px);
+		padding: clamp(12px, 4dvh, 28px) 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
