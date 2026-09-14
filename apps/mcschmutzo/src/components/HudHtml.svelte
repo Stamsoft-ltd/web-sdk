@@ -2068,7 +2068,7 @@
 	   in). Sits between the menu and the spin disc (design). Aspect 31:66. */
 	.ls-buy-rail {
 		/* Height in dvh (width follows the 31:66 aspect) so it fits the fixed-height bar. */
-		height: clamp(30px, 15dvh, 78px);
+		height: clamp(28px, 13.5dvh, 72px);
 		width: auto;
 		aspect-ratio: 31 / 66;
 		flex: 0 0 auto;
@@ -2258,8 +2258,8 @@
 	.ls-round {
 		/* Sized in dvh (viewport height) so they fit the fixed-height bar; the rail width (7vw) only
 		   sets the bar, not these. */
-		width: clamp(20px, 9.5dvh, 50px);
-		height: clamp(20px, 9.5dvh, 50px);
+		width: clamp(19px, 8.8dvh, 46px);
+		height: clamp(19px, 8.8dvh, 46px);
 		flex: 0 0 auto;
 		box-sizing: border-box;
 		border: 2px solid #4c433d;
@@ -2292,8 +2292,8 @@
 	}
 	/* The burger button is smaller than the other rail controls (it's a secondary action). */
 	.ls-menu-wrap .ls-round {
-		width: clamp(16px, 7.5dvh, 40px);
-		height: clamp(16px, 7.5dvh, 40px);
+		width: clamp(15px, 6.8dvh, 37px);
+		height: clamp(15px, 6.8dvh, 37px);
 	}
 	.ls-menu-pop {
 		position: absolute;
@@ -2317,8 +2317,8 @@
 		/* The focal button, in dvh — smaller than before (it was eating too much vertical space and
 		   pushing the outer buttons off the ends). Still a touch wider than the bar so its disc bulges
 		   out the left + right sides (the only control that overflows — horizontally, by design). */
-		width: clamp(38px, 19dvh, 100px);
-		height: clamp(38px, 19dvh, 100px);
+		width: clamp(36px, 17dvh, 92px);
+		height: clamp(36px, 17dvh, 92px);
 		flex: 0 0 auto;
 		border: 0;
 		/* The real turn-button disc art. */
