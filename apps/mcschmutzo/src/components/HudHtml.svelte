@@ -33,6 +33,7 @@
 	// Gold icons layered over the button backgrounds
 	const iconMenu = ap('/assets/hud/icon-info.png');
 	const iconMenuBars = ap('/assets/mcschmutzo/ui-icons/hud-menu.svg'); // hamburger — opens the portrait sound/info menu
+	const iconBurgerClose = ap('/assets/mcschmutzo/ui-icons/burger-close.svg'); // red disc + white X, shown while the menu is open
 	const iconSound = ap('/assets/mcschmutzo/ui-icons/hud-sound.svg');
 	const iconSoundMuted = ap('/assets/mcschmutzo/ui-icons/hud-sound-muted.svg');
 	const iconMinus = ap('/assets/mcschmutzo/ui-icons/hud-minus.svg');
@@ -846,8 +847,12 @@
 							</button>
 						</div>
 					{/if}
-					<button class="ls-round" type="button" onclick={toggleMenu} aria-label="Menu" aria-expanded={menuOpen} data-menu-toggle>
-						<img class="ls-icon" src={iconMenuBars} alt="menu" />
+					<button class="ls-round" class:ls-round--menu-open={menuOpen} type="button" onclick={toggleMenu} aria-label="Menu" aria-expanded={menuOpen} data-menu-toggle>
+						{#if menuOpen}
+							<img class="ls-x-full" src={iconBurgerClose} alt="close" />
+						{:else}
+							<img class="ls-icon" src={iconMenuBars} alt="menu" />
+						{/if}
 					</button>
 				</div>
 
@@ -2136,17 +2141,17 @@
 	}
 	.ls-win__label {
 		font-family: 'Poppins', sans-serif;
-		font-size: clamp(7px, 2.3vh, 12px);
+		font-size: clamp(8px, 2.7vh, 14px);
 		font-style: normal;
-		font-weight: 500;
+		font-weight: 700;
 		line-height: normal;
 		letter-spacing: 0.36px;
 		color: #fff;
 	}
 	.ls-win__value {
 		font-family: 'Poppins', sans-serif;
-		font-weight: 600;
-		font-size: clamp(9px, 2.9vh, 15px);
+		font-weight: 700;
+		font-size: clamp(11px, 3.4vh, 18px);
 		color: #fff;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
 	}
@@ -2156,18 +2161,18 @@
 		   format with spaces ("5 000 592,00 kr") would otherwise wrap to a second line inside the
 		   fixed-height pill instead of letting fitText scale them down. */
 		white-space: nowrap;
-		font-size: clamp(6px, 2vh, 10px);
+		font-size: clamp(7px, 2.4vh, 12px);
 		font-style: normal;
-		font-weight: 500;
+		font-weight: 700;
 		line-height: normal;
 		letter-spacing: 0.36px;
 		color: #fff;
 	}
 	.ls-balance__value {
 		font-family: 'Poppins', sans-serif;
-		font-weight: 600;
+		font-weight: 700;
 		white-space: nowrap;
-		font-size: clamp(7px, 2.2vh, 11px);
+		font-size: clamp(9px, 2.7vh, 13px);
 		color: #fff;
 	}
 
@@ -2179,11 +2184,11 @@
 		   which is already viewport-driven, so a fixed bottom would pull them back off the BUY BONUS
 		   centre line. */
 		.ls-balance { padding: clamp(2px, 0.8vh, 5px) clamp(6px, 1.4vh, 12px); border-radius: 4.21px; }
-		.ls-balance__label { font-size: clamp(7px, 2.3vh, 12px); }
-		.ls-balance__value { font-size: clamp(8px, 2.6vh, 13px); }
+		.ls-balance__label { font-size: clamp(8px, 2.7vh, 14px); font-weight: 700; }
+		.ls-balance__value { font-size: clamp(10px, 3vh, 15px); font-weight: 700; }
 		.ls-win { padding: clamp(3px, 1vh, 6px) clamp(7px, 1.6vh, 14px); border-radius: 4.21px; }
-		.ls-win__label { font-size: clamp(8px, 2.6vh, 13px); }
-		.ls-win__value { font-size: clamp(10px, 3.3vh, 17px); }
+		.ls-win__label { font-size: clamp(9px, 3vh, 15px); font-weight: 700; }
+		.ls-win__value { font-size: clamp(12px, 3.8vh, 19px); font-weight: 700; }
 	}
 
 	/* BET stepper — same small #1F1F1F pill as BALANCE, stretched to BALANCE's width and stacked under
@@ -2203,7 +2208,7 @@
 	.ls-bet__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 700;
-		font-size: clamp(10px, 3vh, 20px);
+		font-size: clamp(12px, 3.5vh, 22px);
 		color: #fff;
 		min-width: clamp(40px, 12vh, 108px);
 		flex: 0 0 auto;
@@ -2293,6 +2298,10 @@
 	   is white-on-dark and the filter would erase it), exactly like the desktop AUTO button. */
 	.ls-round--auto { border: 0; background: none; }
 	.ls-round--auto .ls-icon--auto { width: 100%; height: 100%; filter: none; }
+	/* Menu open: the burger becomes the red disc + white X art (burger-close.svg fills the whole
+	   button), so drop the button's own dark disc and don't invert-filter the already-white X. */
+	.ls-round--menu-open { background: none; }
+	.ls-x-full { width: 100%; height: 100%; object-fit: contain; }
 
 	/* Menu (☰) wrapper. Deliberately NOT a positioning context (static) so the SOUND/MUSIC/INFO popup
 	   anchors to the rail (.ls-right) instead of the burger button — its top:0 then lines up with the
