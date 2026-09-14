@@ -2028,7 +2028,7 @@
 		font-family: 'Cinzel', serif;
 		/* Bottom inset shared by the BALANCE/BET stack (bottom-left) and the WIN pill (bottom-right)
 		   so the two readouts sit level in their corners. Scales with viewport height. */
-		--ls-corner-bottom: clamp(8px, 4vh, 30px);
+		--ls-corner-bottom: clamp(8px, 4dvh, 30px);
 	}
 	.ls-hud button,
 	.ls-hud .ls-bet__value {
@@ -2040,7 +2040,7 @@
 	.ls-pp {
 		position: absolute;
 		top: clamp(3px, 1.6vh, 14px);
-		right: calc(clamp(16px, 3vw, 34px) + clamp(34px, calc(14.5 * var(--ls-vh)), 112px) / 2);
+		right: calc(clamp(16px, 3vw, 34px) + clamp(34px, 14dvh, 112px) / 2);
 		transform: translateX(50%);
 		width: clamp(56px, 13vh, 116px);
 		height: auto;
@@ -2067,7 +2067,9 @@
 	/* Vertical BONUS button in the right rail — the bonus-landscape art (red button, "BONUS" baked
 	   in). Sits between the menu and the spin disc (design). Aspect 31:66. */
 	.ls-buy-rail {
-		width: calc(var(--ls-rail-w) * 0.66);
+		/* Height as a % of the rail (its width follows from the aspect) → guaranteed to fit. */
+		height: 22%;
+		width: auto;
 		aspect-ratio: 31 / 66;
 		flex: 0 0 auto;
 		border: 0;
@@ -2100,7 +2102,7 @@
 		position: absolute;
 		/* Clear the vertical control rail + its right margin (the turn disc overflow sits above WIN,
 		   not at the bottom corner, so only the bar width matters here). */
-		right: calc(clamp(34px, calc(14.5 * var(--ls-vh)), 112px) + clamp(16px, 3vw, 34px) + clamp(8px, 1.5vw, 18px));
+		right: calc(clamp(34px, 14dvh, 112px) + clamp(16px, 3vw, 34px) + clamp(8px, 1.5vw, 18px));
 		bottom: var(--ls-corner-bottom);
 		width: max-content;
 		max-width: 32%;
@@ -2238,25 +2240,31 @@
 		   it's pinned top+bottom, can never be taller than the space it has. All heights are in
 		   --ls-vh (the engine's MEASURED viewport 1vh) so the buttons track the real visible area and
 		   never overflow (plain vh counts the space behind mobile browser chrome). */
-		top: calc(7 * var(--ls-vh));
-		bottom: calc(3 * var(--ls-vh));
-		--ls-rail-w: clamp(34px, calc(14.5 * var(--ls-vh)), 112px);
+		top: 5dvh;
+		/* Bottom aligned to the WIN pill's bottom border (same var), so the rail runs all the way down
+		   to it. */
+		bottom: var(--ls-corner-bottom);
+		--ls-rail-w: clamp(34px, 14dvh, 112px);
 		width: var(--ls-rail-w);
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		/* space-between fills the tall bar; the buttons are sized (rail-w) so their total nearly fills
-		   it → the gaps stay small. Padding insets the outer two off the rounded ends. */
+		/* The buttons' HEIGHTS are % of THIS rail (see below); they sum to well under 100%, so they can
+		   never overflow the ends regardless of viewport/chrome. space-between spreads the slack as
+		   small even gaps; the padding insets the first/last off the rounded ends. */
 		justify-content: space-between;
-		padding: calc(2 * var(--ls-vh)) 0;
+		padding: 2.5% 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
 	/* Menu / turbo / auto — the SAME framed disc as the desktop nav (dark disc + grey ring + white
 	   icon), sized as a fraction of the rail width so they sit inside the bar. */
 	.ls-round {
-		width: calc(var(--ls-rail-w) * 0.72);
-		height: calc(var(--ls-rail-w) * 0.72);
+		/* Height as a % of the rail (width follows, square) → the column can't overflow the ends. */
+		height: 11%;
+		width: auto;
+		aspect-ratio: 1;
+		flex: 0 0 auto;
 		box-sizing: border-box;
 		border: 2px solid #4c433d;
 		border-radius: 50%;
@@ -2277,18 +2285,21 @@
 	.ls-round--auto { border: 0; background: none; }
 	.ls-round--auto .ls-icon--auto { width: 100%; height: 100%; filter: none; }
 
-	/* Menu (☰) wrapper — anchors the SOUND/MUSIC/INFO popup, which opens to the LEFT of the rail. */
+	/* Menu (☰) wrapper — anchors the SOUND/MUSIC/INFO popup, which opens to the LEFT of the rail.
+	   It owns the burger's height slot (% of the rail); the button fills it. */
 	.ls-menu-wrap {
 		position: relative;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		flex: 0 0 auto;
+		height: 9%;
 	}
 	/* The burger button is smaller than the other rail controls (it's a secondary action). */
 	.ls-menu-wrap .ls-round {
-		width: calc(var(--ls-rail-w) * 0.56);
-		height: calc(var(--ls-rail-w) * 0.56);
+		height: 100%;
+		width: auto;
+		aspect-ratio: 1;
 	}
 	.ls-menu-pop {
 		position: absolute;
@@ -2309,10 +2320,12 @@
 	}
 
 	.ls-spin {
-		/* The focal button — larger than the tight bar so its disc bulges out the bar's left + right
-		   sides (the only control that overflows). */
-		width: calc(var(--ls-rail-w) * 1.6);
-		height: calc(var(--ls-rail-w) * 1.6);
+		/* The focal button — its height is a % of the rail; being wider than the bar, its disc bulges
+		   out the left + right sides (the only control that overflows — horizontally, by design). */
+		height: 27%;
+		width: auto;
+		aspect-ratio: 1;
+		flex: 0 0 auto;
 		border: 0;
 		/* The real turn-button disc art. */
 		background: var(--ls-turn) center / contain no-repeat;
