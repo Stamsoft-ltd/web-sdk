@@ -8,12 +8,27 @@
 	// splash used to carry are gone: the new design has a clean floor, and the pillar was the magnet
 	// capsule, which was removed from the game entirely.
 	const roomSrc = './assets/components/splash/room.webp?v=20260901c';
+	// The mobile splash is its own painting (Figma 4277:5883, backdrop node 9128:28701): a TALL
+	// window over the same valley, not the landscape room centre-cropped. Cropping the landscape one
+	// to 9:16 threw away both window jambs and most of the valley, which is why the portrait splash
+	// never matched the design.
+	const roomMobileSrc = './assets/components/splash/room_mobile.webp?v=20260911';
 	// Same URL (incl. ?v=) as assets.ts, so the browser reuses the bytes pixi already downloaded
 	// instead of fetching the same plate twice under two versions.
 	const logoSrc = './assets/components/splash/logo_plate.webp?v=20260901b';
+	// PORTRAIT flies the lockup in as two pieces — the plate WITHOUT its baked saucer, and that
+	// saucer on its own, arriving from deep in the sky. Both are cut from the one lockup by
+	// scripts/build-room-art.py, so when they land they ARE logo_plate.webp, which is what
+	// GameLogoFrame draws on the other side of the hand-off.
+	//
+	// The saucer is the lockup's own and not ui/ufo_ship.webp, the design's standalone sky ship:
+	// that one's dome is empty, and this is the mark's saucer, so it has to have the alien in it
+	// (user, 2026-09-11).
+	const logoBareSrc = './assets/components/splash/logo_plate_bare.webp?v=20260911';
+	const shipSrc = './assets/components/splash/logo_saucer.webp?v=20260911';
 	const panelSrc = './assets/components/splash/panel.webp?v=20260901c';
-	const moonSrc = './assets/components/splash/moon.webp?v=20260901c';
-	const planetSrc = './assets/components/splash/planet.webp?v=20260901c';
+	const moonSrc = './assets/components/splash/moon.webp?v=20260911';
+	const planetSrc = './assets/components/splash/planet.webp?v=20260911';
 	const cloudASrc = './assets/components/splash/cloud_a.webp?v=20260901c';
 	const cloudBSrc = './assets/components/splash/cloud_b.webp?v=20260901c';
 	const polaritySrc = './assets/components/splash/polarity.webp?v=20260902';
@@ -25,7 +40,10 @@
 	// never desync the preload list.
 	export const SPLASH_INTRO_IMAGES = [
 		roomSrc,
+		roomMobileSrc,
 		logoSrc,
+		logoBareSrc,
+		shipSrc,
 		panelSrc,
 		moonSrc,
 		planetSrc,
@@ -41,6 +59,8 @@
 	import { stateI18nDerived } from 'state-shared';
 	import LoadingMark from './LoadingMark.svelte';
 	import { getContext } from '../game/context';
+	import { PORTRAIT_SHIP_RISE_OF_LOGO, PORTRAIT_SHIP_W_OF_LOGO } from '../game/stateGame.svelte';
+	import { MAX_WIN_LABEL } from '../game/config';
 
 	// `loading` = the pre-game phase (Figma node 7219:5322): the SAME room backdrop this splash uses,
 	// dimmed and blurred, with the Press Play progress mark on it. It is one component and one DOM
@@ -142,7 +162,9 @@
 	// so the landing is a seamless swap under the overlay's closing fade (ondone).
 	let leaving = $state(false);
 	let flyStyle = $state('');
+	let shipFlyStyle = $state('');
 	let logoEl: HTMLImageElement | undefined = $state();
+	let shipEl: HTMLImageElement | undefined = $state();
 	let finished = false;
 
 	// Where GameLogoFrame draws the logo, in viewport CSS px — the same maths as GameLogoFrame,
@@ -166,12 +188,12 @@
 			cy = context.stateGameDerived.portraitLogoCY();
 			w = context.stateGameDerived.portraitLogoWidth();
 		} else {
-			w = context.stateGameDerived.landscapeLogoWidth();
-			const h = context.stateGameDerived.landscapeLogoHeight();
-			const board = context.stateGameDerived.boardLayout();
-			const boardLeftX = board.x - board.width * 0.5 * board.boardScale;
-			cx = (canvasLeftMain + boardLeftX) * 0.5;
-			cy = canvasTopMain + h * 0.54;
+			// The SAME rect GameLogoFrame draws, not a second copy of its formula — a copy is what made
+			// the mark jump on landing the moment the landscape logo moved onto its design spot.
+			const rect = context.stateGameDerived.landscapeLogoRect();
+			cx = rect.cx;
+			cy = rect.cy;
+			w = rect.w;
 		}
 		return {
 			cx: cRect.left + (cx - canvasLeftMain) * scale * unit,
@@ -196,6 +218,19 @@
 			const dx = target.cx - (rect!.left + rect!.width / 2);
 			const dy = target.cy - (rect!.top + rect!.height / 2);
 			flyStyle = `--fly-x:${dx.toFixed(1)}px;--fly-y:${dy.toFixed(1)}px;--fly-s:${(target.w / rect!.width).toFixed(4)}`;
+			// The saucer flies WITH the plate, on the same scale and the same curve, to where it sits
+			// on the in-game lockup — the two pieces travel as one object and land as one sprite. It
+			// cannot share the plate's deltas: each element's scale acts about its OWN centre, so the
+			// saucer needs its own translate to keep the gap between the two shrinking with them.
+			const sRect = shipEl?.getBoundingClientRect();
+			if (sRect && sRect.width > 0) {
+				const shipCX = target.cx;
+				const shipCY = target.cy - PORTRAIT_SHIP_RISE_OF_LOGO * target.w;
+				shipFlyStyle =
+					`--fly-x:${(shipCX - (sRect.left + sRect.width / 2)).toFixed(1)}px;` +
+					`--fly-y:${(shipCY - (sRect.top + sRect.height / 2)).toFixed(1)}px;` +
+					`--fly-s:${((PORTRAIT_SHIP_W_OF_LOGO * target.w) / sRect.width).toFixed(4)}`;
+			}
 			context.stateGame.logoHandoffActive = true;
 		}
 		props.onpress();
@@ -265,7 +300,7 @@
 		{:else}
 			<div class="f-title f-gold" use:fitTitle={t('SPLASH MAX TITLE')}>{t('SPLASH MAX TITLE')}</div>
 			<div class="f-sub">{t('SPLASH UP TO')}</div>
-			<div class="f-value f-pink">20'000X</div>
+			<div class="f-value f-pink">{MAX_WIN_LABEL}X</div>
 			<div class="f-sub">{t('SPLASH MULTIPLIER')}</div>
 		{/if}
 	{/snippet}
@@ -308,7 +343,7 @@
 				class="room-bg"
 				class:room-bg--ready={roomReady}
 				class:room-bg--dim={loading}
-				style={`background-image: url('${roomSrc}')`}
+				style={`background-image: url('${isPortrait ? roomMobileSrc : roomSrc}')`}
 			></div>
 
 			{#if loading}
@@ -320,14 +355,26 @@
 				<!-- Portrait: same pieces recomposed — sky + logo up top, one panel at a time below. -->
 				<img class="brand brand--m" src={brandSrc} alt="Press Play" draggable="false" />
 				{@render sky()}
+				<!-- The lockup's own saucer, arriving from deep in the sky onto the plate it was cut
+				     off. It sits OVER the plate, where the lockup draws it, and it flies to the
+				     in-game lockup with the plate rather than fading out with the scenery. -->
+				<img
+					class="ship-m"
+					class:ship-m--fly={leaving && shipFlyStyle}
+					style={shipFlyStyle}
+					bind:this={shipEl}
+					src={shipSrc}
+					alt=""
+					draggable="false"
+				/>
 				<img
 					class="logo logo--m"
 					class:logo--fly={leaving && flyStyle}
 					style={flyStyle}
 					bind:this={logoEl}
 					onanimationend={handleLogoAnimEnd}
-					src={logoSrc}
-					alt="Magnetic Megachain"
+					src={logoBareSrc}
+					alt="Magnetic Mothership"
 					draggable="false"
 				/>
 
@@ -391,10 +438,13 @@
 		pointer-events: auto;
 	}
 
-	/* Handoff: the overlay goes see-through and click-through while the logo flies to its in-game
+	/* Handoff: the overlay goes see-through and click-through while the LOCKUP flies to its in-game
 	   spot; everything else fades. `animation: none` is required — several children carry finished
 	   fill-mode:both animations whose final opacity:1 keyframe would override the fade
-	   (their base poses equal the animations' end poses, so dropping them doesn't shift anything). */
+	   (their base poses equal the animations' end poses, so dropping them doesn't shift anything).
+	   The portrait saucer is exempt alongside the plate: it is half of the mark, not scenery, and
+	   this rule was both fading it out and killing the flight animation it had just been given —
+	   the ship vanished at the hand-off while the wordmark flew on without it (user, 2026-09-11). */
 	.splash-intro.leaving {
 		background: transparent;
 		pointer-events: none;
@@ -404,7 +454,7 @@
 	.splash-intro.loading {
 		cursor: default;
 	}
-	.leaving .shake > :not(.logo) {
+	.leaving .shake > :not(.logo):not(.ship-m) {
 		animation: none;
 		opacity: 0;
 		transition: opacity 320ms ease;
@@ -527,8 +577,11 @@
 		pointer-events: none;
 		clip-path: polygon(12.5% 7.4%, 87.5% 7.4%, 98.6% 27.6%, 98.6% 78%, 1.4% 78%, 1.4% 27.6%);
 	}
+	/* Portrait runs on a different backdrop (room_mobile.webp), whose window is both taller and
+	   higher up: centre-column samples put the sky at 0.052 of the art and the valley's floor at
+	   0.828. The old 7.4%..78% came off the landscape room and would have cut the moon's crown. */
 	.stage--m .sky-clip {
-		clip-path: polygon(0 7.4%, 100% 7.4%, 100% 78%, 0 78%);
+		clip-path: polygon(0 5.5%, 100% 5.5%, 100% 82%, 0 82%);
 	}
 
 	.sky-hold {
@@ -562,6 +615,23 @@
 
 	/* Minutes per revolution. At this size anything quicker reads as a spinning coin, not a world —
 	   and the two differ in speed and direction so they never look like one animation used twice. */
+	/* Portrait places both bodies from the mobile design's own frame (nodes 9128:28881 and
+	   9128:28882 in the 360x800 board): the moon high on the right, the planet low on the left,
+	   where landscape has them side by side near the window's right chamfer. The frame is the
+	   stage, so its boxes are stage fractions directly — and `cover` scales the portrait art to
+	   the stage HEIGHT, so nothing here needs a background-fraction conversion. */
+	.stage--m .moon-hold {
+		left: 85.28%;
+		top: 18%;
+		width: 24.44%;
+	}
+
+	.stage--m .planet-hold {
+		left: 12.36%;
+		top: 27.44%;
+		width: 19.72%;
+	}
+
 	.moon {
 		animation: body-turn 240s linear infinite;
 	}
@@ -614,17 +684,72 @@
 	}
 	/* Portrait logo: 46 -> 42cqw (user pass 2026-08-10, "make logo a bit smaller"). The centre drops
 	   0.5cqh with it so the plate's BOTTOM edge stays seated on the pillar drum instead of lifting
-	   off it as the art shrinks. */
+	   off it as the art shrinks.
+
+	   Portrait art is the BARE plate (aspect 2.719 against the lockup's 1.664), so at the same width
+	   it is shorter and a centre-anchored swap would ride up. The margin puts its centre back where
+	   the lockup's plate sat: fitting the bare art into the lockup puts it at y 0.382..0.995, i.e.
+	   0.1133 logo WIDTHS below the lockup's centre — 0.1133 x 42cqw. */
 	.logo--m {
 		top: 14cqh;
+		margin-top: 4.76cqw;
 		width: 42cqw;
 		--drop-from: -22cqh;
+	}
+
+	/* The arriving ship, portrait only. Width and offset are the same two fractions the in-game
+	   composition uses (PORTRAIT_SHIP_W_OF_LOGO 0.4586 and PORTRAIT_SHIP_RISE_OF_LOGO 0.265 of the
+	   plate's width), so the splash and the game park it in the same place:
+	     width  0.4586 x 42cqw = 19.26cqw
+	     centre 0.265  x 42cqw = 11.13cqw above the plate's centre, i.e. 4.76 - 11.13 = -6.37cqw
+	   z-index 2 keeps it under the plate (z-index 3) and over the sky. */
+	/* Sized and placed from the saucer's own measured seat on the plate (stateGame.svelte.ts):
+	   0.4598 of the plate's width, its centre 0.277 plate-widths above the plate's. The plate is
+	   42cqw wide with its centre at 4.76cqw below `top`, so: 0.4598*42 = 19.31cqw across, and
+	   4.76 - 0.277*42 = -6.87cqw. z-index 4 puts it OVER the plate, which is how the lockup draws
+	   it — its rim and its beam mouth overlap the plate's top edge. */
+	.ship-m {
+		position: absolute;
+		z-index: 4;
+		left: 50.5%;
+		top: 14cqh;
+		margin-top: -6.87cqw;
+		width: 19.31cqw;
+		transform: translate(-50%, -50%);
+		filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.55));
+		animation: ship-arrive 1900ms linear 200ms both;
+	}
+	/* Arrival is PROJECTIVE, not a linear zoom: the stops trace 1/(1 + k.distance) with k set by the
+	   0.06 start scale, so it barely grows over the first half of the run and then rushes the camera.
+	   A linear ramp reads as a zoom; this reads as something flying in. Same model as the in-game
+	   flight in Background.svelte, written out as keyframes because CSS has no easing for it. */
+	@keyframes ship-arrive {
+		0% {
+			transform: translate(-50%, calc(-50% - 30cqh)) scale(0.06);
+			opacity: 0;
+		}
+		10% {
+			opacity: 1;
+		}
+		50% {
+			transform: translate(-50%, calc(-50% - 16cqh)) scale(0.11);
+		}
+		75% {
+			transform: translate(-50%, calc(-50% - 8cqh)) scale(0.25);
+		}
+		90% {
+			transform: translate(-50%, calc(-50% - 2.5cqh)) scale(0.55);
+		}
+		100% {
+			transform: translate(-50%, -50%) scale(1);
+		}
 	}
 
 	/* Handoff flight: FLIP to the in-game logo rect. --fly-x/y are viewport-px deltas between the
 	   two centres, --fly-s the width ratio; scale acts about the img's own centre so translate alone
 	   lands the centre. Declared after .logo so it replaces the entrance animation. */
-	.logo--fly {
+	.logo--fly,
+	.ship-m--fly {
 		animation: logo-fly 640ms cubic-bezier(0.55, 0.05, 0.15, 1) both;
 	}
 	@keyframes logo-fly {

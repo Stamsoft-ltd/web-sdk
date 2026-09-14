@@ -4,7 +4,8 @@
 Sources in art-src/splash/ (supplied by the designer, not pulled from Figma -- the MCP was out of
 quota when this was built):
 
-    room.png        the room, sky empty        -> splash room
+    room.png        the room, sky empty        -> splash room (landscape)
+    room_mobile.png the PORTRAIT room           -> splash room (portrait, Figma 9128:28701)
     cloud_big.png   \\ two cloud shapes         -> drift across the sky
     cloud_small.png /
     planet.png      the small purple planet    -> slow rotation
@@ -36,6 +37,11 @@ PREVIEW = SRC / "preview_splash.png"
 
 # The splash is drawn edge to edge at the room's own aspect.
 ROOM_W = 1920
+# The portrait room is its own painting, not a rebuild of the landscape one: the mobile splash design
+# (Figma 4277:5883) hangs a TALL window over the same valley, and the node's own source raster is
+# 941x1672 -- 0.5628, which is the portrait stage's aspect to within a rounding error, so it needs no
+# crop. Capped narrower than the landscape room because it is only ever drawn across a phone.
+ROOM_M_W = 1080
 
 WEBP = dict(quality=88, method=6)
 RGBA_WEBP = dict(quality=90, method=6, alpha_quality=95)
@@ -182,8 +188,8 @@ def cut_moon(comp: Image.Image, box: dict) -> Image.Image:
 
 
 def main() -> None:
-    need = ["room.png", "cloud_big.png", "cloud_small.png", "planet.png", "panel_a.png",
-            "composite.png", "polarity_icon_raw.png"]
+    need = ["room.png", "room_mobile.png", "cloud_big.png", "cloud_small.png", "planet.png",
+            "panel_a.png", "composite.png", "polarity_icon_raw.png"]
     for n in need:
         if not (SRC / n).exists():
             die(f"missing art-src/splash/{n}")
@@ -195,6 +201,10 @@ def main() -> None:
     room = Image.open(SRC / "room.png").convert("RGB")
     room = room.resize((ROOM_W, round(room.height * ROOM_W / room.width)), Image.LANCZOS)
     room.save(OUT / "room.webp", **WEBP)
+
+    room_m = Image.open(SRC / "room_mobile.png").convert("RGB")
+    room_m = room_m.resize((ROOM_M_W, round(room_m.height * ROOM_M_W / room_m.width)), Image.LANCZOS)
+    room_m.save(OUT / "room_mobile.webp", **WEBP)
 
     panel = trim(Image.open(SRC / "panel_a.png").convert("RGBA"))
     panel.save(OUT / "panel.webp", **RGBA_WEBP)
@@ -221,7 +231,8 @@ def main() -> None:
     icon.save(OUT / "polarity.webp", **RGBA_WEBP)
 
     print("\nwritten to", OUT.relative_to(ROOT))
-    for f in ("room.webp", "panel.webp", "cloud_a.webp", "cloud_b.webp", "planet.webp", "moon.webp",
+    for f in ("room.webp", "room_mobile.webp", "panel.webp", "cloud_a.webp", "cloud_b.webp",
+              "planet.webp", "moon.webp",
               "polarity.webp"):
         p = OUT / f
         print(f"  {f:14s} {Image.open(p).size} {p.stat().st_size // 1024}KB")

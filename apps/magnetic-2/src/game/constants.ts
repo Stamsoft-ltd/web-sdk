@@ -123,7 +123,7 @@ export const SYMBOL_PAD_SCALE: Record<string, number> = {
 // scripts/measure-symbol-head.py, which generated the first of them, is orphaned by this.
 
 export const SYMBOL_SIZE_OVERRIDE: Record<string, number> = {
-	// EMPTY as of 2026-09-03. It used to hold kTile: 1.3 and squirrelTile: 1.1, both written for the
+	// Emptied on 2026-09-03. It used to hold kTile: 1.3 and squirrelTile: 1.1, both written for the
 	// PRE-REBUILD art -- slim diagonal screws and bolts whose bounding box was mostly empty corner.
 	// The MOTHERSHIP symbols in those slots are a chunky helmet and a chunky battery, so the reason
 	// was gone while the numbers stayed, and they were multiplying on top of SYMBOL_PAD_SCALE: the
@@ -131,6 +131,20 @@ export const SYMBOL_SIZE_OVERRIDE: Record<string, number> = {
 	//
 	// Anything added here again must be justified by SHAPE, not by padding -- padding is what
 	// SYMBOL_PAD_SCALE cancels, and a value here silently multiplies it.
+	//
+	// H2 (lightning) is the one that qualifies. It is a filled rounded SQUARE where the other three
+	// premiums are discs with sparse rims, so at the class ratio it inks 0.588 of its cell against a
+	// premium median of 0.409 -- half again as much paint inside the same box, which reads as an
+	// oversized symbol next to its neighbours. Matching the inked AREA outright is 0.827; the
+	// halfway point, sqrt(0.634 / 0.767) = 0.91, was tried on the board first and still read large,
+	// so this sits between the two, nearer the area match. Measured with
+	// scripts/measure-symbol-padding.py.
+	wolfTile: 0.87,
+	wolfTileLand: 0.87,
+	wolfTileMobile: 0.87,
+	wolfWinTile: 0.87,
+	wolfWinTileLand: 0.87,
+	wolfWinTileMobile: 0.87,
 };
 
 // createReelForSpinning needs (BOARD_DIMENSIONS.y + 2) symbols per reel:

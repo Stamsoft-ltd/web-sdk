@@ -15,7 +15,6 @@
 export const socialOverridesEn: Record<string, string> = {
 	// ── Core HUD labels ──────────────────────────────────────────────────────────
 	BET: 'PLAY',
-	'BET SIZE': 'PLAY AMOUNT',
 	'BUY BONUS': 'GET BONUS',
 	BUY: 'PLAY',
 	PAYOUT: 'WIN',
@@ -26,54 +25,11 @@ export const socialOverridesEn: Record<string, string> = {
 	'COST MULTIPLIER': 'FEATURE MULTIPLIER',
 	'PAYOUT MULTIPLIER': 'FINAL MULTIPLIER',
 
-	// ── Bet-mode cards / tickers ─────────────────────────────────────────────────
-	'BET MODE BONUS DESCRIPTION':
-		'Play 10 free spins with boosted magnet odds for 100x your selected play amount.',
-	'BET MODE BONUS BUTTON': 'PLAY',
-	'BET MODE BONUS TICKER IDLE': 'COME AND PLAY',
-	'BET MODE CHANCE DIALOG':
-		'Chance Spin stays active until disabled. Each round can be played for 2x your play amount and triples bonus trigger odds.',
-	'BET MODE CHANCE DESCRIPTION': 'Activate Chance Spin for 2x your selected play amount per round.',
-	'BET MODE SUPER DESCRIPTION':
-		'Play the persistent super bonus for 500x your selected play amount.',
-	'BET MODE SUPER BUTTON': 'PLAY',
-	'BET MODE SUPER TICKER IDLE': 'COME AND PLAY',
-	'BET MODE FEATURE DIALOG':
-		'Feature Spin stays active until disabled. Each round can be played for 50x your play amount and guarantees one magnet spin.',
-	'BET MODE FEATURE DESCRIPTION':
-		'Activate Feature Spin for 50x your selected play amount per round.',
-
-	// ── Rules / paytable ─────────────────────────────────────────────────────────
-	'RULE BUY TITLE': 'PLAY / ACTIVATE MODES',
-	'RULE BUY TEXT':
-		'Gravity Breach can be played for 100x your play amount. Core Overload can be played for 500x. Chance Spin can be played for 2x per round. Feature Spin can be played for 50x per round. Max win is 20,000x. Target RTP is 96.1%.',
-	'HOWTO BET TITLE': 'PLAY AMOUNT SELECTOR',
-	'HOWTO BET TEXT':
-		'Use the + and - buttons or open the menu to change the displayed play amount before a round starts.',
-	'HOWTO BUY TITLE': 'GET BONUS',
-	'HOWTO BUY TEXT':
-		'Open Get Bonus to choose Gravity Breach, Core Overload, Chance Spin or Feature Spin. Instantly triggered bonuses require confirmation. Activate modes can be toggled on or off.',
-	'HOWTO REPLAY TEXT':
-		'Replay loads a previously completed event and displays the original play amount, total play amount and win information.',
-	'PAYTABLE BUY TITLE': 'PLAY MODES',
-	'PAYTABLE BUY_TEXT':
-		'Gravity Breach: 100x play amount.\nCore Overload: 500x play amount.\nChance Spin: 2x play amount per round.\nFeature Spin: 50x play amount per round.',
-	'PAYTABLE MAX_TEXT': 'Advertised max win is 20,000x the selected play amount.',
-
 	// ── Info modal ───────────────────────────────────────────────────────────────
 	'INFO FEATURE BUY': 'INSTANT FEATURES',
 	'INFO OV MAXWIN': 'Maximum win: %value% play amount.',
 	'INFO FB SUB':
 		'Instant feature options are available only where allowed. All instant feature and bonus options are won as a multiple of the selected play amount.',
-	'INFO FB FEATURE TITLE': 'Instant Feature',
-	'INFO FB BONUS TITLE': 'Instant Bonus',
-	// The three card descriptions all open with "Buys …" in the base map — `buy -> play` on the
-	// prohibited list, and reviewers match it as a SUBSTRING, so "Buys" fails just like payline did.
-	// `bought -> instantly triggered` gives the wording for the two direct-access cards.
-	'INFO FB EXTRA TEXT':
-		'Plays a special spin with a guaranteed magnetic connection and a chance to land Multiplier Wilds.',
-	'INFO FB FEATURE TEXT': 'Instantly triggers the Gravity Breach Free Spins feature.',
-	'INFO FB BONUS TEXT': 'Instantly triggers the stronger Core Overload Free Spins feature.',
 	'INFO CTRL SPIN DESC': 'Start a game round with your selected play amount.',
 	'INFO CTRL PLUS': 'Increase Play Amount',
 	'INFO CTRL PLUS DESC': 'Raise your total play amount.',
@@ -84,7 +40,9 @@ export const socialOverridesEn: Record<string, string> = {
 	'BUY CONFIRM': 'PLAY %name% FOR %cost%?',
 	'BUY EXTRA CHANCE TITLE': 'Extra Chance',
 	'BUY FEATURE SPINS TITLE': 'Feature Spins',
-	// Same "Buys …" sentence as INFO FB EXTRA TEXT, reused by the buy-bonus card — scrub both.
+	// Opens "Buys …" in the base map — `buy -> play` is on the prohibited list and reviewers match
+	// it as a SUBSTRING, so "Buys" fails just like payline did. Shown on the buy-bonus card AND on
+	// the rules page, which reuses the same key.
 	'BUY FEATURE SPINS DESC':
 		'Plays a special spin with a guaranteed magnetic connection and a chance to land Multiplier Wilds.',
 
@@ -104,18 +62,10 @@ export const socialOverridesEn: Record<string, string> = {
 	'INFO CW 1': 'Magnetic uses cluster wins instead of win lines.',
 	'INFO FEAT WILD TEXT':
 		'Substitutes for regular symbols except Scatter. When activated, the Magnetic Wild randomly selects one regular symbol currently on the grid and attracts all matching symbols together. Wilds and Scatters cannot be selected. A Magnetic Wild activates only when it lands and does not reactivate during the resulting respin.',
-	'BET MODE BASE DIALOG': '7x7 cluster-win base game with natural clusters and random magnets.',
-	'RULE GAME TEXT':
-		'Magnetic is a 7x7 cluster-win slot. Wins form when 5 or more matching symbols touch horizontally or vertically. Diagonal connections do not count.',
-	'RULE SCATTER TEXT':
-		'3 scatters trigger Gravity Breach. 4 scatters trigger Core Overload. Scatter does not win by itself.',
 	'INFO OV TEXT 1':
 		'Magnetic is a 7x7 cluster-win slot where wins are created by groups of matching symbols. Land 5 or more matching symbols connected horizontally or vertically to win.',
 	'INFO GI INTERRUPTED 2':
 		'All valid plays and potential winnings remain active until the round is fully completed.',
-	'INFO GI LEGAL 1':
-		'Malfunction voids all wins and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.',
-
 	// Insufficient-balance dialog. The base copy carries two restricted terms — "bet" (-> play) and
 	// "funds" (fund -> balance / deposit -> get coins) — so social mode gets its own sentence. The
 	// TITLE needs no override: "NOT ENOUGH BALANCE" contains no restricted substring.

@@ -45,7 +45,9 @@ const MOBILE_STATIC_KEYS: Partial<Record<SymbolName, string>> = {
 	SCATTER: 'scatterCustomMobile',
 };
 
-const DESKTOP_WIN_KEYS: Record<SymbolName, string> = {
+// Partial, like the mobile and landscape maps: POLARITY has no win texture -- it is drawn by
+// PolaritySymbol, not by this lookup -- and the call site already falls back to the static key.
+const DESKTOP_WIN_KEYS: Partial<Record<SymbolName, string>> = {
 	H1: 'kWinTile',
 	H2: 'wolfWinTile',
 	H3: 'bearWinTile',

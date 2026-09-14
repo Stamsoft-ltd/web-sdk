@@ -132,6 +132,9 @@ const assets = {
 		type: 'sprite',
 		src: './assets/components/splash/logo_plate.webp?v=20260901b',
 	},
+	// NOTE there is no bare-plate entry here. splash/logo_plate_bare.webp and splash/logo_saucer.webp
+	// exist, but only the SPLASH draws them, as HTML <img> — it flies the plate and the saucer in as
+	// two pieces and hands over an assembled lockup, which in game is this one sprite.
 	pressPlayLogo: {
 		type: 'sprite',
 		src: './assets/components/ui/press_play_logo.webp?v=20260709',
@@ -263,19 +266,19 @@ const assets = {
 	},
 	wildTile: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/special/wild.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/special/wild.webp?v=20260911',
 	},
 	wildWinTile: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/special/wild.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/special/wild.webp?v=20260911',
 	},
 	wildTileMobile: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/special/wild_mobile.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/special/wild_mobile.webp?v=20260911',
 	},
 	wildWinTileMobile: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/special/wild_mobile.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/special/wild_mobile.webp?v=20260911',
 	},
 	wild2xTile: {
 		type: 'sprite',
@@ -644,7 +647,7 @@ const assets = {
 	},
 	wildTileLand: {
 		type: 'sprite',
-		src: './assets/components/symbols/magnetic/special/wild.webp?v=20260902',
+		src: './assets/components/symbols/magnetic/special/wild.webp?v=20260911',
 	},
 	scatterTileLand: {
 		type: 'sprite',

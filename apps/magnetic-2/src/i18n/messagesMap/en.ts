@@ -5,22 +5,13 @@ export default {
 
 	// Splash intro feature boards (see SplashIntro.svelte). The big multiplier values are
 	// set as constants in the component; only the surrounding copy is translated here.
-	'SPLASH EXP TITLE': 'EXPANDING\nREELS',
-	'SPLASH MEGA TITLE': 'CORE OVERLOAD',
-	'SPLASH EPIC TITLE': 'EPIC WINS',
-	'SPLASH WITH UP TO': 'with up to',
 	'SPLASH MULTIPLIER': 'multiplier',
 	'SPLASH PRESS': 'PRESS TO CONTINUE',
 	'SPLASH BONUS TITLE': 'BONUS\nGAMES',
 	'SPLASH SCATTERS FOR': '%count% scatters for',
-	'SPLASH MMC': 'CORE OVERLOAD',
-	'SPLASH MEGA BUILD': 'Build the',
-	'SPLASH MEGA CHAIN': 'chain',
-	'SPLASH MEGA REST': 'with multipliers that multiply each other',
 	// The three scatter tiers and the POLARITY SHIFTER card (design 9078:18632, 2026-09-02). These
-	// replaced the old MEGA CHAIN copy above on the splash. The whole game now uses the design's
-	// names -- Gravity Breach and Core Overload (2026-09-04 rename, see art-src/REBUILD-QUEUE.md) --
-	// so the SPLASH MEGA* keys above are dead copy kept only so no locale loses an entry.
+	// replaced the old MEGA CHAIN copy on the splash; the game uses the design's names throughout --
+	// Gravity Breach and Core Overload (2026-09-04 rename, see art-src/REBUILD-QUEUE.md).
 	'SPLASH GRAVITY BREACH': 'GRAVITY BREACH',
 	'SPLASH CORE OVERLOAD': 'CORE OVERLOAD',
 	'SPLASH ZERO POINT': 'ZERO POINT PROTOCOL',
@@ -57,118 +48,14 @@ export default {
 	EVENT: 'EVENT',
 	PAYOUT: 'PAYOUT',
 	WIN: 'WIN',
-	'BET SIZE': 'BET SIZE',
 	'DEAL IT': 'GRAVITY BREACH',
 	'ALL IN': 'CORE OVERLOAD',
 	'REPLAY ERROR GENERIC': 'Replay unavailable. Please retry.',
 	'BET MODE BASE TITLE': 'BASE',
-	'BET MODE BASE DIALOG': '7x7 cluster-pay base game with natural clusters and random magnets.',
-	'BET MODE BASE BUTTON': 'PLAY',
-	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
-	'BET MODE BASE TICKER SPIN': 'GOOD LUCK',
 	'BET MODE BONUS TITLE': 'GRAVITY BREACH',
-	'BET MODE BONUS DIALOG': '10 free spins with heavily boosted magnet chance.',
-	'BET MODE BONUS DESCRIPTION':
-		'Buy 10 free spins with boosted magnet odds for 100x your selected bet.',
-	'BET MODE BONUS BUTTON': 'BUY',
-	'BET MODE BONUS TICKER IDLE': 'PLACE YOUR BET',
-	'BET MODE BONUS TICKER SPIN': 'BONUS ACTIVE',
 	'BET MODE CHANCE TITLE': 'CHANCE SPIN',
-	'BET MODE CHANCE DIALOG':
-		'Chance Spin stays active until disabled. Each round costs 2x bet and triples bonus trigger odds.',
-	'BET MODE CHANCE DESCRIPTION': 'Activate Chance Spin for 2x your selected bet per round.',
-	'BET MODE CHANCE BUTTON': 'ACTIVATE',
-	'BET MODE CHANCE TICKER IDLE': 'CHANCE SPIN IS ACTIVE',
-	'BET MODE CHANCE TICKER SPIN': 'GOOD LUCK',
 	'BET MODE SUPER TITLE': 'CORE OVERLOAD',
-	'BET MODE SUPER DIALOG':
-		'10 free spins with a guaranteed first-spin magnet. The target symbol, collected cluster and combined multiplier persist for the full bonus.',
-	'BET MODE SUPER DESCRIPTION': 'Buy the persistent super bonus for 500x your selected bet.',
-	'BET MODE SUPER BUTTON': 'BUY',
-	'BET MODE SUPER TICKER IDLE': 'PLACE YOUR BET',
-	'BET MODE SUPER TICKER SPIN': 'SUPER ACTIVE',
 	'BET MODE FEATURE TITLE': 'FEATURE SPIN',
-	'BET MODE FEATURE DIALOG':
-		'Feature Spin stays active until disabled. Each round costs 50x bet and guarantees one paid magnet spin.',
-	'BET MODE FEATURE DESCRIPTION': 'Activate Feature Spin for 50x your selected bet per round.',
-	'BET MODE FEATURE BUTTON': 'ACTIVATE',
-	'BET MODE FEATURE TICKER IDLE': 'FEATURE SPIN IS ACTIVE',
-	'BET MODE FEATURE TICKER SPIN': 'FEATURE SPIN ACTIVE',
-	'RULE SECTION GAME INFO': 'GAME INFO',
-	'RULE SECTION FEATURES': 'FEATURES',
-	'RULE SECTION HOW TO PLAY': 'HOW TO PLAY',
-	'RULE SECTION DISCLAIMER': 'GENERAL DISCLAIMER',
-	'RULE GAME TITLE': 'MAGNETIC',
-	'RULE GAME TEXT':
-		'Magnetic is a 7x7 cluster-pay slot. Wins form when 5 or more matching symbols touch horizontally or vertically. Diagonal connections do not count.',
-	'RULE WILD TITLE': 'WILD',
-	'RULE WILD TEXT':
-		'In base mode, a Magnetic Wild randomly selects one visible regular-symbol position. Every visible position has the same chance, so symbol types shown more often are more likely to be selected. It then attracts all visible symbols of that type. The target stays fixed for the active magnetic series.',
-	'RULE SCATTER TITLE': 'SCATTER',
-	'RULE SCATTER TEXT':
-		'3 scatters trigger Gravity Breach. 4 scatters trigger Core Overload. Scatter does not pay by itself.',
-	'RULE DEAL IT TITLE': 'CLUSTER RESPINS',
-	'RULE DEAL IT TEXT':
-		'Natural qualifying clusters lock in place. All other cells respin. If new matching symbols land touching the active cluster, they join it and another respin follows.',
-	'RULE ALL IN TITLE': 'CORE OVERLOAD',
-	'RULE ALL IN TEXT':
-		'On the first super free spin a magnet is guaranteed. The chosen target symbol, collected cluster and multiplied series value persist through all 10 free spins and resolve at the end.',
-	'RULE BUY TITLE': 'BUY / ACTIVATE MODES',
-	'RULE BUY TEXT':
-		'Gravity Breach costs 100x bet. Core Overload costs 500x bet. Chance Spin costs 2x bet per round. Feature Spin costs 50x bet per round. Max win is 20,000x. Target RTP is 96.1%.',
-	'FEATURE SELECTED SYMBOL TITLE': 'MAGNET TARGET',
-	'FEATURE SELECTED SYMBOL TEXT':
-		'A Magnetic Wild randomly selects one visible regular-symbol position. Each position has equal chance, so symbol types with more visible positions are more likely. All visible symbols of the selected type are attracted, and extra magnets never change the target mid-series.',
-	'FEATURE DEAL IT MULTIPLIER TITLE': 'MULTIPLIER WILDS',
-	'FEATURE DEAL IT MULTIPLIER TEXT':
-		'Multiplier Wild values stack multiplicatively inside one active magnetic series. Example: 2x × 3x × 4x = 24x total.',
-	'FEATURE ALL IN_MULTIPLIER TITLE': 'PERSISTENT SUPER SERIES',
-	'FEATURE ALL IN_MULTIPLIER TEXT':
-		'In Super Bonus the target symbol, collected cells and multiplied series value carry through all 10 free spins until the final award is resolved.',
-	'HOWTO SPIN TITLE': 'SPIN / STOP',
-	'HOWTO SPIN TEXT':
-		'Press Spin to start a round. Press again while a sequence is running to request stop behaviour where available.',
-	'HOWTO BET TITLE': 'BET SELECTOR',
-	'HOWTO BET TEXT':
-		'Use the + and - buttons or open the bet menu to change the displayed bet amount before a round starts.',
-	'HOWTO BUY TITLE': 'BUY BONUS',
-	'HOWTO BUY TEXT':
-		'Open Buy Bonus to choose Gravity Breach, Core Overload, Chance Spin or Feature Spin. Bought bonuses require confirmation. Activate modes can be toggled on or off.',
-	'HOWTO TURBO TITLE': 'TURBO',
-	'HOWTO TURBO TEXT': 'Turbo shortens certain round timings for faster play.',
-	'HOWTO AUTOPLAY TITLE': 'AUTOPLAY',
-	'HOWTO AUTOPLAY TEXT':
-		'Autoplay repeats rounds automatically until the selected stop condition or counter ends.',
-	'HOWTO REPLAY TITLE': 'REPLAY MODE',
-	'HOWTO REPLAY TEXT':
-		'Replay loads a previously completed event and displays the original bet, total cost, payout and win information.',
-	'PAYTABLE PREMIUM TITLE': 'PREMIUM SYMBOLS',
-	'PAYTABLE LOW TITLE': 'LOW SYMBOLS',
-	'PAYTABLE SPECIAL TITLE': 'SPECIAL SYMBOLS',
-	'PAYTABLE TITLE PAYLINES': 'CLUSTERS',
-	'PAYTABLE TEXT PAYLINES':
-		'Wins require 5 or more touching matching symbols. Only horizontal and vertical adjacency counts.',
-	'PAYTABLE BUY TITLE': 'BUY MODES',
-	'PAYTABLE MAX TITLE': 'MAX WIN',
-	'PAYTABLE FOX':
-		'HORSESHOE MAGNET (H1)\n5 = 0.5x\n6 = 1x\n7 = 2x\n8 = 4x\n9 = 8x\n10-11 = 15x\n12-14 = 30x\n15-19 = 80x\n20-24 = 200x\n25-29 = 500x\n30-32 = 1000x\n33+ = 2000x',
-	'PAYTABLE WOLF':
-		'PLASMA DRILL (H2)\n5 = 0.4x\n6 = 0.8x\n7 = 1.5x\n8 = 3x\n9 = 6x\n10-11 = 12x\n12-14 = 25x\n15-19 = 60x\n20-24 = 150x\n25-29 = 350x\n30-32 = 750x\n33+ = 1500x',
-	'PAYTABLE BEAR':
-		'MAGNETIC CORE CUBE (H3)\n5 = 0.3x\n6 = 0.6x\n7 = 1.2x\n8 = 2.5x\n9 = 5x\n10-11 = 10x\n12-14 = 20x\n15-19 = 50x\n20-24 = 120x\n25-29 = 280x\n30-32 = 600x\n33+ = 1200x',
-	'PAYTABLE RABBIT':
-		'ELECTROMAGNETIC DEVICE (H4)\n5 = 0.25x\n6 = 0.5x\n7 = 1x\n8 = 2x\n9 = 4x\n10-11 = 8x\n12-14 = 16x\n15-19 = 35x\n20-24 = 90x\n25-29 = 220x\n30-32 = 450x\n33+ = 900x',
-	'PAYTABLE SQUIRREL':
-		'BOLT (L1)\n5 = 0.2x\n6 = 0.4x\n7 = 0.8x\n8 = 1.6x\n9 = 3.2x\n10-11 = 6x\n12-14 = 12x\n15-19 = 30x\n20-24 = 75x\n25-29 = 180x\n30-32 = 350x\n33+ = 500x',
-	'PAYTABLE LOWS_1':
-		'NUT (L2)\n5 = 0.12x\n6 = 0.25x\n7 = 0.5x\n8 = 1x\n9 = 2x\n10-11 = 4x\n12-14 = 8x\n15-19 = 20x\n20-24 = 50x\n25-29 = 100x\n30-32 = 200x\n33+ = 400x\n\nWASHER (L3)\n5 = 0.1x\n6 = 0.2x\n7 = 0.4x\n8 = 0.8x\n9 = 1.6x\n10-11 = 3x\n12-14 = 6x\n15-19 = 15x\n20-24 = 40x\n25-29 = 80x\n30-32 = 150x\n33+ = 300x',
-	'PAYTABLE LOWS_2':
-		'ENERGY SCREW (L4)\n5 = 0.08x\n6 = 0.16x\n7 = 0.32x\n8 = 0.64x\n9 = 1.28x\n10-11 = 2.5x\n12-14 = 5x\n15-19 = 12x\n20-24 = 30x\n25-29 = 60x\n30-32 = 120x\n33+ = 250x',
-	'PAYTABLE SPECIAL_TEXT':
-		'Magnet starts magnetic series. Wild substitutes for regular symbols. Multiplier Wilds multiply the active series. Scatter triggers bonuses only.',
-	'PAYTABLE BUY_TEXT':
-		'Gravity Breach: 100x bet.\nCore Overload: 500x bet.\nChance Spin: 2x bet per round.\nFeature Spin: 50x bet per round.',
-	'PAYTABLE MAX_TEXT': 'Advertised max win is 20,000x the selected bet.',
 	// General Game Disclaimer. This is Stake Engine's OWN template, verbatim:
 	//   https://stake-engine.com/docs/approval-guidelines/general-disclaimer
 	// A submission may use the template or its own wording "so long as the same message is
@@ -202,6 +89,9 @@ export default {
 	'INFO STAT RTP': 'RTP',
 	// Paytable
 	'INFO SYMBOL RANK': 'SYMBOL RANK',
+	'INFO POLARITY TITLE': 'POLARITY SHIFTER',
+	'INFO POLARITY TEXT':
+		'When activated, the Polarity Shifter slams the whole cluster toward the wall shown by the arrow. New symbols of the same type are then added along that wall, creating a larger cluster.',
 	'INFO WILD VALUES': 'Multiplier Wild Values',
 	'INFO WILD STANDARD': 'Standard multiplier wild values:',
 	'INFO WILD RARE': 'Rare multiplier wild values (mainly in Core Overload):',
@@ -218,6 +108,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Core Overload Free Spins',
 	'INFO FEAT MEGA TEXT':
 		'Triggered by 4 Scatters. Awards 10 Free Spins. Magnetic clusters can remain locked and grow across the feature.',
+	'INFO FEAT RETRIGGER':
+		'Free Spins cannot be re-triggered. Scatters landing during a bonus round do not award extra spins.',
 	// Cluster win
 	'INFO CW 1': 'Magnetic uses cluster wins instead of paylines.',
 	'INFO CW 2':
@@ -229,13 +121,6 @@ export default {
 	// Feature buy
 	'INFO FB SUB':
 		'Feature Buy options are available only where allowed. All Feature Buy and Bonus Buy options are paid as a multiple of the selected bet.',
-	'INFO FB EXTRA TITLE': 'Extra Feature',
-	'INFO FB EXTRA TEXT':
-		'Buys a special spin with a guaranteed magnetic connection and a chance to land Multiplier Wilds.',
-	'INFO FB FEATURE TITLE': 'Feature Buy',
-	'INFO FB FEATURE TEXT': 'Buys direct access to the Gravity Breach Free Spins feature.',
-	'INFO FB BONUS TITLE': 'Bonus Buy',
-	'INFO FB BONUS TEXT': 'Buys direct access to the stronger Core Overload Free Spins feature.',
 	'INFO COST': 'COST',
 	'INFO RTP': 'RTP',
 	// General info
@@ -245,12 +130,6 @@ export default {
 	'INFO GI INTERRUPTED 2':
 		'All valid wagers and potential winnings remain active until the round is fully completed.',
 	'INFO GI LEGAL TITLE': 'Legal Notice',
-	'INFO GI LEGAL 1':
-		'Malfunction voids all pays and plays. A stable internet connection is required. If the connection is lost, reload the game to complete any unfinished rounds.',
-	'INFO GI LEGAL 2':
-		'The expected return is calculated over a large number of plays. The game display is for visual and entertainment purposes only and does not represent any physical gaming device.',
-	'INFO GI LEGAL 3':
-		'All winnings are settled according to the result received from the Remote Game Server, not from animations or events shown inside the web browser.',
 	// Controls / UI guide
 	'INFO CTRL SPIN': 'Spin',
 	'INFO CTRL SPIN DESC': 'Start a game round with your selected bet.',
@@ -319,6 +198,8 @@ export default {
 	'AUTO SUPER TURBO': 'SUPER TURBO SPIN',
 	'AUTO FEATURE': '50X BONUS FEATURE',
 	'AUTO NUM SPINS': 'NUMBER OF SPINS',
+	'AUTO LOSS LIMIT': 'LOSS LIMIT',
+	'AUTO WIN LIMIT': 'SINGLE WIN LIMIT',
 	'AUTO START': 'START AUTOPLAY',
 	// Win / free-spin screens
 	'YOU WON': 'YOU WON',
@@ -326,8 +207,6 @@ export default {
 	CONGRATULATIONS: 'CONGRATULATIONS!',
 	'PRESS ANYWHERE': 'PRESS ANYWHERE TO CONTINUE',
 	'TOTAL WIN': 'TOTAL WIN',
-	'ALL WINS': 'ALL WINS',
-	RESPIN: 'RESPIN',
 	// Bonus resume modal
 	'UNFINISHED ROUND': 'UNFINISHED ROUND',
 	// Shown instead of the shared generic error modal when a bet cannot be covered — see

@@ -13,7 +13,14 @@
 </script>
 
 <script lang="ts">
-	import { stateBet } from 'state-shared';
+	import {
+		stateBet,
+		stateUi,
+		LOSS_LIMIT_TEXT_OPTIONS,
+		SINGLE_WIN_LIMIT_TEXT_OPTIONS,
+		AUTO_SPINS_LOSS_LIMIT_MULTIPLIER_MAP,
+		AUTO_SPINS_SINGLE_WIN_LIMIT_MULTIPLIER_MAP,
+	} from 'state-shared';
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 
@@ -33,6 +40,27 @@
 	const step = (dir: -1 | 1) => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		stopIndex = Math.min(STOPS.length - 1, Math.max(0, stopIndex + dir));
+	};
+
+	// Autoplay stop limits. Stake requires an autoplay run to be stoppable on loss and on a single
+	// win, and the shared auto-bet machine already enforces both — but it reads
+	// stateBet.autoSpinsLossLimitAmount / autoSpinsSingleWinLimitAmount, which only the SHARED
+	// start button ever set. This custom panel replaced that button and set neither, so both stayed
+	// at their Infinity default and neither limit could ever fire. Same two option lists and the
+	// same bet-amount multiplication as AutoSpinsStartButton, stepped like the spin counter above.
+	const LOSS_STOPS = LOSS_LIMIT_TEXT_OPTIONS;
+	const WIN_STOPS = SINGLE_WIN_LIMIT_TEXT_OPTIONS;
+	let lossIndex = $state(LOSS_STOPS.length - 1); // default ∞
+	let winIndex = $state(WIN_STOPS.length - 1); // default ∞
+	const lossLabel = $derived(LOSS_STOPS[lossIndex]);
+	const winLabel = $derived(WIN_STOPS[winIndex]);
+	const stepLoss = (dir: -1 | 1) => {
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		lossIndex = Math.min(LOSS_STOPS.length - 1, Math.max(0, lossIndex + dir));
+	};
+	const stepWin = (dir: -1 | 1) => {
+		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		winIndex = Math.min(WIN_STOPS.length - 1, Math.max(0, winIndex + dir));
 	};
 
 	// Live game-state toggles (mirror the HUD)
@@ -66,6 +94,14 @@
 	const start = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressBet' });
 		stateBet.autoSpinsCounter = count;
+		// Multiplied by the bet the run starts on, exactly as the shared start button does — the
+		// option lists are bet multiples ("25×"), not currency amounts.
+		stateUi.autoSpinsLossLimitText = lossLabel;
+		stateUi.autoSpinsSingleWinLimitText = winLabel;
+		stateBet.autoSpinsLossLimitAmount =
+			stateBet.betAmount * AUTO_SPINS_LOSS_LIMIT_MULTIPLIER_MAP[lossLabel];
+		stateBet.autoSpinsSingleWinLimitAmount =
+			stateBet.betAmount * AUTO_SPINS_SINGLE_WIN_LIMIT_MULTIPLIER_MAP[winLabel];
 		props.onclose();
 		context.eventEmitter.broadcast({ type: 'autoBet' });
 	};
@@ -113,6 +149,30 @@
 			</button>
 		</div>
 
+		<p class="ap-spins-label">{t('AUTO LOSS LIMIT')}</p>
+
+		<div class="ap-stepper">
+			<button class="ap-icon-btn" type="button" disabled={lossIndex <= 0} onclick={() => stepLoss(-1)} aria-label="Lower loss limit">
+				<span class="glyph glyph--minus"></span>
+			</button>
+			<span class="ap-count">{lossLabel}</span>
+			<button class="ap-icon-btn" type="button" disabled={lossIndex >= LOSS_STOPS.length - 1} onclick={() => stepLoss(1)} aria-label="Raise loss limit">
+				<span class="glyph glyph--plus"></span>
+			</button>
+		</div>
+
+		<p class="ap-spins-label">{t('AUTO WIN LIMIT')}</p>
+
+		<div class="ap-stepper">
+			<button class="ap-icon-btn" type="button" disabled={winIndex <= 0} onclick={() => stepWin(-1)} aria-label="Lower single win limit">
+				<span class="glyph glyph--minus"></span>
+			</button>
+			<span class="ap-count">{winLabel}</span>
+			<button class="ap-icon-btn" type="button" disabled={winIndex >= WIN_STOPS.length - 1} onclick={() => stepWin(1)} aria-label="Raise single win limit">
+				<span class="glyph glyph--plus"></span>
+			</button>
+		</div>
+
 		<button class="ap-start" type="button" onclick={start}>
 			{t('AUTO START')} ({countLabel})
 		</button>
@@ -132,7 +192,10 @@
 	   1200), so on screens wider than the design the dialog keeps its intended presence instead of
 	   shrinking away; 94vw / 104vh keep it inside small or portrait viewports. */
 	.ap-root {
-		--ap-w: min(94vw, 104vh, max(550px, 45.8vw));
+		/* The height cap was 104vh against the old 550x423 plate. The panel now carries two more
+		   stepper blocks (the loss and single-win stop limits), so it is taller than it is wide and
+		   the cap has to come down with it or a short viewport clips the START button. */
+		--ap-w: min(94vw, 62vh, max(550px, 45.8vw));
 		position: fixed;
 		top: 50%;
 		left: 50%;
@@ -153,6 +216,10 @@
 		display: flex;
 		flex-direction: column;
 		padding: 5.09cqw 5.09cqw 6.36cqw;
+		/* Last-resort guard: a very short window (or a long translation) must scroll the panel, not
+		   push START off the bottom where it cannot be pressed. */
+		max-height: 94vh;
+		overflow-y: auto;
 		background: #3a3981;
 		border: 0.44cqw solid #2d2c69;
 		border-radius: 2.55cqw;
@@ -217,7 +284,9 @@
 
 	/* Figma 4036:2489 — Chakra Petch Bold 20px white, 48.4 design px below the last toggle row. */
 	.ap-spins-label {
-		margin: 8.8cqw 0 0;
+		/* 8.8cqw was the design's single-block rhythm. With three blocks it triples, so the leading
+		   gap is halved and the first block keeps a little more air (rule below). */
+		margin: 4.4cqw 0 0;
 		text-align: center;
 		font-weight: 700;
 		font-size: 3.64cqw;
@@ -230,9 +299,13 @@
 		text-transform: uppercase;
 	}
 
+	.ap-spins-label:first-of-type {
+		margin-top: 7.2cqw;
+	}
+
 	/* − [count] + — 48.696 circles, 138 design px apart centre to centre. */
 	.ap-stepper {
-		margin-top: 3.1cqw;
+		margin-top: 2.2cqw;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -320,7 +393,7 @@
 	   it is the only text in this dialog that is. Regular is the family's only weight, so asking for
 	   bold here would get a synthesised smear. */
 	.ap-start {
-		margin-top: 7.33cqw;
+		margin-top: 5.2cqw;
 		height: 8cqw;
 		border: none;
 		border-radius: 1.45cqw;

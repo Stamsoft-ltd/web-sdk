@@ -9,7 +9,9 @@ rebuilds are derived here rather than hand-painted.
     bg_bonus.webp / bg_mobile_bonus.webp   GRAVITY BREACH       (Figma 9164:12399 "Background 2")
     bg_super.webp / bg_mobile_super.webp   CORE OVERLOAD        (Figma 9164:12644 "Background 3")
     bg_zero.webp  / bg_mobile_zero.webp    ZERO POINT PROTOCOL  (Figma 9164:12890 "Background 4")
-    logo_plate.webp                        MAGNETIC 2 MOTHERSHIP
+    logo_plate.webp                        MAGNETIC 2 MOTHERSHIP, saucer and all
+    logo_plate_bare.webp                   the same lockup WITHOUT its saucer  (Figma 9302:32303)
+    logo_saucer.webp                       ...and the saucer the two of them differ by
     (the ship is NOT built here any more -- see scripts/build-ufo-art.py)
 
 FOUR paintings, one per room. The game moved outdoors on 2026-09-03: every room is now the same
@@ -129,7 +131,13 @@ WEBP = dict(quality=88, method=6)
 # game has been rejected over blocking payload before, and none of these three is a texture whose
 # edges survive being pixel-peeped anyway. Caps are the widest each is ever drawn, doubled.
 RGBA_WEBP = dict(quality=88, method=6, alpha_quality=95)
-MAX_WIDTH = {"logo_plate": 900, "ufo_ship": 700, "ufo_beam": 700}
+MAX_WIDTH = {
+    "logo_plate": 900,
+    "logo_plate_bare": 900,
+    "logo_saucer": 700,
+    "ufo_ship": 700,
+    "ufo_beam": 700,
+}
 
 
 def save_rgba(im: Image.Image, path: Path) -> None:
@@ -351,6 +359,120 @@ def trimmed(im: Image.Image) -> Image.Image:
     return trim_box(im)[0]
 
 
+def split_saucer(logo: Image.Image, bare: Image.Image) -> tuple[Image.Image, dict]:
+    """The lockup's OWN saucer, cut out of logo.png, plus where it sits on the bare plate.
+
+    The design ships the lockup two ways and never the saucer alone: logo.png is plate + saucer,
+    logo_bare.png is the plate with a complete, unnotched top edge. The saucer is therefore what
+    the two DIFFER by, and that is how it is taken here -- fit the bare plate into the lockup, then
+    keep the lockup pixels the plate does not account for.
+
+    Why bother, when ui/ufo_ship.webp is already a saucer: that one has an EMPTY dome. The alien is
+    only ever drawn in the lockup's own saucer, and portrait uses the ship as that saucer -- it
+    stands in the lockup's place, so it has to be the lockup's drawing (user, 2026-09-11).
+
+    The fit is a scale + offset search on the alpha masks. It lands at the lockup's full width with
+    the two bottom edges flush, which is the only place it can land: the plate IS the widest thing
+    in the lockup and nothing hangs below it.
+
+    Two cleanups on the difference mask:
+      * a VERTICAL OPENING, which deletes the plate's own top outline. The bare export redraws that
+        edge a hair differently from the lockup's, so it survives the colour test as a 9px-tall
+        line running the width of the plate -- and it is the only thing in the cut that thin.
+      * the largest connected blob, so specks elsewhere on the plate cannot come along.
+    """
+    lm = np.asarray(logo)[..., 3] > 8
+    best = None
+    for s1000 in range(855, 881, 1):
+        s = s1000 / 1000
+        bw, bh = round(bare.width * s), round(bare.height * s)
+        if bw > logo.width or bh > logo.height:
+            continue
+        bm = np.asarray(bare.resize((bw, bh), Image.LANCZOS))[..., 3] > 8
+        for dx in range(-6, 7):
+            for dy in range(logo.height - bh - 20, logo.height - bh + 21):
+                if dy < 0 or dx < 0 or dy + bh > logo.height or dx + bw > logo.width:
+                    continue
+                sub = lm[dy : dy + bh, dx : dx + bw]
+                iou = (sub & bm).sum() / (sub | bm).sum()
+                if best is None or iou > best[0]:
+                    best = (iou, s, dx, dy, bw, bh)
+    if best is None or best[0] < 0.85:
+        die("could not fit the bare plate into the lockup")
+    iou, _s, dx, dy, bw, bh = best
+    plate = np.zeros(np.asarray(logo).shape, int)
+    plate[dy : dy + bh, dx : dx + bw] = np.asarray(bare.resize((bw, bh), Image.LANCZOS)).astype(int)
+    la = np.asarray(logo).astype(int)
+    # 90 on the summed RGB distance: the saucer's purples and the plate's are close, so anything
+    # lower keeps the resize's own edge ringing and anything higher eats the rim's dark outline.
+    cut = lm & ((plate[..., 3] <= 8) | (np.abs(la[..., :3] - plate[..., :3]).sum(2) > 90))
+    core = cut.copy()
+    for _ in range(6):
+        g = core.copy()
+        g[1:, :] &= core[:-1, :]
+        g[:-1, :] &= core[1:, :]
+        core = g
+    for _ in range(6):
+        g = core.copy()
+        g[1:, :] |= core[:-1, :]
+        g[:-1, :] |= core[1:, :]
+        core = g
+    cut &= core
+    ys, xs = np.nonzero(cut)
+    seed = (ys.min(), int(np.nonzero(cut[ys.min()])[0].mean()))
+    blob = np.zeros_like(cut)
+    blob[seed] = True
+    while True:
+        g = blob.copy()
+        g[1:, :] |= blob[:-1, :]
+        g[:-1, :] |= blob[1:, :]
+        g[:, 1:] |= blob[:, :-1]
+        g[:, :-1] |= blob[:, 1:]
+        g &= cut
+        if np.array_equal(g, blob):
+            break
+        blob = g
+    out = np.zeros(la.shape, np.uint8)
+    out[blob] = np.asarray(logo)[blob]
+    ys, xs = np.nonzero(blob)
+    x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
+    saucer = Image.fromarray(out).crop((x0, y0, x1, y1))
+    plate_w = bw
+    return saucer, {
+        "iou": iou,
+        "w_of_plate": (x1 - x0) / plate_w,
+        "rise_of_plate": ((dy + bh / 2) - (y0 + y1) / 2) / plate_w,
+        "dx_of_plate": ((x0 + x1) / 2 - (dx + bw / 2)) / plate_w,
+        "aspect": (x1 - x0) / (y1 - y0),
+        "lockup_cy_of_plate_w": ((dy + bh / 2) - logo.height / 2) / plate_w,
+    }
+
+
+def measure_emitter(saucer: Image.Image) -> dict:
+    """The pink beam mouth on the saucer's underside, in sprite-box fractions.
+
+    Keyed on hue, not brightness the way scripts/build-ufo-art.py keys the other ship's: this art
+    paints the mouth as a flat magenta trapezoid rather than a washed-out white oval.
+    """
+    a = np.asarray(saucer).astype(int)
+    h, w = a.shape[:2]
+    rgb, vis = a[..., :3], a[..., 3] > 60
+    win = np.zeros((h, w), bool)
+    win[int(h * 0.72) :, int(w * 0.28) : int(w * 0.72)] = True
+    lit = win & vis & (rgb[..., 0] > 215) & (rgb[..., 2] > 215) & (rgb[..., 1] > 120)
+    lit &= rgb[..., 1] < 215
+    if lit.sum() < 200:
+        die("could not find the beam mouth under the lockup's saucer")
+    ys, xs = np.nonzero(lit)
+    return {
+        "cx": round(((xs.min() + xs.max()) / 2) / w, 4),
+        "cy": round(((ys.min() + ys.max()) / 2) / h, 4),
+        "w": round((xs.max() - xs.min() + 1) / w, 4),
+        "ry": round((ys.max() - ys.min() + 1) / (2 * h), 4),
+        "bottom": round((ys.max() + 1) / h, 4),
+    }
+
+
 def ufo_placements(raster: tuple[int, int], boxes: dict[str, tuple[float, ...]]) -> None:
     """Print ship/beam placements as fractions of the FINISHED landscape background.
 
@@ -488,6 +610,35 @@ def main() -> None:
     print("logo:")
     logo = trimmed(Image.open(SRC / "logo.png").convert("RGBA"))
     save_rgba(logo, SPLASH / "logo_plate.webp")
+    # The SAME lockup with the saucer taken off, which is how the design draws it wherever a real
+    # ship is in shot: PORTRAIT hangs the animated ufo_ship over this plate, so the baked-in one
+    # would be a second saucer stacked on the first. Landscape keeps the full lockup above -- its
+    # ship parks off in the right-hand sky, nowhere near the mark.
+    #
+    # Its box is NOT the full lockup's. Fitting this art into logo.png puts it at x 0.000-0.999,
+    # y 0.382-0.995 of that box, so the plate is the lockup's full WIDTH and its bottom 61.7%; the
+    # numbers that hang the ship off it live in Background.svelte and are quoted against this width.
+    bare = trimmed(Image.open(SRC / "logo_bare.png").convert("RGBA"))
+    save_rgba(bare, SPLASH / "logo_plate_bare.webp")
+
+    # ...and the saucer the two differ by. PORTRAIT flies this one in over the bare plate on the
+    # splash and hangs it over the lockup in game, so the alien is in the dome where the design
+    # draws it; landscape's sky ship stays ui/ufo_ship.webp, which is the design's own standalone
+    # saucer and has no alien in it.
+    saucer, fit = split_saucer(logo, bare)
+    save_rgba(saucer, SPLASH / "logo_saucer.webp")
+    emitter = measure_emitter(saucer)
+    print(f"  fit IoU {fit['iou']:.4f} (bare plate into the lockup)")
+    print("  saucer, in PLATE WIDTHS -- stateGame.svelte.ts owns these:")
+    print(f"    PORTRAIT_SHIP_W_OF_LOGO    {fit['w_of_plate']:.4f}")
+    print(f"    PORTRAIT_SHIP_RISE_OF_LOGO {fit['rise_of_plate']:.4f}  (dx {fit['dx_of_plate']:+.4f})")
+    print(f"    SHIP_ART_ASPECT            {fit['aspect']:.4f}")
+    print(
+        "    PORTRAIT_LOCKUP_CY_OF_W    "
+        f"{fit['lockup_cy_of_plate_w']:.4f}  (how far the whole lockup's centre rides above the plate's)"
+    )
+    print("  beam mouth, in sprite-box fractions -- Background.svelte owns these:")
+    print(f"    {emitter}")
 
     # --- preview ---------------------------------------------------------------------------------
     tiles = []

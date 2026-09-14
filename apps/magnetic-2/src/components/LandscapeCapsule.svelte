@@ -10,13 +10,10 @@
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import { getContext } from '../game/context';
-	import { INFO_BOX_ASPECT } from '../game/constants';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import InfoBox from './InfoBox.svelte';
 
 	const context = getContext();
-	const main = $derived(context.stateLayoutDerived.mainLayout());
-	const board = $derived(context.stateGameDerived.boardLayout());
 
 	// Only in mobile-landscape. The tall vertical capsule (mobile art, lightning baked in) sits in the
 	// gutter right of the board; the ALL WINS / FREE SPINS boxes stack in the left gutter during bonus.
@@ -63,57 +60,38 @@
 	});
 
 	// ── geometry ──
-	// Capsule column comes from the shared derived (stateGameDerived) so the HTML buy-bonus button can
-	// compute the exact same on-screen position and stay centred beneath the capsule at any ratio.
-	const cap = $derived(context.stateGameDerived.landscapeCapsuleLayout());
-	const colX = $derived(cap.colX);
-	const tubeH = $derived(cap.tubeH);
-	const tubeW = $derived(cap.tubeW);
-	// New animated tesla tube (mp4 → keyed flipbook), rotated 90° to run vertically. The old glass was
-	// only ~94% wide × ~43% tall opaque within its box, so draw the (trimmed) animation at those
-	// fractions to land in the same on-screen tube. Falls back to the static glass + crackle.
-	const tubeY = $derived(cap.tubeY);
-	const gridHalfW = $derived(cap.gridHalfW);
-	const canvasLeftX = $derived(
-		main.width * 0.5 - context.stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1)),
-	);
-
-	// TOTAL WIN / FREE SPINS boxes — left gutter, stacked. Version2: the same wide steel InfoBox
-	// the desktop rail uses, sized to the gutter so it cannot reach the board.
-	const boardLeftX = $derived(board.x - gridHalfW);
-	// 0.62/0.92 -> 0.55/0.84: the three gutter boxes read too wide on popout S (user pass 2026-08-10).
-	const boxW = $derived(Math.min(gridHalfW * 0.55, (boardLeftX - canvasLeftX) * 0.84));
-	const boxH = $derived(boxW / INFO_BOX_ASPECT);
-	const boxX = $derived((canvasLeftX + boardLeftX) * 0.5);
-	const boxGap = $derived(boxH * 0.24);
-	// Stack the bonus boxes from the TOP (just below the logo) instead of centring them on the board, so
-	// the RESPIN box (RespinPanel) can sit BENEATH FREE SPINS instead of being overlapped by it. The
-	// logo/gutter geometry mirrors RespinPanel so the three boxes read as one left-gutter column.
-	// Anchored just under the logo so TOTAL WIN sits below it and the three-box column (incl. RESPIN)
-	// clears the balance/bet control on the shortest landscapes. Both the logo height and the offset
-	// now come from stateGame — RespinPanel reads the SAME function, so the two can no longer drift
-	// apart, and the offset tightens on popout S where there is least vertical room.
-	const stackTopY = $derived(context.stateGameDerived.landscapeStackTopY());
+	// TOTAL WIN / FREE SPINS boxes — the top two slots of the left rail. Size and position come from
+	// stateGameDerived.landscapeRail(), which is the design's own column (4161:22199). This file and
+	// RespinPanel each used to derive the column from the board's left edge and the canvas edge, so
+	// the two copies drifted whenever the board moved, and the whole column drifted with the board
+	// instead of holding the design's margin.
+	const rail = $derived(context.stateGameDerived.landscapeRail());
+	const boxW = $derived(rail.boxW);
+	const boxH = $derived(rail.boxH);
+	const boxX = $derived(rail.x);
+	const boxGap = $derived(rail.gap);
+	const stackTopY = $derived(rail.topY);
 </script>
 
 {#if isLandscape}
 	<MainContainer zIndex={25}>
-		<!-- TOTAL WIN + FREE SPINS boxes, left gutter — only during a bonus. Version2 InfoBox
-		     (same art/typography as the desktop rail). -->
+		<!-- FREE SPINS + TOTAL WIN boxes, left rail — only during a bonus. Version2 InfoBox (same
+		     art/typography as the desktop rail). Slot order is the DESIGN's (4161:22199):
+		     FREE SPINS / TOTAL WIN / RESPIN, which is not the desktop rail's order. -->
 		{#if isBonus}
 			<InfoBox
 				x={boxX}
 				y={stackTopY + boxH * 0.5}
 				width={boxW}
-				label={i18nDerived.translate('TOTAL WIN')}
-				value={totalWin}
+				label={i18nDerived.translate('FREE SPINS')}
+				value={`${fsRemaining}`}
 			/>
 			<InfoBox
 				x={boxX}
 				y={stackTopY + boxH * 1.5 + boxGap}
 				width={boxW}
-				label={i18nDerived.translate('FREE SPINS')}
-				value={`${fsRemaining}`}
+				label={i18nDerived.translate('TOTAL WIN')}
+				value={totalWin}
 			/>
 		{/if}
 	</MainContainer>

@@ -6,7 +6,7 @@ const makeTierPaytable = (bands: Array<[number, number, number]>) => {
 	return out;
 };
 
-export default {
+const config = {
 	providerName: 'sample_provider',
 	gameName: 'magnetic-2',
 	gameID: '0_0_magnetic_2',
@@ -155,3 +155,11 @@ export default {
 		SCATTER: { special_properties: ['scatter'] },
 	},
 } as const;
+
+export default config;
+
+/** Advertised max win, read off the math's own bet-mode table rather than retyped.
+ *  The splash and the rules page each carried their own literal and they had already drifted
+ *  apart in format ("20'000X" against "20,000x"); both now print these two. */
+export const MAX_WIN_MULTIPLIER = config.betModes.BASE.max_win;
+export const MAX_WIN_LABEL = new Intl.NumberFormat('en-US').format(MAX_WIN_MULTIPLIER);

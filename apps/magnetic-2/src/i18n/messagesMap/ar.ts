@@ -17,6 +17,9 @@ export default {
 	'INFO STAT MAXWIN': 'أقصى فوز',
 	'INFO STAT RTP': 'RTP',
 	'INFO SYMBOL RANK': 'ترتيب الرموز',
+	'INFO POLARITY TITLE': 'مبدّل القطبية',
+	'INFO POLARITY TEXT':
+		'عند التفعيل، يدفع مبدّل القطبية العنقود بأكمله نحو الجدار الذي يشير إليه السهم. ثم تُضاف رموز جديدة من النوع نفسه على امتداد ذلك الجدار، مكوّنة عنقودًا أكبر.',
 	'INFO WILD VALUES': 'قيم الوايلد المضاعف',
 	'INFO WILD STANDARD': 'قيم الوايلد المضاعف القياسية:',
 	'INFO WILD RARE': 'قيم الوايلد المضاعف النادرة (بشكل رئيسي في Core Overload):',
@@ -31,6 +34,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'دورات Core Overload المجانية',
 	'INFO FEAT MEGA TEXT':
 		'تُفعّل بواسطة 4 رموز سكاتر. تمنح 10 دورات مجانية. يمكن أن تبقى العناقيد المغناطيسية مثبّتة وتنمو طوال الميزة.',
+	'INFO FEAT RETRIGGER':
+		'لا يمكن إعادة تنشيط اللفات المجانية. رموز السكاتر التي تظهر أثناء جولة المكافأة لا تمنح لفات إضافية.',
 	'INFO CW 1': 'تستخدم Magnetic أرباح العناقيد بدلاً من خطوط الدفع.',
 	'INFO CW 2': 'يتكوّن الفوز عندما يتلامس 5 رموز متطابقة أو أكثر أفقياً أو عمودياً.',
 	'INFO CW 3': 'الاتصالات القطرية لا تُحتسب.',
@@ -38,12 +43,6 @@ export default {
 	'INFO CW 5': 'العناقيد الأكبر تمنح أرباحاً أكبر.',
 	'INFO FB SUB':
 		'خيارات شراء الميزة متاحة فقط حيثما يُسمح بها. تُدفع جميع خيارات شراء الميزة وشراء المكافأة كمضاعف للرهان المحدد.',
-	'INFO FB EXTRA TITLE': 'ميزة إضافية',
-	'INFO FB EXTRA TEXT': 'يشتري دورة خاصة باتصال مغناطيسي مضمون وفرصة للحصول على وايلدات مضاعفة.',
-	'INFO FB FEATURE TITLE': 'شراء الميزة',
-	'INFO FB FEATURE TEXT': 'يشتري وصولاً مباشراً إلى ميزة دورات Gravity Breach المجانية.',
-	'INFO FB BONUS TITLE': 'شراء المكافأة',
-	'INFO FB BONUS TEXT': 'يشتري وصولاً مباشراً إلى ميزة دورات Core Overload المجانية الأقوى.',
 	'INFO COST': 'التكلفة',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': 'الجولات المتوقفة',
@@ -52,12 +51,6 @@ export default {
 	'INFO GI INTERRUPTED 2':
 		'تظل جميع الرهانات الصحيحة والأرباح المحتملة نشطة حتى اكتمال الجولة بالكامل.',
 	'INFO GI LEGAL TITLE': 'إشعار قانوني',
-	'INFO GI LEGAL 1':
-		'أي خلل يُلغي جميع المدفوعات والألعاب. يلزم اتصال إنترنت مستقر. في حال انقطاع الاتصال، أعد تحميل اللعبة لإكمال أي جولات غير منتهية.',
-	'INFO GI LEGAL 2':
-		'يُحتسب العائد المتوقع على عدد كبير من الألعاب. عرض اللعبة لأغراض بصرية وترفيهية فقط ولا يمثّل أي جهاز ألعاب مادي.',
-	'INFO GI LEGAL 3':
-		'تُسوّى جميع الأرباح وفقاً للنتيجة الواردة من خادم اللعبة البعيد، وليس من الرسوم المتحركة أو الأحداث المعروضة داخل متصفح الويب.',
 	'DISCLAIMER TEXT':
 		'يبطل أي خلل جميع الأرباح واللعب. يلزم اتصال إنترنت ثابت. في حال انقطاع الاتصال، أعد تحميل اللعبة لإنهاء أي جولات غير مكتملة. يُحسب العائد المتوقع على مدى العديد من عمليات اللعب. عرض اللعبة لا يمثل أي جهاز مادي وهو لأغراض توضيحية فقط. تُسوّى الأرباح وفقًا للمبلغ المستلم من خادم اللعبة عن بُعد وليس من الأحداث داخل متصفح الويب. TM و © 2026 Engine.',
 	'INFO CTRL SPIN': 'تدوير',
@@ -88,18 +81,10 @@ export default {
 	HOME: 'الرئيسية',
 	'NOT TRANSLATED': 'غير مترجم',
 	'GAME TITLE': 'MAGNETIC',
-	'SPLASH EXP TITLE': 'البكرات\nالممتدة',
-	'SPLASH MEGA TITLE': 'سلسلة ميجا',
-	'SPLASH EPIC TITLE': 'مكاسب أسطورية',
-	'SPLASH WITH UP TO': 'بما يصل إلى',
 	'SPLASH MULTIPLIER': 'مضاعف',
 	'SPLASH PRESS': 'اضغط للمتابعة',
 	'SPLASH BONUS TITLE': 'ألعاب\nالمكافآت',
 	'SPLASH SCATTERS FOR': '%count% رمز سكاتر مقابل',
-	'SPLASH MMC': 'سلسلة ميجا المغناطيسية',
-	'SPLASH MEGA BUILD': 'اِبنِ',
-	'SPLASH MEGA CHAIN': 'السلسلة',
-	'SPLASH MEGA REST': 'بمضاعفات تضاعف بعضها بعضًا',
 	'SPLASH GRAVITY BREACH': 'اختراق الجاذبية',
 	'SPLASH CORE OVERLOAD': 'تحميل زائد للنواة',
 	'SPLASH ZERO POINT': 'بروتوكول نقطة الصفر',
@@ -129,7 +114,6 @@ export default {
 	EVENT: 'الحدث',
 	PAYOUT: 'العائد',
 	WIN: 'الفوز',
-	'BET SIZE': 'حجم الرهان',
 	'REPLAY ERROR GENERIC': 'الإعادة غير متاحة. يرجى المحاولة مرة أخرى.',
 	SOUND: 'الصوت',
 	MUSIC: 'الموسيقى',
@@ -164,14 +148,14 @@ export default {
 	'AUTO SUPER TURBO': 'دورة سوبر تيربو',
 	'AUTO FEATURE': 'ميزة مكافأة 50X',
 	'AUTO NUM SPINS': 'عدد الدورات',
+	'AUTO LOSS LIMIT': 'حد الخسارة',
+	'AUTO WIN LIMIT': 'حد الفوز الواحد',
 	'AUTO START': 'بدء اللعب التلقائي',
 	'YOU WON': 'لقد فزت',
 	'FREE SPINS': 'دورات مجانية',
 	CONGRATULATIONS: 'تهانينا',
 	'PRESS ANYWHERE': 'اضغط في أي مكان للمتابعة',
 	'TOTAL WIN': 'إجمالي الفوز',
-	'ALL WINS': 'جميع الأرباح',
-	RESPIN: 'إعادة الدوران',
 	'UNFINISHED ROUND': 'جولة غير مكتملة',
 	'RESUME BODY': 'لديك مكافأة %mode% نشطة قيد التقدم.',
 	'PLAY ROUND': 'لعب الجولة',
@@ -179,45 +163,8 @@ export default {
 
 	// Approved shared translations reused from Forest Gang.
 	'BET MODE BASE TITLE': 'أساسي',
-	'BET MODE BASE BUTTON': 'العب',
-	'BET MODE BASE TICKER SPIN': 'حظًا موفقًا',
-	'BET MODE BONUS BUTTON': 'شراء',
-	'BET MODE BONUS TICKER IDLE': 'ضع رهانك',
 	'BET MODE CHANCE TITLE': 'لفة الحظ',
-	'BET MODE CHANCE DESCRIPTION': 'فعّل لفة الحظ مقابل 2x من رهانك المحدد لكل جولة.',
-	'BET MODE CHANCE BUTTON': 'تفعيل',
-	'BET MODE CHANCE TICKER IDLE': 'لفة الحظ نشطة',
-	'BET MODE CHANCE TICKER SPIN': 'حظًا موفقًا',
-	'BET MODE SUPER BUTTON': 'شراء',
-	'BET MODE SUPER TICKER IDLE': 'ضع رهانك',
 	'BET MODE FEATURE TITLE': 'لفة الميزة',
-	'BET MODE FEATURE BUTTON': 'تفعيل',
-	'BET MODE FEATURE TICKER IDLE': 'لفة الميزة نشطة',
-	'BET MODE FEATURE TICKER SPIN': 'لفة الميزة نشطة',
-	'RULE SECTION GAME INFO': 'معلومات اللعبة',
-	'RULE SECTION FEATURES': 'الميزات',
-	'RULE SECTION HOW TO PLAY': 'كيفية اللعب',
-	'RULE SECTION DISCLAIMER': 'إخلاء المسؤولية العام',
-	'RULE WILD TITLE': 'وايلد',
-	'RULE SCATTER TITLE': 'سكاتر',
-	'RULE BUY TITLE': 'أوضاع الشراء / التفعيل',
-	'HOWTO SPIN TITLE': 'لف / إيقاف',
-	'HOWTO BET TITLE': 'محدد الرهان',
-	'HOWTO BET TEXT':
-		'استخدم زري + و - أو افتح قائمة الرهان لتغيير مبلغ الرهان المعروض قبل بدء الجولة.',
-	'HOWTO BUY TITLE': 'شراء المكافأة',
-	'HOWTO TURBO TITLE': 'توربو',
-	'HOWTO TURBO TEXT': 'يقصّر التوربو أوقات جولات معينة للعب أسرع.',
-	'HOWTO AUTOPLAY TITLE': 'اللعب التلقائي',
-	'HOWTO AUTOPLAY TEXT':
-		'يكرر اللعب التلقائي الجولات تلقائيًا حتى انتهاء شرط الإيقاف المحدد أو العداد.',
-	'HOWTO REPLAY TITLE': 'وضع الإعادة',
-	'PAYTABLE PREMIUM TITLE': 'الرموز المميزة',
-	'PAYTABLE LOW TITLE': 'الرموز المنخفضة',
-	'PAYTABLE SPECIAL TITLE': 'الرموز الخاصة',
-	'PAYTABLE BUY TITLE': 'أوضاع الشراء',
-	'PAYTABLE MAX TITLE': 'الفوز الأقصى',
-
 	// Magnetic-specific rules, replay, modes, and paytable.
 	'BET REPLAY': 'إعادة عرض الرهان',
 	'REPLAY EVENT': 'إعادة عرض الحدث',
@@ -228,76 +175,8 @@ export default {
 	'REPLAY DISCLAIMER': 'هذه إعادة عرض لجولة رهان سابقة. لن يتم وضع أي رهانات جديدة.',
 	'DEAL IT': 'Gravity Breach',
 	'ALL IN': 'سلسلة ميجا',
-	'BET MODE BASE DIALOG':
-		'Magnetic هي لعبة سلوت بنظام دفع العناقيد بحجم 7x7 حيث تتكوّن الأرباح من مجموعات من الرموز المتطابقة. اجمع 5 رموز متطابقة أو أكثر متصلة أفقياً أو عمودياً للفوز.',
-	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
 	'BET MODE BONUS TITLE': 'Gravity Breach',
-	'BET MODE BONUS DIALOG': '10 دورات مجانية مع زيادة كبيرة في فرصة ظهور المغناطيس.',
-	'BET MODE BONUS DESCRIPTION':
-		'اشترِ 10 دورات مجانية بفرصة مغناطيس أعلى مقابل 100x من الرهان المحدد.',
-	'BET MODE BONUS TICKER SPIN': 'البونص نشط',
-	'BET MODE CHANCE DIALOG':
-		'يبقى Chance Spin نشطًا حتى تعطيله. تكلف كل جولة 2x من الرهان وتضاعف فرصة تشغيل البونص ثلاث مرات.',
 	'BET MODE SUPER TITLE': 'سلسلة ميجا',
-	'BET MODE SUPER DIALOG':
-		'10 دورات مجانية مع مغناطيس مضمون في الدورة الأولى. يستمر الرمز المستهدف والمجموعة المجمعة والمضاعف المشترك طوال البونص.',
-	'BET MODE SUPER DESCRIPTION': 'اشترِ السوبر بونص المستمر مقابل 500x من الرهان المحدد.',
-	'BET MODE SUPER TICKER SPIN': 'السوبر نشط',
-	'BET MODE FEATURE DIALOG':
-		'يبقى Feature Spin نشطًا حتى تعطيله. تكلف كل جولة 50x من الرهان وتضمن دورة مغناطيس مدفوعة واحدة.',
-	'BET MODE FEATURE DESCRIPTION': 'فعّل Feature Spin مقابل 50x من الرهان المحدد لكل جولة.',
-	'RULE GAME TITLE': 'MAGNETIC',
-	'RULE GAME TEXT':
-		'Magnetic هي لعبة سلوت بنظام دفع العناقيد بحجم 7x7 حيث تتكوّن الأرباح من مجموعات من الرموز المتطابقة. اجمع 5 رموز متطابقة أو أكثر متصلة أفقياً أو عمودياً للفوز. الاتصالات القطرية لا تُحتسب.',
-	'RULE WILD TEXT':
-		'في الوضع الأساسي، يختار Magnetic Wild عشوائيًا موضعًا ظاهرًا يحتوي على رمز عادي. لكل موضع ظاهر فرصة متساوية، لذلك تكون أنواع الرموز الأكثر ظهورًا أكثر احتمالًا للاختيار. ثم يجذب جميع الرموز الظاهرة من ذلك النوع. يبقى الهدف ثابتًا طوال السلسلة المغناطيسية النشطة.',
-	'RULE SCATTER TEXT':
-		'تشغّل 3 رموز Scatter ميزة Gravity Breach، وتشغّل 4 رموز Scatter ميزة Core Overload. لا يمنح Scatter عائدًا بمفرده.',
-	'RULE DEAL IT TITLE': 'إعادات دوران المجموعة',
-	'RULE DEAL IT TEXT':
-		'تُثبّت المجموعات الطبيعية المؤهلة في مكانها. تعاد دورة جميع الخانات الأخرى. إذا هبطت رموز مطابقة جديدة ملامسة للمجموعة النشطة، تنضم إليها وتبدأ إعادة دوران أخرى.',
-	'RULE ALL IN TITLE': 'سلسلة ميجا',
-	'RULE ALL IN TEXT':
-		'يُضمن مغناطيس في أول دورة Super مجانية. يستمر الرمز المستهدف المختار والمجموعة المجمعة وقيمة السلسلة المضاعفة خلال الدورات المجانية العشر، وتُحسب في النهاية.',
-	'RULE BUY TEXT':
-		'تكلف Gravity Breach مقدار 100x من الرهان، وCore Overload مقدار 500x، وChance Spin مقدار 2x لكل جولة، وFeature Spin مقدار 50x لكل جولة. الحد الأقصى للفوز: 20,000x. نسبة RTP المستهدفة: 96.1%.',
-	'FEATURE SELECTED SYMBOL TITLE': 'هدف المغناطيس',
-	'FEATURE SELECTED SYMBOL TEXT':
-		'يختار Magnetic Wild عشوائيًا موضعًا ظاهرًا يحتوي على رمز عادي. لكل موضع فرصة متساوية، لذلك تكون الأنواع ذات المواضع الظاهرة الأكثر أكثر احتمالًا. تُجذب جميع الرموز الظاهرة من النوع المختار، ولا تغيّر المغناطيسات الإضافية الهدف أثناء السلسلة.',
-	'FEATURE DEAL IT MULTIPLIER TITLE': 'الوايلد المضاعف',
-	'FEATURE DEAL IT MULTIPLIER TEXT':
-		'تُضرب قيم Multiplier Wild ببعضها داخل سلسلة مغناطيسية نشطة واحدة. مثال: 2x × 3x × 4x = إجمالي 24x.',
-	'FEATURE ALL IN_MULTIPLIER TITLE': 'سلسلة سوبر مستمرة',
-	'FEATURE ALL IN_MULTIPLIER TEXT':
-		'في Super Bonus، يستمر الرمز المستهدف والخانات المجمعة وقيمة السلسلة المضاعفة خلال الدورات المجانية العشر حتى حساب الجائزة النهائية.',
-	'HOWTO SPIN TEXT':
-		'اضغط دوران لبدء جولة. اضغط مرة أخرى أثناء التسلسل لطلب الإيقاف عندما يكون ذلك متاحًا.',
-	'HOWTO BUY TEXT':
-		'افتح شراء البونص لاختيار Gravity Breach أو Core Overload أو Chance Spin أو Feature Spin. تتطلب البونصات المشتراة تأكيدًا. يمكن تشغيل أو إيقاف أوضاع التنشيط.',
-	'HOWTO REPLAY TEXT':
-		'تحمّل إعادة العرض حدثًا مكتملًا وتعرض الرهان الأصلي والتكلفة الإجمالية والعائد ومعلومات الفوز.',
-	'PAYTABLE TITLE PAYLINES': 'عنقود',
-	'PAYTABLE TEXT PAYLINES':
-		'يتكوّن الفوز عندما يتلامس 5 رموز متطابقة أو أكثر أفقياً أو عمودياً. الاتصالات القطرية لا تُحتسب.',
-	'PAYTABLE FOX':
-		'مغناطيس حدوة الحصان (H1)\n5 = 0.5x\n6 = 1x\n7 = 2x\n8 = 4x\n9 = 8x\n10-11 = 15x\n12-14 = 30x\n15-19 = 80x\n20-24 = 200x\n25-29 = 500x\n30-32 = 1000x\n33+ = 2000x',
-	'PAYTABLE WOLF':
-		'مثقاب البلازما (H2)\n5 = 0.4x\n6 = 0.8x\n7 = 1.5x\n8 = 3x\n9 = 6x\n10-11 = 12x\n12-14 = 25x\n15-19 = 60x\n20-24 = 150x\n25-29 = 350x\n30-32 = 750x\n33+ = 1500x',
-	'PAYTABLE BEAR':
-		'مكعب النواة المغناطيسية (H3)\n5 = 0.3x\n6 = 0.6x\n7 = 1.2x\n8 = 2.5x\n9 = 5x\n10-11 = 10x\n12-14 = 20x\n15-19 = 50x\n20-24 = 120x\n25-29 = 280x\n30-32 = 600x\n33+ = 1200x',
-	'PAYTABLE RABBIT':
-		'جهاز كهرومغناطيسي (H4)\n5 = 0.25x\n6 = 0.5x\n7 = 1x\n8 = 2x\n9 = 4x\n10-11 = 8x\n12-14 = 16x\n15-19 = 35x\n20-24 = 90x\n25-29 = 220x\n30-32 = 450x\n33+ = 900x',
-	'PAYTABLE SQUIRREL':
-		'مسمار (L1)\n5 = 0.2x\n6 = 0.4x\n7 = 0.8x\n8 = 1.6x\n9 = 3.2x\n10-11 = 6x\n12-14 = 12x\n15-19 = 30x\n20-24 = 75x\n25-29 = 180x\n30-32 = 350x\n33+ = 500x',
-	'PAYTABLE LOWS_1':
-		'صامولة (L2)\n5 = 0.12x\n6 = 0.25x\n7 = 0.5x\n8 = 1x\n9 = 2x\n10-11 = 4x\n12-14 = 8x\n15-19 = 20x\n20-24 = 50x\n25-29 = 100x\n30-32 = 200x\n33+ = 400x\n\nحلقة معدنية (L3)\n5 = 0.1x\n6 = 0.2x\n7 = 0.4x\n8 = 0.8x\n9 = 1.6x\n10-11 = 3x\n12-14 = 6x\n15-19 = 15x\n20-24 = 40x\n25-29 = 80x\n30-32 = 150x\n33+ = 300x',
-	'PAYTABLE LOWS_2':
-		'برغي الطاقة (L4)\n5 = 0.08x\n6 = 0.16x\n7 = 0.32x\n8 = 0.64x\n9 = 1.28x\n10-11 = 2.5x\n12-14 = 5x\n15-19 = 12x\n20-24 = 30x\n25-29 = 60x\n30-32 = 120x\n33+ = 250x',
-	'PAYTABLE SPECIAL_TEXT':
-		'يبدأ المغناطيس السلاسل المغناطيسية. يحل Wild محل الرموز العادية. تضاعف Multiplier Wilds السلسلة النشطة. يشغّل Scatter البونصات فقط.',
-	'PAYTABLE BUY_TEXT':
-		'Gravity Breach: رهان 100x.\nCore Overload: رهان 500x.\nChance Spin: رهان 2x لكل جولة.\nFeature Spin: رهان 50x لكل جولة.',
-	'PAYTABLE MAX_TEXT': 'الحد الأقصى المعلن للفوز هو 20,000x من الرهان المحدد.',
 	'NO BALANCE TITLE': 'الرصيد غير كافٍ',
 	'NO BALANCE BODY': 'رصيدك منخفض جدًا لهذا الرهان. خفّض مستوى الرهان لمتابعة اللعب.',
 	OK: 'موافق',

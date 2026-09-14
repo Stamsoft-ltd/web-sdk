@@ -327,18 +327,95 @@ const PORTRAIT_PLATE_FILL = 1;
 // the game actually owns (its frame is 800 tall, but the top 93 is the Stake header and the bottom
 // 130 the nav bar -- neither is ours to draw in).
 const PORTRAIT_BOARD_CY = 0.4766;
-const LANDSCAPE_FRAME_FILL = 0.82;
-// On small landscape screens the HTML HUD sits at its min pixel sizes (proportionally larger), so the
-// board fills LESS of the frame there to keep the gutters (balance/bet left, capsule/nav right) clear.
-// Lerp the fill from FILL_MIN at short-side ≤ 250px up to FILL at short-side ≥ 430px.
-// Raised 0.76 -> 0.84 so the grid reads bigger at popout-S sizes. This is the t=0 end of the lerp,
-// so it moves ONLY the small landscape screens; popout L sits at t=1 on LANDSCAPE_FRAME_FILL and is
-// untouched.
-const LANDSCAPE_FRAME_FILL_MIN = 0.84;
+// The landscape board used to fill a lerped fraction of main.height (LANDSCAPE_FRAME_FILL 0.82 /
+// _MIN 0.84, trimmed by a further 0.912) and sit at main.width * 0.475. All of that is gone: the
+// board now comes straight off the design, see LS_GRID_* / LS_BOARD_* below.
 const LANDSCAPE_FILL_SHORT_MIN = 240;
 const LANDSCAPE_FILL_SHORT_MAX = 410;
 // 0 at the smallest landscape screens → 1 at normal-size ones; drives both the board fill and the
 // capsule column bias so small screens get a smaller board and a capsule pulled toward it (nav room).
+// ── Mobile landscape (popout L and S), measured on Figma 4161:22199, an 800x360 frame ──
+// Every number here is a fraction of the VISIBLE canvas, never of main.width/height, and that is
+// the point. main is 1600x900 but a popout is wider than 16:9, so the main-width fractions the
+// rail, the mark and the board used to be quoted against rendered them for a narrower screen than
+// the one they were on: the board came out 20% short of the design, sat LEFT of centre where the
+// design puts it right of centre, and left ~200px of empty sky between its right edge and the nav
+// bar (user, 2026-09-11).
+//
+//   rail      x  22.7..147.7 of 800   boxes 125 x 51.7, first at y 89.3, 4.7 apart
+//   logo      x  28.3..146.7,  y   8.3..83.3
+//   grid      x 212..624,      y  15..348
+//   nav bar   x 718.7..781.3,  y 39.3..315
+const LS_RAIL_CX = 0.1065;
+const LS_RAIL_W = 0.1575;
+const LS_RAIL_TOP = 0.248;
+/** Box gap as a share of a box's own height (4.7 of 51.7). */
+const LS_RAIL_GAP = 0.091;
+const LS_LOGO_W = 0.1475;
+const LS_LOGO_CX = 0.1094;
+const LS_LOGO_CY = 0.1272;
+/** Nav bar, as fractions of the visible width — mirrored by HudHtml's .ls-nav CSS. */
+export const LS_NAV_W = 0.0783;
+export const LS_NAV_RIGHT = 0.0234;
+// The design's grid is 0.928 of the height at x 212..624; ours is BIGGER than that by request
+// (user, 2026-09-11: "make the board bigger basically to touch top and bottom with just small
+// padding"), which is affordable because the same pass took the ship out of the right-hand gutter.
+// So the height fill is a near-full 0.965 and the horizontal extent is no longer a fixed fraction:
+// the board is centred in, and capped by, the span between the rail and the nav bar. Quoting it
+// that way is what keeps it honest on a squarer popout, where a fixed width fraction either
+// overlaps the rail or leaves the board short.
+const LS_GRID_H_FILL = 0.98;
+/** Clearance kept either side of the board, as a fraction of the visible width.
+ *
+ *  This only bites on a SQUARER popout. At the design's own 2.22 aspect the board is limited by its
+ *  height fill and never reaches these bounds, so the margin costs nothing there; at 1.67 the board
+ *  is width-bound and the margin is the only thing holding it off the rail and the nav. 0.012 left
+ *  it crowding both (user, 2026-09-11: "make board a bit smaller"). */
+const LS_BOARD_MARGIN = 0.032;
+// The board is tall enough now to reach down into the band the BALANCE and WIN chips occupy, so on
+// the right it is the WIN chip — not the nav bar above it — that sets how wide the board may be. On
+// the left the binding edge is the rail's, which the BALANCE chip now sits inside of since it moved
+// further left (user, 2026-09-11). A currency string long enough to push BALANCE past the rail will
+// overlap the board's bottom-left corner; that is the same trade the WIN chip's max-width makes.
+// 0.804 -> 0.85: the WIN bar's resting width came down from the design's 16.6% of the screen to 12%
+// specifically to give the board this room back (user, 2026-09-11). Keep the two in step — this is
+// 1 - (.ls-win right) - (.ls-win min-width) in HudHtml.
+const LS_WIN_LEFT = 0.85;
+const LS_BOARD_CY = 0.5042;
+
+/** The visible canvas as a rect in MAIN coordinates — what every fraction above is taken of. */
+const visibleBox = () => {
+	const main = stateLayoutDerived.mainLayout();
+	const canvas = stateLayoutDerived.canvasSizes();
+	const scale = main.scale || 1;
+	const width = canvas.width / scale;
+	const height = canvas.height / scale;
+	return {
+		width,
+		height,
+		left: main.width * 0.5 - width / 2,
+		top: main.height * 0.5 - height / 2,
+	};
+};
+
+const isLandscapeLayout = () => stateLayoutDerived.layoutType() === 'landscape';
+
+/** The left rail in mobile landscape: logo on top, then FREE SPINS / TOTAL WIN / RESPIN. Shared so
+ *  LandscapeCapsule and RespinPanel cannot drift — they each carried their own copy of a
+ *  gutter-derived formula, which is what let the column wander when the board changed size. */
+const landscapeRail = () => {
+	const vis = visibleBox();
+	const boxW = vis.width * LS_RAIL_W;
+	const boxH = boxW / INFO_BOX_ASPECT;
+	return {
+		x: vis.left + vis.width * LS_RAIL_CX,
+		topY: vis.top + vis.height * LS_RAIL_TOP,
+		boxW,
+		boxH,
+		gap: boxH * LS_RAIL_GAP,
+	};
+};
+
 const landscapeSizeT = () => {
 	const c = stateLayoutDerived.canvasSizes();
 	const shortSidePx = Math.min(c.width, c.height);
@@ -351,9 +428,6 @@ const landscapeSizeT = () => {
 		),
 	);
 };
-const landscapeFrameFill = () =>
-	LANDSCAPE_FRAME_FILL_MIN + landscapeSizeT() * (LANDSCAPE_FRAME_FILL - LANDSCAPE_FRAME_FILL_MIN);
-
 // Single source of truth for the game logo's drawn size, in virtual units. GameLogoFrame draws it;
 // LandscapeCapsule and RespinPanel anchor the left-gutter box column (TOTAL WIN / FREE SPINS /
 // RESPIN) just beneath it. All three used to hardcode their own copy of this formula, which desynced
@@ -371,10 +445,43 @@ const landscapeFrameFill = () =>
 const LOGO_ART_ASPECT = 900 / 541;
 const LOGO_WIDTH_FRACTION = 0.155;
 const LOGO_SMALL_SCALE = 0.72;
+// DESKTOP quotes the mark against main.width and shrinks it on popout-S sizes; MOBILE LANDSCAPE
+// takes the design's own fraction of the visible width instead (see LS_LOGO_W above). Desktop's
+// canvas is close to main's shape, so a main-width fraction still means what it says there.
 const landscapeLogoWidth = () =>
-	stateLayoutDerived.mainLayout().width *
-	LOGO_WIDTH_FRACTION *
-	(LOGO_SMALL_SCALE + landscapeSizeT() * (1 - LOGO_SMALL_SCALE));
+	isLandscapeLayout()
+		? visibleBox().width * LS_LOGO_W
+		: stateLayoutDerived.mainLayout().width *
+			LOGO_WIDTH_FRACTION *
+			(LOGO_SMALL_SCALE + landscapeSizeT() * (1 - LOGO_SMALL_SCALE));
+/** The rect GameLogoFrame draws the mark in, outside portrait, in main units.
+ *
+ *  ONE source of truth on purpose: SplashIntro flies its HTML plate to this rect and GameLogoFrame's
+ *  sprite takes over on landing, so the two must agree to the pixel or the hand-off ends in a visible
+ *  snap. They were separate copies of the same formula, and moving the landscape mark onto its design
+ *  spot desynced them immediately (user, 2026-09-11: "strange snap in the top logo").
+ *
+ *  DESKTOP centres it in the gutter between the screen edge and the board. MOBILE LANDSCAPE takes the
+ *  design's own spot (4161:22199) — its gutter is wide enough that centring in it pushed the mark well
+ *  right of the rail it heads. */
+const landscapeLogoRect = () => {
+	const w = landscapeLogoWidth();
+	const h = landscapeLogoHeight();
+	if (isLandscapeLayout()) {
+		const vis = visibleBox();
+		return { cx: vis.left + vis.width * LS_LOGO_CX, cy: vis.top + vis.height * LS_LOGO_CY, w, h };
+	}
+	const main = stateLayoutDerived.mainLayout();
+	const canvas = stateLayoutDerived.canvasSizes();
+	const scale = main.scale || 1;
+	const canvasLeftX = main.width * 0.5 - canvas.width / (2 * scale);
+	const canvasTopY = main.height * 0.5 - canvas.height / (2 * scale);
+	const board = boardLayout();
+	const boardLeftX = board.x - board.width * 0.5 * board.boardScale;
+	// Tight art: the centre sits half its height below the screen top plus a whisker of margin,
+	// matching the design's near-flush top-left plate.
+	return { cx: (canvasLeftX + boardLeftX) * 0.5, cy: canvasTopY + h * 0.54, w, h };
+};
 const landscapeLogoHeight = () => landscapeLogoWidth() / LOGO_ART_ASPECT;
 // Portrait placement of the same mark, in main coords. GameLogoFrame DRAWS from these and
 // SplashIntro's handoff flight AIMS at them; they used to be duplicated as literals in both, so
@@ -398,18 +505,58 @@ const portraitLogoWidth = () =>
 	stateLayoutDerived.mainLayout().width *
 	PORTRAIT_LOGO_WIDTH_FRACTION *
 	(PORTRAIT_LOGO_SMALL_SCALE + portraitSizeT() * (1 - PORTRAIT_LOGO_SMALL_SCALE));
-const portraitLogoHeight = () => portraitLogoWidth() / LOGO_ART_ASPECT;
-// The CY fraction alone let the plate's top edge cross the visible canvas top on short portraits
+// The BARE PLATE — splash/logo_plate_bare.webp, the lockup with its saucer taken off. Portrait's
+// splash flies this plate and the saucer in as two pieces, so it is the plate that the hand-off
+// aims at; in game the two are one sprite again (portraitLockupHeight below). 900x331 is the
+// shipped file, not the 1670x615 source: build-room-art.py caps the art at 900 wide, and the drawn
+// aspect has to be the file's.
+const PORTRAIT_LOGO_ART_ASPECT = 900 / 331;
+const portraitLogoHeight = () => portraitLogoWidth() / PORTRAIT_LOGO_ART_ASPECT;
+// The WHOLE lockup — splash/logo_plate.webp, plate and saucer together, which is what portrait
+// draws in game. Its width is the plate's (the plate is the widest thing in it) and its centre
+// rides PORTRAIT_LOCKUP_CY_OF_W above the plate's, both measured by build-room-art.py.
+const PORTRAIT_LOCKUP_ART_ASPECT = 900 / 541;
+const PORTRAIT_LOCKUP_CY_OF_W = 0.116;
+const portraitLockupHeight = () => portraitLogoWidth() / PORTRAIT_LOCKUP_ART_ASPECT;
+const portraitLockupCY = () => portraitLogoCY() - PORTRAIT_LOCKUP_CY_OF_W * portraitLogoWidth();
+// The plate sits where the full lockup's plate used to, not where the lockup's centre was: fitting
+// the bare art into logo.png puts it at y 0.382..0.995 of that box, so its own centre is 0.6885 of
+// the lockup's height down — (0.6885 - 0.5) / LOGO_ART_ASPECT = 0.1133 logo WIDTHS below the band
+// centre the CY fraction names. Everything the plate anchors (the ship above it, the splash's
+// hand-off flight) is quoted against that width, so the whole assembly scales as one object.
+const PORTRAIT_PLATE_CY_OF_W = 0.1133;
+// How far the ship's antenna ball reaches above the plate's centre, in plate widths — the ship is
+// PORTRAIT_SHIP_W_OF_LOGO wide and rides PORTRAIT_SHIP_RISE_OF_LOGO up, so its top is rise + half
+// its own height above the plate centre.
+//
+// All three are MEASURED, not tuned: portrait's ship is the lockup's own saucer cut out of
+// logo.png (splash/logo_saucer.webp), so the numbers are simply where that saucer sits on the
+// plate it was cut off. build-room-art.py prints them. They used to describe ui/ufo_ship.webp, the
+// design's standalone sky saucer, whose dome is EMPTY — the alien is only ever drawn in the
+// lockup's own one, and portrait's ship stands in the lockup's place (user, 2026-09-11).
+export const PORTRAIT_SHIP_W_OF_LOGO = 0.4598;
+export const PORTRAIT_SHIP_RISE_OF_LOGO = 0.277;
+export const PORTRAIT_SHIP_ART_ASPECT = 1.6436;
+const SHIP_ART_ASPECT = PORTRAIT_SHIP_ART_ASPECT;
+const PORTRAIT_SHIP_TOP_OF_W =
+	PORTRAIT_SHIP_RISE_OF_LOGO + PORTRAIT_SHIP_W_OF_LOGO / SHIP_ART_ASPECT / 2;
+// The CY fraction alone let the mark's top edge cross the visible canvas top on short portraits
 // (user: "logo is still outside"), because main.height is the VIRTUAL height and the canvas is
-// cropped out of it. Floor the centre so the plate always clears the real top edge by 6% of its
-// own height, whatever the viewport.
+// cropped out of it. Floor the centre so the assembly always clears the real top edge, and clear it
+// by the SHIP's reach now rather than the plate's — the plate is no longer the topmost thing.
 const portraitLogoCY = () => {
 	const main = stateLayoutDerived.mainLayout();
 	const canvasTopY =
 		main.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1));
-	const h = portraitLogoHeight();
-	return Math.max(main.height * PORTRAIT_LOGO_CY_FRACTION, canvasTopY + h * 0.56);
+	const w = portraitLogoWidth();
+	return Math.max(
+		main.height * PORTRAIT_LOGO_CY_FRACTION + w * PORTRAIT_PLATE_CY_OF_W,
+		canvasTopY + w * (PORTRAIT_SHIP_TOP_OF_W + 0.03),
+	);
 };
+/** Centre of the saucer that rides over the plate — the splash's fly-in target and, in game, the
+ *  point <Background> hangs the tractor beam off. */
+const portraitShipCY = () => portraitLogoCY() - PORTRAIT_SHIP_RISE_OF_LOGO * portraitLogoWidth();
 // How far below the screen top the left-gutter box column starts, as a fraction of the logo height.
 // Lerped so popout S pulls the column (and the RESPIN box at its foot) UP toward the logo, where
 // there is far less vertical room, while popout L keeps the 0.6 it was tuned at.
@@ -422,52 +569,15 @@ const landscapeStackTopY = () => {
 	const main = stateLayoutDerived.mainLayout();
 	const canvasTopY =
 		main.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1));
+	if (isLandscapeLayout()) return landscapeRail().topY;
 	const factor =
 		LANDSCAPE_STACK_TOP_MIN +
 		landscapeSizeT() * (LANDSCAPE_STACK_TOP_MAX - LANDSCAPE_STACK_TOP_MIN);
 	return canvasTopY + landscapeLogoHeight() * factor;
 };
-// Shrink the landscape grid so the right-hand furniture (capsule tube, BUY BONUS, nav column, spin
-// button) has clearance instead of overlapping the board — see boardLayout() below. 0.912 = the
-// first 5% trim plus a further 4% (0.95 x 0.96) once the first pass still read as too tight.
 // Board centre as a fraction of the CANVAS height, measured off the desktop design frame
 // (9032:23054): the plate spans y 37..535 of 670.
 const DESIGN_BOARD_CY = (37 + 535) / 2 / 670;
-const LANDSCAPE_BOARD_TRIM = 0.912;
-// Landscape vertical capsule column (shared by the pixi capsule and the HTML buy-bonus button so
-// they always align across device aspect ratios). Bias = fraction from the board's right edge toward
-// the visible right edge — snug to the nav on normal screens, pulled toward the board on small ones so
-// the (now bigger) capsule keeps clearance from the nav.
-// MAX (popout L, t=1) lowered from 0.33 -> 0.27: the capsule column and the BUY BONUS badge that
-// tracks it sat too far right there, crowding the nav. MIN (popout S, t=0) went the other way,
-// 0.24 -> 0.26, to push the column slightly RIGHT on small screens as requested.
-// Raised again 2026-08-10 (0.26/0.27 -> 0.34/0.40): the capsule's left side sat ON the board
-// frame (user screenshot); the nav bar is slimmer + tighter to the edge now, so there is room.
-// MIN raised again 0.34 -> 0.44 (user pass 2026-08-10, popout S: "move the tube a little to the
-// right") — the slimmer nav bar freed the room on the right for it — then eased back to 0.41 on
-// the follow-up ("veeery slightly to the left").
-const LANDSCAPE_CAPSULE_BIAS_MIN = 0.38;
-const LANDSCAPE_CAPSULE_BIAS_MAX = 0.4;
-const landscapeCapsuleBias = () =>
-	LANDSCAPE_CAPSULE_BIAS_MIN +
-	landscapeSizeT() * (LANDSCAPE_CAPSULE_BIAS_MAX - LANDSCAPE_CAPSULE_BIAS_MIN);
-// NOTE: the capsule this column was built for is GONE (removed with the MOTHERSHIP redesign). The
-// geometry survives because the HTML buy-bonus button positions itself against this same column.
-// Historic shape, kept so the button lands where it always did:
-// The art has ~29% transparent margins top/bottom (→ left/right after the 90° rotation): the opaque
-// tube is only ~42.5% of the sprite's width and ~94% of its height, so the *visible* tube is a slim
-// vertical cylinder. RATIO scales the whole sprite (bigger = bigger visible tube); STRETCH keeps the
-// native aspect (1.0 = undistorted — higher just makes the visible tube thinner, which reads as small).
-// Lerped by screen size: popout S wants a tighter tube (user pass 2026-08-10) — at full size it
-// crowded the nav and the board there; popout L / phone landscape keep the original 1.5.
-const LANDSCAPE_CAPSULE_TUBE_RATIO_MIN = 1.34;
-const LANDSCAPE_CAPSULE_TUBE_RATIO = 1.5;
-const LANDSCAPE_CAPSULE_TUBE_ASPECT = 668 / 1002;
-const LANDSCAPE_CAPSULE_TUBE_STRETCH = 1.0;
-// Opaque tube extents within the sprite (measured), used to place things against the VISIBLE tube
-// rather than the padded sprite box.
-const LANDSCAPE_CAPSULE_VISIBLE_W = 0.425; // opaque width as a fraction of the sprite width (tubeW)
-const LANDSCAPE_CAPSULE_VISIBLE_H = 0.94; // opaque height as a fraction of the sprite height (tubeH)
 
 // Desktop LEFT-RAIL stack (Version2 design node 7002:11132): RESPIN / FREE SPINS / TOTAL WIN as
 // equal boxes under the logo. Single source of truth so RespinPanel and CapsulePanel cannot drift.
@@ -506,6 +616,7 @@ const desktopRailStack = () => {
 	};
 };
 
+
 const boardLayout = () => {
 	const mainLayout = stateLayoutDerived.mainLayout();
 	const layoutType = stateLayoutDerived.layoutType();
@@ -527,18 +638,25 @@ const boardLayout = () => {
 	}
 
 	if (layoutType === 'landscape') {
-		// Mobile landscape: board fills most of the height and sits slightly LEFT of centre, leaving a
-		// wider right gutter for the vertical capsule + buy bonus + nav bar (left gutter holds the
-		// logo / ALL WINS / FREE SPINS / balance / bet).
-		// LANDSCAPE_BOARD_TRIM: at popout-L sizes the grid grew until the nav column, the spin button
-		// and the BUY BONUS badge sat ON TOP of the board's right edge and the capsule tube. Those are
-		// positioned independently of the board, so the grid has to give the room back. Applied as a
-		// factor on top of the fill lerp so the existing small-screen ramp is preserved.
-		const boardScale =
-			((mainLayout.height * landscapeFrameFill()) / BOARD_SIZES.height) * LANDSCAPE_BOARD_TRIM;
+		// Mobile landscape: straight off the design (4161:22199). The grid fills 0.928 of the visible
+		// HEIGHT and sits right of centre, with the rail in the left margin and the nav bar in the
+		// right one — the fractions live at the top of this file next to the rail's.
+		//
+		// This replaces a height-fill quoted against main.height and then trimmed 8.8%. That trim
+		// existed because the nav column and BUY BONUS badge used to land on the board's
+		// right edge; it is not needed any more — the design's own x fractions leave that gutter
+		// explicitly, so the board is sized and placed rather than grown and then cut back.
+		const vis = visibleBox();
+		const m = vis.width * LS_BOARD_MARGIN;
+		const leftBound = vis.left + vis.width * (LS_RAIL_CX + LS_RAIL_W * 0.5) + m;
+		const rightBound = vis.left + vis.width * LS_WIN_LEFT - m;
+		const boardScale = Math.min(
+			(vis.height * LS_GRID_H_FILL) / BOARD_SIZES.height,
+			(rightBound - leftBound) / BOARD_SIZES.width,
+		);
 		return {
-			x: mainLayout.width * 0.475,
-			y: mainLayout.height * 0.5,
+			x: (leftBound + rightBound) * 0.5,
+			y: vis.top + vis.height * LS_BOARD_CY,
 			boardScale,
 			anchor: { x: 0.5, y: 0.5 },
 			pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
@@ -572,66 +690,11 @@ const boardLayout = () => {
 	};
 };
 
-// Landscape vertical-capsule column geometry, in virtual (main) coordinates. Single source of truth
-// shared by the pixi LandscapeCapsule and the HTML buy-bonus button (which converts it to device px)
-// so the capsule and the buy badge beneath it stay aligned at every device aspect ratio.
-// 0 (was 0.01): the capsule starts flush with the screen top (user pass 2026-08-10).
-const LANDSCAPE_CAPSULE_TOP_GAP = 0;
-
-const landscapeCapsuleLayout = () => {
-	const board = boardLayout();
-	const main = stateLayoutDerived.mainLayout();
-	const scale = board.boardScale;
-	const gridHalfW = board.width * 0.5 * scale;
-	const gridHalfH = board.height * 0.5 * scale;
-	// Right edge of the visible viewport, expressed in virtual units.
-	const canvasRightX =
-		main.width * 0.5 + stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1));
-	const boardRightX = board.x + gridHalfW;
-	const colX = boardRightX + (canvasRightX - boardRightX) * landscapeCapsuleBias();
-	// 10% larger than the board-derived base size, anchored near the SCREEN TOP (not centred on
-	// the board) so the capsule column starts almost at the top edge.
-	const tubeRatio =
-		LANDSCAPE_CAPSULE_TUBE_RATIO_MIN +
-		landscapeSizeT() * (LANDSCAPE_CAPSULE_TUBE_RATIO - LANDSCAPE_CAPSULE_TUBE_RATIO_MIN);
-	const baseH = gridHalfH * tubeRatio * 1.1;
-	const tubeW = baseH * LANDSCAPE_CAPSULE_TUBE_ASPECT;
-	const tubeH = baseH * LANDSCAPE_CAPSULE_TUBE_STRETCH;
-	// Visible (opaque) tube extents — the sprite box is padded, so size the symbol against these and
-	// place the buy-bonus just below the visible tube bottom (not the padded sprite bottom).
-	const visibleW = tubeW * LANDSCAPE_CAPSULE_VISIBLE_W;
-	const visibleH = tubeH * LANDSCAPE_CAPSULE_VISIBLE_H;
-	const canvasTopY =
-		main.height * 0.5 - stateLayoutDerived.canvasSizes().height / (2 * (main.scale || 1));
-	// Anchor the VISIBLE glass top — not the padded sprite box, which carries ~3% dead space above
-	// the art and pushed the whole column down by that much on top of the gap. LANDSCAPE_CAPSULE_TOP_GAP
-	// is now literally the clearance between the screen top and the tube's first visible pixel, so it
-	// means what it says. (0.07 sprite-anchored originally, which read as floating.) This is the single
-	// knob for the capsule's height; the buy-bonus badge and WIN pill track its visible bottom and follow.
-	let tubeY = canvasTopY + main.height * LANDSCAPE_CAPSULE_TOP_GAP + visibleH * 0.5;
-	const symSize = visibleW * 0.66;
-	let visibleBottom = tubeY + visibleH * 0.5;
-	// On very short landscape screens (e.g. 400×225) the board — and this board-derived tube — shrinks,
-	// so the top-anchored capsule + buy-bonus float near the top with dead space below. There, slide the
-	// whole group down so it sits near the bottom. Taller landscape screens keep the top anchor (the
-	// tube already fills the gutter), so this doesn't disturb them.
-	// NOTE: short landscape screens (popout S, ~400x225) used to slide this whole group DOWN toward the
-	// bottom, on the reasoning that the board-derived tube shrinks there and would otherwise float with
-	// dead space beneath it. That shift is gone by request — the capsule (and the buy-bonus badge and
-	// WIN pill that track its visible bottom) now keeps the same top anchor at every landscape size.
-	return {
-		colX,
-		tubeY,
-		tubeW,
-		tubeH,
-		visibleW,
-		visibleH,
-		visibleBottom,
-		symSize,
-		gridHalfW,
-		gridHalfH,
-	};
-};
+// The landscape vertical-capsule column geometry lived here: the capsule tube itself went with the
+// MOTHERSHIP redesign, and the geometry outlived it only because the HTML buy-bonus badge hung off
+// the tube's visible bottom. That badge is now the BONUS pill inside the nav column, where the
+// mobile-landscape design (4161:22199) puts it, so nothing is left to position against a tube that
+// is not drawn.
 
 // ── sound helpers ─────────────────────────────────────────────────────────────
 
@@ -1772,15 +1835,19 @@ export const { getWinLevelDataByWinLevelAlias } = createGetWinLevelDataByWinLeve
 
 export const stateGameDerived = {
 	boardLayout,
-	landscapeCapsuleLayout,
 	// Exposed so components can scope a tweak to ONE end of the landscape range: 0 at popout-S sizes,
 	// 1 at popout-L. GameLogoFrame uses it to shrink the logo on small screens only.
 	landscapeSizeT,
 	landscapeLogoWidth,
 	landscapeLogoHeight,
+	landscapeLogoRect,
+	landscapeRail,
 	portraitLogoWidth,
 	portraitLogoHeight,
 	portraitLogoCY,
+	portraitLockupHeight,
+	portraitLockupCY,
+	portraitShipCY,
 	landscapeStackTopY,
 	desktopRailStack,
 	boardRaw,

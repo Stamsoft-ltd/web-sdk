@@ -18,6 +18,9 @@
 	const icCluster = ap('/assets/components/ui/ov_ic_cluster.webp');
 	const icTrophy = ap('/assets/components/ui/ov_ic_maxwin.webp');
 	const icRtp = ap('/assets/components/ui/ov_ic_rtp.webp');
+	// The POLARITY SHIFTER card on the paytable page (Figma 9076:28194). Same four-arrow lockup the
+	// splash board carries, so it is already in the browser's cache when the rules are opened.
+	const icPolarity = ap('/assets/components/splash/polarity.webp');
 
 	// ── Paytable (page 2) — symbol art in rank order (highest → lowest) with the pay bands from
 	// config.ts (H1→L4). Column headers are the connected-cluster sizes. ──
@@ -233,6 +236,7 @@
 	import { stateConfig, stateUrlDerived } from 'state-shared';
 
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import { MAX_WIN_LABEL } from '../game/config';
 
 	// Shorthand: reactive translate + interpolating translate (re-runs on locale change).
 	const t = (key: string) => i18nDerived.translate(key);
@@ -255,7 +259,7 @@
 
 	const RTP = '96.10%';
 	const RTP_SHORT = '96.1%';
-	const MAX_WIN = '20,000x';
+	const MAX_WIN = `${MAX_WIN_LABEL}x`;
 	// "Maximum win: %value% bet." split around the (bold) value so it stays highlighted in any language.
 	const maxWinParts = $derived(t('INFO OV MAXWIN').split('%value%'));
 
@@ -309,7 +313,7 @@
 						</div>
 						<div class="stat">
 							<span class="stat-ic" style="--ic:0.675"><img src={icTrophy} alt="" /></span>
-							<span class="stat-txt"><b>20,000</b><i>{t('INFO STAT MAXWIN')}</i></span>
+							<span class="stat-txt"><b>{MAX_WIN_LABEL}</b><i>{t('INFO STAT MAXWIN')}</i></span>
 						</div>
 						<div class="stat">
 							<span class="stat-ic" style="--ic:0.740"><img src={icRtp} alt="" /></span>
@@ -338,13 +342,20 @@
 									</tbody>
 								</table>
 							</div>
-							<aside class="pt-side card">
-								<h3 class="pt-side-title">{t('INFO WILD VALUES')}</h3>
-								<p class="pt-side-h">{t('INFO WILD STANDARD')}</p>
-								<p class="pt-side-v">2x, 3x, 4x, 5x, 10x, 25x</p>
-								<p class="pt-side-h">{t('INFO WILD RARE')}</p>
-								<p class="pt-side-v">50x, 100x</p>
-							</aside>
+							<div class="pt-aside">
+								<aside class="pt-side card">
+									<h3 class="pt-side-title">{t('INFO WILD VALUES')}</h3>
+									<p class="pt-side-h">{t('INFO WILD STANDARD')}</p>
+									<p class="pt-side-v">2x, 3x, 4x, 5x, 10x, 25x</p>
+									<p class="pt-side-h">{t('INFO WILD RARE')}</p>
+									<p class="pt-side-v">50x, 100x</p>
+								</aside>
+								<aside class="pt-side pt-polarity card">
+									<h3 class="pt-side-title">{t('INFO POLARITY TITLE')}</h3>
+									<img class="pt-side-ic" src={icPolarity} alt="" />
+									<p class="pt-side-p">{t('INFO POLARITY TEXT')}</p>
+								</aside>
+							</div>
 						</div>
 					</div>
 				{:else if page === 3}
@@ -377,17 +388,20 @@
 									<span class="feat-x">4x</span><img src={scatter} alt="Scatter" />
 								</div>
 							</div>
+							<!-- Was a hardcoded English paragraph and the splash's all-caps wordmark; both are
+						     now the buy-menu card's own keys, like every other card here and on page 5. -->
 							<div class="card feat-card feat-tall">
-								<h3 class="feat-h">{t('SPLASH ZERO POINT')}</h3>
-								<p class="feat-p">
-									5 scatters trigger the hidden bonus. Its first spin starts with a guaranteed
-									multiplier magnet.
-								</p>
+								<h3 class="feat-h">{t('BUY ZERO TITLE')}</h3>
+								<p class="feat-p">{t('BUY ZERO DESC')}</p>
 								<div class="feat-trigger">
 									<span class="feat-x">5x</span><img src={scatter} alt="Scatter" />
 								</div>
 							</div>
 						</div>
+						<!-- Stake's rules requirement is trigger + reward + re-trigger, and the third one has
+					     to be answered even when the answer is "it does not" — silence is what got a
+					     sibling game rejected. The three cards above carry the trigger and the reward. -->
+						<p class="feat-note">{t('INFO FEAT RETRIGGER')}</p>
 					</div>
 				{:else if page === 4}
 					<div class="page">
@@ -413,8 +427,13 @@
 						<p class="fb-sub">{t('INFO FB SUB')}</p>
 						<div class="fb-grid">
 							<div class="card feat-card">
-								<!-- Extra Chance reuses the buy-menu card's own title/description keys (already
-							     translated in every locale) so the rules page and the mode card cannot drift. -->
+								<!-- EVERY card on this page now reuses the buy-menu card's own title/description
+							     keys (already translated in every locale) so the rules page and the mode card
+							     cannot drift. They had: this page called the 50x mode "Extra Feature", the 100x
+							     "Instant Feature" and the 500x "Instant Bonus", while the buy menu called the
+							     same three "Feature Spins", "Gravity Breach" and "Core Overload" — six names for
+							     three products, which is the kind of thing a reviewer reads as two different
+							     feature sets. -->
 								<h3 class="feat-h">{t('BUY EXTRA CHANCE TITLE')}</h3>
 								<p class="feat-p">{t('BUY EXTRA CHANCE DESC')}</p>
 								<img class="feat-ic" src={chipIcon} alt="Extra Chance" />
@@ -426,8 +445,8 @@
 								</div>
 							</div>
 							<div class="card feat-card">
-								<h3 class="feat-h">{t('INFO FB EXTRA TITLE')}</h3>
-								<p class="feat-p">{t('INFO FB EXTRA TEXT')}</p>
+								<h3 class="feat-h">{t('BUY FEATURE SPINS TITLE')}</h3>
+								<p class="feat-p">{t('BUY FEATURE SPINS DESC')}</p>
 								<img class="feat-ic" src={wild} alt="Wild" />
 								<div class="fb-meta">
 									<span class="fb-k">{t('INFO COST')}</span><span class="fb-v">{cost('50x')}</span>
@@ -437,8 +456,8 @@
 								</div>
 							</div>
 							<div class="card feat-card">
-								<h3 class="feat-h">{t('INFO FB FEATURE TITLE')}</h3>
-								<p class="feat-p">{t('INFO FB FEATURE TEXT')}</p>
+								<h3 class="feat-h">{t('BUY DROP TITLE')}</h3>
+								<p class="feat-p">{t('BUY DROP DESC')}</p>
 								<div class="feat-trigger">
 									<span class="feat-x">3x</span><img src={scatter} alt="Scatter" />
 								</div>
@@ -450,8 +469,8 @@
 								</div>
 							</div>
 							<div class="card feat-card">
-								<h3 class="feat-h">{t('INFO FB BONUS TITLE')}</h3>
-								<p class="feat-p">{t('INFO FB BONUS TEXT')}</p>
+								<h3 class="feat-h">{t('BUY MEGA TITLE')}</h3>
+								<p class="feat-p">{t('BUY MEGA DESC')}</p>
 								<div class="feat-trigger">
 									<span class="feat-x">4x</span><img src={scatter} alt="Scatter" />
 								</div>
@@ -1001,9 +1020,32 @@
 	/* Figma 9076:28591 — the Multiplier Wild Values aside is the SAME card as everywhere else
 	   (173x374, radius 8, #343376 under a 3px #8284D6), so it inherits .card and only sets its
 	   padding and the vertical centring here. */
+	/* Figma 9076:28194 — the aside column carries TWO cards now: the Multiplier Wild values above
+	   and POLARITY SHIFTER below. They split the column 193:247 of its 440px height with a 4px gap,
+	   which is what the flex-basis pair below says; neither scrolls, so the split has to come from
+	   the design rather than from the copy. */
+	.pt-aside {
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		gap: clamp(3px, 0.6cqmin, 8px);
+	}
+	/* NO `min-height: 0` and NO `overflow: hidden` here, deliberately. Both were tried and both
+	   clip: a flex item's automatic minimum size is what stops a card from being laid out shorter
+	   than the copy inside it, and the basis below is only a PREFERENCE for how the spare height is
+	   shared. With the minimum defeated, the 44/56 split became a hard height and the cards cut
+	   their own text mid-line (user, 2026-09-11). */
+	.pt-aside .pt-side:first-child {
+		flex: 1 1 43.9%;
+	}
+	.pt-aside .pt-polarity {
+		flex: 1 1 56.1%;
+	}
 	.pt-side {
-		/* 21 of the aside's 173 each side, 29 above the title. */
-		padding: clamp(8px, 4.3cqmin, 38px) clamp(6px, 3.1cqmin, 27px);
+		/* 9 of the aside's 173 above and below, 8 each side — measured on 9076:28194. It used to be
+		   29/21, from the older node where this card had the whole column to itself; two cards share
+		   it now, and the loose insets alone cost more height than the second card has to give. */
+		padding: clamp(4px, 1.35cqmin, 12px) clamp(5px, 1.6cqmin, 14px);
 		display: flex;
 		flex-direction: column;
 		justify-content: center; /* centre the copy vertically in the tall card, not stuck at the top */
@@ -1012,32 +1054,67 @@
 		gap: 0;
 		text-align: center;
 	}
-	/* Figma 9076:28592 — Audiowide 400 / 18px, white, wrapping to three lines. */
+	/* Figma 9076:28592 — Audiowide 400 / 18px, white, wrapping to three lines.
+
+	   ── Why these two cards size on min(cqw, cqh) and not cqmin ──
+	   cqmin is the smaller of the OVERLAY's two sides, but what the aside actually has to fit in is
+	   the .pt box, and that box is not a fixed share of either side: measured over five viewports it
+	   is a near-constant 0.578 of the overlay height but only ~0.71 of its width. On a squarish
+	   viewport (1024x768) cqmin therefore resolves against a height the column never sees, and the
+	   copy came out ~40% bigger than the column was tall — the two cards ran 647px of content into a
+	   445px column and spilled over the "Page 2/7" counter (user, 2026-09-14).
+	   So each size below is the design's own px scaled by min(ptWidth/858, ptHeight/440) — the
+	   design's pt box — with the two proxies folded into the divisors: cqw/12.45 and cqh/7.85.
+	   The pair is 3% under the measured proxies so the tightest case (1000x600, where the column is
+	   only just deep enough) keeps a margin rather than landing exactly on zero. */
 	.pt-side-title {
 		margin: 0;
 		font-family: var(--display);
-		font-size: clamp(11px, 2.7cqmin, 24px);
+		font-size: clamp(10px, min(1.45cqw, 2.29cqh), 24px);
 		font-weight: 400;
 		letter-spacing: 0.03em;
 		color: #fff;
-		line-height: 1.27;
+		line-height: 1.2;
 	}
-	/* Block rhythm measured off the design: ~1.45em between a heading and its values, ~2.6em
-	   between a value line and the next heading, ~3.7em under the title. Expressed in em so it
-	   tracks the font size; the leading already supplies ~0.3em, hence the smaller margins. */
+	/* Block rhythm re-measured on 9076:28194, where the lines run nearly leading-to-leading: a
+	   title line pitch of 23 on an 18px face, then ~17-19 between every body line whether or not a
+	   block ends there. The old 3.7em/2.6em/1.45em came off the same card when it was alone in the
+	   column and could afford to breathe. Expressed in em so it tracks the font size; the leading
+	   already supplies ~0.3em, hence the small numbers. */
 	.pt-side-h {
-		margin: 2.3em 0 0;
-		font-size: clamp(10px, 1.85cqmin, 16px);
+		margin: 0.75em 0 0;
+		font-size: clamp(7px, min(0.88cqw, 1.4cqh), 15px);
 		font-weight: 700;
 		color: #fff;
-		line-height: 1.4;
+		line-height: 1.3;
 	}
 	.pt-side-h:first-of-type {
-		margin-top: 3.4em;
+		margin-top: 0.35em;
 	}
 	.pt-side-v {
-		margin: 1.15em 0 0;
-		font-size: clamp(10px, 1.85cqmin, 16px);
+		margin: 0.5em 0 0;
+		font-size: clamp(7px, min(0.88cqw, 1.4cqh), 15px);
+		font-weight: 500;
+		color: #fff;
+		line-height: 1.3;
+	}
+	/* The polarity card is a title, a mark and a PARAGRAPH, where the card above it is a stack of
+	   short centred lines — so it is packed from the top and given the design's own narrower side
+	   inset (10 of 173, not 21), which is what lets its copy sit in seven lines there instead of
+	   growing out of the card. */
+	.pt-polarity {
+		justify-content: flex-start;
+	}
+	/* Figma: 42 square, centred, with the title above it and the copy below. */
+	.pt-side-ic {
+		display: block;
+		width: clamp(18px, min(3.37cqw, 5.35cqh), 50px);
+		height: auto;
+		margin: 0.35em auto 0;
+	}
+	.pt-side-p {
+		margin: 0.5em 0 0;
+		font-size: clamp(7px, min(0.88cqw, 1.4cqh), 15px);
 		font-weight: 500;
 		color: #fff;
 		line-height: 1.4;
@@ -1050,6 +1127,18 @@
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
 		gap: clamp(10px, 2cqmin, 22px);
+	}
+	/* The re-trigger rule, under the grid. `flex: 0 0 auto` so it takes its own height off the
+	   grid's `flex: 1` share rather than being squeezed to nothing. */
+	.feat-note {
+		flex: 0 0 auto;
+		margin: clamp(6px, 1.4cqmin, 14px) 0 0;
+		font-family: var(--text);
+		font-size: clamp(9px, min(0.88cqw, 1.4cqh), 15px);
+		font-weight: 500;
+		line-height: 1.35;
+		color: #cfcdea;
+		text-align: center;
 	}
 	.feat-col-small {
 		display: flex;
@@ -1580,19 +1669,29 @@
 		.pt {
 			grid-template-columns: 1fr 185px;
 		}
+		/* Two cards share this column now, and the popout stage is a fixed 850x472 — so where the
+		   Multiplier Wild card alone could take 16px insets and a 15px title, the pair overran the
+		   column by ~70px and the text cut off. Every size here is the smallest that still reads at
+		   the stage's own scale; measured by stacking the two cards' copy at 850x472. */
 		.pt-side {
 			gap: 0;
-			padding: 16px 14px;
+			padding: 10px;
+		}
+		.pt-side-p {
+			font-size: 10px;
 		}
 		.pt-side-title {
-			font-size: 15px;
+			font-size: 13px;
 		}
 		/* Equal sizes — the design does not step the values up over their headings. */
 		.pt-side-h {
-			font-size: 11px;
+			font-size: 10px;
 		}
 		.pt-side-v {
-			font-size: 11px;
+			font-size: 10px;
+		}
+		.pt-side-ic {
+			width: 26px;
 		}
 
 		/* Page 3 — Features: slightly larger text/art with roomier gaps. */
@@ -1887,9 +1986,17 @@
 			grid-template-rows: auto auto;
 			gap: clamp(12px, 3cqh, 24px);
 		}
-		.pt-side {
+		.pt-aside {
 			order: 2;
 			align-self: stretch;
+		}
+		/* Portrait stacks the two cards under the table and lets each take the height its own copy
+		   needs — the desktop 44/56 split is a share of a FIXED column height, which there is not
+		   one of once the grid row is auto. */
+		.pt-aside .pt-side:first-child,
+		.pt-aside .pt-polarity {
+			flex: 0 0 auto;
+			flex-basis: auto;
 		}
 		/* "SYMBOL RANK" is wide for a 1/13 column in portrait — shrink it so it clears the "5" header. */
 		.pt-table th.pt-rank {
@@ -1976,34 +2083,44 @@
 			font-size: clamp(13px, 3.3cqmin, 19px);
 		}
 
-		/* Page 6 (general info): inline icon + title headers, no card frames, stacked. */
+		/* Page 6 (general info): inline icon + title headers, stacked cards.
+		   Every size here is measured off the mobile design (Figma 9302:32732, a 360x800 frame): the
+		   title's caps run 14px, each card heading's 10px, the body's line pitch 16px, and the header
+		   icon 22px. Against that frame width those are 5.2 / 3.9 / 2.8 / 6.1 cqmin -- the container is
+		   .info-overlay, which spans the viewport, so cqmin IS the frame width here.
+		   They were 5 / 3.4 / 9 cqmin with 20px, 14px and 36px FLOORS, and on a phone the floors were
+		   what rendered: the headings came out 40% oversized and wrapped to two lines, and the legal
+		   card's copy overran the panel and clipped mid-sentence with the pager sitting on top of it.
+		   The card FRAMES stay on too -- the design draws both cards with their border here, the same
+		   as on desktop; only the header turns from a column into a row. */
 		.gi-grid {
 			grid-template-columns: 1fr;
-			gap: clamp(14px, 3.4cqh, 28px);
+			gap: clamp(10px, 2.8cqh, 24px);
 		}
 		.gi-card {
-			background: none;
-			border: none;
-			border-radius: 0;
-			padding: clamp(2px, 1cqmin, 10px) 0;
-			gap: clamp(6px, 1.6cqmin, 12px);
+			padding: clamp(8px, 3.6cqmin, 26px) clamp(10px, 5.3cqmin, 38px);
+			gap: clamp(4px, 1.4cqmin, 12px);
+		}
+		.gi-card:not(.gi-wide) {
+			padding-left: clamp(10px, 5.3cqmin, 38px);
+			padding-right: clamp(10px, 5.3cqmin, 38px);
 		}
 		.gi-head {
 			flex-direction: row;
 			justify-content: center;
 			align-items: center;
-			gap: clamp(8px, 2.4cqmin, 14px);
+			gap: clamp(5px, 1.8cqmin, 12px);
 		}
 		.gi-head .gi-ic,
 		.gi-head .gi-ic--legal {
-			width: clamp(36px, 9cqmin, 54px);
-			height: clamp(36px, 9cqmin, 54px);
+			width: clamp(16px, 6.1cqmin, 34px);
+			height: clamp(16px, 6.1cqmin, 34px);
 		}
 		.gi-grid .feat-h {
-			font-size: clamp(20px, 5cqmin, 30px);
+			font-size: clamp(11px, 3.9cqmin, 24px);
 		}
 		.gi-card .feat-p {
-			font-size: clamp(14px, 3.4cqmin, 20px);
+			font-size: clamp(8px, 2.8cqmin, 17px);
 		}
 		/* gi-body is a desktop-only centring wrapper — let its paragraphs flow inline in portrait. */
 		.gi-body {
@@ -2079,6 +2196,12 @@
 		}
 		.pt-side-v {
 			font-size: clamp(14px, 3.7cqmin, 22px);
+		}
+		.pt-side-p {
+			font-size: clamp(12px, 3cqmin, 18px);
+		}
+		.pt-side-ic {
+			width: clamp(34px, 9cqmin, 60px);
 		}
 	}
 

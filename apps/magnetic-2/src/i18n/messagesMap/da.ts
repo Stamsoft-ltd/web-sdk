@@ -19,6 +19,9 @@ export default {
 	'INFO STAT MAXWIN': 'MAKS. GEVINST',
 	'INFO STAT RTP': 'RTP',
 	'INFO SYMBOL RANK': 'SYMBOLRANG',
+	'INFO POLARITY TITLE': 'POLARITETSSKIFTER',
+	'INFO POLARITY TEXT':
+		'Når den aktiveres, slynger Polaritetsskifteren hele klyngen mod den væg, pilen viser. Derefter tilføjes nye symboler af samme type langs den væg, så der opstår en større klynge.',
 	'INFO WILD VALUES': 'Multiplikator-Wild-værdier',
 	'INFO WILD STANDARD': 'Standard multiplikator-Wild-værdier:',
 	'INFO WILD RARE': 'Sjældne multiplikator-Wild-værdier (hovedsageligt i Core Overload):',
@@ -34,6 +37,8 @@ export default {
 	'INFO FEAT MEGA TITLE': 'Core Overload gratis spins',
 	'INFO FEAT MEGA TEXT':
 		'Udløses af 4 Scatter. Giver 10 gratis spins. Magnetiske klynger kan forblive låst og vokse gennem hele funktionen.',
+	'INFO FEAT RETRIGGER':
+		'Free Spins kan ikke genudløses. Scatters, der lander under en bonusrunde, giver ikke ekstra spins.',
 	'INFO CW 1': 'Magnetic bruger klyngegevinster i stedet for gevinstlinjer.',
 	'INFO CW 2':
 		'En gevinst opstår, når 5 eller flere matchende symboler rører hinanden vandret eller lodret.',
@@ -43,14 +48,6 @@ export default {
 	'INFO CW 5': 'Større klynger giver større gevinster.',
 	'INFO FB SUB':
 		'Funktionskøb-muligheder er kun tilgængelige, hvor det er tilladt. Alle Funktionskøb- og Bonuskøb-muligheder betales som et multiplum af den valgte indsats.',
-	'INFO FB EXTRA TITLE': 'Ekstra funktion',
-	'INFO FB EXTRA TEXT':
-		'Køber et særligt spin med en garanteret magnetisk forbindelse og en chance for at lande Multiplikator-Wilds.',
-	'INFO FB FEATURE TITLE': 'Funktionskøb',
-	'INFO FB FEATURE TEXT': 'Køber direkte adgang til Gravity Breach gratis spins-funktionen.',
-	'INFO FB BONUS TITLE': 'Bonuskøb',
-	'INFO FB BONUS TEXT':
-		'Køber direkte adgang til den stærkere Core Overload gratis spins-funktion.',
 	'INFO COST': 'PRIS',
 	'INFO RTP': 'RTP',
 	'INFO GI INTERRUPTED TITLE': 'Afbrudte runder',
@@ -59,12 +56,6 @@ export default {
 	'INFO GI INTERRUPTED 2':
 		'Alle gyldige indsatser og potentielle gevinster forbliver aktive, indtil runden er fuldstændigt afsluttet.',
 	'INFO GI LEGAL TITLE': 'Juridisk meddelelse',
-	'INFO GI LEGAL 1':
-		'En fejlfunktion annullerer alle udbetalinger og spil. En stabil internetforbindelse er påkrævet. Hvis forbindelsen mistes, skal du genindlæse spillet for at afslutte uafsluttede runder.',
-	'INFO GI LEGAL 2':
-		'Det forventede afkast beregnes over et stort antal spil. Spilvisningen er kun til visuelle formål og underholdning og repræsenterer ikke nogen fysisk spilleenhed.',
-	'INFO GI LEGAL 3':
-		'Alle gevinster afregnes i henhold til resultatet modtaget fra Remote Game Server, ikke fra animationer eller begivenheder vist i webbrowseren.',
 	'DISCLAIMER TEXT':
 		'En fejlfunktion annullerer alle gevinster og spil. En stabil internetforbindelse er påkrævet. I tilfælde af afbrydelse skal du genindlæse spillet for at afslutte uafsluttede runder. Det forventede afkast beregnes over mange spil. Spilvisningen er ikke repræsentativ for nogen fysisk enhed og er kun til illustrative formål. Gevinster afregnes i henhold til det beløb, der modtages fra Remote Game Server, og ikke fra begivenheder i webbrowseren. TM og © 2026 Engine.',
 	'INFO CTRL SPIN': 'Spin',
@@ -95,18 +86,10 @@ export default {
 	HOME: 'HJEM',
 	'NOT TRANSLATED': 'IKKE OVERSAT',
 	'GAME TITLE': 'MAGNETIC',
-	'SPLASH EXP TITLE': 'UDVIDENDE\nHJUL',
-	'SPLASH MEGA TITLE': 'MEGA-KÆDE',
-	'SPLASH EPIC TITLE': 'EPISKE\nGEVINSTER',
-	'SPLASH WITH UP TO': 'med op til',
 	'SPLASH MULTIPLIER': 'multiplikator',
 	'SPLASH PRESS': 'TRYK FOR AT FORTSÆTTE',
 	'SPLASH BONUS TITLE': 'BONUS\nSPIL',
-	'SPLASH SCATTERS FOR': '%count% scatters for',
-	'SPLASH MMC': 'MAGNETISK MEGA-KÆDE',
-	'SPLASH MEGA BUILD': 'Byg',
-	'SPLASH MEGA CHAIN': 'kæde',
-	'SPLASH MEGA REST': 'med multiplikatorer, der ganger hinanden',
+	'SPLASH SCATTERS FOR': '%count% scatters giver',
 	'SPLASH GRAVITY BREACH': 'TYNGDEKRAFTBRUD',
 	'SPLASH CORE OVERLOAD': 'KERNEOVERBELASTNING',
 	'SPLASH ZERO POINT': 'NULPUNKTSPROTOKOL',
@@ -136,7 +119,6 @@ export default {
 	EVENT: 'BEGIVENHED',
 	PAYOUT: 'UDBETALING',
 	WIN: 'GEVINST',
-	'BET SIZE': 'INDSATSSTØRRELSE',
 	'REPLAY ERROR GENERIC': 'Genafspilning utilgængelig. Prøv venligst igen.',
 	SOUND: 'LYD',
 	MUSIC: 'MUSIK',
@@ -173,14 +155,14 @@ export default {
 	'AUTO SUPER TURBO': 'SUPER TURBOSPIN',
 	'AUTO FEATURE': '50X BONUSFUNKTION',
 	'AUTO NUM SPINS': 'ANTAL SPINS',
-	'AUTO START': 'START AUTOPLAY',
+	'AUTO LOSS LIMIT': 'TABSGRÆNSE',
+	'AUTO WIN LIMIT': 'ENKELTGEVINSTGRÆNSE',
+	'AUTO START': 'START AUTOSPIN',
 	'YOU WON': 'DU VANDT',
 	'FREE SPINS': 'GRATIS SPINS',
 	CONGRATULATIONS: 'TILLYKKE',
 	'PRESS ANYWHERE': 'TRYK HVOR SOM HELST FOR AT FORTSÆTTE',
 	'TOTAL WIN': 'SAMLET GEVINST',
-	'ALL WINS': 'ALLE GEVINSTER',
-	RESPIN: 'RESPIN',
 	'UNFINISHED ROUND': 'UAFSLUTTET RUNDE',
 	'RESUME BODY': 'Du har en aktiv %mode%-bonus i gang.',
 	'PLAY ROUND': 'SPIL RUNDE',
@@ -188,45 +170,8 @@ export default {
 
 	// Approved shared translations reused from Forest Gang.
 	'BET MODE BASE TITLE': 'BASIS',
-	'BET MODE BASE BUTTON': 'SPIL',
-	'BET MODE BASE TICKER SPIN': 'HELD OG LYKKE',
-	'BET MODE BONUS BUTTON': 'KØB',
-	'BET MODE BONUS TICKER IDLE': 'PLACER DIN INDSATS',
 	'BET MODE CHANCE TITLE': 'CHANCESPIN',
-	'BET MODE CHANCE DESCRIPTION': 'Aktivér Chancespin for 2x din valgte indsats pr. runde.',
-	'BET MODE CHANCE BUTTON': 'AKTIVÉR',
-	'BET MODE CHANCE TICKER IDLE': 'CHANCESPIN ER AKTIVT',
-	'BET MODE CHANCE TICKER SPIN': 'HELD OG LYKKE',
-	'BET MODE SUPER BUTTON': 'KØB',
-	'BET MODE SUPER TICKER IDLE': 'PLACER DIN INDSATS',
 	'BET MODE FEATURE TITLE': 'FUNKTIONSSPIN',
-	'BET MODE FEATURE BUTTON': 'AKTIVÉR',
-	'BET MODE FEATURE TICKER IDLE': 'FUNKTIONSSPIN ER AKTIVT',
-	'BET MODE FEATURE TICKER SPIN': 'FUNKTIONSSPIN AKTIVT',
-	'RULE SECTION GAME INFO': 'SPILINFO',
-	'RULE SECTION FEATURES': 'FUNKTIONER',
-	'RULE SECTION HOW TO PLAY': 'SÅDAN SPILLER DU',
-	'RULE SECTION DISCLAIMER': 'GENEREL ANSVARSFRASKRIVELSE',
-	'RULE WILD TITLE': 'WILD',
-	'RULE SCATTER TITLE': 'SCATTER',
-	'RULE BUY TITLE': 'KØB- / AKTIVERINGSTILSTANDE',
-	'HOWTO SPIN TITLE': 'SPIN / STOP',
-	'HOWTO BET TITLE': 'INDSATSVÆLGER',
-	'HOWTO BET TEXT':
-		'Brug + og - knapperne eller åbn indsatsmenuen for at ændre det viste indsatsbeløb, før en runde starter.',
-	'HOWTO BUY TITLE': 'KØB BONUS',
-	'HOWTO TURBO TITLE': 'TURBO',
-	'HOWTO TURBO TEXT': 'Turbo forkorter visse rundetider for hurtigere spil.',
-	'HOWTO AUTOPLAY TITLE': 'AUTOPLAY',
-	'HOWTO AUTOPLAY TEXT':
-		'Autoplay gentager runder automatisk, indtil den valgte stopbetingelse eller tæller slutter.',
-	'HOWTO REPLAY TITLE': 'GENAFSPILNINGSTILSTAND',
-	'PAYTABLE PREMIUM TITLE': 'PREMIUM-SYMBOLER',
-	'PAYTABLE LOW TITLE': 'LAVE SYMBOLER',
-	'PAYTABLE SPECIAL TITLE': 'SPECIALSYMBOLER',
-	'PAYTABLE BUY TITLE': 'KØBSTILSTANDE',
-	'PAYTABLE MAX TITLE': 'MAKS. GEVINST',
-
 	// Magnetic-specific rules, replay, modes, and paytable.
 	'BET REPLAY': 'INDSATS-GENAFSPILNING',
 	'REPLAY EVENT': 'GENAFSPIL HÆNDELSE',
@@ -238,76 +183,8 @@ export default {
 		'Dette er en genafspilning af en tidligere indsatsrunde. Der placeres ingen indsatser.',
 	'DEAL IT': 'Gravity Breach',
 	'ALL IN': 'MEGA-KÆDE',
-	'BET MODE BASE DIALOG':
-		'Magnetic er en 7x7 klyngeudbetalings-slot, hvor gevinster skabes af grupper af matchende symboler. Få 5 eller flere matchende symboler forbundet vandret eller lodret for at vinde.',
-	'BET MODE BASE TICKER IDLE': 'MAGNETIC',
 	'BET MODE BONUS TITLE': 'Gravity Breach',
-	'BET MODE BONUS DIALOG': '10 gratis spins med kraftigt forhøjet magnetchance.',
-	'BET MODE BONUS DESCRIPTION':
-		'Køb 10 gratis spins med forhøjet magnetchance for 100x din valgte indsats.',
-	'BET MODE BONUS TICKER SPIN': 'BONUS AKTIV',
-	'BET MODE CHANCE DIALOG':
-		'Chance Spin forbliver aktivt, indtil det deaktiveres. Hver runde koster 2x indsatsen og tredobler chancen for at udløse bonus.',
 	'BET MODE SUPER TITLE': 'MEGA-KÆDE',
-	'BET MODE SUPER DIALOG':
-		'10 gratis spins med en garanteret magnet på første spin. Målsymbolet, den samlede klynge og den kombinerede multiplikator bevares gennem hele bonussen.',
-	'BET MODE SUPER DESCRIPTION': 'Køb den vedvarende superbonus for 500x din valgte indsats.',
-	'BET MODE SUPER TICKER SPIN': 'SUPER AKTIV',
-	'BET MODE FEATURE DIALOG':
-		'Feature Spin forbliver aktivt, indtil det deaktiveres. Hver runde koster 50x indsatsen og garanterer ét betalt magnetspin.',
-	'BET MODE FEATURE DESCRIPTION': 'Aktivér Feature Spin for 50x din valgte indsats pr. runde.',
-	'RULE GAME TITLE': 'MAGNETIC',
-	'RULE GAME TEXT':
-		'Magnetic er en 7x7 klyngeudbetalings-slot, hvor gevinster skabes af grupper af matchende symboler. Få 5 eller flere matchende symboler forbundet vandret eller lodret for at vinde. Diagonale forbindelser tæller ikke.',
-	'RULE WILD TEXT':
-		'I basistilstand vælger en Magnetic Wild tilfældigt én synlig position med et almindeligt symbol. Hver synlig position har samme chance, så symboltyper, der vises oftere, har større sandsynlighed for at blive valgt. Derefter tiltrækker den alle synlige symboler af denne type. Målet forbliver fast under den aktive magnetserie.',
-	'RULE SCATTER TEXT':
-		'3 Scatter udløser Gravity Breach. 4 Scatter udløser Core Overload. Scatter giver ikke gevinst alene.',
-	'RULE DEAL IT TITLE': 'KLYNGE-RESPINS',
-	'RULE DEAL IT TEXT':
-		'Naturlige kvalificerende klynger låses fast. Alle andre felter spinner igen. Hvis nye matchende symboler lander ved siden af den aktive klynge, slutter de sig til den, og endnu et respin følger.',
-	'RULE ALL IN TITLE': 'MEGA-KÆDE',
-	'RULE ALL IN TEXT':
-		'På det første Super-gratisspin er en magnet garanteret. Det valgte målsymbol, den samlede klynge og seriens multiplicerede værdi bevares gennem alle 10 gratis spins og afgøres til sidst.',
-	'RULE BUY TEXT':
-		'Gravity Breach koster 100x indsatsen. Core Overload koster 500x. Chance Spin koster 2x pr. runde. Feature Spin koster 50x pr. runde. Maksimal gevinst: 20.000x. Mål-RTP: 96,1 %.',
-	'FEATURE SELECTED SYMBOL TITLE': 'MAGNETMÅL',
-	'FEATURE SELECTED SYMBOL TEXT':
-		'En Magnetic Wild vælger tilfældigt én synlig position med et almindeligt symbol. Hver position har samme chance, så typer med flere synlige positioner er mere sandsynlige. Alle synlige symboler af den valgte type tiltrækkes, og ekstra magneter ændrer aldrig målet under serien.',
-	'FEATURE DEAL IT MULTIPLIER TITLE': 'MULTIPLIKATOR-WILD',
-	'FEATURE DEAL IT MULTIPLIER TEXT':
-		'Multiplier Wild-værdier multipliceres med hinanden i én aktiv magnetserie. Eksempel: 2x × 3x × 4x = 24x i alt.',
-	'FEATURE ALL IN_MULTIPLIER TITLE': 'VEDVARENDE SUPERSERIE',
-	'FEATURE ALL IN_MULTIPLIER TEXT':
-		'I Super Bonus bevares målsymbolet, de samlede felter og seriens multiplicerede værdi gennem alle 10 gratis spins, indtil den endelige gevinst afgøres.',
-	'HOWTO SPIN TEXT':
-		'Tryk på Spin for at starte en runde. Tryk igen under en sekvens for at anmode om stop, hvor det er muligt.',
-	'HOWTO BUY TEXT':
-		'Åbn Køb bonus for at vælge Gravity Breach, Core Overload, Chance Spin eller Feature Spin. Købte bonusser kræver bekræftelse. Aktiveringstilstande kan slås til eller fra.',
-	'HOWTO REPLAY TEXT':
-		'Genafspilning indlæser en afsluttet hændelse og viser den oprindelige indsats, samlede omkostning, udbetaling og gevinstinformation.',
-	'PAYTABLE TITLE PAYLINES': 'KLYNGE',
-	'PAYTABLE TEXT PAYLINES':
-		'En gevinst opstår, når 5 eller flere matchende symboler rører hinanden vandret eller lodret. Diagonale forbindelser tæller ikke.',
-	'PAYTABLE FOX':
-		'HESTESKOMAGNET (H1)\n5 = 0.5x\n6 = 1x\n7 = 2x\n8 = 4x\n9 = 8x\n10-11 = 15x\n12-14 = 30x\n15-19 = 80x\n20-24 = 200x\n25-29 = 500x\n30-32 = 1000x\n33+ = 2000x',
-	'PAYTABLE WOLF':
-		'PLASMABOR (H2)\n5 = 0.4x\n6 = 0.8x\n7 = 1.5x\n8 = 3x\n9 = 6x\n10-11 = 12x\n12-14 = 25x\n15-19 = 60x\n20-24 = 150x\n25-29 = 350x\n30-32 = 750x\n33+ = 1500x',
-	'PAYTABLE BEAR':
-		'MAGNETISK KERNEKUBE (H3)\n5 = 0.3x\n6 = 0.6x\n7 = 1.2x\n8 = 2.5x\n9 = 5x\n10-11 = 10x\n12-14 = 20x\n15-19 = 50x\n20-24 = 120x\n25-29 = 280x\n30-32 = 600x\n33+ = 1200x',
-	'PAYTABLE RABBIT':
-		'ELEKTROMAGNETISK ENHED (H4)\n5 = 0.25x\n6 = 0.5x\n7 = 1x\n8 = 2x\n9 = 4x\n10-11 = 8x\n12-14 = 16x\n15-19 = 35x\n20-24 = 90x\n25-29 = 220x\n30-32 = 450x\n33+ = 900x',
-	'PAYTABLE SQUIRREL':
-		'BOLT (L1)\n5 = 0.2x\n6 = 0.4x\n7 = 0.8x\n8 = 1.6x\n9 = 3.2x\n10-11 = 6x\n12-14 = 12x\n15-19 = 30x\n20-24 = 75x\n25-29 = 180x\n30-32 = 350x\n33+ = 500x',
-	'PAYTABLE LOWS_1':
-		'MØTRIK (L2)\n5 = 0.12x\n6 = 0.25x\n7 = 0.5x\n8 = 1x\n9 = 2x\n10-11 = 4x\n12-14 = 8x\n15-19 = 20x\n20-24 = 50x\n25-29 = 100x\n30-32 = 200x\n33+ = 400x\n\nSKIVE (L3)\n5 = 0.1x\n6 = 0.2x\n7 = 0.4x\n8 = 0.8x\n9 = 1.6x\n10-11 = 3x\n12-14 = 6x\n15-19 = 15x\n20-24 = 40x\n25-29 = 80x\n30-32 = 150x\n33+ = 300x',
-	'PAYTABLE LOWS_2':
-		'ENERGISKRUE (L4)\n5 = 0.08x\n6 = 0.16x\n7 = 0.32x\n8 = 0.64x\n9 = 1.28x\n10-11 = 2.5x\n12-14 = 5x\n15-19 = 12x\n20-24 = 30x\n25-29 = 60x\n30-32 = 120x\n33+ = 250x',
-	'PAYTABLE SPECIAL_TEXT':
-		'Magnet starter magnetserier. Wild erstatter almindelige symboler. Multiplier Wilds multiplicerer den aktive serie. Scatter udløser kun bonusser.',
-	'PAYTABLE BUY_TEXT':
-		'Gravity Breach: 100x indsats.\nCore Overload: 500x indsats.\nChance Spin: 2x indsats pr. runde.\nFeature Spin: 50x indsats pr. runde.',
-	'PAYTABLE MAX_TEXT': 'Den annoncerede maksimale gevinst er 20.000x den valgte indsats.',
 	'NO BALANCE TITLE': 'IKKE NOK SALDO',
 	'NO BALANCE BODY':
 		'Din saldo er for lav til denne indsats. Sænk indsatsniveauet for at fortsætte.',

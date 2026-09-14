@@ -59,6 +59,15 @@
 		};
 	});
 	const glowKey = $derived(shownDirection ? glowKeys[shownDirection] : null);
+	/**
+	 * The polarity art is 336x341 -- all but square, where every other symbol is drawn on the shared
+	 * 328x264 canvas. Filling the cell box with it stretched the lockup 23% wide, which is the
+	 * squashed pad it read as on the board. So the box is FITTED, not filled: the art keeps its own
+	 * aspect and takes whichever of the two dimensions runs out first.
+	 */
+	const ART_ASPECT = 336 / 341;
+	const artW = $derived(Math.min(props.width, props.height * ART_ASPECT) * scale);
+	const artH = $derived(artW / ART_ASPECT);
 </script>
 
 <Sprite
@@ -66,8 +75,8 @@
 	x={props.x}
 	y={props.y}
 	anchor={{ x: 0.5, y: 0.5 }}
-	width={props.width * scale}
-	height={props.height * scale}
+	width={artW}
+	height={artH}
 	alpha={props.alpha ?? 1}
 	zIndex={props.zIndex}
 />
@@ -77,8 +86,8 @@
 		x={props.x}
 		y={props.y}
 		anchor={{ x: 0.5, y: 0.5 }}
-		width={props.width * scale}
-		height={props.height * scale}
+		width={artW}
+		height={artH}
 		alpha={(props.alpha ?? 1) * glowAlpha}
 		blendMode="add"
 		zIndex={(props.zIndex ?? 0) + 1}

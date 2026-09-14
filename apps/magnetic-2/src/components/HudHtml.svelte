@@ -194,30 +194,19 @@
 		};
 	}
 
+	// Centre of the left rail in device px — the BET and BALANCE chips sit on the same column as the
+	// logo and the FREE SPINS / TOTAL WIN / RESPIN boxes (user, 2026-09-11: "always center those
+	// horizontally between left and board"). The column lives in main units, so convert it with the
+	// same virtual→screen transform pixi uses.
+	const lsMain = $derived(context.stateLayoutDerived.mainLayout());
+	const lsRailCX = $derived(
+		lsMain.x + (context.stateGameDerived.landscapeRail().x - lsMain.width / 2) * lsMain.scale,
+	);
+
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isPortrait = $derived(layoutType === 'portrait');
 	const isLandscapeMobile = $derived(layoutType === 'landscape');
 
-	// Landscape: the buy-bonus button is an HTML element but must sit centred directly beneath the
-	// pixi capsule. The capsule lives in virtual (main) coordinates; convert its column centre + bottom
-	// to device pixels using the same virtual→screen transform pixi uses, so they track at every ratio.
-	const lsMain = $derived(context.stateLayoutDerived.mainLayout());
-	const lsCapsule = $derived(context.stateGameDerived.landscapeCapsuleLayout());
-	// The badge centres on the capsule COLUMN centre, but the tube art is not perfectly centred inside
-	// its padded sprite box, so it reads a hair left of the glass. A flat 2px nudge (device px, not
-	// scaled) squares it up without disturbing the virtual→screen tracking above.
-	const LS_BUY_X_NUDGE = 2;
-	const lsBuyX = $derived(
-		lsMain.x + (lsCapsule.colX - lsMain.width / 2) * lsMain.scale + LS_BUY_X_NUDGE,
-	);
-	// Buy TOP hangs a gap below the VISIBLE tube bottom (the sprite box is padded). Anchoring by the top
-	// (not the centre) keeps the gap independent of the button's size, so the big min-sized button on
-	// small screens can't creep up against the capsule.
-	const lsBuyY = $derived(
-		lsMain.y +
-			(lsCapsule.visibleBottom - lsMain.height / 2) * lsMain.scale +
-			lsCapsule.visibleW * 0.15 * lsMain.scale,
-	);
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
 	const hasAuto = $derived(stateBetDerived.hasAutoBetCounter());
 	const isSpinStop = $derived(!context.stateXstateDerived.isIdle() || hasAuto);
@@ -400,11 +389,6 @@
 	const openRules = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		showInfoModal = true;
-	};
-
-	const openPaytable = () => {
-		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
-		stateModal.modal = { name: 'payTable' };
 	};
 
 	let showBuyModal = $state(false);
@@ -627,7 +611,7 @@
 	class="hud-shell"
 	class:hud-shell--celebrating={context.stateGame.celebrationActive}
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--ls-buy-x:${lsBuyX}px;--ls-buy-y:${lsBuyY}px`}
+	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--ls-rail-cx:${lsRailCX}px`}
 >
 	<!-- Menu popover (SOUND / MUSIC / INFO) — shared by desktop and portrait; rendered inside a
 	     position:relative nav container so it floats above the menu button. -->
@@ -1050,21 +1034,6 @@
 				</div>
 			</div>
 
-			<!-- Buy bonus centred under the capsule (its original spot), with the last-round WIN stretched
-			     beneath it, reaching under the nav. -->
-			<div class="ls-buy">
-				<button
-					class="buy-btn"
-					type="button"
-					disabled={disableBuy}
-					onclick={openBuyBonus}
-					aria-label={i18nDerived.buyBonus()}
-				>
-					<span class="buy-btn__label" use:fitLabel={i18nDerived.buyBonus()}
-						>{i18nDerived.buyBonus()}</span
-					>
-				</button>
-			</div>
 			<div class="ls-win">
 				<div class="value-pill value-pill--balance ls-win-pill">
 					<div class="label label--balance">
@@ -1092,14 +1061,25 @@
 					{/if}
 				</button>
 				{#if showMenuPopup}{@render menuPopup()}{/if}
-				<!-- Sound icon moved here (was buy bonus): master mute for ALL sound + music. -->
+				<!-- NOTE: the landscape nav carries exactly the design's five controls (menu, BONUS, spin,
+				     turbo, AUTO). The standalone sound/mute disc that used to sit here is gone by
+				     request (user, 2026-09-11) — a sixth button crowded the column and the design has
+				     no slot for it. Master mute is still one tap away in the menu popover, which
+				     carries SOUND / MUSIC / INFO. Portrait and desktop keep their own sound button. -->
+				<!-- BONUS pill, in the nav column where the design puts it (4161:22199). It used to be a
+				     round badge floating in the sky right of the board — the spot the capsule tube used
+				     to occupy — which, once the board grew to the design's size, left it half on the
+				     nav bar. -->
 				<button
-					class="nav-btn nav-btn--framed ls-nav-sound"
+					class="buy-btn ls-nav-buy"
 					type="button"
-					onclick={toggleSound}
-					aria-label="Mute all sound"
+					disabled={disableBuy}
+					onclick={openBuyBonus}
+					aria-label={i18nDerived.buyBonus()}
 				>
-					<img class="nav-icon" src={isMuted ? iconMenuSoundOff : iconSound} alt="sound" />
+					<span class="buy-btn__label" use:fitLabel={i18nDerived.bonus()}
+						>{i18nDerived.bonus()}</span
+					>
 				</button>
 				<button
 					class="spin-btn ls-spin"
@@ -1129,14 +1109,16 @@
 					<img class="nav-icon" src={turboIcon} alt="turbo" />
 				</button>
 				<button
-					class="nav-btn nav-btn--framed"
+					class="nav-btn nav-btn--framed ls-nav-auto"
 					class:active={hasAuto}
 					type="button"
 					onclick={onAuto}
 					disabled={disableAuto}
 					aria-label={i18nDerived.autoplayLabel()}
 				>
+					<!-- Glyph AND the word, stacked — the design's AUTO disc carries both. -->
 					<img class="nav-icon" src={disableAuto ? iconAutoDisabled : iconAuto} alt="auto" />
+					<span class="ls-nav-auto__label">{i18nDerived.autoShort()}</span>
 				</button>
 			</div>
 		</div>
@@ -1168,6 +1150,8 @@
 		   cannot drift apart — they were three separate sets of hard-coded blues before. */
 		--hud-bar: #3a3981;
 		--hud-bar-edge: #2d2c69;
+		/* The near-black BALANCE / WIN bars of the mobile-landscape design (4161:22199). */
+		--hud-bar-dark: #151139;
 		--hud-accent: #a88eff;
 		--hud-accent-rim: #47468a;
 		--hud-control: #49489b;
@@ -1187,9 +1171,14 @@
 
 	/* A congratulations screen is up. The HUD is DOM ABOVE the canvas, so the popup's pixi dim
 	   cannot reach it — without this the bright bottom bar sits on top of the celebration, and it
-	   also swallows the press that is meant to dismiss it. */
+	   also swallows the press that is meant to dismiss it.
+
+	   Fully transparent, not merely dimmed. At 0.12 the bar's own WIN and BET readouts still showed
+	   through the win pad underneath them, which looked like the PAD was translucent. Nothing else
+	   here depends on the HUD staying faintly visible — the press it used to swallow is handled by
+	   the pointer-events rule below, not by the opacity. */
 	.hud-shell--celebrating {
-		opacity: 0.12;
+		opacity: 0;
 	}
 	.hud-shell--celebrating * {
 		pointer-events: none !important;
@@ -1730,7 +1719,9 @@
 	.menu-popup {
 		position: absolute;
 		left: -24px; /* align with the bottom bar's left frame edge (.hud-bottom padding) */
-		bottom: calc(100% + 14px);
+		/* Clearance above the menu button. The button's frame art overhangs the bar's top edge, so
+		   at 14px the panel read as sitting ON the bar rather than floating over it. */
+		bottom: calc(100% + 24px);
 		width: 200px;
 		height: 200px;
 		box-sizing: border-box;
@@ -2487,20 +2478,17 @@
 	/* Right vertical nav column on the tall nav-bar panel. */
 	.ls-nav {
 		position: absolute;
-		/* Tighter to the right edge (user pass 2026-08-10 — the bar floated too far inboard). */
-		right: clamp(6px, 1.2vw, 16px);
-		top: 54%;
+		/* Straight off the design (4161:22199, an 800x360 frame): the bar is x 718.7..781.3, y 39.3..315
+		   — 7.83% of the width, 19px clear of the right edge, 76.7% of the height, centred at 49.2%.
+		   It used to be sized by min(4.8vw, 8.4vh), which rendered it ~30px on that frame: half the
+		   design's width, so the whole control column read as a thin sliver. */
+		right: 2.34vw;
+		top: 49.2%;
 		transform: translateY(-50%);
-		/* Slim panel, tall enough to space the buttons out. Width is decoupled from height (the art is a
-		   plain rounded panel, so the mild horizontal stretch is invisible) so it can be narrow AND tall.
-		   The big spin disc overflows its sides as the focal control (mirrors the desktop spin button,
-		   which protrudes past the bar via negative margins). */
-		/* Sized against BOTH axes (user pass 2026-08-10, popout S: the bar ate a third of the width and
-		   crowded the tube). vw alone kept the 36px floor on a small window, where 36px is a large
-		   FRACTION of it; the vh term pulls it in on short windows too. */
-		width: clamp(26px, min(4.8vw, 8.4vh), 48px);
-		/* Slightly shorter (was 78vh / 348) to leave room for the buy-bonus + WIN column under the capsule. */
-		height: clamp(140px, 64vh, 300px);
+		/* The big spin disc deliberately overflows the bar's sides as the focal control (mirrors the
+		   desktop spin button, which protrudes past the bar via negative margins). */
+		width: 7.83vw;
+		height: 76.7vh;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -2508,24 +2496,59 @@
 		gap: 0;
 		padding: clamp(5px, 2.8vh, 20px) 0;
 		background: var(--hud-bar);
-		border: 4px solid var(--hud-bar-edge);
-		border-radius: 10px;
+		/* 4px -> 2px: the design's bar carries only a hairline edge, and a thick one inset every
+		   button in the column by its own width, which is what made the BONUS pill and the discs read
+		   as too small for the bar. */
+		border: 2px solid var(--hud-bar-edge);
+		border-radius: 12px;
 		box-sizing: border-box;
 		overflow: visible;
 	}
 	.ls-nav .nav-btn {
-		width: clamp(14px, min(6.6vh, 4.3vw), 38px);
-		height: clamp(14px, min(6.6vh, 4.3vw), 38px);
+		/* The design's discs are ~30px on its 800x360 frame — 8.3vh, capped by 5.4vw so a tall, narrow
+		   popout cannot grow them past the bar. */
+		width: clamp(14px, min(8.3vh, 5.4vw), 46px);
+		height: clamp(14px, min(8.3vh, 5.4vw), 46px);
+	}
+	/* AUTO carries the word under its glyph (design 4161:22199), so it stacks rather than centring a
+	   single icon. The glyph gives up the room the label needs; the disc itself stays the same size as
+	   the others in the column. */
+	.ls-nav .ls-nav-auto {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0;
+	}
+	.ls-nav .ls-nav-auto .nav-icon {
+		width: 42%;
+		height: 42%;
+	}
+	.ls-nav .ls-nav-auto__label {
+		font-family: 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 700;
+		font-size: clamp(4px, 1.85vh, 11px);
+		line-height: 1.1;
+		letter-spacing: 0.02em;
+		color: #fff;
 	}
 	/* Focal spin — big disc that overflows the slim nav panel on both sides (negative side margins so
 	   it protrudes past the panel edges without widening the flex column), centred. */
 	.ls-nav .ls-spin {
 		/* Sized against BOTH axes: vh alone let a tall-but-narrow popout grow the disc past the
-		   right screen edge (user report, twice) — the vw term caps it on narrow windows. */
-		width: clamp(40px, min(14vh, 7vw), 78px);
-		height: clamp(40px, min(14vh, 7vw), 78px);
-		margin: clamp(1px, 0.4vh, 4px) calc(-1 * clamp(8px, 2.5vh, 16px));
+		   right screen edge (user report, twice) — the vw term caps it on narrow windows.
+		   23.6vh / 10.6vw puts the DISC at the design's 85px on its 800x360 frame (79px of lilac
+		   inside a 3px rim). */
+		width: clamp(40px, min(23.6vh, 10.6vw), 112px);
+		height: clamp(40px, min(23.6vh, 10.6vw), 112px);
+		margin: clamp(1px, 0.4vh, 4px) calc(-1 * clamp(6px, 3.6vh, 22px));
 		flex: 0 0 auto;
+	}
+	/* .spin-btn::before insets the disc by a FLAT 8px, a figure tuned for the 128px desktop button
+	   — 6% there, but 20% of this one, which drew the landscape disc a fifth smaller than its own
+	   button box and is why it read as undersized against the design. */
+	.ls-nav .ls-spin::before {
+		inset: 0;
 	}
 	.ls-nav .ls-spin .spin-btn__count {
 		font-size: calc(0.8rem * var(--spin-count-scale, 1));
@@ -2533,11 +2556,17 @@
 	/* Balance + bet, bottom-left. */
 	.ls-stats {
 		position: absolute;
-		left: clamp(8px, 2vw, 26px);
-		bottom: clamp(8px, 4vh, 30px);
+		/* Centred on the left rail's own column — the same one the logo and the FREE SPINS / TOTAL WIN
+		   / RESPIN boxes sit on — rather than flush-left at a fixed inset (user, 2026-09-11). The
+		   column comes from stateGameDerived.landscapeRail() via --ls-rail-cx. */
+		left: var(--ls-rail-cx, 10.65%);
+		transform: translateX(-50%);
+		bottom: clamp(6px, 2.2vh, 20px);
 		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
+		/* The design puts the BET stepper ABOVE the balance box; the DOM order is balance-first so the
+		   balance stays the first thing a screen reader hits. */
+		flex-direction: column-reverse;
+		align-items: center;
 		gap: clamp(6px, 2vh, 12px);
 	}
 	/* Balance: label + value on one line in a dark rounded box with generous padding. Scoped under the
@@ -2554,10 +2583,9 @@
 		padding: clamp(4px, 2.7vh, 12px) clamp(8px, 2.2vw, 20px);
 		border-left: none;
 		/* Match the portrait balance — the designed black-box container art (was a plain CSS dark box). */
-		background: var(--hud-bar);
-		border: 2px solid var(--hud-bar-edge);
-		border-radius: 8px;
+		background: var(--hud-bar-dark);
 		border: none;
+		border-radius: clamp(5px, 1.25vw, 12px);
 		text-align: left;
 	}
 	.ls-balance .label--balance {
@@ -2569,9 +2597,11 @@
 		color: #fff;
 	}
 	.ls-balance .label-text {
-		font-size: clamp(0.17rem, 1.3vh, 0.34rem);
+		font-size: clamp(0.17rem, 1.45vh, 0.38rem);
 		letter-spacing: 0.04em;
-		color: var(--hud-label);
+		/* Near-white in the design, not the lilac the rest of the HUD's labels use — sampled off the
+		   frame's own BALANCE chip. */
+		color: #dcdbe8;
 	}
 	/* Bet: the bet-box art with round − / + steppers inside. */
 	.ls-bet {
@@ -2579,14 +2609,17 @@
 		align-items: center;
 		justify-content: center;
 		gap: clamp(1px, 0.4vw, 4px);
-		background: var(--hud-bar);
+		/* The design's bet box is the lighter control blue, a shade up from the bar. */
+		background: var(--hud-control);
 		border: 2px solid var(--hud-bar-edge);
 		border-radius: 8px;
 		padding: clamp(2px, 1.4vh, 9px) clamp(3px, 1.6vw, 18px);
 	}
 	.ls-bet .ls-step {
-		width: clamp(12px, 4.4vh, 28px);
-		height: clamp(12px, 4.4vh, 28px);
+		/* The design's steppers are 30px on its 800x360 frame (8.3vh); the vw term keeps them in
+		   proportion on a squarer popout. They used to be 4.4vh — half the design's size. */
+		width: clamp(12px, min(8.3vh, 4vw), 34px);
+		height: clamp(12px, min(8.3vh, 4vw), 34px);
 	}
 	.ls-bet-val {
 		display: flex;
@@ -2601,36 +2634,34 @@
 		color: #fff;
 		white-space: nowrap;
 	}
-	/* Buy bonus round badge — locked to the pixi capsule column (device px, computed from the shared
-	   capsule geometry) so it stays centred beneath the capsule at every device aspect ratio. */
-	.ls-buy {
-		position: absolute;
-		left: var(--ls-buy-x, 79.5%);
-		top: var(--ls-buy-y, auto);
-		right: auto;
-		bottom: auto;
-		transform: translate(-50%, 0);
-		/* Buy bonus on top, WIN stacked beneath it — both centred on the capsule column. */
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: clamp(3px, 1.4vh, 10px);
-	}
-	.ls-buy .buy-btn {
-		width: clamp(44px, 15.5vh, 94px);
-		height: clamp(44px, 15.5vh, 94px);
-		aspect-ratio: 1;
+	/* BONUS pill inside the nav column. The design's is a full-width lilac rounded rect the same
+	   height as the icon buttons either side of it (62 x 26 of the 800x360 frame). */
+	.ls-nav .ls-nav-buy {
+		/* Spans the bar's OUTER width, as in the design: measured on the frame, the pill's lilac is
+		   60px against a 60px bar. Inside the bar's own border it came out 54, which is what made it
+		   read as a small chip floating in the column. The dark 2px rim went with it — the design's
+		   pill is flat --hud-accent, edge to edge. */
+		width: calc(100% + 4px);
+		margin: 0 -2px;
+		box-sizing: border-box;
+		height: clamp(14px, min(8.3vh, 5.4vw), 46px);
+		flex: 0 0 auto;
 		background: var(--hud-accent);
-		border: 2px solid var(--hud-accent-rim);
-		border-radius: 50%;
+		border: none;
+		border-radius: 999px;
 		padding: 0;
 	}
-	.ls-buy .buy-btn__label {
-		white-space: normal;
-		line-height: 1.02;
+	.ls-nav .ls-nav-buy .buy-btn__label {
+		white-space: nowrap;
+		line-height: 1;
 		text-align: center;
-		font-size: clamp(0.19rem, 2vh, 0.6rem);
-		max-width: 82%;
+		/* Measured, not guessed, twice: the design's BONUS ink is 45x6 px on its 800x360 frame. 3.9vh
+		   overshot it (58x9) because the ink is not just bigger there — it is TRACKED wider. The ratio
+		   45/6 = 7.5 against this face's own 6.4 is the whole difference, so the size comes down to
+		   match the height and the tracking opens up to match the width. */
+		font-size: clamp(0.2rem, 2.42vh, 0.62rem);
+		letter-spacing: 0.28em;
+		max-width: 92%;
 	}
 
 	/* ── Landscape (mirrors portrait): menu opens the SOUND/MUSIC/INFO popover (sound lives there now),
@@ -2675,9 +2706,18 @@
 		bottom: calc(100% + 4px);
 	}
 	/* Desktop: anchor the popup to the far-left edge of the nav bar. hud-system (the popup's positioned
-	   ancestor) sits ~16px inside hud-bottom's left frame edge, so pull the popup left by that much. */
+	   ancestor) sits ~16px inside hud-bottom's left frame edge, so pull the popup left by that much.
+
+	   The rows are then inset LESS than the 20px the panel uses on its right, so the icon circles sit
+	   on the menu button's own centre line rather than 7.5px right of it. The panel is pulled 16px
+	   left of hud-system and has a 4px border, and the icon is 39px wide inside a 1px border
+	   (content-box — there is no global border-box reset), so its centre lands at
+	   -16 + 4 + padding + 20.5. The button is 42px wide starting at hud-system's left edge, so that
+	   has to come to 21: padding = 12.5. Keeping the panel where it is and moving the padding is what
+	   holds the outer edge on the bar's frame line while the column lines up. */
 	.hud-shell[data-layout='desktop'] .menu-popup {
 		left: -16px;
+		padding-left: 12.5px;
 	}
 	/* Smallest portrait phones (e.g. 375×667): shrink the popup + rows further. */
 	@media (max-height: 680px) {
@@ -2725,29 +2765,59 @@
 	   the buy-bonus/capsule across to under the nav. Bottom-anchored so it sits beneath the buy-bonus. */
 	.ls-win {
 		position: absolute;
-		left: calc(var(--ls-buy-x, 79.5%) - clamp(56px, 12vw, 128px));
-		right: clamp(4px, 1vw, 14px);
-		bottom: clamp(8px, 4.5vh, 30px);
+		/* Design: a 133x26 bar at x 643..776 of 800, 8px clear of the bottom. Anchored by its RIGHT
+		   edge with a min width rather than pinned on both sides, so a long win amount grows the bar
+		   leftward instead of spilling out of it. (It used to be pinned to the buy badge's centre,
+		   which moved into the nav column.) */
+		right: 3vw;
+		left: auto;
+		bottom: clamp(6px, 2.2vh, 20px);
+		/* 16.6% is the design's own bar width; 12% is narrower on purpose, to hand the width back to
+		   the board (user, 2026-09-11). stateGame's LS_WIN_LEFT mirrors 1 - right - this. A long win
+		   amount still grows the bar leftward up to max-width. */
+		min-width: 12%;
+		max-width: 46%;
 		display: flex;
-		justify-content: center;
+		justify-content: flex-end;
 	}
-	.ls-win .ls-win-pill {
+	/* Scoped under the layout attribute so it outranks the generic `[data-layout='landscape']
+	   .value-pill` rule — which is more specific than a bare `.ls-win .ls-win-pill` and was winning,
+	   collapsing this into a 98x12 sliver instead of the design's 184x26 bar. */
+	.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill {
 		width: 100%;
 		box-sizing: border-box;
 		flex-direction: row;
 		align-items: center;
-		justify-content: center;
-		gap: clamp(4px, 1.2vw, 12px);
-		background: var(--hud-bar);
-		border: 2px solid var(--hud-bar-edge);
-		border-radius: 8px;
+		/* Design: the label sits against the left edge and the amount against the right, not the two
+		   centred as a pair. */
+		justify-content: space-between;
+		gap: clamp(6px, 1.6vw, 16px);
+		background: var(--hud-bar-dark);
 		border: none;
+		/* The design's chip is a ROUNDED bar (~10px on its 800x360 frame); this rule used to end in a
+		   second `border-radius: 0` that squared it off. */
+		border-radius: clamp(5px, 1.25vw, 12px);
 		box-shadow: none;
 		backdrop-filter: none;
-		border-radius: 0;
 		min-width: 0;
-		/* Roomier vertical padding so the black box reads clearly (matches the balance box). */
-		padding: clamp(5px, 2.7vh, 12px) clamp(10px, 2.4vw, 22px);
+		padding: clamp(4px, 2vh, 10px) clamp(8px, 2vw, 18px);
+	}
+	/* The three bottom-row chips (BET, BALANCE, WIN) are set in POPPINS in the design, not in the
+	   Audiowide the rest of the HUD uses for numerals — measured, not guessed: the design's
+	   "$1,50.00" has an ink aspect of 4.385, against Poppins 700's 4.52 and Audiowide's 5.98 (whose
+	   slashed zero is the giveaway). Scoped to landscape; portrait and desktop keep Audiowide. */
+	.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .value,
+	.hud-shell[data-layout='landscape'] .ls-balance .value,
+	.hud-shell[data-layout='landscape'] .ls-bet-val .value {
+		font-family: 'Poppins', 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 700;
+		letter-spacing: 0;
+	}
+	.hud-shell[data-layout='landscape'] .ls-win .label-text,
+	.hud-shell[data-layout='landscape'] .ls-balance .label-text {
+		font-family: 'Poppins', 'Chakra Petch', 'Inter', sans-serif;
+		font-weight: 700;
+		letter-spacing: 0.03em;
 	}
 	.ls-win .label--balance {
 		justify-content: center;
@@ -2757,7 +2827,7 @@
 		justify-content: center;
 	}
 	.ls-win .ls-win-pill .value {
-		font-size: clamp(0.42rem, 2.9vh, 0.85rem);
+		font-size: clamp(0.42rem, 3.9vh, 1rem);
 		white-space: nowrap;
 		color: #fff;
 	}
@@ -2766,15 +2836,10 @@
 		color: #fff;
 	}
 
-	/* Smaller landscape phones (height ≤ 400px, e.g. 812×375 / 568×320): the buy-bonus badge under the
-	   capsule is smaller, so its BUY / BONUS label shrinks too. (The tiniest screens shrink further in the
-	   max-height:300px block below.) */
-	@media (max-height: 400px) {
-		.hud-shell[data-layout='landscape'] .ls-buy .buy-btn__label {
-			font-size: clamp(0.16rem, 1.55vh, 0.42rem);
-			max-width: 78%;
-		}
-	}
+	/* NOTE: the BONUS pill's label used to be stepped down again here (max-height 400 and 300). Both
+	   overrides were left over from the round badge this replaced, and they OUTRANKED the rule above
+	   — which is why raising it to the design's ~14px silently kept rendering at 6.3px. The base is
+	   quoted in vh, so it already scales with the screen; it does not need a second opinion. */
 
 	/* Very small landscape screens (e.g. 400×225): the balance / bet / buy text is set by its vh term
 	   (above the pixel mins), so shrink those vh sizes here to make the text-heavy HUD a lot smaller
@@ -2789,13 +2854,7 @@
 		.hud-shell[data-layout='landscape'] .ls-bet-val .value {
 			font-size: clamp(0.24rem, 2vh, 0.42rem);
 		}
-		/* Buy-bonus badge under the capsule: smaller BUY / BONUS text so it fits the shrunk badge on
-		   these short landscape screens. */
-		.hud-shell[data-layout='landscape'] .ls-buy .buy-btn__label {
-			font-size: clamp(0.14rem, 1.5vh, 0.28rem);
-			max-width: 74%;
-		}
-		/* WIN under the capsule: shrink so it clears the board's right edge and the capsule above it. */
+		/* WIN, bottom right: shrink so it clears the board's right edge. */
 		.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .value {
 			font-size: clamp(0.34rem, 2.4vh, 0.5rem);
 		}

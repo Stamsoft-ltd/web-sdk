@@ -15,7 +15,7 @@
 	// used to be the compass, which is only the top-paying symbol and says nothing about the mode.
 	// (Flattened composite from scripts/build-paytable-symbols.py, not the board's own texture: the
 	// wild is assembled from loose parts, so its base file alone is a horseshoe with no plaque.)
-	const iconFeature = ap('/assets/components/symbols/magnetic/special/wild_full.webp?v=20260904');
+	const iconFeature = ap('/assets/components/symbols/magnetic/special/wild_full.webp?v=20260911');
 	// The two bought bonuses picture the SCATTER with their trigger count on a lime pill (design
 	// 9248:25536 / 25542, 2026-09-09) — the ringed planet and the molecule they showed before are
 	// gone. Both cards use the one scatter image; the pill is drawn in CSS off `pill` below.

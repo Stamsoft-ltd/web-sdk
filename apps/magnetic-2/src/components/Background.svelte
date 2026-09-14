@@ -10,6 +10,7 @@
 	import { BACKGROUND_LIGHTS } from '../game/backgroundLights';
 	import { PORTRAIT_BACKGROUND_RATIO, SYMBOL_H, SYMBOL_W } from '../game/constants';
 	import { BOARD_SIZES } from '../game/constants';
+	import { PORTRAIT_SHIP_ART_ASPECT, PORTRAIT_SHIP_W_OF_LOGO } from '../game/stateGame.svelte';
 	import type { PaySymbolName } from '../game/types';
 
 	const props: {
@@ -172,27 +173,56 @@
 		w: 0.2143,
 		hullAspect: 1.4112,
 	};
-	// PORTRAIT hangs the same ship top-CENTRE, over the logo, with its beam coming down into the gap
-	// above the board (Figma 4336:15793, the mobile design: node 9126:19898 is this same composite at
-	// 113x360 of the frame width, dead centre).
+	// PORTRAIT does not draw a ship at all — GameLogoFrame draws the whole lockup, saucer included,
+	// and this box only says WHERE that saucer is so the tractor beam can hang off it.
 	//
-	// It is not the design's own y. The design was composed inside a phone MOCK whose Stake header
-	// covers the top 93px, and it hangs the ship half behind that header — in the real game there is
-	// no header there, so the same y would hang half the saucer off the top of the canvas. The ship
-	// is dropped until it is fully in shot instead, which is what the mock shows a player seeing.
-	const UFO_PORTRAIT = {
-		cx: 0.5,
-		cy: 0.075,
-		w: 0.26,
-		hullAspect: 1.4112,
-	};
+	// Two rounds got it here. The ship was first hung as a flat cover fraction and drifted away from
+	// the logo across the portrait range, reading as a SECOND saucer stacked on the lockup's own one;
+	// quoting it against the logo's live rect fixed that. Then the ship had to STOP MOVING: the
+	// saucer portrait needs is the lockup's own (it is the only one with the alien in the dome), and
+	// a saucer that flies in again and then hovers cannot also be a part of a static mark. So the
+	// splash hands the assembled lockup over and it stays put (user, 2026-09-11) — which leaves this
+	// as pure geometry, and the sprite, the running lights and the beacon all skipped below.
+	//
+	// The numbers are measured off the lockup itself by scripts/build-room-art.py and live in
+	// stateGame.svelte.ts, next to the plate they are quoted against.
+	const UFO_PORTRAIT = $derived.by(() => {
+		const main = context.stateLayoutDerived.mainLayout();
+		const scale = main.scale || 1;
+		const canvasTopMain = main.height * 0.5 - canvas.height / (2 * scale);
+		// The logo, in canvas px — the same main-coords → canvas conversion SplashIntro's handoff uses.
+		const logoW = context.stateGameDerived.portraitLogoWidth() * scale;
+		const shipCY = (context.stateGameDerived.portraitShipCY() - canvasTopMain) * scale;
+		return {
+			cx: 0.5,
+			// Back into the fractions the arrival maths below is written in.
+			cy: 0.5 + (shipCY - canvas.height * 0.5) / Math.max(1, cover.height),
+			w: (PORTRAIT_SHIP_W_OF_LOGO * logoW) / Math.max(1, cover.width),
+			hullAspect: PORTRAIT_SHIP_ART_ASPECT,
+		};
+	});
+	// MOBILE LANDSCAPE (popout L and S) draws NO ship and NO beam. The design (4161:22199) has
+	// neither, and there is nowhere left to put one: the board now fills 0.965 of the height and runs
+	// from the rail across to the nav bar, so the sky the desktop ship hangs in is not on screen. It
+	// was briefly parked in the gutter between the board and the nav; the user took that gutter away
+	// with the board's new size and asked for the ship to go with it (2026-09-11).
+	//
+	// NOTE: this also takes the beam-delivered magnet symbol out of mobile landscape. The symbol
+	// still arrives on the board — <BeamSymbol> is a child of the ship's own container, so there is
+	// simply no cone to fly it in down.
+	const isLandscapeMobile = $derived(context.stateLayoutDerived.layoutType() === 'landscape');
 	const UFO = $derived(isPortrait ? UFO_PORTRAIT : UFO_LANDSCAPE);
 	/** The emitter oval on the saucer's underside, in sprite-box fractions — the beam hangs off this. */
 	// `cy`/`ry` are the oval itself, read off the sprite's centre column (ufo_ship.webp, 640x454):
 	// outline 0.858-0.958 of the box height, fill 0.863-0.952. The cone leaves the oval's CENTRE,
 	// drawn over the hull's underside — it used to start at the hull's edge, behind it, which read
 	// as a light coming from behind the ship rather than out of its emitter (2026-09-08).
-	const EMITTER = { cx: 0.5008, cy: 0.908, w: 0.3875, ry: 0.05, bottom: 0.9669 };
+	const EMITTER_LANDSCAPE = { cx: 0.5008, cy: 0.908, w: 0.3875, ry: 0.05, bottom: 0.9669 };
+	// PORTRAIT's saucer is the lockup's own (splash/logo_saucer.webp, 664x404), which paints its
+	// mouth as a flat magenta trapezoid rather than a washed-out oval — different art, so its own
+	// measurement. scripts/build-room-art.py prints these.
+	const EMITTER_PORTRAIT = { cx: 0.4992, cy: 0.9196, w: 0.253, ry: 0.0569, bottom: 0.9777 };
+	const EMITTER = $derived(isPortrait ? EMITTER_PORTRAIT : EMITTER_LANDSCAPE);
 	/** The antenna ball, centre-relative box fractions — the beacon glow sits on it. */
 	const BEACON = { x: -0.0012, y: -0.4074, r: 0.0488 };
 	// Beam reach, in HULL widths: the design's OWN spread, its art running from the emitter's 0.0439
@@ -205,16 +235,30 @@
 	// background at one point so the cone stopped at the old lab window's inner sill; restored to the
 	// design's figures on request.
 	const BEAM = { wOfHull: 0.9435, lenOfHull: 1.2487 };
-	// Portrait shortens the reach: the board plate starts much closer to the ship there, and a beam
-	// at full length runs behind it and loses its pool — the one part of the cone that says the light
-	// is landing on something. The design stops it just above the board.
-	const BEAM_LEN_OF_HULL = $derived(isPortrait ? 0.78 : BEAM.lenOfHull);
+	// PORTRAIT cannot use a hull-width reach. Its ship is the lockup's saucer, pinned to the top of
+	// the screen at roughly a fifth of the landscape ship's size, while the board sits ~290 canvas px
+	// below it whatever the phone — so 0.78 hull widths (~40px) ended the cone BEHIND the logo plate,
+	// which is why there was no beam to see (user: "start the beam from the alien ship"). Portrait
+	// therefore measures the reach to the BOARD and keeps the art's own spread, so the cone still has
+	// the design's proportions; only its length is answerable to the layout.
+	// 0.93 of the way from the beam mouth to the grid's top edge, which lands the pool ~10 canvas px
+	// above the board — the design's own figure, measured on 4336:15793 (360x800: the pool's lower
+	// edge at y 212, the board plate's top at 221). The spread that comes out of it matches too: at
+	// 390x844 the cone's mouth is 0.92 of the lockup's width against the design's 0.95.
+	const PORTRAIT_BEAM_REACH = 0.93;
+	const boardTopY = $derived.by(() => {
+		const main = context.stateLayoutDerived.mainLayout();
+		const scale = main.scale || 1;
+		const canvasTopMain = main.height * 0.5 - canvas.height / (2 * scale);
+		const board = context.stateGameDerived.boardLayout();
+		return (board.y - board.height * 0.5 * board.boardScale - canvasTopMain) * scale;
+	});
 
 	const shipLoaded = $derived(!!context.stateApp.loadedAssets?.ufoShip);
 	// Both orientations now. It used to be landscape-only, back when portrait cropped into an
 	// interior room with no window for the ship to hang in; the mobile design (4336:15793) puts it
 	// top-centre over the logo, which is where UFO_PORTRAIT hangs it.
-	const shipShown = $derived(shipLoaded && hasBg);
+	const shipShown = $derived(shipLoaded && hasBg && !isLandscapeMobile);
 
 	const hullW = $derived(UFO.w * cover.width);
 	const hullH = $derived(hullW / UFO.hullAspect);
@@ -240,6 +284,14 @@
 	let arriveTimer = 0;
 	$effect(() => {
 		if (!props.revealed || !shipShown) return;
+		// PORTRAIT never flies. The splash has just translated the assembled lockup — saucer and all
+		// — onto this exact spot, so a second arrival would be the same ship arriving twice (user,
+		// 2026-09-11). It is parked the instant the hand-off lets go, and the beam takes it from
+		// there.
+		if (isPortrait) {
+			if (!context.stateGame.logoHandoffActive) approach.set(1, { duration: 0 });
+			return;
+		}
 		clearTimeout(arriveTimer);
 		arriveTimer = setTimeout(() => approach.set(1), FLIGHT_DELAY_MS) as unknown as number;
 		return () => clearTimeout(arriveTimer);
@@ -258,12 +310,16 @@
 	// roughly a third of the old rates) because the ship read as distracting on screen. Amplitude
 	// alone was not the problem: a small displacement at 37 rad/s is a buzz, and the eye catches
 	// the rate long before it judges the distance. Slower and smaller together reads as a hover.
+	/** 0 in portrait: the ship is part of a static mark there, so every one of the living-ship
+	 *  motions below — brake, tremble, hover drift, bank — is switched off rather than scaled down.
+	 *  A lockup whose saucer breathes against its own plate reads as a printing error. */
+	const alive = $derived(isPortrait ? 0 : 1);
 	let arrivedAt = $state<number | null>(null);
 	$effect(() => {
 		if (near > 0.985 && arrivedAt === null) arrivedAt = shipClock;
 	});
 	const brake = $derived(arrivedAt === null ? 0 : Math.exp(-(shipClock - arrivedAt) * 2.4));
-	const shake = $derived(hullW * (0.0007 + 0.009 * brake) * near);
+	const shake = $derived(hullW * (0.0007 + 0.009 * brake) * near * alive);
 	/** Where it parks. The background COVERS the canvas, so on a viewport squarer than the art the
 	 *  cover is wider than the canvas and the design's column runs off the right edge — a 3:2
 	 *  window lost a third of the saucer behind the win card. Keep the whole ship in shot. */
@@ -279,7 +335,7 @@
 			(parkX - farX) * near +
 			(Math.sin(shipClock * 13.9) + 0.6 * Math.sin(shipClock * 8.9 + 2.1)) * shake +
 			// A lazy sideways drift to go with the hover: a ship that only moves up and down is a lift.
-			Math.sin(shipClock * 0.31 + 0.9) * cover.width * 0.006 * near,
+			Math.sin(shipClock * 0.31 + 0.9) * cover.width * 0.006 * near * alive,
 	);
 	const shipY = $derived(
 		canvas.height * 0.5 +
@@ -291,14 +347,16 @@
 			// ship never repeats a path — one sine alone reads as a sprite on a spring.
 			(Math.sin(shipClock * 0.52) * 0.011 + Math.sin(shipClock * 0.23 + 2.2) * 0.005) *
 				canvas.height *
-				near,
+				near *
+				alive,
 	);
 	// Banked while it closes, level once it parks, then a hair of roll in the tremble.
 	const shipRotation = $derived(
-		-0.16 * (1 - near) +
-			Math.sin(shipClock * 7.2) * 0.0011 * (1 + brake * 5) * near +
-			// The hover has to bank, or the saucer slides sideways dead level like a cursor.
-			Math.sin(shipClock * 0.31 + 0.9 + Math.PI / 2) * 0.02 * near,
+		alive *
+			(-0.16 * (1 - near) +
+				Math.sin(shipClock * 7.2) * 0.0011 * (1 + brake * 5) * near +
+				// The hover has to bank, or the saucer slides sideways dead level like a cursor.
+				Math.sin(shipClock * 0.31 + 0.9 + Math.PI / 2) * 0.02 * near),
 	);
 
 	/** Seconds between grabs — the beam flares and whatever it is holding is hauled up the cone. */
@@ -423,11 +481,30 @@
 
 	const beamAxisX = $derived((EMITTER.cx - 0.5) * hullW);
 	const beamTopY = $derived(hullY - hullH / 2 + EMITTER.cy * hullH);
-	const beamLen = $derived(BEAM_LEN_OF_HULL * hullW);
-	const beamRadAt = (s: number) => {
-		const rTop = (EMITTER.w * hullW) / 2;
-		return rTop + ((BEAM.wOfHull * hullW) / 2 - rTop) * s;
-	};
+	const beamLen = $derived(
+		isPortrait
+			? Math.max(hullW, (boardTopY - (shipY + beamTopY)) * PORTRAIT_BEAM_REACH)
+			: BEAM.lenOfHull * hullW,
+	);
+	/** How far the portrait cone spreads, as mouth width over length. The art's own is
+	 *  wOfHull/lenOfHull = 0.756, and at portrait's reach that drew a cone two thirds as wide as the
+	 *  lockup itself — right for the landscape ship hanging in open sky, too heavy under a mark at
+	 *  the top of a phone screen (user: "a bit less wider", 2026-09-11). */
+	const PORTRAIT_BEAM_SPREAD = 0.6;
+	/** The cone's radius at its MOUTH. Landscape quotes it off the hull; portrait off its measured
+	 *  reach, so the cone's shape is a fixed thing and only its length answers to the layout. */
+	const beamMouthR = $derived(
+		isPortrait ? (beamLen * PORTRAIT_BEAM_SPREAD) / 2 : (BEAM.wOfHull * hullW) / 2,
+	);
+	/** The cone's radius where it LEAVES the ship. Landscape takes the painted emitter oval's own
+	 *  half-width; portrait cannot — its cone is short and steep, and a cone that narrow at the top
+	 *  emerges from under the lockup as a thin spike where the design has a broad shaft (measured on
+	 *  4336:15793: 0.405 lockup widths across at the mouth, which is 0.44 hull widths of radius).
+	 *  Nothing is lost by widening it there: the mouth sits behind the plate, so the only part ever
+	 *  seen is the cone below it. Taken back to 0.35 with the spread above, so the cone narrows
+	 *  along its whole length rather than only at the bottom, which would have flattened its taper. */
+	const beamTopR = $derived(isPortrait ? 0.35 * hullW : (EMITTER.w * hullW) / 2);
+	const beamRadAt = (s: number) => beamTopR + (beamMouthR - beamTopR) * s;
 	/** 0..1 through the current trip up the cone. */
 	const suckU = $derived(
 		suckT0 === null
@@ -571,9 +648,9 @@
 		const x0 = (EMITTER.cx - 0.5) * hullW;
 		// The cone leaves the emitter oval's centre (see EMITTER).
 		const y0 = hullY - hullH / 2 + EMITTER.cy * hullH;
-		const rTop = (EMITTER.w * hullW) / 2;
-		const rBot = (BEAM.wOfHull * hullW) / 2;
-		const len = BEAM_LEN_OF_HULL * hullW * on;
+		const rTop = beamTopR;
+		const rBot = beamMouthR;
+		const len = beamLen * on;
 		const radAt = (s: number) => rTop + (rBot - rTop) * s;
 		// Where the hull sprite's bottom edge cuts the cone. The cap owns [0, S0] and is drawn in
 		// front of the hull; the back owns [S0, 1] behind it. Nothing is drawn twice.
@@ -1117,36 +1194,43 @@
 					/>
 				</Container>
 			{/if}
-			<Sprite key="ufoShip" anchor={0.5} x={0} y={hullY} width={hullW} height={hullH} />
+			<!-- LANDSCAPE only. Portrait's saucer is drawn by GameLogoFrame as part of the lockup,
+			     in front of this container, so a sprite here would be the same saucer twice — and
+			     the lamp table below is measured on ufo_ship.webp, which is not that drawing. -->
+			{#if !isPortrait}
+				<Sprite key="ufoShip" anchor={0.5} x={0} y={hullY} width={hullW} height={hullH} />
+			{/if}
 			<!-- The beam's mouth, over the hull's underside: the light leaves the emitter oval. -->
 			<Graphics draw={(gr) => (beamCapG = gr as unknown as G)} />
 			<!-- Running lights over the hull's own painted lamps (game/ufoLamps.ts). The art paints
 			     them flat; this is the light. -->
-			<Graphics
-				blendMode="add"
-				draw={(gr) => {
-					gr.clear();
-					drawUfoLamps(gr, {
-						hullX: 0,
-						hullY,
-						hullW,
-						hullH,
-						clock: shipClock,
-						level: near,
-					});
-					// The antenna's ball is a beacon: a slow blink, off-phase from the rim chase.
-					const beacon = 0.5 + 0.5 * Math.sin(shipClock * 1.15);
-					for (let i = 0; i < 7; i += 1) {
-						const u = i / 6;
-						gr.circle(
-							BEACON.x * hullW,
-							hullY + BEACON.y * hullH,
-							BEACON.r * hullW * (0.4 + u * 1.6),
-						);
-						gr.fill({ color: 0xff6be0, alpha: 0.1 * (1 - u) ** 2.2 * beacon * near });
-					}
-				}}
-			/>
+			{#if !isPortrait}
+				<Graphics
+					blendMode="add"
+					draw={(gr) => {
+						gr.clear();
+						drawUfoLamps(gr, {
+							hullX: 0,
+							hullY,
+							hullW,
+							hullH,
+							clock: shipClock,
+							level: near,
+						});
+						// The antenna's ball is a beacon: a slow blink, off-phase from the rim chase.
+						const beacon = 0.5 + 0.5 * Math.sin(shipClock * 1.15);
+						for (let i = 0; i < 7; i += 1) {
+							const u = i / 6;
+							gr.circle(
+								BEACON.x * hullW,
+								hullY + BEACON.y * hullH,
+								BEACON.r * hullW * (0.4 + u * 1.6),
+							);
+							gr.fill({ color: 0xff6be0, alpha: 0.1 * (1 - u) ** 2.2 * beacon * near });
+						}
+					}}
+				/>
+			{/if}
 		</Container>
 	{/if}
 {/if}

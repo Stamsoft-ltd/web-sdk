@@ -228,12 +228,15 @@ const getRoundFromGeneratedBooks = (game, mode = 'BASE', seed = Date.now()) => {
 const buildRound = ({ game, amountMicro, mode, seed }) => {
   const roundData = getRoundFromGeneratedBooks(game, mode, seed) || game.getRoundForMode(mode, seed);
   const payoutMultiplier = roundData.payoutMultiplier;
-  const stakeMultiplier = game.modeCostMultipliers[mode] || 1;
-  const stakeAmount = amountMicro * stakeMultiplier;
   const payout = Math.round(amountMicro * payoutMultiplier);
+  // `amount` is the BASE bet, not the total stake — the platform's own documented round payload
+  // (Authenticate.svelte: amount 1000000 / payout 33400000 / payoutMultiplier 33.4 on mode BONUS)
+  // has payout === amount * payoutMultiplier even for a bought mode, and the resume flow restores
+  // stateBet.betAmount straight from it. Writing the cost-multiplied stake here made a $300 MYSTERY
+  // round replay as a $90,000 base bet whose 1.18x multiplier no longer reconciled with its $354 win.
   const round = {
     betID: nextBetId++,
-    amount: stakeAmount,
+    amount: amountMicro,
     payout,
     payoutMultiplier,
     active: false,
@@ -315,7 +318,10 @@ const server = https.createServer(
     if (req.method === 'GET' && pathname.startsWith('/bet/replay/')) {
       const [, , , routeGame, version, mode, event] = pathname.split('/');
       const replayGame = Object.values(GAME_REGISTRY).find((entry) => entry.gameID === routeGame) || game;
-      const stored = replayStore.get(`${replayGame.slug}:${event}`);
+      // Keyed by bet id alone, so guard the mode: replaying event 1 as BONUS must not serve back the
+      // MYSTERY round that happened to get that id earlier in this process.
+      const storedRound = replayStore.get(`${replayGame.slug}:${event}`);
+      const stored = storedRound && storedRound.mode === String(mode).toUpperCase() ? storedRound : null;
       const replaySeed = Number(url.searchParams.get('seed') || Date.now());
       const fallback = getRoundFromGeneratedBooks(replayGame, mode, replaySeed) || replayGame.getReplayRound({ mode, seed: replaySeed });
       const payload = stored || {

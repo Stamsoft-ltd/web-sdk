@@ -229,6 +229,12 @@
 		left: 50%;
 		top: 50%;
 		transform: translate(-50%, -50%);
+		/* This app has no global `* { box-sizing: border-box }` — components opt in one by one, and
+		   a <button> only looks like it inherits one because Chrome's UA sheet gives it border-box.
+		   Without this line the 92%/94% cap below is a CONTENT width, so the card rendered 34px wider
+		   than its own cap (padding 2x16 + 2x1 border) and bled past both screen edges at 390px
+		   portrait, clipping its own corners and shadow. `max-height` was off by the same amount. */
+		box-sizing: border-box;
 		width: min(430px, 92%);
 		max-height: 94%;
 		overflow: auto;

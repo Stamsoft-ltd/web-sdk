@@ -685,7 +685,7 @@ plain-HTTP twin on 8881) serves it.
   This is PRE-EXISTING — the rebuild reproduced the old set exactly — but it is squarely the kind of
   thing the 2026-08-22 payout-table round was rejected for.
   Not fixed unilaterally because (a) nothing in the repo says which is right: no books ship here,
-  the force records carry no `multiplier` field, and `config_fe_magnetic_2.json` has no multiplier
+  the force records carry no `multiplier` field, and `config_fe_0_0_magnetic_2.json` has no multiplier
   data; and (b) the numbers share ONE font size so that x2 and x10 match, so adding a three-digit
   `x100` shrinks all seven existing discs. Get the real list from the math side first, then re-run
   `build-wild-mult-art.py` once.
@@ -1029,7 +1029,7 @@ lab is retired. All three are the SAME terrace as the base game, repainted for t
   `freeSpinTrigger.positions.length` alongside it, is read by `Background.svelte` and nothing else,
   and a Feature Spin leaves it null so that one spin stays outside in the base sky.
 - **Zero Point Protocol has no bet mode of its own.** It is a room, not a bonus: nothing in
-  `library/configs/config_fe_magnetic_2.json` buys it, and mock-rgs's `SUPER` book lands exactly 4
+  `library/configs/config_fe_0_0_magnetic_2.json` buys it, and mock-rgs's `SUPER` book lands exactly 4
   scatters, so the only way it opens today is a real book with 5. Verified by temporarily lowering
   the threshold to 4 and buying a MEGA CHAIN.
 - **Core Overload's frame stacks its painting over the base one**, which it fully covers. Only the

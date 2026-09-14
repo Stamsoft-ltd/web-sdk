@@ -31,10 +31,12 @@ of what the designer composed. So the arch is placed from the two LIMB blobs and
 from its own blob, all four of which the colour keys separate cleanly because every cap carries a
 full dark outline that cuts it off from the limb it sits on.
 
-The arch layer is the FULL magnet raster, caps included, rather than a cut-out. Its own caps end up
-entirely underneath the repositioned ones (same x to within 2px, and everything below the plaque
-line is covered anyway), so cutting them out would buy nothing and would risk exposing a bite in the
-limb ends if a future reposition moved a cap the other way.
+The arch layer has its own caps CUT OUT. They do NOT hide under the repositioned pair: the design
+both moved the caps up and squashed them ~13%, so the raster's copies sit lower and taller, and
+their white N / S glyphs stick out from under the new ones -- which on the board reads as a single
+broken letter with white inside it. The cut is the same grown ink each cap is lifted with, taken a
+few steps further and stopped at the limb's colour, so it carries the old cap's outline away with it
+and the junction it opens is covered by the re-seated cap sitting above it.
 
 Outputs onto the shared 328x264 symbol canvas:
 
@@ -161,6 +163,34 @@ def grow(mask: np.ndarray, n: int) -> np.ndarray:
     return m
 
 
+def fill_holes(mask: np.ndarray) -> np.ndarray:
+    """The mask with every enclosed hole closed.
+
+    The outside is flooded in from a one-pixel border laid around the mask's own box; whatever the
+    flood cannot reach is a hole. Bounded to that box, so the walk covers the part, not the raster.
+    """
+    x0, y0, x1, y1 = mbb(mask)
+    sub = mask[y0:y1, x0:x1]
+    h, w = sub.shape
+    free = np.ones((h + 2, w + 2), bool)
+    free[1:-1, 1:-1] = ~sub
+    out = np.zeros_like(free)
+    out[0, 0] = True
+    while True:
+        g = out.copy()
+        g[1:, :] |= out[:-1, :]
+        g[:-1, :] |= out[1:, :]
+        g[:, 1:] |= out[:, :-1]
+        g[:, :-1] |= out[:, 1:]
+        g &= free
+        if np.array_equal(g, out):
+            break
+        out = g
+    filled = mask.copy()
+    filled[y0:y1, x0:x1] = ~out[1:-1, 1:-1]
+    return filled
+
+
 def cap_and_limb(mask: np.ndarray, name: str):
     """Split one pole's colour into its LIMB and its CAP, as (mask, box) pairs.
 
@@ -190,7 +220,11 @@ def cap_ink(cap: np.ndarray, limb: np.ndarray):
     for r in range(1, 60):
         nxt = grow(cap, r)
         if (nxt & limb).any():
-            return grown, r - 1
+            # Holes are filled at the end, not per step: the cap's colour key is a ring around the
+            # white N / S glyph, and without this the cap layer would be cut with its own letter
+            # punched out of it -- which is exactly what a hollow letter over the arch's leftover
+            # solid one looked like.
+            return fill_holes(grown), r - 1
         grown = nxt
     die("a cap's outline never closed; the growth ran away")
 
@@ -342,7 +376,24 @@ def main() -> None:
         size = (max(1, round(b[2] - b[0])), max(1, round(b[3] - b[1])))
         rendered[key] = crop.resize(size, Image.LANCZOS)
 
-    raster("magnet_ns", "magnet")
+    # The arch layer has its OWN caps CUT OUT. Leaving them in does not work: the design moved the
+    # caps up and squashed them, so the raster's pair does not hide under the repositioned pair --
+    # their white N / S glyphs stick out from under the new ones and read as one broken letter with
+    # white inside it. The cut is the same grown ink the caps themselves are cut from, so it takes
+    # the cap outline with it and stops short of the limb's colour; what it leaves behind sits below
+    # the plaque line.
+    arch = np.array(mag_im)
+    caps_cut = cap_layers["cap_n"][0] | cap_layers["cap_s"][0]
+    # The growth that built each cut stopped one step before the limb's colour, which leaves the
+    # last hairline of the old cap's outline behind. Take a few more steps and subtract the limbs:
+    # the only thing between a cap and its limb is that outline, and the junction it opens up is
+    # covered by the re-seated cap, which sits HIGHER than the one being cut out.
+    caps_cut = grow(caps_cut, 6) & ~(src_limb_n_m | src_limb_s_m)
+    arch[:, :, 3] = np.where(caps_cut, 0, arch[:, :, 3])
+    mb = to_canvas(boxes["magnet"])
+    rendered["magnet"] = Image.fromarray(arch).crop(mag_a).resize(
+        (max(1, round(mb[2] - mb[0])), max(1, round(mb[3] - mb[1]))), Image.LANCZOS
+    )
     raster("eyeblob", "blob")
     raster("bolt", "bolt")
     raster("plaque", "plaque")
