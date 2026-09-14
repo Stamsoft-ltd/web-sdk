@@ -1388,7 +1388,7 @@
 	   big win (e.g. a bonus payout in the millions) never clips and never pushes BET / the buttons
 	   off the wooden bar. */
 	.value-pill--win .value-fit {
-		width: calc(var(--u) * 126);
+		width: calc(var(--u) * 142);
 	}
 
 	.value-pill--win .label--balance {
