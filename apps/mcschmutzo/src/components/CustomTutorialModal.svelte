@@ -299,14 +299,17 @@
 			<span class="tu-page-num">Page {page}/{TOTAL_PAGES}</span>
 		</div>
 	</div>
-	<button
-		class="tu-close"
-		type="button"
-		style={`background-image:url('${closeArt}')`}
-		onclick={props.onclose}
-		aria-label="Close"
-	></button>
 </div>
+
+<!-- Close (X) is a SIBLING of .tu-root (which is transform-centred) so position:fixed reaches the real
+     viewport top-right corner, exactly like the other modals' close buttons. -->
+<button
+	class="tu-close"
+	type="button"
+	style={`background-image:url('${closeArt}')`}
+	onclick={props.onclose}
+	aria-label="Close"
+></button>
 
 <style>
 	.tu-backdrop {
@@ -349,9 +352,9 @@
 	   overflow-hidden popup, so it isn't clipped). */
 	.tu-close {
 		--x-size: clamp(40px, 5.4vmin, 52px);
-		position: absolute;
-		top: calc(-1 * var(--x-size) - clamp(4px, 1.4vmin, 10px));
-		right: clamp(0px, 1vmin, 6px);
+		position: fixed;
+		top: 20px;
+		right: 20px;
 		z-index: 60;
 		width: var(--x-size);
 		aspect-ratio: 1;
@@ -936,12 +939,12 @@
 			gap: clamp(8px, 3vmin, 14px);
 			padding: clamp(4px, 1.5vmin, 10px) 0 clamp(6px, 2vmin, 12px);
 		}
-		/* Put the X back OUTSIDE, just above the popup's top-right corner (like the other modals) — the
-		   shorter popup above leaves room so it no longer clips off the top. */
+		/* Close (X) at the viewport top-right corner, like the other modals. The narrower/shorter popup
+		   (above) keeps the corner clear so it doesn't overlap. */
 		.tu-close {
 			--x-size: clamp(20px, 9dvh, 30px);
-			top: calc(-1 * var(--x-size) - 5px);
-			right: 2px;
+			top: 6px;
+			right: 6px;
 		}
 	}
 </style>
