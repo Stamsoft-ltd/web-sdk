@@ -2246,9 +2246,9 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: clamp(4px, 3dvh, 22px);
-		/* Generous top/bottom padding squeezes the first/last (burger, AUTO) well inside the bar's
-		   rounded ends; the moderate gap keeps the whole content clear of the screen edges. */
+		/* Gap makes the bar tall (runs down near the bottom); the generous top/bottom padding still
+		   keeps the first/last (burger, AUTO) well inside the bar's rounded ends. */
+		gap: clamp(6px, 5dvh, 34px);
 		padding: clamp(14px, 5dvh, 34px) 0;
 		background: var(--ls-navbox) center / 100% 100% no-repeat;
 	}
