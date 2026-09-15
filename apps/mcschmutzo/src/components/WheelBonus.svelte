@@ -166,9 +166,12 @@
 		text-align: center;
 		pointer-events: none;
 	}
+	/* Segment type is sized in cqw so it scales with the wheel; the floors are kept low so a small
+	   wheel (portrait phones, the 400×225 landscape popout) keeps the same proportions as the big
+	   desktop wheel instead of the floor blowing the text past the narrow wedges. */
 	.wb-fg-num {
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
-		font-size: clamp(16px, 5.4cqw, 34px);
+		font-size: clamp(7px, 4.7cqw, 30px);
 		line-height: 0.9;
 		color: #a5210f;
 		text-shadow: 0 1px 0 rgba(255, 244, 224, 0.6);
@@ -176,21 +179,21 @@
 	.wb-fg-text {
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(7px, 2cqw, 13px);
-		letter-spacing: 0.03em;
+		font-size: clamp(3px, 1.7cqw, 12px);
+		letter-spacing: 0.02em;
 		line-height: 1;
 		color: #4a2c18;
 		text-transform: uppercase;
 	}
 	.wb-steps {
 		margin-top: auto;
-		padding: 4% 8%;
+		padding: 3% 6%;
 		border-radius: 999px;
 		background: linear-gradient(180deg, #c62d1a 0%, #9c1c0d 100%);
 		color: #ffffff;
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(7px, 1.9cqw, 12px);
+		font-size: clamp(3px, 1.5cqw, 11px);
 		line-height: 1.05;
 		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 		white-space: nowrap;
@@ -222,9 +225,9 @@
 		pointer-events: none;
 	}
 
-	/* SPIN button below the wheel (spin-button-box art + centred label). */
+	/* SPIN button below the wheel (spin-button-box art + centred label), ~half the wheel width. */
 	.wb-spin {
-		width: min(220px, 52vw);
+		width: min(200px, 45vw);
 		aspect-ratio: 203 / 40;
 		border: 0;
 		padding: 0;
@@ -256,7 +259,8 @@
 		cursor: default;
 	}
 
-	/* Mobile landscape: the wheel is square, so cap it by height so the whole thing (+ SPIN) fits. */
+	/* Mobile landscape: the wheel is square, so cap it by height so the whole thing (+ SPIN) fits.
+	   The segment type already scales with the wheel (cqw + low floors), so no font override here. */
 	@media (max-height: 500px) {
 		.wb-stage {
 			width: auto;
@@ -265,19 +269,8 @@
 		.wb-wheel-wrap {
 			width: min(460px, 84vw, 72dvh);
 		}
-		/* Drop the text floors so number / FREE GAMES / +N STEPS stay inside the narrow inner wedge. */
-		.wb-fg-num {
-			font-size: clamp(11px, 4.4cqw, 30px);
-		}
-		.wb-fg-text {
-			font-size: clamp(5px, 2cqw, 13px);
-		}
-		.wb-steps {
-			font-size: clamp(4px, 1.9cqw, 12px);
-			padding: 2% 4%;
-		}
 		.wb-spin {
-			width: min(200px, 40dvh);
+			width: min(170px, 34dvh);
 		}
 	}
 </style>
