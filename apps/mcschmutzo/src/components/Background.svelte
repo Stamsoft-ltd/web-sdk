@@ -4,7 +4,6 @@
 
 	import { getContext } from '../game/context';
 	import SpecialMascot from './SpecialMascot.svelte';
-	import AnimatedGuy from './AnimatedGuy.svelte';
 
 	const context = getContext();
 	const aspect = 1678 / 937;
@@ -27,11 +26,6 @@
 	const showSpecialMascot = $derived(isFreegame && layoutType === 'desktop');
 	const mascotHeight = $derived(canvas.height * 0.6);
 	const mascotWidth = $derived(mascotHeight * (1019 / 1336));
-	// The chef stands still; only his eyes move (AnimatedGuy).
-	const mascotPupils = [
-		{ key: 'mascotPupilL', nx: 0.3494, ny: 0.3144, nw: 0.0628, nh: 0.0599 },
-		{ key: 'mascotPupilR', nx: 0.472, ny: 0.3121, nw: 0.0687, nh: 0.0599 },
-	];
 	const key = $derived(isFreegame ? 'backgroundWideBonus' : 'backgroundBase');
 	const portraitKey = $derived(isFreegame ? 'backgroundPortraitBonus' : 'backgroundPortrait');
 	const cover = $derived.by(() => {
@@ -96,14 +90,16 @@
 	<Rectangle {...canvas} backgroundColor={0x180903} alpha={0.16} zIndex={-1} />
 {/if}
 {#if showMascot}
-	<AnimatedGuy
-		baseKey="mascotBase"
+	<!-- Original art with the eyes baked in — no more separate pupils (the eye animation was removed,
+	     and the re-placed pupils sat slightly off). -->
+	<Sprite
+		key="mascot"
 		x={canvas.width * 0.86}
 		y={canvas.height * 0.59}
+		anchor={0.5}
 		width={mascotWidth}
 		height={mascotHeight}
 		zIndex={0}
-		pupils={mascotPupils}
 	/>
 {/if}
 {#if showSpecialMascot}

@@ -2,7 +2,6 @@
 	import { Container, Rectangle, Sprite } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
-	import AnimatedGuy from './AnimatedGuy.svelte';
 
 	const context = getContext();
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
@@ -38,11 +37,6 @@
 		raf = requestAnimationFrame(loop);
 		return () => cancelAnimationFrame(raf);
 	});
-	// Chef stands still; only his eyes move (AnimatedGuy).
-	const specialPupils = [
-		{ key: 'specialPupilL', nx: 0.4259, ny: 0.3212, nw: 0.0593, nh: 0.0624 },
-		{ key: 'specialPupilR', nx: 0.5247, ny: 0.3196, nw: 0.0755, nh: 0.0641 },
-	];
 	const grains = $derived(
 		Array.from({ length: COUNT }, (_, i) => {
 			const p = (phase + i / COUNT) % 1;
@@ -63,14 +57,14 @@
 <!-- Chef (behind) salting the pot (in front), with a falling stream of salt grains. The whole group
      sits BEHIND the board (negative zIndex) but in front of the background. -->
 <Container zIndex={-0.5}>
-	<AnimatedGuy
-		baseKey="specialBase"
+	<Sprite
+		key="specialGuy"
 		x={cx}
 		y={guyY}
+		anchor={0.5}
 		width={guyWidth}
 		height={guyHeight}
 		zIndex={0}
-		pupils={specialPupils}
 	/>
 	{#each grains as g}
 		<Rectangle
