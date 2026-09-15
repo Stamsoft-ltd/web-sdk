@@ -2151,7 +2151,7 @@
 	}
 	.ls-win__label {
 		font-family: 'Poppins', sans-serif;
-		font-size: clamp(8px, 2.7vh, 14px);
+		font-size: clamp(7px, 2.3vh, 12px);
 		font-style: normal;
 		font-weight: 700;
 		line-height: normal;
@@ -2161,7 +2161,7 @@
 	.ls-win__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 700;
-		font-size: clamp(11px, 3.4vh, 18px);
+		font-size: clamp(10px, 2.9vh, 15px);
 		color: #fff;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
 	}
@@ -2171,7 +2171,7 @@
 		   format with spaces ("5 000 592,00 kr") would otherwise wrap to a second line inside the
 		   fixed-height pill instead of letting fitText scale them down. */
 		white-space: nowrap;
-		font-size: clamp(7px, 2.4vh, 12px);
+		font-size: clamp(7px, 2.1vh, 11px);
 		font-style: normal;
 		font-weight: 700;
 		line-height: normal;
@@ -2182,7 +2182,7 @@
 		font-family: 'Poppins', sans-serif;
 		font-weight: 700;
 		white-space: nowrap;
-		font-size: clamp(9px, 2.7vh, 13px);
+		font-size: clamp(8px, 2.3vh, 11px);
 		color: #fff;
 	}
 
@@ -2194,11 +2194,11 @@
 		   which is already viewport-driven, so a fixed bottom would pull them back off the BUY BONUS
 		   centre line. */
 		.ls-balance { padding: clamp(2px, 0.8vh, 5px) clamp(6px, 1.4vh, 12px); border-radius: 4.21px; }
-		.ls-balance__label { font-size: clamp(8px, 2.7vh, 14px); font-weight: 700; }
-		.ls-balance__value { font-size: clamp(10px, 3vh, 15px); font-weight: 700; }
+		.ls-balance__label { font-size: clamp(7px, 2.3vh, 12px); font-weight: 700; }
+		.ls-balance__value { font-size: clamp(9px, 2.6vh, 13px); font-weight: 700; }
 		.ls-win { padding: clamp(3px, 1vh, 6px) clamp(7px, 1.6vh, 14px); border-radius: 4.21px; }
-		.ls-win__label { font-size: clamp(9px, 3vh, 15px); font-weight: 700; }
-		.ls-win__value { font-size: clamp(12px, 3.8vh, 19px); font-weight: 700; }
+		.ls-win__label { font-size: clamp(8px, 2.6vh, 13px); font-weight: 700; }
+		.ls-win__value { font-size: clamp(11px, 3.2vh, 16px); font-weight: 700; }
 	}
 
 	/* BET stepper — same small #1F1F1F pill as BALANCE, stretched to BALANCE's width and stacked under
@@ -2218,7 +2218,7 @@
 	.ls-bet__value {
 		font-family: 'Poppins', sans-serif;
 		font-weight: 700;
-		font-size: clamp(12px, 3.5vh, 22px);
+		font-size: clamp(10px, 3vh, 18px);
 		color: #fff;
 		min-width: clamp(40px, 12vh, 108px);
 		flex: 0 0 auto;
@@ -2304,6 +2304,9 @@
 	/* White icon sitting inside the disc (source icons are gold). */
 	.ls-round .ls-icon { width: 46%; height: 46%; object-fit: contain; filter: brightness(0) invert(1); }
 	.ls-round .ls-icon.is-muted { opacity: 1; }
+	/* Lightning/turbo keeps the framed ring (matches the AUTO disc + the desktop nav); only the burger
+	   stays ring-less. */
+	.ls-round--turbo { border: 2px solid #4c433d; }
 	/* AUTO uses the full design art (disc + arrows + "AUTO") — no frame, no white filter (its "AUTO"
 	   is white-on-dark and the filter would erase it), exactly like the desktop AUTO button. */
 	.ls-round--auto { border: 0; background: none; }
@@ -2779,6 +2782,14 @@
 		font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px;
 		letter-spacing: 0.03em; color: #fff;
 	}
+
+	/* Landscape burger popup runs smaller than portrait: the --u (width-based) sizing above is oversized
+	   on the short landscape rail. Scale it by viewport height for the normal landscape range; the
+	   ≤300px block below (later in source) shrinks it further for the tiniest popouts. */
+	.ls-menu-pop { gap: clamp(2px, 0.7dvh, 5px); padding: clamp(4px, 1dvh, 7px); }
+	.ls-menu-pop .pt-menu-item { gap: clamp(3px, 1.2dvh, 7px); padding: clamp(2px, 0.7dvh, 5px) 0; }
+	.ls-menu-pop .pt-menu-item__ic { width: clamp(14px, 5.6dvh, 22px); height: clamp(14px, 5.6dvh, 22px); }
+	.ls-menu-pop .pt-menu-item__label { font-size: clamp(8px, 2.7dvh, 11px); }
 
 	/* Smallest landscape popouts (~400x225, <=300px tall): the burger (☰) menu items are sized off
 	   --u (≈97vw, width-based) with a fixed 12px label, so the SOUND/MUSIC/INFO popup is ~72% of the
