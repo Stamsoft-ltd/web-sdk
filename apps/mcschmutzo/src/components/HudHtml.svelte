@@ -1907,7 +1907,7 @@
 		pointer-events: none;
 		filter: brightness(0) invert(1); /* white refresh icon (Figma) */
 		/* Centre on the new turn-button disc (measured centre 48.35% / 48.97% of the square button). */
-		transform: translate(-2.7%, -1.03%);
+		transform: translate(-4.6%, -1.03%);
 	}
 
 	.spin-btn:not(:disabled):hover {
@@ -2044,6 +2044,14 @@
 		/* Bottom inset shared by the BALANCE/BET stack (bottom-left) and the WIN pill (bottom-right)
 		   so the two readouts sit level in their corners. Scales with viewport height. */
 		--ls-corner-bottom: clamp(4px, 1.8dvh, 14px);
+		/* The board sizes to the viewport height and is centred, so its left/right edges sit at
+		   ≈ 50vw ∓ 50dvh. The readouts cap their width to the gap between that edge and their own
+		   corner offset, so a large BALANCE/BET/WIN scales down (fitPill) instead of sliding over the
+		   board on the smallest landscape (e.g. the 400×225 popout). */
+		--ls-corner-left: clamp(8px, 2vw, 22px);
+		--ls-win-right: calc(
+			clamp(34px, 14dvh, 112px) + clamp(16px, 3vw, 34px) + clamp(8px, 1.5vw, 18px)
+		);
 	}
 	.ls-hud button,
 	.ls-hud .ls-bet__value {
@@ -2068,10 +2076,11 @@
 	   board. The corner is clear of the board (the board doesn't extend full-width to the bottom). */
 	.ls-left {
 		position: absolute;
-		left: clamp(8px, 2vw, 22px);
+		left: var(--ls-corner-left);
 		bottom: var(--ls-corner-bottom);
 		width: max-content;
-		max-width: 34%;
+		/* Never cross the board's left edge (≈ 50vw − 50dvh); 8px keeps a hair of clearance. */
+		max-width: calc(50vw - 50dvh - var(--ls-corner-left) - 8px);
 		display: flex;
 		flex-direction: column;
 		/* stretch so BALANCE and BET share the same width (the wider one — BALANCE — sets it). */
@@ -2117,10 +2126,11 @@
 		position: absolute;
 		/* Clear the vertical control rail + its right margin (the turn disc overflow sits above WIN,
 		   not at the bottom corner, so only the bar width matters here). */
-		right: calc(clamp(34px, 14dvh, 112px) + clamp(16px, 3vw, 34px) + clamp(8px, 1.5vw, 18px));
+		right: var(--ls-win-right);
 		bottom: var(--ls-corner-bottom);
 		width: max-content;
-		max-width: 32%;
+		/* Never cross the board's right edge (≈ 50vw + 50dvh); WIN extends left from its right anchor. */
+		max-width: calc(50vw - 50dvh - var(--ls-win-right) - 8px);
 		display: flex;
 		flex-direction: column;
 		align-items: flex-end;
@@ -2304,9 +2314,9 @@
 	/* White icon sitting inside the disc (source icons are gold). */
 	.ls-round .ls-icon { width: 46%; height: 46%; object-fit: contain; filter: brightness(0) invert(1); }
 	.ls-round .ls-icon.is-muted { opacity: 1; }
-	/* Lightning/turbo keeps the framed ring (matches the AUTO disc + the desktop nav); only the burger
-	   stays ring-less. */
-	.ls-round--turbo { border: 2px solid #4c433d; }
+	/* Lightning/turbo keeps a framed ring, but thin (1px) so it reads like the AUTO disc's baked ring
+	   rather than a heavy outline on the small rail button; only the burger stays ring-less. */
+	.ls-round--turbo { border: 1px solid #5b5048; }
 	/* AUTO uses the full design art (disc + arrows + "AUTO") — no frame, no white filter (its "AUTO"
 	   is white-on-dark and the filter would erase it), exactly like the desktop AUTO button. */
 	.ls-round--auto { border: 0; background: none; }
@@ -2367,7 +2377,7 @@
 	   gold frame + ketchup drip offsetting it). */
 	.ls-spin__icon {
 		position: absolute;
-		left: 47.3%;
+		left: 46.1%;
 		top: 48.97%;
 		width: 40%;
 		height: 40%;
@@ -2585,7 +2595,7 @@
 	/* The green disc in spin_mobile.png sits ~1% right / ~3% above the art centre (leaf border is
 	   heavier at the bottom), so nudge the icons onto the disc's optical centre. */
 	/* White arrow/stop glyph on the red spin disc (source art is gold → recolour to white). */
-	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(-2.7%, -1.03%); filter: brightness(0) invert(1); } /* arrow overlay, centred on the new disc */
+	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(-4.6%, -1.03%); filter: brightness(0) invert(1); } /* arrow overlay, centred on the new disc */
 	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; transform: translate(2%, 2%); filter: brightness(0) invert(1); }
 	.pt-spin__count {
 		font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.3rem; color: #fff;
@@ -2687,7 +2697,10 @@
 		border-radius: calc(var(--u) * 0.016);
 		background: linear-gradient(180deg, #e5372a 0%, #c61d12 100%);
 		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-		display: grid; place-items: center;
+		/* Flex (not grid) centring: when the nowrap label is wider than the padded content box it
+		   overflows both sides equally, so the text stays horizontally centred; grid place-items left
+		   it a few px off-centre on the narrowest phones. */
+		display: flex; align-items: center; justify-content: center;
 		transition: filter 0.12s ease, transform 0.12s ease;
 	}
 	.pt-buy:hover { filter: brightness(1.1); }
