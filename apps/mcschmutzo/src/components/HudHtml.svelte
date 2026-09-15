@@ -1233,8 +1233,9 @@
 		   desktop bar, just scaled — no per-breakpoint reflow, matching the Figma reference
 		   (node 3406-4596) where the whole bar scales as one unit. */
 		--u: calc(min(93vw, 1860px) / 1860);
-		/* Round nav buttons scale with the bar; all use --nav-s so they stay equal to each other. */
-		--nav-s: calc(var(--u) * 104);
+		/* Round nav buttons scale with the bar; all use --nav-s so they stay equal to each other.
+		   Kept clearly smaller than the spin disc so it stays the hero (was 104 — read too close). */
+		--nav-s: calc(var(--u) * 90);
 		--spin-s: calc(var(--u) * 262);
 		width: calc(var(--u) * 1860);
 		height: auto;
