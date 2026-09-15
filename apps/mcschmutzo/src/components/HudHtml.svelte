@@ -2709,6 +2709,10 @@
 		font-family: 'Bowlby One SC', 'Poppins', sans-serif; font-weight: 400;
 		font-size: 13px; line-height: 1.05; letter-spacing: 0.02em; text-align: center;
 		max-width: 100%;
+		/* The centred label box still leaves the BONUS glyphs ~2px right of the button centre (font
+		   side-bearing + trailing letter-spacing). Nudge left with a layout offset — a transform would
+		   be overwritten by fitLabel's scale. */
+		position: relative; left: -2px;
 		color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 	}
 	.pt-buy__line {
