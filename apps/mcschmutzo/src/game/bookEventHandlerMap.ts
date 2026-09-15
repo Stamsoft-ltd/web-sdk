@@ -279,8 +279,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			current: 1,
 			total: bookEvent.freeSpins,
 		});
-		// Intro/scale (0.32s), wheel spin (2.2s), then hold the resolved award.
-		await waitForTimeout(2200);
+		// Manual spin: wait for the player to press SPIN and the wheel to settle on the RGS segment
+		// (WheelBonus calls stateGame.wheelResolve), then hold the resolved award briefly.
+		await new Promise<void>((resolve) => {
+			stateGame.wheelResolve = resolve;
+		});
+		stateGame.wheelResolve = undefined;
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_up' });
 		await waitForTimeout(800);
 		stateGame.wheel = undefined;

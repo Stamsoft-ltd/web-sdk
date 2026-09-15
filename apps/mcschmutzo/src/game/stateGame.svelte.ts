@@ -102,6 +102,9 @@ export const stateGame = $state({
 				globalMult: number;
 		  }
 		| undefined,
+	// Set by the bonusWheel book-event handler; WheelBonus calls it once the player has spun the wheel
+	// and it settles on the RGS-resolved segment, letting the handler continue into the free games.
+	wheelResolve: undefined as (() => void) | undefined,
 });
 
 const boardLayout = () => {

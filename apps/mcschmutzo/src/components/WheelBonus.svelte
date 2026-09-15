@@ -1,21 +1,24 @@
 <script lang="ts" module>
 	import { ap } from '../lib/preloadArt';
 
-	const wheelArt = ap('/assets/mcschmutzo/wheel/wheel.webp');
-	const hatArt = ap('/assets/mcschmutzo/autoplay/hat.webp');
+	const wheelBaseArt = ap('/assets/mcschmutzo/wheel/wheel-base.svg'); // cream 7-segment disc + red rim
+	const hatArt = ap('/assets/mcschmutzo/wheel/wheel-hat.svg'); // chef-hat hub
+	const spatulaArt = ap('/assets/mcschmutzo/wheel/wheel-spatula.svg'); // pointer at the top
+	const spinBoxArt = ap('/assets/mcschmutzo/wheel/spin-button-box.svg'); // SPIN button frame
 
-	// Segment centre angles (deg, clockwise from top) measured off the wheel art, with the
-	// free-games value + steps for each (top = 6, then clockwise).
+	// Segment centre angles (deg, clockwise from top) for the 7-segment wheel-base (top segment at 0°,
+	// then every 360/7). Each carries its free-games value + steps.
+	const STEP = 360 / 7;
 	const SEGMENTS = [
-		{ a: 1.5, fg: 6, st: 3 },
-		{ a: 53, fg: 30, st: 15 },
-		{ a: 104.5, fg: 20, st: 10 },
-		{ a: 155.5, fg: 15, st: 8 },
-		{ a: 208.5, fg: 12, st: 3 },
-		{ a: 260.5, fg: 10, st: 5 },
-		{ a: 311.5, fg: 8, st: 4 },
+		{ a: 0 * STEP, fg: 6, st: 3 },
+		{ a: 1 * STEP, fg: 30, st: 15 },
+		{ a: 2 * STEP, fg: 20, st: 10 },
+		{ a: 3 * STEP, fg: 15, st: 8 },
+		{ a: 4 * STEP, fg: 12, st: 3 },
+		{ a: 5 * STEP, fg: 10, st: 5 },
+		{ a: 6 * STEP, fg: 8, st: 4 },
 	];
-	const SPIN_MS = 2200;
+	const SPIN_MS = 2600;
 </script>
 
 <script lang="ts">
@@ -27,50 +30,75 @@
 
 	let rotation = $state(0);
 	let spinning = $state(false);
+	let spun = $state(false);
 
-	// Auto-spin to the RGS-resolved segment whenever a wheel result appears.
+	// Reset each time the wheel appears (or is cleared). No auto-spin — the player presses SPIN.
 	$effect(() => {
+		context.stateGame.wheel;
+		rotation = 0;
+		spinning = false;
+		spun = false;
+	});
+
+	// Spin to the RGS-resolved segment: bring that segment under the top pointer after a few turns.
+	const onSpin = () => {
 		const w = context.stateGame.wheel;
-		if (!w) {
-			rotation = 0;
-			spinning = false;
-			return;
-		}
+		if (!w || spun) return;
+		spun = true;
 		const idx = Math.max(
 			0,
 			SEGMENTS.findIndex((s) => s.fg === w.freeSpins),
 		);
-		rotation = 0;
-		spinning = false;
-		const frame = requestAnimationFrame(() => {
-			spinning = true;
-			rotation = 360 * 6 - SEGMENTS[idx].a; // bring that segment under the top pointer
+		spinning = true;
+		context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_up' });
+		requestAnimationFrame(() => {
+			rotation = 360 * 6 - SEGMENTS[idx].a;
 		});
-		return () => cancelAnimationFrame(frame);
-	});
+	};
+
+	// Once the wheel has physically settled, let the bonus flow continue into the free games.
+	const onSettled = (e: TransitionEvent) => {
+		if (e.propertyName !== 'transform' || !spinning) return;
+		spinning = false;
+		context.stateGame.wheelResolve?.();
+	};
 </script>
 
 {#if wheel}
 	<div class="wb-backdrop">
 		<div class="wb-stage" role="dialog" aria-modal="true">
-			<div class="wb-pointer"></div>
+			<div class="wb-wheel-wrap">
+				<div class="wb-wheel">
+					<div
+						class="wb-rotor"
+						ontransitionend={onSettled}
+						style={`background-image:url('${wheelBaseArt}'); transform: rotate(${rotation}deg); transition: transform ${spinning ? SPIN_MS : 0}ms cubic-bezier(0.16, 0.86, 0.22, 1)`}
+					>
+						{#each SEGMENTS as seg (seg.a)}
+							<div class="wb-seg" style={`transform: rotate(${seg.a}deg)`}>
+								<span class="wb-fg-num">{seg.fg}</span>
+								<span class="wb-fg-text">{i18nDerived.translate('FREE GAMES')}</span>
+								<span class="wb-steps">+{seg.st} {i18nDerived.translate('STEPS')}</span>
+							</div>
+						{/each}
+					</div>
 
-			<div class="wb-wheel">
-				<div
-					class="wb-rotor"
-					style={`background-image:url('${wheelArt}'); transform: rotate(${rotation}deg); transition: transform ${spinning ? SPIN_MS : 0}ms cubic-bezier(0.16, 0.84, 0.24, 1)`}
-				>
-					{#each SEGMENTS as seg (seg.a)}
-						<div class="wb-seg" style={`transform: rotate(${seg.a}deg)`}>
-							<span class="wb-fg-num">{seg.fg}</span>
-							<span class="wb-fg-text">{i18nDerived.translate('FREE GAMES')}</span>
-							<span class="wb-steps">+{seg.st} {i18nDerived.translate('STEPS')}</span>
-						</div>
-					{/each}
+					<img class="wb-hat" src={hatArt} alt="" draggable="false" />
 				</div>
 
-				<img class="wb-hat" src={hatArt} alt="" draggable="false" />
+				<!-- Spatula pointer, straddling the top edge of the wheel and aimed down into it. -->
+				<img class="wb-spatula" src={spatulaArt} alt="" draggable="false" />
 			</div>
+
+			<button
+				class="wb-spin"
+				type="button"
+				style={`background-image:url('${spinBoxArt}')`}
+				disabled={spun}
+				onclick={onSpin}
+			>
+				<span>{i18nDerived.translate('SPIN')}</span>
+			</button>
 		</div>
 	</div>
 {/if}
@@ -84,7 +112,7 @@
 		place-items: center;
 		background: rgba(0, 0, 0, 0.5);
 		backdrop-filter: blur(3px);
-		pointer-events: none;
+		pointer-events: auto;
 	}
 
 	.wb-stage {
@@ -92,13 +120,20 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		gap: clamp(10px, 3vmin, 22px);
 		width: min(560px, 92vw);
 	}
 
-	.wb-wheel {
+	/* Wheel + its overhanging spatula pointer. */
+	.wb-wheel-wrap {
 		position: relative;
-		width: min(480px, 86vw);
+		width: min(460px, 84vw);
 		aspect-ratio: 1;
+	}
+
+	.wb-wheel {
+		position: absolute;
+		inset: 0;
 	}
 
 	/* Rotating disc: the wheel art + the segment labels turn together. */
@@ -125,15 +160,18 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		padding: 13% 0 15%;
+		/* Top padding clears the red rim so the number lands in the cream; bottom padding keeps the
+		   STEPS chip clear of the chef-hat hub. */
+		padding: 18% 0 21%;
 		text-align: center;
 		pointer-events: none;
 	}
 	.wb-fg-num {
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
-		font-size: clamp(15px, 4.4cqw, 30px);
+		font-size: clamp(16px, 5.4cqw, 34px);
 		line-height: 0.9;
 		color: #a5210f;
+		text-shadow: 0 1px 0 rgba(255, 244, 224, 0.6);
 	}
 	.wb-fg-text {
 		font-family: 'Inter', sans-serif;
@@ -164,41 +202,70 @@
 		left: 50%;
 		top: 50%;
 		transform: translate(-50%, -50%);
-		width: 20%;
+		width: 24%;
 		height: auto;
 		z-index: 2;
 		filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4));
 		pointer-events: none;
 	}
 
-	/* Fixed pointer at the top, aimed down into the wheel. */
-	.wb-pointer {
+	/* Spatula pointer straddling the top edge, aimed down into the wheel. */
+	.wb-spatula {
 		position: absolute;
 		left: 50%;
-		top: -2%;
-		z-index: 3;
-		width: 5.5%;
-		aspect-ratio: 3 / 4;
+		top: -6%;
+		width: 19%;
+		height: auto;
 		transform: translateX(-50%);
-		background: linear-gradient(180deg, #f2ede0 0%, #d9d2c2 100%);
-		border: 2px solid #6d3b2a;
-		border-radius: 30% 30% 12% 12%;
-		clip-path: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%);
-		box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+		z-index: 3;
+		filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.4));
+		pointer-events: none;
 	}
 
-	/* Mobile landscape: the wheel is square, so its width-based size is too tall for the short
-	   viewport — cap it by height so the whole wheel fits. */
+	/* SPIN button below the wheel (spin-button-box art + centred label). */
+	.wb-spin {
+		width: min(220px, 52vw);
+		aspect-ratio: 203 / 40;
+		border: 0;
+		padding: 0;
+		background: transparent center / 100% 100% no-repeat;
+		cursor: pointer;
+		display: grid;
+		place-items: center;
+		transition:
+			filter 0.12s ease,
+			transform 0.08s ease;
+	}
+	.wb-spin span {
+		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
+		font-weight: 400;
+		font-size: clamp(13px, 4vmin, 20px);
+		letter-spacing: 0.08em;
+		color: #fff;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+		text-transform: uppercase;
+	}
+	.wb-spin:not(:disabled):hover {
+		filter: brightness(1.08);
+	}
+	.wb-spin:not(:disabled):active {
+		transform: scale(0.97);
+	}
+	.wb-spin:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+
+	/* Mobile landscape: the wheel is square, so cap it by height so the whole thing (+ SPIN) fits. */
 	@media (max-height: 500px) {
 		.wb-stage {
 			width: auto;
+			gap: clamp(6px, 2dvh, 14px);
 		}
-		.wb-wheel {
-			width: min(480px, 86vw, 82dvh);
+		.wb-wheel-wrap {
+			width: min(460px, 84vw, 72dvh);
 		}
-		/* On the tiniest wheels (~185px on a 400x225 popout) the text hits its floor and overflows the
-		   narrow inner part of each wedge. Drop the floors so the number, "FREE GAMES" and the
-		   "+N STEPS" chip all sit comfortably inside their segment. */
+		/* Drop the text floors so number / FREE GAMES / +N STEPS stay inside the narrow inner wedge. */
 		.wb-fg-num {
 			font-size: clamp(11px, 4.4cqw, 30px);
 		}
@@ -208,6 +275,9 @@
 		.wb-steps {
 			font-size: clamp(4px, 1.9cqw, 12px);
 			padding: 2% 4%;
+		}
+		.wb-spin {
+			width: min(200px, 40dvh);
 		}
 	}
 </style>
