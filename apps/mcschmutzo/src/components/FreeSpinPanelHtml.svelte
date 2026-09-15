@@ -152,8 +152,10 @@
 	}
 	.fp[data-layout='portrait'] .fp-acc {
 		right: 6%;
-		bottom: 20%;
-		width: min(118px, 30%);
+		/* px floor lifts the printer clear of the bottom nav on short phones (the % alone put it too
+		   low, resting on the control row); a touch narrower so it fits the board-to-nav gap. */
+		bottom: max(21%, 150px);
+		width: min(104px, 27%);
 	}
 
 	/* ── Desktop / landscape: FREE SPINS + TOTAL WIN stacked on the LEFT of the board, accordion above.

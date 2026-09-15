@@ -1952,9 +1952,10 @@
 	/* Gold stop tile shown over the green disc while spinning (replaces the ■ glyph). */
 	.spin-btn__stop {
 		position: absolute;
-		/* Anchor to the green disc's visual center in btn_bg_spin.png. */
-		top: 50%;
-		left: 51%;
+		/* Anchor to the disc's visual centre — same point the arrow (.spin-btn__icon) is nudged to,
+		   so the stop square sits centred instead of a few px right. */
+		top: 49.6%;
+		left: 48.1%;
 		width: 22%;
 		aspect-ratio: 1;
 		transform: translate(-50%, -50%);
@@ -2387,8 +2388,9 @@
 	}
 	.ls-spin__stop {
 		position: absolute;
-		top: 48.5%;
-		left: 51.4%;
+		/* Same disc centre as .ls-spin__icon so the stop square is centred, not pushed right. */
+		top: 48.97%;
+		left: 46.1%;
 		width: 22%;
 		aspect-ratio: 1;
 		transform: translate(-50%, -50%);
@@ -2596,7 +2598,7 @@
 	   heavier at the bottom), so nudge the icons onto the disc's optical centre. */
 	/* White arrow/stop glyph on the red spin disc (source art is gold → recolour to white). */
 	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(-4.6%, -1.03%); filter: brightness(0) invert(1); } /* arrow overlay, centred on the new disc */
-	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; transform: translate(2%, 2%); filter: brightness(0) invert(1); }
+	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; transform: translate(-6.4%, -1.4%); filter: brightness(0) invert(1); } /* same disc centre as .pt-spin__icon */
 	.pt-spin__count {
 		font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.3rem; color: #fff;
 		text-shadow: 0 2px 4px rgba(0,0,0,0.7);

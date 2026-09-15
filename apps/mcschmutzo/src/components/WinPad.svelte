@@ -27,8 +27,9 @@
 	// The visible plaque is ~88% of the art width, so scale the box up a touch to keep it prominent.
 	const boxW = $derived(board.width * (isPortrait ? 0.52 : 0.57));
 	const boxH = $derived(boxW / BOX_ASPECT);
-	// Red panel centre measured at ~(50.3%, 46%) of the art → nudge the amount up from the box centre.
-	const amountY = $derived(-boxH * 0.04);
+	// Red panel centre measured at (50.2%, 49.2%) of the art — essentially the box centre, so the
+	// amount only needs a hair of lift (the old -4% left it hugging the top of the panel).
+	const amountY = $derived(-boxH * 0.008);
 </script>
 
 <Container>
