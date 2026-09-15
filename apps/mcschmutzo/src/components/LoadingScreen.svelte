@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Container, Sprite } from 'pixi-svelte';
-	import { FadeContainer, LoadingProgress } from 'components-pixi';
+	import { Container, Sprite, Rectangle } from 'pixi-svelte';
+	import { FadeContainer } from 'components-pixi';
 	import { MainContainer } from 'components-layout';
 
 	import { getContext } from '../game/context';
@@ -16,6 +16,12 @@
 	const context = getContext();
 
 	let loadingType = $state<'start' | 'transition'>('start');
+
+	// Press Play "P" loader: dark empty shell + a red fill that rises from the bottom with progress.
+	const P_ASPECT = 81 / 146; // isolated loader-p.webp
+	const P_HEIGHT = 190;
+	const P_WIDTH = P_HEIGHT * P_ASPECT;
+	const fillFraction = $derived(Math.max(0, Math.min(1, context.stateApp.loadingProgress / 100)));
 
 	// When loading finishes, hand a "proceed" callback to the host (Game) so its HTML SplashIntro can
 	// drive the press-to-continue; pressing it runs the same transition → onloaded flow.
@@ -36,17 +42,33 @@
 			y={context.stateLayoutDerived.mainLayout().height * 0.5}
 		>
 			{#if !context.stateApp.loaded}
-				<LoadingProgress y={250} width={1967 * 0.2} height={346 * 0.2}>
-					{#snippet background(sizes)}
-						<Sprite key="progressBarBackground.png" {...sizes} />
-					{/snippet}
-					{#snippet progress(sizes)}
-						<Sprite key="progressBar.png" {...sizes} />
-					{/snippet}
-					{#snippet frame(sizes)}
-						<Sprite key="progressBarFrame.png" {...sizes} />
-					{/snippet}
-				</LoadingProgress>
+				<Container y={250}>
+					<!-- Empty shell: the P in a muted grey so its outline reads on the black loading bg. -->
+					<Sprite
+						key="loaderP"
+						anchor={0.5}
+						width={P_WIDTH}
+						height={P_HEIGHT}
+						tint={0x5b5b5b}
+					/>
+					<!-- Red fill, revealed from the bottom up by a mask that grows with progress. -->
+					<Container>
+						<Sprite
+							key="loaderP"
+							anchor={0.5}
+							width={P_WIDTH}
+							height={P_HEIGHT}
+							tint={0xd11f0f}
+						/>
+						<Rectangle
+							isMask
+							anchor={{ x: 0.5, y: 1 }}
+							y={P_HEIGHT / 2}
+							width={P_WIDTH}
+							height={P_HEIGHT * fillFraction}
+						/>
+					</Container>
+				</Container>
 			{/if}
 		</Container>
 	</MainContainer>

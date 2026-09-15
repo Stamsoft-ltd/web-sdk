@@ -282,9 +282,12 @@ export default {
 			scale: 2,
 		},
 	},
-	progressBar: {
-		type: 'sprites',
-		src: new URL('../../assets/sprites/progressBar/progressBar.json', import.meta.url).href,
+	// Loader mark: the Press Play "P" (white on transparent) — tinted grey for the empty shell and
+	// red for the fill that rises bottom-to-top with the load progress. Replaces the old purple
+	// progress bar (mining-template leftover). Preloaded so it's ready first.
+	loaderP: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/loader-p.webp', import.meta.url).href,
 		preload: true,
 	},
 	freeSpins: {
