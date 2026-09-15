@@ -1890,7 +1890,7 @@
 		pointer-events: none;
 		filter: brightness(0) invert(1); /* white refresh icon (Figma) */
 		/* Centre on the new turn-button disc (measured centre 48.35% / 48.97% of the square button). */
-		transform: translate(-1.65%, -1.03%);
+		transform: translate(-2.7%, -1.03%);
 	}
 
 	.spin-btn:not(:disabled):hover {
@@ -2347,7 +2347,7 @@
 	   gold frame + ketchup drip offsetting it). */
 	.ls-spin__icon {
 		position: absolute;
-		left: 48.35%;
+		left: 47.3%;
 		top: 48.97%;
 		width: 40%;
 		height: 40%;
@@ -2565,7 +2565,7 @@
 	/* The green disc in spin_mobile.png sits ~1% right / ~3% above the art centre (leaf border is
 	   heavier at the bottom), so nudge the icons onto the disc's optical centre. */
 	/* White arrow/stop glyph on the red spin disc (source art is gold → recolour to white). */
-	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(-1.65%, -1.03%); filter: brightness(0) invert(1); } /* arrow overlay, centred on the new disc */
+	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(-2.7%, -1.03%); filter: brightness(0) invert(1); } /* arrow overlay, centred on the new disc */
 	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; transform: translate(2%, 2%); filter: brightness(0) invert(1); }
 	.pt-spin__count {
 		font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.3rem; color: #fff;
