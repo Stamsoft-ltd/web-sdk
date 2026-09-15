@@ -678,9 +678,9 @@
 								</button>
 							</div>
 						{/if}
-						<button class="pt-round" type="button" onclick={toggleMenu} aria-label="Menu" aria-expanded={menuOpen} data-menu-toggle>
+						<button class="pt-round" class:pt-round--menu-open={menuOpen} type="button" onclick={toggleMenu} aria-label="Menu" aria-expanded={menuOpen} data-menu-toggle>
 							{#if menuOpen}
-								<span class="pt-round__x">✕</span>
+								<img class="pt-x-full" src={iconBurgerClose} alt="close" />
 							{:else}
 								<img class="pt-icon" src={iconMenuBars} alt="menu" />
 							{/if}
@@ -946,13 +946,18 @@
 					{/if}
 					<button
 						class="nav-btn nav-btn--framed"
+						class:nav-btn--menu-open={menuOpen}
 						type="button"
 						onclick={toggleMenu}
 						aria-label="Menu"
 						aria-expanded={menuOpen}
 						data-menu-toggle
 					>
-						<img class="nav-icon" src={iconMenuBars} alt="menu" />
+						{#if menuOpen}
+							<img class="nav-x-full" src={iconBurgerClose} alt="close" />
+						{:else}
+							<img class="nav-icon" src={iconMenuBars} alt="menu" />
+						{/if}
 					</button>
 				</div>
 <!-- Sound toggle lives only inside the ☰ menu (SOUND item) now — the standalone nav audio icon was removed. -->
@@ -1610,6 +1615,17 @@
 		width: 44%;
 		height: 44%;
 		filter: brightness(0) invert(1);
+	}
+
+	/* Menu open: drop the framed disc so the red-disc-with-X art (burger-close.svg) fills the button. */
+	.nav-btn--menu-open {
+		background: none;
+		border-color: transparent;
+	}
+	.nav-btn .nav-x-full {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
 	}
 
 	/* AUTO button: icon nudged up, "AUTO" caption underneath. */
@@ -2718,10 +2734,9 @@
 	}
 
 	/* ☰ menu button open state: gold ✕ glyph in place of the hamburger icon. */
-	.pt-round__x {
-		font-family: 'Poppins', sans-serif; font-weight: 900; font-size: calc(var(--u) * 0.048);
-		line-height: 1; color: #f1c14a; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.7));
-	}
+	/* Menu open: drop the framed disc so the red-disc-with-X art (burger-close.svg) fills the button. */
+	.pt-round--menu-open { background: none; border-color: transparent; }
+	.pt-round .pt-x-full { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 
 	/* The ☰ button wrapper is NOT a positioning context — the popup anchors to the BAR
 	   (.pt-controls, position:relative), giving it a stable containing block whose width is --u,
