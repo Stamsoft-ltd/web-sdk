@@ -565,7 +565,7 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/sausage/smoke.webp', import.meta.url).href,
 	},
-	// Onion rings (H5) = two leaning rings.
+	// Onion rings (H5) = three leaning rings (ring3 is ring1 mirrored, for the third ring in the pile).
 	onionRing1: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/onion/ring1.webp', import.meta.url).href,
@@ -573,6 +573,10 @@ export default {
 	onionRing2: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/onion/ring2.webp', import.meta.url).href,
+	},
+	onionRing3: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/onion/ring3.webp', import.meta.url).href,
 	},
 	// Cheese (H4) = slab + melty drips.
 	cheeseSlice: {

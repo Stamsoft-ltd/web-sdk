@@ -96,14 +96,15 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'sausageBody', nx: 0.4987, ny: 0.6118, nw: 1.0, nh: 0.8871, dy: 0.012, dx: 0.01, rot: 0.03, pop: 0.03 },
 		],
 	},
-	// Onion rings — the two rings bounce apart and jostle (small tumble), not a flat in-plane spin.
+	// Onion rings — three leaning rings that bounce apart and jostle (small tumble), not a flat spin.
 	H5: {
 		aspect: 1.377,
 		fit: 0.86,
 		squash: 0.05,
 		layers: [
-			{ key: 'onionRing2', nx: 0.4265, ny: 0.4379, nw: 0.8537, nh: 0.8758, dy: -0.06, dx: -0.035, rot: 0.1, pop: 0.05 },
-			{ key: 'onionRing1', nx: 0.5648, ny: 0.6082, nw: 0.8697, nh: 0.7826, dy: 0.07, dx: 0.04, rot: -0.12, pop: 0.05 },
+			{ key: 'onionRing3', nx: 0.3, ny: 0.615, nw: 0.72, nh: 0.66, dy: 0.055, dx: -0.075, rot: 0.16, pop: 0.05 },
+			{ key: 'onionRing2', nx: 0.475, ny: 0.415, nw: 0.8, nh: 0.82, dy: -0.06, dx: -0.02, rot: 0.1, pop: 0.05 },
+			{ key: 'onionRing1', nx: 0.605, ny: 0.63, nw: 0.8, nh: 0.72, dy: 0.07, dx: 0.055, rot: -0.12, pop: 0.05 },
 		],
 	},
 	// Wild — the WILD text bounces/pops while the red splat pulses behind it.
