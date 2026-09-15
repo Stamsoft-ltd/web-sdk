@@ -909,6 +909,17 @@
 		}
 	}
 
+	/* Narrow portrait phones (e.g. 320-wide): match the smaller X used on the buy-bonus / auto popups
+	   so the close button is consistent and doesn't crowd the near-full-width popup. Landscape
+	   max-height rules below still win. */
+	@media (max-width: 480px) {
+		.tu-close {
+			width: clamp(28px, 8.5vw, 36px);
+			top: 8px;
+			right: 8px;
+		}
+	}
+
 	/* Tiny popouts (~400x225): the default text is large enough that only a couple of lines fit
 	   before the page-nav — shrink the type + chrome so a page reads with less scrolling. Placed
 	   LAST so it wins over the base .tu-title/.tu-body rules (equal specificity → later wins). */

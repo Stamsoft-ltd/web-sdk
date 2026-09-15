@@ -556,6 +556,14 @@
 			width: min(100%, 220px);
 			justify-self: center;
 		}
+		/* Narrow portrait phones (e.g. 320-wide): the fixed 42-52px X crowds the near-full-width popup —
+		   shrink it and tuck it into the corner, matching the info/auto popups. The landscape
+		   max-height rules below still win on short viewports. */
+		.bb-close {
+			width: clamp(28px, 8.5vw, 36px);
+			top: 8px;
+			right: 8px;
+		}
 	}
 
 	/* Short viewports (mobile landscape, incl. tiny 400x225 popouts): lay the panel out at a FIXED

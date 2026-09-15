@@ -10,6 +10,7 @@
 </script>
 
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { stateBet } from 'state-shared';
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
@@ -17,6 +18,15 @@
 	type Props = { onclose: () => void };
 	const props: Props = $props();
 	const context = getContext();
+
+	// Close on Escape, matching the buy-bonus / info modals.
+	onMount(() => {
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') props.onclose();
+		};
+		window.addEventListener('keydown', onKeyDown);
+		return () => window.removeEventListener('keydown', onKeyDown);
+	});
 
 	// Spin-count stops (last = unlimited); the −/+ buttons step through them.
 	const STOPS: Array<number> = [10, 25, 50, 100, 250, 500, Infinity];
@@ -403,6 +413,16 @@
 	}
 	.ap-start:active {
 		transform: scale(0.98);
+	}
+
+	/* Narrow portrait phones (e.g. 320-wide): match the smaller X used on the buy-bonus / info popups
+	   so the close button is consistent across the modals. Landscape max-height rules below still win. */
+	@media (max-width: 480px) {
+		.ap-close {
+			width: clamp(28px, 8.5vw, 36px);
+			top: 8px;
+			right: 8px;
+		}
 	}
 
 	/* Short viewports (mobile landscape, incl. tiny 400x225 popouts): the content is taller than the
