@@ -235,6 +235,9 @@
 		cursor: pointer;
 		display: grid;
 		place-items: center;
+		/* Query context so the SPIN label scales with the button, not the viewport — the vmin sizing
+		   floored the text far too big on the tiny landscape button. */
+		container-type: inline-size;
 		transition:
 			filter 0.12s ease,
 			transform 0.08s ease;
@@ -242,7 +245,7 @@
 	.wb-spin span {
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
 		font-weight: 400;
-		font-size: clamp(13px, 4vmin, 20px);
+		font-size: clamp(7px, 10.5cqw, 20px);
 		letter-spacing: 0.08em;
 		color: #fff;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
