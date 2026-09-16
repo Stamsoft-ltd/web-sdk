@@ -231,7 +231,7 @@
 		{:else if page === 4}
 			<div class="tu-page">
 				<h2 class="tu-title">{i18nDerived.translate('WAYS TO WIN')}</h2>
-				<p class="tu-body">{i18nDerived.translate('INFO WAYS BODY')}</p>
+				<p class="tu-body tu-body--wide">{i18nDerived.translate('INFO WAYS BODY')}</p>
 
 				<div class="wt-grid">
 					<div class="ft-card">
@@ -565,8 +565,9 @@
 		gap: clamp(6px, 1.2vmin, 12px);
 		margin-bottom: clamp(6px, 1.2vmin, 12px);
 	}
+	/* All Features-card header icons share one height so they read as a consistent set. */
 	.ft-icon {
-		height: clamp(26px, 4vmin, 42px);
+		height: clamp(28px, 4.3vmin, 44px);
 		width: auto;
 		object-fit: contain;
 	}
@@ -628,7 +629,7 @@
 		position: relative;
 		flex: 0 0 auto;
 		display: inline-block;
-		height: clamp(30px, 4.6vmin, 48px);
+		height: clamp(28px, 4.3vmin, 44px);
 		aspect-ratio: 49 / 37;
 	}
 	.ft-mult-printer {
@@ -647,30 +648,20 @@
 		object-fit: contain;
 		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 	}
-	/* Scatter symbol reads a touch bigger than the wild/burger glyphs; free-games arrow a touch smaller. */
-	.ft-icon--scatter {
-		height: clamp(30px, 4.6vmin, 48px);
-	}
-	.ft-icon--free {
-		height: clamp(24px, 3.6vmin, 38px);
-	}
-
-	/* Scatter card — two sub-sections (3 / 4 scatters), each a badge beside a title + line of copy. */
+	/* Scatter card — two sub-sections (3 / 4 scatters) stacked one under another, each a badge beside
+	   a title + paragraph. Badge tops with the title so the now-multi-line copy reads cleanly. */
 	.ft-sub-grid {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 1fr;
 		gap: clamp(8px, 1.4vmin, 16px);
 		margin-top: clamp(8px, 1.4vmin, 14px);
 	}
 	.ft-sub {
 		display: flex;
 		flex-direction: row;
-		align-items: center;
+		align-items: flex-start;
 		gap: clamp(7px, 1.2vmin, 12px);
-		padding: clamp(8px, 1.3vmin, 14px) clamp(10px, 1.5vmin, 16px);
-		border-radius: 10px;
-		background: #1b1917;
-		border: 1px solid rgba(255, 255, 255, 0.07);
+		/* No panel/padding: the badge sits flush-left so 3 / 4 line up under the header scatter icon. */
 	}
 	.ft-sub-badge {
 		flex: 0 0 auto;
@@ -698,7 +689,13 @@
 		line-height: 1.35;
 	}
 
-	/* Page 4 — ways to win. Intro paragraph (base .tu-body) + a single lock & re-spin board. */
+	/* Page 4 — ways to win. Intro paragraph spans the full popup width (left-aligned, no narrow
+	   centred column) so it uses all the horizontal space, matching the board below. */
+	.tu-body--wide {
+		max-width: none;
+		width: 100%;
+		text-align: left;
+	}
 	.wt-grid {
 		width: 100%;
 		margin-top: clamp(12px, 2.2vmin, 24px);
@@ -794,31 +791,34 @@
 		border-radius: 12px;
 		pointer-events: none;
 	}
+	/* Icon sits ABOVE the title (matches the other games' info pages); larger, prominent icons. */
 	.gi-head {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		gap: clamp(6px, 1.2vmin, 12px);
-		margin-bottom: clamp(8px, 1.6vmin, 16px);
+		margin-bottom: clamp(10px, 1.8vmin, 18px);
 	}
 	.gi-icon {
-		height: clamp(24px, 3.6vmin, 40px);
+		height: clamp(46px, 7.2vmin, 88px);
 		width: auto;
 		object-fit: contain;
+		filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.4));
 	}
 	.gi-title {
 		margin: 0;
 		color: #f3e7cb;
 		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
-		font-size: clamp(0.85rem, 1.9vmin, 1.2rem);
+		font-size: clamp(1rem, 2.3vmin, 1.5rem);
 		letter-spacing: 0.02em;
 		text-transform: uppercase;
 	}
 	.gi-body {
 		color: #cfc6b7;
 		font-weight: 600;
-		font-size: clamp(0.68rem, 1.5vmin, 0.92rem);
+		font-size: clamp(0.8rem, 1.8vmin, 1.12rem);
 		line-height: 1.5;
 	}
 	.gi-body p {
@@ -1013,10 +1013,6 @@
 		.ft-grid {
 			grid-template-columns: 1fr;
 			grid-template-areas: 'wild' 'respin' 'mult' 'scatter' 'free';
-		}
-		/* Scatter sub-sections (3 / 4) stack under one another on narrow screens. */
-		.ft-sub-grid {
-			grid-template-columns: 1fr;
 		}
 		/* FEATURE BUY: four cost cards stacked, no forced tall min-height. */
 		.fb-grid {

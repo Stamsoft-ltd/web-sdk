@@ -100,17 +100,17 @@ export default {
 		'The current Win Multiplier is applied according to the game mathematics and remains active throughout the current Re-Spin sequence.',
 	'INFO SCATTER TITLE': 'SCATTER / BONUS SYMBOL',
 	'INFO SCATTER BODY':
-		'The Scatter / Bonus symbol is counted anywhere on the reels — it does not need to land on a win-line. Landing enough Scatter symbols on a single spin triggers a bonus round. The Wild does not substitute for the Scatter / Bonus symbol.',
+		'The BONUS symbol is the Scatter symbol and can appear on all reels. Landing Scatter symbols activates one of two Free Games modes.',
 	'INFO SCATTER 3 TITLE': '3 SCATTERS',
 	'INFO SCATTER 3 BODY':
-		'Three Scatter symbols trigger the Normal Bonus, which can also be bought for 100× the bet.',
+		'Landing 3 Scatter symbols triggers the Normal Bonus. The player enters the Normal Free Games mode. The Normal Bonus uses the standard Free Games configuration and its corresponding starting Win Multiplier progression. Any active Win Multiplier carried into the feature is combined with the Free Games entry result where applicable. The Win Multiplier persists throughout the entire Free Games feature and can increase during play. It does not reset between Free Games.',
 	'INFO SCATTER 4 TITLE': '4 SCATTERS',
 	'INFO SCATTER 4 BODY':
-		'Four Scatter symbols trigger the Super Bonus. No single spin can land more than four Scatters; it can also be bought for 500× the bet.',
+		'Landing 4 Scatter symbols triggers the Super Bonus. The Super Bonus begins with an enhanced starting configuration compared with the Normal Bonus. The player receives the Super Free Games setup with the maximum / enhanced entry conditions defined for this mode. The Win Multiplier persists throughout the entire Super Bonus and may continue increasing during Free Games. It does not reset between Free Games.',
 	'INFO FREEGAMES BODY 1':
-		'Triggering the bonus awards a set of Free Games played on the same 5×5 grid. A randomly selected symbol expands to cover extra positions and help complete winning combinations.',
+		'During Free Games, the same core winning and Re-Spin mechanics remain active. Whenever a qualifying winning connection occurs, the matching winning symbols automatically lock and trigger a Re-Spin.',
 	'INFO FREEGAMES BODY 2':
-		'A Win Multiplier starts at 2× and doubles with every new winning connection. All wins collected during the Free Games are added to the round total.',
+		'Additional matching symbols added during the Re-Spin are locked, allowing the sequence to continue. McSchmutzo symbols appearing during the feature may increase the Win Multiplier. The accumulated Win Multiplier remains active throughout the entire Free Games feature.',
 	'INFO COMING SOON': 'Coming soon.',
 
 	// ── Info / rules popup: WAYS TO WIN ──────────────────────────────────────────────────────────
