@@ -3,9 +3,9 @@ export default {
 	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
 	"INFO SCATTER TITLE": "SIMBOL SCATTER / BONUS",
 	"INFO SCATTER BODY": "Simbol BONUS adalah simbol Scatter dan dapat muncul di semua gulungan. Mendaratkan simbol Scatter mengaktifkan salah satu dari dua mode Game Gratis.",
-	"INFO SCATTER 3 TITLE": "3 SCATTER - Bonus Normal",
+	"INFO SCATTER 3 TITLE": "SCATTER - Bonus Normal",
 	"INFO SCATTER 3 BODY": "Mendaratkan 3 simbol Scatter memicu Bonus Normal. Pemain masuk ke mode Game Gratis Normal. Bonus Normal menggunakan konfigurasi Game Gratis standar dan progresi Pengali Kemenangan awal yang sesuai. Setiap Pengali Kemenangan aktif yang dibawa ke dalam fitur digabungkan dengan hasil masuk Game Gratis jika berlaku. Pengali Kemenangan bertahan sepanjang seluruh fitur Game Gratis dan dapat meningkat selama permainan. Pengali tidak diatur ulang di antara Game Gratis.",
-	"INFO SCATTER 4 TITLE": "4 SCATTER - Bonus Normal",
+	"INFO SCATTER 4 TITLE": "SCATTER - Bonus Normal",
 	"INFO SCATTER 4 BODY": "Mendaratkan 4 simbol Scatter memicu Super Bonus. Super Bonus dimulai dengan konfigurasi awal yang ditingkatkan dibandingkan dengan Bonus Normal. Pemain menerima pengaturan Super Game Gratis dengan kondisi masuk maksimum / yang ditingkatkan yang ditetapkan untuk mode ini. Pengali Kemenangan bertahan sepanjang seluruh Super Bonus dan dapat terus meningkat selama Game Gratis. Pengali tidak diatur ulang di antara Game Gratis.",
 	"INFO FREEGAMES BODY 1": "Selama Game Gratis, mekanika kemenangan inti dan Re-Spin yang sama tetap aktif. Setiap kali sambungan kemenangan yang memenuhi syarat terjadi, simbol kemenangan yang cocok otomatis terkunci dan memicu Re-Spin.",
 	"INFO FREEGAMES BODY 2": "Simbol yang cocok tambahan yang ditambahkan selama Re-Spin terkunci, memungkinkan rangkaian berlanjut. Simbol McSchmutzo yang muncul selama fitur dapat meningkatkan Pengali Kemenangan. Pengali Kemenangan yang terkumpul tetap aktif sepanjang seluruh fitur Game Gratis.",

@@ -3,9 +3,9 @@ export default {
 	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
 	"INFO SCATTER TITLE": "SCATTER / BONUS-SYMBOLI",
 	"INFO SCATTER BODY": "BONUS-symboli on Scatter-symboli, ja se voi ilmestyä kaikille rullille. Scatter-symbolien osuminen aktivoi jommankumman kahdesta Ilmaispelit-tilasta.",
-	"INFO SCATTER 3 TITLE": "3 SCATTERIA - Normaali bonus",
+	"INFO SCATTER 3 TITLE": "SCATTERIT - Normaali bonus",
 	"INFO SCATTER 3 BODY": "Kolmen Scatter-symbolin osuminen käynnistää Normaalin bonuksen. Pelaaja siirtyy Normaaliin ilmaispelitilaan. Normaali bonus käyttää vakiomuotoista ilmaispelien kokoonpanoa ja sitä vastaavaa aloittavaa voittokertoimen etenemistä. Mahdollinen ominaisuuteen mukaan tuotu aktiivinen voittokerroin yhdistetään ilmaispelien sisääntulotulokseen soveltuvin osin. Voittokerroin pysyy voimassa koko ilmaispeliominaisuuden ajan ja voi kasvaa pelin aikana. Se ei nollaudu ilmaispelien välillä.",
-	"INFO SCATTER 4 TITLE": "4 SCATTERIA - Normaali bonus",
+	"INFO SCATTER 4 TITLE": "SCATTERIT - Normaali bonus",
 	"INFO SCATTER 4 BODY": "Neljän Scatter-symbolin osuminen käynnistää Super-bonuksen. Super-bonus alkaa tehostetulla aloituskokoonpanolla Normaaliin bonukseen verrattuna. Pelaaja saa Super-ilmaispelien asetukset tälle tilalle määritellyillä enimmäis- / tehostetuilla sisääntuloehdoilla. Voittokerroin pysyy voimassa koko Super-bonuksen ajan ja voi jatkaa kasvamistaan ilmaispelien aikana. Se ei nollaudu ilmaispelien välillä.",
 	"INFO FREEGAMES BODY 1": "Ilmaispelien aikana samat perusvoitto- ja uusintakierrosmekaniikat pysyvät aktiivisina. Aina kun muodostuu kelvollinen voittava yhdistelmä, vastaavat voittavat symbolit lukittuvat automaattisesti ja käynnistävät uusintakierroksen.",
 	"INFO FREEGAMES BODY 2": "Uusintakierroksen aikana lisätyt samat symbolit lukittuvat, jolloin sarja voi jatkua. Ominaisuuden aikana ilmestyvät McSchmutzo-symbolit voivat kasvattaa voittokerrointa. Kertynyt voittokerroin pysyy voimassa koko ilmaispeliominaisuuden ajan.",

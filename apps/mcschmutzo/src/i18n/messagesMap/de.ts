@@ -3,9 +3,9 @@ export default {
 	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
 	"INFO SCATTER TITLE": "SCATTER- / BONUS-SYMBOL",
 	"INFO SCATTER BODY": "Das BONUS-Symbol ist das Scatter-Symbol und kann auf allen Walzen erscheinen. Landen Scatter-Symbole, wird einer von zwei Freispiel-Modi aktiviert.",
-	"INFO SCATTER 3 TITLE": "3 SCATTER - Normal-Bonus",
+	"INFO SCATTER 3 TITLE": "SCATTER - Normal-Bonus",
 	"INFO SCATTER 3 BODY": "Landen 3 Scatter-Symbole, wird der Normal-Bonus ausgelöst. Der Spieler betritt den Normal-Freispiel-Modus. Der Normal-Bonus verwendet die standardmäßige Freispiel-Konfiguration und die entsprechende anfängliche Gewinnmultiplikator-Progression. Ein aktiver Gewinnmultiplikator, der in das Feature übernommen wird, wird gegebenenfalls mit dem Freispiel-Eintrittsergebnis kombiniert. Der Gewinnmultiplikator bleibt während des gesamten Freispiel-Features aktiv und kann während des Spiels ansteigen. Er wird zwischen den Freispielen nicht zurückgesetzt.",
-	"INFO SCATTER 4 TITLE": "4 SCATTER - Normal-Bonus",
+	"INFO SCATTER 4 TITLE": "SCATTER - Normal-Bonus",
 	"INFO SCATTER 4 BODY": "Landen 4 Scatter-Symbole, wird der Super-Bonus ausgelöst. Der Super-Bonus beginnt mit einer verstärkten Startkonfiguration im Vergleich zum Normal-Bonus. Der Spieler erhält das Super-Freispiel-Setup mit den maximalen / verstärkten Eintrittsbedingungen, die für diesen Modus definiert sind. Der Gewinnmultiplikator bleibt während des gesamten Super-Bonus aktiv und kann während der Freispiele weiter ansteigen. Er wird zwischen den Freispielen nicht zurückgesetzt.",
 	"INFO FREEGAMES BODY 1": "Während der Freispiele bleiben dieselben grundlegenden Gewinn- und Re-Spin-Mechaniken aktiv. Immer wenn eine qualifizierende Gewinnverbindung entsteht, werden die übereinstimmenden Gewinnsymbole automatisch fixiert und ein Re-Spin wird ausgelöst.",
 	"INFO FREEGAMES BODY 2": "Zusätzliche übereinstimmende Symbole, die während des Re-Spins hinzugefügt werden, werden fixiert, sodass die Sequenz fortgesetzt werden kann. McSchmutzo-Symbole, die während des Features erscheinen, können den Gewinnmultiplikator erhöhen. Der angesammelte Gewinnmultiplikator bleibt während des gesamten Freispiel-Features aktiv.",

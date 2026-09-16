@@ -3,9 +3,9 @@ export default {
 	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
 	"INFO SCATTER TITLE": "SYMBOLE SCATTER / BONUS",
 	"INFO SCATTER BODY": "Le symbole BONUS est le symbole Scatter et peut apparaître sur tous les rouleaux. Obtenir des symboles Scatter active l'un des deux modes de Parties Gratuites.",
-	"INFO SCATTER 3 TITLE": "3 SCATTERS - Bonus Normal",
+	"INFO SCATTER 3 TITLE": "SCATTERS - Bonus Normal",
 	"INFO SCATTER 3 BODY": "Obtenir 3 symboles Scatter déclenche le Bonus Normal. Le joueur accède au mode Parties Gratuites Normal. Le Bonus Normal utilise la configuration standard des Parties Gratuites et sa progression de Multiplicateur de Gains de départ correspondante. Tout Multiplicateur de Gains actif reporté dans la fonction est combiné au résultat d'entrée des Parties Gratuites, le cas échéant. Le Multiplicateur de Gains persiste tout au long de la fonction Parties Gratuites et peut augmenter pendant le jeu. Il ne se réinitialise pas entre les Parties Gratuites.",
-	"INFO SCATTER 4 TITLE": "4 SCATTERS - Bonus Normal",
+	"INFO SCATTER 4 TITLE": "SCATTERS - Bonus Normal",
 	"INFO SCATTER 4 BODY": "Obtenir 4 symboles Scatter déclenche le Super Bonus. Le Super Bonus débute avec une configuration de départ améliorée par rapport au Bonus Normal. Le joueur reçoit la configuration des Super Parties Gratuites avec les conditions d'entrée maximales / améliorées définies pour ce mode. Le Multiplicateur de Gains persiste tout au long du Super Bonus et peut continuer d'augmenter pendant les Parties Gratuites. Il ne se réinitialise pas entre les Parties Gratuites.",
 	"INFO FREEGAMES BODY 1": "Pendant les Parties Gratuites, les mêmes mécaniques principales de gain et de Re-Tour restent actives. Chaque fois qu'une connexion gagnante qualifiante se produit, les symboles gagnants identiques se verrouillent automatiquement et déclenchent un Re-Tour.",
 	"INFO FREEGAMES BODY 2": "Les symboles identiques supplémentaires ajoutés pendant le Re-Tour sont verrouillés, permettant à la séquence de se poursuivre. Les symboles McSchmutzo apparaissant pendant la fonction peuvent augmenter le Multiplicateur de Gains. Le Multiplicateur de Gains accumulé reste actif tout au long de la fonction Parties Gratuites.",

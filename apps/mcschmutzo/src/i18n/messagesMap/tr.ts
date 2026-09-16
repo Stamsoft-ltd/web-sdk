@@ -3,9 +3,9 @@ export default {
 	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
 	"INFO SCATTER TITLE": "SCATTER / BONUS SEMBOLÜ",
 	"INFO SCATTER BODY": "BONUS sembolü, Scatter sembolüdür ve tüm makaralarda görünebilir. Scatter sembollerinin gelmesi, iki Ücretsiz Oyunlar modundan birini etkinleştirir.",
-	"INFO SCATTER 3 TITLE": "3 SCATTER - Normal Bonus",
+	"INFO SCATTER 3 TITLE": "SCATTER - Normal Bonus",
 	"INFO SCATTER 3 BODY": "3 Scatter sembolünün gelmesi Normal Bonusu tetikler. Oyuncu, Normal Ücretsiz Oyunlar moduna girer. Normal Bonus, standart Ücretsiz Oyunlar yapılandırmasını ve buna karşılık gelen başlangıç Kazanç Çarpanı ilerleyişini kullanır. Özelliğe taşınan aktif herhangi bir Kazanç Çarpanı, uygun olduğunda Ücretsiz Oyunlar giriş sonucuyla birleştirilir. Kazanç Çarpanı, tüm Ücretsiz Oyunlar özelliği boyunca kalıcı olur ve oyun sırasında artabilir. Ücretsiz Oyunlar arasında sıfırlanmaz.",
-	"INFO SCATTER 4 TITLE": "4 SCATTER - Normal Bonus",
+	"INFO SCATTER 4 TITLE": "SCATTER - Normal Bonus",
 	"INFO SCATTER 4 BODY": "4 Scatter sembolünün gelmesi Süper Bonusu tetikler. Süper Bonus, Normal Bonusa kıyasla geliştirilmiş bir başlangıç yapılandırmasıyla başlar. Oyuncu, bu mod için tanımlanan maksimum / geliştirilmiş giriş koşullarıyla Süper Ücretsiz Oyunlar düzenini alır. Kazanç Çarpanı, tüm Süper Bonus boyunca kalıcı olur ve Ücretsiz Oyunlar sırasında artmaya devam edebilir. Ücretsiz Oyunlar arasında sıfırlanmaz.",
 	"INFO FREEGAMES BODY 1": "Ücretsiz Oyunlar sırasında, aynı temel kazanç ve Yeniden Döndürme mekanikleri aktif kalır. Uygun bir kazançlı bağlantı oluştuğunda, eşleşen kazanan semboller otomatik olarak kilitlenir ve bir Yeniden Döndürme tetikler.",
 	"INFO FREEGAMES BODY 2": "Yeniden Döndürme sırasında eklenen ek eşleşen semboller kilitlenir ve dizinin devam etmesini sağlar. Özellik sırasında görünen McSchmutzo sembolleri Kazanç Çarpanını artırabilir. Biriken Kazanç Çarpanı, tüm Ücretsiz Oyunlar özelliği boyunca aktif kalır.",

@@ -863,10 +863,10 @@
 	}
 	.ug-label {
 		color: #f2ead9;
-		font-family: 'Nunito', sans-serif;
-		font-weight: 800;
-		font-size: clamp(0.82rem, 1.7vmin, 1.05rem);
-		letter-spacing: 0.03em;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
+		font-size: clamp(0.78rem, 1.6vmin, 1rem);
+		letter-spacing: 0.02em;
 		text-transform: uppercase;
 	}
 	.ug-desc {
@@ -917,7 +917,7 @@
 	}
 	.tu-stat-big {
 		color: #f0a112;
-		font-family: 'Lilita One', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
 		font-size: clamp(1.5rem, 4.4vmin, 2.8rem);
 		letter-spacing: 0.01em;
@@ -928,7 +928,7 @@
 		border-radius: 8px;
 		background: #f0a112;
 		color: #241f1c;
-		font-family: 'Lilita One', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
 		font-size: clamp(1rem, 2.4vmin, 1.4rem);
 		letter-spacing: 0.01em;
