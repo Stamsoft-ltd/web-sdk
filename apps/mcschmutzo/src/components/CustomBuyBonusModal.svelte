@@ -42,12 +42,14 @@
 
 	const props: Props = $props();
 	const context = getContext();
+	// title/description are i18n keys (translated in the markup). Titles wrap naturally per language
+	// instead of using hard '\n' line breaks.
 	const modes: Mode[] = [
 		{
 			id: 'enhancer1',
 			multiplier: 2,
-			title: 'EXTRA\nCHANCE',
-			description: 'Activate to increase 3 times the chance of trigger a bonus round',
+			title: 'CARD CHANCE TITLE',
+			description: 'CARD CHANCE DESC',
 			action: 'activate',
 			art: artExtraChance,
 			badge: '2x',
@@ -55,8 +57,8 @@
 		{
 			id: 'featureSpin',
 			multiplier: 20,
-			title: 'LOCK FEATURE\nSPIN',
-			description: 'Guaranteed paying spin followed by Lock & Re-Spin.',
+			title: 'CARD FEATURE TITLE',
+			description: 'CARD FEATURE DESC',
 			action: 'activate',
 			art: artLockSpin,
 			badge: null,
@@ -64,8 +66,8 @@
 		{
 			id: 'bonus1',
 			multiplier: 100,
-			title: 'NORMAL\nBONUS',
-			description: 'Enter the bonus with three Scatter symbols.',
+			title: 'NORMAL BONUS',
+			description: 'CARD DEALIT DESC',
 			action: 'buy',
 			art: artNormalBonus,
 			badge: '3x',
@@ -73,8 +75,8 @@
 		{
 			id: 'bonus2',
 			multiplier: 500,
-			title: 'SUPER\nBONUS',
-			description: 'Enter the Super Bonus with four Scatter symbols.',
+			title: 'SUPER BONUS',
+			description: 'CARD ALLIN DESC',
 			action: 'buy',
 			art: artSuperBonus,
 			badge: null,
@@ -176,9 +178,9 @@
 	<div class="bb-grid">
 		{#each modes as mode (mode.id)}
 			<article class="bb-card" class:bb-card--active={isActive(mode.id)}>
-				<h3 class="bb-card-title">{mode.title}</h3>
+				<h3 class="bb-card-title">{i18nDerived.translate(mode.title)}</h3>
 				<div class="bb-divider"></div>
-				<p class="bb-desc">{mode.description}</p>
+				<p class="bb-desc">{i18nDerived.translate(mode.description)}</p>
 
 				<div class="bb-art">
 					<img src={mode.art} alt="" draggable="false" />

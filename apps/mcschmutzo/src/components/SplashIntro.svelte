@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { ap } from '../lib/preloadArt';
+	import { i18nDerived } from '../i18n/i18nDerived';
 
 	type Props = { onpress: () => void };
 	const props: Props = $props();
@@ -16,24 +17,25 @@
 	// Each card = an empty drip frame + HTML copy (so the text stays editable / localizable).
 	// `pad` is the interior inset per frame — the red frame carries a baked drop-shadow margin, so it
 	// needs a wider inset than the shadow-less yellow/green frames.
+	// title/body entries are i18n keys (translated in the markup).
 	const CARDS = [
 		{
 			cls: 'card--red',
 			art: cardRed,
-			title: 'WELCOME TO SCHMUTZO',
-			body: ['Bright lights, wild rides and big surprises around every corner.'],
+			title: 'SPLASH C1 TITLE',
+			body: ['SPLASH C1 BODY'],
 		},
 		{
 			cls: 'card--yellow',
 			art: cardYellow,
-			title: '3 UNIQUE BONUSES',
-			body: ['Pick the Ducks', 'Ride the Wilds', 'Survive the Coaster'],
+			title: 'SPLASH C2 TITLE',
+			body: ['SPLASH C2 BODY 1', 'SPLASH C2 BODY 2', 'SPLASH C2 BODY 3'],
 		},
 		{
 			cls: 'card--green',
 			art: cardGreen,
-			title: 'MAX WIN OF 25,000×',
-			body: ['THE ULTIMATE PARK PRIZE'],
+			title: 'SPLASH C3 TITLE',
+			body: ['SPLASH C3 BODY'],
 		},
 	];
 
@@ -66,7 +68,7 @@
 	class="splash-intro"
 	role="button"
 	tabindex="0"
-	aria-label="Press to continue"
+	aria-label={i18nDerived.translate('PRESS TO CONTINUE')}
 	onclick={press}
 	onkeydown={onKey}
 >
@@ -79,9 +81,9 @@
 		{#snippet cardEl(card: (typeof CARDS)[number])}
 			<div class="card {card.cls}" style={`background-image:url('${card.art}')`}>
 				<div class="card-inner">
-					<h3 class="card-title">{card.title}</h3>
+					<h3 class="card-title">{i18nDerived.translate(card.title)}</h3>
 					<div class="card-body">
-						{#each card.body as line (line)}<p>{line}</p>{/each}
+						{#each card.body as line (line)}<p>{i18nDerived.translate(line)}</p>{/each}
 					</div>
 				</div>
 			</div>
@@ -105,7 +107,7 @@
 			</div>
 		{/if}
 
-		<p class="press-label">PRESS TO CONTINUE&nbsp;→</p>
+		<p class="press-label">{i18nDerived.translate('PRESS TO CONTINUE')}&nbsp;→</p>
 	</div>
 </div>
 

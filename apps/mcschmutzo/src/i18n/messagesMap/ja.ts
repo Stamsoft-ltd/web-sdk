@@ -1,0 +1,187 @@
+export default {
+	HOME: 'ホーム',
+
+	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
+	'CARD CHANCE TITLE': 'エクストラチャンス',
+	'CARD CHANCE DESC': 'ボーナス到達のチャンスをアップ。',
+	'CARD FEATURE TITLE': 'ロックフィーチャースピン',
+	'CARD FEATURE DESC': '配当のあるスピンを保証し、ロック＆リスピンを開始。',
+	'CARD DEALIT DESC': '3つのスキャッターでノーマルボーナスに突入。',
+	'CARD ALLIN DESC': '4つのスキャッターでスーパーボーナスに突入。',
+	'CONFIRM TEXT': '%mode%を%cost%で購入しますか？',
+	'NORMAL BONUS': 'ノーマルボーナス',
+	'SUPER BONUS': 'スーパーボーナス',
+	'CONFIRM IT ALL': 'すべて確定',
+	'BUY ALL IN': 'オールインを%cost%で購入',
+	CONFIRM: '確定',
+	CANCEL: 'キャンセル',
+
+	// ── Autoplay modal ───────────────────────────────────────────────────────────────────────────
+	'AUTO SPIN': 'オートスピン',
+	'TURBO SPIN': 'ターボスピン',
+	'SUPER TURBO SPIN': 'スーパーターボスピン',
+	'LOCK FEATURE SPIN': '50Xボーナスフィーチャー',
+	'NUMBER OF SPINS': 'スピン回数',
+	'START AUTOPLAY': 'オートプレイ開始',
+
+	// ── Recovery / interrupted round ─────────────────────────────────────────────────────────────
+	'UNFINISHED ROUND': '未完了のラウンド',
+	'ACTIVE BONUS IN PROGRESS': '進行中の%bonus%ボーナスがあります。',
+	'ACTIVE ROUND IN PROGRESS': '進行中のボーナスがあります。',
+	'END ROUND': 'ラウンド終了',
+	'PLAY ROUND': 'ラウンドをプレイ',
+
+	// ── HUD + wheel + win ────────────────────────────────────────────────────────────────────────
+	BONUS: 'ボーナス',
+	AUTO: 'オート',
+	CONGRATS: 'おめでとう！',
+	'YOU WON': '獲得',
+	'ALL IN BONUS TITLE': 'オールインボーナス',
+	'NORMAL BONUS TITLE': 'ノーマルボーナス',
+	'BONUS BLURB':
+		'%count%回のフリースピン。ランダムな拡張シンボルとマルチプライヤーは2xからスタートし、接続ごとに倍増。',
+	'FREE SPINS': 'フリースピン',
+	'PRESS TO CONTINUE': 'タップして続行',
+	'FREE GAMES': 'フリーゲーム',
+	STEPS: 'ステップ',
+	SPIN: 'スピン',
+	SOUND: 'サウンド',
+	MUSIC: 'ミュージック',
+	INFO: '情報',
+
+	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
+	'SPLASH C1 TITLE': 'SCHMUTZOへようこそ',
+	'SPLASH C1 BODY': 'ジュージューと焼けるソース、ワイルドな勝利、そして毎回のスピンにドタバタなサプライズ。',
+	'SPLASH C2 TITLE': 'ソースたっぷりのフィーチャー',
+	'SPLASH C2 BODY 1': 'ロック＆リスピン',
+	'SPLASH C2 BODY 2': '成長するウィンマルチプライヤー',
+	'SPLASH C2 BODY 3': 'フリーゲーム',
+	'SPLASH C3 TITLE': '最大配当25,000×',
+	'SPLASH C3 BODY': '究極のソース賞金',
+
+	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
+	OVERVIEW: '概要',
+	PAYTABLE: '配当表',
+	SYMBOL: 'シンボル',
+	'3 OF A KIND': '3個一致',
+	'4 OF A KIND': '4個一致',
+	'5 OF A KIND': '5個一致',
+	FEATURES: 'フィーチャー',
+	'WAYS TO WIN': '勝利の方法',
+	'FEATURE BUY': 'フィーチャー購入',
+	'GENERAL INFO': '一般情報',
+	'INTERRUPTED ROUNDS': '中断されたラウンド',
+	'LEGAL NOTICE': '法的通知',
+	'USER INTERFACE GUIDE': 'ユーザーインターフェースガイド',
+
+	// ── Info / rules popup: OVERVIEW ─────────────────────────────────────────────────────────────
+	'INFO OVERVIEW BODY':
+		'McSchmutzoは5×5のリール構成でプレイし、50本の固定ペイラインで配当します。勝利の組み合わせは、有効なペイライン上で一致するシンボルが左端のリールから連続するリールに揃うことで成立します。すべての配当は配当表に表示されたシンボルの価値に従って計算されます。1回のゲームラウンドで複数の勝利の組み合わせが成立する場合があります。',
+	'INFO MAX WIN LABEL': '最大配当：',
+	'INFO MAX WIN VALUE': '25,000×ベット',
+	'INFO RTP LABEL': '理論上のRTP：',
+
+	// ── Info / rules popup: FEATURES ─────────────────────────────────────────────────────────────
+	'INFO WILD TITLE': 'ワイルドシンボル',
+	'INFO WILD BODY 1':
+		'ワイルドシンボルはすべての通常配当シンボルの代わりになります。ワイルドが勝利の組み合わせに貢献する場合、必要な配当シンボルの代わりとなり、その勝利の一部としてカウントされます。',
+	'INFO WILD BODY 2': 'ワイルドはスキャッター/ボーナスシンボルの代わりにはなりません。',
+	'INFO RESPIN TITLE': 'リスピンフィーチャー',
+	'INFO RESPIN BODY 1':
+		'条件を満たす勝利の接続が成立するたびに、勝利シンボルが自動的にその位置にロックされ、リスピンが発動します。必要な勝利の接続が発生した場合、ロックは必ず保証されます。複数の対象シンボルタイプが関わる場合、最も価値の高い条件を満たす勝利シンボルのみがロック対象として選ばれます。リスピン中、ロックされたシンボルはその位置に留まり、残りのリール位置が再度スピンします。',
+	'INFO RESPIN BODY 2':
+		'追加の一致するシンボルが揃い、ロックされた勝利の組み合わせを拡張した場合、それらの一致するシンボルもロックされ、さらにリスピンが付与されます。リスピンのシーケンスは、ロックされた組み合わせに新しい一致するシンボルが追加され続ける限り続きます。リスピン中に追加の一致するシンボルが加わらなかった場合、または利用可能なすべてのリール位置が選ばれた一致するシンボルで埋まった場合、リスピンのシーケンスは終了します。',
+	'INFO RESPIN BODY 3':
+		'リスピンのシーケンス中に生じたすべての配当は、現在のゲームラウンドの配当に加算されます。',
+	'INFO MULT TITLE': 'ウィンマルチプライヤー',
+	'INFO MULT BODY 1':
+		'リスピンフィーチャー中、McSchmutzoシンボルが出現してウィンマルチプライヤーを上昇させることがあります。条件を満たす各McSchmutzoシンボルは、ウィンマルチプライヤーのステップを追加できます。ウィンマルチプライヤーは1xからスタートします。マルチプライヤーは次のレベルを進行します：',
+	'INFO MULT BODY 2':
+		'現在のウィンマルチプライヤーはゲームの数学に従って適用され、現在のリスピンのシーケンス全体を通じて有効なままです。',
+	'INFO COMING SOON': '近日公開。',
+
+	// ── Info / rules popup: FEATURE BUY ──────────────────────────────────────────────────────────
+	'INFO FB1 TITLE': '強化モード1',
+	'INFO FB1 BODY':
+		'ベースベットの2×のコストで、フリーゲーム発動のチャンスが4×に増加します。その他のゲームの仕組みはすべて変わりません。',
+	'INFO FB1 COST': 'ベースベットの2×',
+	'INFO FB2 TITLE': '強化モード2',
+	'INFO FB2 BODY':
+		'ベースベットの10×のコストで、フリーゲーム発動のチャンスが4×に増加し、強化モードはスーパーボーナス/最大突入条件に向けて設定されます。その他のゲームの仕組みはすべて変わりません。',
+	'INFO FB2 COST': 'ベースベットの10×',
+	'INFO FB3 TITLE': 'ノーマルボーナス',
+	'INFO FB3 BODY':
+		'ベースベットの100×のコストで、プレイヤーは直接ノーマルボーナスに突入します。ノーマルボーナスは標準のフリーゲーム突入設定でプレイされます。',
+	'INFO FB3 COST': 'ベースベットの100×',
+	'INFO FB4 TITLE': 'スーパーボーナス',
+	'INFO FB4 BODY':
+		'ベースベットの500×のコストで、プレイヤーは直接スーパーボーナスに突入します。スーパーボーナスは強化された/最大のフリーゲーム突入設定で開始します。',
+	'INFO FB4 COST': 'ベースベットの500×',
+
+	// ── Info / rules popup: GENERAL INFO ─────────────────────────────────────────────────────────
+	'INFO INTERRUPTED BODY 1':
+		'ゲームラウンドが中断された場合、可能な限りゲームの再読み込み時に続行されます。',
+	'INFO INTERRUPTED BODY 2':
+		'すべての有効な賭け金と潜在的な配当は、ラウンドが完全に完了するまで有効なままです。',
+	'INFO LEGAL BODY 1':
+		'不具合が発生した場合、すべての配当とプレイは無効となります。安定したインターネット接続が必要です。接続が切断された場合は、ゲームを再読み込みして未完了のラウンドを終了してください。',
+	'INFO LEGAL BODY 2':
+		'期待される還元率は多数のプレイにわたって計算されます。ゲームの表示はいかなる物理的な装置を表すものではなく、説明目的のみのものです。',
+	'INFO LEGAL BODY 3':
+		'配当はリモートゲームサーバーから受信した金額に従って清算され、ウェブブラウザ内のイベントによるものではありません。',
+	'INFO LEGAL COPYRIGHT': 'TMおよび© 2026 Stake Engine.',
+
+	// ── Info / rules popup: USER INTERFACE GUIDE (labels + descriptions) ─────────────────────────
+	'UI AUTO SPINS': 'オートスピン',
+	'UI BET PLUS': 'ベット +',
+	'UI BET MINUS': 'ベット -',
+	PREVIOUS: '前へ',
+	NEXT: '次へ',
+	CLOSE: '閉じる',
+	MENU: 'メニュー',
+	'INFO UI SPIN DESC': '新しいゲームラウンドを開始します。',
+	'INFO UI AUTO DESC': 'オートスピンメニューを開きます。',
+	'INFO UI TURBO DESC': 'より速いリールスピンを有効にします。',
+	'INFO UI BETPLUS DESC': '合計ベット額を増やします。',
+	'INFO UI BETMINUS DESC': '合計ベット額を減らします。',
+	'INFO UI INFO DESC': 'ゲーム情報を開きます。',
+	'INFO UI SOUND DESC': 'ゲームサウンドのオン/オフを切り替えます。',
+	'INFO UI PREV DESC': '前のページに移動します。',
+	'INFO UI NEXT DESC': '次のページに移動します。',
+	'INFO UI CLOSE DESC': '現在のウィンドウを閉じます。',
+	'INFO UI MENU DESC': 'ゲームメニューを開きます。',
+	'INFO UI MUSIC DESC': 'ゲームミュージックのオン/オフを切り替えます。',
+
+	// ── Info / rules popup: nav ──────────────────────────────────────────────────────────────────
+	'INFO PAGE': 'ページ',
+
+	// ── Common UI terms (shared across Stake games; copied from magnetic/forest) ──
+	"ACTIVATE": "有効化",
+	"ALL IN": "MEGA CHAIN",
+	"AUTOPLAY": "オート",
+	"BALANCE": "残高",
+	"BET": "ベット",
+	"BUY": "購入",
+	"BUY BONUS": "ボーナス購入",
+	"DEACTIVATE": "無効化",
+	"DEAL IT": "DROP-O-MAGNET",
+	"EVENT": "イベント",
+	"GAME RULES": "ゲームルール",
+	"MODE": "モード",
+	"NOT TRANSLATED": "未翻訳",
+	"PAYOUT": "配当",
+	"PLAY AGAIN": "もう一度",
+	"REAL COST": "実コスト",
+	"RECOVERY BODY": "前回のラウンドを自動的に復元できませんでした。新しいラウンドを始める前に、元のラウンドを再試行して完了してください。",
+	"RECOVERY TITLE": "未完了ラウンドを検出",
+	"REPLAY": "リプレイ",
+	"RETRY RESUME": "ラウンド再試行",
+	"START REPLAY": "リプレイ開始",
+	"TOTAL COST": "合計コスト",
+	"TOTAL WIN": "合計ウィン",
+	"TURBO": "ターボ",
+	"WIN": "ウィン",
+	"EARNED": "獲得",
+	"FS FREE SPINS": "フリースピン",
+	"GAME TITLE": "McSchmutzo",
+};

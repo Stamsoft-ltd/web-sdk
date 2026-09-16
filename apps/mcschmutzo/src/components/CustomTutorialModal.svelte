@@ -22,19 +22,20 @@
 	// Page 7 (user interface guide) — the design's icon-button set (self-contained SVGs:
 	// dark disc + #605554 border + white glyph, so they match the HUD 1:1).
 	const uiIcon = (n: string) => ap(`/assets/mcschmutzo/ui-icons/${n}`);
+	// label/desc are i18n keys (translated in the markup).
 	const UI_ITEMS: { label: string; desc: string; icon: string }[] = [
-		{ label: 'SPIN', desc: 'Starts a new game round.', icon: uiIcon('spin.svg') },
-		{ label: 'AUTO SPINS', desc: 'Opens the Auto Spins menu.', icon: uiIcon('auto.svg') },
-		{ label: 'TURBO', desc: 'Enables faster reel spins.', icon: uiIcon('turbo.svg') },
-		{ label: 'BET +', desc: 'Increases your total bet.', icon: uiIcon('plus.svg') },
-		{ label: 'BET -', desc: 'Decreases your total bet.', icon: uiIcon('minus.svg') },
-		{ label: 'INFO', desc: 'Opens the game information.', icon: uiIcon('info.svg') },
-		{ label: 'SOUND', desc: 'Turns game sound on or off.', icon: uiIcon('sound.svg') },
-		{ label: 'PREVIOUS', desc: 'Goes to the previous page.', icon: uiIcon('prev.svg') },
-		{ label: 'NEXT', desc: 'Goes to the next page.', icon: uiIcon('next.svg') },
-		{ label: 'CLOSE', desc: 'Closes the current window.', icon: uiIcon('close.svg') },
-		{ label: 'MENU', desc: 'Opens game menu.', icon: uiIcon('menu.svg') },
-		{ label: 'MUSIC', desc: 'Turns game music on or off.', icon: uiIcon('music.svg') },
+		{ label: 'SPIN', desc: 'INFO UI SPIN DESC', icon: uiIcon('spin.svg') },
+		{ label: 'UI AUTO SPINS', desc: 'INFO UI AUTO DESC', icon: uiIcon('auto.svg') },
+		{ label: 'TURBO', desc: 'INFO UI TURBO DESC', icon: uiIcon('turbo.svg') },
+		{ label: 'UI BET PLUS', desc: 'INFO UI BETPLUS DESC', icon: uiIcon('plus.svg') },
+		{ label: 'UI BET MINUS', desc: 'INFO UI BETMINUS DESC', icon: uiIcon('minus.svg') },
+		{ label: 'INFO', desc: 'INFO UI INFO DESC', icon: uiIcon('info.svg') },
+		{ label: 'SOUND', desc: 'INFO UI SOUND DESC', icon: uiIcon('sound.svg') },
+		{ label: 'PREVIOUS', desc: 'INFO UI PREV DESC', icon: uiIcon('prev.svg') },
+		{ label: 'NEXT', desc: 'INFO UI NEXT DESC', icon: uiIcon('next.svg') },
+		{ label: 'CLOSE', desc: 'INFO UI CLOSE DESC', icon: uiIcon('close.svg') },
+		{ label: 'MENU', desc: 'INFO UI MENU DESC', icon: uiIcon('menu.svg') },
+		{ label: 'MUSIC', desc: 'INFO UI MUSIC DESC', icon: uiIcon('music.svg') },
 	];
 	const MULT_LADDER = [
 		'1x', '2x', '3x', '4x', '5x', '6x', '8x', '10x', '12x', '15x', '20x', '25x', '30x', '35x',
@@ -42,32 +43,12 @@
 		'500x', '600x', '800x', '1000x',
 	];
 
-	// Page 5 (feature buy) — four purchasable modes with cost + RTP.
+	// Page 5 (feature buy) — four purchasable modes. title/body/cost are i18n keys.
 	const FEATURE_BUYS: { title: string; body: string; cost: string; rtp: string }[] = [
-		{
-			title: 'ENHANCED MODE 1',
-			body: 'For a cost of 2× the Base Bet, the chance of triggering Free Games is increased by 4×. All other game mechanics remain unchanged.',
-			cost: '2× the Base Bet',
-			rtp: '96.1%',
-		},
-		{
-			title: 'ENHANCED MODE 2',
-			body: 'For a cost of 10× the Base Bet, the chance of triggering Free Games is increased by 4×, with the enhanced mode configured toward the Super Bonus / maximum entry condition. All other game mechanics remain unchanged.',
-			cost: '10× the Base Bet',
-			rtp: '96.1%',
-		},
-		{
-			title: 'NORMAL BONUS',
-			body: 'For a cost of 100× the Base Bet, the player directly enters the Normal Bonus. The Normal Bonus is played using its standard Free Games entry configuration.',
-			cost: '100× the Base Bet',
-			rtp: '96.1%',
-		},
-		{
-			title: 'SUPER BONUS',
-			body: 'For a cost of 500× the Base Bet, the player directly enters the Super Bonus. The Super Bonus begins using its enhanced / maximum Free Games entry configuration.',
-			cost: '500× the Base Bet',
-			rtp: '96.1%',
-		},
+		{ title: 'INFO FB1 TITLE', body: 'INFO FB1 BODY', cost: 'INFO FB1 COST', rtp: '96.1%' },
+		{ title: 'INFO FB2 TITLE', body: 'INFO FB2 BODY', cost: 'INFO FB2 COST', rtp: '96.1%' },
+		{ title: 'INFO FB3 TITLE', body: 'INFO FB3 BODY', cost: 'INFO FB3 COST', rtp: '96.1%' },
+		{ title: 'INFO FB4 TITLE', body: 'INFO FB4 BODY', cost: 'INFO FB4 COST', rtp: '96.1%' },
 	];
 
 	// Paytable (values per matching-symbol count), ordered low → high as in the design.
@@ -108,23 +89,17 @@
 		{#if page === 1}
 			<div class="tu-page">
 				<h2 class="tu-title">{i18nDerived.translate('OVERVIEW')}</h2>
-				<p class="tu-body">
-					McSchmutzo is played on a 5×5 reel setup and pays on 50 fixed win-lines. Winning
-					combinations are formed by landing matching symbols on an active win-line, starting from
-					the leftmost reel and continuing on consecutive reels. All wins are calculated according
-					to the symbol values shown in the Paytable. Multiple winning combinations may be awarded on
-					the same game round.
-				</p>
+				<p class="tu-body">{i18nDerived.translate('INFO OVERVIEW BODY')}</p>
 
 				<div class="tu-lower">
 					<img class="tu-guy" src={guyArt} alt="" draggable="false" />
 					<div class="tu-stats">
 						<div class="tu-stat">
-							<span class="tu-stat-label">Maximum Win:</span>
-							<span class="tu-stat-big">25,000× bet</span>
+							<span class="tu-stat-label">{i18nDerived.translate('INFO MAX WIN LABEL')}</span>
+							<span class="tu-stat-big">{i18nDerived.translate('INFO MAX WIN VALUE')}</span>
 						</div>
 						<div class="tu-stat">
-							<span class="tu-stat-label">Theoretical RTP:</span>
+							<span class="tu-stat-label">{i18nDerived.translate('INFO RTP LABEL')}</span>
 							<span class="tu-pill">96.10%</span>
 						</div>
 					</div>
@@ -166,33 +141,33 @@
 					<div class="ft-card ft-card--wild">
 						<div class="ft-head">
 							<img class="ft-icon" src={wildArt} alt="" draggable="false" />
-							<h3 class="ft-title">WILD SYMBOL</h3>
+							<h3 class="ft-title">{i18nDerived.translate('INFO WILD TITLE')}</h3>
 						</div>
 						<div class="ft-body ft-body--center">
-							<p>The WILD symbol substitutes for all regular paying symbols. When a Wild contributes to a winning combination, it substitutes for the required paying symbol and is counted as part of that win.</p>
-							<p>The Wild does not substitute for the Scatter / Bonus symbol.</p>
+							<p>{i18nDerived.translate('INFO WILD BODY 1')}</p>
+							<p>{i18nDerived.translate('INFO WILD BODY 2')}</p>
 						</div>
 					</div>
 
 					<div class="ft-card ft-card--respin">
 						<div class="ft-head">
 							<img class="ft-icon" src={respinArt} alt="" draggable="false" />
-							<h3 class="ft-title">RE-SPIN FEATURE</h3>
+							<h3 class="ft-title">{i18nDerived.translate('INFO RESPIN TITLE')}</h3>
 						</div>
 						<div class="ft-body ft-body--center">
-							<p>Whenever a qualifying winning connection is formed, the winning symbols automatically lock in position and a Re-Spin is triggered. The lock is guaranteed whenever the required winning connection occurs. Only the highest-value qualifying winning symbol is selected to lock when multiple eligible symbol types are involved. During the Re-Spin, the locked symbols remain in position while the remaining reel positions spin again.</p>
-							<p>If additional matching symbols land and extend the locked winning combination, those matching symbols are also locked and another Re-Spin is awarded. The Re-Spin sequence continues for as long as new matching symbols are added to the locked combination. A Re-Spin sequence ends when no additional matching symbols are added during a Re-Spin, or when all available reel positions become filled with the selected matching symbol.</p>
-							<p>All wins created during the Re-Spin sequence are added to the current game-round win.</p>
+							<p>{i18nDerived.translate('INFO RESPIN BODY 1')}</p>
+							<p>{i18nDerived.translate('INFO RESPIN BODY 2')}</p>
+							<p>{i18nDerived.translate('INFO RESPIN BODY 3')}</p>
 						</div>
 					</div>
 
 					<div class="ft-card ft-card--mult">
 						<div class="ft-head">
 							<img class="ft-icon" src={multArt} alt="" draggable="false" />
-							<h3 class="ft-title">WIN MULTIPLIER</h3>
+							<h3 class="ft-title">{i18nDerived.translate('INFO MULT TITLE')}</h3>
 						</div>
 						<div class="ft-body">
-							<p>During the Re-Spin Feature, McSchmutzo symbols may appear and increase the Win Multiplier. Each qualifying McSchmutzo symbol can add Win Multiplier steps. The Win Multiplier begins at 1x. The multiplier progresses through the following levels:</p>
+							<p>{i18nDerived.translate('INFO MULT BODY 1')}</p>
 							<div class="ft-ladder">
 								{#each MULT_LADDER as m, i}
 									<span class="ft-step">
@@ -201,7 +176,7 @@
 									</span>
 								{/each}
 							</div>
-							<p>The current Win Multiplier is applied according to the game mathematics and remains active throughout the current Re-Spin sequence.</p>
+							<p>{i18nDerived.translate('INFO MULT BODY 2')}</p>
 						</div>
 					</div>
 				</div>
@@ -209,7 +184,7 @@
 		{:else if page === 4}
 			<div class="tu-page tu-page--placeholder">
 				<h2 class="tu-title">{i18nDerived.translate('WAYS TO WIN')}</h2>
-				<p class="tu-body">Coming soon.</p>
+				<p class="tu-body">{i18nDerived.translate('INFO COMING SOON')}</p>
 			</div>
 		{:else if page === 5}
 			<div class="tu-page">
@@ -218,9 +193,9 @@
 				<div class="fb-grid">
 					{#each FEATURE_BUYS as fb}
 						<div class="fb-card">
-							<h3 class="fb-title">{fb.title}</h3>
-							<p class="fb-body">{fb.body}</p>
-							<div class="fb-cost">{fb.cost}</div>
+							<h3 class="fb-title">{i18nDerived.translate(fb.title)}</h3>
+							<p class="fb-body">{i18nDerived.translate(fb.body)}</p>
+							<div class="fb-cost">{i18nDerived.translate(fb.cost)}</div>
 							<div class="fb-rtp">RTP: {fb.rtp}</div>
 						</div>
 					{/each}
@@ -237,8 +212,8 @@
 							<h3 class="gi-title">{i18nDerived.translate('INTERRUPTED ROUNDS')}</h3>
 						</div>
 						<div class="gi-body">
-							<p>If a game round is interrupted, it will continue when the game is reloaded, where possible.</p>
-							<p>All valid wagers and potential winnings remain active until the round is fully completed.</p>
+							<p>{i18nDerived.translate('INFO INTERRUPTED BODY 1')}</p>
+							<p>{i18nDerived.translate('INFO INTERRUPTED BODY 2')}</p>
 						</div>
 					</div>
 
@@ -248,10 +223,10 @@
 							<h3 class="gi-title">{i18nDerived.translate('LEGAL NOTICE')}</h3>
 						</div>
 						<div class="gi-body">
-							<p>Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds.</p>
-							<p>The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only.</p>
-							<p>Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser.</p>
-							<p>TM and © 2026 Stake Engine.</p>
+							<p>{i18nDerived.translate('INFO LEGAL BODY 1')}</p>
+							<p>{i18nDerived.translate('INFO LEGAL BODY 2')}</p>
+							<p>{i18nDerived.translate('INFO LEGAL BODY 3')}</p>
+							<p>{i18nDerived.translate('INFO LEGAL COPYRIGHT')}</p>
 						</div>
 					</div>
 				</div>
@@ -265,8 +240,8 @@
 						<div class="ug-item">
 							<img class="ug-btn" src={it.icon} alt="" draggable="false" />
 							<span class="ug-text">
-								<span class="ug-label">{it.label}</span>
-								<span class="ug-desc">{it.desc}</span>
+								<span class="ug-label">{i18nDerived.translate(it.label)}</span>
+								<span class="ug-desc">{i18nDerived.translate(it.desc)}</span>
 							</span>
 						</div>
 					{/each}
@@ -274,8 +249,8 @@
 			</div>
 		{:else}
 			<div class="tu-page tu-page--placeholder">
-				<h2 class="tu-title">PAGE {page}</h2>
-				<p class="tu-body">Coming soon.</p>
+				<h2 class="tu-title">{i18nDerived.translate('INFO PAGE')} {page}</h2>
+				<p class="tu-body">{i18nDerived.translate('INFO COMING SOON')}</p>
 			</div>
 		{/if}
 
@@ -285,7 +260,7 @@
 				type="button"
 				onclick={prev}
 				disabled={page === 1}
-				aria-label="Previous"
+				aria-label={i18nDerived.translate('PREVIOUS')}
 				style={`background-image:url('${arrowLeftArt}')`}
 			></button>
 			<button
@@ -293,10 +268,10 @@
 				type="button"
 				onclick={next}
 				disabled={page === TOTAL_PAGES}
-				aria-label="Next"
+				aria-label={i18nDerived.translate('NEXT')}
 				style={`background-image:url('${arrowRightArt}')`}
 			></button>
-			<span class="tu-page-num">Page {page}/{TOTAL_PAGES}</span>
+			<span class="tu-page-num">{i18nDerived.translate('INFO PAGE')} {page}/{TOTAL_PAGES}</span>
 		</div>
 	</div>
 </div>
@@ -308,7 +283,7 @@
 	type="button"
 	style={`background-image:url('${closeArt}')`}
 	onclick={props.onclose}
-	aria-label="Close"
+	aria-label={i18nDerived.translate('CLOSE')}
 ></button>
 
 <style>
