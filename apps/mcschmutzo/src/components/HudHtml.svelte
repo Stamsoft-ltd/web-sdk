@@ -1970,7 +1970,8 @@
 		transform: translate(-50%, -50%);
 		object-fit: contain;
 		pointer-events: none;
-		filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.55));
+		/* Pure white square (the source art is yellow) with a subtle shadow after the recolour. */
+		filter: brightness(0) invert(1) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.55));
 	}
 
 	.spin-btn__count {
@@ -2021,11 +2022,11 @@
 		font-weight: 400;
 		letter-spacing: 0.01em;
 		white-space: nowrap;
-		/* White label to match the design's baked "BONUS" text. */
+		/* White label to match the design's baked "BONUS" text (no shadow). */
 		color: #ffffff;
-		filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.75));
 		line-height: 1;
 		pointer-events: none;
+		text-align: center;
 	}
 
 	/* Scatter card keeps its original (tighter) hide breakpoint. */
