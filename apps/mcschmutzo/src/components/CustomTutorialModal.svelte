@@ -99,7 +99,6 @@
 				<p class="tu-body">{i18nDerived.translate('INFO OVERVIEW BODY')}</p>
 
 				<div class="tu-lower">
-					<img class="tu-guy" src={guyArt} alt="" draggable="false" />
 					<div class="tu-stats">
 						<div class="tu-stat">
 							<span class="tu-stat-label">{i18nDerived.translate('INFO MAX WIN LABEL')}</span>
@@ -313,6 +312,12 @@
 			</div>
 		{/if}
 
+		<!-- Chef pinned to the popup's bottom-left corner (page 1 only). A direct child of .tu-popup so
+		     it isn't clipped by .tu-page's overflow and can sit flush in the corner. -->
+		{#if page === 1}
+			<img class="tu-guy" src={guyArt} alt="" draggable="false" />
+		{/if}
+
 		<div class="tu-nav">
 			<button
 				class="tu-arrow"
@@ -507,7 +512,7 @@
 		padding: clamp(4px, 0.9vmin, 9px) clamp(4px, 1vmin, 14px);
 	}
 	.pt-sym img {
-		height: clamp(30px, 6.4vmin, 66px);
+		height: clamp(36px, 7.6vmin, 82px);
 		max-width: 100%;
 		width: auto;
 		object-fit: contain;
@@ -894,12 +899,16 @@
 		align-items: center;
 		justify-content: center;
 	}
+	/* Direct child of .tu-popup → absolute left/bottom 0 sits flush in the popup's inner corner
+	   (absolute positioning references the padding box, so the popup padding doesn't push it in). */
 	.tu-guy {
 		position: absolute;
 		left: 0;
-		bottom: 0;
-		width: clamp(110px, 26%, 200px);
+		/* Slightly below the edge so the transparent gap under the art is clipped away by the popup. */
+		bottom: clamp(-30px, -3.4vmin, -14px);
+		width: clamp(120px, 19%, 210px);
 		height: auto;
+		z-index: 1;
 		pointer-events: none;
 		filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
 	}
