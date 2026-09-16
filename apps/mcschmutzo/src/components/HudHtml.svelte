@@ -45,6 +45,9 @@
 	// System menu popup — the design's circular icon buttons (disc + white glyph).
 	const menuIcSound = ap('/assets/mcschmutzo/ui-icons/sound.svg');
 	const menuIcMusic = ap('/assets/mcschmutzo/ui-icons/music.svg');
+	// Dedicated disabled-state art (speaker / note with a slash) shown when muted, in every layout.
+	const menuIcSoundOff = ap('/assets/mcschmutzo/ui-icons/sound-disabled.png');
+	const menuIcMusicOff = ap('/assets/mcschmutzo/ui-icons/music-disabled.png');
 	const menuIcInfo = ap('/assets/mcschmutzo/ui-icons/info.svg');
 	const iconSpin = ap('/assets/mcschmutzo/ui-icons/turn-button-arrow.svg'); // hi-res white spin arrow
 	const iconStop = ap('/assets/hud/icon-stop.png');
@@ -210,6 +213,9 @@
 	};
 
 	const isMusicMuted = $derived(stateSound.volumeValueMusic === 0);
+	// Swap to the slashed disabled art when muted (used by all three menu layouts).
+	const soundMenuIcon = $derived(isMuted ? menuIcSoundOff : menuIcSound);
+	const musicMenuIcon = $derived(isMusicMuted ? menuIcMusicOff : menuIcMusic);
 	const toggleMusic = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		stateSound.volumeValueMusic = stateSound.volumeValueMusic === 0 ? 50 : 0;
@@ -659,7 +665,7 @@
 									role="menuitem"
 									onclick={toggleSound}
 								>
-									<img class="pt-menu-item__ic" src={menuIcSound} alt="" />
+									<img class="pt-menu-item__ic" src={soundMenuIcon} alt="" />
 									<span class="pt-menu-item__label">{i18nDerived.translate('SOUND')}</span>
 								</button>
 								<button
@@ -669,7 +675,7 @@
 									role="menuitem"
 									onclick={toggleMusic}
 								>
-									<img class="pt-menu-item__ic" src={menuIcMusic} alt="" />
+									<img class="pt-menu-item__ic" src={musicMenuIcon} alt="" />
 									<span class="pt-menu-item__label">{i18nDerived.translate('MUSIC')}</span>
 								</button>
 								<button class="pt-menu-item" type="button" role="menuitem" onclick={openRules}>
@@ -834,11 +840,11 @@
 					{#if menuOpen}
 						<div class="ls-menu-pop" role="menu">
 							<button class="pt-menu-item" class:muted={isMuted} type="button" role="menuitem" onclick={toggleSound}>
-								<img class="pt-menu-item__ic" src={menuIcSound} alt="" />
+								<img class="pt-menu-item__ic" src={soundMenuIcon} alt="" />
 								<span class="pt-menu-item__label">{i18nDerived.translate('SOUND')}</span>
 							</button>
 							<button class="pt-menu-item" class:muted={isMusicMuted} type="button" role="menuitem" onclick={toggleMusic}>
-								<img class="pt-menu-item__ic" src={menuIcMusic} alt="" />
+								<img class="pt-menu-item__ic" src={musicMenuIcon} alt="" />
 								<span class="pt-menu-item__label">{i18nDerived.translate('MUSIC')}</span>
 							</button>
 							<button class="pt-menu-item" type="button" role="menuitem" onclick={openRules}>
@@ -925,7 +931,7 @@
 								role="menuitem"
 								onclick={toggleSound}
 							>
-								<img class="hud-menu-item__ic" src={menuIcSound} alt="" />
+								<img class="hud-menu-item__ic" src={soundMenuIcon} alt="" />
 								<span class="hud-menu-item__label">{i18nDerived.translate('SOUND')}</span>
 							</button>
 							<button
@@ -935,7 +941,7 @@
 								role="menuitem"
 								onclick={toggleMusic}
 							>
-								<img class="hud-menu-item__ic" src={menuIcMusic} alt="" />
+								<img class="hud-menu-item__ic" src={musicMenuIcon} alt="" />
 								<span class="hud-menu-item__label">{i18nDerived.translate('MUSIC')}</span>
 							</button>
 							<button class="hud-menu-item" type="button" role="menuitem" onclick={openRules}>
@@ -1738,8 +1744,10 @@
 		flex: 0 0 auto;
 		transition: opacity 0.12s ease;
 	}
+	/* Muted shows the dedicated slashed disabled art, so keep it near-full opacity (the slash is
+	   the cue, not faintness). */
 	.hud-menu-item.muted .hud-menu-item__ic {
-		opacity: 0.38;
+		opacity: 0.85;
 	}
 	.hud-menu-item__label {
 		color: #ffffff;
@@ -2796,7 +2804,8 @@
 		object-fit: contain; flex: 0 0 auto;
 		transition: opacity 0.12s ease;
 	}
-	.pt-menu-item.muted .pt-menu-item__ic { opacity: 0.38; }
+	/* Slashed disabled art conveys the muted state — keep it near-full opacity (portrait + landscape). */
+	.pt-menu-item.muted .pt-menu-item__ic { opacity: 0.85; }
 	.pt-menu-item__label {
 		font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px;
 		letter-spacing: 0.03em; color: #fff;

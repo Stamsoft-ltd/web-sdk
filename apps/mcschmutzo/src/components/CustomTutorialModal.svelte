@@ -13,7 +13,14 @@
 	// Page 3 (features) icons + the win-multiplier ladder shown in the design.
 	const wildArt = symArt('W');
 	const respinArt = ap('/assets/mcschmutzo/buybonus/burger.svg');
-	const multArt = ap('/assets/mcschmutzo/tutorial/mult-x2.webp');
+	const scatterArt = symArt('S');
+	// The win-multiplier icon = the receipt printer with an "X2" ticket laid on top of it (design).
+	const printerArt = ap('/assets/mcschmutzo/tutorial/printer.svg');
+	const multX2Art = ap('/assets/mcschmutzo/tutorial/mult-x2.svg');
+	// Scatter / bonus sub-badges (3 / 4 scatters) + the Free Games spin-arrow icon.
+	const scatter3Art = ap('/assets/mcschmutzo/tutorial/scatter-3.svg');
+	const scatter4Art = ap('/assets/mcschmutzo/tutorial/scatter-4.svg');
+	const freeGamesArt = ap('/assets/mcschmutzo/tutorial/free-games-arrow.svg');
 
 	// Page 6 (general info) icons.
 	const reloadArt = ap('/assets/mcschmutzo/tutorial/reload.webp');
@@ -163,7 +170,10 @@
 
 					<div class="ft-card ft-card--mult">
 						<div class="ft-head">
-							<img class="ft-icon" src={multArt} alt="" draggable="false" />
+							<span class="ft-mult-icon">
+								<img class="ft-mult-printer" src={printerArt} alt="" draggable="false" />
+								<img class="ft-mult-x2" src={multX2Art} alt="" draggable="false" />
+							</span>
 							<h3 class="ft-title">{i18nDerived.translate('INFO MULT TITLE')}</h3>
 						</div>
 						<div class="ft-body">
@@ -179,12 +189,61 @@
 							<p>{i18nDerived.translate('INFO MULT BODY 2')}</p>
 						</div>
 					</div>
+
+					<div class="ft-card ft-card--scatter">
+						<div class="ft-head">
+							<img class="ft-icon ft-icon--scatter" src={scatterArt} alt="" draggable="false" />
+							<h3 class="ft-title">{i18nDerived.translate('INFO SCATTER TITLE')}</h3>
+						</div>
+						<div class="ft-body">
+							<p>{i18nDerived.translate('INFO SCATTER BODY')}</p>
+							<div class="ft-sub-grid">
+								<div class="ft-sub">
+									<img class="ft-sub-badge" src={scatter3Art} alt="" draggable="false" />
+									<span class="ft-sub-text">
+										<span class="ft-sub-title">{i18nDerived.translate('INFO SCATTER 3 TITLE')}</span>
+										<span class="ft-sub-body">{i18nDerived.translate('INFO SCATTER 3 BODY')}</span>
+									</span>
+								</div>
+								<div class="ft-sub">
+									<img class="ft-sub-badge" src={scatter4Art} alt="" draggable="false" />
+									<span class="ft-sub-text">
+										<span class="ft-sub-title">{i18nDerived.translate('INFO SCATTER 4 TITLE')}</span>
+										<span class="ft-sub-body">{i18nDerived.translate('INFO SCATTER 4 BODY')}</span>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="ft-card ft-card--free">
+						<div class="ft-head">
+							<img class="ft-icon ft-icon--free" src={freeGamesArt} alt="" draggable="false" />
+							<h3 class="ft-title">{i18nDerived.translate('FREE GAMES')}</h3>
+						</div>
+						<div class="ft-body">
+							<p>{i18nDerived.translate('INFO FREEGAMES BODY 1')}</p>
+							<p>{i18nDerived.translate('INFO FREEGAMES BODY 2')}</p>
+						</div>
+					</div>
 				</div>
 			</div>
 		{:else if page === 4}
-			<div class="tu-page tu-page--placeholder">
+			<div class="tu-page">
 				<h2 class="tu-title">{i18nDerived.translate('WAYS TO WIN')}</h2>
-				<p class="tu-body">{i18nDerived.translate('INFO COMING SOON')}</p>
+				<p class="tu-body">{i18nDerived.translate('INFO WAYS BODY')}</p>
+
+				<div class="wt-grid">
+					<div class="ft-card">
+						<div class="ft-head">
+							<img class="ft-icon" src={respinArt} alt="" draggable="false" />
+							<h3 class="ft-title">{i18nDerived.translate('INFO LOCKRESPIN TITLE')}</h3>
+						</div>
+						<div class="ft-body">
+							<p>{i18nDerived.translate('INFO LOCKRESPIN BODY')}</p>
+						</div>
+					</div>
+				</div>
 			</div>
 		{:else if page === 5}
 			<div class="tu-page">
@@ -467,7 +526,7 @@
 		margin-top: clamp(10px, 2vmin, 20px);
 		display: grid;
 		grid-template-columns: 1fr 2.1fr;
-		grid-template-areas: 'wild respin' 'mult mult';
+		grid-template-areas: 'wild respin' 'mult mult' 'scatter scatter' 'free free';
 		gap: clamp(8px, 1.5vmin, 16px);
 	}
 	.ft-card--wild {
@@ -478,6 +537,12 @@
 	}
 	.ft-card--mult {
 		grid-area: mult;
+	}
+	.ft-card--scatter {
+		grid-area: scatter;
+	}
+	.ft-card--free {
+		grid-area: free;
 	}
 	/* Boards match the Buy Bonus cards: dark gradient body with an inset #605553 frame (::before). */
 	.ft-card {
@@ -555,6 +620,91 @@
 	.ft-arrow {
 		color: #8a8177;
 		font-size: clamp(0.55rem, 1.2vmin, 0.78rem);
+	}
+
+	/* WIN MULTIPLIER icon = the receipt printer with an "X2" ticket laid over its cream receipt. The
+	   X2 is centred on the printer's ticket area (≈52% down) and scaled to a share of the icon width. */
+	.ft-mult-icon {
+		position: relative;
+		flex: 0 0 auto;
+		display: inline-block;
+		height: clamp(30px, 4.6vmin, 48px);
+		aspect-ratio: 49 / 37;
+	}
+	.ft-mult-printer {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		display: block;
+	}
+	.ft-mult-x2 {
+		position: absolute;
+		left: 50%;
+		top: 53%;
+		transform: translate(-50%, -50%);
+		width: 46%;
+		height: auto;
+		object-fit: contain;
+		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+	}
+	/* Scatter symbol reads a touch bigger than the wild/burger glyphs; free-games arrow a touch smaller. */
+	.ft-icon--scatter {
+		height: clamp(30px, 4.6vmin, 48px);
+	}
+	.ft-icon--free {
+		height: clamp(24px, 3.6vmin, 38px);
+	}
+
+	/* Scatter card — two sub-sections (3 / 4 scatters), each a badge beside a title + line of copy. */
+	.ft-sub-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: clamp(8px, 1.4vmin, 16px);
+		margin-top: clamp(8px, 1.4vmin, 14px);
+	}
+	.ft-sub {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: clamp(7px, 1.2vmin, 12px);
+		padding: clamp(8px, 1.3vmin, 14px) clamp(10px, 1.5vmin, 16px);
+		border-radius: 10px;
+		background: #1b1917;
+		border: 1px solid rgba(255, 255, 255, 0.07);
+	}
+	.ft-sub-badge {
+		flex: 0 0 auto;
+		width: clamp(26px, 3.8vmin, 40px);
+		height: clamp(26px, 3.8vmin, 40px);
+		object-fit: contain;
+	}
+	.ft-sub-text {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(1px, 0.3vmin, 4px);
+		min-width: 0;
+	}
+	.ft-sub-title {
+		color: #f0a112;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
+		font-size: clamp(0.66rem, 1.5vmin, 0.92rem);
+		letter-spacing: 0.02em;
+	}
+	.ft-sub-body {
+		color: #c9c0b2;
+		font-weight: 600;
+		font-size: clamp(0.6rem, 1.35vmin, 0.85rem);
+		line-height: 1.35;
+	}
+
+	/* Page 4 — ways to win. Intro paragraph (base .tu-body) + a single lock & re-spin board. */
+	.wt-grid {
+		width: 100%;
+		margin-top: clamp(12px, 2.2vmin, 24px);
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: clamp(8px, 1.5vmin, 16px);
 	}
 
 	/* Page 5 — feature buy. Four equal cost cards; cost chip + RTP pinned to the card bottom. */
@@ -859,10 +1009,14 @@
 		.tu-guy {
 			width: clamp(130px, 40%, 200px);
 		}
-		/* FEATURES: wild / re-spin / multiplier stacked. */
+		/* FEATURES: wild / re-spin / multiplier / scatter / free stacked. */
 		.ft-grid {
 			grid-template-columns: 1fr;
-			grid-template-areas: 'wild' 'respin' 'mult';
+			grid-template-areas: 'wild' 'respin' 'mult' 'scatter' 'free';
+		}
+		/* Scatter sub-sections (3 / 4) stack under one another on narrow screens. */
+		.ft-sub-grid {
+			grid-template-columns: 1fr;
 		}
 		/* FEATURE BUY: four cost cards stacked, no forced tall min-height. */
 		.fb-grid {

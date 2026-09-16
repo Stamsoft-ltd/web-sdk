@@ -1,4 +1,17 @@
 export default {
+
+	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
+	"INFO SCATTER TITLE": "SCATTER / BONUS-SYMBOLI",
+	"INFO SCATTER BODY": "Scatter- / Bonus-symboli lasketaan mistä tahansa rullilta — sen ei tarvitse osua voittolinjalle. Kun yhdellä kierroksella osuu riittävästi Scatter-symboleja, käynnistyy bonuskierros. Wild ei korvaa Scatter- / Bonus-symbolia.",
+	"INFO SCATTER 3 TITLE": "3 SCATTERIA",
+	"INFO SCATTER 3 BODY": "Kolme Scatter-symbolia käynnistää Normaalin bonuksen, jonka voi myös ostaa hintaan 100× panos.",
+	"INFO SCATTER 4 TITLE": "4 SCATTERIA",
+	"INFO SCATTER 4 BODY": "Neljä Scatter-symbolia käynnistää Super-bonuksen. Yhdellä kierroksella ei voi osua enempää kuin neljä Scatteria; sen voi myös ostaa hintaan 500× panos.",
+	"INFO FREEGAMES BODY 1": "Bonuksen käynnistyminen myöntää joukon ilmaispelejä, joita pelataan samalla 5×5-rullastolla. Satunnaisesti valittu symboli laajenee peittämään lisäpaikkoja ja auttaa muodostamaan voittoyhdistelmiä.",
+	"INFO FREEGAMES BODY 2": "Voittokerroin alkaa arvosta 2× ja kaksinkertaistuu jokaisella uudella voittavalla yhdistelmällä. Kaikki ilmaispelien aikana kerätyt voitot lisätään kierroksen kokonaissummaan.",
+	"INFO WAYS BODY": "McSchmutzoa pelataan 5×5-rullastolla, jossa on 50 kiinteää voittolinjaa. Muodosta voitto osumalla 3, 4 tai 5 samaa symbolia vasemmalta oikealle, vasemmanpuoleisimmasta rullasta alkaen, jollakin 50 voittolinjasta. Wild korvaa kaikki tavalliset maksavat symbolit ja voi auttaa muodostamaan voittoyhdistelmiä, mutta se ei korvaa Scatter- eikä erityisiä Kerroin-symboleja. Voittoyhdistelmät maksetaan voittotaulukon mukaisesti.",
+	"INFO LOCKRESPIN TITLE": "LUKITUS & UUSINTAKIERROS",
+	"INFO LOCKRESPIN BODY": "Mikä tahansa voittava yhdistelmä voi käynnistää Lukitus & uusintakierros -ominaisuuden. Käynnistyessään arvokkain voittava symboli lukittuu paikoilleen, kun taas muut rullapaikat pyörähtävät uudelleen. Jos nykyiseen voittoon lisätään uusia samoja symboleja tai uusia voittavia rullapaikkoja, myönnetään uusi uusintakierros. Uusintakierrokset jatkuvat niin kauan kuin voitto kasvaa, ja päättyvät, kun uusia samoja symboleja tai rullapaikkoja ei enää lisätä tai kun rullasto täyttyy voittavilla symboleilla. Kun uusintakierrosten sarja päättyy, lopullinen kertynyt voitto myönnetään.",
 	HOME: 'ETUSIVU',
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────

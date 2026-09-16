@@ -1,4 +1,17 @@
 export default {
+
+	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
+	"INFO SCATTER TITLE": "SIMBOL SCATTER / BONUS",
+	"INFO SCATTER BODY": "Simbol Scatter / Bonus dihitung di mana saja pada gulungan — tidak perlu mendarat pada garis kemenangan. Mendaratkan cukup banyak simbol Scatter dalam satu putaran memicu ronde bonus. Wild tidak menggantikan simbol Scatter / Bonus.",
+	"INFO SCATTER 3 TITLE": "3 SCATTER",
+	"INFO SCATTER 3 BODY": "Tiga simbol Scatter memicu Bonus Normal, yang juga dapat dibeli seharga 100× taruhan.",
+	"INFO SCATTER 4 TITLE": "4 SCATTER",
+	"INFO SCATTER 4 BODY": "Empat simbol Scatter memicu Super Bonus. Tidak ada putaran tunggal yang dapat mendaratkan lebih dari empat Scatter; bonus ini juga dapat dibeli seharga 500× taruhan.",
+	"INFO FREEGAMES BODY 1": "Memicu bonus memberikan sejumlah Game Gratis yang dimainkan pada susunan gulungan 5×5 yang sama. Simbol yang dipilih secara acak mengembang untuk menutupi posisi tambahan dan membantu menyelesaikan kombinasi kemenangan.",
+	"INFO FREEGAMES BODY 2": "Pengali Kemenangan dimulai dari 2× dan berlipat ganda pada setiap sambungan kemenangan baru. Semua kemenangan yang dikumpulkan selama Game Gratis ditambahkan ke total ronde.",
+	"INFO WAYS BODY": "McSchmutzo dimainkan pada susunan gulungan 5×5 dengan 50 garis kemenangan tetap. Daratkan 3, 4, atau 5 simbol yang cocok dari kiri ke kanan, mulai dari gulungan paling kiri, pada salah satu dari 50 garis kemenangan untuk menciptakan kemenangan. Wild menggantikan semua simbol pembayaran biasa dan dapat membantu menyelesaikan kombinasi kemenangan, tetapi tidak menggantikan simbol Scatter atau simbol Pengali khusus. Kombinasi kemenangan dibayar sesuai Tabel Pembayaran.",
+	"INFO LOCKRESPIN TITLE": "LOCK & RE-SPIN",
+	"INFO LOCKRESPIN BODY": "Setiap kombinasi kemenangan dapat memicu fitur Lock & Re-Spin. Ketika dipicu, simbol kemenangan bernilai tertinggi terkunci di tempatnya sementara posisi lainnya berputar kembali. Jika simbol yang cocok tambahan atau posisi kemenangan baru ditambahkan ke kemenangan saat ini, Re-Spin lain diberikan. Re-Spin berlanjut selama kemenangan terus bertambah dan berakhir ketika tidak ada simbol yang cocok atau posisi baru yang ditambahkan, atau ketika susunan gulungan terisi penuh dengan simbol kemenangan. Setelah rangkaian Re-Spin berakhir, kemenangan akhir yang terkumpul diberikan.",
 	HOME: 'BERANDA',
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────

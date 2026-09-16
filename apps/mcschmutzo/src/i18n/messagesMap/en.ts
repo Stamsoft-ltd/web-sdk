@@ -98,7 +98,27 @@ export default {
 		'During the Re-Spin Feature, McSchmutzo symbols may appear and increase the Win Multiplier. Each qualifying McSchmutzo symbol can add Win Multiplier steps. The Win Multiplier begins at 1x. The multiplier progresses through the following levels:',
 	'INFO MULT BODY 2':
 		'The current Win Multiplier is applied according to the game mathematics and remains active throughout the current Re-Spin sequence.',
+	'INFO SCATTER TITLE': 'SCATTER / BONUS SYMBOL',
+	'INFO SCATTER BODY':
+		'The Scatter / Bonus symbol is counted anywhere on the reels — it does not need to land on a win-line. Landing enough Scatter symbols on a single spin triggers a bonus round. The Wild does not substitute for the Scatter / Bonus symbol.',
+	'INFO SCATTER 3 TITLE': '3 SCATTERS',
+	'INFO SCATTER 3 BODY':
+		'Three Scatter symbols trigger the Normal Bonus, which can also be bought for 100× the bet.',
+	'INFO SCATTER 4 TITLE': '4 SCATTERS',
+	'INFO SCATTER 4 BODY':
+		'Four Scatter symbols trigger the Super Bonus. No single spin can land more than four Scatters; it can also be bought for 500× the bet.',
+	'INFO FREEGAMES BODY 1':
+		'Triggering the bonus awards a set of Free Games played on the same 5×5 grid. A randomly selected symbol expands to cover extra positions and help complete winning combinations.',
+	'INFO FREEGAMES BODY 2':
+		'A Win Multiplier starts at 2× and doubles with every new winning connection. All wins collected during the Free Games are added to the round total.',
 	'INFO COMING SOON': 'Coming soon.',
+
+	// ── Info / rules popup: WAYS TO WIN ──────────────────────────────────────────────────────────
+	'INFO WAYS BODY':
+		'McSchmutzo is played on a 5×5 grid with 50 fixed win-lines. Land 3, 4, or 5 matching symbols from left to right, starting from the leftmost reel, on one of the 50 win-lines to create a win. The Wild substitutes for all regular paying symbols and can help complete winning combinations, but it does not substitute for the Scatter or special Multiplier symbols. Winning combinations are paid according to the Paytable.',
+	'INFO LOCKRESPIN TITLE': 'LOCK & RE-SPIN',
+	'INFO LOCKRESPIN BODY':
+		'Any winning combination may trigger the Lock & Re-Spin feature. When triggered, the highest-value winning symbol locks in place while the remaining positions re-spin. If additional matching symbols or new winning positions are added to the current win, another re-spin is awarded. Re-spins continue as long as the win keeps growing and end when no new matching symbols or positions are added, or when the grid is filled with winning symbols. Once the Re-Spin sequence ends, the final accumulated win is awarded.',
 
 	// ── Info / rules popup: FEATURE BUY ──────────────────────────────────────────────────────────
 	'INFO FB1 TITLE': 'ENHANCED MODE 1',

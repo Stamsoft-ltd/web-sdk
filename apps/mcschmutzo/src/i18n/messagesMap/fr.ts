@@ -1,4 +1,17 @@
 export default {
+
+	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
+	"INFO SCATTER TITLE": "SYMBOLE SCATTER / BONUS",
+	"INFO SCATTER BODY": "Le symbole Scatter / Bonus est compté n'importe où sur les rouleaux — il n'a pas besoin d'apparaître sur une ligne de gain. Obtenir suffisamment de symboles Scatter lors d'un même tour déclenche un tour bonus. Le Wild ne remplace pas le symbole Scatter / Bonus.",
+	"INFO SCATTER 3 TITLE": "3 SCATTERS",
+	"INFO SCATTER 3 BODY": "Trois symboles Scatter déclenchent le Bonus Normal, qui peut aussi être acheté pour 100× la mise.",
+	"INFO SCATTER 4 TITLE": "4 SCATTERS",
+	"INFO SCATTER 4 BODY": "Quatre symboles Scatter déclenchent le Super Bonus. Aucun tour ne peut faire apparaître plus de quatre Scatters ; il peut aussi être acheté pour 500× la mise.",
+	"INFO FREEGAMES BODY 1": "Déclencher le bonus accorde une série de Parties Gratuites jouées sur la même grille de 5×5. Un symbole sélectionné aléatoirement s'étend pour couvrir des positions supplémentaires et aider à compléter les combinaisons gagnantes.",
+	"INFO FREEGAMES BODY 2": "Un Multiplicateur de Gains commence à 2× et double à chaque nouvelle connexion gagnante. Tous les gains obtenus pendant les Parties Gratuites sont ajoutés au total du tour de jeu.",
+	"INFO WAYS BODY": "McSchmutzo se joue sur une grille de 5×5 avec 50 lignes de gain fixes. Obtenez 3, 4 ou 5 symboles identiques de gauche à droite, en commençant par le rouleau le plus à gauche, sur l'une des 50 lignes de gain pour créer un gain. Le Wild remplace tous les symboles payants classiques et peut aider à compléter les combinaisons gagnantes, mais il ne remplace pas le symbole Scatter ni les symboles Multiplicateur spéciaux. Les combinaisons gagnantes sont payées selon la Table des Gains.",
+	"INFO LOCKRESPIN TITLE": "VERROUILLAGE & RE-TOUR",
+	"INFO LOCKRESPIN BODY": "Toute combinaison gagnante peut déclencher la fonction Verrouillage & Re-Tour. Lorsqu'elle est déclenchée, le symbole gagnant de plus grande valeur se verrouille en position tandis que les positions restantes tournent à nouveau. Si des symboles identiques supplémentaires ou de nouvelles positions gagnantes s'ajoutent au gain en cours, un nouveau Re-Tour est accordé. Les Re-Tours se poursuivent tant que le gain continue d'augmenter et prennent fin lorsqu'aucun nouveau symbole identique ni aucune nouvelle position ne s'ajoute, ou lorsque la grille est remplie de symboles gagnants. Une fois la séquence de Re-Tours terminée, le gain final accumulé est attribué.",
 	HOME: 'ACCUEIL',
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────

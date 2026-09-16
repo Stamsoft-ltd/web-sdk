@@ -1,4 +1,17 @@
 export default {
+
+	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
+	"INFO SCATTER TITLE": "SCATTER- / BONUS-SYMBOL",
+	"INFO SCATTER BODY": "Das Scatter- / Bonus-Symbol wird an jeder Stelle der Walzen gewertet — es muss nicht auf einer Gewinnlinie landen. Landen genügend Scatter-Symbole in einem einzelnen Spin, wird eine Bonusrunde ausgelöst. Das Wild ersetzt nicht das Scatter- / Bonus-Symbol.",
+	"INFO SCATTER 3 TITLE": "3 SCATTER",
+	"INFO SCATTER 3 BODY": "Drei Scatter-Symbole lösen den Normal-Bonus aus, der auch für 100× den Einsatz gekauft werden kann.",
+	"INFO SCATTER 4 TITLE": "4 SCATTER",
+	"INFO SCATTER 4 BODY": "Vier Scatter-Symbole lösen den Super-Bonus aus. In keinem einzelnen Spin können mehr als vier Scatter landen; er kann auch für 500× den Einsatz gekauft werden.",
+	"INFO FREEGAMES BODY 1": "Das Auslösen des Bonus vergibt eine Reihe von Freispielen, die auf demselben 5×5-Raster gespielt werden. Ein zufällig ausgewähltes Symbol expandiert, um zusätzliche Positionen abzudecken und Gewinnkombinationen zu vervollständigen.",
+	"INFO FREEGAMES BODY 2": "Ein Gewinnmultiplikator startet bei 2× und verdoppelt sich mit jeder neuen Gewinnverbindung. Alle während der Freispiele gesammelten Gewinne werden dem Rundengewinn hinzugefügt.",
+	"INFO WAYS BODY": "McSchmutzo wird auf einem 5×5-Raster mit 50 festen Gewinnlinien gespielt. Lande 3, 4 oder 5 übereinstimmende Symbole von links nach rechts, beginnend bei der äußersten linken Walze, auf einer der 50 Gewinnlinien, um einen Gewinn zu erzielen. Das Wild ersetzt alle regulären zahlenden Symbole und kann helfen, Gewinnkombinationen zu vervollständigen, ersetzt aber nicht die Scatter- oder speziellen Multiplikator-Symbole. Gewinnkombinationen werden gemäß der Gewinntabelle ausgezahlt.",
+	"INFO LOCKRESPIN TITLE": "LOCK & RE-SPIN",
+	"INFO LOCKRESPIN BODY": "Jede Gewinnkombination kann das Lock & Re-Spin-Feature auslösen. Bei Auslösung wird das höchstwertige Gewinnsymbol in Position fixiert, während die übrigen Positionen erneut drehen. Werden dem aktuellen Gewinn weitere übereinstimmende Symbole oder neue Gewinnpositionen hinzugefügt, wird ein weiterer Re-Spin vergeben. Re-Spins setzen sich fort, solange der Gewinn weiter wächst, und enden, wenn keine neuen übereinstimmenden Symbole oder Positionen hinzugefügt werden oder wenn das Raster mit Gewinnsymbolen gefüllt ist. Sobald die Re-Spin-Sequenz endet, wird der finale angesammelte Gewinn vergeben.",
 	HOME: 'START',
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────

@@ -1,4 +1,17 @@
 export default {
+
+	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
+	"INFO SCATTER TITLE": "SCATTER / SYMBOL BONUSOWY",
+	"INFO SCATTER BODY": "Symbol Scatter / Bonus jest liczony w dowolnym miejscu na bębnach — nie musi wylądować na linii wygrywającej. Wylądowanie wystarczającej liczby symboli Scatter podczas jednego spinu uruchamia rundę bonusową. Wild nie zastępuje symbolu Scatter / Bonus.",
+	"INFO SCATTER 3 TITLE": "3 SYMBOLE SCATTER",
+	"INFO SCATTER 3 BODY": "Trzy symbole Scatter uruchamiają Zwykły Bonus, który można również kupić za 100× zakładu.",
+	"INFO SCATTER 4 TITLE": "4 SYMBOLE SCATTER",
+	"INFO SCATTER 4 BODY": "Cztery symbole Scatter uruchamiają Super Bonus. Podczas jednego spinu nie może wylądować więcej niż cztery symbole Scatter; można go również kupić za 500× zakładu.",
+	"INFO FREEGAMES BODY 1": "Uruchomienie bonusu przyznaje zestaw Darmowych Gier rozgrywanych na tym samym układzie bębnów 5×5. Losowo wybrany symbol rozszerza się, aby pokryć dodatkowe pozycje i pomóc ukończyć wygrywające kombinacje.",
+	"INFO FREEGAMES BODY 2": "Mnożnik Wygranej zaczyna się od 2× i podwaja się przy każdym nowym wygrywającym połączeniu. Wszystkie wygrane uzyskane podczas Darmowych Gier są dodawane do sumy rundy.",
+	"INFO WAYS BODY": "McSchmutzo jest rozgrywane na układzie bębnów 5×5 z 50 stałymi liniami wygrywającymi. Umieść 3, 4 lub 5 pasujących symboli od lewej do prawej, zaczynając od skrajnie lewego bębna, na jednej z 50 linii wygrywających, aby utworzyć wygraną. Wild zastępuje wszystkie zwykłe symbole wypłacające i może pomóc ukończyć wygrywające kombinacje, ale nie zastępuje symbolu Scatter ani specjalnych symboli Mnożnika. Wygrywające kombinacje są wypłacane zgodnie z Tabelą Wypłat.",
+	"INFO LOCKRESPIN TITLE": "BLOKADA & PONOWNY SPIN",
+	"INFO LOCKRESPIN BODY": "Każda wygrywająca kombinacja może uruchomić funkcję Blokada i Ponowny Spin. Po uruchomieniu symbol wygrywający o najwyższej wartości blokuje się na swojej pozycji, a pozostałe pozycje obracają się ponownie. Jeśli do bieżącej wygranej zostaną dodane dodatkowe pasujące symbole lub nowe wygrywające pozycje, przyznawany jest kolejny Ponowny Spin. Ponowne Spiny trwają tak długo, jak długo wygrana rośnie, i kończą się, gdy nie zostaną dodane żadne nowe pasujące symbole ani pozycje lub gdy układ bębnów zostanie wypełniony wygrywającymi symbolami. Po zakończeniu sekwencji Ponownych Spinów przyznawana jest ostateczna zgromadzona wygrana.",
 	HOME: 'STRONA GŁÓWNA',
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────

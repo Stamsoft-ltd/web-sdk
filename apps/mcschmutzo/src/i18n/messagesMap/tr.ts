@@ -1,4 +1,17 @@
 export default {
+
+	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
+	"INFO SCATTER TITLE": "SCATTER / BONUS SEMBOLÜ",
+	"INFO SCATTER BODY": "Scatter / Bonus sembolü, makaralarda herhangi bir yerde sayılır — bir kazanç hattına gelmesi gerekmez. Tek bir dönüşte yeterli sayıda Scatter sembolünün gelmesi bir bonus turunu tetikler. Wild, Scatter / Bonus sembolünün yerine geçmez.",
+	"INFO SCATTER 3 TITLE": "3 SCATTER",
+	"INFO SCATTER 3 BODY": "Üç Scatter sembolü Normal Bonusu tetikler; bu bonus ayrıca bahsin 100× katı karşılığında satın alınabilir.",
+	"INFO SCATTER 4 TITLE": "4 SCATTER",
+	"INFO SCATTER 4 BODY": "Dört Scatter sembolü Süper Bonusu tetikler. Tek bir dönüşte dörtten fazla Scatter gelemez; bu bonus ayrıca bahsin 500× katı karşılığında satın alınabilir.",
+	"INFO FREEGAMES BODY 1": "Bonusun tetiklenmesi, aynı 5×5 makara düzeninde oynanan bir dizi Ücretsiz Oyun kazandırır. Rastgele seçilen bir sembol, ek pozisyonları kaplayacak şekilde genişler ve kazançlı kombinasyonların tamamlanmasına yardımcı olur.",
+	"INFO FREEGAMES BODY 2": "Bir Kazanç Çarpanı 2× ile başlar ve her yeni kazançlı bağlantıda ikiye katlanır. Ücretsiz Oyunlar sırasında toplanan tüm kazançlar tur toplamına eklenir.",
+	"INFO WAYS BODY": "McSchmutzo, 50 sabit kazanç hattı bulunan 5×5 makara düzeninde oynanır. Bir kazanç oluşturmak için, en soldaki makaradan başlayarak soldan sağa, 50 kazanç hattından birinde 3, 4 veya 5 eşleşen sembol getirin. Wild, tüm normal ödeme yapan sembollerin yerine geçer ve kazançlı kombinasyonların tamamlanmasına yardımcı olabilir; ancak Scatter veya özel Çarpan sembollerinin yerine geçmez. Kazançlı kombinasyonlar, Ödeme Tablosuna göre ödenir.",
+	"INFO LOCKRESPIN TITLE": "KİLİTLE & YENİDEN DÖNDÜR",
+	"INFO LOCKRESPIN BODY": "Herhangi bir kazançlı kombinasyon, Kilitle & Yeniden Döndür özelliğini tetikleyebilir. Tetiklendiğinde, en yüksek değerli kazanan sembol yerinde kilitlenirken kalan pozisyonlar yeniden döner. Mevcut kazanca ek eşleşen semboller veya yeni kazançlı pozisyonlar eklenirse, bir Yeniden Döndürme daha kazanılır. Kazanç büyümeye devam ettiği sürece Yeniden Döndürmeler devam eder ve yeni eşleşen sembol ya da pozisyon eklenmediğinde veya makara düzeni kazanan sembollerle dolduğunda sona erer. Yeniden Döndürme dizisi sona erdiğinde, biriken nihai kazanç verilir.",
 	HOME: 'ANA SAYFA',
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────

@@ -1,4 +1,17 @@
 export default {
+
+	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
+	"INFO SCATTER TITLE": "BIỂU TƯỢNG SCATTER / THƯỞNG",
+	"INFO SCATTER BODY": "Biểu tượng Scatter / Thưởng được tính ở bất kỳ vị trí nào trên các cuộn — nó không cần rơi vào một dòng thắng. Khi có đủ biểu tượng Scatter xuất hiện trong một lượt quay, một vòng thưởng sẽ được kích hoạt. Wild không thay thế cho biểu tượng Scatter / Thưởng.",
+	"INFO SCATTER 3 TITLE": "3 SCATTER",
+	"INFO SCATTER 3 BODY": "Ba biểu tượng Scatter kích hoạt Vòng Thưởng Thường, cũng có thể được mua với giá 100× tiền cược.",
+	"INFO SCATTER 4 TITLE": "4 SCATTER",
+	"INFO SCATTER 4 BODY": "Bốn biểu tượng Scatter kích hoạt Vòng Thưởng Siêu Cấp. Không lượt quay nào có thể xuất hiện quá bốn Scatter; nó cũng có thể được mua với giá 500× tiền cược.",
+	"INFO FREEGAMES BODY 1": "Kích hoạt vòng thưởng sẽ trao một loạt Vòng Miễn Phí được chơi trên cùng bố cục cuộn 5×5. Một biểu tượng được chọn ngẫu nhiên sẽ mở rộng để bao phủ thêm các vị trí và giúp hoàn thành các tổ hợp thắng.",
+	"INFO FREEGAMES BODY 2": "Hệ Số Nhân Thắng bắt đầu từ 2× và nhân đôi với mỗi kết nối thắng mới. Tất cả tiền thắng thu được trong Vòng Miễn Phí được cộng vào tổng tiền thắng của ván chơi.",
+	"INFO WAYS BODY": "McSchmutzo được chơi trên bố cục cuộn 5×5 với 50 dòng thắng cố định. Xếp 3, 4, hoặc 5 biểu tượng giống nhau từ trái sang phải, bắt đầu từ cuộn ngoài cùng bên trái, trên một trong 50 dòng thắng để tạo thành chiến thắng. Wild thay thế cho tất cả các biểu tượng trả thưởng thông thường và có thể giúp hoàn thành các tổ hợp thắng, nhưng nó không thay thế cho biểu tượng Scatter hoặc biểu tượng Hệ Số Nhân đặc biệt. Các tổ hợp thắng được trả thưởng theo Bảng Thưởng.",
+	"INFO LOCKRESPIN TITLE": "KHÓA & QUAY LẠI",
+	"INFO LOCKRESPIN BODY": "Bất kỳ tổ hợp thắng nào cũng có thể kích hoạt tính năng Khóa & Quay Lại. Khi được kích hoạt, biểu tượng thắng có giá trị cao nhất sẽ khóa tại vị trí trong khi các vị trí còn lại quay lại. Nếu có thêm biểu tượng giống nhau hoặc vị trí thắng mới được thêm vào tổ hợp thắng hiện tại, một lượt Quay Lại khác sẽ được trao. Các lượt Quay Lại tiếp tục miễn là tiền thắng vẫn tăng và kết thúc khi không còn biểu tượng giống nhau hoặc vị trí mới nào được thêm vào, hoặc khi bố cục cuộn được lấp đầy bằng các biểu tượng thắng. Khi chuỗi Quay Lại kết thúc, tiền thắng tích lũy cuối cùng sẽ được trao.",
 	HOME: 'TRANG CHỦ',
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────

@@ -1,4 +1,17 @@
 export default {
+
+	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
+	"INFO SCATTER TITLE": "SÍMBOLO SCATTER / BONO",
+	"INFO SCATTER BODY": "El símbolo Scatter / Bono se cuenta en cualquier posición de los rodillos: no necesita aterrizar en una línea de premio. Conseguir suficientes símbolos Scatter en un solo giro activa una ronda de bono. El Comodín no sustituye al símbolo Scatter / Bono.",
+	"INFO SCATTER 3 TITLE": "3 SCATTERS",
+	"INFO SCATTER 3 BODY": "Tres símbolos Scatter activan el Bono Normal, que también puede comprarse por 100× la apuesta.",
+	"INFO SCATTER 4 TITLE": "4 SCATTERS",
+	"INFO SCATTER 4 BODY": "Cuatro símbolos Scatter activan el Súper Bono. Ningún giro puede aterrizar más de cuatro Scatters; también puede comprarse por 500× la apuesta.",
+	"INFO FREEGAMES BODY 1": "Activar el bono otorga un conjunto de Juegos Gratis que se juegan en la misma cuadrícula de 5×5. Un símbolo seleccionado al azar se expande para cubrir posiciones adicionales y ayudar a completar combinaciones ganadoras.",
+	"INFO FREEGAMES BODY 2": "Un Multiplicador de Premio empieza en 2× y se duplica con cada nueva conexión ganadora. Todos los premios obtenidos durante los Juegos Gratis se suman al total de la ronda.",
+	"INFO WAYS BODY": "McSchmutzo se juega en una cuadrícula de 5×5 con 50 líneas de premio fijas. Aterriza 3, 4 o 5 símbolos coincidentes de izquierda a derecha, empezando por el rodillo más a la izquierda, en una de las 50 líneas de premio para formar un premio. El Comodín sustituye a todos los símbolos de pago normales y puede ayudar a completar combinaciones ganadoras, pero no sustituye a los símbolos Scatter ni a los símbolos especiales de Multiplicador. Las combinaciones ganadoras se pagan según la Tabla de Pagos.",
+	"INFO LOCKRESPIN TITLE": "BLOQUEO & REGIRO",
+	"INFO LOCKRESPIN BODY": "Cualquier combinación ganadora puede activar la función Bloqueo & Regiro. Al activarse, el símbolo ganador de mayor valor se bloquea en su posición mientras las posiciones restantes giran de nuevo. Si se añaden símbolos coincidentes adicionales o nuevas posiciones ganadoras al premio actual, se otorga otro regiro. Los regiros continúan mientras el premio siga creciendo y terminan cuando no se añaden nuevos símbolos coincidentes ni posiciones, o cuando la cuadrícula se llena de símbolos ganadores. Una vez que termina la secuencia de Regiros, se otorga el premio final acumulado.",
 	HOME: 'INICIO',
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────

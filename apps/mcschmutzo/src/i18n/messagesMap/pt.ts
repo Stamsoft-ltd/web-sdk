@@ -1,4 +1,17 @@
 export default {
+
+	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
+	"INFO SCATTER TITLE": "SÍMBOLO SCATTER / BÔNUS",
+	"INFO SCATTER BODY": "O símbolo Scatter / Bônus é contado em qualquer posição dos rolos — não precisa aparecer em uma linha de pagamento. Reunir símbolos Scatter suficientes em um único giro aciona uma rodada de bônus. O Wild não substitui o símbolo Scatter / Bônus.",
+	"INFO SCATTER 3 TITLE": "3 SCATTERS",
+	"INFO SCATTER 3 BODY": "Três símbolos Scatter acionam o Bônus Normal, que também pode ser comprado por 100× a aposta.",
+	"INFO SCATTER 4 TITLE": "4 SCATTERS",
+	"INFO SCATTER 4 BODY": "Quatro símbolos Scatter acionam o Super Bônus. Nenhum giro pode trazer mais de quatro Scatters; também pode ser comprado por 500× a aposta.",
+	"INFO FREEGAMES BODY 1": "Acionar o bônus concede um conjunto de Jogos Grátis jogados na mesma grade 5×5. Um símbolo selecionado aleatoriamente se expande para cobrir posições extras e ajudar a completar combinações vencedoras.",
+	"INFO FREEGAMES BODY 2": "Um Multiplicador de Ganhos começa em 2× e dobra a cada nova conexão vencedora. Todos os ganhos obtidos durante os Jogos Grátis são somados ao total da rodada.",
+	"INFO WAYS BODY": "McSchmutzo é jogado em uma grade 5×5 com 50 linhas de pagamento fixas. Faça 3, 4 ou 5 símbolos iguais da esquerda para a direita, começando pelo rolo mais à esquerda, em uma das 50 linhas de pagamento para formar um ganho. O Wild substitui todos os símbolos de pagamento comuns e pode ajudar a completar combinações vencedoras, mas não substitui os símbolos Scatter nem os símbolos especiais de Multiplicador. As combinações vencedoras são pagas de acordo com a Tabela de Pagamentos.",
+	"INFO LOCKRESPIN TITLE": "TRAVAR & REGIRAR",
+	"INFO LOCKRESPIN BODY": "Qualquer combinação vencedora pode acionar o recurso Travar & Regirar. Quando acionado, o símbolo vencedor de maior valor trava em posição enquanto as posições restantes giram novamente. Se símbolos iguais adicionais ou novas posições vencedoras forem adicionados ao ganho atual, outro Regiro é concedido. Os Regiros continuam enquanto o ganho seguir crescendo e terminam quando nenhum símbolo igual ou posição nova é adicionado, ou quando a grade fica preenchida com símbolos vencedores. Quando a sequência de Regiros termina, o ganho final acumulado é concedido.",
 	HOME: 'INÍCIO',
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
