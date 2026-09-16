@@ -882,49 +882,54 @@
 		line-height: 1.35;
 	}
 
-	/* Guy on the left, stats stacked to his right — one row (matches design). */
+	/* Guy anchored bottom-left; the two stats sit to his right, each on its own row as
+	   "label: value" (design). Auto-margins push the guy to the left and stats fill the rest. */
 	.tu-lower {
 		width: 100%;
-		margin-top: clamp(10px, 1.8vmin, 22px);
+		margin-top: auto;
+		padding-top: clamp(10px, 1.8vmin, 22px);
 		display: flex;
 		flex-direction: row;
-		align-items: center;
-		justify-content: center;
-		gap: clamp(6px, 2.5vw, 30px);
+		align-items: flex-end;
+		justify-content: flex-start;
+		gap: clamp(10px, 3vw, 40px);
 	}
 	.tu-guy {
 		flex: 0 0 auto;
 		align-self: flex-end;
-		width: clamp(120px, 31%, 210px);
+		width: clamp(110px, 26%, 200px);
 		height: auto;
 		pointer-events: none;
 		filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
 	}
 	.tu-stats {
-		flex: 0 1 auto;
+		flex: 1 1 auto;
+		min-width: 0;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: clamp(12px, 2.6vmin, 26px);
+		align-items: flex-start;
+		justify-content: center;
+		gap: clamp(10px, 2.4vmin, 24px);
+		padding-bottom: clamp(6px, 2vmin, 20px);
 	}
-	/* Each stat: label above the value (design). */
+	/* Each stat = label + value on ONE row. Wraps only if the row genuinely can't fit. */
 	.tu-stat {
 		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: clamp(4px, 1vmin, 10px);
+		flex-direction: row;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: clamp(6px, 1.4vw, 14px);
 	}
 	.tu-stat-label {
 		color: #ece2cd;
 		font-weight: 600;
-		font-size: clamp(0.95rem, 2.3vmin, 1.4rem);
-		white-space: nowrap;
+		font-size: clamp(0.9rem, 2.1vmin, 1.32rem);
 	}
 	.tu-stat-big {
 		color: #f0a112;
 		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
-		font-size: clamp(1.5rem, 4.4vmin, 2.8rem);
+		font-size: clamp(1.15rem, 3.2vmin, 2.1rem);
 		letter-spacing: 0.01em;
 		white-space: nowrap;
 	}
@@ -1067,15 +1072,27 @@
 			top: 8px;
 			right: 8px;
 		}
-		/* OVERVIEW: the guy-left / stats-right row can't fit a narrow phone (the "25,000× bet" value
-		   gets clipped), so stack it — guy on top, stats centred below. */
+		/* OVERVIEW keeps the guy bottom-left / stats-right row on narrow phones too. Shrink the guy +
+		   the stat type (vw-scaled) and forbid wrapping so "Maximum Win: 25,000× bet" stays one line. */
 		.tu-lower {
-			flex-direction: column;
-			gap: clamp(10px, 3vmin, 20px);
+			gap: clamp(6px, 2.5vw, 16px);
 		}
 		.tu-guy {
-			align-self: center;
-			width: clamp(120px, 34vw, 170px);
+			width: clamp(78px, 25vw, 130px);
+		}
+		.tu-stat {
+			flex-wrap: nowrap;
+			gap: clamp(4px, 1.4vw, 8px);
+		}
+		.tu-stat-label {
+			font-size: clamp(0.66rem, 3.1vw, 1rem);
+		}
+		.tu-stat-big {
+			font-size: clamp(0.86rem, 4vw, 1.3rem);
+		}
+		.tu-pill {
+			padding: clamp(3px, 1vw, 6px) clamp(8px, 2.6vw, 16px);
+			font-size: clamp(0.8rem, 3.6vw, 1.2rem);
 		}
 		/* PAYTABLE: wordy locales (e.g. French "IDENTIQUES") need smaller/tighter header cells to fit. */
 		.pt-hcell {
