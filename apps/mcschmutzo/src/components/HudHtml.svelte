@@ -1491,7 +1491,7 @@
 	}
 
 	.value {
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Bowlby One SC', 'Poppins', sans-serif;
 		font-size: calc(var(--u) * 32);
 		font-weight: 700;
 		letter-spacing: 0.03em; /* 0.54px @ 18px */
@@ -2180,7 +2180,7 @@
 		color: #fff;
 	}
 	.ls-win__value {
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Bowlby One SC', 'Poppins', sans-serif;
 		font-weight: 700;
 		font-size: clamp(10px, 2.9vh, 15px);
 		color: #fff;
@@ -2200,7 +2200,7 @@
 		color: #fff;
 	}
 	.ls-balance__value {
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Bowlby One SC', 'Poppins', sans-serif;
 		font-weight: 700;
 		white-space: nowrap;
 		font-size: clamp(8px, 2.3vh, 11px);
@@ -2237,7 +2237,7 @@
 		box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
 	}
 	.ls-bet__value {
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Bowlby One SC', 'Poppins', sans-serif;
 		font-weight: 700;
 		font-size: clamp(10px, 3vh, 18px);
 		color: #fff;
@@ -2658,7 +2658,7 @@
 		   inline elements) and scrollWidth measures the true text width — otherwise a long balance
 		   renders full-size and gets clipped by the parent's overflow:hidden. */
 		display: inline-block;
-		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
+		font-family: 'Bowlby One SC', 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
 		font-style: normal; line-height: normal; letter-spacing: 0.36px;
 		white-space: nowrap; transform-origin: center;
 		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);
@@ -2692,7 +2692,7 @@
 	}
 	.pt-bet__value {
 		text-align: center;
-		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 17px;
+		font-family: 'Bowlby One SC', 'Poppins', sans-serif; font-weight: 500; font-size: 17px;
 		font-style: normal; line-height: normal; letter-spacing: 0.54px; color: #fff;
 		white-space: nowrap; cursor: pointer; transform-origin: center;
 		text-shadow: 0 1px 2px rgba(0,0,0,0.6);
@@ -2759,7 +2759,7 @@
 	.pt-win__value {
 		/* inline-block so fitText's transform:scale applies (see .pt-balance__value). */
 		display: inline-block;
-		font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
+		font-family: 'Bowlby One SC', 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
 		font-style: normal; line-height: normal; letter-spacing: 0.36px;
 		white-space: nowrap; transform-origin: center; min-height: 12px;
 		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);
