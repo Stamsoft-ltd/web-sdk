@@ -241,11 +241,15 @@
 		color: #ffffff;
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
 		font-weight: 400;
-		font-size: clamp(1.4rem, 6vmin, 2.25rem);
-		line-height: 1;
+		/* Cap lowered + wrap allowed so long localized titles (e.g. Finnish "AUTOMAATTIKIERROS")
+		   don't overflow the popup on desktop. */
+		font-size: clamp(1.2rem, 5vmin, 1.85rem);
+		line-height: 1.05;
 		letter-spacing: 1.4px;
 		text-transform: uppercase;
 		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+		max-width: 100%;
+		overflow-wrap: break-word;
 	}
 
 	/* Fading rule under the title, 90% width. */
