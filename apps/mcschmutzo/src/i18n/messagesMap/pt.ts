@@ -3,9 +3,9 @@ export default {
 	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
 	"INFO SCATTER TITLE": "SÍMBOLO SCATTER / BÔNUS",
 	"INFO SCATTER BODY": "O símbolo BÔNUS é o símbolo Scatter e pode aparecer em todos os rolos. Reunir símbolos Scatter ativa um de dois modos de Jogos Grátis.",
-	"INFO SCATTER 3 TITLE": "3 SCATTERS",
+	"INFO SCATTER 3 TITLE": "3 SCATTERS - Bônus Normal",
 	"INFO SCATTER 3 BODY": "Reunir 3 símbolos Scatter aciona o Bônus Normal. O jogador entra no modo de Jogos Grátis Normal. O Bônus Normal usa a configuração padrão de Jogos Grátis e sua respectiva progressão inicial de Multiplicador de Ganhos. Qualquer Multiplicador de Ganhos ativo levado para o recurso é combinado com o resultado de entrada dos Jogos Grátis, quando aplicável. O Multiplicador de Ganhos permanece durante todo o recurso de Jogos Grátis e pode aumentar durante o jogo. Ele não é reiniciado entre os Jogos Grátis.",
-	"INFO SCATTER 4 TITLE": "4 SCATTERS",
+	"INFO SCATTER 4 TITLE": "4 SCATTERS - Bônus Normal",
 	"INFO SCATTER 4 BODY": "Reunir 4 símbolos Scatter aciona o Super Bônus. O Super Bônus começa com uma configuração inicial aprimorada em comparação com o Bônus Normal. O jogador recebe a configuração dos Super Jogos Grátis com as condições de entrada máximas / aprimoradas definidas para este modo. O Multiplicador de Ganhos permanece durante todo o Super Bônus e pode continuar aumentando durante os Jogos Grátis. Ele não é reiniciado entre os Jogos Grátis.",
 	"INFO FREEGAMES BODY 1": "Durante os Jogos Grátis, as mesmas mecânicas centrais de ganho e de Regiro permanecem ativas. Sempre que uma conexão vencedora qualificada ocorre, os símbolos vencedores iguais travam automaticamente e acionam um Regiro.",
 	"INFO FREEGAMES BODY 2": "Símbolos iguais adicionais acrescentados durante o Regiro são travados, permitindo que a sequência continue. Símbolos McSchmutzo que aparecem durante o recurso podem aumentar o Multiplicador de Ganhos. O Multiplicador de Ganhos acumulado permanece ativo durante todo o recurso de Jogos Grátis.",

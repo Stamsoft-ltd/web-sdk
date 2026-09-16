@@ -101,10 +101,10 @@ export default {
 	'INFO SCATTER TITLE': 'SCATTER / BONUS SYMBOL',
 	'INFO SCATTER BODY':
 		'The BONUS symbol is the Scatter symbol and can appear on all reels. Landing Scatter symbols activates one of two Free Games modes.',
-	'INFO SCATTER 3 TITLE': '3 SCATTERS',
+	'INFO SCATTER 3 TITLE': '3 SCATTERS - Normal Bonus',
 	'INFO SCATTER 3 BODY':
 		'Landing 3 Scatter symbols triggers the Normal Bonus. The player enters the Normal Free Games mode. The Normal Bonus uses the standard Free Games configuration and its corresponding starting Win Multiplier progression. Any active Win Multiplier carried into the feature is combined with the Free Games entry result where applicable. The Win Multiplier persists throughout the entire Free Games feature and can increase during play. It does not reset between Free Games.',
-	'INFO SCATTER 4 TITLE': '4 SCATTERS',
+	'INFO SCATTER 4 TITLE': '4 SCATTERS - Normal Bonus',
 	'INFO SCATTER 4 BODY':
 		'Landing 4 Scatter symbols triggers the Super Bonus. The Super Bonus begins with an enhanced starting configuration compared with the Normal Bonus. The player receives the Super Free Games setup with the maximum / enhanced entry conditions defined for this mode. The Win Multiplier persists throughout the entire Super Bonus and may continue increasing during Free Games. It does not reset between Free Games.',
 	'INFO FREEGAMES BODY 1':

@@ -681,6 +681,7 @@
 		font-weight: 400;
 		font-size: clamp(0.66rem, 1.5vmin, 0.92rem);
 		letter-spacing: 0.02em;
+		text-transform: uppercase;
 	}
 	.ft-sub-body {
 		color: #c9c0b2;
@@ -830,41 +831,33 @@
 
 	/* Page 7 — user interface guide. Icon-left reference rows (design), 2-up on desktop.
 	   Each row is a board, matching the Buy Bonus cards. */
+	/* Desktop / landscape: plain icon-above-description columns — no card frame. (Mobile portrait
+	   restores the bordered icon-left rows in the narrow media query below.) */
 	.ug-grid {
 		width: 100%;
-		margin-top: clamp(10px, 1.8vmin, 20px);
+		margin-top: clamp(12px, 2vmin, 22px);
 		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: clamp(8px, 1.4vmin, 14px) clamp(12px, 2.4vmin, 26px);
+		grid-template-columns: repeat(3, 1fr);
+		gap: clamp(16px, 2.8vmin, 32px) clamp(10px, 2vmin, 22px);
 	}
 	.ug-item {
 		position: relative;
 		display: flex;
-		flex-direction: row;
+		flex-direction: column;
 		align-items: center;
-		text-align: left;
-		gap: clamp(10px, 1.5vmin, 16px);
-		padding: clamp(10px, 1.7vmin, 18px) clamp(16px, 2.4vmin, 28px);
-		border-radius: 14px;
-		background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
-	}
-	.ug-item::before {
-		content: '';
-		position: absolute;
-		inset: 5px;
-		border: 2.03px solid #605553;
-		border-radius: 11px;
-		pointer-events: none;
+		text-align: center;
+		gap: clamp(6px, 1.1vmin, 12px);
 	}
 	.ug-btn {
 		flex: 0 0 auto;
-		width: clamp(38px, 5vmin, 52px);
-		height: clamp(38px, 5vmin, 52px);
+		width: clamp(40px, 5.4vmin, 58px);
+		height: clamp(40px, 5.4vmin, 58px);
 		object-fit: contain;
 	}
 	.ug-text {
 		display: flex;
 		flex-direction: column;
+		align-items: center;
 		gap: clamp(2px, 0.4vmin, 5px);
 		min-width: 0;
 	}
@@ -1028,9 +1021,35 @@
 		.gi-card {
 			min-height: auto;
 		}
-		/* USER INTERFACE GUIDE: single-column icon-left list (design). */
+		/* USER INTERFACE GUIDE — mobile portrait keeps the original bordered icon-left rows. */
 		.ug-grid {
 			grid-template-columns: 1fr;
+			gap: clamp(8px, 1.4vmin, 14px);
+			margin-top: clamp(10px, 1.8vmin, 20px);
+		}
+		.ug-item {
+			flex-direction: row;
+			align-items: center;
+			text-align: left;
+			gap: clamp(10px, 1.5vmin, 16px);
+			padding: clamp(10px, 1.7vmin, 18px) clamp(16px, 2.4vmin, 28px);
+			border-radius: 14px;
+			background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
+		}
+		.ug-item::before {
+			content: '';
+			position: absolute;
+			inset: 5px;
+			border: 2.03px solid #605553;
+			border-radius: 11px;
+			pointer-events: none;
+		}
+		.ug-btn {
+			width: clamp(38px, 5vmin, 52px);
+			height: clamp(38px, 5vmin, 52px);
+		}
+		.ug-text {
+			align-items: flex-start;
 		}
 	}
 
