@@ -88,7 +88,8 @@ export const SYMBOL_INFO_MAP = {
 	// Sausage art fills its frame more than the other highs — scale it down so it reads the same size.
 	H3: spriteStates('mcH3', 0.8),
 	H4: spriteStates('mcH4'),
-	H5: spriteStates('mcH5'),
+	// Onion rings read a touch large vs the other highs — scale down slightly.
+	H5: spriteStates('mcH5', 0.84),
 	L1: spriteStates('mcL1', 0.88),
 	L2: spriteStates('mcL2', 0.88),
 	L3: spriteStates('mcL3', 0.88),

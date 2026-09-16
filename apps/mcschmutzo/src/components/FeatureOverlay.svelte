@@ -93,10 +93,10 @@
 	<Sprite
 		key="mcschmutzoLogo"
 		x={board.x}
-		y={board.y - board.height * 0.5 + 14}
+		y={board.y - board.height * 0.5 + board.height * 0.075}
 		anchor={{ x: 0.5, y: 1 }}
-		width={board.width * 0.4}
-		height={(board.width * 0.4 * 84) / 302}
+		width={board.width * 0.44}
+		height={(board.width * 0.44 * 84) / 302}
 	/>
 {/if}
 
