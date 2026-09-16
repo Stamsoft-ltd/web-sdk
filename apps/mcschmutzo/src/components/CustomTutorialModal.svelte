@@ -1002,6 +1002,10 @@
 		.tu-root {
 			width: 94vw;
 		}
+		/* Overview chef is desktop-only — hide it on mobile + smaller landscape (design ask). */
+		.tu-guy {
+			display: none;
+		}
 		.tu-popup {
 			padding: clamp(16px, 4.5vw, 30px) clamp(14px, 4vw, 26px) 0;
 		}

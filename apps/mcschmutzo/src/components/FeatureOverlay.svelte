@@ -97,6 +97,7 @@
 		anchor={{ x: 0.5, y: 1 }}
 		width={board.width * 0.44}
 		height={(board.width * 0.44 * 84) / 302}
+		zIndex={1000}
 	/>
 {/if}
 
