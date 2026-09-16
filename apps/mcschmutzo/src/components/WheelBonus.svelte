@@ -121,13 +121,14 @@
 		flex-direction: column;
 		align-items: center;
 		gap: clamp(10px, 3vmin, 22px);
-		width: min(560px, 92vw);
+		width: min(720px, 94vw);
 	}
 
-	/* Wheel + its overhanging spatula pointer. */
+	/* Wheel + its overhanging spatula pointer. Much larger now; the landscape query still caps it by
+	   height so the wheel + SPIN button both stay on screen. */
 	.wb-wheel-wrap {
 		position: relative;
-		width: min(460px, 84vw);
+		width: min(620px, 90vw);
 		aspect-ratio: 1;
 	}
 
@@ -270,7 +271,7 @@
 			gap: clamp(6px, 2dvh, 14px);
 		}
 		.wb-wheel-wrap {
-			width: min(460px, 84vw, 72dvh);
+			width: min(620px, 90vw, 74dvh);
 		}
 		.wb-spin {
 			width: min(170px, 34dvh);
