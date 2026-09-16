@@ -1121,5 +1121,33 @@
 			top: 6px;
 			right: 6px;
 		}
+		/* Card pages (features / general info / feature buy / UI guide): tighten padding + type so more
+		   of a card is visible before the nav on the tiny popout (less mid-card scroll cut-off). */
+		.ft-card,
+		.gi-card,
+		.fb-card,
+		.ug-item {
+			padding: clamp(8px, 3.4vmin, 14px) clamp(10px, 4vmin, 18px);
+		}
+		.ft-title,
+		.gi-title,
+		.fb-title,
+		.ft-sub-title {
+			font-size: clamp(0.68rem, 4.6vmin, 0.92rem);
+		}
+		.ft-body,
+		.gi-body,
+		.fb-body,
+		.ft-sub-body,
+		.ug-desc {
+			font-size: clamp(0.58rem, 3.8vmin, 0.8rem);
+		}
+		.ft-icon,
+		.ft-mult-icon {
+			height: clamp(20px, 7vmin, 32px);
+		}
+		.gi-icon {
+			height: clamp(28px, 10vmin, 52px);
+		}
 	}
 </style>

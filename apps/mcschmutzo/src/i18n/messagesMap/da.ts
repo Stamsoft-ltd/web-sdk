@@ -43,7 +43,7 @@ export default {
 	"PRESS TO CONTINUE": "TRYK FOR AT FORTSÆTTE",
 	"FREE GAMES": "GRATIS SPIL",
 	"STEPS": "TRIN",
-	"SPIN": "SPIN",
+	"SPIN": "SNURR",
 	"SOUND": "LYD",
 	"MUSIC": "MUSIK",
 	"INFO": "INFO",
