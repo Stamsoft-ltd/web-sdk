@@ -434,14 +434,19 @@
 
 	.tu-title {
 		margin: 0 0 clamp(10px, 1.9vmin, 20px);
+		max-width: 100%;
 		text-align: center;
 		color: #f3e7cb;
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
 		font-weight: 400;
 		font-size: clamp(1.5rem, 4.2vmin, 2.5rem);
-		line-height: 1;
+		line-height: 1.06;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
+		/* Long single-word titles (e.g. Finnish "KÄYTTÖLIITTYMÄOPAS") must wrap instead of overflowing. */
+		overflow-wrap: break-word;
+		word-break: break-word;
+		hyphens: auto;
 	}
 
 	.tu-body {
@@ -1061,6 +1066,21 @@
 			width: clamp(28px, 8.5vw, 36px);
 			top: 8px;
 			right: 8px;
+		}
+		/* OVERVIEW: the guy-left / stats-right row can't fit a narrow phone (the "25,000× bet" value
+		   gets clipped), so stack it — guy on top, stats centred below. */
+		.tu-lower {
+			flex-direction: column;
+			gap: clamp(10px, 3vmin, 20px);
+		}
+		.tu-guy {
+			align-self: center;
+			width: clamp(120px, 34vw, 170px);
+		}
+		/* PAYTABLE: wordy locales (e.g. French "IDENTIQUES") need smaller/tighter header cells to fit. */
+		.pt-hcell {
+			padding: clamp(5px, 1.6vw, 10px) clamp(2px, 0.8vw, 6px);
+			font-size: clamp(0.5rem, 2.5vw, 0.8rem);
 		}
 	}
 

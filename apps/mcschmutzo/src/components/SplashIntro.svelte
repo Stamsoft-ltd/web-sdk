@@ -200,20 +200,22 @@
 		justify-content: flex-start;
 		text-align: center;
 		font-family: 'Poppins', sans-serif;
-		/* Uniform now that every frame is the same box; top clears the drip on the red/yellow cards. */
-		padding: 17% 15% 14%;
+		/* Uniform now that every frame is the same box; top clears the drip on the red/yellow cards.
+		   Trimmed so longer localized titles/bodies (pt, ru, fi, id) still fit inside the cream area. */
+		padding: 15.5% 12.5% 12%;
 	}
 
 	/* Titles = Bowlby One 32px @ design (cqh is a fraction of the CARD's height, so it scales with
 	   the card in any orientation: a 367px-tall desktop card → ~32px). */
 	.card-title {
 		margin: 0;
-		font-family: 'Bowlby One', sans-serif;
+		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
 		font-weight: 400;
-		line-height: 1.39;
+		line-height: 1.16;
 		letter-spacing: 0.03em;
-		/* cqw (card WIDTH) not cqh, so a wide word like "SCHMUTZO" fits the frame at any card size. */
-		font-size: 10.5cqw;
+		/* cqw (card WIDTH) not cqh, so a wide word like "SCHMUTZO" fits the frame at any card size.
+		   Lowered from 10.5 so long localized titles wrap without pushing the body out of the card. */
+		font-size: 8.6cqw;
 	}
 	.card--red .card-title {
 		color: #c41e0a;
@@ -227,13 +229,13 @@
 
 	/* Description = Nunito 20px @ design. */
 	.card-body {
-		margin-top: 2.7cqh;
+		margin-top: 1.8cqh;
 		font-family: 'Nunito', sans-serif;
 		color: #232323;
 		font-weight: 500;
-		font-size: 5.45cqh;
-		line-height: 1.4;
-		letter-spacing: 0.03em;
+		font-size: 4.5cqh;
+		line-height: 1.3;
+		letter-spacing: 0.02em;
 	}
 	.card-body p {
 		margin: 0;

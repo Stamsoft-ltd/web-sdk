@@ -9,8 +9,6 @@
 	const minusArt = ap('/assets/mcschmutzo/autoplay/minus.svg');
 	const plusArt = ap('/assets/mcschmutzo/autoplay/plus-icon.svg');
 	const moneyArt = ap('/assets/mcschmutzo/buybonus/money.webp');
-	const activateArt = ap('/assets/mcschmutzo/buybonus/activate.svg');
-	const buyArt = ap('/assets/mcschmutzo/buybonus/buy.svg');
 </script>
 
 <script lang="ts">
@@ -194,12 +192,14 @@
 
 				<button
 					class="bb-btn"
-					style={`background-image:url('${mode.action === 'buy' ? buyArt : activateArt}')`}
+					class:bb-btn--buy={mode.action === 'buy'}
 					type="button"
 					disabled={isDisabled(mode)}
 					onclick={() => chooseMode(mode.id)}
 					aria-label={buttonLabel(mode)}
-				></button>
+				>
+					<span class="bb-btn__label">{buttonLabel(mode)}</span>
+				</button>
 			</article>
 		{/each}
 	</div>
@@ -440,19 +440,44 @@
 	}
 
 	/* Buttons use the provided ACTIVATE / BUY art. */
+	/* CSS pills (were baked BUY/ACTIVATE art) so the label is translatable. Default = cream ACTIVATE;
+	   .bb-btn--buy = red BUY. Label wraps rather than clipping for long localized words. */
 	.bb-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		width: 100%;
-		aspect-ratio: 215 / 50;
-		padding: 0;
-		border: none;
-		background: transparent center / contain no-repeat;
+		min-height: clamp(32px, 7.5vmin, 48px);
+		padding: clamp(5px, 1.2vmin, 9px) clamp(8px, 2vmin, 16px);
+		border: 2px solid #6f665c;
+		border-radius: clamp(7px, 1.4vmin, 12px);
+		background: linear-gradient(180deg, #e9e2d4 0%, #cfc6b4 100%);
 		cursor: pointer;
 		transition:
 			filter 0.12s ease,
 			transform 0.08s ease;
 	}
+	.bb-btn__label {
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
+		font-size: clamp(0.56rem, 1.8vmin, 0.98rem);
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		color: #3a332c;
+		line-height: 1.05;
+		text-align: center;
+		overflow-wrap: break-word;
+	}
+	.bb-btn--buy {
+		border-color: #7d1206;
+		background: linear-gradient(180deg, #d62a12 0%, #a81606 100%);
+	}
+	.bb-btn--buy .bb-btn__label {
+		color: #fff;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+	}
 	.bb-btn:hover:not(:disabled) {
-		filter: brightness(1.1);
+		filter: brightness(1.08);
 	}
 	.bb-btn:active:not(:disabled) {
 		transform: scale(0.97);

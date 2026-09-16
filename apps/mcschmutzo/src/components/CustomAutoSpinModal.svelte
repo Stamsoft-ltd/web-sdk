@@ -5,7 +5,6 @@
 	const hatArt = ap('/assets/mcschmutzo/autoplay/hat.webp');
 	const minusArt = ap('/assets/mcschmutzo/autoplay/minus.svg');
 	const plusArt = ap('/assets/mcschmutzo/autoplay/plus-icon.svg');
-	const startArt = ap('/assets/mcschmutzo/autoplay/autoplay.svg');
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
 </script>
 
@@ -151,10 +150,11 @@
 		<button
 			class="ap-start"
 			type="button"
-			style={`background-image:url('${startArt}')`}
 			onclick={start}
 			aria-label={i18nDerived.translate('START AUTOPLAY')}
-		></button>
+		>
+			<span class="ap-start__label">{i18nDerived.translate('START AUTOPLAY')}</span>
+		</button>
 	</div>
 
 	<!-- Chef hat mascot straddling the top edge of the pop-up (half in, half out). Kept a sibling
@@ -398,19 +398,37 @@
 		left: 53.6%; /* on: knob near the right edge */
 	}
 
-	/* START AUTOPLAY button (Figma art). */
+	/* START AUTOPLAY button — CSS pill (was baked art) so the label is translatable. Red matches the
+	   original #c41e0a art; the label auto-fits and the pill grows with longer localized text. */
 	.ap-start {
-		width: 66%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		align-self: center;
-		aspect-ratio: 317 / 50;
-		margin-top: clamp(2px, 0.8vmin, 6px);
-		padding: 0;
-		border: none;
-		background: transparent center / contain no-repeat;
+		max-width: 94%;
+		margin-top: clamp(4px, 1.2vmin, 10px);
+		padding: clamp(9px, 1.8vmin, 15px) clamp(20px, 5vmin, 46px);
+		border: 2px solid #7d1206;
+		border-radius: clamp(9px, 2vmin, 14px);
+		background: linear-gradient(180deg, #d62a12 0%, #a81606 100%);
+		box-shadow:
+			inset 0 2px 0 rgba(255, 255, 255, 0.22),
+			0 3px 7px rgba(0, 0, 0, 0.35);
 		cursor: pointer;
 		transition:
 			filter 0.12s ease,
 			transform 0.08s ease;
+	}
+	.ap-start__label {
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
+		font-size: clamp(0.85rem, 2.2vmin, 1.3rem);
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		color: #fff;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+		white-space: nowrap;
+		line-height: 1;
 	}
 	.ap-start:hover {
 		filter: brightness(1.06);

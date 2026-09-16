@@ -30,9 +30,9 @@ export default {
 	CANCEL: 'ANULUJ',
 
 	// ── Autoplay modal ───────────────────────────────────────────────────────────────────────────
-	'AUTO SPIN': 'AUTO SPIN',
-	'TURBO SPIN': 'TURBO SPIN',
-	'SUPER TURBO SPIN': 'SUPER TURBO SPIN',
+	'AUTO SPIN': 'AUTOSPIN',
+	'TURBO SPIN': 'TURBOSPIN',
+	'SUPER TURBO SPIN': 'SUPER TURBOSPIN',
 	'LOCK FEATURE SPIN': 'FUNKCJA BONUSOWA 50X',
 	'NUMBER OF SPINS': 'LICZBA SPINÓW',
 	'START AUTOPLAY': 'ROZPOCZNIJ AUTOGRĘ',

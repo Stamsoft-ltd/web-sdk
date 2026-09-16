@@ -19,6 +19,7 @@ import ru from './ru';
 import tr from './tr';
 import vi from './vi';
 import zh from './zh';
+import da from './da';
 
 const localeMaps: Record<string, Record<string, string>> = {
 	ar,
@@ -37,12 +38,17 @@ const localeMaps: Record<string, Record<string, string>> = {
 	tr,
 	vi,
 	zh,
+	da,
 };
+
+// Danish (`da`) isn't in the shared `config-lingui` locale set, but the launcher can still request
+// it, so support it app-locally in addition to the configured locales.
+const appLocales = [...locales, 'da'];
 
 // Every locale layers over English, so any key a translation is missing falls back to the English
 // string instead of showing the raw key.
 const messagesMapGame = Object.fromEntries(
-	locales.map((locale) => [locale, { ...en, ...(localeMaps[locale] ?? {}) }]),
+	appLocales.map((locale) => [locale, { ...en, ...(localeMaps[locale] ?? {}) }]),
 );
 
 const merged = mergeMessagesMaps([
@@ -50,6 +56,10 @@ const merged = mergeMessagesMaps([
 	messagesMapUiPixi,
 	messagesMapUiHtml,
 ]) as unknown as Record<string, typeof en>;
+
+// The shared UI packages (pixi/html) ship no `da` catalog, so give Danish the English UI/base
+// strings with the Danish game strings layered on top (game text = Danish, chrome = English).
+merged.da = { ...merged.en, ...merged.da };
 
 // Any 2-letter locale code we don't ship a file for resolves to English.
 const messagesMap = new Proxy(merged, {
@@ -61,4 +71,4 @@ const messagesMap = new Proxy(merged, {
 
 export default messagesMap;
 
-// locales: en ar de es fi fr hi id ja ko pl pt ru tr vi zh
+// locales: en ar de es fi fr hi id ja ko pl pt ru tr vi zh + da (app-local)
