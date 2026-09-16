@@ -1711,18 +1711,19 @@
 		display: flex;
 		flex-direction: column;
 		width: max-content;
-		min-width: calc(var(--nav-s) * 2.2);
-		padding: calc(var(--nav-s) * 0.1) calc(var(--nav-s) * 0.22);
+		/* Bigger menu (design ~193×229) with the flat #1F1F1F fill + small radius. */
+		min-width: calc(var(--nav-s) * 2.85);
+		padding: calc(var(--nav-s) * 0.16) calc(var(--nav-s) * 0.28);
 		border: 2px solid #3d3733;
-		border-radius: calc(var(--nav-s) * 0.24);
-		background: #1b1917;
+		border-radius: calc(var(--nav-s) * 0.09);
+		background: #1f1f1f;
 		box-shadow: 0 calc(var(--nav-s) * 0.2) calc(var(--nav-s) * 0.5) rgba(0, 0, 0, 0.55);
 	}
 	.hud-menu-item {
 		display: flex;
 		align-items: center;
-		gap: calc(var(--nav-s) * 0.18);
-		padding: calc(var(--nav-s) * 0.16) 0;
+		gap: calc(var(--nav-s) * 0.2);
+		padding: calc(var(--nav-s) * 0.22) 0;
 		border: none;
 		background: none;
 		cursor: pointer;
@@ -1740,8 +1741,8 @@
 		transform: scale(0.98);
 	}
 	.hud-menu-item__ic {
-		width: calc(var(--nav-s) * 0.52);
-		height: calc(var(--nav-s) * 0.52);
+		width: calc(var(--nav-s) * 0.6);
+		height: calc(var(--nav-s) * 0.6);
 		object-fit: contain;
 		flex: 0 0 auto;
 		transition: opacity 0.12s ease;
@@ -1755,7 +1756,7 @@
 		color: #ffffff;
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: calc(var(--nav-s) * 0.22);
+		font-size: calc(var(--nav-s) * 0.26);
 		letter-spacing: 0.03em;
 	}
 
@@ -2786,16 +2787,16 @@
 		bottom: calc(100% + var(--u) * 0.025);
 		z-index: 8;
 		display: flex; flex-direction: column;
-		min-width: calc(var(--u) * 0.33);
-		padding: calc(var(--u) * 0.006) calc(var(--u) * 0.022);
+		min-width: calc(var(--u) * 0.42);
+		padding: calc(var(--u) * 0.014) calc(var(--u) * 0.03);
 		border: 1.5px solid #3d3733;
-		border-radius: calc(var(--u) * 0.022);
-		background: #1b1917;
+		border-radius: calc(var(--u) * 0.009);
+		background: #1f1f1f;
 		box-shadow: 0 calc(var(--u) * 0.018) calc(var(--u) * 0.045) rgba(0, 0, 0, 0.55);
 	}
 	.pt-menu-item {
-		display: flex; align-items: center; gap: calc(var(--u) * 0.016);
-		border: 0; padding: calc(var(--u) * 0.011) 0; cursor: pointer;
+		display: flex; align-items: center; gap: calc(var(--u) * 0.02);
+		border: 0; padding: calc(var(--u) * 0.016) 0; cursor: pointer;
 		background: transparent;
 		transition: filter 0.12s ease, transform 0.08s ease;
 	}
@@ -2803,7 +2804,7 @@
 	.pt-menu-item:hover { filter: brightness(1.14); }
 	.pt-menu-item:active { transform: scale(0.98); }
 	.pt-menu-item__ic {
-		width: calc(var(--u) * 0.082); height: calc(var(--u) * 0.082);
+		width: calc(var(--u) * 0.096); height: calc(var(--u) * 0.096);
 		object-fit: contain; flex: 0 0 auto;
 		transition: opacity 0.12s ease;
 	}
