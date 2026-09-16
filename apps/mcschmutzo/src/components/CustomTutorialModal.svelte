@@ -882,42 +882,42 @@
 		line-height: 1.35;
 	}
 
-	/* Guy anchored bottom-left; the two stats sit to his right, each on its own row as
-	   "label: value" (design). Auto-margins push the guy to the left and stats fill the rest. */
+	/* Guy pinned to the popup's bottom-left corner; the two stats ("label: value" rows) are centred
+	   in the popup, independent of the guy. */
 	.tu-lower {
+		position: relative;
 		width: 100%;
 		margin-top: auto;
 		padding-top: clamp(10px, 1.8vmin, 22px);
+		min-height: clamp(150px, 27vw, 230px);
 		display: flex;
-		flex-direction: row;
-		align-items: flex-end;
-		justify-content: flex-start;
-		gap: clamp(10px, 3vw, 40px);
+		align-items: center;
+		justify-content: center;
 	}
 	.tu-guy {
-		flex: 0 0 auto;
-		align-self: flex-end;
+		position: absolute;
+		left: 0;
+		bottom: 0;
 		width: clamp(110px, 26%, 200px);
 		height: auto;
 		pointer-events: none;
 		filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
 	}
 	.tu-stats {
-		flex: 1 1 auto;
-		min-width: 0;
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: center;
 		justify-content: center;
 		gap: clamp(10px, 2.4vmin, 24px);
-		padding-bottom: clamp(6px, 2vmin, 20px);
+		text-align: center;
 	}
-	/* Each stat = label + value on ONE row. Wraps only if the row genuinely can't fit. */
+	/* Each stat = label + value centred on ONE row. */
 	.tu-stat {
 		display: flex;
 		flex-direction: row;
 		align-items: baseline;
-		flex-wrap: wrap;
+		justify-content: center;
+		flex-wrap: nowrap;
 		gap: clamp(6px, 1.4vw, 14px);
 	}
 	.tu-stat-label {

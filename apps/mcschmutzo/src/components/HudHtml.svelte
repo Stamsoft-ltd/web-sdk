@@ -267,16 +267,17 @@
 	// so instead we compute the font size straight from the value's characters — tabular figures are
 	// uniform width, so the estimate is reliable — and set it inline. This keeps the slot fixed (the
 	// steppers / spin never move off the wooden bar) while long values shrink to stay inside it.
-	const DESKTOP_VALUE_BASE_U = 32; // matches .value font-size: calc(var(--u) * 32)
+	// Bowlby One SC is a wide display face, so the base is lower than the old Poppins 32u and the
+	// per-glyph weights below are heavier — otherwise short values ($1.00) overflow the fixed slot.
+	const DESKTOP_VALUE_BASE_U = 26; // matches .value font-size: calc(var(--u) * 26)
 	// Every value that shrinks renders at ~BASE·CAP px, so the safety factor (not the per-glyph
-	// weights) sets the final width. 0.88 targets ~111u inside the 126u slot — ~12% headroom for
-	// glyph-estimate error so a big balance/win ($5,000,000.00, $10,000,000,000.00) never clips.
+	// weights) sets the final width; the formula self-scales the cap when BASE changes.
 	const DESKTOP_VALUE_CAP_EM = (150 / DESKTOP_VALUE_BASE_U) * 0.88;
 	const glyphEm = (c: string) => {
-		if (c >= '0' && c <= '9') return 0.6; // tabular figure
-		if (c === ',' || c === '.' || c === ' ') return 0.32;
-		if (c === '$') return 0.6;
-		return 0.66; // letters / other currency glyphs (conservative)
+		if (c >= '0' && c <= '9') return 0.72; // tabular figure (Bowlby is wide)
+		if (c === ',' || c === '.' || c === ' ') return 0.3;
+		if (c === '$') return 0.72;
+		return 0.82; // letters / other currency glyphs (conservative)
 	};
 	const desktopValueFontStyle = (s: string) => {
 		let em = 0;
@@ -1492,9 +1493,9 @@
 
 	.value {
 		font-family: 'Bowlby One SC', 'Poppins', sans-serif;
-		font-size: calc(var(--u) * 32);
+		font-size: calc(var(--u) * 26);
 		font-weight: 700;
-		letter-spacing: 0.03em; /* 0.54px @ 18px */
+		letter-spacing: 0.005em;
 		/* Uniform digit widths so the fixed ch-sized balance/bet slots line up exactly
 		   and single-digit changes can't jog the text inside the slot. */
 		font-variant-numeric: tabular-nums;
