@@ -328,6 +328,13 @@ export default {
 		src: new URL('../../assets/mcschmutzo/background-base.png', import.meta.url).href,
 		preload: true,
 	},
+	// Desktop-only base diner (new art). Mobile-landscape still uses backgroundBase until the mobile
+	// backgrounds are supplied.
+	backgroundDesktop: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/background-desktop.webp', import.meta.url).href,
+		preload: true,
+	},
 	// Mobile-landscape diner (a wide crop of the base diner — lamp + shelf, no floor, no chef).
 	backgroundLandscape: {
 		type: 'sprite',

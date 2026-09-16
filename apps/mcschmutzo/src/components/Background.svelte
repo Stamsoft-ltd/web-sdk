@@ -26,7 +26,8 @@
 	const showSpecialMascot = $derived(isFreegame && layoutType === 'desktop');
 	const mascotHeight = $derived(canvas.height * 0.6);
 	const mascotWidth = $derived(mascotHeight * (1019 / 1336));
-	const key = $derived(isFreegame ? 'backgroundWideBonus' : 'backgroundBase');
+	// Desktop base game uses the new desktop diner art; free games keep the grey-kitchen special bg.
+	const key = $derived(isFreegame ? 'backgroundWideBonus' : 'backgroundDesktop');
 	const portraitKey = $derived(isFreegame ? 'backgroundPortraitBonus' : 'backgroundPortrait');
 	const cover = $derived.by(() => {
 		const canvasAspect = canvas.width / canvas.height;

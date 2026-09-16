@@ -7,6 +7,8 @@
 	const props: Props = $props();
 
 	const bg = ap('/assets/mcschmutzo/splash/bg.webp');
+	// New desktop (wide) diner background; portrait/mobile keeps `bg` until the mobile art is supplied.
+	const bgDesktop = ap('/assets/mcschmutzo/splash/bg-desktop.webp');
 	const logo = ap('/assets/mcschmutzo/splash/logo.svg');
 	const man = ap('/assets/mcschmutzo/splash/man.webp');
 	const pressPlay = ap('/assets/mcschmutzo/press-play.svg');
@@ -72,7 +74,7 @@
 	onclick={press}
 	onkeydown={onKey}
 >
-	<div class="stage" style={`background-image:url('${bg}')`}>
+	<div class="stage" style={`--sbg-desktop:url('${bgDesktop}');--sbg-mobile:url('${bg}')`}>
 		<img class="logo" src={logo} alt="McSchmutzo" draggable="false" />
 		<img class="man" src={man} alt="" draggable="false" />
 		<!-- Mobile only: replaces the logo + character with the Press Play wordmark. -->
@@ -131,6 +133,8 @@
 		transform: translate(-50%, -50%);
 		width: max(100vw, calc(100vh * 16 / 9));
 		height: max(100vh, calc(100vw * 9 / 16));
+		/* Desktop / wide = new bg; portrait swaps to the mobile bg (below). */
+		background-image: var(--sbg-desktop);
 		background-size: 100% 100%;
 		background-position: center;
 		background-repeat: no-repeat;
@@ -288,6 +292,8 @@
 			transform: none;
 			width: 100%;
 			height: 100%;
+			/* Portrait keeps the original mobile bg until the new mobile art is supplied. */
+			background-image: var(--sbg-mobile);
 			background-size: cover;
 			background-position: center 22%;
 		}
