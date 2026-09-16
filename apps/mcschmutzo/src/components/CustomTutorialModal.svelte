@@ -518,7 +518,7 @@
 		object-fit: contain;
 	}
 	.pt-sym--multi img {
-		height: clamp(30px, 5.6vmin, 56px);
+		height: clamp(34px, 6.6vmin, 68px);
 	}
 	.pt-val {
 		min-width: 0;

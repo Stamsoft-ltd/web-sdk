@@ -85,7 +85,8 @@ const spriteStates = (assetKey: string, scale = 0.92) => {
 export const SYMBOL_INFO_MAP = {
 	H1: spriteStates('mcH1', 0.96),
 	H2: spriteStates('mcH2'),
-	H3: spriteStates('mcH3'),
+	// Sausage art fills its frame more than the other highs — scale it down so it reads the same size.
+	H3: spriteStates('mcH3', 0.8),
 	H4: spriteStates('mcH4'),
 	H5: spriteStates('mcH5'),
 	L1: spriteStates('mcL1', 0.88),
