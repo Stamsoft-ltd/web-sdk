@@ -837,8 +837,8 @@
 		width: 100%;
 		margin-top: clamp(12px, 2vmin, 22px);
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: clamp(16px, 2.8vmin, 32px) clamp(10px, 2vmin, 22px);
+		grid-template-columns: repeat(5, 1fr);
+		gap: clamp(14px, 2.4vmin, 28px) clamp(6px, 1.4vmin, 16px);
 	}
 	.ug-item {
 		position: relative;
