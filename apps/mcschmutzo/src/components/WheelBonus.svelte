@@ -121,14 +121,15 @@
 		flex-direction: column;
 		align-items: center;
 		gap: clamp(10px, 3vmin, 22px);
-		width: min(720px, 94vw);
+		width: min(640px, 94vw);
 	}
 
-	/* Wheel + its overhanging spatula pointer. Much larger now; the landscape query still caps it by
-	   height so the wheel + SPIN button both stay on screen. */
+	/* Wheel + its overhanging spatula pointer. A middle size (600px — bigger than the original, smaller
+	   than the 620px that overflowed) with a loose 74vh cap that only bites on short screens, so the
+	   square wheel always leaves room for the gap + SPIN button below instead of hiding it. */
 	.wb-wheel-wrap {
 		position: relative;
-		width: min(620px, 90vw);
+		width: min(600px, 90vw, 74vh);
 		aspect-ratio: 1;
 	}
 
