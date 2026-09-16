@@ -46,8 +46,9 @@
 	const menuIcSound = ap('/assets/mcschmutzo/ui-icons/sound.svg');
 	const menuIcMusic = ap('/assets/mcschmutzo/ui-icons/music.svg');
 	// Dedicated disabled-state art (speaker / note with a slash) shown when muted, in every layout.
-	const menuIcSoundOff = ap('/assets/mcschmutzo/ui-icons/sound-disabled.png');
-	const menuIcMusicOff = ap('/assets/mcschmutzo/ui-icons/music-disabled.png');
+	// These SVGs reuse the enabled icons' disc + #605554 border + gradient so size/frame match 1:1.
+	const menuIcSoundOff = ap('/assets/mcschmutzo/ui-icons/sound-disabled.svg');
+	const menuIcMusicOff = ap('/assets/mcschmutzo/ui-icons/music-disabled.svg');
 	const menuIcInfo = ap('/assets/mcschmutzo/ui-icons/info.svg');
 	const iconSpin = ap('/assets/mcschmutzo/ui-icons/turn-button-arrow.svg'); // hi-res white spin arrow
 	const iconStop = ap('/assets/hud/icon-stop.png');
@@ -1744,10 +1745,10 @@
 		flex: 0 0 auto;
 		transition: opacity 0.12s ease;
 	}
-	/* Muted shows the dedicated slashed disabled art, so keep it near-full opacity (the slash is
-	   the cue, not faintness). */
+	/* The muted SVGs carry their own disc + border (matching the enabled icons), so no extra CSS
+	   framing is needed — just render them at full opacity. */
 	.hud-menu-item.muted .hud-menu-item__ic {
-		opacity: 0.85;
+		opacity: 1;
 	}
 	.hud-menu-item__label {
 		color: #ffffff;
@@ -2804,8 +2805,8 @@
 		object-fit: contain; flex: 0 0 auto;
 		transition: opacity 0.12s ease;
 	}
-	/* Slashed disabled art conveys the muted state — keep it near-full opacity (portrait + landscape). */
-	.pt-menu-item.muted .pt-menu-item__ic { opacity: 0.85; }
+	/* Muted SVGs carry their own disc + border (portrait + landscape share this class). */
+	.pt-menu-item.muted .pt-menu-item__ic { opacity: 1; }
 	.pt-menu-item__label {
 		font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px;
 		letter-spacing: 0.03em; color: #fff;
