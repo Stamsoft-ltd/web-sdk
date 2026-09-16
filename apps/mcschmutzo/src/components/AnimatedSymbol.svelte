@@ -65,6 +65,30 @@
 		return () => cancelAnimationFrame(raf);
 	});
 
+	// Land one-shot (opt-in via config.landAnim, e.g. the wild): each layer scales in from 0 with a
+	// slight overshoot at its own `landDelay`, so the parts arrive in sequence (splat first, then
+	// text). Runs once per landing, independent of the win/lock loop, then hands back to rest/loop.
+	const LAND_MS = 640;
+	let landStart = $state(-1);
+	let landClock = $state(0);
+	$effect(() => {
+		if (props.config.landAnim && props.state === 'land') {
+			landStart = performance.now();
+			landClock = landStart;
+		}
+	});
+	$effect(() => {
+		if (landStart < 0) return;
+		let raf = 0;
+		const loop = (ts: number) => {
+			landClock = ts;
+			if (ts - landStart < LAND_MS) raf = requestAnimationFrame(loop);
+			else landStart = -1;
+		};
+		raf = requestAnimationFrame(loop);
+		return () => cancelAnimationFrame(raf);
+	});
+
 	const layers = $derived.by(() => {
 		const active = running && startTime >= 0;
 		const frac = active ? (((clock - startTime) / PERIOD) % 1) : 0;
@@ -86,7 +110,29 @@
 			rotation: number;
 			alpha: number;
 		}> = [];
+		// Land one-shot in progress: scale each layer in (0 → overshoot → 1) at its own landDelay.
+		const landing = landStart >= 0;
+		const lt = landing ? Math.min(1, (landClock - landStart) / LAND_MS) : 1;
 		for (const l of props.config.layers) {
+			if (landing) {
+				const delay = l.landDelay ?? 0;
+				const local = delay >= 1 ? 0 : Math.max(0, (lt - delay) / (1 - delay));
+				// easeOutBack: 0 → slight overshoot (~1.1) → settle at 1 (one grow-then-shrink).
+				const c1 = 1.70158;
+				const c3 = c1 + 1;
+				const s = local <= 0 ? 0 : 1 + c3 * (local - 1) ** 3 + c1 * (local - 1) ** 2;
+				out.push({
+					id: l.key,
+					key: l.key,
+					x: cx + (l.nx - 0.5) * w,
+					y: cy + (l.ny - 0.5) * h,
+					width: l.nw * w * s,
+					height: l.nh * h * s,
+					rotation: 0,
+					alpha: Math.min(1, local * 4),
+				});
+				continue;
+			}
 			// Rising smoke/steam: a continuous stream — several puffs at staggered phases each form at
 			// the base, rise + waft + grow, and fade out (bell alpha, so 0 at both ends → no visible
 			// reset). Overlapping copies keep the stream unbroken. At rest, one puff sits at the base.

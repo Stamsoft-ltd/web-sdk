@@ -21,12 +21,16 @@ export type SymbolPartLayer = {
 	rise?: number; // how far up it rises (fraction of symbol height)
 	sway?: number; // horizontal waft amplitude as it rises (fraction of width)
 	grow?: number; // how much it grows by the top (default 0.4)
+	landDelay?: number; // land one-shot: fraction of the drop-in to wait before this layer scales in
 };
 
 export type SymbolPartsConfig = {
 	aspect: number;
 	fit: number; // fraction of the symbol cell to fill (art has no built-in padding)
 	squash?: number; // whole-symbol squash-stretch at peak (for one-piece symbols)
+	// When set, the symbol plays a one-shot on landing: each layer scales in (0 → overshoot → 1) at
+	// its own `landDelay`, so e.g. the wild's red splat splashes in first, then the WILD text pops.
+	landAnim?: boolean;
 	layers: SymbolPartLayer[];
 };
 
@@ -107,14 +111,26 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'onionRing1', nx: 0.605, ny: 0.63, nw: 0.8, nh: 0.72, dy: 0.07, dx: 0.055, rot: -0.12, pop: 0.05 },
 		],
 	},
-	// Wild — the WILD text bounces/pops while the red splat pulses behind it.
+	// Wild — on landing the red splat splashes in first, then the WILD text pops up→down once
+	// (landAnim). Afterwards, while it wins/locks, the WILD text bounces while the splat pulses.
 	W: {
 		aspect: 1.361,
 		fit: 0.82,
 		squash: 0,
+		landAnim: true,
 		layers: [
-			{ key: 'wildSplat', nx: 0.5, ny: 0.5, nw: 1.0, nh: 1.0, pop: 0.1, rot: 0.04 },
-			{ key: 'wildText', nx: 0.5, ny: 0.5, nw: 0.7889, nh: 0.6704, pop: 0.13, dy: -0.03, rot: 0.05 },
+			{ key: 'wildSplat', nx: 0.5, ny: 0.5, nw: 1.0, nh: 1.0, pop: 0.1, rot: 0.04, landDelay: 0 },
+			{
+				key: 'wildText',
+				nx: 0.5,
+				ny: 0.5,
+				nw: 0.7889,
+				nh: 0.6704,
+				pop: 0.13,
+				dy: -0.03,
+				rot: 0.05,
+				landDelay: 0.4,
+			},
 		],
 	},
 	// Scatter — the stand gives a gentle bob while its SCATTER sign sways like a hanging shingle.
