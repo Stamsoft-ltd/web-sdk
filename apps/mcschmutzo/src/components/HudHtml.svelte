@@ -1612,8 +1612,8 @@
 
 	/* Dark round utility buttons: flat disc + grey ring + white icon (Figma HUD). */
 	.nav-btn--framed {
-		background: radial-gradient(circle at 50% 32%, #2b2622, #17130f);
-		border: 2px solid #4c433d;
+		background: radial-gradient(circle at 50% 32%, #29292a, #191919);
+		border: 2px solid #605554;
 		border-radius: 50%;
 		box-sizing: border-box;
 	}
@@ -2317,7 +2317,7 @@
 		/* No ring/glow on the burger + lightning (design ask) — just the dark disc + white icon. */
 		border: none;
 		border-radius: 50%;
-		background: radial-gradient(circle at 50% 32%, #2b2622, #17130f);
+		background: radial-gradient(circle at 50% 32%, #29292a, #191919);
 		padding: 0;
 		cursor: pointer;
 		display: grid;
@@ -2576,10 +2576,10 @@
 	.pt-round {
 		width: calc(var(--u) * 0.085); height: calc(var(--u) * 0.085);
 		padding: 0; cursor: pointer;
-		border: 2px solid #4c433d;
+		border: 2px solid #605554;
 		border-radius: 50%;
 		box-sizing: border-box;
-		background: radial-gradient(circle at 50% 32%, #2b2622, #17130f);
+		background: radial-gradient(circle at 50% 32%, #29292a, #191919);
 		display: grid; place-items: center;
 		flex: 0 0 auto;
 		transition: transform 0.12s ease, filter 0.12s ease;

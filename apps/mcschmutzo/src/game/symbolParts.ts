@@ -113,7 +113,7 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		layers: [
 			{ key: 'sausageSmoke', nx: 0.6156, ny: 0.32, nw: 0.11, nh: 0.42, rise: 0.24, sway: 0.06, grow: 0.4 },
 			// Sizzles in place — a small jiggle + pulse, kept small so it never leaves the box.
-			{ key: 'sausageBody', nx: 0.4987, ny: 0.6118, nw: 1.0, nh: 0.8871, dy: 0.012, dx: 0.01, rot: 0.03, pop: 0.03 },
+			{ key: 'sausageBody', nx: 0.4987, ny: 0.55, nw: 1.0, nh: 0.8871, dy: 0.012, dx: 0.01, rot: 0.03, pop: 0.03 },
 		],
 	},
 	// Onion rings — three leaning rings that bounce apart and jostle (small tumble), not a flat spin.
