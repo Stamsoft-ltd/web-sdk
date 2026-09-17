@@ -11,7 +11,9 @@
 
 	const props: Props = $props();
 
-	const loaderUrlStakeEngine = new URL('../../stake-engine-loader.gif', import.meta.url).href;
+	// The pre-game loader shows the Press Play "P" (filling) instead of the generic engine loader, so
+	// the branded P loading screen is visible before the game finishes loading.
+	const loaderUrlStakeEngine = new URL('../../press-play-loader.gif', import.meta.url).href;
 
 	setContext();
 </script>
