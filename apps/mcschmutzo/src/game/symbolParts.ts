@@ -62,7 +62,7 @@ const bottle = (n: string): SymbolPartsConfig => ({
 		// overlap ~15px at the neck so the cap's spin never exposes the background behind it.
 		{ key: `bottle${n}Body`, nx: 0.5, ny: 0.5, nw: 1, nh: 1 },
 		// Cap rocks very slightly about its base (the neck) — realistic little wobble, not a slide.
-		{ key: `bottle${n}Cap`, nx: 0.5, ny: 0.5, nw: 1, nh: 1, tilt: 0.045, pivotY: -0.15 },
+		{ key: `bottle${n}Cap`, nx: 0.5, ny: 0.5, nw: 1, nh: 1, tilt: 0.06, pivotY: -0.15 },
 	],
 });
 
