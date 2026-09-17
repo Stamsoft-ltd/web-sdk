@@ -22,7 +22,8 @@ export type SymbolPartLayer = {
 	sway?: number; // horizontal waft amplitude as it rises (fraction of width)
 	grow?: number; // how much it grows by the top (default 0.4)
 	landDelay?: number; // land one-shot: fraction of the drop-in to wait before this layer scales in
-	wag?: number; // signed left↔right sway (fraction of width, sin-driven) — e.g. a cap twisting
+	tilt?: number; // small signed rock (radians, sin-driven) about `pivotY` — e.g. a cap rocking
+	pivotY?: number; // rotation pivot offset from the sprite centre (fraction of h; negative = up)
 };
 
 export type SymbolPartsConfig = {
@@ -60,7 +61,8 @@ const bottle = (n: string): SymbolPartsConfig => ({
 		// each kept in the full 360×360 canvas so they stack back into the exact bottle at rest. They
 		// overlap ~15px at the neck so the cap's spin never exposes the background behind it.
 		{ key: `bottle${n}Body`, nx: 0.5, ny: 0.5, nw: 1, nh: 1 },
-		{ key: `bottle${n}Cap`, nx: 0.5, ny: 0.5, nw: 1, nh: 1, wag: 0.05, spin: 0.12 },
+		// Cap rocks very slightly about its base (the neck) — realistic little wobble, not a slide.
+		{ key: `bottle${n}Cap`, nx: 0.5, ny: 0.5, nw: 1, nh: 1, tilt: 0.045, pivotY: -0.15 },
 	],
 });
 

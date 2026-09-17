@@ -159,20 +159,27 @@
 			// (into the soup) rather than up, so a stirring spoon stays submerged/hidden.
 			const orbitX = (l.orbit ?? 0) * w * Math.sin(theta);
 			const orbitY = (l.orbit ?? 0) * h * (1 - Math.cos(theta));
-			// Signed left↔right sway (full sin cycle per loop) — the cap wags side to side.
-			const wagX = (l.wag ?? 0) * w * Math.sin(theta);
-			const ox = ((l.nx - 0.5) * w + (l.dx ?? 0) * w * env + orbitX + wagX) * sqx;
+			const ox = ((l.nx - 0.5) * w + (l.dx ?? 0) * w * env + orbitX) * sqx;
 			const oy = ((l.ny - 0.5) * h + (l.dy ?? 0) * h * env + orbitY) * sqy;
 			const pop = 1 + (l.pop ?? 0) * env; // uniform pulse
 			const spin = 1 - (l.spin ?? 0) * env; // horizontal squeeze = turn about vertical axis
+			// Rotation: `rot` is a one-way swing (env-driven); `tilt` a small signed rock (sin-driven).
+			// Both pivot about a point offset from the sprite centre by `pivotY` (fraction of h; negative
+			// = up), so e.g. a bottle cap rocks realistically about its base instead of about the symbol
+			// centre (which would swing the cap in a wide arc). The position is compensated so that pivot
+			// point stays put as the sprite rotates about its own anchor.
+			const rotation = (l.rot ?? 0) * env + (l.tilt ?? 0) * Math.sin(theta);
+			const pv = (l.pivotY ?? 0) * h;
+			const pivotCompX = pv * Math.sin(rotation);
+			const pivotCompY = pv * (1 - Math.cos(rotation));
 			out.push({
 				id: l.key,
 				key: l.key,
-				x: cx + ox,
-				y: cy + oy,
+				x: cx + ox + pivotCompX,
+				y: cy + oy + pivotCompY,
 				width: l.nw * w * sqx * spin * pop,
 				height: l.nh * h * sqy * pop,
-				rotation: (l.rot ?? 0) * env,
+				rotation,
 				alpha: 1,
 			});
 		}
