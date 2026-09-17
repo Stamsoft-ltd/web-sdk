@@ -290,6 +290,18 @@ export default {
 		src: new URL('../../assets/mcschmutzo/loader-p.webp', import.meta.url).href,
 		preload: true,
 	},
+	// Press Play "P" loader — 10 discrete fill states (red sweeps left→right across the P inside its
+	// rounded tile) selected by load progress. Tiny (~1.4KB each) and preloaded so they're ready first.
+	loaderP0: { type: 'sprite', src: new URL('../../assets/mcschmutzo/loader/p00.webp', import.meta.url).href, preload: true },
+	loaderP1: { type: 'sprite', src: new URL('../../assets/mcschmutzo/loader/p01.webp', import.meta.url).href, preload: true },
+	loaderP2: { type: 'sprite', src: new URL('../../assets/mcschmutzo/loader/p02.webp', import.meta.url).href, preload: true },
+	loaderP3: { type: 'sprite', src: new URL('../../assets/mcschmutzo/loader/p03.webp', import.meta.url).href, preload: true },
+	loaderP4: { type: 'sprite', src: new URL('../../assets/mcschmutzo/loader/p04.webp', import.meta.url).href, preload: true },
+	loaderP5: { type: 'sprite', src: new URL('../../assets/mcschmutzo/loader/p05.webp', import.meta.url).href, preload: true },
+	loaderP6: { type: 'sprite', src: new URL('../../assets/mcschmutzo/loader/p06.webp', import.meta.url).href, preload: true },
+	loaderP7: { type: 'sprite', src: new URL('../../assets/mcschmutzo/loader/p07.webp', import.meta.url).href, preload: true },
+	loaderP8: { type: 'sprite', src: new URL('../../assets/mcschmutzo/loader/p08.webp', import.meta.url).href, preload: true },
+	loaderP9: { type: 'sprite', src: new URL('../../assets/mcschmutzo/loader/p09.webp', import.meta.url).href, preload: true },
 	freeSpins: {
 		type: 'sprites',
 		src: new URL('../../assets/sprites/freeSpins/freeSpins.json', import.meta.url).href,
