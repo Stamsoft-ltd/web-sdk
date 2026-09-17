@@ -52,7 +52,8 @@ export const fallbackConfig = (assetKey: string): SymbolPartsConfig => ({
 // the cap's bottom edge, so the neck underneath is never exposed (the old whole-sprite reason for not
 // splitting it). Body raster 318×291 (content is the lower neck+body); cap raster 318×168 (content is
 // the top 84px) seated at the top so its base meets the body neck.
-const bottle = (n: string): SymbolPartsConfig => ({
+// capDy seats the cap a touch lower on the neck at rest (mayo keeps 0 — its cap is already seated).
+const bottle = (n: string, capDy = 0.022): SymbolPartsConfig => ({
 	aspect: 131 / 120, // the flat sprite's footprint (both parts share the 360×360 sprite canvas)
 	fit: 1,
 	squash: 0.06,
@@ -61,14 +62,14 @@ const bottle = (n: string): SymbolPartsConfig => ({
 		// each kept in the full 360×360 canvas so they stack back into the exact bottle at rest. They
 		// overlap ~15px at the neck so the cap's spin never exposes the background behind it.
 		{ key: `bottle${n}Body`, nx: 0.5, ny: 0.5, nw: 1, nh: 1 },
-		// Cap rocks very slightly about its base (the neck) — realistic little wobble, not a slide.
-		{ key: `bottle${n}Cap`, nx: 0.5, ny: 0.5, nw: 1, nh: 1, tilt: 0.06, pivotY: -0.15 },
+		// Cap sits a touch lower (capDy) and rocks very slightly about its base — a realistic wobble.
+		{ key: `bottle${n}Cap`, nx: 0.5, ny: 0.5 + capDy, nw: 1, nh: 1, tilt: 0.06, pivotY: -0.15 },
 	],
 });
 
 export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 	L1: bottle('L1'),
-	L2: bottle('L2'),
+	L2: bottle('L2', 0),
 	L3: bottle('L3'),
 	L4: bottle('L4'),
 	L5: bottle('L5'),
