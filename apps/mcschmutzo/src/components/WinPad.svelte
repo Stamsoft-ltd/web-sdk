@@ -21,7 +21,7 @@
 	// value box (winBox, 810x243 — dark-red panel + gold frame).
 	const PAD_ASPECT = 1302 / 455;
 	const BOX_ASPECT = 1536 / 1024;
-	const WOOD_ASPECT = 810 / 243;
+	const SMALL_ASPECT = 1241 / 623; // dedicated small-win plaque
 	// Portrait: the board fills almost the whole layout, so the desktop banner multiplier makes the
 	// pad overflow the phone — use a smaller fraction that still reads big.
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
@@ -29,20 +29,21 @@
 	const padW = $derived(board.width * (isPortrait ? 1.15 : 1.5));
 	const padH = $derived(padW / PAD_ASPECT);
 	// The visible plaque is ~88% of the art width, so scale the box up a touch to keep it prominent.
-	// Box-only (small wins) uses the wooden-board box, centred on the board where the gold number sat.
+	// Box-only (small wins) uses the dedicated small-win plaque, centred on the board where the gold
+	// number used to sit.
 	const boxW = $derived(
-		boxOnly ? board.width * (isPortrait ? 0.74 : 0.6) : board.width * (isPortrait ? 0.52 : 0.57),
+		boxOnly ? board.width * (isPortrait ? 0.82 : 0.66) : board.width * (isPortrait ? 0.52 : 0.57),
 	);
-	const boxH = $derived(boxW / (boxOnly ? WOOD_ASPECT : BOX_ASPECT));
-	// Big-win: red panel centre measured at (50.2%, 49.2%) — a hair of lift. Wooden board is centred.
+	const boxH = $derived(boxW / (boxOnly ? SMALL_ASPECT : BOX_ASPECT));
+	// Big-win: red panel centre measured at (50.2%, 49.2%) — a hair of lift. Small plaque is centred.
 	const amountY = $derived(boxOnly ? 0 : -boxH * 0.008);
 </script>
 
 {#if boxOnly}
-	<!-- Small-win case: the wooden-board value box with the value on top (replaces the old gold bitmap
+	<!-- Small-win case: the dedicated red plaque with the value on top (replaces the old gold bitmap
 	     number, which came from a different game's font). -->
 	<Container>
-		<Sprite key="winBox" anchor={{ x: 0.5, y: 0.5 }} width={boxW} height={boxH} />
+		<Sprite key="winBoxSmall" anchor={{ x: 0.5, y: 0.5 }} width={boxW} height={boxH} />
 		<Container y={amountY}>
 			{@render props.children()}
 		</Container>

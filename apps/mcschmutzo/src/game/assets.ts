@@ -182,6 +182,11 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/win/wooden-board.webp', import.meta.url).href,
 	},
+	// Dedicated small-win value plaque (red panel + cream ornate frame + rivets, no splashes).
+	winBoxSmall: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/win/small-win-box.webp', import.meta.url).href,
+	},
 	// Red plaque frame (shared with the congrats popups) used for the win amount box.
 	winBoxRed: {
 		type: 'sprite',
