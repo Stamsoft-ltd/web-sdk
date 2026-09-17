@@ -159,7 +159,9 @@
 			// (into the soup) rather than up, so a stirring spoon stays submerged/hidden.
 			const orbitX = (l.orbit ?? 0) * w * Math.sin(theta);
 			const orbitY = (l.orbit ?? 0) * h * (1 - Math.cos(theta));
-			const ox = ((l.nx - 0.5) * w + (l.dx ?? 0) * w * env + orbitX) * sqx;
+			// Signed left↔right sway (full sin cycle per loop) — the cap wags side to side.
+			const wagX = (l.wag ?? 0) * w * Math.sin(theta);
+			const ox = ((l.nx - 0.5) * w + (l.dx ?? 0) * w * env + orbitX + wagX) * sqx;
 			const oy = ((l.ny - 0.5) * h + (l.dy ?? 0) * h * env + orbitY) * sqy;
 			const pop = 1 + (l.pop ?? 0) * env; // uniform pulse
 			const spin = 1 - (l.spin ?? 0) * env; // horizontal squeeze = turn about vertical axis
