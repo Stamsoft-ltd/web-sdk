@@ -157,7 +157,9 @@
 	});
 </script>
 
-<Container x={board.x} y={board.y} pivot={board.pivot} sortableChildren={true}>
+<!-- zIndex above LockedCells (5) + Anticipations (6) so the win lines always draw ON TOP of the
+     symbols, including locked ones. -->
+<Container x={board.x} y={board.y} pivot={board.pivot} zIndex={20} sortableChildren={true}>
 	<Graphics
 		blendMode="add"
 		zIndex={70}
