@@ -8,7 +8,7 @@
 	// Frame backgrounds — passed as CSS vars because url() in style blocks can't use runtime paths
 	const menuBtnFrame = ap('/assets/components/frames/top_menu-button_frame.webp');
 	const soundBtnFrame = ap('/assets/components/frames/top_sound_button_frame.webp');
-	const menuBarFrame = ap('/assets/mcschmutzo/hud-bar.png');
+	const menuBarFrame = ap('/assets/mcschmutzo/nav-pad.png'); // flat #1F1F1F nav bar (padddd)
 	const menuPopupBg = ap('/assets/components/frames/menu_popup.webp'); // wooden plaque (Figma 3311-2924)
 
 	// Button backgrounds (icon-less frames) — icons are layered on top in markup
