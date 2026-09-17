@@ -10,13 +10,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Container, Sprite } from 'pixi-svelte';
-	import {
-		FadeContainer,
-		WinCountUpProvider,
-		ResponsiveBitmapText,
-		ResponsiveText,
-		Button,
-	} from 'components-pixi';
+	import { FadeContainer, WinCountUpProvider, ResponsiveText, Button } from 'components-pixi';
 	import { waitForResolve, waitForTimeout } from 'utils-shared/wait';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
@@ -120,19 +114,24 @@
 								/>
 							</WinPad>
 						{:else}
-							<ResponsiveBitmapText
-								anchor={0.5}
-								maxWidth={context.stateLayoutDerived.canvasSizes().width /
-									context.stateLayoutDerived.mainLayout().scale}
-								text={bookEventAmountToCurrencyString(countUpAmount)}
-								style={{
-									fontFamily: 'gold',
-									fontSize: SYMBOL_SIZE,
-									align: 'center',
-									fontWeight: 'bold',
-									letterSpacing: 0,
-								}}
-							/>
+							<!-- Small/medium wins: the value used to render in a gold bitmap font borrowed from a
+							     different game. Show it on the same red win-box plaque instead (value on top). -->
+							{@const smallFontSize = SYMBOL_SIZE * 0.44}
+							<WinPad>
+								<ResponsiveText
+									anchor={0.5}
+									maxWidth={context.stateGameDerived.boardLayout().width * 0.32}
+									text={bookEventAmountToCurrencyString(countUpAmount)}
+									style={{
+										fontFamily: 'Poppins',
+										fontWeight: '700',
+										fill: 0xffffff,
+										fontSize: smallFontSize,
+										letterSpacing: smallFontSize * 0.003,
+										align: 'center',
+									}}
+								/>
+							</WinPad>
 						{/if}
 					</Container>
 				</MainContainer>

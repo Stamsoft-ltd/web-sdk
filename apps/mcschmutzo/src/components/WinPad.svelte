@@ -5,8 +5,9 @@
 	import { getContext } from '../game/context';
 
 	type Props = {
-		/** Sprite key of the tier pad art (plaque + wordmark + sauce + stars + burger). */
-		padKey: string;
+		/** Sprite key of the tier pad art (plaque + wordmark + sauce + stars + burger). Omit for the
+		 *  small-win case: just the red win-box plaque with the value on top (no tier wordmark). */
+		padKey?: string;
 		/** Amount text, rendered centred in the wooden box. */
 		children: Snippet;
 	};
@@ -22,31 +23,40 @@
 	// Portrait: the board fills almost the whole layout, so the desktop banner multiplier makes the
 	// pad overflow the phone — use a smaller fraction that still reads big.
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
+	const boxOnly = $derived(!props.padKey);
 	const padW = $derived(board.width * (isPortrait ? 1.15 : 1.5));
 	const padH = $derived(padW / PAD_ASPECT);
 	// The visible plaque is ~88% of the art width, so scale the box up a touch to keep it prominent.
-	const boxW = $derived(board.width * (isPortrait ? 0.52 : 0.57));
+	// Box-only (small wins) uses a smaller box, centred on the board where the gold number used to sit.
+	const boxW = $derived(
+		boxOnly ? board.width * (isPortrait ? 0.62 : 0.46) : board.width * (isPortrait ? 0.52 : 0.57),
+	);
 	const boxH = $derived(boxW / BOX_ASPECT);
 	// Red panel centre measured at (50.2%, 49.2%) of the art — essentially the box centre, so the
 	// amount only needs a hair of lift (the old -4% left it hugging the top of the panel).
 	const amountY = $derived(-boxH * 0.008);
 </script>
 
-<Container>
-	<!-- Pad (plaque + wordmark + sauce + stars + burger), centred above the amount box. -->
-	<Sprite
-		key={props.padKey}
-		anchor={{ x: 0.5, y: 0.5 }}
-		width={padW}
-		height={padH}
-		y={-padH * 0.2}
-	/>
-
-	<!-- Win-amount plaque with the count-up amount centred inside its red panel. -->
-	<Container y={padH * 0.44}>
+{#if boxOnly}
+	<!-- Small-win case: just the red win-box plaque with the value on top (replaces the old gold
+	     bitmap number, which came from a different game's font). -->
+	<Container>
 		<Sprite key="winBoxAmount" anchor={{ x: 0.5, y: 0.5 }} width={boxW} height={boxH} />
 		<Container y={amountY}>
 			{@render props.children()}
 		</Container>
 	</Container>
-</Container>
+{:else}
+	<Container>
+		<!-- Pad (plaque + wordmark + sauce + stars + burger), centred above the amount box. -->
+		<Sprite key={props.padKey} anchor={{ x: 0.5, y: 0.5 }} width={padW} height={padH} y={-padH * 0.2} />
+
+		<!-- Win-amount plaque with the count-up amount centred inside its red panel. -->
+		<Container y={padH * 0.44}>
+			<Sprite key="winBoxAmount" anchor={{ x: 0.5, y: 0.5 }} width={boxW} height={boxH} />
+			<Container y={amountY}>
+				{@render props.children()}
+			</Container>
+		</Container>
+	</Container>
+{/if}
