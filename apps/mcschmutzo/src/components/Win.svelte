@@ -117,20 +117,24 @@
 								/>
 							</WinPad>
 						{:else}
-							<!-- Small/medium wins: the value used to render in a gold bitmap font borrowed from a
-							     different game. Show it on the same red win-box plaque instead (value on top). -->
-							{@const smallFontSize = SYMBOL_SIZE * 0.44}
+							<!-- Small/medium wins: value on the red plaque, in Bowlby One SC sized to fill the box
+							     (~76px on the design box → 0.18 of the box width; scales with the box per layout).
+							     maxWidth lets very long amounts shrink so they stay inside the red panel. -->
+							{@const isPt = context.stateLayoutDerived.layoutType() === 'portrait'}
+							{@const smallBoxW =
+								context.stateGameDerived.boardLayout().width * (isPt ? 0.82 : 0.66)}
+							{@const smallFontSize = smallBoxW * 0.18}
 							<WinPad>
 								<ResponsiveText
 									anchor={0.5}
-									maxWidth={context.stateGameDerived.boardLayout().width * 0.32}
+									maxWidth={smallBoxW * 0.8}
 									text={bookEventAmountToCurrencyString(countUpAmount)}
 									style={{
-										fontFamily: 'Poppins',
-										fontWeight: '700',
+										fontFamily: 'Bowlby One SC',
+										fontWeight: '400',
 										fill: 0xffffff,
 										fontSize: smallFontSize,
-										letterSpacing: smallFontSize * 0.003,
+										letterSpacing: smallFontSize * 0.03,
 										align: 'center',
 									}}
 								/>
