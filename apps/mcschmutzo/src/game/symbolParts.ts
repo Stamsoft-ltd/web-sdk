@@ -43,13 +43,24 @@ export const fallbackConfig = (assetKey: string): SymbolPartsConfig => ({
 	layers: [{ key: assetKey, nx: 0.5, ny: 0.5, nw: 1, nh: 1, dx: 0, dy: -0.05, rot: 0.08 }],
 });
 
-// The bottle animates as ONE whole sprite (squeeze) — splitting the cap off left a visible seam and
-// showed the background through the gap, so it stays a single piece that narrows + rises.
+// The bottle is reassembled from its body + cap parts (complementary halves cut at the neck, so they
+// stack back into the exact flat sprite — no seam at rest). While active the whole bottle gives a
+// gentle squash and the CAP twists about its vertical axis (spin = horizontal squeeze), reading as
+// the cap turning like it's being screwed on. Spin is symmetric about the cap centre and never lifts
+// the cap's bottom edge, so the neck underneath is never exposed (the old whole-sprite reason for not
+// splitting it). Body raster 318×291 (content is the lower neck+body); cap raster 318×168 (content is
+// the top 84px) seated at the top so its base meets the body neck.
 const bottle = (n: string): SymbolPartsConfig => ({
-	aspect: 131 / 120, // the flat sprite's footprint
+	aspect: 131 / 120, // the flat sprite's footprint (both parts share the 360×360 sprite canvas)
 	fit: 1,
-	squash: 0.1,
-	layers: [{ key: `mc${n}`, nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.02 }],
+	squash: 0.06,
+	layers: [
+		// Body (neck + bottle) and cap (tip + collar) are the splash-free flat sprite cut at the neck,
+		// each kept in the full 360×360 canvas so they stack back into the exact bottle at rest. They
+		// overlap ~15px at the neck so the cap's spin never exposes the background behind it.
+		{ key: `bottle${n}Body`, nx: 0.5, ny: 0.5, nw: 1, nh: 1 },
+		{ key: `bottle${n}Cap`, nx: 0.5, ny: 0.5, nw: 1, nh: 1, spin: 0.12 },
+	],
 });
 
 export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
