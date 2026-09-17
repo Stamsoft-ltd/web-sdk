@@ -16,10 +16,12 @@
 	const context = getContext();
 	const board = $derived(context.stateGameDerived.boardLayout());
 
-	// Pad art is exported ~1302x455 (plaque centred). The amount sits in the dedicated win-box-amount
-	// plaque (1536x1024 art; red panel + gold frame + ketchup/mustard splashes).
+	// Pad art is exported ~1302x455 (plaque centred). The big-win amount sits in the win-box-amount
+	// plaque (1536x1024; red panel + gold frame + splashes); small wins use the simpler wooden-board
+	// value box (winBox, 810x243 — dark-red panel + gold frame).
 	const PAD_ASPECT = 1302 / 455;
 	const BOX_ASPECT = 1536 / 1024;
+	const WOOD_ASPECT = 810 / 243;
 	// Portrait: the board fills almost the whole layout, so the desktop banner multiplier makes the
 	// pad overflow the phone — use a smaller fraction that still reads big.
 	const isPortrait = $derived(context.stateLayoutDerived.layoutType() === 'portrait');
@@ -27,21 +29,20 @@
 	const padW = $derived(board.width * (isPortrait ? 1.15 : 1.5));
 	const padH = $derived(padW / PAD_ASPECT);
 	// The visible plaque is ~88% of the art width, so scale the box up a touch to keep it prominent.
-	// Box-only (small wins) uses a smaller box, centred on the board where the gold number used to sit.
+	// Box-only (small wins) uses the wooden-board box, centred on the board where the gold number sat.
 	const boxW = $derived(
-		boxOnly ? board.width * (isPortrait ? 0.62 : 0.46) : board.width * (isPortrait ? 0.52 : 0.57),
+		boxOnly ? board.width * (isPortrait ? 0.74 : 0.6) : board.width * (isPortrait ? 0.52 : 0.57),
 	);
-	const boxH = $derived(boxW / BOX_ASPECT);
-	// Red panel centre measured at (50.2%, 49.2%) of the art — essentially the box centre, so the
-	// amount only needs a hair of lift (the old -4% left it hugging the top of the panel).
-	const amountY = $derived(-boxH * 0.008);
+	const boxH = $derived(boxW / (boxOnly ? WOOD_ASPECT : BOX_ASPECT));
+	// Big-win: red panel centre measured at (50.2%, 49.2%) — a hair of lift. Wooden board is centred.
+	const amountY = $derived(boxOnly ? 0 : -boxH * 0.008);
 </script>
 
 {#if boxOnly}
-	<!-- Small-win case: just the red win-box plaque with the value on top (replaces the old gold
-	     bitmap number, which came from a different game's font). -->
+	<!-- Small-win case: the wooden-board value box with the value on top (replaces the old gold bitmap
+	     number, which came from a different game's font). -->
 	<Container>
-		<Sprite key="winBoxAmount" anchor={{ x: 0.5, y: 0.5 }} width={boxW} height={boxH} />
+		<Sprite key="winBox" anchor={{ x: 0.5, y: 0.5 }} width={boxW} height={boxH} />
 		<Container y={amountY}>
 			{@render props.children()}
 		</Container>
