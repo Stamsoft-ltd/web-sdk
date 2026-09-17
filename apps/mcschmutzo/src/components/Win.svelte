@@ -78,6 +78,9 @@
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
 				{#if isBigWin}
 					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
+				{:else}
+					<!-- Small-win popup dims the screen too (design: #0000004D ≈ 30% black). -->
+					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.302} />
 				{/if}
 
 				<OnMount
