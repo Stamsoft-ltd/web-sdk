@@ -68,10 +68,13 @@
 	// Land one-shot (opt-in via config.landAnim, e.g. the wild): each layer scales in from 0 with a
 	// slight overshoot at its own `landDelay`, so the parts arrive in sequence (splat first, then
 	// text). Runs once per landing, independent of the win/lock loop, then hands back to rest/loop.
-	const LAND_MS = 640;
+	const LAND_MS = 800;
 	let landStart = $state(-1);
 	let landClock = $state(0);
-	$effect(() => {
+	// $effect.pre so this runs BEFORE the oncomplete $effect above, which flips the momentary 'land'
+	// state straight back to 'static' (see ReelSymbol) — a regular $effect here would only ever read
+	// 'static' and the splash would never fire.
+	$effect.pre(() => {
 		if (props.config.landAnim && props.state === 'land') {
 			landStart = performance.now();
 			landClock = landStart;
