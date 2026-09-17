@@ -500,6 +500,12 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/soup/pot.webp', import.meta.url).href,
 	},
+	// The green liquid surface, extracted from pot.webp so it can be drawn OVER the spoon — the spoon
+	// then stirs submerged (bowl under the liquid, only the handle poking out).
+	soupLiquid: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/soup/liquid.webp', import.meta.url).href,
+	},
 	soupBlobs: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/soup/blobs.webp', import.meta.url).href,

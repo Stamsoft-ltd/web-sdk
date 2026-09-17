@@ -87,9 +87,9 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'burgerBunTop', nx: 0.5, ny: 0.2396, nw: 0.9685, nh: 0.4793, dy: -0.26, dx: 0, rot: 0.05 },
 		],
 	},
-	// Soup pot — steam escapes upward off the pot; the spoon (dipped in, mostly submerged) stirs a
-	// small circle; bubbles pop on the surface. Draw order: steam, pot, spoon, blobs (over the bowl),
-	// drips, label.
+	// Soup pot — steam escapes upward off the pot; the spoon stirs a small circle but sits UNDER the
+	// liquid (only the handle pokes out) because the extracted liquid surface is redrawn over it.
+	// Draw order: steam, pot, spoon, liquid (submerges the spoon bowl), blobs (surface), drips, label.
 	H2: {
 		aspect: 1.2565,
 		fit: 0.95,
@@ -97,7 +97,8 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		layers: [
 			{ key: 'soupSteam', nx: 0.5103, ny: 0.2021, nw: 0.3784, nh: 0.4702, rise: 0.24, sway: 0.05, grow: 0.4 },
 			{ key: 'soupPot', nx: 0.5, ny: 0.5972, nw: 1.0072, nh: 0.8899 },
-			{ key: 'soupSpoon', nx: 0.5732, ny: 0.3873, nw: 0.1773, nh: 0.2539, orbit: 0.03, rot: 0.1 },
+			{ key: 'soupSpoon', nx: 0.5732, ny: 0.335, nw: 0.1773, nh: 0.2539, orbit: 0.025, rot: 0.08 },
+			{ key: 'soupLiquid', nx: 0.5, ny: 0.5972, nw: 1.0072, nh: 0.8899 },
 			{ key: 'soupBlobs', nx: 0.5309, ny: 0.364, nw: 0.3979, nh: 0.4793, pop: 0.4, rot: 0.12 },
 			{ key: 'soupDrips', nx: 0.4845, ny: 0.5453, nw: 0.6454, nh: 0.7927, dy: 0.015, rot: 0.03 },
 			{ key: 'soupLabel', nx: 0.5103, ny: 0.7073, nw: 0.5052, nh: 0.5842 },
