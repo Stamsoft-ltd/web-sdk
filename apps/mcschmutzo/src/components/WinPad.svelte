@@ -35,8 +35,11 @@
 		boxOnly ? board.width * (isPortrait ? 0.82 : 0.66) : board.width * (isPortrait ? 0.52 : 0.57),
 	);
 	const boxH = $derived(boxW / (boxOnly ? SMALL_ASPECT : BOX_ASPECT));
-	// Big-win: red panel centre measured at (50.2%, 49.2%) — a hair of lift. Small plaque is centred.
-	const amountY = $derived(boxOnly ? 0 : -boxH * 0.008);
+	// Big-win: red panel centre measured at (50.2%, 49.2%) — a hair of lift. Small plaque is centred,
+	// but the Bowlby glyphs render a touch high (font metrics) and a touch left (3% letter-spacing's
+	// trailing gap), so nudge the value right + down to sit truly centred in the red panel.
+	const amountX = $derived(boxOnly ? boxW * 0.013 : 0);
+	const amountY = $derived(boxOnly ? boxH * 0.018 : -boxH * 0.008);
 </script>
 
 {#if boxOnly}
@@ -44,7 +47,7 @@
 	     number, which came from a different game's font). -->
 	<Container>
 		<Sprite key="winBoxSmall" anchor={{ x: 0.5, y: 0.5 }} width={boxW} height={boxH} />
-		<Container y={amountY}>
+		<Container x={amountX} y={amountY}>
 			{@render props.children()}
 		</Container>
 	</Container>
