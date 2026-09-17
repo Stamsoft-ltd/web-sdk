@@ -149,13 +149,14 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		],
 	},
 	// Scatter — the stand gives a gentle bob while its SCATTER sign sways like a hanging shingle.
+	// (Real diner-stand art: base + the golden SCATTER sign that sits on the top plank.)
 	S: {
 		aspect: 0.999,
 		fit: 0.86,
 		squash: 0.03,
 		layers: [
-			{ key: 'scatterStand', nx: 0.5, ny: 0.4996, nw: 1.0, nh: 1.0 },
-			{ key: 'scatterBanner', nx: 0.5, ny: 0.1626, nw: 0.8221, nh: 0.2418, rot: 0.07, dy: -0.01 },
+			{ key: 'scatterStand', nx: 0.5, ny: 0.5, nw: 1.0, nh: 1.0 },
+			{ key: 'scatterBanner', nx: 0.485, ny: 0.132, nw: 0.68, nh: 0.232, rot: 0.07, dy: -0.01 },
 		],
 	},
 	// Smutz cup — one whole sprite (straw included) that gives a soft squeeze + bob; splitting the

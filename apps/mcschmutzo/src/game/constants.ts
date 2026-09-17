@@ -66,11 +66,15 @@ export const zIndexes = {
 	background: { backdrop: -3, normal: -2, feature: -1 },
 };
 
+// Global bump so every symbol reads a bit larger in its cell (relative per-symbol scales, tuned so
+// they all look the same size, are preserved — this just multiplies them all).
+const SYMBOL_SCALE = 1.08;
 const spriteStates = (assetKey: string, scale = 0.92) => {
+	const s = scale * SYMBOL_SCALE;
 	const sprite = {
 		type: 'sprite' as const,
 		assetKey,
-		sizeRatios: { width: scale, height: scale },
+		sizeRatios: { width: s, height: s },
 	};
 	return {
 		static: sprite,

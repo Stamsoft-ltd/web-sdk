@@ -449,9 +449,9 @@
 		width: 100%;
 		min-height: clamp(32px, 7.5vmin, 48px);
 		padding: clamp(5px, 1.2vmin, 9px) clamp(8px, 2vmin, 16px);
-		border: 2px solid #6f665c;
+		border: 2px solid #605553;
 		border-radius: clamp(7px, 1.4vmin, 12px);
-		background: linear-gradient(180deg, #e9e2d4 0%, #cfc6b4 100%);
+		background: #60534c3d;
 		cursor: pointer;
 		transition:
 			filter 0.12s ease,
@@ -463,7 +463,8 @@
 		font-size: clamp(0.56rem, 1.8vmin, 0.98rem);
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
-		color: #3a332c;
+		/* Light label — the ACTIVATE pill background is now a dark translucent brown. */
+		color: #efe8d8;
 		line-height: 1.05;
 		text-align: center;
 		overflow-wrap: break-word;

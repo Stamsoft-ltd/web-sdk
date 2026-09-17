@@ -115,21 +115,26 @@
 		pointer-events: auto;
 	}
 
+	/* Fill the whole viewport height: the spatula sits near the top of the screen and the SPIN button
+	   at the bottom, with the wheel as big as the height (or width) allows in between. */
 	.wb-stage {
 		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: clamp(10px, 3vmin, 22px);
-		width: min(640px, 94vw);
+		justify-content: space-between;
+		height: 100dvh;
+		/* Top pad clears the overhanging spatula; bottom pad keeps the SPIN button off the edge. */
+		padding: clamp(10px, 6dvh, 64px) 0 clamp(8px, 3dvh, 32px);
+		box-sizing: border-box;
+		width: min(96vw, 96dvh);
 	}
 
-	/* Wheel + its overhanging spatula pointer. A middle size (600px — bigger than the original, smaller
-	   than the 620px that overflowed) with a loose 74vh cap that only bites on short screens, so the
-	   square wheel always leaves room for the gap + SPIN button below instead of hiding it. */
+	/* Wheel + its overhanging spatula pointer — sized to fill the available height (or width on a
+	   narrow portrait screen). */
 	.wb-wheel-wrap {
 		position: relative;
-		width: min(600px, 90vw, 74vh);
+		width: min(94vw, 84dvh);
 		aspect-ratio: 1;
 	}
 
@@ -264,15 +269,14 @@
 		cursor: default;
 	}
 
-	/* Mobile landscape: the wheel is square, so cap it by height so the whole thing (+ SPIN) fits.
-	   The segment type already scales with the wheel (cqw + low floors), so no font override here. */
+	/* Short screens (mobile landscape): tighten the padding and cap the square wheel a bit lower so the
+	   spatula + wheel + SPIN button all still fit the height. */
 	@media (max-height: 500px) {
 		.wb-stage {
-			width: auto;
-			gap: clamp(6px, 2dvh, 14px);
+			padding: clamp(6px, 4dvh, 26px) 0 clamp(4px, 2dvh, 14px);
 		}
 		.wb-wheel-wrap {
-			width: min(620px, 90vw, 74dvh);
+			width: min(94vw, 76dvh);
 		}
 		.wb-spin {
 			width: min(170px, 34dvh);
