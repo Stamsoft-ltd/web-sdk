@@ -64,13 +64,13 @@ export default {
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': 'BIENVENUE CHEZ SCHMUTZO',
-	'SPLASH C1 BODY': 'Sauces grésillantes, gains sauvages et surprises salissantes à chaque tour.',
-	'SPLASH C2 TITLE': 'FONCTIONS SAVOUREUSES',
-	'SPLASH C2 BODY 1': 'Verrouillage & Re-Tour',
-	'SPLASH C2 BODY 2': 'Multiplicateurs de Gains Croissants',
-	'SPLASH C2 BODY 3': 'Parties Gratuites',
+	'SPLASH C1 BODY': 'Lumières éclatantes, manèges déchaînés et grandes surprises à chaque coin.',
+	'SPLASH C2 TITLE': '3 Bonus Uniques',
+	'SPLASH C2 BODY 1': 'Attrape les Canards',
+	'SPLASH C2 BODY 2': 'Chevauche les Wilds',
+	'SPLASH C2 BODY 3': 'Survis aux Montagnes Russes',
 	'SPLASH C3 TITLE': 'GAIN MAX DE 25,000×',
-	'SPLASH C3 BODY': 'LE PRIX SAUCE ULTIME',
+	'SPLASH C3 BODY': 'Le Prix Ultime du Parc',
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'APERÇU',

@@ -1112,6 +1112,20 @@
 			padding: clamp(5px, 1.6vw, 10px) clamp(2px, 0.8vw, 6px);
 			font-size: clamp(0.5rem, 2.5vw, 0.8rem);
 		}
+		/* The 5 sauce bottles share one narrow cell — on the smallest phones flex-wrap dropped them to
+		   one-per-row. Grid them 3-per-row (3 + 2) with the images filling their cells instead. */
+		.pt-sym--multi {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: clamp(2px, 1vw, 6px);
+			justify-items: center;
+			padding: clamp(4px, 1.2vw, 9px);
+		}
+		.pt-sym--multi img {
+			width: 100%;
+			height: auto;
+			max-height: clamp(30px, 9vw, 50px);
+		}
 	}
 
 	/* Tiny popouts (~400x225): the default text is large enough that only a couple of lines fit

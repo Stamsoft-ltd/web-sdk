@@ -50,13 +50,13 @@ export default {
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	"SPLASH C1 TITLE": "VELKOMMEN TIL SCHMUTZO",
-	"SPLASH C1 BODY": "Sydende saucer, vilde gevinster og sjaskede overraskelser ved hvert spin.",
-	"SPLASH C2 TITLE": "SAFTIGE FUNKTIONER",
-	"SPLASH C2 BODY 1": "Lock & Re-Spin",
-	"SPLASH C2 BODY 2": "Voksende Gevinstmultiplikatorer",
-	"SPLASH C2 BODY 3": "Gratis Spil",
+	"SPLASH C1 BODY": "Skarpe lys, vilde forlystelser og store overraskelser rundt om hvert hjørne.",
+	"SPLASH C2 TITLE": "3 Unikke Bonusser",
+	"SPLASH C2 BODY 1": "Vælg Ænderne",
+	"SPLASH C2 BODY 2": "Rid på Wilds",
+	"SPLASH C2 BODY 3": "Overlev Rutsjebanen",
 	"SPLASH C3 TITLE": "MAKS. GEVINST PÅ 25,000×",
-	"SPLASH C3 BODY": "DEN ULTIMATIVE SAUCEPRÆMIE",
+	"SPLASH C3 BODY": "Den Ultimative Parkpræmie",
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	"OVERVIEW": "OVERSIGT",

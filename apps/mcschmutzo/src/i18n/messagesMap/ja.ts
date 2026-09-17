@@ -64,13 +64,13 @@ export default {
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': 'SCHMUTZOへようこそ',
-	'SPLASH C1 BODY': 'ジュージューと焼けるソース、ワイルドな勝利、そして毎回のスピンにドタバタなサプライズ。',
-	'SPLASH C2 TITLE': 'ソースたっぷりのフィーチャー',
-	'SPLASH C2 BODY 1': 'ロック＆リスピン',
-	'SPLASH C2 BODY 2': '成長するウィンマルチプライヤー',
-	'SPLASH C2 BODY 3': 'フリーゲーム',
+	'SPLASH C1 BODY': 'まばゆい光、スリル満点のライド、そして至るところに待つ大きなサプライズ。',
+	'SPLASH C2 TITLE': '3つのユニークなボーナス',
+	'SPLASH C2 BODY 1': 'アヒルを選べ',
+	'SPLASH C2 BODY 2': 'ワイルドに乗れ',
+	'SPLASH C2 BODY 3': 'コースターを生き抜け',
 	'SPLASH C3 TITLE': '最大配当25,000×',
-	'SPLASH C3 BODY': '究極のソース賞金',
+	'SPLASH C3 BODY': '究極のパーク大賞',
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: '概要',

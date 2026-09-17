@@ -64,13 +64,13 @@ export default {
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': 'TERVETULOA SCHMUTZOON',
-	'SPLASH C1 BODY': 'Sihiseviä kastikkeita, villejä voittoja ja sotkuisia yllätyksiä joka kierroksella.',
-	'SPLASH C2 TITLE': 'MEHEVÄT OMINAISUUDET',
-	'SPLASH C2 BODY 1': 'Lukitus ja uusintakierros',
-	'SPLASH C2 BODY 2': 'Kasvavat voittokertoimet',
-	'SPLASH C2 BODY 3': 'Ilmaispelit',
+	'SPLASH C1 BODY': 'Kirkkaat valot, villit laitteet ja suuret yllätykset joka nurkan takana.',
+	'SPLASH C2 TITLE': '3 Ainutlaatuista Bonusta',
+	'SPLASH C2 BODY 1': 'Poimi ankat',
+	'SPLASH C2 BODY 2': 'Ratsasta Wildeillä',
+	'SPLASH C2 BODY 3': 'Selviä vuoristoradasta',
 	'SPLASH C3 TITLE': 'ENIMMÄISVOITTO 25,000×',
-	'SPLASH C3 BODY': 'PALKINTOJEN HERKULLISIN',
+	'SPLASH C3 BODY': 'Puiston Suurin Palkinto',
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'YLEISKATSAUS',

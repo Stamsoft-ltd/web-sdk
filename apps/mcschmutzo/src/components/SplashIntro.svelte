@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { ap } from '../lib/preloadArt';
+	import { fitLabel } from '../lib/fitLabel';
 	import { i18nDerived } from '../i18n/i18nDerived';
 
 	type Props = { onpress: () => void };
@@ -83,7 +84,9 @@
 		{#snippet cardEl(card: (typeof CARDS)[number])}
 			<div class="card {card.cls}" style={`background-image:url('${card.art}')`}>
 				<div class="card-inner">
-					<h3 class="card-title">{i18nDerived.translate(card.title)}</h3>
+					<h3 class="card-title" use:fitLabel={i18nDerived.translate(card.title)}>
+						{i18nDerived.translate(card.title)}
+					</h3>
 					<div class="card-body">
 						{#each card.body as line (line)}<p>{i18nDerived.translate(line)}</p>{/each}
 					</div>
@@ -201,11 +204,13 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		justify-content: flex-start;
+		/* Centre the title+body block so it fills the card (title upper, description mid-lower with a
+		   gap) instead of clustering at the top and leaving the lower half empty. */
+		justify-content: center;
 		text-align: center;
 		font-family: 'Poppins', sans-serif;
-		/* Uniform now that every frame is the same box; top clears the drip on the red/yellow cards.
-		   Trimmed so longer localized titles/bodies (pt, ru, fi, id) still fit inside the cream area. */
+		/* Insets clear the drip on the red/yellow cards; trimmed so longer localized titles/bodies
+		   (pt, ru, fi, id) still fit inside the cream area. */
 		padding: 15.5% 12.5% 12%;
 	}
 
@@ -213,13 +218,16 @@
 	   the card in any orientation: a 367px-tall desktop card → ~32px). */
 	.card-title {
 		margin: 0;
+		max-width: 100%;
+		/* A big base size (matches the design); `fitLabel` scales it DOWN per card so long localized
+		   words (fi "AINUTLAATUISTA", de, ru) fit the frame instead of breaking mid-word. */
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
 		font-weight: 400;
 		line-height: 1.16;
 		letter-spacing: 0.03em;
 		/* cqw (card WIDTH) not cqh, so a wide word like "SCHMUTZO" fits the frame at any card size.
-		   Lowered from 10.5 so long localized titles wrap without pushing the body out of the card. */
-		font-size: 8.6cqw;
+		   Sized so the title reads big (wraps to ~3 lines) yet long localized titles still fit. */
+		font-size: 11.5cqw;
 	}
 	.card--red .card-title {
 		color: #c41e0a;
@@ -231,9 +239,9 @@
 		color: #75ac10;
 	}
 
-	/* Description = Nunito 20px @ design. */
+	/* Description = Nunito 20px @ design. A clear gap below the title (mid-lower placement). */
 	.card-body {
-		margin-top: 1.8cqh;
+		margin-top: 5cqh;
 		font-family: 'Nunito', sans-serif;
 		color: #232323;
 		font-weight: 500;

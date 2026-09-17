@@ -64,13 +64,13 @@ export default {
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': 'CHÀO MỪNG ĐẾN SCHMUTZO',
-	'SPLASH C1 BODY': 'Nước sốt sôi sục, chiến thắng bùng nổ và những bất ngờ lộn xộn trong mỗi lượt quay.',
-	'SPLASH C2 TITLE': 'TÍNH NĂNG HẤP DẪN',
-	'SPLASH C2 BODY 1': 'Khóa & Quay Lại',
-	'SPLASH C2 BODY 2': 'Hệ Số Nhân Thắng Tăng Dần',
-	'SPLASH C2 BODY 3': 'Vòng Miễn Phí',
+	'SPLASH C1 BODY': 'Ánh đèn rực rỡ, những trò chơi cảm giác mạnh và bất ngờ lớn ở mọi ngóc ngách.',
+	'SPLASH C2 TITLE': '3 Bonus Độc Đáo',
+	'SPLASH C2 BODY 1': 'Chọn Vịt',
+	'SPLASH C2 BODY 2': 'Cưỡi Wilds',
+	'SPLASH C2 BODY 3': 'Sống Sót Tàu Lượn',
 	'SPLASH C3 TITLE': 'THẮNG TỐI ĐA 25,000×',
-	'SPLASH C3 BODY': 'GIẢI THƯỞNG SỐT ĐỈNH CAO',
+	'SPLASH C3 BODY': 'Giải Thưởng Đỉnh Cao Của Công Viên',
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'TỔNG QUAN',

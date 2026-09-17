@@ -64,13 +64,13 @@ export default {
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': 'BIENVENIDO A SCHMUTZO',
-	'SPLASH C1 BODY': 'Salsas chisporroteantes, premios salvajes y sorpresas desordenadas en cada giro.',
-	'SPLASH C2 TITLE': 'FUNCIONES SABROSAS',
-	'SPLASH C2 BODY 1': 'Bloqueo y Regiro',
-	'SPLASH C2 BODY 2': 'Multiplicadores de Premio Crecientes',
-	'SPLASH C2 BODY 3': 'Juegos Gratis',
+	'SPLASH C1 BODY': 'Luces brillantes, atracciones salvajes y grandes sorpresas en cada esquina.',
+	'SPLASH C2 TITLE': '3 Bonos Únicos',
+	'SPLASH C2 BODY 1': 'Elige los Patos',
+	'SPLASH C2 BODY 2': 'Monta los Wilds',
+	'SPLASH C2 BODY 3': 'Sobrevive a la Montaña Rusa',
 	'SPLASH C3 TITLE': 'PREMIO MÁXIMO DE 25,000×',
-	'SPLASH C3 BODY': 'EL PREMIO DE SALSA DEFINITIVO',
+	'SPLASH C3 BODY': 'El Gran Premio del Parque',
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'RESUMEN',

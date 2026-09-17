@@ -64,13 +64,13 @@ export default {
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': 'SELAMAT DATANG DI SCHMUTZO',
-	'SPLASH C1 BODY': 'Saus menggelegak, kemenangan liar, dan kejutan berantakan di setiap putaran.',
-	'SPLASH C2 TITLE': 'FITUR PENUH SAUS',
-	'SPLASH C2 BODY 1': 'Lock & Re-Spin',
-	'SPLASH C2 BODY 2': 'Pengali Kemenangan yang Terus Tumbuh',
-	'SPLASH C2 BODY 3': 'Game Gratis',
+	'SPLASH C1 BODY': 'Lampu terang, wahana liar, dan kejutan besar di setiap sudut.',
+	'SPLASH C2 TITLE': '3 Bonus Unik',
+	'SPLASH C2 BODY 1': 'Pilih Bebeknya',
+	'SPLASH C2 BODY 2': 'Tunggangi Wilds',
+	'SPLASH C2 BODY 3': 'Bertahan di Roller Coaster',
 	'SPLASH C3 TITLE': 'KEMENANGAN MAKS 25,000×',
-	'SPLASH C3 BODY': 'HADIAH SAUS TERTINGGI',
+	'SPLASH C3 BODY': 'Hadiah Utama Taman',
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'IKHTISAR',

@@ -64,13 +64,13 @@ export default {
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': 'SCHMUTZO\'YA HOŞ GELDİN',
-	'SPLASH C1 BODY': 'Her dönüşte cızırdayan soslar, çılgın kazançlar ve dağınık sürprizler.',
-	'SPLASH C2 TITLE': 'SOSLU ÖZELLİKLER',
-	'SPLASH C2 BODY 1': 'Kilitle & Yeniden Döndür',
-	'SPLASH C2 BODY 2': 'Büyüyen Kazanç Çarpanları',
-	'SPLASH C2 BODY 3': 'Ücretsiz Oyunlar',
+	'SPLASH C1 BODY': 'Parlak ışıklar, çılgın gezintiler ve her köşede büyük sürprizler.',
+	'SPLASH C2 TITLE': '3 Eşsiz Bonus',
+	'SPLASH C2 BODY 1': 'Ördekleri Seç',
+	'SPLASH C2 BODY 2': 'Wild\'lara Bin',
+	'SPLASH C2 BODY 3': 'Hız Treninde Hayatta Kal',
 	'SPLASH C3 TITLE': '25,000× MAKSİMUM KAZANÇ',
-	'SPLASH C3 BODY': 'EN BÜYÜK SOS ÖDÜLÜ',
+	'SPLASH C3 BODY': 'En Büyük Park Ödülü',
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'GENEL BAKIŞ',

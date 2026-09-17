@@ -64,13 +64,13 @@ export default {
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': '슈무초에 오신 것을 환영합니다',
-	'SPLASH C1 BODY': '스핀마다 지글거리는 소스, 짜릿한 당첨과 지저분한 서프라이즈가 펼쳐집니다.',
-	'SPLASH C2 TITLE': '소스 가득 피처',
-	'SPLASH C2 BODY 1': '락 앤 리스핀',
-	'SPLASH C2 BODY 2': '증가하는 당첨 배율',
-	'SPLASH C2 BODY 3': '프리 게임',
+	'SPLASH C1 BODY': '밝은 조명, 짜릿한 놀이기구, 그리고 모퉁이마다 기다리는 큰 서프라이즈.',
+	'SPLASH C2 TITLE': '3가지 특별 보너스',
+	'SPLASH C2 BODY 1': '오리를 골라라',
+	'SPLASH C2 BODY 2': '와일드를 타라',
+	'SPLASH C2 BODY 3': '코스터에서 살아남아라',
 	'SPLASH C3 TITLE': '최대 당첨 25,000×',
-	'SPLASH C3 BODY': '최고의 소스 상금',
+	'SPLASH C3 BODY': '궁극의 파크 상금',
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: '개요',

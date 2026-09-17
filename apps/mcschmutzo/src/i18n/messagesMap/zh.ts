@@ -64,13 +64,13 @@ export default {
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': '欢迎来到SCHMUTZO',
-	'SPLASH C1 BODY': '每次旋转都有滋滋作响的酱汁、狂野的奖励和乱糟糟的惊喜。',
-	'SPLASH C2 TITLE': '酱香特色',
-	'SPLASH C2 BODY 1': '锁定与重转',
-	'SPLASH C2 BODY 2': '递增的赢奖倍数',
-	'SPLASH C2 BODY 3': '免费游戏',
+	'SPLASH C1 BODY': '绚丽灯光、刺激游乐设施，处处都有大惊喜。',
+	'SPLASH C2 TITLE': '3 项独特奖励',
+	'SPLASH C2 BODY 1': '挑选小鸭',
+	'SPLASH C2 BODY 2': '驾驭百搭',
+	'SPLASH C2 BODY 3': '挺过过山车',
 	'SPLASH C3 TITLE': '最高赢奖25,000×',
-	'SPLASH C3 BODY': '终极酱汁大奖',
+	'SPLASH C3 BODY': '终极乐园大奖',
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: '概述',
