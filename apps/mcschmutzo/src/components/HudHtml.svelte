@@ -1741,8 +1741,10 @@
 		transform: scale(0.98);
 	}
 	.hud-menu-item__ic {
-		width: calc(var(--nav-s) * 0.6);
-		height: calc(var(--nav-s) * 0.6);
+		/* Match the nav round buttons (.nav-btn = --nav-s) so the menu's circular icon buttons are the
+		   same size as the ones in the bar. */
+		width: var(--nav-s);
+		height: var(--nav-s);
 		object-fit: contain;
 		flex: 0 0 auto;
 		transition: opacity 0.12s ease;
@@ -2820,7 +2822,8 @@
 	   ≤300px block below (later in source) shrinks it further for the tiniest popouts. */
 	.ls-menu-pop { gap: clamp(2px, 0.7dvh, 5px); padding: clamp(4px, 1dvh, 7px); }
 	.ls-menu-pop .pt-menu-item { gap: clamp(3px, 1.2dvh, 7px); padding: clamp(2px, 0.7dvh, 5px) 0; }
-	.ls-menu-pop .pt-menu-item__ic { width: clamp(14px, 5.6dvh, 22px); height: clamp(14px, 5.6dvh, 22px); }
+	/* Match the landscape nav round buttons (.ls-round) so the menu icon buttons are the same size. */
+	.ls-menu-pop .pt-menu-item__ic { width: clamp(22px, 9.6dvh, 36px); height: clamp(22px, 9.6dvh, 36px); }
 	.ls-menu-pop .pt-menu-item__label { font-size: clamp(8px, 2.7dvh, 11px); }
 
 	/* Smallest landscape popouts (~400x225, <=300px tall): the burger (☰) menu items are sized off
@@ -2830,10 +2833,7 @@
 	@media (max-height: 300px) {
 		.ls-menu-pop { gap: 2px; padding: 4px; border-radius: 8px; }
 		.ls-menu-pop .pt-menu-item { gap: 5px; padding: 3px 0; }
-		.ls-menu-pop .pt-menu-item__ic {
-			width: clamp(12px, 7dvh, 22px);
-			height: clamp(12px, 7dvh, 22px);
-		}
+		/* Icon size intentionally left to the base rule so it keeps matching .ls-round on tiny popouts. */
 		.ls-menu-pop .pt-menu-item__label { font-size: clamp(8px, 4dvh, 11px); }
 	}
 </style>
