@@ -375,10 +375,10 @@
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		min-height: min(460px, 78dvh);
-		/* Never taller than the screen (leaves headroom for the close button) — the page body
-		   scrolls instead of the popup being cut off. */
-		max-height: 86dvh;
+		/* FIXED height so the popup stays the same size on every page (no jump when paging). It scales
+		   with the viewport (dvh) and is capped in px on big screens; the page body scrolls if a page's
+		   content is taller than the box. */
+		height: min(680px, 86dvh);
 		padding: clamp(20px, 3.2vmin, 40px) clamp(28px, 5vmin, 60px) 0;
 		border: 1.91px solid #605553;
 		border-radius: 22px;
@@ -1133,10 +1133,9 @@
 	   LAST so it wins over the base .tu-title/.tu-body rules (equal specificity → later wins). */
 	@media (max-height: 300px) {
 		.tu-popup {
-			min-height: 0;
-			/* Keep the popup short enough that the close (X) can sit ABOVE it, outside, without
-			   clipping off the top of the screen. */
-			max-height: 74dvh;
+			/* Fixed (like the base rule) so pages don't jump; short enough that the close (X) can sit
+			   ABOVE it, outside, without clipping off the top of the screen. */
+			height: 74dvh;
 			padding: clamp(10px, 4vmin, 20px) clamp(14px, 5vmin, 28px) 0;
 		}
 		/* Narrower so there's a clear margin around the popup for the outside X. */
