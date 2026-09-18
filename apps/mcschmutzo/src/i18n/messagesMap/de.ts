@@ -69,7 +69,7 @@ export default {
 	'SPLASH C2 BODY 1': 'Wähle die Enten',
 	'SPLASH C2 BODY 2': 'Reite die Wilds',
 	'SPLASH C2 BODY 3': 'Überlebe die Achterbahn',
-	'SPLASH C3 TITLE': 'MAX-GEWINN VON 25.000×',
+	'SPLASH C3 TITLE': 'MAX. GEWINN 25.000×',
 	'SPLASH C3 BODY': 'Der ultimative Parkpreis',
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
