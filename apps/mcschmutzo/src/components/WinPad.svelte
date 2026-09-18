@@ -35,11 +35,13 @@
 		boxOnly ? board.width * (isPortrait ? 0.82 : 0.66) : board.width * (isPortrait ? 0.52 : 0.57),
 	);
 	const boxH = $derived(boxW / (boxOnly ? SMALL_ASPECT : BOX_ASPECT));
-	// Big-win: red panel centre measured at (50.2%, 49.2%) — a hair of lift. Small plaque: nudge the
-	// value right (offsets the 3% letter-spacing's trailing gap) and up a touch so it sits optically
-	// centred in the red panel (the panel's optical centre reads slightly above its geometric one).
-	const amountX = $derived(boxOnly ? boxW * 0.013 : 0);
-	const amountY = $derived(boxOnly ? boxH * -0.02 : -boxH * 0.008);
+	// Centre the value in the red field. Its ink centre sits a touch low (font ascent/descent) and the
+	// red panel sits a hair above the sprite centre, so on the small plaque lift it ~5.3% of the box
+	// (no horizontal shift needed — the tiny -0.2% just cancels the 3% letter-spacing's trailing gap).
+	// Measured on the rendered plaque → text lands dead-centre in the red field. Big-win amount box
+	// (winBoxAmount) keeps its own smaller lift.
+	const amountX = $derived(boxOnly ? boxW * -0.002 : 0);
+	const amountY = $derived(boxOnly ? boxH * -0.053 : -boxH * 0.008);
 </script>
 
 {#if boxOnly}
