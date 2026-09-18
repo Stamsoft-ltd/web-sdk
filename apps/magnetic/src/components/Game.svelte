@@ -6,7 +6,7 @@
 	import { EnableHotkey } from 'components-shared';
 	import { MainContainer } from 'components-layout';
 	import { App } from 'pixi-svelte';
-	import { stateMeta } from 'state-shared';
+	import { stateMeta, stateUi } from 'state-shared';
 	import { Modals } from 'components-ui-html';
 
 	import { getContext } from '../game/context';
@@ -352,7 +352,9 @@
 		{/if}
 
 		{#if !context.stateLayout.showLoadingScreen}
-			<HudHtml />
+			{#if stateUi.config.mode !== 'replay'}
+				<HudHtml />
+			{/if}
 			<ReplayHud />
 			<PendingRoundRecovery />
 		{/if}
