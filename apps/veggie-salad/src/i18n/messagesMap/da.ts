@@ -7,6 +7,7 @@ export default createLocale(source, {
 	earned: 'OPTJENT',
 	garden: 'HAVEN',
 	welcome: 'VELKOMMEN TIL',
+	maxWinOf: 'PÅ',
 	gameBoard: 'Veggie Salad-spilleplade',
 	clusterPayouts: 'KLYNGEGEVINSTER',
 	vegetables: ['BROCCOLI', 'MAJS', 'TOMAT', 'AUBERGINE', 'GULEROD', 'BLOMKÅL', 'RADISE'],
@@ -28,6 +29,10 @@ export default createLocale(source, {
 		'Alle multiplikatorer i en vindende klynge ganges sammen og anvendes på gevinsten.',
 	bonusRule:
 		'3 scattere udløser Normal Bonus, 4 udløser Super Bonus, og Skjult Bonus bruger et 10×10-felt.',
+	legalMark: 'TM og © 2026 Engine.',
+	board: 'SPILLEPLADE',
+	symbol: 'SYMBOL',
+	deactivate: 'DEAKTIVER',
 	controls: 'BETJENING',
 	splashGarden: 'Skab klynger, lad grøntsager falde, og opdag havens overraskelser.',
 });

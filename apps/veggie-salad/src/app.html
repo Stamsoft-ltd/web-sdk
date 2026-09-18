@@ -11,6 +11,13 @@
 			type="font/ttf"
 			crossorigin
 		/>
+		<link
+			rel="preload"
+			href="%sveltekit.assets%/fonts/web/poppins-400.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
 		<meta name="viewport" content="width=device-width" />
 		<style>
 			@font-face {
@@ -21,10 +28,66 @@
 				font-display: block;
 			}
 
+			/* Poppins carries running copy. The design draws the line the way the Figma layers do:
+			   Jersey 10 for every display string (titles, buttons, numbers) and Poppins for the
+			   sentences under them — an 11px card description in Jersey 10 is a smear of stems.
+			   Two weights, the only ones the design uses. */
+			@font-face {
+				font-family: 'Poppins';
+				src: url('%sveltekit.assets%/fonts/web/poppins-400.woff2') format('woff2');
+				font-style: normal;
+				font-weight: 400;
+				font-display: swap;
+			}
+			@font-face {
+				font-family: 'Poppins';
+				src: url('%sveltekit.assets%/fonts/web/poppins-700.woff2') format('woff2');
+				font-style: normal;
+				font-weight: 700;
+				font-display: swap;
+			}
+
+			/* Nunito Sans — the info screens' copy face in the design (page counter, card copy).
+			   One VARIABLE file covers 200-1000, the same download theme-park ships. */
+			@font-face {
+				font-family: 'Nunito Sans';
+				font-style: normal;
+				font-weight: 200 1000;
+				font-display: swap;
+				src: url('%sveltekit.assets%/fonts/web/nunito-sans-latin.woff2') format('woff2');
+				unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+					U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+					U+FEFF, U+FFFD;
+			}
+			@font-face {
+				font-family: 'Nunito Sans';
+				font-style: normal;
+				font-weight: 200 1000;
+				font-display: swap;
+				src: url('%sveltekit.assets%/fonts/web/nunito-sans-latin-ext.woff2') format('woff2');
+				unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+					U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+					U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+			}
+
 			/* One game-wide typeface, including shared HTML HUD, menus, and info modals. */
 			body,
 			body * {
 				font-family: 'Jersey 10', system-ui, sans-serif !important;
+			}
+
+			/* The opt-out. `body *` is a single element selector, so one class beats it even with
+			   both sides marked important — which is what lets a component ask for the copy face
+			   without the blanket rule above having to learn about every such component. */
+			.font-copy,
+			.font-copy * {
+				font-family: 'Poppins', system-ui, sans-serif !important;
+			}
+			/* The info screens' copy face, per their Figma frames ("use nunito font here too",
+			   user 2026-09-16). Same opt-out mechanism as .font-copy. */
+			.font-nunito,
+			.font-nunito * {
+				font-family: 'Nunito Sans', system-ui, sans-serif !important;
 			}
 		</style>
 		%sveltekit.head%

@@ -8,6 +8,12 @@ import { stateXstateDerived } from './stateXstate';
 import { playBet, convertToResumableBet } from './utils';
 import { stateGame, stateGameDerived } from './stateGame.svelte';
 
+// The trap-door exit and the bet request run side by side: the machine awaits onNewGameStart
+// before it calls the RGS, so waiting for the exit THERE put a whole network round trip between
+// the board emptying and the result raining in (a long bare board on a phone). The exit's wait
+// moves to onPlayGame instead, where it only holds the reveal back if the response beat it.
+let exitSettled: Promise<void> = Promise.resolve();
+
 const primaryMachines = createPrimaryMachines<Bet>({
 	onResumeGameActive: (betToResume) => convertToResumableBet(betToResume),
 	onResumeGameInactive: (betToResume) => {
@@ -21,9 +27,11 @@ const primaryMachines = createPrimaryMachines<Bet>({
 			return;
 		stateBet.winBookEventAmount = 0;
 		stateGameDerived.resetRound();
-		// Let the trap-door exit get most of the way out before the next result rains in — the two
-		// waves overlap slightly, so the board is never left bare (magnetic does the same).
-		await stateGameDerived.waitMotion(() => stateGameDerived.exitDurationMs() * 0.75);
+		// The exit plays on its own layer (the prototype's exit ghost), so the next result only
+		// waits for the old board to be visibly on its way out: the two waves overlap and the
+		// board is never bare — new symbols enter the top a beat after this, by which time the
+		// old top row has dropped clear (magnetic does the same).
+		exitSettled = stateGameDerived.waitMotion(() => stateGameDerived.exitDurationMs() * 0.35);
 	},
 	onNewGameError: () => stateGameDerived.settle(),
 	onPlayGame: async (bet) => {
@@ -33,6 +41,7 @@ const primaryMachines = createPrimaryMachines<Bet>({
 			stateGame.endRoundOnly = false;
 			return;
 		}
+		await exitSettled;
 		await playBet(bet);
 	},
 	checkIsBonusGame: (bet) =>

@@ -63,6 +63,10 @@ export default {
 	'AUTO SPIN': 'AUTO SPIN',
 	AUTOPLAY: 'AUTOPLAY',
 	'NUMBER OF SPINS': 'NUMBER OF SPINS',
+	// The autoplay panel's switch rows (design 9044:16058). Magnetic's approved catalogues
+	// carry both of these as AUTO TURBO / AUTO SUPER TURBO, so createLocale sources them.
+	'TURBO SPIN': 'TURBO SPIN',
+	'SUPER TURBO SPIN': 'SUPER TURBO SPIN',
 	'START AUTOPLAY': 'START AUTOPLAY',
 	'AUTOPLAY STOP NOTE': 'Autoplay stops when the selected spin count is complete.',
 	'DECREASE BET': 'DECREASE BET',
@@ -153,8 +157,13 @@ export default {
 	'FEATURES AND AUTOPLAY TEXT':
 		'Bonus opens all feature modes. Purchased modes require confirmation. Extra Chance toggles directly. Autoplay requires selecting a spin count and confirming Start Autoplay.',
 	DISCLAIMER: 'DISCLAIMER',
+	// Engine's own General Game Disclaimer, verbatim from
+	// https://stake-engine.com/docs/approval-guidelines/general-disclaimer. Reviewers diff this
+	// against that template, and the closing mark is "Engine" — never "Stake Engine", which is
+	// the operator's brand and does not belong in a game's legal text. Every other locale already
+	// carried the full paragraph; English alone had been paraphrased and lost two sentences.
 	'DISCLAIMER TEXT':
-		'Malfunction voids wins and plays. A stable internet connection is required; reload to complete interrupted rounds. RTP is a long-run expectation. Browser visuals do not determine settlement. Payouts are determined by the RGS response.',
+		'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Engine.',
 	'PAYTABLE CHANCE TEXT': '2× bet · 3× higher bonus chance.',
 	'PAYTABLE FEATURE TEXT': '20× bet · guaranteed winning cluster with increased multiplier chance.',
 	'PAYTABLE BONUS TEXT': '100× bet · 10 free spins on an 8×8 grid.',
@@ -198,5 +207,69 @@ export default {
 	'3 UNIQUE': '3 UNIQUE',
 	'SPLASH BONUS COPY': 'Normal Bonus · Super Bonus · Hidden Bonus',
 	'MAX WIN': 'MAX WIN',
+	'MAX WIN OF': 'OF',
 	'SPLASH MAX COPY': 'THE ULTIMATE GARDEN PRIZE',
+	// Info pages 3-6 (Figma 9044:13911, 9044:14451, 9044:14691, 9044:14931). Copy is the design's
+	// own text; the legal card reuses DISCLAIMER TEXT so the Engine template stays in one place.
+	'INFO WAYS TO WIN': 'WAYS TO WIN',
+	'INFO FEATURE BUY': 'FEATURE BUY',
+	'INFO GENERAL INFO': 'GENERAL INFO',
+	'INFO PAGE': 'Page',
+	'INFO FEAT CLUSTER TITLE': 'CLUSTER WINS',
+	'INFO FEAT CLUSTER TEXT':
+		'Wins are formed by landing 5 or more matching symbols connected horizontally or vertically. Only symbols directly connected to the same cluster are counted together. Larger clusters award higher payouts according to the Paytable. More than one winning cluster can be formed during the same spin.',
+	'INFO FEAT TUMBLE TITLE': 'TUMBLE FEATURE',
+	'INFO FEAT TUMBLE TEXT':
+		'After a winning cluster is formed, all symbols involved in the win are removed from the grid. The remaining symbols fall down to fill the empty positions and new symbols enter from above.\n\nIf the new symbol layout creates another winning cluster, another win is awarded and the Tumble continues. Tumbles continue until no new winning clusters are formed.',
+	'INFO FEAT MULT TITLE': 'RANDOM MULTIPLIER FEATURE',
+	'INFO FEAT MULT TEXT':
+		'During the Base Game, symbols involved in a winning cluster have a random chance to carry a 2x Multiplier. If more than one Multiplier appears in the same winning cluster, the Multiplier values multiply together.\n\nThe maximum combined Multiplier is 256x.\n\nDuring the Bonus Features, winning symbols have an increased chance of carrying Multipliers and can carry either 2x or 4x Multipliers. Multiple Multipliers can combine up to the maximum of 256x.',
+	'INFO FEAT NORMAL TEXT':
+		'The Normal Bonus is played on an 8x8 grid. The larger grid creates more opportunities for bigger clusters, more Tumbles and stronger win sequences.\n\nThe Random Multiplier Feature remains active during the bonus. Winning symbols have an increased chance of carrying Multipliers.',
+	'INFO FEAT SUPER TEXT':
+		'The Super Bonus is played on a 9x9 grid. The larger playing area creates even more opportunities for simultaneous clusters, long Tumble sequences and stronger Multiplier combinations.\n\nThe Random Multiplier Feature remains active during the bonus. Winning symbols have an increased chance of carrying Multipliers.',
+	'INFO FEAT HIDDEN TEXT':
+		'The Hidden Bonus is played on a 10x10 grid. This is the rarest and most powerful Bonus Feature. The expanded grid creates the highest possible number of symbol positions and the greatest potential for large clusters, repeated Tumbles and powerful Multiplier combinations.\n\nThe Random Multiplier Feature remains active during the bonus. Winning symbols have an increased chance of carrying Multipliers. The Hidden Bonus cannot be purchased directly.',
+	'INFO WTW CLUSTER TEXT':
+		'Wins are formed by connecting 5 or more identical vegetable symbols horizontally or vertically.\nDiagonal symbols do not connect.\nEach connected winning cluster is paid according to the Paytable.',
+	'INFO WTW TUMBLES TITLE': 'TUMBLES',
+	'INFO WTW TUMBLES TEXT':
+		'After a win, all winning symbols are removed.\nThe remaining symbols fall into the empty positions and new symbols enter from above.\nIf another winning cluster is formed, another Tumble occurs.\nTumbles continue until no new winning cluster is formed.',
+	'INFO WTW TRIGGERS TITLE': 'BONUS TRIGGERS',
+	'INFO WTW TRIGGERS TEXT':
+		'Land 3 Scatters to trigger the Normal Bonus on an 8×8 grid with 10 Free Spins.\nLand 4 Scatters to trigger the Super Bonus on a 9×9 grid with 10 Free Spins.\nLand 5 or more Scatters to trigger the Hidden Bonus on a 10×10 grid with 10 Free Spins.\nScatters can appear on the initial grid or during Tumbles.',
+	'INFO WTW RETRIGGERS TITLE': 'RETRIGGERS',
+	'INFO WTW RETRIGGERS TEXT':
+		'During Free Spins, landing 3 or more Scatters awards additional Free Spins.\n3 Scatters = +10 Free Spins\n4 Scatters = +11 Free Spins\n5 Scatters = +12 Free Spins\n6 Scatters = +13 Free Spins\n7 or more Scatters = +14 Free Spins\nRetriggers can occur more than once during the same bonus and do not change the current bonus tier.',
+	'INFO WTW MAXWIN TEXT':
+		'The maximum win is 25,000x the selected base bet.\nWhen the maximum win is reached, the current game round or Free Spins feature ends immediately and the maximum amount is awarded.',
+	'INFO FB NORMAL TITLE': 'Normal Bonus Buy',
+	'INFO FB NORMAL TEXT':
+		'Costs 100x the selected bet and awards direct entry to the Normal Bonus on the 8x8 grid.',
+	'INFO FB SUPER TITLE': 'Super Bonus Buy',
+	'INFO FB SUPER TEXT':
+		'Costs 400x the selected bet and awards direct entry to the Super Bonus on the 9x9 grid.',
+	'INFO FB MYSTERY TITLE': 'Mystery Bonus Buy',
+	'INFO FB MYSTERY TEXT':
+		'Costs 300x the selected bet and randomly awards one of the following Bonus Features:\n60% chance of Normal Bonus, 30% chance of Super Bonus, 10% chance of Hidden Bonus\nThe Hidden Bonus cannot be purchased directly and can only be obtained through a natural trigger or through the Mystery Bonus Buy.',
+	'INFO GI INTERRUPTED TITLE': 'INTERRUPTED ROUNDS',
+	'INFO GI INTERRUPTED TEXT':
+		'If a game round is interrupted, it will continue when the game is reloaded, where possible. All valid wagers and potential winnings remain active until the round is fully completed.',
+	'INFO GI LEGAL TITLE': 'LEGAL NOTICE',
+	// Overview (9025:7456) and paytable (9043:10866) as redrawn 2026-09-16: one intro paragraph,
+	// two stat rows, two feature cards, and a scatter card whose copy is the design's own text.
+	'INFO OV BODY':
+		'Veggie Salad is played on a 7x7 grid in the Base Game. Wins are created by landing 5 or more matching symbols connected horizontally or vertically. Winning symbols are removed and replaced through the Tumble Feature, allowing multiple consecutive wins from a single spin.',
+	'INFO OV MAXWIN LABEL': 'Maximum Win',
+	'INFO OV MAXWIN VALUE': '25,000× bet',
+	'INFO OV RTP LABEL': 'Theoretical RTP',
+	'INFO OV MULT TITLE': 'Random Multipliers',
+	'INFO OV MULT TEXT':
+		'Can appear on winning symbols and combine to increase the value of a winning cluster.',
+	'INFO OV BONUS TITLE': 'Bonus Features',
+	'INFO OV BONUS TEXT':
+		'Expand the grid to 8x8, 9x9 or 10x10 depending on the Bonus Feature triggered.',
+	'INFO PT SCATTER TITLE': 'SCATTER SYMBOL',
+	'INFO PT SCATTER TEXT':
+		'Scatter symbols can appear anywhere on the grid. Landing 3 Scatter symbols triggers the Normal Bonus. Landing 4 Scatter symbols triggers the Super Bonus. Landing 5 Scatter symbols triggers the Hidden Bonus.\nEach Bonus Feature awards 10 Free Spins.',
 };

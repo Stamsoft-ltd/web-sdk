@@ -82,7 +82,9 @@ const prepareBonusGrid = (size: 7 | 8 | 9 | 10) => {
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
 	restoreSnapshot: async (event: BookEventOfType<'restoreSnapshot'>) => {
 		if (event.board) stateGameDerived.setBoard({ board: event.board, gameType: event.gameType });
-		stateGame.gridSize = event.gridSize;
+		// A resume book that omits gridSize would otherwise write `undefined` straight into the
+		// `--grid-size` custom property and collapse the board; keep whatever size is already set.
+		if (event.gridSize) stateGame.gridSize = event.gridSize;
 		stateGame.gameType = event.gameType;
 		stateGame.bonusTier = event.tier;
 		stateGame.roundWin = event.tier
@@ -125,6 +127,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 		stateGame.phase = 'transition';
 		stateGame.bonusTier = event.tier;
+		stateGame.bonusSource = event.source;
 		prepareBonusGrid(event.gridSize);
 		stateGame.gameType = event.tier;
 		stateGame.freeSpinCurrent = 0;
@@ -275,6 +278,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateBet.activeBetModeKey = 'BASE';
 		}
 		stateGame.bonusTier = null;
+		stateGame.bonusSource = null;
 		// Return visual/runtime mode with the bonus, rather than waiting for the next BASE reveal.
 		// Otherwise the post-bonus idle screen keeps the previous tier's background grading.
 		stateGame.gameType = 'basegame';

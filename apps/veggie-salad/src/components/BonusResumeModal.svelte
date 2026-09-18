@@ -30,7 +30,7 @@
 <div class="resume-overlay">
 	<section class="resume-card" role="dialog" aria-modal="true" aria-labelledby="resume-title">
 		<h2 id="resume-title">{t('UNFINISHED ROUND')}</h2>
-		<p>{bodyParts[0]}<strong>{modeLabel}</strong>{bodyParts[1] ?? ''}</p>
+		<p class="font-copy">{bodyParts[0]}<strong>{modeLabel}</strong>{bodyParts[1] ?? ''}</p>
 		<div class="actions">
 			<button class="secondary" type="button" disabled={ending} onclick={endRound}
 				>{ending ? '…' : t('END ROUND')}</button
@@ -41,6 +41,11 @@
 </div>
 
 <style>
+	/* Design 9024:5943. The dialog is the same slab the rest of this game's panels are built from —
+	   a 604x294 box of #351E01 inside a 3px #935901 border — so it is sized the same way: one `--u`
+	   unit equal to a design pixel, and every measurement below is that frame's own. Sizing the
+	   parts independently is what made this one read as a different game: a gold-and-green plaque
+	   with brown slab buttons, none of which appear in the design. */
 	.resume-overlay {
 		position: fixed;
 		inset: 0;
@@ -48,106 +53,90 @@
 		display: grid;
 		place-items: center;
 		padding: 18px;
-		background: rgb(4 14 7 / 76%);
+		background: rgb(6 3 0 / 62%);
 	}
 	.resume-card {
-		width: min(620px, 94vw);
-		max-height: calc(100svh - 36px);
+		--u: calc(min(604px, 92vw, 118svh) / 604);
+		box-sizing: border-box;
+		width: calc(604 * var(--u));
+		max-height: calc(100svh - 24px);
 		overflow-y: auto;
-		padding: clamp(24px, 5vw, 48px);
-		border: 8px solid #321304;
-		background: #31521c;
-		box-shadow:
-			inset 0 0 0 5px #e5a538,
-			inset 0 0 0 10px #6d3510,
-			8px 8px 0 rgb(16 6 1 / 72%);
-		color: #fff;
+		padding: calc(32 * var(--u)) calc(30 * var(--u)) calc(38 * var(--u));
+		border: calc(3 * var(--u)) solid #935901;
+		border-radius: calc(12 * var(--u));
+		background: #351e01;
+		box-shadow: none;
+		color: #f2cb8c;
 		font-family: 'Jersey 10', monospace;
 		text-align: center;
-		image-rendering: pixelated;
 	}
 	h2 {
-		margin: 0 0 20px;
-		color: #ffd052;
-		font-size: clamp(24px, 5vw, 46px);
+		margin: 0;
+		color: #f2a52f;
+		font-size: calc(52 * var(--u));
+		font-weight: 400;
 		line-height: 1;
-		text-shadow: 4px 4px 0 #4b2207;
+		text-shadow: none;
 	}
 	p {
-		margin: 0 auto 28px;
-		max-width: 480px;
-		font-size: clamp(14px, 2.2vw, 21px);
-		line-height: 1.5;
+		margin: calc(40 * var(--u)) auto calc(36 * var(--u));
+		max-width: calc(440 * var(--u));
+		color: #f2cb8c;
+		font-size: calc(19 * var(--u));
+		line-height: 1.6;
 	}
 	strong {
-		color: #ffe463;
+		color: #f2a52f;
+		font-weight: 700;
 	}
 	.actions {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 14px;
+		gap: calc(15 * var(--u));
 	}
 	button {
-		min-height: 52px;
-		border: 4px solid #3b1905;
-		padding: 10px 16px;
-		border-radius: 0;
-		color: #fff;
-		font:
-			900 clamp(12px, 2vw, 18px) 'Jersey 10',
-			monospace;
+		display: grid;
+		place-items: center;
+		box-sizing: border-box;
+		min-height: calc(60 * var(--u));
+		padding: calc(8 * var(--u)) calc(12 * var(--u));
+		border: 0;
+		border-radius: calc(8 * var(--u));
+		font-family: 'Jersey 10', monospace;
+		font-size: calc(21 * var(--u));
+		font-weight: 400;
+		letter-spacing: calc(0.6 * var(--u));
+		line-height: 1;
 		cursor: pointer;
 	}
-	.primary {
-		background: #ed9300;
-	}
+	/* Design 9024:5943 gives the destructive action an outline and the safe one the fill. */
 	.secondary {
-		background: #54280b;
+		border: calc(1 * var(--u)) solid #935906;
+		background: #361e01;
+		color: #f2cb8c;
+	}
+	.primary {
+		background: #e38b01;
+		color: #fff;
 	}
 	button:disabled {
 		opacity: 0.55;
 		cursor: default;
 	}
+	/* The whole dialog is one drawing, so the small shells only narrow `--u` — nothing inside it
+	   is re-sized on its own. */
 	@media (max-width: 460px) {
-		.actions {
-			grid-template-columns: 1fr;
+		.resume-card {
+			--u: calc(min(388px, 100vw - 8px, (100dvh - 8px) * 604 / 294) / 604);
 		}
 	}
-
 	@media (max-width: 520px) and (max-height: 300px) and (orientation: landscape) {
 		.resume-overlay {
 			padding: 4px;
 		}
 		.resume-card {
-			width: min(360px, calc(100vw - 8px));
+			--u: calc(min(604px, 100vw - 16px, (100svh - 16px) * 604 / 294) / 604);
 			max-height: calc(100dvh - 8px);
-			padding: 10px 12px;
-			border-width: 4px;
-			box-shadow:
-				inset 0 0 0 2px #e5a538,
-				inset 0 0 0 5px #6d3510,
-				3px 3px 0 rgb(16 6 1 / 72%);
-			overflow: auto;
-		}
-		h2 {
-			margin-bottom: 6px;
-			font-size: 16px;
-			text-shadow: 2px 2px 0 #4b2207;
-		}
-		p {
-			margin-bottom: 7px;
-			font-size: 8px;
-			line-height: 1.2;
-		}
-		.actions {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: 6px;
-		}
-		button {
-			min-height: 28px;
-			padding: 3px 6px;
-			border-width: 2px;
-			font-size: 8px;
 		}
 	}
 </style>

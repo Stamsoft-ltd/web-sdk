@@ -28,6 +28,10 @@ export default createLocale(source, {
 	multiplierText: 'Mọi hệ số trong cụm thắng được nhân với nhau và áp dụng cho phần thắng.',
 	bonusRule:
 		'3 scatter kích hoạt Thưởng Thường, 4 kích hoạt Siêu Thưởng; Thưởng Ẩn dùng bảng 10×10.',
+	legalMark: 'TM và © 2026 Engine.',
+	board: 'BÀN CHƠI',
+	symbol: 'BIỂU TƯỢNG',
+	deactivate: 'TẮT',
 	controls: 'ĐIỀU KHIỂN',
 	splashGarden: 'Tạo cụm, thả rau củ và khám phá bất ngờ trong khu vườn.',
 });

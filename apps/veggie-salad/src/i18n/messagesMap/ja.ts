@@ -34,6 +34,10 @@ export default createLocale(source, {
 	multiplierTitle: 'マルチプライヤー',
 	multiplierText: '当選クラスター内の倍率はすべて掛け合わされ、その配当に適用されます。',
 	bonusRule: 'スキャッター3個でノーマル、4個でスーパーが発動。隠しボーナスは10×10盤です。',
+	legalMark: 'TM および © 2026 Engine。',
+	board: 'ボード',
+	symbol: 'シンボル',
+	deactivate: '無効にする',
 	controls: '操作',
 	splashGarden: 'クラスターを作り、野菜を落として、ガーデンの驚きを見つけよう。',
 });

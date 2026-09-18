@@ -6,6 +6,8 @@
 	import { stateI18nDerived, stateMeta, stateUi } from 'state-shared';
 
 	import EnableGameActor from './EnableGameActor.svelte';
+	import EnableSound from './EnableSound.svelte';
+	import Sound from './Sound.svelte';
 	import ResumeBet from './ResumeBet.svelte';
 	import VeggieSaladPrototype from './prototype/VeggieSaladPrototype.svelte';
 	import PixelEventOverlay from './PixelEventOverlay.svelte';
@@ -16,6 +18,27 @@
 	import ReplayHud from './replay/ReplayHud.svelte';
 	import PendingRoundRecovery from './PendingRoundRecovery.svelte';
 	import { stateGame, stateGameDerived } from '../game/stateGame.svelte';
+	import { playBookEvents } from '../game/utils';
+	import type { BookEvent } from '../game/typesBookEvent';
+
+	// Dev-only: lets a headless check play a hand-written book (a tumble, a bonus entry) through
+	// the real handlers without an RGS — the mock RGS has no veggie route.
+	if (import.meta.env.DEV && typeof window !== 'undefined') {
+		(window as unknown as { __veggieBook?: (events: BookEvent[]) => Promise<void> }).__veggieBook =
+			(events) => playBookEvents(events);
+		// The same, with the spin's trap-door exit in front, as the bet machine would play it.
+		(
+			window as unknown as {
+				__veggieSpin?: (events: BookEvent[], holdMs?: number) => Promise<void>;
+			}
+		).__veggieSpin = async (events, holdMs = 0) => {
+			stateGameDerived.resetRound();
+			const exit = stateGameDerived.waitMotion(() => stateGameDerived.exitDurationMs() * 0.35);
+			await new Promise((resolve) => setTimeout(resolve, holdMs));
+			await exit;
+			await playBookEvents(events);
+		};
+	}
 
 	let loading = $state(true);
 	let splashVisible = $state(false);
@@ -40,7 +63,7 @@
 		acknowledgePresentation();
 	};
 
-	const symbol = (name: string) => `./assets/veggie-salad/pixel/${name}.png`;
+	const symbol = (name: string) => `./assets/veggie-salad/pixel/${name}.webp`;
 	const infoDir = './assets/veggie-salad/pixel/info';
 	const infoFrame = `${infoDir}/overview_frame.webp`;
 	const infoPanel = `${infoDir}/panel_wood_bg.webp`;
@@ -411,14 +434,22 @@
 			{
 				kind: 'overview',
 				frame: infoFrame,
-				background: './assets/veggie-salad/pixel/background.png',
+				background: './assets/veggie-salad/pixel/background.webp',
 				title: t('INFO OVERVIEW'),
-				body: `${t('RULE CLUSTER TEXT')}\n${t('RULE TUMBLE TEXT')}`,
+				// Design 9025:7456 (2026-09-16): one intro paragraph, the max-win and RTP rows, and two
+				// feature cards. The stat icons are not drawn; they only satisfy the shared type.
+				body: t('INFO OV BODY'),
 				stats: [
-					{ icon: infoIcon('icon_reels'), value: '7×7–10×10', label: t('BOARD') },
-					{ icon: infoIcon('icon_paylines'), value: '5+', label: t('RULE CLUSTER TITLE') },
-					{ icon: infoIcon('icon_maxwin'), value: '25,000×', label: t('MAX WIN') },
-					{ icon: infoIcon('icon_rtp'), value: '96.10%', label: 'RTP' },
+					{
+						icon: infoIcon('icon_maxwin'),
+						value: t('INFO OV MAXWIN VALUE'),
+						label: t('INFO OV MAXWIN LABEL'),
+					},
+					{ icon: infoIcon('icon_rtp'), value: '96.10%', label: t('INFO OV RTP LABEL') },
+				],
+				cards: [
+					{ title: t('INFO OV MULT TITLE'), text: t('INFO OV MULT TEXT') },
+					{ title: t('INFO OV BONUS TITLE'), text: t('INFO OV BONUS TEXT') },
 				],
 			},
 			{
@@ -567,12 +598,80 @@
 						],
 					},
 				],
+				// The scatter card beside the table (9043:11918) carries the design's own copy verbatim.
 				cards: [
-					{ icon: symbol('scatter'), title: t('SCATTER'), text: t('RULE BONUS TEXT') },
 					{
-						icon: symbol('corn'),
-						title: t('RULE MULTIPLIER TITLE'),
-						text: t('RULE MULTIPLIER TEXT'),
+						icon: symbol('scatter'),
+						title: t('INFO PT SCATTER TITLE'),
+						text: t('INFO PT SCATTER TEXT'),
+					},
+				],
+			},
+			{
+				kind: 'features',
+				frame: infoFrame,
+				background: infoPanel,
+				title: t('FEATURES'),
+				cards: [
+					{ title: t('INFO FEAT CLUSTER TITLE'), text: t('INFO FEAT CLUSTER TEXT') },
+					{ title: t('INFO FEAT TUMBLE TITLE'), text: t('INFO FEAT TUMBLE TEXT') },
+					{ title: t('INFO FEAT MULT TITLE'), text: t('INFO FEAT MULT TEXT') },
+					{ title: t('BONUS TIER NORMAL'), text: t('INFO FEAT NORMAL TEXT') },
+					{ title: t('BONUS TIER SUPER'), text: t('INFO FEAT SUPER TEXT') },
+					{ title: t('BONUS TIER HIDDEN'), text: t('INFO FEAT HIDDEN TEXT') },
+				],
+			},
+			{
+				kind: 'ways',
+				frame: infoFrame,
+				background: infoPanel,
+				title: t('INFO WAYS TO WIN'),
+				cards: [
+					{ title: t('INFO FEAT CLUSTER TITLE'), text: t('INFO WTW CLUSTER TEXT') },
+					{ title: t('INFO WTW TUMBLES TITLE'), text: t('INFO WTW TUMBLES TEXT') },
+					{ title: t('INFO WTW TRIGGERS TITLE'), text: t('INFO WTW TRIGGERS TEXT') },
+					{ title: t('INFO WTW RETRIGGERS TITLE'), text: t('INFO WTW RETRIGGERS TEXT') },
+					{ title: t('MAX WIN'), text: t('INFO WTW MAXWIN TEXT') },
+				],
+			},
+			{
+				kind: 'featurebuy',
+				frame: infoFrame,
+				background: infoPanel,
+				title: t('INFO FEATURE BUY'),
+				cards: [
+					{
+						icon: `${infoDir}/fb_normal.svg`,
+						title: t('INFO FB NORMAL TITLE'),
+						text: t('INFO FB NORMAL TEXT'),
+					},
+					{
+						icon: `${infoDir}/fb_super.svg`,
+						title: t('INFO FB SUPER TITLE'),
+						text: t('INFO FB SUPER TEXT'),
+					},
+					{
+						icon: infoIcon('fb_mystery'),
+						title: t('INFO FB MYSTERY TITLE'),
+						text: t('INFO FB MYSTERY TEXT'),
+					},
+				],
+			},
+			{
+				kind: 'general',
+				frame: infoFrame,
+				background: infoPanel,
+				title: t('INFO GENERAL INFO'),
+				cards: [
+					{
+						icon: `${infoDir}/icon_interrupted.svg`,
+						title: t('INFO GI INTERRUPTED TITLE'),
+						text: t('INFO GI INTERRUPTED TEXT'),
+					},
+					{
+						icon: `${infoDir}/icon_legal.svg`,
+						title: t('INFO GI LEGAL TITLE'),
+						text: t('DISCLAIMER TEXT'),
 					},
 				],
 			},
@@ -581,36 +680,67 @@
 				frame: infoFrame,
 				background: infoPanel,
 				title: t('INFO UI GUIDE'),
+				// Design 9044:15707 draws each control as a light glyph on a dark disc; the spin
+				// button alone keeps its amber face (theme 'gold').
 				cards: [
-					{ icon: infoIcon('ui_spin'), title: t('INFO CTRL SPIN'), text: t('INFO CTRL SPIN DESC') },
-					{ icon: infoIcon('ui_auto'), title: t('INFO CTRL AUTO'), text: t('INFO CTRL AUTO DESC') },
 					{
-						icon: infoIcon('ui_turbo'),
+						icon: infoIcon('ui_glyph_spin'),
+						theme: 'gold',
+						title: t('INFO CTRL SPIN'),
+						text: t('INFO CTRL SPIN DESC'),
+					},
+					{
+						icon: `${infoDir}/ui_glyph_auto.svg`,
+						title: t('INFO CTRL AUTO'),
+						text: t('INFO CTRL AUTO DESC'),
+					},
+					{
+						icon: infoIcon('ui_glyph_turbo'),
 						title: t('INFO CTRL TURBO'),
 						text: t('INFO CTRL TURBO DESC'),
 					},
-					{ icon: infoIcon('ui_plus'), title: t('INFO CTRL PLUS'), text: t('INFO CTRL PLUS DESC') },
 					{
-						icon: infoIcon('ui_minus'),
+						icon: `${infoDir}/ui_glyph_betplus.svg`,
+						title: t('INFO CTRL PLUS'),
+						text: t('INFO CTRL PLUS DESC'),
+					},
+					{
+						icon: `${infoDir}/ui_glyph_betminus.svg`,
 						title: t('INFO CTRL MINUS'),
 						text: t('INFO CTRL MINUS DESC'),
 					},
-					{ icon: infoIcon('ui_info'), title: t('INFO CTRL INFO'), text: t('INFO CTRL INFO DESC') },
 					{
-						icon: infoIcon('ui_sound'),
+						icon: `${infoDir}/ui_glyph_info.svg`,
+						title: t('INFO CTRL INFO'),
+						text: t('INFO CTRL INFO DESC'),
+					},
+					{
+						icon: `${infoDir}/ui_glyph_sound.svg`,
 						title: t('INFO CTRL SOUND'),
 						text: t('INFO CTRL SOUND DESC'),
 					},
-					{ icon: infoIcon('ui_prev'), title: t('INFO CTRL PREV'), text: t('INFO CTRL PREV DESC') },
-					{ icon: infoIcon('ui_next'), title: t('INFO CTRL NEXT'), text: t('INFO CTRL NEXT DESC') },
 					{
-						icon: infoIcon('ui_close'),
+						icon: `${infoDir}/ui_glyph_arrow.svg`,
+						title: t('INFO CTRL PREV'),
+						text: t('INFO CTRL PREV DESC'),
+					},
+					{
+						icon: `${infoDir}/ui_glyph_arrow_next.svg`,
+						title: t('INFO CTRL NEXT'),
+						text: t('INFO CTRL NEXT DESC'),
+					},
+					{
+						icon: `${infoDir}/ui_glyph_close.svg`,
 						title: t('INFO CTRL CLOSE'),
 						text: t('INFO CTRL CLOSE DESC'),
 					},
-					{ icon: infoIcon('ui_menu'), title: t('INFO CTRL MENU'), text: t('INFO CTRL MENU DESC') },
 					{
-						icon: infoIcon('ui_music'),
+						icon: `${infoDir}/ui_glyph_menu.svg`,
+						title: t('INFO CTRL MENU'),
+						text: t('INFO CTRL MENU DESC'),
+					},
+					{
+						icon: `${infoDir}/ui_glyph_music.svg`,
 						title: t('INFO CTRL MUSIC'),
 						text: t('INFO CTRL MUSIC DESC'),
 					},
@@ -624,6 +754,10 @@
 
 {#if started}
 	<EnableGameActor />
+	<!-- Audio mounts with play, after the splash click: the first user gesture the Web Audio
+	     context needs has happened by then, so the base loop starts straight away. -->
+	<EnableSound />
+	<Sound />
 	<StakeSync />
 	<EnableHotkey />
 	<VeggieSaladPrototype />

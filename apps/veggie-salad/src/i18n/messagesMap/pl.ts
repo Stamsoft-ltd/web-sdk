@@ -26,6 +26,10 @@ export default createLocale(source, {
 	multiplierTitle: 'MNOŻNIKI',
 	multiplierText: 'Wszystkie mnożniki w wygrywającym klastrze są mnożone i stosowane do wygranej.',
 	bonusRule: '3 scatter uruchamiają Zwykły Bonus, 4 Super Bonus; Ukryty Bonus używa planszy 10×10.',
+	legalMark: 'TM oraz © 2026 Engine.',
+	board: 'PLANSZA',
+	symbol: 'SYMBOL',
+	deactivate: 'DEZAKTYWUJ',
 	controls: 'STEROWANIE',
 	splashGarden: 'Twórz klastry, zrzucaj warzywa i odkrywaj ogrodowe niespodzianki.',
 });

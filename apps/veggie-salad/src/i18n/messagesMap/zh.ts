@@ -26,6 +26,10 @@ export default createLocale(source, {
 	multiplierTitle: '倍数',
 	multiplierText: '中奖集群中的所有倍数相乘，并应用于该集群赢分。',
 	bonusRule: '3个分散符号触发普通奖励，4个触发超级奖励；隐藏奖励使用10×10棋盘。',
+	legalMark: 'TM 和 © 2026 Engine。',
+	board: '棋盘',
+	symbol: '符号',
+	deactivate: '停用',
 	controls: '操作说明',
 	splashGarden: '组成集群，让蔬菜下落并发现花园惊喜。',
 });

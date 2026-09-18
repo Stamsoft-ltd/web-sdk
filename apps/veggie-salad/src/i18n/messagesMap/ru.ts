@@ -7,6 +7,7 @@ export default createLocale(source, {
 	earned: 'НАКОПЛЕНО',
 	garden: 'САД',
 	welcome: 'ДОБРО ПОЖАЛОВАТЬ В',
+	maxWinOf: 'ДО',
 	gameBoard: 'Игровое поле Veggie Salad',
 	clusterPayouts: 'КЛАСТЕРНЫЕ ВЫИГРЫШИ',
 	vegetables: [
@@ -36,6 +37,10 @@ export default createLocale(source, {
 	multiplierText: 'Все множители в выигрышном кластере перемножаются и применяются к выигрышу.',
 	bonusRule:
 		'3 скаттера запускают обычный бонус, 4 — супербонус; скрытый бонус проходит на поле 10×10.',
+	legalMark: 'TM и © 2026 Engine.',
+	board: 'ПОЛЕ',
+	symbol: 'СИМВОЛ',
+	deactivate: 'ОТКЛЮЧИТЬ',
 	controls: 'УПРАВЛЕНИЕ',
 	splashGarden: 'Создавайте кластеры, обрушивайте овощи и находите сюрпризы сада.',
 });

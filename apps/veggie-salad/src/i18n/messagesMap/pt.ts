@@ -7,6 +7,7 @@ export default createLocale(source, {
 	earned: 'ACUMULADO',
 	garden: 'O JARDIM',
 	welcome: 'BEM-VINDO AO',
+	maxWinOf: 'DE',
 	gameBoard: 'Tabuleiro Veggie Salad',
 	clusterPayouts: 'PRÊMIOS DE GRUPOS',
 	vegetables: ['BRÓCOLIS', 'MILHO', 'TOMATE', 'BERINJELA', 'CENOURA', 'COUVE-FLOR', 'RABANETE'],
@@ -28,6 +29,10 @@ export default createLocale(source, {
 		'Todos os multiplicadores de um grupo vencedor são multiplicados e aplicados ao prêmio.',
 	bonusRule:
 		'3 scatters ativam o Bônus Normal, 4 o Super Bônus; o Bônus Oculto usa uma grade 10×10.',
+	legalMark: 'TM e © 2026 Engine.',
+	board: 'TABULEIRO',
+	symbol: 'SÍMBOLO',
+	deactivate: 'DESATIVAR',
 	controls: 'CONTROLES',
 	splashGarden: 'Forme grupos, derrube vegetais e descubra surpresas do jardim.',
 });

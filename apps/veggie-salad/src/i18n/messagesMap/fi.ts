@@ -35,6 +35,10 @@ export default createLocale(source, {
 	multiplierText: 'Voittoryhmän kaikki kertoimet kerrotaan keskenään ja sovelletaan voittoon.',
 	bonusRule:
 		'3 scatteria käynnistää normaalin bonuksen, 4 superbonuksen; piilobonus käyttää 10×10-ruudukkoa.',
+	legalMark: 'TM ja © 2026 Engine.',
+	board: 'PELILAUTA',
+	symbol: 'SYMBOLI',
+	deactivate: 'POISTA KÄYTÖSTÄ',
 	controls: 'OHJAIMET',
 	splashGarden: 'Muodosta ryhmiä, pudota vihanneksia ja löydä puutarhan yllätykset.',
 });

@@ -26,6 +26,10 @@ export default createLocale(source, {
 	multiplierTitle: 'المضاعفات',
 	multiplierText: 'تتضاعف جميع المضاعفات داخل المجموعة الرابحة وتُطبّق على ربحها.',
 	bonusRule: '3 رموز مبعثرة تمنح المكافأة العادية، و4 تمنح الخارقة، والمخفية تستخدم شبكة 10×10.',
+	legalMark: 'TM و © 2026 Engine.',
+	board: 'اللوحة',
+	symbol: 'الرمز',
+	deactivate: 'إلغاء التفعيل',
 	controls: 'عناصر التحكم',
 	splashGarden: 'كوّن مجموعات، وأسقط الخضروات، واكتشف مفاجآت الحديقة.',
 });

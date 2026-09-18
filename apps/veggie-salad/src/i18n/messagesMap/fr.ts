@@ -7,6 +7,7 @@ export default createLocale(source, {
 	earned: 'CUMULÉ',
 	garden: 'LE JARDIN',
 	welcome: 'BIENVENUE DANS',
+	maxWinOf: 'DE',
 	gameBoard: 'Grille de Veggie Salad',
 	clusterPayouts: 'GAINS DE GROUPES',
 	vegetables: ['BROCOLI', 'MAÏS', 'TOMATE', 'AUBERGINE', 'CAROTTE', 'CHOU-FLEUR', 'RADIS'],
@@ -29,6 +30,10 @@ export default createLocale(source, {
 		'Tous les multiplicateurs d’un groupe gagnant sont multipliés et appliqués au gain.',
 	bonusRule:
 		'3 scatters déclenchent le Bonus Normal, 4 le Super Bonus ; le Bonus Caché utilise une grille 10×10.',
+	legalMark: 'TM et © 2026 Engine.',
+	board: 'GRILLE',
+	symbol: 'SYMBOLE',
+	deactivate: 'DÉSACTIVER',
 	controls: 'COMMANDES',
 	splashGarden:
 		'Formez des groupes, faites tomber les légumes et découvrez les surprises du jardin.',

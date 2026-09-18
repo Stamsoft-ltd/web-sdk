@@ -27,6 +27,10 @@ export default createLocale(source, {
 	multiplierText: 'Kazanan kümedeki tüm çarpanlar birbiriyle çarpılır ve kazanca uygulanır.',
 	bonusRule:
 		'3 scatter Normal Bonusu, 4 scatter Süper Bonusu başlatır; Gizli Bonus 10×10 alan kullanır.',
+	legalMark: 'TM ve © 2026 Engine.',
+	board: 'TAHTA',
+	symbol: 'SEMBOL',
+	deactivate: 'DEVRE DIŞI BIRAK',
 	controls: 'KONTROLLER',
 	splashGarden: 'Kümeler oluştur, sebzeleri düşür ve bahçe sürprizlerini keşfet.',
 });

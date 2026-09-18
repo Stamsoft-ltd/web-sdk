@@ -7,6 +7,7 @@ export default createLocale(source, {
 	earned: 'ERSPIELT',
 	garden: 'DER GARTEN',
 	welcome: 'WILLKOMMEN IM',
+	maxWinOf: 'VON',
 	gameBoard: 'Veggie-Salad-Spielfeld',
 	clusterPayouts: 'CLUSTER-GEWINNE',
 	vegetables: ['BROKKOLI', 'MAIS', 'TOMATE', 'AUBERGINE', 'KAROTTE', 'BLUMENKOHL', 'RADIESCHEN'],
@@ -29,6 +30,10 @@ export default createLocale(source, {
 		'Alle Multiplikatoren in einem Gewinn-Cluster werden miteinander multipliziert und auf den Gewinn angewendet.',
 	bonusRule:
 		'3 Scatter lösen den normalen Bonus aus, 4 den Super-Bonus; der versteckte Bonus nutzt ein 10×10-Feld.',
+	legalMark: 'TM und © 2026 Engine.',
+	board: 'SPIELFELD',
+	symbol: 'SYMBOL',
+	deactivate: 'DEAKTIVIEREN',
 	controls: 'STEUERUNG',
 	splashGarden: 'Bilde Cluster, lass Gemüse fallen und entdecke Überraschungen im Garten.',
 });

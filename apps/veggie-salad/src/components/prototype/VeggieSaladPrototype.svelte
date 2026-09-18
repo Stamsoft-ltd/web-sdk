@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
+	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { OnHotkey } from 'components-shared';
 	import {
 		stateBet,
@@ -13,14 +15,49 @@
 	import { bookEventAmountToCurrencyString, numberToCurrencyString } from 'utils-shared/amount';
 
 	import { eventEmitter } from '../../game/eventEmitter';
-	import {
-		CLUSTER_LOG_SIZE,
-		stateGame,
-		stateGameDerived,
-	} from '../../game/stateGame.svelte';
+	import { CLUSTER_LOG_SIZE, stateGame, stateGameDerived } from '../../game/stateGame.svelte';
 	import { stateXstateDerived } from '../../game/stateXstate';
 	import { VEGGIE_SYMBOL_ASSETS } from '../../game/veggieAssets';
+	import { symbolLiveness } from '../../game/symbolLiveness';
 	import type { Position, RawSymbol } from '../../game/types';
+	import PixelInfoPanel from '../PixelInfoPanel.svelte';
+
+	/* ── Board-size swap ───────────────────────────────────────────────────────────────────────
+	   A bonus can move the board between 7x7 and 10x10, and `repeat()` takes an integer, so the new
+	   pitch cannot be interpolated — the grid has to be rebuilt. Rebuilding it alone reads as a cut:
+	   one frame of 10 columns, the next of 8. Instead the two grids cross-fade while each is scaled
+	   to the OTHER's pitch, so a cell's size changes at one continuous rate across the swap. Going
+	   10 -> 8 the outgoing grid grows by 10/8 as it fades and the incoming one starts at 8/10, which
+	   is exactly the pitch each of them has to reach. */
+	const GRID_SWAP_MS = 420;
+	let gridSwapFrom = $state(stateGame.gridSize);
+	let gridSwapSeen = stateGame.gridSize;
+	// Pre-effects run before the DOM is patched, so this still holds the size the outgoing grid was
+	// built at by the time the key block swaps and the transitions are created.
+	$effect.pre(() => {
+		const next = stateGame.gridSize;
+		if (next === gridSwapSeen) return;
+		gridSwapFrom = gridSwapSeen;
+		gridSwapSeen = next;
+	});
+	const gridSwapOut = (_node: Element) => {
+		const target = gridSwapFrom / stateGame.gridSize;
+		return {
+			duration: GRID_SWAP_MS,
+			easing: cubicIn,
+			css: (progress: number, remaining: number) =>
+				`transform: scale(${1 + (target - 1) * remaining}); opacity: ${progress};`,
+		};
+	};
+	const gridSwapIn = (_node: Element) => {
+		const start = stateGame.gridSize / gridSwapFrom;
+		return {
+			duration: GRID_SWAP_MS,
+			easing: cubicOut,
+			css: (progress: number, remaining: number) =>
+				`transform: scale(${1 + (start - 1) * remaining}); opacity: ${progress};`,
+		};
+	};
 
 	const t = (key: string) => stateI18nDerived.translate(key);
 
@@ -51,14 +88,8 @@
 			icon: 'tomato',
 			kind: 'buy',
 		},
-		{
-			key: 'MYSTERY',
-			title: 'MODE MYSTERY TITLE',
-			cost: 300,
-			tag: 'MODE MYSTERY TAG',
-			icon: 'onion',
-			kind: 'buy',
-		},
+		// Second row of the menu: SUPER before MYSTERY (user 2026-09-17), and the mystery card
+		// shows the design's gift box (9318:37405), not the scatter king.
 		{
 			key: 'SUPER',
 			title: 'MODE SUPER TITLE',
@@ -67,12 +98,20 @@
 			icon: 'corn',
 			kind: 'buy',
 		},
+		{
+			key: 'MYSTERY',
+			title: 'MODE MYSTERY TITLE',
+			cost: 300,
+			tag: 'MODE MYSTERY TAG',
+			icon: 'mystery-box',
+			kind: 'buy',
+		},
 	] as const;
 
 	const modeIconAsset = (icon: string) =>
 		icon === 'onion'
 			? `.${VEGGIE_SYMBOL_ASSETS.SCATTER}`
-			: `./assets/veggie-salad/pixel/${icon}.png`;
+			: `./assets/veggie-salad/pixel/${icon}.webp`;
 
 	function randomCloudDrift(node: HTMLElement) {
 		let animation: Animation | undefined;
@@ -131,6 +170,7 @@
 	let showAutoMenu = $state(false);
 	let pendingAutoSpins = $state<number>(100);
 	let showMenu = $state(false);
+	let showInfo = $state(false);
 
 	const isReplay = $derived(stateUi.config.mode === 'replay');
 	const isIdle = $derived(stateXstateDerived.isIdle());
@@ -160,6 +200,15 @@
 	const canChangeSpeed = $derived(
 		!isReplay && !controlsBlocked && !stateConfig.jurisdiction?.disabledTurbo,
 	);
+	/* Design 9298:294975 gives the turbo control three icon-only states, left to right: an outline
+	   bolt at normal speed, one solid bolt on turbo, two solid bolts on super turbo. No text label —
+	   the FAST/MAX caption under the bolt was this game's own invention. */
+	const turboIcon = $derived(
+		stateBet.isSuperTurbo ? 'turbo_max' : stateBet.isTurbo ? 'turbo_on' : 'turbo_off',
+	);
+	const turboLabel = $derived(
+		stateBet.isSuperTurbo ? t('MAX') : stateBet.isTurbo ? t('FAST') : t('TURBO'),
+	);
 	const soundMuted = $derived(stateSound.volumeValueMaster === 0);
 	const musicMuted = $derived(stateSound.volumeValueMusic === 0);
 	const winningKeys = $derived(
@@ -171,6 +220,14 @@
 	// On a bonus-entry spin the scatter COUNT is the announcement of which bonus was won, so it
 	// gets its own read-out under the board.
 	const scatterCount = $derived(stateGame.scatterPositions.length);
+	// Gardens by how the bonus was won (user, 2026-09-17: "butterflies are for normal bonus, wolf
+	// for super bonus and owl for mystery"): a NORMAL bonus plays in the purple dusk garden with
+	// the butterfly (9363:59335); the same tier reached through the Mystery pick plays in the
+	// sunset garden with the owl (9198:104316). SUPER is the night garden with the wolf whatever
+	// its source. The earlier wiring had these two the other way round.
+	const duskGarden = $derived(
+		stateGame.bonusTier === 'normal' && stateGame.bonusSource !== 'mystery',
+	);
 	// Visual theme follows the active bonus, not the last reveal's gameType. The latter remains the
 	// bonus type until the next base reveal, which previously left the base garden colour-graded
 	// after the bonus outro had closed.
@@ -188,6 +245,169 @@
 	// $derived, a skip press rewrites these custom properties on cells that are mid-fall, and the
 	// browser re-scales the running animation instead of dropping it: a fast-forward, not a cut.
 	const motion = $derived(stateGameDerived.motion());
+	/* Design 9235:181907. The cow sneaks in around the LEFT EDGE of the screen every so often,
+	   holds, blinks once or twice, then slips back out. Three phases rather than a boolean: `hidden`
+	   is the resting pose fully off-frame, and the two animations own the travel, because a sneak
+	   is not one easing curve — it is a long creep, a pause to check the coast, and then a commit.
+	   Two sprites only, so the blink is a frame swap rather than a tween, and one timer is ever
+	   outstanding, so a single clearTimeout unwinds the whole chain. */
+	const cowFrame = (name: string) => `./assets/veggie-salad/pixel/splash/${name}.webp`;
+	const cowRand = (min: number, max: number) => min + Math.random() * (max - min);
+	const COW_IN_MS = 1900;
+	const COW_OUT_MS = 950;
+	let cowPhase = $state<'hidden' | 'in' | 'out'>('hidden');
+	let cowBlinking = $state(false);
+	$effect(() => {
+		let timer: ReturnType<typeof setTimeout>;
+		const at = (ms: number, fn: () => void) => {
+			timer = setTimeout(fn, ms);
+		};
+		const leave = () => {
+			cowPhase = 'out';
+			at(COW_OUT_MS, () => {
+				cowPhase = 'hidden';
+				at(cowRand(12000, 26000), enter);
+			});
+		};
+		const blink = (again: number) => {
+			cowBlinking = true;
+			at(130, () => {
+				cowBlinking = false;
+				if (again > 0) at(180, () => blink(again - 1));
+				else at(cowRand(900, 1800), leave);
+			});
+		};
+		const enter = () => {
+			// The bonus gardens have their own creatures; the cow waits every feature out off-frame
+			// ("dont show the cow in bonuses", user 2026-09-17). Read here, in the timer, so the tier
+			// is not a dependency that restarts the chain.
+			if (stateGame.bonusTier) return at(cowRand(3000, 6000), enter);
+			cowPhase = 'in';
+			at(COW_IN_MS + cowRand(600, 1400), () => blink(Math.random() < 0.45 ? 1 : 0));
+		};
+		at(cowRand(4000, 9000), enter);
+		return () => clearTimeout(timer);
+	});
+
+	/* Design 9359:59247 ("vulk"). SUPER's wolf pup sits under the bonus readouts and behaves like
+	   a happy puppy that stays put ("dont make it jump", user): ears that flick one at a time or together, and
+	   eyes that wander an art pixel to either side and blink. The layers come from
+	   scripts/build-super-wolf.py and share one canvas, so every part is `inset: 0` and only the
+	   transform-origins know where an ear or an eye actually is. Same one-timer chain as the cow;
+	   it only runs while the tier is SUPER, because that is the only time the markup exists. */
+	const wolfLayer = (name: string) =>
+		`./assets/veggie-salad/pixel/background/bonus-super/wolf/${name}.webp`;
+	const butterflyLayer = (name: string) =>
+		`./assets/veggie-salad/pixel/background/bonus-normal/butterfly/${name}.webp`;
+	/* The sunset owl (9355:54123) is a watcher: it blinks, and every so often its eyes slide to
+	   one side and back. The rest of its life is CSS — a slow breath and the odd head cock. */
+	const owlLayer = (name: string) =>
+		`./assets/veggie-salad/pixel/background/bonus-normal/sunset/owl/${name}.webp`;
+	let owlGaze = $state(0);
+	let owlBlink = $state(false);
+	$effect(() => {
+		if (stateGame.bonusTier !== 'normal') return;
+		let timer: ReturnType<typeof setTimeout>;
+		const at = (ms: number, fn: () => void) => {
+			timer = setTimeout(fn, ms);
+		};
+		const beat = () => {
+			if (Math.random() < 0.6) {
+				owlBlink = true;
+				at(110, () => {
+					owlBlink = false;
+					if (Math.random() < 0.3) {
+						at(150, () => {
+							owlBlink = true;
+							at(110, () => {
+								owlBlink = false;
+								at(cowRand(1500, 4200), beat);
+							});
+						});
+					} else at(cowRand(1500, 4200), beat);
+				});
+			} else {
+				owlGaze = owlGaze === 0 ? (Math.random() < 0.5 ? -1 : 1) : 0;
+				at(cowRand(900, 2400), beat);
+			}
+		};
+		at(cowRand(800, 2000), beat);
+		return () => {
+			clearTimeout(timer);
+			owlGaze = 0;
+			owlBlink = false;
+		};
+	});
+	let wolfEars = $state<'' | 'l' | 'r' | 'lr'>('');
+	let wolfGaze = $state(0);
+	let wolfBlink = $state(false);
+	// The pup's feet stand on the bottom bar. Its box hangs from the readouts, so the distance from
+	// their underside to the bar is measured, not styled: the bar's offset differs per layout and
+	// the readouts' height per language, and neither is expressible from inside the grid.
+	let wolfDrop = $state(0);
+	$effect(() => {
+		if (stateGame.bonusTier !== 'super') return;
+		const measure = () => {
+			const readouts = document.querySelector('.scene .bonus-readouts');
+			const hud = document.querySelector('.scene footer.hud');
+			if (!readouts || !hud) return;
+			wolfDrop = Math.max(
+				0,
+				Math.round(hud.getBoundingClientRect().top - readouts.getBoundingClientRect().bottom),
+			);
+		};
+		measure();
+		const observer = new ResizeObserver(measure);
+		observer.observe(document.documentElement);
+		const readouts = document.querySelector('.scene .bonus-readouts');
+		if (readouts) observer.observe(readouts);
+		return () => observer.disconnect();
+	});
+	$effect(() => {
+		if (stateGame.bonusTier !== 'super') return;
+		let timer: ReturnType<typeof setTimeout>;
+		const at = (ms: number, fn: () => void) => {
+			timer = setTimeout(fn, ms);
+		};
+		const pick = (...items: string[]) => items[Math.floor(Math.random() * items.length)];
+		const beat = () => {
+			// One thing at a time, so the pup never looks like it is glitching: a flick, a glance,
+			// or a blink, each followed by a rest before the next.
+			const act = pick('ears', 'ears', 'gaze', 'gaze', 'blink');
+			if (act === 'ears') {
+				wolfEars = pick('l', 'r', 'lr', 'lr') as 'l' | 'r' | 'lr';
+				at(480, () => {
+					wolfEars = '';
+					at(cowRand(900, 2600), beat);
+				});
+			} else if (act === 'gaze') {
+				wolfGaze = wolfGaze === 0 ? (Math.random() < 0.5 ? -1 : 1) : 0;
+				at(cowRand(700, 1900), beat);
+			} else {
+				wolfBlink = true;
+				at(130, () => {
+					wolfBlink = false;
+					if (Math.random() < 0.35) {
+						at(170, () => {
+							wolfBlink = true;
+							at(130, () => {
+								wolfBlink = false;
+								at(cowRand(1200, 3200), beat);
+							});
+						});
+					} else at(cowRand(1200, 3200), beat);
+				});
+			}
+		};
+		at(cowRand(600, 1500), beat);
+		return () => {
+			clearTimeout(timer);
+			wolfEars = '';
+			wolfGaze = 0;
+			wolfBlink = false;
+		};
+	});
+
 	const ms = (value: number) => `${Math.round(value)}ms`;
 
 	// Per-cell drop timing. The spin reveal and the tumble refill share one gravity model — only
@@ -214,7 +434,15 @@
 			durationMs: stateGameDerived.fallDurationMs(stateGameDerived.exitDistance(row)),
 		});
 
+		// Idle breath. A deterministic per-cell phase — fallJitter is empty until the first tumble,
+		// so position has to carry it — keeps every vegetable on its own long cycle instead of
+		// letting the board pulse as one sheet.
+		const idlePhase = Math.abs((Math.sin(reel * 12.9898 + row * 78.233) * 43758.5453) % 1);
+		const idleDuration = 10000 + idlePhase * 8000;
+
 		return [
+			`--idle-duration:${ms(idleDuration)}`,
+			`--idle-delay:${ms(-idlePhase * idleDuration)}`,
 			`--fall-offset:${-105 * distance}%`,
 			`--fall-duration:${ms(drop.durationMs)}`,
 			`--fall-delay:${ms(drop.delayMs)}`,
@@ -247,6 +475,59 @@
 	const getCell = (reel: number, row: number): RawSymbol | null =>
 		stateGame.board[reel]?.[row] ?? null;
 	const keyOf = (reel: number, row: number) => `${reel}:${row}`;
+
+	/* Exit ghost. The trap-door exit used to run on the live cells, so the moment the next result
+	   arrived (and re-keyed every symbol) whatever was still falling simply vanished mid-board —
+	   and the result was held back until most of the exit had played, which left the board bare
+	   in between. Now the outgoing board is copied into its own layer the instant the exit starts,
+	   with each cell's exit timing frozen in its style, and that layer falls out on its own clock
+	   while the live board is free to rain the new symbols in over it. A skip during the exit
+	   re-freezes the timing with the cut applied (the jitter is still the exit's own until the
+	   reveal re-rolls it); a skip after the reveal drops the ghost, since the new board is about
+	   to be down anyway. */
+	type ExitGhost = {
+		id: number;
+		gridSize: number;
+		cells: { name: string | null; multiplier: number | undefined; style: string }[][];
+	};
+	let exitGhost = $state<ExitGhost | null>(null);
+	let exitGhostId = 0;
+	const snapshotExit = () => {
+		const gridSize = stateGame.gridSize;
+		const cells = Array.from({ length: gridSize }, (_, row) =>
+			Array.from({ length: gridSize }, (_, reel) => {
+				const cell = getCell(reel, row);
+				return {
+					name: cell?.name ?? null,
+					multiplier: cell?.multiplier,
+					style: cellMotion(reel, row),
+				};
+			}),
+		);
+		return { gridSize, cells };
+	};
+	$effect(() => {
+		if (stateGame.phase !== 'spinning-out') return;
+		const id = ++exitGhostId;
+		untrack(() => {
+			exitGhost = { id, ...snapshotExit() };
+			// The ghost outlives the phase on purpose; only its own clock takes it down.
+			setTimeout(() => {
+				if (exitGhost?.id === id) exitGhost = null;
+			}, stateGameDerived.exitDurationMs() + 120);
+		});
+	});
+	$effect(() => {
+		if (stateGame.skipRequestedAt <= 0) return;
+		untrack(() => {
+			if (!exitGhost) return;
+			if (stateGame.phase === 'spinning-out') {
+				exitGhost = { id: exitGhost.id, ...snapshotExit() };
+			} else {
+				exitGhost = null;
+			}
+		});
+	});
 	// Newest first, already capped by the handler. Rendered into a fixed number of slots, so the
 	// panel is the same size empty or full and a new win always lands in the top slot.
 	const clusterRows = $derived(stateGame.spinClusterWins.slice(0, CLUSTER_LOG_SIZE));
@@ -308,11 +589,23 @@
 		spinOrSkip();
 	};
 
-	// Holding Space is a temporary FAST override. Restore the player's selected speed on release,
+	// Holding Space keeps the game betting, round after round, until the key is released — the
+	// same contract as the shared EnableSpaceHold: `stateBet.isSpaceHold` makes the bet machine's
+	// checkSpaceHold step fetch the next round instead of ending, and the actor's onNewGameStart
+	// takes its fast path. Every game needs this (user, 2026-09-16); do not drop it on a redesign.
+	// The hold is also a temporary FAST override. Restore the player's selected speed on release,
 	// unless another flow (notably bonus entry) deliberately reset both speed flags meanwhile.
 	type SpeedSnapshot = { isTurbo: boolean; isSuperTurbo: boolean };
 	let spaceTurboSnapshot: SpeedSnapshot | null = null;
 	const startSpaceTurbo = () => {
+		if (isReplay) return;
+		if (!stateBet.isSpaceHold) {
+			stateBet.autoSpinsCounter = 0;
+			stateBet.isSpaceHold = true;
+			// The press that began this hold may have been a skip on a running round, or landed
+			// in the idle gap between autoplay rounds; the loop needs a round in flight to extend.
+			if (isIdle && !controlsBlocked) spinOrSkip();
+		}
 		if (!canChangeSpeed || spaceTurboSnapshot) return;
 		spaceTurboSnapshot = {
 			isTurbo: stateBet.isTurbo,
@@ -322,6 +615,8 @@
 		stateBet.isSuperTurbo = false;
 	};
 	const stopSpaceTurbo = () => {
+		// Release ends the loop after the round in flight; the machine reads this at its next check.
+		stateBet.isSpaceHold = false;
 		if (!spaceTurboSnapshot) return;
 		const snapshot = spaceTurboSnapshot;
 		spaceTurboSnapshot = null;
@@ -459,9 +754,79 @@
 		eventEmitter.broadcast({ type: 'autoBet' });
 	};
 
+	/* ── Autoplay panel, design 9044:16058 ────────────────────────────────────────────────────────
+	   The chip grid is gone: the design picks the count with a stepper. The rungs stay this game's
+	   own autoplay presets — a plain ±1 counter needs a hundred taps to reach the default — with the
+	   design's own 5 added below them. */
+	const AUTO_SPIN_STEPS = [5, 10, 25, 50, 100, 250, 500, Infinity];
+	const autoStepIndex = $derived(Math.max(0, AUTO_SPIN_STEPS.indexOf(pendingAutoSpins)));
+	const stepAutoSpins = (direction: number) => {
+		const next = autoStepIndex + direction;
+		if (next < 0 || next >= AUTO_SPIN_STEPS.length) return;
+		pendingAutoSpins = AUTO_SPIN_STEPS[next];
+	};
+
+	type AutoToggle = {
+		key: string;
+		label: string;
+		on: boolean;
+		disabled: boolean;
+		toggle: () => void;
+	};
+	/* The design's three switch rows. Speed is a three-way exclusive here (NORMAL/FAST/MAX) behind
+	   two independent-looking switches, so TURBO SPIN reads as on for either boosted state and
+	   SUPER TURBO SPIN falls back to plain turbo rather than to normal. The third row is this game's
+	   per-spin FEATURE mode; the design's "50 X" is magnetic's cost multiplier, so the number comes
+	   off this game's own mode table instead of being copied. A row the jurisdiction forbids is
+	   dropped rather than shown dead. */
+	const featureMode = modeCards.find((mode) => mode.key === 'FEATURE');
+	const autoToggles = $derived.by<AutoToggle[]>(() => {
+		const rows: AutoToggle[] = [];
+		const rules = stateConfig.jurisdiction;
+		if (!rules?.disabledTurbo) {
+			rows.push({
+				key: 'turbo',
+				label: t('TURBO SPIN'),
+				on: stateBet.isTurbo || stateBet.isSuperTurbo,
+				disabled: false,
+				toggle: () => {
+					const on = stateBet.isTurbo || stateBet.isSuperTurbo;
+					stateBet.isSuperTurbo = false;
+					stateBet.isTurbo = !on;
+				},
+			});
+			if (!rules?.disabledSuperTurbo) {
+				rows.push({
+					key: 'superTurbo',
+					label: t('SUPER TURBO SPIN'),
+					on: stateBet.isSuperTurbo,
+					disabled: false,
+					toggle: () => {
+						const on = stateBet.isSuperTurbo;
+						stateBet.isSuperTurbo = !on;
+						stateBet.isTurbo = on;
+					},
+				});
+			}
+		}
+		if (featureMode && !rules?.disabledBuyFeature) {
+			rows.push({
+				key: 'feature',
+				label: `${featureMode.cost}× ${t(featureMode.title)}`,
+				on: featureActive,
+				disabled: !canInteract,
+				toggle: () => {
+					if (!canInteract) return;
+					stateBet.activeBetModeKey = featureActive ? 'BASE' : featureMode.key;
+				},
+			});
+		}
+		return rows;
+	});
+
 	const openRules = () => {
 		showMenu = false;
-		stateModal.modal = { name: 'gameRules' };
+		showInfo = true;
 	};
 
 	const closeTopPanel = (event: KeyboardEvent) => {
@@ -495,9 +860,12 @@
 	<meta name="description" content="Veggie Salad cluster slot" />
 </svelte:head>
 
+<!-- Not disabled while controls are blocked: OnHotkey ends a hold the moment it is disabled, and
+     a bonus entry blocks the controls mid-hold, so the Space loop died at the first bonus. The
+     press and hold handlers gate on `controlsBlocked` themselves instead. -->
 <OnHotkey
 	hotkey="Space"
-	disabled={Boolean(stateConfig.jurisdiction?.disabledSpacebar) || controlsBlocked}
+	disabled={Boolean(stateConfig.jurisdiction?.disabledSpacebar)}
 	onpress={spaceSpinOrSkip}
 	onhold={startSpaceTurbo}
 	onholdend={stopSpaceTurbo}
@@ -507,9 +875,10 @@
 <main
 	class="scene theme-{theme}"
 	class:bonus-normal={stateGame.bonusTier === 'normal'}
+	class:garden-dusk={duskGarden}
 	class:bonus-super={stateGame.bonusTier === 'super'}
 	class:bonus-hidden={stateGame.bonusTier === 'hidden'}
-	style="--base-plain:url('./assets/veggie-salad/pixel/background/base-plain.png');--base-mountains:url('./assets/veggie-salad/pixel/background/base-mountains.png');--base-cloud:url('./assets/veggie-salad/pixel/background/base-cloud.png');--base-bench:url('./assets/veggie-salad/pixel/background/base-bench.png');--board-frame:url('./assets/veggie-salad/pixel/board-frame.png');--bonus-normal-sky:url('./assets/veggie-salad/pixel/background/bonus-normal/sky-ground.png');--bonus-normal-mountains:url('./assets/veggie-salad/pixel/background/bonus-normal/mountains.png');--bonus-normal-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/cloud.png');--bonus-normal-tree:url('./assets/veggie-salad/pixel/background/bonus-normal/tree.png');--bonus-normal-oak:url('./assets/veggie-salad/pixel/background/bonus-normal/oak.png');--bonus-super-sky:url('./assets/veggie-salad/pixel/background/bonus-super/sky-ground.png');--bonus-super-mountains:url('./assets/veggie-salad/pixel/background/bonus-super/mountains.png');--bonus-super-cloud:url('./assets/veggie-salad/pixel/background/bonus-super/cloud.png');--bonus-super-moon:url('./assets/veggie-salad/pixel/background/bonus-super/moon.png');--bonus-super-fence:url('./assets/veggie-salad/pixel/background/bonus-super/fence.png');--bonus-super-oak:url('./assets/veggie-salad/pixel/background/bonus-super/oak.png');--bonus-super-star-bright:url('./assets/veggie-salad/pixel/background/bonus-super/star-bright.png');--bonus-super-star-dim:url('./assets/veggie-salad/pixel/background/bonus-super/star-dim.png');--bonus-hidden-background:url('./assets/veggie-salad/pixel/background-bonus-hidden.png');--hud-button:url('./assets/veggie-salad/pixel/hud-button.png');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud-button-pressed.png')"
+	style="--base-plain:url('./assets/veggie-salad/pixel/background/base-plain.webp');--base-mountains:url('./assets/veggie-salad/pixel/background/base-mountains.webp');--base-cloud:url('./assets/veggie-salad/pixel/background/base-cloud.webp');--base-bench:url('./assets/veggie-salad/pixel/background/base-bench.webp');--board-frame:url('./assets/veggie-salad/pixel/board-frame.webp');--bonus-normal-sky:url('./assets/veggie-salad/pixel/background/bonus-normal/sky-ground.webp');--bonus-normal-mountains:url('./assets/veggie-salad/pixel/background/bonus-normal/mountains.webp');--bonus-normal-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/cloud.webp');--bonus-normal-tree:url('./assets/veggie-salad/pixel/background/bonus-normal/tree.webp');--bonus-normal-oak:url('./assets/veggie-salad/pixel/background/bonus-normal/oak.webp');--sunset-treeline:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/treeline.webp');--sunset-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/cloud.webp');--sunset-flower:url('./assets/veggie-salad/pixel/splash/flower.webp');--bonus-super-sky:url('./assets/veggie-salad/pixel/background/bonus-super/sky-ground.webp');--bonus-super-mountains:url('./assets/veggie-salad/pixel/background/bonus-super/mountains.webp');--bonus-super-cloud:url('./assets/veggie-salad/pixel/background/bonus-super/cloud.webp');--bonus-super-moon:url('./assets/veggie-salad/pixel/background/bonus-super/moon.webp');--bonus-super-fence:url('./assets/veggie-salad/pixel/background/bonus-super/fence.webp');--bonus-super-oak:url('./assets/veggie-salad/pixel/background/bonus-super/oak.webp');--bonus-super-star-bright:url('./assets/veggie-salad/pixel/background/bonus-super/star-bright.webp');--bonus-super-star-dim:url('./assets/veggie-salad/pixel/background/bonus-super/star-dim.webp');--bonus-hidden-background:url('./assets/veggie-salad/pixel/background-bonus-hidden.webp');--hud-button:url('./assets/veggie-salad/pixel/hud-button.webp');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud-button-pressed.webp')"
 >
 	<!-- Background images cannot interpolate. Persistent layers can: entering a bonus fades its
 	     garden over BASE; leaving fades it away and reveals the exact same BASE layer underneath. -->
@@ -539,6 +908,7 @@
 		<div class="pixel-background background-base base-bench"></div>
 		<div class="pixel-background background-bonus background-normal">
 			<span class="normal-bonus-layer normal-bonus-mountains"></span>
+			<span class="normal-bonus-layer normal-bonus-treeline"></span>
 			<span class="normal-bonus-cloud-field">
 				<span class="normal-bonus-path-guide normal-bonus-path-one"></span>
 				<span class="normal-bonus-path-guide normal-bonus-path-two"></span>
@@ -551,6 +921,7 @@
 			<span class="normal-bonus-layer normal-bonus-fence normal-bonus-fence-right"></span>
 			<span class="normal-bonus-layer normal-bonus-tree"></span>
 			<span class="normal-bonus-layer normal-bonus-oak"></span>
+			<span class="normal-bonus-layer normal-bonus-flowers"></span>
 		</div>
 		<div class="pixel-background background-bonus background-super">
 			<span class="super-bonus-layer super-bonus-moon"></span>
@@ -584,9 +955,21 @@
 	<div class="tree-line tree-front" aria-hidden="true"></div>
 	<div class="meadow" aria-hidden="true"></div>
 	<div class="corner-foliage" aria-hidden="true"></div>
+	<span
+		class="scene-cow"
+		class:peek={cowPhase === 'in'}
+		class:hide={cowPhase === 'out'}
+		aria-hidden="true"
+	>
+		<img src={cowFrame(cowBlinking ? 'cow_blink' : 'cow')} alt="" />
+	</span>
+	<!-- The night garden's foliage (9198:81939) drawn a second time ABOVE the game stage, so the
+	     wolf pup's tail sits behind it as in the design; same class as the background copy, so it
+	     takes the same art, placement and responsive rules. -->
+	<span class="super-bonus-layer super-bonus-oak super-oak-front" aria-hidden="true"></span>
 
 	<header class="brand" aria-label={t('VEGGIE SALAD')}>
-		<img src="./assets/veggie-salad/pixel/logo.png" alt={t('VEGGIE SALAD')} />
+		<img src="./assets/veggie-salad/pixel/logo.webp" alt={t('VEGGIE SALAD')} />
 	</header>
 	<img
 		class="studio-mark"
@@ -595,6 +978,13 @@
 	/>
 
 	<section class="game-stage" aria-label={t('VEGGIE SALAD GAME BOARD')}>
+		{#if duskGarden}
+			<!-- Design 9363:59335. The dusk (Mystery) garden's butterfly wanders the gutter above the
+			     cluster panel; layers from scripts/build-normal-butterfly.py, choreography is CSS. -->
+			<span class="butterfly-flight" aria-hidden="true">
+				{@render butterflySprite()}
+			</span>
+		{/if}
 		{#if stateGame.freeSpinTotal > 0 && stateGame.bonusTier}
 			<div class="bonus-readouts" aria-live="polite">
 				<div class="bonus-status bonus-readout">
@@ -606,6 +996,11 @@
 					<span>{t('EARNED')}</span>
 					<strong style={textFitStyle(bonusTotalText)}>{bonusTotalText}</strong>
 				</div>
+				{#if stateGame.bonusTier === 'super'}
+					<span class="super-wolf" style="--wolf-drop:{wolfDrop}px" aria-hidden="true">
+						{@render wolfSprite()}
+					</span>
+				{/if}
 			</div>
 		{/if}
 		<aside
@@ -613,21 +1008,29 @@
 			style={`--slots:${CLUSTER_LOG_SIZE}`}
 			aria-label={t('CLUSTER PAYOUTS')}
 		>
+			{#if stateGame.bonusTier === 'normal' && !duskGarden}
+				<!-- Design 9198:104316 / 9355:54123: the sunset garden's owl perches on this panel's
+				     top-right corner. Layers from scripts/build-normal-sunset.py. -->
+				<span class="sunset-owl" aria-hidden="true">
+					{@render owlSprite()}
+				</span>
+			{/if}
 			<div class="panel-rows">
 				<!-- Slots, not rows: keyed by position so a repeat win in the same cascade cannot
 				     collide with an identical clusterId from an earlier tumble (which is what stopped
 				     the panel updating), and so the box keeps its height while it fills. -->
 				{#each Array(CLUSTER_LOG_SIZE) as _, slot (slot)}
 					{@const row = clusterRows[slot]}
-					<div
-						class="panel-row"
-						class:vacant={!row}
-					>
+					<div class="panel-row" class:vacant={!row}>
 						{#if row}
 							<span>{row.size}x</span>
 							<img src={`.${VEGGIE_SYMBOL_ASSETS[row.symbol]}`} alt="" />
-							<span>x{row.appliedMultiplier}</span>
-							<strong>{bookWinToCurrency(row.amount)}</strong>
+							<!-- "1x", the way both the landscape (9283:250375) and portrait (9256:209233)
+							     designs letter the multiplier box. -->
+							<span>{row.appliedMultiplier}x</span>
+							<strong style={textFitStyle(bookWinToCurrency(row.amount))}
+								>{bookWinToCurrency(row.amount)}</strong
+							>
 						{/if}
 					</div>
 				{/each}
@@ -644,6 +1047,8 @@
 						class="board phase-{stateGame.phase}"
 						style={`--grid-size:${stateGame.gridSize};--reveal:${stateGame.revealId};--impact-duration:${ms(motion.impactMs)};--remove-duration:${ms(motion.removeMs)}`}
 						aria-label={`${stateGame.gridSize} by ${stateGame.gridSize} symbol grid`}
+						in:gridSwapIn
+						out:gridSwapOut
 					>
 						{#each Array(stateGame.gridSize) as _, row}
 							{#each Array(stateGame.gridSize) as _, reel}
@@ -664,7 +1069,7 @@
 												{#if cell.name === 'SCATTER' && scatterHit}
 													<img
 														class="backplate"
-														src="./assets/veggie-salad/symbols/backplate.png"
+														src="./assets/veggie-salad/symbols/backplate.webp"
 														alt=""
 													/>
 												{/if}
@@ -673,9 +1078,14 @@
 													src={`.${VEGGIE_SYMBOL_ASSETS[cell.name]}`}
 													alt={cell.name.toLowerCase()}
 													draggable="false"
+													use:symbolLiveness={cell.name}
 												/>
 												{#if cell.multiplier}
-													<span class="multiplier">{cell.multiplier}×</span>
+													<span class="multiplier"
+														><span class="multiplier-value">{cell.multiplier}</span><span
+															class="multiplier-x">x</span
+														></span
+													>
 												{/if}
 											</div>
 										{/key}
@@ -693,6 +1103,39 @@
 						{/each}
 					</div>
 				{/key}
+				{#if exitGhost}
+					{#key exitGhost.id}
+						<div
+							class="board board-exit phase-spinning-out"
+							style={`--grid-size:${exitGhost.gridSize}`}
+							aria-hidden="true"
+						>
+							{#each exitGhost.cells as cells, row (row)}
+								{#each cells as cell, reel (reel)}
+									<div class="cell" class:empty={!cell.name} style={cell.style}>
+										{#if cell.name}
+											<div class="symbol-layer">
+												<img
+													class={`symbol symbol-${cell.name.toLowerCase()}`}
+													src={`.${VEGGIE_SYMBOL_ASSETS[cell.name as keyof typeof VEGGIE_SYMBOL_ASSETS]}`}
+													alt=""
+													draggable="false"
+												/>
+												{#if cell.multiplier}
+													<span class="multiplier"
+														><span class="multiplier-value">{cell.multiplier}</span><span
+															class="multiplier-x">x</span
+														></span
+													>
+												{/if}
+											</div>
+										{/if}
+									</div>
+								{/each}
+							{/each}
+						</div>
+					{/key}
+				{/if}
 				<div class="frame-highlight" aria-hidden="true"></div>
 			</div>
 
@@ -703,40 +1146,139 @@
 				</div>
 			{/if}
 		</div>
+		{#if stateGame.bonusTier === 'normal' || stateGame.bonusTier === 'super'}
+			<!-- Tall portrait phones leave a strip of lawn between the board and the control bar;
+			     the garden's creature lives there (the landscape layouts put it in their own
+			     gutters, which portrait has none of). Same layers, same script timers. -->
+			<div class="paddock" aria-hidden="true">
+				{#if duskGarden}
+					{@render butterflySprite()}
+				{:else if stateGame.bonusTier === 'normal'}
+					<span class="paddock-owl">{@render owlSprite()}</span>
+				{:else}
+					<span class="paddock-wolf">{@render wolfSprite()}</span>
+				{/if}
+			</div>
+		{/if}
 	</section>
 
+	{#snippet butterflySprite()}
+		<span class="butterfly">
+			<span class="butterfly-bob">
+				<img
+					class="butterfly-layer butterfly-wing butterfly-wing-l"
+					src={butterflyLayer('wing-l')}
+					alt=""
+				/>
+				<img
+					class="butterfly-layer butterfly-wing butterfly-wing-r"
+					src={butterflyLayer('wing-r')}
+					alt=""
+				/>
+				<img
+					class="butterfly-layer butterfly-antenna butterfly-antenna-l"
+					src={butterflyLayer('antenna-l')}
+					alt=""
+				/>
+				<img
+					class="butterfly-layer butterfly-antenna butterfly-antenna-r"
+					src={butterflyLayer('antenna-r')}
+					alt=""
+				/>
+				<img class="butterfly-layer" src={butterflyLayer('body')} alt="" />
+			</span>
+		</span>
+	{/snippet}
+	{#snippet owlSprite()}
+		<span class="owl-stage" style="--gaze:{owlGaze}">
+			<img class="owl-layer" src={owlLayer('body')} alt="" />
+			<img class="owl-layer owl-eyes" class:blink={owlBlink} src={owlLayer('eyes')} alt="" />
+		</span>
+	{/snippet}
+	{#snippet wolfSprite()}
+		<span class="wolf-stage" style="--gaze:{wolfGaze}">
+			<img class="wolf-layer" src={wolfLayer('body')} alt="" />
+			<img
+				class="wolf-layer wolf-ear wolf-ear-l"
+				class:flick={wolfEars.includes('l')}
+				src={wolfLayer('ear-l')}
+				alt=""
+			/>
+			<img
+				class="wolf-layer wolf-ear wolf-ear-r"
+				class:flick={wolfEars.includes('r')}
+				src={wolfLayer('ear-r')}
+				alt=""
+			/>
+			<img class="wolf-layer wolf-eyes" class:blink={wolfBlink} src={wolfLayer('eyes')} alt="" />
+		</span>
+	{/snippet}
+
 	{#if showBuyMenu}
-		<div class="modal-layer">
-			<section class="buy-panel">
-				<button class="close" aria-label={t('CLOSE')} onclick={() => (showBuyMenu = false)}
-					>×</button
-				>
-				<header>
-					<small>{t('CHOOSE YOUR HARVEST')}</small>
-					<h2>{t('BONUS FEATURES')}</h2>
-				</header>
+		<div class="modal-layer buy-layer">
+			<!-- Design 9257:209905, a 1200x670 frame. The menu is one proportional drawing: the stage
+			     keeps that frame's aspect and every size below is a design px times `--u`, so the
+			     3+2 card layout, the title, the close disc and the bet stepper hold their places at
+			     every landscape size instead of reflowing. Portrait/narrow stacks the cards instead. -->
+			<section class="buy-panel" role="dialog" aria-modal="true" aria-label={t('BONUS FEATURES')}>
+				<h2>{t('BONUS FEATURES')}</h2>
+				<button class="close" aria-label={t('CLOSE')} onclick={() => (showBuyMenu = false)}>
+					<span class="close-glyph" aria-hidden="true"></span>
+				</button>
 				<div class="buy-grid">
 					{#each modeCards as mode}
 						{@const isArmed = mode.kind === 'toggle' && activeMode === mode.key}
-						<button
-							class="buy-card mode-{mode.key.toLowerCase()}"
-							class:armed={isArmed}
-							aria-pressed={mode.kind === 'toggle' ? isArmed : undefined}
-							disabled={!canAffordMode(mode) && !isArmed}
-							onclick={() => requestBuyMode(mode)}
-						>
-							<img src={modeIconAsset(mode.icon)} alt="" />
+						{@const blocked = !canAffordMode(mode) && !isArmed}
+						<div class="buy-card mode-{mode.key.toLowerCase()}" class:armed={isArmed}>
 							<span>{t(mode.title)}</span>
-							<small>{t(mode.tag)}</small>
-							<strong
-								>{mode.cost}× {t('BET')}{mode.kind === 'toggle' ? ` / ${t('SPIN')}` : ''}</strong
+							<small class="font-copy">{t(`BET MODE ${mode.key} DIALOG`)}</small>
+							<img src={modeIconAsset(mode.icon)} alt="" />
+							<em class="font-copy">{formatCurrency(stateBet.betAmount * mode.cost)}</em>
+							<button
+								class="buy-cta"
+								class:buy={mode.kind === 'buy'}
+								aria-pressed={mode.kind === 'toggle' ? isArmed : undefined}
+								disabled={blocked}
+								onclick={() => requestBuyMode(mode)}
 							>
-							<em>{formatCurrency(stateBet.betAmount * mode.cost)}</em>
-							{#if mode.kind === 'toggle'}
-								<b class="card-state">{isArmed ? t('ARMED TAP TO STOP') : t('TOGGLE')}</b>
-							{/if}
-						</button>
+								{#if mode.kind === 'toggle'}
+									{isArmed ? t('ARMED TAP TO STOP') : t('ACTIVATE')}
+								{:else}
+									{t('BUY')}
+								{/if}
+							</button>
+						</div>
 					{/each}
+				</div>
+				<!-- The design's own bet stepper (9257:211058) sits over the bar so the price on every
+				     card can be changed without leaving the menu. -->
+				<div class="buy-bet">
+					<button
+						type="button"
+						aria-label={t('DECREASE BET')}
+						disabled={disableDecrease}
+						onclick={(event) => {
+							flashControl(event);
+							stepBet(-1);
+						}}
+					>
+						<span class="step-glyph minus" aria-hidden="true"></span>
+					</button>
+					<div class="buy-bet-readout font-copy">
+						<span>{t('BET')}</span>
+						<strong>{betText}</strong>
+					</div>
+					<button
+						type="button"
+						aria-label={t('INCREASE BET')}
+						disabled={disableIncrease}
+						onclick={(event) => {
+							flashControl(event);
+							stepBet(1);
+						}}
+					>
+						<span class="step-glyph plus" aria-hidden="true"></span>
+					</button>
 				</div>
 			</section>
 		</div>
@@ -745,17 +1287,14 @@
 	{#if pendingMode}
 		<div class="modal-layer confirm-layer">
 			<section class="confirm-panel" role="dialog" aria-modal="true">
-				<button class="close" aria-label={t('CLOSE')} onclick={() => (pendingMode = null)}>×</button
-				>
-				<small
-					>{pendingMode.kind === 'toggle' ? t('CONFIRM ACTIVATION') : t('CONFIRM PURCHASE')}</small
-				>
-				<img src={modeIconAsset(pendingMode.icon)} alt="" />
+				<!-- Design 9024:2502: title, hairline rule, one line of copy, two buttons. No eyebrow, no
+				     icon and no close cross — CANCEL and the scrim both dismiss it. -->
 				<h2>{t(pendingMode.title)}</h2>
-				<p>{t(pendingMode.tag)}</p>
-				<strong>{formatCurrency(stateBet.betAmount * pendingMode.cost)}</strong>
+				<div class="dlg-rule"></div>
+				<p class="font-copy">{t(pendingMode.tag)}</p>
+				<strong class="font-copy">{formatCurrency(stateBet.betAmount * pendingMode.cost)}</strong>
 				{#if pendingMode.kind === 'toggle'}
-					<p class="confirm-note">{t('TOGGLE COST NOTE')}</p>
+					<p class="confirm-note font-copy">{t('TOGGLE COST NOTE')}</p>
 				{/if}
 				<div class="confirm-actions">
 					<button class="cancel" onclick={() => (pendingMode = null)}>{t('CANCEL')}</button>
@@ -768,22 +1307,50 @@
 	{/if}
 
 	{#if showAutoMenu}
-		<div class="modal-layer">
-			<section class="auto-panel" role="dialog" aria-modal="true">
-				<button class="close" aria-label={t('CLOSE')} onclick={() => (showAutoMenu = false)}
-					>×</button
-				>
-				<small>{t('AUTOPLAY')}</small>
-				<h2>{t('NUMBER OF SPINS')}</h2>
-				<div class="auto-options">
-					{#each [10, 25, 50, 100, 250, 500, Infinity] as count}
-						<button
-							class:active={pendingAutoSpins === count}
-							onclick={() => (pendingAutoSpins = count)}
-						>
-							{count === Infinity ? '∞' : count}
-						</button>
+		<div class="modal-layer auto-layer">
+			<!-- The design hangs this dialog's close off the screen's top-right corner (9044:16291),
+			     not off the panel: inside the panel it would sit on top of the first switch. It is a
+			     sibling of the panel so the panel's own overflow cannot clip it. -->
+			<button class="close" aria-label={t('CLOSE')} onclick={() => (showAutoMenu = false)}>
+				<span class="close-glyph" aria-hidden="true"></span>
+			</button>
+			<section class="auto-panel" role="dialog" aria-modal="true" aria-label={t('AUTOPLAY')}>
+				<div class="auto-toggles">
+					{#each autoToggles as row (row.key)}
+						<div class="auto-toggle-row">
+							<span>{row.label}</span>
+							<button
+								type="button"
+								class="switch"
+								class:on={row.on}
+								role="switch"
+								aria-checked={row.on}
+								aria-label={row.label}
+								disabled={row.disabled}
+								onclick={row.toggle}
+							></button>
+						</div>
 					{/each}
+				</div>
+				<h2>{t('NUMBER OF SPINS')}</h2>
+				<div class="auto-count">
+					<button
+						type="button"
+						aria-label={`− ${t('NUMBER OF SPINS')}`}
+						disabled={autoStepIndex === 0}
+						onclick={() => stepAutoSpins(-1)}
+					>
+						<span class="step-glyph minus" aria-hidden="true"></span>
+					</button>
+					<strong>{pendingAutoSpins === Infinity ? '∞' : pendingAutoSpins}</strong>
+					<button
+						type="button"
+						aria-label={`+ ${t('NUMBER OF SPINS')}`}
+						disabled={autoStepIndex === AUTO_SPIN_STEPS.length - 1}
+						onclick={() => stepAutoSpins(1)}
+					>
+						<span class="step-glyph plus" aria-hidden="true"></span>
+					</button>
 				</div>
 				<p>{t('AUTOPLAY STOP NOTE')}</p>
 				<button
@@ -791,10 +1358,14 @@
 					disabled={!stateBetDerived.isBetCostAvailable()}
 					onclick={startAuto}
 				>
-					{t('START AUTOPLAY')}
+					{t('CONFIRM')}
 				</button>
 			</section>
 		</div>
+	{/if}
+
+	{#if showInfo}
+		<PixelInfoPanel onclose={() => (showInfo = false)} />
 	{/if}
 
 	{#if showMenu}
@@ -806,12 +1377,14 @@
 				class:off={soundMuted}
 				onclick={toggleSound}
 			>
+				<!-- Design 9372:61506 / 9372:61509: each row's glyph is a component with an on and a
+				     slashed off state, drawn at its own size inside the 48px square. -->
 				<span class="quick-menu-icon" aria-hidden="true">
-					<svg viewBox="0 0 24 24"
-						><path
-							d="M3 9v6h4l5 4V5L7 9H3zm13-1-2 2a3 3 0 0 1 0 4l2 2a6 6 0 0 0 0-8zm3-3-2 2a8 8 0 0 1 0 10l2 2a11 11 0 0 0 0-14z"
-						/></svg
-					>
+					<img
+						class="qm-glyph qm-sound-{soundMuted ? 'off' : 'on'}"
+						src="./assets/veggie-salad/pixel/ui/sound-{soundMuted ? 'off' : 'on'}.svg"
+						alt=""
+					/>
 				</span>
 				<span>{t('SOUND')}</span>
 			</button>
@@ -823,9 +1396,11 @@
 				onclick={toggleMusic}
 			>
 				<span class="quick-menu-icon" aria-hidden="true">
-					<svg viewBox="0 0 24 24"
-						><path d="M9 4v11.2a4 4 0 1 0 2 3.5V8l8-2v7.2a4 4 0 1 0 2 3.5V2L9 4z" /></svg
-					>
+					<img
+						class="qm-glyph qm-music-{musicMuted ? 'off' : 'on'}"
+						src="./assets/veggie-salad/pixel/ui/music-{musicMuted ? 'off' : 'on'}.svg"
+						alt=""
+					/>
 				</span>
 				<span>{t('MUSIC')}</span>
 			</button>
@@ -841,17 +1416,23 @@
 			<div class="hud-left">
 				<button
 					type="button"
-					class="round utility"
-					aria-label={t('MENU')}
+					class="round utility menu-toggle"
+					class:open={showMenu}
+					aria-label={showMenu ? t('CLOSE') : t('MENU')}
 					aria-expanded={showMenu}
 					onclick={(event) => {
 						flashControl(event);
 						showMenu = !showMenu;
 					}}
 				>
-					<svg viewBox="0 0 64 64" aria-hidden="true">
-						<path d="M13 17h38v6H13zm0 12h38v6H13zm0 12h38v6H13z" />
-					</svg>
+					{#if showMenu}
+						<!-- Open state per 9227:175692: the same box turns amber and carries a cross. -->
+						<span class="close-glyph" aria-hidden="true"></span>
+					{:else}
+						<svg viewBox="0 0 64 64" aria-hidden="true">
+							<path d="M13 17h38v6H13zm0 12h38v6H13zm0 12h38v6H13z" />
+						</svg>
+					{/if}
 				</button>
 				{#if !stateConfig.jurisdiction?.disabledBuyFeature}
 					<button
@@ -874,14 +1455,19 @@
 
 			<div class="metrics">
 				<div class="metric balance">
-					<span>{t('BALANCE')}</span><strong style={textFitStyle(balanceText)}>{balanceText}</strong
+					<span class="font-copy">{t('BALANCE')}</span><strong style={textFitStyle(balanceText)}
+						>{balanceText}</strong
 					>
 				</div>
 				<div class="metric win">
-					<span>{t('WIN')}</span><strong style={textFitStyle(winText)}>{winText}</strong>
+					<span class="font-copy">{t('WIN')}</span><strong style={textFitStyle(winText)}
+						>{winText}</strong
+					>
 				</div>
 				<div class="metric bet" class:boosted={chanceActive || featureActive}>
-					<span>{t('BET')}</span><strong style={textFitStyle(betText)}>{betText}</strong>
+					<span class="font-copy">{t('BET')}</span><strong style={textFitStyle(betText)}
+						>{betText}</strong
+					>
 				</div>
 			</div>
 
@@ -894,8 +1480,10 @@
 						onclick={(event) => {
 							flashControl(event);
 							stepBet(-1);
-						}}>−</button
+						}}
 					>
+						<span class="step-glyph minus" aria-hidden="true"></span>
+					</button>
 					<button
 						type="button"
 						aria-label={t('INCREASE BET')}
@@ -903,8 +1491,10 @@
 						onclick={(event) => {
 							flashControl(event);
 							stepBet(1);
-						}}>+</button
+						}}
 					>
+						<span class="step-glyph plus" aria-hidden="true"></span>
+					</button>
 				</div>
 				<button
 					type="button"
@@ -925,18 +1515,21 @@
 				<button
 					type="button"
 					class="round utility turbo"
-					aria-label={t('TURBO')}
+					aria-label={`${t('TURBO')} — ${turboLabel}`}
 					aria-pressed={stateBet.isTurbo || stateBet.isSuperTurbo}
+					title={turboLabel}
 					disabled={!canChangeSpeed}
 					onclick={(event) => {
 						flashControl(event);
 						toggleTurbo();
 					}}
 				>
-					<svg viewBox="0 0 64 64" aria-hidden="true">
-						<path d="M36 5 15 36h14l-2 23 22-34H35z" />
-					</svg><small>{stateBet.isSuperTurbo ? t('MAX') : stateBet.isTurbo ? t('FAST') : ''}</small
-					>
+					<img
+						class="turbo-icon"
+						class:wide={stateBet.isSuperTurbo}
+						src="./assets/veggie-salad/pixel/ui/{turboIcon}.webp"
+						alt=""
+					/>
 				</button>
 				{#if !stateConfig.jurisdiction?.disabledAutoplay}
 					<button
@@ -953,9 +1546,21 @@
 						{#if hasAuto}
 							<span>{autoCounterText}</span>
 						{:else}
-							<svg viewBox="0 0 64 64" aria-hidden="true">
+							<!-- Traced pixel-for-pixel off design 9283:250375, where this glyph is 7px of ink
+							     inside a 34px box. The smooth 64-unit arrows it replaces collapsed into a
+							     single dot at that size, and the viewBox is tight to the ink so the box
+							     percentage below IS the ink size. -->
+							<svg class="auto-glyph" viewBox="0 0 8 7" aria-hidden="true">
 								<path
-									d="M47 20a21 21 0 0 0-34 7l9 2a12 12 0 0 1 19-4l-7 6h18V13zM17 44a21 21 0 0 0 34-7l-9-2a12 12 0 0 1-19 4l7-6H12v18z"
+									d="M1 0h7v1h-7zM0 1h2v1h-2zM5 1h3v1h-3zM0 2h2v1h-2zM4 2h4v1h-4zM0 4h3v1h-3zM6 4h1v1h-1zM0 5h2v1h-2zM5 5h2v1h-2zM0 6h6v1h-6z"
+								/>
+							</svg>
+							<!-- The desktop bar (design 9198:123416) draws a different mark: the smooth
+							     twin-arrow vector exported from that node, verbatim. Shown only by the
+							     bottom-bar pass; the rails keep the pixel trace above. -->
+							<svg class="auto-glyph-smooth" viewBox="0 0 10.526 9.83066" aria-hidden="true">
+								<path
+									d="M1.95428 3.74388C2.12317 3.26555 2.39734 2.81573 2.78337 2.43174C4.15422 1.06036 6.37609 1.06036 7.74695 2.43174L8.12201 2.80915H7.01875C6.63053 2.80915 6.31688 3.12292 6.31688 3.5113C6.31688 3.89967 6.63053 4.21345 7.01875 4.21345H9.8153H9.8241C10.2123 4.21345 10.526 3.89967 10.526 3.5113V0.702697C10.526 0.314321 10.2123 0.000547457 9.8241 0.000547457C9.43582 0.000547457 9.12218 0.314321 9.12218 0.702697V1.82614L8.73834 1.43996C6.81916 -0.479986 3.70897 -0.479986 1.78978 1.43996C1.2546 1.97534 0.86857 2.60509 0.631688 3.27871C0.50228 3.64514 0.695295 4.0445 1.05939 4.17395C1.42349 4.30341 1.82487 4.11032 1.95428 3.74608V3.74388ZM0.504472 5.64627C0.394805 5.67918 0.289523 5.73843 0.203983 5.8262C0.116248 5.91397 0.0570273 6.01929 0.0263203 6.13339C0.0197403 6.15972 0.0131602 6.18824 0.00877343 6.21677C0.00219335 6.25407 0 6.29138 0 6.32867V9.1285C0 9.51685 0.31365 9.83066 0.701875 9.83066C1.0901 9.83066 1.40375 9.51685 1.40375 9.1285V8.00725L1.78978 8.39124C3.70897 10.309 6.81916 10.309 8.73615 8.39124C9.27133 7.85585 9.65958 7.22611 9.89644 6.55468C10.0259 6.18824 9.8328 5.7889 9.46876 5.65944C9.10464 5.52998 8.70325 5.72307 8.57384 6.08731C8.40495 6.56565 8.13078 7.01546 7.74475 7.39945C6.3739 8.77084 4.15203 8.77084 2.78118 7.39945L2.77899 7.39726L2.40392 7.02205H3.50938C3.8976 7.02205 4.21125 6.70827 4.21125 6.3199C4.21125 5.93152 3.8976 5.61775 3.50938 5.61775H0.710648C0.675555 5.61775 0.640461 5.61994 0.605367 5.62433C0.570273 5.62871 0.537373 5.63531 0.504472 5.64627Z"
 								/>
 							</svg>
 						{/if}
@@ -1139,6 +1744,308 @@
 			radial-gradient(ellipse at -3% 103%, #0b4823 0 16%, transparent 16.5%),
 			radial-gradient(ellipse at 103% 103%, #0b4020 0 17%, transparent 17.5%);
 	}
+	/* ── Cow ───────────────────────────────────────────────────────────────────────────────────
+	   The art is cut off along its neck, which is what lets it read as a head coming round a
+	   corner — so it comes round the screen's own left edge, and the resting pose keeps a sliver of
+	   it off-frame so that cut never shows as a cut. Hidden is a real position outside the viewport
+	   rather than opacity, so nothing ever fades on the grass. */
+	.scene-cow {
+		position: absolute;
+		bottom: 13%;
+		left: 0;
+		z-index: 6;
+		display: block;
+		width: clamp(72px, 9.5vw, 140px);
+		transform: translateX(-104%);
+		transform-origin: 0 100%;
+		pointer-events: none;
+	}
+	/* A sneak is a long creep, a pause to check the coast, then the commit — one easing curve
+	   cannot say that, so the travel lives in keyframes instead of in a transition. */
+	.scene-cow.peek {
+		animation: cow-sneak-in 1900ms cubic-bezier(0.32, 0.72, 0.35, 1) forwards;
+	}
+	.scene-cow.hide {
+		animation: cow-sneak-out 950ms cubic-bezier(0.55, 0, 0.75, 0.35) forwards;
+	}
+	@keyframes cow-sneak-in {
+		0% {
+			transform: translateX(-104%) rotate(-7deg);
+		}
+		42% {
+			transform: translateX(-52%) rotate(-4deg);
+		}
+		58% {
+			transform: translateX(-49%) rotate(-4.5deg);
+		}
+		100% {
+			transform: translateX(-11%) rotate(0deg);
+		}
+	}
+	@keyframes cow-sneak-out {
+		0% {
+			transform: translateX(-11%) rotate(0deg);
+		}
+		22% {
+			transform: translateX(-3%) rotate(2.5deg);
+		}
+		100% {
+			transform: translateX(-104%) rotate(-7deg);
+		}
+	}
+	.scene-cow img {
+		display: block;
+		width: 100%;
+		height: auto;
+		image-rendering: pixelated;
+		animation: cow-nod 2.8s ease-in-out infinite;
+	}
+	@keyframes cow-nod {
+		0%,
+		100% {
+			transform: translateY(0) rotate(0deg);
+		}
+		50% {
+			transform: translateY(-2%) rotate(1.4deg);
+		}
+	}
+	.scene.bonus-normal .scene-cow,
+	.scene.bonus-super .scene-cow,
+	.scene.bonus-hidden .scene-cow {
+		display: none;
+	}
+	/* ── SUPER wolf pup ───────────────────────────────────────────────────────────────────────
+	   Hangs off the bonus readouts so it follows them through every landscape layout: it is an
+	   absolute child of that grid, one gap below EARNED, and never a grid item, so the readouts
+	   themselves keep their measured position. Landscape only — portrait turns the readouts into a
+	   row above the board and there is no ground under them; narrow landscape docks the cluster
+	   panel there. The layers share one canvas
+	   (435×405, see scripts/build-super-wolf.py); the origins below are the ear bases and the
+	   midpoint between the eyes on that canvas. */
+	.super-wolf {
+		display: none;
+		position: absolute;
+		top: 100%;
+		right: 0;
+		width: 100%;
+		height: var(--wolf-drop, 0px);
+		justify-content: flex-end;
+		align-items: flex-end;
+		pointer-events: none;
+	}
+	/* Only the wide landscape layouts leave the gutter under the readouts empty; narrower ones
+	   dock the cluster panel there. */
+	@media (min-width: 1180px) and (min-height: 601px) and (orientation: landscape) {
+		.super-wolf {
+			display: flex;
+		}
+	}
+	/* Sized by the room under the readouts, capped like the design's (its pup is 187 tall on the
+	   670 frame), and pushed to the readouts' right edge so the tail runs into the foliage. */
+	.wolf-stage {
+		position: relative;
+		display: block;
+		height: min(100%, 28vh);
+		margin-bottom: 2px;
+		/* Of the readouts' width: tucks the rump, not just the tail, into the foliage ("hide a bit
+		   more the wolf", user 2026-09-17). */
+		margin-right: 13%;
+		aspect-ratio: 435 / 405;
+		/* Weight shifts, not a bounce ("move slightly front and back", user 2026-09-17): the pup
+		   leans out from behind the foliage and settles back, with a slow breath on top. Pivots at
+		   the feet so it never leaves the ground, and a whole cycle is long enough that no single
+		   move reads as a jump. */
+		transform-origin: 50% 100%;
+		animation: wolf-sway 9s ease-in-out infinite;
+	}
+	@keyframes wolf-sway {
+		0%,
+		100% {
+			transform: translateX(0) rotate(0deg) scale(1, 1);
+		}
+		12% {
+			transform: translateX(-1.5%) rotate(-0.8deg) scale(1.005, 1.015);
+		}
+		30% {
+			transform: translateX(-4%) rotate(-1.6deg) scale(1.01, 1.01);
+		}
+		44% {
+			transform: translateX(-3%) rotate(-1.2deg) scale(1.005, 1.02);
+		}
+		62% {
+			transform: translateX(0.5%) rotate(0.3deg) scale(1, 1);
+		}
+		78% {
+			transform: translateX(1.5%) rotate(0.8deg) scale(1.005, 1.015);
+		}
+	}
+	/* Two class selectors: the plain .super-bonus-oak rules further down (z-index 4, twice) are
+	   written later and would otherwise put this copy back under the game stage. */
+	.super-bonus-oak.super-oak-front {
+		display: none;
+		z-index: 6;
+		opacity: 0;
+		transition: opacity 1700ms ease-in-out;
+	}
+	.scene.bonus-super .super-oak-front {
+		opacity: 1;
+		transition-duration: 850ms;
+	}
+	@media (min-width: 1180px) and (min-height: 601px) and (orientation: landscape) {
+		.super-bonus-oak.super-oak-front {
+			display: block;
+		}
+	}
+	.wolf-layer {
+		position: absolute;
+		inset: 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+	.wolf-ear-l {
+		transform-origin: 60.5% 24.1%;
+	}
+	.wolf-ear-r {
+		transform-origin: 93.1% 27.8%;
+	}
+	/* The flick is a stretch from the base plus a tilt outward, so the overlay keeps covering the
+	   ear painted on the body beneath it (see the build script). */
+	.wolf-ear.flick {
+		animation: wolf-ear-flick 480ms ease-out;
+	}
+	@keyframes wolf-ear-flick {
+		0%,
+		100% {
+			transform: none;
+		}
+		30% {
+			transform: scaleY(1.14) rotate(calc(var(--ear-side, -1) * 7deg));
+		}
+		65% {
+			transform: scaleY(1.03) rotate(calc(var(--ear-side, -1) * -2deg));
+		}
+	}
+	.wolf-ear-r {
+		--ear-side: 1;
+	}
+	/* One art pixel is ~3% of the canvas; the glance is a slide, the blink a squash to a line. */
+	.wolf-eyes {
+		transform-origin: 76.1% 38.8%;
+		transform: translateX(calc(var(--gaze, 0) * 3%));
+		transition: transform 90ms steps(2, jump-end);
+	}
+	.wolf-eyes.blink {
+		transform: translateX(calc(var(--gaze, 0) * 3%)) scaleY(0.12);
+	}
+	/* ── NORMAL butterfly ─────────────────────────────────────────────────────────────────────
+	   The flight box is the right gutter above the cluster panel (same gutter formula the side
+	   furniture uses), and the butterfly wanders it on `left`/`top` so the path is in box terms
+	   while every transform stays free for the body. Three motions at three speeds: the wander
+	   (20s loop), the bob that goes with each wingbeat, and the beat itself (a squash towards the
+	   body's centre line — the body is stacked on top, so the folded wing tucks under the head).
+	   Antennae swing from their bases, also hidden under the head. Wide landscape only: that is
+	   the only layout with this gutter empty. */
+	.butterfly-flight {
+		display: none;
+		position: absolute;
+		top: 6%;
+		right: 2cqw;
+		left: calc(50% + min(50cqw, 62.5cqh) + 2cqw);
+		z-index: 6;
+		height: 18%;
+		pointer-events: none;
+	}
+	@media (min-width: 1180px) and (min-height: 601px) and (orientation: landscape) {
+		.butterfly-flight {
+			display: block;
+		}
+	}
+	.butterfly {
+		position: absolute;
+		left: 8%;
+		top: 30%;
+		width: clamp(64px, 8.4vw, 130px);
+		aspect-ratio: 412 / 355;
+		animation: butterfly-wander 20s ease-in-out infinite;
+	}
+	@keyframes butterfly-wander {
+		0%,
+		100% {
+			left: 8%;
+			top: 30%;
+			transform: rotate(6deg);
+		}
+		20% {
+			left: 58%;
+			top: 4%;
+			transform: rotate(-4deg);
+		}
+		40% {
+			left: 62%;
+			top: 40%;
+			transform: rotate(-9deg);
+		}
+		60% {
+			left: 30%;
+			top: 45%;
+			transform: rotate(5deg);
+		}
+		80% {
+			left: 2%;
+			top: 18%;
+			transform: rotate(8deg);
+		}
+	}
+	.butterfly-bob {
+		position: absolute;
+		inset: 0;
+		display: block;
+		animation: butterfly-bob 520ms ease-in-out infinite alternate;
+	}
+	@keyframes butterfly-bob {
+		from {
+			transform: translateY(-4%);
+		}
+		to {
+			transform: translateY(4%);
+		}
+	}
+	.butterfly-layer {
+		position: absolute;
+		inset: 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+	.butterfly-wing {
+		transform-origin: 50% 50%;
+		animation: butterfly-beat 260ms ease-in-out infinite alternate;
+	}
+	@keyframes butterfly-beat {
+		from {
+			transform: scaleX(1);
+		}
+		to {
+			transform: scaleX(0.55);
+		}
+	}
+	.butterfly-antenna-l {
+		transform-origin: 47.6% 28.2%;
+		animation: butterfly-antenna 1.3s ease-in-out infinite alternate;
+	}
+	.butterfly-antenna-r {
+		transform-origin: 52.4% 28.2%;
+		animation: butterfly-antenna 1.1s ease-in-out -0.6s infinite alternate-reverse;
+	}
+	@keyframes butterfly-antenna {
+		from {
+			transform: rotate(-9deg);
+		}
+		to {
+			transform: rotate(9deg);
+		}
+	}
 	.brand {
 		position: absolute;
 		top: max(8px, 1.2vh);
@@ -1221,6 +2128,11 @@
 	}
 	.board-frame {
 		position: relative;
+		/* A single cell both boards share, so the outgoing and incoming grids sit on top of each
+		   other for the length of the swap. */
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr);
 		width: 100%;
 		height: 100%;
 		padding: clamp(8px, 1vw, 14px);
@@ -1257,10 +2169,10 @@
 		);
 	}
 	.board {
-		/* Runs once per mount, and {#key stateGame.gridSize} remounts the grid whenever the bonus
-		   changes board size — so 7×7 → 9×9 reads as a re-deal instead of the cells jumping to a
-		   new pitch under the old symbols. */
-		animation: grid-swap 380ms cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+		/* The pitch change is carried by gridSwapIn/gridSwapOut, which cross-fade the old and new
+		   grids while scaling each to the other's cell size. Stacked so the two overlap during the
+		   swap instead of the outgoing one collapsing the frame. */
+		grid-area: 1 / 1;
 		display: grid;
 		grid-template-columns: repeat(var(--grid-size), minmax(0, 1fr));
 		grid-template-rows: repeat(var(--grid-size), minmax(0, 1fr));
@@ -1332,9 +2244,12 @@
 		width: 104%;
 		height: 104%;
 	}
+	/* 110, not 117: the tomato's art fills 80% of its canvas, so 117% put it at 94% of the cell
+	   while the rest of the crop sits at 85–89% — "it looks bigger than all others" (user,
+	   2026-09-18). */
 	.symbol-tomato {
-		width: 117%;
-		height: 117%;
+		width: 110%;
+		height: 110%;
 	}
 	.symbol-eggplant,
 	.symbol-onion {
@@ -1354,28 +2269,74 @@
 		height: 96%;
 		filter: drop-shadow(0 0 7px #ffe36a);
 	}
+	/* Design 9198:20884 (groups 148/149): a 47px coin on a 75px cell — 63% of the cell, hung off
+	   its top-right corner with the centre ~18% in, so it rides over the neighbours. Kept a touch
+	   smaller and further in (62% of the cell's height, centre 26% in) because the board clips at
+	   its 3px padding and the design's overhang would lose 13% of an edge cell's coin. #2C1901 at
+	   rest, the design's #FD1A19 once the cell is part of a win; the "2" is Jersey 10 at 0.89 of
+	   the coin and the "X" at 0.47, both #FFF3B9 on a 1px #FFEA83 ring. */
 	.multiplier {
 		position: absolute;
-		right: 2%;
-		bottom: 1%;
+		top: 26%;
+		right: 26%;
 		z-index: 3;
-		display: grid;
-		place-items: center;
-		min-width: 31%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 62%;
 		aspect-ratio: 1;
-		padding: 1px;
-		border: clamp(1px, 0.15vw, 2px) solid #fff4a4;
+		transform: translate(50%, -50%);
+		border: max(1px, 2.1cqmin / var(--grid-size)) solid #ffea83;
 		border-radius: 50%;
-		background: linear-gradient(#ff813d, #c92322);
-		box-shadow: 0 2px 5px #310900;
-		font-size: clamp(7px, 1vw, 15px);
-		font-weight: 1000;
-		text-shadow: 0 2px 2px #510700;
+		background: #2c1901;
+		box-shadow: 0 0.2em 0.35em rgb(0 0 0 / 45%);
+		color: #fff3b9;
+		font-size: calc(min(100cqw, 100cqh) / var(--grid-size) * 0.6);
+		line-height: 1;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+	.multiplier-value {
+		font-size: 0.89em;
+	}
+	.multiplier-x {
+		font-size: 0.47em;
+	}
+	.cell.cluster-hit .multiplier {
+		background: #fd1a19;
+	}
+	/* The coin overhangs the cell to its right, which is a later sibling: lift the symbol layer
+	   that carries it so that neighbour's vegetable cannot paint over it. The layer, never the
+	   cell — a cell with a z-index is a stacking context whose opaque ::before then sits above
+	   every other cell's falling symbol: in a bonus drop the vegetables passing over the
+	   multiplier cells vanished, leaving slivers in the gap lines ("strange bug with items in
+	   board … after buying a bonus", 2026-09-17). Hit cells are 4, so a hit multiplier cell
+	   still needs its own lift; the board is never dropping while cells are lit. */
+	.symbol-layer:has(.multiplier) {
+		z-index: 3;
+	}
+	.cell.cluster-hit:has(.multiplier) {
+		z-index: 5;
 	}
 	/* Trap-door exit: the old board free-falls out the bottom under the same gravity as the drop,
-	   loosened by a per-reel delay and the per-cell jitter instead of a rigid left-to-right sweep. */
-	.phase-spinning-out .symbol-layer {
+	   loosened by a per-reel delay and the per-cell jitter instead of a rigid left-to-right sweep.
+	   It plays on the exit ghost (see the script), which is the live board's twin drawn over it
+	   with nothing but the symbols; the live cells keep their pads and hide their own symbols
+	   until the next result rains in. */
+	.board-exit .symbol-layer {
 		animation: trapdoor-exit var(--exit-duration) var(--gravity-ease) var(--exit-delay) both;
+	}
+	.board:not(.board-exit).phase-spinning-out .symbol-layer {
+		visibility: hidden;
+	}
+	.board.board-exit {
+		z-index: 4;
+		background: transparent;
+		border-color: transparent;
+		pointer-events: none;
+	}
+	.board-exit .cell::before {
+		display: none;
 	}
 	/* Spin reveal and tumble refill are the SAME motion: an accelerating fall whose duration is
 	   proportional to sqrt(distance) (constant gravity — see FALL_MOTION), then a separate
@@ -1442,6 +2403,30 @@
 	}
 	.cell.empty::before {
 		background: linear-gradient(145deg, #354e1b, #18320f);
+	}
+	/* Idle breath. Between spins the board is a still image, which reads as a screenshot. Each
+	   vegetable gets one small rise on a 10-18s cycle that is still for 90% of its length, and every
+	   cell runs that cycle at its own offset — so only a handful are ever moving at once and no two
+	   move together. Idle phase only, and never on a cell a win or a scatter is already animating.
+	   The reduced-motion block above flattens this along with everything else. */
+	.board.phase-idle .cell:not(.cluster-hit):not(.scatter-hit) .symbol {
+		transform-origin: center bottom;
+		animation: veg-breathe var(--idle-duration, 14s) ease-in-out var(--idle-delay, 0s) infinite;
+	}
+	@keyframes veg-breathe {
+		0%,
+		90% {
+			transform: translateY(0) scale(1, 1);
+		}
+		94% {
+			transform: translateY(-4.5%) scale(0.99, 1.02);
+		}
+		97% {
+			transform: translateY(0) scale(1.015, 0.985);
+		}
+		100% {
+			transform: translateY(0) scale(1, 1);
+		}
 	}
 	/* Cluster win read-out: heavy white type stroked in dark green, parked on the cluster's centre
 	   of mass. Sized off the cell pitch (board square / grid size) so it stays proportional from a
@@ -1728,12 +2713,73 @@
 		gap: 4px;
 	}
 	.bet-stepper button {
+		display: grid;
+		place-items: center;
 		width: 34px;
 		height: 34px;
 		border: 2px solid #a97423 !important;
 		border-radius: 50%;
 		background: #342006;
 		font-size: 20px;
+	}
+	/* Design reference (the HUD strip the user supplied alongside 9044:16058) draws both steppers as
+	   bars, not as type: inside a 104px button the minus is a 30x4 rule and the plus two of them
+	   crossed. Jersey 10's own "+" and "−" rendered a third of that, which is what read as "too
+	   small". Drawn instead of typeset so the ink keeps the design's ratio at every HUD size, and
+	   drawn as a span rather than an <svg> because `.hud button svg` is resized by six separate
+	   breakpoints that all assume a 64x64 icon box. */
+	.step-glyph {
+		position: relative;
+		display: block;
+		width: 28.8%;
+		aspect-ratio: 1;
+	}
+	.step-glyph::before,
+	.step-glyph::after {
+		content: '';
+		position: absolute;
+		background: currentcolor;
+		filter: drop-shadow(2px 2px 0 rgb(35 13 2 / 50%));
+	}
+	.step-glyph::before {
+		top: 50%;
+		left: 0;
+		width: 100%;
+		height: 13.4%;
+		min-height: 2px;
+		transform: translateY(-50%);
+	}
+	.step-glyph::after {
+		top: 0;
+		left: 50%;
+		width: 13.4%;
+		min-width: 2px;
+		height: 100%;
+		transform: translateX(-50%);
+	}
+	.step-glyph.minus::after {
+		display: none;
+	}
+	/* Icon-only, per 9298:294975 — the bolt is 47% of the button's height, and the two-bolt super
+	   turbo state is the one variant that is wider than it is tall. Taken out of the button's grid
+	   flow on purpose: this button's rows are `1fr auto` for an icon-over-caption pair it no longer
+	   has, and a flowed image resolves `1fr` against its own 132px intrinsic height, which blew the
+	   row open and then had the button's `overflow: hidden` slice the bolt into a stub. Absolute
+	   against the button's padding box, the percentage has a definite box to measure. */
+	.turbo-icon {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: auto;
+		height: 47%;
+		transform: translate(-50%, -50%);
+		/* The one non-pixel-art mark in the HUD: a smooth vector bolt taken down from 132px, which
+		   the skin's blanket `pixelated` turned into a staircase. */
+		image-rendering: auto;
+		filter: drop-shadow(2px 2px 0 rgb(35 13 2 / 50%));
+	}
+	.turbo-icon.wide {
+		height: 43%;
 	}
 	.spin {
 		position: relative;
@@ -1830,30 +2876,108 @@
 		color: #fff067;
 		font-size: 27px;
 	}
+	/* ── Bonus menu ────────────────────────────────────────────────────────────────────────────
+	   Design 9257:209905, a 1200x670 frame with the cards straight on the darkened game. The panel
+	   is a stage at that frame's aspect, sized to the viewport, and `--u` is one design px of it —
+	   every measurement below is the frame's own number times `--u`, which is what keeps the 3+2
+	   layout, the title, the close disc and the bet stepper in place at every landscape size. It
+	   replaced a px layout that reflowed to two columns under 980px and grew past the screen. */
+	.buy-layer {
+		padding: 20px;
+	}
 	.buy-panel {
+		--u: calc(100cqw / 1200);
 		position: relative;
-		width: min(920px, 94vw);
-		padding: 25px;
-		border: 6px solid #71410d;
-		border-radius: 28px;
-		background: linear-gradient(#416b20, #18360f);
-		box-shadow:
-			inset 0 0 0 3px #d5a63c,
-			0 25px 70px #102008;
-	}
-	.buy-panel header {
-		text-align: center;
-	}
-	.buy-panel header small {
-		color: #d9ff78;
-		font-weight: 900;
-		letter-spacing: 0.2em;
+		width: min(100%, calc((100svh - 40px) * 1200 / 670));
+		aspect-ratio: 1200 / 670;
+		container-type: inline-size;
+		padding: 0;
+		border: 0;
+		border-radius: 0;
+		background: none;
+		box-shadow: none;
+		overflow: visible;
 	}
 	.buy-panel h2 {
-		margin: 2px 0 18px;
-		color: #ffe45d;
-		font-size: 34px;
-		text-shadow: 0 3px #4c2500;
+		position: absolute;
+		top: calc(21 * var(--u));
+		right: 0;
+		left: 0;
+		margin: 0;
+		color: #fff;
+		font-size: calc(45 * var(--u));
+		line-height: 1;
+		text-align: center;
+		text-shadow: none;
+	}
+	/* The close is a round dark disc (9257:210138) at the frame's top-right, against the pixel pass
+	   that squares every other button — hence the `!important` on the radius. */
+	.buy-panel .close {
+		top: calc(24 * var(--u));
+		right: auto;
+		left: calc(1127 * var(--u));
+		display: grid;
+		place-items: center;
+		width: calc(48.7 * var(--u));
+		height: calc(48.7 * var(--u));
+		aspect-ratio: 1;
+		padding: 0;
+		border: max(1px, calc(1 * var(--u))) solid #935901;
+		border-radius: 50% !important;
+		background: #351e01;
+		color: #fff;
+	}
+	/* Drawn, not typeset: Jersey 10's "×" carries uneven side bearings and sat high and right of
+	   the disc's centre ("the x is not centered inside the circle", user 2026-09-16). Two bars on
+	   the disc's own centre cannot drift. 16px of ink in the design's 48.7 disc. The menu toggle
+	   draws the same cross in its open state. */
+	.menu-toggle .close-glyph,
+	.buy-panel .close-glyph,
+	.auto-layer .close-glyph {
+		position: relative;
+		display: block;
+		width: 34%;
+		aspect-ratio: 1;
+	}
+	.menu-toggle .close-glyph::before,
+	.menu-toggle .close-glyph::after,
+	.buy-panel .close-glyph::before,
+	.buy-panel .close-glyph::after,
+	.auto-layer .close-glyph::before,
+	.auto-layer .close-glyph::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: -8%;
+		width: 116%;
+		height: max(2px, 20%);
+		background: currentcolor;
+		transform: translateY(-50%) rotate(45deg);
+	}
+	.menu-toggle .close-glyph::after,
+	.buy-panel .close-glyph::after,
+	.auto-layer .close-glyph::after {
+		transform: translateY(-50%) rotate(-45deg);
+	}
+	/* Menu toggle's cross, 9281:249872: a rounded-cap plus (17.5 long, 2.7 thick) scaled x1.414 and
+	   turned 45deg inside the 49 box, so the ink spans 17.5 (36% of the box) corner to corner with
+	   3.8px (22% of that span) strokes and round ends — lighter than the buy panel's square-cut
+	   bars ("the x is wrong", user 2026-09-16). */
+	.menu-toggle .close-glyph {
+		width: 36%;
+	}
+	.menu-toggle .close-glyph::before,
+	.menu-toggle .close-glyph::after {
+		left: -21%;
+		width: 142%;
+		height: max(2px, 22%);
+		border-radius: 999px;
+	}
+	.menu-toggle.open {
+		background: #e38b01 !important;
+		background-image: none !important;
+		border-color: #e38b01 !important;
+		color: #fff;
 	}
 	.close {
 		position: absolute;
@@ -1869,73 +2993,185 @@
 		font-size: 26px;
 		cursor: pointer;
 	}
+	/* Three across, then two centred under them — the design's own 3+2: a 1048-wide grid at
+	   (75, 72), cards 345.33 x 250.34 on a 6 gap. Six columns, each card spanning two, puts the
+	   last row's pair in the middle without a second grid. */
 	.buy-grid {
+		position: absolute;
+		top: calc(72 * var(--u));
+		left: calc(75 * var(--u));
 		display: grid;
-		grid-template-columns: repeat(5, minmax(0, 1fr));
-		gap: 12px;
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+		grid-template-rows: repeat(2, calc(250.34 * var(--u)));
+		gap: calc(6 * var(--u));
+		width: calc(1048 * var(--u));
 	}
+	.buy-grid > .buy-card {
+		grid-column: span 2;
+	}
+	.buy-grid > .buy-card:nth-child(4) {
+		grid-column: 2 / span 2;
+	}
+	/* Card: #351E01 on a 3px #935901 edge, 8px corners. The design measures its rows from the
+	   card's outer edge — title at 12, copy at 44, symbol at 99, price at 172, button at 188.34 —
+	   so the rows are those exact heights on a 4 gap inside 12/16 of padding that includes the
+	   border. Fixed rows, not `auto`: the five copy lines differ by a line or two, and the symbol,
+	   price and button have to sit at the same height on every card. */
 	.buy-card {
 		display: grid;
-		grid-template-rows: 80px auto auto auto auto;
+		grid-template-rows:
+			calc(28 * var(--u)) calc(51 * var(--u)) calc(69 * var(--u)) calc(12.34 * var(--u))
+			calc(50 * var(--u));
 		justify-items: center;
-		gap: 5px;
+		align-items: center;
+		gap: calc(4 * var(--u));
 		min-width: 0;
-		padding: 14px 8px;
-		border: 2px solid #9ec652;
-		border-radius: 18px;
-		background: linear-gradient(#527d2a, #244615);
+		padding: calc(9 * var(--u)) calc(13 * var(--u));
+		border: calc(3 * var(--u)) solid #935901;
+		border-radius: calc(8 * var(--u));
+		background: #351e01;
 		color: #fff;
+		box-shadow: none;
+	}
+	.buy-card img {
+		width: calc(70 * var(--u));
+		height: calc(69 * var(--u));
+		object-fit: contain;
+		filter: drop-shadow(0 calc(4 * var(--u)) calc(3 * var(--u)) #1a0d01);
+	}
+	.buy-card span {
+		color: #fff;
+		font-size: calc(26.45 * var(--u));
+		font-weight: 400;
+		letter-spacing: 0.03em;
+		line-height: 1;
+		text-align: center;
+	}
+	/* Poppins, at the design's 11px on a 17px line. In Jersey 10 this line was 8px of stems and
+	   unreadable (user, 2026-09-15); the design answers that with a different face for copy, not
+	   a bigger pixel one. Three lines fit the row; a longer translation is clipped, not reflowed. */
+	.buy-card small {
+		align-self: start;
+		width: 100%;
+		overflow: hidden;
+		color: #fff;
+		font-size: calc(11 * var(--u));
+		letter-spacing: 0.02em;
+		line-height: calc(17 * var(--u));
+		text-align: center;
+	}
+	/* The design sets the price at 9.36px, which is below what this game's players can read
+	   (every "too small" note so far); 12 keeps it a caption without being one. */
+	.buy-card em {
+		color: #fff;
+		font-size: calc(12 * var(--u));
+		font-style: normal;
+		font-weight: 700;
+		line-height: 1;
+	}
+	.buy-cta {
+		width: calc(300 * var(--u));
+		max-width: 100%;
+		height: calc(50 * var(--u));
+		min-height: 0;
+		margin: 0;
+		padding: 0;
+		border: max(1px, calc(1 * var(--u))) solid #935901;
+		/* Square, like every other pixel button ("buttons with no rounding", user 2026-09-18). */
+		border-radius: 0;
+		background: #351e01;
+		color: #fff;
+		font-size: calc(21.93 * var(--u));
+		letter-spacing: 0.058em;
+		line-height: 1;
+		text-transform: uppercase;
 		cursor: pointer;
-		box-shadow: inset 0 0 18px rgb(255 245 132 / 9%);
 	}
-	.buy-card:hover:not(:disabled) {
-		transform: translateY(-3px);
-		border-color: #ffe065;
+	/* The buy modes take the filled button; the two per-spin toggles stay outlined. */
+	.buy-cta.buy {
+		border-color: #e38b01;
+		background: #e38b01;
 	}
-	.buy-card:disabled {
+	.buy-cta:hover:not(:disabled) {
+		border-color: #ffc45f;
+	}
+	.buy-cta:disabled {
 		opacity: 0.42;
 		cursor: not-allowed;
 	}
-	.buy-card img {
-		width: 80px;
-		height: 80px;
-		object-fit: contain;
-		filter: drop-shadow(0 4px 3px #142407);
-	}
-	.buy-card span {
-		color: #ffe769;
-		font-weight: 1000;
-		text-align: center;
-	}
-	.buy-card small {
-		min-height: 24px;
-		color: #dcf5b6;
-		font-size: 8px;
-		text-align: center;
-	}
-	.buy-card strong {
-		font-size: 20px;
-	}
-	.buy-card em {
-		color: #ffd05a;
-		font-size: 11px;
-		font-style: normal;
-	}
-	.buy-card .card-state {
-		font-size: 10px;
-		letter-spacing: 0.08em;
-		color: #cfeaa0;
-	}
 	.buy-card.armed {
 		border-color: #ffd166;
-		background: linear-gradient(#c98a22, #6d3f0b);
-		box-shadow:
-			inset 0 0 18px rgb(255 226 132 / 22%),
-			0 0 14px rgb(255 202 74 / 55%);
+		box-shadow: 0 0 calc(14 * var(--u)) rgb(255 202 74 / 55%);
 	}
-	.buy-card.armed .card-state {
-		color: #fff0bd;
+	.buy-card.armed .buy-cta {
+		border-color: #ffd166;
+		background: #a5660a;
 	}
+	/* Bet stepper, 9257:211058: a 271.7 x 67 box at (464, 592) — over the bar, where the HUD's
+	   own stepper is — with a 48.7 disc at each end and BET over the amount between them. */
+	.buy-bet {
+		position: absolute;
+		top: calc(592 * var(--u));
+		left: calc(464 * var(--u));
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		width: calc(271.7 * var(--u));
+		height: calc(67 * var(--u));
+		padding: 0 calc(14 * var(--u));
+		border: max(1px, calc(2 * var(--u))) solid #935901;
+		border-radius: calc(12 * var(--u));
+		background: #351e01;
+	}
+	.buy-bet button {
+		display: grid;
+		place-items: center;
+		width: calc(48.7 * var(--u));
+		height: calc(48.7 * var(--u));
+		padding: 0;
+		border: max(1px, calc(1 * var(--u))) solid #935901;
+		border-radius: 50% !important;
+		background: #351e01;
+		color: #fff;
+		clip-path: none !important;
+		cursor: pointer;
+	}
+	.buy-bet button:disabled {
+		opacity: 0.42;
+		cursor: not-allowed;
+	}
+	/* `pressed-flash` is added at runtime by flashControl, so it is :global for the compiler. */
+	.buy-bet button:global(.pressed-flash),
+	.buy-bet button:active:not(:disabled) {
+		background: #65400c;
+	}
+	.buy-bet .step-glyph::before,
+	.buy-bet .step-glyph::after {
+		filter: none;
+	}
+	.buy-bet-readout {
+		display: grid;
+		gap: calc(4 * var(--u));
+		min-width: 0;
+		color: #fff;
+		text-align: center;
+	}
+	.buy-bet-readout span {
+		font-size: calc(11 * var(--u));
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		line-height: 1;
+		text-transform: uppercase;
+	}
+	.buy-bet-readout strong {
+		overflow: hidden;
+		font-size: calc(24 * var(--u));
+		font-weight: 700;
+		line-height: 1;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
 	.confirm-note {
 		margin: 0;
 		max-width: 260px;
@@ -1946,101 +3182,235 @@
 		z-index: 45;
 		background: rgb(7 17 2 / 76%);
 	}
-	.confirm-panel,
-	.auto-panel {
+	/* ── Confirm / autoplay dialog chrome ──────────────────────────────────────────────────────
+	   Measured off the design (Figma 9024:2502, and the 1200x670 board frame it sits in): the
+	   dialog is 600x290 there, so every number below is design px at a 600px panel.
+	     panel   #311F05 on a 2px #D6902C border, square corners, no inner rings and no drop shadow
+	     title   #E6A945, 32px cap height, 40 from the panel's top edge
+	     rule    2px #5A370D fading out at both ends, at y 87
+	     copy    #EBCD92
+	     buttons 59 tall, two 260-wide columns 16 apart, bottom padding 37
+	   The green wood panel this replaces was the buy menu's chrome reused; the buy menu keeps it. */
+	.confirm-panel {
 		position: relative;
 		display: grid;
 		justify-items: center;
-		width: min(470px, 92vw);
-		padding: 30px;
-		border: 6px solid #71410d;
-		border-radius: 28px;
-		background: radial-gradient(circle at 50% 0, #648d2a, #18360f 70%);
-		box-shadow:
-			inset 0 0 0 3px #d5a63c,
-			0 25px 70px #102008;
+		width: min(600px, 92vw);
+		padding: 26px 32px 37px;
+		border: 2px solid #d6902c;
+		border-radius: 0;
+		background: #311f05;
+		box-shadow: none;
 		text-align: center;
 	}
-	.confirm-panel > small,
-	.auto-panel > small {
-		color: #d9ff78;
+	.dlg-rule {
+		width: 100%;
+		height: 2px;
+		margin-top: 13px;
+		background: linear-gradient(
+			90deg,
+			rgb(90 55 13 / 0%),
+			#5a370d 16%,
+			#5a370d 84%,
+			rgb(90 55 13 / 0%)
+		);
+	}
+	.confirm-panel > small {
+		color: #8a5d1b;
 		font-weight: 1000;
 		letter-spacing: 0.18em;
 	}
-	.confirm-panel > img {
-		width: 105px;
-		height: 105px;
-		object-fit: contain;
-		filter: drop-shadow(0 5px 4px #102008);
+	.confirm-panel h2 {
+		margin: 0;
+		color: #e6a945;
+		font-size: 46px;
+		line-height: 1;
+		text-shadow: none;
 	}
-	.confirm-panel h2,
-	.auto-panel h2 {
-		margin: 2px 0 8px;
-		color: #ffe45d;
-		font-size: clamp(24px, 4vw, 38px);
-		text-shadow: 0 3px #4c2500;
-	}
-	.confirm-panel p,
-	.auto-panel p {
-		margin: 4px 0 14px;
-		color: #e3f6be;
-		font-size: 12px;
+	.confirm-panel p {
+		margin: 22px 0 0;
+		color: #ebcd92;
+		font-size: 22px;
+		line-height: 1.25;
 	}
 	.confirm-panel > strong {
-		margin-bottom: 18px;
-		color: #fff;
-		font-size: 29px;
+		margin-top: 6px;
+		color: #ebcd92;
+		font-size: 26px;
 	}
 	.confirm-actions {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 12px;
+		gap: 16px;
 		width: 100%;
+		/* 21, not a round number: it lands the button row on the design's y 194 and the panel on its
+		   290, with this dialog carrying a price line the reference frame folds into its one sentence. */
+		margin-top: 21px;
 	}
-	.confirm-actions button,
-	.auto-start {
-		min-height: 45px;
-		border: 2px solid #dcad43;
-		border-radius: 12px;
-		color: #fff;
+	.confirm-actions button {
+		min-height: 59px;
+		border: 2px solid #8a5d1b;
+		border-radius: 0;
+		color: #ebcd92;
+		font-size: 24px;
 		font-weight: 1000;
 		cursor: pointer;
 	}
 	.confirm-actions .cancel {
-		background: #51330d;
+		background: #311f05;
 	}
-	.confirm-actions .accept,
-	.auto-start {
-		background: linear-gradient(#83bc36, #3f761b);
-		box-shadow: inset 0 2px #bdec66;
-	}
-	.auto-panel {
-		width: min(560px, 92vw);
-	}
-	.auto-options {
-		display: grid;
-		grid-template-columns: repeat(7, 1fr);
-		gap: 7px;
-		width: 100%;
-		margin: 18px 0;
-	}
-	.auto-options button {
-		min-width: 0;
-		padding: 10px 3px;
-		border: 2px solid #80601c;
-		border-radius: 9px;
-		background: #2d2008;
+	.confirm-actions .accept {
+		border-color: #d6902c;
+		background: #d6902c;
+		box-shadow: none;
 		color: #fff;
-		font-weight: 1000;
+	}
+	/* ── Autoplay panel, design 9044:16058 ────────────────────────────────────────────────────────
+	   604x477 of #351E01 behind a 3px #935901 border at radius 12. One 540-wide column inset 32 on
+	   every side: three switch rows 33.214 tall on a 16 gap from y32, the NUMBER OF SPINS heading,
+	   a stepper of two 48.696 circles either side of the figure, and a 540x60 #E38B01 CONFIRM bar
+	   landing on the bottom inset. The chip grid this replaces was this game's own invention.
+	   Every length is a multiple of --u, the panel's own 1/604th, so the dialog scales as one piece
+	   instead of as a stack of independently clamped parts. The design sets the labels, heading and
+	   figure in the copy face and CONFIRM in Jersey 10; the measured ink heights (14 cap on the
+	   labels, 17 on CONFIRM) are what the sizes below are tuned against. */
+	.auto-panel {
+		--u: calc(min(604px, 92vw, 118svh) / 604);
+		position: relative;
+		display: grid;
+		justify-items: stretch;
+		width: calc(604 * var(--u));
+		padding: calc(32 * var(--u));
+		border: calc(3 * var(--u)) solid #935901;
+		border-radius: calc(12 * var(--u));
+		background: #351e01;
+		box-shadow: none;
+		text-align: center;
+	}
+	/* Anchored to the overlay, at the design's own screen-corner spot, in the panel's palette. */
+	.auto-layer .close {
+		top: clamp(8px, 3.6svh, 24px);
+		right: clamp(8px, 2vw, 24px);
+		display: grid;
+		place-items: center;
+		width: clamp(22px, 6.4svh, 49px);
+		height: auto;
+		padding: 0;
+		border: 1px solid #935901;
+		/* The skin squares every close button; this one is the design's own circle. */
+		border-radius: 50% !important;
+		background: #361e01;
+	}
+	.auto-toggles {
+		display: grid;
+		gap: calc(16 * var(--u));
+	}
+	.auto-toggle-row {
+		display: flex;
+		gap: calc(16 * var(--u));
+		align-items: center;
+		justify-content: space-between;
+		min-height: calc(33.214 * var(--u));
+	}
+	.auto-toggle-row span {
+		color: #fff;
+		font-size: calc(28 * var(--u));
+		font-weight: 400;
+		letter-spacing: calc(0.6 * var(--u));
+		text-align: left;
+	}
+	/* 62x33.214 pill carrying a 23 knob inset 5, so the knob travels 62 - 5 - 23 = 34. */
+	.switch {
+		position: relative;
+		flex: none;
+		width: calc(62 * var(--u));
+		height: calc(33.214 * var(--u));
+		border: calc(1.5 * var(--u)) solid #e38b01 !important;
+		border-radius: 999px;
+		background: #351e01;
+		cursor: pointer;
+		transition: background 140ms linear;
+	}
+	.switch::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: calc(5 * var(--u));
+		width: calc(23 * var(--u));
+		height: calc(23 * var(--u));
+		border-radius: 50%;
+		background: #fff;
+		transform: translateY(-50%);
+		transition: left 140ms ease;
+	}
+	.switch.on {
+		background: #e38b01;
+	}
+	.switch.on::after {
+		left: calc(34 * var(--u));
+	}
+	.switch:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+	.auto-panel h2 {
+		margin: calc(62 * var(--u)) 0 0;
+		color: #fff;
+		font-size: calc(28 * var(--u));
+		font-weight: 400;
+		letter-spacing: calc(0.6 * var(--u));
+		line-height: 1;
+		text-shadow: none;
+	}
+	.auto-count {
+		display: flex;
+		gap: calc(30 * var(--u));
+		align-items: center;
+		justify-content: center;
+		margin-top: calc(28 * var(--u));
+	}
+	.auto-count button {
+		display: grid;
+		place-items: center;
+		width: calc(48.696 * var(--u));
+		height: calc(48.696 * var(--u));
+		border: calc(1 * var(--u)) solid #935901 !important;
+		border-radius: 50%;
+		background: #361e01;
+		color: #fff;
+		box-shadow: none;
 		cursor: pointer;
 	}
-	.auto-options button.active {
-		border-color: #efff83;
-		background: #639429;
-		box-shadow: 0 0 12px #b9f94b88;
+	.auto-count button:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+	/* Jersey 10 throughout, like every other panel in the game ("fonts here should be same as
+	   others", user 2026-09-16); it sets a third smaller than the Poppins it replaces at the same
+	   em, so each size below is stepped up to keep the design's visual weight. */
+	.auto-count strong {
+		min-width: calc(64 * var(--u));
+		color: #fff;
+		font-size: calc(46 * var(--u));
+		font-weight: 400;
+		line-height: 1;
+	}
+	.auto-panel p {
+		margin: calc(22 * var(--u)) 0 calc(24 * var(--u));
+		color: #e6c28a;
+		font-size: calc(19 * var(--u));
+		line-height: 1.2;
 	}
 	.auto-start {
-		width: 100%;
+		min-height: calc(60 * var(--u));
+		border: 0 !important;
+		border-radius: 0;
+		background: #e38b01;
+		box-shadow: none;
+		color: #fff;
+		font-size: calc(32 * var(--u));
+		line-height: 1;
+		cursor: pointer;
 	}
 	.auto-start:disabled {
 		opacity: 0.4;
@@ -2087,23 +3457,26 @@
 			transform: translateY(0) scale(1, 1);
 		}
 	}
-	/* Stone-hit: wide and short against the floor, springs back through a small bounce. Timings
-	   mirror magnetic's squash (~190ms) / thump (45ms) / bounce (35ms) / settle (40ms) split. */
+	/* Landing settle: a soft touchdown, not a stone-hit. The earlier 13% squash and 7% bounce
+	   read as a jolt; the user asked for "a very gentle shake when items hit their cell"
+	   (2026-09-16), so the squash is a few percent, the rebound a pixel or two, with a hair of
+	   side-to-side wobble as the symbol comes to rest. Same phase split as magnetic's
+	   squash / thump / bounce / settle so the timing profile is unchanged. */
 	@keyframes land-impact {
 		0% {
 			transform: none;
 		}
-		18% {
-			transform: translateY(0) scale(1.13, 0.86);
+		22% {
+			transform: translate(0, 0) scale(1.045, 0.945);
 		}
-		38% {
-			transform: translateY(-7%) scale(0.97, 1.05);
+		45% {
+			transform: translate(-1.5%, -2.5%) scale(0.99, 1.015);
 		}
-		60% {
-			transform: translateY(0) scale(1.03, 0.98);
+		68% {
+			transform: translate(1%, 0) scale(1.01, 0.995);
 		}
-		80% {
-			transform: translateY(-2%) scale(0.99, 1.01);
+		86% {
+			transform: translate(-0.5%, -0.6%) scale(1, 1);
 		}
 		100% {
 			transform: none;
@@ -2146,18 +3519,6 @@
 			transform: scale(0.06) rotate(14deg) translateY(6%);
 			opacity: 0;
 			filter: brightness(2.4);
-		}
-	}
-	@keyframes grid-swap {
-		from {
-			transform: scale(0.9);
-			opacity: 0;
-			filter: brightness(1.5);
-		}
-		to {
-			transform: scale(1);
-			opacity: 1;
-			filter: none;
 		}
 	}
 	@keyframes card-in {
@@ -2212,9 +3573,6 @@
 		.metric strong {
 			font-size: 15px;
 		}
-		.buy-grid {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-		}
 	}
 	@media (max-width: 680px), (orientation: portrait) {
 		.brand {
@@ -2255,14 +3613,55 @@
 		.metrics {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
-		.buy-grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
+		/* Narrow / portrait: the 1200x670 stage would put a 4px sentence on a phone, so the same
+		   drawing flows instead — one card per row at close to design size, scrolling, with the
+		   stepper under the cards. `--u` is a card-width unit here rather than a frame one. */
+		.buy-layer {
+			padding: 8px;
 		}
 		.buy-panel {
-			padding: 18px 12px;
+			--u: calc(min(100vw - 16px, 420px) / 380);
+			width: min(100%, 420px);
+			max-height: calc(100svh - 16px);
+			aspect-ratio: auto;
+			container-type: normal;
+			padding: calc(8 * var(--u)) calc(8 * var(--u)) calc(12 * var(--u));
+			overflow-y: auto;
 		}
 		.buy-panel h2 {
-			font-size: 25px;
+			position: static;
+			margin: calc(8 * var(--u)) calc(56 * var(--u)) calc(14 * var(--u));
+			font-size: calc(34 * var(--u));
+		}
+		.buy-panel .close {
+			top: calc(4 * var(--u));
+			right: calc(4 * var(--u));
+			left: auto;
+			width: calc(44 * var(--u));
+			height: calc(44 * var(--u));
+			font-size: calc(28 * var(--u));
+		}
+		.buy-grid {
+			position: static;
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: none;
+			gap: calc(8 * var(--u));
+			width: 100%;
+		}
+		.buy-grid > .buy-card,
+		.buy-grid > .buy-card:nth-child(4) {
+			grid-column: auto;
+		}
+		.buy-card {
+			grid-template-rows: auto auto calc(69 * var(--u)) auto calc(50 * var(--u));
+		}
+		.buy-card small {
+			overflow: visible;
+		}
+		.buy-bet {
+			position: static;
+			width: min(100%, calc(271.7 * var(--u)));
+			margin: calc(12 * var(--u)) auto 0;
 		}
 	}
 	@media (max-height: 650px) and (orientation: landscape) {
@@ -2320,7 +3719,7 @@
 		padding: 0;
 		border: 0;
 		border-radius: 0;
-		background: url('/assets/veggie-salad/pixel/logo.png') center / contain no-repeat;
+		background: url('/assets/veggie-salad/pixel/logo.webp') center / contain no-repeat;
 		box-shadow: none;
 		transform: translateX(-50%);
 	}
@@ -2389,17 +3788,35 @@
 	.backplate {
 		filter: drop-shadow(0 0 0 #ffe36a);
 	}
-	.multiplier {
-		border-radius: 0;
-		background: #c52b1d;
-		box-shadow: 2px 2px 0 #390c08;
-		font-family: inherit;
-	}
+	/* Design 9257:211159: the win read-out is a plaque, not loose type — a #2C1901 field inside a
+	   #844A0D border with stepped corners, the amount in #E38B01 Jersey 10. White type stroked in
+	   dark green was the thing that would not read against the board. Proportions are the design's
+	   own 340x133 plaque: 6px of border and a 57px cap against 81px type, so 0.075em and 0.7em. The
+	   design's side padding (1.02em) is cut to 0.62em — at cluster-label size the full plaque runs
+	   wider than two cells. */
 	.win-label {
+		padding: 0.14em 0.62em 0.2em;
+		border: 0.1em solid #844a0d;
+		background: #2c1901;
+		color: #e38b01;
 		font-family: inherit;
 		font-size: calc(min(100cqw, 100cqh) / var(--grid-size) * 0.34);
-		-webkit-text-stroke: 0.12em #18330b;
-		text-shadow: 3px 3px 0 #18330b;
+		line-height: 1.2;
+		/* One chamfer stands in for the design's two-step corner stair: scaled to a board cell each
+		   step is under 3px, and the stair reads as a single cut anyway. */
+		clip-path: polygon(
+			0.18em 0,
+			calc(100% - 0.18em) 0,
+			100% 0.18em,
+			100% calc(100% - 0.18em),
+			calc(100% - 0.18em) 100%,
+			0.18em 100%,
+			0 calc(100% - 0.18em),
+			0 0.18em
+		);
+		-webkit-text-stroke: 0;
+		text-shadow: none;
+		filter: drop-shadow(0.06em 0.08em 0 rgb(0 0 0 / 45%));
 		animation: pixel-win-in 260ms steps(4) both;
 	}
 	.bonus-status,
@@ -2409,7 +3826,6 @@
 	.quick-menu,
 	.buy-panel,
 	.confirm-panel,
-	.auto-panel,
 	.event-card {
 		border-radius: 0;
 		font-family: inherit;
@@ -2481,7 +3897,11 @@
 		margin-left: auto;
 		gap: 18px;
 	}
-	.bet-stepper button {
+	/* The design row runs one square size across the stepper, the bolt and the auto button — 104 of
+	   the bar's 157px inner height. Against this HUD's 84px inner box that is 58, which the stepper
+	   already used and the two utilities did not. */
+	.bet-stepper button,
+	.hud-right .utility {
 		width: 58px;
 		height: 58px;
 	}
@@ -2494,10 +3914,7 @@
 		font-size: 92px;
 	}
 	.hud button,
-	.buy-card,
 	.confirm-actions button,
-	.auto-options button,
-	.auto-start,
 	.event-card button,
 	.quick-menu button {
 		border-radius: 0;
@@ -2554,20 +3971,8 @@
 	.event-card.kind-retrigger {
 		background: #1e5c72;
 	}
-	.buy-panel,
-	.confirm-panel,
-	.auto-panel {
-		border: 6px solid #6d360b;
-		background: #294514;
-		box-shadow:
-			inset 0 0 0 4px #d49b35,
-			inset 0 0 0 8px #351b08,
-			8px 10px 0 #1c0d05;
-	}
-	.buy-card {
-		border-color: #b57925;
-		background: #3b5c1c;
-	}
+	/* The green wood panel and its cards used to be redefined here. Both dialogs and the bonus menu
+	   now carry their own design colours, so there is nothing left for this block to repaint. */
 	.close {
 		border-radius: 0 !important;
 	}
@@ -3391,13 +4796,25 @@
 		place-items: center;
 		padding: 5px 2px 4px;
 	}
+	/* Measured off the design's own HUD strip: inside a 50px button the auto arrows are 10px of ink
+	   over a 21px AUTO caption — the same fifth-of-the-box the mobile rail draws. The viewBox is
+	   tight to the glyph, so this percentage is the ink itself; `height: auto` keeps its 8:7. */
 	.hud-right .utility svg {
-		width: 50%;
-		height: 50%;
+		width: 20%;
+		height: auto;
+		filter: none;
+	}
+	.auto-glyph {
+		shape-rendering: crispedges;
+	}
+	/* Scoped under the bar so `.hud button svg { display: block }` above cannot win the cascade
+	   and stack both marks in one button ("this button is wrong", user 2026-09-17). */
+	.hud button .auto-glyph-smooth {
+		display: none;
 	}
 	.hud-right .utility small {
 		min-height: 0.72em;
-		font-size: clamp(5px, 0.48vw, 8px);
+		font-size: clamp(8px, 0.95vw, 14px);
 		line-height: 1;
 	}
 
@@ -4267,8 +5684,7 @@
 
 	.super-bonus-moon {
 		z-index: 1;
-		background: var(--bonus-super-moon) left 12% top 9% / clamp(52px, 5.5vw, 118px) auto
-			no-repeat;
+		background: var(--bonus-super-moon) left 12% top 9% / clamp(52px, 5.5vw, 118px) auto no-repeat;
 		filter: drop-shadow(0 0 clamp(10px, 1.6vw, 26px) rgb(255 244 186 / 45%));
 	}
 
@@ -4396,9 +5812,11 @@
 			no-repeat;
 	}
 
+	/* Design 9198:81939: the foliage is 290 tall on the 670 frame, bottom-left, shown whole — the
+	   wide, low corner is what the wolf pup's tail tucks behind. */
 	.super-bonus-oak {
 		z-index: 4;
-		background: var(--bonus-super-oak) left bottom -26vh / auto 68% no-repeat;
+		background: var(--bonus-super-oak) left bottom / auto 43.3% no-repeat;
 	}
 
 	.background-hidden {
@@ -4490,10 +5908,25 @@
 		color: currentColor;
 	}
 
-	.quick-menu-icon svg {
-		width: 16px;
-		height: 16px;
-		fill: currentColor;
+	/* Glyph widths are the design's own boxes on its 48px square: sound 22.5 / 32 (the slash
+	   needs the room), music 24.6 / 21.6. Height follows each SVG's aspect. Smooth vectors, so
+	   the skin's blanket `pixelated` is lifted like the turbo bolt's. */
+	.quick-menu-icon img {
+		display: block;
+		height: auto;
+		image-rendering: auto;
+	}
+	.qm-sound-on {
+		width: 47%;
+	}
+	.qm-sound-off {
+		width: 67%;
+	}
+	.qm-music-on {
+		width: 51%;
+	}
+	.qm-music-off {
+		width: 45%;
 	}
 
 	.quick-menu-icon.info-icon {
@@ -4801,10 +6234,14 @@
 			padding: 4px;
 			overflow: hidden;
 		}
+		.buy-layer {
+			padding: 4px;
+		}
+		.buy-panel {
+			width: min(100%, calc((100svh - 8px) * 1200 / 670));
+		}
 
-		.buy-panel,
-		.confirm-panel,
-		.auto-panel {
+		.confirm-panel {
 			width: min(388px, calc(100vw - 8px));
 			max-height: calc(100dvh - 8px);
 			padding: 6px 10px;
@@ -4813,6 +6250,14 @@
 				inset 0 0 0 2px #d49b35,
 				inset 0 0 0 4px #351b08,
 				3px 3px 0 #1c0d05;
+			overflow: auto;
+		}
+
+		/* The autoplay dialog is one proportional drawing, so the shell only has to hand it a
+		   smaller unit — 540 is its own height in design units once the stop note is counted. */
+		.auto-panel {
+			--u: calc(min(388px, 100vw - 8px, (100dvh - 8px) * 604 / 540) / 604);
+			max-height: calc(100dvh - 8px);
 			overflow: auto;
 		}
 
@@ -4826,67 +6271,19 @@
 			line-height: 1;
 		}
 
-		.buy-panel header small,
-		.confirm-panel > small,
-		.auto-panel > small {
+		.confirm-panel > small {
 			font-size: 6px;
 			letter-spacing: 0.1em;
 		}
 
-		.buy-panel h2,
-		.confirm-panel h2,
-		.auto-panel h2 {
+		.confirm-panel h2 {
 			margin: 0 24px 4px;
 			font-size: 15px;
 			line-height: 1;
 			text-shadow: 1px 1px #4c2500;
 		}
 
-		.buy-grid {
-			grid-template-columns: repeat(5, minmax(0, 1fr));
-			gap: 4px;
-		}
-
-		.buy-card {
-			grid-template-rows: 30px auto auto auto auto auto;
-			gap: 1px;
-			padding: 3px 2px;
-			border-width: 2px;
-		}
-
-		.buy-card img {
-			width: 28px;
-			height: 28px;
-		}
-
-		.buy-card span {
-			font-size: 6px;
-			line-height: 1;
-		}
-
-		.buy-card small {
-			min-height: 0;
-			font-size: 5px;
-			line-height: 1.05;
-		}
-
-		.buy-card strong {
-			font-size: 8px;
-		}
-
-		.buy-card em,
-		.buy-card .card-state {
-			font-size: 5px;
-			line-height: 1;
-		}
-
-		.confirm-panel > img {
-			width: 42px;
-			height: 42px;
-		}
-
 		.confirm-panel p,
-		.auto-panel p,
 		.confirm-note {
 			max-width: 100%;
 			margin: 1px 0 4px;
@@ -4904,23 +6301,11 @@
 			gap: 4px;
 		}
 
-		.confirm-actions button,
-		.auto-start {
+		.confirm-actions button {
 			min-height: 28px;
 			padding: 3px;
 			border-width: 2px;
 			font-size: 8px;
-		}
-
-		.auto-options {
-			gap: 3px;
-			margin: 5px 0;
-		}
-
-		.auto-options button {
-			padding: 4px 1px;
-			border-width: 1px;
-			font-size: 7px;
 		}
 
 		:global(.pop-up-wrap .top-layer) {
@@ -4997,21 +6382,79 @@
 			padding: clamp(7px, 1.2cqh, 12px);
 		}
 
-		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .cluster-panel {
+		.scene .cluster-panel {
 			right: 1cqw;
 			left: calc(50% + min(50cqw, 62.5cqh) + 0.75cqw);
 			height: clamp(274px, 39cqh, 430px);
 			padding: clamp(17px, 2.1cqh, 24px) clamp(15px, 1.2cqw, 22px);
 		}
 
-		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .cluster-panel .panel-rows {
+		.scene .cluster-panel .panel-rows {
 			height: 100%;
 		}
 
-		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .cluster-panel .panel-row {
+		.scene .cluster-panel .panel-row {
+			container-type: size;
 			min-height: 0;
 			padding-inline: clamp(7px, 0.65cqw, 11px);
-			font-size: clamp(13px, 2.3cqh, 20px);
+			font-size: clamp(15px, 2.8cqh, 30px);
+		}
+		/* Sized off the ROW, not the stage. `2.8cqh` above resolves against the game stage, so on
+		   a 720-tall window it gave 17px inside a 45px row — "too small, very hard to read" (user,
+		   2026-09-16) — and the ceiling never moved with the row. Each row is its own size
+		   container now, so the type is a fixed share of the row it sits in: Jersey 10 carries a
+		   lot of leading, and 58% of the row puts its caps at roughly 40% of it, which is the
+		   design's proportion. The `cqw` term is the amount column's guard against a long total
+		   on the narrowest gutter. */
+		.scene .cluster-panel .panel-row > span,
+		.scene .cluster-panel .panel-row > strong {
+			font-size: min(58cqh, 13cqw);
+			line-height: 1;
+		}
+		/* The amount column is about 53% of the row and Jersey 10 runs 0.51em a glyph, so a total
+		   of N glyphs fits at 92cqw / N; only long totals on a narrow gutter ever hit this term. */
+		.scene .cluster-panel .panel-row > strong {
+			min-width: 0;
+			overflow: hidden;
+			font-size: min(58cqh, 13cqw, calc(92cqw / var(--chars, 6)));
+			white-space: nowrap;
+		}
+		.scene .cluster-panel .panel-row > img {
+			width: 100%;
+			height: 82cqh;
+		}
+
+		/* Desktop landscape never got the row the portrait and handheld passes were redesigned to:
+		   it still drew the original dark gradient pill with unboxed values, so the cluster size,
+		   the multiplier and the symbol all sank into the board behind them. Same treatment as
+		   those passes — flat lighter field, boxed value cells, amber total — sized off the row's
+		   own type rather than off the viewport, since the panel lives in a fixed gutter. */
+		.scene .cluster-panel .panel-row {
+			grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1.7fr);
+			gap: clamp(2px, 0.35cqw, 6px);
+			padding: clamp(1px, 0.3cqh, 4px) clamp(4px, 0.55cqw, 9px);
+			border: 1px solid #708741;
+			background: #617637;
+			box-shadow: none;
+			font-weight: 400;
+			text-shadow: none;
+		}
+		.scene .cluster-panel .panel-row.vacant {
+			border-color: #53672a;
+			background: #354818;
+		}
+		.scene .cluster-panel .panel-row img {
+			width: 100%;
+			height: 1.75em;
+		}
+		.scene .cluster-panel .panel-row span {
+			padding: 0.04em 0.3em;
+			border: 1px solid #9cad73;
+			text-align: center;
+		}
+		.scene .cluster-panel .panel-row strong {
+			color: #ffc022;
+			text-shadow: none;
 		}
 
 		.panel-rows {
@@ -5315,9 +6758,27 @@
 		background: var(--base-plain) center / cover no-repeat;
 	}
 
+	/* Coming home from a bonus is a dawn, not a cut ("not with snap but with some animation in
+	   backgrounds", user 2026-09-17). A transition takes the timing of the state it is heading
+	   INTO, so these rules — the visible, base-game state — own the return: the bonus sky
+	   lingers while the base garden builds back up in layers, sky first, then hills, the fence,
+	   and finally the clouds. Entering a bonus keeps the quick single fade, set on the bonus
+	   rules below, so the feature still arrives with a snap of intent. */
 	.background-base,
 	.base-cloud-field {
-		transition: opacity 850ms ease-in-out;
+		transition: opacity 1500ms ease-in-out;
+	}
+	.background-base.base-mountains {
+		transition-delay: 300ms;
+	}
+	.background-base.base-bench {
+		transition-delay: 600ms;
+	}
+	.base-cloud-field {
+		transition-delay: 900ms;
+	}
+	.background-bonus {
+		transition-duration: 1700ms;
 	}
 
 	.scene.bonus-normal .background-base,
@@ -5327,6 +6788,12 @@
 	.scene.bonus-hidden .background-base,
 	.scene.bonus-hidden .base-cloud-field {
 		opacity: 0;
+		transition: opacity 850ms ease-in-out;
+	}
+	.scene.bonus-normal .background-normal,
+	.scene.bonus-super .background-super,
+	.scene.bonus-hidden .background-hidden {
+		transition-duration: 850ms;
 	}
 
 	.base-cloud-field {
@@ -5753,6 +7220,135 @@
 		background-size: cover;
 	}
 
+	/* ── The SUNSET garden (design 9198:104316) ──────────────────────────────────────────────
+	   Everything above under `normal-bonus-*` is the design's dusk frame — the NORMAL bonus's
+	   own garden, shown under the `garden-dusk` modifier with the butterfly. A NORMAL bonus
+	   reached through the Mystery pick plays here instead: a red-to-gold gradient sky over the same
+	   #7f8905 ground the design paints from its 52% line, the base hills recoloured for dusk,
+	   the lit cloud, the base fence and two flowers at the left, and the owl on the panel.
+	   The gradient replaces the raster sky, so the cover-scaling ::before goes back to 1. */
+	.scene:not(.garden-dusk) .background-normal::before {
+		background-image: linear-gradient(
+			180deg,
+			#cd3e4b 1%,
+			#dc403f 14%,
+			#f16026 40%,
+			#f77619 66%,
+			#f69c0f 92.5%
+		);
+		background-size: 100% 52.2%;
+		transform: none;
+	}
+	.scene:not(.garden-dusk) .background-normal::after {
+		top: 52.2%;
+		background: #7f8905;
+	}
+	.scene:not(.garden-dusk)
+		:is(.normal-bonus-mountains, .normal-bonus-tree, .normal-bonus-oak, .normal-bonus-fence-right),
+	.scene.garden-dusk :is(.normal-bonus-treeline, .normal-bonus-flowers) {
+		display: none;
+	}
+	/* Same responsive contract as the hills it replaces: uniform scale, cropped on phones. The
+	   design draws it from 32% down with its dark base band over the ground. */
+	.normal-bonus-treeline {
+		top: auto;
+		bottom: 25%;
+		left: 50%;
+		right: auto;
+		width: max(100%, 120vh);
+		height: auto;
+		aspect-ratio: 2400 / 494;
+		transform: translateX(-50%);
+		background: var(--sunset-treeline) center / contain no-repeat;
+	}
+	.scene:not(.garden-dusk) .normal-bonus-cloud {
+		background-image: var(--sunset-cloud);
+	}
+	.scene:not(.garden-dusk) .normal-bonus-fence-left {
+		background-position: left -1.4vw bottom 23.5%;
+		background-size: 17.6vw auto;
+	}
+	/* The two daisies hang off the fence (design 9198:104316, measured on the 1200x670 render):
+	   the fence art is 112x94 inside its 211x110 image box, and the daisies sit under its right
+	   post — centres 2px right of the post and 19px below the art's foot (35px wide), then 36px
+	   right and 49px below (26px wide). They were placed by their own % of the viewport before,
+	   so on any aspect other than the design's they drifted off the fence (up and away from it on
+	   a tall window). Now every term is the fence's: the same vw scale, and the same
+	   `bottom 23.5%` — each daisy's own `bottom` % resolves against (height − its own size), so
+	   the vw offset folds in the 0.235 × (fence height − daisy size) difference:
+	   23.5% − 0.235·(9.17 − 2.9)vw − 1.08vw − 1.45vw = 23.5% − 4vw, and −6.3vw for the second. */
+	.normal-bonus-flowers {
+		z-index: 3;
+		background:
+			var(--sunset-flower) left 13.25vw bottom calc(23.5% - 4vw) / 2.9vw 2.9vw no-repeat,
+			var(--sunset-flower) left 16.4vw bottom calc(23.5% - 6.3vw) / 2.2vw 2.2vw no-repeat;
+	}
+
+	/* The owl (9355:54123) perches on the cluster panel's top-right corner: in the design its
+	   feet overlap the frame by 19px and its right side overhangs the panel; the overhang is
+	   trimmed here because the game's panel already sits at the viewport edge. It
+	   breathes, cocks its head now and then, and the eyes (their own layer, sockets filled with
+	   the face's cream) blink and glance on a timer chain in the script. */
+	.sunset-owl {
+		display: none;
+		position: absolute;
+		right: -4%;
+		bottom: calc(100% - clamp(10px, 1.5vw, 24px));
+		z-index: 1;
+		width: 52%;
+		pointer-events: none;
+	}
+	/* Wide landscape only: everywhere else the panel has the readouts or the board right above it. */
+	@media (min-width: 1180px) and (min-height: 601px) and (orientation: landscape) {
+		.sunset-owl {
+			display: block;
+		}
+	}
+	.owl-stage {
+		position: relative;
+		display: block;
+		width: 100%;
+		aspect-ratio: 380 / 425;
+		transform-origin: 50% 100%;
+		animation: owl-alive 11s ease-in-out infinite;
+	}
+	.owl-layer {
+		position: absolute;
+		inset: 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+	/* One slow breath every ~3.7s (three per loop), with a head cock held in the middle of it. */
+	@keyframes owl-alive {
+		0%,
+		27%,
+		55%,
+		82%,
+		100% {
+			transform: scale(1, 1) rotate(0deg);
+		}
+		13%,
+		41%,
+		68%,
+		91% {
+			transform: scale(0.99, 1.02) rotate(0deg);
+		}
+		58%,
+		74% {
+			transform: scale(1, 1) rotate(-4deg);
+		}
+	}
+	/* One art pixel is ~3.2% of the canvas. */
+	.owl-eyes {
+		transform-origin: 58.9% 38.2%;
+		transform: translateX(calc(var(--gaze, 0) * 3.2%));
+		transition: transform 80ms steps(2, jump-end);
+	}
+	.owl-eyes.blink {
+		transform: translateX(calc(var(--gaze, 0) * 3.2%)) scaleY(0.1);
+	}
+
 	@media (min-width: 681px) and (orientation: landscape) {
 		/* Compact landscape HUD must retain both bet controls, including 800×450. */
 		.bet-stepper {
@@ -5774,37 +7370,54 @@
 		}
 	}
 
-
 	/* Portrait design: compact identity, 2×3 payout cells beside bonus counters,
 	   full-width board, control rail, then balance / bet / win. One width-based
 	   composition prevents spare viewport height from becoming gaps between bands. */
+	/* ── Portrait ──────────────────────────────────────────────────────────────────────────────
+	   Design 9256:207184, a 360x800 phone whose game area is the 360x577 between the operator's
+	   header and footer. Every size below is that frame's, as a share of its width (--pw):
+	   Press Play mark 57 wide at y3; wordmark 178 wide, art y25..52; cluster panel x4..213 by
+	   y56..149 (2x3 rows); board x-8..369 by y141..447 — it runs 8px past both edges and its top
+	   rail covers the panel's bottom border; bar x16..342 by y455..505 with the 83px spin disc
+	   centred on it (y439..522); BALANCE / BET / WIN 90 / 124 / 90 wide by 41 at y523; 13px of
+	   ground under them. Height is the one thing that varies between phones: the frame is 1.603
+	   widths tall, a taller screen keeps the frame's width and spreads the spare height around
+	   the board, a shorter one shrinks the width so the whole frame still fits. */
 	@media (orientation: portrait) {
 		.scene {
-			--portrait-width: min(94vw, calc((100svh - 12px) / 1.78));
+			--portrait-width: min(100vw, calc((100svh - 6px) / 1.603));
+			--pw: var(--portrait-width);
 			display: grid;
-			grid-template-columns: var(--portrait-width);
-			grid-template-rows: calc(var(--portrait-width) * 0.16) auto calc(var(--portrait-width) * 0.38);
-			gap: calc(var(--portrait-width) * 0.04);
-			align-content: start;
+			grid-template-columns: var(--pw);
+			grid-template-rows: calc(var(--pw) * 0.156) minmax(0, 1fr) auto;
+			gap: 0;
+			align-content: stretch;
 			justify-content: center;
 			justify-items: stretch;
-			padding: max(2px, env(safe-area-inset-top, 0px)) 0 0;
+			padding: max(0px, env(safe-area-inset-top, 0px)) 0 calc(var(--pw) * 0.036);
+			overflow: hidden;
 		}
+		/* The wordmark file is 857x304 with the art on rows 79..216; the box is the art's own
+		   height and the image slides up inside it, so the box top IS the art top. */
 		.scene .brand {
 			position: relative;
 			inset: auto;
 			display: block;
 			grid-row: 1;
-			align-self: end;
+			align-self: start;
 			justify-self: center;
-			width: 56%;
+			width: 49.4%;
 			height: auto;
 			min-height: 0;
 			aspect-ratio: 857 / 140;
-			margin: 0;
+			margin: calc(var(--pw) * 0.069) 0 0;
+			overflow: hidden;
 			transform: none;
 		}
-		.scene .brand img { transform: translateY(-25.658%); }
+		.scene .brand img {
+			transform: translateY(-25.658%);
+		}
+		/* 548x228 canvas, art 449 wide from x49 / y41: 57px of art is a 69.6px canvas. */
 		.scene .studio-mark {
 			position: absolute;
 			inset: auto;
@@ -5812,8 +7425,9 @@
 			grid-row: 1;
 			align-self: start;
 			justify-self: center;
-			width: calc(var(--portrait-width) * 0.24);
-			height: calc(var(--portrait-width) * 0.08);
+			width: calc(var(--pw) * 0.193);
+			height: auto;
+			margin-top: calc(var(--pw) * -0.006);
 			transform: none;
 			object-fit: contain;
 		}
@@ -5823,9 +7437,9 @@
 			inset: auto;
 			display: grid;
 			grid-row: 2;
-			grid-template-columns: 60% minmax(0, 1fr);
-			grid-template-rows: calc(var(--portrait-width) * 0.26) auto;
-			gap: calc(var(--portrait-width) * 0.04) 0;
+			grid-template-columns: 58% minmax(0, 1fr);
+			grid-template-rows: calc(var(--pw) * 0.258) auto;
+			gap: 0;
 			align-content: start;
 			width: 100%;
 			height: auto;
@@ -5833,6 +7447,9 @@
 			padding: 0;
 			container-type: inline-size;
 		}
+		/* Cluster panel, design 9256:209233 on the 360 frame: a 209x93 box, #42561f behind an 8px
+		   #844a0d frame that carries a 2px black line on both its edges, holding a 2x3 grid of
+		   90.5x21 cells (2px gaps) inset 3/4px from the inner line. */
 		.scene .game-stage .cluster-panel,
 		.scene .game-stage:has(.bonus-readouts) .cluster-panel {
 			position: relative;
@@ -5842,48 +7459,117 @@
 			grid-row: 1;
 			width: 100%;
 			height: 100%;
-			padding: clamp(4px, 1.4vw, 7px);
-			border: 3px solid #805014;
-			background: #3e501d;
-			box-shadow: inset 0 0 0 1px #171b08, 0 0 0 1px #241504;
+			/* Indented past the board frame's left edge (1.5% in) — "add more spacing on the left",
+			   user 2026-09-17. */
+			margin-left: calc(var(--pw) * 0.03);
+			padding: calc(var(--pw) * 0.0167) calc(var(--pw) * 0.014);
+			border: calc(var(--pw) * 0.022) solid #844a0d;
+			background: #42561f;
+			box-shadow:
+				inset 0 0 0 2px #000,
+				0 0 0 2px #000;
 			transform: none;
 		}
 		.cluster-panel::before,
-		.cluster-panel::after { display: none; }
+		.cluster-panel::after {
+			display: none;
+		}
 		.scene .cluster-panel .panel-rows {
 			height: 100%;
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 			grid-template-rows: repeat(3, minmax(0, 1fr));
-			gap: 2px;
+			gap: calc(var(--pw) * 0.0056);
+		}
+		/* The log keeps five slots but the design draws six cells: the sixth is a permanently
+		   vacant one so the grid closes without a slot stretching across the bottom line. */
+		.scene .cluster-panel .panel-rows::after {
+			content: '';
+			display: block;
 		}
 		.scene .cluster-panel .panel-row {
+			/* 16.95 count box, 16.49 symbol box, 16.95 multiplier box, then the amount over what
+			   is left of the 90.5 cell — all flush, the design has no gap between them. */
 			display: grid;
-			grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1.7fr);
-			gap: 1px;
-			padding: 1px 2px;
+			grid-template-columns:
+				calc(var(--pw) * 0.047) calc(var(--pw) * 0.0458) calc(var(--pw) * 0.047)
+				minmax(0, 1fr);
+			gap: 0;
+			align-items: center;
+			padding: 0 0 0 calc(var(--pw) * 0.0083);
 			min-width: 0;
 			min-height: 0;
 			height: auto;
-			border: 1px solid #758b46;
-			background: #617637;
+			border: 0;
+			border-radius: 1px;
+			background: #667f3c;
 			box-shadow: none;
-			font-size: clamp(7px, 2.2vw, 12px);
-			font-weight: 400;
+			color: #fff;
+			font-size: calc(var(--pw) * 0.022);
+			font-weight: 600;
 			text-shadow: none;
 		}
-		.scene .cluster-panel .panel-row.vacant { background: #354b16; border-color: #566d2d; }
-		.scene .cluster-panel .panel-row img { width: 100%; height: min(4vw, 18px); object-fit: contain; }
-		.scene .cluster-panel .panel-row span,
-		.scene .cluster-panel .panel-row strong { display: block; min-width: 0; font-size: inherit; text-shadow: none; }
+		.scene .cluster-panel .panel-row.vacant,
+		.scene .cluster-panel .panel-rows::after {
+			border: 1px solid #667f3c;
+			border-radius: 1px;
+			background: #374b15;
+		}
+		.scene .cluster-panel .panel-row img {
+			width: calc(var(--pw) * 0.038);
+			height: calc(var(--pw) * 0.038);
+			justify-self: center;
+			object-fit: contain;
+			filter: none;
+		}
+		/* The two boxes: 16.95 squares outlined in 30% white, Nunito Sans SemiBold in the design;
+		   Poppins is the copy face this game ships. */
+		.scene .cluster-panel .panel-row > span {
+			display: grid;
+			place-items: center;
+			width: calc(var(--pw) * 0.047);
+			height: calc(var(--pw) * 0.047);
+			min-width: 0;
+			padding: 0;
+			border: 1px solid rgb(255 255 255 / 30%);
+			background: #667f3c;
+			font-family: 'Poppins', system-ui, sans-serif;
+			font-size: inherit;
+			letter-spacing: 0.05em;
+			line-height: 1;
+			text-shadow: none;
+			text-transform: uppercase;
+		}
+		/* $0.50: Jersey 10, 12px on the 360 frame, #fee302, centred in the cell's tail. */
+		.scene .cluster-panel .panel-row > strong {
+			display: block;
+			min-width: 0;
+			padding: 0 calc(var(--pw) * 0.006);
+			color: #fee302;
+			font-family: 'Jersey 10', system-ui, sans-serif;
+			font-size: calc(var(--pw) * 0.0333);
+			font-weight: 400;
+			letter-spacing: 0.08em;
+			line-height: 1;
+			text-align: center;
+			text-shadow: none;
+		}
+		/* The design's board group is 377 wide on the 360 frame and 306.5 tall, frame included,
+		   with the top rail over the panel's bottom 8px. The frame art hangs 4% / 5.2% outside
+		   this box on each side, so the box itself is 349 x 277.6. The design lands the rail on
+		   the panel; this starts the box 12px under it so the rail clears the panel by a few px
+		   ("small [space] from the board", user 2026-09-17). */
 		.scene .game-stage .board-wrap,
 		.scene .game-stage:has(.bonus-readouts) .board-wrap {
 			position: relative;
 			inset: auto;
 			grid-row: 2;
 			grid-column: 1 / -1;
-			width: 100%;
+			justify-self: center;
+			width: calc(var(--pw) * 0.97);
+			max-width: none;
 			height: auto;
-			aspect-ratio: 1.25;
+			aspect-ratio: 349 / 277.6;
+			margin-top: calc(var(--pw) * 0.033);
 			transform: none;
 		}
 		.scene .bonus-readouts {
@@ -5911,80 +7597,109 @@
 			box-shadow: none;
 			text-shadow: none;
 		}
-		.scene .bonus-readout small { display: none; }
-		.scene .bonus-readout span { color: #fff8df; font-size: clamp(10px, 3.8vw, 18px); line-height: 1; letter-spacing: 0; font-weight: 400; }
-		.scene .bonus-readout strong { color: #eea000; font-size: clamp(18px, 5.5vw, 28px); line-height: 1; font-weight: 400; }
+		.scene .bonus-readout small {
+			display: none;
+		}
+		.scene .bonus-readout span {
+			color: #fff8df;
+			font-size: clamp(10px, 3.8vw, 18px);
+			line-height: 1;
+			letter-spacing: 0;
+			font-weight: 400;
+		}
+		.scene .bonus-readout strong {
+			color: #eea000;
+			font-size: clamp(18px, 5.5vw, 28px);
+			line-height: 1;
+			font-weight: 400;
+		}
+		/* The HUD box runs from the spin disc's top to the readouts' bottom (y439..564). The
+		   bar is drawn by ::before 16px down it; the disc is centred on the bar by its own
+		   absolute placement, so the two side groups only ever share the bar's ends. */
 		.scene .hud {
 			position: relative;
 			inset: auto !important;
-			display: grid;
+			display: flex;
 			grid-row: 3;
-			grid-template-areas: none;
-			grid-template-columns: 12% 20% 28% 20% 12%;
-			grid-template-rows: calc(var(--portrait-width) * 0.14);
 			justify-content: space-between;
-			align-content: start;
-			align-items: center;
-			align-self: start;
+			align-items: start;
+			align-self: end;
 			gap: 0;
-			width: 98%;
-			height: calc(var(--portrait-width) * 0.32) !important;
+			width: 90.6%;
+			height: calc(var(--pw) * 0.347) !important;
 			min-height: 0;
-			margin: calc(var(--portrait-width) * 0.06) auto 0;
-			padding: 0 2%;
+			margin: 0 auto;
+			padding: calc(var(--pw) * 0.044) calc(var(--pw) * 0.032) 0 calc(var(--pw) * 0.019);
 			border: 0;
 			background: none;
 			box-shadow: none;
 			transform: none;
 		}
 		.scene .hud::before {
-			inset: 0 0 auto;
-			height: calc(var(--portrait-width) * 0.14);
+			inset: calc(var(--pw) * 0.044) 0 auto;
+			height: calc(var(--pw) * 0.139);
 			border: 2px solid #805014;
 			background: #321c03;
 			box-shadow: none;
 		}
 		.scene .hud-left,
-		.scene .hud-right { display: contents; }
+		.scene .hud-right {
+			/* Static on purpose: the spin disc and the bet stepper inside .hud-right are placed
+			   against the HUD box, not against their own group. */
+			position: static;
+			display: flex;
+			align-items: center;
+			gap: calc(var(--pw) * 0.028);
+			width: auto;
+			height: calc(var(--pw) * 0.139);
+			padding: 0;
+		}
 		.scene .hud .utility,
 		.scene .hud .bonus-button {
 			position: relative;
 			inset: auto;
-			grid-row: 1;
-			width: 100%;
-			height: calc(var(--portrait-width) * 0.105);
+			flex: none;
+			width: calc(var(--pw) * 0.097);
+			height: calc(var(--pw) * 0.097);
 			min-width: 0;
 			min-height: 0;
 			padding: 0;
 			margin: 0;
 			clip-path: none !important;
 		}
-		.scene .hud-left .utility { grid-column: 1; }
-		.scene .hud .bonus-button { grid-column: 2; border: 2px solid #ce8700 !important; background: #e89600 !important; box-shadow: none !important; }
-		.scene .hud .bonus-button span { font-size: clamp(10px, 3vw, 16px); }
-		.scene .hud .spin {
-			position: relative;
-			inset: auto;
-			grid-column: 3;
-			grid-row: 1;
-			justify-self: center;
-			width: calc(var(--portrait-width) * 0.23);
-			height: calc(var(--portrait-width) * 0.23);
-			margin: 0;
+		.scene .hud .bonus-button {
+			width: calc(var(--pw) * 0.175);
+			height: calc(var(--pw) * 0.092);
+			border: 2px solid #ce8700 !important;
+			background: #e89600 !important;
+			box-shadow: none !important;
 		}
-		.scene .hud .turbo { grid-column: 4; width: 65%; justify-self: center; }
-		.scene .hud .auto { grid-column: 5; }
+		.scene .hud .bonus-button span {
+			font-size: calc(var(--pw) * 0.036);
+		}
+		.scene .hud .spin {
+			position: absolute;
+			inset: 0 auto auto 50%;
+			width: calc(var(--pw) * 0.23);
+			height: calc(var(--pw) * 0.23);
+			margin: 0;
+			translate: -50% 0;
+		}
+		.scene .hud .turbo {
+			width: calc(var(--pw) * 0.097);
+			justify-self: auto;
+		}
 		.scene .hud .metrics {
 			position: absolute;
 			inset: auto 0 0;
 			display: grid;
 			grid-template-areas: 'balance bet win';
-			grid-template-columns: 28% 40% 28%;
+			grid-template-columns: 27.6% 38% 27.6%;
 			grid-template-rows: minmax(0, 1fr);
 			justify-content: space-between;
 			gap: 0;
 			width: 100%;
-			height: calc(var(--portrait-width) * 0.12);
+			height: calc(var(--pw) * 0.114);
 		}
 		.scene .hud .metric {
 			position: static;
@@ -5993,7 +7708,7 @@
 			width: 100%;
 			height: 100%;
 			min-width: 0;
-			padding: 1% 6%;
+			padding: 2% 7%;
 			gap: 0;
 			align-content: center;
 			border: 0;
@@ -6001,34 +7716,108 @@
 			box-shadow: none;
 			text-align: left;
 		}
-		.scene .hud .metric.balance { grid-area: balance; }
-		.scene .hud .metric.win { grid-area: win; }
-		.scene .hud .metric.bet { grid-area: bet; padding-inline: 24%; text-align: center; }
-		.scene .hud .metric span { color: #fff8df; font-size: clamp(7px, 2.3vw, 11px); letter-spacing: 0; font-weight: 400; text-shadow: none; }
-		.scene .hud .metric strong { color: #fff8df; font-size: clamp(10px, min(3.5vw, calc(170cqw / var(--chars, 8))), 20px) !important; font-weight: 400; text-shadow: none; }
-		.scene .hud .metric.bet span { display: none; }
+		.scene .hud .metric.balance {
+			grid-area: balance;
+		}
+		.scene .hud .metric.win {
+			grid-area: win;
+		}
+		.scene .hud .metric.bet {
+			grid-area: bet;
+			padding-inline: 24%;
+			text-align: center;
+		}
+		.scene .hud .metric span {
+			color: #fff8df;
+			font-size: calc(var(--pw) * 0.022);
+			letter-spacing: 0;
+			font-weight: 400;
+			text-shadow: none;
+		}
+		.scene .hud .metric strong {
+			color: #fff8df;
+			font-size: min(calc(var(--pw) * 0.046), calc(170cqw / var(--chars, 8))) !important;
+			font-weight: 400;
+			text-shadow: none;
+		}
+		.scene .hud .metric.bet span {
+			display: none;
+		}
+		/* − / + are 25px squares 8px inside the 124px BET box. */
 		.scene .hud .bet-stepper {
 			position: absolute;
-			inset: auto 30% 0;
+			inset: auto 33.5% 0;
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
 			width: auto;
-			height: calc(var(--portrait-width) * 0.12);
-			padding: 1%;
+			height: calc(var(--pw) * 0.114);
+			padding: 0;
 			border: 0;
 			background: none;
 		}
-		.scene .hud .bet-stepper button { width: 20%; height: 70%; padding: 0; font-size: clamp(12px, 3vw, 18px); clip-path: none !important; }
+		.scene .hud .bet-stepper button {
+			width: calc(var(--pw) * 0.07);
+			height: calc(var(--pw) * 0.07);
+			padding: 0;
+			font-size: calc(var(--pw) * 0.04);
+			clip-path: none !important;
+		}
+		/* Every icon in the design is white — the amber is reserved for the labels, the BONUS fill
+		   and the spin disc. */
 		.scene .hud .utility,
-		.scene .hud .bet-stepper button { border: 2px solid #8c601a !important; background: #321c03 !important; box-shadow: none !important; }
+		.scene .hud .bet-stepper button {
+			border: 2px solid #8c601a !important;
+			background: #321c03 !important;
+			box-shadow: none !important;
+		}
 		.scene .hud .utility:active,
 		.scene .hud .utility.pressed-flash,
-		.scene .hud .bet-stepper button:active { background: #65400c !important; }
-		.scene .quick-menu { inset: auto 4% calc(var(--portrait-width) * 0.36) auto; max-height: 60svh; overflow-y: auto; }
-		.scene .modal-layer { padding: 8px; }
-		.scene .buy-panel,
-		.scene .auto-panel,
+		.scene .hud .bet-stepper button:active {
+			background: #65400c !important;
+		}
+		/* AUTO, per 9256:207577: the desktop bar's smooth twin-arrow (8.05 x 7.5 in the 34.88 box,
+		   23%) over a 5.73px Inter Bold caption on an 8.6 line, stacked as one centred pair with
+		   1.4px between — not the rails' pixel trace and Jersey caption. */
+		.scene .hud-right .auto {
+			display: grid;
+			grid-template-rows: auto auto;
+			gap: calc(var(--pw) * 0.004);
+			align-content: center;
+			justify-items: center;
+		}
+		.scene .hud-right .auto .auto-glyph {
+			display: none;
+		}
+		.scene .hud-right .auto .auto-glyph-smooth {
+			display: block;
+			width: calc(var(--pw) * 0.0223);
+			height: auto;
+			margin: 0;
+			fill: #fff;
+			filter: none;
+		}
+		.scene .hud-right .auto small {
+			min-height: 0;
+			color: #fff;
+			/* Inter Bold in the design; Poppins is the copy face this game ships. */
+			font-family: 'Poppins', system-ui, sans-serif !important;
+			font-size: calc(var(--pw) * 0.0159);
+			font-weight: 700;
+			letter-spacing: -0.02em;
+			line-height: 1.5;
+			text-transform: uppercase;
+		}
+		/* Opens above the menu toggle it belongs to, at the bar's left end ("this should be on
+		   the left above menu", user 2026-09-17). */
+		.scene .quick-menu {
+			inset: auto auto calc(var(--portrait-width) * 0.36) calc(4.7% + var(--pw) * 0.019);
+			max-height: 60svh;
+			overflow-y: auto;
+		}
+		.scene .modal-layer {
+			padding: 8px;
+		}
 		.scene .confirm-panel {
 			min-width: 0;
 			width: min(100%, 620px);
@@ -6036,18 +7825,441 @@
 			max-height: calc(100svh - 16px);
 			overflow-y: auto;
 		}
+
+		.scene .auto-panel {
+			--u: calc(min(604px, 100vw - 16px, (100svh - 16px) * 604 / 540) / 604);
+			max-height: calc(100svh - 16px);
+			overflow-y: auto;
+		}
 	}
 
-	/* Landscape reference: left identity/readouts/history/balance, centred board,
-	   right control rail with a separate bet stepper and bottom win readout.
-	   Touch phones and Popout S. Desktop/tablet keep their existing horizontal HUD.
-	   All furniture uses the live viewport, never a fixed desktop design size. */
-	@media (orientation: landscape) and (pointer: coarse) and (max-height: 600px),
-		(orientation: landscape) and (max-width: 520px) and (max-height: 300px) {
+	/* ── Bottom bar ────────────────────────────────────────────────────────────────────────────
+	   Design 9198:78408. Everything below was measured off the rendered 1200x670 frame rather than
+	   read from the node tree: the bar is x52..1147 by y584..660, a #351E01 field inside a 2px
+	   #925A06 border, inset 4.33% either side. Every small control is a plain 49x49 box of those
+	   same two colours — the passes above dress them in a chamfered PNG shell (`--hud-button`) and
+	   clip-path stairs that the design does not have, which is why this block is last and why it
+	   has to shout. Anchors, left to right: menu 65, BONUS 129 (118 wide), BALANCE 262, WIN 486,
+	   coin 669 / BET 713, − 777, + 840, spin centred 955 (104 across), turbo 1023, auto 1086. */
+	/* The height gate is what keeps this off a landscape phone. The frame it is measured from is
+	   1200x670; on an 800x360 shell these rules drew 730x311 of bar over a 360-tall screen, and
+	   because they shout they beat the rail pass wherever it sits in the file. Short landscape
+	   belongs to that pass, and its `max-height: 600px` is the other half of this gate. */
+	@media (min-width: 681px) and (orientation: landscape) and (min-height: 601px) {
+		.scene .hud {
+			box-sizing: border-box;
+			display: grid;
+			grid-template-columns: auto minmax(0, 1fr) auto;
+			/* The spin disc is taller than the bar, so without a capped row it would grow the grid
+			   row to its own 104px and push every control off centre. */
+			grid-template-rows: minmax(0, 1fr);
+			column-gap: clamp(8px, 1.4%, 18px);
+			align-items: center;
+			width: min(91.3vw, 1370px);
+			min-height: 0;
+			height: clamp(56px, 11.6vh, 77px);
+			/* The design parks the bar 10px off the frame bottom, which leaves its spin disc hanging
+			   4px past the frame edge — on a real viewport that reads as a sliced button. The bar
+			   rides a few px higher so the disc always clears. */
+			bottom: clamp(12px, 2.2vh, 18px) !important;
+			padding: 0 1%;
+			border: 2px solid #925a06;
+			border-radius: 0;
+			background: #351e01;
+			box-shadow: none;
+		}
+		/* The spin disc is 104 against a 77-tall bar, so it has to be free to hang out of both edges
+		   exactly as it does in the design. */
+		.scene .hud,
+		.scene .hud-right {
+			overflow: visible;
+		}
+		.scene .hud-left {
+			display: grid;
+			grid-template-columns: auto auto;
+			gap: clamp(8px, 1.3vw, 16px);
+			align-items: center;
+			width: auto;
+			height: 100%;
+			min-height: 0;
+			padding: 0;
+			border: 0 !important;
+		}
+		.scene .hud .utility,
+		.scene .hud .bet-stepper button {
+			/* Sized off the BAR, not the viewport: the design's 49px control in a 77px bar is 64% of
+			   its height — 67% of the 73px inside its 2px border. A vw-based size overflowed the bar
+			   on a wide-but-short window and pushed the boxes through its bottom border. */
+			width: auto !important;
+			height: 67% !important;
+			min-height: 0 !important;
+			aspect-ratio: 1 !important;
+			padding: 0 !important;
+			overflow: hidden;
+			border: 1px solid #925a06 !important;
+			border-radius: 0 !important;
+			background: #351e01 !important;
+			background-image: none !important;
+			box-shadow: none !important;
+			color: #fff !important;
+			clip-path: none !important;
+			transform: none !important;
+		}
+		/* Open menu toggle, 9227:175692: the same box goes amber behind its cross. Has to sit here,
+		   after the shell rule above, because both are !important at equal specificity. */
+		.scene .hud .utility.menu-toggle.open {
+			background: #e38b01 !important;
+			border: 0 !important;
+			/* The amber plate is the design's Vector 2 (9281:249873): a 48.4x48.5 square with an
+			   11x7 bite out of the top-right corner and a 10.4x4.9 one out of the bottom-left. */
+			clip-path: polygon(
+				0 0,
+				77.5% 0,
+				77.5% 14.4%,
+				100% 14.4%,
+				100% 100%,
+				21.6% 100%,
+				21.6% 89.9%,
+				0 89.9%
+			) !important;
+		}
+		.scene .hud button svg {
+			width: 54%;
+			height: 54%;
+			filter: none;
+		}
+		/* AUTO, per 9198:123416: a 48x49 box holding the smooth twin-arrow mark (10.5 x 9.8, so
+		   22% of the box) over an 8px bold sans caption on a 12px line, the pair centred as one
+		   stack with 2px between. The pixel trace and Jersey caption the rails use read as a
+		   different control here ("not by design", user 2026-09-16). The button is its own size
+		   container so the ink and caption are shares of the box, whatever the bar's height. */
+		.scene .hud-right .utility {
+			container-type: size;
+			grid-template-rows: auto auto;
+			align-content: center;
+			justify-items: center;
+			/* A percentage, not `cqh`: container units on the container itself resolve against its
+			   ancestor (here the viewport), which put 29px between the arrows and the caption. */
+			gap: 4%;
+			padding: 0 !important;
+		}
+		.scene .hud-right .utility .auto-glyph {
+			display: none;
+		}
+		.scene .hud-right .utility .auto-glyph-smooth {
+			display: block;
+			width: 22cqw;
+			height: auto;
+			margin: 0;
+			fill: #fff;
+			filter: none;
+		}
+		.scene .hud-right .utility small {
+			color: #fff;
+			/* Inter Bold in the design; Poppins is the copy face this game ships. */
+			font-family: 'Poppins', system-ui, sans-serif !important;
+			font-size: 16.5cqh;
+			font-weight: 700;
+			letter-spacing: -0.02em;
+			line-height: 1;
+			text-transform: uppercase;
+		}
+		/* The running autoplay count takes the arrows' row. */
+		.scene .hud-right .utility span {
+			font-size: 44cqh;
+			line-height: 1;
+		}
+		.scene .hud .bonus-button {
+			width: auto !important;
+			min-width: 0 !important;
+			height: 67% !important;
+			min-height: 0 !important;
+			aspect-ratio: 118 / 49 !important;
+			border: 0 !important;
+			border-radius: 0 !important;
+			background: #e38b01 !important;
+			box-shadow: none !important;
+			color: #fff !important;
+			clip-path: none !important;
+		}
+		.scene .hud .bonus-button span {
+			font-size: clamp(17px, 2.1vw, 25px);
+			letter-spacing: 0.02em;
+			text-shadow: none;
+		}
+		.scene .hud .metrics {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 0;
+			align-self: center;
+			width: 100%;
+			height: 100%;
+			min-height: 0;
+		}
+		/* Label over value, both flush left on the group's own x — no boxes around the read-outs.
+		   The one rule the design draws is a hairline between BALANCE and WIN (9198:123436, the
+		   rotated Line 3): sampled #6f4605 off the frame, with WIN's type 53px clear of it. */
+		.scene .hud .metric {
+			display: grid;
+			align-content: center;
+			justify-items: start;
+			gap: 2px;
+			min-width: 0;
+			min-height: 0;
+			padding: 0;
+			border: 0 !important;
+			text-align: left;
+		}
+		.scene .hud .metric.win {
+			position: relative;
+			padding-left: clamp(14px, 2.2vw, 30px);
+		}
+		/* Measured off the frame: the rail's field is 72px tall and the rule runs y35..82 of it — 48px,
+		   a third of the field clear at each end, not edge to edge ("still wrong", user 2026-09-16). */
+		.scene .hud .metric.win::before {
+			content: '';
+			position: absolute;
+			top: 17%;
+			bottom: 17%;
+			left: 0;
+			width: 1px;
+			background: #6f4605;
+		}
+		.scene .hud .metric span {
+			color: #e38b01;
+			font-size: clamp(8px, 0.9vw, 11px);
+			letter-spacing: 0.14em;
+			line-height: 1;
+		}
+		.scene .hud .metric strong {
+			color: #fff !important;
+			font-size: clamp(14px, 2vw, 26px) !important;
+			line-height: 1;
+			text-shadow: none;
+		}
+		/* The BET group is the only one with an icon: a 24x25 coin stack, 21px clear of the type. */
+		.scene .hud .metric.bet {
+			padding-left: clamp(30px, 3.8vw, 45px);
+			background: url('/assets/veggie-salad/pixel/coin-stack.webp') left center / auto
+				clamp(17px, 2.1vw, 25px) no-repeat;
+		}
+		.scene .hud-right {
+			display: grid;
+			grid-template-columns: auto auto auto auto;
+			grid-template-rows: minmax(0, 1fr);
+			gap: clamp(8px, 1.3vw, 16px);
+			align-items: center;
+			width: auto;
+			height: 100%;
+			min-height: 0;
+			margin-left: 0;
+			padding: 0;
+			border: 0 !important;
+		}
+		.scene .hud .bet-stepper {
+			display: grid;
+			grid-template-columns: repeat(2, auto);
+			grid-template-rows: minmax(0, 1fr);
+			align-items: center;
+			height: 100%;
+			gap: clamp(8px, 1.3vw, 15px);
+			width: auto;
+		}
+		.scene .hud .spin {
+			width: auto !important;
+			/* 104/73 in the design; trimmed so the overhang fits the clearance below the bar. */
+			height: 129% !important;
+			min-height: 0 !important;
+			aspect-ratio: 1 !important;
+			margin: 0 !important;
+			border: 0 !important;
+			border-radius: 50% !important;
+			background: #e38b01 !important;
+			/* The disc carries a soft halo of its own colour in the art, not a hard ring. */
+			box-shadow: 0 0 0 9px rgb(227 139 1 / 32%) !important;
+			clip-path: none !important;
+		}
+		.scene .hud .spin-arrow {
+			width: 64% !important;
+			height: 64% !important;
+			fill: #fbe7fa !important;
+			filter: none !important;
+		}
+	}
+
+	/* ── Side boards keep their sides in the bonus ─────────────────────────────────────────────
+	   Every landscape pass above swaps them the moment a bonus class lands on the scene: the win
+	   board jumps from the right gutter to the left and the free-spin counters take the right. That
+	   moves both boards out from under the player mid-feature. They now hold the sides they have in
+	   the base game — win board right, counters left — using the same gutter maths the passes above
+	   use, so nothing else about their size or spacing changes. */
+	@media (orientation: landscape) {
+		.scene .game-stage .cluster-panel {
+			right: 1cqw;
+			left: calc(50% + min(50cqw, 62.5cqh) + 0.75cqw);
+		}
+		.scene .game-stage .bonus-readouts {
+			right: auto;
+			left: 2cqw;
+			width: calc(50% - min(50cqw, 62.5cqh) - 4cqw);
+			max-width: none;
+		}
+	}
+
+	/* ── Free-spin counters ────────────────────────────────────────────────────────────────────
+	   Design 9198:20884: two identical slabs, 270x90 on a 1200x670 frame, 10 apart — a #2C1901
+	   field inside a 3px #844A0D border, the same two colours as the win plaque and the bonus
+	   cards. The design reads label-in-white over value-in-amber; this had it the other way round,
+	   and gave EARNED a green field of its own. The design's box carries no tier line, so the one
+	   under the spin count goes — the congrats card has just named the tier. */
+	.scene .game-stage .bonus-readouts {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: auto auto;
+		gap: clamp(4px, 1.5cqh, 10px);
+		height: auto;
+		min-height: 0;
+	}
+	.scene .game-stage .bonus-readout {
+		display: grid;
+		align-content: center;
+		justify-items: center;
+		gap: clamp(2px, 0.7cqh, 5px);
+		min-height: clamp(52px, 13.4cqh, 90px);
+		padding: clamp(5px, 1.1cqh, 11px) clamp(6px, 0.8cqw, 14px);
+		border: 3px solid #844a0d;
+		border-radius: 0;
+		background: #2c1901;
+		box-shadow: none;
+	}
+	.scene .game-stage .bonus-readout span {
+		color: #fff;
+		font-size: clamp(11px, 3.5cqh, 24px);
+		letter-spacing: 0.04em;
+		text-shadow: none;
+	}
+	.scene .game-stage .bonus-readout strong {
+		min-width: 0;
+		color: #e38b01;
+		font-size: clamp(17px, 5.6cqh, 38px);
+		line-height: 1;
+		text-shadow: none;
+	}
+	.scene .game-stage .bonus-readout small {
+		display: none;
+	}
+
+	/* ── Quick menu ────────────────────────────────────────────────────────────────────────────
+	   Dressed as the bottom bar it opens from: a #351E01 field in a 2px #925A06 border with amber
+	   Jersey 10 labels. The old panel was 104px wide with 10px labels on a darker brown, which read
+	   as a scrap of UI dropped over the signpost behind it rather than part of the bar. Appearance
+	   only — each layout keeps its own anchor, since the menu button moves side to side. */
+	.scene .quick-menu {
+		gap: 0;
+		padding: 5px;
+		border: 2px solid #925a06;
+		border-radius: 0;
+		background: #351e01;
+		box-shadow: 0 6px 0 rgb(12 6 1 / 45%);
+	}
+	.scene .quick-menu button {
+		gap: 10px;
+		padding: 0 7px 0 3px;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+		color: #e38b01;
+		letter-spacing: 0.06em;
+	}
+	.scene .quick-menu button + button {
+		border-top: 1px solid #5c360a;
+	}
+	.scene .quick-menu button:hover,
+	.scene .quick-menu button:focus-visible {
+		background: #4a2a02;
+		color: #ffa10e;
+		outline: 0;
+	}
+	.scene .quick-menu button.off {
+		color: #8a5b16;
+	}
+	.scene .quick-menu-icon {
+		border: 2px solid #925a06;
+		background: #2c1901;
+		/* The typeset "i" takes this; the sound and music glyphs are SVGs filled #F2CB8C, and the
+		   label orange it inherited left the "i" the odd one out on the phone layouts. */
+		color: #f2cb8c;
+	}
+
+	/* Landscape sizing, to the same scale as the bar's own controls — so it carries the bar's own
+	   height gate rather than reaching a shell that has no bar. */
+	@media (min-width: 681px) and (orientation: landscape) and (min-height: 601px) {
+		/* Design 9227:176057 on the 1200x670 frame: a 170-wide box holding 48px icon squares
+		   with 24px Jersey labels 18px to their right, rows 11px apart on hairlines. The old
+		   34px icons and 15-20px labels were "not big enough" (user, 2026-09-16); these are the
+		   frame's own sizes in vw so they grow with the bar. */
+		.scene .quick-menu {
+			--qm: calc(100vw / 1200);
+			/* Flush with the bar's left inset and parked directly on top of it. */
+			left: 4.33vw;
+			bottom: calc(clamp(56px, 11.6vh, 77px) + clamp(12px, 2.2vh, 18px) + 9px);
+			width: clamp(170px, calc(170 * var(--qm)), 240px);
+			padding: max(6px, calc(11 * var(--qm)));
+		}
+		.scene .quick-menu button {
+			grid-template-columns: clamp(44px, calc(48 * var(--qm)), 64px) minmax(0, 1fr);
+			gap: clamp(12px, calc(18 * var(--qm)), 24px);
+			height: auto;
+			padding: max(4px, calc(5.5 * var(--qm))) 0;
+			color: #f2cb8c;
+			font-size: clamp(22px, calc(24 * var(--qm)), 32px);
+			letter-spacing: 0.02em;
+		}
+		.scene .quick-menu button + button {
+			border-top: 1px solid #925a06;
+		}
+		.scene .quick-menu button:hover,
+		.scene .quick-menu button:focus-visible {
+			background: transparent;
+			color: #fff;
+		}
+		.scene .quick-menu button.off {
+			color: #8a6a3a;
+		}
+		.scene .quick-menu-icon {
+			width: clamp(44px, calc(48 * var(--qm)), 64px);
+			height: clamp(44px, calc(48 * var(--qm)), 64px);
+			border: 1px solid #935901;
+			background: #361e01;
+			/* White here left the "i" the odd one out beside the #F2CB8C SVG glyphs ("the i is not
+			   the right color", user 2026-09-18). */
+			color: #f2cb8c;
+		}
+		.scene .quick-menu-icon.info-icon {
+			font-size: clamp(28px, calc(32 * var(--qm)), 42px);
+		}
+	}
+	/* ── Landscape phones and short landscape shells ──────────────────────────────────────────
+	   This pass is LAST on purpose. The bottom-bar and desktop-HUD passes below it are written for
+	   a tall landscape shell and both match `(min-width: 681px) and (orientation: landscape)`, so on
+	   an 800x360 phone they were winning on source order and rebuilding the rail as a full-width
+	   bar — 730x311 of HUD over a 360-tall screen. Nothing here changed except its position in the
+	   file; the rail it declares is the one design 9283:250375 draws. */
+
+	/* Landscape reference, design 9283:250375: left identity/readouts/history/balance, centred
+	   board, right control rail with a separate bet stepper and a bottom win readout. Every
+	   measurement uses the live viewport, never a fixed design size.
+	   Keyed on HEIGHT alone now, not on `pointer: coarse`: a phone is not the only thing that is
+	   360 tall — a resized desktop window is the same shape and the bottom bar fits it just as
+	   badly — and gating on the pointer left such a window falling through to a pass written for a
+	   670-tall frame. */
+	@media (orientation: landscape) and (max-height: 600px) {
 		.scene {
 			--land-left: 22vw;
 			--land-hud-border: clamp(3px, 0.45vw, 5px);
-			--land-control-border: clamp(2px, 0.3vw, 3px);
+			/* The design hairlines every control box and the rail itself at one pixel of #8C5601 —
+			   measured off its own frame, not the thicker slab border the wide layout uses. */
+			--land-control-border: 1px;
 			--land-right: 20vw;
 			display: block;
 			padding: 0;
@@ -6063,7 +8275,9 @@
 			margin: 0;
 			transform: none;
 		}
-		.brand img { transform: translateY(-25.658%); }
+		.brand img {
+			transform: translateY(-25.658%);
+		}
 		.studio-mark {
 			display: block;
 			inset: 1.4% 1.6% auto auto;
@@ -6087,8 +8301,11 @@
 		.game-stage:has(.bonus-readouts) .board-wrap {
 			position: absolute;
 			inset: 50% auto auto 52%;
-			width: min(53cqw, 116cqh);
-			height: min(42.4cqw, 92.8cqh);
+			/* The design's board is 423x341 on its 800x360 frame — 52.9cqw by 94.7cqh, where the
+			   old cap stopped at 92.8cqh and left it a little short of the frame. Both terms are
+			   raised by the same factor, so the 1.24 aspect the frame art needs is unchanged. */
+			width: min(55cqw, 120cqh);
+			height: min(44cqw, 96cqh);
 			grid-area: auto;
 			transform: translate(-50%, -50%);
 		}
@@ -6103,22 +8320,31 @@
 			padding: clamp(5px, 0.8vw, 12px);
 			border: clamp(2px, 0.28vw, 4px) solid #241906;
 			background: #354818;
-			box-shadow: inset 0 0 0 clamp(2px, 0.4vw, 6px) #82500c,
+			box-shadow:
+				inset 0 0 0 clamp(2px, 0.4vw, 6px) #82500c,
 				inset 0 0 0 clamp(4px, 0.65vw, 10px) #a4772b;
 			clip-path: polygon(4% 0, 96% 0, 100% 4%, 100% 96%, 96% 100%, 4% 100%, 0 96%, 0 4%);
 			transform: none;
 		}
 		.cluster-panel::before,
-		.cluster-panel::after { display: none; }
+		.cluster-panel::after {
+			display: none;
+		}
 		.scene .game-stage .cluster-panel .panel-rows,
-		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .game-stage .cluster-panel .panel-rows {
+		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden)
+			.game-stage
+			.cluster-panel
+			.panel-rows {
 			height: 100%;
 			grid-template-columns: minmax(0, 1fr);
 			grid-template-rows: repeat(var(--slots, 6), minmax(0, 1fr));
 			gap: clamp(1px, 0.25vh, 3px);
 		}
 		.scene .game-stage .cluster-panel .panel-row,
-		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden) .game-stage .cluster-panel .panel-row {
+		.scene:not(.bonus-normal):not(.bonus-super):not(.bonus-hidden)
+			.game-stage
+			.cluster-panel
+			.panel-row {
 			grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1.6fr);
 			gap: clamp(1px, 0.3vw, 4px);
 			min-width: 0;
@@ -6132,16 +8358,29 @@
 			background: #617637;
 			box-shadow: none;
 		}
-		.scene .game-stage .cluster-panel .panel-row.vacant { background: #354818; border-color: #53672a; }
+		.scene .game-stage .cluster-panel .panel-row.vacant {
+			background: #354818;
+			border-color: #53672a;
+		}
 		.cluster-panel .panel-row img {
 			width: 100%;
 			height: min(4.6vh, 2.3vw);
 			object-fit: contain;
 		}
 		.cluster-panel .panel-row span,
-		.cluster-panel .panel-row strong { display: block; font-size: inherit; }
-		.cluster-panel .panel-row span { padding: 1px 3px; border: 1px solid #9cad73; }
-		.cluster-panel .panel-row strong { min-width: 0; color: #ffc022; text-shadow: none; }
+		.cluster-panel .panel-row strong {
+			display: block;
+			font-size: inherit;
+		}
+		.cluster-panel .panel-row span {
+			padding: 1px 3px;
+			border: 1px solid #9cad73;
+		}
+		.cluster-panel .panel-row strong {
+			min-width: 0;
+			color: #ffc022;
+			text-shadow: none;
+		}
 		.bonus-readouts {
 			position: absolute;
 			inset: 17% auto auto 2.8%;
@@ -6164,34 +8403,54 @@
 			background: #321c03;
 			box-shadow: none;
 		}
-		.bonus-readout span { color: #fff8df; font-size: clamp(8px, 1.65vw, 24px); letter-spacing: 0; }
-		.bonus-readout strong { color: #eea000; font-size: clamp(12px, 2.2vw, 32px); line-height: 1; }
-		.bonus-readout small { display: none; }
+		.bonus-readout span {
+			color: #fff8df;
+			font-size: clamp(8px, 1.65vw, 24px);
+			letter-spacing: 0;
+		}
+		.bonus-readout strong {
+			color: #eea000;
+			font-size: clamp(12px, 2.2vw, 32px);
+			line-height: 1;
+		}
+		.bonus-readout small {
+			display: none;
+		}
 		.scene .hud {
 			position: fixed;
 			inset: 10.4% 2.6% 12% auto !important;
 			display: grid;
 			grid-template-areas: none;
 			grid-template-columns: minmax(0, 1fr);
-			grid-template-rows: 1fr 1fr 2.2fr 1fr 1fr;
-			gap: 1vh;
+			/* One continuous box with the disc lying ON it, which is what design 9283:250375 draws.
+			   A connected-component read of that frame reports two dark boxes only because the
+			   opaque disc interrupts the one box in the middle — measured again by row, the rail
+			   runs unbroken from y38 to y315. Its contents at that size: menu 32, BONUS 51x28, the
+			   disc 70 across, turbo 32, auto 32, on a 15px rhythm inside ~11px of padding. The
+			   children carry those sizes, so the tracks are content-sized. */
+			grid-template-rows: repeat(5, auto);
+			gap: 4vh;
 			align-items: center;
 			justify-items: center;
 			width: 7.6%;
 			height: auto !important;
 			min-height: 0;
-			padding: 1.8vh 0;
-			border: var(--land-hud-border) solid #8c601a;
-			background: #321c03;
+			padding: 3vh 0;
+			border: var(--land-control-border) solid #8c5601;
+			background: #351e01;
 			box-shadow: none;
 			transform: none;
 			overflow: visible;
 			pointer-events: auto;
 		}
-		.hud::before { display: none; }
+		.hud::before {
+			display: none;
+		}
 		.hud-left,
 		.hud-right,
-		.hud .metrics { display: contents; }
+		.hud .metrics {
+			display: contents;
+		}
 		.scene .hud .utility,
 		.scene .hud .bonus-button,
 		.scene .hud .spin {
@@ -6209,30 +8468,68 @@
 			height: min(4.4vw, 9.4vh);
 			clip-path: none !important;
 		}
-		.hud-left .utility { grid-row: 1; }
+		.hud-left .utility {
+			grid-row: 1;
+		}
 		.scene .hud .bonus-button {
 			grid-row: 2;
-			width: 86%;
-			height: 8vh;
+			/* 51x28 against the rail's 60 in the design — a wide, shallow block, not a slab that
+			   fills the column. */
+			width: 85%;
+			height: min(3.6vw, 7.8vh);
 			clip-path: none !important;
 			border: 0 !important;
 			background: #e89600 !important;
 			box-shadow: none !important;
 		}
-		.hud .bonus-button span { font-size: clamp(9px, 1.45vw, 22px); }
-		.hud .bonus-button small { display: none; }
+		.hud .bonus-button span {
+			font-size: clamp(9px, 1.45vw, 22px);
+		}
+		.hud .bonus-button small {
+			display: none;
+		}
 		.scene .hud .spin {
 			grid-row: 3;
 			align-self: center;
 			justify-self: center;
-			width: min(9.6vw, 22vh);
-			height: min(9.6vw, 22vh);
+			/* 70 across in the design, which is 8.75vw / 19.4vh at its own 800x360. */
+			width: min(8.8vw, 19.4vh);
+			height: min(8.8vw, 19.4vh);
 			border-width: clamp(3px, 0.4vw, 6px) !important;
 		}
-		.scene .hud .turbo { grid-row: 4; }
-		.scene .hud .auto { grid-row: 5; }
-		.scene .hud .utility svg { width: 58%; height: 58%; }
-		.scene .hud .auto small { font-size: clamp(6px, 0.9vw, 14px); }
+		.scene .hud .turbo {
+			grid-row: 4;
+		}
+		.scene .hud .auto {
+			grid-row: 5;
+		}
+		/* Ink measured inside the design's own 34px boxes: the menu bars are 12x10, the turbo bolt
+		   7x15 and the auto arrows only 7x7 over a 15x5 AUTO caption. At 58% the arrows came out
+		   19px — nearly three times the design's — which is what made this button read as a
+		   different control. The pair is centred as one stack, not pinned top-and-bottom. */
+		.scene .hud-right .utility {
+			grid-template-rows: auto auto;
+			align-content: center;
+			gap: 13%;
+			padding: 0;
+		}
+		.scene .hud .utility svg {
+			/* 8px of ink across the design's 34px box. */
+			width: 24%;
+			height: auto;
+		}
+		/* The menu bars are the widest ink in the rail — 12px of the same 34px box. Its viewBox
+		   carries about half its width in padding, so the box percentage is roughly double. */
+		.scene .hud-left .utility svg {
+			width: 76%;
+		}
+		.scene .hud .turbo .turbo-icon {
+			width: auto;
+			height: 44%;
+		}
+		.scene .hud .auto small {
+			font-size: clamp(6px, 1.2vw, 18px);
+		}
 		.scene .hud .bet-stepper {
 			position: fixed;
 			inset: auto 11.6% 12% auto;
@@ -6257,13 +8554,25 @@
 			transform: none;
 			clip-path: none !important;
 		}
-		.hud .bet-stepper button:first-child { grid-column: 1; grid-row: 3; }
-		.hud .bet-stepper button:last-child { grid-column: 1; grid-row: 1; }
+		.hud .bet-stepper button:first-child {
+			grid-column: 1;
+			grid-row: 3;
+		}
+		.hud .bet-stepper button:last-child {
+			grid-column: 1;
+			grid-row: 1;
+		}
 		.scene .hud .utility,
-		.scene .hud .bet-stepper button { background: #321c03 !important; border: var(--land-control-border) solid #8c601a !important; box-shadow: none !important; }
+		.scene .hud .bet-stepper button {
+			background: #321c03 !important;
+			border: var(--land-control-border) solid #8c601a !important;
+			box-shadow: none !important;
+		}
 		.scene .hud .utility:active,
 		.scene .hud .utility.pressed-flash,
-		.scene .hud .bet-stepper button:active { background: #65400c !important; }
+		.scene .hud .bet-stepper button:active {
+			background: #65400c !important;
+		}
 		.hud .metric {
 			position: fixed;
 			inset: auto auto 1.6% 2.8%;
@@ -6281,9 +8590,28 @@
 			box-shadow: none;
 			text-align: left;
 		}
-		.hud .metric.win { inset: auto 2.6% 1.6% auto; }
-		.hud .metric span { display: block; color: #fff8df; font-size: clamp(7px, 1.3vw, 20px); letter-spacing: 0; text-shadow: none; }
-		.hud .metric strong { font-size: clamp(9px, min(2.2vw, calc(110cqw / var(--chars, 8))), 32px) !important; text-align: right; text-shadow: none; }
+		.hud .metric.win {
+			inset: auto 2.6% 1.6% auto;
+		}
+		.hud .metric span {
+			display: block;
+			color: #fff8df;
+			font-size: clamp(7px, 1.3vw, 20px);
+			letter-spacing: 0;
+			text-shadow: none;
+		}
+		/* BALANCE, WIN and BET all read WHITE in the design — sampled off its own frame, every one
+		   of those values is #FFFFFF. The amber in this layout belongs to BONUS, the disc and the
+		   win board's totals, and using it here as well flattened that hierarchy. */
+		.hud .metric strong {
+			color: #fff !important;
+			font-size: clamp(9px, min(2.2vw, calc(110cqw / var(--chars, 8))), 32px) !important;
+			text-align: right;
+			text-shadow: none;
+		}
+		.scene .hud .auto small {
+			color: #fff;
+		}
 		.hud .metric.bet {
 			inset: auto 11.6% 21.65% auto;
 			z-index: 2;
@@ -6296,13 +8624,30 @@
 			background: none;
 			pointer-events: none;
 		}
-		.hud .metric.bet span { display: none; }
-		.hud .metric.bet strong { font-size: clamp(7px, calc(150cqw / var(--chars, 8)), 22px) !important; text-align: center; }
-		.quick-menu { inset: 10.4% 11.6% auto auto; max-height: 80svh; overflow-y: auto; }
-		.modal-layer { padding: 6px; }
-		.buy-panel,
-		.auto-panel,
-		.confirm-panel { max-height: calc(100svh - 12px); overflow-y: auto; }
+		.hud .metric.bet span {
+			display: none;
+		}
+		.hud .metric.bet strong {
+			font-size: clamp(7px, calc(150cqw / var(--chars, 8)), 22px) !important;
+			text-align: center;
+		}
+		.quick-menu {
+			inset: 10.4% 11.6% auto auto;
+			max-height: 80svh;
+			overflow-y: auto;
+		}
+		.modal-layer {
+			padding: 6px;
+		}
+		.confirm-panel {
+			max-height: calc(100svh - 12px);
+			overflow-y: auto;
+		}
+		.auto-panel {
+			--u: calc(min(604px, 100vw - 12px, (100svh - 12px) * 604 / 540) / 604);
+			max-height: calc(100svh - 12px);
+			overflow-y: auto;
+		}
 		:global(.pop-up-wrap .info-stage) {
 			width: min(calc(100vw - 24px), calc((100svh - 80px) * 1.49));
 		}
@@ -6311,8 +8656,14 @@
 	/* Popout S: use narrow gutters and nearly the entire height for the board.
 	   Controls grow independently of the tiny viewport width. */
 	@media (orientation: landscape) and (max-width: 520px) and (max-height: 300px) {
-		.scene .brand { inset: 2% auto auto 1%; width: 17%; }
-		.scene .studio-mark { inset: 0 0 auto auto; width: 12%; }
+		.scene .brand {
+			inset: 2% auto auto 1%;
+			width: 17%;
+		}
+		.scene .studio-mark {
+			inset: 0 0 auto auto;
+			width: 12%;
+		}
 		.scene .game-stage .board-wrap,
 		.scene .game-stage:has(.bonus-readouts) .board-wrap {
 			left: 50%;
@@ -6325,8 +8676,15 @@
 			width: 17%;
 			padding: 4px;
 		}
-		.scene .game-stage:has(.bonus-readouts) .cluster-panel { top: 44%; }
-		.scene .bonus-readouts { inset: 13% auto auto 1%; width: 17%; height: 28%; gap: 2px; }
+		.scene .game-stage:has(.bonus-readouts) .cluster-panel {
+			top: 44%;
+		}
+		.scene .bonus-readouts {
+			inset: 13% auto auto 1%;
+			width: 17%;
+			height: 28%;
+			gap: 2px;
+		}
 		.scene .hud {
 			inset: 8% 1% 12% auto !important;
 			width: 10.5%;
@@ -6334,14 +8692,204 @@
 			gap: 2px;
 			grid-template-rows: 1fr 1fr 1.8fr 1fr 1fr;
 		}
-		.scene .hud .utility { width: min(7vw, 12vh); height: min(7vw, 12vh); }
-		.scene .hud .bonus-button { width: 94%; height: 11vh; }
-		.scene .hud .spin { width: min(13vw, 23vh); height: min(13vw, 23vh); }
-		.scene .hud .bet-stepper { right: 12.2%; bottom: 12%; width: 5.8vw; height: 36vh; padding: 1px; }
-		.scene .hud .metric.bet { right: 12.2%; bottom: 24%; width: 5.8vw; height: 12vh; }
-		.scene .hud .metric.balance { left: 1%; width: 17vw; }
-		.scene .hud .metric.win { right: 1%; width: 17vw; }
-		.scene .quick-menu { inset: 4px 12% auto auto; }
+		.scene .hud .utility {
+			width: min(7vw, 12vh);
+			height: min(7vw, 12vh);
+		}
+		.scene .hud .bonus-button {
+			width: 94%;
+			height: 11vh;
+		}
+		.scene .hud .spin {
+			width: min(13vw, 23vh);
+			height: min(13vw, 23vh);
+		}
+		.scene .hud .bet-stepper {
+			right: 12.2%;
+			bottom: 12%;
+			width: 5.8vw;
+			height: 36vh;
+			padding: 1px;
+		}
+		.scene .hud .metric.bet {
+			right: 12.2%;
+			bottom: 24%;
+			width: 5.8vw;
+			height: 12vh;
+		}
+		.scene .hud .metric.balance {
+			left: 1%;
+			width: 17vw;
+		}
+		.scene .hud .metric.win {
+			right: 1%;
+			width: 17vw;
+		}
+		.scene .quick-menu {
+			inset: 4px 12% auto auto;
+		}
+	}
+	/* ── Portrait bonus, designs 9262:211494 (dusk) / 9262:213551 (night) / 9262:215601 (sunset)
+	   Sits after the unscoped free-spin-counter pass above, which otherwise sizes the counters
+	   off the stage's cqh and lets them grow over the logo ("the backgrounds are wrong", user
+	   2026-09-17). Everything is a share of --pw, the 360 design width. */
+	@media (orientation: portrait) {
+		/* Two 135.6x46 slabs on the panel's own row, 1px apart: #2C1901 in a 1.665px #844A0D line,
+		   the label in white Jersey 10 at 17.76 and the value in amber at 23.87. The design parks
+		   them 10px off the right edge, which lands their left border on the cluster panel's; they
+		   sit 6px off instead — flush with the board frame's right edge below — so a 5px gap keeps
+		   the two boxes apart. */
+		.scene .game-stage .bonus-readouts {
+			display: grid;
+			grid-column: 2;
+			grid-row: 1;
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: repeat(2, minmax(0, 1fr));
+			gap: calc(var(--pw) * 0.003);
+			justify-self: end;
+			width: calc(var(--pw) * 0.377);
+			height: 100%;
+			min-height: 0;
+			margin-right: calc(var(--pw) * 0.0154);
+		}
+		.scene .game-stage .bonus-readout {
+			display: grid;
+			grid-template-rows: auto auto;
+			align-content: center;
+			justify-items: center;
+			gap: calc(var(--pw) * 0.004);
+			min-height: 0;
+			padding: 0 calc(var(--pw) * 0.01);
+			border: max(1px, calc(var(--pw) * 0.0046)) solid #844a0d;
+			border-radius: 0;
+			background: #2c1901;
+			box-shadow: none;
+		}
+		.scene .game-stage .bonus-readout span {
+			font-size: calc(var(--pw) * 0.049);
+			letter-spacing: 0.03em;
+			line-height: 1;
+		}
+		.scene .game-stage .bonus-readout strong {
+			font-size: calc(var(--pw) * 0.066);
+			line-height: 1;
+		}
+
+		/* The gardens: a sky gradient (the design's 350-tall rect starts 46px above the game, under
+		   the site header), the flat ground from 304px (0.844pw) down, and one hill strip behind
+		   the board over it. The strips are cut by scripts/build-portrait-gardens.py. The landscape
+		   gardens' own layers, clouds and stars are switched off here, not resized. */
+		.scene .background-normal > *,
+		.scene .background-super > * {
+			display: none;
+		}
+		.scene .background-normal,
+		.scene .background-super {
+			background-image: none;
+			background-repeat: no-repeat;
+			background-position: 0 calc(var(--pw) * -0.128);
+			background-size: 100% calc(var(--pw) * 0.972);
+		}
+		.scene .background-normal::before,
+		.scene .background-super::before {
+			inset: auto 0;
+			z-index: 1;
+			width: auto;
+			height: auto;
+			background-image: none;
+			background-position: center top;
+			background-size: 100% 100%;
+			background-repeat: no-repeat;
+			transform: none;
+		}
+		.scene .background-normal::after,
+		.scene .background-super::after {
+			display: none;
+		}
+		/* Dusk (garden-dusk): purple-to-pink sky, #659337 ground, hills 175.5 tall from 208. */
+		.scene.garden-dusk .background-normal {
+			background-color: #659337;
+			background-image: linear-gradient(
+				180deg,
+				#6e62bd 1%,
+				#7461ba 14%,
+				#9465b2 40%,
+				#b469aa 66%,
+				#de768f 92.5%
+			);
+		}
+		.scene.garden-dusk .background-normal::before {
+			top: calc(var(--pw) * 0.578);
+			height: calc(var(--pw) * 0.4875);
+			background-image: url('./assets/veggie-salad/pixel/background/portrait/hills-dusk.webp');
+		}
+		/* Sunset (NORMAL via the Mystery pick): red-to-gold sky, #7F8905 ground, hills 217.7 tall
+		   from 183. */
+		.scene:not(.garden-dusk) .background-normal {
+			background-color: #7f8905;
+			background-image: linear-gradient(
+				180deg,
+				#cd3e4b 1%,
+				#dc403f 14%,
+				#f16026 40%,
+				#f77619 66%,
+				#f69c0f 92.5%
+			);
+		}
+		.scene:not(.garden-dusk) .background-normal::before {
+			top: calc(var(--pw) * 0.508);
+			height: calc(var(--pw) * 0.605);
+			background-image: url('./assets/veggie-salad/pixel/background/portrait/hills-sunset.webp');
+		}
+		/* Night (SUPER): flat #092669 sky, #1B623A ground, hills 169.7 tall from 219. */
+		.scene .background-super {
+			background-color: #1b623a;
+			background-image: linear-gradient(#092669, #092669);
+		}
+		.scene .background-super::before {
+			top: calc(var(--pw) * 0.608);
+			height: calc(var(--pw) * 0.471);
+			background-image: url('./assets/veggie-salad/pixel/background/portrait/hills-night.webp');
+		}
 	}
 
+	/* ── Portrait paddock ─────────────────────────────────────────────────────────────────────
+	   The 360x577 design frame has no lawn between the board and the bar, but every taller phone
+	   does (the scene's middle row stretches, the stage's rows do not), and the garden's creature
+	   grazes it: the butterfly wanders the whole strip, the owl and the pup stand low on the left. Its top is the board's own bottom (readouts row + board margin + the board's
+	   349:277.6 height, all in --pw), and it only opens once the strip is about a quarter of the
+	   width tall — a viewport at least 1.85 times taller than wide. */
+	.paddock {
+		display: none;
+	}
+	@media (orientation: portrait) and (max-aspect-ratio: 1 / 1.85) {
+		.scene .game-stage .paddock {
+			position: absolute;
+			inset: calc(var(--pw) * 1.0625) 0 0;
+			display: block;
+			overflow: hidden;
+			pointer-events: none;
+		}
+		.scene .paddock .butterfly {
+			width: calc(var(--pw) * 0.2);
+		}
+		.scene .paddock-owl {
+			position: absolute;
+			bottom: 3%;
+			left: 6%;
+			width: calc(var(--pw) * 0.3);
+		}
+		/* The pup faces right, so it stands on the left with its tail off the edge and looks in
+		   across the lawn. */
+		.scene .paddock-wolf {
+			position: absolute;
+			bottom: 2%;
+			left: -5%;
+			height: min(88%, calc(var(--pw) * 0.42));
+		}
+		.scene .paddock .wolf-stage {
+			height: 100%;
+			margin: 0;
+		}
+	}
 </style>

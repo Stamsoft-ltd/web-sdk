@@ -27,6 +27,10 @@ export default createLocale(source, {
 	multiplierText: 'Semua pengali dalam klaster pemenang dikalikan dan diterapkan pada kemenangan.',
 	bonusRule:
 		'3 scatter memicu Bonus Normal, 4 memicu Bonus Super; Bonus Tersembunyi memakai kisi 10×10.',
+	legalMark: 'TM dan © 2026 Engine.',
+	board: 'PAPAN',
+	symbol: 'SIMBOL',
+	deactivate: 'NONAKTIFKAN',
 	controls: 'KONTROL',
 	splashGarden: 'Bentuk klaster, jatuhkan sayuran, dan temukan kejutan kebun.',
 });

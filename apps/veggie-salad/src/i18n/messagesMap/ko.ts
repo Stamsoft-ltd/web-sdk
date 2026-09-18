@@ -27,6 +27,10 @@ export default createLocale(source, {
 	multiplierText: '당첨 클러스터 안의 모든 배수를 곱해 해당 당첨에 적용합니다.',
 	bonusRule:
 		'스캐터 3개는 일반, 4개는 슈퍼 보너스를 발동하며 숨겨진 보너스는 10×10 보드를 사용합니다.',
+	legalMark: 'TM 및 © 2026 Engine.',
+	board: '보드',
+	symbol: '심볼',
+	deactivate: '비활성화',
 	controls: '조작',
 	splashGarden: '클러스터를 만들고 채소를 떨어뜨려 정원의 놀라움을 찾아보세요.',
 });

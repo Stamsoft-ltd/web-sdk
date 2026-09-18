@@ -7,8 +7,8 @@
 		"format": "prettier --write --ignore-path=../../.prettierignore .",
 		"lint": "eslint \"src\"",
 		"storybook": "PUBLIC_CHROMATIC=true storybook dev -p 6001 public",
-		"dev": "vite dev --host --port 3018",
-		"build": "vite build",
+		"dev": "node scripts/build-preload-list.mjs && vite dev --host --port 3018",
+		"build": "node scripts/build-preload-list.mjs && vite build",
 		"preview": "vite preview"
 	},
 	"type": "module",

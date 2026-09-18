@@ -49,6 +49,10 @@ export const stateGame = $state({
 	gridSize: 7 as 7 | 8 | 9 | 10,
 	gameType: 'basegame' as GameType,
 	bonusTier: null as BonusTier | null,
+	// How the running bonus was entered. Presentation only: a MYSTERY pick that lands NORMAL plays
+	// in the sunset garden with the owl instead of NORMAL's dusk garden with the butterfly.
+	// Unknown on a resumed round, which then shows the tier's own garden.
+	bonusSource: null as 'natural' | 'buy' | 'mystery' | null,
 	phase: 'idle' as Phase,
 	revealId: 0,
 	winningPositions: [] as Position[],
@@ -99,8 +103,18 @@ export const stateGame = $state({
 // fall itself is eased quadIn (CSS `--fall-ease`), which makes the trajectory identical for
 // short and long falls — so a symbol can never overtake the one below it, and a one-row tumble
 // reads as the same weight as a full board drop. Landing adds a squash + bounce (`land-impact`).
-export const FALL_MOTION = {
-	// ms per sqrt(cell) of travel: 1 row ≈ 130ms, 9 rows ≈ 390ms.
+// Whole-game tempo: every duration below and every narrative wait is this many times its
+// authored value. 1.25 = "reduce the game speed by 20% for all modes" (user 2026-09-17); turbo
+// and super turbo keep their ratio to normal, so they slow by the same 20%.
+export const GAME_PACE = 1.25;
+
+const paced = <T extends Record<string, number>>(profile: T): T =>
+	Object.fromEntries(
+		Object.entries(profile).map(([key, ms]) => [key, Math.round(ms * GAME_PACE)]),
+	) as T;
+
+export const FALL_MOTION = paced({
+	// ms per sqrt(cell) of travel: 1 row ≈ 130ms, 9 rows ≈ 390ms (before GAME_PACE).
 	unitMs: 130,
 	minMs: 120,
 	// Bottom rows leave first so each column piles up from the floor.
@@ -119,13 +133,13 @@ export const FALL_MOTION = {
 	// Cluster harvest (win symbols leaving), plus the per-cell jitter spread on it.
 	removeMs: 420,
 	removeJitterMs: 55,
-} as const;
+} as const);
 
 // Fast profile. Turbo, super turbo and a skip press all switch to THIS instead of scaling every
 // duration towards zero: skipping is a fast-forward, so the tumble still plays — cluster, harvest,
 // refill, in that order — just in ~a fifth of the time. Scaling to 0 read as a cancel, and the
 // board jumped to new symbols without ever showing what had won.
-export const FALL_MOTION_FAST = {
+export const FALL_MOTION_FAST = paced({
 	unitMs: 55,
 	minMs: 50,
 	spinRowStaggerMs: 11,
@@ -138,7 +152,7 @@ export const FALL_MOTION_FAST = {
 	exitJitterMs: 10,
 	removeMs: 180,
 	removeJitterMs: 20,
-} as const;
+} as const);
 
 // Scatters a tier needs to trigger. The paytable states 3 → normal (8×8) and 4 → super (9×9);
 // hidden has no published count, so it takes the next one up. Single source of truth: the
@@ -150,9 +164,11 @@ export const SCATTER_TRIGGER_COUNTS: Record<BonusTier, number> = {
 	hidden: 5,
 };
 
-// UI history only: six retained payouts at every viewport size.
+// UI history only: five retained payouts at every viewport size — the count the design's own win
+// board carries. A sixth slot cost every row a fifth of its height, which is what left the cluster
+// size, the symbol and the multiplier too small to read across the board.
 // Both layouts reserve their slots even when empty, avoiding shifts during cascades.
-export const CLUSTER_LOG_SIZE = 6;
+export const CLUSTER_LOG_SIZE = 5;
 
 export type FallMotion = { [Key in keyof typeof FALL_MOTION]: number };
 
@@ -328,7 +344,7 @@ const clearSkip = () => {
 const SKIP_SCALE = 0.12;
 
 const animationScale = () => {
-	const base = stateBet.isSuperTurbo ? 0.08 : stateBet.isTurbo ? 0.32 : 1;
+	const base = (stateBet.isSuperTurbo ? 0.08 : stateBet.isTurbo ? 0.32 : 1) * GAME_PACE;
 	return stateGame.skipRequested ? Math.min(SKIP_SCALE, base) : base;
 };
 
