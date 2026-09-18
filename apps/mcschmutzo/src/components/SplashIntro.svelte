@@ -1,11 +1,65 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { ap } from '../lib/preloadArt';
-	import { fitLabel } from '../lib/fitLabel';
 	import { i18nDerived } from '../i18n/i18nDerived';
 
 	type Props = { onpress: () => void };
 	const props: Props = $props();
+
+	// Shrink a wrapping card title DOWN to fit its card by reducing FONT-SIZE (via the `--fit`
+	// multiplier), not a transform. A transform scales the already-overflowed layout, which shoves a
+	// long single word (de "EINZIGARTIGE", tr "SCHMUTZO'YA") off-centre and past the frame rule.
+	// Reducing the font makes the text reflow so it actually fits, and `text-align: center` then keeps
+	// every line centred. Only ever scales down — English/short titles stay at full size.
+	function fitFont(node: HTMLElement, _dep?: unknown) {
+		const fit = () => {
+			const slot = node.parentElement;
+			if (!slot) return;
+			// Measure at FULL size: reset --fit to 1 so the line widths below are the real full-font
+			// metrics (no extrapolation error). The parent's size is independent of --fit, so this
+			// never re-triggers the observer below → no feedback loop.
+			node.style.setProperty('--fit', '1');
+			const cs = getComputedStyle(slot);
+			const availW = slot.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+			const availH = slot.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+			// Widest actual LINE (getClientRects = the rendered text extent, incl. a single long word's
+			// overflow). Using the line width — not scrollWidth — keeps short titles at full size: a
+			// title only shrinks when a line genuinely can't fit, matching English's current look.
+			const range = document.createRange();
+			range.selectNodeContents(node);
+			const widest = Math.max(0, ...Array.from(range.getClientRects(), (r) => r.width));
+			const height = node.scrollHeight;
+			let scale = 1;
+			if (widest > availW && availW > 0) scale = Math.min(scale, availW / widest);
+			if (height > availH && availH > 0) scale = Math.min(scale, availH / height);
+			node.style.setProperty('--fit', scale < 1 ? String(scale) : '1');
+		};
+		const schedule = () => requestAnimationFrame(fit);
+		const ro = new ResizeObserver(schedule);
+		// Observe the CARD (parent), whose size is independent of --fit → resizing the viewport re-fits
+		// but our own font change never re-triggers (no feedback loop).
+		if (node.parentElement) ro.observe(node.parentElement);
+		schedule();
+		// The first pass runs in the fallback font (narrower); re-fit once the real font (Bowlby One SC)
+		// has actually loaded. document.fonts.load resolves reliably even if `ready` already fired.
+		if (typeof document !== 'undefined' && document.fonts) {
+			try {
+				const c = getComputedStyle(node);
+				document.fonts.load(`${c.fontStyle} ${c.fontWeight} 40px ${c.fontFamily}`).then(schedule).catch(() => {});
+			} catch {
+				/* ignore an unparseable font shorthand — the timers below still cover the swap */
+			}
+			document.fonts.ready.then(schedule).catch(() => {});
+		}
+		const timers = [setTimeout(schedule, 200), setTimeout(schedule, 700)];
+		return {
+			update: schedule,
+			destroy: () => {
+				ro.disconnect();
+				timers.forEach(clearTimeout);
+			},
+		};
+	}
 
 	const bg = ap('/assets/mcschmutzo/splash/bg.webp');
 	// New desktop (wide) diner background; portrait/mobile keeps `bg` until the mobile art is supplied.
@@ -84,7 +138,7 @@
 		{#snippet cardEl(card: (typeof CARDS)[number])}
 			<div class="card {card.cls}" style={`background-image:url('${card.art}')`}>
 				<div class="card-inner">
-					<h3 class="card-title" use:fitLabel={i18nDerived.translate(card.title)}>
+					<h3 class="card-title" use:fitFont={i18nDerived.translate(card.title)}>
 						{i18nDerived.translate(card.title)}
 					</h3>
 					<div class="card-body">
@@ -219,15 +273,16 @@
 	.card-title {
 		margin: 0;
 		max-width: 100%;
-		/* A big base size (matches the design); `fitLabel` scales it DOWN per card so long localized
-		   words (fi "AINUTLAATUISTA", de, ru) fit the frame instead of breaking mid-word. */
+		/* A big base size (matches the design); the `fitFont` action multiplies it by `--fit` (≤1) per
+		   card so long localized words (fi "AINUTLAATUISTA", de "EINZIGARTIGE", tr) shrink to fit the
+		   frame — reflowing (so they stay centred) instead of breaking mid-word or spilling past it. */
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
 		font-weight: 400;
 		line-height: 1.16;
 		letter-spacing: 0.03em;
 		/* cqw (card WIDTH) not cqh, so a wide word like "SCHMUTZO" fits the frame at any card size.
 		   Sized so the title reads big (wraps to ~3 lines) yet long localized titles still fit. */
-		font-size: 11.5cqw;
+		font-size: calc(11.5cqw * var(--fit, 1));
 	}
 	.card--red .card-title {
 		color: #c41e0a;
