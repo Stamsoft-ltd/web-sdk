@@ -13,6 +13,8 @@
 	// Page 3 (features) icons + the win-multiplier ladder shown in the design.
 	const wildArt = symArt('W');
 	const respinArt = ap('/assets/mcschmutzo/buybonus/burger.svg');
+	// Page 4 (ways to win) — the dedicated "Lock & Re-spin" tile (burger with a padlock badge).
+	const lockFeatureArt = ap('/assets/mcschmutzo/tutorial/lock-feature.webp');
 	const scatterArt = symArt('S');
 	// The win-multiplier icon = the receipt printer with an "X2" ticket laid on top of it (design).
 	const printerArt = ap('/assets/mcschmutzo/tutorial/printer.svg');
@@ -235,7 +237,7 @@
 				<div class="wt-grid">
 					<div class="ft-card">
 						<div class="ft-head">
-							<img class="ft-icon" src={respinArt} alt="" draggable="false" />
+							<img class="ft-icon" src={lockFeatureArt} alt="" draggable="false" />
 							<h3 class="ft-title">{i18nDerived.translate('INFO LOCKRESPIN TITLE')}</h3>
 						</div>
 						<div class="ft-body">
@@ -1014,6 +1016,66 @@
 		}
 		.tu-page-num {
 			right: clamp(4px, 2vw, 12px);
+		}
+	}
+
+	/* ── Laptop & desktop (≥1000px) ──────────────────────────────────────────────────────────────
+	   Bring the overview chef back on page 1. The height rule above hides it on short game-frames,
+	   but on laptop-and-up widths we want it regardless of the frame height (it sits flush in the
+	   corner and never collides with the centred stats). Comes AFTER the hide rule so it re-shows;
+	   the narrow/portrait rules (≤680/≤480) are a disjoint width range so they're untouched. */
+	@media (min-width: 1000px) {
+		.tu-guy {
+			display: block;
+		}
+	}
+
+	/* Card enlargements (Feature-Buy / General-Info / UI-Guide) only kick in when the fixed-height
+	   popup actually has spare vertical room — i.e. a tall-enough viewport. On short laptop frames
+	   (e.g. 1280×520) there's no slack, so keep the base sizes there to avoid clipping card bottoms. */
+	@media (min-width: 1000px) and (min-height: 640px) {
+		/* FEATURE BUY (page 5) — taller cards + larger title/body/cost/RTP. */
+		.fb-card {
+			min-height: clamp(320px, 50vmin, 470px);
+			padding: clamp(20px, 2.8vmin, 34px) clamp(18px, 2.2vmin, 26px);
+		}
+		.fb-title {
+			font-size: clamp(0.95rem, 2vmin, 1.28rem);
+			margin-bottom: clamp(12px, 2vmin, 22px);
+		}
+		.fb-body {
+			font-size: clamp(0.78rem, 1.7vmin, 1.04rem);
+		}
+		.fb-cost {
+			font-size: clamp(0.84rem, 1.75vmin, 1.1rem);
+			padding: clamp(8px, 1.3vmin, 13px) clamp(12px, 2vmin, 20px);
+		}
+		.fb-rtp {
+			font-size: clamp(0.82rem, 1.7vmin, 1.05rem);
+		}
+		/* GENERAL INFO (page 6) — roomier cards, bigger icon + type. */
+		.gi-card {
+			padding: clamp(22px, 3vmin, 40px) clamp(24px, 3vmin, 44px);
+		}
+		.gi-icon {
+			height: clamp(58px, 8.4vmin, 104px);
+		}
+		.gi-title {
+			font-size: clamp(1.15rem, 2.6vmin, 1.7rem);
+		}
+		.gi-body {
+			font-size: clamp(0.92rem, 2vmin, 1.24rem);
+		}
+		/* USER INTERFACE GUIDE (page 7, the last page) — larger icon buttons + labels. */
+		.ug-btn {
+			width: clamp(48px, 6.2vmin, 72px);
+			height: clamp(48px, 6.2vmin, 72px);
+		}
+		.ug-label {
+			font-size: clamp(0.9rem, 1.8vmin, 1.14rem);
+		}
+		.ug-desc {
+			font-size: clamp(0.74rem, 1.55vmin, 0.95rem);
 		}
 	}
 
