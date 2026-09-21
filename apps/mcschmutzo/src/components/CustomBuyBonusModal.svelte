@@ -180,7 +180,7 @@
 				<div class="bb-divider"></div>
 				<p class="bb-desc">{i18nDerived.translate(mode.description)}</p>
 
-				<div class="bb-art">
+				<div class="bb-art" class:bb-art--burger={mode.id === 'featureSpin'}>
 					<img src={mode.art} alt="" draggable="false" />
 					{#if mode.badge}<span class="bb-badge">{mode.badge}</span>{/if}
 				</div>
@@ -397,6 +397,21 @@
 		height: clamp(66px, 12vmin, 108px);
 		object-fit: contain;
 		filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.4));
+	}
+	/* The Lock & Re-spin feature IS the burger symbol — give it the board burger's playful energy: a
+	   seamless squash-and-stretch hop (origin at its base so it bounces onto the plate). */
+	.bb-art--burger img {
+		transform-origin: 50% 88%;
+		animation: bb-burger-bob 2.1s ease-in-out infinite;
+	}
+	@keyframes bb-burger-bob {
+		0%, 100% { transform: translateY(0) scale(1, 1); }
+		30% { transform: translateY(-9%) scale(0.97, 1.05); }
+		55% { transform: translateY(0) scale(1.04, 0.95); }
+		78% { transform: translateY(-2.5%) scale(0.99, 1.01); }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.bb-art--burger img { animation: none; }
 	}
 	.bb-badge {
 		position: absolute;
