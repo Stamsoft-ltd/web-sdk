@@ -155,13 +155,15 @@
 		font-family: 'Poppins', sans-serif;
 	}
 
-	/* Sauces peeking out from behind the plaque: bigger at the top corners, smaller at the sides. */
+	/* Sauces peeking out from behind the plaque: bigger at the top corners, smaller at the sides.
+	   They SWOOSH in a beat after the plaque (win first, then the splashes burst in behind it). */
 	.fs-sauce {
 		position: absolute;
 		height: auto;
 		z-index: 0;
 		pointer-events: none;
 		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+		animation: fs-splash 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.22s both;
 	}
 	/* Top splashes (over): pulled in so they don't overflow the screen. */
 	.fs-sauce--tl {
@@ -195,19 +197,22 @@
 		background-position: center;
 		display: grid;
 		place-items: center;
+		/* The win (plaque + copy) pops in first. */
+		animation: fs-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 	}
 
-	/* Burger sits centred on the top edge of the plaque, mostly above it. */
+	/* Burger peeks over the top edge of the plaque from BEHIND it (z-index below the plaque), bigger. */
 	.fs-burger {
 		position: absolute;
 		left: 50%;
-		top: -15%;
+		top: -20%;
 		transform: translateX(-50%);
-		width: 21%;
+		width: 26%;
 		height: auto;
-		z-index: 2;
+		z-index: 0;
 		pointer-events: none;
 		filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.4));
+		animation: fs-burger-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 	}
 
 	/* Copy sits within the red field of the plaque. */
@@ -232,6 +237,8 @@
 		letter-spacing: 0.02em;
 		text-transform: uppercase;
 		text-shadow: 0 2px 5px rgba(90, 10, 5, 0.6);
+		/* Title breathes (expand / retract), starting after the pop-in. */
+		animation: fs-breathe 2.3s ease-in-out 0.5s infinite;
 	}
 	.fs-youwon {
 		margin: 0;
@@ -311,6 +318,32 @@
 		50% {
 			opacity: 0.5;
 		}
+	}
+
+	/* Win (plaque + copy) pops in first. */
+	@keyframes fs-pop {
+		0% { opacity: 0; transform: scale(0.72); }
+		60% { opacity: 1; transform: scale(1.03); }
+		100% { opacity: 1; transform: scale(1); }
+	}
+	/* Burger keeps its translateX(-50%) centring while it pops. */
+	@keyframes fs-burger-pop {
+		0% { opacity: 0; transform: translateX(-50%) scale(0.55); }
+		60% { opacity: 1; transform: translateX(-50%) scale(1.06); }
+		100% { opacity: 1; transform: translateX(-50%) scale(1); }
+	}
+	/* Sauces burst in behind the plaque, a beat later. */
+	@keyframes fs-splash {
+		0% { opacity: 0; transform: scale(0.3); }
+		70% { opacity: 1; transform: scale(1.05); }
+		100% { opacity: 1; transform: scale(1); }
+	}
+	@keyframes fs-breathe {
+		0%, 100% { transform: scale(1); }
+		50% { transform: scale(1.04); }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.fs-plaque, .fs-burger, .fs-sauce, .fs-congrats { animation: none; }
 	}
 
 	/* Tiny popouts (~400x225): shrink the close (X) so it doesn't dominate the small screen. */

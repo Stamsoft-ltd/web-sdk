@@ -163,6 +163,8 @@
 		z-index: 0;
 		pointer-events: none;
 		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+		/* Swoosh in a beat after the plaque (win first, then the splashes burst in behind it). */
+		animation: fo-splash 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.22s both;
 	}
 	.fo-sauce--tl {
 		width: 33%;
@@ -186,17 +188,18 @@
 		right: -6%;
 	}
 
-	/* Burger sits centred on the top edge of the plaque, mostly above it. */
+	/* Burger peeks over the top edge of the plaque from BEHIND it (z-index below the plaque), bigger. */
 	.fo-burger {
 		position: absolute;
 		left: 50%;
-		top: -26%;
+		top: -30%;
 		transform: translateX(-50%);
-		width: 21%;
+		width: 26%;
 		height: auto;
-		z-index: 2;
+		z-index: 0;
 		pointer-events: none;
 		filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.4));
+		animation: fo-burger-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 	}
 
 	.fo-plaque {
@@ -208,6 +211,8 @@
 		background-position: center;
 		display: grid;
 		place-items: center;
+		/* The win (plaque + copy) pops in first. */
+		animation: fo-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 	}
 
 	.fo-content {
@@ -231,6 +236,8 @@
 		letter-spacing: 0.02em;
 		text-transform: uppercase;
 		text-shadow: 0 2px 5px rgba(90, 10, 5, 0.6);
+		/* Title breathes (expand / retract), starting after the pop-in. */
+		animation: fo-breathe 2.3s ease-in-out 0.5s infinite;
 	}
 	.fo-youwon {
 		margin: clamp(1px, 0.5vmin, 4px) 0 0;
@@ -286,6 +293,30 @@
 		50% {
 			opacity: 0.5;
 		}
+	}
+
+	/* Win (plaque + copy) pops in first; burger keeps its centring while it pops; sauces burst in. */
+	@keyframes fo-pop {
+		0% { opacity: 0; transform: scale(0.72); }
+		60% { opacity: 1; transform: scale(1.03); }
+		100% { opacity: 1; transform: scale(1); }
+	}
+	@keyframes fo-burger-pop {
+		0% { opacity: 0; transform: translateX(-50%) scale(0.55); }
+		60% { opacity: 1; transform: translateX(-50%) scale(1.06); }
+		100% { opacity: 1; transform: translateX(-50%) scale(1); }
+	}
+	@keyframes fo-splash {
+		0% { opacity: 0; transform: scale(0.3); }
+		70% { opacity: 1; transform: scale(1.05); }
+		100% { opacity: 1; transform: scale(1); }
+	}
+	@keyframes fo-breathe {
+		0%, 100% { transform: scale(1); }
+		50% { transform: scale(1.04); }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.fo-plaque, .fo-burger, .fo-sauce, .fo-congrats { animation: none; }
 	}
 
 	/* Smallest landscape popouts (~400x225, <=300px tall): the plaque is sized by width, so on a very
