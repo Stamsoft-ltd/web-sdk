@@ -59,35 +59,55 @@
 		return 1 + c3 * (x - 1) ** 3 + c1 * (x - 1) ** 2;
 	};
 
-	type L = { id: string; key: string; x: number; y: number; w: number; h: number; a: number };
+	type L = { id: string; key: string; x: number; y: number; w: number; h: number; a: number; rot: number };
 	const anim = $derived.by(() => {
 		const w = W;
 		// Win group (banner + title + stars) pops first.
 		const winS = easeOutBack(phase(40, 340));
 		const winA = clamp01(elapsed / 140);
-		// Splashes swoosh in behind, a beat later, bursting outward from the centre.
-		const splS = easeOutBack(phase(200, 430));
+		// Splashes get THROWN in behind, a beat later: they burst outward from the centre, spinning into
+		// place with a slight overshoot, then keep throbbing/wobbling like wet sauce.
+		const splP = phase(200, 430);
+		const splS = easeOutBack(splP);
 		const splA = clamp01((elapsed - 200) / 160);
+		const spinIn = (1 - splP) ** 2; // spin swing that eases out as it lands
+		const splThrobY = 1 + 0.05 * Math.sin(elapsed / 250);
+		const splThrobR = 1 + 0.05 * Math.sin(elapsed / 250 + 2.1);
+		const splWobble = 0.035 * Math.sin(elapsed / 360);
 		// Continuous flourishes once settled.
 		const twinkle = 1 + 0.09 * Math.sin(elapsed / 260);
 		const twinkle2 = 1 + 0.09 * Math.sin(elapsed / 260 + Math.PI);
+		const starRot = 0.1 * Math.sin(elapsed / 600);
 		const titleBreathe = 1 + 0.03 * Math.sin(elapsed / 470); // expand / retract
 
+		const syW = 0.205 * w;
+		const srW = 0.205 * w;
 		const back: L[] = [];
-		back.push({ id: 'sy', key: 'winSplashYellow', x: -0.315 * w * splS, y: -0.02 * w * splS, w: 0.185 * w * splS, h: (0.185 * w / 1.2) * splS, a: splA });
-		back.push({ id: 'sr', key: 'winSplashRed', x: 0.315 * w * splS, y: -0.02 * w * splS, w: 0.185 * w * splS, h: (0.185 * w / 1.71) * splS, a: splA });
-		back.push({ id: 'banner', key: bannerKey, x: 0, y: 0.015 * w * winS, w: 0.70 * w * winS, h: (0.70 * w / bannerAR) * winS, a: winA });
-		back.push({ id: 'starL', key: 'winStar', x: -0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle, h: (0.072 * w / 1.03) * winS * twinkle, a: winA });
-		back.push({ id: 'starR', key: 'winStar', x: 0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle2, h: (0.072 * w / 1.03) * winS * twinkle2, a: winA });
+		back.push({ id: 'sy', key: 'winSplashYellow', x: -0.315 * w * splS, y: -0.02 * w * splS, w: syW * splS * splThrobY, h: (syW / 1.2) * splS * splThrobY, a: splA, rot: -0.55 * spinIn + splWobble });
+		back.push({ id: 'sr', key: 'winSplashRed', x: 0.315 * w * splS, y: -0.02 * w * splS, w: srW * splS * splThrobR, h: (srW / 1.71) * splS * splThrobR, a: splA, rot: 0.55 * spinIn - splWobble });
+		back.push({ id: 'banner', key: bannerKey, x: 0, y: 0.015 * w * winS, w: 0.70 * w * winS, h: (0.70 * w / bannerAR) * winS, a: winA, rot: 0 });
+		back.push({ id: 'starL', key: 'winStar', x: -0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle, h: (0.072 * w / 1.03) * winS * twinkle, a: winA, rot: starRot });
+		back.push({ id: 'starR', key: 'winStar', x: 0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle2, h: (0.072 * w / 1.03) * winS * twinkle2, a: winA, rot: -starRot });
 
 		const s = winS * titleBreathe;
-		const title: L = { id: 'title', key: titleKey, x: 0, y: -0.03 * w * winS, w: titleW * w * s, h: (titleW * w / titleAR) * s, a: winA };
+		const title: L = { id: 'title', key: titleKey, x: 0, y: -0.03 * w * winS, w: titleW * w * s, h: (titleW * w / titleAR) * s, a: winA, rot: 0 };
+
+		// Star SHINE: an additive copy of each star flashes bright on a periodic glint (offset so the two
+		// stars sparkle out of sync).
+		const glint = (off: number) => {
+			const p = ((elapsed + off) % 2200) / 2200;
+			return Math.exp(-(((p - 0.5) * 7) ** 2)) * 0.85 * winA;
+		};
+		const glints: L[] = [
+			{ id: 'gL', key: 'winStar', x: -0.245 * w * winS, y: 0.03 * w * winS, w: 0.083 * w * winS * twinkle, h: (0.083 * w / 1.03) * winS * twinkle, a: glint(0), rot: starRot },
+			{ id: 'gR', key: 'winStar', x: 0.245 * w * winS, y: 0.03 * w * winS, w: 0.083 * w * winS * twinkle2, h: (0.083 * w / 1.03) * winS * twinkle2, a: glint(1100), rot: -starRot },
+		];
 
 		// Real burger symbol, BEHIND the plaque (drawn first) so it peeks over the top of the banner.
 		// It ASSEMBLES slice-by-slice (H1_ASSEMBLE land one-shot) then hands over to the board's dancing
 		// idle (winning loop). Fixed size — the assemble is its entrance, not the group pop.
 		const burger = { x: 0, y: -0.205 * w, scale: 1.5, winning: true };
-		return { back, title, burger };
+		return { back, title, burger, glints };
 	});
 </script>
 
@@ -95,7 +115,10 @@
 	<!-- Burger BEHIND the plaque: assembles slice-by-slice, then dances (H1 idle loop). -->
 	<AnimatedSymbol config={H1_ASSEMBLE} x={anim.burger.x} y={anim.burger.y} scale={anim.burger.scale} state="land" winning={anim.burger.winning} />
 	{#each anim.back as l (l.id)}
-		<Sprite key={l.key} x={l.x} y={l.y} anchor={0.5} width={l.w} height={l.h} alpha={l.a} />
+		<Sprite key={l.key} x={l.x} y={l.y} anchor={0.5} width={l.w} height={l.h} rotation={l.rot} alpha={l.a} />
 	{/each}
-	<Sprite key={anim.title.key} x={anim.title.x} y={anim.title.y} anchor={0.5} width={anim.title.w} height={anim.title.h} alpha={anim.title.a} />
+	{#each anim.glints as g (g.id)}
+		<Sprite key={g.key} x={g.x} y={g.y} anchor={0.5} width={g.w} height={g.h} rotation={g.rot} alpha={g.a} blendMode="add" />
+	{/each}
+	<Sprite key={anim.title.key} x={anim.title.x} y={anim.title.y} anchor={0.5} width={anim.title.w} height={anim.title.h} rotation={anim.title.rot} alpha={anim.title.a} />
 </Container>
