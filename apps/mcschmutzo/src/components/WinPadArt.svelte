@@ -2,9 +2,13 @@
 	import { onMount } from 'svelte';
 	import { Container, Sprite } from 'pixi-svelte';
 
+	import AnimatedSymbol from './AnimatedSymbol.svelte';
+	import { SYMBOL_PARTS } from '../game/symbolParts';
+
 	// The tier win-pad, re-assembled from separate layers so it can ANIMATE (the baked pad art was a
 	// single flat image). Sequence: the banner + title + stars pop in first ("the win"), then the two
-	// sauce splashes swoosh in from behind it, the stars keep twinkling and the burger gently wobbles.
+	// sauce splashes swoosh in from behind it. The title keeps breathing (expand / retract), the stars
+	// twinkle, and the real BURGER SYMBOL sits behind the title and pops once (its separate-reassemble).
 	type Props = {
 		/** 'winPadSweet' | 'winPadLegendary' | 'winPadEpic' | 'winPadWild' | 'winPadMythic' */
 		padKey: string;
@@ -24,7 +28,7 @@
 	const bannerAR = $derived(BANNER_AR[tier] ?? 3.3);
 	const titleAR = $derived(TITLE_AR[tier] ?? 1.5);
 
-	// rAF clock — runs the whole time the pad is shown (twinkle + wobble are continuous).
+	// rAF clock — runs the whole time the pad is shown (breathe + twinkle are continuous).
 	let clock = $state(0);
 	let start = $state(0);
 	onMount(() => {
@@ -51,46 +55,43 @@
 		return 1 + c3 * (x - 1) ** 3 + c1 * (x - 1) ** 2;
 	};
 
-	type L = { id: string; key: string; x: number; y: number; w: number; h: number; rot: number; a: number };
-	const layers = $derived.by((): L[] => {
+	type L = { id: string; key: string; x: number; y: number; w: number; h: number; a: number };
+	const anim = $derived.by(() => {
 		const w = W;
-		// Win group (banner + title + stars + burger) pops first.
-		const winP = phase(40, 340);
-		const winS = easeOutBack(winP);
+		// Win group (banner + title + stars) pops first.
+		const winS = easeOutBack(phase(40, 340));
 		const winA = clamp01(elapsed / 140);
 		// Splashes swoosh in behind, a beat later, bursting outward from the centre.
-		const splP = phase(200, 430);
-		const splS = easeOutBack(splP);
+		const splS = easeOutBack(phase(200, 430));
 		const splA = clamp01((elapsed - 200) / 160);
 		// Continuous flourishes once settled.
 		const twinkle = 1 + 0.09 * Math.sin(elapsed / 260);
-		const twinkle2 = 1 + 0.09 * Math.sin(elapsed / 260 + Math.PI); // second star out of phase
-		const burgerRot = 0.05 * Math.sin(elapsed / 620);
-		const burgerBob = -0.004 * w * (1 + Math.sin(elapsed / 620));
+		const twinkle2 = 1 + 0.09 * Math.sin(elapsed / 260 + Math.PI);
+		const titleBreathe = 1 + 0.03 * Math.sin(elapsed / 470); // expand / retract
 
-		const out: L[] = [];
-		// Splash layer — scaled + translated about the origin so it grows out from behind the banner.
-		const splash = (id: string, key: string, bx: number, by: number, bw: number, ar: number) =>
-			out.push({ id, key, x: bx * splS, y: by * splS, w: bw * splS, h: (bw / ar) * splS, rot: 0, a: splA });
-		splash('sy', 'winSplashYellow', -0.315 * w, -0.02 * w, 0.185 * w, 1.2);
-		splash('sy2', 'winSplashYellow2', -0.40 * w, 0.08 * w, 0.10 * w, 1.36);
-		splash('sr', 'winSplashRed', 0.315 * w, -0.02 * w, 0.185 * w, 1.71);
-		splash('sr2', 'winSplashRed2', 0.40 * w, 0.07 * w, 0.085 * w, 1.09);
+		const back: L[] = [];
+		back.push({ id: 'sy', key: 'winSplashYellow', x: -0.315 * w * splS, y: -0.02 * w * splS, w: 0.185 * w * splS, h: (0.185 * w / 1.2) * splS, a: splA });
+		back.push({ id: 'sr', key: 'winSplashRed', x: 0.315 * w * splS, y: -0.02 * w * splS, w: 0.185 * w * splS, h: (0.185 * w / 1.71) * splS, a: splA });
+		back.push({ id: 'banner', key: bannerKey, x: 0, y: 0.015 * w * winS, w: 0.70 * w * winS, h: (0.70 * w / bannerAR) * winS, a: winA });
+		back.push({ id: 'starL', key: 'winStar', x: -0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle, h: (0.072 * w / 1.03) * winS * twinkle, a: winA });
+		back.push({ id: 'starR', key: 'winStar', x: 0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle2, h: (0.072 * w / 1.03) * winS * twinkle2, a: winA });
 
-		// Win group — scaled + translated about the origin (pop-in together).
-		const win = (id: string, key: string, bx: number, by: number, bw: number, ar: number, extra = 1, rot = 0) =>
-			out.push({ id, key, x: bx * winS, y: (by + (id === 'burger' ? burgerBob : 0)) * winS, w: bw * winS * extra, h: (bw / ar) * winS * extra, rot, a: winA });
-		win('banner', bannerKey, 0, 0.015 * w, 0.70 * w, bannerAR);
-		win('starL', 'winStar', -0.245 * w, 0.03 * w, 0.072 * w * twinkle, 1.03);
-		win('starR', 'winStar', 0.245 * w, 0.03 * w, 0.072 * w * twinkle2, 1.03);
-		win('title', titleKey, 0, -0.03 * w, 0.42 * w, titleAR);
-		win('burger', 'winPadBurger', 0, -0.145 * w, 0.085 * w, 1.84, 1, burgerRot);
-		return out;
+		const s = winS * titleBreathe;
+		const title: L = { id: 'title', key: titleKey, x: 0, y: -0.03 * w * winS, w: 0.42 * w * s, h: (0.42 * w / titleAR) * s, a: winA };
+
+		// Real burger symbol, behind the title, popping ONCE (separate → reassemble, then rest).
+		const burger = { x: 0, y: -0.175 * w * winS, scale: 1.1 * winS, winning: elapsed > 60 && elapsed < 1500 };
+		return { back, title, burger };
 	});
 </script>
 
 <Container>
-	{#each layers as l (l.id)}
-		<Sprite key={l.key} x={l.x} y={l.y} anchor={0.5} width={l.w} height={l.h} rotation={l.rot} alpha={l.a} />
+	{#each anim.back as l (l.id)}
+		<Sprite key={l.key} x={l.x} y={l.y} anchor={0.5} width={l.w} height={l.h} alpha={l.a} />
 	{/each}
+	<!-- Burger symbol BEHIND the title (peeks above it), pops once on show. -->
+	{#if anim.burger.scale > 0.01}
+		<AnimatedSymbol config={SYMBOL_PARTS.H1} x={anim.burger.x} y={anim.burger.y} scale={anim.burger.scale} winning={anim.burger.winning} />
+	{/if}
+	<Sprite key={anim.title.key} x={anim.title.x} y={anim.title.y} anchor={0.5} width={anim.title.w} height={anim.title.h} alpha={anim.title.a} />
 </Container>
