@@ -56,9 +56,11 @@
 	);
 	// Pupils (measured from the cut art) + eye-cover boxes for the blink lid; all fractions of the
 	// figure. Skin tone sampled by the eyes so the lid is invisible where it overshoots onto skin.
+	// ny nudged down from the measured centre so the pupils sit LOW in the sclera (less white showing
+	// underneath — they were reading a touch too high).
 	const mascotPupils = [
-		{ key: 'mascotPupilL', nx: 0.3415, ny: 0.3069, nw: 0.0491, nh: 0.0479 },
-		{ key: 'mascotPupilR', nx: 0.473, ny: 0.3046, nw: 0.0687, nh: 0.0449 },
+		{ key: 'mascotPupilL', nx: 0.3415, ny: 0.3155, nw: 0.0491, nh: 0.0479 },
+		{ key: 'mascotPupilR', nx: 0.473, ny: 0.3125, nw: 0.0687, nh: 0.0449 },
 	];
 	const mascotLids = [
 		{ cx: 0.329, cy: 0.305, w: 0.084, h: 0.08 },
