@@ -113,10 +113,12 @@
 		const bph = elapsed / 430;
 		const bounceIn = clamp01((elapsed - 1550) / 500); // ease the bounce in once assembled (~land end)
 		const settle = (bounceIn * (1 - Math.cos(bph))) / 2; // 0 → 1 → 0, always >= 0 (downward only)
-		// Rest height (-0.15w) sits the burger peeking over the banner but clear of the McSchmutzo logo
-		// that hugs the board's top edge on desktop (it used to be -0.205w and covered the logo). The
+		// Rest height (-0.185w) sits the burger peeking well over the banner — high enough that the
+		// slice-by-slice assemble reads (at -0.15w it sat too low and the build hid behind the banner) —
+		// yet still clear of the McSchmutzo logo that hugs the board's top edge on desktop (it used to be
+		// -0.205w and covered the logo). The
 		// bob then only ever settles DOWN from here, so it can never climb back into the logo.
-		const burger = { x: 0, y: -0.15 * w + settle * 0.02 * w, scale: 1.5 * (1 - settle * 0.025), winning: false };
+		const burger = { x: 0, y: -0.185 * w + settle * 0.02 * w, scale: 1.5 * (1 - settle * 0.025), winning: false };
 		return { back, title, burger, glints };
 	});
 </script>
