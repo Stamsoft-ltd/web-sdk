@@ -105,12 +105,18 @@
 
 		// Real burger symbol, BEHIND the plaque. It ASSEMBLES slice-by-slice ONCE (H1_ASSEMBLE land
 		// one-shot, winning=false so the separate-and-reassemble loop never runs / never "repeats"),
-		// then the WHOLE built burger just bobs + pulses in a smooth, seamless bounce (all slices move
-		// together, so it never comes apart). A pure sine keeps the loop seamless (no velocity kink).
+		// then the WHOLE built burger just SETTLES with a gentle bob (all slices move together, so it
+		// never comes apart). The bob only ever goes DOWN from the resting height + squashes a hair —
+		// it never rises above rest, so on desktop (where the board's McSchmutzo logo sits right above
+		// the burger) the bounce can't push it up into the logo. `(1-cos)/2` is a seamless 0→1→0 that
+		// stays >= 0 (down only); at bigger sizes this is the same fraction, so it's clear everywhere.
 		const bph = elapsed / 430;
 		const bounceIn = clamp01((elapsed - 1550) / 500); // ease the bounce in once assembled (~land end)
-		const bob = bounceIn * Math.sin(bph);
-		const burger = { x: 0, y: -0.205 * w + bob * -0.02 * w, scale: 1.5 * (1 + bounceIn * 0.045 * Math.sin(bph)), winning: false };
+		const settle = (bounceIn * (1 - Math.cos(bph))) / 2; // 0 → 1 → 0, always >= 0 (downward only)
+		// Rest height (-0.15w) sits the burger peeking over the banner but clear of the McSchmutzo logo
+		// that hugs the board's top edge on desktop (it used to be -0.205w and covered the logo). The
+		// bob then only ever settles DOWN from here, so it can never climb back into the logo.
+		const burger = { x: 0, y: -0.15 * w + settle * 0.02 * w, scale: 1.5 * (1 - settle * 0.025), winning: false };
 		return { back, title, burger, glints };
 	});
 </script>
