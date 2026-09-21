@@ -6,6 +6,10 @@ export const SYMBOL_SIZE = 80;
 
 export const REEL_PADDING = 0.53;
 
+// The round's win cap in bet multiples, as the info pages and bet-mode metadata state it. A win
+// at or past it is presented as MAX WIN (design 9428:64173) instead of a named tier.
+export const MAX_WIN_MULTIPLIER = 25000;
+
 // initial board (padded top and bottom)
 export const INITIAL_BOARD: RawSymbol[][] = [
 	[

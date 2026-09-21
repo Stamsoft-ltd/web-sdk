@@ -18,6 +18,7 @@
 	import ReplayHud from './replay/ReplayHud.svelte';
 	import PendingRoundRecovery from './PendingRoundRecovery.svelte';
 	import { stateGame, stateGameDerived } from '../game/stateGame.svelte';
+	import { MAX_WIN_MULTIPLIER } from '../game/constants';
 	import { playBookEvents } from '../game/utils';
 	import type { BookEvent } from '../game/typesBookEvent';
 
@@ -86,7 +87,7 @@
 				type: 'default',
 				parent: '',
 				children: '',
-				maxWin: 25000,
+				maxWin: MAX_WIN_MULTIPLIER,
 				assets: {
 					icon: symbol('tomato'),
 					volatility: '',
@@ -108,7 +109,7 @@
 				type: 'activate',
 				parent: '',
 				children: '',
-				maxWin: 25000,
+				maxWin: MAX_WIN_MULTIPLIER,
 				assets: {
 					icon: symbol('scatter'),
 					volatility: '',
@@ -131,7 +132,7 @@
 				type: 'activate',
 				parent: '',
 				children: '',
-				maxWin: 25000,
+				maxWin: MAX_WIN_MULTIPLIER,
 				assets: {
 					icon: symbol('broccoli'),
 					volatility: '',
@@ -154,7 +155,7 @@
 				type: 'buy',
 				parent: '',
 				children: '',
-				maxWin: 25000,
+				maxWin: MAX_WIN_MULTIPLIER,
 				assets: {
 					icon: symbol('tomato'),
 					volatility: '',
@@ -177,7 +178,7 @@
 				type: 'buy',
 				parent: '',
 				children: '',
-				maxWin: 25000,
+				maxWin: MAX_WIN_MULTIPLIER,
 				assets: {
 					icon: symbol('scatter'),
 					volatility: '',
@@ -200,7 +201,7 @@
 				type: 'buy',
 				parent: '',
 				children: '',
-				maxWin: 25000,
+				maxWin: MAX_WIN_MULTIPLIER,
 				assets: {
 					icon: symbol('corn'),
 					volatility: '',

@@ -118,6 +118,8 @@ const assets: Assets = {
 	winBannerMythicV3: { type: 'sprite', src: `${wins}/v2/banner-mythic.webp` },
 	winBannerLegendaryV3: { type: 'sprite', src: `${wins}/v2/banner-legendary.webp` },
 	winWordArtWildV3: { type: 'sprite', src: `${wins}/v2/wild-wordart.webp` },
+	// MAX WIN, design 9428:64173: the word art's own transparent master (9428:64660).
+	winWordArtMaxV1: { type: 'sprite', src: `${wins}/v2/max-wordart.webp` },
 	winAmountPlaqueV3: { type: 'sprite', src: `${wins}/v2/amount-plaque.webp` },
 	winTitleSweetTopV2: { type: 'sprite', src: `${wins}/v2/sweet-sweet.webp` },
 	winTitleSweetBottomV2: { type: 'sprite', src: `${wins}/v2/sweet-win.webp` },
@@ -130,7 +132,7 @@ const assets: Assets = {
 	/* The Howler sprite of the delivered sounds (audio-src/README.txt), rebuilt by
 	   scripts/build-sounds.mjs. Loaded through the same manifest so the loading screen counts it
 	   and EnableSound finds it in loadedAssets once play starts. */
-	sound: { type: 'audio', src: './assets/veggie-salad/audio/sounds.json?v=20260918' },
+	sound: { type: 'audio', src: './assets/veggie-salad/audio/sounds.json?v=20260921' },
 };
 
 export default assets;

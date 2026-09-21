@@ -17,3 +17,10 @@ Delivered 2026-09-21 (2 files), the cluster chimes:
   sfx_cluster_multi connection cluster with multi.mp3          (0.5s)  a cluster pays through a multiplier
 The .m4a files are Opus-in-MP4, which Safari cannot decode — another reason everything goes
 through the sprite build (mp3 + ogg) rather than being served as delivered.
+
+bgm_base.wav (2026-09-21) replaces the delivered bgm_base.m4a (kept in original/): the export was
+20.773s for a 27-beat phrase at 77.5 bpm (20.903s) — 70ms of silence before the music, the last
+beat's decay cut 130ms short — so every loop stumbled and dipped at the seam. The wav is the same
+audio re-cut to the exact period: downbeat first, the cut-off decay bridged by mirroring the tail
+(continuous at the join, faded out), then the 230ms pre-roll leading back into the downbeat.
+Rebuilt by the numpy recipe in the 2026-09-21 session; grid fitted from the onsets, not guessed.

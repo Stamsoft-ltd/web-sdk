@@ -2,6 +2,7 @@ import { stateBet } from 'state-shared';
 import { recordBookEvent, type BookEventHandlerMap } from 'utils-book';
 import { bookEventAmountToBetAmountMultiplier } from 'utils-shared/amount';
 
+import { MAX_WIN_MULTIPLIER } from './constants';
 import { CLUSTER_LOG_SIZE, stateGame, stateGameDerived } from './stateGame.svelte';
 import type { BookEvent, BookEventContext, BookEventOfType } from './typesBookEvent';
 
@@ -15,8 +16,12 @@ const isBonusBook = (bookEvents: BookEvent[]) =>
 const tierLabel = (tier: 'normal' | 'super' | 'hidden') =>
 	tier === 'hidden' ? 'HIDDEN BONUS' : tier === 'super' ? 'SUPER BONUS' : 'NORMAL BONUS';
 
+const isMaxWin = (amount: number) =>
+	bookEventAmountToBetAmountMultiplier(amount) >= MAX_WIN_MULTIPLIER;
+
 const winTitle = (amount: number) => {
 	const multiplier = bookEventAmountToBetAmountMultiplier(amount);
+	if (multiplier >= MAX_WIN_MULTIPLIER) return 'MAX WIN';
 	if (multiplier >= 500) return 'LEGENDARY WIN';
 	if (multiplier >= 200) return 'MYTHIC WIN';
 	if (multiplier >= 100) return 'EPIC WIN';
@@ -29,6 +34,7 @@ const winTitle = (amount: number) => {
 // still shortens the wait through stateGameDerived.wait(); normal play gets this full timeline.
 const winTiming = (amount: number) => {
 	const multiplier = bookEventAmountToBetAmountMultiplier(amount);
+	if (multiplier >= MAX_WIN_MULTIPLIER) return { countDurationMs: 7000, presentDurationMs: 9000 };
 	if (multiplier >= 500) return { countDurationMs: 6000, presentDurationMs: 8500 };
 	if (multiplier >= 200) return { countDurationMs: 5250, presentDurationMs: 7750 };
 	if (multiplier >= 100) return { countDurationMs: 4500, presentDurationMs: 7000 };
@@ -58,10 +64,17 @@ const presentWin = async (amount: number, detail: 'ROUND WIN' | 'TOTAL WIN') => 
 		amount,
 		countDurationMs,
 	};
-	await stateGameDerived.wait(timing.presentDurationMs, {
-		// Even slam-stop/turbo leaves enough time to identify the result and final amount.
-		min: title === 'WIN' ? 500 : 1500,
-	});
+	if (title === 'MAX WIN') {
+		// The cap ends the round. Hold the counted total, then require a click/tap exactly like
+		// the bonus outro, so the biggest screen in the game is never timed away under autoplay.
+		await stateGameDerived.waitMotion(() => Math.max(1800, countDurationMs + 450));
+		await stateGameDerived.waitForContinue();
+	} else {
+		await stateGameDerived.wait(timing.presentDurationMs, {
+			// Even slam-stop/turbo leaves enough time to identify the result and final amount.
+			min: title === 'WIN' ? 500 : 1500,
+		});
+	}
 	stateGame.overlay = null;
 	await stateGameDerived.wait(230, { min: 120 });
 };
@@ -258,6 +271,16 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	},
 	freeSpinEnd: async (event: BookEventOfType<'freeSpinEnd'>) => {
 		stateGameDerived.clearSkip();
+		if (isMaxWin(event.amount)) {
+			// A capped bonus gets the MAX WIN screen on its total instead of the CONGRATULATIONS
+			// card — and not both a last-spin ROUND WIN and the total, when that spin is what
+			// capped it.
+			stateGame.roundWin = event.amount;
+			stateGame.bonusTotalWin = event.amount;
+			stateBet.winBookEventAmount = event.amount;
+			await presentWin(event.amount, 'TOTAL WIN');
+			return;
+		}
 		await presentPendingBonusSpinWin();
 		stateGame.roundWin = event.amount;
 		stateGame.bonusTotalWin = event.amount;

@@ -24,7 +24,8 @@
 	import { getContext } from '../game/context';
 
 	type OverlayData = NonNullable<typeof stateGame.overlay>;
-	type ArtKey = 'winSweet' | 'winWild' | 'winEpic' | 'winMythic' | 'winLegendary';
+	type ArtKey = 'winSweet' | 'winWild' | 'winEpic' | 'winMythic' | 'winLegendary' | 'winMax';
+	type BannerArtKey = Exclude<ArtKey, 'winMax'>;
 	type WinBannerKey =
 		| 'winBannerSweetV3'
 		| 'winBannerWildV3'
@@ -97,6 +98,91 @@
 		{ x: 180, y: -175, size: 139, rotation: 0, start: 0.28 },
 		{ x: 369, y: -133, size: 175, rotation: 24.69, start: 0.34 },
 	];
+	/* MAX WIN, design 9428:64173: no banner. The word art (9428:64660, 684x429 with its top at 71)
+	   sits over the dimmed board, the total on the same orange plaque (9428:64494, 380x127 at 487,
+	   its amount at Jersey 73.65), and six symbols are flung around the frame — the mock hangs its
+	   cauliflower and broccoli half off the 1200-wide window. Each slot keeps the mock's rotation
+	   and the square the texture is scaled into so the texture's content matches the mock's inner
+	   image box (content bounds measured off the webp files), but the mock's centres are pulled
+	   in to the word art's edge so each symbol peeks out from behind the letters and its flight
+	   (MAX_WIN_FLIGHT) carries it in and out of cover ("show from behind the text partially",
+	   user 2026-09-21). Keys follow the FILES: cauliflower.webp holds the radish art and
+	   radish.webp the cauliflower. */
+	const MAX_WIN_WORD_ART = { y: -50, width: 684, height: 429 };
+	const MAX_WIN_AMOUNT_Y = 214;
+	// `stack` is the portrait fallback (see maxWinVeggiePlace): a row of three above the word art
+	// and three below the plaque, each at `stackX` of the visible half-width.
+	const MAX_WIN_VEGGIE_SLOTS: {
+		key: VeggieKey;
+		x: number;
+		y: number;
+		size: number;
+		rotation: number;
+		start: number;
+		stack: 'top' | 'bottom';
+		stackX: number;
+	}[] = [
+		{
+			key: 'pixelRadish',
+			x: -372,
+			y: -40,
+			size: 193,
+			rotation: 0,
+			start: 0.1,
+			stack: 'top',
+			stackX: -0.62,
+		},
+		{
+			key: 'pixelCarrot',
+			x: -300,
+			y: -218,
+			size: 210,
+			rotation: 12.9,
+			start: 0.16,
+			stack: 'top',
+			stackX: 0,
+		},
+		{
+			key: 'pixelCorn',
+			x: -318,
+			y: 74,
+			size: 205,
+			rotation: -37.94,
+			start: 0.22,
+			stack: 'bottom',
+			stackX: -0.62,
+		},
+		{
+			key: 'pixelTomato',
+			x: 348,
+			y: -226,
+			size: 165,
+			rotation: -37,
+			start: 0.28,
+			stack: 'top',
+			stackX: 0.62,
+		},
+		{
+			key: 'pixelCauliflower',
+			x: 300,
+			y: 92,
+			size: 213,
+			rotation: 33.25,
+			start: 0.34,
+			stack: 'bottom',
+			stackX: 0,
+		},
+		{
+			key: 'pixelBroccoli',
+			x: 378,
+			y: -46,
+			size: 184,
+			rotation: 32.31,
+			start: 0.4,
+			stack: 'bottom',
+			stackX: 0.62,
+		},
+	];
 	// Every symbol texture is square except the cauliflower (276x284).
 	const VEGGIE_ASPECT: Record<VeggieKey, number> = {
 		pixelBroccoli: 1,
@@ -112,7 +198,7 @@
 		return { width: width * scale, height: height * scale };
 	};
 
-	const WIN_ART: Record<ArtKey, WinArt> = {
+	const WIN_ART: Record<BannerArtKey, WinArt> = {
 		winSweet: {
 			banner: 'winBannerSweetV3',
 			titleTop: 'winTitleSweetTopV2',
@@ -239,17 +325,19 @@
 	const artKey = $derived<ArtKey | null>(
 		bonusPresentation
 			? null
-			: title === 'LEGENDARY WIN'
-				? 'winLegendary'
-				: title === 'MYTHIC WIN'
-					? 'winMythic'
-					: title === 'EPIC WIN'
-						? 'winEpic'
-						: title === 'WILD WIN'
-							? 'winWild'
-							: title === 'SWEET WIN'
-								? 'winSweet'
-								: null,
+			: title === 'MAX WIN'
+				? 'winMax'
+				: title === 'LEGENDARY WIN'
+					? 'winLegendary'
+					: title === 'MYTHIC WIN'
+						? 'winMythic'
+						: title === 'EPIC WIN'
+							? 'winEpic'
+							: title === 'WILD WIN'
+								? 'winWild'
+								: title === 'SWEET WIN'
+									? 'winSweet'
+									: null,
 	);
 	const showAmount = $derived(overlay?.kind === 'win');
 	// Every win presentation gets the same centred fountain. Density is driven by the target win,
@@ -258,33 +346,37 @@
 	const showCoins = $derived(showAmount && bonusPresentation !== 'end');
 	const isSmallWin = $derived(showAmount && title === 'WIN');
 	const showBackdrop = $derived(!isSmallWin);
-	const winArt = $derived(artKey ? WIN_ART[artKey] : null);
+	const winArt = $derived(artKey && artKey !== 'winMax' ? WIN_ART[artKey] : null);
 
 	const tier = $derived(
-		artKey === 'winLegendary'
-			? 5
-			: artKey === 'winMythic'
-				? 4
-				: artKey === 'winEpic'
-					? 3
-					: artKey === 'winWild'
-						? 2
-						: artKey === 'winSweet'
-							? 1
-							: bonusPresentation === 'end'
-								? 4
-								: 2,
+		artKey === 'winMax'
+			? 6
+			: artKey === 'winLegendary'
+				? 5
+				: artKey === 'winMythic'
+					? 4
+					: artKey === 'winEpic'
+						? 3
+						: artKey === 'winWild'
+							? 2
+							: artKey === 'winSweet'
+								? 1
+								: bonusPresentation === 'end'
+									? 4
+									: 2,
 	);
 	const glowColor = $derived(
-		artKey === 'winSweet'
-			? 0x2c9dff
-			: artKey === 'winWild' || bonusPresentation === 'start'
-				? 0x72e622
-				: artKey === 'winEpic'
-					? 0xff3d27
-					: artKey === 'winMythic'
-						? 0xc43cff
-						: 0xffc52c,
+		artKey === 'winMax'
+			? 0xff7a1a
+			: artKey === 'winSweet'
+				? 0x2c9dff
+				: artKey === 'winWild' || bonusPresentation === 'start'
+					? 0x72e622
+					: artKey === 'winEpic'
+						? 0xff3d27
+						: artKey === 'winMythic'
+							? 0xc43cff
+							: 0xffc52c,
 	);
 	const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 	const timeline = (startSeconds: number, durationSeconds: number) =>
@@ -426,8 +518,10 @@
 		{ bob: 2.05, sway: 1.5, amp: 6, tilt: 0.035, phase: 3.7 },
 		{ bob: 2.65, sway: 2.0, amp: 4.8, tilt: 0.042, phase: 5.1 },
 		{ bob: 2.5, sway: 1.85, amp: 5.2, tilt: 0.048, phase: 2.6 },
+		// Sixth channel: the MAX WIN screen throws one more symbol in.
+		{ bob: 2.2, sway: 1.95, amp: 5.8, tilt: 0.038, phase: 4.4 },
 	];
-	let winVeggieEyes = $state<EyeBeat[]>(['rest', 'rest', 'rest', 'rest', 'rest']);
+	let winVeggieEyes = $state<EyeBeat[]>(['rest', 'rest', 'rest', 'rest', 'rest', 'rest']);
 	const eyeFrameKey = (veggie: VeggieKey, beat: EyeBeat) =>
 		beat === 'rest'
 			? veggie
@@ -519,9 +613,11 @@
 			? { width: 480 * DESIGN_SCALE, height: 615 * DESIGN_SCALE }
 			: bonusPresentation === 'end'
 				? { width: 980, height: 610 }
-				: artKey
-					? { width: 900 * DESIGN_SCALE, height: 545 * DESIGN_SCALE }
-					: { width: 760, height: 470 },
+				: artKey === 'winMax'
+					? { width: 700 * DESIGN_SCALE, height: 560 * DESIGN_SCALE }
+					: artKey
+						? { width: 900 * DESIGN_SCALE, height: 545 * DESIGN_SCALE }
+						: { width: 760, height: 470 },
 	);
 	const presentationFit = $derived(
 		Math.min(
@@ -531,6 +627,53 @@
 		),
 	);
 	const plaqueScale = $derived(Math.max(0, enter.current) * breathe * presentationFit);
+	/* The mock spreads the MAX WIN symbols beside the word art across a 1200-wide frame, two of
+	   them half off it. A portrait phone has no room beside the words at all — pulled in to the
+	   edge they only hid behind the art — so once the visible half-width (in frame units) can't
+	   hold the word art plus a symbol, the six slide into two rows instead: three above the
+	   words, three under the plaque, a quarter smaller. The blend is continuous so a resize
+	   never snaps them. */
+	const maxWinEdgeX = $derived((mainLayout.width * 0.5) / (presentationFit * DESIGN_SCALE));
+	const lerp = (from: number, to: number, t: number) => from + (to - from) * t;
+	const maxWinVeggiePlace = (slot: (typeof MAX_WIN_VEGGIE_SLOTS)[number]) => {
+		const stacked = clamp01(
+			(MAX_WIN_WORD_ART.width * 0.5 + slot.size * 0.5 - maxWinEdgeX) / (slot.size * 0.35),
+		);
+		if (stacked <= 0) return { x: slot.x, y: slot.y, scale: 1, stacked: 0 };
+		const stackedX = slot.stackX * Math.min(maxWinEdgeX - slot.size * 0.3, 360);
+		const stackedY =
+			slot.stack === 'top'
+				? MAX_WIN_WORD_ART.y - MAX_WIN_WORD_ART.height * 0.5 - slot.size * 0.34
+				: MAX_WIN_AMOUNT_Y + AMOUNT_PLAQUE.height * 0.5 + slot.size * 0.34;
+		return {
+			x: lerp(slot.x, stackedX, stacked),
+			y: lerp(slot.y, stackedY, stacked),
+			scale: 1 - stacked * 0.25,
+			stacked,
+		};
+	};
+	/* The MAX WIN symbols fly rather than sit ("make the animals fly around", user 2026-09-21):
+	   each rides a slow figure-of-eight around its slot (two unrelated periods per axis, so the
+	   loop never repeats visibly), banks into the turn and tumbles a little either way. The
+	   amplitudes are frame units; the stacked portrait rows halve them so the rows stay rows. */
+	const MAX_WIN_FLIGHT = [
+		{ ax: 46, ay: 34, wx: 0.62, wy: 0.91, wr: 0.74, roll: 0.24, phase: 0.0 },
+		{ ax: 54, ay: 30, wx: 0.55, wy: 0.83, wr: 0.68, roll: 0.2, phase: 1.7 },
+		{ ax: 42, ay: 38, wx: 0.7, wy: 0.97, wr: 0.8, roll: 0.26, phase: 3.3 },
+		{ ax: 50, ay: 32, wx: 0.58, wy: 0.87, wr: 0.71, roll: 0.22, phase: 4.6 },
+		{ ax: 44, ay: 36, wx: 0.66, wy: 0.79, wr: 0.77, roll: 0.25, phase: 2.4 },
+		{ ax: 52, ay: 30, wx: 0.53, wy: 0.93, wr: 0.65, roll: 0.21, phase: 5.5 },
+	];
+	const maxWinFlight = (index: number, damp: number) => {
+		const f = MAX_WIN_FLIGHT[index];
+		const t = clock + f.phase * 3;
+		const x = Math.sin(t * f.wx) * f.ax * damp;
+		const y = Math.sin(t * f.wy + f.phase) * f.ay * damp;
+		// Bank with the horizontal velocity, and tumble on its own slower beat.
+		const bank = Math.cos(t * f.wx) * 0.12;
+		const roll = Math.sin(t * f.wr + f.phase * 0.5) * f.roll;
+		return { x, y, rotation: (bank + roll) * (0.4 + damp * 0.6) };
+	};
 	// The mock compositions already sit above the HUD; only the outro sign needs lifting.
 	const plaqueRestY = $derived(bonusPresentation === 'start' || artKey ? 0 : -44);
 	const plaqueY = $derived(plaqueRestY + (1 - enter.current) * 74 + Math.sin(clock * 2.4) * 3);
@@ -936,6 +1079,107 @@
 								/>
 							</Container>
 						{/if}
+					</Container>
+				{:else if artKey === 'winMax'}
+					{@const wordIn = popIn(0, 0.5)}
+					<!-- Design 9428:64173: the MAX WIN word art stamps down over the dimmed board, six of
+					     the game's symbols hop in around it, and the total lands on the orange plaque
+					     below. The symbols sit behind the word art (the mock layers them over it, but on
+					     a phone they are pulled in to the edge and would cover the words). -->
+					<Container
+						y={namedWinY}
+						scale={Math.max(0, enter.current) * presentationFit * namedWinIdleScale * DESIGN_SCALE}
+						rotation={plaqueRotation}
+						alpha={plaqueAlpha}
+					>
+						<Container y={MAX_WIN_WORD_ART.y} scale={0.92 + Math.sin(clock * 2.1) * 0.035}>
+							<Graphics
+								blendMode="add"
+								draw={(graphics) => {
+									for (let glowIndex = 7; glowIndex >= 1; glowIndex -= 1) {
+										graphics.ellipse(0, 0, 300 + glowIndex * 34, 200 + glowIndex * 24);
+										graphics.fill({
+											color: glowColor,
+											alpha: 0.014 + (7 - glowIndex) * 0.007,
+										});
+									}
+								}}
+							/>
+						</Container>
+
+						{#each sparks as spark, index}
+							{@const progress = (clock * spark.speed + spark.phase) % 1}
+							{@const radius = 330 + progress * 190}
+							<Rectangle
+								x={Math.cos(spark.angle) * radius}
+								y={MAX_WIN_WORD_ART.y + Math.sin(spark.angle) * radius * 0.62}
+								width={spark.size + 2}
+								height={spark.size + 2}
+								anchor={0.5}
+								rotation={spark.angle + clock}
+								backgroundColor={index % 3 === 0 ? 0xffffff : glowColor}
+								alpha={(1 - progress) * 0.85 * fadeIn(0.08, 0.4)}
+							/>
+						{/each}
+
+						{#each MAX_WIN_VEGGIE_SLOTS as slot, index}
+							{@const idle = WIN_VEGGIE_IDLE[index]}
+							{@const veggieIn = popIn(slot.start, 0.38)}
+							{@const place = maxWinVeggiePlace(slot)}
+							{@const flight = maxWinFlight(index, 1 - place.stacked * 0.5)}
+							<Container
+								x={place.x + flight.x}
+								y={place.y + veggieJumpOffset(slot.start) * 0.45 + flight.y}
+								scale={veggieIn *
+									place.scale *
+									(1 + Math.sin(clock * idle.bob * 1.15 + idle.phase) * 0.03)}
+								rotation={(slot.rotation * Math.PI) / 180 + flight.rotation}
+								alpha={clamp01(veggieIn)}
+							>
+								<Sprite
+									key={eyeFrameKey(slot.key, winVeggieEyes[index])}
+									anchor={0.5}
+									width={slot.size}
+									height={slot.size * VEGGIE_ASPECT[slot.key]}
+								/>
+							</Container>
+						{/each}
+
+						<!-- The word art lands like a stamp: from half again its size down onto the board,
+						     with the same overshoot the banners use, then a slow breathe. -->
+						<Container
+							y={MAX_WIN_WORD_ART.y + Math.sin(clock * 2.6) * 3}
+							scale={(1.5 - wordIn * 0.5) * (1 + Math.sin(clock * 2.4) * 0.008)}
+							rotation={(1 - wordIn) * -0.04 + Math.sin(clock * 1.8) * 0.004}
+							alpha={clamp01(wordIn * 2)}
+						>
+							<Sprite
+								key="winWordArtMaxV1"
+								anchor={0.5}
+								width={MAX_WIN_WORD_ART.width}
+								height={MAX_WIN_WORD_ART.height}
+							/>
+						</Container>
+
+						<Container
+							y={MAX_WIN_AMOUNT_Y + (1 - clamp01(amountIn)) * 70}
+							scale={amountIn}
+							alpha={clamp01(amountIn)}
+						>
+							<Sprite
+								key="winAmountPlaqueV3"
+								anchor={0.5}
+								width={AMOUNT_PLAQUE.width}
+								height={AMOUNT_PLAQUE.height}
+							/>
+							<ResponsiveBitmapText
+								anchor={0.5}
+								y={-4}
+								maxWidth={AMOUNT_PLAQUE.maxWidth}
+								text={countedWinText}
+								style={pixelText(AMOUNT_PLAQUE.fontSize, 0xffffff, 0x4c2008)}
+							/>
+						</Container>
 					</Container>
 				{:else if artKey && winArt}
 					<!-- Design 9242:190479: the riveted banner with a star on each wing, the two-line word art

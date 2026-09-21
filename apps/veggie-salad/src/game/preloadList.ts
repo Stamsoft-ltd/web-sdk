@@ -158,6 +158,7 @@ export const PRELOAD_IMAGES: readonly string[] = [
 	'./assets/veggie-salad/pixel/wins/v2/epic-title.webp',
 	'./assets/veggie-salad/pixel/wins/v2/legendary-amount.webp',
 	'./assets/veggie-salad/pixel/wins/v2/legendary-title.webp',
+	'./assets/veggie-salad/pixel/wins/v2/max-wordart.webp',
 	'./assets/veggie-salad/pixel/wins/v2/mythic-title.webp',
 	'./assets/veggie-salad/pixel/wins/v2/sweet-star.webp',
 	'./assets/veggie-salad/pixel/wins/v2/sweet-sweet.webp',

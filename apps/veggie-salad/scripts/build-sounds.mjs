@@ -122,9 +122,14 @@ ffmpeg(['-i', combined, '-b:a', '160k', join(outDir, 'sounds.mp3')]);
 ffmpeg(['-i', combined, '-c:a', 'libvorbis', '-q:a', '5', join(outDir, 'sounds.ogg')]);
 
 // 4. Write the Howler sprite manifest.
+// Cache-bust the encoded tracks by build date; the manifest URL carries its own ?v= in pixelAssets.
+const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 const json = {
 	sprite,
-	src: ['./assets/veggie-salad/audio/sounds.ogg', './assets/veggie-salad/audio/sounds.mp3'],
+	src: [
+		`./assets/veggie-salad/audio/sounds.ogg?v=${stamp}`,
+		`./assets/veggie-salad/audio/sounds.mp3?v=${stamp}`,
+	],
 	config,
 };
 writeFileSync(join(outDir, 'sounds.json'), JSON.stringify(json));

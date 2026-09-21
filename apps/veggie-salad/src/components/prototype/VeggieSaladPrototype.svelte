@@ -2236,12 +2236,12 @@
 		width: 104%;
 		height: 104%;
 	}
-	/* 110, not 117: the tomato's art fills 80% of its canvas, so 117% put it at 94% of the cell
+	/* 104.5, not 117: the tomato's art fills 80% of its canvas, so 117% put it at 94% of the cell
 	   while the rest of the crop sits at 85–89% — "it looks bigger than all others" (user,
-	   2026-09-18). */
+	   2026-09-18). Trimmed a further 5% from 110 ("make the tomato 5% smaller", user 2026-09-21). */
 	.symbol-tomato {
-		width: 110%;
-		height: 110%;
+		width: 104.5%;
+		height: 104.5%;
 	}
 	.symbol-eggplant,
 	.symbol-onion {
