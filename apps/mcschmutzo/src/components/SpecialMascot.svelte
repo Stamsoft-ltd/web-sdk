@@ -3,9 +3,21 @@
 
 	import { getContext } from '../game/context';
 	import { mascotIdle } from '../game/mascotIdle';
+	import AnimatedGuy from './AnimatedGuy.svelte';
 
 	const context = getContext();
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
+
+	// Pupils + eye-cover boxes (measured from the cut special art) so the salting chef also glances +
+	// blinks. Skin tone sampled by his eyes.
+	const specialPupils = [
+		{ key: 'specialPupilL', nx: 0.4313, ny: 0.3208, nw: 0.0539, nh: 0.0666 },
+		{ key: 'specialPupilR', nx: 0.5301, ny: 0.3175, nw: 0.0701, nh: 0.0582 },
+	];
+	const specialLids = [
+		{ cx: 0.43, cy: 0.321, w: 0.072, h: 0.082 },
+		{ cx: 0.533, cy: 0.314, w: 0.088, h: 0.086 },
+	];
 
 	// Composition sits on the right, BEHIND the board — shifted right so the raised salt shaker
 	// clears the board's right edge instead of being hidden behind it.
@@ -68,15 +80,17 @@
 <!-- Chef (behind) salting the pot (in front), with a falling stream of salt grains. The whole group
      sits BEHIND the board (negative zIndex) but in front of the background. -->
 <Container zIndex={-0.5}>
-	<Sprite
-		key="specialGuy"
+	<AnimatedGuy
+		baseKey="specialBase"
 		x={guyPose.x}
 		y={guyPose.y}
-		anchor={0.5}
 		width={guyPose.width}
 		height={guyPose.height}
-		rotation={guyPose.rotation}
 		zIndex={0}
+		pupils={specialPupils}
+		lids={specialLids}
+		skin={0xef9650}
+		phase={2000}
 	/>
 	{#each grains as g}
 		<Rectangle

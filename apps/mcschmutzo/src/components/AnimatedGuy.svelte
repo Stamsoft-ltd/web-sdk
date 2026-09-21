@@ -1,13 +1,15 @@
 <script lang="ts">
-	import { Sprite, Rectangle } from 'pixi-svelte';
+	import { Sprite, Rectangle, Circle } from 'pixi-svelte';
 
 	// A chef that stands (the parent breathes him via x/y/width/height) while his face is ALIVE: the
 	// pupils glance around with occasional quick saccades and he blinks now and then. The base art has
-	// the pupils cut out (sclera filled), the pupils are their own sprites nudged within the eye, and
-	// each blink is a skin-coloured lid that drops over the eye (drawn in pixi — overshooting onto the
-	// surrounding skin is invisible since it's the same colour). Extra layers (label) can be tilted via
-	// `extras` — each rotates a hair about its own pin so it reads as pinned-and-jiggling.
-	type Pupil = { key: string; nx: number; ny: number; nw: number; nh: number };
+	// the pupils cut out (sclera filled), and the pupils are drawn FRESH as clean dark discs + a glint
+	// (like the splash chef) rather than the cut-from-art pupils — those carried a sliver of the eye's
+	// black outline, so nudging them merged pupil-into-border and read badly. The discs are a touch
+	// smaller than the socket and the glance is small, so they never reach the outline. Each blink is a
+	// skin-coloured lid that drops over the eye (overshoot onto surrounding skin is invisible, same
+	// colour) with a soft crease. Extra layers (label) can tilt about their own pin via `extras`.
+	type Pupil = { nx: number; ny: number; nw: number; nh: number };
 	type Lid = { cx: number; cy: number; w: number; h: number };
 	type Extra = {
 		key: string;
@@ -57,10 +59,10 @@
 	const KF = [
 		{ t: 0.0, x: 0, y: 0 },
 		{ t: 0.4, x: 0, y: 0 },
-		{ t: 0.45, x: 0.015, y: -0.006 }, // quick glance to his left/up
-		{ t: 0.66, x: 0.015, y: -0.006 },
-		{ t: 0.71, x: 0.008, y: 0.009 }, // then down a touch
-		{ t: 0.9, x: 0.008, y: 0.009 },
+		{ t: 0.45, x: 0.009, y: -0.004 }, // quick glance to his left/up (small — stays in the sclera)
+		{ t: 0.66, x: 0.009, y: -0.004 },
+		{ t: 0.71, x: 0.005, y: 0.006 }, // then down a touch
+		{ t: 0.9, x: 0.005, y: 0.006 },
 		{ t: 0.95, x: 0, y: 0 },
 		{ t: 1.0, x: 0, y: 0 },
 	];
@@ -108,14 +110,19 @@
 	height={props.height}
 	zIndex={z}
 />
-{#each props.pupils as p (p.key)}
-	<Sprite
-		key={p.key}
-		x={left + (p.nx + glance.x) * props.width}
-		y={top + (p.ny + glance.y) * props.height}
+{#each props.pupils as p, i (i)}
+	{@const d = Math.min(p.nw * props.width, p.nh * props.height) * 0.7}
+	{@const cx = left + (p.nx + glance.x) * props.width}
+	{@const cy = top + (p.ny + glance.y) * props.height}
+	<!-- Clean dark disc (no cut-art outline) + a glint, sitting in the filled sclera. -->
+	<Circle x={cx} y={cy} diameter={d} anchor={0.5} backgroundColor={0x15100e} zIndex={z} />
+	<Circle
+		x={cx - d * 0.2}
+		y={cy - d * 0.24}
+		diameter={d * 0.34}
 		anchor={0.5}
-		width={p.nw * props.width}
-		height={p.nh * props.height}
+		backgroundColor={0xffffff}
+		backgroundAlpha={0.9}
 		zIndex={z}
 	/>
 {/each}
