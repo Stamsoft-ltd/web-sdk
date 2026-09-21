@@ -537,8 +537,6 @@
 			// (label / minus-button) already occupies — but ONLY when that sibling sits on the
 			// same row. In a column layout (portrait BALANCE: label ABOVE value) the value has the
 			// full slot width, so subtracting the label there wrongly shrank it to nothing.
-			const prev = node.previousElementSibling as HTMLElement | null;
-			const sameRow = prev ? Math.abs(prev.offsetTop - node.offsetTop) < node.offsetHeight * 0.6 : false;
 			// Measure the fit entirely in LAYOUT px (offsetWidth / clientWidth) so the CSS-transform
 			// scale of the game container cancels out on its own. The earlier version mixed layout px
 			// (clientWidth) with rendered px (getBoundingClientRect) through a `slotScale` factor; any
@@ -546,11 +544,24 @@
 			// or a big landscape balance) never shrank and clipped under the slot's overflow:hidden.
 			// offsetWidth is the inline-block's unscaled border-box width = the full text width, and
 			// clientWidth is the slot's unscaled content+padding width — both immune to the transform.
-			const used = prev && sameRow ? prev.offsetWidth + 8 : 0;
 			const cs = getComputedStyle(slot);
+			const gap = parseFloat(cs.columnGap) || parseFloat(cs.gap) || 0;
+			// Subtract EVERY sibling that shares the value's row — the landscape BET value sits BETWEEN
+			// the − and + steppers, so counting only the previous one (the −) over-stated the room and
+			// let a long value spill past the +. A column-stacked label (portrait BET/WIN, desktop) has
+			// a different offsetTop → excluded → used stays 0, so those layouts are unchanged.
+			let used = 0;
+			for (const sib of Array.from(slot.children) as HTMLElement[]) {
+				if (sib === node) continue;
+				if (Math.abs(sib.offsetTop - node.offsetTop) < node.offsetHeight * 0.6) used += sib.offsetWidth + gap;
+			}
+			const sameRow = used > 0;
 			const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
 			const avail = slot.clientWidth - pad - used;
-			const full = node.offsetWidth;
+			// scrollWidth (not offsetWidth) = the value's FULL content width even when its box is
+			// flex-shrunk with overflow:hidden (the landscape BET value). offsetWidth would report the
+			// already-clipped box there, so fitText would think it fits and never scale → clipped text.
+			const full = node.scrollWidth;
 			// Adaptive shrink origin: portrait centres the value in its slot (align-items:center) —
 			// there a left origin keeps clipping the "$" prefix, so shrink from the CENTRE. Desktop
 			// (.value-fit, left-aligned text) and landscape (label-beside-value row) are left-aligned
@@ -2245,8 +2256,14 @@
 		font-weight: 700;
 		font-size: clamp(10px, 3vh, 18px);
 		color: #fff;
-		min-width: clamp(40px, 12vh, 108px);
-		flex: 0 0 auto;
+		/* Grow to fill the room BETWEEN the − / + steppers (flex:1 1 0, min-width:0) so fitText can scale
+		   the value into that whole space and it stays readable; the pill itself can't run away because
+		   the .ls-left column is width-capped (never crosses the board). A long feature/bonus value (BET
+		   × multiplier) therefore scales down instead of pushing the pill wider. overflow:hidden is a
+		   hard backstop only. */
+		flex: 1 1 0;
+		min-width: 0;
+		overflow: hidden;
 		white-space: nowrap;
 		text-align: center;
 	}
@@ -2273,7 +2290,7 @@
 	   rail, so it never breaks. 812x375 (height 375) is unaffected. */
 	@media (max-height: 300px) {
 		.ls-bet { padding: 1px 4px; gap: 2px; }
-		.ls-bet__value { font-size: clamp(7px, 3.4vmin, 11px); min-width: clamp(22px, 11vmin, 40px); }
+		.ls-bet__value { font-size: clamp(7px, 3.4vmin, 11px); min-width: 0; }
 		.ls-step { width: clamp(11px, 5.5vmin, 18px); height: clamp(11px, 5.5vmin, 18px); }
 	}
 
