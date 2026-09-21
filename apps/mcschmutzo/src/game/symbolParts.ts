@@ -320,5 +320,16 @@ export const H1_ASSEMBLE: SymbolPartsConfig = {
 	landAnim: true,
 	landMs: 1500,
 	landDrop: 0.6,
-	layers: SYMBOL_PARTS.H1.layers.map((l, i) => ({ ...l, landDelay: ASSEMBLE_DELAYS[i] ?? 0.8 })),
+	// A touch more whole-stack squash so the settled burger has a bit of bounce.
+	squash: 0.06,
+	// The assemble (landDelay + scale) plays ONCE. After it, the idle loop uses these dx/dy/rot offsets
+	// — damped WAY down from H1's full separate-and-reassemble so the built burger just gently bounces
+	// (pieces jiggle a hair, no gaps) instead of flying apart and rebuilding over and over.
+	layers: SYMBOL_PARTS.H1.layers.map((l, i) => ({
+		...l,
+		landDelay: ASSEMBLE_DELAYS[i] ?? 0.8,
+		dx: (l.dx ?? 0) * 0.04,
+		dy: (l.dy ?? 0) * 0.09,
+		rot: (l.rot ?? 0) * 0.09,
+	})),
 };
