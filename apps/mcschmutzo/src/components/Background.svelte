@@ -3,6 +3,7 @@
 	import { stateUi } from 'state-shared';
 
 	import { getContext } from '../game/context';
+	import { mascotIdle } from '../game/mascotIdle';
 	import SpecialMascot from './SpecialMascot.svelte';
 
 	type Props = {
@@ -32,6 +33,21 @@
 	const showSpecialMascot = $derived(isFreegame && layoutType === 'desktop');
 	const mascotHeight = $derived(canvas.height * 0.6);
 	const mascotWidth = $derived(mascotHeight * (1019 / 1336));
+	// Subtle idle so the chef isn't a frozen cut-out: a slow breathe + gentle weight-shift sway.
+	let clock = $state(0);
+	$effect(() => {
+		if (!showMascot) return;
+		let raf = 0;
+		const loop = (ts: number) => {
+			clock = ts;
+			raf = requestAnimationFrame(loop);
+		};
+		raf = requestAnimationFrame(loop);
+		return () => cancelAnimationFrame(raf);
+	});
+	const mascotPose = $derived(
+		mascotIdle(clock, canvas.width * 0.86, canvas.height * 0.59, mascotWidth, mascotHeight),
+	);
 	// Desktop base game uses the new desktop diner art; free games keep the grey-kitchen special bg.
 	const key = $derived(isFreegame ? 'backgroundWideBonus' : 'backgroundDesktop');
 	const portraitKey = $derived(isFreegame ? 'backgroundPortraitBonus' : 'backgroundPortrait');
@@ -100,14 +116,15 @@
 {/if}
 {#if showArt && showMascot}
 	<!-- Original art with the eyes baked in — no more separate pupils (the eye animation was removed,
-	     and the re-placed pupils sat slightly off). -->
+	     and the re-placed pupils sat slightly off). The whole figure breathes + sways subtly. -->
 	<Sprite
 		key="mascot"
-		x={canvas.width * 0.86}
-		y={canvas.height * 0.59}
+		x={mascotPose.x}
+		y={mascotPose.y}
 		anchor={0.5}
-		width={mascotWidth}
-		height={mascotHeight}
+		width={mascotPose.width}
+		height={mascotPose.height}
+		rotation={mascotPose.rotation}
 		zIndex={0}
 	/>
 {/if}

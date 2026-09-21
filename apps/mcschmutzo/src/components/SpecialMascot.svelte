@@ -2,6 +2,7 @@
 	import { Container, Rectangle, Sprite } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
+	import { mascotIdle } from '../game/mascotIdle';
 
 	const context = getContext();
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
@@ -16,27 +17,37 @@
 	const potHeight = $derived(potWidth * (848 / 1180));
 	const potY = $derived(canvas.height * 0.82);
 
-	// Salt shaker spout (upper-left of the guy) → the pot's mouth (a gentle diagonal drift).
-	const saltTopX = $derived(cx - guyWidth * 0.21);
-	const saltTopY = $derived(guyY - guyHeight * 0.04);
-	const saltBotX = $derived(cx - guyWidth * 0.12);
-	const saltBotY = $derived(potY - potHeight * 0.18);
-	const grain = $derived(Math.max(2.5, canvas.height * 0.006));
-
-	// Looping fall — each grain is offset in phase so the stream is continuous.
-	const COUNT = 40;
+	// Clock: drives both the salt fall (phase) and the chef's idle breathe (elapsed).
+	const COUNT = 40; // salt grains
 	let phase = $state(0);
+	let elapsed = $state(0);
 	$effect(() => {
 		let raf = 0;
 		let start = 0;
 		const loop = (ts: number) => {
 			if (!start) start = ts;
-			phase = ((((ts - start) / 1200) % 1) + 1) % 1;
+			elapsed = ts - start;
+			phase = (((elapsed / 1200) % 1) + 1) % 1;
 			raf = requestAnimationFrame(loop);
 		};
 		raf = requestAnimationFrame(loop);
 		return () => cancelAnimationFrame(raf);
 	});
+
+	// Subtle idle breathe/bob for the chef (he's mid-salt, so no big lean — just a living breath). The
+	// pot stays planted on the ground; only the guy + his salt origin drift.
+	const guyPose = $derived(
+		mascotIdle(elapsed, cx, guyY, guyWidth, guyHeight, { sway: 0, breathe: 0.005, bob: 0.004 }),
+	);
+	const guyDy = $derived(guyPose.y - guyY); // vertical drift, applied to the salt spout too
+
+	// Salt shaker spout (upper-left of the guy) → the pot's mouth (a gentle diagonal drift). The spout
+	// rides with the chef's breathe so the stream stays glued to the shaker.
+	const saltTopX = $derived(cx - guyWidth * 0.21);
+	const saltTopY = $derived(guyY - guyHeight * 0.04 + guyDy);
+	const saltBotX = $derived(cx - guyWidth * 0.12);
+	const saltBotY = $derived(potY - potHeight * 0.18);
+	const grain = $derived(Math.max(2.5, canvas.height * 0.006));
 	const grains = $derived(
 		Array.from({ length: COUNT }, (_, i) => {
 			const p = (phase + i / COUNT) % 1;
@@ -59,11 +70,12 @@
 <Container zIndex={-0.5}>
 	<Sprite
 		key="specialGuy"
-		x={cx}
-		y={guyY}
+		x={guyPose.x}
+		y={guyPose.y}
 		anchor={0.5}
-		width={guyWidth}
-		height={guyHeight}
+		width={guyPose.width}
+		height={guyPose.height}
+		rotation={guyPose.rotation}
 		zIndex={0}
 	/>
 	{#each grains as g}
