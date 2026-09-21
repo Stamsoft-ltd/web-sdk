@@ -6,17 +6,19 @@
 	const spatulaArt = ap('/assets/mcschmutzo/wheel/wheel-spatula.svg'); // pointer at the top
 	const spinBoxArt = ap('/assets/mcschmutzo/wheel/spin-button-box.svg'); // SPIN button frame
 
-	// Segment centre angles (deg, clockwise from top) for the 7-segment wheel-base (top segment at 0°,
-	// then every 360/7). Each carries its free-games value + steps.
-	const STEP = 360 / 7;
+	// Segment centre angles (deg, clockwise from top) for the 7-segment wheel-base. The base ART isn't
+	// perfectly even (its wedges span 50–53° each), so using an ideal 360/7 spacing left every label
+	// sitting up to ~3° (≈10px at the rim) off its wedge — noticeably off-centre once the wheel stops.
+	// These angles are MEASURED from the wheel-base.svg slice centres so each label sits dead-centre in
+	// its wedge, and the winning wedge lands squarely under the spatula. Re-measure if the art changes.
 	const SEGMENTS = [
-		{ a: 0 * STEP, fg: 6, st: 3 },
-		{ a: 1 * STEP, fg: 30, st: 15 },
-		{ a: 2 * STEP, fg: 20, st: 10 },
-		{ a: 3 * STEP, fg: 15, st: 8 },
-		{ a: 4 * STEP, fg: 12, st: 3 },
-		{ a: 5 * STEP, fg: 10, st: 5 },
-		{ a: 6 * STEP, fg: 8, st: 4 },
+		{ a: 1.3, fg: 6, st: 3 },
+		{ a: 52.1, fg: 30, st: 15 },
+		{ a: 102.6, fg: 20, st: 10 },
+		{ a: 154.1, fg: 15, st: 8 },
+		{ a: 206.9, fg: 12, st: 3 },
+		{ a: 259.5, fg: 10, st: 5 },
+		{ a: 310.7, fg: 8, st: 4 },
 	];
 	const SPIN_MS = 2600;
 </script>
