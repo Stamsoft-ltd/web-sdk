@@ -163,7 +163,10 @@
 		z-index: 0;
 		pointer-events: none;
 		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
-		animation: fs-splash 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.22s both;
+		/* Thrown in behind the plaque, then a slow throb so the sauce reads as wet. */
+		animation:
+			fs-splash 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.22s both,
+			fs-throb 2.6s ease-in-out 0.85s infinite;
 	}
 	/* Top splashes (over): pulled in so they don't overflow the screen. */
 	.fs-sauce--tl {
@@ -332,11 +335,15 @@
 		60% { opacity: 1; transform: translateX(-50%) scale(1.06); }
 		100% { opacity: 1; transform: translateX(-50%) scale(1); }
 	}
-	/* Sauces burst in behind the plaque, a beat later. */
+	/* Sauces get THROWN in behind the plaque (spin + overshoot), a beat later. */
 	@keyframes fs-splash {
-		0% { opacity: 0; transform: scale(0.3); }
-		70% { opacity: 1; transform: scale(1.05); }
-		100% { opacity: 1; transform: scale(1); }
+		0% { opacity: 0; transform: scale(0.25) rotate(-20deg); }
+		70% { opacity: 1; transform: scale(1.08) rotate(5deg); }
+		100% { opacity: 1; transform: scale(1) rotate(0deg); }
+	}
+	@keyframes fs-throb {
+		0%, 100% { transform: scale(1) rotate(0deg); }
+		50% { transform: scale(1.045) rotate(2deg); }
 	}
 	@keyframes fs-breathe {
 		0%, 100% { transform: scale(1); }
