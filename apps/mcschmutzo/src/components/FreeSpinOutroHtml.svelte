@@ -201,7 +201,13 @@
 		z-index: 0;
 		pointer-events: none;
 		filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.4));
-		animation: fo-burger-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+		/* Base anchored so the ongoing bounce squashes onto the plaque edge, not up past the top. */
+		transform-origin: 50% 100%;
+		/* Pop in once, then keep the burger alive with a seamless squash-and-stretch bounce (same
+		   playful energy as the board/win-pad burger; base-anchored so it can't overflow upward). */
+		animation:
+			fo-burger-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+			fo-burger-bounce 2.4s ease-in-out 0.45s infinite;
 	}
 
 	.fo-plaque {
@@ -307,6 +313,12 @@
 		0% { opacity: 0; transform: translateX(-50%) scale(0.55); }
 		60% { opacity: 1; transform: translateX(-50%) scale(1.06); }
 		100% { opacity: 1; transform: translateX(-50%) scale(1); }
+	}
+	@keyframes fo-burger-bounce {
+		0%, 100% { transform: translateX(-50%) scale(1, 1); }
+		28% { transform: translateX(-50%) scale(0.97, 1.04); }
+		52% { transform: translateX(-50%) scale(1.04, 0.96); }
+		76% { transform: translateX(-50%) scale(0.99, 1.01); }
 	}
 	@keyframes fo-splash {
 		0% { opacity: 0; transform: scale(0.25) rotate(-20deg); }
