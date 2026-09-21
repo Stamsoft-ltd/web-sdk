@@ -25,8 +25,12 @@
 	// w / h of each part (from the exported art) so we can size by width and keep the aspect.
 	const BANNER_AR: Record<string, number> = { sweet: 3.39, legendary: 3.25, epic: 3.22, wild: 3.29, mythic: 3.3 };
 	const TITLE_AR: Record<string, number> = { sweet: 1.62, legendary: 2.14, epic: 1.29, wild: 1.42, mythic: 1.49 };
+	// Title width as a fraction of the pad. LEGENDARY is a long word, so at the shared width its
+	// letters render smaller than the other tiers — give it more width so its type matches theirs.
+	const TITLE_W: Record<string, number> = { sweet: 0.42, legendary: 0.55, epic: 0.42, wild: 0.42, mythic: 0.44 };
 	const bannerAR = $derived(BANNER_AR[tier] ?? 3.3);
 	const titleAR = $derived(TITLE_AR[tier] ?? 1.5);
+	const titleW = $derived(TITLE_W[tier] ?? 0.42);
 
 	// rAF clock — runs the whole time the pad is shown (breathe + twinkle are continuous).
 	let clock = $state(0);
@@ -77,21 +81,22 @@
 		back.push({ id: 'starR', key: 'winStar', x: 0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle2, h: (0.072 * w / 1.03) * winS * twinkle2, a: winA });
 
 		const s = winS * titleBreathe;
-		const title: L = { id: 'title', key: titleKey, x: 0, y: -0.03 * w * winS, w: 0.42 * w * s, h: (0.42 * w / titleAR) * s, a: winA };
+		const title: L = { id: 'title', key: titleKey, x: 0, y: -0.03 * w * winS, w: titleW * w * s, h: (titleW * w / titleAR) * s, a: winA };
 
-		// Real burger symbol, behind the title, popping ONCE (separate → reassemble, then rest).
-		const burger = { x: 0, y: -0.175 * w * winS, scale: 1.1 * winS, winning: elapsed > 60 && elapsed < 1500 };
+		// Real burger symbol, BEHIND the plaque (drawn first), tucked so it just peeks over the banner's
+		// top edge; pops ONCE (separate → reassemble) then rests.
+		const burger = { x: 0, y: -0.12 * w * winS, scale: 1.05 * winS, winning: elapsed > 60 && elapsed < 1500 };
 		return { back, title, burger };
 	});
 </script>
 
 <Container>
-	{#each anim.back as l (l.id)}
-		<Sprite key={l.key} x={l.x} y={l.y} anchor={0.5} width={l.w} height={l.h} alpha={l.a} />
-	{/each}
-	<!-- Burger symbol BEHIND the title (peeks above it), pops once on show. -->
+	<!-- Burger symbol BEHIND the plaque (peeks over the banner's top edge), pops once on show. -->
 	{#if anim.burger.scale > 0.01}
 		<AnimatedSymbol config={SYMBOL_PARTS.H1} x={anim.burger.x} y={anim.burger.y} scale={anim.burger.scale} winning={anim.burger.winning} />
 	{/if}
+	{#each anim.back as l (l.id)}
+		<Sprite key={l.key} x={l.x} y={l.y} anchor={0.5} width={l.w} height={l.h} alpha={l.a} />
+	{/each}
 	<Sprite key={anim.title.key} x={anim.title.x} y={anim.title.y} anchor={0.5} width={anim.title.w} height={anim.title.h} alpha={anim.title.a} />
 </Container>
