@@ -583,17 +583,18 @@
 		width: auto;
 		object-fit: contain;
 	}
-	/* The Lock & Re-spin tile IS the burger symbol — give it the board burger's playful hop (seamless
-	   squash-and-stretch, origin at its base) so it feels alive like on the reels. */
+	/* The Lock & Re-spin tile IS the burger symbol — give it the board burger's playful bounce, but
+	   ANCHORED at its base (transform-origin bottom) with no translate, so in the tight icon+title head
+	   row it squashes/stretches in place (top rises only ~5%) and can't overflow the card edge. */
 	.ft-card--respin .ft-icon {
-		transform-origin: 50% 88%;
+		transform-origin: 50% 100%;
 		animation: ft-burger-bob 2.1s ease-in-out infinite;
 	}
 	@keyframes ft-burger-bob {
-		0%, 100% { transform: translateY(0) scale(1, 1); }
-		30% { transform: translateY(-11%) scale(0.97, 1.05); }
-		55% { transform: translateY(0) scale(1.04, 0.95); }
-		78% { transform: translateY(-3%) scale(0.99, 1.01); }
+		0%, 100% { transform: scale(1, 1); }
+		28% { transform: scale(0.96, 1.05); }
+		52% { transform: scale(1.05, 0.95); }
+		76% { transform: scale(0.99, 1.01); }
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.ft-card--respin .ft-icon { animation: none; }

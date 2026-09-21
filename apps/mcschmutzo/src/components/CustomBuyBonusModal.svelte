@@ -399,16 +399,18 @@
 		filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.4));
 	}
 	/* The Lock & Re-spin feature IS the burger symbol — give it the board burger's playful energy: a
-	   seamless squash-and-stretch hop (origin at its base so it bounces onto the plate). */
+	   seamless squash-and-stretch bounce ANCHORED at its base (transform-origin bottom), so the burger
+	   never translates and its base stays planted — the top rises only ~5% and the width grows ~5%,
+	   both well inside the card so the animation can never overflow into the copy or the amount badge. */
 	.bb-art--burger img {
-		transform-origin: 50% 88%;
+		transform-origin: 50% 100%;
 		animation: bb-burger-bob 2.1s ease-in-out infinite;
 	}
 	@keyframes bb-burger-bob {
-		0%, 100% { transform: translateY(0) scale(1, 1); }
-		30% { transform: translateY(-9%) scale(0.97, 1.05); }
-		55% { transform: translateY(0) scale(1.04, 0.95); }
-		78% { transform: translateY(-2.5%) scale(0.99, 1.01); }
+		0%, 100% { transform: scale(1, 1); }
+		28% { transform: scale(0.96, 1.05); }
+		52% { transform: scale(1.05, 0.95); }
+		76% { transform: scale(0.99, 1.01); }
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.bb-art--burger img { animation: none; }
