@@ -52,31 +52,32 @@
 		mascotIdle(elapsed, cx, guyY, guyWidth, guyHeight, { sway: 0, breathe: 0.005, bob: 0.004 }),
 	);
 
-	// The hand + shaker (cut into its own sprite) FLICKS about the wrist in a sprinkling rhythm, and the
-	// salt is released on the down-flick — so the arm motion and the falling salt read as one action.
-	const SHAKE_PERIOD = 620; // ms per flick
-	const SHAKE_AMP = 0.032; // rad (~1.8°) — small so the cut forearm edge never opens a visible seam
+	// The whole hand+shaker+forearm (a CLEAN designer layer, only-hand.svg — the base has exactly this
+	// region removed) FLICKS about the elbow in a sprinkling rhythm; the salt releases on the down-flick
+	// so the arm and the falling salt read as one action. It's a full-frame sprite (same footprint as
+	// the base) rotated about the elbow, so there's no cut edge in the middle of the arm to seam.
+	const SHAKE_PERIOD = 560; // ms per flick
+	const SHAKE_AMP = 0.045; // rad (~2.6°) about the elbow — a gentle sprinkling flick
 	const shakeP = $derived((elapsed % SHAKE_PERIOD) / SHAKE_PERIOD);
 	const armAngle = $derived(SHAKE_AMP * Math.sin(2 * Math.PI * shakeP)); // + = flick down (cap dips)
-	const flick = $derived(0.5 + 0.5 * Math.sin(2 * Math.PI * shakeP)); // 0..1, peaks with the down-flick
 
-	// Chef box + the arm sprite's geometry (matches the cut: box x[0,0.44] y[0.16,0.55], wrist pivot).
 	const chefL = $derived(guyPose.x - guyPose.width / 2);
 	const chefT = $derived(guyPose.y - guyPose.height / 2);
-	const wristX = $derived(chefL + 0.108 * guyPose.width);
-	const wristY = $derived(chefT + 0.492 * guyPose.height);
-	const armW = $derived(0.44 * guyPose.width);
-	const armH = $derived(0.39 * guyPose.height);
+	// Elbow pivot (chef fractions) — where the forearm meets the upper arm.
+	const PIVX = 0.389;
+	const PIVY = 0.696;
+	const pivotX = $derived(chefL + PIVX * guyPose.width);
+	const pivotY = $derived(chefT + PIVY * guyPose.height);
 
-	// Salt spout = the shaker cap, rotated with the flick about the wrist, so the stream stays glued to
-	// the (moving) cap. capRest is the cap's exit in chef fractions (kept ~where the old spout sat).
-	const CAP_DX = 0.29 - 0.108; // cap - wrist (chef-frac x)
-	const CAP_DY = 0.46 - 0.492; // cap - wrist (chef-frac y)
+	// Salt spout = the shaker cap, carried around the elbow by the flick so the stream stays glued to
+	// the (moving) cap.
+	const CAP_DX = 0.29 - PIVX; // cap - elbow (chef-frac x)
+	const CAP_DY = 0.46 - PIVY; // cap - elbow (chef-frac y)
 	const saltTopX = $derived(
-		wristX + (CAP_DX * guyPose.width) * Math.cos(armAngle) - (CAP_DY * guyPose.height) * Math.sin(armAngle),
+		pivotX + (CAP_DX * guyPose.width) * Math.cos(armAngle) - (CAP_DY * guyPose.height) * Math.sin(armAngle),
 	);
 	const saltTopY = $derived(
-		wristY + (CAP_DX * guyPose.width) * Math.sin(armAngle) + (CAP_DY * guyPose.height) * Math.cos(armAngle),
+		pivotY + (CAP_DX * guyPose.width) * Math.sin(armAngle) + (CAP_DY * guyPose.height) * Math.cos(armAngle),
 	);
 	const saltBotX = $derived(cx - guyWidth * 0.12);
 	const saltBotY = $derived(potY - potHeight * 0.18);
@@ -119,15 +120,15 @@
 		skin={0xef9650}
 		phase={2000}
 	/>
-	<!-- Hand + shaker, flicking about the wrist (the base has this region cut out). Above the base,
-	     below the falling salt so the grains read as leaving the cap. -->
+	<!-- Hand+shaker+forearm (clean full-frame layer), flicking about the elbow. Above the base, below
+	     the falling salt so the grains read as leaving the cap. -->
 	<Sprite
 		key="specialArm"
-		x={wristX}
-		y={wristY}
-		anchor={{ x: 0.2455, y: 0.8513 }}
-		width={armW}
-		height={armH}
+		x={pivotX}
+		y={pivotY}
+		anchor={{ x: PIVX, y: PIVY }}
+		width={guyPose.width}
+		height={guyPose.height}
 		rotation={armAngle}
 		zIndex={0.5}
 	/>
