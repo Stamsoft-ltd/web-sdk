@@ -38,8 +38,13 @@ const winTiming = (amount: number) => {
 	return { countDurationMs: 900, presentDurationMs: 3800 };
 };
 
+// Below this the plain WIN plaque stays away and the win reads off the HUD alone ("show the
+// small win only if the win is above 10x", user 2026-09-21).
+const SMALL_WIN_MIN_MULTIPLIER = 10;
+
 const presentWin = async (amount: number, detail: 'ROUND WIN' | 'TOTAL WIN') => {
 	if (amount <= 0) return;
+	if (bookEventAmountToBetAmountMultiplier(amount) < SMALL_WIN_MIN_MULTIPLIER) return;
 	const timing = winTiming(amount);
 	const title = winTitle(amount);
 	const countDurationMs = Math.max(
@@ -160,6 +165,16 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.freeSpinCurrent = Math.min(event.amount + 1, event.total);
 		stateGame.freeSpinTotal = event.total;
 		stateGame.bonusTier = event.tier;
+		// The spin before leaves the way a base-game board does — trap door open, the old symbols
+		// dropping on the exit ghost — with the next reveal entering over the last 65% of it, the
+		// same overlap actor.ts gives a pressed spin. Without this the free spin's reveal re-keyed
+		// every cell and the board simply blinked empty ("the board is immediately cleared, not
+		// animated down", user 2026-09-21). The first free spin has nothing to clear: the trigger
+		// blanked the board when it resized it.
+		if (stateGame.board.some((reel) => reel.some(Boolean))) {
+			stateGameDerived.startExit();
+			await stateGameDerived.waitMotion(() => stateGameDerived.exitDurationMs() * 0.35);
+		}
 	},
 	retrigger: async (event: BookEventOfType<'retrigger'>) => {
 		stateGame.freeSpinTotal = event.total;

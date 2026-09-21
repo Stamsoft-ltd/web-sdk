@@ -58,15 +58,21 @@
 
 	/* Placards. The bonus entry sign plays the entering jingle once over silence; the bonus's
 	   final total sign plays the ending music; a win sign loops the small-win bed for a plain WIN
-	   and the big-win bed for every titled tier, over the music ducked to a quarter. */
-	let ducked: MusicName | null = null;
+	   over the music ducked to a tenth ("reduce the background sound to 10% and after it hides
+	   resume it", user 2026-09-21), and the big-win bed for every titled tier over the music
+	   ducked to a quarter. The duck remembers its level so the resume fades from where it left. */
+	let ducked: { name: MusicName; level: number } | null = null;
+	const duck = (level: number) => {
+		ducked = { name: currentMusic(), level };
+		void sound.fade({ name: ducked.name, from: 1, to: level, duration: 250 });
+	};
 	$effect(() => {
 		const overlay = stateGame.overlay;
 		if (!overlay) {
 			sound.stop({ name: 'sfx_win_loop' });
 			stopMusic('bgm_bigwin');
 			if (ducked) {
-				void sound.fade({ name: ducked, from: 0.25, to: 1, duration: 400 });
+				void sound.fade({ name: ducked.name, from: ducked.level, to: 1, duration: 400 });
 				ducked = null;
 			}
 			return;
@@ -80,10 +86,10 @@
 			sound.players.once.play({ name: 'jng_bonus_outro', forcePlay: true });
 		} else if (overlay.kind === 'win') {
 			if (overlay.title === 'WIN') {
+				duck(0.1);
 				sound.players.loop.play({ name: 'sfx_win_loop' });
 			} else {
-				ducked = currentMusic();
-				void sound.fade({ name: ducked, from: 1, to: 0.25, duration: 250 });
+				duck(0.25);
 				sound.players.music.play({ name: 'bgm_bigwin' });
 			}
 		}
