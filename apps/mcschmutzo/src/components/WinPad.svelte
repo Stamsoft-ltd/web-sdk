@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { Container, Sprite } from 'pixi-svelte';
 
+	import WinPadArt from './WinPadArt.svelte';
 	import { getContext } from '../game/context';
 
 	type Props = {
@@ -55,8 +56,11 @@
 	</Container>
 {:else}
 	<Container>
-		<!-- Pad (plaque + wordmark + sauce + stars + burger), centred above the amount box. -->
-		<Sprite key={props.padKey} anchor={{ x: 0.5, y: 0.5 }} width={padW} height={padH} y={-padH * 0.2} />
+		<!-- Pad (plaque + wordmark + sauce + stars + burger) re-assembled from layers so it animates in:
+		     the win pops first, then the splashes swoosh in behind. Centred above the amount box. -->
+		<Container y={-padH * 0.2}>
+			<WinPadArt padKey={props.padKey ?? 'winPadSweet'} width={padW} />
+		</Container>
 
 		<!-- Win-amount plaque with the count-up amount centred inside its red panel. -->
 		<Container y={padH * 0.44}>

@@ -178,6 +178,25 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/win/pad-mythic.webp', import.meta.url).href,
 	},
+	// Separated win-pad layers (banner / title / splashes / star / burger) so the pad can be
+	// re-assembled and animated: banner + title pop in first, then the sauce splashes swoosh in
+	// behind, the stars twinkle and the burger wiggles.
+	winBannerSweet: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/banner-sweet.webp', import.meta.url).href },
+	winBannerLegendary: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/banner-legendary.webp', import.meta.url).href },
+	winBannerEpic: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/banner-epic.webp', import.meta.url).href },
+	winBannerWild: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/banner-wild.webp', import.meta.url).href },
+	winBannerMythic: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/banner-mythic.webp', import.meta.url).href },
+	winTitleSweet: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/title-sweet.webp', import.meta.url).href },
+	winTitleLegendary: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/title-legendary.webp', import.meta.url).href },
+	winTitleEpic: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/title-epic.webp', import.meta.url).href },
+	winTitleWild: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/title-wild.webp', import.meta.url).href },
+	winTitleMythic: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/title-mythic.webp', import.meta.url).href },
+	winSplashYellow: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/splash-yellow.webp', import.meta.url).href },
+	winSplashYellow2: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/splash-yellow2.webp', import.meta.url).href },
+	winSplashRed: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/splash-red.webp', import.meta.url).href },
+	winSplashRed2: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/splash-red2.webp', import.meta.url).href },
+	winStar: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/win-star.webp', import.meta.url).href },
+	winPadBurger: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/pad-burger.webp', import.meta.url).href },
 	winBox: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/win/wooden-board.webp', import.meta.url).href,
