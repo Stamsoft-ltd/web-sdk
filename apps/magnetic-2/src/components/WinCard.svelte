@@ -5,12 +5,18 @@
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import SparkBurst from './SparkBurst.svelte';
-	import { DRIP_OFFSETS, drawSlimeCluster, drawSlimeDrips } from '../game/slimeDrip';
+	import {
+		DRIP_OFFSETS,
+		drawSlimeCluster,
+		drawSlimeDrips,
+		drawSlimeFlight,
+		drawSlimeSpray,
+	} from '../game/slimeDrip';
 	import { buildWinSlime, makeRng } from '../game/winSlime';
 	import {
 		WIN_CARD_FRAME,
 		WIN_CARD_INK,
-		WIN_CARD_PLATE_SLAB,
+		WIN_CARD_PLATE_OUTLINE,
 		WIN_CARD_SAUCER_BELT,
 		type WinCardTier,
 	} from '../game/winCardTiers';
@@ -90,17 +96,28 @@
 	// closes, decelerating into its parking spot.
 	const shipFly = new Tween(0, { duration: SHIP_MS, easing: cubicInOut, delay: SHIP_DELAY });
 	const alienPop = new Tween(0, { duration: 380, easing: backOut, delay: ALIEN_DELAY });
-	// The slime is NOT a tween: `drawSlimeCluster` grows the splat itself, lobe by lobe out of its
-	// first one (`grow`), so what it needs is a plain 0..1 ramp per splat off the card's own clock.
-	// The tween it replaces scaled each finished splat up as one rigid group in ~100ms, which is
-	// what read as the slime "showing instantly" — a sticker appearing, not a mass oozing out.
+	// The slime is NOT a tween. Each splat has three beats on the card's own clock: it is FLUNG off
+	// the docked saucer's rim and lobs across to its spot (drawSlimeFlight), it HITS and spreads
+	// out lobe by lobe from the point of impact (`grow` in drawSlimeCluster) throwing a few
+	// droplets off (drawSlimeSpray), and then it sits there oozing and dripping. The flight is what
+	// gives the slime a source — before it, each splat just grew out of the plate at full size,
+	// which however well it oozed read as "it stays from nowhere" (2026-09-21). And the spread is
+	// quick now (0.42s, it was a 1.05s ooze): a wet lump hitting a plate splats, it does not inflate.
 	const BLOB_START = BLOB_DELAY / 1000;
-	/** How long one splat takes to come out, and the gap between one splat and the next. */
-	const BLOB_GROW = 1.05;
-	const BLOB_LAG = 0.34;
-	/** When splat `i` starts, and when it is fully out — its drops only begin gathering after that. */
+	/** Flight time, spread time, and the gap between one splat's launch and the next. */
+	const BLOB_FLY = 0.46;
+	const BLOB_GROW = 0.42;
+	const BLOB_LAG = 0.3;
+	/** When splat `i` launches, lands, and is fully out — its drops only begin gathering after that. */
 	const splatStart = (i: number) => BLOB_START + i * BLOB_LAG;
-	const splatDone = (i: number) => splatStart(i) + BLOB_GROW;
+	const splatLand = (i: number) => splatStart(i) + BLOB_FLY;
+	const splatDone = (i: number) => splatLand(i) + BLOB_GROW;
+	// Where the blobs leave from: the saucer's rim, on whichever side the splat lands, just under
+	// the dome line — as if flicked off the edge of the ship.
+	const launchFor = (splat: { lobes: { x: number }[] }) => ({
+		x: tier.saucer.cx + Math.sign(splat.lobes[0].x - tier.saucer.cx || 1) * tier.saucer.w * 0.36,
+		y: tier.saucer.cy + shipSeatDY + tier.saucer.h * 0.12,
+	});
 	const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 	$effect(() => {
 		plateRise.set(1);
@@ -125,23 +142,29 @@
 
 	// One roll per card instance: `seed` is captured at init and the generator is pure, so the slime
 	// is fixed for as long as the card is up but different the next time one appears.
-	// The visible slab, not the plate sprite's box — see WIN_CARD_PLATE_SLAB.
-	const slab = $derived({
-		cx:
-			tier.plate.cx +
-			((WIN_CARD_PLATE_SLAB.left + WIN_CARD_PLATE_SLAB.right) / 2 - 0.5) * tier.plate.w,
-		cy:
-			tier.plate.cy +
-			((WIN_CARD_PLATE_SLAB.top + WIN_CARD_PLATE_SLAB.bottom) / 2 - 0.5) * tier.plate.h,
-		w: (WIN_CARD_PLATE_SLAB.right - WIN_CARD_PLATE_SLAB.left) * tier.plate.w,
-		h: (WIN_CARD_PLATE_SLAB.bottom - WIN_CARD_PLATE_SLAB.top) * tier.plate.h,
+	// The plate's silhouette in the card's design units — what the slime catches on (see
+	// WIN_CARD_PLATE_OUTLINE). The sprite box is `tier.plate`; the outline is fractions of it.
+	const outline = $derived(
+		WIN_CARD_PLATE_OUTLINE.map((p) => ({
+			x: tier.plate.cx + (p.x - 0.5) * tier.plate.w,
+			y: tier.plate.cy + (p.y - 0.5) * tier.plate.h,
+		})),
+	);
+	// The alien medallion on the plate's foot, as a guard: it is on the outline's lowest run, and a
+	// splat over it hides the one bit of the plate's art that is a face. Circle centred at
+	// 0.497 x 0.92 of the sprite box, ~0.09 of its width across.
+	const medallion = $derived({
+		cx: tier.plate.cx - 0.003 * tier.plate.w,
+		cy: tier.plate.cy + 0.42 * tier.plate.h,
+		w: 0.09 * tier.plate.w,
+		h: 0.16 * tier.plate.h,
 	});
 
 	const seed = Math.random();
 	const splats = $derived(
 		buildWinSlime({
 			tierKey: props.tierKey,
-			ring: slab,
+			outline,
 			guards: [
 				// NEGATIVE clearance on the mark: its bounding box is as tall as the plate itself on MAX,
 				// so honouring the box outright leaves only the two side edges free and the slime lines
@@ -149,6 +172,7 @@
 				{ rect: tier.word, pad: -1.2 },
 				{ rect: tier.plaque, pad: 1 },
 				{ rect: tier.saucer, pad: 0.9 },
+				{ rect: medallion, pad: 0.6 },
 			],
 			rng: makeRng(seed),
 		}),
@@ -325,12 +349,13 @@
 	     the tier, and a drop that falls has to change shape as it goes. Each splat lands on its own
 	     beat so they arrive as a spatter. -->
 	{#each splats as splat, i (i)}
-		{@const t = clamp01((clock - splatStart(i)) / BLOB_GROW)}
-		{#if t > 0.002}
+		{@const fly = clamp01((clock - splatStart(i)) / BLOB_FLY)}
+		{@const t = clamp01((clock - splatLand(i)) / BLOB_GROW)}
+		{#if fly > 0.002}
 			<!-- The drops run on their OWN clock, which is zero until the splat is out: on the card's
 			     clock the first drop was already half fallen the frame the splat appeared. -->
 			{@const dripClock = Math.max(0, clock - splatDone(i))}
-			<Container alpha={Math.min(1, t * 4)}>
+			<Container>
 				<Graphics
 					draw={(g) => {
 						g.clear();
@@ -338,6 +363,27 @@
 						// big splat and swamps a small one.
 						const big = Math.max(...splat.lobes.map((lobe) => lobe.r));
 						const edge = Math.max(1, big * S * 0.13);
+						const impact = { x: splat.lobes[0].x * S, y: splat.lobes[0].y * S };
+						if (fly < 1) {
+							const from = launchFor(splat);
+							drawSlimeFlight(g, {
+								from: { x: from.x * S, y: from.y * S },
+								to: impact,
+								t: fly,
+								r: splat.lobes[0].r * S * 0.62,
+								edge,
+								clock,
+							});
+							return;
+						}
+						drawSlimeSpray(g, {
+							x: impact.x,
+							y: impact.y,
+							age: clock - splatLand(i),
+							size: splat.lobes[0].r * S,
+							drops: splat.spray,
+							edge,
+						});
 						if (splat.drip) {
 							drawSlimeDrips(g, {
 								x: splat.drip.x * S,

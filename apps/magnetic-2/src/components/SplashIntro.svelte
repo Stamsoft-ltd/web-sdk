@@ -144,6 +144,29 @@
 	const SLIDE_COUNT = 3;
 	const updateOrientation = () => (isPortrait = window.innerWidth < window.innerHeight);
 
+	// ── Console lamps ──
+	// The room painting has a lit control console under the window's left chamfer: four pink pills
+	// on a slanted plate. They are PAINT — the same flat pink whatever the scene does — and the ask
+	// (2026-09-21) was for them to read as real lights. Each pill's box is measured off the art
+	// itself (bright pink ink, R>200 B>200 G<190: bboxes x116-152 / 123-160 / 129-166 / 136-173,
+	// rows 840-850 / 861-871 / 881-891 / 902-912 of room.webp 1920x1072; x52-85 ... x71-102, rows
+	// 1567-1643 of room_mobile.webp 1080x1919), as percentages of the art. Both rooms are drawn
+	// `cover` on a stage of the art's own aspect (1201/671 vs 1920/1072; 9/16 vs 1080/1919), so
+	// art fractions are stage fractions to within a pixel. The pills lean ~4° with the plate.
+	const CONSOLE_LAMPS_LANDSCAPE = [
+		{ x: 6.98, y: 78.82, w: 1.93, h: 1.03 },
+		{ x: 7.37, y: 80.78, w: 1.93, h: 1.03 },
+		{ x: 7.68, y: 82.65, w: 1.93, h: 1.03 },
+		{ x: 8.05, y: 84.61, w: 1.93, h: 1.03 },
+	];
+	const CONSOLE_LAMPS_PORTRAIT = [
+		{ x: 6.34, y: 81.92, w: 3.15, h: 0.63 },
+		{ x: 6.9, y: 83.06, w: 3.15, h: 0.63 },
+		{ x: 7.45, y: 84.16, w: 3.15, h: 0.63 },
+		{ x: 8.01, y: 85.3, w: 3.15, h: 0.63 },
+	];
+	const consoleLamps = $derived(isPortrait ? CONSOLE_LAMPS_PORTRAIT : CONSOLE_LAMPS_LANDSCAPE);
+
 	onMount(updateOrientation);
 
 	$effect(() => {
@@ -344,7 +367,21 @@
 				class:room-bg--ready={roomReady}
 				class:room-bg--dim={loading}
 				style={`background-image: url('${isPortrait ? roomMobileSrc : roomSrc}')`}
-			></div>
+			>
+				<!-- The console's four lamps, lit: a hot core over the painted pill and a spill of its
+				     own pink over the plate, chasing down the column. Inside .room-bg so they take its
+				     loading dim/blur and its handover fade with the paint they sit on. -->
+				{#each consoleLamps as lamp, i (i)}
+					<span
+						class="console-lamp"
+						style:left="{lamp.x}%"
+						style:top="{lamp.y}%"
+						style:width="{lamp.w}%"
+						style:height="{lamp.h}%"
+						style:--i={i}
+					></span>
+				{/each}
+			</div>
 
 			{#if loading}
 				<!-- Figma 7219:5322 — the lockup sits dead centre of the frame. -->
@@ -514,6 +551,46 @@
 		opacity: 0.6;
 		filter: blur(2px);
 		transform: scale(1.012);
+	}
+
+	/* A lit lamp over the painted one. `screen` is what makes it light rather than a sticker: the
+	   near-white core pushes the pink ink to a hot centre, and the box-shadow rings are the spill
+	   over the plate, wide and faint. The whole column breathes in a slow chase, one lamp after the
+	   next, and never goes fully dark — a running light is on, it just breathes. Sizes are in cq
+	   units so the spill scales with the stage like the pills themselves do. */
+	.console-lamp {
+		position: absolute;
+		display: block;
+		transform: translate(-50%, -50%) rotate(-4deg);
+		border-radius: 999px;
+		background: #ffe0f8;
+		mix-blend-mode: screen;
+		box-shadow:
+			0 0 0.22cqw 0.04cqw #ffb8f0,
+			0 0 0.8cqw 0.12cqw #ff6be0,
+			0 0 2cqw 0.35cqw rgba(255, 107, 224, 0.55);
+		animation: console-chase 2.8s ease-in-out infinite;
+		animation-delay: calc(var(--i) * -0.7s);
+		pointer-events: none;
+	}
+	.stage--m .console-lamp {
+		transform: translate(-50%, -50%) rotate(-3deg);
+		box-shadow:
+			0 0 0.5cqw 0.08cqw #ffb8f0,
+			0 0 1.6cqw 0.25cqw #ff6be0,
+			0 0 4cqw 0.7cqw rgba(255, 107, 224, 0.55);
+	}
+	@keyframes console-chase {
+		0%,
+		100% {
+			opacity: 0.62;
+		}
+		30% {
+			opacity: 1;
+		}
+		60% {
+			opacity: 0.72;
+		}
 	}
 
 	/* Loading lockup, centred in the frame. --mark is the tile edge; LoadingMark derives the gap and

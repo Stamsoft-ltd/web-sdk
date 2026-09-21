@@ -12,10 +12,15 @@ import type {
 	PaySymbolName,
 	Position,
 	RawSymbol,
-	SymbolName,
 	SymbolState,
 } from './types';
 import { stateLayoutDerived } from './stateLayout';
+import {
+	collectDeviceNamesAcrossMoves,
+	isWildDeviceName,
+	planPolarityDeviceDemotions,
+	type CarriedDevice,
+} from './polarityDevices';
 import { PLATE_H, PLATE_W } from './boardStyle';
 import { winLevelMap } from './winLevelMap';
 import {
@@ -216,10 +221,9 @@ const bumpBoardThump = () => {
 	void stateGame.boardThump.set(0, { duration: BOARD_THUMP_DECAY_MS, easing: cubicOut });
 };
 
-// A wild/magnet DEVICE is named WILD or MAGNET. Math also sets `wild`/`magnet` on the PAY symbols
-// it has pulled into a magnet cluster (membership markers), and those must never make a cell a
-// device — see shouldKeepWildInCluster below for the history.
-const isWildDeviceName = (name: SymbolName) => name === 'WILD' || name === 'MAGNET';
+// A wild/magnet DEVICE is named WILD or MAGNET (isWildDeviceName, game/polarityDevices.ts). Math
+// also sets `wild`/`magnet` on the PAY symbols it has pulled into a magnet cluster (membership
+// markers), and those must never make a cell a device — see shouldKeepWildInCluster below.
 
 // The one place a raw symbol's flags become cell state, so this is where a membership marker on a
 // pay symbol is dropped. Everything downstream that reads `cell.magnet` — the activation pulse's
@@ -1193,6 +1197,30 @@ const restoreWildMultipliers = (carried: Map<string, number>) => {
 	if (restored.length) logMagneticDiagnostic('warn', 'polarity_multiplier_restored', { restored });
 };
 
+// The device-name carry across a Polarity slam (game/polarityDevices.ts has the why). Read before
+// the board mutates, applied after the settle; every cell it corrects is logged, like the
+// multiplier restore above.
+const demoteInventedPolarityDevices = (
+	carried: Map<string, CarriedDevice>,
+	series: ClusterSeriesSnapshot[],
+) => {
+	const demotions = planPolarityDeviceDemotions({ board: boardRaw(), carried, series });
+	if (!demotions.length) return;
+	for (const { position, to } of demotions) {
+		const cell = stateGame.board[position.reel]?.[position.row];
+		if (!cell) continue;
+		cell.name = to;
+		cell.wild = false;
+		cell.magnet = false;
+		cell.multiplier = undefined;
+		applyCellVisualState(cell);
+	}
+	logMagneticDiagnostic('warn', 'polarity_device_demoted', {
+		demoted: demotions.map(({ position, from, to }) => ({ position: posKey(position), from, to })),
+	});
+	syncSpinBoardFromSettledBoard();
+};
+
 const animatePolarityShift = async ({
 	moves,
 	shifterPositions,
@@ -1219,6 +1247,7 @@ const animatePolarityShift = async ({
 	// Read BEFORE anything mutates the board: settleBoardInstant below overwrites every cell from
 	// math's own board, and a multiplier the payload omits is unrecoverable after that.
 	const carriedMultipliers = collectWildMultipliersAcrossMoves(moves);
+	const carriedDevices = collectDeviceNamesAcrossMoves({ board: boardRaw(), moves });
 
 	if (!symbolMoves.length) {
 		settleBoardInstant({ rawBoard, series, magnetTargetSymbol });
@@ -1228,6 +1257,7 @@ const animatePolarityShift = async ({
 			totalMultiplier: stateGame.seriesTotalMultiplier,
 		});
 		restoreWildMultipliers(carriedMultipliers);
+		demoteInventedPolarityDevices(carriedDevices, series);
 		stateGame.polarityDirection = null;
 		return;
 	}
@@ -1289,6 +1319,7 @@ const animatePolarityShift = async ({
 		totalMultiplier: stateGame.seriesTotalMultiplier,
 	});
 	restoreWildMultipliers(carriedMultipliers);
+	demoteInventedPolarityDevices(carriedDevices, series);
 	stateGame.polarityDirection = null;
 	stateGame.forceFastAnimations = false;
 };

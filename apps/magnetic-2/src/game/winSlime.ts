@@ -6,9 +6,17 @@
  * were one drawing at four fixed rotations; these are generated, so the card is never twice the
  * same and the tier decides how much of it there is.
  *
- * Shape is taken from the MAX render: a splat is a CLOVER of two to four fat round lobes floating
- * clear of the lockup, not a drape hanging off the plate's rim. Drapes were built first and thrown
- * away twice — pointed outward they read as tentacles, pointed down as green bars.
+ * Shape is taken from the MAX render: a splat is a CLOVER of two to four fat round lobes, not a
+ * drape hanging off the plate's rim. Drapes were built first and thrown away twice — pointed
+ * outward they read as tentacles, pointed down as green bars.
+ *
+ * WHERE IT SITS (2026-09-21, "it stays from nowhere"): on the plate's FACE. The clovers used to be
+ * centred a third of a splat outside the border and dealt their lobes in every direction, so a
+ * whole splat could hang beside the plate with nothing under it — a green lump floating in the
+ * dark next to the lockup. Slime thrown at a plate sticks to the plate: its first lobe catches on
+ * the border, the rest of the mass runs DOWN the face under its own weight, and only at the
+ * bottom edge does it hang over. So lobe 0 lands on the border, every other lobe is dealt into
+ * the downward half and clamped onto the slab, and only the bottom edge lets them spill.
  *
  * Everything below is in the card's own design units, measured from its CENTRE, exactly like
  * game/winCardTiers.ts — WinCard scales the whole set by one factor.
@@ -23,6 +31,12 @@ export type SlimeSplat = {
 	period: number;
 	/** Which lobes carry a specular bead, and how big. */
 	highlights: { lobe: number; size: number }[];
+	/**
+	 * The droplets flung out when the blob hits the plate — direction, speed and size, all in
+	 * multiples of the splat size so WinCard can scale them with everything else. Rolled here so a
+	 * card's spray is as fixed as its splats.
+	 */
+	spray: { angle: number; speed: number; r: number }[];
 };
 
 type Tier = {
@@ -57,6 +71,19 @@ export const makeRng = (seed: number) => {
 };
 
 type Rect = { cx: number; cy: number; w: number; h: number };
+type Point = { x: number; y: number };
+
+/** Even-odd point-in-polygon. */
+const inside = (p: Point, poly: Point[]) => {
+	let hit = false;
+	for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+		const a = poly[i];
+		const b = poly[j];
+		if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x)
+			hit = !hit;
+	}
+	return hit;
+};
 
 /**
  * One splat, centred on `anchor`.
@@ -66,27 +93,60 @@ type Rect = { cx: number; cy: number; w: number; h: number };
  * their combined radii, which is what fuses them instead of leaving a lumpy string.
  */
 const splat = (
-	anchor: { x: number; y: number },
+	anchor: Point,
 	size: number,
 	rng: () => number,
 	dripping: boolean,
+	/** The plate's silhouette. Lobes are pulled back onto it, except under a downward-facing
+	    border, where they may hang over — that overhang is where the drips come from. */
+	face: { outline: Point[]; hangs: boolean },
 ): SlimeSplat => {
 	const n = 2 + Math.floor(rng() * 3);
 	const chained = rng() < 0.35;
-	const lobes = [{ x: 0, y: 0, r: size * (0.8 + rng() * 0.35) }];
-	let heading = rng() * Math.PI * 2;
+	// Lobe 0 IS the anchor: the point of impact, on the border, that the rest grows out of.
+	const lobes = [{ x: anchor.x, y: anchor.y, r: size * (0.8 + rng() * 0.35) }];
+	// Everything else runs DOWN. Budded lobes are dealt across the lower half, alternating sides;
+	// a chain starts downward and wanders as it goes.
+	const DOWN = Math.PI / 2;
+	let heading = DOWN + (rng() - 0.5) * 1.1;
 	for (let i = 1; i < n; i += 1) {
 		const from = chained ? lobes[i - 1] : lobes[0];
 		const r = size * (0.45 + rng() * 0.4);
-		const angle = chained ? (heading += (rng() - 0.5) * 1.6) : heading + (i * Math.PI * 2) / n;
+		const side = i % 2 === 1 ? -1 : 1;
+		const angle = chained
+			? (heading += (rng() - 0.5) * 1.3)
+			: DOWN + side * (0.35 + rng() * 0.75) * (i > 2 ? 0.5 : 1);
 		const d = (from.r + r) * (0.55 + rng() * 0.2);
 		lobes.push({ x: from.x + Math.cos(angle) * d, y: from.y + Math.sin(angle) * d, r });
 	}
 
-	// Recentre on the anchor, so `count` splats spread evenly however their lobes happened to fall.
-	const midX = (Math.min(...lobes.map((l) => l.x)) + Math.max(...lobes.map((l) => l.x))) / 2;
-	const midY = (Math.min(...lobes.map((l) => l.y)) + Math.max(...lobes.map((l) => l.y))) / 2;
-	const placed = lobes.map((l) => ({ x: anchor.x + l.x - midX, y: anchor.y + l.y - midY, r: l.r }));
+	// Onto the face: a lobe that has strayed off the plate is pulled back along its line to the
+	// anchor until it is over the plate, then a little further so most of it is (a bisection on
+	// the outline — the plate is a boat, and a rectangle clamp put lobes under its diagonals with
+	// nothing behind them). Under a border that faces down (the foot, the diagonals) lobes below
+	// the anchor are left to hang. The anchor itself keeps its border seat — it is what reads as
+	// "caught on the rim".
+	const placed = lobes.map((l, i) => {
+		if (i === 0) return l;
+		// Over a downward border the mass may hang, but only so far: the lobes are the wet mass
+		// caught on the rim, and it is the drip that falls. Uncapped, a chain dealt downward ran a
+		// tongue three splats long over the amount plaque's corners.
+		if (face.hangs && l.y > anchor.y) return { ...l, y: Math.min(l.y, anchor.y + size * 0.9) };
+		const dx = l.x - anchor.x;
+		const dy = l.y - anchor.y;
+		const len = Math.hypot(dx, dy) || 1e-6;
+		const probe = (s: number) => ({ x: anchor.x + dx * s, y: anchor.y + dy * s });
+		if (inside(probe(1 + (l.r * 0.3) / len), face.outline)) return l;
+		let lo = 0;
+		let hi = 1;
+		for (let step = 0; step < 10; step += 1) {
+			const mid = (lo + hi) / 2;
+			if (inside(probe(mid), face.outline)) lo = mid;
+			else hi = mid;
+		}
+		const s = Math.max(0.15, lo - (l.r * 0.3) / len);
+		return { ...probe(s), r: l.r };
+	});
 
 	const lowest = placed.reduce((a, b) => (a.y + a.r > b.y + b.r ? a : b));
 	const biggest = placed.reduce((a, b, i) => (placed[a].r >= b.r ? a : i), 0);
@@ -103,13 +163,20 @@ const splat = (
 						{ lobe: (biggest + 1) % placed.length, size: 0.26 },
 					]
 				: [{ lobe: biggest, size: 0.34 }],
+		// Four to five droplets, flung mostly upward and to the sides — what leaves a wet mass on
+		// impact — and small, a tenth to a fifth of the splat.
+		spray: Array.from({ length: 4 + Math.floor(rng() * 2) }, () => ({
+			angle: -Math.PI * (0.12 + rng() * 0.76),
+			speed: 0.9 + rng() * 1.1,
+			r: 0.1 + rng() * 0.1,
+		})),
 	};
 };
 
 export const buildWinSlime = (o: {
 	tierKey: string;
-	/** The slab the slime runs off. Splats STRADDLE its border — they never float free. */
-	ring: Rect;
+	/** The plate's silhouette, in design units. Splats STRADDLE its border — they never float free. */
+	outline: Point[];
 	/** What the border must stay clear of, each with its own clearance in multiples of the splat
 	    size — the wordmark only needs elbow room, the amount plaque has to stay readable. */
 	guards: { rect: Rect; pad: number }[];
@@ -118,13 +185,13 @@ export const buildWinSlime = (o: {
 	const tier = WIN_SLIME_TIERS[o.tierKey] ?? WIN_SLIME_TIERS.sweet;
 	const { rng } = o;
 
-	// Where a splat can catch: the plate's own border, minus its chamfered corners and minus
-	// anywhere the wordmark, plaque or saucer sits. Sampling the perimeter and throwing candidates
-	// away is what makes the slime read as stuck ON the plate — the first cut ringed the lockup at a
-	// distance, and free-floating lumps look like stickers, not slime running off an edge.
-	const hw = o.ring.w * 0.5;
-	const hh = o.ring.h * 0.5;
-	const chamfer = 0.06; // the plate's corners are cut; nothing catches on the diagonal itself
+	// Where a splat can catch: the plate's own silhouette, minus anywhere the wordmark, plaque,
+	// saucer or medallion sits. Sampling the perimeter and throwing candidates away is what makes
+	// the slime read as stuck ON the plate — the first cut ringed the lockup at a distance, and
+	// free-floating lumps look like stickers, not slime running off an edge. The perimeter is the
+	// traced outline (WIN_CARD_PLATE_OUTLINE) walked at an even stride by arc length; a rectangle
+	// with hand-tuned corner walks was tried first and put splats inside the face and under the
+	// diagonals ("they should be by the border, not some random places", 2026-09-21).
 	const clear = (x: number, y: number, size: number) =>
 		!o.guards.some(
 			(g) =>
@@ -132,29 +199,46 @@ export const buildWinSlime = (o: {
 				Math.abs(y - g.rect.cy) < g.rect.h * 0.5 + g.pad * size,
 		);
 
+	const poly = o.outline;
+	const centroid = {
+		x: poly.reduce((sum, p) => sum + p.x, 0) / poly.length,
+		y: poly.reduce((sum, p) => sum + p.y, 0) / poly.length,
+	};
+	const edges = poly.map((a, i) => {
+		const b = poly[(i + 1) % poly.length];
+		const len = Math.hypot(b.x - a.x, b.y - a.y) || 1e-6;
+		// Outward: whichever edge normal points away from the centroid.
+		let nx = (b.y - a.y) / len;
+		let ny = -(b.x - a.x) / len;
+		if (nx * ((a.x + b.x) / 2 - centroid.x) + ny * ((a.y + b.y) / 2 - centroid.y) < 0) {
+			nx = -nx;
+			ny = -ny;
+		}
+		return { a, b, len, nx, ny };
+	});
+	const perimeter = edges.reduce((sum, e) => sum + e.len, 0);
 	const SAMPLES = 240;
 	const spots: { x: number; y: number; nx: number; ny: number }[] = [];
 	for (let i = 0; i < SAMPLES; i += 1) {
-		const u = i / SAMPLES;
-		const side = Math.floor(u * 4);
-		const f = u * 4 - side; // 0..1 along this side
-		if (f < chamfer || f > 1 - chamfer) continue;
-		const k = f * 2 - 1; // -1..1 across the side
-		// The plate is a hexagon, not a rectangle: its ends are cut back at an angle. Anchors near a
-		// corner walk inward with the cut, or the splat catches on a corner of the bounding box that
-		// has no art under it and reads as floating beside the plate.
-		const cut = Math.max(0, (Math.abs(k) - 0.5) / 0.5) ** 1.3;
-		const inX = cut * hw * 0.1;
-		const inY = cut * hh * 0.36;
-		const spot =
-			side === 0
-				? { x: o.ring.cx + k * hw, y: o.ring.cy - hh + inY, nx: 0, ny: -1 }
-				: side === 1
-					? { x: o.ring.cx + hw - inX, y: o.ring.cy + k * hh, nx: 1, ny: 0 }
-					: side === 2
-						? { x: o.ring.cx - k * hw, y: o.ring.cy + hh - inY, nx: 0, ny: 1 }
-						: { x: o.ring.cx - hw + inX, y: o.ring.cy - k * hh, nx: -1, ny: 0 };
-		spots.push(spot);
+		let d = (i / SAMPLES) * perimeter;
+		for (const e of edges) {
+			if (d > e.len) {
+				d -= e.len;
+				continue;
+			}
+			// Nothing catches on a corner itself: the tabs' short edges and the medallion's rim are
+			// under a splat long, and a splat centred on one hangs off both sides at once.
+			if (e.len >= tier.size * 1.2) {
+				const f = d / e.len;
+				spots.push({
+					x: e.a.x + (e.b.x - e.a.x) * f,
+					y: e.a.y + (e.b.y - e.a.y) * f,
+					nx: e.nx,
+					ny: e.ny,
+				});
+			}
+			break;
+		}
 	}
 
 	const usable = spots.filter((spot) => clear(spot.x, spot.y, tier.size));
@@ -183,9 +267,14 @@ export const buildWinSlime = (o: {
 		for (let attempt = 0; attempt < TRIES; attempt += 1) {
 			const spot = at(start + i * step + (rng() - 0.5) * step * 0.5);
 			const size = tier.size * (0.7 + rng() * 0.55);
-			// Sitting ON the edge: about a third of the splat outside it, the rest over the plate face.
-			const anchor = { x: spot.x + spot.nx * size * 0.35, y: spot.y + spot.ny * size * 0.35 };
-			const candidate = splat(anchor, size, rng, rng() < tier.dripping);
+			// Caught ON the border: the anchor lobe's centre sits a tenth of a splat inside the
+			// outline, so it straddles the rim — over the face on one side, bulging past the edge on
+			// the other: the point of impact. The rest of the splat is pulled onto the face.
+			const anchor = { x: spot.x - spot.nx * size * 0.1, y: spot.y - spot.ny * size * 0.1 };
+			const candidate = splat(anchor, size, rng, rng() < tier.dripping, {
+				outline: poly,
+				hangs: spot.ny > 0.5,
+			});
 			// How far the clover actually reaches from its anchor — the lobes are dealt around it, so
 			// this is not `size` and is what two splats have to keep between them.
 			const reach = Math.max(

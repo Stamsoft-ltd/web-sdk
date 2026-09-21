@@ -54,6 +54,56 @@ export type WinCardTier = {
 export const WIN_CARD_PLATE_SLAB = { left: 0.02, right: 0.988, top: 0.121, bottom: 0.857 };
 
 /**
+ * The plate's SILHOUETTE, as fractions of the sprite's box (`plate` above) — what the slime
+ * catches on. The slab rectangle is fine for placing the plate, but slime placed round a rectangle
+ * ended up inside the face or hanging under the diagonals with nothing behind it: the plate is a
+ * boat, its lower half cut back by two long diagonals to a narrow foot with a medallion on it.
+ * Traced off winCardPlate.webp's alpha by scripts/measure-win-plate-outline.py (rays from the
+ * centroid, simplified to 4px), clockwise in screen coordinates. Re-run the script if the art
+ * changes; never hand-edit.
+ */
+export const WIN_CARD_PLATE_OUTLINE = [
+	{ x: 0.9834, y: 0.472 },
+	{ x: 0.9835, y: 0.5979 },
+	{ x: 0.9786, y: 0.6195 },
+	{ x: 0.9727, y: 0.6289 },
+	{ x: 0.926, y: 0.6337 },
+	{ x: 0.8262, y: 0.9002 },
+	{ x: 0.6702, y: 0.9008 },
+	{ x: 0.6542, y: 0.9414 },
+	{ x: 0.5367, y: 0.9417 },
+	{ x: 0.5164, y: 0.9869 },
+	{ x: 0.493, y: 0.998 },
+	{ x: 0.4719, y: 0.9827 },
+	{ x: 0.4539, y: 0.9416 },
+	{ x: 0.3386, y: 0.9422 },
+	{ x: 0.3211, y: 0.9007 },
+	{ x: 0.1681, y: 0.9009 },
+	{ x: 0.1589, y: 0.8927 },
+	{ x: 0.0642, y: 0.6305 },
+	{ x: 0.0384, y: 0.6059 },
+	{ x: 0.0363, y: 0.3713 },
+	{ x: 0.0009, y: 0.2662 },
+	{ x: 0.0007, y: 0.1414 },
+	{ x: 0.0403, y: 0.0226 },
+	{ x: 0.0521, y: 0.0096 },
+	{ x: 0.1061, y: 0.0096 },
+	{ x: 0.1704, y: 0.0747 },
+	{ x: 0.2863, y: 0.0768 },
+	{ x: 0.3155, y: 0.1232 },
+	{ x: 0.6741, y: 0.1235 },
+	{ x: 0.6805, y: 0.1234 },
+	{ x: 0.7221, y: 0.0486 },
+	{ x: 0.8091, y: 0.0484 },
+	{ x: 0.8486, y: 0.0038 },
+	{ x: 0.9528, y: 0.0022 },
+	{ x: 0.9978, y: 0.1237 },
+	{ x: 0.9984, y: 0.3064 },
+	{ x: 0.9699, y: 0.3943 },
+	{ x: 0.9835, y: 0.4378 },
+];
+
+/**
  * Where the saucer sprite's glass dome ends and its purple belly begins, as a fraction of the
  * sprite's height (build-win-card.py: first lower-half row whose opaque pixels average purple for
  * four rows running). WinCard clips the alien here so it sits IN the dome with its body behind

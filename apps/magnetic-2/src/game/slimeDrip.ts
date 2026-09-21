@@ -89,6 +89,30 @@ export const drawSlimeDrips = (g: SlimeDripTarget, o: SlimeDripOptions) => {
 		g.closePath();
 	};
 
+	// A drop in free fall: a bead with a tail. The tail is what the thread it broke from left on
+	// it — a taper to a point above the bead, joining it where the bead is 45% wide, and shrinking
+	// as the drop falls. One closed outline, so the fill and the stroke are one drop.
+	const fallingDrop = (cy: number, rx: number, ry: number, tail: number) => {
+		const JOIN = Math.asin(0.45); // angle from the bead's top where the tail meets it
+		const joinY = cy - ry * Math.cos(JOIN);
+		const tipY = joinY - tail;
+		const T = 6;
+		const B = 12;
+		const tailHalf = (u: number) => rx * 0.45 * u ** 0.7;
+		g.moveTo(x, tipY);
+		for (let i = 1; i <= T; i += 1) g.lineTo(x - tailHalf(i / T), tipY + tail * (i / T));
+		for (let i = 0; i <= B; i += 1) {
+			const phi = JOIN + (Math.PI - JOIN) * (i / B);
+			g.lineTo(x - rx * Math.sin(phi), cy - ry * Math.cos(phi));
+		}
+		for (let i = B; i >= 0; i -= 1) {
+			const phi = JOIN + (Math.PI - JOIN) * (i / B);
+			g.lineTo(x + rx * Math.sin(phi), cy - ry * Math.cos(phi));
+		}
+		for (let i = T; i >= 1; i -= 1) g.lineTo(x + tailHalf(i / T), tipY + tail * (i / T));
+		g.closePath();
+	};
+
 	for (const offset of o.offsets ?? DRIP_OFFSETS) {
 		const raw = o.clock / o.period + offset;
 		if (raw < 0) continue; // this drop's first cycle has not begun
@@ -97,19 +121,25 @@ export const drawSlimeDrips = (g: SlimeDripTarget, o: SlimeDripOptions) => {
 		const fade = t > 0.9 ? (1 - t) / 0.1 : 1;
 		let beadY: number;
 		let beadR: number;
-		if (t < 0.52) {
-			// Attached: the bead swells and is drawn out until the waist gives way.
-			const k = (t - 0.1) / 0.42;
+		if (t < 0.58) {
+			// Attached: the bead swells and is drawn out on a strand that thins to a thread before
+			// it gives way. It used to snap at a waist of 0.55 — a strand still half as wide as the
+			// bead, which is a stalk breaking, not slime stringing out.
+			const k = (t - 0.1) / 0.48;
 			beadR = R * (0.62 + 0.38 * k);
-			beadY = o.y + R * 0.9 + k * R * 2.6;
-			teardrop(beadY - top, beadR, 0.55 * k);
+			beadY = o.y + R * 0.9 + k * R * 3.1;
+			teardrop(beadY - top, beadR, 0.82 * k ** 0.8);
 		} else {
-			// Snapped: it falls, stretching with its speed, and a residual bead stays behind.
-			const k = (t - 0.52) / 0.48;
+			// Snapped: the drop falls, stretching with its speed and trailing a tail that thins
+			// out behind it, while the thread it left recoils into the mass. Both are the SAME
+			// closed-outline profile — the old cut drew a loose ellipse for the residual bead,
+			// whose outline read as a dark ring hanging under the lobe.
+			const k = (t - 0.58) / 0.42;
 			beadR = R * (0.95 - 0.2 * k);
-			beadY = o.y + R * 3.5 + o.fall * k * k;
-			g.ellipse(x, beadY, beadR * (1 - 0.28 * k), beadR * (1 + 0.7 * k));
-			g.ellipse(x, o.y - R * 0.15, R * 0.6 * (1 - k), R * 0.45 * (1 - k));
+			beadY = o.y + R * 4 + o.fall * k * k;
+			fallingDrop(beadY, beadR * (1 - 0.28 * k), beadR * (1 + 0.7 * k), R * 1.4 * (1 - k) ** 1.5);
+			const recoil = (1 - k) ** 2.2;
+			if (recoil > 0.02) teardrop(R * (0.8 + 2.1 * recoil), R * 0.34 * recoil, 0.6);
 		}
 		g.fill({ color: SLIME, alpha: fade });
 		g.stroke({ color: SLIME_EDGE, width: EDGE, alpha: fade });
@@ -265,15 +295,15 @@ export const drawSlimeCluster = (g: SlimeBlobTarget, o: SlimeClusterOptions) => 
 	const emergeStep = o.lobes.length > 1 ? (1 - EMERGE_SPAN) / (o.lobes.length - 1) : 0;
 	const anchor = o.lobes[0];
 
-	// How full the feeding lobe is: 0 at rest, 1 the instant before the drop's waist gives way
-	// (t 0.1 → 0.52 in drawSlimeDrips), then it recoils over the next 0.18 of the cycle.
+	// How full the feeding lobe is: 0 at rest, 1 the instant before the drop's thread gives way
+	// (t 0.1 → 0.58 in drawSlimeDrips), then it recoils over the next 0.18 of the cycle.
 	let feed = 0;
 	if (o.drip) {
 		for (const offset of o.drip.offsets ?? DRIP_OFFSETS) {
 			const raw = o.clock / o.drip.period + offset;
 			if (raw < 0) continue; // matches the same guard in drawSlimeDrips
 			const t = raw % 1;
-			const k = t < 0.1 ? 0 : t < 0.52 ? (t - 0.1) / 0.42 : t < 0.7 ? 1 - (t - 0.52) / 0.18 : 0;
+			const k = t < 0.1 ? 0 : t < 0.58 ? (t - 0.1) / 0.48 : t < 0.76 ? 1 - (t - 0.58) / 0.18 : 0;
 			feed = Math.max(feed, k * k);
 		}
 	}
@@ -348,5 +378,154 @@ export const drawSlimeCluster = (g: SlimeBlobTarget, o: SlimeClusterOptions) => 
 		if (!s || s.out <= 0.002) continue;
 		g.ellipse(s.x - s.rx * 0.26, s.y - s.ry * 0.3, s.rx * hl.size, s.ry * hl.size * 1.45);
 		g.fill({ color: SLIME_LIGHT, alpha: 0.9 });
+	}
+};
+
+export type SlimeFlightTarget = {
+	moveTo(x: number, y: number): unknown;
+	lineTo(x: number, y: number): unknown;
+	closePath(): unknown;
+	ellipse(x: number, y: number, rx: number, ry: number): unknown;
+	fill(style: { color: number; alpha?: number }): unknown;
+	stroke(style: { color: number; width: number; alpha?: number }): unknown;
+};
+
+export type SlimeFlightOptions = {
+	/** Where the blob leaves from and where it lands, in the units the Graphics draws in. */
+	from: { x: number; y: number };
+	to: { x: number; y: number };
+	/** 0 at launch, 1 at impact. */
+	t: number;
+	/** The blob's radius at rest. */
+	r: number;
+	/** Outline width. */
+	edge: number;
+	clock: number;
+};
+
+/**
+ * Where a flung blob is at `t` — a lob: out and up off the rim, then down onto the plate under
+ * gravity. The arc is quoted off the throw's own length so a short throw is a short hop.
+ */
+export const slimeFlightAt = (
+	from: { x: number; y: number },
+	to: { x: number; y: number },
+	t: number,
+) => {
+	const u = Math.min(1, Math.max(0, t));
+	const dx = to.x - from.x;
+	const dy = to.y - from.y;
+	const rise = Math.max(Math.abs(dx) * 0.28, Math.abs(dy) * 0.22, 18);
+	// Slightly eased out along the throw — it leaves fast and is slowing as it lands.
+	const a = 1 - (1 - u) ** 1.35;
+	return {
+		x: from.x + dx * a,
+		y: from.y + dy * a - rise * Math.sin(Math.PI * u),
+		vx: dx * 1.35 * (1 - u) ** 0.35,
+		vy: dy * 1.35 * (1 - u) ** 0.35 - rise * Math.PI * Math.cos(Math.PI * u),
+	};
+};
+
+/**
+ * The blob in the air. WHERE THE SLIME COMES FROM: the card's saucer docks, and only then does
+ * the slime arrive — a wet lump flung off the ship's rim that lobs across to the plate and hits
+ * it. A splat that simply grows out of the plate at full size, however well it oozes, has no
+ * source, which is what "it stays from nowhere" (2026-09-21) was.
+ *
+ * Drawn as a bead stretched along its own velocity, wobbling as it tumbles, with a thin tail
+ * behind it — the profile a thrown lump of goo actually has, not a ball.
+ */
+export const drawSlimeFlight = (g: SlimeFlightTarget, o: SlimeFlightOptions) => {
+	const t = Math.min(1, Math.max(0, o.t));
+	if (t <= 0 || t >= 1) return;
+	const p = slimeFlightAt(o.from, o.to, t);
+	const speed = Math.hypot(p.vx, p.vy);
+	const ang = Math.atan2(p.vy, p.vx);
+	// Stretch with speed, and squash a little at the top of the arc where it is slowest.
+	const stretch = 1 + Math.min(0.55, speed / (o.r * 40));
+	const wob = 1 + 0.07 * Math.sin(o.clock * 21 + t * 9);
+	const along = o.r * stretch * wob;
+	const across = (o.r / stretch) * (2 - wob);
+	// Pops out of the rim from nothing over the first 12% of the flight.
+	const out = Math.min(1, t / 0.12);
+	const N = 20;
+	const ca = Math.cos(ang);
+	const sa = Math.sin(ang);
+	// A closed outline round the stretched bead, with a tail behind: the back half is drawn out
+	// along -velocity by a taper, so it reads as a lump trailing goo rather than a rugby ball.
+	for (let i = 0; i <= N; i += 1) {
+		const th = (i / N) * Math.PI * 2;
+		const tailPull = Math.cos(th) < 0 ? 1 + 0.9 * (-Math.cos(th)) ** 2 * (1 - t) : 1;
+		const lx = Math.cos(th) * along * tailPull * out;
+		const ly = Math.sin(th) * across * out * (Math.cos(th) < 0 ? 0.75 : 1);
+		const px = p.x + lx * ca - ly * sa;
+		const py = p.y + lx * sa + ly * ca;
+		if (i === 0) g.moveTo(px, py);
+		else g.lineTo(px, py);
+	}
+	g.closePath();
+	g.fill({ color: SLIME });
+	g.stroke({ color: SLIME_EDGE, width: Math.min(o.edge, o.r * 0.4) * out });
+	// The specular rides the leading upper side.
+	g.ellipse(
+		p.x + ca * along * 0.2 - sa * -across * 0.35,
+		p.y + sa * along * 0.2 + ca * -across * 0.35,
+		across * 0.26 * out,
+		across * 0.3 * out,
+	);
+	g.fill({ color: SLIME_LIGHT, alpha: 0.85 });
+};
+
+export type SlimeSprayOptions = {
+	/** The point of impact, in the units the Graphics draws in. */
+	x: number;
+	y: number;
+	/** Seconds since impact. */
+	age: number;
+	/** The splat's size in the Graphics' units — speeds and radii below are multiples of it. */
+	size: number;
+	drops: { angle: number; speed: number; r: number }[];
+	/** Outline width. */
+	edge: number;
+};
+
+/** How long the spray is in the air. */
+export const SLIME_SPRAY_S = 0.55;
+
+/**
+ * The droplets a wet mass throws off when it hits: a handful of beads flung up and out, falling
+ * back under gravity and fading, each stretching a little along its own path. Over in half a
+ * second — the impact itself, not a fountain.
+ */
+export const drawSlimeSpray = (g: SlimeFlightTarget, o: SlimeSprayOptions) => {
+	if (o.age <= 0 || o.age >= SLIME_SPRAY_S) return;
+	const u = o.age / SLIME_SPRAY_S;
+	const fade = u < 0.6 ? 1 : 1 - (u - 0.6) / 0.4;
+	const G = o.size * 9; // gravity, per second squared
+	for (const d of o.drops) {
+		const vx = Math.cos(d.angle) * d.speed * o.size * 4.2;
+		const vy0 = Math.sin(d.angle) * d.speed * o.size * 4.2;
+		const px = o.x + vx * o.age;
+		const py = o.y + vy0 * o.age + 0.5 * G * o.age * o.age;
+		const vy = vy0 + G * o.age;
+		const speed = Math.hypot(vx, vy);
+		const r = d.r * o.size * (1 - 0.35 * u);
+		const stretch = 1 + Math.min(0.6, speed / (o.size * 30));
+		const ang = Math.atan2(vy, vx);
+		const ca = Math.cos(ang);
+		const sa = Math.sin(ang);
+		const N = 12;
+		for (let i = 0; i <= N; i += 1) {
+			const th = (i / N) * Math.PI * 2;
+			const lx = Math.cos(th) * r * stretch;
+			const ly = (Math.sin(th) * r) / stretch;
+			const qx = px + lx * ca - ly * sa;
+			const qy = py + lx * sa + ly * ca;
+			if (i === 0) g.moveTo(qx, qy);
+			else g.lineTo(qx, qy);
+		}
+		g.closePath();
+		g.fill({ color: SLIME, alpha: fade });
+		g.stroke({ color: SLIME_EDGE, width: Math.min(o.edge, r * 0.4), alpha: fade });
 	}
 };

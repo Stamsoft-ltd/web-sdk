@@ -6,6 +6,7 @@
 	import SkyClouds from './SkyClouds.svelte';
 	import BeamSymbol from './BeamSymbol.svelte';
 	import { drawUfoLamps } from '../game/ufoLamps';
+	import { WIN_CARD_SAUCER_BELT } from '../game/winCardTiers';
 	import { getContext } from '../game/context';
 	import { BACKGROUND_LIGHTS } from '../game/backgroundLights';
 	import { PORTRAIT_BACKGROUND_RATIO, SYMBOL_H, SYMBOL_W } from '../game/constants';
@@ -264,6 +265,19 @@
 	const hullH = $derived(hullW / UFO.hullAspect);
 	// Local coordinates inside the ship container, whose origin is the sprite's own centre.
 	const hullY = 0;
+	// ── The pilot ──
+	// The saucer art has an EMPTY dome (Figma 9148:31504 draws it that way), and the recording of
+	// 2026-09-21 was the first time anyone saw the ship hang there for a whole bonus with nobody
+	// flying it. The win card's lockup is the same saucer drawing (winCardSaucer.webp differs from
+	// ufo_ship.webp only by webp re-encode noise) with the alien seated in it, so this is that
+	// seating, quoted from WIN_CARD_TIERS (saucer 260.5x184.8, alien 54.3x82.8 at +6.5 down) as
+	// fractions of the hull box, and clipped at the same belt line so the body hides behind the
+	// hull and only the head and shoulders show through the glass.
+	const PILOT = { cx: 0, cy: 6.5 / 184.8, w: 54.3 / 260.5, h: 82.8 / 184.8 };
+	// A bob of its own, off-phase from the hull's hover — the same figure the win card uses
+	// (4px of a 184.8px saucer), so the pilot reads as sitting in the ship rather than glued to it.
+	const pilotBobY = $derived((4 / 184.8) * Math.sin(shipClock * 2.3 + 1.1));
+	const pilotLoaded = $derived(!!context.stateApp.loadedAssets?.winCardAlien);
 
 	// ── Arrival ──
 	// The room's first impression: the ship comes in from deep in the window's sky, tiny, growing as
@@ -1209,6 +1223,31 @@
 			     the lamp table below is measured on ufo_ship.webp, which is not that drawing. -->
 			{#if !isPortrait}
 				<Sprite key="ufoShip" anchor={0.5} x={0} y={hullY} width={hullW} height={hullH} />
+			{/if}
+			<!-- The pilot, IN the dome: clipped at the saucer's belly line exactly as the win card
+			     clips it, so the head shows through the glass and the body is behind the hull. Over
+			     the sprite, like the win card — the glass highlight is baked into the art. -->
+			{#if !isPortrait && pilotLoaded}
+				<Container>
+					<Graphics
+						isMask
+						draw={(g) => {
+							g.clear();
+							const top = hullY - hullH;
+							const belt = hullY - hullH / 2 + WIN_CARD_SAUCER_BELT * hullH;
+							g.rect(-hullW, top, hullW * 2, belt - top);
+							g.fill(0xffffff);
+						}}
+					/>
+					<Sprite
+						key="winCardAlien"
+						anchor={0.5}
+						x={PILOT.cx * hullW}
+						y={hullY + (PILOT.cy + pilotBobY) * hullH}
+						width={PILOT.w * hullW}
+						height={PILOT.h * hullH}
+					/>
+				</Container>
 			{/if}
 			<!-- The beam's mouth, over the hull's underside: the light leaves the emitter oval. -->
 			<Graphics draw={(gr) => (beamCapG = gr as unknown as G)} />
