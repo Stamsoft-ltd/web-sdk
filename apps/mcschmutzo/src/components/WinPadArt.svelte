@@ -83,9 +83,10 @@
 		const s = winS * titleBreathe;
 		const title: L = { id: 'title', key: titleKey, x: 0, y: -0.03 * w * winS, w: titleW * w * s, h: (titleW * w / titleAR) * s, a: winA };
 
-		// Real burger symbol, BEHIND the plaque (drawn first), tucked so it just peeks over the banner's
-		// top edge; pops ONCE (separate → reassemble) then rests.
-		const burger = { x: 0, y: -0.12 * w * winS, scale: 1.05 * winS, winning: elapsed > 60 && elapsed < 1500 };
+		// Real burger symbol, BEHIND the plaque (drawn first) so it peeks over the top of the banner /
+		// title rather than sitting in front. Sized bigger than a board symbol; pops ONCE (separate →
+		// reassemble) then rests.
+		const burger = { x: 0, y: -0.205 * w * winS, scale: 1.45 * winS, winning: elapsed > 60 && elapsed < 1500 };
 		return { back, title, burger };
 	});
 </script>
