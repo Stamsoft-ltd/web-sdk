@@ -22,9 +22,13 @@ export const resolveMagnetActivationPositions = ({
 	eventPositions: Position[];
 	board: RawSymbol[][];
 }): Position[] => {
+	// `magnet` here is the CELL flag (boardRaw), which updateCellRaw only sets on a cell named
+	// WILD/MAGNET — the client's own marked anchors are WILD + magnet. Math's `magnet: true`
+	// membership marker on a pay symbol never reaches this flag, so a stale activation cannot
+	// fall back onto the cluster's own symbols and rename them WILD.
 	const settledPositions = board.flatMap((column, reel) =>
 		column.flatMap((cell, row) =>
-			cell.magnet || cell.name === 'MAGNET' ? [{ reel, row }] : [],
+			(cell.name === 'WILD' && cell.magnet) || cell.name === 'MAGNET' ? [{ reel, row }] : [],
 		),
 	);
 	if (!settledPositions.length) return [];

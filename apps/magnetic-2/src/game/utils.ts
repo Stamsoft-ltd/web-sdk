@@ -207,7 +207,7 @@ export const getSymbolInfo = ({
 		name: rawSymbol.name,
 		state: assetState as 'static' | 'win',
 		multiplier: rawSymbol.multiplier,
-		magnet: rawSymbol.magnet || rawSymbol.name === 'MAGNET',
+		magnet: rawSymbol.name === 'MAGNET',
 	});
 
 	const baseRatios =

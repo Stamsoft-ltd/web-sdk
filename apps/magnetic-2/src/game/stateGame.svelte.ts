@@ -12,6 +12,7 @@ import type {
 	PaySymbolName,
 	Position,
 	RawSymbol,
+	SymbolName,
 	SymbolState,
 } from './types';
 import { stateLayoutDerived } from './stateLayout';
@@ -215,13 +216,43 @@ const bumpBoardThump = () => {
 	void stateGame.boardThump.set(0, { duration: BOARD_THUMP_DECAY_MS, easing: cubicOut });
 };
 
+// A wild/magnet DEVICE is named WILD or MAGNET. Math also sets `wild`/`magnet` on the PAY symbols
+// it has pulled into a magnet cluster (membership markers), and those must never make a cell a
+// device — see shouldKeepWildInCluster below for the history.
+const isWildDeviceName = (name: SymbolName) => name === 'WILD' || name === 'MAGNET';
+
+// The one place a raw symbol's flags become cell state, so this is where a membership marker on a
+// pay symbol is dropped. Everything downstream that reads `cell.magnet` — the activation pulse's
+// settled-magnet lookup (resolveMagnetActivationPositions via boardRaw), animateMagnetCluster's
+// "magnet cells" that get renamed WILD once the pull lands, the magnet visual state — used to see
+// a flagged L1 as a magnet. The 2026-09-14 rename-by-name fix covered setSeriesSnapshots and the
+// sprite lookup, but a flagged pay symbol that arrived on a REVEAL board (never re-stamped by the
+// series) still turned into a WILD at the next magnetActivated: with the event's coordinates
+// stale, the fallback lit up every flagged cell and markMagnetPositions renamed them all.
 const updateCellRaw = (cell: BoardCell, raw: RawSymbol) => {
+	const isDevice = isWildDeviceName(raw.name);
 	cell.name = raw.name;
 	cell.multiplier = raw.multiplier;
 	cell.scatter = raw.scatter;
-	cell.magnet = raw.magnet || raw.name === 'MAGNET';
+	cell.magnet = raw.name === 'MAGNET' || (isDevice && !!raw.magnet);
 	cell.polarity = raw.polarity || raw.name === 'POLARITY';
-	cell.wild = raw.wild && !cell.magnet;
+	cell.wild = isDevice && !cell.magnet;
+};
+
+// Math's raw wild/magnet flags on PAY symbols are ignored by updateCellRaw rather than drawing a
+// board of magnets — but they are still worth seeing in the console, because they mean the payload
+// and the renderer disagree. Both raw-board entry points report: the instant settle (polarityShift)
+// and the reveal drop.
+const warnFlaggedPaySymbols = (rawBoard: RawSymbol[][], source: 'settle' | 'reveal') => {
+	const flaggedPaySymbols = rawBoard.flatMap((reel, ri) =>
+		reel.flatMap((raw, rowi) =>
+			(raw.wild || raw.magnet) && !isWildDeviceName(raw.name)
+				? [{ position: `${ri}:${rowi}`, name: raw.name, wild: !!raw.wild, magnet: !!raw.magnet }]
+				: [],
+		),
+	);
+	if (flaggedPaySymbols.length)
+		logMagneticDiagnostic('warn', 'raw_board_flags_on_pay_symbol', { source, flaggedPaySymbols });
 };
 
 // Whether a cell inside a cluster keeps its wild lockup instead of being stamped with the
@@ -237,7 +268,7 @@ const updateCellRaw = (cell: BoardCell, raw: RawSymbol) => {
 //
 // A genuine wild always arrives named WILD (markMagnetPositions, and math's own wild/multiplier-
 // wild cells), so nothing that should stay wild stops staying wild.
-const shouldKeepWildInCluster = (cell: RawSymbol) => cell.name === 'WILD' || cell.name === 'MAGNET';
+const shouldKeepWildInCluster = (cell: RawSymbol) => isWildDeviceName(cell.name);
 
 // `highlighted` OUTRANKS `locked`. It used to be the other way round, which made a stacked cell
 // unable to ever show its win animation: animateWinningPositions sets symbolState = 'win' directly,
@@ -743,9 +774,9 @@ const playLandSound = (raw: RawSymbol) => {
 		eventEmitter.broadcast({ type: 'soundOnce', name: SCATTER_LAND_SOUND_MAP[scatterLandIndex()] });
 	}
 	// The wild itself landing, distinct from the pull it goes on to trigger (sfx_magnet_pull) and
-	// from each subsequent addition to the chain (sfx_chain_grow). `magnet` covers pay symbols the
-	// board has turned magnetic; `name` covers a literal WILD/MAGNET drop.
-	if (raw.magnet || raw.name === 'WILD' || raw.name === 'MAGNET') {
+	// from each subsequent addition to the chain (sfx_chain_grow). By NAME: a pay symbol carrying
+	// math's `magnet` membership marker is not a wild landing (see updateCellRaw).
+	if (isWildDeviceName(raw.name)) {
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_wild_land' });
 	}
 	if (raw.multiplier && raw.multiplier > 1) {
@@ -1441,18 +1472,7 @@ const settleBoardInstant = ({
 		}
 		stateGame.spinBoard[ri].setSymbolsWithRawSymbols(makeSpinSymbols(rawBoard[ri]));
 	}
-	// The only place math's raw wild/magnet flags reach the board mid-round. If they ride along on
-	// pay symbols, the rules above now ignore them rather than drawing 49 magnets — but it is still
-	// worth seeing in the console, because it means the payload and the renderer disagree.
-	const flaggedPaySymbols = rawBoard.flatMap((reel, ri) =>
-		reel.flatMap((raw, rowi) =>
-			(raw.wild || raw.magnet) && raw.name !== 'WILD' && raw.name !== 'MAGNET'
-				? [{ position: `${ri}:${rowi}`, name: raw.name, wild: !!raw.wild, magnet: !!raw.magnet }]
-				: [],
-		),
-	);
-	if (flaggedPaySymbols.length)
-		logMagneticDiagnostic('warn', 'raw_board_flags_on_pay_symbol', { flaggedPaySymbols });
+	warnFlaggedPaySymbols(rawBoard, 'settle');
 	applySeriesDecorations({ board: stateGame.board, series, magnetTargetSymbol });
 	stateGame.boardSpinning = false;
 	stateGame.boardMode = 'settle';
@@ -1641,6 +1661,7 @@ const animateReveal = async ({
 }) => {
 	stateGame.gameType = gameType;
 	stateGame.boardSpinning = true;
+	warnFlaggedPaySymbols(rawBoard, 'reveal');
 
 	const isRespin = stateGame.nextRevealMode === 'respin';
 	const previousScatterKeys = new Set(
