@@ -3,7 +3,7 @@
 	import { Container, Sprite } from 'pixi-svelte';
 
 	import AnimatedSymbol from './AnimatedSymbol.svelte';
-	import { SYMBOL_PARTS } from '../game/symbolParts';
+	import { H1_ASSEMBLE } from '../game/symbolParts';
 
 	// The tier win-pad, re-assembled from separate layers so it can ANIMATE (the baked pad art was a
 	// single flat image). Sequence: the banner + title + stars pop in first ("the win"), then the two
@@ -83,19 +83,17 @@
 		const s = winS * titleBreathe;
 		const title: L = { id: 'title', key: titleKey, x: 0, y: -0.03 * w * winS, w: titleW * w * s, h: (titleW * w / titleAR) * s, a: winA };
 
-		// Real burger symbol, BEHIND the plaque (drawn first) so it peeks over the top of the banner /
-		// title rather than sitting in front. Sized bigger than a board symbol; pops ONCE (separate →
-		// reassemble) then rests.
-		const burger = { x: 0, y: -0.205 * w * winS, scale: 1.45 * winS, winning: elapsed > 60 && elapsed < 1500 };
+		// Real burger symbol, BEHIND the plaque (drawn first) so it peeks over the top of the banner.
+		// It ASSEMBLES slice-by-slice (H1_ASSEMBLE land one-shot) then hands over to the board's dancing
+		// idle (winning loop). Fixed size — the assemble is its entrance, not the group pop.
+		const burger = { x: 0, y: -0.205 * w, scale: 1.5, winning: true };
 		return { back, title, burger };
 	});
 </script>
 
 <Container>
-	<!-- Burger symbol BEHIND the plaque (peeks over the banner's top edge), pops once on show. -->
-	{#if anim.burger.scale > 0.01}
-		<AnimatedSymbol config={SYMBOL_PARTS.H1} x={anim.burger.x} y={anim.burger.y} scale={anim.burger.scale} winning={anim.burger.winning} />
-	{/if}
+	<!-- Burger BEHIND the plaque: assembles slice-by-slice, then dances (H1 idle loop). -->
+	<AnimatedSymbol config={H1_ASSEMBLE} x={anim.burger.x} y={anim.burger.y} scale={anim.burger.scale} state="land" winning={anim.burger.winning} />
 	{#each anim.back as l (l.id)}
 		<Sprite key={l.key} x={l.x} y={l.y} anchor={0.5} width={l.w} height={l.h} alpha={l.a} />
 	{/each}

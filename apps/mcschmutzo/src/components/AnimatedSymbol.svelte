@@ -81,7 +81,7 @@
 	// Land one-shot (opt-in via config.landAnim, e.g. the wild): each layer scales in from 0 with a
 	// slight overshoot at its own `landDelay`, so the parts arrive in sequence (splat first, then
 	// text). Runs once per landing, independent of the win/lock loop, then hands back to rest/loop.
-	const LAND_MS = 800;
+	const LAND_MS = $derived(props.config.landMs ?? 800);
 	let landStart = $state(-1);
 	let landClock = $state(0);
 	// $effect.pre so this runs BEFORE the oncomplete $effect above, which flips the momentary 'land'
@@ -143,7 +143,9 @@
 					id: l.key,
 					key: l.key,
 					x: cx + (l.nx - 0.5) * w,
-					y: cy + (l.ny - 0.5) * h,
+					// Fall in from above: start `landDrop` of the height up and drop onto the stack as it
+					// scales in (decelerating), so each slice reads as splatting into place.
+					y: cy + (l.ny - 0.5) * h - (props.config.landDrop ?? 0) * h * (1 - local) ** 1.6,
 					width: l.nw * w * s,
 					height: l.nh * h * s,
 					rotation: 0,

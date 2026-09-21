@@ -33,6 +33,11 @@ export type SymbolPartsConfig = {
 	// When set, the symbol plays a one-shot on landing: each layer scales in (0 → overshoot → 1) at
 	// its own `landDelay`, so e.g. the wild's red splat splashes in first, then the WILD text pops.
 	landAnim?: boolean;
+	// Land one-shot tuning: `landMs` overrides the 800ms default (a multi-piece assemble needs longer),
+	// and `landDrop` makes each piece FALL into place from this fraction of the symbol height above its
+	// rest spot as it scales in — the burger stacks bottom-to-top, each slice splatting onto the last.
+	landMs?: number;
+	landDrop?: number;
 	// Alive at rest: keep the loop running (slower) whenever the symbol sits on the board, at this
 	// fraction of the win/lock amplitude. Special symbols (wild, scatter) use it so they never read
 	// as static tiles between spins.
@@ -303,4 +308,17 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		squash: 0.09,
 		layers: [{ key: 'mcH4', nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.02 }],
 	},
+};
+
+// Win-pad burger: the SAME burger parts as the board's H1, but it ASSEMBLES on show — each slice
+// falls in and splats onto the one below (bottom bun → patty → cheese → onion → tomato → lettuce →
+// top bun, staggered), then hands over to H1's normal separate-and-reassemble "dance" loop. Kept
+// separate from H1 so the board symbol is unaffected.
+const ASSEMBLE_DELAYS = [0, 0.12, 0.24, 0.36, 0.48, 0.6, 0.74];
+export const H1_ASSEMBLE: SymbolPartsConfig = {
+	...SYMBOL_PARTS.H1,
+	landAnim: true,
+	landMs: 1500,
+	landDrop: 0.6,
+	layers: SYMBOL_PARTS.H1.layers.map((l, i) => ({ ...l, landDelay: ASSEMBLE_DELAYS[i] ?? 0.8 })),
 };
