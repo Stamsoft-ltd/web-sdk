@@ -65,7 +65,7 @@ export default {
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': 'CHÀO MỪNG ĐẾN SCHMUTZO',
 	'SPLASH C1 BODY': 'Ánh đèn rực rỡ, những trò chơi cảm giác mạnh và bất ngờ lớn ở mọi ngóc ngách.',
-	'SPLASH C2 TITLE': '3 Bonus Độc Đáo',
+	'SPLASH C2 TITLE': '3\nBonus\nĐộc Đáo',
 	'SPLASH C2 BODY 1': 'Chọn Vịt',
 	'SPLASH C2 BODY 2': 'Cưỡi Wilds',
 	'SPLASH C2 BODY 3': 'Sống Sót Tàu Lượn',

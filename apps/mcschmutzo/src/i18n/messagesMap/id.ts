@@ -65,7 +65,7 @@ export default {
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': 'SELAMAT DATANG DI SCHMUTZO',
 	'SPLASH C1 BODY': 'Lampu terang, wahana liar, dan kejutan besar di setiap sudut.',
-	'SPLASH C2 TITLE': '3 Bonus Unik',
+	'SPLASH C2 TITLE': '3\nBonus\nUnik',
 	'SPLASH C2 BODY 1': 'Pilih Bebeknya',
 	'SPLASH C2 BODY 2': 'Tunggangi Wilds',
 	'SPLASH C2 BODY 3': 'Bertahan di Roller Coaster',

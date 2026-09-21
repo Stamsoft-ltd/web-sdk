@@ -65,7 +65,7 @@ export default {
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': 'TERVETULOA SCHMUTZOON',
 	'SPLASH C1 BODY': 'Kirkkaat valot, villit laitteet ja suuret yllätykset joka nurkan takana.',
-	'SPLASH C2 TITLE': '3 Ainutlaatuista Bonusta',
+	'SPLASH C2 TITLE': '3\nAinutlaatuista\nBonusta',
 	'SPLASH C2 BODY 1': 'Poimi ankat',
 	'SPLASH C2 BODY 2': 'Ratsasta Wildeillä',
 	'SPLASH C2 BODY 3': 'Selviä vuoristoradasta',

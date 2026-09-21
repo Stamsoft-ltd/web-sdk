@@ -5,6 +5,12 @@
 	import { getContext } from '../game/context';
 	import SpecialMascot from './SpecialMascot.svelte';
 
+	type Props = {
+		/** False while the loading screen / splash is up: only the dark backdrop renders. */
+		showArt?: boolean;
+	};
+	const { showArt = true }: Props = $props();
+
 	const context = getContext();
 	const aspect = 1678 / 937;
 	// Portrait diner background (mobile-bg): its own 9:16-ish raster, cover-scaled to the phone.
@@ -53,7 +59,9 @@
 </script>
 
 <Rectangle {...canvas} backgroundColor={0x170905} zIndex={-3} />
-{#if isLandscape}
+{#if !showArt}
+	<!-- Loading / splash: nothing but the backdrop (the art below would show through). -->
+{:else if isLandscape}
 	<!-- Mobile-landscape: the real full diner (cover-scaled) for the base game, swapping to the
 	     dedicated wide grey-kitchen crop for free games. No chef in landscape (design ask). -->
 	<Sprite
@@ -90,7 +98,7 @@
 	/>
 	<Rectangle {...canvas} backgroundColor={0x180903} alpha={0.16} zIndex={-1} />
 {/if}
-{#if showMascot}
+{#if showArt && showMascot}
 	<!-- Original art with the eyes baked in — no more separate pupils (the eye animation was removed,
 	     and the re-placed pupils sat slightly off). -->
 	<Sprite
@@ -103,6 +111,6 @@
 		zIndex={0}
 	/>
 {/if}
-{#if showSpecialMascot}
+{#if showArt && showSpecialMascot}
 	<SpecialMascot />
 {/if}

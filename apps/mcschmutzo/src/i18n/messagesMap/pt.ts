@@ -65,7 +65,7 @@ export default {
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': 'BEM-VINDO AO SCHMUTZO',
 	'SPLASH C1 BODY': 'Luzes brilhantes, brinquedos radicais e grandes surpresas a cada esquina.',
-	'SPLASH C2 TITLE': '3 Bônus Únicos',
+	'SPLASH C2 TITLE': '3\nBônus\nÚnicos',
 	'SPLASH C2 BODY 1': 'Escolha os Patos',
 	'SPLASH C2 BODY 2': 'Domine os Wilds',
 	'SPLASH C2 BODY 3': 'Sobreviva à Montanha-Russa',

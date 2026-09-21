@@ -65,7 +65,7 @@ export default {
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': '슈무초에 오신 것을 환영합니다',
 	'SPLASH C1 BODY': '밝은 조명, 짜릿한 놀이기구, 그리고 모퉁이마다 기다리는 큰 서프라이즈.',
-	'SPLASH C2 TITLE': '3가지 특별 보너스',
+	'SPLASH C2 TITLE': '3가지\n특별\n보너스',
 	'SPLASH C2 BODY 1': '오리를 골라라',
 	'SPLASH C2 BODY 2': '와일드를 타라',
 	'SPLASH C2 BODY 3': '코스터에서 살아남아라',

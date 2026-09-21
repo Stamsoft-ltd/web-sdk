@@ -51,7 +51,7 @@ export default {
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	"SPLASH C1 TITLE": "VELKOMMEN TIL SCHMUTZO",
 	"SPLASH C1 BODY": "Skarpe lys, vilde forlystelser og store overraskelser rundt om hvert hjørne.",
-	"SPLASH C2 TITLE": "3 Unikke Bonusser",
+	"SPLASH C2 TITLE": "3\nUnikke\nBonusser",
 	"SPLASH C2 BODY 1": "Vælg Ænderne",
 	"SPLASH C2 BODY 2": "Rid på Wilds",
 	"SPLASH C2 BODY 3": "Overlev Rutsjebanen",

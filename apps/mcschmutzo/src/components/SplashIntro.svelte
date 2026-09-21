@@ -45,7 +45,10 @@
 		if (typeof document !== 'undefined' && document.fonts) {
 			try {
 				const c = getComputedStyle(node);
-				document.fonts.load(`${c.fontStyle} ${c.fontWeight} 40px ${c.fontFamily}`).then(schedule).catch(() => {});
+				document.fonts
+					.load(`${c.fontStyle} ${c.fontWeight} 40px ${c.fontFamily}`)
+					.then(schedule)
+					.catch(() => {});
 			} catch {
 				/* ignore an unparseable font shorthand — the timers below still cover the swap */
 			}
@@ -65,11 +68,74 @@
 	// New desktop (wide) diner background; portrait/mobile keeps `bg` until the mobile art is supplied.
 	const bgDesktop = ap('/assets/mcschmutzo/splash/bg-desktop.webp');
 	const logo = ap('/assets/mcschmutzo/splash/logo.svg');
-	const man = ap('/assets/mcschmutzo/splash/man.webp');
+	/** Percent of a box dimension, for laying art-pixel geometry over fluid-sized layers. */
+	const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
+
+	// The chef is layered so his face and hand can move: base (pupils/brows/bottle cut out and the
+	// art under them patched), the two brows, and the ketchup bottle + hand. Pupils and eyelids are
+	// drawn in CSS. Geometry below is in the art's own 480×900 px (see man_cut.py in the session's
+	// scratchpad for how the pieces were cut).
+	const manBase = ap('/assets/mcschmutzo/splash/man-base.webp');
+	const manBrowL = ap('/assets/mcschmutzo/splash/man-brow-l.webp');
+	const manBrowR = ap('/assets/mcschmutzo/splash/man-brow-r.webp');
+	const manBottle = ap('/assets/mcschmutzo/splash/man-bottle.webp');
+	const MAN_W = 480;
+	const MAN_H = 900;
+	type Box = [number, number, number, number];
+	const MAN = {
+		browL: [128, 194, 226, 250] as Box,
+		browR: [244, 201, 305, 250] as Box,
+		pupilL: [142, 248, 172, 280] as Box,
+		pupilR: [242, 257, 264, 288] as Box,
+		// Eye openings (outline bbox): the lids are clipped to these so a blink never paints outside the eye.
+		eyeL: [136, 224, 202, 292] as Box,
+		eyeR: [237, 240, 282, 295] as Box,
+		bottle: [287, 320, 480, 729] as Box,
+		bottlePivot: [446, 612] as [number, number],
+		skin: '#e39c5d', // face skin right around the eyes (lid colour)
+	};
+	const manBox = ([x0, y0, x1, y1]: Box) =>
+		`left:${pct(x0, MAN_W)};top:${pct(y0, MAN_H)};width:${pct(x1 - x0, MAN_W)};height:${pct(y1 - y0, MAN_H)};`;
+	const bottleStyle =
+		manBox(MAN.bottle) +
+		`transform-origin:${pct(MAN.bottlePivot[0] - MAN.bottle[0], MAN.bottle[2] - MAN.bottle[0])} ` +
+		`${pct(MAN.bottlePivot[1] - MAN.bottle[1], MAN.bottle[3] - MAN.bottle[1])};`;
 	const pressPlay = ap('/assets/mcschmutzo/press-play.svg');
+	// Card frames are now drip-FREE (the drip was cut out of the original art: clean frame = the
+	// frame's own right corner mirrored over the left, drip = the difference). Each drip is a
+	// full-card-size layer (drip-*.webp, same 470×690 box) so it lines up with the frame at any size.
 	const cardRed = ap('/assets/mcschmutzo/splash/card-red.webp');
 	const cardYellow = ap('/assets/mcschmutzo/splash/card-yellow.webp');
 	const cardGreen = ap('/assets/mcschmutzo/splash/card-green.webp');
+	const dripRed = ap('/assets/mcschmutzo/splash/drip-red.webp');
+	const dripYellow = ap('/assets/mcschmutzo/splash/drip-yellow.webp');
+	const dripGreen = ap('/assets/mcschmutzo/splash/drip-green.webp');
+
+	// Live sauce: the drip renders as three copies of the same layer — the cap, plus the two long
+	// hanging tendrils, each clipped to its own column below a `cut` row (chosen just under the sauce
+	// valleys on either side, so the column holds nothing but that tendril) and stretched from that
+	// row on its own phase. Because the cut row is the transform origin it never moves → no seam.
+	// Columns/cuts are measured on the 470×690 art (px); cx is the tendril's centre for the squeeze.
+	type Tendril = { x0: number; x1: number; cut: number; cx: number };
+	const ART_W = 470;
+	const ART_H = 690;
+	// The tendril clip overlaps the cap by a few source px (OVERLAP) — with both clip edges on the
+	// same pixel row their anti-aliased halves summed to a visible hairline. The origin stays on
+	// the cut row, so the overlapping rows above it move by a sub-pixel at most.
+	const OVERLAP = 3;
+	const tendrilStyle = (t: Tendril) =>
+		`clip-path:inset(${pct(t.cut - OVERLAP, ART_H)} ${pct(ART_W - t.x1 - OVERLAP, ART_W)} 0 ${pct(Math.max(0, t.x0 - OVERLAP), ART_W)});` +
+		`transform-origin:${pct(t.cx, ART_W)} ${pct(t.cut, ART_H)};`;
+	// The cap = everything except the two tendril rectangles (a comb-shaped polygon).
+	const capStyle = (a: Tendril, b: Tendril) => {
+		const [l, r] = a.x0 <= b.x0 ? [a, b] : [b, a];
+		const P = (x: number, y: number) => `${pct(x, ART_W)} ${pct(y, ART_H)}`;
+		return (
+			`clip-path:polygon(${P(0, 0)},${P(ART_W, 0)},${P(ART_W, ART_H)},` +
+			`${P(r.x1, ART_H)},${P(r.x1, r.cut)},${P(r.x0, r.cut)},${P(r.x0, ART_H)},` +
+			`${P(l.x1, ART_H)},${P(l.x1, l.cut)},${P(l.x0, l.cut)},${P(l.x0, ART_H)},${P(0, ART_H)});`
+		);
+	};
 
 	// Each card = an empty drip frame + HTML copy (so the text stays editable / localizable).
 	// `pad` is the interior inset per frame — the red frame carries a baked drop-shadow margin, so it
@@ -79,18 +145,39 @@
 		{
 			cls: 'card--red',
 			art: cardRed,
+			drip: dripRed,
+			tendrils: [
+				{ x0: 0, x1: 63, cut: 84, cx: 44 },
+				{ x0: 76, x1: 110, cut: 77, cx: 93 },
+			] as [Tendril, Tendril],
+			// Where the long tendril ends (art px) — the drop forms here.
+			tip: { x: 42, y: 152 },
 			title: 'SPLASH C1 TITLE',
 			body: ['SPLASH C1 BODY'],
 		},
 		{
 			cls: 'card--yellow',
 			art: cardYellow,
+			drip: dripYellow,
+			tendrils: [
+				{ x0: 0, x1: 58, cut: 75, cx: 36 },
+				{ x0: 59, x1: 98, cut: 72, cx: 84 },
+			] as [Tendril, Tendril],
+			// Where the long tendril ends (art px) — the drop forms here.
+			tip: { x: 39, y: 136 },
 			title: 'SPLASH C2 TITLE',
 			body: ['SPLASH C2 BODY 1', 'SPLASH C2 BODY 2', 'SPLASH C2 BODY 3'],
 		},
 		{
 			cls: 'card--green',
 			art: cardGreen,
+			drip: dripGreen,
+			tendrils: [
+				{ x0: 0, x1: 54, cut: 79, cx: 33 },
+				{ x0: 54, x1: 114, cut: 80, cx: 96 },
+			] as [Tendril, Tendril],
+			// Where the long tendril ends (art px) — the drop forms here.
+			tip: { x: 33, y: 155 },
 			title: 'SPLASH C3 TITLE',
 			body: ['SPLASH C3 BODY'],
 		},
@@ -131,12 +218,38 @@
 >
 	<div class="stage" style={`--sbg-desktop:url('${bgDesktop}');--sbg-mobile:url('${bg}')`}>
 		<img class="logo" src={logo} alt="McSchmutzo" draggable="false" />
-		<img class="man" src={man} alt="" draggable="false" />
+		<div class="man" style={`--skin:${MAN.skin}`}>
+			<img class="man-base" src={manBase} alt="" draggable="false" />
+			<div class="brow brow--l" style={manBox(MAN.browL)}>
+				<img src={manBrowL} alt="" draggable="false" />
+			</div>
+			<div class="brow brow--r" style={manBox(MAN.browR)}>
+				<img src={manBrowR} alt="" draggable="false" />
+			</div>
+			<div class="pupil" style={manBox(MAN.pupilL)}><span class="glint"></span></div>
+			<div class="pupil" style={manBox(MAN.pupilR)}><span class="glint"></span></div>
+			<div class="eye" style={manBox(MAN.eyeL)}><div class="lid"></div></div>
+			<div class="eye" style={manBox(MAN.eyeR)}><div class="lid"></div></div>
+			<div class="bottle" style={bottleStyle}><img src={manBottle} alt="" draggable="false" /></div>
+		</div>
 		<!-- Mobile only: replaces the logo + character with the Press Play wordmark. -->
 		<img class="pp-mark" src={pressPlay} alt="Press Play" draggable="false" />
 
 		{#snippet cardEl(card: (typeof CARDS)[number])}
 			<div class="card {card.cls}" style={`background-image:url('${card.art}')`}>
+				<!-- Sauce drip: cap + two independently oozing tendrils (same image, clipped). Sits under
+				     the copy like the old baked-in drip did. -->
+				<div class="drip-wrap" style={`--drip:url('${card.drip}')`}>
+					<div class="drip drip--cap" style={capStyle(card.tendrils[0], card.tendrils[1])}></div>
+					<div class="drip drip--t drip--t1" style={tendrilStyle(card.tendrils[0])}></div>
+					<div class="drip drip--t drip--t2" style={tendrilStyle(card.tendrils[1])}></div>
+					<!-- The drop: swells at the long tendril's tip while it stretches, lets go, runs down
+					     the card (behind the copy) and fades. Drawn in CSS in the card's sauce colour. -->
+					<div
+						class="drop"
+						style={`left:${pct(card.tip.x, ART_W)};top:${pct(card.tip.y, ART_H)};`}
+					></div>
+				</div>
 				<div class="card-inner">
 					<h3 class="card-title" use:fitFont={i18nDerived.translate(card.title)}>
 						{i18nDerived.translate(card.title)}
@@ -207,6 +320,8 @@
 		height: auto;
 		object-fit: contain;
 		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+		/* Entrance: drops in from above the stage (see the card sweeps below). */
+		animation: logo-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
 
 	.man {
@@ -214,8 +329,67 @@
 		left: 0.5%;
 		bottom: 0;
 		height: 63%;
-		width: auto;
-		object-fit: contain;
+		aspect-ratio: 480 / 900;
+		/* Alive: a slow breath on the whole figure; the eyes glance around and blink, the brows lift,
+		   and the ketchup bottle gets a little shake — each its own layer (see the script constants). */
+		transform-origin: 50% 100%;
+		animation: chef-breathe 3.4s ease-in-out infinite alternate;
+	}
+	.man-base,
+	.brow img,
+	.bottle img {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+	.man-base {
+		position: absolute;
+		inset: 0;
+	}
+	.brow,
+	.pupil,
+	.eye,
+	.bottle {
+		position: absolute;
+	}
+	.brow {
+		animation: brow-raise 7s ease-in-out infinite;
+	}
+	.brow--r {
+		animation-delay: 0.08s;
+	}
+	/* Pupils: dark disc + a glint, sitting where the erased ones were; they dart around now and then. */
+	.pupil {
+		border-radius: 50%;
+		background: radial-gradient(circle at 50% 50%, #1a1512 0 62%, #0d0a08 100%);
+		animation: eyes-look 9s ease-in-out infinite;
+	}
+	.pupil .glint {
+		position: absolute;
+		left: 28%;
+		top: 20%;
+		width: 34%;
+		height: 32%;
+		border-radius: 50%;
+		background: #fff;
+	}
+	/* Eyelids: each eye opening is a clipped ellipse and its skin-coloured lid slides down inside it
+	   for a blink — mid-blink it reads as a lid over the eye, never as a bar on the forehead. */
+	.eye {
+		border-radius: 50%;
+		overflow: hidden;
+		pointer-events: none;
+	}
+	.lid {
+		position: absolute;
+		inset: 0;
+		background: var(--skin);
+		box-shadow: inset 0 -2px 0 #2b1a10;
+		transform: translateY(-101%);
+		animation: eyes-blink 5.5s linear infinite;
+	}
+	.bottle {
+		animation: bottle-shake 6s ease-in-out infinite;
 	}
 
 	/* Press Play wordmark — mobile only (see portrait media query); hidden on desktop. */
@@ -249,6 +423,88 @@
 		/* Each card is its own query container so the copy scales with the card in ANY orientation
 		   (on portrait the row shrinks the cards, and the text has to follow). */
 		container-type: size;
+		/* Entrance choreography: the cards fly in from three sides — left card from the left, right
+		   card from the right, centre card up from the bottom — while the logo drops in from the top.
+		   Both flat rows keep the position rules above (transform is only used by the entrance). */
+		animation: card-in-bottom 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+		animation-delay: 0.1s;
+	}
+	.cards:not(.cards--single) .card:nth-child(1) {
+		animation-name: card-in-left;
+	}
+	.cards:not(.cards--single) .card:nth-child(3) {
+		animation-name: card-in-right;
+	}
+
+	/* Sauce layers: every copy fills the card box exactly like the frame, so the drip lands where it
+	   was baked in. The wrap sags as a whole (slow), the tendrils ooze on top of that. */
+	.drip-wrap {
+		position: absolute;
+		inset: 0;
+		transform-origin: 0 0;
+		animation: sauce-sag 6.5s ease-in-out infinite alternate;
+	}
+	.drip {
+		position: absolute;
+		inset: 0;
+		background: var(--drip) center / 100% 100% no-repeat;
+		will-change: transform;
+	}
+	/* The long tendril and its drop share one cycle (--cycle/--phase, per card) so the drop lets go
+	   exactly when the tendril is at full stretch and the sauce recoils. */
+	.drip--t1 {
+		animation: sauce-drip var(--cycle) ease-in-out infinite;
+		animation-delay: var(--phase);
+	}
+	.drip--t2 {
+		animation: sauce-ooze 4.8s ease-in-out infinite;
+		animation-delay: calc(var(--phase) - 1.7s);
+	}
+	.drop {
+		position: absolute;
+		width: 4.2cqw;
+		height: 5.4cqw;
+		/* Top edge sits inside the tendril tip so it reads as attached while it swells. */
+		margin-top: -3cqw;
+		border-radius: 50% 50% 50% 50% / 42% 42% 58% 58%;
+		background: radial-gradient(
+			ellipse at 36% 28%,
+			var(--sauce-hi) 0%,
+			var(--sauce) 38%,
+			var(--sauce-dk) 100%
+		);
+		transform: translate(-50%, 0) scale(0);
+		animation: sauce-drop var(--cycle) linear infinite;
+		animation-delay: var(--phase);
+		will-change: transform, opacity;
+	}
+	/* Each card gets its own cycle length + phase so the three never pulse in unison. */
+	.card--red {
+		--cycle: 6.4s;
+		--phase: -1s;
+		--sauce: #e11105;
+		--sauce-hi: #ff9d8a;
+		--sauce-dk: #890702;
+	}
+	.card--yellow {
+		--cycle: 7.3s;
+		--phase: -4.2s;
+		--sauce: #fbcb07;
+		--sauce-hi: #fff0b0;
+		--sauce-dk: #a86a06;
+	}
+	.card--green {
+		--cycle: 8.1s;
+		--phase: -6.6s;
+		--sauce: #8ccc18;
+		--sauce-hi: #e2f9a6;
+		--sauce-dk: #4a6f06;
+	}
+	.card--yellow .drip-wrap {
+		animation-delay: -2.2s;
+	}
+	.card--green .drip-wrap {
+		animation-delay: -4.4s;
 	}
 
 	/* Copy sits inside the cream interior; insets tuned per frame (red carries the shadow margin). */
@@ -273,6 +529,8 @@
 	.card-title {
 		margin: 0;
 		max-width: 100%;
+		/* Titles may carry explicit line breaks (card 2: the number on its own line, as designed). */
+		white-space: pre-line;
 		/* A big base size (matches the design); the `fitFont` action multiplies it by `--fit` (≤1) per
 		   card so long localized words (fi "AINUTLAATUISTA", de "EINZIGARTIGE", tr) shrink to fit the
 		   frame — reflowing (so they stay centred) instead of breaking mid-word or spilling past it. */
@@ -404,6 +662,184 @@
 		.press-label {
 			bottom: 3%;
 			font-size: clamp(12px, 4.2vw, 20px);
+		}
+	}
+
+	/* Offsets are in stage container units (cqw/cqh of `.stage`), so every start point is fully
+	   off-screen at any viewport size. */
+	@keyframes card-in-left {
+		from {
+			transform: translateX(-90cqw);
+		}
+		to {
+			transform: translateX(0);
+		}
+	}
+	@keyframes card-in-right {
+		from {
+			transform: translateX(90cqw);
+		}
+		to {
+			transform: translateX(0);
+		}
+	}
+	@keyframes card-in-bottom {
+		from {
+			transform: translateY(110cqh);
+		}
+		to {
+			transform: translateY(0);
+		}
+	}
+	@keyframes logo-in {
+		from {
+			transform: translate(-50%, -70cqh);
+		}
+		to {
+			transform: translate(-50%, 0);
+		}
+	}
+
+	/* A tendril slowly lengthens (and thins a touch, like sauce does), then eases back. */
+	@keyframes sauce-ooze {
+		0%,
+		100% {
+			transform: scale(1, 1);
+		}
+		55% {
+			transform: scale(0.955, 1.16);
+		}
+	}
+	/* The long tendril: stretches while the drop forms, lets go at 52%, recoils, settles. */
+	@keyframes sauce-drip {
+		0%,
+		78%,
+		100% {
+			transform: scale(1, 1);
+		}
+		44% {
+			transform: scale(0.95, 1.24);
+		}
+		52% {
+			transform: scale(0.94, 1.28);
+		}
+		60% {
+			transform: scale(1.015, 0.985);
+		}
+	}
+	/* The drop: hidden → swells at the (moving) tip → detaches → falls behind the copy → fades. The
+	   tip travels ~2.6cqh at full stretch (0.28 × the tendril's stretched rows on the art). */
+	@keyframes sauce-drop {
+		0%,
+		34% {
+			transform: translate(-50%, 0) scale(0);
+			opacity: 1;
+			animation-timing-function: ease-out;
+		}
+		46% {
+			transform: translate(-50%, 1.9cqh) scale(0.7);
+			animation-timing-function: ease-in-out;
+		}
+		52% {
+			transform: translate(-50%, 2.6cqh) scale(1);
+			animation-timing-function: ease-in;
+		}
+		56% {
+			transform: translate(-50%, 4cqh) scale(1.02, 1.18);
+			animation-timing-function: cubic-bezier(0.5, 0, 0.85, 0.4);
+		}
+		80% {
+			transform: translate(-50%, 48cqh) scale(0.88, 1.28);
+			opacity: 1;
+			animation-timing-function: linear;
+		}
+		85% {
+			transform: translate(-50%, 56cqh) scale(0.85, 1.25);
+			opacity: 0;
+		}
+		100% {
+			transform: translate(-50%, 56cqh) scale(0);
+			opacity: 0;
+		}
+	}
+	@keyframes sauce-sag {
+		from {
+			transform: scaleY(1);
+		}
+		to {
+			transform: scaleY(1.02);
+		}
+	}
+	@keyframes brow-raise {
+		0%,
+		58%,
+		88%,
+		100% {
+			transform: translateY(0);
+		}
+		64%,
+		80% {
+			transform: translateY(-10%);
+		}
+	}
+	@keyframes eyes-look {
+		0%,
+		38%,
+		78%,
+		100% {
+			transform: translate(0, 0);
+		}
+		41%,
+		56% {
+			transform: translate(-13%, 5%);
+		}
+		59%,
+		75% {
+			transform: translate(11%, -3%);
+		}
+	}
+	@keyframes eyes-blink {
+		0%,
+		90%,
+		100% {
+			transform: translateY(-101%);
+		}
+		92.5% {
+			transform: translateY(0);
+		}
+		95% {
+			transform: translateY(-101%);
+		}
+	}
+	@keyframes bottle-shake {
+		0%,
+		48%,
+		66%,
+		100% {
+			transform: rotate(0deg);
+		}
+		51% {
+			transform: rotate(-3.2deg);
+		}
+		54% {
+			transform: rotate(2.6deg);
+		}
+		57% {
+			transform: rotate(-2deg);
+		}
+		60% {
+			transform: rotate(1.2deg);
+		}
+		63% {
+			transform: rotate(-0.5deg);
+		}
+	}
+	@keyframes chef-breathe {
+		from {
+			scale: 1 1;
+		}
+		to {
+			scale: 1.008 1.018;
 		}
 	}
 

@@ -52,7 +52,7 @@ export default {
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': 'WELCOME TO SCHMUTZO',
 	'SPLASH C1 BODY': 'Bright lights, wild rides and big surprises around every corner.',
-	'SPLASH C2 TITLE': '3 UNIQUE BONUSES',
+	'SPLASH C2 TITLE': '3\nUNIQUE\nBONUSES',
 	'SPLASH C2 BODY 1': 'Pick the Ducks',
 	'SPLASH C2 BODY 2': 'Ride the Wilds',
 	'SPLASH C2 BODY 3': 'Survive the Coaster',

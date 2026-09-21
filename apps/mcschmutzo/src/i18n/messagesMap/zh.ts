@@ -65,7 +65,7 @@ export default {
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': '欢迎来到SCHMUTZO',
 	'SPLASH C1 BODY': '绚丽灯光、刺激游乐设施，处处都有大惊喜。',
-	'SPLASH C2 TITLE': '3 项独特奖励',
+	'SPLASH C2 TITLE': '3\n项独特奖励',
 	'SPLASH C2 BODY 1': '挑选小鸭',
 	'SPLASH C2 BODY 2': '驾驭百搭',
 	'SPLASH C2 BODY 3': '挺过过山车',

@@ -36,14 +36,18 @@
 	const w = $derived(h * props.config.aspect);
 
 	const PERIOD = 1400; // ms per loop cycle (out and back)
+	const PERIOD_IDLE = 2600; // slower, softer loop for symbols that are alive at rest (config.idle)
 	// Everything the layer math reads is $state so the render tracks the animation reliably.
 	let clock = $state(0); // rAF timestamp
 	let startTime = $state(-1); // when the active loop began (-1 = at rest)
 	let running = $state(false);
 
-	// Run the loop for as long as the symbol is active; stop (settle) when it isn't.
+	// Run the loop while the symbol is active — or, for idle-configured symbols, whenever it sits on
+	// the board (not mid-spin). Stop (settle) otherwise.
+	const idleAmp = $derived(props.config.idle ?? 0);
+	const shouldRun = $derived(!!props.winning || (idleAmp > 0 && props.state !== 'spin'));
 	$effect(() => {
-		if (props.winning) {
+		if (shouldRun) {
 			if (!running) {
 				startTime = performance.now();
 				clock = startTime;
@@ -52,6 +56,15 @@
 		} else if (running) {
 			running = false;
 			startTime = -1;
+		}
+	});
+	// Idle and win loops have different periods/amplitudes: restart the clock when switching so the
+	// phase doesn't jump.
+	$effect(() => {
+		props.winning;
+		if (running) {
+			startTime = performance.now();
+			clock = startTime;
 		}
 	});
 	$effect(() => {
@@ -94,9 +107,11 @@
 
 	const layers = $derived.by(() => {
 		const active = running && startTime >= 0;
-		const frac = active ? (((clock - startTime) / PERIOD) % 1) : 0;
-		// Smooth loop 0 → 1 → 0 with zero velocity at the seam (no jerk between cycles).
-		const env = active ? (1 - Math.cos(Math.PI * 2 * frac)) / 2 : 0;
+		const idle = active && !props.winning;
+		const frac = active ? ((clock - startTime) / (idle ? PERIOD_IDLE : PERIOD)) % 1 : 0;
+		// Smooth loop 0 → 1 → 0 with zero velocity at the seam (no jerk between cycles). The idle loop
+		// runs the same motion at a fraction of the amplitude.
+		const env = active ? ((1 - Math.cos(Math.PI * 2 * frac)) / 2) * (idle ? idleAmp : 1) : 0;
 		const theta = Math.PI * 2 * frac; // full turn per cycle — drives circular `orbit`
 		const sq = (props.config.squash ?? 0) * env;
 		const sqx = 1 - sq;

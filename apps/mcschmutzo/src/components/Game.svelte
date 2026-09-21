@@ -44,6 +44,11 @@
 	// runs the loading screen's proceed handler (transition → game).
 	let splashIntroVisible = $state(false);
 	let splashPressHandler = $state<(() => void) | undefined>(undefined);
+	// The pixi base-game art (diner bg + desktop chef on the right) must stay hidden under the
+	// loading screen / splash: its atlas lands mid-load and used to pop in behind the loader, then
+	// show through the splash's fade-in. It only appears once the splash is pressed, so the splash
+	// fades out onto the game background and the transition wipe takes over.
+	let splashPressed = $state(false);
 	const modeImage = './assets/mcschmutzo/background-base.png';
 	const symbolImage = (name: string) => `./assets/mcschmutzo/symbols/${name}.png`;
 
@@ -197,7 +202,7 @@
 			<EnableGameActor />
 			<EnablePixiExtension />
 
-			<Background />
+			<Background showArt={!context.stateLayout.showLoadingScreen || splashPressed} />
 
 			{#if context.stateLayout.showLoadingScreen}
 				<LoadingScreen
@@ -230,7 +235,9 @@
 			{/if}
 		</App>
 
-		{#if context.stateLayout.showLoadingScreen && !splashIntroVisible}
+		<!-- Loader chrome: only BEFORE the splash. After the press the loading screen stays mounted for
+		     the transition wipe, and these must not flash back in over the game background. -->
+		{#if context.stateLayout.showLoadingScreen && !splashIntroVisible && !splashPressed}
 			<img class="mcs-loading-logo" src={loadingLogo} alt="McSchmutzo" />
 			<img class="pp-loading-mark" src={pressPlayLogo} alt="Press Play" />
 		{/if}
@@ -239,6 +246,7 @@
 			<div transition:fade={{ duration: 350 }} style="position:absolute;inset:0;z-index:10;">
 				<SplashIntro
 					onpress={() => {
+						splashPressed = true;
 						splashIntroVisible = false;
 						splashPressHandler?.();
 					}}

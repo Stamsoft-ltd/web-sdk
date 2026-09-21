@@ -65,7 +65,7 @@ export default {
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
 	'SPLASH C1 TITLE': 'SCHMUTZO\'YA HOŞ GELDİN',
 	'SPLASH C1 BODY': 'Parlak ışıklar, çılgın gezintiler ve her köşede büyük sürprizler.',
-	'SPLASH C2 TITLE': '3 Eşsiz Bonus',
+	'SPLASH C2 TITLE': '3\nEşsiz\nBonus',
 	'SPLASH C2 BODY 1': 'Ördekleri Seç',
 	'SPLASH C2 BODY 2': 'Wild\'lara Bin',
 	'SPLASH C2 BODY 3': 'Hız Treninde Hayatta Kal',

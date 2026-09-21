@@ -33,6 +33,10 @@ export type SymbolPartsConfig = {
 	// When set, the symbol plays a one-shot on landing: each layer scales in (0 → overshoot → 1) at
 	// its own `landDelay`, so e.g. the wild's red splat splashes in first, then the WILD text pops.
 	landAnim?: boolean;
+	// Alive at rest: keep the loop running (slower) whenever the symbol sits on the board, at this
+	// fraction of the win/lock amplitude. Special symbols (wild, scatter) use it so they never read
+	// as static tiles between spins.
+	idle?: number;
 	layers: SymbolPartLayer[];
 };
 
@@ -79,13 +83,76 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		fit: 0.64,
 		squash: 0.03,
 		layers: [
-			{ key: 'burgerBunBottom', nx: 0.5, ny: 0.8587, nw: 0.9453, nh: 0.2826, dy: 0.2, dx: 0, rot: 0 },
-			{ key: 'burgerPatty', nx: 0.5, ny: 0.7389, nw: 1.0, nh: 0.3694, dy: 0.1, dx: -0.02, rot: -0.05 },
-			{ key: 'burgerCheese', nx: 0.5, ny: 0.662, nw: 0.9435, nh: 0.2786, dy: 0.03, dx: 0.03, rot: 0.06 },
-			{ key: 'burgerOnion', nx: 0.5, ny: 0.6191, nw: 0.7322, nh: 0.1847, dy: -0.03, dx: -0.05, rot: -0.08 },
-			{ key: 'burgerTomato', nx: 0.5, ny: 0.5921, nw: 0.8276, nh: 0.2327, dy: -0.09, dx: 0.04, rot: 0.07 },
-			{ key: 'burgerLettuce', nx: 0.5, ny: 0.5092, nw: 0.8981, nh: 0.2197, dy: -0.16, dx: -0.04, rot: -0.1 },
-			{ key: 'burgerBunTop', nx: 0.5, ny: 0.2396, nw: 0.9685, nh: 0.4793, dy: -0.26, dx: 0, rot: 0.05 },
+			{
+				key: 'burgerBunBottom',
+				nx: 0.5,
+				ny: 0.8587,
+				nw: 0.9453,
+				nh: 0.2826,
+				dy: 0.2,
+				dx: 0,
+				rot: 0,
+			},
+			{
+				key: 'burgerPatty',
+				nx: 0.5,
+				ny: 0.7389,
+				nw: 1.0,
+				nh: 0.3694,
+				dy: 0.1,
+				dx: -0.02,
+				rot: -0.05,
+			},
+			{
+				key: 'burgerCheese',
+				nx: 0.5,
+				ny: 0.662,
+				nw: 0.9435,
+				nh: 0.2786,
+				dy: 0.03,
+				dx: 0.03,
+				rot: 0.06,
+			},
+			{
+				key: 'burgerOnion',
+				nx: 0.5,
+				ny: 0.6191,
+				nw: 0.7322,
+				nh: 0.1847,
+				dy: -0.03,
+				dx: -0.05,
+				rot: -0.08,
+			},
+			{
+				key: 'burgerTomato',
+				nx: 0.5,
+				ny: 0.5921,
+				nw: 0.8276,
+				nh: 0.2327,
+				dy: -0.09,
+				dx: 0.04,
+				rot: 0.07,
+			},
+			{
+				key: 'burgerLettuce',
+				nx: 0.5,
+				ny: 0.5092,
+				nw: 0.8981,
+				nh: 0.2197,
+				dy: -0.16,
+				dx: -0.04,
+				rot: -0.1,
+			},
+			{
+				key: 'burgerBunTop',
+				nx: 0.5,
+				ny: 0.2396,
+				nw: 0.9685,
+				nh: 0.4793,
+				dy: -0.26,
+				dx: 0,
+				rot: 0.05,
+			},
 		],
 	},
 	// Soup pot — steam escapes upward off the pot; the spoon stirs a small circle but sits UNDER the
@@ -96,7 +163,16 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		fit: 0.95,
 		squash: 0,
 		layers: [
-			{ key: 'soupSteam', nx: 0.5103, ny: 0.2021, nw: 0.3784, nh: 0.4702, rise: 0.24, sway: 0.05, grow: 0.4 },
+			{
+				key: 'soupSteam',
+				nx: 0.5103,
+				ny: 0.2021,
+				nw: 0.3784,
+				nh: 0.4702,
+				rise: 0.24,
+				sway: 0.05,
+				grow: 0.4,
+			},
 			{ key: 'soupPot', nx: 0.5, ny: 0.5972, nw: 1.0072, nh: 0.8899 },
 			{ key: 'soupSpoon', nx: 0.5732, ny: 0.335, nw: 0.1773, nh: 0.2539, orbit: 0.025, rot: 0.08 },
 			{ key: 'soupLiquid', nx: 0.5, ny: 0.5972, nw: 1.0072, nh: 0.8899 },
@@ -111,9 +187,28 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		fit: 0.88,
 		squash: 0,
 		layers: [
-			{ key: 'sausageSmoke', nx: 0.6156, ny: 0.32, nw: 0.11, nh: 0.42, rise: 0.24, sway: 0.06, grow: 0.4 },
+			{
+				key: 'sausageSmoke',
+				nx: 0.6156,
+				ny: 0.32,
+				nw: 0.11,
+				nh: 0.42,
+				rise: 0.24,
+				sway: 0.06,
+				grow: 0.4,
+			},
 			// Sizzles in place — a small jiggle + pulse, kept small so it never leaves the box.
-			{ key: 'sausageBody', nx: 0.4987, ny: 0.55, nw: 1.0, nh: 0.8871, dy: 0.012, dx: 0.01, rot: 0.03, pop: 0.03 },
+			{
+				key: 'sausageBody',
+				nx: 0.4987,
+				ny: 0.55,
+				nw: 1.0,
+				nh: 0.8871,
+				dy: 0.012,
+				dx: 0.01,
+				rot: 0.03,
+				pop: 0.03,
+			},
 		],
 	},
 	// Onion rings — three leaning rings that bounce apart and jostle (small tumble), not a flat spin.
@@ -122,9 +217,39 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		fit: 0.86,
 		squash: 0.05,
 		layers: [
-			{ key: 'onionRing3', nx: 0.3, ny: 0.615, nw: 0.72, nh: 0.66, dy: 0.055, dx: -0.075, rot: 0.16, pop: 0.05 },
-			{ key: 'onionRing2', nx: 0.475, ny: 0.415, nw: 0.8, nh: 0.82, dy: -0.06, dx: -0.02, rot: 0.1, pop: 0.05 },
-			{ key: 'onionRing1', nx: 0.605, ny: 0.63, nw: 0.8, nh: 0.72, dy: 0.07, dx: 0.055, rot: -0.12, pop: 0.05 },
+			{
+				key: 'onionRing3',
+				nx: 0.3,
+				ny: 0.615,
+				nw: 0.72,
+				nh: 0.66,
+				dy: 0.055,
+				dx: -0.075,
+				rot: 0.16,
+				pop: 0.05,
+			},
+			{
+				key: 'onionRing2',
+				nx: 0.475,
+				ny: 0.415,
+				nw: 0.8,
+				nh: 0.82,
+				dy: -0.06,
+				dx: -0.02,
+				rot: 0.1,
+				pop: 0.05,
+			},
+			{
+				key: 'onionRing1',
+				nx: 0.605,
+				ny: 0.63,
+				nw: 0.8,
+				nh: 0.72,
+				dy: 0.07,
+				dx: 0.055,
+				rot: -0.12,
+				pop: 0.05,
+			},
 		],
 	},
 	// Wild — on landing the red splat splashes in first, then the WILD text pops up→down once
@@ -134,6 +259,7 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		fit: 0.82,
 		squash: 0,
 		landAnim: true,
+		idle: 0.45,
 		layers: [
 			{ key: 'wildSplat', nx: 0.5, ny: 0.5, nw: 1.0, nh: 1.0, pop: 0.1, rot: 0.04, landDelay: 0 },
 			{
@@ -155,6 +281,7 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		aspect: 0.999,
 		fit: 0.86,
 		squash: 0.03,
+		idle: 0.55,
 		layers: [
 			{ key: 'scatterStand', nx: 0.5, ny: 0.5, nw: 1.0, nh: 1.0 },
 			{ key: 'scatterBanner', nx: 0.485, ny: 0.132, nw: 0.68, nh: 0.232, rot: 0.07, dy: -0.01 },
