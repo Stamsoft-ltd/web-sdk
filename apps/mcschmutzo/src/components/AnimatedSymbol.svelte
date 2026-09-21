@@ -84,13 +84,24 @@
 	const LAND_MS = $derived(props.config.landMs ?? 800);
 	let landStart = $state(-1);
 	let landClock = $state(0);
+	// Fire the land one-shot exactly ONCE per entry into the 'land' state. A bare `if (state==='land')`
+	// re-fires whenever this effect re-runs while state stays 'land' (e.g. the win-pad burger, which is
+	// permanently mounted in state="land" while its parent re-renders every frame) — that made the
+	// burger re-materialise on a loop. The latch resets when the symbol leaves 'land', so board symbols
+	// (whose state toggles land→static→land each landing) still splash on every landing.
+	let landLatched = false;
 	// $effect.pre so this runs BEFORE the oncomplete $effect above, which flips the momentary 'land'
 	// state straight back to 'static' (see ReelSymbol) — a regular $effect here would only ever read
 	// 'static' and the splash would never fire.
 	$effect.pre(() => {
 		if (props.config.landAnim && props.state === 'land') {
-			landStart = performance.now();
-			landClock = landStart;
+			if (!landLatched) {
+				landLatched = true;
+				landStart = performance.now();
+				landClock = landStart;
+			}
+		} else {
+			landLatched = false;
 		}
 	});
 	$effect(() => {

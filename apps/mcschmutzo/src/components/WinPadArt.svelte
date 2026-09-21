@@ -103,16 +103,20 @@
 			{ id: 'gR', key: 'winStar', x: 0.245 * w * winS, y: 0.03 * w * winS, w: 0.083 * w * winS * twinkle2, h: (0.083 * w / 1.03) * winS * twinkle2, a: glint(1100), rot: -starRot },
 		];
 
-		// Real burger symbol, BEHIND the plaque (drawn first) so it peeks over the top of the banner.
-		// It ASSEMBLES slice-by-slice (H1_ASSEMBLE land one-shot) then hands over to the board's dancing
-		// idle (winning loop). Fixed size — the assemble is its entrance, not the group pop.
-		const burger = { x: 0, y: -0.205 * w, scale: 1.5, winning: true };
+		// Real burger symbol, BEHIND the plaque. It ASSEMBLES slice-by-slice ONCE (H1_ASSEMBLE land
+		// one-shot, winning=false so the separate-and-reassemble loop never runs / never "repeats"),
+		// then the WHOLE built burger just bobs + pulses in a smooth, seamless bounce (all slices move
+		// together, so it never comes apart). A pure sine keeps the loop seamless (no velocity kink).
+		const bph = elapsed / 430;
+		const bounceIn = clamp01((elapsed - 1550) / 500); // ease the bounce in once assembled (~land end)
+		const bob = bounceIn * Math.sin(bph);
+		const burger = { x: 0, y: -0.205 * w + bob * -0.02 * w, scale: 1.5 * (1 + bounceIn * 0.045 * Math.sin(bph)), winning: false };
 		return { back, title, burger, glints };
 	});
 </script>
 
 <Container>
-	<!-- Burger BEHIND the plaque: assembles slice-by-slice, then dances (H1 idle loop). -->
+	<!-- Burger BEHIND the plaque: assembles slice-by-slice ONCE, then bobs (whole-burger bounce). -->
 	<AnimatedSymbol config={H1_ASSEMBLE} x={anim.burger.x} y={anim.burger.y} scale={anim.burger.scale} state="land" winning={anim.burger.winning} />
 	{#each anim.back as l (l.id)}
 		<Sprite key={l.key} x={l.x} y={l.y} anchor={0.5} width={l.w} height={l.h} rotation={l.rot} alpha={l.a} />
