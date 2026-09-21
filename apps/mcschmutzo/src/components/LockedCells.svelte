@@ -70,19 +70,25 @@
 </script>
 
 <Container x={board.x} y={board.y} pivot={board.pivot} zIndex={5}>
-	{#each cells as { reel, gridRow, config, scale } (`${reel}:${gridRow}`)}
-		{@const cx = reel * SYMBOL_WIDTH + SYMBOL_WIDTH / 2}
-		{@const cy = gridRow * SYMBOL_SIZE + SYMBOL_SIZE / 2}
-		<!-- Full-cell cover in the board's own cell colour, so a spinning reel behind can't show
-		     through the gap around the inset highlight. -->
+	<!-- Pass 1 — opaque covers FIRST, drawn EDGE-TO-EDGE (a hair oversized) in the board's own cell
+	     colour. Because every cover is laid down before any held symbol, a run of adjacent locked cells
+	     forms one seamless mask: a symbol on the spinning reel behind — even one much bigger than its
+	     cell — can never peek through the seams or around a held symbol. (The old per-cell inset cover
+	     left a thin gap at every boundary where a big symbol behind showed through.) -->
+	{#each cells as { reel, gridRow } (`cover:${reel}:${gridRow}`)}
 		<Rectangle
-			x={reel * SYMBOL_WIDTH + 1}
-			y={gridRow * SYMBOL_SIZE + 1}
-			width={SYMBOL_WIDTH - 2}
-			height={SYMBOL_SIZE - 2}
-			borderRadius={3}
+			x={reel * SYMBOL_WIDTH - 1}
+			y={gridRow * SYMBOL_SIZE - 1}
+			width={SYMBOL_WIDTH + 2}
+			height={SYMBOL_SIZE + 2}
+			borderRadius={0}
 			backgroundColor={0x2e2a27}
 		/>
+	{/each}
+	<!-- Pass 2 — the locked-cell decoration on top of the mask: light background, held symbol, badge. -->
+	{#each cells as { reel, gridRow, config, scale } (`cell:${reel}:${gridRow}`)}
+		{@const cx = reel * SYMBOL_WIDTH + SYMBOL_WIDTH / 2}
+		{@const cy = gridRow * SYMBOL_SIZE + SYMBOL_SIZE / 2}
 		<!-- Opaque light background (inset so adjacent locked cells keep a gap). -->
 		<Rectangle
 			x={reel * SYMBOL_WIDTH + 9}
