@@ -429,6 +429,38 @@ export default {
 		src: new URL('../../assets/mcschmutzo/special-pot.webp', import.meta.url).href,
 		preload: true,
 	},
+	// Layered chefs (base with the pupils cut out + the pupils as their own sprites) so the eyes can
+	// glance + blink while the figure stands. See AnimatedGuy.svelte.
+	mascotBase: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mascot_base.webp', import.meta.url).href,
+		preload: true,
+	},
+	mascotPupilL: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mascot_pupilL.webp', import.meta.url).href,
+		preload: true,
+	},
+	mascotPupilR: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mascot_pupilR.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialBase: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_base.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialPupilL: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_pupilL.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialPupilR: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_pupilR.webp', import.meta.url).href,
+		preload: true,
+	},
 	mcschmutzoLogo: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/logo.png', import.meta.url).href,

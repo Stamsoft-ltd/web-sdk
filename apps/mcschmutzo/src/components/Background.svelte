@@ -4,6 +4,7 @@
 
 	import { getContext } from '../game/context';
 	import { mascotIdle } from '../game/mascotIdle';
+	import AnimatedGuy from './AnimatedGuy.svelte';
 	import SpecialMascot from './SpecialMascot.svelte';
 
 	type Props = {
@@ -33,7 +34,8 @@
 	const showSpecialMascot = $derived(isFreegame && layoutType === 'desktop');
 	const mascotHeight = $derived(canvas.height * 0.6);
 	const mascotWidth = $derived(mascotHeight * (1019 / 1336));
-	// Subtle idle so the chef isn't a frozen cut-out: a slow breathe + gentle weight-shift sway.
+	// Subtle idle so the chef isn't a frozen cut-out: a slow breathe (no lean — his eyes carry the
+	// life, and a rotation would drag the pupils/label out of place).
 	let clock = $state(0);
 	$effect(() => {
 		if (!showMascot) return;
@@ -46,8 +48,22 @@
 		return () => cancelAnimationFrame(raf);
 	});
 	const mascotPose = $derived(
-		mascotIdle(clock, canvas.width * 0.86, canvas.height * 0.59, mascotWidth, mascotHeight),
+		mascotIdle(clock, canvas.width * 0.86, canvas.height * 0.59, mascotWidth, mascotHeight, {
+			sway: 0,
+			breathe: 0.005,
+			bob: 0.004,
+		}),
 	);
+	// Pupils (measured from the cut art) + eye-cover boxes for the blink lid; all fractions of the
+	// figure. Skin tone sampled by the eyes so the lid is invisible where it overshoots onto skin.
+	const mascotPupils = [
+		{ key: 'mascotPupilL', nx: 0.3415, ny: 0.3069, nw: 0.0491, nh: 0.0479 },
+		{ key: 'mascotPupilR', nx: 0.473, ny: 0.3046, nw: 0.0687, nh: 0.0449 },
+	];
+	const mascotLids = [
+		{ cx: 0.329, cy: 0.305, w: 0.084, h: 0.08 },
+		{ cx: 0.4595, cy: 0.299, w: 0.106, h: 0.088 },
+	];
 	// Desktop base game uses the new desktop diner art; free games keep the grey-kitchen special bg.
 	const key = $derived(isFreegame ? 'backgroundWideBonus' : 'backgroundDesktop');
 	const portraitKey = $derived(isFreegame ? 'backgroundPortraitBonus' : 'backgroundPortrait');
@@ -115,17 +131,17 @@
 	<Rectangle {...canvas} backgroundColor={0x180903} alpha={0.16} zIndex={-1} />
 {/if}
 {#if showArt && showMascot}
-	<!-- Original art with the eyes baked in — no more separate pupils (the eye animation was removed,
-	     and the re-placed pupils sat slightly off). The whole figure breathes + sways subtly. -->
-	<Sprite
-		key="mascot"
+	<!-- The chef breathes, his eyes glance + blink, and his nametag jiggles (layered art). -->
+	<AnimatedGuy
+		baseKey="mascotBase"
 		x={mascotPose.x}
 		y={mascotPose.y}
-		anchor={0.5}
 		width={mascotPose.width}
 		height={mascotPose.height}
-		rotation={mascotPose.rotation}
 		zIndex={0}
+		pupils={mascotPupils}
+		lids={mascotLids}
+		skin={0xec9c58}
 	/>
 {/if}
 {#if showArt && showSpecialMascot}
