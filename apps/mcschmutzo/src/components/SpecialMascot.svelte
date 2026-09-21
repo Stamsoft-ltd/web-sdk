@@ -51,12 +51,33 @@
 	const guyPose = $derived(
 		mascotIdle(elapsed, cx, guyY, guyWidth, guyHeight, { sway: 0, breathe: 0.005, bob: 0.004 }),
 	);
-	const guyDy = $derived(guyPose.y - guyY); // vertical drift, applied to the salt spout too
 
-	// Salt shaker spout (upper-left of the guy) → the pot's mouth (a gentle diagonal drift). The spout
-	// rides with the chef's breathe so the stream stays glued to the shaker.
-	const saltTopX = $derived(cx - guyWidth * 0.21);
-	const saltTopY = $derived(guyY - guyHeight * 0.04 + guyDy);
+	// The hand + shaker (cut into its own sprite) FLICKS about the wrist in a sprinkling rhythm, and the
+	// salt is released on the down-flick — so the arm motion and the falling salt read as one action.
+	const SHAKE_PERIOD = 620; // ms per flick
+	const SHAKE_AMP = 0.032; // rad (~1.8°) — small so the cut forearm edge never opens a visible seam
+	const shakeP = $derived((elapsed % SHAKE_PERIOD) / SHAKE_PERIOD);
+	const armAngle = $derived(SHAKE_AMP * Math.sin(2 * Math.PI * shakeP)); // + = flick down (cap dips)
+	const flick = $derived(0.5 + 0.5 * Math.sin(2 * Math.PI * shakeP)); // 0..1, peaks with the down-flick
+
+	// Chef box + the arm sprite's geometry (matches the cut: box x[0,0.44] y[0.16,0.55], wrist pivot).
+	const chefL = $derived(guyPose.x - guyPose.width / 2);
+	const chefT = $derived(guyPose.y - guyPose.height / 2);
+	const wristX = $derived(chefL + 0.108 * guyPose.width);
+	const wristY = $derived(chefT + 0.492 * guyPose.height);
+	const armW = $derived(0.44 * guyPose.width);
+	const armH = $derived(0.39 * guyPose.height);
+
+	// Salt spout = the shaker cap, rotated with the flick about the wrist, so the stream stays glued to
+	// the (moving) cap. capRest is the cap's exit in chef fractions (kept ~where the old spout sat).
+	const CAP_DX = 0.29 - 0.108; // cap - wrist (chef-frac x)
+	const CAP_DY = 0.46 - 0.492; // cap - wrist (chef-frac y)
+	const saltTopX = $derived(
+		wristX + (CAP_DX * guyPose.width) * Math.cos(armAngle) - (CAP_DY * guyPose.height) * Math.sin(armAngle),
+	);
+	const saltTopY = $derived(
+		wristY + (CAP_DX * guyPose.width) * Math.sin(armAngle) + (CAP_DY * guyPose.height) * Math.cos(armAngle),
+	);
 	const saltBotX = $derived(cx - guyWidth * 0.12);
 	const saltBotY = $derived(potY - potHeight * 0.18);
 	const grain = $derived(Math.max(2.5, canvas.height * 0.006));
@@ -67,11 +88,17 @@
 			const dir = Math.sin(i * 2.3999); // deterministic spread direction (-1..1)
 			const spread = grain * (1 + p * 4.5);
 			const ease = p * (0.5 + 0.5 * p);
+			// The stream hangs off the (moving) cap at the top and lands at the fixed pot, so it wiggles
+			// with the shake near the shaker and is anchored below.
 			const x = saltTopX + (saltBotX - saltTopX) * p + dir * spread;
 			const y = saltTopY + (saltBotY - saltTopY) * ease;
 			const size = grain * (0.5 + ((i * 7) % 5) * 0.2); // varied grain sizes
 			const fade = Math.min(1, p / 0.1) * (p > 0.8 ? Math.max(0, (1 - p) / 0.2) : 1);
-			const alpha = fade * (0.6 + (i % 3) * 0.15);
+			// Density pulses with the flick AT THE MOMENT THIS GRAIN LEFT the shaker → salt bursts out on
+			// each down-flick instead of an even stream.
+			const releaseE = elapsed - p * 1200;
+			const rf = 0.5 + 0.5 * Math.sin((2 * Math.PI * (((releaseE % SHAKE_PERIOD) + SHAKE_PERIOD) % SHAKE_PERIOD)) / SHAKE_PERIOD);
+			const alpha = fade * (0.22 + 0.78 * rf) * (0.6 + (i % 3) * 0.15);
 			return { x, y, size, alpha };
 		}),
 	);
@@ -91,6 +118,18 @@
 		lids={specialLids}
 		skin={0xef9650}
 		phase={2000}
+	/>
+	<!-- Hand + shaker, flicking about the wrist (the base has this region cut out). Above the base,
+	     below the falling salt so the grains read as leaving the cap. -->
+	<Sprite
+		key="specialArm"
+		x={wristX}
+		y={wristY}
+		anchor={{ x: 0.2455, y: 0.8513 }}
+		width={armW}
+		height={armH}
+		rotation={armAngle}
+		zIndex={0.5}
 	/>
 	{#each grains as g}
 		<Rectangle

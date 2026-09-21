@@ -461,6 +461,13 @@ export default {
 		src: new URL('../../assets/mcschmutzo/guys/special_pupilR.webp', import.meta.url).href,
 		preload: true,
 	},
+	// The salting chef's hand + shaker, cut out so it can flick in time with the falling salt (the
+	// base has this region removed). See SpecialMascot.svelte.
+	specialArm: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_arm.webp', import.meta.url).href,
+		preload: true,
+	},
 	mcschmutzoLogo: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/logo.png', import.meta.url).href,
