@@ -136,6 +136,19 @@
 		return () => window.removeEventListener('animationstart', onLand, true);
 	});
 
+	/* A cluster chimes as it lights (`clusterWin` → 'winning', once per tumble step, since the
+	   harvest and refill take the phase away in between). The multiplier chime whenever any
+	   cluster of the step pays through a multiplier — the same `appliedMultiplier > 1` test the
+	   board's "× N" tag uses — the plain one otherwise. */
+	$effect(() => {
+		if (stateGame.phase !== 'winning') return;
+		const multiplied = stateGame.winningClusters.some((cluster) => cluster.appliedMultiplier > 1);
+		sound.players.once.play({
+			name: multiplied ? 'sfx_cluster_multi' : 'sfx_cluster',
+			forcePlay: true,
+		});
+	});
+
 	/* The scatter hold (a trigger, a retrigger, a mystery pick) chimes again as the count lights. */
 	$effect(() => {
 		if (stateGame.scatterPositions.length) {

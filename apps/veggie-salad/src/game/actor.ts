@@ -8,12 +8,12 @@ import { stateXstateDerived } from './stateXstate';
 import { playBet, convertToResumableBet } from './utils';
 import { stateGame, stateGameDerived } from './stateGame.svelte';
 
-// The trap-door exit and the bet request run side by side: the machine awaits onNewGameStart
-// before it calls the RGS, so waiting for the exit THERE put a whole network round trip between
-// the board emptying and the result raining in (a long bare board on a phone). The exit's wait
-// moves to onPlayGame instead, where it only holds the reveal back if the response beat it.
-let exitSettled: Promise<void> = Promise.resolve();
-
+// Spin choreography against the network. The machine awaits onNewGameStart before it calls the
+// RGS, and the result can take anything from 50ms to a second to come back. Emptying the board
+// on the press and hoping the result beat the exit left the board bare for the difference on
+// every slow response, so the press only arms the round (the old board holds in place) and the
+// trap door opens in onPlayGame, once the result is in hand — exit and drop then run back to
+// back with a fixed overlap, whatever the latency.
 const primaryMachines = createPrimaryMachines<Bet>({
 	onResumeGameActive: (betToResume) => convertToResumableBet(betToResume),
 	onResumeGameInactive: (betToResume) => {
@@ -27,11 +27,6 @@ const primaryMachines = createPrimaryMachines<Bet>({
 			return;
 		stateBet.winBookEventAmount = 0;
 		stateGameDerived.resetRound();
-		// The exit plays on its own layer (the prototype's exit ghost), so the next result only
-		// waits for the old board to be visibly on its way out: the two waves overlap and the
-		// board is never bare — new symbols enter the top a beat after this, by which time the
-		// old top row has dropped clear (magnetic does the same).
-		exitSettled = stateGameDerived.waitMotion(() => stateGameDerived.exitDurationMs() * 0.35);
 	},
 	onNewGameError: () => stateGameDerived.settle(),
 	onPlayGame: async (bet) => {
@@ -41,7 +36,12 @@ const primaryMachines = createPrimaryMachines<Bet>({
 			stateGame.endRoundOnly = false;
 			return;
 		}
-		await exitSettled;
+		// The exit plays on its own layer (the prototype's exit ghost), so the result only waits
+		// for the old board to be visibly on its way out: the two waves overlap and the board is
+		// never bare — new symbols enter the top a beat after this, by which time the old top row
+		// has dropped clear (magnetic does the same).
+		stateGameDerived.startExit();
+		await stateGameDerived.waitMotion(() => stateGameDerived.exitDurationMs() * 0.35);
 		await playBet(bet);
 	},
 	checkIsBonusGame: (bet) =>

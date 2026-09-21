@@ -33,9 +33,10 @@
 			}
 		).__veggieSpin = async (events, holdMs = 0) => {
 			stateGameDerived.resetRound();
-			const exit = stateGameDerived.waitMotion(() => stateGameDerived.exitDurationMs() * 0.35);
+			// holdMs stands in for the RGS round trip.
 			await new Promise((resolve) => setTimeout(resolve, holdMs));
-			await exit;
+			stateGameDerived.startExit();
+			await stateGameDerived.waitMotion(() => stateGameDerived.exitDurationMs() * 0.35);
 			await playBookEvents(events);
 		};
 	}

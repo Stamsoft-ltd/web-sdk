@@ -92,31 +92,38 @@
 	   "the veggies showing partially diagonal behind the board with text" (user, 2026-09-18).
 	   Half, and drawn big: at a third showing they were small whole sprites floating in the
 	   sky beside the board rather than crop tucked behind it ("does not look very good").
-	   `top` rather than `bottom`, since they step down the board's height, and the tilt is the
-	   resting pose the idle sway swings about. Same cqw units, off the same board-wide stage. Names are FILE
-	   names, and the files are swapped (veggieAssets.ts): radish.webp is the cauliflower. */
+	   The tilt is the resting pose the idle sway swings about. `hide` is the share of the sprite's
+	   own width the board covers, set per sprite so both eyes clear the rail once the tilt has
+	   swung the face towards it — the faces sit left of centre, so the right rail hides less. The
+	   right three used to sit 58% under, which put the broccoli's and eggplant's eyes behind the
+	   rail ("the brokoli is almost not visible also the violet tangerine", user 2026-09-21). `at` is the
+	   sprite's centre down the BOARD's height, and the sprite is the smaller of its design width
+	   and a third of that height, so on a squat board (a wide portrait window caps it at 320px)
+	   the three still step down the rail instead of the bottom pair dropping off it or the three
+	   piling onto each other. Both are percentages of the sprite's own box, so they ride in the
+	   idle transform (`--shift`, `--anchor`) rather than in left/top. Names are FILE names, and
+	   the files are swapped (veggieAssets.ts): radish.webp is the cauliflower. */
 	const GROUND_PORTRAIT = [
-		{ name: 'carrot', left: -17.5, top: 0, size: 30, tilt: -20 },
-		{ name: 'radish', left: -20, top: 31, size: 34, tilt: -12 },
-		{ name: 'corn', left: -18, top: 62, size: 31, tilt: -22 },
-		{ name: 'broccoli', left: 81.5, top: 4, size: 32, tilt: 20 },
-		{ name: 'tomato', left: 80, top: 36, size: 34, tilt: 12 },
-		{ name: 'eggplant', left: 83, top: 68, size: 29, tilt: 22 },
-	];
-	type Crop = {
-		name: string;
-		left: number;
-		size: number;
-		bottom?: number;
-		top?: number;
-		tilt?: number;
-	};
+		{ name: 'carrot', side: 'left', at: 16, size: 30, hide: 42, tilt: -38 },
+		{ name: 'radish', side: 'left', at: 50, size: 34, hide: 38, tilt: -12 },
+		{ name: 'corn', side: 'left', at: 84, size: 31, hide: 42, tilt: -22 },
+		{ name: 'broccoli', side: 'right', at: 17, size: 32, hide: 30, tilt: 20 },
+		{ name: 'tomato', side: 'right', at: 51, size: 34, hide: 32, tilt: 12 },
+		{ name: 'eggplant', side: 'right', at: 85, size: 29, hide: 32, tilt: 22 },
+	] as const;
+	type Crop = { name: string; left: number; bottom: number; size: number; tilt?: number };
+	type Leaner = (typeof GROUND_PORTRAIT)[number];
 	const cropStyle = (item: Crop) =>
-		`left:${item.left}cqw; ${item.top === undefined ? `bottom:${item.bottom}cqw` : `top:${item.top}cqw`}; width:${item.size}cqw; --tilt:${item.tilt ?? 0}deg`;
-	const withMotion = (list: Crop[]) =>
+		`left:${item.left}cqw; bottom:${item.bottom}cqw; width:${item.size}cqw; --tilt:${item.tilt ?? 0}deg`;
+	const leanerStyle = (item: Leaner) =>
+		`${item.side}:0; top:${item.at}%; height:min(${item.size}cqw, 34%); width:auto; --shift:${item.side === 'left' ? item.hide - 100 : 100 - item.hide}%; --anchor:-50%; --tilt:${item.tilt}deg`;
+	const withMotion = <T extends { name: string }>(list: readonly T[]) =>
 		list.map((item) => ({ ...item, ...VEG_MOTION[item.name], delay: -rand(0, 6) }));
-	const ground = withMotion(GROUND);
-	const groundPortrait = withMotion(GROUND_PORTRAIT);
+	const ground = withMotion(GROUND).map((item) => ({ ...item, style: cropStyle(item) }));
+	const groundPortrait = withMotion(GROUND_PORTRAIT).map((item) => ({
+		...item,
+		style: leanerStyle(item),
+	}));
 
 	const reducedMotion = () =>
 		typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -312,9 +319,7 @@
 					class="veg veg-{item.name}"
 					src={vegFrame(item.name, eyeFrames[item.name])}
 					alt=""
-					style="{cropStyle(
-						item,
-					)}; --sway:{item.sway}; --lift:{item.lift}; --dur:{item.dur}s; --delay:{item.delay}s"
+					style="{item.style}; --sway:{item.sway}; --lift:{item.lift}; --dur:{item.dur}s; --delay:{item.delay}s"
 				/>
 			{/each}
 		</div>
@@ -521,18 +526,22 @@
 		position: absolute;
 		height: auto;
 		transform-origin: 50% 100%;
+		/* The resting pose, for when reduced motion drops the idle below. */
+		transform: translate(var(--shift, 0%), var(--anchor, 0%)) rotate(var(--tilt, 0deg));
 		image-rendering: pixelated;
 		animation: veg-idle var(--dur) ease-in-out var(--delay) infinite;
 	}
 	/* Rooted at the ground line and leaning, rather than floating: the rotation pivots on the base
-	   and the lift is small enough that nothing ever leaves the soil. */
+	   and the lift is small enough that nothing ever leaves the soil. `--shift`/`--anchor` are the
+	   portrait leaners' own-box offsets (tuck under the rail, centre on the row); 0 in landscape. */
 	@keyframes veg-idle {
 		0%,
 		100% {
-			transform: translateY(0) rotate(calc(var(--tilt, 0deg) + var(--sway) * -1deg));
+			transform: translate(var(--shift, 0%), var(--anchor, 0%))
+				rotate(calc(var(--tilt, 0deg) + var(--sway) * -1deg));
 		}
 		50% {
-			transform: translateY(calc(var(--lift) * -1%))
+			transform: translate(var(--shift, 0%), calc(var(--anchor, 0%) - var(--lift) * 1%))
 				rotate(calc(var(--tilt, 0deg) + var(--sway) * 1deg));
 		}
 	}

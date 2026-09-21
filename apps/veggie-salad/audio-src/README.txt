@@ -12,5 +12,8 @@ Delivered 2026-09-18 as "Sounds Gorgo" (10 files); the original names were:
   sfx_reels_land   reels landing sound.mp3                     (0.5s)
   sfx_scatter_land Scatter Land sound.mp3                      (0.5s)
   sfx_button       button click sound.mp3                      (0.5s)
+Delivered 2026-09-21 (2 files), the cluster chimes:
+  sfx_cluster       connection cluster normal.mp3              (0.5s)  a cluster pays at 1x
+  sfx_cluster_multi connection cluster with multi.mp3          (0.5s)  a cluster pays through a multiplier
 The .m4a files are Opus-in-MP4, which Safari cannot decode — another reason everything goes
 through the sprite build (mp3 + ogg) rather than being served as delivered.

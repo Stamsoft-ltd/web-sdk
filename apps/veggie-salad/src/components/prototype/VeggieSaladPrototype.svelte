@@ -220,24 +220,25 @@
 	// On a bonus-entry spin the scatter COUNT is the announcement of which bonus was won, so it
 	// gets its own read-out under the board.
 	const scatterCount = $derived(stateGame.scatterPositions.length);
-	// Gardens by how the bonus was won (user, 2026-09-17: "butterflies are for normal bonus, wolf
-	// for super bonus and owl for mystery"): a NORMAL bonus plays in the purple dusk garden with
-	// the butterfly (9363:59335); the same tier reached through the Mystery pick plays in the
-	// sunset garden with the owl (9198:104316). SUPER is the night garden with the wolf whatever
-	// its source. The earlier wiring had these two the other way round.
-	const duskGarden = $derived(
-		stateGame.bonusTier === 'normal' && stateGame.bonusSource !== 'mystery',
-	);
+	// Gardens by tier, as the designs pair them with the board sizes (user, 2026-09-21, on the
+	// portrait frames: 8 columns = 9262:211494, 9 = 9262:213551, 10 = 9262:215601): NORMAL (8×8)
+	// plays in the purple dusk garden with the butterfly (9363:59335), SUPER (9×9) in the night
+	// garden with the wolf (9198:81939), HIDDEN (10×10) in the sunset garden with the owl
+	// (9198:104316, whose board is the ten-wide one). The earlier wiring showed the sunset for a
+	// NORMAL bonus reached through the Mystery pick and a rainbow raster for HIDDEN — "owl for
+	// mystery" (user, 2026-09-17) is the bonus the Mystery pick alone can hand out.
+	const duskGarden = $derived(stateGame.bonusTier === 'normal');
+	const sunsetGarden = $derived(stateGame.bonusTier === 'hidden');
 	// Visual theme follows the active bonus, not the last reveal's gameType. The latter remains the
 	// bonus type until the next base reveal, which previously left the base garden colour-graded
 	// after the bonus outro had closed.
 	const theme = $derived(
 		stateGame.bonusTier === 'hidden'
-			? 'rainbow'
+			? 'sunset'
 			: stateGame.bonusTier === 'super'
 				? 'night'
 				: stateGame.bonusTier === 'normal'
-					? 'sunset'
+					? 'dusk'
 					: 'day',
 	);
 
@@ -876,9 +877,10 @@
 	class="scene theme-{theme}"
 	class:bonus-normal={stateGame.bonusTier === 'normal'}
 	class:garden-dusk={duskGarden}
+	class:garden-sunset={sunsetGarden}
 	class:bonus-super={stateGame.bonusTier === 'super'}
 	class:bonus-hidden={stateGame.bonusTier === 'hidden'}
-	style="--base-plain:url('./assets/veggie-salad/pixel/background/base-plain.webp');--base-mountains:url('./assets/veggie-salad/pixel/background/base-mountains.webp');--base-cloud:url('./assets/veggie-salad/pixel/background/base-cloud.webp');--base-bench:url('./assets/veggie-salad/pixel/background/base-bench.webp');--board-frame:url('./assets/veggie-salad/pixel/board-frame.webp');--bonus-normal-sky:url('./assets/veggie-salad/pixel/background/bonus-normal/sky-ground.webp');--bonus-normal-mountains:url('./assets/veggie-salad/pixel/background/bonus-normal/mountains.webp');--bonus-normal-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/cloud.webp');--bonus-normal-tree:url('./assets/veggie-salad/pixel/background/bonus-normal/tree.webp');--bonus-normal-oak:url('./assets/veggie-salad/pixel/background/bonus-normal/oak.webp');--sunset-treeline:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/treeline.webp');--sunset-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/cloud.webp');--sunset-flower:url('./assets/veggie-salad/pixel/splash/flower.webp');--bonus-super-sky:url('./assets/veggie-salad/pixel/background/bonus-super/sky-ground.webp');--bonus-super-mountains:url('./assets/veggie-salad/pixel/background/bonus-super/mountains.webp');--bonus-super-cloud:url('./assets/veggie-salad/pixel/background/bonus-super/cloud.webp');--bonus-super-moon:url('./assets/veggie-salad/pixel/background/bonus-super/moon.webp');--bonus-super-fence:url('./assets/veggie-salad/pixel/background/bonus-super/fence.webp');--bonus-super-oak:url('./assets/veggie-salad/pixel/background/bonus-super/oak.webp');--bonus-super-star-bright:url('./assets/veggie-salad/pixel/background/bonus-super/star-bright.webp');--bonus-super-star-dim:url('./assets/veggie-salad/pixel/background/bonus-super/star-dim.webp');--bonus-hidden-background:url('./assets/veggie-salad/pixel/background-bonus-hidden.webp');--hud-button:url('./assets/veggie-salad/pixel/hud-button.webp');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud-button-pressed.webp')"
+	style="--base-plain:url('./assets/veggie-salad/pixel/background/base-plain.webp');--base-mountains:url('./assets/veggie-salad/pixel/background/base-mountains.webp');--base-cloud:url('./assets/veggie-salad/pixel/background/base-cloud.webp');--base-bench:url('./assets/veggie-salad/pixel/background/base-bench.webp');--board-frame:url('./assets/veggie-salad/pixel/board-frame.webp');--bonus-normal-sky:url('./assets/veggie-salad/pixel/background/bonus-normal/sky-ground.webp');--bonus-normal-mountains:url('./assets/veggie-salad/pixel/background/bonus-normal/mountains.webp');--bonus-normal-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/cloud.webp');--bonus-normal-tree:url('./assets/veggie-salad/pixel/background/bonus-normal/tree.webp');--bonus-normal-oak:url('./assets/veggie-salad/pixel/background/bonus-normal/oak.webp');--sunset-treeline:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/treeline.webp');--sunset-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/cloud.webp');--sunset-flower:url('./assets/veggie-salad/pixel/splash/flower.webp');--bonus-super-sky:url('./assets/veggie-salad/pixel/background/bonus-super/sky-ground.webp');--bonus-super-mountains:url('./assets/veggie-salad/pixel/background/bonus-super/mountains.webp');--bonus-super-cloud:url('./assets/veggie-salad/pixel/background/bonus-super/cloud.webp');--bonus-super-moon:url('./assets/veggie-salad/pixel/background/bonus-super/moon.webp');--bonus-super-fence:url('./assets/veggie-salad/pixel/background/bonus-super/fence.webp');--bonus-super-oak:url('./assets/veggie-salad/pixel/background/bonus-super/oak.webp');--bonus-super-star-bright:url('./assets/veggie-salad/pixel/background/bonus-super/star-bright.webp');--bonus-super-star-dim:url('./assets/veggie-salad/pixel/background/bonus-super/star-dim.webp');--hud-button:url('./assets/veggie-salad/pixel/hud-button.webp');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud-button-pressed.webp')"
 >
 	<!-- Background images cannot interpolate. Persistent layers can: entering a bonus fades its
 	     garden over BASE; leaving fades it away and reveals the exact same BASE layer underneath. -->
@@ -945,10 +947,8 @@
 			<span class="super-bonus-layer super-bonus-fence"></span>
 			<span class="super-bonus-layer super-bonus-oak"></span>
 		</div>
-		<div class="pixel-background background-bonus background-hidden"></div>
 	</div>
 	<div class="sun-moon" aria-hidden="true"></div>
-	<div class="rainbow" aria-hidden="true"></div>
 	<div class="cloud cloud-a" aria-hidden="true"></div>
 	<div class="cloud cloud-b" aria-hidden="true"></div>
 	<div class="tree-line tree-back" aria-hidden="true"></div>
@@ -979,7 +979,7 @@
 
 	<section class="game-stage" aria-label={t('VEGGIE SALAD GAME BOARD')}>
 		{#if duskGarden}
-			<!-- Design 9363:59335. The dusk (Mystery) garden's butterfly wanders the gutter above the
+			<!-- Design 9363:59335. The dusk (NORMAL) garden's butterfly wanders the gutter above the
 			     cluster panel; layers from scripts/build-normal-butterfly.py, choreography is CSS. -->
 			<span class="butterfly-flight" aria-hidden="true">
 				{@render butterflySprite()}
@@ -1008,8 +1008,8 @@
 			style={`--slots:${CLUSTER_LOG_SIZE}`}
 			aria-label={t('CLUSTER PAYOUTS')}
 		>
-			{#if stateGame.bonusTier === 'normal' && !duskGarden}
-				<!-- Design 9198:104316 / 9355:54123: the sunset garden's owl perches on this panel's
+			{#if sunsetGarden}
+				<!-- Design 9198:104316 / 9355:54123: the sunset (HIDDEN) garden's owl perches on this panel's
 				     top-right corner. Layers from scripts/build-normal-sunset.py. -->
 				<span class="sunset-owl" aria-hidden="true">
 					{@render owlSprite()}
@@ -1040,7 +1040,9 @@
 			<div class="board-shadow"></div>
 			<div
 				class="board-frame"
-				class:is-spinning={stateGame.phase === 'spinning' || stateGame.phase === 'spinning-out'}
+				class:is-spinning={stateGame.phase === 'spinning' ||
+					stateGame.phase === 'spinning-out' ||
+					stateGame.phase === 'spin-pending'}
 			>
 				{#key stateGame.gridSize}
 					<div
@@ -1146,17 +1148,21 @@
 				</div>
 			{/if}
 		</div>
-		{#if stateGame.bonusTier === 'normal' || stateGame.bonusTier === 'super'}
+		{#if stateGame.bonusTier}
 			<!-- Tall portrait phones leave a strip of lawn between the board and the control bar;
 			     the garden's creature lives there (the landscape layouts put it in their own
 			     gutters, which portrait has none of). Same layers, same script timers. -->
 			<div class="paddock" aria-hidden="true">
 				{#if duskGarden}
 					{@render butterflySprite()}
-				{:else if stateGame.bonusTier === 'normal'}
-					<span class="paddock-owl">{@render owlSprite()}</span>
+				{:else if sunsetGarden}
+					<!-- The owl perches on the control bar instead (hud-owl, below). -->
 				{:else}
 					<span class="paddock-wolf">{@render wolfSprite()}</span>
+					<!-- The night garden's foliage (9198:81939) in front of the pup, so its tail and
+					     rear tuck behind the leaves as in the landscape layout instead of being cut
+					     off by the screen edge ("now it stays strange", user 2026-09-21). -->
+					<span class="paddock-oak"></span>
 				{/if}
 			</div>
 		{/if}
@@ -1413,6 +1419,13 @@
 
 	{#if !isReplay}
 		<footer class="hud">
+			{#if sunsetGarden}
+				<!-- Portrait only: the sunset garden's owl sits on the bar the way it sits on the
+				     cluster panel in landscape — small, feet over the bar's top edge, in front of it
+				     ("the owl should be smaller and sitting on the menu", user 2026-09-21). Inside the
+				     HUD because the bar stacks above the game stage. -->
+				<span class="hud-owl" aria-hidden="true">{@render owlSprite()}</span>
+			{/if}
 			<div class="hud-left">
 				<button
 					type="button"
@@ -1615,8 +1628,8 @@
 	.theme-night {
 		background: linear-gradient(#071544 0, #174986 50%, #245a68 70%, #123b35 100%);
 	}
-	.theme-rainbow {
-		background: linear-gradient(#d9edf6 0, #eaf4f4 48%, #8bce62 72%, #39863b 100%);
+	.theme-dusk {
+		background: linear-gradient(#6e62bd 0, #b469aa 44%, #659337 70%, #315e2c 100%);
 	}
 	.sun-moon {
 		position: absolute;
@@ -1634,27 +1647,6 @@
 		left: 17%;
 		background: transparent;
 		box-shadow: 18px 0 0 0 #fffbd0;
-	}
-	.theme-rainbow .sun-moon {
-		opacity: 0;
-	}
-	.rainbow {
-		position: absolute;
-		left: 50%;
-		top: 39%;
-		width: 84vw;
-		height: 53vw;
-		transform: translate(-50%, -50%);
-		border-radius: 50% 50% 0 0;
-		border: clamp(16px, 2.8vw, 50px) solid transparent;
-		background:
-			linear-gradient(#dceef4, #dceef4) padding-box,
-			linear-gradient(90deg, #f36b6b, #ffd55f, #72d57f, #69aeef, #a27ae7) border-box;
-		opacity: 0;
-		filter: saturate(0.75);
-	}
-	.theme-rainbow .rainbow {
-		opacity: 0.88;
 	}
 	.cloud {
 		position: absolute;
@@ -2329,6 +2321,9 @@
 	.board:not(.board-exit).phase-spinning-out .symbol-layer {
 		visibility: hidden;
 	}
+	/* Spin pressed, result still on its way: the old board simply holds until the trap door
+	   opens. (A floor-rattle tremor was tried here as a "press landed" cue and read as a glitch —
+	   "strange quick shake of all items", user 2026-09-18.) */
 	.board.board-exit {
 		z-index: 4;
 		background: transparent;
@@ -3689,6 +3684,22 @@
 			animation-duration: 1ms !important;
 			transition-duration: 1ms !important;
 		}
+		/* The reels are the game, not decoration: with Reduce Motion on (an iPhone accessibility
+		   setting) the rule above made the old board vanish in a frame and the new one pop in cell
+		   by cell — "the items disappear almost immediately". The trap-door exit, the gravity drop
+		   and its landing squash keep their own durations; everything else (sway, breath, clouds,
+		   pulses) stays cut to a frame. */
+		.board-exit .symbol-layer {
+			animation-duration: var(--exit-duration) !important;
+		}
+		.phase-spinning .symbol-layer,
+		.phase-dropping .cell.falling .symbol-layer {
+			animation-duration: var(--fall-duration), var(--impact-duration) !important;
+		}
+		.phase-removing .cell.cluster-hit .symbol-layer,
+		.phase-removing .cell.cluster-hit .symbol-layer::after {
+			animation-duration: var(--remove-duration) !important;
+		}
 	}
 
 	/* Pixel-art skin. Keeps game state, controls, math, and responsive layout unchanged. */
@@ -3705,7 +3716,6 @@
 		mix-blend-mode: multiply;
 	}
 	.scene > .sun-moon,
-	.scene > .rainbow,
 	.scene > .cloud,
 	.scene > .tree-line,
 	.scene > .meadow,
@@ -4659,7 +4669,6 @@
 		opacity: 0;
 	}
 	.sun-moon,
-	.rainbow,
 	.cloud,
 	.tree-line,
 	.meadow {
@@ -4699,8 +4708,8 @@
 	.scene.theme-night {
 		background: #123d74;
 	}
-	.scene.theme-rainbow {
-		background: #bde8f4;
+	.scene.theme-dusk {
+		background: #9465b2;
 	}
 	.theme-sunset .background-base {
 		filter: sepia(0.18) saturate(1.12) brightness(0.88);
@@ -4708,8 +4717,8 @@
 	.theme-night .background-base {
 		filter: brightness(0.48) saturate(0.85) hue-rotate(34deg);
 	}
-	.theme-rainbow .background-base {
-		filter: saturate(1.3) brightness(1.08);
+	.theme-dusk .background-base {
+		filter: saturate(0.9) brightness(0.8) hue-rotate(20deg);
 	}
 	.brand {
 		top: clamp(-38px, -2.8vw, -27px);
@@ -5536,7 +5545,8 @@
 		filter: none;
 		overflow: hidden;
 	}
-	.scene.bonus-normal .background-normal {
+	.scene.bonus-normal .background-normal,
+	.scene.garden-sunset .background-normal {
 		opacity: 1;
 	}
 
@@ -5817,24 +5827,6 @@
 	.super-bonus-oak {
 		z-index: 4;
 		background: var(--bonus-super-oak) left bottom / auto 43.3% no-repeat;
-	}
-
-	.background-hidden {
-		background-image: var(--bonus-hidden-background);
-		background-position: center;
-		background-size: cover;
-		filter: none;
-	}
-	.scene.bonus-hidden .background-hidden {
-		opacity: 1;
-	}
-
-	.background-hidden::after {
-		background:
-			radial-gradient(circle at 18% 28%, rgb(202 124 255 / 26%), transparent 31%),
-			radial-gradient(circle at 82% 24%, rgb(99 255 197 / 24%), transparent 32%),
-			linear-gradient(rgb(121 73 168 / 10%), transparent 62%);
-		opacity: 0.84;
 	}
 
 	/* Canonical pressed frame. JS keeps it visible long enough to read on touch screens. */
@@ -6792,7 +6784,7 @@
 	}
 	.scene.bonus-normal .background-normal,
 	.scene.bonus-super .background-super,
-	.scene.bonus-hidden .background-hidden {
+	.scene.bonus-hidden .background-normal {
 		transition-duration: 850ms;
 	}
 
@@ -7216,18 +7208,14 @@
 		   compensation is measured against the same width expression the layer is sized by. */
 		margin-bottom: calc(-1 * max(100%, 120vh) * 32 / 4816);
 	}
-	.background-hidden {
-		background-size: cover;
-	}
-
 	/* ── The SUNSET garden (design 9198:104316) ──────────────────────────────────────────────
 	   Everything above under `normal-bonus-*` is the design's dusk frame — the NORMAL bonus's
-	   own garden, shown under the `garden-dusk` modifier with the butterfly. A NORMAL bonus
-	   reached through the Mystery pick plays here instead: a red-to-gold gradient sky over the same
+	   own garden, shown under the `garden-dusk` modifier with the butterfly. The HIDDEN bonus
+	   (`garden-sunset`) plays on the same layer, restyled: a red-to-gold gradient sky over the same
 	   #7f8905 ground the design paints from its 52% line, the base hills recoloured for dusk,
 	   the lit cloud, the base fence and two flowers at the left, and the owl on the panel.
 	   The gradient replaces the raster sky, so the cover-scaling ::before goes back to 1. */
-	.scene:not(.garden-dusk) .background-normal::before {
+	.scene.garden-sunset .background-normal::before {
 		background-image: linear-gradient(
 			180deg,
 			#cd3e4b 1%,
@@ -7239,11 +7227,11 @@
 		background-size: 100% 52.2%;
 		transform: none;
 	}
-	.scene:not(.garden-dusk) .background-normal::after {
+	.scene.garden-sunset .background-normal::after {
 		top: 52.2%;
 		background: #7f8905;
 	}
-	.scene:not(.garden-dusk)
+	.scene.garden-sunset
 		:is(.normal-bonus-mountains, .normal-bonus-tree, .normal-bonus-oak, .normal-bonus-fence-right),
 	.scene.garden-dusk :is(.normal-bonus-treeline, .normal-bonus-flowers) {
 		display: none;
@@ -7261,10 +7249,10 @@
 		transform: translateX(-50%);
 		background: var(--sunset-treeline) center / contain no-repeat;
 	}
-	.scene:not(.garden-dusk) .normal-bonus-cloud {
+	.scene.garden-sunset .normal-bonus-cloud {
 		background-image: var(--sunset-cloud);
 	}
-	.scene:not(.garden-dusk) .normal-bonus-fence-left {
+	.scene.garden-sunset .normal-bonus-fence-left {
 		background-position: left -1.4vw bottom 23.5%;
 		background-size: 17.6vw auto;
 	}
@@ -8823,9 +8811,8 @@
 			height: calc(var(--pw) * 0.4875);
 			background-image: url('./assets/veggie-salad/pixel/background/portrait/hills-dusk.webp');
 		}
-		/* Sunset (NORMAL via the Mystery pick): red-to-gold sky, #7F8905 ground, hills 217.7 tall
-		   from 183. */
-		.scene:not(.garden-dusk) .background-normal {
+		/* Sunset (HIDDEN): red-to-gold sky, #7F8905 ground, hills 217.7 tall from 183. */
+		.scene.garden-sunset .background-normal {
 			background-color: #7f8905;
 			background-image: linear-gradient(
 				180deg,
@@ -8836,7 +8823,7 @@
 				#f69c0f 92.5%
 			);
 		}
-		.scene:not(.garden-dusk) .background-normal::before {
+		.scene.garden-sunset .background-normal::before {
 			top: calc(var(--pw) * 0.508);
 			height: calc(var(--pw) * 0.605);
 			background-image: url('./assets/veggie-salad/pixel/background/portrait/hills-sunset.webp');
@@ -8856,10 +8843,12 @@
 	/* ── Portrait paddock ─────────────────────────────────────────────────────────────────────
 	   The 360x577 design frame has no lawn between the board and the bar, but every taller phone
 	   does (the scene's middle row stretches, the stage's rows do not), and the garden's creature
-	   grazes it: the butterfly wanders the whole strip, the owl and the pup stand low on the left. Its top is the board's own bottom (readouts row + board margin + the board's
+	   grazes it: the butterfly wanders the whole strip, the pup stands low on the left behind the
+	   foliage, and the owl perches on the control bar (`hud-owl`). Its top is the board's own bottom (readouts row + board margin + the board's
 	   349:277.6 height, all in --pw), and it only opens once the strip is about a quarter of the
 	   width tall — a viewport at least 1.85 times taller than wide. */
-	.paddock {
+	.paddock,
+	.hud-owl {
 		display: none;
 	}
 	@media (orientation: portrait) and (max-aspect-ratio: 1 / 1.85) {
@@ -8873,23 +8862,41 @@
 		.scene .paddock .butterfly {
 			width: calc(var(--pw) * 0.2);
 		}
-		.scene .paddock-owl {
+		/* The bar's dark strip starts 0.044pw below the HUD's top (its ::before); the owl's feet
+		   overlap that edge by 0.02pw. Half the size the lawn version had (0.3pw). */
+		.scene .hud .hud-owl {
 			position: absolute;
-			bottom: 3%;
-			left: 6%;
-			width: calc(var(--pw) * 0.3);
+			display: block;
+			left: calc(var(--pw) * 0.05);
+			bottom: calc(100% - var(--pw) * 0.064);
+			z-index: 1;
+			width: calc(var(--pw) * 0.15);
+			pointer-events: none;
 		}
-		/* The pup faces right, so it stands on the left with its tail off the edge and looks in
-		   across the lawn. */
+		/* The pup faces right, so it stands on the left and looks in across the lawn, its tail and
+		   hindquarters behind the foliage in the corner — the same tuck as the landscape layout,
+		   where the oak is drawn a second time above the stage. The oak's opaque shape reaches
+		   94% of its width along the ground and ~50% at the pup's back, so hung off the left edge
+		   by 0.18pw it covers the hind legs and the tail's base and leaves the head and forepaws
+		   clear. */
 		.scene .paddock-wolf {
 			position: absolute;
 			bottom: 2%;
-			left: -5%;
+			left: 6%;
 			height: min(88%, calc(var(--pw) * 0.42));
 		}
 		.scene .paddock .wolf-stage {
 			height: 100%;
 			margin: 0;
+		}
+		.scene .paddock-oak {
+			position: absolute;
+			bottom: 0;
+			left: calc(var(--pw) * -0.18);
+			width: calc(var(--pw) * 0.62 * 1080 / 1160);
+			height: calc(var(--pw) * 0.62);
+			background: var(--bonus-super-oak) center / 100% 100% no-repeat;
+			image-rendering: pixelated;
 		}
 	}
 </style>

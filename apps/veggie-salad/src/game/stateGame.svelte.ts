@@ -5,6 +5,8 @@ import type { ClusterWin } from './typesBookEvent';
 
 type Phase =
 	| 'idle'
+	// The spin is pressed and the result is on its way: the board holds, nothing has left yet.
+	| 'spin-pending'
 	| 'spinning-out'
 	| 'spinning'
 	| 'dropping'
@@ -486,6 +488,12 @@ const resetRound = () => {
 	stateGame.fallDistances = zeroFallDistances(stateGame.gridSize);
 	stateGame.fallJitter = rollFallJitter(stateGame.gridSize);
 	clearWinningState();
+	stateGame.phase = 'spin-pending';
+};
+
+// The trap door opens only once the result is in hand (see actor.ts): an exit that started on
+// the press ran out before a slow response arrived and left the board bare for the difference.
+const startExit = () => {
 	// The exit is a wave too: it is what a skip pressed at the very start of a spin acts on.
 	beginWave();
 	stateGame.phase = 'spinning-out';
@@ -523,6 +531,7 @@ export const stateGameDerived = {
 	wait,
 	animationScale,
 	resetRound,
+	startExit,
 	settle,
 	positionKey,
 	isWinning: (reel: number, row: number) =>

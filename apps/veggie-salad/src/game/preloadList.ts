@@ -34,7 +34,6 @@ export const PRELOAD_IMAGES: readonly string[] = [
 	'./assets/veggie-salad/pixel/background/portrait/hills-dusk.webp',
 	'./assets/veggie-salad/pixel/background/portrait/hills-night.webp',
 	'./assets/veggie-salad/pixel/background/portrait/hills-sunset.webp',
-	'./assets/veggie-salad/pixel/background-bonus-hidden.webp',
 	'./assets/veggie-salad/pixel/background.webp',
 	'./assets/veggie-salad/pixel/board-frame.webp',
 	'./assets/veggie-salad/pixel/broccoli.webp',

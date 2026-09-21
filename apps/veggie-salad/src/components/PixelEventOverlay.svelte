@@ -573,7 +573,14 @@
 	// Tiered flight speed follows Magnetic's level map; stable config + live scalar/density follows
 	// Forest Gang's no-cleanup pattern, preserving one continuous fountain at tier transitions.
 	const coinGravity = 520;
-	const coinOriginY = 210;
+	// The spout is the banner's own centre, so every coin is born behind the main plate and only
+	// shows once it has climbed out over its top edge. A fixed 210 below centre (inside the amount
+	// plaque in landscape) put the spout under the number on a phone, where the whole card is a
+	// third the size ("they should start behind the main plate", user 2026-09-21). The coins
+	// shrink with the card too, floored so they stay readable: full-size coins were wider than
+	// the phone plaque and their lower halves hung out under it.
+	const coinFit = $derived(Math.max(0.55, presentationFit));
+	const coinOriginY = $derived(BANNER.y * DESIGN_SCALE * presentationFit);
 	const mainHeight = $derived(mainLayout.height);
 	// Launch high enough to clear the top edge on every layout, then gravity returns the coins
 	// through the screen. The 18% overshoot preserves the off-screen beat at cone edges.
@@ -590,8 +597,8 @@
 		alpha: { start: 1, end: 1 },
 		// 1254px source -> roughly 120–170 layout pixels. Readable behind every plaque.
 		scale: {
-			start: 0.095 + coinTier * 0.008,
-			end: 0.078 + coinTier * 0.005,
+			start: (0.095 + coinTier * 0.008) * coinFit,
+			end: (0.078 + coinTier * 0.005) * coinFit,
 			minimumScaleMultiplier: 0.82,
 		},
 		speed: {
