@@ -17,5 +17,5 @@ export function nextSpeed(
 	return 'fast';
 }
 export const speedFactor = (speed: Speed) => (speed === 'turbo' ? 3 : speed === 'fast' ? 2 : 1);
-/** Book amounts are hundredths of base stake. Exactly 10x does NOT show a win panel. */
-export const showsWinPanel = (amount: number) => amount > 1000;
+/** Full win screens start at 20x; 10x..<20x is text only over the board. */
+export const showsWinPanel = (amount: number) => amount >= 2000;

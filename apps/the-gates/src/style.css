@@ -2246,3 +2246,30 @@ img.studio-mark {
 		transform: translateX(var(--left-hud-shift, 0px));
 	}
 }
+.board-area {
+	position: relative;
+}
+.inline-win {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+	z-index: 8;
+	gap: 8px;
+	text-align: center;
+	text-shadow:
+		0 3px 6px #000,
+		0 0 12px #000;
+}
+.inline-win-art {
+	width: clamp(100px, 20vw, 230px);
+	height: auto;
+	filter: drop-shadow(0 3px 5px #000);
+}
+.inline-win .win-amount {
+	font: 700 clamp(30px, 5vw, 62px) / 1.15 var(--serif);
+	color: #fff;
+}

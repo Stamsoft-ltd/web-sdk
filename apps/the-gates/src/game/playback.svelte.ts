@@ -2,7 +2,8 @@ import { stateBet, stateConfig, stateUrlDerived } from 'state-shared';
 import { requestEndEvent } from 'rgs-requests';
 import { initialState, reduceEvent, restorePrefix } from './reducer';
 import { TIMING, waitForDismissal, waitForTarget } from './presentation';
-import { selectedSpeed, speedFactor, showsWinPanel } from './uiPolicy';
+import { selectedSpeed, speedFactor } from './uiPolicy';
+import { showsAnyWin, winTiming } from './winPresentation';
 import { cellMotion, type Wave } from './motion';
 import type { Speed } from './uiPolicy';
 import type { Bet, BookEvent, Position } from './contract';
@@ -17,6 +18,7 @@ export const runtime = $state({
 		tier?: string;
 		amount?: number;
 		spins?: number;
+		countMs?: number;
 	},
 	waiting: false,
 	counting: false,
@@ -135,6 +137,12 @@ async function present(signal: AbortSignal, autoCloseMs?: number) {
 	await delay(TIMING.overlayGuard, signal);
 	await pause(signal, autoCloseMs);
 }
+async function presentWin(amount: number, signal: AbortSignal) {
+	const timing = winTiming(amount, runtime.skipRequested ? 6 : speedFactor(currentSpeed()));
+	runtime.overlay = { kind: 'win', amount, countMs: timing.countMs };
+	await present(signal, timing.holdMs);
+	runtime.overlay = null;
+}
 export function restoreBet(bet: Bet) {
 	const cursor = Number(bet.event ?? 0);
 	runtime.game = restorePrefix(bet.state, cursor);
@@ -215,7 +223,9 @@ export async function playEvents(events: BookEvent[], demo = false) {
 					break;
 				case 'spinWin':
 					runtime.phase = 'settling';
-					if (e.amount) await wait(TIMING.settle, 80);
+					if (runtime.game.freeSpin > 0 && showsAnyWin(e.amount) && !runtime.game.capped)
+						await presentWin(e.amount, signal);
+					else if (e.amount) await wait(TIMING.settle, 80);
 					break;
 				case 'setTotalWin':
 				case 'setWin':
@@ -247,13 +257,11 @@ export async function playEvents(events: BookEvent[], demo = false) {
 			(performance.now() - runtime.startedAt);
 		if (!demo && remaining > 0) await delay(remaining, signal);
 		if (
-			showsWinPanel(runtime.game.total) &&
+			showsAnyWin(runtime.game.total) &&
 			!events.some((e) => e.type === 'freeSpinEnd') &&
 			!runtime.game.capped
 		) {
-			runtime.overlay = { kind: 'win', amount: runtime.game.total };
-			await present(signal, TIMING.winAutoClose);
-			runtime.overlay = null;
+			await presentWin(runtime.game.total, signal);
 		}
 	} finally {
 		runtime.busy = false;

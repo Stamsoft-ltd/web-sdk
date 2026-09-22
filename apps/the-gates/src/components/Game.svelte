@@ -25,6 +25,9 @@
 	import { t } from '../i18n';
 	import Board from './Board.svelte';
 	import CountUp from './CountUp.svelte';
+	import WinScreen from './WinScreen.svelte';
+	import BonusScreen from './BonusScreen.svelte';
+	import { showsInlineWin, winTier } from '../game/winPresentation';
 	import { selectedSpeed, nextSpeed } from '../game/uiPolicy';
 	import TempleGate from './TempleGate.svelte';
 	import Symbol from './Symbol.svelte';
@@ -375,6 +378,20 @@
 					{#if runtime.game.tier}<p class="bonus-mode-label">{title}</p>{/if}
 				</div>
 				<Board />
+				{#if runtime.overlay?.kind === 'win' && showsInlineWin(runtime.overlay.amount ?? 0)}
+					<div class="inline-win" role="status" aria-label={t('WIN')}>
+						<img
+							class="inline-win-art"
+							src="./assets/the-gates/wins/win-title.png"
+							alt={t('WIN')}
+						/>
+						{#key runtime.overlay}<CountUp
+								amount={runtime.overlay?.amount ?? 0}
+								format={winnings}
+								duration={600}
+							/>{/key}
+					</div>
+				{/if}
 				<div class="board-caption" aria-live="polite">
 					{#if runtime.phase === 'winning'}{t('RAW WIN')}
 						<b>{winnings(runtime.game.raw)}</b
@@ -536,30 +553,27 @@
 			>{#if demo}<small>{t('DEMO')}</small>{/if}
 		</div>
 	</div>
-{:else if runtime.overlay}<Modal
-		presentation
-		title={runtime.overlay.kind === 'bonus'
-			? t(runtime.overlay.tier!.toUpperCase())
-			: runtime.overlay.kind === 'summary'
-				? t('BONUS COMPLETE')
-				: runtime.overlay.kind === 'cap'
-					? t('MAX WIN')
-					: t('WIN')}
-		close={() => {}}
-		locked
-		><div class="celebration">
-			<div class="celebration-glyph"><Icon name="gate" /></div>
-			{#if runtime.overlay.spins}<strong>{runtime.overlay.spins}</strong>
-				<p>{t('FREE SPINS')}</p>{:else}{#key runtime.overlay}<CountUp
-						amount={runtime.overlay?.amount ?? 0}
-						format={winnings}
-					/>{/key}{/if}<button
-				class="gold-button"
-				disabled={!runtime.waiting}
-				onclick={continuePresentation}>{t('CONTINUE')}</button
-			>
-		</div></Modal
-	>
+{:else if runtime.overlay?.kind === 'win' && winTier(runtime.overlay.amount ?? 0)}
+	{#key runtime.overlay}<WinScreen
+			amount={runtime.overlay?.amount ?? 0}
+			countMs={runtime.overlay?.countMs ?? 1050}
+			format={winnings}
+		/>{/key}
+{:else if runtime.overlay?.kind === 'bonus' || runtime.overlay?.kind === 'summary'}
+	{#key runtime.overlay}<BonusScreen
+			kind={runtime.overlay?.kind === 'summary' ? 'summary' : 'bonus'}
+			tier={runtime.overlay?.tier ?? 'normal'}
+			spins={runtime.overlay?.spins ?? 0}
+			amount={runtime.overlay?.amount ?? 0}
+			format={winnings}
+		/>{/key}
+{:else if runtime.overlay?.kind === 'cap'}
+	{#key runtime.overlay}<WinScreen
+			capped
+			amount={runtime.overlay?.amount ?? 0}
+			countMs={1050}
+			format={winnings}
+		/>{/key}
 {:else if replay && !busy}<Modal title={t('REPLAY')} close={() => {}} locked
 		><div class="replay-details">
 			<p>{gatesStakeDerived.modeTitle()} · {gatesStakeState.replayEventId}</p>

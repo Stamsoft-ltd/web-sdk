@@ -23,7 +23,7 @@ test('jurisdiction restrictions cannot be bypassed by speed flags', () => {
 		'normal',
 	);
 });
-test('win panel only strictly above 10x base stake, including fractional boundary', () => {
-	for (const n of [0, 25, 375, 750, 1000]) assert.equal(showsWinPanel(n), false);
-	for (const n of [1001, 2000, 2500000]) assert.equal(showsWinPanel(n), true);
+test('win panel starts at 20x, including fractional boundary', () => {
+	for (const n of [0, 25, 375, 750, 1000, 1999]) assert.equal(showsWinPanel(n), false);
+	for (const n of [2000, 5000, 2500000]) assert.equal(showsWinPanel(n), true);
 });

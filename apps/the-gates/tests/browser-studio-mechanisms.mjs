@@ -25,7 +25,7 @@ try {
 		window.winPanels = 0;
 		let last = null;
 		new MutationObserver(() => {
-			const win = document.querySelector('dialog[aria-label="Win"]');
+			const win = document.querySelector('dialog[data-win-tier]');
 			if (win && win !== last) window.winPanels++;
 			last = win;
 		}).observe(document, { subtree: true, childList: true });
@@ -107,18 +107,18 @@ try {
 	assert.equal(await page.evaluate(() => window.winPanels), 0, 'wins <=10x never open panels');
 	payout = 2000;
 	await page.locator('.spin-button').click();
-	await page.getByRole('dialog', { name: 'Win', exact: true }).waitFor();
+	await page.getByRole('dialog', { name: 'Sweet Win', exact: true }).waitFor();
 	const first = await page.locator('.win-amount').innerText();
 	assert.notEqual(first, '$20.00', 'amount must count up');
 	await page.waitForFunction(() => document.querySelector('.win-amount')?.textContent === '$20.00');
 	await page.screenshot({ path: '/tmp/gates-counted-win.png' });
 	await page.getByRole('dialog').waitFor({ state: 'hidden' });
 	assert.equal(await page.evaluate(() => window.winPanels), 1);
-	payout = 1001;
+	payout = 2001;
 	await page.locator('.spin-button').click();
-	await page.getByRole('dialog', { name: 'Win', exact: true }).waitFor();
+	await page.getByRole('dialog', { name: 'Sweet Win', exact: true }).waitFor();
 	await page.getByRole('button', { name: 'Continue', exact: true }).click();
-	await page.waitForFunction(() => document.querySelector('.win-amount')?.textContent === '$10.01');
+	await page.waitForFunction(() => document.querySelector('.win-amount')?.textContent === '$20.01');
 	await page.getByRole('button', { name: 'Continue', exact: true }).click();
 	await page.getByRole('dialog').waitFor({ state: 'hidden' });
 	for (const [width, height] of [
@@ -148,7 +148,7 @@ try {
 	await page.screenshot({ path: '/tmp/gates-fitted-hud.png' });
 	assert.deepEqual(errors, []);
 	console.log(
-		'PASS: Press Play, 3 speeds, speed-focus Space spin, no KEY label, strict >10x panels, count-up, snap/dismiss, automatic close, 14 HUD viewports.',
+		'PASS: Press Play, 3 speeds, speed-focus Space spin, no KEY label, 20x+ tier panels, count-up, snap/dismiss, automatic close, 14 HUD viewports.',
 	);
 } finally {
 	await browser.close();

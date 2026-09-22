@@ -1,0 +1,138 @@
+{
+  "generator": "OpenAI built-in image_gen",
+  "assets": [
+    {
+      "key": "sweet",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-266f509d-28bd-4ca0-a14f-aacc44849396.png",
+      "file": "wins/sweet-title.png",
+      "prompt": "Use case: stylized-concept. Production game title word-art sprite for THE GATES ancient temple slot. The ONLY text is \"SWEET WIN\", exact spelling, uppercase, single horizontal line. Hand-crafted monumental carved gold lettering: very thick sculpted letterforms, deep dark bronze 3D extrusions, broad polished bevels, hammered-gold texture, tiny engraved geometric temple detailing, turquoise gemstone accents. Powerful premium fantasy game reward logo, NOT ordinary flat typed text, not cursive, not cartoon. Letters must be immediately readable even at small size, with clear spaces between words. Front view with subtle dimensional depth, balanced centered composition. Transparent RGBA background, no plaque, no frame, no backdrop, no scene, no separate symbols or objects, no additional words. Entire wordmark inside wide 1536x512 canvas with 8% transparent safe margin all around; title fills usable width and height. Soft gold glints confined to letter edges, no large bloom.",
+      "dimensions": [
+        2172,
+        724
+      ],
+      "source_sha256": "84582565a0fc2fe69dc9a8b76c86f251c12a9cd9e82fb8d4a32cd44b90a4b93c",
+      "sha256": "c95d26cfadc5d825fd960cc0acff49714c0eefe1c1b1a40acb35ab0d91d66e2f"
+    },
+    {
+      "key": "mythic",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-85e07e0c-4175-4ee4-9692-db723fc6ac06.png",
+      "file": "wins/mythic-title.png",
+      "prompt": "Use case: stylized-concept. Production game title word-art sprite for THE GATES ancient temple slot. The ONLY text is \"MYTHIC WIN\", exact spelling, uppercase, single horizontal line. Hand-crafted monumental carved gold lettering: very thick sculpted letterforms, deep dark bronze 3D extrusions, broad polished bevels, hammered-gold texture, tiny engraved geometric temple detailing, ruby gemstone accents. Powerful premium fantasy game reward logo, NOT ordinary flat typed text, not cursive, not cartoon. Letters must be immediately readable even at small size, with clear spaces between words. Front view with subtle dimensional depth, balanced centered composition. Transparent RGBA background, no plaque, no frame, no backdrop, no scene, no separate symbols or objects, no additional words. Entire wordmark inside wide 1536x512 canvas with 8% transparent safe margin all around; title fills usable width and height. Soft gold glints confined to letter edges, no large bloom.",
+      "dimensions": [
+        2172,
+        724
+      ],
+      "source_sha256": "eb4602b96ed16c452b5556daa9a3734767219ab0d2023fd6ffc1eabda190ae0d",
+      "sha256": "96d26bd9995de8b0d3cb376db3dcc14406b7eba1df03788fd6ef92eed350d776"
+    },
+    {
+      "key": "wild",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-f151c476-bd17-4523-8f20-2aabe2166bbe.png",
+      "file": "wins/wild-title.png",
+      "prompt": "Use case: stylized-concept. Production game title word-art sprite for THE GATES ancient temple slot. The ONLY text is \"WILD WIN\", exact spelling, uppercase, single horizontal line. Hand-crafted monumental carved gold lettering: very thick sculpted letterforms, deep dark bronze 3D extrusions, broad polished bevels, hammered-gold texture, tiny engraved geometric temple detailing, emerald gemstone accents. Powerful premium fantasy game reward logo, NOT ordinary flat typed text, not cursive, not cartoon. Letters must be immediately readable even at small size, with clear spaces between words. Front view with subtle dimensional depth, balanced centered composition. Transparent RGBA background, no plaque, no frame, no backdrop, no scene, no separate symbols or objects, no additional words. Entire wordmark inside wide 1536x512 canvas with 8% transparent safe margin all around; title fills usable width and height. Soft gold glints confined to letter edges, no large bloom.",
+      "dimensions": [
+        2172,
+        724
+      ],
+      "source_sha256": "6afc35faa758ff1e969c67c1288c23ee77aae9a9fc0b89cf3863c8f41d96893a",
+      "sha256": "b4bed28f2fcf27f3e34d0aa3814ed9def9417c19043bfb04b47fe4c15ff279f4"
+    },
+    {
+      "key": "epic",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-6b4b5760-179b-4498-a559-8bfaec4f9352.png",
+      "file": "wins/epic-title.png",
+      "prompt": "Use case: stylized-concept. Production game title word-art sprite for THE GATES ancient temple slot. The ONLY text is \"EPIC WIN\", exact spelling, uppercase, single horizontal line. Hand-crafted monumental carved gold lettering: very thick sculpted letterforms, deep dark bronze 3D extrusions, broad polished bevels, hammered-gold texture, tiny engraved geometric temple detailing, amethyst gemstone accents. Powerful premium fantasy game reward logo, NOT ordinary flat typed text, not cursive, not cartoon. Letters must be immediately readable even at small size, with clear spaces between words. Front view with subtle dimensional depth, balanced centered composition. Transparent RGBA background, no plaque, no frame, no backdrop, no scene, no separate symbols or objects, no additional words. Entire wordmark inside wide 1536x512 canvas with 8% transparent safe margin all around; title fills usable width and height. Soft gold glints confined to letter edges, no large bloom.",
+      "dimensions": [
+        2172,
+        724
+      ],
+      "source_sha256": "0ce08a9e214e5b685ec4b45a9c8eae3b4cda8d31f2e4a7ac1f00ece1755982f6",
+      "sha256": "fc2141e52e3d7910cf45d6423382fa7318cf9f0ba88ceb43a0a96520a6dfc9e3"
+    },
+    {
+      "key": "win",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-23e8248a-0449-4a31-a39b-b9a253a9d09d.png",
+      "file": "wins/win-title.png",
+      "prompt": "Use case: stylized-concept. Production game title word-art sprite for THE GATES ancient temple slot. The ONLY text is \"WIN\", exact spelling, uppercase, single horizontal line. Hand-crafted monumental carved gold lettering: very thick sculpted letterforms, deep dark bronze 3D extrusions, broad polished bevels, hammered-gold texture, tiny engraved geometric temple detailing, restrained gold accents. Powerful premium fantasy game reward logo, NOT ordinary flat typed text, not cursive, not cartoon. Letters must be immediately readable even at small size, with clear spaces between words. Front view with subtle dimensional depth, balanced centered composition. Transparent RGBA background, no plaque, no frame, no backdrop, no scene, no separate symbols or objects, no additional words. Entire wordmark inside wide 1536x512 canvas with 8% transparent safe margin all around; title fills usable width and height. Soft gold glints confined to letter edges, no large bloom.",
+      "dimensions": [
+        2079,
+        756
+      ],
+      "source_sha256": "cb9911204c61905bfbcd46cd70f716aba2a1aa12415abfd5c65bd7a586fb07a9",
+      "sha256": "bac49c5f3792850da84550d8a7ee69b5a7a953c165a2651d283beb4f26edbb61"
+    },
+    {
+      "key": "legendary",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-f580fabf-5212-470f-9646-23fccb712c6f.png",
+      "file": "wins/legendary-title.png",
+      "prompt": "Use case: stylized-concept. Production game title word-art sprite for THE GATES ancient temple slot. The ONLY text is \"LEGENDARY WIN\", exact spelling, uppercase, single horizontal line. Hand-crafted monumental carved gold lettering: very thick sculpted letterforms, deep dark bronze 3D extrusions, broad polished bevels, hammered-gold texture, tiny engraved geometric temple detailing, brilliant amber gemstone accents. Powerful premium fantasy game reward logo, NOT ordinary flat typed text, not cursive, not cartoon. Letters must be immediately readable even at small size, with clear spaces between words. Front view with subtle dimensional depth, balanced centered composition. Transparent RGBA background, no plaque, no frame, no backdrop, no scene, no separate symbols or objects, no additional words. Entire wordmark inside wide 1536x512 canvas with 8% transparent safe margin all around; title fills usable width and height. Soft gold glints confined to letter edges, no large bloom.",
+      "dimensions": [
+        2172,
+        724
+      ],
+      "source_sha256": "b1ce49af6efb32895aa0fd2e136af0ef9e0bca3ada46f2c086143ca78a1ac21b",
+      "sha256": "e9d43d05f0055a64194b45cd310071434353a93c3eb91759b151928a209e8b22"
+    },
+    {
+      "key": "normal",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-08ff012f-a53c-481c-9fb9-80102984f872.png",
+      "file": "presentations/normal-crest.png",
+      "prompt": "Use case: stylized-concept. Create a NEW ORIGINAL premium illustrated UI centerpiece for THE GATES ancient temple slot bonus entry screen. This is a standalone sculpted gold-and-obsidian reward crest, NOT a whole screen or screenshot. cyan gemstones and turquoise luminous runes, a central sun disk, restrained gilded guardian wings. Highly detailed dimensional gold metal, weighty beveled edges, ancient geometric carvings, refined realistic 3D game art. A wide architectural stepped ornament with spectacular raised top crest. Across its center integrate very LARGE custom gold sculpted lettering \"NORMAL BONUS\" exactly, uppercase, single line; beautiful thick embossed 3D letter art, polished edges, dark bronze extrusion, excellent legibility. Below the lettering a small ornamental point, NOT a second text area. No numbers, no extra words, no button, no currency, no prize amount. Dynamic spin count or total amount will be live UI BELOW this asset, NOT inside it. Symmetric front orthographic view, horizontal 1536x768 composition with entire silhouette contained in frame and 8% clear transparent padding. REAL transparent RGBA background, no environment, no rectangular backdrop, no drop shadow outside silhouette. Premium mystical temple art, no cartoon or farm imagery.",
+      "dimensions": [
+        1774,
+        887
+      ],
+      "source_sha256": "474d6505521e85171c9f9cf8c59d7f248f05dd816bdd299380d94b7727253801",
+      "sha256": "e4b02840ead12c9c2e054052b08e678b691dc3c5caf8d3276f693ea5af882dab"
+    },
+    {
+      "key": "hidden",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-96d06976-daf6-4602-8577-6e7ab5d99963.png",
+      "file": "presentations/hidden-crest.png",
+      "prompt": "Use case: stylized-concept. Create a NEW ORIGINAL premium illustrated UI centerpiece for THE GATES ancient temple slot bonus entry screen. This is a standalone sculpted gold-and-obsidian reward crest, NOT a whole screen or screenshot. amber gemstones and molten gold luminous runes, a sun-lion crowned crest and majestic sculpted guardian wings. Highly detailed dimensional gold metal, weighty beveled edges, ancient geometric carvings, refined realistic 3D game art. A wide architectural stepped ornament with spectacular raised top crest. Across its center integrate very LARGE custom gold sculpted lettering \"HIDDEN BONUS\" exactly, uppercase, single line; beautiful thick embossed 3D letter art, polished edges, dark bronze extrusion, excellent legibility. Below the lettering a small ornamental point, NOT a second text area. No numbers, no extra words, no button, no currency, no prize amount. Dynamic spin count or total amount will be live UI BELOW this asset, NOT inside it. Symmetric front orthographic view, horizontal 1536x768 composition with entire silhouette contained in frame and 8% clear transparent padding. REAL transparent RGBA background, no environment, no rectangular backdrop, no drop shadow outside silhouette. Premium mystical temple art, no cartoon or farm imagery.",
+      "dimensions": [
+        1774,
+        887
+      ],
+      "source_sha256": "c210b02d49d6334e0933774583ae9dd90a60186f14fb0aff2780d0c39b0cd663",
+      "sha256": "b54735cb8faab78c0c2e36642cfdc330a6b09a35f8f63a50902f49c62381dae4"
+    },
+    {
+      "key": "super",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-2a72d149-ea7a-4f6c-9f51-72a4d1debf60.png",
+      "file": "presentations/super-crest.png",
+      "prompt": "Use case: stylized-concept. Create a NEW ORIGINAL premium illustrated UI centerpiece for THE GATES ancient temple slot bonus entry screen. This is a standalone sculpted gold-and-obsidian reward crest, NOT a whole screen or screenshot. amethyst gemstones and violet luminous runes, a crowned sacred eye and grand golden falcon wings. Highly detailed dimensional gold metal, weighty beveled edges, ancient geometric carvings, refined realistic 3D game art. A wide architectural stepped ornament with spectacular raised top crest. Across its center integrate very LARGE custom gold sculpted lettering \"SUPER BONUS\" exactly, uppercase, single line; beautiful thick embossed 3D letter art, polished edges, dark bronze extrusion, excellent legibility. Below the lettering a small ornamental point, NOT a second text area. No numbers, no extra words, no button, no currency, no prize amount. Dynamic spin count or total amount will be live UI BELOW this asset, NOT inside it. Symmetric front orthographic view, horizontal 1536x768 composition with entire silhouette contained in frame and 8% clear transparent padding. REAL transparent RGBA background, no environment, no rectangular backdrop, no drop shadow outside silhouette. Premium mystical temple art, no cartoon or farm imagery.",
+      "dimensions": [
+        1774,
+        887
+      ],
+      "source_sha256": "66a2f7a10d7cf0f478d6cd476528457bb3090df4278ac2b60a325b6c262e5194",
+      "sha256": "a3dfb60b4428a63f3e446b2e70d9c798989901b3b31c18fbb9a8cb988ed12928"
+    },
+    {
+      "key": "complete",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-d55b9ba8-7591-40bc-b9ed-e7d2cc619d74.png",
+      "file": "presentations/complete-crest.png",
+      "prompt": "Use case: stylized-concept. Create a NEW ORIGINAL premium illustrated UI centerpiece for THE GATES ancient temple slot bonus end / total winnings screen. This is a standalone sculpted gold-and-obsidian reward crest, NOT a whole screen or screenshot. warm antique gold and emerald inlays, triumphant golden winged sun crest. Highly detailed dimensional gold metal, weighty beveled edges, ancient geometric carvings, refined realistic 3D game art. A wide architectural stepped ornament with spectacular raised top crest. Across its center integrate very LARGE custom gold sculpted lettering \"BONUS COMPLETE\" exactly, uppercase, single line; beautiful thick embossed 3D letter art, polished edges, dark bronze extrusion, excellent legibility. Below the lettering a small ornamental point, NOT a second text area. No numbers, no extra words, no button, no currency, no prize amount. Dynamic spin count or total amount will be live UI BELOW this asset, NOT inside it. Symmetric front orthographic view, horizontal 1536x768 composition with entire silhouette contained in frame and 8% clear transparent padding. REAL transparent RGBA background, no environment, no rectangular backdrop, no drop shadow outside silhouette. Premium mystical temple art, no cartoon or farm imagery.",
+      "dimensions": [
+        1774,
+        887
+      ],
+      "source_sha256": "64314d152702e34099c8bff2a40552ed0e0db17d86acadb2897ae16b00e31582",
+      "sha256": "9d410e1b20ce032243506c035a6d6978b6f867201bd1da78627b3ae8fcf736c1"
+    },
+    {
+      "key": "max",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-04923b18-dd67-4d8a-910d-69f0136407e1.png",
+      "file": "wins/max-title.png",
+      "prompt": "Use case: stylized-concept. Original transparent title word-art sprite for THE GATES ancient temple game. EXACT text \"MAXIMUM WIN\" uppercase, single horizontal line, no other text. Monumental handcrafted sculpted gold lettering, deep dark bronze 3D extrusion, broad polished bevels, hammered gold texture, engraved geometric temple detailing, brilliant amber gemstone inlays. Strong readable premium fantasy reward title, NOT flat typed text, not cartoon. Front view with substantial carved depth. Transparent RGBA background, no plaque, no frame, no backdrop, no separate objects. Wide 1536x512 composition, entire wordmark inside frame with safe transparent margins; no clipped letters. Only restrained glints along gold edges. Match carved temple-gold win titles.",
+      "dimensions": [
+        2172,
+        724
+      ],
+      "source_sha256": "666ce492ca7052883dcb7a58592bada48ec2f326220953f7f36e29ebeee22331",
+      "sha256": "60503eb238017ae07d3ada28de03780d57cd68d9178929897a61c04ff0eaad05"
+    }
+  ],
+  "export": "Pixel-identical lossless PNG re-encoding with macOS sips; RGBA transparency preserved."
+}

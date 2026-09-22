@@ -1,0 +1,55 @@
+{
+  "generator": "OpenAI built-in image_gen",
+  "original": true,
+  "assets": [
+    {
+      "key": "sweet",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-274cd30d-2c7f-4d00-ba27-47c23b1d9bf6.png",
+      "file": "sweet-plaque.png",
+      "prompt": "Use case: stylized-concept. Production transparent UI reward plaque for THE GATES, a high-detail ancient temple slot game. Create a NEW ORIGINAL blank SWEET WIN tier nameplate, no lettering. NOT pixel art, no wooden farm signs. Physically rendered antiqued bronze and gold, carved obsidian slab, restrained luminous turquoise runes and two inset cyan gemstones. Architectural rectangular stepped silhouette with subtly winged stone endcaps and small central sun crest. Front orthographic view, symmetric, substantial bevel depth and realistic metallic highlights. Main center is a wide uninterrupted very dark blue-black inset suitable for large live gold title text. Plaque fills about 90% width and 68% height of wide 1536x640 canvas, entire silhouette and ornaments inside frame with transparent margins. Real transparent RGBA background, not checkerboard, no scene, no shadows beyond object, no extra objects, no text, no logo, no watermark. Refined ancient mystical stone/metal temple aesthetic, detailed 3D game art, not cute or cartoon.",
+      "sha256": "c930f5733323087d47f1c4c89c9a94fea28053151a5b7252aaabcc1d416115bb",
+      "source_sha256": "7223a6e255411e6e7b1fb4a5657000df4b9d3a35d74476a063c77686b04ace10"
+    },
+    {
+      "key": "wild",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-8963b1bc-7881-4b2f-980d-16663c0f829d.png",
+      "file": "wild-plaque.png",
+      "prompt": "Use case: stylized-concept. Production transparent UI reward plaque for THE GATES ancient temple slot. Create a NEW ORIGINAL blank WILD WIN tier nameplate, no lettering. NOT pixel art or farm art. Physically rendered antiqued gold and dark basalt, carved sweeping feather/wing reliefs at ends, emerald gemstone inlays, green magical rune accents. Symmetric substantial architectural stepped rectangular plaque with heavier sculpted endcaps and raised central emerald crown crest. Front orthographic view, realistic polished metallic bevels and aged carved stone. Center wide uninterrupted very dark green-black inset reserved for live gold title text. Whole silhouette about 90% width and 68% height of wide 1536x640 canvas, ornaments never clipped, transparent margins. Genuine transparent RGBA background, no checkerboard or environment. No text, no logo, no watermark. Premium high-detail 3D fantasy temple game art, not cartoon.",
+      "sha256": "19c9b0d4581c26ebaf1cd59bdf2f0df97ba92a8cad9ab18c5f87d0945e14709f",
+      "source_sha256": "ec9429e663e611a5ff30c4b7814e3ccbe124df7062840387b514199bfa20af80"
+    },
+    {
+      "key": "epic",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-809c384d-43e0-4963-a2f5-70f3bb32b5c4.png",
+      "file": "epic-plaque.png",
+      "prompt": "Use case: stylized-concept. Production transparent UI reward plaque for THE GATES ancient temple slot. Create a NEW ORIGINAL blank EPIC WIN tier nameplate with no lettering. NOT pixel art or wooden farm signs. Rich ancient gold structural frame, deep midnight basalt, paired carved guardian-eye end ornaments, faceted amethyst inlays, restrained violet magical runes. Symmetric architectural stepped rectangular nameplate, substantial depth, sculpted central sacred-eye crown crest. Front orthographic view, premium detailed physically rendered gold and stone. Main center very dark violet-black with generous uninterrupted horizontal space for live gold title text. Entire silhouette about 90% canvas width and 68% height, wide 1536x640 canvas, ornament tips not clipped, genuine transparent RGBA outside. No environment, checkerboard, extra objects, lettering, logo or watermark. Serious lavish 3D temple-game aesthetic.",
+      "sha256": "8cb6d0c822d20decabd34e6e4c58dccd9b783ba1163d7858e3378128247175a8",
+      "source_sha256": "b1606bce29bad2457774e03d2ffc4af94acf2cd10a7ee2616af81add8f95899c"
+    },
+    {
+      "key": "mythic",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-f2e7586e-7738-4cba-99a8-3f306701afb1.png",
+      "file": "mythic-plaque.png",
+      "prompt": "Use case: stylized-concept. Production transparent UI reward plaque for THE GATES ancient temple slot. Create a NEW ORIGINAL blank MYTHIC WIN nameplate, no text. NOT pixel art, not cartoon, no wooden farm signs. Imposing antiqued rose-gold and rich gold carved architectural border around deep obsidian, sculpted guardian-mask endcaps, ruby inlays and glowing crimson glyph accents. Elaborate raised flame-like central crown crest, layered thick metal/stone bevels. Symmetric broad stepped rectangular front-view plaque. Center very dark red-black uninterrupted horizontal area for large live gold title text. Whole silhouette fills 90% width and 68% height of 1536x640 wide canvas with clear transparent margins and all decorative tips inside frame. Real transparent RGBA backdrop, no checkerboard, no scenery or extra objects. Premium realistic high-detail 3D fantasy temple game reward art. No lettering, logo or watermark.",
+      "sha256": "0d9965e5183cae3a943a198d0befea05befa372b049cef47493341bdabd1beda",
+      "source_sha256": "ba9e8bfd81c947ecdecfe0febfe6e85c38552adea61672abdb150e37aaf590ae"
+    },
+    {
+      "key": "legendary",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-2769eb57-4780-455d-8a61-24f6b01e8943.png",
+      "file": "legendary-plaque.png",
+      "prompt": "Use case: stylized-concept. Production transparent UI reward plaque for THE GATES ancient temple slot. Create a NEW ORIGINAL blank LEGENDARY WIN nameplate, highest tier, no text. NOT pixel art, cartoon, or wooden farm art. Monumental ornate gold and obsidian temple relic, detailed guardian-lion mask endcaps, sweeping engraved golden wings and tiered sunburst crown above the center, luminous amber gems, golden runic inlays, physically rendered thick bevels and reflective metal with ancient patina. Symmetric wide stepped rectangular front orthographic plaque. Center wide very dark black-gold inset with uninterrupted space for long live title 'LEGENDARY WIN' but DO NOT draw text. Whole silhouette about 92% width and 76% height of wide 1536x640 canvas; all crown and wing tips inside image with transparent margins. Genuine transparent RGBA background, no checkerboard, no scenery, no floating particles outside silhouette, no logo or watermark. Lavish serious high-detail 3D temple game art.",
+      "sha256": "90510bdac883962b90d504d93c21642b8d10c95b7840aba779d1e6327a57aaad",
+      "source_sha256": "a45fe4e85bcbf5091b73f93c23e218bb1c90eee28e0fd29234996745830d1e64"
+    },
+    {
+      "key": "coin",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-f77d93a1-9cbb-4170-b8a5-1e2d049c0188.png",
+      "file": "coin.png",
+      "prompt": "Use case: stylized-concept. Single original gold coin sprite for THE GATES ancient temple slot win fountain. High-detail realistic 3D game art, NOT pixel art, not cartoon. Thick round ancient gold coin, engraved sun-eye temple rune at center, decorative concentric stepped geometric border, fine gold ridged edge, slightly worn brushed relief and bright polished highlights. Front facing nearly orthographic with a slight 8-degree tilt revealing substantial edge depth. Gold/amber only, strong readable silhouette at 24-48 pixels. Centered coin occupies 82% of square 1024x1024 canvas, genuine transparent RGBA background. No text, letters, currency numbers, no Press Play symbol, no copied logo, no additional coins, no glow outside silhouette, no checkerboard or environment. Premium sculpted ancient golden temple relic.",
+      "sha256": "16b7a8d7ecd0e78afc48660465cab3a25be668edb71976f9f7328eebe24a2acd",
+      "source_sha256": "38cff2bee4c520ff57fff8aa1c917387c2f663ba80843320ecdfe95ae08b5a9f"
+    }
+  ],
+  "export": "Lossless PNG re-encoding with macOS sips; original RGBA dimensions and every decoded pixel verified identical. Required for full Chromium decoding of generated PNGs."
+}

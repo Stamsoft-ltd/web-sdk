@@ -200,6 +200,46 @@ in this UI phase; no math generation or validation executed.
   the actual screen-edge-to-board gap, including the stage's responsive scale.
   Board/logo placement and portrait's above-board HUD stay unchanged.
 - Layout regression adds equal-gap assertions and the supplied 2366×1046 viewport.
-- Build and TypeScript passed. Browser rerun blocked by automatic approval review:
-  workspace out of credits. Latest left-HUD geometry remains browser-unverified;
-  prior layout passes above predate this translation change.
+- Build and TypeScript passed. Browser rerun now passed all 17 viewports, including
+  equal left-HUD gaps and the supplied 2366×1046 viewport.
+
+### Tiered wins (2026-09-22)
+
+- Exact base-bet thresholds: **10x <= win <20x** is Win + amount over the board,
+  no modal/shade/coins. Under 10x stays in the HUD. **20/50/100/200/500x** start
+  Sweet/Wild/Epic/Mythic/Legendary screens respectively, inclusive lower bounds.
+- Original Gates temple plaques and engraved sun-eye gold coin generated with
+  built-in image generation; no Veggie visual assets. Reuses timing/fountain
+  mechanics only. Tier colors and live count-up; title art updated below.
+  One bounded canvas, max 150 coins, DPR capped at 2; teardown cancels RAF/observer.
+  Reduced motion removes coins/rays. No second Pixi renderer or math-side effects.
+- Normal count/hold timings match Veggie (2.5s/5s up to 6s/8.5s), shortened by
+  Fast/Turbo/skip. Continue/Space available after the same 120ms input guard:
+  first finishes count, second dismisses. All screens auto-close.
+- Bonus winning spins also get the applicable tier before advancing; final bonus
+  summary stays separate. No duplicate total-win screen after bonus completion.
+- Browser tier regression passed 12 boundaries, visible coin pixels, all five
+  tiers, inline-only lower wins, reduced motion, bonus spin celebration, 4 layouts
+  and one wager/settlement per round. Screenshots checked desktop/mobile/landscape.
+  All six PNGs also check opaque middle/lower rows in Chromium, preventing silent
+  top-strip-only decode regressions. Exports preserve every generated RGBA pixel.
+- Unit suite: 31 passing. Build + TypeScript pass. Only the existing four shared
+  auth errors / 17 carousel warnings remain in Svelte check.
+
+### Illustrated bonus / win presentations
+
+- Normal, Super and Hidden entry screens now have distinct original illustrated
+  crests. Bonus end uses a new winged-sun crest, live total, tier-colored aura and
+  bounded coin fountain. Generic dialog header/gate icon removed from these screens.
+- All five win tiers use sculpted gold lettering images over the existing Gates
+  plaques. Inline 10–<20x WIN and Maximum Win also use original lettering art.
+  Thresholds, timings, skip/count-up and wallet behavior unchanged.
+- English headings are baked into art, not ordinary HTML text. Accessible names,
+  supporting labels and controls retain existing localization. Counts and currency
+  amounts remain dynamic. Full generation prompts and provenance are in
+  `static/assets/the-gates/presentation-art-provenance.json`.
+- 31 unit tests, production build and TypeScript pass. Browser checks pass all
+  12 tier boundaries, new title sprites, coins, reduced motion, bonus spin wins,
+  36 bonus entry/end viewport combinations and early win/max-win dismissal.
+  No missing assets, page errors or layout findings. Svelte check still reports
+  only the existing 4 shared auth errors and 17 shared carousel warnings.

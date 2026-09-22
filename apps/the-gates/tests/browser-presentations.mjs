@@ -48,7 +48,7 @@ async function pageFor(mode, cap = false) {
 		if (r.url().startsWith(origin) && r.status() >= 400) assetFailures.push([r.status(), r.url()]);
 	});
 	const events = previewEvents(mode);
-	// A 20x base payout exercises the >10x celebration; small wins no longer open panels.
+	// A 20x base payout exercises the Sweet Win celebration; small wins no longer open panels.
 	if (mode === 'BASE' && !cap)
 		for (const e of events)
 			if (['spinWin', 'setTotalWin', 'setWin', 'finalWin'].includes(e.type)) e.amount = 2000;
@@ -98,14 +98,17 @@ async function pageFor(mode, cap = false) {
 async function assertDialogFits(page, label) {
 	const bounds = await page.getByRole('dialog').evaluate((e) => {
 		const r = e.getBoundingClientRect(),
-			body = e.querySelector('.modal-body'),
+			body =
+				e.querySelector('.modal-body') ??
+				e.querySelector('.win-stage') ??
+				e.querySelector('.bonus-body'),
 			button = e.querySelector('.gold-button').getBoundingClientRect();
 		return {
 			top: r.top,
 			bottom: r.bottom,
 			scroll: document.documentElement.scrollHeight,
 			viewport: innerHeight,
-			bodyScroll: body.scrollHeight,
+			bodyScroll: e.matches('.win-tier-dialog') ? body.clientHeight : body.scrollHeight,
 			bodyHeight: body.clientHeight,
 			buttonBottom: button.bottom,
 		};
@@ -132,6 +135,14 @@ try {
 		await page.locator(`[data-mode="${mode}"]`).click();
 		await page.getByRole('button', { name: 'Confirm', exact: true }).click();
 		await page.getByRole('dialog', { name: title, exact: true }).waitFor();
+		await page.locator('.bonus-crest').evaluate((img) => img.decode());
+		assert.match(
+			await page.locator('.bonus-crest').getAttribute('src'),
+			new RegExp(`${skin}-crest\\.png$`),
+		);
+		assert.equal(await page.locator('.bonus-stage h2').textContent(), '');
+		assert.equal(await page.locator('.spin-award').textContent(), '15');
+		await page.screenshot({ path: `/tmp/gates-${skin}-intro-desktop-v2.png` });
 		for (const [width, height] of sizes) {
 			await page.setViewportSize({ width, height });
 			await assertDialogFits(page, `${skin} intro ${width}x${height}`);
@@ -147,6 +158,9 @@ try {
 		await page.locator('.temple-gate.open .gate-reward').waitFor();
 		await page.screenshot({ path: `/tmp/gates-${skin}-open-registered.png` });
 		await page.getByRole('dialog', { name: 'Bonus complete', exact: true }).waitFor();
+		await page.locator('.bonus-crest').evaluate((img) => img.decode());
+		assert.match(await page.locator('.bonus-crest').getAttribute('src'), /complete-crest\.png$/);
+		await page.screenshot({ path: `/tmp/gates-${skin}-summary-desktop-v2.png` });
 		for (const [width, height] of sizes) {
 			await page.setViewportSize({ width, height });
 			await assertDialogFits(page, `${skin} summary ${width}x${height}`);
