@@ -1117,6 +1117,61 @@ importers:
         specifier: workspace:*
         version: link:../../packages/eslint-config-custom
 
+  apps/the-gates:
+    dependencies:
+      '@lingui/core':
+        specifier: 5.2.0
+        version: 5.2.0(@lingui/babel-plugin-lingui-macro@5.2.0(babel-plugin-macros@3.1.0))(babel-plugin-macros@3.1.0)
+      '@sveltejs/kit':
+        specifier: 2.17.3
+        version: 2.17.3(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.20.5)(vite@6.2.0(@types/node@26.1.2)(jiti@1.21.7)(sass-embedded@1.89.2)))(svelte@5.20.5)(vite@6.2.0(@types/node@26.1.2)(jiti@1.21.7)(sass-embedded@1.89.2))
+      components-shared:
+        specifier: workspace:*
+        version: link:../../packages/components-shared
+      components-ui-html:
+        specifier: workspace:*
+        version: link:../../packages/components-ui-html
+      constants-shared:
+        specifier: workspace:*
+        version: link:../../packages/constants-shared
+      rgs-requests:
+        specifier: workspace:*
+        version: link:../../packages/rgs-requests
+      state-shared:
+        specifier: workspace:*
+        version: link:../../packages/state-shared
+      svelte:
+        specifier: 5.20.5
+        version: 5.20.5
+      utils-bet:
+        specifier: workspace:*
+        version: link:../../packages/utils-bet
+      utils-shared:
+        specifier: workspace:*
+        version: link:../../packages/utils-shared
+      utils-xstate:
+        specifier: workspace:*
+        version: link:../../packages/utils-xstate
+      vite:
+        specifier: 6.2.0
+        version: 6.2.0(@types/node@26.1.2)(jiti@1.21.7)(sass-embedded@1.89.2)
+    devDependencies:
+      '@sveltejs/vite-plugin-svelte':
+        specifier: 5.0.3
+        version: 5.0.3(svelte@5.20.5)(vite@6.2.0(@types/node@26.1.2)(jiti@1.21.7)(sass-embedded@1.89.2))
+      config-lingui:
+        specifier: workspace:*
+        version: link:../../packages/config-lingui
+      config-svelte:
+        specifier: workspace:*
+        version: link:../../packages/config-svelte
+      config-ts:
+        specifier: workspace:*
+        version: link:../../packages/config-ts
+      config-vite:
+        specifier: workspace:*
+        version: link:../../packages/config-vite
+
   apps/veggie-salad:
     dependencies:
       '@lingui/core':
