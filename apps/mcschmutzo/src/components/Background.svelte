@@ -201,14 +201,13 @@
 	{/if}
 	{#if lamps}
 		<!-- Two small hanging pendant lamps in the top-left ceiling strip; bulbs blink on/off.
-		     The soft halo renders BEHIND the shade so only the light escaping under the rim shows
-		     (the shade occludes the top); the bulb glows at the shade's bottom opening. -->
+		     A subtle warm pool of light renders BEHIND the shade (only what escapes under the rim
+		     shows); the bulb at the shade's bottom opening dims when off and warms gently when on. -->
 		{#each lamps.list as l, i (i)}
-			<Circle x={l.x} y={lamps.haloYPx} diameter={lamps.lampW * 1.25} anchor={0.5} backgroundColor={0xffce7a} backgroundAlpha={l.on * 0.24} zIndex={-0.93} blendMode="add" />
+			<Circle x={l.x} y={lamps.haloYPx} diameter={lamps.lampW * 0.72} anchor={0.5} backgroundColor={0xffca78} backgroundAlpha={l.on * 0.12} zIndex={-0.93} blendMode="add" />
 			<Sprite key="specialLamp" x={l.x} y={lamps.y} anchor={{ x: 0.5, y: 0 }} width={lamps.lampW} height={lamps.lampH} zIndex={-0.92} />
-			<Circle x={l.x} y={lamps.bulbYPx} diameter={lamps.lampW * 0.44} anchor={0.5} backgroundColor={0x140d07} backgroundAlpha={(1 - l.on) * 0.5} zIndex={-0.9} />
-			<Circle x={l.x} y={lamps.bulbYPx} diameter={lamps.lampW * 0.5} anchor={0.5} backgroundColor={0xffe6a8} backgroundAlpha={l.on * 0.5} zIndex={-0.9} blendMode="add" />
-			<Circle x={l.x} y={lamps.bulbYPx} diameter={lamps.lampW * 0.26} anchor={0.5} backgroundColor={0xfff7df} backgroundAlpha={l.on * 0.72} zIndex={-0.9} blendMode="add" />
+			<Circle x={l.x} y={lamps.bulbYPx} diameter={lamps.lampW * 0.42} anchor={0.5} backgroundColor={0x140d07} backgroundAlpha={(1 - l.on) * 0.45} zIndex={-0.9} />
+			<Circle x={l.x} y={lamps.bulbYPx} diameter={lamps.lampW * 0.36} anchor={0.5} backgroundColor={0xffe1a4} backgroundAlpha={l.on * 0.34} zIndex={-0.9} blendMode="add" />
 		{/each}
 	{/if}
 {/if}
