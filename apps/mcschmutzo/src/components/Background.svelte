@@ -67,6 +67,23 @@
 		{ cx: 0.329, cy: 0.305, w: 0.084, h: 0.08 },
 		{ cx: 0.4595, cy: 0.299, w: 0.106, h: 0.088 },
 	];
+	// The held "EXTRA MESSY" ketchup bottle is a separate overlay (cut out of mascotBase) so it can
+	// shake about the wrist like the splash chef's bottle. Pivot = the wrist joint (chef fractions).
+	const BOTTLE_PIVX = 0.19;
+	const BOTTLE_PIVY = 0.8;
+	const mascotLeft = $derived(mascotPose.x - mascotPose.width / 2);
+	const mascotTop = $derived(mascotPose.y - mascotPose.height / 2);
+	const bottlePivotX = $derived(mascotLeft + BOTTLE_PIVX * mascotPose.width);
+	const bottlePivotY = $derived(mascotTop + BOTTLE_PIVY * mascotPose.height);
+	// A quick damped wiggle every few seconds (matching the splash's bottle-shake), otherwise still.
+	const BOTTLE_PERIOD = 5000; // ms between shakes
+	const SHAKE_DUR = 950; // ms the wiggle lasts
+	const bottleShake = $derived.by(() => {
+		const t = clock % BOTTLE_PERIOD;
+		if (t > SHAKE_DUR) return 0;
+		const u = t / SHAKE_DUR; // 0..1 across the shake
+		return 0.058 * Math.exp(-2.7 * u) * Math.sin(u * 2 * Math.PI * 2.6); // ~3.3° damped, ~2.6 wiggles
+	});
 	// Desktop base game uses the new desktop diner art; free games keep the grey-kitchen special bg.
 	const key = $derived(isFreegame ? 'backgroundWideBonus' : 'backgroundDesktop');
 	const portraitKey = $derived(isFreegame ? 'backgroundPortraitBonus' : 'backgroundPortrait');
@@ -145,6 +162,17 @@
 		pupils={mascotPupils}
 		lids={mascotLids}
 		skin={0xec9c58}
+	/>
+	<!-- The held ketchup bottle, overlaid so it can shake about the wrist like the splash chef's. -->
+	<Sprite
+		key="mascotBottle"
+		x={bottlePivotX}
+		y={bottlePivotY}
+		anchor={{ x: BOTTLE_PIVX, y: BOTTLE_PIVY }}
+		width={mascotPose.width}
+		height={mascotPose.height}
+		rotation={bottleShake}
+		zIndex={0.5}
 	/>
 {/if}
 {#if showArt && showSpecialMascot}
