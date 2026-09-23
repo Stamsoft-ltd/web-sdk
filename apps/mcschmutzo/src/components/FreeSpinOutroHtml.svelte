@@ -11,7 +11,6 @@
 
 	// Small plaque (congrats-cover) for the total-win outro; burger sits on its top edge.
 	const plaqueArt = ap('/assets/mcschmutzo/congrats-cover-sm.webp');
-	const burgerArt = ap('/assets/mcschmutzo/congrats-burger.webp');
 	const sauceYellowBig = ap('/assets/mcschmutzo/congrats-sauce-yellow-big.webp');
 	const sauceRedBig = ap('/assets/mcschmutzo/congrats-sauce-red-big.webp');
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
@@ -25,6 +24,7 @@
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import BurgerStack from './BurgerStack.svelte';
 
 	const context = getContext();
 
@@ -98,8 +98,8 @@
 			<img class="fo-sauce fo-sauce--tl" src={sauceYellowBig} alt="" draggable="false" />
 			<img class="fo-sauce fo-sauce--tr" src={sauceRedBig} alt="" draggable="false" />
 
-			<!-- Burger perched on the top edge of the plaque. -->
-			<img class="fo-burger" src={burgerArt} alt="" draggable="false" />
+			<!-- Burger perched on the top edge of the plaque — the real slice burger so it assembles. -->
+			<div class="fo-burger"><BurgerStack /></div>
 
 			<div class="fo-plaque" style={`background-image:url('${plaqueArt}')`}>
 				<div class="fo-content">
@@ -169,45 +169,40 @@
 			fo-throb 2.6s ease-in-out 0.85s infinite;
 	}
 	.fo-sauce--tl {
-		width: 33%;
-		top: -18%;
-		left: -2%;
+		width: 40%;
+		top: -24%;
+		left: -8%;
 	}
 	.fo-sauce--tr {
-		width: 33%;
-		top: -22%;
-		right: -2%;
+		width: 40%;
+		top: -28%;
+		right: -8%;
 	}
 	/* Under splashes: red beneath the left yellow, yellow beneath the right red. */
 	.fo-sauce--ul {
-		width: 22%;
-		top: 40%;
-		left: -6%;
+		width: 28%;
+		top: 44%;
+		left: -11%;
 	}
 	.fo-sauce--ur {
-		width: 22%;
-		top: 36%;
-		right: -6%;
+		width: 28%;
+		top: 40%;
+		right: -11%;
 	}
 
-	/* Burger peeks over the top edge of the plaque from BEHIND it (z-index below the plaque), bigger. */
+	/* Burger peeks over the top edge of the plaque — the real slice-built burger (BurgerStack) so it
+	   assembles / disassembles; a contained --sep keeps the burst from spreading too far up. */
 	.fo-burger {
 		position: absolute;
 		left: 50%;
-		top: -30%;
+		top: -34%;
 		transform: translateX(-50%);
-		width: 26%;
-		height: auto;
+		width: 27%;
+		aspect-ratio: 1.077;
 		z-index: 0;
 		pointer-events: none;
-		filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.4));
-		/* Base anchored so the ongoing bounce squashes onto the plaque edge, not up past the top. */
-		transform-origin: 50% 100%;
-		/* Pop in once, then keep the burger alive with a seamless squash-and-stretch bounce (same
-		   playful energy as the board/win-pad burger; base-anchored so it can't overflow upward). */
-		animation:
-			fo-burger-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both,
-			fo-burger-bounce 2.4s ease-in-out 0.45s infinite;
+		--sep: 0.5;
+		animation: fo-burger-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 	}
 
 	.fo-plaque {
@@ -314,20 +309,14 @@
 		60% { opacity: 1; transform: translateX(-50%) scale(1.06); }
 		100% { opacity: 1; transform: translateX(-50%) scale(1); }
 	}
-	@keyframes fo-burger-bounce {
-		0%, 100% { transform: translateX(-50%) scale(1, 1); }
-		28% { transform: translateX(-50%) scale(0.97, 1.04); }
-		52% { transform: translateX(-50%) scale(1.04, 0.96); }
-		76% { transform: translateX(-50%) scale(0.99, 1.01); }
-	}
 	@keyframes fo-splash {
-		0% { opacity: 0; transform: scale(0.25) rotate(-20deg); }
-		70% { opacity: 1; transform: scale(1.08) rotate(5deg); }
+		0% { opacity: 0; transform: scale(0.15) rotate(-28deg); }
+		70% { opacity: 1; transform: scale(1.12) rotate(6deg); }
 		100% { opacity: 1; transform: scale(1) rotate(0deg); }
 	}
 	@keyframes fo-throb {
 		0%, 100% { transform: scale(1) rotate(0deg); }
-		50% { transform: scale(1.045) rotate(2deg); }
+		50% { transform: scale(1.07) rotate(3.5deg); }
 	}
 	@keyframes fo-breathe {
 		0%, 100% { transform: scale(1); }

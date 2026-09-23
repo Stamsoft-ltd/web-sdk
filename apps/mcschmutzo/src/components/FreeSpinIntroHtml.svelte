@@ -4,9 +4,9 @@
 
 	// Large plaque (bigger-cover) for the bonus intro; the burger sits on its top edge.
 	const plaqueArt = ap('/assets/mcschmutzo/congrats-cover-lg.webp');
-	const burgerArt = ap('/assets/mcschmutzo/congrats-burger.webp');
 	const sauceYellowBig = ap('/assets/mcschmutzo/congrats-sauce-yellow-big.webp');
 	const sauceRedBig = ap('/assets/mcschmutzo/congrats-sauce-red-big.webp');
+	const starArt = ap('/assets/mcschmutzo/win/parts/win-star.webp');
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
 </script>
 
@@ -16,6 +16,7 @@
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import BurgerStack from './BurgerStack.svelte';
 
 	const context = getContext();
 
@@ -94,8 +95,12 @@
 			<img class="fs-sauce fs-sauce--tl" src={sauceYellowBig} alt="" draggable="false" />
 			<img class="fs-sauce fs-sauce--tr" src={sauceRedBig} alt="" draggable="false" />
 
-			<!-- Burger perched on the top edge of the plaque. -->
-			<img class="fs-burger" src={burgerArt} alt="" draggable="false" />
+			<!-- Burger perched on the top edge of the plaque — the real slice burger so it assembles. -->
+			<div class="fs-burger"><BurgerStack /></div>
+
+			<!-- Flanking stars (top-right + bottom-left) that twinkle, like the win pad. -->
+			<img class="fs-star fs-star--tr" src={starArt} alt="" draggable="false" />
+			<img class="fs-star fs-star--bl" src={starArt} alt="" draggable="false" />
 
 			<div class="fs-plaque" style={`background-image:url('${plaqueArt}')`}>
 				<div class="fs-content">
@@ -168,27 +173,27 @@
 			fs-splash 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.22s both,
 			fs-throb 2.6s ease-in-out 0.85s infinite;
 	}
-	/* Top splashes (over): pulled in so they don't overflow the screen. */
+	/* Top splashes (over): bigger sprays that push out past the plaque corners. */
 	.fs-sauce--tl {
-		width: 29%;
-		top: -8%;
-		left: 0%;
+		width: 37%;
+		top: -12%;
+		left: -6%;
 	}
 	.fs-sauce--tr {
-		width: 29%;
-		top: -10%;
-		right: 0%;
+		width: 37%;
+		top: -14%;
+		right: -6%;
 	}
 	/* Under splashes: red beneath the left yellow, yellow beneath the right red. */
 	.fs-sauce--ul {
-		width: 23%;
-		top: 26%;
-		left: -3%;
+		width: 30%;
+		top: 30%;
+		left: -8%;
 	}
 	.fs-sauce--ur {
-		width: 23%;
-		top: 24%;
-		right: -3%;
+		width: 30%;
+		top: 28%;
+		right: -8%;
 	}
 
 	.fs-plaque {
@@ -204,24 +209,58 @@
 		animation: fs-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 	}
 
-	/* Burger peeks over the top edge of the plaque from BEHIND it (z-index below the plaque), bigger. */
+	/* Burger peeks over the top edge of the plaque from BEHIND it. It's the real slice-built burger
+	   (BurgerStack) so it assembles / disassembles like the reels; a contained --sep keeps the burst
+	   from spreading too far above the plaque. Pops in once, then the slices loop. */
 	.fs-burger {
 		position: absolute;
 		left: 50%;
-		top: -20%;
+		top: -24%;
 		transform: translateX(-50%);
-		width: 26%;
-		height: auto;
+		width: 27%;
+		aspect-ratio: 1.077;
 		z-index: 0;
 		pointer-events: none;
-		filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.4));
-		/* Base anchored so the ongoing bounce squashes onto the plaque edge, not up past the top. */
-		transform-origin: 50% 100%;
-		/* Pop in once, then keep the burger alive with a seamless squash-and-stretch bounce (same
-		   playful energy as the board/win-pad burger; base-anchored so it can't overflow upward). */
+		--sep: 0.5;
+		animation: fs-burger-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+	}
+
+	/* Twinkling stars flanking the plaque (top-right + bottom-left), like the win pad. */
+	.fs-star {
+		position: absolute;
+		width: 12%;
+		height: auto;
+		z-index: 2;
+		pointer-events: none;
+		filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35));
 		animation:
-			fs-burger-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both,
-			fs-burger-bounce 2.4s ease-in-out 0.45s infinite;
+			fs-star-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both,
+			fs-star-twinkle 1.5s ease-in-out 0.9s infinite;
+	}
+	.fs-star--tr {
+		top: -4%;
+		right: 4%;
+	}
+	.fs-star--bl {
+		bottom: -2%;
+		left: 4%;
+		/* Offset so the two don't twinkle in lock-step. */
+		animation-delay: 0.45s, 1.65s;
+	}
+	@keyframes fs-star-in {
+		0% { opacity: 0; transform: scale(0) rotate(-45deg); }
+		70% { opacity: 1; transform: scale(1.18) rotate(9deg); }
+		100% { opacity: 1; transform: scale(1) rotate(0deg); }
+	}
+	@keyframes fs-star-twinkle {
+		0%, 100% {
+			transform: scale(1) rotate(-5deg);
+			filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35)) brightness(1);
+		}
+		50% {
+			transform: scale(1.14) rotate(5deg);
+			filter: drop-shadow(0 0 9px rgba(255, 226, 120, 0.95)) brightness(1.28);
+		}
 	}
 
 	/* Copy sits within the red field of the plaque. */
@@ -341,28 +380,22 @@
 		60% { opacity: 1; transform: translateX(-50%) scale(1.06); }
 		100% { opacity: 1; transform: translateX(-50%) scale(1); }
 	}
-	@keyframes fs-burger-bounce {
-		0%, 100% { transform: translateX(-50%) scale(1, 1); }
-		28% { transform: translateX(-50%) scale(0.97, 1.04); }
-		52% { transform: translateX(-50%) scale(1.04, 0.96); }
-		76% { transform: translateX(-50%) scale(0.99, 1.01); }
-	}
-	/* Sauces get THROWN in behind the plaque (spin + overshoot), a beat later. */
+	/* Sauces get THROWN in behind the plaque (spin + overshoot), a beat later — a bigger burst now. */
 	@keyframes fs-splash {
-		0% { opacity: 0; transform: scale(0.25) rotate(-20deg); }
-		70% { opacity: 1; transform: scale(1.08) rotate(5deg); }
+		0% { opacity: 0; transform: scale(0.15) rotate(-28deg); }
+		70% { opacity: 1; transform: scale(1.12) rotate(6deg); }
 		100% { opacity: 1; transform: scale(1) rotate(0deg); }
 	}
 	@keyframes fs-throb {
 		0%, 100% { transform: scale(1) rotate(0deg); }
-		50% { transform: scale(1.045) rotate(2deg); }
+		50% { transform: scale(1.07) rotate(3.5deg); }
 	}
 	@keyframes fs-breathe {
 		0%, 100% { transform: scale(1); }
 		50% { transform: scale(1.04); }
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.fs-plaque, .fs-burger, .fs-sauce, .fs-congrats { animation: none; }
+		.fs-plaque, .fs-burger, .fs-sauce, .fs-congrats, .fs-star { animation: none; }
 	}
 
 	/* Tiny popouts (~400x225): shrink the close (X) so it doesn't dominate the small screen. */
