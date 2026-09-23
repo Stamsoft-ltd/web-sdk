@@ -135,15 +135,6 @@
 			return { id: i, x, y, d, alpha };
 		}),
 	);
-
-	// The wooden spoon (cut out of the pot) is overlaid and gently STIRRED — a slow sway about the point
-	// where it meets the soup, so it reads as being turned through the simmering soup.
-	const SPOON_PIVX = 0.72;
-	const SPOON_PIVY = 0.41;
-	const spoonPivotX = $derived(potLeft + SPOON_PIVX * potWidth);
-	const spoonPivotY = $derived(potTop + SPOON_PIVY * potHeight);
-	const STIR_PERIOD = 2800; // ms per slow back-and-forth
-	const spoonStir = $derived(0.033 * Math.sin((2 * Math.PI * (elapsed % STIR_PERIOD)) / STIR_PERIOD)); // ~±1.9°
 </script>
 
 <!-- Chef (behind) salting the pot (in front), with a falling stream of salt grains. The whole group
@@ -216,15 +207,4 @@
 			zIndex={2.6}
 		/>
 	{/each}
-	<!-- The wooden spoon, overlaid on the (spoon-less) pot and slowly stirred about the soup line. -->
-	<Sprite
-		key="specialSpoon"
-		x={spoonPivotX}
-		y={spoonPivotY}
-		anchor={{ x: SPOON_PIVX, y: SPOON_PIVY }}
-		width={potWidth}
-		height={potHeight}
-		rotation={spoonStir}
-		zIndex={2.7}
-	/>
 </Container>
