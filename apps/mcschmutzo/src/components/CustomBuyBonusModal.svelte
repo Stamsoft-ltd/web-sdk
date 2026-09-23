@@ -20,6 +20,7 @@
 	import { mcschmutzoStakeDerived } from '../state/mcschmutzoStake.svelte';
 	import BurgerStack from './BurgerStack.svelte';
 	import CustomConfirmModal from './CustomConfirmModal.svelte';
+	import ScatterStack from './ScatterStack.svelte';
 
 	type ModeId = 'enhancer1' | 'featureSpin' | 'bonus1' | 'bonus2';
 	type Mode = {
@@ -192,6 +193,12 @@
 						<!-- The Lock & Re-spin feature IS the burger symbol — rebuild it from its slices so it
 						     assembles / disassembles exactly like the reels. -->
 						<div class="bb-burger-holder"><BurgerStack /></div>
+					{:else if mode.id === 'bonus1' || mode.id === 'enhancer1'}
+						<!-- Both scatter-shack cards ARE the SCATTER symbol — rebuild it from its parts so the
+						     sign sways like the reels. Offset the two so they don't sway in lock-step. -->
+						<div class="bb-scatter-holder">
+							<ScatterStack delay={mode.id === 'enhancer1' ? -1.35 : 0} />
+						</div>
 					{:else}
 						<img src={mode.art} alt="" draggable="false" />
 					{/if}
@@ -426,6 +433,11 @@
 		   inside the (smaller) box. */
 		--sep: 0.55;
 	}
+	/* Both scatter cards rebuild the SCATTER symbol (stand + swaying sign) at the icon footprint. */
+	.bb-scatter-holder {
+		height: clamp(60px, 11vmin, 100px);
+		aspect-ratio: 1;
+	}
 	/* Super Bonus IS the prize wheel — spin it steadily so the card previews what it does. */
 	.bb-art--wheel img {
 		animation: bb-wheel-spin 5.5s linear infinite;
@@ -434,25 +446,8 @@
 		from { transform: rotate(0); }
 		to { transform: rotate(360deg); }
 	}
-	/* Both the Extra Chance and Normal Bonus cards show the SCATTER shack — bob + rock it gently on its
-	   base so it "moves" like it does when it lands. The two are offset so they don't sway in lock-step. */
-	.bb-art--scatter img,
-	.bb-art--chance img {
-		transform-origin: 50% 92%;
-		animation: bb-scatter-move 2.6s ease-in-out infinite;
-	}
-	.bb-art--chance img {
-		animation-delay: -1.3s;
-	}
-	@keyframes bb-scatter-move {
-		0%, 100% { transform: translateY(0) rotate(0deg); }
-		30% { transform: translateY(-5%) rotate(-1.8deg); }
-		70% { transform: translateY(-2.5%) rotate(1.8deg); }
-	}
 	@media (prefers-reduced-motion: reduce) {
-		.bb-art--wheel img,
-		.bb-art--scatter img,
-		.bb-art--chance img {
+		.bb-art--wheel img {
 			animation: none;
 		}
 	}
