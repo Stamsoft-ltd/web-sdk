@@ -473,6 +473,12 @@ export default {
 		src: new URL('../../assets/mcschmutzo/guys/special_base.webp', import.meta.url).href,
 		preload: true,
 	},
+	specialLabel: {
+		// The salting chef's "McSchmutzo" nametag, cut out (patched behind) so it can jiggle on its pin.
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_label.webp', import.meta.url).href,
+		preload: true,
+	},
 	specialPupilL: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/guys/special_pupilL.webp', import.meta.url).href,

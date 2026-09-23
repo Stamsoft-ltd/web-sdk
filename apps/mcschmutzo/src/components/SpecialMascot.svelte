@@ -152,6 +152,20 @@
 		skin={0xef9650}
 		phase={2000}
 		sparkle={{ nx: 0.49, ny: 0.455, size: 0.075, period: 3800, phase: 1200 }}
+		extras={[
+			{
+				key: 'specialLabel',
+				nx: 0.566,
+				ny: 0.6003,
+				nw: 0.1636,
+				nh: 0.1054,
+				px: 0.5,
+				py: 0.07,
+				amp: 0.04,
+				period: 320,
+				phase: 900,
+			},
+		]}
 	/>
 	<!-- Hand+shaker+forearm (clean full-frame layer), flicking about the elbow. Above the base, below
 	     the falling salt so the grains read as leaving the cap. -->
