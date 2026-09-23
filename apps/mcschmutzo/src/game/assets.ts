@@ -452,6 +452,12 @@ export default {
 		src: new URL('../../assets/mcschmutzo/guys/mascot_bottle.webp', import.meta.url).href,
 		preload: true,
 	},
+	mascotLabel: {
+		// The "McSchmutzo" nametag, cut out of the base (patched behind) so it can jiggle on its pin.
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mascot_label.webp', import.meta.url).href,
+		preload: true,
+	},
 	mascotPupilL: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/guys/mascot_pupilL.webp', import.meta.url).href,

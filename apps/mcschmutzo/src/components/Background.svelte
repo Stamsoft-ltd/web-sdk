@@ -75,8 +75,8 @@
 	const mascotTop = $derived(mascotPose.y - mascotPose.height / 2);
 	const bottlePivotX = $derived(mascotLeft + BOTTLE_PIVX * mascotPose.width);
 	const bottlePivotY = $derived(mascotTop + BOTTLE_PIVY * mascotPose.height);
-	// A quick damped wiggle every few seconds (matching the splash's bottle-shake), otherwise still.
-	const BOTTLE_PERIOD = 5000; // ms between shakes
+	// A quick damped wiggle, more often now (matching the splash's bottle-shake), otherwise still.
+	const BOTTLE_PERIOD = 2800; // ms between shakes
 	const SHAKE_DUR = 950; // ms the wiggle lasts
 	const bottleShake = $derived.by(() => {
 		const t = clock % BOTTLE_PERIOD;
@@ -162,6 +162,19 @@
 		pupils={mascotPupils}
 		lids={mascotLids}
 		skin={0xec9c58}
+		extras={[
+			{
+				key: 'mascotLabel',
+				nx: 0.4406,
+				ny: 0.5973,
+				nw: 0.2434,
+				nh: 0.1026,
+				px: 0.5,
+				py: 0.07,
+				amp: 0.04,
+				period: 320,
+			},
+		]}
 	/>
 	<!-- The held ketchup bottle, overlaid so it can shake about the wrist like the splash chef's. -->
 	<Sprite
