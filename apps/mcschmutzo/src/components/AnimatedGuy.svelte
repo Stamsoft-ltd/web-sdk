@@ -59,10 +59,10 @@
 	const KF = [
 		{ t: 0.0, x: 0, y: 0 },
 		{ t: 0.4, x: 0, y: 0 },
-		{ t: 0.45, x: 0.009, y: -0.004 }, // quick glance to his left/up (small — stays in the sclera)
-		{ t: 0.66, x: 0.009, y: -0.004 },
-		{ t: 0.71, x: 0.005, y: 0.006 }, // then down a touch
-		{ t: 0.9, x: 0.005, y: 0.006 },
+		{ t: 0.45, x: 0.0045, y: -0.002 }, // quick glance to his left/up (tiny — pupils stay well inside the sclera)
+		{ t: 0.66, x: 0.0045, y: -0.002 },
+		{ t: 0.71, x: 0.0025, y: 0.003 }, // then down a touch
+		{ t: 0.9, x: 0.0025, y: 0.003 },
 		{ t: 0.95, x: 0, y: 0 },
 		{ t: 1.0, x: 0, y: 0 },
 	];

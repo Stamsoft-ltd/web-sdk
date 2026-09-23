@@ -52,13 +52,13 @@
 		mascotIdle(elapsed, cx, guyY, guyWidth, guyHeight, { sway: 0, breathe: 0.005, bob: 0.004 }),
 	);
 
-	// The WHOLE arm (hand+shaker+forearm+upper-arm to the shoulder — extracted clean from the art, the
-	// base has exactly that region removed) FLICKS about the SHOULDER SOCKET. Pivoting at the socket
-	// keeps the arm attached to the body (the socket point barely moves, so the body stays covered)
-	// while the forearm+hand swing out over the background — no cut at the shoulder. The salt releases
-	// on the down-flick so arm + falling salt read as one action.
+	// The arm (a clean full-frame copy of the hand+shaker+arm) is OVERLAID on the FULL base (the base
+	// still contains the arm at rest — no hole is cut) and flicks a hair about the shoulder socket. Like
+	// the splash chef's patched base, nothing behind the arm is transparent, so the flick can never
+	// detach the arm or reveal the black oven behind it; the tiny angle keeps the overlaid arm from
+	// showing any double edge against the resting one. Salt releases on the down-flick.
 	const SHAKE_PERIOD = 560; // ms per flick
-	const SHAKE_AMP = 0.048; // rad (~2.7°) about the shoulder — visible but seamless flick
+	const SHAKE_AMP = 0.028; // rad (~1.6°) — small flick; the base is full (no hole) so no black is ever revealed
 	const shakeP = $derived((elapsed % SHAKE_PERIOD) / SHAKE_PERIOD);
 	const armAngle = $derived(SHAKE_AMP * Math.sin(2 * Math.PI * shakeP)); // + = flick down (cap dips)
 
