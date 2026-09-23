@@ -425,8 +425,15 @@ export default {
 		preload: true,
 	},
 	specialPot: {
+		// Pot with the wooden spoon cut out (patched behind) so the spoon can be overlaid and stirred.
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/special-pot.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/special-pot-nospoon.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialSpoon: {
+		// The extracted wooden spoon (full-frame canvas), overlaid on the pot and gently stirred.
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/special-spoon.webp', import.meta.url).href,
 		preload: true,
 	},
 	// Layered chefs (base with the pupils cut out + the pupils as their own sprites) so the eyes can

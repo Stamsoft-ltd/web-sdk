@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Container, Rectangle, Sprite } from 'pixi-svelte';
+	import { Circle, Container, Rectangle, Sprite } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
 	import { mascotIdle } from '../game/mascotIdle';
@@ -104,6 +104,46 @@
 			return { x, y, size, alpha };
 		}),
 	);
+
+	// The soup simmers: a few bubbles swell on the surface and pop, on a loop. Positions are fixed per
+	// bubble (spread across the surface ellipse) so they read as spots that keep bubbling, not drifting.
+	const BUBBLE_N = 8;
+	const BUBBLE_PERIOD = 2400; // ms per swell→pop
+	const SOUP_CX = 0.45;
+	const SOUP_CY = 0.34;
+	const SOUP_RX = 0.29;
+	const SOUP_RY = 0.075; // surface ellipse (pot fractions)
+	const potLeft = $derived(cx + guyWidth * 0.02 - potWidth / 2);
+	const potTop = $derived(potY - potHeight / 2);
+	const bubbles = $derived.by(() =>
+		Array.from({ length: BUBBLE_N }, (_, i) => {
+			const p = (((elapsed / BUBBLE_PERIOD + i / BUBBLE_N) % 1) + 1) % 1;
+			// Fixed spot per bubble: golden-angle spread inside the surface ellipse.
+			const ang = i * 2.3999;
+			const rad = 0.25 + 0.7 * (((i * 0.618) % 1 + 1) % 1);
+			const bx = SOUP_CX + Math.cos(ang) * SOUP_RX * rad;
+			const by = SOUP_CY + Math.sin(ang) * SOUP_RY * rad;
+			const x = potLeft + bx * potWidth;
+			const y = potTop + by * potHeight;
+			// Swell to full by 55%, then pop (expand + fade) and rest until it swells again.
+			const grow = Math.min(1, p / 0.5);
+			const pop = p > 0.58 ? Math.min(1, (p - 0.58) / 0.22) : 0;
+			const base = Math.max(3, potHeight * 0.03) * (0.55 + 0.45 * ((i * 7) % 3));
+			const d = base * (0.35 + 0.65 * grow) * (1 + pop * 0.9);
+			const fadeIn = Math.min(1, p / 0.06);
+			const alpha = fadeIn * (pop > 0 ? Math.max(0, 1 - pop) : 1);
+			return { id: i, x, y, d, alpha };
+		}),
+	);
+
+	// The wooden spoon (cut out of the pot) is overlaid and gently STIRRED — a slow sway about the point
+	// where it meets the soup, so it reads as being turned through the simmering soup.
+	const SPOON_PIVX = 0.72;
+	const SPOON_PIVY = 0.41;
+	const spoonPivotX = $derived(potLeft + SPOON_PIVX * potWidth);
+	const spoonPivotY = $derived(potTop + SPOON_PIVY * potHeight);
+	const STIR_PERIOD = 2800; // ms per slow back-and-forth
+	const spoonStir = $derived(0.033 * Math.sin((2 * Math.PI * (elapsed % STIR_PERIOD)) / STIR_PERIOD)); // ~±1.9°
 </script>
 
 <!-- Chef (behind) salting the pot (in front), with a falling stream of salt grains. The whole group
@@ -153,5 +193,38 @@
 		width={potWidth}
 		height={potHeight}
 		zIndex={2}
+	/>
+	<!-- Simmering bubbles on the soup surface: a lighter-green dome + a soft highlight, swelling and
+	     popping. Above the pot so they read as sitting on the liquid. -->
+	{#each bubbles as bub (bub.id)}
+		<Circle
+			x={bub.x}
+			y={bub.y}
+			diameter={bub.d}
+			anchor={0.5}
+			backgroundColor={0x8fc22a}
+			backgroundAlpha={bub.alpha * 0.85}
+			zIndex={2.5}
+		/>
+		<Circle
+			x={bub.x - bub.d * 0.16}
+			y={bub.y - bub.d * 0.2}
+			diameter={bub.d * 0.34}
+			anchor={0.5}
+			backgroundColor={0xe7f5b8}
+			backgroundAlpha={bub.alpha * 0.8}
+			zIndex={2.6}
+		/>
+	{/each}
+	<!-- The wooden spoon, overlaid on the (spoon-less) pot and slowly stirred about the soup line. -->
+	<Sprite
+		key="specialSpoon"
+		x={spoonPivotX}
+		y={spoonPivotY}
+		anchor={{ x: SPOON_PIVX, y: SPOON_PIVY }}
+		width={potWidth}
+		height={potHeight}
+		rotation={spoonStir}
+		zIndex={2.7}
 	/>
 </Container>
