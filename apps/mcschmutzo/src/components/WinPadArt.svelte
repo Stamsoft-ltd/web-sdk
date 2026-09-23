@@ -27,8 +27,10 @@
 	const BANNER_AR: Record<string, number> = { sweet: 3.39, legendary: 3.25, epic: 3.22, wild: 3.29, mythic: 3.3 };
 	const WORD_AR: Record<string, number> = { sweet: 2.645, legendary: 3.16, epic: 2.078, wild: 2.365, mythic: 2.573 };
 	const WIN_AR = 2.374;
-	// Tier word target height (fraction of pad); LEGENDARY is long, so shrink it a touch to fit the banner.
-	const TIER_H: Record<string, number> = { sweet: 0.15, legendary: 0.125, epic: 0.15, wild: 0.15, mythic: 0.15 };
+	// Tier word target height (fraction of pad) — SAME for every tier so the wordmarks read equal-sized;
+	// longer words (LEGENDARY) just run wider, and still fit inside the banner.
+	const TIER_H_ALL = 0.145;
+	const TIER_H: Record<string, number> = { sweet: TIER_H_ALL, legendary: TIER_H_ALL, epic: TIER_H_ALL, wild: TIER_H_ALL, mythic: TIER_H_ALL };
 	const bannerAR = $derived(BANNER_AR[tier] ?? 3.3);
 	const wordAR = $derived(WORD_AR[tier] ?? 2.5);
 	const tierH = $derived(TIER_H[tier] ?? 0.15);
