@@ -102,6 +102,13 @@
 			<img class="fs-star fs-star--tr" src={starArt} alt="" draggable="false" />
 			<img class="fs-star fs-star--bl" src={starArt} alt="" draggable="false" />
 
+			<!-- Sauce drips off each splash: a drop pinches off and falls under gravity, same colours +
+			     consistency as the button drips. -->
+			<span class="fs-drip fs-drip--tl"></span>
+			<span class="fs-drip fs-drip--tr"></span>
+			<span class="fs-drip fs-drip--ul"></span>
+			<span class="fs-drip fs-drip--ur"></span>
+
 			<div class="fs-plaque" style={`background-image:url('${plaqueArt}')`}>
 				<div class="fs-content">
 					<p class="fs-congrats">{i18nDerived.translate('CONGRATS')}</p>
@@ -248,6 +255,29 @@
 		left: 11%;
 		/* Offset so the two don't twinkle in lock-step. */
 		animation-delay: 0.45s, 1.65s;
+	}
+	/* Sauce drips off the splashes (same colours + drop consistency as the button drips). */
+	.fs-drip {
+		position: absolute;
+		z-index: 2;
+		width: clamp(9px, 2.3%, 20px);
+		aspect-ratio: 0.82;
+		border-radius: 50% 50% 50% 50% / 38% 38% 64% 64%;
+		pointer-events: none;
+		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+		transform: translate(-50%, 0) scale(0);
+		animation: fs-drip-fall 2.4s ease-in 1s infinite;
+	}
+	/* On the cream frame just under each splash tip (a red drop would vanish on the red field). */
+	.fs-drip--tl { top: 20%; left: 7%; background: #efa80e; }
+	.fs-drip--tr { top: 16%; right: 7%; background: #c41e0a; animation-delay: 1.6s; }
+	.fs-drip--ul { top: 62%; left: 4%; background: #c41e0a; animation-delay: 0.6s; }
+	.fs-drip--ur { top: 68%; right: 4%; background: #efa80e; animation-delay: 2.1s; }
+	@keyframes fs-drip-fall {
+		0%, 42% { transform: translate(-50%, 0) scale(0.3); opacity: 0; }
+		52% { transform: translate(-50%, 0.4vmin) scale(1); opacity: 1; }
+		82% { opacity: 1; }
+		100% { transform: translate(-50%, 5vmin) scale(0.82, 1.35); opacity: 0; }
 	}
 	@keyframes fs-star-in {
 		0% { opacity: 0; transform: scale(0) rotate(-45deg); }
@@ -397,7 +427,7 @@
 		50% { transform: scale(1.04); }
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.fs-plaque, .fs-burger, .fs-sauce, .fs-congrats, .fs-star { animation: none; }
+		.fs-plaque, .fs-burger, .fs-sauce, .fs-congrats, .fs-star, .fs-drip { animation: none; }
 	}
 
 	/* Tiny popouts (~400x225): shrink the close (X) so it doesn't dominate the small screen. */
