@@ -48,7 +48,7 @@
 >
 	{#if summary && amount > 0}<WinCoins tier={1} reduced={runtime.reduced} />{/if}
 	<div class="bonus-body">
-		<section class="bonus-stage">
+		<section class="bonus-stage" style={`--arrival-ms:${summary ? 420 : 700}ms`}>
 			<div class="bonus-aura" aria-hidden="true"></div>
 			<CelebrationFlourish reduced={runtime.reduced} />
 			<h2 class:spine-ready={spineReady}>
@@ -61,6 +61,7 @@
 					rig={`bonus-${summary ? 'complete' : skin}`}
 					atlas="presentations"
 					intro="enter"
+					speed={summary ? 1 : 0.7}
 					reduced={runtime.reduced}
 					onready={(value) => (spineReady = value)}
 				/>
@@ -126,7 +127,7 @@
 		align-items: center;
 		gap: clamp(10px, 2vh, 20px);
 		text-align: center;
-		animation: crest-arrive 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation: crest-arrive var(--arrival-ms) cubic-bezier(0.16, 1, 0.3, 1) both;
 	}
 	h2 {
 		position: relative;

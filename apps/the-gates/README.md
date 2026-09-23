@@ -277,7 +277,7 @@ in this UI phase; no math generation or validation executed.
 - Coins are 3x former desktop size (mobile bounded). Gate dust uses round ID +
   `eventId` (book index fallback), with independent X/Y, left/right drift, rotation,
   size, 0–780ms delays and 1.05–2.15s lifetimes. Same seed gives same replay.
-- Left-to-right reveal/tumble columns use 38/24/10ms Normal/Fast/Turbo offsets.
+- Left-to-right reveal/tumble columns use 50/24/10ms Normal/Fast/Turbo offsets.
   Live Space skip and mid-bonus speed switching retain event order and settlement.
 
 Assets and rebuild:
@@ -298,7 +298,7 @@ Retain `SPINE-LICENSE.txt`; release requires the studio's appropriate Spine lice
 The Canvas2D adapter currently supports region/mesh attachments and normal/additive
 blend modes used by these rigs; it is not a general-purpose Spine renderer.
 
-Validation: 45 unit tests pass, including official-runtime rig parsing, independent
+Validation: 46 unit tests pass, including official-runtime rig parsing, independent
 paying tracks, flame frame transitions/loop seams, mode pulse staggering, concentric sun/bonus pivots, HD source resolution and queued
 presentation transitions. Mocked browser motion and dedicated Spine checks pass.
 TypeScript passes. Svelte check retains four pre-existing shared auth errors and
@@ -325,7 +325,7 @@ approval remain release QA.
   original/charred texture slots; no generic smoke sprite over an intact symbol.
 - Only `tumbleRemove.positions` trigger it; sticky wilds are excluded. Presentation
   randomness is seeded by round/reveal/cell, with no outcome RNG or math changes.
-- Uses the existing 210/190/70ms Normal/Fast/Turbo removal duration and live wave
+- Uses the 280/190/70ms Normal/Fast/Turbo removal duration and live wave
   deadline. Space and speed changes shorten the same effect without restarting it.
   Reduced motion retains simple removal; missing rigs retain the static fallback.
 - No new raster downloads, timers or tickers. Two temporary RGBA textures per
@@ -336,3 +336,23 @@ approval remain release QA.
 - Regression coverage: `symbolAsh.test.mjs`, `browser-ash.mjs` (three speeds,
   source-pixel breakup, removal-only scope, cleanup, Space skip, reduced motion,
   unchanged event checkpoints and settlement).
+
+
+### Normal pacing / bonus Info
+
+- Normal exit + full reveal now totals ~1 second. Normal winning highlights last
+  ~522ms, ash removal 280ms, and small-win settling ~392ms. Fast/Turbo profiles and
+  live skip remain unchanged.
+- Before applying a bonus-trigger event, retain the completed entry grid for
+  900ms at Normal, 450ms at Fast/Turbo, or 350ms after explicit skip (150ms reduced
+  motion). This also covers bought bonuses and Mystery selection; no reveal or
+  settlement event is skipped. Entry Spine animation plays at 0.7× speed (~1s),
+  with a 650ms dismissal guard; then the player chooses Continue. Win/summary
+  dismissal timing remains unchanged.
+- Info now describes Normal, Super, Hidden, Mystery, Extra Chance and Feature
+  Spin. Costs derive from the RGS contract. Rules checked against local
+  `math-sdk/games/0_0_the_gates/math_targets.py` and `gates_math.py`; no math edits.
+  New descriptions include English and Bulgarian strings, with existing fallback
+  behavior for other locales. Desktop/mobile scrolling verified.
+- `browser-pacing-info.mjs` checks all three bought entry paths, guards and all six
+  Info sections. Existing speed/skip and settlement regressions remain applicable.

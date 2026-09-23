@@ -1,0 +1,568 @@
+{
+  "status": "local_unit_contract_package_and_full_pilot_replay_passed",
+  "tests": {
+    "pipeline": 7,
+    "hidden": 4,
+    "tailFitting": 9,
+    "contract": 15
+  },
+  "productionCountPlan": {
+    "modePoolCounts": {
+      "BASE": {
+        "zero": 100000,
+        "normal": 100000,
+        "super": 100000,
+        "hidden": 100000,
+        "base": 100000
+      },
+      "CHANCE": {
+        "zero": 100000,
+        "normal": 100000,
+        "super": 100000,
+        "hidden": 100000,
+        "base": 100000
+      },
+      "FEATURE": {
+        "feature": 500000
+      },
+      "BONUS": {
+        "normal": 500000
+      },
+      "SUPER": {
+        "super": 500000
+      },
+      "MYSTERY": {
+        "normal": 166667,
+        "super": 166667,
+        "hidden": 166666
+      }
+    },
+    "booksPerMode": {
+      "BASE": 500000,
+      "CHANCE": 500000,
+      "FEATURE": 500000,
+      "BONUS": 500000,
+      "SUPER": 500000,
+      "MYSTERY": 500000
+    },
+    "totalPublishedBooks": 3000000,
+    "storage": "compressed streaming; no uncompressed copies",
+    "keepPools": false
+  },
+  "sourceSha256": {
+    "run.py": "61fe8981f72e7d0258edfcba8bfcf395b7125be77fc1eb0bb6391500a3f3db2f",
+    "artifacts.py": "3bc701402eb902365426dc0fffde3eeaaaed07874878697b49c975db17be4c2f",
+    "book_storage.py": "aa8da77a9e2366e54a00da655a53d065262a6519eba5009ee4d31f6b447d774a",
+    "validate_gates_artifacts.py": "9f2c44ef520d7d4a632c264038d36481039b2ede49d73de6e1a7e7d66a39d7c9",
+    "audit_hidden_spread.py": "7cfd97b3936f06af794827a8831c28798b9293ba1bd1147bf201cfebeebf02e2",
+    "reweight_only.py": "9777cf7c3d7a777744dfe0cd2e5f71da0d3bc09674321f2f9ed6179cd982a537",
+    "test_book_pipeline.py": "6f54ae84ace9fe875e6cf31cf43902af8a0ed9a5761d469811a465b6aa9b69d9"
+  },
+  "userDecision": "500k distinct event paths per mode; independent mode samples permitted. Same means/rules, finite distributions may differ.",
+  "largeRunStarted": false,
+  "smokeBooksPerMode": 30000,
+  "smokeOutput": "/tmp/gates-stream-smoke-30k",
+  "notes": [
+    "Default uses compressed scratch per mode; deletes only scratch from successful staging modes.",
+    "Existing libraries, uploads and rgs_verification.py untouched.",
+    "Local testing is not live Studio sign-off.",
+    "Pilot generated with the initial streamed runner; installed final revision additionally has read-only --plan, pre-publication report checking and no redundant for_mode deepcopy. Installed revision passed pipeline/unit/contract tests; full pilot replay uses installed validator."
+  ],
+  "negativePackageChecks": [
+    {
+      "case": "unknown-sampling-scheme",
+      "rejected": true,
+      "error": "Unsupported sampling scheme"
+    },
+    {
+      "case": "noninteger-count",
+      "rejected": true,
+      "error": "Invalid per-mode book count"
+    },
+    {
+      "case": "wrong-compressed-hash",
+      "rejected": true,
+      "error": "Compressed hash mismatch"
+    },
+    {
+      "case": "wrong-lookup-hash",
+      "rejected": true,
+      "error": "Lookup hash mismatch"
+    }
+  ],
+  "smokeReports": {
+    "BASE": {
+      "books": 30000,
+      "cost": 1,
+      "totalWeight": 4000000000000,
+      "meanBaseBetX": 0.961,
+      "weightedRtp": 0.961,
+      "rtpDelta": 0.0,
+      "tailRiskChecks": {
+        "5000": {
+          "probability": 4.54435975e-06,
+          "limit": 0.01,
+          "passed": true
+        },
+        "10000": {
+          "probability": 2.27032775e-06,
+          "limit": 0.005,
+          "passed": true
+        },
+        "25000": {
+          "probability": 1.338225e-08,
+          "limit": 0.002,
+          "passed": true
+        }
+      },
+      "baseGameMeanX": 0.547566986481,
+      "freeGameMeanX": 0.413433013519,
+      "stdDevBaseBetX": 32.30990516729587,
+      "hitRate": 0.30238649247125,
+      "bonusTriggerRate": 0.0025,
+      "bonusTierMix": {
+        "normal": 0.85,
+        "super": 0.14,
+        "hidden": 0.01
+      },
+      "maxWinRate": 1.338225e-08,
+      "payoutAtLeast5000xBaseBet": 4.54435975e-06,
+      "payoutAtLeast10000xBaseBet": 2.27032775e-06,
+      "roundWith1000xGateRate": 2.55e-11,
+      "averageGates": 0.0146778968655,
+      "averageWinningCascades": 0.442764043358,
+      "nonTenthPayoutRate": 0.068524449441,
+      "maxSingleBookProbability": 0.00011625,
+      "effectiveBookCount": 9458.692126787939,
+      "warnings": [],
+      "uncompressedSha256": "ceeed6f86ef523cef8ccf5dab75d5ac0a832e89ca29dd0d0d33a5ce823e9d440"
+    },
+    "CHANCE": {
+      "books": 30000,
+      "cost": 2,
+      "totalWeight": 4000000000000,
+      "meanBaseBetX": 1.922,
+      "weightedRtp": 0.961,
+      "rtpDelta": 0.0,
+      "tailRiskChecks": {
+        "5000": {
+          "probability": 1.3630985e-05,
+          "limit": 0.01,
+          "passed": true
+        },
+        "10000": {
+          "probability": 6.81111175e-06,
+          "limit": 0.005,
+          "passed": true
+        },
+        "25000": {
+          "probability": 4.061675e-08,
+          "limit": 0.002,
+          "passed": true
+        }
+      },
+      "baseGameMeanX": 0.6772812237102125,
+      "freeGameMeanX": 1.2447187762897876,
+      "stdDevBaseBetX": 57.14668698233138,
+      "hitRate": 0.307146052668,
+      "bonusTriggerRate": 0.0075,
+      "bonusTierMix": {
+        "normal": 0.85,
+        "super": 0.14,
+        "hidden": 0.01
+      },
+      "maxWinRate": 4.061675e-08,
+      "payoutAtLeast5000xBaseBet": 1.3630985e-05,
+      "payoutAtLeast10000xBaseBet": 6.81111175e-06,
+      "roundWith1000xGateRate": 8.725e-11,
+      "averageGates": 0.0243328199345,
+      "averageWinningCascades": 0.53994775035225,
+      "nonTenthPayoutRate": 0.0671015188935,
+      "maxSingleBookProbability": 0.00032049120375,
+      "effectiveBookCount": 9599.441135923742,
+      "warnings": [],
+      "uncompressedSha256": "2affb8225c66f8ee8ac2ea05ce047d7b43dd739fd5a93e614fa1e5d19dd10f23"
+    },
+    "FEATURE": {
+      "books": 30000,
+      "cost": 20,
+      "totalWeight": 4000000000000,
+      "meanBaseBetX": 19.22,
+      "weightedRtp": 0.961,
+      "rtpDelta": 0.0,
+      "tailRiskChecks": {
+        "5000": {
+          "probability": 4.19e-10,
+          "limit": 0.01,
+          "passed": true
+        },
+        "10000": {
+          "probability": 1.405e-10,
+          "limit": 0.005,
+          "passed": true
+        },
+        "25000": {
+          "probability": 1.75e-11,
+          "limit": 0.002,
+          "passed": true
+        }
+      },
+      "baseGameMeanX": 19.2197653648686,
+      "freeGameMeanX": 0.0002346351314,
+      "stdDevBaseBetX": 13.792788474211912,
+      "hitRate": 1.0,
+      "bonusTriggerRate": 2.72075825e-06,
+      "bonusTierMix": {
+        "normal": 0.9999913627019232,
+        "super": 5.696941284658422e-06,
+        "hidden": 2.940356792081766e-06
+      },
+      "maxWinRate": 1.75e-11,
+      "payoutAtLeast5000xBaseBet": 4.19e-10,
+      "payoutAtLeast10000xBaseBet": 1.405e-10,
+      "roundWith1000xGateRate": 2.5e-13,
+      "averageGates": 1.043492336296,
+      "averageWinningCascades": 4.001922632465,
+      "nonTenthPayoutRate": 0.0877102085075,
+      "maxSingleBookProbability": 0.00047677440975,
+      "effectiveBookCount": 4856.971641799686,
+      "warnings": [],
+      "uncompressedSha256": "4114893fb0242cbbcc72473f32bc4e4534f2215851dac6fcdd2442717bfce9c6"
+    },
+    "BONUS": {
+      "books": 30000,
+      "cost": 100,
+      "totalWeight": 4000000000000,
+      "meanBaseBetX": 96.1,
+      "weightedRtp": 0.961,
+      "rtpDelta": 0.0,
+      "tailRiskChecks": {
+        "5000": {
+          "probability": 9.577e-05,
+          "limit": 0.01,
+          "passed": true
+        },
+        "10000": {
+          "probability": 3.584e-05,
+          "limit": 0.005,
+          "passed": true
+        },
+        "25000": {
+          "probability": 4.51e-06,
+          "limit": 0.002,
+          "passed": true
+        }
+      },
+      "baseGameMeanX": 3.087694291,
+      "freeGameMeanX": 93.012305709,
+      "stdDevBaseBetX": 134.1552729428769,
+      "hitRate": 0.98409241,
+      "bonusTriggerRate": 1.0,
+      "bonusTierMix": {
+        "normal": 1.0,
+        "super": 0.0,
+        "hidden": 0.0
+      },
+      "maxWinRate": 4.51e-06,
+      "payoutAtLeast5000xBaseBet": 9.577e-05,
+      "payoutAtLeast10000xBaseBet": 3.584e-05,
+      "roundWith1000xGateRate": 2e-08,
+      "averageGates": 1.0244591,
+      "averageWinningCascades": 18.65292545,
+      "nonTenthPayoutRate": 0.4860792,
+      "maxSingleBookProbability": 0.01590759,
+      "effectiveBookCount": 238.78942667190563,
+      "warnings": [
+        "A single book exceeds 1% probability; increase outcome diversity and review weighting.",
+        "Effective outcome count below 1,000; prototype is not release-ready."
+      ],
+      "uncompressedSha256": "cea10dc131f554669a49165e70bcce6423f6abf956cbb65c140eab643b58447d"
+    },
+    "SUPER": {
+      "books": 30000,
+      "cost": 300,
+      "totalWeight": 4000000000000,
+      "meanBaseBetX": 288.3,
+      "weightedRtp": 0.961,
+      "rtpDelta": 0.0,
+      "tailRiskChecks": {
+        "5000": {
+          "probability": 0.00021962,
+          "limit": 0.01,
+          "passed": true
+        },
+        "10000": {
+          "probability": 0.00018259,
+          "limit": 0.005,
+          "passed": true
+        },
+        "25000": {
+          "probability": 0.00014519,
+          "limit": 0.002,
+          "passed": true
+        }
+      },
+      "baseGameMeanX": 5.1837325705,
+      "freeGameMeanX": 283.1162674295,
+      "stdDevBaseBetX": 376.1821937467297,
+      "hitRate": 0.99166944,
+      "bonusTriggerRate": 1.0,
+      "bonusTierMix": {
+        "normal": 0.0,
+        "super": 1.0,
+        "hidden": 0.0
+      },
+      "maxWinRate": 0.00014519,
+      "payoutAtLeast5000xBaseBet": 0.00021962,
+      "payoutAtLeast10000xBaseBet": 0.00018259,
+      "roundWith1000xGateRate": 5e-08,
+      "averageGates": 2.83466419,
+      "averageWinningCascades": 25.42156138,
+      "nonTenthPayoutRate": 0.43092276,
+      "maxSingleBookProbability": 0.00833056,
+      "effectiveBookCount": 414.87409222549064,
+      "warnings": [
+        "Effective outcome count below 1,000; prototype is not release-ready."
+      ],
+      "uncompressedSha256": "f818e6aa77f53eefdf3cc67b963b1f1b2390948662503a23f2d6e182ecaafdbf"
+    },
+    "MYSTERY": {
+      "books": 30000,
+      "cost": 400,
+      "totalWeight": 4000000000000,
+      "meanBaseBetX": 384.4,
+      "weightedRtp": 0.961,
+      "rtpDelta": 0.0,
+      "tailRiskChecks": {
+        "5000": {
+          "probability": 0.009,
+          "limit": 0.01,
+          "passed": true
+        },
+        "10000": {
+          "probability": 0.0045,
+          "limit": 0.005,
+          "passed": true
+        },
+        "25000": {
+          "probability": 1.988e-05,
+          "limit": 0.002,
+          "passed": true
+        }
+      },
+      "baseGameMeanX": 3.133432639275,
+      "freeGameMeanX": 381.266567360725,
+      "stdDevBaseBetX": 1361.1306662865018,
+      "hitRate": 0.977505849,
+      "bonusTriggerRate": 1.0,
+      "bonusTierMix": {
+        "normal": 0.65,
+        "super": 0.3,
+        "hidden": 0.05
+      },
+      "maxWinRate": 1.988e-05,
+      "payoutAtLeast5000xBaseBet": 0.009,
+      "payoutAtLeast10000xBaseBet": 0.0045,
+      "roundWith1000xGateRate": 1.95e-08,
+      "averageGates": 1.672078012,
+      "averageWinningCascades": 20.146335659,
+      "nonTenthPayoutRate": 0.355509617,
+      "maxSingleBookProbability": 0.017402658,
+      "effectiveBookCount": 229.38264878515642,
+      "warnings": [
+        "A single book exceeds 1% probability; increase outcome diversity and review weighting.",
+        "Effective outcome count below 1,000; prototype is not release-ready."
+      ],
+      "uncompressedSha256": "cc1c1524010e3535793962ce9a93a92cc6d735ec64869571b5448ef75cab2d8a"
+    }
+  },
+  "hiddenAudit": {
+    "meanBonusGates": 4.44484614,
+    "medianBonusGates": 4,
+    "gateDistribution": {
+      "0": 0.00124758,
+      "1": 0.00125929,
+      "2": 0.00988968,
+      "3": 0.28609007,
+      "4": 0.31007243,
+      "5": 0.28658606,
+      "6": 0.0278562,
+      "7": 0.01731332,
+      "8": 0.01471603,
+      "9": 0.01559154,
+      "10": 0.00947453,
+      "11": 0.00361415,
+      "12": 0.00941764,
+      "13": 0.00207722,
+      "14": 0.00204082,
+      "15": 0.00151733,
+      "16": 0.0009412,
+      "17": 0.00028943,
+      "18": 1.99e-06,
+      "19": 1.42e-06,
+      "20": 6.7e-07,
+      "21": 6.1e-07,
+      "22": 3.3e-07,
+      "23": 2.3e-07,
+      "24": 1.2e-07,
+      "25": 6e-08,
+      "26": 3e-08,
+      "28": 1e-08,
+      "29": 1e-08
+    },
+    "medianTotalPayoutX": 3786.0,
+    "distinctPayouts": 1237,
+    "maxExactPayoutProbability": 0.00475538,
+    "topExactPayouts": [
+      {
+        "payoutX": 4080.8,
+        "probability": 0.00475538
+      },
+      {
+        "payoutX": 3786.0,
+        "probability": 0.00410114
+      },
+      {
+        "payoutX": 4993.4,
+        "probability": 0.00375963
+      },
+      {
+        "payoutX": 4989.4,
+        "probability": 0.00375209
+      },
+      {
+        "payoutX": 4949.0,
+        "probability": 0.00367675
+      },
+      {
+        "payoutX": 4926.1,
+        "probability": 0.00363474
+      },
+      {
+        "payoutX": 4904.0,
+        "probability": 0.00359464
+      },
+      {
+        "payoutX": 4892.2,
+        "probability": 0.00357341
+      },
+      {
+        "payoutX": 4886.0,
+        "probability": 0.00356232
+      },
+      {
+        "payoutX": 4858.25,
+        "probability": 0.00351298
+      }
+    ],
+    "library": "/tmp/gates-stream-smoke-30k",
+    "proposedSource": false,
+    "changedPaths": 0,
+    "hiddenRecords": 10000,
+    "hiddenLookupWeight": 200000000000,
+    "basis": "Exact local MYSTERY lookup distribution conditional on Hidden; not live telemetry or a new simulation",
+    "meanTotalPayoutX": 4708.9,
+    "meanWinningFreeSpins": 8.36488453,
+    "meanFreeSpins": 15.28301782,
+    "oneWinFourteenBlanksProbability": 0.00061329,
+    "oneWinningSpinProbability": 0.00061529,
+    "atLeast90PercentOnOneSpinProbability": 0.01650933,
+    "oneWinWitnessProbability": 0.00061332,
+    "winningSpinDistribution": {
+      "0": 0.00030608,
+      "1": 0.00061529,
+      "2": 3.89e-06,
+      "3": 5.16e-06,
+      "4": 7.28e-06,
+      "5": 0.12325738,
+      "6": 0.2051868,
+      "7": 0.22229748,
+      "8": 0.24806816,
+      "9": 7.06e-06,
+      "10": 0.00430586,
+      "11": 0.00194965,
+      "12": 0.01779326,
+      "13": 0.01973444,
+      "14": 0.04731531,
+      "15": 0.05541841,
+      "16": 0.01499565,
+      "17": 0.01449902,
+      "18": 0.0114472,
+      "19": 0.00735784,
+      "20": 0.00123746,
+      "21": 0.00240081,
+      "22": 0.00153144,
+      "23": 1e-08,
+      "24": 3e-08,
+      "25": 2e-08,
+      "26": 0.00025901
+    },
+    "longestBlankStreakDistribution": {
+      "0": 0.03951904,
+      "1": 0.14640247,
+      "2": 0.51739861,
+      "3": 0.24107089,
+      "4": 0.05468962,
+      "14": 0.00061329,
+      "15": 0.00030608
+    },
+    "witnessProbability": {
+      "max": 1e-08,
+      "minimum": 0.00030646,
+      "quarter": 0.00030683,
+      "random": 0.20030365,
+      "rare1000": 1e-08,
+      "tail": 0.79877696,
+      "zero": 0.00030608
+    },
+    "payout3750Probability": 0.0,
+    "oneWinFourteenBlanksGiven3750": null
+  },
+  "storageMeasurement": {
+    "pilotBytes": 848848714,
+    "pilotBooks": 180000,
+    "projected500kPerModeGiB": 13.1758661630253,
+    "estimatedPeakGiB": [
+      18,
+      25
+    ],
+    "recommendedFreeGiB": [
+      35,
+      40
+    ],
+    "plainJsonlFiles": 0,
+    "retainedCandidatePools": false
+  },
+  "smokeGenerationSourceHashes": {
+    "__init__.py": "6e47b81482e693ff0dfb93e1f2b66c9ffa5d5927fe4cc457cd2f3f2e02ae4152",
+    "artifacts.py": "42d7ba43367f58e0a1f558de323911e0865372c6183ee22f50efbc28362b5382",
+    "audit_hidden_spread.py": "7cfd97b3936f06af794827a8831c28798b9293ba1bd1147bf201cfebeebf02e2",
+    "book_storage.py": "aa8da77a9e2366e54a00da655a53d065262a6519eba5009ee4d31f6b447d774a",
+    "game_config.py": "17fd53fe4a770ce749dd8ff3767c885d919b833f7e0e436aa4c2f3379bec9bca",
+    "gamestate.py": "687d5d84853a2ee18d00477551398cee94530f39ec13683f8a90742dd68b5dc1",
+    "gates_math.py": "50cad3d0cd4d9e8e79c827d9918c67da53c3ac748c9a7cf481efbbba5ffb77c7",
+    "math_targets.py": "772a2357284be76b074a6da662ddcedf0ccb3922afe09c235adcb572a79ad1e5",
+    "reweight_only.py": "9777cf7c3d7a777744dfe0cd2e5f71da0d3bc09674321f2f9ed6179cd982a537",
+    "run.py": "9eefbe0e29e162059dff7b0d1ffad9e1c39076e60113d8f76c12239f0b3e54f7",
+    "test_hidden_spread.py": "8fd03ae60bb5937e08f486d07c7709e2734e3ec84c335858325e7cabae306855",
+    "test_tail_weights.py": "5e6f9048c6e92d16eaae763bbb9aebe484dcd42e0f4946e8eb8c6f6eda87dc2e",
+    "validate_gates_artifacts.py": "7037ac5023d24356298194e1c2d60e269ef11074e1fc75e5e6b7c357ae537cc4",
+    "validate_gates_contract.py": "a94b8a1e074d9a85b2e72fb3eb059ef1f917f4790e0ac4b319050e8efd127734",
+    "weight_lookups.py": "145ed531fe69b2776455ec79cc23c9e07c08e84cb05a1e6670565565fd348e0e"
+  },
+  "smokeValidation": {
+    "exitCode": 0,
+    "booksPerMode": 30000,
+    "totalBooks": 180000,
+    "validatorSha256": "9f2c44ef520d7d4a632c264038d36481039b2ede49d73de6e1a7e7d66a39d7c9",
+    "log": [
+      "BASE: event/weight/package checks PASS; 30,000 books; RTP 96.1000000000%; non-tenth books 4,498",
+      "CHANCE: event/weight/package checks PASS; 30,000 books; RTP 96.1000000000%; non-tenth books 4,497",
+      "FEATURE: event/weight/package checks PASS; 30,000 books; RTP 96.1000000000%; non-tenth books 1,869",
+      "BONUS: event/weight/package checks PASS; 30,000 books; RTP 96.1000000000%; non-tenth books 11,740",
+      "SUPER: event/weight/package checks PASS; 30,000 books; RTP 96.1000000000%; non-tenth books 5,545",
+      "MYSTERY: event/weight/package checks PASS; 30,000 books; RTP 96.1000000000%; non-tenth books 5,964",
+      "The Gates local artifact checks: PASS. Live RGS acceptance and platform risk review remain separate."
+    ]
+  }
+}

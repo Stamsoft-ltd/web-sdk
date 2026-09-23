@@ -3,6 +3,24 @@ import { messagesMap as sharedMessages } from 'components-ui-html';
 import { locales } from 'config-lingui';
 import type { MessagesMap } from 'utils-shared/i18n';
 const en: Record<string, string> = {
+	'BONUS MODES': 'Bonus modes & features',
+	'BONUS SHARED RULES':
+		'Each bonus starts with 15 free spins and a fresh 1× multiplier. The entry-spin multiplier does not carry over. During the bonus, multiplier upgrades persist between spins. Every third winning tumble within a spin opens another gate; tumble progress resets for the next spin. Keys never appear during free spins, so extra spins and retriggers can only come from gate rewards.',
+	'NORMAL RULES':
+		'Triggered by 3 Keys, selected by Mystery, or bought directly. Each gate gives one additive multiplier reward. The first reward sets the multiplier; later additive rewards increase it. Normal has no sticky Wilds or extra-spin rewards. A direct Normal purchase always awards Normal, with no chance of upgrading to Super or Hidden.',
+	'SUPER RULES':
+		'Triggered by 4 Keys, selected by Mystery, or bought directly. Each gate gives one reward: an additive multiplier, multiplication of the current multiplier by 2, 3 or 5, a sticky Wild, 1–2 extra spins, or a 3- or 5-spin retrigger. Sticky Wilds substitute for paying symbols and remain in place through tumbles and subsequent free spins, with up to 3 at once. A direct Super purchase always awards Super, with no chance of upgrading to Hidden.',
+	'HIDDEN RULES':
+		'Triggered by 5 or more Keys or selected by Mystery; not sold directly. Uses the same reward types as Super, but every gate awards two rewards, applied in order. Multiplier upgrades and sticky Wilds persist through the bonus. Both rewards are resolved before the current spin win is calculated.',
+	'MYSTERY RULES':
+		'Selects one tier: 65% Normal, 30% Super, or 5% Hidden. The selected tier starts with 15 free spins and keeps its own rules throughout the bonus; there is no later tier upgrade. Mystery is not a guaranteed Hidden bonus.',
+	'CHANCE RULES':
+		'An optional paid-spin mode that triples the natural bonus-trigger chance compared with the base game. It does not guarantee a bonus. Remains active for each paid spin until deactivated.',
+	'FEATURE RULES':
+		'An optional paid-spin mode guaranteeing at least one gate on the full entry spin. Gate rewards on that spin are additive multipliers. Keys can also trigger a bonus. Remains active for each paid spin until deactivated; a bonus is not guaranteed.',
+	'BONUS PURCHASE RULES':
+		'All costs above are multiples of the base bet. Bonus purchases play the full entry spin before the free spins begin. Normal and Super purchases are tier-locked; only Mystery randomly selects a tier. Wins are calculated from the base bet, not the purchase cost. The 25,000× round cap includes the entry spin and the entire bonus.',
+
 	'REDUCED MOTION': 'Reduced motion',
 	SPIN: 'Spin',
 	STOP: 'Stop',
@@ -101,6 +119,24 @@ const en: Record<string, string> = {
 	'REPLAY ERROR GENERIC': 'Unable to load this replay. Please reconnect.',
 };
 const bg: Record<string, string> = {
+	'BONUS MODES': 'Бонус режими и функции',
+	'BONUS SHARED RULES':
+		'Всеки бонус започва с 15 безплатни врътки и нов множител 1×. Множителят от входната врътка не се пренася. Увеличенията на множителя се запазват между бонус врътките. Всяка трета печеливша каскада в една врътка отваря портал; броячът на каскадите се нулира при следващата врътка. В бонусите няма ключове — допълнителни врътки и ретригъри се получават само от порталите.',
+	'NORMAL RULES':
+		'Активира се с 3 ключа, чрез Мистери или с директна покупка. Всеки портал дава една награда за добавяне към множителя. Първата награда задава множителя, а следващите го увеличават. Няма залепващи Wild символи или награди с допълнителни врътки. Директната покупка винаги дава Нормален бонус, без шанс за Супер или Скрит.',
+	'SUPER RULES':
+		'Активира се с 4 ключа, чрез Мистери или с директна покупка. Всеки портал дава една награда: добавяне към множителя, умножаване на текущия множител по 2, 3 или 5, залепващ Wild, 1–2 допълнителни врътки или ретригър с 3 или 5 врътки. Wild символите заместват плащащите символи и остават на място при каскадите и следващите бонус врътки — до 3 едновременно. Директната покупка винаги дава Супер бонус, без шанс за Скрит.',
+	'HIDDEN RULES':
+		'Активира се с 5 или повече ключа или чрез Мистери; няма директна покупка. Наградите са като в Супер, но всеки портал дава две награди, прилагани последователно. Множителят и залепващите Wild символи се запазват през бонуса. И двете награди се прилагат преди изчисляване на печалбата от текущата врътка.',
+	'MYSTERY RULES':
+		'Избира един бонус: 65% Нормален, 30% Супер или 5% Скрит. Избраният бонус започва с 15 безплатни врътки и запазва правилата си до края — няма последващо надграждане. Мистери не гарантира Скрит бонус.',
+	'CHANCE RULES':
+		'Режим за платени врътки с троен естествен шанс за бонус спрямо основната игра. Не гарантира бонус. Остава активен за всяка платена врътка до изключването му.',
+	'FEATURE RULES':
+		'Режим за платени врътки, гарантиращ поне един портал по време на пълната входна врътка. Наградите от порталите в нея добавят към множителя. Ключовете могат да активират бонус, но той не е гарантиран. Режимът остава активен до изключването му.',
+	'BONUS PURCHASE RULES':
+		'Всички цени са кратни на основния залог. При покупка се изиграва цялата входна врътка преди безплатните врътки. Нормален и Супер дават само съответния бонус; само Мистери избира случаен вид. Печалбите се изчисляват спрямо основния залог, не цената на покупката. Лимитът от 25 000× включва входната врътка и целия бонус.',
+
 	SPIN: 'Завърти',
 	STOP: 'Стоп',
 	PLAY: 'Играй',

@@ -1,7 +1,7 @@
 import { stateBet, stateConfig, stateUrlDerived } from 'state-shared';
 import { requestEndEvent } from 'rgs-requests';
 import { initialState, reduceEvent, restorePrefix } from './reducer';
-import { TIMING, waitForDismissal, waitForTarget } from './presentation';
+import { TIMING, bonusEntryHold, waitForDismissal, waitForTarget } from './presentation';
 import { selectedSpeed, speedFactor } from './uiPolicy';
 import { showsAnyWin, winTiming } from './winPresentation';
 import { cellMotion, type Wave } from './motion';
@@ -133,10 +133,14 @@ async function pause(signal: AbortSignal, autoCloseMs?: number) {
 	);
 	runtime.waiting = false;
 }
-async function present(signal: AbortSignal, autoCloseMs?: number) {
+async function present(
+	signal: AbortSignal,
+	autoCloseMs?: number,
+	guard: number = TIMING.overlayGuard,
+) {
 	runtime.finishCount = false;
 	// Tiny guard stops the trigger tap from also dismissing the new screen.
-	await delay(TIMING.overlayGuard, signal);
+	await delay(guard, signal);
 	await pause(signal, autoCloseMs);
 }
 async function presentWin(amount: number, signal: AbortSignal) {
@@ -160,12 +164,16 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 	const signal = controller.signal;
 	runtime.busy = true;
 	runtime.skipRequested = false;
-	const wait = (ms: number, min = 70) =>
+	const wait = (ms: number, min = 70, normalScale = 1) =>
 		waitForTarget(
 			() =>
 				runtime.reduced
 					? Math.max(min, Math.min(ms, 150))
-					: Math.max(min, ms / (runtime.skipRequested ? 6 : speedFactor(currentSpeed()))),
+					: Math.max(
+							min,
+							(ms * (!runtime.skipRequested && currentSpeed() === 'normal' ? normalScale : 1)) /
+								(runtime.skipRequested ? 6 : speedFactor(currentSpeed())),
+						),
 			signal,
 		);
 	const waitMotion = () => waitForTarget(waveDuration, signal);
@@ -178,6 +186,12 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 				beginWave('remove');
 				runtime.phase = 'removing';
 				await waitMotion();
+			}
+			if (e.type === 'freeSpinTrigger') {
+				await waitForTarget(
+					() => bonusEntryHold(currentSpeed(), runtime.reduced, runtime.skipRequested),
+					signal,
+				);
 			}
 			runtime.game = reduceEvent(runtime.game, e);
 			switch (e.type) {
@@ -207,10 +221,10 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 					break;
 				case 'cascadeWin':
 					runtime.phase = 'winning';
-					await wait(TIMING.winHighlight, 100);
+					await wait(TIMING.winHighlight, 100, 1.45);
 					break;
 				case 'gateProgress':
-					await wait(TIMING.progress, 60);
+					await wait(TIMING.progress, 60, 1.35);
 					break;
 				case 'gateOpen':
 					runtime.phase = 'gate';
@@ -229,7 +243,7 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 					runtime.phase = 'settling';
 					if (runtime.game.freeSpin > 0 && showsAnyWin(e.amount) && !runtime.game.capped)
 						await presentWin(e.amount, signal);
-					else if (e.amount) await wait(TIMING.settle, 80);
+					else if (e.amount) await wait(TIMING.settle, 80, 1.4);
 					break;
 				case 'setTotalWin':
 				case 'setWin':
@@ -241,7 +255,11 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 					stateBet.isTurbo = false;
 					stateBet.isSuperTurbo = false;
 					runtime.overlay = { kind: 'bonus', tier: e.tier, spins: e.totalFs };
-					await present(signal);
+					await present(
+						signal,
+						undefined,
+						runtime.reduced ? TIMING.overlayGuard : TIMING.bonusGuard,
+					);
 					runtime.overlay = null;
 					break;
 				case 'freeSpinEnd':

@@ -51,7 +51,10 @@ test('normal exit plus full board drop stays within the readable normal budget',
 			exit = Math.max(exit, e.delay + e.duration + 24);
 			drop = Math.max(drop, d.delay + d.duration + d.impact + 24);
 		}
-	assert.ok(exit + drop < 760, `${exit + drop}ms is too slow`);
+	assert.ok(
+		exit + drop >= 900 && exit + drop < 1100,
+		`${exit + drop}ms outside deliberate Normal budget`,
+	);
 });
 
 test('reveal and tumble travel visibly left to right at every speed', () => {

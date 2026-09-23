@@ -4,8 +4,17 @@ import type { Speed } from './uiPolicy';
  * Freeze the profile for each wave; never restart cells that already landed.
  */
 export const MOTION = {
-	// Normal: relaxed readability. Previous normal profile now maps to Fast feel.
-	normal: { unit: 62, min: 56, row: 9, tumbleRow: 7, reel: 38, jitter: 8, impact: 90, remove: 210 },
+	// Normal has a deliberate ~1s exit + reveal; Fast/Turbo keep their existing profiles.
+	normal: {
+		unit: 86,
+		min: 78,
+		row: 12,
+		tumbleRow: 10,
+		reel: 50,
+		jitter: 8,
+		impact: 120,
+		remove: 280,
+	},
 	fast: { unit: 55, min: 50, row: 8, tumbleRow: 6, reel: 24, jitter: 8, impact: 80, remove: 190 },
 	turbo: { unit: 24, min: 20, row: 3, tumbleRow: 2, reel: 10, jitter: 4, impact: 40, remove: 70 },
 } as const;

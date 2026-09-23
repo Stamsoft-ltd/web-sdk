@@ -7,6 +7,7 @@
 		atlas = 'symbols',
 		animation = 'idle',
 		intro,
+		speed = 1,
 		reduced = false,
 		seed = 0,
 		onready,
@@ -16,6 +17,7 @@
 		atlas?: string;
 		animation?: string;
 		intro?: string;
+		speed?: number;
 		reduced?: boolean;
 		seed?: number;
 		onready?: (ready: boolean) => void;
@@ -73,7 +75,7 @@
 				removal.draw(ctx, ashProgress(performance.now(), timing));
 				return;
 			}
-			actor.update(still ? 0 : dt);
+			actor.update(still ? 0 : dt * speed);
 			ctx.clearRect(0, 0, surface.width, surface.height);
 			ctx.imageSmoothingEnabled = true;
 			ctx.imageSmoothingQuality = 'high';

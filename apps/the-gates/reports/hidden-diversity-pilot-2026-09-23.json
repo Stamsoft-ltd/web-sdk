@@ -1,0 +1,523 @@
+{
+  "status": "pilot_metadata_refit_not_published_not_500k_validation",
+  "basis": "10,000 candidates per shared pool, seed 20260921. All 999 changed Hidden tail paths regenerated and event-validated; unchanged candidate metadata reused. All six mode fits checked via mode_report. Not a Monte Carlo estimate or live deployment.",
+  "originalGenerationManifest": {
+    "gameId": "0_0_the_gates",
+    "modelVersion": "the-gates-v1",
+    "seed": 20260921,
+    "samplesPerPool": 10000,
+    "workers": 8,
+    "pythonVersion": "3.13.1 (main, Dec  3 2024, 17:59:52) [Clang 16.0.0 (clang-1600.0.26.4)]",
+    "zstandardVersion": "0.23.0",
+    "pythonHashSeedIndependent": true,
+    "status": "generated_not_validated",
+    "sourceHashes": {
+      "__init__.py": "6e47b81482e693ff0dfb93e1f2b66c9ffa5d5927fe4cc457cd2f3f2e02ae4152",
+      "artifacts.py": "cc7574699b9692131491377291b58a8912208a67cbf8cd031f01932650d85a04",
+      "audit_hidden_spread.py": "e49e2bf328b2111ac1f38ef5d96a1cc6d3bda5784636dc702a92518787b055dc",
+      "game_config.py": "17fd53fe4a770ce749dd8ff3767c885d919b833f7e0e436aa4c2f3379bec9bca",
+      "gamestate.py": "687d5d84853a2ee18d00477551398cee94530f39ec13683f8a90742dd68b5dc1",
+      "gates_math.py": "b69b72798da15f26f4cf6fad2b501d51ce599da278adee623dbd2bd14f5048c8",
+      "math_targets.py": "4c45a69a40ba1f0d065b2dbc221aebd241d0c6388e17e170e38fe51d3132cf72",
+      "reweight_only.py": "94f157a070d4eeb1cbad59b3031101507f38ac8f5104e98f8e5db6c0f6e4c88a",
+      "run.py": "dd8986f1ab9e2382bf97619d4971dbd04ba9a4b7cf28ec52629e565dc032eaed",
+      "test_hidden_spread.py": "4848163b88def871c881dac3da8eeda4a400a4e587a60f8f7c89f30af89d478d",
+      "test_tail_weights.py": "233b3f3a14785b6cc3831113e08aad8b3139697bec0bd76ab5afbe1ffa488727",
+      "validate_gates_artifacts.py": "12a2968d6ad535cfc19ccd369b9afdd5ac75f219d89885dc5caa0d080efc57d5",
+      "validate_gates_contract.py": "a94b8a1e074d9a85b2e72fb3eb059ef1f917f4790e0ac4b319050e8efd127734",
+      "weight_lookups.py": "f197fa995b193540e3a1fa12bd30e3d7f58f677eff7219d3f31a98ca87a7aaab"
+    }
+  },
+  "sourceSha256": {
+    "test_tail_weights.py": "5e6f9048c6e92d16eaae763bbb9aebe484dcd42e0f4946e8eb8c6f6eda87dc2e",
+    "weight_lookups.py": "145ed531fe69b2776455ec79cc23c9e07c08e84cb05a1e6670565565fd348e0e",
+    "run.py": "51aacbd6bc944b0e3620ec3d94b602b1d2313d1ddcf56940c935052e8c239a41",
+    "test_hidden_spread.py": "8fd03ae60bb5937e08f486d07c7709e2734e3ec84c335858325e7cabae306855",
+    "__init__.py": "6e47b81482e693ff0dfb93e1f2b66c9ffa5d5927fe4cc457cd2f3f2e02ae4152",
+    "gamestate.py": "687d5d84853a2ee18d00477551398cee94530f39ec13683f8a90742dd68b5dc1",
+    "gates_math.py": "50cad3d0cd4d9e8e79c827d9918c67da53c3ac748c9a7cf481efbbba5ffb77c7",
+    "validate_gates_contract.py": "a94b8a1e074d9a85b2e72fb3eb059ef1f917f4790e0ac4b319050e8efd127734",
+    "reweight_only.py": "94f157a070d4eeb1cbad59b3031101507f38ac8f5104e98f8e5db6c0f6e4c88a",
+    "math_targets.py": "772a2357284be76b074a6da662ddcedf0ccb3922afe09c235adcb572a79ad1e5",
+    "game_config.py": "17fd53fe4a770ce749dd8ff3767c885d919b833f7e0e436aa4c2f3379bec9bca",
+    "artifacts.py": "cc7574699b9692131491377291b58a8912208a67cbf8cd031f01932650d85a04",
+    "validate_gates_artifacts.py": "911948cd6944e296ae26191252beeb92e9f2f53805d6dd78e87b0c8c3470479a",
+    "audit_hidden_spread.py": "888858827a5ca501c39e732d8388806e28296ffdcd8c21ac269042bd29851e5e"
+  },
+  "hidden": {
+    "meanX": 4708.9,
+    "medianX": 3693.0,
+    "exact3750Probability": 0.0,
+    "largestExactPayoutProbability": 0.00416634,
+    "distinctPayouts": 1228,
+    "topPayouts": [
+      [
+        4970.2,
+        0.00416634
+      ],
+      [
+        4955.5,
+        0.00413356
+      ],
+      [
+        4929.7,
+        0.00407665
+      ],
+      [
+        4924.9,
+        0.00406612
+      ],
+      [
+        4916.0,
+        0.00404671
+      ],
+      [
+        4902.55,
+        0.00401759
+      ],
+      [
+        4899.2,
+        0.00401036
+      ],
+      [
+        4892.8,
+        0.00399658
+      ],
+      [
+        4881.8,
+        0.00397304
+      ],
+      [
+        4874.5,
+        0.00395751
+      ],
+      [
+        4871.0,
+        0.00395005
+      ],
+      [
+        4870.0,
+        0.00394791
+      ],
+      [
+        4862.5,
+        0.00393203
+      ],
+      [
+        4845.0,
+        0.00389522
+      ],
+      [
+        4813.7,
+        0.00383027
+      ]
+    ],
+    "meanGates": 4.33098225,
+    "medianGates": 4,
+    "gateDistribution": {
+      "0": 0.00176759,
+      "1": 0.00074331,
+      "2": 0.00530346,
+      "3": 0.301144,
+      "4": 0.29684417,
+      "5": 0.30874623,
+      "6": 0.0318473,
+      "7": 0.01623023,
+      "8": 0.01032275,
+      "9": 0.00670295,
+      "10": 0.00526989,
+      "11": 0.00518965,
+      "12": 0.00426836,
+      "13": 0.00254736,
+      "14": 0.00276009,
+      "15": 0.00029953,
+      "16": 4.49e-06,
+      "17": 3.18e-06,
+      "18": 1.82e-06,
+      "19": 1.37e-06,
+      "20": 9.2e-07,
+      "21": 6e-07,
+      "22": 3.2e-07,
+      "23": 2.1e-07,
+      "24": 1.4e-07,
+      "25": 5e-08,
+      "26": 1e-08,
+      "27": 2e-08
+    },
+    "meanWinningSpins": 7.86741214,
+    "medianWinningSpins": 7,
+    "payoutBands": {
+      "0..<1000": 0.05009589,
+      "1000..<2500": 0.17165863,
+      "2500..<5000": 0.59909779,
+      "5000..<10000": 0.08966367,
+      "10000..<25000": 0.08939632,
+      "25000..<25001": 8.77e-05
+    }
+  },
+  "fits": {
+    "normal": {
+      "targetMeanX": 96.1,
+      "actualMeanX": 96.1,
+      "momentResidual": 0,
+      "fixedRareBooks": 128,
+      "maxSingleBookProbability": 0.03524282,
+      "effectiveBookCount": 95.88387805208082
+    },
+    "super": {
+      "targetMeanX": 288.3,
+      "actualMeanX": 288.3,
+      "momentResidual": 0,
+      "fixedRareBooks": 4846,
+      "maxSingleBookProbability": 0.02211677,
+      "effectiveBookCount": 129.35749907743912
+    },
+    "hidden": {
+      "targetMeanX": 4708.9,
+      "actualMeanX": 4708.9,
+      "momentResidual": 0,
+      "fixedRareBooks": 8770,
+      "tailConstraintActive": true,
+      "tailThresholdBookUnits": 500000,
+      "tailProbabilityBefore": 0.35609701,
+      "tailProbability": 0.17914769,
+      "tailCap": 0.17914769,
+      "preservedUpperTailFromBookUnits": 1000000,
+      "maxSingleBookProbability": 0.00416634,
+      "effectiveBookCount": 605.8077994437617,
+      "upperTailFit": {
+        "targetMeanX": 4708.9,
+        "actualMeanX": 4708.9,
+        "momentResidual": 0,
+        "fixedRareBooks": 8770,
+        "tailConstraintActive": true,
+        "tailThresholdBookUnits": 1000000,
+        "tailProbabilityBefore": 0.11623689,
+        "tailProbability": 0.08948402,
+        "tailCap": 0.08948402,
+        "preservedUpperTailFromBookUnits": 2500000,
+        "maxSingleBookProbability": 0.00105217,
+        "effectiveBookCount": 1109.509234273829
+      },
+      "payoutDiversity": {
+        "distinctPayouts": 1228,
+        "maxExactPayoutProbability": 0.00416634,
+        "mostCommonPayoutX": 4970.2,
+        "exactPayoutCap": 0.01,
+        "payout3750Probability": 0.0
+      }
+    },
+    "BASE/base": {
+      "targetMeanX": 1.7938666666666667,
+      "actualMeanX": 1.7938666666666667,
+      "momentResidual": 0,
+      "fixedRareBooks": 2,
+      "maxSingleBookProbability": 0.0002044073625,
+      "effectiveBookCount": 6105.972120445206
+    },
+    "CHANCE/base": {
+      "targetMeanX": 2.1782666666666666,
+      "actualMeanX": 2.1782666666666666,
+      "momentResidual": 0,
+      "fixedRareBooks": 2,
+      "maxSingleBookProbability": 0.000186214555,
+      "effectiveBookCount": 6522.981297091742
+    },
+    "feature": {
+      "targetMeanX": 19.22,
+      "actualMeanX": 19.22,
+      "momentResidual": 0,
+      "fixedRareBooks": 25,
+      "maxSingleBookProbability": 0.00135815158925,
+      "effectiveBookCount": 1655.075328592006
+    }
+  },
+  "modeReports": {
+    "BASE": {
+      "books": 50000,
+      "cost": 1,
+      "totalWeight": 4000000000000,
+      "meanBaseBetX": 0.961,
+      "weightedRtp": 0.961,
+      "rtpDelta": 0.0,
+      "tailRiskChecks": {
+        "5000": {
+          "probability": 4.57213075e-06,
+          "limit": 0.01,
+          "passed": true
+        },
+        "10000": {
+          "probability": 2.2831025e-06,
+          "limit": 0.005,
+          "passed": true
+        },
+        "25000": {
+          "probability": 2.1874e-08,
+          "limit": 0.002,
+          "passed": true
+        }
+      },
+      "baseGameMeanX": 0.5478155129398,
+      "freeGameMeanX": 0.4131844870602,
+      "stdDevBaseBetX": 32.409087147801145,
+      "hitRate": 0.30241736094575,
+      "bonusTriggerRate": 0.0025,
+      "bonusTierMix": {
+        "normal": 0.85,
+        "super": 0.14,
+        "hidden": 0.01
+      },
+      "maxWinRate": 2.1874e-08,
+      "payoutAtLeast5000xBaseBet": 4.57213075e-06,
+      "payoutAtLeast10000xBaseBet": 2.2831025e-06,
+      "roundWith1000xGateRate": 2.875e-11,
+      "averageGates": 0.01388841693875,
+      "averageWinningCascades": 0.44385311594775,
+      "nonTenthPayoutRate": 0.0680295102395,
+      "maxSingleBookProbability": 7.48909925e-05,
+      "effectiveBookCount": 15763.339202929923,
+      "warnings": []
+    },
+    "CHANCE": {
+      "books": 50000,
+      "cost": 2,
+      "totalWeight": 4000000000000,
+      "meanBaseBetX": 1.922,
+      "weightedRtp": 0.961,
+      "rtpDelta": 0.0,
+      "tailRiskChecks": {
+        "5000": {
+          "probability": 1.3716227e-05,
+          "limit": 0.01,
+          "passed": true
+        },
+        "10000": {
+          "probability": 6.8492625e-06,
+          "limit": 0.005,
+          "passed": true
+        },
+        "25000": {
+          "probability": 6.5621e-08,
+          "limit": 0.002,
+          "passed": true
+        }
+      },
+      "baseGameMeanX": 0.6824465388194,
+      "freeGameMeanX": 1.2395534611806,
+      "stdDevBaseBetX": 56.0928488911728,
+      "hitRate": 0.30725208283725,
+      "bonusTriggerRate": 0.0075,
+      "bonusTierMix": {
+        "normal": 0.85,
+        "super": 0.14,
+        "hidden": 0.01
+      },
+      "maxWinRate": 6.5621e-08,
+      "payoutAtLeast5000xBaseBet": 1.3716227e-05,
+      "payoutAtLeast10000xBaseBet": 6.8492625e-06,
+      "roundWith1000xGateRate": 8.575e-11,
+      "averageGates": 0.024105292206,
+      "averageWinningCascades": 0.54961174257475,
+      "nonTenthPayoutRate": 0.0675864340315,
+      "maxSingleBookProbability": 0.0002246729775,
+      "effectiveBookCount": 16080.949753932377,
+      "warnings": []
+    },
+    "FEATURE": {
+      "books": 10000,
+      "cost": 20,
+      "totalWeight": 4000000000000,
+      "meanBaseBetX": 19.22,
+      "weightedRtp": 0.961,
+      "rtpDelta": 0.0,
+      "tailRiskChecks": {
+        "5000": {
+          "probability": 1.4175e-10,
+          "limit": 0.01,
+          "passed": true
+        },
+        "10000": {
+          "probability": 4.8e-11,
+          "limit": 0.005,
+          "passed": true
+        },
+        "25000": {
+          "probability": 6.25e-12,
+          "limit": 0.002,
+          "passed": true
+        }
+      },
+      "baseGameMeanX": 19.21999327978865,
+      "freeGameMeanX": 6.72021135e-06,
+      "stdDevBaseBetX": 14.0705682925404,
+      "hitRate": 1.0,
+      "bonusTriggerRate": 7.616425e-08,
+      "bonusTierMix": {
+        "normal": 0.9999245052632961,
+        "super": 5.251807770706073e-05,
+        "hidden": 2.2976658996839067e-05
+      },
+      "maxWinRate": 6.25e-12,
+      "payoutAtLeast5000xBaseBet": 1.4175e-10,
+      "payoutAtLeast10000xBaseBet": 4.8e-11,
+      "roundWith1000xGateRate": 2.5e-13,
+      "averageGates": 1.04155569900025,
+      "averageWinningCascades": 3.96116627969275,
+      "nonTenthPayoutRate": 0.0935457953765,
+      "maxSingleBookProbability": 0.00135815158925,
+      "effectiveBookCount": 1655.075328592006,
+      "warnings": []
+    },
+    "BONUS": {
+      "books": 10000,
+      "cost": 100,
+      "totalWeight": 4000000000000,
+      "meanBaseBetX": 96.1,
+      "weightedRtp": 0.961,
+      "rtpDelta": 0.0,
+      "tailRiskChecks": {
+        "5000": {
+          "probability": 3.193e-05,
+          "limit": 0.01,
+          "passed": true
+        },
+        "10000": {
+          "probability": 1.162e-05,
+          "limit": 0.005,
+          "passed": true
+        },
+        "25000": {
+          "probability": 1.28e-06,
+          "limit": 0.002,
+          "passed": true
+        }
+      },
+      "baseGameMeanX": 3.755526441,
+      "freeGameMeanX": 92.344473559,
+      "stdDevBaseBetX": 94.33582532802397,
+      "hitRate": 0.96475718,
+      "bonusTriggerRate": 1.0,
+      "bonusTierMix": {
+        "normal": 1.0,
+        "super": 0.0,
+        "hidden": 0.0
+      },
+      "maxWinRate": 1.28e-06,
+      "payoutAtLeast5000xBaseBet": 3.193e-05,
+      "payoutAtLeast10000xBaseBet": 1.162e-05,
+      "roundWith1000xGateRate": 1e-08,
+      "averageGates": 1.0412349,
+      "averageWinningCascades": 18.02235133,
+      "nonTenthPayoutRate": 0.45863882,
+      "maxSingleBookProbability": 0.03524282,
+      "effectiveBookCount": 95.88387805208082,
+      "warnings": [
+        "A single book exceeds 1% probability; increase outcome diversity and review weighting.",
+        "Effective outcome count below 1,000; prototype is not release-ready."
+      ]
+    },
+    "SUPER": {
+      "books": 10000,
+      "cost": 300,
+      "totalWeight": 4000000000000,
+      "meanBaseBetX": 288.3,
+      "weightedRtp": 0.961,
+      "rtpDelta": 0.0,
+      "tailRiskChecks": {
+        "5000": {
+          "probability": 7.287e-05,
+          "limit": 0.01,
+          "passed": true
+        },
+        "10000": {
+          "probability": 6.082e-05,
+          "limit": 0.005,
+          "passed": true
+        },
+        "25000": {
+          "probability": 4.846e-05,
+          "limit": 0.002,
+          "passed": true
+        }
+      },
+      "baseGameMeanX": 4.704028271,
+      "freeGameMeanX": 283.595971729,
+      "stdDevBaseBetX": 297.08262431587025,
+      "hitRate": 0.97788323,
+      "bonusTriggerRate": 1.0,
+      "bonusTierMix": {
+        "normal": 0.0,
+        "super": 1.0,
+        "hidden": 0.0
+      },
+      "maxWinRate": 4.846e-05,
+      "payoutAtLeast5000xBaseBet": 7.287e-05,
+      "payoutAtLeast10000xBaseBet": 6.082e-05,
+      "roundWith1000xGateRate": 2e-08,
+      "averageGates": 2.61617433,
+      "averageWinningCascades": 23.79204278,
+      "nonTenthPayoutRate": 0.4635432,
+      "maxSingleBookProbability": 0.02211677,
+      "effectiveBookCount": 129.35749907743912,
+      "warnings": [
+        "A single book exceeds 1% probability; increase outcome diversity and review weighting.",
+        "Effective outcome count below 1,000; prototype is not release-ready."
+      ]
+    },
+    "MYSTERY": {
+      "books": 30000,
+      "cost": 400,
+      "totalWeight": 4000000000000,
+      "meanBaseBetX": 384.4,
+      "weightedRtp": 0.961,
+      "rtpDelta": 0.0,
+      "tailRiskChecks": {
+        "5000": {
+          "probability": 0.009,
+          "limit": 0.01,
+          "passed": true
+        },
+        "10000": {
+          "probability": 0.0045,
+          "limit": 0.005,
+          "passed": true
+        },
+        "25000": {
+          "probability": 1.9755e-05,
+          "limit": 0.002,
+          "passed": true
+        }
+      },
+      "baseGameMeanX": 3.9095193836,
+      "freeGameMeanX": 380.4904806164,
+      "stdDevBaseBetX": 1347.447782987447,
+      "hitRate": 0.9704427515,
+      "bonusTriggerRate": 1.0,
+      "bonusTierMix": {
+        "normal": 0.65,
+        "super": 0.3,
+        "hidden": 0.05
+      },
+      "maxWinRate": 1.9755e-05,
+      "payoutAtLeast5000xBaseBet": 0.009,
+      "payoutAtLeast10000xBaseBet": 0.0045,
+      "roundWith1000xGateRate": 1.3e-08,
+      "averageGates": 1.678944272,
+      "averageWinningCascades": 19.7633615725,
+      "nonTenthPayoutRate": 0.448032634,
+      "maxSingleBookProbability": 0.022907833,
+      "effectiveBookCount": 195.838638839168,
+      "warnings": [
+        "A single book exceeds 1% probability; increase outcome diversity and review weighting.",
+        "Effective outcome count below 1,000; prototype is not release-ready."
+      ]
+    }
+  },
+  "tests": {
+    "hiddenSpread": 4,
+    "tailWeights": 9,
+    "contract": 15,
+    "allPassed": true
+  },
+  "reproduce": "PYTHONDONTWRITEBYTECODE=1 ../math-sdk/env/bin/python apps/the-gates/tools/audit-hidden-diversity-pilot.py ../math-sdk/games/0_0_the_gates /tmp/hidden-diversity-pilot.json"
+}

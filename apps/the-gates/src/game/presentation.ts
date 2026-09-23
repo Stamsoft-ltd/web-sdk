@@ -1,3 +1,5 @@
+import type { Speed } from './uiPolicy';
+
 /** Wait for an acknowledgement or optional auto-close. Own and clean up every timer. */
 export function waitForDismissal(
 	signal: AbortSignal,
@@ -50,7 +52,12 @@ export function waitForTarget(target: () => number, signal: AbortSignal): Promis
 	});
 }
 
-/** Faster presentation, unchanged event order and awards. Milliseconds. */
+/** Read the entry Keys before switching to the bonus backdrop/modal.
+ * Even slam-stop retains a short trigger beat; reduced motion avoids a long pause. */
+export const bonusEntryHold = (speed: Speed, reduced: boolean, skipped: boolean) =>
+	reduced ? 150 : skipped ? 350 : speed === 'normal' ? 900 : 450;
+
+/** Presentation only; unchanged event order and awards. Milliseconds. */
 export const TIMING = {
 	winHighlight: 360,
 	progress: 80,
@@ -58,6 +65,7 @@ export const TIMING = {
 	gateReward: 1050,
 	settle: 280,
 	overlayGuard: 120,
+	bonusGuard: 650,
 	winAutoClose: 1800,
 	capAutoClose: 2400,
 } as const;

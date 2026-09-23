@@ -27,6 +27,7 @@
 	import CountUp from './CountUp.svelte';
 	import WinScreen from './WinScreen.svelte';
 	import BonusScreen from './BonusScreen.svelte';
+	import BonusInfo from './BonusInfo.svelte';
 	import { showsInlineWin, winTier } from '../game/winPresentation';
 	import { selectedSpeed, nextSpeed } from '../game/uiPolicy';
 	import TempleGate from './TempleGate.svelte';
@@ -674,7 +675,7 @@
 		</table>
 		<p>{t('PAYS NOTE')}</p>
 		<p>{t('CAP RULE')}</p>
-		<p>{t('MYSTERY DESC')}</p>
+		<BonusInfo />
 		<p class="notice">{t('UNVALIDATED')}</p></Modal
 	>
 {:else if modal === 'settings'}<Modal title={t('SETTINGS')} close={() => (modal = null)}

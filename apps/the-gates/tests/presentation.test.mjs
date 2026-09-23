@@ -111,3 +111,14 @@ test('live wait abort cleans timer and rejects, including pre-aborted signal', a
 	}
 	t.mock.timers.tick(10000);
 });
+
+test('bonus trigger holds entry grid; skip and faster speeds preserve a readable beat', async () => {
+	const { bonusEntryHold } = await import('../src/game/presentation.ts');
+	assert.equal(bonusEntryHold('normal', false, false), 900);
+	assert.equal(bonusEntryHold('fast', false, false), 450);
+	assert.equal(bonusEntryHold('turbo', false, false), 450);
+	assert.equal(bonusEntryHold('normal', false, true), 350);
+	assert.equal(bonusEntryHold('normal', true, false), 150);
+	assert.ok(TIMING.bonusGuard >= 600 && TIMING.bonusGuard < 1000);
+	assert.equal(TIMING.overlayGuard, 120, 'win/cap screens retain quick dismissal');
+});
