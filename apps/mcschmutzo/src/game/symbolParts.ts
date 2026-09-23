@@ -42,6 +42,10 @@ export type SymbolPartsConfig = {
 	// fraction of the win/lock amplitude. Special symbols (wild, scatter) use it so they never read
 	// as static tiles between spins.
 	idle?: number;
+	// Sauce squirt: while active, the symbol shoots a looping arc of sauce blobs (this colour) out of
+	// its nozzle in time with the squeeze — the squeeze bottles come alive by squirting. The nozzle
+	// defaults to the bottle tip (top-centre); `dir` (+1 right / -1 left) angles the arc.
+	squirt?: { color: number; nozzleNx?: number; nozzleNy?: number; dir?: number };
 	layers: SymbolPartLayer[];
 };
 
@@ -62,10 +66,11 @@ export const fallbackConfig = (assetKey: string): SymbolPartsConfig => ({
 // splitting it). Body raster 318×291 (content is the lower neck+body); cap raster 318×168 (content is
 // the top 84px) seated at the top so its base meets the body neck.
 // capDy seats the cap a touch lower on the neck at rest (mayo keeps 0 — its cap is already seated).
-const bottle = (n: string, capDy = 0.022): SymbolPartsConfig => ({
+const bottle = (n: string, sauce: number, capDy = 0.022): SymbolPartsConfig => ({
 	aspect: 131 / 120, // the flat sprite's footprint (both parts share the 360×360 sprite canvas)
 	fit: 1,
 	squash: 0.06,
+	squirt: { color: sauce },
 	layers: [
 		// Body (neck + bottle) and cap (tip + collar) are the splash-free flat sprite cut at the neck,
 		// each kept in the full 360×360 canvas so they stack back into the exact bottle at rest. They
@@ -77,11 +82,11 @@ const bottle = (n: string, capDy = 0.022): SymbolPartsConfig => ({
 });
 
 export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
-	L1: bottle('L1'),
-	L2: bottle('L2', 0),
-	L3: bottle('L3'),
-	L4: bottle('L4'),
-	L5: bottle('L5'),
+	L1: bottle('L1', 0xe22318), // ketchup — tomato red
+	L2: bottle('L2', 0xf4e8ca, 0), // mayo — cream (its cap is blue, but the sauce is pale)
+	L3: bottle('L3', 0xe8ab1e), // mustard — yellow
+	L4: bottle('L4', 0x8f3c1b), // BBQ — brown
+	L5: bottle('L5', 0xaac559), // avocado ranch — green
 	// Burger — the stack separates (bun up, bottom down, fillings fan out) then reassembles.
 	H1: {
 		aspect: 1.077,
