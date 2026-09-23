@@ -58,7 +58,7 @@
 	// detach the arm or reveal the black oven behind it; the tiny angle keeps the overlaid arm from
 	// showing any double edge against the resting one. Salt releases on the down-flick.
 	const SHAKE_PERIOD = 560; // ms per flick
-	const SHAKE_AMP = 0.028; // rad (~1.6°) — small flick; the base is full (no hole) so no black is ever revealed
+	const SHAKE_AMP = 0.028; // rad (~1.6°) — small flick
 	const shakeP = $derived((elapsed % SHAKE_PERIOD) / SHAKE_PERIOD);
 	const armAngle = $derived(SHAKE_AMP * Math.sin(2 * Math.PI * shakeP)); // + = flick down (cap dips)
 
