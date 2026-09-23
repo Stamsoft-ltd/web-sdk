@@ -209,7 +209,7 @@
 		aspect-ratio: 1.077;
 		z-index: 0;
 		pointer-events: none;
-		--sep: 0.6;
+		--sep: 0.5;
 		animation: fo-burger-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 	}
 

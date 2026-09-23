@@ -230,11 +230,11 @@
 		const cy = props.y ?? 0;
 		const nozX = cx + ((cfg.nozzleNx ?? 0.5) - 0.5) * w;
 		const nozY = cy + ((cfg.nozzleNy ?? 0.086) - 0.5) * h;
-		const T_EMIT = 620; // ms between drips
-		const T_LIFE = 900; // ms a drip lives (swell + fall + fade)
+		const T_EMIT = 320; // ms between drips — fast enough that a few chase each other down (a drip run)
+		const T_LIFE = 950; // ms a drip lives (swell + fall + fade)
 		const newest = Math.floor(t / T_EMIT);
 		const out: Array<{ id: number; x: number; y: number; d: number; alpha: number }> = [];
-		for (let k = 0; k < 3; k++) {
+		for (let k = 0; k < 5; k++) {
 			const idx = newest - k;
 			if (idx < 0) continue;
 			const p = (t - idx * T_EMIT) / T_LIFE; // 0..1 progress of this drip
