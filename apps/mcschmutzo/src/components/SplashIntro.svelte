@@ -83,8 +83,9 @@
 	const MAN_H = 900;
 	type Box = [number, number, number, number];
 	const MAN = {
-		browL: [128, 194, 226, 250] as Box,
-		browR: [244, 201, 305, 250] as Box,
+		// Padded +12px each side (art re-exported with a feathered edge) so the raise never shows a cut.
+		browL: [116, 182, 238, 262] as Box,
+		browR: [232, 189, 317, 262] as Box,
 		pupilL: [142, 248, 172, 280] as Box,
 		pupilR: [242, 257, 264, 288] as Box,
 		// Eye openings (outline bbox): the lids are clipped to these so a blink never paints outside the eye.
