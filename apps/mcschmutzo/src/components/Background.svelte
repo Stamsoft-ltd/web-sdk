@@ -108,6 +108,16 @@
 			? { width: canvas.width, height: canvas.width / portraitAspect }
 			: { width: canvas.height * portraitAspect, height: canvas.height };
 	});
+	// A slow, subtle diagonal light-sweep across the diner so it reads as freshly polished / super
+	// clean. Sweeps every ~10s and fades in/out; only on the desktop base-game bg (uses the same clock).
+	const shine = $derived.by(() => {
+		const period = 10000;
+		const dur = 2800;
+		const t = clock % period;
+		if (t > dur) return null;
+		const p = t / dur;
+		return { x: (-0.2 + 1.4 * p) * canvas.width, a: 0.11 * Math.sin(Math.PI * p) };
+	});
 </script>
 
 <Rectangle {...canvas} backgroundColor={0x170905} zIndex={-3} />
@@ -149,6 +159,11 @@
 		zIndex={-2}
 	/>
 	<Rectangle {...canvas} backgroundColor={0x180903} alpha={0.16} zIndex={-1} />
+	{#if showMascot && shine}
+		<!-- Clean gleam: a soft light band (wide dim + narrow bright core) sweeping across the diner. -->
+		<Rectangle x={shine.x} y={canvas.height * 0.5} anchor={0.5} width={canvas.width * 0.11} height={canvas.height * 1.7} rotation={0.32} backgroundColor={0xffffff} alpha={shine.a} zIndex={-0.6} />
+		<Rectangle x={shine.x} y={canvas.height * 0.5} anchor={0.5} width={canvas.width * 0.04} height={canvas.height * 1.7} rotation={0.32} backgroundColor={0xffffff} alpha={shine.a * 1.3} zIndex={-0.6} />
+	{/if}
 {/if}
 {#if showArt && showMascot}
 	<!-- The chef breathes, his eyes glance + blink, and his nametag jiggles (layered art). -->
