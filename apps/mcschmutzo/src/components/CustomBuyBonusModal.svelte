@@ -18,6 +18,7 @@
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { mcschmutzoStakeDerived } from '../state/mcschmutzoStake.svelte';
+	import BurgerStack from './BurgerStack.svelte';
 	import CustomConfirmModal from './CustomConfirmModal.svelte';
 
 	type ModeId = 'enhancer1' | 'featureSpin' | 'bonus1' | 'bonus2';
@@ -180,8 +181,20 @@
 				<div class="bb-divider"></div>
 				<p class="bb-desc">{i18nDerived.translate(mode.description)}</p>
 
-				<div class="bb-art" class:bb-art--burger={mode.id === 'featureSpin'}>
-					<img src={mode.art} alt="" draggable="false" />
+				<div
+					class="bb-art"
+					class:bb-art--burger={mode.id === 'featureSpin'}
+					class:bb-art--scatter={mode.id === 'bonus1'}
+					class:bb-art--wheel={mode.id === 'bonus2'}
+					class:bb-art--chance={mode.id === 'enhancer1'}
+				>
+					{#if mode.id === 'featureSpin'}
+						<!-- The Lock & Re-spin feature IS the burger symbol — rebuild it from its slices so it
+						     assembles / disassembles exactly like the reels. -->
+						<div class="bb-burger-holder"><BurgerStack /></div>
+					{:else}
+						<img src={mode.art} alt="" draggable="false" />
+					{/if}
 					{#if mode.badge}<span class="bb-badge">{mode.badge}</span>{/if}
 				</div>
 
@@ -398,22 +411,50 @@
 		object-fit: contain;
 		filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.4));
 	}
-	/* The Lock & Re-spin feature IS the burger symbol — give it the board burger's playful energy: a
-	   seamless squash-and-stretch bounce ANCHORED at its base (transform-origin bottom), so the burger
-	   never translates and its base stays planted — the top rises only ~5% and the width grows ~5%,
-	   both well inside the card so the animation can never overflow into the copy or the amount badge. */
-	.bb-art--burger img {
-		transform-origin: 50% 100%;
-		animation: bb-burger-bob 2.1s ease-in-out infinite;
+	/* The Lock & Re-spin feature IS the burger symbol — it's rebuilt from its slices (BurgerStack) so it
+	   assembles / disassembles like the reels. The holder sizes it to the same footprint as the other
+	   icons and fixes the board cell's aspect so the slices line up. */
+	/* The burger card clips to its art box so the separating stack can never draw over the copy/amount,
+	   and the holder is left smaller than the others' icons to give the bun headroom to rise into. */
+	.bb-art--burger {
+		overflow: hidden;
 	}
-	@keyframes bb-burger-bob {
-		0%, 100% { transform: scale(1, 1); }
-		28% { transform: scale(0.96, 1.05); }
-		52% { transform: scale(1.05, 0.95); }
-		76% { transform: scale(0.99, 1.01); }
+	.bb-burger-holder {
+		height: clamp(52px, 9.5vmin, 82px);
+		aspect-ratio: 1.077;
+		/* Roughly half the reels' full throw — still a clear assemble/disassemble, but the extremes stay
+		   inside the (smaller) box. */
+		--sep: 0.55;
+	}
+	/* Super Bonus IS the prize wheel — spin it steadily so the card previews what it does. */
+	.bb-art--wheel img {
+		animation: bb-wheel-spin 5.5s linear infinite;
+	}
+	@keyframes bb-wheel-spin {
+		from { transform: rotate(0); }
+		to { transform: rotate(360deg); }
+	}
+	/* Both the Extra Chance and Normal Bonus cards show the SCATTER shack — bob + rock it gently on its
+	   base so it "moves" like it does when it lands. The two are offset so they don't sway in lock-step. */
+	.bb-art--scatter img,
+	.bb-art--chance img {
+		transform-origin: 50% 92%;
+		animation: bb-scatter-move 2.6s ease-in-out infinite;
+	}
+	.bb-art--chance img {
+		animation-delay: -1.3s;
+	}
+	@keyframes bb-scatter-move {
+		0%, 100% { transform: translateY(0) rotate(0deg); }
+		30% { transform: translateY(-5%) rotate(-1.8deg); }
+		70% { transform: translateY(-2.5%) rotate(1.8deg); }
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.bb-art--burger img { animation: none; }
+		.bb-art--wheel img,
+		.bb-art--scatter img,
+		.bb-art--chance img {
+			animation: none;
+		}
 	}
 	.bb-badge {
 		position: absolute;
