@@ -83,9 +83,10 @@
 	const MAN_H = 900;
 	type Box = [number, number, number, number];
 	const MAN = {
-		// Padded +12px each side (art re-exported with a feathered edge) so the raise never shows a cut.
-		browL: [116, 182, 238, 262] as Box,
-		browR: [232, 189, 317, 262] as Box,
+		// Brows re-exported cleaned (thin lower stroke dropped, body slimmed) + padded +8px each side so
+		// the raise never hits the crop edge (no cut).
+		browL: [120, 186, 234, 258] as Box,
+		browR: [236, 193, 313, 258] as Box,
 		pupilL: [142, 248, 172, 280] as Box,
 		pupilR: [242, 257, 264, 288] as Box,
 		// Eye openings (outline bbox): the lids are clipped to these so a blink never paints outside the eye.
@@ -780,7 +781,7 @@
 		}
 		64%,
 		80% {
-			transform: translateY(-10%);
+			transform: translateY(-7%);
 		}
 	}
 	@keyframes eyes-look {
