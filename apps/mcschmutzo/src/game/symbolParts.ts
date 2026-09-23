@@ -82,11 +82,11 @@ const bottle = (n: string, sauce: number, capDy = 0.022): SymbolPartsConfig => (
 });
 
 export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
-	L1: bottle('L1', 0xe22318), // ketchup — tomato red
-	L2: bottle('L2', 0xf4e8ca, 0), // mayo — cream (its cap is blue, but the sauce is pale)
-	L3: bottle('L3', 0xe8ab1e), // mustard — yellow
-	L4: bottle('L4', 0x8f3c1b), // BBQ — brown
-	L5: bottle('L5', 0xaac559), // avocado ranch — green
+	L1: bottle('L1', 0xdb1812), // ketchup — tomato red (sampled from the sauce)
+	L2: bottle('L2', 0xf7edcf, 0), // mayo — pale cream
+	L3: bottle('L3', 0xdc9c02), // mustard — golden yellow
+	L4: bottle('L4', 0xa62410), // BBQ — dark red-brown
+	L5: bottle('L5', 0xaac14d), // avocado ranch — green
 	// Burger — the stack separates (bun up, bottom down, fillings fan out) then reassembles.
 	H1: {
 		aspect: 1.077,

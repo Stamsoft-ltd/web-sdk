@@ -217,10 +217,9 @@
 		return out;
 	});
 
-	// Sauce squirt: while the bottle is active (winning/locked) it shoots a looping arc of sauce blobs
-	// out of its nozzle as DISCRETE drops: one pinches off every T_EMIT and is airborne for T_LIFE, so
-	// only ~2 are in flight at once with clear gaps between them — it reads as dripping/squirting drops,
-	// not a continuous spray. Each drop pinches small at the tip, swells as it detaches, arcs and falls.
+	// Sauce drip: while the bottle is active (winning/locked) it dribbles sauce from its nozzle exactly
+	// like the button drips — a bead swells at the tip, pinches off, then falls STRAIGHT DOWN under
+	// gravity and fades. One drip every T_EMIT, so only a couple hang/fall at once (no upward spray).
 	const squirtColor = $derived(props.config.squirt?.color ?? 0xffffff);
 	const squirtBlobs = $derived.by(() => {
 		const cfg = props.config.squirt;
@@ -231,26 +230,23 @@
 		const cy = props.y ?? 0;
 		const nozX = cx + ((cfg.nozzleNx ?? 0.5) - 0.5) * w;
 		const nozY = cy + ((cfg.nozzleNy ?? 0.086) - 0.5) * h;
-		const dir = cfg.dir ?? 1;
-		const T_EMIT = 360; // ms between drops
-		const T_LIFE = 900; // ms a drop is airborne
-		const VY = 0.66; // launch up (fraction of h)
-		const G = 1.24; // gravity — arcs back down past the tip
-		const VX = 0.28; // forward drift (fraction of w)
+		const T_EMIT = 620; // ms between drips
+		const T_LIFE = 900; // ms a drip lives (swell + fall + fade)
 		const newest = Math.floor(t / T_EMIT);
 		const out: Array<{ id: number; x: number; y: number; d: number; alpha: number }> = [];
-		for (let k = 0; k < 4; k++) {
+		for (let k = 0; k < 3; k++) {
 			const idx = newest - k;
 			if (idx < 0) continue;
-			const p = (t - idx * T_EMIT) / T_LIFE; // 0..1 progress of this drop's flight
+			const p = (t - idx * T_EMIT) / T_LIFE; // 0..1 progress of this drip
 			if (p < 0 || p > 1) continue;
-			const jx = ((idx * 37) % 7) / 7 - 0.5; // tiny per-drop scatter so drops aren't identical
-			const x = nozX + (VX * dir * p + 0.045 * jx) * w;
-			const y = nozY - VY * p * h + G * p * p * h;
-			const grow = Math.min(1, p / 0.16); // pinch off: small at the tip → swells as it detaches
-			const d = Math.max(3, (0.155 + 0.03 * jx) * w) * (0.45 + 0.55 * grow);
-			const fadeOut = 1 - Math.max(0, (p - 0.8) / 0.2);
-			out.push({ id: idx, x, y, d, alpha: Math.min(1, grow * 1.3) * fadeOut });
+			const jx = (((idx * 37) % 5) / 5 - 0.5) * 0.05; // tiny per-drip scatter
+			const swell = Math.min(1, p / 0.3); // a bead swells at the nozzle tip (the ooze)
+			const fall = Math.max(0, (p - 0.3) / 0.7); // then it pinches off and falls
+			const x = nozX + jx * w;
+			const y = nozY + (0.02 + 0.72 * fall * fall) * h; // straight down, gravity accelerating
+			const d = Math.max(3, 0.145 * w) * (0.4 + 0.6 * swell);
+			const fadeOut = 1 - Math.max(0, (p - 0.82) / 0.18);
+			out.push({ id: idx, x, y, d, alpha: Math.min(1, swell * 1.5) * fadeOut });
 		}
 		return out;
 	});
@@ -269,15 +265,11 @@
 			alpha={l.alpha}
 		/>
 	{/each}
-	<!-- Sauce squirt (bottles only) — drawn over the bottle so it reads as leaving the nozzle. -->
+	<!-- Sauce drip (bottles only) — a glossy drop that dribbles down off the nozzle. A dark rim + a
+	     white glint make it read as a distinct wet drop even over a same-coloured bottle. -->
 	{#each squirtBlobs as b (b.id)}
-		<Circle
-			x={b.x}
-			y={b.y}
-			diameter={b.d}
-			anchor={0.5}
-			backgroundColor={squirtColor}
-			backgroundAlpha={b.alpha}
-		/>
+		<Circle x={b.x} y={b.y} diameter={b.d * 1.16} anchor={0.5} backgroundColor={0x000000} backgroundAlpha={b.alpha * 0.28} />
+		<Circle x={b.x} y={b.y} diameter={b.d} anchor={0.5} backgroundColor={squirtColor} backgroundAlpha={b.alpha} />
+		<Circle x={b.x - b.d * 0.19} y={b.y - b.d * 0.22} diameter={b.d * 0.34} anchor={0.5} backgroundColor={0xffffff} backgroundAlpha={b.alpha * 0.55} />
 	{/each}
 </Container>
