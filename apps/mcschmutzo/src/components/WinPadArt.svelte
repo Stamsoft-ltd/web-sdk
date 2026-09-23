@@ -21,16 +21,17 @@
 	const tier = $derived(props.padKey.replace('winPad', '').toLowerCase());
 	const cap = $derived(tier.charAt(0).toUpperCase() + tier.slice(1));
 	const bannerKey = $derived(`winBanner${cap}`);
-	const titleKey = $derived(`winTitle${cap}`);
-	// w / h of each part (from the exported art) so we can size by width and keep the aspect.
+	// Title is now TWO separate words — the tier wordmark (top) and the shared "WIN" (bottom) — so each
+	// can fly in from its own edge. Aspects (w/h) from the exported word rasters.
+	const wordKey = $derived(`winWord${cap}`);
 	const BANNER_AR: Record<string, number> = { sweet: 3.39, legendary: 3.25, epic: 3.22, wild: 3.29, mythic: 3.3 };
-	const TITLE_AR: Record<string, number> = { sweet: 1.62, legendary: 2.14, epic: 1.29, wild: 1.42, mythic: 1.49 };
-	// Title width as a fraction of the pad. LEGENDARY is a long word, so at the shared width its
-	// letters render smaller than the other tiers — give it more width so its type matches theirs.
-	const TITLE_W: Record<string, number> = { sweet: 0.42, legendary: 0.55, epic: 0.42, wild: 0.42, mythic: 0.44 };
+	const WORD_AR: Record<string, number> = { sweet: 2.645, legendary: 3.16, epic: 2.078, wild: 2.365, mythic: 2.573 };
+	const WIN_AR = 2.374;
+	// Tier word target height (fraction of pad); LEGENDARY is long, so shrink it a touch to fit the banner.
+	const TIER_H: Record<string, number> = { sweet: 0.15, legendary: 0.125, epic: 0.15, wild: 0.15, mythic: 0.15 };
 	const bannerAR = $derived(BANNER_AR[tier] ?? 3.3);
-	const titleAR = $derived(TITLE_AR[tier] ?? 1.5);
-	const titleW = $derived(TITLE_W[tier] ?? 0.42);
+	const wordAR = $derived(WORD_AR[tier] ?? 2.5);
+	const tierH = $derived(TIER_H[tier] ?? 0.15);
 
 	// rAF clock — runs the whole time the pad is shown (breathe + twinkle are continuous).
 	let clock = $state(0);
@@ -89,8 +90,37 @@
 		back.push({ id: 'starL', key: 'winStar', x: -0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle, h: (0.072 * w / 1.03) * winS * twinkle, a: winA, rot: starRot });
 		back.push({ id: 'starR', key: 'winStar', x: 0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle2, h: (0.072 * w / 1.03) * winS * twinkle2, a: winA, rot: -starRot });
 
-		const s = winS * titleBreathe;
-		const title: L = { id: 'title', key: titleKey, x: 0, y: -0.03 * w * winS, w: titleW * w * s, h: (titleW * w / titleAR) * s, a: winA, rot: 0 };
+		// Split title: the tier word DROPS in from the top, the shared WIN RISES from the bottom, both
+		// with an easeOutBack settle + fade. The tier word's drop is short and it fades in as it lands, so
+		// it stays clear of the assembling burger that peeks above the banner. Then both breathe together.
+		// Start the words AFTER the banner has popped in, so their fly-in from top/bottom reads clearly
+		// against the settled banner instead of moving while the whole pad is still scaling up.
+		const wordE = easeOutBack(phase(330, 540));
+		const wordA = clamp01((elapsed - 330) / 260);
+		const tierHpx = tierH * w * titleBreathe;
+		const winHpx = 0.105 * w * titleBreathe;
+		const tierRestY = -0.05 * w;
+		const winRestY = 0.078 * w;
+		const tierWord: L = {
+			id: 'tierWord',
+			key: wordKey,
+			x: 0,
+			y: tierRestY - (1 - wordE) * 0.08 * w, // enters from ABOVE (short drop, clear of the burger)
+			w: tierHpx * wordAR,
+			h: tierHpx,
+			a: wordA,
+			rot: 0,
+		};
+		const winWord: L = {
+			id: 'winWord',
+			key: 'winWordWin',
+			x: 0,
+			y: winRestY + (1 - wordE) * 0.2 * w, // rises from BELOW
+			w: winHpx * WIN_AR,
+			h: winHpx,
+			a: wordA,
+			rot: 0,
+		};
 
 		// Star SHINE: an additive copy of each star flashes bright on a periodic glint (offset so the two
 		// stars sparkle out of sync).
@@ -119,7 +149,7 @@
 		// -0.205w and covered the logo). The
 		// bob then only ever settles DOWN from here, so it can never climb back into the logo.
 		const burger = { x: 0, y: -0.185 * w + settle * 0.02 * w, scale: 1.5 * (1 - settle * 0.025), winning: false };
-		return { back, title, burger, glints };
+		return { back, tierWord, winWord, burger, glints };
 	});
 </script>
 
@@ -132,5 +162,7 @@
 	{#each anim.glints as g (g.id)}
 		<Sprite key={g.key} x={g.x} y={g.y} anchor={0.5} width={g.w} height={g.h} rotation={g.rot} alpha={g.a} blendMode="add" />
 	{/each}
-	<Sprite key={anim.title.key} x={anim.title.x} y={anim.title.y} anchor={0.5} width={anim.title.w} height={anim.title.h} rotation={anim.title.rot} alpha={anim.title.a} />
+	<!-- Title words on top: tier wordmark (dropped in from above) + shared WIN (risen from below). -->
+	<Sprite key={anim.winWord.key} x={anim.winWord.x} y={anim.winWord.y} anchor={0.5} width={anim.winWord.w} height={anim.winWord.h} rotation={anim.winWord.rot} alpha={anim.winWord.a} />
+	<Sprite key={anim.tierWord.key} x={anim.tierWord.x} y={anim.tierWord.y} anchor={0.5} width={anim.tierWord.w} height={anim.tierWord.h} rotation={anim.tierWord.rot} alpha={anim.tierWord.a} />
 </Container>

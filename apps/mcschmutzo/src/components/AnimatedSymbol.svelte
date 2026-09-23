@@ -218,34 +218,39 @@
 	});
 
 	// Sauce squirt: while the bottle is active (winning/locked) it shoots a looping arc of sauce blobs
-	// out of its nozzle — a staggered rope of drops that launch up off the tip, arc forward and fall,
-	// pulsing brighter/fatter on the squeeze (env) so the squeeze bottle reads as actively squirting.
+	// out of its nozzle as DISCRETE drops: one pinches off every T_EMIT and is airborne for T_LIFE, so
+	// only ~2 are in flight at once with clear gaps between them — it reads as dripping/squirting drops,
+	// not a continuous spray. Each drop pinches small at the tip, swells as it detaches, arcs and falls.
 	const squirtColor = $derived(props.config.squirt?.color ?? 0xffffff);
 	const squirtBlobs = $derived.by(() => {
 		const cfg = props.config.squirt;
 		const active = running && startTime >= 0 && !!props.winning;
 		if (!cfg || !active) return [] as Array<{ id: number; x: number; y: number; d: number; alpha: number }>;
-		const frac = ((clock - startTime) / PERIOD) % 1;
-		const env = (1 - Math.cos(Math.PI * 2 * frac)) / 2; // the squeeze (0 → 1 → 0)
+		const t = clock - startTime; // ms the bottle has been active
 		const cx = props.x ?? 0;
 		const cy = props.y ?? 0;
 		const nozX = cx + ((cfg.nozzleNx ?? 0.5) - 0.5) * w;
 		const nozY = cy + ((cfg.nozzleNy ?? 0.086) - 0.5) * h;
 		const dir = cfg.dir ?? 1;
-		const N = 13;
-		const VY = 0.72; // launch up (fraction of h)
-		const G = 1.28; // gravity — arcs back down past the tip
-		const VX = 0.3; // forward drift (fraction of w)
+		const T_EMIT = 360; // ms between drops
+		const T_LIFE = 900; // ms a drop is airborne
+		const VY = 0.66; // launch up (fraction of h)
+		const G = 1.24; // gravity — arcs back down past the tip
+		const VX = 0.28; // forward drift (fraction of w)
+		const newest = Math.floor(t / T_EMIT);
 		const out: Array<{ id: number; x: number; y: number; d: number; alpha: number }> = [];
-		for (let i = 0; i < N; i++) {
-			const p = (frac + i / N) % 1; // staggered phases → a continuous rope of sauce along the arc
-			const jit = 0.8 + 0.4 * (((i * 5) % 7) / 6);
-			const x = nozX + VX * dir * p * w;
+		for (let k = 0; k < 4; k++) {
+			const idx = newest - k;
+			if (idx < 0) continue;
+			const p = (t - idx * T_EMIT) / T_LIFE; // 0..1 progress of this drop's flight
+			if (p < 0 || p > 1) continue;
+			const jx = ((idx * 37) % 7) / 7 - 0.5; // tiny per-drop scatter so drops aren't identical
+			const x = nozX + (VX * dir * p + 0.045 * jx) * w;
 			const y = nozY - VY * p * h + G * p * p * h;
-			const d = Math.max(3, (0.17 - 0.09 * p) * w * jit); // fat at the nozzle, tapering as it flies
-			const fadeIn = Math.min(1, p / 0.07);
-			const fadeOut = 1 - Math.max(0, (p - 0.7) / 0.3);
-			out.push({ id: i, x, y, d, alpha: fadeIn * fadeOut * (0.55 + 0.45 * env) });
+			const grow = Math.min(1, p / 0.16); // pinch off: small at the tip → swells as it detaches
+			const d = Math.max(3, (0.155 + 0.03 * jx) * w) * (0.45 + 0.55 * grow);
+			const fadeOut = 1 - Math.max(0, (p - 0.8) / 0.2);
+			out.push({ id: idx, x, y, d, alpha: Math.min(1, grow * 1.3) * fadeOut });
 		}
 		return out;
 	});

@@ -480,22 +480,22 @@
 	}
 	/* Each card gets its own cycle length + phase so the three never pulse in unison. */
 	.card--red {
-		--cycle: 6.4s;
+		--cycle: 3.4s;
 		--phase: -1s;
 		--sauce: #e11105;
 		--sauce-hi: #ff9d8a;
 		--sauce-dk: #890702;
 	}
 	.card--yellow {
-		--cycle: 7.3s;
-		--phase: -4.2s;
+		--cycle: 3.8s;
+		--phase: -2.3s;
 		--sauce: #fbcb07;
 		--sauce-hi: #fff0b0;
 		--sauce-dk: #a86a06;
 	}
 	.card--green {
-		--cycle: 8.1s;
-		--phase: -6.6s;
+		--cycle: 4.2s;
+		--phase: -3.4s;
 		--sauce: #8ccc18;
 		--sauce-hi: #e2f9a6;
 		--sauce-dk: #4a6f06;

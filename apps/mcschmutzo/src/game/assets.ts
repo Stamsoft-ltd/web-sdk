@@ -191,6 +191,13 @@ export default {
 	winTitleEpic: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/title-epic.webp', import.meta.url).href },
 	winTitleWild: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/title-wild.webp', import.meta.url).href },
 	winTitleMythic: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/title-mythic.webp', import.meta.url).href },
+	// Split title words (tier word on top + the shared WIN below) so each can fly in from its own edge.
+	winWordSweet: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-sweet.webp', import.meta.url).href },
+	winWordLegendary: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-legendary.webp', import.meta.url).href },
+	winWordEpic: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-epic.webp', import.meta.url).href },
+	winWordWild: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-wild.webp', import.meta.url).href },
+	winWordMythic: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-mythic.webp', import.meta.url).href },
+	winWordWin: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-win.webp', import.meta.url).href },
 	winSplashYellow: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/splash-yellow.webp', import.meta.url).href },
 	winSplashRed: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/splash-red.webp', import.meta.url).href },
 	winStar: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/win-star.webp', import.meta.url).href },
