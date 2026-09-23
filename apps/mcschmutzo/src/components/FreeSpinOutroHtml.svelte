@@ -195,13 +195,15 @@
 	.fo-burger {
 		position: absolute;
 		left: 50%;
-		top: -34%;
+		/* Raised + smaller with a contained --sep so the whole burger (even disassembled) clears the
+		   plaque top instead of hiding/cutting behind it. */
+		top: -40%;
 		transform: translateX(-50%);
-		width: 27%;
+		width: 23%;
 		aspect-ratio: 1.077;
 		z-index: 0;
 		pointer-events: none;
-		--sep: 0.5;
+		--sep: 0.32;
 		animation: fo-burger-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 	}
 

@@ -215,20 +215,22 @@
 	.fs-burger {
 		position: absolute;
 		left: 50%;
-		top: -24%;
+		/* Raised so the whole burger clears the plaque top (its bottom no longer hides behind it), and a
+		   smaller footprint + contained --sep keep the disassembled slices fully visible. */
+		top: -34%;
 		transform: translateX(-50%);
-		width: 27%;
+		width: 24%;
 		aspect-ratio: 1.077;
 		z-index: 0;
 		pointer-events: none;
-		--sep: 0.5;
+		--sep: 0.32;
 		animation: fs-burger-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 	}
 
-	/* Twinkling stars flanking the plaque (top-right + bottom-left), like the win pad. */
+	/* Twinkling stars, tucked INSIDE the red field corners (top-right + bottom-left), like the win pad. */
 	.fs-star {
 		position: absolute;
-		width: 12%;
+		width: 10%;
 		height: auto;
 		z-index: 2;
 		pointer-events: none;
@@ -238,12 +240,12 @@
 			fs-star-twinkle 1.5s ease-in-out 0.9s infinite;
 	}
 	.fs-star--tr {
-		top: -4%;
-		right: 4%;
+		top: 13%;
+		right: 11%;
 	}
 	.fs-star--bl {
-		bottom: -2%;
-		left: 4%;
+		bottom: 13%;
+		left: 11%;
 		/* Offset so the two don't twinkle in lock-step. */
 		animation-delay: 0.45s, 1.65s;
 	}
