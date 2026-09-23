@@ -151,6 +151,7 @@
 		lids={specialLids}
 		skin={0xef9650}
 		phase={2000}
+		sparkle={{ nx: 0.49, ny: 0.455, size: 0.075, period: 3800, phase: 1200 }}
 	/>
 	<!-- Hand+shaker+forearm (clean full-frame layer), flicking about the elbow. Above the base, below
 	     the falling salt so the grains read as leaving the cap. -->

@@ -25,6 +25,8 @@
 		period?: number;
 		phase?: number;
 	};
+	/** A periodic *ding* sparkle on a tooth (nx/ny in figure fractions; size fraction of width). */
+	type Sparkle = { nx: number; ny: number; size: number; period?: number; phase?: number };
 	type Props = {
 		baseKey: string;
 		x: number;
@@ -36,6 +38,7 @@
 		lids?: Lid[];
 		skin?: number;
 		extras?: Extra[];
+		sparkle?: Sparkle;
 		/** ms offset so two instances never blink/glance in lock-step. */
 		phase?: number;
 	};
@@ -99,6 +102,16 @@
 	const skin = $derived(props.skin ?? 0xf6ac67);
 
 	const extraTilt = (e: Extra) => (e.amp ?? 0) * Math.sin((clock + (e.phase ?? 0)) / (e.period ?? 2600));
+
+	// Teeth *ding*: a white 4-point sparkle that flashes on a tooth now and then.
+	const sparkle = $derived.by(() => {
+		const sp = props.sparkle;
+		if (!sp) return null;
+		const period = sp.period ?? 3200;
+		const p = (((clock + (sp.phase ?? 0)) % period) + period) % period / period;
+		const fl = Math.exp(-(((p - 0.12) * 9) ** 2)); // quick flash 0 → 1 → 0 once per period
+		return { x: left + sp.nx * props.width, y: top + sp.ny * props.height, s: fl * sp.size * props.width, a: fl };
+	});
 </script>
 
 <Sprite
@@ -167,4 +180,10 @@
 			zIndex={z}
 		/>
 	{/each}
+{/if}
+{#if sparkle && sparkle.a > 0.02}
+	<!-- 4-point sparkle: a vertical + horizontal ray and a bright centre, all flashing together. -->
+	<Rectangle x={sparkle.x} y={sparkle.y} anchor={0.5} width={sparkle.s * 0.15} height={sparkle.s} borderRadius={sparkle.s * 0.075} backgroundColor={0xffffff} backgroundAlpha={sparkle.a} zIndex={z} />
+	<Rectangle x={sparkle.x} y={sparkle.y} anchor={0.5} width={sparkle.s} height={sparkle.s * 0.15} borderRadius={sparkle.s * 0.075} backgroundColor={0xffffff} backgroundAlpha={sparkle.a} zIndex={z} />
+	<Circle x={sparkle.x} y={sparkle.y} diameter={sparkle.s * 0.42} anchor={0.5} backgroundColor={0xffffff} backgroundAlpha={Math.min(1, sparkle.a * 1.4)} zIndex={z} />
 {/if}

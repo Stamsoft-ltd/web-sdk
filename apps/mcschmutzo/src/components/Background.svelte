@@ -175,6 +175,7 @@
 				period: 320,
 			},
 		]}
+		sparkle={{ nx: 0.44, ny: 0.425, size: 0.075, period: 3400 }}
 	/>
 	<!-- The held ketchup bottle, overlaid so it can shake about the wrist like the splash chef's. -->
 	<Sprite
