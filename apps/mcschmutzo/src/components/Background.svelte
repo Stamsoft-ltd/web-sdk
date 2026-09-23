@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Rectangle, Sprite } from 'pixi-svelte';
+	import { Circle, Rectangle, Sprite } from 'pixi-svelte';
 	import { stateUi } from 'state-shared';
 
 	import { getContext } from '../game/context';
@@ -38,7 +38,8 @@
 	// life, and a rotation would drag the pupils/label out of place).
 	let clock = $state(0);
 	$effect(() => {
-		if (!showMascot) return;
+		// Runs for the base-game chef AND the special-bg (its hanging lamps blink).
+		if (!showMascot && !showSpecialMascot) return;
 		let raf = 0;
 		const loop = (ts: number) => {
 			clock = ts;
@@ -118,6 +119,37 @@
 		const p = t / dur;
 		return { x: (-0.2 + 1.4 * p) * canvas.width, a: 0.11 * Math.sin(Math.PI * p) };
 	});
+	// Two hanging pendant lamps in the special (free-games) kitchen bg's top-left. They hang from the
+	// ceiling (bg top) and their bulbs blink on/off smoothly from time to time.
+	const lamps = $derived.by(() => {
+		if (!showSpecialMascot) return null;
+		const bgLeft = canvas.width / 2 - cover.width / 2;
+		const bgTop = canvas.height / 2 - cover.height / 2;
+		const lampH = cover.height * 0.38;
+		const lampW = lampH * (700 / 1077);
+		// On most of the time; a smooth dip fully OFF now and then (a blink).
+		const blink = (phase: number) => {
+			const period = 4200;
+			const t = (((clock + phase) % period) + period) % period;
+			const lo = period * 0.72;
+			const hi = period * 0.92;
+			if (t < lo || t > hi) return 1;
+			const u = (t - lo) / (hi - lo); // 0..1 across the dip
+			const tri = 1 - Math.abs(u * 2 - 1); // 0 → 1 → 0
+			const s = tri * tri * (3 - 2 * tri); // smoothstep the dip
+			return 1 - s; // 1 (on) → 0 (off) → 1
+		};
+		return {
+			lampW,
+			lampH,
+			y: bgTop,
+			bulbY: 0.83, // bulb height within the lamp (fraction of lampH)
+			list: [
+				{ x: bgLeft + cover.width * 0.1, on: blink(0) },
+				{ x: bgLeft + cover.width * 0.21, on: blink(2100) },
+			],
+		};
+	});
 </script>
 
 <Rectangle {...canvas} backgroundColor={0x170905} zIndex={-3} />
@@ -163,6 +195,15 @@
 		<!-- Clean gleam: a soft light band (wide dim + narrow bright core) sweeping across the diner. -->
 		<Rectangle x={shine.x} y={canvas.height * 0.5} anchor={0.5} width={canvas.width * 0.11} height={canvas.height * 1.7} rotation={0.32} backgroundColor={0xffffff} alpha={shine.a} zIndex={-0.6} />
 		<Rectangle x={shine.x} y={canvas.height * 0.5} anchor={0.5} width={canvas.width * 0.04} height={canvas.height * 1.7} rotation={0.32} backgroundColor={0xffffff} alpha={shine.a * 1.3} zIndex={-0.6} />
+	{/if}
+	{#if lamps}
+		<!-- Two hanging pendant lamps in the top-left; bulbs blink on/off smoothly. -->
+		{#each lamps.list as l, i (i)}
+			<Sprite key="specialLamp" x={l.x} y={lamps.y} anchor={{ x: 0.5, y: 0 }} width={lamps.lampW} height={lamps.lampH} zIndex={-0.92} />
+			<Circle x={l.x} y={lamps.y + lamps.lampH * lamps.bulbY} diameter={lamps.lampW * 1.05} anchor={0.5} backgroundColor={0xffd471} backgroundAlpha={l.on * 0.2} zIndex={-0.9} blendMode="add" />
+			<Circle x={l.x} y={lamps.y + lamps.lampH * lamps.bulbY} diameter={lamps.lampW * 0.52} anchor={0.5} backgroundColor={0xfff2c2} backgroundAlpha={l.on * 0.45} zIndex={-0.9} blendMode="add" />
+			<Circle x={l.x} y={lamps.y + lamps.lampH * lamps.bulbY} diameter={lamps.lampW * 0.4} anchor={0.5} backgroundColor={0x140f0a} backgroundAlpha={(1 - l.on) * 0.5} zIndex={-0.89} />
+		{/each}
 	{/if}
 {/if}
 {#if showArt && showMascot}

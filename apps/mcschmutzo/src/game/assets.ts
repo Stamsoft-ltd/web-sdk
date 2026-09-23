@@ -404,8 +404,15 @@ export default {
 		preload: true,
 	},
 	backgroundWideBonus: {
+		// New special (free-games) kitchen bg — lamps are overlaid + animated separately.
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/special-bg-desktop.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/special-bg-wide.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialLamp: {
+		// Hanging pendant lamp for the special bg (two overlaid top-left, blinking).
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/special-lamp.webp', import.meta.url).href,
 		preload: true,
 	},
 	bonusWheel: {
