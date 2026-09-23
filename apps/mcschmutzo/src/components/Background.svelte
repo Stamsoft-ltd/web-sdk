@@ -56,11 +56,12 @@
 	);
 	// Pupils (measured from the cut art) + eye-cover boxes for the blink lid; all fractions of the
 	// figure. Skin tone sampled by the eyes so the lid is invisible where it overshoots onto skin.
-	// ny nudged down from the measured centre so the pupils sit LOW in the sclera (less white showing
-	// underneath — they were reading a touch too high).
+	// Pupils sit low-ish in the (now fully-filled white) sclera for a natural forward gaze. The eye
+	// whites in mascot_base were re-filled solid white — they had skin showing where the pupils were
+	// cut, so the moving disc used to reveal skin.
 	const mascotPupils = [
-		{ key: 'mascotPupilL', nx: 0.3415, ny: 0.3155, nw: 0.0491, nh: 0.0479 },
-		{ key: 'mascotPupilR', nx: 0.473, ny: 0.3125, nw: 0.0687, nh: 0.0449 },
+		{ key: 'mascotPupilL', nx: 0.3415, ny: 0.311, nw: 0.0491, nh: 0.0479 },
+		{ key: 'mascotPupilR', nx: 0.473, ny: 0.308, nw: 0.0687, nh: 0.0449 },
 	];
 	const mascotLids = [
 		{ cx: 0.329, cy: 0.305, w: 0.084, h: 0.08 },
