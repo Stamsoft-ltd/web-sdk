@@ -48,6 +48,21 @@ const winTiming = (amount: number) => {
 // small win only if the win is above 10x", user 2026-09-21).
 const SMALL_WIN_MIN_MULTIPLIER = 10;
 
+// Both round-ending cards (bonus CONGRATULATIONS, MAX WIN) are click-through from the frame they
+// appear. The gate used to open only after the full count-up, so the tail of a bonus was 8-10s of
+// dead time for a player queueing buys ("you should be able to click it immediately", user
+// 2026-09-21). A press mid-count snaps the amount to the total and holds it one readable beat; a
+// press once counted closes at once.
+const holdUntilContinue = async (countDurationMs: number) => {
+	const shownAt = performance.now();
+	await stateGameDerived.waitForContinue();
+	if (performance.now() - shownAt < countDurationMs + 150) {
+		// The overlay's skip effect is what snaps the count; reuse it rather than a second channel.
+		stateGameDerived.requestSkip();
+		await stateGameDerived.waitMotion(() => 420);
+	}
+};
+
 const presentWin = async (amount: number, detail: 'ROUND WIN' | 'TOTAL WIN') => {
 	if (amount <= 0) return;
 	if (bookEventAmountToBetAmountMultiplier(amount) < SMALL_WIN_MIN_MULTIPLIER) return;
@@ -65,10 +80,9 @@ const presentWin = async (amount: number, detail: 'ROUND WIN' | 'TOTAL WIN') => 
 		countDurationMs,
 	};
 	if (title === 'MAX WIN') {
-		// The cap ends the round. Hold the counted total, then require a click/tap exactly like
-		// the bonus outro, so the biggest screen in the game is never timed away under autoplay.
-		await stateGameDerived.waitMotion(() => Math.max(1800, countDurationMs + 450));
-		await stateGameDerived.waitForContinue();
+		// The cap ends the round. Require a click/tap exactly like the bonus outro, so the biggest
+		// screen in the game is never timed away under autoplay.
+		await holdUntilContinue(countDurationMs);
 	} else {
 		await stateGameDerived.wait(timing.presentDurationMs, {
 			// Even slam-stop/turbo leaves enough time to identify the result and final amount.
@@ -285,6 +299,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.roundWin = event.amount;
 		stateGame.bonusTotalWin = event.amount;
 		stateBet.winBookEventAmount = event.amount;
+		// A skip pressed on the last spin's ROUND WIN must not pre-snap the bonus total: this is the
+		// one number of the feature, so it counts up — and the gate below lets it be cut at once.
+		stateGameDerived.clearSkip();
 		const countDurationMs = Math.max(
 			1200,
 			Math.min(6000, Math.max(3000, winTiming(event.amount).countDurationMs)) *
@@ -299,9 +316,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			bonusPresentation: 'end',
 			tier: event.tier,
 		};
-		// Show the full counted total, then require a click/tap exactly like the reference games.
-		await stateGameDerived.waitMotion(() => Math.max(1800, countDurationMs + 450));
-		await stateGameDerived.waitForContinue();
+		// Require a click/tap exactly like the reference games — accepted from the first frame.
+		await holdUntilContinue(countDurationMs);
 		stateGame.overlay = null;
 		await stateGameDerived.wait(230, { min: 120 });
 	},

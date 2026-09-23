@@ -113,7 +113,9 @@ export default {
 	'MODE BONUS TITLE': 'NORMAL BONUS',
 	'MODE BONUS TAG': '8×8 GRID · 10 FREE SPINS',
 	'MODE MYSTERY TITLE': 'MYSTERY BONUS',
-	'MODE MYSTERY TAG': 'NORMAL · SUPER · HIDDEN',
+	// The confirm dialog names the odds of each tier ('add percentages for each bonus possibility',
+	// user 2026-09-21); the same 60/30/10 split as the paytable and feature-buy info pages.
+	'MODE MYSTERY TAG': 'NORMAL 60% · SUPER 30% · HIDDEN 10%',
 	'MODE SUPER TITLE': 'SUPER BONUS',
 	'MODE SUPER TAG': '9×9 GRID · 10 FREE SPINS',
 	'BET MODE BASE TITLE': 'BASE GAME',

@@ -218,7 +218,7 @@ export const createLocale = (source: Record<string, string>, terms: LocaleTerms)
 		'MODE BONUS TITLE': terms.normalBonus,
 		'MODE BONUS TAG': `8×8 · 10 ${freeSpins}`,
 		'MODE MYSTERY TITLE': terms.mysteryBonus,
-		'MODE MYSTERY TAG': `${terms.normalBonus} · ${terms.superBonus} · ${terms.hiddenBonus}`,
+		'MODE MYSTERY TAG': `${terms.normalBonus} 60% · ${terms.superBonus} 30% · ${terms.hiddenBonus} 10%`,
 		'MODE SUPER TITLE': terms.superBonus,
 		'MODE SUPER TAG': `9×9 · 10 ${freeSpins}`,
 		'BET MODE BASE TITLE': 'VEGGIE SALAD',
