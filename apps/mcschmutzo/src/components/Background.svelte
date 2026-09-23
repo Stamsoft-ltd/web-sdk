@@ -125,7 +125,9 @@
 		if (!showSpecialMascot) return null;
 		const bgLeft = canvas.width / 2 - cover.width / 2;
 		const bgTop = canvas.height / 2 - cover.height / 2;
-		const lampH = cover.height * 0.38;
+		// Small lamps that sit in the clear ceiling strip ABOVE the top-left readout (so the
+		// multiplier plaque never covers them). Keep the bulb above the readout's top edge.
+		const lampH = Math.min(canvas.height * 0.16, cover.height * 0.2);
 		const lampW = lampH * (700 / 1077);
 		// On most of the time; a smooth dip fully OFF now and then (a blink).
 		const blink = (phase: number) => {
@@ -143,10 +145,11 @@
 			lampW,
 			lampH,
 			y: bgTop,
-			bulbY: 0.83, // bulb height within the lamp (fraction of lampH)
+			bulbYPx: bgTop + lampH * 0.95, // the bulb sits at the shade's bottom opening
+			haloYPx: bgTop + lampH * 1.12, // halo pools below the rim (light shines down, shade blocks up)
 			list: [
-				{ x: bgLeft + cover.width * 0.1, on: blink(0) },
-				{ x: bgLeft + cover.width * 0.21, on: blink(2100) },
+				{ x: bgLeft + cover.width * 0.122, on: blink(0) },
+				{ x: bgLeft + cover.width * 0.182, on: blink(2100) },
 			],
 		};
 	});
@@ -197,12 +200,15 @@
 		<Rectangle x={shine.x} y={canvas.height * 0.5} anchor={0.5} width={canvas.width * 0.04} height={canvas.height * 1.7} rotation={0.32} backgroundColor={0xffffff} alpha={shine.a * 1.3} zIndex={-0.6} />
 	{/if}
 	{#if lamps}
-		<!-- Two hanging pendant lamps in the top-left; bulbs blink on/off smoothly. -->
+		<!-- Two small hanging pendant lamps in the top-left ceiling strip; bulbs blink on/off.
+		     The soft halo renders BEHIND the shade so only the light escaping under the rim shows
+		     (the shade occludes the top); the bulb glows at the shade's bottom opening. -->
 		{#each lamps.list as l, i (i)}
+			<Circle x={l.x} y={lamps.haloYPx} diameter={lamps.lampW * 1.25} anchor={0.5} backgroundColor={0xffce7a} backgroundAlpha={l.on * 0.24} zIndex={-0.93} blendMode="add" />
 			<Sprite key="specialLamp" x={l.x} y={lamps.y} anchor={{ x: 0.5, y: 0 }} width={lamps.lampW} height={lamps.lampH} zIndex={-0.92} />
-			<Circle x={l.x} y={lamps.y + lamps.lampH * lamps.bulbY} diameter={lamps.lampW * 1.05} anchor={0.5} backgroundColor={0xffd471} backgroundAlpha={l.on * 0.2} zIndex={-0.9} blendMode="add" />
-			<Circle x={l.x} y={lamps.y + lamps.lampH * lamps.bulbY} diameter={lamps.lampW * 0.52} anchor={0.5} backgroundColor={0xfff2c2} backgroundAlpha={l.on * 0.45} zIndex={-0.9} blendMode="add" />
-			<Circle x={l.x} y={lamps.y + lamps.lampH * lamps.bulbY} diameter={lamps.lampW * 0.4} anchor={0.5} backgroundColor={0x140f0a} backgroundAlpha={(1 - l.on) * 0.5} zIndex={-0.89} />
+			<Circle x={l.x} y={lamps.bulbYPx} diameter={lamps.lampW * 0.44} anchor={0.5} backgroundColor={0x140d07} backgroundAlpha={(1 - l.on) * 0.5} zIndex={-0.9} />
+			<Circle x={l.x} y={lamps.bulbYPx} diameter={lamps.lampW * 0.5} anchor={0.5} backgroundColor={0xffe6a8} backgroundAlpha={l.on * 0.5} zIndex={-0.9} blendMode="add" />
+			<Circle x={l.x} y={lamps.bulbYPx} diameter={lamps.lampW * 0.26} anchor={0.5} backgroundColor={0xfff7df} backgroundAlpha={l.on * 0.72} zIndex={-0.9} blendMode="add" />
 		{/each}
 	{/if}
 {/if}
