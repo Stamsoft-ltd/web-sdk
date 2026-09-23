@@ -52,27 +52,28 @@
 		mascotIdle(elapsed, cx, guyY, guyWidth, guyHeight, { sway: 0, breathe: 0.005, bob: 0.004 }),
 	);
 
-	// The whole hand+shaker+forearm (a CLEAN designer layer, only-hand.svg — the base has exactly this
-	// region removed) FLICKS about the elbow in a sprinkling rhythm; the salt releases on the down-flick
-	// so the arm and the falling salt read as one action. It's a full-frame sprite (same footprint as
-	// the base) rotated about the elbow, so there's no cut edge in the middle of the arm to seam.
+	// The WHOLE arm (hand+shaker+forearm+upper-arm to the shoulder — extracted clean from the art, the
+	// base has exactly that region removed) FLICKS about the SHOULDER SOCKET. Pivoting at the socket
+	// keeps the arm attached to the body (the socket point barely moves, so the body stays covered)
+	// while the forearm+hand swing out over the background — no cut at the shoulder. The salt releases
+	// on the down-flick so arm + falling salt read as one action.
 	const SHAKE_PERIOD = 560; // ms per flick
-	const SHAKE_AMP = 0.045; // rad (~2.6°) about the elbow — a gentle sprinkling flick
+	const SHAKE_AMP = 0.048; // rad (~2.7°) about the shoulder — visible but seamless flick
 	const shakeP = $derived((elapsed % SHAKE_PERIOD) / SHAKE_PERIOD);
 	const armAngle = $derived(SHAKE_AMP * Math.sin(2 * Math.PI * shakeP)); // + = flick down (cap dips)
 
 	const chefL = $derived(guyPose.x - guyPose.width / 2);
 	const chefT = $derived(guyPose.y - guyPose.height / 2);
-	// Elbow pivot (chef fractions) — where the forearm meets the upper arm.
-	const PIVX = 0.389;
-	const PIVY = 0.696;
+	// Shoulder-socket pivot (chef fractions) — where the arm meets the body.
+	const PIVX = 0.455;
+	const PIVY = 0.61;
 	const pivotX = $derived(chefL + PIVX * guyPose.width);
 	const pivotY = $derived(chefT + PIVY * guyPose.height);
 
-	// Salt spout = the shaker cap, carried around the elbow by the flick so the stream stays glued to
-	// the (moving) cap.
-	const CAP_DX = 0.29 - PIVX; // cap - elbow (chef-frac x)
-	const CAP_DY = 0.46 - PIVY; // cap - elbow (chef-frac y)
+	// Salt spout = the shaker cap, carried around the shoulder by the flick so the stream stays glued
+	// to the (moving) cap.
+	const CAP_DX = 0.33 - PIVX; // cap - shoulder (chef-frac x)
+	const CAP_DY = 0.5 - PIVY; // cap - shoulder (chef-frac y)
 	const saltTopX = $derived(
 		pivotX + (CAP_DX * guyPose.width) * Math.cos(armAngle) - (CAP_DY * guyPose.height) * Math.sin(armAngle),
 	);
