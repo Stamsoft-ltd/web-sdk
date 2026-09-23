@@ -222,15 +222,16 @@
 	.fs-burger {
 		position: absolute;
 		left: 50%;
-		/* Raised so the whole burger clears the plaque top (its bottom no longer hides behind it), and a
-		   smaller footprint + contained --sep keep the disassembled slices fully visible. */
-		top: -34%;
+		/* Sized + placed so the burger's bottom sits at the plaque top (clears it, no cut behind it) while
+		   its top stays on-screen even on short desktop windows; --sep is big enough that the
+		   assemble/disassemble clearly reads. */
+		top: -25%;
 		transform: translateX(-50%);
-		width: 24%;
+		width: 20%;
 		aspect-ratio: 1.077;
 		z-index: 0;
 		pointer-events: none;
-		--sep: 0.32;
+		--sep: 0.6;
 		animation: fs-burger-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 	}
 
