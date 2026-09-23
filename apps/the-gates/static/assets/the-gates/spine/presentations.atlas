@@ -1,0 +1,53 @@
+presentations.png
+size: 1448,1086
+filter: Linear,Linear
+pma: false
+left
+  bounds: 6,94,349,280
+right
+  bounds: 373,93,338,281
+crest
+  bounds: 1119,62,324,362
+cyanGem
+  bounds: 48,778,264,259
+greenGem
+  bounds: 412,778,264,259
+redGem
+  bounds: 778,778,262,259
+goldGem
+  bounds: 1140,778,264,259
+
+hq-plaque.png
+size: 2048,768
+filter: Linear,Linear
+pma: false
+plaque
+  bounds: 2,53,2044,708
+
+hq-normal.png
+size: 2048,768
+filter: Linear,Linear
+pma: false
+normal
+  bounds: 62,216,1924,336
+
+hq-super.png
+size: 1983,793
+filter: Linear,Linear
+pma: false
+super
+  bounds: 56,239,1873,345
+
+hq-hidden.png
+size: 2172,724
+filter: Linear,Linear
+pma: false
+hidden
+  bounds: 52,176,2071,395
+
+hq-complete.png
+size: 1983,793
+filter: Linear,Linear
+pma: false
+complete
+  bounds: 25,231,1931,332

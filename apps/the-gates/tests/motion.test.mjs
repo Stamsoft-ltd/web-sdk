@@ -41,7 +41,7 @@ test('every airborne cell ends by skip tail; no finished animation rewinds', () 
 			}
 	}
 });
-test('normal exit plus full board drop fits the old 520ms drop budget', () => {
+test('normal exit plus full board drop stays within the readable normal budget', () => {
 	let exit = 0,
 		drop = 0;
 	for (let reel = 0; reel < 6; reel++)
@@ -51,5 +51,22 @@ test('normal exit plus full board drop fits the old 520ms drop budget', () => {
 			exit = Math.max(exit, e.delay + e.duration + 24);
 			drop = Math.max(drop, d.delay + d.duration + d.impact + 24);
 		}
-	assert.ok(exit + drop < 520, `${exit + drop}ms is too slow`);
+	assert.ok(exit + drop < 760, `${exit + drop}ms is too slow`);
+});
+
+test('reveal and tumble travel visibly left to right at every speed', () => {
+	for (const speed of ['normal', 'fast', 'turbo']) {
+		for (const kind of ['spin', 'tumble']) {
+			for (let row = 0; row < 5; row++) {
+				const delays = Array.from(
+					{ length: 6 },
+					(_, reel) => cellMotion(wave(speed, kind), reel, row, -600).delay,
+				);
+				for (let reel = 1; reel < 6; reel++) assert.ok(delays[reel] > delays[reel - 1]);
+				assert.ok(
+					delays[5] - delays[0] >= (speed === 'normal' ? 180 : speed === 'fast' ? 110 : 40),
+				);
+			}
+		}
+	}
 });

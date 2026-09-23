@@ -24,7 +24,7 @@ const primary = createPrimaryMachines<Bet>({
 	},
 	onPlayGame: async (bet) => {
 		try {
-			await playEvents(bet.state);
+			await playEvents(bet.state, false, String(bet.betID ?? bet.roundID ?? 'book'));
 		} catch (error) {
 			runtime.error = String(error);
 			stateBet.autoSpinsCounter = 0;

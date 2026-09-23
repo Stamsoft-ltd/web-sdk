@@ -5,7 +5,7 @@ const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
 const origin = process.env.GATES_ORIGIN || 'http://127.0.0.1:3022';
 const browser = await chromium.launch({ headless: true });
 const errors = [];
-async function setup(mode, restrictions = {}) {
+async function setup(mode, restrictions = {}, symbol = 'PURPLE_GEM') {
 	const page = await browser.newPage({
 		viewport: { width: 1440, height: 960 },
 		reducedMotion: 'no-preference',
@@ -13,6 +13,12 @@ async function setup(mode, restrictions = {}) {
 	page.setDefaultTimeout(20000);
 	page.on('pageerror', (e) => errors.push(e.message));
 	const events = previewEvents(mode);
+	for (const event of events) {
+		if (event.type === 'reveal')
+			for (const col of event.board)
+				for (const cell of col) if (cell?.name === 'PURPLE_GEM') cell.name = symbol;
+		if (event.type === 'cascadeWin') for (const win of event.wins) win.symbol = symbol;
+	}
 	const trace = { plays: 0, checkpoints: [], ended: 0 };
 	await page.route('https://motion.test/**', async (route) => {
 		const path = new URL(route.request().url()).pathname;
@@ -79,8 +85,30 @@ async function settled(page, events, trace) {
 }
 try {
 	const { page, events, trace } = await setup('BASE');
+	await page.locator('.temple-flames.ready').waitFor();
+	assert.equal(
+		await page.locator('.temple-flames').getAttribute('data-fire-source'),
+		'spine-layers',
+	);
+	await page.screenshot({ path: '/tmp/gates-vfx-idle.png' });
+	const flamesBefore = await page.locator('.temple-flames').evaluate((c) => c.toDataURL());
+	await page.waitForTimeout(150);
+	assert.notEqual(
+		await page.locator('.temple-flames').evaluate((c) => c.toDataURL()),
+		flamesBefore,
+		'flames actually change frames',
+	);
 	await page.locator('.spin-button').click();
 	await page.waitForFunction(() => document.querySelector('.board').dataset.phase === 'dropping');
+	const delays = await page
+		.locator('.reel')
+		.evaluateAll((reels) =>
+			reels.map((reel) =>
+				parseFloat(reel.querySelector('.symbol-motion').style.getPropertyValue('--motion-delay')),
+			),
+		);
+	for (let i = 1; i < delays.length; i++)
+		assert.ok(delays[i] > delays[i - 1], 'left to right wave');
 	const before = await page
 		.locator('.drop')
 		.first()
@@ -98,6 +126,25 @@ try {
 	await page.waitForFunction(() => document.querySelector('.board').dataset.waveSpeed === 'turbo');
 	await page.waitForFunction(() => document.querySelector('.board').dataset.phase === 'gate');
 	const opened = Date.now();
+	assert.equal(await page.locator('.gate-dust i').count(), 32);
+	const dust = await page
+		.locator('.gate-dust i')
+		.evaluateAll((nodes) =>
+			nodes.map((e) =>
+				['--x', '--y', '--drift', '--delay'].map((p) => e.style.getPropertyValue(p)),
+			),
+		);
+	for (let field = 0; field < 4; field++) assert.ok(new Set(dust.map((p) => p[field])).size > 20);
+	assert.equal(
+		await page.locator('.gate-dust').getAttribute('data-event-seed'),
+		`1:${events.find((e) => e.type === 'gateOpen').index}`,
+	);
+	assert.equal(
+		await page.locator('.temple').evaluate((e) => getComputedStyle(e).animationName),
+		'temple-impact',
+	);
+	await page.waitForTimeout(100);
+	await page.screenshot({ path: '/tmp/gates-vfx-gate.png' });
 	await page.waitForFunction(() => document.querySelector('.board').dataset.phase !== 'gate');
 	assert.ok(Date.now() - opened >= 650, 'skip preserves gate/reward presentation');
 	await settled(page, events, trace);
@@ -136,6 +183,54 @@ try {
 	await settled(bonus.page, bonus.events, bonus.trace);
 	await bonus.page.close();
 
+	const effects = new Set();
+	for (const symbol of [
+		'PURPLE_GEM',
+		'GUARDIAN_MASK',
+		'SUN_MEDALLION',
+		'SACRED_EYE',
+		'RUNE_CHALICE',
+		'CRYSTAL_ORB',
+	]) {
+		const sample = await setup('BASE', {}, symbol);
+		await sample.page.locator('.spin-button').click();
+		await sample.page.locator('.symbol.paying').first().waitFor();
+		assert.equal(
+			await sample.page.locator('.symbol.paying').count(),
+			8,
+			'only paying positions animate',
+		);
+		const art = sample.page.locator('.symbol.paying canvas.ready').first();
+		await art.waitFor();
+		assert.equal(await art.getAttribute('data-spine-animation'), 'paying');
+		assert.equal(await art.getAttribute('data-spine-rig'), symbol);
+		assert.equal(
+			await sample.page
+				.locator('.symbol:not(.paying) canvas[data-spine-animation="paying"]')
+				.count(),
+			0,
+		);
+		const frame = await art.evaluate((c) => c.toDataURL());
+		await sample.page.waitForTimeout(100);
+		assert.notEqual(
+			await art.evaluate((c) => c.toDataURL()),
+			frame,
+			'Spine paying track changes rendered pixels',
+		);
+		effects.add(await art.getAttribute('data-spine-rig'));
+		await sample.page.screenshot({ path: `/tmp/gates-vfx-${symbol}.png` });
+		await sample.page.keyboard.press('Space');
+		await settled(sample.page, sample.events, sample.trace);
+		await sample.page.emulateMedia({ reducedMotion: 'reduce' });
+		await sample.page.waitForFunction(
+			() =>
+				document.querySelector('.temple').classList.contains('reduced') &&
+				!document.querySelector('.temple-flames, .symbol-sheen, .gate-dust'),
+		);
+		assert.equal(await sample.page.locator('.temple-flames, .symbol-sheen, .gate-dust').count(), 0);
+		await sample.page.close();
+	}
+	assert.equal(effects.size, 6, 'gem and each premium use distinct winning animation');
 	const restricted = await setup('BASE', { disabledSlamstop: true, disabledTurbo: true });
 	assert.equal(await restricted.page.locator('.speed').isVisible(), false);
 	await restricted.page.locator('.spin-button').click();

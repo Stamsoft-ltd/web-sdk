@@ -1,0 +1,590 @@
+{
+  "skeleton": {
+    "spine": "4.2.74",
+    "x": -768,
+    "y": -512,
+    "width": 1536,
+    "height": 1024
+  },
+  "bones": [
+    {
+      "name": "root"
+    },
+    {
+      "name": "super-0",
+      "parent": "root",
+      "x": -562,
+      "y": 358
+    },
+    {
+      "name": "super-1",
+      "parent": "root",
+      "x": -563,
+      "y": 240
+    },
+    {
+      "name": "super-2",
+      "parent": "root",
+      "x": -570,
+      "y": 19
+    },
+    {
+      "name": "super-3",
+      "parent": "root",
+      "x": 263,
+      "y": 238
+    },
+    {
+      "name": "super-4",
+      "parent": "root",
+      "x": 666,
+      "y": 238
+    },
+    {
+      "name": "super-5",
+      "parent": "root",
+      "x": 263,
+      "y": 4
+    },
+    {
+      "name": "super-6",
+      "parent": "root",
+      "x": 666,
+      "y": 4
+    },
+    {
+      "name": "super-7",
+      "parent": "root",
+      "x": 408.5,
+      "y": 396
+    },
+    {
+      "name": "super-8",
+      "parent": "root",
+      "x": 519.5,
+      "y": 396
+    },
+    {
+      "name": "super-9",
+      "parent": "root",
+      "x": 0,
+      "y": -313.5
+    },
+    {
+      "name": "super-10",
+      "parent": "root",
+      "x": 0,
+      "y": -345
+    }
+  ],
+  "slots": [
+    {
+      "name": "super-0",
+      "bone": "super-0",
+      "attachment": "super-0",
+      "color": "ffffffff"
+    },
+    {
+      "name": "super-1",
+      "bone": "super-1",
+      "attachment": "super-1",
+      "color": "ffffffff"
+    },
+    {
+      "name": "super-2",
+      "bone": "super-2",
+      "attachment": "super-2",
+      "color": "ffffffff"
+    },
+    {
+      "name": "super-3",
+      "bone": "super-3",
+      "attachment": "super-3",
+      "color": "ffffffff"
+    },
+    {
+      "name": "super-4",
+      "bone": "super-4",
+      "attachment": "super-4",
+      "color": "ffffffff"
+    },
+    {
+      "name": "super-5",
+      "bone": "super-5",
+      "attachment": "super-5",
+      "color": "ffffffff"
+    },
+    {
+      "name": "super-6",
+      "bone": "super-6",
+      "attachment": "super-6",
+      "color": "ffffffff"
+    },
+    {
+      "name": "super-7",
+      "bone": "super-7",
+      "attachment": "super-7",
+      "color": "ffffffff"
+    },
+    {
+      "name": "super-8",
+      "bone": "super-8",
+      "attachment": "super-8",
+      "color": "ffffffff"
+    },
+    {
+      "name": "super-9",
+      "bone": "super-9",
+      "attachment": "super-9",
+      "color": "ffffffff"
+    },
+    {
+      "name": "super-10",
+      "bone": "super-10",
+      "attachment": "super-10",
+      "color": "ffffffff"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "super-0": {
+          "super-0": {
+            "path": "super-0",
+            "width": 24,
+            "height": 40
+          }
+        },
+        "super-1": {
+          "super-1": {
+            "path": "super-1",
+            "width": 24,
+            "height": 40
+          }
+        },
+        "super-2": {
+          "super-2": {
+            "path": "super-2",
+            "width": 24,
+            "height": 40
+          }
+        },
+        "super-3": {
+          "super-3": {
+            "path": "super-3",
+            "width": 24,
+            "height": 40
+          }
+        },
+        "super-4": {
+          "super-4": {
+            "path": "super-4",
+            "width": 24,
+            "height": 40
+          }
+        },
+        "super-5": {
+          "super-5": {
+            "path": "super-5",
+            "width": 24,
+            "height": 40
+          }
+        },
+        "super-6": {
+          "super-6": {
+            "path": "super-6",
+            "width": 24,
+            "height": 40
+          }
+        },
+        "super-7": {
+          "super-7": {
+            "path": "super-7",
+            "width": 59,
+            "height": 56
+          }
+        },
+        "super-8": {
+          "super-8": {
+            "path": "super-8",
+            "width": 57,
+            "height": 56
+          }
+        },
+        "super-9": {
+          "super-9": {
+            "path": "super-9",
+            "width": 92,
+            "height": 41
+          }
+        },
+        "super-10": {
+          "super-10": {
+            "path": "super-10",
+            "width": 92,
+            "height": 50
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "pulse": {
+      "slots": {
+        "super-0": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 0.6,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 1.25,
+              "value": 0.25
+            },
+            {
+              "time": 2.4,
+              "value": 0.08
+            },
+            {
+              "time": 4.5,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "super-1": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 0.43,
+              "value": 0.08
+            },
+            {
+              "time": 1.03,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 1.68,
+              "value": 0.25
+            },
+            {
+              "time": 2.83,
+              "value": 0.08
+            },
+            {
+              "time": 4.93,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "super-2": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 0.86,
+              "value": 0.08
+            },
+            {
+              "time": 1.46,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 2.11,
+              "value": 0.25
+            },
+            {
+              "time": 3.26,
+              "value": 0.08
+            },
+            {
+              "time": 5.36,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "super-3": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 1.29,
+              "value": 0.08
+            },
+            {
+              "time": 1.8900000000000001,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 2.54,
+              "value": 0.25
+            },
+            {
+              "time": 3.69,
+              "value": 0.08
+            },
+            {
+              "time": 5.79,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "super-4": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 0.21999999999999975,
+              "value": 0.08
+            },
+            {
+              "time": 1.72,
+              "value": 0.08
+            },
+            {
+              "time": 2.32,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 2.9699999999999998,
+              "value": 0.25
+            },
+            {
+              "time": 4.12,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "super-5": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 0.6500000000000004,
+              "value": 0.08
+            },
+            {
+              "time": 2.15,
+              "value": 0.08
+            },
+            {
+              "time": 2.75,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 3.4,
+              "value": 0.25
+            },
+            {
+              "time": 4.55,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "super-6": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 1.08,
+              "value": 0.08
+            },
+            {
+              "time": 2.58,
+              "value": 0.08
+            },
+            {
+              "time": 3.18,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 3.83,
+              "value": 0.25
+            },
+            {
+              "time": 4.98,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "super-7": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 1.5099999999999998,
+              "value": 0.08
+            },
+            {
+              "time": 3.01,
+              "value": 0.08
+            },
+            {
+              "time": 3.61,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 4.26,
+              "value": 0.25
+            },
+            {
+              "time": 5.41,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "super-8": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 1.9399999999999995,
+              "value": 0.08
+            },
+            {
+              "time": 3.44,
+              "value": 0.08
+            },
+            {
+              "time": 4.04,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 4.6899999999999995,
+              "value": 0.25
+            },
+            {
+              "time": 5.84,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "super-9": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.11991304347826087
+            },
+            {
+              "time": 0.2699999999999996,
+              "value": 0.08000000000000004
+            },
+            {
+              "time": 2.370000000000001,
+              "value": 0.08
+            },
+            {
+              "time": 3.87,
+              "value": 0.08
+            },
+            {
+              "time": 4.47,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 5.12,
+              "value": 0.25
+            },
+            {
+              "time": 6,
+              "value": 0.11991304347826098
+            }
+          ]
+        },
+        "super-10": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.1834782608695652
+            },
+            {
+              "time": 0.6999999999999993,
+              "value": 0.08000000000000004
+            },
+            {
+              "time": 2.8000000000000007,
+              "value": 0.08
+            },
+            {
+              "time": 4.3,
+              "value": 0.08
+            },
+            {
+              "time": 4.8999999999999995,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 5.55,
+              "value": 0.25
+            },
+            {
+              "time": 6,
+              "value": 0.1834782608695652
+            }
+          ]
+        }
+      }
+    }
+  }
+}

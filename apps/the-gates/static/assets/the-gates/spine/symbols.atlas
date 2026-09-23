@@ -1,0 +1,44 @@
+symbols.png
+size: 1402,1122
+filter: Linear,Linear
+pma: false
+frame
+  bounds: 8,8,270,298
+red
+  bounds: 318,28,218,260
+blue
+  bounds: 592,28,220,260
+green
+  bounds: 876,28,224,260
+purple
+  bounds: 1164,26,230,265
+amber
+  bounds: 35,310,227,257
+crown
+  bounds: 273,282,300,310
+face
+  bounds: 588,322,228,251
+rays
+  bounds: 825,281,305,313
+sun
+  bounds: 1155,338,240,216
+eyeFrame
+  bounds: 5,576,274,260
+iris
+  bounds: 329,630,186,178
+bowl
+  bounds: 559,591,273,193
+stem
+  bounds: 848,624,265,182
+orb
+  bounds: 1124,573,273,258
+stand
+  bounds: 3,840,280,259
+wildFrame
+  bounds: 282,813,290,287
+vortex
+  bounds: 577,831,249,246
+glint
+  bounds: 928,904,108,128
+wisp
+  bounds: 1147,825,224,292

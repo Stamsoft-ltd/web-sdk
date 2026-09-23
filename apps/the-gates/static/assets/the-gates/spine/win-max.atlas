@@ -1,0 +1,13 @@
+../wins/legendary-plaque.png
+size: 1942,809
+filter: Linear,Linear
+pma: false
+plaque
+  bounds: 0,0,1942,809
+
+../wins/max-title.png
+size: 2172,724
+filter: Linear,Linear
+pma: false
+title
+  bounds: 0,0,2172,724

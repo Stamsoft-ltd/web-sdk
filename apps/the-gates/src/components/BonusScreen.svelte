@@ -4,6 +4,9 @@
 	import { t } from '../i18n';
 	import CountUp from './CountUp.svelte';
 	import WinCoins from './WinCoins.svelte';
+	import CelebrationFlourish from './CelebrationFlourish.svelte';
+	import SpineArt from './SpineArt.svelte';
+	let spineReady = $state(false);
 	let {
 		kind,
 		tier,
@@ -47,11 +50,19 @@
 	<div class="bonus-body">
 		<section class="bonus-stage">
 			<div class="bonus-aura" aria-hidden="true"></div>
-			<h2>
+			<CelebrationFlourish reduced={runtime.reduced} />
+			<h2 class:spine-ready={spineReady}>
 				<img
 					class="bonus-crest"
 					src={`./assets/the-gates/presentations/${summary ? 'complete' : skin}-crest.png`}
 					alt={title}
+				/>
+				<SpineArt
+					rig={`bonus-${summary ? 'complete' : skin}`}
+					atlas="presentations"
+					intro="enter"
+					reduced={runtime.reduced}
+					onready={(value) => (spineReady = value)}
 				/>
 			</h2>
 			<div class="bonus-award">
@@ -118,9 +129,13 @@
 		animation: crest-arrive 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
 	}
 	h2 {
+		position: relative;
 		margin: 0;
 		width: 100%;
 		line-height: 0;
+	}
+	.spine-ready .bonus-crest {
+		opacity: 0;
 	}
 	.bonus-crest {
 		display: block;

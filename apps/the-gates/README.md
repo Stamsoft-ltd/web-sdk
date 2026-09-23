@@ -243,3 +243,96 @@ in this UI phase; no math generation or validation executed.
   36 bonus entry/end viewport combinations and early win/max-win dismissal.
   No missing assets, page errors or layout findings. Svelte check still reports
   only the existing 4 shared auth errors and 17 shared carousel warnings.
+
+### Speed pacing revision
+
+- Normal board motion slowed ~13% for readable drops/tumbles. Fast keeps the prior
+  normal feel; Turbo unchanged. Speed cycle and live mid-round switching unchanged.
+
+### Layered Spine animation (4.2.74)
+
+- New image-generated component atlases: symbol settings/inserts, face/crown,
+  eye/frame, bowl/stem, orb/base; flame base/tongues/plume; bonus wings, socket,
+  jewel, plaque and title. Keys remain static and unlabeled. No math changes.
+- Official `@esotericsoftware/spine-core` evaluates exported JSON bones, slots,
+  animation blending and mesh deformation. Canvas2D adapter draws regions and
+  textured mesh triangles. This is not a CSS animation of a flattened symbol.
+  Eleven symbol rigs each have idle/paying tracks; five gems share their mechanic.
+- Four background clean plates keep the existing architecture and door registration.
+  Flames use 12 distinct burning-contour frames per palette, evaluated by Spine
+  attachment tracks. Two complementary crossfade slots and a coal-bed layer keep
+  light output steady. Bases register to measured coal-bed centers; no rigid sway,
+  scale or rotation tracks. Door occlusion remains correct.
+- Ambient tracks: base cyan runes, normal gold ornament pulses, super emerald
+  inlays, hidden red branching fissures. Separate hand-traced transparent energy
+  layers fade on staggered six-second Spine tracks; no full-screen brightness flash.
+- Win plaques and lettering have separate Spine bones. Bonus entry/end rigs add
+  separate wings, crest and gem. Entrance queues idle; count-up, skip guards,
+  thresholds and auto-dismiss are unchanged. Existing approved CSS 3D door leaves,
+  CSS travel/shake and procedural coins/dust remain; not every UI effect is Spine.
+- One shared 30fps animation clock, capped pixel density, cached atlases/rig data,
+  hidden-tab pause and teardown cleanup. Reduced motion freezes symbol/presentation
+  poses and removes ambient canvas, dust and motes. Failed asset loads retain
+  static originals. Canvas2D avoids one WebGL context per board cell.
+- Coins are 3x former desktop size (mobile bounded). Gate dust uses round ID +
+  `eventId` (book index fallback), with independent X/Y, left/right drift, rotation,
+  size, 0–780ms delays and 1.05–2.15s lifetimes. Same seed gives same replay.
+- Left-to-right reveal/tumble columns use 38/24/10ms Normal/Fast/Turbo offsets.
+  Live Space skip and mid-bonus speed switching retain event order and settlement.
+
+Assets and rebuild:
+
+```sh
+# From apps/the-gates
+python3 tools/measure-spine-art.py # only when source PNGs change
+node tools/build-spine.mjs
+PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs node tools/rasterize-spine.mjs
+node --experimental-strip-types --test tests/*.test.mjs
+```
+
+`static/assets/the-gates/spine/` contains 28 Spine JSON rigs, atlas files,
+PNG source layers, editable `energy.svg`, and `provenance.json` with full built-in
+image_gen prompts and original paths. `build-spine.mjs` is the editable rig source.
+These are importable Spine 4.2 JSON exports, not binary `.spine` editor projects.
+Retain `SPINE-LICENSE.txt`; release requires the studio's appropriate Spine license.
+The Canvas2D adapter currently supports region/mesh attachments and normal/additive
+blend modes used by these rigs; it is not a general-purpose Spine renderer.
+
+Validation: 45 unit tests pass, including official-runtime rig parsing, independent
+paying tracks, flame frame transitions/loop seams, mode pulse staggering, concentric sun/bonus pivots, HD source resolution and queued
+presentation transitions. Mocked browser motion and dedicated Spine checks pass.
+TypeScript passes. Svelte check retains four pre-existing shared auth errors and
+17 shared carousel warnings. Low-end-device FPS/thermal profiling and final art
+approval remain release QA.
+
+### Burn / registration / HD refinement
+
+- Fire no longer sways a fixed cutout. Three 12-frame burn atlases morph the actual
+  contour through Spine attachment/alpha tracks; crossfade brightness stays fixed.
+- Sun face/rays and bonus gem/socket register to measured artwork landmarks,
+  rather than atlas bounding-box centers. Rotation cannot orbit the central insert.
+- Bonus lettering and plaque use standalone ~2K images (formerly 330–400px cells).
+  Text fits the black writing well with equal side margins; Canvas uses up to DPR2
+  and high-quality downsampling. Original layered wings/crest remain independent.
+- Sources, alpha/baseline measurements and built-in generation prompts:
+  `spine/art-layout.json`, `spine/refinement-provenance.json`.
+
+### Paying-symbol ash removal
+
+- `symbolAsh.ts` snapshots the current layered Spine pose, chars its actual pixels,
+  then crumbles it into 100 small, staggered flakes. Tiny surviving material glints
+  disappear with the ash. An ephemeral Spine 4.2 rig drives independent flake bones and
+  original/charred texture slots; no generic smoke sprite over an intact symbol.
+- Only `tumbleRemove.positions` trigger it; sticky wilds are excluded. Presentation
+  randomness is seeded by round/reveal/cell, with no outcome RNG or math changes.
+- Uses the existing 210/190/70ms Normal/Fast/Turbo removal duration and live wave
+  deadline. Space and speed changes shorten the same effect without restarting it.
+  Reduced motion retains simple removal; missing rigs retain the static fallback.
+- No new raster downloads, timers or tickers. Two temporary RGBA textures per
+  removed symbol, approximately `8 * canvasWidth * canvasHeight` bytes, plus rig/canvas
+  overhead; references are released at the next reveal/unmount. At 280x280 backing
+  pixels this is ~0.6 MiB/symbol (~18 MiB for all 30). At most 100 flakes/symbol,
+  sampled on the existing shared 30fps clock. Real-device FPS impact not profiled.
+- Regression coverage: `symbolAsh.test.mjs`, `browser-ash.mjs` (three speeds,
+  source-pixel breakup, removal-only scope, cleanup, Space skip, reduced motion,
+  unchanged event checkpoints and settlement).

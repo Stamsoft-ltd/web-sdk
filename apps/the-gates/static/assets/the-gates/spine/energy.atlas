@@ -1,0 +1,90 @@
+energy.png
+size: 1024,240
+filter: Linear,Linear
+pma: false
+base-0
+  bounds: 8,8,24,36
+base-1
+  bounds: 40,8,24,36
+base-2
+  bounds: 72,8,24,36
+base-3
+  bounds: 104,8,24,36
+base-4
+  bounds: 136,8,24,36
+base-5
+  bounds: 168,8,24,36
+base-6
+  bounds: 200,8,24,36
+base-7
+  bounds: 232,8,24,36
+base-8
+  bounds: 264,8,24,36
+base-9
+  bounds: 296,8,24,36
+base-10
+  bounds: 328,8,24,36
+base-11
+  bounds: 360,8,24,36
+normal-0
+  bounds: 392,8,26,42
+normal-1
+  bounds: 426,8,26,42
+normal-2
+  bounds: 460,8,26,42
+normal-3
+  bounds: 494,8,26,42
+normal-4
+  bounds: 528,8,26,42
+normal-5
+  bounds: 562,8,26,42
+normal-6
+  bounds: 596,8,26,42
+normal-7
+  bounds: 8,58,437,14
+normal-8
+  bounds: 453,58,237,14
+normal-9
+  bounds: 8,80,368,56
+super-0
+  bounds: 384,80,24,40
+super-1
+  bounds: 416,80,24,40
+super-2
+  bounds: 448,80,24,40
+super-3
+  bounds: 480,80,24,40
+super-4
+  bounds: 512,80,24,40
+super-5
+  bounds: 544,80,24,40
+super-6
+  bounds: 576,80,24,40
+super-7
+  bounds: 608,80,59,56
+super-8
+  bounds: 675,80,57,56
+super-9
+  bounds: 740,80,92,41
+super-10
+  bounds: 840,80,92,50
+hidden-0
+  bounds: 940,80,69,48
+hidden-1
+  bounds: 8,144,58,52
+hidden-2
+  bounds: 74,144,52,71
+hidden-3
+  bounds: 134,144,39,61
+hidden-4
+  bounds: 181,144,45,73
+hidden-5
+  bounds: 234,144,62,65
+hidden-6
+  bounds: 304,144,63,47
+hidden-7
+  bounds: 375,144,66,41
+hidden-8
+  bounds: 449,144,28,62
+hidden-9
+  bounds: 485,144,24,67

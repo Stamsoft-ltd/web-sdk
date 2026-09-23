@@ -443,10 +443,8 @@ button:not(:disabled):active {
 		0 0 12px #7eeee944;
 	animation: win-pulse 0.65s ease-in-out infinite alternate;
 }
-.cell.winning .symbol-motion {
-	animation: win-lift 0.7s ease-in-out infinite alternate;
-}
-.cell.removing .symbol-motion {
+
+.cell.removing:not(.sticky) .symbol-motion:not(:has(.symbol.rig-ready.animated)) {
 	animation: dissolve var(--motion-duration) ease-in var(--motion-delay) forwards;
 }
 .cell.sticky::before {
@@ -2272,4 +2270,98 @@ img.studio-mark {
 .inline-win .win-amount {
 	font: 700 clamp(30px, 5vw, 62px) / 1.15 var(--serif);
 	color: #fff;
+}
+
+/* Effect transforms live inside the drop wrapper; never compete with gravity. */
+.board[data-phase='dropping'] .symbol-sheen,
+.board[data-phase='spinning'] .symbol-sheen,
+.board[data-phase='removing'] .symbol-sheen,
+.board[data-phase='dropping'] .symbol-spark,
+.board[data-phase='spinning'] .symbol-spark,
+.board[data-phase='removing'] .symbol-spark {
+	visibility: hidden;
+}
+.temple.gate-impact {
+	animation: temple-impact 620ms ease-out;
+}
+@keyframes temple-impact {
+	0%,
+	100% {
+		transform: translate(0);
+	}
+	12% {
+		transform: translate(-3px, 2px);
+	}
+	24% {
+		transform: translate(3px, -2px);
+	}
+	39% {
+		transform: translate(-2px, 1px);
+	}
+	55% {
+		transform: translate(2px, 0);
+	}
+	75% {
+		transform: translate(-1px, 0);
+	}
+}
+/* Layered presentation choreography, no change to dismissal or count-up timing. */
+.bonus-award,
+.win-stage > .win-amount {
+	animation: award-rise 400ms ease-out both;
+}
+.win-stage .gold-button,
+.bonus-stage .gold-button {
+	animation: control-arrive 300ms ease-out both;
+}
+@keyframes crest-hover {
+	from {
+		transform: translateY(0) rotate(-0.3deg);
+	}
+	to {
+		transform: translateY(-5px) rotate(0.3deg);
+	}
+}
+@keyframes gold-awaken {
+	0% {
+		opacity: 0;
+		transform: scale(0.78);
+		filter: brightness(1.5);
+	}
+	60% {
+		opacity: 1;
+		transform: scale(1.04);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1);
+		filter: brightness(1);
+	}
+}
+@keyframes award-rise {
+	from {
+		opacity: 0;
+		transform: translateY(10px) scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+@keyframes control-arrive {
+	from {
+		opacity: 0.4;
+		transform: translateY(5px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.board[data-phase='winning'] .symbol:not(.paying) .symbol-sheen,
+.board[data-phase='winning'] .symbol:not(.paying) .symbol-spark,
+.board[data-phase='gate'] .symbol:not(.paying) .symbol-sheen,
+.board[data-phase='gate'] .symbol:not(.paying) .symbol-spark {
+	visibility: hidden;
 }

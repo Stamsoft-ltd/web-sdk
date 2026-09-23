@@ -1,0 +1,272 @@
+{
+  "skeleton": {
+    "spine": "4.2.74",
+    "x": -140,
+    "y": -140,
+    "width": 280,
+    "height": 280
+  },
+  "bones": [
+    {
+      "name": "root"
+    },
+    {
+      "name": "vortex",
+      "parent": "root",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "name": "rim",
+      "parent": "root",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "name": "spark",
+      "parent": "root",
+      "x": -44,
+      "y": 68
+    }
+  ],
+  "slots": [
+    {
+      "name": "vortex",
+      "bone": "vortex",
+      "attachment": "vortex",
+      "color": "ffffffff"
+    },
+    {
+      "name": "rim",
+      "bone": "rim",
+      "attachment": "rim",
+      "color": "ffffffff"
+    },
+    {
+      "name": "spark",
+      "bone": "spark",
+      "attachment": "spark",
+      "color": "ffffff00"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "vortex": {
+          "vortex": {
+            "path": "vortex",
+            "width": 188,
+            "height": 188
+          }
+        },
+        "rim": {
+          "rim": {
+            "path": "wildFrame",
+            "width": 248,
+            "height": 248
+          }
+        },
+        "spark": {
+          "spark": {
+            "path": "glint",
+            "width": 31,
+            "height": 35
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "idle": {
+      "bones": {
+        "vortex": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 12,
+              "value": 360
+            }
+          ]
+        },
+        "spark": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 1.4,
+              "value": 40
+            },
+            {
+              "time": 2.8,
+              "value": 0
+            },
+            {
+              "time": 4.199999999999999,
+              "value": -40
+            },
+            {
+              "time": 5.6,
+              "value": 0
+            }
+          ],
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 2.8,
+              "x": 1.2,
+              "y": 1.2
+            },
+            {
+              "time": 5.6,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        }
+      },
+      "slots": {
+        "spark": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 2.352,
+              "value": 0
+            },
+            {
+              "time": 3.08,
+              "value": 0.7
+            },
+            {
+              "time": 4.199999999999999,
+              "value": 0
+            },
+            {
+              "time": 5.6,
+              "value": 0
+            }
+          ]
+        }
+      }
+    },
+    "paying": {
+      "bones": {
+        "vortex": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 1.2,
+              "value": 360
+            }
+          ]
+        },
+        "rim": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.3,
+              "value": 4
+            },
+            {
+              "time": 0.6,
+              "value": 0
+            },
+            {
+              "time": 0.8999999999999999,
+              "value": -4
+            },
+            {
+              "time": 1.2,
+              "value": 0
+            }
+          ]
+        },
+        "spark": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.1875,
+              "value": 65
+            },
+            {
+              "time": 0.375,
+              "value": 0
+            },
+            {
+              "time": 0.5625,
+              "value": -65
+            },
+            {
+              "time": 0.75,
+              "value": 0
+            }
+          ],
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 0.375,
+              "x": 1.5,
+              "y": 1.5
+            },
+            {
+              "time": 0.75,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        }
+      },
+      "slots": {
+        "spark": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.315,
+              "value": 0
+            },
+            {
+              "time": 0.41250000000000003,
+              "value": 1
+            },
+            {
+              "time": 0.5625,
+              "value": 0
+            },
+            {
+              "time": 0.75,
+              "value": 0
+            }
+          ]
+        }
+      }
+    }
+  }
+}

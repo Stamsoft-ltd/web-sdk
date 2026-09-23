@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { runtime } from '../game/playback.svelte';
 	import { t } from '../i18n';
+	import TempleAtmosphere from './TempleAtmosphere.svelte';
 	let { rewardText }: { rewardText: string } = $props();
 	const skin = $derived(runtime.game.tier ?? 'base');
 </script>
@@ -10,6 +11,7 @@
 <div class="temple-scene" data-scene={skin}>
 	<div class="temple-world">
 		<img class="scene-art" src={`./assets/the-gates/scene-${skin}.png`} alt="" />
+		<TempleAtmosphere {skin} />
 		<div
 			class="temple-gate"
 			data-skin={skin}

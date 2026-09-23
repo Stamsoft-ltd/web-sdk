@@ -5,6 +5,9 @@
 	import { t } from '../i18n';
 	import CountUp from './CountUp.svelte';
 	import WinCoins from './WinCoins.svelte';
+	import CelebrationFlourish from './CelebrationFlourish.svelte';
+	import SpineArt from './SpineArt.svelte';
+	let spineReady = $state(false);
 	let {
 		amount,
 		countMs,
@@ -46,7 +49,8 @@
 		style={`--tier-color:${['#62d9ff', '#83f59a', '#c792ff', '#ff8492', '#ffdc66'][WIN_TIERS.indexOf(tier)]}`}
 	>
 		<div class="win-rays" aria-hidden="true"></div>
-		<div class="win-tier-title">
+		<CelebrationFlourish reduced={runtime.reduced} />
+		<div class="win-tier-title" class:spine-ready={spineReady}>
 			<img class="plaque" src={`./assets/the-gates/wins/${tier.key}-plaque.png`} alt="" />
 			<h2>
 				<img
@@ -55,6 +59,13 @@
 					alt={title}
 				/>
 			</h2>
+			<SpineArt
+				rig={`win-${capped ? 'max' : tier.key}`}
+				atlas={`win-${capped ? 'max' : tier.key}`}
+				intro="enter"
+				reduced={runtime.reduced}
+				onready={(value) => (spineReady = value)}
+			/>
 		</div>
 		<CountUp {amount} {format} duration={countMs} />
 		<button class="gold-button" disabled={!runtime.waiting} onclick={continuePresentation}
@@ -102,6 +113,10 @@
 		aspect-ratio: 1942/809;
 		display: grid;
 		place-items: center;
+	}
+	.spine-ready .plaque,
+	.spine-ready h2 {
+		opacity: 0;
 	}
 	.plaque {
 		position: absolute;

@@ -1,0 +1,22 @@
+{
+  "version": "4.2.74",
+  "symbols": [
+    "RED_GEM",
+    "BLUE_GEM",
+    "GREEN_GEM",
+    "PURPLE_GEM",
+    "AMBER_GEM",
+    "GUARDIAN_MASK",
+    "SUN_MEDALLION",
+    "SACRED_EYE",
+    "RUNE_CHALICE",
+    "CRYSTAL_ORB",
+    "WILD"
+  ],
+  "flames": [
+    "gold",
+    "green",
+    "red"
+  ],
+  "sourceLayers": 32
+}

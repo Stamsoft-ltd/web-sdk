@@ -1,0 +1,323 @@
+{
+  "skeleton": {
+    "spine": "4.2.74",
+    "x": -140,
+    "y": -140,
+    "width": 280,
+    "height": 280
+  },
+  "bones": [
+    {
+      "name": "root"
+    },
+    {
+      "name": "iris",
+      "parent": "root",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "name": "frame",
+      "parent": "root",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "name": "spark",
+      "parent": "root",
+      "x": -44,
+      "y": 68
+    }
+  ],
+  "slots": [
+    {
+      "name": "iris",
+      "bone": "iris",
+      "attachment": "iris",
+      "color": "ffffffff"
+    },
+    {
+      "name": "frame",
+      "bone": "frame",
+      "attachment": "frame",
+      "color": "ffffffff"
+    },
+    {
+      "name": "spark",
+      "bone": "spark",
+      "attachment": "spark",
+      "color": "ffffff00"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "iris": {
+          "iris": {
+            "path": "iris",
+            "width": 142,
+            "height": 73
+          }
+        },
+        "frame": {
+          "frame": {
+            "path": "eyeFrame",
+            "width": 246,
+            "height": 234
+          }
+        },
+        "spark": {
+          "spark": {
+            "path": "glint",
+            "width": 31,
+            "height": 35
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "idle": {
+      "bones": {
+        "iris": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 1.45,
+              "x": 3,
+              "y": 0
+            },
+            {
+              "time": 2.9,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 4.35,
+              "x": -3,
+              "y": 0
+            },
+            {
+              "time": 5.8,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        },
+        "spark": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 1.4,
+              "value": 40
+            },
+            {
+              "time": 2.8,
+              "value": 0
+            },
+            {
+              "time": 4.199999999999999,
+              "value": -40
+            },
+            {
+              "time": 5.6,
+              "value": 0
+            }
+          ],
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 2.8,
+              "x": 1.2,
+              "y": 1.2
+            },
+            {
+              "time": 5.6,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        }
+      },
+      "slots": {
+        "spark": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 2.352,
+              "value": 0
+            },
+            {
+              "time": 3.08,
+              "value": 0.7
+            },
+            {
+              "time": 4.199999999999999,
+              "value": 0
+            },
+            {
+              "time": 5.6,
+              "value": 0
+            }
+          ]
+        }
+      }
+    },
+    "paying": {
+      "bones": {
+        "iris": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.225,
+              "x": 8,
+              "y": 0
+            },
+            {
+              "time": 0.45,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.675,
+              "x": -8,
+              "y": 0
+            },
+            {
+              "time": 0.9,
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 0.45,
+              "x": 1.06,
+              "y": 1.12
+            },
+            {
+              "time": 0.9,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        },
+        "frame": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.225,
+              "value": 1
+            },
+            {
+              "time": 0.45,
+              "value": 0
+            },
+            {
+              "time": 0.675,
+              "value": -1
+            },
+            {
+              "time": 0.9,
+              "value": 0
+            }
+          ]
+        },
+        "spark": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.1875,
+              "value": 65
+            },
+            {
+              "time": 0.375,
+              "value": 0
+            },
+            {
+              "time": 0.5625,
+              "value": -65
+            },
+            {
+              "time": 0.75,
+              "value": 0
+            }
+          ],
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 0.375,
+              "x": 1.5,
+              "y": 1.5
+            },
+            {
+              "time": 0.75,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        }
+      },
+      "slots": {
+        "spark": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.315,
+              "value": 0
+            },
+            {
+              "time": 0.41250000000000003,
+              "value": 1
+            },
+            {
+              "time": 0.5625,
+              "value": 0
+            },
+            {
+              "time": 0.75,
+              "value": 0
+            }
+          ]
+        }
+      }
+    }
+  }
+}

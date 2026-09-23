@@ -1,0 +1,388 @@
+{
+  "skeleton": {
+    "spine": "4.2.74",
+    "x": -140,
+    "y": -140,
+    "width": 280,
+    "height": 280
+  },
+  "bones": [
+    {
+      "name": "root"
+    },
+    {
+      "name": "stem",
+      "parent": "root",
+      "x": 0,
+      "y": -73
+    },
+    {
+      "name": "bowl",
+      "parent": "root",
+      "x": 0,
+      "y": 34
+    },
+    {
+      "name": "magic",
+      "parent": "root",
+      "x": 0,
+      "y": 88
+    },
+    {
+      "name": "spark",
+      "parent": "root",
+      "x": -44,
+      "y": 68
+    }
+  ],
+  "slots": [
+    {
+      "name": "stem",
+      "bone": "stem",
+      "attachment": "stem",
+      "color": "ffffffff"
+    },
+    {
+      "name": "bowl",
+      "bone": "bowl",
+      "attachment": "bowl",
+      "color": "ffffffff"
+    },
+    {
+      "name": "magic",
+      "bone": "magic",
+      "attachment": "magic",
+      "color": "ffffff00"
+    },
+    {
+      "name": "spark",
+      "bone": "spark",
+      "attachment": "spark",
+      "color": "ffffff00"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "stem": {
+          "stem": {
+            "path": "stem",
+            "width": 166,
+            "height": 106
+          }
+        },
+        "bowl": {
+          "bowl": {
+            "path": "bowl",
+            "width": 224,
+            "height": 160
+          }
+        },
+        "magic": {
+          "magic": {
+            "path": "wisp",
+            "width": 65,
+            "height": 105
+          }
+        },
+        "spark": {
+          "spark": {
+            "path": "glint",
+            "width": 31,
+            "height": 35
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "idle": {
+      "bones": {
+        "bowl": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 1.25,
+              "value": 1
+            },
+            {
+              "time": 2.5,
+              "value": 0
+            },
+            {
+              "time": 3.75,
+              "value": -1
+            },
+            {
+              "time": 5,
+              "value": 0
+            }
+          ]
+        },
+        "spark": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 1.4,
+              "value": 40
+            },
+            {
+              "time": 2.8,
+              "value": 0
+            },
+            {
+              "time": 4.199999999999999,
+              "value": -40
+            },
+            {
+              "time": 5.6,
+              "value": 0
+            }
+          ],
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 2.8,
+              "x": 1.2,
+              "y": 1.2
+            },
+            {
+              "time": 5.6,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        }
+      },
+      "slots": {
+        "spark": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 2.352,
+              "value": 0
+            },
+            {
+              "time": 3.08,
+              "value": 0.7
+            },
+            {
+              "time": 4.199999999999999,
+              "value": 0
+            },
+            {
+              "time": 5.6,
+              "value": 0
+            }
+          ]
+        }
+      }
+    },
+    "paying": {
+      "bones": {
+        "bowl": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.275,
+              "value": 4
+            },
+            {
+              "time": 0.55,
+              "value": 0
+            },
+            {
+              "time": 0.8250000000000001,
+              "value": -4
+            },
+            {
+              "time": 1.1,
+              "value": 0
+            }
+          ],
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.275,
+              "x": 0,
+              "y": 4
+            },
+            {
+              "time": 0.55,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.8250000000000001,
+              "x": 0,
+              "y": -4
+            },
+            {
+              "time": 1.1,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        },
+        "magic": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.275,
+              "x": 6,
+              "y": 13
+            },
+            {
+              "time": 0.55,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.8250000000000001,
+              "x": -6,
+              "y": -13
+            },
+            {
+              "time": 1.1,
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 0.55,
+              "x": 1.1,
+              "y": 1.2
+            },
+            {
+              "time": 1.1,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        },
+        "spark": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.1875,
+              "value": 65
+            },
+            {
+              "time": 0.375,
+              "value": 0
+            },
+            {
+              "time": 0.5625,
+              "value": -65
+            },
+            {
+              "time": 0.75,
+              "value": 0
+            }
+          ],
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 0.375,
+              "x": 1.5,
+              "y": 1.5
+            },
+            {
+              "time": 0.75,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        }
+      },
+      "slots": {
+        "magic": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.462,
+              "value": 0
+            },
+            {
+              "time": 0.6050000000000001,
+              "value": 0.75
+            },
+            {
+              "time": 0.8250000000000001,
+              "value": 0
+            },
+            {
+              "time": 1.1,
+              "value": 0
+            }
+          ]
+        },
+        "spark": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.315,
+              "value": 0
+            },
+            {
+              "time": 0.41250000000000003,
+              "value": 1
+            },
+            {
+              "time": 0.5625,
+              "value": 0
+            },
+            {
+              "time": 0.75,
+              "value": 0
+            }
+          ]
+        }
+      }
+    }
+  }
+}

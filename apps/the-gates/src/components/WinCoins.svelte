@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { winCoinSize } from '../game/visualRandom';
 	let { tier, reduced = false }: { tier: number; reduced?: boolean } = $props();
 	let canvas = $state<HTMLCanvasElement>();
 	$effect(() => {
@@ -57,7 +58,7 @@
 					vy: -Math.cos(angle) * speed,
 					angle: Math.random() * Math.PI,
 					turn: 3 + Math.random() * 5,
-					size: 18 + Math.random() * 18 + tier * 2,
+					size: winCoinSize(tier, Math.random(), width),
 					age: 0,
 				});
 			}
@@ -68,7 +69,7 @@
 				p.vy += gravity * dt;
 				p.y += p.vy * dt;
 				p.angle += p.turn * dt;
-				if (p.age > 8 || p.y > height + 80) {
+				if (p.age > 8 || p.y > height + p.size) {
 					particles.splice(i, 1);
 					continue;
 				}

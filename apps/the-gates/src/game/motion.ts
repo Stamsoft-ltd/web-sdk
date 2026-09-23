@@ -4,9 +4,10 @@ import type { Speed } from './uiPolicy';
  * Freeze the profile for each wave; never restart cells that already landed.
  */
 export const MOTION = {
-	normal: { unit: 55, min: 50, row: 8, tumbleRow: 6, reel: 3, jitter: 8, impact: 80, remove: 190 },
-	fast: { unit: 38, min: 32, row: 5, tumbleRow: 4, reel: 2, jitter: 6, impact: 60, remove: 110 },
-	turbo: { unit: 24, min: 20, row: 3, tumbleRow: 2, reel: 1, jitter: 4, impact: 40, remove: 70 },
+	// Normal: relaxed readability. Previous normal profile now maps to Fast feel.
+	normal: { unit: 62, min: 56, row: 9, tumbleRow: 7, reel: 38, jitter: 8, impact: 90, remove: 210 },
+	fast: { unit: 55, min: 50, row: 8, tumbleRow: 6, reel: 24, jitter: 8, impact: 80, remove: 190 },
+	turbo: { unit: 24, min: 20, row: 3, tumbleRow: 2, reel: 10, jitter: 4, impact: 40, remove: 70 },
 } as const;
 export type Wave = {
 	speed: Speed;
@@ -29,7 +30,7 @@ export function cellMotion(wave: Wave, reel: number, row: number, offset: number
 	const timing = skipAdjust(
 		wave.kind === 'remove'
 			? jitter * 12
-			: (rows - row - 1) * stagger + reel * p.reel + jitter * p.jitter,
+			: (rows - row - 1) * stagger + reel * (exit ? 3 : p.reel) + jitter * p.jitter,
 		wave.kind === 'remove' ? p.remove : Math.max(p.min, p.unit * Math.sqrt(distance)),
 		wave.cut,
 		wave.tail,

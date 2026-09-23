@@ -1,0 +1,50 @@
+[
+  {
+    "name": "hq-normal",
+    "prompt": "Production game title asset, isolated sculpted gold 3D lettering \"NORMAL BONUS\" ONLY. One line, centered. Exact wording with visible word spacing. Match gold chiseled serif lettering of The Gates reference. No plaque, no wings, no frame, no other objects. Transparent background true alpha. Fine crisp bevels, warm gold faces, dark bronze extrusion, no blurry glow. LARGE standalone title 2048x512 pixels, lettering fills 90% width and 65% height with balanced transparent margins. NOT a sprite sheet. Render at high resolution with sharp engraved details.",
+    "tool": "built-in image_gen",
+    "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-d745c48a-0699-4bd3-a039-ec898020ca92.png"
+  },
+  {
+    "name": "hq-super",
+    "prompt": "Production game title asset, isolated sculpted gold 3D lettering \"SUPER BONUS\" ONLY. One line, centered. Exact wording with visible word spacing. Match gold chiseled serif lettering of The Gates reference. No plaque, no wings, no frame, no other objects. Transparent background true alpha. Fine crisp bevels, warm gold faces, dark bronze extrusion, no blurry glow. LARGE standalone title 2048x512 pixels, lettering fills 90% width and 65% height with balanced transparent margins. NOT a sprite sheet. Render at high resolution with sharp engraved details.",
+    "tool": "built-in image_gen",
+    "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-48f07df4-cf40-459d-a488-1d11f3fa6a89.png"
+  },
+  {
+    "name": "hq-hidden",
+    "prompt": "Production game title asset, isolated sculpted gold 3D lettering \"HIDDEN BONUS\" ONLY. One line, centered. Exact wording with visible word spacing. Match gold chiseled serif lettering of The Gates reference. No plaque, no wings, no frame, no other objects. Transparent background true alpha. Fine crisp bevels, warm gold faces, dark bronze extrusion, no blurry glow. LARGE standalone title 2048x512 pixels, lettering fills 90% width and 65% height with balanced transparent margins. NOT a sprite sheet. Render at high resolution with sharp engraved details.",
+    "tool": "built-in image_gen",
+    "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-04f7c43b-b2dd-4bbe-9ba2-bee408818b7e.png"
+  },
+  {
+    "name": "hq-complete",
+    "prompt": "Production game title asset, isolated sculpted gold 3D lettering \"BONUS COMPLETE\" ONLY. One line, centered. Exact wording with visible word spacing. Match gold chiseled serif lettering of The Gates reference. No plaque, no wings, no frame, no other objects. Transparent background true alpha. Fine crisp bevels, warm gold faces, dark bronze extrusion, no blurry glow. LARGE standalone title 2048x512 pixels, lettering fills 90% width and 65% height with balanced transparent margins. NOT a sprite sheet. Render at high resolution with sharp engraved details.",
+    "tool": "built-in image_gen",
+    "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-1f32c13f-1af9-41a6-936e-e58ab6e492d1.png"
+  },
+  {
+    "name": "hq-plaque",
+    "prompt": "Production The Gates game asset. A SINGLE large blank rectangular black obsidian title plaque bordered by elaborate polished engraved GOLD. Turquoise diamond gem at each side and a centered pendant point below. Match reference plaque design exactly, but NO LETTERS, NO WINGS, NO SUN CREST. Bilaterally symmetric. Front orthographic view, no perspective. Black writing area exactly centered horizontally, high enough for large title. True transparent alpha surrounding only this plaque. High resolution 2048x768, entire plaque fills 94% width, crisp gold bevels and stone texture, generous transparent margins. One asset, NOT a sprite sheet.",
+    "tool": "built-in image_gen",
+    "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-a3134832-a075-4d48-bdd4-09ac50c1e4aa.png"
+  },
+  {
+    "name": "burn-gold",
+    "prompt": "Production 2D game FIRE ANIMATION sprite sheet, true transparent PNG. EXACT 4 columns x 3 rows of 12 chronological animation frames, each identical-sized cell. Color warm golden orange with white hot core. Realistic detailed flames like a temple brazier. No bowl, no background, no letters, no numbering, no grid lines.\nThe same LOW WIDE fire plume burns continuously through all 12 frames: new tongues emerge at the bottom, split and curl upward, pinch off at their tips, fade and are replaced. Completely different flame contour each frame; NOT the same cutout rotated or wobbled. Stable base width, same origin/baseline per cell, no camera motion, no whole-object drift. Continuous loop frames read left-to-right top-to-bottom. Every flame centered within its cell and surrounded by 15% empty transparent margins. Keep bases at exactly 85% cell height, plume within 15%-85% cell height. At least 4 small independently changing tongues per frame. Natural wispy thin flame shapes, NO smoke or colored fog, no cast shadows. Uniform fixed cells, 2048x1536 preferred.",
+    "tool": "built-in image_gen",
+    "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-79523161-91e2-4afe-b3c7-76e3d6cb3204.png"
+  },
+  {
+    "name": "burn-green",
+    "prompt": "Production 2D game FIRE ANIMATION sprite sheet, true transparent PNG. EXACT 4 columns x 3 rows of 12 chronological animation frames, each identical-sized cell. Color emerald green with white hot core. Realistic detailed flames like a temple brazier. No bowl, no background, no letters, no numbering, no grid lines.\nThe same LOW WIDE fire plume burns continuously through all 12 frames: new tongues emerge at the bottom, split and curl upward, pinch off at their tips, fade and are replaced. Completely different flame contour each frame; NOT the same cutout rotated or wobbled. Stable base width, same origin/baseline per cell, no camera motion, no whole-object drift. Continuous loop frames read left-to-right top-to-bottom. Every flame centered within its cell and surrounded by 15% empty transparent margins. Keep bases at exactly 85% cell height, plume within 15%-85% cell height. At least 4 small independently changing tongues per frame. Natural wispy thin flame shapes, NO smoke or colored fog, no cast shadows. Uniform fixed cells, 2048x1536 preferred.",
+    "tool": "built-in image_gen",
+    "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-a221af5a-f0a4-44b1-8ade-db6265fc6a23.png"
+  },
+  {
+    "name": "burn-red",
+    "prompt": "Production 2D game FIRE ANIMATION sprite sheet, true transparent PNG. EXACT 4 columns x 3 rows of 12 chronological animation frames, each identical-sized cell. Color scarlet red with white hot core. Realistic detailed flames like a temple brazier. No bowl, no background, no letters, no numbering, no grid lines.\nThe same LOW WIDE fire plume burns continuously through all 12 frames: new tongues emerge at the bottom, split and curl upward, pinch off at their tips, fade and are replaced. Completely different flame contour each frame; NOT the same cutout rotated or wobbled. Stable base width, same origin/baseline per cell, no camera motion, no whole-object drift. Continuous loop frames read left-to-right top-to-bottom. Every flame centered within its cell and surrounded by 15% empty transparent margins. Keep bases at exactly 85% cell height, plume within 15%-85% cell height. At least 4 small independently changing tongues per frame. Natural wispy thin flame shapes, NO smoke or colored fog, no cast shadows. Uniform fixed cells, 2048x1536 preferred.",
+    "tool": "built-in image_gen",
+    "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-9c4eda1e-97fa-4b34-ab9d-9187ca4a6fe4.png"
+  }
+]

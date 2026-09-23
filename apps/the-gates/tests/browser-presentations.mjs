@@ -136,11 +136,12 @@ try {
 		await page.getByRole('button', { name: 'Confirm', exact: true }).click();
 		await page.getByRole('dialog', { name: title, exact: true }).waitFor();
 		await page.locator('.bonus-crest').evaluate((img) => img.decode());
+		await page.locator(`[data-spine-rig="bonus-${skin}"].ready`).waitFor();
 		assert.match(
 			await page.locator('.bonus-crest').getAttribute('src'),
 			new RegExp(`${skin}-crest\\.png$`),
 		);
-		assert.equal(await page.locator('.bonus-stage h2').textContent(), '');
+		assert.equal((await page.locator('.bonus-stage h2').textContent()).trim(), '');
 		assert.equal(await page.locator('.spin-award').textContent(), '15');
 		await page.screenshot({ path: `/tmp/gates-${skin}-intro-desktop-v2.png` });
 		for (const [width, height] of sizes) {
@@ -160,6 +161,7 @@ try {
 		await page.getByRole('dialog', { name: 'Bonus complete', exact: true }).waitFor();
 		await page.locator('.bonus-crest').evaluate((img) => img.decode());
 		assert.match(await page.locator('.bonus-crest').getAttribute('src'), /complete-crest\.png$/);
+		await page.locator('[data-spine-rig="bonus-complete"].ready').waitFor();
 		await page.screenshot({ path: `/tmp/gates-${skin}-summary-desktop-v2.png` });
 		for (const [width, height] of sizes) {
 			await page.setViewportSize({ width, height });

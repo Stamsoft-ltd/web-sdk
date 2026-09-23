@@ -30,6 +30,7 @@
 	import { showsInlineWin, winTier } from '../game/winPresentation';
 	import { selectedSpeed, nextSpeed } from '../game/uiPolicy';
 	import TempleGate from './TempleGate.svelte';
+	import GateDust from './GateDust.svelte';
 	import Symbol from './Symbol.svelte';
 	import Icon from './Icon.svelte';
 	import Modal from './Modal.svelte';
@@ -323,6 +324,7 @@
 >
 <main
 	class="temple"
+	class:gate-impact={runtime.game.gateOpen && !runtime.reduced}
 	class:reduced={runtime.reduced}
 	class:quick={speed !== 'normal'}
 	class:turbo={speed === 'turbo'}
@@ -331,6 +333,7 @@
 	class:hidden-tier={runtime.game.tier === 'hidden'}
 >
 	<TempleGate {rewardText} />
+	<GateDust />
 	<div class="ambient" aria-hidden="true">
 		{#each Array(12) as _, i}<i style={`--i:${i}`}></i>{/each}
 	</div>

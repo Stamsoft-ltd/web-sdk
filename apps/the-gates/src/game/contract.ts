@@ -115,7 +115,8 @@ type Payload =
 			capped: boolean;
 	  }
 	| { type: 'setTotalWin' | 'setWin' | 'finalWin' | 'maxWin'; amount: number };
-export type BookEvent = Payload & { index: number };
-export type Bet = BetType<BookEvent>;
+export type BookEvent = Payload & { index: number; eventId?: string | number };
+// Some RGS deployments use betID; SDK schema names the same identifier roundID.
+export type Bet = BetType<BookEvent> & { betID?: string | number };
 export const posKey = (p: Position) => `${p.reel}:${p.row}`;
 export const emptyBoard = (): Board => Array.from({ length: 6 }, () => Array(5).fill(null));

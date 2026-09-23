@@ -10,6 +10,7 @@ import type { Bet, BookEvent, Position } from './contract';
 
 export const runtime = $state({
 	game: initialState(),
+	roundId: 'preview',
 	busy: false,
 	phase: 'idle',
 	removed: [] as Position[],
@@ -30,6 +31,7 @@ export const runtime = $state({
 	waveStartedAt: 0,
 	wave: { speed: 'normal', kind: 'spin', cut: null, tail: 130 } as Wave,
 });
+let previewRound = 0;
 let active: AbortController | null = null;
 let acknowledge: (() => void) | null = null;
 function currentSpeed(): Speed {
@@ -144,13 +146,15 @@ async function presentWin(amount: number, signal: AbortSignal) {
 	runtime.overlay = null;
 }
 export function restoreBet(bet: Bet) {
+	runtime.roundId = String(bet.betID ?? bet.roundID ?? 'book');
 	const cursor = Number(bet.event ?? 0);
 	runtime.game = restorePrefix(bet.state, cursor);
 	stateBet.winBookEventAmount = runtime.game.total;
 	return { ...bet, state: bet.state.slice(cursor) };
 }
-export async function playEvents(events: BookEvent[], demo = false) {
+export async function playEvents(events: BookEvent[], demo = false, roundId?: string) {
 	if (runtime.busy) throw new Error('Concurrent playback rejected');
+	runtime.roundId = roundId ?? (demo ? `preview-${++previewRound}` : runtime.roundId);
 	const controller = new AbortController();
 	active = controller;
 	const signal = controller.signal;

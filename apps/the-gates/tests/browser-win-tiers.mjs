@@ -164,6 +164,7 @@ try {
 				new RegExp(`${key}-title\\.png$`),
 			);
 			await dialog.locator('.lettering').evaluate((img) => img.decode());
+			await dialog.locator(`[data-spine-rig="win-${key}"].ready`).waitFor();
 			assert.equal(
 				await dialog.locator('.win-amount').getAttribute('data-final-amount'),
 				String(value),

@@ -4,6 +4,7 @@
 	import { posKey } from '../game/contract';
 	import Symbol from './Symbol.svelte';
 	const winning = $derived(new Set(runtime.game.wins.flatMap((w) => w.positions.map(posKey))));
+	const celebrating = $derived(['winning', 'gate'].includes(runtime.phase));
 	const removed = $derived(new Set(runtime.removed.map(posKey)));
 	const sticky = $derived(new Set(runtime.game.sticky.map(posKey)));
 </script>
@@ -30,19 +31,41 @@
 					{@const motion = cellMotion(runtime.wave, reel, row, offset)}
 					<div
 						class="cell"
-						class:winning={winning.has(key)}
+						class:winning={celebrating && winning.has(key)}
 						class:removing={removed.has(key)}
 						class:sticky={sticky.has(key)}
 						class:key-symbol={cell?.name === 'KEY'}
 						data-symbol={cell?.name ?? 'EMPTY'}
 					>
-						{#if sticky.has(key)}<div class="symbol-motion"><Symbol name="WILD" decorative /></div>
+						{#if sticky.has(key)}<div class="symbol-motion">
+								<Symbol
+									name="WILD"
+									decorative
+									animated={!runtime.reduced}
+									paying={celebrating && winning.has(key)}
+									seed={reel * 5 + row}
+								/>
+							</div>
 						{:else}{#key runtime.game.revealId}<div
 									class="symbol-motion"
 									class:drop={runtime.phase === 'dropping' && offset !== 0}
 									style={`--motion-delay:${motion.delay}ms;--motion-duration:${motion.duration}ms;--drop:${motion.offset}%;--impact-delay:${motion.delay + motion.duration}ms;--impact-duration:${motion.impact}ms;`}
 								>
-									{#if cell}<Symbol name={cell.name} decorative />{/if}
+									{#if cell}<Symbol
+											name={cell.name}
+											decorative
+											animated={!runtime.reduced}
+											paying={celebrating && winning.has(key)}
+											seed={reel * 5 + row}
+											ash={runtime.phase === 'removing' && removed.has(key)
+												? {
+														startedAt: runtime.waveStartedAt,
+														delay: motion.delay,
+														duration: motion.duration,
+														seed: `${runtime.roundId}:${runtime.game.revealId}:${key}`,
+													}
+												: undefined}
+										/>{/if}
 								</div>{/key}{/if}
 						{#if cell?.name === 'WILD'}<span class="symbol-tag">WILD</span>{/if}
 					</div>

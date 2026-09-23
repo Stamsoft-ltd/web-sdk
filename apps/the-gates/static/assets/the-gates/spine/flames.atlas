@@ -1,0 +1,115 @@
+flames.png
+size: 1536,1024
+filter: Linear,Linear
+pma: false
+gold-0
+  bounds: 0,0,490,340
+gold-1
+  bounds: 550,0,250,340
+gold-2
+  bounds: 840,0,280,340
+gold-3
+  bounds: 1190,0,340,340
+green-0
+  bounds: 0,341,490,340
+green-1
+  bounds: 550,341,250,340
+green-2
+  bounds: 840,341,280,340
+green-3
+  bounds: 1190,341,340,340
+red-0
+  bounds: 0,682,490,340
+red-1
+  bounds: 550,682,250,340
+red-2
+  bounds: 840,682,280,340
+red-3
+  bounds: 1190,682,340,340
+
+burn-gold.png
+size: 1448,1086
+filter: Linear,Linear
+pma: false
+gold-frame-0
+  bounds: 0,0,362,362
+gold-frame-1
+  bounds: 362,0,362,362
+gold-frame-2
+  bounds: 724,0,362,362
+gold-frame-3
+  bounds: 1086,0,362,362
+gold-frame-4
+  bounds: 0,362,362,362
+gold-frame-5
+  bounds: 362,362,362,362
+gold-frame-6
+  bounds: 724,362,362,362
+gold-frame-7
+  bounds: 1086,362,362,362
+gold-frame-8
+  bounds: 0,724,362,362
+gold-frame-9
+  bounds: 362,724,362,362
+gold-frame-10
+  bounds: 724,724,362,362
+gold-frame-11
+  bounds: 1086,724,362,362
+
+burn-green.png
+size: 1448,1086
+filter: Linear,Linear
+pma: false
+green-frame-0
+  bounds: 0,0,362,362
+green-frame-1
+  bounds: 362,0,362,362
+green-frame-2
+  bounds: 724,0,362,362
+green-frame-3
+  bounds: 1086,0,362,362
+green-frame-4
+  bounds: 0,362,362,362
+green-frame-5
+  bounds: 362,362,362,362
+green-frame-6
+  bounds: 724,362,362,362
+green-frame-7
+  bounds: 1086,362,362,362
+green-frame-8
+  bounds: 0,724,362,362
+green-frame-9
+  bounds: 362,724,362,362
+green-frame-10
+  bounds: 724,724,362,362
+green-frame-11
+  bounds: 1086,724,362,362
+
+burn-red.png
+size: 1448,1086
+filter: Linear,Linear
+pma: false
+red-frame-0
+  bounds: 0,0,362,362
+red-frame-1
+  bounds: 362,0,362,362
+red-frame-2
+  bounds: 724,0,362,362
+red-frame-3
+  bounds: 1086,0,362,362
+red-frame-4
+  bounds: 0,362,362,362
+red-frame-5
+  bounds: 362,362,362,362
+red-frame-6
+  bounds: 724,362,362,362
+red-frame-7
+  bounds: 1086,362,362,362
+red-frame-8
+  bounds: 0,724,362,362
+red-frame-9
+  bounds: 362,724,362,362
+red-frame-10
+  bounds: 724,724,362,362
+red-frame-11
+  bounds: 1086,724,362,362

@@ -21,6 +21,7 @@ export function initialState() {
 		progress: 0,
 		gate: 0,
 		gateOpen: false,
+		gateEventId: '',
 		reward: null as Reward | null,
 		rewardOrder: 0,
 		rewardCount: 0,
@@ -89,6 +90,7 @@ export function reduceEvent(previous: GameState, e: BookEvent): GameState {
 			s.progress = e.progress;
 			break;
 		case 'gateOpen':
+			s.gateEventId = String(e.eventId ?? e.index);
 			s.gateOpen = true;
 			s.gate = e.gate;
 			s.rewardCount = e.rewardCount;

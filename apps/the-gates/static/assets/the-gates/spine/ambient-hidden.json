@@ -1,0 +1,539 @@
+{
+  "skeleton": {
+    "spine": "4.2.74",
+    "x": -768,
+    "y": -512,
+    "width": 1536,
+    "height": 1024
+  },
+  "bones": [
+    {
+      "name": "root"
+    },
+    {
+      "name": "hidden-0",
+      "parent": "root",
+      "x": 180.5,
+      "y": 250
+    },
+    {
+      "name": "hidden-1",
+      "parent": "root",
+      "x": 138,
+      "y": 214
+    },
+    {
+      "name": "hidden-2",
+      "parent": "root",
+      "x": 97,
+      "y": 166.5
+    },
+    {
+      "name": "hidden-3",
+      "parent": "root",
+      "x": 176.5,
+      "y": 65.5
+    },
+    {
+      "name": "hidden-4",
+      "parent": "root",
+      "x": 156.5,
+      "y": 12.5
+    },
+    {
+      "name": "hidden-5",
+      "parent": "root",
+      "x": -369,
+      "y": 49.5
+    },
+    {
+      "name": "hidden-6",
+      "parent": "root",
+      "x": -320.5,
+      "y": 7.5
+    },
+    {
+      "name": "hidden-7",
+      "parent": "root",
+      "x": -41,
+      "y": 420.5
+    },
+    {
+      "name": "hidden-8",
+      "parent": "root",
+      "x": 646,
+      "y": -128
+    },
+    {
+      "name": "hidden-9",
+      "parent": "root",
+      "x": -444,
+      "y": 420.5
+    }
+  ],
+  "slots": [
+    {
+      "name": "hidden-0",
+      "bone": "hidden-0",
+      "attachment": "hidden-0",
+      "color": "ffffffff"
+    },
+    {
+      "name": "hidden-1",
+      "bone": "hidden-1",
+      "attachment": "hidden-1",
+      "color": "ffffffff"
+    },
+    {
+      "name": "hidden-2",
+      "bone": "hidden-2",
+      "attachment": "hidden-2",
+      "color": "ffffffff"
+    },
+    {
+      "name": "hidden-3",
+      "bone": "hidden-3",
+      "attachment": "hidden-3",
+      "color": "ffffffff"
+    },
+    {
+      "name": "hidden-4",
+      "bone": "hidden-4",
+      "attachment": "hidden-4",
+      "color": "ffffffff"
+    },
+    {
+      "name": "hidden-5",
+      "bone": "hidden-5",
+      "attachment": "hidden-5",
+      "color": "ffffffff"
+    },
+    {
+      "name": "hidden-6",
+      "bone": "hidden-6",
+      "attachment": "hidden-6",
+      "color": "ffffffff"
+    },
+    {
+      "name": "hidden-7",
+      "bone": "hidden-7",
+      "attachment": "hidden-7",
+      "color": "ffffffff"
+    },
+    {
+      "name": "hidden-8",
+      "bone": "hidden-8",
+      "attachment": "hidden-8",
+      "color": "ffffffff"
+    },
+    {
+      "name": "hidden-9",
+      "bone": "hidden-9",
+      "attachment": "hidden-9",
+      "color": "ffffffff"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "hidden-0": {
+          "hidden-0": {
+            "path": "hidden-0",
+            "width": 69,
+            "height": 48
+          }
+        },
+        "hidden-1": {
+          "hidden-1": {
+            "path": "hidden-1",
+            "width": 58,
+            "height": 52
+          }
+        },
+        "hidden-2": {
+          "hidden-2": {
+            "path": "hidden-2",
+            "width": 52,
+            "height": 71
+          }
+        },
+        "hidden-3": {
+          "hidden-3": {
+            "path": "hidden-3",
+            "width": 39,
+            "height": 61
+          }
+        },
+        "hidden-4": {
+          "hidden-4": {
+            "path": "hidden-4",
+            "width": 45,
+            "height": 73
+          }
+        },
+        "hidden-5": {
+          "hidden-5": {
+            "path": "hidden-5",
+            "width": 62,
+            "height": 65
+          }
+        },
+        "hidden-6": {
+          "hidden-6": {
+            "path": "hidden-6",
+            "width": 63,
+            "height": 47
+          }
+        },
+        "hidden-7": {
+          "hidden-7": {
+            "path": "hidden-7",
+            "width": 66,
+            "height": 41
+          }
+        },
+        "hidden-8": {
+          "hidden-8": {
+            "path": "hidden-8",
+            "width": 28,
+            "height": 62
+          }
+        },
+        "hidden-9": {
+          "hidden-9": {
+            "path": "hidden-9",
+            "width": 24,
+            "height": 67
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "pulse": {
+      "slots": {
+        "hidden-0": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 0.6,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 1.25,
+              "value": 0.25
+            },
+            {
+              "time": 2.4,
+              "value": 0.08
+            },
+            {
+              "time": 4.5,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "hidden-1": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 0.43,
+              "value": 0.08
+            },
+            {
+              "time": 1.03,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 1.68,
+              "value": 0.25
+            },
+            {
+              "time": 2.83,
+              "value": 0.08
+            },
+            {
+              "time": 4.93,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "hidden-2": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 0.86,
+              "value": 0.08
+            },
+            {
+              "time": 1.46,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 2.11,
+              "value": 0.25
+            },
+            {
+              "time": 3.26,
+              "value": 0.08
+            },
+            {
+              "time": 5.36,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "hidden-3": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 1.29,
+              "value": 0.08
+            },
+            {
+              "time": 1.8900000000000001,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 2.54,
+              "value": 0.25
+            },
+            {
+              "time": 3.69,
+              "value": 0.08
+            },
+            {
+              "time": 5.79,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "hidden-4": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 0.21999999999999975,
+              "value": 0.08
+            },
+            {
+              "time": 1.72,
+              "value": 0.08
+            },
+            {
+              "time": 2.32,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 2.9699999999999998,
+              "value": 0.25
+            },
+            {
+              "time": 4.12,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "hidden-5": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 0.6500000000000004,
+              "value": 0.08
+            },
+            {
+              "time": 2.15,
+              "value": 0.08
+            },
+            {
+              "time": 2.75,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 3.4,
+              "value": 0.25
+            },
+            {
+              "time": 4.55,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "hidden-6": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 1.08,
+              "value": 0.08
+            },
+            {
+              "time": 2.58,
+              "value": 0.08
+            },
+            {
+              "time": 3.18,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 3.83,
+              "value": 0.25
+            },
+            {
+              "time": 4.98,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "hidden-7": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 1.5099999999999998,
+              "value": 0.08
+            },
+            {
+              "time": 3.01,
+              "value": 0.08
+            },
+            {
+              "time": 3.61,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 4.26,
+              "value": 0.25
+            },
+            {
+              "time": 5.41,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "hidden-8": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.08
+            },
+            {
+              "time": 1.9399999999999995,
+              "value": 0.08
+            },
+            {
+              "time": 3.44,
+              "value": 0.08
+            },
+            {
+              "time": 4.04,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 4.6899999999999995,
+              "value": 0.25
+            },
+            {
+              "time": 5.84,
+              "value": 0.08
+            },
+            {
+              "time": 6,
+              "value": 0.08
+            }
+          ]
+        },
+        "hidden-9": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0.11991304347826087
+            },
+            {
+              "time": 0.2699999999999996,
+              "value": 0.08000000000000004
+            },
+            {
+              "time": 2.370000000000001,
+              "value": 0.08
+            },
+            {
+              "time": 3.87,
+              "value": 0.08
+            },
+            {
+              "time": 4.47,
+              "value": 0.6499999999999996
+            },
+            {
+              "time": 5.12,
+              "value": 0.25
+            },
+            {
+              "time": 6,
+              "value": 0.11991304347826098
+            }
+          ]
+        }
+      }
+    }
+  }
+}
