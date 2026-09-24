@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Circle, Rectangle, Sprite } from 'pixi-svelte';
+	import { Rectangle, Sprite } from 'pixi-svelte';
 	import { stateUi } from 'state-shared';
 
 	import { getContext } from '../game/context';
@@ -129,12 +129,13 @@
 		// multiplier plaque never covers them). Keep the bulb above the readout's top edge.
 		const lampH = Math.min(canvas.height * 0.16, cover.height * 0.2);
 		const lampW = lampH * (700 / 1077);
-		// On most of the time; a smooth dip fully OFF now and then (a blink).
+		// On most of the time; a quick smooth dip fully OFF now and then (a blink). Both lamps share
+		// the same phase so they blink in sync.
 		const blink = (phase: number) => {
-			const period = 4200;
+			const period = 2000;
 			const t = (((clock + phase) % period) + period) % period;
-			const lo = period * 0.72;
-			const hi = period * 0.92;
+			const lo = period * 0.78;
+			const hi = period * 0.94; // short window -> a snappy on→off→on switch
 			if (t < lo || t > hi) return 1;
 			const u = (t - lo) / (hi - lo); // 0..1 across the dip
 			const tri = 1 - Math.abs(u * 2 - 1); // 0 → 1 → 0
@@ -149,7 +150,7 @@
 			haloYPx: bgTop + lampH * 1.0, // halo centred on the bulb (light escaping under the rim)
 			list: [
 				{ x: bgLeft + cover.width * 0.1, on: blink(0) },
-				{ x: bgLeft + cover.width * 0.2, on: blink(2100) },
+				{ x: bgLeft + cover.width * 0.2, on: blink(0) },
 			],
 		};
 	});
@@ -204,12 +205,11 @@
 		     The glow is a soft radial texture (baked warm gradient, transparent edge) blended
 		     additively BEHIND the shade — a smooth natural falloff with no hard circle edge, biased
 		     slightly DOWN so it reads as light spilling from under the shade. It's a touch taller
-		     than wide so it pools downward like a real downlight. The bulb keeps its own colour and
-		     just dims when off. -->
+		     than wide so it pools downward like a real downlight. Only the glow blinks — the bulb
+		     art is left untouched (no dark overlay when off). -->
 		{#each lamps.list as l, i (i)}
 			<Sprite key="lampGlow" x={l.x} y={lamps.haloYPx + lamps.lampH * 0.08} anchor={0.5} width={lamps.lampW * 2.5} height={lamps.lampW * 2.85} alpha={l.on * 0.5} zIndex={-0.93} blendMode="add" />
 			<Sprite key="specialLamp" x={l.x} y={lamps.y} anchor={{ x: 0.5, y: 0 }} width={lamps.lampW} height={lamps.lampH} zIndex={-0.92} />
-			<Circle x={l.x} y={lamps.bulbYPx} diameter={lamps.lampW * 0.42} anchor={0.5} backgroundColor={0x140d07} backgroundAlpha={(1 - l.on) * 0.45} zIndex={-0.9} />
 		{/each}
 	{/if}
 {/if}
