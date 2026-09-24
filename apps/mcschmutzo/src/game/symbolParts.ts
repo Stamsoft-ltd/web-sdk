@@ -46,6 +46,9 @@ export type SymbolPartsConfig = {
 	// its nozzle in time with the squeeze — the squeeze bottles come alive by squirting. The nozzle
 	// defaults to the bottle tip (top-centre); `dir` (+1 right / -1 left) angles the arc.
 	squirt?: { color: number; nozzleNx?: number; nozzleNy?: number; dir?: number };
+	// Melty cheese drip: while alive, slow gooey drops ooze from a few points along the bottom edge,
+	// swell into a hanging teardrop, pinch off and fall (thicker + slower than a sauce squirt).
+	drip?: { color: number; edgeNy?: number; nozzles?: number[] };
 	layers: SymbolPartLayer[];
 };
 
@@ -305,12 +308,14 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		squash: 0.09,
 		layers: [{ key: 'mcM', nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.02 }],
 	},
-	// Cheese — one whole slice (drips included) that gently jiggles; splitting the drips off left a
-	// visible seam, so it stays a single piece.
+	// Cheese — one whole slice (drips included) that gently jiggles. It stays alive on the board (idle)
+	// and dribbles slow, gooey melted-cheese drops off its bottom edge.
 	H4: {
 		aspect: 131 / 120,
 		fit: 1,
 		squash: 0.09,
+		idle: 0.35,
+		drip: { color: 0xf6aa0b, edgeNy: 0.74, nozzles: [0.34, 0.52, 0.68] },
 		layers: [{ key: 'mcH4', nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.02 }],
 	},
 };

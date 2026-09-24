@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Circle, Container, Sprite } from 'pixi-svelte';
+	import { Circle, Container, Rectangle, Sprite } from 'pixi-svelte';
 
 	import { SYMBOL_SIZE, SYMBOL_WIDTH } from '../game/constants';
 	import type { SymbolPartsConfig } from '../game/symbolParts';
@@ -250,6 +250,53 @@
 		}
 		return out;
 	});
+
+	// Melty cheese drip: while the cheese is alive on the board, slow gooey drops ooze off a few
+	// points along its bottom edge — a bead swells and hangs on a thinning strand, pinches off, then
+	// falls and fades. Thicker/slower than the sauce squirt so it reads as melted cheese.
+	const dripColor = $derived(props.config.drip?.color ?? 0xf6aa0b);
+	const dripBlobs = $derived.by(() => {
+		const cfg = props.config.drip;
+		const active = running && startTime >= 0;
+		if (!cfg || !active)
+			return [] as Array<{ id: number; x: number; y: number; edgeY: number; d: number; alpha: number; neckAlpha: number }>;
+		const t = clock - startTime;
+		const cx = props.x ?? 0;
+		const cy = props.y ?? 0;
+		const edgeY = cy + ((cfg.edgeNy ?? 0.74) - 0.5) * h;
+		const nozzles = cfg.nozzles ?? [0.5];
+		const T_EMIT = 1150; // ms between drops per point — cheese oozes lazily
+		const T_LIFE = 2050; // ms a drop lives (swell + hang + fall + fade)
+		const out: Array<{ id: number; x: number; y: number; edgeY: number; d: number; alpha: number; neckAlpha: number }> = [];
+		nozzles.forEach((nx, ni) => {
+			const nozX = cx + (nx - 0.5) * w;
+			const tt = t + ni * T_EMIT * 0.6; // stagger the points so they don't drip in unison
+			const newest = Math.floor(tt / T_EMIT);
+			for (let k = 0; k < 2; k++) {
+				const idx = newest - k;
+				if (idx < 0) continue;
+				const p = (tt - idx * T_EMIT) / T_LIFE;
+				if (p < 0 || p > 1) continue;
+				const swell = Math.min(1, p / 0.4); // the bead fattens as it forms
+				const attached = p < 0.5;
+				const stretch = (attached ? p / 0.5 : 1) * 0.14; // hangs lower on a thinning strand
+				const fall = attached ? 0 : (p - 0.5) / 0.5; // then pinches off and drops
+				const y = edgeY + (stretch + 0.42 * fall * fall) * h;
+				const d = Math.max(3, 0.12 * w) * (0.4 + 0.6 * swell);
+				const fadeOut = 1 - Math.max(0, (p - 0.72) / 0.28);
+				out.push({
+					id: ni * 1000 + idx,
+					x: nozX,
+					y,
+					edgeY,
+					d,
+					alpha: Math.min(1, swell * 1.4) * fadeOut,
+					neckAlpha: attached ? (1 - p / 0.5) * 0.9 : 0,
+				});
+			}
+		});
+		return out;
+	});
 </script>
 
 <Container>
@@ -271,5 +318,16 @@
 		<Circle x={b.x} y={b.y} diameter={b.d * 1.16} anchor={0.5} backgroundColor={0x000000} backgroundAlpha={b.alpha * 0.28} />
 		<Circle x={b.x} y={b.y} diameter={b.d} anchor={0.5} backgroundColor={squirtColor} backgroundAlpha={b.alpha} />
 		<Circle x={b.x - b.d * 0.19} y={b.y - b.d * 0.22} diameter={b.d * 0.34} anchor={0.5} backgroundColor={0xffffff} backgroundAlpha={b.alpha * 0.55} />
+	{/each}
+	<!-- Melty cheese drip: a gooey teardrop (round bottom + pointed top) on a thinning strand while it
+	     hangs, that pinches off and falls. Dark rim + white glint read it as a wet drop of cheese. -->
+	{#each dripBlobs as b (b.id)}
+		{#if b.neckAlpha > 0.01}
+			<Rectangle x={b.x} y={(b.edgeY + b.y) / 2} anchor={0.5} width={b.d * 0.42} height={Math.max(1, b.y - b.edgeY)} backgroundColor={dripColor} backgroundAlpha={b.neckAlpha} />
+		{/if}
+		<Circle x={b.x} y={b.y} diameter={b.d * 1.18} anchor={0.5} backgroundColor={0x000000} backgroundAlpha={b.alpha * 0.2} />
+		<Circle x={b.x} y={b.y - b.d * 0.42} diameter={b.d * 0.62} anchor={0.5} backgroundColor={dripColor} backgroundAlpha={b.alpha} />
+		<Circle x={b.x} y={b.y} diameter={b.d} anchor={0.5} backgroundColor={dripColor} backgroundAlpha={b.alpha} />
+		<Circle x={b.x - b.d * 0.2} y={b.y - b.d * 0.22} diameter={b.d * 0.3} anchor={0.5} backgroundColor={0xffffff} backgroundAlpha={b.alpha * 0.5} />
 	{/each}
 </Container>
