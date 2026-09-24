@@ -20,14 +20,17 @@
 	const potHeight = $derived(potWidth * (848 / 1180));
 	const potY = $derived(canvas.height * 0.82);
 
-	// Pupils drawn fresh as dark discs (base eyes are whited out) so they glance; + skin lids for blinks.
+	// The base keeps the art's real eyes. The animated pupils are dark discs drawn slightly LARGER
+	// than the baked pupils and centred on them, so at rest the face reads as the untouched art and
+	// the (tiny) glance carries the disc without ever exposing the baked pupil beneath. Skin lids
+	// drop over the whole eye for blinks.
 	const specialPupils = [
-		{ nx: 0.454, ny: 0.283, nw: 0.062, nh: 0.06 },
-		{ nx: 0.538, ny: 0.272, nw: 0.072, nh: 0.07 },
+		{ nx: 0.4544, ny: 0.2796, nw: 0.089, nh: 0.075 },
+		{ nx: 0.5369, ny: 0.267, nw: 0.109, nh: 0.092 },
 	];
 	const specialLids = [
-		{ cx: 0.454, cy: 0.274, w: 0.088, h: 0.082 },
-		{ cx: 0.538, cy: 0.264, w: 0.098, h: 0.092 },
+		{ cx: 0.4544, cy: 0.2775, w: 0.095, h: 0.088 },
+		{ cx: 0.5369, cy: 0.264, w: 0.108, h: 0.1 },
 	];
 
 	// Clock: drives both the salt fall (phase) and the chef's idle breathe (elapsed).

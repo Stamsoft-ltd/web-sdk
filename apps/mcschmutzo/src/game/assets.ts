@@ -477,10 +477,11 @@ export default {
 		preload: true,
 	},
 	specialBase: {
-		// Real designer chef (no salting arm — that's overlaid separately so it can flick), on the
-		// shared 358x425 frame so specialArm lines up.
+		// Real designer chef WITHOUT the salting arm (body fully drawn underneath) on the shared
+		// 358x425 frame — the arm overlays and flicks with nothing duplicated behind it, and the
+		// eyes are the intact art (animated pupils overlay the baked ones slightly larger).
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_base_v6.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/special_base_v7.webp', import.meta.url).href,
 		preload: true,
 	},
 	specialArm: {
