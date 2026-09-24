@@ -63,9 +63,4 @@
 			transform: translateY(calc(var(--dy) * var(--sep, 1) * 100%));
 		}
 	}
-	@media (prefers-reduced-motion: reduce) {
-		.burger-layer {
-			animation: none;
-		}
-	}
 </style>

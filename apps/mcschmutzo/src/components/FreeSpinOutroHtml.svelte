@@ -163,37 +163,47 @@
 		font-family: 'Poppins', sans-serif;
 	}
 
+	/* Each sauce SPLATS in like real sauce hitting the screen — instant over-scale impact + a squash
+	   wobble as the liquid settles, growing outward from behind the plaque, staggered. */
 	.fo-sauce {
 		position: absolute;
 		height: auto;
 		z-index: 0;
 		pointer-events: none;
 		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
-		/* Thrown in behind the plaque, then a slow throb so the sauce reads as wet. */
+		/* Splat in, then a slow throb so the sauce reads as wet. */
 		animation:
-			fo-splash 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.22s both,
-			fo-throb 2.6s ease-in-out 0.85s infinite;
+			fo-splash 0.6s cubic-bezier(0.22, 1, 0.36, 1) both,
+			fo-throb 2.6s ease-in-out 0.95s infinite;
 	}
 	.fo-sauce--tl {
 		width: 40%;
 		top: -24%;
 		left: -8%;
+		transform-origin: 75% 85%;
+		animation-delay: 0.18s, 0.95s;
 	}
 	.fo-sauce--tr {
 		width: 40%;
 		top: -28%;
 		right: -8%;
+		transform-origin: 25% 85%;
+		animation-delay: 0.28s, 1.15s;
 	}
 	/* Under splashes: red beneath the left yellow, yellow beneath the right red. */
 	.fo-sauce--ul {
 		width: 28%;
 		top: 44%;
 		left: -11%;
+		transform-origin: 85% 50%;
+		animation-delay: 0.38s, 1.35s;
 	}
 	.fo-sauce--ur {
 		width: 28%;
 		top: 40%;
 		right: -11%;
+		transform-origin: 15% 50%;
+		animation-delay: 0.48s, 1.55s;
 	}
 
 	/* Burger peeks over the top edge of the plaque — the real slice-built burger (BurgerStack) so it
@@ -340,8 +350,12 @@
 		100% { transform: translate(-50%, 5vmin) scale(0.82, 1.35); opacity: 0; }
 	}
 	@keyframes fo-splash {
-		0% { opacity: 0; transform: scale(0.15) rotate(-28deg); }
-		70% { opacity: 1; transform: scale(1.12) rotate(6deg); }
+		/* Splat: near-instant impact at over-scale with a motion blur, then the liquid wobble —
+		   squash wide, rebound tall, settle. */
+		0% { opacity: 0; transform: scale(0.3); filter: blur(5px); }
+		22% { opacity: 1; transform: scale(1.28, 0.82) rotate(-3deg); filter: blur(0.5px); }
+		45% { transform: scale(0.92, 1.12) rotate(2deg); filter: blur(0); }
+		70% { transform: scale(1.06, 0.96) rotate(-1deg); }
 		100% { opacity: 1; transform: scale(1) rotate(0deg); }
 	}
 	@keyframes fo-throb {

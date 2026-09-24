@@ -47,9 +47,11 @@ export type SymbolPartsConfig = {
 	// defaults to the bottle tip (top-centre); `dir` (+1 right / -1 left) angles the arc.
 	squirt?: { color: number; nozzleNx?: number; nozzleNy?: number; dir?: number };
 	// Melty cheese drip: while alive, slow gooey drops ooze from the tips of the painted drips (the
-	// spots already stretched/hanging), swell into a teardrop, pinch off and fall. `points` are the
-	// drip origins (nx, ny within the symbol box) — set to the low points of the art's bottom edge.
-	drip?: { color: number; points: { nx: number; ny: number }[] };
+	// spots already stretched/hanging), swell into a teardrop, pinch off and fall a short way.
+	// `points` are the drip origins (nx, ny within the symbol box) at the low points of the art's
+	// bottom edge; each may carry its own `color` sampled from that painted drip (falls back to the
+	// shared `color`).
+	drip?: { color: number; points: { nx: number; ny: number; color?: number }[] };
 	layers: SymbolPartLayer[];
 };
 
@@ -316,13 +318,14 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		fit: 1,
 		squash: 0.09,
 		idle: 0.35,
-		// Origins sit at the tips of the art's painted drips so each falling drop continues one.
+		// Origins sit at the tips of the art's painted drips so each falling drop extends one; colors
+		// sampled from those very tips (the right drip is a darker orange).
 		drip: {
-			color: 0xf6aa0b,
+			color: 0xf69a0e,
 			points: [
-				{ nx: 0.205, ny: 0.66 },
-				{ nx: 0.42, ny: 0.81 },
-				{ nx: 0.6, ny: 0.74 },
+				{ nx: 0.205, ny: 0.66, color: 0xf69a16 },
+				{ nx: 0.42, ny: 0.81, color: 0xf69a0e },
+				{ nx: 0.6, ny: 0.74, color: 0xe67006 },
 			],
 		},
 		layers: [{ key: 'mcH4', nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.02 }],

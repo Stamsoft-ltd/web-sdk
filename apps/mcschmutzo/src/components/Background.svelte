@@ -129,18 +129,18 @@
 		// multiplier plaque never covers them). Keep the bulb above the readout's top edge.
 		const lampH = Math.min(canvas.height * 0.16, cover.height * 0.2);
 		const lampW = lampH * (700 / 1077);
-		// On most of the time; a quick smooth dip fully OFF now and then (a blink). Both lamps share
-		// the same phase so they blink in sync.
+		// On most of the time, with a frequent double-flicker (two quick dips back to back) — a
+		// stuttery neon-sign feel. Both lamps share the same phase so they blink in sync.
 		const blink = (phase: number) => {
-			const period = 2000;
+			const period = 1300;
 			const t = (((clock + phase) % period) + period) % period;
-			const lo = period * 0.78;
-			const hi = period * 0.94; // short window -> a snappy on→off→on switch
-			if (t < lo || t > hi) return 1;
-			const u = (t - lo) / (hi - lo); // 0..1 across the dip
-			const tri = 1 - Math.abs(u * 2 - 1); // 0 → 1 → 0
-			const s = tri * tri * (3 - 2 * tri); // smoothstep the dip
-			return 1 - s; // 1 (on) → 0 (off) → 1
+			const dip = (lo: number, hi: number) => {
+				if (t < lo * period || t > hi * period) return 0;
+				const u = (t - lo * period) / ((hi - lo) * period); // 0..1 across the dip
+				const tri = 1 - Math.abs(u * 2 - 1); // 0 → 1 → 0
+				return tri * tri * (3 - 2 * tri); // smoothstep the dip
+			};
+			return 1 - Math.max(dip(0.6, 0.72), dip(0.78, 0.9)); // 1 (on) → 0 (off) → 1, twice
 		};
 		return {
 			lampW,
