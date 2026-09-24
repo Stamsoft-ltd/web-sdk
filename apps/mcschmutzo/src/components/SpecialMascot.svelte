@@ -12,9 +12,11 @@
 	// Composition sits on the right, BEHIND the board — shifted right so the raised salt shaker
 	// clears the board's right edge instead of being hidden behind it.
 	const cx = $derived(canvas.width * 0.85);
-	const guyHeight = $derived(canvas.height * 0.52);
-	const guyWidth = $derived(guyHeight * (1113 / 1186));
-	const guyY = $derived(canvas.height * 0.52);
+	// Taller one-piece art (full torso), so a bit more height and shifted down to keep the head +
+	// raised shaker at the same spot on screen.
+	const guyHeight = $derived(canvas.height * 0.62);
+	const guyWidth = $derived(guyHeight * (1499 / 1911));
+	const guyY = $derived(canvas.height * 0.585);
 	const potWidth = $derived(guyWidth * 1.06);
 	const potHeight = $derived(potWidth * (848 / 1180));
 	const potY = $derived(canvas.height * 0.82);
@@ -48,8 +50,8 @@
 	const chefL = $derived(guyPose.x - guyPose.width / 2);
 	const chefT = $derived(guyPose.y - guyPose.height / 2);
 	// Salt spout = the shaker cap on the combined art (chef fractions).
-	const saltTopX = $derived(chefL + 0.22 * guyPose.width);
-	const saltTopY = $derived(chefT + 0.52 * guyPose.height);
+	const saltTopX = $derived(chefL + 0.29 * guyPose.width);
+	const saltTopY = $derived(chefT + 0.47 * guyPose.height);
 	const saltBotX = $derived(cx - guyWidth * 0.12);
 	const saltBotY = $derived(potY - potHeight * 0.18);
 	const grain = $derived(Math.max(2.5, canvas.height * 0.006));
@@ -122,7 +124,7 @@
 		pupils={[]}
 		skin={0xef9650}
 		phase={2000}
-		sparkle={{ nx: 0.54, ny: 0.45, size: 0.07, period: 3800, phase: 1200 }}
+		sparkle={{ nx: 0.46, ny: 0.4, size: 0.06, period: 3800, phase: 1200 }}
 	/>
 	{#each grains as g}
 		<Rectangle

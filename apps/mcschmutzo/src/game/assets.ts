@@ -484,30 +484,7 @@ export default {
 	},
 	specialBase: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_base_v3.webp', import.meta.url).href,
-		preload: true,
-	},
-	specialLabel: {
-		// The salting chef's "McSchmutzo" nametag, cut out (patched behind) so it can jiggle on its pin.
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_label.webp', import.meta.url).href,
-		preload: true,
-	},
-	specialPupilL: {
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_pupilL.webp', import.meta.url).href,
-		preload: true,
-	},
-	specialPupilR: {
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_pupilR.webp', import.meta.url).href,
-		preload: true,
-	},
-	// The salting chef's hand + shaker, cut out so it can flick in time with the falling salt (the
-	// base has this region removed). See SpecialMascot.svelte.
-	specialArm: {
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_arm.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/special_base_v4.webp', import.meta.url).href,
 		preload: true,
 	},
 	mcschmutzoLogo: {
