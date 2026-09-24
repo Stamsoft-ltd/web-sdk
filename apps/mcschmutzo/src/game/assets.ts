@@ -415,6 +415,13 @@ export default {
 		src: new URL('../../assets/mcschmutzo/special-lamp.webp', import.meta.url).href,
 		preload: true,
 	},
+	lampGlow: {
+		// Soft radial glow (baked warm gradient, transparent edge) for the pendant bulbs — a smooth
+		// falloff with no hard circle edge, blended additively behind the shade.
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/lamp-glow.webp', import.meta.url).href,
+		preload: true,
+	},
 	bonusWheel: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/bonus-wheel.png', import.meta.url).href,

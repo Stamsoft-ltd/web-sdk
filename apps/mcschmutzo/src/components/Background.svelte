@@ -201,12 +201,13 @@
 	{/if}
 	{#if lamps}
 		<!-- Two small hanging pendant lamps in the top-left ceiling strip; bulbs blink on/off.
-		     One broad warm glow (two soft stops for a natural gradient falloff) renders BEHIND the
-		     shade — only the light escaping under the rim shows. The bulb at the shade's bottom
-		     opening keeps its colour, dimming when off. No bright highlight on the bulb itself. -->
+		     The glow is a soft radial texture (baked warm gradient, transparent edge) blended
+		     additively BEHIND the shade — a smooth natural falloff with no hard circle edge, biased
+		     slightly DOWN so it reads as light spilling from under the shade. It's a touch taller
+		     than wide so it pools downward like a real downlight. The bulb keeps its own colour and
+		     just dims when off. -->
 		{#each lamps.list as l, i (i)}
-			<Circle x={l.x} y={lamps.haloYPx} diameter={lamps.lampW * 1.9} anchor={0.5} backgroundColor={0xffca78} backgroundAlpha={l.on * 0.08} zIndex={-0.93} blendMode="add" />
-			<Circle x={l.x} y={lamps.haloYPx} diameter={lamps.lampW * 1.15} anchor={0.5} backgroundColor={0xffd487} backgroundAlpha={l.on * 0.11} zIndex={-0.93} blendMode="add" />
+			<Sprite key="lampGlow" x={l.x} y={lamps.haloYPx + lamps.lampH * 0.08} anchor={0.5} width={lamps.lampW * 2.5} height={lamps.lampW * 2.85} alpha={l.on * 0.5} zIndex={-0.93} blendMode="add" />
 			<Sprite key="specialLamp" x={l.x} y={lamps.y} anchor={{ x: 0.5, y: 0 }} width={lamps.lampW} height={lamps.lampH} zIndex={-0.92} />
 			<Circle x={l.x} y={lamps.bulbYPx} diameter={lamps.lampW * 0.42} anchor={0.5} backgroundColor={0x140d07} backgroundAlpha={(1 - l.on) * 0.45} zIndex={-0.9} />
 		{/each}
