@@ -484,7 +484,7 @@ export default {
 	},
 	specialBase: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_base.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/special_base_v2.webp', import.meta.url).href,
 		preload: true,
 	},
 	specialLabel: {
