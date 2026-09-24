@@ -75,25 +75,25 @@
 	// art under them patched), the two brows, and the ketchup bottle + hand. Pupils and eyelids are
 	// drawn in CSS. Geometry below is in the art's own 480×900 px (see man_cut.py in the session's
 	// scratchpad for how the pieces were cut).
-	const manBase = ap('/assets/mcschmutzo/splash/man-base.webp');
-	const manBrowL = ap('/assets/mcschmutzo/splash/man-brow-l.webp');
-	const manBrowR = ap('/assets/mcschmutzo/splash/man-brow-r.webp');
-	const manBottle = ap('/assets/mcschmutzo/splash/man-bottle.webp');
-	const MAN_W = 480;
-	const MAN_H = 900;
+	const manBase = ap('/assets/mcschmutzo/splash/man-base-v2.webp');
+	const manBrowL = ap('/assets/mcschmutzo/splash/man-brow-l-v2.webp');
+	const manBrowR = ap('/assets/mcschmutzo/splash/man-brow-r-v2.webp');
+	const manBottle = ap('/assets/mcschmutzo/splash/man-bottle-v2.webp');
+	const MAN_W = 1060;
+	const MAN_H = 1484;
 	type Box = [number, number, number, number];
 	const MAN = {
 		// Brows re-exported cleaned (thin lower stroke dropped, body slimmed) + padded +8px each side so
 		// the raise never hits the crop edge (no cut).
-		browL: [120, 186, 234, 258] as Box,
-		browR: [236, 193, 313, 258] as Box,
-		pupilL: [142, 248, 172, 280] as Box,
-		pupilR: [242, 257, 264, 288] as Box,
+		browL: [490, 307, 620, 414] as Box,
+		browR: [600, 277, 774, 423] as Box,
+		pupilL: [500, 414, 590, 479] as Box,
+		pupilR: [654, 420, 740, 505] as Box,
 		// Eye openings (outline bbox): the lids are clipped to these so a blink never paints outside the eye.
-		eyeL: [136, 224, 202, 292] as Box,
-		eyeR: [237, 240, 282, 295] as Box,
-		bottle: [287, 320, 480, 729] as Box,
-		bottlePivot: [446, 612] as [number, number],
+		eyeL: [494, 400, 598, 494] as Box,
+		eyeR: [628, 404, 732, 516] as Box,
+		bottle: [694, 527, 998, 1100] as Box,
+		bottlePivot: [954, 913] as [number, number],
 		skin: '#e39c5d', // face skin right around the eyes (lid colour)
 	};
 	const manBox = ([x0, y0, x1, y1]: Box) =>
@@ -328,10 +328,14 @@
 
 	.man {
 		position: absolute;
-		left: 0.5%;
+		left: -1.5%;
 		bottom: 0;
-		height: 63%;
-		aspect-ratio: 480 / 900;
+		height: 58%;
+		aspect-ratio: 1060 / 1484;
+		/* The real art's frame includes the raised bottle on its right, so the figure is wider than
+		   the old cut — sit him IN FRONT of the card stack (a foreground character) so the bottle
+		   isn't swallowed behind the first card. */
+		z-index: 3;
 		/* Alive: a slow breath on the whole figure; the eyes glance around and blink, the brows lift,
 		   and the ketchup bottle gets a little shake — each its own layer (see the script constants). */
 		transform-origin: 50% 100%;
