@@ -201,15 +201,16 @@
 		<Rectangle x={shine.x} y={canvas.height * 0.5} anchor={0.5} width={canvas.width * 0.04} height={canvas.height * 1.7} rotation={0.32} backgroundColor={0xffffff} alpha={shine.a * 1.3} zIndex={-0.6} />
 	{/if}
 	{#if lamps}
-		<!-- Two small hanging pendant lamps in the top-left ceiling strip; bulbs blink on/off.
+		<!-- Two small hanging pendant lamps in the top-left ceiling strip; bulbs blink on/off in sync.
 		     The glow is a soft radial texture (baked warm gradient, transparent edge) blended
 		     additively BEHIND the shade — a smooth natural falloff with no hard circle edge, biased
-		     slightly DOWN so it reads as light spilling from under the shade. It's a touch taller
-		     than wide so it pools downward like a real downlight. Only the glow blinks — the bulb
-		     art is left untouched (no dark overlay when off). -->
+		     slightly DOWN so it reads as light spilling from under the shade. When the lamp switches
+		     off the bulb itself dims: the SAME soft glow texture, tinted near-black, fades in over the
+		     bulb (a soft radial, so it reads as the bulb going dark — not a hard shadow disc). -->
 		{#each lamps.list as l, i (i)}
 			<Sprite key="lampGlow" x={l.x} y={lamps.haloYPx + lamps.lampH * 0.08} anchor={0.5} width={lamps.lampW * 2.5} height={lamps.lampW * 2.85} alpha={l.on * 0.5} zIndex={-0.93} blendMode="add" />
 			<Sprite key="specialLamp" x={l.x} y={lamps.y} anchor={{ x: 0.5, y: 0 }} width={lamps.lampW} height={lamps.lampH} zIndex={-0.92} />
+			<Sprite key="lampGlow" x={l.x} y={lamps.bulbYPx} anchor={0.5} width={lamps.lampW * 0.82} height={lamps.lampW * 0.82} tint={0x181005} alpha={(1 - l.on) * 0.72} zIndex={-0.9} />
 		{/each}
 	{/if}
 {/if}
