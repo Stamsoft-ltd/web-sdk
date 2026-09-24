@@ -80,18 +80,14 @@
 {#if isReplayMode}
 	<div class="replay-hud">
 		<!-- Nothing may sit over the board while the round plays: in small popout windows the reels
-		     fill the viewport, so any persistent chrome covers symbols. Mode and event are on the
-		     summary card, which is up whenever the replay is not running. -->
+		     fill the viewport, so any persistent chrome covers symbols. The mode is on the summary
+		     card, which is up whenever the replay is not running. The internal event id is shown
+		     nowhere (Stake review, 2026-09-23): it means nothing to a player. -->
 		<div class="replay-topbar" class:replay-topbar--hidden={replayRunning}>
 			<div class="replay-meta">
 				<span class="replay-badge">{magneticStakeDerived.t('REPLAY')}</span>
 				{#if selectedMode}
 					<span class="replay-chip">{selectedMode}</span>
-				{/if}
-				{#if magneticStakeState.replayEventId}
-					<span class="replay-chip"
-						>{magneticStakeDerived.t('EVENT')} {magneticStakeState.replayEventId}</span
-					>
 				{/if}
 			</div>
 		</div>
@@ -107,12 +103,6 @@
 						<span>{magneticStakeDerived.t('MODE')}</span>
 						<strong>{selectedMode}</strong>
 					</div>
-					{#if magneticStakeState.replayEventId}
-						<div class="replay-row">
-							<span>{magneticStakeDerived.t('EVENT')}</span>
-							<strong>{magneticStakeState.replayEventId}</strong>
-						</div>
-					{/if}
 
 					<hr class="replay-rule" />
 
@@ -158,11 +148,7 @@
 						onclick={replayHasPlayed ? replayAgain : startReplay}
 					>
 						<span class="replay-play-icon">▶</span>
-						<span
-							>{replayHasPlayed
-								? magneticStakeDerived.t('REPLAY EVENT')
-								: magneticStakeDerived.t('START REPLAY')}</span
-						>
+						<span>{magneticStakeDerived.t('START REPLAY')}</span>
 					</button>
 				{/if}
 

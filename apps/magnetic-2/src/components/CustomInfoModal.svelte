@@ -263,6 +263,135 @@
 	// "Maximum win: %value% bet." split around the (bold) value so it stays highlighted in any language.
 	const maxWinParts = $derived(t('INFO OV MAXWIN').split('%value%'));
 
+	// Short-landscape only (see the container query near the end of the stylesheet): the popup lays
+	// its page out on a fixed canvas and scales that canvas to fit the panel. The canvas height is
+	// grown here to whatever the page actually needs, so the scale can take it into account. Without
+	// it a page longer than the design's ran off the bottom of the canvas — visibly, since the
+	// canvas is only clipped by the panel: the controls page put its second row of captions under
+	// the pager arrows.
+	const CANVAS_H = 356;
+	const CANVAS_W = 640;
+	let stageEl = $state<HTMLDivElement>();
+	const fitStage = () => {
+		const stage = stageEl;
+		if (!stage) return;
+		const body = stage.querySelector('.info-body') as HTMLElement | null;
+		if (!body) return;
+		// Not in the scaled mode (desktop / portrait lay the page out directly) — nothing to fit.
+		if (getComputedStyle(stage).position !== 'absolute') {
+			stage.style.removeProperty('--canvas-h');
+			stage.style.removeProperty('--pager-k');
+			stage.style.removeProperty('--stage-scale');
+			return;
+		}
+		// The pager rides inside the canvas, so a page with a wider or taller canvas (6, 7, and any
+		// page grown below) drew its arrows smaller than the rest — 5 and 6 visibly differed (user,
+		// 2026-09-23). --pager-k is the base canvas's scale over this page's, which the pager's sizes
+		// multiply by so they render at one size on every page. It is set INSIDE the loop, before
+		// each measurement: a bigger pager leaves the page less room, and setting it after the loop
+		// left the page 24px past its canvas at 610x347 and 400x225.
+		const panel = stage.parentElement;
+		const setPagerK = (h: number) => {
+			if (!panel) return;
+			const pcs = getComputedStyle(panel);
+			const pw = panel.clientWidth - parseFloat(pcs.paddingLeft) - parseFloat(pcs.paddingRight);
+			const ph = panel.clientHeight - parseFloat(pcs.paddingTop) - parseFloat(pcs.paddingBottom);
+			const cw = parseFloat(getComputedStyle(stage).getPropertyValue('--canvas-w')) || CANVAS_W;
+			const base = Math.min(pw / CANVAS_W, ph / CANVAS_H);
+			const actual = Math.min(pw / cw, ph / h);
+			if (base > 0 && actual > 0) {
+				stage.style.setProperty('--pager-k', `${base / actual}`);
+				// The canvas scale itself, set here rather than left to the stylesheet's
+				// `scale(min(100cqw / var(--canvas-w), …))`: dividing one length by another inside
+				// calc() is recent CSS, and a browser without it drops the whole transform — the
+				// page then draws unscaled and runs under the pager, which is what a user's browser
+				// showed on pages 2 and 4 at 800x450 while Chrome rendered them clean.
+				stage.style.setProperty('--stage-scale', `${actual}`);
+			}
+		};
+		let h = CANVAS_H;
+		stage.style.setProperty('--canvas-h', `${h}px`);
+		setPagerK(h);
+		// Growing the canvas also grows anything sized in cqmin inside it, so this can take several
+		// rounds to settle.
+		for (let pass = 0; pass < 8; pass += 1) {
+			const over = body.scrollHeight - body.clientHeight;
+			if (over <= 1) break;
+			h += over + 2;
+			stage.style.setProperty('--canvas-h', `${h}px`);
+			setPagerK(h);
+		}
+	};
+	$effect(() => {
+		// Re-fit on every page turn and whenever the panel changes size.
+		page;
+		const stage = stageEl;
+		if (!stage) return;
+		const raf = requestAnimationFrame(fitStage);
+		const ro = new ResizeObserver(fitStage);
+		ro.observe(stage);
+		// `fonts.ready` only covers fonts already loading. A weight first USED on this page (Poppins
+		// 700 in the paytable's side cards) starts loading after the render, the copy grows when it
+		// lands, and nothing here resized — so the page ran past its canvas into the pager (user,
+		// 2026-09-23, 800x450). `loadingdone` fires for every font load, including those.
+		const fonts = (document as Document).fonts;
+		fonts?.ready.then(fitStage);
+		fonts?.addEventListener('loadingdone', fitStage);
+		// Images too: the paytable's side icon and the cluster-win grids have no height until their
+		// file arrives, so a page fitted before they load grows afterwards and runs under the pager
+		// — reproduced with delayed image loads (24px over on page 2 at 806x462), and what a first
+		// open of the rules showed in Chrome at Popout-L. `load` does not bubble, so listen in the
+		// capture phase.
+		stage.addEventListener('load', fitStage, true);
+		return () => {
+			cancelAnimationFrame(raf);
+			ro.disconnect();
+			fonts?.removeEventListener('loadingdone', fitStage);
+			stage.removeEventListener('load', fitStage, true);
+		};
+	});
+
+	// Every card on the feature / feature-buy / game-info pages holds its whole explanation in a box
+	// the grid fixes the height of, and the copy that goes in it is a translation whose length nobody
+	// controls. The sizes inside were tuned by hand for that, coefficient by coefficient, and still
+	// clipped: Stake's 2026-09-23 review caught the landscape FEATURE BUY row with a card's heading
+	// cut off at the top and its RTP line cut off at the bottom. This measures each card instead —
+	// the type steps down (--fit, which every size inside the card is multiplied by) until the
+	// content fits the box it was given, in any language, at any window size.
+	const fitCard = (node: HTMLElement) => {
+		let raf = 0;
+		const apply = () => {
+			raf = 0;
+			node.style.setProperty('--card-fit', '1');
+			// scrollHeight is the content's full height (the cards clip with overflow: hidden), so
+			// this compares what the card wants against the room the grid gave it.
+			let fit = 1;
+			let guard = 0;
+			while (guard++ < 24 && fit > 0.55 && node.scrollHeight > node.clientHeight + 1) {
+				fit -= 0.04;
+				node.style.setProperty('--card-fit', fit.toFixed(2));
+			}
+		};
+		const schedule = () => {
+			if (!raf) raf = requestAnimationFrame(apply);
+		};
+		const ro = new ResizeObserver(schedule);
+		ro.observe(node);
+		// The art inside carries no intrinsic height until it decodes, so a first pass measured a
+		// card that was still missing its icon.
+		for (const img of node.querySelectorAll('img')) {
+			if (!img.complete) img.addEventListener('load', schedule, { once: true });
+		}
+		(document as Document).fonts?.ready.then(schedule);
+		schedule();
+		return {
+			destroy: () => {
+				ro.disconnect();
+				if (raf) cancelAnimationFrame(raf);
+			},
+		};
+	};
+
 	onMount(() => {
 		const onKey = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') props.onclose();
@@ -279,13 +408,31 @@
 
 <div class="info-overlay">
 	<div class="info-panel" role="dialog" aria-modal="true">
+		<!-- Close sits INSIDE the panel's top-right corner, level with the page title. It used to be
+		     pinned to the screen corner, which landed it half over the panel's rounded corner on some
+		     windows and clear of it on others (user, 2026-09-23). A sibling of the stage, so the
+		     small-window canvas scaling never shrinks it. -->
+		<button class="info-close" type="button" onclick={props.onclose} aria-label="Close">
+			<span class="x-glyph"></span>
+		</button>
 		<!-- Stage wrapper: transparent (display:contents) at normal sizes; on small landscape it becomes a
 		     fixed-size, scaled-to-fit canvas so the whole layout zooms down as one unit. -->
-		<div class="info-stage">
+		<!-- Two pages carry more copy than the canvas the rest of them use: the controls guide (five
+		     columns of captions, every one of which wrapped to four lines) and the general-info page
+		     (the legal notice is one long block). Both get a wider canvas: it costs a little scale and
+		     buys back more in lines not wrapped. -->
+		<div
+			class="info-stage"
+			bind:this={stageEl}
+			style={`--canvas-w:${page === 6 ? 800 : page === 7 ? 760 : 640}px`}
+		>
 			<div class="info-body">
 				{#if page === 1}
 					<div class="ov">
-						<div class="ov-left">
+						<!-- Fitted like the cards: the copy is a translation, the column's height is the
+						     page's, and on a short window the last paragraph (the max-win line) was
+						     simply cut off. -->
+						<div class="ov-left" use:fitCard>
 							<h2 class="ov-title">{t('INFO OVERVIEW')}</h2>
 							<p class="ov-text">{t('INFO OV TEXT 1')}</p>
 							<p class="ov-text">{t('INFO OV TEXT 2')}</p>
@@ -363,25 +510,25 @@
 						<h2 class="page-title">{t('INFO FEATURES')}</h2>
 						<div class="feat-grid">
 							<div class="feat-col-small">
-								<div class="card feat-card feat-card--wild">
+								<div class="card feat-card feat-card--wild" use:fitCard>
 									<h3 class="feat-h">{t('INFO FEAT WILD TITLE')}</h3>
 									<p class="feat-p">{t('INFO FEAT WILD TEXT')}</p>
 									<img class="feat-ic" src={wild} alt="Wild" />
 								</div>
-								<div class="card feat-card">
+								<div class="card feat-card" use:fitCard>
 									<h3 class="feat-h">{t('INFO FEAT MWILD TITLE')}</h3>
 									<p class="feat-p">{t('INFO FEAT MWILD TEXT')}</p>
 									<img class="feat-ic" src={wildX10} alt="Multiplier Wild" />
 								</div>
 							</div>
-							<div class="card feat-card feat-tall">
+							<div class="card feat-card feat-tall" use:fitCard>
 								<h3 class="feat-h">{t('INFO FEAT DROP TITLE')}</h3>
 								<p class="feat-p">{t('INFO FEAT DROP TEXT')}</p>
 								<div class="feat-trigger">
 									<span class="feat-x">3x</span><img src={scatter} alt="Scatter" />
 								</div>
 							</div>
-							<div class="card feat-card feat-tall">
+							<div class="card feat-card feat-tall" use:fitCard>
 								<h3 class="feat-h">{t('INFO FEAT MEGA TITLE')}</h3>
 								<p class="feat-p">{t('INFO FEAT MEGA TEXT')}</p>
 								<div class="feat-trigger">
@@ -391,7 +538,7 @@
 							<!-- Title is the buy menu's own key (identical wording); the body is this page's, because
 						     a buy card cannot say "Triggered by 5 Scatters" and this one has to, like its two
 						     siblings — trigger, reward, and what the room keeps from Core Overload. -->
-							<div class="card feat-card feat-tall">
+							<div class="card feat-card feat-tall" use:fitCard>
 								<h3 class="feat-h">{t('BUY ZERO TITLE')}</h3>
 								<p class="feat-p">{t('INFO FEAT ZERO TEXT')}</p>
 								<div class="feat-trigger">
@@ -427,7 +574,7 @@
 						<h2 class="page-title">{t('INFO FEATURE BUY')}</h2>
 						<p class="fb-sub">{t('INFO FB SUB')}</p>
 						<div class="fb-grid">
-							<div class="card feat-card">
+							<div class="card feat-card" use:fitCard>
 								<!-- EVERY card on this page now reuses the buy-menu card's own title/description
 							     keys (already translated in every locale) so the rules page and the mode card
 							     cannot drift. They had: this page called the 50x mode "Extra Feature", the 100x
@@ -445,7 +592,7 @@
 									<span class="fb-k">{t('INFO RTP')}</span><span class="fb-v">{RTP_SHORT}</span>
 								</div>
 							</div>
-							<div class="card feat-card">
+							<div class="card feat-card" use:fitCard>
 								<h3 class="feat-h">{t('BUY FEATURE SPINS TITLE')}</h3>
 								<p class="feat-p">{t('BUY FEATURE SPINS DESC')}</p>
 								<img class="feat-ic" src={wild} alt="Wild" />
@@ -456,7 +603,7 @@
 									<span class="fb-k">{t('INFO RTP')}</span><span class="fb-v">{RTP_SHORT}</span>
 								</div>
 							</div>
-							<div class="card feat-card">
+							<div class="card feat-card" use:fitCard>
 								<h3 class="feat-h">{t('BUY DROP TITLE')}</h3>
 								<p class="feat-p">{t('BUY DROP DESC')}</p>
 								<div class="feat-trigger">
@@ -469,7 +616,7 @@
 									<span class="fb-k">{t('INFO RTP')}</span><span class="fb-v">{RTP_SHORT}</span>
 								</div>
 							</div>
-							<div class="card feat-card">
+							<div class="card feat-card" use:fitCard>
 								<h3 class="feat-h">{t('BUY MEGA TITLE')}</h3>
 								<p class="feat-p">{t('BUY MEGA DESC')}</p>
 								<div class="feat-trigger">
@@ -486,7 +633,7 @@
 							     No COST row: the math has not published a bet mode for it (index.json ships
 							     BASE/CHANCE/FEATURE/BONUS/SUPER), so the only truthful thing to state here is
 							     how it triggers — 5 scatters. Add the row when the mode ships. -->
-							<div class="card feat-card">
+							<div class="card feat-card" use:fitCard>
 								<h3 class="feat-h">{t('BUY ZERO TITLE')}</h3>
 								<p class="feat-p">{t('BUY ZERO DESC')}</p>
 								<div class="feat-trigger">
@@ -499,7 +646,7 @@
 							<!-- Mystery buy. Same title/description keys as its buy-menu card, and the three
 							     outcomes are named from the splash screen's own tier keys, so all three
 							     surfaces stay in step. -->
-							<div class="card feat-card">
+							<div class="card feat-card" use:fitCard>
 								<h3 class="feat-h">{t('BUY MYSTERY TITLE')}</h3>
 								<p class="feat-p">
 									{tv('BUY MYSTERY DESC', {
@@ -522,7 +669,7 @@
 					<div class="page">
 						<h2 class="page-title">{t('INFO GENERAL INFO')}</h2>
 						<div class="gi-grid">
-							<div class="card gi-card">
+							<div class="card gi-card" use:fitCard>
 								<div class="gi-head">
 									<span class="gi-ic"><img src={icRotate} alt="" /></span>
 									<h3 class="feat-h">{t('INFO GI INTERRUPTED TITLE')}</h3>
@@ -532,7 +679,7 @@
 									<p class="feat-p">{t('INFO GI INTERRUPTED 2')}</p>
 								</div>
 							</div>
-							<div class="card gi-card gi-wide">
+							<div class="card gi-card gi-wide" use:fitCard>
 								<div class="gi-head">
 									<span class="gi-ic gi-ic--legal"><img src={icLegal} alt="" /></span>
 									<h3 class="feat-h">{t('INFO GI LEGAL TITLE')}</h3>
@@ -586,10 +733,6 @@
 		</div>
 	</div>
 
-	<!-- Close button pinned to the screen's top-right corner (outside the panel). -->
-	<button class="info-close" type="button" onclick={props.onclose} aria-label="Close">
-		<span class="x-glyph"></span>
-	</button>
 </div>
 
 <style>
@@ -653,13 +796,14 @@
 		flex-direction: column;
 	}
 
-	/* Pinned to the screen's top-right corner (positioned against the full-viewport overlay). */
+	/* Inside the panel's top-right corner, inset by about the panel's own corner padding. */
 	.info-close {
 		position: absolute;
-		top: clamp(8px, 2cqmin, 26px);
-		right: clamp(8px, 2cqmin, 26px);
-		width: clamp(34px, 5.6cqmin, 52px);
-		height: clamp(34px, 5.6cqmin, 52px);
+		top: clamp(8px, 1.6cqmin, 18px);
+		right: clamp(8px, 1.6cqmin, 18px);
+		/* Floor 34 -> 26px: on a ~520px-tall Popout-L the 34px floor was what set the button. */
+		width: clamp(26px, 5.6cqmin, 52px);
+		height: clamp(26px, 5.6cqmin, 52px);
 		/* Figma 4504:4318 — 49px #49489B circle with a 1px WHITE ring (the pager arrows below use the
 		   lavender ring instead; the close button is the one that does not). */
 		border: 1px solid #fff;
@@ -744,7 +888,7 @@
 	.ov-title {
 		margin: 0;
 		font-family: var(--display);
-		font-size: clamp(20px, 5.2cqmin, 44px);
+		font-size: calc((clamp(20px, 5.2cqmin, 44px)) * var(--card-fit, 1));
 		font-weight: 400;
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
@@ -760,7 +904,7 @@
 		margin: 0;
 		font-family: var(--text);
 		font-weight: 500;
-		font-size: clamp(11px, 1.95cqmin, 18px);
+		font-size: calc((clamp(11px, 1.95cqmin, 18px)) * var(--card-fit, 1));
 		letter-spacing: 0.03em;
 		line-height: 1.5;
 		color: #fff;
@@ -769,7 +913,7 @@
 		margin: clamp(2px, 0.6cqmin, 8px) 0 0;
 		font-family: var(--text);
 		font-weight: 500;
-		font-size: clamp(11px, 1.95cqmin, 18px);
+		font-size: calc((clamp(11px, 1.95cqmin, 18px)) * var(--card-fit, 1));
 		letter-spacing: 0.03em;
 		color: #fff;
 	}
@@ -777,7 +921,7 @@
 	   the display face: Audiowide is far wider per glyph and "20,000x" then runs a third longer than
 	   the design's, which pushes "bet." off the measure. */
 	.ov-maxwin span {
-		font-size: clamp(16px, 4.8cqmin, 32px);
+		font-size: calc((clamp(16px, 4.8cqmin, 32px)) * var(--card-fit, 1));
 		font-weight: 500;
 		color: #fff;
 		letter-spacing: 0.03em;
@@ -914,7 +1058,7 @@
 	.feat-h {
 		margin: 0;
 		font-family: var(--display);
-		font-size: clamp(12px, 2.7cqmin, 25px);
+		font-size: calc((clamp(12px, 2.7cqmin, 25px)) * var(--card-fit, 1));
 		font-weight: 400;
 		line-height: 1.27;
 		letter-spacing: 0.03em;
@@ -924,7 +1068,7 @@
 		margin: 0;
 		font-family: var(--text);
 		font-weight: 500;
-		font-size: clamp(10px, 1.95cqmin, 17px);
+		font-size: calc((clamp(10px, 1.95cqmin, 17px)) * var(--card-fit, 1));
 		letter-spacing: 0.03em;
 		line-height: 1.5;
 		color: #fff;
@@ -960,8 +1104,11 @@
 		/* 4px between cells at design size (50 pitch on a 46 cell, 42 on a 38). */
 		border-spacing: clamp(1px, 0.6cqmin, 5px);
 		table-layout: fixed;
-		/* Value cells are Poppins 500 / 12; 1.8cqmin resolves to exactly 12 on the design frame. */
-		font-size: clamp(7px, 1.8cqmin, 16px);
+		/* Value cells: Poppins 500 / 12 on the design frame (1.8cqmin), raised to 2.05cqmin because
+		   the values read too small against their cells (Stake feedback via the user, 2026-09-23).
+		   The 1.2cqw term and the 17px cap keep "2000x" inside its value column (measured: 19px /
+		   1.4cqw spilled it at 1024x768 and above 1500px wide). */
+		font-size: clamp(7px, min(2.05cqmin, 1.2cqw), 17px);
 	}
 	.pt-table th,
 	.pt-table td {
@@ -973,7 +1120,12 @@
 		   36, which is what actually fits — a `border-separate` table also spaces ABOVE the header
 		   and BELOW the last row, so nine 38s plus ten 4s overruns the design's own 374-tall band by
 		   8, and that 8 is exactly enough to put the pager arrows on top of the last row. */
-		height: clamp(14px, 5.4cqmin, 48px);
+		/* Cap 48 -> 42px: the panel stops growing at 660px tall, but these cells kept growing with
+		   the window, so from ~890px up the nine rows no longer fitted the capped panel and the table
+		   pushed into the pager — at 1920x1080 the arrows sat on the last row and the POLARITY card
+		   ran under "Page 2/7" (user, 2026-09-23). 40 is what nine rows + spacing leave in 660 (42 still
+		   reached the pager by 3px at 1920x1080). */
+		height: clamp(14px, 5.4cqmin, 40px);
 		padding: 0;
 		font-family: var(--text);
 		font-weight: 500;
@@ -1068,10 +1220,13 @@
 	   design's pt box — with the two proxies folded into the divisors: cqw/12.45 and cqh/7.85.
 	   The pair is 3% under the measured proxies so the tightest case (1000x600, where the column is
 	   only just deep enough) keeps a margin rather than landing exactly on zero. */
+	/* CAPS: the panel stops growing at 1120x660 (from ~1360x800 up) but these sizes kept growing
+	   with the window, so on a 1530x872+ screen the POLARITY card ran past the table and under the
+	   "Page 2/7" counter (user, 2026-09-23). Each cap is its size at the point the panel stops. */
 	.pt-side-title {
 		margin: 0;
 		font-family: var(--display);
-		font-size: clamp(10px, min(1.45cqw, 2.29cqh), 24px);
+		font-size: clamp(10px, min(1.45cqw, 2.29cqh), 18px);
 		font-weight: 400;
 		letter-spacing: 0.03em;
 		color: #fff;
@@ -1084,7 +1239,7 @@
 	   already supplies ~0.3em, hence the small numbers. */
 	.pt-side-h {
 		margin: 0.75em 0 0;
-		font-size: clamp(7px, min(0.88cqw, 1.4cqh), 15px);
+		font-size: clamp(7px, min(0.88cqw, 1.4cqh), 11.2px);
 		font-weight: 700;
 		color: #fff;
 		line-height: 1.3;
@@ -1094,7 +1249,7 @@
 	}
 	.pt-side-v {
 		margin: 0.5em 0 0;
-		font-size: clamp(7px, min(0.88cqw, 1.4cqh), 15px);
+		font-size: clamp(7px, min(0.88cqw, 1.4cqh), 11.2px);
 		font-weight: 500;
 		color: #fff;
 		line-height: 1.3;
@@ -1109,13 +1264,13 @@
 	/* Figma: 42 square, centred, with the title above it and the copy below. */
 	.pt-side-ic {
 		display: block;
-		width: clamp(18px, min(3.37cqw, 5.35cqh), 50px);
+		width: clamp(18px, min(3.37cqw, 5.35cqh), 42px);
 		height: auto;
 		margin: 0.35em auto 0;
 	}
 	.pt-side-p {
 		margin: 0.5em 0 0;
-		font-size: clamp(7px, min(0.88cqw, 1.4cqh), 15px);
+		font-size: clamp(7px, min(0.88cqw, 1.4cqh), 11.2px);
 		font-weight: 500;
 		color: #fff;
 		line-height: 1.4;
@@ -1140,7 +1295,7 @@
 		flex: 0 0 auto;
 		margin: clamp(6px, 1.4cqmin, 14px) 0 0;
 		font-family: var(--text);
-		font-size: clamp(9px, min(0.88cqw, 1.4cqh), 15px);
+		font-size: calc((clamp(9px, min(0.88cqw, 1.4cqh), 15px)) * var(--card-fit, 1));
 		font-weight: 500;
 		line-height: 1.35;
 		color: #cfcdea;
@@ -1166,13 +1321,13 @@
 	/* Smaller than the tall cards' art on purpose — these two cards are half-height and carry the
 	   longest copy on the page, so the magnet has to give way to the text, not the other way round. */
 	.feat-grid .feat-col-small .feat-ic {
-		width: clamp(30px, 6.2cqmin, 36px);
+		width: calc((clamp(30px, 6.2cqmin, 36px)) * var(--card-fit, 1));
 		margin: 0;
 	}
 	/* The approved Magnetic Wild explanation is substantially longer than the other feature copy.
 	   Keep it inside the half-height card without pushing the Wild art through the lower frame. */
 	.feat-grid .feat-col-small .feat-card--wild .feat-p {
-		font-size: clamp(8px, 1.4cqmin, 12px);
+		font-size: calc((clamp(8px, 1.4cqmin, 12px)) * var(--card-fit, 1));
 		line-height: 1.3;
 		letter-spacing: 0.015em;
 	}
@@ -1185,7 +1340,7 @@
 		gap: clamp(6px, 1.4cqmin, 14px);
 	}
 	.feat-ic {
-		width: clamp(52px, 11cqmin, 108px);
+		width: calc((clamp(52px, 11cqmin, 108px)) * var(--card-fit, 1));
 		height: auto;
 		object-fit: contain;
 		margin-top: auto;
@@ -1200,13 +1355,13 @@
 	/* Figma 7022:6377 — Poppins 700 / 24px beside the scatter. */
 	.feat-x {
 		font-family: var(--text);
-		font-size: clamp(16px, 3.6cqmin, 34px);
+		font-size: calc((clamp(16px, 3.6cqmin, 34px)) * var(--card-fit, 1));
 		font-weight: 700;
 		letter-spacing: 0.03em;
 		color: #fff;
 	}
 	.feat-trigger img {
-		width: clamp(44px, 9cqmin, 88px);
+		width: calc((clamp(44px, 9cqmin, 88px)) * var(--card-fit, 1));
 		height: auto;
 		object-fit: contain;
 		filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.45));
@@ -1227,11 +1382,11 @@
 		gap: clamp(8px, 1.8cqmin, 20px);
 	}
 	.feat-grid .feat-tall .feat-p {
-		font-size: clamp(9px, 1.72cqmin, 15px);
+		font-size: calc((clamp(9px, 1.72cqmin, 15px)) * var(--card-fit, 1));
 		line-height: 1.4;
 	}
 	.feat-grid .feat-ic {
-		width: clamp(84px, 17.5cqmin, 176px);
+		width: calc((clamp(84px, 17.5cqmin, 176px)) * var(--card-fit, 1));
 		margin: 0;
 	}
 	/* The three trigger cards are equal-height grid items, so the 3x / 4x / 5x rows only line up if
@@ -1247,10 +1402,10 @@
 		margin: auto 0 0;
 	}
 	.feat-grid .feat-trigger img {
-		width: clamp(72px, 14.5cqmin, 146px);
+		width: calc((clamp(72px, 14.5cqmin, 146px)) * var(--card-fit, 1));
 	}
 	.feat-grid .feat-x {
-		font-size: clamp(30px, 6.6cqmin, 66px);
+		font-size: calc((clamp(30px, 6.6cqmin, 66px)) * var(--card-fit, 1));
 	}
 
 	/* ── Page 4: Cluster win ── */
@@ -1304,7 +1459,7 @@
 		text-align: center;
 		font-family: var(--text);
 		font-weight: 500;
-		font-size: clamp(10px, 2.1cqmin, 18px);
+		font-size: calc((clamp(10px, 2.1cqmin, 18px)) * var(--card-fit, 1));
 		letter-spacing: 0.03em;
 		line-height: 1.5;
 		color: #fff;
@@ -1347,7 +1502,7 @@
 		   overflow in en/de/ru at 1600x900, 1280x720, 1024x768 and mobile landscape. The MAXIMA matter
 		   as much as the coefficients: 16:9 desktop is wide enough that the clamp max is what renders
 		   (measured 15px of a 1.7cqmin/15px description there), so raising them re-broke Russian. */
-		font-size: clamp(11px, 2.4cqmin, 21px);
+		font-size: calc((clamp(11px, 2.4cqmin, 21px)) * var(--card-fit, 1));
 	}
 	.fb-grid .feat-p {
 		/* Slightly smaller so the (now larger) icons fit the tight cards on desktop without clipping.
@@ -1358,21 +1513,21 @@
 		   Down again from 1.8cqmin when the Mystery buy made it five cards: the longest card is now
 		   Mystery, whose copy names all three outcomes, and in Russian — where those three names are
 		   long — it ran 14px past the card and clipped its RTP. */
-		font-size: clamp(9px, 1.5cqmin, 14px);
+		font-size: calc((clamp(9px, 1.5cqmin, 14px)) * var(--card-fit, 1));
 		line-height: 1.45;
 	}
 	.fb-grid .feat-ic {
 		/* Desktop (base) W icon — the Mystery card has the longest copy, so this is the largest that
 		   fits without clipping COST/RTP on the tightest (16:9) desktop panels, even in the wordiest
 		   locale (Russian). cqmin scales it. */
-		width: clamp(34px, 5.9cqmin, 56px);
+		width: calc((clamp(34px, 5.9cqmin, 56px)) * var(--card-fit, 1));
 	}
 	.fb-grid .feat-trigger img {
 		/* Scatter cards have shorter copy → the scatter can be a bit bigger. */
-		width: clamp(40px, 8cqmin, 66px);
+		width: calc((clamp(40px, 8cqmin, 66px)) * var(--card-fit, 1));
 	}
 	.fb-grid .feat-x {
-		font-size: clamp(17px, 3.4cqmin, 32px);
+		font-size: calc((clamp(17px, 3.4cqmin, 32px)) * var(--card-fit, 1));
 	}
 	.fb-meta {
 		display: flex;
@@ -1394,7 +1549,7 @@
 	.fb-k,
 	.fb-v {
 		font-family: var(--text);
-		font-size: clamp(9px, 1.8cqmin, 16px);
+		font-size: calc((clamp(9px, 1.8cqmin, 16px)) * var(--card-fit, 1));
 		font-weight: 700;
 		letter-spacing: 0.03em;
 		color: #fff;
@@ -1480,7 +1635,7 @@
 		max-width: 80%;
 		font-family: var(--text);
 		font-weight: 500;
-		font-size: clamp(8px, 1.45cqmin, 13px);
+		font-size: calc((clamp(8px, 1.45cqmin, 13px)) * var(--card-fit, 1));
 		letter-spacing: 0.03em;
 		line-height: 1.5;
 		color: #fff;
@@ -1641,8 +1796,8 @@
 			overflow: hidden;
 			/* Same flat plate as the desktop panel, only wider against the short viewport — but not so
 			   wide that the screen-corner close button lands on its top-right radius. */
-			width: min(1120px, 88cqw);
-			height: min(660px, 90cqh);
+			width: min(1120px, 94cqw);
+			height: min(660px, 94cqh);
 			border-radius: clamp(8px, 2cqmin, 16px);
 			padding: clamp(8px, 2.2cqmin, 26px) clamp(10px, 2.6cqmin, 30px);
 		}
@@ -1672,24 +1827,24 @@
 		   its px floors, so enlarge each page's text/art (and rebalance spacing) per the design review. */
 		/* Bigger section title on every landscape page (pages 2–7 use .page-title; page 1 uses .ov-title). */
 		.page-title {
-			font-size: 28px;
+			font-size: calc((28px) * var(--card-fit, 1));
 		}
 		/* Page 1 — Overview: larger title, copy and hero ring. */
 		.ov-left {
 			gap: 10px;
 		}
 		.ov-title {
-			font-size: 32px;
+			font-size: calc((32px) * var(--card-fit, 1));
 		}
 		.ov-text {
-			font-size: 14px;
+			font-size: calc((14px) * var(--card-fit, 1));
 			line-height: 1.45;
 		}
 		.ov-maxwin {
-			font-size: 14px;
+			font-size: calc((14px) * var(--card-fit, 1));
 		}
 		.ov-maxwin span {
-			font-size: 24px;
+			font-size: calc((24px) * var(--card-fit, 1));
 		}
 
 		/* Page 2 — Paytable: enlarge the right-hand Multiplier-Wild panel text. Widen the aside and keep the
@@ -1735,33 +1890,33 @@
 			padding: 12px 14px;
 		}
 		.feat-grid .feat-h {
-			font-size: 16px;
+			font-size: calc((16px) * var(--card-fit, 1));
 		}
 		.feat-grid .feat-p {
-			font-size: 12px;
+			font-size: calc((12px) * var(--card-fit, 1));
 		}
 		/* The Multiplier Wild card (small left column) has the most copy — a touch smaller so it sits easy. */
 		.feat-grid .feat-col-small .feat-p {
-			font-size: 11px;
+			font-size: calc((11px) * var(--card-fit, 1));
 		}
 		.feat-grid .feat-col-small .feat-card--wild .feat-p {
-			font-size: 9px;
+			font-size: calc((9px) * var(--card-fit, 1));
 			line-height: 1.25;
 		}
 		.feat-grid .feat-ic {
-			width: 96px;
+			width: calc((96px) * var(--card-fit, 1));
 		}
 		.feat-grid .feat-col-small .feat-ic {
-			width: 70px;
+			width: calc((70px) * var(--card-fit, 1));
 		}
 		.feat-grid .feat-col-small .feat-card--wild .feat-ic {
-			width: 56px;
+			width: calc((56px) * var(--card-fit, 1));
 		}
 		.feat-grid .feat-trigger img {
-			width: 86px;
+			width: calc((86px) * var(--card-fit, 1));
 		}
 		.feat-grid .feat-x {
-			font-size: 32px;
+			font-size: calc((32px) * var(--card-fit, 1));
 		}
 
 		/* Page 4 — Cluster win: much larger copy; stack the WIN / NO-WIN grids in a column. Extra left inset
@@ -1788,7 +1943,7 @@
 
 		/* Page 5 — Feature buy: everything bigger (the cards have spare height). */
 		.fb-sub {
-			font-size: 12px;
+			font-size: calc((12px) * var(--card-fit, 1));
 		}
 		/* Wider than the desktop row's band: the landscape canvas is only 850px across, so the same
 		   percentage left the cards narrow enough to wrap the Extra-Feature copy an extra line. With
@@ -1807,76 +1962,90 @@
 			justify-content: center;
 		}
 		.fb-grid .feat-h {
-			font-size: 15px;
+			font-size: calc((15px) * var(--card-fit, 1));
 		}
 		/* Under the other landscape body copy: at 15px the longest card wrapped to five lines and
 		   pushed COST/RTP past the frame art's bottom edge in both popout sizes. 10px, not 11, since
 		   the Mystery buy joined the row — in Russian its copy (which names all three outcomes) was
 		   the one running past the card. */
 		.fb-grid .feat-p {
-			font-size: 10px;
+			font-size: calc((10px) * var(--card-fit, 1));
 		}
 		/* Short landscape viewports (this @container fires ≤490px tall, e.g. mobile landscape): the panel is
 		   only ~half height, so keep the icons modest or they clip the card's COST/RTP. */
 		.fb-grid .feat-ic {
-			width: 60px;
+			width: calc((60px) * var(--card-fit, 1));
 		}
 		.fb-grid .feat-trigger img {
-			width: 72px;
+			width: calc((72px) * var(--card-fit, 1));
 		}
 		.fb-grid .feat-x {
-			font-size: 23px;
+			font-size: calc((23px) * var(--card-fit, 1));
 		}
 		.fb-k {
-			font-size: 13px;
+			font-size: calc((13px) * var(--card-fit, 1));
 		}
 		.fb-v {
-			font-size: 13px;
+			font-size: calc((13px) * var(--card-fit, 1));
 		}
 
 		/* Page 6 — General info: bigger icons, more card padding, larger gaps between stacked elements. */
+		/* Padding and icon were the desktop card's (40/46 and 80px) on a card only ~270px tall: 80px of
+		   it went to padding and another 80 to the icon, which left the legal notice so little room
+		   that the card overflowed however far its type was stepped down. */
 		.gi-card {
-			padding: 40px 46px;
-			gap: 16px;
+			padding: 18px 26px;
+			gap: 10px;
 		}
 		/* The narrow (Interrupted Rounds) card's copy sits closer to its frame edges — extra side padding
 		   insets it to match the wider Legal card. */
 		.gi-card:not(.gi-wide) {
-			padding-left: 64px;
-			padding-right: 64px;
+			padding-left: 34px;
+			padding-right: 34px;
 		}
 		.gi-head {
 			gap: 12px;
 		}
 		/* Same size for both so the icon centres + titles line up exactly across the two cards. */
 		.gi-ic {
-			width: 80px;
-			height: 80px;
+			width: 54px;
+			height: 54px;
 		}
 		.gi-ic--legal {
-			width: 80px;
-			height: 80px;
+			width: 54px;
+			height: 54px;
 		}
 		.gi-grid .feat-h {
-			font-size: 19px;
+			font-size: calc((19px) * var(--card-fit, 1));
 		}
 		.gi-card .feat-p {
-			font-size: 12px;
+			font-size: calc((12px) * var(--card-fit, 1));
 			line-height: 1.42;
+			/* The legal block is the longest single paragraph in the popup; on a short screen it needs
+			   the card's full width, not the desktop inset. */
+			max-width: 94%;
 		}
 		/* Equal body height across both cards → the icon+title blocks match, so the icons centre to the
 		   same level. Sized (relative, so it scales with the modal) to the taller Legal card's 3-paragraph
 		   copy so it never clips. */
 		.gi-body {
-			min-height: clamp(126px, 34cqmin, 168px);
+			/* No floor here: the grid already stretches both cards to the same height, and a 126px
+			   minimum on a ~270px card was room the copy could not spare. */
+			min-height: 0;
 		}
 
 		/* Page 7 — UI guide: larger icons and labels. Anchor the grid to the TOP (start) so the taller
 		   title can never overlap the first row; a small padding-top keeps a clean gap below the title. */
 		.ctrl-grid {
+			/* SIX per row here, not the design's five: there are twelve controls, so five columns is
+			   three rows, and three rows do not fit a short window's canvas without scaling the whole
+			   page (and its captions) down to ~6px. Six columns is two rows on the wider canvas this
+			   page asks for, which keeps the captions at a readable size. */
+			grid-template-columns: repeat(6, minmax(0, 1fr));
 			gap: 11px 12px;
 			align-content: start;
 			padding-top: 6px;
+			padding-inline: 0;
 		}
 		.ctrl {
 			gap: 4px;
@@ -1902,8 +2071,6 @@
 		.info-close {
 			width: clamp(22px, 4.4cqmin, 34px);
 			height: clamp(22px, 4.4cqmin, 34px);
-			top: clamp(6px, 1.6cqmin, 16px);
-			right: clamp(6px, 1.6cqmin, 16px);
 		}
 		.info-stage {
 			display: flex;
@@ -1912,14 +2079,47 @@
 			left: 50%;
 			top: 50%;
 			/* Fixed design canvas (aspect ~1.8 ≈ the panel's content box in landscape). Content inside is
-			   sized against THIS box (container-type below), so it is pixel-stable regardless of viewport. */
-			width: 850px;
-			height: 472px;
+			   sized against THIS box (container-type below), so it is pixel-stable regardless of viewport.
+			   850x472 made the scale factor 0.63 in Stake's Popout-S (610x347) — every fixed-px size in
+			   this block, which is most of the copy, rendered at about two thirds of its number, and an
+			   11.5px line came out at 7px. That is the unreadable rules screen in the 2026-09-23 review.
+			   A smaller canvas raises the factor (0.90 at Popout-S) without touching a single size: the
+			   fluid, cq-based elements keep their physical size, and the fixed-px copy gains 40%. What
+			   it costs is layout room, which the per-card fitter (--card-fit) and the tightened blocks
+			   below give back. */
+			width: var(--canvas-w, 640px);
+			/* The canvas HEIGHT is not fixed: a page whose copy runs longer than the design's (any
+			   translation, and in English the cluster-win and controls pages) gets a taller canvas
+			   from fitStage below, and the scale below takes it into account — so a dense page
+			   scales down a little instead of running its last rows under the pager. */
+			height: var(--canvas-h, 356px);
 			container-type: size;
 			/* Centre the (oversized) canvas on the panel, then uniformly scale it to fit. Denominators carry
 			   px so each ratio is unitless (length / length) for scale(). */
-			transform: translate(-50%, -50%) scale(min(100cqw / 850px, 100cqh / 472px));
+			/* --stage-scale is min(panel width / canvas width, panel height / canvas height), set by
+			   fitStage; see the note there on why this is not computed in calc(). */
+			transform: translate(-50%, -50%) scale(var(--stage-scale, 1));
 			transform-origin: center;
+		}
+		/* One pager size on every page (see --pager-k in fitStage): these are the base rule's own
+		   values on the 640x356 canvas, multiplied back up by how much more this page's canvas is
+		   scaled down. */
+		.info-pager {
+			gap: calc(10px * var(--pager-k, 1));
+			padding-top: calc(8px * var(--pager-k, 1));
+		}
+		.pg-arrow {
+			width: calc(34px * var(--pager-k, 1));
+			height: calc(34px * var(--pager-k, 1));
+		}
+		.pg-num {
+			font-size: calc(9px * var(--pager-k, 1));
+		}
+		/* Paytable values on the canvas: the base rule's cqw term resolved to 7.7px here (the canvas
+		   is only 640 wide), which the user flagged as too small. 9.5px still fits "2000x" in a
+		   ~31px value column. */
+		.pt-table {
+			font-size: 9.5px;
 		}
 	}
 
@@ -1975,13 +2175,13 @@
 			gap: clamp(8px, 2cqh, 18px);
 		}
 		.ov-title {
-			font-size: clamp(24px, 6.4cqmin, 40px);
+			font-size: calc((clamp(24px, 6.4cqmin, 40px)) * var(--card-fit, 1));
 		}
 		.ov-text {
-			font-size: clamp(13px, 3.4cqmin, 18px);
+			font-size: calc((clamp(13px, 3.4cqmin, 18px)) * var(--card-fit, 1));
 		}
 		.ov-maxwin span {
-			font-size: clamp(18px, 4.6cqmin, 30px);
+			font-size: calc((clamp(18px, 4.6cqmin, 30px)) * var(--card-fit, 1));
 		}
 		/* The desktop width is 34.4cqw because the design gives the logo a third of a LANDSCAPE frame.
 		   In a portrait container cqw is the short side, so that same rule renders it at ~140px — the
@@ -2051,7 +2251,7 @@
 		   Portrait stacks them at natural height, so the magnet can be legible again — still well
 		   under the tall cards' scatter, which is the visual hierarchy the page wants. */
 		.feat-grid .feat-col-small .feat-ic {
-			width: clamp(56px, 13cqmin, 96px);
+			width: calc((clamp(56px, 13cqmin, 96px)) * var(--card-fit, 1));
 		}
 		/* Stack the four buy cards vertically — and drop the centred max-width, which only applies
 		   to the four-across desktop row. */
@@ -2145,10 +2345,10 @@
 			height: clamp(16px, 6.1cqmin, 34px);
 		}
 		.gi-grid .feat-h {
-			font-size: clamp(11px, 3.9cqmin, 24px);
+			font-size: calc((clamp(11px, 3.9cqmin, 24px)) * var(--card-fit, 1));
 		}
 		.gi-card .feat-p {
-			font-size: clamp(8px, 2.8cqmin, 17px);
+			font-size: calc((clamp(8px, 2.8cqmin, 17px)) * var(--card-fit, 1));
 		}
 		/* gi-body is a desktop-only centring wrapper — let its paragraphs flow inline in portrait. */
 		.gi-body {
@@ -2161,37 +2361,37 @@
 		}
 		.feat-grid .feat-h,
 		.fb-grid .feat-h {
-			font-size: clamp(19px, 4.7cqmin, 30px);
+			font-size: calc((clamp(19px, 4.7cqmin, 30px)) * var(--card-fit, 1));
 		}
 		.feat-grid .feat-p,
 		.fb-grid .feat-p {
-			font-size: clamp(14px, 3.5cqmin, 21px);
+			font-size: calc((clamp(14px, 3.5cqmin, 21px)) * var(--card-fit, 1));
 		}
 		.feat-grid .feat-col-small .feat-card--wild .feat-p {
-			font-size: clamp(14px, 3.5cqmin, 21px);
+			font-size: calc((clamp(14px, 3.5cqmin, 21px)) * var(--card-fit, 1));
 			line-height: 1.45;
 			letter-spacing: 0.03em;
 		}
 		.feat-grid .feat-ic,
 		.fb-grid .feat-ic {
-			width: clamp(84px, 21cqmin, 138px);
+			width: calc((clamp(84px, 21cqmin, 138px)) * var(--card-fit, 1));
 		}
 		.feat-grid .feat-trigger img,
 		.fb-grid .feat-trigger img {
-			width: clamp(74px, 18cqmin, 120px);
+			width: calc((clamp(74px, 18cqmin, 120px)) * var(--card-fit, 1));
 		}
 		.feat-grid .feat-x,
 		.fb-grid .feat-x {
-			font-size: clamp(34px, 8.4cqmin, 62px);
+			font-size: calc((clamp(34px, 8.4cqmin, 62px)) * var(--card-fit, 1));
 		}
 		.fb-grid .fb-k {
-			font-size: clamp(13px, 3.1cqmin, 20px);
+			font-size: calc((clamp(13px, 3.1cqmin, 20px)) * var(--card-fit, 1));
 		}
 		.fb-grid .fb-v {
-			font-size: clamp(13px, 3.1cqmin, 20px);
+			font-size: calc((clamp(13px, 3.1cqmin, 20px)) * var(--card-fit, 1));
 		}
 		.fb-sub {
-			font-size: clamp(13px, 3.1cqmin, 18px);
+			font-size: calc((clamp(13px, 3.1cqmin, 18px)) * var(--card-fit, 1));
 		}
 
 		/* Page 2 paytable: bigger table + bigger 'Multiplier Wild Values' card text. Give the value

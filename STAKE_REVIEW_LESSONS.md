@@ -936,3 +936,103 @@ them reserves the band. Both defects are live in all three; only theme-park has 
 
 Close every CDP tab you open. Three orphaned game tabs on software WebGL saturate the machine and
 the next run appears to hang on boot rather than to be starved.
+
+## R-13 — A readout that reserves its width by arithmetic, and a page that scales instead of fitting (magnetic-2, 2026-09-23)
+
+**Reviewer wording (four findings, one round):**
+
+> The Balance and Win fields overlap in the bottom bar for multiple currencies, making the displayed
+> values difficult to read.
+>
+> In Popout-S screen size, the overall layout needs to be adjusted to improve readability and
+> usability. The main issue is that the text and UI elements are scaled too small… This affects the
+> Game Rules, Bonus Menu, Autoplay Menu, and the main game interface, where the Balance information
+> is particularly small.
+>
+> In landscape screen sizes, some text in the Bonus Menu is cut off and not fully visible within the
+> feature cards.
+>
+> Please remove the Event information from the Replay window.
+
+**Rule 1 — never reserve a width with viewport arithmetic.** The desktop bar sized its BALANCE and
+WIN pills with `width: min(130px, calc((min(100vw - 16px, 1120px) - 711px) / 2))` — "give each pill
+half of whatever is left after the bar's other 711px". Below a ~745px viewport that expression is
+zero (a negative `width` clamps to 0), the pills collapsed to their padding, and two `nowrap`
+amounts drew on top of each other. The fitter did not save it either: `fitAmount` starts with
+`if (availW <= 0) return`, so at exactly the moment the pill needed shrinking most it did nothing.
+Long currency strings are only where it *shows* first — the arithmetic was wrong at every value.
+
+Popout-L is a **desktop**-layout window: `utils-layout` only leaves the desktop HUD when
+`min(width, height) ≤ 480`, so a 760x520 popout gets the full 1060px bar in 728px of room. The fix
+is to lay that bar out once, at its design width, and scale the whole plate (`--bar-scale`,
+`transform-origin: bottom center`) — a proportion cannot overlap.
+
+*Two things a transform on a bar will break.* A `position: fixed` child is laid out against the
+transformed ancestor, not the viewport, so the menu's click-away backdrop covered only the bar (it
+now renders as a sibling, under the bar's z-index). And a fitter that compares a `Range` rect
+(screen px) against `clientWidth` (layout px) stops shrinking early inside it — both fitters now
+divide by the element's own render scale.
+
+**Rule 2 — in portrait, put the three readouts in tracks.** BALANCE and WIN were `width: fit-content`
+in a flex row with the bet plate absolutely centred over them: any currency whose code is spelled out
+("10,000.00 GC") grew each box until it ran under the plate. A 3-track grid (`1fr auto 1fr`) keeps the
+plate on the centre line *and* caps the boxes, and `fitAmount` on each value spends what is left.
+
+**Rule 3 — a fixed canvas that scales to fit is not a small-screen layout.** The rules popup lays its
+page out on a fixed 850x472 canvas and scales that canvas into the panel. At Popout-S (610x347) the
+factor was 0.63, so every *fixed-px* size in the short-landscape block — which is most of the copy —
+rendered at two thirds of its number: an 11.5px caption came out at 7px. Shrinking the canvas raises
+the factor without touching a single size (cq-based elements keep their physical size, fixed-px copy
+gains); the canvas is now 640x356 and the factor 0.87. Two caveats, both learned the hard way:
+
+- The scale denominators are *literals in the transform* (`100cqw / 850px`). Changing the canvas
+  element's width without changing them changes nothing at all — measure the rendered scale, do not
+  assume the edit took.
+- Growing the canvas height to fit a long page **feeds back**: sizes written in `cqmin` grow with it,
+  so the content grows too. Page 7 settled at a 530px canvas and a *worse* factor than before. Fix
+  the page's layout (its 12 controls are 6 columns here, not the design's 5) rather than letting the
+  canvas chase the content, and give a genuinely long page a wider canvas instead of a taller one.
+
+**Rule 4 — a card with a fixed height must fit its own copy, by measurement.** The feature-buy row
+had been hand-tuned coefficient by coefficient ("measures 0px overflow in en/de/ru at 1600x900,
+1280x720…") and still clipped a heading off the top and the RTP line off the bottom. Every such card
+now carries `use:fitCard`: it steps a `--card-fit` multiplier down (every size inside the card is
+multiplied by it) until `scrollHeight` fits `clientHeight`. Where the fitter bottoms out, the card's
+*furniture* is the problem, not its type — page 6's card spent 80px of a 270px card on padding and
+another 80 on its icon, and no font size could have fixed that.
+
+**Rule 5 — a buy menu that cannot be read is worse than one that scrolls.** Five cards in two rows
+plus the bet plate in 250px of height means ~140px cards, and every size on that card is a share of
+its width, so the copy renders at 4.5px. Under a card-width threshold the grid now floors its type in
+px and scrolls (with a fade at the cut edge), which is the trade portrait already makes.
+
+**Rule 6 — the player has no use for an event id.** The replay card showed `EVENT 321`. It is an
+internal identifier; it is gone from the card and the top bar, and the repeat button says START
+REPLAY rather than "Replay Event".
+
+**Rule 7 — every readout is capped by the thing it must not cover, not by its content.** A second
+pass with a real long currency (ARS: "1,000.00 ARS") found the same overlap in the two mobile HUDs.
+Landscape: BALANCE and the bet plate were `fit-content` and ran ~80px over the board's first column,
+and WIN over its last. The group is now capped to the measured gutter (`--ls-stats-max`,
+`--ls-board-right`, both from `boardLayout()` through the same transform as `--ls-rail-cx`); the
+label/amount line wraps, and `fitAmount` fits the amount. The WIN chip grew a line doing so and the
+nav column (a fixed 76.7vh) sat on it, so the column now ends 8px above the chip's measured height
+(`--ls-win-h`). Portrait: the bet plate took 146 of 304px at 320 wide and left BALANCE its amount at
+6px; the plate is capped at `min(42vw, 170px)` and both readouts fill their tracks (7.6px at 320,
+9px at 375 — what three ARS amounts in 304px can have). The mock RGS only speaks USD: test with
+CDP `Fetch` rewriting `"currency":"USD"` in `/wallet/authenticate`, or the long-code case never runs.
+Desktop had the same bug one level up: the controls group was `justify-content: flex-end`, so a
+"1,000.00 ARS" BET (196px at 24px) overflowed the group LEFTWARD and drew WIN over BALANCE even at
+scale 1. It is `safe flex-end` now, the bet pill is the one item that yields (with `fitAmount`), and
+the bar's layout width went 1060 -> 1200 so that yield is not needed at design sizes — at 1060 the
+bet fitted only at 9.5px. Test the BET, not just the balance: raise `defaultBetLevel` in the same
+rewrite, because the default 1.00 bet hides it.
+
+**How to verify.** Drive the dev build over CDP with `Emulation.setDeviceMetricsOverride` (not
+`--window-size`: `--headless=new` forces a ~500px minimum `innerWidth`). Popout-S measures
+**610x347** CSS px — the aspect in the review's screenshots, and the size at which every number in
+this entry was taken. For each viewport in {1920x1080, 1400x800, 1024x768, 760x520, 610x347,
+400x225, 390x800}: assert that no `.value` rect escapes its pill's rect, that every one of the seven
+rules pages reports `scrollHeight - clientHeight <= 1` on `.info-body` **and** an empty list of
+descendants whose content overflows a clipped box, and read the rendered font sizes back — a layout
+that fits can still be unreadable, and 5px type passes every overflow assertion.

@@ -137,40 +137,42 @@
 			</div>
 		</div>
 
-		<p class="ap-spins-label">{t('AUTO NUM SPINS')}</p>
+		<div class="ap-limits">
+			<p class="ap-spins-label">{t('AUTO NUM SPINS')}</p>
 
-		<div class="ap-stepper">
-			<button class="ap-icon-btn" type="button" disabled={disableDec} onclick={() => step(-1)} aria-label="Fewer spins">
-				<span class="glyph glyph--minus"></span>
-			</button>
-			<span class="ap-count">{countLabel}</span>
-			<button class="ap-icon-btn" type="button" disabled={disableInc} onclick={() => step(1)} aria-label="More spins">
-				<span class="glyph glyph--plus"></span>
-			</button>
-		</div>
+			<div class="ap-stepper">
+				<button class="ap-icon-btn" type="button" disabled={disableDec} onclick={() => step(-1)} aria-label="Fewer spins">
+					<span class="glyph glyph--minus"></span>
+				</button>
+				<span class="ap-count">{countLabel}</span>
+				<button class="ap-icon-btn" type="button" disabled={disableInc} onclick={() => step(1)} aria-label="More spins">
+					<span class="glyph glyph--plus"></span>
+				</button>
+			</div>
 
-		<p class="ap-spins-label">{t('AUTO LOSS LIMIT')}</p>
+			<p class="ap-spins-label">{t('AUTO LOSS LIMIT')}</p>
 
-		<div class="ap-stepper">
-			<button class="ap-icon-btn" type="button" disabled={lossIndex <= 0} onclick={() => stepLoss(-1)} aria-label="Lower loss limit">
-				<span class="glyph glyph--minus"></span>
-			</button>
-			<span class="ap-count">{lossLabel}</span>
-			<button class="ap-icon-btn" type="button" disabled={lossIndex >= LOSS_STOPS.length - 1} onclick={() => stepLoss(1)} aria-label="Raise loss limit">
-				<span class="glyph glyph--plus"></span>
-			</button>
-		</div>
+			<div class="ap-stepper">
+				<button class="ap-icon-btn" type="button" disabled={lossIndex <= 0} onclick={() => stepLoss(-1)} aria-label="Lower loss limit">
+					<span class="glyph glyph--minus"></span>
+				</button>
+				<span class="ap-count">{lossLabel}</span>
+				<button class="ap-icon-btn" type="button" disabled={lossIndex >= LOSS_STOPS.length - 1} onclick={() => stepLoss(1)} aria-label="Raise loss limit">
+					<span class="glyph glyph--plus"></span>
+				</button>
+			</div>
 
-		<p class="ap-spins-label">{t('AUTO WIN LIMIT')}</p>
+			<p class="ap-spins-label">{t('AUTO WIN LIMIT')}</p>
 
-		<div class="ap-stepper">
-			<button class="ap-icon-btn" type="button" disabled={winIndex <= 0} onclick={() => stepWin(-1)} aria-label="Lower single win limit">
-				<span class="glyph glyph--minus"></span>
-			</button>
-			<span class="ap-count">{winLabel}</span>
-			<button class="ap-icon-btn" type="button" disabled={winIndex >= WIN_STOPS.length - 1} onclick={() => stepWin(1)} aria-label="Raise single win limit">
-				<span class="glyph glyph--plus"></span>
-			</button>
+			<div class="ap-stepper">
+				<button class="ap-icon-btn" type="button" disabled={winIndex <= 0} onclick={() => stepWin(-1)} aria-label="Lower single win limit">
+					<span class="glyph glyph--minus"></span>
+				</button>
+				<span class="ap-count">{winLabel}</span>
+				<button class="ap-icon-btn" type="button" disabled={winIndex >= WIN_STOPS.length - 1} onclick={() => stepWin(1)} aria-label="Raise single win limit">
+					<span class="glyph glyph--plus"></span>
+				</button>
+			</div>
 		</div>
 
 		<button class="ap-start" type="button" onclick={start}>
@@ -244,7 +246,9 @@
 	/* Chakra Petch Bold 20px white (20 / 550). */
 	.ap-row__label {
 		font-weight: 700;
-		font-size: 3.64cqw;
+		/* max() is a FLOOR: the plate's sizes are shares of its width, and a narrow plate (a phone in
+		   portrait, a popout) took them below the point where they can be read. */
+		font-size: max(12px, 3.64cqw);
 		letter-spacing: 0.02em;
 		color: #fff;
 		text-transform: uppercase;
@@ -289,7 +293,7 @@
 		margin: 4.4cqw 0 0;
 		text-align: center;
 		font-weight: 700;
-		font-size: 3.64cqw;
+		font-size: max(12px, 3.64cqw);
 		/* The design gives this line a 30px box against a 20px face. Left at the browser's default
 		   the stack comes up ~6 design px short and the plate ends up proportionally wider than
 		   550x423, which shows as a slack margin under the START button. */
@@ -384,7 +388,7 @@
 		text-align: center;
 		color: #fff;
 		font-weight: 700;
-		font-size: 5.82cqw;
+		font-size: max(19px, 5.82cqw);
 		line-height: 1;
 	}
 
@@ -394,14 +398,21 @@
 	   bold here would get a synthesised smear. */
 	.ap-start {
 		margin-top: 5.2cqw;
-		height: 8cqw;
+		/* A MINIMUM height, not a fixed one: a label that has to wrap (a long translation, or any
+		   language in the half-width Popout-S column) grew out of a fixed 8cqw box and drew its
+		   second line across the plate's bottom edge. */
+		min-height: 8cqw;
+		height: auto;
+		padding: 0.55em 0.9em;
+		line-height: 1.15;
+		text-wrap: balance;
 		border: none;
 		border-radius: 1.45cqw;
 		background: #a88eff;
 		color: #fff;
 		font-family: 'Audiowide', 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 400;
-		font-size: 2.9cqw;
+		font-size: max(13px, 2.9cqw);
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		cursor: pointer;
@@ -418,13 +429,17 @@
 	   Sized against the viewport — a fixed-px button takes a huge bite out of a phone screen (user
 	   pass 2026-08-10) — with the design's 48px as the cap. */
 	.ap-close {
+		/* Width-only sizing gave a short popout the phone's button: 34px on a 225px-tall Popout-S
+		   and the full 48px on Popout-L. The 7vh term brings those to 22 / ~36px; tall windows keep
+		   the design's 48. */
+		--ap-close: clamp(22px, min(8.5vw, 7vh), 48px);
 		position: fixed;
-		top: clamp(10px, 3vw, 22px);
-		right: clamp(10px, 3vw, 22px);
+		top: clamp(8px, min(3vw, 3vh), 22px);
+		right: clamp(8px, min(3vw, 3vh), 22px);
 		z-index: 60;
-		width: clamp(32px, 8.5vw, 48px);
-		height: clamp(32px, 8.5vw, 48px);
-		font-size: clamp(10.5px, 2.8vw, 16px);
+		width: var(--ap-close);
+		height: var(--ap-close);
+		font-size: calc(var(--ap-close) * 0.33);
 		padding: 0;
 		border: none;
 		border-radius: 50%;
@@ -436,6 +451,124 @@
 	}
 	.ap-close:hover {
 		filter: brightness(1.3);
+	}
+
+	/* ── Short, wide windows (Stake's popout sizes, e.g. 610x347) ──
+	   The dialog is taller than it is wide, so on a short window the `62vh` term above used to set
+	   the whole plate — 215px across at Popout-S — and every size inside is a share of that width:
+	   the row labels came out at 5px and the START button at 4px, which is the unreadable dialog in
+	   the 2026-09-23 Stake review. Here the plate takes the WIDTH it can have instead, and the
+	   content splits into two columns so the short axis still fits: toggles and START on the left,
+	   the three limit steppers on the right. */
+	@media (max-height: 700px) and (min-aspect-ratio: 5 / 4) {
+		.ap-root {
+			--ap-w: min(94vw, 700px);
+		}
+		.ap-panel {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			column-gap: 5cqw;
+			align-items: start;
+			padding: 3.6cqw 4cqw 4cqw;
+		}
+		.ap-toggles {
+			grid-column: 1;
+			grid-row: 1;
+		}
+		.ap-limits {
+			grid-column: 2;
+			grid-row: 1 / span 2;
+		}
+		.ap-spins-label:first-of-type {
+			margin-top: 0;
+		}
+		.ap-start {
+			grid-column: 1;
+			grid-row: 2;
+			align-self: end;
+			margin-top: 4cqw;
+			/* Half the plate is ~250px at Popout-S: at the one-column 0.12em tracking "START
+			   AUTOPLAY (100)" needs ~265px and broke onto two lines. Tighter tracking and 2.3cqw type keep
+			   English on one line; longer translations wrap inside the button (min-height above). */
+			letter-spacing: 0.05em;
+			font-size: max(12px, 2.3cqw);
+		}
+		/* The design's vertical rhythm was set for one column of blocks; three of them stacked in
+		   half the plate need a tighter one, or the plate outgrows a 347px-tall window and starts
+		   to scroll. */
+		.ap-spins-label {
+			margin-top: 2.6cqw;
+			/* In a half-width column the Russian headings ("КОЛИЧЕСТВО ВРАЩЕНИЙ", "ЛИМИТ ОДНОГО
+			   ВЫИГРЫША") wrap, and at the design's 1.5 leading each extra line cost ~31px: the plate
+			   grew to 360px in a 347px Popout-S and lost its top and bottom edges. */
+			font-size: max(12px, 3.1cqw);
+			line-height: 1.2;
+			text-wrap: balance;
+		}
+		.ap-stepper {
+			margin-top: 1.2cqw;
+		}
+		.ap-icon-btn {
+			width: 7.8cqw;
+			height: 7.8cqw;
+		}
+		/* Half the plate is a narrow column, so a long row label (any of the translations, and
+		   "50X BONUS FEATURE" in English) wraps. The row is a fixed 6.04cqw tall in the one-column
+		   design, which a wrapped label overflows straight into the row below it. */
+		.ap-row {
+			height: auto;
+			min-height: 6.04cqw;
+		}
+		.ap-row__label {
+			font-size: max(12px, 3.2cqw);
+			line-height: 1.15;
+		}
+		.ap-toggles {
+			gap: 3.4cqw;
+		}
+	}
+
+	/* ── Very short windows (Popout-S, 400x225) ──
+	   The two-column layout above still spent the whole screen here: every size sat on its 12px
+	   floor, which at this scale made the plate 376x185 of a 400x225 window, with START wrapped onto
+	   two lines (user, 2026-09-23: "we don't need that huge dialog"). A narrower plate and 10px
+	   floors keep the copy readable — the 2026-09-23 review's complaint was 5px type, not 10 — and
+	   leave the game visible around the dialog. */
+	@media (max-height: 300px) and (min-aspect-ratio: 5 / 4) {
+		.ap-root {
+			--ap-w: min(76vw, 420px);
+		}
+		.ap-panel {
+			padding: 3cqw 3.6cqw 3.4cqw;
+		}
+		.ap-row__label,
+		.ap-spins-label {
+			font-size: max(10px, 3.1cqw);
+		}
+		/* The right column's three stacked steppers set the plate's height, so that is where the
+		   rhythm comes in: smaller discs, and the heading sits right on its stepper. */
+		.ap-spins-label {
+			margin-top: 1.6cqw;
+			line-height: 1.1;
+		}
+		.ap-stepper {
+			margin-top: 0.8cqw;
+		}
+		.ap-icon-btn {
+			width: 6.8cqw;
+			height: 6.8cqw;
+		}
+		.ap-count {
+			font-size: max(14px, 4.8cqw);
+		}
+		.ap-toggles {
+			gap: 2.4cqw;
+		}
+		.ap-start {
+			font-size: max(10px, 2.9cqw);
+			letter-spacing: 0.02em;
+			padding: 0.5em 0.5em;
+		}
 	}
 
 	/* Buttons do NOT inherit font-family: the UA stylesheet hard-sets `font: 400 13.333px Arial` on

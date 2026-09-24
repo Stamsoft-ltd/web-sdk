@@ -87,8 +87,23 @@
 	 *  allowed to grow past that 0.70 ratio — the budget reserves the taller box so two rows plus
 	 *  the bet plate still fit inside the panel. */
 	const CARD_H_BUDGET = 0.83;
+	/** Below this the card's own proportions stop being readable: every size inside the card is a
+	 *  share of its width (the design's 345px card carries 12px copy, 3.5% of it), so a card the
+	 *  height budget has squeezed to ~140px — which is what a 610x347 popout leaves for two rows —
+	 *  draws that copy at 4.5px. Under this width the card switches to floored type and the grid
+	 *  scrolls instead, the same trade portrait already makes. (Stake review, 2026-09-23.) */
+	const COMPACT_CARD_W = 232;
 	let panelEl = $state<HTMLDivElement>();
 	let gridEl = $state<HTMLDivElement>();
+	let isCompactGrid = $state(false);
+	/** Very short windows (Popout-S, 400x225). Even the compact grid's floored type made two rows
+	 *  of five cards that ran under the bet plate with their titles cut to "Gravity Brea…", and a
+	 *  bet amount wrapped onto two lines (user, 2026-09-23: "it's very ugly"). Here the cards drop
+	 *  their descriptions (the rules page carries those), sit three to a row and the grid scrolls
+	 *  VERTICALLY — a sideways row just showed a sliced fourth card, and a mouse wheel does not
+	 *  scroll sideways. The bet plate becomes a single line. */
+	const TINY_MAX_H = 300;
+	let isTinyGrid = $state(false);
 	$effect(() => {
 		const el = panelEl;
 		if (!el) return;
@@ -103,7 +118,8 @@
 			const h = el.clientHeight;
 			if (!w || !h) return;
 			// Chrome (title / close button) scales down on small containers so it doesn't dominate.
-			const closePx = clampNum(30, (w * 48.7) / 1200, 56);
+			// Height-aware too: on a 225px-tall Popout-S the width term alone left a 30px button.
+			const closePx = clampNum(22, Math.min((w * 48.7) / 1200, h * 0.07), 56);
 			const titlePx = clampNum(15, (w * 32) / 1200, 38);
 			const gap = Math.max(6, w * CARD_GAP_FRACTION);
 			const padX = clampNum(8, w * 0.008, 32);
@@ -121,6 +137,17 @@
 				Math.min(widthBudget, heightBudget / CARD_H_BUDGET, 420),
 				widthBudget,
 			);
+			// Short, wide windows: take the full width the row allows and let the grid scroll, rather
+			// than shrinking the card (and with it all its type) until two rows fit the height.
+			const tiny = h <= TINY_MAX_H;
+			isTinyGrid = tiny;
+			const compact = !tiny && card < COMPACT_CARD_W;
+			isCompactGrid = compact;
+			if (compact) card = clampNum(56, widthBudget, 420);
+			if (tiny) {
+				// Three across, less the scrollbar's 8px gutter.
+				card = clampNum(96, (w - 2 * padX - 2 * gap - 8) / 3, 150);
+			}
 			el.style.setProperty('--bb-gap', `${gap}px`);
 			el.style.setProperty('--bb-pad-x', `${padX}px`);
 			el.style.setProperty('--bb-pad-top', `${padTop}px`);
@@ -130,6 +157,14 @@
 			el.style.setProperty('--bb-close', `${closePx}px`);
 			el.style.setProperty('--bb-title', `${titlePx}px`);
 			el.style.setProperty('--bb-card', `${card}px`);
+			if (tiny) {
+				el.style.setProperty('--bb-pad-top', `${clampNum(30, h * 0.16, 44)}px`);
+				el.style.setProperty('--bb-pad-bot', '8px');
+				el.style.setProperty('--bb-vgap', '6px');
+				// 12px: at the generic 15px floor the heading dominated a 225px-tall window.
+				el.style.setProperty('--bb-title', '12px');
+				return;
+			}
 			// Second pass. CARD_H_BUDGET is only an estimate of the card's height — what actually
 			// settles it is where the DESCRIPTION wraps, and in the wordiest locales (Russian,
 			// Finnish, German) it runs a line longer than the reserve, which left the two rows
@@ -137,7 +172,7 @@
 			// element rather than through a reactive style string so each pass can read the new
 			// layout back immediately; it converges in one or two rounds.
 			const grid = gridEl;
-			if (!grid) return;
+			if (!grid || compact) return;
 			for (let pass = 0; pass < 3 && grid.scrollHeight > grid.clientHeight + 1; pass += 1) {
 				card = Math.max(56, card * (grid.clientHeight / grid.scrollHeight));
 				el.style.setProperty('--bb-card', `${card}px`);
@@ -348,7 +383,15 @@
 ></button>
 
 <!-- Panel -->
-<div class="panel" class:portrait={isPortrait} bind:this={panelEl} role="dialog" aria-modal="true">
+<div
+	class="panel"
+	class:portrait={isPortrait}
+	class:compact={isCompactGrid && !isPortrait}
+	class:tiny={isTinyGrid && !isPortrait}
+	bind:this={panelEl}
+	role="dialog"
+	aria-modal="true"
+>
 	<h2 class="title">{t('BUY BONUS')}</h2>
 	<button class="close-btn" type="button" onclick={props.onclose} aria-label="Close"
 		><span class="glyph glyph--close"></span></button
@@ -496,8 +539,9 @@
 	/* Design 9164:11763 "Icon buttons" — a #49489B circle ringed white, with a drawn glyph. */
 	.close-btn {
 		position: fixed;
-		top: 16px;
-		right: 16px;
+		/* The inset follows the button: a fixed 16px was most of a 22px Popout-S button's size. */
+		top: clamp(8px, calc(var(--bb-close, 48px) * 0.33), 16px);
+		right: clamp(8px, calc(var(--bb-close, 48px) * 0.33), 16px);
 		z-index: 63;
 		width: var(--bb-close, 48px);
 		height: var(--bb-close, 48px);
@@ -805,6 +849,170 @@
 		   min-height (not height) means a longer locale grows the card and scrolls the grid rather
 		   than spilling its copy out of the plate. */
 		min-height: calc(var(--bb-card) * 0.82);
+	}
+
+	/* ---- Compact (short, wide windows — Stake's popouts) ----
+	   The card keeps the design's layout but not its type SCALE: each size gets a px floor, so the
+	   copy stays readable on a card that is half the design's width. The two rows then run past the
+	   panel, which is what .grid's `overflow: auto` is for. ---- */
+	.panel.compact .grid {
+		align-content: flex-start;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		/* Five cards at a readable size cannot fit a ~250px tall grid, so it scrolls — and it has to
+		   LOOK like it scrolls: a visible track, and the bottom row fading out under the edge rather
+		   than being sliced off mid-card. */
+		scrollbar-width: thin;
+		scrollbar-color: #a88eff rgba(255, 255, 255, 0.14);
+		padding-bottom: 10px;
+		mask-image: linear-gradient(to bottom, #000 calc(100% - 26px), transparent 100%);
+	}
+	.panel.compact .grid::-webkit-scrollbar {
+		width: 6px;
+	}
+	.panel.compact .grid::-webkit-scrollbar-thumb {
+		background: #a88eff;
+		border-radius: 3px;
+	}
+	.panel.compact .grid::-webkit-scrollbar-track {
+		background: rgba(255, 255, 255, 0.14);
+		border-radius: 3px;
+	}
+	.panel.compact .card {
+		min-height: 0;
+	}
+	.panel.compact .card-title {
+		font-size: max(12px, 5.24cqw);
+	}
+	.panel.compact .card-desc {
+		font-size: max(9.5px, 3.5cqw);
+		min-height: 0;
+	}
+	.panel.compact .card-pill {
+		font-size: max(9px, 3.03cqw);
+	}
+	.panel.compact .card-price {
+		font-size: max(10px, 2.98cqw);
+	}
+	.panel.compact .card-btn {
+		font-size: max(11px, 4.07cqw);
+		height: max(26px, 15.92cqw);
+	}
+	.panel.compact .card-icon-slot {
+		height: max(30px, 21.97cqw);
+	}
+
+	/* ---- Tiny (Popout-S, ≤300px tall): three cards a row without descriptions, the grid scrolling
+	   vertically with a visible track, and a one-line bet plate. Sizes are px here, not the card's cqw scale: at a ~110px card the
+	   design's proportions give 4px copy. ---- */
+	.panel.tiny .grid {
+		max-width: calc(var(--bb-card) * 3 + var(--bb-gap) * 2 + 8px);
+		align-content: flex-start;
+		overflow-x: hidden;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		scroll-snap-type: y proximity;
+		scrollbar-width: thin;
+		scrollbar-color: #a88eff rgba(255, 255, 255, 0.14);
+		scrollbar-gutter: stable;
+		/* The second row fades in under the bottom edge, so it reads as "more below". */
+		mask-image: linear-gradient(to bottom, #000 calc(100% - 18px), transparent 100%);
+		padding-bottom: 14px;
+	}
+	.panel.tiny .grid::-webkit-scrollbar {
+		width: 6px;
+	}
+	.panel.tiny .grid::-webkit-scrollbar-thumb {
+		background: #a88eff;
+		border-radius: 3px;
+	}
+	.panel.tiny .grid::-webkit-scrollbar-track {
+		background: rgba(255, 255, 255, 0.14);
+		border-radius: 3px;
+	}
+	.panel.tiny .card {
+		min-height: 0;
+		scroll-snap-align: start;
+		padding: 5px 6px 6px;
+		gap: 2px;
+		border-width: 1px;
+		border-radius: 6px;
+	}
+	.panel.tiny .card-title {
+		font-size: 11px;
+		line-height: 1.15;
+		letter-spacing: 0.02em;
+		/* Two lines, reserved on every card so the icons stay on one line across the row. */
+		white-space: normal;
+		text-overflow: clip;
+		min-height: 2.3em;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-wrap: balance;
+	}
+	.panel.tiny .card-desc {
+		display: none;
+	}
+	.panel.tiny .card-icon-slot {
+		height: 30px;
+		margin-top: 0;
+	}
+	.panel.tiny .card-pill {
+		font-size: 8px;
+		padding: 1px 3px;
+		border-radius: 4px;
+		border-width: 1px;
+	}
+	/* "50,000.00 ARS / spin" is wider than a ~120px card: let it wrap (balanced) rather than run
+	   into the card's edges. */
+	.panel.tiny .card-price {
+		margin-top: 1px;
+		font-size: 10px;
+		line-height: 1.2;
+		white-space: normal;
+		text-wrap: balance;
+	}
+	/* margin-top stays `auto` (base rule): it pins every button in a row to one baseline when a
+	   price wraps on one card only. The cards are kept short enough that the top of the second row
+	   shows under the grid's fade — the cue that there is more to scroll to. */
+	.panel.tiny .card-btn {
+		width: 100%;
+		height: 22px;
+		font-size: 10px;
+		letter-spacing: 0.06em;
+		border-radius: 5px;
+		padding: 0 4px;
+	}
+	.panel.tiny .bet {
+		/* The plate is a size container (its children use cqw), and a container cannot be sized by
+		   its own content — `width: auto` collapsed it to its padding. Every size inside is px here,
+		   so drop the containment and let it hug the one-line amount. */
+		container-type: normal;
+		width: auto;
+		height: 34px;
+		padding: 0 4px;
+		gap: 10px;
+		border-width: 1px;
+		border-radius: 8px;
+	}
+	.panel.tiny .bet-step {
+		width: 26px;
+		height: 26px;
+		font-size: 13px;
+	}
+	.panel.tiny .bet-value {
+		flex-direction: row;
+		align-items: baseline;
+		gap: 6px;
+	}
+	.panel.tiny .bet-label {
+		font-size: 9px;
+		letter-spacing: 0.14em;
+	}
+	.panel.tiny .bet-amount {
+		font-size: 14px;
+		white-space: nowrap;
 	}
 
 	/* ---- Mobile portrait: BUY BONUS title fixed at top, the cards in a vertical scrollable column

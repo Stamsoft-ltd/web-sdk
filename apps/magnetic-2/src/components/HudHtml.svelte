@@ -106,6 +106,39 @@
 	//     pt/ru/vi) otherwise reaches the ring. Short labels (en "BUY BONUS", da "KØB BONUS") keep base.
 	// Iterative so it also converges when shrinking re-flows a wrapped label onto fewer lines. Re-runs on
 	// language change (text passed as the dep), on resize, and once the web font has loaded.
+	// The landscape BALANCE / BET group is centred on the left rail's column, which is a pixi
+	// measurement: on a narrow popout the column sits close enough to the screen edge that half the
+	// group hangs off it (the BALANCE box lost its first letter at 610x347 once the type was sized
+	// up to be readable). Nudge it back inside instead of moving the column, which the board and the
+	// logo share.
+	function keepInside(node: HTMLElement, _railCX?: number) {
+		const apply = () => {
+			node.style.setProperty('--ls-stats-nudge', '0px');
+			const r = node.getBoundingClientRect();
+			const left = Math.max(0, 6 - r.left);
+			const right = Math.max(0, r.right - (window.innerWidth - 6));
+			node.style.setProperty('--ls-stats-nudge', `${left > 0 ? left : -right}px`);
+		};
+		const ro = new ResizeObserver(apply);
+		ro.observe(node);
+		window.addEventListener('resize', apply);
+		requestAnimationFrame(apply);
+		return {
+			update: apply,
+			destroy: () => {
+				ro.disconnect();
+				window.removeEventListener('resize', apply);
+			},
+		};
+	}
+
+	// A Range's getBoundingClientRect is in SCREEN px, while clientWidth/clientHeight are the
+	// element's own untransformed layout px. The desktop bar is transform-scaled (--bar-scale), so
+	// the two fitters below have to bring the box into the same space as the measurement or they
+	// stop shrinking early and let a long amount run past its pill.
+	const renderScale = (el: HTMLElement) =>
+		el.offsetWidth > 0 ? el.getBoundingClientRect().width / el.offsetWidth : 1;
+
 	function fitLabel(node: HTMLElement, _dep?: unknown) {
 		const apply = () => {
 			const btn = node.parentElement;
@@ -123,8 +156,9 @@
 			// Near-square pads are the round buy-bonus button: usable text area is a fraction of the box so
 			// the wrapped copy clears the ring. Wide pills use their full inner width (height never binds).
 			const round = Math.max(bw, bh) > 0 && Math.abs(bw - bh) / Math.max(bw, bh) < 0.35;
-			const availW = round ? bw * 0.62 : Math.max(0, bw - padX) * 0.96;
-			const availH = round ? bh * 0.6 : Math.max(0, bh - padY);
+			const k = renderScale(btn);
+			const availW = (round ? bw * 0.62 : Math.max(0, bw - padX) * 0.96) * k;
+			const availH = (round ? bh * 0.6 : Math.max(0, bh - padY)) * k;
 			if (availW <= 0 || availH <= 0) return;
 			// Measure the ACTUAL rendered text (widest line + total height) via a Range — for a wrapping
 			// label `scrollWidth` reports the max-width box, not the widest line, which would over-shrink.
@@ -165,7 +199,10 @@
 			const baseSize = parseFloat(cs.fontSize);
 			const pcs = getComputedStyle(pill);
 			const availW =
-				pill.clientWidth - parseFloat(pcs.paddingLeft || '0') - parseFloat(pcs.paddingRight || '0');
+				(pill.clientWidth -
+					parseFloat(pcs.paddingLeft || '0') -
+					parseFloat(pcs.paddingRight || '0')) *
+				renderScale(pill);
 			if (availW <= 0) return;
 			const range = document.createRange();
 			range.selectNodeContents(node);
@@ -194,6 +231,18 @@
 		};
 	}
 
+	// Publishes the landscape WIN chip's rendered height on the HUD layer as --ls-win-h, so the nav
+	// column can end above it. The chip wraps to two lines when its gutter is narrow (long currency
+	// codes), and at a fixed 76.7vh the column's AUTO button then sat on top of it.
+	function publishWinHeight(node: HTMLElement) {
+		const host = node.parentElement;
+		const ro = new ResizeObserver(() =>
+			host?.style.setProperty('--ls-win-h', `${node.getBoundingClientRect().height}px`),
+		);
+		ro.observe(node);
+		return { destroy: () => ro.disconnect() };
+	}
+
 	// Centre of the left rail in device px — the BET and BALANCE chips sit on the same column as the
 	// logo and the FREE SPINS / TOTAL WIN / RESPIN boxes (user, 2026-09-11: "always center those
 	// horizontally between left and board"). The column lives in main units, so convert it with the
@@ -202,10 +251,47 @@
 	const lsRailCX = $derived(
 		lsMain.x + (context.stateGameDerived.landscapeRail().x - lsMain.width / 2) * lsMain.scale,
 	);
+	// The board's plate edges in device px, from the same transform. The two landscape gutters are
+	// what the BALANCE / BET group and the WIN chip may occupy: sized to their content they ran over
+	// the board as soon as a currency spelled its code out ("1,000.00 ARS", Stake 2026-09-23).
+	const lsBoardEdges = $derived.by(() => {
+		const board = context.stateGameDerived.boardLayout();
+		const half = (board.width / 2) * board.boardScale;
+		const toScreen = (x: number) => lsMain.x + (x - lsMain.width / 2) * lsMain.scale;
+		return { left: toScreen(board.x - half), right: toScreen(board.x + half) };
+	});
+	// 6px off the screen edge, 10px clear of the board (its drawn frame overhangs the grid a little).
+	const lsStatsMaxW = $derived(
+		Math.max(0, 2 * Math.min(lsRailCX - 6, lsBoardEdges.left - 10 - lsRailCX)),
+	);
 
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
 	const isPortrait = $derived(layoutType === 'portrait');
 	const isLandscapeMobile = $derived(layoutType === 'landscape');
+
+	// The desktop bar is laid out ONCE, at the design's own width, and scaled as a unit on anything
+	// narrower — Stake's popout windows are ~700-900 CSS px across and still get the desktop HUD
+	// (the layout only drops to the mobile one below 480px on the short side). It used to keep every
+	// control at its full pixel size there and buy the room back by squeezing the BALANCE / WIN
+	// pills through a `calc(100vw - 711px)` reservation; below ~745px that reservation reached zero,
+	// the pills collapsed to their padding and the two amounts drew straight over each other
+	// (Stake review 2026-09-23, reported on long currency strings, which is simply where a
+	// zero-width pill shows first). Scaling keeps every proportion the design has and cannot
+	// overlap at any width or currency length.
+	// 1060 -> 1200: at the design's 1060 the controls group had no room for a bet written with a
+	// currency code ("1,000.00 ARS" is 196px at 24px), which either pushed WIN onto BALANCE or,
+	// once the bet pill yielded, crushed the bet to 9.5px. Wide windows keep every size; narrow
+	// ones scale the bar a touch further.
+	const DESKTOP_BAR_WIDTH = 1200;
+	const desktopBarScale = $derived.by(() => {
+		if (layoutType !== 'desktop') return 1;
+		// 16px of shell padding either side, as the shell's own `padding: 8px` plus the plate's
+		// breathing room; below 0.55 (a 660px plate, the floor the 1060px bar had at 0.62) the type
+		// would be smaller than the mobile HUD's, and a window that narrow is already on the mobile
+		// layout on its short axis.
+		const available = context.stateLayoutDerived.canvasSizes().width - 32;
+		return Math.max(0.55, Math.min(1, available / DESKTOP_BAR_WIDTH));
+	});
 
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
 	const hasAuto = $derived(stateBetDerived.hasAutoBetCounter());
@@ -611,17 +697,11 @@
 	class="hud-shell"
 	class:hud-shell--celebrating={context.stateGame.celebrationActive}
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--ls-rail-cx:${lsRailCX}px`}
+	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--ls-rail-cx:${lsRailCX}px;--ls-stats-max:${lsStatsMaxW}px;--ls-board-right:${lsBoardEdges.right}px;--bar-scale:${desktopBarScale}`}
 >
 	<!-- Menu popover (SOUND / MUSIC / INFO) — shared by desktop and portrait; rendered inside a
 	     position:relative nav container so it floats above the menu button. -->
 	{#snippet menuPopup()}
-		<button
-			class="menu-popup-backdrop"
-			type="button"
-			aria-label="Close menu"
-			onclick={() => (showMenuPopup = false)}
-		></button>
 		<div class="menu-popup">
 			<button class="menu-row" type="button" onclick={toggleSfx}>
 				<!-- SOUND uses the exact bottom-bar sound/mute button art so the two match 1:1. -->
@@ -653,6 +733,20 @@
 			</button>
 		</div>
 	{/snippet}
+
+	<!-- Click-away for the menu popover. It lives OUT here, a sibling of the bar, because the
+	     desktop bar is transform-scaled: a position:fixed child of a transformed element is laid
+	     out against that element, not the viewport, so inside the bar this covered only the bar.
+	     It sits BELOW the bar's own z-index, so a press on the canvas closes the popover while the
+	     bar's buttons still receive their own clicks. -->
+	{#if showMenuPopup}
+		<button
+			class="menu-popup-backdrop"
+			type="button"
+			aria-label="Close menu"
+			onclick={() => (showMenuPopup = false)}
+		></button>
+	{/if}
 
 	<div class="hud-bottom">
 		<div class="hud-left">
@@ -727,7 +821,9 @@
 				</span>
 				<div class="bet-values">
 					<span class="label">{i18nDerived.betLabel()}</span>
-					<span class="value" class:value--feature={isAnyModeActive}>{formattedBet}</span>
+					<span class="value" class:value--feature={isAnyModeActive} use:fitAmount
+						>{formattedBet}</span
+					>
 				</div>
 			</div>
 
@@ -923,7 +1019,7 @@
 					<div class="label label--balance">
 						<span class="label-text">{i18nDerived.balance()}</span>
 					</div>
-					<span class="value">{formattedBalance}</span>
+					<span class="value" use:fitAmount>{formattedBalance}</span>
 				</div>
 
 				<!-- Bet stepper: round −/+ (desktop-style) flanking the value inside the bet container. -->
@@ -949,7 +1045,9 @@
 					<!-- Display-only, like desktop: bet changes go through the − / + steppers. The tap-to-open
 					     bet menu was removed here (user pass 2026-08-10). -->
 					<div class="pt-bet-val">
-						<span class="value" class:value--feature={isAnyModeActive}>{formattedBet}</span>
+						<span class="value" class:value--feature={isAnyModeActive} use:fitAmount
+							>{formattedBet}</span
+						>
 					</div>
 					<button
 						class="nav-btn nav-btn--framed pt-step"
@@ -972,7 +1070,7 @@
 					<div class="label label--balance">
 						<span class="label-text">{i18nDerived.win()}</span>
 					</div>
-					<span class="value">{formattedWin}</span>
+					<span class="value" use:fitAmount>{formattedWin}</span>
 				</div>
 			</div>
 		</div>
@@ -981,12 +1079,12 @@
 	{#if isLandscapeMobile}
 		<!-- ── Landscape HUD: vertical nav bar (right), balance/bet (bottom-left), buy bonus ── -->
 		<div class="ls-hud">
-			<div class="ls-stats">
+			<div class="ls-stats" use:keepInside={lsRailCX}>
 				<div class="value-pill value-pill--balance ls-balance">
 					<div class="label label--balance">
 						<span class="label-text">{i18nDerived.balance()}</span>
 					</div>
-					<span class="value">{formattedBalance}</span>
+					<span class="value" use:fitAmount>{formattedBalance}</span>
 				</div>
 				<div class="ls-bet">
 					<button
@@ -1015,7 +1113,7 @@
 							e.key === 'Enter' && canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
 						onclick={() => canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
 					>
-						<span class="value" class:value--feature={isAnyModeActive}>{formattedBet}</span>
+						<span class="value" class:value--feature={isAnyModeActive} use:fitAmount>{formattedBet}</span>
 					</div>
 					<button
 						class="nav-btn nav-btn--framed ls-step"
@@ -1034,12 +1132,12 @@
 				</div>
 			</div>
 
-			<div class="ls-win">
+			<div class="ls-win" use:publishWinHeight>
 				<div class="value-pill value-pill--balance ls-win-pill">
 					<div class="label label--balance">
 						<span class="label-text">{i18nDerived.win()}</span>
 					</div>
-					<span class="value">{formattedWin}</span>
+					<span class="value" use:fitAmount>{formattedWin}</span>
 				</div>
 			</div>
 
@@ -1118,7 +1216,9 @@
 				>
 					<!-- Glyph AND the word, stacked — the design's AUTO disc carries both. -->
 					<img class="nav-icon" src={disableAuto ? iconAutoDisabled : iconAuto} alt="auto" />
-					<span class="ls-nav-auto__label">{i18nDerived.autoShort()}</span>
+					<span class="ls-nav-auto__label" use:fitLabel={i18nDerived.autoShort()}
+						>{i18nDerived.autoShort()}</span
+					>
 				</button>
 			</div>
 		</div>
@@ -1255,12 +1355,9 @@
 		z-index: 6;
 		align-self: center;
 		margin-top: auto;
-		/* A DEFINITE width, not fit-content. The readouts reserve width through a flex basis
-		   (.value-pill--balance), and a basis is only honoured against a real container width: in
-		   a content-hugging bar each group is sized from its text and the pill shrinks straight
-		   back to it. The definite width is also what lets the pills give that reservation up when
-		   the window is tighter than the content, instead of the groups overflowing the plate's
-		   ends. (Used to hug content; the >=1200px rule below sets the wide bar.) */
+		/* A DEFINITE width, not fit-content: every readout inside holds a fixed width so a count-up
+		   never re-lays the bar. The desktop rule below pins it to a fixed 1200px and
+		   scales the whole plate down on narrower windows, so this is only the fallback. */
 		width: min(calc(100% - 16px), 1120px);
 		height: auto;
 		box-sizing: border-box;
@@ -1341,20 +1438,26 @@
 	.hud-controls {
 		display: flex;
 		align-items: center;
-		justify-content: flex-end;
+		/* `safe`: if the group's content is ever wider than its box it overflows to the RIGHT (into
+		   the shell's clip), never leftward over BALANCE — plain flex-end is what let WIN draw on
+		   top of BALANCE with a 1,000.00 ARS bet (Stake 2026-09-23). */
+		justify-content: safe flex-end;
 		gap: 9px;
 		flex: 0 1 auto;
 		min-width: 0;
 		padding-top: 0;
 	}
 
-	/* Screens 1200px and wider: lengthen the bar so it isn't a tiny centred cluster; the two groups
-	   spread toward the ends to fill it. Narrower screens keep the compact, content-hugging bar. */
-	@media (min-width: 1200px) {
-		.hud-shell[data-layout='desktop'] .hud-bottom {
-			width: min(1060px, calc(100% - 64px));
-			justify-content: space-between;
-		}
+	/* The desktop bar always draws at its design width and is scaled as a unit to fit the window
+	   (--bar-scale, measured in the script above). transform-origin is the BOTTOM centre so the
+	   plate keeps its 20px lift off the canvas edge at every scale, and the shell clips nothing:
+	   .magnetic-shell already hides its overflow, so the unscaled 1200px layout box overhanging a
+	   narrow window costs no scrollbar. */
+	.hud-shell[data-layout='desktop'] .hud-bottom {
+		width: 1200px;
+		justify-content: space-between;
+		transform: scale(var(--bar-scale, 1));
+		transform-origin: bottom center;
 	}
 
 	.value-pill {
@@ -1373,17 +1476,19 @@
 		align-items: flex-start;
 		padding: 0 10px;
 		/* FIXED width, so WIN going "$0.00" -> "$25.00" as a round pays never re-lays the bar (it
-		   used to push the bet stepper and the spin button sideways; a min-width reservation then
-		   pushed the menu and AUTO buttons off a 1000px laptop's bar instead). The number fits the
-		   pill, not the other way round: fitAmount steps the numerals down when an amount is too
-		   long for it. The width itself yields to the window: 130px holds "$1,000.00" at the 24px
-		   numerals, and the bar's other content measures 701px, so below that room the two pills
-		   split what is left (10px guard). Wide bar (>=1200px): 160px, holds six figures. */
+		   used to push the bet stepper and the spin button sideways). 160px holds six figures plus
+		   a currency code at the 24px numerals; anything longer is stepped down by fitAmount, which
+		   fits the number to the pill rather than the pill to the number. The width no longer
+		   yields to the viewport — the whole bar scales instead (see --bar-scale) — because the
+		   arithmetic that used to shrink it reached zero on popout windows and let the BALANCE and
+		   WIN amounts draw over each other. */
 		flex: 0 0 auto;
-		width: min(130px, calc((min(100vw - 16px, 1120px) - 711px) / 2));
+		width: 160px;
 		min-width: 0;
 		box-sizing: border-box;
 		border-left: none;
+		/* A last-resort guard: whatever the amount, it can never bleed onto its neighbour. */
+		overflow: hidden;
 	}
 
 	.value-pill--balance .label--balance {
@@ -1396,11 +1501,6 @@
 		white-space: nowrap;
 		font-variant-numeric: tabular-nums;
 	}
-	@media (min-width: 1200px) {
-		.hud-shell[data-layout='desktop'] .value-pill--balance {
-			width: 160px;
-		}
-	}
 
 	.value-pill--bet {
 		display: flex;
@@ -1409,7 +1509,11 @@
 		gap: 6px;
 		padding: 0 12px;
 		border-left: none;
-		flex: 0 0 auto;
+		/* The ONE item in the controls group that yields: the bar is a fixed 1200px, so a longer bet
+		   ("1,000.00 ARS" is 196px at 24px) has to come out of this pill, where fitAmount steps its
+		   type down, rather than push WIN into BALANCE. */
+		flex: 0 1 auto;
+		min-width: 0;
 	}
 
 	/* Central "pipe" divider sitting in the big middle gap between the two control groups. */
@@ -1427,6 +1531,11 @@
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 2px;
+		min-width: 0;
+		overflow: hidden;
+	}
+	.bet-values .value {
+		white-space: nowrap;
 	}
 
 	.value-pill--bet .label {
@@ -1713,7 +1822,9 @@
 		background: transparent;
 		border: none;
 		padding: 0;
-		z-index: 59;
+		/* Under the bar (z-index 6) on purpose — see the markup note. */
+		z-index: 5;
+		pointer-events: auto;
 		cursor: default;
 	}
 	.menu-popup {
@@ -2102,79 +2213,11 @@
 		}
 	}
 
-	@media (max-width: 900px) {
-		.hud-bottom {
-			grid-template-columns: minmax(150px, 210px) 1fr 1fr 1.1fr auto auto;
-			gap: 12px;
-			padding: 12px 14px;
-		}
-
-		.circle-btn {
-			width: 54px;
-			height: 54px;
-		}
-
-		.circle-btn--small {
-			width: 48px;
-			height: 48px;
-		}
-
-		.spin-btn {
-			width: 78px;
-			height: 78px;
-			font-size: 2rem;
-		}
-	}
-
-	@media (max-width: 700px) {
-		.hud-shell {
-			padding: 12px;
-		}
-
-		.hud-bottom {
-			grid-template-columns: 1fr 1fr;
-			grid-template-areas:
-				'buy buy'
-				'balance bet'
-				'mode mode'
-				'stepper actions';
-			gap: 10px;
-			padding: 12px;
-		}
-
-		.stepper {
-			grid-area: stepper;
-		}
-		.action-cluster {
-			grid-area: actions;
-			justify-content: flex-end;
-		}
-
-		.label {
-			font-size: 0.72rem;
-		}
-
-		.value {
-			font-size: 0.92rem;
-		}
-
-		.circle-btn {
-			width: 50px;
-			height: 50px;
-		}
-
-		.circle-btn--small {
-			width: 46px;
-			height: 46px;
-			font-size: 1.35rem;
-		}
-
-		.spin-btn {
-			width: 82px;
-			height: 82px;
-			font-size: 2rem;
-		}
-	}
+	/* NOTE: two legacy `max-width` blocks used to live here (900px and 700px). They were written for
+	   an older GRID bar — they set grid-template-areas on what is now a flex row, and shrank the
+	   type and the round buttons on narrow windows. The desktop bar now scales as a whole unit
+	   (--bar-scale), so those overrides only made the popout HUD smaller than the design's own
+	   proportions; the portrait and landscape HUDs size themselves in the blocks below. */
 
 	.hud-shell[data-layout='landscape'] {
 		padding: 8px 12px;
@@ -2325,19 +2368,38 @@
 	}
 	/* Balance pinned left, buy-bonus pinned right, and the bet box absolutely centred on the
 	   screen — so the differing balance / buy widths never pull it off-centre. */
+	/* Three tracks — BALANCE, the bet plate, WIN — with equal side tracks, so the plate sits on the
+	   screen's centre line without being taken out of the flow. It used to be absolutely centred
+	   while the two readouts were `fit-content` in a flex row: a long amount (any of the currencies
+	   whose code is spelled out, e.g. "10,000.00 GC") simply grew each box until it ran under the
+	   centred plate, which is the overlap Stake reported on 2026-09-23. In a track the boxes cannot
+	   pass each other — they are capped, and fitAmount steps the numerals down to the room left. */
 	.pt-stats {
 		position: relative;
 		width: 100%;
 		max-width: 410px;
-		display: flex;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr);
 		align-items: center;
-		justify-content: space-between;
+		column-gap: clamp(4px, 1.5vw, 10px);
 	}
+	/* The plate is capped at ~42% of the row: sized to its content it took 146 of a 304px row on a
+	   320px phone and left BALANCE 69px, which fitAmount could only honour at 6px type. */
 	.pt-stats .pt-bet {
-		position: absolute;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
+		position: static;
+		transform: none;
+		justify-self: center;
+		max-width: min(42vw, 170px);
+		min-width: 0;
+		box-sizing: border-box;
+	}
+	/* Each readout fills its whole track, so the amount gets every px the row has to spare. */
+	.pt-stats > .pt-balance {
+		justify-self: stretch;
+		width: auto;
+		max-width: 100%;
+		min-width: 0;
+		overflow: hidden;
 	}
 	.pt-grp {
 		display: flex;
@@ -2380,7 +2442,10 @@
 		gap: clamp(1px, 0.6vw, 3px);
 		width: fit-content;
 		min-width: 0;
-		padding: clamp(10px, 2.8vw, 14px) clamp(18px, 5vw, 26px);
+		/* Side padding was clamp(18px, 5vw, 26px): on a 390px screen that spent 39px of a ~105px
+		   box on air, which is room the amount needs (the boxes are tracks now, so what the padding
+		   takes comes straight off the numerals). */
+		padding: clamp(10px, 2.8vw, 14px) clamp(6px, 2.4vw, 18px);
 		text-align: left;
 	}
 	.pt-balance .label--balance {
@@ -2409,17 +2474,23 @@
 		background: var(--hud-bar);
 		border: 4px solid var(--hud-bar-edge);
 		border-radius: 10px;
-		padding: clamp(8px, 2.4vw, 12px) clamp(8px, 2.4vw, 12px);
+		padding: clamp(8px, 2.4vw, 12px) clamp(4px, 1.6vw, 12px);
 	}
 	.pt-bet .pt-step {
 		width: clamp(24px, 7vw, 30px);
 		height: clamp(24px, 7vw, 30px);
+		flex: 0 0 auto;
 	}
 	.pt-bet-val {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		min-width: clamp(42px, 12.5vw, 54px);
+		min-width: 0;
+		flex: 0 1 auto;
+		/* Caps the middle track so a long bet cannot crowd the two readouts out of their own
+		   tracks; the amount inside is fitted to whatever width is left. */
+		max-width: min(40vw, 156px);
+		overflow: hidden;
 		padding: 0 clamp(1px, 0.6vw, 3px);
 	}
 	.pt-bet-val .value {
@@ -2483,12 +2554,16 @@
 		   It used to be sized by min(4.8vw, 8.4vh), which rendered it ~30px on that frame: half the
 		   design's width, so the whole control column read as a thin sliver. */
 		right: 2.34vw;
-		top: 49.2%;
-		transform: translateY(-50%);
+		/* The design's top edge (49.2% centre - half of 76.7%). The column ends at the design's bottom
+		   or 8px above the WIN chip, whichever is higher (--ls-win-h is measured on the chip). */
+		top: 10.85%;
 		/* The big spin disc deliberately overflows the bar's sides as the focal control (mirrors the
 		   desktop spin button, which protrudes past the bar via negative margins). */
 		width: 7.83vw;
-		height: 76.7vh;
+		height: min(
+			76.7vh,
+			calc(100% - 10.85% - clamp(6px, 2.2vh, 20px) - var(--ls-win-h, 0px) - 8px)
+		);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -2527,10 +2602,26 @@
 	.ls-nav .ls-nav-auto__label {
 		font-family: 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(4px, 1.85vh, 11px);
+		/* Was clamp(7px, 2.6vh, 12px), which ran "AUTO" out to the disc's ring (the disc is
+		   min(8.3vh, 5.4vw), so the word's share of it grew on wide windows). A smaller base, and
+		   fitLabel keeps any locale's word inside the disc's inscribed width. */
+		font-size: clamp(6px, 2.1vh, 10px);
 		line-height: 1.1;
 		letter-spacing: 0.02em;
+		white-space: nowrap;
 		color: #fff;
+	}
+	/* The disc is min(8.3vh, 5.4vw); under ~26px (these two breakpoints) the fitted word came out
+	   at 4px on Popout-S. There the glyph carries the button alone, at the size the other discs'
+	   icons have — the button keeps its autoplay aria-label. */
+	@media (max-height: 313px), (max-width: 481px) {
+		.ls-nav .ls-nav-auto__label {
+			display: none;
+		}
+		.ls-nav .ls-nav-auto .nav-icon {
+			width: 58%;
+			height: 58%;
+		}
 	}
 	/* Focal spin — big disc that overflows the slim nav panel on both sides (negative side margins so
 	   it protrudes past the panel edges without widening the flex column), centred. */
@@ -2560,7 +2651,7 @@
 		   / RESPIN boxes sit on — rather than flush-left at a fixed inset (user, 2026-09-11). The
 		   column comes from stateGameDerived.landscapeRail() via --ls-rail-cx. */
 		left: var(--ls-rail-cx, 10.65%);
-		transform: translateX(-50%);
+		transform: translateX(calc(-50% + var(--ls-stats-nudge, 0px)));
 		bottom: clamp(6px, 2.2vh, 20px);
 		display: flex;
 		/* The design puts the BET stepper ABOVE the balance box; the DOM order is balance-first so the
@@ -2568,6 +2659,14 @@
 		flex-direction: column-reverse;
 		align-items: center;
 		gap: clamp(6px, 2vh, 12px);
+		/* Never wider than the gutter between the screen edge and the board (measured in the script
+		   as --ls-stats-max). Inside it the BALANCE line wraps its amount under the label and the
+		   amounts step their type down, instead of the boxes growing over the board's first column. */
+		max-width: var(--ls-stats-max, none);
+	}
+	.ls-stats > * {
+		max-width: 100%;
+		box-sizing: border-box;
 	}
 	/* Balance: label + value on one line in a dark rounded box with generous padding. Scoped under the
 	   layout attribute so it outranks the generic `[data-layout='landscape'] .value-pill` rule (which
@@ -2579,6 +2678,10 @@
 		gap: clamp(2px, 0.6vw, 9px);
 		width: fit-content;
 		min-width: 0;
+		/* Label and amount share one line while they fit; past the gutter the amount drops under it. */
+		flex-wrap: wrap;
+		row-gap: 0;
+		overflow: hidden;
 		/* Roomier padding so the black container box reads as a proper box (was a thin ~20px sliver). */
 		padding: clamp(4px, 2.7vh, 12px) clamp(8px, 2.2vw, 20px);
 		border-left: none;
@@ -2591,13 +2694,18 @@
 	.ls-balance .label--balance {
 		justify-content: flex-start;
 	}
-	.ls-balance .value {
-		font-size: clamp(0.24rem, 1.85vh, 0.5rem);
+	/* Sizes are a share of the window's HEIGHT, which is what a landscape popout is short of, with a
+	   hard floor in px. They used to be 1.85vh / 1.45vh capped at 0.5rem / 0.38rem, which drew the
+	   amount at 11px and the BALANCE label at 5px in Stake's Popout-S (~610x347) — the "text scaled
+	   too small to read" of the 2026-09-23 review. The floors are what a phone-sized landscape
+	   window gets; the caps keep the box in proportion on a big one. */
+	.hud-shell[data-layout='landscape'] .ls-balance .value {
+		font-size: clamp(11px, 4.6vh, 22px);
 		white-space: nowrap;
 		color: #fff;
 	}
-	.ls-balance .label-text {
-		font-size: clamp(0.17rem, 1.45vh, 0.38rem);
+	.hud-shell[data-layout='landscape'] .ls-balance .label-text {
+		font-size: clamp(8px, 2.9vh, 14px);
 		letter-spacing: 0.04em;
 		/* Near-white in the design, not the lilac the rest of the HUD's labels use — sampled off the
 		   frame's own BALANCE chip. */
@@ -2613,7 +2721,9 @@
 		background: var(--hud-control);
 		border: 2px solid var(--hud-bar-edge);
 		border-radius: 8px;
-		padding: clamp(2px, 1.4vh, 9px) clamp(3px, 1.6vw, 18px);
+		/* Side padding was clamp(3px, 1.6vw, 18px): now that the group is capped to the gutter, every
+		   px of it comes straight off the bet amount. */
+		padding: clamp(2px, 1.4vh, 9px) clamp(3px, 0.8vw, 8px);
 	}
 	.ls-bet .ls-step {
 		/* The design's steppers are 30px on its 800x360 frame (8.3vh); the vw term keeps them in
@@ -2625,11 +2735,16 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		min-width: clamp(20px, 5vw, 50px);
+		min-width: 0;
+		flex: 0 1 auto;
+		overflow: hidden;
 		cursor: pointer;
 	}
-	.ls-bet-val .value {
-		font-size: clamp(0.28rem, 2.5vh, 0.72rem);
+	.ls-bet .ls-step {
+		flex: 0 0 auto;
+	}
+	.hud-shell[data-layout='landscape'] .ls-bet-val .value {
+		font-size: clamp(12px, 4.9vh, 24px);
 		font-weight: 700;
 		color: #fff;
 		white-space: nowrap;
@@ -2776,7 +2891,9 @@
 		   the board (user, 2026-09-11). stateGame's LS_WIN_LEFT mirrors 1 - right - this. A long win
 		   amount still grows the bar leftward up to max-width. */
 		min-width: 12%;
-		max-width: 46%;
+		/* Right of the board only: a long amount grows the bar leftward up to the board's edge and
+		   then wraps / steps down, rather than running over the last column. */
+		max-width: calc(100% - 3vw - var(--ls-board-right, 54%) - 10px);
 		display: flex;
 		justify-content: flex-end;
 	}
@@ -2791,7 +2908,9 @@
 		/* Design: the label sits against the left edge and the amount against the right, not the two
 		   centred as a pair. */
 		justify-content: space-between;
-		gap: clamp(6px, 1.6vw, 16px);
+		flex-wrap: wrap;
+		gap: 0 clamp(6px, 1.6vw, 16px);
+		overflow: hidden;
 		background: var(--hud-bar-dark);
 		border: none;
 		/* The design's chip is a ROUNDED bar (~10px on its 800x360 frame); this rule used to end in a
@@ -2826,13 +2945,13 @@
 	.ls-win .label--balance {
 		justify-content: center;
 	}
-	.ls-win .ls-win-pill .value {
-		font-size: clamp(0.42rem, 3.9vh, 1rem);
+	.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .value {
+		font-size: clamp(11px, 4.6vh, 22px);
 		white-space: nowrap;
 		color: #fff;
 	}
-	.ls-win .ls-win-pill .label-text {
-		font-size: clamp(0.3rem, 1.75vh, 0.54rem);
+	.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .label-text {
+		font-size: clamp(8px, 2.9vh, 14px);
 		color: #fff;
 	}
 
@@ -2841,25 +2960,55 @@
 	   — which is why raising it to the design's ~14px silently kept rendering at 6.3px. The base is
 	   quoted in vh, so it already scales with the screen; it does not need a second opinion. */
 
-	/* Very small landscape screens (e.g. 400×225): the balance / bet / buy text is set by its vh term
-	   (above the pixel mins), so shrink those vh sizes here to make the text-heavy HUD a lot smaller
-	   without touching normal-size landscape screens. */
+	/* Narrow landscape windows (Stake's popouts): the two readouts are LINE-WRAPPED into their
+	   gutters rather than run on one line. Their type now has px floors — it has to, or it cannot be
+	   read at this size — so the boxes no longer shrink with the window, and an inline
+	   "BALANCE  $1,000.00" measured ~157px against a 129px gutter at 610x347: the box covered the
+	   board's bottom-left cell. Stacked, the same content is ~105px and clears the board. The
+	   design's single line is kept everywhere it fits. */
+	@media (max-width: 760px) {
+		.hud-shell[data-layout='landscape'] .ls-balance {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0;
+			padding: clamp(3px, 1.6vh, 9px) clamp(6px, 1.8vw, 14px);
+		}
+		.hud-shell[data-layout='landscape'] .ls-win {
+			min-width: 0;
+		}
+		.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill {
+			flex-direction: column;
+			align-items: flex-end;
+			justify-content: center;
+			gap: 0;
+			padding: clamp(3px, 1.6vh, 9px) clamp(6px, 1.8vw, 14px);
+		}
+		.hud-shell[data-layout='landscape'] .ls-win .label--balance {
+			justify-content: flex-end;
+		}
+	}
+
+	/* Very small landscape screens (e.g. 400x225): the boxes have to give up some of the room the
+	   taller landscape sizes take, but not the legibility — these used to bottom out at 4-5px type
+	   (0.24rem / 0.2rem), which is the "text is too small to read" Stake reported on 2026-09-23.
+	   The floors below are what the readouts keep no matter how short the window is; the boxes
+	   themselves stay narrow because their padding is still sized in vh/vw. */
 	@media (max-height: 300px) {
 		.hud-shell[data-layout='landscape'] .ls-balance .value {
-			font-size: clamp(0.24rem, 2vh, 0.42rem);
+			font-size: clamp(9px, 4.4vh, 14px);
 		}
 		.hud-shell[data-layout='landscape'] .ls-balance .label-text {
-			font-size: clamp(0.2rem, 1.5vh, 0.32rem);
+			font-size: clamp(7px, 2.8vh, 11px);
 		}
 		.hud-shell[data-layout='landscape'] .ls-bet-val .value {
-			font-size: clamp(0.24rem, 2vh, 0.42rem);
+			font-size: clamp(9px, 4.4vh, 14px);
 		}
-		/* WIN, bottom right: shrink so it clears the board's right edge. */
+		/* WIN, bottom right: a touch smaller than the balance so it clears the board's right edge. */
 		.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .value {
-			font-size: clamp(0.34rem, 2.4vh, 0.5rem);
+			font-size: clamp(9px, 4.2vh, 13px);
 		}
 		.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .label-text {
-			font-size: clamp(0.24rem, 1.5vh, 0.34rem);
+			font-size: clamp(7px, 2.6vh, 10px);
 		}
 		/* Drop the pill's box (min-width / dark fill / blur) here — centred on the capsule, the boxed pill
 		   grew LEFT into the board with a real win value. As plain centred text it stays clear of the board. */
