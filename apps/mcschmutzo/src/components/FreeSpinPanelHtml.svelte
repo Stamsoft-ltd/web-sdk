@@ -59,9 +59,14 @@
 			<span class="fp-card__value">{totalWin}</span>
 		</div>
 
-		<!-- Multiplier accordion: the value shows once a multiplier is active. -->
+		<!-- Multiplier accordion/printer: indicator lights blink (machine alive) and the value stamps
+		     onto the ticket each time it prints/changes. -->
 		<div class="fp-acc" style={`background-image:url('${accordionArt}')`}>
-			<span class="fp-acc__mult" class:fp-acc__mult--on={hasMult}>{mult}x</span>
+			<span class="fp-acc__led fp-acc__led--green"></span>
+			<span class="fp-acc__led fp-acc__led--red"></span>
+			{#key mult}
+				<span class="fp-acc__mult" class:fp-acc__mult--on={hasMult}>{mult}x</span>
+			{/key}
 		</div>
 	</div>
 {/if}
@@ -133,10 +138,87 @@
 		font-size: 17cqw;
 		line-height: 1;
 		opacity: 0;
-		transition: opacity 0.15s ease;
 	}
+	/* The value "prints/stamps" onto the ticket: drops in big + tilted with an overshoot, then
+	   settles — replayed whenever the multiplier value changes (the {#key} remounts it). */
 	.fp-acc__mult--on {
 		opacity: 1;
+		animation: fp-mult-stamp 0.5s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+	}
+	@keyframes fp-mult-stamp {
+		0% {
+			opacity: 0;
+			transform: translate(-50%, -95%) scale(1.9) rotate(-9deg);
+			filter: blur(1.2px);
+		}
+		55% {
+			opacity: 1;
+			transform: translate(-50%, -43%) scale(0.9) rotate(3deg);
+			filter: blur(0);
+		}
+		100% {
+			opacity: 1;
+			transform: translate(-50%, -50%) scale(1) rotate(0);
+		}
+	}
+
+	/* Indicator lights — soft glows layered over the painted lamps so they pulse/blink (machine alive).
+	   `screen` blend brightens the underlying dot rather than covering it. */
+	.fp-acc__led {
+		position: absolute;
+		width: 9cqw;
+		height: 9cqw;
+		transform: translate(-50%, -50%);
+		border-radius: 50%;
+		pointer-events: none;
+		mix-blend-mode: screen;
+	}
+	.fp-acc__led--green {
+		left: 16.8%;
+		top: 10.6%;
+		background: radial-gradient(circle at 42% 36%, #eaffe4 0%, #74e85e 42%, rgba(70, 190, 45, 0) 70%);
+		animation: fp-led-breathe 1.7s ease-in-out infinite;
+	}
+	.fp-acc__led--red {
+		left: 82.4%;
+		top: 10.6%;
+		background: radial-gradient(circle at 42% 36%, #ffe0d8 0%, #ff5333 42%, rgba(210, 45, 20, 0) 70%);
+		animation: fp-led-blink 1.5s steps(1, end) infinite;
+	}
+	@keyframes fp-led-breathe {
+		0%,
+		100% {
+			opacity: 0.3;
+			transform: translate(-50%, -50%) scale(0.85);
+		}
+		50% {
+			opacity: 0.95;
+			transform: translate(-50%, -50%) scale(1.12);
+		}
+	}
+	@keyframes fp-led-blink {
+		0%,
+		62% {
+			opacity: 0;
+		}
+		66%,
+		84% {
+			opacity: 1;
+		}
+		88%,
+		100% {
+			opacity: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.fp-acc__mult--on {
+			animation: none;
+		}
+		.fp-acc__led {
+			animation: none;
+			opacity: 0.6;
+		}
 	}
 
 	/* ── Portrait: a row under the board (accordion lifted so it clears the nav bar). ── */
