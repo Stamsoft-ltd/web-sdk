@@ -23,9 +23,11 @@
 	// The base has the baked pupils erased (color-aware: sclera/pupil only, skin untouched) and the
 	// animated pupils are discs at the ART'S OWN pupil size, centred where they were — at rest the
 	// face reads as the original art, and the tiny glance only ever exposes white-on-white sclera.
+	// Rest-centres are nudged slightly toward each socket's middle (off the art's edge-hugging pupil
+	// spots) so the disc + the glance excursions always stay inside the white of the eye.
 	const specialPupils = [
-		{ nx: 0.4544, ny: 0.2796, nw: 0.0721, nh: 0.0607 },
-		{ nx: 0.5369, ny: 0.267, nw: 0.0926, nh: 0.078 },
+		{ nx: 0.4485, ny: 0.2762, nw: 0.059, nh: 0.0497 },
+		{ nx: 0.5305, ny: 0.2635, nw: 0.076, nh: 0.064 },
 	];
 	const specialLids = [
 		{ cx: 0.4544, cy: 0.2775, w: 0.095, h: 0.088 },
@@ -55,16 +57,18 @@
 		mascotIdle(elapsed, cx, guyY, guyWidth, guyHeight, { sway: 0, breathe: 0.005, bob: 0.004 }),
 	);
 
-	// The salt-shaker forearm is overlaid on the base and flicks a hair about the shoulder so it reads
-	// as shaking; salt pours from the (moving) cap. Frame fractions measured off the shared frame.
+	// The salt-shaker forearm is overlaid on the base and flicks gently so it reads as shaking; salt
+	// pours from the (moving) cap. The pivot sits ON the joint strip that's baked into the base, so
+	// the connection region never diverges from the painted joint (seamless), while the shaker end —
+	// far from the pivot — does the visible swinging. Frame fractions off the shared frame.
 	const SHAKE_PERIOD = 560; // ms per flick
-	const SHAKE_AMP = 0.03; // rad (~1.7°)
+	const SHAKE_AMP = 0.022; // rad (~1.3°) — gentle, smooth
 	const shakeP = $derived((elapsed % SHAKE_PERIOD) / SHAKE_PERIOD);
 	const armAngle = $derived(SHAKE_AMP * Math.sin(2 * Math.PI * shakeP));
 	const chefL = $derived(guyPose.x - guyPose.width / 2);
 	const chefT = $derived(guyPose.y - guyPose.height / 2);
-	const PIVX = 0.44; // shoulder socket (frame fractions)
-	const PIVY = 0.31;
+	const PIVX = 0.452; // middle of the baked joint strip (frame fractions)
+	const PIVY = 0.5;
 	const pivotX = $derived(chefL + PIVX * guyPose.width);
 	const pivotY = $derived(chefT + PIVY * guyPose.height);
 	const CAP_DX = 0.335 - PIVX; // shaker cap relative to shoulder
