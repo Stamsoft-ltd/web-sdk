@@ -477,8 +477,23 @@ export default {
 		preload: true,
 	},
 	specialBase: {
+		// Real designer chef (no salting arm — that's overlaid separately so it can flick), on the
+		// shared 358x425 frame so specialArm lines up.
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_base_v4.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/special_base_v6.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialArm: {
+		// The salt-shaker forearm on the same frame, overlaid + flicked about the shoulder.
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_arm_v2.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialLabel: {
+		// The "McSchmutzo" nametag (extracted), overlaid a touch larger over the baked one so it can
+		// jiggle on its pin without exposing the one underneath.
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_label_v2.webp', import.meta.url).href,
 		preload: true,
 	},
 	mcschmutzoLogo: {

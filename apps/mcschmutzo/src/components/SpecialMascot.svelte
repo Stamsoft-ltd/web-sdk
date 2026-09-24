@@ -9,17 +9,26 @@
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 
 
-	// Composition sits on the right, BEHIND the board — shifted right so the raised salt shaker
-	// clears the board's right edge instead of being hidden behind it.
-	const cx = $derived(canvas.width * 0.85);
-	// Taller one-piece art (full torso), so a bit more height and shifted down to keep the head +
-	// raised shaker at the same spot on screen.
-	const guyHeight = $derived(canvas.height * 0.62);
-	const guyWidth = $derived(guyHeight * (1499 / 1911));
-	const guyY = $derived(canvas.height * 0.585);
-	const potWidth = $derived(guyWidth * 1.06);
+	// Composition sits on the right, BEHIND the board. The real art is laid out on a shared 358x425
+	// frame (guy on the right, the salt-arm overlay on the left) so both sprites line up; sized +
+	// placed so the head and raised shaker read at the right spot.
+	const cx = $derived(canvas.width * 0.88);
+	const guyHeight = $derived(canvas.height * 0.72);
+	const guyWidth = $derived(guyHeight * (358 / 425));
+	const guyY = $derived(canvas.height * 0.6);
+	const potWidth = $derived(guyWidth * 0.82);
 	const potHeight = $derived(potWidth * (848 / 1180));
 	const potY = $derived(canvas.height * 0.82);
+
+	// Pupils drawn fresh as dark discs (base eyes are whited out) so they glance; + skin lids for blinks.
+	const specialPupils = [
+		{ nx: 0.454, ny: 0.283, nw: 0.062, nh: 0.06 },
+		{ nx: 0.538, ny: 0.272, nw: 0.072, nh: 0.07 },
+	];
+	const specialLids = [
+		{ cx: 0.454, cy: 0.278, w: 0.078, h: 0.07 },
+		{ cx: 0.538, cy: 0.268, w: 0.09, h: 0.082 },
+	];
 
 	// Clock: drives both the salt fall (phase) and the chef's idle breathe (elapsed).
 	const COUNT = 40; // salt grains
@@ -44,14 +53,22 @@
 		mascotIdle(elapsed, cx, guyY, guyWidth, guyHeight, { sway: 0, breathe: 0.005, bob: 0.004 }),
 	);
 
-	// The chef art is one piece (arm + shaker baked in), so the shaker stays put and salt simply
-	// pours from its (fixed) cap. A steady rhythm still bursts the grains so it reads as shaking.
-	const SHAKE_PERIOD = 560; // ms per salt burst
+	// The salt-shaker forearm is overlaid on the base and flicks a hair about the shoulder so it reads
+	// as shaking; salt pours from the (moving) cap. Frame fractions measured off the shared frame.
+	const SHAKE_PERIOD = 560; // ms per flick
+	const SHAKE_AMP = 0.03; // rad (~1.7°)
+	const shakeP = $derived((elapsed % SHAKE_PERIOD) / SHAKE_PERIOD);
+	const armAngle = $derived(SHAKE_AMP * Math.sin(2 * Math.PI * shakeP));
 	const chefL = $derived(guyPose.x - guyPose.width / 2);
 	const chefT = $derived(guyPose.y - guyPose.height / 2);
-	// Salt spout = the shaker cap on the combined art (chef fractions).
-	const saltTopX = $derived(chefL + 0.29 * guyPose.width);
-	const saltTopY = $derived(chefT + 0.47 * guyPose.height);
+	const PIVX = 0.44; // shoulder socket (frame fractions)
+	const PIVY = 0.31;
+	const pivotX = $derived(chefL + PIVX * guyPose.width);
+	const pivotY = $derived(chefT + PIVY * guyPose.height);
+	const CAP_DX = 0.335 - PIVX; // shaker cap relative to shoulder
+	const CAP_DY = 0.235 - PIVY;
+	const saltTopX = $derived(pivotX + CAP_DX * guyPose.width * Math.cos(armAngle) - CAP_DY * guyPose.height * Math.sin(armAngle));
+	const saltTopY = $derived(pivotY + CAP_DX * guyPose.width * Math.sin(armAngle) + CAP_DY * guyPose.height * Math.cos(armAngle));
 	const saltBotX = $derived(cx - guyWidth * 0.12);
 	const saltBotY = $derived(potY - potHeight * 0.18);
 	const grain = $derived(Math.max(2.5, canvas.height * 0.006));
@@ -112,8 +129,9 @@
 <!-- Chef (behind) salting the pot (in front), with a falling stream of salt grains. The whole group
      sits BEHIND the board (negative zIndex) but in front of the background. -->
 <Container zIndex={-0.5}>
-	<!-- One-piece original chef art (arm + shaker + face + nametag all baked in), so no pupil/lid/arm
-	     overlays — just the falling salt, pot and idle breathe animate. -->
+	<!-- Real chef base (no salting arm). Baked pupils are kept, so no fresh discs (pupils empty) — he
+	     just BLINKS via skin lids. The nametag jiggles as an overlay (a touch larger than the baked
+	     one so it stays covered), and a tooth *ding* sparkles. -->
 	<AnimatedGuy
 		baseKey="specialBase"
 		x={guyPose.x}
@@ -121,10 +139,25 @@
 		width={guyPose.width}
 		height={guyPose.height}
 		zIndex={0}
-		pupils={[]}
+		pupils={specialPupils}
+		lids={specialLids}
 		skin={0xef9650}
 		phase={2000}
-		sparkle={{ nx: 0.46, ny: 0.4, size: 0.06, period: 3800, phase: 1200 }}
+		sparkle={{ nx: 0.5, ny: 0.4, size: 0.06, period: 3800, phase: 1200 }}
+		extras={[
+			{ key: 'specialLabel', nx: 0.5643, ny: 0.5737, nw: 0.1984, nh: 0.1119, px: 0.5, py: 0.13, amp: 0.045, period: 320, phase: 900 },
+		]}
+	/>
+	<!-- Salt-shaker forearm overlay: flicks about the shoulder (above the base, below the salt). -->
+	<Sprite
+		key="specialArm"
+		x={pivotX}
+		y={pivotY}
+		anchor={{ x: PIVX, y: PIVY }}
+		width={guyPose.width}
+		height={guyPose.height}
+		rotation={armAngle}
+		zIndex={0.5}
 	/>
 	{#each grains as g}
 		<Rectangle
