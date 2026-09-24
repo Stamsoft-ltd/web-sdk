@@ -146,10 +146,10 @@
 			lampH,
 			y: bgTop,
 			bulbYPx: bgTop + lampH * 0.95, // the bulb sits at the shade's bottom opening
-			haloYPx: bgTop + lampH * 1.12, // halo pools below the rim (light shines down, shade blocks up)
+			haloYPx: bgTop + lampH * 1.0, // halo centred on the bulb (light escaping under the rim)
 			list: [
-				{ x: bgLeft + cover.width * 0.122, on: blink(0) },
-				{ x: bgLeft + cover.width * 0.182, on: blink(2100) },
+				{ x: bgLeft + cover.width * 0.1, on: blink(0) },
+				{ x: bgLeft + cover.width * 0.2, on: blink(2100) },
 			],
 		};
 	});
@@ -201,13 +201,14 @@
 	{/if}
 	{#if lamps}
 		<!-- Two small hanging pendant lamps in the top-left ceiling strip; bulbs blink on/off.
-		     A subtle warm pool of light renders BEHIND the shade (only what escapes under the rim
-		     shows); the bulb at the shade's bottom opening dims when off and warms gently when on. -->
+		     One broad warm glow (two soft stops for a natural gradient falloff) renders BEHIND the
+		     shade — only the light escaping under the rim shows. The bulb at the shade's bottom
+		     opening keeps its colour, dimming when off. No bright highlight on the bulb itself. -->
 		{#each lamps.list as l, i (i)}
-			<Circle x={l.x} y={lamps.haloYPx} diameter={lamps.lampW * 0.72} anchor={0.5} backgroundColor={0xffca78} backgroundAlpha={l.on * 0.12} zIndex={-0.93} blendMode="add" />
+			<Circle x={l.x} y={lamps.haloYPx} diameter={lamps.lampW * 1.9} anchor={0.5} backgroundColor={0xffca78} backgroundAlpha={l.on * 0.08} zIndex={-0.93} blendMode="add" />
+			<Circle x={l.x} y={lamps.haloYPx} diameter={lamps.lampW * 1.15} anchor={0.5} backgroundColor={0xffd487} backgroundAlpha={l.on * 0.11} zIndex={-0.93} blendMode="add" />
 			<Sprite key="specialLamp" x={l.x} y={lamps.y} anchor={{ x: 0.5, y: 0 }} width={lamps.lampW} height={lamps.lampH} zIndex={-0.92} />
 			<Circle x={l.x} y={lamps.bulbYPx} diameter={lamps.lampW * 0.42} anchor={0.5} backgroundColor={0x140d07} backgroundAlpha={(1 - l.on) * 0.45} zIndex={-0.9} />
-			<Circle x={l.x} y={lamps.bulbYPx} diameter={lamps.lampW * 0.36} anchor={0.5} backgroundColor={0xffe1a4} backgroundAlpha={l.on * 0.34} zIndex={-0.9} blendMode="add" />
 		{/each}
 	{/if}
 {/if}
