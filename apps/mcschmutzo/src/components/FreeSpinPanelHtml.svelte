@@ -166,8 +166,8 @@
 	   `screen` blend brightens the underlying dot rather than covering it. */
 	.fp-acc__led {
 		position: absolute;
-		width: 9cqw;
-		height: 9cqw;
+		width: 6cqw;
+		height: 6cqw;
 		transform: translate(-50%, -50%);
 		border-radius: 50%;
 		pointer-events: none;
