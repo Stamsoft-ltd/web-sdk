@@ -439,12 +439,6 @@ export default {
 		src: new URL('../../assets/mcschmutzo/mascot.png', import.meta.url).href,
 		preload: true,
 	},
-	// Special (free-games) mascot: the chef salting a pot — guy behind, pot in front.
-	specialGuy: {
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/special-guy.webp', import.meta.url).href,
-		preload: true,
-	},
 	specialPot: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/special-pot.webp', import.meta.url).href,
