@@ -8,16 +8,6 @@
 	const context = getContext();
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
 
-	// Pupils + eye-cover boxes (measured from the cut special art) so the salting chef also glances +
-	// blinks. Skin tone sampled by his eyes.
-	const specialPupils = [
-		{ key: 'specialPupilL', nx: 0.4313, ny: 0.3208, nw: 0.0539, nh: 0.0666 },
-		{ key: 'specialPupilR', nx: 0.5301, ny: 0.3175, nw: 0.0701, nh: 0.0582 },
-	];
-	const specialLids = [
-		{ cx: 0.43, cy: 0.321, w: 0.072, h: 0.082 },
-		{ cx: 0.533, cy: 0.314, w: 0.088, h: 0.086 },
-	];
 
 	// Composition sits on the right, BEHIND the board — shifted right so the raised salt shaker
 	// clears the board's right edge instead of being hidden behind it.
@@ -52,34 +42,14 @@
 		mascotIdle(elapsed, cx, guyY, guyWidth, guyHeight, { sway: 0, breathe: 0.005, bob: 0.004 }),
 	);
 
-	// The arm (a clean full-frame copy of the hand+shaker+arm) is OVERLAID on the FULL base (the base
-	// still contains the arm at rest — no hole is cut) and flicks a hair about the shoulder socket. Like
-	// the splash chef's patched base, nothing behind the arm is transparent, so the flick can never
-	// detach the arm or reveal the black oven behind it; the tiny angle keeps the overlaid arm from
-	// showing any double edge against the resting one. Salt releases on the down-flick.
-	const SHAKE_PERIOD = 560; // ms per flick
-	const SHAKE_AMP = 0.028; // rad (~1.6°) — small flick
-	const shakeP = $derived((elapsed % SHAKE_PERIOD) / SHAKE_PERIOD);
-	const armAngle = $derived(SHAKE_AMP * Math.sin(2 * Math.PI * shakeP)); // + = flick down (cap dips)
-
+	// The chef art is one piece (arm + shaker baked in), so the shaker stays put and salt simply
+	// pours from its (fixed) cap. A steady rhythm still bursts the grains so it reads as shaking.
+	const SHAKE_PERIOD = 560; // ms per salt burst
 	const chefL = $derived(guyPose.x - guyPose.width / 2);
 	const chefT = $derived(guyPose.y - guyPose.height / 2);
-	// Shoulder-socket pivot (chef fractions) — where the arm meets the body.
-	const PIVX = 0.455;
-	const PIVY = 0.61;
-	const pivotX = $derived(chefL + PIVX * guyPose.width);
-	const pivotY = $derived(chefT + PIVY * guyPose.height);
-
-	// Salt spout = the shaker cap, carried around the shoulder by the flick so the stream stays glued
-	// to the (moving) cap.
-	const CAP_DX = 0.33 - PIVX; // cap - shoulder (chef-frac x)
-	const CAP_DY = 0.5 - PIVY; // cap - shoulder (chef-frac y)
-	const saltTopX = $derived(
-		pivotX + (CAP_DX * guyPose.width) * Math.cos(armAngle) - (CAP_DY * guyPose.height) * Math.sin(armAngle),
-	);
-	const saltTopY = $derived(
-		pivotY + (CAP_DX * guyPose.width) * Math.sin(armAngle) + (CAP_DY * guyPose.height) * Math.cos(armAngle),
-	);
+	// Salt spout = the shaker cap on the combined art (chef fractions).
+	const saltTopX = $derived(chefL + 0.22 * guyPose.width);
+	const saltTopY = $derived(chefT + 0.52 * guyPose.height);
 	const saltBotX = $derived(cx - guyWidth * 0.12);
 	const saltBotY = $derived(potY - potHeight * 0.18);
 	const grain = $derived(Math.max(2.5, canvas.height * 0.006));
@@ -140,6 +110,8 @@
 <!-- Chef (behind) salting the pot (in front), with a falling stream of salt grains. The whole group
      sits BEHIND the board (negative zIndex) but in front of the background. -->
 <Container zIndex={-0.5}>
+	<!-- One-piece original chef art (arm + shaker + face + nametag all baked in), so no pupil/lid/arm
+	     overlays — just the falling salt, pot and idle breathe animate. -->
 	<AnimatedGuy
 		baseKey="specialBase"
 		x={guyPose.x}
@@ -147,37 +119,10 @@
 		width={guyPose.width}
 		height={guyPose.height}
 		zIndex={0}
-		pupils={specialPupils}
-		lids={specialLids}
+		pupils={[]}
 		skin={0xef9650}
 		phase={2000}
-		sparkle={{ nx: 0.49, ny: 0.455, size: 0.075, period: 3800, phase: 1200 }}
-		extras={[
-			{
-				key: 'specialLabel',
-				nx: 0.566,
-				ny: 0.6003,
-				nw: 0.1636,
-				nh: 0.1054,
-				px: 0.5,
-				py: 0.07,
-				amp: 0.04,
-				period: 320,
-				phase: 900,
-			},
-		]}
-	/>
-	<!-- Hand+shaker+forearm (clean full-frame layer), flicking about the elbow. Above the base, below
-	     the falling salt so the grains read as leaving the cap. -->
-	<Sprite
-		key="specialArm"
-		x={pivotX}
-		y={pivotY}
-		anchor={{ x: PIVX, y: PIVY }}
-		width={guyPose.width}
-		height={guyPose.height}
-		rotation={armAngle}
-		zIndex={0.5}
+		sparkle={{ nx: 0.54, ny: 0.45, size: 0.07, period: 3800, phase: 1200 }}
 	/>
 	{#each grains as g}
 		<Rectangle
