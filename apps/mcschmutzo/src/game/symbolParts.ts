@@ -311,13 +311,12 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		squash: 0.09,
 		layers: [{ key: 'mcM', nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.02 }],
 	},
-	// Cheese — one whole slice (drips included) that gently jiggles. It stays alive on the board (idle)
-	// and dribbles slow, gooey melted-cheese drops off its bottom edge.
+	// Cheese — one whole slice (drips included) that gently jiggles and dribbles gooey drops off its
+	// painted drip tips, but ONLY while active (locked / part of a win) like the other symbols.
 	H4: {
 		aspect: 131 / 120,
 		fit: 1,
 		squash: 0.09,
-		idle: 0.35,
 		// Origins sit at the tips of the art's painted drips so each falling drop extends one; colors
 		// sampled from those very tips (the right drip is a darker orange).
 		drip: {

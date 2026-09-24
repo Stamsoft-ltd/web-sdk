@@ -256,7 +256,8 @@
 	// way and fades (well inside the symbol's own cell). Each drop wears its tip's sampled colour.
 	const dripBlobs = $derived.by(() => {
 		const cfg = props.config.drip;
-		const active = running && startTime >= 0;
+		// Drip only while the symbol is truly active (locked / on a win line), like the other symbols.
+		const active = running && startTime >= 0 && !!props.winning;
 		if (!cfg || !active)
 			return [] as Array<{ id: number; x: number; y: number; edgeY: number; d: number; alpha: number; neckAlpha: number; color: number }>;
 		const t = clock - startTime;
