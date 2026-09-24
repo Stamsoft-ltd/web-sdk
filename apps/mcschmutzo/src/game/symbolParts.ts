@@ -46,9 +46,10 @@ export type SymbolPartsConfig = {
 	// its nozzle in time with the squeeze — the squeeze bottles come alive by squirting. The nozzle
 	// defaults to the bottle tip (top-centre); `dir` (+1 right / -1 left) angles the arc.
 	squirt?: { color: number; nozzleNx?: number; nozzleNy?: number; dir?: number };
-	// Melty cheese drip: while alive, slow gooey drops ooze from a few points along the bottom edge,
-	// swell into a hanging teardrop, pinch off and fall (thicker + slower than a sauce squirt).
-	drip?: { color: number; edgeNy?: number; nozzles?: number[] };
+	// Melty cheese drip: while alive, slow gooey drops ooze from the tips of the painted drips (the
+	// spots already stretched/hanging), swell into a teardrop, pinch off and fall. `points` are the
+	// drip origins (nx, ny within the symbol box) — set to the low points of the art's bottom edge.
+	drip?: { color: number; points: { nx: number; ny: number }[] };
 	layers: SymbolPartLayer[];
 };
 
@@ -315,7 +316,15 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		fit: 1,
 		squash: 0.09,
 		idle: 0.35,
-		drip: { color: 0xf6aa0b, edgeNy: 0.74, nozzles: [0.34, 0.52, 0.68] },
+		// Origins sit at the tips of the art's painted drips so each falling drop continues one.
+		drip: {
+			color: 0xf6aa0b,
+			points: [
+				{ nx: 0.205, ny: 0.66 },
+				{ nx: 0.42, ny: 0.81 },
+				{ nx: 0.6, ny: 0.74 },
+			],
+		},
 		layers: [{ key: 'mcH4', nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.02 }],
 	},
 };

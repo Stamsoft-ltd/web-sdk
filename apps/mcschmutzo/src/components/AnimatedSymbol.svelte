@@ -263,13 +263,13 @@
 		const t = clock - startTime;
 		const cx = props.x ?? 0;
 		const cy = props.y ?? 0;
-		const edgeY = cy + ((cfg.edgeNy ?? 0.74) - 0.5) * h;
-		const nozzles = cfg.nozzles ?? [0.5];
+		const points = cfg.points ?? [{ nx: 0.5, ny: 0.74 }];
 		const T_EMIT = 1150; // ms between drops per point — cheese oozes lazily
 		const T_LIFE = 2050; // ms a drop lives (swell + hang + fall + fade)
 		const out: Array<{ id: number; x: number; y: number; edgeY: number; d: number; alpha: number; neckAlpha: number }> = [];
-		nozzles.forEach((nx, ni) => {
-			const nozX = cx + (nx - 0.5) * w;
+		points.forEach((pt, ni) => {
+			const nozX = cx + (pt.nx - 0.5) * w;
+			const edgeY = cy + (pt.ny - 0.5) * h; // origin at this painted drip's tip
 			const tt = t + ni * T_EMIT * 0.6; // stagger the points so they don't drip in unison
 			const newest = Math.floor(tt / T_EMIT);
 			for (let k = 0; k < 2; k++) {
