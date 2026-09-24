@@ -9,7 +9,7 @@ export default createLocale(source, {
 	welcome: 'आपका स्वागत है',
 	gameBoard: 'Veggie Salad गेम बोर्ड',
 	clusterPayouts: 'क्लस्टर भुगतान',
-	vegetables: ['ब्रोकली', 'मक्का', 'टमाटर', 'बैंगन', 'गाजर', 'फूलगोभी', 'मूली'],
+	vegetables: ['पत्तागोभी', 'शिमला मिर्च', 'टमाटर', 'बैंगन', 'आलू', 'मूली', 'लहसुन'],
 	normalBonus: 'सामान्य बोनस',
 	superBonus: 'सुपर बोनस',
 	hiddenBonus: 'छिपा बोनस',

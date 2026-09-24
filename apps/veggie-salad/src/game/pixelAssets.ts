@@ -27,38 +27,39 @@ const assets: Assets = {
 		preload: true,
 	},
 
-	pixelBroccoli: { type: 'sprite', src: `${root}/broccoli.webp` },
-	pixelCorn: { type: 'sprite', src: `${root}/corn.webp` },
-	pixelTomato: { type: 'sprite', src: `${root}/tomato.webp` },
-	pixelEggplant: { type: 'sprite', src: `${root}/eggplant.webp` },
-	pixelCarrot: { type: 'sprite', src: `${root}/carrot.webp` },
-	pixelCauliflower: { type: 'sprite', src: `${root}/cauliflower.webp` },
-	pixelRadish: { type: 'sprite', src: `${root}/radish.webp` },
-	// Eye frames for the same seven sprites, cut pixel-for-pixel from them by
-	// scripts/build-splash-eyes.py (splash/<file>-blink|look-l|look-r.webp). The win banner's
-	// symbols blink and glance with them, keyed off the FILE so the swapped cauliflower/radish art
-	// stays true.
-	pixelBroccoliBlink: { type: 'sprite', src: `${root}/splash/broccoli-blink.webp` },
-	pixelBroccoliLookL: { type: 'sprite', src: `${root}/splash/broccoli-look-l.webp` },
-	pixelBroccoliLookR: { type: 'sprite', src: `${root}/splash/broccoli-look-r.webp` },
-	pixelCornBlink: { type: 'sprite', src: `${root}/splash/corn-blink.webp` },
-	pixelCornLookL: { type: 'sprite', src: `${root}/splash/corn-look-l.webp` },
-	pixelCornLookR: { type: 'sprite', src: `${root}/splash/corn-look-r.webp` },
-	pixelTomatoBlink: { type: 'sprite', src: `${root}/splash/tomato-blink.webp` },
-	pixelTomatoLookL: { type: 'sprite', src: `${root}/splash/tomato-look-l.webp` },
-	pixelTomatoLookR: { type: 'sprite', src: `${root}/splash/tomato-look-r.webp` },
-	pixelEggplantBlink: { type: 'sprite', src: `${root}/splash/eggplant-blink.webp` },
-	pixelEggplantLookL: { type: 'sprite', src: `${root}/splash/eggplant-look-l.webp` },
-	pixelEggplantLookR: { type: 'sprite', src: `${root}/splash/eggplant-look-r.webp` },
-	pixelCarrotBlink: { type: 'sprite', src: `${root}/splash/carrot-blink.webp` },
-	pixelCarrotLookL: { type: 'sprite', src: `${root}/splash/carrot-look-l.webp` },
-	pixelCarrotLookR: { type: 'sprite', src: `${root}/splash/carrot-look-r.webp` },
-	pixelCauliflowerBlink: { type: 'sprite', src: `${root}/splash/cauliflower-blink.webp` },
-	pixelCauliflowerLookL: { type: 'sprite', src: `${root}/splash/cauliflower-look-l.webp` },
-	pixelCauliflowerLookR: { type: 'sprite', src: `${root}/splash/cauliflower-look-r.webp` },
-	pixelRadishBlink: { type: 'sprite', src: `${root}/splash/radish-blink.webp` },
-	pixelRadishLookL: { type: 'sprite', src: `${root}/splash/radish-look-l.webp` },
-	pixelRadishLookR: { type: 'sprite', src: `${root}/splash/radish-look-r.webp` },
+	/* The win screens' vegetables are the BOARD's own sprites (pixel/board/, the set design
+	   9242:184876 draws round the banner), so a win never shows symbols the reels do not have.
+	   The premiums keep their shades, as on the board. Each has three beat frames beside it:
+	   blink / glance for the crowd; for the premiums a shout (-wide), the shades lifted (-lift)
+	   and a glint glance — see build-board-crop.py and build-board-premium.py. */
+	winVeggieCabbage: { type: 'sprite', src: `${root}/board/cabbage-shades.webp` },
+	winVeggieCabbageBlink: { type: 'sprite', src: `${root}/board/cabbage-shades-wide.webp` },
+	winVeggieCabbageLookL: { type: 'sprite', src: `${root}/board/cabbage-shades-lift.webp` },
+	winVeggieCabbageLookR: { type: 'sprite', src: `${root}/board/cabbage-shades-look-r.webp` },
+	winVeggiePepper: { type: 'sprite', src: `${root}/board/pepper-shades.webp` },
+	winVeggiePepperBlink: { type: 'sprite', src: `${root}/board/pepper-shades-wide.webp` },
+	winVeggiePepperLookL: { type: 'sprite', src: `${root}/board/pepper-shades-lift.webp` },
+	winVeggiePepperLookR: { type: 'sprite', src: `${root}/board/pepper-shades-look-r.webp` },
+	winVeggieTomato: { type: 'sprite', src: `${root}/board/tomato-shades.webp` },
+	winVeggieTomatoBlink: { type: 'sprite', src: `${root}/board/tomato-shades-wide.webp` },
+	winVeggieTomatoLookL: { type: 'sprite', src: `${root}/board/tomato-shades-lift.webp` },
+	winVeggieTomatoLookR: { type: 'sprite', src: `${root}/board/tomato-shades-look-r.webp` },
+	winVeggieEggplant: { type: 'sprite', src: `${root}/board/eggplant.webp` },
+	winVeggieEggplantBlink: { type: 'sprite', src: `${root}/board/eggplant-blink.webp` },
+	winVeggieEggplantLookL: { type: 'sprite', src: `${root}/board/eggplant-look-l.webp` },
+	winVeggieEggplantLookR: { type: 'sprite', src: `${root}/board/eggplant-look-r.webp` },
+	winVeggiePotato: { type: 'sprite', src: `${root}/board/potato.webp` },
+	winVeggiePotatoBlink: { type: 'sprite', src: `${root}/board/potato-blink.webp` },
+	winVeggiePotatoLookL: { type: 'sprite', src: `${root}/board/potato-look-l.webp` },
+	winVeggiePotatoLookR: { type: 'sprite', src: `${root}/board/potato-look-r.webp` },
+	winVeggieRadish: { type: 'sprite', src: `${root}/board/radish.webp` },
+	winVeggieRadishBlink: { type: 'sprite', src: `${root}/board/radish-blink.webp` },
+	winVeggieRadishLookL: { type: 'sprite', src: `${root}/board/radish-look-l.webp` },
+	winVeggieRadishLookR: { type: 'sprite', src: `${root}/board/radish-look-r.webp` },
+	winVeggieGarlic: { type: 'sprite', src: `${root}/board/garlic.webp` },
+	winVeggieGarlicBlink: { type: 'sprite', src: `${root}/board/garlic-blink.webp` },
+	winVeggieGarlicLookL: { type: 'sprite', src: `${root}/board/garlic-look-l.webp` },
+	winVeggieGarlicLookR: { type: 'sprite', src: `${root}/board/garlic-look-r.webp` },
 	// Scatter king: `scatter` is the closed-eyed frame, `scatter_open` the resting open-eyed one.
 	// The splash swaps them on a random timer and the bonus-intro card does the same.
 	pixelScatter: { type: 'sprite', src: `${root}/scatter.webp` },
@@ -67,45 +68,21 @@ const assets: Assets = {
 	// Design 9050:17100's wooden plank card (node 9313:295187, 453x598 in the 1200-wide frame).
 	// New filename rather than a query string so the previous card cannot be served from cache.
 	bonusStartCardV5: { type: 'sprite', src: `${root}/overlays/v2/bonus-start-card-v5.webp` },
-	bonusEndPlaqueV2: { type: 'sprite', src: `${root}/overlays/v2/bonus-end-plaque.webp` },
-	/* Design 9044:16622's veggie basket (node 9243:192637), cut out of the one flat image the
-	   design ships so each vegetable can move on its own. `bed` is the leafy backdrop with the
-	   vegetables' footprints filled in from their neighbours, so lifting one exposes leaves rather
-	   than a hole. The cut's third layer, the `crate` bowl, is deliberately NOT loaded: the design's
-	   congrats sign has no crate — its own top edge is what crops the bunch — so that file stays on
-	   disk only as a master for the info panel's recomposed still. */
-	/* The congrats sign's king, design 9050:17100 (its `potato` frame is a 119px VECTOR of the
-	   scatter, closed-eyed). Rendered from that SVG at 4x by scripts/build-congrats-king.py, so
-	   the sign no longer blows the 89px board sprite up four times over ("the scatter image is
-	   bad quality", user 2026-09-18). `king-open` is the same render with scatter_open's eyes
-	   painted on at the art's own pitch — the closed frame is the design's, the blink swaps to it. */
-	congratsKing: { type: 'sprite', src: `${root}/overlays/v2/congrats/king.webp` },
-	congratsKingOpen: { type: 'sprite', src: `${root}/overlays/v2/congrats/king-open.webp` },
-	congratsBed: { type: 'sprite', src: `${root}/overlays/v2/congrats/bed.webp` },
-	congratsTomato: { type: 'sprite', src: `${root}/overlays/v2/congrats/tomato.webp` },
-	congratsEggplant: { type: 'sprite', src: `${root}/overlays/v2/congrats/eggplant.webp` },
-	congratsCauliflower: { type: 'sprite', src: `${root}/overlays/v2/congrats/cauliflower.webp` },
-	congratsCarrot: { type: 'sprite', src: `${root}/overlays/v2/congrats/carrot.webp` },
-	congratsCorn: { type: 'sprite', src: `${root}/overlays/v2/congrats/corn.webp` },
-	congratsBroccoli: { type: 'sprite', src: `${root}/overlays/v2/congrats/broccoli.webp` },
-	// Closed-eye frames of the same six cut-outs (eyes painted over with the skin colour plus a
-	// shut arc, same idea as scatter vs scatter_open) so the bunch can blink on the outro sign.
-	congratsTomatoBlink: { type: 'sprite', src: `${root}/overlays/v2/congrats/tomato-blink.webp` },
-	congratsEggplantBlink: {
-		type: 'sprite',
-		src: `${root}/overlays/v2/congrats/eggplant-blink.webp`,
-	},
-	congratsCauliflowerBlink: {
-		type: 'sprite',
-		src: `${root}/overlays/v2/congrats/cauliflower-blink.webp`,
-	},
-	congratsCarrotBlink: { type: 'sprite', src: `${root}/overlays/v2/congrats/carrot-blink.webp` },
-	congratsCornBlink: { type: 'sprite', src: `${root}/overlays/v2/congrats/corn-blink.webp` },
-	congratsBroccoliBlink: {
-		type: 'sprite',
-		src: `${root}/overlays/v2/congrats/broccoli-blink.webp`,
-	},
+	bonusEndPlaqueV2: { type: 'sprite', src: `${root}/overlays/v2/bonus-end-plaque-px.webp` },
+	/* The splash king's rig (scripts/build-splash-king.py): one 451px canvas per moving part, so
+	   they stack centred. The bonus intro card animates it with the splash's own keyframes
+	   (PixelEventOverlay KING_RIG) — "on congrats screen lets use same animation as splash". */
+	kingSprout: { type: 'sprite', src: `${root}/splash/king/sprout.webp` },
+	kingBody: { type: 'sprite', src: `${root}/splash/king/body.webp` },
+	kingBodyOpen: { type: 'sprite', src: `${root}/splash/king/body-open.webp` },
+	kingCrown: { type: 'sprite', src: `${root}/splash/king/crown.webp` },
+	kingFeetL: { type: 'sprite', src: `${root}/splash/king/feet-l.webp` },
+	kingFeetR: { type: 'sprite', src: `${root}/splash/king/feet-r.webp` },
+	kingCapeL: { type: 'sprite', src: `${root}/splash/king/cape-l.webp` },
+	kingCapeR: { type: 'sprite', src: `${root}/splash/king/cape-r.webp` },
 
+	/* Word art and the bonus-end plaque load the grid-snapped -px copies from
+	   scripts/build-crisp-art.py; the sources were blurred pixel art (softness 0.13-0.23). */
 	winStarSweetV2: { type: 'sprite', src: `${wins}/v2/sweet-star.webp` },
 	/* Design 9242:190479 (WILD WIN). The sign is one riveted banner (9242:190694, 989x374 in the
 	   1200-wide frame); Figma ships its master blue and tints it, so the per-tier files are that
@@ -117,15 +94,15 @@ const assets: Assets = {
 	winBannerEpicV3: { type: 'sprite', src: `${wins}/v2/banner-epic.webp` },
 	winBannerMythicV3: { type: 'sprite', src: `${wins}/v2/banner-mythic.webp` },
 	winBannerLegendaryV3: { type: 'sprite', src: `${wins}/v2/banner-legendary.webp` },
-	winWordArtWildV3: { type: 'sprite', src: `${wins}/v2/wild-wordart.webp` },
+	winWordArtWildV3: { type: 'sprite', src: `${wins}/v2/wild-wordart-px.webp` },
 	// MAX WIN, design 9428:64173: the word art's own transparent master (9428:64660).
-	winWordArtMaxV1: { type: 'sprite', src: `${wins}/v2/max-wordart.webp` },
+	winWordArtMaxV1: { type: 'sprite', src: `${wins}/v2/max-wordart-px.webp` },
 	winAmountPlaqueV3: { type: 'sprite', src: `${wins}/v2/amount-plaque.webp` },
-	winTitleSweetTopV2: { type: 'sprite', src: `${wins}/v2/sweet-sweet.webp` },
-	winTitleSweetBottomV2: { type: 'sprite', src: `${wins}/v2/sweet-win.webp` },
-	winTitleEpicV2: { type: 'sprite', src: `${wins}/v2/epic-title.webp` },
-	winTitleMythicV2: { type: 'sprite', src: `${wins}/v2/mythic-title.webp` },
-	winTitleLegendaryV2: { type: 'sprite', src: `${wins}/v2/legendary-title.webp` },
+	winTitleSweetTopV2: { type: 'sprite', src: `${wins}/v2/sweet-sweet-px.webp` },
+	winTitleSweetBottomV2: { type: 'sprite', src: `${wins}/v2/sweet-win-px.webp` },
+	winTitleEpicV2: { type: 'sprite', src: `${wins}/v2/epic-title-px.webp` },
+	winTitleMythicV2: { type: 'sprite', src: `${wins}/v2/mythic-title-px.webp` },
+	winTitleLegendaryV2: { type: 'sprite', src: `${wins}/v2/legendary-title-px.webp` },
 	// Still used by the bonus outro's total plaque.
 	winAmountLegendaryV2: { type: 'sprite', src: `${wins}/v2/legendary-amount.webp` },
 

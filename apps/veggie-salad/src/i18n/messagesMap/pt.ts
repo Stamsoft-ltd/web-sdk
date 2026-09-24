@@ -10,7 +10,7 @@ export default createLocale(source, {
 	maxWinOf: 'DE',
 	gameBoard: 'Tabuleiro Veggie Salad',
 	clusterPayouts: 'PRÊMIOS DE GRUPOS',
-	vegetables: ['BRÓCOLIS', 'MILHO', 'TOMATE', 'BERINJELA', 'CENOURA', 'COUVE-FLOR', 'RABANETE'],
+	vegetables: ['REPOLHO', 'PIMENTÃO', 'TOMATE', 'BERINJELA', 'BATATA', 'RABANETE', 'ALHO'],
 	normalBonus: 'BÔNUS NORMAL',
 	superBonus: 'SUPER BÔNUS',
 	hiddenBonus: 'BÔNUS OCULTO',

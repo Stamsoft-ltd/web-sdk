@@ -17,7 +17,7 @@
 	import { eventEmitter } from '../../game/eventEmitter';
 	import { CLUSTER_LOG_SIZE, stateGame, stateGameDerived } from '../../game/stateGame.svelte';
 	import { stateXstateDerived } from '../../game/stateXstate';
-	import { VEGGIE_SYMBOL_ASSETS } from '../../game/veggieAssets';
+	import { VEGGIE_PREMIUM_SYMBOLS, VEGGIE_SYMBOL_ASSETS } from '../../game/veggieAssets';
 	import { symbolLiveness } from '../../game/symbolLiveness';
 	import type { Position, RawSymbol } from '../../game/types';
 	import PixelInfoPanel from '../PixelInfoPanel.svelte';
@@ -204,7 +204,7 @@
 	   bolt at normal speed, one solid bolt on turbo, two solid bolts on super turbo. No text label —
 	   the FAST/MAX caption under the bolt was this game's own invention. */
 	const turboIcon = $derived(
-		stateBet.isSuperTurbo ? 'turbo_max' : stateBet.isTurbo ? 'turbo_on' : 'turbo_off',
+		stateBet.isSuperTurbo ? 'icon-turbo-max' : stateBet.isTurbo ? 'icon-turbo-on' : 'icon-turbo',
 	);
 	const turboLabel = $derived(
 		stateBet.isSuperTurbo ? t('MAX') : stateBet.isTurbo ? t('FAST') : t('TURBO'),
@@ -220,6 +220,69 @@
 	// On a bonus-entry spin the scatter COUNT is the announcement of which bonus was won, so it
 	// gets its own read-out under the board.
 	const scatterCount = $derived(stateGame.scatterPositions.length);
+	// Back to front. The cheer keeps the authored shut-eyed body: his ^^ is the happiest face he has.
+	/* Component 25's sparkle squares, in the 89-unit frame the king sprite shares (x, y, side);
+	   dx says which side of him each one flies out to. The right-hand pair overhang the frame by
+	   design. */
+	const KING_SPARKS = [
+		[6, 23, 7],
+		[85, 20, 7],
+		[15, 18, 4],
+		[75, 18, 4],
+		[6, 40, 4],
+		[85, 40, 4],
+		[12, 33, 6],
+		[78, 33, 6],
+	].map(([x, y, size]) => ({
+		x: +((x / 89) * 100).toFixed(2),
+		y: +((y / 89) * 100).toFixed(2),
+		size: +((size / 89) * 100).toFixed(2),
+		dx: x < 44 ? -1 : 1,
+	}));
+	const KING_CHEER_PARTS = [
+		'sprout',
+		'body',
+		'crown',
+		'feet-l',
+		'feet-r',
+		'cape-l',
+		'cape-r',
+	] as const;
+	// A winner's faces, in the order .face-* plays them.
+	const WIN_FACES = ['open', 'blink', 'look-l', 'look-r'] as const;
+	// The premiums wear shades, so their faces play the frames build-board-premium.py cuts for
+	// them instead: a shout on every jump and the shades lifted on the left lean ("new premium
+	// items stay too static", user 2026-09-24). The right lean keeps the glint glance.
+	const PREMIUM_WIN_FACE: Record<(typeof WIN_FACES)[number], string> = {
+		open: '',
+		blink: '-wide',
+		'look-l': '-lift',
+		'look-r': '-look-r',
+	};
+	const winFaceSrc = (
+		name: keyof typeof VEGGIE_SYMBOL_ASSETS,
+		face: (typeof WIN_FACES)[number],
+	) => {
+		const base = VEGGIE_SYMBOL_ASSETS[name];
+		const suffix = VEGGIE_PREMIUM_SYMBOLS.has(name)
+			? PREMIUM_WIN_FACE[face]
+			: face === 'open'
+				? ''
+				: `-${face}`;
+		return `.${base.replace(/\.webp$/, `${suffix}.webp`)}`;
+	};
+	// A landed king at rest: the same rig with his eyes open over the design's shut ones, so he
+	// blinks by hiding the open layer.
+	const KING_IDLE_PARTS = [
+		'sprout',
+		'body',
+		'body-open',
+		'crown',
+		'feet-l',
+		'feet-r',
+		'cape-l',
+		'cape-r',
+	] as const;
 	// Gardens by tier, as the designs pair them with the board sizes (user, 2026-09-21, on the
 	// portrait frames: 8 columns = 9262:211494, 9 = 9262:213551, 10 = 9262:215601): NORMAL (8×8)
 	// plays in the purple dusk garden with the butterfly (9363:59335), SUPER (9×9) in the night
@@ -254,6 +317,37 @@
 	   outstanding, so a single clearTimeout unwinds the whole chain. */
 	const cowFrame = (name: string) => `./assets/veggie-salad/pixel/splash/${name}.webp`;
 	const cowRand = (min: number, max: number) => min + Math.random() * (max - min);
+	// The panel cow stands on the cluster panel's outer top edge, a bit in from its left corner.
+	// Measured, because the panel's box comes from a different rule in almost every layout; rects
+	// are divided by the container's CSS scale so the numbers are layout px.
+	let clusterPanelEl = $state<HTMLElement>();
+	let panelCowEl = $state<HTMLElement>();
+	let panelCowBox = $state('');
+	$effect(() => {
+		const panel = clusterPanelEl;
+		const cow = panelCowEl;
+		if (!panel || !cow) return;
+		const place = () => {
+			const frame = cow.offsetParent as HTMLElement | null;
+			const box = panel.getBoundingClientRect();
+			if (!frame || !box.width) return;
+			const origin = frame.getBoundingClientRect();
+			const k = frame.offsetWidth ? origin.width / frame.offsetWidth : 1;
+			const width = (box.width / k) * 0.46;
+			const left = (box.left - origin.left) / k + (box.width / k) * 0.12;
+			const top = (box.top - origin.top) / k - (width * 292) / 256;
+			panelCowBox = `left:${left}px;top:${top}px;width:${width}px`;
+		};
+		place();
+		const observer = new ResizeObserver(place);
+		observer.observe(panel);
+		observer.observe(document.documentElement);
+		window.addEventListener('resize', place);
+		return () => {
+			observer.disconnect();
+			window.removeEventListener('resize', place);
+		};
+	});
 	const COW_IN_MS = 1900;
 	const COW_OUT_MS = 950;
 	let cowPhase = $state<'hidden' | 'in' | 'out'>('hidden');
@@ -435,10 +529,13 @@
 			durationMs: stateGameDerived.fallDurationMs(stateGameDerived.exitDistance(row)),
 		});
 
-		// Idle breath. A deterministic per-cell phase — fallJitter is empty until the first tumble,
-		// so position has to carry it — keeps every vegetable on its own long cycle instead of
-		// letting the board pulse as one sheet.
-		const idlePhase = Math.abs((Math.sin(reel * 12.9898 + row * 78.233) * 43758.5453) % 1);
+		// Idle breath. A per-cell phase keeps every vegetable on its own long cycle instead of
+		// letting the board pulse as one sheet. Hashed from position AND revealId: position alone
+		// replayed the same cells in the same order after every spin ("we always move the same
+		// cells", tester 2026-09-24). A hash, not Math.random, so re-running this for a skip press
+		// never reshuffles a phase mid-idle; cells are keyed by revealId, so each spin restarts it.
+		const seed = reel * 12.9898 + row * 78.233 + stateGame.revealId * 37.719;
+		const idlePhase = Math.abs((Math.sin(seed) * 43758.5453) % 1);
 		const idleDuration = 10000 + idlePhase * 8000;
 
 		return [
@@ -626,6 +723,43 @@
 		stateBet.isTurbo = snapshot.isTurbo;
 		stateBet.isSuperTurbo = snapshot.isSuperTurbo;
 	};
+
+	// Holding the spin button is holding Space ("make the spin button work when hold or long
+	// clicked as space when hold", user 2026-09-24): past OnHotkey's 400ms it starts the same hold,
+	// and letting go ends it. The release is heard on the window — the button disables itself at a
+	// bonus entry mid-hold, and a disabled button never sees its pointerup — and the click that
+	// follows a hold's release is not also a tap.
+	const SPIN_HOLD_MS = 400;
+	let spinHoldTimer: ReturnType<typeof setTimeout> | undefined;
+	let spinHeld = false;
+	const endSpinHold = () => {
+		clearTimeout(spinHoldTimer);
+		spinHoldTimer = undefined;
+		window.removeEventListener('pointerup', endSpinHold);
+		window.removeEventListener('pointercancel', endSpinHold);
+		window.removeEventListener('blur', endSpinHold);
+		if (spinHeld) stopSpaceTurbo();
+	};
+	const beginSpinHold = (event: PointerEvent) => {
+		if (event.button !== 0 || controlsBlocked || isReplay) return;
+		spinHeld = false;
+		clearTimeout(spinHoldTimer);
+		spinHoldTimer = setTimeout(() => {
+			spinHeld = true;
+			startSpaceTurbo();
+		}, SPIN_HOLD_MS);
+		window.addEventListener('pointerup', endSpinHold);
+		window.addEventListener('pointercancel', endSpinHold);
+		window.addEventListener('blur', endSpinHold);
+	};
+	const clickSpin = () => {
+		if (spinHeld) {
+			spinHeld = false;
+			return;
+		}
+		spinOrSkip();
+	};
+	$effect(() => () => endSpinHold());
 
 	const stepBet = (direction: -1 | 1) => {
 		if (!canInteract || betOptions.length === 0) return;
@@ -880,7 +1014,7 @@
 	class:garden-sunset={sunsetGarden}
 	class:bonus-super={stateGame.bonusTier === 'super'}
 	class:bonus-hidden={stateGame.bonusTier === 'hidden'}
-	style="--base-plain:url('./assets/veggie-salad/pixel/background/base-plain.webp');--base-mountains:url('./assets/veggie-salad/pixel/background/base-mountains.webp');--base-cloud:url('./assets/veggie-salad/pixel/background/base-cloud.webp');--base-bench:url('./assets/veggie-salad/pixel/background/base-bench.webp');--board-frame:url('./assets/veggie-salad/pixel/board-frame.webp');--bonus-normal-sky:url('./assets/veggie-salad/pixel/background/bonus-normal/sky-ground.webp');--bonus-normal-mountains:url('./assets/veggie-salad/pixel/background/bonus-normal/mountains.webp');--bonus-normal-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/cloud.webp');--bonus-normal-tree:url('./assets/veggie-salad/pixel/background/bonus-normal/tree.webp');--bonus-normal-oak:url('./assets/veggie-salad/pixel/background/bonus-normal/oak.webp');--sunset-treeline:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/treeline.webp');--sunset-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/cloud.webp');--sunset-flower:url('./assets/veggie-salad/pixel/splash/flower.webp');--bonus-super-sky:url('./assets/veggie-salad/pixel/background/bonus-super/sky-ground.webp');--bonus-super-mountains:url('./assets/veggie-salad/pixel/background/bonus-super/mountains.webp');--bonus-super-cloud:url('./assets/veggie-salad/pixel/background/bonus-super/cloud.webp');--bonus-super-moon:url('./assets/veggie-salad/pixel/background/bonus-super/moon.webp');--bonus-super-fence:url('./assets/veggie-salad/pixel/background/bonus-super/fence.webp');--bonus-super-oak:url('./assets/veggie-salad/pixel/background/bonus-super/oak.webp');--bonus-super-star-bright:url('./assets/veggie-salad/pixel/background/bonus-super/star-bright.webp');--bonus-super-star-dim:url('./assets/veggie-salad/pixel/background/bonus-super/star-dim.webp');--hud-button:url('./assets/veggie-salad/pixel/hud-button.webp');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud-button-pressed.webp')"
+	style="--base-plain:url('./assets/veggie-salad/pixel/background/base-plain.webp');--base-mountains:url('./assets/veggie-salad/pixel/background/base-mountains.webp');--base-cloud:url('./assets/veggie-salad/pixel/background/base-cloud.webp');--base-bench:url('./assets/veggie-salad/pixel/background/base-bench.webp');--board-frame:url('./assets/veggie-salad/pixel/board-frame.webp');--bonus-normal-sky:url('./assets/veggie-salad/pixel/background/bonus-normal/sky-ground.webp');--bonus-normal-mountains:url('./assets/veggie-salad/pixel/background/bonus-normal/mountains.webp');--bonus-normal-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/cloud.webp');--bonus-normal-tree:url('./assets/veggie-salad/pixel/background/bonus-normal/tree.webp');--bonus-normal-oak:url('./assets/veggie-salad/pixel/background/bonus-normal/oak.webp');--sunset-treeline:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/treeline.webp');--sunset-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/cloud.webp');--sunset-flower:url('./assets/veggie-salad/pixel/splash/flower.webp');--bonus-super-sky:url('./assets/veggie-salad/pixel/background/bonus-super/sky-ground.webp');--bonus-super-mountains:url('./assets/veggie-salad/pixel/background/bonus-super/mountains.webp');--bonus-super-cloud:url('./assets/veggie-salad/pixel/background/bonus-super/cloud.webp');--bonus-super-moon:url('./assets/veggie-salad/pixel/background/bonus-super/moon.webp');--bonus-super-fence:url('./assets/veggie-salad/pixel/background/bonus-super/fence.webp');--bonus-super-oak:url('./assets/veggie-salad/pixel/background/bonus-super/oak.webp');--bonus-super-star-bright:url('./assets/veggie-salad/pixel/background/bonus-super/star-bright.webp');--bonus-super-star-dim:url('./assets/veggie-salad/pixel/background/bonus-super/star-dim.webp');--hud-button:url('./assets/veggie-salad/pixel/hud/frame.webp');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud/frame-pressed.webp');--hud-bonus:url('./assets/veggie-salad/pixel/hud/bonus.webp');--hud-spin-coin:url('./assets/veggie-salad/pixel/hud/spin-coin.webp')"
 >
 	<!-- Background images cannot interpolate. Persistent layers can: entering a bonus fades its
 	     garden over BASE; leaving fades it away and reveals the exact same BASE layer underneath. -->
@@ -955,13 +1089,13 @@
 	<div class="tree-line tree-front" aria-hidden="true"></div>
 	<div class="meadow" aria-hidden="true"></div>
 	<div class="corner-foliage" aria-hidden="true"></div>
-	<span
-		class="scene-cow"
-		class:peek={cowPhase === 'in'}
-		class:hide={cowPhase === 'out'}
-		aria-hidden="true"
-	>
-		<img src={cowFrame(cowBlinking ? 'cow_blink' : 'cow')} alt="" />
+	<!-- Design 9451:149452: the cow lives behind a haystack in the bottom-left corner and rises
+	     over it to look at the board. -->
+	<span class="cow-nook" aria-hidden="true">
+		<span class="scene-cow" class:peek={cowPhase === 'in'} class:hide={cowPhase === 'out'}>
+			<img src={cowFrame(cowBlinking ? 'cow_blink' : 'cow')} alt="" />
+		</span>
+		<img class="scene-haystack" src="./assets/veggie-salad/pixel/background/haystack.webp" alt="" />
 	</span>
 	<!-- The night garden's foliage (9198:81939) drawn a second time ABOVE the game stage, so the
 	     wolf pup's tail sits behind it as in the design; same class as the background copy, so it
@@ -969,7 +1103,7 @@
 	<span class="super-bonus-layer super-bonus-oak super-oak-front" aria-hidden="true"></span>
 
 	<header class="brand" aria-label={t('VEGGIE SALAD')}>
-		<img src="./assets/veggie-salad/pixel/logo.webp" alt={t('VEGGIE SALAD')} />
+		<img src="./assets/veggie-salad/pixel/logo-px.webp" alt={t('VEGGIE SALAD')} />
 	</header>
 	<img
 		class="studio-mark"
@@ -1003,7 +1137,18 @@
 				{/if}
 			</div>
 		{/if}
+		<!-- Short landscape docks the cluster panel over the haystack's corner and hides the cow, so
+		     there she rises from behind the panel's top edge instead ("in mobile landscape the cow
+		     can show behind the [panel]", user 2026-09-24): same peek clock and blink as the corner
+		     cow. A sibling, not a child — the panel's notched clip-path would cut her off — placed
+		     from the panel's measured box (the effect beside cowPhase). -->
+		<span class="panel-cow" style={panelCowBox} bind:this={panelCowEl} aria-hidden="true">
+			<span class="panel-cow-body" class:peek={cowPhase === 'in'} class:hide={cowPhase === 'out'}>
+				<img src={cowFrame(cowBlinking ? 'cow_blink' : 'cow')} alt="" />
+			</span>
+		</span>
 		<aside
+			bind:this={clusterPanelEl}
 			class="cluster-panel"
 			style={`--slots:${CLUSTER_LOG_SIZE}`}
 			aria-label={t('CLUSTER PAYOUTS')}
@@ -1061,13 +1206,26 @@
 									class="cell"
 									class:cluster-hit={hit}
 									class:scatter-hit={scatterHit}
+									class:scatter-cell={cell?.name === 'SCATTER'}
 									class:empty={!cell}
+									data-veg={cell?.name}
 									class:falling={(stateGame.fallDistances[reel]?.[row] ?? 0) > 0}
 									style={cellMotion(reel, row)}
 								>
 									{#if cell}
 										{#key `${stateGame.revealId}:${reel}:${row}`}
 											<div class="symbol-layer">
+												{#if cell.name === 'SCATTER'}
+													<!-- The scatter's gold pad rides in the symbol layer, not on the cell:
+													     the cell learns the new board the moment a spin starts, so a pad
+													     on it lit up where the king would land before anything fell. -->
+													<span class="special-pad pad-scatter" aria-hidden="true"></span>
+												{:else if VEGGIE_PREMIUM_SYMBOLS.has(cell.name)}
+													<span
+														class="special-pad pad-premium pad-{cell.name.toLowerCase()}"
+														aria-hidden="true"
+													></span>
+												{/if}
 												{#if cell.name === 'SCATTER' && scatterHit}
 													<img
 														class="backplate"
@@ -1075,13 +1233,61 @@
 														alt=""
 													/>
 												{/if}
-												<img
-													class={`symbol symbol-${cell.name.toLowerCase()}`}
-													src={`.${VEGGIE_SYMBOL_ASSETS[cell.name]}`}
-													alt={cell.name.toLowerCase()}
-													draggable="false"
-													use:symbolLiveness={cell.name}
-												/>
+												{#if cell.name === 'SCATTER'}
+													<!-- Every landed king is the design's vector cut into parts
+													     (scripts/build-splash-king.py), framed exactly as onion.webp: he idles
+													     where he lands and cheers when he triggers. -->
+													<span
+														class="symbol symbol-scatter"
+														class:king-cheer={scatterHit}
+														class:king-idle={!scatterHit}
+														role="img"
+														aria-label="scatter"
+													>
+														{#each scatterHit ? KING_CHEER_PARTS : KING_IDLE_PARTS as part (part)}
+															<img
+																class="king-{part}"
+																src={`./assets/veggie-salad/pixel/splash/king/${part}.webp`}
+																alt=""
+																draggable="false"
+															/>
+														{/each}
+													</span>
+												{:else}
+													<img
+														class={`symbol symbol-${cell.name.toLowerCase()}`}
+														src={`.${VEGGIE_SYMBOL_ASSETS[cell.name]}`}
+														alt={cell.name.toLowerCase()}
+														draggable="false"
+														use:symbolLiveness={cell.name}
+													/>
+													{#if hit}
+														<!-- A winner's face moves with its hop (.face-* below): eyes open on the
+														     crouch, ^^ on the jump, a glance on the lean, ^^ on landing — the
+														     frames build-board-crop.py cuts beside every sprite. Their own <img>s,
+														     so the liveness action on the resting sprite can never write over
+														     them mid-win. -->
+														{#each WIN_FACES as face (face)}
+															<img
+																class={`symbol symbol-${cell.name.toLowerCase()} symbol-face face-${face}`}
+																src={winFaceSrc(cell.name, face)}
+																alt=""
+																draggable="false"
+															/>
+														{/each}
+													{/if}
+												{/if}
+												{#if cell.name === 'SCATTER'}
+													<!-- The king's eight gold sparkles (Component 25, 9451:149209), real
+													     elements so each can twinkle and fly on its own during a hold. -->
+													<span class="king-sparks" aria-hidden="true">
+														{#each KING_SPARKS as spark, index (index)}
+															<i
+																style={`left:${spark.x}%;top:${spark.y}%;width:${spark.size}%;--dx:${spark.dx};--spark-delay:${index * -190}ms`}
+															></i>
+														{/each}
+													</span>
+												{/if}
 												{#if cell.multiplier}
 													<span class="multiplier"
 														><span class="multiplier-value">{cell.multiplier}</span><span
@@ -1117,6 +1323,12 @@
 									<div class="cell" class:empty={!cell.name} style={cell.style}>
 										{#if cell.name}
 											<div class="symbol-layer">
+												{#if cell.name === 'SCATTER'}
+													<span class="special-pad pad-scatter"></span>
+												{:else if VEGGIE_PREMIUM_SYMBOLS.has(cell.name as keyof typeof VEGGIE_SYMBOL_ASSETS)}
+													<span class="special-pad pad-premium pad-{cell.name.toLowerCase()}"
+													></span>
+												{/if}
 												<img
 													class={`symbol symbol-${cell.name.toLowerCase()}`}
 													src={`.${VEGGIE_SYMBOL_ASSETS[cell.name as keyof typeof VEGGIE_SYMBOL_ASSETS]}`}
@@ -1192,6 +1404,29 @@
 					alt=""
 				/>
 				<img class="butterfly-layer" src={butterflyLayer('body')} alt="" />
+				<!-- Face patches (scripts/build-normal-butterfly-face.py) over the body: each is
+				     opaque only over the eyes or the mouth, so glances, blinks and chatter run on
+				     their own clocks without fighting over one frame. -->
+				<img
+					class="butterfly-layer butterfly-face face-look-l"
+					src={butterflyLayer('face-look-l')}
+					alt=""
+				/>
+				<img
+					class="butterfly-layer butterfly-face face-look-r"
+					src={butterflyLayer('face-look-r')}
+					alt=""
+				/>
+				<img
+					class="butterfly-layer butterfly-face face-blink"
+					src={butterflyLayer('face-blink')}
+					alt=""
+				/>
+				<img
+					class="butterfly-layer butterfly-face face-mouth"
+					src={butterflyLayer('face-mouth')}
+					alt=""
+				/>
 			</span>
 		</span>
 	{/snippet}
@@ -1383,12 +1618,12 @@
 				class:off={soundMuted}
 				onclick={toggleSound}
 			>
-				<!-- Design 9372:61506 / 9372:61509: each row's glyph is a component with an on and a
-				     slashed off state, drawn at its own size inside the 48px square. -->
+				<!-- Design 9227:176057: each row is a pixel icon in the bar's stepped tile; the design
+				     draws only ON, so OFF is the same icon with a pixel slash (build-menu.py). -->
 				<span class="quick-menu-icon" aria-hidden="true">
 					<img
 						class="qm-glyph qm-sound-{soundMuted ? 'off' : 'on'}"
-						src="./assets/veggie-salad/pixel/ui/sound-{soundMuted ? 'off' : 'on'}.svg"
+						src="./assets/veggie-salad/pixel/ui/menu-sound{soundMuted ? '-off' : ''}.webp"
 						alt=""
 					/>
 				</span>
@@ -1404,14 +1639,20 @@
 				<span class="quick-menu-icon" aria-hidden="true">
 					<img
 						class="qm-glyph qm-music-{musicMuted ? 'off' : 'on'}"
-						src="./assets/veggie-salad/pixel/ui/music-{musicMuted ? 'off' : 'on'}.svg"
+						src="./assets/veggie-salad/pixel/ui/menu-music{musicMuted ? '-off' : ''}.webp"
 						alt=""
 					/>
 				</span>
 				<span>{t('MUSIC')}</span>
 			</button>
 			<button type="button" role="menuitem" onclick={openRules}>
-				<span class="quick-menu-icon info-icon" aria-hidden="true">i</span>
+				<span class="quick-menu-icon" aria-hidden="true">
+					<img
+						class="qm-glyph qm-info"
+						src="./assets/veggie-salad/pixel/ui/menu-info.webp"
+						alt=""
+					/>
+				</span>
 				<span>{t('INFO')}</span>
 			</button>
 		</div>
@@ -1442,9 +1683,12 @@
 						<!-- Open state per 9227:175692: the same box turns amber and carries a cross. -->
 						<span class="close-glyph" aria-hidden="true"></span>
 					{:else}
-						<svg viewBox="0 0 64 64" aria-hidden="true">
-							<path d="M13 17h38v6H13zm0 12h38v6H13zm0 12h38v6H13z" />
-						</svg>
+						<img
+							class="hud-icon icon-menu"
+							src="./assets/veggie-salad/pixel/hud/icon-menu.webp"
+							alt=""
+							draggable="false"
+						/>
 					{/if}
 				</button>
 				{#if !stateConfig.jurisdiction?.disabledBuyFeature}
@@ -1495,7 +1739,12 @@
 							stepBet(-1);
 						}}
 					>
-						<span class="step-glyph minus" aria-hidden="true"></span>
+						<img
+							class="hud-icon icon-minus"
+							src="./assets/veggie-salad/pixel/hud/icon-minus.webp"
+							alt=""
+							draggable="false"
+						/>
 					</button>
 					<button
 						type="button"
@@ -1506,7 +1755,12 @@
 							stepBet(1);
 						}}
 					>
-						<span class="step-glyph plus" aria-hidden="true"></span>
+						<img
+							class="hud-icon icon-plus"
+							src="./assets/veggie-salad/pixel/hud/icon-plus.webp"
+							alt=""
+							draggable="false"
+						/>
 					</button>
 				</div>
 				<button
@@ -1515,12 +1769,17 @@
 					aria-label={isIdle ? t('SPIN') : t('SKIP')}
 					title={isIdle ? t('SPIN') : t('SKIP ANIMATION')}
 					disabled={controlsBlocked}
-					onclick={spinOrSkip}
+					onclick={clickSpin}
+					onpointerdown={beginSpinHold}
+					oncontextmenu={(event) => event.preventDefault()}
 				>
 					{#if isIdle}
-						<svg class="spin-arrow" viewBox="0 0 100 100" aria-hidden="true">
-							<path d="M74 27A33 33 0 1 0 79 66l-10-5a22 22 0 1 1-3-26L55 45h31V14z" />
-						</svg>
+						<img
+							class="spin-arrow"
+							src="./assets/veggie-salad/pixel/hud/spin-arrow.webp"
+							alt=""
+							draggable="false"
+						/>
 					{:else}
 						<span class="stop">■</span>
 					{/if}
@@ -1540,7 +1799,7 @@
 					<img
 						class="turbo-icon"
 						class:wide={stateBet.isSuperTurbo}
-						src="./assets/veggie-salad/pixel/ui/{turboIcon}.webp"
+						src="./assets/veggie-salad/pixel/hud/{turboIcon}.webp"
 						alt=""
 					/>
 				</button>
@@ -1559,23 +1818,13 @@
 						{#if hasAuto}
 							<span>{autoCounterText}</span>
 						{:else}
-							<!-- Traced pixel-for-pixel off design 9283:250375, where this glyph is 7px of ink
-							     inside a 34px box. The smooth 64-unit arrows it replaces collapsed into a
-							     single dot at that size, and the viewBox is tight to the ink so the box
-							     percentage below IS the ink size. -->
-							<svg class="auto-glyph" viewBox="0 0 8 7" aria-hidden="true">
-								<path
-									d="M1 0h7v1h-7zM0 1h2v1h-2zM5 1h3v1h-3zM0 2h2v1h-2zM4 2h4v1h-4zM0 4h3v1h-3zM6 4h1v1h-1zM0 5h2v1h-2zM5 5h2v1h-2zM0 6h6v1h-6z"
-								/>
-							</svg>
-							<!-- The desktop bar (design 9198:123416) draws a different mark: the smooth
-							     twin-arrow vector exported from that node, verbatim. Shown only by the
-							     bottom-bar pass; the rails keep the pixel trace above. -->
-							<svg class="auto-glyph-smooth" viewBox="0 0 10.526 9.83066" aria-hidden="true">
-								<path
-									d="M1.95428 3.74388C2.12317 3.26555 2.39734 2.81573 2.78337 2.43174C4.15422 1.06036 6.37609 1.06036 7.74695 2.43174L8.12201 2.80915H7.01875C6.63053 2.80915 6.31688 3.12292 6.31688 3.5113C6.31688 3.89967 6.63053 4.21345 7.01875 4.21345H9.8153H9.8241C10.2123 4.21345 10.526 3.89967 10.526 3.5113V0.702697C10.526 0.314321 10.2123 0.000547457 9.8241 0.000547457C9.43582 0.000547457 9.12218 0.314321 9.12218 0.702697V1.82614L8.73834 1.43996C6.81916 -0.479986 3.70897 -0.479986 1.78978 1.43996C1.2546 1.97534 0.86857 2.60509 0.631688 3.27871C0.50228 3.64514 0.695295 4.0445 1.05939 4.17395C1.42349 4.30341 1.82487 4.11032 1.95428 3.74608V3.74388ZM0.504472 5.64627C0.394805 5.67918 0.289523 5.73843 0.203983 5.8262C0.116248 5.91397 0.0570273 6.01929 0.0263203 6.13339C0.0197403 6.15972 0.0131602 6.18824 0.00877343 6.21677C0.00219335 6.25407 0 6.29138 0 6.32867V9.1285C0 9.51685 0.31365 9.83066 0.701875 9.83066C1.0901 9.83066 1.40375 9.51685 1.40375 9.1285V8.00725L1.78978 8.39124C3.70897 10.309 6.81916 10.309 8.73615 8.39124C9.27133 7.85585 9.65958 7.22611 9.89644 6.55468C10.0259 6.18824 9.8328 5.7889 9.46876 5.65944C9.10464 5.52998 8.70325 5.72307 8.57384 6.08731C8.40495 6.56565 8.13078 7.01546 7.74475 7.39945C6.3739 8.77084 4.15203 8.77084 2.78118 7.39945L2.77899 7.39726L2.40392 7.02205H3.50938C3.8976 7.02205 4.21125 6.70827 4.21125 6.3199C4.21125 5.93152 3.8976 5.61775 3.50938 5.61775H0.710648C0.675555 5.61775 0.640461 5.61994 0.605367 5.62433C0.570273 5.62871 0.537373 5.63531 0.504472 5.64627Z"
-								/>
-							</svg>
+							<!-- Design 9456:158078 draws the twin arrows as a pixel raster over the AUTO caption. -->
+							<img
+								class="hud-icon icon-auto"
+								src="./assets/veggie-salad/pixel/hud/icon-auto.webp"
+								alt=""
+								draggable="false"
+							/>
 						{/if}
 						<small>{t('AUTO')}</small>
 					</button>
@@ -1737,23 +1986,63 @@
 			radial-gradient(ellipse at 103% 103%, #0b4020 0 17%, transparent 17.5%);
 	}
 	/* ── Cow ───────────────────────────────────────────────────────────────────────────────────
-	   The art is cut off along its neck, which is what lets it read as a head coming round a
-	   corner — so it comes round the screen's own left edge, and the resting pose keeps a sliver of
-	   it off-frame so that cut never shows as a cut. Hidden is a real position outside the viewport
-	   rather than opacity, so nothing ever fades on the grass. */
-	.scene-cow {
+	   Design 9451:149452: a haystack in the bottom-left corner, a third of it off the screen's left
+	   edge and its foot under the HUD, with the cow behind it. The cow no longer comes round the
+	   edge: it RISES from behind the hay and looks over it ("hide the cow behind the haystack",
+	   user 2026-09-24). Its art is still cut along the neck, so it keeps a sliver off the left edge.
+	   The nook clips along its own bottom edge only, so the hidden cow — parked below the hay — can
+	   never show under it, wherever a layout raises the nook; everything above stays unclipped. */
+	.cow-nook {
+		--cow-w: clamp(96px, 14vw, 210px);
+		/* The hay is drawn half again the cow's width so its peak clears the HUD, which covers its
+		   foot as it does in the design; the cow stands in it at 45% of the hay's height. */
+		--hay-w: calc(var(--cow-w) * 1.5);
+		--cow-foot: calc(var(--hay-w) * 0.733 * 0.45);
 		position: absolute;
-		bottom: 13%;
+		bottom: 0;
 		left: 0;
-		z-index: 6;
-		display: block;
-		width: clamp(72px, 9.5vw, 140px);
-		transform: translateX(-104%);
-		transform-origin: 0 100%;
+		/* Under the game stage (z 5): where a layout docks a panel over this corner, the panel wins. */
+		z-index: 4;
+		width: var(--hay-w);
+		height: calc(var(--cow-foot) + var(--cow-w) * 1.3);
+		clip-path: inset(-100vh -100vw 0 -100vw);
 		pointer-events: none;
 	}
-	/* A sneak is a long creep, a pause to check the coast, then the commit — one easing curve
-	   cannot say that, so the travel lives in keyframes instead of in a transition. */
+	.scene-haystack {
+		position: absolute;
+		bottom: 0;
+		left: -33%;
+		width: 100%;
+		height: auto;
+		image-rendering: pixelated;
+	}
+	/* Parked below the hay, fully out of sight; the peek lifts it until its chest sits in the hay. */
+	.scene-cow {
+		position: absolute;
+		bottom: var(--cow-foot);
+		left: 0;
+		display: block;
+		width: var(--cow-w);
+		transform: translate(-11%, 145%);
+		transform-origin: 30% 100%;
+	}
+	/* Portrait: the HUD runs the full width of the foot of the screen, so the nook stands on the
+	   grass just above it instead of behind it. */
+	@media (orientation: portrait) {
+		.cow-nook {
+			/* Smaller than the board's gutter allows: at 22vw she and the hay crowded the board's
+			   bottom-left corner ("on mobile portrait we can reduce the cow and the dry grass",
+			   user 2026-09-24). */
+			--cow-w: clamp(52px, 15vw, 84px);
+			bottom: 15%;
+		}
+	}
+	@media (max-height: 460px) and (orientation: landscape) {
+		.cow-nook {
+			--cow-w: clamp(56px, 16vh, 80px);
+		}
+	}
+	/* A creep until the eyes clear the hay, a pause to check the coast, then the commit up. */
 	.scene-cow.peek {
 		animation: cow-sneak-in 1900ms cubic-bezier(0.32, 0.72, 0.35, 1) forwards;
 	}
@@ -1762,27 +2051,27 @@
 	}
 	@keyframes cow-sneak-in {
 		0% {
-			transform: translateX(-104%) rotate(-7deg);
+			transform: translate(-11%, 145%) rotate(-4deg);
 		}
 		42% {
-			transform: translateX(-52%) rotate(-4deg);
+			transform: translate(-11%, 44%) rotate(-3deg);
 		}
 		58% {
-			transform: translateX(-49%) rotate(-4.5deg);
+			transform: translate(-11%, 41%) rotate(-5deg);
 		}
 		100% {
-			transform: translateX(-11%) rotate(0deg);
+			transform: translate(-11%, 0) rotate(0deg);
 		}
 	}
 	@keyframes cow-sneak-out {
 		0% {
-			transform: translateX(-11%) rotate(0deg);
+			transform: translate(-11%, 0) rotate(0deg);
 		}
 		22% {
-			transform: translateX(-3%) rotate(2.5deg);
+			transform: translate(-11%, -4%) rotate(2deg);
 		}
 		100% {
-			transform: translateX(-104%) rotate(-7deg);
+			transform: translate(-11%, 145%) rotate(-4deg);
 		}
 	}
 	.scene-cow img {
@@ -1801,9 +2090,79 @@
 			transform: translateY(-2%) rotate(1.4deg);
 		}
 	}
-	.scene.bonus-normal .scene-cow,
-	.scene.bonus-super .scene-cow,
-	.scene.bonus-hidden .scene-cow {
+	.scene.bonus-normal .cow-nook,
+	.scene.bonus-super .cow-nook,
+	.scene.bonus-hidden .cow-nook {
+		display: none;
+	}
+	/* The panel cow (see the markup): short landscape only, where the panel covers the corner. The
+	   wrapper ends on the panel's outer top edge and clips everything below it, so the parked cow is
+	   invisible and the peek shows ears, eyes and snout over the panel. */
+	.panel-cow {
+		display: none;
+	}
+	@media (max-height: 460px) and (orientation: landscape) {
+		.scene .cow-nook .scene-cow {
+			display: none;
+		}
+		.panel-cow {
+			position: absolute;
+			/* Under the panel (z 7); left/top/width come from the effect beside cowPhase. */
+			z-index: 6;
+			display: block;
+			aspect-ratio: 256 / 292;
+			overflow: hidden;
+			pointer-events: none;
+		}
+		.panel-cow-body {
+			display: block;
+			width: 100%;
+			transform: translateY(105%);
+			transform-origin: 50% 100%;
+		}
+		.panel-cow-body.peek {
+			animation: panel-cow-in 1900ms cubic-bezier(0.32, 0.72, 0.35, 1) forwards;
+		}
+		.panel-cow-body.hide {
+			animation: panel-cow-out 950ms cubic-bezier(0.55, 0, 0.75, 0.35) forwards;
+		}
+		.panel-cow-body img {
+			display: block;
+			width: 100%;
+			height: auto;
+			image-rendering: pixelated;
+			animation: cow-nod 2.8s ease-in-out infinite;
+		}
+	}
+	/* The corner cow's creep, pause and commit, ending with her chin on the panel's edge. */
+	@keyframes panel-cow-in {
+		0% {
+			transform: translateY(105%);
+		}
+		42% {
+			transform: translateY(62%);
+		}
+		58% {
+			transform: translateY(60%) rotate(-3deg);
+		}
+		100% {
+			transform: translateY(28%);
+		}
+	}
+	@keyframes panel-cow-out {
+		0% {
+			transform: translateY(28%);
+		}
+		22% {
+			transform: translateY(24%);
+		}
+		100% {
+			transform: translateY(105%);
+		}
+	}
+	.scene.bonus-normal .panel-cow,
+	.scene.bonus-super .panel-cow,
+	.scene.bonus-hidden .panel-cow {
 		display: none;
 	}
 	/* ── SUPER wolf pup ───────────────────────────────────────────────────────────────────────
@@ -1827,7 +2186,7 @@
 	}
 	/* Only the wide landscape layouts leave the gutter under the readouts empty; narrower ones
 	   dock the cluster panel there. */
-	@media (min-width: 1180px) and (min-height: 601px) and (orientation: landscape) {
+	@media (min-width: 1180px) and (min-height: 461px) and (orientation: landscape) {
 		.super-wolf {
 			display: flex;
 		}
@@ -1883,7 +2242,7 @@
 		opacity: 1;
 		transition-duration: 850ms;
 	}
-	@media (min-width: 1180px) and (min-height: 601px) and (orientation: landscape) {
+	@media (min-width: 1180px) and (min-height: 461px) and (orientation: landscape) {
 		.super-bonus-oak.super-oak-front {
 			display: block;
 		}
@@ -1948,7 +2307,7 @@
 		height: 18%;
 		pointer-events: none;
 	}
-	@media (min-width: 1180px) and (min-height: 601px) and (orientation: landscape) {
+	@media (min-width: 1180px) and (min-height: 461px) and (orientation: landscape) {
 		.butterfly-flight {
 			display: block;
 		}
@@ -2036,6 +2395,104 @@
 		}
 		to {
 			transform: rotate(9deg);
+		}
+	}
+	/* Face frames switch, never fade: hidden at rest (so reduced motion, which stops the
+	   animations, shows the plain face), shown in steps. The periods are unrelated so the
+	   glance, blink and chatter drift against each other instead of looping as one. */
+	.butterfly-face {
+		opacity: 0;
+		animation-timing-function: step-end;
+		animation-iteration-count: infinite;
+	}
+	.face-look-l {
+		animation-name: butterfly-look-l;
+		animation-duration: 7.3s;
+	}
+	.face-look-r {
+		animation-name: butterfly-look-r;
+		animation-duration: 7.3s;
+	}
+	.face-blink {
+		animation-name: butterfly-blink;
+		animation-duration: 4.1s;
+	}
+	.face-mouth {
+		animation-name: butterfly-chatter;
+		animation-duration: 5.3s;
+	}
+	@keyframes butterfly-look-l {
+		0% {
+			opacity: 0;
+		}
+		18% {
+			opacity: 1;
+		}
+		31% {
+			opacity: 0;
+		}
+	}
+	@keyframes butterfly-look-r {
+		0% {
+			opacity: 0;
+		}
+		60% {
+			opacity: 1;
+		}
+		73% {
+			opacity: 0;
+		}
+	}
+	@keyframes butterfly-blink {
+		0% {
+			opacity: 0;
+		}
+		40% {
+			opacity: 1;
+		}
+		44% {
+			opacity: 0;
+		}
+		84% {
+			opacity: 1;
+		}
+		87.5% {
+			opacity: 0;
+		}
+		91% {
+			opacity: 1;
+		}
+		94.5% {
+			opacity: 0;
+		}
+	}
+	@keyframes butterfly-chatter {
+		0% {
+			opacity: 0;
+		}
+		8% {
+			opacity: 1;
+		}
+		12% {
+			opacity: 0;
+		}
+		15% {
+			opacity: 1;
+		}
+		19% {
+			opacity: 0;
+		}
+		22% {
+			opacity: 1;
+		}
+		27% {
+			opacity: 0;
+		}
+		64% {
+			opacity: 1;
+		}
+		72% {
+			opacity: 0;
 		}
 	}
 	.brand {
@@ -2225,32 +2682,18 @@
 		user-select: none;
 		filter: drop-shadow(0 3px 2px rgb(0 0 0 / 42%));
 	}
-	/* Source sprites carry different transparent margins. Per-symbol boxes compensate those
-	   margins so the visible art—not the PNG canvas—occupies about 90% of its cell. */
+	/* The vegetables (build-board-crop.py) are drawn on a canvas that IS the design's cell, each
+	   already scaled and placed as 9451:148386 shows it, so they take the whole cell and need no
+	   per-symbol boxes. The scatter king keeps his own sprite and box. */
 	.symbol-broccoli,
-	.symbol-carrot {
-		width: 93%;
-		height: 93%;
-	}
-	.symbol-corn {
-		width: 104%;
-		height: 104%;
-	}
-	/* 104.5, not 117: the tomato's art fills 80% of its canvas, so 117% put it at 94% of the cell
-	   while the rest of the crop sits at 85–89% — "it looks bigger than all others" (user,
-	   2026-09-18). Trimmed a further 5% from 110 ("make the tomato 5% smaller", user 2026-09-21). */
-	.symbol-tomato {
-		width: 104.5%;
-		height: 104.5%;
-	}
+	.symbol-corn,
+	.symbol-tomato,
 	.symbol-eggplant,
+	.symbol-carrot,
+	.symbol-pepper,
 	.symbol-onion {
-		width: 99%;
-		height: 99%;
-	}
-	.symbol-pepper {
-		width: 96%;
-		height: 96%;
+		width: 100%;
+		height: 100%;
 	}
 	.symbol-scatter {
 		width: 97%;
@@ -2353,34 +2796,226 @@
 			inset 0 0 0 2px #fff36a,
 			0 0 12px rgb(229 255 69 / 70%);
 	}
+	/* A win, veggie by veggie: the winners' faces play over the hop (.face-* below) and they hop — crouch, stretch up, a little lean at the top, squash on
+	   landing — on one clock for as long as the cluster is held. Each cell starts a touch later
+	   than its neighbour (--harvest-delay), so the cluster ripples instead of bouncing as a slab. */
 	.cell.cluster-hit .symbol-layer {
-		animation: cluster-pulse 720ms ease-in-out infinite alternate;
+		animation: veg-cheer 850ms cubic-bezier(0.33, 0, 0.3, 1) calc(var(--harvest-delay) * 0.6)
+			infinite;
 	}
+	.cell.cluster-hit .symbol:not(.symbol-face) {
+		visibility: hidden;
+	}
+	/* The face over the hop: one clock two hops long (the same 850ms beat and delay as
+	   veg-cheer), so the glance alternates sides. Per hop: eyes open through the crouch (0-14%),
+	   ^^ up the jump, a glance while it leans at the top (54-74%), ^^ again on the landing. A face
+	   held for the whole win read as a still ("veggies stay with static face the whole
+	   animation", user 2026-09-24). Hard switches, like the resting beats — pixel art does not
+	   cross-fade. */
+	.cell.cluster-hit .symbol-face {
+		opacity: 0;
+		animation: 1.7s linear calc(var(--harvest-delay) * 0.6) infinite;
+	}
+	.cell.cluster-hit .face-open {
+		animation-name: face-open;
+	}
+	.cell.cluster-hit .face-blink {
+		animation-name: face-happy;
+	}
+	.cell.cluster-hit .face-look-l {
+		animation-name: face-look-l;
+	}
+	.cell.cluster-hit .face-look-r {
+		animation-name: face-look-r;
+	}
+	@keyframes face-open {
+		0%,
+		6.9%,
+		50%,
+		56.9% {
+			opacity: 1;
+		}
+		7%,
+		49.9%,
+		57%,
+		100% {
+			opacity: 0;
+		}
+	}
+	@keyframes face-happy {
+		0%,
+		6.9%,
+		27%,
+		36.9%,
+		50%,
+		56.9%,
+		77%,
+		86.9% {
+			opacity: 0;
+		}
+		7%,
+		26.9%,
+		37%,
+		49.9%,
+		57%,
+		76.9%,
+		87%,
+		100% {
+			opacity: 1;
+		}
+	}
+	@keyframes face-look-l {
+		0%,
+		26.9%,
+		37%,
+		100% {
+			opacity: 0;
+		}
+		27%,
+		36.9% {
+			opacity: 1;
+		}
+	}
+	@keyframes face-look-r {
+		0%,
+		76.9%,
+		87%,
+		100% {
+			opacity: 0;
+		}
+		77%,
+		86.9% {
+			opacity: 1;
+		}
+	}
+	/* Harvest: a smooth pop — swell, then shrink away with a small spin — and a burst of pixel
+	   bits in the vegetable's own colour flying out of the cell. Replaces the old stepped
+	   white-out. The burst lives on the CELL, not the symbol layer, so the pop does not shrink it. */
 	.phase-removing .cell.cluster-hit .symbol-layer {
 		visibility: visible;
-		animation: harvest var(--remove-duration) steps(6, end) var(--harvest-delay) forwards;
+		animation: veg-pop var(--remove-duration) cubic-bezier(0.3, 0, 0.6, 1) var(--harvest-delay)
+			forwards;
 	}
-	.phase-removing .cell.cluster-hit .symbol-layer::before,
-	.phase-removing .cell.cluster-hit .symbol-layer::after {
+	.phase-removing .cell.cluster-hit::after {
 		content: '';
 		position: absolute;
-		z-index: 8;
-		left: 46%;
-		top: 46%;
-		width: 9%;
-		aspect-ratio: 1;
-		background: #fff25a;
-		box-shadow:
-			-1.9em -1.2em #7bdf2d,
-			1.8em -1.4em #ff9c19,
-			2.2em 0.5em #e93624,
-			-2.1em 0.8em #9c3cff,
-			0.4em 2em #f4f06a;
-		animation: pixel-burst-a var(--remove-duration) steps(5, end) var(--harvest-delay) forwards;
+		inset: -12%;
+		z-index: 9;
+		pointer-events: none;
+		opacity: 0;
+		background-image:
+			linear-gradient(var(--burst), var(--burst)), linear-gradient(#ffd23a, #ffd23a),
+			linear-gradient(var(--burst), var(--burst)), linear-gradient(#fff6c2, #fff6c2),
+			linear-gradient(var(--burst), var(--burst)), linear-gradient(#ffd23a, #ffd23a),
+			linear-gradient(var(--burst), var(--burst)), linear-gradient(#fff6c2, #fff6c2),
+			linear-gradient(var(--burst), var(--burst)), linear-gradient(#ffd23a, #ffd23a),
+			linear-gradient(var(--burst), var(--burst)), linear-gradient(#fff6c2, #fff6c2),
+			linear-gradient(var(--burst), var(--burst)), linear-gradient(#ffd23a, #ffd23a);
+		background-position:
+			83% 45.6%,
+			67.1% 58.7%,
+			70.1% 70.9%,
+			50.5% 67.6%,
+			42.8% 77.1%,
+			33.5% 59.5%,
+			20.3% 59.9%,
+			28.9% 41.4%,
+			20.9% 31.7%,
+			40% 26%,
+			42.8% 14.2%,
+			58.9% 26.1%,
+			70.6% 19.8%,
+			70.8% 40.4%;
+		background-size:
+			13% 13%,
+			10% 10%,
+			10% 10%,
+			13% 13%,
+			10% 10%,
+			10% 10%,
+			13% 13%,
+			10% 10%,
+			10% 10%,
+			13% 13%,
+			10% 10%,
+			10% 10%,
+			13% 13%,
+			10% 10%;
+		background-repeat: no-repeat;
+		image-rendering: pixelated;
+		animation: veg-burst var(--remove-duration) cubic-bezier(0.1, 0.6, 0.3, 1) var(--harvest-delay)
+			forwards;
 	}
-	.phase-removing .cell.cluster-hit .symbol-layer::after {
-		transform: rotate(45deg) scale(0.72);
-		animation-name: pixel-burst-b;
+	.cell[data-veg='BROCCOLI'] {
+		--burst: #8fd14f;
+	}
+	.cell[data-veg='CORN'] {
+		--burst: #ffc21a;
+	}
+	.cell[data-veg='TOMATO'] {
+		--burst: #f0302a;
+	}
+	.cell[data-veg='EGGPLANT'] {
+		--burst: #9a55de;
+	}
+	.cell[data-veg='CARROT'] {
+		--burst: #d0914f;
+	}
+	.cell[data-veg='PEPPER'] {
+		--burst: #ff5d8f;
+	}
+	.cell[data-veg='ONION'] {
+		--burst: #fff3dc;
+	}
+	@keyframes veg-cheer {
+		0%,
+		100% {
+			transform: none;
+		}
+		14% {
+			transform: scale(1.12, 0.86);
+		}
+		38% {
+			transform: translateY(-17%) scale(0.92, 1.1);
+		}
+		54% {
+			transform: translateY(-19%) rotate(-5deg);
+		}
+		74% {
+			transform: scale(1.12, 0.88);
+		}
+		88% {
+			transform: scale(0.97, 1.03);
+		}
+	}
+	@keyframes veg-pop {
+		0% {
+			transform: none;
+			opacity: 1;
+		}
+		32% {
+			transform: scale(1.24);
+			opacity: 1;
+			filter: brightness(1.15);
+		}
+		100% {
+			transform: scale(0) rotate(12deg);
+			opacity: 0;
+			filter: brightness(1.15);
+		}
+	}
+	@keyframes veg-burst {
+		0% {
+			opacity: 0;
+			transform: scale(0.3);
+		}
+		25% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+			transform: translateY(10%) scale(1.5);
+		}
 	}
 	/* Bonus-entry scatters: gold cell and a slow throb, so counting them takes no effort. Kept
 	   distinct from the lime cluster highlight — a scatter is not a pay. */
@@ -2393,8 +3028,255 @@
 			inset 0 0 0 2px #fff3b0,
 			0 0 14px rgb(255 199 62 / 75%);
 	}
+	/* The glow only: the king does his own moving now (.king-cheer below), and a whole-cell scale
+	   on top of his jump made him judder. */
 	.cell.scatter-hit .symbol-layer {
 		animation: scatter-throb 620ms ease-in-out infinite alternate;
+	}
+	/* The triggering king cheers like a graduate: a crouch, a big leap with the pelerina thrown up
+	   like two arms, the crown tossed up spinning a full turn and caught on landing, then two happy
+	   bounces with the arms waving. Every part is a full-canvas layer, so origins are points on him
+	   (build-splash-king.py prints the boxes). One 1.6s clock, looping for as long as the hold. */
+	.king-cheer {
+		display: block;
+		transform-origin: 50% 90%;
+		animation: king-cheer-jump 1.6s ease-in-out infinite;
+	}
+	.king-cheer img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		image-rendering: pixelated;
+		animation: 1.6s ease-in-out infinite;
+	}
+	.king-cheer .king-body {
+		transform-origin: 50% 89%;
+		animation-name: king-cheer-body;
+	}
+	.king-cheer .king-crown {
+		transform-origin: 50% 27%;
+		animation-name: king-cheer-crown;
+	}
+	.king-cheer .king-sprout {
+		transform-origin: 50% 24%;
+		animation-name: king-cheer-sprout;
+	}
+	.king-cheer .king-cape-l {
+		transform-origin: 44% 60%;
+		animation-name: king-cheer-cape-l;
+	}
+	.king-cheer .king-cape-r {
+		transform-origin: 56% 60%;
+		animation-name: king-cheer-cape-r;
+	}
+	.king-cheer .king-feet-l {
+		transform-origin: 40% 86%;
+		animation-name: king-cheer-foot-l;
+	}
+	.king-cheer .king-feet-r {
+		transform-origin: 60% 86%;
+		animation-name: king-cheer-foot-r;
+	}
+	@keyframes king-cheer-jump {
+		0%,
+		8%,
+		55%,
+		72%,
+		86%,
+		100% {
+			transform: translateY(0);
+		}
+		30% {
+			transform: translateY(-32%);
+		}
+		64% {
+			transform: translateY(-10%);
+		}
+		79% {
+			transform: translateY(-8%);
+		}
+	}
+	@keyframes king-cheer-body {
+		0%,
+		100% {
+			transform: scale(1.06, 0.93);
+		}
+		14% {
+			transform: scale(0.94, 1.08);
+		}
+		30%,
+		48% {
+			transform: scale(1, 1);
+		}
+		55% {
+			transform: scale(1.08, 0.92);
+		}
+		60% {
+			transform: scale(0.97, 1.04);
+		}
+		72% {
+			transform: scale(1.05, 0.95);
+		}
+		76% {
+			transform: scale(0.98, 1.03);
+		}
+		86% {
+			transform: scale(1.04, 0.96);
+		}
+	}
+	@keyframes king-cheer-crown {
+		0%,
+		100% {
+			transform: translateY(3%) rotate(0);
+		}
+		12% {
+			transform: translateY(-6%) rotate(-40deg);
+		}
+		30% {
+			transform: translateY(-40%) rotate(-220deg);
+		}
+		46% {
+			transform: translateY(-14%) rotate(-360deg);
+		}
+		55% {
+			transform: translateY(4%) rotate(-352deg);
+		}
+		62% {
+			transform: translateY(-2%) rotate(-366deg);
+		}
+		72% {
+			transform: translateY(3%) rotate(-356deg);
+		}
+		80% {
+			transform: translateY(-1%) rotate(-363deg);
+		}
+		86% {
+			transform: translateY(3%) rotate(-360deg);
+		}
+	}
+	@keyframes king-cheer-sprout {
+		0%,
+		100% {
+			transform: translateY(4%) rotate(-4deg);
+		}
+		14% {
+			transform: translateY(-3%) rotate(8deg);
+		}
+		30% {
+			transform: translateY(-2%) rotate(-10deg);
+		}
+		46% {
+			transform: translateY(0) rotate(10deg);
+		}
+		55% {
+			transform: translateY(5%) rotate(-8deg);
+		}
+		64% {
+			transform: translateY(-2%) rotate(6deg);
+		}
+		72% {
+			transform: translateY(4%) rotate(-5deg);
+		}
+		80% {
+			transform: translateY(-1%) rotate(5deg);
+		}
+	}
+	@keyframes king-cheer-cape-l {
+		0%,
+		100% {
+			transform: translateY(2%) rotate(-3deg);
+		}
+		14% {
+			transform: translateY(-2%) rotate(24deg);
+		}
+		30%,
+		44% {
+			transform: translateY(-3%) rotate(32deg);
+		}
+		55% {
+			transform: translateY(2%) rotate(14deg);
+		}
+		64% {
+			transform: translateY(-2%) rotate(28deg);
+		}
+		72% {
+			transform: translateY(1%) rotate(10deg);
+		}
+		79% {
+			transform: translateY(-2%) rotate(26deg);
+		}
+		88% {
+			transform: translateY(1%) rotate(6deg);
+		}
+	}
+	@keyframes king-cheer-cape-r {
+		0%,
+		100% {
+			transform: translateY(2%) rotate(3deg);
+		}
+		14% {
+			transform: translateY(-2%) rotate(-24deg);
+		}
+		30%,
+		44% {
+			transform: translateY(-3%) rotate(-32deg);
+		}
+		55% {
+			transform: translateY(2%) rotate(-14deg);
+		}
+		64% {
+			transform: translateY(-2%) rotate(-10deg);
+		}
+		72% {
+			transform: translateY(1%) rotate(-28deg);
+		}
+		79% {
+			transform: translateY(-2%) rotate(-8deg);
+		}
+		88% {
+			transform: translateY(1%) rotate(-24deg);
+		}
+	}
+	@keyframes king-cheer-foot-l {
+		0%,
+		8%,
+		55%,
+		72%,
+		86%,
+		100% {
+			transform: translateY(0) rotate(0);
+		}
+		22%,
+		40% {
+			transform: translateY(4%) rotate(-16deg);
+		}
+		64% {
+			transform: translateY(2%) rotate(-8deg);
+		}
+		79% {
+			transform: translateY(2%) rotate(-8deg);
+		}
+	}
+	@keyframes king-cheer-foot-r {
+		0%,
+		8%,
+		55%,
+		72%,
+		86%,
+		100% {
+			transform: translateY(0) rotate(0);
+		}
+		22%,
+		40% {
+			transform: translateY(4%) rotate(16deg);
+		}
+		64% {
+			transform: translateY(2%) rotate(8deg);
+		}
+		79% {
+			transform: translateY(2%) rotate(8deg);
+		}
 	}
 	.cell.empty::before {
 		background: linear-gradient(145deg, #354e1b, #18320f);
@@ -2404,7 +3286,7 @@
 	   cell runs that cycle at its own offset — so only a handful are ever moving at once and no two
 	   move together. Idle phase only, and never on a cell a win or a scatter is already animating.
 	   The reduced-motion block above flattens this along with everything else. */
-	.board.phase-idle .cell:not(.cluster-hit):not(.scatter-hit) .symbol {
+	.board.phase-idle .cell:not(.cluster-hit):not(.scatter-cell) .symbol {
 		transform-origin: center bottom;
 		animation: veg-breathe var(--idle-duration, 14s) ease-in-out var(--idle-delay, 0s) infinite;
 	}
@@ -2780,6 +3662,10 @@
 		position: relative;
 		display: grid;
 		place-items: center;
+		/* A long press is a hold (beginSpinHold), not a text selection or the image callout. */
+		-webkit-touch-callout: none;
+		user-select: none;
+		touch-action: manipulation;
 		width: 78px;
 		aspect-ratio: 1;
 		border: 5px solid #ffebad !important;
@@ -3479,41 +4365,10 @@
 	}
 	@keyframes scatter-throb {
 		from {
-			transform: scale(1);
 			filter: brightness(1);
 		}
 		to {
-			transform: scale(1.12);
 			filter: brightness(1.28) drop-shadow(0 0 8px rgb(255 226 128 / 85%));
-		}
-	}
-	@keyframes cluster-pulse {
-		from {
-			transform: scale(1);
-			filter: brightness(1);
-		}
-		to {
-			transform: scale(1.08);
-			filter: brightness(1.24);
-		}
-	}
-	@keyframes harvest {
-		0% {
-			transform: none;
-			filter: brightness(1.2);
-		}
-		26% {
-			transform: scale(1.18, 0.88);
-			filter: brightness(1.9);
-		}
-		48% {
-			transform: scale(0.94, 1.14) translateY(-8%);
-			filter: brightness(2.2);
-		}
-		100% {
-			transform: scale(0.06) rotate(14deg) translateY(6%);
-			opacity: 0;
-			filter: brightness(2.4);
 		}
 	}
 	@keyframes card-in {
@@ -3697,7 +4552,7 @@
 			animation-duration: var(--fall-duration), var(--impact-duration) !important;
 		}
 		.phase-removing .cell.cluster-hit .symbol-layer,
-		.phase-removing .cell.cluster-hit .symbol-layer::after {
+		.phase-removing .cell.cluster-hit::after {
 			animation-duration: var(--remove-duration) !important;
 		}
 	}
@@ -3729,7 +4584,7 @@
 		padding: 0;
 		border: 0;
 		border-radius: 0;
-		background: url('/assets/veggie-salad/pixel/logo.webp') center / contain no-repeat;
+		background: url('/assets/veggie-salad/pixel/logo-px.webp') center / contain no-repeat;
 		box-shadow: none;
 		transform: translateX(-50%);
 	}
@@ -3784,6 +4639,306 @@
 			inset 0 0 0 2px #e8f45c,
 			0 0 0 2px #4d7315;
 	}
+	/* Design 9451:148386: a scatter sits on a gold pad (Symbols pad 9451:148843 — #948106 under a
+	   soft #CD9C1F glow, #2F4110 keyline; drawn inside the falling symbol layer, never on the
+	   cell, so it cannot give the king away before he lands) with the king's eight gold sparkles either side of him
+	   (Component 25, 9451:149209, in its 89-unit frame — the same frame onion.webp uses). */
+	.special-pad {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+	.pad-scatter {
+		background: radial-gradient(ellipse 50% 62% at 50% 50%, #cd9c1f, #948106);
+		box-shadow: inset 0 0 0 1px #2f4110;
+	}
+	/* The top three payers' pad (designs 9476:54863 / 9476:53635 / 9476:55568): darker olive
+	   under a faint gold keyline, and the same gold blurred just inside it (the tomato frame's
+	   3px blurred border). The art brings its own glow (build-board-premium.py). In the symbol
+	   layer like the scatter's, so it lands with its symbol. */
+	.pad-premium {
+		background: #45510c;
+		box-shadow:
+			inset 0 0 0 1px rgb(253 199 19 / 32%),
+			inset 0 0 3px 2px rgb(253 199 19 / 32%);
+	}
+	/* Each premium's pad has its own keyline (user 2026-09-24, "it should be red"): the tomato
+	   (TOMATO, 9476:56858) sits on a warmer gold-olive under a RED keyline and blurred red frame,
+	   the cabbage (BROCCOLI, 9476:56701) keeps the olive under a GREEN one; the pepper (CORN,
+	   9476:53635) is the gold default above. */
+	.pad-premium.pad-tomato {
+		background: rgb(131 108 4 / 86%);
+		box-shadow:
+			inset 0 0 0 1px rgb(97 11 13 / 58%),
+			inset 0 0 3px 3px rgb(97 11 13 / 58%);
+	}
+	.pad-premium.pad-broccoli {
+		box-shadow:
+			inset 0 0 0 1px rgb(187 229 82 / 21%),
+			inset 0 0 3px 3px rgb(187 229 82 / 27%);
+	}
+	/* A win or a trigger shows its highlight on the cell instead. */
+	.cell.scatter-hit .special-pad,
+	.cell.cluster-hit .special-pad {
+		display: none;
+	}
+	.king-sparks {
+		position: absolute;
+		left: 1.5%;
+		top: 1.5%;
+		width: 97%;
+		height: 97%;
+		pointer-events: none;
+	}
+	.king-sparks i {
+		position: absolute;
+		aspect-ratio: 1;
+		background: #fdcc05;
+		box-shadow: inset 0 0 0 max(1px, 12%) #fda303;
+		image-rendering: pixelated;
+	}
+	/* During a scatter hold the sparkles come alive: each twinkles and bursts out to its side of
+	   the king and drifts back, on its own phase, while he cheers. */
+	.cell.scatter-hit .king-sparks i {
+		animation: king-spark 1.14s cubic-bezier(0.3, 0, 0.4, 1) var(--spark-delay) infinite;
+	}
+	/* A king who lands without triggering was a still sprite ("scatter stays static on base when
+	   we got him", user 2026-09-24). He idles on the rig instead: a small hop with a squash on
+	   landing, the pelerina fluttering, crown and sprout bobbing a beat behind, feet tapping, and a
+	   blink on its own clock. Calmer than the cheer, so a trigger still reads as the bigger moment.
+	   Each cell runs at its own phase (--idle-delay), and the sparkles twinkle in place. */
+	.king-idle {
+		display: block;
+		transform-origin: 50% 90%;
+		animation: king-idle-hop 2.8s ease-in-out var(--idle-delay, 0s) infinite;
+	}
+	.king-idle img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		image-rendering: pixelated;
+		animation: 2.8s ease-in-out var(--idle-delay, 0s) infinite;
+	}
+	.king-idle .king-body,
+	.king-idle .king-body-open {
+		transform-origin: 50% 89%;
+		animation-name: king-idle-body;
+	}
+	.king-idle .king-body-open {
+		animation:
+			king-idle-body 2.8s ease-in-out var(--idle-delay, 0s) infinite,
+			king-idle-blink 3.7s steps(1) var(--idle-delay, 0s) infinite;
+	}
+	.king-idle .king-crown {
+		transform-origin: 50% 27%;
+		animation-name: king-idle-crown;
+	}
+	.king-idle .king-sprout {
+		transform-origin: 50% 24%;
+		animation-name: king-idle-sprout;
+	}
+	.king-idle .king-cape-l {
+		transform-origin: 44% 60%;
+		animation-name: king-idle-cape-l;
+	}
+	.king-idle .king-cape-r {
+		transform-origin: 56% 60%;
+		animation-name: king-idle-cape-r;
+	}
+	.king-idle .king-feet-l {
+		transform-origin: 40% 86%;
+		animation-name: king-idle-foot-l;
+	}
+	.king-idle .king-feet-r {
+		transform-origin: 60% 86%;
+		animation-name: king-idle-foot-r;
+	}
+	@keyframes king-idle-hop {
+		0%,
+		30%,
+		100% {
+			transform: none;
+		}
+		42% {
+			transform: translateY(-7%);
+		}
+		54% {
+			transform: none;
+		}
+		62% {
+			transform: translateY(-2.5%);
+		}
+		70% {
+			transform: none;
+		}
+	}
+	@keyframes king-idle-body {
+		0%,
+		100% {
+			transform: none;
+		}
+		28% {
+			transform: scale(1.05, 0.95);
+		}
+		40% {
+			transform: scale(0.96, 1.05);
+		}
+		54% {
+			transform: scale(1.06, 0.94);
+		}
+		60% {
+			transform: none;
+		}
+	}
+	@keyframes king-idle-blink {
+		0%,
+		92%,
+		100% {
+			opacity: 1;
+		}
+		94%,
+		97% {
+			opacity: 0;
+		}
+	}
+	@keyframes king-idle-crown {
+		0%,
+		100% {
+			transform: none;
+		}
+		32% {
+			transform: translateY(2%) rotate(-3deg);
+		}
+		46% {
+			transform: translateY(-3%) rotate(4deg);
+		}
+		58% {
+			transform: translateY(1.5%) rotate(-2deg);
+		}
+		68% {
+			transform: none;
+		}
+	}
+	@keyframes king-idle-sprout {
+		0%,
+		100% {
+			transform: none;
+		}
+		34% {
+			transform: rotate(-6deg);
+		}
+		50% {
+			transform: rotate(7deg);
+		}
+		64% {
+			transform: rotate(-3deg);
+		}
+	}
+	@keyframes king-idle-cape-l {
+		0%,
+		100% {
+			transform: none;
+		}
+		30% {
+			transform: rotate(-3deg);
+		}
+		44% {
+			transform: rotate(9deg);
+		}
+		58% {
+			transform: rotate(-2deg);
+		}
+		66% {
+			transform: rotate(4deg);
+		}
+	}
+	@keyframes king-idle-cape-r {
+		0%,
+		100% {
+			transform: none;
+		}
+		30% {
+			transform: rotate(3deg);
+		}
+		44% {
+			transform: rotate(-9deg);
+		}
+		58% {
+			transform: rotate(2deg);
+		}
+		66% {
+			transform: rotate(-4deg);
+		}
+	}
+	@keyframes king-idle-foot-l {
+		0%,
+		36%,
+		100% {
+			transform: none;
+		}
+		44% {
+			transform: rotate(-10deg);
+		}
+		54% {
+			transform: none;
+		}
+	}
+	@keyframes king-idle-foot-r {
+		0%,
+		40%,
+		100% {
+			transform: none;
+		}
+		48% {
+			transform: rotate(10deg);
+		}
+		58% {
+			transform: none;
+		}
+	}
+	.cell.scatter-cell:not(.scatter-hit) .king-sparks i {
+		animation: king-twinkle 1.9s steps(1) var(--spark-delay) infinite;
+	}
+	@keyframes king-twinkle {
+		0%,
+		100% {
+			transform: none;
+			opacity: 1;
+		}
+		40% {
+			transform: scale(1.35);
+			filter: brightness(1.3);
+		}
+		55% {
+			transform: scale(0.6);
+			opacity: 0.55;
+		}
+	}
+	@keyframes king-spark {
+		0%,
+		100% {
+			transform: none;
+			opacity: 1;
+		}
+		30% {
+			transform: translate(calc(var(--dx) * 90%), -120%) scale(1.5);
+			filter: brightness(1.35);
+		}
+		55% {
+			transform: translate(calc(var(--dx) * 150%), -200%) scale(0.5);
+			opacity: 0.35;
+		}
+		56% {
+			transform: scale(0.2);
+			opacity: 0;
+		}
+		80% {
+			transform: scale(1.2);
+			opacity: 1;
+		}
+	}
+
 	.cell.scatter-hit::before {
 		background: #b47c1e;
 		box-shadow:
@@ -3985,62 +5140,6 @@
 	   now carry their own design colours, so there is nothing left for this block to repaint. */
 	.close {
 		border-radius: 0 !important;
-	}
-	@keyframes harvest {
-		0% {
-			transform: scale(1);
-			opacity: 1;
-			filter: brightness(1);
-		}
-		24% {
-			transform: scale(1.18, 0.84);
-			filter: brightness(2.4);
-		}
-		48% {
-			transform: scale(0.88, 1.13);
-			opacity: 1;
-			filter: brightness(3);
-		}
-		76% {
-			transform: scale(0.42);
-			opacity: 0.7;
-			filter: brightness(2);
-		}
-		100% {
-			transform: scale(0);
-			opacity: 0;
-			filter: brightness(2);
-		}
-	}
-	@keyframes pixel-burst-a {
-		0%,
-		20% {
-			transform: translate(0, 0) scale(0);
-			opacity: 0;
-		}
-		35% {
-			transform: translate(0, 0) scale(1);
-			opacity: 1;
-		}
-		100% {
-			transform: translate(-120%, -95%) scale(0.3);
-			opacity: 0;
-		}
-	}
-	@keyframes pixel-burst-b {
-		0%,
-		20% {
-			transform: rotate(45deg) translate(0, 0) scale(0);
-			opacity: 0;
-		}
-		35% {
-			transform: rotate(45deg) translate(0, 0) scale(0.72);
-			opacity: 1;
-		}
-		100% {
-			transform: rotate(45deg) translate(110%, 105%) scale(0.2);
-			opacity: 0;
-		}
 	}
 	@keyframes pixel-win-in {
 		0% {
@@ -4767,14 +5866,6 @@
 		position: relative;
 		isolation: isolate;
 	}
-	.hud button svg {
-		display: block;
-		width: 62%;
-		height: 62%;
-		margin: auto;
-		fill: currentcolor;
-		filter: drop-shadow(2px 2px 0 rgb(35 13 2 / 50%));
-	}
 	.hud .utility,
 	.bet-stepper button {
 		border-radius: 0 !important;
@@ -4805,21 +5896,8 @@
 		place-items: center;
 		padding: 5px 2px 4px;
 	}
-	/* Measured off the design's own HUD strip: inside a 50px button the auto arrows are 10px of ink
-	   over a 21px AUTO caption — the same fifth-of-the-box the mobile rail draws. The viewBox is
-	   tight to the glyph, so this percentage is the ink itself; `height: auto` keeps its 8:7. */
-	.hud-right .utility svg {
-		width: 20%;
-		height: auto;
-		filter: none;
-	}
 	.auto-glyph {
 		shape-rendering: crispedges;
-	}
-	/* Scoped under the bar so `.hud button svg { display: block }` above cannot win the cascade
-	   and stack both marks in one button ("this button is wrong", user 2026-09-17). */
-	.hud button .auto-glyph-smooth {
-		display: none;
 	}
 	.hud-right .utility small {
 		min-height: 0.72em;
@@ -4946,10 +6024,6 @@
 		.hud {
 			bottom: max(6px, env(safe-area-inset-bottom, 0px)) !important;
 		}
-		.hud button svg {
-			width: 58%;
-			height: 58%;
-		}
 		.hud .utility,
 		.bet-stepper button,
 		.hud-left .utility,
@@ -4961,7 +6035,7 @@
 		}
 	}
 
-	@media (max-height: 520px) and (orientation: landscape) {
+	@media (max-height: 460px) and (orientation: landscape) {
 		.brand {
 			top: -38px;
 			width: min(42vw, 440px);
@@ -5483,11 +6557,6 @@
 			padding: 0;
 		}
 
-		.hud button svg {
-			width: 55%;
-			height: 55%;
-		}
-
 		.bonus-readouts {
 			top: 4px;
 			right: 54px;
@@ -5900,31 +6969,24 @@
 		color: currentColor;
 	}
 
-	/* Glyph widths are the design's own boxes on its 48px square: sound 22.5 / 32 (the slash
-	   needs the room), music 24.6 / 21.6. Height follows each SVG's aspect. Smooth vectors, so
-	   the skin's blanket `pixelated` is lifted like the turbo bolt's. */
+	/* Design 9227:176057: pixel icons (scripts/build-menu.py) at the design's own boxes on its
+	   49-unit tile — sound 34, music 28, the "i" 23.9 wide. The off icons carry their slash inside
+	   the same box, so they keep the on width. */
 	.quick-menu-icon img {
 		display: block;
 		height: auto;
-		image-rendering: auto;
+		image-rendering: pixelated;
 	}
-	.qm-sound-on {
-		width: 47%;
-	}
+	.qm-sound-on,
 	.qm-sound-off {
-		width: 67%;
+		width: 69%;
 	}
-	.qm-music-on {
-		width: 51%;
-	}
+	.qm-music-on,
 	.qm-music-off {
-		width: 45%;
+		width: 57%;
 	}
-
-	.quick-menu-icon.info-icon {
-		font-family: 'Jersey 10', serif;
-		font-size: 18px;
-		font-weight: 900;
+	.qm-info {
+		width: 49%;
 	}
 
 	/* Portrait owns the viewport height. Extra room stays inside the game stage, never below HUD. */
@@ -6155,11 +7217,6 @@
 			width: 28px;
 			height: 28px;
 			padding: 0;
-		}
-
-		.hud button svg {
-			width: 54%;
-			height: 54%;
 		}
 
 		.metrics {
@@ -7287,7 +8344,7 @@
 		pointer-events: none;
 	}
 	/* Wide landscape only: everywhere else the panel has the readouts or the board right above it. */
-	@media (min-width: 1180px) and (min-height: 601px) and (orientation: landscape) {
+	@media (min-width: 1180px) and (min-height: 461px) and (orientation: landscape) {
 		.sunset-owl {
 			display: block;
 		}
@@ -7774,17 +8831,6 @@
 			align-content: center;
 			justify-items: center;
 		}
-		.scene .hud-right .auto .auto-glyph {
-			display: none;
-		}
-		.scene .hud-right .auto .auto-glyph-smooth {
-			display: block;
-			width: calc(var(--pw) * 0.0223);
-			height: auto;
-			margin: 0;
-			fill: #fff;
-			filter: none;
-		}
 		.scene .hud-right .auto small {
 			min-height: 0;
 			color: #fff;
@@ -7832,8 +8878,11 @@
 	/* The height gate is what keeps this off a landscape phone. The frame it is measured from is
 	   1200x670; on an 800x360 shell these rules drew 730x311 of bar over a 360-tall screen, and
 	   because they shout they beat the rail pass wherever it sits in the file. Short landscape
-	   belongs to that pass, and its `max-height: 600px` is the other half of this gate. */
-	@media (min-width: 681px) and (orientation: landscape) and (min-height: 601px) {
+	   belongs to that pass, and its `max-height: 460px` is the other half of this gate. The line
+	   was 600 until a laptop-sized frame (about 940x530) got the phone rail ("this is laptop
+	   simulator it should look like normal desktop", user 2026-09-24); landscape phones stay
+	   under ~430 tall. */
+	@media (min-width: 681px) and (orientation: landscape) and (min-height: 461px) {
 		.scene .hud {
 			box-sizing: border-box;
 			display: grid;
@@ -7911,11 +8960,6 @@
 				0 89.9%
 			) !important;
 		}
-		.scene .hud button svg {
-			width: 54%;
-			height: 54%;
-			filter: none;
-		}
 		/* AUTO, per 9198:123416: a 48x49 box holding the smooth twin-arrow mark (10.5 x 9.8, so
 		   22% of the box) over an 8px bold sans caption on a 12px line, the pair centred as one
 		   stack with 2px between. The pixel trace and Jersey caption the rails use read as a
@@ -7930,17 +8974,6 @@
 			   ancestor (here the viewport), which put 29px between the arrows and the caption. */
 			gap: 4%;
 			padding: 0 !important;
-		}
-		.scene .hud-right .utility .auto-glyph {
-			display: none;
-		}
-		.scene .hud-right .utility .auto-glyph-smooth {
-			display: block;
-			width: 22cqw;
-			height: auto;
-			margin: 0;
-			fill: #fff;
-			filter: none;
 		}
 		.scene .hud-right .utility small {
 			color: #fff;
@@ -8181,7 +9214,7 @@
 
 	/* Landscape sizing, to the same scale as the bar's own controls — so it carries the bar's own
 	   height gate rather than reaching a shell that has no bar. */
-	@media (min-width: 681px) and (orientation: landscape) and (min-height: 601px) {
+	@media (min-width: 681px) and (orientation: landscape) and (min-height: 461px) {
 		/* Design 9227:176057 on the 1200x670 frame: a 170-wide box holding 48px icon squares
 		   with 24px Jersey labels 18px to their right, rows 11px apart on hairlines. The old
 		   34px icons and 15-20px labels were "not big enough" (user, 2026-09-16); these are the
@@ -8223,9 +9256,6 @@
 			   the right color", user 2026-09-18). */
 			color: #f2cb8c;
 		}
-		.scene .quick-menu-icon.info-icon {
-			font-size: clamp(28px, calc(32 * var(--qm)), 42px);
-		}
 	}
 	/* ── Landscape phones and short landscape shells ──────────────────────────────────────────
 	   This pass is LAST on purpose. The bottom-bar and desktop-HUD passes below it are written for
@@ -8241,7 +9271,7 @@
 	   360 tall — a resized desktop window is the same shape and the bottom bar fits it just as
 	   badly — and gating on the pointer left such a window falling through to a pass written for a
 	   670-tall frame. */
-	@media (orientation: landscape) and (max-height: 600px) {
+	@media (orientation: landscape) and (max-height: 460px) {
 		.scene {
 			--land-left: 22vw;
 			--land-hud-border: clamp(3px, 0.45vw, 5px);
@@ -8500,16 +9530,6 @@
 			align-content: center;
 			gap: 13%;
 			padding: 0;
-		}
-		.scene .hud .utility svg {
-			/* 8px of ink across the design's 34px box. */
-			width: 24%;
-			height: auto;
-		}
-		/* The menu bars are the widest ink in the rail — 12px of the same 34px box. Its viewBox
-		   carries about half its width in padding, so the box percentage is roughly double. */
-		.scene .hud-left .utility svg {
-			width: 76%;
 		}
 		.scene .hud .turbo .turbo-icon {
 			width: auto;
@@ -8898,5 +9918,106 @@
 			background: var(--bonus-super-oak) center / 100% 100% no-repeat;
 			image-rendering: pixelated;
 		}
+	}
+
+	/* ── Bar furniture from design 9456:158078 ────────────────────────────────────────────────
+	   The design draws every control as pixel art (scripts/build-hud.py): the stepped 49-unit
+	   button frame (via --hud-button above), the stepped BONUS plate, and the stepped coin with a
+	   separate glowing arrow. These come last so they beat every layout pass above, which keep
+	   sizing the controls; only the look is set here. Icon sizes are the design's ink boxes as a
+	   share of their 49-unit frame, measured off its 4x export. */
+	/* The bar pass (landscape, min-height 601) repaints these as a flat 1px box; the design's
+	   stepped frame replaces it everywhere. The open menu toggle keeps its amber (more specific). */
+	.scene .hud .utility,
+	.scene .hud .bet-stepper button {
+		border: 0 !important;
+		background: var(--hud-button) center / 100% 100% no-repeat !important;
+		image-rendering: pixelated;
+	}
+	.scene .hud .utility:active,
+	.scene .hud .utility.pressed-flash,
+	.scene .hud .bet-stepper button:active {
+		background-image: var(--hud-button-pressed) !important;
+	}
+	.scene .hud .hud-icon,
+	.scene .hud .turbo-icon {
+		display: block;
+		height: auto !important;
+		max-height: none !important;
+		object-fit: contain;
+		image-rendering: pixelated;
+		filter: none !important;
+	}
+	.scene .hud .icon-menu {
+		width: 40% !important;
+	}
+	.scene .hud .icon-minus,
+	.scene .hud .icon-plus {
+		width: 45% !important;
+	}
+	.scene .hud .turbo-icon {
+		width: auto !important;
+		height: 52% !important;
+	}
+	.scene .hud .icon-auto {
+		width: 44% !important;
+	}
+	.scene .hud .bonus-button {
+		border: 0 !important;
+		border-radius: 0 !important;
+		clip-path: none !important;
+		box-shadow: none !important;
+		background: var(--hud-bonus) center / 100% 100% no-repeat !important;
+		image-rendering: pixelated;
+	}
+	.scene .hud .bonus-button span {
+		font-family: 'Jersey 10', monospace !important;
+		color: #fff !important;
+		letter-spacing: 0.06em;
+		text-shadow: none !important;
+	}
+	/* The coin art is 102.85 units inside its 119-unit export (the rest is the arrow's glow
+	   room), so it is drawn 119/102.85 of the button to put the coin's rim on the button's. */
+	.scene .hud .spin {
+		border: 0 !important;
+		border-radius: 50% !important;
+		box-shadow: none !important;
+		clip-path: none !important;
+		background: var(--hud-spin-coin) center / 115.7% 115.7% no-repeat !important;
+		image-rendering: pixelated;
+	}
+	/* Out of flow (the button is already a positioned box in every layout): an <img> in flow
+	   sized the button off its intrinsic width. */
+	.scene .hud .spin-arrow {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		width: auto !important;
+		height: 57% !important;
+		max-width: none !important;
+		fill: none !important;
+		filter: drop-shadow(0 0 0.25em #985e00) !important;
+	}
+	/* Quick-menu tiles are the bar's own stepped button frame (design 9227:176057 draws the same
+	   49-unit tile), not the plain squares every layout pass above gives them. */
+	.scene .quick-menu .quick-menu-icon {
+		border: 0 !important;
+		background: var(--hud-button) center / 100% 100% no-repeat !important;
+		image-rendering: pixelated;
+	}
+	/* Flat rows with the design's #F2CB8C labels in every layout: the generic button pass gave
+	   each row a 3px drop shadow (dark strips down the panel's right and under each rule), and
+	   the portrait pass kept the old orange labels. */
+	.scene .quick-menu button {
+		box-shadow: none;
+		color: #f2cb8c;
+	}
+	.scene .quick-menu button:hover,
+	.scene .quick-menu button:focus-visible {
+		color: #fff;
+	}
+	.scene .quick-menu button.off {
+		color: #8a6a3a;
 	}
 </style>

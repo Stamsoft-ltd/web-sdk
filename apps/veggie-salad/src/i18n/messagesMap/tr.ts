@@ -9,7 +9,7 @@ export default createLocale(source, {
 	welcome: 'HOŞ GELDİN',
 	gameBoard: 'Veggie Salad oyun alanı',
 	clusterPayouts: 'KÜME KAZANÇLARI',
-	vegetables: ['BROKOLİ', 'MISIR', 'DOMATES', 'PATLICAN', 'HAVUÇ', 'KARNABAHAR', 'TURP'],
+	vegetables: ['LAHANA', 'BİBER', 'DOMATES', 'PATLICAN', 'PATATES', 'TURP', 'SARIMSAK'],
 	normalBonus: 'NORMAL BONUS',
 	superBonus: 'SÜPER BONUS',
 	hiddenBonus: 'GİZLİ BONUS',

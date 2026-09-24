@@ -90,6 +90,8 @@ const presentWin = async (amount: number, detail: 'ROUND WIN' | 'TOTAL WIN') => 
 		});
 	}
 	stateGame.overlay = null;
+	// A skip pressed on a win screen is spent on that screen; whatever animates next starts clean.
+	stateGameDerived.clearSkip();
 	await stateGameDerived.wait(230, { min: 120 });
 };
 
@@ -183,9 +185,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		await stateGameDerived.wait(230, { min: 120 });
 	},
 	updateFreeSpin: async (event: BookEventOfType<'updateFreeSpin'>) => {
-		// New free spin, new skip budget: a skip press belongs to the spin it was pressed on.
-		stateGameDerived.clearSkip();
+		// New free spin, new skip budget: a skip press belongs to the spin it was pressed on. The
+		// previous spin's ROUND WIN belongs to that spin, so clear AFTER it — clearing first let a
+		// Space tap on its count-up carry into this spin's exit, which ran on the fast profile
+		// ("next reel animations like in turbo", user 2026-09-24).
 		await presentPendingBonusSpinWin();
+		stateGameDerived.clearSkip();
 		stateGame.bonusSpinStartTotal = stateGame.bonusTotalWin;
 		stateGame.roundWin = 0;
 		// Math emits a zero-based spin index. HUD is player-facing: 1 / total … total / total.
@@ -325,7 +330,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateBet.winBookEventAmount = event.amount;
 		stateGame.roundWin = event.amount;
 		stateGame.phase = 'idle';
-		stateGame.skipRequested = false;
+		stateGameDerived.clearSkip();
 		stateGameDerived.clearWinningState();
 		// Actual bonus buys fall back to BASE. CHANCE and FEATURE remain armed per-spin modes.
 		if (['BONUS', 'MYSTERY', 'SUPER'].includes(stateBet.activeBetModeKey.toUpperCase())) {

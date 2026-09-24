@@ -65,10 +65,9 @@ def blobs(mask):
             yield len(pts), min(xs), min(ys), max(xs), max(ys)
 
 
-def main():
-    cairosvg.svg2png(url=str(SVG), write_to=str(OUT / 'king.png'), scale=SCALE)
-    shut = np.array(Image.open(OUT / 'king.png').convert('RGBA')).astype(int)
-    (OUT / 'king.png').unlink()
+def open_eyes(shut):
+    """The king render (RGBA int array, eyes shut) with scatter_open.webp's eyes painted over the
+    arcs at the render's own pitch."""
     h, w = shut.shape[:2]
     # The face's black marks: two brows (upper) and two shut arcs (lower), left to right.
     m = black(shut).copy()
@@ -106,10 +105,18 @@ def main():
                 else:
                     continue
                 out[row(y) : row(y + 1), col(x) : col(x + 1)] = fill
+    return out, brows, arcs
+
+
+def main():
+    cairosvg.svg2png(url=str(SVG), write_to=str(OUT / 'king.png'), scale=SCALE)
+    shut = np.array(Image.open(OUT / 'king.png').convert('RGBA')).astype(int)
+    (OUT / 'king.png').unlink()
+    h, w = shut.shape[:2]
+    out, brows, arcs = open_eyes(shut)
     Image.fromarray(shut.astype('uint8')).save(OUT / 'king.webp', lossless=True, quality=100, method=6)
     Image.fromarray(out.astype('uint8')).save(OUT / 'king-open.webp', lossless=True, quality=100, method=6)
     print(f'king {w}x{h} brows={[(b[1], b[2], b[3], b[4]) for b in brows]} arcs={[(a[1], a[2], a[3], a[4]) for a in arcs]}')
-
 
 if __name__ == '__main__':
     main()

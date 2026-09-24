@@ -9,7 +9,7 @@ export default createLocale(source, {
 	welcome: '환영합니다',
 	gameBoard: 'Veggie Salad 게임 보드',
 	clusterPayouts: '클러스터 당첨',
-	vegetables: ['브로콜리', '옥수수', '토마토', '가지', '당근', '콜리플라워', '무'],
+	vegetables: ['양배추', '파프리카', '토마토', '가지', '감자', '래디시', '마늘'],
 	normalBonus: '일반 보너스',
 	superBonus: '슈퍼 보너스',
 	hiddenBonus: '숨겨진 보너스',

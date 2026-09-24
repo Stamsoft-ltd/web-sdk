@@ -10,7 +10,7 @@ export default createLocale(source, {
 	maxWinOf: 'DE',
 	gameBoard: 'Grille de Veggie Salad',
 	clusterPayouts: 'GAINS DE GROUPES',
-	vegetables: ['BROCOLI', 'MAÏS', 'TOMATE', 'AUBERGINE', 'CAROTTE', 'CHOU-FLEUR', 'RADIS'],
+	vegetables: ['CHOU', 'POIVRON', 'TOMATE', 'AUBERGINE', 'POMME DE TERRE', 'RADIS', 'AIL'],
 	normalBonus: 'BONUS NORMAL',
 	superBonus: 'SUPER BONUS',
 	hiddenBonus: 'BONUS CACHÉ',

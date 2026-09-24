@@ -9,7 +9,7 @@ export default createLocale(source, {
 	welcome: 'مرحبًا بك في',
 	gameBoard: 'لوحة لعبة Veggie Salad',
 	clusterPayouts: 'أرباح المجموعات',
-	vegetables: ['بروكلي', 'ذرة', 'طماطم', 'باذنجان', 'جزر', 'قرنبيط', 'فجل'],
+	vegetables: ['ملفوف', 'فلفل', 'طماطم', 'باذنجان', 'بطاطس', 'فجل', 'ثوم'],
 	normalBonus: 'المكافأة العادية',
 	superBonus: 'المكافأة الخارقة',
 	hiddenBonus: 'المكافأة المخفية',

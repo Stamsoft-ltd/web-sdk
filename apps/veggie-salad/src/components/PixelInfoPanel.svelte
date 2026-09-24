@@ -5,6 +5,15 @@
 	type Props = { onclose: () => void };
 	const props: Props = $props();
 	const t = (key: string) => stateI18nDerived.translate(key);
+	// Portrait decor: the design's slot (placement class) → the board sprite drawn in it, matched
+	// by silhouette — tall radish where the carrot stood, round garlic for the cauliflower.
+	const INFO_VEG = [
+		['carrot', 'radish'],
+		['cauliflower', 'garlic'],
+		['corn', 'pepper-shades'],
+		['radish', 'eggplant'],
+		['broccoli', 'cabbage-shades'],
+	] as const;
 
 	const pages = $derived(stateMeta.gameRuleMeta.infoPages ?? []);
 	let index = $state(0);
@@ -143,7 +152,7 @@
 			<div class="info-head">
 				<h2>{page.title}</h2>
 				{#if showLogo}
-					<img class="info-logo" src="./assets/veggie-salad/pixel/logo.webp" alt="" />
+					<img class="info-logo" src="./assets/veggie-salad/pixel/logo-px.webp" alt="" />
 				{/if}
 			</div>
 
@@ -250,15 +259,16 @@
 					     from exactly those layers at their own placements — one picture, two uses. -->
 					<img
 						class="info-basket"
-						src="./assets/veggie-salad/pixel/overlays/v2/congrats/basket.webp"
+						src="./assets/veggie-salad/pixel/overlays/v2/congrats/basket-v2.webp"
 						alt=""
 					/>
 					<!-- Portrait only (9262:230493): five symbols lean in over the panel's side edges
-					     instead of the basket, each a tilted square the panel's overflow clips. -->
-					{#each ['carrot', 'cauliflower', 'corn', 'radish', 'broccoli'] as veg (veg)}
+					     instead of the basket, each a tilted square the panel's overflow clips. The
+					     slots keep the design's names; the art is the board's current set. -->
+					{#each INFO_VEG as [slot, art] (slot)}
 						<img
-							class="info-veg info-veg--{veg}"
-							src="./assets/veggie-salad/pixel/{veg}.webp"
+							class="info-veg info-veg--{slot}"
+							src="./assets/veggie-salad/pixel/board/{art}.webp"
 							alt=""
 						/>
 					{/each}

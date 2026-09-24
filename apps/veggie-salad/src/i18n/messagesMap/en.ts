@@ -20,13 +20,15 @@ export default {
 	'VEGGIE SALAD GAME BOARD': 'Veggie Salad game board',
 	'CLUSTER PAYOUTS': 'Cluster payouts',
 	PAYTABLE: 'PAYTABLE',
-	BROCCOLI: 'BROCCOLI',
-	CORN: 'CORN',
+	// Named after the board's art (design 9451:148386). translate() runs twice, so a label must
+	// never equal another key: CAULIFLOWER: 'RADISH' once rendered as GARLIC and broke the paytable.
+	CABBAGE: 'CABBAGE',
+	PEPPER: 'PEPPER',
 	TOMATO: 'TOMATO',
 	EGGPLANT: 'EGGPLANT',
-	CARROT: 'CARROT',
-	CAULIFLOWER: 'CAULIFLOWER',
+	POTATO: 'POTATO',
 	RADISH: 'RADISH',
+	GARLIC: 'GARLIC',
 	'PAYS BROCCOLI':
 		'5: 1× · 6: 1.5× · 7: 1.75× · 8: 2× · 9: 2.5× · 10: 5× · 11: 7.5× · 12: 15× · 13: 35× · 14: 70× · 15+: 150×',
 	'PAYS CORN':

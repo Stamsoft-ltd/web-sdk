@@ -9,7 +9,7 @@ export default createLocale(source, {
 	welcome: 'SELAMAT DATANG DI',
 	gameBoard: 'Papan permainan Veggie Salad',
 	clusterPayouts: 'BAYARAN KLASTER',
-	vegetables: ['BROKOLI', 'JAGUNG', 'TOMAT', 'TERONG', 'WORTEL', 'KEMBANG KOL', 'LOBAK'],
+	vegetables: ['KUBIS', 'PAPRIKA', 'TOMAT', 'TERONG', 'KENTANG', 'LOBAK', 'BAWANG PUTIH'],
 	normalBonus: 'BONUS NORMAL',
 	superBonus: 'BONUS SUPER',
 	hiddenBonus: 'BONUS TERSEMBUNYI',

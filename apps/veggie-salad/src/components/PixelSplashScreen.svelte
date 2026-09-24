@@ -1,40 +1,43 @@
 <script lang="ts">
 	import { stateI18nDerived } from 'state-shared';
 
-	type Props = { onstart: () => void };
+	/* `onstart` hands the game the wordmark's box, so the game can fly the logo from here into its
+	   own header; `leaving` then fades everything else away while that flight plays. */
+	type Props = { onstart: (logo: DOMRect | null) => void; leaving?: boolean };
 	const props: Props = $props();
 	const t = (key: string) => stateI18nDerived.translate(key);
 	let started = false;
+	let gameLogo: HTMLImageElement | undefined = $state();
 	const start = () => {
 		if (started) return;
 		started = true;
-		props.onstart();
+		props.onstart(gameLogo?.getBoundingClientRect() ?? null);
 	};
-	const veg = (name: string) => `./assets/veggie-salad/pixel/${name}.webp`;
 	const splashArt = (name: string) => `./assets/veggie-salad/pixel/splash/${name}.webp`;
 	const bgArt = (name: string) => `./assets/veggie-salad/pixel/background/${name}.webp`;
-	/* Design 9200:145271 plants a crop either side of the board row. Each entry is that instance's
-	   own box on the row, and the row was measured off the rendered design rather than read from the
-	   node tree — the boards sit inside nested frames whose transforms do not match what they paint.
-	   Re-measured 2026-09-15 against a fresh capture of the frame, where the row renders 1137px wide
-	   and bottoms out at y639: every vegetable was located by matching this game's own PNG into that
-	   image and scoring on pixel agreement, because a colour mask only ever finds the sliver of each
-	   one that the vegetable in front of it does not cover. So 1 design px is 100/1137 cqw of the
-	   stage, and the cluster rescales with the boards. Anchored to the stage's BOTTOM, since these
-	   sit on the ground line. Painted back to front. */
 	/* Fence row, Figma 9200:145271. Seven 211x110 tiles at y=416 whose left rail nub tucks onto the
 	   previous post, which is why the pitch (~180) is narrower than the tile: the design shows the
 	   resulting double posts and so do we. Design px → cqw of the scenery box (1200 wide). */
 	const FENCE_X = [-36, 143, 324, 506, 693, 871, 1048];
 
+	/* Design 9200:145271 plants a crop either side of the board row: radish, potato, garlic and pepper
+	   on the left, cabbage, eggplant and tomato on the right. They are the design's own newer set, not
+	   the board's symbols, cut by scripts/build-splash-crop.py. Each was located in a 1200x670 render
+	   of the frame by matching its sprite into the image over angle, size and position (scoring on
+	   pixel agreement, 90-99% for all seven), because the instances' node boxes sit inside rotated,
+	   nested frames that do not describe what they paint. The row renders 806px wide there, from x198,
+	   and bottoms out at y588, so 1 design px is 100/806 cqw of the stage and the cluster rescales with
+	   the boards. Anchored to the stage's BOTTOM, since these sit on the ground line; `tilt` is the
+	   instance's own rotation, taken about the sprite's base, which is where the idle pivots. Painted
+	   back to front, in the design's layer order. */
 	const GROUND = [
-		{ name: 'broccoli', left: 92.49, bottom: 2.3, size: 11.91 },
-		{ name: 'cauliflower', left: -15.39, bottom: -0.51, size: 15.87 },
-		{ name: 'eggplant', left: 89.83, bottom: -3.1, size: 8.44 },
-		{ name: 'tomato', left: 94.87, bottom: -7.39, size: 13.38 },
-		{ name: 'carrot', left: -5.09, bottom: 5.21, size: 10.05 },
-		{ name: 'corn', left: -0.37, bottom: -1.61, size: 11.17 },
-		{ name: 'radish', left: -7.44, bottom: -4.59, size: 11.79 },
+		{ name: 'pepper', left: 1.37, bottom: -0.12, size: 8.2, tilt: 0 },
+		{ name: 'cabbage', left: 94.68, bottom: 3.97, size: 7.57, tilt: 0 },
+		{ name: 'radish', left: -9.69, bottom: 0.65, size: 8.41, tilt: -6.5 },
+		{ name: 'tomato', left: 95.63, bottom: -4.33, size: 9.57, tilt: 15 },
+		{ name: 'eggplant', left: 90.82, bottom: -2.36, size: 5.92, tilt: 0 },
+		{ name: 'potato', left: -1.64, bottom: 6.47, size: 7.12, tilt: -30.5 },
+		{ name: 'garlic', left: -7, bottom: -2.69, size: 9.02, tilt: 15 },
 	];
 	/* A splash that never moves reads as a screenshot. Everything below is generated once per mount,
 	   so no two visits are identical, and it is driven by CSS animation rather than a rAF loop — the
@@ -77,39 +80,39 @@
 	/* Idle motion for the crop. Leafy tops sway, round roots mostly breathe, and the amplitudes are
 	   per vegetable so the cluster does not pulse as one object. Phase is randomised per mount. */
 	const VEG_MOTION: Record<string, { sway: number; lift: number; dur: number }> = {
-		broccoli: { sway: 2.2, lift: 1.8, dur: 4.6 },
-		cauliflower: { sway: 1.4, lift: 1.2, dur: 5.8 },
-		eggplant: { sway: 2.6, lift: 2.4, dur: 4.1 },
-		tomato: { sway: 1.1, lift: 2.6, dur: 3.7 },
-		carrot: { sway: 3.1, lift: 1.5, dur: 5.2 },
-		corn: { sway: 2.4, lift: 1.9, dur: 6.1 },
-		radish: { sway: 1.7, lift: 2.2, dur: 4.9 },
+		radish: { sway: 2.6, lift: 1.8, dur: 4.9 },
+		potato: { sway: 1.2, lift: 1.4, dur: 5.8 },
+		garlic: { sway: 2.2, lift: 1.9, dur: 5.2 },
+		pepper: { sway: 1.6, lift: 2.4, dur: 4.1 },
+		cabbage: { sway: 1.1, lift: 1.3, dur: 6.1 },
+		eggplant: { sway: 2.4, lift: 2.4, dur: 4.6 },
+		tomato: { sway: 1.3, lift: 2.6, dur: 3.7 },
 	};
 	/* Portrait crop. The single board is 256px wide on a 360 phone, so the row's seven at the
 	   row's sizes were seven thumbnails piled against its rails. Here they peep out from BEHIND
-	   the board instead, three a side, each leaning off the rail at its own angle with a bit
-	   under half of it hidden by the board, so both eyes still show — the same treatment as the portrait info panel's leaners:
-	   "the veggies showing partially diagonal behind the board with text" (user, 2026-09-18).
-	   Half, and drawn big: at a third showing they were small whole sprites floating in the
+	   the board instead, three a side, each leaning off the rail at its own angle with part of it
+	   hidden by the board and both eyes still showing — the same treatment as the portrait info
+	   panel's leaners: "the veggies showing partially diagonal behind the board with text" (user,
+	   2026-09-18). Drawn big: at a third the size they were small whole sprites floating in the
 	   sky beside the board rather than crop tucked behind it ("does not look very good").
 	   The tilt is the resting pose the idle sway swings about. `hide` is the share of the sprite's
-	   own width the board covers, set per sprite so both eyes clear the rail once the tilt has
-	   swung the face towards it — the faces sit left of centre, so the right rail hides less. The
-	   right three used to sit 58% under, which put the broccoli's and eggplant's eyes behind the
-	   rail ("the brokoli is almost not visible also the violet tangerine", user 2026-09-21). `at` is the
+	   own width the board covers, kept low enough that both eyes clear the rail once the tilt has
+	   swung the face towards it. This set's faces are centred, so that is barely a fifth; at 58%
+	   under, the eyes went behind the rail ("the brokoli is almost not visible also the violet
+	   tangerine", user 2026-09-21). `at` is the
 	   sprite's centre down the BOARD's height, and the sprite is the smaller of its design width
 	   and a third of that height, so on a squat board (a wide portrait window caps it at 320px)
 	   the three still step down the rail instead of the bottom pair dropping off it or the three
 	   piling onto each other. Both are percentages of the sprite's own box, so they ride in the
-	   idle transform (`--shift`, `--anchor`) rather than in left/top. Names are FILE names, and
-	   the files are swapped (veggieAssets.ts): radish.webp is the cauliflower. */
+	   idle transform (`--shift`, `--anchor`) rather than in left/top. Garlic sits this one out:
+	   three a side, and the left keeps the three colours that read against the sky. */
 	const GROUND_PORTRAIT = [
-		{ name: 'carrot', side: 'left', at: 16, size: 30, hide: 42, tilt: -38 },
-		{ name: 'radish', side: 'left', at: 50, size: 34, hide: 38, tilt: -12 },
-		{ name: 'corn', side: 'left', at: 84, size: 31, hide: 42, tilt: -22 },
-		{ name: 'broccoli', side: 'right', at: 17, size: 32, hide: 30, tilt: 20 },
-		{ name: 'tomato', side: 'right', at: 51, size: 34, hide: 32, tilt: 12 },
-		{ name: 'eggplant', side: 'right', at: 85, size: 29, hide: 32, tilt: 22 },
+		{ name: 'radish', side: 'left', at: 16, size: 27, hide: 22, tilt: -18 },
+		{ name: 'potato', side: 'left', at: 50, size: 27, hide: 22, tilt: -12 },
+		{ name: 'pepper', side: 'left', at: 84, size: 27, hide: 22, tilt: -16 },
+		{ name: 'cabbage', side: 'right', at: 17, size: 26, hide: 22, tilt: 16 },
+		{ name: 'tomato', side: 'right', at: 51, size: 28, hide: 22, tilt: 12 },
+		{ name: 'eggplant', side: 'right', at: 85, size: 25, hide: 22, tilt: 18 },
 	] as const;
 	type Crop = { name: string; left: number; bottom: number; size: number; tilt?: number };
 	type Leaner = (typeof GROUND_PORTRAIT)[number];
@@ -128,13 +131,22 @@
 	const reducedMotion = () =>
 		typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-	/* The scatter sprite is authored with its eyes shut, so on the splash the king just sat there
-	   squinting for ever. `scatter_open` is that same sprite with the two closed arcs replaced by
-	   open eyes in the set's own style, and the authored closed-eye frame is what a blink swaps
-	   back to — so the blink is the original art, not an invented one. */
+	/* The king is authored with his eyes shut, so on the splash he just sat there squinting for
+	   ever. `body-open` is his body with the two closed arcs replaced by open eyes in the set's own
+	   style, and the authored closed-eye body is what a blink swaps back to — so the blink is the
+	   original art, not an invented one. */
 	let kingBlinking = $state(false);
+	/* The king's rig, back to front: the design's vector (9200:148144) cut into the parts that move
+	   by scripts/build-splash-king.py, every layer the same canvas so they stack at inset 0. Each
+	   part is animated in the styles on the hop's own 3.4s clock. */
+	const kingArt = (name: string) => splashArt(`king/${name}`);
+	const KING_PARTS = ['sprout', 'body', 'crown', 'foot-l', 'foot-r', 'cape-l', 'cape-r'] as const;
+	const kingPart = (part: (typeof KING_PARTS)[number]) =>
+		kingArt(part === 'body' ? (kingBlinking ? 'body' : 'body-open') : part.replace('foot', 'feet'));
 	$effect(() => {
 		if (reducedMotion()) return;
+		// Both faces decoded before the first blink, so it never flashes through an unloaded frame.
+		for (const name of ['body', 'body-open']) new Image().src = kingArt(name);
 		let timer: ReturnType<typeof setTimeout>;
 		const at = (ms: number, fn: () => void) => {
 			timer = setTimeout(fn, ms);
@@ -151,9 +163,9 @@
 		return () => clearTimeout(timer);
 	});
 
-	/* The crop's eyes. Each vegetable has three derived frames next to the splash art — the eyes
-	   slid one art pixel left or right, and shut — cut from its own sprite by
-	   scripts/build-splash-eyes.py, so a glance is the authored eye moving, not a new drawing.
+	/* The crop's eyes. Each vegetable has three derived frames next to its sprite — the eyes
+	   slid one art pixel left or right, and shut — cut from that sprite by
+	   scripts/build-splash-crop.py, so a glance is the authored eye moving, not a new drawing.
 	   Every vegetable runs its own clock: a long hold, then either a glance to one side that is
 	   held for under a second, or a blink (sometimes doubled, as the king's is), with the phases
 	   randomised per vegetable and per mount so the seven never move together. "Make the white in
@@ -164,7 +176,7 @@
 		Object.fromEntries(GROUND.map((item) => [item.name, 'base'])),
 	);
 	const vegFrame = (name: string, frame: EyeFrame) =>
-		frame === 'base' ? veg(name) : splashArt(`${name}-${frame}`);
+		splashArt(frame === 'base' ? `crop/${name}` : `crop/${name}-${frame}`);
 	$effect(() => {
 		if (reducedMotion()) return;
 		// Decoded before the first swap so a glance never flashes through an unloaded frame.
@@ -244,6 +256,7 @@
 
 <div
 	class="splash-screen"
+	class:leaving={props.leaving}
 	role="button"
 	tabindex="0"
 	aria-label={t('CLICK ANYWHERE TO CONTINUE')}
@@ -289,7 +302,12 @@
 		src="./assets/veggie-salad/pixel/loading/press_play_logo.webp"
 		alt="Press Play"
 	/>
-	<img class="game-logo" src="./assets/veggie-salad/pixel/logo.webp" alt="Veggie Salad" />
+	<img
+		class="game-logo"
+		bind:this={gameLogo}
+		src="./assets/veggie-salad/pixel/logo-px.webp"
+		alt="Veggie Salad"
+	/>
 	<div class="splash-stage">
 		<div class="splash-panels">
 			<div class:slide-on={slide === 0}>
@@ -300,7 +318,11 @@
 				<strong>{t('3 UNIQUE')}<br />{' '}{t('BONUSES')}</strong>
 				<span class="font-copy">{t('SPLASH BONUS COPY')}</span>
 				<span class="panel-king" aria-hidden="true">
-					<img src={veg(kingBlinking ? 'scatter' : 'scatter_open')} alt="" />
+					<span class="king-rig">
+						{#each KING_PARTS as part (part)}
+							<img class="king-{part}" src={kingPart(part)} alt="" />
+						{/each}
+					</span>
 				</span>
 			</div>
 			<!-- The design's third board carries the heading and the figure and nothing else. -->
@@ -358,6 +380,34 @@
 		image-rendering: pixelated;
 		cursor: pointer;
 		outline: none;
+	}
+	/* Hand-over to the game. The wordmark goes at once — the game flies its own copy of it from
+	   this exact box into the header — and the rest of the screen drops away under it: the boards
+	   and crop sink and fade, the sky and scenery fade last so the game's own sky takes over
+	   rather than the screen blinking to a new one. */
+	.splash-screen.leaving {
+		pointer-events: none;
+		animation: splash-leave 700ms ease-in 150ms both;
+	}
+	.splash-screen.leaving .game-logo {
+		visibility: hidden;
+	}
+	.splash-screen.leaving .splash-stage,
+	.splash-screen.leaving .splash-dots,
+	.splash-screen.leaving .continue-label,
+	.splash-screen.leaving .studio-logo {
+		animation: splash-content-leave 450ms cubic-bezier(0.5, 0, 0.75, 0) both;
+	}
+	@keyframes splash-leave {
+		to {
+			opacity: 0;
+		}
+	}
+	@keyframes splash-content-leave {
+		to {
+			opacity: 0;
+			transform: translateY(6%) scale(0.94);
+		}
 	}
 	/* ── Scenery ─────────────────────────────────────────────────────────────────────────────
 	   A 1200x670 box scaled to cover the viewport; 1 design px = 100/1200 cqw in both axes (the
@@ -556,13 +606,258 @@
 		translate: -50% 0;
 		animation: king-hop 3.4s cubic-bezier(0.34, 0, 0.36, 1) infinite;
 	}
-	.panel-king img {
+	.king-rig {
+		position: relative;
 		display: block;
 		width: 100%;
-		height: auto;
+		aspect-ratio: 1;
 		transform-origin: 50% 85%;
-		image-rendering: pixelated;
 		animation: king-tilt 5.1s ease-in-out infinite;
+	}
+	/* Every part is a full-canvas layer, so a transform-origin in % is a point on the king himself
+	   (the boxes build-splash-king.py prints). All of them run on the hop's 3.4s clock and key off
+	   its beats — crouch to 62%, take-off, apex at 72%, landing at 84%, the small rebound at 90% —
+	   so each part reacts to the jump rather than looping on its own. */
+	.king-rig img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		image-rendering: pixelated;
+		animation: 3.4s ease-in-out infinite;
+	}
+	/* The onion squashes into the crouch and the landing and stretches on take-off, about the line
+	   his feet stand on; every part above follows that line down and up. */
+	.king-rig .king-body {
+		transform-origin: 50% 89%;
+		animation-name: king-body;
+	}
+	/* The crown sits loose: it lags the take-off, floats off his head at the apex and comes down a
+	   beat late with a wobble. */
+	.king-rig .king-crown {
+		transform-origin: 50% 41%;
+		animation-name: king-crown;
+	}
+	/* The sprout whips about its root, behind the crown. */
+	.king-rig .king-sprout {
+		transform-origin: 50% 24%;
+		animation-name: king-sprout;
+	}
+	/* The pelerina hangs from his shoulders: it trails down as he leaves the ground, flares out at
+	   the apex and drops past rest on landing before it settles. */
+	.king-rig .king-cape-l {
+		transform-origin: 44% 60%;
+		animation-name: king-cape-l;
+	}
+	.king-rig .king-cape-r {
+		transform-origin: 56% 60%;
+		animation-name: king-cape-r;
+	}
+	/* Feet dangle toes-out in the air, and between hops each taps once, left then right. */
+	.king-rig .king-foot-l {
+		transform-origin: 40% 86%;
+		animation-name: king-foot-l;
+	}
+	.king-rig .king-foot-r {
+		transform-origin: 60% 86%;
+		animation-name: king-foot-r;
+	}
+	@keyframes king-body {
+		0%,
+		54%,
+		74%,
+		100% {
+			transform: scale(1, 1);
+		}
+		62% {
+			transform: scale(1.05, 0.95);
+		}
+		67% {
+			transform: scale(0.96, 1.05);
+		}
+		84% {
+			transform: scale(1.07, 0.93);
+		}
+		88% {
+			transform: scale(0.97, 1.03);
+		}
+		93% {
+			transform: scale(1.02, 0.98);
+		}
+	}
+	@keyframes king-crown {
+		0%,
+		54%,
+		100% {
+			transform: translateY(0) rotate(0);
+		}
+		28% {
+			transform: translateY(0) rotate(-1deg);
+		}
+		42% {
+			transform: translateY(0) rotate(1deg);
+		}
+		62% {
+			transform: translateY(2.4%) rotate(0);
+		}
+		67% {
+			transform: translateY(-1%) rotate(1deg);
+		}
+		74% {
+			transform: translateY(-3.5%) rotate(-3deg);
+		}
+		80% {
+			transform: translateY(-1%) rotate(1deg);
+		}
+		84% {
+			transform: translateY(4.5%) rotate(2.5deg);
+		}
+		88% {
+			transform: translateY(-2.5%) rotate(-2deg);
+		}
+		93% {
+			transform: translateY(1%) rotate(1deg);
+		}
+	}
+	@keyframes king-sprout {
+		0%,
+		54%,
+		100% {
+			transform: translateY(0) rotate(0);
+		}
+		20% {
+			transform: translateY(0) rotate(-3deg);
+		}
+		40% {
+			transform: translateY(0) rotate(3deg);
+		}
+		62% {
+			transform: translateY(3.2%) rotate(0);
+		}
+		67% {
+			transform: translateY(-2%) rotate(6deg);
+		}
+		74% {
+			transform: translateY(-3%) rotate(-7deg);
+		}
+		84% {
+			transform: translateY(4.5%) rotate(8deg);
+		}
+		88% {
+			transform: translateY(-2%) rotate(-5deg);
+		}
+		93% {
+			transform: translateY(0) rotate(3deg);
+		}
+		97% {
+			transform: translateY(0) rotate(-1deg);
+		}
+	}
+	@keyframes king-cape-l {
+		0%,
+		54%,
+		100% {
+			transform: translateY(0) rotate(0);
+		}
+		30% {
+			transform: translateY(0) rotate(1deg);
+		}
+		62% {
+			transform: translateY(1.5%) rotate(-2deg);
+		}
+		67% {
+			transform: translateY(-1.5%) rotate(-5deg);
+		}
+		74% {
+			transform: translateY(0) rotate(9deg);
+		}
+		80% {
+			transform: translateY(0) rotate(6deg);
+		}
+		84% {
+			transform: translateY(2%) rotate(-5deg);
+		}
+		88% {
+			transform: translateY(0) rotate(3deg);
+		}
+		93% {
+			transform: translateY(0) rotate(-1.5deg);
+		}
+	}
+	@keyframes king-cape-r {
+		0%,
+		54%,
+		100% {
+			transform: translateY(0) rotate(0);
+		}
+		30% {
+			transform: translateY(0) rotate(-1deg);
+		}
+		62% {
+			transform: translateY(1.5%) rotate(2deg);
+		}
+		67% {
+			transform: translateY(-1.5%) rotate(5deg);
+		}
+		74% {
+			transform: translateY(0) rotate(-9deg);
+		}
+		80% {
+			transform: translateY(0) rotate(-6deg);
+		}
+		84% {
+			transform: translateY(2%) rotate(5deg);
+		}
+		88% {
+			transform: translateY(0) rotate(-3deg);
+		}
+		93% {
+			transform: translateY(0) rotate(1.5deg);
+		}
+	}
+	@keyframes king-foot-l {
+		0%,
+		18%,
+		26%,
+		62%,
+		84%,
+		100% {
+			transform: translateY(0) rotate(0);
+		}
+		22% {
+			transform: translateY(-2.5%) rotate(-8deg);
+		}
+		67% {
+			transform: translateY(3%) rotate(0);
+		}
+		74% {
+			transform: translateY(2.5%) rotate(-10deg);
+		}
+		80% {
+			transform: translateY(1%) rotate(-4deg);
+		}
+	}
+	@keyframes king-foot-r {
+		0%,
+		36%,
+		44%,
+		62%,
+		84%,
+		100% {
+			transform: translateY(0) rotate(0);
+		}
+		40% {
+			transform: translateY(-2.5%) rotate(8deg);
+		}
+		67% {
+			transform: translateY(3%) rotate(0);
+		}
+		74% {
+			transform: translateY(2.5%) rotate(10deg);
+		}
+		80% {
+			transform: translateY(1%) rotate(4deg);
+		}
 	}
 	/* The king gets a hop the crop does not: he is the one character on the screen, and a long hold
 	   followed by a double bounce reads as a decision rather than as a loop. The tilt runs on a
@@ -669,7 +964,8 @@
 		.splash-flowers img,
 		.splash-veg .veg,
 		.panel-king,
-		.panel-king img,
+		.king-rig,
+		.king-rig img,
 		.continue-label {
 			animation: none;
 		}

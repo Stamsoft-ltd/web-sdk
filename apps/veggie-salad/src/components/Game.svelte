@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { GameVersion, Modals } from 'components-ui-html';
 	import { EnablePixiExtension } from 'components-pixi';
 	import { App } from 'pixi-svelte';
@@ -53,9 +54,84 @@
 		else splashVisible = true;
 	};
 
-	const startGame = () => {
-		splashVisible = false;
+	/* Splash → game. The game mounts under the splash, the splash fades away (its own `leaving`
+	   styles), and the wordmark FLIES from its splash box into the game's header plate: a copy of
+	   it is laid over the page at the splash box and animated onto the header logo's box, which is
+	   measured live because the header sits differently in every layout. The header's own logo is
+	   hidden for the flight and shown the moment the copy lands on it. */
+	let splashLeaving = $state(false);
+	const LOGO_FLIGHT_MS = 950;
+	const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+	const headerLogo = async () => {
+		// The game's first frames are still laying out; wait for the header logo to have a box.
+		for (let frame = 0; frame < 90; frame++) {
+			const img = document.querySelector<HTMLImageElement>('.brand img');
+			const box = img?.getBoundingClientRect();
+			if (img?.complete && box && box.width > 0) return img;
+			await nextFrame();
+		}
+		return null;
+	};
+	const flyLogo = async (from: DOMRect | null) => {
+		if (!from || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		await tick();
+		const target = await headerLogo();
+		if (!target) return;
+		// One more frame so the header has settled into its final place before it is measured.
+		await nextFrame();
+		const to = target.getBoundingClientRect();
+		const flyer = target.cloneNode() as HTMLImageElement;
+		Object.assign(flyer.style, {
+			position: 'fixed',
+			left: `${from.left}px`,
+			top: `${from.top}px`,
+			width: `${from.width}px`,
+			height: `${from.height}px`,
+			margin: '0',
+			zIndex: '130',
+			pointerEvents: 'none',
+			transformOrigin: '0 0',
+			imageRendering: 'pixelated',
+		});
+		document.body.appendChild(flyer);
+		target.style.visibility = 'hidden';
+		const dx = to.left - from.left;
+		const dy = to.top - from.top;
+		const scale = to.width / from.width;
+		const flight = flyer.animate(
+			[
+				{ transform: 'translate(0, 0) scale(1)', offset: 0 },
+				// A breath in place first — the logo swells as the splash drops away from under it.
+				{
+					transform: 'translate(0, -1%) scale(1.06)',
+					offset: 0.18,
+					easing: 'cubic-bezier(0.5, 0, 0.2, 1)',
+				},
+				{
+					transform: `translate(${dx}px, ${dy - 18}px) scale(${scale * 1.08})`,
+					offset: 0.78,
+					easing: 'cubic-bezier(0.3, 0, 0.4, 1)',
+				},
+				// Lands on the plate with a small settle.
+				{ transform: `translate(${dx}px, ${dy + 3}px) scale(${scale * 0.97})`, offset: 0.9 },
+				{ transform: `translate(${dx}px, ${dy}px) scale(${scale})`, offset: 1 },
+			],
+			{ duration: LOGO_FLIGHT_MS, fill: 'forwards' },
+		);
+		try {
+			await flight.finished;
+		} finally {
+			target.style.visibility = '';
+			flyer.remove();
+		}
+	};
+
+	const startGame = async (logo: DOMRect | null) => {
 		started = true;
+		splashLeaving = true;
+		await Promise.all([flyLogo(logo), new Promise((resolve) => setTimeout(resolve, 850))]);
+		splashVisible = false;
+		splashLeaving = false;
 	};
 
 	const acknowledgePresentation = () => stateGameDerived.continuePresentation();
@@ -65,7 +141,18 @@
 		acknowledgePresentation();
 	};
 
-	const symbol = (name: string) => `./assets/veggie-salad/pixel/${name}.webp`;
+	// The info screens name symbols by the old art's files; the board now draws the design's newer
+	// set (veggieAssets.ts), so each old file resolves to the board sprite that took its slot.
+	const BOARD_ART: Record<string, string> = {
+		broccoli: 'board/cabbage-shades',
+		corn: 'board/pepper-shades',
+		tomato: 'board/tomato-shades',
+		eggplant: 'board/eggplant',
+		carrot: 'board/potato',
+		cauliflower: 'board/radish',
+		radish: 'board/garlic',
+	};
+	const symbol = (name: string) => `./assets/veggie-salad/pixel/${BOARD_ART[name] ?? name}.webp`;
 	const infoDir = './assets/veggie-salad/pixel/info';
 	const infoFrame = `${infoDir}/overview_frame.webp`;
 	const infoPanel = `${infoDir}/panel_wood_bg.webp`;
@@ -308,7 +395,7 @@
 				columns: 1,
 				containers: [
 					{
-						title: t('BROCCOLI'),
+						title: t('CABBAGE'),
 						text: t('PAYS BROCCOLI'),
 						image: symbol('broccoli'),
 						row: 0,
@@ -316,7 +403,7 @@
 						imagePosition: 'left',
 					},
 					{
-						title: t('CORN'),
+						title: t('PEPPER'),
 						text: t('PAYS CORN'),
 						image: symbol('corn'),
 						row: 1,
@@ -340,7 +427,7 @@
 						imagePosition: 'left',
 					},
 					{
-						title: t('CARROT'),
+						title: t('POTATO'),
 						text: t('PAYS CARROT'),
 						image: symbol('carrot'),
 						row: 4,
@@ -348,7 +435,7 @@
 						imagePosition: 'left',
 					},
 					{
-						title: t('CAULIFLOWER'),
+						title: t('RADISH'),
 						text: t('PAYS PEPPER'),
 						image: symbol('cauliflower'),
 						row: 5,
@@ -356,7 +443,7 @@
 						imagePosition: 'left',
 					},
 					{
-						title: t('RADISH'),
+						title: t('GARLIC'),
 						text: t('PAYS ONION'),
 						image: symbol('radish'),
 						row: 6,
@@ -466,7 +553,7 @@
 				payouts: [
 					{
 						icon: symbol('broccoli'),
-						name: t('BROCCOLI'),
+						name: t('CABBAGE'),
 						premium: true,
 						x3: '1×',
 						x4: '1.5×',
@@ -487,7 +574,7 @@
 					},
 					{
 						icon: symbol('corn'),
-						name: t('CORN'),
+						name: t('PEPPER'),
 						premium: true,
 						x3: '0.75×',
 						x4: '1×',
@@ -538,7 +625,7 @@
 					},
 					{
 						icon: symbol('carrot'),
-						name: t('CARROT'),
+						name: t('POTATO'),
 						premium: true,
 						x3: '0.3×',
 						x4: '0.4×',
@@ -559,7 +646,7 @@
 					},
 					{
 						icon: symbol('cauliflower'),
-						name: t('CAULIFLOWER'),
+						name: t('RADISH'),
 						premium: true,
 						x3: '0.25×',
 						x4: '0.3×',
@@ -580,7 +667,7 @@
 					},
 					{
 						icon: symbol('radish'),
-						name: t('RADISH'),
+						name: t('GARLIC'),
 						premium: true,
 						x3: '0.2×',
 						x4: '0.25×',
@@ -783,7 +870,7 @@
 </div>
 
 {#if splashVisible}
-	<PixelSplashScreen onstart={startGame} />
+	<PixelSplashScreen onstart={startGame} leaving={splashLeaving} />
 {/if}
 
 {#if stateGame.continueGate}

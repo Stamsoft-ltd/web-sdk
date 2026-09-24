@@ -38,13 +38,13 @@
 		| 'winTitleMythicV2'
 		| 'winTitleLegendaryV2';
 	type VeggieKey =
-		| 'pixelBroccoli'
-		| 'pixelCorn'
-		| 'pixelTomato'
-		| 'pixelEggplant'
-		| 'pixelCarrot'
-		| 'pixelCauliflower'
-		| 'pixelRadish';
+		| 'winVeggieCabbage'
+		| 'winVeggiePepper'
+		| 'winVeggieTomato'
+		| 'winVeggieEggplant'
+		| 'winVeggiePotato'
+		| 'winVeggieRadish'
+		| 'winVeggieGarlic';
 	type WinArt = {
 		banner: WinBannerKey;
 		// WILD carries the design's own two-line word art. Every other tier stacks its tier word
@@ -89,14 +89,18 @@
 	// 12% larger than the mock so the amount is unmistakably the biggest text on the screen.
 	const AMOUNT_PLAQUE = { y: 152, width: 407, height: 107, fontSize: 84, maxWidth: 350 };
 	/* Component 25 instances — the game's own symbol art. Each is placed by its box centre and the
-	   square the symbol texture is scaled into (corn 164, carrot 142, cauliflower 178, radish 139,
-	   tomato 175 — measured off the mock's inner image boxes against the textures' content). */
+	   square the symbol texture is scaled into (164, 142, 178, 139, 175 — measured off the mock's
+	   inner image boxes). Design 9242:184876 draws the same slots with the board's set: pepper,
+	   potato, garlic, radish, tomato; SWEET uses exactly those, the other tiers vary the pick. */
 	const VEGGIE_SLOTS = [
-		{ x: -358, y: -126, size: 164, rotation: -24.43, start: 0.1 },
-		{ x: -184, y: -181, size: 142, rotation: -20.09, start: 0.16 },
-		{ x: 10, y: -202, size: 178, rotation: 0, start: 0.22 },
-		{ x: 180, y: -175, size: 139, rotation: 0, start: 0.28 },
-		{ x: 369, y: -133, size: 175, rotation: 24.69, start: 0.34 },
+		// Sunk 10-17 units below the mock so more of each body sits behind the banner ("hide a
+		// little more the veggies behind the plate", user 2026-09-24) — no further, or the word art
+		// starts covering the faces; the wing pair also comes in a little.
+		{ x: -364, y: -146, size: 164, rotation: -24.43, start: 0.1 },
+		{ x: -184, y: -164, size: 142, rotation: -20.09, start: 0.16 },
+		{ x: 10, y: -192, size: 178, rotation: 0, start: 0.22 },
+		{ x: 180, y: -160, size: 139, rotation: 0, start: 0.28 },
+		{ x: 362, y: -120, size: 175, rotation: 24.69, start: 0.34 },
 	];
 	/* MAX WIN, design 9428:64173: no banner. The word art (9428:64660, 684x429 with its top at 71)
 	   sits over the dimmed board, the total on the same orange plaque (9428:64494, 380x127 at 487,
@@ -106,8 +110,7 @@
 	   image box (content bounds measured off the webp files), but the mock's centres are pulled
 	   in to the word art's edge so each symbol peeks out from behind the letters and its flight
 	   (MAX_WIN_FLIGHT) carries it in and out of cover ("show from behind the text partially",
-	   user 2026-09-21). Keys follow the FILES: cauliflower.webp holds the radish art and
-	   radish.webp the cauliflower. */
+	   user 2026-09-21). The six are the board's set (see pixelAssets.ts), not the mock's older one. */
 	const MAX_WIN_WORD_ART = { y: -50, width: 684, height: 429 };
 	const MAX_WIN_AMOUNT_Y = 214;
 	// `stack` is the portrait fallback (see maxWinVeggiePlace): a row of three above the word art
@@ -123,7 +126,7 @@
 		stackX: number;
 	}[] = [
 		{
-			key: 'pixelRadish',
+			key: 'winVeggieRadish',
 			x: -372,
 			y: -40,
 			size: 193,
@@ -133,7 +136,7 @@
 			stackX: -0.62,
 		},
 		{
-			key: 'pixelCarrot',
+			key: 'winVeggiePotato',
 			x: -300,
 			y: -218,
 			size: 210,
@@ -143,7 +146,7 @@
 			stackX: 0,
 		},
 		{
-			key: 'pixelCorn',
+			key: 'winVeggiePepper',
 			x: -318,
 			y: 74,
 			size: 205,
@@ -153,7 +156,7 @@
 			stackX: -0.62,
 		},
 		{
-			key: 'pixelTomato',
+			key: 'winVeggieTomato',
 			x: 348,
 			y: -226,
 			size: 165,
@@ -163,7 +166,7 @@
 			stackX: 0.62,
 		},
 		{
-			key: 'pixelCauliflower',
+			key: 'winVeggieGarlic',
 			x: 300,
 			y: 92,
 			size: 213,
@@ -173,7 +176,7 @@
 			stackX: 0,
 		},
 		{
-			key: 'pixelBroccoli',
+			key: 'winVeggieCabbage',
 			x: 378,
 			y: -46,
 			size: 184,
@@ -183,16 +186,10 @@
 			stackX: 0.62,
 		},
 	];
-	// Every symbol texture is square except the cauliflower (276x284).
-	const VEGGIE_ASPECT: Record<VeggieKey, number> = {
-		pixelBroccoli: 1,
-		pixelCorn: 1,
-		pixelTomato: 1,
-		pixelEggplant: 1,
-		pixelCarrot: 1,
-		pixelCauliflower: 284 / 276,
-		pixelRadish: 1,
-	};
+	/* The slot sizes were measured against the old symbol set, whose art filled 0.876 of its square
+	   on average; the board sprites share one pixel size on a padded 267 canvas and fill 0.786. One
+	   factor for all keeps the board's own proportions between vegetables. */
+	const VEGGIE_SCALE = 0.876 / 0.786;
 	const fitBox = (width: number, height: number, maxWidth: number, maxHeight: number) => {
 		const scale = Math.min(maxWidth / width, maxHeight / height);
 		return { width: width * scale, height: height * scale };
@@ -204,33 +201,63 @@
 			titleTop: 'winTitleSweetTopV2',
 			titleTopWidth: 1607,
 			titleTopHeight: 574,
-			veggies: ['pixelEggplant', 'pixelCarrot', 'pixelCauliflower', 'pixelRadish', 'pixelBroccoli'],
+			veggies: [
+				'winVeggiePepper',
+				'winVeggiePotato',
+				'winVeggieGarlic',
+				'winVeggieRadish',
+				'winVeggieTomato',
+			],
 		},
 		winWild: {
 			banner: 'winBannerWildV3',
 			wordArt: 'winWordArtWildV3',
-			veggies: ['pixelCorn', 'pixelCarrot', 'pixelCauliflower', 'pixelRadish', 'pixelTomato'],
+			veggies: [
+				'winVeggieEggplant',
+				'winVeggieRadish',
+				'winVeggieCabbage',
+				'winVeggiePotato',
+				'winVeggiePepper',
+			],
 		},
 		winEpic: {
 			banner: 'winBannerEpicV3',
 			titleTop: 'winTitleEpicV2',
 			titleTopWidth: 1614,
 			titleTopHeight: 706,
-			veggies: ['pixelCarrot', 'pixelEggplant', 'pixelTomato', 'pixelCorn', 'pixelRadish'],
+			veggies: [
+				'winVeggieGarlic',
+				'winVeggieEggplant',
+				'winVeggieTomato',
+				'winVeggiePepper',
+				'winVeggieRadish',
+			],
 		},
 		winMythic: {
 			banner: 'winBannerMythicV3',
 			titleTop: 'winTitleMythicV2',
 			titleTopWidth: 2057,
 			titleTopHeight: 684,
-			veggies: ['pixelEggplant', 'pixelTomato', 'pixelCorn', 'pixelBroccoli', 'pixelCauliflower'],
+			veggies: [
+				'winVeggiePotato',
+				'winVeggieTomato',
+				'winVeggiePepper',
+				'winVeggieCabbage',
+				'winVeggieGarlic',
+			],
 		},
 		winLegendary: {
 			banner: 'winBannerLegendaryV3',
 			titleTop: 'winTitleLegendaryV2',
 			titleTopWidth: 2082,
 			titleTopHeight: 633,
-			veggies: ['pixelBroccoli', 'pixelCorn', 'pixelTomato', 'pixelEggplant', 'pixelCarrot'],
+			veggies: [
+				'winVeggieCabbage',
+				'winVeggiePepper',
+				'winVeggieTomato',
+				'winVeggieEggplant',
+				'winVeggieRadish',
+			],
 		},
 	};
 
@@ -400,90 +427,272 @@
 		if (progress < 0.44) return 84 - cubicOut(progress / 0.44) * 188;
 		return -104 + cubicOut((progress - 0.44) / 0.56) * 104;
 	};
-	/* ── Congrats basket ───────────────────────────────────────────────────────────────────────
-	   Design 9044:16622 ships the basket as one rasterised image, which is exactly what it looked
-	   like on screen: a single still block of vegetables. It is cut here into the leafy bed, the
-	   six vegetables and the crate that stands in front of them, so each one can breathe on its
-	   own timing. The boxes are that cut's own bounding boxes in the 1234x522 source; the basket
-	   draws at 617x260, so a source pixel is half an overlay unit.
-	   The bed is painted UNDER the vegetables with their footprints filled in from the nearest
-	   surviving leaf, so a vegetable can lift clear without tearing a hole in what was behind it,
-	   and the crate is painted last because it stands in front of every stalk. */
-	const BASKET_SCALE = 0.5;
-	const BASKET_X = -308.5;
-	const BASKET_Y = -255;
-	const basketRect = (x: number, y: number, w: number, h: number) => ({
-		cx: BASKET_X + (x + w * 0.5) * BASKET_SCALE,
-		by: BASKET_Y + (y + h) * BASKET_SCALE,
-		w: w * BASKET_SCALE,
-		h: h * BASKET_SCALE,
-	});
-	/* Painted back to front. Every vegetable gets its own start, bob rate and lean so the bunch
-	   reads as seven things sitting together rather than one drawing — the rates are deliberately
-	   unrelated numbers so the group never falls into step with itself. */
-	const BASKET_BED = basketRect(40, 15, 1161, 369);
-	const BASKET_VEG = [
+	/* ── Congrats perch ─────────────────────────────────────────────────────────────────────────
+	   Design 9044:16622 (updated 2026-09-24) drops the basket: five of the board's own vegetables
+	   perch along the sign's top edge — pepper leaning off the left wing, potato, garlic in the
+	   middle and a head taller, radish, tomato tipping off the right wing — each half hidden behind
+	   the sign. Positions are the art's centre measured off the design render, in this branch's
+	   units (the sign is 750 wide here, 650 in the design, so design px x 1.154) relative to the
+	   sign's centre; `h` is the art's visible height. The sprites are the win banner's winVeggie*
+	   keys (267px board canvases), so eyes come for free. Each is pivoted on its foot, found by
+	   rotating the half-height down from the centre, so a hop lifts it off the sign edge. */
+	const VEG_CANVAS = 267;
+	const perch = (
+		cx: number,
+		cy: number,
+		h: number,
+		deg: number,
+		bbox: [number, number, number, number],
+	) => {
+		const rotation = (deg * Math.PI) / 180;
+		const size = (h / (bbox[3] - bbox[1])) * VEG_CANVAS;
+		const half = h * 0.5;
+		return {
+			x: cx - Math.sin(rotation) * half,
+			y: cy + Math.cos(rotation) * half,
+			rotation,
+			anchor: { x: (bbox[0] + bbox[2]) / 2 / VEG_CANVAS, y: bbox[3] / VEG_CANVAS },
+			size,
+		};
+	};
+	// Painted back to front: the middle three first, the two wing leaners over them.
+	const BASKET_VEG: {
+		key: VeggieKey;
+		rect: ReturnType<typeof perch>;
+		start: number;
+		period: number;
+		hop: number;
+		tilt: number;
+	}[] = [
 		{
-			key: 'congratsEggplant',
-			rect: basketRect(395, 37, 180, 247),
+			key: 'winVeggiePotato',
+			rect: perch(-157, -130, 104, -4.1, [48, 30, 216, 238]),
 			start: 0.2,
-			bob: 2.05,
-			lean: 1.7,
-			amp: 4.5,
-			tilt: 0.03,
+			period: 3.4,
+			hop: 9,
+			tilt: -0.05,
 		},
 		{
-			key: 'congratsCarrot',
-			rect: basketRect(629, 15, 189, 298),
+			key: 'winVeggieRadish',
+			rect: perch(175, -133, 111, 0, [54, 15, 207, 258]),
 			start: 0.32,
-			bob: 1.64,
-			lean: 2.3,
-			amp: 3.8,
-			tilt: 0.022,
+			period: 4.1,
+			hop: 10,
+			tilt: 0.06,
 		},
 		{
-			key: 'congratsCorn',
-			rect: basketRect(779, 95, 139, 221),
-			start: 0.44,
-			bob: 2.41,
-			lean: 1.45,
-			amp: 4.2,
-			tilt: 0.034,
-		},
-		{
-			key: 'congratsTomato',
-			rect: basketRect(208, 167, 232, 196),
-			start: 0.14,
-			bob: 1.83,
-			lean: 2.6,
-			amp: 5,
-			tilt: 0.026,
-		},
-		{
-			key: 'congratsCauliflower',
-			rect: basketRect(466, 207, 189, 151),
-			start: 0.5,
-			bob: 2.72,
-			lean: 1.9,
-			amp: 3.4,
-			tilt: 0.038,
-		},
-		{
-			key: 'congratsBroccoli',
-			rect: basketRect(897, 192, 196, 187),
+			key: 'winVeggieGarlic',
+			rect: perch(0, -152, 155, 0, [36, 30, 228, 238]),
 			start: 0.26,
-			bob: 2.18,
-			lean: 2.9,
-			amp: 4.6,
-			tilt: 0.031,
+			period: 3.7,
+			hop: 11,
+			tilt: 0.04,
+		},
+		{
+			key: 'winVeggiePepper',
+			rect: perch(-306, -76, 144, -24.4, [11, 6, 258, 262]),
+			start: 0.14,
+			period: 4.4,
+			hop: 8,
+			tilt: -0.06,
+		},
+		{
+			key: 'winVeggieTomato',
+			rect: perch(322, -80, 127, 30, [0, 9, 267, 261]),
+			start: 0.44,
+			period: 4.8,
+			hop: 8,
+			tilt: 0.06,
 		},
 	];
+	/* ── The intro card's king: the splash rig ─────────────────────────────────────────────────
+	   The same layered king and the same keyframes as PixelSplashScreen.svelte's CSS, sampled here
+	   because the card is drawn in Pixi. Every part runs on the hop's 3.4s clock (crouch to 62%,
+	   apex 72%, landing 84%, rebound 90%); the whole rig tilts on its own 5.1s period. A frame is
+	   [percent, translateY (% of the layer), rotate (deg), scaleX, scaleY]; `origin` is the CSS
+	   transform-origin, a point on the 451px canvas. Between frames: ease-in-out, as in the CSS. */
+	type RigFrame = [number, number, number, number, number];
+	const REST = (p: number): RigFrame => [p, 0, 0, 1, 1];
+	const KING_RIG: { key: string; origin: [number, number]; frames: RigFrame[] }[] = [
+		{
+			key: 'kingSprout',
+			origin: [0.5, 0.24],
+			frames: [
+				REST(0),
+				[20, 0, -3, 1, 1],
+				[40, 0, 3, 1, 1],
+				REST(54),
+				[62, 3.2, 0, 1, 1],
+				[67, -2, 6, 1, 1],
+				[74, -3, -7, 1, 1],
+				[84, 4.5, 8, 1, 1],
+				[88, -2, -5, 1, 1],
+				[93, 0, 3, 1, 1],
+				[97, 0, -1, 1, 1],
+				REST(100),
+			],
+		},
+		{
+			key: 'kingBody',
+			origin: [0.5, 0.89],
+			frames: [
+				REST(0),
+				REST(54),
+				[62, 0, 0, 1.05, 0.95],
+				[67, 0, 0, 0.96, 1.05],
+				REST(74),
+				[84, 0, 0, 1.07, 0.93],
+				[88, 0, 0, 0.97, 1.03],
+				[93, 0, 0, 1.02, 0.98],
+				REST(100),
+			],
+		},
+		{
+			key: 'kingCrown',
+			origin: [0.5, 0.41],
+			frames: [
+				REST(0),
+				[28, 0, -1, 1, 1],
+				[42, 0, 1, 1, 1],
+				REST(54),
+				[62, 2.4, 0, 1, 1],
+				[67, -1, 1, 1, 1],
+				[74, -3.5, -3, 1, 1],
+				[80, -1, 1, 1, 1],
+				[84, 4.5, 2.5, 1, 1],
+				[88, -2.5, -2, 1, 1],
+				[93, 1, 1, 1, 1],
+				REST(100),
+			],
+		},
+		{
+			key: 'kingFeetL',
+			origin: [0.4, 0.86],
+			frames: [
+				REST(0),
+				REST(18),
+				[22, -2.5, -8, 1, 1],
+				REST(26),
+				REST(62),
+				[67, 3, 0, 1, 1],
+				[74, 2.5, -10, 1, 1],
+				[80, 1, -4, 1, 1],
+				REST(84),
+				REST(100),
+			],
+		},
+		{
+			key: 'kingFeetR',
+			origin: [0.6, 0.86],
+			frames: [
+				REST(0),
+				REST(36),
+				[40, -2.5, 8, 1, 1],
+				REST(44),
+				REST(62),
+				[67, 3, 0, 1, 1],
+				[74, 2.5, 10, 1, 1],
+				[80, 1, 4, 1, 1],
+				REST(84),
+				REST(100),
+			],
+		},
+		{
+			key: 'kingCapeL',
+			origin: [0.44, 0.6],
+			frames: [
+				REST(0),
+				[30, 0, 1, 1, 1],
+				REST(54),
+				[62, 1.5, -2, 1, 1],
+				[67, -1.5, -5, 1, 1],
+				[74, 0, 9, 1, 1],
+				[80, 0, 6, 1, 1],
+				[84, 2, -5, 1, 1],
+				[88, 0, 3, 1, 1],
+				[93, 0, -1.5, 1, 1],
+				REST(100),
+			],
+		},
+		{
+			key: 'kingCapeR',
+			origin: [0.56, 0.6],
+			frames: [
+				REST(0),
+				[30, 0, -1, 1, 1],
+				REST(54),
+				[62, 1.5, 2, 1, 1],
+				[67, -1.5, 5, 1, 1],
+				[74, 0, -9, 1, 1],
+				[80, 0, -6, 1, 1],
+				[84, 2, 5, 1, 1],
+				[88, 0, -3, 1, 1],
+				[93, 0, 1.5, 1, 1],
+				REST(100),
+			],
+		},
+	];
+	const KING_HOP: RigFrame[] = [
+		REST(0),
+		REST(62),
+		[72, -9, 0, 1, 1],
+		REST(84),
+		[90, -3, 0, 1, 1],
+		REST(100),
+	];
+	const KING_TILT: RigFrame[] = [
+		[0, 0, -2.4, 1, 1],
+		[50, 0, 2.4, 0.99, 1.012],
+		[100, 0, -2.4, 1, 1],
+	];
+	const KING_HOP_S = 3.4;
+	const KING_TILT_S = 5.1;
+	// The rig's canvas in card units: its art then spans the ~104 units the single sprite did.
+	const KING_RIG_SIZE = 120;
+	const sampleRig = (frames: RigFrame[], seconds: number, period: number) => {
+		const pct = ((((seconds / period) % 1) + 1) % 1) * 100;
+		let i = 0;
+		while (i < frames.length - 2 && frames[i + 1][0] <= pct) i++;
+		const [p0, ...a] = frames[i];
+		const [p1, ...b] = frames[i + 1];
+		const u = p1 > p0 ? Math.min(1, Math.max(0, (pct - p0) / (p1 - p0))) : 0;
+		const e = u * u * (3 - 2 * u);
+		const [ty, rot, sx, sy] = a.map((v, k) => v + (b[k] - v) * e);
+		return { ty, rot: (rot * Math.PI) / 180, sx, sy };
+	};
+
+	/* How a basket vegetable moves: it SITS. A slow breath squashes it from its foot (wider as it
+	   settles, taller as it fills), and once a period it hops — a quick lift with a lean, a squash
+	   on landing — on its own clock, so the bunch takes turns instead of all bobbing on sine waves
+	   ("they move a bit unreal", user 2026-09-24). */
+	const HOP_SHARE = 0.16;
+	const LAND_SHARE = 0.08;
+	const basketMotion = (item: (typeof BASKET_VEG)[number], time: number) => {
+		const breath = Math.sin(time * 2.1 + item.start * 11);
+		const t = ((((time + item.start * 7) / item.period) % 1) + 1) % 1;
+		let lift = 0;
+		let squash = 0;
+		let lean = 0;
+		if (t < HOP_SHARE) {
+			const u = t / HOP_SHARE;
+			lift = Math.sin(Math.PI * u) * item.hop;
+			lean = Math.sin(Math.PI * u) * item.tilt;
+			squash = -0.05 * Math.sin(Math.PI * u);
+		} else if (t < HOP_SHARE + LAND_SHARE) {
+			squash = 0.07 * Math.sin((Math.PI * (t - HOP_SHARE)) / LAND_SHARE);
+		}
+		return {
+			lift,
+			lean,
+			sx: 1 + breath * 0.012 + squash,
+			sy: 1 - breath * 0.018 - squash,
+		};
+	};
 	// Eye blinks, splash-style: open at rest, shut for ~170ms at random 2.4–5.6s gaps, now and then
 	// a double. The king blinks on the intro card; on the outro every basket vegetable runs its own
 	// timer with a staggered first blink, so the bunch never shuts its eyes in unison. Off entirely
 	// under prefers-reduced-motion.
 	let kingBlinking = $state(false);
-	let basketBlinking = $state<Record<string, boolean>>({});
 	const rand = (min: number, max: number) => min + Math.random() * (max - min);
 	const runBlinker = (set: (shut: boolean) => void, firstDelayMs: number) => {
 		const timers = new Set<number>();
@@ -522,6 +731,7 @@
 		{ bob: 2.2, sway: 1.95, amp: 5.8, tilt: 0.038, phase: 4.4 },
 	];
 	let winVeggieEyes = $state<EyeBeat[]>(['rest', 'rest', 'rest', 'rest', 'rest', 'rest']);
+	let basketEyes = $state<EyeBeat[]>(['rest', 'rest', 'rest', 'rest', 'rest']);
 	const eyeFrameKey = (veggie: VeggieKey, beat: EyeBeat) =>
 		beat === 'rest'
 			? veggie
@@ -577,10 +787,10 @@
 		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 		if (presentation === 'start')
 			return runBlinker((shut) => (kingBlinking = shut), rand(1200, 3000));
-		const stops = BASKET_VEG.map((item, index) =>
-			runBlinker(
-				(shut) => {
-					basketBlinking = { ...basketBlinking, [item.key]: shut };
+		const stops = BASKET_VEG.map((_, index) =>
+			runEyes(
+				(beat) => {
+					basketEyes = basketEyes.map((current, at) => (at === index ? beat : current));
 				},
 				rand(900, 2200) + index * 420,
 			),
@@ -824,7 +1034,7 @@
 	const CARD_W = 431;
 	const CARD_H = 611;
 	const localizedStartTitle = $derived(stateI18nDerived.translate('CONGRATS!'));
-	const localizedEndTitle = $derived(stateI18nDerived.translate('CONGRATULATIONS!'));
+	const localizedEndTitle = $derived(stateI18nDerived.translate('CONGRATS!'));
 	const bonusModeText = $derived(
 		overlay?.tier
 			? stateI18nDerived.translate(`BONUS TIER ${overlay.tier.toUpperCase()}`)
@@ -929,20 +1139,37 @@
 									/>
 								</Container>
 
+								{@const hop = sampleRig(KING_HOP, clock, KING_HOP_S)}
+								{@const tilt = sampleRig(KING_TILT, clock, KING_TILT_S)}
+								<!-- The splash king, rig and all: hop on the outer container, the 5.1s tilt about
+								     his feet (CSS origin 50% 85%), then each part on the hop's clock. Open-eyed
+								     at rest, blinking like the splash king. -->
 								<Container
-									y={52 + (1 - clamp01(bonusSymbolIn)) * 54 + Math.sin(clock * 3) * 5}
-									scale={bonusSymbolIn * (1 + Math.sin(clock * 2.6) * 0.018)}
-									rotation={Math.sin(clock * 2.2) * 0.025}
+									y={52 + (1 - clamp01(bonusSymbolIn)) * 54 + (hop.ty / 100) * KING_RIG_SIZE}
+									scale={bonusSymbolIn}
 									alpha={clamp01(bonusSymbolIn)}
 								>
-									<!-- The design's own vector king (pixelAssets: congratsKing), open-eyed at rest and
-									     blinking like the splash king. -->
-									<Sprite
-										key={kingBlinking ? 'congratsKing' : 'congratsKingOpen'}
-										anchor={0.5}
-										width={119}
-										height={119}
-									/>
+									<Container
+										y={KING_RIG_SIZE * 0.35}
+										rotation={tilt.rot}
+										scale={{ x: tilt.sx, y: tilt.sy }}
+									>
+										{#each KING_RIG as part (part.key)}
+											{@const pose = sampleRig(part.frames, clock, KING_HOP_S)}
+											<Sprite
+												key={part.key === 'kingBody' && !kingBlinking ? 'kingBodyOpen' : part.key}
+												anchor={{ x: part.origin[0], y: part.origin[1] }}
+												x={(part.origin[0] - 0.5) * KING_RIG_SIZE}
+												y={(part.origin[1] - 0.85) * KING_RIG_SIZE +
+													(pose.ty / 100) * KING_RIG_SIZE}
+												rotation={pose.rot}
+												scale={{
+													x: (pose.sx * KING_RIG_SIZE) / 451,
+													y: (pose.sy * KING_RIG_SIZE) / 451,
+												}}
+											/>
+										{/each}
+									</Container>
 								</Container>
 
 								<Container
@@ -972,44 +1199,27 @@
 								</Container>
 							</Container>
 						{:else}
-							<!-- Design 9044:16622 sets one bunch of vegetables BEHIND the sign. There is no
-							     wooden crate in it — the sign's own top edge is what cuts the bunch off — so
-							     the crate layer is never drawn, but the leafy `bed` is: it is the greenery
-							     packed between the vegetables, and without it they read as six loose symbols
-							     floating apart. The sign's top edge sits at y-131, and the group is placed so
-							     that edge crosses the bunch about two thirds of the way down it (bunch top
-							     -251, bottom -67). Drawn before the plaque, so the plaque paints over
-							     everything below its edge. -->
+							<!-- Design 9044:16622: the five perched vegetables go down BEFORE the sign, so its
+							     top edge hides their lower halves. -->
 							{@const basketIn = popIn(0.08, 0.42)}
-							<Container
-								y={-4 + veggieJumpOffset(0.08) + Math.sin(clock * 2.3) * 4}
-								scale={basketIn * (1 + Math.sin(clock * 2.3) * 0.012)}
-								alpha={clamp01(basketIn)}
-							>
-								<Sprite
-									key="congratsBed"
-									anchor={{ x: 0.5, y: 1 }}
-									x={BASKET_BED.cx}
-									y={BASKET_BED.by}
-									width={BASKET_BED.w}
-									height={BASKET_BED.h}
-								/>
-								{#each BASKET_VEG as item (item.key)}
+							<Container y={veggieJumpOffset(0.08)} alpha={clamp01(basketIn)}>
+								{#each BASKET_VEG as item, index (item.key)}
 									{@const vegIn = popIn(item.start, 0.4)}
-									<!-- Pivoted on its own base: the bob and the lean both swing from where the
-									     vegetable meets the crate, so its feet stay planted while its head moves. -->
+									{@const move = basketMotion(item, clock)}
+									<!-- Pivoted on its own foot: the breath, the hop's lean and the landing squash
+									     all swing from where the vegetable sits, so it never slides. -->
 									<Container
-										x={item.rect.cx}
-										y={item.rect.by + Math.sin(clock * item.bob + item.start * 9) * item.amp}
-										scale={vegIn}
-										rotation={Math.sin(clock * item.lean + item.start * 5) * item.tilt}
+										x={item.rect.x}
+										y={item.rect.y - move.lift + (1 - clamp01(vegIn)) * 60}
+										scale={{ x: vegIn * move.sx, y: vegIn * move.sy }}
+										rotation={item.rect.rotation + move.lean}
 										alpha={clamp01(vegIn)}
 									>
 										<Sprite
-											key={basketBlinking[item.key] ? `${item.key}Blink` : item.key}
-											anchor={{ x: 0.5, y: 1 }}
-											width={item.rect.w}
-											height={item.rect.h}
+											key={eyeFrameKey(item.key, basketEyes[index])}
+											anchor={item.rect.anchor}
+											width={item.rect.size}
+											height={item.rect.size}
 										/>
 									</Container>
 								{/each}
@@ -1018,19 +1228,6 @@
 							<Container scale={0.9 + bonusPlaqueIn * 0.1} alpha={clamp01(bonusPlaqueIn)}>
 								<Sprite key="bonusEndPlaqueV2" anchor={0.5} width={750} height={262} />
 							</Container>
-
-							{#each STAR_SLOTS as star, index}
-								{@const starIn = popIn(0.25 + index * 0.08, 0.36)}
-								<Container
-									x={star.x * 1.05}
-									y={13}
-									scale={starIn * (1 + Math.sin(clock * 3.2 + star.phase) * 0.08)}
-									rotation={(index ? 1 : -1) * 0.1 + Math.sin(clock * 2.4 + index) * 0.05}
-									alpha={clamp01(starIn)}
-								>
-									<Sprite key="winStarSweetV2" anchor={0.5} width={60} height={58} />
-								</Container>
-							{/each}
 
 							<Container
 								y={-33 - (1 - clamp01(bonusTitleIn)) * 44}
@@ -1139,8 +1336,8 @@
 								<Sprite
 									key={eyeFrameKey(slot.key, winVeggieEyes[index])}
 									anchor={0.5}
-									width={slot.size}
-									height={slot.size * VEGGIE_ASPECT[slot.key]}
+									width={slot.size * VEGGIE_SCALE}
+									height={slot.size * VEGGIE_SCALE}
 								/>
 							</Container>
 						{/each}
@@ -1241,8 +1438,8 @@
 								<Sprite
 									key={eyeFrameKey(veggie, winVeggieEyes[index])}
 									anchor={0.5}
-									width={slot.size}
-									height={slot.size * VEGGIE_ASPECT[veggie]}
+									width={slot.size * VEGGIE_SCALE}
+									height={slot.size * VEGGIE_SCALE}
 								/>
 							</Container>
 						{/each}

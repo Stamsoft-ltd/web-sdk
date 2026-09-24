@@ -9,7 +9,7 @@ export default createLocale(source, {
 	welcome: '欢迎来到',
 	gameBoard: '蔬菜沙拉游戏盘',
 	clusterPayouts: '集群赢分',
-	vegetables: ['西兰花', '玉米', '番茄', '茄子', '胡萝卜', '花椰菜', '萝卜'],
+	vegetables: ['卷心菜', '甜椒', '番茄', '茄子', '土豆', '萝卜', '大蒜'],
 	normalBonus: '普通奖励',
 	superBonus: '超级奖励',
 	hiddenBonus: '隐藏奖励',

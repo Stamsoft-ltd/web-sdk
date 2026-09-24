@@ -9,7 +9,7 @@ export default createLocale(source, {
 	welcome: 'WITAJ W',
 	gameBoard: 'Plansza Veggie Salad',
 	clusterPayouts: 'WYGRANE KLASTROWE',
-	vegetables: ['BROKUŁ', 'KUKURYDZA', 'POMIDOR', 'BAKŁAŻAN', 'MARCHEW', 'KALAFIOR', 'RZODKIEWKA'],
+	vegetables: ['KAPUSTA', 'PAPRYKA', 'POMIDOR', 'BAKŁAŻAN', 'ZIEMNIAK', 'RZODKIEWKA', 'CZOSNEK'],
 	normalBonus: 'ZWYKŁY BONUS',
 	superBonus: 'SUPER BONUS',
 	hiddenBonus: 'UKRYTY BONUS',

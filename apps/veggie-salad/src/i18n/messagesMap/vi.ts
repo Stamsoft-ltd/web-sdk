@@ -9,7 +9,7 @@ export default createLocale(source, {
 	welcome: 'CHÀO MỪNG ĐẾN',
 	gameBoard: 'Bảng chơi Veggie Salad',
 	clusterPayouts: 'THƯỞNG CỤM',
-	vegetables: ['BÔNG CẢI XANH', 'NGÔ', 'CÀ CHUA', 'CÀ TÍM', 'CÀ RỐT', 'SÚP LƠ TRẮNG', 'CỦ CẢI'],
+	vegetables: ['BẮP CẢI', 'ỚT CHUÔNG', 'CÀ CHUA', 'CÀ TÍM', 'KHOAI TÂY', 'CỦ CẢI', 'TỎI'],
 	normalBonus: 'THƯỞNG THƯỜNG',
 	superBonus: 'SIÊU THƯỞNG',
 	hiddenBonus: 'THƯỞNG ẨN',

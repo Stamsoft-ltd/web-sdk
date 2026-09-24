@@ -10,7 +10,7 @@ export default createLocale(source, {
 	maxWinOf: 'VON',
 	gameBoard: 'Veggie-Salad-Spielfeld',
 	clusterPayouts: 'CLUSTER-GEWINNE',
-	vegetables: ['BROKKOLI', 'MAIS', 'TOMATE', 'AUBERGINE', 'KAROTTE', 'BLUMENKOHL', 'RADIESCHEN'],
+	vegetables: ['KOHL', 'PAPRIKA', 'TOMATE', 'AUBERGINE', 'KARTOFFEL', 'RADIESCHEN', 'KNOBLAUCH'],
 	normalBonus: 'NORMALER BONUS',
 	superBonus: 'SUPER-BONUS',
 	hiddenBonus: 'VERSTECKTER BONUS',

@@ -5,8 +5,8 @@
    for ever in a cell while the splash's king blinked. This gives each resting cell its own slow,
    randomly phased clock: the king rests on `scatter_open` and drops to the authored shut frame
    for a blink; a vegetable occasionally blinks or glances — its eyes slid one art pixel left or
-   right — using the frames scripts/build-splash-eyes.py already cuts from these very sprites
-   (splash/<name>-look-l|look-r|blink.webp), so every frame is the board art itself.
+   right — using the frames scripts/build-board-crop.py cuts from these very sprites
+   (board/<name>-look-l|look-r|blink.webp), so every frame is the board art itself.
 
    A Svelte action on the board `<img>` (`use:symbolLiveness={cell.name}`) rather than a component,
    so the prototype's scoped `.symbol` styles still land on the same element; it only ever writes
@@ -18,13 +18,18 @@ const PIXEL_ROOT = './assets/veggie-salad/pixel';
 const SCATTER_OPEN = `${PIXEL_ROOT}/scatter_open.webp`;
 const SCATTER_SHUT = `${PIXEL_ROOT}/scatter.webp`;
 
-type Beat = 'blink' | 'look-l' | 'look-r';
+type Beat = 'blink' | 'look-l' | 'look-r' | 'lift' | 'wide' | 'shut';
 
 const rand = (lo: number, hi: number) => lo + Math.random() * (hi - lo);
 
 /* The king keeps the splash's own rhythm; the crowd is much sparser. */
 const KING = { first: [1200, 3600], rest: [2400, 5600] } as const;
 const VEG = { first: [1500, 9000], rest: [6000, 14000] } as const;
+/* The premiums in shades read as stills on the crowd's clock ("new premium items stay too
+   static", user 2026-09-24): a busier clock and their own beats — the shades lifted, a chatter. */
+const PREMIUM = { first: [600, 3500], rest: [2500, 6000] } as const;
+const LIFT_MS: [number, number] = [650, 1000];
+const CHATTER_MS: [number, number] = [110, 150];
 const BLINK_MS: [number, number] = [130, 170];
 const GLANCE_MS: [number, number] = [400, 800];
 const DOUBLE_GAP_MS = 150;
@@ -54,19 +59,27 @@ const preload = (src: string) => {
 /** The frame set for one symbol image, or null for art that has no eye frames. */
 const framesFor = (img: HTMLImageElement, name: string) => {
 	if (name === 'SCATTER') {
-		return { rest: SCATTER_OPEN, beats: { blink: SCATTER_SHUT } as Partial<Record<Beat, string>>, clock: KING };
+		return {
+			rest: SCATTER_OPEN,
+			beats: { blink: SCATTER_SHUT } as Partial<Record<Beat, string>>,
+			clock: KING,
+			premium: false,
+		};
 	}
-	// splash/<file>-look-l.webp is cut from pixel/<file>.webp, so key the variants off the file
-	// the board actually loaded (the cauliflower/radish files are historically swapped; the
-	// variants follow the files, not the names, so they stay pixel-true).
-	const file = (img.getAttribute('src') || '').split('/').pop()?.replace(/\.webp$/, '');
-	if (!file) return null;
-	const variant = (beat: Beat) => `${PIXEL_ROOT}/splash/${file}-${beat}.webp`;
-	return {
-		rest: img.getAttribute('src') || '',
-		beats: { blink: variant('blink'), 'look-l': variant('look-l'), 'look-r': variant('look-r') },
-		clock: VEG,
+	// scripts/build-board-crop.py writes each board sprite's eye frames beside it
+	// (board/<file>-look-l.webp), so key the variants off the file the board actually loaded.
+	const src = img.getAttribute('src') || '';
+	if (!/\.webp$/.test(src)) return null;
+	const variant = (beat: Beat) => src.replace(/\.webp$/, `-${beat}.webp`);
+	const beats: Partial<Record<Beat, string>> = {
+		blink: variant('blink'),
+		'look-l': variant('look-l'),
+		'look-r': variant('look-r'),
 	};
+	// scripts/build-board-premium.py cuts these for the premiums only.
+	const premium = /-shades\.webp$/.test(src);
+	if (premium) Object.assign(beats, { lift: variant('lift'), wide: variant('wide'), shut: variant('shut') });
+	return { rest: src, beats, clock: premium ? PREMIUM : VEG, premium };
 };
 
 /** Idle board, cell not dropping or celebrating, tab visible. */
@@ -124,6 +137,17 @@ export const symbolLiveness = (img: HTMLImageElement, name: string) => {
 			else finish();
 		});
 	};
+	const lift = () => {
+		show(frames.beats.lift as string);
+		at(rand(...LIFT_MS), finish);
+	};
+	// Shut, open, wide, open, shut, open: a quick mutter.
+	const chatter = (steps: (Beat | 'rest')[] = ['shut', 'rest', 'wide', 'rest', 'shut']) => {
+		const [step, ...more] = steps;
+		if (!step) return finish();
+		show(step === 'rest' ? frames.rest : (frames.beats[step] as string));
+		at(rand(...CHATTER_MS), () => chatter(more));
+	};
 	const glance = () => {
 		show(frames.beats[Math.random() < 0.5 ? 'look-l' : 'look-r'] as string);
 		at(rand(...GLANCE_MS), finish);
@@ -137,7 +161,10 @@ export const symbolLiveness = (img: HTMLImageElement, name: string) => {
 		active += 1;
 		lastStart = now;
 		const canGlance = frames.beats['look-l'] && frames.beats['look-r'];
-		if (canGlance && Math.random() < GLANCE_CHANCE) glance();
+		const roll = Math.random();
+		if (frames.premium && roll < 0.35) lift();
+		else if (frames.premium && roll < 0.65) chatter();
+		else if (canGlance && Math.random() < GLANCE_CHANCE) glance();
 		else blink(Math.random() < DOUBLE_CHANCE ? 1 : 0);
 	};
 

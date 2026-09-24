@@ -10,7 +10,7 @@ export default createLocale(source, {
 	maxWinOf: 'PÅ',
 	gameBoard: 'Veggie Salad-spilleplade',
 	clusterPayouts: 'KLYNGEGEVINSTER',
-	vegetables: ['BROCCOLI', 'MAJS', 'TOMAT', 'AUBERGINE', 'GULEROD', 'BLOMKÅL', 'RADISE'],
+	vegetables: ['KÅL', 'PEBERFRUGT', 'TOMAT', 'AUBERGINE', 'KARTOFFEL', 'RADISE', 'HVIDLØG'],
 	normalBonus: 'NORMAL BONUS',
 	superBonus: 'SUPER BONUS',
 	hiddenBonus: 'SKJULT BONUS',
