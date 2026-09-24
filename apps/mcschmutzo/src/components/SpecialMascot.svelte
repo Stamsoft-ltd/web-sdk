@@ -26,8 +26,8 @@
 		{ nx: 0.538, ny: 0.272, nw: 0.072, nh: 0.07 },
 	];
 	const specialLids = [
-		{ cx: 0.454, cy: 0.278, w: 0.078, h: 0.07 },
-		{ cx: 0.538, cy: 0.268, w: 0.09, h: 0.082 },
+		{ cx: 0.454, cy: 0.274, w: 0.088, h: 0.082 },
+		{ cx: 0.538, cy: 0.264, w: 0.098, h: 0.092 },
 	];
 
 	// Clock: drives both the salt fall (phase) and the chef's idle breathe (elapsed).
