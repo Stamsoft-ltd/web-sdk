@@ -481,13 +481,13 @@ export default {
 		// 358x425 frame — the arm overlays and flicks with nothing duplicated behind it, and the
 		// eyes are the intact art (animated pupils overlay the baked ones slightly larger).
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_base_v7.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/special_base_v8.webp', import.meta.url).href,
 		preload: true,
 	},
 	specialArm: {
 		// The salt-shaker forearm on the same frame, overlaid + flicked about the shoulder.
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_arm_v2.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/special_arm_v3.webp', import.meta.url).href,
 		preload: true,
 	},
 	specialLabel: {

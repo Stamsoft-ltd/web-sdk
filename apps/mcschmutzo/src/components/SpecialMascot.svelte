@@ -20,13 +20,12 @@
 	const potHeight = $derived(potWidth * (848 / 1180));
 	const potY = $derived(canvas.height * 0.82);
 
-	// The base keeps the art's real eyes. The animated pupils are dark discs drawn slightly LARGER
-	// than the baked pupils and centred on them, so at rest the face reads as the untouched art and
-	// the (tiny) glance carries the disc without ever exposing the baked pupil beneath. Skin lids
-	// drop over the whole eye for blinks.
+	// The base has the baked pupils erased (color-aware: sclera/pupil only, skin untouched) and the
+	// animated pupils are discs at the ART'S OWN pupil size, centred where they were — at rest the
+	// face reads as the original art, and the tiny glance only ever exposes white-on-white sclera.
 	const specialPupils = [
-		{ nx: 0.4544, ny: 0.2796, nw: 0.089, nh: 0.075 },
-		{ nx: 0.5369, ny: 0.267, nw: 0.109, nh: 0.092 },
+		{ nx: 0.4544, ny: 0.2796, nw: 0.0721, nh: 0.0607 },
+		{ nx: 0.5369, ny: 0.267, nw: 0.0926, nh: 0.078 },
 	];
 	const specialLids = [
 		{ cx: 0.4544, cy: 0.2775, w: 0.095, h: 0.088 },
