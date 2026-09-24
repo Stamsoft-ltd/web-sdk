@@ -450,20 +450,20 @@ export default {
 		// The base with the eyes AND the held ketchup bottle+hand cut out — the bottle is overlaid
 		// separately (mascotBottle) so it can shake like the splash chef's.
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/mascot_base_nobottle.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/mascot_base_v2.webp', import.meta.url).href,
 		preload: true,
 	},
 	mascotBottle: {
 		// The extracted ketchup bottle + gripping hand (full-frame canvas), overlaid on mascotBase and
 		// shaken about the wrist.
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/mascot_bottle.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/mascot_bottle_v2.webp', import.meta.url).href,
 		preload: true,
 	},
 	mascotLabel: {
 		// The "McSchmutzo" nametag, cut out of the base (patched behind) so it can jiggle on its pin.
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/mascot_label.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/mascot_label_v2.webp', import.meta.url).href,
 		preload: true,
 	},
 	mascotPupilL: {

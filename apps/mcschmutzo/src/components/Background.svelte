@@ -33,7 +33,7 @@
 	const showMascot = $derived(!isFreegame && layoutType === 'desktop');
 	const showSpecialMascot = $derived(isFreegame && layoutType === 'desktop');
 	const mascotHeight = $derived(canvas.height * 0.6);
-	const mascotWidth = $derived(mascotHeight * (1019 / 1336));
+	const mascotWidth = $derived(mascotHeight * (248 / 425));
 	// Subtle idle so the chef isn't a frozen cut-out: a slow breathe (no lean — his eyes carry the
 	// life, and a rotation would drag the pupils/label out of place).
 	let clock = $state(0);
@@ -57,20 +57,20 @@
 	);
 	// Pupils (measured from the cut art) + eye-cover boxes for the blink lid; all fractions of the
 	// figure. Skin tone sampled by the eyes so the lid is invisible where it overshoots onto skin.
-	// Pupils sit low-ish in the (now fully-filled white) sclera for a natural forward gaze. The eye
-	// whites in mascot_base were re-filled solid white — they had skin showing where the pupils were
-	// cut, so the moving disc used to reveal skin.
+	// Real-art base (guy-base + eye whites + brows + nametag composed): the eye sockets are clean
+	// whites, so the pupils are discs at the design's own pupil sizes, both at the same offset in
+	// their socket (slightly down-left, toward the board) for one consistent gaze.
 	const mascotPupils = [
-		{ key: 'mascotPupilL', nx: 0.3415, ny: 0.311, nw: 0.0491, nh: 0.0479 },
-		{ key: 'mascotPupilR', nx: 0.473, ny: 0.308, nw: 0.0687, nh: 0.0449 },
+		{ nx: 0.132, ny: 0.29, nw: 0.0864, nh: 0.0504 }, // far eye (our left)
+		{ nx: 0.31, ny: 0.278, nw: 0.121, nh: 0.0706 }, // near eye
 	];
 	const mascotLids = [
-		{ cx: 0.329, cy: 0.305, w: 0.084, h: 0.08 },
-		{ cx: 0.4595, cy: 0.299, w: 0.106, h: 0.088 },
+		{ cx: 0.138, cy: 0.282, w: 0.125, h: 0.08 },
+		{ cx: 0.318, cy: 0.268, w: 0.165, h: 0.1 },
 	];
-	// The held "EXTRA MESSY" ketchup bottle is a separate overlay (cut out of mascotBase) so it can
-	// shake about the wrist like the splash chef's bottle. Pivot = the wrist joint (chef fractions).
-	const BOTTLE_PIVX = 0.19;
+	// The held ketchup bottle (real hand-with-sauce art) is a separate overlay on the same frame so
+	// it can shake about the wrist like the splash chef's. Pivot = the fist (chef fractions).
+	const BOTTLE_PIVX = 0.1;
 	const BOTTLE_PIVY = 0.8;
 	const mascotLeft = $derived(mascotPose.x - mascotPose.width / 2);
 	const mascotTop = $derived(mascotPose.y - mascotPose.height / 2);
@@ -228,18 +228,19 @@
 		skin={0xec9c58}
 		extras={[
 			{
+				// 12% larger than the baked label so the tilt never exposes the corners beneath.
 				key: 'mascotLabel',
-				nx: 0.4406,
-				ny: 0.5973,
-				nw: 0.2434,
-				nh: 0.1026,
+				nx: 0.133,
+				ny: 0.4805,
+				nw: 0.334,
+				nh: 0.129,
 				px: 0.5,
-				py: 0.07,
-				amp: 0.04,
+				py: 0.1,
+				amp: 0.035,
 				period: 320,
 			},
 		]}
-		sparkle={{ nx: 0.44, ny: 0.425, size: 0.075, period: 3400 }}
+		sparkle={{ nx: 0.24, ny: 0.35, size: 0.075, period: 3400 }}
 	/>
 	<!-- The held ketchup bottle, overlaid so it can shake about the wrist like the splash chef's. -->
 	<Sprite
