@@ -23,11 +23,13 @@
 	// The base has the baked pupils erased (color-aware: sclera/pupil only, skin untouched) and the
 	// animated pupils are discs at the ART'S OWN pupil size, centred where they were — at rest the
 	// face reads as the original art, and the tiny glance only ever exposes white-on-white sclera.
-	// Rest-centres are nudged slightly toward each socket's middle (off the art's edge-hugging pupil
-	// spots) so the disc + the glance excursions always stay inside the white of the eye.
+	// Both pupils sit at the SAME normalized offset inside their socket (slightly down-left, toward
+	// the pot) so the eyes read as one consistent gaze, and disc + glance excursions are sized to
+	// stay inside the white (sockets measured: L c(0.4351,0.2785) hw.029/.0264, R c(0.5425,0.2667)
+	// hw.0366/.0335; disc radii L .0207w R .0266w; max glance ±.0045x/.003y — all fit).
 	const specialPupils = [
-		{ nx: 0.4485, ny: 0.2762, nw: 0.059, nh: 0.0497 },
-		{ nx: 0.5305, ny: 0.2635, nw: 0.076, nh: 0.064 },
+		{ nx: 0.4314, ny: 0.2821, nw: 0.059, nh: 0.0497 },
+		{ nx: 0.538, ny: 0.2711, nw: 0.076, nh: 0.064 },
 	];
 	const specialLids = [
 		{ cx: 0.4544, cy: 0.2775, w: 0.095, h: 0.088 },
@@ -35,7 +37,7 @@
 	];
 
 	// Clock: drives both the salt fall (phase) and the chef's idle breathe (elapsed).
-	const COUNT = 40; // salt grains
+	const COUNT = 90; // salt grains — a dense, fine pour
 	let phase = $state(0);
 	let elapsed = $state(0);
 	$effect(() => {
@@ -71,31 +73,33 @@
 	const PIVY = 0.5;
 	const pivotX = $derived(chefL + PIVX * guyPose.width);
 	const pivotY = $derived(chefT + PIVY * guyPose.height);
-	const CAP_DX = 0.335 - PIVX; // shaker cap relative to shoulder
-	const CAP_DY = 0.235 - PIVY;
+	// The cap's holes face sits at frame (0.352, 0.466) — salt exits right there.
+	const CAP_DX = 0.352 - PIVX;
+	const CAP_DY = 0.466 - PIVY;
 	const saltTopX = $derived(pivotX + CAP_DX * guyPose.width * Math.cos(armAngle) - CAP_DY * guyPose.height * Math.sin(armAngle));
 	const saltTopY = $derived(pivotY + CAP_DX * guyPose.width * Math.sin(armAngle) + CAP_DY * guyPose.height * Math.cos(armAngle));
 	const saltBotX = $derived(cx - guyWidth * 0.12);
 	const saltBotY = $derived(potY - potHeight * 0.18);
-	const grain = $derived(Math.max(2.5, canvas.height * 0.006));
+	const grain = $derived(Math.max(2, canvas.height * 0.0045));
 	const grains = $derived(
 		Array.from({ length: COUNT }, (_, i) => {
 			const p = (phase + i / COUNT) % 1;
-			// Fine sprinkle: fans out into a cone as it falls + gentle gravity acceleration.
+			// Free fall: grains leave the holes slowly and accelerate down (p² gravity), so they bunch
+			// tight near the cap (a dense pour) and string out as they speed up toward the pot.
+			const ease = p * p * 0.82 + p * 0.18;
+			// Tight at the holes, fanning into a narrow cone on the way down.
 			const dir = Math.sin(i * 2.3999); // deterministic spread direction (-1..1)
-			const spread = grain * (1 + p * 4.5);
-			const ease = p * (0.5 + 0.5 * p);
-			// The stream hangs off the (moving) cap at the top and lands at the fixed pot, so it wiggles
-			// with the shake near the shaker and is anchored below.
-			const x = saltTopX + (saltBotX - saltTopX) * p + dir * spread;
+			const wob = Math.sin(i * 12.9898 + p * 9); // slight per-grain flutter as it falls
+			const spread = grain * (0.35 + ease * 5.5);
+			const x = saltTopX + (saltBotX - saltTopX) * ease + dir * spread + wob * grain * 0.35 * ease;
 			const y = saltTopY + (saltBotY - saltTopY) * ease;
-			const size = grain * (0.5 + ((i * 7) % 5) * 0.2); // varied grain sizes
-			const fade = Math.min(1, p / 0.1) * (p > 0.8 ? Math.max(0, (1 - p) / 0.2) : 1);
+			const size = grain * (0.45 + ((i * 7) % 5) * 0.16); // fine, varied grains
+			const fade = Math.min(1, p / 0.06) * (p > 0.82 ? Math.max(0, (1 - p) / 0.18) : 1);
 			// Density pulses with the flick AT THE MOMENT THIS GRAIN LEFT the shaker → salt bursts out on
 			// each down-flick instead of an even stream.
 			const releaseE = elapsed - p * 1200;
 			const rf = 0.5 + 0.5 * Math.sin((2 * Math.PI * (((releaseE % SHAKE_PERIOD) + SHAKE_PERIOD) % SHAKE_PERIOD)) / SHAKE_PERIOD);
-			const alpha = fade * (0.22 + 0.78 * rf) * (0.6 + (i % 3) * 0.15);
+			const alpha = fade * (0.3 + 0.7 * rf) * (0.65 + (i % 3) * 0.15);
 			return { x, y, size, alpha };
 		}),
 	);
