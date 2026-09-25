@@ -23,6 +23,7 @@
 	import Win from './Win.svelte';
 	import FreeSpinIntroHtml from './FreeSpinIntroHtml.svelte';
 	import FreeSpinPanelHtml from './FreeSpinPanelHtml.svelte';
+	import OrderNotesHtml from './OrderNotesHtml.svelte';
 	import WheelBonus from './WheelBonus.svelte';
 	import FreeSpinOutroHtml from './FreeSpinOutroHtml.svelte';
 	import Transition from './Transition.svelte';
@@ -259,6 +260,7 @@
 			<FreeSpinIntroHtml />
 			<FreeSpinOutroHtml />
 			<FreeSpinPanelHtml />
+			<OrderNotesHtml />
 			<WheelBonus />
 		{/if}
 	</div>
