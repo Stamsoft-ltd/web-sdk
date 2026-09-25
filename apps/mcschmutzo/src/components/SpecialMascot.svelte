@@ -12,28 +12,43 @@
 	// Composition sits on the right, BEHIND the board. The real art is laid out on a shared 358x425
 	// frame (guy on the right, the salt-arm overlay on the left) so both sprites line up; sized +
 	// placed so the head and raised shaker read at the right spot.
-	const cx = $derived(canvas.width * 0.88);
-	const guyHeight = $derived(canvas.height * 0.72);
-	const guyWidth = $derived(guyHeight * (358 / 425));
-	const guyY = $derived(canvas.height * 0.6);
+	// Fit the frame between the board and the screen's right edge so his thumbs-up hand (at the frame's
+	// right edge) is never cut: at 0.72·H tall and cx 0.88·W the frame ran ~80px off-screen on 16:9.
+	// The frame may tuck 7% of its width behind the board (just the shaker's tail), and shrinks only
+	// when that space is short; his feet stay at the same height (bottom = 0.96·H).
+	const boardRight = $derived.by(() => {
+		const main = context.stateLayoutDerived.mainLayout();
+		const b = context.stateGameDerived.boardLayout();
+		return main.x - (main.width * main.scale) / 2 + (b.x + b.width / 2) * main.scale;
+	});
+	const EDGE = 8; // px kept clear of the screen edge
+	const fullWidth = $derived(canvas.height * 0.72 * (358 / 425));
+	// Never shrink below 80% (narrow 4:3 screens): there he tucks further behind the board instead.
+	const guyWidth = $derived(
+		Math.max(fullWidth * 0.8, Math.min(fullWidth, (canvas.width - EDGE - boardRight) / 0.93)),
+	);
+	const guyHeight = $derived(guyWidth * (425 / 358));
+	const cx = $derived(canvas.width - EDGE - guyWidth / 2);
+	// Stand him so the pot's rim sits just under his thumbs-up hand (≈80% down the frame): anchored to
+	// the screen bottom instead, the rim covered his nametag and the pointing hand.
+	const guyY = $derived(canvas.height * 0.82 - (guyWidth * 0.82 * (848 / 1180)) / 2 + 0.02 * guyHeight - 0.3 * guyHeight);
 	const potWidth = $derived(guyWidth * 0.82);
 	const potHeight = $derived(potWidth * (848 / 1180));
 	const potY = $derived(canvas.height * 0.82);
 
-	// The base has the baked pupils erased (color-aware: sclera/pupil only, skin untouched) and the
-	// animated pupils are discs at the ART'S OWN pupil size, centred where they were — at rest the
-	// face reads as the original art, and the tiny glance only ever exposes white-on-white sclera.
-	// Both pupils sit at the SAME normalized offset inside their socket (slightly down-left, toward
-	// the pot) so the eyes read as one consistent gaze, and disc + glance excursions are sized to
-	// stay inside the white (sockets measured: L c(0.4351,0.2785) hw.029/.0264, R c(0.5425,0.2667)
-	// hw.0366/.0335; disc radii L .0207w R .0266w; max glance ±.0045x/.003y — all fit).
+	// Eyes (base v10): the eye region was rebuilt from a fresh render of the real SVG — pupils erased
+	// inside the eye opening only (outline band, skin and brows protected, so no white bleeds into the
+	// brows). This face is the SAME design as the board chef's (Figma), at 4.5× with the body at
+	// x=513, so the pupils + lids are the board chef's, rescaled: pupils a touch smaller than the art
+	// (the right one nudged up to clear its lower-lid line), lids sized to each eye opening. The brows
+	// are their own layer (extras) drawn above the lids, so a blink closes UNDER the brow.
 	const specialPupils = [
-		{ nx: 0.4314, ny: 0.2821, nw: 0.059, nh: 0.0497 },
-		{ nx: 0.538, ny: 0.2711, nw: 0.076, nh: 0.064 },
+		{ nx: 0.4469, ny: 0.2866, nw: 0.0509, nh: 0.0429 },
+		{ nx: 0.5525, ny: 0.272, nw: 0.0638, nh: 0.0538 },
 	];
 	const specialLids = [
-		{ cx: 0.4544, cy: 0.2775, w: 0.095, h: 0.088 },
-		{ cx: 0.5369, cy: 0.264, w: 0.108, h: 0.1 },
+		{ cx: 0.4336, cy: 0.278, w: 0.0627, h: 0.056 },
+		{ cx: 0.5453, cy: 0.2667, w: 0.0701, h: 0.069 },
 	];
 
 	// Clock: drives both the salt fall (phase) and the chef's idle breathe (elapsed).
@@ -155,6 +170,7 @@
 		phase={2000}
 		sparkle={{ nx: 0.5, ny: 0.4, size: 0.06, period: 3800, phase: 1200 }}
 		extras={[
+			{ key: 'specialBrows', nx: 0, ny: 0, nw: 1, nh: 1, amp: 0 },
 			{ key: 'specialLabel', nx: 0.5643, ny: 0.5737, nw: 0.1984, nh: 0.1119, px: 0.5, py: 0.13, amp: 0.045, period: 320, phase: 900 },
 		]}
 	/>

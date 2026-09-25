@@ -56,7 +56,7 @@
 		position: fixed;
 		inset: 0;
 		z-index: 68;
-		background: rgba(0, 0, 0, 0.64);
+		background: rgba(0, 0, 0, 0.74);
 		backdrop-filter: blur(4px);
 	}
 

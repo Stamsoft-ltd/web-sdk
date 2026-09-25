@@ -40,7 +40,7 @@
 </script>
 
 <FadeContainer {show}>
-	<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
+	<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.6} />
 
 	<FreeSpinAnimation>
 		{#snippet children({ sizes })}

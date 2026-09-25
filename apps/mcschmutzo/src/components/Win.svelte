@@ -77,10 +77,10 @@
 		<WinCountUpProvider {amount} {duration} oncomplete={() => onCountUpComplete()}>
 			{#snippet children({ countUpAmount, startCountUp, finishCountUp, countUpCompleted })}
 				{#if isBigWin}
-					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.5} />
+					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.6} />
 				{:else}
-					<!-- Small-win popup dims the screen too (design: #0000004D ≈ 30% black). -->
-					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.302} />
+					<!-- Small-win popup dims the screen too (design #0000004D ≈ 30% black, +10% darker per design ask). -->
+					<CanvasSizeRectangle backgroundColor={0x000000} backgroundAlpha={0.402} />
 				{/if}
 
 				<OnMount

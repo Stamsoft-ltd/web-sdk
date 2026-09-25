@@ -78,6 +78,7 @@
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import { getContext } from '../game/context';
+	import { PORTRAIT_SHORT_ASPECT } from '../game/stateLayout';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { fitLabel } from '../lib/fitLabel';
 	import { mcschmutzoStakeDerived } from '../state/mcschmutzoStake.svelte';
@@ -94,6 +95,10 @@
 	// mobile browser chrome, which pushed the rail's bottom off-screen.
 	const lsVh = $derived((context.stateLayoutDerived.canvasSizes().height || 1) / 100);
 	const isPortrait = $derived(layoutType === 'portrait');
+	// Short phones (see stateLayout PORTRAIT_SHORT_ASPECT): tight header — logo right under Press Play.
+	const isShortPortrait = $derived(
+		isPortrait && context.stateLayoutDerived.canvasSizes().width / context.stateLayoutDerived.canvasSizes().height > PORTRAIT_SHORT_ASPECT,
+	);
 	const isLandscapeMobile = $derived(layoutType === 'landscape');
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
 	// While a free-spin congrats screen (intro/outro) is up, make the whole HUD non-interactive so
@@ -243,6 +248,25 @@
 		};
 		window.addEventListener('pointerdown', onDown, true);
 		return () => window.removeEventListener('pointerdown', onDown, true);
+	});
+
+	// Landscape: the SOUND/MUSIC/INFO popup opens sideways from the rail — shift it so its FIRST icon
+	// sits exactly level with the ☰ / ✕ button (the rail's top padding otherwise put it ~20px higher).
+	$effect(() => {
+		if (!menuOpen || !isLandscapeMobile) return;
+		let raf = 0;
+		const align = () => {
+			const pop = document.querySelector<HTMLElement>('.ls-menu-pop');
+			const btn = document.querySelector('.ls-round[data-menu-toggle]')?.getBoundingClientRect();
+			const ic = pop?.querySelector('.pt-menu-item__ic')?.getBoundingClientRect();
+			if (pop && btn && ic) {
+				const delta = btn.top + btn.height / 2 - (ic.top + ic.height / 2);
+				if (Math.abs(delta) > 0.5) pop.style.top = `${(parseFloat(pop.style.top) || 0) + delta}px`;
+			}
+			raf = requestAnimationFrame(align);
+		};
+		raf = requestAnimationFrame(align);
+		return () => cancelAnimationFrame(raf);
 	});
 
 	const openRules = () => {
@@ -566,13 +590,15 @@
 			// there a left origin keeps clipping the "$" prefix, so shrink from the CENTRE. Desktop
 			// (.value-fit, left-aligned text) and landscape (label-beside-value row) are left-aligned
 			// — there a centre origin shifts/clips the value, so shrink from the LEFT. Detect which by
-			// comparing the value's centre to the slot's centre (rendered px ratios, scale cancels).
+			// WHERE THE VALUE STARTS: a left-aligned value starts exactly at the slot's padding edge; a
+			// centred one starts inside it (fits) or before it (overflows). (Comparing centres misread
+			// a slightly-overflowing left-aligned value — e.g. the special-bet "$20.00" in the 90u
+			// desktop BET slot — as centred, shrank it about its centre and clipped its last digit.)
 			const nodeRect = node.getBoundingClientRect();
 			const slotRect = slot.getBoundingClientRect();
-			const centered =
-				!sameRow &&
-				Math.abs(nodeRect.left + nodeRect.width / 2 - (slotRect.left + slotRect.width / 2)) <
-					slotRect.width * 0.15;
+			const k = slot.offsetWidth ? slotRect.width / slot.offsetWidth : 1; // rendered px per layout px
+			const startGap = (nodeRect.left - slotRect.left) / k - slot.clientLeft - parseFloat(cs.paddingLeft);
+			const centered = !sameRow && Math.abs(startGap) > 1;
 			node.style.transformOrigin = centered ? 'center center' : 'left center';
 			const scale = full > avail && avail > 0 ? avail / full : 1;
 			node.style.transform = scale < 1 ? `scale(${scale})` : 'none';
@@ -659,7 +685,7 @@
 >
 	{#if isPortrait}
 		<!-- Portrait header: Press Play mark + big McSchmutzo logo, pinned above the board. -->
-		<div class="pt-top">
+		<div class="pt-top" class:pt-top--short={isShortPortrait}>
 			<img class="pt-top__pp" src={ptPressPlay} alt="Press Play" draggable="false" />
 			<img class="pt-top__logo" src={ptLogo} alt="McSchmutzo" draggable="false" />
 		</div>
@@ -1461,8 +1487,10 @@
 
 	.bet-coin {
 		pointer-events: none;
-		width: calc(var(--u) * 52);
-		height: calc(var(--u) * 52);
+		/* Smaller coin stack with a bit more air before the BET text (design ask). */
+		width: calc(var(--u) * 40);
+		height: calc(var(--u) * 40);
+		margin-right: calc(var(--u) * 8);
 		display: grid;
 		place-items: center;
 		flex: 0 0 auto;
@@ -1639,7 +1667,8 @@
 	/* Menu open: drop the framed disc so the red-disc-with-X art (burger-close.svg) fills the button. */
 	.nav-btn--menu-open {
 		background: none;
-		border-color: transparent;
+		/* No border while open, so the ✕ disc fills the full button (same size as every round button). */
+		border-width: 0;
 	}
 	.nav-btn .nav-x-full {
 		width: 100%;
@@ -1715,9 +1744,9 @@
 	.hud-menu-pop {
 		position: absolute;
 		bottom: calc(100% + var(--nav-s) * 0.28);
-		/* Pull the left edge out to the bar's start (cancel the bar's 74u side padding that
-		   insets the menu button), so the popup begins where the nav bar begins. */
-		left: calc(var(--u) * -74);
+		/* Anchor to the menu button so the popup's icon column sits exactly above the ☰ / ✕
+		   (same 72u discs, same centre): pull left by the popup's own border + side padding. */
+		left: calc(-2px - var(--nav-s) * 0.28);
 		z-index: 45;
 		display: flex;
 		flex-direction: column;
@@ -1978,8 +2007,8 @@
 		position: absolute;
 		/* Anchor to the disc's visual centre — same point the arrow (.spin-btn__icon) is nudged to,
 		   so the stop square sits centred instead of a few px right. */
-		top: 49.6%;
-		left: 48.1%;
+		top: 49.07%; /* red-disc centre of turn-button-bg.svg (same as the landscape button) */
+		left: 47.93%;
 		width: 22%;
 		aspect-ratio: 1;
 		transform: translate(-50%, -50%);
@@ -2042,6 +2071,14 @@
 		line-height: 1;
 		pointer-events: none;
 		text-align: center;
+		/* Centre the GLYPHS on the red plaque: trim the line box to the capitals (the font's uneven
+		   ascent/descent pushed the text ~2px high), and offset to the plaque's own centre — it sits at
+		   49.23% / 51.58% of the button art (buy-bonus-button.svg inner rect 8.5–167.75 × 15–58.25 of
+		   179×71), not the box centre. */
+		text-box: trim-both cap alphabetic;
+		position: relative;
+		left: -0.77%;
+		top: 1.58%;
 	}
 
 	/* Scatter card keeps its original (tighter) hide breakpoint. */
@@ -2263,7 +2300,9 @@
 		   hard backstop only. */
 		flex: 1 1 0;
 		min-width: 0;
-		overflow: hidden;
+		/* NOT overflow:hidden — fitText scales this same element, and a clip on it cuts the text at the
+		   un-scaled box BEFORE the scale applies (a long bet read "$50,000" on 400×225 popouts). */
+		overflow: visible;
 		white-space: nowrap;
 		text-align: center;
 	}
@@ -2404,13 +2443,14 @@
 	}
 	.ls-spin:not(:disabled):hover { filter: brightness(1.06); }
 	.ls-spin:disabled { opacity: 0.5; cursor: default; }
-	/* Arrow forced white (source glyph is gold) and absolutely centred on the turn-button DISC
-	   (its centre sits at ~51.4%/48.5% of the square, not the box centre, because the art has a
-	   gold frame + ketchup drip offsetting it). */
+	/* Arrow forced white (source glyph is gold) and absolutely centred on the red DISC. Measured from
+	   turn-button-bg.svg (disc centre 672,535 in its 1402×1096 viewBox, drawn contain in the square
+	   box): 47.93% / 49.07% of the box. The arrow glyph sits 1.1% high inside its own 78×78 file, so
+	   the icon is nudged down 0.45% (40% × 1.1%) to put the GLYPH on the disc centre. */
 	.ls-spin__icon {
 		position: absolute;
-		left: 46.1%;
-		top: 48.97%;
+		left: 47.87%;
+		top: 49.52%;
 		width: 40%;
 		height: 40%;
 		object-fit: contain;
@@ -2419,9 +2459,9 @@
 	}
 	.ls-spin__stop {
 		position: absolute;
-		/* Same disc centre as .ls-spin__icon so the stop square is centred, not pushed right. */
-		top: 48.97%;
-		left: 46.1%;
+		/* Disc centre (47.93% / 49.07%) — the stop square is centred in its own file. */
+		top: 49.07%;
+		left: 47.93%;
 		width: 22%;
 		aspect-ratio: 1;
 		transform: translate(-50%, -50%);
@@ -2430,8 +2470,8 @@
 	}
 	.ls-spin__count {
 		position: absolute;
-		top: 50%;
-		left: 50%;
+		top: 49.07%;
+		left: 47.93%;
 		transform: translate(-50%, -50%);
 		font-weight: 800;
 		font-size: 1.1rem;
@@ -2538,6 +2578,17 @@
 		width: 100%;
 		pointer-events: none;
 	}
+	/* Short phones: logo moved up to the top (small gap), a bit smaller, so the wider board fits. */
+	.pt-top--short {
+		top: calc(0.8% + env(safe-area-inset-top, 0px));
+		gap: 0.4vh;
+	}
+	.pt-top--short .pt-top__pp {
+		width: min(22%, 110px);
+	}
+	.pt-top--short .pt-top__logo {
+		width: min(64%, 320px);
+	}
 	.pt-top__pp {
 		width: min(32%, 150px);
 		height: auto;
@@ -2629,7 +2680,7 @@
 	   heavier at the bottom), so nudge the icons onto the disc's optical centre. */
 	/* White arrow/stop glyph on the red spin disc (source art is gold → recolour to white). */
 	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(-4.6%, -1.03%); filter: brightness(0) invert(1); } /* arrow overlay, centred on the new disc */
-	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; transform: translate(-6.4%, -1.4%); filter: brightness(0) invert(1); } /* same disc centre as .pt-spin__icon */
+	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; transform: translate(-6.9%, -3.1%); filter: brightness(0) invert(1); } /* square on the red-disc centre (47.93% / 49.07% of the box) */
 	.pt-spin__count {
 		font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.3rem; color: #fff;
 		text-shadow: 0 2px 4px rgba(0,0,0,0.7);
@@ -2742,10 +2793,9 @@
 		font-family: 'Bowlby One SC', 'Poppins', sans-serif; font-weight: 400;
 		font-size: 13px; line-height: 1.05; letter-spacing: 0.02em; text-align: center;
 		max-width: 100%;
-		/* The centred label box still leaves the BONUS glyphs ~2px right of the button centre (font
-		   side-bearing + trailing letter-spacing). Nudge left with a layout offset — a transform would
-		   be overwritten by fitLabel's scale. */
-		position: relative; left: -2px;
+		/* Glyphs centred in the red box: the line box is trimmed to the capitals (uneven font
+		   ascent/descent pushed the text up), and no horizontal nudge (the old -2px overshot left). */
+		text-box: trim-both cap alphabetic;
 		color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 	}
 	.pt-buy__line {
@@ -2788,7 +2838,7 @@
 
 	/* ☰ menu button open state: gold ✕ glyph in place of the hamburger icon. */
 	/* Menu open: drop the framed disc so the red-disc-with-X art (burger-close.svg) fills the button. */
-	.pt-round--menu-open { background: none; border-color: transparent; }
+	.pt-round--menu-open { background: none; border-width: 0; } /* ✕ disc = full button size */
 	.pt-round .pt-x-full { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 
 	/* The ☰ button wrapper is NOT a positioning context — the popup anchors to the BAR
@@ -2800,9 +2850,9 @@
 	   Sits just above the bar, aligned to its left edge. */
 	.pt-menu-pop {
 		position: absolute;
-		/* Align the popup's left edge with the bar's inner content edge (was -0.04u, which pushed
-		   it off the left of the screen). */
-		left: calc(var(--u) * 0.03);
+		/* Placed so the popup's icon column is centred exactly above the ☰ / ✕ button (everything in
+		   the bar scales with --u, so this holds at every phone width). */
+		left: calc(var(--u) * 0.0425);
 		bottom: calc(100% + var(--u) * 0.025);
 		z-index: 8;
 		display: flex; flex-direction: column;
@@ -2823,7 +2873,8 @@
 	.pt-menu-item:hover { filter: brightness(1.14); }
 	.pt-menu-item:active { transform: scale(0.98); }
 	.pt-menu-item__ic {
-		width: calc(var(--u) * 0.096); height: calc(var(--u) * 0.096);
+		/* Same size as the bar's round buttons (.pt-round) and the ☰ / ✕. */
+		width: calc(var(--u) * 0.085); height: calc(var(--u) * 0.085);
 		object-fit: contain; flex: 0 0 auto;
 		transition: opacity 0.12s ease;
 	}

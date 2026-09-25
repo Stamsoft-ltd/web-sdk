@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { Rectangle, Sprite } from 'pixi-svelte';
+	import { Graphics, Rectangle, Sprite } from 'pixi-svelte';
 	import { stateUi } from 'state-shared';
 
 	import { getContext } from '../game/context';
 	import { mascotIdle } from '../game/mascotIdle';
+	import { SQUIRT_EMIT, drawSauceSquirt, squirtHash, type SquirtGraphics } from '../game/ketchupSquirt';
 	import AnimatedGuy from './AnimatedGuy.svelte';
 	import SpecialMascot from './SpecialMascot.svelte';
 
@@ -33,13 +34,13 @@
 	const showMascot = $derived(!isFreegame && layoutType === 'desktop');
 	const showSpecialMascot = $derived(isFreegame && layoutType === 'desktop');
 	const mascotHeight = $derived(canvas.height * 0.6);
-	const mascotWidth = $derived(mascotHeight * (1019 / 1336));
+	const mascotWidth = $derived(mascotHeight * (1304 / 1699));
 	// Subtle idle so the chef isn't a frozen cut-out: a slow breathe (no lean — his eyes carry the
 	// life, and a rotation would drag the pupils/label out of place).
 	let clock = $state(0);
 	$effect(() => {
-		// Runs for the base-game chef AND the special-bg (its hanging lamps blink).
-		if (!showMascot && !showSpecialMascot) return;
+		// Runs for the base-game chef + sparks (any layout) AND the special-bg (its hanging lamps blink).
+		if (!showSparks && !showMascot && !showSpecialMascot) return;
 		let raf = 0;
 		const loop = (ts: number) => {
 			clock = ts;
@@ -48,6 +49,32 @@
 		raf = requestAnimationFrame(loop);
 		return () => cancelAnimationFrame(raf);
 	});
+	// Sparks: a few tiny warm glints drifting up behind the board on the regular (base-game) bg, so it
+	// feels alive without competing with the reels. Deterministic off the clock: each spark has its
+	// own column, speed, sway and size; it fades in, rises one lifetime and fades out, twinkling.
+	const showSparks = $derived(showArt && !isFreegame);
+	const SPARKS = 26;
+	const drawSparks = (g: SquirtGraphics) => {
+		const W = canvas.width;
+		const H = canvas.height;
+		for (let i = 0; i < SPARKS; i++) {
+			const life = 6000 + 5000 * squirtHash(i * 4.1); // ms per rise
+			const t = clock + squirtHash(i * 7.3) * life;
+			const cycle = Math.floor(t / life);
+			const p = (t % life) / life; // 0..1 through this rise
+			// New column + start height every cycle so the pattern never repeats visibly.
+			const hx = squirtHash(i * 13.7 + cycle * 3.3);
+			const x0 = hx * W;
+			const y0 = H * (0.55 + 0.45 * squirtHash(i * 5.9 + cycle * 1.7));
+			const x = x0 + Math.sin(p * Math.PI * 2 * (0.6 + hx) + i) * W * 0.012;
+			const y = y0 - p * H * (0.3 + 0.25 * squirtHash(i * 2.2));
+			const twinkle = 0.65 + 0.35 * Math.sin(clock / (180 + 140 * squirtHash(i)) + i * 2.1);
+			const a = Math.sin(Math.PI * p) * twinkle * 0.55; // fade in / out
+			const r = H * (0.0016 + 0.0022 * squirtHash(i * 9.4));
+			g.circle(x, y, r * 3.2).fill({ color: 0xffb347, alpha: a * 0.18 }); // soft glow
+			g.circle(x, y, r).fill({ color: 0xfff1c8, alpha: a }); // hot core
+		}
+	};
 	const mascotPose = $derived(
 		mascotIdle(clock, canvas.width * 0.86, canvas.height * 0.59, mascotWidth, mascotHeight, {
 			sway: 0,
@@ -55,23 +82,23 @@
 			bob: 0.004,
 		}),
 	);
-	// Pupils (measured from the cut art) + eye-cover boxes for the blink lid; all fractions of the
-	// figure. Skin tone sampled by the eyes so the lid is invisible where it overshoots onto skin.
-	// Pupils sit low-ish in the (now fully-filled white) sclera for a natural forward gaze. The eye
-	// whites in mascot_base were re-filled solid white — they had skin showing where the pupils were
-	// cut, so the moving disc used to reveal skin.
+	// The Figma chef (McShmutzo file, "Frame 427321577"), exported at 4× (1304×1699) and keyed off
+	// the flat canvas grey — the same art as the free-games salting chef. Layers: base (pupils erased,
+	// the bottle hand cut out), the bottle hand (drawn BEHIND the body, as in Figma, so it can shake),
+	// and the nametag plate (jiggles over its baked copy). Pupils are redrawn a touch smaller than the
+	// art and nudged up so the right one clears its lower-lid line while glancing. All fractions of
+	// the frame. Skin sampled beside the eyes so the blink lid blends in.
 	const mascotPupils = [
-		{ key: 'mascotPupilL', nx: 0.3415, ny: 0.311, nw: 0.0491, nh: 0.0479 },
-		{ key: 'mascotPupilR', nx: 0.473, ny: 0.308, nw: 0.0687, nh: 0.0449 },
+		{ nx: 0.3804, ny: 0.2866, nw: 0.0559, nh: 0.0429 },
+		{ nx: 0.4962, ny: 0.2719, nw: 0.0701, nh: 0.0538 },
 	];
 	const mascotLids = [
-		{ cx: 0.329, cy: 0.305, w: 0.084, h: 0.08 },
-		{ cx: 0.4595, cy: 0.299, w: 0.106, h: 0.088 },
+		{ cx: 0.3658, cy: 0.2778, w: 0.069, h: 0.056 },
+		{ cx: 0.4885, cy: 0.2666, w: 0.0767, h: 0.0689 },
 	];
-	// The held "EXTRA MESSY" ketchup bottle is a separate overlay (cut out of mascotBase) so it can
-	// shake about the wrist like the splash chef's bottle. Pivot = the wrist joint (chef fractions).
-	const BOTTLE_PIVX = 0.19;
-	const BOTTLE_PIVY = 0.8;
+	// The held ketchup bottle (full-frame hand layer) shakes about the wrist, tucked behind the body.
+	const BOTTLE_PIVX = 0.29;
+	const BOTTLE_PIVY = 0.56;
 	const mascotLeft = $derived(mascotPose.x - mascotPose.width / 2);
 	const mascotTop = $derived(mascotPose.y - mascotPose.height / 2);
 	const bottlePivotX = $derived(mascotLeft + BOTTLE_PIVX * mascotPose.width);
@@ -79,12 +106,60 @@
 	// A quick damped wiggle, more often now (matching the splash's bottle-shake), otherwise still.
 	const BOTTLE_PERIOD = 2800; // ms between shakes
 	const SHAKE_DUR = 950; // ms the wiggle lasts
-	const bottleShake = $derived.by(() => {
-		const t = clock % BOTTLE_PERIOD;
-		if (t > SHAKE_DUR) return 0;
-		const u = t / SHAKE_DUR; // 0..1 across the shake
+	const shakeAt = (t: number) => {
+		const u = (t % BOTTLE_PERIOD) / SHAKE_DUR; // 0..1 across the shake
+		if (u > 1) return 0;
 		return 0.058 * Math.exp(-2.7 * u) * Math.sin(u * 2 * Math.PI * 2.6); // ~3.3° damped, ~2.6 wiggles
-	});
+	};
+
+	// Ketchup squirt: now and then he squeezes the bottle and a real-looking shot of ketchup leaves the
+	// nozzle (physics + drawing in ketchupSquirt.ts, shared with the sauce symbols). The bottle kicks
+	// back a touch while squeezed.
+	const SQ_PERIOD = 6500; // a squirt slot every 6.5s …
+	const SQ_OFFSET = 1700; // … starting this far into the slot (clear of the shake)
+	const NOZZLE = { x: 0.1438, y: 0.3773 }; // nozzle tip (frame fractions)
+	const NOZZLE_DIR = Math.atan2(-0.979, -0.204); // bottle axis: up, leaning ~12° toward the board
+	/** Squirt slot for time t: local ms into the squirt, or -1 when this slot doesn't squirt. */
+	const squirtLocal = (t: number) => {
+		const k = Math.floor(t / SQ_PERIOD);
+		if (squirtHash(k) < 0.35) return -1; // skip ~1 in 3 slots → irregular, "from time to time"
+		return t - k * SQ_PERIOD - SQ_OFFSET;
+	};
+	const recoilAt = (t: number) => {
+		const u = squirtLocal(t);
+		if (u < 0 || u > SQUIRT_EMIT + 400) return 0;
+		// Kick back (clockwise, away from the stream) as he squeezes, then settle with a small overshoot.
+		const k = u / (SQUIRT_EMIT + 400);
+		return 0.05 * Math.sin(Math.PI * Math.min(1, u / SQUIRT_EMIT)) * (1 - k) + 0.012 * Math.sin(k * Math.PI * 3) * (1 - k);
+	};
+	const bottleRotAt = (t: number) => {
+		const u = squirtLocal(t);
+		const squirting = u >= -200 && u <= SQUIRT_EMIT + 700;
+		return (squirting ? 0 : shakeAt(t)) + recoilAt(t);
+	};
+	const bottleShake = $derived(bottleRotAt(clock));
+	const drawSquirt = (g: SquirtGraphics) => {
+		const u = squirtLocal(clock);
+		const t0 = clock - u; // absolute time the squeeze began
+		const w = mascotPose.width;
+		const h = mascotPose.height;
+		const dx = mascotLeft + NOZZLE.x * w - bottlePivotX;
+		const dy = mascotTop + NOZZLE.y * h - bottlePivotY;
+		drawSauceSquirt(g, {
+			u,
+			unit: canvas.height,
+			color: 0xb3160d,
+			dark: 0x5e0704,
+			floorY: canvas.height * 0.8, // gone behind the HUD band
+			// The nozzle rides the bottle's rotation about the wrist.
+			nozzleAt: (ms) => {
+				const th = bottleRotAt(t0 + ms);
+				const c = Math.cos(th);
+				const sn = Math.sin(th);
+				return { x: bottlePivotX + dx * c - dy * sn, y: bottlePivotY + dx * sn + dy * c, dir: NOZZLE_DIR + th };
+			},
+		});
+	};
 	// Desktop base game uses the new desktop diner art; free games keep the grey-kitchen special bg.
 	const key = $derived(isFreegame ? 'backgroundWideBonus' : 'backgroundDesktop');
 	const portraitKey = $derived(isFreegame ? 'backgroundPortraitBonus' : 'backgroundPortrait');
@@ -214,6 +289,10 @@
 		{/each}
 	{/if}
 {/if}
+{#if showSparks}
+	<!-- Subtle rising sparks between the bg and the board (additive, so they glow on the warm art). -->
+	<Graphics zIndex={-0.5} blendMode="add" draw={drawSparks} />
+{/if}
 {#if showArt && showMascot}
 	<!-- The chef breathes, his eyes glance + blink, and his nametag jiggles (layered art). -->
 	<AnimatedGuy
@@ -225,23 +304,33 @@
 		zIndex={0}
 		pupils={mascotPupils}
 		lids={mascotLids}
-		skin={0xec9c58}
+		skin={0xee9c58}
 		extras={[
 			{
+				// Brows above the blink lids (static full-frame layer).
+				key: 'mascotBrows',
+				nx: 0,
+				ny: 0,
+				nw: 1,
+				nh: 1,
+				amp: 0,
+			},
+			{
+				// Full-frame layer (the exact plate pixels), tilting about its pin.
 				key: 'mascotLabel',
-				nx: 0.4406,
-				ny: 0.5973,
-				nw: 0.2434,
-				nh: 0.1026,
-				px: 0.5,
-				py: 0.07,
-				amp: 0.04,
+				nx: 0,
+				ny: 0,
+				nw: 1,
+				nh: 1,
+				px: 0.6196,
+				py: 0.6027,
+				amp: 0.035,
 				period: 320,
 			},
 		]}
-		sparkle={{ nx: 0.44, ny: 0.425, size: 0.075, period: 3400 }}
+		sparkle={{ nx: 0.46, ny: 0.376, size: 0.075, period: 3400 }}
 	/>
-	<!-- The held ketchup bottle, overlaid so it can shake about the wrist like the splash chef's. -->
+	<!-- The held ketchup bottle — behind the body (as in the Figma layer order), shaking about the wrist. -->
 	<Sprite
 		key="mascotBottle"
 		x={bottlePivotX}
@@ -250,8 +339,11 @@
 		width={mascotPose.width}
 		height={mascotPose.height}
 		rotation={bottleShake}
-		zIndex={0.5}
+		zIndex={-0.1}
 	/>
+	<!-- The ketchup squirt: zIndex 0 ties with the chef and the board containers, so insertion order
+	     puts it in front of the chef but BEHIND the reels (drops never cover symbols). -->
+	<Graphics zIndex={0} draw={drawSquirt} />
 {/if}
 {#if showArt && showSpecialMascot}
 	<SpecialMascot />

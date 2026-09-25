@@ -25,6 +25,7 @@
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import BurgerStack from './BurgerStack.svelte';
+	import SauceFx from './SauceFx.svelte';
 
 	const context = getContext();
 
@@ -93,19 +94,26 @@
 		<div class="fo-stage" role="dialog" aria-modal="true">
 			<!-- Two-tone pairs: the "under" splash (red beneath the yellow, yellow beneath the red)
 			     renders first so the top splash sits over it. -->
-			<img class="fo-sauce fo-sauce--ul" src={sauceRedBig} alt="" draggable="false" />
-			<img class="fo-sauce fo-sauce--ur" src={sauceYellowBig} alt="" draggable="false" />
-			<img class="fo-sauce fo-sauce--tl" src={sauceYellowBig} alt="" draggable="false" />
-			<img class="fo-sauce fo-sauce--tr" src={sauceRedBig} alt="" draggable="false" />
+			<div class="fo-sauce fo-sauce--ul">
+				<img src={sauceRedBig} alt="" draggable="false" />
+				<SauceFx bleed={0.6} splashes={[{ x: 0.55, y: 0.6, dir: 3.0, color: 0xc41e0a, delay: 380, size: 1.1 }]} />
+			</div>
+			<div class="fo-sauce fo-sauce--ur">
+				<img src={sauceYellowBig} alt="" draggable="false" />
+				<SauceFx bleed={0.6} splashes={[{ x: 0.5, y: 0.5, dir: 0.15, color: 0xefa80e, delay: 480, size: 1.1 }]} />
+			</div>
+			<div class="fo-sauce fo-sauce--tl">
+				<img src={sauceYellowBig} alt="" draggable="false" />
+				<SauceFx bleed={0.6} splashes={[{ x: 0.45, y: 0.45, dir: -2.4, color: 0xefa80e, delay: 180, size: 1.1 }]} />
+			</div>
+			<div class="fo-sauce fo-sauce--tr">
+				<img src={sauceRedBig} alt="" draggable="false" />
+				<SauceFx bleed={0.6} splashes={[{ x: 0.5, y: 0.55, dir: -0.8, color: 0xc41e0a, delay: 280, size: 1.1 }]} />
+			</div>
 
 			<!-- Burger perched on the top edge of the plaque — the real slice burger so it assembles. -->
-			<div class="fo-burger"><BurgerStack /></div>
+			<div class="fo-burger"><BurgerStack assemble /></div>
 
-			<!-- Sauce drips off each splash (same colours + consistency as the button drips). -->
-			<span class="fo-drip fo-drip--tl"></span>
-			<span class="fo-drip fo-drip--tr"></span>
-			<span class="fo-drip fo-drip--ul"></span>
-			<span class="fo-drip fo-drip--ur"></span>
 
 			<div class="fo-plaque" style={`background-image:url('${plaqueArt}')`}>
 				<div class="fo-content">
@@ -127,7 +135,7 @@
 		z-index: 55;
 		display: grid;
 		place-items: center;
-		background: rgba(0, 0, 0, 0.5);
+		background: rgba(0, 0, 0, 0.6);
 		cursor: pointer;
 		user-select: none;
 	}
@@ -165,6 +173,13 @@
 
 	/* Each sauce SPLATS in like real sauce hitting the screen — instant over-scale impact + a squash
 	   wobble as the liquid settles, growing outward from behind the plaque, staggered. */
+	.fo-sauce img {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+	/* Each splash is a wrapper (art + its own SauceFx impact spray, which shares the splash's layer
+	   BEHIND the plaque and rides its splat animation). */
 	.fo-sauce {
 		position: absolute;
 		height: auto;
@@ -327,28 +342,6 @@
 		60% { opacity: 1; transform: translateX(-50%) scale(1.06); }
 		100% { opacity: 1; transform: translateX(-50%) scale(1); }
 	}
-	/* Sauce drips off the splashes (same colours + drop consistency as the button drips). */
-	.fo-drip {
-		position: absolute;
-		z-index: 2;
-		width: clamp(9px, 2.3%, 20px);
-		aspect-ratio: 0.82;
-		border-radius: 50% 50% 50% 50% / 38% 38% 64% 64%;
-		pointer-events: none;
-		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
-		transform: translate(-50%, 0) scale(0);
-		animation: fo-drip-fall 2.4s ease-in 1s infinite;
-	}
-	.fo-drip--tl { top: 24%; left: 7%; background: #efa80e; }
-	.fo-drip--tr { top: 20%; right: 7%; background: #c41e0a; animation-delay: 1.6s; }
-	.fo-drip--ul { top: 66%; left: 5%; background: #c41e0a; animation-delay: 0.6s; }
-	.fo-drip--ur { top: 70%; right: 5%; background: #efa80e; animation-delay: 2.1s; }
-	@keyframes fo-drip-fall {
-		0%, 42% { transform: translate(-50%, 0) scale(0.3); opacity: 0; }
-		52% { transform: translate(-50%, 0.4vmin) scale(1); opacity: 1; }
-		82% { opacity: 1; }
-		100% { transform: translate(-50%, 5vmin) scale(0.82, 1.35); opacity: 0; }
-	}
 	@keyframes fo-splash {
 		/* Splat: near-instant impact at over-scale with a motion blur, then the liquid wobble —
 		   squash wide, rebound tall, settle. */
@@ -367,7 +360,7 @@
 		50% { transform: scale(1.04); }
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.fo-plaque, .fo-burger, .fo-sauce, .fo-congrats, .fo-drip { animation: none; }
+		.fo-plaque, .fo-burger, .fo-sauce, .fo-congrats { animation: none; }
 	}
 
 	/* Smallest landscape popouts (~400x225, <=300px tall): the plaque is sized by width, so on a very

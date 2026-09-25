@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Circle, Container, Rectangle, Sprite } from 'pixi-svelte';
+	import { Circle, Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
 
 	import { SYMBOL_SIZE, SYMBOL_WIDTH } from '../game/constants';
+	import { drawSauceSquirt, squirtHash, type SquirtGraphics } from '../game/ketchupSquirt';
 	import type { SymbolPartsConfig } from '../game/symbolParts';
 	import type { SymbolState } from '../game/types';
 
@@ -156,7 +157,7 @@
 					x: cx + (l.nx - 0.5) * w,
 					// Fall in from above: start `landDrop` of the height up and drop onto the stack as it
 					// scales in (decelerating), so each slice reads as splatting into place.
-					y: cy + (l.ny - 0.5) * h - (props.config.landDrop ?? 0) * h * (1 - local) ** 1.6,
+					y: cy + (l.ny - 0.5) * h - (l.landDrop ?? props.config.landDrop ?? 0) * h * (1 - local) ** 1.6,
 					width: l.nw * w * s,
 					height: l.nh * h * s,
 					rotation: 0,
@@ -199,7 +200,8 @@
 			// = up), so e.g. a bottle cap rocks realistically about its base instead of about the symbol
 			// centre (which would swing the cap in a wide arc). The position is compensated so that pivot
 			// point stays put as the sprite rotates about its own anchor.
-			const rotation = (l.rot ?? 0) * env + (l.tilt ?? 0) * Math.sin(theta);
+			const jit = l.jitter && active && props.winning ? l.jitter * Math.sin(clock / 38) * Math.sin(clock / 97) : 0;
+			const rotation = (l.rot ?? 0) * env + (l.tilt ?? 0) * Math.sin(theta) + jit;
 			const pv = (l.pivotY ?? 0) * h;
 			const pivotCompX = pv * Math.sin(rotation);
 			const pivotCompY = pv * (1 - Math.cos(rotation));
@@ -217,39 +219,109 @@
 		return out;
 	});
 
-	// Sauce drip: while the bottle is active (winning/locked) it dribbles sauce from its nozzle exactly
-	// like the button drips — a bead swells at the tip, pinches off, then falls STRAIGHT DOWN under
-	// gravity and fades. One drip every T_EMIT, so only a couple hang/fall at once (no upward spray).
-	const squirtColor = $derived(props.config.squirt?.color ?? 0xffffff);
-	const squirtBlobs = $derived.by(() => {
+	// Sauce squirt: while the bottle is active (winning/locked) it squeezes out a shot of sauce each
+	// loop cycle, timed to the squash peak — the SAME squirt as the board chef's ketchup (see
+	// ketchupSquirt.ts), scaled down to the symbol: a tapered glossy rope arcing up off the nozzle that
+	// snaps into drops of different sizes. The previous cycle's drops are still falling when the next
+	// squeeze starts, so both are drawn.
+	const SQUIRT_UNIT = 1.5; // squirt length scale, in symbol heights (a short arc over the cap)
+	const SQUIRT_WIDTH = 1.9; // …with a proportionally fatter rope so it still reads as sauce
+	const drawSquirt = (g: SquirtGraphics) => {
 		const cfg = props.config.squirt;
 		const active = running && startTime >= 0 && !!props.winning;
-		if (!cfg || !active) return [] as Array<{ id: number; x: number; y: number; d: number; alpha: number }>;
-		const t = clock - startTime; // ms the bottle has been active
+		if (!cfg || !active) return;
+		const t = clock - startTime;
 		const cx = props.x ?? 0;
 		const cy = props.y ?? 0;
-		const nozX = cx + ((cfg.nozzleNx ?? 0.5) - 0.5) * w;
-		const nozY = cy + ((cfg.nozzleNy ?? 0.086) - 0.5) * h;
-		const T_EMIT = 320; // ms between drips — fast enough that a few chase each other down (a drip run)
-		const T_LIFE = 950; // ms a drip lives (swell + fall + fade)
-		const newest = Math.floor(t / T_EMIT);
-		const out: Array<{ id: number; x: number; y: number; d: number; alpha: number }> = [];
-		for (let k = 0; k < 5; k++) {
-			const idx = newest - k;
-			if (idx < 0) continue;
-			const p = (t - idx * T_EMIT) / T_LIFE; // 0..1 progress of this drip
-			if (p < 0 || p > 1) continue;
-			const jx = (((idx * 37) % 5) / 5 - 0.5) * 0.05; // tiny per-drip scatter
-			const swell = Math.min(1, p / 0.3); // a bead swells at the nozzle tip (the ooze)
-			const fall = Math.max(0, (p - 0.3) / 0.7); // then it pinches off and falls
-			const x = nozX + jx * w;
-			const y = nozY + (0.02 + 0.72 * fall * fall) * h; // straight down, gravity accelerating
-			const d = Math.max(3, 0.145 * w) * (0.4 + 0.6 * swell);
-			const fadeOut = 1 - Math.max(0, (p - 0.82) / 0.18);
-			out.push({ id: idx, x, y, d, alpha: Math.min(1, swell * 1.5) * fadeOut });
+		const noz = {
+			x: cx + ((cfg.nozzleNx ?? 0.5) - 0.5) * w,
+			y: cy + ((cfg.nozzleNy ?? 0.086) - 0.5) * h,
+			dir: -Math.PI / 2 + (cfg.dir ?? 0) * 0.25,
+		};
+		const cycle = Math.floor((t - PERIOD * 0.35) / PERIOD);
+		for (const k of [cycle - 1, cycle]) {
+			if (k < 0) continue;
+			// Each shot arcs off to one side (~25°, side varies per shot) so it lands beside the bottle.
+			const hk = squirtHash(k * 1.7 + cx * 0.01);
+			const lean = (hk < 0.5 ? -1 : 1) * (0.36 + 0.16 * hk);
+			drawSauceSquirt(g, {
+				u: t - PERIOD * 0.35 - k * PERIOD,
+				unit: h * SQUIRT_UNIT,
+				widthScale: SQUIRT_WIDTH,
+				color: cfg.color,
+				floorY: cy + h * 0.42,
+				floorBand: h * 0.12,
+				seed: k + cx * 0.013 + cy * 0.007,
+				nozzleAt: () => ({ ...noz, dir: noz.dir + lean }),
+			});
 		}
-		return out;
-	});
+	};
+
+	// Fizz (cup) + sizzle (sausage) particles — deterministic off the clock, only while active.
+	const drawFx = (g: SquirtGraphics) => {
+		const active = running && startTime >= 0 && !!props.winning;
+		if (!active) return;
+		const t = clock - startTime;
+		const cx = props.x ?? 0;
+		const cy = props.y ?? 0;
+		const fz = props.config.fizz;
+		if (fz) {
+			const N = 11;
+			const P = 1100; // ms a bubble takes to rise
+			for (let i = 0; i < N; i++) {
+				const tt = t + (i / N) * P;
+				const k = Math.floor(tt / P);
+				const p = (tt % P) / P;
+				const hs = squirtHash(i * 3.7 + k * 1.3);
+				const x0 = cx + (fz.nx - 0.5) * w + (hs - 0.5) * fz.spread * w;
+				const x = x0 + Math.sin(p * 9 + i) * 0.025 * w;
+				const y = cy + (fz.ny - 0.5) * h - p * 0.2 * h;
+				const r = h * (0.012 + 0.016 * squirtHash(i * 5.1 + k)) * (0.6 + 0.7 * p);
+				if (p < 0.88) {
+					const a = Math.min(1, p / 0.12);
+					g.circle(x, y, r).fill({ color: fz.color, alpha: 0.28 * a });
+					g.circle(x, y, r).stroke({ width: Math.max(1, r * 0.3), color: 0xffffff, alpha: 0.85 * a });
+					g.circle(x - r * 0.35, y - r * 0.35, r * 0.28).fill({ color: 0xffffff, alpha: 0.9 * a });
+				} else {
+					// pop: a thin ring flashing outward
+					const q = (p - 0.88) / 0.12;
+					g.circle(x, y, r * (1 + 0.9 * q)).stroke({ width: Math.max(1, r * 0.2), color: 0xffffff, alpha: 0.7 * (1 - q) });
+				}
+			}
+		}
+		const sz = props.config.sizzle;
+		if (sz) {
+			const P = 820;
+			sz.points.forEach((pt, j) => {
+				for (let s2 = 0; s2 < 2; s2++) {
+					const off = (j * 0.37 + s2 * 0.5) * P;
+					const tt = t + off;
+					const k = Math.floor(tt / P);
+					const p = (tt % P) / P;
+					const hs = squirtHash(j * 7.1 + s2 * 2.9 + k * 1.7);
+					if (hs < 0.25) continue; // not every slot spits
+					const ox = cx + (pt.nx - 0.5) * w;
+					const oy = cy + (pt.ny - 0.5) * h;
+					const vx = (hs - 0.6) * 0.5 * w; // px per cycle
+					const up = (0.16 + 0.18 * squirtHash(k + j)) * h;
+					const x = ox + vx * p;
+					const y = oy - up * 4 * p * (1 - p); // parabola: up and back down
+					const a = p < 0.1 ? p / 0.1 : 1 - Math.max(0, (p - 0.7) / 0.3);
+					const r = h * (0.014 + 0.01 * hs);
+					g.circle(x, y, r * 2.6).fill({ color: 0xff9a2e, alpha: 0.28 * a }); // hot glow
+					g.circle(x, y, r * 1.25).fill({ color: 0xb8620f, alpha: 0.85 * a }); // amber rim (reads on light bg)
+					g.circle(x, y, r).fill({ color: sz.color, alpha: a });
+					g.circle(x - r * 0.3, y - r * 0.3, r * 0.4).fill({ color: 0xffffff, alpha: 0.9 * a });
+					if (hs > 0.82 && p > 0.35 && p < 0.6) {
+						// a bright spark at the top of the hop
+						const L = r * 3.6;
+						g.moveTo(x - L, y).lineTo(x + L, y).stroke({ width: Math.max(1, r * 0.45), color: 0xfff1b0, alpha: 0.95 * a });
+						g.moveTo(x, y - L).lineTo(x, y + L).stroke({ width: Math.max(1, r * 0.45), color: 0xffffff, alpha: 0.8 * a });
+					}
+				}
+			});
+		}
+	};
 
 	// Melty cheese drip: while the cheese is alive on the board, small gooey drops ooze off the tips
 	// of the painted drips — the tip stretches down a touch, a modest bead pinches off, falls a SHORT
@@ -314,13 +386,13 @@
 			alpha={l.alpha}
 		/>
 	{/each}
-	<!-- Sauce drip (bottles only) — a glossy drop that dribbles down off the nozzle. A dark rim + a
-	     white glint make it read as a distinct wet drop even over a same-coloured bottle. -->
-	{#each squirtBlobs as b (b.id)}
-		<Circle x={b.x} y={b.y} diameter={b.d * 1.16} anchor={0.5} backgroundColor={0x000000} backgroundAlpha={b.alpha * 0.28} />
-		<Circle x={b.x} y={b.y} diameter={b.d} anchor={0.5} backgroundColor={squirtColor} backgroundAlpha={b.alpha} />
-		<Circle x={b.x - b.d * 0.19} y={b.y - b.d * 0.22} diameter={b.d * 0.34} anchor={0.5} backgroundColor={0xffffff} backgroundAlpha={b.alpha * 0.55} />
-	{/each}
+	{#if props.config.fizz || props.config.sizzle}
+		<Graphics draw={drawFx} />
+	{/if}
+	<!-- Sauce squirt (bottles only), in front of the bottle. -->
+	{#if props.config.squirt}
+		<Graphics draw={drawSquirt} />
+	{/if}
 	<!-- Melty cheese drip: a gooey teardrop (round bottom + pointed top) on a thinning strand while it
 	     hangs, that pinches off and falls. Dark rim + white glint read it as a wet drop of cheese. -->
 	{#each dripBlobs as b (b.id)}

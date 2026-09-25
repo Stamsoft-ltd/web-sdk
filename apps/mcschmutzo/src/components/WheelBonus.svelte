@@ -112,7 +112,7 @@
 		z-index: 45;
 		display: grid;
 		place-items: center;
-		background: rgba(0, 0, 0, 0.5);
+		background: rgba(0, 0, 0, 0.6);
 		backdrop-filter: blur(3px);
 		pointer-events: auto;
 	}
@@ -208,13 +208,14 @@
 		white-space: nowrap;
 	}
 
-	/* Chef-hat hub over the wheel centre. */
+	/* Chef-hat hub over the wheel centre — sized to sit INSIDE the red hub circle (≈17% of the
+	   wheel across), not spill over its ring. */
 	.wb-hat {
 		position: absolute;
 		left: 50%;
 		top: 50%;
 		transform: translate(-50%, -50%);
-		width: 24%;
+		width: 15.5%;
 		height: auto;
 		z-index: 2;
 		filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4));

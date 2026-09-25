@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { ap } from '../lib/preloadArt';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import SauceFx from './SauceFx.svelte';
 
 	type Props = { onpress: () => void };
 	const props: Props = $props();
@@ -71,30 +72,27 @@
 	/** Percent of a box dimension, for laying art-pixel geometry over fluid-sized layers. */
 	const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
 
-	// The chef is layered so his face and hand can move: base (pupils/brows/bottle cut out and the
-	// art under them patched), the two brows, and the ketchup bottle + hand. Pupils and eyelids are
-	// drawn in CSS. Geometry below is in the art's own 480×900 px (see man_cut.py in the session's
-	// scratchpad for how the pieces were cut).
-	const manBase = ap('/assets/mcschmutzo/splash/man-base.webp');
-	const manBrowL = ap('/assets/mcschmutzo/splash/man-brow-l.webp');
-	const manBrowR = ap('/assets/mcschmutzo/splash/man-brow-r.webp');
-	const manBottle = ap('/assets/mcschmutzo/splash/man-bottle.webp');
-	const MAN_W = 480;
-	const MAN_H = 900;
+	// The chef is the board chef (Figma "Frame 427321577", 4× = 1304×1699) flipped horizontally so he
+	// faces the cards from the left — the base is pre-mirrored with the nametag re-pasted readable.
+	// Layers: base (pupils erased, bottle hand cut out) + the bottle hand, drawn BEHIND the body and
+	// shaking about the wrist. Pupils and eyelids are drawn in CSS. Geometry is in the frame's px.
+	const manBase = ap('/assets/mcschmutzo/splash/man-base-v3.webp');
+	const manBottle = ap('/assets/mcschmutzo/splash/man-bottle-v3.webp');
+	const manBrows = ap('/assets/mcschmutzo/splash/man-brows-v3.webp'); // above the lids
+	const MAN_W = 1304;
+	const MAN_H = 1699;
 	type Box = [number, number, number, number];
 	const MAN = {
-		// Brows re-exported cleaned (thin lower stroke dropped, body slimmed) + padded +8px each side so
-		// the raise never hits the crop edge (no cut).
-		browL: [120, 186, 234, 258] as Box,
-		browR: [236, 193, 313, 258] as Box,
-		pupilL: [142, 248, 172, 280] as Box,
-		pupilR: [242, 257, 264, 288] as Box,
+		// Pupils: the board chef's (a touch smaller than the art, the far one nudged up to clear its
+		// lower-lid line), mirrored.
+		pupilL: [783, 462, 834, 513] as Box,
+		pupilR: [625, 430, 689, 494] as Box,
 		// Eye openings (outline bbox): the lids are clipped to these so a blink never paints outside the eye.
-		eyeL: [136, 224, 202, 292] as Box,
-		eyeR: [237, 240, 282, 295] as Box,
-		bottle: [287, 320, 480, 729] as Box,
-		bottlePivot: [446, 612] as [number, number],
-		skin: '#e39c5d', // face skin right around the eyes (lid colour)
+		eyeL: [782, 425, 872, 520] as Box,
+		eyeR: [617, 395, 717, 512] as Box,
+		bottle: [0, 0, 1304, 1699] as Box, // full-frame layer
+		bottlePivot: [926, 951] as [number, number], // the wrist, tucked behind the body
+		skin: '#ee9c58', // face skin right around the eyes (lid colour)
 	};
 	const manBox = ([x0, y0, x1, y1]: Box) =>
 		`left:${pct(x0, MAN_W)};top:${pct(y0, MAN_H)};width:${pct(x1 - x0, MAN_W)};height:${pct(y1 - y0, MAN_H)};`;
@@ -154,6 +152,9 @@
 			] as [Tendril, Tendril],
 			// Where the long tendril ends (art px) — the drop forms here.
 			tip: { x: 42, y: 152 },
+			sauce: 0xe11105,
+			cycle: 3400,
+			dripPhase: 1340, // |--phase| + 0.10·cycle → pinch-off lands at the tendril's full stretch
 			title: 'SPLASH C1 TITLE',
 			body: ['SPLASH C1 BODY'],
 		},
@@ -167,6 +168,9 @@
 			] as [Tendril, Tendril],
 			// Where the long tendril ends (art px) — the drop forms here.
 			tip: { x: 39, y: 136 },
+			sauce: 0xf0b800,
+			cycle: 3800,
+			dripPhase: 2680,
 			title: 'SPLASH C2 TITLE',
 			body: ['SPLASH C2 BODY 1', 'SPLASH C2 BODY 2', 'SPLASH C2 BODY 3'],
 		},
@@ -180,6 +184,9 @@
 			] as [Tendril, Tendril],
 			// Where the long tendril ends (art px) — the drop forms here.
 			tip: { x: 33, y: 155 },
+			sauce: 0x7fbf12,
+			cycle: 4200,
+			dripPhase: 3820,
 			title: 'SPLASH C3 TITLE',
 			body: ['SPLASH C3 BODY'],
 		},
@@ -221,18 +228,14 @@
 	<div class="stage" style={`--sbg-desktop:url('${bgDesktop}');--sbg-mobile:url('${bg}')`}>
 		<img class="logo" src={logo} alt="McSchmutzo" draggable="false" />
 		<div class="man" style={`--skin:${MAN.skin}`}>
+			<div class="bottle" style={bottleStyle}><img src={manBottle} alt="" draggable="false" /></div>
 			<img class="man-base" src={manBase} alt="" draggable="false" />
-			<div class="brow brow--l" style={manBox(MAN.browL)}>
-				<img src={manBrowL} alt="" draggable="false" />
-			</div>
-			<div class="brow brow--r" style={manBox(MAN.browR)}>
-				<img src={manBrowR} alt="" draggable="false" />
-			</div>
 			<div class="pupil" style={manBox(MAN.pupilL)}><span class="glint"></span></div>
 			<div class="pupil" style={manBox(MAN.pupilR)}><span class="glint"></span></div>
 			<div class="eye" style={manBox(MAN.eyeL)}><div class="lid"></div></div>
 			<div class="eye" style={manBox(MAN.eyeR)}><div class="lid"></div></div>
-			<div class="bottle" style={bottleStyle}><img src={manBottle} alt="" draggable="false" /></div>
+			<!-- Brows over the lids, so a blink closes under the brow. -->
+			<img class="man-base" src={manBrows} alt="" draggable="false" />
 		</div>
 		<!-- Mobile only: replaces the logo + character with the Press Play wordmark. -->
 		<img class="pp-mark" src={pressPlay} alt="Press Play" draggable="false" />
@@ -245,12 +248,24 @@
 					<div class="drip drip--cap" style={capStyle(card.tendrils[0], card.tendrils[1])}></div>
 					<div class="drip drip--t drip--t1" style={tendrilStyle(card.tendrils[0])}></div>
 					<div class="drip drip--t drip--t2" style={tendrilStyle(card.tendrils[1])}></div>
-					<!-- The drop: swells at the long tendril's tip while it stretches, lets go, runs down
-					     the card (behind the copy) and fades. Drawn in CSS in the card's sauce colour. -->
-					<div
-						class="drop"
-						style={`left:${pct(card.tip.x, ART_W)};top:${pct(card.tip.y, ART_H)};`}
-					></div>
+					<!-- The drop: a real viscous drip (SauceFx) off the long tendril's tip — a bead oozes out,
+					     pinches off as the tendril hits full stretch, and falls down the card (behind the
+					     copy). Same period as the tendril's CSS cycle so the two stay in step. -->
+					<SauceFx
+						bleed={0}
+						drips={[
+							{
+								x: card.tip.x / ART_W,
+								y: (card.tip.y - 4) / ART_H,
+								color: card.sauce,
+								size: 0.016,
+								period: card.cycle,
+								phase: card.dripPhase,
+								fall: 0.55,
+								steady: true,
+							},
+						]}
+					/>
 				</div>
 				<div class="card-inner">
 					<h3 class="card-title" use:fitFont={i18nDerived.translate(card.title)}>
@@ -328,17 +343,23 @@
 
 	.man {
 		position: absolute;
-		left: 0.5%;
-		bottom: 0;
-		height: 63%;
-		aspect-ratio: 480 / 900;
-		/* Alive: a slow breath on the whole figure; the eyes glance around and blink, the brows lift,
-		   and the ketchup bottle gets a little shake — each its own layer (see the script constants). */
+		left: -1.5%;
+		/* Sunk below the stage edge so the art's curved apron cut-off is never visible — the screen
+		   edge crops his lower torso (the stage is a 16:9 cover box, so its bottom is always at or
+		   below the viewport's). */
+		bottom: -5%;
+		height: 58%;
+		aspect-ratio: 1304 / 1699;
+		/* The real art's frame includes the raised bottle on its right, so the figure is wider than
+		   the old cut — sit him IN FRONT of the card stack (a foreground character) so the bottle
+		   isn't swallowed behind the first card. */
+		z-index: 3;
+		/* Alive: a slow breath on the whole figure; the eyes glance around and blink, and the ketchup
+		   bottle gets a little shake — each its own layer (see the script constants). */
 		transform-origin: 50% 100%;
 		animation: chef-breathe 3.4s ease-in-out infinite alternate;
 	}
 	.man-base,
-	.brow img,
 	.bottle img {
 		display: block;
 		width: 100%;
@@ -348,17 +369,10 @@
 		position: absolute;
 		inset: 0;
 	}
-	.brow,
 	.pupil,
 	.eye,
 	.bottle {
 		position: absolute;
-	}
-	.brow {
-		animation: brow-raise 7s ease-in-out infinite;
-	}
-	.brow--r {
-		animation-delay: 0.08s;
 	}
 	/* Pupils: dark disc + a glint, sitting where the erased ones were; they dart around now and then. */
 	.pupil {
@@ -461,24 +475,6 @@
 	.drip--t2 {
 		animation: sauce-ooze 4.8s ease-in-out infinite;
 		animation-delay: calc(var(--phase) - 1.7s);
-	}
-	.drop {
-		position: absolute;
-		width: 4.2cqw;
-		height: 5.4cqw;
-		/* Top edge sits inside the tendril tip so it reads as attached while it swells. */
-		margin-top: -3cqw;
-		border-radius: 50% 50% 50% 50% / 42% 42% 58% 58%;
-		background: radial-gradient(
-			ellipse at 36% 28%,
-			var(--sauce-hi) 0%,
-			var(--sauce) 38%,
-			var(--sauce-dk) 100%
-		);
-		transform: translate(-50%, 0) scale(0);
-		animation: sauce-drop var(--cycle) linear infinite;
-		animation-delay: var(--phase);
-		will-change: transform, opacity;
 	}
 	/* Each card gets its own cycle length + phase so the three never pulse in unison. */
 	.card--red {
@@ -729,59 +725,12 @@
 			transform: scale(1.015, 0.985);
 		}
 	}
-	/* The drop: hidden → swells at the (moving) tip → detaches → falls behind the copy → fades. The
-	   tip travels ~2.6cqh at full stretch (0.28 × the tendril's stretched rows on the art). */
-	@keyframes sauce-drop {
-		0%,
-		34% {
-			transform: translate(-50%, 0) scale(0);
-			opacity: 1;
-			animation-timing-function: ease-out;
-		}
-		46% {
-			transform: translate(-50%, 1.9cqh) scale(0.7);
-			animation-timing-function: ease-in-out;
-		}
-		52% {
-			transform: translate(-50%, 2.6cqh) scale(1);
-			animation-timing-function: ease-in;
-		}
-		56% {
-			transform: translate(-50%, 4cqh) scale(1.02, 1.18);
-			animation-timing-function: cubic-bezier(0.5, 0, 0.85, 0.4);
-		}
-		80% {
-			transform: translate(-50%, 48cqh) scale(0.88, 1.28);
-			opacity: 1;
-			animation-timing-function: linear;
-		}
-		85% {
-			transform: translate(-50%, 56cqh) scale(0.85, 1.25);
-			opacity: 0;
-		}
-		100% {
-			transform: translate(-50%, 56cqh) scale(0);
-			opacity: 0;
-		}
-	}
 	@keyframes sauce-sag {
 		from {
 			transform: scaleY(1);
 		}
 		to {
 			transform: scaleY(1.02);
-		}
-	}
-	@keyframes brow-raise {
-		0%,
-		58%,
-		88%,
-		100% {
-			transform: translateY(0);
-		}
-		64%,
-		80% {
-			transform: translateY(-7%);
 		}
 	}
 	@keyframes eyes-look {

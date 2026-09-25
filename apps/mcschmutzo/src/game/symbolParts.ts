@@ -22,8 +22,10 @@ export type SymbolPartLayer = {
 	sway?: number; // horizontal waft amplitude as it rises (fraction of width)
 	grow?: number; // how much it grows by the top (default 0.4)
 	landDelay?: number; // land one-shot: fraction of the drop-in to wait before this layer scales in
+	landDrop?: number; // per-layer override of config.landDrop (e.g. only the scatter sign falls in)
 	tilt?: number; // small signed rock (radians, sin-driven) about `pivotY` — e.g. a cap rocking
 	pivotY?: number; // rotation pivot offset from the sprite centre (fraction of h; negative = up)
+	jitter?: number; // fast tiny shake (radians) while active — a sizzling twitch
 };
 
 export type SymbolPartsConfig = {
@@ -42,9 +44,9 @@ export type SymbolPartsConfig = {
 	// fraction of the win/lock amplitude. Special symbols (wild, scatter) use it so they never read
 	// as static tiles between spins.
 	idle?: number;
-	// Sauce squirt: while active, the symbol shoots a looping arc of sauce blobs (this colour) out of
-	// its nozzle in time with the squeeze — the squeeze bottles come alive by squirting. The nozzle
-	// defaults to the bottle tip (top-centre); `dir` (+1 right / -1 left) angles the arc.
+	// Sauce squirt: while active, the bottle squeezes out a shot of sauce (this colour) each loop cycle —
+	// the same squirt as the board chef's (ketchupSquirt.ts), scaled to the symbol. The nozzle defaults
+	// to the bottle tip (top-centre); `dir` (+1 right / -1 left) leans the shot.
 	squirt?: { color: number; nozzleNx?: number; nozzleNy?: number; dir?: number };
 	// Melty cheese drip: while alive, slow gooey drops ooze from the tips of the painted drips (the
 	// spots already stretched/hanging), swell into a teardrop, pinch off and fall a short way.
@@ -52,6 +54,12 @@ export type SymbolPartsConfig = {
 	// bottom edge; each may carry its own `color` sampled from that painted drip (falls back to the
 	// shared `color`).
 	drip?: { color: number; points: { nx: number; ny: number; color?: number }[] };
+	// Soda fizz: carbonation bubbles rise out of (nx, ny) — the straw/lid — wobbling, growing and
+	// popping into a little ring at the top. `spread` = horizontal scatter (fraction of width).
+	fizz?: { nx: number; ny: number; spread: number; color: number };
+	// Sizzle: hot grease spits up off the food's surface at these points in short arcs and falls back,
+	// with the odd bright spark — something frying on a hot grill.
+	sizzle?: { color: number; points: { nx: number; ny: number }[] };
 	layers: SymbolPartLayer[];
 };
 
@@ -223,9 +231,20 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 				dy: 0.012,
 				dx: 0.01,
 				rot: 0.03,
-				pop: 0.03,
+				pop: 0.06, // juicy swell
+				jitter: 0.018, // sizzling twitch
 			},
 		],
+		// Grease spits off the top of the banger (points along its upper edge).
+		sizzle: {
+			color: 0xffc766,
+			points: [
+				{ nx: 0.3, ny: 0.34 },
+				{ nx: 0.45, ny: 0.4 },
+				{ nx: 0.6, ny: 0.5 },
+				{ nx: 0.72, ny: 0.62 },
+			],
+		},
 	},
 	// Onion rings — three leaning rings that bounce apart and jostle (small tumble), not a flat spin.
 	H5: {
@@ -293,23 +312,41 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 	},
 	// Scatter — the stand gives a gentle bob while its SCATTER sign sways like a hanging shingle.
 	// (Real diner-stand art: base + the golden SCATTER sign that sits on the top plank.)
+	// On landing the stand pops in first, then the sign drops onto the top plank. The sign swings
+	// about its top edge (pivotY) so it rocks both ways like a real hanging sign.
 	S: {
 		aspect: 0.999,
 		fit: 0.86,
-		squash: 0.03,
-		idle: 0.55,
+		squash: 0.06,
+		idle: 0.75,
+		landAnim: true,
+		landMs: 1100,
 		layers: [
-			{ key: 'scatterStand', nx: 0.5, ny: 0.5, nw: 1.0, nh: 1.0 },
-			{ key: 'scatterBanner', nx: 0.485, ny: 0.132, nw: 0.68, nh: 0.232, rot: 0.07, dy: -0.01 },
+			{ key: 'scatterStand', nx: 0.5, ny: 0.5, nw: 1.0, nh: 1.0, dy: -0.03, landDelay: 0 },
+			{
+				key: 'scatterBanner',
+				nx: 0.485,
+				ny: 0.132,
+				nw: 0.68,
+				nh: 0.232,
+				dy: -0.05,
+				pop: 0.08,
+				tilt: 0.14,
+				pivotY: -0.11,
+				landDelay: 0.45,
+				landDrop: 0.45,
+			},
 		],
 	},
-	// Smutz cup — one whole sprite (straw included) that gives a soft squeeze + bob; splitting the
-	// straw off left it poking out broken from behind the lid, so it stays a single piece.
+	// Smutz cup — one whole sprite (straw included; splitting the straw off left it poking out broken).
+	// Comes alive like an ice-cold soda: it rocks from its base and hops with a sip-squeeze, while
+	// fizzy bubbles stream up out of the straw and pop.
 	M: {
 		aspect: 131 / 120, // the flat sprite's padded footprint — matches the normal cup size exactly
 		fit: 1,
-		squash: 0.09,
-		layers: [{ key: 'mcM', nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.02 }],
+		squash: 0.08,
+		fizz: { nx: 0.53, ny: 0.2, spread: 0.2, color: 0x9fd8ff }, // rises from the lid, stays in its cell
+		layers: [{ key: 'mcM', nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.06, tilt: 0.1, pivotY: 0.42 }],
 	},
 	// Cheese — one whole slice (drips included) that gently jiggles and dribbles gooey drops off its
 	// painted drip tips, but ONLY while active (locked / part of a win) like the other symbols.
@@ -340,7 +377,9 @@ export const H1_ASSEMBLE: SymbolPartsConfig = {
 	...SYMBOL_PARTS.H1,
 	landAnim: true,
 	landMs: 1500,
-	landDrop: 0.6,
+	// Short fall: the win-pad burger rests near the top of the screen, and a longer drop (0.6) started
+	// the top bun off-screen — it read as cut on big/wide resolutions.
+	landDrop: 0.2,
 	// A touch more whole-stack squash so the settled burger has a bit of bounce.
 	squash: 0.06,
 	// The assemble (landDelay + scale) plays ONCE. After it, the idle loop uses these dx/dy/rot offsets

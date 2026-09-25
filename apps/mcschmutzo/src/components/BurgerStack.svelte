@@ -14,13 +14,22 @@
 		{ src: ap(P + 'lettuce.webp'), nx: 0.5, ny: 0.5092, nw: 0.8981, dy: -0.16 },
 		{ src: ap(P + 'bun_top.webp'), nx: 0.5, ny: 0.2396, nw: 0.9685, dy: -0.26 },
 	];
+
+	type Props = {
+		/** Congratulations screens: build the burger ONCE slice-by-slice (bottom bun → top bun, each
+		 *  dropping in with a small overshoot — the same stagger as the win-pad H1_ASSEMBLE), then the
+		 *  finished burger just bobs gently. Off (default) = the looping separate-and-regroup burst. */
+		assemble?: boolean;
+	};
+	const { assemble = false }: Props = $props();
+	const ASSEMBLE_DELAYS = [0, 0.12, 0.24, 0.36, 0.48, 0.6, 0.74]; // × 1.5s, as H1_ASSEMBLE
 </script>
 
-<div class="burger-stack">
+<div class="burger-stack" class:burger-stack--assemble={assemble}>
 	{#each PARTS as p, i (i)}
 		<!-- Each layer sits in a full-box wrapper so translateY(dy*100%) = dy * the burger's height,
 		     matching the reels' dy*symbolHeight separation regardless of the slice's own size. -->
-		<div class="burger-layer" style={`z-index:${i}; --dy:${p.dy};`}>
+		<div class="burger-layer" style={`z-index:${i}; --dy:${p.dy}; --d:${ASSEMBLE_DELAYS[i] * 1.5}s;`}>
 			<img
 				src={p.src}
 				alt=""
@@ -51,6 +60,55 @@
 		position: absolute;
 		height: auto;
 		transform: translate(-50%, -50%);
+	}
+	/* Assemble (congrats screens): each slice falls a short way (20% of the burger height — enough to
+	   read as dropping onto the stack, never so far it starts off-screen) while scaling in with an
+	   overshoot, staggered bottom → top. Then the whole built burger bobs. */
+	.burger-stack--assemble {
+		animation: burger-bob 2.4s ease-in-out 1.7s infinite;
+	}
+	.burger-stack--assemble .burger-layer {
+		animation: slice-drop 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) var(--d) both;
+	}
+	.burger-stack--assemble .burger-layer img {
+		animation: slice-scale 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) var(--d) both;
+	}
+	@keyframes slice-drop {
+		from {
+			transform: translateY(-20%);
+			opacity: 0;
+		}
+		30% {
+			opacity: 1;
+		}
+		to {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+	@keyframes slice-scale {
+		from {
+			transform: translate(-50%, -50%) scale(0);
+		}
+		to {
+			transform: translate(-50%, -50%) scale(1);
+		}
+	}
+	@keyframes burger-bob {
+		0%,
+		100% {
+			transform: translateY(0) scale(1, 1);
+		}
+		50% {
+			transform: translateY(-2.5%) scale(1.015, 0.985);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.burger-stack--assemble,
+		.burger-stack--assemble .burger-layer,
+		.burger-stack--assemble .burger-layer img {
+			animation: none;
+		}
 	}
 	@keyframes burger-sep {
 		0%,

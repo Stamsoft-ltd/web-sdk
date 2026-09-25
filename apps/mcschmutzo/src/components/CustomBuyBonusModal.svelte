@@ -270,7 +270,7 @@
 		position: fixed;
 		inset: 0;
 		z-index: 58;
-		background: rgba(0, 0, 0, 0.64);
+		background: rgba(0, 0, 0, 0.74);
 		backdrop-filter: blur(4px);
 	}
 
@@ -457,8 +457,21 @@
 		bottom: 8%;
 		display: grid;
 		place-items: center;
-		width: clamp(24px, 4vmin, 34px);
-		aspect-ratio: 1;
+		/* Always a PERFECT circle: explicit equal width + height (aspect-ratio alone let the box stretch
+		   in its grid/flex parent or widen to the text), no shrink/grow, no padding. */
+		--badge-d: clamp(24px, 4vmin, 34px);
+		width: var(--badge-d);
+		height: var(--badge-d);
+		min-width: var(--badge-d);
+		max-width: var(--badge-d);
+		min-height: var(--badge-d);
+		max-height: var(--badge-d);
+		flex: 0 0 auto;
+		align-self: auto;
+		padding: 0;
+		box-sizing: border-box;
+		line-height: 1;
+		white-space: nowrap;
 		border-radius: 50%;
 		border: 2px solid #ffce6a;
 		background: #c4281c;

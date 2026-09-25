@@ -27,6 +27,38 @@
 	// latest spin's win, this sums them). Set via the setTotalWin book event.
 	const totalWin = $derived(bookEventAmountToCurrencyString(stateBet.winBookEventAmount));
 
+	// Portrait: the three panels sit in ONE row in the gap between the board's bottom edge and the
+	// control bar — measured live (board from the pixi layout, bar from the DOM) so they never
+	// collide with either on any phone (the fixed % positions overlapped both on short screens).
+	let row = $state<{ top: number; h: number; c: number; accH: number } | null>(null);
+	$effect(() => {
+		if (!show || layoutType !== 'portrait') return;
+		let raf = 0;
+		const measure = () => {
+			const main = context.stateLayoutDerived.mainLayout();
+			const b = context.stateGameDerived.boardLayout();
+			const boardBottom = main.y - (main.height * main.scale) / 2 + (b.y + b.height / 2) * main.scale;
+			const bar = document.querySelector('.pt-controls')?.getBoundingClientRect();
+			// The round spin button bulges above the bar in the middle — the row is centred between the
+			// board and the BAR, and only its height is limited so it still clears the spin disc.
+			const spin = document.querySelector('.pt-spin')?.getBoundingClientRect();
+			if (bar) {
+				const c = (boardBottom + bar.top) / 2;
+				const clearSpin = spin ? 2 * (spin.top - 4 - c) : Infinity;
+				const h = Math.max(24, Math.min(64, bar.top - boardBottom - 10, clearSpin));
+				const top = c - h / 2;
+				// The printer sits at the right, clear of the spin disc: a bit taller than the pills, but
+				// always with ≥8px of air to the board above and the nav bar below.
+				const accH = Math.max(h, Math.min(60, bar.top - boardBottom - 16, h * 1.4));
+				if (!row || Math.abs(row.top - top) > 0.5 || Math.abs(row.h - h) > 0.5 || Math.abs(row.accH - accH) > 0.5)
+					row = { top, h, c, accH };
+			}
+			raf = requestAnimationFrame(measure);
+		};
+		raf = requestAnimationFrame(measure);
+		return () => cancelAnimationFrame(raf);
+	});
+
 	// DEV preview: press 8 to force a free-games state (special bg + counter + multiplier + total).
 	import { onMount } from 'svelte';
 	onMount(() => {
@@ -46,7 +78,11 @@
 </script>
 
 {#if show}
-	<div class="fp" data-layout={layoutType}>
+	<div
+		class="fp"
+		data-layout={layoutType}
+		style={row ? `--row-top:${row.top}px;--row-h:${row.h}px;--acc-top:${row.c - row.accH / 2}px;--acc-h:${row.accH}px` : undefined}
+	>
 		<!-- FREE SPINS counter -->
 		<div class="fp-card fp-fs">
 			<span class="fp-card__label">{i18nDerived.translate('FREE SPINS')}</span>
@@ -65,7 +101,7 @@
 			<span class="fp-acc__led fp-acc__led--green"></span>
 			<span class="fp-acc__led fp-acc__led--red"></span>
 			{#key mult}
-				<span class="fp-acc__mult" class:fp-acc__mult--on={hasMult}>{mult}x</span>
+				<span class="fp-acc__mult" class:fp-acc__mult--on={hasMult} class:fp-acc__mult--long={String(mult).length > 1}>{mult}x</span>
 			{/key}
 		</div>
 	</div>
@@ -130,12 +166,14 @@
 	.fp-acc__mult {
 		position: absolute;
 		left: 50%;
-		top: 62%;
+		/* Centred on the ticket (between its dashed lines), big enough to read at a glance. */
+		top: 55%;
 		transform: translate(-50%, -50%);
 		color: #b3261a;
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
 		font-weight: 400;
-		font-size: 17cqw;
+		font-size: 25cqw;
+		white-space: nowrap;
 		line-height: 1;
 		opacity: 0;
 	}
@@ -164,24 +202,30 @@
 
 	/* Indicator lights — soft glows layered over the painted lamps so they pulse/blink (machine alive).
 	   `screen` blend brightens the underlying dot rather than covering it. */
+	/* Two-digit multipliers ("10x") step down so they stay inside the ticket. */
+	.fp-acc__mult--long {
+		font-size: 19cqw;
+	}
+	/* Glow overlays sit EXACTLY on the art's painted LED lenses (centres + lens size measured from
+	   accordion.webp's black rings: green (17.66%, 10.33%), red (81.28%, 10.33%), lens ≈ 5% wide). */
 	.fp-acc__led {
 		position: absolute;
-		width: 6cqw;
-		height: 6cqw;
+		width: 5cqw;
+		height: 5cqw;
 		transform: translate(-50%, -50%);
 		border-radius: 50%;
 		pointer-events: none;
 		mix-blend-mode: screen;
 	}
 	.fp-acc__led--green {
-		left: 16.8%;
-		top: 10.6%;
+		left: 17.66%;
+		top: 10.33%;
 		background: radial-gradient(circle at 42% 36%, #eaffe4 0%, #74e85e 42%, rgba(70, 190, 45, 0) 70%);
 		animation: fp-led-breathe 1.7s ease-in-out infinite;
 	}
 	.fp-acc__led--red {
-		left: 82.4%;
-		top: 10.6%;
+		left: 81.28%;
+		top: 10.33%;
 		background: radial-gradient(circle at 42% 36%, #ffe0d8 0%, #ff5333 42%, rgba(210, 45, 20, 0) 70%);
 		animation: fp-led-blink 1.5s steps(1, end) infinite;
 	}
@@ -189,11 +233,11 @@
 		0%,
 		100% {
 			opacity: 0.3;
-			transform: translate(-50%, -50%) scale(0.85);
+			transform: translate(-50%, -50%) scale(0.92);
 		}
 		50% {
 			opacity: 0.95;
-			transform: translate(-50%, -50%) scale(1.12);
+			transform: translate(-50%, -50%) scale(1);
 		}
 	}
 	@keyframes fp-led-blink {
@@ -221,23 +265,43 @@
 		}
 	}
 
-	/* ── Portrait: a row under the board (accordion lifted so it clears the nav bar). ── */
+	/* ── Portrait: FREE SPINS · TOTAL WIN · printer in one row, filling the board-to-control-bar gap
+	   (--row-top / --row-h measured in the script). Everything scales off the row height. ── */
+	.fp[data-layout='portrait'] .fp-fs,
+	.fp[data-layout='portrait'] .fp-total,
+	.fp[data-layout='portrait'] .fp-acc {
+		top: var(--row-top, 70%);
+		height: var(--row-h, 56px);
+	}
+	.fp[data-layout='portrait'] .fp-card {
+		box-sizing: border-box;
+		width: 34%;
+		padding: 0 4px;
+		justify-content: center;
+		gap: calc(var(--row-h, 56px) * 0.08);
+	}
 	.fp[data-layout='portrait'] .fp-fs {
-		left: 6%;
-		bottom: 24%;
-		width: min(150px, 39%);
+		left: 3%;
+		width: 27%;
 	}
 	.fp[data-layout='portrait'] .fp-total {
-		left: 6%;
-		bottom: 13%;
-		width: min(150px, 39%);
+		left: 32%;
+		width: 38%;
+	}
+	.fp[data-layout='portrait'] .fp-card__label {
+		font-size: calc(var(--row-h, 56px) * 0.2);
+	}
+	.fp[data-layout='portrait'] .fp-card__value {
+		font-size: calc(var(--row-h, 56px) * 0.36);
+		white-space: nowrap;
 	}
 	.fp[data-layout='portrait'] .fp-acc {
-		right: 6%;
-		/* px floor lifts the printer clear of the bottom nav on short phones (the % alone put it too
-		   low, resting on the control row); a touch narrower so it fits the board-to-nav gap. */
-		bottom: max(21%, 150px);
-		width: min(104px, 27%);
+		top: var(--acc-top, 70%);
+		height: var(--acc-h, 56px);
+		right: 3%;
+		width: auto;
+		aspect-ratio: 1127 / 794;
+		max-width: 28%;
 	}
 
 	/* ── Desktop / landscape: FREE SPINS + TOTAL WIN stacked on the LEFT of the board, accordion above.

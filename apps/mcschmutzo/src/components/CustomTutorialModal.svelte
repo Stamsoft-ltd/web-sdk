@@ -33,7 +33,9 @@
 	const uiIcon = (n: string) => ap(`/assets/mcschmutzo/ui-icons/${n}`);
 	// label/desc are i18n keys (translated in the markup).
 	const UI_ITEMS: { label: string; desc: string; icon: string }[] = [
-		{ label: 'SPIN', desc: 'INFO UI SPIN DESC', icon: uiIcon('spin.svg') },
+		// Hi-res raster of the spin button, cropped tight so it fills the same box as the other discs
+		// (spin.svg wraps its art in padding, so it rendered smaller + soft next to them).
+		{ label: 'SPIN', desc: 'INFO UI SPIN DESC', icon: uiIcon('spin-guide.webp') },
 		{ label: 'UI AUTO SPINS', desc: 'INFO UI AUTO DESC', icon: uiIcon('auto.svg') },
 		{ label: 'TURBO', desc: 'INFO UI TURBO DESC', icon: uiIcon('turbo.svg') },
 		{ label: 'UI BET PLUS', desc: 'INFO UI BETPLUS DESC', icon: uiIcon('plus.svg') },
@@ -357,7 +359,7 @@
 		position: fixed;
 		inset: 0;
 		z-index: 58;
-		background: rgba(0, 0, 0, 0.6);
+		background: rgba(0, 0, 0, 0.7);
 		backdrop-filter: blur(4px);
 	}
 

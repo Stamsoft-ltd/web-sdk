@@ -6,7 +6,6 @@
 	import { SYMBOL_PARTS } from '../game/symbolParts';
 	import type { SymbolState, RawSymbol } from '../game/types';
 	import { getContext } from '../game/context';
-	import { BitmapText } from 'pixi-svelte';
 
 	type Props = {
 		x?: number;
@@ -56,15 +55,5 @@
 	/>
 {/if}
 
-{#if props.rawSymbol.multiplier}
-	<BitmapText
-		anchor={0.5}
-		x={props.x}
-		y={props.y}
-		text={`${props.rawSymbol.multiplier}X`}
-		style={{
-			fontFamily: 'gold',
-			fontSize: 50,
-		}}
-	/>
-{/if}
+<!-- No per-symbol multiplier label: the template's gold "{N}X" bitmap text sat right across the
+     Smutz cup's logo (read as a stray "X"); the running multiplier shows on the printer instead. -->
