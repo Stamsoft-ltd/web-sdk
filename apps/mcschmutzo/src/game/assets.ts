@@ -450,7 +450,7 @@ export default {
 		// The base with the eyes AND the held ketchup bottle+hand cut out — the bottle is overlaid
 		// separately (mascotBottle) so it can shake like the splash chef's.
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/mascot_base_v5.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/mascot_base_v6.webp', import.meta.url).href,
 		preload: true,
 	},
 	mascotBottle: {
@@ -458,6 +458,13 @@ export default {
 		// shaken about the wrist.
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/guys/mascot_bottle_v5.webp', import.meta.url).href,
+		preload: true,
+	},
+	mascotHand: {
+		// The pointing/thumbs-up hand, cut from the base (patched underneath), so it can gesture about
+		// the wrist.
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mascot_hand_v1.webp', import.meta.url).href,
 		preload: true,
 	},
 	mascotBrows: {
@@ -488,13 +495,19 @@ export default {
 		// 358x425 frame — the arm overlays and flicks with nothing duplicated behind it, and the
 		// eyes are the intact art (animated pupils overlay the baked ones slightly larger).
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_base_v10.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/special_base_v11.webp', import.meta.url).href,
 		preload: true,
 	},
 	specialArm: {
 		// The salt-shaker forearm on the same frame, overlaid + flicked about the shoulder.
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/guys/special_arm_v3.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialHand: {
+		// His pointing hand, cut from the base (patched beneath), gesturing about the wrist.
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_hand_v1.webp', import.meta.url).href,
 		preload: true,
 	},
 	specialBrows: {

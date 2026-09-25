@@ -170,8 +170,11 @@
 		phase={2000}
 		sparkle={{ nx: 0.5, ny: 0.4, size: 0.06, period: 3800, phase: 1200 }}
 		extras={[
-			{ key: 'specialBrows', nx: 0, ny: 0, nw: 1, nh: 1, amp: 0 },
+			// Nametag first, so the pointing hand sits over it.
 			{ key: 'specialLabel', nx: 0.5643, ny: 0.5737, nw: 0.1984, nh: 0.1119, px: 0.5, py: 0.13, amp: 0.045, period: 320, phase: 900 },
+			// Pointing hand: slow ~1.3° sway about the wrist (cuff), like the board chef's.
+			{ key: 'specialHand', nx: 0, ny: 0, nw: 1, nh: 1, px: 0.982, py: 0.7244, amp: 0.023, period: 700, phase: 1500 },
+			{ key: 'specialBrows', nx: 0, ny: 0, nw: 1, nh: 1, amp: 0 },
 		]}
 	/>
 	<!-- Salt-shaker forearm overlay: flicks about the shoulder (above the base, below the salt). -->

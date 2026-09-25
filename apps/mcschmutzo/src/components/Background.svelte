@@ -375,16 +375,8 @@
 		skin={0xee9c58}
 		extras={[
 			{
-				// Brows above the blink lids (static full-frame layer).
-				key: 'mascotBrows',
-				nx: 0,
-				ny: 0,
-				nw: 1,
-				nh: 1,
-				amp: 0,
-			},
-			{
-				// Full-frame layer (the exact plate pixels), tilting about its pin.
+				// Full-frame layer (the exact plate pixels), tilting about its pin — drawn FIRST so the
+				// pointing hand passes over it.
 				key: 'mascotLabel',
 				nx: 0,
 				ny: 0,
@@ -394,6 +386,29 @@
 				py: 0.6027,
 				amp: 0.035,
 				period: 320,
+			},
+			{
+				// The pointing hand gestures slowly about the wrist (at the sleeve cuff) — a subtle
+				// ~1.3° sway so it never uncovers the patch beneath.
+				key: 'mascotHand',
+				nx: 0,
+				ny: 0,
+				nw: 1,
+				nh: 1,
+				px: 0.951,
+				py: 0.6945,
+				amp: 0.023,
+				period: 700,
+				phase: 400,
+			},
+			{
+				// Brows above the blink lids (static full-frame layer).
+				key: 'mascotBrows',
+				nx: 0,
+				ny: 0,
+				nw: 1,
+				nh: 1,
+				amp: 0,
 			},
 		]}
 		sparkle={{ nx: 0.46, ny: 0.376, size: 0.075, period: 3400 }}

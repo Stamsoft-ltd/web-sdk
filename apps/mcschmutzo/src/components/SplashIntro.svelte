@@ -77,7 +77,8 @@
 	// faces the cards from the left — the base is pre-mirrored with the nametag re-pasted readable.
 	// Layers: base (pupils erased, bottle hand cut out) + the bottle hand, drawn BEHIND the body and
 	// shaking about the wrist. Pupils and eyelids are drawn in CSS. Geometry is in the frame's px.
-	const manBase = ap('/assets/mcschmutzo/splash/man-base-v3.webp');
+	const manBase = ap('/assets/mcschmutzo/splash/man-base-v4.webp');
+	const manHand = ap('/assets/mcschmutzo/splash/man-hand-v1.webp'); // pointing hand, gestures about the wrist
 	const manBottle = ap('/assets/mcschmutzo/splash/man-bottle-v3.webp');
 	// The nametag plate (full-frame layer over its baked copy) jiggles on its pin, like the board chef.
 	const manLabel = ap('/assets/mcschmutzo/splash/man-label-v3.webp');
@@ -251,7 +252,9 @@
 				/>
 			</div>
 			<img class="man-base" src={manBase} alt="" draggable="false" />
+			<!-- Nametag under the pointing hand. -->
 			<img class="man-label" src={manLabel} alt="" draggable="false" />
+			<img class="man-hand" src={manHand} alt="" draggable="false" />
 			<span class="man-sparkle" aria-hidden="true"></span>
 			<div class="pupil" style={manBox(MAN.pupilL)}><span class="glint"></span></div>
 			<div class="pupil" style={manBox(MAN.pupilR)}><span class="glint"></span></div>
@@ -481,6 +484,23 @@
 	}
 	.bottle {
 		animation: bottle-shake 6s ease-in-out infinite;
+	}
+	/* Pointing hand: a slow, subtle sway about the wrist (sleeve cuff, 4.9% / 69.45% of the frame). */
+	.man-hand {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		transform-origin: 4.9% 69.45%;
+		animation: hand-sway 4.4s ease-in-out 0.6s infinite alternate;
+	}
+	@keyframes hand-sway {
+		from {
+			transform: rotate(1.3deg);
+		}
+		to {
+			transform: rotate(-1.3deg);
+		}
 	}
 	/* Nametag jiggles on its pin (pin = top-centre of the plate: 38.04% / 60.45% of the frame). */
 	.man-label {
