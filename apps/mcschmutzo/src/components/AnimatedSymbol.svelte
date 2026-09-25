@@ -144,6 +144,43 @@
 		const landing = landStart >= 0;
 		const lt = landing ? Math.min(1, (landClock - landStart) / LAND_MS) : 1;
 		for (const l of props.config.layers) {
+			if (landing && props.config.landFall) {
+				const delay = l.landDelay ?? 0;
+				const slice = props.config.landSlice ?? 0.3;
+				const local = Math.max(0, Math.min(1, (lt - delay) / slice));
+				const FALL = 0.5; // share of the slice spent falling; the rest is the splat + bounce
+				let oy = 0;
+				let sx = 1;
+				let sy = 1;
+				let alpha = 1;
+				if (local <= 0) {
+					alpha = 0; // not dropped yet
+				} else if (local < FALL) {
+					const q = local / FALL;
+					oy = -(props.config.landDrop ?? 1) * h * (1 - q * q); // gravity: accelerates down
+					alpha = Math.min(1, q * 5);
+					sy = 1 + 0.1 * q; // stretches a touch with speed
+					sx = 1 - 0.05 * q;
+				} else {
+					const q = (local - FALL) / (1 - FALL);
+					const e = Math.exp(-4.5 * q) * Math.cos(q * Math.PI * 2.6); // impact → rebound → settle
+					sx = 1 + 0.22 * e;
+					sy = 1 - 0.26 * e;
+					oy = -Math.max(0, -e) * h * 0.03; // tiny hop on the rebound
+				}
+				out.push({
+					id: l.key,
+					key: l.key,
+					x: cx + (l.nx - 0.5) * w,
+					// squash about the slice's BOTTOM so it lands on the one below
+					y: cy + (l.ny - 0.5) * h + oy + (l.nh * h * (1 - sy)) / 2,
+					width: l.nw * w * sx,
+					height: l.nh * h * sy,
+					rotation: 0,
+					alpha,
+				});
+				continue;
+			}
 			if (landing) {
 				const delay = l.landDelay ?? 0;
 				const local = delay >= 1 ? 0 : Math.max(0, (lt - delay) / (1 - delay));

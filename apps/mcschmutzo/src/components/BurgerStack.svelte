@@ -22,7 +22,7 @@
 		assemble?: boolean;
 	};
 	const { assemble = false }: Props = $props();
-	const ASSEMBLE_DELAYS = [0, 0.12, 0.24, 0.36, 0.48, 0.6, 0.74]; // × 1.5s, as H1_ASSEMBLE
+	const ASSEMBLE_DELAYS = [0, 0.12, 0.24, 0.36, 0.48, 0.6, 0.74]; // × 1.5s: bottom bun first
 </script>
 
 <div class="burger-stack" class:burger-stack--assemble={assemble}>
@@ -61,24 +61,25 @@
 		height: auto;
 		transform: translate(-50%, -50%);
 	}
-	/* Assemble (congrats screens): each slice falls a short way (20% of the burger height — enough to
-	   read as dropping onto the stack, never so far it starts off-screen) while scaling in with an
-	   overshoot, staggered bottom → top. Then the whole built burger bobs. */
+	/* Assemble (congrats screens): each slice FALLS in full-size from well above (gravity: ease-in),
+	   fading in, then SPLATS onto the slice below — squashed wide + flat at impact about its bottom,
+	   rebound, settle — staggered bottom → top. Then the whole built burger bobs. */
 	.burger-stack--assemble {
-		animation: burger-bob 2.4s ease-in-out 1.7s infinite;
+		animation: burger-bob 2.4s ease-in-out 2s infinite;
 	}
 	.burger-stack--assemble .burger-layer {
-		animation: slice-drop 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) var(--d) both;
+		animation: slice-fall 0.46s cubic-bezier(0.55, 0, 1, 0.45) var(--d) both;
 	}
 	.burger-stack--assemble .burger-layer img {
-		animation: slice-scale 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) var(--d) both;
+		transform-origin: 50% 100%;
+		animation: slice-splat 0.9s linear var(--d) both;
 	}
-	@keyframes slice-drop {
+	@keyframes slice-fall {
 		from {
-			transform: translateY(-20%);
+			transform: translateY(-260%);
 			opacity: 0;
 		}
-		30% {
+		18% {
 			opacity: 1;
 		}
 		to {
@@ -86,12 +87,25 @@
 			opacity: 1;
 		}
 	}
-	@keyframes slice-scale {
-		from {
-			transform: translate(-50%, -50%) scale(0);
+	/* 0–51% = the fall (slight stretch), then impact squash → rebound → settle. */
+	@keyframes slice-splat {
+		0% {
+			transform: translate(-50%, -50%) scale(0.96, 1.06);
 		}
-		to {
-			transform: translate(-50%, -50%) scale(1);
+		51% {
+			transform: translate(-50%, -50%) scale(0.95, 1.1);
+		}
+		56% {
+			transform: translate(-50%, -50%) scale(1.24, 0.72);
+		}
+		68% {
+			transform: translate(-50%, -50%) scale(0.93, 1.1);
+		}
+		80% {
+			transform: translate(-50%, -50%) scale(1.05, 0.96);
+		}
+		100% {
+			transform: translate(-50%, -50%) scale(1, 1);
 		}
 	}
 	@keyframes burger-bob {

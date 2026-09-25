@@ -145,7 +145,7 @@
 		// the burger) the bounce can't push it up into the logo. `(1-cos)/2` is a seamless 0→1→0 that
 		// stays >= 0 (down only); at bigger sizes this is the same fraction, so it's clear everywhere.
 		const bph = elapsed / 430;
-		const bounceIn = clamp01((elapsed - 1550) / 500); // ease the bounce in once assembled (~land end)
+		const bounceIn = clamp01((elapsed - 1750) / 500); // ease the bounce in once assembled (~land end)
 		const settle = (bounceIn * (1 - Math.cos(bph))) / 2; // 0 → 1 → 0, always >= 0 (downward only)
 		// Rest height (-0.185w) sits the burger peeking well over the banner — high enough that the
 		// slice-by-slice assemble reads (at -0.15w it sat too low and the build hid behind the banner) —

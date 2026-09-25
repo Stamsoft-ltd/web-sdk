@@ -46,6 +46,11 @@ export type SymbolPartsConfig = {
 	// rest spot as it scales in — the burger stacks bottom-to-top, each slice splatting onto the last.
 	landMs?: number;
 	landDrop?: number;
+	// Land as a real DROP: each layer falls in full-size from `landDrop` above (gravity, fading in),
+	// SPLATS onto the stack (wide + flat squash at impact) and bounces once — instead of scaling in.
+	// `landSlice` = each layer's own share of landMs (so the stagger doesn't speed up later slices).
+	landFall?: boolean;
+	landSlice?: number;
 	// Alive at rest: keep the loop running (slower) whenever the symbol sits on the board, at this
 	// fraction of the win/lock amplitude. Special symbols (wild, scatter) use it so they never read
 	// as static tiles between spins.
@@ -354,10 +359,12 @@ const ASSEMBLE_DELAYS = [0, 0.12, 0.24, 0.36, 0.48, 0.6, 0.74];
 export const H1_ASSEMBLE: SymbolPartsConfig = {
 	...SYMBOL_PARTS.H1,
 	landAnim: true,
-	landMs: 1500,
-	// Short fall: the win-pad burger rests near the top of the screen, and a longer drop (0.6) started
-	// the top bun off-screen — it read as cut on big/wide resolutions.
-	landDrop: 0.2,
+	landMs: 1700,
+	// Pieces fall in from the TOP (well above the pad) and splat onto each other, bottom bun first. Only
+	// the settled burger has to stay on-screen; falling in past the top edge is the effect.
+	landFall: true,
+	landDrop: 1.6,
+	landSlice: 0.28,
 	// A touch more whole-stack squash so the settled burger has a bit of bounce.
 	squash: 0.06,
 	// The assemble (landDelay + scale) plays ONCE. After it, the idle loop uses these dx/dy/rot offsets
