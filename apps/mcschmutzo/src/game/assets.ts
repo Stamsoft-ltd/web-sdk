@@ -512,7 +512,7 @@ export default {
 	},
 	mcschmutzoLogo: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/logo.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/logo-v3.webp', import.meta.url).href,
 		preload: true,
 	},
 	mcH1: {

@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Container, Sprite } from 'pixi-svelte';
+	import { Container, Graphics, Sprite } from 'pixi-svelte';
 
 	import AnimatedSymbol from './AnimatedSymbol.svelte';
 	import { H1_ASSEMBLE } from '../game/symbolParts';
+	import { drawSauceSquirt, squirtHash, type SquirtGraphics } from '../game/ketchupSquirt';
 
 	// The tier win-pad, re-assembled from separate layers so it can ANIMATE (the baked pad art was a
 	// single flat image). Sequence: the banner + title + stars pop in first ("the win"), then the two
@@ -83,11 +84,12 @@
 		const starRot = 0.1 * Math.sin(elapsed / 600);
 		const titleBreathe = 1 + 0.03 * Math.sin(elapsed / 470); // expand / retract
 
-		const syW = 0.205 * w;
-		const srW = 0.205 * w;
+		// Bigger splashes (design ask), pushed a touch further out so they still frame the banner.
+		const syW = 0.29 * w;
+		const srW = 0.29 * w;
 		const back: L[] = [];
-		back.push({ id: 'sy', key: 'winSplashYellow', x: -0.315 * w * splS, y: -0.02 * w * splS, w: syW * splS * splThrobY, h: (syW / 1.2) * splS * splThrobY, a: splA, rot: -0.55 * spinIn + splWobble });
-		back.push({ id: 'sr', key: 'winSplashRed', x: 0.315 * w * splS, y: -0.02 * w * splS, w: srW * splS * splThrobR, h: (srW / 1.71) * splS * splThrobR, a: splA, rot: 0.55 * spinIn - splWobble });
+		back.push({ id: 'sy', key: 'winSplashYellow', x: -0.34 * w * splS, y: -0.03 * w * splS, w: syW * splS * splThrobY, h: (syW / 1.2) * splS * splThrobY, a: splA, rot: -0.55 * spinIn + splWobble });
+		back.push({ id: 'sr', key: 'winSplashRed', x: 0.34 * w * splS, y: -0.03 * w * splS, w: srW * splS * splThrobR, h: (srW / 1.71) * splS * splThrobR, a: splA, rot: 0.55 * spinIn - splWobble });
 		back.push({ id: 'banner', key: bannerKey, x: 0, y: 0.015 * w * winS, w: 0.70 * w * winS, h: (0.70 * w / bannerAR) * winS, a: winA, rot: 0 });
 		back.push({ id: 'starL', key: 'winStar', x: -0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle, h: (0.072 * w / 1.03) * winS * twinkle, a: winA, rot: starRot });
 		back.push({ id: 'starR', key: 'winStar', x: 0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle2, h: (0.072 * w / 1.03) * winS * twinkle2, a: winA, rot: -starRot });
@@ -153,9 +155,35 @@
 		const burger = { x: 0, y: -0.185 * w + settle * 0.02 * w, scale: 1.5 * (1 - settle * 0.025), winning: false };
 		return { back, tierWord, winWord, burger, glints };
 	});
+
+	// Impact spray as each splash lands (like the congrats screens): a fan of three sauce jets thrown
+	// outward from the splash, snapping into drops of mixed sizes. One-shot, behind the banner.
+	const SPRAYS = [
+		{ x: -0.34, y: -0.03, dir: -2.5, color: 0xefa80e },
+		{ x: 0.34, y: -0.03, dir: -0.64, color: 0xc41e0a },
+	];
+	const drawSpray = (g: SquirtGraphics) => {
+		const u0 = elapsed - 330; // as the splashes land
+		if (u0 < 0 || u0 > 2200) return;
+		SPRAYS.forEach((sp, i) => {
+			for (let j = 0; j < 3; j++) {
+				const dir = sp.dir + (j - 1) * 0.55 + (squirtHash(i * 5 + j) - 0.5) * 0.2;
+				drawSauceSquirt(g, {
+					u: u0 - j * 40,
+					unit: 0.36 * W * (0.8 + 0.35 * squirtHash(i * 3 + j * 7)),
+					color: sp.color,
+					seed: i * 10 + j,
+					widthScale: 1.5,
+					nozzleAt: () => ({ x: sp.x * W, y: sp.y * W, dir }),
+				});
+			}
+		});
+	};
 </script>
 
 <Container>
+	<!-- Impact spray (behind everything on the pad). -->
+	<Graphics draw={drawSpray} />
 	<!-- Burger BEHIND the plaque: assembles slice-by-slice ONCE, then bobs (whole-burger bounce). -->
 	<AnimatedSymbol config={H1_ASSEMBLE} x={anim.burger.x} y={anim.burger.y} scale={anim.burger.scale} state="land" winning={anim.burger.winning} />
 	{#each anim.back as l (l.id)}

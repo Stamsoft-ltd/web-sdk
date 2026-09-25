@@ -81,7 +81,8 @@
 	<div
 		class="fp"
 		data-layout={layoutType}
-		style={row ? `--row-top:${row.top}px;--row-h:${row.h}px;--acc-top:${row.c - row.accH / 2}px;--acc-h:${row.accH}px` : undefined}
+		class:fp--dim={context.stateGame.winDim > 0}
+		style={`--win-dim:${1 - context.stateGame.winDim};` + (row ? `--row-top:${row.top}px;--row-h:${row.h}px;--acc-top:${row.c - row.accH / 2}px;--acc-h:${row.accH}px` : '')}
 	>
 		<!-- FREE SPINS counter -->
 		<div class="fp-card fp-fs">
@@ -350,5 +351,8 @@
 		.fp-card__value {
 			font-size: clamp(11px, 5vmin, 16px);
 		}
+	}
+	.fp--dim {
+		filter: brightness(var(--win-dim));
 	}
 </style>

@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { ap } from '../lib/preloadArt';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import DustFx from './DustFx.svelte';
 	import SauceFx from './SauceFx.svelte';
 
 	type Props = { onpress: () => void };
@@ -68,7 +69,7 @@
 	const bg = ap('/assets/mcschmutzo/splash/bg.webp');
 	// New desktop (wide) diner background; portrait/mobile keeps `bg` until the mobile art is supplied.
 	const bgDesktop = ap('/assets/mcschmutzo/splash/bg-desktop.webp');
-	const logo = ap('/assets/mcschmutzo/splash/logo.svg');
+	const logo = ap('/assets/mcschmutzo/logo-v3.webp');
 	/** Percent of a box dimension, for laying art-pixel geometry over fluid-sized layers. */
 	const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
 
@@ -78,6 +79,10 @@
 	// shaking about the wrist. Pupils and eyelids are drawn in CSS. Geometry is in the frame's px.
 	const manBase = ap('/assets/mcschmutzo/splash/man-base-v3.webp');
 	const manBottle = ap('/assets/mcschmutzo/splash/man-bottle-v3.webp');
+	// The nametag plate (full-frame layer over its baked copy) jiggles on its pin, like the board chef.
+	const manLabel = ap('/assets/mcschmutzo/splash/man-label-v3.webp');
+	// Mirrored board-chef nozzle (frame fractions) + squirt direction (up, leaning toward the cards).
+	const NOZZLE = { x: 1 - 0.1438, y: 0.3773, dir: Math.atan2(-0.979, 0.204) };
 	const manBrows = ap('/assets/mcschmutzo/splash/man-brows-v3.webp'); // above the lids
 	const MAN_W = 1304;
 	const MAN_H = 1699;
@@ -226,10 +231,28 @@
 	onkeydown={onKey}
 >
 	<div class="stage" style={`--sbg-desktop:url('${bgDesktop}');--sbg-mobile:url('${bg}')`}>
+		<!-- The board's "freshly polished" gleam: a tilted light band sweeps across the diner every 10s
+		     (over the background, behind the logo / cards / chef). -->
+		<div class="shine" aria-hidden="true"><div class="shine__band"></div></div>
+		<!-- Warm dust floating in the diner air (brighter in the sunlit window area, top-left/right),
+		     with the odd draft — behind the logo / cards / chef. -->
+		<DustFx count={90} color="255,255,255" boost={1.6} lights={[{ x: 0.12, y: 0.25, r: 0.45 }, { x: 0.88, y: 0.2, r: 0.4 }]} />
 		<img class="logo" src={logo} alt="McSchmutzo" draggable="false" />
 		<div class="man" style={`--skin:${MAN.skin}`}>
-			<div class="bottle" style={bottleStyle}><img src={manBottle} alt="" draggable="false" /></div>
+			<div class="bottle" style={bottleStyle}>
+				<img src={manBottle} alt="" draggable="false" />
+				<!-- Now and then he squeezes the bottle: the board chef's ketchup squirt (it rides the bottle
+				     layer, so it follows the shake). Fires in the calm part of the 6s shake loop. -->
+				<SauceFx
+					bleed={0.6}
+					splashes={[
+						{ x: NOZZLE.x, y: NOZZLE.y, dir: NOZZLE.dir, color: 0xb3160d, jets: 1, size: 1.2, delay: 700, period: 6000, skip: 0.3 },
+					]}
+				/>
+			</div>
 			<img class="man-base" src={manBase} alt="" draggable="false" />
+			<img class="man-label" src={manLabel} alt="" draggable="false" />
+			<span class="man-sparkle" aria-hidden="true"></span>
 			<div class="pupil" style={manBox(MAN.pupilL)}><span class="glint"></span></div>
 			<div class="pupil" style={manBox(MAN.pupilR)}><span class="glint"></span></div>
 			<div class="eye" style={manBox(MAN.eyeL)}><div class="lid"></div></div>
@@ -328,6 +351,58 @@
 		container-type: size;
 	}
 
+	/* Same as the board's shine (Background.svelte): wide band at 11% white + a narrow core (4% of the
+	   width) on top, tilted 0.32 rad, sweeping −20% → 120% over 2.8s of every 10s with a sine fade. */
+	.shine {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		pointer-events: none;
+	}
+	.shine__band {
+		position: absolute;
+		top: -35%;
+		left: -20%;
+		width: 11%;
+		height: 170%;
+		transform: translateX(-50%) rotate(18.3deg);
+		background: linear-gradient(
+			to right,
+			rgba(255, 255, 255, 0.11) 0 31.8%,
+			rgba(255, 255, 255, 0.25) 31.8% 68.2%,
+			rgba(255, 255, 255, 0.11) 68.2%
+		);
+		opacity: 0;
+		animation: shine-sweep 10s linear 1.5s infinite;
+	}
+	@keyframes shine-sweep {
+		0% {
+			left: -20%;
+			opacity: 0;
+		}
+		7% {
+			opacity: 0.71;
+		}
+		14% {
+			opacity: 1;
+		}
+		21% {
+			opacity: 0.71;
+		}
+		28% {
+			left: 120%;
+			opacity: 0;
+		}
+		100% {
+			left: 120%;
+			opacity: 0;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.shine {
+			display: none;
+		}
+	}
 	.logo {
 		position: absolute;
 		left: 50%;
@@ -406,6 +481,55 @@
 	}
 	.bottle {
 		animation: bottle-shake 6s ease-in-out infinite;
+	}
+	/* Nametag jiggles on its pin (pin = top-centre of the plate: 38.04% / 60.45% of the frame). */
+	.man-label {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		transform-origin: 38.04% 60.45%;
+		animation: label-jiggle 0.64s ease-in-out infinite alternate;
+	}
+	@keyframes label-jiggle {
+		from {
+			transform: rotate(-2deg);
+		}
+		to {
+			transform: rotate(2deg);
+		}
+	}
+	/* Tooth *ding*: a 4-point sparkle that flashes on his grin now and then (board chef's, mirrored). */
+	.man-sparkle {
+		position: absolute;
+		left: 54%;
+		top: 37.6%;
+		width: 7.5%;
+		aspect-ratio: 1;
+		transform: translate(-50%, -50%) scale(0);
+		background:
+			linear-gradient(#fff, #fff) center / 15% 100% no-repeat,
+			linear-gradient(#fff, #fff) center / 100% 15% no-repeat,
+			radial-gradient(circle, #fff 0 20%, transparent 21%);
+		border-radius: 2px;
+		pointer-events: none;
+		animation: tooth-ding 3.4s ease-out 1.2s infinite;
+	}
+	@keyframes tooth-ding {
+		0%,
+		86%,
+		100% {
+			transform: translate(-50%, -50%) scale(0) rotate(0deg);
+			opacity: 0;
+		}
+		90% {
+			transform: translate(-50%, -50%) scale(1.1) rotate(20deg);
+			opacity: 1;
+		}
+		95% {
+			transform: translate(-50%, -50%) scale(0.7) rotate(40deg);
+			opacity: 0.8;
+		}
 	}
 
 	/* Press Play wordmark — mobile only (see portrait media query); hidden on desktop. */

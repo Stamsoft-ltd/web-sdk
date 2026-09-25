@@ -40,7 +40,7 @@
 	let clock = $state(0);
 	$effect(() => {
 		// Runs for the base-game chef + sparks (any layout) AND the special-bg (its hanging lamps blink).
-		if (!showSparks && !showMascot && !showSpecialMascot) return;
+		if (!showSparks && !showKitchenAir && !showMascot && !showSpecialMascot) return;
 		let raf = 0;
 		const loop = (ts: number) => {
 			clock = ts;
@@ -53,6 +53,70 @@
 	// feels alive without competing with the reels. Deterministic off the clock: each spark has its
 	// own column, speed, sway and size; it fades in, rises one lifetime and fades out, twinkling.
 	const showSparks = $derived(showArt && !isFreegame);
+	// Free-games kitchen air (the grey-kitchen special bg): the base game's glints, re-imagined for a
+	// working kitchen — soft STEAM puffs rising from below (swelling, swaying, fading), and FLOUR/SALT
+	// dust swirling on a slow, never-repeating current, catching the light as it drifts under the
+	// hanging lamps. Every ~8s a DRAFT (a door swinging) sweeps the dust sideways and bends the steam,
+	// then the air settles. Deterministic off the clock; drawn behind the board.
+	const showKitchenAir = $derived(showArt && isFreegame);
+	const MOTES = 72;
+	const PUFFS = 9;
+	const drawKitchenAir = (g: SquirtGraphics) => {
+		const W = canvas.width;
+		const H = canvas.height;
+		const t = clock;
+		// Draft: a smooth gust envelope (0 → 1 → 0 over ~2.4s) once per 8s, alternating direction.
+		const DRAFT = 8000;
+		const dk = Math.floor(t / DRAFT);
+		const dp = (t % DRAFT) / 2400;
+		const gust = dp < 1 ? Math.sin(Math.PI * dp) ** 2 : 0;
+		const gustDir = dk % 2 ? -1 : 1;
+		// Lamp light pools (desktop: the pendant lamps; else a soft high-left key light).
+		const lights = lamps
+			? lamps.list.map((l) => ({ x: l.x, y: lamps.haloYPx + lamps.lampH * 0.6, r: lamps.lampW * 2.2, on: l.on }))
+			: [{ x: W * 0.18, y: H * 0.15, r: H * 0.35, on: 1 }];
+		// Steam: big soft puffs, each a few overlapping discs, rising from the bottom band.
+		for (let i = 0; i < PUFFS; i++) {
+			const life = 7000 + 4000 * squirtHash(i * 3.1);
+			const tt = t + squirtHash(i * 8.7) * life;
+			const k = Math.floor(tt / life);
+			const p = (tt % life) / life;
+			const x0 = W * (0.05 + 0.9 * squirtHash(i * 1.9 + k * 4.3));
+			const bend = gust * gustDir * W * 0.06 * p;
+			const x = x0 + Math.sin(p * 5 + i) * W * 0.02 + bend;
+			const y = H * (1.02 - 0.75 * p);
+			const r = H * (0.05 + 0.1 * p) * (0.8 + 0.4 * squirtHash(i * 2.2));
+			const a = Math.sin(Math.PI * p) * 0.08;
+			for (let j = 0; j < 3; j++) {
+				const ox = (j - 1) * r * 0.55;
+				const oy = Math.sin(j * 2.1 + p * 3) * r * 0.2;
+				g.circle(x + ox, y + oy, r * (0.75 + 0.2 * j)).fill({ color: 0xf2efe8, alpha: a });
+			}
+		}
+		// Flour / salt dust: swirling motes (sum-of-sines current), brighter inside the lamp light.
+		for (let i = 0; i < MOTES; i++) {
+			const h1 = squirtHash(i * 5.3);
+			const h2 = squirtHash(i * 9.1);
+			const sp = 0.00004 + 0.00005 * h2; // drift speed
+			const bx = ((h1 + t * sp * (0.6 + h1)) % 1) * W;
+			const by = ((h2 + t * sp * 0.35 * (h1 - 0.5)) % 1 + 1) % 1 * H * 0.85;
+			const swirlX = Math.sin(t / (1900 + 900 * h1) + i) * W * 0.018 + Math.sin(t / 700 + i * 2.3) * W * 0.004;
+			const swirlY = Math.cos(t / (2300 + 800 * h2) + i * 1.7) * H * 0.025;
+			let x = bx + swirlX + gust * gustDir * W * (0.05 + 0.07 * h2);
+			x = ((x % W) + W) % W;
+			const y = by + swirlY - gust * H * 0.02 * h1;
+			let lit = 0.25;
+			for (const L of lights) {
+				const d = Math.hypot(x - L.x, y - L.y) / L.r;
+				if (d < 1) lit = Math.max(lit, 0.25 + 0.75 * (1 - d) ** 1.5 * L.on);
+			}
+			const twinkle = 0.7 + 0.3 * Math.sin(t / (220 + 160 * h1) + i * 2.9);
+			const a = Math.min(0.9, lit * twinkle * (0.5 + 0.5 * gust + 0.5));
+			const r = H * (0.0014 + 0.002 * h1) * (1 + 0.8 * lit);
+			if (lit > 0.4) g.circle(x, y, r * 3.5).fill({ color: 0xffe2a8, alpha: a * 0.12 }); // glint halo
+			g.circle(x, y, r).fill({ color: 0xfff8ec, alpha: a });
+		}
+	};
 	const SPARKS = 26;
 	const drawSparks = (g: SquirtGraphics) => {
 		const W = canvas.width;
@@ -288,6 +352,10 @@
 			<Sprite key="lampGlow" x={l.x} y={lamps.bulbYPx} anchor={0.5} width={lamps.lampW * 0.82} height={lamps.lampW * 0.82} tint={0x181005} alpha={(1 - l.on) * 0.72} zIndex={-0.9} />
 		{/each}
 	{/if}
+{/if}
+{#if showKitchenAir}
+	<!-- Free-games kitchen air: rising steam + flour dust in the lamp light, with the odd draft. -->
+	<Graphics zIndex={-0.5} draw={drawKitchenAir} />
 {/if}
 {#if showSparks}
 	<!-- Subtle rising sparks between the bg and the board (additive, so they glow on the warm art). -->

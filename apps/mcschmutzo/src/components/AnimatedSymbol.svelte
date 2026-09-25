@@ -187,6 +187,49 @@
 				}
 				continue;
 			}
+			// Toss (e.g. onion rings): each layer runs its own staggered hop inside a SLOWER loop (3 tosses
+			// per 2 base periods) — gravity arc, a coin-flip in the air, landing squash + rebound.
+			if (l.hop) {
+				const TOSS = 0.36; // share of the layer's cycle spent in the air
+				const f = active ? (((clock - startTime) / (PERIOD * 2) + (l.phase ?? 0)) % 1) : 1;
+				const amp = props.winning ? 1 : idleAmp;
+				let oy = 0;
+				let sx = 1;
+				let sy = 1;
+				let rotT = 0;
+				// Every stage starts AND ends at rest (value + velocity ≈ 0), so there are no jumps between
+				// the arc, the landing and the idle wait.
+				if (f < TOSS) {
+					const q = f / TOSS;
+					const e = (1 - Math.cos(Math.PI * q)) / 2; // eased 0→1 through the air
+					oy = -l.hop * h * Math.sin(Math.PI * e) * amp; // smooth rise + fall (zero speed at ends)
+					// Turn toward edge-on and back (never mirrored, never collapses to a sliver).
+					sx = 1 - 0.55 * Math.sin(Math.PI * e) ** 2 * (l.flip ?? 0) * amp;
+					rotT = (l.rot ?? 0) * Math.sin(Math.PI * e) * amp;
+				} else if (f < TOSS + 0.24) {
+					const q = (f - TOSS) / 0.24; // landing: squash grows from 0, rebounds once, settles
+					const d = Math.sin(Math.PI * q) * (1 - q) * 1.6 - 0.25 * Math.sin(Math.PI * 2 * q) * (1 - q);
+					sx = 1 + 0.1 * d * amp;
+					sy = 1 - 0.12 * d * amp;
+				} else {
+					// Sympathetic jiggle as the OTHER rings land — faded in/out so it never pops.
+					const r = (f - TOSS - 0.24) / (1 - TOSS - 0.24);
+					sy = 1 + 0.012 * Math.sin(r * Math.PI * 4) * Math.sin(Math.PI * r) * amp;
+				}
+				const ox = (l.dx ?? 0) * w * Math.sin(Math.PI * ((1 - Math.cos(Math.PI * Math.min(1, f / TOSS))) / 2)) * amp;
+				out.push({
+					id: l.key,
+					key: l.key,
+					x: cx + (l.nx - 0.5) * w + ox,
+					// keep the bottom planted while squashing (grow/shrink from the base)
+					y: cy + (l.ny - 0.5) * h + oy + (l.nh * h * (1 - sy)) / 2,
+					width: l.nw * w * sx,
+					height: l.nh * h * sy,
+					rotation: rotT,
+					alpha: 1,
+				});
+				continue;
+			}
 			// Circular path (starts + ends at the rest position so it loops seamlessly). Dips DOWN
 			// (into the soup) rather than up, so a stirring spoon stays submerged/hidden.
 			const orbitX = (l.orbit ?? 0) * w * Math.sin(theta);

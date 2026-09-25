@@ -59,7 +59,7 @@
 
 	// Portrait game-screen header: the McSchmutzo wordmark with the Press Play studio mark above it,
 	// pinned to the top over the diner background (mirrors the splash / loading header).
-	const ptLogo = ap('/assets/mcschmutzo/logo.png');
+	const ptLogo = ap('/assets/mcschmutzo/logo-v3.webp');
 	const ptPressPlay = ap('/assets/mcschmutzo/press-play.svg');
 
 	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
@@ -680,8 +680,9 @@
 <div
 	class="hud-shell"
 	class:hud-shell--blocked={congratsBlocking}
+	class:hud-shell--win-dim={context.stateGame.winDim > 0}
 	data-layout={layoutType}
-	style={`--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}');--ls-navbox:url('${lsNavBox}');--ls-bonus:url('${lsBonus}');--ls-turn:url('${lsTurn}');--ls-vh:${lsVh}px`}
+	style={`--win-dim:${1 - context.stateGame.winDim};--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}');--ls-navbox:url('${lsNavBox}');--ls-bonus:url('${lsBonus}');--ls-turn:url('${lsTurn}');--ls-vh:${lsVh}px`}
 >
 	{#if isPortrait}
 		<!-- Portrait header: Press Play mark + big McSchmutzo logo, pinned above the board. -->
@@ -2903,5 +2904,12 @@
 		.ls-menu-pop .pt-menu-item { gap: 5px; padding: 3px 0; }
 		/* Icon size intentionally left to the base rule so it keeps matching .ls-round on tiny popouts. */
 		.ls-menu-pop .pt-menu-item__label { font-size: clamp(8px, 4dvh, 11px); }
+	}
+	/* A win screen is up: dim the HUD exactly like the pixi overlay dims the canvas (brightness =
+	   1 − overlay alpha), so everything but the win popup sits under the same shade, as on the congrats
+	   screens. */
+	.hud-shell--win-dim > * {
+		filter: brightness(var(--win-dim));
+		transition: filter 0.25s ease;
 	}
 </style>

@@ -26,6 +26,12 @@ export type SymbolPartLayer = {
 	tilt?: number; // small signed rock (radians, sin-driven) about `pivotY` — e.g. a cap rocking
 	pivotY?: number; // rotation pivot offset from the sprite centre (fraction of h; negative = up)
 	jitter?: number; // fast tiny shake (radians) while active — a sizzling twitch
+	// Toss: the layer hops up (hop = height, fraction of symbol h) on a gravity arc, flips `flip`
+	// times in the air (coin-turn = horizontal squeeze), lands with a squash + small rebound. `phase`
+	// (0..1 of the loop) staggers layers so they're tossed one after another.
+	hop?: number;
+	flip?: number;
+	phase?: number;
 };
 
 export type SymbolPartsConfig = {
@@ -246,45 +252,17 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			],
 		},
 	},
-	// Onion rings — three leaning rings that bounce apart and jostle (small tumble), not a flat spin.
+	// Onion rings — tossed like they're being flipped in the fryer: one after another (back → middle →
+	// front) each hops up, turns over in the air and lands with a squash, nudging the stack; the rest
+	// of the stack gives a small sympathetic jiggle.
 	H5: {
 		aspect: 1.377,
 		fit: 0.86,
-		squash: 0.05,
+		squash: 0.03,
 		layers: [
-			{
-				key: 'onionRing3',
-				nx: 0.3,
-				ny: 0.615,
-				nw: 0.72,
-				nh: 0.66,
-				dy: 0.055,
-				dx: -0.075,
-				rot: 0.16,
-				pop: 0.05,
-			},
-			{
-				key: 'onionRing2',
-				nx: 0.475,
-				ny: 0.415,
-				nw: 0.8,
-				nh: 0.82,
-				dy: -0.06,
-				dx: -0.02,
-				rot: 0.1,
-				pop: 0.05,
-			},
-			{
-				key: 'onionRing1',
-				nx: 0.605,
-				ny: 0.63,
-				nw: 0.8,
-				nh: 0.72,
-				dy: 0.07,
-				dx: 0.055,
-				rot: -0.12,
-				pop: 0.05,
-			},
+			{ key: 'onionRing3', nx: 0.3, ny: 0.615, nw: 0.72, nh: 0.66, hop: 0.2, flip: 1, phase: 0, rot: 0.05, dx: -0.02 },
+			{ key: 'onionRing2', nx: 0.475, ny: 0.415, nw: 0.8, nh: 0.82, hop: 0.24, flip: 1, phase: 0.33, rot: -0.04 },
+			{ key: 'onionRing1', nx: 0.605, ny: 0.63, nw: 0.8, nh: 0.72, hop: 0.2, flip: 1, phase: 0.66, rot: 0.05, dx: 0.02 },
 		],
 	},
 	// Wild — on landing the red splat splashes in first, then the WILD text pops up→down once

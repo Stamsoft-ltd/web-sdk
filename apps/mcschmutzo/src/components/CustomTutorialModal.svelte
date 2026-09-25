@@ -1052,6 +1052,11 @@
 	   popup actually has spare vertical room — i.e. a tall-enough viewport. On short laptop frames
 	   (e.g. 1280×520) there's no slack, so keep the base sizes there to avoid clipping card bottoms. */
 	@media (min-width: 1000px) and (min-height: 640px) {
+		/* Overview chef: bigger on big popups, scaling with the popup width (26% ≈ 255px at the full
+		   980px popup) and never wider than the empty column left of the stats. */
+		.tu-guy {
+			width: clamp(186px, 26%, 260px);
+		}
 		/* FEATURE BUY (page 5) — taller cards + larger title/body/cost/RTP. */
 		.fb-card {
 			min-height: clamp(320px, 50vmin, 470px);

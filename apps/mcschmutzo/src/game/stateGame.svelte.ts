@@ -105,6 +105,9 @@ export const stateGame = $state({
 	// Set by the bonusWheel book-event handler; WheelBonus calls it once the player has spun the wheel
 	// and it settles on the RGS-resolved segment, letting the handler continue into the free games.
 	wheelResolve: undefined as (() => void) | undefined,
+	// Win popup dim (0..1 black alpha) while a win screen is up — the pixi overlay only darkens the
+	// canvas, so the HTML layers (HUD, free-games panels) read this to dim themselves to match.
+	winDim: 0,
 });
 
 const boardLayout = () => {

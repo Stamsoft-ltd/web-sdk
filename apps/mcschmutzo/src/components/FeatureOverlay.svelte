@@ -84,19 +84,26 @@
 		resultAlpha.set(1, { duration: 160, easing: cubicOut });
 		resultScale.set(1, { duration: 260, easing: cubicOut });
 	});
+
+	// Desktop's board sits right under the screen top (≈33 main units free), so the taller new logo is a
+	// bit smaller there and its top is clamped just inside the main area; landscape has room above.
+	const logoW = $derived(board.width * (context.stateLayoutDerived.layoutType() === 'desktop' ? 0.36 : 0.46));
+	const logoBottom = $derived(
+		Math.max(board.y - board.height * 0.5 + board.height * 0.075 - board.width * 0.03, 4 + logoW / 3.97),
+	);
 </script>
 
-<!-- Board logo: sized as a fraction of the board width so it never overflows a narrow board.
-     Keeps the new art's 302:84 aspect. Sits mostly above the board, dipping just slightly over
-     the top edge. Portrait uses the HTML .pt-top header instead. -->
+<!-- Board logo (logo-v3: tight-cropped 1800×453, aspect 3.97): sized as a fraction of the board
+     width so it never overflows a narrow board. Its bottom (the drips under the banner) dips just over
+     the board's top edge, where the old logo's lettering ended. Portrait uses the HTML .pt-top header. -->
 {#if !isPortrait}
 	<Sprite
 		key="mcschmutzoLogo"
 		x={board.x}
-		y={board.y - board.height * 0.5 + board.height * 0.075}
+		y={logoBottom}
 		anchor={{ x: 0.5, y: 1 }}
-		width={board.width * 0.44}
-		height={(board.width * 0.44 * 84) / 302}
+		width={logoW}
+		height={logoW / 3.97}
 		zIndex={1000}
 	/>
 {/if}

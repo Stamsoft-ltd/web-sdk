@@ -20,6 +20,9 @@
 		spread?: number; // fan half-angle between the jets (radians)
 		delay?: number; // ms after mount
 		size?: number; // spray scale (fraction of host height)
+		jets?: number; // jets per shot (default 3: an impact fan; 1 = a single bottle squirt)
+		period?: number; // repeat every `period` ms (default: fire once)
+		skip?: number; // with `period`: fraction of slots that stay quiet (irregular, "now and then")
 	};
 	type Drip = {
 		x: number;
@@ -194,11 +197,16 @@
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			if (t < 0) return;
 			splashes.forEach((sp, i) => {
-				const u = t - (sp.delay ?? 0);
+				let u = t - (sp.delay ?? 0);
+				if (sp.period && u >= 0) {
+					const k = Math.floor(u / sp.period);
+					u = squirtHash(k * 1.37 + i) < (sp.skip ?? 0) ? -1 : u - k * sp.period;
+				}
 				const unit = (sp.size ?? 0.9) * H;
 				const spread = sp.spread ?? 0.55;
-				for (let j = 0; j < 3; j++) {
-					const dir = sp.dir + (j - 1) * spread + (squirtHash(i * 5 + j) - 0.5) * 0.2;
+				const jets = sp.jets ?? 3;
+				for (let j = 0; j < jets; j++) {
+					const dir = sp.dir + (jets > 1 ? (j - 1) * spread : 0) + (squirtHash(i * 5 + j) - 0.5) * 0.2;
 					drawSauceSquirt(g, {
 						u: u - j * 40,
 						unit: unit * (0.8 + 0.35 * squirtHash(i * 3 + j * 7)),

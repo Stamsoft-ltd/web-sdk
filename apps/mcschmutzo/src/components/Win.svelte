@@ -28,6 +28,10 @@
 	let amount = $state(0);
 	let winLevelData = $state<WinLevelData>();
 	let oncomplete = $state(() => {});
+	// Share the dim with the HTML layers (HUD etc. sit above the canvas, so the pixi overlay misses them).
+	$effect(() => {
+		context.stateGame.winDim = show && winLevelData ? (winLevelData.type === 'big' ? 0.6 : 0.402) : 0;
+	});
 	let onCountUpComplete = $state(() => {});
 
 	context.eventEmitter.subscribeOnMount({
