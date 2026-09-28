@@ -40,6 +40,15 @@
 	const loadingLogo = ap('/assets/mcschmutzo/logo-v3.webp');
 
 	const context = getContext();
+	// Phones / tablets (coarse pointer): lighter GPU load — render at 1.8× instead of 2× (≈19% fewer
+	// pixels, invisible on dense phone screens) and cap Pixi's render loop at 60 fps on 90/120 Hz
+	// panels (the game's animations are authored for 60). Desktop keeps 2× and the display rate.
+	const isTouchDevice =
+		typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches === true;
+	$effect(() => {
+		const app = context.stateApp.pixiApplication;
+		if (app && isTouchDevice) app.ticker.maxFPS = 60;
+	});
 
 	// The designed splash (logo + character + feature cards) shows once assets are ready; pressing it
 	// runs the loading screen's proceed handler (transition → game).
@@ -50,8 +59,8 @@
 	// show through the splash's fade-in. It only appears once the splash is pressed, so the splash
 	// fades out onto the game background and the transition wipe takes over.
 	let splashPressed = $state(false);
-	const modeImage = './assets/mcschmutzo/background-base.png';
-	const symbolImage = (name: string) => `./assets/mcschmutzo/symbols/${name}.png`;
+	const modeImage = './assets/mcschmutzo/background-base.webp';
+	const symbolImage = (name: string) => `./assets/mcschmutzo/symbols/${name}.webp`;
 
 	const modeMeta = (
 		mode: string,
@@ -108,7 +117,7 @@
 						{
 							title: 'LOCK & RE-SPIN',
 							text: 'Every spin with at least one paying line locks its winning symbol and starts the re-spin feature. New matching wins add locked positions.',
-							image: './assets/mcschmutzo/lock-respin.png',
+							image: './assets/mcschmutzo/lock-respin.webp',
 							row: 1,
 							column: 0,
 							imagePosition: 'left',
@@ -124,7 +133,7 @@
 						{
 							title: 'SUPER BONUS',
 							text: 'Four Scatter symbols trigger the Super Bonus. No spin can land more than four Scatters. It can also be bought for 500x bet.',
-							image: './assets/mcschmutzo/bonus-wheel.png',
+							image: './assets/mcschmutzo/bonus-wheel.webp',
 							row: 3,
 							column: 0,
 							imagePosition: 'left',
@@ -197,7 +206,7 @@
 	style={`--mcschmutzo-shell-bg:url('${modeImage}')`}
 >
 	<div class="mcschmutzo-stage">
-		<App preloadWebFont={false} maxResolution={2} antialias={false} rendererPreference="webgl">
+		<App preloadWebFont={false} maxResolution={isTouchDevice ? 1.8 : 2} antialias={false} rendererPreference="webgl">
 			<EnableSound />
 			<EnableHotkey />
 			<EnableGameActor />

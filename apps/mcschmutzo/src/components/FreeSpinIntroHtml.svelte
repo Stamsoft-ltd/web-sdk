@@ -18,6 +18,15 @@
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import BurgerStack from './BurgerStack.svelte';
 	import SauceFx from './SauceFx.svelte';
+	import { continueBottom } from '../lib/continuePos';
+	// Prompt position (above the portrait HUD; default elsewhere) — re-measured on resize.
+	let contBottom = $state('clamp(14px, 3.5vh, 34px)');
+	$effect(() => {
+		const upd = () => (contBottom = continueBottom('clamp(14px, 3.5vh, 34px)'));
+		const raf = requestAnimationFrame(upd);
+		window.addEventListener('resize', upd);
+		return () => (cancelAnimationFrame(raf), window.removeEventListener('resize', upd));
+	});
 
 	const context = getContext();
 
@@ -128,7 +137,7 @@
 			</div>
 		</div>
 
-		<p class="fs-continue">{i18nDerived.translate('PRESS TO CONTINUE')}&nbsp;→</p>
+		<p class="fs-continue" style={`bottom:${contBottom}`}>{i18nDerived.translate('PRESS TO CONTINUE')}&nbsp;→</p>
 	</div>
 {/if}
 
@@ -168,8 +177,11 @@
 
 	.fs-stage {
 		position: relative;
-		width: min(600px, 90vw);
-		max-height: 88dvh;
+		/* Height-capped too (86dvh of WIDTH ≈ 62% of the screen height for the plaque): the burger sits
+		   25% of the plaque above it and the splashes overhang, so on short landscape screens a
+		   width-only cap pushed the burger + top sauces off the top. */
+		width: min(600px, 90vw, 86dvh);
+		container-type: inline-size;
 		aspect-ratio: 1366 / 989;
 		font-family: 'Poppins', sans-serif;
 	}
@@ -307,14 +319,14 @@
 		align-items: center;
 		text-align: center;
 		color: #ffffff;
-		gap: clamp(3px, 0.9vmin, 8px);
+		gap: min(clamp(3px, 0.9vmin, 8px), 1.3cqw);
 	}
 
 	.fs-congrats {
 		margin: 0;
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
 		font-weight: 400;
-		font-size: clamp(1.4rem, 5.6vmin, 2.5rem);
+		font-size: min(clamp(1.4rem, 5.6vmin, 2.5rem), 6.67cqw);
 		line-height: 1;
 		letter-spacing: 0.02em;
 		text-transform: uppercase;
@@ -326,22 +338,22 @@
 		margin: 0;
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(0.62rem, 1.9vmin, 0.9rem);
+		font-size: min(clamp(0.62rem, 1.9vmin, 0.9rem), 2.4cqw);
 		letter-spacing: 0.16em;
 	}
 	.fs-bonus {
 		margin: 0;
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(0.95rem, 3vmin, 1.35rem);
+		font-size: min(clamp(0.95rem, 3vmin, 1.35rem), 3.6cqw);
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 	}
 	.fs-blurb {
-		margin: clamp(2px, 0.8vmin, 8px) 0 0;
+		margin: min(clamp(2px, 0.8vmin, 8px), 1.3cqw) 0 0;
 		font-family: 'Poppins', sans-serif;
 		font-weight: 500;
-		font-size: clamp(0.62rem, 1.9vmin, 0.88rem);
+		font-size: min(clamp(0.62rem, 1.9vmin, 0.88rem), 2.35cqw);
 		line-height: 1.35;
 		color: #ffe9d9;
 		max-width: 32ch;
@@ -349,11 +361,11 @@
 
 	/* Amount box per spec. */
 	.fs-count {
-		margin: clamp(6px, 1.6vmin, 14px) 0 clamp(2px, 0.8vmin, 6px);
+		margin: min(clamp(6px, 1.6vmin, 14px), 2.3cqw) 0 min(clamp(2px, 0.8vmin, 6px), 1cqw);
 		display: grid;
 		place-items: center;
-		min-width: clamp(74px, 14vmin, 108px);
-		padding: clamp(6px, 1.4vmin, 12px) clamp(16px, 3vmin, 26px);
+		min-width: min(clamp(74px, 14vmin, 108px), 18cqw);
+		padding: min(clamp(6px, 1.4vmin, 12px), 2cqw) min(clamp(16px, 3vmin, 26px), 4.3cqw);
 		border-radius: 12px;
 		background: #292624;
 		border: 1px solid #ffffff;
@@ -362,7 +374,7 @@
 	.fs-count span {
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(1.5rem, 4.6vmin, 2.2rem);
+		font-size: min(clamp(1.5rem, 4.6vmin, 2.2rem), 5.9cqw);
 		line-height: 1;
 		color: #ffffff;
 	}
@@ -370,7 +382,7 @@
 		margin: 0;
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(0.9rem, 2.8vmin, 1.25rem);
+		font-size: min(clamp(0.9rem, 2.8vmin, 1.25rem), 3.33cqw);
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 	}

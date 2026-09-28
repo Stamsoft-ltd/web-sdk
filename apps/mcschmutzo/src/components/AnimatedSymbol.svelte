@@ -304,8 +304,10 @@
 	// ketchupSquirt.ts), scaled down to the symbol: a tapered glossy rope arcing up off the nozzle that
 	// snaps into drops of different sizes. The previous cycle's drops are still falling when the next
 	// squeeze starts, so both are drawn.
-	const SQUIRT_UNIT = 1.5; // squirt length scale, in symbol heights (a short arc over the cap)
-	const SQUIRT_WIDTH = 1.9; // …with a proportionally fatter rope so it still reads as sauce
+	// Shot out SIDEWAYS in a short arc that drops down beside the bottle: the cap sits just under the
+	// cell's top edge, so an upward shot would be cut by the cell clip.
+	const SQUIRT_UNIT = 0.95;
+	const SQUIRT_WIDTH = 2.7; // …with a proportionally fatter rope so it still reads as sauce (same thickness as before the shorter arc)
 	const drawSquirt = (g: SquirtGraphics) => {
 		const cfg = props.config.squirt;
 		const active = running && startTime >= 0 && !!props.winning;
@@ -323,7 +325,7 @@
 			if (k < 0) continue;
 			// Each shot arcs off to one side (~25°, side varies per shot) so it lands beside the bottle.
 			const hk = squirtHash(k * 1.7 + cx * 0.01);
-			const lean = (hk < 0.5 ? -1 : 1) * (0.36 + 0.16 * hk);
+			const lean = (hk < 0.5 ? -1 : 1) * (0.8 + 0.2 * hk); // ~46–57° off vertical: out to the side
 			drawSauceSquirt(g, {
 				u: t - PERIOD * 0.35 - k * PERIOD,
 				unit: h * SQUIRT_UNIT,
@@ -335,6 +337,13 @@
 				nozzleAt: () => ({ ...noz, dir: noz.dir + lean }),
 			});
 		}
+	};
+
+	const CELL_INSET = 9;
+	const drawCellMask = (g: SquirtGraphics & { rect: (x: number, y: number, w: number, h: number) => { fill: (s: object) => unknown } }) => {
+		const cx = props.x ?? 0;
+		const cy = props.y ?? 0;
+		g.rect(cx - SYMBOL_WIDTH / 2 + CELL_INSET, cy - SYMBOL_SIZE / 2 + CELL_INSET, SYMBOL_WIDTH - 2 * CELL_INSET, SYMBOL_SIZE - 2 * CELL_INSET).fill({ color: 0xffffff });
 	};
 
 	// Fizz (cup) + sizzle (sausage) particles — deterministic off the clock, only while active.
@@ -466,6 +475,10 @@
 			alpha={l.alpha}
 		/>
 	{/each}
+	<!-- All particle FX (squirt, fizz, sizzle, cheese drips) are clipped to THIS symbol's own cell
+	     (inset 9px — the locked cell's light box), so sauce never lands in a neighbouring box. -->
+	<Container>
+		<Graphics isMask draw={drawCellMask} />
 	{#if props.config.fizz || props.config.sizzle}
 		<Graphics draw={drawFx} />
 	{/if}
@@ -484,4 +497,5 @@
 		<Circle x={b.x} y={b.y} diameter={b.d} anchor={0.5} backgroundColor={b.color} backgroundAlpha={b.alpha} />
 		<Circle x={b.x - b.d * 0.2} y={b.y - b.d * 0.22} diameter={b.d * 0.28} anchor={0.5} backgroundColor={0xffffff} backgroundAlpha={b.alpha * 0.45} />
 	{/each}
+	</Container>
 </Container>

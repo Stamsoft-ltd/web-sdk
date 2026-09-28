@@ -26,6 +26,15 @@
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import BurgerStack from './BurgerStack.svelte';
 	import SauceFx from './SauceFx.svelte';
+	import { continueBottom } from '../lib/continuePos';
+	// Prompt position (above the portrait HUD; default elsewhere) — re-measured on resize.
+	let contBottom = $state('clamp(14px, 3.5vh, 34px)');
+	$effect(() => {
+		const upd = () => (contBottom = continueBottom('clamp(14px, 3.5vh, 34px)'));
+		const raf = requestAnimationFrame(upd);
+		window.addEventListener('resize', upd);
+		return () => (cancelAnimationFrame(raf), window.removeEventListener('resize', upd));
+	});
 
 	const context = getContext();
 
@@ -124,7 +133,7 @@
 			</div>
 		</div>
 
-		<p class="fo-continue">{i18nDerived.translate('PRESS TO CONTINUE')}&nbsp;→</p>
+		<p class="fo-continue" style={`bottom:${contBottom}`}>{i18nDerived.translate('PRESS TO CONTINUE')}&nbsp;→</p>
 	</div>
 {/if}
 
@@ -165,9 +174,11 @@
 	/* Small plaque is wide + short (1241 x 623). */
 	.fo-stage {
 		position: relative;
-		width: min(560px, 92vw);
-		max-height: 82dvh;
+		/* Height-capped (plaque ≈ 1/2 of its width tall, burger + splashes overhang above) so the whole
+		   composition stays on short landscape screens. */
+		width: min(560px, 92vw, 110dvh);
 		aspect-ratio: 1241 / 623;
+		container-type: inline-size; /* text below scales with the plaque (cqw) */
 		font-family: 'Poppins', sans-serif;
 	}
 
@@ -267,7 +278,7 @@
 		margin: 0;
 		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
 		font-weight: 400;
-		font-size: clamp(1.5rem, 6.4vmin, 2.7rem);
+		font-size: min(clamp(1.5rem, 6.4vmin, 2.7rem), 7cqw);
 		line-height: 1;
 		letter-spacing: 0.02em;
 		text-transform: uppercase;
@@ -279,7 +290,7 @@
 		margin: clamp(1px, 0.5vmin, 4px) 0 0;
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(0.66rem, 2vmin, 0.95rem);
+		font-size: min(clamp(0.66rem, 2vmin, 0.95rem), 2.7cqw);
 		letter-spacing: 0.16em;
 	}
 
@@ -288,8 +299,8 @@
 		margin: clamp(8px, 2vmin, 18px) 0 0;
 		display: grid;
 		place-items: center;
-		min-width: clamp(120px, 26vmin, 220px);
-		padding: clamp(7px, 1.6vmin, 14px) clamp(18px, 3.4vmin, 32px);
+		min-width: min(clamp(120px, 26vmin, 220px), 39cqw);
+		padding: min(clamp(7px, 1.6vmin, 14px), 2.5cqw) min(clamp(18px, 3.4vmin, 32px), 5.7cqw);
 		border-radius: 12px;
 		background: #292624;
 		border: 1px solid #ffffff;
@@ -298,7 +309,7 @@
 	.fo-amount span {
 		font-family: 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: clamp(1.5rem, 5vmin, 2.4rem);
+		font-size: min(clamp(1.5rem, 5vmin, 2.4rem), 6cqw);
 		line-height: 1;
 		color: #ffffff;
 		white-space: nowrap;
@@ -370,7 +381,7 @@
 	   rules. 812x375 (height 375) is unaffected. */
 	@media (max-height: 300px) {
 		.fo-stage {
-			width: min(560px, 92vw, 126dvh);
+			width: min(560px, 92vw, 108dvh);
 			max-height: none;
 		}
 		.fo-close {

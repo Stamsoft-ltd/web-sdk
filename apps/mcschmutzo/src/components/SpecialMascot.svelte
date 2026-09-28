@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { Circle, Container, Rectangle, Sprite } from 'pixi-svelte';
+	import { Container, Graphics, Sprite } from 'pixi-svelte';
+
+	import type { SquirtGraphics } from '../game/ketchupSquirt';
 
 	import { getContext } from '../game/context';
 	import { mascotIdle } from '../game/mascotIdle';
@@ -119,6 +121,12 @@
 		}),
 	);
 
+	const drawSalt = (gfx: SquirtGraphics) => {
+		for (const g of grains) {
+			const r = g.size / 2;
+			gfx.circle(g.x + r, g.y + r, r).fill({ color: 0xfffdf5, alpha: g.alpha });
+		}
+	};
 	// The soup simmers: a few bubbles swell on the surface and pop, on a loop. Positions are fixed per
 	// bubble (spread across the surface ellipse) so they read as spots that keep bubbling, not drifting.
 	const BUBBLE_N = 8;
@@ -149,6 +157,13 @@
 			return { id: i, x, y, d, alpha };
 		}),
 	);
+	// Bubbles: a lighter-green dome + a soft highlight each, all in ONE Graphics.
+	const drawBubbles = (gfx: SquirtGraphics) => {
+		for (const b of bubbles) {
+			gfx.circle(b.x, b.y, b.d / 2).fill({ color: 0x8fc22a, alpha: b.alpha * 0.85 });
+			gfx.circle(b.x - b.d * 0.16, b.y - b.d * 0.2, b.d * 0.17).fill({ color: 0xe7f5b8, alpha: b.alpha * 0.8 });
+		}
+	};
 </script>
 
 <!-- Chef (behind) salting the pot (in front), with a falling stream of salt grains. The whole group
@@ -188,18 +203,10 @@
 		rotation={armAngle}
 		zIndex={0.5}
 	/>
-	{#each grains as g}
-		<Rectangle
-			x={g.x}
-			y={g.y}
-			width={g.size}
-			height={g.size}
-			radius={g.size * 0.5}
-			backgroundColor={0xfffdf5}
-			alpha={g.alpha}
-			zIndex={1}
-		/>
-	{/each}
+	<!-- Salt pour: ONE Graphics for all grains (was 90 Rectangle components = 90 objects re-synced +
+	     re-tessellated every frame). Same round grains, same positions (the old rects were top-left
+	     anchored, so the centre is +size/2). -->
+	<Graphics zIndex={1} draw={drawSalt} />
 	<Sprite
 		key="specialPot"
 		x={cx + guyWidth * 0.02}
@@ -211,24 +218,5 @@
 	/>
 	<!-- Simmering bubbles on the soup surface: a lighter-green dome + a soft highlight, swelling and
 	     popping. Above the pot so they read as sitting on the liquid. -->
-	{#each bubbles as bub (bub.id)}
-		<Circle
-			x={bub.x}
-			y={bub.y}
-			diameter={bub.d}
-			anchor={0.5}
-			backgroundColor={0x8fc22a}
-			backgroundAlpha={bub.alpha * 0.85}
-			zIndex={2.5}
-		/>
-		<Circle
-			x={bub.x - bub.d * 0.16}
-			y={bub.y - bub.d * 0.2}
-			diameter={bub.d * 0.34}
-			anchor={0.5}
-			backgroundColor={0xe7f5b8}
-			backgroundAlpha={bub.alpha * 0.8}
-			zIndex={2.6}
-		/>
-	{/each}
+	<Graphics zIndex={2.5} draw={drawBubbles} />
 </Container>

@@ -218,7 +218,7 @@ export default {
 	// The dedicated win-amount plaque (red panel + gold frame + ketchup/mustard splashes).
 	winBoxAmount: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/win/win-box-amount.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/win/win-box-amount.webp', import.meta.url).href,
 	},
 	boardBg: {
 		type: 'sprite',
@@ -260,30 +260,6 @@ export default {
 			skeleton: new URL('../../assets/spines/fsIntro/fs_total_number.json', import.meta.url).href,
 			scale: 2,
 		},
-	},
-	foregroundAnimation: {
-		type: 'spine',
-		src: {
-			atlas: new URL('../../assets/spines/foregroundAnimation/mm_bg.atlas', import.meta.url).href,
-			skeleton: new URL('../../assets/spines/foregroundAnimation/mm_bg.json', import.meta.url).href,
-			scale: 2,
-		},
-		preload: true,
-	},
-	foregroundFeatureAnimation: {
-		type: 'spine',
-		src: {
-			atlas: new URL(
-				'../../assets/spines/foregroundFeatureAnimation/mm_bg_feature.atlas',
-				import.meta.url,
-			).href,
-			skeleton: new URL(
-				'../../assets/spines/foregroundFeatureAnimation/mm_bg_feature.json',
-				import.meta.url,
-			).href,
-			scale: 2,
-		},
-		preload: true,
 	},
 	tumble_multiplier: {
 		type: 'spine',
@@ -365,7 +341,7 @@ export default {
 	},
 	backgroundBase: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/background-base.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/background-base.webp', import.meta.url).href,
 		preload: true,
 	},
 	// Desktop-only base diner (new art). Mobile-landscape still uses backgroundBase until the mobile
@@ -375,21 +351,10 @@ export default {
 		src: new URL('../../assets/mcschmutzo/background-desktop.webp', import.meta.url).href,
 		preload: true,
 	},
-	// Mobile-landscape diner (a wide crop of the base diner — lamp + shelf, no floor, no chef).
-	backgroundLandscape: {
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/background-landscape.webp', import.meta.url).href,
-		preload: true,
-	},
 	// Mobile-landscape SPECIAL (free-games) grey kitchen — wide crop matching the base landscape bg.
 	backgroundLandscapeBonus: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/special-bg-landscape.webp', import.meta.url).href,
-		preload: true,
-	},
-	backgroundBonus: {
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/background-bonus.png', import.meta.url).href,
 		preload: true,
 	},
 	backgroundPortrait: {
@@ -424,20 +389,15 @@ export default {
 	},
 	bonusWheel: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/bonus-wheel.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/bonus-wheel.webp', import.meta.url).href,
 	},
 	bonusWheelDisc: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/bonus-wheel-disc.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/bonus-wheel-disc.webp', import.meta.url).href,
 	},
 	bonusWheelPointer: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/bonus-wheel-pointer.png', import.meta.url).href,
-	},
-	mascot: {
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/mascot.png', import.meta.url).href,
-		preload: true,
+		src: new URL('../../assets/mcschmutzo/bonus-wheel-pointer.webp', import.meta.url).href,
 	},
 	specialPot: {
 		type: 'sprite',
@@ -480,16 +440,6 @@ export default {
 		src: new URL('../../assets/mcschmutzo/guys/mascot_label_v5.webp', import.meta.url).href,
 		preload: true,
 	},
-	mascotPupilL: {
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/mascot_pupilL.webp', import.meta.url).href,
-		preload: true,
-	},
-	mascotPupilR: {
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/mascot_pupilR.webp', import.meta.url).href,
-		preload: true,
-	},
 	specialBase: {
 		// Real designer chef WITHOUT the salting arm (body fully drawn underneath) on the shared
 		// 358x425 frame — the arm overlays and flicks with nothing duplicated behind it, and the
@@ -530,55 +480,55 @@ export default {
 	},
 	mcH1: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/H1.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/H1.webp', import.meta.url).href,
 	},
 	mcH2: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/H2.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/H2.webp', import.meta.url).href,
 	},
 	mcH3: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/H3.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/H3.webp', import.meta.url).href,
 	},
 	mcH4: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/H4.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/H4.webp', import.meta.url).href,
 	},
 	mcH5: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/H5.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/H5.webp', import.meta.url).href,
 	},
 	mcL1: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/L1.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/L1.webp', import.meta.url).href,
 	},
 	mcL2: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/L2.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/L2.webp', import.meta.url).href,
 	},
 	mcL3: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/L3.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/L3.webp', import.meta.url).href,
 	},
 	mcL4: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/L4.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/L4.webp', import.meta.url).href,
 	},
 	mcL5: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/L5.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/L5.webp', import.meta.url).href,
 	},
 	mcW: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/W.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/W.webp', import.meta.url).href,
 	},
 	mcS: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/S.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/S.webp', import.meta.url).href,
 	},
 	mcM: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/M.png', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/M.webp', import.meta.url).href,
 	},
 	// Burger (H1) split into layers so it can be reassembled and animated part-by-part.
 	burgerBunBottom: {

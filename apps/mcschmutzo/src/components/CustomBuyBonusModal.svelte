@@ -41,6 +41,40 @@
 	};
 
 	const props: Props = $props();
+
+	// Long single words (Finnish "LISÄMAHDOLLISUUS", German compounds…) can't wrap, so they ran past
+	// the card. Shrink THIS element's font until its widest word fits the card's content width (down
+	// to 55%); normal-length titles are untouched. Re-fits on resize and when the text changes.
+	function fitWords(node: HTMLElement, _text: string) {
+		let base = 0;
+		const fit = () => {
+			node.style.fontSize = '';
+			base = parseFloat(getComputedStyle(node).fontSize);
+			// All in LAYOUT px (offsetWidth / clientWidth): the modal is transform-scaled to fit small
+			// screens, so on-screen (getBoundingClientRect) widths would under-report and never shrink.
+			const box = node.parentElement;
+			if (!box) return;
+			const cs = getComputedStyle(box);
+			const avail = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 4;
+			const probe = document.createElement('span');
+			probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;letter-spacing:inherit';
+			node.appendChild(probe);
+			let widest = 0;
+			for (const w of (node.textContent || '').split(/\s+/)) {
+				if (!w) continue;
+				probe.textContent = w;
+				widest = Math.max(widest, probe.offsetWidth);
+			}
+			probe.remove();
+			if (widest > avail && widest > 0) node.style.fontSize = `${Math.max(base * 0.55, (base * avail) / widest)}px`;
+		};
+		const ro = new ResizeObserver(() => requestAnimationFrame(fit));
+		const card = node.closest('.bb-card');
+		if (card) ro.observe(card);
+		document.fonts?.ready.then(fit);
+		requestAnimationFrame(fit);
+		return { update: () => requestAnimationFrame(fit), destroy: () => ro.disconnect() };
+	}
 	const context = getContext();
 	// title/description are i18n keys (translated in the markup). Titles wrap naturally per language
 	// instead of using hard '\n' line breaks.
@@ -178,9 +212,9 @@
 	<div class="bb-grid">
 		{#each modes as mode (mode.id)}
 			<article class="bb-card" class:bb-card--active={isActive(mode.id)}>
-				<h3 class="bb-card-title">{i18nDerived.translate(mode.title)}</h3>
+				<h3 class="bb-card-title" use:fitWords={i18nDerived.translate(mode.title)}>{i18nDerived.translate(mode.title)}</h3>
 				<div class="bb-divider"></div>
-				<p class="bb-desc">{i18nDerived.translate(mode.description)}</p>
+				<p class="bb-desc" use:fitWords={i18nDerived.translate(mode.description)}>{i18nDerived.translate(mode.description)}</p>
 
 				<div
 					class="bb-art"
@@ -425,6 +459,10 @@
 	   and the holder is left smaller than the others' icons to give the bun headroom to rise into. */
 	.bb-art--burger {
 		overflow: hidden;
+		/* Room for the full separate/regroup throw (--sep 0.55: top bun rises ~14% of the burger's
+		   height, bottom bun drops ~11%) so the buns are never sliced by the clip — on portrait the art
+		   box hugs the burger, so this padding is the only headroom it has. */
+		padding-block: clamp(10px, 1.9vmin, 16px) clamp(8px, 1.5vmin, 12px);
 	}
 	.bb-burger-holder {
 		height: clamp(52px, 9.5vmin, 82px);

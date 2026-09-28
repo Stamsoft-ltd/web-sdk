@@ -98,8 +98,19 @@
 		const boardTop = main.y - (main.height * main.scale) / 2 + (b.y - b.height / 2) * main.scale;
 		const boardH = b.height * main.scale;
 		const gutter = boardLeft;
-		const w = Math.min(gutter * 0.6, boardH * 0.34, 230);
-		return { left: gutter / 2, top: boardTop + boardH * 0.2, w, canvasH: canvas.height };
+		// Pinned on the plain cream WALL, not the red/white awning: the desktop diner art is
+		// cover-scaled (1678×937), and in it the awning ends at 25% of the height and the darker lower
+		// wall panel starts at ~62%. The notes start just under the awning (27.5%) and are sized so the
+		// whole stack (ticket + pink sticky ≈ 1.45 × width tall) ends above that lower panel.
+		const artAsp = 1678 / 937;
+		const coverH = canvas.width / canvas.height > artAsp ? canvas.width / artAsp : canvas.height;
+		const artTop = (canvas.height - coverH) / 2;
+		const top = artTop + coverH * 0.275;
+		const room = coverH * (0.6 - 0.275);
+		const w = Math.min(gutter * 0.6, room / 1.45, 230);
+		void boardTop;
+		void boardH;
+		return { left: gutter / 2, top, w, canvasH: canvas.height };
 	});
 	const winDim = $derived(context.stateGame.winDim);
 </script>
@@ -110,12 +121,6 @@
 		style={`left:${box.left}px;top:${box.top}px;--w:${box.w}px;filter:brightness(${1 - winDim})`}
 		aria-hidden="true"
 	>
-		<!-- Pink kitchen memo, stuck behind the ticket's top-right. -->
-		<div class="pink" style={`background-image:url('${pinkArt}')`}>
-			{#key memo}
-				<p class="hand pink__text"><span>{memo[0]}</span><span>{memo[1]}</span></p>
-			{/key}
-		</div>
 		<div class="stack">
 			{#each pile as t (t.n)}
 				<div class="ticket" style={`background-image:url('${ticketArt}');left:${t.x}%;${t.style}`}>
@@ -137,6 +142,12 @@
 					{#if !t.top || ticked}<span class="ticket__tick hand">✓</span>{/if}
 				</div>
 			{/each}
+		</div>
+		<!-- Pink kitchen memo, stuck OVER the ticket's lower-right corner (on top, so the memo reads). -->
+		<div class="pink" style={`background-image:url('${pinkArt}')`}>
+			{#key memo}
+				<p class="hand pink__text"><span>{memo[0]}</span><span>{memo[1]}</span></p>
+			{/key}
 		</div>
 	</div>
 {/if}
@@ -244,10 +255,11 @@
 	}
 	.pink {
 		position: absolute;
-		width: 78%;
+		width: 72%;
 		aspect-ratio: 720 / 452;
-		left: 48%;
-		top: 88%;
+		left: 46%;
+		top: 76%; /* over the ticket's lower-right corner (keeps the stack short) */
+		z-index: 5;
 		background: center / 100% 100% no-repeat;
 		transform: rotate(6deg);
 		filter: drop-shadow(0 5px 7px rgba(0, 0, 0, 0.3));

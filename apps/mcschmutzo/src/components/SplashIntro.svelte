@@ -3,6 +3,7 @@
 	import { ap } from '../lib/preloadArt';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import DustFx from './DustFx.svelte';
+	import CardDrip from './CardDrip.svelte';
 	import SauceFx from './SauceFx.svelte';
 
 	type Props = { onpress: () => void };
@@ -122,7 +123,7 @@
 	// valleys on either side, so the column holds nothing but that tendril) and stretched from that
 	// row on its own phase. Because the cut row is the transform origin it never moves → no seam.
 	// Columns/cuts are measured on the 470×690 art (px); cx is the tendril's centre for the squeeze.
-	type Tendril = { x0: number; x1: number; cut: number; cx: number };
+	type Tendril = { x0: number; x1: number; cut: number; cx: number; stop?: number };
 	const ART_W = 470;
 	const ART_H = 690;
 	// The tendril clip overlaps the cap by a few source px (OVERLAP) — with both clip edges on the
@@ -130,7 +131,7 @@
 	// the cut row, so the overlapping rows above it move by a sub-pixel at most.
 	const OVERLAP = 3;
 	const tendrilStyle = (t: Tendril) =>
-		`clip-path:inset(${pct(t.cut - OVERLAP, ART_H)} ${pct(ART_W - t.x1 - OVERLAP, ART_W)} 0 ${pct(Math.max(0, t.x0 - OVERLAP), ART_W)});` +
+		`clip-path:inset(${pct(t.cut - OVERLAP, ART_H)} ${pct(ART_W - t.x1 - OVERLAP, ART_W)} ${t.stop ? pct(ART_H - t.stop, ART_H) : 0} ${pct(Math.max(0, t.x0 - OVERLAP), ART_W)});` +
 		`transform-origin:${pct(t.cx, ART_W)} ${pct(t.cut, ART_H)};`;
 	// The cap = everything except the two tendril rectangles (a comb-shaped polygon).
 	const capStyle = (a: Tendril, b: Tendril) => {
@@ -153,11 +154,12 @@
 			art: cardRed,
 			drip: dripRed,
 			tendrils: [
-				{ x0: 0, x1: 63, cut: 84, cx: 44 },
+				{ x0: 0, x1: 63, cut: 84, cx: 44, stop: 127 },
 				{ x0: 76, x1: 110, cut: 77, cx: 93 },
 			] as [Tendril, Tendril],
 			// Where the long tendril ends (art px) — the drop forms here.
 			tip: { x: 42, y: 152 },
+			runs: [{ cx: 46.5, tip: 152, bulb: 28, period: 4200, phase: 0, endCx: 45.5, endW: 30 }],
 			sauce: 0xe11105,
 			cycle: 3400,
 			dripPhase: 1340, // |--phase| + 0.10·cycle → pinch-off lands at the tendril's full stretch
@@ -169,11 +171,12 @@
 			art: cardYellow,
 			drip: dripYellow,
 			tendrils: [
-				{ x0: 0, x1: 58, cut: 75, cx: 36 },
+				{ x0: 0, x1: 58, cut: 75, cx: 36, stop: 111 },
 				{ x0: 59, x1: 98, cut: 72, cx: 84 },
 			] as [Tendril, Tendril],
 			// Where the long tendril ends (art px) — the drop forms here.
 			tip: { x: 39, y: 136 },
+			runs: [{ cx: 35, tip: 136, bulb: 28, period: 4600, phase: 1900, endCx: 38.5, endW: 27 }],
 			sauce: 0xf0b800,
 			cycle: 3800,
 			dripPhase: 2680,
@@ -185,11 +188,15 @@
 			art: cardGreen,
 			drip: dripGreen,
 			tendrils: [
-				{ x0: 0, x1: 54, cut: 79, cx: 33 },
-				{ x0: 54, x1: 114, cut: 80, cx: 96 },
+				{ x0: 0, x1: 54, cut: 79, cx: 33, stop: 130 },
+				{ x0: 54, x1: 114, cut: 80, cx: 96, stop: 92 },
 			] as [Tendril, Tendril],
 			// Where the long tendril ends (art px) — the drop forms here.
 			tip: { x: 33, y: 155 },
+			runs: [
+				{ cx: 33, tip: 155, bulb: 28, period: 4400, phase: 3100, endCx: 32, endW: 32 },
+				{ cx: 96, tip: 111, bulb: 22, period: 6100, phase: 800, reach: 24, run: 160, endCx: 96, endW: 29 },
+			],
 			sauce: 0x7fbf12,
 			cycle: 4200,
 			dripPhase: 3820,
@@ -274,24 +281,9 @@
 					<div class="drip drip--cap" style={capStyle(card.tendrils[0], card.tendrils[1])}></div>
 					<div class="drip drip--t drip--t1" style={tendrilStyle(card.tendrils[0])}></div>
 					<div class="drip drip--t drip--t2" style={tendrilStyle(card.tendrils[1])}></div>
-					<!-- The drop: a real viscous drip (SauceFx) off the long tendril's tip — a bead oozes out,
-					     pinches off as the tendril hits full stretch, and falls down the card (behind the
-					     copy). Same period as the tendril's CSS cycle so the two stay in step. -->
-					<SauceFx
-						bleed={0}
-						drips={[
-							{
-								x: card.tip.x / ART_W,
-								y: (card.tip.y - 4) / ART_H,
-								color: card.sauce,
-								size: 0.016,
-								period: card.cycle,
-								phase: card.dripPhase,
-								fall: 0.55,
-								steady: true,
-							},
-						]}
-					/>
+					<!-- The painted drip itself stretches, pinches and runs down the card (CardDrip redraws the
+					     tendril tips from the same art, so colour + shading match exactly). -->
+					<CardDrip src={card.drip} artW={ART_W} artH={ART_H} tendrils={card.runs} />
 				</div>
 				<div class="card-inner">
 					<h3 class="card-title" use:fitFont={i18nDerived.translate(card.title)}>
@@ -612,9 +604,13 @@
 	}
 	/* The long tendril and its drop share one cycle (--cycle/--phase, per card) so the drop lets go
 	   exactly when the tendril is at full stretch and the sauce recoils. */
+	/* Tendrils whose tip is redrawn by CardDrip stay still (the canvas stretches the tip); moving the
+	   painted tube under it would open a seam. The green card's second tendril is animated the same way. */
 	.drip--t1 {
-		animation: sauce-drip var(--cycle) ease-in-out infinite;
-		animation-delay: var(--phase);
+		animation: none;
+	}
+	.card--green .drip--t2 {
+		animation: none;
 	}
 	.drip--t2 {
 		animation: sauce-ooze 4.8s ease-in-out infinite;

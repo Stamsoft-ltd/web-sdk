@@ -8,7 +8,7 @@
 
 	const TOTAL_PAGES = 7;
 
-	const symArt = (name: string) => ap(`/assets/mcschmutzo/symbols/${name}.png`);
+	const symArt = (name: string) => ap(`/assets/mcschmutzo/symbols/${name}.webp`);
 
 	// Page 3 (features) icons + the win-multiplier ladder shown in the design.
 	const wildArt = symArt('W');
@@ -1251,11 +1251,19 @@
 		}
 		/* Card pages (features / general info / feature buy / UI guide): tighten padding + type so more
 		   of a card is visible before the nav on the tiny popout (less mid-card scroll cut-off). */
+		/* The visible frame is an INSET border (6px in + 2px line), so the padding must clear that too:
+		   ≥6px of air above/below the text and ≥8px at the sides, inside the drawn frame. */
 		.ft-card,
 		.gi-card,
 		.fb-card,
 		.ug-item {
-			padding: clamp(8px, 3.4vmin, 14px) clamp(10px, 4vmin, 18px);
+			padding: clamp(14px, 6.2vmin, 20px) clamp(16px, 7.2vmin, 24px);
+		}
+		.ft-grid,
+		.gi-grid,
+		.fb-grid,
+		.ug-grid {
+			gap: clamp(8px, 3.6vmin, 14px);
 		}
 		.ft-title,
 		.gi-title,

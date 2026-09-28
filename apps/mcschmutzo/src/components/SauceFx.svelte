@@ -33,6 +33,10 @@
 		phase?: number; // ms offset
 		fall?: number; // fall distance before fading (fraction of host height)
 		steady?: boolean; // exact period (no per-cycle jitter) — to stay in sync with a CSS loop
+		/** RUN on a vertical surface instead of free-falling: the bead swells out of the tip, then slides
+		 *  down the card leaving a tapering, wobbling glossy streak that fades before the next one. */
+		run?: boolean;
+		neck?: number; // width where the sauce leaves the tip (fraction of host height)
 	};
 	type Props = { splashes?: Splash[]; drips?: Drip[]; bleed?: number; delay?: number };
 	const { splashes = [], drips = [], bleed = 0.35, delay = 0 }: Props = $props();
@@ -101,6 +105,96 @@
 					},
 				};
 			},
+		};
+
+		// Sauce running down a vertical surface (the splash cards). Phases of one cycle:
+		//  0–SWELL   a bead swells out of the tendril's tip on a short neck (slow, viscous);
+		//  SWELL–END it breaks loose and SLIDES down: slow start, speeding up, then easing as it thins,
+		//            dragging a tapering streak behind it that wobbles a little (surface texture);
+		//  END–1     the streak + bead soak away (fade) before the next bead forms.
+		const drawRun = (d: Drip, i: number, t: number) => {
+			const R = (d.size ?? 0.018) * H;
+			const neck = (d.neck ?? 0.03) * H;
+			const base = d.period ?? 4000;
+			const tt = t + (d.phase ?? i * 777);
+			const k = Math.floor(tt / base);
+			const p = (tt - k * base) / base;
+			const SWELL = 0.34;
+			const END = 0.8;
+			const x0 = bx + d.x * W;
+			const y0 = by + d.y * H;
+			const col = d.color;
+			const dark = sauceDark(col);
+			const seed = k * 1.31 + i;
+			const wob = (y: number) => Math.sin((y - y0) / (H * 0.07) + seed * 3) * H * 0.0035 + Math.sin((y - y0) / (H * 0.025) + seed) * H * 0.0012;
+			const ease = (q: number) => q * q * (3 - 2 * q);
+			let r: number;
+			let yb: number;
+			let alpha = 1;
+			if (p < SWELL) {
+				const q = p / SWELL;
+				r = R * (0.35 + 0.65 * (1 - (1 - q) ** 2));
+				yb = y0 + r * 0.55 + R * 0.5 * ease(q); // sags as it fills
+			} else {
+				const q = Math.min(1, (p - SWELL) / (END - SWELL));
+				const travel = (d.fall ?? 0.45) * H;
+				const s = q < 0.5 ? 2 * q * q : 1 - 2 * (1 - q) * (1 - q) * 0.5 - 0.0; // slow → fast → easing
+				r = R * (1 - 0.4 * q);
+				yb = y0 + r * 0.55 + R * 0.5 + travel * Math.min(1, s);
+				if (p > END) alpha = 1 - (p - END) / (1 - END);
+			}
+			// Streak / neck: from the tip down to the bead, tapering from the neck width to a thin line
+			// just above the bead, then flaring into it.
+			const N = 28;
+			const left: [number, number][] = [];
+			const right: [number, number][] = [];
+			const span = Math.max(1, yb - y0);
+			for (let j = 0; j <= N; j++) {
+				const f = j / N;
+				const y = y0 + span * f;
+				const tailW = p < SWELL ? neck * (0.95 - 0.35 * f) : neck * (0.55 * (1 - f) + 0.28 * f);
+				const flare = Math.max(0, (f - 0.78) / 0.22) ** 2 * (r * 1.7 - tailW);
+				const w = tailW + flare;
+				const x = x0 + wob(y) * Math.min(1, f * 3);
+				left.push([x - w / 2, y]);
+				right.push([x + w / 2, y]);
+			}
+			ctx.globalAlpha = alpha;
+			ctx.beginPath();
+			ctx.moveTo(left[0][0], left[0][1] - 2);
+			for (const [x, y] of left) ctx.lineTo(x, y);
+			for (let j = right.length - 1; j >= 0; j--) ctx.lineTo(right[j][0], right[j][1]);
+			ctx.lineTo(right[0][0], right[0][1] - 2);
+			ctx.closePath();
+			ctx.fillStyle = hex(col);
+			ctx.fill();
+			ctx.lineWidth = Math.max(0.8, R * 0.1);
+			ctx.strokeStyle = hex(dark, 0.45);
+			ctx.stroke();
+			// Bead (slightly teardrop: flatter on top where the streak joins).
+			const bxp = x0 + wob(yb);
+			ctx.beginPath();
+			ctx.ellipse(bxp, yb, r * 0.95, r * 1.08, 0, 0, Math.PI * 2);
+			ctx.fillStyle = hex(col);
+			ctx.fill();
+			ctx.stroke();
+			// Wet highlights: a thin sheen line down the streak + a glint on the bead.
+			ctx.beginPath();
+			for (let j = 2; j <= N - 4; j++) {
+				const [lx, y] = left[j];
+				const [rx] = right[j];
+				const hx = lx + (rx - lx) * 0.3;
+				if (j === 2) ctx.moveTo(hx, y);
+				else ctx.lineTo(hx, y);
+			}
+			ctx.lineWidth = Math.max(0.6, neck * 0.12);
+			ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+			ctx.stroke();
+			ctx.beginPath();
+			ctx.ellipse(bxp - r * 0.35, yb - r * 0.35, r * 0.22, r * 0.34, -0.4, 0, Math.PI * 2);
+			ctx.fillStyle = 'rgba(255,255,255,0.6)';
+			ctx.fill();
+			ctx.globalAlpha = 1;
 		};
 
 		const drawDrip = (d: Drip, i: number, t: number) => {
@@ -217,7 +311,7 @@
 					});
 				}
 			});
-			drips.forEach((d, i) => drawDrip(d, i, t));
+			drips.forEach((d, i) => (d.run ? drawRun(d, i, t) : drawDrip(d, i, t)));
 		};
 		raf = requestAnimationFrame(loop);
 		return () => {

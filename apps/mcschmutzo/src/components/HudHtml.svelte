@@ -8,7 +8,7 @@
 	// Frame backgrounds — passed as CSS vars because url() in style blocks can't use runtime paths
 	const menuBtnFrame = ap('/assets/components/frames/top_menu-button_frame.webp');
 	const soundBtnFrame = ap('/assets/components/frames/top_sound_button_frame.webp');
-	const menuBarFrame = ap('/assets/mcschmutzo/nav-pad.png'); // flat #1F1F1F nav bar (padddd)
+	const menuBarFrame = ap('/assets/mcschmutzo/nav-pad.webp'); // flat #1F1F1F nav bar (padddd)
 	const menuPopupBg = ap('/assets/components/frames/menu_popup.webp'); // wooden plaque (Figma 3311-2924)
 
 	// Button backgrounds (icon-less frames) — icons are layered on top in markup
@@ -20,18 +20,18 @@
 	// Portrait/mobile pads (Figma 2792-4133)
 	// Mobile-landscape HUD art (Figma 2682-3639)
 	const lsRightBar = ap('/assets/components/symbols/landscape/right_bar.webp?v=20260715'); // vertical control bar
-	const lsBetPad = ap('/assets/components/symbols/landscape/stepper_pad.png'); // − value + bottom pad
-	const lsBuyBonus = ap('/assets/components/symbols/landscape/buy_bonus.png'); // round green badge
+	const lsBetPad = ap('/assets/components/symbols/landscape/stepper_pad.webp'); // − value + bottom pad
+	const lsBuyBonus = ap('/assets/components/symbols/landscape/buy_bonus.webp'); // round green badge
 	const lsNavBox = ap('/assets/components/symbols/landscape/nav_bg.svg'); // flat dark vertical rail box
 	const lsBonus = ap('/assets/components/symbols/landscape/bonus.svg'); // red vertical BONUS button (text baked in)
 	const lsTurn = ap('/assets/mcschmutzo/ui-icons/turn-button-bg.svg'); // hi-res red turn disc (bg)
 	const navPadMobile = ap('/assets/components/navbar/nav_pad_mobile.webp'); // control-bar pill
-	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.png'); // − value + pill
+	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.webp'); // − value + pill
 	const buyBonusMobile = btnWideBg;
 	const spinMobile = btnSpinBg;
 
 	// Gold icons layered over the button backgrounds
-	const iconMenu = ap('/assets/hud/icon-info.png');
+	const iconMenu = ap('/assets/hud/icon-info.webp');
 	const iconMenuBars = ap('/assets/mcschmutzo/ui-icons/hud-menu.svg'); // hamburger — opens the portrait sound/info menu
 	const iconBurgerClose = ap('/assets/mcschmutzo/ui-icons/burger-close.svg'); // red disc + white X, shown while the menu is open
 	const iconSound = ap('/assets/mcschmutzo/ui-icons/hud-sound.svg');
@@ -51,10 +51,10 @@
 	const menuIcMusicOff = ap('/assets/mcschmutzo/ui-icons/music-disabled.svg');
 	const menuIcInfo = ap('/assets/mcschmutzo/ui-icons/info.svg');
 	const iconSpin = ap('/assets/mcschmutzo/ui-icons/turn-button-arrow.svg'); // hi-res white spin arrow
-	const iconStop = ap('/assets/hud/icon-stop.png');
-	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.png');
-	const iconTurbo2 = ap('/assets/hud/icon-lightning-2.png');
-	const iconTurbo3 = ap('/assets/hud/icon-lightning-3.png');
+	const iconStop = ap('/assets/hud/icon-stop.webp');
+	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.webp');
+	const iconTurbo2 = ap('/assets/hud/icon-lightning-2.webp');
+	const iconTurbo3 = ap('/assets/hud/icon-lightning-3.webp');
 	const iconCoins = ap('/assets/mcschmutzo/buybonus/money.webp');
 
 	// Portrait game-screen header: the McSchmutzo wordmark with the Press Play studio mark above it,
@@ -62,7 +62,7 @@
 	const ptLogo = ap('/assets/mcschmutzo/logo-v3.webp');
 	const ptPressPlay = ap('/assets/mcschmutzo/press-play.svg');
 
-	const scatterFrame = ap('/assets/components/frames/scatter_frame.png');
+	const scatterFrame = ap('/assets/components/frames/scatter_frame.webp');
 	const hudFrame = ap('/assets/components/frames/hud_frame.webp');
 	const smallBtnFrame = ap('/assets/components/frames/lower_hud_button_frame.webp');
 	const playBtnFrame = ap('/assets/components/frames/play_button-frame.webp');
@@ -79,6 +79,7 @@
 
 	import { getContext } from '../game/context';
 	import { PORTRAIT_SHORT_ASPECT } from '../game/stateLayout';
+	import { continueBottom } from '../lib/continuePos';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { fitLabel } from '../lib/fitLabel';
 	import { mcschmutzoStakeDerived } from '../state/mcschmutzoStake.svelte';
@@ -267,6 +268,12 @@
 		};
 		raf = requestAnimationFrame(align);
 		return () => cancelAnimationFrame(raf);
+	});
+
+	// Win popups' "PRESS TO CONTINUE →" (same look as the congrats screens), clear of the portrait HUD.
+	let winContBottom = $state('clamp(14px, 3.5vh, 34px)');
+	$effect(() => {
+		if (context.stateGame.winDim > 0) winContBottom = continueBottom('clamp(14px, 3.5vh, 34px)');
 	});
 
 	const openRules = () => {
@@ -1177,6 +1184,10 @@
 		oncancel={endRound}
 		onconfirm={playRound}
 	/>
+{/if}
+
+{#if context.stateGame.winDim > 0}
+	<p class="win-continue" style={`bottom:${winContBottom}`}>{i18nDerived.translate('PRESS TO CONTINUE')}&nbsp;→</p>
 {/if}
 
 <style>
@@ -2911,5 +2922,27 @@
 	.hud-shell--win-dim > * {
 		filter: brightness(var(--win-dim));
 		transition: filter 0.25s ease;
+	}
+	/* Matches FreeSpinIntroHtml .fs-continue. Above the HUD shade; taps pass through to the game. */
+	.win-continue {
+		position: fixed;
+		left: 50%;
+		transform: translateX(-50%);
+		margin: 0;
+		z-index: 60;
+		pointer-events: none;
+		white-space: nowrap;
+		font-family: 'Poppins', sans-serif;
+		font-weight: 600;
+		font-size: clamp(12px, 2.2vmin, 17px);
+		letter-spacing: 0.1em;
+		color: #fff;
+		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+		animation: win-cont-pulse 1.6s ease-in-out infinite;
+	}
+	@keyframes win-cont-pulse {
+		50% {
+			opacity: 0.55;
+		}
 	}
 </style>
