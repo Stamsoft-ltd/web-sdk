@@ -26,9 +26,12 @@ import numpy as np
 from PIL import Image
 
 APP = Path(__file__).resolve().parents[1]
-PIX = APP / 'static/assets/veggie-salad/pixel'
+# Retired 2026-09-24: the board's pixel king (build-board-king.py) replaced this art on every
+# screen, so the output lives with the other retired sources, outside static/ (every image under
+# static/ is preloaded).
+PIX = APP / 'scripts/art/king-sources'
 SVG = APP / 'scripts/art/congrats-king-9363-60186.svg'
-OUT = PIX / 'overlays/v2/congrats'
+OUT = PIX
 SCALE = 4
 # The sprite's brows: art columns 34-40 / 48-54 on rows 44-46; its open eyes fill rows 47-53 of
 # columns 33-40 / 47-54 (the brow joins the eye on the outer column).
@@ -114,8 +117,8 @@ def main():
     (OUT / 'king.png').unlink()
     h, w = shut.shape[:2]
     out, brows, arcs = open_eyes(shut)
-    Image.fromarray(shut.astype('uint8')).save(OUT / 'king.webp', lossless=True, quality=100, method=6)
-    Image.fromarray(out.astype('uint8')).save(OUT / 'king-open.webp', lossless=True, quality=100, method=6)
+    Image.fromarray(shut.astype('uint8')).save(OUT / 'congrats-king.webp', lossless=True, quality=100, method=6)
+    Image.fromarray(out.astype('uint8')).save(OUT / 'congrats-king-open.webp', lossless=True, quality=100, method=6)
     print(f'king {w}x{h} brows={[(b[1], b[2], b[3], b[4]) for b in brows]} arcs={[(a[1], a[2], a[3], a[4]) for a in arcs]}')
 
 if __name__ == '__main__':

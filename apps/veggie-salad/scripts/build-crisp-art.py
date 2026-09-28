@@ -13,7 +13,8 @@ source's size and cell positions exactly, so nothing that places these sprites h
 
 The soft originals sit in scripts/art/crisp-sources/ (not static/, whose every image the loader
 fetches); each writes <name>-px.webp at the original's place under static/, a new name so no
-cache can serve the soft one.
+cache can serve the soft one. Art the grid fit would damage is palette-snapped instead (SNAP_*,
+see there); layered rigs write a sibling <dir>-px/ with the same file names.
 
 Run from anywhere:
 
@@ -32,7 +33,7 @@ PIXEL = APP / 'static/assets/veggie-salad/pixel'
 # The soft originals live outside static/ — the loader preloads every image under it.
 SOURCES = APP / 'scripts/art/crisp-sources'
 TARGETS = [
-    'logo.webp',
+    # logo.webp retired 2026-09-25: the wordmark is build-logo.py's, from design 9471:47883.
     'wins/v2/sweet-sweet.webp',
     'wins/v2/sweet-win.webp',
     'wins/v2/epic-title.webp',
@@ -41,6 +42,35 @@ TARGETS = [
     'wins/v2/wild-wordart.webp',
     'wins/v2/max-wordart.webp',
     'overlays/v2/bonus-end-plaque.webp',
+    # Mock review 2026-09-24 ("soft art"): the bonus box, the info meadow and the haystack.
+    'mystery-box.webp',
+    'background.webp',
+    'background/haystack.webp',
+    # Review 2026-09-25 (2, 2, 1.67): the bonus outro's total plaque, the softest win art left
+    # that the grid fit repairs cleanly.
+    'wins/v2/legendary-amount.webp',
+]
+# Art whose soft part is only the anti-aliased ramp at colour edges, where a re-grid moves
+# features (it redrew the wolf's mouth, the butterfly's face and an owl glint, even at the true
+# pitch). These keep every pixel where it is: each takes the nearest of the art's own flat
+# colours and alpha is cut at 50% (`snap`). A rig is snapped as one — one palette off its stacked
+# layers — so a part cannot come out a shade off the body it sits on; it writes to <dir>-px/.
+# Tried and left: coin.webp (near-crisp already; snapping speckled it), the congrats basket (its
+# small colours — blush, glints — fall out of the palette), fence/base-bench (speckled), moon and
+# coin-stack (their "soft" steps are the art's own shades).
+SNAP_RIGS = {
+    'background/bonus-super/wolf': ['body', 'ear-l', 'ear-r', 'eyes'],
+    'background/bonus-normal/butterfly': [
+        'body', 'wing-l', 'wing-r', 'antenna-l', 'antenna-r',
+        'face-blink', 'face-look-l', 'face-look-r', 'face-mouth',
+    ],
+    'background/bonus-normal/sunset/owl': ['body', 'eyes'],
+}
+SNAP_FILES = [
+    'wins/v2/sweet-star.webp',
+    'background/bonus-normal/tree.webp',
+    'background/bonus-normal/oak.webp',
+    'background/bonus-super/oak.webp',
 ]
 
 
@@ -90,6 +120,28 @@ def dominant(cell: np.ndarray) -> np.ndarray:
     return np.array([*group[:, :3].mean(axis=0).round(), 255], np.uint8)
 
 
+def palette(a: np.ndarray, share: float = 0.004) -> np.ndarray:
+    """The art's flat colours: 4-bit-a-channel groups covering at least `share` of its opaque
+    pixels, each the mean of its group — colours the drawing actually has."""
+    px = a.reshape(-1, 4).astype(int)
+    px = px[px[:, 3] > 200]
+    keys = (px[:, 0] >> 4) << 8 | (px[:, 1] >> 4) << 4 | (px[:, 2] >> 4)
+    values, counts = np.unique(keys, return_counts=True)
+    return np.array([px[keys == k, :3].mean(axis=0) for k in values[counts >= share * len(px)]])
+
+
+def snap(a: np.ndarray, colours: np.ndarray) -> np.ndarray:
+    """Every pixel at least half opaque takes its nearest palette colour at full alpha; the rest
+    go clear. Nothing moves."""
+    out = np.zeros_like(a)
+    on = a[..., 3] >= 128
+    rgb = a[on, :3].astype(float)
+    nearest = ((rgb[:, None, :] - colours[None, :, :]) ** 2).sum(axis=-1).argmin(axis=1)
+    out[on, :3] = colours[nearest].round().astype(np.uint8)
+    out[on, 3] = 255
+    return out
+
+
 def crisp(crop, a: np.ndarray) -> tuple[np.ndarray, float, float]:
     # The art's blocks are square; where the two axes disagree the finer pitch wins — splitting a
     # real block costs nothing (both halves take its colour), merging two loses a detail (the
@@ -116,6 +168,25 @@ def main():
         Image.fromarray(out).save(dst, lossless=True, quality=100, method=6)
         print(f'{rel:36} pitch {px:4.1f}x{py:4.1f}  softness {softness(a):.3f} -> '
               f'{softness(out):.3f}  {src.stat().st_size // 1024}K -> {dst.stat().st_size // 1024}K')
+    for rel in SNAP_FILES:
+        src = SOURCES / rel
+        a = np.array(Image.open(src).convert('RGBA'))
+        out = snap(a, palette(a))
+        dst = (PIXEL / rel).with_name(src.stem + '-px.webp')
+        Image.fromarray(out).save(dst, lossless=True, quality=100, method=6)
+        print(f'{rel:36} snap  softness {softness(a):.3f} -> {softness(out):.3f}')
+    for rel, parts in SNAP_RIGS.items():
+        layers = {n: Image.open(SOURCES / rel / f'{n}.webp').convert('RGBA') for n in parts}
+        stack = Image.new('RGBA', next(iter(layers.values())).size)
+        for layer in layers.values():
+            stack.alpha_composite(layer)
+        colours = palette(np.array(stack))
+        out_dir = PIXEL / f'{rel}-px'
+        out_dir.mkdir(parents=True, exist_ok=True)
+        for n, layer in layers.items():
+            Image.fromarray(snap(np.array(layer), colours)).save(
+                out_dir / f'{n}.webp', lossless=True, quality=100, method=6)
+        print(f'{rel:36} rig of {len(parts)}, {len(colours)} colours -> {out_dir.name}/')
 
 
 if __name__ == '__main__':

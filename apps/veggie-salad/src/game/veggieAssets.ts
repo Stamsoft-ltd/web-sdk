@@ -24,7 +24,7 @@ export const VEGGIE_SYMBOL_ASSETS: Record<VeggieDisplaySymbolName, string> = {
 	CARROT: `${BOARD}/potato.webp`,
 	PEPPER: `${BOARD}/radish.webp`,
 	ONION: `${BOARD}/garlic.webp`,
-	SCATTER: '/assets/veggie-salad/pixel/onion.webp',
+	SCATTER: `${BOARD}/king.webp`,
 };
 
 // The premium payers, which sit on the design's gold-edged olive pad.

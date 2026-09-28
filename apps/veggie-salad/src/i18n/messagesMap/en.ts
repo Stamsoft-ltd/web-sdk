@@ -173,7 +173,7 @@ export default {
 	'PAYTABLE BONUS TEXT': '100× bet · 10 free spins on an 8×8 grid.',
 	'PAYTABLE SUPER TEXT': '400× bet · 10 free spins on a 9×9 grid.',
 	'PAYTABLE MYSTERY TEXT': '300× bet · 60% Normal, 30% Super, 10% Hidden.',
-	'PAYTABLE MAX TEXT': 'Maximum win is 25,000× total bet.',
+	'PAYTABLE MAX TEXT': 'Maximum win is 25,000× the base bet.',
 	'INFO OVERVIEW': 'OVERVIEW',
 	'INFO PAYTABLE': 'PAYTABLE',
 	'INFO UI GUIDE': 'USER INTERFACE GUIDE',
@@ -247,6 +247,14 @@ export default {
 		'During Free Spins, landing 3 or more Scatters awards additional Free Spins.\n3 Scatters = +10 Free Spins\n4 Scatters = +11 Free Spins\n5 Scatters = +12 Free Spins\n6 Scatters = +13 Free Spins\n7 or more Scatters = +14 Free Spins\nRetriggers can occur more than once during the same bonus and do not change the current bonus tier.',
 	'INFO WTW MAXWIN TEXT':
 		'The maximum win is 25,000x the selected base bet.\nWhen the maximum win is reached, the current game round or Free Spins feature ends immediately and the maximum amount is awarded.',
+	// The two spin modes the Bonus panel sells beside the buys (mock review 2026-09-25, R-04: every
+	// purchasable mode must be described on a rendered info page).
+	'INFO FB CHANCE TITLE': 'Extra Chance',
+	'INFO FB CHANCE TEXT':
+		'Costs 2x the selected bet on every spin while switched on and makes triggering a Bonus Feature 3 times more likely. It stays on until switched off.',
+	'INFO FB FEATURE TITLE': 'Feature Spin',
+	'INFO FB FEATURE TEXT':
+		'Costs 20x the selected bet on every spin while switched on. Every Feature Spin lands at least one winning cluster, with an increased chance of Multipliers. It stays on until switched off.',
 	'INFO FB NORMAL TITLE': 'Normal Bonus Buy',
 	'INFO FB NORMAL TEXT':
 		'Costs 100x the selected bet and awards direct entry to the Normal Bonus on the 8x8 grid.',
@@ -265,7 +273,7 @@ export default {
 	'INFO OV BODY':
 		'Veggie Salad is played on a 7x7 grid in the Base Game. Wins are created by landing 5 or more matching symbols connected horizontally or vertically. Winning symbols are removed and replaced through the Tumble Feature, allowing multiple consecutive wins from a single spin.',
 	'INFO OV MAXWIN LABEL': 'Maximum Win',
-	'INFO OV MAXWIN VALUE': '25,000× bet',
+	'INFO OV MAXWIN VALUE': '25,000× base bet',
 	'INFO OV RTP LABEL': 'Theoretical RTP',
 	'INFO OV MULT TITLE': 'Random Multipliers',
 	'INFO OV MULT TEXT':
@@ -275,5 +283,5 @@ export default {
 		'Expand the grid to 8x8, 9x9 or 10x10 depending on the Bonus Feature triggered.',
 	'INFO PT SCATTER TITLE': 'SCATTER SYMBOL',
 	'INFO PT SCATTER TEXT':
-		'Scatter symbols can appear anywhere on the grid. Landing 3 Scatter symbols triggers the Normal Bonus. Landing 4 Scatter symbols triggers the Super Bonus. Landing 5 Scatter symbols triggers the Hidden Bonus.\nEach Bonus Feature awards 10 Free Spins.',
+		'Scatter symbols can appear anywhere on the grid. Landing 3 Scatter symbols triggers the Normal Bonus. Landing 4 Scatter symbols triggers the Super Bonus. Landing 5 or more Scatter symbols triggers the Hidden Bonus.\nEach Bonus Feature awards 10 Free Spins.',
 };

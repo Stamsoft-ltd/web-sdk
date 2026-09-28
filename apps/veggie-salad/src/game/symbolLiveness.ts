@@ -1,10 +1,8 @@
 /* Liveness for symbols at rest on the board — the splash crop's beat, played very gently.
 
-   Every board symbol is authored with its eyes open and a glint, except the scatter king, whose
-   symbol art (`onion.webp`, the same drawing as `scatter.webp`) has them shut — so he squinted
-   for ever in a cell while the splash's king blinked. This gives each resting cell its own slow,
-   randomly phased clock: the king rests on `scatter_open` and drops to the authored shut frame
-   for a blink; a vegetable occasionally blinks or glances — its eyes slid one art pixel left or
+   Every board symbol is authored with its eyes open and a glint. This gives each resting cell its
+   own slow, randomly phased clock: the king still (board/king.webp) drops to `king-shut` for a
+   blink; a vegetable occasionally blinks or glances — its eyes slid one art pixel left or
    right — using the frames scripts/build-board-crop.py cuts from these very sprites
    (board/<name>-look-l|look-r|blink.webp), so every frame is the board art itself.
 
@@ -15,8 +13,8 @@
    dropping / winning, off under prefers-reduced-motion. Timers only — no per-frame work. */
 
 const PIXEL_ROOT = './assets/veggie-salad/pixel';
-const SCATTER_OPEN = `${PIXEL_ROOT}/scatter_open.webp`;
-const SCATTER_SHUT = `${PIXEL_ROOT}/scatter.webp`;
+const SCATTER_OPEN = `${PIXEL_ROOT}/board/king.webp`;
+const SCATTER_SHUT = `${PIXEL_ROOT}/board/king-shut.webp`;
 
 type Beat = 'blink' | 'look-l' | 'look-r' | 'lift' | 'wide' | 'shut';
 

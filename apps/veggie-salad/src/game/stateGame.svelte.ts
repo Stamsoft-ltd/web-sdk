@@ -123,9 +123,14 @@ export const FALL_MOTION = paced({
 	spinRowStaggerMs: 40,
 	tumbleRowStaggerMs: 22,
 	reelDelayMs: 9,
+	// The spin reveal sweeps the board column by column, left to right, each column piling up
+	// from the floor — a wave, not a sheet (the reference the user shared 2026-09-24). Tumble
+	// refills keep the tight `reelDelayMs`: only the gaps fill, and they should close together.
+	spinReelDelayMs: 72,
 	// Multiplied by the per-cell jitter roll, so nothing lands in lockstep.
 	jitterMs: 38,
-	impactMs: 220,
+	// Landing: a cartoon squash and stretch (land-impact), long enough to read.
+	impactMs: 340,
 	// Trap-door exit on spin start: the old board free-falls out the bottom under the SAME gravity
 	// as the drop (duration from the distance, bottom rows first), so leaving reads as a tumble
 	// rather than the whole board sliding off as one sheet.
@@ -147,8 +152,9 @@ export const FALL_MOTION_FAST = paced({
 	spinRowStaggerMs: 11,
 	tumbleRowStaggerMs: 6,
 	reelDelayMs: 3,
+	spinReelDelayMs: 16,
 	jitterMs: 12,
-	impactMs: 90,
+	impactMs: 110,
 	exitRowStaggerMs: 7,
 	exitReelDelayMs: 3,
 	exitJitterMs: 10,
@@ -218,10 +224,8 @@ const fallDurationMs = (distance: number) => {
 };
 
 // Longest per-cell delay in a wave: top row, last reel, worst jitter.
-const maxFallDelayMs = (staggerMs: number) =>
-	(stateGame.gridSize - 1) * staggerMs +
-	(stateGame.gridSize - 1) * motion().reelDelayMs +
-	motion().jitterMs;
+const maxFallDelayMs = (staggerMs: number, reelDelayMs: number) =>
+	(stateGame.gridSize - 1) * staggerMs + (stateGame.gridSize - 1) * reelDelayMs + motion().jitterMs;
 
 // What a reveal wave actually takes on screen. The book handler waits this out instead of a
 // hardcoded number — otherwise the phase flips back to `idle`, the CSS animation is dropped and
@@ -237,7 +241,8 @@ const revealDurationMs = (kind: 'spin' | 'tumble') => {
 	// Fast-forwarded: everything lands at cut + SKIP_TAIL_MS, so that plus the impact is all the
 	// time the wave still needs.
 	if (cut > 0) return cut + SKIP_TAIL_MS + FALL_MOTION_FAST.impactMs + 60;
-	return maxFallDelayMs(stagger) + fallDurationMs(maxDistance) + active.impactMs + 60;
+	const reelDelay = kind === 'spin' ? active.spinReelDelayMs : active.reelDelayMs;
+	return maxFallDelayMs(stagger, reelDelay) + fallDurationMs(maxDistance) + active.impactMs + 60;
 };
 
 // Distance a cell travels to clear the bottom edge: its own row plus a row of margin.

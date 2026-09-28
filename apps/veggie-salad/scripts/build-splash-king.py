@@ -39,7 +39,10 @@ from PIL import Image
 
 APP = Path(__file__).resolve().parents[1]
 SVG = APP / 'scripts/art/splash-crop-9200-145271/king-9200-148144.svg'
-OUT = APP / 'static/assets/veggie-salad/pixel/splash/king'
+# Retired 2026-09-24: the board's pixel king (build-board-king.py) replaced this art on every
+# screen, so the output lives with the other retired sources, outside static/ (every image under
+# static/ is preloaded).
+OUT = APP / 'scripts/art/king-sources/splash-king'
 SCALE = 4
 # How far (render px) a layer is painted in under the layers in front of it: 3 art pixels.
 UNDERPAINT = 3 * 2 * SCALE

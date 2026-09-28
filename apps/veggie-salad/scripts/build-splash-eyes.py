@@ -24,7 +24,10 @@ from pathlib import Path
 
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parents[1] / 'static/assets/veggie-salad/pixel'
+# Retired 2026-09-24: the board draws the newer set (build-board-crop.py / build-board-premium.py), so
+# this old art is unused, so the output lives with the other retired sources, outside static/ (every image under
+# static/ is preloaded).
+ROOT = Path(__file__).resolve().parents[1] / 'scripts/art/old-symbols'
 OUT = ROOT / 'splash'
 NAMES = ['broccoli', 'cauliflower', 'eggplant', 'tomato', 'carrot', 'corn', 'radish']
 

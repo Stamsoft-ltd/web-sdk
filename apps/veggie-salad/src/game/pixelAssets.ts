@@ -60,30 +60,26 @@ const assets: Assets = {
 	winVeggieGarlicBlink: { type: 'sprite', src: `${root}/board/garlic-blink.webp` },
 	winVeggieGarlicLookL: { type: 'sprite', src: `${root}/board/garlic-look-l.webp` },
 	winVeggieGarlicLookR: { type: 'sprite', src: `${root}/board/garlic-look-r.webp` },
-	// Scatter king: `scatter` is the closed-eyed frame, `scatter_open` the resting open-eyed one.
-	// The splash swaps them on a random timer and the bonus-intro card does the same.
-	pixelScatter: { type: 'sprite', src: `${root}/scatter.webp` },
-	pixelScatterOpen: { type: 'sprite', src: `${root}/scatter_open.webp` },
 	pixelCoinSheet: { type: 'spriteSheet', src: `${root}/coin.json` },
 	// Design 9050:17100's wooden plank card (node 9313:295187, 453x598 in the 1200-wide frame).
 	// New filename rather than a query string so the previous card cannot be served from cache.
 	bonusStartCardV5: { type: 'sprite', src: `${root}/overlays/v2/bonus-start-card-v5.webp` },
 	bonusEndPlaqueV2: { type: 'sprite', src: `${root}/overlays/v2/bonus-end-plaque-px.webp` },
-	/* The splash king's rig (scripts/build-splash-king.py): one 451px canvas per moving part, so
-	   they stack centred. The bonus intro card animates it with the splash's own keyframes
+	/* The king's rig — the board's pixel king (scripts/build-board-king.py), the only king in the
+	   game: one 450px canvas per moving part, so they stack centred. The bonus intro card animates it with the splash's own keyframes
 	   (PixelEventOverlay KING_RIG) — "on congrats screen lets use same animation as splash". */
-	kingSprout: { type: 'sprite', src: `${root}/splash/king/sprout.webp` },
-	kingBody: { type: 'sprite', src: `${root}/splash/king/body.webp` },
-	kingBodyOpen: { type: 'sprite', src: `${root}/splash/king/body-open.webp` },
-	kingCrown: { type: 'sprite', src: `${root}/splash/king/crown.webp` },
-	kingFeetL: { type: 'sprite', src: `${root}/splash/king/feet-l.webp` },
-	kingFeetR: { type: 'sprite', src: `${root}/splash/king/feet-r.webp` },
-	kingCapeL: { type: 'sprite', src: `${root}/splash/king/cape-l.webp` },
-	kingCapeR: { type: 'sprite', src: `${root}/splash/king/cape-r.webp` },
+	kingSprout: { type: 'sprite', src: `${root}/board/king/sprout.webp` },
+	kingBody: { type: 'sprite', src: `${root}/board/king/body.webp` },
+	kingBodyOpen: { type: 'sprite', src: `${root}/board/king/body-open.webp` },
+	kingCrown: { type: 'sprite', src: `${root}/board/king/crown.webp` },
+	kingFeetL: { type: 'sprite', src: `${root}/board/king/feet-l.webp` },
+	kingFeetR: { type: 'sprite', src: `${root}/board/king/feet-r.webp` },
+	kingCapeL: { type: 'sprite', src: `${root}/board/king/cape-l.webp` },
+	kingCapeR: { type: 'sprite', src: `${root}/board/king/cape-r.webp` },
 
 	/* Word art and the bonus-end plaque load the grid-snapped -px copies from
 	   scripts/build-crisp-art.py; the sources were blurred pixel art (softness 0.13-0.23). */
-	winStarSweetV2: { type: 'sprite', src: `${wins}/v2/sweet-star.webp` },
+	winStarSweetV2: { type: 'sprite', src: `${wins}/v2/sweet-star-px.webp` },
 	/* Design 9242:190479 (WILD WIN). The sign is one riveted banner (9242:190694, 989x374 in the
 	   1200-wide frame); Figma ships its master blue and tints it, so the per-tier files are that
 	   master recoloured to the tier hue. WILD's word art is the design's own (9242:190797); the other
@@ -104,7 +100,7 @@ const assets: Assets = {
 	winTitleMythicV2: { type: 'sprite', src: `${wins}/v2/mythic-title-px.webp` },
 	winTitleLegendaryV2: { type: 'sprite', src: `${wins}/v2/legendary-title-px.webp` },
 	// Still used by the bonus outro's total plaque.
-	winAmountLegendaryV2: { type: 'sprite', src: `${wins}/v2/legendary-amount.webp` },
+	winAmountLegendaryV2: { type: 'sprite', src: `${wins}/v2/legendary-amount-px.webp` },
 
 	/* The Howler sprite of the delivered sounds (audio-src/README.txt), rebuilt by
 	   scripts/build-sounds.mjs. Loaded through the same manifest so the loading screen counts it

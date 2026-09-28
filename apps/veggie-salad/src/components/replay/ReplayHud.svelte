@@ -12,6 +12,9 @@
 	const betText = $derived(veggieStakeDerived.formatAmount(bet));
 	const costText = $derived(veggieStakeDerived.formatAmount(cost));
 	const winText = $derived(veggieStakeDerived.formatWin(veggieStakeDerived.replayWinAmount()));
+	// Up to 4 decimals, trailing zeros dropped by Number: a clamp to 2 no longer multiplies back to
+	// the win (lessons R-09).
+	const payoutText = $derived(`${Number(payoutMultiplier.toFixed(4))}×`);
 	const replayError = $derived(
 		veggieStakeState.bootStatus === 'error' ? veggieStakeState.bootError : '',
 	);
@@ -22,6 +25,23 @@
 		const spacing = length >= 18 ? -0.065 : length >= 16 ? -0.05 : length >= 14 ? -0.032 : 0;
 		return `--value-scale:${scale};--value-spacing:${spacing}em`;
 	};
+	let bar = $state<HTMLElement>();
+	// The band the bar takes off the bottom of the viewport. Written straight to a CSS variable, never
+	// to state: the scene's layout reads it, and a measurement that fed back into state would re-run
+	// this on its own output (lessons R-10/R-12).
+	$effect(() => {
+		const el = bar;
+		if (!el) return;
+		const root = document.documentElement;
+		const publish = () => root.style.setProperty('--replay-band', `${Math.ceil(el.getBoundingClientRect().height)}px`);
+		const observer = new ResizeObserver(publish);
+		observer.observe(el);
+		publish();
+		return () => {
+			observer.disconnect();
+			root.style.removeProperty('--replay-band');
+		};
+	});
 	const replay = () => {
 		if (!veggieStakeDerived.requestReplayStart()) return;
 		const snapshot = veggieStakeDerived.cloneReplayBet(veggieStakeState.replaySnapshot);
@@ -34,165 +54,211 @@
 	};
 </script>
 
-{#if veggieStakeDerived.isReplayMode() && !veggieStakeState.replayRunning}
-	<div class="replay-shell">
-		<section class="replay-card" role="dialog" aria-modal="true" aria-label={t('BET REPLAY')}>
-			<header><span>{t('REPLAY')}</span><strong>{veggieStakeDerived.modeTitle()}</strong></header>
-			{#if veggieStakeState.replayEventId}
-				<p class="event">{t('EVENT')} {veggieStakeState.replayEventId}</p>
-			{/if}
-			<div class="rows">
-				<p><span>{t('MODE')}</span><strong>{veggieStakeDerived.modeTitle()}</strong></p>
-				<p><span>{t('BASE BET')}</span><strong style={valueStyle(betText)}>{betText}</strong></p>
-				<p>
-					<span>{t('COST MULTIPLIER')}</span><strong
-						>{veggieStakeDerived.modeCostMultiplier()}×</strong
-					>
-				</p>
-				<p>
-					<span>{t('TOTAL BET COST')}</span><strong style={valueStyle(costText)}>{costText}</strong>
-				</p>
-				<p>
-					<span>{t('PAYOUT MULTIPLIER')}</span><strong
-						>{payoutMultiplier.toFixed(2).replace(/\.?0+$/, '')}×</strong
-					>
-				</p>
-				<p>
-					<span>{t('TOTAL WIN')}</span><strong style={valueStyle(winText)}>{winText}</strong>
-				</p>
-			</div>
-			{#if replayError}<p class="error">{replayError}</p>{/if}
-			{#if !replayError}
-				<button type="button" disabled={!veggieStakeState.replaySnapshot} onclick={replay}>
+<!-- A docked bar, not a modal (mock review 2026-09-25, R-12): the old full-screen card with its
+     scrim covered every cell before and after playback, so the replayed result was never visible.
+     The bar stays mounted while the replay runs, so the band it takes never changes height, and it
+     publishes that band as --replay-band; the scene shrinks the board's box by it. -->
+{#if veggieStakeDerived.isReplayMode()}
+	<section class="replay-bar" bind:this={bar} aria-label={t('BET REPLAY')}>
+		<header><span>{t('REPLAY')}</span><strong>{veggieStakeDerived.modeTitle()}</strong></header>
+		<dl class="rows">
+			<div><dt>{t('BASE BET')}</dt><dd style={valueStyle(betText)}>{betText}</dd></div>
+			<div><dt>{t('COST MULTIPLIER')}</dt><dd>{veggieStakeDerived.modeCostMultiplier()}×</dd></div>
+			<div><dt>{t('TOTAL BET COST')}</dt><dd style={valueStyle(costText)}>{costText}</dd></div>
+			<div><dt>{t('PAYOUT MULTIPLIER')}</dt><dd>{payoutText}</dd></div>
+			<div><dt>{t('TOTAL WIN')}</dt><dd style={valueStyle(winText)}>{winText}</dd></div>
+		</dl>
+		<div class="act">
+			{#if replayError}
+				<p class="error">{replayError}</p>
+			{:else}
+				<button
+					type="button"
+					disabled={!veggieStakeState.replaySnapshot || veggieStakeState.replayRunning}
+					onclick={replay}
+				>
 					▶ {veggieStakeState.replayHasPlayed ? t('REPLAY EVENT') : t('START REPLAY')}
 				</button>
 			{/if}
 			<small>{t('REPLAY DISCLAIMER')}</small>
-		</section>
-	</div>
+		</div>
+	</section>
 {/if}
 
 <style>
-	.replay-shell {
+	.replay-bar {
 		position: fixed;
-		inset: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
 		z-index: 90;
 		display: grid;
-		place-items: center;
-		padding: 14px;
-		background: rgb(4 18 12 / 72%);
-	}
-	.replay-card {
-		width: min(430px, 96vw);
-		max-height: calc(100svh - 28px);
-		overflow: auto;
-		padding: 20px;
-		border: 6px solid #3a1b05;
+		grid-template-columns: auto minmax(0, 1fr) minmax(170px, 22%);
+		align-items: center;
+		gap: 8px 16px;
+		padding: 10px max(16px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom))
+			max(16px, env(safe-area-inset-left));
+		border-top: 5px solid #3a1b05;
 		background: #24380f;
-		box-shadow:
-			inset 0 0 0 3px #d99a32,
-			7px 7px 0 #140b04;
+		box-shadow: inset 0 3px 0 #d99a32;
 		color: #fff;
 		font-family: 'Jersey 10', monospace;
 	}
 	header {
-		display: flex;
-		justify-content: space-between;
-		gap: 12px;
+		display: grid;
+		gap: 2px;
 		color: #ffe15b;
-		font-weight: 900;
+		line-height: 1;
 	}
-	.event,
-	small {
-		color: #d7e9b6;
-		font-size: 11px;
-		text-align: center;
+	header span {
+		color: #cfe5aa;
+		font-size: 13px;
+		letter-spacing: 0.08em;
+	}
+	header strong {
+		font-size: 22px;
+		white-space: nowrap;
 	}
 	.rows {
 		display: grid;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
 		gap: 4px;
-		margin: 14px 0;
-	}
-	.rows p {
-		display: flex;
-		justify-content: space-between;
-		gap: 12px;
 		margin: 0;
-		padding: 8px;
+	}
+	.rows div {
+		min-width: 0;
+		padding: 5px 8px;
 		background: #172909;
 	}
-	.rows span {
+	/* Labels wrap rather than ellipsise: a clipped "PAYOUT MULTIP…" reads as broken. */
+	dt {
 		color: #cfe5aa;
-		font-size: 11px;
+		font-size: 13px;
+		line-height: 1;
 	}
-	.rows strong {
-		color: #ffd55b;
-		max-width: 58%;
+	dd {
+		margin: 0;
 		overflow: hidden;
-		font-size: calc(1em * var(--value-scale, 1));
+		color: #ffd55b;
+		font-size: calc(20px * var(--value-scale, 1));
 		letter-spacing: var(--value-spacing, 0);
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
+	.act {
+		display: grid;
+		gap: 4px;
+		justify-items: stretch;
+	}
 	button {
-		width: 100%;
-		margin: 10px 0;
-		padding: 13px;
+		padding: 8px 12px;
 		border: 4px solid #6d390d;
 		background: #ec9200;
 		color: #fff;
 		font:
-			900 14px 'Jersey 10',
+			900 18px 'Jersey 10',
 			monospace;
 		cursor: pointer;
 	}
 	button:disabled {
 		opacity: 0.5;
+		cursor: default;
+	}
+	small {
+		color: #d7e9b6;
+		font-size: 11px;
+		line-height: 1.1;
+		text-align: center;
 	}
 	.error {
+		margin: 0;
 		color: #ffb5a8;
+		font-size: 14px;
 	}
 
-	@media (max-width: 520px) and (max-height: 300px) and (orientation: landscape) {
-		.replay-shell {
-			padding: 4px;
-		}
-		.replay-card {
-			width: min(380px, calc(100vw - 8px));
-			max-height: calc(100dvh - 8px);
-			padding: 7px 10px;
-			border-width: 4px;
-			box-shadow:
-				inset 0 0 0 2px #d99a32,
-				3px 3px 0 #140b04;
+	/* Phones in portrait: stacked, three values to a row. */
+	@media (orientation: portrait) {
+		.replay-bar {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 6px;
+			padding-top: 8px;
 		}
 		header {
-			gap: 5px;
-			font-size: 9px;
+			display: flex;
+			align-items: baseline;
+			justify-content: space-between;
 		}
-		.event,
-		small {
-			margin: 3px 0;
-			font-size: 6px;
-			line-height: 1.1;
+		header strong {
+			font-size: 20px;
 		}
 		.rows {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: 2px;
-			margin: 4px 0;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
 		}
-		.rows p {
-			gap: 4px;
-			padding: 3px 4px;
-			font-size: 7px;
+		dt {
+			font-size: 12px;
 		}
-		.rows span {
-			font-size: 6px;
+		dd {
+			font-size: calc(18px * var(--value-scale, 1));
+		}
+	}
+
+	/* Short landscape (phones, Popout L/S): one row, as low as it can read. */
+	@media (orientation: landscape) and (max-height: 520px) {
+		.replay-bar {
+			grid-template-columns: auto minmax(0, 1fr) minmax(120px, 24%);
+			gap: 4px 10px;
+			padding-top: 5px;
+			padding-bottom: calc(5px + env(safe-area-inset-bottom));
+			border-top-width: 3px;
+			box-shadow: inset 0 2px 0 #d99a32;
+		}
+		header span,
+		dt {
+			font-size: 11px;
+		}
+		header strong {
+			font-size: 16px;
+		}
+		.rows div {
+			padding: 3px 6px;
+		}
+		dd {
+			font-size: calc(15px * var(--value-scale, 1));
 		}
 		button {
-			margin: 4px 0;
-			padding: 5px;
+			padding: 4px 8px;
+			border-width: 3px;
+			font-size: 14px;
+		}
+		small {
+			font-size: 9px;
+		}
+	}
+	@media (orientation: landscape) and (max-height: 300px) {
+		.replay-bar {
+			grid-template-columns: minmax(0, 1fr) 30%;
+			gap: 3px 6px;
+			padding: 3px 6px calc(3px + env(safe-area-inset-bottom));
+		}
+		header {
+			display: none;
+		}
+		.rows div {
+			padding: 2px 4px;
+		}
+		header span,
+		dt {
+			font-size: 9px;
+		}
+		dd {
+			font-size: calc(12px * var(--value-scale, 1));
+		}
+		button {
+			padding: 2px 6px;
 			border-width: 2px;
+			font-size: 12px;
+		}
+		small {
 			font-size: 8px;
 		}
 	}

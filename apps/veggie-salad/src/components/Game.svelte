@@ -135,6 +135,23 @@
 	};
 
 	const acknowledgePresentation = () => stateGameDerived.continuePresentation();
+	/* The prompt sits just above the HUD, measured live: pinned to the screen's foot it lay over
+	   the portrait bet row (mock review). */
+	const aboveHud = (node: HTMLElement) => {
+		const place = () => {
+			const hud = document.querySelector('.scene .hud')?.getBoundingClientRect();
+			// Portrait only: there the card ends well above the HUD bar. In landscape the card
+			// reaches the bar, so lifting the prompt puts it on the card's own lettering; phone
+			// landscape's HUD is side columns, not in the way at all.
+			const portrait = window.innerHeight > window.innerWidth;
+			const acrossFoot = portrait && hud && hud.height > 0 && hud.width > window.innerWidth / 2;
+			const lift = acrossFoot ? Math.max(0, window.innerHeight - hud.top) : 0;
+			node.style.setProperty('--hud-lift', `${Math.round(lift)}px`);
+		};
+		place();
+		window.addEventListener('resize', place);
+		return { destroy: () => window.removeEventListener('resize', place) };
+	};
 	const acknowledgeWithKeyboard = (event: KeyboardEvent) => {
 		if (!stateGame.continueGate || (event.key !== 'Enter' && event.code !== 'Space')) return;
 		event.preventDefault();
@@ -151,12 +168,16 @@
 		carrot: 'board/potato',
 		cauliflower: 'board/radish',
 		radish: 'board/garlic',
+		scatter: 'board/king',
+		onion: 'board/king',
 	};
 	const symbol = (name: string) => `./assets/veggie-salad/pixel/${BOARD_ART[name] ?? name}.webp`;
 	const infoDir = './assets/veggie-salad/pixel/info';
 	const infoFrame = `${infoDir}/overview_frame.webp`;
 	const infoPanel = `${infoDir}/panel_wood_bg.webp`;
 	const infoIcon = (name: string) => `${infoDir}/${name}.webp`;
+	const hudDir = './assets/veggie-salad/pixel/hud';
+	const glyphDir = `${infoDir}/px`;
 	const t = (key: string) => {
 		try {
 			return stateI18nDerived.translate(key);
@@ -523,7 +544,7 @@
 			{
 				kind: 'overview',
 				frame: infoFrame,
-				background: './assets/veggie-salad/pixel/background.webp',
+				background: './assets/veggie-salad/pixel/background-px.webp',
 				title: t('INFO OVERVIEW'),
 				// Design 9025:7456 (2026-09-16): one intro paragraph, the max-win and RTP rows, and two
 				// feature cards. The stat icons are not drawn; they only satisfy the shared type.
@@ -728,19 +749,36 @@
 				frame: infoFrame,
 				background: infoPanel,
 				title: t('INFO FEATURE BUY'),
+				// Two rows: the spin modes and the RTP statement, then the three bonus buys.
 				cards: [
 					{
-						icon: `${infoDir}/fb_normal.svg`,
+						icon: symbol('scatter'),
+						title: t('INFO FB CHANCE TITLE'),
+						text: t('INFO FB CHANCE TEXT'),
+					},
+					{
+						icon: symbol('broccoli'),
+						title: t('INFO FB FEATURE TITLE'),
+						text: t('INFO FB FEATURE TEXT'),
+					},
+					{
+						title: t('RTP AND MAX WIN'),
+						text: t('RTP AND MAX WIN TEXT'),
+					},
+					{
+						// The designs' king / corn / box, drawn with the board's own sprites (the old
+						// fb_* art was the retired king and corn, and a soft-edged box).
+						icon: symbol('scatter'),
 						title: t('INFO FB NORMAL TITLE'),
 						text: t('INFO FB NORMAL TEXT'),
 					},
 					{
-						icon: `${infoDir}/fb_super.svg`,
+						icon: symbol('corn'),
 						title: t('INFO FB SUPER TITLE'),
 						text: t('INFO FB SUPER TEXT'),
 					},
 					{
-						icon: infoIcon('fb_mystery'),
+						icon: symbol('mystery-box-px'),
 						title: t('INFO FB MYSTERY TITLE'),
 						text: t('INFO FB MYSTERY TEXT'),
 					},
@@ -770,66 +808,68 @@
 				background: infoPanel,
 				title: t('INFO UI GUIDE'),
 				// Design 9044:15707 draws each control as a light glyph on a dark disc; the spin
-				// button alone keeps its amber face (theme 'gold').
+				// button alone keeps its amber face (theme 'gold') and the HUD's own lilac arrow. Every
+				// glyph is pixel art in the design's cream (scripts/build-info-glyphs.py); the ones the
+				// bar also shows are the bar's own cells, so the page matches the HUD.
 				cards: [
 					{
-						icon: infoIcon('ui_glyph_spin'),
+						icon: `${hudDir}/spin-arrow.webp`,
 						theme: 'gold',
 						title: t('INFO CTRL SPIN'),
 						text: t('INFO CTRL SPIN DESC'),
 					},
 					{
-						icon: `${infoDir}/ui_glyph_auto.svg`,
+						icon: `${glyphDir}/auto.webp`,
 						title: t('INFO CTRL AUTO'),
 						text: t('INFO CTRL AUTO DESC'),
 					},
 					{
-						icon: infoIcon('ui_glyph_turbo'),
+						icon: `${glyphDir}/turbo.webp`,
 						title: t('INFO CTRL TURBO'),
 						text: t('INFO CTRL TURBO DESC'),
 					},
 					{
-						icon: `${infoDir}/ui_glyph_betplus.svg`,
+						icon: `${glyphDir}/plus.webp`,
 						title: t('INFO CTRL PLUS'),
 						text: t('INFO CTRL PLUS DESC'),
 					},
 					{
-						icon: `${infoDir}/ui_glyph_betminus.svg`,
+						icon: `${glyphDir}/minus.webp`,
 						title: t('INFO CTRL MINUS'),
 						text: t('INFO CTRL MINUS DESC'),
 					},
 					{
-						icon: `${infoDir}/ui_glyph_info.svg`,
+						icon: `${glyphDir}/info.webp`,
 						title: t('INFO CTRL INFO'),
 						text: t('INFO CTRL INFO DESC'),
 					},
 					{
-						icon: `${infoDir}/ui_glyph_sound.svg`,
+						icon: `${glyphDir}/sound.webp`,
 						title: t('INFO CTRL SOUND'),
 						text: t('INFO CTRL SOUND DESC'),
 					},
 					{
-						icon: `${infoDir}/ui_glyph_arrow.svg`,
+						icon: `${glyphDir}/arrow.webp`,
 						title: t('INFO CTRL PREV'),
 						text: t('INFO CTRL PREV DESC'),
 					},
 					{
-						icon: `${infoDir}/ui_glyph_arrow_next.svg`,
+						icon: `${glyphDir}/arrow-next.webp`,
 						title: t('INFO CTRL NEXT'),
 						text: t('INFO CTRL NEXT DESC'),
 					},
 					{
-						icon: `${infoDir}/ui_glyph_close.svg`,
+						icon: `${glyphDir}/close.webp`,
 						title: t('INFO CTRL CLOSE'),
 						text: t('INFO CTRL CLOSE DESC'),
 					},
 					{
-						icon: `${infoDir}/ui_glyph_menu.svg`,
+						icon: `${glyphDir}/menu.webp`,
 						title: t('INFO CTRL MENU'),
 						text: t('INFO CTRL MENU DESC'),
 					},
 					{
-						icon: `${infoDir}/ui_glyph_music.svg`,
+						icon: `${glyphDir}/music.webp`,
 						title: t('INFO CTRL MUSIC'),
 						text: t('INFO CTRL MUSIC DESC'),
 					},
@@ -877,6 +917,7 @@
 	<button
 		type="button"
 		class="continue-gate"
+		use:aboveHud
 		aria-label={t('CLICK ANYWHERE TO CONTINUE')}
 		onclick={acknowledgePresentation}
 	>
@@ -907,7 +948,7 @@
 		display: flex;
 		align-items: flex-end;
 		justify-content: center;
-		padding: 0 16px max(8px, 1.5vh);
+		padding: 0 16px calc(var(--hud-lift, 0px) + max(8px, 1.5vh));
 		border: 0;
 		background: transparent;
 		color: #fff1a8;

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { stateI18nDerived } from 'state-shared';
 
+	import { birdFlight } from '../game/birdFlight';
+
 	/* `onstart` hands the game the wordmark's box, so the game can fly the logo from here into its
 	   own header; `leaving` then fades everything else away while that flight plays. */
 	type Props = { onstart: (logo: DOMRect | null) => void; leaving?: boolean };
@@ -29,15 +31,18 @@
 	   and bottoms out at y588, so 1 design px is 100/806 cqw of the stage and the cluster rescales with
 	   the boards. Anchored to the stage's BOTTOM, since these sit on the ground line; `tilt` is the
 	   instance's own rotation, taken about the sprite's base, which is where the idle pivots. Painted
-	   back to front, in the design's layer order. */
+	   back to front, in the design's layer order. The positions leave the design: it stacked the
+	   crop, the cabbage, potato and radish a head above the others, and on screen they read as
+	   hanging in the air ("the brocoli ... stays in the air", user 2026-09-25). Every one now
+	   stands on the same ground line, in a row with small overlaps and both eyes clear. */
 	const GROUND = [
-		{ name: 'pepper', left: 1.37, bottom: -0.12, size: 8.2, tilt: 0 },
-		{ name: 'cabbage', left: 94.68, bottom: 3.97, size: 7.57, tilt: 0 },
-		{ name: 'radish', left: -9.69, bottom: 0.65, size: 8.41, tilt: -6.5 },
+		{ name: 'pepper', left: 2.2, bottom: -3.2, size: 8.2, tilt: 0 },
+		{ name: 'cabbage', left: 105.6, bottom: -3.1, size: 7.57, tilt: 4 },
+		{ name: 'radish', left: -12.4, bottom: -3.6, size: 8.41, tilt: -4 },
 		{ name: 'tomato', left: 95.63, bottom: -4.33, size: 9.57, tilt: 15 },
 		{ name: 'eggplant', left: 90.82, bottom: -2.36, size: 5.92, tilt: 0 },
-		{ name: 'potato', left: -1.64, bottom: 6.47, size: 7.12, tilt: -30.5 },
-		{ name: 'garlic', left: -7, bottom: -2.69, size: 9.02, tilt: 15 },
+		{ name: 'potato', left: -19.2, bottom: -3.4, size: 7.12, tilt: -8 },
+		{ name: 'garlic', left: -5.2, bottom: -3.6, size: 9.02, tilt: 8 },
 	];
 	/* A splash that never moves reads as a screenshot. Everything below is generated once per mount,
 	   so no two visits are identical, and it is driven by CSS animation rather than a rAF loop — the
@@ -84,7 +89,9 @@
 		potato: { sway: 1.2, lift: 1.4, dur: 5.8 },
 		garlic: { sway: 2.2, lift: 1.9, dur: 5.2 },
 		pepper: { sway: 1.6, lift: 2.4, dur: 4.1 },
-		cabbage: { sway: 1.1, lift: 1.3, dur: 6.1 },
+		// Was 1.1/1.3: next to the others it read as parked on the tomato ("the brocolli stays",
+		// user 2026-09-25).
+		cabbage: { sway: 2.4, lift: 3.2, dur: 4.4 },
 		eggplant: { sway: 2.4, lift: 2.4, dur: 4.6 },
 		tomato: { sway: 1.3, lift: 2.6, dur: 3.7 },
 	};
@@ -121,7 +128,14 @@
 	const leanerStyle = (item: Leaner) =>
 		`${item.side}:0; top:${item.at}%; height:min(${item.size}cqw, 34%); width:auto; --shift:${item.side === 'left' ? item.hide - 100 : 100 - item.hide}%; --anchor:-50%; --tilt:${item.tilt}deg`;
 	const withMotion = <T extends { name: string }>(list: readonly T[]) =>
-		list.map((item) => ({ ...item, ...VEG_MOTION[item.name], delay: -rand(0, 6) }));
+		list.map((item) => ({
+			...item,
+			...VEG_MOTION[item.name],
+			delay: -rand(0, 6),
+			// The logo's landing kick: a staggered hop each, not one block leaving the ground.
+			jumpDelay: rand(0, 110),
+			jumpHeight: rand(20, 34),
+		}));
 	const ground = withMotion(GROUND).map((item) => ({ ...item, style: cropStyle(item) }));
 	const groundPortrait = withMotion(GROUND_PORTRAIT).map((item) => ({
 		...item,
@@ -136,10 +150,11 @@
 	   style, and the authored closed-eye body is what a blink swaps back to — so the blink is the
 	   original art, not an invented one. */
 	let kingBlinking = $state(false);
-	/* The king's rig, back to front: the design's vector (9200:148144) cut into the parts that move
-	   by scripts/build-splash-king.py, every layer the same canvas so they stack at inset 0. Each
+	/* The king's rig, back to front: the board's pixel king (scripts/build-board-king.py; "replace
+	   it in splash and all screens", user 2026-09-24) in the parts that move, every layer the same
+	   canvas so they stack at inset 0. Each
 	   part is animated in the styles on the hop's own 3.4s clock. */
-	const kingArt = (name: string) => splashArt(`king/${name}`);
+	const kingArt = (name: string) => `./assets/veggie-salad/pixel/board/king/${name}.webp`;
 	const KING_PARTS = ['sprout', 'body', 'crown', 'foot-l', 'foot-r', 'cape-l', 'cape-r'] as const;
 	const kingPart = (part: (typeof KING_PARTS)[number]) =>
 		kingArt(part === 'body' ? (kingBlinking ? 'body' : 'body-open') : part.replace('foot', 'feet'));
@@ -252,6 +267,17 @@
 	};
 </script>
 
+<!-- Short phone landscape only (styles below): the ground crop hangs off the board row, and on a
+     shell that wide there is nowhere for it to hang, so each side board carries its cluster in its
+     own empty lower half instead — without it the boards read as bare (mock review). -->
+{#snippet boardCrop(names: string[])}
+	<span class="board-crop" aria-hidden="true">
+		{#each names as name (name)}
+			<img src={vegFrame(name, eyeFrames[name] ?? 'base')} alt="" />
+		{/each}
+	</span>
+{/snippet}
+
 <svelte:window onkeydown={handleKey} />
 
 <div
@@ -288,6 +314,15 @@
 			</span>
 		{/each}
 	</div>
+	<!-- The base game's birds ("in splash to add some birds maybe like in base", user 2026-09-25),
+	     mostly banking through the open sky beside the boards. -->
+	<div
+		class="splash-birds"
+		use:birdFlight={{
+			gutter: () => document.querySelector('.splash-stage')?.getBoundingClientRect(),
+		}}
+		aria-hidden="true"
+	></div>
 	<div class="splash-flowers" aria-hidden="true">
 		{#each FLOWERS as flower (flower.id)}
 			<img
@@ -305,18 +340,19 @@
 	<img
 		class="game-logo"
 		bind:this={gameLogo}
-		src="./assets/veggie-salad/pixel/logo-px.webp"
+		src="./assets/veggie-salad/pixel/logo-v2.webp"
 		alt="Veggie Salad"
 	/>
 	<div class="splash-stage">
 		<div class="splash-panels">
 			<div class:slide-on={slide === 0}>
 				<strong>{t('WELCOME TO')}<br />{' '}{t('THE GARDEN')}</strong>
-				<span class="font-copy">{t('SPLASH GARDEN COPY')}</span>
+				<span>{t('SPLASH GARDEN COPY')}</span>
+				{@render boardCrop(['radish', 'potato', 'garlic', 'pepper'])}
 			</div>
 			<div class:slide-on={slide === 1}>
 				<strong>{t('3 UNIQUE')}<br />{' '}{t('BONUSES')}</strong>
-				<span class="font-copy">{t('SPLASH BONUS COPY')}</span>
+				<span>{t('SPLASH BONUS COPY')}</span>
 				<span class="panel-king" aria-hidden="true">
 					<span class="king-rig">
 						{#each KING_PARTS as part (part)}
@@ -331,6 +367,7 @@
 					>{t('MAX WIN')}{#if t('MAX WIN OF').trim()}<br />{' '}{t('MAX WIN OF')}{/if}</strong
 				>
 				<em>25,000×</em>
+				{@render boardCrop(['cabbage', 'eggplant', 'tomato'])}
 			</div>
 		</div>
 		<!-- Ground crop. The design plants two clusters either side of the boards, overlapping them;
@@ -341,7 +378,7 @@
 					class="veg veg-{item.name}"
 					src={vegFrame(item.name, eyeFrames[item.name])}
 					alt=""
-					style="{item.style}; --sway:{item.sway}; --lift:{item.lift}; --dur:{item.dur}s; --delay:{item.delay}s"
+					style="{item.style}; --sway:{item.sway}; --lift:{item.lift}; --dur:{item.dur}s; --delay:{item.delay}s; --jump-delay:{item.jumpDelay}ms; --jump:{item.jumpHeight}%"
 				/>
 			{/each}
 		</div>
@@ -352,8 +389,9 @@
 			<span class="dot" class:dot-on={slide === i}></span>
 		{/each}
 	</div>
-	<p class="continue-label font-copy">
-		{t('CLICK ANYWHERE TO CONTINUE')}<span class="continue-arrow" aria-hidden="true">→</span>
+	<!-- The arrow stays in the copy face: Jersey 10 has no → glyph. -->
+	<p class="continue-label">
+		{t('CLICK ANYWHERE TO CONTINUE')}<span class="continue-arrow font-copy" aria-hidden="true">→</span>
 	</p>
 </div>
 
@@ -444,6 +482,26 @@
 		height: 9.17cqw;
 		image-rendering: pixelated;
 	}
+	/* Portrait: the base game's own portrait garden (design_mobile, pixel/background/
+	   base-portrait.webp; "use same in splash background", user 2026-09-25) — one tall painting of
+	   sky, hills and grass, cover-scaled from the bottom like the game's, with no fence. */
+	@media (orientation: portrait) {
+		.splash-scenery {
+			inset: 0;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			aspect-ratio: auto;
+			transform: none;
+			background: url('./assets/veggie-salad/pixel/background/base-portrait.webp') center bottom /
+				cover no-repeat;
+		}
+		.scenery-mountains,
+		.scenery-fence {
+			display: none;
+		}
+	}
 	/* ── Sky ───────────────────────────────────────────────────────────────────────────────────
 	   Clouds cross on one wind, each on its own lane, speed and haze. The bob is a second animation
 	   on the image itself so the two cycles beat against each other rather than the whole sky
@@ -452,6 +510,13 @@
 		position: absolute;
 		inset: 0;
 		z-index: 0;
+		pointer-events: none;
+	}
+	.splash-birds {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		overflow: hidden;
 		pointer-events: none;
 	}
 	.cloud {
@@ -520,6 +585,9 @@
 	.continue-label {
 		z-index: 1;
 	}
+	.board-crop {
+		display: none;
+	}
 	/* Landscape lays the boards out in a row; the carousel's dots only exist in portrait. */
 	.splash-dots {
 		display: none;
@@ -535,6 +603,9 @@
 		image-rendering: pixelated;
 		/* Over the boards: the design hangs the wordmark's bar across their top edge. */
 		z-index: 2;
+		/* The drop squashes on the sign's own bottom edge (the art's band ends at ~72% of the
+		   canvas), so it lands on the boards rather than shrinking about its middle. */
+		transform-origin: 50% 72%;
 	}
 	/* ── Splash boards ─────────────────────────────────────────────────────────────────────────
 	   Design 9200:145271, a 1200x670 frame. Three SEPARATE boards, not one bar split by hairlines:
@@ -579,7 +650,9 @@
 		/* The resting pose, for when reduced motion drops the idle below. */
 		transform: translate(var(--shift, 0%), var(--anchor, 0%)) rotate(var(--tilt, 0deg));
 		image-rendering: pixelated;
-		animation: veg-idle var(--dur) ease-in-out var(--delay) infinite;
+		animation:
+			veg-idle var(--dur) ease-in-out var(--delay) infinite,
+			veg-jump 760ms linear calc(var(--impact) + var(--jump-delay, 0ms)) both;
 	}
 	/* Rooted at the ground line and leaning, rather than floating: the rotation pivots on the base
 	   and the lift is small enough that nothing ever leaves the soil. `--shift`/`--anchor` are the
@@ -612,7 +685,10 @@
 		width: 100%;
 		aspect-ratio: 1;
 		transform-origin: 50% 85%;
-		animation: king-tilt 5.1s ease-in-out infinite;
+		--jump: 26%;
+		animation:
+			king-tilt 5.1s ease-in-out infinite,
+			veg-jump 760ms linear calc(var(--impact) + 40ms) both;
 	}
 	/* Every part is a full-canvas layer, so a transform-origin in % is a point on the king himself
 	   (the boxes build-splash-king.py prints). All of them run on the hop's 3.4s clock and key off
@@ -930,12 +1006,15 @@
 		font-style: normal;
 		line-height: 1;
 	}
-	/* Poppins. The design sets every sentence on this screen in the copy face; in Jersey 10 the
-	   four-line garden blurb was the same wall of stems as the bonus menu's card text. */
+	/* Jersey 10, the headings' pixel face ("can we use for those some pixelated font maybe, same
+	   as others", user 2026-09-24; the design set these in Poppins). Jersey draws ~0.77 of
+	   Poppins' size, so every size is 1.3x the Poppins one, with a little tracking to open the
+	   stems up. */
 	.splash-panels span {
 		color: #fff;
-		font-size: clamp(9px, 1.42vw, 17px);
-		line-height: 1.4;
+		font-size: clamp(12px, 1.85vw, 22px);
+		letter-spacing: 0.04em;
+		line-height: 1.2;
 	}
 	.continue-label {
 		display: inline-flex;
@@ -943,7 +1022,7 @@
 		align-items: center;
 		margin: 4px 0 0;
 		color: #fff;
-		font-size: clamp(11px, 1.42vw, 17px);
+		font-size: clamp(14px, 1.85vw, 22px);
 		font-weight: 400;
 		letter-spacing: 0.06em;
 		text-shadow: 2px 2px 0 rgb(21 26 7 / 55%);
@@ -958,6 +1037,121 @@
 			opacity: 0.45;
 		}
 	}
+	/* ── Arrival ────────────────────────────────────────────────────────────────────────────────
+	   ("the logo coming from top and when it hit ... make veggies jump like stone hit the ground",
+	   user 2026-09-25.) The wordmark falls from above the window, accelerating, lands on the
+	   boards at --impact, squashes and settles; at that instant the boards take a short jolt and
+	   every vegetable (and the king) is kicked into a hop, each a few ms apart. Everything runs on
+	   `translate`/`scale`, so the idles on `transform` carry on underneath untouched. */
+	.splash-screen {
+		--drop: 620ms cubic-bezier(0.55, 0, 0.9, 0.45) 250ms;
+		--impact: 870ms;
+	}
+	@keyframes logo-drop {
+		0% {
+			translate: 0 -115vh;
+			scale: 1 1;
+		}
+		100% {
+			translate: 0 0;
+			scale: 1 1;
+		}
+	}
+	/* The squash is its own animation so the fall keeps its easing and the landing its own. */
+	.game-logo {
+		animation:
+			logo-drop var(--drop) both,
+			logo-land 420ms ease-out var(--impact) both;
+	}
+	/* Neutral at 0%: `both` holds the first keyframe through the delay, i.e. the whole fall. */
+	@keyframes logo-land {
+		0% {
+			scale: 1 1;
+		}
+		10% {
+			scale: 1.06 0.84;
+		}
+		38% {
+			scale: 0.97 1.06;
+		}
+		65% {
+			scale: 1.01 0.98;
+		}
+		100% {
+			scale: 1 1;
+		}
+	}
+	.splash-stage {
+		animation: stage-jolt 360ms linear var(--impact) both;
+	}
+	@keyframes stage-jolt {
+		0% {
+			translate: 0 0;
+		}
+		15% {
+			translate: 0 5px;
+		}
+		35% {
+			translate: 0 -2px;
+		}
+		55% {
+			translate: 0 2px;
+		}
+		75% {
+			translate: 0 -1px;
+		}
+		100% {
+			translate: 0 0;
+		}
+	}
+	/* Kicked up off the ground, a squash on the way back down and a small rebound. Heights are a
+	   share of each sprite's own box (`--jump`), so big and small veg hop in proportion. */
+	@keyframes veg-jump {
+		0% {
+			translate: 0 0;
+			scale: 1 1;
+			animation-timing-function: ease-out;
+		}
+		6% {
+			translate: 0 0;
+			scale: 1.08 0.9;
+			animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+		}
+		38% {
+			translate: 0 calc(var(--jump, 28%) * -1);
+			scale: 0.96 1.06;
+			animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.4);
+		}
+		68% {
+			translate: 0 0;
+			scale: 1.1 0.88;
+			animation-timing-function: ease-out;
+		}
+		82% {
+			translate: 0 calc(var(--jump, 28%) * -0.18);
+			scale: 0.98 1.02;
+			animation-timing-function: ease-in;
+		}
+		100% {
+			translate: 0 0;
+			scale: 1 1;
+		}
+	}
+	.board-crop img {
+		transform-origin: 50% 100%;
+		--jump: 30%;
+		animation: veg-jump 760ms linear var(--impact) both;
+	}
+	.board-crop img:nth-child(2) {
+		animation-delay: calc(var(--impact) + 50ms);
+	}
+	.board-crop img:nth-child(3) {
+		animation-delay: calc(var(--impact) + 90ms);
+	}
+	.board-crop img:nth-child(4) {
+		animation-delay: calc(var(--impact) + 30ms);
+	}
+
 	@media (prefers-reduced-motion: reduce) {
 		.cloud,
 		.cloud img,
@@ -966,11 +1160,16 @@
 		.panel-king,
 		.king-rig,
 		.king-rig img,
-		.continue-label {
+		.continue-label,
+		.game-logo,
+		.splash-stage,
+		.board-crop img {
 			animation: none;
 		}
 	}
-	@media (max-width: 680px) {
+	/* Portrait only: a narrow LANDSCAPE shell is a popout, which draws the fitted desktop
+	   composition below instead. */
+	@media (max-width: 680px) and (orientation: portrait) {
 		.splash-screen {
 			gap: 10px;
 			padding: 10px;
@@ -1005,7 +1204,7 @@
 			font-size: clamp(11px, 3.6vw, 18px);
 		}
 		.splash-panels span {
-			font-size: 9px;
+			font-size: 12px;
 		}
 	}
 
@@ -1076,8 +1275,8 @@
 		.splash-panels span {
 			max-width: 30ch;
 			margin: 0 auto;
-			font-size: clamp(12px, 3.8vw, 16px);
-			line-height: 1.4;
+			font-size: clamp(15px, 4.9vw, 21px);
+			line-height: 1.2;
 		}
 		/* Back on, and BEHIND the board: the leaners pivot on their own centres, so the tilt reads
 		   as a lean out from under the rail rather than a topple off the ground line. */
@@ -1114,7 +1313,7 @@
 		}
 		.continue-label {
 			margin-top: 0;
-			font-size: clamp(11px, 3.4vw, 16px);
+			font-size: clamp(14px, 4.4vw, 21px);
 		}
 	}
 	@media (orientation: portrait) and (prefers-reduced-motion: reduce) {
@@ -1123,7 +1322,7 @@
 		}
 	}
 
-	@media (max-height: 520px) and (orientation: landscape) {
+	@media (max-height: 520px) and (orientation: landscape) and (min-aspect-ratio: 2001/1000) {
 		.splash-screen {
 			grid-template-rows: auto auto auto auto;
 			gap: clamp(2px, 1vh, 8px);
@@ -1132,6 +1331,8 @@
 		}
 		.studio-logo {
 			width: clamp(52px, 15vh, 78px);
+			/* The base 2x3px shadow is a second, offset logo at this size. */
+			filter: drop-shadow(1px 1px 0 rgb(0 45 83 / 45%));
 		}
 		.game-logo {
 			width: min(58vw, 64vh);
@@ -1154,9 +1355,33 @@
 		}
 		/* The crop hangs 13cqw past the board row, and on a shell this wide the stage already runs
 		   to within a few px of the frame — there is nowhere for it to hang, so it stays hidden. */
-		.splash-veg,
-		.panel-king {
+		.splash-veg {
 			display: none;
+		}
+		.splash-panels div {
+			position: relative;
+		}
+		.board-crop {
+			position: absolute;
+			right: 6%;
+			bottom: 7%;
+			left: 6%;
+			display: flex;
+			align-items: flex-end;
+			justify-content: center;
+			gap: 3%;
+			pointer-events: none;
+		}
+		.board-crop img {
+			width: auto;
+			height: clamp(28px, 11vh, 56px);
+			image-rendering: pixelated;
+		}
+		/* The king stands inside his board, sized off the shell's height so he stays under the
+		   copy, where the other two boards carry their crop. */
+		.splash-panels .panel-king {
+			bottom: 4%;
+			width: clamp(40px, 15vh, 72px);
 		}
 		.splash-panels div {
 			gap: 2px;
@@ -1178,28 +1403,62 @@
 			font-size: calc(var(--splash-title) * 1.3);
 		}
 		.splash-panels span {
-			font-size: clamp(8px, 2.4vh, 12px);
-			line-height: 1.25;
+			font-size: clamp(10px, 3.1vh, 16px);
+			line-height: 1.15;
 		}
 		.continue-label {
-			/* Clear of the king, who hangs 7.9% of a board below its bottom edge. */
+			/* A little air under the boards; the king stands inside his here. */
 			margin: clamp(10px, 3.2vh, 20px) 0 0;
-			font-size: clamp(9px, 3vh, 16px);
+			font-size: clamp(12px, 3.9vh, 21px);
 			line-height: 1;
 			text-shadow: 1px 1px 0 #351a07;
 		}
 	}
 
-	/* The king does not hang off the board row, only off his own board, so once the boards are tall
-	   enough to keep his crown clear of the copy he comes back: the design fills the space under the
-	   copy with him, and without him these boards read as empty. The boards are 34vh here, and below
-	   ~400px of shell that leaves no slack under the copy for him to stand in. */
-	@media (min-height: 400px) and (max-height: 520px) and (orientation: landscape) {
-		.splash-panels .panel-king {
-			display: block;
-			/* Three-tenths of the board rather than the full-height 42%: the boards are 34vh here and
-			   the copy sits where the design's empty space would be, so he has to stand under it. */
-			width: 30%;
+	/* ── Popouts ───────────────────────────────────────────────────────────────────────────────
+	   Stake's Popout S (400x225) and L (795x457) are 16:9-ish and short. The phone layout above
+	   is for shells wider than 2:1; on a popout its px floors outgrew the box — crop and king over
+	   the copy, the 25,000x pushed out ("popout s is very buggy", user 2026-09-24). A popout has
+	   the design's own proportions, so it draws the DESKTOP composition, every size written in
+	   design px of the 1200x670 frame and scaled by --p to fit the shell, crop and all. */
+	@media (orientation: landscape) and (max-height: 520px) and (max-aspect-ratio: 2/1),
+		(orientation: landscape) and (max-width: 680px) and (max-aspect-ratio: 2/1) {
+		.splash-screen {
+			--p: min(calc(100vw / 1200), calc(100vh / 670));
+			--logo-w: calc(760 * var(--p));
+			--splash-gap: calc(10.7 * var(--p));
+			padding: calc(16 * var(--p));
+		}
+		.studio-logo {
+			width: calc(170 * var(--p));
+			filter: drop-shadow(calc(2 * var(--p)) calc(3 * var(--p)) 0 rgb(0 45 83 / 45%));
+		}
+		.splash-panels {
+			--splash-title: calc(38 * var(--p));
+			gap: calc(19 * var(--p));
+		}
+		.splash-panels div {
+			gap: calc(10.7 * var(--p));
+			min-height: calc(299 * var(--p));
+			padding: calc(22.8 * var(--p)) calc(21.6 * var(--p)) calc(21.6 * var(--p));
+			border-width: max(1px, calc(5 * var(--p)));
+			box-shadow:
+				0 0 0 max(1px, calc(2 * var(--p))) #2c1901,
+				inset 0 0 0 max(1px, calc(2 * var(--p))) #2c1901;
+		}
+		.splash-panels div:nth-child(3) strong {
+			font-size: calc(50 * var(--p));
+		}
+		.splash-panels .panel-max em {
+			font-size: calc(52.8 * var(--p));
+		}
+		.splash-panels span {
+			font-size: calc(22 * var(--p));
+		}
+		.continue-label {
+			margin: calc(4 * var(--p)) 0 0;
+			font-size: calc(22 * var(--p));
+			text-shadow: max(1px, calc(2 * var(--p))) max(1px, calc(2 * var(--p))) 0 rgb(21 26 7 / 55%);
 		}
 	}
 </style>

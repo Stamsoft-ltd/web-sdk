@@ -35,7 +35,7 @@ export const socialOverridesEn: Record<string, string> = {
 	'CONFIRM ACTIVATION': 'CONFIRM PLAY',
 	CONFIRM: 'PLAY',
 	'CHOOSE YOUR HARVEST': 'CHOOSE YOUR FEATURE',
-	'PAYTABLE MAX TEXT': 'Maximum win is 25,000× the selected play amount.',
+	'PAYTABLE MAX TEXT': 'Maximum win is 25,000× the base play amount.',
 	'PAYTABLE CHANCE TEXT': '2× play amount · 3× higher bonus chance.',
 	'PAYTABLE FEATURE TEXT': '20× play amount · guaranteed winning cluster.',
 	'BET MODE FEATURE DIALOG':
@@ -84,6 +84,10 @@ export const socialOverridesEn: Record<string, string> = {
 		'Wins are formed by connecting 5 or more identical vegetable symbols horizontally or vertically.\nDiagonal symbols do not connect.\nEach connected winning cluster wins according to the Win Table.',
 	'INFO WTW MAXWIN TEXT':
 		'The maximum win is 25,000x the selected base play amount.\nWhen the maximum win is reached, the current game round or Free Spins feature ends immediately and the maximum amount is awarded.',
+	'INFO FB CHANCE TEXT':
+		'Uses 2x the selected play amount on every spin while switched on and makes triggering a Bonus Feature 3 times more likely. It stays on until switched off.',
+	'INFO FB FEATURE TEXT':
+		'Uses 20x the selected play amount on every spin while switched on. Every Feature Spin lands at least one winning cluster, with an increased chance of Multipliers. It stays on until switched off.',
 	'INFO FB NORMAL TITLE': 'Instant Normal Bonus',
 	'INFO FB NORMAL TEXT':
 		'Can be played for 100x the selected play amount and awards direct entry to the Normal Bonus on the 8x8 grid.',
@@ -96,5 +100,5 @@ export const socialOverridesEn: Record<string, string> = {
 	'INFO GI INTERRUPTED TEXT':
 		'If a game round is interrupted, it will continue when the game is reloaded, where possible. All valid plays and potential winnings remain active until the round is fully completed.',
 	// Overview stat value (design copy reads "25,000× bet").
-	'INFO OV MAXWIN VALUE': '25,000× play amount',
+	'INFO OV MAXWIN VALUE': '25,000× base play amount',
 };

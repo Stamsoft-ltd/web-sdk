@@ -31,7 +31,8 @@ from PIL import Image, ImageDraw
 
 HERE = Path(__file__).resolve().parent
 SRC = HERE / 'art/vulk-9359-59247.svg'
-OUT = HERE.parents[0] / 'static/assets/veggie-salad/pixel/background/bonus-super/wolf'
+# The soft layers; build-crisp-art.py palette-snaps them into static/.../bonus-super/wolf-px/.
+OUT = HERE / 'art/crisp-sources/background/bonus-super/wolf'
 
 SCALE = 4  # the SVG is 246px; masks below are in 4x coordinates
 CROP = (40, 100, 910, 910)  # the pup's bounds with a little air, 4x

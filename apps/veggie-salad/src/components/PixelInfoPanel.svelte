@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { stateBet, stateI18nDerived, stateMeta } from 'state-shared';
-	import { numberToCurrencyString } from 'utils-shared/amount';
+	import { numberToWinCurrencyString } from 'utils-shared/amount';
 
 	type Props = { onclose: () => void };
 	const props: Props = $props();
@@ -98,7 +98,8 @@
 	const payCellText = (value: string) => {
 		const multiplier = Number.parseFloat(value);
 		if (!Number.isFinite(multiplier)) return value;
-		return numberToCurrencyString(multiplier * stateBet.betAmount);
+		// A win value, so the win formatter (up to 4 dp): 0.2× at a 0.01 bet is $0.002, not $0.00 (R-01).
+		return numberToWinCurrencyString(multiplier * stateBet.betAmount);
 	};
 	/* Only the overview (9025:7456) carries the game logo in its head; every other page, the paytable
 	   included since its 2026-09-16 redraw, prints the title alone. */
@@ -109,7 +110,7 @@
 	   Faces: every heading the design draws in Jersey 10 stays Jersey 10 (the app-wide default);
 	   every piece of copy the design sets in Nunito goes on `.font-nunito` (Nunito Sans, variable
 	   weight, declared in app.html) at the design's own size and weight. */
-	const isOdds = (chunk: string) => /^\d+%$/.test(chunk);
+	const isOdds = (chunk: string) => /^\d+(?:\.\d+)?%$/.test(chunk);
 </script>
 
 {#snippet copy(text: string)}
@@ -118,7 +119,7 @@
 			<span class="copy-gap"></span>
 		{:else}
 			<span class="copy-line"
-				>{#each line.split(/(\d+%)/) as chunk, chunkIndex (chunkIndex)}{#if isOdds(chunk)}<em
+				>{#each line.split(/(\d+(?:\.\d+)?%)/) as chunk, chunkIndex (chunkIndex)}{#if isOdds(chunk)}<em
 							>{chunk}</em
 						>{:else}{chunk}{/if}{/each}</span
 			>
@@ -144,15 +145,15 @@
 	>
 		<button
 			type="button"
-			class="info-close font-copy"
+			class="info-close"
 			aria-label={t('CLOSE')}
-			onclick={props.onclose}>×</button
+			onclick={props.onclose}><img src="{infoDir}/px/close.webp" alt="" /></button
 		>
 		{#if page}
 			<div class="info-head">
 				<h2>{page.title}</h2>
 				{#if showLogo}
-					<img class="info-logo" src="./assets/veggie-salad/pixel/logo-px.webp" alt="" />
+					<img class="info-logo" src="./assets/veggie-salad/pixel/logo-v2.webp" alt="" />
 				{/if}
 			</div>
 
@@ -166,8 +167,28 @@
 						{#each page.payouts as row (row.name)}
 							<span class="pay-cell pay-symbol"><img src={row.icon} alt={row.name} /></span>
 							{#each row.values as value, valueIndex (valueIndex)}
-								<span class="pay-cell pay-value font-nunito">{payCellText(value)}</span>
+								{@const price = payCellText(value)}
+								<span class="pay-cell pay-value font-nunito"
+									><span style="--chars:{Array.from(price).length}">{price}</span></span
+								>
 							{/each}
+						{/each}
+					</div>
+					<!-- Phones (portrait and short landscape): eleven price columns across a phone
+					     left each price ~25px — "$15,000.00" at a $100 bet fitted at 3px (mock review).
+					     There the table becomes one card per symbol, cluster size against price, so
+					     a price gets most of a card's width at any bet. -->
+					<div class="pay-cards">
+						{#each page.payouts as row (row.name)}
+							<article class="pay-card">
+								<img src={row.icon} alt={row.name} />
+								<dl class="font-nunito">
+									{#each row.values as value, valueIndex (valueIndex)}
+										<dt>{page.payoutHead.cols[valueIndex]}</dt>
+										<dd>{payCellText(value)}</dd>
+									{/each}
+								</dl>
+							</article>
 						{/each}
 					</div>
 					{#if page.cards?.length}
@@ -277,10 +298,10 @@
 
 			<nav class="info-nav">
 				<button type="button" aria-label={t('INFO CTRL PREV')} onclick={() => step(-1)}>
-					<img src="{infoDir}/nav_arrow.svg" alt="" />
+					<img src="{infoDir}/px/arrow.webp" alt="" />
 				</button>
 				<button type="button" aria-label={t('INFO CTRL NEXT')} onclick={() => step(1)}>
-					<img class="info-nav-next" src="{infoDir}/nav_arrow.svg" alt="" />
+					<img class="info-nav-next" src="{infoDir}/px/arrow.webp" alt="" />
 				</button>
 			</nav>
 			<span class="info-page font-nunito">{t('INFO PAGE')} {index + 1}/{pages.length}</span>
@@ -498,6 +519,19 @@
 		font-weight: 500;
 		letter-spacing: 0.03em;
 	}
+	/* The design sizes prices for "$1.00"; the 15+ column at the base bet ("$150.00") and every
+	   column at big bets ran past their cells (mock review). Each cell is its own size container,
+	   and a price only shrinks when its characters (~0.62em each in Nunito) cannot fit. */
+	.pay-cell.pay-value {
+		container-type: inline-size;
+	}
+	.pay-value > span {
+		font-size: min(1em, calc((100cqi - 3px) / (var(--chars, 5) * 0.62)));
+		white-space: nowrap;
+	}
+	.pay-cards {
+		display: none;
+	}
 	.pay-symbol img {
 		width: 4.1cqw;
 		height: auto;
@@ -561,8 +595,16 @@
 	.info-nav img {
 		width: 2cqw;
 		height: auto;
+		image-rendering: pixelated;
 	}
-	/* The design's Union glyph is drawn pointing left; NEXT mirrors it. */
+	/* Pixel close glyph (scripts/build-info-glyphs.py); was a Poppins "x", the one smooth mark
+	   left on the panel's frame. */
+	.info-close img {
+		width: 40%;
+		height: auto;
+		image-rendering: pixelated;
+	}
+	/* The arrow glyph is drawn pointing left; NEXT mirrors it. */
 	.info-nav-next {
 		transform: scaleX(-1);
 	}
@@ -614,12 +656,14 @@
 	.rule-grid--ways > :nth-child(4) {
 		grid-column: span 4;
 	}
+	/* Two rows since review 2026-09-25 (R-04): Extra Chance, Feature Spin and the RTP statement over
+	   the three buys, the wide column taking the RTP card and Mystery. */
 	.rule-grid--buy {
-		top: 16.65cqw;
+		top: 7.2cqw;
 		width: 88.4cqw;
 		grid-template-columns: 219fr 219fr 439fr;
-		grid-template-rows: minmax(23.1cqw, auto);
-		gap: 1.18cqw;
+		grid-template-rows: repeat(2, minmax(15.6cqw, auto));
+		gap: 0.8cqw;
 	}
 	.rule-grid--general {
 		top: 9cqw;
@@ -673,12 +717,16 @@
 		font-weight: 800;
 	}
 	.buy-card {
-		padding-top: 2.4cqw;
+		padding-top: 1.4cqw;
 	}
 	.buy-card img {
-		height: 6.6cqw;
+		height: 3.9cqw;
 		width: auto;
-		margin: 0.9cqw 0 1.1cqw;
+		margin: 0.2cqw 0 0.4cqw;
+	}
+	/* The RTP card has no icon; its copy sits centred in the card. */
+	.buy-card:not(:has(img)) {
+		justify-content: center;
 	}
 	.buy-card p {
 		width: 88%;
@@ -748,9 +796,13 @@
 		border-radius: 50%;
 		background: #361e01;
 	}
+	/* A square box the glyph is fitted into, not a width: the pixel glyphs run from the 8x2
+	   minus to the 6x10 "i", and a width alone let the tall ones through the ring. */
 	.ui-disc img {
 		width: 2.2cqw;
-		height: auto;
+		height: 2.2cqw;
+		object-fit: contain;
+		image-rendering: pixelated;
 	}
 	.ui-disc--gold {
 		border: 0.25cqw solid #925a06;
@@ -758,6 +810,7 @@
 	}
 	.ui-disc--gold img {
 		width: 2.7cqw;
+		height: 2.7cqw;
 	}
 	.ui-card h3 {
 		margin: 0;
@@ -780,8 +833,10 @@
 	/* ---- Portrait, designs 9262:230493 (overview) and 9266:230946 (paytable). The panel is a
 	   337x508 card on the 360 frame, 54px under the game's top edge with the close disc above its
 	   right corner; 1 design px is 100/337 cqw, kept in --d. Pages without a portrait design stack
-	   their cards in one column inside a scrolling body. */
-	@media (orientation: portrait) {
+	   their cards in one column inside a scrolling body.
+	   Short landscape phones take this layout too: the desktop page scaled onto a 390px-tall shell
+	   set its copy at 6-7px (mock review); the size there is fixed below instead. */
+	@media (orientation: portrait), (orientation: landscape) and (max-height: 520px) {
 		/* The design drops the card 54px under the wordmark; the wordmark is under the scrim
 		   anyway, so the card takes the same box as the game's other portrait panels (the bonus
 		   menu: 8px in from every edge) and the height goes to the pages — "make the height a
@@ -954,13 +1009,15 @@
 		}
 		.info-veg--cauliflower {
 			bottom: calc(144 * var(--d));
-			left: calc(268 * var(--d));
+			/* From the right edge (268 + 109 of the 337 design): the same spot in portrait, and
+			   still on the edge when a short landscape panel is wider than 337 units. */
+			right: calc(-40 * var(--d));
 			width: calc(109 * var(--d));
 			transform: rotate(-15deg);
 		}
 		.info-veg--broccoli {
 			bottom: calc(47 * var(--d));
-			left: calc(288 * var(--d));
+			right: calc(-41 * var(--d));
 			width: calc(90 * var(--d));
 			transform: rotate(15deg);
 		}
@@ -975,8 +1032,53 @@
 			margin: calc(10 * var(--d)) calc(8 * var(--d)) 0;
 		}
 		.pay-grid {
-			grid-template-columns: calc(42.5 * var(--d)) repeat(var(--cols, 11), minmax(0, 1fr));
-			gap: calc(2 * var(--d));
+			display: none;
+		}
+		.pay-cards {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(calc(150 * var(--d)), 1fr));
+			gap: calc(8 * var(--d));
+		}
+		.pay-card {
+			display: grid;
+			justify-items: center;
+			align-content: start;
+			gap: calc(6 * var(--d));
+			min-width: 0;
+			padding: calc(8 * var(--d)) calc(10 * var(--d)) calc(10 * var(--d));
+			border: 1px solid #935901;
+			border-radius: calc(8 * var(--d));
+			background: #442601;
+		}
+		.pay-card img {
+			width: calc(40 * var(--d));
+			height: auto;
+			image-rendering: pixelated;
+		}
+		/* Cluster size in the column heads' Jersey amber, the price in Nunito at the rule copy's
+		   12px, right-aligned so the amounts line up. */
+		.pay-card dl {
+			display: grid;
+			grid-template-columns: auto minmax(0, 1fr);
+			align-items: baseline;
+			gap: calc(2 * var(--d)) calc(10 * var(--d));
+			width: 100%;
+			margin: 0;
+		}
+		.pay-card dt {
+			color: #f2a52f;
+			font-family: 'Jersey 10', monospace;
+			font-size: calc(16 * var(--d));
+			line-height: 1;
+		}
+		.pay-card dd {
+			margin: 0;
+			overflow-wrap: anywhere;
+			color: #f2cb8c;
+			font-size: calc(12 * var(--d));
+			font-weight: 600;
+			line-height: calc(16 * var(--d));
+			text-align: right;
 		}
 		.pay-cell {
 			height: calc(19 * var(--d));
@@ -1084,12 +1186,14 @@
 		}
 		.ui-disc img {
 			width: calc(17 * var(--d));
+			height: calc(17 * var(--d));
 		}
 		.ui-disc--gold {
 			border-width: calc(2 * var(--d));
 		}
 		.ui-disc--gold img {
 			width: calc(21 * var(--d));
+			height: calc(21 * var(--d));
 		}
 		/* Two 34px discs 5px apart, their top 461px down the panel, and a 12px counter whose
 		   right edge is 19px in. */
@@ -1109,6 +1213,32 @@
 			bottom: calc(17 * var(--d));
 			font-size: calc(12 * var(--d));
 			line-height: calc(16 * var(--d));
+		}
+	}
+	/* Short landscape: the phone layout above at a fixed scale. There --d is the panel width over
+	   the 337 design, which on an 844-wide shell would set the copy at 30px; a fixed 1.05px keeps
+	   it at the portrait phone's ~13px, and the wider panel carries more cards per row. */
+	@media (orientation: landscape) and (max-height: 520px) {
+		.info-panel {
+			--d: 1.05px;
+			width: min(calc(100vw - 2 * var(--info-edge)), 760px);
+		}
+		.rule-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		.ui-grid {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+	}
+	/* Popout S (400x225): a ~210px panel has no margin for the leaning vegetables — at 100+px
+	   each they sat across the copy — and the head and nav rows need a smaller unit to leave
+	   room for a page between them. */
+	@media (orientation: landscape) and (max-height: 300px) {
+		.info-panel {
+			--d: 0.85px;
+		}
+		.info-veg {
+			display: none;
 		}
 	}
 </style>

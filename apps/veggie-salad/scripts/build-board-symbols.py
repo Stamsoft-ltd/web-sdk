@@ -24,7 +24,10 @@ from PIL import Image
 
 HERE = Path(__file__).parent
 ART = HERE / "art" / "symbols-9235-181907"
-OUT = HERE.parent / "static" / "assets" / "veggie-salad" / "pixel"
+# Retired 2026-09-24: the board draws the newer set (build-board-crop.py / build-board-premium.py), so
+# this old art is unused, so the output lives with the other retired sources, outside static/ (every image under
+# static/ is preloaded).
+OUT = HERE / "art" / "old-symbols"
 PAD = (66, 86, 31)
 SCALE = 4
 CELL = 69 * SCALE

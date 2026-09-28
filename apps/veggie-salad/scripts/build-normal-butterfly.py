@@ -29,7 +29,8 @@ from PIL import Image, ImageDraw
 
 HERE = Path(__file__).resolve().parent
 SRC = HERE / 'art/butterfly-9363-59335.svg'
-OUT = HERE.parents[0] / 'static/assets/veggie-salad/pixel/background/bonus-normal/butterfly'
+# The soft layers; build-crisp-art.py palette-snaps them into static/.../butterfly-px/.
+OUT = HERE / 'art/crisp-sources/background/bonus-normal/butterfly'
 
 SCALE = 8  # the SVG is 113px; masks below are in 8x coordinates
 CROP = (40, 100, 864, 810)

@@ -107,8 +107,13 @@ def main():
     eyes = eye_mask(owl)
     # The fill is widened a few pixels so the ring's anti-aliased edge does not survive under
     # the eye layer as a ghost outline when the eyes glance aside.
-    save(inpaint(owl, eyes.filter(ImageFilter.MaxFilter(9))).crop(OWL_CROP).resize(OWL_OUT, Image.LANCZOS), 'owl/body.webp')
-    save(cut(owl, eyes).crop(OWL_CROP).resize(OWL_OUT, Image.LANCZOS), 'owl/eyes.webp')
+    # The owl's layers are soft sources; build-crisp-art.py palette-snaps them into sunset/owl-px/.
+    owl_src = HERE / 'art/crisp-sources/background/bonus-normal/sunset/owl'
+    owl_src.mkdir(parents=True, exist_ok=True)
+    inpaint(owl, eyes.filter(ImageFilter.MaxFilter(9))).crop(OWL_CROP).resize(OWL_OUT, Image.LANCZOS).save(
+        owl_src / 'body.webp', lossless=True, quality=100, method=6)
+    cut(owl, eyes).crop(OWL_CROP).resize(OWL_OUT, Image.LANCZOS).save(
+        owl_src / 'eyes.webp', lossless=True, quality=100, method=6)
 
 
 if __name__ == '__main__':

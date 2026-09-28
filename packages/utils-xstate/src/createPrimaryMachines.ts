@@ -33,7 +33,9 @@ const handleRequestBet = async ({ onError }: { onError: () => void }) => {
 	} catch (error) {
 		onError();
 		stateBet.autoSpinsCounter = 0;
-		stateModal.modal = { name: 'error', error };
+		// The bet machine falls through to 'end' -> parent 'idle' from here, so the game stays
+		// playable: let the player dismiss this and retry rather than stranding them on the modal.
+		stateModal.modal = { name: 'error', error, recoverable: true };
 		console.error(error);
 		throw error;
 	}
@@ -96,7 +98,9 @@ function createPrimaryMachines<TBet extends BaseBet>(options: Options<TBet>) {
 		const error = new Error(
 			'INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.',
 		);
-		stateModal.modal = { name: 'error', error };
+		// Nothing was wagered — the player only has to lower the bet level, so this must be
+		// dismissible. `code` lets the modal show the translated (and social-override) copy.
+		stateModal.modal = { name: 'error', error, code: 'insufficientFunds', recoverable: true };
 		throw error;
 	};
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { backOut, cubicIn, cubicOut } from 'svelte/easing';
+	import { backOut, bounceOut, cubicIn, cubicOut } from 'svelte/easing';
 	import { Tween } from 'svelte/motion';
 	import { CanvasSizeRectangle, MainContainer } from 'components-layout';
 	import { ResponsiveBitmapText } from 'components-pixi';
@@ -510,7 +510,7 @@
 	   because the card is drawn in Pixi. Every part runs on the hop's 3.4s clock (crouch to 62%,
 	   apex 72%, landing 84%, rebound 90%); the whole rig tilts on its own 5.1s period. A frame is
 	   [percent, translateY (% of the layer), rotate (deg), scaleX, scaleY]; `origin` is the CSS
-	   transform-origin, a point on the 451px canvas. Between frames: ease-in-out, as in the CSS. */
+	   transform-origin, a point on the 450px canvas. Between frames: ease-in-out, as in the CSS. */
 	type RigFrame = [number, number, number, number, number];
 	const REST = (p: number): RigFrame => [p, 0, 0, 1, 1];
 	const KING_RIG: { key: string; origin: [number, number]; frames: RigFrame[] }[] = [
@@ -807,6 +807,23 @@
 	const bonusCopyIn = $derived(fadeIn(0.2, 0.38));
 	const bonusSymbolIn = $derived(popIn(0.36, 0.44));
 	const bonusTicketIn = $derived(popIn(0.5, 0.4));
+	/* The bonus-end card's entrance ("this congrats is a bit booring maybe the congrats and you won
+	   text can come from somewhere", user 2026-09-25). CONGRATS! falls from above the sign and
+	   bounces on it — bounceOut first touches down at 4/11 of its run, which is the impact: the
+	   word squashes and the sign takes a jolt. YOU WON then swings in from the left, leaning into
+	   the stop, and the win ticket rises from under the card. */
+	const END_TITLE_DROP = { start: 0.12, duration: 0.9 };
+	const endTitleImpact = END_TITLE_DROP.start + (END_TITLE_DROP.duration * 4) / 11;
+	const endTitleFall = $derived(bounceOut(timeline(END_TITLE_DROP.start, END_TITLE_DROP.duration)));
+	const endTitleShown = $derived(clock >= END_TITLE_DROP.start);
+	const endImpact = $derived(timeline(endTitleImpact, 0.34));
+	// A damped single squash: flat on contact, back to round by the end of the window.
+	const endSquash = $derived(endImpact > 0 && endImpact < 1 ? Math.sin(Math.PI * endImpact) * (1 - endImpact) : 0);
+	const endPlaqueJolt = $derived(
+		endImpact > 0 && endImpact < 1 ? Math.sin(Math.PI * 2 * endImpact) * (1 - endImpact) * 14 : 0,
+	);
+	const endCopyIn = $derived(slideIn(endTitleImpact + 0.12, 0.55));
+	const endTicketIn = $derived(popIn(endTitleImpact + 0.42, 0.45));
 	const namedWinIdleScale = $derived(1 + Math.sin(clock * (2.25 + tier * 0.1)) * 0.007);
 	const countedWinText = $derived(
 		bookEventAmountToCurrencyString(amount.current, overlay?.amount ?? stateGame.roundWin),
@@ -1164,8 +1181,8 @@
 													(pose.ty / 100) * KING_RIG_SIZE}
 												rotation={pose.rot}
 												scale={{
-													x: (pose.sx * KING_RIG_SIZE) / 451,
-													y: (pose.sy * KING_RIG_SIZE) / 451,
+													x: (pose.sx * KING_RIG_SIZE) / 450,
+													y: (pose.sy * KING_RIG_SIZE) / 450,
 												}}
 											/>
 										{/each}
@@ -1225,15 +1242,21 @@
 								{/each}
 							</Container>
 
-							<Container scale={0.9 + bonusPlaqueIn * 0.1} alpha={clamp01(bonusPlaqueIn)}>
+							<Container
+								y={endPlaqueJolt}
+								scale={0.9 + bonusPlaqueIn * 0.1}
+								alpha={clamp01(bonusPlaqueIn)}
+							>
 								<Sprite key="bonusEndPlaqueV2" anchor={0.5} width={750} height={262} />
 							</Container>
 
+							<!-- Falls from above the card (y -520) onto its row, squashing on the sign at the
+							     first bounce; the sway after it is the old idle. -->
 							<Container
-								y={-33 - (1 - clamp01(bonusTitleIn)) * 44}
-								scale={bonusTitleIn}
-								rotation={Math.sin(clock * 1.9) * 0.006}
-								alpha={clamp01(bonusTitleIn)}
+								y={-33 - (1 - endTitleFall) * 520 + endPlaqueJolt}
+								scale={{ x: 1 + endSquash * 0.22, y: 1 - endSquash * 0.26 }}
+								rotation={(1 - clamp01(endTitleFall)) * -0.18 + Math.sin(clock * 1.9) * 0.006}
+								alpha={endTitleShown ? 1 : 0}
 							>
 								<ResponsiveBitmapText
 									anchor={0.5}
@@ -1250,18 +1273,25 @@
 								/>
 							</Container>
 
-							<BitmapText
-								anchor={0.5}
-								y={20 + (1 - bonusCopyIn) * 16}
-								alpha={bonusCopyIn}
-								text={stateI18nDerived.translate('YOU WON')}
-								style={pixelText(42, 0xffffff)}
-							/>
+							<!-- Swings in from off the card's left, leaning forward, and straightens as it
+							     stops. -->
+							<Container
+								x={-(1 - endCopyIn) * 640}
+								y={20 + endPlaqueJolt}
+								rotation={(1 - clamp01(endCopyIn)) * 0.22 + Math.sin(clock * 2.3 + 1) * 0.01}
+								alpha={clamp01(endCopyIn * 3)}
+							>
+								<BitmapText
+									anchor={0.5}
+									text={stateI18nDerived.translate('YOU WON')}
+									style={pixelText(42, 0xffffff)}
+								/>
+							</Container>
 
 							<Container
-								y={118 + (1 - clamp01(bonusTicketIn)) * 44}
-								scale={bonusTicketIn}
-								alpha={clamp01(bonusTicketIn)}
+								y={118 + (1 - clamp01(endTicketIn)) * 220}
+								scale={endTicketIn}
+								alpha={clamp01(endTicketIn)}
 							>
 								<Sprite key="winAmountLegendaryV2" anchor={0.5} width={410} height={139} />
 								<ResponsiveBitmapText

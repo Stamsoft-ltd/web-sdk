@@ -18,6 +18,7 @@
 	import { CLUSTER_LOG_SIZE, stateGame, stateGameDerived } from '../../game/stateGame.svelte';
 	import { stateXstateDerived } from '../../game/stateXstate';
 	import { VEGGIE_PREMIUM_SYMBOLS, VEGGIE_SYMBOL_ASSETS } from '../../game/veggieAssets';
+	import { birdFlight } from '../../game/birdFlight';
 	import { symbolLiveness } from '../../game/symbolLiveness';
 	import type { Position, RawSymbol } from '../../game/types';
 	import PixelInfoPanel from '../PixelInfoPanel.svelte';
@@ -103,14 +104,22 @@
 			title: 'MODE MYSTERY TITLE',
 			cost: 300,
 			tag: 'MODE MYSTERY TAG',
-			icon: 'mystery-box',
+			icon: 'mystery-box-px',
 			kind: 'buy',
 		},
 	] as const;
 
+	// Mode icons name the old art's files; the symbols among them draw the board's own sprites
+	// (onion = the scatter king), so the menu shows the veggies the board does.
+	const MODE_ICON_SYMBOL: Record<string, keyof typeof VEGGIE_SYMBOL_ASSETS> = {
+		onion: 'SCATTER',
+		broccoli: 'BROCCOLI',
+		tomato: 'TOMATO',
+		corn: 'CORN',
+	};
 	const modeIconAsset = (icon: string) =>
-		icon === 'onion'
-			? `.${VEGGIE_SYMBOL_ASSETS.SCATTER}`
+		icon in MODE_ICON_SYMBOL
+			? `.${VEGGIE_SYMBOL_ASSETS[MODE_ICON_SYMBOL[icon]]}`
 			: `./assets/veggie-salad/pixel/${icon}.webp`;
 
 	function randomCloudDrift(node: HTMLElement) {
@@ -317,7 +326,9 @@
 	   outstanding, so a single clearTimeout unwinds the whole chain. */
 	const cowFrame = (name: string) => `./assets/veggie-salad/pixel/splash/${name}.webp`;
 	const cowRand = (min: number, max: number) => min + Math.random() * (max - min);
-	// The panel cow stands on the cluster panel's outer top edge, a bit in from its left corner.
+	// The panel cow leans out from behind the cluster panel's RIGHT edge, into the gutter between
+	// it and the board, a little down from the panel's top ("make it from right side", user
+	// 2026-09-24; over the top edge she read as a head stuck on the panel).
 	// Measured, because the panel's box comes from a different rule in almost every layout; rects
 	// are divided by the container's CSS scale so the numbers are layout px.
 	let clusterPanelEl = $state<HTMLElement>();
@@ -334,8 +345,8 @@
 			const origin = frame.getBoundingClientRect();
 			const k = frame.offsetWidth ? origin.width / frame.offsetWidth : 1;
 			const width = (box.width / k) * 0.46;
-			const left = (box.left - origin.left) / k + (box.width / k) * 0.12;
-			const top = (box.top - origin.top) / k - (width * 292) / 256;
+			const left = (box.right - origin.left) / k;
+			const top = (box.top - origin.top) / k + (box.height / k) * 0.1;
 			panelCowBox = `left:${left}px;top:${top}px;width:${width}px`;
 		};
 		place();
@@ -391,13 +402,13 @@
 	   transform-origins know where an ear or an eye actually is. Same one-timer chain as the cow;
 	   it only runs while the tier is SUPER, because that is the only time the markup exists. */
 	const wolfLayer = (name: string) =>
-		`./assets/veggie-salad/pixel/background/bonus-super/wolf/${name}.webp`;
+		`./assets/veggie-salad/pixel/background/bonus-super/wolf-px/${name}.webp`;
 	const butterflyLayer = (name: string) =>
-		`./assets/veggie-salad/pixel/background/bonus-normal/butterfly/${name}.webp`;
+		`./assets/veggie-salad/pixel/background/bonus-normal/butterfly-px/${name}.webp`;
 	/* The sunset owl (9355:54123) is a watcher: it blinks, and every so often its eyes slide to
 	   one side and back. The rest of its life is CSS — a slow breath and the odd head cock. */
 	const owlLayer = (name: string) =>
-		`./assets/veggie-salad/pixel/background/bonus-normal/sunset/owl/${name}.webp`;
+		`./assets/veggie-salad/pixel/background/bonus-normal/sunset/owl-px/${name}.webp`;
 	let owlGaze = $state(0);
 	let owlBlink = $state(false);
 	$effect(() => {
@@ -512,11 +523,11 @@
 		const distance = stateGame.fallDistances[reel]?.[row] ?? 0;
 		const jitter = stateGame.fallJitter[reel]?.[row] ?? 0;
 		const fall = stateGameDerived.fallDurationMs(distance);
-		const stagger =
-			stateGame.phase === 'spinning' ? motion.spinRowStaggerMs : motion.tumbleRowStaggerMs;
+		const spinning = stateGame.phase === 'spinning';
+		const stagger = spinning ? motion.spinRowStaggerMs : motion.tumbleRowStaggerMs;
 		const delay =
 			(stateGame.gridSize - 1 - row) * stagger +
-			reel * motion.reelDelayMs +
+			reel * (spinning ? motion.spinReelDelayMs : motion.reelDelayMs) +
 			jitter * motion.jitterMs;
 
 		// A skip press rewrites these so every cell still in the air lands together.
@@ -529,8 +540,8 @@
 			durationMs: stateGameDerived.fallDurationMs(stateGameDerived.exitDistance(row)),
 		});
 
-		// Idle breath. A per-cell phase keeps every vegetable on its own long cycle instead of
-		// letting the board pulse as one sheet. Hashed from position AND revealId: position alone
+		// Idle phase, now used only by a resting scatter king (the veggies' idle breath is gone), so
+		// two kings on one board never hop in step. Hashed from position AND revealId: position alone
 		// replayed the same cells in the same order after every spin ("we always move the same
 		// cells", tester 2026-09-24). A hash, not Math.random, so re-running this for a skip press
 		// never reshuffles a phase mid-idle; cells are keyed by revealId, so each spin restarts it.
@@ -802,6 +813,9 @@
 				error: new Error(
 					'INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.',
 				),
+				// Translated (and social) copy, dismissible: nothing was spent.
+				code: 'insufficientFunds',
+				recoverable: true,
 			};
 			return;
 		}
@@ -1009,12 +1023,13 @@
 
 <main
 	class="scene theme-{theme}"
+	class:replay={isReplay}
 	class:bonus-normal={stateGame.bonusTier === 'normal'}
 	class:garden-dusk={duskGarden}
 	class:garden-sunset={sunsetGarden}
 	class:bonus-super={stateGame.bonusTier === 'super'}
 	class:bonus-hidden={stateGame.bonusTier === 'hidden'}
-	style="--base-plain:url('./assets/veggie-salad/pixel/background/base-plain.webp');--base-mountains:url('./assets/veggie-salad/pixel/background/base-mountains.webp');--base-cloud:url('./assets/veggie-salad/pixel/background/base-cloud.webp');--base-bench:url('./assets/veggie-salad/pixel/background/base-bench.webp');--board-frame:url('./assets/veggie-salad/pixel/board-frame.webp');--bonus-normal-sky:url('./assets/veggie-salad/pixel/background/bonus-normal/sky-ground.webp');--bonus-normal-mountains:url('./assets/veggie-salad/pixel/background/bonus-normal/mountains.webp');--bonus-normal-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/cloud.webp');--bonus-normal-tree:url('./assets/veggie-salad/pixel/background/bonus-normal/tree.webp');--bonus-normal-oak:url('./assets/veggie-salad/pixel/background/bonus-normal/oak.webp');--sunset-treeline:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/treeline.webp');--sunset-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/cloud.webp');--sunset-flower:url('./assets/veggie-salad/pixel/splash/flower.webp');--bonus-super-sky:url('./assets/veggie-salad/pixel/background/bonus-super/sky-ground.webp');--bonus-super-mountains:url('./assets/veggie-salad/pixel/background/bonus-super/mountains.webp');--bonus-super-cloud:url('./assets/veggie-salad/pixel/background/bonus-super/cloud.webp');--bonus-super-moon:url('./assets/veggie-salad/pixel/background/bonus-super/moon.webp');--bonus-super-fence:url('./assets/veggie-salad/pixel/background/bonus-super/fence.webp');--bonus-super-oak:url('./assets/veggie-salad/pixel/background/bonus-super/oak.webp');--bonus-super-star-bright:url('./assets/veggie-salad/pixel/background/bonus-super/star-bright.webp');--bonus-super-star-dim:url('./assets/veggie-salad/pixel/background/bonus-super/star-dim.webp');--hud-button:url('./assets/veggie-salad/pixel/hud/frame.webp');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud/frame-pressed.webp');--hud-bonus:url('./assets/veggie-salad/pixel/hud/bonus.webp');--hud-spin-coin:url('./assets/veggie-salad/pixel/hud/spin-coin.webp')"
+	style="--base-plain:url('./assets/veggie-salad/pixel/background/base-plain.webp');--base-mountains:url('./assets/veggie-salad/pixel/background/base-mountains.webp');--base-cloud:url('./assets/veggie-salad/pixel/background/base-cloud.webp');--base-bench:url('./assets/veggie-salad/pixel/background/base-bench.webp');--base-portrait:url('./assets/veggie-salad/pixel/background/base-portrait.webp');--base-house:url('./assets/veggie-salad/pixel/background/house.webp');--base-house-front:url('./assets/veggie-salad/pixel/background/house-front.webp');--base-lodge-smoke:url('./assets/veggie-salad/pixel/background/lodge-smoke.webp');--board-frame:url('./assets/veggie-salad/pixel/board-frame.webp');--bonus-normal-sky:url('./assets/veggie-salad/pixel/background/bonus-normal/sky-ground.webp');--bonus-normal-mountains:url('./assets/veggie-salad/pixel/background/bonus-normal/mountains.webp');--bonus-normal-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/cloud.webp');--bonus-normal-tree:url('./assets/veggie-salad/pixel/background/bonus-normal/tree-px.webp');--bonus-normal-oak:url('./assets/veggie-salad/pixel/background/bonus-normal/oak-px.webp');--sunset-treeline:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/treeline.webp');--sunset-cloud:url('./assets/veggie-salad/pixel/background/bonus-normal/sunset/cloud.webp');--sunset-flower:url('./assets/veggie-salad/pixel/splash/flower.webp');--bonus-super-sky:url('./assets/veggie-salad/pixel/background/bonus-super/sky-ground.webp');--bonus-super-mountains:url('./assets/veggie-salad/pixel/background/bonus-super/mountains.webp');--bonus-super-cloud:url('./assets/veggie-salad/pixel/background/bonus-super/cloud.webp');--bonus-super-moon:url('./assets/veggie-salad/pixel/background/bonus-super/moon.webp');--bonus-super-fence:url('./assets/veggie-salad/pixel/background/bonus-super/fence.webp');--bonus-super-oak:url('./assets/veggie-salad/pixel/background/bonus-super/oak-px.webp');--bonus-super-star-bright:url('./assets/veggie-salad/pixel/background/bonus-super/star-bright.webp');--bonus-super-star-dim:url('./assets/veggie-salad/pixel/background/bonus-super/star-dim.webp');--hud-button:url('./assets/veggie-salad/pixel/hud/frame.webp');--hud-button-pressed:url('./assets/veggie-salad/pixel/hud/frame-pressed.webp');--hud-bonus:url('./assets/veggie-salad/pixel/hud/bonus.webp');--hud-spin-coin:url('./assets/veggie-salad/pixel/hud/spin-coin.webp')"
 >
 	<!-- Background images cannot interpolate. Persistent layers can: entering a bonus fades its
 	     garden over BASE; leaving fades it away and reveals the exact same BASE layer underneath. -->
@@ -1031,6 +1046,14 @@
 			<div class="drifting-cloud cloud-two" use:randomCloudDrift></div>
 			<div class="drifting-cloud cloud-three" use:randomCloudDrift></div>
 			<div class="drifting-cloud cloud-four" use:randomCloudDrift></div>
+			<div
+				class="sky-birds"
+				use:birdFlight={{
+					gutter: () => document.querySelector('.scene .board-frame')?.getBoundingClientRect(),
+					paused: () => stateGame.bonusTier !== null,
+				}}
+				aria-hidden="true"
+			></div>
 		</div>
 		<div class="pixel-background background-base base-mountains"></div>
 		<div class="base-cloud-field base-cloud-field--front">
@@ -1040,6 +1063,17 @@
 			<div class="drifting-cloud cloud-five" use:randomCloudDrift></div>
 			<div class="drifting-cloud cloud-six" use:randomCloudDrift></div>
 			<div class="drifting-cloud cloud-eight" use:randomCloudDrift></div>
+		</div>
+		<!-- The lodge rides the hills' box but paints above both cloud fields, so a cloud never
+		     drifts across the house ("make clouds behind", user 2026-09-25). -->
+		<div class="pixel-background background-base base-lodge-layer">
+			<span class="base-house"></span>
+			<span class="base-house-front"></span>
+			<span class="house-smoke">
+				{#each [0, 1, 2, 3] as puff (puff)}
+					<span class="lodge-smoke" style="--puff:{puff}"></span>
+				{/each}
+			</span>
 		</div>
 		<div class="pixel-background background-base base-bench"></div>
 		<div class="pixel-background background-bonus background-normal">
@@ -1052,6 +1086,8 @@
 				<span class="normal-bonus-cloud normal-bonus-cloud-one" use:randomCloudDrift></span>
 				<span class="normal-bonus-cloud normal-bonus-cloud-two" use:randomCloudDrift></span>
 				<span class="normal-bonus-cloud normal-bonus-cloud-three" use:randomCloudDrift></span>
+				<span class="normal-bonus-cloud normal-bonus-cloud-four" use:randomCloudDrift></span>
+				<span class="normal-bonus-cloud normal-bonus-cloud-five" use:randomCloudDrift></span>
 			</span>
 			<span class="normal-bonus-layer normal-bonus-fence normal-bonus-fence-left"></span>
 			<span class="normal-bonus-layer normal-bonus-fence normal-bonus-fence-right"></span>
@@ -1076,6 +1112,8 @@
 				<span class="super-bonus-cloud super-bonus-cloud-one" use:randomCloudDrift></span>
 				<span class="super-bonus-cloud super-bonus-cloud-two" use:randomCloudDrift></span>
 				<span class="super-bonus-cloud super-bonus-cloud-three" use:randomCloudDrift></span>
+				<span class="super-bonus-cloud super-bonus-cloud-four" use:randomCloudDrift></span>
+				<span class="super-bonus-cloud super-bonus-cloud-five" use:randomCloudDrift></span>
 			</span>
 			<span class="super-bonus-layer super-bonus-mountains"></span>
 			<span class="super-bonus-layer super-bonus-fence"></span>
@@ -1095,7 +1133,7 @@
 		<span class="scene-cow" class:peek={cowPhase === 'in'} class:hide={cowPhase === 'out'}>
 			<img src={cowFrame(cowBlinking ? 'cow_blink' : 'cow')} alt="" />
 		</span>
-		<img class="scene-haystack" src="./assets/veggie-salad/pixel/background/haystack.webp" alt="" />
+		<img class="scene-haystack" src="./assets/veggie-salad/pixel/background/haystack-px.webp" alt="" />
 	</span>
 	<!-- The night garden's foliage (9198:81939) drawn a second time ABOVE the game stage, so the
 	     wolf pup's tail sits behind it as in the design; same class as the background copy, so it
@@ -1103,7 +1141,7 @@
 	<span class="super-bonus-layer super-bonus-oak super-oak-front" aria-hidden="true"></span>
 
 	<header class="brand" aria-label={t('VEGGIE SALAD')}>
-		<img src="./assets/veggie-salad/pixel/logo-px.webp" alt={t('VEGGIE SALAD')} />
+		<img src="./assets/veggie-salad/pixel/logo-v2.webp" alt={t('VEGGIE SALAD')} />
 	</header>
 	<img
 		class="studio-mark"
@@ -1138,9 +1176,9 @@
 			</div>
 		{/if}
 		<!-- Short landscape docks the cluster panel over the haystack's corner and hides the cow, so
-		     there she rises from behind the panel's top edge instead ("in mobile landscape the cow
-		     can show behind the [panel]", user 2026-09-24): same peek clock and blink as the corner
-		     cow. A sibling, not a child — the panel's notched clip-path would cut her off — placed
+		     there she leans out from behind the panel's right edge instead ("in mobile landscape the
+		     cow can show behind the [panel]" → "make it from right side", user 2026-09-24): same
+		     peek clock and blink as the corner cow. A sibling, not a child — the panel's notched clip-path would cut her off — placed
 		     from the panel's measured box (the effect beside cowPhase). -->
 		<span class="panel-cow" style={panelCowBox} bind:this={panelCowEl} aria-hidden="true">
 			<span class="panel-cow-body" class:peek={cowPhase === 'in'} class:hide={cowPhase === 'out'}>
@@ -1179,6 +1217,20 @@
 						{/if}
 					</div>
 				{/each}
+				{#if clusterRows.length === 0}
+					<!-- An empty log read as a broken box (mock review): until the first cluster lands
+					     it says what it will list, in the key every locale already translates. -->
+					<!-- Word by word, so portrait's two-column grid can set the gap between them on its
+					     centre line ("make the text so the space is in the middle", user 2026-09-24). -->
+					{@const [emptyFirst, ...emptyRest] = t('CLUSTER PAYOUTS').split(' ')}
+					<span class="panel-empty"
+						><span class="panel-empty-text"
+							><span>{emptyFirst}</span>{#if emptyRest.length}{' '}<span
+									>{emptyRest.join(' ')}</span
+								>{/if}</span
+						></span
+					>
+				{/if}
 			</div>
 		</aside>
 		<div class="board-wrap">
@@ -1234,8 +1286,8 @@
 													/>
 												{/if}
 												{#if cell.name === 'SCATTER'}
-													<!-- Every landed king is the design's vector cut into parts
-													     (scripts/build-splash-king.py), framed exactly as onion.webp: he idles
+													<!-- Every landed king is the pixel king, drawn in parts
+													     (scripts/build-board-king.py), drawn at the veggies' pixel size: he idles
 													     where he lands and cheers when he triggers. -->
 													<span
 														class="symbol symbol-scatter"
@@ -1247,7 +1299,7 @@
 														{#each scatterHit ? KING_CHEER_PARTS : KING_IDLE_PARTS as part (part)}
 															<img
 																class="king-{part}"
-																src={`./assets/veggie-salad/pixel/splash/king/${part}.webp`}
+																src={`./assets/veggie-salad/pixel/board/king/${part}.webp`}
 																alt=""
 																draggable="false"
 															/>
@@ -1463,7 +1515,16 @@
 			     every landscape size instead of reflowing. Portrait/narrow stacks the cards instead. -->
 			<section class="buy-panel" role="dialog" aria-modal="true" aria-label={t('BONUS FEATURES')}>
 				<h2>{t('BONUS FEATURES')}</h2>
-				<button class="close" aria-label={t('CLOSE')} onclick={() => (showBuyMenu = false)}>
+				<!-- Closing the panel drops its confirm too; a confirm left open for a closed panel
+				     (mock review 2026-09-25) could still charge. -->
+				<button
+					class="close"
+					aria-label={t('CLOSE')}
+					onclick={() => {
+						pendingMode = null;
+						showBuyMenu = false;
+					}}
+				>
 					<span class="close-glyph" aria-hidden="true"></span>
 				</button>
 				<div class="buy-grid">
@@ -1472,9 +1533,15 @@
 						{@const blocked = !canAffordMode(mode) && !isArmed}
 						<div class="buy-card mode-{mode.key.toLowerCase()}" class:armed={isArmed}>
 							<span>{t(mode.title)}</span>
-							<small class="font-copy">{t(`BET MODE ${mode.key} DIALOG`)}</small>
-							<img src={modeIconAsset(mode.icon)} alt="" />
-							<em class="font-copy">{formatCurrency(stateBet.betAmount * mode.cost)}</em>
+							<small class="font-pixel">{t(`BET MODE ${mode.key} DIALOG`)}</small>
+							<img
+								class:board-art={mode.icon in MODE_ICON_SYMBOL && mode.icon !== 'onion'}
+								class:king-art={mode.icon === 'onion'}
+								src={modeIconAsset(mode.icon)}
+								alt=""
+							/>
+							<!-- Jersey 10, not Pixelify: Pixelify's bold 2 reads as an 8 ("$2.00" looked like "$8.00"). -->
+							<em>{formatCurrency(stateBet.betAmount * mode.cost)}</em>
 							<button
 								class="buy-cta"
 								class:buy={mode.kind === 'buy'}
@@ -1505,7 +1572,7 @@
 					>
 						<span class="step-glyph minus" aria-hidden="true"></span>
 					</button>
-					<div class="buy-bet-readout font-copy">
+					<div class="buy-bet-readout">
 						<span>{t('BET')}</span>
 						<strong>{betText}</strong>
 					</div>
@@ -1532,10 +1599,10 @@
 				     icon and no close cross — CANCEL and the scrim both dismiss it. -->
 				<h2>{t(pendingMode.title)}</h2>
 				<div class="dlg-rule"></div>
-				<p class="font-copy">{t(pendingMode.tag)}</p>
-				<strong class="font-copy">{formatCurrency(stateBet.betAmount * pendingMode.cost)}</strong>
+				<p class="font-pixel">{t(pendingMode.tag)}</p>
+				<strong>{formatCurrency(stateBet.betAmount * pendingMode.cost)}</strong>
 				{#if pendingMode.kind === 'toggle'}
-					<p class="confirm-note font-copy">{t('TOGGLE COST NOTE')}</p>
+					<p class="confirm-note font-pixel">{t('TOGGLE COST NOTE')}</p>
 				{/if}
 				<div class="confirm-actions">
 					<button class="cancel" onclick={() => (pendingMode = null)}>{t('CANCEL')}</button>
@@ -2036,6 +2103,46 @@
 			--cow-w: clamp(52px, 15vw, 84px);
 			bottom: 15%;
 		}
+		/* Here the nook stands on open grass, and the hay's low right slope is all that is under
+		   her face — sinking straight down, she went into bare ground ("the cow in mobile portrait
+		   hides a bit unrealistic", user 2026-09-24). The art is a head leaning in from its own
+		   left edge, so in portrait she leans in round the SCREEN edge, over the hay's peak, and
+		   ducks back out the same way. */
+		.cow-nook .scene-cow {
+			transform: translate(-105%, 18%) rotate(-8deg);
+		}
+		.cow-nook .scene-cow.peek {
+			animation-name: cow-edge-in;
+		}
+		.cow-nook .scene-cow.hide {
+			animation-name: cow-edge-out;
+		}
+	}
+	/* Creep until an eye clears the edge, a pause to check the coast, then the lean out. */
+	@keyframes cow-edge-in {
+		0% {
+			transform: translate(-105%, 18%) rotate(-8deg);
+		}
+		42% {
+			transform: translate(-58%, 9%) rotate(-6deg);
+		}
+		58% {
+			transform: translate(-55%, 9%) rotate(-9deg);
+		}
+		100% {
+			transform: translate(-11%, 0) rotate(0deg);
+		}
+	}
+	@keyframes cow-edge-out {
+		0% {
+			transform: translate(-11%, 0) rotate(0deg);
+		}
+		22% {
+			transform: translate(-7%, -3%) rotate(3deg);
+		}
+		100% {
+			transform: translate(-105%, 18%) rotate(-8deg);
+		}
 	}
 	@media (max-height: 460px) and (orientation: landscape) {
 		.cow-nook {
@@ -2096,8 +2203,9 @@
 		display: none;
 	}
 	/* The panel cow (see the markup): short landscape only, where the panel covers the corner. The
-	   wrapper ends on the panel's outer top edge and clips everything below it, so the parked cow is
-	   invisible and the peek shows ears, eyes and snout over the panel. */
+	   wrapper starts on the panel's outer right edge and clips everything left of it, so the parked
+	   cow is behind the panel and the peek slides her head out sideways — the art is already a head
+	   leaning in from its own left edge. */
 	.panel-cow {
 		display: none;
 	}
@@ -2117,8 +2225,8 @@
 		.panel-cow-body {
 			display: block;
 			width: 100%;
-			transform: translateY(105%);
-			transform-origin: 50% 100%;
+			transform: translateX(-102%);
+			transform-origin: 0% 100%;
 		}
 		.panel-cow-body.peek {
 			animation: panel-cow-in 1900ms cubic-bezier(0.32, 0.72, 0.35, 1) forwards;
@@ -2134,30 +2242,31 @@
 			animation: cow-nod 2.8s ease-in-out infinite;
 		}
 	}
-	/* The corner cow's creep, pause and commit, ending with her chin on the panel's edge. */
+	/* The corner cow's creep, pause and commit, sideways: an eye round the edge first, then the
+	   head out with her neck still behind the panel. */
 	@keyframes panel-cow-in {
 		0% {
-			transform: translateY(105%);
+			transform: translateX(-102%);
 		}
 		42% {
-			transform: translateY(62%);
+			transform: translateX(-62%);
 		}
 		58% {
-			transform: translateY(60%) rotate(-3deg);
+			transform: translateX(-60%) rotate(3deg);
 		}
 		100% {
-			transform: translateY(28%);
+			transform: translateX(-32%);
 		}
 	}
 	@keyframes panel-cow-out {
 		0% {
-			transform: translateY(28%);
+			transform: translateX(-32%);
 		}
 		22% {
-			transform: translateY(24%);
+			transform: translateX(-28%);
 		}
 		100% {
-			transform: translateY(105%);
+			transform: translateX(-102%);
 		}
 	}
 	.scene.bonus-normal .panel-cow,
@@ -2694,6 +2803,16 @@
 	.symbol-onion {
 		width: 100%;
 		height: 100%;
+	}
+	/* The radish (PEPPER) is the one sprite drawn nearly to its canvas top: 15 of 267px above the
+	   leaves, where the set keeps 24-30. On a portrait phone's small cell the leaves met the cell's
+	   rim ("it goes out of the square", user 2026-09-25); 92% gives it the set's headroom. Its win
+	   faces share the class, so they shrink with it. */
+	@media (orientation: portrait) {
+		.symbol-pepper {
+			width: 92%;
+			height: 92%;
+		}
 	}
 	.symbol-scatter {
 		width: 97%;
@@ -3281,30 +3400,9 @@
 	.cell.empty::before {
 		background: linear-gradient(145deg, #354e1b, #18320f);
 	}
-	/* Idle breath. Between spins the board is a still image, which reads as a screenshot. Each
-	   vegetable gets one small rise on a 10-18s cycle that is still for 90% of its length, and every
-	   cell runs that cycle at its own offset — so only a handful are ever moving at once and no two
-	   move together. Idle phase only, and never on a cell a win or a scatter is already animating.
-	   The reduced-motion block above flattens this along with everything else. */
-	.board.phase-idle .cell:not(.cluster-hit):not(.scatter-cell) .symbol {
-		transform-origin: center bottom;
-		animation: veg-breathe var(--idle-duration, 14s) ease-in-out var(--idle-delay, 0s) infinite;
-	}
-	@keyframes veg-breathe {
-		0%,
-		90% {
-			transform: translateY(0) scale(1, 1);
-		}
-		94% {
-			transform: translateY(-4.5%) scale(0.99, 1.02);
-		}
-		97% {
-			transform: translateY(0) scale(1.015, 0.985);
-		}
-		100% {
-			transform: translateY(0) scale(1, 1);
-		}
-	}
+	/* No idle breath: every resting vegetable used to rise on its own random 10-18s cycle, which
+	   read as "random movement, very unrealistic" (user 2026-09-24). The board rests still; life
+	   at rest is the faces only (symbolLiveness blinks/glances) and the landing below. */
 	/* Cluster win read-out: heavy white type stroked in dark green, parked on the cluster's centre
 	   of mass. Sized off the cell pitch (board square / grid size) so it stays proportional from a
 	   7×7 base grid to a 10×10 bonus grid. */
@@ -3394,6 +3492,25 @@
 		color: #f4ffdf;
 		font-size: clamp(10px, 1.9cqh, 15px);
 		font-weight: 1000;
+	}
+	.panel-rows {
+		position: relative;
+	}
+	.panel-empty {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		padding: 0 10%;
+		color: rgb(255 224 122 / 72%);
+		font-size: clamp(13px, 2.4cqh, 18px);
+		font-weight: 1000;
+		letter-spacing: 0.12em;
+		line-height: 1.3;
+		text-align: center;
+		text-transform: uppercase;
+		text-shadow: 0 2px 2px #2a1403;
+		pointer-events: none;
 	}
 	.panel-row.vacant {
 		border-color: rgb(158 198 82 / 26%);
@@ -3900,8 +4017,12 @@
 	   price and button have to sit at the same height on every card. */
 	.buy-card {
 		display: grid;
+		/* Copy row 51 -> 60 and price row 12.34 -> 20.34 for the bigger Pixelify text ("a bit
+		   bigger, its hard to read" / "values are way too small", user 2026-09-24), paid for by
+		   the icon row (69 -> 52) so the card keeps the design's height; board sprites scale back
+		   up over it (.board-art). */
 		grid-template-rows:
-			calc(28 * var(--u)) calc(51 * var(--u)) calc(69 * var(--u)) calc(12.34 * var(--u))
+			calc(28 * var(--u)) calc(60 * var(--u)) calc(52 * var(--u)) calc(20.34 * var(--u))
 			calc(50 * var(--u));
 		justify-items: center;
 		align-items: center;
@@ -3916,7 +4037,7 @@
 	}
 	.buy-card img {
 		width: calc(70 * var(--u));
-		height: calc(69 * var(--u));
+		height: calc(52 * var(--u));
 		object-fit: contain;
 		filter: drop-shadow(0 calc(4 * var(--u)) calc(3 * var(--u)) #1a0d01);
 	}
@@ -3928,24 +4049,35 @@
 		line-height: 1;
 		text-align: center;
 	}
-	/* Poppins, at the design's 11px on a 17px line. In Jersey 10 this line was 8px of stems and
-	   unreadable (user, 2026-09-15); the design answers that with a different face for copy, not
-	   a bigger pixel one. Three lines fit the row; a longer translation is clipped, not reflowed. */
+	/* Pixelify Sans at the design's 11px on a 17px line (was Poppins: "we can try pixelify sans",
+	   user 2026-09-24). Jersey 10 at this size was 8px of stems and unreadable (2026-09-15);
+	   Pixelify keeps the pixel look with open lowercase. Three lines fit the row; a longer
+	   translation is clipped, not reflowed. */
 	.buy-card small {
 		align-self: start;
 		width: 100%;
 		overflow: hidden;
 		color: #fff;
-		font-size: calc(11 * var(--u));
+		font-size: calc(15 * var(--u));
 		letter-spacing: 0.02em;
-		line-height: calc(17 * var(--u));
+		line-height: calc(19 * var(--u));
 		text-align: center;
 	}
 	/* The design sets the price at 9.36px, which is below what this game's players can read
 	   (every "too small" note so far); 12 keeps it a caption without being one. */
+	/* The board's sprites sit padded on a cell-sized canvas, so in the shorter icon row they
+	   draw at their old visible size only scaled up; the mystery box is trimmed art and is not. */
+	.buy-card img.board-art {
+		transform: scale(1.25);
+	}
+	/* The king's still fills his canvas edge to edge (the veggies sit padded in theirs), so he
+	   draws a touch under the row instead, clear of the price ("make the image smaller"). */
+	.buy-card img.king-art {
+		transform: translateY(calc(-2 * var(--u))) scale(0.85);
+	}
 	.buy-card em {
-		color: #fff;
-		font-size: calc(12 * var(--u));
+		color: #ffd35a;
+		font-size: calc(22 * var(--u));
 		font-style: normal;
 		font-weight: 700;
 		line-height: 1;
@@ -4038,7 +4170,7 @@
 		text-align: center;
 	}
 	.buy-bet-readout span {
-		font-size: calc(11 * var(--u));
+		font-size: calc(13 * var(--u));
 		font-weight: 700;
 		letter-spacing: 0.18em;
 		line-height: 1;
@@ -4046,7 +4178,7 @@
 	}
 	.buy-bet-readout strong {
 		overflow: hidden;
-		font-size: calc(24 * var(--u));
+		font-size: calc(26 * var(--u));
 		font-weight: 700;
 		line-height: 1;
 		text-overflow: ellipsis;
@@ -4338,26 +4470,26 @@
 			transform: translateY(0) scale(1, 1);
 		}
 	}
-	/* Landing settle: a soft touchdown, not a stone-hit. The earlier 13% squash and 7% bounce
-	   read as a jolt; the user asked for "a very gentle shake when items hit their cell"
-	   (2026-09-16), so the squash is a few percent, the rebound a pixel or two, with a hair of
-	   side-to-side wobble as the symbol comes to rest. Same phase split as magnetic's
-	   squash / thump / bounce / settle so the timing profile is unchanged. */
+	/* Landing: cartoon squash and stretch, pivoted on the cell floor (.symbol-layer's origin is
+	   centre bottom). The veggie flattens and widens as it hits, springs up tall and thin, then
+	   settles with a smaller squash — the kids'-film "splat, boing" the user asked for
+	   (2026-09-24), replacing the earlier few-percent settle. Volume is roughly kept: wider
+	   always means shorter. */
 	@keyframes land-impact {
 		0% {
 			transform: none;
 		}
-		22% {
-			transform: translate(0, 0) scale(1.045, 0.945);
+		16% {
+			transform: scale(1.22, 0.76);
 		}
-		45% {
-			transform: translate(-1.5%, -2.5%) scale(0.99, 1.015);
+		38% {
+			transform: translateY(-7%) scale(0.9, 1.12);
 		}
-		68% {
-			transform: translate(1%, 0) scale(1.01, 0.995);
+		58% {
+			transform: translateY(0) scale(1.08, 0.93);
 		}
-		86% {
-			transform: translate(-0.5%, -0.6%) scale(1, 1);
+		76% {
+			transform: translateY(-1.5%) scale(0.98, 1.03);
 		}
 		100% {
 			transform: none;
@@ -4584,7 +4716,7 @@
 		padding: 0;
 		border: 0;
 		border-radius: 0;
-		background: url('/assets/veggie-salad/pixel/logo-px.webp') center / contain no-repeat;
+		background: url('/assets/veggie-salad/pixel/logo-v2.webp') center / contain no-repeat;
 		box-shadow: none;
 		transform: translateX(-50%);
 	}
@@ -6682,19 +6814,19 @@
 
 	.normal-bonus-cloud-one {
 		--cloud-top: 8%;
-		--cloud-duration: 168s;
+		--cloud-duration: 104s;
 	}
 
 	.normal-bonus-cloud-two {
 		--cloud-width: clamp(125px, 14vw, 280px);
 		--cloud-top: 21%;
-		--cloud-duration: 214s;
+		--cloud-duration: 128s;
 	}
 
 	.normal-bonus-cloud-three {
 		--cloud-width: clamp(105px, 11vw, 220px);
 		--cloud-top: 35%;
-		--cloud-duration: 246s;
+		--cloud-duration: 150s;
 	}
 
 	.normal-bonus-fence {
@@ -6870,19 +7002,19 @@
 
 	.super-bonus-cloud-one {
 		--cloud-top: 9%;
-		--cloud-duration: 182s;
+		--cloud-duration: 110s;
 	}
 
 	.super-bonus-cloud-two {
 		--cloud-width: clamp(115px, 13vw, 260px);
 		--cloud-top: 22%;
-		--cloud-duration: 228s;
+		--cloud-duration: 136s;
 	}
 
 	.super-bonus-cloud-three {
 		--cloud-width: clamp(98px, 10vw, 205px);
 		--cloud-top: 33%;
-		--cloud-duration: 260s;
+		--cloud-duration: 158s;
 	}
 
 	.super-bonus-fence {
@@ -7286,8 +7418,19 @@
 		.buy-layer {
 			padding: 4px;
 		}
+		/* The narrow flow layout (one card per row at --u ~1) put a single card on the whole popout
+		   (Popout S). Here it runs two cards a row at ~0.7 of that unit: the copy stays ~10px
+		   rather than the 5px the 1200x670 stage would give it, and a row of cards fits under the
+		   title. */
 		.buy-panel {
-			width: min(100%, calc((100svh - 8px) * 1200 / 670));
+			--u: calc((100vw - 8px) / 600);
+			width: 100%;
+		}
+		.buy-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		.buy-grid > .buy-card {
+			grid-template-columns: minmax(0, 1fr);
 		}
 
 		.confirm-panel {
@@ -7817,7 +7960,8 @@
 	.base-cloud-field {
 		transition: opacity 1500ms ease-in-out;
 	}
-	.background-base.base-mountains {
+	.background-base.base-mountains,
+	.background-base.base-lodge-layer {
 		transition-delay: 300ms;
 	}
 	.background-base.base-bench {
@@ -7953,7 +8097,7 @@
 		top: calc(30% + clamp(16px, 1.67vw, 33px));
 	}
 	.path-eight {
-		top: calc(44% + clamp(18px, 2.17vw, 42px));
+		top: calc(34% + clamp(18px, 2.17vw, 42px));
 	}
 
 	.cloud-five {
@@ -7976,7 +8120,9 @@
 
 	.cloud-eight {
 		--cloud-width: clamp(105px, 13vw, 250px);
-		--cloud-top: 44%;
+		/* 34%, not 44%: at 44% it crossed the hills left of the board at the lodge's height ("this
+		   is very low", user 2026-09-25). */
+		--cloud-top: 34%;
 		--cloud-duration: 184s;
 		--cloud-delay: -92s;
 		--cloud-rest-x: 28vw;
@@ -8238,6 +8384,7 @@
 		background-size: cover;
 	}
 	.base-mountains,
+	.base-lodge-layer,
 	.normal-bonus-mountains,
 	.super-bonus-mountains {
 		/* Shared horizon. Wide art crops on phones rather than squashing its peaks. */
@@ -8251,8 +8398,107 @@
 		background-position: center;
 		background-size: contain;
 	}
-	.base-mountains {
+	.base-mountains,
+	.base-lodge-layer {
 		aspect-ratio: 5028 / 998;
+	}
+	.base-lodge-layer {
+		z-index: 3;
+	}
+	/* The house on the hills left of the board, tucked into them, its chimney smoking (design
+	   9524:57297, scripts/build-lodge.py; "add small house ... and a smoke from it", "more cozy
+	   and hidden in mountain", user 2026-09-25). Its layer takes the hills' box, so every number
+	   here is in the hill image's own pixels (5028x998), the ones build-lodge.py's HOUSE and BOX
+	   are: the house stands behind the mid-teal slope, and `base-house-front` is that slope, cut
+	   from the hill art and laid back over the house's foot. */
+	.base-house,
+	.base-house-front,
+	.house-smoke {
+		position: absolute;
+		background: center / 100% 100% no-repeat;
+		image-rendering: pixelated;
+	}
+	.base-house {
+		left: calc(575 / 5028 * 100%);
+		top: calc(515 / 998 * 100%);
+		width: calc(260 / 5028 * 100%);
+		aspect-ratio: 307 / 223;
+		background-image: var(--base-house);
+	}
+	.base-house-front {
+		left: calc(520 / 5028 * 100%);
+		top: calc(545 / 998 * 100%);
+		width: calc(340 / 5028 * 100%);
+		aspect-ratio: 340 / 215;
+		background-image: var(--base-house-front);
+	}
+	/* One 50px puff, its foot on the chimney's top (x 652-709, y 515). Each leaves small, swells,
+	   drifts downwind and thins out; four on one clock, a quarter apart, make a steady plume. */
+	.house-smoke {
+		left: calc((680 - 25) / 5028 * 100%);
+		top: calc((515 - 36) / 998 * 100%);
+		width: calc(50 / 5028 * 100%);
+		aspect-ratio: 48 / 40;
+	}
+	.lodge-smoke {
+		position: absolute;
+		inset: 0;
+		background: var(--base-lodge-smoke) center / 100% 100% no-repeat;
+		image-rendering: pixelated;
+		transform-origin: 50% 100%;
+		opacity: 0;
+		animation: lodge-smoke 6s linear calc(var(--puff) * -1.5s) infinite;
+	}
+	/* Portrait's own base garden (user 2026-09-25): one tall painting of sky, hills and grass
+	   (scripts/art/base-portrait/design_mobile.png, 1440x3200) in place of the wide scene's
+	   plain, hill strip and ground band, which on a phone showed a sliver of hills at 120vh wide.
+	   Cover-scaled from the bottom, so the grass always keeps the painting's bottom 20.25% (rows
+	   2552-3200). The painting has no fence ("the background i gave you has no fence", user
+	   2026-09-25) and no house hill, so both go with the wide hills. The stack becomes a size container so the line is measured
+	   against the scene, not 100vh (which is not the visible height on mobile Safari). */
+	@media (orientation: portrait) {
+		.pixel-background-stack {
+			container-type: size;
+		}
+		.background-base-plain::before {
+			background-image: var(--base-portrait);
+			background-position: center bottom;
+			background-size: cover;
+			transform: none;
+		}
+		.background-base-plain::after,
+		.base-mountains,
+		.base-lodge-layer,
+		.base-bench {
+			display: none;
+		}
+	}
+	@keyframes lodge-smoke {
+		0% {
+			transform: translate(0, 0) scale(0.45);
+			opacity: 0;
+		}
+		12% {
+			transform: translate(4%, -40%) scale(0.6);
+			opacity: 0.95;
+		}
+		55% {
+			transform: translate(45%, -210%) scale(1.05);
+			opacity: 0.7;
+		}
+		100% {
+			transform: translate(130%, -400%) scale(1.5);
+			opacity: 0;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.lodge-smoke {
+			animation: none;
+		}
+		.lodge-smoke:first-child {
+			transform: translate(10%, -60%) scale(0.7);
+			opacity: 0.8;
+		}
 	}
 	.normal-bonus-mountains {
 		aspect-ratio: 5028 / 1136;
@@ -8530,6 +8776,25 @@
 		.scene .cluster-panel .panel-rows::after {
 			content: '';
 			display: block;
+		}
+		/* The empty label splits on the grid's centre line: first word ends on it, the rest starts
+		   from it. The negative margin takes back the tracking after the last letter, which
+		   otherwise pushes the visible gap off-centre. */
+		.panel-empty {
+			padding: 0;
+		}
+		.panel-empty-text {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			column-gap: 0.7em;
+			width: 100%;
+		}
+		.panel-empty-text > span:first-child {
+			justify-self: end;
+			margin-right: -0.12em;
+		}
+		.panel-empty-text > span:last-child:not(:first-child) {
+			justify-self: start;
 		}
 		.scene .cluster-panel .panel-row {
 			/* 16.95 count box, 16.49 symbol box, 16.95 multiplier box, then the amount over what
@@ -9879,8 +10144,10 @@
 			overflow: hidden;
 			pointer-events: none;
 		}
+		/* 0.714 of its first 0.2pw, with the pup and the cow ("also same for the butterfly", user
+		   2026-09-25); the wander path is in the lawn's own %, so it covers the same ground. */
 		.scene .paddock .butterfly {
-			width: calc(var(--pw) * 0.2);
+			width: calc(var(--pw) * 0.143);
 		}
 		/* The bar's dark strip starts 0.044pw below the HUD's top (its ::before); the owl's feet
 		   overlap that edge by 0.02pw. Half the size the lawn version had (0.3pw). */
@@ -9898,12 +10165,14 @@
 		   where the oak is drawn a second time above the stage. The oak's opaque shape reaches
 		   94% of its width along the ground and ~50% at the pup's back, so hung off the left edge
 		   by 0.18pw it covers the hind legs and the tail's base and leaves the head and forepaws
-		   clear. */
+		   clear. Both at 0.714 of their first size (0.42pw pup), as the cow went from 22vw to
+		   15vw ("reduce the wolf size since we reduced the cow in portrait", user 2026-09-25); the
+		   oak shrinks with the pup so it still covers the same part of it. */
 		.scene .paddock-wolf {
 			position: absolute;
 			bottom: 2%;
 			left: 6%;
-			height: min(88%, calc(var(--pw) * 0.42));
+			height: min(63%, calc(var(--pw) * 0.3));
 		}
 		.scene .paddock .wolf-stage {
 			height: 100%;
@@ -9912,9 +10181,9 @@
 		.scene .paddock-oak {
 			position: absolute;
 			bottom: 0;
-			left: calc(var(--pw) * -0.18);
-			width: calc(var(--pw) * 0.62 * 1080 / 1160);
-			height: calc(var(--pw) * 0.62);
+			left: calc(var(--pw) * -0.129);
+			width: calc(var(--pw) * 0.443 * 1080 / 1160);
+			height: calc(var(--pw) * 0.443);
 			background: var(--bonus-super-oak) center / 100% 100% no-repeat;
 			image-rendering: pixelated;
 		}
@@ -9988,16 +10257,21 @@
 	}
 	/* Out of flow (the button is already a positioned box in every layout): an <img> in flow
 	   sized the button off its intrinsic width. */
+	/* Pixel art on an 18x17 canvas (scripts/build-hud.py): the ring is columns 0-15 — the head
+	   sticks two columns out to the right — and rows 0-15, with the shadow row under it. So the
+	   box is 17/16 of the ring's height, and it is shifted to put the RING, not the canvas, on the
+	   coin's centre. The shadow is drawn into the art; the blurred CSS glow was the last smooth
+	   edge on the button. */
 	.scene .hud .spin-arrow {
 		position: absolute;
 		left: 50%;
 		top: 50%;
-		transform: translate(-50%, -50%);
+		transform: translate(-44.4%, -47.1%);
 		width: auto !important;
-		height: 57% !important;
+		height: 60.5% !important;
 		max-width: none !important;
 		fill: none !important;
-		filter: drop-shadow(0 0 0.25em #985e00) !important;
+		filter: none !important;
 	}
 	/* Quick-menu tiles are the bar's own stepped button frame (design 9227:176057 draws the same
 	   49-unit tile), not the plain squares every layout pass above gives them. */
@@ -10019,5 +10293,96 @@
 	}
 	.scene .quick-menu button.off {
 		color: #8a6a3a;
+	}
+
+	/* Replay (mock review 2026-09-25, R-12): ReplayHud docks a bar on the bottom edge in place of
+	   the HUD and publishes its height as --replay-band on the root; the board's box gives that band
+	   up, so the replayed result is never under the bar. Portrait's stage sits in the scene's grid,
+	   so there the scene is padded instead. */
+	.scene.replay .game-stage {
+		bottom: calc(var(--replay-band, 0px) + 6px);
+	}
+	@media (orientation: portrait) {
+		.scene.replay {
+			padding-bottom: calc(var(--replay-band, 0px) + 6px);
+		}
+		.scene.replay .game-stage {
+			bottom: auto;
+		}
+	}
+
+	/* Popout S (400x225) readouts, mock review 2026-09-25 (R-10). BALANCE and WIN printed label and
+	   value on one line, so the value had ~28px of a 68px pill and ran out of it at the default
+	   balance. Stacked, the value gets the pill's whole width and shrinks by its character count
+	   against the pill (the metric is an inline-size container). The spin coin was 52px centred on
+	   a 42px rail and stuck 0.9px out of the window; it now fits the rail. */
+	@media (max-width: 520px) and (max-height: 300px) and (orientation: landscape) {
+		.scene .hud .metric.balance,
+		.scene .hud .metric.win {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: flex-start;
+			gap: 0;
+			padding-block: 0;
+			container-type: inline-size;
+		}
+		.scene .hud .metric.balance span,
+		.scene .hud .metric.win span {
+			line-height: 1;
+		}
+		.scene .hud .metric.balance strong,
+		.scene .hud .metric.win strong {
+			align-self: flex-start;
+			max-width: 100%;
+			margin: 0;
+			/* Jersey 10 figures are ~0.35em wide: 250cqw / chars fills the pill with a little spare. */
+			font-size: clamp(5px, calc(250cqw / var(--chars, 8)), 9px) !important;
+			line-height: 1;
+			text-align: left;
+			white-space: nowrap;
+		}
+		.scene .hud .metric.bet {
+			container-type: inline-size;
+			overflow: hidden;
+		}
+		.scene .hud .metric.bet strong {
+			font-size: clamp(4.5px, calc(250cqw / var(--chars, 8)), 7px) !important;
+			white-space: nowrap;
+		}
+		.scene .hud .spin {
+			width: 42px;
+			height: 42px;
+		}
+	}
+
+	/* Base-game birds: see game/birdFlight.ts. In the back cloud field, which fades out for the
+	   bonus gardens. */
+	.sky-birds {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	/* Bonus-garden skies (user 2026-09-25, "clouds ... colored according the background"). Three
+	   slow clouds spent most of their crossing behind the board, so the gutters looked empty; each
+	   garden now runs five at about 60% of the old crossing time, the extra two on the high lanes
+	   the side gutters show. The dusk garden's own cloud was a 40%-alpha haze that vanished on its
+	   purple sky; it takes the base cloud's crisp shape in a dusk ramp (build-dusk-cloud.py). The
+	   night and sunset clouds already carry their sky's colours. */
+	.scene.garden-dusk .normal-bonus-cloud {
+		background-image: url('/assets/veggie-salad/pixel/background/bonus-normal/cloud-dusk.webp');
+	}
+	.normal-bonus-cloud-four,
+	.super-bonus-cloud-four {
+		--cloud-width: clamp(120px, 13vw, 260px);
+		--cloud-top: 3%;
+		--cloud-duration: 118s;
+	}
+	.normal-bonus-cloud-five,
+	.super-bonus-cloud-five {
+		--cloud-width: clamp(95px, 9.5vw, 190px);
+		--cloud-top: 14%;
+		--cloud-duration: 142s;
 	}
 </style>

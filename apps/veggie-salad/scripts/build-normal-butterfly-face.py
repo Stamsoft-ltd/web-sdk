@@ -26,7 +26,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageFilter
 
-OUT = Path(__file__).resolve().parents[1] / 'static/assets/veggie-salad/pixel/background/bonus-normal/butterfly'
+# Beside build-normal-butterfly.py's soft layers; build-crisp-art.py snaps them all together.
+OUT = Path(__file__).resolve().parent / 'art/crisp-sources/background/bonus-normal/butterfly'
 SKIN = (253, 218, 185, 255)
 INK = (40, 17, 9, 255)
 TONGUE = (233, 101, 104, 255)
