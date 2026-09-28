@@ -229,6 +229,12 @@
 	// On a bonus-entry spin the scatter COUNT is the announcement of which bonus was won, so it
 	// gets its own read-out under the board.
 	const scatterCount = $derived(stateGame.scatterPositions.length);
+	// A bought bonus's entry spin lands its scatters by rule, so "3/4/5 SCATTERS" there counts
+	// nothing the player earned ("remove it please when we buy bonus", user 2026-09-28). Free
+	// spins keep it: there it counts retrigger scatters, bought or not.
+	const boughtEntrySpin = $derived(
+		!stateGame.bonusTier && ['BONUS', 'SUPER', 'MYSTERY'].includes(activeMode),
+	);
 	// Back to front. The cheer keeps the authored shut-eyed body: his ^^ is the happiest face he has.
 	/* Component 25's sparkle squares, in the 89-unit frame the king sprite shares (x, y, side);
 	   dx says which side of him each one flies out to. The right-hand pair overhang the frame by
@@ -641,21 +647,46 @@
 	// panel is the same size empty or full and a new win always lands in the top slot.
 	const clusterRows = $derived(stateGame.spinClusterWins.slice(0, CLUSTER_LOG_SIZE));
 
-	// One label per live cluster, parked on the cluster's centre of mass rather than on its first
-	// cell, so the amount reads as belonging to the whole shape.
+	// One label per live cluster, always ON one of the cluster's own cells (R-05: the amount must
+	// sit on the cluster that earned it). The centre of mass alone is not enough — an L-shape's
+	// falls on a cell outside it — so the label takes the member cell nearest that centre. The
+	// plaque is wider than a cell, so members with a member beside them in the row are preferred,
+	// and the plaque grows towards that neighbour (left- or right-aligned on its cell) instead of
+	// being clamped off the edge into another symbol's reel, which the old 1.8-cell inset did.
 	const clusterLabels = $derived(
 		stateGame.winningClusters.map((cluster) => {
-			const reels = cluster.positions.map((position) => position.reel);
-			const rows = cluster.positions.map((position) => position.row);
-			const centre = (values: number[]) => values.reduce((a, b) => a + b, 0) / values.length;
-			// Keep the label inside the frame: the board clips its own overflow (it has to, for the
-			// falls), so a cluster hugging an edge would otherwise have half its amount cut off.
-			const pitch = 100 / stateGame.gridSize;
-			const inset = (value: number) => Math.min(100 - pitch * 1.8, Math.max(pitch * 1.8, value));
+			const size = stateGame.gridSize;
+			const members = new Set(cluster.positions.map((p) => `${p.reel},${p.row}`));
+			const has = (reel: number, row: number) => members.has(`${reel},${row}`);
+			const n = cluster.positions.length;
+			const cx = cluster.positions.reduce((a, p) => a + p.reel, 0) / n;
+			const cy = cluster.positions.reduce((a, p) => a + p.row, 0) / n;
+			const anchor = cluster.positions
+				.map((p) => {
+					const lonely = Number(!has(p.reel - 1, p.row)) + Number(!has(p.reel + 1, p.row));
+					return { p, cost: Math.hypot(p.reel - cx, p.row - cy) + lonely * 0.6 };
+				})
+				.reduce((best, next) => (next.cost < best.cost ? next : best)).p;
+			const leftIn = has(anchor.reel - 1, anchor.row);
+			const rightIn = has(anchor.reel + 1, anchor.row);
+			// -50% centres the plaque on its cell; 0% / -100% pin its left / right edge to the
+			// cell's, so it spreads over the member beside it (or stays inside an edge reel).
+			const align =
+				rightIn && !leftIn
+					? 'left'
+					: leftIn && !rightIn
+						? 'right'
+						: !leftIn && !rightIn && anchor.reel === 0
+							? 'left'
+							: !leftIn && !rightIn && anchor.reel === size - 1
+								? 'right'
+								: 'centre';
+			const pitch = 100 / size;
 			return {
 				id: cluster.clusterId,
-				left: inset(((centre(reels) + 0.5) / stateGame.gridSize) * 100),
-				top: inset(((centre(rows) + 0.5) / stateGame.gridSize) * 100),
+				left: (anchor.reel + (align === 'left' ? 0 : align === 'right' ? 1 : 0.5)) * pitch,
+				top: (anchor.row + 0.5) * pitch,
+				shift: align === 'left' ? '0%' : align === 'right' ? '-100%' : '-50%',
 				// The expression reads "base payout × applied multiplier". Using `amount` here
 				// repeated the already-multiplied total on the left and visually multiplied it twice.
 				text: `${bookWinToCurrency(cluster.rawAmount)}${
@@ -1357,7 +1388,10 @@
 						<!-- Keyed by position, not clusterId: the math is free to reuse an id between
 						     cascades, and a duplicate key in a keyed each is a runtime error. -->
 						{#each clusterLabels as label, index (index)}
-							<span class="win-label" style={`left:${label.left}%;top:${label.top}%`}>
+							<span
+								class="win-label"
+								style={`left:${label.left}%;top:${label.top}%;--label-shift:${label.shift}`}
+							>
 								{label.text}
 							</span>
 						{/each}
@@ -1405,7 +1439,7 @@
 				<div class="frame-highlight" aria-hidden="true"></div>
 			</div>
 
-			{#if scatterCount > 0}
+			{#if scatterCount > 0 && !boughtEntrySpin}
 				<div class="scatter-tally">
 					{scatterCount}
 					{scatterCount === 1 ? t('SCATTER') : t('SCATTERS')}
@@ -3410,7 +3444,7 @@
 		position: absolute;
 		z-index: 8;
 		width: max-content;
-		transform: translate(-50%, -50%);
+		transform: translate(var(--label-shift, -50%), -50%);
 		color: #fff;
 		font-size: calc(min(100cqw, 100cqh) / var(--grid-size) * 0.4);
 		font-weight: 1000;
@@ -3426,11 +3460,11 @@
 	}
 	@keyframes win-label-in {
 		from {
-			transform: translate(-50%, -50%) scale(0.55);
+			transform: translate(var(--label-shift, -50%), -50%) scale(0.55);
 			opacity: 0;
 		}
 		to {
-			transform: translate(-50%, -50%) scale(1);
+			transform: translate(var(--label-shift, -50%), -50%) scale(1);
 			opacity: 1;
 		}
 	}
@@ -3885,6 +3919,13 @@
 	}
 	.buy-panel {
 		--u: calc(100cqw / 1200);
+		/* What four lines of the floored card copy (4 x 11.5px) need beyond the design's 60-unit
+		   copy row: 0 wherever the unit is big enough, ~15px on a short landscape phone. The copy
+		   row, both card rows and the bet stepper grow by it, and the panel's contents rise by
+		   one and a half of it, keeping the stack's foot ~8px off a 390px-tall screen (R-13,
+		   2026-09-28). Resolved on the children: on the panel itself cqw measures the container
+		   above it, not the panel. */
+		--copy-extra: max(0px, 46px - 60 * var(--u));
 		position: relative;
 		width: min(100%, calc((100svh - 40px) * 1200 / 670));
 		aspect-ratio: 1200 / 670;
@@ -3895,6 +3936,24 @@
 		background: none;
 		box-shadow: none;
 		overflow: visible;
+	}
+	.buy-panel > h2,
+	.buy-panel > .close,
+	.buy-panel > .buy-grid,
+	.buy-panel > .buy-bet {
+		translate: 0 calc(-1.5 * var(--copy-extra, 0px));
+	}
+	/* The disc sits 24 units down with the layer's 20px above the panel; the full rise put its
+	   top at y 0 on a 320-340px-tall landscape screen and cut it off ("the x button is cut",
+	   user 2026-09-28). It is right of the card grid (1127 vs 1123 units), so it only needs to
+	   follow the title as far as that keeps it 8px clear of the screen's top. */
+	.buy-panel > .close {
+		translate: 0 max(calc(-1.5 * var(--copy-extra, 0px)), calc(-24 * var(--u) - 12px));
+	}
+	/* The title took the same rise to y -3; held 3px clear, its caps (no descenders) still
+	   end above the cards, which keep rising under it. */
+	.buy-panel > h2 {
+		translate: 0 max(calc(-1.5 * var(--copy-extra, 0px)), calc(-21 * var(--u) - 17px));
 	}
 	.buy-panel h2 {
 		position: absolute;
@@ -4000,7 +4059,7 @@
 		left: calc(75 * var(--u));
 		display: grid;
 		grid-template-columns: repeat(6, minmax(0, 1fr));
-		grid-template-rows: repeat(2, calc(250.34 * var(--u)));
+		grid-template-rows: repeat(2, calc(250.34 * var(--u) + var(--copy-extra, 0px)));
 		gap: calc(6 * var(--u));
 		width: calc(1048 * var(--u));
 	}
@@ -4021,9 +4080,12 @@
 		   bigger, its hard to read" / "values are way too small", user 2026-09-24), paid for by
 		   the icon row (69 -> 52) so the card keeps the design's height; board sprites scale back
 		   up over it (.board-art). */
+		/* The copy row never drops under four lines of the floored copy (below): where the unit
+		   is small the text stops shrinking at 9.5px, so the row must stop too, or Feature
+		   Spin's four lines ran into its icon. */
 		grid-template-rows:
-			calc(28 * var(--u)) calc(60 * var(--u)) calc(52 * var(--u)) calc(20.34 * var(--u))
-			calc(50 * var(--u));
+			calc(28 * var(--u)) calc(60 * var(--u) + var(--copy-extra, 0px)) calc(52 * var(--u))
+			calc(20.34 * var(--u)) calc(50 * var(--u));
 		justify-items: center;
 		align-items: center;
 		gap: calc(4 * var(--u));
@@ -4058,9 +4120,11 @@
 		width: 100%;
 		overflow: hidden;
 		color: #fff;
-		font-size: calc(15 * var(--u));
+		/* Floored: on a short landscape phone (844x390) the panel's unit made this 7.8px, which
+		   Stake calls "scaled too small" (R-13). The cards have spare room under three lines. */
+		font-size: max(9.5px, calc(15 * var(--u)));
 		letter-spacing: 0.02em;
-		line-height: calc(19 * var(--u));
+		line-height: max(11.5px, calc(19 * var(--u)));
 		text-align: center;
 	}
 	/* The design sets the price at 9.36px, which is below what this game's players can read
@@ -4124,7 +4188,7 @@
 	   own stepper is — with a 48.7 disc at each end and BET over the amount between them. */
 	.buy-bet {
 		position: absolute;
-		top: calc(592 * var(--u));
+		top: calc(592 * var(--u) + 2 * var(--copy-extra, 0px));
 		left: calc(464 * var(--u));
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr) auto;
@@ -4170,7 +4234,7 @@
 		text-align: center;
 	}
 	.buy-bet-readout span {
-		font-size: calc(13 * var(--u));
+		font-size: max(8.5px, calc(13 * var(--u)));
 		font-weight: 700;
 		letter-spacing: 0.18em;
 		line-height: 1;
@@ -4603,6 +4667,10 @@
 		}
 		.buy-panel {
 			--u: calc(min(100vw - 16px, 420px) / 380);
+			/* The flow layout's rows are auto-height, so the stage's copy growth and the rise that
+			   pays for it do not apply; left on, Popout S's 0.65 unit lifted the close disc 10px
+			   above this scroll box's top edge and clipped it ("x button is still cut", 2026-09-28). */
+			--copy-extra: 0px;
 			width: min(100%, 420px);
 			max-height: calc(100svh - 16px);
 			aspect-ratio: auto;
@@ -5276,14 +5344,14 @@
 	@keyframes pixel-win-in {
 		0% {
 			opacity: 0;
-			transform: translate(-50%, -50%) scale(0);
+			transform: translate(var(--label-shift, -50%), -50%) scale(0);
 		}
 		75% {
 			opacity: 1;
-			transform: translate(-50%, -50%) scale(1.12);
+			transform: translate(var(--label-shift, -50%), -50%) scale(1.12);
 		}
 		100% {
-			transform: translate(-50%, -50%) scale(1);
+			transform: translate(var(--label-shift, -50%), -50%) scale(1);
 		}
 	}
 	@keyframes pixel-card-in {
@@ -7433,11 +7501,13 @@
 			grid-template-columns: minmax(0, 1fr);
 		}
 
+		/* Half the window, as the design's 600 is half its 1200 frame: at 388px it covered the
+		   whole popout ("this dialog is too big", user 2026-09-28). */
 		.confirm-panel {
-			width: min(388px, calc(100vw - 8px));
+			width: min(220px, calc(100vw - 8px));
 			max-height: calc(100dvh - 8px);
-			padding: 6px 10px;
-			border-width: 4px;
+			padding: 6px 8px;
+			border-width: 3px;
 			box-shadow:
 				inset 0 0 0 2px #d49b35,
 				inset 0 0 0 4px #351b08,
@@ -7491,10 +7561,15 @@
 
 		.confirm-actions {
 			gap: 4px;
+			margin-top: 6px;
+		}
+
+		.dlg-rule {
+			margin-top: 4px;
 		}
 
 		.confirm-actions button {
-			min-height: 28px;
+			min-height: 22px;
 			padding: 3px;
 			border-width: 2px;
 			font-size: 8px;
@@ -9958,6 +10033,65 @@
 			height: 28%;
 			gap: 2px;
 		}
+		/* A payout row is 56px wide here: the count box, symbol and multiplier box took 44 of it
+		   and the amount ran out of the panel ("text goes out of the box", user 2026-09-28). The
+		   rows are ~30px tall, so the amount takes a second line of its own under the boxes. */
+		/* Two equal box columns either side of the symbol, so the boxes line up from row to row
+		   instead of each sizing to its own text ("see when more than 1...", user 2026-09-28). */
+		.scene .cluster-panel .panel-row:not(.vacant) {
+			grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+			grid-template-rows: auto auto;
+			justify-content: center;
+			align-content: center;
+			row-gap: 1px;
+		}
+		.scene .cluster-panel .panel-row strong {
+			grid-column: 1 / -1;
+			justify-self: center;
+			max-width: 100%;
+			font-size: 7px !important;
+			line-height: 1;
+			white-space: nowrap;
+		}
+		.scene .cluster-panel .panel-row:not(.vacant) > span {
+			text-align: center;
+		}
+		/* In free spins the counters take the panel's top half, leaving five rows ~17px each for
+		   ~20px of boxes and amount, so the boxes rode over each row's top edge ("this is not ok
+		   enough", user 2026-09-28). The three newest wins (the log is newest first) get the room. */
+		.scene .game-stage:has(.bonus-readouts) .cluster-panel .panel-rows {
+			grid-template-rows: repeat(3, minmax(0, 1fr));
+		}
+		.scene .game-stage:has(.bonus-readouts) .cluster-panel .panel-row:nth-child(n + 4) {
+			display: none;
+		}
+		/* The unscoped free-spin counter pass (52px floor, 11/17px type) sits earlier but is more
+		   specific, so here each slab grew to ~55px and the pair ran 45px down over the cluster
+		   panel ("you broke when we have spins and earned", user 2026-09-28). Two slabs share
+		   this dock's 28% (63px): half each, label and value on one line apiece. */
+		.scene .game-stage .bonus-readouts {
+			grid-template-rows: repeat(2, minmax(0, 1fr));
+		}
+		.scene .game-stage .bonus-readout {
+			min-height: 0;
+			gap: 1px;
+			padding: 2px 3px;
+			border-width: 2px;
+			overflow: hidden;
+			container-type: inline-size;
+		}
+		.scene .game-stage .bonus-readout span {
+			font-size: 7px;
+			letter-spacing: 0;
+			line-height: 1;
+			white-space: nowrap;
+		}
+		.scene .game-stage .bonus-readout strong {
+			max-width: 100%;
+			font-size: clamp(7px, calc(250cqw / var(--chars, 8)), 12px);
+			line-height: 1;
+			white-space: nowrap;
+		}
 		.scene .hud {
 			inset: 8% 1% 12% auto !important;
 			width: 10.5%;
@@ -10326,6 +10460,11 @@
 			gap: 0;
 			padding-block: 0;
 			container-type: inline-size;
+			/* 20px on a 2px frame leaves the 16px the 7px label and 9px value stack to: at 18px
+			   on a 3px frame the field was 12px and both lines ran over the frame ("texts are out
+			   of the box", user 2026-09-28). Same type sizes — only the frame changes. */
+			height: 20px;
+			border-width: 2px;
 		}
 		.scene .hud .metric.balance span,
 		.scene .hud .metric.win span {

@@ -323,7 +323,10 @@
 		container-type: inline-size;
 		position: relative;
 		box-sizing: border-box;
-		width: min(1020px, 85vw, calc((100vh - 4vh) * 1.774));
+		/* Up to 1.6x the design's 1020 (1632px): at 1020px flat it read small on a 1920 screen
+		   next to a board that had grown to 1033px (FHD visual pass, 2026-09-28). Everything
+		   inside is in cqw, so it scales as one piece. */
+		width: min(1632px, 85vw, calc((100vh - 4vh) * 1.774));
 		aspect-ratio: 1020 / 575;
 		border: 4px solid #935901;
 		display: grid;

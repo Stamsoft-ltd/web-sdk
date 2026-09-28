@@ -1421,10 +1421,15 @@
 	   the copy, the 25,000x pushed out ("popout s is very buggy", user 2026-09-24). A popout has
 	   the design's own proportions, so it draws the DESKTOP composition, every size written in
 	   design px of the 1200x670 frame and scaled by --p to fit the shell, crop and all. */
+	/* Large screens take the same scaled composition: the desktop layout above is written in
+	   design px at 1:1, so on a 1920x1080 screen it sat at its 1200 size in the middle — a 760px
+	   logo and 22px copy (FHD visual pass, 2026-09-28). Capped at 1.6x so a 4K window does not
+	   get a wall of a logo. */
 	@media (orientation: landscape) and (max-height: 520px) and (max-aspect-ratio: 2/1),
-		(orientation: landscape) and (max-width: 680px) and (max-aspect-ratio: 2/1) {
+		(orientation: landscape) and (max-width: 680px) and (max-aspect-ratio: 2/1),
+		(orientation: landscape) and (min-width: 1300px) and (min-height: 730px) {
 		.splash-screen {
-			--p: min(calc(100vw / 1200), calc(100vh / 670));
+			--p: min(calc(100vw / 1200), calc(100vh / 670), 1.6px);
 			--logo-w: calc(760 * var(--p));
 			--splash-gap: calc(10.7 * var(--p));
 			padding: calc(16 * var(--p));
@@ -1452,12 +1457,14 @@
 		.splash-panels .panel-max em {
 			font-size: calc(52.8 * var(--p));
 		}
+		/* Floored at 9px: at Popout S (--p 0.33) the design's 22 came to 7.3px, the size Stake
+		   calls "scaled too small" (R-13). The boards' min-height has the room for it. */
 		.splash-panels span {
-			font-size: calc(22 * var(--p));
+			font-size: max(9px, calc(22 * var(--p)));
 		}
 		.continue-label {
 			margin: calc(4 * var(--p)) 0 0;
-			font-size: calc(22 * var(--p));
+			font-size: max(9px, calc(22 * var(--p)));
 			text-shadow: max(1px, calc(2 * var(--p))) max(1px, calc(2 * var(--p))) 0 rgb(21 26 7 / 55%);
 		}
 	}
