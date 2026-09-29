@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Container, Rectangle, Sprite } from 'pixi-svelte';
+	import { Container, Rectangle } from 'pixi-svelte';
 
 	import AnimatedSymbol from './AnimatedSymbol.svelte';
 	import { getContext } from '../game/context';
@@ -27,7 +27,6 @@
 			return { reel, gridRow: row - 1, config, scale: info?.sizeRatios.width ?? 0.92 };
 		}),
 	);
-	const badge = $derived(Math.min(SYMBOL_WIDTH, SYMBOL_SIZE) * 0.34);
 
 	// DEV previews:
 	//   key 9 — toggle a small mixed demo row.
@@ -85,7 +84,7 @@
 			backgroundColor={0x2e2a27}
 		/>
 	{/each}
-	<!-- Pass 2 — the locked-cell decoration on top of the mask: light background, held symbol, badge. -->
+	<!-- Pass 2 — the locked-cell decoration on top of the mask: light background + held symbol (no lock badge). -->
 	{#each cells as { reel, gridRow, config, scale } (`cell:${reel}:${gridRow}`)}
 		{@const cx = reel * SYMBOL_WIDTH + SYMBOL_WIDTH / 2}
 		{@const cy = gridRow * SYMBOL_SIZE + SYMBOL_SIZE / 2}
@@ -104,6 +103,5 @@
 			<!-- Held symbol, pinned to the box, animating while it stays locked. -->
 			<AnimatedSymbol {config} x={cx} y={cy} {scale} winning={true} />
 		{/if}
-		<Sprite key="lockBadge" x={cx} y={gridRow * SYMBOL_SIZE + SYMBOL_SIZE * 0.62} anchor={0.5} width={badge} height={badge} />
 	{/each}
 </Container>

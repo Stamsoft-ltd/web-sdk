@@ -8,6 +8,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	import { stateUi } from 'state-shared';
+
 	import { getContext } from '../game/context';
 
 	// Diner order notes pinned on the wall in the free space LEFT of the board (desktop base game only —
@@ -16,7 +18,9 @@
 	// is pinned on top of it (the finished one stays underneath); the pink sticky carries a short kitchen memo that changes less often.
 	const context = getContext();
 	const layoutType = $derived(context.stateLayoutDerived.layoutType());
-	const isFreegame = $derived(context.stateGame.gameType === 'freegame');
+	// Same test as Background.svelte's special-bg switch (free-spin counter shown for the whole bonus,
+	// even while the per-spin gameType flips) — the notes belong to the REGULAR diner bg only.
+	const isFreegame = $derived(context.stateGame.gameType === 'freegame' || stateUi.freeSpinCounterShow);
 	const show = $derived(layoutType === 'desktop' && !isFreegame);
 
 	const ORDERS = [
@@ -47,6 +51,15 @@
 		raf = requestAnimationFrame(loop);
 		return () => cancelAnimationFrame(raf);
 	});
+	// Hide (fade) while ANY popup or win screen is up: the notes are HTML above the game canvas, so
+	// otherwise they'd sit on top of the pixi win pad / splashes and peek over modal backdrops.
+	const POPUPS = '.bb-backdrop,.ap-backdrop,.cf-backdrop,.tu-backdrop,.fs-backdrop,.fo-backdrop,.wb-backdrop';
+	let popupUp = $state(false);
+	$effect(() => {
+		const id = setInterval(() => (popupUp = !!document.querySelector(POPUPS)), 200);
+		return () => clearInterval(id);
+	});
+	const hidden = $derived(popupUp || context.stateGame.winDim > 0);
 	const k = $derived(Math.floor(clock / CYCLE));
 	const u = $derived(clock % CYCLE);
 	const order = $derived(ORDERS[k % ORDERS.length]);
@@ -112,13 +125,12 @@
 		void boardH;
 		return { left: gutter / 2, top, w, canvasH: canvas.height };
 	});
-	const winDim = $derived(context.stateGame.winDim);
 </script>
 
 {#if show && box.w > 70}
 	<div
 		class="notes"
-		style={`left:${box.left}px;top:${box.top}px;--w:${box.w}px;filter:brightness(${1 - winDim})`}
+		style={`left:${box.left}px;top:${box.top}px;--w:${box.w}px;opacity:${hidden ? 0 : 1}`}
 		aria-hidden="true"
 	>
 		<div class="stack">
@@ -159,7 +171,7 @@
 		width: var(--w);
 		transform: translateX(-50%);
 		pointer-events: none;
-		transition: filter 0.25s ease;
+		transition: opacity 0.25s ease;
 	}
 	.hand {
 		font-family: 'Caveat', 'Comic Sans MS', cursive;
@@ -235,9 +247,9 @@
 	.ticket__line--done:nth-child(6)::after { transition-delay: 0.24s; }
 	.ticket__tick {
 		position: absolute;
-		right: 10%;
-		bottom: 12%;
-		font-size: calc(var(--w) * 0.36);
+		left: 14%;
+		bottom: 9%; /* lower-left: clear of the order lines and of the pink sticky on the right */
+		font-size: calc(var(--w) * 0.3);
 		line-height: 1;
 		color: #1f7a2a;
 		transform: rotate(-8deg);

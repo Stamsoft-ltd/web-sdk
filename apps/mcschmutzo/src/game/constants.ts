@@ -43,19 +43,36 @@ export const INITIAL_SYMBOL_STATE: SymbolState = 'static';
 
 const SPIN_OPTIONS_SHARED = {
 	reelBounceBackSpeed: 0.22,
-	reelSpinSpeedBeforeBounce: 4.5,
 	reelPaddingMultiplierNormal: 1.2,
 	reelPaddingMultiplierAnticipated: 10,
 	reelSpinDelay: 100,
 };
+// Normal play is paced for suspense (design ask: "too fast"): reels spin a little slower, run longer
+// before stopping, stop one after another with a clear gap, and settle with a softer bounce.
+// Turbo (SPIN_OPTIONS_FAST) keeps the original quick timings.
 export const SPIN_OPTIONS_DEFAULT = {
 	...SPIN_OPTIONS_SHARED,
-	reelPreSpinSpeed: 2.5,
-	reelSpinSpeed: 3.6,
-	reelBounceSizeMulti: 0.18,
+	reelPaddingMultiplierNormal: 2.0,
+	// Smooth start: a small wind-up, then a steady acceleration from rest that ends at EXACTLY
+	// reelSpinSpeed and never exceeds it. f = t² − 0.25·t(1−t)² has f'(1) = 2, so with the leg's
+	// average speed at half the spin speed its final speed is exactly reelSpinSpeed — no lurch.
+	reelPreSpinSpeed: 1.4,
+	reelPreSpinEasing: (t: number) => t * t - 0.25 * t * (1 - t) * (1 - t),
+	reelSpinSpeed: 2.8,
+	// Anticipated (yellow-frame) reels run faster than the rest, each ramping up the same smooth way
+	// once the result arrives, then stop from that speed.
+	reelAnticipationSpeedMulti: 1.6,
+	reelAnticipationRampMs: 900,
+	// Hard stop: the reel keeps its full speed right up to the landing (p = 1 → linear, no slow-down
+	// before the stop), overshoots a touch and snaps back — the symbols' squash fires at that impact.
+	reelStopEasingPower: 1,
+	reelSpinDelay: 190,
+	reelBounceBackSpeed: 0.3,
+	reelBounceSizeMulti: 0.14,
 };
 export const SPIN_OPTIONS_FAST = {
 	...SPIN_OPTIONS_SHARED,
+	reelSpinSpeedBeforeBounce: 4.5,
 	reelPreSpinSpeed: 6,
 	reelSpinSpeed: 7,
 	reelBounceSizeMulti: 0.05,

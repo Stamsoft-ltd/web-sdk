@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { ap } from '../lib/preloadArt';
 	import { i18nDerived } from '../i18n/i18nDerived';
-	import DustFx from './DustFx.svelte';
 	import CardDrip from './CardDrip.svelte';
 	import SauceFx from './SauceFx.svelte';
 
@@ -242,9 +241,6 @@
 		<!-- The board's "freshly polished" gleam: a tilted light band sweeps across the diner every 10s
 		     (over the background, behind the logo / cards / chef). -->
 		<div class="shine" aria-hidden="true"><div class="shine__band"></div></div>
-		<!-- Warm dust floating in the diner air (brighter in the sunlit window area, top-left/right),
-		     with the odd draft — behind the logo / cards / chef. -->
-		<DustFx count={90} color="255,255,255" boost={1.6} lights={[{ x: 0.12, y: 0.25, r: 0.45 }, { x: 0.88, y: 0.2, r: 0.4 }]} />
 		<img class="logo" src={logo} alt="McSchmutzo" draggable="false" />
 		<div class="man" style={`--skin:${MAN.skin}`}>
 			<div class="bottle" style={bottleStyle}>

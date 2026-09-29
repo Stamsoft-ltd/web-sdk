@@ -42,6 +42,32 @@
 		spun = false;
 	});
 
+	// Idle "itching to spin": until SPIN is pressed the wheel swings like a pendulum — the SAME angle to
+	// the left and to the right on every swing (a pure sine, so each side gets equal force), eased in
+	// from rest. The swing size and tempo drift slowly on two unrelated periods, so the motion never
+	// visibly repeats but stays smooth (all terms are continuous; no nudges or jumps). The spatula
+	// leans with the wheel's speed, equally both ways. Driven through the SAME `rotation` the spin uses,
+	// so the spin starts from wherever the wheel is. Reduced-motion: stays still.
+	$effect(() => {
+		if (!wheel || spun || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		let raf = 0;
+		const t0 = performance.now();
+		const loop = (now: number) => {
+			const t = (now - t0) / 1000;
+			const easeIn = Math.min(1, t / 1.2) ** 2 * (3 - 2 * Math.min(1, t / 1.2));
+			const amp = 4.2 + 0.9 * Math.sin(t / 5.3) * Math.sin(t / 3.1 + 1); // 3.3°..5.1°, slowly drifting
+			// phase advances at a gently varying rate (≈1.55s swing) — integrated, so no jumps
+			const phase = t * 4.05 + 0.35 * Math.sin(t / 4.7);
+			rotation = easeIn * amp * Math.sin(phase);
+			const vel = easeIn * amp * Math.cos(phase); // ∝ angular speed
+			spatulaTilt = -vel * 0.55;
+			raf = requestAnimationFrame(loop);
+		};
+		raf = requestAnimationFrame(loop);
+		return () => cancelAnimationFrame(raf);
+	});
+	let spatulaTilt = $state(0);
+
 	// Spin to the RGS-resolved segment: bring that segment under the top pointer after a few turns.
 	const onSpin = () => {
 		const w = context.stateGame.wheel;
@@ -52,9 +78,11 @@
 			SEGMENTS.findIndex((s) => s.fg === w.freeSpins),
 		);
 		spinning = true;
+		spatulaTilt = 0;
 		context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_up' });
 		requestAnimationFrame(() => {
-			rotation = 360 * 6 - SEGMENTS[idx].a;
+			// round up from the current (idle) angle so it always spins forward
+			rotation = Math.ceil(rotation / 360) * 360 + 360 * 6 - SEGMENTS[idx].a;
 		});
 	};
 
@@ -89,7 +117,7 @@
 				</div>
 
 				<!-- Spatula pointer, straddling the top edge of the wheel and aimed down into it. -->
-				<img class="wb-spatula" src={spatulaArt} alt="" draggable="false" />
+				<img class="wb-spatula" src={spatulaArt} alt="" draggable="false" style={`transform: translateX(-50%) rotate(${spatulaTilt}deg)`} />
 			</div>
 
 			<button
@@ -230,6 +258,7 @@
 		width: 19%;
 		height: auto;
 		transform: translateX(-50%);
+		transform-origin: 50% 12%; /* pivots near its top, like a flexing pointer */
 		z-index: 3;
 		filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.4));
 		pointer-events: none;

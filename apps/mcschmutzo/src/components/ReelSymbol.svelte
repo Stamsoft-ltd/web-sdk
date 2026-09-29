@@ -3,6 +3,7 @@
 	import SymbolWrap from './SymbolWrap.svelte';
 	import { getSymbolInfo, getSymbolX } from '../game/utils';
 	import { getContext } from '../game/context';
+	import { reelLandedAt } from '../game/reelLanding.svelte';
 	import type { ReelSymbol } from '../game/stateGame.svelte';
 
 	type Props = {
@@ -19,6 +20,14 @@
 	const symbolInfo = $derived(
 		rawSymbol ? getSymbolInfo({ rawSymbol, state: props.reelSymbol.symbolState }) : undefined,
 	);
+	// The reel lands (motion enters 'bouncing') → stamp the time; every symbol on it bounces from that.
+	const motion = $derived(context.stateGame.board[props.reelIndex]?.reelState.motion);
+	$effect.pre(() => {
+		if (motion === 'bouncing' && performance.now() - (reelLandedAt[props.reelIndex] ?? -1e9) > 400)
+			reelLandedAt[props.reelIndex] = performance.now();
+	});
+	const landedAt = $derived(reelLandedAt[props.reelIndex] ?? -1);
+		const y = props.reelSymbol.symbolY();
 	// A symbol comes alive on the board while a paying line runs through it (paylineWins stays set
 	// while the win is shown). Locked cells are additionally animated, pinned, by LockedCells.svelte
 	// on top of the board. paylineWins.row is 0-based (grid row = symbols-array index - 1).
@@ -40,6 +49,7 @@
 			state={props.reelSymbol.symbolState}
 			{rawSymbol}
 			{winning}
+			{landedAt}
 			oncomplete={() => {
 				if (props.reelSymbol.symbolState === 'win') props.reelSymbol.oncomplete();
 				if (props.reelSymbol.symbolState === 'land') props.reelSymbol.symbolState = 'static';

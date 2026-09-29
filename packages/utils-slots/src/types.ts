@@ -36,6 +36,15 @@ type SpinningReelStopOptions =
 export type SpinningReelSpinOptions = {
 	// speed (pixel / ms)
 	reelPreSpinSpeed: number;
+	// Optional easing for the FIRST pre-spin leg (the wind-up from rest). Default: backIn, whose end
+	// slope (≈4.7) makes the reel shoot well past reelSpinSpeed and then drop back — a visible lurch.
+	// An easing with f(0)=0, f(1)=1 and f'(1)=1, used with reelPreSpinSpeed = reelSpinSpeed, hands
+	// over at exactly the spin speed. Games that don't set it keep backIn.
+	reelPreSpinEasing?: (t: number) => number;
+	// Optional: anticipated reels speed up to reelSpinSpeed × this (> 1), ramping smoothly over
+	// reelAnticipationRampMs (default 900) after the result arrives. Unset = same speed as the rest.
+	reelAnticipationSpeedMulti?: number;
+	reelAnticipationRampMs?: number;
 	reelBounceBackSpeed: number;
 	reelSpinSpeed: number;
 	// size

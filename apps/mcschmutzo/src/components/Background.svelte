@@ -52,7 +52,7 @@
 	// Sparks: a few tiny warm glints drifting up behind the board on the regular (base-game) bg, so it
 	// feels alive without competing with the reels. Deterministic off the clock: each spark has its
 	// own column, speed, sway and size; it fades in, rises one lifetime and fades out, twinkling.
-	const showSparks = $derived(showArt && !isFreegame);
+	const showSparks = false; // design ask: no floating dots on the regular bg
 	// Free-games kitchen air (the grey-kitchen special bg): the base game's glints, re-imagined for a
 	// working kitchen — soft STEAM puffs rising from below (swelling, swaying, fading), and FLOUR/SALT
 	// dust swirling on a slow, never-repeating current, catching the light as it drifts under the
@@ -93,29 +93,7 @@
 				g.circle(x + ox, y + oy, r * (0.75 + 0.2 * j)).fill({ color: 0xf2efe8, alpha: a });
 			}
 		}
-		// Flour / salt dust: swirling motes (sum-of-sines current), brighter inside the lamp light.
-		for (let i = 0; i < MOTES; i++) {
-			const h1 = squirtHash(i * 5.3);
-			const h2 = squirtHash(i * 9.1);
-			const sp = 0.00004 + 0.00005 * h2; // drift speed
-			const bx = ((h1 + t * sp * (0.6 + h1)) % 1) * W;
-			const by = ((h2 + t * sp * 0.35 * (h1 - 0.5)) % 1 + 1) % 1 * H * 0.85;
-			const swirlX = Math.sin(t / (1900 + 900 * h1) + i) * W * 0.018 + Math.sin(t / 700 + i * 2.3) * W * 0.004;
-			const swirlY = Math.cos(t / (2300 + 800 * h2) + i * 1.7) * H * 0.025;
-			let x = bx + swirlX + gust * gustDir * W * (0.05 + 0.07 * h2);
-			x = ((x % W) + W) % W;
-			const y = by + swirlY - gust * H * 0.02 * h1;
-			let lit = 0.25;
-			for (const L of lights) {
-				const d = Math.hypot(x - L.x, y - L.y) / L.r;
-				if (d < 1) lit = Math.max(lit, 0.25 + 0.75 * (1 - d) ** 1.5 * L.on);
-			}
-			const twinkle = 0.7 + 0.3 * Math.sin(t / (220 + 160 * h1) + i * 2.9);
-			const a = Math.min(0.9, lit * twinkle * (0.5 + 0.5 * gust + 0.5));
-			const r = H * (0.0014 + 0.002 * h1) * (1 + 0.8 * lit);
-			if (lit > 0.4) g.circle(x, y, r * 3.5).fill({ color: 0xffe2a8, alpha: a * 0.12 }); // glint halo
-			g.circle(x, y, r).fill({ color: 0xfff8ec, alpha: a });
-		}
+		// (flour/salt dust motes removed — design ask: no dots; the steam stays)
 	};
 	const SPARKS = 26;
 	const drawSparks = (g: SquirtGraphics) => {
