@@ -425,10 +425,32 @@
 		context.eventEmitter.broadcast({ type: 'stopButtonClick' });
 	};
 
+	// Space belongs to whatever is on screen: if a popup / win screen / wheel / splash / menu is up
+	// when Space goes down, that press only closes (or acts on) it — it must NOT also spin, skip or
+	// fast-forward the next roll. Snapshotted in the CAPTURE phase, i.e. before any handler (the
+	// popups' own Space handlers close them synchronously, so checking later would see them gone).
+	const SPACE_OVERLAYS =
+		'.bb-backdrop,.ap-backdrop,.cf-backdrop,.tu-backdrop,.fs-backdrop,.fo-backdrop,.wb-scene,.splash-intro';
+	let spaceOverOverlay = false;
+	const overlayUp = () =>
+		!!document.querySelector(SPACE_OVERLAYS) || context.stateGame.winDim > 0 || menuOpen;
+	$effect(() => {
+		const snap = (e: KeyboardEvent) => {
+			if (e.code !== 'Space' && e.key !== ' ') return;
+			if (e.repeat) return; // keep the verdict of the press that started it
+			spaceOverOverlay = overlayUp();
+		};
+		window.addEventListener('keydown', snap, { capture: true });
+		return () => window.removeEventListener('keydown', snap, { capture: true });
+	});
+
 	const onSpinHotkey = () => {
 		// Ignore Space while the "Unfinished Round" resume dialog is open — the player
 		// must choose Play/End there; a stray spin would launch the game and throw.
 		if (context.stateGame.resumeModalOpen) return;
+		// Something else was on screen → this press was for it (closing a popup etc.), not the reels.
+		// (checked live as well: a Space dispatched straight at window can reach us before the snapshot)
+		if (spaceOverOverlay || overlayUp()) return;
 
 		if (hasAuto) {
 			if (context.stateXstateDerived.isIdle()) return;

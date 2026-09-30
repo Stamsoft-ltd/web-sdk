@@ -37,6 +37,7 @@
 	const w = $derived(h * props.config.aspect);
 
 	const PERIOD = 1400; // ms per loop cycle (out and back)
+	const RAMP_MS = 700; // ease-in of the loop's amplitude whenever it (re)starts
 	const PERIOD_IDLE = 2600; // slower, softer loop for symbols that are alive at rest (config.idle)
 	// Everything the layer math reads is $state so the render tracks the animation reliably.
 	let clock = $state(0); // rAF timestamp
@@ -111,7 +112,15 @@
 		const loop = (ts: number) => {
 			landClock = ts;
 			if (ts - landStart < LAND_MS) raf = requestAnimationFrame(loop);
-			else landStart = -1;
+			else {
+				landStart = -1;
+				// Hand over to the loop from its rest pose: the loop clock kept ticking under the
+				// one-shot, so without this restart it would take over mid-swing (a visible jump).
+				if (running) {
+					startTime = ts;
+					clock = ts;
+				}
+			}
 		};
 		raf = requestAnimationFrame(loop);
 		return () => cancelAnimationFrame(raf);
@@ -123,7 +132,11 @@
 		const frac = active ? ((clock - startTime) / (idle ? PERIOD_IDLE : PERIOD)) % 1 : 0;
 		// Smooth loop 0 → 1 → 0 with zero velocity at the seam (no jerk between cycles). The idle loop
 		// runs the same motion at a fraction of the amplitude.
-		const env = active ? ((1 - Math.cos(Math.PI * 2 * frac)) / 2) * (idle ? idleAmp : 1) : 0;
+		// Each (re)start eases the motion in over RAMP_MS, so it also starts with zero velocity (the
+		// signed `tilt` rock would otherwise set off at full speed).
+		const r0 = active ? Math.min(1, (clock - startTime) / RAMP_MS) : 0;
+		const ramp = r0 * r0 * (3 - 2 * r0);
+		const env = active ? ((1 - Math.cos(Math.PI * 2 * frac)) / 2) * (idle ? idleAmp : 1) * ramp : 0;
 		const theta = Math.PI * 2 * frac; // full turn per cycle — drives circular `orbit`
 		const sq = (props.config.squash ?? 0) * env;
 		const sqx = 1 - sq;
@@ -281,7 +294,7 @@
 			// centre (which would swing the cap in a wide arc). The position is compensated so that pivot
 			// point stays put as the sprite rotates about its own anchor.
 			const jit = l.jitter && active && props.winning ? l.jitter * Math.sin(clock / 38) * Math.sin(clock / 97) : 0;
-			const rotation = (l.rot ?? 0) * env + (l.tilt ?? 0) * Math.sin(theta) + jit;
+			const rotation = (l.rot ?? 0) * env + (l.tilt ?? 0) * Math.sin(theta) * ramp + jit;
 			const pv = (l.pivotY ?? 0) * h;
 			const pivotCompX = pv * Math.sin(rotation);
 			const pivotCompY = pv * (1 - Math.cos(rotation));

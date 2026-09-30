@@ -180,4 +180,5 @@ export default {
 	"EARNED": "OPTJENT",
 	"FS FREE SPINS": "GRATIS SPINS",
 	"GAME TITLE": "McSchmutzo",
+	"WIN UP TO": "VIND OP TIL",
 };

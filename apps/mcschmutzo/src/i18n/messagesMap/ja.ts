@@ -197,4 +197,5 @@ export default {
 	"EARNED": "獲得",
 	"FS FREE SPINS": "フリースピン",
 	"GAME TITLE": "McSchmutzo",
+	"WIN UP TO": "最大",
 };

@@ -197,4 +197,5 @@ export default {
 	"EARNED": "KAZANILAN",
 	"FS FREE SPINS": "BEDAVA DÖNÜŞLER",
 	"GAME TITLE": "McSchmutzo",
+	"WIN UP TO": "KAZAN: EN FAZLA",
 };

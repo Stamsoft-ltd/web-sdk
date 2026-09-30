@@ -5,6 +5,9 @@ import { stateBet, stateUi } from 'state-shared';
 import { sequence } from 'utils-shared/sequence';
 import { waitForTimeout } from 'utils-shared/wait';
 
+const FREE_SPIN_LANDED_HOLD_MS = 1200;
+const WHEEL_FADE_OUT_MS = 280; // keep in sync with WheelBonus.svelte's out:fade duration
+
 import { eventEmitter } from './eventEmitter';
 import { playBookEvent } from './utils';
 import { winLevelMap, type WinLevel, type WinLevelData } from './winLevelMap';
@@ -122,6 +125,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		if (hadPendingStop) stateGameDerived.enhancedBoard.stop();
 		await spinPromise;
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
+		// Free games: hold the landed board a moment after the last reel stops, so the player clearly
+		// sees what was rolled before the win presentation / next free spin kicks in.
+		if (bookEvent.gameType === 'freegame') await waitForTimeout(FREE_SPIN_LANDED_HOLD_MS);
 	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>) => {
 		stateGame.roundWin = bookEvent.totalWin;
@@ -288,6 +294,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_up' });
 		await waitForTimeout(800);
 		stateGame.wheel = undefined;
+		// Let the wheel screen finish fading out (WheelBonus out:fade, 280ms) plus a short beat on the
+		// clear board, so the first free spin's reels start in full view instead of under the fade.
+		await waitForTimeout(WHEEL_FADE_OUT_MS + 250);
 	},
 	// customised
 	createBonusSnapshot: async (bookEvent: BookEventOfType<'createBonusSnapshot'>) => {

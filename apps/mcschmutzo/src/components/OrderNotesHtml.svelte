@@ -53,7 +53,7 @@
 	});
 	// Hide (fade) while ANY popup or win screen is up: the notes are HTML above the game canvas, so
 	// otherwise they'd sit on top of the pixi win pad / splashes and peek over modal backdrops.
-	const POPUPS = '.bb-backdrop,.ap-backdrop,.cf-backdrop,.tu-backdrop,.fs-backdrop,.fo-backdrop,.wb-backdrop';
+	const POPUPS = '.bb-backdrop,.ap-backdrop,.cf-backdrop,.tu-backdrop,.fs-backdrop,.fo-backdrop,.wb-scene';
 	let popupUp = $state(false);
 	$effect(() => {
 		const id = setInterval(() => (popupUp = !!document.querySelector(POPUPS)), 200);

@@ -197,4 +197,5 @@ export default {
 	"EARNED": "GAGNÉ",
 	"FS FREE SPINS": "TOURS GRATUITS",
 	"GAME TITLE": "McSchmutzo",
+	"WIN UP TO": "GAGNEZ JUSQU'À",
 };

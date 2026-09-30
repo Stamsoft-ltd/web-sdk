@@ -197,4 +197,5 @@ export default {
 	"EARNED": "ЗАРАБОТАНО",
 	"FS FREE SPINS": "БЕСПЛАТНЫЕ ВРАЩЕНИЯ",
 	"GAME TITLE": "McSchmutzo",
+	"WIN UP TO": "ВЫИГРАЙ ДО",
 };

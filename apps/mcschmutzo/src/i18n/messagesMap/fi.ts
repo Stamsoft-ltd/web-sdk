@@ -197,4 +197,5 @@ export default {
 	"EARNED": "ANSAITTU",
 	"FS FREE SPINS": "ILMAISKIERROSTA",
 	"GAME TITLE": "McSchmutzo",
+	"WIN UP TO": "VOITA JOPA",
 };

@@ -197,4 +197,5 @@ export default {
 	"EARNED": "अर्जित",
 	"FS FREE SPINS": "फ्री स्पिन",
 	"GAME TITLE": "McSchmutzo",
+	"WIN UP TO": "जीतें अधिकतम",
 };

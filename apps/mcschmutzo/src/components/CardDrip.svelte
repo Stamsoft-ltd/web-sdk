@@ -66,7 +66,7 @@
 		};
 		// Exact colours of THIS drip, sampled from the painted art once it loads: body (right of the
 		// highlight), rim (darkest outline pixel) and highlight (brightest), per tendril.
-		type Pal = { body: string; rim: string; hi: string; w: number };
+		type Pal = { body: string; rim: string; hi: string; w: number; rows: number[]; eq: number };
 		const pal = new Map<Tendril, Pal>();
 		const sample = () => {
 			const c = document.createElement('canvas');
@@ -98,7 +98,20 @@
 				const rj = Math.max(0, lo - 2);
 				const rim = `rgb(${col[rj * 4]},${col[rj * 4 + 1]},${col[rj * 4 + 2]})`;
 				void dark;
-				pal.set(t, { body, rim, hi: `rgba(${bright[0]},${bright[1]},${bright[2]},0.85)`, w: r - l + 1 });
+				// Width of every row of the painted end (tube → round tip), and `eq` = the last full-width
+				// row, where the rounded bottom begins (the ends are straight tubes that round off at the tip,
+				// not bulbs — everything above `eq` gets squeezed into the neck / the drop's domed top).
+				const rows: number[] = [];
+				for (let j = 0; j < t.bulb; j++) {
+					const rd = x.getImageData(Math.round(t.cx - HALF), Math.round(t.tip - t.bulb + 2 + j), HALF * 2, 1).data;
+					let a0 = -1, a1 = -1;
+					for (let i = 0; i < HALF * 2; i++) if (rd[i * 4 + 3] > 128) { if (a0 < 0) a0 = i; a1 = i; }
+					rows.push(a0 < 0 ? 0 : a1 - a0 + 1);
+				}
+				const maxW = Math.max(...rows);
+				let eq = 0;
+				for (let j = 0; j < rows.length; j++) if (rows[j] >= maxW * 0.96) eq = j;
+				pal.set(t, { body, rim, hi: `rgba(${bright[0]},${bright[1]},${bright[2]},0.85)`, w: r - l + 1, rows, eq });
 			}
 		};
 		// Thin sauce thread (a solid body-coloured strand with a faint rim).
@@ -110,68 +123,51 @@
 			ctx.fillRect(t.cx - w / 2, y0, w, y1 - y0);
 			ctx.globalAlpha = 1;
 		};
-		// Pinching neck between the tube (full width W at yA) and the hanging end (full width at yB),
-		// narrowing to `min` in the middle — smooth curves, body fill + rim, like the painted outline.
-		const neck = (t: Tendril, yA: number, yB: number, min: number) => {
-			const c = pal.get(t);
-			if (!c || yB <= yA) return;
-			const hw = c.w / 2 - 0.5;
-			const N = 16;
-			const pts: [number, number][] = [];
-			for (let j = 0; j <= N; j++) {
-				const f = j / N;
-				// hourglass, narrowest at 70% down (just above the heavy end), full width at both ends
-				// smoothstep in/out: starts parallel to the tube (no shoulder), narrowest at 78%
-				const g = f < 0.78 ? ease(f / 0.78) : 1 - ease((f - 0.78) / 0.22);
-				pts.push([hw - (hw - min / 2) * g, yA + (yB - yA) * f]);
-			}
-			ctx.beginPath();
-			pts.forEach(([w, y], j) => (j ? ctx.lineTo(t.cx - w, y) : ctx.moveTo(t.cx - w, y)));
-			for (let j = N; j >= 0; j--) ctx.lineTo(t.cx + pts[j][0], pts[j][1]);
-			ctx.closePath();
-			// fill with the PAINTED tube (shading + highlight), clipped to the hourglass
-			ctx.save();
-			ctx.clip();
-			tube(t, yA - 0.5, yB + 0.5, 1);
-			ctx.restore();
-			ctx.lineWidth = 1.6;
-			ctx.strokeStyle = c.rim;
-			// outline only where the neck narrows (the painted tube above already has its own outline)
-			const from = Math.round(N * 0.3);
-			for (const side of [-1, 1]) {
-				ctx.beginPath();
-				for (let j = from; j <= N; j++) {
-					const [w, y] = pts[j];
-					if (j === from) ctx.moveTo(t.cx + side * w, y);
-					else ctx.lineTo(t.cx + side * w, y);
-				}
-				ctx.stroke();
-			}
-		};
-		// A falling teardrop (round bottom, pointed top), in the painted colours, centred on cx; `cy` =
-		// centre of its round part, `r` = radius, `len` = tail length above.
-		const drop = (t: Tendril, cy: number, r: number, len: number, alpha = 1) => {
-			const c = pal.get(t);
-			if (!c) return;
-			const x = t.endCx ?? t.cx;
+		// Draw rows y0…y1, each one a painted source row squeezed horizontally about cx. `rowAt(f)`
+		// (f = 0 top → 1 bottom) returns which row of the painted end to use (-1 = the plain tube row),
+		// its painted content width, and the width to draw it at. Squeezing painted rows (instead of
+		// clipping or stroking) keeps the art's own outline + highlight at every width, so a thinning
+		// neck or a drop's tail looks painted, not drawn.
+		type RowSpec = { src: number; srcW: number; w: number };
+		const W_NARROW = 16; // art px — rows narrower than this get the body wash (see span)
+		const span = (t: Tendril, y0: number, y1: number, rowAt: (f: number) => RowSpec, alpha = 1) => {
+			if (y1 - y0 <= 0.2) return;
+			const top = t.tip - t.bulb + 2;
+			const n = Math.max(1, Math.ceil(y1 - y0));
+			const hStep = (y1 - y0) / n;
 			ctx.globalAlpha = alpha;
-			ctx.beginPath();
-			ctx.moveTo(x, cy - r - len);
-			ctx.bezierCurveTo(x + r * 0.35, cy - r - len * 0.45, x + r, cy - r * 0.55, x + r, cy);
-			ctx.arc(x, cy, r, 0, Math.PI, false);
-			ctx.bezierCurveTo(x - r, cy - r * 0.55, x - r * 0.35, cy - r - len * 0.45, x, cy - r - len);
-			ctx.closePath();
-			ctx.fillStyle = c.body;
-			ctx.fill();
-			ctx.lineWidth = 1.6;
-			ctx.strokeStyle = c.rim;
-			ctx.stroke();
-			ctx.beginPath();
-			ctx.ellipse(x - r * 0.38, cy - r * 0.25, r * 0.2, r * 0.36, -0.25, 0, Math.PI * 2);
-			ctx.fillStyle = c.hi;
-			ctx.fill();
+			for (let i = 0; i < n; i++) {
+				const r = rowAt((i + 0.5) / n);
+				const wf = r.srcW > 0 ? Math.max(0, r.w) / r.srcW : 0;
+				if (wf <= 0.01) continue;
+				const sy = top + Math.max(0, r.src);
+				ctx.drawImage(img, t.cx - HALF, sy, HALF * 2, 1, t.cx - HALF * wf, y0 + i * hStep, HALF * 2 * wf, hStep + 0.6);
+				// very narrow rows: the squeezed highlight + outline crowd into a pale criss-cross; wash
+				// the row's middle with the sauce body so a thin neck reads as solid sauce
+				const c = pal.get(t);
+				if (c && r.w < W_NARROW && r.w > 1) {
+					ctx.globalAlpha = alpha * 0.55 * (1 - r.w / W_NARROW);
+					ctx.fillStyle = c.body;
+					ctx.fillRect(t.cx - r.w * 0.32, y0 + i * hStep, r.w * 0.64, hStep + 0.6);
+					ctx.globalAlpha = alpha;
+				}
+			}
 			ctx.globalAlpha = 1;
 		};
+		// The painted end from its row `from` down (the part below the neck/tail), top at y, scaled s.
+		const bulbFrom = (t: Tendril, y: number, from: number, s: number, alpha = 1) => {
+			const sy = t.tip - t.bulb + 2 + from;
+			const sh = t.bulb - from;
+			ctx.globalAlpha = alpha;
+			ctx.drawImage(img, t.cx - HALF, sy, HALF * 2, sh, t.cx - HALF * s, y, HALF * 2 * s, sh * s);
+			ctx.globalAlpha = 1;
+		};
+		// Neck profile over the squeezed span: 0 at both ends, 1 at the pinch point. Above the pinch it
+		// eases in (the tube thinning); below it the width comes back like a DOME (fast off the pinch,
+		// flattening into the heavy end), so the hanging end reads round, not squat.
+		const PINCH_AT = 0.5;
+		const neckG = (f: number) =>
+			f < PINCH_AT ? ease(f / PINCH_AT) : 1 - Math.sin((Math.PI / 2) * ((f - PINCH_AT) / (1 - PINCH_AT)));
 
 		const draw = (t: Tendril, now: number) => {
 			const P = t.period;
@@ -179,9 +175,18 @@
 			const top = t.tip - t.bulb + 2; // the painted layer is cut here; everything below is ours
 			const E = t.reach ?? 30;
 			const RUN = t.run ?? 230;
-			const STRETCH = 0.5;
-			const PINCH = 0.62;
-			const R0 = ((pal.get(t)?.w ?? 26) / 2) * 0.8; // detached drop radius
+			const c = pal.get(t);
+			const W = c?.w ?? 26;
+			const eq = c?.eq ?? Math.round(t.bulb * 0.45);
+			const endW = (r: number) => c?.rows[Math.min(t.bulb - 1, Math.max(0, Math.floor(r)))] || W;
+			const STRETCH = 0.48;
+			const PINCH = 0.64;
+			const MIN_NECK = 0.12; // neck width at the moment it lets go (fraction of the row's width)
+			const SAG = 5;
+			const yA = top + E * 0.3; // the squeezed span starts here (shared by the pinch and the break)
+			// Row of the squeezed span at absolute y, given where the painted end's top (yb) is.
+			const baseRow = (y: number, yb: number): RowSpec =>
+				y < yb ? { src: -1, srcW: W, w: W } : { src: y - yb, srcW: endW(y - yb), w: endW(y - yb) };
 			if (p < STRETCH) {
 				// The painted tendril STRETCHES (slow viscous ooze): exact painted pixels, just longer.
 				const ext = E * ease(p / STRETCH);
@@ -190,31 +195,67 @@
 				return;
 			}
 			if (p < PINCH) {
-				// The neck thins over the stretched length while the heavy end (kept exactly where the
-				// stretch left it) sags a little — continuous with the stretch, no jump.
+				// The neck thins while the heavy end sags a touch. Everything from the neck down to the
+				// end's widest row is squeezed painted rows (tube rows, then the end's own rows), so at the
+				// start this is exactly the stretched pose and there's never a flat edge.
 				const q = ease((p - STRETCH) / (PINCH - STRETCH));
-				const sag = 4 * q;
-				const yA = top + E * 0.35;
-				const yB = top + E + sag + 5;
-				const W = pal.get(t)?.w ?? 26;
+				const yb = top + E + SAG * q;
+				const yEq = yb + eq;
+				const m = 1 - (1 - MIN_NECK) * q;
 				tube(t, top, yA + 1, 1);
-				neck(t, yA, yB, W * (0.92 - 0.8 * q));
-				bulb(t, top + E + sag, 1);
+				bulbFrom(t, yEq, eq, 1);
+				span(t, yA, yEq + 0.5, (f) => {
+					const b = baseRow(yA + (yEq - yA) * f, yb);
+					return { ...b, w: b.w * (1 - (1 - m) * neckG(f)) };
+				});
 				return;
 			}
-			// Detached: a teardrop RUNS down the card (slow start, speeding up, then easing), trailing a
-			// thin streak that fades; the tendril recoils to its painted rest with a damped bounce.
+			// Broken: the neck parts at its pinch point. The lower half stays on the drop as its tail
+			// (sharpening to a point and pulling in), and the drop — still the painted end — runs down
+			// the card (slow start, speeding up, easing out) leaving a thin streak. The upper half
+			// springs back up and beads into the painted rest pose.
 			const q = (p - PINCH) / (1 - PINCH);
+			const yb0 = top + E + SAG;
+			const yEq0 = yb0 + eq;
+			const yP = yA + (yEq0 - yA) * PINCH_AT;
 			const sp = q < 0.55 ? (q / 0.55) ** 2 * 0.7 : 0.7 + 0.3 * ease((q - 0.55) / 0.45);
-			const r = R0 * (1 - 0.3 * q);
-			const cy = top + E + 4 + t.bulb - R0 + RUN * sp; // starts where the hanging end was
+			const fall = RUN * sp;
+			const s = 1 - 0.18 * q; // the drop thins as it leaves sauce behind
 			const fade = q > 0.72 ? 1 - (q - 0.72) / 0.28 : 1;
-			thread(t, top + t.bulb - 2, cy - r - 6, 2.4 * (1 - 0.4 * q), 0.85 * fade);
-			drop(t, cy, r, r * 1.3, fade);
-			const rq = Math.min(1, q / 0.4);
-			const ext = Math.max(0, E * 0.35 * (1 - rq) * Math.cos(rq * Math.PI * 1.5));
-			tube(t, top, top + ext + 1, 1);
-			bulb(t, top + ext, 1);
+			// The lower half of the neck rounds into a teardrop top: from exactly the neck's shape at the
+			// break to a dome narrowing to a point, ~1.5× the height of the drop's rounded bottom.
+			const tailPull = ease(Math.min(1, q / 0.3));
+			const tipW = MIN_NECK * (1 - ease(Math.min(1, q / 0.1))); // the tip closes to a point
+			const yEq = yEq0 + fall;
+			const H0 = yEq0 - yP;
+			const Hd = Math.max(8, (t.bulb - eq) * 1.5);
+			const tailTop = yEq - (H0 + (Hd - H0) * tailPull) * s;
+			if (q > 0.04) thread(t, yP + 2, tailTop, 1.8 * (1 - 0.4 * q), 0.6 * fade * Math.min(1, (q - 0.04) / 0.1));
+			bulbFrom(t, yEq, eq, s, fade);
+			span(
+				t,
+				tailTop,
+				yEq + 0.5,
+				(f) => {
+					// same rows/profile as the neck's lower half just before the break, compressed
+					const yo = yP + (yEq0 - yP) * f;
+					const b = baseRow(yo, yb0);
+					const fo = (yo - yA) / (yEq0 - yA);
+					const neckShape = 1 - (1 - tipW) * neckG(fo);
+					const tear = Math.sin((Math.PI / 2) * f) ** 1.4; // pointed top → full width at the base
+					return { ...b, w: b.w * s * (neckShape + (tear - neckShape) * tailPull) };
+				},
+				fade,
+			);
+			// Upper half: recoils from the break point to the rest pose; its tip beads up — a small
+			// painted end at the tip of the retracting taper that swells to full size as it arrives —
+			// then a small damped wobble.
+			const u = ease(Math.min(1, q / 0.28));
+			const wob = q > 0.28 ? 2.5 * Math.exp(-(q - 0.28) * 9) * Math.sin((q - 0.28) * 26) : 0;
+			const su = MIN_NECK + 0.25 + (0.75 - MIN_NECK) * u; // bead size (fraction of the rest end)
+			const yEnd = top + (yP - top) * (1 - u);
+			span(t, top, yEnd + 0.5, (f) => ({ src: -1, srcW: W, w: W * (1 - (1 - su) * f * f) }));
+			bulb(t, yEnd + Math.max(0, wob), su);
 		};
 
 		let raf = 0;

@@ -112,13 +112,13 @@ export const stateGame = $state({
 
 const boardLayout = () => {
 	// Portrait sits the board a touch higher so its top tucks under the logo header (which slightly
-	// overlaps it); desktop keeps the original centring. Landscape nudges the board left of centre
-	// so the right control rail (and free-spin panels) have clear gutter beside it (matches design).
+	// overlaps it); desktop keeps the original centring. Landscape centres the board on the screen
+	// (it used to sit left of centre, which looked crowded against the balance/bet gutter).
 	const layoutType = stateLayoutDerived.layoutType();
 	const isPortrait = layoutType === 'portrait';
 	const isLandscape = layoutType === 'landscape';
 	return {
-		x: stateLayoutDerived.mainLayout().width * (isLandscape ? 0.47 : 0.494),
+		x: stateLayoutDerived.mainLayout().width * (isLandscape ? 0.5 : 0.494),
 		// Landscape drops the board toward the bottom so the title logo (drawn just above the board
 		// top by FeatureOverlay) has clear space at the top instead of clipping off-screen.
 		// Short portrait (main height < 1422, see stateLayout): the board sits just under the tight

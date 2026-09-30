@@ -197,4 +197,5 @@ export default {
 	"EARNED": "DIPEROLEH",
 	"FS FREE SPINS": "PUTARAN GRATIS",
 	"GAME TITLE": "McSchmutzo",
+	"WIN UP TO": "MENANG HINGGA",
 };
