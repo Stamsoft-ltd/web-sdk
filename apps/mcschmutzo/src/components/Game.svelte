@@ -4,7 +4,8 @@
 	import { EnablePixiExtension } from 'components-pixi';
 	import { EnableHotkey } from 'components-shared';
 	import { MainContainer } from 'components-layout';
-	import { App } from 'pixi-svelte';
+	import { App, Container } from 'pixi-svelte';
+	import { Tween } from 'svelte/motion';
 	import { stateBet, stateMeta, stateModal } from 'state-shared';
 
 	import { GameVersion, Modals } from 'components-ui-html';
@@ -59,6 +60,26 @@
 	// show through the splash's fade-in. It only appears once the splash is pressed, so the splash
 	// fades out onto the game background and the transition wipe takes over.
 	let splashPressed = $state(false);
+
+	// Board entrance: once, right after the splash's camera pan hands over to the game, the board (and
+	// everything on it — frame, reels, logo) drops in from above the screen and lands with a little
+	// bounce. Never replayed (the game branch mounts once per session).
+	const boardDrop = new Tween(0);
+	let boardIntroDone = false;
+	const landBounce = (t: number) => {
+		// fall (accelerating) → impact → two shrinking rebounds
+		if (t < 0.62) return (t / 0.62) ** 2;
+		const u = (t - 0.62) / 0.38;
+		return 1 - 0.06 * Math.abs(Math.sin(u * Math.PI * 2)) * (1 - u) ** 1.6;
+	};
+	$effect(() => {
+		if (context.stateLayout.showLoadingScreen || boardIntroDone) return;
+		boardIntroDone = true;
+		const h = context.stateLayoutDerived.canvasSizes().height;
+		boardDrop.set(-h * 1.05, { duration: 0 });
+		// a short beat so the splash's fade-out has started before the board arrives
+		setTimeout(() => boardDrop.set(0, { duration: 950, easing: landBounce }), 120);
+	});
 	const modeImage = './assets/mcschmutzo/background-base.webp';
 	const symbolImage = (name: string) => `./assets/mcschmutzo/symbols/${name}.webp`;
 
@@ -226,6 +247,7 @@
 				<ResumeBet />
 				<Sound />
 
+				<Container y={boardDrop.current}>
 				<MainContainer>
 					<BoardFrame />
 				</MainContainer>
@@ -239,6 +261,7 @@
 						<PaylineOverlay wins={context.stateGame.paylineWins} />
 					{/if}
 				</MainContainer>
+				</Container>
 
 				<Win />
 				<Transition />
