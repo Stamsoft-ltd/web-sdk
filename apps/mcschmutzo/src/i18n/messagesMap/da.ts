@@ -49,14 +49,14 @@ export default {
 	"INFO": "INFO",
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	"SPLASH C1 TITLE": "VELKOMMEN TIL SCHMUTZO",
-	"SPLASH C1 BODY": "Skarpe lys, vilde forlystelser og store overraskelser rundt om hvert hjørne.",
-	"SPLASH C2 TITLE": "3\nUnikke\nBonusser",
-	"SPLASH C2 BODY 1": "Vælg Ænderne",
-	"SPLASH C2 BODY 2": "Rid på Wilds",
-	"SPLASH C2 BODY 3": "Overlev Rutsjebanen",
+	"SPLASH C1 TITLE": "VELKOMMEN TIL McSCHMUTZO",
+	"SPLASH C1 BODY": "Gevinster låses fast og spinner igen, indtil grillen er fuld.",
+	"SPLASH C2 TITLE": "3\nLÆKRE\nFUNKTIONER",
+	"SPLASH C2 BODY 1": "Lås & Re-Spin",
+	"SPLASH C2 BODY 2": "Drej Bonushjulet",
+	"SPLASH C2 BODY 3": "Øg Multiplikatoren",
 	"SPLASH C3 TITLE": "MAKS. GEVINST PÅ 25,000×",
-	"SPLASH C3 BODY": "Den Ultimative Parkpræmie",
+	"SPLASH C3 BODY": "BYENS STØRSTE BESTILLING",
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	"OVERVIEW": "OVERSIGT",
@@ -94,7 +94,7 @@ export default {
 	"INFO SCATTER BODY": "BONUS-symbolet er Scatter-symbolet og kan optræde på alle hjul. Når Scatter-symboler lander, aktiveres en af to Gratis Spil-tilstande.",
 	"INFO SCATTER 3 TITLE": "SCATTERE - Normal Bonus",
 	"INFO SCATTER 3 BODY": "Når 3 Scatter-symboler lander, udløses Normal Bonus. Spilleren går ind i Normal Gratis Spil-tilstanden. Normal Bonus bruger standardkonfigurationen for Gratis Spil og den tilhørende startprogression for Gevinstmultiplikatoren. Enhver aktiv Gevinstmultiplikator, der føres med ind i funktionen, kombineres med resultatet ved indgang til Gratis Spil, hvor det er relevant. Gevinstmultiplikatoren bevares gennem hele Gratis Spil-funktionen og kan stige under spillet. Den nulstilles ikke mellem Gratis Spil.",
-	"INFO SCATTER 4 TITLE": "SCATTERE - Normal Bonus",
+	"INFO SCATTER 4 TITLE": "SCATTERE - Super Bonus",
 	"INFO SCATTER 4 BODY": "Når 4 Scatter-symboler lander, udløses Super Bonus. Super Bonus begynder med en forbedret startkonfiguration sammenlignet med Normal Bonus. Spilleren modtager Super Gratis Spil-opsætningen med de maksimale / forbedrede indgangsbetingelser, der er defineret for denne tilstand. Gevinstmultiplikatoren bevares gennem hele Super Bonus og kan fortsætte med at stige under Gratis Spil. Den nulstilles ikke mellem Gratis Spil.",
 	"INFO FREEGAMES BODY 1": "Under Gratis Spil forbliver de samme grundlæggende gevinst- og Re-Spin-mekanikker aktive. Hver gang en kvalificerende vindende forbindelse opstår, låses de matchende vindende symboler automatisk og udløser et Re-Spin.",
 	"INFO FREEGAMES BODY 2": "Yderligere matchende symboler, der tilføjes under Re-Spin, låses, så sekvensen kan fortsætte. McSchmutzo-symboler, der dukker op under funktionen, kan øge Gevinstmultiplikatoren. Den akkumulerede Gevinstmultiplikator forbliver aktiv gennem hele Gratis Spil-funktionen.",
@@ -181,4 +181,5 @@ export default {
 	"FS FREE SPINS": "GRATIS SPINS",
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "VIND OP TIL",
+	"CONFIRM PURCHASE": "BEKRÆFT KØB",
 };

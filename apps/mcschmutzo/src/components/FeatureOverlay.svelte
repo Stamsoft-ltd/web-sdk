@@ -116,7 +116,7 @@
 			y={-300}
 			width={690}
 			height={600}
-			radius={28}
+			borderRadius={28}
 			backgroundColor={0x120603}
 			alpha={0.97}
 		/>
@@ -182,7 +182,7 @@
 			y={222}
 			width={490}
 			height={62}
-			radius={18}
+			borderRadius={18}
 			backgroundColor={0x2c0d02}
 			alpha={wheelSettled ? 0.98 : 0.82}
 		/>
@@ -190,7 +190,7 @@
 			<Container y={253} alpha={resultAlpha.current} scale={resultScale.current}>
 				<Text
 					anchor={0.5}
-					text={`${context.stateGame.wheel.freeSpins} FREE GAMES · +${context.stateGame.wheel.addedSteps} STEPS · ${context.stateGame.wheel.globalMult}x`}
+					text={`${context.stateGame.wheel?.freeSpins ?? 0} FREE GAMES · +${context.stateGame.wheel?.addedSteps ?? 0} STEPS · ${context.stateGame.wheel?.globalMult ?? 1}x`}
 					style={{
 						fill: 0xffd34d,
 						fontFamily: 'Poppins',

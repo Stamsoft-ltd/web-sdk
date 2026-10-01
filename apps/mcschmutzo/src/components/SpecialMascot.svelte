@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cropExtra, cropSprite } from '../game/chefCrops';
 	import { Container, Graphics, Sprite } from 'pixi-svelte';
 
 	import type { SquirtGraphics } from '../game/ketchupSquirt';
@@ -88,6 +89,7 @@
 	const chefT = $derived(guyPose.y - guyPose.height / 2);
 	const PIVX = 0.452; // middle of the baked joint strip (frame fractions)
 	const PIVY = 0.5;
+	const armCrop = cropSprite('specialArm', PIVX, PIVY);
 	const pivotX = $derived(chefL + PIVX * guyPose.width);
 	const pivotY = $derived(chefT + PIVY * guyPose.height);
 	// The cap's holes face sits at frame (0.352, 0.466) — salt exits right there.
@@ -188,8 +190,8 @@
 			// Nametag first, so the pointing hand sits over it.
 			{ key: 'specialLabel', nx: 0.5643, ny: 0.5737, nw: 0.1984, nh: 0.1119, px: 0.5, py: 0.13, amp: 0.045, period: 320, phase: 900 },
 			// Pointing hand: slow ~1.3° sway about the wrist (cuff), like the board chef's.
-			{ key: 'specialHand', nx: 0, ny: 0, nw: 1, nh: 1, px: 0.982, py: 0.7244, amp: 0.023, period: 700, phase: 1500 },
-			{ key: 'specialBrows', nx: 0, ny: 0, nw: 1, nh: 1, amp: 0 },
+			{ ...cropExtra('specialHand', [0.982, 0.7244]), amp: 0.023, period: 700, phase: 1500 },
+			{ ...cropExtra('specialBrows'), amp: 0 },
 		]}
 	/>
 	<!-- Salt-shaker forearm overlay: flicks about the shoulder (above the base, below the salt). -->
@@ -197,9 +199,9 @@
 		key="specialArm"
 		x={pivotX}
 		y={pivotY}
-		anchor={{ x: PIVX, y: PIVY }}
-		width={guyPose.width}
-		height={guyPose.height}
+		anchor={armCrop.anchor}
+		width={guyPose.width * armCrop.sw}
+		height={guyPose.height * armCrop.sh}
 		rotation={armAngle}
 		zIndex={0.5}
 	/>

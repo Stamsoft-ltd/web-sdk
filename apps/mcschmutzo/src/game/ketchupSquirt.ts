@@ -4,6 +4,7 @@ export type SquirtGraphics = {
 	lineTo: (x: number, y: number) => SquirtGraphics;
 	stroke: (style: object) => unknown;
 	circle: (x: number, y: number, r: number) => { fill: (style: object) => unknown; stroke: (style: object) => unknown };
+	ellipse: (x: number, y: number, rx: number, ry: number) => { fill: (style: object) => unknown; stroke: (style: object) => unknown };
 };
 
 // Sauce squirt, shared by the board chef's ketchup bottle and the sauce-bottle symbols. Fully

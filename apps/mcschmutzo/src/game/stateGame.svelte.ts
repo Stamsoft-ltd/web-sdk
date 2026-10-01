@@ -83,6 +83,8 @@ export const stateGame = $state({
 	collectedScatters: 0,
 	globalMultiplier: 1,
 	featureMessage: '',
+	// Which free-games mode is running: 3 scatters / bought Normal = 'normal', 4 scatters / Super = 'super'.
+	bonusTier: 'normal' as 'normal' | 'super',
 	paylineWins: [] as Array<{
 		lineIndex: number;
 		path: Array<{ reel: number; row: number }>;

@@ -5,7 +5,7 @@ export default {
 	"INFO SCATTER BODY": "El símbolo BONUS es el símbolo Scatter y puede aparecer en todos los rodillos. Conseguir símbolos Scatter activa uno de los dos modos de Juegos Gratis.",
 	"INFO SCATTER 3 TITLE": "SCATTERS - Bono Normal",
 	"INFO SCATTER 3 BODY": "Conseguir 3 símbolos Scatter activa el Bono Normal. El jugador entra al modo de Juegos Gratis Normal. El Bono Normal utiliza la configuración estándar de Juegos Gratis y su correspondiente progresión inicial del Multiplicador de Premio. Cualquier Multiplicador de Premio activo que se traslade a la función se combina con el resultado de entrada de los Juegos Gratis cuando corresponda. El Multiplicador de Premio permanece activo durante toda la función de Juegos Gratis y puede aumentar durante el juego. No se reinicia entre Juegos Gratis.",
-	"INFO SCATTER 4 TITLE": "SCATTERS - Bono Normal",
+	"INFO SCATTER 4 TITLE": "SCATTERS - Súper Bono",
 	"INFO SCATTER 4 BODY": "Conseguir 4 símbolos Scatter activa el Súper Bono. El Súper Bono comienza con una configuración inicial mejorada en comparación con el Bono Normal. El jugador recibe la configuración de Súper Juegos Gratis con las condiciones de entrada máximas / mejoradas definidas para este modo. El Multiplicador de Premio permanece activo durante todo el Súper Bono y puede seguir aumentando durante los Juegos Gratis. No se reinicia entre Juegos Gratis.",
 	"INFO FREEGAMES BODY 1": "Durante los Juegos Gratis, siguen activas las mismas mecánicas principales de premios y Regiros. Siempre que se produce una conexión ganadora válida, los símbolos ganadores coincidentes se bloquean automáticamente y activan un Regiro.",
 	"INFO FREEGAMES BODY 2": "Los símbolos coincidentes adicionales que se añaden durante el Regiro se bloquean, permitiendo que la secuencia continúe. Los símbolos de McSchmutzo que aparecen durante la función pueden aumentar el Multiplicador de Premio. El Multiplicador de Premio acumulado permanece activo durante toda la función de Juegos Gratis.",
@@ -63,14 +63,14 @@ export default {
 	INFO: 'INFO',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': 'BIENVENIDO A SCHMUTZO',
-	'SPLASH C1 BODY': 'Luces brillantes, atracciones salvajes y grandes sorpresas en cada esquina.',
-	'SPLASH C2 TITLE': '3\nBonos\nÚnicos',
-	'SPLASH C2 BODY 1': 'Elige los Patos',
-	'SPLASH C2 BODY 2': 'Monta los Wilds',
-	'SPLASH C2 BODY 3': 'Sobrevive a la Montaña Rusa',
+	'SPLASH C1 TITLE': "BIENVENIDO A McSCHMUTZO",
+	'SPLASH C1 BODY': "Las ganancias se bloquean y vuelven a girar hasta llenar la parrilla.",
+	'SPLASH C2 TITLE': "3\nFUNCIONES\nSABROSAS",
+	'SPLASH C2 BODY 1': "Bloqueo y Re-Spin",
+	'SPLASH C2 BODY 2': "Gira la Rueda de Bonos",
+	'SPLASH C2 BODY 3': "Haz crecer el Multiplicador",
 	'SPLASH C3 TITLE': 'PREMIO MÁXIMO DE 25,000×',
-	'SPLASH C3 BODY': 'El Gran Premio del Parque',
+	'SPLASH C3 BODY': "EL PEDIDO MÁS GRANDE DE LA CIUDAD",
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'RESUMEN',
@@ -198,4 +198,5 @@ export default {
 	"FS FREE SPINS": "GIROS GRATIS",
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "GANA HASTA",
+	"CONFIRM PURCHASE": "CONFIRMAR COMPRA",
 };

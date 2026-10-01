@@ -216,9 +216,15 @@ export default {
 		src: new URL('../../assets/mcschmutzo/congrats-cover-sm.webp', import.meta.url).href,
 	},
 	// The dedicated win-amount plaque (red panel + gold frame + ketchup/mustard splashes).
-	winBoxAmount: {
+	// The amount plaque with its five sauce-tendril ends cut out (they're redrawn live from
+	// winBoxDrips — see game/paintedDrip.ts), and the sauce-only source for those ends.
+	winBoxAmountCut: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/win/win-box-amount.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/win/win-box-amount-cut.webp', import.meta.url).href,
+	},
+	winBoxDrips: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/win/win-box-drips.webp', import.meta.url).href,
 	},
 	boardBg: {
 		type: 'sprite',
@@ -339,16 +345,10 @@ export default {
 		type: 'spriteSheet',
 		src: new URL('../../assets/sprites/coin/SD2_Coin.json', import.meta.url).href,
 	},
-	backgroundBase: {
+	// The connected diner panorama (splash = left end, base game = right end; see game/panorama.ts).
+	backgroundPanorama: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/background-base.webp', import.meta.url).href,
-		preload: true,
-	},
-	// Desktop-only base diner (new art). Mobile-landscape still uses backgroundBase until the mobile
-	// backgrounds are supplied.
-	backgroundDesktop: {
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/background-desktop.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/background-panorama.webp', import.meta.url).href,
 		preload: true,
 	},
 	// Mobile-landscape SPECIAL (free-games) grey kitchen — wide crop matching the base landscape bg.

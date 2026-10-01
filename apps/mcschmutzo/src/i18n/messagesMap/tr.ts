@@ -5,7 +5,7 @@ export default {
 	"INFO SCATTER BODY": "BONUS sembolü, Scatter sembolüdür ve tüm makaralarda görünebilir. Scatter sembollerinin gelmesi, iki Ücretsiz Oyunlar modundan birini etkinleştirir.",
 	"INFO SCATTER 3 TITLE": "SCATTER - Normal Bonus",
 	"INFO SCATTER 3 BODY": "3 Scatter sembolünün gelmesi Normal Bonusu tetikler. Oyuncu, Normal Ücretsiz Oyunlar moduna girer. Normal Bonus, standart Ücretsiz Oyunlar yapılandırmasını ve buna karşılık gelen başlangıç Kazanç Çarpanı ilerleyişini kullanır. Özelliğe taşınan aktif herhangi bir Kazanç Çarpanı, uygun olduğunda Ücretsiz Oyunlar giriş sonucuyla birleştirilir. Kazanç Çarpanı, tüm Ücretsiz Oyunlar özelliği boyunca kalıcı olur ve oyun sırasında artabilir. Ücretsiz Oyunlar arasında sıfırlanmaz.",
-	"INFO SCATTER 4 TITLE": "SCATTER - Normal Bonus",
+	"INFO SCATTER 4 TITLE": "SCATTER - Süper Bonus",
 	"INFO SCATTER 4 BODY": "4 Scatter sembolünün gelmesi Süper Bonusu tetikler. Süper Bonus, Normal Bonusa kıyasla geliştirilmiş bir başlangıç yapılandırmasıyla başlar. Oyuncu, bu mod için tanımlanan maksimum / geliştirilmiş giriş koşullarıyla Süper Ücretsiz Oyunlar düzenini alır. Kazanç Çarpanı, tüm Süper Bonus boyunca kalıcı olur ve Ücretsiz Oyunlar sırasında artmaya devam edebilir. Ücretsiz Oyunlar arasında sıfırlanmaz.",
 	"INFO FREEGAMES BODY 1": "Ücretsiz Oyunlar sırasında, aynı temel kazanç ve Yeniden Döndürme mekanikleri aktif kalır. Uygun bir kazançlı bağlantı oluştuğunda, eşleşen kazanan semboller otomatik olarak kilitlenir ve bir Yeniden Döndürme tetikler.",
 	"INFO FREEGAMES BODY 2": "Yeniden Döndürme sırasında eklenen ek eşleşen semboller kilitlenir ve dizinin devam etmesini sağlar. Özellik sırasında görünen McSchmutzo sembolleri Kazanç Çarpanını artırabilir. Biriken Kazanç Çarpanı, tüm Ücretsiz Oyunlar özelliği boyunca aktif kalır.",
@@ -63,14 +63,14 @@ export default {
 	INFO: 'BİLGİ',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': 'SCHMUTZO\'YA HOŞ GELDİN',
-	'SPLASH C1 BODY': 'Parlak ışıklar, çılgın gezintiler ve her köşede büyük sürprizler.',
-	'SPLASH C2 TITLE': '3\nEşsiz\nBonus',
-	'SPLASH C2 BODY 1': 'Ördekleri Seç',
-	'SPLASH C2 BODY 2': 'Wild\'lara Bin',
-	'SPLASH C2 BODY 3': 'Hız Treninde Hayatta Kal',
+	'SPLASH C1 TITLE': "McSCHMUTZO'YA HOŞ GELDİNİZ",
+	'SPLASH C1 BODY': "Kazançlar yerine kilitlenir ve ızgara dolana kadar yeniden döner.",
+	'SPLASH C2 TITLE': "3\nLEZZETLİ\nÖZELLİK",
+	'SPLASH C2 BODY 1': "Kilitle ve Yeniden Döndür",
+	'SPLASH C2 BODY 2': "Bonus Çarkını Çevir",
+	'SPLASH C2 BODY 3': "Çarpanı Büyüt",
 	'SPLASH C3 TITLE': '25,000× MAKSİMUM KAZANÇ',
-	'SPLASH C3 BODY': 'En Büyük Park Ödülü',
+	'SPLASH C3 BODY': "ŞEHRİN EN BÜYÜK SİPARİŞİ",
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'GENEL BAKIŞ',
@@ -198,4 +198,5 @@ export default {
 	"FS FREE SPINS": "BEDAVA DÖNÜŞLER",
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "KAZAN: EN FAZLA",
+	"CONFIRM PURCHASE": "SATIN ALMAYI ONAYLA",
 };

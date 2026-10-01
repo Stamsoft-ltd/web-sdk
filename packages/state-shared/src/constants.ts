@@ -1,3 +1,5 @@
+// Template bet-mode meta (games override this at startup). Asset URLs are blank: they pointed at a
+// test S3 bucket that must never ship in a bundle.
 const DEFAULT_BET_MODE_META = {
 	BASE: {
 		mode: 'BASE',
@@ -30,15 +32,11 @@ const DEFAULT_BET_MODE_META = {
 		parent: '',
 		children: '',
 		assets: {
-			icon: 'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/icon_doubleboost.webp',
-			dialogImage:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/doubleboost_image.webp',
-			dialogVolatility:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/volatility/volatility_01.webp',
-			volatility:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/volatility/volatility_white_01.webp',
-			button:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/button_activate.webp',
+			icon: '',
+			dialogImage: '',
+			dialogVolatility: '',
+			volatility: '',
+			button: '',
 			bannerText: 'example banner text',
 		},
 		text: {
@@ -60,15 +58,11 @@ const DEFAULT_BET_MODE_META = {
 		parent: '',
 		children: '',
 		assets: {
-			icon: 'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/icon_superboost.webp',
-			dialogImage:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/superboost_image.webp',
-			dialogVolatility:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/volatility/volatility_02.webp',
-			volatility:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/volatility/volatility_white_02.webp',
-			button:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/button_activate.webp',
+			icon: '',
+			dialogImage: '',
+			dialogVolatility: '',
+			volatility: '',
+			button: '',
 		},
 		text: {
 			title: 'SUPER BOOST',
@@ -89,15 +83,11 @@ const DEFAULT_BET_MODE_META = {
 		parent: '',
 		children: '',
 		assets: {
-			icon: 'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/icon_superspin.webp',
-			dialogImage:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/superspin_image.webp',
-			dialogVolatility:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/volatility/volatility_03.webp',
-			volatility:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/volatility/volatility_white_03.webp',
-			button:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/button_activate.webp',
+			icon: '',
+			dialogImage: '',
+			dialogVolatility: '',
+			volatility: '',
+			button: '',
 		},
 		text: {
 			title: 'SAMURAI SPIN',
@@ -142,15 +132,11 @@ const DEFAULT_BET_MODE_META = {
 		parent: '',
 		children: '',
 		assets: {
-			icon: 'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/icon_bonusbuy.webp',
-			dialogImage:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/bonus_image.webp',
-			dialogVolatility:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/volatility/volatility_04.webp',
-			volatility:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/volatility/volatility_white_04.webp',
-			button:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_8_97/betModes/button_buy.webp',
+			icon: '',
+			dialogImage: '',
+			dialogVolatility: '',
+			volatility: '',
+			button: '',
 		},
 		text: {
 			title: 'BONUS',
@@ -170,15 +156,11 @@ const DEFAULT_BET_MODE_META = {
 		parent: '',
 		children: '',
 		assets: {
-			icon: 'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/icon_superbonusbuy.webp',
-			dialogImage:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/superbonus_image.webp',
-			dialogVolatility:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/volatility/volatility_05.webp',
-			volatility:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_9_97/betModes/volatility/volatility_white_05.webp',
-			button:
-				'https://test-fart-cdn-bucket.s3.ap-southeast-2.amazonaws.com/1_8_97/betModes/button_buy.webp',
+			icon: '',
+			dialogImage: '',
+			dialogVolatility: '',
+			volatility: '',
+			button: '',
 		},
 		text: {
 			title: 'SUPER BONUS',

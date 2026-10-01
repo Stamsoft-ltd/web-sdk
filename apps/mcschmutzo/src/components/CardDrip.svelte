@@ -19,8 +19,17 @@
 		endCx?: number; // centre of the rounded end (art px), if it differs from the tube's
 		endW?: number; // width of the rounded end's top (art px)
 	};
-	type Props = { src: string; artW: number; artH: number; tendrils: Tendril[] };
-	const { src, artW, artH, tendrils }: Props = $props();
+	type Props = {
+		src: string;
+		artW: number;
+		artH: number;
+		tendrils: Tendril[];
+		/** half-width of the painted slices (art px) — must cover the tube, not its neighbours */
+		half?: number;
+		/** drops fall FREE off an edge (accelerating, no streak) instead of running down a surface */
+		free?: boolean;
+	};
+	const { src, artW, artH, tendrils, half = 22, free = false }: Props = $props();
 
 	let canvas: HTMLCanvasElement;
 	onMount(() => {
@@ -43,7 +52,7 @@
 		ro.observe(canvas);
 		resize();
 
-		const HALF = 22; // half-width of the source slices (art px) — covers the tube + its outline
+		const HALF = half; // half-width of the source slices (art px) — covers the tube + its outline
 		const ease = (q: number) => q * q * (3 - 2 * q);
 		// Draw the tube slice (the 4 straight rows above the bulb) stretched from y0 to y1, its width
 		// scaled per band by widthAt(f) (f = 0 top → 1 bottom), centred on cx.
@@ -182,14 +191,17 @@
 			const STRETCH = 0.48;
 			const PINCH = 0.64;
 			const MIN_NECK = 0.12; // neck width at the moment it lets go (fraction of the row's width)
-			const SAG = 5;
+			const SAG = E * 0.3; // further ooze while the neck thins (the end keeps moving — never pauses)
+			// One continuous path for the hanging end, from rest to the break: an ever-so-slightly
+			// accelerating ooze (the drop gets heavier), so the stretch flows straight into the pinch.
+			const POS = (pp: number) => (E + SAG) * Math.min(1, pp / PINCH) ** 1.7;
 			const yA = top + E * 0.3; // the squeezed span starts here (shared by the pinch and the break)
 			// Row of the squeezed span at absolute y, given where the painted end's top (yb) is.
 			const baseRow = (y: number, yb: number): RowSpec =>
 				y < yb ? { src: -1, srcW: W, w: W } : { src: y - yb, srcW: endW(y - yb), w: endW(y - yb) };
 			if (p < STRETCH) {
 				// The painted tendril STRETCHES (slow viscous ooze): exact painted pixels, just longer.
-				const ext = E * ease(p / STRETCH);
+				const ext = POS(p);
 				tube(t, top, top + ext + 1, 1);
 				bulb(t, top + ext, 1);
 				return;
@@ -199,7 +211,7 @@
 				// end's widest row is squeezed painted rows (tube rows, then the end's own rows), so at the
 				// start this is exactly the stretched pose and there's never a flat edge.
 				const q = ease((p - STRETCH) / (PINCH - STRETCH));
-				const yb = top + E + SAG * q;
+				const yb = top + POS(p);
 				const yEq = yb + eq;
 				const m = 1 - (1 - MIN_NECK) * q;
 				tube(t, top, yA + 1, 1);
@@ -218,10 +230,22 @@
 			const yb0 = top + E + SAG;
 			const yEq0 = yb0 + eq;
 			const yP = yA + (yEq0 - yA) * PINCH_AT;
-			const sp = q < 0.55 ? (q / 0.55) ** 2 * 0.7 : 0.7 + 0.3 * ease((q - 0.55) / 0.45);
+			// The drop leaves at the speed the end was oozing (no restart from zero). Running down a
+			// surface: a smooth Hermite curve from that speed to a gentle stop as it fades (it never stalls
+			// mid-way); free fall: gravity on top of that launch speed.
+			const v0 = ((E + SAG) * 1.7 * (1 - PINCH)) / PINCH / RUN; // launch slope in run units per q
+			const sp = free
+				? Math.min(1, v0 * q + (1 - v0) * Math.min(1, q / 0.7) ** 2)
+				: v0 * (q * q * q - 2 * q * q + q) + 3 * q * q - 2 * q * q * q;
 			const fall = RUN * sp;
-			const s = 1 - 0.18 * q; // the drop thins as it leaves sauce behind
-			const fade = q > 0.72 ? 1 - (q - 0.72) / 0.28 : 1;
+			const s = 1 - (free ? 0.06 : 0.18) * q; // the drop thins as it leaves sauce behind
+			const fade = free
+				? q > 0.42
+					? Math.max(0, 1 - (q - 0.42) / 0.28)
+					: 1
+				: q > 0.72
+					? 1 - (q - 0.72) / 0.28
+					: 1;
 			// The lower half of the neck rounds into a teardrop top: from exactly the neck's shape at the
 			// break to a dome narrowing to a point, ~1.5× the height of the drop's rounded bottom.
 			const tailPull = ease(Math.min(1, q / 0.3));
@@ -230,7 +254,7 @@
 			const H0 = yEq0 - yP;
 			const Hd = Math.max(8, (t.bulb - eq) * 1.5);
 			const tailTop = yEq - (H0 + (Hd - H0) * tailPull) * s;
-			if (q > 0.04) thread(t, yP + 2, tailTop, 1.8 * (1 - 0.4 * q), 0.6 * fade * Math.min(1, (q - 0.04) / 0.1));
+			if (!free && q > 0.04) thread(t, yP + 2, tailTop, 1.8 * (1 - 0.4 * q), 0.6 * fade * Math.min(1, (q - 0.04) / 0.1));
 			bulbFrom(t, yEq, eq, s, fade);
 			span(
 				t,

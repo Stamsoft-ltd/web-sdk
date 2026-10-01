@@ -15,7 +15,18 @@
 	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.webp'); // wooden round — utility buttons
 	const btnSpinBg = ap('/assets/mcschmutzo/ui-icons/turn-button-bg.svg'); // hi-res red turn disc (bg)
 	const btnSpinHoverBg = btnSpinBg;
-	const btnWideBg = ap('/assets/mcschmutzo/buy-bonus-button.svg');
+	// Buy-bonus plaque (static raster, its sauce tendril tips cut out) + the live drips drawn over it by
+	// CardDrip from buy-bonus-drips.webp — the same stretch → pinch → falling drop as the turn disc.
+	// Art = the original 179×71 svg at 4× (716×284); cx / tip / bulb measured on the drips layer.
+	const btnWideBg = ap('/assets/mcschmutzo/buy-bonus-button.webp');
+	const buyDrips = ap('/assets/mcschmutzo/buy-bonus-drips.webp');
+	const BUY_DRIPS = [
+		{ cx: 71.5, tip: 102, bulb: 16, reach: 9, run: 120, period: 5400, phase: 1700 }, // ketchup, left lobe
+		{ cx: 108, tip: 106, bulb: 16, reach: 10, run: 120, period: 4900, phase: 0 }, // ketchup
+		{ cx: 158.5, tip: 87, bulb: 16, reach: 9, run: 130, period: 6200, phase: 3300 }, // ketchup
+		{ cx: 567, tip: 272, bulb: 16, reach: 10, run: 110, period: 5100, phase: 2500 }, // mustard
+		{ cx: 622, tip: 276, bulb: 16, reach: 10, run: 110, period: 5800, phase: 4400 }, // mustard
+	];
 	const btnWideHoverBg = btnWideBg;
 	// Portrait/mobile pads (Figma 2792-4133)
 	// Mobile-landscape HUD art (Figma 2682-3639)
@@ -25,6 +36,16 @@
 	const lsNavBox = ap('/assets/components/symbols/landscape/nav_bg.svg'); // flat dark vertical rail box
 	const lsBonus = ap('/assets/components/symbols/landscape/bonus.svg'); // red vertical BONUS button (text baked in)
 	const lsTurn = ap('/assets/mcschmutzo/ui-icons/turn-button-bg.svg'); // hi-res red turn disc (bg)
+	// The turn disc's three mustard tendrils, drawn live by CardDrip (free-fall drops) from the painted
+	// sauce itself; their tips are cut from turn-button-bg.svg. Art = the svg's 1402×1096 viewBox at
+	// half scale (701×548). The ends in turn-drips.webp are rebuilt from a clean tube row (the original
+	// cut-outs carried baked-in ring pixels, which read as a brown drop off the rim).
+	const turnDrips = ap('/assets/mcschmutzo/ui-icons/turn-drips.webp');
+	const TURN_DRIPS = [
+		{ cx: 109, tip: 372, bulb: 12, reach: 10, run: 150, period: 5200, phase: 0 }, // left
+		{ cx: 392, tip: 527, bulb: 17, reach: 9, run: 140, period: 6100, phase: 2300 }, // bottom
+		{ cx: 564, tip: 373, bulb: 13, reach: 10, run: 150, period: 5600, phase: 4100 }, // right
+	];
 	const navPadMobile = ap('/assets/components/navbar/nav_pad_mobile.webp'); // control-bar pill
 	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.webp'); // − value + pill
 	const buyBonusMobile = btnWideBg;
@@ -50,7 +71,7 @@
 	const menuIcSoundOff = ap('/assets/mcschmutzo/ui-icons/sound-disabled.svg');
 	const menuIcMusicOff = ap('/assets/mcschmutzo/ui-icons/music-disabled.svg');
 	const menuIcInfo = ap('/assets/mcschmutzo/ui-icons/info.svg');
-	const iconSpin = ap('/assets/mcschmutzo/ui-icons/turn-button-arrow.svg'); // hi-res white spin arrow
+	const iconSpin = ap('/assets/mcschmutzo/ui-icons/turn-button-arrow.webp'); // hi-res white spin arrow
 	const iconStop = ap('/assets/hud/icon-stop.webp');
 	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.webp');
 	const iconTurbo2 = ap('/assets/hud/icon-lightning-2.webp');
@@ -83,6 +104,7 @@
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { fitLabel } from '../lib/fitLabel';
 	import { mcschmutzoStakeDerived } from '../state/mcschmutzoStake.svelte';
+	import CardDrip from './CardDrip.svelte';
 	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
 	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
 	import CustomConfirmModal from './CustomConfirmModal.svelte';
@@ -122,11 +144,15 @@
 	// toggle is desktop-only (it was broken on touch for the activatable modes).
 	const buyLabelText = $derived(i18nDerived.translate('BONUS'));
 	// Buying a bonus is not allowed while a multi-spin bonus round is in progress.
-	// Feature mode keeps its selected-symbol badge after the round, but should not lock the HUD.
-	const isInBonus = $derived(context.stateGame.bonusMode !== null && context.stateGame.bonusMode !== 'feature');
+	const isInBonus = $derived(context.stateGame.bonusMode !== null);
 	// BUY BONUS availability: blocked while a spin is running (incl. the bought bonus's own
 	// trigger-spin reel animation, when bonusMode isn't set yet) and inside the bonus.
-	const disableBuy = $derived((!canInteract || isInBonus) && !isAnyModeActive);
+	// Operator / jurisdiction switches (stateConfig.jurisdiction, from the RGS config). Each one turns
+	// its control off everywhere: the button is disabled AND its handler / hotkey path refuses.
+	const J = $derived(stateConfig.jurisdiction);
+	const disableBuy = $derived(
+		J.disabledBuyFeature || ((!canInteract || isInBonus) && !isAnyModeActive),
+	);
 	// Bolder icon = faster: Normal shows the outline bolt, Turbo the solid bolt, Super turbo the double.
 	const turboIcon = $derived(
 		stateBet.isSuperTurbo ? iconTurbo3 : stateBet.isTurbo ? iconTurbo1 : iconTurbo2,
@@ -170,6 +196,7 @@
 	const disableDecrease = $derived(!canInteract || stateBet.betAmount === smallestBet);
 	const disableIncrease = $derived(!canInteract || stateBet.betAmount === biggestBet);
 	const disableAuto = $derived.by(() => {
+		if (J.disabledAutoplay) return true;
 		if (stateBet.isSpaceHold) return true;
 		if (!canInteract && !hasAuto) return true;
 		if (!stateBetDerived.isBetCostAvailable()) return true;
@@ -300,10 +327,10 @@
 	// steppers / spin never move off the wooden bar) while long values shrink to stay inside it.
 	// Bowlby One SC is a wide display face, so the base is lower than the old Poppins 32u and the
 	// per-glyph weights below are heavier — otherwise short values ($1.00) overflow the fixed slot.
-	const DESKTOP_VALUE_BASE_U = 26; // matches .value font-size: calc(var(--u) * 26)
+	const DESKTOP_VALUE_BASE_U = 20 * (1860 / 1096); // .value font-size: 20 design px (calc(var(--d) * 20))
 	// Every value that shrinks renders at ~BASE·CAP px, so the safety factor (not the per-glyph
 	// weights) sets the final width; the formula self-scales the cap when BASE changes.
-	const DESKTOP_VALUE_CAP_EM = (150 / DESKTOP_VALUE_BASE_U) * 0.88;
+	const DESKTOP_VALUE_CAP_EM = ((112 * (1860 / 1096)) / DESKTOP_VALUE_BASE_U) * 0.9; // 112-d slot
 	const glyphEm = (c: string) => {
 		if (c >= '0' && c <= '9') return 0.72; // tabular figure (Bowlby is wide)
 		if (c === ',' || c === '.' || c === ' ') return 0.3;
@@ -371,7 +398,9 @@
 		const nextIndex = Math.min(betOptions.length - 1, Math.max(0, currentBetIndex + direction));
 		const nextBet = betOptions[nextIndex];
 		if (typeof nextBet !== 'number' || nextBet === stateBet.betAmount) return;
-		stateBetDerived.setBetAmount(nextBet);
+		// Set the RGS level itself: the shared setBetAmount clamps to what the balance covers, which
+		// produced amounts that aren't valid bet levels. Affordability is enforced by the spin guard.
+		stateBet.betAmount = nextBet;
 	};
 
 	const onDecrease = () => stepBet(-1);
@@ -415,13 +444,15 @@
 
 		// Buffer stop only during the initial bet-loading window (first event only)
 		if (context.stateGame.awaitingFirstReveal) {
-			context.stateGame.pendingStop = true;
+			if (!J.disabledSlamstop) context.stateGame.pendingStop = true;
 		} else {
 			context.eventEmitter.broadcast({ type: 'stopButtonClick' });
 		}
 	};
 
+	// Slam-stop (skipping the reels / presentation) can be switched off by the jurisdiction.
 	const broadcastStop = () => {
+		if (J.disabledSlamstop) return;
 		context.eventEmitter.broadcast({ type: 'stopButtonClick' });
 	};
 
@@ -444,6 +475,28 @@
 		return () => window.removeEventListener('keydown', snap, { capture: true });
 	});
 
+	// Hold Space = keep playing (the bet machine re-bets while stateBet.isSpaceHold), in turbo unless
+	// the jurisdiction forbids turbo. Not when the press began over a popup, and not where Space or
+	// autoplay is switched off. The player's own turbo setting is restored on release.
+	let holdTurboWas: boolean | null = null;
+	const onSpaceHold = () => {
+		if (spaceOverOverlay || overlayUp() || J.disabledSpacebar || J.disabledAutoplay) return;
+		stateBet.autoSpinsCounter = 0;
+		stateBet.isSpaceHold = true;
+		if (!J.disabledTurbo) {
+			holdTurboWas = stateBet.isTurbo;
+			stateBetDerived.updateIsTurbo(true, { persistent: true });
+		}
+	};
+	const onSpaceHoldEnd = () => {
+		if (!stateBet.isSpaceHold) return;
+		stateBet.isSpaceHold = false;
+		if (holdTurboWas !== null) {
+			stateBetDerived.updateIsTurbo(holdTurboWas, { persistent: true });
+			holdTurboWas = null;
+		}
+	};
+
 	const onSpinHotkey = () => {
 		// Ignore Space while the "Unfinished Round" resume dialog is open — the player
 		// must choose Play/End there; a stray spin would launch the game and throw.
@@ -459,7 +512,7 @@
 			// the next bet is still in the pre-spin/loading window; broadcasting stop here
 			// interrupts pre-spin directly and looks different. Buffer it until reveal starts.
 			if (context.stateGame.awaitingFirstReveal) {
-				context.stateGame.pendingStop = true;
+				if (!J.disabledSlamstop) context.stateGame.pendingStop = true;
 			} else {
 				broadcastStop();
 			}
@@ -481,7 +534,7 @@
 
 		// Buffer stop only during the initial bet-loading window (first event only)
 		if (context.stateGame.awaitingFirstReveal) {
-			context.stateGame.pendingStop = true;
+			if (!J.disabledSlamstop) context.stateGame.pendingStop = true;
 		} else {
 			broadcastStop();
 		}
@@ -507,7 +560,7 @@
 		// Same skip path as the stop button: buffer during the initial bet-loading window (so the
 		// press isn't swallowed before any event has drawn), otherwise stop right now.
 		if (context.stateGame.awaitingFirstReveal) {
-			context.stateGame.pendingStop = true;
+			if (!J.disabledSlamstop) context.stateGame.pendingStop = true;
 			return;
 		}
 		broadcastStop();
@@ -550,10 +603,15 @@
 	});
 
 	const onTurbo = () => {
+		if (J.disabledTurbo) return;
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		if (!stateBet.isTurbo && !stateBet.isSuperTurbo) {
 			stateBet.isTurbo = true;
 			stateBet.isSuperTurbo = false;
+			return;
+		}
+		if (stateBet.isTurbo && !stateBet.isSuperTurbo && J.disabledSuperTurbo) {
+			stateBet.isTurbo = false; // super turbo not allowed: turbo → off
 			return;
 		}
 		if (stateBet.isTurbo && !stateBet.isSuperTurbo) {
@@ -700,10 +758,32 @@
 	});
 </script>
 
+{#snippet buyDripsEl()}
+	<span class="buy-drips" aria-hidden="true">
+		<span class="buy-drips__canvas">
+			<CardDrip src={buyDrips} artW={716} artH={284} tendrils={BUY_DRIPS} half={16} free />
+		</span>
+	</span>
+{/snippet}
+
+{#snippet turnDripsEl()}
+	<!-- Live mustard drips on the turn disc: a box matching the background art's contain-fit, with
+	     extra room below so a falling drop can leave the rim. -->
+	<span class="turn-drips" aria-hidden="true">
+		<span class="turn-drips__art">
+			<span class="turn-drips__canvas">
+				<CardDrip src={turnDrips} artW={701} artH={548} tendrils={TURN_DRIPS} half={14} free />
+			</span>
+		</span>
+	</span>
+{/snippet}
+
 <OnHotkey
 	hotkey="Space"
 	disabled={!stateConfig.jurisdiction ? false : stateConfig.jurisdiction.disabledSpacebar}
 	onpress={onSpinHotkey}
+	onhold={onSpaceHold}
+	onholdend={onSpaceHoldEnd}
 />
 
 <div
@@ -784,6 +864,7 @@
 					aria-label="Spin"
 					disabled={canInteract && !hasAuto && !canAffordBet}
 				>
+					{@render turnDripsEl()}
 					{#if !isSpinStop}
 						<img src={iconSpin} alt="" class="pt-spin__icon" />
 					{/if}
@@ -800,7 +881,8 @@
 						class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
 						class:turbo-super={stateBet.isSuperTurbo}
 						type="button"
-						onclick={onTurbo}
+						disabled={J.disabledTurbo}
+					onclick={onTurbo}
 						aria-label={i18nDerived.turboLabel()}
 					>
 						<img class="pt-icon" src={turboIcon} alt="turbo" />
@@ -946,6 +1028,7 @@
 					aria-label="Spin"
 					disabled={canInteract && !hasAuto && !canAffordBet}
 				>
+					{@render turnDripsEl()}
 					{#if !isSpinStop}
 						<img src={iconSpin} alt="" class="ls-spin__icon" />
 					{/if}
@@ -960,6 +1043,7 @@
 					class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
 					class:turbo-super={stateBet.isSuperTurbo}
 					type="button"
+					disabled={J.disabledTurbo}
 					onclick={onTurbo}
 					aria-label={i18nDerived.turboLabel()}
 				>
@@ -1046,6 +1130,7 @@
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Disable' : i18nDerived.buyBonus()}
 				>
+					{@render buyDripsEl()}
 					<span class="buy-btn__label" use:fitLabel={isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.translate('BONUS')}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.translate('BONUS')}</span>
 				</button>
 			</div>
@@ -1129,8 +1214,9 @@
 			</div>
 		</div>
 
-		<!-- The focal SPIN floats CENTERED in the free bar space between the + stepper (left)
-		     and the turbo/auto pair (right) via its auto side margins. -->
+		<!-- The focal SPIN sits CENTRED in its pocket: the pocket takes exactly the bar space left
+		     between the + stepper and turbo/auto, and the disc's transparent drip margin overhangs it. -->
+		<div class="spin-pocket">
 		<button
 			class="spin-btn"
 			type="button"
@@ -1138,6 +1224,7 @@
 			aria-label="Spin"
 			disabled={canInteract && !hasAuto && !canAffordBet}
 		>
+			{@render turnDripsEl()}
 			{#if !isSpinStop}
 				<img src={iconSpin} alt="" class="spin-btn__icon" />
 			{/if}
@@ -1151,6 +1238,7 @@
 				<img src={iconStop} alt="" class="spin-btn__stop" aria-hidden="true" />
 			{/if}
 		</button>
+		</div>
 
 		<div class="hud-controls">
 			<div class="action-cluster">
@@ -1159,6 +1247,7 @@
 					class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
 					class:turbo-super={stateBet.isSuperTurbo}
 					type="button"
+					disabled={J.disabledTurbo}
 					onclick={onTurbo}
 					aria-label={i18nDerived.turboLabel()}
 				>
@@ -1319,19 +1408,22 @@
 		--u: calc(min(93vw, 1860px) / 1860);
 		/* Round nav buttons scale with the bar; all use --nav-s so they stay equal to each other.
 		   Kept clearly smaller than the spin disc so it stays the hero (was 104 — read too close). */
-		--nav-s: calc(var(--u) * 90);
+		/* --d = one px of the Figma bar (node 8763-6624, 1096×77): the row below is laid out in
+		   those units, so it matches the design at every size (the whole bar still scales via --u). */
+		--d: calc(var(--u) * 1860 / 1096);
+		--nav-s: calc(var(--d) * 48);
 		--spin-s: calc(var(--u) * 262);
 		width: calc(var(--u) * 1860);
 		height: auto;
 		box-sizing: border-box;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: calc(var(--u) * 12);
+		justify-content: flex-start;
+		gap: 0;
 		/* Vertical padding gives the bar its height (Figma: 125-tall bar on a 1150 span,
 		   ×1.617 → 200 design px); side padding (74) is the row inset from the bar ends —
 		   wider than the 70px end-cap art, so edge buttons clear the caps by construction. */
-		padding: calc(var(--u) * 19) calc(var(--u) * 74);
+		padding: calc(var(--d) * 14.5) calc(var(--d) * 16);
 		/* The wooden pill art (bar.webp) is fully opaque with its own dark-wood body, so no
 		   background base is needed — a dark base used to peek past the art's silhouette and
 		   read as a black halo around the bar. */
@@ -1362,7 +1454,7 @@
 	.hud-left {
 		display: flex;
 		align-items: center;
-		gap: calc(var(--u) * 10);
+		gap: calc(var(--d) * 11);
 		flex: 0 0 auto;
 	}
 
@@ -1377,17 +1469,64 @@
 	.hud-stats {
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-start;
 		gap: 0;
 		flex: 0 0 auto;
 		min-width: 0;
+		margin-left: calc(var(--d) * 24);
+	}
+
+	/* Live turn-disc drips (see turnDripsEl): .turn-drips fills the button, .turn-drips__art is the
+	   background art's contain box (162:127, centred), the canvas box extends below it for falls. */
+	.turn-drips {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		container-type: size;
+		pointer-events: none;
+	}
+	.turn-drips__art {
+		position: relative;
+		width: min(100cqw, 100cqh * 162 / 127);
+		aspect-ratio: 162 / 127;
+	}
+	.turn-drips__canvas {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		aspect-ratio: 701 / 700;
+	}
+
+	/* Live buy-bonus drips: the button box IS the art box (aspect 179:71), the canvas extends below it. */
+	.buy-drips {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+	.buy-drips__canvas {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		aspect-ratio: 716 / 440;
+	}
+
+	.spin-pocket {
+		flex: 1 1 0;
+		min-width: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 3;
 	}
 
 	.hud-controls {
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
-		gap: calc(var(--u) * 22);
+		gap: calc(var(--d) * 12);
 		flex: 0 0 auto;
 		padding-top: 0;
 	}
@@ -1406,7 +1545,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		padding: 0 calc(var(--u) * 12);
+		padding: 0 calc(var(--d) * 22) 0 0;
 		/* Hug the actual balance text so the WIN readout sits right beside it; .value-fit's
 		   max-width still caps very long balances (fitText scales them into that slot), so the
 		   pill can never push the navigation. */
@@ -1445,11 +1584,12 @@
 	   background; the transform-based fitText scaler never applied on this element, so the font is
 	   sized from the value's own characters instead.) */
 	.value-pill--balance .value-fit {
-		width: calc(var(--u) * 142);
+		width: calc(var(--d) * 112);
+		max-width: none;
 	}
 
 	.value-fit--bet {
-		width: calc(var(--u) * 90);
+		width: calc(var(--d) * 72);
 		max-width: none;
 	}
 
@@ -1462,10 +1602,9 @@
 	   text (like balance) so BET stays close; the min-width keeps a small slot while hidden. */
 	.value-pill--win {
 		align-items: flex-start;
-		padding: 0 calc(var(--u) * 12);
+		padding: 0 calc(var(--d) * 14) 0 calc(var(--d) * 24);
 		flex: 0 0 auto;
 		width: fit-content;
-		min-width: calc(var(--u) * 96);
 		border-left: 1px solid rgba(255, 255, 255, 0.3);
 	}
 
@@ -1473,7 +1612,8 @@
 	   big win (e.g. a bonus payout in the millions) never clips and never pushes BET / the buttons
 	   off the wooden bar. */
 	.value-pill--win .value-fit {
-		width: calc(var(--u) * 142);
+		width: calc(var(--d) * 112);
+		max-width: none;
 	}
 
 	.value-pill--win .label--balance {
@@ -1496,10 +1636,8 @@
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		gap: calc(var(--u) * 6);
-		padding: 0 calc(var(--u) * 12);
-		/* Nudge the BET block right off the WIN slot (design ask). */
-		margin-left: calc(var(--u) * 10);
+		gap: calc(var(--d) * 12);
+		padding: 0 0 0 calc(var(--d) * 30);
 		border-left: 1px solid rgba(255, 255, 255, 0.3);
 		flex: 0 0 auto;
 	}
@@ -1522,9 +1660,10 @@
 	.bet-coin {
 		pointer-events: none;
 		/* Smaller coin stack with a bit more air before the BET text (design ask). */
-		width: calc(var(--u) * 40);
-		height: calc(var(--u) * 40);
-		margin-right: calc(var(--u) * 8);
+		width: calc(var(--d) * 40);
+		height: calc(var(--d) * 40);
+		padding: calc(var(--d) * 7);
+		box-sizing: border-box;
 		display: grid;
 		place-items: center;
 		flex: 0 0 auto;
@@ -1538,10 +1677,12 @@
 	}
 
 	.label {
-		font-family: 'Poppins', sans-serif;
-		font-size: calc(var(--u) * 22);
+		font-family: 'Inter', 'Poppins', sans-serif;
+		font-size: calc(var(--d) * 12);
+		line-height: calc(var(--d) * 15);
 		font-weight: 700;
-		letter-spacing: 0.03em;
+		letter-spacing: 0.167em; /* 2px at 12px (Figma) */
+		text-transform: uppercase;
 		/* Golden gradient clipped to the BALANCE / BET label text */
 		background: linear-gradient(184deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
 		background-clip: text;
@@ -1566,9 +1707,9 @@
 
 	.value {
 		font-family: 'Bowlby One SC', 'Poppins', sans-serif;
-		font-size: calc(var(--u) * 26);
-		font-weight: 700;
-		letter-spacing: 0.005em;
+		font-size: calc(var(--d) * 20);
+		font-weight: 400;
+		letter-spacing: 0.003em;
 		/* Uniform digit widths so the fixed ch-sized balance/bet slots line up exactly
 		   and single-digit changes can't jog the text inside the slot. */
 		font-variant-numeric: tabular-nums;
@@ -1591,20 +1732,20 @@
 	/* The whole BET block (coin + value + steppers) sits shifted toward the central spin as one
 	   unit — the internal spacing between them stays fixed. */
 	.hud-stats .value-pill--bet {
-		margin-left: calc(var(--u) * 6);
+		margin-left: 0;
 	}
 
 	/* The − / + pair (kept snug together, matching the turbo↔auto spacing) sits shifted a bit
 	   right of the BET value, toward the central spin. */
 	.hud-stats .stepper {
-		margin-left: calc(var(--u) * 8);
+		margin-left: calc(var(--d) * 13);
 	}
 
 	/* Figma keeps turbo↔autoplay at the plain cluster gap — no extra drift. */
 
 	/* Match the − / + spacing to the turbo↔autoplay spacing. */
 	.stepper {
-		gap: calc(var(--u) * 20);
+		gap: calc(var(--d) * 15);
 	}
 
 
@@ -1724,11 +1865,11 @@
 	}
 
 	/* Thin dividers between the BALANCE / WIN / BET readouts. */
+	/* Thin dividers between the BALANCE / WIN / BET readouts (Figma #605554, 1px). */
 	.hud-bottom .value-pill--win,
 	.hud-bottom .value-pill--bet {
-		border-left: 2px solid rgba(255, 255, 255, 0.12);
-		padding-left: calc(var(--u) * 16);
-		margin-left: calc(var(--u) * 4);
+		border-left: 1px solid #605554;
+		margin-left: 0;
 	}
 
 	.nav-btn:not(:disabled):hover {
@@ -1969,7 +2110,8 @@
 		   (margin-bottom below) so the lower protrusion stays on-screen. Negative side margins (~-11%
 		   of the box) cancel the transparent drip-margin around the disc (the visible disc is ~78% of
 		   its square box) so its left/right gaps match the gaps between the other bar items. */
-		margin: calc((var(--nav-s) - var(--spin-s)) / 2) calc(var(--spin-s) * -0.11);
+		/* Centred in .spin-pocket; the box's transparent drip margin overhangs the pocket. */
+		margin: calc((var(--nav-s) - var(--spin-s)) / 2) 0;
 		border: none;
 		background: var(--btn-spin-bg) center / contain no-repeat;
 		padding: 0;
@@ -2059,8 +2201,9 @@
 	.buy-btn {
 		/* Just a touch taller than the round nav buttons (Figma), so the bar stays slim and
 		   the button doesn't stretch the background. Aspect keeps the 300/126 art. */
-		height: calc(var(--u) * 100);
+		height: calc(var(--d) * 71);
 		width: auto;
+		margin-block: calc(var(--d) * -11.5); /* the drippy art overhangs the row like in Figma */
 		/* Match the bonus-button.svg art (179 x 71) so it fills without letterboxing. */
 		aspect-ratio: 179 / 71;
 		border: 0;
@@ -2096,9 +2239,9 @@
 		font-family: 'Bowlby One SC', 'Poppins', sans-serif;
 		/* Scales with the bar's design unit; fitLabel shrinks it further only when a
 		   translation runs long. */
-		font-size: calc(var(--u) * 22);
+		font-size: calc(var(--d) * 16);
 		font-weight: 400;
-		letter-spacing: 0.01em;
+		letter-spacing: 0.093em; /* 1.49px at 16px (Figma) */
 		white-space: nowrap;
 		/* White label to match the design's baked "BONUS" text (no shadow). */
 		color: #ffffff;
@@ -2363,7 +2506,12 @@
 	   rail, so it never breaks. 812x375 (height 375) is unaffected. */
 	@media (max-height: 300px) {
 		.ls-bet { padding: 1px 4px; gap: 2px; }
-		.ls-bet__value { font-size: clamp(7px, 3.4vmin, 11px); min-width: 0; }
+		.ls-bet__value { font-size: clamp(10px, 3.4vmin, 11px); min-width: 0; }
+		/* readable floors on the smallest popouts (were ~7–8px); fitPill still shrinks long balances */
+		.ls-balance__label,
+		.ls-win__label { font-size: 8px; }
+		.ls-balance__value { font-size: 10.5px; }
+		.ls-win__value { font-size: 11px; }
 		.ls-step { width: clamp(11px, 5.5vmin, 18px); height: clamp(11px, 5.5vmin, 18px); }
 	}
 

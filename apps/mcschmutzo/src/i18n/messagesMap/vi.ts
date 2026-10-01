@@ -5,7 +5,7 @@ export default {
 	"INFO SCATTER BODY": "Biểu tượng THƯỞNG chính là biểu tượng Scatter và có thể xuất hiện trên tất cả các cuộn. Khi các biểu tượng Scatter xuất hiện, một trong hai chế độ Vòng Miễn Phí sẽ được kích hoạt.",
 	"INFO SCATTER 3 TITLE": "SCATTER - Vòng Thưởng Thường",
 	"INFO SCATTER 3 BODY": "Xuất hiện 3 biểu tượng Scatter sẽ kích hoạt Vòng Thưởng Thường. Người chơi vào chế độ Vòng Miễn Phí Thường. Vòng Thưởng Thường sử dụng cấu hình Vòng Miễn Phí tiêu chuẩn cùng tiến trình Hệ Số Nhân Thắng khởi đầu tương ứng. Bất kỳ Hệ Số Nhân Thắng nào đang hoạt động được mang vào tính năng sẽ được kết hợp với kết quả vào Vòng Miễn Phí nếu áp dụng được. Hệ Số Nhân Thắng được duy trì trong suốt toàn bộ tính năng Vòng Miễn Phí và có thể tăng lên trong khi chơi. Nó không đặt lại giữa các Vòng Miễn Phí.",
-	"INFO SCATTER 4 TITLE": "SCATTER - Vòng Thưởng Thường",
+	"INFO SCATTER 4 TITLE": "SCATTER - Vòng Thưởng Siêu Cấp",
 	"INFO SCATTER 4 BODY": "Xuất hiện 4 biểu tượng Scatter sẽ kích hoạt Vòng Thưởng Siêu Cấp. Vòng Thưởng Siêu Cấp bắt đầu với cấu hình khởi đầu nâng cao so với Vòng Thưởng Thường. Người chơi nhận được thiết lập Vòng Miễn Phí Siêu Cấp với các điều kiện vào tối đa / nâng cao được quy định cho chế độ này. Hệ Số Nhân Thắng được duy trì trong suốt toàn bộ Vòng Thưởng Siêu Cấp và có thể tiếp tục tăng trong Vòng Miễn Phí. Nó không đặt lại giữa các Vòng Miễn Phí.",
 	"INFO FREEGAMES BODY 1": "Trong Vòng Miễn Phí, các cơ chế thắng cốt lõi và Quay Lại vẫn hoạt động như thường lệ. Mỗi khi một kết nối thắng đủ điều kiện xuất hiện, các biểu tượng thắng giống nhau sẽ tự động khóa lại và kích hoạt một lượt Quay Lại.",
 	"INFO FREEGAMES BODY 2": "Các biểu tượng giống nhau bổ sung được thêm vào trong lượt Quay Lại sẽ bị khóa, cho phép chuỗi tiếp tục. Các biểu tượng McSchmutzo xuất hiện trong tính năng có thể tăng Hệ Số Nhân Thắng. Hệ Số Nhân Thắng tích lũy vẫn hoạt động trong suốt toàn bộ tính năng Vòng Miễn Phí.",
@@ -63,14 +63,14 @@ export default {
 	INFO: 'THÔNG TIN',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': 'CHÀO MỪNG ĐẾN SCHMUTZO',
-	'SPLASH C1 BODY': 'Ánh đèn rực rỡ, những trò chơi cảm giác mạnh và bất ngờ lớn ở mọi ngóc ngách.',
-	'SPLASH C2 TITLE': '3\nBonus\nĐộc Đáo',
-	'SPLASH C2 BODY 1': 'Chọn Vịt',
-	'SPLASH C2 BODY 2': 'Cưỡi Wilds',
-	'SPLASH C2 BODY 3': 'Sống Sót Tàu Lượn',
+	'SPLASH C1 TITLE': "CHÀO MỪNG ĐẾN McSCHMUTZO",
+	'SPLASH C1 BODY': "Thắng sẽ được khóa lại và quay lại cho đến khi đầy vỉ nướng.",
+	'SPLASH C2 TITLE': "3\nTÍNH NĂNG\nHẤP DẪN",
+	'SPLASH C2 BODY 1': "Khóa & Quay lại",
+	'SPLASH C2 BODY 2': "Quay Vòng Quay Thưởng",
+	'SPLASH C2 BODY 3': "Tăng Hệ Số Nhân",
 	'SPLASH C3 TITLE': 'THẮNG TỐI ĐA 25,000×',
-	'SPLASH C3 BODY': 'Giải Thưởng Đỉnh Cao Của Công Viên',
+	'SPLASH C3 BODY': "ĐƠN HÀNG LỚN NHẤT THỊ TRẤN",
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'TỔNG QUAN',
@@ -198,4 +198,5 @@ export default {
 	"FS FREE SPINS": "QUAY MIỄN PHÍ",
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "THẮNG ĐẾN",
+	"CONFIRM PURCHASE": "XÁC NHẬN MUA",
 };

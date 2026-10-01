@@ -3,11 +3,16 @@
 
 	import { ap } from '../lib/preloadArt';
 	import { getContext } from '../game/context';
+	import { panoramaRect, PANORAMA_SPLASH_X } from '../game/panorama';
 
 	// Pre-game loading screen: the diner background (dimmed with a shadow) with the Press Play "P"
 	// filling in sync with the REAL asset-load progress (not a looping animation). Hides once loaded.
 	const context = getContext();
-	const bg = ap('/assets/mcschmutzo/splash/bg-desktop.webp');
+	// Same view of the diner panorama as the splash that follows, so loader → splash doesn't jump.
+	const bg = ap('/assets/mcschmutzo/background-panorama.webp');
+	let vw = $state(typeof window === 'undefined' ? 1200 : window.innerWidth);
+	let vh = $state(typeof window === 'undefined' ? 670 : window.innerHeight);
+	const view = $derived(panoramaRect(vw, vh, PANORAMA_SPLASH_X));
 	const frames = Array.from({ length: 10 }, (_, i) => ap(`/assets/mcschmutzo/loader/p0${i}.webp`));
 
 	const progress = $derived(Math.max(0, Math.min(100, context.stateApp.loadingProgress ?? 0)));
@@ -15,8 +20,14 @@
 	const loaded = $derived(context.stateApp.loaded);
 </script>
 
+<svelte:window bind:innerWidth={vw} bind:innerHeight={vh} />
+
 {#if !loaded}
-	<div class="pp-loader" style={`background-image:url('${bg}')`} out:fade={{ duration: 320 }}>
+	<div
+		class="pp-loader"
+		style={`background-image:url('${bg}');background-size:${view.width}px ${view.height}px;background-position:${view.x}px ${view.y}px`}
+		out:fade={{ duration: 320 }}
+	>
 		<div class="pp-loader__shade"></div>
 		<div class="pp-loader__mark">
 			<img class="pp-loader__p" src={frames[frameIndex]} alt="" draggable="false" />
@@ -30,8 +41,6 @@
 		position: fixed;
 		inset: 0;
 		z-index: 100;
-		background-size: cover;
-		background-position: center;
 		background-repeat: no-repeat;
 		display: grid;
 		place-items: center;

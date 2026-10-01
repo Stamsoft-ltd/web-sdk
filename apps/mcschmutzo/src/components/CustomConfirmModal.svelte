@@ -7,7 +7,7 @@
 
 <script lang="ts">
 	// Reusable two-action confirm dialog, styled to match CustomAutoSpinModal.
-	// Used for the buy-bonus confirm ("CONFIRM IT ALL") and the unfinished-round prompt.
+	// Used for the buy-bonus confirm ("CONFIRM PURCHASE") and the unfinished-round prompt.
 	type Props = {
 		title: string;
 		message: string;

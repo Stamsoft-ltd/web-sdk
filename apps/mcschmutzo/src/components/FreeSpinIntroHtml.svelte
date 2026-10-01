@@ -49,12 +49,13 @@
 		},
 	});
 
-	// Bonus name + blurb keyed off the mode that produced the free spins.
-	const bonusName = $derived(
-		stateBet.activeBetModeKey === 'bonus1'
-			? i18nDerived.translate('NORMAL BONUS TITLE')
-			: i18nDerived.translate('ALL IN BONUS TITLE'),
+	// Bonus name keyed off what produced the free spins: a bought Normal / Super bonus, or the natural
+	// trigger (3 scatters = Normal Bonus, 4 = Super Bonus — see stateGame.bonusTier).
+	const isSuper = $derived(
+		stateBet.activeBetModeKey === 'bonus2' ||
+			(stateBet.activeBetModeKey !== 'bonus1' && context.stateGame.bonusTier === 'super'),
 	);
+	const bonusName = $derived(i18nDerived.translate(isSuper ? 'INFO FB4 TITLE' : 'INFO FB3 TITLE'));
 	const bonusBlurb = $derived(i18nDerived.translateVars('BONUS BLURB', { count: totalFreeSpins }));
 
 	// DEV preview: press 6 to show the free-spin bonus congrats with mock data.

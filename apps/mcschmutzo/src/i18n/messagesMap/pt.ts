@@ -5,7 +5,7 @@ export default {
 	"INFO SCATTER BODY": "O símbolo BÔNUS é o símbolo Scatter e pode aparecer em todos os rolos. Reunir símbolos Scatter ativa um de dois modos de Jogos Grátis.",
 	"INFO SCATTER 3 TITLE": "SCATTERS - Bônus Normal",
 	"INFO SCATTER 3 BODY": "Reunir 3 símbolos Scatter aciona o Bônus Normal. O jogador entra no modo de Jogos Grátis Normal. O Bônus Normal usa a configuração padrão de Jogos Grátis e sua respectiva progressão inicial de Multiplicador de Ganhos. Qualquer Multiplicador de Ganhos ativo levado para o recurso é combinado com o resultado de entrada dos Jogos Grátis, quando aplicável. O Multiplicador de Ganhos permanece durante todo o recurso de Jogos Grátis e pode aumentar durante o jogo. Ele não é reiniciado entre os Jogos Grátis.",
-	"INFO SCATTER 4 TITLE": "SCATTERS - Bônus Normal",
+	"INFO SCATTER 4 TITLE": "SCATTERS - Super Bônus",
 	"INFO SCATTER 4 BODY": "Reunir 4 símbolos Scatter aciona o Super Bônus. O Super Bônus começa com uma configuração inicial aprimorada em comparação com o Bônus Normal. O jogador recebe a configuração dos Super Jogos Grátis com as condições de entrada máximas / aprimoradas definidas para este modo. O Multiplicador de Ganhos permanece durante todo o Super Bônus e pode continuar aumentando durante os Jogos Grátis. Ele não é reiniciado entre os Jogos Grátis.",
 	"INFO FREEGAMES BODY 1": "Durante os Jogos Grátis, as mesmas mecânicas centrais de ganho e de Regiro permanecem ativas. Sempre que uma conexão vencedora qualificada ocorre, os símbolos vencedores iguais travam automaticamente e acionam um Regiro.",
 	"INFO FREEGAMES BODY 2": "Símbolos iguais adicionais acrescentados durante o Regiro são travados, permitindo que a sequência continue. Símbolos McSchmutzo que aparecem durante o recurso podem aumentar o Multiplicador de Ganhos. O Multiplicador de Ganhos acumulado permanece ativo durante todo o recurso de Jogos Grátis.",
@@ -63,14 +63,14 @@ export default {
 	INFO: 'INFO',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': 'BEM-VINDO AO SCHMUTZO',
-	'SPLASH C1 BODY': 'Luzes brilhantes, brinquedos radicais e grandes surpresas a cada esquina.',
-	'SPLASH C2 TITLE': '3\nBônus\nÚnicos',
-	'SPLASH C2 BODY 1': 'Escolha os Patos',
-	'SPLASH C2 BODY 2': 'Domine os Wilds',
-	'SPLASH C2 BODY 3': 'Sobreviva à Montanha-Russa',
+	'SPLASH C1 TITLE': "BEM-VINDO AO McSCHMUTZO",
+	'SPLASH C1 BODY': "Os ganhos ficam bloqueados e giram de novo até encher a grelha.",
+	'SPLASH C2 TITLE': "3\nRECURSOS\nSABOROSOS",
+	'SPLASH C2 BODY 1': "Bloqueio e Re-Spin",
+	'SPLASH C2 BODY 2': "Gire a Roda de Bônus",
+	'SPLASH C2 BODY 3': "Aumente o Multiplicador",
 	'SPLASH C3 TITLE': 'GANHO MÁXIMO DE 25,000×',
-	'SPLASH C3 BODY': 'O Grande Prêmio do Parque',
+	'SPLASH C3 BODY': "O MAIOR PEDIDO DA CIDADE",
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'VISÃO GERAL',
@@ -198,4 +198,5 @@ export default {
 	"FS FREE SPINS": "GIROS GRÁTIS",
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "GANHE ATÉ",
+	"CONFIRM PURCHASE": "CONFIRMAR COMPRA",
 };

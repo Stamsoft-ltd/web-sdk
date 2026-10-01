@@ -105,6 +105,21 @@
 					},
 				};
 			},
+			ellipse(x, y, rx, ry) {
+				ctx.beginPath();
+				ctx.ellipse(x, y, Math.max(0, rx), Math.max(0, ry), 0, 0, Math.PI * 2);
+				return {
+					fill(s: any) {
+						ctx.fillStyle = hex(s.color ?? 0, s.alpha ?? 1);
+						ctx.fill();
+					},
+					stroke(s: any) {
+						ctx.lineWidth = s.width ?? 1;
+						ctx.strokeStyle = hex(s.color ?? 0, s.alpha ?? 1);
+						ctx.stroke();
+					},
+				};
+			},
 		};
 
 		// Sauce running down a vertical surface (the splash cards). Phases of one cycle:

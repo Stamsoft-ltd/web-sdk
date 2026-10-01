@@ -5,6 +5,8 @@
 	import { getContext } from '../game/context';
 	import { mascotIdle } from '../game/mascotIdle';
 	import { SQUIRT_EMIT, drawSauceSquirt, squirtHash, type SquirtGraphics } from '../game/ketchupSquirt';
+	import { panoramaRect, PANORAMA_BASE_X } from '../game/panorama';
+	import { cropExtra, cropSprite } from '../game/chefCrops';
 	import AnimatedGuy from './AnimatedGuy.svelte';
 	import SpecialMascot from './SpecialMascot.svelte';
 
@@ -141,6 +143,7 @@
 	// The held ketchup bottle (full-frame hand layer) shakes about the wrist, tucked behind the body.
 	const BOTTLE_PIVX = 0.29;
 	const BOTTLE_PIVY = 0.56;
+	const bottleCrop = cropSprite('mascotBottle', BOTTLE_PIVX, BOTTLE_PIVY);
 	const mascotLeft = $derived(mascotPose.x - mascotPose.width / 2);
 	const mascotTop = $derived(mascotPose.y - mascotPose.height / 2);
 	const bottlePivotX = $derived(mascotLeft + BOTTLE_PIVX * mascotPose.width);
@@ -202,9 +205,12 @@
 			},
 		});
 	};
-	// Desktop base game uses the new desktop diner art; free games keep the grey-kitchen special bg.
-	const key = $derived(isFreegame ? 'backgroundWideBonus' : 'backgroundDesktop');
+	// Free games (desktop) keep the grey-kitchen special bg; the base game uses the panorama (below).
+	const key = 'backgroundWideBonus';
 	const portraitKey = $derived(isFreegame ? 'backgroundPortraitBonus' : 'backgroundPortrait');
+	// Base game (desktop + mobile landscape): the right-hand view of the connected diner panorama,
+	// framed exactly like the splash frames it at the end of its camera pan (see SplashIntro).
+	const pano = $derived(panoramaRect(canvas.width, canvas.height, PANORAMA_BASE_X));
 	const cover = $derived.by(() => {
 		const canvasAspect = canvas.width / canvas.height;
 		return canvasAspect > aspect
@@ -279,15 +285,19 @@
 {:else if isLandscape}
 	<!-- Mobile-landscape: the real full diner (cover-scaled) for the base game, swapping to the
 	     dedicated wide grey-kitchen crop for free games. No chef in landscape (design ask). -->
-	<Sprite
-		key={isFreegame ? 'backgroundLandscapeBonus' : 'backgroundBase'}
-		x={canvas.width * 0.5}
-		y={canvas.height * 0.5}
-		anchor={0.5}
-		width={isFreegame ? specialLandscapeCover.width : cover.width}
-		height={isFreegame ? specialLandscapeCover.height : cover.height}
-		zIndex={-2}
-	/>
+	{#if isFreegame}
+		<Sprite
+			key="backgroundLandscapeBonus"
+			x={canvas.width * 0.5}
+			y={canvas.height * 0.5}
+			anchor={0.5}
+			width={specialLandscapeCover.width}
+			height={specialLandscapeCover.height}
+			zIndex={-2}
+		/>
+	{:else}
+		<Sprite key="backgroundPanorama" x={pano.x} y={pano.y} width={pano.width} height={pano.height} zIndex={-2} />
+	{/if}
 	<Rectangle {...canvas} backgroundColor={0x180903} alpha={0.16} zIndex={-1} />
 {:else if isPortrait}
 	<!-- Mobile portrait: the dedicated diner background, no darkening overlay (matches the splash).
@@ -302,15 +312,19 @@
 		zIndex={-2}
 	/>
 {:else}
-	<Sprite
-		{key}
-		x={canvas.width * 0.5}
-		y={canvas.height * 0.5}
-		anchor={0.5}
-		width={cover.width}
-		height={cover.height}
-		zIndex={-2}
-	/>
+	{#if isFreegame}
+		<Sprite
+			{key}
+			x={canvas.width * 0.5}
+			y={canvas.height * 0.5}
+			anchor={0.5}
+			width={cover.width}
+			height={cover.height}
+			zIndex={-2}
+		/>
+	{:else}
+		<Sprite key="backgroundPanorama" x={pano.x} y={pano.y} width={pano.width} height={pano.height} zIndex={-2} />
+	{/if}
 	<Rectangle {...canvas} backgroundColor={0x180903} alpha={0.16} zIndex={-1} />
 	{#if showMascot && shine}
 		<!-- Clean gleam: a soft light band (wide dim + narrow bright core) sweeping across the diner. -->
@@ -353,39 +367,22 @@
 		skin={0xee9c58}
 		extras={[
 			{
-				// Full-frame layer (the exact plate pixels), tilting about its pin — drawn FIRST so the
-				// pointing hand passes over it.
-				key: 'mascotLabel',
-				nx: 0,
-				ny: 0,
-				nw: 1,
-				nh: 1,
-				px: 0.6196,
-				py: 0.6027,
+				// The nametag plate, tilting about its pin — drawn FIRST so the pointing hand passes over it.
+				...cropExtra('mascotLabel', [0.6196, 0.6027]),
 				amp: 0.035,
 				period: 320,
 			},
 			{
 				// The pointing hand gestures slowly about the wrist (at the sleeve cuff) — a subtle
 				// ~1.3° sway so it never uncovers the patch beneath.
-				key: 'mascotHand',
-				nx: 0,
-				ny: 0,
-				nw: 1,
-				nh: 1,
-				px: 0.951,
-				py: 0.6945,
+				...cropExtra('mascotHand', [0.951, 0.6945]),
 				amp: 0.023,
 				period: 700,
 				phase: 400,
 			},
 			{
-				// Brows above the blink lids (static full-frame layer).
-				key: 'mascotBrows',
-				nx: 0,
-				ny: 0,
-				nw: 1,
-				nh: 1,
+				// Brows above the blink lids (static layer).
+				...cropExtra('mascotBrows'),
 				amp: 0,
 			},
 		]}
@@ -396,9 +393,9 @@
 		key="mascotBottle"
 		x={bottlePivotX}
 		y={bottlePivotY}
-		anchor={{ x: BOTTLE_PIVX, y: BOTTLE_PIVY }}
-		width={mascotPose.width}
-		height={mascotPose.height}
+		anchor={bottleCrop.anchor}
+		width={mascotPose.width * bottleCrop.sw}
+		height={mascotPose.height * bottleCrop.sh}
 		rotation={bottleShake}
 		zIndex={-0.1}
 	/>

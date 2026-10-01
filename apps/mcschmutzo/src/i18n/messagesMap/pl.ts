@@ -5,7 +5,7 @@ export default {
 	"INFO SCATTER BODY": "Symbol BONUS jest symbolem Scatter i może pojawić się na wszystkich bębnach. Wylądowanie symboli Scatter aktywuje jeden z dwóch trybów Darmowych Gier.",
 	"INFO SCATTER 3 TITLE": "SYMBOLE SCATTER - Zwykły Bonus",
 	"INFO SCATTER 3 BODY": "Wylądowanie 3 symboli Scatter uruchamia Zwykły Bonus. Gracz wchodzi do trybu Zwykłych Darmowych Gier. Zwykły Bonus wykorzystuje standardową konfigurację Darmowych Gier oraz odpowiadającą jej początkową progresję Mnożnika Wygranej. Każdy aktywny Mnożnik Wygranej przeniesiony do funkcji jest łączony z wynikiem wejścia do Darmowych Gier tam, gdzie ma to zastosowanie. Mnożnik Wygranej utrzymuje się przez całą funkcję Darmowych Gier i może rosnąć podczas gry. Nie resetuje się pomiędzy Darmowymi Grami.",
-	"INFO SCATTER 4 TITLE": "SYMBOLE SCATTER - Zwykły Bonus",
+	"INFO SCATTER 4 TITLE": "SYMBOLE SCATTER - Super Bonus",
 	"INFO SCATTER 4 BODY": "Wylądowanie 4 symboli Scatter uruchamia Super Bonus. Super Bonus rozpoczyna się od ulepszonej konfiguracji początkowej w porównaniu ze Zwykłym Bonusem. Gracz otrzymuje konfigurację Super Darmowych Gier z maksymalnymi / ulepszonymi warunkami wejścia zdefiniowanymi dla tego trybu. Mnożnik Wygranej utrzymuje się przez cały Super Bonus i może nadal rosnąć podczas Darmowych Gier. Nie resetuje się pomiędzy Darmowymi Grami.",
 	"INFO FREEGAMES BODY 1": "Podczas Darmowych Gier te same podstawowe mechaniki wygrywania i Ponownego Spinu pozostają aktywne. Za każdym razem, gdy powstaje kwalifikujące się wygrywające połączenie, pasujące symbole wygrywające automatycznie blokują się i uruchamiają Ponowny Spin.",
 	"INFO FREEGAMES BODY 2": "Dodatkowe pasujące symbole dodane podczas Ponownego Spinu są blokowane, co pozwala kontynuować sekwencję. Symbole McSchmutzo pojawiające się podczas funkcji mogą zwiększyć Mnożnik Wygranej. Zgromadzony Mnożnik Wygranej pozostaje aktywny przez całą funkcję Darmowych Gier.",
@@ -63,14 +63,14 @@ export default {
 	INFO: 'INFO',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': 'WITAJ W SCHMUTZO',
-	'SPLASH C1 BODY': 'Jasne światła, szalone przejażdżki i wielkie niespodzianki na każdym kroku.',
-	'SPLASH C2 TITLE': '3\nWyjątkowe\nBonusy',
-	'SPLASH C2 BODY 1': 'Wybierz Kaczki',
-	'SPLASH C2 BODY 2': 'Dosiądź Wildów',
-	'SPLASH C2 BODY 3': 'Przetrwaj Kolejkę Górską',
+	'SPLASH C1 TITLE': "WITAJ W McSCHMUTZO",
+	'SPLASH C1 BODY': "Wygrane blokują się i kręcą ponownie, aż grill się zapełni.",
+	'SPLASH C2 TITLE': "3\nSMAKOWITE\nFUNKCJE",
+	'SPLASH C2 BODY 1': "Blokada i Re-Spin",
+	'SPLASH C2 BODY 2': "Zakręć Kołem Bonusowym",
+	'SPLASH C2 BODY 3': "Zwiększaj Mnożnik",
 	'SPLASH C3 TITLE': 'MAKS. WYGRANA 25,000×',
-	'SPLASH C3 BODY': 'Główna Nagroda Parku',
+	'SPLASH C3 BODY': "NAJWIĘKSZE ZAMÓWIENIE W MIEŚCIE",
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'PRZEGLĄD',
@@ -198,4 +198,5 @@ export default {
 	"FS FREE SPINS": "DARMOWE SPINY",
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "WYGRAJ DO",
+	"CONFIRM PURCHASE": "POTWIERDŹ ZAKUP",
 };

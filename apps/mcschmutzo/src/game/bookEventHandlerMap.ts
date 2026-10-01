@@ -6,6 +6,17 @@ import { sequence } from 'utils-shared/sequence';
 import { waitForTimeout } from 'utils-shared/wait';
 
 const FREE_SPIN_LANDED_HOLD_MS = 1200;
+
+// A bought bonus (bonus1 = 100×, bonus2 = 500×) is a one-shot purchase, but its mode used to stay
+// selected after the round: the HUD then priced the next spin at 100×/500× and, if the balance
+// couldn't cover that, disabled spin / Space / autoplay with nothing to reset it (a soft-lock).
+// Once the bought round is being played (its request already went out with the right mode),
+// drop back to the base mode. The Lock-Feature / Extra-Chance toggles are left alone.
+const releaseBoughtMode = () => {
+	if (stateBet.activeBetModeKey === 'bonus1' || stateBet.activeBetModeKey === 'bonus2') {
+		stateBet.activeBetModeKey = 'base';
+	}
+};
 const WHEEL_FADE_OUT_MS = 280; // keep in sync with WheelBonus.svelte's out:fade duration
 
 import { eventEmitter } from './eventEmitter';
@@ -150,6 +161,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateBet.winBookEventAmount = bookEvent.amount;
 	},
 	freeSpinTrigger: async (bookEvent: BookEventOfType<'freeSpinTrigger'>) => {
+		stateGame.bonusTier = bookEvent.positions.length >= 4 ? 'super' : 'normal';
 		// animate scatters
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_win_v2' });
 		await animateSymbols({ positions: bookEvent.positions });
@@ -234,7 +246,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		eventEmitter.broadcast({ type: 'winHide' });
 	},
 	finalWin: async (bookEvent: BookEventOfType<'finalWin'>) => {
-		// Do nothing
+		releaseBoughtMode();
 	},
 	wincap: async (bookEvent: BookEventOfType<'wincap'>) => {
 		stateBet.winBookEventAmount = bookEvent.amount;
@@ -274,6 +286,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.bonusMode = 'freegame';
 		stateGame.globalMultiplier = bookEvent.globalMult;
 		stateGame.wheel = bookEvent;
+		stateGame.bonusTier = bookEvent.scatterEntry === 4 ? 'super' : 'normal';
+		releaseBoughtMode();
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_superfreespin' });
 		stateGame.featureMessage = bookEvent.scatterEntry === 4 ? 'SUPER BONUS' : 'NORMAL BONUS';
 		stateUi.freeSpinCounterShow = true;

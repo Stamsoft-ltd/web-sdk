@@ -3,6 +3,11 @@
 	import { ap } from '../lib/preloadArt';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import CardDrip from './CardDrip.svelte';
+	import {
+		panoramaRect,
+		PANORAMA_BASE_X,
+		PANORAMA_SPLASH_X,
+	} from '../game/panorama';
 	import SauceFx from './SauceFx.svelte';
 
 	type Props = { onpress: () => void };
@@ -67,8 +72,10 @@
 	}
 
 	const bg = ap('/assets/mcschmutzo/splash/bg.webp');
-	// New desktop (wide) diner background; portrait/mobile keeps `bg` until the mobile art is supplied.
-	const bgDesktop = ap('/assets/mcschmutzo/splash/bg-desktop.webp');
+	// Wide screens: the LEFT end of the connected diner panorama (door, lamp, awning). Leaving the
+	// splash pans the camera right to the panorama's base-game view, where the game's own background
+	// takes over (same framing, see game/panorama.ts). Portrait keeps `bg` until mobile art exists.
+	const panoArt = ap('/assets/mcschmutzo/background-panorama.webp');
 	const logo = ap('/assets/mcschmutzo/logo-v3.webp');
 	/** Percent of a box dimension, for laying art-pixel geometry over fluid-sized layers. */
 	const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
@@ -96,7 +103,12 @@
 		// Eye openings (outline bbox): the lids are clipped to these so a blink never paints outside the eye.
 		eyeL: [782, 425, 872, 520] as Box,
 		eyeR: [617, 395, 717, 512] as Box,
-		bottle: [0, 0, 1304, 1699] as Box, // full-frame layer
+		bottle: [0, 0, 1304, 1699] as Box, // full-frame layer (its squirt is placed in frame fractions)
+		// Hand / nametag / brows are cropped to their visible bounds (they were mostly-transparent
+		// full-frame canvases); these boxes put each crop back exactly where it sat in the frame.
+		hand: [16, 925, 540, 1370] as Box,
+		label: [368, 1023, 624, 1160] as Box,
+		brows: [574, 326, 907, 470] as Box,
 		bottlePivot: [926, 951] as [number, number], // the wrist, tucked behind the body
 		skin: '#ee9c58', // face skin right around the eyes (lid colour)
 	};
@@ -154,11 +166,14 @@
 			drip: dripRed,
 			tendrils: [
 				{ x0: 0, x1: 63, cut: 84, cx: 44, stop: 127 },
-				{ x0: 76, x1: 110, cut: 77, cx: 93 },
+				{ x0: 76, x1: 110, cut: 77, cx: 93, stop: 87 },
 			] as [Tendril, Tendril],
 			// Where the long tendril ends (art px) — the drop forms here.
 			tip: { x: 42, y: 152 },
-			runs: [{ cx: 46.5, tip: 152, bulb: 28, period: 4200, phase: 0, endCx: 45.5, endW: 30 }],
+			runs: [
+				{ cx: 46.5, tip: 152, bulb: 28, period: 4200, phase: 0, endCx: 45.5, endW: 30 },
+				{ cx: 94.5, tip: 104, bulb: 20, period: 5600, phase: 2600, reach: 22, run: 150 },
+			],
 			sauce: 0xe11105,
 			cycle: 3400,
 			dripPhase: 1340, // |--phase| + 0.10·cycle → pinch-off lands at the tendril's full stretch
@@ -171,11 +186,14 @@
 			drip: dripYellow,
 			tendrils: [
 				{ x0: 0, x1: 58, cut: 75, cx: 36, stop: 111 },
-				{ x0: 59, x1: 98, cut: 72, cx: 84 },
+				{ x0: 59, x1: 98, cut: 72, cx: 84, stop: 76 },
 			] as [Tendril, Tendril],
 			// Where the long tendril ends (art px) — the drop forms here.
 			tip: { x: 39, y: 136 },
-			runs: [{ cx: 35, tip: 136, bulb: 28, period: 4600, phase: 1900, endCx: 38.5, endW: 27 }],
+			runs: [
+				{ cx: 35, tip: 136, bulb: 28, period: 4600, phase: 1900, endCx: 38.5, endW: 27 },
+				{ cx: 83, tip: 93, bulb: 20, period: 5900, phase: 400, reach: 22, run: 150 },
+			],
 			sauce: 0xf0b800,
 			cycle: 3800,
 			dripPhase: 2680,
@@ -204,10 +222,29 @@
 		},
 	];
 
-	const press = () => props.onpress();
+	// Leaving: the cards, logo and chef exit while the camera pans right across the panorama (and
+	// the base game's 16% dim fades in), then the host fades the splash out over the game.
+	const PAN_MS = 1700;
+	let exiting = $state(false);
+	let vw = $state(0);
+	let vh = $state(0);
+	const press = () => {
+		if (exiting) return;
+		if (isPortrait || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			props.onpress();
+			return;
+		}
+		exiting = true;
+		setTimeout(() => props.onpress(), PAN_MS + 40);
+	};
 	const onKey = (e: KeyboardEvent) => {
 		if (e.code === 'Space' || e.code === 'Enter') press();
 	};
+	const panoStyle = $derived.by(() => {
+		const r = panoramaRect(vw, vh, PANORAMA_SPLASH_X);
+		const pan = exiting ? (PANORAMA_BASE_X - PANORAMA_SPLASH_X) * r.k : 0;
+		return `left:${r.x}px;top:${r.y}px;width:${r.width}px;height:${r.height}px;transform:translateX(${-pan}px);--pan-ms:${PAN_MS}ms`;
+	});
 
 	// Portrait (mobile): show the feature cards one at a time and auto-advance every 3s, with dot
 	// indicators — matching the other games. Landscape/desktop keeps all three cards in a row.
@@ -231,13 +268,20 @@
 
 <div
 	class="splash-intro"
+	class:exiting
 	role="button"
 	tabindex="0"
 	aria-label={i18nDerived.translate('PRESS TO CONTINUE')}
 	onclick={press}
 	onkeydown={onKey}
+	bind:clientWidth={vw}
+	bind:clientHeight={vh}
 >
-	<div class="stage" style={`--sbg-desktop:url('${bgDesktop}');--sbg-mobile:url('${bg}')`}>
+	{#if !isPortrait && vw > 0}
+		<img class="pano" src={panoArt} alt="" draggable="false" style={panoStyle} />
+		<div class="pano-dim" style={`--pan-ms:${PAN_MS}ms`}></div>
+	{/if}
+	<div class="stage" style={`--sbg-mobile:url('${bg}')`}>
 		<!-- The board's "freshly polished" gleam: a tilted light band sweeps across the diner every 10s
 		     (over the background, behind the logo / cards / chef). -->
 		<div class="shine" aria-hidden="true"><div class="shine__band"></div></div>
@@ -256,15 +300,15 @@
 			</div>
 			<img class="man-base" src={manBase} alt="" draggable="false" />
 			<!-- Nametag under the pointing hand. -->
-			<img class="man-label" src={manLabel} alt="" draggable="false" />
-			<img class="man-hand" src={manHand} alt="" draggable="false" />
+			<img class="man-label" src={manLabel} alt="" draggable="false" style={manBox(MAN.label)} />
+			<img class="man-hand" src={manHand} alt="" draggable="false" style={manBox(MAN.hand)} />
 			<span class="man-sparkle" aria-hidden="true"></span>
 			<div class="pupil" style={manBox(MAN.pupilL)}><span class="glint"></span></div>
 			<div class="pupil" style={manBox(MAN.pupilR)}><span class="glint"></span></div>
 			<div class="eye" style={manBox(MAN.eyeL)}><div class="lid"></div></div>
 			<div class="eye" style={manBox(MAN.eyeR)}><div class="lid"></div></div>
 			<!-- Brows over the lids, so a blink closes under the brow. -->
-			<img class="man-base" src={manBrows} alt="" draggable="false" />
+			<img class="man-brows" src={manBrows} alt="" draggable="false" style={manBox(MAN.brows)} />
 		</div>
 		<!-- Mobile only: replaces the logo + character with the Press Play wordmark. -->
 		<img class="pp-mark" src={pressPlay} alt="Press Play" draggable="false" />
@@ -277,9 +321,9 @@
 					<div class="drip drip--cap" style={capStyle(card.tendrils[0], card.tendrils[1])}></div>
 					<div class="drip drip--t drip--t1" style={tendrilStyle(card.tendrils[0])}></div>
 					<div class="drip drip--t drip--t2" style={tendrilStyle(card.tendrils[1])}></div>
-					<!-- The painted drip itself stretches, pinches and runs down the card (CardDrip redraws the
-					     tendril tips from the same art, so colour + shading match exactly). -->
-					<CardDrip src={card.drip} artW={ART_W} artH={ART_H} tendrils={card.runs} />
+					<!-- The painted drip itself stretches, pinches and lets a drop fall — the same drip as the
+					     turn / buy-bonus buttons and the win plaque (CardDrip free mode, from the same art). -->
+					<CardDrip src={card.drip} artW={ART_W} artH={ART_H} tendrils={card.runs} free />
 				</div>
 				<div class="card-inner">
 					<h3 class="card-title" use:fitFont={i18nDerived.translate(card.title)}>
@@ -334,12 +378,32 @@
 		transform: translate(-50%, -50%);
 		width: max(100vw, calc(100vh * 16 / 9));
 		height: max(100vh, calc(100vw * 9 / 16));
-		/* Desktop / wide = new bg; portrait swaps to the mobile bg (below). */
-		background-image: var(--sbg-desktop);
-		background-size: 100% 100%;
-		background-position: center;
+		/* Wide screens draw the panorama (.pano) behind the stage; portrait uses the mobile bg (below). */
 		background-repeat: no-repeat;
 		container-type: size;
+	}
+
+	/* The diner panorama, positioned in px from panoramaRect (same maths as the game's background).
+	   The camera pan is a translateX to the base-game view. */
+	.pano {
+		position: absolute;
+		max-width: none;
+		transition: transform var(--pan-ms) cubic-bezier(0.65, 0, 0.35, 1);
+		will-change: transform;
+		pointer-events: none;
+	}
+	/* The base game's background carries a 16% dark wash — fade it in during the pan so the handover
+	   to the game background is seamless. */
+	.pano-dim {
+		position: absolute;
+		inset: 0;
+		background: #180903;
+		opacity: 0;
+		transition: opacity var(--pan-ms) ease-in-out;
+		pointer-events: none;
+	}
+	.exiting .pano-dim {
+		opacity: 0.16;
 	}
 
 	/* Same as the board's shine (Background.svelte): wide band at 11% white + a narrow core (4% of the
@@ -403,8 +467,13 @@
 		height: auto;
 		object-fit: contain;
 		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
-		/* Entrance: drops in from above the stage (see the card sweeps below). */
-		animation: logo-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+		/* Entrance: once the cards are in, it drops in from the top and bounces to rest, then keeps
+		   bouncing gently (squash at each landing — the bounce rides `translate`/`scale`, the drop
+		   `transform`, so the two never fight). */
+		transform-origin: 50% 100%;
+		animation:
+			logo-in 1.1s linear 1.75s both,
+			logo-bounce 1.5s linear 2.85s infinite;
 	}
 
 	.man {
@@ -423,7 +492,9 @@
 		/* Alive: a slow breath on the whole figure; the eyes glance around and blink, and the ketchup
 		   bottle gets a little shake — each its own layer (see the script constants). */
 		transform-origin: 50% 100%;
-		animation: chef-breathe 3.4s ease-in-out infinite alternate;
+		animation:
+			chef-breathe 3.4s ease-in-out infinite alternate,
+			man-in 1.1s cubic-bezier(0.22, 1, 0.36, 1) 2.7s both;
 	}
 	.man-base,
 	.bottle img {
@@ -474,12 +545,12 @@
 		animation: bottle-shake 6s ease-in-out infinite;
 	}
 	/* Pointing hand: a slow, subtle sway about the wrist (sleeve cuff, 4.9% / 69.45% of the frame). */
+	.man-brows {
+		position: absolute;
+	}
 	.man-hand {
 		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		transform-origin: 4.9% 69.45%;
+		transform-origin: 9.14% 57.29%; /* the wrist: frame 4.9% / 69.45% */
 		animation: hand-sway 4.4s ease-in-out 0.6s infinite alternate;
 	}
 	@keyframes hand-sway {
@@ -493,10 +564,7 @@
 	/* Nametag jiggles on its pin (pin = top-centre of the plate: 38.04% / 60.45% of the frame). */
 	.man-label {
 		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		transform-origin: 38.04% 60.45%;
+		transform-origin: 50.02% 2.95%; /* the pin: frame 38.04% / 60.45% */
 		animation: label-jiggle 0.64s ease-in-out infinite alternate;
 	}
 	@keyframes label-jiggle {
@@ -574,14 +642,46 @@
 		/* Entrance choreography: the cards fly in from three sides — left card from the left, right
 		   card from the right, centre card up from the bottom — while the logo drops in from the top.
 		   Both flat rows keep the position rules above (transform is only used by the entrance). */
-		animation: card-in-bottom 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-		animation-delay: 0.1s;
+		/* Slow, one after another: left, centre, right. */
+		animation: card-in-bottom 1.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+		animation-delay: 0.25s;
 	}
 	.cards:not(.cards--single) .card:nth-child(1) {
 		animation-name: card-in-left;
 	}
+	.cards:not(.cards--single) .card:nth-child(2) {
+		animation-delay: 0.6s;
+	}
 	.cards:not(.cards--single) .card:nth-child(3) {
 		animation-name: card-in-right;
+		animation-delay: 0.95s;
+	}
+
+	/* Leaving (camera pan): everything clears out the way it came, quickly, as the view moves on. */
+	.exiting .card {
+		animation: card-out-bottom 0.65s cubic-bezier(0.55, 0, 0.9, 0.4) forwards;
+	}
+	.exiting .cards:not(.cards--single) .card:nth-child(1) {
+		animation-name: card-out-left;
+	}
+	.exiting .cards:not(.cards--single) .card:nth-child(2) {
+		animation-delay: 0.06s;
+	}
+	.exiting .cards:not(.cards--single) .card:nth-child(3) {
+		animation-name: card-out-right;
+		animation-delay: 0.12s;
+	}
+	.exiting .logo {
+		animation: logo-out 0.55s cubic-bezier(0.55, 0, 0.9, 0.4) forwards;
+	}
+	.exiting .man {
+		animation: man-out 0.6s cubic-bezier(0.55, 0, 0.9, 0.4) forwards;
+	}
+	.exiting .press-label,
+	.exiting .shine {
+		animation: none;
+		opacity: 0;
+		transition: opacity 0.25s ease;
 	}
 
 	/* Sauce layers: every copy fills the card box exactly like the frame, so the drip lands where it
@@ -600,18 +700,13 @@
 	}
 	/* The long tendril and its drop share one cycle (--cycle/--phase, per card) so the drop lets go
 	   exactly when the tendril is at full stretch and the sauce recoils. */
-	/* Tendrils whose tip is redrawn by CardDrip stay still (the canvas stretches the tip); moving the
-	   painted tube under it would open a seam. The green card's second tendril is animated the same way. */
-	.drip--t1 {
+	/* Every tendril's tip is redrawn by CardDrip (stretch → pinch → drop, one continuous motion), so the
+	   painted tubes stay still — moving them under the canvas would open a seam (and the old CSS ooze
+	   grew, paused and shrank back up, which real sauce doesn't do). */
+	.drip--t {
 		animation: none;
 	}
-	.card--green .drip--t2 {
-		animation: none;
-	}
-	.drip--t2 {
-		animation: sauce-ooze 4.8s ease-in-out infinite;
-		animation-delay: calc(var(--phase) - 1.7s);
-	}
+
 	/* Each card gets its own cycle length + phase so the three never pulse in unison. */
 	.card--red {
 		--cycle: 3.4s;
@@ -825,25 +920,100 @@
 			transform: translateY(0);
 		}
 	}
+	/* Drop from above the stage, land, two settling bounces. */
 	@keyframes logo-in {
-		from {
+		0% {
 			transform: translate(-50%, -70cqh);
+			animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); /* falling: accelerate */
+		}
+		55% {
+			transform: translate(-50%, 0);
+			animation-timing-function: cubic-bezier(0, 0.55, 0.45, 1); /* rebound: decelerate */
+		}
+		72% {
+			transform: translate(-50%, -4.5cqh);
+			animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+		}
+		86% {
+			transform: translate(-50%, 0);
+			animation-timing-function: cubic-bezier(0, 0.55, 0.45, 1);
+		}
+		93% {
+			transform: translate(-50%, -1.2cqh);
+			animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+		}
+		100% {
+			transform: translate(-50%, 0);
+		}
+	}
+	/* Continuous bounce: a little hop with a squash on each landing. */
+	@keyframes logo-bounce {
+		0% {
+			translate: 0 0;
+			scale: 1.03 0.96;
+			animation-timing-function: ease-out;
+		}
+		10% {
+			translate: 0 0;
+			scale: 1 1;
+			animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1); /* rising: slowing */
+		}
+		50% {
+			translate: 0 -2.4cqh;
+			scale: 0.99 1.015;
+			animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.4); /* falling: speeding up */
+		}
+		90% {
+			translate: 0 0;
+			scale: 1 1;
+			animation-timing-function: ease-in;
+		}
+		100% {
+			translate: 0 0;
+			scale: 1.03 0.96;
+		}
+	}
+	@keyframes logo-out {
+		from {
+			transform: translate(-50%, 0);
 		}
 		to {
-			transform: translate(-50%, 0);
+			transform: translate(-50%, -80cqh);
+		}
+	}
+	@keyframes man-in {
+		from {
+			translate: -120% 0;
+		}
+		to {
+			translate: 0 0;
+		}
+	}
+	@keyframes man-out {
+		from {
+			translate: 0 0;
+		}
+		to {
+			translate: -130% 0;
+		}
+	}
+	@keyframes card-out-left {
+		to {
+			transform: translateX(-90cqw);
+		}
+	}
+	@keyframes card-out-right {
+		to {
+			transform: translateX(90cqw);
+		}
+	}
+	@keyframes card-out-bottom {
+		to {
+			transform: translateY(110cqh);
 		}
 	}
 
 	/* A tendril slowly lengthens (and thins a touch, like sauce does), then eases back. */
-	@keyframes sauce-ooze {
-		0%,
-		100% {
-			transform: scale(1, 1);
-		}
-		55% {
-			transform: scale(0.955, 1.16);
-		}
-	}
 	/* The long tendril: stretches while the drop forms, lets go at 52%, recoils, settles. */
 	@keyframes sauce-drip {
 		0%,

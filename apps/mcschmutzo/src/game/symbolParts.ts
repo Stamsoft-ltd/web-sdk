@@ -32,6 +32,15 @@ export type SymbolPartLayer = {
 	hop?: number;
 	flip?: number;
 	phase?: number;
+	// Ketchup slam (wild): `slam` = the layer hops up (fraction of symbol h) and SLAMS back down,
+	// squashing on impact; `ripple` = the layer is the sauce it lands in — it ripples out from each
+	// impact like liquid (amplitude as a scale fraction) and wobbles gently in between.
+	slam?: number;
+	ripple?: number;
+	// Liquid pulse: the layer slowly swells and shrinks (fraction of its size), its width and height
+	// slightly out of step like a wobbling puddle; `pulseLag` delays it (radians) behind the others.
+	pulse?: number;
+	pulseLag?: number;
 };
 
 export type SymbolPartsConfig = {
@@ -71,6 +80,17 @@ export type SymbolPartsConfig = {
 	// Sizzle: hot grease spits up off the food's surface at these points in short arcs and falls back,
 	// with the odd bright spark — something frying on a hot grill.
 	sizzle?: { color: number; points: { nx: number; ny: number }[] };
+	// Splash: on each slam impact, ketchup droplets fly off the sauce's edge (an ellipse of radii
+	// rx/ry, fractions of w/h) on short gravity arcs and fall away, while active.
+	splash?: { color: number; rim: number; rx: number; ry: number };
+	// Painted drips (game/paintedDrip.ts) hanging off a layer's own art while active: `layer` = the
+	// layer key (also its texture key), srcW / srcH = that art's size, tendrils in its pixels.
+	paintedDrips?: {
+		layer: string;
+		srcW: number;
+		srcH: number;
+		tendrils: import('./paintedDrip').PaintedTendril[];
+	};
 	layers: SymbolPartLayer[];
 };
 
@@ -272,25 +292,29 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 	},
 	// Wild — on landing the red splat splashes in first, then the WILD text pops up→down once
 	// (landAnim). Afterwards, while it wins/locks, the WILD text bounces while the splat pulses.
+	// Wild — on landing the red splat splashes in, then WILD pops on top (landAnim). While part of a
+	// win the ketchup puddle keeps swelling and shrinking like liquid (the letters ride it a beat
+	// behind), and thick painted drips ooze off its bottom lobes, pinch and fall.
 	W: {
 		aspect: 1.361,
 		fit: 0.82,
 		squash: 0,
 		landAnim: true,
 		idle: 0.45,
+		paintedDrips: {
+			layer: 'wildSplat',
+			srcW: 1350,
+			srcH: 992,
+			tendrils: [
+				{ cx: 233.5, tip: 990, bulb: 44, half: 52, reach: 46, run: 230, period: 2900, phase: 0, dropStretch: 2.2, dropNarrow: 0.62 },
+				{ cx: 486, tip: 953, bulb: 44, half: 50, reach: 40, run: 220, period: 3400, phase: 1500, dropStretch: 2.2, dropNarrow: 0.62 },
+				{ cx: 674.5, tip: 966, bulb: 44, half: 50, reach: 44, run: 220, period: 3100, phase: 600, dropStretch: 2.2, dropNarrow: 0.62 },
+				{ cx: 916.5, tip: 933, bulb: 44, half: 50, reach: 40, run: 220, period: 3700, phase: 2300, dropStretch: 2.2, dropNarrow: 0.62 },
+			],
+		},
 		layers: [
-			{ key: 'wildSplat', nx: 0.5, ny: 0.5, nw: 1.0, nh: 1.0, pop: 0.1, rot: 0.04, landDelay: 0 },
-			{
-				key: 'wildText',
-				nx: 0.5,
-				ny: 0.5,
-				nw: 0.7889,
-				nh: 0.6704,
-				pop: 0.13,
-				dy: -0.03,
-				rot: 0.05,
-				landDelay: 0.4,
-			},
+			{ key: 'wildSplat', nx: 0.5, ny: 0.5, nw: 1.0, nh: 1.0, pulse: 0.07, landDelay: 0 },
+			{ key: 'wildText', nx: 0.5, ny: 0.5, nw: 0.7889, nh: 0.6704, pulse: 0.05, pulseLag: 0.7, landDelay: 0.4 },
 		],
 	},
 	// Scatter — the stand gives a gentle bob while its SCATTER sign sways like a hanging shingle.

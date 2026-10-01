@@ -3,7 +3,7 @@
 
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
 	const artExtraChance = ap('/assets/mcschmutzo/buybonus/extra-chance.webp');
-	const artLockSpin = ap('/assets/mcschmutzo/buybonus/burger.svg');
+	const artLockSpin = ap('/assets/mcschmutzo/buybonus/burger.webp');
 	const artNormalBonus = ap('/assets/mcschmutzo/buybonus/normal-bonus.webp');
 	const artSuperBonus = ap('/assets/mcschmutzo/buybonus/super-bonus.webp');
 	const minusArt = ap('/assets/mcschmutzo/autoplay/minus.svg');
@@ -181,7 +181,9 @@
 		const next = betOptions[index];
 		if (typeof next !== 'number' || next === stateBet.betAmount) return;
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
-		stateBetDerived.setBetAmount(next);
+		// Set the RGS level itself: the shared setBetAmount clamps to what the balance covers, which
+		// produced amounts that aren't valid bet levels. Affordability is enforced by the spin guard.
+		stateBet.betAmount = next;
 	};
 
 	onMount(() => {
@@ -289,8 +291,11 @@
 
 {#if confirmMode}
 	<CustomConfirmModal
-		title={i18nDerived.translate('CONFIRM IT ALL')}
-		message={i18nDerived.translateVars('BUY ALL IN', { cost: confirmCost })}
+		title={i18nDerived.translate('CONFIRM PURCHASE')}
+		message={i18nDerived.translateVars('CONFIRM TEXT', {
+			mode: i18nDerived.translate(modeById(confirmMode).title),
+			cost: confirmCost,
+		})}
 		cancelLabel={i18nDerived.translate('CANCEL')}
 		confirmLabel={i18nDerived.translate('CONFIRM')}
 		oncancel={closeConfirm}

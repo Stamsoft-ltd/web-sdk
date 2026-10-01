@@ -42,8 +42,7 @@
 	<SymbolWrap
 		x={getSymbolX(props.reelIndex)}
 		y={props.reelSymbol.symbolY()}
-		animating={symbolInfo.type === 'spine' &&
-			(props.reelSymbol.symbolState === 'land' || props.reelSymbol.symbolState === 'win')}
+		animating={false /* every symbol is a sprite (no spine land/win animations to lift) */}
 	>
 		<Symbol
 			state={props.reelSymbol.symbolState}

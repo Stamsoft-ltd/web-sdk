@@ -12,17 +12,17 @@
 
 	// Page 3 (features) icons + the win-multiplier ladder shown in the design.
 	const wildArt = symArt('W');
-	const respinArt = ap('/assets/mcschmutzo/buybonus/burger.svg');
+	const respinArt = ap('/assets/mcschmutzo/buybonus/burger.webp');
 	// Page 4 (ways to win) — the dedicated "Lock & Re-spin" tile (burger with a padlock badge).
 	const lockFeatureArt = ap('/assets/mcschmutzo/tutorial/lock-feature.webp');
 	const scatterArt = symArt('S');
 	// The win-multiplier icon = the receipt printer with an "X2" ticket laid on top of it (design).
-	const printerArt = ap('/assets/mcschmutzo/tutorial/printer.svg');
+	const printerArt = ap('/assets/mcschmutzo/tutorial/printer.webp');
 	const multX2Art = ap('/assets/mcschmutzo/tutorial/mult-x2.svg');
 	// Scatter / bonus sub-badges (3 / 4 scatters) + the Free Games spin-arrow icon.
 	const scatter3Art = ap('/assets/mcschmutzo/tutorial/scatter-3.svg');
 	const scatter4Art = ap('/assets/mcschmutzo/tutorial/scatter-4.svg');
-	const freeGamesArt = ap('/assets/mcschmutzo/tutorial/free-games-arrow.svg');
+	const freeGamesArt = ap('/assets/mcschmutzo/tutorial/free-games-arrow.webp');
 
 	// Page 6 (general info) icons.
 	const reloadArt = ap('/assets/mcschmutzo/tutorial/reload.webp');
@@ -37,7 +37,7 @@
 		// (spin.svg wraps its art in padding, so it rendered smaller + soft next to them).
 		{ label: 'SPIN', desc: 'INFO UI SPIN DESC', icon: uiIcon('spin-guide.webp') },
 		{ label: 'UI AUTO SPINS', desc: 'INFO UI AUTO DESC', icon: uiIcon('auto.svg') },
-		{ label: 'TURBO', desc: 'INFO UI TURBO DESC', icon: uiIcon('turbo.svg') },
+		{ label: 'TURBO', desc: 'INFO UI TURBO DESC', icon: uiIcon('turbo.webp') },
 		{ label: 'UI BET PLUS', desc: 'INFO UI BETPLUS DESC', icon: uiIcon('plus.svg') },
 		{ label: 'UI BET MINUS', desc: 'INFO UI BETMINUS DESC', icon: uiIcon('minus.svg') },
 		{ label: 'INFO', desc: 'INFO UI INFO DESC', icon: uiIcon('info.svg') },
@@ -80,6 +80,34 @@
 	const props: Props = $props();
 
 	let page = $state(1);
+
+	// Scroll cue: a page whose content runs past the bottom gets a soft fade on its lower edge and a
+	// bouncing chevron above the pager (tap to scroll) — so a half-visible line reads as "more below",
+	// not as clipped. Re-evaluated on scroll and whenever the page / popup size changes.
+	let pageEl: HTMLElement | null = null;
+	let hasMore = $state(false);
+	function scrollCue(node: HTMLElement) {
+		pageEl = node;
+		const update = () => {
+			const more = node.scrollHeight - node.clientHeight - node.scrollTop > 6;
+			node.classList.toggle('tu-page--more', more);
+			hasMore = more;
+		};
+		const ro = new ResizeObserver(update);
+		ro.observe(node);
+		for (const c of Array.from(node.children)) ro.observe(c);
+		node.addEventListener('scroll', update, { passive: true });
+		requestAnimationFrame(update);
+		document.fonts?.ready.then(update);
+		return {
+			destroy: () => {
+				ro.disconnect();
+				node.removeEventListener('scroll', update);
+				if (pageEl === node) pageEl = null;
+			},
+		};
+	}
+	const scrollMore = () => pageEl?.scrollBy({ top: pageEl.clientHeight * 0.7, behavior: 'smooth' });
 	const prev = () => (page = Math.max(1, page - 1));
 	const next = () => (page = Math.min(TOTAL_PAGES, page + 1));
 
@@ -98,7 +126,7 @@
 <div class="tu-root" role="dialog" aria-modal="true">
 	<div class="tu-popup">
 		{#if page === 1}
-			<div class="tu-page">
+			<div class="tu-page" use:scrollCue>
 				<h2 class="tu-title">{i18nDerived.translate('OVERVIEW')}</h2>
 				<p class="tu-body">{i18nDerived.translate('INFO OVERVIEW BODY')}</p>
 
@@ -116,7 +144,7 @@
 				</div>
 			</div>
 		{:else if page === 2}
-			<div class="tu-page">
+			<div class="tu-page" use:scrollCue>
 				<h2 class="tu-title">{i18nDerived.translate('PAYTABLE')}</h2>
 
 				<div class="pt-table">
@@ -144,7 +172,7 @@
 				</div>
 			</div>
 		{:else if page === 3}
-			<div class="tu-page">
+			<div class="tu-page" use:scrollCue>
 				<h2 class="tu-title">{i18nDerived.translate('FEATURES')}</h2>
 
 				<div class="ft-grid">
@@ -232,7 +260,7 @@
 				</div>
 			</div>
 		{:else if page === 4}
-			<div class="tu-page">
+			<div class="tu-page" use:scrollCue>
 				<h2 class="tu-title">{i18nDerived.translate('WAYS TO WIN')}</h2>
 				<p class="tu-body tu-body--wide">{i18nDerived.translate('INFO WAYS BODY')}</p>
 
@@ -249,7 +277,7 @@
 				</div>
 			</div>
 		{:else if page === 5}
-			<div class="tu-page">
+			<div class="tu-page" use:scrollCue>
 				<h2 class="tu-title">{i18nDerived.translate('FEATURE BUY')}</h2>
 
 				<div class="fb-grid">
@@ -264,7 +292,7 @@
 				</div>
 			</div>
 		{:else if page === 6}
-			<div class="tu-page">
+			<div class="tu-page" use:scrollCue>
 				<h2 class="tu-title">{i18nDerived.translate('GENERAL INFO')}</h2>
 
 				<div class="gi-grid">
@@ -294,7 +322,7 @@
 				</div>
 			</div>
 		{:else if page === 7}
-			<div class="tu-page">
+			<div class="tu-page" use:scrollCue>
 				<h2 class="tu-title">{i18nDerived.translate('USER INTERFACE GUIDE')}</h2>
 
 				<div class="ug-grid">
@@ -323,6 +351,12 @@
 		{/if}
 
 		<div class="tu-nav">
+			{#if hasMore}
+				<!-- sits just above the pager, inside the page's faded lower edge -->
+				<button class="tu-more" type="button" onclick={scrollMore} aria-label="Scroll down">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7" /></svg>
+				</button>
+			{/if}
 			<button
 				class="tu-arrow"
 				type="button"
@@ -740,10 +774,13 @@
 		width: 100%;
 		margin-top: clamp(12px, 2.4vmin, 26px);
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
+		/* minmax(0, …): plain 1fr can't shrink below its content, so the no-wrap cost chip widened its
+		   column and pushed the 4th card off the popup (seen at 1920×1080). */
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: clamp(8px, 1.5vmin, 16px);
 	}
 	.fb-card {
+		min-width: 0;
 		position: relative;
 		display: flex;
 		flex-direction: column;
@@ -788,7 +825,10 @@
 		color: #fff;
 		font-weight: 800;
 		font-size: clamp(0.72rem, 1.55vmin, 0.98rem);
-		white-space: nowrap;
+		max-width: 100%;
+		box-sizing: border-box;
+		text-align: center;
+		overflow-wrap: anywhere;
 	}
 	.fb-rtp {
 		color: #c9c0b2;
@@ -978,6 +1018,43 @@
 	}
 
 	/* Nav arrows + page indicator — a static footer below the scrolling page. */
+	/* Scroll cue (see scrollCue): fade the lower edge of an overflowing page + a bouncing chevron. */
+	:global(.tu-page.tu-page--more) {
+		-webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 46px), transparent);
+		mask-image: linear-gradient(180deg, #000 calc(100% - 46px), transparent);
+	}
+	.tu-more {
+		position: absolute;
+		left: 50%;
+		bottom: calc(100% + 2px);
+		translate: -50% 0;
+		z-index: 4;
+		width: clamp(20px, 4.2vmin, 36px);
+		height: clamp(20px, 4.2vmin, 36px);
+		padding: 0;
+		border: 1px solid #605553;
+		border-radius: 50%;
+		background: rgba(31, 31, 31, 0.92);
+		cursor: pointer;
+		display: grid;
+		place-items: center;
+		animation: tu-more-bob 1.3s ease-in-out infinite;
+	}
+	.tu-more svg {
+		width: 60%;
+		height: 60%;
+		fill: none;
+		stroke: #f0a112;
+		stroke-width: 3;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+	@keyframes tu-more-bob {
+		50% {
+			translate: -50% 4px;
+		}
+	}
+
 	.tu-nav {
 		position: relative;
 		flex: 0 0 auto;

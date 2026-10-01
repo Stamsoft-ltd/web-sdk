@@ -50,14 +50,14 @@ export default {
 	INFO: 'INFO',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': 'WELCOME TO SCHMUTZO',
-	'SPLASH C1 BODY': 'Bright lights, wild rides and big surprises around every corner.',
-	'SPLASH C2 TITLE': '3\nUNIQUE\nBONUSES',
-	'SPLASH C2 BODY 1': 'Pick the Ducks',
-	'SPLASH C2 BODY 2': 'Ride the Wilds',
-	'SPLASH C2 BODY 3': 'Survive the Coaster',
+	'SPLASH C1 TITLE': "WELCOME TO McSCHMUTZO",
+	'SPLASH C1 BODY': "Wins lock in place and re-spin until the grill is full.",
+	'SPLASH C2 TITLE': "3\nTASTY\nFEATURES",
+	'SPLASH C2 BODY 1': "Lock & Re-Spin",
+	'SPLASH C2 BODY 2': "Spin the Bonus Wheel",
+	'SPLASH C2 BODY 3': "Grow the Multiplier",
 	'SPLASH C3 TITLE': 'MAX WIN OF 25,000×',
-	'SPLASH C3 BODY': 'THE ULTIMATE PARK PRIZE',
+	'SPLASH C3 BODY': "THE BIGGEST ORDER IN TOWN",
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'OVERVIEW',
@@ -104,7 +104,7 @@ export default {
 	'INFO SCATTER 3 TITLE': 'SCATTERS - Normal Bonus',
 	'INFO SCATTER 3 BODY':
 		'Landing 3 Scatter symbols triggers the Normal Bonus. The player enters the Normal Free Games mode. The Normal Bonus uses the standard Free Games configuration and its corresponding starting Win Multiplier progression. Any active Win Multiplier carried into the feature is combined with the Free Games entry result where applicable. The Win Multiplier persists throughout the entire Free Games feature and can increase during play. It does not reset between Free Games.',
-	'INFO SCATTER 4 TITLE': 'SCATTERS - Normal Bonus',
+	'INFO SCATTER 4 TITLE': "SCATTERS - Super Bonus",
 	'INFO SCATTER 4 BODY':
 		'Landing 4 Scatter symbols triggers the Super Bonus. The Super Bonus begins with an enhanced starting configuration compared with the Normal Bonus. The player receives the Super Free Games setup with the maximum / enhanced entry conditions defined for this mode. The Win Multiplier persists throughout the entire Super Bonus and may continue increasing during Free Games. It does not reset between Free Games.',
 	'INFO FREEGAMES BODY 1':
@@ -205,4 +205,5 @@ export default {
 	"FS FREE SPINS": "FREE SPINS",
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "WIN UP TO",
+	"CONFIRM PURCHASE": "CONFIRM PURCHASE",
 };

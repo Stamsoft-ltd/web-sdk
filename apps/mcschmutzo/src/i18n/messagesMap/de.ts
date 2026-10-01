@@ -5,7 +5,7 @@ export default {
 	"INFO SCATTER BODY": "Das BONUS-Symbol ist das Scatter-Symbol und kann auf allen Walzen erscheinen. Landen Scatter-Symbole, wird einer von zwei Freispiel-Modi aktiviert.",
 	"INFO SCATTER 3 TITLE": "SCATTER - Normal-Bonus",
 	"INFO SCATTER 3 BODY": "Landen 3 Scatter-Symbole, wird der Normal-Bonus ausgelöst. Der Spieler betritt den Normal-Freispiel-Modus. Der Normal-Bonus verwendet die standardmäßige Freispiel-Konfiguration und die entsprechende anfängliche Gewinnmultiplikator-Progression. Ein aktiver Gewinnmultiplikator, der in das Feature übernommen wird, wird gegebenenfalls mit dem Freispiel-Eintrittsergebnis kombiniert. Der Gewinnmultiplikator bleibt während des gesamten Freispiel-Features aktiv und kann während des Spiels ansteigen. Er wird zwischen den Freispielen nicht zurückgesetzt.",
-	"INFO SCATTER 4 TITLE": "SCATTER - Normal-Bonus",
+	"INFO SCATTER 4 TITLE": "SCATTER - Super-Bonus",
 	"INFO SCATTER 4 BODY": "Landen 4 Scatter-Symbole, wird der Super-Bonus ausgelöst. Der Super-Bonus beginnt mit einer verstärkten Startkonfiguration im Vergleich zum Normal-Bonus. Der Spieler erhält das Super-Freispiel-Setup mit den maximalen / verstärkten Eintrittsbedingungen, die für diesen Modus definiert sind. Der Gewinnmultiplikator bleibt während des gesamten Super-Bonus aktiv und kann während der Freispiele weiter ansteigen. Er wird zwischen den Freispielen nicht zurückgesetzt.",
 	"INFO FREEGAMES BODY 1": "Während der Freispiele bleiben dieselben grundlegenden Gewinn- und Re-Spin-Mechaniken aktiv. Immer wenn eine qualifizierende Gewinnverbindung entsteht, werden die übereinstimmenden Gewinnsymbole automatisch fixiert und ein Re-Spin wird ausgelöst.",
 	"INFO FREEGAMES BODY 2": "Zusätzliche übereinstimmende Symbole, die während des Re-Spins hinzugefügt werden, werden fixiert, sodass die Sequenz fortgesetzt werden kann. McSchmutzo-Symbole, die während des Features erscheinen, können den Gewinnmultiplikator erhöhen. Der angesammelte Gewinnmultiplikator bleibt während des gesamten Freispiel-Features aktiv.",
@@ -63,14 +63,14 @@ export default {
 	INFO: 'INFO',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': 'WILLKOMMEN BEI SCHMUTZO',
-	'SPLASH C1 BODY': 'Grelle Lichter, wilde Fahrten und große Überraschungen an jeder Ecke.',
-	'SPLASH C2 TITLE': '3\neinzigartige\nBoni',
-	'SPLASH C2 BODY 1': 'Wähle die Enten',
-	'SPLASH C2 BODY 2': 'Reite die Wilds',
-	'SPLASH C2 BODY 3': 'Überlebe die Achterbahn',
+	'SPLASH C1 TITLE': "WILLKOMMEN BEI McSCHMUTZO",
+	'SPLASH C1 BODY': "Gewinne bleiben stehen und drehen erneut, bis der Grill voll ist.",
+	'SPLASH C2 TITLE': "3\nLECKERE\nFEATURES",
+	'SPLASH C2 BODY 1': "Lock & Re-Spin",
+	'SPLASH C2 BODY 2': "Dreh das Bonusrad",
+	'SPLASH C2 BODY 3': "Steigere den Multiplikator",
 	'SPLASH C3 TITLE': 'MAX. GEWINN 25.000×',
-	'SPLASH C3 BODY': 'Der ultimative Parkpreis',
+	'SPLASH C3 BODY': "DIE GRÖSSTE BESTELLUNG DER STADT",
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'ÜBERSICHT',
@@ -198,4 +198,5 @@ export default {
 	"FS FREE SPINS": "FREISPIELE",
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "GEWINNE BIS ZU",
+	"CONFIRM PURCHASE": "KAUF BESTÄTIGEN",
 };

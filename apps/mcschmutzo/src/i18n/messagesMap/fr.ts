@@ -5,7 +5,7 @@ export default {
 	"INFO SCATTER BODY": "Le symbole BONUS est le symbole Scatter et peut apparaître sur tous les rouleaux. Obtenir des symboles Scatter active l'un des deux modes de Parties Gratuites.",
 	"INFO SCATTER 3 TITLE": "SCATTERS - Bonus Normal",
 	"INFO SCATTER 3 BODY": "Obtenir 3 symboles Scatter déclenche le Bonus Normal. Le joueur accède au mode Parties Gratuites Normal. Le Bonus Normal utilise la configuration standard des Parties Gratuites et sa progression de Multiplicateur de Gains de départ correspondante. Tout Multiplicateur de Gains actif reporté dans la fonction est combiné au résultat d'entrée des Parties Gratuites, le cas échéant. Le Multiplicateur de Gains persiste tout au long de la fonction Parties Gratuites et peut augmenter pendant le jeu. Il ne se réinitialise pas entre les Parties Gratuites.",
-	"INFO SCATTER 4 TITLE": "SCATTERS - Bonus Normal",
+	"INFO SCATTER 4 TITLE": "SCATTERS - Super Bonus",
 	"INFO SCATTER 4 BODY": "Obtenir 4 symboles Scatter déclenche le Super Bonus. Le Super Bonus débute avec une configuration de départ améliorée par rapport au Bonus Normal. Le joueur reçoit la configuration des Super Parties Gratuites avec les conditions d'entrée maximales / améliorées définies pour ce mode. Le Multiplicateur de Gains persiste tout au long du Super Bonus et peut continuer d'augmenter pendant les Parties Gratuites. Il ne se réinitialise pas entre les Parties Gratuites.",
 	"INFO FREEGAMES BODY 1": "Pendant les Parties Gratuites, les mêmes mécaniques principales de gain et de Re-Tour restent actives. Chaque fois qu'une connexion gagnante qualifiante se produit, les symboles gagnants identiques se verrouillent automatiquement et déclenchent un Re-Tour.",
 	"INFO FREEGAMES BODY 2": "Les symboles identiques supplémentaires ajoutés pendant le Re-Tour sont verrouillés, permettant à la séquence de se poursuivre. Les symboles McSchmutzo apparaissant pendant la fonction peuvent augmenter le Multiplicateur de Gains. Le Multiplicateur de Gains accumulé reste actif tout au long de la fonction Parties Gratuites.",
@@ -63,14 +63,14 @@ export default {
 	INFO: 'INFO',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': 'BIENVENUE CHEZ SCHMUTZO',
-	'SPLASH C1 BODY': 'Lumières éclatantes, manèges déchaînés et grandes surprises à chaque coin.',
-	'SPLASH C2 TITLE': '3\nBonus\nUniques',
-	'SPLASH C2 BODY 1': 'Attrape les Canards',
-	'SPLASH C2 BODY 2': 'Chevauche les Wilds',
-	'SPLASH C2 BODY 3': 'Survis aux Montagnes Russes',
+	'SPLASH C1 TITLE': "BIENVENUE CHEZ McSCHMUTZO",
+	'SPLASH C1 BODY': "Les gains se verrouillent et relancent jusqu'à remplir le grill.",
+	'SPLASH C2 TITLE': "3\nFONCTIONS\nSAVOUREUSES",
+	'SPLASH C2 BODY 1': "Verrouillage & Re-Spin",
+	'SPLASH C2 BODY 2': "Tourne la Roue Bonus",
+	'SPLASH C2 BODY 3': "Fais grimper le Multiplicateur",
 	'SPLASH C3 TITLE': 'GAIN MAX DE 25,000×',
-	'SPLASH C3 BODY': 'Le Prix Ultime du Parc',
+	'SPLASH C3 BODY': "LA PLUS GROSSE COMMANDE DE LA VILLE",
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'APERÇU',
@@ -198,4 +198,5 @@ export default {
 	"FS FREE SPINS": "TOURS GRATUITS",
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "GAGNEZ JUSQU'À",
+	"CONFIRM PURCHASE": "CONFIRMER L'ACHAT",
 };

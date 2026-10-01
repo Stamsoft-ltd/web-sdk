@@ -5,7 +5,7 @@ export default {
 	"INFO SCATTER BODY": "奖励符号即为分散符号，可出现在所有卷轴上。落下分散符号将激活两种免费游戏模式中的其中一种。",
 	"INFO SCATTER 3 TITLE": "分散符号 - 普通奖励",
 	"INFO SCATTER 3 BODY": "落下3个分散符号将触发普通奖励。玩家进入普通免费游戏模式。普通奖励采用标准的免费游戏配置及其对应的初始赢奖倍数递进。在适用的情况下，任何带入本特色的当前赢奖倍数将与免费游戏的进入结果相结合。赢奖倍数在整个免费游戏特色期间持续有效，并可在游戏过程中提升。它不会在各次免费游戏之间重置。",
-	"INFO SCATTER 4 TITLE": "分散符号 - 普通奖励",
+	"INFO SCATTER 4 TITLE": "分散符号 - 超级奖励",
 	"INFO SCATTER 4 BODY": "落下4个分散符号将触发超级奖励。与普通奖励相比，超级奖励以增强的初始配置开始。玩家将获得超级免费游戏设置，并采用为此模式定义的最高/增强进入条件。赢奖倍数在整个超级奖励期间持续有效，并可能在免费游戏期间继续提升。它不会在各次免费游戏之间重置。",
 	"INFO FREEGAMES BODY 1": "在免费游戏期间，相同的核心中奖与重转机制依然有效。每当出现符合条件的中奖连接时，相匹配的中奖符号会自动锁定并触发一次重转。",
 	"INFO FREEGAMES BODY 2": "在重转期间新增的相同符号会被锁定，使该序列得以继续。特色期间出现的McSchmutzo符号可能提升赢奖倍数。累积的赢奖倍数在整个免费游戏特色期间保持有效。",
@@ -63,14 +63,14 @@ export default {
 	INFO: '信息',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': '欢迎来到SCHMUTZO',
-	'SPLASH C1 BODY': '绚丽灯光、刺激游乐设施，处处都有大惊喜。',
-	'SPLASH C2 TITLE': '3\n项独特奖励',
-	'SPLASH C2 BODY 1': '挑选小鸭',
-	'SPLASH C2 BODY 2': '驾驭百搭',
-	'SPLASH C2 BODY 3': '挺过过山车',
+	'SPLASH C1 TITLE': "欢迎来到 McSCHMUTZO",
+	'SPLASH C1 BODY': "中奖符号锁定并重转，直到烤架填满。",
+	'SPLASH C2 TITLE': "3大\n美味\n特色",
+	'SPLASH C2 BODY 1': "锁定与重转",
+	'SPLASH C2 BODY 2': "转动奖励转盘",
+	'SPLASH C2 BODY 3': "提升倍数",
 	'SPLASH C3 TITLE': '最高赢奖25,000×',
-	'SPLASH C3 BODY': '终极乐园大奖',
+	'SPLASH C3 BODY': "全城最大的订单",
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: '概述',
@@ -198,4 +198,5 @@ export default {
 	"FS FREE SPINS": "免费旋转",
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "最高可赢",
+	"CONFIRM PURCHASE": "确认购买",
 };

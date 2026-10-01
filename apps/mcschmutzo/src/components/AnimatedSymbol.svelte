@@ -4,6 +4,8 @@
 
 	import { SYMBOL_SIZE, SYMBOL_WIDTH } from '../game/constants';
 	import { drawSauceSquirt, squirtHash, type SquirtGraphics } from '../game/ketchupSquirt';
+	import { drawPaintedDrip } from '../game/paintedDrip';
+	import { getContext } from '../game/context';
 	import type { SymbolPartsConfig } from '../game/symbolParts';
 	import type { SymbolState } from '../game/types';
 
@@ -23,6 +25,7 @@
 		oncomplete?: () => void;
 	};
 	const props: Props = $props();
+	const appContext = getContext();
 
 	// Preserve SymbolSprite's contract: resolve the win-presentation await immediately.
 	onMount(() => props.oncomplete?.());
@@ -38,7 +41,11 @@
 
 	const PERIOD = 1400; // ms per loop cycle (out and back)
 	const RAMP_MS = 700; // ease-in of the loop's amplitude whenever it (re)starts
-	const PERIOD_IDLE = 2600; // slower, softer loop for symbols that are alive at rest (config.idle)
+	const PERIOD_IDLE = 2600;
+	const PULSE_MS = 1900; // one swell + shrink of a pulsing layer
+	const SLAM_MS = 1700; // one wild slam cycle while active (idle uses PERIOD_IDLE)
+	// Slam cycle shared by the layers and the splash droplets: 0 → 0.38 rise, → 0.5 fall, impact at 0.5.
+	const slamPhase = (t: number, idle: boolean) => (t / (idle ? PERIOD_IDLE : SLAM_MS)) % 1; // slower, softer loop for symbols that are alive at rest (config.idle)
 	// Everything the layer math reads is $state so the render tracks the animation reliably.
 	let clock = $state(0); // rAF timestamp
 	let startTime = $state(-1); // when the active loop began (-1 = at rest)
@@ -217,7 +224,7 @@
 			}
 			// Rising smoke/steam: a continuous stream — several puffs at staggered phases each form at
 			// the base, rise + waft + grow, and fade out (bell alpha, so 0 at both ends → no visible
-			// reset). Overlapping copies keep the stream unbroken. At rest, one puff sits at the base.
+			// reset). Overlapping copies keep the stream unbroken. At rest there is no smoke.
 			if (l.rise) {
 				const N = 3;
 				for (let i = 0; i < N; i++) {
@@ -232,7 +239,8 @@
 						width: l.nw * w * grow,
 						height: l.nh * h * grow,
 						rotation: 0,
-						alpha: active ? Math.sin(Math.PI * fr) : i === 0 ? 1 : 0,
+						// No smoke at rest (design ask); when active it fades in with the loop's ease-in ramp.
+						alpha: active ? Math.sin(Math.PI * fr) * ramp : 0,
 					});
 				}
 				continue;
@@ -276,6 +284,70 @@
 					width: l.nw * w * sx,
 					height: l.nh * h * sy,
 					rotation: rotT,
+					alpha: 1,
+				});
+				continue;
+			}
+			// Ketchup slam (wild letters) / the sauce they land in (wild splat).
+			if (active && l.pulse) {
+				// liquid pulse: swell + shrink, height a little behind width (a wobbling puddle)
+				const tt = (clock - startTime) / PULSE_MS;
+				const amp = l.pulse * (idle ? idleAmp : 1) * ramp;
+				const ph = Math.PI * 2 * tt - (l.pulseLag ?? 0);
+				const sx = 1 + amp * Math.sin(ph);
+				const sy = 1 + amp * Math.sin(ph - 0.55);
+				out.push({
+					id: l.key,
+					key: l.key,
+					x: cx + (l.nx - 0.5) * w,
+					y: cy + (l.ny - 0.5) * h,
+					width: l.nw * w * sx,
+					height: l.nh * h * sy,
+					rotation: 0.012 * amp * 10 * Math.sin(ph * 0.5),
+					alpha: 1,
+				});
+				continue;
+			}
+			if (active && (l.slam || l.ripple)) {
+				const f = slamPhase(clock - startTime, idle);
+				const amp = (idle ? idleAmp : 1) * ramp;
+				let oy = 0;
+				let sx = 1;
+				let sy = 1;
+				if (l.slam) {
+					const H = l.slam * h * amp;
+					if (f < 0.38) {
+						oy = -H * Math.sin((Math.PI / 2) * (f / 0.38)); // rising, slowing
+						sy = 1 + 0.05 * amp * (1 - f / 0.38);
+					} else if (f < 0.5) {
+						const q = (f - 0.38) / 0.12;
+						oy = -H * Math.cos((Math.PI / 2) * q); // falling, speeding up
+						sy = 1 + 0.08 * amp * q; // stretched by the speed
+					} else if (f < 0.85) {
+						const u = (f - 0.5) / 0.35;
+						const d = Math.exp(-5.5 * u) * Math.cos(u * Math.PI * 3); // SLAM: squash → rebound
+						sx = 1 + 0.16 * d * amp;
+						sy = 1 - 0.2 * d * amp;
+					}
+				}
+				if (l.ripple) {
+					// liquid: an impact ripple (alternating wide/tall like a jelly) + a slow breathing wobble
+					const u = f >= 0.5 ? (f - 0.5) / 0.5 : -1;
+					const hit = u >= 0 ? Math.exp(-4.2 * u) * Math.sin(u * Math.PI * 3.2) : 0;
+					const pre = f > 0.44 && f < 0.5 ? -0.02 * Math.sin(((f - 0.44) / 0.06) * Math.PI) : 0;
+					const tt = (clock - startTime) / 1000;
+					sx = 1 + (l.ripple * hit + pre) * amp + 0.012 * amp * Math.sin(tt * 2.3);
+					sy = 1 + (-l.ripple * 0.85 * hit + pre) * amp + 0.012 * amp * Math.sin(tt * 2.3 + 1.7);
+				}
+				out.push({
+					id: l.key,
+					key: l.key,
+					x: cx + (l.nx - 0.5) * w,
+					// letters squash onto their BASE (the splat), so the bottom edge stays planted
+					y: cy + (l.ny - 0.5) * h + oy + (l.slam ? (l.nh * h * (1 - sy)) / 2 : 0),
+					width: l.nw * w * sx,
+					height: l.nh * h * sy,
+					rotation: 0,
 					alpha: 1,
 				});
 				continue;
@@ -359,6 +431,27 @@
 		g.rect(cx - SYMBOL_WIDTH / 2 + CELL_INSET, cy - SYMBOL_SIZE / 2 + CELL_INSET, SYMBOL_WIDTH - 2 * CELL_INSET, SYMBOL_SIZE - 2 * CELL_INSET).fill({ color: 0xffffff });
 	};
 
+	// Painted drips riding their layer (wild splat): drawn only while the symbol is winning.
+	const drawLayerDrips = (g: any) => {
+		const cfg = props.config.paintedDrips;
+		const active = running && startTime >= 0 && !!props.winning;
+		if (!cfg || !active) return;
+		const tex = appContext.stateApp.loadedAssets?.[cfg.layer] as Parameters<typeof drawPaintedDrip>[1] | undefined;
+		const L = layers.find((x) => x.key === cfg.layer);
+		if (!tex || !L) return;
+		const map = {
+			ox: cfg.srcW / 2,
+			oy: cfg.srcH / 2,
+			k: 1,
+			kx: L.width / cfg.srcW,
+			ky: L.height / cfg.srcH,
+			tx: L.x,
+			ty: L.y,
+		};
+		const t = clock - startTime;
+		for (const d of cfg.tendrils) drawPaintedDrip(g, tex, d, t, map);
+	};
+
 	// Fizz (cup) + sizzle (sausage) particles — deterministic off the clock, only while active.
 	const drawFx = (g: SquirtGraphics) => {
 		const active = running && startTime >= 0 && !!props.winning;
@@ -388,6 +481,35 @@
 					// pop: a thin ring flashing outward
 					const q = (p - 0.88) / 0.12;
 					g.circle(x, y, r * (1 + 0.9 * q)).stroke({ width: Math.max(1, r * 0.2), color: 0xffffff, alpha: 0.7 * (1 - q) });
+				}
+			}
+		}
+		const sp = props.config.splash;
+		if (sp) {
+			// Each slam throws ~7 ketchup droplets off the splat's edge (mostly up/outward): short gravity
+			// arcs that fall away and fade — deterministic per cycle, so every hit splashes differently.
+			const k = Math.floor(t / SLAM_MS);
+			const u = ((t / SLAM_MS) % 1 - 0.5) / 0.48; // 0 at impact → 1
+			if (u >= 0 && u <= 1) {
+				const N = 7;
+				for (let i = 0; i < N; i++) {
+					const hs = squirtHash(k * 3.3 + i * 7.9);
+					const hs2 = squirtHash(k * 1.9 + i * 4.1 + 0.5);
+					// out of the sides and shoulders (the cell has little room above the splat): −200° … +20°
+					const side = i % 2 === 0 ? -1 : 1;
+					const ang = side < 0 ? Math.PI * (0.92 + 0.22 * hs) : Math.PI * (-0.14 + 0.22 * hs);
+					const ox = cx + Math.cos(ang) * sp.rx * w;
+					const oy = cy + Math.sin(ang) * sp.ry * h;
+					const v = (0.1 + 0.09 * hs2) * h; // short arcs: they stay inside the symbol's own box
+					const x = ox + Math.cos(ang) * v * u - side * 0.02 * h * u;
+					const y = oy + Math.sin(ang) * v * u - 0.12 * h * u + 0.42 * h * u * u; // pop up, then gravity
+					const r = h * (0.026 + 0.022 * hs) * (1 - 0.3 * u);
+					const a = u < 0.08 ? u / 0.08 : 1 - Math.max(0, (u - 0.6) / 0.4);
+					// stretched along its motion right after launch
+					const st = 1 + 0.6 * Math.max(0, 1 - u * 3);
+					g.ellipse(x, y, r * 1.18, r * 1.18 * st).fill({ color: sp.rim, alpha: 0.9 * a });
+					g.ellipse(x, y, r, r * st).fill({ color: sp.color, alpha: a });
+					g.circle(x - r * 0.35, y - r * 0.4 * st, r * 0.32).fill({ color: 0xffffff, alpha: 0.75 * a });
 				}
 			}
 		}
@@ -492,7 +614,10 @@
 	     (inset 9px — the locked cell's light box), so sauce never lands in a neighbouring box. -->
 	<Container>
 		<Graphics isMask draw={drawCellMask} />
-	{#if props.config.fizz || props.config.sizzle}
+	{#if props.config.paintedDrips}
+		<Graphics draw={drawLayerDrips} />
+	{/if}
+	{#if props.config.fizz || props.config.sizzle || props.config.splash}
 		<Graphics draw={drawFx} />
 	{/if}
 	<!-- Sauce squirt (bottles only), in front of the bottle. -->

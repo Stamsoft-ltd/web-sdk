@@ -4,7 +4,6 @@
 	import { MainContainer } from 'components-layout';
 
 	import { getContext } from '../game/context';
-	import TransitionAnimation from './TransitionAnimation.svelte';
 
 	type Props = {
 		onloaded: () => void;
@@ -15,7 +14,7 @@
 	const props: Props = $props();
 	const context = getContext();
 
-	let loadingType = $state<'start' | 'transition'>('start');
+	let loadingType = $state<'start' | 'done'>('start');
 
 	// Press Play "P" loader: a rounded tile whose red fill sweeps left→right across the P, shown as 10
 	// discrete frames (loaderP0…loaderP9) picked by load progress.
@@ -25,12 +24,16 @@
 	const frameIndex = $derived(Math.min(P_FRAMES - 1, Math.round(fillFraction * (P_FRAMES - 1))));
 
 	// When loading finishes, hand a "proceed" callback to the host (Game) so its HTML SplashIntro can
-	// drive the press-to-continue; pressing it runs the same transition → onloaded flow.
+	// drive the press-to-continue. No dark wipe any more: the splash pans its camera across the diner
+	// panorama onto the base game's exact background view and fades out over the game itself.
 	let notified = false;
 	$effect(() => {
 		if (context.stateApp.loaded && !notified) {
 			notified = true;
-			props.oncanproceed?.(() => (loadingType = 'transition'));
+			props.oncanproceed?.(() => {
+				loadingType = 'done';
+				props.onloaded();
+			});
 		}
 	});
 </script>
@@ -52,7 +55,3 @@
 	</MainContainer>
 </FadeContainer>
 
-<!-- transition between the loading screen and the game -->
-<FadeContainer show={loadingType === 'transition'}>
-	<TransitionAnimation oncomplete={props.onloaded} />
-</FadeContainer>

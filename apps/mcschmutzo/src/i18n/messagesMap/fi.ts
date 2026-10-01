@@ -5,7 +5,7 @@ export default {
 	"INFO SCATTER BODY": "BONUS-symboli on Scatter-symboli, ja se voi ilmestyä kaikille rullille. Scatter-symbolien osuminen aktivoi jommankumman kahdesta Ilmaispelit-tilasta.",
 	"INFO SCATTER 3 TITLE": "SCATTERIT - Normaali bonus",
 	"INFO SCATTER 3 BODY": "Kolmen Scatter-symbolin osuminen käynnistää Normaalin bonuksen. Pelaaja siirtyy Normaaliin ilmaispelitilaan. Normaali bonus käyttää vakiomuotoista ilmaispelien kokoonpanoa ja sitä vastaavaa aloittavaa voittokertoimen etenemistä. Mahdollinen ominaisuuteen mukaan tuotu aktiivinen voittokerroin yhdistetään ilmaispelien sisääntulotulokseen soveltuvin osin. Voittokerroin pysyy voimassa koko ilmaispeliominaisuuden ajan ja voi kasvaa pelin aikana. Se ei nollaudu ilmaispelien välillä.",
-	"INFO SCATTER 4 TITLE": "SCATTERIT - Normaali bonus",
+	"INFO SCATTER 4 TITLE": "SCATTERIT - Super-bonus",
 	"INFO SCATTER 4 BODY": "Neljän Scatter-symbolin osuminen käynnistää Super-bonuksen. Super-bonus alkaa tehostetulla aloituskokoonpanolla Normaaliin bonukseen verrattuna. Pelaaja saa Super-ilmaispelien asetukset tälle tilalle määritellyillä enimmäis- / tehostetuilla sisääntuloehdoilla. Voittokerroin pysyy voimassa koko Super-bonuksen ajan ja voi jatkaa kasvamistaan ilmaispelien aikana. Se ei nollaudu ilmaispelien välillä.",
 	"INFO FREEGAMES BODY 1": "Ilmaispelien aikana samat perusvoitto- ja uusintakierrosmekaniikat pysyvät aktiivisina. Aina kun muodostuu kelvollinen voittava yhdistelmä, vastaavat voittavat symbolit lukittuvat automaattisesti ja käynnistävät uusintakierroksen.",
 	"INFO FREEGAMES BODY 2": "Uusintakierroksen aikana lisätyt samat symbolit lukittuvat, jolloin sarja voi jatkua. Ominaisuuden aikana ilmestyvät McSchmutzo-symbolit voivat kasvattaa voittokerrointa. Kertynyt voittokerroin pysyy voimassa koko ilmaispeliominaisuuden ajan.",
@@ -63,14 +63,14 @@ export default {
 	INFO: 'TIEDOT',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': 'TERVETULOA SCHMUTZOON',
-	'SPLASH C1 BODY': 'Kirkkaat valot, villit laitteet ja suuret yllätykset joka nurkan takana.',
-	'SPLASH C2 TITLE': '3\nAinutlaatuista\nBonusta',
-	'SPLASH C2 BODY 1': 'Poimi ankat',
-	'SPLASH C2 BODY 2': 'Ratsasta Wildeillä',
-	'SPLASH C2 BODY 3': 'Selviä vuoristoradasta',
+	'SPLASH C1 TITLE': "TERVETULOA McSCHMUTZOON",
+	'SPLASH C1 BODY': "Voitot lukittuvat ja pyörivät uudelleen, kunnes grilli on täynnä.",
+	'SPLASH C2 TITLE': "3\nHERKULLISTA\nOMINAISUUTTA",
+	'SPLASH C2 BODY 1': "Lukitus ja uudelleenpyöräytys",
+	'SPLASH C2 BODY 2': "Pyöräytä bonuspyörää",
+	'SPLASH C2 BODY 3': "Kasvata kerrointa",
 	'SPLASH C3 TITLE': 'ENIMMÄISVOITTO 25,000×',
-	'SPLASH C3 BODY': 'Puiston Suurin Palkinto',
+	'SPLASH C3 BODY': "KAUPUNGIN SUURIN TILAUS",
 
 	// ── Info / rules popup: section titles ───────────────────────────────────────────────────────
 	OVERVIEW: 'YLEISKATSAUS',
@@ -198,4 +198,5 @@ export default {
 	"FS FREE SPINS": "ILMAISKIERROSTA",
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "VOITA JOPA",
+	"CONFIRM PURCHASE": "VAHVISTA OSTO",
 };
