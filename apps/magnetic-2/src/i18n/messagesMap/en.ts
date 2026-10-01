@@ -115,10 +115,10 @@ export default {
 	// Cluster win
 	'INFO CW 1': 'Magnetic uses cluster wins instead of paylines.',
 	'INFO CW 2':
-		'A win is created when 5 or more matching symbols touch each other horizontally or vertically.',
-	'INFO CW 3': 'Diagonal connections do not count.',
+		'5 or more matching symbols connected horizontally or vertically create a win. Diagonals do not count.',
+	'INFO CW 3': 'Symbols only need to form one connected group, not a straight line.',
 	'INFO CW 4':
-		'Winning symbols do not need to form a straight line. They only need to be connected as one group.',
+		'Winning symbols lock in place while all other positions respin. New matching symbols that join the cluster also lock and trigger another respin. This continues until no new symbols join.',
 	'INFO CW 5': 'Bigger clusters award bigger wins.',
 	// Feature buy
 	'INFO FB SUB':

@@ -41,10 +41,11 @@ export default {
 		'Bedava Dönüşler yeniden tetiklenemez. Bonus turu sırasında gelen Scatter sembolleri ek dönüş kazandırmaz.',
 	'INFO CW 1': 'Magnetic, ödeme çizgileri yerine küme kazançları kullanır.',
 	'INFO CW 2':
-		'Bir kazanç, 5 veya daha fazla eşleşen sembol yatay veya dikey olarak birbirine dokunduğunda oluşur.',
-	'INFO CW 3': 'Çapraz bağlantılar sayılmaz.',
+		'Yatay veya dikey olarak bağlı 5 veya daha fazla eşleşen sembol bir kazanç oluşturur. Çaprazlar sayılmaz.',
+	'INFO CW 3':
+		'Sembollerin düz bir çizgi değil, yalnızca bağlı tek bir grup oluşturması yeterlidir.',
 	'INFO CW 4':
-		'Kazanan sembollerin düz bir çizgi oluşturması gerekmez. Yalnızca tek bir grup olarak bağlı olmaları yeterlidir.',
+		'Kazanan semboller yerlerine kilitlenirken diğer tüm konumlar yeniden çevrilir. Kümeye katılan yeni eşleşen semboller de kilitlenir ve bir yeniden çevrim daha tetikler. Bu, yeni sembol katılmayana kadar devam eder.',
 	'INFO CW 5': 'Daha büyük kümeler daha büyük kazançlar verir.',
 	'INFO FB SUB':
 		'Özellik Satın Alma seçenekleri yalnızca izin verilen yerlerde mevcuttur. Tüm Özellik Satın Alma ve Bonus Satın Alma seçenekleri, seçilen bahsin katı olarak ödenir.',

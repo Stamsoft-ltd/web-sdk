@@ -41,10 +41,10 @@ export default {
 		'Ilmaiskierroksia ei voi laukaista uudelleen. Bonuskierroksen aikana osuvat Scatter-symbolit eivät anna lisäkierroksia.',
 	'INFO CW 1': 'Magnetic käyttää ryhmävoittoja voittolinjojen sijaan.',
 	'INFO CW 2':
-		'Voitto syntyy, kun 5 tai useampi samanlainen symboli koskettaa toisiaan vaaka- tai pystysuunnassa.',
-	'INFO CW 3': 'Vinottaisia yhteyksiä ei lasketa.',
+		'5 tai useampi samanlainen symboli, jotka ovat yhteydessä vaaka- tai pystysuunnassa, muodostavat voiton. Vinottaisia yhteyksiä ei lasketa.',
+	'INFO CW 3': 'Symbolien tarvitsee vain muodostaa yksi yhtenäinen ryhmä, ei suoraa linjaa.',
 	'INFO CW 4':
-		'Voittavien symbolien ei tarvitse muodostaa suoraa linjaa. Niiden täytyy vain olla yhteydessä yhtenä ryhmänä.',
+		'Voittavat symbolit lukittuvat paikoilleen, kun kaikki muut paikat saavat uusintapyöräytyksen. Uudet samanlaiset symbolit, jotka liittyvät klusteriin, lukittuvat myös ja käynnistävät uuden uusintapyöräytyksen. Tämä jatkuu, kunnes uusia symboleita ei enää liity.',
 	'INFO CW 5': 'Suuremmat ryhmät antavat suurempia voittoja.',
 	'INFO FB SUB':
 		'Ominaisuuden osto -vaihtoehdot ovat käytettävissä vain siellä, missä se on sallittua. Kaikki Ominaisuuden osto- ja Bonuksen osto -vaihtoehdot maksetaan valitun panoksen kerrannaisena.',

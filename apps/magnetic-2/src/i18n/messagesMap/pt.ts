@@ -41,10 +41,10 @@ export default {
 		'As Rodadas Grátis não podem ser reativadas. Os Scatters que aparecerem durante uma rodada de bônus não concedem rodadas extras.',
 	'INFO CW 1': 'Magnetic usa ganhos em cluster em vez de linhas de pagamento.',
 	'INFO CW 2':
-		'Um ganho é formado quando 5 ou mais símbolos iguais se tocam na horizontal ou na vertical.',
-	'INFO CW 3': 'Conexões diagonais não contam.',
+		'5 ou mais símbolos iguais conectados na horizontal ou na vertical criam um ganho. Diagonais não contam.',
+	'INFO CW 3': 'Os símbolos só precisam formar um grupo conectado, não uma linha reta.',
 	'INFO CW 4':
-		'Os símbolos vencedores não precisam formar uma linha reta. Basta estarem conectados como um único grupo.',
+		'Os símbolos vencedores ficam travados no lugar enquanto todas as outras posições fazem um respin. Novos símbolos iguais que se juntam ao cluster também são travados e acionam outro respin. Isso continua até que nenhum novo símbolo se junte.',
 	'INFO CW 5': 'Clusters maiores concedem ganhos maiores.',
 	'INFO FB SUB':
 		'As opções de Compra de Recurso estão disponíveis apenas onde permitido. Todas as opções de Compra de Recurso e Compra de Bônus são pagas como um múltiplo da aposta selecionada.',

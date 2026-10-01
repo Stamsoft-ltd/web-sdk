@@ -41,10 +41,10 @@ export default {
 		'Free Spins können nicht erneut ausgelöst werden. Scatter, die während einer Bonusrunde landen, gewähren keine zusätzlichen Spins.',
 	'INFO CW 1': 'Magnetic verwendet Cluster-Gewinne anstelle von Gewinnlinien.',
 	'INFO CW 2':
-		'Ein Gewinn entsteht, wenn sich 5 oder mehr übereinstimmende Symbole horizontal oder vertikal berühren.',
-	'INFO CW 3': 'Diagonale Verbindungen zählen nicht.',
+		'5 oder mehr übereinstimmende Symbole, die horizontal oder vertikal verbunden sind, ergeben einen Gewinn. Diagonalen zählen nicht.',
+	'INFO CW 3': 'Die Symbole müssen nur eine zusammenhängende Gruppe bilden, keine gerade Linie.',
 	'INFO CW 4':
-		'Gewinnsymbole müssen keine gerade Linie bilden. Sie müssen nur als eine Gruppe verbunden sein.',
+		'Gewinnsymbole werden festgehalten, während alle anderen Positionen einen Respin erhalten. Neue passende Symbole, die sich dem Cluster anschließen, werden ebenfalls festgehalten und lösen einen weiteren Respin aus. Dies wird fortgesetzt, bis keine neuen Symbole mehr hinzukommen.',
 	'INFO CW 5': 'Größere Cluster bringen größere Gewinne.',
 	'INFO FB SUB':
 		'Feature-Kauf-Optionen sind nur dort verfügbar, wo dies erlaubt ist. Alle Feature-Kauf- und Bonus-Kauf-Optionen werden als Vielfaches des gewählten Einsatzes bezahlt.',

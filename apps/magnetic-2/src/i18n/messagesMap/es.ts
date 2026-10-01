@@ -41,10 +41,10 @@ export default {
 		'Las Tiradas Gratis no se pueden volver a activar. Los Scatters que aparezcan durante una ronda de bonus no otorgan tiradas adicionales.',
 	'INFO CW 1': 'Magnetic usa ganancias por clúster en lugar de líneas de pago.',
 	'INFO CW 2':
-		'Se forma una ganancia cuando 5 o más símbolos iguales se tocan horizontal o verticalmente.',
-	'INFO CW 3': 'Las conexiones diagonales no cuentan.',
+		'5 o más símbolos iguales conectados horizontal o verticalmente crean una ganancia. Las diagonales no cuentan.',
+	'INFO CW 3': 'Los símbolos solo necesitan formar un grupo conectado, no una línea recta.',
 	'INFO CW 4':
-		'Los símbolos ganadores no necesitan formar una línea recta. Solo deben estar conectados como un único grupo.',
+		'Los símbolos ganadores se bloquean en su lugar mientras todas las demás posiciones hacen un respin. Los nuevos símbolos iguales que se unen al clúster también se bloquean y activan otro respin. Esto continúa hasta que no se unan nuevos símbolos.',
 	'INFO CW 5': 'Los clústeres más grandes otorgan premios mayores.',
 	'INFO FB SUB':
 		'Las opciones de Compra de Función solo están disponibles donde esté permitido. Todas las opciones de Compra de Función y Compra de Bonificación se pagan como un múltiplo de la apuesta seleccionada.',

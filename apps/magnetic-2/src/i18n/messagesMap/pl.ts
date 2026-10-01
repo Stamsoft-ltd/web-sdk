@@ -40,10 +40,10 @@ export default {
 		'Darmowych Spinów nie można ponownie aktywować. Symbole Scatter, które wypadną podczas rundy bonusowej, nie przyznają dodatkowych spinów.',
 	'INFO CW 1': 'Magnetic używa wygranych klastrowych zamiast linii wypłat.',
 	'INFO CW 2':
-		'Wygrana powstaje, gdy 5 lub więcej pasujących symboli styka się ze sobą poziomo lub pionowo.',
-	'INFO CW 3': 'Połączenia po przekątnej nie są liczone.',
+		'5 lub więcej pasujących symboli połączonych poziomo lub pionowo tworzy wygraną. Przekątne nie są liczone.',
+	'INFO CW 3': 'Symbole muszą jedynie tworzyć jedną połączoną grupę, a nie prostą linię.',
 	'INFO CW 4':
-		'Wygrywające symbole nie muszą tworzyć prostej linii. Muszą jedynie być połączone w jedną grupę.',
+		'Wygrywające symbole zostają zablokowane na miejscu, a wszystkie pozostałe pozycje wykonują respin. Nowe pasujące symbole, które dołączą do klastra, również zostają zablokowane i uruchamiają kolejny respin. Trwa to do momentu, gdy żadne nowe symbole nie dołączą.',
 	'INFO CW 5': 'Większe klastry przyznają większe wygrane.',
 	'INFO FB SUB':
 		'Opcje Zakupu Funkcji są dostępne tylko tam, gdzie jest to dozwolone. Wszystkie opcje Zakupu Funkcji i Zakupu Bonusu są opłacane jako wielokrotność wybranego zakładu.',

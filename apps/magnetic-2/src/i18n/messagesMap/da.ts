@@ -43,10 +43,10 @@ export default {
 		'Free Spins kan ikke genudløses. Scatters, der lander under en bonusrunde, giver ikke ekstra spins.',
 	'INFO CW 1': 'Magnetic bruger klyngegevinster i stedet for gevinstlinjer.',
 	'INFO CW 2':
-		'En gevinst opstår, når 5 eller flere matchende symboler rører hinanden vandret eller lodret.',
-	'INFO CW 3': 'Diagonale forbindelser tæller ikke.',
+		'5 eller flere matchende symboler, der er forbundet vandret eller lodret, giver en gevinst. Diagonaler tæller ikke.',
+	'INFO CW 3': 'Symbolerne skal blot danne én forbundet gruppe, ikke en lige linje.',
 	'INFO CW 4':
-		'Vindende symboler behøver ikke at danne en lige linje. De skal blot være forbundet som én gruppe.',
+		'Vindende symboler låses fast, mens alle andre positioner får et respin. Nye matchende symboler, der slutter sig til klyngen, låses også og udløser endnu et respin. Dette fortsætter, indtil ingen nye symboler slutter sig til.',
 	'INFO CW 5': 'Større klynger giver større gevinster.',
 	'INFO FB SUB':
 		'Funktionskøb-muligheder er kun tilgængelige, hvor det er tilladt. Alle Funktionskøb- og Bonuskøb-muligheder betales som et multiplum af den valgte indsats.',

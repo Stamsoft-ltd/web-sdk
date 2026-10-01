@@ -41,10 +41,10 @@ export default {
 		'Les Tours Gratuits ne peuvent pas être redéclenchés. Les Scatters obtenus pendant un tour bonus n’octroient pas de tours supplémentaires.',
 	'INFO CW 1': 'Magnetic utilise des gains en cluster au lieu de lignes de paiement.',
 	'INFO CW 2':
-		'Un gain est formé lorsque 5 symboles identiques ou plus se touchent horizontalement ou verticalement.',
-	'INFO CW 3': 'Les connexions diagonales ne comptent pas.',
+		'5 symboles identiques ou plus reliés horizontalement ou verticalement forment un gain. Les diagonales ne comptent pas.',
+	'INFO CW 3': 'Les symboles doivent seulement former un groupe connecté, pas une ligne droite.',
 	'INFO CW 4':
-		"Les symboles gagnants n'ont pas besoin de former une ligne droite. Ils doivent seulement être reliés en un seul groupe.",
+		"Les symboles gagnants sont verrouillés en place pendant que toutes les autres positions effectuent un respin. Les nouveaux symboles identiques qui rejoignent le cluster sont également verrouillés et déclenchent un nouveau respin. Cela continue jusqu'à ce qu'aucun nouveau symbole ne les rejoigne.",
 	'INFO CW 5': 'Les clusters plus grands rapportent des gains plus importants.',
 	'INFO FB SUB':
 		"Les options d'Achat de Fonction ne sont disponibles que là où elles sont autorisées. Toutes les options d'Achat de Fonction et d'Achat de Bonus sont payées en multiple de la mise sélectionnée.",

@@ -41,10 +41,10 @@ export default {
 		'Free Spin tidak dapat dipicu ulang. Scatter yang muncul selama putaran bonus tidak memberikan spin tambahan.',
 	'INFO CW 1': 'Magnetic menggunakan kemenangan kluster alih-alih garis pembayaran.',
 	'INFO CW 2':
-		'Kemenangan terbentuk ketika 5 atau lebih simbol yang cocok saling bersentuhan secara horizontal atau vertikal.',
-	'INFO CW 3': 'Koneksi diagonal tidak dihitung.',
+		'5 atau lebih simbol yang cocok dan terhubung secara horizontal atau vertikal membentuk kemenangan. Diagonal tidak dihitung.',
+	'INFO CW 3': 'Simbol hanya perlu membentuk satu kelompok yang terhubung, bukan garis lurus.',
 	'INFO CW 4':
-		'Simbol pemenang tidak perlu membentuk garis lurus. Mereka hanya perlu terhubung sebagai satu kelompok.',
+		'Simbol pemenang terkunci di tempatnya sementara semua posisi lainnya melakukan respin. Simbol cocok baru yang bergabung dengan kluster juga terkunci dan memicu respin berikutnya. Ini berlanjut hingga tidak ada simbol baru yang bergabung.',
 	'INFO CW 5': 'Kluster yang lebih besar memberikan kemenangan yang lebih besar.',
 	'INFO FB SUB':
 		'Opsi Beli Fitur hanya tersedia jika diizinkan. Semua opsi Beli Fitur dan Beli Bonus dibayar sebagai kelipatan dari taruhan yang dipilih.',

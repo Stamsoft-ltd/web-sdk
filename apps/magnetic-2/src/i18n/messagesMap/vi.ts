@@ -41,10 +41,10 @@ export default {
 		'Vòng Quay Miễn Phí không thể được kích hoạt lại. Các biểu tượng Scatter xuất hiện trong vòng thưởng không trao thêm lượt quay.',
 	'INFO CW 1': 'Magnetic sử dụng chiến thắng theo cụm thay vì các dòng trả thưởng.',
 	'INFO CW 2':
-		'Một chiến thắng được tạo ra khi 5 biểu tượng giống nhau trở lên chạm nhau theo chiều ngang hoặc chiều dọc.',
-	'INFO CW 3': 'Các kết nối theo đường chéo không được tính.',
+		'5 biểu tượng giống nhau trở lên kết nối theo chiều ngang hoặc chiều dọc tạo thành một chiến thắng. Đường chéo không được tính.',
+	'INFO CW 3': 'Các biểu tượng chỉ cần tạo thành một nhóm kết nối, không cần là một đường thẳng.',
 	'INFO CW 4':
-		'Các biểu tượng thắng không cần tạo thành một đường thẳng. Chúng chỉ cần được kết nối thành một nhóm.',
+		'Các biểu tượng thắng được khóa tại chỗ trong khi tất cả các vị trí khác quay lại. Các biểu tượng giống nhau mới gia nhập cụm cũng được khóa và kích hoạt một lượt quay lại khác. Điều này tiếp diễn cho đến khi không còn biểu tượng mới nào gia nhập.',
 	'INFO CW 5': 'Cụm càng lớn thì thưởng càng lớn.',
 	'INFO FB SUB':
 		'Các tùy chọn Mua Tính Năng chỉ khả dụng ở nơi được cho phép. Tất cả tùy chọn Mua Tính Năng và Mua Thưởng được thanh toán bằng bội số của mức cược đã chọn.',
