@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Container, Graphics, Sprite } from 'pixi-svelte';
 
-	import type { SquirtGraphics } from '../game/ketchupSquirt';
+	import { squirtHash, type SquirtGraphics } from '../game/ketchupSquirt';
 
 	import { getContext } from '../game/context';
 	import { mascotIdle } from '../game/mascotIdle';
@@ -14,8 +14,8 @@
 	// Composition sits on the right, BEHIND the board. The real art is laid out on a shared 358x425
 	// frame (guy on the right, the salt-arm overlay on the left) so both sprites line up; sized +
 	// placed so the head and raised shaker read at the right spot.
-	// Fit the frame between the board and the screen's right edge so his thumbs-up hand (at the frame's
-	// right edge) is never cut: at 0.72·H tall and cx 0.88·W the frame ran ~80px off-screen on 16:9.
+	// Fit the frame between the board and the screen's right edge so his arm (at the frame's right
+	// edge) is never cut: at 0.72·H tall and cx 0.88·W the frame ran ~80px off-screen on 16:9.
 	// The frame may tuck 7% of its width behind the board (just the shaker's tail), and shrinks only
 	// when that space is short; his feet stay at the same height (bottom = 0.96·H).
 	const boardRight = $derived.by(() => {
@@ -31,8 +31,8 @@
 	);
 	const guyHeight = $derived(guyWidth * (425 / 358));
 	const cx = $derived(canvas.width - EDGE - guyWidth / 2);
-	// Stand him so the pot's rim sits just under his thumbs-up hand (≈80% down the frame): anchored to
-	// the screen bottom instead, the rim covered his nametag and the pointing hand.
+	// Stand him so the pot's rim sits ≈80% down the frame: anchored to the screen bottom instead, the
+	// rim covered his nametag.
 	const guyY = $derived(canvas.height * 0.82 - (guyWidth * 0.82 * (848 / 1180)) / 2 + 0.02 * guyHeight - 0.3 * guyHeight);
 	const potWidth = $derived(guyWidth * 0.82);
 	const potHeight = $derived(potWidth * (848 / 1180));
@@ -44,14 +44,21 @@
 	// x=513, so the pupils + lids are the board chef's, rescaled: pupils a touch smaller than the art
 	// (the right one nudged up to clear its lower-lid line), lids sized to each eye opening. The brows
 	// are their own layer (extras) drawn above the lids, so a blink closes UNDER the brow.
-	const specialPupils = [
-		{ nx: 0.4469, ny: 0.2866, nw: 0.0509, nh: 0.0429 },
-		{ nx: 0.5525, ny: 0.272, nw: 0.0638, nh: 0.0538 },
-	];
+	// Look (2026-10): wide round eyes with big pupils at different spots in each socket read goofy /
+	// cross-eyed. Now the lids rest a third of the way down (LID_REST, a sly heavy-lidded look under
+	// his scheming brows), the pupils are smaller, and both sit at the SAME spot in their sockets
+	// (a touch down and toward his left — on the player), so the gaze is one deliberate look.
 	const specialLids = [
 		{ cx: 0.4336, cy: 0.278, w: 0.0627, h: 0.056 },
 		{ cx: 0.5453, cy: 0.2667, w: 0.0701, h: 0.069 },
 	];
+	const LID_REST = 0.32;
+	const GAZE = { x: -0.06, y: 0.16 }; // pupil offset, fractions of each socket's w/h
+	const PUPIL = 0.6; // pupil size, fraction of the socket's smaller side (÷ AnimatedGuy's 0.7)
+	const specialPupils = specialLids.map((l) => {
+		const d = (Math.min(l.w * (358 / 425), l.h) * PUPIL) / 0.7; // frame is 358 wide per 425 tall
+		return { nx: l.cx + GAZE.x * l.w, ny: l.cy + GAZE.y * l.h, nw: d * (425 / 358), nh: d };
+	});
 
 	// Clock: drives both the salt fall (phase) and the chef's idle breathe (elapsed).
 	const COUNT = 90; // salt grains — a dense, fine pour
@@ -161,6 +168,29 @@
 		}),
 	);
 	// Bubbles: a lighter-green dome + a soft highlight each, all in ONE Graphics.
+	// Steam rises from the soup only (it used to drift up across the whole screen): soft puffs leave
+	// the surface ellipse, swell, sway and fade as they climb over the chef.
+	const STEAM_N = 7;
+	const drawSteam = (gfx: SquirtGraphics) => {
+		for (let i = 0; i < STEAM_N; i++) {
+			const life = 3200 + 1800 * squirtHash(i * 3.1);
+			const tt = elapsed + squirtHash(i * 8.7) * life;
+			const k = Math.floor(tt / life);
+			const p = (tt % life) / life;
+			const sx = SOUP_CX + SOUP_RX * 0.8 * (2 * squirtHash(i * 1.9 + k * 4.3) - 1);
+			const x0 = potLeft + sx * potWidth;
+			const y0 = potTop + SOUP_CY * potHeight;
+			const x = x0 + Math.sin(p * 4 + i * 1.7) * potWidth * 0.035 * p;
+			const y = y0 - p * potHeight * (1.1 + 0.5 * squirtHash(i * 5.3 + k));
+			const r = potWidth * (0.035 + 0.075 * p) * (0.8 + 0.4 * squirtHash(i * 2.2));
+			const a = Math.min(1, p / 0.15) * (1 - p) * 0.2;
+			for (let j = 0; j < 3; j++) {
+				const ox = (j - 1) * r * 0.55;
+				const oy = Math.sin(j * 2.1 + p * 3) * r * 0.2;
+				gfx.circle(x + ox, y + oy, r * (0.75 + 0.2 * j)).fill({ color: 0xf2efe8, alpha: a });
+			}
+		}
+	};
 	const drawBubbles = (gfx: SquirtGraphics) => {
 		for (const b of bubbles) {
 			gfx.circle(b.x, b.y, b.d / 2).fill({ color: 0x8fc22a, alpha: b.alpha * 0.85 });
@@ -185,14 +215,12 @@
 		zIndex={0}
 		pupils={specialPupils}
 		lids={specialLids}
+		lidRest={LID_REST}
 		skin={0xef9650}
 		phase={2000}
 		sparkle={{ nx: 0.5, ny: 0.4, size: 0.06, period: 3800, phase: 1200 }}
 		extras={[
-			// Nametag first, so the pointing hand sits over it.
 			{ key: 'specialLabel', nx: 0.5643, ny: 0.5737, nw: 0.1984, nh: 0.1119, px: 0.5, py: 0.13, amp: 0.045, period: 320, phase: 900 },
-			// Pointing hand: breath drift + a random "point-point" about the wrist, like the board chef's.
-			{ key: 'specialHand', ...cropRect(GUY_CROPS.specialHand), ...cropPivot(GUY_CROPS.specialHand, 0.982, 0.7244), gesture: { tip: -1, breath: Math.sin(elapsed / 580) } },
 			{ key: 'specialBrows', ...cropRect(GUY_CROPS.specialBrows), amp: 0 },
 		]}
 	/>
@@ -223,4 +251,6 @@
 	<!-- Simmering bubbles on the soup surface: a lighter-green dome + a soft highlight, swelling and
 	     popping. Above the pot so they read as sitting on the liquid. -->
 	<Graphics zIndex={2.5} draw={drawBubbles} />
+	<!-- Steam off the soup, over the pot and the chef. -->
+	<Graphics zIndex={3} draw={drawSteam} />
 </Container>

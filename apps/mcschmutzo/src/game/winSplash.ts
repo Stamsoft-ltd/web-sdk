@@ -19,6 +19,12 @@ export type SplashSpec = {
 	palette: { edge: number; body: number; shade: number; light: number };
 	/** Outline thickness (W units); the big-win card's default is a thin 0.0034. */
 	edgeW?: number;
+	/**
+	 * The reel symbols' sauce look (the pot's drips, the bottles): outline in a dark tone of the sauce,
+	 * a wider shade band down the lower-right, NO lit core, and gloss in the pale `light` tint instead
+	 * of white. Used by the logo splats and the splash cards' sauce; the big-win card keeps its look.
+	 */
+	item?: boolean;
 };
 
 // Mustard (left of the banner) — taller, one long tongue thrown up over the banner's top corner.
@@ -221,8 +227,15 @@ export function splashShapes(spec: SplashSpec, side: 1 | -1, ms: number, seed = 
 	pass(0x000000, E, 0.22, 0.002, 0.004); // contact shadow
 	pass(P.edge, E);
 	pass(P.shade, 0);
-	pass(P.body, -0.0045, 1, -0.0015, -0.002);
-	pass(P.light, -0.012, 0.4, -0.004, -0.005);
+	if (spec.item) {
+		// body pulled further in and up-left: the shade shows as a band down the lower-right
+		pass(P.body, -0.006, 1, -0.0045, -0.0035);
+	} else {
+		pass(P.body, -0.0045, 1, -0.0015, -0.002);
+		pass(P.light, -0.012, 0.4, -0.004, -0.005);
+	}
+	const GLOSS = spec.item ? P.light : 0xffffff;
+	const GA = spec.item ? 0.95 : 0.75;
 	// gloss: a streak along each tongue near its head, a dot on each drop, a sheen on the core
 	for (const { t, g, dir } of tongues) {
 		if (g < 0.5) continue;
@@ -231,12 +244,12 @@ export function splashShapes(spec: SplashSpec, side: 1 | -1, ms: number, seed = 
 		const nx = Math.sin(dir);
 		const ny = -Math.cos(dir);
 		const up = ny < 0 ? 1 : -1; // put the streak on the upper side of the tongue
-		out.push({ kind: 'poly', pts: rotEllipse(tg.hx - Math.cos(dir) * r * 0.5 + nx * up * r * 0.45, tg.hy - Math.sin(dir) * r * 0.5 + ny * up * r * 0.45, r * 0.62, r * 0.2, dir), color: 0xffffff, alpha: 0.75 });
+		out.push({ kind: 'poly', pts: rotEllipse(tg.hx - Math.cos(dir) * r * 0.5 + nx * up * r * 0.45, tg.hy - Math.sin(dir) * r * 0.5 + ny * up * r * 0.45, r * 0.62, r * 0.2, dir), color: GLOSS, alpha: GA });
 	}
-	out.push({ kind: 'poly', pts: rotEllipse(ox - spec.core.rx * 0.3 * coreS, oy - spec.core.ry * 0.5 * coreS, spec.core.rx * 0.38 * coreS, spec.core.ry * 0.13 * coreS, -0.15 * side), color: 0xffffff, alpha: 0.6 });
+	out.push({ kind: 'poly', pts: rotEllipse(ox - spec.core.rx * 0.3 * coreS, oy - spec.core.ry * 0.5 * coreS, spec.core.rx * 0.38 * coreS, spec.core.ry * 0.13 * coreS, -0.15 * side), color: GLOSS, alpha: GA * 0.8 });
 	for (const d of drops) {
 		if (d.alpha <= 0) continue;
-		out.push({ kind: 'circle', x: d.x - d.r * 0.35, y: d.y - d.r * 0.35, r: d.r * 0.3, color: 0xffffff, alpha: 0.8 * d.alpha });
+		out.push({ kind: 'circle', x: d.x - d.r * 0.35, y: d.y - d.r * 0.35, r: d.r * 0.3, color: GLOSS, alpha: GA * d.alpha });
 	}
 	return out;
 }

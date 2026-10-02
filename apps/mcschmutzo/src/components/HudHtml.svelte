@@ -14,18 +14,11 @@
 	const btnRoundBg = ap('/assets/components/navbar/btn_bg_round.webp'); // wooden round — utility buttons
 	const btnSpinBg = ap('/assets/mcschmutzo/ui-icons/turn-button-bg.svg'); // hi-res red turn disc (bg)
 	const btnSpinHoverBg = btnSpinBg;
-	// Buy-bonus plaque (static raster, its sauce tendril tips cut out) + the live drips drawn over it by
-	// CardDrip from buy-bonus-drips.webp — the same stretch → pinch → falling drop as the turn disc.
-	// Art = the original 179×71 svg at 4× (716×284); cx / tip / bulb measured on the drips layer.
-	const btnWideBg = ap('/assets/mcschmutzo/buy-bonus-button.webp');
-	const buyDrips = ap('/assets/mcschmutzo/buy-bonus-drips.webp');
-	const BUY_DRIPS = [
-		{ cx: 71.5, tip: 102, bulb: 16, reach: 9, run: 120, period: 5400, phase: 1700 }, // ketchup, left lobe
-		{ cx: 108, tip: 106, bulb: 16, reach: 10, run: 120, period: 4900, phase: 0 }, // ketchup
-		{ cx: 158.5, tip: 87, bulb: 16, reach: 9, run: 130, period: 6200, phase: 3300 }, // ketchup
-		{ cx: 567, tip: 272, bulb: 16, reach: 10, run: 110, period: 5100, phase: 2500 }, // mustard
-		{ cx: 622, tip: 276, bulb: 16, reach: 10, run: 110, period: 5800, phase: 4400 }, // mustard
-	];
+	// Buy-bonus plaque: the bare plaque (sauce painted out — buy-bonus-plaque.webp) with its ketchup and
+	// mustard drawn live over it in code (SauceCorner, lib/splashSauce buySauce: random spots on its
+	// frame each game) in the same style as the logo and the splash cards; each drip stretches, pinches
+	// and drops. Art = 716×284.
+	const btnWideBg = ap('/assets/mcschmutzo/buy-bonus-plaque.webp');
 	const btnWideHoverBg = btnWideBg;
 	// Portrait/mobile pads (Figma 2792-4133)
 	// Mobile-landscape HUD art (Figma 2682-3639)
@@ -35,16 +28,9 @@
 	const lsNavBox = ap('/assets/components/symbols/landscape/nav_bg.svg'); // flat dark vertical rail box
 	const lsBonus = ap('/assets/components/symbols/landscape/bonus.svg'); // red vertical BONUS button (text baked in)
 	const lsTurn = ap('/assets/mcschmutzo/ui-icons/turn-button-bg.svg'); // hi-res red turn disc (bg)
-	// The turn disc's three mustard tendrils, drawn live by CardDrip (free-fall drops) from the painted
-	// sauce itself; their tips are cut from turn-button-bg.svg. Art = the svg's 1402×1096 viewBox at
-	// half scale (701×548). The ends in turn-drips.webp are rebuilt from a clean tube row (the original
-	// cut-outs carried baked-in ring pixels, which read as a brown drop off the rim).
-	const turnDrips = ap('/assets/mcschmutzo/ui-icons/turn-drips.webp');
-	const TURN_DRIPS = [
-		{ cx: 109, tip: 372, bulb: 12, reach: 10, run: 150, period: 5200, phase: 0 }, // left
-		{ cx: 392, tip: 527, bulb: 17, reach: 9, run: 140, period: 6100, phase: 2300 }, // bottom
-		{ cx: 564, tip: 373, bulb: 13, reach: 10, run: 150, period: 5600, phase: 4100 }, // right
-	];
+	// The turn disc's ketchup + mustard: drawn live over the bare disc by SauceCorner, same style as the
+	// logo / cards / buy button, at random spots on the rim each game (lib/splashSauce turnSauce). Art =
+	// the svg's 1402×1096 viewBox at half scale (701×548); the canvas runs to 700 so a drop can leave the rim.
 	const navPadMobile = ap('/assets/components/navbar/nav_pad_mobile.webp'); // control-bar pill
 	const betPadMobile = ap('/assets/components/navbar/bet_pad_mobile.webp'); // − value + pill
 	const buyBonusMobile = btnWideBg;
@@ -102,7 +88,8 @@
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { fitLabel } from '../lib/fitLabel';
 	import { mcschmutzoStakeDerived } from '../state/mcschmutzoStake.svelte';
-	import CardDrip from './CardDrip.svelte';
+	import SauceCorner from './SauceCorner.svelte';
+	import { buySauce, turnSauce } from '../lib/splashSauce';
 	import {
 		isReplayMode,
 		prepareReplayStart,
@@ -897,7 +884,8 @@
 {#snippet buyDripsEl()}
 	<span class="buy-drips" aria-hidden="true">
 		<span class="buy-drips__canvas">
-			<CardDrip src={buyDrips} artW={716} artH={284} tendrils={BUY_DRIPS} half={16} free />
+			<SauceCorner spec={buySauce.ketchup} artW={716} artH={440} free outline={6} band={[-5, -3]} />
+			<SauceCorner spec={buySauce.mustard} artW={716} artH={440} free outline={6} band={[-5, -3]} />
 		</span>
 	</span>
 {/snippet}
@@ -908,7 +896,8 @@
 	<span class="turn-drips" aria-hidden="true">
 		<span class="turn-drips__art">
 			<span class="turn-drips__canvas">
-				<CardDrip src={turnDrips} artW={701} artH={548} tendrils={TURN_DRIPS} half={14} free />
+				<SauceCorner spec={turnSauce.ketchup} artW={701} artH={700} free outline={7} band={[-5, -3]} />
+				<SauceCorner spec={turnSauce.mustard} artW={701} artH={700} free outline={7} band={[-5, -3]} />
 			</span>
 		</span>
 	</span>

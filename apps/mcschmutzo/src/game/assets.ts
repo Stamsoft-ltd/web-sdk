@@ -149,21 +149,17 @@ export default {
 	specialBase: {
 		// Real designer chef WITHOUT the salting arm (body fully drawn underneath) on the shared
 		// 358x425 frame — the arm overlays and flicks with nothing duplicated behind it, and the
-		// eyes are the intact art (animated pupils overlay the baked ones slightly larger).
+		// eyes are the intact art (animated pupils overlay the baked ones slightly larger). Since v12 his
+		// other arm is the board chef's relaxed, hanging one (mascotBase, aligned + blended in) instead
+		// of the outstretched pointing hand.
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_base_v11r_c@0.798x.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/special_base_v12_c@0.798x.webp', import.meta.url).href,
 		preload: true,
 	},
 	specialArm: {
 		// The salt-shaker forearm on the same frame, overlaid + flicked about the shoulder.
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/guys/special_arm_v3_c@0.798x.webp', import.meta.url).href,
-		preload: true,
-	},
-	specialHand: {
-		// His pointing hand, cut from the base (patched beneath), gesturing about the wrist.
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_hand_v1_c@0.798x.webp', import.meta.url).href,
 		preload: true,
 	},
 	specialBrows: {
@@ -196,7 +192,7 @@ export default {
 	},
 	mcH3: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/H3.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/H3_v2.webp', import.meta.url).href,
 	},
 	mcH4: {
 		type: 'sprite',
@@ -316,7 +312,7 @@ export default {
 	// Sausage (H3) = banger + rising smoke.
 	sausageBody: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/parts/sausage/body.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/parts/sausage/body_v2.webp', import.meta.url).href,
 	},
 	sausageSmoke: {
 		type: 'sprite',

@@ -18,7 +18,6 @@
 		mascotLabel: { x0: 679, y0: 1022, x1: 937, y1: 1161, ...MASCOT },
 		specialBase: { x0: 511, y0: 0, x1: 1611, y1: 1912, ...SPECIAL },
 		specialArm: { x0: 108, y0: 480, x1: 735, y1: 1285, ...SPECIAL },
-		specialHand: { x0: 1024, y0: 1043, x1: 1608, y1: 1538, ...SPECIAL },
 		specialBrows: { x0: 622, y0: 389, x1: 981, y1: 527, ...SPECIAL },
 	} satisfies Record<string, GuyCrop>;
 	export type FrameRect = { nx: number; ny: number; nw: number; nh: number };
@@ -81,6 +80,9 @@
 		zIndex?: number;
 		pupils: Pupil[];
 		lids?: Lid[];
+		/** How far the lids rest lowered (0..1 of the eye) between blinks — a heavy-lidded, sly look
+		 * instead of wide round "bug" eyes; a blink closes from there. */
+		lidRest?: number;
 		skin?: number;
 		extras?: Extra[];
 		sparkle?: Sparkle;
@@ -148,6 +150,8 @@
 	const z = $derived(props.zIndex ?? 0);
 	const baseRect = $derived(props.baseRect ?? FULL_FRAME);
 	const skin = $derived(props.skin ?? 0xf6ac67);
+	const lidRest = $derived(props.lidRest ?? 0);
+	const lidDrop = $derived(lidRest + (1 - lidRest) * blink);
 
 	const extraTilt = (e: Extra) => (e.amp ?? 0) * Math.sin((clock + (e.phase ?? 0)) / (e.period ?? 2600));
 
@@ -210,7 +214,7 @@
 			y={top + (l.cy - l.h / 2) * props.height}
 			anchor={{ x: 0.5, y: 0 }}
 			width={l.w * props.width}
-			height={blink * l.h * props.height}
+			height={lidDrop * l.h * props.height}
 			borderRadius={Math.min(l.w * props.width, l.h * props.height) * 0.5}
 			backgroundColor={skin}
 			zIndex={z}
@@ -219,13 +223,13 @@
 		     closed eye (lids meeting) rather than a flat skin patch. -->
 		<Rectangle
 			x={left + l.cx * props.width}
-			y={top + (l.cy - l.h / 2 + blink * l.h) * props.height}
+			y={top + (l.cy - l.h / 2 + lidDrop * l.h) * props.height}
 			anchor={0.5}
-			width={l.w * props.width * 0.82}
-			height={Math.max(2, l.h * props.height * 0.07)}
+			width={l.w * props.width * (lidRest > 0 ? 0.9 : 0.82)}
+			height={Math.max(2, l.h * props.height * (lidRest > 0 ? 0.1 : 0.07))}
 			borderRadius={l.h * props.height * 0.05}
-			backgroundColor={0x3a2416}
-			backgroundAlpha={blink * 0.7}
+			backgroundColor={lidRest > 0 ? 0x1a0f0a : 0x3a2416}
+			backgroundAlpha={lidRest > 0 ? 0.85 : blink * 0.7}
 			zIndex={z}
 		/>
 	{/each}

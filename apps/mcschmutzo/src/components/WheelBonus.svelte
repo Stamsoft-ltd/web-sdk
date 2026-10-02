@@ -315,15 +315,34 @@
 		};
 	});
 
+	// Space during the spin fast-forwards it: both rings' running transitions are sped up so they land
+	// within FAST_FORWARD_MS (the real end values, so transitionend → settle runs as usual and the
+	// spatula still clacks over the last pegs, just quicker).
+	const FAST_FORWARD_MS = 380;
+	let innerEl: HTMLDivElement | undefined = $state();
+	const fastForward = () => {
+		for (const el of [outerEl, innerEl]) {
+			for (const a of el?.getAnimations() ?? []) {
+				const t = a.effect?.getComputedTiming();
+				const end = Number(t?.endTime ?? 0);
+				const now = Number(a.currentTime ?? 0);
+				const left = end - now;
+				if (left > FAST_FORWARD_MS) a.updatePlaybackRate(left / FAST_FORWARD_MS);
+			}
+		}
+	};
+
 	// Space presses SPIN too (captured, so the game's own space-to-spin never sees it while the wheel
-	// is up).
+	// is up), and a second press while it spins fast-forwards it.
 	$effect(() => {
 		if (!wheel || stateConfig.jurisdiction?.disabledSpacebar) return;
 		const onKey = (e: KeyboardEvent) => {
 			if (e.code !== 'Space' && e.key !== ' ') return;
 			e.preventDefault();
 			e.stopImmediatePropagation();
-			if (!e.repeat) onSpin();
+			if (e.repeat) return;
+			if (spinning) fastForward();
+			else onSpin();
 		};
 		window.addEventListener('keydown', onKey, { capture: true });
 		return () => window.removeEventListener('keydown', onKey, { capture: true });
@@ -388,6 +407,7 @@
 			<div
 				class="wb-ring"
 				style={ringStyle(rotInner, INNER_MS, INNER, INNER_DELAY_MS)}
+				bind:this={innerEl}
 				ontransitionend={onSettled('inner')}
 			>
 				<img src={ringInnerArt} alt="" draggable="false" />

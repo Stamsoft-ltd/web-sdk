@@ -11,13 +11,28 @@
 	const props: Props = $props();
 
 	type Placed = { spec: SplashSpec; side: 1 | -1; x: number; y: number; k: number; delay: number; seed: number };
+	// Drawn in the logo's sauce style (game/logoSplash SPLAT: the reel symbols' look — thick dark
+	// outline, flat body, pale gloss), not the big-win card's softer 3D one. Outline scaled to each
+	// spec's core so it reads as thick as the logo's.
+	const RED: SplashSpec = {
+		...SPLASH_RED,
+		palette: { edge: 0x5a0d07, body: 0xe2271a, shade: 0xa8150b, light: 0xffb3a3 },
+		edgeW: 0.0085,
+		item: true,
+	};
+	const YELLOW: SplashSpec = {
+		...SPLASH_YELLOW,
+		palette: { edge: 0x6b3d05, body: 0xf4aa1e, shade: 0xc27c0a, light: 0xffe7a8 },
+		edgeW: 0.008,
+		item: true,
+	};
 	// y is from the plaque TOP (stage top = 0), so it suits both plaque heights.
 	const SPLASHES: Placed[] = [
 		// under pair first (drawn beneath the top pair)
-		{ spec: SPLASH_RED, side: -1, x: -0.43, y: 0.34, k: 0.7, delay: 110, seed: 2.1 },
-		{ spec: SPLASH_YELLOW, side: 1, x: 0.43, y: 0.3, k: 0.7, delay: 150, seed: 3.4 },
-		{ spec: SPLASH_YELLOW, side: -1, x: -0.38, y: 0.1, k: 1, delay: 0, seed: 0 },
-		{ spec: SPLASH_RED, side: 1, x: 0.38, y: 0.08, k: 1, delay: 40, seed: 1.2 },
+		{ spec: RED, side: -1, x: -0.43, y: 0.34, k: 0.7, delay: 110, seed: 2.1 },
+		{ spec: YELLOW, side: 1, x: 0.43, y: 0.3, k: 0.7, delay: 150, seed: 3.4 },
+		{ spec: YELLOW, side: -1, x: -0.38, y: 0.1, k: 1, delay: 0, seed: 0 },
+		{ spec: RED, side: 1, x: 0.38, y: 0.08, k: 1, delay: 40, seed: 1.2 },
 	];
 	// winSplash specs carry the big-win card's origin; here each is drawn around its own spot.
 	const atOrigin = SPLASHES.map((s) => ({ ...s, spec: { ...s.spec, ox: 0, oy: 0 } }));

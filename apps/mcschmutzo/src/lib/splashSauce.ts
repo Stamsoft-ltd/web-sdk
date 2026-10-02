@@ -6,7 +6,17 @@
 // starts exactly at the wood edge (the painted drips were each placed differently).
 // Tendrils = the two drips per card that animate (centre x, tip y, width).
 export type SauceTendril = { cx: number; tip: number; w: number; reach: number; run: number; period: number; phase: number };
-export type SauceSpec = { body: [number, number, number]; poly: number[]; tendrils: SauceTendril[] };
+// `more` = extra closed outlines of the same sauce; `discs` = [x, y, r] circles unioned into the blob
+// (a generated shape — see makeTurnSauce).
+export type SauceSpec = {
+	body: [number, number, number];
+	poly: number[];
+	tendrils: SauceTendril[];
+	more?: number[][];
+	discs?: [number, number, number][];
+	/** extra shine capsules [x, y, rx, ry, rotation] (generated puddles) */
+	gloss?: [number, number, number, number, number][];
+};
 
 export const SAUCE: Record<'red' | 'yellow' | 'green', SauceSpec> = {
 	red: {
@@ -82,3 +92,216 @@ export const SAUCE: Record<'red' | 'yellow' | 'green', SauceSpec> = {
 		],
 	},
 };
+
+// Randomly placed sauce (the spin disc + the BONUS plaque): laid out afresh each time the game loads.
+// A piece is a puddle of discs along a RIM (a closed path through the art, in art px, walked by
+// arc length) with one or two drips hanging straight down from its lowest point(s). Rendered by
+// SauceCorner (`discs` + `tendrils`).
+type Disc = [number, number, number];
+type Gloss = [number, number, number, number, number];
+type Piece = { discs: Disc[]; tendrils: SauceTendril[]; gloss: Gloss[] };
+type Rim = {
+	/** total length (art px) */
+	len: number;
+	/** the point `s` px along the rim */
+	at: (s: number) => [number, number];
+	/** how far a drip from (x, y) may run (0 = no drip there) */
+	run: (x: number, y: number, rnd: () => number) => number;
+	/** widest drip (art px) */
+	maxDrip: number;
+	/** where a piece may be centred (default: anywhere) */
+	ok?: (x: number, y: number) => boolean;
+};
+const rimPiece = (rim: Rim, s0: number, span: number, th: number, rnd: () => number): Piece => {
+	// A puddle, not a tube: one off-centre pool (where it was squeezed out) tapering to thin smears
+	// either side, with a couple of lumps — and it bulges OUTWARD as it thickens, spilling over the
+	// rim's outer edge the way real sauce slumps off a ledge.
+	const pool = 0.3 + 0.4 * rnd();
+	const bumps = [0, 1].map(() => ({ c: rnd(), amp: (rnd() - 0.3) * 0.5 }));
+	const discs: Disc[] = [];
+	const n = Math.max(8, Math.round(span / 2.4));
+	for (let i = 0; i <= n; i++) {
+		const f = i / n;
+		const bell = Math.exp(-(((f - pool) / 0.26) ** 2));
+		const w = th * (0.28 + 0.72 * bell) * (1 + bumps.reduce((v, b) => v + b.amp * Math.exp(-(((f - b.c) / 0.12) ** 2)), 0));
+		const s = s0 + span * (f - 0.5);
+		const [x, y] = rim.at(s);
+		const [xa, ya] = rim.at(s - 1);
+		const [xb, yb] = rim.at(s + 1);
+		const tl = Math.hypot(xb - xa, yb - ya) || 1;
+		// outward normal (both rims run clockwise on screen)
+		const out = (w - th * 0.28) * 0.45;
+		discs.push([x + ((yb - ya) / tl) * out, y - ((xb - xa) / tl) * out, w]);
+	}
+	// shine: a capsule along the pool's top, tilted with the rim, inset toward the upper side
+	const gloss: Gloss[] = [];
+	{
+		const k = Math.round(pool * n);
+		const [x, y, w] = discs[k];
+		const [xa, ya] = discs[Math.max(0, k - 1)];
+		const [xb, yb] = discs[Math.min(n, k + 1)];
+		let rot = Math.atan2(yb - ya, xb - xa);
+		if (rot > Math.PI / 2) rot -= Math.PI;
+		if (rot < -Math.PI / 2) rot += Math.PI;
+		gloss.push([x - w * 0.2, y - w * 0.42, w * 0.42, w * 0.13, rot]);
+		const k2 = Math.round(((pool + (rnd() < 0.5 ? -0.28 : 0.28)) * n));
+		if (k2 > 0 && k2 < n) {
+			const [x2, y2, w2] = discs[k2];
+			gloss.push([x2 - w2 * 0.15, y2 - w2 * 0.4, w2 * 0.16, w2 * 0.12, rot]);
+		}
+	}
+	// drips: from the lowest point of the run, and maybe a second one further along it
+	const lowest = discs.reduce((m, d, i) => (d[1] + d[2] > discs[m][1] + discs[m][2] ? i : m), 0);
+	const at = [lowest];
+	if (rnd() < 0.55) {
+		const j = lowest + Math.round((rnd() < 0.5 ? -1 : 1) * n * (0.3 + 0.15 * rnd()));
+		if (j > 1 && j < n - 1) at.push(j);
+	}
+	const tendrils: SauceTendril[] = [];
+	for (const i of at) {
+		const [x, y, r] = discs[i];
+		const run = rim.run(x, y, rnd);
+		if (run <= 0) continue;
+		const w = Math.min(rim.maxDrip, Math.max(rim.maxDrip * 0.6, r * (1.2 + 0.35 * rnd())));
+		// the drip's round end must sit below everything of the run within its column (its stub is
+		// redrawn from there down, so nothing of the run may be cut)
+		const half = w / 2 + 14;
+		const floor = discs.filter((d) => Math.abs(d[0] - x) < half + d[2]).reduce((m, d) => Math.max(m, d[1] + d[2]), y + r);
+		const tip = Math.max(y + r + 6 + rnd() * 26, floor + w / 2 + 4);
+		for (let yy = y; yy < tip - w / 2; yy += 2) discs.push([x, yy, w / 2]);
+		tendrils.push({
+			cx: Math.round(x * 10) / 10,
+			tip: Math.round(tip * 10) / 10,
+			w: Math.round(w * 10) / 10,
+			reach: 8 + 3 * rnd(),
+			run,
+			period: 5000 + 2600 * rnd(),
+			phase: 7600 * rnd(),
+		});
+	}
+	return { discs, tendrils, gloss };
+};
+type SauceLayout = {
+	ketchup: { span: [number, number]; th: [number, number] };
+	mustard: { count: [number, number]; span: [number, number]; th: [number, number] };
+	/** clear rim between pieces (art px) */
+	gap: number;
+};
+const layOut = (rim: Rim, L: SauceLayout, rnd: () => number): { ketchup: SauceSpec; mustard: SauceSpec } => {
+	const between = (r: [number, number]) => r[0] + (r[1] - r[0]) * rnd();
+	const taken: [number, number][] = [];
+	const place = (span: number) => {
+		for (let tries = 0; tries < 60; tries++) {
+			const c = rnd() * rim.len;
+			if (rim.ok && !rim.ok(...rim.at(c))) continue;
+			const clear = taken.every(([b, w]) => {
+				const d = Math.abs(((c - b + rim.len * 1.5) % rim.len) - rim.len / 2);
+				return d > (span + w) / 2 + L.gap;
+			});
+			if (clear) {
+				taken.push([c, span]);
+				return c;
+			}
+		}
+		return null;
+	};
+	const kSpan = between(L.ketchup.span);
+	const k = rimPiece(rim, place(kSpan) ?? 0, kSpan, between(L.ketchup.th), rnd);
+	const mustard: Piece = { discs: [], tendrils: [], gloss: [] };
+	const count = Math.round(between(L.mustard.count));
+	for (let i = 0; i < count; i++) {
+		const span = between(L.mustard.span);
+		const c = place(span);
+		if (c === null) continue;
+		const p = rimPiece(rim, c, span, between(L.mustard.th), rnd);
+		mustard.discs.push(...p.discs);
+		mustard.tendrils.push(...p.tendrils);
+		mustard.gloss.push(...p.gloss);
+	}
+	return {
+		ketchup: { body: [226, 39, 26], poly: [], discs: k.discs, tendrils: k.tendrils, gloss: k.gloss },
+		mustard: { body: [244, 170, 30], poly: [], discs: mustard.discs, tendrils: mustard.tendrils, gloss: mustard.gloss },
+	};
+};
+
+// The spin disc: its rim in the disc art's 701×548 px space (ui-icons/turn-button-bg.svg at half
+// scale; the bare disc has the full ring of rivets). Over the button face a drop only runs a little
+// way (it reads as sliding on the button); off the rim it falls further.
+const DISC = { x: 336.3, y: 268, rim: 228, face: 190 };
+const DISC_RIM: Rim = {
+	len: 2 * Math.PI * DISC.rim,
+	at: (s) => [DISC.x + DISC.rim * Math.cos(s / DISC.rim), DISC.y + DISC.rim * Math.sin(s / DISC.rim)],
+	run: (x, y, rnd) => (Math.abs(x - DISC.x) < DISC.face && y < DISC.y ? 60 : 130 + 30 * rnd()),
+	maxDrip: 28,
+};
+/** A fresh random spin-disc layout: { ketchup, mustard } specs for SauceCorner. */
+export const makeTurnSauce = (rnd: () => number = Math.random) =>
+	layOut(
+		DISC_RIM,
+		{
+			ketchup: { span: [95, 160], th: [20, 25] },
+			mustard: { count: [1.5, 3.4], span: [70, 135], th: [18, 23] },
+			gap: 104,
+		},
+		rnd,
+	);
+/** This game's layout (module scope: the same for every spin-button layout until the next load). */
+export const turnSauce = makeTurnSauce();
+
+// The BONUS plaque (buy-bonus-plaque.webp, 716×284, drawn in a 716×440 box so drips can leave its
+// bottom): the rim is the centre line of its gold frame band. A drop on the top band runs only a
+// short way down the red face, and never over the BONUS label in the middle.
+const PLAQUE = { x0: 21, y0: 48, x1: 686, y1: 246, r: 26 };
+const PLAQUE_RIM: Rim = (() => {
+	const { x0, y0, x1, y1, r } = PLAQUE;
+	const W = x1 - x0 - 2 * r;
+	const H = y1 - y0 - 2 * r;
+	const q = (Math.PI * r) / 2;
+	// clockwise from the top-left corner's end: top, TR arc, right, BR arc, bottom, BL arc, left, TL arc
+	const segs: [number, (u: number) => [number, number]][] = [
+		[W, (u) => [x0 + r + u, y0]],
+		[q, (u) => arc(x1 - r, y0 + r, -Math.PI / 2 + u / r)],
+		[H, (u) => [x1, y0 + r + u]],
+		[q, (u) => arc(x1 - r, y1 - r, u / r)],
+		[W, (u) => [x1 - r - u, y1]],
+		[q, (u) => arc(x0 + r, y1 - r, Math.PI / 2 + u / r)],
+		[H, (u) => [x0, y1 - r - u]],
+		[q, (u) => arc(x0 + r, y0 + r, Math.PI + u / r)],
+	];
+	function arc(cx: number, cy: number, a: number): [number, number] {
+		return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+	}
+	const len = segs.reduce((v, [l]) => v + l, 0);
+	return {
+		len,
+		at: (s) => {
+			let u = ((s % len) + len) % len;
+			for (const [l, f] of segs) {
+				if (u <= l) return f(u);
+				u -= l;
+			}
+			return segs[0][1](0);
+		},
+		run: (x, y, rnd) => {
+			if (y > y0 + r) return 60 + 40 * rnd(); // sides / bottom: off the plaque
+			return x > 215 && x < 500 ? 0 : 26;
+		},
+		maxDrip: 22,
+		// On the top or bottom band (corners included) — a run down a side edge read as a sausage —
+		// and not across the top middle, where it couldn't drip (the label).
+		ok: (x, y) => (y < y0 + r + 6 && (x < 190 || x > 525)) || y > y1 - r - 6,
+	};
+})();
+/** A fresh random BONUS-plaque layout: { ketchup, mustard } specs for SauceCorner. */
+export const makeBuySauce = (rnd: () => number = Math.random) =>
+	layOut(
+		PLAQUE_RIM,
+		{
+			ketchup: { span: [80, 130], th: [20, 25] },
+			mustard: { count: [1, 2.4], span: [70, 115], th: [18, 23] },
+			gap: 70,
+		},
+		rnd,
+	);
+/** This game's plaque layout (module scope, like turnSauce). */
+export const buySauce = makeBuySauce();

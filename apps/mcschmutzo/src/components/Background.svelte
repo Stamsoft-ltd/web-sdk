@@ -73,7 +73,8 @@
 	// dust swirling on a slow, never-repeating current, catching the light as it drifts under the
 	// hanging lamps. Every ~8s a DRAFT (a door swinging) sweeps the dust sideways and bends the steam,
 	// then the air settles. Deterministic off the clock; drawn behind the board.
-	const showKitchenAir = $derived(showArt && isFreegame);
+	// (off: the steam now rises from the chef's soup only — SpecialMascot drawSteam)
+	const showKitchenAir = false;
 	const MOTES = 72;
 	const PUFFS = 9;
 	const drawKitchenAir = (g: SquirtGraphics) => {

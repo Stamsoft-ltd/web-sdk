@@ -30,8 +30,19 @@
 	//
 	// Drawn in the card art's 470x690 px space (the canvas covers the card box).
 	// frameR = corner radius of the card frame's outer edge (art px; the three frames are identical).
-	type Props = { spec: SauceSpec; artW?: number; artH?: number; frameR?: number };
-	const { spec, artW = 470, artH = 690, frameR = 54 }: Props = $props();
+	// free = sauce that is NOT poured over a card's top-left corner (the HUD buttons): no frame clip /
+	// edge snapping / edge-hugging drips / corner shine, and its traced size as-is. outline + band
+	// (art px) let a small piece keep the same on-screen weight as the cards'.
+	type Props = {
+		spec: SauceSpec;
+		artW?: number;
+		artH?: number;
+		frameR?: number;
+		free?: boolean;
+		outline?: number;
+		band?: [number, number];
+	};
+	const { spec, artW = 470, artH = 690, frameR = 54, free = false, outline = 3.6, band = [-5.5, -3.5] }: Props = $props();
 
 	let canvas: HTMLCanvasElement;
 
@@ -52,13 +63,19 @@
 		const poly = spec.poly;
 		let maxX = 0;
 		let maxY = 0;
-		for (let i = 0; i < poly.length; i += 2) {
-			maxX = Math.max(maxX, poly[i]);
-			maxY = Math.max(maxY, poly[i + 1]);
+		for (const pl of [poly, ...(spec.more ?? [])]) {
+			for (let i = 0; i < pl.length; i += 2) {
+				maxX = Math.max(maxX, pl[i]);
+				maxY = Math.max(maxY, pl[i + 1]);
+			}
 		}
 		for (const t of spec.tendrils) maxY = Math.max(maxY, t.tip + t.reach + t.run + t.w);
+		for (const [x, y, r] of spec.discs ?? []) {
+			maxX = Math.max(maxX, x + r);
+			maxY = Math.max(maxY, y + r);
+		}
 		// The blob scales about the frame's top-left corner (where every card's sauce is pinned).
-		const SCALE = nextBlobScale();
+		const SCALE = free ? 1 : nextBlobScale();
 		const AX = 0;
 		const AY = 0;
 		const RX = Math.ceil(AX + (maxX - AX) * SCALE + 8);
@@ -100,18 +117,24 @@
 				[nx, ny] = [[-1, 0], [1, 0], [0, -1], [0, 1]][m];
 			}
 			const corner = qx !== x && qy !== y;
-			if (depth >= (!corner && nx === -1 ? EDGE_SNAP_LEFT : EDGE_SNAP)) continue;
+			if (free || depth >= (!corner && nx === -1 ? EDGE_SNAP_LEFT : EDGE_SNAP)) continue;
 			sealed[i] = (x + nx * (depth + EDGE_PAST)) / SCALE;
 			sealed[i + 1] = (y + ny * (depth + EDGE_PAST)) / SCALE;
 		}
 		const blob = new Path2D();
-		{
-			const n = sealed.length / 2;
-			const px = (i: number) => sealed[((i + n) % n) * 2];
-			const py = (i: number) => sealed[((i + n) % n) * 2 + 1];
+		for (const pl of [sealed, ...(spec.more ?? [])]) {
+			const n = pl.length / 2;
+			const px = (i: number) => pl[((i + n) % n) * 2];
+			const py = (i: number) => pl[((i + n) % n) * 2 + 1];
 			blob.moveTo((px(-1) + px(0)) / 2, (py(-1) + py(0)) / 2);
 			for (let i = 0; i < n; i++) blob.quadraticCurveTo(px(i), py(i), (px(i) + px(i + 1)) / 2, (py(i) + py(i + 1)) / 2);
 			blob.closePath();
+		}
+		// generated sauce (lib/splashSauce makeTurnSauce): a union of discs (nonzero fill; their inner
+		// strokes in the outline pass end up under the body)
+		for (const [x, y, r] of spec.discs ?? []) {
+			blob.moveTo(x + r, y);
+			blob.arc(x, y, r, 0, Math.PI * 2);
 		}
 
 		// The long specular streak: an arc inside the frame's rounded corner that runs on along the top
@@ -119,15 +142,14 @@
 		// used to be traced from the outline's points, which kinked wherever the outline wobbled.
 		const STREAK_IN = 6.5; // art px inside the frame edge
 		const STREAK_RUN = 48; // how far it carries on along the top
-		// The logo splats' cartoon look (game/winSplash), in art px: a thick dark-brown outline, a flat
-		// body, a darker rim pooled along the lower-right, a 40% lighter core nudged up-left, white gloss.
-		const OUTLINE = 4.5;
-		const EDGE = '#3a1408';
-		const RIM = 2.6; // lower-right rim depth
-		const RIM_THIN = 1.1; // and all round
-		const LIGHT_IN = 7; // the lit core's inset from the edge…
-		const LIGHT_NX = -2.5; // …nudged up-left
-		const LIGHT_NY = -3;
+		// The reel symbols' sauce look (the pot's drips — symbols/parts/soup/drips), in art px: an outline
+		// in a dark tone of the sauce itself, a flat body, a wide darker band down each drip's lower-right
+		// side, and pale (sauce-tinted, not white) capsule highlights — a dashed run along the top.
+		const OUTLINE = outline;
+		const EDGE = shade(-0.62);
+		const [BAND_X, BAND_Y] = band; // the shade band: the outside slid up-left over the body, so it
+		// shows on the lower-right of every edge
+		const GLOSS = shade(0.55);
 		const streak = new Path2D();
 		streak.arc(frameR, frameR, frameR - STREAK_IN, Math.PI * 1.08, Math.PI * 1.5);
 		streak.lineTo(frameR + STREAK_RUN, STREAK_IN);
@@ -209,11 +231,13 @@
 			c.closePath();
 			paint(c);
 		};
-		const glint = (c: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, a = 0.85) => {
-			c.fillStyle = `rgba(255,255,255,${a})`;
+		const glint = (c: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, a = 0.85, rot = -0.25) => {
+			c.fillStyle = GLOSS;
+			c.globalAlpha = a;
 			c.beginPath();
-			c.ellipse(x, y, Math.max(0.2, rx), Math.max(0.2, ry), -0.25, 0, Math.PI * 2);
+			c.ellipse(x, y, Math.max(0.2, rx), Math.max(0.2, ry), rot, 0, Math.PI * 2);
 			c.fill();
+			c.globalAlpha = 1;
 		};
 
 		// Drip cycle per tendril (same choreography as before: stretch → pinch → the drop runs down the
@@ -235,7 +259,7 @@
 		// A drip whose left side runs within EDGE_SNAP_LEFT of the card edge hugs it: a wall of sauce from
 		// the edge to the drip's centre, rounded off at the bottom into the drip's own round end, so no
 		// strip of frame shows beside it. The drip itself still stretches / pinches / drops at its centre.
-		const hugs = (t: SauceTendril) => (t.cx - t.w / 2) * SCALE < EDGE_SNAP_LEFT;
+		const hugs = (t: SauceTendril) => !free && (t.cx - t.w / 2) * SCALE < EDGE_SNAP_LEFT;
 		const hugWall = (c: CanvasRenderingContext2D, t: SauceTendril) => {
 			const r = t.w / 2;
 			const cy = t.tip - r;
@@ -306,8 +330,9 @@
 					{ a: -40 + j(8, 20), d: 0.6, r: 0.042, delay: 50 },
 					{ a: 4 + j(9, 16), d: 0.5, r: 0.034, delay: 70 },
 				],
-				palette: { edge: 0x3a1408, body: hex(0), shade: hex(-0.3), light: hex(0.35) },
+				palette: { edge: hex(-0.62), body: hex(0), shade: hex(-0.3), light: hex(0.55) },
 				edgeW: 0, // set per hit (a fixed width in art px)
+				item: true,
 			};
 		};
 		const splatAt = (x: number, y: number, rs: number, ms: number, seed: number) => {
@@ -340,7 +365,7 @@
 				const sw = 1 + (1.06 * dropScale - 1) * q;
 				profile(c, t.cx, cy - 2, cy + ext, () => t.w);
 				disc(c, t.cx, cy + ext, r * sw);
-				glints.push([t.cx - r * 0.38, cy + ext - r * 0.05, r * 0.17, r * 0.32]);
+				glints.push([t.cx - r * 0.38, cy + ext - r * 0.05, r * 0.15, r * 0.4]);
 				return;
 			}
 			const rb = r * 1.06 * dropScale;
@@ -350,7 +375,7 @@
 				const m = 1 - (1 - MIN_NECK) * q;
 				profile(c, t.cx, cy - 2, yb, (f) => t.w * (1 - (1 - m) * neckG(f)));
 				disc(c, t.cx, yb, rb * (1 + 0.04 * q));
-				glints.push([t.cx - rb * 0.38, yb - rb * 0.05, rb * 0.17, rb * 0.32]);
+				glints.push([t.cx - rb * 0.38, yb - rb * 0.05, rb * 0.15, rb * 0.4]);
 				return;
 			}
 			// Broken: the drop runs down the card; the rest springs back up into the rest pose.
@@ -399,7 +424,7 @@
 				falling.push({
 					alpha: fade,
 					draw: (fc) => tear(fc, t.cx, yd, rd, tailH),
-					glints: [[t.cx - rd * 0.38, yd - rd * 0.1, rd * 0.17, rd * 0.32]],
+					glints: [[t.cx - rd * 0.38, yd - rd * 0.1, rd * 0.15, rd * 0.4]],
 				});
 			}
 			// upper half recoils from the break to the rest pose; its end beads up, then a damped wobble
@@ -410,7 +435,7 @@
 			const yEnd = cy + (yP - r * su - cy) * (1 - u) + Math.max(0, wob);
 			profile(c, t.cx, cy - 2, yEnd, (f) => t.w * (1 - (1 - su) * f * f));
 			disc(c, t.cx, yEnd, r * su);
-			glints.push([t.cx - r * su * 0.38, yEnd - r * su * 0.05, r * su * 0.17, r * su * 0.32]);
+			glints.push([t.cx - r * su * 0.38, yEnd - r * su * 0.05, r * su * 0.15, r * su * 0.4]);
 		};
 
 		// Shade whatever silhouette `fill` adds to the mask, into O (then O is drawn to the screen).
@@ -424,15 +449,19 @@
 			fill(mc);
 			// The sauce overhangs the frame corner a little; clip it to the frame's own rounded outline so
 			// on every card it starts exactly at the wood edge and follows the corner's curve (no gap).
-			mc.setTransform(s, 0, 0, s, 0, 0);
-			mc.globalCompositeOperation = 'destination-in';
 			// (Clipped a hair OUTSIDE the frame: on the exact same outline the frame's anti-aliased dark
 			// edge showed through as a thin line around the sauce's curve.)
 			const BLEED = 2; // art px (also covers the drip-wrap's 2% sag)
-			mc.beginPath();
-			mc.roundRect(-BLEED, -BLEED, artW + 2 * BLEED, artH + 2 * BLEED, frameR + BLEED);
-			mc.fill();
-			mc.globalCompositeOperation = 'source-over';
+			const clipToFrame = (c: CanvasRenderingContext2D) => {
+				if (free) return;
+				c.setTransform(s, 0, 0, s, 0, 0);
+				c.globalCompositeOperation = 'destination-in';
+				c.beginPath();
+				c.roundRect(-BLEED, -BLEED, artW + 2 * BLEED, artH + 2 * BLEED, frameR + BLEED);
+				c.fill();
+				c.globalCompositeOperation = 'source-over';
+			};
+			clipToFrame(mc);
 			// inverse mask (for the inner shadows)
 			ic.setTransform(1, 0, 0, 1, 0, 0);
 			ic.globalCompositeOperation = 'source-over';
@@ -445,12 +474,14 @@
 			// card's edge it gets no rim / inner shadow — it reads as running on over the edge instead of
 			// a dark outline along the frame. (Starts 1 px inside the clip so the two anti-aliased edges
 			// don't leave a faint seam.)
-			ic.setTransform(s, 0, 0, s, 0, 0);
-			ic.beginPath();
-			ic.rect(-BLEED - 20, -BLEED - 20, artW + 2 * BLEED + 40, artH + 2 * BLEED + 40);
-			ic.roundRect(-BLEED + 1, -BLEED + 1, artW + 2 * BLEED - 2, artH + 2 * BLEED - 2, frameR + BLEED - 1);
-			ic.fill('evenodd');
-			ic.setTransform(1, 0, 0, 1, 0, 0);
+			if (!free) {
+				ic.setTransform(s, 0, 0, s, 0, 0);
+				ic.beginPath();
+				ic.rect(-BLEED - 20, -BLEED - 20, artW + 2 * BLEED + 40, artH + 2 * BLEED + 40);
+				ic.roundRect(-BLEED + 1, -BLEED + 1, artW + 2 * BLEED - 2, artH + 2 * BLEED - 2, frameR + BLEED - 1);
+				ic.fill('evenodd');
+				ic.setTransform(1, 0, 0, 1, 0, 0);
+			}
 			ic.globalCompositeOperation = 'source-over';
 			// body: the silhouette in the flat sauce colour
 			oc.setTransform(1, 0, 0, 1, 0, 0);
@@ -472,36 +503,31 @@
 				oc.drawImage(I, 0, 0);
 				oc.restore();
 			};
-			// lit core: tint everything, then put the body colour back in a ring LIGHT_IN wide around it
-			oc.fillStyle = shade(0.35, 0.4);
-			oc.fillRect(0, 0, W, H);
-			for (let n = 0; n < 10; n++) {
-				const a = (n / 10) * Math.PI * 2;
-				inner(shade(0), LIGHT_NX + LIGHT_IN * Math.cos(a), LIGHT_NY + LIGHT_IN * Math.sin(a));
-			}
-			// the darker rim: pooled along the lower-right, a thin line elsewhere
+			// the shade band down the lower-right (two offsets, so its inner edge follows the drip's curve)
 			const dark = shade(-0.3);
-			inner(dark, -RIM, -RIM * 1.2);
-			inner(dark, RIM_THIN, 0);
-			inner(dark, -RIM_THIN, 0);
-			inner(dark, 0, RIM_THIN);
-			inner(dark, 0, -RIM_THIN);
+			inner(dark, BAND_X, BAND_Y);
+			inner(dark, BAND_X * 0.5, BAND_Y * 1.2);
 			// gloss
-			if (withStreak) {
+			if (withStreak && !free) {
 				oc.setTransform(s, 0, 0, s, 0, 0);
 				oc.lineCap = 'round';
 				// fades in from the left side, full along the corner, fades out along the top
 				const g = oc.createLinearGradient(STREAK_IN, frameR * 1.15, frameR + STREAK_RUN, STREAK_IN);
-				g.addColorStop(0, 'rgba(255,255,255,0)');
-				g.addColorStop(0.3, 'rgba(255,255,255,0.8)');
-				g.addColorStop(0.62, 'rgba(255,255,255,0.8)');
-				g.addColorStop(1, 'rgba(255,255,255,0)');
+				g.addColorStop(0, shade(0.55, 0));
+				g.addColorStop(0.25, shade(0.55, 0.95));
+				g.addColorStop(0.7, shade(0.55, 0.95));
+				g.addColorStop(1, shade(0.55, 0));
 				oc.strokeStyle = g;
-				oc.lineWidth = 3;
+				oc.lineWidth = 4;
+				// dashed, like the run of capsule highlights along the top of the symbols' drips
+				oc.setLineDash([16, 9]);
 				oc.stroke(streak);
+				oc.setLineDash([]);
 			}
 			artToDevice(oc);
 			for (const [x, y, rx, ry, a] of glints) glint(oc, x, y, rx, ry, a);
+			// the generated puddles' own shine (lib/splashSauce: a capsule along the rim on each pool)
+			for (const [x, y, rx, ry, rot] of spec.gloss ?? []) glint(oc, x, y, rx, ry, 0.9, rot);
 			// Outline: the same shapes stroked (into I, free by now), clipped to the card like the sauce —
 			// so there is none along the card's edge — and slid UNDER the shaded body.
 			ic.setTransform(1, 0, 0, 1, 0, 0);
@@ -515,12 +541,7 @@
 			outlining = true;
 			fill(ic);
 			outlining = false;
-			ic.setTransform(s, 0, 0, s, 0, 0);
-			ic.globalCompositeOperation = 'destination-in';
-			ic.beginPath();
-			ic.roundRect(-BLEED, -BLEED, artW + 2 * BLEED, artH + 2 * BLEED, frameR + BLEED);
-			ic.fill();
-			ic.globalCompositeOperation = 'source-over';
+			clipToFrame(ic);
 			oc.setTransform(1, 0, 0, 1, 0, 0);
 			oc.globalCompositeOperation = 'destination-over';
 			oc.drawImage(I, 0, 0);

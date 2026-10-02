@@ -23,7 +23,7 @@ const pop = (ms: number) => {
 /** The splats are fully out and settled by now; the board (and the splash, once landed) shows this frame. */
 export const LOGO_REST_MS = 1500;
 
-// Thick dark-brown outline like the letters', glossy ketchup inside.
+// Drawn like the reel symbols' sauce (the pot's drips): dark-red outline, flat ketchup, shade band, pale gloss.
 const SPLAT: SplashSpec = {
 	ox: 0,
 	oy: 0,
@@ -40,8 +40,10 @@ const SPLAT: SplashSpec = {
 		{ a: 18, d: 0.17, r: 0.012, delay: 20 },
 		{ a: -112, d: 0.16, r: 0.011, delay: 50 },
 	],
-	palette: { edge: 0x3a1408, body: 0xe2271a, shade: 0xa8150b, light: 0xff6a4c },
-	edgeW: 0.011,
+	// the reel symbols' sauce style: a dark-red outline (not the wordmark's brown), pale gloss
+	palette: { edge: 0x5a0d07, body: 0xe2271a, shade: 0xa8150b, light: 0xffb3a3 },
+	edgeW: 0.009,
+	item: true,
 };
 const SIDES = [
 	{ side: -1 as const, x: -0.36, y: -0.01, k: 0.68, seed: 0.7, delay: 0 },
