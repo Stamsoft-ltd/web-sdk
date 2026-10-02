@@ -67,7 +67,7 @@ export default {
 		src: new URL('../../assets/mcschmutzo/background-panorama.webp', import.meta.url).href,
 		preload: true,
 	},
-	// The same panorama pre-blurred (Gaussian r8 at full size, stored at half size): faded in over the
+	// The same panorama pre-blurred (Gaussian r3 at full size, stored at half size): faded in over the
 	// sharp one once the splash's camera pan has handed over, so the board reads in front. A baked
 	// texture instead of a BlurFilter, which would re-blur the whole screen every frame.
 	backgroundPanoramaBlur: {

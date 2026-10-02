@@ -52,7 +52,7 @@ export default {
 	INFO: 'INFO',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "WELCOME TO McSCHMUTZO",
+	'SPLASH C1 TITLE': "WELCOME\nTO\nMcSCHMUTZO",
 	'SPLASH C1 BODY': "Wins lock in place and re-spin until the grill is full.",
 	'SPLASH C2 TITLE': "3\nTASTY\nFEATURES",
 	'SPLASH C2 BODY 1': "Lock & Re-Spin",

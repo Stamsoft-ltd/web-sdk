@@ -126,9 +126,6 @@
 		`${pct(MAN.bottlePivot[1] - MAN.bottle[1], MAN.bottle[3] - MAN.bottle[1])};`;
 	const pressPlay = ap('/assets/mcschmutzo/press-play.svg');
 	// Card frames are drip-FREE; the corner sauce is drawn in code on top (SauceCorner + lib/splashSauce).
-	const cardRed = ap('/assets/mcschmutzo/splash/card-red.webp');
-	const cardYellow = ap('/assets/mcschmutzo/splash/card-yellow.webp');
-	const cardGreen = ap('/assets/mcschmutzo/splash/card-green.webp');
 
 	// Each card = an empty drip frame + HTML copy (so the text stays editable / localizable).
 	// `pad` is the interior inset per frame — the red frame carries a baked drop-shadow margin, so it
@@ -138,21 +135,18 @@
 		{
 			cls: 'card--red',
 			sauce: SAUCE.red,
-			art: cardRed,
 			title: 'SPLASH C1 TITLE',
 			body: ['SPLASH C1 BODY'],
 		},
 		{
 			cls: 'card--yellow',
 			sauce: SAUCE.yellow,
-			art: cardYellow,
 			title: 'SPLASH C2 TITLE',
 			body: ['SPLASH C2 BODY 1', 'SPLASH C2 BODY 2', 'SPLASH C2 BODY 3'],
 		},
 		{
 			cls: 'card--green',
 			sauce: SAUCE.green,
-			art: cardGreen,
 			title: 'SPLASH C3 TITLE',
 			body: ['SPLASH C3 BODY'],
 		},
@@ -270,9 +264,12 @@
 		<img class="pp-mark" src={pressPlay} alt="Press Play" draggable="false" />
 
 		{#snippet cardEl(card: (typeof CARDS)[number])}
-			<div class="card {card.cls}" style={`background-image:url('${card.art}')`}>
-				<!-- Corner sauce, drawn in code: the blob + both tendrils dripping. Sits under the copy like the
-				     old baked-in drip did; the wrap sags as a whole. -->
+			<div class="card {card.cls}">
+				<!-- The frame is drawn in CSS (wood band, outlines, cream panel) so it stays
+				     sharp at any zoom / screen density — the old 470×690 raster went soft when scaled up. -->
+				<div class="card-frame" aria-hidden="true"><div class="card-panel"></div></div>
+				<!-- Corner sauce, drawn in code: the blob + both tendrils dripping. Sits OVER the copy so a
+				     drop can splat onto the title; the wrap sags as a whole. -->
 				<div class="drip-wrap">
 					<SauceCorner spec={card.sauce} />
 				</div>
@@ -571,9 +568,6 @@
 		/* All three frames are cropped to the same 470×690 box, so one aspect ratio → equal width &
 		   height for every card (and the gap between them stays equal). */
 		aspect-ratio: 470 / 690;
-		background-size: 100% 100%;
-		background-repeat: no-repeat;
-		background-position: center;
 		filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.22));
 		/* Each card is its own query container so the copy scales with the card in ANY orientation
 		   (on portrait the row shrinks the cards, and the text has to follow). */
@@ -633,6 +627,8 @@
 	.drip-wrap {
 		position: absolute;
 		inset: 0;
+		/* Above the copy: a falling drop lands on the title and splats over the letters. */
+		z-index: 1;
 		transform-origin: 0 0;
 		animation: sauce-sag 9.5s ease-in-out infinite alternate;
 	}
@@ -678,6 +674,33 @@
 		   Sized so the title reads big (wraps to ~3 lines) yet long localized titles still fit. */
 		font-size: calc(11.5cqw * var(--fit, 1));
 	}
+	/* The frame, in the old art's 470×690 px space expressed as card-width units (1cqw = 4.7 art px):
+	   a 4.5px dark outline, a 13px wood band lit from the top, a 2.5px dark line and the cream panel. The outer radius (54px) is the one the sauce
+	   corner clips to (SauceCorner frameR). */
+	.card-frame {
+		position: absolute;
+		inset: 0;
+		box-sizing: border-box;
+		border: 0.96cqw solid #3a1203;
+		border-radius: 11.49cqw;
+		padding: 2.77cqw;
+		background: linear-gradient(180deg, #b06a3e 0%, #95491c 18%, #8a4318 70%, #7a3912 100%);
+		box-shadow:
+			inset 0 0.45cqw 0.35cqw rgba(255, 210, 160, 0.38),
+			inset 0 -0.45cqw 0.5cqw rgba(40, 10, 0, 0.35);
+	}
+	.card-panel {
+		position: relative;
+		box-sizing: border-box;
+		width: 100%;
+		height: 100%;
+		border: 0.53cqw solid #3a1000;
+		border-radius: 7.7cqw;
+		background: radial-gradient(ellipse 80% 70% at 50% 40%, #fcf4e3 0%, #f8eedb 70%, #f4e7d0 100%);
+		box-shadow: inset 0 0.35cqw 0.7cqw rgba(70, 25, 0, 0.22);
+	}
+	/* (No coloured inner rule: its left side ran right under each corner drip and read as a thread
+	   hanging from the sauce.) */
 	.card--red .card-title {
 		color: #c41e0a;
 	}
