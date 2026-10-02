@@ -12,9 +12,8 @@
 	const MASCOT = { fw: 1304, fh: 1699 };
 	const SPECIAL = { fw: 1611, fh: 1912 };
 	export const GUY_CROPS = {
-		mascotBase: { x0: 80, y0: 0, x1: 1304, y1: 1699, ...MASCOT },
+		mascotBase: { x0: 316, y0: 0, x1: 1256, y1: 1800, ...MASCOT }, // runs past the frame: the relaxed hand
 		mascotBottle: { x0: 80, y0: 639, x1: 575, y1: 1330, ...MASCOT },
-		mascotHand: { x0: 766, y0: 927, x1: 1286, y1: 1368, ...MASCOT },
 		mascotBrows: { x0: 399, y0: 328, x1: 728, y1: 469, ...MASCOT },
 		mascotLabel: { x0: 679, y0: 1022, x1: 937, y1: 1161, ...MASCOT },
 		specialBase: { x0: 511, y0: 0, x1: 1611, y1: 1912, ...SPECIAL },

@@ -79,7 +79,6 @@
 
 	// Portrait game-screen header: the McSchmutzo wordmark with the Press Play studio mark above it,
 	// pinned to the top over the diner background (mirrors the splash / loading header).
-	const ptLogo = ap('/assets/mcschmutzo/logo-v3.webp');
 	const ptPressPlay = ap('/assets/mcschmutzo/press-play.svg');
 
 	const scatterFrame = ap('/assets/components/frames/scatter_frame.webp');
@@ -114,6 +113,7 @@
 	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
 	import CustomConfirmModal from './CustomConfirmModal.svelte';
 	import CustomTutorialModal from './CustomTutorialModal.svelte';
+	import LogoHtml from './LogoHtml.svelte';
 
 	const context = getContext();
 
@@ -933,7 +933,7 @@
 		<!-- Portrait header: Press Play mark + big McSchmutzo logo, pinned above the board. -->
 		<div class="pt-top" class:pt-top--short={isShortPortrait}>
 			<img class="pt-top__pp" src={ptPressPlay} alt="Press Play" draggable="false" />
-			<img class="pt-top__logo" src={ptLogo} alt="McSchmutzo" draggable="false" />
+			<div class="pt-top__logo"><LogoHtml /></div>
 		</div>
 		<!-- Dedicated portrait HUD (Figma mobile 2792-4133). Desktop/landscape markup below is untouched. -->
 		<div class="pt-hud">
@@ -2936,8 +2936,6 @@
 	}
 	.pt-top__logo {
 		width: min(78%, 380px);
-		height: auto;
-		object-fit: contain;
 		filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
 	}
 

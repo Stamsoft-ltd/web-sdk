@@ -10,9 +10,13 @@
 		PANORAMA_SPLASH_X,
 	} from '../game/panorama';
 	import SauceFx from './SauceFx.svelte';
-	import { createPointGesture } from '../game/pointGesture';
+	import LogoHtml from './LogoHtml.svelte';
 
-	type Props = { onpress: () => void };
+	type Props = {
+		onpress: () => void;
+		/** Where the game draws its board logo, in this overlay's px: the splash logo flies there on exit. */
+		logoTarget?: () => { cx: number; cy: number; width: number };
+	};
 	const props: Props = $props();
 
 	// Shrink a wrapping card title DOWN to fit its card by reducing FONT-SIZE (via the `--fit`
@@ -78,43 +82,17 @@
 	// splash pans the camera right to the panorama's base-game view, where the game's own background
 	// takes over (same framing, see game/panorama.ts). Portrait keeps `bg` until mobile art exists.
 	const panoArt = ap('/assets/mcschmutzo/background-panorama.webp');
-	const logo = ap('/assets/mcschmutzo/logo-v3.webp');
+	// The logo drops in (CSS logo-in: 1.75s delay, lands 43% into its 1.4s) and the impact squeezes
+	// its ketchup splats out — LogoHtml bursts them this many ms after mount.
+	const LOGO_HIT_MS = 1750 + 0.43 * 1400;
 	/** Percent of a box dimension, for laying art-pixel geometry over fluid-sized layers. */
 	const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
 
 	// The chef is the board chef (Figma "Frame 427321577", 4× = 1304×1699) flipped horizontally so he
-	// faces the cards from the left — the base is pre-mirrored with the nametag re-pasted readable.
-	// Layers: base (pupils erased, bottle hand cut out) + the bottle hand, drawn BEHIND the body and
-	// shaking about the wrist. Pupils and eyelids are drawn in CSS. Geometry is in the frame's px.
-	const manBase = ap('/assets/mcschmutzo/splash/man-base-v5.webp');
-	const manHand = ap('/assets/mcschmutzo/splash/man-hand-v1.webp'); // pointing hand, gestures about the wrist
-
-	// The pointing hand is JS-driven (not a CSS loop) so its "point-point" lands at random 3–6 s
-	// intervals: breath drift + anticipation lift, jab, rebound, smaller jab, damped settle (shared
-	// with the pixi chefs, game/pointGesture). The fingertip is RIGHT of the wrist here, so the
-	// gesture's "+ = fingertip down" is a plain clockwise CSS rotate. The layer is cropped to the hand
-	// (MAN.hand, 524 px wide), so a slide of `along` hand-lengths is along × (516 / 524) of its width.
-	let manHandEl = $state<HTMLImageElement>();
-	const HAND_LEN = 516 / 524;
-	$effect(() => {
-		const el = manHandEl;
-		if (!el) return;
-		const hand = createPointGesture();
-		let raf = 0;
-		let t0 = 0;
-		const loop = (ts: number) => {
-			if (!t0) t0 = ts;
-			const t = ts - t0;
-			// .man's chef-breathe runs 5 s ease-in-out alternate from exhaled: approximate it.
-			const breath = -Math.cos((Math.PI * t) / 5000);
-			const p = hand.pose(t, breath);
-			const stretch = 1 + (1 - p.squash) * 0.4;
-			el.style.transform = `translateX(${(p.along * HAND_LEN * 100).toFixed(3)}%) rotate(${p.angle.toFixed(3)}deg) scale(${p.squash.toFixed(4)}, ${stretch.toFixed(4)})`;
-			raf = requestAnimationFrame(loop);
-		};
-		raf = requestAnimationFrame(loop);
-		return () => cancelAnimationFrame(raf);
-	});
+	// faces the cards from the left. The base is the relaxed-arm body (McShmutzo node 8779:1769) with
+	// the old eye whites + brows pasted in, pre-mirrored (the nametag is its own readable layer).
+	// Layers: base (pupils erased) + the bottle hand, drawn BEHIND the body and shaking about the wrist. Pupils and eyelids are drawn in CSS. Geometry is in the frame's px.
+	const manBase = ap('/assets/mcschmutzo/splash/man-base-v6.webp');
 	const manBottle = ap('/assets/mcschmutzo/splash/man-bottle-v3.webp');
 	// The nametag plate (cropped layer over its baked copy) jiggles on its pin, like the board chef.
 	const manLabel = ap('/assets/mcschmutzo/splash/man-label-v3.webp');
@@ -133,9 +111,8 @@
 		eyeL: [782, 425, 872, 520] as Box,
 		eyeR: [617, 395, 717, 512] as Box,
 		bottle: [0, 0, 1304, 1699] as Box, // full-frame layer (its squirt is placed in frame fractions)
-		// Hand / nametag / brows are cropped to their visible bounds (they were mostly-transparent
+		// Nametag / brows are cropped to their visible bounds (they were mostly-transparent
 		// full-frame canvases); these boxes put each crop back exactly where it sat in the frame.
-		hand: [16, 925, 540, 1370] as Box,
 		label: [368, 1023, 624, 1160] as Box,
 		brows: [574, 326, 907, 470] as Box,
 		bottlePivot: [926, 951] as [number, number], // the wrist, tucked behind the body
@@ -185,6 +162,24 @@
 	// the base game's 16% dim fades in), then the host fades the splash out over the game.
 	const PAN_MS = 1700;
 	let exiting = $state(false);
+	let rootEl: HTMLDivElement | undefined = $state();
+	let stageEl: HTMLDivElement | undefined = $state();
+	let logoEl: HTMLDivElement | undefined = $state();
+	// The logo's exit = a move + scale from its REST spot (layout box, so a press mid-entrance still
+	// measures the landed pose) onto the board logo, which is already at rest under the splash when
+	// it fades. Without a target it falls back to flying off the top.
+	let logoFly = $state('');
+	const measureLogoFly = () => {
+		const target = props.logoTarget?.();
+		if (!target || !rootEl || !stageEl || !logoEl || !logoEl.offsetWidth) return '';
+		const root = rootEl.getBoundingClientRect();
+		const stage = stageEl.getBoundingClientRect();
+		// `.logo` is left:50% + translateX(-50%), so offsetLeft is its centre.
+		const cx = stage.left - root.left + logoEl.offsetLeft;
+		const cy = stage.top - root.top + logoEl.offsetTop + logoEl.offsetHeight * 0.5;
+		const k = target.width / logoEl.offsetWidth;
+		return `--fly-x:${target.cx - cx}px;--fly-y:${target.cy - cy}px;--fly-k:${k}`;
+	};
 	let vw = $state(0);
 	let vh = $state(0);
 	const press = () => {
@@ -193,6 +188,7 @@
 			props.onpress();
 			return;
 		}
+		logoFly = measureLogoFly();
 		exiting = true;
 		setTimeout(() => props.onpress(), PAN_MS + 40);
 	};
@@ -228,6 +224,8 @@
 <div
 	class="splash-intro"
 	class:exiting
+	class:logo-fly={logoFly !== ''}
+	bind:this={rootEl}
 	role="button"
 	tabindex="0"
 	aria-label={i18nDerived.translate('PRESS TO CONTINUE')}
@@ -240,11 +238,11 @@
 		<img class="pano" src={panoArt} alt="" draggable="false" style={panoStyle} />
 		<div class="pano-dim" style={`--pan-ms:${PAN_MS}ms`}></div>
 	{/if}
-	<div class="stage" style={`--sbg-mobile:url('${bg}')`}>
+	<div class="stage" bind:this={stageEl} style={`--sbg-mobile:url('${bg}')`}>
 		<!-- The board's "freshly polished" gleam: a tilted light band sweeps across the diner every 13s
 		     (over the background, behind the logo / cards / chef). -->
 		<div class="shine" aria-hidden="true"><div class="shine__band"></div></div>
-		<img class="logo" src={logo} alt="McSchmutzo" draggable="false" />
+		<div class="logo" bind:this={logoEl} style={logoFly}><LogoHtml hitAt={LOGO_HIT_MS} /></div>
 		<div class="man" style={`--skin:${MAN.skin}`}>
 			<div class="bottle" style={bottleStyle}>
 				<img src={manBottle} alt="" draggable="false" />
@@ -258,9 +256,8 @@
 				/>
 			</div>
 			<img class="man-base" src={manBase} alt="" draggable="false" />
-			<!-- Nametag under the pointing hand. -->
+			<!-- Nametag on the apron strap. -->
 			<img class="man-label" src={manLabel} alt="" draggable="false" style={manBox(MAN.label)} />
-			<img class="man-hand" bind:this={manHandEl} src={manHand} alt="" draggable="false" style={manBox(MAN.hand)} />
 			<span class="man-sparkle" aria-hidden="true"></span>
 			<div class="pupil" style={manBox(MAN.pupilL)}><span class="glint"></span></div>
 			<div class="pupil" style={manBox(MAN.pupilR)}><span class="glint"></span></div>
@@ -417,12 +414,13 @@
 		left: 50%;
 		top: 4.5%;
 		transform: translateX(-50%);
+		/* squash about the bottom edge — it lands on the awning */
+		transform-origin: 50% 100%;
 		width: 39%;
-		height: auto;
-		object-fit: contain;
 		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
-		/* Entrance: once the cards are in, it drops in from the top and bounces to rest, then stays put. */
-		animation: logo-in 1.1s linear 1.75s both;
+		/* Entrance: once the cards are in, it drops in from the top, HITS and squashes (the splats
+		   squeeze out — LogoHtml), springs back, then stays put. */
+		animation: logo-in 1.4s linear 1.75s both;
 	}
 
 	.man {
@@ -451,9 +449,15 @@
 		width: 100%;
 		height: 100%;
 	}
+	/* Frame-wide, natural height: the art (1304×1800) runs past the 1304×1699 frame so the relaxed
+	   hand isn't cut off. */
 	.man-base {
 		position: absolute;
-		inset: 0;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: auto;
+		max-width: none;
 	}
 	.pupil,
 	.eye,
@@ -495,13 +499,6 @@
 	}
 		.man-brows {
 		position: absolute;
-	}
-	/* Pointing hand: pivots about the wrist (sleeve cuff, frame 4.9% / 69.45%); the script's rAF loop
-	   writes its transform (breath drift + random "point-point"). */
-	.man-hand {
-		position: absolute;
-		transform-origin: 9.14% 57.29%; /* the wrist: frame 4.9% / 69.45% */
-		will-change: transform;
 	}
 	/* Nametag jiggles on its pin (pin = top-centre of the plate: 38.04% / 60.45% of the frame). */
 	.man-label {
@@ -601,22 +598,26 @@
 		animation-delay: 0.95s;
 	}
 
-	/* Leaving (camera pan): everything clears out the way it came, quickly, as the view moves on. */
-	.exiting .card {
-		animation: card-out-bottom 0.65s cubic-bezier(0.55, 0, 0.9, 0.4) forwards;
-	}
-	.exiting .cards:not(.cards--single) .card:nth-child(1) {
-		animation-name: card-out-left;
+	/* Leaving (camera pan → right): the cards all slide off to the LEFT, the way the view leaves
+	   them behind, left card first; the chef goes left too. */
+	/* (Same specificity as the per-card entrance rules above, so this replaces their animation-name.) */
+	.exiting .cards:not(.cards--single) .card {
+		animation: card-out-left 0.7s cubic-bezier(0.55, 0, 0.9, 0.4) forwards;
 	}
 	.exiting .cards:not(.cards--single) .card:nth-child(2) {
-		animation-delay: 0.06s;
+		animation-delay: 0.07s;
 	}
 	.exiting .cards:not(.cards--single) .card:nth-child(3) {
-		animation-name: card-out-right;
-		animation-delay: 0.12s;
+		animation-delay: 0.14s;
 	}
 	.exiting .logo {
 		animation: logo-out 0.55s cubic-bezier(0.55, 0, 0.9, 0.4) forwards;
+	}
+	/* …while the logo flies onto the board's logo (measured in measureLogoFly), landing as the pan ends
+	   so the splash fades out over the identical pixi logo. */
+	.exiting.logo-fly .logo {
+		transform-origin: 50% 50%; /* measureLogoFly scales about the centre */
+		animation: logo-fly 1.45s cubic-bezier(0.6, 0, 0.3, 1) 0.1s forwards;
 	}
 	.exiting .man {
 		animation: man-out 0.6s cubic-bezier(0.55, 0, 0.9, 0.4) forwards;
@@ -826,30 +827,45 @@
 			transform: translateY(0);
 		}
 	}
-	/* Drop from above the stage, land, two settling bounces. */
+	/* Drop from above the stage, HIT, squash wide + flat, spring back, settle. */
 	@keyframes logo-in {
 		0% {
 			transform: translate(-50%, -70cqh);
 			animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); /* falling: accelerate */
 		}
-		55% {
-			transform: translate(-50%, 0);
-			animation-timing-function: cubic-bezier(0, 0.55, 0.45, 1); /* rebound: decelerate */
-		}
-		72% {
-			transform: translate(-50%, -4.5cqh);
-			animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
-		}
-		86% {
-			transform: translate(-50%, 0);
+		43% {
+			transform: translate(-50%, 0) scale(1);
 			animation-timing-function: cubic-bezier(0, 0.55, 0.45, 1);
 		}
-		93% {
-			transform: translate(-50%, -1.2cqh);
-			animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+		53% {
+			transform: translate(-50%, 0) scale(1.14, 0.8);
+		}
+		68% {
+			transform: translate(-50%, 0) scale(0.95, 1.07);
+		}
+		84% {
+			transform: translate(-50%, 0) scale(1.02, 0.98);
 		}
 		100% {
-			transform: translate(-50%, 0);
+			transform: translate(-50%, 0) scale(1);
+		}
+	}
+	/* Rest → board logo: a slight lift as it sets off, a small overshoot in size, then settle. The
+	   drop-shadow fades since the pixi logo has none. */
+	@keyframes logo-fly {
+		0% {
+			transform: translate(-50%, 0) scale(1);
+			filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+		}
+		18% {
+			transform: translate(-50%, -1.5cqh) scale(1.04);
+		}
+		85% {
+			transform: translate(calc(-50% + var(--fly-x)), var(--fly-y)) scale(calc(var(--fly-k) * 1.04));
+		}
+		100% {
+			transform: translate(calc(-50% + var(--fly-x)), var(--fly-y)) scale(var(--fly-k));
+			filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0));
 		}
 	}
 	@keyframes logo-out {
@@ -876,19 +892,10 @@
 			translate: -130% 0;
 		}
 	}
+	/* Far enough that the RIGHT card (≈ the stage's right third) also clears the left edge. */
 	@keyframes card-out-left {
 		to {
-			transform: translateX(-90cqw);
-		}
-	}
-	@keyframes card-out-right {
-		to {
-			transform: translateX(90cqw);
-		}
-	}
-	@keyframes card-out-bottom {
-		to {
-			transform: translateY(110cqh);
+			transform: translateX(-120cqw);
 		}
 	}
 

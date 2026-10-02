@@ -132,7 +132,7 @@
 		<!-- Pad (plaque + wordmark + sauce + stars + burger) re-assembled from layers so it animates in:
 		     the win pops first, then the splashes swoosh in behind. Centred above the amount box. -->
 		<Container y={-padH * 0.2}>
-			<WinPadArt padKey={props.padKey ?? 'winPadSweet'} width={padW} />
+			<WinPadArt padKey={props.padKey ?? 'winPadSweet'} width={padW} compact={isPortrait} />
 		</Container>
 
 		<!-- Win-amount plaque with the count-up amount centred inside its red panel. -->

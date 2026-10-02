@@ -32,13 +32,14 @@
 	import PaylineOverlay from './PaylineOverlay.svelte';
 	import HudHtml from './HudHtml.svelte';
 	import SplashIntro from './SplashIntro.svelte';
+	import { boardLogoScreenRect } from '../game/boardLogo';
+	import LogoHtml from './LogoHtml.svelte';
 	import { fade } from 'svelte/transition';
 	import { warmArt, ap } from '../lib/preloadArt';
 
 	// Press Play studio wordmark + McSchmutzo logo — shown on the (dark) loading screen while assets
 	// stream in (the leftover template title-screen spine was removed).
 	const pressPlayLogo = ap('/assets/mcschmutzo/press-play.svg');
-	const loadingLogo = ap('/assets/mcschmutzo/logo-v3.webp');
 
 	const context = getContext();
 	// Phones / tablets (coarse pointer): lighter GPU load — render at 1.8× instead of 2× (≈19% fewer
@@ -256,12 +257,16 @@
 					<Board />
 					<LockedCells />
 					<Anticipations />
-					<FeatureOverlay />
 					{#if context.stateGame.paylineWins.length > 0}
 						<PaylineOverlay wins={context.stateGame.paylineWins} />
 					{/if}
 				</MainContainer>
 				</Container>
+
+				<!-- Board logo: outside the drop-in, so it is already at rest where the splash logo lands. -->
+				<MainContainer>
+					<FeatureOverlay />
+				</MainContainer>
 
 				<Win />
 				<Transition />
@@ -271,13 +276,14 @@
 		<!-- Loader chrome: only BEFORE the splash. After the press the loading screen stays mounted for
 		     the transition wipe, and these must not flash back in over the game background. -->
 		{#if context.stateLayout.showLoadingScreen && !splashIntroVisible && !splashPressed}
-			<img class="mcs-loading-logo" src={loadingLogo} alt="McSchmutzo" />
+			<div class="mcs-loading-logo"><LogoHtml /></div>
 			<img class="pp-loading-mark" src={pressPlayLogo} alt="Press Play" />
 		{/if}
 
 		{#if splashIntroVisible}
 			<div transition:fade={{ duration: 350 }} style="position:absolute;inset:0;z-index:10;">
 				<SplashIntro
+					logoTarget={() => boardLogoScreenRect(context)}
 					onpress={() => {
 						splashPressed = true;
 						splashIntroVisible = false;
@@ -337,7 +343,6 @@
 		top: 30%;
 		transform: translate(-50%, -50%);
 		width: min(420px, 46%);
-		height: auto;
 		z-index: 11;
 		pointer-events: none;
 		filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.5));

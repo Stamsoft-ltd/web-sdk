@@ -5,6 +5,7 @@
 	import { SYMBOL_SIZE, SYMBOL_WIDTH } from '../game/constants';
 	import { drawSauceSquirt, squirtHash, type SquirtGraphics } from '../game/ketchupSquirt';
 	import { drawPaintedDrip } from '../game/paintedDrip';
+	import { splatDrips, splatShapes, WILD_SPLAT_LAND, type SplatShape } from '../game/wildSplat';
 	import { getContext } from '../game/context';
 	import type { SymbolPartsConfig } from '../game/symbolParts';
 	import type { SymbolState } from '../game/types';
@@ -196,6 +197,38 @@
 					y: cy + (l.ny - 0.5) * h + oy + (l.nh * h * (1 - sy)) / 2,
 					width: l.nw * w * sx,
 					height: l.nh * h * sy,
+					rotation: 0,
+					alpha,
+				});
+				continue;
+			}
+			if (landing && l.landStamp) {
+				// Stamp: comes DOWN from 1.5× (accelerating) onto the splat, hits at textHit, squashes
+				// flat and springs back — the sauce ripples from the same hit (wildSplat).
+				const start = l.landDelay ?? 0;
+				const hit = WILD_SPLAT_LAND.textHit;
+				let s = 1;
+				let sx = 1;
+				let sy = 1;
+				let alpha = 1;
+				if (lt < start) alpha = 0;
+				else if (lt < hit) {
+					const q = (lt - start) / (hit - start);
+					s = 1.5 - 0.5 * q * q;
+					alpha = Math.min(1, q * 3);
+				} else {
+					const v = (lt - hit) / (1 - hit);
+					const d = Math.exp(-6 * v) * Math.cos(v * Math.PI * 3);
+					sx = 1 + 0.14 * d;
+					sy = 1 - 0.18 * d;
+				}
+				out.push({
+					id: l.key,
+					key: l.key,
+					x: cx + (l.nx - 0.5) * w,
+					y: cy + (l.ny - 0.5) * h,
+					width: l.nw * w * s * sx,
+					height: l.nh * h * s * sy,
 					rotation: 0,
 					alpha,
 				});
@@ -452,6 +485,36 @@
 		for (const d of cfg.tendrils) drawPaintedDrip(g, tex, d, t, map);
 	};
 
+	// Code-drawn ketchup splat (wild): one frame of game/wildSplat in box-height units, scaled to `h`.
+	const drawShapes = (g: any, list: SplatShape[]) => {
+		const cx = props.x ?? 0;
+		const cy = props.y ?? 0;
+		for (const s of list) {
+			if (s.alpha <= 0.002) continue;
+			if (s.kind === 'poly') {
+				const pts = s.pts.map((v, i) => (i % 2 === 0 ? cx + v * h : cy + v * h));
+				g.poly(pts, true).fill({ color: s.color, alpha: s.alpha });
+			} else if (s.kind === 'circle') g.circle(cx + s.x * h, cy + s.y * h, s.r * h).fill({ color: s.color, alpha: s.alpha });
+			else g.ellipse(cx + s.x * h, cy + s.y * h, s.rx * h, s.ry * h).fill({ color: s.color, alpha: s.alpha });
+		}
+	};
+	const splatLoop = $derived.by(() => {
+		const active = running && startTime >= 0;
+		if (!active) return { t: 0, amp: 0 };
+		const r0 = Math.min(1, (clock - startTime) / RAMP_MS);
+		const ramp = r0 * r0 * (3 - 2 * r0);
+		return { t: clock - startTime, amp: (props.winning ? 1 : idleAmp) * ramp };
+	});
+	const drawSplat = (g: any) => {
+		const land = landStart >= 0 ? Math.min(1, (landClock - landStart) / LAND_MS) : null;
+		drawShapes(g, splatShapes({ land, ...splatLoop }));
+	};
+	// Win drips off the splat's bottom lobes — in the cell-clipped container, only while winning.
+	const drawSplatDrips = (g: any) => {
+		if (!props.winning || landStart >= 0) return;
+		drawShapes(g, splatDrips(splatLoop.t, splatLoop.amp));
+	};
+
 	// Fizz (cup) + sizzle (sausage) particles — deterministic off the clock, only while active.
 	const drawFx = (g: SquirtGraphics) => {
 		const active = running && startTime >= 0 && !!props.winning;
@@ -598,6 +661,9 @@
 </script>
 
 <Container>
+	{#if props.config.splat}
+		<Graphics draw={drawSplat} />
+	{/if}
 	{#each layers as l (l.id)}
 		<Sprite
 			key={l.key}
@@ -616,6 +682,9 @@
 		<Graphics isMask draw={drawCellMask} />
 	{#if props.config.paintedDrips}
 		<Graphics draw={drawLayerDrips} />
+	{/if}
+	{#if props.config.splat}
+		<Graphics draw={drawSplatDrips} />
 	{/if}
 	{#if props.config.fizz || props.config.sizzle || props.config.splash}
 		<Graphics draw={drawFx} />

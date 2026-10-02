@@ -5,16 +5,20 @@
 	import AnimatedSymbol from './AnimatedSymbol.svelte';
 	import { H1_ASSEMBLE } from '../game/symbolParts';
 	import { drawSauceSquirt, squirtHash, type SquirtGraphics } from '../game/ketchupSquirt';
+	import { splashShapes, SPLASH_RED, SPLASH_YELLOW } from '../game/winSplash';
 
 	// The tier win-pad, re-assembled from separate layers so it can ANIMATE (the baked pad art was a
-	// single flat image). Sequence: the banner + title + stars pop in first ("the win"), then the two
-	// sauce splashes swoosh in from behind it. The title keeps breathing (expand / retract), the stars
-	// twinkle, and the real BURGER SYMBOL sits behind the title and pops once (its separate-reassemble).
+	// single flat image). Sequence: the banner + stars pop in first, then the title words are STAMPED
+	// onto it — they hit at HIT_MS, squash flat, and the impact squeezes the two sauce splashes (drawn in
+	// code, game/winSplash.ts) out from under the banner ends. The title keeps breathing (expand /
+	// retract), the stars twinkle, and the real BURGER SYMBOL sits behind the title and pops once.
 	type Props = {
 		/** 'winPadSweet' | 'winPadLegendary' | 'winPadEpic' | 'winPadWild' | 'winPadMythic' */
 		padKey: string;
 		/** Rendered pad width (matches the old flat sprite footprint). */
 		width: number;
+		/** Portrait: the pad is nearly screen-wide, so the splashes are tucked in and drawn smaller. */
+		compact?: boolean;
 	};
 	const props: Props = $props();
 	const W = $derived(props.width);
@@ -22,8 +26,8 @@
 	const tier = $derived(props.padKey.replace('winPad', '').toLowerCase());
 	const cap = $derived(tier.charAt(0).toUpperCase() + tier.slice(1));
 	const bannerKey = $derived(`winBanner${cap}`);
-	// Title is now TWO separate words — the tier wordmark (top) and the shared "WIN" (bottom) — so each
-	// can fly in from its own edge. Aspects (w/h) from the exported word rasters.
+	// Title is TWO separate words — the tier wordmark (top) and the shared "WIN" (bottom), stamped onto
+	// the banner together. Aspects (w/h) from the exported word rasters.
 	const wordKey = $derived(`winWord${cap}`);
 	const BANNER_AR: Record<string, number> = { sweet: 3.39, legendary: 3.25, epic: 3.22, wild: 3.29, mythic: 3.3 };
 	const WORD_AR: Record<string, number> = { sweet: 2.645, legendary: 3.16, epic: 2.078, wild: 2.365, mythic: 2.573 };
@@ -51,6 +55,8 @@
 		return () => cancelAnimationFrame(raf);
 	});
 	const elapsed = $derived(clock - start);
+	const HIT_MS = 640; // the title words land on the banner
+	const STAMP_FROM = 330; // …after coming down from 1.7× from here
 
 	const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 	const phase = (start_: number, dur: number) => clamp01((elapsed - start_) / dur);
@@ -69,49 +75,38 @@
 		// Win group (banner + title + stars) pops first.
 		const winS = easeOutBack(phase(40, 340));
 		const winA = clamp01(elapsed / 140);
-		// Splashes get THROWN in behind, a beat later: they burst outward from the centre, spinning into
-		// place with a slight overshoot, then keep throbbing/wobbling like wet sauce.
-		const splP = phase(200, 430);
-		const splS = easeOutBack(splP);
-		const splA = clamp01((elapsed - 200) / 160);
-		const spinIn = (1 - splP) ** 2; // spin swing that eases out as it lands
-		const splThrobY = 1 + 0.05 * Math.sin(elapsed / 250);
-		const splThrobR = 1 + 0.05 * Math.sin(elapsed / 250 + 2.1);
-		const splWobble = 0.035 * Math.sin(elapsed / 360);
+		// The hit: everything squashes on impact and springs back (damped), the words hardest.
+		const v = (elapsed - HIT_MS) / 520;
+		const hitD = v >= 0 ? Math.exp(-6 * v) * Math.cos(v * Math.PI * 3) : 0;
+		const bannerSx = 1 + 0.035 * hitD;
+		const bannerSy = 1 - 0.05 * hitD;
 		// Continuous flourishes once settled.
 		const twinkle = 1 + 0.09 * Math.sin(elapsed / 260);
 		const twinkle2 = 1 + 0.09 * Math.sin(elapsed / 260 + Math.PI);
 		const starRot = 0.1 * Math.sin(elapsed / 600);
 		const titleBreathe = 1 + 0.03 * Math.sin(elapsed / 470); // expand / retract
 
-		// Bigger splashes (design ask), pushed a touch further out so they still frame the banner.
-		const syW = 0.29 * w;
-		const srW = 0.29 * w;
 		const back: L[] = [];
-		back.push({ id: 'sy', key: 'winSplashYellow', x: -0.34 * w * splS, y: -0.03 * w * splS, w: syW * splS * splThrobY, h: (syW / 1.2) * splS * splThrobY, a: splA, rot: -0.55 * spinIn + splWobble });
-		back.push({ id: 'sr', key: 'winSplashRed', x: 0.34 * w * splS, y: -0.03 * w * splS, w: srW * splS * splThrobR, h: (srW / 1.71) * splS * splThrobR, a: splA, rot: 0.55 * spinIn - splWobble });
-		back.push({ id: 'banner', key: bannerKey, x: 0, y: 0.015 * w * winS, w: 0.70 * w * winS, h: (0.70 * w / bannerAR) * winS, a: winA, rot: 0 });
+		back.push({ id: 'banner', key: bannerKey, x: 0, y: 0.015 * w * winS, w: 0.70 * w * winS * bannerSx, h: (0.70 * w / bannerAR) * winS * bannerSy, a: winA, rot: 0 });
 		back.push({ id: 'starL', key: 'winStar', x: -0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle, h: (0.072 * w / 1.03) * winS * twinkle, a: winA, rot: starRot });
 		back.push({ id: 'starR', key: 'winStar', x: 0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle2, h: (0.072 * w / 1.03) * winS * twinkle2, a: winA, rot: -starRot });
 
-		// Split title: the tier word DROPS in from the top, the shared WIN RISES from the bottom, both
-		// with an easeOutBack settle + fade. The tier word's drop is short and it fades in as it lands, so
-		// it stays clear of the assembling burger that peeks above the banner. Then both breathe together.
-		// Start the words AFTER the banner has popped in, so their fly-in from top/bottom reads clearly
-		// against the settled banner instead of moving while the whole pad is still scaling up.
-		const wordE = easeOutBack(phase(330, 540));
-		const wordA = clamp01((elapsed - 330) / 260);
+		// Title: both words are STAMPED onto the banner — they come down from 1.7× (accelerating, fading
+		// in), hit at HIT_MS, squash wide + flat and spring back. Then they breathe together.
+		const q = clamp01((elapsed - STAMP_FROM) / (HIT_MS - STAMP_FROM));
+		const stamp = 1.7 - 0.7 * q * q;
+		const wordA = clamp01((elapsed - STAMP_FROM) / 120);
+		const wordSx = stamp * (1 + 0.16 * hitD);
+		const wordSy = stamp * (1 - 0.2 * hitD);
 		const tierHpx = tierH * w * titleBreathe;
 		const winHpx = 0.105 * w * titleBreathe;
-		const tierRestY = -0.05 * w;
-		const winRestY = 0.078 * w;
 		const tierWord: L = {
 			id: 'tierWord',
 			key: wordKey,
 			x: 0,
-			y: tierRestY - (1 - wordE) * 0.08 * w, // enters from ABOVE (short drop, clear of the burger)
-			w: tierHpx * wordAR,
-			h: tierHpx,
+			y: -0.05 * w,
+			w: tierHpx * wordAR * wordSx,
+			h: tierHpx * wordSy,
 			a: wordA,
 			rot: 0,
 		};
@@ -119,9 +114,9 @@
 			id: 'winWord',
 			key: 'winWordWin',
 			x: 0,
-			y: winRestY + (1 - wordE) * 0.2 * w, // rises from BELOW
-			w: winHpx * WIN_AR,
-			h: winHpx,
+			y: 0.078 * w,
+			w: winHpx * WIN_AR * wordSx,
+			h: winHpx * wordSy,
 			a: wordA,
 			rot: 0,
 		};
@@ -156,14 +151,29 @@
 		return { back, tierWord, winWord, burger, glints };
 	});
 
-	// Impact spray as each splash lands (like the congrats screens): a fan of three sauce jets thrown
-	// outward from the splash, snapping into drops of mixed sizes. One-shot, behind the banner.
+	// The two splashes squeezed out by the title hit (behind the banner), in pad-width units.
+	const drawSplashes = (g: any) => {
+		const ms = elapsed - HIT_MS;
+		if (ms < 0) return;
+		for (const [spec, side, seed] of [[SPLASH_YELLOW, -1, 0], [SPLASH_RED, 1, 2]] as const) {
+			const place = props.compact ? { ox: 0.26, k: 0.7 } : undefined;
+			for (const s of splashShapes(spec, side, ms, seed, place)) {
+				if (s.alpha <= 0.002) continue;
+				if (s.kind === 'poly') g.poly(s.pts.map((p) => p * W), true).fill({ color: s.color, alpha: s.alpha });
+				else if (s.kind === 'circle') g.circle(s.x * W, s.y * W, s.r * W).fill({ color: s.color, alpha: s.alpha });
+				else g.ellipse(s.x * W, s.y * W, s.rx * W, s.ry * W).fill({ color: s.color, alpha: s.alpha });
+			}
+		}
+	};
+
+	// Impact spray as the splashes burst out: a fan of three sauce jets thrown outward from each banner
+	// end, snapping into drops of mixed sizes. One-shot, behind the banner.
 	const SPRAYS = [
 		{ x: -0.34, y: -0.03, dir: -2.5, color: 0xefa80e },
 		{ x: 0.34, y: -0.03, dir: -0.64, color: 0xc41e0a },
 	];
 	const drawSpray = (g: SquirtGraphics) => {
-		const u0 = elapsed - 330; // as the splashes land
+		const u0 = elapsed - HIT_MS; // as the title hits and squeezes the sauce out
 		if (u0 < 0 || u0 > 2200) return;
 		SPRAYS.forEach((sp, i) => {
 			for (let j = 0; j < 3; j++) {
@@ -184,6 +194,8 @@
 <Container>
 	<!-- Impact spray (behind everything on the pad). -->
 	<Graphics draw={drawSpray} />
+	<!-- Sauce squeezed out from under the banner ends by the title hit. -->
+	<Graphics draw={drawSplashes} />
 	<!-- Burger BEHIND the plaque: assembles slice-by-slice ONCE, then bobs (whole-burger bounce). -->
 	<AnimatedSymbol config={H1_ASSEMBLE} x={anim.burger.x} y={anim.burger.y} scale={anim.burger.scale} state="land" winning={anim.burger.winning} />
 	{#each anim.back as l (l.id)}

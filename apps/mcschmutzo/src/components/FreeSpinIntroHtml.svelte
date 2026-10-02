@@ -4,8 +4,6 @@
 
 	// Large plaque (bigger-cover) for the bonus intro; the burger sits on its top edge.
 	const plaqueArt = ap('/assets/mcschmutzo/congrats-cover-lg.webp');
-	const sauceYellowBig = ap('/assets/mcschmutzo/congrats-sauce-yellow-big.webp');
-	const sauceRedBig = ap('/assets/mcschmutzo/congrats-sauce-red-big.webp');
 	const starArt = ap('/assets/mcschmutzo/win/parts/win-star.webp');
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
 </script>
@@ -18,7 +16,7 @@
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import BurgerStack from './BurgerStack.svelte';
-	import SauceFx from './SauceFx.svelte';
+	import CongratsSplashes from './CongratsSplashes.svelte';
 	import { continueBottom } from '../lib/continuePos';
 	// Prompt position (above the portrait HUD; default elsewhere) — re-measured on resize.
 	let contBottom = $state('clamp(14px, 3.5vh, 34px)');
@@ -58,7 +56,7 @@
 		stateBet.activeBetModeKey === 'bonus2' ||
 			(stateBet.activeBetModeKey !== 'bonus1' && context.stateGame.bonusTier === 'super'),
 	);
-	const bonusName = $derived(i18nDerived.translate(isSuper ? 'INFO FB4 TITLE' : 'INFO FB3 TITLE'));
+	const bonusName = $derived(i18nDerived.translate(isSuper ? 'SUPER BONUS TITLE' : 'NORMAL BONUS TITLE'));
 	const bonusBlurb = $derived(i18nDerived.translateVars('BONUS BLURB', { count: totalFreeSpins }));
 
 	// DEV preview: press 6 to show the free-spin bonus congrats with mock data.
@@ -118,26 +116,11 @@
 		></button>
 
 		<div class="fs-stage" role="dialog" aria-modal="true">
-			<!-- Each side is a two-tone pair: the "under" splash (red beneath the yellow, yellow beneath
-			     the red) renders first so the top splash sits over it. -->
-			<div class="fs-sauce fs-sauce--ul">
-				<img src={sauceRedBig} alt="" draggable="false" />
-				<SauceFx bleed={0.6} splashes={[{ x: 0.55, y: 0.6, dir: 3.0, color: 0xc41e0a, delay: 380, size: 1.1 }]} />
-			</div>
-			<div class="fs-sauce fs-sauce--ur">
-				<img src={sauceYellowBig} alt="" draggable="false" />
-				<SauceFx bleed={0.6} splashes={[{ x: 0.5, y: 0.5, dir: 0.15, color: 0xefa80e, delay: 480, size: 1.1 }]} />
-			</div>
-			<div class="fs-sauce fs-sauce--tl">
-				<img src={sauceYellowBig} alt="" draggable="false" />
-				<SauceFx bleed={0.6} splashes={[{ x: 0.45, y: 0.45, dir: -2.4, color: 0xefa80e, delay: 180, size: 1.1 }]} />
-			</div>
-			<div class="fs-sauce fs-sauce--tr">
-				<img src={sauceRedBig} alt="" draggable="false" />
-				<SauceFx bleed={0.6} splashes={[{ x: 0.5, y: 0.55, dir: -0.8, color: 0xc41e0a, delay: 280, size: 1.1 }]} />
-			</div>
+			<!-- Mustard + ketchup, drawn in code and squeezed out from behind the plaque when the
+			     CONGRATS title slams onto it (HIT, 0.64s in — see the title's stamp animation). -->
+			<CongratsSplashes hitMs={640} />
 
-			<!-- Burger perched on the top edge of the plaque — the real slice burger so it assembles. -->
+			<!-- Burger straddling the plaque's top edge, in front of the rim — the real slice burger so it assembles. -->
 			<div class="fs-burger"><BurgerStack assemble /></div>
 
 			<!-- Flanking stars (top-right + bottom-left) that twinkle, like the win pad. -->
@@ -206,58 +189,6 @@
 		font-family: 'Poppins', sans-serif;
 	}
 
-	/* Sauces peeking out from behind the plaque: bigger at the top corners, smaller at the sides.
-	   Each SPLATS in like real sauce hitting the screen — an instant over-scale impact with a squash
-	   that wobbles as the liquid settles, growing OUTWARD from behind the plaque (transform-origin
-	   faces the plaque) and landing one after another (staggered delays). */
-	.fs-sauce img {
-		display: block;
-		width: 100%;
-		height: auto;
-	}
-	/* Each splash is a wrapper (art + its own SauceFx impact spray, which shares the splash's layer
-	   BEHIND the plaque and rides its splat animation). */
-	.fs-sauce {
-		position: absolute;
-		height: auto;
-		z-index: 0;
-		pointer-events: none;
-		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
-		/* Splat in, then a slow throb so the sauce reads as wet. */
-		animation:
-			fs-splash 0.6s cubic-bezier(0.22, 1, 0.36, 1) both,
-			fs-throb 2.6s ease-in-out 0.95s infinite;
-	}
-	/* Top splashes (over): bigger sprays that push out past the plaque corners. */
-	.fs-sauce--tl {
-		width: 37%;
-		top: -12%;
-		left: -6%;
-		transform-origin: 75% 85%;
-		animation-delay: 0.18s, 0.95s;
-	}
-	.fs-sauce--tr {
-		width: 37%;
-		top: -14%;
-		right: -6%;
-		transform-origin: 25% 85%;
-		animation-delay: 0.28s, 1.15s;
-	}
-	/* Under splashes: red beneath the left yellow, yellow beneath the right red. */
-	.fs-sauce--ul {
-		width: 30%;
-		top: 30%;
-		left: -8%;
-		transform-origin: 85% 50%;
-		animation-delay: 0.38s, 1.35s;
-	}
-	.fs-sauce--ur {
-		width: 30%;
-		top: 28%;
-		right: -8%;
-		transform-origin: 15% 50%;
-		animation-delay: 0.48s, 1.55s;
-	}
 
 	.fs-plaque {
 		position: absolute;
@@ -269,7 +200,9 @@
 		display: grid;
 		place-items: center;
 		/* The win (plaque + copy) pops in first. */
-		animation: fs-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+		animation:
+			fs-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+			fs-hit 0.52s linear 0.64s;
 	}
 
 	/* Burger peeks over the top edge of the plaque from BEHIND it. It's the real slice-built burger
@@ -278,14 +211,13 @@
 	.fs-burger {
 		position: absolute;
 		left: 50%;
-		/* Sized + placed so the burger's bottom sits at the plaque top (clears it, no cut behind it) while
-		   its top stays on-screen even on short desktop windows; --sep is big enough that the
-		   assemble/disassemble clearly reads. */
-		top: -25%;
+		/* Straddles the plaque's top edge, IN FRONT of the rim: the bottom bun sits on the red field just
+		   under the rim, the top bun stands up over it (clear of the CONGRATS title below). */
+		top: -9%;
 		transform: translateX(-50%);
 		width: 20%;
 		aspect-ratio: 1.077;
-		z-index: 0;
+		z-index: 2;
 		pointer-events: none;
 		--sep: 0.5;
 		animation: fs-burger-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
@@ -351,8 +283,12 @@
 		letter-spacing: 0.02em;
 		text-transform: uppercase;
 		text-shadow: 0 2px 5px rgba(90, 10, 5, 0.6);
-		/* Title breathes (expand / retract), starting after the pop-in. */
-		animation: fs-breathe 2.3s ease-in-out 0.5s infinite;
+		/* STAMPED onto the plaque: drops from 1.7× and slams down at 0.64s (the HIT that squashes the
+		   plaque and squeezes the sauce out — CongratsSplashes), squashes flat, springs back, then
+		   breathes. */
+		animation:
+			fs-stamp 0.85s linear 0.33s both,
+			fs-breathe 2.3s ease-in-out 1.3s infinite;
 	}
 	.fs-youwon {
 		margin: 0;
@@ -446,26 +382,31 @@
 		60% { opacity: 1; transform: translateX(-50%) scale(1.06); }
 		100% { opacity: 1; transform: translateX(-50%) scale(1); }
 	}
-	/* Sauces get THROWN in behind the plaque (spin + overshoot), a beat later — a bigger burst now. */
-	@keyframes fs-splash {
-		/* Splat: near-instant impact at over-scale with a motion blur, then the liquid wobble —
-		   squash wide, rebound tall, settle. */
-		0% { opacity: 0; transform: scale(0.3); filter: blur(5px); }
-		22% { opacity: 1; transform: scale(1.28, 0.82) rotate(-3deg); filter: blur(0.5px); }
-		45% { transform: scale(0.92, 1.12) rotate(2deg); filter: blur(0); }
-		70% { transform: scale(1.06, 0.96) rotate(-1deg); }
-		100% { opacity: 1; transform: scale(1) rotate(0deg); }
+	/* Stamp: hit at 36% (0.64s after the screen opens), squash wide + flat, spring back. */
+	@keyframes fs-stamp {
+		0% { opacity: 0; transform: scale(1.7); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+		12% { opacity: 1; }
+		36% { transform: scale(1); }
+		46% { transform: scale(1.16, 0.8); }
+		60% { transform: scale(0.94, 1.07); }
+		74% { transform: scale(1.03, 0.98); }
+		88% { transform: scale(0.995, 1.005); }
+		100% { opacity: 1; transform: scale(1); }
 	}
-	@keyframes fs-throb {
-		0%, 100% { transform: scale(1) rotate(0deg); }
-		50% { transform: scale(1.07) rotate(3.5deg); }
+	/* The plaque takes the title's impact: a quick squash and a damped wobble. */
+	@keyframes fs-hit {
+		0% { transform: scale(1); }
+		18% { transform: scale(1.035, 0.95); }
+		42% { transform: scale(0.988, 1.018); }
+		68% { transform: scale(1.006, 0.996); }
+		100% { transform: scale(1); }
 	}
 	@keyframes fs-breathe {
 		0%, 100% { transform: scale(1); }
 		50% { transform: scale(1.04); }
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.fs-plaque, .fs-burger, .fs-sauce, .fs-congrats, .fs-star { animation: none; }
+		.fs-plaque, .fs-burger, .fs-congrats, .fs-star { animation: none; }
 	}
 
 	/* Tiny popouts (~400x225): shrink the close (X) so it doesn't dominate the small screen. */

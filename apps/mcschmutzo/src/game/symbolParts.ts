@@ -41,6 +41,9 @@ export type SymbolPartLayer = {
 	// slightly out of step like a wobbling puddle; `pulseLag` delays it (radians) behind the others.
 	pulse?: number;
 	pulseLag?: number;
+	// Stamp landing (wild letters): instead of scaling up from 0, the layer comes DOWN from 1.5× onto
+	// the symbol at `landDelay`, hits at wildSplat's textHit, squashes and settles.
+	landStamp?: boolean;
 };
 
 export type SymbolPartsConfig = {
@@ -91,6 +94,9 @@ export type SymbolPartsConfig = {
 		srcH: number;
 		tendrils: import('./paintedDrip').PaintedTendril[];
 	};
+	// The wild's ketchup splat, drawn in code under the layers (game/wildSplat.ts): drop → splat on
+	// landing, breathing on the board, liquid wobble + drips while winning.
+	splat?: boolean;
 	layers: SymbolPartLayer[];
 };
 
@@ -290,31 +296,19 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'onionRing1', nx: 0.605, ny: 0.63, nw: 0.8, nh: 0.72, hop: 0.2, flip: 1, phase: 0.66, rot: 0.05, dx: 0.02 },
 		],
 	},
-	// Wild — on landing the red splat splashes in first, then the WILD text pops up→down once
-	// (landAnim). Afterwards, while it wins/locks, the WILD text bounces while the splat pulses.
-	// Wild — on landing the red splat splashes in, then WILD pops on top (landAnim). While part of a
-	// win the ketchup puddle keeps swelling and shrinking like liquid (the letters ride it a beat
-	// behind), and thick painted drips ooze off its bottom lobes, pinch and fall.
+	// Wild — on landing a drop of ketchup falls into the cell and SPLATS (drawn in code, see
+	// game/wildSplat.ts), then the WILD letters are stamped on top. While part of a win the puddle
+	// wobbles like liquid (the letters ride it a beat behind) and drops ooze off its bottom lobes.
 	W: {
 		aspect: 1.361,
 		fit: 0.82,
 		squash: 0,
 		landAnim: true,
+		landMs: 1300,
 		idle: 0.45,
-		paintedDrips: {
-			layer: 'wildSplat',
-			srcW: 1350,
-			srcH: 992,
-			tendrils: [
-				{ cx: 233.5, tip: 990, bulb: 44, half: 52, reach: 46, run: 230, period: 2900, phase: 0, dropStretch: 2.2, dropNarrow: 0.62 },
-				{ cx: 486, tip: 953, bulb: 44, half: 50, reach: 40, run: 220, period: 3400, phase: 1500, dropStretch: 2.2, dropNarrow: 0.62 },
-				{ cx: 674.5, tip: 966, bulb: 44, half: 50, reach: 44, run: 220, period: 3100, phase: 600, dropStretch: 2.2, dropNarrow: 0.62 },
-				{ cx: 916.5, tip: 933, bulb: 44, half: 50, reach: 40, run: 220, period: 3700, phase: 2300, dropStretch: 2.2, dropNarrow: 0.62 },
-			],
-		},
+		splat: true,
 		layers: [
-			{ key: 'wildSplat', nx: 0.5, ny: 0.5, nw: 1.0, nh: 1.0, pulse: 0.07, landDelay: 0 },
-			{ key: 'wildText', nx: 0.5, ny: 0.5, nw: 0.7889, nh: 0.6704, pulse: 0.05, pulseLag: 0.7, landDelay: 0.4 },
+			{ key: 'wildText', nx: 0.5, ny: 0.5, nw: 0.7889, nh: 0.6704, pulse: 0.05, pulseLag: 0.7, landDelay: 0.45, landStamp: true },
 		],
 	},
 	// Scatter — the stand gives a gentle bob while its SCATTER sign sways like a hanging shingle.

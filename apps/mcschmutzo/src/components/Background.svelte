@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { Graphics, Rectangle, Sprite } from 'pixi-svelte';
+	import { Tween } from 'svelte/motion';
+	import { cubicInOut } from 'svelte/easing';
 	import { stateUi } from 'state-shared';
 
 	import { getContext } from '../game/context';
@@ -16,6 +18,18 @@
 	const { showArt = true }: Props = $props();
 
 	const context = getContext();
+
+	// Depth: once the splash's camera pan has handed over and the board has dropped in and landed
+	// (Game: +120ms, 950ms), the diner panorama softly defocuses — the pre-blurred copy fades in over
+	// it — so the board reads in front. Once per session; it stays blurred for the base game after.
+	const panoBlur = new Tween(0);
+	let panoBlurDone = false;
+	$effect(() => {
+		if (context.stateLayout.showLoadingScreen || panoBlurDone) return;
+		panoBlurDone = true;
+		const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		setTimeout(() => panoBlur.set(1, { duration: reduced ? 0 : 900, easing: cubicInOut }), reduced ? 0 : 1100);
+	});
 	const aspect = 1678 / 937;
 	// Portrait diner background (mobile-bg): its own 9:16-ish raster, cover-scaled to the phone.
 	const portraitAspect = 941 / 1672;
@@ -126,8 +140,8 @@
 		}),
 	);
 	// The Figma chef (McShmutzo file, "Frame 427321577"), exported at 4× (1304×1699) and keyed off
-	// the flat canvas grey — the same art as the free-games salting chef. Layers: base (pupils erased,
-	// the bottle hand cut out), the bottle hand (drawn BEHIND the body, as in Figma, so it can shake),
+	// the flat canvas grey — the same art as the free-games salting chef; since 2026-10 the base is the
+	// relaxed-arm body (node 8779:1769) instead of the pointing hand. Layers: base (pupils erased), the bottle hand (drawn BEHIND the body, as in Figma, so it can shake),
 	// and the nametag plate (jiggles over its baked copy). Pupils are redrawn a touch smaller than the
 	// art and nudged up so the right one clears its lower-lid line while glancing. All fractions of
 	// the frame. Skin sampled beside the eyes so the blink lid blends in.
@@ -298,6 +312,9 @@
 		/>
 	{:else}
 		<Sprite key="backgroundPanorama" x={pano.x} y={pano.y} width={pano.width} height={pano.height} zIndex={-2} />
+		{#if panoBlur.current > 0}
+			<Sprite key="backgroundPanoramaBlur" x={pano.x} y={pano.y} width={pano.width} height={pano.height} alpha={panoBlur.current} zIndex={-1.95} />
+		{/if}
 	{/if}
 	<Rectangle {...canvas} backgroundColor={0x180903} alpha={0.16} zIndex={-1} />
 {:else if isPortrait}
@@ -325,6 +342,9 @@
 		/>
 	{:else}
 		<Sprite key="backgroundPanorama" x={pano.x} y={pano.y} width={pano.width} height={pano.height} zIndex={-2} />
+		{#if panoBlur.current > 0}
+			<Sprite key="backgroundPanoramaBlur" x={pano.x} y={pano.y} width={pano.width} height={pano.height} alpha={panoBlur.current} zIndex={-1.95} />
+		{/if}
 	{/if}
 	<Rectangle {...canvas} backgroundColor={0x180903} alpha={0.16} zIndex={-1} />
 	{#if showMascot && shine}
@@ -369,22 +389,12 @@
 		skin={0xee9c58}
 		extras={[
 			{
-				// Full-frame layer (the exact plate pixels), tilting about its pin — drawn FIRST so the
-				// pointing hand passes over it.
+				// Full-frame layer (the exact plate pixels), tilting about its pin.
 				key: 'mascotLabel',
 				...cropRect(GUY_CROPS.mascotLabel),
 				...cropPivot(GUY_CROPS.mascotLabel, 0.6196, 0.6027),
 				amp: 0.035,
 				period: 320,
-			},
-			{
-				// The pointing hand gestures about the wrist (at the sleeve cuff): it drifts with his
-				// breath and every 3–6 s jabs a "point-point" at the player. The base under it was
-				// repainted (v6r) so the swing never uncovers a smear. Fingertip is LEFT of the wrist.
-				key: 'mascotHand',
-				...cropRect(GUY_CROPS.mascotHand),
-				...cropPivot(GUY_CROPS.mascotHand, 0.951, 0.6945),
-				gesture: { tip: -1, breath: Math.sin(clock / 580) },
 			},
 			{
 				// Brows above the blink lids (static full-frame layer).

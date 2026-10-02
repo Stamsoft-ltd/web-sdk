@@ -23,8 +23,6 @@ export default {
 	winWordWild: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-wild@0.597x.webp', import.meta.url).href, defer: true },
 	winWordMythic: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-mythic@0.613x.webp', import.meta.url).href, defer: true },
 	winWordWin: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-win@0.482x.webp', import.meta.url).href, defer: true },
-	winSplashYellow: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/splash-yellow.webp', import.meta.url).href, defer: true },
-	winSplashRed: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/splash-red.webp', import.meta.url).href, defer: true },
 	winStar: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/win-star.webp', import.meta.url).href, defer: true },
 	// Dedicated small-win value plaque (red panel + cream ornate frame + rivets, no splashes).
 	winBoxSmall: {
@@ -67,6 +65,14 @@ export default {
 	backgroundPanorama: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/background-panorama.webp', import.meta.url).href,
+		preload: true,
+	},
+	// The same panorama pre-blurred (Gaussian r8 at full size, stored at half size): faded in over the
+	// sharp one once the splash's camera pan has handed over, so the board reads in front. A baked
+	// texture instead of a BlurFilter, which would re-blur the whole screen every frame.
+	backgroundPanoramaBlur: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/background-panorama-blur@0.5x.webp', import.meta.url).href,
 		preload: true,
 	},
 	// Mobile-landscape SPECIAL (free-games) grey kitchen — wide crop matching the base landscape bg.
@@ -113,10 +119,11 @@ export default {
 	// Layered chefs (base with the pupils cut out + the pupils as their own sprites) so the eyes can
 	// glance + blink while the figure stands. See AnimatedGuy.svelte.
 	mascotBase: {
-		// The base with the eyes AND the held ketchup bottle+hand cut out — the bottle is overlaid
-		// separately (mascotBottle) so it can shake like the splash chef's.
+		// The Figma chef with the relaxed arm (McShmutzo node 8779:1769, "One-Armed Retro Diner
+		// Worker") on the old 1304×1699 frame, with the old base's eye whites + brows pasted in (the
+		// Figma face has none). The bottle arm is overlaid separately (mascotBottle) so it can shake.
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/mascot_base_v6r_c@0.882x.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/mascot_base_v7_c@0.882x.webp', import.meta.url).href,
 		preload: true,
 	},
 	mascotBottle: {
@@ -124,13 +131,6 @@ export default {
 		// shaken about the wrist.
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/guys/mascot_bottle_v5_c@0.882x.webp', import.meta.url).href,
-		preload: true,
-	},
-	mascotHand: {
-		// The pointing/thumbs-up hand, cut from the base (patched underneath), so it can gesture about
-		// the wrist.
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/mascot_hand_v1_c@0.882x.webp', import.meta.url).href,
 		preload: true,
 	},
 	mascotBrows: {
@@ -179,9 +179,11 @@ export default {
 		src: new URL('../../assets/mcschmutzo/guys/special_label_v2@0.862x.webp', import.meta.url).href,
 		preload: true,
 	},
-	mcschmutzoLogo: {
+	// The Figma wordmark only (node 8779:1698); the board logo's ketchup splats are drawn in code
+	// (game/logoSplash, FeatureOverlay).
+	mcschmutzoWord: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/logo-v3@0.412x.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/logo-word@0.5x.webp', import.meta.url).href,
 		preload: true,
 	},
 	mcH1: {
@@ -297,11 +299,7 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/soup/label@0.26x.webp', import.meta.url).href,
 	},
-	// Wild (W) = red splat + WILD text.
-	wildSplat: {
-		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/parts/wild/splat@0.438x.webp', import.meta.url).href,
-	},
+	// Wild (W) = WILD text; its ketchup splat is drawn in code (game/wildSplat.ts).
 	wildText: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/wild/text@0.359x.webp', import.meta.url).href,

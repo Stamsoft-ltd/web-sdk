@@ -151,8 +151,8 @@
 
 	// Idle "itching to spin": until SPIN is pressed both rings sway like pendulums in opposite
 	// directions — equal swing each way (pure sine), eased in from rest, amplitude and tempo drifting
-	// slowly on unrelated periods so it never visibly repeats. The spatula leans with the outer
-	// ring's speed. Driven through the same rotations the spin uses, so the spin starts from wherever
+	// slowly on unrelated periods so it never visibly repeats. (The sway never reaches a divider, so
+	// the spatula hangs still until the spin.) Driven through the same rotations the spin uses, so the spin starts from wherever
 	// the rings are. Reduced motion: still.
 	$effect(() => {
 		if (!wheel || spun || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -167,7 +167,6 @@
 			const phase = t * 1.95 + 0.25 * Math.sin(t / 4.7);
 			rotOuter = easeIn * amp * Math.sin(phase);
 			rotInner = -easeIn * amp * 0.8 * Math.sin(phase + 0.6);
-			spatulaTilt = -easeIn * amp * Math.cos(phase) * 0.5;
 			raf = requestAnimationFrame(loop);
 		};
 		raf = requestAnimationFrame(loop);
@@ -188,7 +187,6 @@
 		winInner = i.index;
 		outerDone = innerDone = false;
 		spinning = true;
-		spatulaTilt = 0;
 		context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_up' });
 		requestAnimationFrame(() => {
 			rotOuter = Math.ceil(rotOuter / 360) * 360 + 360 * 6 - OUTER_ANGLES[o.index];
@@ -230,27 +228,84 @@
 		return () => clearTimeout(fallbackTimer);
 	});
 
-	// Pointer clicker: while spinning, read the outer ring's live angle and flick the spatula each
-	// time a wedge divider passes under it — fast flutter at speed, single clacks in the final crawl.
+	// Pointer = a real flapper: the spatula hangs on a pin (its upper rivet) and its tip dips into
+	// the outer ring, where the wedge dividers act as pegs. A passing peg shoves the tip aside until
+	// the lean lifts the tip clear (FLAP_SLIP), then it slips under and the spatula springs back,
+	// overshooting and ringing down. At speed the pegs catch it on the way back (flutter); in the
+	// final crawl every peg is one slow push → clack → wobble. Angles are in degrees; `flapTheta` > 0
+	// = tip to the right (CSS rotate(-θ)).
+	// Geometry (stage px): pin at y 181.5, tip at y 285.8, ring centre at y 542.25 → the tip moves
+	// L/R ≈ 0.41° of ring angle per degree of lean.
+	const FLAP_GEAR = 104.3 / 256.5;
+	const FLAP_CONTACT = 2; // tip + divider half-widths, in ring degrees
+	const FLAP_SLIP = 14; // lean at which the tip has lifted clear of the divider
+	const FLAP_W = 2 * Math.PI * 6.5; // natural frequency (rad/s) — a light, stiff pointer
+	const FLAP_ZETA = 0.16;
+	const FLAP_BOUNCE = 0.3; // restitution when the swinging tip hits a divider
+	// The bracket's stops: at full speed a divider flings the tip far harder than any lean it could
+	// take, so it bangs against a stop each side instead of whirling round.
+	const FLAP_STOP = 22;
+	const FLAP_STOP_BOUNCE = 0.35;
+	const DIVIDERS = OUTER_ANGLES.map((a, i) => {
+		const next = OUTER_ANGLES[(i + 1) % OUTER_ANGLES.length] + (i === OUTER_ANGLES.length - 1 ? 360 : 0);
+		return (a + next) / 2;
+	});
+	const wrap180 = (a: number) => ((((a + 180) % 360) + 360) % 360) - 180;
 	$effect(() => {
-		if (!spinning || !outerEl) return;
+		if (!wheel || !outerEl || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 		const el = outerEl;
-		let raf = 0;
-		let last = performance.now();
-		let prevDivider: number | undefined;
-		let kick = 0;
-		const loop = (now: number) => {
-			const dt = now - last;
-			last = now;
+		const readRot = () => {
 			const m = getComputedStyle(el).transform.match(/matrix\(([^,]+),\s*([^,]+)/);
-			if (m) {
-				const angle = (Math.atan2(+m[2], +m[1]) * 180) / Math.PI;
-				const divider = Math.floor((angle + 360 + SEG / 2) / SEG);
-				if (prevDivider !== undefined && divider !== prevDivider) kick = 1;
-				prevDivider = divider;
+			return m ? (Math.atan2(+m[2], +m[1]) * 180) / Math.PI : 0;
+		};
+		let theta = 0;
+		let omega = 0;
+		let rot = readRot(); // unwrapped ring angle
+		let rawPrev = rot;
+		// which side of each divider the tip is on (+1 = tip right of it); refreshed while not touching
+		const side = DIVIDERS.map((d) => (wrap180(d + rot) > 0 ? -1 : 1));
+		const slipping = DIVIDERS.map(() => false); // passing under the lifted tip
+		let last = performance.now();
+		let raf = 0;
+		const loop = (now: number) => {
+			const frameMs = Math.min(50, now - last);
+			last = now;
+			const raw = readRot();
+			const rotTo = rot + wrap180(raw - rawPrev);
+			rawPrev = raw;
+			const steps = Math.max(1, Math.ceil(frameMs)); // ~1ms substeps
+			const dt = frameMs / 1000 / steps;
+			const ringVel = frameMs > 0 ? (rotTo - rot) / (frameMs / 1000) : 0;
+			const rot0 = rot;
+			for (let k = 1; k <= steps; k++) {
+				const r = rot0 + ((rotTo - rot0) * k) / steps;
+				omega += (-FLAP_W * FLAP_W * theta - 2 * FLAP_ZETA * FLAP_W * omega) * dt;
+				theta += omega * dt;
+				const tip = theta * FLAP_GEAR;
+				for (let j = 0; j < DIVIDERS.length; j++) {
+					const a = wrap180(DIVIDERS[j] + r);
+					if (Math.abs(a - tip) >= FLAP_CONTACT) {
+						side[j] = tip > a ? 1 : -1;
+						slipping[j] = false;
+						continue;
+					}
+					if (slipping[j]) continue;
+					const pushed = (a + side[j] * FLAP_CONTACT) / FLAP_GEAR;
+					if (Math.sign(pushed) === side[j] && Math.abs(pushed) > FLAP_SLIP) {
+						slipping[j] = true; // lifted clear: the divider passes under the tip
+						continue;
+					}
+					theta = pushed;
+					const rel = omega * FLAP_GEAR - ringVel; // tip vs divider, ring degrees/s
+					if (rel * side[j] < 0) omega = (ringVel - FLAP_BOUNCE * rel) / FLAP_GEAR;
+				}
+				if (Math.abs(theta) > FLAP_STOP) {
+					theta = Math.sign(theta) * FLAP_STOP;
+					if (omega * theta > 0) omega *= -FLAP_STOP_BOUNCE;
+				}
 			}
-			kick *= Math.exp(-dt / 70);
-			spatulaTilt = -15 * kick; // clockwise ring pushes the tip to the right
+			rot = rotTo;
+			spatulaTilt = -theta;
 			raf = requestAnimationFrame(loop);
 		};
 		raf = requestAnimationFrame(loop);
@@ -574,7 +629,8 @@
 		top: 161px;
 		width: 133px;
 		height: 133px;
-		transform-origin: 50% 12%;
+		/* the pin = the upper rivet on the handle */
+		transform-origin: 49.85% 15.4%;
 		filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.35));
 	}
 
