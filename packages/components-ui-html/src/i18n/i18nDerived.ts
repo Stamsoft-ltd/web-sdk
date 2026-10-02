@@ -21,4 +21,16 @@ export const i18nDerived = {
 	lossLimitReached: () => stateI18nDerived.translate('LOSS LIMIT REACHED'),
 	singleWinLimitReached: () => stateI18nDerived.translate('SINGLE WIN LIMIT REACHED'),
 	settings: () => stateI18nDerived.translate('SETTINGS'),
+	// Error modal copy (ModalError). The key IS the English sentence so a game whose catalog lacks
+	// the entry still renders readable English rather than a bare key.
+	errorNetwork: () =>
+		stateI18nDerived.translate('CONNECTION PROBLEM. PLEASE CHECK YOUR CONNECTION AND TRY AGAIN.'),
+	errorSession: () =>
+		stateI18nDerived.translate('YOUR SESSION HAS EXPIRED. PLEASE RELOAD THE GAME.'),
+	errorLimits: () =>
+		stateI18nDerived.translate('YOUR ACCOUNT LIMIT HAS BEEN REACHED.'),
+	errorReplay: () =>
+		stateI18nDerived.translate('THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.'),
+	errorGeneral: () =>
+		stateI18nDerived.translate('SOMETHING WENT WRONG. PLEASE TRY AGAIN.'),
 };

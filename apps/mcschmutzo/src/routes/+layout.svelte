@@ -4,6 +4,7 @@
 	import { Authenticate, LoadI18n } from 'components-shared';
 	import Game from '../components/Game.svelte';
 	import PressPlayLoader from '../components/PressPlayLoader.svelte';
+	import SocialI18nSync from '../components/SocialI18nSync.svelte';
 	import { setContext } from '../game/context';
 
 	import messagesMap from '../i18n/messagesMap';
@@ -18,6 +19,7 @@
 <GlobalStyle>
 	<Authenticate>
 		<LoadI18n {messagesMap}>
+			<SocialI18nSync />
 			<Game />
 		</LoadI18n>
 	</Authenticate>

@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { cropExtra, cropSprite } from '../game/chefCrops';
 	import { Container, Graphics, Sprite } from 'pixi-svelte';
 
 	import type { SquirtGraphics } from '../game/ketchupSquirt';
 
 	import { getContext } from '../game/context';
 	import { mascotIdle } from '../game/mascotIdle';
-	import AnimatedGuy from './AnimatedGuy.svelte';
+	import AnimatedGuy, { GUY_CROPS, cropPivot, cropRect } from './AnimatedGuy.svelte';
 
 	const context = getContext();
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
@@ -89,9 +88,11 @@
 	const chefT = $derived(guyPose.y - guyPose.height / 2);
 	const PIVX = 0.452; // middle of the baked joint strip (frame fractions)
 	const PIVY = 0.5;
-	const armCrop = cropSprite('specialArm', PIVX, PIVY);
 	const pivotX = $derived(chefL + PIVX * guyPose.width);
 	const pivotY = $derived(chefT + PIVY * guyPose.height);
+	// The arm layer is cropped to its opaque box: same shoulder pivot, expressed inside the crop.
+	const ARM_RECT = cropRect(GUY_CROPS.specialArm);
+	const ARM_ANCHOR = cropPivot(GUY_CROPS.specialArm, PIVX, PIVY);
 	// The cap's holes face sits at frame (0.352, 0.466) — salt exits right there.
 	const CAP_DX = 0.352 - PIVX;
 	const CAP_DY = 0.466 - PIVY;
@@ -176,6 +177,7 @@
 	     one so it stays covered), and a tooth *ding* sparkles. -->
 	<AnimatedGuy
 		baseKey="specialBase"
+		baseRect={cropRect(GUY_CROPS.specialBase)}
 		x={guyPose.x}
 		y={guyPose.y}
 		width={guyPose.width}
@@ -189,9 +191,9 @@
 		extras={[
 			// Nametag first, so the pointing hand sits over it.
 			{ key: 'specialLabel', nx: 0.5643, ny: 0.5737, nw: 0.1984, nh: 0.1119, px: 0.5, py: 0.13, amp: 0.045, period: 320, phase: 900 },
-			// Pointing hand: slow ~1.3° sway about the wrist (cuff), like the board chef's.
-			{ ...cropExtra('specialHand', [0.982, 0.7244]), amp: 0.023, period: 700, phase: 1500 },
-			{ ...cropExtra('specialBrows'), amp: 0 },
+			// Pointing hand: breath drift + a random "point-point" about the wrist, like the board chef's.
+			{ key: 'specialHand', ...cropRect(GUY_CROPS.specialHand), ...cropPivot(GUY_CROPS.specialHand, 0.982, 0.7244), gesture: { tip: -1, breath: Math.sin(elapsed / 580) } },
+			{ key: 'specialBrows', ...cropRect(GUY_CROPS.specialBrows), amp: 0 },
 		]}
 	/>
 	<!-- Salt-shaker forearm overlay: flicks about the shoulder (above the base, below the salt). -->
@@ -199,9 +201,9 @@
 		key="specialArm"
 		x={pivotX}
 		y={pivotY}
-		anchor={armCrop.anchor}
-		width={guyPose.width * armCrop.sw}
-		height={guyPose.height * armCrop.sh}
+		anchor={{ x: ARM_ANCHOR.px, y: ARM_ANCHOR.py }}
+		width={guyPose.width * ARM_RECT.nw}
+		height={guyPose.height * ARM_RECT.nh}
 		rotation={armAngle}
 		zIndex={0.5}
 	/>

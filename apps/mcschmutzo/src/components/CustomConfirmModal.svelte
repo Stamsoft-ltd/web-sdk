@@ -1,6 +1,7 @@
 <script lang="ts" module>
 	// Module scope so the art preloads during the loading screen (the modal mounts on demand).
 	import { ap } from '../lib/preloadArt';
+	import { i18nDerived } from '../i18n/i18nDerived';
 
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
 </script>
@@ -32,7 +33,7 @@
 	type="button"
 	style={`background-image:url('${closeArt}')`}
 	onclick={dismiss}
-	aria-label="Close"
+	aria-label={i18nDerived.translate('CLOSE')}
 ></button>
 
 <div class="cf-root" role="dialog" aria-modal="true">

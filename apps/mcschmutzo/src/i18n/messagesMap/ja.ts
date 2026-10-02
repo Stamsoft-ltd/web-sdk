@@ -2,13 +2,13 @@ export default {
 
 	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
 	"INFO SCATTER TITLE": "スキャッター / ボーナスシンボル",
-	"INFO SCATTER BODY": "ボーナスシンボルはスキャッターシンボルであり、すべてのリールに出現することができます。スキャッターシンボルが揃うと、2つのフリーゲームモードのいずれかが発動します。",
+	"INFO SCATTER BODY": "BONUSシンボルはスキャッターシンボルで、どのリールにも出現します。スキャッターシンボルが3個または4個出現するとフリーゲームが始まり、必ずボーナスホイールのスピンから開始します。ホイールはフリーゲーム6～30回を付与し、ウィンマルチプライヤーを3～15段階上昇させます。",
 	"INFO SCATTER 3 TITLE": "スキャッター - ノーマルボーナス",
-	"INFO SCATTER 3 BODY": "3つのスキャッターシンボルが揃うとノーマルボーナスが発動します。プレイヤーはノーマルフリーゲームモードに突入します。ノーマルボーナスは標準のフリーゲーム構成と、それに対応する初期のウィンマルチプライヤーの進行を使用します。フィーチャーに持ち込まれた有効なウィンマルチプライヤーは、該当する場合、フリーゲーム突入結果と組み合わされます。ウィンマルチプライヤーはフリーゲームフィーチャー全体を通じて持続し、プレイ中に上昇することがあります。フリーゲームの間にリセットされることはありません。",
+	"INFO SCATTER 3 BODY": "スキャッターシンボル3個でノーマルボーナスが始まります。ボーナスホイールがフリーゲームの回数と開始時のウィンマルチプライヤーを決定します。ウィンマルチプライヤーはさらに上昇でき、フリーゲーム中は一度もリセットされません。",
 	"INFO SCATTER 4 TITLE": "スキャッター - スーパーボーナス",
-	"INFO SCATTER 4 BODY": "4つのスキャッターシンボルが揃うとスーパーボーナスが発動します。スーパーボーナスは、ノーマルボーナスと比較して強化された初期構成で開始します。プレイヤーは、このモードに定義された最大 / 強化された突入条件を備えたスーパーフリーゲーム設定を受け取ります。ウィンマルチプライヤーはスーパーボーナス全体を通じて持続し、フリーゲーム中も上昇し続けることがあります。フリーゲームの間にリセットされることはありません。",
-	"INFO FREEGAMES BODY 1": "フリーゲーム中も、同じ基本的な勝利とリスピンの仕組みが有効なままです。条件を満たす勝利の接続が成立するたびに、一致する勝利シンボルが自動的にロックされ、リスピンが発動します。",
-	"INFO FREEGAMES BODY 2": "リスピン中に追加された一致するシンボルはロックされ、シーケンスの継続を可能にします。フィーチャー中に出現するMcSchmutzoシンボルはウィンマルチプライヤーを上昇させることがあります。累積したウィンマルチプライヤーはフリーゲームフィーチャー全体を通じて有効なままです。",
+	"INFO SCATTER 4 BODY": "スキャッターシンボル4個でスーパーボーナスが始まります。ノーマルボーナスと同様に進行しますが、強化されたボーナスホイールのスピンから始まります。ウィンマルチプライヤーはさらに上昇でき、フリーゲーム中は一度もリセットされません。",
+	"INFO FREEGAMES BODY 1": "フリーゲーム中も、ライン配当とロック＆リスピンのルールは同じです。条件を満たす当たりの組み合わせが成立するたびに、当たりシンボルがロックされリスピンが発生します。McSchmutzoシンボルはウィンマルチプライヤーの段階を追加でき、ウィンマルチプライヤーはフィーチャー終了まですべての配当に適用されます。",
+	"INFO FREEGAMES BODY 2": "フリーゲームは再トリガーできません。フリーゲーム中に出現したスキャッターシンボルで追加のフリーゲームは付与されません。",
 	"INFO WAYS BODY": "McSchmutzoは5×5のリール構成で、50本の固定ペイラインでプレイします。左端のリールから左から右へ、50本のペイラインのいずれか1本の上に3個、4個、または5個の一致するシンボルが揃うと勝利になります。ワイルドはすべての通常配当シンボルの代わりとなり、勝利の組み合わせの完成を助けますが、スキャッターや特別なマルチプライヤーシンボルの代わりにはなりません。勝利の組み合わせは配当表に従って配当されます。",
 	"INFO LOCKRESPIN TITLE": "ロック & リスピン",
 	"INFO LOCKRESPIN BODY": "いかなる勝利の組み合わせもロック & リスピンフィーチャーを発動させることがあります。発動すると、最も価値の高い勝利シンボルがその位置にロックされ、残りの位置が再度スピンします。追加の一致するシンボルや新しい勝利位置が現在の勝利に加わると、さらにリスピンが付与されます。リスピンは勝利が増え続ける限り続き、新しい一致するシンボルや位置が加わらなくなったとき、またはリール構成が勝利シンボルで埋まったときに終了します。リスピンのシーケンスが終了すると、最終的に累積した配当が付与されます。",
@@ -18,14 +18,12 @@ export default {
 	'CARD CHANCE TITLE': 'エクストラチャンス',
 	'CARD CHANCE DESC': 'ボーナス到達のチャンスをアップ。',
 	'CARD FEATURE TITLE': 'ロックフィーチャースピン',
-	'CARD FEATURE DESC': '配当のあるスピンを保証し、ロック＆リスピンを開始。',
+	"CARD FEATURE DESC": "当たりスピンを保証し、ロック＆リスピンを開始。",
 	'CARD DEALIT DESC': '3つのスキャッターでノーマルボーナスに突入。',
 	'CARD ALLIN DESC': '4つのスキャッターでスーパーボーナスに突入。',
 	'CONFIRM TEXT': '%mode%を%cost%で購入しますか？',
 	'NORMAL BONUS': 'ノーマルボーナス',
 	'SUPER BONUS': 'スーパーボーナス',
-	'CONFIRM IT ALL': 'すべて確定',
-	'BUY ALL IN': 'オールインを%cost%で購入',
 	CONFIRM: '確定',
 	CANCEL: 'キャンセル',
 
@@ -33,13 +31,13 @@ export default {
 	'AUTO SPIN': 'オートスピン',
 	'TURBO SPIN': 'ターボスピン',
 	'SUPER TURBO SPIN': 'スーパーターボスピン',
-	'LOCK FEATURE SPIN': '50Xボーナスフィーチャー',
+	"LOCK FEATURE SPIN": "ロックフィーチャースピン",
 	'NUMBER OF SPINS': 'スピン回数',
 	'START AUTOPLAY': 'オートプレイ開始',
 
 	// ── Recovery / interrupted round ─────────────────────────────────────────────────────────────
 	'UNFINISHED ROUND': '未完了のラウンド',
-	'ACTIVE BONUS IN PROGRESS': '進行中の%bonus%ボーナスがあります。',
+	"ACTIVE BONUS IN PROGRESS": "進行中の%bonus%があります。",
 	'ACTIVE ROUND IN PROGRESS': '進行中のボーナスがあります。',
 	'END ROUND': 'ラウンド終了',
 	'PLAY ROUND': 'ラウンドをプレイ',
@@ -49,10 +47,8 @@ export default {
 	AUTO: 'オート',
 	CONGRATS: 'おめでとう！',
 	'YOU WON': '獲得',
-	'ALL IN BONUS TITLE': 'オールインボーナス',
 	'NORMAL BONUS TITLE': 'ノーマルボーナス',
-	'BONUS BLURB':
-		'%count%回のフリースピン。ランダムな拡張シンボルとマルチプライヤーは2xからスタートし、接続ごとに倍増。',
+	"BONUS BLURB": "条件を満たすすべての当たりでロック＆リスピン、リセットされないウィンマルチプライヤー付きのフリースピン%count%回",
 	'FREE SPINS': 'フリースピン',
 	'PRESS TO CONTINUE': 'タップして続行',
 	'FREE GAMES': 'フリーゲーム',
@@ -91,7 +87,7 @@ export default {
 	'INFO OVERVIEW BODY':
 		'McSchmutzoは5×5のリール構成でプレイし、50本の固定ペイラインで配当します。勝利の組み合わせは、有効なペイライン上で一致するシンボルが左端のリールから連続するリールに揃うことで成立します。すべての配当は配当表に表示されたシンボルの価値に従って計算されます。1回のゲームラウンドで複数の勝利の組み合わせが成立する場合があります。',
 	'INFO MAX WIN LABEL': '最大配当：',
-	'INFO MAX WIN VALUE': '25,000×ベット',
+	"INFO MAX WIN VALUE": "%value%×ベット",
 	'INFO RTP LABEL': '理論上のRTP：',
 
 	// ── Info / rules popup: FEATURES ─────────────────────────────────────────────────────────────
@@ -107,29 +103,15 @@ export default {
 	'INFO RESPIN BODY 3':
 		'リスピンのシーケンス中に生じたすべての配当は、現在のゲームラウンドの配当に加算されます。',
 	'INFO MULT TITLE': 'ウィンマルチプライヤー',
-	'INFO MULT BODY 1':
-		'リスピンフィーチャー中、McSchmutzoシンボルが出現してウィンマルチプライヤーを上昇させることがあります。条件を満たす各McSchmutzoシンボルは、ウィンマルチプライヤーのステップを追加できます。ウィンマルチプライヤーは1xからスタートします。マルチプライヤーは次のレベルを進行します：',
-	'INFO MULT BODY 2':
-		'現在のウィンマルチプライヤーはゲームの数学に従って適用され、現在のリスピンのシーケンス全体を通じて有効なままです。',
+	"INFO MULT BODY 1": "リスピン中とフリーゲーム中にMcSchmutzoシンボルが出現し、ウィンマルチプライヤーを上昇させることがあります。条件を満たす各McSchmutzoシンボルはウィンマルチプライヤーの段階を追加できます。ウィンマルチプライヤーは1xから始まり、次のレベルを順に進みます：",
+	"INFO MULT BODY 2": "現在のウィンマルチプライヤーはすべてのライン配当に適用されます。ベースゲームでは進行中のリスピンシーケンスの間有効で、フリーゲーム中は一度もリセットされません。",
 	'INFO COMING SOON': '近日公開。',
 
 	// ── Info / rules popup: FEATURE BUY ──────────────────────────────────────────────────────────
-	'INFO FB1 TITLE': '強化モード1',
-	'INFO FB1 BODY':
-		'ベースベットの2×のコストで、フリーゲーム発動のチャンスが4×に増加します。その他のゲームの仕組みはすべて変わりません。',
-	'INFO FB1 COST': 'ベースベットの2×',
-	'INFO FB2 TITLE': '強化モード2',
-	'INFO FB2 BODY':
-		'ベースベットの10×のコストで、フリーゲーム発動のチャンスが4×に増加し、強化モードはスーパーボーナス/最大突入条件に向けて設定されます。その他のゲームの仕組みはすべて変わりません。',
-	'INFO FB2 COST': 'ベースベットの10×',
-	'INFO FB3 TITLE': 'ノーマルボーナス',
-	'INFO FB3 BODY':
-		'ベースベットの100×のコストで、プレイヤーは直接ノーマルボーナスに突入します。ノーマルボーナスは標準のフリーゲーム突入設定でプレイされます。',
-	'INFO FB3 COST': 'ベースベットの100×',
-	'INFO FB4 TITLE': 'スーパーボーナス',
-	'INFO FB4 BODY':
-		'ベースベットの500×のコストで、プレイヤーは直接スーパーボーナスに突入します。スーパーボーナスは強化された/最大のフリーゲーム突入設定で開始します。',
-	'INFO FB4 COST': 'ベースベットの500×',
+	"INFO FB1 BODY": "有効中は各スピンが下記の金額となり、フリーゲームが始まる確率が上がります。その他のゲームの仕組みは変わりません。無効にするまで有効なままです。",
+	"INFO FB2 BODY": "有効中は各スピンが下記の金額となり、ロック＆リスピンを開始する当たりスピンが保証されます。無効にするまで有効なままです。",
+	"INFO FB3 BODY": "スキャッターシンボルが3個出現したのと同様に、ノーマルボーナスを即座に開始します。ボーナスはボーナスホイールのスピンから始まります。",
+	"INFO FB4 BODY": "スキャッターシンボルが4個出現したのと同様に、スーパーボーナスを即座に開始します。ボーナスはボーナスホイールのスピンから始まります。",
 
 	// ── Info / rules popup: GENERAL INFO ─────────────────────────────────────────────────────────
 	'INFO INTERRUPTED BODY 1':
@@ -142,7 +124,7 @@ export default {
 		'期待される還元率は多数のプレイにわたって計算されます。ゲームの表示はいかなる物理的な装置を表すものではなく、説明目的のみのものです。',
 	'INFO LEGAL BODY 3':
 		'配当はリモートゲームサーバーから受信した金額に従って清算され、ウェブブラウザ内のイベントによるものではありません。',
-	'INFO LEGAL COPYRIGHT': 'TMおよび© 2026 Stake Engine.',
+	"INFO LEGAL COPYRIGHT": "TM および © 2026 Engine。",
 
 	// ── Info / rules popup: USER INTERFACE GUIDE (labels + descriptions) ─────────────────────────
 	'UI AUTO SPINS': 'オートスピン',
@@ -170,14 +152,12 @@ export default {
 
 	// ── Common UI terms (shared across Stake games; copied from magnetic/forest) ──
 	"ACTIVATE": "有効化",
-	"ALL IN": "MEGA CHAIN",
 	"AUTOPLAY": "オート",
 	"BALANCE": "残高",
 	"BET": "ベット",
 	"BUY": "購入",
 	"BUY BONUS": "ボーナス購入",
 	"DEACTIVATE": "無効化",
-	"DEAL IT": "DROP-O-MAGNET",
 	"EVENT": "イベント",
 	"GAME RULES": "ゲームルール",
 	"MODE": "モード",
@@ -199,4 +179,22 @@ export default {
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "最大",
 	"CONFIRM PURCHASE": "購入の確認",
+
+	// ── Rules / buy-confirm / HUD keys added in the 2026-10 copy fix ──
+	"CONFIRM ACTIVATE TEXT": "%mode%を有効にしますか？各スピンは%cost%です。",
+	"FEWER SPINS": "スピンを減らす",
+	"MORE SPINS": "スピンを増やす",
+	"SUPER BONUS TITLE": "スーパーボーナス",
+	"REMAINING AUTO SPINS": "残りオートスピン：%count%",
+	"INFO RTP SHORT": "RTP：",
+	"INFO FB COST": "ベースベットの%cost%×",
+
+	// ── Error / notification modal copy (mirrors the en.ts block, 2026-10-01) ──
+	"NOTIFICATION": "お知らせ",
+	"INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.": "このベットに必要な残高が不足しています。アカウントに入金するか、ベットレベルを下げてください。",
+	"CONNECTION PROBLEM. PLEASE CHECK YOUR CONNECTION AND TRY AGAIN.": "接続に問題があります。接続を確認して、もう一度お試しください。",
+	"YOUR SESSION HAS EXPIRED. PLEASE RELOAD THE GAME.": "セッションの有効期限が切れました。ゲームを再読み込みしてください。",
+	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "アカウントの上限に達しました。",
+	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "このリプレイを読み込めませんでした。もう一度お試しください。",
+	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "問題が発生しました。もう一度お試しください。",
 };

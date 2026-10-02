@@ -2,13 +2,13 @@ export default {
 
 	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
 	"INFO SCATTER TITLE": "SCATTER- / BONUS-SYMBOL",
-	"INFO SCATTER BODY": "Das BONUS-Symbol ist das Scatter-Symbol und kann auf allen Walzen erscheinen. Landen Scatter-Symbole, wird einer von zwei Freispiel-Modi aktiviert.",
+	"INFO SCATTER BODY": "Das BONUS-Symbol ist das Scatter-Symbol und kann auf jeder Walze landen. 3 oder 4 Scatter-Symbole lösen die Freispiele aus, die immer mit einem Dreh am Bonusrad beginnen. Das Rad vergibt 6 bis 30 Freispiele und erhöht den Gewinnmultiplikator um 3 bis 15 Stufen.",
 	"INFO SCATTER 3 TITLE": "SCATTER - Normal-Bonus",
-	"INFO SCATTER 3 BODY": "Landen 3 Scatter-Symbole, wird der Normal-Bonus ausgelöst. Der Spieler betritt den Normal-Freispiel-Modus. Der Normal-Bonus verwendet die standardmäßige Freispiel-Konfiguration und die entsprechende anfängliche Gewinnmultiplikator-Progression. Ein aktiver Gewinnmultiplikator, der in das Feature übernommen wird, wird gegebenenfalls mit dem Freispiel-Eintrittsergebnis kombiniert. Der Gewinnmultiplikator bleibt während des gesamten Freispiel-Features aktiv und kann während des Spiels ansteigen. Er wird zwischen den Freispielen nicht zurückgesetzt.",
+	"INFO SCATTER 3 BODY": "Landen 3 Scatter-Symbole, wird der Normal-Bonus ausgelöst. Das Bonusrad bestimmt die Anzahl der Freispiele und den Gewinnmultiplikator, mit dem sie beginnen. Der Gewinnmultiplikator kann weiter steigen und wird während der Freispiele nie zurückgesetzt.",
 	"INFO SCATTER 4 TITLE": "SCATTER - Super-Bonus",
-	"INFO SCATTER 4 BODY": "Landen 4 Scatter-Symbole, wird der Super-Bonus ausgelöst. Der Super-Bonus beginnt mit einer verstärkten Startkonfiguration im Vergleich zum Normal-Bonus. Der Spieler erhält das Super-Freispiel-Setup mit den maximalen / verstärkten Eintrittsbedingungen, die für diesen Modus definiert sind. Der Gewinnmultiplikator bleibt während des gesamten Super-Bonus aktiv und kann während der Freispiele weiter ansteigen. Er wird zwischen den Freispielen nicht zurückgesetzt.",
-	"INFO FREEGAMES BODY 1": "Während der Freispiele bleiben dieselben grundlegenden Gewinn- und Re-Spin-Mechaniken aktiv. Immer wenn eine qualifizierende Gewinnverbindung entsteht, werden die übereinstimmenden Gewinnsymbole automatisch fixiert und ein Re-Spin wird ausgelöst.",
-	"INFO FREEGAMES BODY 2": "Zusätzliche übereinstimmende Symbole, die während des Re-Spins hinzugefügt werden, werden fixiert, sodass die Sequenz fortgesetzt werden kann. McSchmutzo-Symbole, die während des Features erscheinen, können den Gewinnmultiplikator erhöhen. Der angesammelte Gewinnmultiplikator bleibt während des gesamten Freispiel-Features aktiv.",
+	"INFO SCATTER 4 BODY": "Landen 4 Scatter-Symbole, wird der Super-Bonus ausgelöst. Er wird wie der Normal-Bonus gespielt, beginnt aber mit einem verstärkten Dreh am Bonusrad. Der Gewinnmultiplikator kann weiter steigen und wird während der Freispiele nie zurückgesetzt.",
+	"INFO FREEGAMES BODY 1": "Während der Freispiele gelten dieselben Regeln für Liniengewinne und Lock & Re-Spin. Immer wenn eine qualifizierende Gewinnverbindung entsteht, werden die Gewinnsymbole fixiert und ein Re-Spin wird ausgelöst. McSchmutzo-Symbole können Gewinnmultiplikator-Stufen hinzufügen, und der Gewinnmultiplikator gilt für jeden Gewinn bis zum Ende des Features.",
+	"INFO FREEGAMES BODY 2": "Freispiele können nicht erneut ausgelöst werden. Scatter-Symbole, die während der Freispiele landen, vergeben keine zusätzlichen Freispiele.",
 	"INFO WAYS BODY": "McSchmutzo wird auf einem 5×5-Raster mit 50 festen Gewinnlinien gespielt. Lande 3, 4 oder 5 übereinstimmende Symbole von links nach rechts, beginnend bei der äußersten linken Walze, auf einer der 50 Gewinnlinien, um einen Gewinn zu erzielen. Das Wild ersetzt alle regulären zahlenden Symbole und kann helfen, Gewinnkombinationen zu vervollständigen, ersetzt aber nicht die Scatter- oder speziellen Multiplikator-Symbole. Gewinnkombinationen werden gemäß der Gewinntabelle ausgezahlt.",
 	"INFO LOCKRESPIN TITLE": "LOCK & RE-SPIN",
 	"INFO LOCKRESPIN BODY": "Jede Gewinnkombination kann das Lock & Re-Spin-Feature auslösen. Bei Auslösung wird das höchstwertige Gewinnsymbol in Position fixiert, während die übrigen Positionen erneut drehen. Werden dem aktuellen Gewinn weitere übereinstimmende Symbole oder neue Gewinnpositionen hinzugefügt, wird ein weiterer Re-Spin vergeben. Re-Spins setzen sich fort, solange der Gewinn weiter wächst, und enden, wenn keine neuen übereinstimmenden Symbole oder Positionen hinzugefügt werden oder wenn das Raster mit Gewinnsymbolen gefüllt ist. Sobald die Re-Spin-Sequenz endet, wird der finale angesammelte Gewinn vergeben.",
@@ -24,8 +24,6 @@ export default {
 	'CONFIRM TEXT': '%mode% für %cost% kaufen?',
 	'NORMAL BONUS': 'Normal-Bonus',
 	'SUPER BONUS': 'Super-Bonus',
-	'CONFIRM IT ALL': 'ALLES BESTÄTIGEN',
-	'BUY ALL IN': 'All in für %cost% kaufen',
 	CONFIRM: 'BESTÄTIGEN',
 	CANCEL: 'ABBRECHEN',
 
@@ -33,13 +31,13 @@ export default {
 	'AUTO SPIN': 'AUTO-SPIN',
 	'TURBO SPIN': 'TURBO-SPIN',
 	'SUPER TURBO SPIN': 'SUPER-TURBO-SPIN',
-	'LOCK FEATURE SPIN': '50X BONUS-FEATURE',
+	"LOCK FEATURE SPIN": "LOCK-FEATURE-SPIN",
 	'NUMBER OF SPINS': 'ANZAHL DER SPINS',
 	'START AUTOPLAY': 'AUTOPLAY STARTEN',
 
 	// ── Recovery / interrupted round ─────────────────────────────────────────────────────────────
 	'UNFINISHED ROUND': 'UNVOLLENDETE RUNDE',
-	'ACTIVE BONUS IN PROGRESS': 'Du hast einen aktiven %bonus%-Bonus in Bearbeitung.',
+	"ACTIVE BONUS IN PROGRESS": "Du hast einen laufenden %bonus%.",
 	'ACTIVE ROUND IN PROGRESS': 'Du hast einen aktiven Bonus in Bearbeitung.',
 	'END ROUND': 'RUNDE BEENDEN',
 	'PLAY ROUND': 'RUNDE SPIELEN',
@@ -49,10 +47,8 @@ export default {
 	AUTO: 'AUTO',
 	CONGRATS: 'GLÜCKWUNSCH!',
 	'YOU WON': 'DU HAST GEWONNEN',
-	'ALL IN BONUS TITLE': 'ALL-IN-BONUS',
 	'NORMAL BONUS TITLE': 'NORMAL-BONUS',
-	'BONUS BLURB':
-		'%count% Freispiele mit zufälligem expandierendem Symbol und Multiplikator, der bei 2x startet und sich bei jeder Verbindung verdoppelt',
+	"BONUS BLURB": "%count% Freispiele mit Lock & Re-Spin bei jedem qualifizierenden Gewinn und einem Gewinnmultiplikator, der nie zurückgesetzt wird",
 	'FREE SPINS': 'FREISPIELE',
 	'PRESS TO CONTINUE': 'ZUM FORTFAHREN DRÜCKEN',
 	'FREE GAMES': 'FREISPIELE',
@@ -91,7 +87,7 @@ export default {
 	'INFO OVERVIEW BODY':
 		'McSchmutzo wird auf einem 5×5-Walzenraster gespielt und zahlt auf 50 festen Gewinnlinien aus. Gewinnkombinationen entstehen, wenn übereinstimmende Symbole auf einer aktiven Gewinnlinie landen, beginnend bei der äußersten linken Walze und fortlaufend auf den folgenden Walzen. Alle Gewinne werden gemäß den in der Gewinntabelle angezeigten Symbolwerten berechnet. In derselben Spielrunde können mehrere Gewinnkombinationen ausgezahlt werden.',
 	'INFO MAX WIN LABEL': 'Maximaler Gewinn:',
-	'INFO MAX WIN VALUE': '25.000× Einsatz',
+	"INFO MAX WIN VALUE": "%value%× Einsatz",
 	'INFO RTP LABEL': 'Theoretischer RTP:',
 
 	// ── Info / rules popup: FEATURES ─────────────────────────────────────────────────────────────
@@ -107,29 +103,15 @@ export default {
 	'INFO RESPIN BODY 3':
 		'Alle während der Re-Spin-Sequenz erzielten Gewinne werden dem aktuellen Spielrundengewinn hinzugefügt.',
 	'INFO MULT TITLE': 'GEWINNMULTIPLIKATOR',
-	'INFO MULT BODY 1':
-		'Während des Re-Spin-Features können McSchmutzo-Symbole erscheinen und den Gewinnmultiplikator erhöhen. Jedes qualifizierende McSchmutzo-Symbol kann Gewinnmultiplikator-Stufen hinzufügen. Der Gewinnmultiplikator beginnt bei 1x. Der Multiplikator durchläuft die folgenden Stufen:',
-	'INFO MULT BODY 2':
-		'Der aktuelle Gewinnmultiplikator wird gemäß der Spielmathematik angewendet und bleibt während der aktuellen Re-Spin-Sequenz aktiv.',
+	"INFO MULT BODY 1": "Während Re-Spins und Freispielen können McSchmutzo-Symbole erscheinen und den Gewinnmultiplikator erhöhen. Jedes qualifizierende McSchmutzo-Symbol kann Gewinnmultiplikator-Stufen hinzufügen. Der Gewinnmultiplikator beginnt bei 1x. Der Multiplikator durchläuft die folgenden Stufen:",
+	"INFO MULT BODY 2": "Der aktuelle Gewinnmultiplikator wird auf jeden Liniengewinn angewendet. Im Basisspiel bleibt er während der laufenden Re-Spin-Sequenz aktiv; in den Freispielen wird er nie zurückgesetzt.",
 	'INFO COMING SOON': 'Demnächst verfügbar.',
 
 	// ── Info / rules popup: FEATURE BUY ──────────────────────────────────────────────────────────
-	'INFO FB1 TITLE': 'VERSTÄRKTER MODUS 1',
-	'INFO FB1 BODY':
-		'Für Kosten von 2× dem Grundeinsatz wird die Chance, Freispiele auszulösen, um das 4-Fache erhöht. Alle anderen Spielmechaniken bleiben unverändert.',
-	'INFO FB1 COST': '2× der Grundeinsatz',
-	'INFO FB2 TITLE': 'VERSTÄRKTER MODUS 2',
-	'INFO FB2 BODY':
-		'Für Kosten von 10× dem Grundeinsatz wird die Chance, Freispiele auszulösen, um das 4-Fache erhöht, wobei der verstärkte Modus auf den Super-Bonus / die maximale Eintrittsbedingung ausgerichtet ist. Alle anderen Spielmechaniken bleiben unverändert.',
-	'INFO FB2 COST': '10× der Grundeinsatz',
-	'INFO FB3 TITLE': 'NORMAL-BONUS',
-	'INFO FB3 BODY':
-		'Für Kosten von 100× dem Grundeinsatz betritt der Spieler direkt den Normal-Bonus. Der Normal-Bonus wird mit seiner standardmäßigen Freispiel-Eintrittskonfiguration gespielt.',
-	'INFO FB3 COST': '100× der Grundeinsatz',
-	'INFO FB4 TITLE': 'SUPER-BONUS',
-	'INFO FB4 BODY':
-		'Für Kosten von 500× dem Grundeinsatz betritt der Spieler direkt den Super-Bonus. Der Super-Bonus beginnt mit seiner verstärkten / maximalen Freispiel-Eintrittskonfiguration.',
-	'INFO FB4 COST': '500× der Grundeinsatz',
+	"INFO FB1 BODY": "Solange aktiv, kostet jeder Spin den unten angegebenen Betrag und hat eine erhöhte Chance, die Freispiele auszulösen. Alle anderen Spielmechaniken bleiben unverändert. Bleibt aktiv, bis es deaktiviert wird.",
+	"INFO FB2 BODY": "Solange aktiv, kostet jeder Spin den unten angegebenen Betrag und ist garantiert ein Gewinnspin, der das Lock & Re-Spin-Feature startet. Bleibt aktiv, bis es deaktiviert wird.",
+	"INFO FB3 BODY": "Löst sofort den Normal-Bonus aus, als wären 3 Scatter-Symbole gelandet. Der Bonus beginnt mit einem Dreh am Bonusrad.",
+	"INFO FB4 BODY": "Löst sofort den Super-Bonus aus, als wären 4 Scatter-Symbole gelandet. Der Bonus beginnt mit einem Dreh am Bonusrad.",
 
 	// ── Info / rules popup: GENERAL INFO ─────────────────────────────────────────────────────────
 	'INFO INTERRUPTED BODY 1':
@@ -142,7 +124,7 @@ export default {
 		'Die erwartete Rückzahlung wird über viele Spiele hinweg berechnet. Die Spielanzeige stellt kein physisches Gerät dar und dient nur zur Veranschaulichung.',
 	'INFO LEGAL BODY 3':
 		'Gewinne werden gemäß dem vom Remote Game Server erhaltenen Betrag abgerechnet und nicht anhand von Ereignissen innerhalb des Webbrowsers.',
-	'INFO LEGAL COPYRIGHT': 'TM und © 2026 Stake Engine.',
+	"INFO LEGAL COPYRIGHT": "TM und © 2026 Engine.",
 
 	// ── Info / rules popup: USER INTERFACE GUIDE (labels + descriptions) ─────────────────────────
 	'UI AUTO SPINS': 'AUTO-SPINS',
@@ -170,14 +152,12 @@ export default {
 
 	// ── Common UI terms (shared across Stake games; copied from magnetic/forest) ──
 	"ACTIVATE": "AKTIVIEREN",
-	"ALL IN": "MEGA CHAIN",
 	"AUTOPLAY": "AUTOPLAY",
 	"BALANCE": "GUTHABEN",
 	"BET": "EINSATZ",
 	"BUY": "KAUFEN",
 	"BUY BONUS": "BONUS KAUFEN",
 	"DEACTIVATE": "DEAKTIVIEREN",
-	"DEAL IT": "DROP-O-MAGNET",
 	"EVENT": "EREIGNIS",
 	"GAME RULES": "SPIELREGELN",
 	"MODE": "MODUS",
@@ -199,4 +179,22 @@ export default {
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "GEWINNE BIS ZU",
 	"CONFIRM PURCHASE": "KAUF BESTÄTIGEN",
+
+	// ── Rules / buy-confirm / HUD keys added in the 2026-10 copy fix ──
+	"CONFIRM ACTIVATE TEXT": "%mode% aktivieren? Jeder Spin kostet %cost%.",
+	"FEWER SPINS": "Weniger Spins",
+	"MORE SPINS": "Mehr Spins",
+	"SUPER BONUS TITLE": "SUPER-BONUS",
+	"REMAINING AUTO SPINS": "Verbleibende Auto-Spins: %count%",
+	"INFO RTP SHORT": "RTP:",
+	"INFO FB COST": "%cost%× der Grundeinsatz",
+
+	// ── Error / notification modal copy (mirrors the en.ts block, 2026-10-01) ──
+	"NOTIFICATION": "HINWEIS",
+	"INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.": "NICHT GENÜGEND GUTHABEN FÜR DIESEN EINSATZ. BITTE ZAHLE GUTHABEN AUF DEIN KONTO EIN ODER SENKE DEN EINSATZ.",
+	"CONNECTION PROBLEM. PLEASE CHECK YOUR CONNECTION AND TRY AGAIN.": "VERBINDUNGSPROBLEM. BITTE ÜBERPRÜFE DEINE VERBINDUNG UND VERSUCHE ES ERNEUT.",
+	"YOUR SESSION HAS EXPIRED. PLEASE RELOAD THE GAME.": "DEINE SITZUNG IST ABGELAUFEN. BITTE LADE DAS SPIEL NEU.",
+	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "DEIN KONTOLIMIT WURDE ERREICHT.",
+	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "DIESE WIEDERHOLUNG KONNTE NICHT GELADEN WERDEN. BITTE VERSUCHE ES ERNEUT.",
+	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "ETWAS IST SCHIEFGELAUFEN. BITTE VERSUCHE ES ERNEUT.",
 };

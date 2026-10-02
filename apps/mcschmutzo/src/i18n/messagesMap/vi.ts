@@ -2,13 +2,13 @@ export default {
 
 	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
 	"INFO SCATTER TITLE": "BIỂU TƯỢNG SCATTER / THƯỞNG",
-	"INFO SCATTER BODY": "Biểu tượng THƯỞNG chính là biểu tượng Scatter và có thể xuất hiện trên tất cả các cuộn. Khi các biểu tượng Scatter xuất hiện, một trong hai chế độ Vòng Miễn Phí sẽ được kích hoạt.",
+	"INFO SCATTER BODY": "Biểu tượng BONUS là biểu tượng Scatter và có thể xuất hiện trên bất kỳ cuộn nào. 3 hoặc 4 biểu tượng Scatter kích hoạt Vòng Miễn Phí, luôn bắt đầu bằng một lượt quay Vòng Quay Thưởng. Vòng quay trao từ 6 đến 30 Vòng Miễn Phí và nâng Hệ Số Nhân Thắng thêm 3 đến 15 bậc.",
 	"INFO SCATTER 3 TITLE": "SCATTER - Vòng Thưởng Thường",
-	"INFO SCATTER 3 BODY": "Xuất hiện 3 biểu tượng Scatter sẽ kích hoạt Vòng Thưởng Thường. Người chơi vào chế độ Vòng Miễn Phí Thường. Vòng Thưởng Thường sử dụng cấu hình Vòng Miễn Phí tiêu chuẩn cùng tiến trình Hệ Số Nhân Thắng khởi đầu tương ứng. Bất kỳ Hệ Số Nhân Thắng nào đang hoạt động được mang vào tính năng sẽ được kết hợp với kết quả vào Vòng Miễn Phí nếu áp dụng được. Hệ Số Nhân Thắng được duy trì trong suốt toàn bộ tính năng Vòng Miễn Phí và có thể tăng lên trong khi chơi. Nó không đặt lại giữa các Vòng Miễn Phí.",
+	"INFO SCATTER 3 BODY": "3 biểu tượng Scatter kích hoạt Vòng Thưởng Thường. Vòng Quay Thưởng quyết định số Vòng Miễn Phí và Hệ Số Nhân Thắng khởi đầu. Hệ Số Nhân Thắng có thể tiếp tục tăng và không bao giờ bị đặt lại trong Vòng Miễn Phí.",
 	"INFO SCATTER 4 TITLE": "SCATTER - Vòng Thưởng Siêu Cấp",
-	"INFO SCATTER 4 BODY": "Xuất hiện 4 biểu tượng Scatter sẽ kích hoạt Vòng Thưởng Siêu Cấp. Vòng Thưởng Siêu Cấp bắt đầu với cấu hình khởi đầu nâng cao so với Vòng Thưởng Thường. Người chơi nhận được thiết lập Vòng Miễn Phí Siêu Cấp với các điều kiện vào tối đa / nâng cao được quy định cho chế độ này. Hệ Số Nhân Thắng được duy trì trong suốt toàn bộ Vòng Thưởng Siêu Cấp và có thể tiếp tục tăng trong Vòng Miễn Phí. Nó không đặt lại giữa các Vòng Miễn Phí.",
-	"INFO FREEGAMES BODY 1": "Trong Vòng Miễn Phí, các cơ chế thắng cốt lõi và Quay Lại vẫn hoạt động như thường lệ. Mỗi khi một kết nối thắng đủ điều kiện xuất hiện, các biểu tượng thắng giống nhau sẽ tự động khóa lại và kích hoạt một lượt Quay Lại.",
-	"INFO FREEGAMES BODY 2": "Các biểu tượng giống nhau bổ sung được thêm vào trong lượt Quay Lại sẽ bị khóa, cho phép chuỗi tiếp tục. Các biểu tượng McSchmutzo xuất hiện trong tính năng có thể tăng Hệ Số Nhân Thắng. Hệ Số Nhân Thắng tích lũy vẫn hoạt động trong suốt toàn bộ tính năng Vòng Miễn Phí.",
+	"INFO SCATTER 4 BODY": "4 biểu tượng Scatter kích hoạt Vòng Thưởng Siêu Cấp. Vòng này diễn ra như Vòng Thưởng Thường nhưng bắt đầu bằng một lượt quay Vòng Quay Thưởng được tăng cường. Hệ Số Nhân Thắng có thể tiếp tục tăng và không bao giờ bị đặt lại trong Vòng Miễn Phí.",
+	"INFO FREEGAMES BODY 1": "Trong Vòng Miễn Phí, các quy tắc thắng theo đường và Khóa & Quay Lại vẫn được áp dụng. Mỗi khi hình thành một kết nối thắng hợp lệ, các biểu tượng thắng sẽ bị khóa và một lượt Quay Lại được kích hoạt. Biểu tượng McSchmutzo có thể cộng thêm bậc cho Hệ Số Nhân Thắng, và Hệ Số Nhân Thắng áp dụng cho mọi khoản thắng cho đến khi tính năng kết thúc.",
+	"INFO FREEGAMES BODY 2": "Vòng Miễn Phí không thể được kích hoạt lại. Biểu tượng Scatter xuất hiện trong Vòng Miễn Phí không trao thêm Vòng Miễn Phí.",
 	"INFO WAYS BODY": "McSchmutzo được chơi trên bố cục cuộn 5×5 với 50 dòng thắng cố định. Xếp 3, 4, hoặc 5 biểu tượng giống nhau từ trái sang phải, bắt đầu từ cuộn ngoài cùng bên trái, trên một trong 50 dòng thắng để tạo thành chiến thắng. Wild thay thế cho tất cả các biểu tượng trả thưởng thông thường và có thể giúp hoàn thành các tổ hợp thắng, nhưng nó không thay thế cho biểu tượng Scatter hoặc biểu tượng Hệ Số Nhân đặc biệt. Các tổ hợp thắng được trả thưởng theo Bảng Thưởng.",
 	"INFO LOCKRESPIN TITLE": "KHÓA & QUAY LẠI",
 	"INFO LOCKRESPIN BODY": "Bất kỳ tổ hợp thắng nào cũng có thể kích hoạt tính năng Khóa & Quay Lại. Khi được kích hoạt, biểu tượng thắng có giá trị cao nhất sẽ khóa tại vị trí trong khi các vị trí còn lại quay lại. Nếu có thêm biểu tượng giống nhau hoặc vị trí thắng mới được thêm vào tổ hợp thắng hiện tại, một lượt Quay Lại khác sẽ được trao. Các lượt Quay Lại tiếp tục miễn là tiền thắng vẫn tăng và kết thúc khi không còn biểu tượng giống nhau hoặc vị trí mới nào được thêm vào, hoặc khi bố cục cuộn được lấp đầy bằng các biểu tượng thắng. Khi chuỗi Quay Lại kết thúc, tiền thắng tích lũy cuối cùng sẽ được trao.",
@@ -24,8 +24,6 @@ export default {
 	'CONFIRM TEXT': 'Mua %mode% với giá %cost%?',
 	'NORMAL BONUS': 'Vòng Thưởng Thường',
 	'SUPER BONUS': 'Vòng Thưởng Siêu Cấp',
-	'CONFIRM IT ALL': 'XÁC NHẬN TẤT CẢ',
-	'BUY ALL IN': 'Mua All In với giá %cost%',
 	CONFIRM: 'XÁC NHẬN',
 	CANCEL: 'HỦY',
 
@@ -33,13 +31,13 @@ export default {
 	'AUTO SPIN': 'TỰ ĐỘNG QUAY',
 	'TURBO SPIN': 'QUAY NHANH',
 	'SUPER TURBO SPIN': 'QUAY SIÊU NHANH',
-	'LOCK FEATURE SPIN': '50X TÍNH NĂNG THƯỞNG',
+	"LOCK FEATURE SPIN": "LƯỢT QUAY KHÓA",
 	'NUMBER OF SPINS': 'SỐ LƯỢT QUAY',
 	'START AUTOPLAY': 'BẮT ĐẦU TỰ ĐỘNG',
 
 	// ── Recovery / interrupted round ─────────────────────────────────────────────────────────────
 	'UNFINISHED ROUND': 'VÁN CHƯA HOÀN THÀNH',
-	'ACTIVE BONUS IN PROGRESS': 'Bạn đang có vòng thưởng %bonus% chưa kết thúc.',
+	"ACTIVE BONUS IN PROGRESS": "Bạn đang có %bonus% chưa kết thúc.",
 	'ACTIVE ROUND IN PROGRESS': 'Bạn đang có vòng thưởng chưa kết thúc.',
 	'END ROUND': 'KẾT THÚC VÁN',
 	'PLAY ROUND': 'CHƠI TIẾP',
@@ -49,10 +47,8 @@ export default {
 	AUTO: 'TỰ ĐỘNG',
 	CONGRATS: 'CHÚC MỪNG!',
 	'YOU WON': 'BẠN THẮNG',
-	'ALL IN BONUS TITLE': 'VÒNG THƯỞNG ALL IN',
 	'NORMAL BONUS TITLE': 'VÒNG THƯỞNG THƯỜNG',
-	'BONUS BLURB':
-		'%count% lượt quay miễn phí với biểu tượng mở rộng ngẫu nhiên và hệ số nhân bắt đầu từ 2x và nhân đôi mỗi khi có kết nối',
+	"BONUS BLURB": "%count% lượt quay miễn phí với Khóa & Quay Lại ở mỗi lần thắng hợp lệ và Hệ Số Nhân Thắng không bao giờ bị đặt lại",
 	'FREE SPINS': 'QUAY MIỄN PHÍ',
 	'PRESS TO CONTINUE': 'NHẤN ĐỂ TIẾP TỤC',
 	'FREE GAMES': 'VÒNG MIỄN PHÍ',
@@ -91,7 +87,7 @@ export default {
 	'INFO OVERVIEW BODY':
 		'McSchmutzo được chơi trên bố cục cuộn 5×5 và trả thưởng trên 50 dòng thắng cố định. Các tổ hợp thắng được hình thành khi các biểu tượng giống nhau xuất hiện trên một dòng thắng đang hoạt động, bắt đầu từ cuộn ngoài cùng bên trái và tiếp tục trên các cuộn liên tiếp. Tất cả tiền thắng được tính theo giá trị biểu tượng hiển thị trong Bảng Thưởng. Nhiều tổ hợp thắng có thể được trao trong cùng một ván chơi.',
 	'INFO MAX WIN LABEL': 'Thắng Tối Đa:',
-	'INFO MAX WIN VALUE': '25,000× tiền cược',
+	"INFO MAX WIN VALUE": "%value%× tiền cược",
 	'INFO RTP LABEL': 'RTP Lý Thuyết:',
 
 	// ── Info / rules popup: FEATURES ─────────────────────────────────────────────────────────────
@@ -107,29 +103,15 @@ export default {
 	'INFO RESPIN BODY 3':
 		'Tất cả tiền thắng được tạo ra trong chuỗi Quay Lại được cộng vào tiền thắng của ván chơi hiện tại.',
 	'INFO MULT TITLE': 'HỆ SỐ NHÂN THẮNG',
-	'INFO MULT BODY 1':
-		'Trong Tính Năng Quay Lại, các biểu tượng McSchmutzo có thể xuất hiện và tăng Hệ Số Nhân Thắng. Mỗi biểu tượng McSchmutzo đủ điều kiện có thể thêm các bước Hệ Số Nhân Thắng. Hệ Số Nhân Thắng bắt đầu từ 1x. Hệ số nhân tiến triển qua các cấp độ sau:',
-	'INFO MULT BODY 2':
-		'Hệ Số Nhân Thắng hiện tại được áp dụng theo cơ chế toán học của trò chơi và duy trì trong suốt chuỗi Quay Lại hiện tại.',
+	"INFO MULT BODY 1": "Trong các lượt Quay Lại và Vòng Miễn Phí, biểu tượng McSchmutzo có thể xuất hiện và tăng Hệ Số Nhân Thắng. Mỗi biểu tượng McSchmutzo hợp lệ có thể cộng thêm bậc cho Hệ Số Nhân Thắng. Hệ Số Nhân Thắng bắt đầu từ 1x. Hệ số nhân tăng qua các mức sau:",
+	"INFO MULT BODY 2": "Hệ Số Nhân Thắng hiện tại được áp dụng cho mọi khoản thắng theo đường. Trong trò chơi cơ bản, nó duy trì trong suốt chuỗi Quay Lại hiện tại; trong Vòng Miễn Phí, nó không bao giờ bị đặt lại.",
 	'INFO COMING SOON': 'Sắp ra mắt.',
 
 	// ── Info / rules popup: FEATURE BUY ──────────────────────────────────────────────────────────
-	'INFO FB1 TITLE': 'CHẾ ĐỘ NÂNG CAO 1',
-	'INFO FB1 BODY':
-		'Với chi phí bằng 2× Tiền Cược Gốc, cơ hội kích hoạt Vòng Miễn Phí được tăng thêm 4×. Tất cả các cơ chế trò chơi khác không thay đổi.',
-	'INFO FB1 COST': '2× Tiền Cược Gốc',
-	'INFO FB2 TITLE': 'CHẾ ĐỘ NÂNG CAO 2',
-	'INFO FB2 BODY':
-		'Với chi phí bằng 10× Tiền Cược Gốc, cơ hội kích hoạt Vòng Miễn Phí được tăng thêm 4×, với chế độ nâng cao được cấu hình hướng tới Vòng Thưởng Siêu Cấp / điều kiện vào tối đa. Tất cả các cơ chế trò chơi khác không thay đổi.',
-	'INFO FB2 COST': '10× Tiền Cược Gốc',
-	'INFO FB3 TITLE': 'VÒNG THƯỞNG THƯỜNG',
-	'INFO FB3 BODY':
-		'Với chi phí bằng 100× Tiền Cược Gốc, người chơi vào thẳng Vòng Thưởng Thường. Vòng Thưởng Thường được chơi bằng cấu hình vào Vòng Miễn Phí tiêu chuẩn.',
-	'INFO FB3 COST': '100× Tiền Cược Gốc',
-	'INFO FB4 TITLE': 'VÒNG THƯỞNG SIÊU CẤP',
-	'INFO FB4 BODY':
-		'Với chi phí bằng 500× Tiền Cược Gốc, người chơi vào thẳng Vòng Thưởng Siêu Cấp. Vòng Thưởng Siêu Cấp bắt đầu bằng cấu hình vào Vòng Miễn Phí nâng cao / tối đa.',
-	'INFO FB4 COST': '500× Tiền Cược Gốc',
+	"INFO FB1 BODY": "Khi được bật, mỗi lượt quay tốn số tiền hiển thị bên dưới và có cơ hội kích hoạt Vòng Miễn Phí cao hơn. Mọi cơ chế khác của trò chơi giữ nguyên. Chế độ duy trì cho đến khi bị tắt.",
+	"INFO FB2 BODY": "Khi được bật, mỗi lượt quay tốn số tiền hiển thị bên dưới và chắc chắn là lượt quay thắng, bắt đầu tính năng Khóa & Quay Lại. Chế độ duy trì cho đến khi bị tắt.",
+	"INFO FB3 BODY": "Kích hoạt ngay Vòng Thưởng Thường, như thể đã xuất hiện 3 biểu tượng Scatter. Vòng thưởng bắt đầu bằng một lượt quay Vòng Quay Thưởng.",
+	"INFO FB4 BODY": "Kích hoạt ngay Vòng Thưởng Siêu Cấp, như thể đã xuất hiện 4 biểu tượng Scatter. Vòng thưởng bắt đầu bằng một lượt quay Vòng Quay Thưởng.",
 
 	// ── Info / rules popup: GENERAL INFO ─────────────────────────────────────────────────────────
 	'INFO INTERRUPTED BODY 1':
@@ -142,7 +124,7 @@ export default {
 		'Tỷ lệ hoàn trả dự kiến được tính trên nhiều lượt chơi. Hiển thị của trò chơi không đại diện cho bất kỳ thiết bị vật lý nào và chỉ mang tính minh họa.',
 	'INFO LEGAL BODY 3':
 		'Tiền thắng được quyết toán theo số tiền nhận được từ Máy Chủ Trò Chơi Từ Xa chứ không phải từ các sự kiện trong trình duyệt web.',
-	'INFO LEGAL COPYRIGHT': 'TM and © 2026 Stake Engine.',
+	"INFO LEGAL COPYRIGHT": "TM và © 2026 Engine.",
 
 	// ── Info / rules popup: USER INTERFACE GUIDE (labels + descriptions) ─────────────────────────
 	'UI AUTO SPINS': 'TỰ ĐỘNG QUAY',
@@ -170,14 +152,12 @@ export default {
 
 	// ── Common UI terms (shared across Stake games; copied from magnetic/forest) ──
 	"ACTIVATE": "KÍCH HOẠT",
-	"ALL IN": "MEGA CHAIN",
 	"AUTOPLAY": "TỰ ĐỘNG",
 	"BALANCE": "SỐ DƯ",
 	"BET": "CƯỢC",
 	"BUY": "MUA",
 	"BUY BONUS": "MUA THƯỞNG",
 	"DEACTIVATE": "HỦY KÍCH HOẠT",
-	"DEAL IT": "DROP-O-MAGNET",
 	"EVENT": "SỰ KIỆN",
 	"GAME RULES": "LUẬT CHƠI",
 	"MODE": "CHẾ ĐỘ",
@@ -199,4 +179,22 @@ export default {
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "THẮNG ĐẾN",
 	"CONFIRM PURCHASE": "XÁC NHẬN MUA",
+
+	// ── Rules / buy-confirm / HUD keys added in the 2026-10 copy fix ──
+	"CONFIRM ACTIVATE TEXT": "Kích hoạt %mode%? Mỗi lượt quay tốn %cost%.",
+	"FEWER SPINS": "Ít lượt quay hơn",
+	"MORE SPINS": "Nhiều lượt quay hơn",
+	"SUPER BONUS TITLE": "VÒNG THƯỞNG SIÊU CẤP",
+	"REMAINING AUTO SPINS": "Lượt quay tự động còn lại: %count%",
+	"INFO RTP SHORT": "RTP:",
+	"INFO FB COST": "%cost%× Tiền Cược Gốc",
+
+	// ── Error / notification modal copy (mirrors the en.ts block, 2026-10-01) ──
+	"NOTIFICATION": "THÔNG BÁO",
+	"INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.": "SỐ DƯ KHÔNG ĐỦ CHO MỨC CƯỢC NÀY. VUI LÒNG NẠP THÊM VÀO TÀI KHOẢN HOẶC GIẢM MỨC CƯỢC.",
+	"CONNECTION PROBLEM. PLEASE CHECK YOUR CONNECTION AND TRY AGAIN.": "SỰ CỐ KẾT NỐI. VUI LÒNG KIỂM TRA KẾT NỐI VÀ THỬ LẠI.",
+	"YOUR SESSION HAS EXPIRED. PLEASE RELOAD THE GAME.": "PHIÊN CỦA BẠN ĐÃ HẾT HẠN. VUI LÒNG TẢI LẠI TRÒ CHƠI.",
+	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "ĐÃ ĐẠT GIỚI HẠN TÀI KHOẢN CỦA BẠN.",
+	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "KHÔNG THỂ TẢI BẢN PHÁT LẠI NÀY. VUI LÒNG THỬ LẠI.",
+	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "ĐÃ XẢY RA LỖI. VUI LÒNG THỬ LẠI.",
 };

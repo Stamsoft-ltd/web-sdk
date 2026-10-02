@@ -119,11 +119,26 @@
 
 	const betAmount = $derived(stateBet.betAmount);
 	const betOptions = $derived(stateConfig.betAmountOptions);
-	const currentBetIndex = $derived(Math.max(0, betOptions.indexOf(stateBet.betAmount)));
+	// Index of the current bet among the authenticated levels. A bet that is not exactly a level
+	// (a resumed round's amount, a float mismatch) steps from the nearest level at or below it, so
+	// − / + never jump back to the first level or skip one.
+	const currentBetIndex = $derived.by(() => {
+		const exact = betOptions.indexOf(stateBet.betAmount);
+		if (exact >= 0) return exact;
+		let index = 0;
+		for (let i = 0; i < betOptions.length; i += 1) {
+			if (betOptions[i] <= stateBet.betAmount + 1e-9) index = i;
+			else break;
+		}
+		return index;
+	});
 	const canDec = $derived(currentBetIndex > 0);
 	const canInc = $derived(currentBetIndex < betOptions.length - 1);
 	const formattedBet = $derived(mcschmutzoStakeDerived.formatCurrencyAmount(betAmount));
-	const isSocial = $derived(stateConfig.jurisdiction.socialCasino || stateUrlDerived.social());
+	const isSocial = $derived(!!stateConfig.jurisdiction?.socialCasino || stateUrlDerived.social());
+	// Jurisdiction disabledBuyFeature: the bought bonuses (100x / 500x) cannot be purchased. The
+	// activatable modes (extra chance, feature spin) are per-spin toggles, not feature buys.
+	const buyFeatureDisabled = $derived(!!stateConfig.jurisdiction?.disabledBuyFeature);
 	const decBetLabel = $derived(isSocial ? 'Decrease play amount' : 'Decrease bet');
 	const incBetLabel = $derived(isSocial ? 'Increase play amount' : 'Increase bet');
 
@@ -136,7 +151,9 @@
 	const isActive = (id: ModeId) =>
 		(id === 'enhancer1' && props.isChanceActive) ||
 		(id === 'featureSpin' && props.isFeatureActive);
-	const isDisabled = (mode: Mode) => !isActive(mode.id) && !canAfford(mode.multiplier);
+	const isDisabled = (mode: Mode) =>
+		!isActive(mode.id) &&
+		(!canAfford(mode.multiplier) || (mode.action === 'buy' && buyFeatureDisabled));
 	const buttonLabel = (mode: Mode) =>
 		isActive(mode.id)
 			? i18nDerived.deactivate()
@@ -149,6 +166,7 @@
 		props.onclose();
 	};
 	const chooseMode = (id: ModeId) => {
+		if (isDisabled(modeById(id))) return;
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		if (id === 'enhancer1') {
 			closeWithToggle(props.onToggleChance);
@@ -165,6 +183,11 @@
 	const closeConfirm = () => (confirmMode = null);
 	const confirmAccept = () => {
 		if (!confirmMode) return;
+		// Re-check at the moment of purchase: the balance or bet may have changed under the dialog.
+		if (isDisabled(modeById(confirmMode))) {
+			confirmMode = null;
+			return;
+		}
 		if (confirmMode === 'featureSpin') {
 			confirmMode = null;
 			closeWithToggle(props.onToggleFeature);
@@ -177,6 +200,7 @@
 	};
 
 	const stepBet = (direction: -1 | 1) => {
+		if (betOptions.length === 0) return;
 		const index = Math.min(betOptions.length - 1, Math.max(0, currentBetIndex + direction));
 		const next = betOptions[index];
 		if (typeof next !== 'number' || next === stateBet.betAmount) return;
@@ -205,7 +229,7 @@
 	type="button"
 	style={`background-image:url('${closeArt}')`}
 	onclick={props.onclose}
-	aria-label="Close"
+	aria-label={i18nDerived.translate('CLOSE')}
 ></button>
 
 <section class="bb-panel" role="dialog" aria-modal="true" aria-labelledby="bb-title">
@@ -291,11 +315,13 @@
 
 {#if confirmMode}
 	<CustomConfirmModal
-		title={i18nDerived.translate('CONFIRM PURCHASE')}
-		message={i18nDerived.translateVars('CONFIRM TEXT', {
-			mode: i18nDerived.translate(modeById(confirmMode).title),
-			cost: confirmCost,
-		})}
+		title={i18nDerived.translate(
+			confirmMode === 'featureSpin' ? modeById(confirmMode).title : 'CONFIRM PURCHASE',
+		)}
+		message={i18nDerived.translateVars(
+			confirmMode === 'featureSpin' ? 'CONFIRM ACTIVATE TEXT' : 'CONFIRM TEXT',
+			{ mode: i18nDerived.translate(modeById(confirmMode).title), cost: confirmCost },
+		)}
 		cancelLabel={i18nDerived.translate('CANCEL')}
 		confirmLabel={i18nDerived.translate('CONFIRM')}
 		oncancel={closeConfirm}

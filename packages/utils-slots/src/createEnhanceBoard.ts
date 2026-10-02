@@ -1,3 +1,4 @@
+import { stateSlots } from './stateSlots.svelte';
 import { createEnhanceBoardPreSpin } from './createEnhanceBoardPreSpin';
 import { createEnhanceBoardSpin } from './createEnhanceBoardSpin';
 import type { Reel, GetRawSymbolFromReel } from './types';
@@ -8,11 +9,15 @@ export function createEnhanceBoard() {
 
 		const { preSpin } = createEnhanceBoardPreSpin({ board });
 		const { spin } = createEnhanceBoardSpin({ board });
-		const settle = (rawBoard?: TRawSymbol[][]) =>
+		const settle = (rawBoard?: TRawSymbol[][]) => {
+			// A settle is the board coming to rest: a pre-spin that was waiting for a result (e.g.
+			// the play request failed) is over, so the next spin must not wait for its readyToSpin.
+			stateSlots.isPreSpinning = false;
 			board.forEach((reel, reelIndex) => {
 				const rawSymbols = rawBoard?.[reelIndex] || [];
 				reel.setSymbolsWithRawSymbols(rawSymbols);
 			});
+		};
 		const stop = () => board.forEach((reel) => reel.stop());
 		// Only spinning reels expose forceStop; cascading reels fall back to their plain stop.
 		const forceStop = () =>

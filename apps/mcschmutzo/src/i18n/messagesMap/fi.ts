@@ -2,13 +2,13 @@ export default {
 
 	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
 	"INFO SCATTER TITLE": "SCATTER / BONUS-SYMBOLI",
-	"INFO SCATTER BODY": "BONUS-symboli on Scatter-symboli, ja se voi ilmestyä kaikille rullille. Scatter-symbolien osuminen aktivoi jommankumman kahdesta Ilmaispelit-tilasta.",
+	"INFO SCATTER BODY": "BONUS-symboli on scatter-symboli, ja se voi osua mille tahansa rullalle. 3 tai 4 scatter-symbolia käynnistää ilmaispelit, jotka alkavat aina bonuspyörän pyöräytyksellä. Pyörä antaa 6–30 ilmaispeliä ja nostaa voittokerrointa 3–15 porrasta.",
 	"INFO SCATTER 3 TITLE": "SCATTERIT - Normaali bonus",
-	"INFO SCATTER 3 BODY": "Kolmen Scatter-symbolin osuminen käynnistää Normaalin bonuksen. Pelaaja siirtyy Normaaliin ilmaispelitilaan. Normaali bonus käyttää vakiomuotoista ilmaispelien kokoonpanoa ja sitä vastaavaa aloittavaa voittokertoimen etenemistä. Mahdollinen ominaisuuteen mukaan tuotu aktiivinen voittokerroin yhdistetään ilmaispelien sisääntulotulokseen soveltuvin osin. Voittokerroin pysyy voimassa koko ilmaispeliominaisuuden ajan ja voi kasvaa pelin aikana. Se ei nollaudu ilmaispelien välillä.",
+	"INFO SCATTER 3 BODY": "3 scatter-symbolia käynnistää normaalin bonuksen. Bonuspyörä määrää ilmaispelien määrän ja voittokertoimen, jolla ne alkavat. Voittokerroin voi kasvaa edelleen, eikä sitä koskaan nollata ilmaispelien aikana.",
 	"INFO SCATTER 4 TITLE": "SCATTERIT - Super-bonus",
-	"INFO SCATTER 4 BODY": "Neljän Scatter-symbolin osuminen käynnistää Super-bonuksen. Super-bonus alkaa tehostetulla aloituskokoonpanolla Normaaliin bonukseen verrattuna. Pelaaja saa Super-ilmaispelien asetukset tälle tilalle määritellyillä enimmäis- / tehostetuilla sisääntuloehdoilla. Voittokerroin pysyy voimassa koko Super-bonuksen ajan ja voi jatkaa kasvamistaan ilmaispelien aikana. Se ei nollaudu ilmaispelien välillä.",
-	"INFO FREEGAMES BODY 1": "Ilmaispelien aikana samat perusvoitto- ja uusintakierrosmekaniikat pysyvät aktiivisina. Aina kun muodostuu kelvollinen voittava yhdistelmä, vastaavat voittavat symbolit lukittuvat automaattisesti ja käynnistävät uusintakierroksen.",
-	"INFO FREEGAMES BODY 2": "Uusintakierroksen aikana lisätyt samat symbolit lukittuvat, jolloin sarja voi jatkua. Ominaisuuden aikana ilmestyvät McSchmutzo-symbolit voivat kasvattaa voittokerrointa. Kertynyt voittokerroin pysyy voimassa koko ilmaispeliominaisuuden ajan.",
+	"INFO SCATTER 4 BODY": "4 scatter-symbolia käynnistää super-bonuksen. Sitä pelataan kuten normaalia bonusta, mutta se alkaa tehostetulla bonuspyörän pyöräytyksellä. Voittokerroin voi kasvaa edelleen, eikä sitä koskaan nollata ilmaispelien aikana.",
+	"INFO FREEGAMES BODY 1": "Ilmaispelien aikana sovelletaan samoja linjavoittojen sekä Lukitus & uusintakierros -sääntöjä. Aina kun kelpaava voittoyhdistelmä muodostuu, voittosymbolit lukittuvat ja uusintakierros käynnistyy. McSchmutzo-symbolit voivat lisätä voittokertoimeen portaita, ja voittokerroin koskee jokaista voittoa ominaisuuden loppuun asti.",
+	"INFO FREEGAMES BODY 2": "Ilmaispelejä ei voi käynnistää uudelleen. Ilmaispelien aikana osuvat scatter-symbolit eivät anna lisää ilmaispelejä.",
 	"INFO WAYS BODY": "McSchmutzoa pelataan 5×5-rullastolla, jossa on 50 kiinteää voittolinjaa. Muodosta voitto osumalla 3, 4 tai 5 samaa symbolia vasemmalta oikealle, vasemmanpuoleisimmasta rullasta alkaen, jollakin 50 voittolinjasta. Wild korvaa kaikki tavalliset maksavat symbolit ja voi auttaa muodostamaan voittoyhdistelmiä, mutta se ei korvaa Scatter- eikä erityisiä Kerroin-symboleja. Voittoyhdistelmät maksetaan voittotaulukon mukaisesti.",
 	"INFO LOCKRESPIN TITLE": "LUKITUS & UUSINTAKIERROS",
 	"INFO LOCKRESPIN BODY": "Mikä tahansa voittava yhdistelmä voi käynnistää Lukitus & uusintakierros -ominaisuuden. Käynnistyessään arvokkain voittava symboli lukittuu paikoilleen, kun taas muut rullapaikat pyörähtävät uudelleen. Jos nykyiseen voittoon lisätään uusia samoja symboleja tai uusia voittavia rullapaikkoja, myönnetään uusi uusintakierros. Uusintakierrokset jatkuvat niin kauan kuin voitto kasvaa, ja päättyvät, kun uusia samoja symboleja tai rullapaikkoja ei enää lisätä tai kun rullasto täyttyy voittavilla symboleilla. Kun uusintakierrosten sarja päättyy, lopullinen kertynyt voitto myönnetään.",
@@ -24,8 +24,6 @@ export default {
 	'CONFIRM TEXT': 'Ostetaanko %mode% hintaan %cost%?',
 	'NORMAL BONUS': 'Normaali bonus',
 	'SUPER BONUS': 'Super-bonus',
-	'CONFIRM IT ALL': 'VAHVISTA KAIKKI',
-	'BUY ALL IN': 'Osta All in hintaan %cost%',
 	CONFIRM: 'VAHVISTA',
 	CANCEL: 'PERUUTA',
 
@@ -33,13 +31,13 @@ export default {
 	'AUTO SPIN': 'AUTOMAATTIKIERROS',
 	'TURBO SPIN': 'TURBOKIERROS',
 	'SUPER TURBO SPIN': 'SUPER-TURBOKIERROS',
-	'LOCK FEATURE SPIN': '50X BONUSOMINAISUUS',
+	"LOCK FEATURE SPIN": "LUKITUSKIERROS",
 	'NUMBER OF SPINS': 'KIERROSTEN MÄÄRÄ',
 	'START AUTOPLAY': 'ALOITA AUTOMAATTI',
 
 	// ── Recovery / interrupted round ─────────────────────────────────────────────────────────────
 	'UNFINISHED ROUND': 'KESKEN JÄÄNYT KIERROS',
-	'ACTIVE BONUS IN PROGRESS': 'Sinulla on käynnissä oleva %bonus%-bonus.',
+	"ACTIVE BONUS IN PROGRESS": "Sinulla on käynnissä: %bonus%.",
 	'ACTIVE ROUND IN PROGRESS': 'Sinulla on käynnissä oleva bonus.',
 	'END ROUND': 'PÄÄTÄ KIERROS',
 	'PLAY ROUND': 'PELAA KIERROS',
@@ -49,10 +47,8 @@ export default {
 	AUTO: 'AUTO',
 	CONGRATS: 'ONNITTELUT!',
 	'YOU WON': 'VOITIT',
-	'ALL IN BONUS TITLE': 'ALL IN -BONUS',
 	'NORMAL BONUS TITLE': 'NORMAALI BONUS',
-	'BONUS BLURB':
-		'%count% ilmaiskierrosta satunnaisella laajenevalla symbolilla ja kertoimella, joka alkaa arvosta 2x ja kaksinkertaistuu jokaisella yhdistelmällä',
+	"BONUS BLURB": "%count% ilmaiskierrosta, Lukitus & uusintakierros jokaisesta kelpaavasta voitosta ja voittokerroin, joka ei koskaan nollaudu",
 	'FREE SPINS': 'ILMAISKIERROKSET',
 	'PRESS TO CONTINUE': 'PAINA JATKAAKSESI',
 	'FREE GAMES': 'ILMAISPELIT',
@@ -91,7 +87,7 @@ export default {
 	'INFO OVERVIEW BODY':
 		'McSchmutzoa pelataan 5×5-rullastolla ja se maksaa 50 kiinteällä voittolinjalla. Voittoyhdistelmät muodostuvat, kun samat symbolit osuvat aktiiviselle voittolinjalle vasemmanpuoleisimmasta rullasta alkaen ja jatkuen peräkkäisillä rullilla. Kaikki voitot lasketaan voittotaulukossa näkyvien symbolien arvojen mukaan. Samalla pelikierroksella voidaan myöntää useita voittoyhdistelmiä.',
 	'INFO MAX WIN LABEL': 'Enimmäisvoitto:',
-	'INFO MAX WIN VALUE': '25,000× panos',
+	"INFO MAX WIN VALUE": "%value%× panos",
 	'INFO RTP LABEL': 'Teoreettinen RTP:',
 
 	// ── Info / rules popup: FEATURES ─────────────────────────────────────────────────────────────
@@ -107,29 +103,15 @@ export default {
 	'INFO RESPIN BODY 3':
 		'Kaikki uusintakierrosten sarjan aikana syntyneet voitot lisätään nykyiseen pelikierroksen voittoon.',
 	'INFO MULT TITLE': 'VOITTOKERROIN',
-	'INFO MULT BODY 1':
-		'Uusintakierros-ominaisuuden aikana McSchmutzo-symboleja voi ilmestyä ja kasvattaa voittokerrointa. Jokainen kelvollinen McSchmutzo-symboli voi lisätä voittokertoimen askelia. Voittokerroin alkaa arvosta 1x. Kerroin etenee seuraavien tasojen kautta:',
-	'INFO MULT BODY 2':
-		'Nykyinen voittokerroin sovelletaan pelin matematiikan mukaisesti ja pysyy voimassa koko nykyisen uusintakierrosten sarjan ajan.',
+	"INFO MULT BODY 1": "Uusintakierrosten ja ilmaispelien aikana McSchmutzo-symboleita voi ilmestyä ja ne kasvattavat voittokerrointa. Jokainen kelpaava McSchmutzo-symboli voi lisätä voittokertoimeen portaita. Voittokerroin alkaa arvosta 1x. Kerroin etenee seuraavien tasojen kautta:",
+	"INFO MULT BODY 2": "Nykyistä voittokerrointa sovelletaan jokaiseen linjavoittoon. Peruspelissä se pysyy voimassa käynnissä olevan uusintakierrossarjan ajan; ilmaispeleissä sitä ei koskaan nollata.",
 	'INFO COMING SOON': 'Tulossa pian.',
 
 	// ── Info / rules popup: FEATURE BUY ──────────────────────────────────────────────────────────
-	'INFO FB1 TITLE': 'TEHOSTETTU TILA 1',
-	'INFO FB1 BODY':
-		'Hintaan 2× peruspanos ilmaispelien laukeamismahdollisuus kasvaa 4×. Kaikki muut pelimekaniikat pysyvät ennallaan.',
-	'INFO FB1 COST': '2× peruspanos',
-	'INFO FB2 TITLE': 'TEHOSTETTU TILA 2',
-	'INFO FB2 BODY':
-		'Hintaan 10× peruspanos ilmaispelien laukeamismahdollisuus kasvaa 4×, ja tehostettu tila on suunnattu Super-bonuksen / enimmäissisääntulon ehtoon. Kaikki muut pelimekaniikat pysyvät ennallaan.',
-	'INFO FB2 COST': '10× peruspanos',
-	'INFO FB3 TITLE': 'NORMAALI BONUS',
-	'INFO FB3 BODY':
-		'Hintaan 100× peruspanos pelaaja astuu suoraan Normaaliin bonukseen. Normaalia bonusta pelataan sen vakiomuotoisella ilmaispelien sisääntuloasetuksella.',
-	'INFO FB3 COST': '100× peruspanos',
-	'INFO FB4 TITLE': 'SUPER-BONUS',
-	'INFO FB4 BODY':
-		'Hintaan 500× peruspanos pelaaja astuu suoraan Super-bonukseen. Super-bonus alkaa sen tehostetulla / enimmäismuotoisella ilmaispelien sisääntuloasetuksella.',
-	'INFO FB4 COST': '500× peruspanos',
+	"INFO FB1 BODY": "Kun tila on päällä, jokainen kierros maksaa alla näkyvän summan ja ilmaispelien käynnistymisen todennäköisyys kasvaa. Kaikki muut pelimekaniikat pysyvät ennallaan. Tila pysyy päällä, kunnes se poistetaan käytöstä.",
+	"INFO FB2 BODY": "Kun tila on päällä, jokainen kierros maksaa alla näkyvän summan ja on taatusti voittava kierros, joka käynnistää Lukitus & uusintakierros -ominaisuuden. Tila pysyy päällä, kunnes se poistetaan käytöstä.",
+	"INFO FB3 BODY": "Käynnistää heti normaalin bonuksen, ikään kuin 3 scatter-symbolia olisi osunut. Bonus alkaa bonuspyörän pyöräytyksellä.",
+	"INFO FB4 BODY": "Käynnistää heti super-bonuksen, ikään kuin 4 scatter-symbolia olisi osunut. Bonus alkaa bonuspyörän pyöräytyksellä.",
 
 	// ── Info / rules popup: GENERAL INFO ─────────────────────────────────────────────────────────
 	'INFO INTERRUPTED BODY 1':
@@ -142,7 +124,7 @@ export default {
 		'Odotettu palautus lasketaan lukuisten pelien perusteella. Pelinäkymä ei kuvaa mitään fyysistä laitetta ja on vain havainnollistava.',
 	'INFO LEGAL BODY 3':
 		'Voitot maksetaan etäpelipalvelimelta saadun summan mukaan, ei verkkoselaimen sisäisten tapahtumien perusteella.',
-	'INFO LEGAL COPYRIGHT': 'TM ja © 2026 Stake Engine.',
+	"INFO LEGAL COPYRIGHT": "TM ja © 2026 Engine.",
 
 	// ── Info / rules popup: USER INTERFACE GUIDE (labels + descriptions) ─────────────────────────
 	'UI AUTO SPINS': 'AUTOMAATTIKIERROKSET',
@@ -170,14 +152,12 @@ export default {
 
 	// ── Common UI terms (shared across Stake games; copied from magnetic/forest) ──
 	"ACTIVATE": "OTA KÄYTTÖÖN",
-	"ALL IN": "MEGA CHAIN",
 	"AUTOPLAY": "AUTOMAATTI",
 	"BALANCE": "SALDO",
 	"BET": "PANOS",
 	"BUY": "OSTA",
 	"BUY BONUS": "OSTA BONUS",
 	"DEACTIVATE": "POISTA KÄYTÖSTÄ",
-	"DEAL IT": "DROP-O-MAGNET",
 	"EVENT": "TAPAHTUMA",
 	"GAME RULES": "PELISÄÄNNÖT",
 	"MODE": "TILA",
@@ -199,4 +179,22 @@ export default {
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "VOITA JOPA",
 	"CONFIRM PURCHASE": "VAHVISTA OSTO",
+
+	// ── Rules / buy-confirm / HUD keys added in the 2026-10 copy fix ──
+	"CONFIRM ACTIVATE TEXT": "Aktivoidaanko %mode%? Jokainen kierros maksaa %cost%.",
+	"FEWER SPINS": "Vähemmän kierroksia",
+	"MORE SPINS": "Enemmän kierroksia",
+	"SUPER BONUS TITLE": "SUPER-BONUS",
+	"REMAINING AUTO SPINS": "Automaattikierroksia jäljellä: %count%",
+	"INFO RTP SHORT": "RTP:",
+	"INFO FB COST": "%cost%× peruspanos",
+
+	// ── Error / notification modal copy (mirrors the en.ts block, 2026-10-01) ──
+	"NOTIFICATION": "ILMOITUS",
+	"INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.": "SALDO EI RIITÄ TÄHÄN PANOKSEEN. LISÄÄ VAROJA TILILLESI TAI PIENENNÄ PANOSTA.",
+	"CONNECTION PROBLEM. PLEASE CHECK YOUR CONNECTION AND TRY AGAIN.": "YHTEYSONGELMA. TARKISTA YHTEYTESI JA YRITÄ UUDELLEEN.",
+	"YOUR SESSION HAS EXPIRED. PLEASE RELOAD THE GAME.": "ISTUNTOSI ON VANHENTUNUT. LATAA PELI UUDELLEEN.",
+	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "TILISI RAJA ON SAAVUTETTU.",
+	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "TÄTÄ UUSINTAA EI VOITU LADATA. YRITÄ UUDELLEEN.",
+	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "JOKIN MENI VIKAAN. YRITÄ UUDELLEEN.",
 };

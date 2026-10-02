@@ -20,6 +20,8 @@
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { waitForResolve } from 'utils-shared/wait';
+	import { stateBet, stateBetDerived } from 'state-shared';
+	import { isReplayMode } from '../state/roundFlow.svelte';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import { getContext } from '../game/context';
@@ -42,7 +44,7 @@
 	let oncomplete = $state(() => {});
 	// Count the total win up from 0 (mirrors the previous animated outro).
 	const amountTween = new Tween(0, { duration: 900, easing: cubicOut });
-	const amountText = $derived(bookEventAmountToCurrencyString(amountTween.current));
+	const amountText = $derived(bookEventAmountToCurrencyString(Math.round(amountTween.current)));
 
 	context.eventEmitter.subscribeOnMount({
 		freeSpinOutroShow: () => {
@@ -56,7 +58,9 @@
 		},
 		freeSpinOutroCountUp: async (emitterEvent) => {
 			amountTween.set(emitterEvent.amount);
+			awaitingPress = true;
 			await waitForResolve((resolve) => (oncomplete = resolve));
+			awaitingPress = false;
 		},
 	});
 
@@ -64,6 +68,22 @@
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		oncomplete();
 	};
+
+	// Nobody is at the controls during autoplay / held Space, and a replay must play through on its
+	// own — waiting for a press there stalls the round (same rule as the bonus wheel).
+	const AUTO_ADVANCE_MS = 2500;
+	const autoAdvances = $derived(
+		isReplayMode() ||
+			stateBetDerived.hasAutoBetCounter() ||
+			context.stateXstateDerived.isAutoBetting() ||
+			stateBet.isSpaceHold,
+	);
+	let awaitingPress = $state(false);
+	$effect(() => {
+		if (!show || !awaitingPress || !autoAdvances) return;
+		const timer = setTimeout(proceed, AUTO_ADVANCE_MS);
+		return () => clearTimeout(timer);
+	});
 	const onKey = (e: KeyboardEvent) => {
 		if (show && (e.code === 'Space' || e.code === 'Enter')) proceed();
 	};
@@ -97,7 +117,7 @@
 				e.stopPropagation();
 				proceed();
 			}}
-			aria-label="Close"
+			aria-label={i18nDerived.translate('CLOSE')}
 		></button>
 
 		<div class="fo-stage" role="dialog" aria-modal="true">

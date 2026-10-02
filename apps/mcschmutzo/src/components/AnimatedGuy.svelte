@@ -1,5 +1,45 @@
+<script lang="ts" module>
+	/**
+	 * The chef layers used to be exported as full-frame canvases (1304x1699 / 1611x1912) that were
+	 * mostly transparent — a 4% eyebrow strip cost the same GPU memory as the whole figure. Each layer
+	 * is now cropped to its opaque box (+2px) and only that box is shipped. `GUY_CROPS` records where
+	 * each crop sat on its original frame (source px), so callers can keep placing it in FRAME
+	 * fractions exactly as before: `cropRect` gives the frame-fraction rect the crop covers, and
+	 * `cropPivot` re-expresses a full-frame pivot inside that rect. Same texels land on the same
+	 * screen pixels — the composite is unchanged.
+	 */
+	export type GuyCrop = { x0: number; y0: number; x1: number; y1: number; fw: number; fh: number };
+	const MASCOT = { fw: 1304, fh: 1699 };
+	const SPECIAL = { fw: 1611, fh: 1912 };
+	export const GUY_CROPS = {
+		mascotBase: { x0: 80, y0: 0, x1: 1304, y1: 1699, ...MASCOT },
+		mascotBottle: { x0: 80, y0: 639, x1: 575, y1: 1330, ...MASCOT },
+		mascotHand: { x0: 766, y0: 927, x1: 1286, y1: 1368, ...MASCOT },
+		mascotBrows: { x0: 399, y0: 328, x1: 728, y1: 469, ...MASCOT },
+		mascotLabel: { x0: 679, y0: 1022, x1: 937, y1: 1161, ...MASCOT },
+		specialBase: { x0: 511, y0: 0, x1: 1611, y1: 1912, ...SPECIAL },
+		specialArm: { x0: 108, y0: 480, x1: 735, y1: 1285, ...SPECIAL },
+		specialHand: { x0: 1024, y0: 1043, x1: 1608, y1: 1538, ...SPECIAL },
+		specialBrows: { x0: 622, y0: 389, x1: 981, y1: 527, ...SPECIAL },
+	} satisfies Record<string, GuyCrop>;
+	export type FrameRect = { nx: number; ny: number; nw: number; nh: number };
+	export const FULL_FRAME: FrameRect = { nx: 0, ny: 0, nw: 1, nh: 1 };
+	export const cropRect = (c: GuyCrop): FrameRect => ({
+		nx: c.x0 / c.fw,
+		ny: c.y0 / c.fh,
+		nw: (c.x1 - c.x0) / c.fw,
+		nh: (c.y1 - c.y0) / c.fh,
+	});
+	/** A pivot given in full-frame fractions, as an anchor inside the cropped layer. */
+	export const cropPivot = (c: GuyCrop, px: number, py: number) => {
+		const r = cropRect(c);
+		return { px: (px - r.nx) / r.nw, py: (py - r.ny) / r.nh };
+	};
+</script>
+
 <script lang="ts">
 	import { Sprite, Rectangle, Circle } from 'pixi-svelte';
+	import { createPointGesture, type HandPose } from '../game/pointGesture';
 
 	// A chef that stands (the parent breathes him via x/y/width/height) while his face is ALIVE: the
 	// pupils glance around with occasional quick saccades and he blinks now and then. The base art has
@@ -24,6 +64,12 @@
 		amp?: number;
 		period?: number;
 		phase?: number;
+		/**
+		 * Pointing-hand gesture instead of the sine tilt: breathing drift + a random "point-point"
+		 * every 3–6 s (see game/pointGesture). `tip` is the fingertip's side of the pivot (-1 = left),
+		 * `breath` the figure's current breath (-1..1) so the drift rides the chest.
+		 */
+		gesture?: { tip: 1 | -1; breath?: number };
 	};
 	/** A periodic *ding* sparkle on a tooth (nx/ny in figure fractions; size fraction of width). */
 	type Sparkle = { nx: number; ny: number; size: number; period?: number; phase?: number };
@@ -41,6 +87,8 @@
 		sparkle?: Sparkle;
 		/** ms offset so two instances never blink/glance in lock-step. */
 		phase?: number;
+		/** Where the (cropped) base texture sits on the figure frame; full frame when omitted. */
+		baseRect?: FrameRect;
 	};
 	const props: Props = $props();
 
@@ -99,9 +147,25 @@
 	const left = $derived(props.x - props.width / 2);
 	const top = $derived(props.y - props.height / 2);
 	const z = $derived(props.zIndex ?? 0);
+	const baseRect = $derived(props.baseRect ?? FULL_FRAME);
 	const skin = $derived(props.skin ?? 0xf6ac67);
 
 	const extraTilt = (e: Extra) => (e.amp ?? 0) * Math.sin((clock + (e.phase ?? 0)) / (e.period ?? 2600));
+
+	// One scheduler per gesturing extra (plain map — it only holds each hand's next-gesture time).
+	const gestures = new Map<string, ReturnType<typeof createPointGesture>>();
+	const REST_POSE: HandPose = { angle: 0, along: 0, squash: 1 };
+	const extraPoses = $derived(
+		(props.extras ?? []).map((e) => {
+			if (!e.gesture) return REST_POSE;
+			let g = gestures.get(e.key);
+			if (!g) gestures.set(e.key, (g = createPointGesture()));
+			return g.pose(clock, e.gesture.breath ?? 0);
+		}),
+	);
+	// Gesture angle is "+ = fingertip down"; on screen that's clockwise for a right-pointing hand.
+	const extraRotation = (e: Extra, pose: HandPose) =>
+		e.gesture ? (e.gesture.tip * pose.angle * Math.PI) / 180 : extraTilt(e);
 
 	// Teeth *ding*: a white 4-point sparkle that flashes on a tooth now and then.
 	const sparkle = $derived.by(() => {
@@ -116,11 +180,11 @@
 
 <Sprite
 	key={props.baseKey}
-	x={props.x}
-	y={props.y}
+	x={left + (baseRect.nx + baseRect.nw / 2) * props.width}
+	y={top + (baseRect.ny + baseRect.nh / 2) * props.height}
 	anchor={0.5}
-	width={props.width}
-	height={props.height}
+	width={baseRect.nw * props.width}
+	height={baseRect.nh * props.height}
 	zIndex={z}
 />
 {#each props.pupils as p, i (i)}

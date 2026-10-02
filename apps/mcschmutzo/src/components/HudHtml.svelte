@@ -3,7 +3,6 @@
 	// during the loading screen, before the HUD (or the modals it opens) first renders.
 	import { ap } from '../lib/preloadArt';
 
-	const heroCardBg = ap('/assets/components/backgrounds/visual_v2.jpg');
 
 	// Frame backgrounds — passed as CSS vars because url() in style blocks can't use runtime paths
 	const menuBtnFrame = ap('/assets/components/frames/top_menu-button_frame.webp');
@@ -105,6 +104,12 @@
 	import { fitLabel } from '../lib/fitLabel';
 	import { mcschmutzoStakeDerived } from '../state/mcschmutzoStake.svelte';
 	import CardDrip from './CardDrip.svelte';
+	import {
+		isReplayMode,
+		prepareReplayStart,
+		replayCostAmount,
+		roundFlowState,
+	} from '../state/roundFlow.svelte';
 	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
 	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
 	import CustomConfirmModal from './CustomConfirmModal.svelte';
@@ -124,6 +129,37 @@
 	);
 	const isLandscapeMobile = $derived(layoutType === 'landscape');
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
+
+	// ── Replay mode (Stake `?replay=true` links) ────────────────────────────────────────────────────
+	// Nothing is wagered: the bet steppers, BONUS, turbo and autoplay are hidden (their slots kept, so
+	// the bar does not reflow), the BALANCE readout shows the replayed round's cost under a REPLAY
+	// label, and the spin control starts / restarts the replay.
+	const isReplay = $derived(isReplayMode());
+
+	// ── Jurisdiction flags from /wallet/authenticate (stateConfig.jurisdiction) ─────────────────────
+	// `jurisdiction` can be missing on a misconfigured operator; every read is guarded.
+	const jurisdiction = $derived(stateConfig.jurisdiction);
+	// disabledTurbo removes both speed-ups (super turbo is a faster turbo); disabledSuperTurbo only
+	// the second step.
+	const turboAllowed = $derived(!jurisdiction?.disabledTurbo);
+	const superTurboAllowed = $derived(turboAllowed && !jurisdiction?.disabledSuperTurbo);
+	const autoplayAllowed = $derived(!jurisdiction?.disabledAutoplay);
+	const slamstopAllowed = $derived(!jurisdiction?.disabledSlamstop);
+	const spacebarAllowed = $derived(!jurisdiction?.disabledSpacebar);
+	const showTurbo = $derived(!isReplay && turboAllowed);
+	const showAuto = $derived(!isReplay && autoplayAllowed);
+	const showBetControls = $derived(!isReplay);
+	$effect(() => {
+		if (!turboAllowed && (stateBet.isTurbo || stateBet.isSuperTurbo)) {
+			stateBet.isTurbo = false;
+			stateBet.isSuperTurbo = false;
+		} else if (!superTurboAllowed && stateBet.isSuperTurbo) {
+			stateBet.isSuperTurbo = false;
+		}
+	});
+	$effect(() => {
+		if (!autoplayAllowed && stateBet.autoSpinsCounter !== 0) stateBet.autoSpinsCounter = 0;
+	});
 	// While a free-spin congrats screen (intro/outro) is up, make the whole HUD non-interactive so
 	// the popup reads as a fullscreen modal; taps then fall through to the press-anywhere handler.
 	const congratsBlocking = $derived(context.stateGame.freeSpinPopupShowing);
@@ -144,6 +180,7 @@
 	// toggle is desktop-only (it was broken on touch for the activatable modes).
 	const buyLabelText = $derived(i18nDerived.translate('BONUS'));
 	// Buying a bonus is not allowed while a multi-spin bonus round is in progress.
+	// Feature mode keeps its selected-symbol badge after the round, but should not lock the HUD.
 	const isInBonus = $derived(context.stateGame.bonusMode !== null);
 	// BUY BONUS availability: blocked while a spin is running (incl. the bought bonus's own
 	// trigger-spin reel animation, when bonusMode isn't set yet) and inside the bonus.
@@ -160,7 +197,7 @@
 	const isMuted = $derived(stateSound.volumeValueMaster === 0);
 	// Social-casino jurisdictions can't surface "bet" wording — swap the +/- screen-reader
 	// labels to "play amount" so assistive tech matches the on-screen social terminology.
-	const isSocial = $derived(stateConfig.jurisdiction.socialCasino || stateUrlDerived.social());
+	const isSocial = $derived(!!stateConfig.jurisdiction?.socialCasino || stateUrlDerived.social());
 	const decBetLabel = $derived(isSocial ? 'Decrease play amount' : 'Decrease bet');
 	const incBetLabel = $derived(isSocial ? 'Increase play amount' : 'Increase bet');
 	const betOptions = $derived(stateConfig.betAmountOptions);
@@ -180,9 +217,14 @@
 		}
 		return idx;
 	});
+	// Replay has no wallet: the BALANCE readout becomes the REPLAY indicator, carrying the replayed
+	// round's total cost (wallet money: exactly the currency's decimals).
 	const formattedBalance = $derived(
-		mcschmutzoStakeDerived.formatCurrencyAmount(stateBet.balanceAmount),
+		isReplay
+			? mcschmutzoStakeDerived.formatCurrencyAmount(replayCostAmount())
+			: mcschmutzoStakeDerived.formatCurrencyAmount(stateBet.balanceAmount),
 	);
+	const balanceLabel = $derived(isReplay ? i18nDerived.replay() : i18nDerived.balance());
 	const formattedBet = $derived(
 		isFeatureActive
 			? mcschmutzoStakeDerived.formatCurrencyAmount(stateBet.betAmount * 20)
@@ -193,10 +235,14 @@
 	const autoSpinsRemainingText = $derived(
 		stateBet.autoSpinsCounter === Infinity ? '∞' : `${stateBet.autoSpinsCounter}`,
 	);
-	const disableDecrease = $derived(!canInteract || stateBet.betAmount === smallestBet);
-	const disableIncrease = $derived(!canInteract || stateBet.betAmount === biggestBet);
+	const disableDecrease = $derived(
+		!canInteract || isReplay || currentBetIndex <= 0 || stateBet.betAmount <= smallestBet,
+	);
+	const disableIncrease = $derived(
+		!canInteract || isReplay || currentBetIndex >= betOptions.length - 1 || stateBet.betAmount >= biggestBet,
+	);
 	const disableAuto = $derived.by(() => {
-		if (J.disabledAutoplay) return true;
+		if (!showAuto) return true;
 		if (stateBet.isSpaceHold) return true;
 		if (!canInteract && !hasAuto) return true;
 		if (!stateBetDerived.isBetCostAvailable()) return true;
@@ -317,7 +363,13 @@
 		const target = context.stateGame.roundWin;
 		winTween.set(target, { duration: target === 0 ? 0 : 650 });
 	});
-	const winValue = $derived(bookEventAmountToCurrencyString(winTween.current));
+	// Round the IN-FLIGHT count-up only (an unrounded tween renders jittery 4-decimal values); the
+	// settled value is printed exactly, so a 0.0016 win reads $0.0016 (STAKE_REVIEW_LESSONS R-01).
+	const winValue = $derived(
+		bookEventAmountToCurrencyString(
+			winTween.current === winTween.target ? winTween.target : Math.round(winTween.current),
+		),
+	);
 	const hasWin = $derived(context.stateGame.roundWin > 0);
 
 	// Deterministic text-fit for the FIXED-width desktop BALANCE / WIN slots. The transform-based
@@ -359,7 +411,7 @@
 	});
 
 	const openBuyBonus = () => {
-		if (disableBuy) return;
+		if (disableBuy || isReplay) return;
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		showBuyModal = true;
 	};
@@ -368,7 +420,13 @@
 	const resumeMessage = $derived.by(() => {
 		const mode = stateBet.betToResume?.mode;
 		const bonus =
-			mode === 'bonus1' ? 'Normal' : mode === 'bonus2' ? 'Super' : mode === 'featureSpin' ? 'Feature' : '';
+			mode === 'bonus1'
+				? i18nDerived.translate('NORMAL BONUS')
+				: mode === 'bonus2'
+					? i18nDerived.translate('SUPER BONUS')
+					: mode === 'featureSpin'
+						? i18nDerived.translate('CARD FEATURE TITLE')
+						: '';
 		return bonus
 			? i18nDerived.translateVars('ACTIVE BONUS IN PROGRESS', { bonus })
 			: i18nDerived.translate('ACTIVE ROUND IN PROGRESS');
@@ -386,12 +444,45 @@
 		context.eventEmitter.broadcast({ type: 'soundPressBet' });
 		resumeRound();
 	};
+	// END ROUND settles the round without playing it: the resume machine skips the presentation
+	// (roundFlowState.endRoundOnly, read in game/actor.ts) and its endGame step calls
+	// /wallet/end-round, crediting the balance. Previously this was identical to PLAY ROUND.
 	const endRound = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		roundFlowState.endRoundOnly = true;
 		resumeRound();
 	};
 
+	// Replay: hand a fresh copy of the replayed round to the resume machine. Idle only.
+	const startReplay = async () => {
+		if (!context.stateXstateDerived.isIdle()) return;
+		if (!(await prepareReplayStart())) return;
+		context.eventEmitter.broadcast({ type: 'soundPressBet' });
+		context.eventEmitter.broadcast({ type: 'resumeBet' });
+	};
+	const replayPromptVisible = $derived(
+		isReplay && canInteract && !roundFlowState.replayLoading && context.stateGame.winDim === 0,
+	);
+	const replayPromptText = $derived(
+		roundFlowState.replayHasPlayed ? i18nDerived.playAgain() : i18nDerived.startReplay(),
+	);
+	// Sits just above the visible control bar (desktop bar / portrait controls), else low.
+	let replayPromptBottom = $state('clamp(14px, 3.5vh, 34px)');
+	$effect(() => {
+		if (!replayPromptVisible) return;
+		layoutType;
+		const raf = requestAnimationFrame(() => {
+			const bar = document.querySelector('.hud-bottom')?.getBoundingClientRect();
+			replayPromptBottom =
+				layoutType === 'desktop' && bar && bar.height > 0
+					? `${Math.round(window.innerHeight - bar.top + 8)}px`
+					: continueBottom('clamp(14px, 3.5vh, 34px)');
+		});
+		return () => cancelAnimationFrame(raf);
+	});
+
 	const stepBet = (direction: -1 | 1, { playSound = true } = {}) => {
+		if (isReplay) return;
 		if (direction < 0 && disableDecrease) return;
 		if (direction > 0 && disableIncrease) return;
 		if (playSound) context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
@@ -423,15 +514,22 @@
 	};
 
 	const onSpinButton = () => {
-		context.eventEmitter.broadcast({ type: 'soundPressBet' });
+		// A dialog owns the screen (an error, the unfinished-round prompt): never bet behind it.
+		if (stateModal.modal || context.stateGame.resumeModalOpen) return;
+		if (isReplay && context.stateXstateDerived.isIdle()) {
+			startReplay();
+			return;
+		}
 
 		if (hasAuto) {
+			context.eventEmitter.broadcast({ type: 'soundPressBet' });
 			stateBet.autoSpinsCounter = 0;
 			return;
 		}
 
 		if (context.stateXstateDerived.isIdle()) {
 			if (!canAffordBet) return;
+			context.eventEmitter.broadcast({ type: 'soundPressBet' });
 			// Always reset to BASE before a new spin (unless feature toggle is on)
 			stateBet.activeBetModeKey = isFeatureActive
 				? 'featureSpin'
@@ -442,6 +540,9 @@
 			return;
 		}
 
+		// Jurisdiction disabledSlamstop: a running round may not be cut short.
+		if (!slamstopAllowed) return;
+		context.eventEmitter.broadcast({ type: 'soundPressBet' });
 		// Buffer stop only during the initial bet-loading window (first event only)
 		if (context.stateGame.awaitingFirstReveal) {
 			if (!J.disabledSlamstop) context.stateGame.pendingStop = true;
@@ -449,6 +550,15 @@
 			context.eventEmitter.broadcast({ type: 'stopButtonClick' });
 		}
 	};
+	// Idle: disabled only when the bet can't be paid (replay: while a retry loads). Running: the
+	// button is STOP (autoplay) or skip — skip is off when the jurisdiction disables slam-stop.
+	const spinDisabled = $derived(
+		canInteract
+			? isReplay
+				? roundFlowState.replayLoading
+				: !hasAuto && !canAffordBet
+			: !hasAuto && !slamstopAllowed,
+	);
 
 	// Slam-stop (skipping the reels / presentation) can be switched off by the jurisdiction.
 	const broadcastStop = () => {
@@ -480,6 +590,7 @@
 	// autoplay is switched off. The player's own turbo setting is restored on release.
 	let holdTurboWas: boolean | null = null;
 	const onSpaceHold = () => {
+		if (isReplay) return;
 		if (spaceOverOverlay || overlayUp() || J.disabledSpacebar || J.disabledAutoplay) return;
 		stateBet.autoSpinsCounter = 0;
 		stateBet.isSpaceHold = true;
@@ -487,6 +598,7 @@
 			holdTurboWas = stateBet.isTurbo;
 			stateBetDerived.updateIsTurbo(true, { persistent: true });
 		}
+		onSpinHold();
 	};
 	const onSpaceHoldEnd = () => {
 		if (!stateBet.isSpaceHold) return;
@@ -501,12 +613,20 @@
 		// Ignore Space while the "Unfinished Round" resume dialog is open — the player
 		// must choose Play/End there; a stray spin would launch the game and throw.
 		if (context.stateGame.resumeModalOpen) return;
+		// An error / notification dialog is up: Space must not place a bet behind it.
+		if (stateModal.modal) return;
 		// Something else was on screen → this press was for it (closing a popup etc.), not the reels.
 		// (checked live as well: a Space dispatched straight at window can reach us before the snapshot)
 		if (spaceOverOverlay || overlayUp()) return;
 
+		if (isReplay && context.stateXstateDerived.isIdle()) {
+			startReplay();
+			return;
+		}
+
 		if (hasAuto) {
 			if (context.stateXstateDerived.isIdle()) return;
+			if (!slamstopAllowed) return;
 			context.eventEmitter.broadcast({ type: 'soundPressBet' });
 			// Match manual-spin skip behavior. During autoplay the first Space can arrive while
 			// the next bet is still in the pre-spin/loading window; broadcasting stop here
@@ -519,10 +639,9 @@
 			return;
 		}
 
-		context.eventEmitter.broadcast({ type: 'soundPressBet' });
-
 		if (context.stateXstateDerived.isIdle()) {
 			if (!canAffordBet) return;
+			context.eventEmitter.broadcast({ type: 'soundPressBet' });
 			stateBet.activeBetModeKey = isFeatureActive
 				? 'featureSpin'
 				: isChanceActive
@@ -532,12 +651,27 @@
 			return;
 		}
 
+		if (!slamstopAllowed) return;
+		context.eventEmitter.broadcast({ type: 'soundPressBet' });
 		// Buffer stop only during the initial bet-loading window (first event only)
 		if (context.stateGame.awaitingFirstReveal) {
 			if (!J.disabledSlamstop) context.stateGame.pendingStop = true;
 		} else {
 			broadcastStop();
 		}
+	};
+
+	// Held Space keeps spinning (onSpaceHold sets stateBet.isSpaceHold and the bet machine re-bets
+	// while it is set). If the hold begins on an idle game — the first press was swallowed by
+	// a closing popup, or its round already ended — start the first round here.
+	const onSpinHold = () => {
+		if (isReplay || !context.stateXstateDerived.isIdle()) return;
+		if (context.stateGame.resumeModalOpen || stateModal.modal) return;
+		if (spaceOverOverlay || overlayUp()) return;
+		if (!canAffordBet) return;
+		context.eventEmitter.broadcast({ type: 'soundPressBet' });
+		stateBet.activeBetModeKey = isFeatureActive ? 'featureSpin' : isChanceActive ? 'enhancer1' : 'base';
+		context.eventEmitter.broadcast({ type: 'bet' });
 	};
 
 	// Tap-anywhere on touch layouts SKIPS the presentation — it hurries the current round along, the
@@ -554,8 +688,14 @@
 	const onTapSkip = () => {
 		// The "Unfinished Round" dialog owns the screen — the player must choose there.
 		if (context.stateGame.resumeModalOpen) return;
+		// Replay costs nothing: on touch layouts a tap on the board starts / restarts it.
+		if (isReplay && context.stateXstateDerived.isIdle()) {
+			startReplay();
+			return;
+		}
 		// Idle = nothing to skip. This is the guard that keeps a tap from ever costing a bet.
 		if (context.stateXstateDerived.isIdle()) return;
+		if (!slamstopAllowed) return;
 		context.eventEmitter.broadcast({ type: 'soundPressBet' });
 		// Same skip path as the stop button: buffer during the initial bet-loading window (so the
 		// press isn't swallowed before any event has drawn), otherwise stop right now.
@@ -603,18 +743,14 @@
 	});
 
 	const onTurbo = () => {
-		if (J.disabledTurbo) return;
+		if (!turboAllowed) return;
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		if (!stateBet.isTurbo && !stateBet.isSuperTurbo) {
 			stateBet.isTurbo = true;
 			stateBet.isSuperTurbo = false;
 			return;
 		}
-		if (stateBet.isTurbo && !stateBet.isSuperTurbo && J.disabledSuperTurbo) {
-			stateBet.isTurbo = false; // super turbo not allowed: turbo → off
-			return;
-		}
-		if (stateBet.isTurbo && !stateBet.isSuperTurbo) {
+		if (stateBet.isTurbo && !stateBet.isSuperTurbo && superTurboAllowed) {
 			stateBet.isSuperTurbo = true;
 			return;
 		}
@@ -780,7 +916,7 @@
 
 <OnHotkey
 	hotkey="Space"
-	disabled={!stateConfig.jurisdiction ? false : stateConfig.jurisdiction.disabledSpacebar}
+	disabled={!spacebarAllowed}
 	onpress={onSpinHotkey}
 	onhold={onSpaceHold}
 	onholdend={onSpaceHoldEnd}
@@ -791,7 +927,7 @@
 	class:hud-shell--blocked={congratsBlocking}
 	class:hud-shell--win-dim={context.stateGame.winDim > 0}
 	data-layout={layoutType}
-	style={`--win-dim:${1 - context.stateGame.winDim};--forest-card-bg:url('${heroCardBg}');--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}');--ls-navbox:url('${lsNavBox}');--ls-bonus:url('${lsBonus}');--ls-turn:url('${lsTurn}');--ls-vh:${lsVh}px`}
+	style={`--win-dim:${1 - context.stateGame.winDim};--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}');--ls-navbox:url('${lsNavBox}');--ls-bonus:url('${lsBonus}');--ls-turn:url('${lsTurn}');--ls-vh:${lsVh}px`}
 >
 	{#if isPortrait}
 		<!-- Portrait header: Press Play mark + big McSchmutzo logo, pinned above the board. -->
@@ -833,7 +969,7 @@
 								</button>
 							</div>
 						{/if}
-						<button class="pt-round" class:pt-round--menu-open={menuOpen} type="button" onclick={toggleMenu} aria-label="Menu" aria-expanded={menuOpen} data-menu-toggle>
+						<button class="pt-round" class:pt-round--menu-open={menuOpen} type="button" onclick={toggleMenu} aria-label={i18nDerived.translate('MENU')} aria-expanded={menuOpen} data-menu-toggle>
 							{#if menuOpen}
 								<img class="pt-x-full" src={iconBurgerClose} alt="close" />
 							{:else}
@@ -843,6 +979,7 @@
 					</div>
 					<button
 						class="pt-buy pt-buy--controls"
+						style:visibility={isReplay ? 'hidden' : null}
 						type="button"
 						disabled={disableBuy}
 						onclick={openBuyBonus}
@@ -861,8 +998,8 @@
 					class="pt-spin"
 					type="button"
 					onclick={onSpinButton}
-					aria-label="Spin"
-					disabled={canInteract && !hasAuto && !canAffordBet}
+					aria-label={i18nDerived.translate('SPIN')}
+					disabled={spinDisabled}
 				>
 					{@render turnDripsEl()}
 					{#if !isSpinStop}
@@ -878,10 +1015,11 @@
 				<div class="pt-grp">
 					<button
 						class="pt-round pt-round--turbo"
+						style:visibility={showTurbo ? null : 'hidden'}
+						disabled={!showTurbo}
 						class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
 						class:turbo-super={stateBet.isSuperTurbo}
 						type="button"
-						disabled={J.disabledTurbo}
 					onclick={onTurbo}
 						aria-label={i18nDerived.turboLabel()}
 					>
@@ -889,6 +1027,7 @@
 					</button>
 					<button
 						class="pt-round"
+						style:visibility={showAuto ? null : 'hidden'}
 						class:active={hasAuto}
 						type="button"
 						onclick={onAuto}
@@ -902,13 +1041,14 @@
 
 			<div class="pt-stats">
 				<div class="pt-balance">
-					<span class="pt-balance__label">{i18nDerived.balance()}</span>
+					<span class="pt-balance__label">{balanceLabel}</span>
 					<span class="pt-balance__value" use:fitText={formattedBalance}>{formattedBalance}</span>
 				</div>
 
 				<div class="pt-bet">
 					<button
 						class="pt-round pt-round--sm"
+						style:visibility={showBetControls ? null : 'hidden'}
 						type="button"
 						onclick={onDecrease}
 						disabled={disableDecrease}
@@ -926,6 +1066,7 @@
 					</span>
 					<button
 						class="pt-round pt-round--sm"
+						style:visibility={showBetControls ? null : 'hidden'}
 						type="button"
 						onclick={onIncrease}
 						disabled={disableIncrease}
@@ -955,12 +1096,13 @@
 			<!-- Left column: BALANCE over the BET stepper, bottom-left -->
 			<div class="ls-left">
 				<div class="ls-balance" use:fitPill={{ dep: formattedBalance, align: 'left' }}>
-					<span class="ls-balance__label">{i18nDerived.balance()}</span>
+					<span class="ls-balance__label">{balanceLabel}</span>
 					<span class="ls-balance__value">{formattedBalance}</span>
 				</div>
 				<div class="ls-bet">
 					<button
 						class="ls-step"
+						style:visibility={showBetControls ? null : 'hidden'}
 						type="button"
 						onclick={onDecrease}
 						disabled={disableDecrease}
@@ -975,6 +1117,7 @@
 					>{formattedBet}</span>
 					<button
 						class="ls-step"
+						style:visibility={showBetControls ? null : 'hidden'}
 						type="button"
 						onclick={onIncrease}
 						disabled={disableIncrease}
@@ -1004,7 +1147,7 @@
 							</button>
 						</div>
 					{/if}
-					<button class="ls-round" class:ls-round--menu-open={menuOpen} type="button" onclick={toggleMenu} aria-label="Menu" aria-expanded={menuOpen} data-menu-toggle>
+					<button class="ls-round" class:ls-round--menu-open={menuOpen} type="button" onclick={toggleMenu} aria-label={i18nDerived.translate('MENU')} aria-expanded={menuOpen} data-menu-toggle>
 						{#if menuOpen}
 							<img class="ls-x-full" src={iconBurgerClose} alt="close" />
 						{:else}
@@ -1015,6 +1158,7 @@
 
 				<button
 					class="ls-buy-rail"
+					style:visibility={isReplay ? 'hidden' : null}
 					type="button"
 					disabled={disableBuy}
 					onclick={openBuyBonus}
@@ -1025,8 +1169,8 @@
 					class="ls-spin"
 					type="button"
 					onclick={onSpinButton}
-					aria-label="Spin"
-					disabled={canInteract && !hasAuto && !canAffordBet}
+					aria-label={i18nDerived.translate('SPIN')}
+					disabled={spinDisabled}
 				>
 					{@render turnDripsEl()}
 					{#if !isSpinStop}
@@ -1040,10 +1184,11 @@
 				</button>
 				<button
 					class="ls-round ls-round--turbo"
+					style:visibility={showTurbo ? null : 'hidden'}
+					disabled={!showTurbo}
 					class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
 					class:turbo-super={stateBet.isSuperTurbo}
 					type="button"
-					disabled={J.disabledTurbo}
 					onclick={onTurbo}
 					aria-label={i18nDerived.turboLabel()}
 				>
@@ -1051,6 +1196,7 @@
 				</button>
 				<button
 					class="ls-round ls-round--auto"
+					style:visibility={showAuto ? null : 'hidden'}
 					class:active={hasAuto}
 					type="button"
 					onclick={onAuto}
@@ -1108,7 +1254,7 @@
 						class:nav-btn--menu-open={menuOpen}
 						type="button"
 						onclick={toggleMenu}
-						aria-label="Menu"
+						aria-label={i18nDerived.translate('MENU')}
 						aria-expanded={menuOpen}
 						data-menu-toggle
 					>
@@ -1125,10 +1271,11 @@
 			<div class="hud-buy">
 				<button
 					class="buy-btn"
+					style:visibility={isReplay ? 'hidden' : null}
 					type="button"
 					disabled={disableBuy}
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
-					aria-label={isAnyModeActive ? 'Disable' : i18nDerived.buyBonus()}
+					aria-label={isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}
 				>
 					{@render buyDripsEl()}
 					<span class="buy-btn__label" use:fitLabel={isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.translate('BONUS')}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.translate('BONUS')}</span>
@@ -1139,7 +1286,7 @@
 		<div class="hud-stats">
 			<div class="value-pill value-pill--balance">
 				<div class="label label--balance">
-					<span class="label-text">{i18nDerived.balance()}</span>
+					<span class="label-text">{balanceLabel}</span>
 				</div>
 				<div class="value-fit">
 					<span class="value" style={desktopValueFontStyle(formattedBalance)}>{formattedBalance}</span>
@@ -1178,13 +1325,14 @@
 						class="nav-btn nav-btn--framed"
 						type="button"
 						onclick={openRules}
-						aria-label="Game rules"
+						aria-label={i18nDerived.gameRules()}
 					>
 						<img class="nav-icon" src={iconMenu} alt="menu" />
 					</button>
 				{/if}
 				<button
 					class="nav-btn nav-btn--framed"
+					style:visibility={showBetControls ? null : 'hidden'}
 					type="button"
 					onpointerdown={(event) =>
 						startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
@@ -1199,6 +1347,7 @@
 				</button>
 				<button
 					class="nav-btn nav-btn--framed"
+					style:visibility={showBetControls ? null : 'hidden'}
 					type="button"
 					onpointerdown={(event) =>
 						startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
@@ -1221,8 +1370,8 @@
 			class="spin-btn"
 			type="button"
 			onclick={onSpinButton}
-			aria-label="Spin"
-			disabled={canInteract && !hasAuto && !canAffordBet}
+			aria-label={i18nDerived.translate('SPIN')}
+			disabled={spinDisabled}
 		>
 			{@render turnDripsEl()}
 			{#if !isSpinStop}
@@ -1231,7 +1380,7 @@
 			{#if hasAuto}
 				<span
 					class="spin-btn__count"
-					aria-label={`Remaining auto spins ${autoSpinsRemainingText}`}
+					aria-label={i18nDerived.translateVars('REMAINING AUTO SPINS', { count: autoSpinsRemainingText })}
 					>{autoSpinsRemainingText}</span
 				>
 			{:else if isSpinStop}
@@ -1244,10 +1393,11 @@
 			<div class="action-cluster">
 				<button
 					class="nav-btn nav-btn--framed nav-btn--turbo"
+					style:visibility={showTurbo ? null : 'hidden'}
+					disabled={!showTurbo}
 					class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
 					class:turbo-super={stateBet.isSuperTurbo}
 					type="button"
-					disabled={J.disabledTurbo}
 					onclick={onTurbo}
 					aria-label={i18nDerived.turboLabel()}
 				>
@@ -1255,6 +1405,7 @@
 				</button>
 				<button
 					class="nav-btn nav-btn--auto"
+					style:visibility={showAuto ? null : 'hidden'}
 					class:active={hasAuto}
 					type="button"
 					onclick={onAuto}
@@ -1299,6 +1450,12 @@
 
 {#if context.stateGame.winDim > 0}
 	<p class="win-continue" style={`bottom:${winContBottom}`}>{i18nDerived.translate('PRESS TO CONTINUE')}&nbsp;→</p>
+{/if}
+
+<!-- Replay start / restart prompt (same look as the win screens' PRESS TO CONTINUE). The spin
+     control, Space, or (touch layouts) a tap on the board starts it. -->
+{#if replayPromptVisible}
+	<p class="win-continue" style={`bottom:${replayPromptBottom}`}>{replayPromptText}&nbsp;→</p>
 {/if}
 
 <style>

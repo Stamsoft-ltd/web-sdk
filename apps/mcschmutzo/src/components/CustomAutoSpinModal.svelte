@@ -10,7 +10,7 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { stateBet } from 'state-shared';
+	import { stateBet, stateConfig } from 'state-shared';
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 
@@ -69,6 +69,10 @@
 	};
 
 	const start = () => {
+		if (stateConfig.jurisdiction?.disabledAutoplay) {
+			props.onclose();
+			return;
+		}
 		context.eventEmitter.broadcast({ type: 'soundPressBet' });
 		// Buy modes are one-shot. Autospin must never inherit a previous BONUS/SUPER purchase.
 		if (stateBet.activeBetModeKey === 'bonus1' || stateBet.activeBetModeKey === 'bonus2') {
@@ -79,9 +83,16 @@
 		context.eventEmitter.broadcast({ type: 'autoBet' });
 	};
 
+	// Jurisdiction flags: disabledTurbo removes both speed-ups, disabledSuperTurbo only the second.
+	const turboAllowed = $derived(!stateConfig.jurisdiction?.disabledTurbo);
+	const superTurboAllowed = $derived(turboAllowed && !stateConfig.jurisdiction?.disabledSuperTurbo);
 	const TOGGLES = $derived([
-		{ label: i18nDerived.translate('TURBO SPIN'), on: isTurbo, onclick: toggleTurbo },
-		{ label: i18nDerived.translate('SUPER TURBO SPIN'), on: isSuperTurbo, onclick: toggleSuperTurbo },
+		...(turboAllowed
+			? [{ label: i18nDerived.translate('TURBO SPIN'), on: isTurbo, onclick: toggleTurbo }]
+			: []),
+		...(superTurboAllowed
+			? [{ label: i18nDerived.translate('SUPER TURBO SPIN'), on: isSuperTurbo, onclick: toggleSuperTurbo }]
+			: []),
 		{ label: i18nDerived.translate('LOCK FEATURE SPIN'), on: isFeature, onclick: toggleFeature },
 	]);
 </script>
@@ -94,7 +105,7 @@
 	type="button"
 	style={`background-image:url('${closeArt}')`}
 	onclick={props.onclose}
-	aria-label="Close"
+	aria-label={i18nDerived.translate('CLOSE')}
 ></button>
 
 <div class="ap-root" role="dialog" aria-modal="true">
@@ -129,7 +140,7 @@
 					style={`background-image:url('${minusArt}')`}
 					onclick={() => step(-1)}
 					disabled={stopIndex === 0}
-					aria-label="Fewer spins"
+					aria-label={i18nDerived.translate('FEWER SPINS')}
 				></button>
 
 				<div class="ap-counter-box">
@@ -142,7 +153,7 @@
 					style={`background-image:url('${plusArt}')`}
 					onclick={() => step(1)}
 					disabled={stopIndex === STOPS.length - 1}
-					aria-label="More spins"
+					aria-label={i18nDerived.translate('MORE SPINS')}
 				></button>
 			</div>
 		</div>

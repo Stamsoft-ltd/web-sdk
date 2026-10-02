@@ -2,6 +2,7 @@ import { setup, assign } from 'xstate';
 
 import { context, type Context } from './machineContext';
 import type { PrimaryMachines } from './types';
+import { resetOneShotBetMode } from './resetOneShotBetMode';
 
 export const createIntermediateMachineResumeBet = (actors: {
 	resumeGame: PrimaryMachines['resumeGame'];
@@ -82,6 +83,9 @@ export const createIntermediateMachineResumeBet = (actors: {
 					},
 				},
 				end: {
+					// A resumed bonus round restores the bought mode (Authenticate sets it from the
+					// round); clear it once the round settles so the next spin is not priced as a buy.
+					entry: () => resetOneShotBetMode(),
 					type: 'final',
 				},
 			},

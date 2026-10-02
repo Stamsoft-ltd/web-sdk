@@ -1,19 +1,17 @@
 import { setup, fromPromise, assign } from 'xstate';
 
-import { stateBet, stateBetDerived } from 'state-shared';
+import { stateBet } from 'state-shared';
 
 import { context, type Context } from './machineContext';
 import type { PrimaryMachines } from './types';
+import { resetOneShotBetMode } from './resetOneShotBetMode';
 
 const checkSpaceHold = fromPromise(async () => {
-	if (stateBet.isSpaceHold) {
-		if (stateBetDerived.activeBetMode()?.type === 'buy') {
-			stateBet.activeBetModeKey = 'BASE';
-			return;
-		}
+	// The buy-mode reset used to sit inside the space-hold branch only, so an ordinary buy left
+	// activeBetModeKey on the bonus mode after the round (see resetOneShotBetMode).
+	resetOneShotBetMode();
 
-		return;
-	}
+	if (stateBet.isSpaceHold) return;
 	throw Error('end bet');
 });
 
@@ -117,6 +115,8 @@ export const createIntermediateMachineBet = ({
 					},
 				},
 				end: {
+					// Also reached straight from a failed newGame / endGame, which skip checkSpaceHold.
+					entry: () => resetOneShotBetMode(),
 					type: 'final',
 				},
 			},

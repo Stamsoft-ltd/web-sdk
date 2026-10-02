@@ -109,7 +109,7 @@
 								<ResponsiveText
 									anchor={0.5}
 									maxWidth={context.stateGameDerived.boardLayout().width * 0.4}
-									text={bookEventAmountToCurrencyString(countUpAmount)}
+									text={bookEventAmountToCurrencyString(Math.round(countUpAmount))}
 									style={{
 										fontFamily: 'Poppins',
 										fontWeight: '700',
@@ -132,7 +132,7 @@
 								<ResponsiveText
 									anchor={0.5}
 									maxWidth={smallBoxW * 0.8}
-									text={bookEventAmountToCurrencyString(countUpAmount)}
+									text={bookEventAmountToCurrencyString(Math.round(countUpAmount))}
 									style={{
 										fontFamily: 'Bowlby One SC',
 										fontWeight: '400',

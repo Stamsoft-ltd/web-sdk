@@ -42,6 +42,4 @@ export const i18nDerived = {
 	retryResume: () => stateI18nDerived.translate('RETRY RESUME'),
 	recoveryTitle: () => stateI18nDerived.translate('RECOVERY TITLE'),
 	recoveryBody: () => stateI18nDerived.translate('RECOVERY BODY'),
-	dealIt: () => stateI18nDerived.translate('DEAL IT'),
-	allIn: () => stateI18nDerived.translate('ALL IN'),
 };

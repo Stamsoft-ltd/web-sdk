@@ -13,6 +13,10 @@ export const stateConfig = $state({
 		displaySessionTimer: false,
 		minimumRoundDuration: 0,
 	},
+	minBetAmount: 1,
+	maxBetAmount: 1000,
+	stepBetAmount: 0,
+	defaultBetAmount: 1,
 	betAmountOptions: [1, 5, 25, 50, 75, 100, 200, 500, 800, 1000],
 	betMenuOptions: [1, 5, 25, 50, 75, 100, 200, 500, 800, 1000],
 });

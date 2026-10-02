@@ -2,13 +2,13 @@ export default {
 
 	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
 	"INFO SCATTER TITLE": "SÍMBOLO SCATTER / BÔNUS",
-	"INFO SCATTER BODY": "O símbolo BÔNUS é o símbolo Scatter e pode aparecer em todos os rolos. Reunir símbolos Scatter ativa um de dois modos de Jogos Grátis.",
+	"INFO SCATTER BODY": "O símbolo BONUS é o símbolo Scatter e pode cair em qualquer rolo. 3 ou 4 símbolos Scatter ativam os Jogos Grátis, que sempre começam com um giro da Roda de Bônus. A roda concede de 6 a 30 Jogos Grátis e avança o Multiplicador de Ganhos de 3 a 15 níveis.",
 	"INFO SCATTER 3 TITLE": "SCATTERS - Bônus Normal",
-	"INFO SCATTER 3 BODY": "Reunir 3 símbolos Scatter aciona o Bônus Normal. O jogador entra no modo de Jogos Grátis Normal. O Bônus Normal usa a configuração padrão de Jogos Grátis e sua respectiva progressão inicial de Multiplicador de Ganhos. Qualquer Multiplicador de Ganhos ativo levado para o recurso é combinado com o resultado de entrada dos Jogos Grátis, quando aplicável. O Multiplicador de Ganhos permanece durante todo o recurso de Jogos Grátis e pode aumentar durante o jogo. Ele não é reiniciado entre os Jogos Grátis.",
+	"INFO SCATTER 3 BODY": "3 símbolos Scatter ativam o Bônus Normal. A Roda de Bônus define o número de Jogos Grátis e o Multiplicador de Ganhos inicial. O Multiplicador de Ganhos pode continuar aumentando e nunca é zerado durante os Jogos Grátis.",
 	"INFO SCATTER 4 TITLE": "SCATTERS - Super Bônus",
-	"INFO SCATTER 4 BODY": "Reunir 4 símbolos Scatter aciona o Super Bônus. O Super Bônus começa com uma configuração inicial aprimorada em comparação com o Bônus Normal. O jogador recebe a configuração dos Super Jogos Grátis com as condições de entrada máximas / aprimoradas definidas para este modo. O Multiplicador de Ganhos permanece durante todo o Super Bônus e pode continuar aumentando durante os Jogos Grátis. Ele não é reiniciado entre os Jogos Grátis.",
-	"INFO FREEGAMES BODY 1": "Durante os Jogos Grátis, as mesmas mecânicas centrais de ganho e de Regiro permanecem ativas. Sempre que uma conexão vencedora qualificada ocorre, os símbolos vencedores iguais travam automaticamente e acionam um Regiro.",
-	"INFO FREEGAMES BODY 2": "Símbolos iguais adicionais acrescentados durante o Regiro são travados, permitindo que a sequência continue. Símbolos McSchmutzo que aparecem durante o recurso podem aumentar o Multiplicador de Ganhos. O Multiplicador de Ganhos acumulado permanece ativo durante todo o recurso de Jogos Grátis.",
+	"INFO SCATTER 4 BODY": "4 símbolos Scatter ativam o Super Bônus. Ele é jogado como o Bônus Normal, mas começa com um giro aprimorado da Roda de Bônus. O Multiplicador de Ganhos pode continuar aumentando e nunca é zerado durante os Jogos Grátis.",
+	"INFO FREEGAMES BODY 1": "Durante os Jogos Grátis, valem as mesmas regras de ganhos de linha e de Travar & Regirar. Sempre que uma conexão vencedora válida ocorre, os símbolos vencedores são travados e um Regiro é ativado. Símbolos McSchmutzo podem adicionar níveis ao Multiplicador de Ganhos, que se aplica a cada ganho até o fim do recurso.",
+	"INFO FREEGAMES BODY 2": "Os Jogos Grátis não podem ser reativados. Símbolos Scatter que caem durante os Jogos Grátis não concedem Jogos Grátis adicionais.",
 	"INFO WAYS BODY": "McSchmutzo é jogado em uma grade 5×5 com 50 linhas de pagamento fixas. Faça 3, 4 ou 5 símbolos iguais da esquerda para a direita, começando pelo rolo mais à esquerda, em uma das 50 linhas de pagamento para formar um ganho. O Wild substitui todos os símbolos de pagamento comuns e pode ajudar a completar combinações vencedoras, mas não substitui os símbolos Scatter nem os símbolos especiais de Multiplicador. As combinações vencedoras são pagas de acordo com a Tabela de Pagamentos.",
 	"INFO LOCKRESPIN TITLE": "TRAVAR & REGIRAR",
 	"INFO LOCKRESPIN BODY": "Qualquer combinação vencedora pode acionar o recurso Travar & Regirar. Quando acionado, o símbolo vencedor de maior valor trava em posição enquanto as posições restantes giram novamente. Se símbolos iguais adicionais ou novas posições vencedoras forem adicionados ao ganho atual, outro Regiro é concedido. Os Regiros continuam enquanto o ganho seguir crescendo e terminam quando nenhum símbolo igual ou posição nova é adicionado, ou quando a grade fica preenchida com símbolos vencedores. Quando a sequência de Regiros termina, o ganho final acumulado é concedido.",
@@ -24,8 +24,6 @@ export default {
 	'CONFIRM TEXT': 'Comprar %mode% por %cost%?',
 	'NORMAL BONUS': 'Bônus Normal',
 	'SUPER BONUS': 'Super Bônus',
-	'CONFIRM IT ALL': 'CONFIRMAR TUDO',
-	'BUY ALL IN': 'Comprar Tudo por %cost%',
 	CONFIRM: 'CONFIRMAR',
 	CANCEL: 'CANCELAR',
 
@@ -33,13 +31,13 @@ export default {
 	'AUTO SPIN': 'GIRO AUTO',
 	'TURBO SPIN': 'GIRO TURBO',
 	'SUPER TURBO SPIN': 'SUPER GIRO TURBO',
-	'LOCK FEATURE SPIN': 'RECURSO BÔNUS 50X',
+	"LOCK FEATURE SPIN": "GIRO TRAVAR & REGIRAR",
 	'NUMBER OF SPINS': 'NÚMERO DE GIROS',
 	'START AUTOPLAY': 'INICIAR AUTOMÁTICO',
 
 	// ── Recovery / interrupted round ─────────────────────────────────────────────────────────────
 	'UNFINISHED ROUND': 'RODADA INCOMPLETA',
-	'ACTIVE BONUS IN PROGRESS': 'Você tem um bônus %bonus% ativo em andamento.',
+	"ACTIVE BONUS IN PROGRESS": "Você tem %bonus% ativo em andamento.",
 	'ACTIVE ROUND IN PROGRESS': 'Você tem um bônus ativo em andamento.',
 	'END ROUND': 'ENCERRAR RODADA',
 	'PLAY ROUND': 'JOGAR RODADA',
@@ -49,10 +47,8 @@ export default {
 	AUTO: 'AUTO',
 	CONGRATS: 'PARABÉNS!',
 	'YOU WON': 'VOCÊ GANHOU',
-	'ALL IN BONUS TITLE': 'BÔNUS ALL IN',
 	'NORMAL BONUS TITLE': 'BÔNUS NORMAL',
-	'BONUS BLURB':
-		'%count% giros grátis com símbolo expansivo aleatório e multiplicador que começa em 2x e dobra a cada conexão',
+	"BONUS BLURB": "%count% giros grátis com Travar & Regirar em cada ganho válido e um Multiplicador de Ganhos que nunca é zerado",
 	'FREE SPINS': 'GIROS GRÁTIS',
 	'PRESS TO CONTINUE': 'PRESSIONE PARA CONTINUAR',
 	'FREE GAMES': 'JOGOS GRÁTIS',
@@ -91,7 +87,7 @@ export default {
 	'INFO OVERVIEW BODY':
 		'McSchmutzo é jogado em uma grade de rolos 5×5 e paga em 50 linhas de pagamento fixas. As combinações vencedoras são formadas ao aparecerem símbolos iguais em uma linha de pagamento ativa, começando pelo rolo mais à esquerda e continuando em rolos consecutivos. Todos os ganhos são calculados de acordo com os valores dos símbolos mostrados na Tabela de Pagamentos. Várias combinações vencedoras podem ser premiadas na mesma rodada.',
 	'INFO MAX WIN LABEL': 'Ganho Máximo:',
-	'INFO MAX WIN VALUE': '25,000× a aposta',
+	"INFO MAX WIN VALUE": "%value%× a aposta",
 	'INFO RTP LABEL': 'RTP Teórico:',
 
 	// ── Info / rules popup: FEATURES ─────────────────────────────────────────────────────────────
@@ -107,29 +103,15 @@ export default {
 	'INFO RESPIN BODY 3':
 		'Todos os ganhos criados durante a sequência de Regiros são somados ao ganho da rodada atual.',
 	'INFO MULT TITLE': 'MULTIPLICADOR DE GANHOS',
-	'INFO MULT BODY 1':
-		'Durante o Recurso Regirar, símbolos McSchmutzo podem aparecer e aumentar o Multiplicador de Ganhos. Cada símbolo McSchmutzo qualificado pode adicionar etapas ao Multiplicador de Ganhos. O Multiplicador de Ganhos começa em 1x. O multiplicador avança pelos seguintes níveis:',
-	'INFO MULT BODY 2':
-		'O Multiplicador de Ganhos atual é aplicado de acordo com a matemática do jogo e permanece ativo durante toda a sequência de Regiros atual.',
+	"INFO MULT BODY 1": "Durante os Regiros e os Jogos Grátis, símbolos McSchmutzo podem aparecer e aumentar o Multiplicador de Ganhos. Cada símbolo McSchmutzo válido pode adicionar níveis ao Multiplicador de Ganhos. O Multiplicador de Ganhos começa em 1x. O multiplicador avança pelos seguintes níveis:",
+	"INFO MULT BODY 2": "O Multiplicador de Ganhos atual é aplicado a cada ganho de linha. No jogo base, ele permanece ativo durante a sequência de Regiro em andamento; durante os Jogos Grátis, nunca é zerado.",
 	'INFO COMING SOON': 'Em breve.',
 
 	// ── Info / rules popup: FEATURE BUY ──────────────────────────────────────────────────────────
-	'INFO FB1 TITLE': 'MODO APRIMORADO 1',
-	'INFO FB1 BODY':
-		'Por um custo de 2× a Aposta Base, a chance de acionar os Jogos Grátis é aumentada em 4×. Todas as outras mecânicas do jogo permanecem inalteradas.',
-	'INFO FB1 COST': '2× a Aposta Base',
-	'INFO FB2 TITLE': 'MODO APRIMORADO 2',
-	'INFO FB2 BODY':
-		'Por um custo de 10× a Aposta Base, a chance de acionar os Jogos Grátis é aumentada em 4×, com o modo aprimorado configurado para a condição de entrada do Super Bônus / máxima. Todas as outras mecânicas do jogo permanecem inalteradas.',
-	'INFO FB2 COST': '10× a Aposta Base',
-	'INFO FB3 TITLE': 'BÔNUS NORMAL',
-	'INFO FB3 BODY':
-		'Por um custo de 100× a Aposta Base, o jogador entra diretamente no Bônus Normal. O Bônus Normal é jogado usando sua configuração padrão de entrada dos Jogos Grátis.',
-	'INFO FB3 COST': '100× a Aposta Base',
-	'INFO FB4 TITLE': 'SUPER BÔNUS',
-	'INFO FB4 BODY':
-		'Por um custo de 500× a Aposta Base, o jogador entra diretamente no Super Bônus. O Super Bônus começa usando sua configuração aprimorada / máxima de entrada dos Jogos Grátis.',
-	'INFO FB4 COST': '500× a Aposta Base',
+	"INFO FB1 BODY": "Enquanto ativo, cada giro custa o valor mostrado abaixo e tem uma chance maior de ativar os Jogos Grátis. Todas as outras mecânicas do jogo permanecem inalteradas. Fica ativo até ser desativado.",
+	"INFO FB2 BODY": "Enquanto ativo, cada giro custa o valor mostrado abaixo e é um giro vencedor garantido que inicia o recurso Travar & Regirar. Fica ativo até ser desativado.",
+	"INFO FB3 BODY": "Ativa imediatamente o Bônus Normal, como se 3 símbolos Scatter tivessem caído. O bônus começa com um giro da Roda de Bônus.",
+	"INFO FB4 BODY": "Ativa imediatamente o Super Bônus, como se 4 símbolos Scatter tivessem caído. O bônus começa com um giro da Roda de Bônus.",
 
 	// ── Info / rules popup: GENERAL INFO ─────────────────────────────────────────────────────────
 	'INFO INTERRUPTED BODY 1':
@@ -142,7 +124,7 @@ export default {
 		'O retorno esperado é calculado ao longo de muitas jogadas. A exibição do jogo não representa nenhum dispositivo físico e serve apenas para fins ilustrativos.',
 	'INFO LEGAL BODY 3':
 		'Os ganhos são liquidados de acordo com o valor recebido do Servidor de Jogo Remoto e não com base em eventos dentro do navegador.',
-	'INFO LEGAL COPYRIGHT': 'TM e © 2026 Stake Engine.',
+	"INFO LEGAL COPYRIGHT": "TM e © 2026 Engine.",
 
 	// ── Info / rules popup: USER INTERFACE GUIDE (labels + descriptions) ─────────────────────────
 	'UI AUTO SPINS': 'GIROS AUTO',
@@ -170,14 +152,12 @@ export default {
 
 	// ── Common UI terms (shared across Stake games; copied from magnetic/forest) ──
 	"ACTIVATE": "ATIVAR",
-	"ALL IN": "MEGA CHAIN",
 	"AUTOPLAY": "AUTOMÁTICO",
 	"BALANCE": "SALDO",
 	"BET": "APOSTA",
 	"BUY": "COMPRAR",
 	"BUY BONUS": "COMPRAR BÔNUS",
 	"DEACTIVATE": "DESATIVAR",
-	"DEAL IT": "DROP-O-MAGNET",
 	"EVENT": "EVENTO",
 	"GAME RULES": "REGRAS DO JOGO",
 	"MODE": "MODO",
@@ -199,4 +179,22 @@ export default {
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "GANHE ATÉ",
 	"CONFIRM PURCHASE": "CONFIRMAR COMPRA",
+
+	// ── Rules / buy-confirm / HUD keys added in the 2026-10 copy fix ──
+	"CONFIRM ACTIVATE TEXT": "Ativar %mode%? Cada giro custa %cost%.",
+	"FEWER SPINS": "Menos giros",
+	"MORE SPINS": "Mais giros",
+	"SUPER BONUS TITLE": "SUPER BÔNUS",
+	"REMAINING AUTO SPINS": "Giros automáticos restantes: %count%",
+	"INFO RTP SHORT": "RTP:",
+	"INFO FB COST": "%cost%× a Aposta Base",
+
+	// ── Error / notification modal copy (mirrors the en.ts block, 2026-10-01) ──
+	"NOTIFICATION": "NOTIFICAÇÃO",
+	"INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.": "SALDO INSUFICIENTE PARA ESTA APOSTA. ADICIONE FUNDOS À SUA CONTA OU REDUZA O NÍVEL DE APOSTA.",
+	"CONNECTION PROBLEM. PLEASE CHECK YOUR CONNECTION AND TRY AGAIN.": "PROBLEMA DE CONEXÃO. VERIFIQUE SUA CONEXÃO E TENTE NOVAMENTE.",
+	"YOUR SESSION HAS EXPIRED. PLEASE RELOAD THE GAME.": "SUA SESSÃO EXPIROU. RECARREGUE O JOGO.",
+	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "O LIMITE DA SUA CONTA FOI ATINGIDO.",
+	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "NÃO FOI POSSÍVEL CARREGAR ESTE REPLAY. TENTE NOVAMENTE.",
+	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "ALGO DEU ERRADO. TENTE NOVAMENTE.",
 };

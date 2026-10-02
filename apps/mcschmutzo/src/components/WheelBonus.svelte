@@ -85,6 +85,8 @@
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { fade } from 'svelte/transition';
+	import { stateBet, stateBetDerived, stateConfig } from 'state-shared';
+	import { isReplayMode } from '../state/roundFlow.svelte';
 
 	const context = getContext();
 	const wheel = $derived(context.stateGame.wheel);
@@ -103,7 +105,8 @@
 	let innerDone = false;
 	let outerEl: HTMLDivElement | undefined = $state();
 
-	// Reset each time the wheel appears (or is cleared). No auto-spin — the player presses SPIN.
+	// Reset each time the wheel appears (or is cleared). In manual play the player presses SPIN;
+	// autoplay, held Space and replay spin it on their own (see the auto-spin effect below).
 	$effect(() => {
 		context.stateGame.wheel;
 		rotOuter = rotInner = 0;
@@ -193,6 +196,40 @@
 		});
 	};
 
+	// Nobody is at the controls during autoplay / held Space, and a replay must play through on its
+	// own — waiting for a SPIN press there stalls the round. Give the wheel a beat on screen, then spin.
+	const AUTO_SPIN_DELAY_MS = 1200;
+	const autoSpins = $derived(
+		isReplayMode() ||
+			stateBetDerived.hasAutoBetCounter() ||
+			context.stateXstateDerived.isAutoBetting() ||
+			stateBet.isSpaceHold,
+	);
+	$effect(() => {
+		if (!wheel || spun || !autoSpins) return;
+		const timer = setTimeout(onSpin, AUTO_SPIN_DELAY_MS);
+		return () => clearTimeout(timer);
+	});
+
+	// Safety net: the bonus flow only continues when both rings report transitionend. A backgrounded
+	// tab can drop those events, which would hold the round (and an autoplay run) on the wheel for
+	// good — so once the spin has had all its time, settle it regardless.
+	const SETTLE_FALLBACK_MS = INNER_DELAY_MS + Math.max(OUTER_MS, INNER_MS) + 1500;
+	let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
+	const settleNow = () => {
+		if (!spinning) return;
+		outerDone = innerDone = true;
+		spinning = false;
+		settled = true;
+		context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_win' });
+		setTimeout(() => context.stateGame.wheelResolve?.(), 1400);
+	};
+	$effect(() => {
+		if (!spinning) return;
+		fallbackTimer = setTimeout(settleNow, SETTLE_FALLBACK_MS);
+		return () => clearTimeout(fallbackTimer);
+	});
+
 	// Pointer clicker: while spinning, read the outer ring's live angle and flick the spatula each
 	// time a wedge divider passes under it — fast flutter at speed, single clacks in the final crawl.
 	$effect(() => {
@@ -226,7 +263,7 @@
 	// Space presses SPIN too (captured, so the game's own space-to-spin never sees it while the wheel
 	// is up).
 	$effect(() => {
-		if (!wheel) return;
+		if (!wheel || stateConfig.jurisdiction?.disabledSpacebar) return;
 		const onKey = (e: KeyboardEvent) => {
 			if (e.code !== 'Space' && e.key !== ' ') return;
 			e.preventDefault();
@@ -247,11 +284,8 @@
 			name: ring === 'outer' ? 'sfx_reel_stop_1' : 'sfx_reel_stop_3',
 		});
 		if (!outerDone || !innerDone) return;
-		spinning = false;
-		settled = true;
-		context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_win' });
 		// let the landed values pulse before the bonus flow moves on
-		setTimeout(() => context.stateGame.wheelResolve?.(), 1400);
+		settleNow();
 	};
 
 	const labelStyle = (angle: number, r: number) =>

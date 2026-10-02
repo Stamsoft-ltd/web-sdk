@@ -1,12 +1,7 @@
-import { stateI18n } from 'state-shared';
-
 import { BOOK_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import { stateBet } from 'state-shared';
 
-const NO_LOCALISATION_CURRENCY_MAP: Record<string, string> = {
-	XGC: 'GC',
-	XSC: 'SC',
-};
+import { formatWalletAmount, formatWinAmount } from './currency';
 
 // bookEventAmount: is the amount or win numbers in the events of books, e.g. the amount in setTotalWin bookEvent
 // {
@@ -29,37 +24,30 @@ export const bookEventAmountToNormalisedAmount = (bookEventAmount: number) => {
 
 export const numberToFloat = (value: number) => Number.parseFloat(`${value}`);
 
-// Sub-cent payouts: a genuine non-zero win must never render as a flat "0.00" (Stake
-// pre-submission requirement). Normal amounts keep 2 decimals; only values that would
-// round to zero at 2 places get extra precision, grown until the shown figure is
-// non-zero and capped so we never spill trailing noise digits.
-const MAX_FRACTION_DIGITS = 8;
-export const fractionDigitsForAmount = (value: number, min = 2) => {
-	const abs = Math.abs(value);
-	if (abs === 0) return min;
-	let digits = min;
-	while (digits < MAX_FRACTION_DIGITS && Number(abs.toFixed(digits)) === 0) {
-		digits += 1;
-	}
-	return digits;
-};
+export { fractionDigitsForAmount } from './currency';
 
-export const numberToCurrencyString = (value: number) => {
-	const fractionDigits = fractionDigitsForAmount(value);
-	if (stateBet.currency in NO_LOCALISATION_CURRENCY_MAP) {
-		return `${NO_LOCALISATION_CURRENCY_MAP[stateBet.currency]} ${numberToFloat(value).toFixed(fractionDigits)}`;
-	}
+// Money on screen has TWO display contracts, and Stake reviews them separately:
+//
+//   wallet (balance, bet, costs) -> exactly the currency's decimals. A balance must never grow a
+//     third decimal just because the float is precise; "$999.946" was rejected 2026-08-20.
+//   win (spin/round/total, countups) -> the exact settled value, up to 4 decimals, so a sub-cent
+//     payout reads "$0.0016" rather than "$0.00".
+//
+// These two used to share one expanding formatter, which satisfied the win rule and broke the
+// wallet rule. Keep them separate: the function you call IS the compliance decision.
+//
+// Both format via the RGS-documented currency table rather than Intl's own currency rendering, so
+// symbol, decimal count and symbol placement match the spec (Intl renders PLN as "PLN 10.00"
+// rather than "10.00 zł", and has no notion of XGC/XSC/XEC at all).
 
-	return stateI18n.i18n.number(value, {
-		minimumFractionDigits: 2,
-		maximumFractionDigits: fractionDigits,
-		style: 'currency',
-		currency: stateBet.currency,
-		// numberingSystem: 'latn',
-	});
-};
+/** Wallet money in currency units: balance, bet, total cost, buy-bonus prices, autoplay limits. */
+export const numberToCurrencyString = (value: number) =>
+	formatWalletAmount(stateBet.currency, value);
 
-export const bookEventAmountToCurrencyString = (bookEventAmount: number) => {
-	const normalisedAmount = bookEventAmountToNormalisedAmount(bookEventAmount);
-	return numberToCurrencyString(normalisedAmount);
-};
+/** Win money in currency units. Prefer `bookEventAmountToCurrencyString` for book amounts. */
+export const numberToWinCurrencyString = (value: number) =>
+	formatWinAmount(stateBet.currency, value);
+
+/** Win money from a book-event amount — the normal path for every win readout. */
+export const bookEventAmountToCurrencyString = (bookEventAmount: number) =>
+	numberToWinCurrencyString(bookEventAmountToNormalisedAmount(bookEventAmount));

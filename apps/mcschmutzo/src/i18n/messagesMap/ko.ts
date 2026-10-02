@@ -2,13 +2,13 @@ export default {
 
 	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
 	"INFO SCATTER TITLE": "스캐터 / 보너스 심볼",
-	"INFO SCATTER BODY": "보너스 심볼은 스캐터 심볼이며 모든 릴에 나타날 수 있습니다. 스캐터 심볼이 나타나면 두 가지 프리 게임 모드 중 하나가 발동됩니다.",
+	"INFO SCATTER BODY": "BONUS 심볼은 스캐터 심볼이며 모든 릴에 나타날 수 있습니다. 스캐터 심볼 3개 또는 4개가 나타나면 프리 게임이 시작되며, 항상 보너스 휠 스핀으로 시작합니다. 휠은 프리 게임 6~30회를 지급하고 당첨 배율을 3~15단계 올립니다.",
 	"INFO SCATTER 3 TITLE": "스캐터 - 일반 보너스",
-	"INFO SCATTER 3 BODY": "스캐터 심볼 3개가 나타나면 일반 보너스가 발동됩니다. 플레이어는 일반 프리 게임 모드에 진입합니다. 일반 보너스는 표준 프리 게임 구성과 그에 해당하는 시작 당첨 배율 진행을 사용합니다. 피처로 이어진 활성 당첨 배율은 해당되는 경우 프리 게임 진입 결과와 결합됩니다. 당첨 배율은 프리 게임 피처 전체에 걸쳐 유지되며 플레이 중 증가할 수 있습니다. 프리 게임 사이에 초기화되지 않습니다.",
+	"INFO SCATTER 3 BODY": "스캐터 심볼 3개가 나타나면 일반 보너스가 시작됩니다. 보너스 휠이 프리 게임 횟수와 시작 당첨 배율을 정합니다. 당첨 배율은 계속 오를 수 있으며 프리 게임 동안 절대 초기화되지 않습니다.",
 	"INFO SCATTER 4 TITLE": "스캐터 - 슈퍼 보너스",
-	"INFO SCATTER 4 BODY": "스캐터 심볼 4개가 나타나면 슈퍼 보너스가 발동됩니다. 슈퍼 보너스는 일반 보너스에 비해 강화된 시작 구성으로 시작됩니다. 플레이어는 이 모드에 정의된 최대 / 강화 진입 조건이 적용된 슈퍼 프리 게임 설정을 받습니다. 당첨 배율은 슈퍼 보너스 전체에 걸쳐 유지되며 프리 게임 동안 계속 증가할 수 있습니다. 프리 게임 사이에 초기화되지 않습니다.",
-	"INFO FREEGAMES BODY 1": "프리 게임 동안 동일한 핵심 당첨 및 리스핀 메커니즘이 계속 활성화됩니다. 조건을 충족하는 당첨 연결이 발생할 때마다 일치하는 당첨 심볼이 자동으로 고정되고 리스핀이 발동됩니다.",
-	"INFO FREEGAMES BODY 2": "리스핀 동안 추가되는 일치 심볼도 고정되어 시퀀스가 계속 이어집니다. 피처 동안 나타나는 McSchmutzo 심볼은 당첨 배율을 높일 수 있습니다. 누적된 당첨 배율은 프리 게임 피처 전체에 걸쳐 계속 활성 상태로 유지됩니다.",
+	"INFO SCATTER 4 BODY": "스캐터 심볼 4개가 나타나면 슈퍼 보너스가 시작됩니다. 일반 보너스처럼 진행되지만 강화된 보너스 휠 스핀으로 시작합니다. 당첨 배율은 계속 오를 수 있으며 프리 게임 동안 절대 초기화되지 않습니다.",
+	"INFO FREEGAMES BODY 1": "프리 게임 중에도 라인 당첨과 락 앤 리스핀 규칙이 동일하게 적용됩니다. 조건을 충족하는 당첨 연결이 생길 때마다 당첨 심볼이 고정되고 리스핀이 발동됩니다. McSchmutzo 심볼은 당첨 배율 단계를 추가할 수 있으며, 당첨 배율은 피처가 끝날 때까지 모든 당첨에 적용됩니다.",
+	"INFO FREEGAMES BODY 2": "프리 게임은 재발동되지 않습니다. 프리 게임 중에 나타나는 스캐터 심볼은 추가 프리 게임을 지급하지 않습니다.",
 	"INFO WAYS BODY": "McSchmutzo는 50개의 고정 당첨 라인이 있는 5×5 릴 구성에서 진행됩니다. 가장 왼쪽 릴부터 시작하여 왼쪽에서 오른쪽으로 일치하는 심볼 3, 4 또는 5개가 50개 당첨 라인 중 하나에 나타나면 당첨이 형성됩니다. 와일드는 모든 일반 배당 심볼을 대체하며 당첨 조합 완성을 도울 수 있지만, 스캐터나 특수 배율 심볼은 대체하지 않습니다. 당첨 조합은 배당표에 따라 지급됩니다.",
 	"INFO LOCKRESPIN TITLE": "락 & 리스핀",
 	"INFO LOCKRESPIN BODY": "모든 당첨 조합은 락 앤 리스핀 피처를 발동할 수 있습니다. 발동되면 가장 높은 값의 당첨 심볼이 제자리에 고정되고 나머지 위치가 다시 회전합니다. 추가로 일치하는 심볼이나 새로운 당첨 위치가 현재 당첨에 더해지면 또 한 번의 리스핀이 지급됩니다. 리스핀은 당첨이 계속 커지는 한 이어지며, 새로운 일치 심볼이나 위치가 추가되지 않거나 릴 구성이 당첨 심볼로 가득 채워지면 종료됩니다. 리스핀 시퀀스가 종료되면 최종 누적 당첨금이 지급됩니다.",
@@ -24,8 +24,6 @@ export default {
 	'CONFIRM TEXT': '%cost%에 %mode%을(를) 구매하시겠습니까?',
 	'NORMAL BONUS': '일반 보너스',
 	'SUPER BONUS': '슈퍼 보너스',
-	'CONFIRM IT ALL': '올인 확정',
-	'BUY ALL IN': '%cost%에 올인 구매',
 	CONFIRM: '확인',
 	CANCEL: '취소',
 
@@ -33,13 +31,13 @@ export default {
 	'AUTO SPIN': '자동 스핀',
 	'TURBO SPIN': '터보 스핀',
 	'SUPER TURBO SPIN': '슈퍼 터보 스핀',
-	'LOCK FEATURE SPIN': '50X 보너스 피처',
+	"LOCK FEATURE SPIN": "락 피처 스핀",
 	'NUMBER OF SPINS': '스핀 횟수',
 	'START AUTOPLAY': '자동 재생 시작',
 
 	// ── Recovery / interrupted round ─────────────────────────────────────────────────────────────
 	'UNFINISHED ROUND': '미완료 라운드',
-	'ACTIVE BONUS IN PROGRESS': '진행 중인 %bonus% 보너스가 있습니다.',
+	"ACTIVE BONUS IN PROGRESS": "진행 중인 %bonus%이(가) 있습니다.",
 	'ACTIVE ROUND IN PROGRESS': '진행 중인 보너스가 있습니다.',
 	'END ROUND': '라운드 종료',
 	'PLAY ROUND': '라운드 진행',
@@ -49,10 +47,8 @@ export default {
 	AUTO: '자동',
 	CONGRATS: '축하합니다!',
 	'YOU WON': '획득 상금',
-	'ALL IN BONUS TITLE': '올인 보너스',
 	'NORMAL BONUS TITLE': '일반 보너스',
-	'BONUS BLURB':
-		'무작위 확장 심볼이 등장하는 %count% 프리 스핀, 배율은 2x에서 시작해 연결될 때마다 두 배로 증가합니다',
+	"BONUS BLURB": "조건을 충족하는 모든 당첨에 락 앤 리스핀, 초기화되지 않는 당첨 배율이 적용되는 프리 스핀 %count%회",
 	'FREE SPINS': '프리 스핀',
 	'PRESS TO CONTINUE': '계속하려면 누르세요',
 	'FREE GAMES': '프리 게임',
@@ -91,7 +87,7 @@ export default {
 	'INFO OVERVIEW BODY':
 		'McSchmutzo는 5×5 릴 구성으로 진행되며 50개의 고정 당첨 라인에서 당첨금을 지급합니다. 당첨 조합은 활성화된 당첨 라인에 일치하는 심볼이 가장 왼쪽 릴부터 연속된 릴에 걸쳐 나타날 때 형성됩니다. 모든 당첨금은 배당표에 표시된 심볼 값에 따라 계산됩니다. 하나의 게임 라운드에서 여러 개의 당첨 조합이 지급될 수 있습니다.',
 	'INFO MAX WIN LABEL': '최대 당첨금:',
-	'INFO MAX WIN VALUE': '25,000× 베팅액',
+	"INFO MAX WIN VALUE": "%value%× 베팅액",
 	'INFO RTP LABEL': '이론적 RTP:',
 
 	// ── Info / rules popup: FEATURES ─────────────────────────────────────────────────────────────
@@ -107,29 +103,15 @@ export default {
 	'INFO RESPIN BODY 3':
 		'리스핀 시퀀스 동안 발생한 모든 당첨금은 현재 게임 라운드 당첨금에 합산됩니다.',
 	'INFO MULT TITLE': '당첨 배율',
-	'INFO MULT BODY 1':
-		'리스핀 피처 동안 McSchmutzo 심볼이 나타나 당첨 배율을 높일 수 있습니다. 조건을 충족하는 각 McSchmutzo 심볼은 당첨 배율 단계를 추가할 수 있습니다. 당첨 배율은 1x에서 시작합니다. 배율은 다음 단계로 상승합니다:',
-	'INFO MULT BODY 2':
-		'현재 당첨 배율은 게임 수학에 따라 적용되며 현재 리스핀 시퀀스 내내 유지됩니다.',
+	"INFO MULT BODY 1": "리스핀과 프리 게임 중에 McSchmutzo 심볼이 나타나 당첨 배율을 높일 수 있습니다. 조건을 충족하는 각 McSchmutzo 심볼은 당첨 배율 단계를 추가할 수 있습니다. 당첨 배율은 1x에서 시작하며 다음 단계를 거쳐 올라갑니다:",
+	"INFO MULT BODY 2": "현재 당첨 배율은 모든 라인 당첨에 적용됩니다. 기본 게임에서는 진행 중인 리스핀 시퀀스 동안 유지되며, 프리 게임 동안에는 절대 초기화되지 않습니다.",
 	'INFO COMING SOON': '곧 제공됩니다.',
 
 	// ── Info / rules popup: FEATURE BUY ──────────────────────────────────────────────────────────
-	'INFO FB1 TITLE': '강화 모드 1',
-	'INFO FB1 BODY':
-		'기본 베팅액의 2× 비용으로 프리 게임 발동 확률이 4× 증가합니다. 다른 모든 게임 메커니즘은 변경되지 않습니다.',
-	'INFO FB1 COST': '기본 베팅액의 2×',
-	'INFO FB2 TITLE': '강화 모드 2',
-	'INFO FB2 BODY':
-		'기본 베팅액의 10× 비용으로 프리 게임 발동 확률이 4× 증가하며, 강화 모드는 슈퍼 보너스 / 최대 진입 조건 쪽으로 설정됩니다. 다른 모든 게임 메커니즘은 변경되지 않습니다.',
-	'INFO FB2 COST': '기본 베팅액의 10×',
-	'INFO FB3 TITLE': '일반 보너스',
-	'INFO FB3 BODY':
-		'기본 베팅액의 100× 비용으로 플레이어는 일반 보너스에 직접 진입합니다. 일반 보너스는 표준 프리 게임 진입 구성으로 진행됩니다.',
-	'INFO FB3 COST': '기본 베팅액의 100×',
-	'INFO FB4 TITLE': '슈퍼 보너스',
-	'INFO FB4 BODY':
-		'기본 베팅액의 500× 비용으로 플레이어는 슈퍼 보너스에 직접 진입합니다. 슈퍼 보너스는 강화된 / 최대 프리 게임 진입 구성으로 시작됩니다.',
-	'INFO FB4 COST': '기본 베팅액의 500×',
+	"INFO FB1 BODY": "활성화되어 있는 동안 각 스핀은 아래 표시된 금액이 들며 프리 게임이 시작될 확률이 높아집니다. 다른 모든 게임 방식은 그대로입니다. 비활성화할 때까지 계속 유지됩니다.",
+	"INFO FB2 BODY": "활성화되어 있는 동안 각 스핀은 아래 표시된 금액이 들며, 락 앤 리스핀 피처를 시작하는 당첨 스핀이 보장됩니다. 비활성화할 때까지 계속 유지됩니다.",
+	"INFO FB3 BODY": "스캐터 심볼 3개가 나타난 것처럼 일반 보너스를 즉시 시작합니다. 보너스는 보너스 휠 스핀으로 시작합니다.",
+	"INFO FB4 BODY": "스캐터 심볼 4개가 나타난 것처럼 슈퍼 보너스를 즉시 시작합니다. 보너스는 보너스 휠 스핀으로 시작합니다.",
 
 	// ── Info / rules popup: GENERAL INFO ─────────────────────────────────────────────────────────
 	'INFO INTERRUPTED BODY 1':
@@ -142,7 +124,7 @@ export default {
 		'기대 환수율은 다수의 플레이에 걸쳐 계산됩니다. 게임 화면은 실제 물리적 기기를 나타내지 않으며 예시 목적으로만 제공됩니다.',
 	'INFO LEGAL BODY 3':
 		'당첨금은 웹 브라우저 내의 이벤트가 아니라 원격 게임 서버로부터 수신된 금액에 따라 정산됩니다.',
-	'INFO LEGAL COPYRIGHT': 'TM and © 2026 Stake Engine.',
+	"INFO LEGAL COPYRIGHT": "TM 및 © 2026 Engine.",
 
 	// ── Info / rules popup: USER INTERFACE GUIDE (labels + descriptions) ─────────────────────────
 	'UI AUTO SPINS': '자동 스핀',
@@ -170,14 +152,12 @@ export default {
 
 	// ── Common UI terms (shared across Stake games; copied from magnetic/forest) ──
 	"ACTIVATE": "활성화",
-	"ALL IN": "MEGA CHAIN",
 	"AUTOPLAY": "자동",
 	"BALANCE": "잔액",
 	"BET": "베팅",
 	"BUY": "구매",
 	"BUY BONUS": "보너스 구매",
 	"DEACTIVATE": "비활성화",
-	"DEAL IT": "DROP-O-MAGNET",
 	"EVENT": "이벤트",
 	"GAME RULES": "게임 규칙",
 	"MODE": "모드",
@@ -199,4 +179,22 @@ export default {
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "최대",
 	"CONFIRM PURCHASE": "구매 확인",
+
+	// ── Rules / buy-confirm / HUD keys added in the 2026-10 copy fix ──
+	"CONFIRM ACTIVATE TEXT": "%mode%을(를) 활성화하시겠습니까? 스핀당 %cost%입니다.",
+	"FEWER SPINS": "스핀 줄이기",
+	"MORE SPINS": "스핀 늘리기",
+	"SUPER BONUS TITLE": "슈퍼 보너스",
+	"REMAINING AUTO SPINS": "남은 자동 스핀: %count%",
+	"INFO RTP SHORT": "RTP:",
+	"INFO FB COST": "기본 베팅액의 %cost%×",
+
+	// ── Error / notification modal copy (mirrors the en.ts block, 2026-10-01) ──
+	"NOTIFICATION": "알림",
+	"INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.": "이 베팅에 필요한 잔액이 부족합니다. 계정에 자금을 추가하거나 베팅 레벨을 낮추세요.",
+	"CONNECTION PROBLEM. PLEASE CHECK YOUR CONNECTION AND TRY AGAIN.": "연결 문제가 발생했습니다. 연결을 확인하고 다시 시도하세요.",
+	"YOUR SESSION HAS EXPIRED. PLEASE RELOAD THE GAME.": "세션이 만료되었습니다. 게임을 다시 불러오세요.",
+	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "계정 한도에 도달했습니다.",
+	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "이 리플레이를 불러올 수 없습니다. 다시 시도하세요.",
+	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "문제가 발생했습니다. 다시 시도하세요.",
 };

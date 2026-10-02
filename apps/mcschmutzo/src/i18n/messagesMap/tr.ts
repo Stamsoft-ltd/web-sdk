@@ -2,13 +2,13 @@ export default {
 
 	// ── Info popup: FEATURES scatter/free-games + WAYS TO WIN (added) ──
 	"INFO SCATTER TITLE": "SCATTER / BONUS SEMBOLÜ",
-	"INFO SCATTER BODY": "BONUS sembolü, Scatter sembolüdür ve tüm makaralarda görünebilir. Scatter sembollerinin gelmesi, iki Ücretsiz Oyunlar modundan birini etkinleştirir.",
+	"INFO SCATTER BODY": "BONUS sembolü Scatter sembolüdür ve herhangi bir makaraya gelebilir. 3 veya 4 Scatter sembolü, her zaman Bonus Çarkının çevrilmesiyle başlayan Ücretsiz Oyunları tetikler. Çark 6 ila 30 Ücretsiz Oyun verir ve Kazanç Çarpanını 3 ila 15 basamak yükseltir.",
 	"INFO SCATTER 3 TITLE": "SCATTER - Normal Bonus",
-	"INFO SCATTER 3 BODY": "3 Scatter sembolünün gelmesi Normal Bonusu tetikler. Oyuncu, Normal Ücretsiz Oyunlar moduna girer. Normal Bonus, standart Ücretsiz Oyunlar yapılandırmasını ve buna karşılık gelen başlangıç Kazanç Çarpanı ilerleyişini kullanır. Özelliğe taşınan aktif herhangi bir Kazanç Çarpanı, uygun olduğunda Ücretsiz Oyunlar giriş sonucuyla birleştirilir. Kazanç Çarpanı, tüm Ücretsiz Oyunlar özelliği boyunca kalıcı olur ve oyun sırasında artabilir. Ücretsiz Oyunlar arasında sıfırlanmaz.",
+	"INFO SCATTER 3 BODY": "3 Scatter sembolü Normal Bonusu tetikler. Bonus Çarkı, Ücretsiz Oyunların sayısını ve başlangıçtaki Kazanç Çarpanını belirler. Kazanç Çarpanı artmaya devam edebilir ve Ücretsiz Oyunlar sırasında asla sıfırlanmaz.",
 	"INFO SCATTER 4 TITLE": "SCATTER - Süper Bonus",
-	"INFO SCATTER 4 BODY": "4 Scatter sembolünün gelmesi Süper Bonusu tetikler. Süper Bonus, Normal Bonusa kıyasla geliştirilmiş bir başlangıç yapılandırmasıyla başlar. Oyuncu, bu mod için tanımlanan maksimum / geliştirilmiş giriş koşullarıyla Süper Ücretsiz Oyunlar düzenini alır. Kazanç Çarpanı, tüm Süper Bonus boyunca kalıcı olur ve Ücretsiz Oyunlar sırasında artmaya devam edebilir. Ücretsiz Oyunlar arasında sıfırlanmaz.",
-	"INFO FREEGAMES BODY 1": "Ücretsiz Oyunlar sırasında, aynı temel kazanç ve Yeniden Döndürme mekanikleri aktif kalır. Uygun bir kazançlı bağlantı oluştuğunda, eşleşen kazanan semboller otomatik olarak kilitlenir ve bir Yeniden Döndürme tetikler.",
-	"INFO FREEGAMES BODY 2": "Yeniden Döndürme sırasında eklenen ek eşleşen semboller kilitlenir ve dizinin devam etmesini sağlar. Özellik sırasında görünen McSchmutzo sembolleri Kazanç Çarpanını artırabilir. Biriken Kazanç Çarpanı, tüm Ücretsiz Oyunlar özelliği boyunca aktif kalır.",
+	"INFO SCATTER 4 BODY": "4 Scatter sembolü Süper Bonusu tetikler. Normal Bonus gibi oynanır ancak güçlendirilmiş bir Bonus Çarkı dönüşüyle başlar. Kazanç Çarpanı artmaya devam edebilir ve Ücretsiz Oyunlar sırasında asla sıfırlanmaz.",
+	"INFO FREEGAMES BODY 1": "Ücretsiz Oyunlar sırasında aynı çizgi kazancı ve Kilitle & Yeniden Döndür kuralları geçerlidir. Uygun bir kazanç bağlantısı oluştuğunda kazanan semboller kilitlenir ve bir Yeniden Döndürme tetiklenir. McSchmutzo sembolleri Kazanç Çarpanına basamak ekleyebilir ve Kazanç Çarpanı özellik bitene kadar her kazanca uygulanır.",
+	"INFO FREEGAMES BODY 2": "Ücretsiz Oyunlar yeniden tetiklenemez. Ücretsiz Oyunlar sırasında gelen Scatter sembolleri ek Ücretsiz Oyun vermez.",
 	"INFO WAYS BODY": "McSchmutzo, 50 sabit kazanç hattı bulunan 5×5 makara düzeninde oynanır. Bir kazanç oluşturmak için, en soldaki makaradan başlayarak soldan sağa, 50 kazanç hattından birinde 3, 4 veya 5 eşleşen sembol getirin. Wild, tüm normal ödeme yapan sembollerin yerine geçer ve kazançlı kombinasyonların tamamlanmasına yardımcı olabilir; ancak Scatter veya özel Çarpan sembollerinin yerine geçmez. Kazançlı kombinasyonlar, Ödeme Tablosuna göre ödenir.",
 	"INFO LOCKRESPIN TITLE": "KİLİTLE & YENİDEN DÖNDÜR",
 	"INFO LOCKRESPIN BODY": "Herhangi bir kazançlı kombinasyon, Kilitle & Yeniden Döndür özelliğini tetikleyebilir. Tetiklendiğinde, en yüksek değerli kazanan sembol yerinde kilitlenirken kalan pozisyonlar yeniden döner. Mevcut kazanca ek eşleşen semboller veya yeni kazançlı pozisyonlar eklenirse, bir Yeniden Döndürme daha kazanılır. Kazanç büyümeye devam ettiği sürece Yeniden Döndürmeler devam eder ve yeni eşleşen sembol ya da pozisyon eklenmediğinde veya makara düzeni kazanan sembollerle dolduğunda sona erer. Yeniden Döndürme dizisi sona erdiğinde, biriken nihai kazanç verilir.",
@@ -24,8 +24,6 @@ export default {
 	'CONFIRM TEXT': '%mode% modunu %cost% karşılığında satın al?',
 	'NORMAL BONUS': 'Normal Bonus',
 	'SUPER BONUS': 'Süper Bonus',
-	'CONFIRM IT ALL': 'HEPSİNİ ONAYLA',
-	'BUY ALL IN': 'Hepsini %cost% karşılığında satın al',
 	CONFIRM: 'ONAYLA',
 	CANCEL: 'İPTAL',
 
@@ -33,13 +31,13 @@ export default {
 	'AUTO SPIN': 'OTOMATİK DÖNÜŞ',
 	'TURBO SPIN': 'TURBO DÖNÜŞ',
 	'SUPER TURBO SPIN': 'SÜPER TURBO DÖNÜŞ',
-	'LOCK FEATURE SPIN': '50X BONUS ÖZELLİĞİ',
+	"LOCK FEATURE SPIN": "KİLİTLİ ÖZELLİK DÖNÜŞÜ",
 	'NUMBER OF SPINS': 'DÖNÜŞ SAYISI',
 	'START AUTOPLAY': 'OTOMATİK OYNAT',
 
 	// ── Recovery / interrupted round ─────────────────────────────────────────────────────────────
 	'UNFINISHED ROUND': 'TAMAMLANMAMIŞ TUR',
-	'ACTIVE BONUS IN PROGRESS': 'Devam eden aktif bir %bonus% bonusunuz var.',
+	"ACTIVE BONUS IN PROGRESS": "Devam eden aktif bir %bonus% var.",
 	'ACTIVE ROUND IN PROGRESS': 'Devam eden aktif bir bonusunuz var.',
 	'END ROUND': 'TURU BİTİR',
 	'PLAY ROUND': 'TURU OYNA',
@@ -49,10 +47,8 @@ export default {
 	AUTO: 'OTOMATİK',
 	CONGRATS: 'TEBRİKLER!',
 	'YOU WON': 'KAZANDINIZ',
-	'ALL IN BONUS TITLE': 'ALL IN BONUS',
 	'NORMAL BONUS TITLE': 'NORMAL BONUS',
-	'BONUS BLURB':
-		'Rastgele genişleyen sembol ile %count% ücretsiz dönüş ve 2x ile başlayıp her bağlantıda ikiye katlanan çarpan',
+	"BONUS BLURB": "Her uygun kazançta Kilitle & Yeniden Döndür ve hiç sıfırlanmayan bir Kazanç Çarpanı ile %count% ücretsiz dönüş",
 	'FREE SPINS': 'ÜCRETSİZ DÖNÜŞLER',
 	'PRESS TO CONTINUE': 'DEVAM ETMEK İÇİN BAS',
 	'FREE GAMES': 'ÜCRETSİZ OYUNLAR',
@@ -91,7 +87,7 @@ export default {
 	'INFO OVERVIEW BODY':
 		'McSchmutzo, 5×5 makara düzeninde oynanır ve 50 sabit kazanç hattı üzerinden ödeme yapar. Kazançlı kombinasyonlar, en soldaki makaradan başlayarak ardışık makaralarda aktif bir kazanç hattı üzerine eşleşen sembollerin gelmesiyle oluşur. Tüm kazançlar, Ödeme Tablosunda gösterilen sembol değerlerine göre hesaplanır. Aynı oyun turunda birden fazla kazançlı kombinasyon verilebilir.',
 	'INFO MAX WIN LABEL': 'Maksimum Kazanç:',
-	'INFO MAX WIN VALUE': '25,000× bahis',
+	"INFO MAX WIN VALUE": "%value%× bahis",
 	'INFO RTP LABEL': 'Teorik RTP:',
 
 	// ── Info / rules popup: FEATURES ─────────────────────────────────────────────────────────────
@@ -107,29 +103,15 @@ export default {
 	'INFO RESPIN BODY 3':
 		'Yeniden Döndürme dizisi sırasında oluşan tüm kazançlar mevcut oyun turu kazancına eklenir.',
 	'INFO MULT TITLE': 'KAZANÇ ÇARPANI',
-	'INFO MULT BODY 1':
-		'Yeniden Döndürme Özelliği sırasında McSchmutzo sembolleri görünebilir ve Kazanç Çarpanını artırabilir. Her uygun McSchmutzo sembolü Kazanç Çarpanı adımları ekleyebilir. Kazanç Çarpanı 1x ile başlar. Çarpan şu seviyelerden geçer:',
-	'INFO MULT BODY 2':
-		'Mevcut Kazanç Çarpanı, oyun matematiğine göre uygulanır ve mevcut Yeniden Döndürme dizisi boyunca aktif kalır.',
+	"INFO MULT BODY 1": "Yeniden Döndürmeler ve Ücretsiz Oyunlar sırasında McSchmutzo sembolleri belirebilir ve Kazanç Çarpanını artırabilir. Her uygun McSchmutzo sembolü Kazanç Çarpanına basamak ekleyebilir. Kazanç Çarpanı 1x ile başlar. Çarpan aşağıdaki seviyelerden geçer:",
+	"INFO MULT BODY 2": "Geçerli Kazanç Çarpanı her çizgi kazancına uygulanır. Ana oyunda devam eden Yeniden Döndürme dizisi boyunca aktif kalır; Ücretsiz Oyunlar sırasında asla sıfırlanmaz.",
 	'INFO COMING SOON': 'Çok yakında.',
 
 	// ── Info / rules popup: FEATURE BUY ──────────────────────────────────────────────────────────
-	'INFO FB1 TITLE': 'GELİŞTİRİLMİŞ MOD 1',
-	'INFO FB1 BODY':
-		'Temel Bahsin 2× karşılığında, Ücretsiz Oyunları tetikleme şansı 4× artar. Diğer tüm oyun mekanikleri değişmeden kalır.',
-	'INFO FB1 COST': 'Temel Bahsin 2× katı',
-	'INFO FB2 TITLE': 'GELİŞTİRİLMİŞ MOD 2',
-	'INFO FB2 BODY':
-		'Temel Bahsin 10× karşılığında, Ücretsiz Oyunları tetikleme şansı 4× artar ve geliştirilmiş mod Süper Bonus / maksimum giriş koşuluna doğru yapılandırılır. Diğer tüm oyun mekanikleri değişmeden kalır.',
-	'INFO FB2 COST': 'Temel Bahsin 10× katı',
-	'INFO FB3 TITLE': 'NORMAL BONUS',
-	'INFO FB3 BODY':
-		'Temel Bahsin 100× karşılığında, oyuncu doğrudan Normal Bonusa girer. Normal Bonus, standart Ücretsiz Oyunlar giriş yapılandırmasıyla oynanır.',
-	'INFO FB3 COST': 'Temel Bahsin 100× katı',
-	'INFO FB4 TITLE': 'SÜPER BONUS',
-	'INFO FB4 BODY':
-		'Temel Bahsin 500× karşılığında, oyuncu doğrudan Süper Bonusa girer. Süper Bonus, geliştirilmiş / maksimum Ücretsiz Oyunlar giriş yapılandırmasıyla başlar.',
-	'INFO FB4 COST': 'Temel Bahsin 500× katı',
+	"INFO FB1 BODY": "Etkinken her dönüş aşağıda gösterilen tutardadır ve Ücretsiz Oyunları tetikleme şansı artar. Diğer tüm oyun mekanikleri değişmeden kalır. Devre dışı bırakılana kadar etkin kalır.",
+	"INFO FB2 BODY": "Etkinken her dönüş aşağıda gösterilen tutardadır ve Kilitle & Yeniden Döndür özelliğini başlatan garantili bir kazançlı dönüştür. Devre dışı bırakılana kadar etkin kalır.",
+	"INFO FB3 BODY": "Normal Bonusu, 3 Scatter sembolü gelmiş gibi anında tetikler. Bonus, Bonus Çarkının çevrilmesiyle başlar.",
+	"INFO FB4 BODY": "Süper Bonusu, 4 Scatter sembolü gelmiş gibi anında tetikler. Bonus, Bonus Çarkının çevrilmesiyle başlar.",
 
 	// ── Info / rules popup: GENERAL INFO ─────────────────────────────────────────────────────────
 	'INFO INTERRUPTED BODY 1':
@@ -142,7 +124,7 @@ export default {
 		'Beklenen getiri, çok sayıda oyun üzerinden hesaplanır. Oyun görünümü herhangi bir fiziksel cihazı temsil etmez ve yalnızca gösterim amaçlıdır.',
 	'INFO LEGAL BODY 3':
 		'Kazançlar, web tarayıcısındaki olaylara göre değil, Uzak Oyun Sunucusundan alınan tutara göre ödenir.',
-	'INFO LEGAL COPYRIGHT': 'TM ve © 2026 Stake Engine.',
+	"INFO LEGAL COPYRIGHT": "TM ve © 2026 Engine.",
 
 	// ── Info / rules popup: USER INTERFACE GUIDE (labels + descriptions) ─────────────────────────
 	'UI AUTO SPINS': 'OTOMATİK DÖNÜŞLER',
@@ -170,14 +152,12 @@ export default {
 
 	// ── Common UI terms (shared across Stake games; copied from magnetic/forest) ──
 	"ACTIVATE": "ETKİNLEŞTİR",
-	"ALL IN": "MEGA CHAIN",
 	"AUTOPLAY": "OTOMATİK",
 	"BALANCE": "BAKİYE",
 	"BET": "BAHİS",
 	"BUY": "SATIN AL",
 	"BUY BONUS": "BONUS AL",
 	"DEACTIVATE": "DEVRE DIŞI",
-	"DEAL IT": "DROP-O-MAGNET",
 	"EVENT": "OLAY",
 	"GAME RULES": "OYUN KURALLARI",
 	"MODE": "MOD",
@@ -199,4 +179,22 @@ export default {
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "KAZAN: EN FAZLA",
 	"CONFIRM PURCHASE": "SATIN ALMAYI ONAYLA",
+
+	// ── Rules / buy-confirm / HUD keys added in the 2026-10 copy fix ──
+	"CONFIRM ACTIVATE TEXT": "%mode% etkinleştirilsin mi? Her dönüş %cost% tutarındadır.",
+	"FEWER SPINS": "Daha az dönüş",
+	"MORE SPINS": "Daha fazla dönüş",
+	"SUPER BONUS TITLE": "SÜPER BONUS",
+	"REMAINING AUTO SPINS": "Kalan otomatik dönüş: %count%",
+	"INFO RTP SHORT": "RTP:",
+	"INFO FB COST": "Temel Bahsin %cost%× katı",
+
+	// ── Error / notification modal copy (mirrors the en.ts block, 2026-10-01) ──
+	"NOTIFICATION": "BİLDİRİM",
+	"INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.": "BU BAHİS İÇİN YETERSİZ BAKİYE. LÜTFEN HESABINIZA BAKİYE EKLEYİN VEYA BAHİS SEVİYESİNİ DÜŞÜRÜN.",
+	"CONNECTION PROBLEM. PLEASE CHECK YOUR CONNECTION AND TRY AGAIN.": "BAĞLANTI SORUNU. LÜTFEN BAĞLANTINIZI KONTROL EDİP TEKRAR DENEYİN.",
+	"YOUR SESSION HAS EXPIRED. PLEASE RELOAD THE GAME.": "OTURUMUNUZUN SÜRESİ DOLDU. LÜTFEN OYUNU YENİDEN YÜKLEYİN.",
+	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "HESAP LİMİTİNİZE ULAŞILDI.",
+	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "BU TEKRAR YÜKLENEMEDİ. LÜTFEN TEKRAR DENEYİN.",
+	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "BİR ŞEYLER TERS GİTTİ. LÜTFEN TEKRAR DENEYİN.",
 };

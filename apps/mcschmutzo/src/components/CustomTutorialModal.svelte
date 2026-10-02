@@ -1,5 +1,6 @@
 <script lang="ts" module>
 	import { ap } from '../lib/preloadArt';
+	import config from '../game/config';
 
 	const guyArt = ap('/assets/mcschmutzo/tutorial/overview-guy.webp');
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
@@ -54,23 +55,46 @@
 		'500x', '600x', '800x', '1000x',
 	];
 
-	// Page 5 (feature buy) — four purchasable modes. title/body/cost are i18n keys.
-	const FEATURE_BUYS: { title: string; body: string; cost: string; rtp: string }[] = [
-		{ title: 'INFO FB1 TITLE', body: 'INFO FB1 BODY', cost: 'INFO FB1 COST', rtp: '96.1%' },
-		{ title: 'INFO FB2 TITLE', body: 'INFO FB2 BODY', cost: 'INFO FB2 COST', rtp: '96.1%' },
-		{ title: 'INFO FB3 TITLE', body: 'INFO FB3 BODY', cost: 'INFO FB3 COST', rtp: '96.1%' },
-		{ title: 'INFO FB4 TITLE', body: 'INFO FB4 BODY', cost: 'INFO FB4 COST', rtp: '96.1%' },
-	];
+	// Every number on these pages comes from game/config.ts (the app's copy of the math), never typed
+	// by hand — a hand-typed cell drifts from what the RGS pays (STAKE_REVIEW_LESSONS R-03).
+	const formatRtp = (rtp: number) => `${(rtp * 100).toFixed(2)}%`;
+	const GAME_RTP = formatRtp(config.rtp);
 
-	// Paytable (values per matching-symbol count), ordered low → high as in the design.
-	const PAY_ROWS: { syms: string[]; pays: [string, string, string] }[] = [
-		{ syms: ['L1', 'L2', 'L3', 'L4', 'L5'], pays: ['0.1', '0.4', '1'] },
-		{ syms: ['H5'], pays: ['0.2', '0.8', '2'] },
-		{ syms: ['H4'], pays: ['0.2', '0.8', '2'] },
-		{ syms: ['H3'], pays: ['0.3', '1', '2.5'] },
-		{ syms: ['M'], pays: ['0.3', '1', '2.5'] },
-		{ syms: ['H1'], pays: ['0.5', '2', '5'] },
+	// Page 5 (feature buy) — every selectable bet mode. Titles reuse the buy-menu's own keys (R-04);
+	// body is an i18n key; cost (× base bet) and RTP are read from config.betModes.
+	type BetModeKey = keyof typeof config.betModes;
+	const FEATURE_BUYS: { title: string; body: string; mode: BetModeKey }[] = [
+		{ title: 'CARD CHANCE TITLE', body: 'INFO FB1 BODY', mode: 'enhancer1' },
+		{ title: 'CARD FEATURE TITLE', body: 'INFO FB2 BODY', mode: 'featureSpin' },
+		{ title: 'NORMAL BONUS', body: 'INFO FB3 BODY', mode: 'bonus1' },
+		{ title: 'SUPER BONUS', body: 'INFO FB4 BODY', mode: 'bonus2' },
 	];
+	const MAX_WIN = config.betModes.base.max_win.toLocaleString('en-US');
+
+	// Paytable rows, ordered low → high as in the design (the five low symbols pay alike and share a
+	// row). Payouts per matching-symbol count are read from config.symbols[*].paytable.
+	type PaySymbol = keyof typeof config.symbols;
+	const payFor = (sym: PaySymbol, count: 3 | 4 | 5): string => {
+		const table = (config.symbols[sym] as { paytable?: Record<string, number>[] }).paytable ?? [];
+		const hit = table.find((entry) => String(count) in entry);
+		return hit ? String(hit[String(count)]) : '-';
+	};
+	const PAY_ROWS: { syms: PaySymbol[]; pays: [string, string, string] }[] = (
+		[['L1', 'L2', 'L3', 'L4', 'L5'], ['H5'], ['H4'], ['H3'], ['H2'], ['H1']] as PaySymbol[][]
+	).map((syms) => ({
+		syms,
+		pays: [payFor(syms[0], 3), payFor(syms[0], 4), payFor(syms[0], 5)],
+	}));
+	// A shared row is only valid while every symbol in it pays the same — fail loudly in dev if the
+	// math ever changes so the grouped row would misstate a symbol.
+	if (import.meta.env.DEV) {
+		for (const row of PAY_ROWS) {
+			for (const s of row.syms) {
+				const own = [payFor(s, 3), payFor(s, 4), payFor(s, 5)].join('/');
+				if (own !== row.pays.join('/')) console.error(`[paytable] ${s} pays ${own}, row shows ${row.pays.join('/')}`);
+			}
+		}
+	}
 </script>
 
 <script lang="ts">
@@ -134,11 +158,11 @@
 					<div class="tu-stats">
 						<div class="tu-stat">
 							<span class="tu-stat-label">{i18nDerived.translate('INFO MAX WIN LABEL')}</span>
-							<span class="tu-stat-big">{i18nDerived.translate('INFO MAX WIN VALUE')}</span>
+							<span class="tu-stat-big">{i18nDerived.translateVars('INFO MAX WIN VALUE', { value: MAX_WIN })}</span>
 						</div>
 						<div class="tu-stat">
 							<span class="tu-stat-label">{i18nDerived.translate('INFO RTP LABEL')}</span>
-							<span class="tu-pill">96.10%</span>
+							<span class="tu-pill">{GAME_RTP}</span>
 						</div>
 					</div>
 				</div>
@@ -285,8 +309,12 @@
 						<div class="fb-card">
 							<h3 class="fb-title">{i18nDerived.translate(fb.title)}</h3>
 							<p class="fb-body">{i18nDerived.translate(fb.body)}</p>
-							<div class="fb-cost">{i18nDerived.translate(fb.cost)}</div>
-							<div class="fb-rtp">RTP: {fb.rtp}</div>
+							<div class="fb-cost">
+								{i18nDerived.translateVars('INFO FB COST', { cost: config.betModes[fb.mode].cost })}
+							</div>
+							<div class="fb-rtp">
+								{i18nDerived.translate('INFO RTP SHORT')} {formatRtp(config.betModes[fb.mode].rtp)}
+							</div>
 						</div>
 					{/each}
 				</div>

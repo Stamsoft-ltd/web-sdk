@@ -153,7 +153,7 @@
 			} else {
 				const q = Math.min(1, (p - SWELL) / (END - SWELL));
 				const travel = (d.fall ?? 0.45) * H;
-				const s = q < 0.5 ? 2 * q * q : 1 - 2 * (1 - q) * (1 - q) * 0.5 - 0.0; // slow → fast → easing
+				const s = q < 0.5 ? 2 * q * q : 1 - 2 * (1 - q) * (1 - q); // slow → fast → easing (continuous at 0.5)
 				r = R * (1 - 0.4 * q);
 				yb = y0 + r * 0.55 + R * 0.5 + travel * Math.min(1, s);
 				if (p > END) alpha = 1 - (p - END) / (1 - END);

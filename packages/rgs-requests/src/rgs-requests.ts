@@ -66,7 +66,9 @@ export const requestBet = async (options: {
 			mode: options.mode,
 			currency: options.currency,
 			sessionID: options.sessionID,
-			amount: options.amount * API_AMOUNT_MULTIPLIER,
+			// Integer API units: 0.07 * 1e6 is 70000.00000000001 in floating point, which is not a
+			// bet level the RGS offered.
+			amount: Math.round(options.amount * API_AMOUNT_MULTIPLIER),
 		},
 	});
 
@@ -93,6 +95,8 @@ export const requestReplay = async (options: {
 		currency?: string;
 		amount?: number;
 		payout?: number;
+		payoutMultiplier?: number;
+		costMultiplier?: number;
 		state?: unknown[];
 	} & Record<string, unknown>;
 }

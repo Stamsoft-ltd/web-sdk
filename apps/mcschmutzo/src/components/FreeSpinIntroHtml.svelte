@@ -11,7 +11,8 @@
 </script>
 
 <script lang="ts">
-	import { stateBet } from 'state-shared';
+	import { stateBet, stateBetDerived } from 'state-shared';
+	import { isReplayMode } from '../state/roundFlow.svelte';
 	import { waitForResolve } from 'utils-shared/wait';
 
 	import { getContext } from '../game/context';
@@ -45,7 +46,9 @@
 		},
 		freeSpinIntroUpdate: async (emitterEvent) => {
 			totalFreeSpins = emitterEvent.totalFreeSpins;
+			awaitingPress = true;
 			await waitForResolve((resolve) => (oncomplete = resolve));
+			awaitingPress = false;
 		},
 	});
 
@@ -77,6 +80,22 @@
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
 		oncomplete();
 	};
+
+	// Nobody is at the controls during autoplay / held Space, and a replay must play through on its
+	// own — waiting for a press there stalls the round (same rule as the bonus wheel).
+	const AUTO_ADVANCE_MS = 2500;
+	const autoAdvances = $derived(
+		isReplayMode() ||
+			stateBetDerived.hasAutoBetCounter() ||
+			context.stateXstateDerived.isAutoBetting() ||
+			stateBet.isSpaceHold,
+	);
+	let awaitingPress = $state(false);
+	$effect(() => {
+		if (!show || !awaitingPress || !autoAdvances) return;
+		const timer = setTimeout(proceed, AUTO_ADVANCE_MS);
+		return () => clearTimeout(timer);
+	});
 	const onKey = (e: KeyboardEvent) => {
 		if (show && (e.code === 'Space' || e.code === 'Enter')) proceed();
 	};
@@ -95,7 +114,7 @@
 				e.stopPropagation();
 				proceed();
 			}}
-			aria-label="Close"
+			aria-label={i18nDerived.translate('CLOSE')}
 		></button>
 
 		<div class="fs-stage" role="dialog" aria-modal="true">

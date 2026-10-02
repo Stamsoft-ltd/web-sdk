@@ -6,8 +6,7 @@
 	import { mascotIdle } from '../game/mascotIdle';
 	import { SQUIRT_EMIT, drawSauceSquirt, squirtHash, type SquirtGraphics } from '../game/ketchupSquirt';
 	import { panoramaRect, PANORAMA_BASE_X } from '../game/panorama';
-	import { cropExtra, cropSprite } from '../game/chefCrops';
-	import AnimatedGuy from './AnimatedGuy.svelte';
+	import AnimatedGuy, { GUY_CROPS, cropPivot, cropRect } from './AnimatedGuy.svelte';
 	import SpecialMascot from './SpecialMascot.svelte';
 
 	type Props = {
@@ -143,7 +142,9 @@
 	// The held ketchup bottle (full-frame hand layer) shakes about the wrist, tucked behind the body.
 	const BOTTLE_PIVX = 0.29;
 	const BOTTLE_PIVY = 0.56;
-	const bottleCrop = cropSprite('mascotBottle', BOTTLE_PIVX, BOTTLE_PIVY);
+	// The bottle layer is cropped to its opaque box: same pivot, expressed inside the crop.
+	const BOTTLE_RECT = cropRect(GUY_CROPS.mascotBottle);
+	const BOTTLE_ANCHOR = cropPivot(GUY_CROPS.mascotBottle, BOTTLE_PIVX, BOTTLE_PIVY);
 	const mascotLeft = $derived(mascotPose.x - mascotPose.width / 2);
 	const mascotTop = $derived(mascotPose.y - mascotPose.height / 2);
 	const bottlePivotX = $derived(mascotLeft + BOTTLE_PIVX * mascotPose.width);
@@ -357,6 +358,7 @@
 	<!-- The chef breathes, his eyes glance + blink, and his nametag jiggles (layered art). -->
 	<AnimatedGuy
 		baseKey="mascotBase"
+		baseRect={cropRect(GUY_CROPS.mascotBase)}
 		x={mascotPose.x}
 		y={mascotPose.y}
 		width={mascotPose.width}
@@ -367,22 +369,27 @@
 		skin={0xee9c58}
 		extras={[
 			{
-				// The nametag plate, tilting about its pin — drawn FIRST so the pointing hand passes over it.
-				...cropExtra('mascotLabel', [0.6196, 0.6027]),
+				// Full-frame layer (the exact plate pixels), tilting about its pin — drawn FIRST so the
+				// pointing hand passes over it.
+				key: 'mascotLabel',
+				...cropRect(GUY_CROPS.mascotLabel),
+				...cropPivot(GUY_CROPS.mascotLabel, 0.6196, 0.6027),
 				amp: 0.035,
 				period: 320,
 			},
 			{
-				// The pointing hand gestures slowly about the wrist (at the sleeve cuff) — a subtle
-				// ~1.3° sway so it never uncovers the patch beneath.
-				...cropExtra('mascotHand', [0.951, 0.6945]),
-				amp: 0.023,
-				period: 700,
-				phase: 400,
+				// The pointing hand gestures about the wrist (at the sleeve cuff): it drifts with his
+				// breath and every 3–6 s jabs a "point-point" at the player. The base under it was
+				// repainted (v6r) so the swing never uncovers a smear. Fingertip is LEFT of the wrist.
+				key: 'mascotHand',
+				...cropRect(GUY_CROPS.mascotHand),
+				...cropPivot(GUY_CROPS.mascotHand, 0.951, 0.6945),
+				gesture: { tip: -1, breath: Math.sin(clock / 580) },
 			},
 			{
-				// Brows above the blink lids (static layer).
-				...cropExtra('mascotBrows'),
+				// Brows above the blink lids (static full-frame layer).
+				key: 'mascotBrows',
+				...cropRect(GUY_CROPS.mascotBrows),
 				amp: 0,
 			},
 		]}
@@ -393,9 +400,9 @@
 		key="mascotBottle"
 		x={bottlePivotX}
 		y={bottlePivotY}
-		anchor={bottleCrop.anchor}
-		width={mascotPose.width * bottleCrop.sw}
-		height={mascotPose.height * bottleCrop.sh}
+		anchor={{ x: BOTTLE_ANCHOR.px, y: BOTTLE_ANCHOR.py }}
+		width={mascotPose.width * BOTTLE_RECT.nw}
+		height={mascotPose.height * BOTTLE_RECT.nh}
 		rotation={bottleShake}
 		zIndex={-0.1}
 	/>

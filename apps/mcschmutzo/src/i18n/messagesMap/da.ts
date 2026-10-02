@@ -11,8 +11,6 @@ export default {
 	"CONFIRM TEXT": "Køb %mode% for %cost%?",
 	"NORMAL BONUS": "Normal Bonus",
 	"SUPER BONUS": "Super Bonus",
-	"CONFIRM IT ALL": "BEKRÆFT DET HELE",
-	"BUY ALL IN": "Køb Alt Ind for %cost%",
 	"CONFIRM": "BEKRÆFT",
 	"CANCEL": "ANNULLÉR",
 
@@ -20,13 +18,13 @@ export default {
 	"AUTO SPIN": "AUTOSPIN",
 	"TURBO SPIN": "TURBOSPIN",
 	"SUPER TURBO SPIN": "SUPER TURBOSPIN",
-	"LOCK FEATURE SPIN": "50X BONUSFUNKTION",
+	"LOCK FEATURE SPIN": "LOCK-FUNKTIONSSPIN",
 	"NUMBER OF SPINS": "ANTAL SPINS",
 	"START AUTOPLAY": "START AUTOSPIL",
 
 	// ── Recovery / interrupted round ─────────────────────────────────────────────────────────────
 	"UNFINISHED ROUND": "UAFSLUTTET RUNDE",
-	"ACTIVE BONUS IN PROGRESS": "Du har en aktiv %bonus%-bonus i gang.",
+	"ACTIVE BONUS IN PROGRESS": "Du har en aktiv %bonus% i gang.",
 	"ACTIVE ROUND IN PROGRESS": "Du har en aktiv bonus i gang.",
 	"END ROUND": "AFSLUT RUNDE",
 	"PLAY ROUND": "SPIL RUNDE",
@@ -36,9 +34,8 @@ export default {
 	"AUTO": "AUTO",
 	"CONGRATS": "TILLYKKE!",
 	"YOU WON": "DU VANDT",
-	"ALL IN BONUS TITLE": "ALT IND BONUS",
 	"NORMAL BONUS TITLE": "NORMAL BONUS",
-	"BONUS BLURB": "%count% gratis spins med et tilfældigt udvidende symbol og en multiplikator, der starter ved 2x og fordobles ved hver forbindelse",
+	"BONUS BLURB": "%count% gratis spins med Lock & Re-Spin på hver kvalificerende gevinst og en Gevinstmultiplikator, der aldrig nulstilles",
 	"FREE SPINS": "GRATIS SPINS",
 	"PRESS TO CONTINUE": "TRYK FOR AT FORTSÆTTE",
 	"FREE GAMES": "GRATIS SPIL",
@@ -76,7 +73,7 @@ export default {
 	// ── Info / rules popup: OVERVIEW ─────────────────────────────────────────────────────────────
 	"INFO OVERVIEW BODY": "McSchmutzo spilles på en 5×5-hjulopsætning og udbetaler på 50 faste gevinstlinjer. Vindende kombinationer dannes ved at lande matchende symboler på en aktiv gevinstlinje, startende fra hjulet længst til venstre og fortsættende på fortløbende hjul. Alle gevinster beregnes i henhold til de symbolværdier, der vises i Gevinsttabellen. Flere vindende kombinationer kan tildeles i samme spilrunde.",
 	"INFO MAX WIN LABEL": "Maksimal Gevinst:",
-	"INFO MAX WIN VALUE": "25,000× indsats",
+	"INFO MAX WIN VALUE": "%value%× indsats",
 	"INFO RTP LABEL": "Teoretisk RTP:",
 
 	// ── Info / rules popup: FEATURES ─────────────────────────────────────────────────────────────
@@ -88,16 +85,16 @@ export default {
 	"INFO RESPIN BODY 2": "Hvis yderligere matchende symboler lander og udvider den låste vindende kombination, låses disse matchende symboler også, og endnu et Re-Spin tildeles. Re-Spin-sekvensen fortsætter, så længe der tilføjes nye matchende symboler til den låste kombination. En Re-Spin-sekvens slutter, når der ikke tilføjes flere matchende symboler under et Re-Spin, eller når alle tilgængelige hjulpositioner er fyldt med det valgte matchende symbol.",
 	"INFO RESPIN BODY 3": "Alle gevinster, der skabes under Re-Spin-sekvensen, lægges til den aktuelle spilrundes gevinst.",
 	"INFO MULT TITLE": "GEVINSTMULTIPLIKATOR",
-	"INFO MULT BODY 1": "Under Re-Spin-funktionen kan McSchmutzo-symboler dukke op og øge Gevinstmultiplikatoren. Hvert kvalificerende McSchmutzo-symbol kan tilføje trin til Gevinstmultiplikatoren. Gevinstmultiplikatoren begynder ved 1x. Multiplikatoren gennemløber følgende niveauer:",
-	"INFO MULT BODY 2": "Den aktuelle Gevinstmultiplikator anvendes i henhold til spillets matematik og forbliver aktiv gennem hele den aktuelle Re-Spin-sekvens.",
+	"INFO MULT BODY 1": "Under Re-Spins og Gratis Spil kan McSchmutzo-symboler dukke op og øge Gevinstmultiplikatoren. Hvert kvalificerende McSchmutzo-symbol kan tilføje trin til Gevinstmultiplikatoren. Gevinstmultiplikatoren starter ved 1x. Multiplikatoren går gennem følgende niveauer:",
+	"INFO MULT BODY 2": "Den aktuelle Gevinstmultiplikator anvendes på hver liniegevinst. I grundspillet forbliver den aktiv gennem den aktuelle Re-Spin-sekvens; under Gratis Spil nulstilles den aldrig.",
 	"INFO SCATTER TITLE": "SCATTER- / BONUS-SYMBOL",
-	"INFO SCATTER BODY": "BONUS-symbolet er Scatter-symbolet og kan optræde på alle hjul. Når Scatter-symboler lander, aktiveres en af to Gratis Spil-tilstande.",
+	"INFO SCATTER BODY": "BONUS-symbolet er Scatter-symbolet og kan lande på alle hjul. 3 eller 4 Scatter-symboler udløser Gratis Spil, som altid starter med et spin på Bonushjulet. Hjulet giver 6 til 30 Gratis Spil og hæver Gevinstmultiplikatoren med 3 til 15 trin.",
 	"INFO SCATTER 3 TITLE": "SCATTERE - Normal Bonus",
-	"INFO SCATTER 3 BODY": "Når 3 Scatter-symboler lander, udløses Normal Bonus. Spilleren går ind i Normal Gratis Spil-tilstanden. Normal Bonus bruger standardkonfigurationen for Gratis Spil og den tilhørende startprogression for Gevinstmultiplikatoren. Enhver aktiv Gevinstmultiplikator, der føres med ind i funktionen, kombineres med resultatet ved indgang til Gratis Spil, hvor det er relevant. Gevinstmultiplikatoren bevares gennem hele Gratis Spil-funktionen og kan stige under spillet. Den nulstilles ikke mellem Gratis Spil.",
+	"INFO SCATTER 3 BODY": "3 Scatter-symboler udløser Normal Bonus. Bonushjulet bestemmer antallet af Gratis Spil og den Gevinstmultiplikator, de starter med. Gevinstmultiplikatoren kan fortsætte med at stige og nulstilles aldrig under Gratis Spil.",
 	"INFO SCATTER 4 TITLE": "SCATTERE - Super Bonus",
-	"INFO SCATTER 4 BODY": "Når 4 Scatter-symboler lander, udløses Super Bonus. Super Bonus begynder med en forbedret startkonfiguration sammenlignet med Normal Bonus. Spilleren modtager Super Gratis Spil-opsætningen med de maksimale / forbedrede indgangsbetingelser, der er defineret for denne tilstand. Gevinstmultiplikatoren bevares gennem hele Super Bonus og kan fortsætte med at stige under Gratis Spil. Den nulstilles ikke mellem Gratis Spil.",
-	"INFO FREEGAMES BODY 1": "Under Gratis Spil forbliver de samme grundlæggende gevinst- og Re-Spin-mekanikker aktive. Hver gang en kvalificerende vindende forbindelse opstår, låses de matchende vindende symboler automatisk og udløser et Re-Spin.",
-	"INFO FREEGAMES BODY 2": "Yderligere matchende symboler, der tilføjes under Re-Spin, låses, så sekvensen kan fortsætte. McSchmutzo-symboler, der dukker op under funktionen, kan øge Gevinstmultiplikatoren. Den akkumulerede Gevinstmultiplikator forbliver aktiv gennem hele Gratis Spil-funktionen.",
+	"INFO SCATTER 4 BODY": "4 Scatter-symboler udløser Super Bonus. Den spilles som Normal Bonus, men starter med et forstærket spin på Bonushjulet. Gevinstmultiplikatoren kan fortsætte med at stige og nulstilles aldrig under Gratis Spil.",
+	"INFO FREEGAMES BODY 1": "Under Gratis Spil gælder de samme regler for liniegevinster og Lock & Re-Spin. Når en kvalificerende gevinstforbindelse opstår, låses gevinstsymbolerne, og et Re-Spin udløses. McSchmutzo-symboler kan tilføje trin til Gevinstmultiplikatoren, og Gevinstmultiplikatoren gælder for hver gevinst, indtil funktionen slutter.",
+	"INFO FREEGAMES BODY 2": "Gratis Spil kan ikke genudløses. Scatter-symboler, der lander under Gratis Spil, giver ikke ekstra Gratis Spil.",
 	"INFO COMING SOON": "Kommer snart.",
 
 	// ── Info / rules popup: WAYS TO WIN ──────────────────────────────────────────────────────────
@@ -106,18 +103,10 @@ export default {
 	"INFO LOCKRESPIN BODY": "Enhver vindende kombination kan udløse Lock & Re-Spin-funktionen. Når den udløses, låses det højest værdisatte vindende symbol på plads, mens de øvrige positioner snurrer igen. Hvis der tilføjes yderligere matchende symboler eller nye vindende positioner til den aktuelle gevinst, tildeles endnu et re-spin. Re-spins fortsætter, så længe gevinsten bliver ved med at vokse, og slutter, når der ikke tilføjes nye matchende symboler eller positioner, eller når gitteret er fyldt med vindende symboler. Når Re-Spin-sekvensen slutter, tildeles den endelige akkumulerede gevinst.",
 
 	// ── Info / rules popup: FEATURE BUY ──────────────────────────────────────────────────────────
-	"INFO FB1 TITLE": "FORBEDRET TILSTAND 1",
-	"INFO FB1 BODY": "For en pris på 2× grundindsatsen øges chancen for at udløse Gratis Spil med 4×. Alle andre spilmekanikker forbliver uændrede.",
-	"INFO FB1 COST": "2× grundindsatsen",
-	"INFO FB2 TITLE": "FORBEDRET TILSTAND 2",
-	"INFO FB2 BODY": "For en pris på 10× grundindsatsen øges chancen for at udløse Gratis Spil med 4×, hvor den forbedrede tilstand er indstillet mod Super Bonus / den maksimale indgangsbetingelse. Alle andre spilmekanikker forbliver uændrede.",
-	"INFO FB2 COST": "10× grundindsatsen",
-	"INFO FB3 TITLE": "NORMAL BONUS",
-	"INFO FB3 BODY": "For en pris på 100× grundindsatsen går spilleren direkte ind i Normal Bonus. Normal Bonus spilles med dens standardkonfiguration for indgang til Gratis Spil.",
-	"INFO FB3 COST": "100× grundindsatsen",
-	"INFO FB4 TITLE": "SUPER BONUS",
-	"INFO FB4 BODY": "For en pris på 500× grundindsatsen går spilleren direkte ind i Super Bonus. Super Bonus begynder med dens forbedrede / maksimale konfiguration for indgang til Gratis Spil.",
-	"INFO FB4 COST": "500× grundindsatsen",
+	"INFO FB1 BODY": "Mens den er aktiv, koster hvert spin beløbet vist nedenfor og har en øget chance for at udløse Gratis Spil. Alle andre spilmekanikker forbliver uændrede. Den forbliver aktiv, indtil den deaktiveres.",
+	"INFO FB2 BODY": "Mens den er aktiv, koster hvert spin beløbet vist nedenfor og er garanteret et vindende spin, der starter Lock & Re-Spin-funktionen. Den forbliver aktiv, indtil den deaktiveres.",
+	"INFO FB3 BODY": "Udløser straks Normal Bonus, som om 3 Scatter-symboler var landet. Bonussen starter med et spin på Bonushjulet.",
+	"INFO FB4 BODY": "Udløser straks Super Bonus, som om 4 Scatter-symboler var landet. Bonussen starter med et spin på Bonushjulet.",
 
 	// ── Info / rules popup: GENERAL INFO ─────────────────────────────────────────────────────────
 	"INFO INTERRUPTED BODY 1": "Hvis en spilrunde afbrydes, fortsætter den, når spillet genindlæses, hvor det er muligt.",
@@ -125,7 +114,7 @@ export default {
 	"INFO LEGAL BODY 1": "En fejlfunktion annullerer alle gevinster og spil. En stabil internetforbindelse er påkrævet. I tilfælde af afbrydelse skal du genindlæse spillet for at afslutte uafsluttede runder.",
 	"INFO LEGAL BODY 2": "Det forventede afkast beregnes over mange spil. Spilvisningen er ikke repræsentativ for nogen fysisk enhed og er kun til illustrative formål.",
 	"INFO LEGAL BODY 3": "Gevinster afregnes i henhold til det beløb, der modtages fra Remote Game Server, og ikke fra begivenheder i webbrowseren.",
-	"INFO LEGAL COPYRIGHT": "TM og © 2026 Stake Engine.",
+	"INFO LEGAL COPYRIGHT": "TM og © 2026 Engine.",
 
 	// ── Info / rules popup: USER INTERFACE GUIDE (labels + descriptions) ─────────────────────────
 	"UI AUTO SPINS": "AUTO-SPINS",
@@ -153,14 +142,12 @@ export default {
 
 	// ── Common UI terms (shared across Stake games; copied from magnetic/forest) ──
 	"ACTIVATE": "AKTIVÉR",
-	"ALL IN": "MEGA CHAIN",
 	"AUTOPLAY": "AUTOPLAY",
 	"BALANCE": "SALDO",
 	"BET": "INDSATS",
 	"BUY": "KØB",
 	"BUY BONUS": "KØB BONUS",
 	"DEACTIVATE": "DEAKTIVÉR",
-	"DEAL IT": "DROP-O-MAGNET",
 	"EVENT": "BEGIVENHED",
 	"GAME RULES": "SPILLEREGLER",
 	"MODE": "TILSTAND",
@@ -182,4 +169,22 @@ export default {
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "VIND OP TIL",
 	"CONFIRM PURCHASE": "BEKRÆFT KØB",
+
+	// ── Rules / buy-confirm / HUD keys added in the 2026-10 copy fix ──
+	"CONFIRM ACTIVATE TEXT": "Aktivér %mode%? Hvert spin koster %cost%.",
+	"FEWER SPINS": "Færre spins",
+	"MORE SPINS": "Flere spins",
+	"SUPER BONUS TITLE": "SUPER BONUS",
+	"REMAINING AUTO SPINS": "Resterende auto-spins: %count%",
+	"INFO RTP SHORT": "RTP:",
+	"INFO FB COST": "%cost%× grundindsatsen",
+
+	// ── Error / notification modal copy (mirrors the en.ts block, 2026-10-01) ──
+	"NOTIFICATION": "MEDDELELSE",
+	"INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.": "UTILSTRÆKKELIG SALDO TIL DENNE INDSATS. INDSÆT VENLIGST PENGE PÅ DIN KONTO ELLER SÆNK INDSATSEN.",
+	"CONNECTION PROBLEM. PLEASE CHECK YOUR CONNECTION AND TRY AGAIN.": "FORBINDELSESPROBLEM. TJEK VENLIGST DIN FORBINDELSE OG PRØV IGEN.",
+	"YOUR SESSION HAS EXPIRED. PLEASE RELOAD THE GAME.": "DIN SESSION ER UDLØBET. GENINDLÆS VENLIGST SPILLET.",
+	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "DIN KONTOGRÆNSE ER NÅET.",
+	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "DENNE GENAFSPILNING KUNNE IKKE INDLÆSES. PRØV VENLIGST IGEN.",
+	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "NOGET GIK GALT. PRØV VENLIGST IGEN.",
 };

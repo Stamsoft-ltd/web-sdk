@@ -439,6 +439,10 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 	};
 
 	const setSymbolsWithReelSymbols = (reelSymbols?: ReelSymbol[]) => {
+		// Settling a reel ends any pre-spin. Without this a settle issued mid pre-spin (a failed
+		// play request) left the slide-down loop running, which re-padded the reel over the restored
+		// symbols and kept it spinning behind the error modal.
+		isPreSpinning = false;
 		reelState.motion = 'stopped';
 		placeY(defaultY);
 		if (reelSymbols) {

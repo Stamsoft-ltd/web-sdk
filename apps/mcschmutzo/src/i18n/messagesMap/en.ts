@@ -5,14 +5,13 @@ export default {
 	'CARD CHANCE TITLE': 'Extra Chance',
 	'CARD CHANCE DESC': 'Increase the chance of reaching the bonus.',
 	'CARD FEATURE TITLE': 'Lock Feature Spin',
-	'CARD FEATURE DESC': 'Guarantees a paying spin and starts Lock & Re-Spin.',
+	'CARD FEATURE DESC': 'Guarantees a winning spin and starts Lock & Re-Spin.',
 	'CARD DEALIT DESC': 'Enter the Normal Bonus with three scatters.',
 	'CARD ALLIN DESC': 'Enter the Super Bonus with four scatters.',
 	'CONFIRM TEXT': 'Buy %mode% for %cost%?',
+	'CONFIRM ACTIVATE TEXT': 'Activate %mode%? Each spin costs %cost%.',
 	'NORMAL BONUS': 'Normal Bonus',
 	'SUPER BONUS': 'Super Bonus',
-	'CONFIRM IT ALL': 'CONFIRM IT ALL',
-	'BUY ALL IN': 'Buy All in for %cost%',
 	CONFIRM: 'CONFIRM',
 	CANCEL: 'CANCEL',
 
@@ -20,13 +19,15 @@ export default {
 	'AUTO SPIN': 'AUTO SPIN',
 	'TURBO SPIN': 'TURBO SPIN',
 	'SUPER TURBO SPIN': 'SUPER TURBO SPIN',
-	'LOCK FEATURE SPIN': '50X BONUS FEATURE',
+	'LOCK FEATURE SPIN': 'LOCK FEATURE SPIN',
 	'NUMBER OF SPINS': 'NUMBER OF SPINS',
 	'START AUTOPLAY': 'START AUTOPLAY',
+	'FEWER SPINS': 'Fewer spins',
+	'MORE SPINS': 'More spins',
 
 	// ── Recovery / interrupted round ─────────────────────────────────────────────────────────────
 	'UNFINISHED ROUND': 'UNFINISHED ROUND',
-	'ACTIVE BONUS IN PROGRESS': 'You have an active %bonus% bonus in progress.',
+	'ACTIVE BONUS IN PROGRESS': 'You have an active %bonus% in progress.',
 	'ACTIVE ROUND IN PROGRESS': 'You have an active bonus in progress.',
 	'END ROUND': 'END ROUND',
 	'PLAY ROUND': 'PLAY ROUND',
@@ -36,10 +37,11 @@ export default {
 	AUTO: 'AUTO',
 	CONGRATS: 'CONGRATS!',
 	'YOU WON': 'YOU WON',
-	'ALL IN BONUS TITLE': 'ALL IN BONUS',
+	'SUPER BONUS TITLE': 'SUPER BONUS',
 	'NORMAL BONUS TITLE': 'NORMAL BONUS',
 	'BONUS BLURB':
-		'%count% free spins with random expanding symbol and multiplier start at 2x and doubles on every connection',
+		'%count% free spins with Lock & Re-Spin on every qualifying win and a Win Multiplier that never resets',
+	'REMAINING AUTO SPINS': 'Remaining auto spins: %count%',
 	'FREE SPINS': 'FREE SPINS',
 	'PRESS TO CONTINUE': 'PRESS TO CONTINUE',
 	'FREE GAMES': 'FREE GAMES',
@@ -78,8 +80,9 @@ export default {
 	'INFO OVERVIEW BODY':
 		'McSchmutzo is played on a 5×5 reel setup and pays on 50 fixed win-lines. Winning combinations are formed by landing matching symbols on an active win-line, starting from the leftmost reel and continuing on consecutive reels. All wins are calculated according to the symbol values shown in the Paytable. Multiple winning combinations may be awarded on the same game round.',
 	'INFO MAX WIN LABEL': 'Maximum Win:',
-	'INFO MAX WIN VALUE': '25,000× bet',
+	'INFO MAX WIN VALUE': '%value%× bet',
 	'INFO RTP LABEL': 'Theoretical RTP:',
+	'INFO RTP SHORT': 'RTP:',
 
 	// ── Info / rules popup: FEATURES ─────────────────────────────────────────────────────────────
 	'INFO WILD TITLE': 'WILD SYMBOL',
@@ -95,22 +98,22 @@ export default {
 		'All wins created during the Re-Spin sequence are added to the current game-round win.',
 	'INFO MULT TITLE': 'WIN MULTIPLIER',
 	'INFO MULT BODY 1':
-		'During the Re-Spin Feature, McSchmutzo symbols may appear and increase the Win Multiplier. Each qualifying McSchmutzo symbol can add Win Multiplier steps. The Win Multiplier begins at 1x. The multiplier progresses through the following levels:',
+		'During Re-Spins and Free Games, McSchmutzo symbols may appear and increase the Win Multiplier. Each qualifying McSchmutzo symbol can add Win Multiplier steps. The Win Multiplier begins at 1x. The multiplier progresses through the following levels:',
 	'INFO MULT BODY 2':
-		'The current Win Multiplier is applied according to the game mathematics and remains active throughout the current Re-Spin sequence.',
+		'The current Win Multiplier is applied to every line win. In the base game it remains active throughout the current Re-Spin sequence; during Free Games it is never reset.',
 	'INFO SCATTER TITLE': 'SCATTER / BONUS SYMBOL',
 	'INFO SCATTER BODY':
-		'The BONUS symbol is the Scatter symbol and can appear on all reels. Landing Scatter symbols activates one of two Free Games modes.',
+		'The BONUS symbol is the Scatter symbol and can land on any reel. Landing 3 or 4 Scatter symbols triggers the Free Games, which always start with a spin of the Bonus Wheel. The wheel awards 6 to 30 Free Games and advances the Win Multiplier by 3 to 15 steps.',
 	'INFO SCATTER 3 TITLE': 'SCATTERS - Normal Bonus',
 	'INFO SCATTER 3 BODY':
-		'Landing 3 Scatter symbols triggers the Normal Bonus. The player enters the Normal Free Games mode. The Normal Bonus uses the standard Free Games configuration and its corresponding starting Win Multiplier progression. Any active Win Multiplier carried into the feature is combined with the Free Games entry result where applicable. The Win Multiplier persists throughout the entire Free Games feature and can increase during play. It does not reset between Free Games.',
-	'INFO SCATTER 4 TITLE': "SCATTERS - Super Bonus",
+		'Landing 3 Scatter symbols triggers the Normal Bonus. The Bonus Wheel sets the number of Free Games and the Win Multiplier they start with. The Win Multiplier can keep increasing and is never reset during the Free Games.',
+	'INFO SCATTER 4 TITLE': 'SCATTERS - Super Bonus',
 	'INFO SCATTER 4 BODY':
-		'Landing 4 Scatter symbols triggers the Super Bonus. The Super Bonus begins with an enhanced starting configuration compared with the Normal Bonus. The player receives the Super Free Games setup with the maximum / enhanced entry conditions defined for this mode. The Win Multiplier persists throughout the entire Super Bonus and may continue increasing during Free Games. It does not reset between Free Games.',
+		'Landing 4 Scatter symbols triggers the Super Bonus. It plays like the Normal Bonus but starts from an enhanced Bonus Wheel spin. The Win Multiplier can keep increasing and is never reset during the Free Games.',
 	'INFO FREEGAMES BODY 1':
-		'During Free Games, the same core winning and Re-Spin mechanics remain active. Whenever a qualifying winning connection occurs, the matching winning symbols automatically lock and trigger a Re-Spin.',
+		'During Free Games, the same line wins and Lock & Re-Spin rules apply. Whenever a qualifying winning connection occurs, the winning symbols lock and a Re-Spin is triggered. McSchmutzo symbols may add Win Multiplier steps, and the Win Multiplier applies to every win until the feature ends.',
 	'INFO FREEGAMES BODY 2':
-		'Additional matching symbols added during the Re-Spin are locked, allowing the sequence to continue. McSchmutzo symbols appearing during the feature may increase the Win Multiplier. The accumulated Win Multiplier remains active throughout the entire Free Games feature.',
+		'Free Games cannot be re-triggered. Scatter symbols that land during the Free Games do not award additional Free Games.',
 	'INFO COMING SOON': 'Coming soon.',
 
 	// ── Info / rules popup: WAYS TO WIN ──────────────────────────────────────────────────────────
@@ -121,22 +124,17 @@ export default {
 		'Any winning combination may trigger the Lock & Re-Spin feature. When triggered, the highest-value winning symbol locks in place while the remaining positions re-spin. If additional matching symbols or new winning positions are added to the current win, another re-spin is awarded. Re-spins continue as long as the win keeps growing and end when no new matching symbols or positions are added, or when the grid is filled with winning symbols. Once the Re-Spin sequence ends, the final accumulated win is awarded.',
 
 	// ── Info / rules popup: FEATURE BUY ──────────────────────────────────────────────────────────
-	'INFO FB1 TITLE': 'ENHANCED MODE 1',
+	// Card titles reuse the buy-menu keys (CARD CHANCE TITLE / CARD FEATURE TITLE / NORMAL BONUS /
+	// SUPER BONUS); cost + RTP are read from game/config.ts betModes, so no numbers live in this copy.
 	'INFO FB1 BODY':
-		'For a cost of 2× the Base Bet, the chance of triggering Free Games is increased by 4×. All other game mechanics remain unchanged.',
-	'INFO FB1 COST': '2× the Base Bet',
-	'INFO FB2 TITLE': 'ENHANCED MODE 2',
+		'While active, every spin costs the amount shown below and has an increased chance of triggering the Free Games. All other game mechanics remain unchanged. It stays active until it is deactivated.',
 	'INFO FB2 BODY':
-		'For a cost of 10× the Base Bet, the chance of triggering Free Games is increased by 4×, with the enhanced mode configured toward the Super Bonus / maximum entry condition. All other game mechanics remain unchanged.',
-	'INFO FB2 COST': '10× the Base Bet',
-	'INFO FB3 TITLE': 'NORMAL BONUS',
+		'While active, every spin costs the amount shown below and is guaranteed to be a winning spin that starts the Lock & Re-Spin feature. It stays active until it is deactivated.',
 	'INFO FB3 BODY':
-		'For a cost of 100× the Base Bet, the player directly enters the Normal Bonus. The Normal Bonus is played using its standard Free Games entry configuration.',
-	'INFO FB3 COST': '100× the Base Bet',
-	'INFO FB4 TITLE': 'SUPER BONUS',
+		'Instantly triggers the Normal Bonus, as if 3 Scatter symbols had landed. The bonus starts with a spin of the Bonus Wheel.',
 	'INFO FB4 BODY':
-		'For a cost of 500× the Base Bet, the player directly enters the Super Bonus. The Super Bonus begins using its enhanced / maximum Free Games entry configuration.',
-	'INFO FB4 COST': '500× the Base Bet',
+		'Instantly triggers the Super Bonus, as if 4 Scatter symbols had landed. The bonus starts with a spin of the Bonus Wheel.',
+	'INFO FB COST': '%cost%× the base bet',
 
 	// ── Info / rules popup: GENERAL INFO ─────────────────────────────────────────────────────────
 	'INFO INTERRUPTED BODY 1':
@@ -149,7 +147,9 @@ export default {
 		'The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only.',
 	'INFO LEGAL BODY 3':
 		'Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser.',
-	'INFO LEGAL COPYRIGHT': 'TM and © 2026 Stake Engine.',
+	// General Game Disclaimer (BODY 1-3 + COPYRIGHT) = Engine's own template, verbatim. It ends
+	// "TM and © 2026 Engine." — never "Stake Engine". No social override: it is Engine's approved text.
+	'INFO LEGAL COPYRIGHT': 'TM and © 2026 Engine.',
 
 	// ── Info / rules popup: USER INTERFACE GUIDE (labels + descriptions) ─────────────────────────
 	'UI AUTO SPINS': 'AUTO SPINS',
@@ -177,14 +177,12 @@ export default {
 
 	// ── Common UI terms (shared across Stake games; copied from magnetic/forest) ──
 	"ACTIVATE": "ACTIVATE",
-	"ALL IN": "MEGA CHAIN",
 	"AUTOPLAY": "AUTOPLAY",
 	"BALANCE": "BALANCE",
 	"BET": "BET",
 	"BUY": "BUY",
 	"BUY BONUS": "BUY BONUS",
 	"DEACTIVATE": "DEACTIVATE",
-	"DEAL IT": "DROP-O-MAGNET",
 	"EVENT": "EVENT",
 	"GAME RULES": "GAME RULES",
 	"MODE": "MODE",
@@ -206,4 +204,15 @@ export default {
 	"GAME TITLE": "McSchmutzo",
 	"WIN UP TO": "WIN UP TO",
 	"CONFIRM PURCHASE": "CONFIRM PURCHASE",
+
+	// ── Error / notification modal copy (added by the Stake-review fix pass, 2026-10-01). ──────────
+	// Keys are the shared packages' English sentences (components-ui-html i18nDerived), so the same
+	// key renders readable English in a locale that has not translated it yet.
+	"NOTIFICATION": "NOTIFICATION",
+	"INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.": "INSUFFICIENT FUNDS TO PLACE THIS BET. PLEASE ADD FUNDS TO YOUR ACCOUNT OR LOWER THE BET LEVEL.",
+	"CONNECTION PROBLEM. PLEASE CHECK YOUR CONNECTION AND TRY AGAIN.": "CONNECTION PROBLEM. PLEASE CHECK YOUR CONNECTION AND TRY AGAIN.",
+	"YOUR SESSION HAS EXPIRED. PLEASE RELOAD THE GAME.": "YOUR SESSION HAS EXPIRED. PLEASE RELOAD THE GAME.",
+	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "YOUR ACCOUNT LIMIT HAS BEEN REACHED.",
+	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.",
+	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "SOMETHING WENT WRONG. PLEASE TRY AGAIN.",
 };

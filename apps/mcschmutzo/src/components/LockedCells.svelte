@@ -170,7 +170,7 @@
 					context.stateGame.lockedPositions = [];
 					return;
 				}
-				const types = ['H1', 'H2', 'H3', 'H4', 'H5', 'L1', 'L2', 'L3', 'L4', 'L5', 'W', 'S', 'M'];
+				const types = ['H1', 'H2', 'H3', 'H4', 'H5', 'L1', 'L2', 'L3', 'L4', 'L5', 'W', 'S', 'M'] as const;
 				const all: { reel: number; row: number }[] = [];
 				context.stateGame.lockSymbol = undefined;
 				context.stateGame.board.forEach((reel, r) => {

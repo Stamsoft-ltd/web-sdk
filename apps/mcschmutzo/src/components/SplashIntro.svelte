@@ -2,13 +2,15 @@
 	import { onMount } from 'svelte';
 	import { ap } from '../lib/preloadArt';
 	import { i18nDerived } from '../i18n/i18nDerived';
-	import CardDrip from './CardDrip.svelte';
+	import SauceCorner from './SauceCorner.svelte';
+	import { SAUCE } from '../lib/splashSauce';
 	import {
 		panoramaRect,
 		PANORAMA_BASE_X,
 		PANORAMA_SPLASH_X,
 	} from '../game/panorama';
 	import SauceFx from './SauceFx.svelte';
+	import { createPointGesture } from '../game/pointGesture';
 
 	type Props = { onpress: () => void };
 	const props: Props = $props();
@@ -84,10 +86,37 @@
 	// faces the cards from the left — the base is pre-mirrored with the nametag re-pasted readable.
 	// Layers: base (pupils erased, bottle hand cut out) + the bottle hand, drawn BEHIND the body and
 	// shaking about the wrist. Pupils and eyelids are drawn in CSS. Geometry is in the frame's px.
-	const manBase = ap('/assets/mcschmutzo/splash/man-base-v4.webp');
+	const manBase = ap('/assets/mcschmutzo/splash/man-base-v5.webp');
 	const manHand = ap('/assets/mcschmutzo/splash/man-hand-v1.webp'); // pointing hand, gestures about the wrist
+
+	// The pointing hand is JS-driven (not a CSS loop) so its "point-point" lands at random 3–6 s
+	// intervals: breath drift + anticipation lift, jab, rebound, smaller jab, damped settle (shared
+	// with the pixi chefs, game/pointGesture). The fingertip is RIGHT of the wrist here, so the
+	// gesture's "+ = fingertip down" is a plain clockwise CSS rotate. The layer is cropped to the hand
+	// (MAN.hand, 524 px wide), so a slide of `along` hand-lengths is along × (516 / 524) of its width.
+	let manHandEl = $state<HTMLImageElement>();
+	const HAND_LEN = 516 / 524;
+	$effect(() => {
+		const el = manHandEl;
+		if (!el) return;
+		const hand = createPointGesture();
+		let raf = 0;
+		let t0 = 0;
+		const loop = (ts: number) => {
+			if (!t0) t0 = ts;
+			const t = ts - t0;
+			// .man's chef-breathe runs 5 s ease-in-out alternate from exhaled: approximate it.
+			const breath = -Math.cos((Math.PI * t) / 5000);
+			const p = hand.pose(t, breath);
+			const stretch = 1 + (1 - p.squash) * 0.4;
+			el.style.transform = `translateX(${(p.along * HAND_LEN * 100).toFixed(3)}%) rotate(${p.angle.toFixed(3)}deg) scale(${p.squash.toFixed(4)}, ${stretch.toFixed(4)})`;
+			raf = requestAnimationFrame(loop);
+		};
+		raf = requestAnimationFrame(loop);
+		return () => cancelAnimationFrame(raf);
+	});
 	const manBottle = ap('/assets/mcschmutzo/splash/man-bottle-v3.webp');
-	// The nametag plate (full-frame layer over its baked copy) jiggles on its pin, like the board chef.
+	// The nametag plate (cropped layer over its baked copy) jiggles on its pin, like the board chef.
 	const manLabel = ap('/assets/mcschmutzo/splash/man-label-v3.webp');
 	// Mirrored board-chef nozzle (frame fractions) + squirt direction (up, leaning toward the cards).
 	const NOZZLE = { x: 1 - 0.1438, y: 0.3773, dir: Math.atan2(-0.979, 0.204) };
@@ -119,41 +148,10 @@
 		`transform-origin:${pct(MAN.bottlePivot[0] - MAN.bottle[0], MAN.bottle[2] - MAN.bottle[0])} ` +
 		`${pct(MAN.bottlePivot[1] - MAN.bottle[1], MAN.bottle[3] - MAN.bottle[1])};`;
 	const pressPlay = ap('/assets/mcschmutzo/press-play.svg');
-	// Card frames are now drip-FREE (the drip was cut out of the original art: clean frame = the
-	// frame's own right corner mirrored over the left, drip = the difference). Each drip is a
-	// full-card-size layer (drip-*.webp, same 470×690 box) so it lines up with the frame at any size.
+	// Card frames are drip-FREE; the corner sauce is drawn in code on top (SauceCorner + lib/splashSauce).
 	const cardRed = ap('/assets/mcschmutzo/splash/card-red.webp');
 	const cardYellow = ap('/assets/mcschmutzo/splash/card-yellow.webp');
 	const cardGreen = ap('/assets/mcschmutzo/splash/card-green.webp');
-	const dripRed = ap('/assets/mcschmutzo/splash/drip-red.webp');
-	const dripYellow = ap('/assets/mcschmutzo/splash/drip-yellow.webp');
-	const dripGreen = ap('/assets/mcschmutzo/splash/drip-green.webp');
-
-	// Live sauce: the drip renders as three copies of the same layer — the cap, plus the two long
-	// hanging tendrils, each clipped to its own column below a `cut` row (chosen just under the sauce
-	// valleys on either side, so the column holds nothing but that tendril) and stretched from that
-	// row on its own phase. Because the cut row is the transform origin it never moves → no seam.
-	// Columns/cuts are measured on the 470×690 art (px); cx is the tendril's centre for the squeeze.
-	type Tendril = { x0: number; x1: number; cut: number; cx: number; stop?: number };
-	const ART_W = 470;
-	const ART_H = 690;
-	// The tendril clip overlaps the cap by a few source px (OVERLAP) — with both clip edges on the
-	// same pixel row their anti-aliased halves summed to a visible hairline. The origin stays on
-	// the cut row, so the overlapping rows above it move by a sub-pixel at most.
-	const OVERLAP = 3;
-	const tendrilStyle = (t: Tendril) =>
-		`clip-path:inset(${pct(t.cut - OVERLAP, ART_H)} ${pct(ART_W - t.x1 - OVERLAP, ART_W)} ${t.stop ? pct(ART_H - t.stop, ART_H) : 0} ${pct(Math.max(0, t.x0 - OVERLAP), ART_W)});` +
-		`transform-origin:${pct(t.cx, ART_W)} ${pct(t.cut, ART_H)};`;
-	// The cap = everything except the two tendril rectangles (a comb-shaped polygon).
-	const capStyle = (a: Tendril, b: Tendril) => {
-		const [l, r] = a.x0 <= b.x0 ? [a, b] : [b, a];
-		const P = (x: number, y: number) => `${pct(x, ART_W)} ${pct(y, ART_H)}`;
-		return (
-			`clip-path:polygon(${P(0, 0)},${P(ART_W, 0)},${P(ART_W, ART_H)},` +
-			`${P(r.x1, ART_H)},${P(r.x1, r.cut)},${P(r.x0, r.cut)},${P(r.x0, ART_H)},` +
-			`${P(l.x1, ART_H)},${P(l.x1, l.cut)},${P(l.x0, l.cut)},${P(l.x0, ART_H)},${P(0, ART_H)});`
-		);
-	};
 
 	// Each card = an empty drip frame + HTML copy (so the text stays editable / localizable).
 	// `pad` is the interior inset per frame — the red frame carries a baked drop-shadow margin, so it
@@ -162,61 +160,22 @@
 	const CARDS = [
 		{
 			cls: 'card--red',
+			sauce: SAUCE.red,
 			art: cardRed,
-			drip: dripRed,
-			tendrils: [
-				{ x0: 0, x1: 63, cut: 84, cx: 44, stop: 127 },
-				{ x0: 76, x1: 110, cut: 77, cx: 93, stop: 87 },
-			] as [Tendril, Tendril],
-			// Where the long tendril ends (art px) — the drop forms here.
-			tip: { x: 42, y: 152 },
-			runs: [
-				{ cx: 46.5, tip: 152, bulb: 28, period: 4200, phase: 0, endCx: 45.5, endW: 30 },
-				{ cx: 94.5, tip: 104, bulb: 20, period: 5600, phase: 2600, reach: 22, run: 150 },
-			],
-			sauce: 0xe11105,
-			cycle: 3400,
-			dripPhase: 1340, // |--phase| + 0.10·cycle → pinch-off lands at the tendril's full stretch
 			title: 'SPLASH C1 TITLE',
 			body: ['SPLASH C1 BODY'],
 		},
 		{
 			cls: 'card--yellow',
+			sauce: SAUCE.yellow,
 			art: cardYellow,
-			drip: dripYellow,
-			tendrils: [
-				{ x0: 0, x1: 58, cut: 75, cx: 36, stop: 111 },
-				{ x0: 59, x1: 98, cut: 72, cx: 84, stop: 76 },
-			] as [Tendril, Tendril],
-			// Where the long tendril ends (art px) — the drop forms here.
-			tip: { x: 39, y: 136 },
-			runs: [
-				{ cx: 35, tip: 136, bulb: 28, period: 4600, phase: 1900, endCx: 38.5, endW: 27 },
-				{ cx: 83, tip: 93, bulb: 20, period: 5900, phase: 400, reach: 22, run: 150 },
-			],
-			sauce: 0xf0b800,
-			cycle: 3800,
-			dripPhase: 2680,
 			title: 'SPLASH C2 TITLE',
 			body: ['SPLASH C2 BODY 1', 'SPLASH C2 BODY 2', 'SPLASH C2 BODY 3'],
 		},
 		{
 			cls: 'card--green',
+			sauce: SAUCE.green,
 			art: cardGreen,
-			drip: dripGreen,
-			tendrils: [
-				{ x0: 0, x1: 54, cut: 79, cx: 33, stop: 130 },
-				{ x0: 54, x1: 114, cut: 80, cx: 96, stop: 92 },
-			] as [Tendril, Tendril],
-			// Where the long tendril ends (art px) — the drop forms here.
-			tip: { x: 33, y: 155 },
-			runs: [
-				{ cx: 33, tip: 155, bulb: 28, period: 4400, phase: 3100, endCx: 32, endW: 32 },
-				{ cx: 96, tip: 111, bulb: 22, period: 6100, phase: 800, reach: 24, run: 160, endCx: 96, endW: 29 },
-			],
-			sauce: 0x7fbf12,
-			cycle: 4200,
-			dripPhase: 3820,
 			title: 'SPLASH C3 TITLE',
 			body: ['SPLASH C3 BODY'],
 		},
@@ -246,7 +205,7 @@
 		return `left:${r.x}px;top:${r.y}px;width:${r.width}px;height:${r.height}px;transform:translateX(${-pan}px);--pan-ms:${PAN_MS}ms`;
 	});
 
-	// Portrait (mobile): show the feature cards one at a time and auto-advance every 3s, with dot
+	// Portrait (mobile): show the feature cards one at a time and auto-advance every 4.5s, with dot
 	// indicators — matching the other games. Landscape/desktop keeps all three cards in a row.
 	let isPortrait = $state(false);
 	let slide = $state(0);
@@ -259,7 +218,7 @@
 			slide = 0;
 			return;
 		}
-		const id = setInterval(() => (slide = (slide + 1) % SLIDE_COUNT), 3000);
+		const id = setInterval(() => (slide = (slide + 1) % SLIDE_COUNT), 4500);
 		return () => clearInterval(id);
 	});
 </script>
@@ -282,7 +241,7 @@
 		<div class="pano-dim" style={`--pan-ms:${PAN_MS}ms`}></div>
 	{/if}
 	<div class="stage" style={`--sbg-mobile:url('${bg}')`}>
-		<!-- The board's "freshly polished" gleam: a tilted light band sweeps across the diner every 10s
+		<!-- The board's "freshly polished" gleam: a tilted light band sweeps across the diner every 13s
 		     (over the background, behind the logo / cards / chef). -->
 		<div class="shine" aria-hidden="true"><div class="shine__band"></div></div>
 		<img class="logo" src={logo} alt="McSchmutzo" draggable="false" />
@@ -290,18 +249,18 @@
 			<div class="bottle" style={bottleStyle}>
 				<img src={manBottle} alt="" draggable="false" />
 				<!-- Now and then he squeezes the bottle: the board chef's ketchup squirt (it rides the bottle
-				     layer, so it follows the shake). Fires in the calm part of the 6s shake loop. -->
+				     layer, so it follows the shake). Fires in the calm part of the 9s shake loop. -->
 				<SauceFx
 					bleed={0.6}
 					splashes={[
-						{ x: NOZZLE.x, y: NOZZLE.y, dir: NOZZLE.dir, color: 0xb3160d, jets: 1, size: 1.2, delay: 700, period: 6000, skip: 0.3 },
+						{ x: NOZZLE.x, y: NOZZLE.y, dir: NOZZLE.dir, color: 0xb3160d, jets: 1, size: 1.2, delay: 1050, period: 9000, skip: 0.3 },
 					]}
 				/>
 			</div>
 			<img class="man-base" src={manBase} alt="" draggable="false" />
 			<!-- Nametag under the pointing hand. -->
 			<img class="man-label" src={manLabel} alt="" draggable="false" style={manBox(MAN.label)} />
-			<img class="man-hand" src={manHand} alt="" draggable="false" style={manBox(MAN.hand)} />
+			<img class="man-hand" bind:this={manHandEl} src={manHand} alt="" draggable="false" style={manBox(MAN.hand)} />
 			<span class="man-sparkle" aria-hidden="true"></span>
 			<div class="pupil" style={manBox(MAN.pupilL)}><span class="glint"></span></div>
 			<div class="pupil" style={manBox(MAN.pupilR)}><span class="glint"></span></div>
@@ -315,15 +274,10 @@
 
 		{#snippet cardEl(card: (typeof CARDS)[number])}
 			<div class="card {card.cls}" style={`background-image:url('${card.art}')`}>
-				<!-- Sauce drip: cap + two independently oozing tendrils (same image, clipped). Sits under
-				     the copy like the old baked-in drip did. -->
-				<div class="drip-wrap" style={`--drip:url('${card.drip}')`}>
-					<div class="drip drip--cap" style={capStyle(card.tendrils[0], card.tendrils[1])}></div>
-					<div class="drip drip--t drip--t1" style={tendrilStyle(card.tendrils[0])}></div>
-					<div class="drip drip--t drip--t2" style={tendrilStyle(card.tendrils[1])}></div>
-					<!-- The painted drip itself stretches, pinches and lets a drop fall — the same drip as the
-					     turn / buy-bonus buttons and the win plaque (CardDrip free mode, from the same art). -->
-					<CardDrip src={card.drip} artW={ART_W} artH={ART_H} tendrils={card.runs} free />
+				<!-- Corner sauce, drawn in code: the blob + both tendrils dripping. Sits under the copy like the
+				     old baked-in drip did; the wrap sags as a whole. -->
+				<div class="drip-wrap">
+					<SauceCorner spec={card.sauce} />
 				</div>
 				<div class="card-inner">
 					<h3 class="card-title" use:fitFont={i18nDerived.translate(card.title)}>
@@ -428,7 +382,7 @@
 			rgba(255, 255, 255, 0.11) 68.2%
 		);
 		opacity: 0;
-		animation: shine-sweep 10s linear 1.5s infinite;
+		animation: shine-sweep 13s linear 2.5s infinite;
 	}
 	@keyframes shine-sweep {
 		0% {
@@ -467,13 +421,8 @@
 		height: auto;
 		object-fit: contain;
 		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
-		/* Entrance: once the cards are in, it drops in from the top and bounces to rest, then keeps
-		   bouncing gently (squash at each landing — the bounce rides `translate`/`scale`, the drop
-		   `transform`, so the two never fight). */
-		transform-origin: 50% 100%;
-		animation:
-			logo-in 1.1s linear 1.75s both,
-			logo-bounce 1.5s linear 2.85s infinite;
+		/* Entrance: once the cards are in, it drops in from the top and bounces to rest, then stays put. */
+		animation: logo-in 1.1s linear 1.75s both;
 	}
 
 	.man {
@@ -493,7 +442,7 @@
 		   bottle gets a little shake — each its own layer (see the script constants). */
 		transform-origin: 50% 100%;
 		animation:
-			chef-breathe 3.4s ease-in-out infinite alternate,
+			chef-breathe 5s ease-in-out infinite alternate,
 			man-in 1.1s cubic-bezier(0.22, 1, 0.36, 1) 2.7s both;
 	}
 	.man-base,
@@ -515,7 +464,7 @@
 	.pupil {
 		border-radius: 50%;
 		background: radial-gradient(circle at 50% 50%, #1a1512 0 62%, #0d0a08 100%);
-		animation: eyes-look 9s ease-in-out infinite;
+		animation: eyes-look 13s ease-in-out infinite;
 	}
 	.pupil .glint {
 		position: absolute;
@@ -539,40 +488,33 @@
 		background: var(--skin);
 		box-shadow: inset 0 -2px 0 #2b1a10;
 		transform: translateY(-101%);
-		animation: eyes-blink 5.5s linear infinite;
+		animation: eyes-blink 7s linear infinite;
 	}
 	.bottle {
-		animation: bottle-shake 6s ease-in-out infinite;
+		animation: bottle-shake 9s ease-in-out infinite;
 	}
-	/* Pointing hand: a slow, subtle sway about the wrist (sleeve cuff, 4.9% / 69.45% of the frame). */
-	.man-brows {
+		.man-brows {
 		position: absolute;
 	}
+	/* Pointing hand: pivots about the wrist (sleeve cuff, frame 4.9% / 69.45%); the script's rAF loop
+	   writes its transform (breath drift + random "point-point"). */
 	.man-hand {
 		position: absolute;
 		transform-origin: 9.14% 57.29%; /* the wrist: frame 4.9% / 69.45% */
-		animation: hand-sway 4.4s ease-in-out 0.6s infinite alternate;
-	}
-	@keyframes hand-sway {
-		from {
-			transform: rotate(1.3deg);
-		}
-		to {
-			transform: rotate(-1.3deg);
-		}
+		will-change: transform;
 	}
 	/* Nametag jiggles on its pin (pin = top-centre of the plate: 38.04% / 60.45% of the frame). */
 	.man-label {
 		position: absolute;
 		transform-origin: 50.02% 2.95%; /* the pin: frame 38.04% / 60.45% */
-		animation: label-jiggle 0.64s ease-in-out infinite alternate;
+		animation: label-jiggle 2.2s ease-in-out infinite alternate;
 	}
 	@keyframes label-jiggle {
 		from {
-			transform: rotate(-2deg);
+			transform: rotate(-1.6deg);
 		}
 		to {
-			transform: rotate(2deg);
+			transform: rotate(1.6deg);
 		}
 	}
 	/* Tooth *ding*: a 4-point sparkle that flashes on his grin now and then (board chef's, mirrored). */
@@ -589,7 +531,7 @@
 			radial-gradient(circle, #fff 0 20%, transparent 21%);
 		border-radius: 2px;
 		pointer-events: none;
-		animation: tooth-ding 3.4s ease-out 1.2s infinite;
+		animation: tooth-ding 6s ease-out 2.5s infinite;
 	}
 	@keyframes tooth-ding {
 		0%,
@@ -646,8 +588,10 @@
 		animation: card-in-bottom 1.15s cubic-bezier(0.22, 1, 0.36, 1) both;
 		animation-delay: 0.25s;
 	}
+	/* Staggered arrival (logo first, then left → centre → right) so the eye can follow each one. */
 	.cards:not(.cards--single) .card:nth-child(1) {
 		animation-name: card-in-left;
+		animation-delay: 0.45s;
 	}
 	.cards:not(.cards--single) .card:nth-child(2) {
 		animation-delay: 0.6s;
@@ -684,50 +628,12 @@
 		transition: opacity 0.25s ease;
 	}
 
-	/* Sauce layers: every copy fills the card box exactly like the frame, so the drip lands where it
-	   was baked in. The wrap sags as a whole (slow), the tendrils ooze on top of that. */
+	/* The corner sauce fills the card box exactly like the frame. The wrap sags as a whole (slow). */
 	.drip-wrap {
 		position: absolute;
 		inset: 0;
 		transform-origin: 0 0;
-		animation: sauce-sag 6.5s ease-in-out infinite alternate;
-	}
-	.drip {
-		position: absolute;
-		inset: 0;
-		background: var(--drip) center / 100% 100% no-repeat;
-		will-change: transform;
-	}
-	/* The long tendril and its drop share one cycle (--cycle/--phase, per card) so the drop lets go
-	   exactly when the tendril is at full stretch and the sauce recoils. */
-	/* Every tendril's tip is redrawn by CardDrip (stretch → pinch → drop, one continuous motion), so the
-	   painted tubes stay still — moving them under the canvas would open a seam (and the old CSS ooze
-	   grew, paused and shrank back up, which real sauce doesn't do). */
-	.drip--t {
-		animation: none;
-	}
-
-	/* Each card gets its own cycle length + phase so the three never pulse in unison. */
-	.card--red {
-		--cycle: 3.4s;
-		--phase: -1s;
-		--sauce: #e11105;
-		--sauce-hi: #ff9d8a;
-		--sauce-dk: #890702;
-	}
-	.card--yellow {
-		--cycle: 3.8s;
-		--phase: -2.3s;
-		--sauce: #fbcb07;
-		--sauce-hi: #fff0b0;
-		--sauce-dk: #a86a06;
-	}
-	.card--green {
-		--cycle: 4.2s;
-		--phase: -3.4s;
-		--sauce: #8ccc18;
-		--sauce-hi: #e2f9a6;
-		--sauce-dk: #4a6f06;
+		animation: sauce-sag 9.5s ease-in-out infinite alternate;
 	}
 	.card--yellow .drip-wrap {
 		animation-delay: -2.2s;
@@ -829,7 +735,7 @@
 		letter-spacing: 0.08em;
 		color: #fff;
 		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.55);
-		animation: blink 1.6s ease-in-out infinite;
+		animation: blink 2.4s ease-in-out infinite;
 	}
 
 	/* Portrait: the 16:9 scene can't cover-scale without cropping the cards off, so let the background
@@ -946,33 +852,6 @@
 			transform: translate(-50%, 0);
 		}
 	}
-	/* Continuous bounce: a little hop with a squash on each landing. */
-	@keyframes logo-bounce {
-		0% {
-			translate: 0 0;
-			scale: 1.03 0.96;
-			animation-timing-function: ease-out;
-		}
-		10% {
-			translate: 0 0;
-			scale: 1 1;
-			animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1); /* rising: slowing */
-		}
-		50% {
-			translate: 0 -2.4cqh;
-			scale: 0.99 1.015;
-			animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.4); /* falling: speeding up */
-		}
-		90% {
-			translate: 0 0;
-			scale: 1 1;
-			animation-timing-function: ease-in;
-		}
-		100% {
-			translate: 0 0;
-			scale: 1.03 0.96;
-		}
-	}
 	@keyframes logo-out {
 		from {
 			transform: translate(-50%, 0);
@@ -1014,23 +893,6 @@
 	}
 
 	/* A tendril slowly lengthens (and thins a touch, like sauce does), then eases back. */
-	/* The long tendril: stretches while the drop forms, lets go at 52%, recoils, settles. */
-	@keyframes sauce-drip {
-		0%,
-		78%,
-		100% {
-			transform: scale(1, 1);
-		}
-		44% {
-			transform: scale(0.95, 1.24);
-		}
-		52% {
-			transform: scale(0.94, 1.28);
-		}
-		60% {
-			transform: scale(1.015, 0.985);
-		}
-	}
 	@keyframes sauce-sag {
 		from {
 			transform: scaleY(1);
