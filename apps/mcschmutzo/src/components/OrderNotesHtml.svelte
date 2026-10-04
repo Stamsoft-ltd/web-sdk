@@ -6,7 +6,6 @@
 </script>
 
 <script lang="ts">
-	import { onMount } from 'svelte';
 
 	import { stateUi } from 'state-shared';
 
@@ -41,9 +40,12 @@
 	const WRITE = 1600; // ms to write the lines
 	const TICK = 5200; // when the order is ticked off
 	let clock = $state(0);
-	onMount(() => {
+	// Only tick while the notes are on screen (they're unmounted during free games / non-desktop);
+	// the clock still counts from the same t0, so the orders resume exactly where they'd be.
+	const t0 = typeof performance === 'undefined' ? 0 : performance.now();
+	$effect(() => {
+		if (!show) return;
 		let raf = 0;
-		const t0 = performance.now();
 		const loop = (ts: number) => {
 			clock = Math.max(0, ts - t0); // first rAF can land before t0
 			raf = requestAnimationFrame(loop);
@@ -56,6 +58,7 @@
 	const POPUPS = '.bb-backdrop,.ap-backdrop,.cf-backdrop,.tu-backdrop,.fs-backdrop,.fo-backdrop,.wb-scene';
 	let popupUp = $state(false);
 	$effect(() => {
+		if (!show) return;
 		const id = setInterval(() => (popupUp = !!document.querySelector(POPUPS)), 200);
 		return () => clearInterval(id);
 	});

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { Container, Graphics, Rectangle } from 'pixi-svelte';
 
 	import AnimatedSymbol from './AnimatedSymbol.svelte';
@@ -44,11 +45,14 @@
 	const IMPACT = 0.35; // share of the slam spent dropping in
 	let clock = $state(0);
 	const lockStart: Record<string, number> = $state({});
+	// Triggered by `cells` only; lockStart is written here, so it's read untracked.
 	$effect(() => {
 		const keys = new Set(cells.map((c) => `${c.reel}:${c.gridRow}`));
-		const t = performance.now();
-		for (const k of keys) if (!(k in lockStart)) lockStart[k] = t;
-		for (const k of Object.keys(lockStart)) if (!keys.has(k)) delete lockStart[k];
+		untrack(() => {
+			const t = performance.now();
+			for (const k of keys) if (!(k in lockStart)) lockStart[k] = t;
+			for (const k of Object.keys(lockStart)) if (!keys.has(k)) delete lockStart[k];
+		});
 	});
 	$effect(() => {
 		if (!cells.length) return;
@@ -92,22 +96,33 @@
 		}
 		return { y, sx, sy, flash, t };
 	};
+	// Heat lamp: a warm glow around the box, breathing slowly (each box on its own phase). The rings are
+	// drawn ONCE at full strength; only the Graphics' alpha animates, so it costs no geometry rebuild.
+	const drawGlow = (g: any) => {
+		const W = SYMBOL_WIDTH - 18;
+		const H = SYMBOL_SIZE - 18;
+		for (let i = 3; i >= 1; i--) {
+			const pad = i * 3.2;
+			g.roundRect(-W / 2 - pad, -H / 2 - pad, W + pad * 2, H + pad * 2, 10 + pad).fill({
+				color: 0xffa640,
+				alpha: 1 - i * 0.22,
+			});
+		}
+	};
+	const glowAlpha = (reel: number, gridRow: number) => {
+		const t = clock - (lockStart[`${reel}:${gridRow}`] ?? -1e9);
+		const seed = reel * 3.7 + gridRow * 1.3;
+		const glow = 0.5 + 0.5 * Math.sin(clock / 1100 + seed);
+		const fadeIn = Math.min(1, Math.max(0, (t - SLAM_MS * 0.5) / 600));
+		return (0.05 + 0.05 * glow) * fadeIn;
+	};
 	// Splat + heat-lamp glow + steam, drawn per cell (box-local coords, origin at the cell centre).
 	const drawCellFx = (reel: number, gridRow: number, name: string) => (g: any) => {
 		const t = clock - (lockStart[`${reel}:${gridRow}`] ?? -1e9);
 		const W = SYMBOL_WIDTH - 18;
 		const H = SYMBOL_SIZE - 18;
 		const seed = reel * 3.7 + gridRow * 1.3;
-		// heat lamp: a warm glow around the box, breathing slowly (each box on its own phase)
-		const glow = 0.5 + 0.5 * Math.sin(clock / 1100 + seed);
-		const fadeIn = Math.min(1, Math.max(0, (t - SLAM_MS * 0.5) / 600));
-		for (let i = 3; i >= 1; i--) {
-			const pad = i * 3.2;
-			g.roundRect(-W / 2 - pad, -H / 2 - pad, W + pad * 2, H + pad * 2, 10 + pad).fill({
-				color: 0xffa640,
-				alpha: (0.05 + 0.05 * glow) * fadeIn * (1 - i * 0.22),
-			});
-		}
+		// (the heat-lamp glow is its own static Graphics — see drawGlow / glowAlpha)
 		// splat at the impact: a flat ring of sauce + droplets thrown outward, fading
 		const ta = t - SLAM_MS * IMPACT;
 		if (ta >= 0 && ta < 700) {
@@ -212,6 +227,7 @@
 		{@const an = cellAnim(reel, gridRow)}
 		<Container x={cx} y={cy + an.y} scale={{ x: an.sx, y: an.sy }}>
 			<!-- heat-lamp glow + lock splat + steam (behind the box) -->
+			<Graphics draw={drawGlow} alpha={glowAlpha(reel, gridRow)} />
 			<Graphics draw={drawCellFx(reel, gridRow, name)} />
 			<!-- Opaque light background (inset so adjacent locked cells keep a gap). -->
 			<Rectangle

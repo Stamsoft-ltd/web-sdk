@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { Circle, Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
 
 	import { SYMBOL_SIZE, SYMBOL_WIDTH } from '../game/constants';
@@ -56,26 +56,40 @@
 	// the board (not mid-spin). Stop (settle) otherwise.
 	const idleAmp = $derived(props.config.idle ?? 0);
 	const shouldRun = $derived(!!props.winning || (idleAmp > 0 && props.state !== 'spin'));
+	// These effects WRITE the loop state (running / startTime / clock), so they must not also depend
+	// on it: reading it tracked made an effect re-trigger itself (write startTime → it re-runs →
+	// writes a new performance.now() → …). Usually that settled, but when a symbol's win/lock state
+	// changed in a busy frame it spun until Svelte's 1000-update limit (effect_update_depth_exceeded),
+	// re-rendering the symbol (and the wild's vector splat) every round — the multi-second freezes
+	// seen in the free games. The state is read untracked; each effect still re-runs only on its
+	// real trigger (shouldRun / props.winning), exactly as before.
 	$effect(() => {
-		if (shouldRun) {
-			if (!running) {
-				startTime = performance.now();
-				clock = startTime;
-				running = true;
+		const run = shouldRun;
+		untrack(() => {
+			if (run) {
+				if (!running) {
+					const now = performance.now();
+					startTime = now;
+					clock = now;
+					running = true;
+				}
+			} else if (running) {
+				running = false;
+				startTime = -1;
 			}
-		} else if (running) {
-			running = false;
-			startTime = -1;
-		}
+		});
 	});
 	// Idle and win loops have different periods/amplitudes: restart the clock when switching so the
 	// phase doesn't jump.
 	$effect(() => {
 		props.winning;
-		if (running) {
-			startTime = performance.now();
-			clock = startTime;
-		}
+		untrack(() => {
+			if (running) {
+				const now = performance.now();
+				startTime = now;
+				clock = now;
+			}
+		});
 	});
 	$effect(() => {
 		if (!running) return;
@@ -107,8 +121,9 @@
 		if (props.config.landAnim && props.state === 'land') {
 			if (!landLatched) {
 				landLatched = true;
-				landStart = performance.now();
-				landClock = landStart;
+				const now = performance.now(); // (don't read landStart back here — see the note above)
+				landStart = now;
+				landClock = now;
 			}
 		} else {
 			landLatched = false;
@@ -498,13 +513,22 @@
 			else g.ellipse(cx + s.x * h, cy + s.y * h, s.rx * h, s.ry * h).fill({ color: s.color, alpha: s.alpha });
 		}
 	};
-	const splatLoop = $derived.by(() => {
-		const active = running && startTime >= 0;
-		if (!active) return { t: 0, amp: 0 };
-		const r0 = Math.min(1, (clock - startTime) / RAMP_MS);
-		const ramp = r0 * r0 * (3 - 2 * r0);
-		return { t: clock - startTime, amp: (props.winning ? 1 : idleAmp) * ramp };
+	// Split into two NUMBER deriveds so the splat only re-draws when its pose actually changes. An idle
+	// (not winning) wild just breathes ±1.6% over ~1.9 s, so its clock is stepped at 30 fps — visually
+	// identical, but it no longer rebuilds + re-triangulates the whole vector splat every frame for
+	// every wild on the board. A winning wild keeps the full frame rate.
+	const splatT = $derived.by(() => {
+		if (!(running && startTime >= 0)) return 0;
+		const t = clock - startTime;
+		return props.winning ? t : Math.floor(t / 33) * 33;
 	});
+	const splatAmp = $derived.by(() => {
+		if (!(running && startTime >= 0)) return 0;
+		const r0 = Math.min(1, splatT / RAMP_MS);
+		const ramp = r0 * r0 * (3 - 2 * r0);
+		return (props.winning ? 1 : idleAmp) * ramp;
+	});
+	const splatLoop = $derived({ t: splatT, amp: splatAmp });
 	const drawSplat = (g: any) => {
 		const land = landStart >= 0 ? Math.min(1, (landClock - landStart) / LAND_MS) : null;
 		drawShapes(g, splatShapes({ land, ...splatLoop }));

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import Symbol from './Symbol.svelte';
 	import SymbolWrap from './SymbolWrap.svelte';
 	import { getSymbolInfo, getSymbolX } from '../game/utils';
@@ -22,12 +23,17 @@
 	);
 	// The reel lands (motion enters 'bouncing') → stamp the time; every symbol on it bounces from that.
 	const motion = $derived(context.stateGame.board[props.reelIndex]?.reelState.motion);
+	// Triggered by `motion` only; the stamp is read untracked so writing it can't re-trigger this
+	// effect (and every other symbol's on the same reel).
 	$effect.pre(() => {
-		if (motion === 'bouncing' && performance.now() - (reelLandedAt[props.reelIndex] ?? -1e9) > 400)
-			reelLandedAt[props.reelIndex] = performance.now();
+		if (motion !== 'bouncing') return;
+		const i = props.reelIndex;
+		untrack(() => {
+			const now = performance.now();
+			if (now - (reelLandedAt[i] ?? -1e9) > 400) reelLandedAt[i] = now;
+		});
 	});
 	const landedAt = $derived(reelLandedAt[props.reelIndex] ?? -1);
-		const y = props.reelSymbol.symbolY();
 	// A symbol comes alive on the board while a paying line runs through it (paylineWins stays set
 	// while the win is shown). Locked cells are additionally animated, pinned, by LockedCells.svelte
 	// on top of the board. paylineWins.row is 0-based (grid row = symbols-array index - 1).
