@@ -197,4 +197,5 @@ export default {
 	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "ДОСТИГНУТ ЛИМИТ ВАШЕГО СЧЁТА.",
 	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "НЕ УДАЛОСЬ ЗАГРУЗИТЬ ЭТОТ ПОВТОР. ПОПРОБУЙТЕ СНОВА.",
 	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "ЧТО-ТО ПОШЛО НЕ ТАК. ПОПРОБУЙТЕ СНОВА.",
+	"POT MULTIPLIER": "МНОЖИТЕЛЬ",
 };

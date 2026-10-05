@@ -32,6 +32,7 @@
 	import PaylineOverlay from './PaylineOverlay.svelte';
 	import HudHtml from './HudHtml.svelte';
 	import SplashIntro from './SplashIntro.svelte';
+	import PotShots from './PotShots.svelte';
 	import { boardLogoScreenRect } from '../game/boardLogo';
 	import LogoHtml from './LogoHtml.svelte';
 	import { fade } from 'svelte/transition';
@@ -268,6 +269,7 @@
 					<FeatureOverlay />
 				</MainContainer>
 
+				<PotShots />
 				<Win />
 				<Transition />
 			{/if}

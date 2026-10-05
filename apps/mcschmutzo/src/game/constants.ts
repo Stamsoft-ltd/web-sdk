@@ -105,7 +105,7 @@ const spriteStates = (assetKey: string, scale = 0.92) => {
 
 export const SYMBOL_INFO_MAP = {
 	H1: spriteStates('mcH1', 0.96),
-	H2: spriteStates('mcH2'),
+	H2: spriteStates('mcH2', 0.94), // Smutz cup
 	// Sausage art fills its frame more than the other highs — scale it down so it reads the same size.
 	H3: spriteStates('mcH3', 0.8),
 	H4: spriteStates('mcH4'),
@@ -118,13 +118,9 @@ export const SYMBOL_INFO_MAP = {
 	L5: spriteStates('mcL5', 0.88),
 	W: spriteStates('mcW', 1),
 	S: spriteStates('mcS', 1),
-	M: spriteStates('mcM', 0.94),
+	M: spriteStates('mcM'), // soup pot — the multiplier symbol
 } as const;
 
-export const SCATTER_LAND_SOUND_MAP = {
-	1: 'sfx_scatter_stop_1',
-	2: 'sfx_scatter_stop_2',
-	3: 'sfx_scatter_stop_3',
-	4: 'sfx_scatter_stop_4',
-	5: 'sfx_scatter_stop_5',
-} as const;
+// How long a newly locked cell takes to arrive (LockedCells' drop → impact → settle). The free-games
+// flow waits this long after new locks so the next re-spin never starts over the animation.
+export const LOCK_SLAM_MS = 1150;

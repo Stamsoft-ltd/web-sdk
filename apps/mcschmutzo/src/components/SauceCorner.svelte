@@ -554,6 +554,8 @@
 		const render = (now: number) => {
 			ctx.setTransform(1, 0, 0, 1, 0, 0);
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			// not laid out yet / hidden (0-size work canvases): drawImage on them throws every frame
+			if (!M.width || !M.height) return;
 			const glints: Glint[] = [];
 			const falling: Falling[] = [];
 			spec.tendrils.forEach((t, i) => tendrilShapes(i, t, now, scratch, glints, falling));

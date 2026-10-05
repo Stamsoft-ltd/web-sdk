@@ -7,7 +7,7 @@ import { createPrimaryMachines, createIntermediateMachines, createGameActor } fr
 import type { Bet } from './typesBookEvent';
 import { stateXstateDerived } from './stateXstate';
 import { playBet, convertTorResumableBet } from './utils';
-import { stateGame, stateGameDerived } from './stateGame.svelte';
+import { beginReelSpin, stateGame, stateGameDerived } from './stateGame.svelte';
 import config from './config';
 import type { RawSymbol } from './types';
 import { roundFlowState, finalWinBookAmount } from '../state/roundFlow.svelte';
@@ -34,6 +34,7 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		stateGame.roundWin = 0;
 		stateGame.pendingStop = false;
 		stateGame.awaitingFirstReveal = true;
+		beginReelSpin();
 		await stateGameDerived.enhancedBoard.preSpin({
 			paddingBoard: config.paddingReels[stateGame.gameType],
 		});

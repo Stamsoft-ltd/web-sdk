@@ -6,6 +6,29 @@ import { sequence } from 'utils-shared/sequence';
 import { waitForTimeout } from 'utils-shared/wait';
 
 const FREE_SPIN_LANDED_HOLD_MS = 1200;
+// Free games (the special bg) are paced so every landing and every lock animation can be seen before
+// the reels move again. The base game keeps its own (quicker) pace.
+const inFreeGames = () => stateGame.bonusMode === 'freegame';
+const RESPIN_LANDED_HOLD_MS = 500; // after a re-spin lands
+const NEXT_FREE_SPIN_PAUSE_MS = 800; // before the next free spin's reels start
+const LOCK_SETTLE_MS = LOCK_SLAM_MS + 300; // new yellow boxes fully arrived + a beat
+// Soups (M) currently showing on the board (rows 1..5), as book-event positions.
+// DEV check: soups that land in free games but are followed by NO multiplier step before the next
+// spin. The client only animates the steps the book reports, so this tells a math-side "the soup
+// didn't qualify" apart from a missing animation.
+let soupCheck: null | { index: number; soups: { reel: number; row: number }[] } = null;
+const reportSoupCheck = () => {
+	if (soupCheck && import.meta.env.DEV)
+		console.warn('[pot] soup(s) landed but the book added no multiplier steps', soupCheck);
+	soupCheck = null;
+};
+const soupsOnBoard = () =>
+	stateGame.board.flatMap((reel, r) =>
+		reel.reelState.symbols
+			.map((s, row) => ({ reel: r, row, name: s?.rawSymbol?.name }))
+			.filter((p) => p.row >= 1 && p.row <= BOARD_DIMENSIONS.y && p.name === 'M')
+			.map(({ reel: rr, row }) => ({ reel: rr, row })),
+	);
 
 // A bought bonus (bonus1 = 100×, bonus2 = 500×) is a one-shot purchase, but its mode used to stay
 // selected after the round: the HUD then priced the next spin at 100×/500× and, if the balance
@@ -22,10 +45,11 @@ const WHEEL_FADE_OUT_MS = 280; // keep in sync with WheelBonus.svelte's out:fade
 import { eventEmitter } from './eventEmitter';
 import { playBookEvent } from './utils';
 import { winLevelMap, type WinLevel, type WinLevelData } from './winLevelMap';
-import { stateGame, stateGameDerived } from './stateGame.svelte';
+import { beginReelSpin, stateGame, stateGameDerived } from './stateGame.svelte';
 import type { BookEvent, BookEventOfType, BookEventContext } from './typesBookEvent';
 import type { Position } from './types';
-import { BOARD_DIMENSIONS } from './constants';
+import { BOARD_DIMENSIONS, LOCK_SLAM_MS } from './constants';
+import { beginPotReveal, flushPot, queuePotShots, resetPot } from './potState.svelte';
 import config from './config';
 
 const getWinLevelData = (winLevel: number): WinLevelData => {
@@ -66,17 +90,17 @@ const winLevelSoundsPlay = ({ winLevelData }: { winLevelData: WinLevelData }) =>
 	if (winLevelData?.sound?.sfx) {
 		eventEmitter.broadcast({ type: 'soundOnce', name: winLevelData.sound.sfx });
 	}
+	// big wins: the win track replaces the bed (the count-up is timed to end on its final hit)
 	if (winLevelData?.sound?.bgm) {
 		eventEmitter.broadcast({ type: 'soundMusic', name: winLevelData.sound.bgm });
-	}
-	if (winLevelData?.type === 'big') {
-		eventEmitter.broadcast({ type: 'soundLoop', name: 'sfx_bigwin_coinloop' });
 	}
 };
 
 const winLevelSoundsStop = () => {
-	eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_bigwin_coinloop' });
-	if (stateGame.gameType === 'freegame') {
+	// STOP (not just pause) the one-shot win tracks, so the next big win starts from the top
+	eventEmitter.broadcast({ type: 'soundStop', name: 'bgm_bigwin' });
+	eventEmitter.broadcast({ type: 'soundStop', name: 'bgm_bigwin_top' });
+	if (stateGame.gameType === 'freegame' || stateGame.bonusMode === 'freegame') {
 		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
 	} else {
 		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_main' });
@@ -122,6 +146,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateGame.featureMessage = '';
 		}
 		stateGame.gameType = bookEvent.gameType;
+		beginPotReveal();
+		beginReelSpin();
 		const hadPendingStop = stateGame.pendingStop && stateGame.awaitingFirstReveal;
 		stateGame.awaitingFirstReveal = false;
 		stateGame.pendingStop = false;
@@ -135,10 +161,16 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		});
 		if (hadPendingStop) stateGameDerived.enhancedBoard.stop();
 		await spinPromise;
+		reportSoupCheck();
+		if (inFreeGames()) {
+			const soups = soupsOnBoard();
+			if (soups.length) soupCheck = { index: bookEvent.index, soups };
+		}
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
 		// Free games: hold the landed board a moment after the last reel stops, so the player clearly
 		// sees what was rolled before the win presentation / next free spin kicks in.
 		if (bookEvent.gameType === 'freegame') await waitForTimeout(FREE_SPIN_LANDED_HOLD_MS);
+		else if (bookEvent.gameType === 'respin' && inFreeGames()) await waitForTimeout(RESPIN_LANDED_HOLD_MS);
 	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>) => {
 		stateGame.roundWin = bookEvent.totalWin;
@@ -146,7 +178,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateGame.paylineWins = [];
 			return;
 		}
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_winlevel_small' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_normal', forcePlay: true });
 		await sequence(bookEvent.wins, async (win) => {
 			await animateSymbols({ positions: win.positions });
 		});
@@ -163,14 +195,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	freeSpinTrigger: async (bookEvent: BookEventOfType<'freeSpinTrigger'>) => {
 		stateGame.bonusTier = bookEvent.positions.length >= 4 ? 'super' : 'normal';
 		// animate scatters
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_win_v2' });
 		await animateSymbols({ positions: bookEvent.positions });
-		// show free spin intro
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_superfreespin' });
+		// show free spin intro (waits for the click to start)
 		await eventEmitter.broadcastAsync({ type: 'uiHide' });
 		await eventEmitter.broadcastAsync({ type: 'transition' });
 		eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'jng_intro_fs' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_screen' });
 		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
 		await eventEmitter.broadcastAsync({
 			type: 'freeSpinIntroUpdate',
@@ -192,6 +222,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		eventEmitter.broadcast({ type: 'drawerFold' });
 	},
 	updateFreeSpin: async (bookEvent: BookEventOfType<'updateFreeSpin'>) => {
+		reportSoupCheck();
+		// Safety net: anything still queued (normally already shot when its step event came) goes now.
+		if (bookEvent.amount === 0) resetPot(stateGame.globalMultiplier);
+		else await flushPot(stateGame.globalMultiplier);
 		eventEmitter.broadcast({ type: 'freeSpinCounterShow' });
 		stateUi.freeSpinCounterShow = true;
 		eventEmitter.broadcast({
@@ -201,9 +235,14 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		});
 		stateUi.freeSpinCounterCurrent = bookEvent.amount + 1;
 		stateUi.freeSpinCounterTotal = bookEvent.total;
+		// a breath between free spins (not before the first one — the wheel / intro just closed)
+		if (bookEvent.amount > 0) await waitForTimeout(NEXT_FREE_SPIN_PAUSE_MS);
 	},
 	freeSpinEnd: async (bookEvent: BookEventOfType<'freeSpinEnd'>) => {
 		const winLevelData = getWinLevelDataForAmount(bookEvent.amount);
+		reportSoupCheck();
+		// (safety net — soups shoot when their step event comes)
+		await flushPot(stateGame.globalMultiplier);
 
 		await eventEmitter.broadcastAsync({ type: 'uiHide' });
 		stateGame.gameType = 'basegame';
@@ -216,7 +255,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.paylineWins = [];
 		eventEmitter.broadcast({ type: 'boardFrameGlowHide' });
 		eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_youwon_panel' });
+		if (bookEvent.amount > 0 && winLevelData?.type !== 'big') eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_normal' });
 		winLevelSoundsPlay({ winLevelData });
 		await eventEmitter.broadcastAsync({
 			type: 'freeSpinOutroCountUp',
@@ -257,13 +296,26 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.lockedPositions = bookEvent.lockedPositions;
 		stateGame.globalMultiplier = bookEvent.globalMult;
 		stateGame.featureMessage = `LOCK & RE-SPIN · ${bookEvent.symbol}`;
-		await waitForTimeout(250);
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_lock_grow', forcePlay: true });
+		await waitForTimeout(inFreeGames() ? LOCK_SETTLE_MS : 250);
 	},
 	lockRespinUpdate: async (bookEvent: BookEventOfType<'lockRespinUpdate'>) => {
 		const positions = [...stateGame.lockedPositions, ...bookEvent.newLockedPositions];
 		stateGame.lockedPositions = _.uniqBy(positions, ({ reel, row }) => `${reel}:${row}`);
 		stateGame.collectedScatters = bookEvent.collectedScatters;
 		stateGame.globalMultiplier = bookEvent.globalMult;
+		const newLocks = bookEvent.newLockedPositions.length > 0;
+		if (newLocks) eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_lock_grow', forcePlay: true });
+		if (newLocks && inFreeGames()) await waitForTimeout(LOCK_SETTLE_MS);
+		if (bookEvent.addedSteps > 0) soupCheck = null;
+		if (import.meta.env.DEV && bookEvent.addedSteps > 0)
+			console.info('[pot] lockRespinUpdate', { addedSteps: bookEvent.addedSteps, globalMult: bookEvent.globalMult, multiplierPositions: bookEvent.multiplierPositions, soupsOnBoard: soupsOnBoard() });
+		// The soups shoot NOW, while they're still in their cells (the next re-spin rolls them away) and
+		// before this spin's win is shown — not deferred to the end of the free spin.
+		if (bookEvent.addedSteps > 0 && inFreeGames()) {
+			queuePotShots(bookEvent.addedSteps, bookEvent.multiplierPositions);
+			await flushPot(stateGame.globalMultiplier);
+		}
 		if (bookEvent.addedSteps > 0) {
 			stateGame.featureMessage = `CHEF +${bookEvent.addedSteps} STEP${bookEvent.addedSteps === 1 ? '' : 'S'}`;
 			await waitForTimeout(350);
@@ -274,10 +326,18 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.collectedScatters = bookEvent.collectedScatters;
 		stateGame.globalMultiplier = bookEvent.globalMult;
 		stateGame.featureMessage = '';
-		await waitForTimeout(250);
+		await waitForTimeout(inFreeGames() ? 600 : 250);
 	},
 	updateGlobalMult: async (bookEvent: BookEventOfType<'updateGlobalMult'>) => {
 		stateGame.globalMultiplier = bookEvent.globalMult;
+		if (bookEvent.addedSteps > 0) soupCheck = null;
+		if (import.meta.env.DEV && bookEvent.addedSteps > 0)
+			console.info('[pot] updateGlobalMult', { source: bookEvent.source, addedSteps: bookEvent.addedSteps, previousGlobalMult: bookEvent.previousGlobalMult, globalMult: bookEvent.globalMult, soupsOnBoard: soupsOnBoard() });
+		// (the wheel's steps aren't soups — they're shown by the wheel itself)
+		if (bookEvent.addedSteps > 0 && inFreeGames() && bookEvent.source !== 'wheel') {
+			queuePotShots(bookEvent.addedSteps, soupsOnBoard());
+			await flushPot(stateGame.globalMultiplier);
+		}
 		stateGame.featureMessage =
 			bookEvent.addedSteps > 0 ? `MULTIPLIER +${bookEvent.addedSteps} STEPS` : '';
 	},
@@ -288,7 +348,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.wheel = bookEvent;
 		stateGame.bonusTier = bookEvent.scatterEntry === 4 ? 'super' : 'normal';
 		releaseBoughtMode();
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_superfreespin' });
+		// the wheel screen waits for SPIN: bonus music + the "click to start" sting
+		eventEmitter.broadcast({ type: 'soundMusic', name: 'bgm_freespin' });
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_bonus_screen' });
 		stateGame.featureMessage = bookEvent.scatterEntry === 4 ? 'SUPER BONUS' : 'NORMAL BONUS';
 		stateUi.freeSpinCounterShow = true;
 		stateUi.freeSpinCounterCurrent = 1;
@@ -305,7 +367,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			stateGame.wheelResolve = resolve;
 		});
 		stateGame.wheelResolve = undefined;
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_up' });
+		// the wheel's steps boost the multiplier (the soup badge)
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_soup_boost' });
 		await waitForTimeout(800);
 		stateGame.wheel = undefined;
 		// Let the wheel screen finish fading out (WheelBonus out:fade, 280ms) plus a short beat on the

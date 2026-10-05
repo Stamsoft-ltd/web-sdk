@@ -197,4 +197,5 @@ export default {
 	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "계정 한도에 도달했습니다.",
 	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "이 리플레이를 불러올 수 없습니다. 다시 시도하세요.",
 	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "문제가 발생했습니다. 다시 시도하세요.",
+	"POT MULTIPLIER": "배수",
 };

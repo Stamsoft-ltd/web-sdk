@@ -80,6 +80,11 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 	let isPreSpinning = false;
 	// Resolves when the pre-spin loop has finished its current leg (see preSpinSlideDownLoop).
 	let preSpinLoopDone: Promise<void> | null = null;
+	// Releases the pre-spin loop's in-flight leg. A snap (placeY) aborts that leg's tween, and an
+	// aborted Svelte Tween never resolves its promise — so without this the loop (and with it
+	// preSpinLoopDone, reel.spin() and the whole round) waited forever: a skip pressed while reels
+	// were still pre-spinning froze the game.
+	let cutPreSpinLeg: (() => void) | null = null;
 	let targetPaddingPosition = reelLength - 1;
 	let prevSymbols: ReelSymbol[] = createReelSymbols(reelOptions.initialSymbols);
 	let targetSymbols: ReelSymbol[] = createReelSymbols(reelOptions.initialSymbols);
@@ -150,6 +155,10 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 	};
 
 	const placeY = (targetY: number) => reelY.set(targetY, { duration: 0 });
+	const snapPreSpin = () => {
+		placeY(defaultY);
+		cutPreSpinLeg?.();
+	};
 
 	// Slide to `targetY` while the speed rises from `fromSpeed` to `toSpeed` (smoothstep in time over
 	// `rampMs`) and then holds — velocity-continuous at both ends, so no lurch. If the distance is too
@@ -225,7 +234,11 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 				? reelState.spinOptions().reelSpinSpeed
 				: reelState.spinOptions().reelPreSpinSpeed;
 			const easing = started || isTurboBeforeAll ? linear : (reelState.spinOptions().reelPreSpinEasing ?? backIn);
-			await slideY({ reelY: defaultY, speed, easing });
+			await Promise.race([
+				slideY({ reelY: defaultY, speed, easing }),
+				new Promise<void>((resolve) => (cutPreSpinLeg = resolve)),
+			]);
+			cutPreSpinLeg = null;
 			// The spin result arrived during this leg: stop HERE, exactly at defaultY, so the result
 			// spin (generalSpinWith) continues from a known position — no re-padding, no jump.
 			if (!isPreSpinning) break;
@@ -309,6 +322,9 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 			slideDown: async () => {
 				const bounceSize = reelOptions.symbolHeight * reelState.spinOptions().reelBounceSizeMulti;
 
+				reelOptions.onReelImpactIn?.(
+					Math.abs(defaultY + bounceSize - reelY.current) / reelState.spinOptions().reelSpinSpeed,
+				);
 				await slideY({
 					reelY: defaultY + bounceSize,
 					speed: reelState.spinOptions().reelSpinSpeed,
@@ -350,6 +366,22 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 				: baseSpeed;
 
 		const leg1Y = defaultY * basePaddingSize();
+		const bounceY = defaultY + bounceSize;
+		const configuredPower = spinOptions.reelStopEasingPower;
+		const power = Number.isFinite(configuredPower) && (configuredPower as number) >= 1 ? (configuredPower as number) : 1;
+		if (reelOptions.onReelImpactIn) {
+			// both legs' durations, exactly as slideY / rampY below derive them
+			const d1 = Math.abs(leg1Y - reelY.current);
+			let leg1Ms = d1 / spinSpeed;
+			if (spinSpeed !== baseSpeed && d1 > 0) {
+				const ramp = Math.min(spinOptions.reelAnticipationRampMs ?? 900, (2 * d1) / (baseSpeed + spinSpeed));
+				leg1Ms = ramp + (d1 - ((baseSpeed + spinSpeed) / 2) * ramp) / spinSpeed;
+			}
+			const d2 = Math.abs(bounceY - leg1Y);
+			const leg2Ms =
+				configuredPower === undefined ? d2 / spinOptions.reelSpinSpeedBeforeBounce : (power * d2) / spinSpeed;
+			reelOptions.onReelImpactIn(leg1Ms + leg2Ms);
+		}
 		if (spinSpeed === baseSpeed) {
 			await slideY({ reelY: leg1Y, speed: spinSpeed });
 		} else {
@@ -361,9 +393,6 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 			});
 		}
 
-		const bounceY = defaultY + bounceSize;
-		const configuredPower = spinOptions.reelStopEasingPower;
-
 		if (configuredPower === undefined) {
 			await slideY({
 				reelY: bounceY,
@@ -374,9 +403,8 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 		}
 
 		// p < 1 would accelerate into the stop and a non-finite p would stall the reel on an infinite
-		// duration. Both are config errors; degrade to p = 1 — linear, still velocity-continuous.
-		const power = Number.isFinite(configuredPower) && configuredPower >= 1 ? configuredPower : 1;
-
+		// duration. Both are config errors; degrade to p = 1 — linear, still velocity-continuous (see
+		// `power` above).
 		await slideY({
 			reelY: bounceY,
 			speed: spinSpeed / power,
@@ -444,7 +472,7 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 		// symbols and kept it spinning behind the error modal.
 		isPreSpinning = false;
 		reelState.motion = 'stopped';
-		placeY(defaultY);
+		snapPreSpin();
 		if (reelSymbols) {
 			prevSymbols = [...reelSymbols];
 			targetSymbols = [...reelSymbols];
@@ -462,14 +490,14 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 		interruptible.interrupt();
 		// Snap to defaultY during pre-spin so readyToSpin fires immediately instead of
 		// waiting for the current slideY loop to complete naturally.
-		if (isPreSpinning) placeY(defaultY);
+		if (isPreSpinning) snapPreSpin();
 	};
 
 	// Interrupts even noStop (anticipated) reels. Use when the player explicitly skips.
 	const forceStop = () => {
 		interruptible.interrupt();
 		forceStopResolve?.();
-		if (isPreSpinning) placeY(defaultY);
+		if (isPreSpinning) snapPreSpin();
 	};
 
 	const readyToSpinEffect = () => {

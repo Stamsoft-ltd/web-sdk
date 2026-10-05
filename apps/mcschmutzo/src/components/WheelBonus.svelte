@@ -20,6 +20,9 @@
 	const barArt = ap(`${A}/yellow-bar.svg`);
 	const badgeGamesArt = ap(`${A}/badge-games.webp`); // "30" splat — max free games
 	const badgeStepsArt = ap(`${A}/badge-steps.webp`); // "+15" splat — max added steps
+	// Top-left, behind the "+15": the soup pot — the symbol that raises the multiplier every time it
+	// lands (Figma 8798:10303, its own hi-res export for this page).
+	const soupArt = ap(`${A}/pot.webp`);
 
 	// Both rings turn about ONE centre on the base, midway between the dark disc's centre (fitted:
 	// 338.07, 331.46, r 279.9) and the hub's (Figma 8740:2373: 337, 331, r 101), so the dark gaps to
@@ -48,10 +51,13 @@
 	const INNER_VALUES = [4, 15, 6, 8, 5, 3, 10, 6, 5, 8, 3, 4, 10, 3];
 
 	// Suspense pacing: both rings pull back a hair, wind up slowly, then coast down through a long
-	// crawl. The inner ring follows the outer one a beat later and lands after it.
-	const OUTER_MS = 5600;
-	const INNER_MS = 6000;
+	// crawl. The inner ring follows the outer one a beat later and lands after it — on the spin
+	// sound's final hit (sfx_wheel_spin: 8.0 s in, then it rings out), so the whole clip is heard.
+	const OUTER_MS = 6950;
+	const INNER_MS = 7350;
 	const INNER_DELAY_MS = 650;
+	const OUTER_TURNS = 8;
+	const INNER_TURNS = 7;
 	const EASE = 'cubic-bezier(0.45, -0.03, 0.1, 1)';
 
 	// Rim bulbs (centres measured from the base art, wheel-local); the static rim doesn't turn, so the
@@ -187,10 +193,11 @@
 		winInner = i.index;
 		outerDone = innerDone = false;
 		spinning = true;
-		context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_up' });
+		skipped = false;
+		context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_wheel_spin', forcePlay: true });
 		requestAnimationFrame(() => {
-			rotOuter = Math.ceil(rotOuter / 360) * 360 + 360 * 6 - OUTER_ANGLES[o.index];
-			rotInner = Math.floor(rotInner / 360) * 360 - 360 * 5 - INNER_ANGLES[i.index];
+			rotOuter = Math.ceil(rotOuter / 360) * 360 + 360 * OUTER_TURNS - OUTER_ANGLES[o.index];
+			rotInner = Math.floor(rotInner / 360) * 360 - 360 * INNER_TURNS - INNER_ANGLES[i.index];
 		});
 	};
 
@@ -219,7 +226,8 @@
 		outerDone = innerDone = true;
 		spinning = false;
 		settled = true;
-		context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_multiplier_win' });
+		// (the spin sound's own final hit is the landing; a skipped spin cut it, so clack instead)
+		if (skipped) context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_reel_stop', forcePlay: true });
 		setTimeout(() => context.stateGame.wheelResolve?.(), 1400);
 	};
 	$effect(() => {
@@ -320,7 +328,11 @@
 	// spatula still clacks over the last pegs, just quicker).
 	const FAST_FORWARD_MS = 380;
 	let innerEl: HTMLDivElement | undefined = $state();
+	let skipped = false;
 	const fastForward = () => {
+		// the spin sound runs to the slow landing — cut it with the fast-forwarded spin
+		if (!skipped) context.eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_wheel_spin' });
+		skipped = true;
 		for (const el of [outerEl, innerEl]) {
 			for (const a of el?.getAnimations() ?? []) {
 				const t = a.effect?.getComputedTiming();
@@ -353,10 +365,6 @@
 		if (e.propertyName !== 'transform' || !spinning || e.target !== e.currentTarget) return;
 		if (ring === 'outer') outerDone = true;
 		else innerDone = true;
-		context.eventEmitter.broadcast({
-			type: 'soundOnce',
-			name: ring === 'outer' ? 'sfx_reel_stop_1' : 'sfx_reel_stop_3',
-		});
 		if (!outerDone || !innerDone) return;
 		// let the landed values pulse before the bonus flow moves on
 		settleNow();
@@ -461,7 +469,14 @@
 				<span class="wb-title-outline" aria-hidden="true">{i18nDerived.translate('WIN UP TO')}</span>
 				<span class="wb-title-fill">{i18nDerived.translate('WIN UP TO')}</span>
 			</div>
-			<!-- max awards: free steps in the left corner, free games in the right -->
+			<!-- left corner: the soup pot with the "+15" max-steps splat in front; right corner: max free games -->
+			<img
+				class="wb-badge wb-badge--soup"
+				class:wb-badge--portrait={portrait}
+				src={soupArt}
+				alt=""
+				draggable="false"
+			/>
 			<img
 				class="wb-badge wb-badge--steps"
 				class:wb-badge--portrait={portrait}
@@ -695,8 +710,12 @@
 		height: 147px;
 		animation: wb-badge-bob 2.8s ease-in-out infinite;
 	}
-	.wb-badge--steps {
-		left: 41px;
+	/* Figma: 209×209 at (18, 19) — the symbol art's own padding sits it like the design. */
+	.wb-badge--soup {
+		left: 18px;
+		top: 19px;
+		width: 209px;
+		height: 209px;
 	}
 	.wb-badge--games {
 		left: 938px; /* mirrored: 1200 − 41 − 221 */
@@ -705,8 +724,21 @@
 	.wb-badge--portrait {
 		top: -165px;
 	}
+	/* a smaller "+15" tucked over the pot's bottom-left corner (pot: 209×209 at 18, 19) */
+	.wb-badge--steps {
+		left: 4px;
+		top: 132px;
+		width: 136px;
+		height: 90px;
+		animation-delay: -0.7s;
+	}
 	.wb-badge--steps.wb-badge--portrait {
-		left: 372px;
+		left: 364px;
+		top: -83px;
+	}
+	.wb-badge--soup.wb-badge--portrait {
+		left: 378px;
+		top: -196px;
 	}
 	.wb-badge--games.wb-badge--portrait {
 		left: 607px;

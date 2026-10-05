@@ -197,4 +197,5 @@ export default {
 	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "アカウントの上限に達しました。",
 	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "このリプレイを読み込めませんでした。もう一度お試しください。",
 	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "問題が発生しました。もう一度お試しください。",
+	"POT MULTIPLIER": "マルチプライヤー",
 };

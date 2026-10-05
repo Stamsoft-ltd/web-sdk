@@ -197,4 +197,5 @@ export default {
 	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "已达到您的账户限额。",
 	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "无法加载此回放。请重试。",
 	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "出现错误。请重试。",
+	"POT MULTIPLIER": "倍数",
 };

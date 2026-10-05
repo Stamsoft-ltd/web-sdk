@@ -113,7 +113,7 @@ export default {
 	},
 	specialPot: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/special-pot@0.888x.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/special-pot-v2.webp', import.meta.url).href,
 		preload: true,
 	},
 	// Layered chefs (base with the pupils cut out + the pupils as their own sprites) so the eyes can
@@ -151,9 +151,11 @@ export default {
 		// 358x425 frame — the arm overlays and flicks with nothing duplicated behind it, and the
 		// eyes are the intact art (animated pupils overlay the baked ones slightly larger). Since v12 his
 		// other arm is the board chef's relaxed, hanging one (mascotBase, aligned + blended in) instead
-		// of the outstretched pointing hand.
+		// of the outstretched pointing hand. v12h = v12 with the hanging hand's fingertips (cut off at
+		// the frame bottom) grafted back from the board chef's hand, so the hand ends naturally wherever
+		// the pot / nav bar no longer hide that edge.
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/special_base_v12_c@0.798x.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/special_base_v12h_c@0.798x.webp', import.meta.url).href,
 		preload: true,
 	},
 	specialArm: {
@@ -186,13 +188,16 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/H1.webp', import.meta.url).href,
 	},
+	// H2 = the Smutz cup (regular high symbol); M = the soup pot (the rare multiplier symbol — it raises
+	// the Win Multiplier). The two image files used to be swapped. H3.webp = the sausage (was H3_v2.webp,
+	// which the info paytable's name-based lookup couldn't find).
 	mcH2: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/H2.webp', import.meta.url).href,
 	},
 	mcH3: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/H3_v2.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/H3.webp', import.meta.url).href,
 	},
 	mcH4: {
 		type: 'sprite',
@@ -300,14 +305,14 @@ export default {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/wild/text@0.359x.webp', import.meta.url).href,
 	},
-	// Scatter (S) = stand + SCATTER banner.
-	scatterStand: {
+	// Scatter (S) parts: the crossed spatula + knife, each its own layer so they can swing like swords.
+	scatterSpatula: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/parts/scatter/stand@0.517x.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/parts/scatter2/spatula.webp', import.meta.url).href,
 	},
-	scatterBanner: {
+	scatterKnife: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/parts/scatter/banner@0.362x.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/parts/scatter2/knife.webp', import.meta.url).href,
 	},
 	// Sausage (H3) = banger + rising smoke.
 	sausageBody: {

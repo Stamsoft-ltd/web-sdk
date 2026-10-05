@@ -78,6 +78,12 @@ type ReelCreateOptions<TRawSymbol extends object, TSymbolState extends string> =
 	symbolHeight: number;
 	onReelStopping: () => void;
 	onSymbolLand: (args: { rawSymbol: TRawSymbol }) => void;
+	/**
+	 * Optional: called as a reel starts its result slide with the time (ms) until it hits its stop,
+	 * so a stop sound whose impact isn't at its very start can be started early enough to land on it.
+	 * Not called for a skipped (snapped) stop — onReelStopping still fires at the real impact.
+	 */
+	onReelImpactIn?: (ms: number) => void;
 };
 
 export type SpinningReelCreateOptions<

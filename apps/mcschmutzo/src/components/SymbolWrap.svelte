@@ -11,6 +11,7 @@
 		x: number;
 		y: number;
 		animating: boolean;
+		alpha?: number;
 		children: Snippet;
 	};
 
@@ -25,7 +26,7 @@
 </script>
 
 {#if props.debug || (show && inFrame)}
-	<Container x={props.x} y={props.y}>
+	<Container x={props.x} y={props.y} alpha={props.alpha ?? 1}>
 		{@render props.children()}
 	</Container>
 {/if}

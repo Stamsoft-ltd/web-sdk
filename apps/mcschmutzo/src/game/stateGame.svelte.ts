@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import type { Tween } from 'svelte/motion';
 
-import { stateBet } from 'state-shared';
 import { createEnhanceBoard, createReelForSpinning } from 'utils-slots';
 import { createGetWinLevelDataByWinLevelAlias } from 'utils-shared/winLevel';
 
@@ -17,24 +16,63 @@ import {
 	SPIN_OPTIONS_DEFAULT,
 	SPIN_OPTIONS_FAST,
 	INITIAL_SYMBOL_STATE,
-	SCATTER_LAND_SOUND_MAP,
 } from './constants';
 
 const onSymbolLand = ({ rawSymbol }: { rawSymbol: RawSymbol }) => {
 	if (rawSymbol.name === 'S') {
 		eventEmitter.broadcast({ type: 'soundScatterCounterIncrease' });
-		eventEmitter.broadcast({
-			type: 'soundOnce',
-			name: SCATTER_LAND_SOUND_MAP[scatterLandIndex()],
-		});
+		// every scatter that lands sounds (forcePlay: several can land within the clip's length)
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_land', forcePlay: true });
 	}
+};
 
-	if (rawSymbol.name === 'W') {
-		eventEmitter.broadcast({
-			type: 'soundOnce',
-			name: 'sfx_multiplier_landing',
-		});
+// Reel-stop sound sync. The stop clip leads in with ~455 ms of ticks before its thud, so it's started
+// that long BEFORE the reel's impact (the reel reports its time-to-impact as its result slide begins:
+// onReelImpactIn), landing the thud on the stop. A stop that comes sooner than planned (skipped spin)
+// or too soon for the lead (turbo) plays just the thud at the real impact (onReelStopping).
+const REEL_STOP_HIT_MS = 455; // the thud's onset in sfx_reel_stop
+const AUDIO_LATENCY_MS = 10; // WebAudio output latency, less the ~10 ms a reel lands after its forecast (frame timing)
+const reelStopPlan = _.range(BOARD_DIMENSIONS.x).map(() => ({
+	timer: undefined as ReturnType<typeof setTimeout> | undefined,
+	startedAt: -1,
+	impactAt: -1,
+}));
+let lastReelHitAt = -1e9;
+// Which reels have landed in the current spin (a skip must stop every reel still to land — moving
+// or not yet started — and never latch a stop onto one that already landed: see Board.svelte).
+export const reelLanded: boolean[] = _.range(BOARD_DIMENSIONS.x).map(() => true);
+export const beginReelSpin = () => reelLanded.fill(false);
+const planReelStopSound = (reelIndex: number, ms: number) => {
+	const plan = reelStopPlan[reelIndex];
+	clearTimeout(plan.timer);
+	plan.startedAt = -1;
+	plan.impactAt = performance.now() + ms;
+	const lead = REEL_STOP_HIT_MS + AUDIO_LATENCY_MS;
+	if (ms < lead) return; // too soon for the ticks: the thud plays at the impact instead
+	plan.timer = setTimeout(() => {
+		plan.timer = undefined;
+		plan.startedAt = performance.now();
+		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_reel_stop', forcePlay: true });
+	}, ms - lead);
+};
+const reelStopImpact = (reelIndex: number) => {
+	reelLanded[reelIndex] = true;
+	const plan = reelStopPlan[reelIndex];
+	clearTimeout(plan.timer);
+	const now = performance.now();
+	const inSync = plan.startedAt >= 0 && Math.abs(now - plan.impactAt) < 90;
+	if (!inSync) {
+		// skipped: the early-started clip's thud would now come late — cut it (its latest instance)
+		if (plan.startedAt >= 0) eventEmitter.broadcast({ type: 'soundStop', name: 'sfx_reel_stop' });
+		// (several reels snapping together on a skip make ONE thud, not a stack of them)
+		if (now - lastReelHitAt > 40) {
+			lastReelHitAt = now;
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_reel_stop_hit', forcePlay: true });
+		}
 	}
+	plan.timer = undefined;
+	plan.startedAt = -1;
+	plan.impactAt = -1;
 };
 
 const board = _.range(BOARD_DIMENSIONS.x).map((reelIndex) => {
@@ -43,13 +81,8 @@ const board = _.range(BOARD_DIMENSIONS.x).map((reelIndex) => {
 		symbolHeight: SYMBOL_SIZE,
 		initialSymbols: INITIAL_BOARD[reelIndex],
 		initialSymbolState: INITIAL_SYMBOL_STATE,
-		onReelStopping: () => {
-			eventEmitter.broadcast({
-				type: 'soundOnce',
-				name: 'sfx_reel_stop_1',
-				forcePlay: !stateBet.isTurbo,
-			});
-		},
+		onReelImpactIn: (ms) => planReelStopSound(reelIndex, ms),
+		onReelStopping: () => reelStopImpact(reelIndex),
 		onSymbolLand,
 	});
 

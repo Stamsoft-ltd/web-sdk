@@ -1,5 +1,14 @@
 import { SECOND } from 'constants-shared/time';
 
+// Big wins count up for exactly as long as their win track builds, so the amount lands on the
+// track's final hit (bgm_bigwin: SWEET / EPIC / WILD) or as its sustain ends (bgm_bigwin_top:
+// LEGENDARY / MYTHIC) — measured from audio-src (scripts/build-sounds.mjs).
+const BIG_WIN_HIT_MS = 9.3 * SECOND;
+const TOP_WIN_END_MS = 12 * SECOND;
+// …then the screen holds for the rest of the track (its ring-out) before it closes.
+const BIG_WIN_TAIL_MS = 11.0 * SECOND - BIG_WIN_HIT_MS;
+const TOP_WIN_TAIL_MS = 12.95 * SECOND - TOP_WIN_END_MS;
+
 export const winLevelMap = {
 	1: {
 		level: 1,
@@ -7,6 +16,7 @@ export const winLevelMap = {
 		type: 'small',
 		text: null,
 		presentDuration: 0,
+		holdDuration: 300,
 		sound: { sfx: undefined, bgm: undefined },
 		animation: undefined,
 		pad: undefined,
@@ -17,6 +27,7 @@ export const winLevelMap = {
 		type: 'small',
 		text: null,
 		presentDuration: 0.6 * SECOND,
+		holdDuration: 300,
 		sound: { sfx: undefined, bgm: undefined },
 		animation: undefined,
 		pad: undefined,
@@ -27,6 +38,7 @@ export const winLevelMap = {
 		type: 'small',
 		text: null,
 		presentDuration: 1 * SECOND,
+		holdDuration: 300,
 		sound: { sfx: undefined, bgm: undefined },
 		animation: undefined,
 		pad: undefined,
@@ -37,6 +49,7 @@ export const winLevelMap = {
 		type: 'medium',
 		text: null,
 		presentDuration: 1.5 * SECOND,
+		holdDuration: 300,
 		sound: { sfx: undefined, bgm: undefined },
 		animation: undefined,
 		pad: undefined,
@@ -47,6 +60,7 @@ export const winLevelMap = {
 		type: 'medium',
 		text: null,
 		presentDuration: 2.0 * SECOND,
+		holdDuration: 300,
 		sound: { sfx: undefined, bgm: undefined },
 		animation: undefined,
 		pad: undefined,
@@ -56,8 +70,9 @@ export const winLevelMap = {
 		alias: 'big',
 		type: 'big',
 		text: 'SWEET WIN',
-		presentDuration: 6 * SECOND,
-		sound: { sfx: undefined, bgm: 'bgm_winlevel_big' },
+		presentDuration: BIG_WIN_HIT_MS,
+		holdDuration: BIG_WIN_TAIL_MS,
+		sound: { sfx: undefined, bgm: 'bgm_bigwin' },
 		animation: { intro: 'big_win_intro', idle: 'big_win_idle', outro: 'big_win_exit' },
 		pad: 'winPadSweet',
 	},
@@ -66,8 +81,9 @@ export const winLevelMap = {
 		alias: 'superwin',
 		type: 'big',
 		text: 'LEGENDARY WIN',
-		presentDuration: 18 * SECOND,
-		sound: { sfx: undefined, bgm: 'bgm_winlevel_superwin' },
+		presentDuration: TOP_WIN_END_MS,
+		holdDuration: TOP_WIN_TAIL_MS,
+		sound: { sfx: undefined, bgm: 'bgm_bigwin_top' },
 		animation: { intro: 'super_win_intro', idle: 'super_win_idle', outro: 'super_win_exit' },
 		pad: 'winPadLegendary',
 	},
@@ -76,8 +92,9 @@ export const winLevelMap = {
 		alias: 'mega',
 		type: 'big',
 		text: 'EPIC WIN',
-		presentDuration: 20 * SECOND,
-		sound: { sfx: undefined, bgm: 'bgm_winlevel_mega' },
+		presentDuration: BIG_WIN_HIT_MS,
+		holdDuration: BIG_WIN_TAIL_MS,
+		sound: { sfx: undefined, bgm: 'bgm_bigwin' },
 		animation: { intro: 'mega_win_intro', idle: 'mega_win_idle', outro: 'mega_win_exit' },
 		pad: 'winPadEpic',
 	},
@@ -86,8 +103,9 @@ export const winLevelMap = {
 		alias: 'epic',
 		type: 'big',
 		text: 'WILD WIN',
-		presentDuration: 26 * SECOND,
-		sound: { sfx: undefined, bgm: 'bgm_winlevel_epic' },
+		presentDuration: BIG_WIN_HIT_MS,
+		holdDuration: BIG_WIN_TAIL_MS,
+		sound: { sfx: undefined, bgm: 'bgm_bigwin' },
 		animation: { intro: 'epic_win_intro', idle: 'epic_win_idle', outro: 'epic_win_exit' },
 		pad: 'winPadWild',
 	},
@@ -96,8 +114,9 @@ export const winLevelMap = {
 		alias: 'max',
 		type: 'big',
 		text: 'MYTHIC WIN',
-		presentDuration: 32 * SECOND,
-		sound: { sfx: undefined, bgm: 'bgm_winlevel_max' },
+		presentDuration: TOP_WIN_END_MS,
+		holdDuration: TOP_WIN_TAIL_MS,
+		sound: { sfx: undefined, bgm: 'bgm_bigwin_top' },
 		animation: { intro: 'max_win_intro', idle: 'max_win_idle', outro: 'max_win_exit' },
 		pad: 'winPadMythic',
 	},

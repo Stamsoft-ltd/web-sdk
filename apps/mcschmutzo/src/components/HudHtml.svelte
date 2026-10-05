@@ -72,7 +72,6 @@
 	const smallBtnFrame = ap('/assets/components/frames/lower_hud_button_frame.webp');
 	const playBtnFrame = ap('/assets/components/frames/play_button-frame.webp');
 
-	const scatterImg = ap('/assets/components/ui/scatter-panel-image.webp');
 </script>
 
 <script lang="ts">

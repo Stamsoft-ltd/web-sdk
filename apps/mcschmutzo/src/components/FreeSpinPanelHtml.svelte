@@ -2,7 +2,8 @@
 	// Module scope so the art preloads during the loading screen.
 	import { ap } from '../lib/preloadArt';
 
-	const accordionArt = ap('/assets/mcschmutzo/accordion.webp');
+	// Mobile: the soup pot carries the multiplier (desktop draws it next to the chef, SpecialMascot).
+	const potArt = ap('/assets/mcschmutzo/special-pot-v2.webp');
 </script>
 
 <script lang="ts">
@@ -11,6 +12,7 @@
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
+	import { flushPot, potState, queuePotShots } from '../game/potState.svelte';
 
 	const context = getContext();
 
@@ -23,6 +25,28 @@
 	// The accordion reveals the running win multiplier once it climbs above 1x.
 	const mult = $derived(context.stateGame.globalMultiplier);
 	const hasMult = $derived(mult > 1);
+	// Publish the mobile pot's box to potState (canvas px) so the soup shots aim at it.
+	let potEl: HTMLDivElement | undefined = $state();
+	$effect(() => {
+		const el = potEl;
+		if (!el) return;
+		let raf = 0;
+		const measure = () => {
+			const r = el.getBoundingClientRect();
+			const c = document.querySelector('.mcschmutzo-stage canvas')?.getBoundingClientRect();
+			const ox = c?.left ?? 0;
+			const oy = c?.top ?? 0;
+			const next = { x: r.left - ox, y: r.top - oy, w: r.width, h: r.height };
+			const cur = potState.rect;
+			if (!cur || Math.abs(cur.x - next.x) + Math.abs(cur.y - next.y) + Math.abs(cur.w - next.w) > 0.5) potState.rect = next;
+			raf = requestAnimationFrame(measure);
+		};
+		raf = requestAnimationFrame(measure);
+		return () => {
+			cancelAnimationFrame(raf);
+			potState.rect = null;
+		};
+	});
 	// Running bonus total — the sum of every free-spin win (the bottom-right WIN shows only the
 	// latest spin's win, this sums them). Set via the setTotalWin book event.
 	const totalWin = $derived(bookEventAmountToCurrencyString(stateBet.winBookEventAmount));
@@ -49,7 +73,7 @@
 				const top = c - h / 2;
 				// The printer sits at the right, clear of the spin disc: a bit taller than the pills, but
 				// always with ≥8px of air to the board above and the nav bar below.
-				const accH = Math.max(h, Math.min(60, bar.top - boardBottom - 16, h * 1.4));
+				const accH = Math.max(h, Math.min(92, bar.top - boardBottom - 10, h * 1.7));
 				if (!row || Math.abs(row.top - top) > 0.5 || Math.abs(row.h - h) > 0.5 || Math.abs(row.accH - accH) > 0.5)
 					row = { top, h, c, accH };
 			}
@@ -61,12 +85,21 @@
 
 	// DEV preview: press 8 to force a free-games state (special bg + counter + multiplier + total).
 	import { onMount } from 'svelte';
+
 	onMount(() => {
 		if (!import.meta.env.DEV) return;
 		const onDev = (e: KeyboardEvent) => {
+			// P: preview the end-of-round soup shots (two soups → +1 and +2 into the pot)
+			if (e.code === 'KeyP') {
+				queuePotShots(1, [{ reel: 1, row: 2 }]);
+				queuePotShots(2, [{ reel: 3, row: 4 }]);
+				void flushPot(potState.mult + 3);
+				return;
+			}
 			if (e.code !== 'Digit8') return;
 			context.stateGame.gameType = 'freegame';
 			context.stateGame.globalMultiplier = context.stateGame.globalMultiplier > 1 ? 1 : 3;
+			potState.mult = context.stateGame.globalMultiplier;
 			stateUi.freeSpinCounterShow = true;
 			stateUi.freeSpinCounterCurrent = 2;
 			stateUi.freeSpinCounterTotal = 15;
@@ -96,15 +129,22 @@
 			<span class="fp-card__value">{totalWin}</span>
 		</div>
 
-		<!-- Multiplier accordion/printer: indicator lights blink (machine alive) and the value stamps
-		     onto the ticket each time it prints/changes. -->
-		<div class="fp-acc" style={`background-image:url('${accordionArt}')`}>
-			<span class="fp-acc__led fp-acc__led--green"></span>
-			<span class="fp-acc__led fp-acc__led--red"></span>
-			{#key mult}
-				<span class="fp-acc__mult" class:fp-acc__mult--on={hasMult} class:fp-acc__mult--long={String(mult).length > 1}>{mult}x</span>
-			{/key}
+		<!-- Mobile: the soup pot with the multiplier on its front (same design as desktop: "MULTIPLIER"
+		     printed on the pot, under it a #BCB7AF box with a 1 px #C10C01 border holding only the value —
+		     in cqw of the pot, so it scales with it). Soup shots fly into it (potState.rect). -->
+		{#if layoutType !== 'desktop'}
+		<div class="fp-acc fp-pot" bind:this={potEl}>
+			<img class="fp-pot__img" src={potArt} alt="" draggable="false" />
+			<div class="fp-pot__front">
+				<span class="fp-pot__label">{i18nDerived.translate('POT MULTIPLIER')}</span>
+				{#key potState.mult}
+					<div class="fp-pot__plaque" class:fp-pot__plaque--stamp={potState.mult > 1}>
+						<span class="fp-pot__value">×{potState.mult}</span>
+					</div>
+				{/key}
+			</div>
 		</div>
+		{/if}
 	</div>
 {/if}
 
@@ -155,6 +195,80 @@
 	.fp-card__value {
 		font-size: clamp(17px, 1.9vw, 27px);
 	}
+	/* FREE SPINS + TOTAL WIN cards (design 8274:11443): a heavier label and a much bigger value in the
+	   game's display face (Bowlby One SC), so the spins left / the win read at a glance. */
+	.fp-fs .fp-card__label,
+	.fp-total .fp-card__label {
+		font-weight: 800;
+		font-size: clamp(11px, 1.3vw, 19px);
+		opacity: 1;
+	}
+	.fp-fs .fp-card__value,
+	.fp-total .fp-card__value {
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
+		font-size: clamp(22px, 2.6vw, 38px);
+		letter-spacing: 0.03em;
+	}
+
+	/* Mobile soup pot + multiplier plaque (cqw = % of the pot width; the design pot is 376 px wide, so
+	   1 design px = 0.266cqw). */
+	.fp-pot {
+		container-type: inline-size;
+		aspect-ratio: 1271 / 914 !important;
+		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+	}
+	.fp-pot__img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+	/* label + box block, centred on the pot body's front (body: 54% → 97% of the sprite, axis 49.8%) */
+	.fp-pot__front {
+		position: absolute;
+		left: 49.8%;
+		top: 78%;
+		translate: -50% -50%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.8cqw;
+		font-family: 'Bowlby One SC', sans-serif;
+		color: #c10c01;
+		line-height: 1;
+		white-space: nowrap;
+	}
+	.fp-pot__plaque {
+		min-width: 29cqw; /* the design's 128 px box at a 438 px pot */
+		box-sizing: border-box;
+		display: flex;
+		justify-content: center;
+		padding: 3cqw 4.4cqw;
+		background: #bcb7af;
+		border: 1px solid #c10c01;
+		border-radius: 6cqw;
+	}
+	.fp-pot__label {
+		font-size: 7cqw; /* the design's 18 px, enlarged — the mobile pot is small */
+		text-box: trim-both cap alphabetic;
+	}
+	.fp-pot__value {
+		font-size: 16cqw;
+		text-box: trim-both cap alphabetic;
+	}
+	.fp-pot__plaque--stamp {
+		animation: fp-pot-stamp 0.6s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+	}
+	@keyframes fp-pot-stamp {
+		from {
+			scale: 1.45;
+		}
+		to {
+			scale: 1;
+		}
+	}
 
 	/* Multiplier accordion machine. */
 	.fp-acc {
@@ -164,107 +278,13 @@
 		background-repeat: no-repeat;
 		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
 	}
-	.fp-acc__mult {
-		position: absolute;
-		left: 50%;
-		/* Centred on the ticket (between its dashed lines), big enough to read at a glance. */
-		top: 55%;
-		transform: translate(-50%, -50%);
-		color: #b3261a;
-		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
-		font-weight: 400;
-		font-size: 25cqw;
-		white-space: nowrap;
-		line-height: 1;
-		opacity: 0;
-	}
 	/* The value "prints/stamps" onto the ticket: drops in big + tilted with an overshoot, then
 	   settles — replayed whenever the multiplier value changes (the {#key} remounts it). */
-	.fp-acc__mult--on {
-		opacity: 1;
-		animation: fp-mult-stamp 0.5s cubic-bezier(0.2, 1.5, 0.4, 1) both;
-	}
-	@keyframes fp-mult-stamp {
-		0% {
-			opacity: 0;
-			transform: translate(-50%, -95%) scale(1.9) rotate(-9deg);
-			filter: blur(1.2px);
-		}
-		55% {
-			opacity: 1;
-			transform: translate(-50%, -43%) scale(0.9) rotate(3deg);
-			filter: blur(0);
-		}
-		100% {
-			opacity: 1;
-			transform: translate(-50%, -50%) scale(1) rotate(0);
-		}
-	}
 
 	/* Indicator lights — soft glows layered over the painted lamps so they pulse/blink (machine alive).
 	   `screen` blend brightens the underlying dot rather than covering it. */
-	/* Two-digit multipliers ("10x") step down so they stay inside the ticket. */
-	.fp-acc__mult--long {
-		font-size: 19cqw;
-	}
 	/* Glow overlays sit EXACTLY on the art's painted LED lenses (centres + lens size measured from
 	   accordion.webp's black rings: green (17.66%, 10.33%), red (81.28%, 10.33%), lens ≈ 5% wide). */
-	.fp-acc__led {
-		position: absolute;
-		width: 5cqw;
-		height: 5cqw;
-		transform: translate(-50%, -50%);
-		border-radius: 50%;
-		pointer-events: none;
-		mix-blend-mode: screen;
-	}
-	.fp-acc__led--green {
-		left: 17.66%;
-		top: 10.33%;
-		background: radial-gradient(circle at 42% 36%, #eaffe4 0%, #74e85e 42%, rgba(70, 190, 45, 0) 70%);
-		animation: fp-led-breathe 1.7s ease-in-out infinite;
-	}
-	.fp-acc__led--red {
-		left: 81.28%;
-		top: 10.33%;
-		background: radial-gradient(circle at 42% 36%, #ffe0d8 0%, #ff5333 42%, rgba(210, 45, 20, 0) 70%);
-		animation: fp-led-blink 1.5s steps(1, end) infinite;
-	}
-	@keyframes fp-led-breathe {
-		0%,
-		100% {
-			opacity: 0.3;
-			transform: translate(-50%, -50%) scale(0.92);
-		}
-		50% {
-			opacity: 0.95;
-			transform: translate(-50%, -50%) scale(1);
-		}
-	}
-	@keyframes fp-led-blink {
-		0%,
-		62% {
-			opacity: 0;
-		}
-		66%,
-		84% {
-			opacity: 1;
-		}
-		88%,
-		100% {
-			opacity: 0;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.fp-acc__mult--on {
-			animation: none;
-		}
-		.fp-acc__led {
-			animation: none;
-			opacity: 0.6;
-		}
-	}
 
 	/* ── Portrait: FREE SPINS · TOTAL WIN · printer in one row, filling the board-to-control-bar gap
 	   (--row-top / --row-h measured in the script). Everything scales off the row height. ── */
@@ -296,22 +316,36 @@
 		font-size: calc(var(--row-h, 56px) * 0.36);
 		white-space: nowrap;
 	}
+	.fp[data-layout='portrait'] .fp-fs .fp-card__label,
+	.fp[data-layout='portrait'] .fp-total .fp-card__label {
+		font-size: calc(var(--row-h, 56px) * 0.23);
+	}
+	.fp[data-layout='portrait'] .fp-fs .fp-card__value {
+		font-size: min(calc(var(--row-h, 56px) * 0.44), 6.2vw);
+	}
+	/* the win can be long ($12,345.67): capped by the card's own width (cqw) so it never overflows */
+	.fp[data-layout='portrait'] .fp-total {
+		container-type: inline-size;
+	}
+	.fp[data-layout='portrait'] .fp-total .fp-card__value {
+		font-size: min(calc(var(--row-h, 56px) * 0.44), 11.5cqw);
+	}
 	.fp[data-layout='portrait'] .fp-acc {
 		top: var(--acc-top, 70%);
 		height: var(--acc-h, 56px);
 		right: 3%;
 		width: auto;
 		aspect-ratio: 1127 / 794;
-		max-width: 28%;
+		max-width: 36%;
 	}
 
 	/* ── Desktop / landscape: FREE SPINS + TOTAL WIN stacked on the LEFT of the board, accordion above.
 	   Sized in vmin (short side) so the pills shrink on tiny popouts (400x225) and clear the board's
 	   left column, while staying full-size on normal mobile-landscape. ── */
 	.fp:not([data-layout='portrait']) .fp-acc {
-		left: 4%;
-		top: 18%;
-		width: clamp(70px, 22vmin, 180px);
+		left: 3%;
+		top: 12%;
+		width: clamp(96px, 34vmin, 230px);
 	}
 	.fp:not([data-layout='portrait']) .fp-fs {
 		left: 3.5%;
@@ -329,8 +363,8 @@
 	   base rules (equal specificity → later wins). 812x375 (height 375) is unaffected. */
 	@media (max-height: 300px) {
 		.fp:not([data-layout='portrait']) .fp-acc {
-			top: 15%;
-			width: clamp(46px, 19vmin, 120px);
+			top: 8%;
+			width: clamp(70px, 32vmin, 140px);
 		}
 		.fp:not([data-layout='portrait']) .fp-fs {
 			top: 42%;
@@ -350,6 +384,17 @@
 		}
 		.fp-card__value {
 			font-size: clamp(11px, 5vmin, 16px);
+		}
+		.fp-fs .fp-card__label,
+		.fp-total .fp-card__label {
+			font-size: clamp(7px, 3.4vmin, 11px);
+		}
+		.fp-fs .fp-card__value {
+			font-size: clamp(14px, 6.4vmin, 21px);
+		}
+		/* (the win is long in the wide display face — kept small enough to clear the board) */
+		.fp-total .fp-card__value {
+			font-size: clamp(9px, 4.2vmin, 14px);
 		}
 	}
 	.fp--dim {

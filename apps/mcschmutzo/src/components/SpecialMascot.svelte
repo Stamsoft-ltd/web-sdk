@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { Container, Graphics, Sprite } from 'pixi-svelte';
+	import { Container, Graphics, PIXI, Sprite, Text } from 'pixi-svelte';
+	import { potState } from '../game/potState.svelte';
+	import { i18nDerived } from '../i18n/i18nDerived';
 
 	import { squirtHash, type SquirtGraphics } from '../game/ketchupSquirt';
 
@@ -33,10 +35,24 @@
 	const cx = $derived(canvas.width - EDGE - guyWidth / 2);
 	// Stand him so the pot's rim sits ≈80% down the frame: anchored to the screen bottom instead, the
 	// rim covered his nametag.
-	const guyY = $derived(canvas.height * 0.82 - (guyWidth * 0.82 * (848 / 1180)) / 2 + 0.02 * guyHeight - 0.3 * guyHeight);
-	const potWidth = $derived(guyWidth * 0.82);
-	const potHeight = $derived(potWidth * (848 / 1180));
-	const potY = $derived(canvas.height * 0.82);
+	// The soup pot is the multiplier display, so it's bigger than before (0.98 of the frame, was 0.82)
+	// and stands with its BASE (and the multiplier plaque on it) just above the desktop nav bar — the
+	// bar's top is H − 166.7·u (HudHtml: 77 design px of bar + 36u margin, u = min(93vw, 1860)/1860).
+	const potWidth = $derived(guyWidth * 0.98);
+	const potHeight = $derived(potWidth * (914 / 1271)); // special-pot-v2 (label-free pot)
+	const navTop = $derived(canvas.height - 166.7 * (Math.min(canvas.width * 0.93, 1860) / 1860));
+	// He stands anchored to 0.82·H; the pot's rim sits just under his pointing hand (the hand's bottom
+	// is 80.4% down his frame), so the hand reads clearly while the pot covers his lower body.
+	const guyY0 = $derived(canvas.height * 0.82 - (guyWidth * 0.82 * (848 / 1180)) / 2 + 0.02 * guyHeight - 0.3 * guyHeight);
+	const potY0 = $derived(guyY0 - guyHeight / 2 + 0.804 * guyHeight - potHeight * 0.3 + potHeight / 2);
+	// Design (8274:11059): the WHOLE pot stands clear above the nav bar (its painted base ends 97% down
+	// the sprite), so the multiplier on its front is fully visible. Where that pot would tuck behind the
+	// bar, the pot AND the chef are lifted together — the hand stays resting on the rim.
+	const lift = $derived(Math.max(0, potY0 + potHeight * 0.47 + potHeight * 0.04 - navTop));
+	const potY = $derived(potY0 - lift);
+	const potX = $derived(cx - guyWidth * 0.02);
+	// (the chef only as far as his hat — ≈3% above his frame — stays on screen, on short windows)
+	const guyY = $derived(guyY0 - Math.min(lift, Math.max(0, guyY0 - 0.53 * guyHeight - 6)));
 
 	// Eyes (base v10): the eye region was rebuilt from a fresh render of the real SVG — pupils erased
 	// inside the eye opening only (outline band, skin and brows protected, so no white bleeds into the
@@ -137,15 +153,85 @@
 			gfx.circle(g.x + r, g.y + r, r).fill({ color: 0xfffdf5, alpha: g.alpha });
 		}
 	};
+	// Publish where the pot is, so the soup shots (PotShots) know where to fly; cleared when it goes.
+	$effect(() => {
+		potState.rect = { x: potLeft, y: potTop, w: potWidth, h: potHeight };
+	});
+	$effect(() => () => {
+		potState.rect = null;
+	});
+	// Multiplier on the pot's front (design 8798:10296 / 8798:10297, at a 438 px-wide pot): the label
+	// "MULTIPLIER" (Bowlby One SC 18 px, #C10C01) is printed straight on the pot, and under it a box
+	// (#BCB7AF fill, 1 px #C10C01 border, 10 × 13 px padding, radius 20) holds ONLY the value (48 px).
+	// Both are centred on the pot body's front (the sprite's body axis is at 49.8%); each line is centred
+	// on its measured ink box (the font's ascent/descent would otherwise sit it high).
+	const dk = $derived(potWidth / 438); // design px → canvas px
+	const multText = $derived(`×${potState.mult}`);
+	const labelText = $derived(i18nDerived.translate('POT MULTIPLIER'));
+	const labelFont = $derived(Math.round(18 * dk));
+	const multFont = $derived(Math.round(48 * dk));
+	const measureInk = (text: string, size: number) => {
+		if (typeof document === 'undefined') return { w: size * text.length * 0.7, asc: size * 0.72, desc: 0, dx: 0, fontAsc: size };
+		const font = `${size}px 'Bowlby One SC'`;
+		const c = document.createElement('canvas').getContext('2d')!;
+		c.font = font;
+		const m = c.measureText(text);
+		return {
+			w: m.actualBoundingBoxLeft + m.actualBoundingBoxRight,
+			asc: m.actualBoundingBoxAscent,
+			desc: m.actualBoundingBoxDescent,
+			// ink centre vs the advance-box centre (what anchor.x = 0.5 centres)
+			dx: (m.width - (m.actualBoundingBoxRight - m.actualBoundingBoxLeft)) / 2,
+			// where pixi puts the baseline below the top of its text box
+			fontAsc: PIXI.CanvasTextMetrics.measureFont(font).ascent,
+		};
+	};
+	const labelInk = $derived(measureInk(labelText, labelFont));
+	const ink = $derived(measureInk(multText, multFont));
+	const padY = $derived(10 * dk);
+	const padX = $derived(13 * dk);
+	const gap = $derived(8 * dk); // label ink → box top
+	// the box keeps the design's width for short values (×2) and grows with longer ones
+	const boxW = $derived(Math.max(128 * dk - 2 * padX, ink.w) + 2 * padX);
+	const boxH = $derived(ink.asc + ink.desc + 2 * padY);
+	const labelH = $derived(labelInk.asc + labelInk.desc);
+	// the label + box block, centred on the pot body's front (body runs 54% → 97% of the sprite)
+	const frontX = $derived(potX + potWidth * (0.498 - 0.5));
+	const blockTop = $derived(potY - potHeight / 2 + potHeight * 0.755 - (labelH + gap + boxH) / 2);
+	const labelBase = $derived(blockTop + labelInk.asc); // canvas y
+	const boxY = $derived(blockTop + labelH + gap + boxH / 2); // box centre, canvas y
+	const multBase = $derived(-boxH / 2 + padY + ink.asc); // relative to the box centre
+	let stampAt = $state(-1e9);
+	let lastMult = potState.mult;
+	$effect(() => {
+		const m = potState.mult;
+		if (m !== lastMult) {
+			lastMult = m;
+			stampAt = performance.now();
+		}
+	});
+	const stamp = $derived.by(() => {
+		const u = (performance.now() - stampAt) / 700;
+		void elapsed; // re-evaluate each frame while the clock runs
+		if (u < 0 || u > 1) return 1;
+		return 1 + 0.35 * Math.exp(-5 * u) * Math.cos(u * Math.PI * 3);
+	});
+	const drawPlaque = (g: any) => {
+		const w = boxW;
+		const h = boxH;
+		const b = Math.max(1, dk);
+		g.roundRect(-w / 2, -h / 2, w, h, Math.min(20 * dk, h / 2)).fill({ color: 0xbcb7af }).stroke({ width: b, color: 0xc10c01, alignment: 1 });
+	};
+
 	// The soup simmers: a few bubbles swell on the surface and pop, on a loop. Positions are fixed per
 	// bubble (spread across the surface ellipse) so they read as spots that keep bubbling, not drifting.
 	const BUBBLE_N = 8;
 	const BUBBLE_PERIOD = 2400; // ms per swell→pop
-	const SOUP_CX = 0.45;
-	const SOUP_CY = 0.34;
+	const SOUP_CX = 0.47;
+	const SOUP_CY = 0.33;
 	const SOUP_RX = 0.29;
 	const SOUP_RY = 0.075; // surface ellipse (pot fractions)
-	const potLeft = $derived(cx + guyWidth * 0.02 - potWidth / 2);
+	const potLeft = $derived(potX - potWidth / 2);
 	const potTop = $derived(potY - potHeight / 2);
 	const bubbles = $derived.by(() =>
 		Array.from({ length: BUBBLE_N }, (_, i) => {
@@ -241,13 +327,32 @@
 	<Graphics zIndex={1} draw={drawSalt} />
 	<Sprite
 		key="specialPot"
-		x={cx + guyWidth * 0.02}
+		x={potX}
 		y={potY}
 		anchor={0.5}
 		width={potWidth}
 		height={potHeight}
 		zIndex={2}
 	/>
+	<!-- The multiplier on the pot's front: the label printed on the pot, the value in its box. -->
+	<Text
+		anchor={{ x: 0.5, y: 0 }}
+		x={frontX + labelInk.dx}
+		y={labelBase - labelInk.fontAsc}
+		zIndex={2.5}
+		text={labelText}
+		style={{ fontFamily: 'Bowlby One SC', fontSize: labelFont, fill: 0xc10c01 }}
+	/>
+	<Container x={frontX} y={boxY} scale={stamp} zIndex={2.5}>
+		<Graphics draw={drawPlaque} />
+		<Text
+			anchor={{ x: 0.5, y: 0 }}
+			x={ink.dx}
+			y={multBase - ink.fontAsc}
+			text={multText}
+			style={{ fontFamily: 'Bowlby One SC', fontSize: multFont, fill: 0xc10c01 }}
+		/>
+	</Container>
 	<!-- Simmering bubbles on the soup surface: a lighter-green dome + a soft highlight, swelling and
 	     popping. Above the pot so they read as sitting on the liquid. -->
 	<Graphics zIndex={2.5} draw={drawBubbles} />

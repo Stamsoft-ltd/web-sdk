@@ -1,59 +1,24 @@
 import { createSound } from 'utils-sound';
 
+// The McSchmutzo sound set (one Howler sprite built from audio-src/ by scripts/build-sounds.mjs —
+// every name here needs a source file there).
 export type MusicName =
-	| 'bgm_main'
-	| 'bgm_freespin'
-	| 'bgm_winlevel_big'
-	| 'bgm_winlevel_epic'
-	| 'bgm_winlevel_max'
-	| 'bgm_winlevel_mega'
-	| 'bgm_winlevel_superwin';
+	| 'bgm_main' // base game bed (loops)
+	| 'bgm_freespin' // bonus / free games bed (loops)
+	| 'bgm_bigwin' // big win: SWEET / EPIC / WILD (one-shot, ~11 s)
+	| 'bgm_bigwin_top'; // big win: LEGENDARY / MYTHIC (one-shot, ~13 s)
 
 export type SoundEffectName =
-	| 'jng_intro_fs'
-	| 'sfx_anticipation'
-	| 'sfx_anticipation_start'
-	| 'sfx_bigwin_coinloop'
-	| 'sfx_btn_general'
-	| 'sfx_btn_spin'
-	| 'sfx_fs_respins'
-	| 'sfx_multiplier_combine_a'
-	| 'sfx_multiplier_combine_b'
-	| 'sfx_multiplier_explosion_a'
-	| 'sfx_multiplier_explosion_b'
-	| 'sfx_multiplier_explosion_c'
-	| 'sfx_multiplier_landing'
-	| 'sfx_multiplier_reset'
-	| 'sfx_multiplier_up'
-	| 'sfx_multiplier_update'
-	| 'sfx_multiplier_win'
-	| 'sfx_reel_stop_1'
-	| 'sfx_reel_stop_2'
-	| 'sfx_reel_stop_3'
-	| 'sfx_reel_stop_4'
-	| 'sfx_reel_stop_5'
-	| 'sfx_royals_landing'
-	| 'sfx_scatter_reveal'
-	| 'sfx_scatter_stop_1'
-	| 'sfx_scatter_stop_2'
-	| 'sfx_scatter_stop_3'
-	| 'sfx_scatter_stop_4'
-	| 'sfx_scatter_stop_5'
-	| 'sfx_scatter_win'
-	| 'sfx_scatter_win_v2'
-	| 'sfx_superfreespin'
-	| 'sfx_symbols_landing'
-	| 'sfx_wild_explode'
-	| 'sfx_winlevel_end'
-	| 'sfx_winlevel_nice'
-	| 'sfx_winlevel_small'
-	| 'sfx_winlevel_standard'
-	| 'sfx_winlevel_substantial'
-	| 'sfx_youwon_panel'
-	| 'tumble_win_1'
-	| 'tumble_win_2'
-	| 'tumble_win_3'
-	| 'tumble_win_4';
+	| 'sfx_btn_general' // UI click
+	| 'sfx_btn_spin' // spin start
+	| 'sfx_reel_stop' // ~455 ms of ticks, then the thud — started early so the thud lands on the stop
+	| 'sfx_reel_stop_hit' // just the thud (stops that come too soon for the full clip)
+	| 'sfx_scatter_land'
+	| 'sfx_win_normal' // line wins under the big-win threshold (< 20×)
+	| 'sfx_lock_grow' // Lock & Re-Spin: cells lock
+	| 'sfx_soup_boost' // a soup shoots its multiplier step into the pot
+	| 'sfx_wheel_spin' // bonus wheel spin (~9 s — the wheel lands on its final hit)
+	| 'sfx_bonus_screen'; // bonus screen waiting for the click to start (wheel / free-games intro)
 
 export type SoundName = MusicName | SoundEffectName;
 

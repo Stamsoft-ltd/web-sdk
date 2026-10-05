@@ -5,6 +5,7 @@
 	import { getSymbolInfo, getSymbolX } from '../game/utils';
 	import { getContext } from '../game/context';
 	import { reelLandedAt } from '../game/reelLanding.svelte';
+	import { potState } from '../game/potState.svelte';
 	import type { ReelSymbol } from '../game/stateGame.svelte';
 
 	type Props = {
@@ -45,10 +46,12 @@
 </script>
 
 {#if symbolInfo && rawSymbol}
+	<!-- alpha: fades out while PotShots shows this cell's soup shooting (potState.hidden) -->
 	<SymbolWrap
 		x={getSymbolX(props.reelIndex)}
 		y={props.reelSymbol.symbolY()}
 		animating={false /* every symbol is a sprite (no spine land/win animations to lift) */}
+		alpha={1 - (potState.hidden[`${props.reelIndex}:${props.symbolIndex}`] ?? 0)}
 	>
 		<Symbol
 			state={props.reelSymbol.symbolState}

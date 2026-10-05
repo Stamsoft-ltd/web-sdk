@@ -90,7 +90,8 @@
 				<OnMount
 					onmount={async () => {
 						await startCountUp();
-						await waitForTimeout(300);
+						// (big wins: let the win track ring out — winLevelMap holdDuration)
+						await waitForTimeout(winLevelData?.holdDuration ?? 300);
 						oncomplete();
 					}}
 				/>

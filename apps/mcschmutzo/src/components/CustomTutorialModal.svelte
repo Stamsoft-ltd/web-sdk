@@ -18,7 +18,8 @@
 	const lockFeatureArt = ap('/assets/mcschmutzo/tutorial/lock-feature.webp');
 	const scatterArt = symArt('S');
 	// The win-multiplier icon = the receipt printer with an "X2" ticket laid on top of it (design).
-	const printerArt = ap('/assets/mcschmutzo/tutorial/printer.webp');
+	// The multiplier is raised by the soup (M) and shown on the chef's soup pot — the card shows the soup.
+	const printerArt = symArt('M');
 	const multX2Art = ap('/assets/mcschmutzo/tutorial/mult-x2.svg');
 	// Scatter / bonus sub-badges (3 / 4 scatters) + the Free Games spin-arrow icon.
 	const scatter3Art = ap('/assets/mcschmutzo/tutorial/scatter-3.svg');

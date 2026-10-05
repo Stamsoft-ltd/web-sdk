@@ -44,6 +44,9 @@ export type SymbolPartLayer = {
 	// Stamp landing (wild letters): instead of scaling up from 0, the layer comes DOWN from 1.5× onto
 	// the symbol at `landDelay`, hits at wildSplat's textHit, squashes and settles.
 	landStamp?: boolean;
+	// Sword swing (scatter): the layer rotates about (px, py) — its handle end, fractions of the
+	// sprite — by up to `open` radians (signed) away from its rest pose, then slams back into it.
+	swing?: { px: number; py: number; open: number };
 };
 
 export type SymbolPartsConfig = {
@@ -86,6 +89,8 @@ export type SymbolPartsConfig = {
 	// Splash: on each slam impact, ketchup droplets fly off the sauce's edge (an ellipse of radii
 	// rx/ry, fractions of w/h) on short gravity arcs and fall away, while active.
 	splash?: { color: number; rim: number; rx: number; ry: number };
+	// Clash spark at (nx, ny) of the symbol box each time swinging layers slam closed.
+	clash?: { nx: number; ny: number };
 	// Painted drips (game/paintedDrip.ts) hanging off a layer's own art while active: `layer` = the
 	// layer key (also its texture key), srcW / srcH = that art's size, tendrils in its pixels.
 	paintedDrips?: {
@@ -216,10 +221,11 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			},
 		],
 	},
-	// Soup pot — steam escapes upward off the pot; the spoon stirs a small circle but sits UNDER the
-	// liquid (only the handle pokes out) because the extracted liquid surface is redrawn over it.
+	// Soup pot (M — the rare multiplier symbol) — steam escapes upward off the pot; the spoon stirs a
+	// small circle but sits UNDER the liquid (only the handle pokes out) because the extracted liquid
+	// surface is redrawn over it.
 	// Draw order: steam, pot, spoon, liquid (submerges the spoon bowl), blobs (surface), drips, label.
-	H2: {
+	M: {
 		aspect: 1.2565,
 		fit: 0.95,
 		squash: 0,
@@ -311,43 +317,49 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 			{ key: 'wildText', nx: 0.5, ny: 0.5, nw: 0.7889, nh: 0.6704, pulse: 0.05, pulseLag: 0.7, landDelay: 0.45, landStamp: true },
 		],
 	},
-	// Scatter — the stand gives a gentle bob while its SCATTER sign sways like a hanging shingle.
-	// (Real diner-stand art: base + the golden SCATTER sign that sits on the top plank.)
-	// On landing the stand pops in first, then the sign drops onto the top plank. The sign swings
-	// about its top edge (pivotY) so it rocks both ways like a real hanging sign.
+	// Scatter — crossed spatula + chef's knife (Figma 8796:10162, two layers in a 96×93 group). They
+	// cross like swords: EVERY landing they pop in already swung apart, hang there a beat, then slam
+	// together into the cross (clash + spark), spring apart and clash again, in time with the landing
+	// sound (AnimatedSymbol swordLand); idle /
+	// winning they keep swinging open and slamming shut. Sized so even the swung-open pose (±0.19 rad
+	// about the handles ≈ 1.25× the crossed width) stays inside the cell's light box (113 × 102):
+	// crossed it's ≈ 88 × 85 px.
 	S: {
-		aspect: 0.999,
-		fit: 0.86,
-		squash: 0.06,
-		idle: 0.75,
+		aspect: 96 / 93,
+		fit: 0.66,
+		squash: 0,
+		idle: 0.6,
 		landAnim: true,
-		landMs: 1100,
+		landMs: 1100, // = sfx_scatter_land's length (its accents drive AnimatedSymbol swordLand)
+		clash: { nx: 0.5, ny: 0.5 },
 		layers: [
-			{ key: 'scatterStand', nx: 0.5, ny: 0.5, nw: 1.0, nh: 1.0, dy: -0.03, landDelay: 0 },
 			{
-				key: 'scatterBanner',
-				nx: 0.485,
-				ny: 0.132,
-				nw: 0.68,
-				nh: 0.232,
-				dy: -0.05,
-				pop: 0.08,
-				tilt: 0.14,
-				pivotY: -0.11,
-				landDelay: 0.45,
-				landDrop: 0.45,
+				key: 'scatterSpatula',
+				nx: 0.4212,
+				ny: 0.4886,
+				nw: 0.8424,
+				nh: 0.9772,
+				swing: { px: 0.84, py: 0.92, open: -0.19 },
+			},
+			{
+				key: 'scatterKnife',
+				nx: 0.5833,
+				ny: 0.5161,
+				nw: 0.8333,
+				nh: 0.9677,
+				swing: { px: 0.11, py: 0.95, open: 0.19 },
 			},
 		],
 	},
-	// Smutz cup — one whole sprite (straw included; splitting the straw off left it poking out broken).
-	// Comes alive like an ice-cold soda: it rocks from its base and hops with a sip-squeeze, while
-	// fizzy bubbles stream up out of the straw and pop.
-	M: {
+	// Smutz cup (H2) — one whole sprite (straw included; splitting the straw off left it poking out
+	// broken). Comes alive like an ice-cold soda: it rocks from its base and hops with a sip-squeeze,
+	// while fizzy bubbles stream up out of the straw and pop.
+	H2: {
 		aspect: 131 / 120, // the flat sprite's padded footprint — matches the normal cup size exactly
 		fit: 1,
 		squash: 0.08,
 		fizz: { nx: 0.53, ny: 0.2, spread: 0.2, color: 0x9fd8ff }, // rises from the lid, stays in its cell
-		layers: [{ key: 'mcM', nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.06, tilt: 0.1, pivotY: 0.42 }],
+		layers: [{ key: 'mcH2', nx: 0.5, ny: 0.5, nw: 1, nh: 1, dy: -0.06, tilt: 0.1, pivotY: 0.42 }],
 	},
 	// Cheese — one whole slice (drips included) that gently jiggles and dribbles gooey drops off its
 	// painted drip tips, but ONLY while active (locked / part of a win) like the other symbols.

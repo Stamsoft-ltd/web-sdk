@@ -197,4 +197,5 @@ export default {
 	"YOUR ACCOUNT LIMIT HAS BEEN REACHED.": "आपके खाते की सीमा पूरी हो गई है।",
 	"THIS REPLAY COULD NOT BE LOADED. PLEASE TRY AGAIN.": "यह रीप्ले लोड नहीं हो सका। कृपया फिर से प्रयास करें।",
 	"SOMETHING WENT WRONG. PLEASE TRY AGAIN.": "कुछ गलत हो गया। कृपया फिर से प्रयास करें।",
+	"POT MULTIPLIER": "मल्टीप्लायर",
 };

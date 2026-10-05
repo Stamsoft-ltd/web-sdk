@@ -16,7 +16,7 @@
 		mascotBottle: { x0: 80, y0: 639, x1: 575, y1: 1330, ...MASCOT },
 		mascotBrows: { x0: 399, y0: 328, x1: 728, y1: 469, ...MASCOT },
 		mascotLabel: { x0: 679, y0: 1022, x1: 937, y1: 1161, ...MASCOT },
-		specialBase: { x0: 511, y0: 0, x1: 1611, y1: 1912, ...SPECIAL },
+		specialBase: { x0: 511, y0: 0, x1: 1611, y1: 1974.6, ...SPECIAL }, // runs past the frame: v12h's fingertips
 		specialArm: { x0: 108, y0: 480, x1: 735, y1: 1285, ...SPECIAL },
 		specialBrows: { x0: 622, y0: 389, x1: 981, y1: 527, ...SPECIAL },
 	} satisfies Record<string, GuyCrop>;

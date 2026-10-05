@@ -14,8 +14,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import { waitForTimeout } from 'utils-shared/wait';
-	import { SECOND } from 'constants-shared/time';
 	import { stateBet } from 'state-shared';
 
 	import { getContext } from '../game/context';
@@ -24,11 +22,9 @@
 
 	context.eventEmitter.subscribeOnMount({
 		// ui
-		soundBetMode: async ({ betModeKey }) => {
+		soundBetMode: ({ betModeKey }) => {
 			if (betModeKey === 'SUPERSPIN') {
 				// check if SUPERSPIN, when changing the bet mode.
-				sound.players.once.play({ name: 'sfx_winlevel_end' });
-				await waitForTimeout(SECOND);
 				sound.players.music.play({ name: 'bgm_freespin' });
 			} else {
 				sound.players.music.play({ name: 'bgm_main' });

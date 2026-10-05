@@ -43,7 +43,54 @@
 	const PERIOD = 1400; // ms per loop cycle (out and back)
 	const RAMP_MS = 700; // ease-in of the loop's amplitude whenever it (re)starts
 	const PERIOD_IDLE = 2600;
-	const PULSE_MS = 1900; // one swell + shrink of a pulsing layer
+	const PULSE_MS = 1900;
+	// Sword swing (scatter): one open → hold → slam shut → rebound → rest cycle.
+	const SWORD_MS = 2600;
+	const swordOpen = (f: number) => {
+		// 0–.42 swing open (eases out), .42–.56 hold, .56–.64 slam shut (accelerating, overshoots past the
+		// cross), .64–.86 rebound and settle, .86–1 rest (crossed)
+		if (f < 0.42) {
+			const q = f / 0.42;
+			return 1 - (1 - q) ** 3;
+		}
+		if (f < 0.56) return 1;
+		if (f < 0.64) {
+			const q = (f - 0.56) / 0.08;
+			return 1 - q * q * 1.12;
+		}
+		if (f < 0.86) {
+			const q = (f - 0.64) / 0.22;
+			return -0.12 * Math.exp(-4 * q) * Math.cos(q * Math.PI * 2.4);
+		}
+		return 0;
+	}; // one swell + shrink of a pulsing layer
+	// Sword LANDING (every time the scatter lands), timed to sfx_scatter_land (started at the same
+	// moment, onSymbolLand): its accents at ~200 / 400 / 875 ms (+ ~20 ms output latency) are the blades
+	// popping in already SEPARATED (swung open), the CLASH as they slam into the cross, and a second,
+	// lighter clash after they spring apart — then they settle crossed. Times in ms from the landing.
+	// Returns the open fraction (1 = swung fully open, 0 = crossed, < 0 = past the cross) + pop-in.
+	const SWORD_LAND_HITS = [420, 895]; // the two clashes — the spark fires at each
+	const swordLand = (ms: number) => {
+		const pop = Math.min(1, ms / 200);
+		const c1 = 1.70158;
+		const sc = 0.55 + 0.45 * (1 + (c1 + 1) * (pop - 1) ** 3 + c1 * (pop - 1) ** 2); // easeOutBack
+		const [h1, h2] = SWORD_LAND_HITS;
+		let open = 1;
+		if (ms >= 340 && ms < h1) {
+			const q = (ms - 340) / (h1 - 340);
+			open = 1 - q * q * 1.1; // accelerating into the cross, a touch past it
+		} else if (ms >= h1 && ms < 660) {
+			const q = (ms - h1) / (660 - h1);
+			open = -0.1 + 0.55 * Math.sin((Math.PI / 2) * q); // spring back apart (to ~45% open)
+		} else if (ms >= 660 && ms < h2) {
+			const q = (ms - 660) / (h2 - 660);
+			open = 0.45 - 0.5 * q * q; // second slam
+		} else if (ms >= h2) {
+			const q = (ms - h2) / 205;
+			open = -0.05 * Math.exp(-4 * q) * Math.cos(q * Math.PI * 2.2);
+		}
+		return { open, scale: sc, alpha: Math.min(1, ms / 80) };
+	};
 	const SLAM_MS = 1700; // one wild slam cycle while active (idle uses PERIOD_IDLE)
 	// Slam cycle shared by the layers and the splash droplets: 0 → 0.38 rise, → 0.5 fall, impact at 0.5.
 	const slamPhase = (t: number, idle: boolean) => (t / (idle ? PERIOD_IDLE : SLAM_MS)) % 1; // slower, softer loop for symbols that are alive at rest (config.idle)
@@ -249,6 +296,28 @@
 				});
 				continue;
 			}
+			if (landing && l.swing) {
+				const sw = swordLand(lt * LAND_MS);
+				const rot = l.swing.open * sw.open;
+				const W = l.nw * w * sw.scale;
+				const H = l.nh * h * sw.scale;
+				const dx = (l.swing.px - 0.5) * W;
+				const dy = (l.swing.py - 0.5) * H;
+				const c = Math.cos(rot);
+				const sn = Math.sin(rot);
+				out.push({
+					id: l.key,
+					key: l.key,
+					// (pop-in scales about the symbol centre; the swing turns about the handle end)
+					x: cx + (l.nx - 0.5) * w * sw.scale + dx - (dx * c - dy * sn),
+					y: cy + (l.ny - 0.5) * h * sw.scale + dy - (dx * sn + dy * c),
+					width: W,
+					height: H,
+					rotation: rot,
+					alpha: sw.alpha,
+				});
+				continue;
+			}
 			if (landing) {
 				const delay = l.landDelay ?? 0;
 				const local = delay >= 1 ? 0 : Math.max(0, (lt - delay) / (1 - delay));
@@ -337,6 +406,29 @@
 				continue;
 			}
 			// Ketchup slam (wild letters) / the sauce they land in (wild splat).
+			if (active && l.swing) {
+				const f = ((clock - startTime) / SWORD_MS) % 1;
+				const amp = (idle ? idleAmp : 1) * ramp;
+				const rot = l.swing.open * amp * swordOpen(f);
+				const W = l.nw * w;
+				const H = l.nh * h;
+				const dx = (l.swing.px - 0.5) * W;
+				const dy = (l.swing.py - 0.5) * H;
+				const c = Math.cos(rot);
+				const sn = Math.sin(rot);
+				out.push({
+					id: l.key,
+					key: l.key,
+					// rotate about the handle end: centre' = pivot − R·(pivot − centre)
+					x: cx + (l.nx - 0.5) * w + dx - (dx * c - dy * sn),
+					y: cy + (l.ny - 0.5) * h + dy - (dx * sn + dy * c),
+					width: W,
+					height: H,
+					rotation: rot,
+					alpha: 1,
+				});
+				continue;
+			}
 			if (active && l.pulse) {
 				// liquid pulse: swell + shrink, height a little behind width (a wobbling puddle)
 				const tt = (clock - startTime) / PULSE_MS;
@@ -501,16 +593,23 @@
 	};
 
 	// Code-drawn ketchup splat (wild): one frame of game/wildSplat in box-height units, scaled to `h`.
+	// The splat geometry reaches ~−0.70…+0.79 h across and −0.70…+0.76 h down (arms, landing drop,
+	// win drips), which spilled out of the locked yellow box (inset 9 px). It's drawn at SPLAT_K and
+	// shifted by SPLAT_DX (its arms reach further right than left) so every phase stays inside the box;
+	// the WILD letters keep their size.
+	const SPLAT_K = 0.87;
+	const SPLAT_DX = -0.042;
 	const drawShapes = (g: any, list: SplatShape[]) => {
-		const cx = props.x ?? 0;
+		const cx = (props.x ?? 0) + SPLAT_DX * h * SPLAT_K;
 		const cy = props.y ?? 0;
+		const k = h * SPLAT_K;
 		for (const s of list) {
 			if (s.alpha <= 0.002) continue;
 			if (s.kind === 'poly') {
-				const pts = s.pts.map((v, i) => (i % 2 === 0 ? cx + v * h : cy + v * h));
+				const pts = s.pts.map((v, i) => (i % 2 === 0 ? cx + v * k : cy + v * k));
 				g.poly(pts, true).fill({ color: s.color, alpha: s.alpha });
-			} else if (s.kind === 'circle') g.circle(cx + s.x * h, cy + s.y * h, s.r * h).fill({ color: s.color, alpha: s.alpha });
-			else g.ellipse(cx + s.x * h, cy + s.y * h, s.rx * h, s.ry * h).fill({ color: s.color, alpha: s.alpha });
+			} else if (s.kind === 'circle') g.circle(cx + s.x * k, cy + s.y * k, s.r * k).fill({ color: s.color, alpha: s.alpha });
+			else g.ellipse(cx + s.x * k, cy + s.y * k, s.rx * k, s.ry * k).fill({ color: s.color, alpha: s.alpha });
 		}
 	};
 	// Split into two NUMBER deriveds so the splat only re-draws when its pose actually changes. An idle
@@ -540,7 +639,31 @@
 	};
 
 	// Fizz (cup) + sizzle (sausage) particles — deterministic off the clock, only while active.
+	// clash: a white-hot flash + a burst of short spark streaks at the crossing (u: 0 → 1 over ~250 ms)
+	const drawClash = (g: SquirtGraphics, u: number, a: number, k: number) => {
+		const cl = props.config.clash;
+		if (!cl || u < 0 || u > 1) return;
+		const x0 = (props.x ?? 0) + (cl.nx - 0.5) * w;
+		const y0 = (props.y ?? 0) + (cl.ny - 0.5) * h;
+		const al = (1 - u) * a;
+		g.circle(x0, y0, h * (0.05 + 0.1 * u)).fill({ color: 0xfff6c8, alpha: 0.75 * al });
+		for (let i = 0; i < 8; i++) {
+			const ang = (i / 8) * Math.PI * 2 + squirtHash(k + i * 1.3) * 0.6;
+			const r0 = h * (0.06 + 0.12 * u);
+			const r1 = r0 + h * (0.06 + 0.05 * squirtHash(i + k * 2.1)) * (1 - u * 0.5);
+			g.moveTo(x0 + Math.cos(ang) * r0, y0 + Math.sin(ang) * r0)
+				.lineTo(x0 + Math.cos(ang) * r1, y0 + Math.sin(ang) * r1)
+				.stroke({ width: Math.max(1.5, h * 0.018), color: i % 2 ? 0xffd34d : 0xffffff, alpha: al });
+		}
+	};
 	const drawFx = (g: SquirtGraphics) => {
+		// the landing slam's clash (every landing, winning or not)
+		if (landStart >= 0 && props.config.clash && props.config.layers.some((l) => l.swing)) {
+			const ms = landClock - landStart;
+			// a full spark at the clash, a smaller one at the second
+			SWORD_LAND_HITS.forEach((hit, k) => drawClash(g, (ms - hit) / 260, k === 0 ? 1 : 0.6, Math.floor(landStart) + k));
+			return;
+		}
 		const active = running && startTime >= 0 && !!props.winning;
 		if (!active) return;
 		const t = clock - startTime;
@@ -570,6 +693,11 @@
 					g.circle(x, y, r * (1 + 0.9 * q)).stroke({ width: Math.max(1, r * 0.2), color: 0xffffff, alpha: 0.7 * (1 - q) });
 				}
 			}
+		}
+		if (props.config.clash) {
+			// the loop's slam shut (f ≈ .63), fading over ~250 ms
+			const f = (t / SWORD_MS) % 1;
+			drawClash(g, (f - 0.625) / 0.1, props.winning ? 1 : idleAmp, Math.floor(t / SWORD_MS));
 		}
 		const sp = props.config.splash;
 		if (sp) {
@@ -710,7 +838,7 @@
 	{#if props.config.splat}
 		<Graphics draw={drawSplatDrips} />
 	{/if}
-	{#if props.config.fizz || props.config.sizzle || props.config.splash}
+	{#if props.config.fizz || props.config.sizzle || props.config.splash || props.config.clash}
 		<Graphics draw={drawFx} />
 	{/if}
 	<!-- Sauce squirt (bottles only), in front of the bottle. -->
