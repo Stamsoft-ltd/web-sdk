@@ -374,6 +374,8 @@ const PORTRAIT_PLATE_FILL = 1;
 // the game actually owns (its frame is 800 tall, but the top 93 is the Stake header and the bottom
 // 130 the nav bar -- neither is ours to draw in).
 const PORTRAIT_BOARD_CY = 0.4766;
+/** CSS px kept clear between the plate's bottom edge and the portrait HUD's top. */
+const PORTRAIT_HUD_GAP = 8;
 // The landscape board used to fill a lerped fraction of main.height (LANDSCAPE_FRAME_FILL 0.82 /
 // _MIN 0.84, trimmed by a further 0.912) and sit at main.width * 0.475. All of that is gone: the
 // board now comes straight off the design, see LS_GRID_* / LS_BOARD_* below.
@@ -672,10 +674,26 @@ const boardLayout = () => {
 		const visibleW = stateLayoutDerived.canvasSizes().width / mainScale;
 		const visibleH = stateLayoutDerived.canvasSizes().height / mainScale;
 		const canvasTopY = mainLayout.height * 0.5 - visibleH / 2;
-		const boardScale = (visibleW * PORTRAIT_PLATE_FILL) / PLATE_W;
+		let boardScale = (visibleW * PORTRAIT_PLATE_FILL) / PLATE_W;
+		let y = canvasTopY + visibleH * PORTRAIT_BOARD_CY;
+		// The design's centre assumes its own ~0.62 aspect. On a shorter screen the full-width plate
+		// reaches into the HUD, so it is fitted into the band between the logo lockup and the HUD's
+		// top: first slid up, and only shrunk when sliding alone cannot clear the bar.
+		if (stateGame.portraitHudTop > 0) {
+			const gap = PORTRAIT_HUD_GAP / mainScale;
+			const bottom = canvasTopY + stateGame.portraitHudTop / mainScale - gap;
+			const top = portraitLockupCY() + portraitLockupHeight() * 0.5;
+			if (PLATE_H * boardScale > bottom - top) {
+				boardScale = Math.max(0, bottom - top) / PLATE_H;
+				y = (top + bottom) * 0.5;
+			} else {
+				const halfH = PLATE_H * boardScale * 0.5;
+				y = Math.max(top + halfH, Math.min(y, bottom - halfH));
+			}
+		}
 		return {
 			x: mainLayout.width * 0.5,
-			y: canvasTopY + visibleH * PORTRAIT_BOARD_CY,
+			y,
 			boardScale,
 			anchor: { x: 0.5, y: 0.5 },
 			pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
@@ -1417,6 +1435,11 @@ export const stateGame = $state({
 	board: INITIAL_BOARD.map((reel, ri) => reel.map((raw, rowi) => initBoardCell(raw, ri, rowi))),
 	spinBoard,
 	boardMode: 'settle' as 'spin' | 'settle',
+	// Portrait only: the window-y (CSS px) of the HUD's topmost edge — the spin disc, which rides
+	// above the control bar. Measured by HudHtml; 0 until it has been. boardLayout keeps the plate
+	// above it, because inside the Stake app the header and tab bar leave a viewport short enough
+	// that the design's fixed board centre put the last row under the bar (Stake, 2026-10-05).
+	portraitHudTop: 0,
 	gameType: 'basegame' as GameType,
 	bonusMode: null as 'freegame' | 'superspin' | 'feature' | null,
 	// WHICH bonus room the player is standing in, which is finer-grained than bonusMode: the design

@@ -184,6 +184,31 @@
 		return { update: apply, destroy: () => ro.disconnect() };
 	}
 
+	// Portrait: report the HUD's topmost edge so the board can be fitted above it. That edge is the
+	// spin disc, which is centred on the control bar and taller than it; offsetHeight is used for the
+	// disc because a rect would pick up its spin rotation. The bar is bottom-anchored, so a window
+	// resize moves it without resizing it — hence the resize listener next to the observer.
+	function reportHudTop(node: HTMLElement) {
+		const apply = () => {
+			const spin = node.querySelector<HTMLElement>('.pt-spin');
+			const bar = node.getBoundingClientRect();
+			const overhang = spin ? Math.max(0, (spin.offsetHeight - node.offsetHeight) / 2) : 0;
+			context.stateGame.portraitHudTop = Math.max(1, bar.top - overhang);
+		};
+		const ro = new ResizeObserver(apply);
+		ro.observe(node);
+		if (node.parentElement) ro.observe(node.parentElement);
+		window.addEventListener('resize', apply);
+		requestAnimationFrame(apply);
+		return {
+			destroy: () => {
+				ro.disconnect();
+				window.removeEventListener('resize', apply);
+				context.stateGame.portraitHudTop = 0;
+			},
+		};
+	}
+
 	// Fit an AMOUNT into its fixed-width pill (desktop balance / win). The pills hold a fixed width
 	// so a count-up never re-lays the bar; what gives instead is the type — a long amount steps its
 	// font down until the text clears the pill's inner width. Unlike fitLabel this watches the TEXT
@@ -936,7 +961,7 @@
 	{#if isPortrait}
 		<!-- ── Portrait HUD: spin-centred control row + balance / bet / buy row ── -->
 		<div class="pt-hud">
-			<div class="pt-controls">
+			<div class="pt-controls" use:reportHudTop>
 				<div class="pt-grp pt-grp--left">
 					<button
 						class="nav-btn nav-btn--framed"

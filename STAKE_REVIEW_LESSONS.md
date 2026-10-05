@@ -1036,3 +1036,21 @@ this entry was taken. For each viewport in {1920x1080, 1400x800, 1024x768, 760x5
 rules pages reports `scrollHeight - clientHeight <= 1` on `.info-body` **and** an empty list of
 descendants whose content overflows a clipped box, and read the rendered font sizes back — a layout
 that fits can still be unreadable, and 5px type passes every overflow assertion.
+
+## R-14 — A board placed by the design's aspect, on a screen the host has shortened (magnetic-2, 2026-10-05)
+
+**Finding (live mobile test).** "The game does not scale correctly to the screen size. The Bet bar
+covers the last row of the slot." Inside the Stake app the casino header and the tab bar leave the
+game a short portrait viewport (~0.73 w/h). The portrait board was full-width and centred at a fixed
+0.4766 of the height — numbers measured off a ~0.62 design frame — and nothing compared its bottom
+edge with the HUD, so the bottom row ran under the control bar and the spin disc.
+
+**Fix.** `HudHtml` measures the HUD's topmost edge (`use:reportHudTop` on `.pt-controls`: bar top
+minus the spin disc's overhang, via `offsetHeight` so the disc's rotation cannot skew it) into
+`stateGame.portraitHudTop`. Portrait `boardLayout()` keeps the plate between the logo lockup's
+bottom and that edge minus 8px: it first slides up, and only shrinks if sliding cannot clear the
+bar. Tall phones are untouched — the plate already fits there.
+
+**How to verify.** CDP `setDeviceMetricsOverride` at 390x530 and 375x520 (short, in-app) and
+390x844 (normal): the plate's bottom edge must sit above `.pt-spin`'s top. Measured at 390x530:
+disc top 342px, last row fully clear.
