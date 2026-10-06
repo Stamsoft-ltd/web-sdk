@@ -49,7 +49,7 @@ export function fitLabel(node: HTMLElement, param?: FitParam) {
 	const ro = new ResizeObserver(schedule);
 	if (node.parentElement) ro.observe(node.parentElement);
 	schedule();
-	// Re-measure once web fonts (Cinzel/Poppins) have loaded — the first pass runs with a
+	// Re-measure once web fonts (Bowlby One SC / Nunito) have loaded — the first pass runs with a
 	// narrower fallback font, which under-measures long strings and lets them overflow.
 	if (typeof document !== 'undefined' && document.fonts?.ready) {
 		document.fonts.ready.then(schedule).catch(() => {});

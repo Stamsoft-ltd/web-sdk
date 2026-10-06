@@ -509,7 +509,7 @@
 		max-width: 100%;
 		text-align: center;
 		color: #f3e7cb;
-		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
 		font-size: clamp(1.5rem, 4.2vmin, 2.5rem);
 		line-height: 1.06;

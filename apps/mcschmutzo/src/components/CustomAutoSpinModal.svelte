@@ -190,7 +190,7 @@
 		z-index: 59;
 		width: min(460px, 92vw);
 		max-height: 94dvh;
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 	}
 
 	/* Dark pop-up: 3px #444444 border wrapped by a few px of #181818 (the outer-most layer).
@@ -250,7 +250,7 @@
 		margin: 0;
 		text-align: center;
 		color: #ffffff;
-		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
 		/* Cap lowered + wrap allowed so long localized titles (e.g. Finnish "AUTOMAATTIKIERROS")
 		   don't overflow the popup on desktop. */
@@ -348,7 +348,8 @@
 	}
 	.ap-count {
 		color: #fff1cf;
-		font-weight: 800;
+		font-family: 'Bowlby One SC', sans-serif; /* values are in the display face, like the HUD's */
+		font-weight: 400;
 		font-size: clamp(1.4rem, 5vmin, 2.1rem);
 		line-height: 1;
 		letter-spacing: 0.02em;
@@ -368,7 +369,7 @@
 	}
 	.ap-row__label {
 		color: #fff;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 		font-size: clamp(0.9rem, 3vmin, 1.25rem); /* 20px @ design */
 		line-height: 1;

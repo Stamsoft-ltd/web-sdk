@@ -373,14 +373,14 @@
 		overflow-y: auto;
 		box-sizing: border-box;
 		padding: clamp(10px, 2vmin, 22px);
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 	}
 
 	.bb-title {
 		margin: 0 0 clamp(14px, 2.4vmin, 24px);
 		text-align: center;
 		color: #ffffff;
-		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
 		font-size: clamp(1.75rem, 5vmin, 2.9rem);
 		line-height: 1;
@@ -438,7 +438,7 @@
 		justify-content: center;
 		white-space: pre-line; /* explicit two-row breaks in the title strings */
 		color: #ffffff;
-		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
 		font-size: clamp(1.05rem, 2.4vmin, 1.6rem);
 		line-height: 1.12;
@@ -545,7 +545,7 @@
 		border: 2px solid #ffce6a;
 		background: #c4281c;
 		color: #fff4d2;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 		font-size: clamp(0.6rem, 1.3vmin, 0.85rem);
 	}
@@ -564,7 +564,7 @@
 	}
 	.bb-mult {
 		color: #ffc264;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 		font-size: clamp(0.68rem, 1.3vmin, 0.9rem);
 	}
@@ -683,7 +683,7 @@
 	}
 	.bb-bet-label {
 		color: #d88200;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 		font-size: clamp(0.58rem, 1.1vmin, 0.7rem); /* ~12px @ design */
 		line-height: 1;

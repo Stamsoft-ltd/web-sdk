@@ -186,7 +186,7 @@
 		width: min(600px, 90vw, 86dvh);
 		container-type: inline-size;
 		aspect-ratio: 1366 / 989;
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 	}
 
 
@@ -276,7 +276,7 @@
 
 	.fs-congrats {
 		margin: 0;
-		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
 		font-size: min(clamp(1.4rem, 5.6vmin, 2.5rem), 6.67cqw);
 		line-height: 1;
@@ -292,14 +292,14 @@
 	}
 	.fs-youwon {
 		margin: 0;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 		font-size: min(clamp(0.62rem, 1.9vmin, 0.9rem), 2.4cqw);
 		letter-spacing: 0.16em;
 	}
 	.fs-bonus {
 		margin: 0;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 		font-size: min(clamp(0.95rem, 3vmin, 1.35rem), 3.6cqw);
 		letter-spacing: 0.06em;
@@ -307,7 +307,7 @@
 	}
 	.fs-blurb {
 		margin: min(clamp(2px, 0.8vmin, 8px), 1.3cqw) 0 0;
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 500;
 		font-size: min(clamp(0.62rem, 1.9vmin, 0.88rem), 2.35cqw);
 		line-height: 1.35;
@@ -328,15 +328,15 @@
 		box-shadow: 0px 0px 17px 0px #e8b574;
 	}
 	.fs-count span {
-		font-family: 'Inter', sans-serif;
-		font-weight: 700;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
 		font-size: min(clamp(1.5rem, 4.6vmin, 2.2rem), 5.9cqw);
 		line-height: 1;
 		color: #ffffff;
 	}
 	.fs-label {
 		margin: 0;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 		font-size: min(clamp(0.9rem, 2.8vmin, 1.25rem), 3.33cqw);
 		letter-spacing: 0.08em;
@@ -351,7 +351,7 @@
 		z-index: 56;
 		margin: 0;
 		white-space: nowrap;
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 600;
 		font-size: clamp(12px, 2.2vmin, 17px);
 		letter-spacing: 0.1em;

@@ -182,7 +182,7 @@
 		width: min(560px, 92vw, 110dvh);
 		aspect-ratio: 1241 / 623;
 		container-type: inline-size; /* text below scales with the plaque (cqw) */
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 	}
 
 
@@ -232,7 +232,7 @@
 
 	.fo-congrats {
 		margin: 0;
-		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
 		font-size: min(clamp(1.5rem, 6.4vmin, 2.7rem), 7cqw);
 		line-height: 1;
@@ -248,7 +248,7 @@
 	}
 	.fo-youwon {
 		margin: clamp(1px, 0.5vmin, 4px) 0 0;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 		font-size: min(clamp(0.66rem, 2vmin, 0.95rem), 2.7cqw);
 		letter-spacing: 0.16em;
@@ -267,8 +267,8 @@
 		box-shadow: 0px 0px 17px 0px #e8b574;
 	}
 	.fo-amount span {
-		font-family: 'Inter', sans-serif;
-		font-weight: 700;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
 		font-size: min(clamp(1.5rem, 5vmin, 2.4rem), 6cqw);
 		line-height: 1;
 		color: #ffffff;
@@ -283,7 +283,7 @@
 		z-index: 56;
 		margin: 0;
 		white-space: nowrap;
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 600;
 		font-size: clamp(12px, 2.2vmin, 17px);
 		letter-spacing: 0.1em;

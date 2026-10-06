@@ -154,7 +154,7 @@
 		inset: 0;
 		z-index: 6;
 		pointer-events: none;
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 	}
 
 	.fp-card,

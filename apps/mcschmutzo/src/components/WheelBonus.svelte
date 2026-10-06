@@ -601,7 +601,7 @@
 
 	.wb-label {
 		position: absolute;
-		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		letter-spacing: 1.4px;
 		line-height: 1;
 		white-space: nowrap;
@@ -682,7 +682,7 @@
 		left: 600px;
 		top: 78.5px;
 		translate: -50% -50%;
-		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		font-size: 56px;
 		line-height: 1.2;
 		letter-spacing: 1.4px;
@@ -1007,7 +1007,7 @@
 			transform 0.08s ease;
 	}
 	.wb-spin span {
-		font-family: 'Inter', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 		font-size: 36px;
 		line-height: 20px;

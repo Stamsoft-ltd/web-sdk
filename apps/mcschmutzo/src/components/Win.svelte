@@ -102,7 +102,7 @@
 						y={context.stateGameDerived.boardLayout().y}
 					>
 						{#if winLevelData?.pad}
-							<!-- Amount in the win-box-amount plaque: Poppins bold, cream. Fixed base size so every
+							<!-- Amount in the win-box-amount plaque: Bowlby One SC (the game's display face), cream. Fixed base size so every
 							     tier renders the SAME size (short or long); maxWidth scales the longest amounts
 							     down so even large values stay inside the red panel. -->
 							{@const amountFontSize = SYMBOL_SIZE * 0.48}
@@ -112,8 +112,8 @@
 									maxWidth={context.stateGameDerived.boardLayout().width * 0.4}
 									text={bookEventAmountToCurrencyString(Math.round(countUpAmount))}
 									style={{
-										fontFamily: 'Poppins',
-										fontWeight: '700',
+										fontFamily: 'Bowlby One SC',
+										fontWeight: '400',
 										fill: 0xfff1cf,
 										fontSize: amountFontSize,
 										letterSpacing: amountFontSize * 0.003,

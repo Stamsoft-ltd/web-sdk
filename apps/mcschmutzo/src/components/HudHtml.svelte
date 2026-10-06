@@ -1464,7 +1464,7 @@
 		justify-content: space-between;
 		padding: 8px;
 		z-index: 20;
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		/* Fluid desktop-bar sizing: the bar and everything on it scale with viewport width
 		   (growing until ~1900px, then capped) so wide screens get the chunky redesign bar
 		   instead of sizes frozen at the 1200px breakpoint. Min sizes stay near the old
@@ -1515,14 +1515,14 @@
 	}
 
 	.scatter-card__title {
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-size: 1.15rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
 	}
 
 	.scatter-card__text {
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-size: 0.8rem;
 		font-weight: 700;
 		line-height: 1.3;
@@ -1822,7 +1822,7 @@
 	}
 
 	.label {
-		font-family: 'Inter', 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-size: calc(var(--d) * 12);
 		line-height: calc(var(--d) * 15);
 		font-weight: 700;
@@ -1851,7 +1851,7 @@
 	}
 
 	.value {
-		font-family: 'Bowlby One SC', 'Poppins', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		font-size: calc(var(--d) * 20);
 		font-weight: 400;
 		letter-spacing: 0.003em;
@@ -2116,7 +2116,7 @@
 	}
 	.hud-menu-item__label {
 		color: #ffffff;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 		font-size: calc(var(--nav-s) * 0.26);
 		letter-spacing: 0.03em;
@@ -2313,8 +2313,8 @@
 		border-radius: 50%;
 		background: radial-gradient(circle, rgba(20, 48, 8, 0.96) 60%, rgba(20, 48, 8, 0) 100%);
 		color: #fff;
-		font-family: 'Poppins', sans-serif;
-		font-weight: 900;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
 		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
 		pointer-events: none;
 	}
@@ -2381,7 +2381,7 @@
 	}
 
 	.buy-btn__label {
-		font-family: 'Bowlby One SC', 'Poppins', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		/* Scales with the bar's design unit; fitLabel shrinks it further only when a
 		   translation runs long. */
 		font-size: calc(var(--d) * 16);
@@ -2425,7 +2425,7 @@
 		inset: 0;
 		pointer-events: none;
 		z-index: 20;
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		/* Bottom inset shared by the BALANCE/BET stack (bottom-left) and the WIN pill (bottom-right)
 		   so the two readouts sit level in their corners. Scales with viewport height. */
 		--ls-corner-bottom: clamp(4px, 1.8dvh, 14px);
@@ -2545,7 +2545,7 @@
 		visibility: hidden;
 	}
 	.ls-win__label {
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-size: clamp(7px, 2.3vh, 12px);
 		font-style: normal;
 		font-weight: 700;
@@ -2554,14 +2554,14 @@
 		color: #fff;
 	}
 	.ls-win__value {
-		font-family: 'Bowlby One SC', 'Poppins', sans-serif;
-		font-weight: 700;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
 		font-size: clamp(10px, 2.9vh, 15px);
 		color: #fff;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
 	}
 	.ls-balance__label {
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		/* nowrap on both halves: the rail gets narrow on small landscape windows, and locales that
 		   format with spaces ("5 000 592,00 kr") would otherwise wrap to a second line inside the
 		   fixed-height pill instead of letting fitText scale them down. */
@@ -2574,8 +2574,8 @@
 		color: #fff;
 	}
 	.ls-balance__value {
-		font-family: 'Bowlby One SC', 'Poppins', sans-serif;
-		font-weight: 700;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
 		white-space: nowrap;
 		font-size: clamp(8px, 2.3vh, 11px);
 		color: #fff;
@@ -2590,10 +2590,10 @@
 		   centre line. */
 		.ls-balance { padding: clamp(2px, 0.8vh, 5px) clamp(6px, 1.4vh, 12px); border-radius: 4.21px; }
 		.ls-balance__label { font-size: clamp(7px, 2.3vh, 12px); font-weight: 700; }
-		.ls-balance__value { font-size: clamp(9px, 2.6vh, 13px); font-weight: 700; }
+		.ls-balance__value { font-size: clamp(9px, 2.6vh, 13px); font-weight: 400; }
 		.ls-win { padding: clamp(3px, 1vh, 6px) clamp(7px, 1.6vh, 14px); border-radius: 4.21px; }
 		.ls-win__label { font-size: clamp(8px, 2.6vh, 13px); font-weight: 700; }
-		.ls-win__value { font-size: clamp(11px, 3.2vh, 16px); font-weight: 700; }
+		.ls-win__value { font-size: clamp(11px, 3.2vh, 16px); font-weight: 400; }
 	}
 
 	/* BET stepper — same small #1F1F1F pill as BALANCE, stretched to BALANCE's width and stacked under
@@ -2611,8 +2611,8 @@
 		box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
 	}
 	.ls-bet__value {
-		font-family: 'Bowlby One SC', 'Poppins', sans-serif;
-		font-weight: 700;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-weight: 400;
 		font-size: clamp(10px, 3vh, 18px);
 		color: #fff;
 		/* Grow to fill the room BETWEEN the − / + steppers (flex:1 1 0, min-width:0) so fitText can scale
@@ -3007,7 +3007,7 @@
 	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(-4.6%, -1.03%); filter: brightness(0) invert(1); } /* arrow overlay, centred on the new disc */
 	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; transform: translate(-6.9%, -3.1%); filter: brightness(0) invert(1); } /* square on the red-disc centre (47.93% / 49.07% of the box) */
 	.pt-spin__count {
-		font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 1.3rem; color: #fff;
+		font-family: 'Bowlby One SC', sans-serif; font-weight: 400; font-size: 1.3rem; color: #fff;
 		text-shadow: 0 2px 4px rgba(0,0,0,0.7);
 	}
 
@@ -3046,7 +3046,7 @@
 		backdrop-filter: blur(4px);
 	}
 	.pt-balance__label {
-		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 10px;
+		font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 10px;
 		letter-spacing: 0.04em; white-space: nowrap;
 		color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 	}
@@ -3055,7 +3055,7 @@
 		   inline elements) and scrollWidth measures the true text width — otherwise a long balance
 		   renders full-size and gets clipped by the parent's overflow:hidden. */
 		display: inline-block;
-		font-family: 'Bowlby One SC', 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
+		font-family: 'Bowlby One SC', sans-serif; font-weight: 500; font-size: 12px;
 		font-style: normal; line-height: normal; letter-spacing: 0.36px;
 		white-space: nowrap; transform-origin: center;
 		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);
@@ -3081,7 +3081,7 @@
 		gap: 1px;
 	}
 	.pt-bet__label {
-		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 10px;
+		font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 10px;
 		letter-spacing: 0.06em; white-space: nowrap; pointer-events: none;
 		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
 		-webkit-background-clip: text; background-clip: text;
@@ -3089,7 +3089,7 @@
 	}
 	.pt-bet__value {
 		text-align: center;
-		font-family: 'Bowlby One SC', 'Poppins', sans-serif; font-weight: 500; font-size: 17px;
+		font-family: 'Bowlby One SC', sans-serif; font-weight: 500; font-size: 17px;
 		font-style: normal; line-height: normal; letter-spacing: 0.54px; color: #fff;
 		white-space: nowrap; cursor: pointer; transform-origin: center;
 		text-shadow: 0 1px 2px rgba(0,0,0,0.6);
@@ -3115,7 +3115,7 @@
 	.pt-buy:hover { filter: brightness(1.1); }
 	.pt-buy:active { transform: scale(0.95); }
 	.pt-buy__label {
-		font-family: 'Bowlby One SC', 'Poppins', sans-serif; font-weight: 400;
+		font-family: 'Bowlby One SC', sans-serif; font-weight: 400;
 		font-size: 13px; line-height: 1.05; letter-spacing: 0.02em; text-align: center;
 		max-width: 100%;
 		/* Glyphs centred in the red box: the line box is trimmed to the capitals (uneven font
@@ -3148,14 +3148,14 @@
 		backdrop-filter: blur(4px);
 	}
 	.pt-win__label {
-		font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 10px;
+		font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 10px;
 		letter-spacing: 0.04em; white-space: nowrap;
 		color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 	}
 	.pt-win__value {
 		/* inline-block so fitText's transform:scale applies (see .pt-balance__value). */
 		display: inline-block;
-		font-family: 'Bowlby One SC', 'Poppins', sans-serif; font-weight: 500; font-size: 12px;
+		font-family: 'Bowlby One SC', sans-serif; font-weight: 500; font-size: 12px;
 		font-style: normal; line-height: normal; letter-spacing: 0.36px;
 		white-space: nowrap; transform-origin: center; min-height: 12px;
 		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);
@@ -3206,7 +3206,7 @@
 	/* Muted SVGs carry their own disc + border (portrait + landscape share this class). */
 	.pt-menu-item.muted .pt-menu-item__ic { opacity: 1; }
 	.pt-menu-item__label {
-		font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px;
+		font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 12px;
 		letter-spacing: 0.03em; color: #fff;
 	}
 
@@ -3245,7 +3245,7 @@
 		z-index: 60;
 		pointer-events: none;
 		white-space: nowrap;
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 600;
 		font-size: clamp(12px, 2.2vmin, 17px);
 		letter-spacing: 0.1em;

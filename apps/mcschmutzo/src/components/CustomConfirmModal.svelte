@@ -69,7 +69,7 @@
 		z-index: 69;
 		width: min(500px, 92vw);
 		max-height: 94dvh;
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 	}
 
 	/* Dark pop-up: 3px #444444 border wrapped by a few px of #181818 (the outer-most layer). */
@@ -114,7 +114,7 @@
 		margin: 0;
 		text-align: center;
 		color: #ffffff;
-		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
 		font-size: clamp(1.25rem, 5vmin, 1.9rem);
 		line-height: 1.05;
@@ -148,7 +148,7 @@
 		max-width: 190px;
 		padding: clamp(10px, 2.2vmin, 15px) clamp(10px, 2vmin, 18px);
 		border-radius: 10px;
-		font-family: 'Inter', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 		font-size: clamp(0.78rem, 2.2vmin, 0.95rem);
 		letter-spacing: 0.04em;

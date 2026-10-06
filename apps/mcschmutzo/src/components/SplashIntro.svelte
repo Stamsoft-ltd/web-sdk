@@ -650,7 +650,7 @@
 		   gap) instead of clustering at the top and leaving the lower half empty. */
 		justify-content: center;
 		text-align: center;
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		/* Insets clear the drip on the red/yellow cards; trimmed so longer localized titles/bodies
 		   (pt, ru, fi, id) still fit inside the cream area. */
 		padding: 15.5% 12.5% 12%;
@@ -666,7 +666,7 @@
 		/* A big base size (matches the design); the `fitFont` action multiplies it by `--fit` (≤1) per
 		   card so long localized words (fi "AINUTLAATUISTA", de "EINZIGARTIGE", tr) shrink to fit the
 		   frame — reflowing (so they stay centred) instead of breaking mid-word or spilling past it. */
-		font-family: 'Bowlby One SC', 'Bowlby One', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
 		line-height: 1.16;
 		letter-spacing: 0.03em;
@@ -753,7 +753,7 @@
 		transform: translateX(-50%);
 		margin: 0;
 		white-space: nowrap;
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 		font-size: clamp(13px, 2.1cqh, 24px);
 		letter-spacing: 0.08em;

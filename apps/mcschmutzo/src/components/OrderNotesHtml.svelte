@@ -177,7 +177,7 @@
 		transition: opacity 0.25s ease;
 	}
 	.hand {
-		font-family: 'Caveat', 'Comic Sans MS', cursive;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 600;
 		color: #2c2320;
 	}
@@ -200,8 +200,9 @@
 		left: 13%;
 		right: 12%;
 		top: 16%;
-		font-size: calc(var(--w) * 0.105);
-		line-height: 1.12;
+		/* (Nunito runs wider than a handwriting face: sized so the longest line fits the ticket) */
+		font-size: calc(var(--w) * 0.08);
+		line-height: 1.3;
 		transform: rotate(-1.5deg);
 	}
 	.ticket__body p {

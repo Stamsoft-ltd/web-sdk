@@ -64,7 +64,7 @@
 		filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
 	}
 	.pp-loader__text {
-		font-family: 'Poppins', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 600;
 		color: #fff;
 		font-size: clamp(26px, 3.6vw, 52px);
