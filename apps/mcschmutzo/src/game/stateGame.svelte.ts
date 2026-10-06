@@ -5,7 +5,7 @@ import { createEnhanceBoard, createReelForSpinning } from 'utils-slots';
 import { createGetWinLevelDataByWinLevelAlias } from 'utils-shared/winLevel';
 
 import type { GameType, Position, RawSymbol, SymbolState } from './types';
-import { stateLayoutDerived } from './stateLayout';
+import { portraitFit, stateLayoutDerived } from './stateLayout';
 import { winLevelMap } from './winLevelMap';
 import { eventEmitter } from './eventEmitter';
 import { setChefMood } from './chefMood.svelte';
@@ -162,23 +162,33 @@ export const stateGame = $state({
 });
 
 const boardLayout = () => {
-	// Portrait sits the board a touch higher so its top tucks under the logo header (which slightly
-	// overlaps it); desktop sits a little low to leave the logo room. Landscape centres the board on the screen
+	// Desktop sits a little low to leave the logo room. Landscape centres the board on the screen
 	// (it used to sit left of centre, which looked crowded against the balance/bet gutter).
+	// Portrait follows portraitFit (stateLayout), which sized the main so it fits between the header
+	// and the bottom HUD on every phone.
 	const layoutType = stateLayoutDerived.layoutType();
-	const isPortrait = layoutType === 'portrait';
+	const main = stateLayoutDerived.mainLayout();
+	if (layoutType === 'portrait') {
+		const canvas = stateLayoutDerived.canvasSizes();
+		const { scale, frameTop } = portraitFit(canvas.width, canvas.height);
+		const centerPx = frameTop + BOARD_SIZES.height * (0.0224 + 0.5) * scale;
+		return {
+			// the old 0.494 × 675 offset: 4 main units left of centre
+			x: main.width / 2 - 4.05,
+			y: main.height / 2 + (centerPx - canvas.height / 2) / scale,
+			anchor: { x: 0.5, y: 0.5 },
+			pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
+			...BOARD_SIZES,
+		};
+	}
 	const isLandscape = layoutType === 'landscape';
 	return {
-		x: stateLayoutDerived.mainLayout().width * (isLandscape ? 0.5 : 0.494),
+		x: main.width * (isLandscape ? 0.5 : 0.494),
 		// Landscape drops the board toward the bottom so the title logo (drawn just above the board
 		// top by FeatureOverlay) has clear space at the top instead of clipping off-screen.
 		// Desktop sits it 0.45 down (was 0.42): the board top at ~56 main units leaves the logo its full
 		// 36%-of-board width (boardLogo shrinks it to fit whatever room is above the board).
-		// Short portrait (main height < 1422, see stateLayout): the board sits just under the tight
-		// logo header and clear of the bottom HUD.
-		y:
-			stateLayoutDerived.mainLayout().height *
-			(isPortrait ? (stateLayoutDerived.mainLayout().height < 1422 ? 0.425 : 0.435) : isLandscape ? 0.53 : 0.45),
+		y: main.height * (isLandscape ? 0.53 : 0.45),
 		anchor: { x: 0.5, y: 0.5 },
 		pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
 		...BOARD_SIZES,

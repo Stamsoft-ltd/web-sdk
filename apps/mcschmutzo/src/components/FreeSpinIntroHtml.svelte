@@ -27,10 +27,20 @@
 	import { popOut } from '../lib/popOut';
 	import { cubicIn } from 'svelte/easing';
 	import { fade } from 'svelte/transition';
-	// Prompt position (above the portrait HUD; default elsewhere) — re-measured on resize.
+	// Prompt position (above the portrait HUD; default elsewhere) — re-measured on resize. The card
+	// is then centred in the room ABOVE the prompt and sized to fit it (--room-h), so on short phones
+	// the pots never run into PRESS TO CONTINUE.
 	let contBottom = $state('clamp(14px, 3.5vh, 34px)');
+	let roomH = $state(0);
 	$effect(() => {
-		const upd = () => (contBottom = continueBottom('clamp(14px, 3.5vh, 34px)'));
+		void show;
+		const upd = () => {
+			contBottom = continueBottom('clamp(14px, 3.5vh, 34px)');
+			requestAnimationFrame(() => {
+				const prompt = document.querySelector('.fs-continue')?.getBoundingClientRect();
+				roomH = prompt && prompt.height ? Math.max(0, prompt.top - 10) : 0;
+			});
+		};
 		const raf = requestAnimationFrame(upd);
 		window.addEventListener('resize', upd);
 		return () => (cancelAnimationFrame(raf), window.removeEventListener('resize', upd));
@@ -110,7 +120,7 @@
 
 {#if show}
 	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-	<div class="fs-backdrop" onclick={proceed} out:fade={{ duration: 260, easing: cubicIn }}>
+	<div class="fs-backdrop" style={roomH ? `--room-h:${roomH}px` : ''} onclick={proceed} out:fade={{ duration: 260, easing: cubicIn }}>
 		<button
 			class="fs-close"
 			type="button"
@@ -160,6 +170,8 @@
 		z-index: 55;
 		display: grid;
 		place-items: center;
+		/* centre the card in the room above the prompt (whole screen until it's measured) */
+		grid-template-rows: var(--room-h, 100%) 1fr;
 		background: rgba(0, 0, 0, 0.6);
 		cursor: pointer;
 		user-select: none;
@@ -192,9 +204,9 @@
 	   11% left, 7.5% right, 12% above — so the width cap leaves that room. */
 	.fs-stage {
 		position: relative;
-		/* height cap: the (centred) board must end above the fixed PRESS TO CONTINUE prompt (~280px of
-		   the height is prompt + HUD + air); the 70dvh floor keeps tiny popouts from collapsing */
-		width: min(740px, 80vw, max(calc((100dvh - 280px) * 1.5), 70dvh));
+		/* height cap: the board (740 × 493) fits the measured room above PRESS TO CONTINUE with a
+		   little air; the 180px floor keeps tiny popouts from collapsing */
+		width: min(740px, 80vw, max(calc((var(--room-h, 100dvh) - 24px) * 1.5), 180px));
 		aspect-ratio: 740 / 493.44;
 		container-type: inline-size;
 		font-family: 'Bowlby One SC', sans-serif;

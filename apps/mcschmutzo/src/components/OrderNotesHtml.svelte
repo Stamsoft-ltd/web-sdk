@@ -215,7 +215,8 @@
 		top: 16%;
 		/* (Nunito runs wider than a handwriting face: sized so the longest line fits the ticket) */
 		font-size: calc(var(--w) * 0.08);
-		line-height: 1.3;
+		/* airier than a single-spaced list so the order fills the ticket down to the tick */
+		line-height: 1.6;
 		transform: rotate(-1.5deg);
 	}
 	.ticket__body p {

@@ -468,9 +468,10 @@
 
 	.bb-desc {
 		margin: 0;
-		color: #c3b8ab;
-		font-weight: 500;
-		font-size: clamp(0.62rem, 1.2vmin, 0.8rem);
+		color: #ddd3c7;
+		font-weight: 600;
+		/* ≥13px on a 1200×670 desktop (it sat at a ~10px floor — "unreadable" in the rating review) */
+		font-size: clamp(0.82rem, 1.95vmin, 1.05rem);
 		line-height: 1.3;
 	}
 
@@ -570,12 +571,12 @@
 		color: #ffc264;
 		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
-		font-size: clamp(0.68rem, 1.3vmin, 0.9rem);
+		font-size: clamp(0.86rem, 1.9vmin, 1.1rem);
 	}
 	.bb-cost {
 		color: #ffffff;
 		font-weight: 700;
-		font-size: clamp(0.64rem, 1.2vmin, 0.84rem);
+		font-size: clamp(0.84rem, 1.85vmin, 1.06rem);
 	}
 
 	/* Buttons use the provided ACTIVATE / BUY art. */
