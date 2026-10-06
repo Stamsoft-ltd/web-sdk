@@ -46,6 +46,10 @@ export const potState = $state({
 	 * locked) its yellow box + held symbol fade out by this much while PotShots shows the soup there.
 	 */
 	hidden: {} as Record<string, number>,
+	/** Bumped to make the pot react without a value change (the final-spin build-up). */
+	nudge: 0,
+	/** performance.now() when the pot boils over (the bonus ending); -1 = not overflowing. */
+	overflowAt: -1,
 });
 
 /** `reel:row` (row 1-based, as in book-event positions); '' for a shot without a known cell. */
@@ -55,6 +59,7 @@ export const potCellKey = (p: { reel?: number; row?: number }) =>
 /** Start of a bonus: the pot shows the starting multiplier, nothing queued. */
 export const resetPot = (mult: number) => {
 	potState.mult = mult;
+	potState.overflowAt = -1;
 	potState.pending = [];
 	potState.volley = null;
 	potState.hidden = {};

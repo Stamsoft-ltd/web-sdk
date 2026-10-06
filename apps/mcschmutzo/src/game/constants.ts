@@ -121,6 +121,10 @@ export const SYMBOL_INFO_MAP = {
 	M: spriteStates('mcM'), // soup pot — the multiplier symbol
 } as const;
 
+// Each extra scatter landing in a spin plays its land sound a step higher (playback rate), and its
+// landing animation runs at the same rate so the sword clashes stay on the sound's accents.
+export const scatterLandRate = (nth: number) => 1 + 0.06 * (Math.min(Math.max(nth, 1), 5) - 1);
+
 // How long a newly locked cell takes to arrive (LockedCells' drop → impact → settle). The free-games
-// flow waits this long after new locks so the next re-spin never starts over the animation.
+// flow starts the next re-spin during its last 300ms (the damped wobble), after the impact.
 export const LOCK_SLAM_MS = 1150;

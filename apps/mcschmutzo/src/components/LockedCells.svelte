@@ -4,6 +4,7 @@
 
 	import AnimatedSymbol from './AnimatedSymbol.svelte';
 	import { potState } from '../game/potState.svelte';
+	import { focusAlpha, isWinningCell } from '../game/winFocus.svelte';
 	import { getContext } from '../game/context';
 	import { getSymbolInfo } from '../game/utils';
 	import { SYMBOL_PARTS, fallbackConfig } from '../game/symbolParts';
@@ -264,7 +265,7 @@
 			x={cx}
 			y={cy + an.y}
 			scale={{ x: an.sx, y: an.sy }}
-			alpha={an.alpha * (1 - (potState.hidden[`${reel}:${gridRow + 1}`] ?? 0))}
+			alpha={an.alpha * focusAlpha(isWinningCell(reel, gridRow)) * (1 - (potState.hidden[`${reel}:${gridRow + 1}`] ?? 0))}
 		>
 			<!-- heat-lamp glow + lock splat + steam (behind the box) -->
 			<Graphics draw={drawGlow} alpha={glowAlpha(reel, gridRow)} />

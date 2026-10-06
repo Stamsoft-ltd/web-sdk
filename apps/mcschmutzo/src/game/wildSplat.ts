@@ -67,10 +67,12 @@ const DROPS = [
 	{ a: 103, d: 1.52, r: 0.016 },
 ];
 
+// Fractions of the wild's landMs (900 ms): the drop hits at ~110 ms, the letters pop in on the splat
+// and peak (the impact: ripple + shake) at ~215 ms, the splat is fully out by ~400 ms.
 const LAND = {
-	dropEnd: 0.15, // the falling drop hits here
-	spreadEnd: 0.5, // the splat is fully out by here
-	textHit: 0.68, // the stamped letters land here (kept in step with the text layer)
+	dropEnd: 0.12, // the falling drop hits here
+	spreadEnd: 0.45, // the splat is fully out by here
+	textHit: 0.24, // the letters' pop peaks here (kept in step with the text layer)
 };
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));

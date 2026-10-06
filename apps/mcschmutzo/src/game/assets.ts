@@ -104,6 +104,12 @@ export default {
 		src: new URL('../../assets/mcschmutzo/special-lamp@0.37x.webp', import.meta.url).href,
 		preload: true,
 	},
+	lampBeam: {
+		// The portrait base-game lamp's light cone (scripts/build-lamp-beam.py, PortraitLamp.svelte).
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/lamp-beam.webp', import.meta.url).href,
+		preload: true,
+	},
 	lampGlow: {
 		// Soft radial glow (baked warm gradient, transparent edge) for the pendant bulbs — a smooth
 		// falloff with no hard circle edge, blended additively behind the shade.
@@ -111,23 +117,61 @@ export default {
 		src: new URL('../../assets/mcschmutzo/lamp-glow.webp', import.meta.url).href,
 		preload: true,
 	},
+	// the pot's drip fingers, animated over the painted ones (scripts/build-pot-drips.py, game/potDrips)
+	potDrip0: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/pot-drips/drip-0.webp', import.meta.url).href,
+		preload: true,
+	},
+	potDrip1: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/pot-drips/drip-1.webp', import.meta.url).href,
+		preload: true,
+	},
+	potDrip2: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/pot-drips/drip-2.webp', import.meta.url).href,
+		preload: true,
+	},
+	potDrip3: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/pot-drips/drip-3.webp', import.meta.url).href,
+		preload: true,
+	},
+	potDrip4: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/pot-drips/drip-4.webp', import.meta.url).href,
+		preload: true,
+	},
 	specialPot: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/special-pot-v2.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/special-pot-v3.webp', import.meta.url).href,
 		preload: true,
 	},
 	// Layered chefs (base with the pupils cut out + the pupils as their own sprites) so the eyes can
 	// glance + blink while the figure stands. See AnimatedGuy.svelte.
-	mascotBase: {
-		// The Figma chef with the relaxed arm (McShmutzo node 8779:1769, "One-Armed Retro Diner
-		// Worker") on the old 1304×1699 frame, with the old base's eye whites + brows pasted in (the
-		// Figma face has none). The bottle arm is overlaid separately (mascotBottle) so it can shake.
+	// The Figma chef with the relaxed arm (McShmutzo node 8779:1769, "One-Armed Retro Diner Worker")
+	// on the old 1304×1699 frame, with the old base's eye whites + brows pasted in (the Figma face has
+	// none) — mascot_base_v7 — split into body + head + hanging forearm so the head can tilt and nod
+	// on its neck and the forearm swing from the elbow (scripts/build-chef-head.py). The bottle arm is
+	// overlaid separately (mascotBottle) so it can shake.
+	mascotBody: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/mascot_base_v7_c@0.882x.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/mascot_body_v2_c@0.882x.webp', import.meta.url).href,
+		preload: true,
+	},
+	mascotHead: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mascot_head_v1_c@0.882x.webp', import.meta.url).href,
+		preload: true,
+	},
+	mascotArm: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mascot_arm_v1_c@0.882x.webp', import.meta.url).href,
 		preload: true,
 	},
 	mascotBottle: {
-		// The extracted ketchup bottle + gripping hand (full-frame canvas), overlaid on mascotBase and
+		// The extracted ketchup bottle + gripping hand (full-frame canvas), overlaid on mascotBody and
 		// shaken about the wrist.
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/guys/mascot_bottle_v5_c@0.882x.webp', import.meta.url).href,
@@ -137,7 +181,7 @@ export default {
 		// Both eyebrows lifted off the base (full-frame layer), drawn above the blink lids so a blink
 		// closes UNDER the brow instead of painting skin over it.
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/mascot_brows_v5_c@0.882x.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/mascot_brows_v6_c@0.882x.webp', import.meta.url).href,
 		preload: true,
 	},
 	mascotLabel: {
@@ -177,11 +221,28 @@ export default {
 		src: new URL('../../assets/mcschmutzo/guys/special_label_v2@0.862x.webp', import.meta.url).href,
 		preload: true,
 	},
-	// The Figma wordmark only (node 8779:1698); the board logo's ketchup splats are drawn in code
-	// (game/logoSplash, FeatureOverlay).
+	// The phone (portrait) chef — Figma 8870:32978 / 8870:33637: a pointing bust over the board's
+	// top-right corner, holding the bottle (base) or the salt shaker (free games), each hand its own
+	// layer behind the body (scripts/build-mobile-chef.py keys them off Figma's white exports).
+	mobileBody: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mobile_body_v1.webp', import.meta.url).href,
+		preload: true,
+	},
+	mobileBottle: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mobile_bottle_v1.webp', import.meta.url).href,
+		preload: true,
+	},
+	mobileSalt: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mobile_salt_v1.webp', import.meta.url).href,
+		preload: true,
+	},
+	// The Figma logo (node 8870:33545, scripts/build-logo.py), drawn as the desktop/landscape board logo.
 	mcschmutzoWord: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/logo-word@0.5x.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/logo-word-v2@0.5x.webp', import.meta.url).href,
 		preload: true,
 	},
 	mcH1: {
@@ -233,7 +294,7 @@ export default {
 	},
 	mcS: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/symbols/S.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/symbols/S_scatter.webp', import.meta.url).href,
 	},
 	mcM: {
 		type: 'sprite',
@@ -313,6 +374,10 @@ export default {
 	scatterKnife: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/symbols/parts/scatter2/knife.webp', import.meta.url).href,
+	},
+	scatterText: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/symbols/parts/scatter2/text.webp', import.meta.url).href,
 	},
 	// Sausage (H3) = banger + rising smoke.
 	sausageBody: {

@@ -12,7 +12,9 @@
 	const MASCOT = { fw: 1304, fh: 1699 };
 	const SPECIAL = { fw: 1611, fh: 1912 };
 	export const GUY_CROPS = {
-		mascotBase: { x0: 316, y0: 0, x1: 1256, y1: 1800, ...MASCOT }, // runs past the frame: the relaxed hand
+		mascotBody: { x0: 316, y0: 0, x1: 1256, y1: 1800, ...MASCOT }, // runs past the frame: the relaxed hand
+		mascotHead: { x0: 316, y0: 0, x1: 1019, y1: 876.2, ...MASCOT }, // scripts/build-chef-head.py prints these
+		mascotArm: { x0: 1030.4, y0: 1295.6, x1: 1256, y1: 1796.6, ...MASCOT },
 		mascotBottle: { x0: 80, y0: 639, x1: 575, y1: 1330, ...MASCOT },
 		mascotBrows: { x0: 399, y0: 328, x1: 728, y1: 469, ...MASCOT },
 		mascotLabel: { x0: 679, y0: 1022, x1: 937, y1: 1161, ...MASCOT },
@@ -36,7 +38,7 @@
 </script>
 
 <script lang="ts">
-	import { Sprite, Rectangle, Circle } from 'pixi-svelte';
+	import { Container, Sprite, Rectangle, Circle } from 'pixi-svelte';
 	import { createPointGesture, type HandPose } from '../game/pointGesture';
 
 	// A chef that stands (the parent breathes him via x/y/width/height) while his face is ALIVE: the
@@ -58,10 +60,11 @@
 		/** pivot within the sprite (0..1); the tilt swings about this point. */
 		px?: number;
 		py?: number;
-		/** peak tilt in radians and its period (ms). */
+		/** peak tilt in radians and its period (ms), swinging about `bias` (radians, default 0). */
 		amp?: number;
 		period?: number;
 		phase?: number;
+		bias?: number;
 		/**
 		 * Pointing-hand gesture instead of the sine tilt: breathing drift + a random "point-point"
 		 * every 3–6 s (see game/pointGesture). `tip` is the fingertip's side of the pivot (-1 = left),
@@ -90,6 +93,21 @@
 		phase?: number;
 		/** Where the (cropped) base texture sits on the figure frame; full frame when omitted. */
 		baseRect?: FrameRect;
+		/** Reaction overrides (game/chefMood): a gaze target (figure fractions) with its weight over
+		 * the idle glance, a squint (0..1, lids lowered — happy / laughing eyes) and a brow offset
+		 * (fraction of the height, + = down) applied to the `browKey` extra. */
+		look?: { x: number; y: number; weight: number };
+		squint?: number;
+		brow?: number;
+		browKey?: string;
+		/**
+		 * A separate head layer (the base is then the body without it): the head, the eyes, lids,
+		 * brows (`browKey`) and the sparkle turn together about the neck pivot (figure fractions).
+		 * On top of its own idle (a slow sway, a breath nod, and following the eyes' glances a beat
+		 * late) it takes the reaction's `tilt` (radians, + = clockwise) and `nod` (fraction of the
+		 * height, + = down).
+		 */
+		head?: { key: string; rect: FrameRect; px: number; py: number; tilt?: number; nod?: number };
 	};
 	const props: Props = $props();
 
@@ -118,8 +136,8 @@
 		{ t: 0.95, x: 0, y: 0 },
 		{ t: 1.0, x: 0, y: 0 },
 	];
-	const glance = $derived.by(() => {
-		const f = (clock % GLANCE_PERIOD) / GLANCE_PERIOD;
+	const glanceAt = (t: number) => {
+		const f = (((t % GLANCE_PERIOD) + GLANCE_PERIOD) % GLANCE_PERIOD) / GLANCE_PERIOD;
 		for (let i = 0; i < KF.length - 1; i++) {
 			if (f >= KF[i].t && f <= KF[i + 1].t) {
 				const u = (f - KF[i].t) / (KF[i + 1].t - KF[i].t);
@@ -131,7 +149,8 @@
 			}
 		}
 		return { x: 0, y: 0 };
-	});
+	};
+	const glance = $derived(glanceAt(clock));
 
 	// Blink: a quick lid drop (0 → 1 → 0 over ~140ms), with an occasional double blink.
 	const BLINK_PERIOD = 4300;
@@ -151,9 +170,35 @@
 	const baseRect = $derived(props.baseRect ?? FULL_FRAME);
 	const skin = $derived(props.skin ?? 0xf6ac67);
 	const lidRest = $derived(props.lidRest ?? 0);
-	const lidDrop = $derived(lidRest + (1 - lidRest) * blink);
+	const lidDrop = $derived(Math.max(lidRest + (1 - lidRest) * blink, props.squint ?? 0));
+	const gaze = $derived.by(() => {
+		const l = props.look;
+		if (!l || l.weight <= 0) return glance;
+		return { x: glance.x + (l.x - glance.x) * l.weight, y: glance.y + (l.y - glance.y) * l.weight };
+	});
 
-	const extraTilt = (e: Extra) => (e.amp ?? 0) * Math.sin((clock + (e.phase ?? 0)) / (e.period ?? 2600));
+	// Head on its neck: the eyes lead, the head follows a beat later (HEAD_LAG_MS) and only part of
+	// the way; under it a slow two-sine sway and a small nod riding the breath. Reaction tilt / nod add.
+	const HEAD_LAG_MS = 170;
+	const HEAD_FOLLOW = 4.5; // radians of tilt per figure-width of glance
+	const headPose = $derived.by(() => {
+		const h = props.head;
+		if (!h) return null;
+		const lagged = glanceAt(clock - HEAD_LAG_MS);
+		const l = props.look;
+		const eyeX = l && l.weight > 0 ? lagged.x + (l.x - lagged.x) * l.weight : lagged.x;
+		const eyeY = l && l.weight > 0 ? lagged.y + (l.y - lagged.y) * l.weight : lagged.y;
+		const sway = 0.014 * Math.sin(clock / 1730) + 0.006 * Math.sin(clock / 830 + 1.1);
+		const breathNod = 0.0009 * Math.sin(clock / 580);
+		return {
+			rot: sway + eyeX * HEAD_FOLLOW + (h.tilt ?? 0),
+			nod: breathNod + eyeY * 0.5 + (h.nod ?? 0),
+			px: left + h.px * props.width,
+			py: top + h.py * props.height,
+		};
+	});
+
+	const extraTilt = (e: Extra) => (e.bias ?? 0) + (e.amp ?? 0) * Math.sin((clock + (e.phase ?? 0)) / (e.period ?? 2600));
 
 	// One scheduler per gesturing extra (plain map — it only holds each hand's next-gesture time).
 	const gestures = new Map<string, ReturnType<typeof createPointGesture>>();
@@ -181,6 +226,75 @@
 	});
 </script>
 
+{#snippet eyes()}
+	{#each props.pupils as p, i (i)}
+		{@const d = Math.min(p.nw * props.width, p.nh * props.height) * 0.7}
+		{@const cx = left + (p.nx + gaze.x) * props.width}
+		{@const cy = top + (p.ny + gaze.y) * props.height}
+		<!-- Clean dark disc (no cut-art outline) + a glint, sitting in the filled sclera. -->
+		<Circle x={cx} y={cy} diameter={d} anchor={0.5} backgroundColor={0x15100e} zIndex={z} />
+		<Circle
+			x={cx - d * 0.2}
+			y={cy - d * 0.24}
+			diameter={d * 0.34}
+			anchor={0.5}
+			backgroundColor={0xffffff}
+			backgroundAlpha={0.9}
+			zIndex={z}
+		/>
+	{/each}
+	{#if props.lids}
+		{#each props.lids as l, i (i)}
+			<!-- Skin lid drops from the eye top; overshoot onto surrounding skin is invisible (same colour). -->
+			<Rectangle
+				x={left + l.cx * props.width}
+				y={top + (l.cy - l.h / 2) * props.height}
+				anchor={{ x: 0.5, y: 0 }}
+				width={l.w * props.width}
+				height={lidDrop * l.h * props.height}
+				borderRadius={Math.min(l.w * props.width, l.h * props.height) * 0.5}
+				backgroundColor={skin}
+				zIndex={z}
+			/>
+			<!-- Eyelid crease: a soft dark line riding the lid's lower edge so a full blink reads as a
+			     closed eye (lids meeting) rather than a flat skin patch. -->
+			<Rectangle
+				x={left + l.cx * props.width}
+				y={top + (l.cy - l.h / 2 + lidDrop * l.h) * props.height}
+				anchor={0.5}
+				width={l.w * props.width * (lidRest > 0 ? 0.9 : 0.82)}
+				height={Math.max(2, l.h * props.height * (lidRest > 0 ? 0.1 : 0.07))}
+				borderRadius={l.h * props.height * 0.05}
+				backgroundColor={lidRest > 0 ? 0x1a0f0a : 0x3a2416}
+				backgroundAlpha={lidRest > 0 ? 0.85 : blink * 0.7}
+				zIndex={z}
+			/>
+		{/each}
+	{/if}
+{/snippet}
+
+{#snippet extra(e: Extra)}
+	<Sprite
+		key={e.key}
+		x={left + (e.nx + (e.nw * (e.px ?? 0.5))) * props.width}
+		y={top + (e.ny + (e.nh * (e.py ?? 0.5)) + (e.key === props.browKey ? (props.brow ?? 0) : 0)) * props.height}
+		anchor={{ x: e.px ?? 0.5, y: e.py ?? 0.5 }}
+		width={e.nw * props.width}
+		height={e.nh * props.height}
+		rotation={extraTilt(e)}
+		zIndex={z}
+	/>
+{/snippet}
+
+{#snippet sparkleRays()}
+	{#if sparkle && sparkle.a > 0.02}
+		<!-- 4-point sparkle: a vertical + horizontal ray and a bright centre, all flashing together. -->
+		<Rectangle x={sparkle.x} y={sparkle.y} anchor={0.5} width={sparkle.s * 0.15} height={sparkle.s} borderRadius={sparkle.s * 0.075} backgroundColor={0xffffff} backgroundAlpha={sparkle.a} zIndex={z} />
+		<Rectangle x={sparkle.x} y={sparkle.y} anchor={0.5} width={sparkle.s} height={sparkle.s * 0.15} borderRadius={sparkle.s * 0.075} backgroundColor={0xffffff} backgroundAlpha={sparkle.a} zIndex={z} />
+		<Circle x={sparkle.x} y={sparkle.y} diameter={sparkle.s * 0.42} anchor={0.5} backgroundColor={0xffffff} backgroundAlpha={Math.min(1, sparkle.a * 1.4)} zIndex={z} />
+	{/if}
+{/snippet}
+
 <Sprite
 	key={props.baseKey}
 	x={left + (baseRect.nx + baseRect.nw / 2) * props.width}
@@ -190,67 +304,38 @@
 	height={baseRect.nh * props.height}
 	zIndex={z}
 />
-{#each props.pupils as p, i (i)}
-	{@const d = Math.min(p.nw * props.width, p.nh * props.height) * 0.7}
-	{@const cx = left + (p.nx + glance.x) * props.width}
-	{@const cy = top + (p.ny + glance.y) * props.height}
-	<!-- Clean dark disc (no cut-art outline) + a glint, sitting in the filled sclera. -->
-	<Circle x={cx} y={cy} diameter={d} anchor={0.5} backgroundColor={0x15100e} zIndex={z} />
-	<Circle
-		x={cx - d * 0.2}
-		y={cy - d * 0.24}
-		diameter={d * 0.34}
-		anchor={0.5}
-		backgroundColor={0xffffff}
-		backgroundAlpha={0.9}
+{#if props.head && headPose}
+	{@const hr = props.head.rect}
+	<!-- The head and everything on the face turn together about the neck (the container's pivot is
+	     the neck in the same coordinates the children use, so they keep their usual placement). -->
+	<Container
+		x={headPose.px}
+		y={headPose.py + headPose.nod * props.height}
+		pivot={{ x: headPose.px, y: headPose.py }}
+		rotation={headPose.rot}
 		zIndex={z}
-	/>
-{/each}
-{#if props.lids}
-	{#each props.lids as l, i (i)}
-		<!-- Skin lid drops from the eye top; overshoot onto surrounding skin is invisible (same colour). -->
-		<Rectangle
-			x={left + l.cx * props.width}
-			y={top + (l.cy - l.h / 2) * props.height}
-			anchor={{ x: 0.5, y: 0 }}
-			width={l.w * props.width}
-			height={lidDrop * l.h * props.height}
-			borderRadius={Math.min(l.w * props.width, l.h * props.height) * 0.5}
-			backgroundColor={skin}
-			zIndex={z}
-		/>
-		<!-- Eyelid crease: a soft dark line riding the lid's lower edge so a full blink reads as a
-		     closed eye (lids meeting) rather than a flat skin patch. -->
-		<Rectangle
-			x={left + l.cx * props.width}
-			y={top + (l.cy - l.h / 2 + lidDrop * l.h) * props.height}
-			anchor={0.5}
-			width={l.w * props.width * (lidRest > 0 ? 0.9 : 0.82)}
-			height={Math.max(2, l.h * props.height * (lidRest > 0 ? 0.1 : 0.07))}
-			borderRadius={l.h * props.height * 0.05}
-			backgroundColor={lidRest > 0 ? 0x1a0f0a : 0x3a2416}
-			backgroundAlpha={lidRest > 0 ? 0.85 : blink * 0.7}
-			zIndex={z}
-		/>
-	{/each}
-{/if}
-{#if props.extras}
-	{#each props.extras as e (e.key)}
+	>
 		<Sprite
-			key={e.key}
-			x={left + (e.nx + (e.nw * (e.px ?? 0.5))) * props.width}
-			y={top + (e.ny + (e.nh * (e.py ?? 0.5))) * props.height}
-			anchor={{ x: e.px ?? 0.5, y: e.py ?? 0.5 }}
-			width={e.nw * props.width}
-			height={e.nh * props.height}
-			rotation={extraTilt(e)}
-			zIndex={z}
+			key={props.head.key}
+			x={left + (hr.nx + hr.nw / 2) * props.width}
+			y={top + (hr.ny + hr.nh / 2) * props.height}
+			anchor={0.5}
+			width={hr.nw * props.width}
+			height={hr.nh * props.height}
 		/>
+		{@render eyes()}
+		{#each props.extras ?? [] as e (e.key)}
+			{#if e.key === props.browKey}{@render extra(e)}{/if}
+		{/each}
+		{@render sparkleRays()}
+	</Container>
+	{#each props.extras ?? [] as e (e.key)}
+		{#if e.key !== props.browKey}{@render extra(e)}{/if}
 	{/each}
-{/if}
-{#if sparkle && sparkle.a > 0.02}
-	<!-- 4-point sparkle: a vertical + horizontal ray and a bright centre, all flashing together. -->
-	<Rectangle x={sparkle.x} y={sparkle.y} anchor={0.5} width={sparkle.s * 0.15} height={sparkle.s} borderRadius={sparkle.s * 0.075} backgroundColor={0xffffff} backgroundAlpha={sparkle.a} zIndex={z} />
-	<Rectangle x={sparkle.x} y={sparkle.y} anchor={0.5} width={sparkle.s} height={sparkle.s * 0.15} borderRadius={sparkle.s * 0.075} backgroundColor={0xffffff} backgroundAlpha={sparkle.a} zIndex={z} />
-	<Circle x={sparkle.x} y={sparkle.y} diameter={sparkle.s * 0.42} anchor={0.5} backgroundColor={0xffffff} backgroundAlpha={Math.min(1, sparkle.a * 1.4)} zIndex={z} />
+{:else}
+	{@render eyes()}
+	{#each props.extras ?? [] as e (e.key)}
+		{@render extra(e)}
+	{/each}
+	{@render sparkleRays()}
 {/if}

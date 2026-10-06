@@ -17,6 +17,7 @@
 
 	import { getContext } from '../game/context';
 	import { reelLanded } from '../game/stateGame.svelte';
+	import { winFocus } from '../game/winFocus.svelte';
 	import BoardContainer from './BoardContainer.svelte';
 	import BoardMask from './BoardMask.svelte';
 	import BoardBase from './BoardBase.svelte';
@@ -57,6 +58,12 @@
 	});
 
 	context.stateGameDerived.enhancedBoard.readyToSpinEffect();
+
+	// Win focus: dim the non-winning cells while win lines are on show (game/winFocus).
+	$effect(() => {
+		const on = context.stateGame.paylineWins.length > 0;
+		winFocus.set(on ? 1 : 0, { duration: on ? 220 : 120 });
+	});
 </script>
 
 {#if show}

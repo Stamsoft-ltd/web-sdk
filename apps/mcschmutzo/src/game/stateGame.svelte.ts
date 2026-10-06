@@ -8,6 +8,7 @@ import type { GameType, Position, RawSymbol, SymbolState } from './types';
 import { stateLayoutDerived } from './stateLayout';
 import { winLevelMap } from './winLevelMap';
 import { eventEmitter } from './eventEmitter';
+import { setChefMood } from './chefMood.svelte';
 import {
 	SYMBOL_SIZE,
 	BOARD_SIZES,
@@ -16,13 +17,23 @@ import {
 	SPIN_OPTIONS_DEFAULT,
 	SPIN_OPTIONS_FAST,
 	INITIAL_SYMBOL_STATE,
+	scatterLandRate,
 } from './constants';
 
 const onSymbolLand = ({ rawSymbol }: { rawSymbol: RawSymbol }) => {
+	// a WILD hitting the board: the chef lunges at it and smacks the counter
+	if (rawSymbol.name === 'W') setChefMood('wild');
 	if (rawSymbol.name === 'S') {
 		eventEmitter.broadcast({ type: 'soundScatterCounterIncrease' });
-		// every scatter that lands sounds (forcePlay: several can land within the clip's length)
-		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_scatter_land', forcePlay: true });
+		// every scatter that lands sounds (forcePlay: several can land within the clip's length), each
+		// one a step higher than the last (the counter was just bumped by the broadcast above)
+		const nth = Math.max(1, stateGame.scatterCounter);
+		eventEmitter.broadcast({
+			type: 'soundOnce',
+			name: 'sfx_scatter_land',
+			forcePlay: true,
+			rate: scatterLandRate(nth),
+		});
 	}
 };
 
@@ -120,9 +131,14 @@ export const stateGame = $state({
 	bonusTier: 'normal' as 'normal' | 'super',
 	paylineWins: [] as Array<{
 		lineIndex: number;
+		/** The paying symbol (picks the line's sauce, PaylineOverlay). */
+		symbol?: string;
 		path: Array<{ reel: number; row: number }>;
 	}>,
 	roundWin: 0,
+	// While a win screen (big-win pad / bonus total) counts up, the HUD WIN readout shows THIS value
+	// instead of roundWin, so the two never disagree. null = no win screen owns the readout.
+	winCountUp: null as number | null,
 	pendingStop: false,
 	awaitingFirstReveal: false,
 	hasAnticipationPending: false,
@@ -147,7 +163,7 @@ export const stateGame = $state({
 
 const boardLayout = () => {
 	// Portrait sits the board a touch higher so its top tucks under the logo header (which slightly
-	// overlaps it); desktop keeps the original centring. Landscape centres the board on the screen
+	// overlaps it); desktop sits a little low to leave the logo room. Landscape centres the board on the screen
 	// (it used to sit left of centre, which looked crowded against the balance/bet gutter).
 	const layoutType = stateLayoutDerived.layoutType();
 	const isPortrait = layoutType === 'portrait';
@@ -156,11 +172,13 @@ const boardLayout = () => {
 		x: stateLayoutDerived.mainLayout().width * (isLandscape ? 0.5 : 0.494),
 		// Landscape drops the board toward the bottom so the title logo (drawn just above the board
 		// top by FeatureOverlay) has clear space at the top instead of clipping off-screen.
+		// Desktop sits it 0.45 down (was 0.42): the board top at ~56 main units leaves the logo its full
+		// 36%-of-board width (boardLogo shrinks it to fit whatever room is above the board).
 		// Short portrait (main height < 1422, see stateLayout): the board sits just under the tight
 		// logo header and clear of the bottom HUD.
 		y:
 			stateLayoutDerived.mainLayout().height *
-			(isPortrait ? (stateLayoutDerived.mainLayout().height < 1422 ? 0.425 : 0.435) : isLandscape ? 0.53 : 0.42),
+			(isPortrait ? (stateLayoutDerived.mainLayout().height < 1422 ? 0.425 : 0.435) : isLandscape ? 0.53 : 0.45),
 		anchor: { x: 0.5, y: 0.5 },
 		pivot: { x: BOARD_SIZES.width / 2, y: BOARD_SIZES.height / 2 },
 		...BOARD_SIZES,

@@ -10,7 +10,7 @@
 	type Props = { hitAt?: number };
 	const props: Props = $props();
 
-	const word = ap('/assets/mcschmutzo/logo-word.webp');
+	const word = ap('/assets/mcschmutzo/logo-word-v2.webp');
 	const wordW = LOGO_WORD.w;
 	const wordH = LOGO_WORD.w / LOGO_WORD.aspect;
 	// The wordmark's box as % of the logo box (y units are box widths, the box is 1/LOGO_ASPECT tall).

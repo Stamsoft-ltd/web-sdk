@@ -54,6 +54,7 @@
 			}
 			while (sunk < v.shots.length && ts - start - FADE - sunk * STAGGER >= POP + FLY) {
 				potState.mult = v.shots[sunk].after ?? v.target;
+				context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_pot_pop', forcePlay: true });
 				sunk++;
 			}
 			if (ts - start < FADE + (v.shots.length - 1) * STAGGER + Math.max(SHOT_MS, BACK + FADE) + 150)

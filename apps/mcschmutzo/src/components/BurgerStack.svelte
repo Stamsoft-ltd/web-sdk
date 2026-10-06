@@ -72,7 +72,7 @@
 	}
 	.burger-stack--assemble .burger-layer img {
 		transform-origin: 50% 100%;
-		animation: slice-splat 0.9s linear var(--d) both;
+		animation: slice-splat 0.9s ease-in-out var(--d) both;
 	}
 	@keyframes slice-fall {
 		from {

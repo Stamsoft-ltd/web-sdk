@@ -7,6 +7,7 @@
 </script>
 
 <script lang="ts">
+	import PotDripsHtml from './PotDripsHtml.svelte';
 	import { stateBet, stateUi } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
@@ -22,6 +23,8 @@
 
 	const current = $derived(stateUi.freeSpinCounterCurrent ?? 0);
 	const total = $derived(stateUi.freeSpinCounterTotal ?? 0);
+	// Tension near the end: the card warms up over the last spins, and burns red on the final one.
+	const tension = $derived(total <= 1 || current <= 0 ? 0 : current >= total ? 2 : total - current <= 2 ? 1 : 0);
 	// The accordion reveals the running win multiplier once it climbs above 1x.
 	const mult = $derived(context.stateGame.globalMultiplier);
 	const hasMult = $derived(mult > 1);
@@ -55,6 +58,9 @@
 	// control bar — measured live (board from the pixi layout, bar from the DOM) so they never
 	// collide with either on any phone (the fixed % positions overlapped both on short screens).
 	let row = $state<{ top: number; h: number; c: number; accH: number } | null>(null);
+	// Portrait: the pot stands on the board's top-right corner in front of the phone chef
+	// (MobileChef) — Figma 8870:33637, placed in board-FRAME fractions like him.
+	let pot = $state<{ cx: number; cy: number; w: number } | null>(null);
 	$effect(() => {
 		if (!show || layoutType !== 'portrait') return;
 		let raf = 0;
@@ -62,6 +68,14 @@
 			const main = context.stateLayoutDerived.mainLayout();
 			const b = context.stateGameDerived.boardLayout();
 			const boardBottom = main.y - (main.height * main.scale) / 2 + (b.y + b.height / 2) * main.scale;
+			const s = main.scale;
+			const frameX = main.x + (b.x - b.width / 2 - main.width / 2) * s - b.width * 0.0206 * s;
+			const frameY = main.y + (b.y - b.height / 2 - main.height / 2) * s - b.height * 0.0224 * s;
+			const frameW = b.width * 1.043 * s;
+			const frameH = b.height * 1.0473 * s;
+			const nextPot = { cx: frameX + 0.844 * frameW, cy: frameY - 0.047 * frameH, w: 0.2 * frameW };
+			if (!pot || Math.abs(pot.cx - nextPot.cx) + Math.abs(pot.cy - nextPot.cy) + Math.abs(pot.w - nextPot.w) > 0.5)
+				pot = nextPot;
 			const bar = document.querySelector('.pt-controls')?.getBoundingClientRect();
 			// The round spin button bulges above the bar in the middle — the row is centred between the
 			// board and the BAR, and only its height is limited so it still clears the spin disc.
@@ -115,12 +129,16 @@
 		class="fp"
 		data-layout={layoutType}
 		class:fp--dim={context.stateGame.winDim > 0}
-		style={`--win-dim:${1 - context.stateGame.winDim};` + (row ? `--row-top:${row.top}px;--row-h:${row.h}px;--acc-top:${row.c - row.accH / 2}px;--acc-h:${row.accH}px` : '')}
+		class:fp--hidden={context.stateGame.freeSpinPopupShowing}
+		style={`--win-dim:${1 - context.stateGame.winDim};` + (row ? `--row-top:${row.top}px;--row-h:${row.h}px;--acc-top:${row.c - row.accH / 2}px;--acc-h:${row.accH}px` : '') + (pot ? `;--pot-cx:${pot.cx}px;--pot-cy:${pot.cy}px;--pot-w:${pot.w}px` : '')}
 	>
 		<!-- FREE SPINS counter -->
-		<div class="fp-card fp-fs">
+		<div class="fp-card fp-fs" class:fp-fs--tense={tension === 1} class:fp-fs--final={tension === 2}>
 			<span class="fp-card__label">{i18nDerived.translate('FREE SPINS')}</span>
-			<span class="fp-card__value">{current}/{total}</span>
+			<!-- flips over and punches on every change (the {#key} replays it) -->
+			{#key `${current}/${total}`}
+				<span class="fp-card__value fp-flip">{current}/{total}</span>
+			{/key}
 		</div>
 
 		<!-- TOTAL WIN — the running sum of the free-spin wins. -->
@@ -135,6 +153,8 @@
 		{#if layoutType !== 'desktop'}
 		<div class="fp-acc fp-pot" bind:this={potEl}>
 			<img class="fp-pot__img" src={potArt} alt="" draggable="false" />
+			<!-- its painted drips ooze and let drops go (game/potDrips), under the label -->
+			<PotDripsHtml />
 			<div class="fp-pot__front">
 				<span class="fp-pot__label">{i18nDerived.translate('POT MULTIPLIER')}</span>
 				{#key potState.mult}
@@ -155,6 +175,11 @@
 		z-index: 6;
 		pointer-events: none;
 		font-family: 'Nunito', sans-serif;
+	}
+	/* out of the way while the CONGRATS card is up (its PRESS TO CONTINUE sits over this row) */
+	.fp--hidden {
+		opacity: 0;
+		transition: opacity 0.2s ease;
 	}
 
 	.fp-card,
@@ -209,6 +234,62 @@
 		font-weight: 400;
 		font-size: clamp(22px, 2.6vw, 38px);
 		letter-spacing: 0.03em;
+	}
+
+	/* The spin count flips over (top edge towards the player) and punches past full size, back-out. */
+	.fp-flip {
+		display: inline-block;
+		animation: fp-flip 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+		transform-origin: 50% 60%;
+	}
+	@keyframes fp-flip {
+		from {
+			transform: perspective(200px) rotateX(-95deg) scale(1.3);
+			opacity: 0;
+		}
+		45% {
+			opacity: 1;
+		}
+		to {
+			transform: perspective(200px) rotateX(0deg) scale(1);
+		}
+	}
+	/* last spins: a warm pulsing rim; the final spin: red, faster */
+	.fp-fs--tense {
+		animation: fp-tense 1.1s ease-in-out infinite;
+	}
+	.fp-fs--final {
+		animation: fp-final 0.6s ease-in-out infinite;
+	}
+	.fp-fs--final .fp-card__value {
+		color: #ffd36b;
+	}
+	@keyframes fp-tense {
+		0%,
+		100% {
+			box-shadow: 0 5px 12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 140, 40, 0.35);
+		}
+		50% {
+			box-shadow: 0 5px 12px rgba(0, 0, 0, 0.5), 0 0 14px 2px rgba(255, 140, 40, 0.65);
+		}
+	}
+	@keyframes fp-final {
+		0%,
+		100% {
+			box-shadow: 0 5px 12px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(225, 30, 12, 0.6);
+			scale: 1;
+		}
+		50% {
+			box-shadow: 0 5px 12px rgba(0, 0, 0, 0.5), 0 0 20px 4px rgba(255, 50, 20, 0.85);
+			scale: 1.04;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.fp-flip,
+		.fp-fs--tense,
+		.fp-fs--final {
+			animation: none;
+		}
 	}
 
 	/* Mobile soup pot + multiplier plaque (cqw = % of the pot width; the design pot is 376 px wide, so
@@ -337,6 +418,17 @@
 		width: auto;
 		aspect-ratio: 1127 / 794;
 		max-width: 36%;
+	}
+
+	/* the pot (on the board's top-right corner, in front of the chef) instead of the printer slot */
+	.fp[data-layout='portrait'] .fp-acc.fp-pot {
+		top: var(--pot-cy, 14%);
+		left: var(--pot-cx, 84%);
+		right: auto;
+		width: var(--pot-w, 25%);
+		height: auto;
+		max-width: none;
+		translate: -50% -50%;
 	}
 
 	/* ── Desktop / landscape: FREE SPINS + TOTAL WIN stacked on the LEFT of the board, accordion above.

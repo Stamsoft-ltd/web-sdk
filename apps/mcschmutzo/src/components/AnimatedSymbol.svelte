@@ -1,3 +1,9 @@
+<script lang="ts" module>
+	// Wild landings share one clock so several wilds landing on the same frame are spread out.
+	const WILD_STAGGER_MS = 65;
+	let lastWildLand = -1e9;
+</script>
+
 <script lang="ts">
 	import { onMount, untrack } from 'svelte';
 	import { Circle, Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
@@ -9,6 +15,7 @@
 	import { getContext } from '../game/context';
 	import type { SymbolPartsConfig } from '../game/symbolParts';
 	import type { SymbolState } from '../game/types';
+	import { shakeAfter } from '../game/screenShake.svelte';
 
 	// A symbol reassembled from layered part sprites (see symbolParts.ts). While it is active
 	// (locked / winning — "yellow"), it keeps animating on a loop: each layer travels out along its
@@ -24,6 +31,8 @@
 		state?: SymbolState;
 		winning?: boolean;
 		oncomplete?: () => void;
+		/** Plays the land one-shot this much faster (the scatter's land sound is pitched up per scatter). */
+		landRate?: number;
 	};
 	const props: Props = $props();
 	const appContext = getContext();
@@ -91,6 +100,21 @@
 		}
 		return { open, scale: sc, alpha: Math.min(1, ms / 80) };
 	};
+	// Keyframes [ms, value], eased in and out of every key (smoothstep).
+	const keyed = (keys: [number, number][], ms: number) => {
+		for (let i = 1; i < keys.length; i += 1) {
+			const [ta, va] = keys[i - 1];
+			const [tb, vb] = keys[i];
+			if (ms <= tb) {
+				const x = Math.max(0, Math.min(1, (ms - ta) / (tb - ta)));
+				return va + (vb - va) * x * x * (3 - 2 * x);
+			}
+		}
+		return keys[keys.length - 1][1];
+	};
+	// Wild impact: a micro shake of the whole symbol, ~110 ms from the letters' hit, ~2.5 px.
+	const SHAKE_MS = 110;
+	const SHAKE_PX = SYMBOL_SIZE * 0.021;
 	const SLAM_MS = 1700; // one wild slam cycle while active (idle uses PERIOD_IDLE)
 	// Slam cycle shared by the layers and the splash droplets: 0 → 0.38 rise, → 0.5 fall, impact at 0.5.
 	const slamPhase = (t: number, idle: boolean) => (t / (idle ? PERIOD_IDLE : SLAM_MS)) % 1; // slower, softer loop for symbols that are alive at rest (config.idle)
@@ -153,6 +177,7 @@
 	// slight overshoot at its own `landDelay`, so the parts arrive in sequence (splat first, then
 	// text). Runs once per landing, independent of the win/lock loop, then hands back to rest/loop.
 	const LAND_MS = $derived(props.config.landMs ?? 800);
+	const landRate = $derived(props.landRate ?? 1);
 	let landStart = $state(-1);
 	let landClock = $state(0);
 	// Fire the land one-shot exactly ONCE per entry into the 'land' state. A bare `if (state==='land')`
@@ -169,7 +194,19 @@
 			if (!landLatched) {
 				landLatched = true;
 				const now = performance.now(); // (don't read landStart back here — see the note above)
-				landStart = now;
+				// Wilds landing on the same frame hit one after another, not all at once.
+				const start = props.config.splat ? Math.max(now, lastWildLand + WILD_STAGGER_MS) : now;
+				if (props.config.splat) {
+					lastWildLand = start;
+					// the letters' hit jolts the whole board a touch (on top of this symbol's own shake)
+					const hitIn = start - now + (WILD_SPLAT_LAND.textHit * LAND_MS) / (props.landRate ?? 1);
+					shakeAfter(hitIn, 2.2, 110);
+					setTimeout(
+						() => appContext.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_wild_land', forcePlay: true }),
+						Math.max(0, hitIn),
+					);
+				}
+				landStart = start;
 				landClock = now;
 			}
 		} else {
@@ -181,7 +218,7 @@
 		let raf = 0;
 		const loop = (ts: number) => {
 			landClock = ts;
-			if (ts - landStart < LAND_MS) raf = requestAnimationFrame(loop);
+			if ((ts - landStart) * landRate < LAND_MS) raf = requestAnimationFrame(loop);
 			else {
 				landStart = -1;
 				// Hand over to the loop from its rest pose: the loop clock kept ticking under the
@@ -225,7 +262,7 @@
 		}> = [];
 		// Land one-shot in progress: scale each layer in (0 → overshoot → 1) at its own landDelay.
 		const landing = landStart >= 0;
-		const lt = landing ? Math.min(1, (landClock - landStart) / LAND_MS) : 1;
+		const lt = landing ? Math.max(0, Math.min(1, ((landClock - landStart) * landRate) / LAND_MS)) : 1;
 		for (const l of props.config.layers) {
 			if (landing && props.config.landFall) {
 				const delay = l.landDelay ?? 0;
@@ -265,24 +302,48 @@
 				continue;
 			}
 			if (landing && l.landStamp) {
-				// Stamp: comes DOWN from 1.5× (accelerating) onto the splat, hits at textHit, squashes
-				// flat and springs back — the sauce ripples from the same hit (wildSplat).
-				const start = l.landDelay ?? 0;
-				const hit = WILD_SPLAT_LAND.textHit;
+				// Pop: the letters appear as the drop hits the cell and pop 0 → 125% (the impact, at
+				// textHit — the sauce ripples and the symbol shakes from it) → 92% → 100%.
+				const ms = lt * LAND_MS;
+				const t0 = WILD_SPLAT_LAND.dropEnd * LAND_MS;
+				const t1 = WILD_SPLAT_LAND.textHit * LAND_MS;
+				const s = ms < t0 ? 0 : keyed([[t0, 0], [t1, 1.25], [t1 + 90, 0.92], [t1 + 200, 1]], ms);
+				out.push({
+					id: l.key,
+					key: l.key,
+					x: cx + (l.nx - 0.5) * w,
+					y: cy + (l.ny - 0.5) * h,
+					width: l.nw * w * s,
+					height: l.nh * h * s,
+					rotation: 0,
+					alpha: ms < t0 ? 0 : 1,
+				});
+				continue;
+			}
+			if (landing && l.clashPop) {
+				// Lettering: drops in from 1.4× just before the first clash, lands ON it (squash →
+				// spring back), then bumps on the second, lighter clash.
+				const ms = lt * LAND_MS;
+				const [h1, h2] = SWORD_LAND_HITS;
+				const IN_MS = 110;
 				let s = 1;
 				let sx = 1;
 				let sy = 1;
 				let alpha = 1;
-				if (lt < start) alpha = 0;
-				else if (lt < hit) {
-					const q = (lt - start) / (hit - start);
-					s = 1.5 - 0.5 * q * q;
+				if (ms < h1 - IN_MS) alpha = 0;
+				else if (ms < h1) {
+					const q = (ms - (h1 - IN_MS)) / IN_MS;
+					s = 1.4 - 0.4 * q * q;
 					alpha = Math.min(1, q * 3);
 				} else {
-					const v = (lt - hit) / (1 - hit);
-					const d = Math.exp(-6 * v) * Math.cos(v * Math.PI * 3);
-					sx = 1 + 0.14 * d;
-					sy = 1 - 0.18 * d;
+					const v = (ms - h1) / 320;
+					const d = v < 1 ? Math.exp(-5 * v) * Math.cos(v * Math.PI * 3) : 0;
+					sx = 1 + 0.12 * d;
+					sy = 1 - 0.14 * d;
+					if (ms >= h2) {
+						const u = (ms - h2) / 220;
+						s = 1 + (u < 1 ? l.clashPop * Math.exp(-4 * u) * Math.cos(u * Math.PI * 1.5) : 0);
+					}
 				}
 				out.push({
 					id: l.key,
@@ -293,6 +354,26 @@
 					height: l.nh * h * s * sy,
 					rotation: 0,
 					alpha,
+				});
+				continue;
+			}
+			if (active && l.clashPop) {
+				// Lettering in the idle / win loop: still, but punched by each clash of the tools
+				// (swordOpen crosses back through the cross at f ≈ 0.636).
+				const f = ((clock - startTime) / SWORD_MS) % 1;
+				const amp = (idle ? idleAmp : 1) * ramp;
+				const v = (f - 0.636) / 0.12;
+				const d = v >= 0 && v < 1 ? Math.exp(-4 * v) * Math.cos(v * Math.PI * 1.5) : 0;
+				const s = 1 + l.clashPop * amp * d;
+				out.push({
+					id: l.key,
+					key: l.key,
+					x: cx + (l.nx - 0.5) * w,
+					y: cy + (l.ny - 0.5) * h,
+					width: l.nw * w * s,
+					height: l.nh * h * s,
+					rotation: 0,
+					alpha: 1,
 				});
 				continue;
 			}
@@ -629,14 +710,31 @@
 	});
 	const splatLoop = $derived({ t: splatT, amp: splatAmp });
 	const drawSplat = (g: any) => {
-		const land = landStart >= 0 ? Math.min(1, (landClock - landStart) / LAND_MS) : null;
+		const land = landStart >= 0 ? Math.max(0, Math.min(1, ((landClock - landStart) * landRate) / LAND_MS)) : null;
 		drawShapes(g, splatShapes({ land, ...splatLoop }));
 	};
-	// Win drips off the splat's bottom lobes — in the cell-clipped container, only while winning.
+	// Drips off the splat's bottom lobes — in the cell-clipped container. While winning they loop; on
+	// landing one drip forms (and one pinches off) as the splat settles, faded in and out.
 	const drawSplatDrips = (g: any) => {
-		if (!props.winning || landStart >= 0) return;
+		if (landStart >= 0) {
+			const ms = landClock - landStart;
+			const from = WILD_SPLAT_LAND.spreadEnd * LAND_MS - 60;
+			if (ms < from) return;
+			const amp = 0.8 * keyed([[0, 0], [140, 1], [LAND_MS - from - 120, 1], [LAND_MS - from, 0]], ms - from);
+			drawShapes(g, splatDrips(ms - from, amp));
+			return;
+		}
+		if (!props.winning) return;
 		drawShapes(g, splatDrips(splatLoop.t, splatLoop.amp));
 	};
+	// The impact shake (wild): a few fast, damped jolts of the whole symbol from the letters' hit.
+	const shake = $derived.by(() => {
+		if (!props.config.splat || landStart < 0) return { x: 0, y: 0 };
+		const v = (landClock - landStart - WILD_SPLAT_LAND.textHit * LAND_MS) / SHAKE_MS;
+		if (v < 0 || v >= 1) return { x: 0, y: 0 };
+		const d = SHAKE_PX * (1 - v) ** 2;
+		return { x: d * Math.sin(v * Math.PI * 7), y: d * 0.6 * Math.cos(v * Math.PI * 5) };
+	});
 
 	// Fizz (cup) + sizzle (sausage) particles — deterministic off the clock, only while active.
 	// clash: a white-hot flash + a burst of short spark streaks at the crossing (u: 0 → 1 over ~250 ms)
@@ -659,7 +757,7 @@
 	const drawFx = (g: SquirtGraphics) => {
 		// the landing slam's clash (every landing, winning or not)
 		if (landStart >= 0 && props.config.clash && props.config.layers.some((l) => l.swing)) {
-			const ms = landClock - landStart;
+			const ms = (landClock - landStart) * landRate;
 			// a full spark at the clash, a smaller one at the second
 			SWORD_LAND_HITS.forEach((hit, k) => drawClash(g, (ms - hit) / 260, k === 0 ? 1 : 0.6, Math.floor(landStart) + k));
 			return;
@@ -812,7 +910,7 @@
 	});
 </script>
 
-<Container>
+<Container x={shake.x} y={shake.y}>
 	{#if props.config.splat}
 		<Graphics draw={drawSplat} />
 	{/if}

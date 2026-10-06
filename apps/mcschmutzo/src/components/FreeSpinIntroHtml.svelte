@@ -2,9 +2,17 @@
 	// Module scope so the art preloads during the loading screen (mounts on demand).
 	import { ap } from '../lib/preloadArt';
 
-	// Large plaque (bigger-cover) for the bonus intro; the burger sits on its top edge.
-	const plaqueArt = ap('/assets/mcschmutzo/congrats-cover-lg.webp');
-	const starArt = ap('/assets/mcschmutzo/win/parts/win-star.webp');
+	// The CONGRATS card (Figma McShmutzo 8808:12044 / card group 8808:13038; scripts/build-fs-congrats.py):
+	// the red scalloped board, the design's own ketchup + mustard splats (cut from its splat sheet),
+	// the star and the soup pot of the spin counter.
+	const FS = '/assets/mcschmutzo/fs-congrats';
+	const boardArt = ap(`${FS}/board-v1.webp`);
+	const ketchupBig = ap(`${FS}/ketchup-big-v1.webp`);
+	const mustardBig = ap(`${FS}/mustard-big-v1.webp`);
+	const ketchupDrops = ap(`${FS}/ketchup-drops-v1.webp`);
+	const mustardDrops = ap(`${FS}/mustard-drops-v1.webp`);
+	const starArt = ap(`${FS}/star-v1.webp`);
+	const potArt = ap(`${FS}/pot-v1.webp`);
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
 </script>
 
@@ -15,9 +23,10 @@
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
-	import BurgerStack from './BurgerStack.svelte';
-	import CongratsSplashes from './CongratsSplashes.svelte';
 	import { continueBottom } from '../lib/continuePos';
+	import { popOut } from '../lib/popOut';
+	import { cubicIn } from 'svelte/easing';
+	import { fade } from 'svelte/transition';
 	// Prompt position (above the portrait HUD; default elsewhere) — re-measured on resize.
 	let contBottom = $state('clamp(14px, 3.5vh, 34px)');
 	$effect(() => {
@@ -50,14 +59,12 @@
 		},
 	});
 
-	// Bonus name keyed off what produced the free spins: a bought Normal / Super bonus, or the natural
-	// trigger (3 scatters = Normal Bonus, 4 = Super Bonus — see stateGame.bonusTier).
-	const isSuper = $derived(
-		stateBet.activeBetModeKey === 'bonus2' ||
-			(stateBet.activeBetModeKey !== 'bonus1' && context.stateGame.bonusTier === 'super'),
-	);
-	const bonusName = $derived(i18nDerived.translate(isSuper ? 'SUPER BONUS TITLE' : 'NORMAL BONUS TITLE'));
-	const bonusBlurb = $derived(i18nDerived.translateVars('BONUS BLURB', { count: totalFreeSpins }));
+	// One soup pot per free spin won, in rows of five (the design's 2 × 5 for 10); capped at 3 rows.
+	const POTS_PER_ROW = 5;
+	const potRows = $derived.by(() => {
+		const n = Math.max(0, Math.min(15, totalFreeSpins));
+		return Array.from({ length: Math.ceil(n / POTS_PER_ROW) }, (_, r) => Math.min(POTS_PER_ROW, n - r * POTS_PER_ROW));
+	});
 
 	// DEV preview: press 6 to show the free-spin bonus congrats with mock data.
 	import { onMount } from 'svelte';
@@ -103,7 +110,7 @@
 
 {#if show}
 	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-	<div class="fs-backdrop" onclick={proceed}>
+	<div class="fs-backdrop" onclick={proceed} out:fade={{ duration: 260, easing: cubicIn }}>
 		<button
 			class="fs-close"
 			type="button"
@@ -115,27 +122,29 @@
 			aria-label={i18nDerived.translate('CLOSE')}
 		></button>
 
-		<div class="fs-stage" role="dialog" aria-modal="true">
-			<!-- Mustard + ketchup, drawn in code and squeezed out from behind the plaque when the
-			     CONGRATS title slams onto it (HIT, 0.64s in — see the title's stamp animation). -->
-			<CongratsSplashes hitMs={640} />
+		<div class="fs-stage" role="dialog" aria-modal="true" out:popOut>
+			<!-- Ketchup + mustard behind the board: squeezed out when the CONGRATS title slams onto it
+			     (the HIT, 0.64s in), then they keep wobbling like fresh sauce. Placed as in 8808:13038. -->
+			<img class="fs-sauce fs-sauce--mustard" src={mustardBig} alt="" draggable="false" />
+			<img class="fs-sauce fs-sauce--ketchup" src={ketchupBig} alt="" draggable="false" />
+			<img class="fs-sauce fs-drops fs-drops--ketchup" src={ketchupDrops} alt="" draggable="false" />
+			<img class="fs-sauce fs-drops fs-drops--mustard" src={mustardDrops} alt="" draggable="false" />
 
-			<!-- Burger straddling the plaque's top edge, in front of the rim — the real slice burger so it assembles. -->
-			<div class="fs-burger"><BurgerStack assemble /></div>
-
-			<!-- Flanking stars (top-right + bottom-left) that twinkle, like the win pad. -->
-			<img class="fs-star fs-star--tr" src={starArt} alt="" draggable="false" />
-			<img class="fs-star fs-star--bl" src={starArt} alt="" draggable="false" />
-
-
-			<div class="fs-plaque" style={`background-image:url('${plaqueArt}')`}>
-				<div class="fs-content">
-					<p class="fs-congrats">{i18nDerived.translate('CONGRATS')}</p>
-					<p class="fs-youwon">{i18nDerived.translate('YOU WON')}</p>
-					<p class="fs-bonus">{bonusName}</p>
-					<p class="fs-blurb">{bonusBlurb}</p>
-					<div class="fs-count"><span>{totalFreeSpins}</span></div>
-					<p class="fs-label">{i18nDerived.translate('FREE SPINS')}</p>
+			<div class="fs-board" style={`background-image:url('${boardArt}')`}>
+				<p class="fs-congrats">{i18nDerived.translate('CONGRATS')}</p>
+				<p class="fs-youwon">{i18nDerived.translate('YOU WON')}</p>
+				<img class="fs-star fs-star--l" src={starArt} alt="" draggable="false" />
+				<p class="fs-count">{totalFreeSpins}</p>
+				<img class="fs-star fs-star--r" src={starArt} alt="" draggable="false" />
+				<p class="fs-label">{i18nDerived.translate('FREE SPINS')}</p>
+				<div class="fs-pots" aria-hidden="true">
+					{#each potRows as count, r (r)}
+						<div class="fs-pots__row">
+							{#each Array(count) as _, i (i)}
+								<span class="fs-pot" style={`--i:${r * POTS_PER_ROW + i}`}><img src={potArt} alt="" draggable="false" /></span>
+							{/each}
+						</div>
+					{/each}
 				</div>
 			</div>
 		</div>
@@ -178,169 +187,183 @@
 		transform: scale(0.94);
 	}
 
+	/* The stage IS the board (740 × 493 in the design): every part is placed in % of it (and type in
+	   cqw of its width) straight from 8808:13038, so it scales as one. The sauces overhang it — up to
+	   11% left, 7.5% right, 12% above — so the width cap leaves that room. */
 	.fs-stage {
 		position: relative;
-		/* Height-capped too (86dvh of WIDTH ≈ 62% of the screen height for the plaque): the burger sits
-		   25% of the plaque above it and the splashes overhang, so on short landscape screens a
-		   width-only cap pushed the burger + top sauces off the top. */
-		width: min(600px, 90vw, 86dvh);
+		/* height cap: the (centred) board must end above the fixed PRESS TO CONTINUE prompt (~280px of
+		   the height is prompt + HUD + air); the 70dvh floor keeps tiny popouts from collapsing */
+		width: min(740px, 80vw, max(calc((100dvh - 280px) * 1.5), 70dvh));
+		aspect-ratio: 740 / 493.44;
 		container-type: inline-size;
-		aspect-ratio: 1366 / 989;
-		font-family: 'Nunito', sans-serif;
+		font-family: 'Bowlby One SC', sans-serif;
+		/* pops in; then takes the title's HIT (0.64s) */
+		animation:
+			fs-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+			fs-hit 0.52s ease-in-out 0.64s;
 	}
 
-
-	.fs-plaque {
+	.fs-board {
 		position: absolute;
 		inset: 0;
 		z-index: 1;
-		background-size: 100% 100%;
-		background-repeat: no-repeat;
-		background-position: center;
-		display: grid;
-		place-items: center;
-		/* The win (plaque + copy) pops in first. */
-		animation:
-			fs-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both,
-			fs-hit 0.52s linear 0.64s;
+		background: center / 100% 100% no-repeat;
+		filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.45));
 	}
-
-	/* Burger peeks over the top edge of the plaque from BEHIND it. It's the real slice-built burger
-	   (BurgerStack) so it assembles / disassembles like the reels; a contained --sep keeps the burst
-	   from spreading too far above the plaque. Pops in once, then the slices loop. */
-	.fs-burger {
+	.fs-board p {
 		position: absolute;
 		left: 50%;
-		/* Straddles the plaque's top edge, IN FRONT of the rim: the bottom bun sits on the red field just
-		   under the rim, the top bun stands up over it (clear of the CONGRATS title below). */
-		top: -9%;
-		transform: translateX(-50%);
-		width: 20%;
-		aspect-ratio: 1.077;
-		z-index: 2;
-		pointer-events: none;
-		--sep: 0.5;
-		animation: fs-burger-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-	}
-
-	/* Twinkling stars, tucked INSIDE the red field corners (top-right + bottom-left), like the win pad. */
-	.fs-star {
-		position: absolute;
-		width: 10%;
-		height: auto;
-		z-index: 2;
-		pointer-events: none;
-		filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35));
-		animation:
-			fs-star-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both,
-			fs-star-twinkle 1.5s ease-in-out 0.9s infinite;
-	}
-	.fs-star--tr {
-		top: 13%;
-		right: 11%;
-	}
-	.fs-star--bl {
-		bottom: 13%;
-		left: 11%;
-		/* Offset so the two don't twinkle in lock-step. */
-		animation-delay: 0.45s, 1.65s;
-	}
-	@keyframes fs-star-in {
-		0% { opacity: 0; transform: scale(0) rotate(-45deg); }
-		70% { opacity: 1; transform: scale(1.18) rotate(9deg); }
-		100% { opacity: 1; transform: scale(1) rotate(0deg); }
-	}
-	@keyframes fs-star-twinkle {
-		0%, 100% {
-			transform: scale(1) rotate(-5deg);
-			filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35)) brightness(1);
-		}
-		50% {
-			transform: scale(1.14) rotate(5deg);
-			filter: drop-shadow(0 0 9px rgba(255, 226, 120, 0.95)) brightness(1.28);
-		}
-	}
-
-	/* Copy sits within the red field of the plaque. */
-	.fs-content {
-		position: relative;
-		z-index: 3;
-		width: 62%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-		color: #ffffff;
-		gap: min(clamp(3px, 0.9vmin, 8px), 1.3cqw);
-	}
-
-	.fs-congrats {
 		margin: 0;
-		font-family: 'Bowlby One SC', sans-serif;
-		font-weight: 400;
-		font-size: min(clamp(1.4rem, 5.6vmin, 2.5rem), 6.67cqw);
+		translate: -50% 0;
+		white-space: nowrap;
 		line-height: 1;
-		letter-spacing: 0.02em;
-		text-transform: uppercase;
-		text-shadow: 0 2px 5px rgba(90, 10, 5, 0.6);
-		/* STAMPED onto the plaque: drops from 1.7× and slams down at 0.64s (the HIT that squashes the
-		   plaque and squeezes the sauce out — CongratsSplashes), squashes flat, springs back, then
-		   breathes. */
+		text-align: center;
+	}
+
+	/* ── sauces: centre + width (% of the board) and rotation from the design; each squeezes out from
+	   the edge it hides behind (transform-origin), springs, then keeps a slow wet wobble ── */
+	.fs-sauce {
+		position: absolute;
+		height: auto;
+		translate: -50% -50%;
+		pointer-events: none;
+		z-index: 0;
+		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
 		animation:
-			fs-stamp 0.85s linear 0.33s both,
+			fs-squeeze 0.75s cubic-bezier(0.2, 1.6, 0.4, 1) 0.64s both,
+			fs-wobble 2.6s ease-in-out 1.45s infinite;
+	}
+	.fs-sauce--mustard {
+		left: 8.17%;
+		top: 14.38%;
+		width: 31.41%;
+		rotate: -29.85deg;
+		transform-origin: 80% 85%;
+	}
+	.fs-sauce--ketchup {
+		left: 88%;
+		top: 11.75%;
+		width: 39.21%;
+		transform-origin: 22% 88%;
+		animation-delay: 0.68s, 1.9s;
+	}
+	/* the loose drops fly off the board's sides a beat later and then bob */
+	.fs-drops {
+		animation:
+			fs-fling 0.6s cubic-bezier(0.15, 0.9, 0.3, 1.15) 0.74s both,
+			fs-bob 2.2s ease-in-out 1.4s infinite;
+	}
+	.fs-drops--ketchup {
+		left: 0.92%;
+		top: 44.27%;
+		width: 12.92%;
+		rotate: 25.64deg;
+		--fly-x: 9cqw;
+	}
+	.fs-drops--mustard {
+		left: 97.67%;
+		top: 43.2%;
+		width: 15.06%;
+		--fly-x: -9cqw;
+		animation-delay: 0.8s, 1.75s;
+	}
+
+	/* ── copy (8808:13079 / 13080 / 13044 / 13045) ── */
+	.fs-congrats {
+		top: 18.9%;
+		translate: -50% -50% !important;
+		font-size: 5.4cqw;
+		letter-spacing: 0.035em;
+		text-transform: uppercase;
+		color: #fff1cf;
+		text-shadow: 0 0.35cqw 0.8cqw rgba(70, 8, 4, 0.55);
+		/* STAMPED onto the board: drops from 1.7×, slams down at 0.64s (the HIT), squashes, springs
+		   back, then breathes */
+		animation:
+			fs-stamp 0.85s ease-in-out 0.33s both,
 			fs-breathe 2.3s ease-in-out 1.3s infinite;
 	}
 	.fs-youwon {
-		margin: 0;
-		font-family: 'Nunito', sans-serif;
-		font-weight: 700;
-		font-size: min(clamp(0.62rem, 1.9vmin, 0.9rem), 2.4cqw);
-		letter-spacing: 0.16em;
+		top: 25.08%;
+		font-size: 2.16cqw;
+		letter-spacing: 0.03em;
+		color: #fff1cf;
+		animation: fs-rise 0.4s ease-out 0.85s both;
 	}
-	.fs-bonus {
-		margin: 0;
-		font-family: 'Nunito', sans-serif;
-		font-weight: 700;
-		font-size: min(clamp(0.95rem, 3vmin, 1.35rem), 3.6cqw);
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-	}
-	.fs-blurb {
-		margin: min(clamp(2px, 0.8vmin, 8px), 1.3cqw) 0 0;
-		font-family: 'Nunito', sans-serif;
-		font-weight: 500;
-		font-size: min(clamp(0.62rem, 1.9vmin, 0.88rem), 2.35cqw);
-		line-height: 1.35;
-		color: #ffe9d9;
-		max-width: 32ch;
-	}
-
-	/* Amount box per spec. */
 	.fs-count {
-		margin: min(clamp(6px, 1.6vmin, 14px), 2.3cqw) 0 min(clamp(2px, 0.8vmin, 6px), 1cqw);
-		display: grid;
-		place-items: center;
-		min-width: min(clamp(74px, 14vmin, 108px), 18cqw);
-		padding: min(clamp(6px, 1.4vmin, 12px), 2cqw) min(clamp(16px, 3vmin, 26px), 4.3cqw);
-		border-radius: 12px;
-		background: #292624;
-		border: 1px solid #ffffff;
-		box-shadow: 0px 0px 17px 0px #e8b574;
-	}
-	.fs-count span {
-		font-family: 'Bowlby One SC', sans-serif;
-		font-weight: 400;
-		font-size: min(clamp(1.5rem, 4.6vmin, 2.2rem), 5.9cqw);
-		line-height: 1;
-		color: #ffffff;
+		top: 43.62%;
+		translate: -50% -50% !important;
+		font-size: 14.3cqw;
+		color: #fec402;
+		text-shadow:
+			0 0.5cqw 0 #9c5a00,
+			0 0.9cqw 1.6cqw rgba(60, 6, 2, 0.6);
+		animation: fs-punch 0.55s cubic-bezier(0.34, 1.7, 0.6, 1) 0.95s both;
 	}
 	.fs-label {
-		margin: 0;
-		font-family: 'Nunito', sans-serif;
-		font-weight: 700;
-		font-size: min(clamp(0.9rem, 2.8vmin, 1.25rem), 3.33cqw);
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
+		top: 55.68%;
+		font-size: 2.7cqw;
+		letter-spacing: 0.03em;
+		color: #fff1cf;
+		animation: fs-rise 0.4s ease-out 1.15s both;
+	}
+	.fs-star {
+		position: absolute;
+		width: 8.78%;
+		height: auto;
+		translate: -50% -50%;
+		filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35));
+		animation:
+			fs-star-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.05s both,
+			fs-star-twinkle 1.5s ease-in-out 1.6s infinite;
+	}
+	.fs-star--l {
+		left: 34.51%;
+		top: 45.04%;
+	}
+	.fs-star--r {
+		left: 68.29%;
+		top: 44.43%;
+		animation-delay: 1.15s, 2.35s;
+	}
+
+	/* ── spin counter: overlapping discs (#902220, #FFB3B1 rim) each holding a pot (8808:13046) ── */
+	.fs-pots {
+		position: absolute;
+		left: 50.4%;
+		top: 63.79%;
+		translate: -50% 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.fs-pots__row {
+		display: flex;
+	}
+	.fs-pots__row + .fs-pots__row {
+		margin-top: -2.9cqw;
+	}
+	.fs-pot {
+		position: relative;
+		width: 9.29cqw;
+		aspect-ratio: 1;
+		border-radius: 50%;
+		background: #902220;
+		box-shadow: inset 0 0 0 0.1cqw #ffb3b1;
+		/* one after another, like spins being dealt */
+		animation: fs-pot-in 0.42s cubic-bezier(0.34, 1.7, 0.6, 1) calc(1.25s + var(--i) * 0.07s) both;
+	}
+	.fs-pot + .fs-pot {
+		margin-left: -2.23cqw;
+	}
+	.fs-pot img {
+		position: absolute;
+		left: 3.1%;
+		top: 4.2%;
+		width: 88.4%;
+		height: 88.4%;
+		object-fit: contain;
 	}
 
 	.fs-continue {
@@ -376,11 +399,39 @@
 		60% { opacity: 1; transform: scale(1.03); }
 		100% { opacity: 1; transform: scale(1); }
 	}
-	/* Burger keeps its translateX(-50%) centring while it pops. */
-	@keyframes fs-burger-pop {
-		0% { opacity: 0; transform: translateX(-50%) scale(0.55); }
-		60% { opacity: 1; transform: translateX(-50%) scale(1.06); }
-		100% { opacity: 1; transform: translateX(-50%) scale(1); }
+	/* sauce squeezed out from behind the board: from a sliver at its hidden edge to an overshoot */
+	@keyframes fs-squeeze {
+		0% { opacity: 0; transform: scale(0.15, 0.3); }
+		25% { opacity: 1; }
+		100% { opacity: 1; transform: scale(1); }
+	}
+	/* fresh sauce never quite sits still: a slow uneven swell */
+	@keyframes fs-wobble {
+		0%, 100% { transform: scale(1) skewX(0deg); }
+		35% { transform: scale(1.035, 0.975) skewX(1.2deg); }
+		70% { transform: scale(0.985, 1.02) skewX(-0.8deg); }
+	}
+	/* drops flung outward from behind the board's side */
+	@keyframes fs-fling {
+		0% { opacity: 0; transform: translateX(var(--fly-x)) scale(0.3) rotate(-20deg); }
+		30% { opacity: 1; }
+		100% { opacity: 1; transform: translateX(0) scale(1) rotate(0deg); }
+	}
+	@keyframes fs-bob {
+		0%, 100% { transform: translateY(0) rotate(0deg); }
+		50% { transform: translateY(-0.6cqw) rotate(3deg); }
+	}
+	@keyframes fs-rise {
+		from { opacity: 0; transform: translateY(1cqw); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+	@keyframes fs-punch {
+		0% { opacity: 0; transform: scale(0.2); }
+		100% { opacity: 1; transform: scale(1); }
+	}
+	@keyframes fs-pot-in {
+		0% { opacity: 0; transform: translateY(-3cqw) scale(0.4); }
+		100% { opacity: 1; transform: translateY(0) scale(1); }
 	}
 	/* Stamp: hit at 36% (0.64s after the screen opens), squash wide + flat, spring back. */
 	@keyframes fs-stamp {
@@ -406,7 +457,7 @@
 		50% { transform: scale(1.04); }
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.fs-plaque, .fs-burger, .fs-congrats, .fs-star { animation: none; }
+		.fs-stage, .fs-sauce, .fs-congrats, .fs-youwon, .fs-count, .fs-label, .fs-star, .fs-pot { animation: none; }
 	}
 
 	/* Tiny popouts (~400x225): shrink the close (X) so it doesn't dominate the small screen. */

@@ -11,6 +11,8 @@
 	} from '../game/panorama';
 	import SauceFx from './SauceFx.svelte';
 	import LogoHtml from './LogoHtml.svelte';
+	import { getContext } from '../game/context';
+	import { chefPose, idleSnicker } from '../game/chefMood.svelte';
 
 	type Props = {
 		onpress: () => void;
@@ -85,14 +87,31 @@
 	// The logo drops in (CSS logo-in: 1.75s delay, lands 43% into its 1.4s) and the impact squeezes
 	// its ketchup splats out — LogoHtml bursts them this many ms after mount.
 	const LOGO_HIT_MS = 1750 + 0.43 * 1400;
+	// The splash mounts as soon as the game CAN proceed, often still under the Press Play pre-loader
+	// (PressPlayLoader, gone on stateApp.loaded + its 320ms fade). Its whole entrance (cards in, the
+	// logo's drop + hit) is held paused until then, or a slow load plays it all unseen and the logo
+	// just "is there".
+	const context = getContext();
+	let revealed = $state(false);
+	$effect(() => {
+		if (!context.stateApp.loaded || revealed) return;
+		const id = setTimeout(() => (revealed = true), 250);
+		return () => clearTimeout(id);
+	});
 	/** Percent of a box dimension, for laying art-pixel geometry over fluid-sized layers. */
 	const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
 
 	// The chef is the board chef (Figma "Frame 427321577", 4× = 1304×1699) flipped horizontally so he
 	// faces the cards from the left. The base is the relaxed-arm body (McShmutzo node 8779:1769) with
 	// the old eye whites + brows pasted in, pre-mirrored (the nametag is its own readable layer).
-	// Layers: base (pupils erased) + the bottle hand, drawn BEHIND the body and shaking about the wrist. Pupils and eyelids are drawn in CSS. Geometry is in the frame's px.
-	const manBase = ap('/assets/mcschmutzo/splash/man-base-v6.webp');
+	// Layers: body (pupils erased) + the bottle hand, drawn BEHIND the body and shaking about the wrist,
+	// + the head (tilting and nodding on its neck, carrying the eyes, brows and grin sparkle) and the
+	// hanging forearm (swinging from the elbow) — the board chef's rig, cut the same way
+	// (scripts/build-chef-head.py) and driven by the same chefPose / idle snicker (the rAF loop below).
+	// Pupils and eyelids are drawn in CSS. Geometry is in the frame's px.
+	const manBody = ap('/assets/mcschmutzo/splash/man-body-v1.webp');
+	const manHead = ap('/assets/mcschmutzo/splash/man-head-v1.webp');
+	const manArm = ap('/assets/mcschmutzo/splash/man-arm-v1.webp');
 	const manBottle = ap('/assets/mcschmutzo/splash/man-bottle-v3.webp');
 	// The nametag plate (cropped layer over its baked copy) jiggles on its pin, like the board chef.
 	const manLabel = ap('/assets/mcschmutzo/splash/man-label-v3.webp');
@@ -116,6 +135,11 @@
 		label: [368, 1023, 624, 1160] as Box,
 		brows: [574, 326, 907, 470] as Box,
 		bottlePivot: [926, 951] as [number, number], // the wrist, tucked behind the body
+		// build-chef-head.py prints these (splash man-head / man-arm boxes, neck + elbow)
+		head: [287, 0, 986, 875] as Box,
+		neck: [642, 861] as [number, number], // the head turns about this
+		arm: [50, 1295, 274, 1794] as Box,
+		elbow: [166, 1322] as [number, number],
 		skin: '#ee9c58', // face skin right around the eyes (lid colour)
 	};
 	const manBox = ([x0, y0, x1, y1]: Box) =>
@@ -124,6 +148,68 @@
 		manBox(MAN.bottle) +
 		`transform-origin:${pct(MAN.bottlePivot[0] - MAN.bottle[0], MAN.bottle[2] - MAN.bottle[0])} ` +
 		`${pct(MAN.bottlePivot[1] - MAN.bottle[1], MAN.bottle[3] - MAN.bottle[1])};`;
+	const origin = ([x, y]: [number, number], [x0, y0, x1, y1]: Box) =>
+		`transform-origin:${pct(x - x0, x1 - x0)} ${pct(y - y0, y1 - y0)};`;
+	const headOrigin = `transform-origin:${pct(MAN.neck[0], MAN_W)} ${pct(MAN.neck[1], MAN_H)};`;
+
+	// The rig, on one rAF loop: the board chef's maths (AnimatedGuy head + Background forearm), every
+	// rotation sign-flipped for the mirrored art. The head sways on two slow sines, nods with the
+	// breath and follows the CSS pupils' glance (eyes-look, 13s) a beat late; the forearm swings
+	// inward only; chefPose adds the idle snicker (shoulder pops, squint, cocked head, bottle waggle).
+	const LOOK_MS = 13000;
+	// eyes-look's keyframes: [progress, x, y] in fractions of a pupil
+	const LOOK_KEYS: [number, number, number][] = [
+		[0, 0, 0], [0.38, 0, 0], [0.41, -0.13, 0.05], [0.56, -0.13, 0.05],
+		[0.59, 0.11, -0.03], [0.75, 0.11, -0.03], [0.78, 0, 0], [1, 0, 0],
+	];
+	const PUPIL_FRAC = 57 / MAN_W; // a pupil's width, as a fraction of the frame
+	const easeInOut = (u: number) => (u < 0.5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2);
+	/** The CSS pupils' offset at t ms into their animation (fractions of the frame width). */
+	const glanceAt = (t: number) => {
+		const p = (((t % LOOK_MS) + LOOK_MS) % LOOK_MS) / LOOK_MS;
+		for (let i = 1; i < LOOK_KEYS.length; i++) {
+			const [p1, x1, y1] = LOOK_KEYS[i];
+			const [p0, x0, y0] = LOOK_KEYS[i - 1];
+			if (p <= p1) {
+				const u = easeInOut((p - p0) / (p1 - p0));
+				return { x: (x0 + (x1 - x0) * u) * PUPIL_FRAC, y: (y0 + (y1 - y0) * u) * PUPIL_FRAC };
+			}
+		}
+		return { x: 0, y: 0 };
+	};
+	const HEAD_LAG_MS = 170;
+	const HEAD_FOLLOW = 4.5; // radians of tilt per frame-width of glance
+	const ARM_MAX = 0.04;
+	let rig = $state({ head: '', arm: '', body: '', bottle: '', brows: '', squint: 0 });
+	let manH = $state(0); // the figure's px height (nod / brow offsets are fractions of it)
+	onMount(() => {
+		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		const t0 = performance.now(); // the CSS eye animations start with the element
+		let raf = 0;
+		const frame = (now: number) => {
+			raf = requestAnimationFrame(frame);
+			idleSnicker(now);
+			const pose = chefPose(now);
+			const g = glanceAt(now - t0 - HEAD_LAG_MS);
+			const sway = 0.014 * Math.sin(now / 1730) + 0.006 * Math.sin(now / 830 + 1.1);
+			const rot = sway + g.x * HEAD_FOLLOW - pose.headTilt;
+			const nod = 0.0009 * Math.sin(now / 580) + g.y * 0.5 + pose.headNod;
+			const swing = Math.min(
+				ARM_MAX,
+				Math.max(0, 0.014 + 0.012 * Math.sin(now / 1270 + 0.6) + 0.004 * Math.sin(now / 610) + Math.abs(pose.propRot) * 0.35),
+			);
+			rig = {
+				head: `transform:translateY(${(nod * manH).toFixed(2)}px) rotate(${rot.toFixed(4)}rad);`,
+				arm: `transform:rotate(${(-swing).toFixed(4)}rad);`,
+				body: `transform:translate(${(-pose.dx * 100).toFixed(3)}%,${(pose.dy * 100).toFixed(3)}%) scale(${pose.sx.toFixed(4)},${pose.sy.toFixed(4)});`,
+				bottle: `rotate:${(-pose.propRot).toFixed(4)}rad;`,
+				brows: `translate:0 ${(pose.brow * manH).toFixed(2)}px;`,
+				squint: pose.squint,
+			};
+		};
+		raf = requestAnimationFrame(frame);
+		return () => cancelAnimationFrame(raf);
+	});
 	const pressPlay = ap('/assets/mcschmutzo/press-play.svg');
 	// Card frames are drip-FREE; the corner sauce is drawn in code on top (SauceCorner + lib/splashSauce).
 
@@ -155,6 +241,7 @@
 	// Leaving: the cards, logo and chef exit while the camera pans right across the panorama (and
 	// the base game's 16% dim fades in), then the host fades the splash out over the game.
 	const PAN_MS = 1700;
+	const PORTRAIT_EXIT_MS = 900;
 	let exiting = $state(false);
 	let rootEl: HTMLDivElement | undefined = $state();
 	let stageEl: HTMLDivElement | undefined = $state();
@@ -178,13 +265,15 @@
 	let vh = $state(0);
 	const press = () => {
 		if (exiting) return;
-		if (isPortrait || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
 			props.onpress();
 			return;
 		}
 		logoFly = measureLogoFly();
 		exiting = true;
-		setTimeout(() => props.onpress(), PAN_MS + 40);
+		// Portrait has no pan and the game isn't drawn behind the splash yet, so it hands over as soon
+		// as the (short) logo flight lands — the board then drops in under the logo.
+		setTimeout(() => props.onpress(), isPortrait ? PORTRAIT_EXIT_MS : PAN_MS + 40);
 	};
 	const onKey = (e: KeyboardEvent) => {
 		if (e.code === 'Space' || e.code === 'Enter') press();
@@ -199,16 +288,34 @@
 	// indicators — matching the other games. Landscape/desktop keeps all three cards in a row.
 	let isPortrait = $state(false);
 	let slide = $state(0);
+	// true from the first auto-advance on: later cards arrive by cardSlide, not the CSS entrance
+	let swapped = $state(false);
+	// Carousel motion: in from the right (dir 1), out to the left (dir −1), easing out, with a fade
+	// at the far end; the standalone `translate` leaves the card's own transform (entrance/exit) alone.
+	const cardSlide = (_node: Element, { dir }: { dir: 1 | -1 }) =>
+		matchMedia('(prefers-reduced-motion: reduce)').matches
+			? { duration: 0 }
+			: {
+					duration: 620,
+					css: (t: number) => {
+						const e = dir === 1 ? 1 - (1 - t) ** 3 : t * t * (3 - 2 * t);
+						const x = (1 - e) * 115 * (dir === 1 ? 1 : -1);
+						return `translate: ${x}% 0; opacity: ${Math.min(1, e * 1.6)}; rotate: ${(1 - e) * 4 * dir}deg;`;
+					},
+				};
 	const SLIDE_COUNT = CARDS.length;
 	const currentCard = $derived(CARDS[slide]);
 	const updateOrientation = () => (isPortrait = window.innerWidth < window.innerHeight);
 	onMount(updateOrientation);
 	$effect(() => {
-		if (!isPortrait) {
+		if (!isPortrait || !revealed) {
 			slide = 0;
 			return;
 		}
-		const id = setInterval(() => (slide = (slide + 1) % SLIDE_COUNT), 4500);
+		const id = setInterval(() => {
+			swapped = true;
+			slide = (slide + 1) % SLIDE_COUNT;
+		}, 4500);
 		return () => clearInterval(id);
 	});
 </script>
@@ -218,6 +325,7 @@
 <div
 	class="splash-intro"
 	class:exiting
+	class:waiting={!revealed}
 	class:logo-fly={logoFly !== ''}
 	bind:this={rootEl}
 	role="button"
@@ -237,8 +345,9 @@
 		     (over the background, behind the logo / cards / chef). -->
 		<div class="shine" aria-hidden="true"><div class="shine__band"></div></div>
 		<div class="logo" bind:this={logoEl} style={logoFly}><LogoHtml hitAt={LOGO_HIT_MS} /></div>
-		<div class="man" style={`--skin:${MAN.skin}`}>
-			<div class="bottle" style={bottleStyle}>
+		<div class="man" style={`--skin:${MAN.skin}`} bind:clientHeight={manH}>
+		<div class="man-rig" style={rig.body}>
+			<div class="bottle" style={bottleStyle + rig.bottle}>
 				<img src={manBottle} alt="" draggable="false" />
 				<!-- Now and then he squeezes the bottle: the board chef's ketchup squirt (it rides the bottle
 				     layer, so it follows the shake). Fires in the calm part of the 9s shake loop. -->
@@ -249,18 +358,31 @@
 					]}
 				/>
 			</div>
-			<img class="man-base" src={manBase} alt="" draggable="false" />
+			<img class="man-base" src={manBody} alt="" draggable="false" />
+			<img class="man-part" src={manArm} alt="" draggable="false" style={manBox(MAN.arm) + origin(MAN.elbow, MAN.arm) + rig.arm} />
 			<!-- Nametag on the apron strap. -->
 			<img class="man-label" src={manLabel} alt="" draggable="false" style={manBox(MAN.label)} />
-			<span class="man-sparkle" aria-hidden="true"></span>
-			<div class="pupil" style={manBox(MAN.pupilL)}><span class="glint"></span></div>
-			<div class="pupil" style={manBox(MAN.pupilR)}><span class="glint"></span></div>
-			<div class="eye" style={manBox(MAN.eyeL)}><div class="lid"></div></div>
-			<div class="eye" style={manBox(MAN.eyeR)}><div class="lid"></div></div>
-			<!-- Brows over the lids, so a blink closes under the brow. -->
-			<img class="man-brows" src={manBrows} alt="" draggable="false" style={manBox(MAN.brows)} />
+			<!-- The head on its neck: a frame-sized layer, so the face parts keep their frame boxes. -->
+			<div class="man-head" style={headOrigin + rig.head}>
+				<img class="man-part" src={manHead} alt="" draggable="false" style={manBox(MAN.head)} />
+				<span class="man-sparkle" aria-hidden="true"></span>
+				<div class="pupil" style={manBox(MAN.pupilL)}><span class="glint"></span></div>
+				<div class="pupil" style={manBox(MAN.pupilR)}><span class="glint"></span></div>
+				{#each [MAN.eyeL, MAN.eyeR] as eye, i (i)}
+					<div class="eye" style={manBox(eye)}>
+						<div class="lid"></div>
+						<!-- the snicker's screwed-up eyes: a second lid, lowered by chefPose's squint -->
+						{#if rig.squint > 0.01}
+							<div class="lid lid--squint" style={`transform:translateY(${((rig.squint - 1) * 101).toFixed(1)}%)`}></div>
+						{/if}
+					</div>
+				{/each}
+				<!-- Brows over the lids, so a blink closes under the brow. -->
+				<img class="man-brows" src={manBrows} alt="" draggable="false" style={manBox(MAN.brows) + rig.brows} />
+			</div>
 		</div>
-		<!-- Mobile only: replaces the logo + character with the Press Play wordmark. -->
+		</div>
+		<!-- Mobile only: the Press Play wordmark (desktop has none; mobile has no character). -->
 		<img class="pp-mark" src={pressPlay} alt="Press Play" draggable="false" />
 
 		{#snippet cardEl(card: (typeof CARDS)[number])}
@@ -286,7 +408,13 @@
 
 		<div class="cards" class:cards--single={isPortrait}>
 			{#if isPortrait}
-				{@render cardEl(currentCard)}
+				<!-- one slot per slide: the old card slides out left while the next slides in from the
+				     right (both share one grid cell). The first card keeps its rise-up entrance. -->
+				{#key slide}
+					<div class="card-slot" class:card-slot--swap={swapped} in:cardSlide={{ dir: 1 }} out:cardSlide={{ dir: -1 }}>
+						{@render cardEl(currentCard)}
+					</div>
+				{/key}
 			{:else}
 				{#each CARDS as card (card.cls)}
 					{@render cardEl(card)}
@@ -307,6 +435,10 @@
 </div>
 
 <style>
+	/* still under the pre-loader: hold every entrance at its first frame (see `revealed`) */
+	.splash-intro.waiting :global(*) {
+		animation-play-state: paused !important;
+	}
 	.splash-intro {
 		position: absolute;
 		inset: 0;
@@ -417,7 +549,7 @@
 		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
 		/* Entrance: once the cards are in, it drops in from the top, HITS and squashes (the splats
 		   squeeze out — LogoHtml), springs back, then stays put. */
-		animation: logo-in 1.4s linear 1.75s both;
+		animation: logo-in 1.4s ease-in-out 1.75s both;
 	}
 
 	.man {
@@ -458,8 +590,21 @@
 	}
 	.pupil,
 	.eye,
-	.bottle {
+	.bottle,
+	.man-part {
 		position: absolute;
+	}
+	.man-part {
+		display: block;
+		max-width: none;
+	}
+	.man-rig,
+	.man-head {
+		position: absolute;
+		inset: 0;
+	}
+	.man-rig {
+		transform-origin: 50% 100%;
 	}
 	/* Pupils: dark disc + a glint, sitting where the erased ones were; they dart around now and then. */
 	.pupil {
@@ -493,6 +638,9 @@
 	}
 	.bottle {
 		animation: bottle-shake 9s ease-in-out infinite;
+	}
+	.lid--squint {
+		animation: none;
 	}
 		.man-brows {
 		position: absolute;
@@ -777,10 +925,40 @@
 			background-size: cover;
 			background-position: center 22%;
 		}
-		/* Mobile: drop the character + big logo, show just the Press Play wordmark at the top. */
-		.logo,
+		/* Mobile: no character; the Press Play wordmark at the top and the logo OVER the card's top
+		   edge (Figma 8259:3928 / logo 8878:2010: its art ~97% of the card frame's width, centre ~9% of
+		   its height above the frame's top, tilted 2.03° clockwise). The card is --card-w wide at
+		   470:690, centred at 46% (.cards), so this is pure CSS. */
+		.stage {
+			--card-w: min(66vw, 340px);
+		}
 		.man {
 			display: none;
+		}
+		.logo {
+			width: calc(var(--card-w) * 1.045);
+			top: calc(46cqh - var(--card-w) * 690 / 470 / 2 - var(--card-w) * 1.045 / 3.97 * 0.59);
+			/* its own property, so the drop / fly keyframes (transform) leave the tilt alone */
+			rotate: 2.03deg;
+			filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.3));
+			/* over the card (and its corner sauce), not behind it */
+			z-index: 5;
+		}
+		/* Leaving: the card drops away and the dots / mark fade while the logo flies onto the board's
+		   (logo-fly, measured in measureLogoFly — the same exit as desktop, minus the pan). */
+		.exiting .cards--single .card {
+			animation: card-out-down 0.6s cubic-bezier(0.55, 0, 0.9, 0.4) forwards;
+		}
+		/* …and straightens on the way: the board logo is level */
+		.exiting.logo-fly .logo {
+			animation-duration: 0.8s;
+			rotate: 0deg;
+			transition: rotate 0.7s cubic-bezier(0.6, 0, 0.3, 1) 0.1s;
+		}
+		.exiting .dots,
+		.exiting .pp-mark {
+			opacity: 0;
+			transition: opacity 0.25s ease;
 		}
 		.pp-mark {
 			display: block;
@@ -809,10 +987,24 @@
 		/* One card at a time on mobile: a single, larger centred card. */
 		.cards--single {
 			width: auto;
+			/* the carousel's outgoing + incoming slots overlap in one cell while they slide */
+			display: grid;
+		}
+		.card-slot {
+			grid-area: 1 / 1;
+		}
+		.card-slot--swap .card {
+			animation: none;
+		}
+		/* the logo's drop lands ON the card (logo-in hits 43% into its 1.4s, after a 1.75s delay):
+		   the first card takes the blow — knocked down a touch, squashed, springs back */
+		.card-slot:not(.card-slot--swap) {
+			transform-origin: 50% 100%;
+			animation: card-hit 0.55s ease-out calc(1.75s + 0.43 * 1.4s) both;
 		}
 		.cards--single .card {
 			flex: 0 0 auto;
-			width: min(66vw, 340px);
+			width: var(--card-w);
 		}
 		.man {
 			height: 30%;
@@ -919,6 +1111,30 @@
 	@keyframes card-out-left {
 		to {
 			transform: translateX(-120cqw);
+		}
+	}
+
+	@keyframes card-hit {
+		0% {
+			translate: 0 0;
+			scale: 1;
+		}
+		22% {
+			translate: 0 1.6cqh;
+			scale: 1.025 0.965;
+		}
+		55% {
+			translate: 0 -0.4cqh;
+			scale: 0.992 1.01;
+		}
+		100% {
+			translate: 0 0;
+			scale: 1;
+		}
+	}
+	@keyframes card-out-down {
+		to {
+			transform: translateY(110cqh);
 		}
 	}
 

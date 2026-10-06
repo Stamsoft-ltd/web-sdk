@@ -41,12 +41,15 @@ export type SymbolPartLayer = {
 	// slightly out of step like a wobbling puddle; `pulseLag` delays it (radians) behind the others.
 	pulse?: number;
 	pulseLag?: number;
-	// Stamp landing (wild letters): instead of scaling up from 0, the layer comes DOWN from 1.5× onto
-	// the symbol at `landDelay`, hits at wildSplat's textHit, squashes and settles.
+	// Stamp landing (wild letters): the layer pops in on the splat as the drop hits (wildSplat
+	// dropEnd): 0 → 125% at textHit (the impact) → 92% → 100%.
 	landStamp?: boolean;
 	// Sword swing (scatter): the layer rotates about (px, py) — its handle end, fractions of the
 	// sprite — by up to `open` radians (signed) away from its rest pose, then slams back into it.
 	swing?: { px: number; py: number; open: number };
+	// Clash pop (scatter lettering): stamps in at the landing's first clash (AnimatedSymbol
+	// SWORD_LAND_HITS) and gives a bump of this size (fraction of its size) at every clash after.
+	clashPop?: number;
 };
 
 export type SymbolPartsConfig = {
@@ -303,27 +306,31 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		],
 	},
 	// Wild — on landing a drop of ketchup falls into the cell and SPLATS (drawn in code, see
-	// game/wildSplat.ts), then the WILD letters are stamped on top. While part of a win the puddle
-	// wobbles like liquid (the letters ride it a beat behind) and drops ooze off its bottom lobes.
+	// game/wildSplat.ts), the WILD letters pop on top of it (0 → 125% → 92% → 100%), the whole symbol
+	// shakes a few px on their impact and a drip forms off the splat as it settles. Several wilds landing
+	// on the same frame hit one after another (AnimatedSymbol WILD_STAGGER_MS). While part of a win the
+	// puddle wobbles like liquid (the letters ride it a beat behind) and drops ooze off its bottom lobes.
 	W: {
 		aspect: 1.361,
 		fit: 0.82,
 		squash: 0,
 		landAnim: true,
-		landMs: 1300,
+		landMs: 900,
 		idle: 0.45,
 		splat: true,
 		layers: [
-			{ key: 'wildText', nx: 0.5, ny: 0.5, nw: 0.7889, nh: 0.6704, pulse: 0.05, pulseLag: 0.7, landDelay: 0.45, landStamp: true },
+			{ key: 'wildText', nx: 0.5, ny: 0.5, nw: 0.7889, nh: 0.6704, pulse: 0.05, pulseLag: 0.7, landStamp: true },
 		],
 	},
-	// Scatter — crossed spatula + chef's knife (Figma 8796:10162, two layers in a 96×93 group). They
+	// Scatter — crossed spatula + chef's knife + the SCATTER lettering on top (Figma 8844:1585 + 8844:1704
+	// in the design cell; the tools' 96×93 group is the box, the lettering hangs 3% past its right
+	// edge and 1% past its bottom, over the handles). The tools
 	// cross like swords: EVERY landing they pop in already swung apart, hang there a beat, then slam
 	// together into the cross (clash + spark), spring apart and clash again, in time with the landing
 	// sound (AnimatedSymbol swordLand); idle /
-	// winning they keep swinging open and slamming shut. Sized so even the swung-open pose (±0.19 rad
-	// about the handles ≈ 1.25× the crossed width) stays inside the cell's light box (113 × 102):
-	// crossed it's ≈ 88 × 85 px.
+	// winning they keep swinging open and slamming shut. The swing opens ±0.3 rad about the handles
+	// (it was ±0.19, too small to read as a sword clash); the blade tips still stay inside the cell
+	// (checked in-game 2026-10-06). Crossed it's ≈ 88 × 85 px.
 	S: {
 		aspect: 96 / 93,
 		fit: 0.66,
@@ -339,7 +346,7 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 				ny: 0.4886,
 				nw: 0.8424,
 				nh: 0.9772,
-				swing: { px: 0.84, py: 0.92, open: -0.19 },
+				swing: { px: 0.84, py: 0.92, open: -0.3 },
 			},
 			{
 				key: 'scatterKnife',
@@ -347,8 +354,10 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 				ny: 0.5161,
 				nw: 0.8333,
 				nh: 0.9677,
-				swing: { px: 0.11, py: 0.95, open: 0.19 },
+				swing: { px: 0.11, py: 0.95, open: 0.3 },
 			},
+			// the lettering never swings: it stamps in on the first clash and bumps on every clash
+			{ key: 'scatterText', nx: 0.5573, ny: 0.8172, nw: 1.0313, nh: 0.3871, clashPop: 0.08 },
 		],
 	},
 	// Smutz cup (H2) — one whole sprite (straw included; splitting the straw off left it poking out

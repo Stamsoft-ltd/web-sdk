@@ -9,6 +9,8 @@
 </script>
 
 <script lang="ts">
+	import { fade } from 'svelte/transition';
+	import { popIn, popOut } from '../lib/popOut';
 	import { onMount } from 'svelte';
 	import { stateBet, stateConfig } from 'state-shared';
 	import { getContext } from '../game/context';
@@ -98,9 +100,11 @@
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-<div class="ap-backdrop" onclick={props.onclose}></div>
+<div class="ap-backdrop" in:fade|global={{ duration: 220 }} out:fade|global={{ duration: 200 }} onclick={props.onclose}></div>
 
 <button
+	in:fade|global={{ duration: 220, delay: 200 }}
+	out:fade|global={{ duration: 120 }}
 	class="ap-close"
 	type="button"
 	style={`background-image:url('${closeArt}')`}
@@ -108,7 +112,7 @@
 	aria-label={i18nDerived.translate('CLOSE')}
 ></button>
 
-<div class="ap-root" role="dialog" aria-modal="true">
+<div class="ap-root" in:popIn|global out:popOut|global role="dialog" aria-modal="true">
 	<div class="ap-popup">
 		<p class="ap-title">{i18nDerived.translate('AUTO SPIN')}</p>
 		<div class="ap-divider"></div>

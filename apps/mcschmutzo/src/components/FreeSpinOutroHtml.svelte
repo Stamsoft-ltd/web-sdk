@@ -15,8 +15,9 @@
 </script>
 
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { Tween } from 'svelte/motion';
-	import { cubicOut } from 'svelte/easing';
+	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { waitForResolve } from 'utils-shared/wait';
 	import { stateBet, stateBetDerived } from 'state-shared';
 	import { isReplayMode } from '../state/roundFlow.svelte';
@@ -27,6 +28,8 @@
 	import BurgerStack from './BurgerStack.svelte';
 	import CongratsSplashes from './CongratsSplashes.svelte';
 	import { continueBottom } from '../lib/continuePos';
+	import { popOut } from '../lib/popOut';
+	import { fade } from 'svelte/transition';
 	// Prompt position (above the portrait HUD; default elsewhere) — re-measured on resize.
 	let contBottom = $state('clamp(14px, 3.5vh, 34px)');
 	$effect(() => {
@@ -43,6 +46,13 @@
 	// Count the total win up from 0 (mirrors the previous animated outro).
 	const amountTween = new Tween(0, { duration: 900, easing: cubicOut });
 	const amountText = $derived(bookEventAmountToCurrencyString(Math.round(amountTween.current)));
+	// The HUD WIN readout follows this count-up while freeSpinEnd owns it (stateGame.winCountUp).
+	$effect(() => {
+		const amount = amountTween.current;
+		untrack(() => {
+			if (show && context.stateGame.winCountUp !== null) context.stateGame.winCountUp = amount;
+		});
+	});
 
 	context.eventEmitter.subscribeOnMount({
 		freeSpinOutroShow: () => {
@@ -106,7 +116,7 @@
 
 {#if show}
 	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-	<div class="fo-backdrop" onclick={proceed}>
+	<div class="fo-backdrop" onclick={proceed} out:fade={{ duration: 260, easing: cubicIn }}>
 		<button
 			class="fo-close"
 			type="button"
@@ -118,7 +128,7 @@
 			aria-label={i18nDerived.translate('CLOSE')}
 		></button>
 
-		<div class="fo-stage" role="dialog" aria-modal="true">
+		<div class="fo-stage" role="dialog" aria-modal="true" out:popOut>
 			<!-- Mustard + ketchup, drawn in code and squeezed out from behind the plaque when the
 			     CONGRATS title slams onto it (HIT, 0.64s in — see the title's stamp animation). -->
 			<CongratsSplashes hitMs={640} />
@@ -130,7 +140,7 @@
 			<div class="fo-plaque" style={`background-image:url('${plaqueArt}')`}>
 				<div class="fo-content">
 					<p class="fo-congrats">{i18nDerived.translate('CONGRATS')}</p>
-					<p class="fo-youwon">{i18nDerived.translate('YOU WON')}</p>
+					<p class="fo-youwon">{i18nDerived.translate('TOTAL WIN')}</p>
 					<div class="fo-amount"><span>{amountText}</span></div>
 				</div>
 			</div>
@@ -215,7 +225,7 @@
 		/* The win (plaque + copy) pops in first. */
 		animation:
 			fo-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both,
-			fo-hit 0.52s linear 0.64s;
+			fo-hit 0.52s ease-in-out 0.64s;
 	}
 
 	.fo-content {
@@ -243,7 +253,7 @@
 		   plaque and squeezes the sauce out — CongratsSplashes), squashes flat, springs back, then
 		   breathes. */
 		animation:
-			fo-stamp 0.85s linear 0.33s both,
+			fo-stamp 0.85s ease-in-out 0.33s both,
 			fo-breathe 2.3s ease-in-out 1.3s infinite;
 	}
 	.fo-youwon {

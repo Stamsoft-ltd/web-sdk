@@ -63,6 +63,19 @@
 		return () => clearInterval(id);
 	});
 	const hidden = $derived(popupUp || context.stateGame.winDim > 0);
+	// Entrance (they used to snap in): each time the notes come on — the splash handing over, back
+	// from free games — the ticket drops onto the wall and swings on its tape, then the pink memo is
+	// slapped on over its corner and its text written. CSS animations on mount (the {#if} remounts).
+	const MEMO_WRITE_DELAY = 1050; // ms: the memo's text waits for the memo to land (first time only)
+	let entering = $state(true);
+	$effect(() => {
+		if (!show) {
+			entering = true;
+			return;
+		}
+		const id = setTimeout(() => (entering = false), MEMO_WRITE_DELAY + 700);
+		return () => clearTimeout(id);
+	});
 	const k = $derived(Math.floor(clock / CYCLE));
 	const u = $derived(clock % CYCLE);
 	const order = $derived(ORDERS[k % ORDERS.length]);
@@ -136,7 +149,7 @@
 		style={`left:${box.left}px;top:${box.top}px;--w:${box.w}px;opacity:${hidden ? 0 : 1}`}
 		aria-hidden="true"
 	>
-		<div class="stack">
+		<div class="stack notes-enter">
 			{#each pile as t (t.n)}
 				<div class="ticket" style={`background-image:url('${ticketArt}');left:${t.x}%;${t.style}`}>
 					<div class="ticket__body hand">
@@ -159,9 +172,9 @@
 			{/each}
 		</div>
 		<!-- Pink kitchen memo, stuck OVER the ticket's lower-right corner (on top, so the memo reads). -->
-		<div class="pink" style={`background-image:url('${pinkArt}')`}>
+		<div class="pink notes-enter" style={`background-image:url('${pinkArt}')`}>
 			{#key memo}
-				<p class="hand pink__text"><span>{memo[0]}</span><span>{memo[1]}</span></p>
+				<p class="hand pink__text" style={entering ? `animation-delay:${MEMO_WRITE_DELAY}ms` : ''}><span>{memo[0]}</span><span>{memo[1]}</span></p>
 			{/key}
 		</div>
 	</div>
@@ -302,7 +315,54 @@
 			clip-path: inset(0 0 0 0);
 		}
 	}
+	/* Entrance: the ticket drops in from above, swings on its tape and settles; the memo slaps on. */
+	.stack.notes-enter {
+		transform-origin: 50% 3%;
+		animation: ticket-pin 0.85s cubic-bezier(0.3, 0.7, 0.4, 1) 0.45s both;
+	}
+	.pink.notes-enter {
+		animation: memo-slap 0.45s cubic-bezier(0.5, 0, 0.75, 0.3) 0.8s both;
+	}
+	@keyframes ticket-pin {
+		0% {
+			transform: translateY(-40%) rotate(9deg);
+			opacity: 0;
+		}
+		25% {
+			opacity: 1;
+		}
+		45% {
+			transform: translateY(0) rotate(-4deg);
+		}
+		65% {
+			transform: rotate(2.5deg);
+		}
+		82% {
+			transform: rotate(-1deg);
+		}
+		100% {
+			transform: none;
+		}
+	}
+	/* comes at the wall big and tilted (ease-in), hits flat with a squash, settles on its 6° rest */
+	@keyframes memo-slap {
+		0% {
+			transform: scale(1.5) rotate(-10deg);
+			opacity: 0;
+		}
+		30% {
+			opacity: 1;
+		}
+		70% {
+			transform: scale(0.94) rotate(7deg);
+			animation-timing-function: ease-out;
+		}
+		100% {
+			transform: scale(1) rotate(6deg);
+		}
+	}
 	@media (prefers-reduced-motion: reduce) {
+		.notes-enter,
 		.ticket,
 		.pink__text,
 		.ticket__tick {

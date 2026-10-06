@@ -6,16 +6,21 @@
 
 	import { getContext } from '../game/context';
 	import { mascotIdle } from '../game/mascotIdle';
-	import { SQUIRT_EMIT, drawSauceSquirt, squirtHash, type SquirtGraphics } from '../game/ketchupSquirt';
+	import { SQUIRT_EMIT, SQUIRT_LIFE, drawSauceSquirt, squirtHash, type SquirtGraphics } from '../game/ketchupSquirt';
+	import { MOOD_MS, chefMood, chefPose, idleSnicker, setChefMood } from '../game/chefMood.svelte';
 	import { panoramaRect, PANORAMA_BASE_X } from '../game/panorama';
 	import AnimatedGuy, { GUY_CROPS, cropPivot, cropRect } from './AnimatedGuy.svelte';
 	import SpecialMascot from './SpecialMascot.svelte';
+	import MobileChef from './MobileChef.svelte';
+	import PortraitLamp from './PortraitLamp.svelte';
 
 	type Props = {
 		/** False while the loading screen / splash is up: only the dark backdrop renders. */
 		showArt?: boolean;
+		/** the board's drop-in has landed (the phone chef waits for it — he'd show under the falling board) */
+		boardLanded?: boolean;
 	};
-	const { showArt = true }: Props = $props();
+	const { showArt = true, boardLanded = true }: Props = $props();
 
 	const context = getContext();
 
@@ -59,6 +64,7 @@
 		let raf = 0;
 		const loop = (ts: number) => {
 			clock = ts;
+			idleSnicker(ts);
 			raf = requestAnimationFrame(loop);
 		};
 		raf = requestAnimationFrame(loop);
@@ -133,13 +139,53 @@
 			g.circle(x, y, r).fill({ color: 0xfff1c8, alpha: a }); // hot core
 		}
 	};
-	const mascotPose = $derived(
+	const idlePose = $derived(
 		mascotIdle(clock, canvas.width * 0.86, canvas.height * 0.59, mascotWidth, mascotHeight, {
 			sway: 0,
 			breathe: 0.005,
 			bob: 0.004,
 		}),
 	);
+	// The chef reacts to the game (game/chefMood: leans in on a spin, shrugs at a dead spin, nods at a
+	// win, lunges + smacks at a WILD, laughs / celebrates big wins). Offsets ride on the idle pose,
+	// scaled about his feet.
+	const react = $derived(chefPose(clock));
+	// Entrance (he used to just snap in): whenever he comes on — the splash handing over, back from
+	// free games — he pops up from behind the bottom edge with an overshoot, squashes as he lands,
+	// then gives a "hello" nod. Starts just after the splash's 350 ms fade, alongside the board drop.
+	const ENTER_DELAY = 300;
+	const ENTER_MS = 750;
+	let enterAt = $state(-1);
+	$effect(() => {
+		if (!(showArt && showMascot)) return;
+		const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		enterAt = reduced ? -1 : performance.now() + ENTER_DELAY;
+		if (reduced) return;
+		const id = setTimeout(() => chefMood.mood === 'idle' && setChefMood('win'), ENTER_DELAY + ENTER_MS * 0.7);
+		return () => clearTimeout(id);
+	});
+	const enter = $derived.by(() => {
+		if (enterAt < 0) return { dy: 0, sy: 1 };
+		const t = clock - enterAt;
+		if (t >= ENTER_MS + 260) return { dy: 0, sy: 1 };
+		// fully below the screen's bottom edge until his start, then a back-out rise
+		const hidden = canvas.height - (idlePose.y - idlePose.height / 2) + idlePose.height * 0.02;
+		const u = Math.max(0, Math.min(1, t / ENTER_MS));
+		const back = 1 + 2.4 * (u - 1) ** 3 + 1.4 * (u - 1) ** 2; // overshoots ~6% then settles
+		const land = t - ENTER_MS * 0.55; // the squash as he tops out and drops back
+		const sy = land > 0 && land < 420 ? 1 - 0.035 * Math.exp(-land / 120) * Math.sin((land / 420) * Math.PI * 2.5) : 1;
+		return { dy: hidden * (1 - back), sy };
+	});
+	const mascotPose = $derived({
+		x: idlePose.x + react.dx * idlePose.width,
+		y:
+			idlePose.y +
+			react.dy * idlePose.height -
+			((react.sy * enter.sy - 1) * idlePose.height) / 2 +
+			enter.dy,
+		width: idlePose.width * (react.sx / Math.sqrt(enter.sy)),
+		height: idlePose.height * react.sy * enter.sy,
+	});
 	// The Figma chef (McShmutzo file, "Frame 427321577"), exported at 4× (1304×1699) and keyed off
 	// the flat canvas grey — the same art as the free-games salting chef; since 2026-10 the base is the
 	// relaxed-arm body (node 8779:1769) instead of the pointing hand. Layers: base (pupils erased), the bottle hand (drawn BEHIND the body, as in Figma, so it can shake),
@@ -180,11 +226,20 @@
 	const SQ_OFFSET = 1700; // … starting this far into the slot (clear of the shake)
 	const NOZZLE = { x: 0.1438, y: 0.3773 }; // nozzle tip (frame fractions)
 	const NOZZLE_DIR = Math.atan2(-0.979, -0.204); // bottle axis: up, leaning ~12° toward the board
-	/** Squirt slot for time t: local ms into the squirt, or -1 when this slot doesn't squirt. */
-	const squirtLocal = (t: number) => {
+	// Big wins fire the bottle on cue (a huge win twice) instead of the idle squirt.
+	const CELEBRATE_SHOTS: Partial<Record<string, number[]>> = { bigWin: [300], hugeWin: [250, 1250] };
+	/** When each squeeze that can still show at time t began (absolute ms). */
+	const squeezeStarts = (t: number) => {
+		const shots = CELEBRATE_SHOTS[chefMood.mood];
+		if (shots && t < chefMood.at + MOOD_MS[chefMood.mood] + SQUIRT_LIFE) return shots.map((s) => chefMood.at + s);
 		const k = Math.floor(t / SQ_PERIOD);
-		if (squirtHash(k) < 0.35) return -1; // skip ~1 in 3 slots → irregular, "from time to time"
-		return t - k * SQ_PERIOD - SQ_OFFSET;
+		if (squirtHash(k) < 0.35) return []; // skip ~1 in 3 slots → irregular, "from time to time"
+		return [k * SQ_PERIOD + SQ_OFFSET];
+	};
+	/** ms into the latest squeeze already begun (or about to, within 200ms) at t; -1 if none. */
+	const squirtLocal = (t: number) => {
+		const live = squeezeStarts(t).filter((s) => t - s >= -200);
+		return live.length ? t - live[live.length - 1] : -1;
 	};
 	const recoilAt = (t: number) => {
 		const u = squirtLocal(t);
@@ -198,28 +253,54 @@
 		const squirting = u >= -200 && u <= SQUIRT_EMIT + 700;
 		return (squirting ? 0 : shakeAt(t)) + recoilAt(t);
 	};
-	const bottleShake = $derived(bottleRotAt(clock));
+	const bottleShake = $derived(bottleRotAt(clock) + react.propRot);
+	// The hanging forearm swings a little from the elbow: a slow pendulum, plus a jolt when he smacks
+	// or waggles the bottle (WILD, laughs). Inward only (0..ARM_MAX, + = the hand toward his apron):
+	// swinging out would uncover what the hand hides on the body layer.
+	const ARM_MAX = 0.04;
+	const ARM_ELBOW = cropPivot(GUY_CROPS.mascotArm, 0.8728, 0.7779); // build-chef-head.py ARM_PIVOT
+	const armSwing = $derived(
+		Math.min(
+			ARM_MAX,
+			Math.max(0, 0.014 + 0.012 * Math.sin(clock / 1270 + 0.6) + 0.004 * Math.sin(clock / 610) + Math.abs(react.propRot) * 0.35),
+		),
+	);
+	// the celebration squirts are heard (the idle ones stay silent: short reactions, not constant noise)
+	$effect(() => {
+		const shots = CELEBRATE_SHOTS[chefMood.mood];
+		if (!shots) return;
+		const wait = chefMood.at - performance.now();
+		const timers = shots.map((s) =>
+			setTimeout(
+				() => context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_chef_squirt', forcePlay: true }),
+				Math.max(0, wait + s),
+			),
+		);
+		return () => timers.forEach(clearTimeout);
+	});
+
 	const drawSquirt = (g: SquirtGraphics) => {
-		const u = squirtLocal(clock);
-		const t0 = clock - u; // absolute time the squeeze began
 		const w = mascotPose.width;
 		const h = mascotPose.height;
 		const dx = mascotLeft + NOZZLE.x * w - bottlePivotX;
 		const dy = mascotTop + NOZZLE.y * h - bottlePivotY;
-		drawSauceSquirt(g, {
-			u,
-			unit: canvas.height,
-			color: 0xb3160d,
-			dark: 0x5e0704,
-			floorY: canvas.height * 0.8, // gone behind the HUD band
-			// The nozzle rides the bottle's rotation about the wrist.
-			nozzleAt: (ms) => {
-				const th = bottleRotAt(t0 + ms);
-				const c = Math.cos(th);
-				const sn = Math.sin(th);
-				return { x: bottlePivotX + dx * c - dy * sn, y: bottlePivotY + dx * sn + dy * c, dir: NOZZLE_DIR + th };
-			},
-		});
+		for (const [i, t0] of squeezeStarts(clock).entries()) {
+			drawSauceSquirt(g, {
+				u: clock - t0,
+				unit: canvas.height,
+				color: 0xb3160d,
+				dark: 0x5e0704,
+				floorY: canvas.height * 0.8, // gone behind the HUD band
+				seed: i,
+				// The nozzle rides the bottle's rotation about the wrist.
+				nozzleAt: (ms) => {
+					const th = bottleRotAt(t0 + ms);
+					const c = Math.cos(th);
+					const sn = Math.sin(th);
+					return { x: bottlePivotX + dx * c - dy * sn, y: bottlePivotY + dx * sn + dy * c, dir: NOZZLE_DIR + th };
+				},
+			});
+		}
 	};
 	// Free games (desktop) keep the grey-kitchen special bg; the base game uses the panorama (below).
 	const key = 'backgroundWideBonus';
@@ -330,6 +411,14 @@
 		height={portraitCover.height}
 		zIndex={-2}
 	/>
+	{#if !isFreegame}
+		<!-- the painted pendant lamp, lit for real -->
+		<PortraitLamp cx={canvas.width * 0.5} cy={canvas.height * 0.5} width={portraitCover.width} height={portraitCover.height} />
+	{/if}
+	<!-- The phone chef peeks over the board's top-right corner (Figma 8870:32978 / 8870:33637). -->
+	{#if boardLanded}
+		<MobileChef freegame={isFreegame} />
+	{/if}
 {:else}
 	{#if isFreegame}
 		<Sprite
@@ -378,8 +467,17 @@
 {#if showArt && showMascot}
 	<!-- The chef breathes, his eyes glance + blink, and his nametag jiggles (layered art). -->
 	<AnimatedGuy
-		baseKey="mascotBase"
-		baseRect={cropRect(GUY_CROPS.mascotBase)}
+		baseKey="mascotBody"
+		baseRect={cropRect(GUY_CROPS.mascotBody)}
+		head={{
+			key: 'mascotHead',
+			rect: cropRect(GUY_CROPS.mascotHead),
+			// the neck's base (scripts/build-chef-head.py PIVOT, in frame fractions)
+			px: 0.5075,
+			py: 0.507,
+			tilt: react.headTilt,
+			nod: react.headNod,
+		}}
 		x={mascotPose.x}
 		y={mascotPose.y}
 		width={mascotPose.width}
@@ -388,7 +486,19 @@
 		pupils={mascotPupils}
 		lids={mascotLids}
 		skin={0xee9c58}
+		look={{ x: react.lookX, y: react.lookY, weight: react.look }}
+		squint={react.squint}
+		brow={react.brow}
+		browKey="mascotBrows"
 		extras={[
+			{
+				// The relaxed forearm + hand, swinging from the elbow (amp 0: Background drives it).
+				key: 'mascotArm',
+				...cropRect(GUY_CROPS.mascotArm),
+				...ARM_ELBOW,
+				amp: 0,
+				bias: armSwing,
+			},
 			{
 				// Full-frame layer (the exact plate pixels), tilting about its pin.
 				key: 'mascotLabel',

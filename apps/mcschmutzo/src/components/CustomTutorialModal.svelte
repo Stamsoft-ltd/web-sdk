@@ -9,7 +9,7 @@
 
 	const TOTAL_PAGES = 7;
 
-	const symArt = (name: string) => ap(`/assets/mcschmutzo/symbols/${name}.webp`);
+	const symArt = (name: string) => ap(`/assets/mcschmutzo/symbols/${name === 'S' ? 'S_scatter' : name}.webp`);
 
 	// Page 3 (features) icons + the win-multiplier ladder shown in the design.
 	const wildArt = symArt('W');
@@ -99,6 +99,8 @@
 </script>
 
 <script lang="ts">
+	import { fade } from 'svelte/transition';
+	import { popIn, popOut } from '../lib/popOut';
 	import { i18nDerived } from '../i18n/i18nDerived';
 
 	type Props = { onclose: () => void };
@@ -146,9 +148,9 @@
 <svelte:window onkeydown={onKey} />
 
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-<div class="tu-backdrop" onclick={props.onclose}></div>
+<div class="tu-backdrop" in:fade|global={{ duration: 220 }} out:fade|global={{ duration: 200 }} onclick={props.onclose}></div>
 
-<div class="tu-root" role="dialog" aria-modal="true">
+<div class="tu-root" in:popIn|global out:popOut|global role="dialog" aria-modal="true">
 	<div class="tu-popup">
 		{#if page === 1}
 			<div class="tu-page" use:scrollCue>
@@ -410,6 +412,8 @@
 <!-- Close (X) is a SIBLING of .tu-root (which is transform-centred) so position:fixed reaches the real
      viewport top-right corner, exactly like the other modals' close buttons. -->
 <button
+	in:fade|global={{ duration: 220, delay: 200 }}
+	out:fade|global={{ duration: 120 }}
 	class="tu-close"
 	type="button"
 	style={`background-image:url('${closeArt}')`}

@@ -1,15 +1,19 @@
-// The McSchmutzo logo = the Figma wordmark (McShmutzo node 8779:1698, letters only, logo-word.webp)
-// + two ketchup splats drawn in code behind its ends — behind the "M" and past the "o". The splash
-// screen squeezes them out when the dropping logo HITS (see SplashIntro); the board draws them at
-// rest (FeatureOverlay). Units: fractions of the logo box WIDTH, origin at the box centre, y down.
+// The McSchmutzo logo = the Figma wordmark (McShmutzo node 8870:33545, "Glossy Mc Schmutzo Cartoon
+// Logo", logo-word-v2.webp, scripts/build-logo.py). Until 2026-10-06 it was the 8779:1698 wordmark +
+// two ketchup splats drawn in code behind its ends, squeezed out when the splash logo HITS (see
+// SplashIntro) and drawn at rest on the board (FeatureOverlay). The new logo has no splats, so they are
+// switched off (SPLATS_ON) — the code stays, so they can come back. Units: fractions of the logo box
+// WIDTH, origin at the box centre, y down.
 
 import { splashShapes, type SplashSpec } from './winSplash';
 import type { SplatShape } from './wildSplat';
 
 /** The logo box (wordmark + splats) — the same footprint the old baked logo-v3 had. */
 export const LOGO_ASPECT = 3.97;
-/** The wordmark inside the box (centre + width; its own art is 1777×373). */
-export const LOGO_WORD = { x: 0, y: 0.018, w: 0.8, aspect: 1777 / 373 };
+/** The wordmark inside the box (centre + width; its own art is 2140×575 — it fills the box's height). */
+export const LOGO_WORD = { x: 0, y: 0, w: 0.93, aspect: 2140 / 575 };
+/** The old logo's ketchup splats (off: the 8870:33545 logo has none). */
+const SPLATS_ON = false;
 // The burst plays at 0.7× the big-win card's pace — a slower, heavier squeeze for the logo.
 const PACE = 0.7;
 // …and each splat POPS out as a whole on top of that: from a quarter size to ~1.2× and a damped
@@ -53,6 +57,7 @@ const SIDES = [
 /** Both splats `ms` after the hit (negative = not out yet), in logo-box units. */
 export function logoSplashShapes(ms: number): SplatShape[] {
 	const out: SplatShape[] = [];
+	if (!SPLATS_ON) return out;
 	for (const s of SIDES) {
 		const t = Math.min(ms - s.delay, LOGO_REST_MS);
 		const k = s.k * pop(t);

@@ -124,6 +124,10 @@ function createPrimaryMachines<TBet extends BaseBet>(options: Options<TBet>) {
 	} = options;
 
 	let balanceAmountFromApiHolder: null | number = null;
+	// The wallet balance the play response reported, held until the round has been presented. Some
+	// RGS backends (the local mock among them) already include the round's payout in it; showing it
+	// as soon as the spin starts gives the outcome away before the reels stop.
+	let playBalanceFromApiHolder: null | number = null;
 
 	const failInsufficientFunds = (onError: () => void) => {
 		onError();
@@ -140,7 +144,12 @@ function createPrimaryMachines<TBet extends BaseBet>(options: Options<TBet>) {
 	const BET_TYPE_METHODS_MAP = {
 		noWin: {
 			newGame: async () => undefined,
-			endGame: async () => undefined,
+			endGame: async () => {
+				if (playBalanceFromApiHolder !== null) {
+					handleUpdateBalance({ balanceAmountFromApi: playBalanceFromApiHolder });
+					playBalanceFromApiHolder = null;
+				}
+			},
 		},
 		singleRoundWin: {
 			newGame: async () => {
@@ -150,20 +159,20 @@ function createPrimaryMachines<TBet extends BaseBet>(options: Options<TBet>) {
 				}
 			},
 			endGame: async () => {
-				if (balanceAmountFromApiHolder !== null) {
-					handleUpdateBalance({ balanceAmountFromApi: balanceAmountFromApiHolder });
-					balanceAmountFromApiHolder = null;
-				}
+				const settled = balanceAmountFromApiHolder ?? playBalanceFromApiHolder;
+				if (settled !== null) handleUpdateBalance({ balanceAmountFromApi: settled });
+				balanceAmountFromApiHolder = null;
+				playBalanceFromApiHolder = null;
 			},
 		},
 		bonusWin: {
 			newGame: async () => undefined,
 			endGame: async () => {
 				const data = await handleRequestEndRound();
-				if (data?.balance) {
-					handleUpdateBalance({ balanceAmountFromApi: data.balance.amount });
-					balanceAmountFromApiHolder = null;
-				}
+				const settled = data?.balance?.amount ?? playBalanceFromApiHolder;
+				if (settled !== null) handleUpdateBalance({ balanceAmountFromApi: settled });
+				balanceAmountFromApiHolder = null;
+				playBalanceFromApiHolder = null;
 			},
 		},
 	} as const;
@@ -190,13 +199,23 @@ function createPrimaryMachines<TBet extends BaseBet>(options: Options<TBet>) {
 			failInsufficientFunds(onNewGameError);
 		}
 
+		// What the wallet must read once this play is debited, taken before the request (a bought mode
+		// can be released while the round is presented).
+		const debitedBalanceFromApi = Math.round(
+			(stateBet.balanceAmount - stateBetDerived.betCost()) * API_AMOUNT_MULTIPLIER,
+		);
+
 		await onNewGameStart();
 
 		const data = await handleRequestBet({ onError: onNewGameError });
 
 		if (data) {
 			if (data.balance) {
-				handleUpdateBalance({ balanceAmountFromApi: data.balance.amount });
+				// Show only the debit now; the settled balance lands at endGame.
+				playBalanceFromApiHolder = data.balance.amount;
+				handleUpdateBalance({
+					balanceAmountFromApi: Math.min(data.balance.amount, debitedBalanceFromApi),
+				});
 			}
 
 			const bet = data.round as TBet;

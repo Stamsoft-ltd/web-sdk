@@ -32,6 +32,7 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		if ((stateBet.isTurbo && stateXstateDerived.isAutoBetting()) || stateBet.isSpaceHold) return;
 		stateBet.winBookEventAmount = 0;
 		stateGame.roundWin = 0;
+		stateGame.winCountUp = null;
 		stateGame.pendingStop = false;
 		stateGame.awaitingFirstReveal = true;
 		beginReelSpin();

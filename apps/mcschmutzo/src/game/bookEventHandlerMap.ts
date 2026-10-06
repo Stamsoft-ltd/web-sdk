@@ -5,13 +5,45 @@ import { stateBet, stateUi } from 'state-shared';
 import { sequence } from 'utils-shared/sequence';
 import { waitForTimeout } from 'utils-shared/wait';
 
-const FREE_SPIN_LANDED_HOLD_MS = 1200;
 // Free games (the special bg) are paced so every landing and every lock animation can be seen before
 // the reels move again. The base game keeps its own (quicker) pace.
 const inFreeGames = () => stateGame.bonusMode === 'freegame';
-const RESPIN_LANDED_HOLD_MS = 500; // after a re-spin lands
-const NEXT_FREE_SPIN_PAUSE_MS = 800; // before the next free spin's reels start
-const LOCK_SETTLE_MS = LOCK_SLAM_MS + 300; // new yellow boxes fully arrived + a beat
+// Dead time: a landed board holds only as long as it needs to be read. When something follows (a win,
+// a lock, a soup step, the trigger / end) it holds a bit longer so the reaction lands on a still board;
+// a quiet spin moves on quickly. Turbo halves every hold.
+const FREE_SPIN_LANDED_HOLD_MS = 700; // after a free spin lands, before what it set off
+const FREE_SPIN_QUIET_HOLD_MS = 450; // after a free spin lands with nothing to show
+const RESPIN_LANDED_HOLD_MS = 500; // after a re-spin lands with nothing new
+const RESPIN_LOCK_HOLD_MS = 300; // after a re-spin lands with new locks (their slam is the reaction)
+const NEXT_FREE_SPIN_PAUSE_MS = 450; // before the next free spin's reels start
+// The next re-spin starts during the last 300ms of the lock slam (its damped wobble), not after it.
+const LOCK_SETTLE_MS = LOCK_SLAM_MS - 300;
+const LOCK_END_HOLD_MS = 400; // the lock feature ends, before its win is shown
+const hold = (ms: number) => waitForTimeout(stateBet.isTurbo ? ms / 2 : ms);
+// Does anything get shown between this reveal and the next spin?
+const revealHasFollowUp = (bookEvent: BookEvent, bookEvents: BookEvent[]) => {
+	const at = bookEvents.findIndex((event) => event.index === bookEvent.index);
+	for (const event of bookEvents.slice(at + 1)) {
+		if (event.type === 'reveal' || event.type === 'updateFreeSpin') return false;
+		if (event.type === 'winInfo' && event.wins.length > 0) return true;
+		if (event.type === 'lockRespinStart' || event.type === 'freeSpinTrigger' || event.type === 'freeSpinEnd')
+			return true;
+		if (event.type === 'lockRespinUpdate' && (event.newLockedPositions.length > 0 || event.addedSteps > 0))
+			return true;
+		if (event.type === 'updateGlobalMult' && event.addedSteps > 0) return true;
+	}
+	return false;
+};
+// Win beat: after the win lines light up, the winners pulse and the rest dim (Symbol / winFocus)
+// before anything else happens — the win screen, or the lock & re-spin that follows a win.
+const WIN_BEAT_MS = 520;
+const WIN_BEAT_TURBO_MS = 260;
+// A short held breath between the board landing and its win lighting up.
+const WIN_PRE_PAUSE_MS = 130;
+// Wins below this multiplier get no win screen: the amount pops on the board and the WIN readout
+// counts it up. Bigger ones keep their plaque.
+const BOARD_ONLY_WIN_MULTIPLIER = 5;
+const BOARD_ONLY_WIN_HOLD_MS = 900;
 // Soups (M) currently showing on the board (rows 1..5), as book-event positions.
 // DEV check: soups that land in free games but are followed by NO multiplier step before the next
 // spin. The client only animates the steps the book reports, so this tells a math-side "the soup
@@ -49,7 +81,8 @@ import { beginReelSpin, stateGame, stateGameDerived } from './stateGame.svelte';
 import type { BookEvent, BookEventOfType, BookEventContext } from './typesBookEvent';
 import type { Position } from './types';
 import { BOARD_DIMENSIONS, LOCK_SLAM_MS } from './constants';
-import { beginPotReveal, flushPot, queuePotShots, resetPot } from './potState.svelte';
+import { beginPotReveal, flushPot, potState, queuePotShots, resetPot } from './potState.svelte';
+import { setChefMood } from './chefMood.svelte';
 import config from './config';
 
 const getWinLevelData = (winLevel: number): WinLevelData => {
@@ -58,8 +91,12 @@ const getWinLevelData = (winLevel: number): WinLevelData => {
 };
 
 // Pick the win screen from the win AMOUNT (bet multiplier), so bigger wins escalate
-// through the pads (SWEET → LEGENDARY → EPIC → WILD → MYTHIC) — same ladder as the
-// previous games. Levels 1–5 have no pad, so small wins just count up in place.
+// through the pads: SWEET 20× → WILD 50× → EPIC 100× → MYTHIC 200× → LEGENDARY 500×+. The two
+// top tiers share the longer bgm_bigwin_top track. Levels 1–5 have no pad, so small wins just
+// count up in place.
+// The chef's reaction to a presented win: a nod for a plaque win, a laugh for a big win, the full
+// celebration from the EPIC tier (100×) up.
+const chefMoodForWin = (data: WinLevelData) => (data.level >= 8 ? 'hugeWin' : data.type === 'big' ? 'bigWin' : 'win');
 const getWinLevelDataForAmount = (amount: number): WinLevelData => {
 	const multiplier = amount / 100;
 	const level =
@@ -77,9 +114,9 @@ const getWinLevelDataForAmount = (amount: number): WinLevelData => {
 								? 6
 								: multiplier < 100
 									? 7
-									: multiplier < 250
+									: multiplier < 200
 										? 8
-										: multiplier < 1000
+										: multiplier < 500
 											? 9
 											: 10;
 	return getWinLevelData(level);
@@ -132,7 +169,8 @@ const scatterOnlyAnticipation = (bookEvent: BookEventOfType<'reveal'>) => {
 
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
 	reveal: async (bookEvent: BookEventOfType<'reveal'>, { bookEvents }: BookEventContext) => {
-		stateGame.roundWin = 0;
+		// A lock re-spin continues the same win: only a new spin clears the WIN readout.
+		if (bookEvent.gameType !== 'respin') stateGame.roundWin = 0;
 		stateGame.paylineWins = [];
 		const isBonusGame = checkIsMultipleRevealEvents({ bookEvents });
 		if (isBonusGame) {
@@ -148,6 +186,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.gameType = bookEvent.gameType;
 		beginPotReveal();
 		beginReelSpin();
+		setChefMood('spin');
 		const hadPendingStop = stateGame.pendingStop && stateGame.awaitingFirstReveal;
 		stateGame.awaitingFirstReveal = false;
 		stateGame.pendingStop = false;
@@ -169,25 +208,37 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		eventEmitter.broadcast({ type: 'soundScatterCounterClear' });
 		// Free games: hold the landed board a moment after the last reel stops, so the player clearly
 		// sees what was rolled before the win presentation / next free spin kicks in.
-		if (bookEvent.gameType === 'freegame') await waitForTimeout(FREE_SPIN_LANDED_HOLD_MS);
-		else if (bookEvent.gameType === 'respin' && inFreeGames()) await waitForTimeout(RESPIN_LANDED_HOLD_MS);
+		const followUp = revealHasFollowUp(bookEvent, bookEvents);
+		// nothing came of it: the chef shrugs
+		if (!followUp) setChefMood('dead');
+		if (bookEvent.gameType === 'freegame')
+			await hold(followUp ? FREE_SPIN_LANDED_HOLD_MS : FREE_SPIN_QUIET_HOLD_MS);
+		else if (bookEvent.gameType === 'respin' && inFreeGames())
+			await hold(followUp ? RESPIN_LOCK_HOLD_MS : RESPIN_LANDED_HOLD_MS);
 	},
-	winInfo: async (bookEvent: BookEventOfType<'winInfo'>) => {
-		stateGame.roundWin = bookEvent.totalWin;
+	winInfo: async (bookEvent: BookEventOfType<'winInfo'>, { bookEvents }: BookEventContext) => {
+		// When a win screen presents this amount next (setWin), it counts the readout up itself;
+		// setting it here would show the final value before the count-up starts.
+		const at = bookEvents.findIndex((event) => event.index === bookEvent.index);
+		if (bookEvents[at + 1]?.type !== 'setWin') stateGame.roundWin = bookEvent.totalWin;
 		if (bookEvent.wins.length === 0) {
 			stateGame.paylineWins = [];
 			return;
 		}
+		await waitForTimeout(stateBet.isTurbo ? WIN_PRE_PAUSE_MS / 2 : WIN_PRE_PAUSE_MS);
+		setChefMood('win');
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_normal', forcePlay: true });
 		await sequence(bookEvent.wins, async (win) => {
 			await animateSymbols({ positions: win.positions });
 		});
 		stateGame.paylineWins = bookEvent.wins.map((win) => ({
 			lineIndex: win.meta.lineIndex,
+			symbol: win.symbol,
 			path: [...win.positions]
 				.sort((left, right) => left.reel - right.reel)
 				.map(({ reel, row }) => ({ reel, row: row - 1 })),
 		}));
+		await waitForTimeout(stateBet.isTurbo ? WIN_BEAT_TURBO_MS : WIN_BEAT_MS);
 	},
 	setTotalWin: async (bookEvent: BookEventOfType<'setTotalWin'>) => {
 		stateBet.winBookEventAmount = bookEvent.amount;
@@ -236,7 +287,13 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateUi.freeSpinCounterCurrent = bookEvent.amount + 1;
 		stateUi.freeSpinCounterTotal = bookEvent.total;
 		// a breath between free spins (not before the first one — the wheel / intro just closed)
-		if (bookEvent.amount > 0) await waitForTimeout(NEXT_FREE_SPIN_PAUSE_MS);
+		if (bookEvent.amount > 0) await hold(NEXT_FREE_SPIN_PAUSE_MS);
+		// The last spin is announced: the room dims, the pot pulses and the chef reacts, FINAL SPIN slams
+		// down (FinalSpinHtml) — the spin starts once it has landed.
+		if (bookEvent.total > 1 && bookEvent.amount + 1 === bookEvent.total) {
+			potState.nudge += 1;
+			await eventEmitter.broadcastAsync({ type: 'finalSpin' });
+		}
 	},
 	freeSpinEnd: async (bookEvent: BookEventOfType<'freeSpinEnd'>) => {
 		const winLevelData = getWinLevelDataForAmount(bookEvent.amount);
@@ -245,6 +302,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		await flushPot(stateGame.globalMultiplier);
 
 		await eventEmitter.broadcastAsync({ type: 'uiHide' });
+		// The ending (BonusEndingHtml), on the bonus board before the TOTAL WIN plaque: BONUS COMPLETE,
+		// then the final multiplier flies out of the pot; the pot boils over and the chef celebrates.
+		setChefMood(bookEvent.amount > 0 ? (winLevelData.level >= 8 ? 'hugeWin' : 'bigWin') : 'dead');
+		potState.overflowAt = performance.now();
+		potState.nudge += 1;
+		await eventEmitter.broadcastAsync({ type: 'bonusEnding', mult: stateGame.globalMultiplier });
 		stateGame.gameType = 'basegame';
 		stateGame.bonusMode = null;
 		stateGame.globalMultiplier = 1;
@@ -254,7 +317,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.featureMessage = '';
 		stateGame.paylineWins = [];
 		eventEmitter.broadcast({ type: 'boardFrameGlowHide' });
+		// The WIN readout follows the bonus total's count-up, then keeps the total back in the base game.
+		stateGame.winCountUp = 0;
 		eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
+		if (bookEvent.amount > 0) setChefMood(chefMoodForWin(winLevelData));
 		if (bookEvent.amount > 0 && winLevelData?.type !== 'big') eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_normal' });
 		winLevelSoundsPlay({ winLevelData });
 		await eventEmitter.broadcastAsync({
@@ -262,6 +328,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			amount: bookEvent.amount,
 			winLevelData,
 		});
+		stateGame.roundWin = bookEvent.amount;
+		stateGame.winCountUp = null;
 		winLevelSoundsStop();
 		eventEmitter.broadcast({ type: 'freeSpinOutroHide' });
 		eventEmitter.broadcast({ type: 'freeSpinCounterHide' });
@@ -274,6 +342,18 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 	setWin: async (bookEvent: BookEventOfType<'setWin'>) => {
 		const winLevelData = getWinLevelDataForAmount(bookEvent.amount);
 
+		// Small win: no win screen. The amount pops on the board (BoardWinPop) while the WIN readout
+		// counts it up, and the win lines keep playing.
+		if (bookEvent.amount > 0 && bookEvent.amount / 100 < BOARD_ONLY_WIN_MULTIPLIER) {
+			stateGame.roundWin = bookEvent.amount;
+			eventEmitter.broadcast({ type: 'boardWinPop', amount: bookEvent.amount });
+			await waitForTimeout(stateBet.isTurbo ? BOARD_ONLY_WIN_HOLD_MS / 2 : BOARD_ONLY_WIN_HOLD_MS);
+			return;
+		}
+
+		// The WIN readout follows the win screen's count-up (WinReadoutSync), then holds the amount.
+		stateGame.winCountUp = 0;
+		setChefMood(chefMoodForWin(winLevelData));
 		eventEmitter.broadcast({ type: 'winShow' });
 		winLevelSoundsPlay({ winLevelData });
 		await eventEmitter.broadcastAsync({
@@ -281,6 +361,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			amount: bookEvent.amount,
 			winLevelData,
 		});
+		stateGame.roundWin = bookEvent.amount;
+		stateGame.winCountUp = null;
 		winLevelSoundsStop();
 		eventEmitter.broadcast({ type: 'winHide' });
 	},
@@ -297,7 +379,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.globalMultiplier = bookEvent.globalMult;
 		stateGame.featureMessage = `LOCK & RE-SPIN · ${bookEvent.symbol}`;
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_lock_grow', forcePlay: true });
-		await waitForTimeout(inFreeGames() ? LOCK_SETTLE_MS : 250);
+		await hold(inFreeGames() ? LOCK_SETTLE_MS : 250);
 	},
 	lockRespinUpdate: async (bookEvent: BookEventOfType<'lockRespinUpdate'>) => {
 		const positions = [...stateGame.lockedPositions, ...bookEvent.newLockedPositions];
@@ -306,7 +388,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.globalMultiplier = bookEvent.globalMult;
 		const newLocks = bookEvent.newLockedPositions.length > 0;
 		if (newLocks) eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_lock_grow', forcePlay: true });
-		if (newLocks && inFreeGames()) await waitForTimeout(LOCK_SETTLE_MS);
+		if (newLocks && inFreeGames()) await hold(LOCK_SETTLE_MS);
 		if (bookEvent.addedSteps > 0) soupCheck = null;
 		if (import.meta.env.DEV && bookEvent.addedSteps > 0)
 			console.info('[pot] lockRespinUpdate', { addedSteps: bookEvent.addedSteps, globalMult: bookEvent.globalMult, multiplierPositions: bookEvent.multiplierPositions, soupsOnBoard: soupsOnBoard() });
@@ -326,7 +408,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.collectedScatters = bookEvent.collectedScatters;
 		stateGame.globalMultiplier = bookEvent.globalMult;
 		stateGame.featureMessage = '';
-		await waitForTimeout(inFreeGames() ? 600 : 250);
+		await hold(inFreeGames() ? LOCK_END_HOLD_MS : 250);
 	},
 	updateGlobalMult: async (bookEvent: BookEventOfType<'updateGlobalMult'>) => {
 		stateGame.globalMultiplier = bookEvent.globalMult;
@@ -370,10 +452,18 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// the wheel's steps boost the multiplier (the soup badge)
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_soup_boost' });
 		await waitForTimeout(800);
+		// Into the bonus board: the CONGRATS card (FreeSpinIntroHtml, Figma 8808:12044) announces the
+		// spins won; the wheel is taken away under its backdrop, and the press (or autoplay's timer)
+		// reveals the board. Every bonus comes through the wheel — natural and bought alike — so this is
+		// where players actually see the card. (It replaced the ketchup wipe, SauceWipeHtml, 2026-10-06.)
+		eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
+		const pressed = eventEmitter.broadcastAsync({ type: 'freeSpinIntroUpdate', totalFreeSpins: bookEvent.freeSpins });
+		await waitForTimeout(400); // the card is up over the wheel
 		stateGame.wheel = undefined;
-		// Let the wheel screen finish fading out (WheelBonus out:fade, 280ms) plus a short beat on the
-		// clear board, so the first free spin's reels start in full view instead of under the fade.
-		await waitForTimeout(WHEEL_FADE_OUT_MS + 250);
+		// (and the wheel's fade-out has finished under it before the card leaves)
+		await Promise.all([pressed, waitForTimeout(WHEEL_FADE_OUT_MS)]);
+		eventEmitter.broadcast({ type: 'freeSpinIntroHide' });
+		await waitForTimeout(120);
 	},
 	// customised
 	createBonusSnapshot: async (bookEvent: BookEventOfType<'createBonusSnapshot'>) => {

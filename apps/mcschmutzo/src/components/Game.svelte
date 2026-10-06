@@ -22,10 +22,16 @@
 	import Board from './Board.svelte';
 	import Anticipations from './Anticipations.svelte';
 	import Win from './Win.svelte';
+	import BoardWinPop from './BoardWinPop.svelte';
 	import FreeSpinIntroHtml from './FreeSpinIntroHtml.svelte';
 	import FreeSpinPanelHtml from './FreeSpinPanelHtml.svelte';
 	import OrderNotesHtml from './OrderNotesHtml.svelte';
 	import WheelBonus from './WheelBonus.svelte';
+	import SauceWipeHtml from './SauceWipeHtml.svelte';
+	import BoardDepth from './BoardDepth.svelte';
+	import FinalSpinHtml from './FinalSpinHtml.svelte';
+	import { screenShake } from '../game/screenShake.svelte';
+	import BonusEndingHtml from './BonusEndingHtml.svelte';
 	import FreeSpinOutroHtml from './FreeSpinOutroHtml.svelte';
 	import Transition from './Transition.svelte';
 	import FeatureOverlay from './FeatureOverlay.svelte';
@@ -36,6 +42,7 @@
 	import { boardLogoScreenRect } from '../game/boardLogo';
 	import LogoHtml from './LogoHtml.svelte';
 	import { fade } from 'svelte/transition';
+	import { cubicInOut } from 'svelte/easing';
 	import { warmArt, ap } from '../lib/preloadArt';
 
 	// Press Play studio wordmark + McSchmutzo logo — shown on the (dark) loading screen while assets
@@ -68,6 +75,8 @@
 	// bounce. Never replayed (the game branch mounts once per session).
 	const boardDrop = new Tween(0);
 	let boardIntroDone = false;
+	// true once the drop has fully landed (bounces included) — the phone chef waits for it
+	let boardLanded = $state(false);
 	const landBounce = (t: number) => {
 		// fall (accelerating) → impact → two shrinking rebounds
 		if (t < 0.62) return (t / 0.62) ** 2;
@@ -80,10 +89,11 @@
 		const h = context.stateLayoutDerived.canvasSizes().height;
 		boardDrop.set(-h * 1.05, { duration: 0 });
 		// a short beat so the splash's fade-out has started before the board arrives
-		setTimeout(() => boardDrop.set(0, { duration: 950, easing: landBounce }), 120);
+		setTimeout(() => boardDrop.set(0, { duration: 950, easing: landBounce }).then(() => (boardLanded = true)), 120);
 	});
 	const modeImage = './assets/mcschmutzo/background-base.webp';
-	const symbolImage = (name: string) => `./assets/mcschmutzo/symbols/${name}.webp`;
+	// (the scatter's art is S_scatter.webp: the SCATTER-lettered version under a new name, so no cached S.webp shows)
+	const symbolImage = (name: string) => `./assets/mcschmutzo/symbols/${name === 'S' ? 'S_scatter' : name}.webp`;
 
 	const modeMeta = (
 		mode: string,
@@ -235,7 +245,7 @@
 			<EnableGameActor />
 			<EnablePixiExtension />
 
-			<Background showArt={!context.stateLayout.showLoadingScreen || splashPressed} />
+			<Background showArt={!context.stateLayout.showLoadingScreen || splashPressed} {boardLanded} />
 
 			{#if context.stateLayout.showLoadingScreen}
 				<LoadingScreen
@@ -249,9 +259,12 @@
 				<ResumeBet />
 				<Sound />
 
-				<Container y={boardDrop.current}>
+				<!-- the board group takes the impact shakes (game/screenShake); the background does not -->
+				<Container x={screenShake.x} y={boardDrop.current + screenShake.y}>
 				<MainContainer>
 					<BoardFrame />
+					<!-- tile depth under the symbols: win-tile light, specials' glow, sauce stains -->
+					<BoardDepth />
 				</MainContainer>
 
 				<MainContainer>
@@ -265,11 +278,14 @@
 				</Container>
 
 				<!-- Board logo: outside the drop-in, so it is already at rest where the splash logo lands. -->
-				<MainContainer>
-					<FeatureOverlay />
-				</MainContainer>
+				<Container x={screenShake.x} y={screenShake.y}>
+					<MainContainer>
+						<FeatureOverlay />
+					</MainContainer>
+				</Container>
 
 				<PotShots />
+				<BoardWinPop />
 				<Win />
 				<Transition />
 			{/if}
@@ -283,7 +299,7 @@
 		{/if}
 
 		{#if splashIntroVisible}
-			<div transition:fade={{ duration: 350 }} style="position:absolute;inset:0;z-index:10;">
+			<div transition:fade={{ duration: 350, easing: cubicInOut }} style="position:absolute;inset:0;z-index:10;">
 				<SplashIntro
 					logoTarget={() => boardLogoScreenRect(context)}
 					onpress={() => {
@@ -302,6 +318,9 @@
 			<FreeSpinPanelHtml />
 			<OrderNotesHtml />
 			<WheelBonus />
+			<FinalSpinHtml />
+			<BonusEndingHtml />
+			<SauceWipeHtml />
 		{/if}
 	</div>
 </div>

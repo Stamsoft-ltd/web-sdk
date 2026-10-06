@@ -75,13 +75,16 @@
 </script>
 
 <script lang="ts">
+	import { menuPop } from '../lib/popOut';
 	import { OnHotkey } from 'components-shared';
 	import { stateBet, stateBetDerived, stateConfig, stateModal, stateSound, stateUrlDerived } from 'state-shared';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, untrack } from 'svelte';
 	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import { getContext } from '../game/context';
+	import { boardFrameScreenRect, boardLogoScreenRect } from '../game/boardLogo';
 	import { PORTRAIT_SHORT_ASPECT } from '../game/stateLayout';
 	import { continueBottom } from '../lib/continuePos';
 	import { i18nDerived } from '../i18n/i18nDerived';
@@ -344,16 +347,62 @@
 	// Portrait WIN readout: this spin's win (per round) — during a bonus it shows each round's win,
 	// NOT the cumulative total (that's EARNED). Set to the grand total at bonus end, cleared each
 	// spin. Count-up on a win, snap on the spin-start clear.
+	// Landscape corner readouts: the real gap beside the board frame, and whether the WIN corner sits
+	// clear BELOW it (then the pill may run in under the board's side instead of shrinking into the
+	// side gap — the 700×460 popout's WIN pill was being scaled down to ~12×8 px).
+	const lsBoard = $derived.by(() => {
+		const canvas = context.stateLayoutDerived.canvasSizes();
+		const frame = boardFrameScreenRect(context);
+		return {
+			leftGap: Math.max(0, frame.left),
+			rightGap: Math.max(0, canvas.width - frame.right),
+			below: Math.max(0, canvas.height - frame.bottom),
+		};
+	});
+	const ptLogoStyle = $derived.by(() => {
+		const r = boardLogoScreenRect(context);
+		return `left:${(r.cx - r.width / 2).toFixed(1)}px;top:${(r.cy - r.height / 2).toFixed(1)}px;width:${r.width.toFixed(1)}px`;
+	});
+	const lsBoardVars = $derived(
+		`--ls-board-left-gap:${lsBoard.leftGap.toFixed(1)}px;--ls-board-right-gap:${lsBoard.rightGap.toFixed(1)}px`,
+	);
+	// Clear below = the WIN pill's own height (measured, unscaled) plus its corner inset (CSS
+	// --ls-corner-bottom: clamp(4px, 1.8dvh, 14px)) and a few px fit under the frame, so it can't reach
+	// the board whatever its width.
+	let lsWinH = $state(0);
+	const lsClearBelow = $derived.by(() => {
+		const h = context.stateLayoutDerived.canvasSizes().height;
+		const cornerBottom = Math.min(14, Math.max(4, h * 0.018));
+		return lsWinH > 0 && lsBoard.below >= lsWinH + cornerBottom + 4;
+	});
+
 	const winTween = new Tween(0);
+	// The last value a win screen counted the readout up to. The handler sets roundWin and releases
+	// winCountUp in the same tick, so by the time the tween effect runs winCountUp is already null —
+	// this remembers what was shown so the settled amount isn't counted up a second time.
+	let countedTo: number | null = null;
+	$effect.pre(() => {
+		const shown = context.stateGame.winCountUp;
+		if (shown !== null) countedTo = Math.round(shown);
+	});
 	$effect(() => {
 		const target = context.stateGame.roundWin;
-		winTween.set(target, { duration: target === 0 ? 0 : 650 });
+		const counted =
+			untrack(() => context.stateGame.winCountUp !== null) || Math.round(target) === countedTo;
+		countedTo = null;
+		winTween.set(target, { duration: target === 0 || counted ? 0 : 650, easing: cubicOut });
 	});
 	// Round the IN-FLIGHT count-up only (an unrounded tween renders jittery 4-decimal values); the
 	// settled value is printed exactly, so a 0.0016 win reads $0.0016 (STAKE_REVIEW_LESSONS R-01).
+	// While a win screen counts up, follow it — never below what the readout already showed.
+	const winCountUp = $derived(context.stateGame.winCountUp);
 	const winValue = $derived(
 		bookEventAmountToCurrencyString(
-			winTween.current === winTween.target ? winTween.target : Math.round(winTween.current),
+			winCountUp !== null
+				? Math.max(Math.round(winCountUp), context.stateGame.roundWin)
+				: winTween.current === winTween.target
+					? winTween.target
+					: Math.round(winTween.current),
 		),
 	);
 	const hasWin = $derived(context.stateGame.roundWin > 0);
@@ -458,11 +507,7 @@
 		if (!replayPromptVisible) return;
 		layoutType;
 		const raf = requestAnimationFrame(() => {
-			const bar = document.querySelector('.hud-bottom')?.getBoundingClientRect();
-			replayPromptBottom =
-				layoutType === 'desktop' && bar && bar.height > 0
-					? `${Math.round(window.innerHeight - bar.top + 8)}px`
-					: continueBottom('clamp(14px, 3.5vh, 34px)');
+			replayPromptBottom = continueBottom('clamp(14px, 3.5vh, 34px)');
 		});
 		return () => cancelAnimationFrame(raf);
 	});
@@ -918,11 +963,12 @@
 	style={`--win-dim:${1 - context.stateGame.winDim};--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}');--ls-navbox:url('${lsNavBox}');--ls-bonus:url('${lsBonus}');--ls-turn:url('${lsTurn}');--ls-vh:${lsVh}px`}
 >
 	{#if isPortrait}
-		<!-- Portrait header: Press Play mark + big McSchmutzo logo, pinned above the board. -->
+		<!-- Portrait header: the Press Play mark at the top; the McSchmutzo logo sits on the board's
+		     top rail, left of the chef (Figma 8870:32978 — boardLogoLayout's portrait branch). -->
 		<div class="pt-top" class:pt-top--short={isShortPortrait}>
 			<img class="pt-top__pp" src={ptPressPlay} alt="Press Play" draggable="false" />
-			<div class="pt-top__logo"><LogoHtml /></div>
 		</div>
+		<div class="pt-logo" style={ptLogoStyle}><LogoHtml /></div>
 		<!-- Dedicated portrait HUD (Figma mobile 2792-4133). Desktop/landscape markup below is untouched. -->
 		<div class="pt-hud">
 			<div class="pt-controls">
@@ -930,7 +976,7 @@
 					<div class="pt-menu-wrap">
 						<!-- Sound / Info popup — anchored directly above the ☰ menu button. -->
 						{#if menuOpen}
-							<div class="pt-menu-pop" role="menu">
+							<div class="pt-menu-pop" role="menu" in:menuPop out:menuPop={{ duration: 140 }}>
 								<button
 									class="pt-menu-item"
 									class:muted={isMuted}
@@ -1077,7 +1123,7 @@
 		<!-- Dedicated mobile-landscape HUD: a big centred board flanked by a bottom-left BALANCE+BET
 		     stack and a right control rail (menu · BONUS · spin · turbo · auto), WIN bottom-right.
 		     Everything scales with viewport height (vh) so it shrinks together on smaller landscapes. -->
-		<div class="ls-hud">
+		<div class="ls-hud" class:ls-hud--clear-below={lsClearBelow} style={lsBoardVars}>
 			<!-- Press Play studio mark, centred above the right control rail. -->
 			<img class="ls-pp" src={ptPressPlay} alt="Press Play" draggable="false" />
 
@@ -1120,7 +1166,7 @@
 			<div class="ls-right">
 				<div class="ls-menu-wrap">
 					{#if menuOpen}
-						<div class="ls-menu-pop" role="menu">
+						<div class="ls-menu-pop" role="menu" in:menuPop out:menuPop={{ duration: 140 }}>
 							<button class="pt-menu-item" class:muted={isMuted} type="button" role="menuitem" onclick={toggleSound}>
 								<img class="pt-menu-item__ic" src={soundMenuIcon} alt="" />
 								<span class="pt-menu-item__label">{i18nDerived.translate('SOUND')}</span>
@@ -1198,7 +1244,7 @@
 			<!-- WIN readout, bottom-right — mirrors the BALANCE block bottom-left. Current spin win /
 			     running bonus total, cleared on the next spin; keeps its slot while hidden. -->
 			<div class="ls-right-bottom">
-				<div class="ls-win" use:fitPill={{ dep: winValue, align: 'right' }}>
+				<div class="ls-win" bind:clientHeight={lsWinH} use:fitPill={{ dep: winValue, align: 'right' }}>
 					<span class="ls-win__label">{i18nDerived.win()}</span>
 					<span class="ls-win__value">{winValue}</span>
 				</div>
@@ -1210,7 +1256,7 @@
 			<div class="hud-system">
 				<div class="menu-wrap">
 					{#if menuOpen}
-						<div class="hud-menu-pop" role="menu">
+						<div class="hud-menu-pop" role="menu" in:menuPop out:menuPop={{ duration: 140 }}>
 							<button
 								class="hud-menu-item"
 								class:muted={isMuted}
@@ -2063,6 +2109,7 @@
 	}
 	.hud-menu-pop {
 		position: absolute;
+		transform-origin: bottom left; /* menuPop unfolds from the ☰ button */
 		bottom: calc(100% + var(--nav-s) * 0.28);
 		/* Anchor to the menu button so the popup's icon column sits exactly above the ☰ / ✕
 		   (same 72u discs, same centre): pull left by the popup's own border + side padding. */
@@ -2464,8 +2511,8 @@
 		left: var(--ls-corner-left);
 		bottom: var(--ls-corner-bottom);
 		width: max-content;
-		/* Never cross the board's left edge (≈ 50vw − 50dvh); 8px keeps a hair of clearance. */
-		max-width: calc(50vw - 50dvh - var(--ls-corner-left) - 8px);
+		/* Never cross the board frame's left edge (measured: --ls-board-left-gap); 8px of clearance. */
+		max-width: calc(var(--ls-board-left-gap, 50vw - 50dvh) - var(--ls-corner-left) - 8px);
 		display: flex;
 		flex-direction: column;
 		/* stretch so BALANCE and BET share the same width (the wider one — BALANCE — sets it). */
@@ -2514,8 +2561,9 @@
 		right: var(--ls-win-right);
 		bottom: var(--ls-corner-bottom);
 		width: max-content;
-		/* Never cross the board's right edge (≈ 50vw + 50dvh); WIN extends left from its right anchor. */
-		max-width: calc(50vw - 50dvh - var(--ls-win-right) - 8px);
+		/* Never cross the board frame's right edge (measured: --ls-board-right-gap); WIN extends left
+		   from its right anchor. */
+		max-width: calc(var(--ls-board-right-gap, 50vw - 50dvh) - var(--ls-win-right) - 8px);
 		display: flex;
 		flex-direction: column;
 		align-items: flex-end;
@@ -2539,6 +2587,12 @@
 		background: #1f1f1f;
 		border-top: 1.28px solid #605553;
 		box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
+	}
+	/* WIN corner clear below the board frame: the one-pill WIN readout may run in under the board's
+	   side (up to the centre line) instead of shrinking into the narrow side gap. Not the BALANCE/BET
+	   stack: it is about twice as tall and would reach the board's side. */
+	.ls-hud--clear-below .ls-right-bottom {
+		max-width: calc(50vw - var(--ls-win-right) - 8px);
 	}
 	/* No win yet → keep the slot but show nothing (matches the portrait WIN behavior). */
 	.ls-win--hidden {
@@ -2736,6 +2790,7 @@
 	}
 	.ls-menu-pop {
 		position: absolute;
+		transform-origin: top right; /* menuPop unfolds from the ☰ button */
 		right: calc(100% + clamp(6px, 1.4vw, 12px));
 		/* Drop DOWN from the button's top (the burger sits near the top of the rail, so a vertically
 		   centred popup got clipped off the top of the screen). */
@@ -2888,8 +2943,8 @@
 	.hud-shell[data-layout='portrait'] { padding: 0; }
 	.hud-shell[data-layout='portrait'] .hud-bottom { display: none; }
 
-	/* Portrait header — Press Play mark stacked over the big McSchmutzo logo, at the top of the
-	   screen above the reels. Non-interactive (taps fall through to the board). */
+	/* Portrait header — the Press Play mark at the top of the screen (the McSchmutzo logo is .pt-logo,
+	   on the board's top rail). Non-interactive (taps fall through to the board). */
 	.pt-top {
 		position: absolute;
 		top: calc(2% + env(safe-area-inset-top, 0px));
@@ -2899,22 +2954,15 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		/* Press Play stays near the top; the logo drops down (big gap) so its lower edge slightly
-		   overlaps the top of the reels. */
-		gap: 8.5vh;
 		width: 100%;
 		pointer-events: none;
 	}
-	/* Short phones: logo moved up to the top (small gap), a bit smaller, so the wider board fits. */
+	/* Short phones: the mark a bit higher and smaller. */
 	.pt-top--short {
 		top: calc(0.8% + env(safe-area-inset-top, 0px));
-		gap: 0.4vh;
 	}
 	.pt-top--short .pt-top__pp {
 		width: min(22%, 110px);
-	}
-	.pt-top--short .pt-top__logo {
-		width: min(64%, 320px);
 	}
 	.pt-top__pp {
 		width: min(32%, 150px);
@@ -2922,9 +2970,11 @@
 		object-fit: contain;
 		filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
 	}
-	.pt-top__logo {
-		width: min(78%, 380px);
-		filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
+	.pt-logo {
+		position: absolute;
+		z-index: 6;
+		pointer-events: none;
+		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
 	}
 
 	.pt-hud {
@@ -3175,6 +3225,7 @@
 	   Sits just above the bar, aligned to its left edge. */
 	.pt-menu-pop {
 		position: absolute;
+		transform-origin: bottom left; /* menuPop unfolds from the ☰ button */
 		/* Placed so the popup's icon column is centred exactly above the ☰ / ✕ button (everything in
 		   the bar scales with --u, so this holds at every phone width). */
 		left: calc(var(--u) * 0.0425);

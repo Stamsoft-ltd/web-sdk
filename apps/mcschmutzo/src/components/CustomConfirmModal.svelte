@@ -7,6 +7,8 @@
 </script>
 
 <script lang="ts">
+	import { fade } from 'svelte/transition';
+	import { popIn, popOut } from '../lib/popOut';
 	// Reusable two-action confirm dialog, styled to match CustomAutoSpinModal.
 	// Used for the buy-bonus confirm ("CONFIRM PURCHASE") and the unfinished-round prompt.
 	type Props = {
@@ -26,9 +28,11 @@
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-<div class="cf-backdrop" onclick={dismiss}></div>
+<div class="cf-backdrop" in:fade|global={{ duration: 220 }} out:fade|global={{ duration: 200 }} onclick={dismiss}></div>
 
 <button
+	in:fade|global={{ duration: 220, delay: 200 }}
+	out:fade|global={{ duration: 120 }}
 	class="cf-close"
 	type="button"
 	style={`background-image:url('${closeArt}')`}
@@ -36,7 +40,7 @@
 	aria-label={i18nDerived.translate('CLOSE')}
 ></button>
 
-<div class="cf-root" role="dialog" aria-modal="true">
+<div class="cf-root" in:popIn|global out:popOut|global role="dialog" aria-modal="true">
 	<div class="cf-popup">
 		<p class="cf-title">{props.title}</p>
 		<p class="cf-message">{props.message}</p>

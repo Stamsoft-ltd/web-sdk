@@ -91,6 +91,7 @@
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { fade } from 'svelte/transition';
+	import { cubicIn } from 'svelte/easing';
 	import { stateBet, stateBetDerived, stateConfig } from 'state-shared';
 	import { isReplayMode } from '../state/roundFlow.svelte';
 
@@ -382,7 +383,7 @@
 </script>
 
 {#if wheel}
-	<div class="wb-scene" role="dialog" aria-modal="true" out:fade={{ duration: 280 /* = WHEEL_FADE_OUT_MS in bookEventHandlerMap */ }}>
+	<div class="wb-scene" role="dialog" aria-modal="true" out:fade={{ duration: 280 /* = WHEEL_FADE_OUT_MS in bookEventHandlerMap */, easing: cubicIn }}>
 		<!-- Back layers: wall, wood counter, wheel, front plank, rail. -->
 		<div class="wb-stage" style={stageStyle}>
 			<div
@@ -469,7 +470,7 @@
 				<span class="wb-title-outline" aria-hidden="true">{i18nDerived.translate('WIN UP TO')}</span>
 				<span class="wb-title-fill">{i18nDerived.translate('WIN UP TO')}</span>
 			</div>
-			<!-- left corner: the soup pot with the "+15" max-steps splat in front; right corner: max free games -->
+			<!-- left corner: the soup pot with the "+15" max-steps splat on its lower right; right corner: max free games -->
 			<img
 				class="wb-badge wb-badge--soup"
 				class:wb-badge--portrait={portrait}
@@ -724,16 +725,17 @@
 	.wb-badge--portrait {
 		top: -165px;
 	}
-	/* a smaller "+15" tucked over the pot's bottom-left corner (pot: 209×209 at 18, 19) */
+	/* a smaller "+15" on the pot's lower RIGHT, clear of the McSchmutzo label (pot: 209×209 at 18, 19;
+	   its visible body spans x 27…218, y 33…191) — about half the pot's width */
 	.wb-badge--steps {
-		left: 4px;
+		left: 130px;
 		top: 132px;
-		width: 136px;
-		height: 90px;
+		width: 100px;
+		height: 66px;
 		animation-delay: -0.7s;
 	}
 	.wb-badge--steps.wb-badge--portrait {
-		left: 364px;
+		left: 490px; /* the same offset from the portrait pot (378, −196) */
 		top: -83px;
 	}
 	.wb-badge--soup.wb-badge--portrait {

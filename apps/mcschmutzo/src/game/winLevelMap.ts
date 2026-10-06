@@ -1,8 +1,8 @@
 import { SECOND } from 'constants-shared/time';
 
 // Big wins count up for exactly as long as their win track builds, so the amount lands on the
-// track's final hit (bgm_bigwin: SWEET / EPIC / WILD) or as its sustain ends (bgm_bigwin_top:
-// LEGENDARY / MYTHIC) — measured from audio-src (scripts/build-sounds.mjs).
+// track's final hit (bgm_bigwin: SWEET / WILD / EPIC) or as its sustain ends (bgm_bigwin_top:
+// MYTHIC / LEGENDARY) — measured from audio-src (scripts/build-sounds.mjs).
 const BIG_WIN_HIT_MS = 9.3 * SECOND;
 const TOP_WIN_END_MS = 12 * SECOND;
 // …then the screen holds for the rest of the track (its ring-out) before it closes.
@@ -80,12 +80,12 @@ export const winLevelMap = {
 		level: 7,
 		alias: 'superwin',
 		type: 'big',
-		text: 'LEGENDARY WIN',
-		presentDuration: TOP_WIN_END_MS,
-		holdDuration: TOP_WIN_TAIL_MS,
-		sound: { sfx: undefined, bgm: 'bgm_bigwin_top' },
+		text: 'WILD WIN',
+		presentDuration: BIG_WIN_HIT_MS,
+		holdDuration: BIG_WIN_TAIL_MS,
+		sound: { sfx: undefined, bgm: 'bgm_bigwin' },
 		animation: { intro: 'super_win_intro', idle: 'super_win_idle', outro: 'super_win_exit' },
-		pad: 'winPadLegendary',
+		pad: 'winPadWild',
 	},
 	8: {
 		level: 8,
@@ -102,23 +102,23 @@ export const winLevelMap = {
 		level: 9,
 		alias: 'epic',
 		type: 'big',
-		text: 'WILD WIN',
-		presentDuration: BIG_WIN_HIT_MS,
-		holdDuration: BIG_WIN_TAIL_MS,
-		sound: { sfx: undefined, bgm: 'bgm_bigwin' },
+		text: 'MYTHIC WIN',
+		presentDuration: TOP_WIN_END_MS,
+		holdDuration: TOP_WIN_TAIL_MS,
+		sound: { sfx: undefined, bgm: 'bgm_bigwin_top' },
 		animation: { intro: 'epic_win_intro', idle: 'epic_win_idle', outro: 'epic_win_exit' },
-		pad: 'winPadWild',
+		pad: 'winPadMythic',
 	},
 	10: {
 		level: 10,
 		alias: 'max',
 		type: 'big',
-		text: 'MYTHIC WIN',
+		text: 'LEGENDARY WIN',
 		presentDuration: TOP_WIN_END_MS,
 		holdDuration: TOP_WIN_TAIL_MS,
 		sound: { sfx: undefined, bgm: 'bgm_bigwin_top' },
 		animation: { intro: 'max_win_intro', idle: 'max_win_idle', outro: 'max_win_exit' },
-		pad: 'winPadMythic',
+		pad: 'winPadLegendary',
 	},
 } as const;
 
