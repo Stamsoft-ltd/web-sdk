@@ -174,13 +174,14 @@
 		border: 0.21cqw solid #a88eff;
 		border-radius: 2.57cqw;
 		background: #a88eff;
+		/* White on #A88EFF is ~2.6:1; deep purple matches the buy menu's primary labels. */
+		color: #1f1d55;
 		font-family: 'Audiowide', 'Chakra Petch', 'Inter', sans-serif;
 		font-size: 3.43cqw;
 		font-weight: 400;
 		letter-spacing: 0.0875em;
 		text-transform: uppercase;
 		white-space: nowrap;
-		color: #fff;
 		cursor: pointer;
 		transition: filter 0.12s ease;
 	}

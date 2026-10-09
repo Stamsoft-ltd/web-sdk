@@ -191,6 +191,8 @@
 	/* Play Round — the design's primary: flat #A88EFF */
 	.resume-btn--ok {
 		background: #a88eff;
+		/* White on #A88EFF is ~2.6:1; deep purple matches the buy menu's primary labels. */
+		color: #1f1d55;
 	}
 	/* End Round — the design's secondary: the plate's own lighter purple, outlined */
 	.resume-btn--cancel {

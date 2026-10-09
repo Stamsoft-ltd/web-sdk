@@ -85,8 +85,9 @@
 	const CARD_GAP_FRACTION = 6 / 1200;
 	/** Card box 345.3x243.3. Our descriptions run a line longer than the design's, so the card is
 	 *  allowed to grow past that 0.70 ratio — the budget reserves the taller box so two rows plus
-	 *  the bet plate still fit inside the panel. */
-	const CARD_H_BUDGET = 0.83;
+	 *  the bet plate still fit inside the panel. 0.92 since the copy and price were enlarged for
+	 *  legibility (user, 2026-10-09). */
+	const CARD_H_BUDGET = 0.92;
 	/** Below this the card's own proportions stop being readable: every size inside the card is a
 	 *  share of its width (the design's 345px card carries 12px copy, 3.5% of it), so a card the
 	 *  height budget has squeezed to ~140px — which is what a 610x347 popout leaves for two rows —
@@ -651,16 +652,19 @@
 	.card-desc {
 		flex-shrink: 0;
 		width: 100%;
-		min-height: 21cqw;
+		min-height: 22.4cqw;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
 		font-family: 'Poppins', 'Chakra Petch', 'Inter', sans-serif;
-		font-weight: 400;
-		font-size: 3.5cqw;
-		line-height: 1.5;
-		letter-spacing: 0.03em;
+		/* Larger and a touch heavier than the design's 11px Regular, which read as hard to make out
+		   on the purple plate at in-game scale (user, 2026-10-09). */
+		font-weight: 500;
+		font-size: 4.15cqw;
+		line-height: 1.35;
+		letter-spacing: 0.02em;
 		color: #ffffff;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 	}
 
 	/* Fixed-height icon row (69 of 345.3) so all five icons sit on one line whatever their own
@@ -706,13 +710,16 @@
 		filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
 	}
 
-	/* 9164:11770 — POPPINS Bold 9.36px, white. */
+	/* 9164:11770 — POPPINS Bold, white. The design's 9.36px was the smallest type on the card for
+	   its most important number; enlarged to read at a glance (user, 2026-10-09). */
 	.card-price {
 		flex-shrink: 0;
 		margin-top: 2.5cqw;
 		font-family: 'Poppins', 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
-		font-size: 2.98cqw;
+		font-size: 5.1cqw;
+		line-height: 1.2;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 		letter-spacing: 0.02em;
 		white-space: nowrap;
 		color: #ffffff;
@@ -728,7 +735,7 @@
 		padding: 0 3cqw;
 		border-radius: 3.82cqw;
 		font-family: 'Audiowide', 'Chakra Petch', 'Inter', sans-serif;
-		font-size: 4.07cqw;
+		font-size: 4.6cqw;
 		font-weight: 400;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
@@ -744,10 +751,12 @@
 		opacity: 0.45;
 		cursor: default;
 	}
-	/* Buy — the design's primary: flat #A88EFF ringed in #47468A. */
+	/* Buy — the design's primary: flat #A88EFF ringed in #47468A. White on that lavender measured
+	   ~2.6:1 and the label washed out, so primary labels are the plate's deep purple instead. */
 	.card-btn--buy {
 		background: #a88eff;
 		border: 1px solid #47468a;
+		color: #1f1d55;
 	}
 	/* Activate — the secondary of the same pair, the two fills swapped. */
 	.card-btn--activate {
@@ -758,6 +767,7 @@
 	.card-btn--active {
 		background: #a88eff;
 		border-color: #47468a;
+		color: #1f1d55;
 	}
 
 	/* Bet selector — design 9164:11752: the card's own plate at 271.7x67 on radius 12, a round
@@ -885,17 +895,17 @@
 		font-size: max(12px, 5.24cqw);
 	}
 	.panel.compact .card-desc {
-		font-size: max(9.5px, 3.5cqw);
+		font-size: max(10.5px, 4.15cqw);
 		min-height: 0;
 	}
 	.panel.compact .card-pill {
 		font-size: max(9px, 3.03cqw);
 	}
 	.panel.compact .card-price {
-		font-size: max(10px, 2.98cqw);
+		font-size: max(12px, 5.1cqw);
 	}
 	.panel.compact .card-btn {
-		font-size: max(11px, 4.07cqw);
+		font-size: max(11px, 4.6cqw);
 		height: max(26px, 15.92cqw);
 	}
 	.panel.compact .card-icon-slot {
@@ -968,7 +978,7 @@
 	   into the card's edges. */
 	.panel.tiny .card-price {
 		margin-top: 1px;
-		font-size: 10px;
+		font-size: 11px;
 		line-height: 1.2;
 		white-space: normal;
 		text-wrap: balance;
@@ -1185,6 +1195,7 @@
 	}
 	.confirm-btn--ok {
 		background: #a88eff;
+		color: #1f1d55;
 	}
 
 	/* Buttons do NOT inherit font-family: the UA stylesheet hard-sets `font: 400 13.333px Arial` on
