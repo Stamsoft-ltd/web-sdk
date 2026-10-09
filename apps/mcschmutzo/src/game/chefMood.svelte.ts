@@ -24,6 +24,8 @@ export const chefMood = $state({
 	/** The mood it took over from (its pose blends out over BLEND_MS). */
 	prev: 'idle' as ChefMood,
 	prevAt: -1e9,
+	/** A LEGENDARY win (500×+, which every max win is): the free-games chef flips his hat. */
+	top: false,
 });
 
 // The chef keeps his own pace, not the reels': turbo / super turbo (and Space-hold) only hurry the
@@ -43,7 +45,7 @@ const reactionLeft = (t: number) => {
 	return Number.isFinite(dur) && dur > 0 ? Math.max(0, chefMood.at + dur - t) : 0;
 };
 
-export const setChefMood = (mood: ChefMood) => {
+export const setChefMood = (mood: ChefMood, top = false) => {
 	const t = performance.now();
 	// the same reaction again within a beat (two WILDs landing together) doesn't restart it
 	if (mood === chefMood.mood && t - chefMood.at < 450) return;
@@ -80,14 +82,15 @@ export const setChefMood = (mood: ChefMood) => {
 	}
 	clearTimeout(pendingSpin);
 	pendingSpin = undefined;
-	applyChefMood(mood, t);
+	applyChefMood(mood, t, top);
 };
 
-const applyChefMood = (mood: ChefMood, t: number) => {
+const applyChefMood = (mood: ChefMood, t: number, top = false) => {
 	chefMood.prev = chefMood.mood;
 	chefMood.prevAt = chefMood.at;
 	chefMood.mood = mood;
 	chefMood.at = t;
+	chefMood.top = top;
 };
 
 /**

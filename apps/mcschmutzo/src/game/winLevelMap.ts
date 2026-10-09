@@ -120,6 +120,19 @@ export const winLevelMap = {
 		animation: { intro: 'max_win_intro', idle: 'max_win_idle', outro: 'max_win_exit' },
 		pad: 'winPadLegendary',
 	},
+	// MAX WIN: only a win that hits the 25,000× cap exactly (config betModes.*.max_win). Same track
+	// and timing as LEGENDARY; its own screen (Figma 8634:2173 — MAX / WIN wordmark, no banner).
+	11: {
+		level: 11,
+		alias: 'maxwin',
+		type: 'big',
+		text: 'MAX WIN',
+		presentDuration: TOP_WIN_END_MS,
+		holdDuration: TOP_WIN_TAIL_MS,
+		sound: { sfx: undefined, bgm: 'bgm_bigwin_top' },
+		animation: { intro: 'max_win_intro', idle: 'max_win_idle', outro: 'max_win_exit' },
+		pad: 'winPadMax',
+	},
 } as const;
 
 export type WinLevelMap = typeof winLevelMap;

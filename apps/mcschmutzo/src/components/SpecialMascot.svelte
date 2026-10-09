@@ -11,6 +11,7 @@
 	import { breathAt, flexAt, type BodyFlex } from '../game/bodyFlex';
 	import { bowShake, chefMood, chefPose, type ChefMood } from '../game/chefMood.svelte';
 	import AnimatedGuy, { GUY_CROPS, cropPivot, cropRect } from './AnimatedGuy.svelte';
+	import { hatTossPeak, hatTossPose } from '../game/chefHat';
 
 	type Props = {
 		/**
@@ -166,10 +167,10 @@
 	// The latest celebration: [start, duration]. A win's cheer is latched when the mood starts, so the
 	// next spin's mood can't snap the raised arm down mid-cheer.
 	const CHEER_MS: Partial<Record<ChefMood, number>> = { win: 1300, bigWin: 2000, hugeWin: 2800 };
-	let winCheer = $state<[number, number, ChefMood]>([-1e9, 0, 'win']);
+	let winCheer = $state<[number, number, ChefMood, boolean]>([-1e9, 0, 'win', false]);
 	$effect(() => {
 		const dur = CHEER_MS[chefMood.mood];
-		if (dur) winCheer = [chefMood.at, dur, chefMood.mood];
+		if (dur) winCheer = [chefMood.at, dur, chefMood.mood, chefMood.top];
 	});
 	const cheer = (ts: number): [number, number] =>
 		ts - stampAt >= 0 && stampAt > winCheer[0] ? [stampAt, 1100] : [winCheer[0], winCheer[1]];
@@ -286,9 +287,13 @@
 	// The hat hops off his head as a cheer starts (twice on a huge win): up, tipping, a squash as it
 	// lands back on the hair.
 	const HAT_PIVOT = { px: 0.6439, py: 0.1639 };
+	// LEGENDARY / max win: the hat is TOSSED instead (game/chefHat). Its far corner swings ~0.21 of
+	// the height off the pivot mid-flip; the peak is held to the room above his frame.
+	const topHatPose = (t: number) => hatTossPose(t, hatTossPeak(chefT, guyPose.height, HAT_PIVOT.py, 0.21));
 	const hatPose = $derived.by(() => {
 		const [c0] = cheer(now);
 		const ms = now - c0;
+		if (winCheer[0] === c0 && winCheer[3]) return topHatPose(ms - 60);
 		const hops = winCheer[0] === c0 && winCheer[2] === 'hugeWin' ? [0, 700] : [0];
 		let dy = 0;
 		let rot = 0;

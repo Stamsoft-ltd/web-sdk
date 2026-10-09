@@ -11,6 +11,7 @@
 	import { MOOD_MS, bowShake, chefMood, chefPose, idleSnicker, setChefMood } from '../game/chefMood.svelte';
 	import { panoramaRect, PANORAMA_BASE_X } from '../game/panorama';
 	import AnimatedGuy, { GUY_CROPS, cropPivot, cropRect } from './AnimatedGuy.svelte';
+	import { HAT_REST, HAT_TOSS_MS, hatTossPeak, hatTossPose } from '../game/chefHat';
 	import SpecialMascot from './SpecialMascot.svelte';
 	import PortraitLamp from './PortraitLamp.svelte';
 	import { landscapeLayout } from '../game/landscapeLayout';
@@ -316,6 +317,19 @@
 	const BOTTLE_ANCHOR = cropPivot(GUY_CROPS.mascotBottle, BOTTLE_PIVX, BOTTLE_PIVY);
 	const mascotLeft = $derived(mascotPose.x - mascotPose.width / 2);
 	const mascotTop = $derived(mascotPose.y - mascotPose.height / 2);
+	// His paper hat is its own layer (scripts/build-chef-hat.py): it sits still on his head and is
+	// TOSSED on a LEGENDARY / max win (game/chefHat), latched when the mood starts so the next spin's
+	// mood can't cut the flight short. Its far corner swings 0.21 of the height off the brim pivot.
+	const HAT_PIVOT = { px: 0.5902, py: 0.1602 };
+	let tossAt = $state(-1e9);
+	$effect(() => {
+		if (chefMood.top) tossAt = chefMood.at;
+	});
+	const hatPose = $derived.by(() => {
+		const t = clock - tossAt - 60;
+		if (t < -140 || t > HAT_TOSS_MS) return HAT_REST;
+		return hatTossPose(t, hatTossPeak(mascotTop, mascotPose.height, HAT_PIVOT.py, 0.21));
+	});
 	// (riding the torso field where the sleeve runs in under the strap, like the layers on the body)
 	const bottleFlex = $derived(flexAt(CHEF_FLEX, chefFlexState, BOTTLE_PIVX, BOTTLE_PIVY, mascotPose.width, mascotPose.height));
 	const bottlePivotX = $derived(mascotLeft + BOTTLE_PIVX * mascotPose.width + bottleFlex.dx);
@@ -338,9 +352,13 @@
 	const NOZZLE_DIR = Math.atan2(-0.979, -0.204); // bottle axis: up, leaning ~12° toward the board
 	// Big wins fire the bottle on cue (a huge win twice) instead of the idle squirt.
 	const CELEBRATE_SHOTS: Partial<Record<string, number[]>> = { bigWin: [300], hugeWin: [250, 1250] };
+	// A LEGENDARY win squeezes the bottle again and again through the whole laugh (user, 2026-10-09:
+	// "squish more ketchup") — six shots, spaced past each squeeze + its recoil (SQUIRT_EMIT + 400).
+	const TOP_SHOTS = [200, 650, 1100, 1550, 2000, 2450];
+	const celebrateShots = () => (chefMood.mood === 'hugeWin' && chefMood.top ? TOP_SHOTS : CELEBRATE_SHOTS[chefMood.mood]);
 	/** When each squeeze that can still show at time t began (absolute ms). */
 	const squeezeStarts = (t: number) => {
-		const shots = CELEBRATE_SHOTS[chefMood.mood];
+		const shots = celebrateShots();
 		if (shots && t < chefMood.at + MOOD_MS[chefMood.mood] + SQUIRT_LIFE) return shots.map((s) => chefMood.at + s);
 		const k = Math.floor(t / SQ_PERIOD);
 		if (squirtHash(k) < 0.35) return []; // skip ~1 in 3 slots → irregular, "from time to time"
@@ -395,7 +413,7 @@
 	);
 	// the celebration squirts are heard (the idle ones stay silent: short reactions, not constant noise)
 	$effect(() => {
-		const shots = CELEBRATE_SHOTS[chefMood.mood];
+		const shots = celebrateShots();
 		if (!shots) return;
 		const wait = chefMood.at - performance.now();
 		const timers = shots.map((s) =>
@@ -625,6 +643,7 @@
 				tiltRange: [-0.035, 0.035],
 				maxLift: 0.0004,
 			}}
+			hat={{ key: 'mascotHat', rect: cropRect(GUY_CROPS.mascotHat), ...HAT_PIVOT, ...hatPose }}
 			x={mascotPose.x}
 			y={mascotPose.y}
 			width={mascotPose.width}

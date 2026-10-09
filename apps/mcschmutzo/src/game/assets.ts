@@ -22,6 +22,9 @@ export default {
 	winWordEpic: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-epic@0.591x.webp', import.meta.url).href, defer: true },
 	winWordWild: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-wild@0.597x.webp', import.meta.url).href, defer: true },
 	winWordMythic: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-mythic@0.613x.webp', import.meta.url).href, defer: true },
+	// MAX WIN (exactly the 25,000× cap): its own two-word wordmark, no banner (Figma 8634:2173).
+	winWordMax: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-max@0.5x.webp', import.meta.url).href, defer: true },
+	winWordMaxWin: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-maxwin@0.5x.webp', import.meta.url).href, defer: true },
 	winWordWin: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/word-win@0.482x.webp', import.meta.url).href, defer: true },
 	winStar: { type: 'sprite', src: new URL('../../assets/mcschmutzo/win/parts/win-star.webp', import.meta.url).href, defer: true },
 	// Dedicated small-win value plaque (red panel + cream ornate frame + rivets, no splashes).
@@ -162,7 +165,14 @@ export default {
 	},
 	mascotHead: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/mascot_head_v1_c@0.882x.webp', import.meta.url).href,
+		// v2: the hat lifted off, a crown of hair under it (scripts/build-chef-hat.py)
+		src: new URL('../../assets/mcschmutzo/guys/mascot_head_v2_c@0.882x.webp', import.meta.url).href,
+		preload: true,
+	},
+	mascotHat: {
+		// …and his paper hat on its own layer (tossed on a LEGENDARY win).
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mascot_hat_v1_c@0.882x.webp', import.meta.url).href,
 		preload: true,
 	},
 	mascotArm: {

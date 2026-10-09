@@ -88,7 +88,7 @@ import { releaseLocks } from './lockRelease.svelte';
 import config from './config';
 
 const getWinLevelData = (winLevel: number): WinLevelData => {
-	const clamped = Math.min(10, Math.max(1, Math.round(winLevel))) as WinLevel;
+	const clamped = Math.min(11, Math.max(1, Math.round(winLevel))) as WinLevel;
 	return winLevelMap[clamped];
 };
 
@@ -99,8 +99,13 @@ const getWinLevelData = (winLevel: number): WinLevelData => {
 // The chef's reaction to a presented win: a nod for a plaque win, a laugh for a big win, the full
 // celebration from the EPIC tier (100×) up.
 const chefMoodForWin = (data: WinLevelData) => (data.level >= 8 ? 'hugeWin' : data.type === 'big' ? 'bigWin' : 'win');
+/** LEGENDARY (500×+) — every max win lands here too: the free-games chef's hat does a full flip. */
+const isTopWin = (data: WinLevelData) => data.level >= 10;
+/** The win cap (25,000×): only a win that reaches it exactly is a MAX WIN. */
+const MAX_WIN_MULTIPLIER = config.betModes.base.max_win;
 const getWinLevelDataForAmount = (amount: number): WinLevelData => {
 	const multiplier = amount / 100;
+	if (multiplier >= MAX_WIN_MULTIPLIER) return getWinLevelData(11);
 	const level =
 		multiplier <= 0
 			? 1
@@ -125,7 +130,7 @@ const getWinLevelDataForAmount = (amount: number): WinLevelData => {
 };
 
 const winLevelSoundsPlay = ({ winLevelData }: { winLevelData: WinLevelData }) => {
-	if (winLevelData?.alias === 'max') eventEmitter.broadcastAsync({ type: 'uiHide' });
+	if (winLevelData?.alias === 'max' || winLevelData?.alias === 'maxwin') eventEmitter.broadcastAsync({ type: 'uiHide' });
 	if (winLevelData?.sound?.sfx) {
 		eventEmitter.broadcast({ type: 'soundOnce', name: winLevelData.sound.sfx });
 	}
@@ -335,7 +340,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		await eventEmitter.broadcastAsync({ type: 'uiHide' });
 		// The ending (BonusEndingHtml), on the bonus board before the TOTAL WIN plaque: BONUS COMPLETE,
 		// then the final multiplier flies out of the pot; the pot boils over and the chef celebrates.
-		setChefMood(bookEvent.amount > 0 ? (winLevelData.level >= 8 ? 'hugeWin' : 'bigWin') : 'dead');
+		setChefMood(
+			bookEvent.amount > 0 ? (winLevelData.level >= 8 ? 'hugeWin' : 'bigWin') : 'dead',
+			bookEvent.amount > 0 && isTopWin(winLevelData),
+		);
 		potState.overflowAt = performance.now();
 		potState.nudge += 1;
 		await eventEmitter.broadcastAsync({ type: 'bonusEnding', mult: stateGame.globalMultiplier });
@@ -350,7 +358,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// The WIN readout follows the bonus total's count-up, then keeps the total back in the base game.
 		stateGame.winCountUp = 0;
 		eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
-		if (bookEvent.amount > 0) setChefMood(chefMoodForWin(winLevelData));
+		if (bookEvent.amount > 0) setChefMood(chefMoodForWin(winLevelData), isTopWin(winLevelData));
 		if (bookEvent.amount > 0 && winLevelData?.type !== 'big') eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_normal' });
 		winLevelSoundsPlay({ winLevelData });
 		await eventEmitter.broadcastAsync({
@@ -383,7 +391,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 		// The WIN readout follows the win screen's count-up (WinReadoutSync), then holds the amount.
 		stateGame.winCountUp = 0;
-		setChefMood(chefMoodForWin(winLevelData));
+		setChefMood(chefMoodForWin(winLevelData), isTopWin(winLevelData));
 		eventEmitter.broadcast({ type: 'winShow' });
 		winLevelSoundsPlay({ winLevelData });
 		await eventEmitter.broadcastAsync({

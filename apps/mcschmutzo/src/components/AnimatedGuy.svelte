@@ -14,6 +14,7 @@
 	export const GUY_CROPS = {
 		mascotBody: { x0: 316, y0: 0, x1: 1256, y1: 1800, ...MASCOT }, // runs past the frame: the relaxed hand
 		mascotHead: { x0: 316, y0: 0, x1: 1019, y1: 876.2, ...MASCOT }, // scripts/build-chef-head.py prints these
+		mascotHat: { x0: 545.0, y0: 0, x1: 1002.0, y1: 400.3, ...MASCOT }, // scripts/build-chef-hat.py
 		mascotArm: { x0: 1030.4, y0: 1295.6, x1: 1256, y1: 1796.6, ...MASCOT },
 		mascotBottle: { x0: 80, y0: 639, x1: 575, y1: 1330, ...MASCOT },
 		mascotBrows: { x0: 399, y0: 328, x1: 728, y1: 469, ...MASCOT },
@@ -45,7 +46,7 @@
 </script>
 
 <script lang="ts">
-	import { Container, Sprite, Rectangle, Circle } from 'pixi-svelte';
+	import { Container, Graphics, Sprite, Rectangle, Circle } from 'pixi-svelte';
 	import BodyMesh from './BodyMesh.svelte';
 	import { flexAt, type BodyFlex, type FlexState } from '../game/bodyFlex';
 	import { createPointGesture, type HandPose } from '../game/pointGesture';
@@ -142,9 +143,18 @@
 			dy: number;
 			rot: number;
 			sy: number;
+			/** spin about the vertical, radians (0 = facing us): drawn as a 3D turn — see the markup */
+			turn?: number;
 		};
 	};
 	const props: Props = $props();
+	/** The spinning hat's light: full facing us, dimmer edge-on, and its back face darker and warmer. */
+	const hatShade = (cs: number) => {
+		const b = cs >= 0 ? 0.74 + 0.26 * cs : 0.62 + 0.14 * -cs;
+		const warm = cs >= 0 ? 1 : 0.9;
+		const ch = (v: number) => Math.round(Math.max(0, Math.min(1, v)) * 255);
+		return (ch(b) << 16) | (ch(b * (0.97 + 0.03 * warm)) << 8) | ch(b * warm * 0.95);
+	};
 
 	let clock = $state(0);
 	$effect(() => {
@@ -427,14 +437,44 @@
 			{@const ht = props.hat}
 			{@const hx = left + ht.px * props.width}
 			{@const hy = top + ht.py * props.height}
-			<Container x={hx} y={hy + ht.dy * props.height} rotation={ht.rot} scale={{ x: 1 / Math.sqrt(ht.sy), y: ht.sy }} zIndex={z}>
+			{@const turn = ht.turn ?? 0}
+			{@const cs = Math.cos(turn)}
+			{@const sn = Math.sin(turn)}
+			{@const hatW = ht.rect.nw * props.width}
+			{@const lift = Math.max(0, -ht.dy)}
+			{@const sprX = left + (ht.rect.nx + ht.rect.nw / 2) * props.width - hx}
+			{@const sprY = top + (ht.rect.ny + ht.rect.nh / 2) * props.height - hy}
+			<!-- Its shadow on his hair while it is up: darkest just off the head, fading and spreading
+			     as it climbs (drawn under the hat, on the head). -->
+			<!-- (always mounted, toggled by `visible`: a late-mounted child would land ON TOP of the hat) -->
+			<Graphics
+					zIndex={z}
+					visible={lift > 0.002}
+					draw={(g) => {
+						const k = Math.min(1, lift / 0.12);
+						g.clear()
+							.ellipse(hx, hy + hatW * 0.02, hatW * (0.34 + 0.14 * k), hatW * (0.07 + 0.03 * k))
+							.fill({ color: 0x140a04, alpha: 0.32 * Math.min(1, lift / 0.02) * (1 - 0.55 * k) });
+					}}
+				/>
+			<!-- The spin about the vertical, faked in 2D: the width runs through cos(turn); a darker
+			     copy offset by sin(turn) shows the brim's THICKNESS when it is edge-on; a shear that
+			     follows the turn reads as perspective; and it is lit from the front, so it dims as it
+			     turns away and its back (mirrored) face is darker and warmer. -->
+			{@const frame = { y: hy + ht.dy * props.height, rotation: ht.rot, skew: { x: 0, y: 0.16 * sn * Math.abs(cs) } }}
+			{@const sx = cs / Math.sqrt(ht.sy)}
+			<Container x={hx - sn * hatW * 0.045} {...frame} scale={{ x: sx, y: ht.sy }} visible={turn !== 0} zIndex={z}>
+				<Sprite key={ht.key} x={sprX} y={sprY} anchor={0.5} width={hatW} height={ht.rect.nh * props.height} tint={0x6b4632} />
+			</Container>
+			<Container x={hx} {...frame} scale={{ x: sx, y: ht.sy }} zIndex={z}>
 				<Sprite
 					key={ht.key}
-					x={left + (ht.rect.nx + ht.rect.nw / 2) * props.width - hx}
-					y={top + (ht.rect.ny + ht.rect.nh / 2) * props.height - hy}
+					x={sprX}
+					y={sprY}
 					anchor={0.5}
-					width={ht.rect.nw * props.width}
+					width={hatW}
 					height={ht.rect.nh * props.height}
+					tint={turn === 0 ? 0xffffff : hatShade(cs)}
 				/>
 			</Container>
 		{/if}

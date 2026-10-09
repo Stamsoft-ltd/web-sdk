@@ -2334,20 +2334,20 @@
 		cursor: default;
 	}
 
-	/* Stop / autospin-count overlays sit on the green disc, over the spin icon */
+	/* Stop / autospin-count overlays sit straight on the red disc, like the landscape and portrait
+	   buttons. They used to carry a dark-green 56% patch left over from the old green disc, which
+	   left a red ring showing round it during autoplay (user, 2026-10-09). */
 	.spin-btn__glyph,
 	.spin-btn__count {
 		position: absolute;
-		/* match the disc center (slightly below box center) like .spin-btn__icon */
-		top: 50%;
-		left: 50%;
+		/* Red-disc centre of turn-button-bg.svg — same point as .spin-btn__stop. */
+		top: 49.07%;
+		left: 47.93%;
 		width: 56%;
 		height: 56%;
 		transform: translate(-50%, -50%);
 		display: grid;
 		place-items: center;
-		border-radius: 50%;
-		background: radial-gradient(circle, rgba(20, 48, 8, 0.96) 60%, rgba(20, 48, 8, 0) 100%);
 		color: #fff;
 		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
@@ -2376,7 +2376,8 @@
 	}
 
 	.spin-btn__count {
-		font-size: calc(var(--u) * 24);
+		/* 24 read small on the bare red disc (user, 2026-10-09). */
+		font-size: calc(var(--u) * 30);
 	}
 
 	.buy-btn {

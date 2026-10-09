@@ -16,7 +16,7 @@
 	// relaunched on a loop for as long as the win screen is up. Deterministic off the clock.
 	const FOODS = ['mcH1', 'mcH3', 'mcH4', 'mcH5', 'mcL1', 'mcL3', 'mcL5', 'mcH1', 'mcH3', 'mcL2', 'mcL4'];
 	// a few pieces for SWEET, building to a storm for LEGENDARY
-	const COUNT_BY_LEVEL: Record<number, number> = { 6: 4, 7: 8, 8: 14, 9: 22, 10: 32 };
+	const COUNT_BY_LEVEL: Record<number, number> = { 6: 4, 7: 8, 8: 14, 9: 22, 10: 32, 11: 40 };
 	const CYCLE_MS = 2300;
 	const count = $derived(COUNT_BY_LEVEL[props.level] ?? 4);
 

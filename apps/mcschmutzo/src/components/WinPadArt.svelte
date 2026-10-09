@@ -13,7 +13,7 @@
 	// code, game/winSplash.ts) out from under the banner ends. The title keeps breathing (expand /
 	// retract), the stars twinkle, and the real BURGER SYMBOL sits behind the title and pops once.
 	type Props = {
-		/** 'winPadSweet' | 'winPadLegendary' | 'winPadEpic' | 'winPadWild' | 'winPadMythic' */
+		/** 'winPadSweet' | 'winPadLegendary' | 'winPadEpic' | 'winPadWild' | 'winPadMythic' | 'winPadMax' */
 		padKey: string;
 		/** Rendered pad width (matches the old flat sprite footprint). */
 		width: number;
@@ -39,6 +39,18 @@
 	const bannerAR = $derived(BANNER_AR[tier] ?? 3.3);
 	const wordAR = $derived(WORD_AR[tier] ?? 2.5);
 	const tierH = $derived(TIER_H[tier] ?? 0.15);
+	// MAX WIN (Figma 8634:2173) has no banner and no burger: a big MAX over a cream WIN, the two sauce
+	// splats bigger and further out behind them, a star off each side. Sizes are the design's ink
+	// widths (MAX 646, WIN 476 on its 1200 frame), scaled so MAX runs 0.52 of the pad.
+	const isMax = $derived(tier === 'max');
+	const MAX_W = 0.52;
+	const MAX_AR = 2.602;
+	const MAXWIN_W = 0.383;
+	const MAXWIN_AR = 2.373;
+	const MAX_STARS = [
+		{ id: 'starR', x: 0.293, y: -0.106, w: 0.076, flip: 1 },
+		{ id: 'starL', x: -0.24, y: 0.094, w: 0.076, flip: -1 },
+	];
 
 	// rAF clock — runs the whole time the pad is shown (breathe + twinkle are continuous).
 	let clock = $state(0);
@@ -95,9 +107,16 @@
 		const titleBreathe = 1 + 0.03 * Math.sin(elapsed / 470); // expand / retract
 
 		const back: L[] = [];
+		if (isMax) {
+			for (const st of MAX_STARS) {
+				const tw = st.flip > 0 ? twinkle : twinkle2;
+				back.push({ id: st.id, key: 'winStar', x: st.x * w * winS, y: st.y * w * winS, w: st.w * w * winS * tw, h: (st.w * w / 1.03) * winS * tw, a: winA, rot: starRot * st.flip });
+			}
+		} else {
 		back.push({ id: 'banner', key: bannerKey, x: 0, y: 0.015 * w * winS, w: 0.70 * w * winS * bannerSx, h: (0.70 * w / bannerAR) * winS * bannerSy, a: winA, rot: 0 });
 		back.push({ id: 'starL', key: 'winStar', x: -STAR_X * w * winS, y: STAR_Y * w * winS, w: STAR_W * w * winS * twinkle, h: (STAR_W * w / 1.03) * winS * twinkle, a: winA, rot: starRot });
 		back.push({ id: 'starR', key: 'winStar', x: STAR_X * w * winS, y: STAR_Y * w * winS, w: STAR_W * w * winS * twinkle2, h: (STAR_W * w / 1.03) * winS * twinkle2, a: winA, rot: -starRot });
+		}
 
 		// Title: both words are STAMPED onto the banner — they come down from 1.7× (accelerating, fading
 		// in), hit at HIT_MS, squash wide + flat and spring back. Then they breathe together.
@@ -108,26 +127,32 @@
 		const wordSy = stamp * (1 - 0.2 * hitD);
 		const tierHpx = tierH * w * titleBreathe;
 		const winHpx = 0.105 * w * titleBreathe;
-		const tierWord: L = {
-			id: 'tierWord',
-			key: wordKey,
-			x: 0,
-			y: -0.05 * w,
-			w: tierHpx * wordAR * wordSx,
-			h: tierHpx * wordSy,
-			a: wordA,
-			rot: 0,
-		};
-		const winWord: L = {
-			id: 'winWord',
-			key: 'winWordWin',
-			x: 0,
-			y: 0.078 * w,
-			w: winHpx * WIN_AR * wordSx,
-			h: winHpx * wordSy,
-			a: wordA,
-			rot: 0,
-		};
+		const maxW = MAX_W * w * titleBreathe;
+		const maxWinW = MAXWIN_W * w * titleBreathe;
+		const tierWord: L = isMax
+			? { id: 'tierWord', key: 'winWordMax', x: 0, y: -0.09 * w, w: maxW * wordSx, h: (maxW / MAX_AR) * wordSy, a: wordA, rot: 0 }
+			: {
+					id: 'tierWord',
+					key: wordKey,
+					x: 0,
+					y: -0.05 * w,
+					w: tierHpx * wordAR * wordSx,
+					h: tierHpx * wordSy,
+					a: wordA,
+					rot: 0,
+				};
+		const winWord: L = isMax
+			? { id: 'winWord', key: 'winWordMaxWin', x: 0, y: 0.07 * w, w: maxWinW * wordSx, h: (maxWinW / MAXWIN_AR) * wordSy, a: wordA, rot: 0 }
+			: {
+					id: 'winWord',
+					key: 'winWordWin',
+					x: 0,
+					y: 0.078 * w,
+					w: winHpx * WIN_AR * wordSx,
+					h: winHpx * wordSy,
+					a: wordA,
+					rot: 0,
+				};
 
 		// Star SHINE: an additive copy of each star flashes bright on a periodic glint (offset so the two
 		// stars sparkle out of sync).
@@ -135,7 +160,9 @@
 			const p = ((elapsed + off) % 2200) / 2200;
 			return Math.exp(-(((p - 0.5) * 7) ** 2)) * 0.85 * winA;
 		};
-		const glints: L[] = [
+		const glints: L[] = isMax
+			? MAX_STARS.map((st, i) => ({ id: `g${st.id}`, key: 'winStar', x: st.x * w * winS, y: st.y * w * winS, w: st.w * 1.15 * w * winS, h: (st.w * 1.15 * w / 1.03) * winS, a: glint(i * 1100), rot: starRot * st.flip }))
+			: [
 			{ id: 'gL', key: 'winStar', x: -STAR_X * w * winS, y: STAR_Y * w * winS, w: STAR_W * 1.15 * w * winS * twinkle, h: (STAR_W * 1.15 * w / 1.03) * winS * twinkle, a: glint(0), rot: starRot },
 			{ id: 'gR', key: 'winStar', x: STAR_X * w * winS, y: STAR_Y * w * winS, w: STAR_W * 1.15 * w * winS * twinkle2, h: (STAR_W * 1.15 * w / 1.03) * winS * twinkle2, a: glint(1100), rot: -starRot },
 		];
@@ -164,7 +191,9 @@
 		const ms = elapsed - HIT_MS;
 		if (ms < 0) return;
 		for (const [spec, side, seed] of [[SPLASH_YELLOW, -1, 0], [SPLASH_RED, 1, 2]] as const) {
-			const place = props.compact ? { ox: 0.26, k: 0.7 } : undefined;
+			const place = isMax
+				? props.compact ? { ox: 0.28, k: 1 } : { ox: 0.34, k: 1.45 }
+				: props.compact ? { ox: 0.26, k: 0.7 } : undefined;
 			for (const s of splashShapes(spec, side, ms, seed, place)) {
 				if (s.alpha <= 0.002) continue;
 				if (s.kind === 'poly') g.poly(s.pts.map((p) => p * W), true).fill({ color: s.color, alpha: s.alpha });
@@ -205,7 +234,9 @@
 	<!-- Sauce squeezed out from under the banner ends by the title hit. -->
 	<Graphics draw={drawSplashes} />
 	<!-- Burger BEHIND the plaque: assembles slice-by-slice ONCE, then bobs (whole-burger bounce). -->
-	<AnimatedSymbol config={H1_ASSEMBLE} x={anim.burger.x} y={anim.burger.y} scale={anim.burger.scale} state="land" winning={anim.burger.winning} />
+	{#if !isMax}
+		<AnimatedSymbol config={H1_ASSEMBLE} x={anim.burger.x} y={anim.burger.y} scale={anim.burger.scale} state="land" winning={anim.burger.winning} />
+	{/if}
 	{#each anim.back as l (l.id)}
 		<Sprite key={l.key} x={l.x} y={l.y} anchor={0.5} width={l.w} height={l.h} rotation={l.rot} alpha={l.a} />
 	{/each}

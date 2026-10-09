@@ -57,7 +57,7 @@
 
 	// Big-win tiers escalate in size: SWEET is 28% smaller than the shared plaque, and each tier
 	// above it is 10% bigger than the one below (WILD, EPIC, MYTHIC, LEGENDARY). Small wins keep 1.
-	const TIER_SCALE: Partial<Record<number, number>> = { 6: 0.72, 7: 0.79, 8: 0.87, 9: 0.96, 10: 1.05 };
+	const TIER_SCALE: Partial<Record<number, number>> = { 6: 0.72, 7: 0.79, 8: 0.87, 9: 0.96, 10: 1.05, 11: 1.12 };
 	const tierScale = $derived(TIER_SCALE[winLevelData?.level ?? 0] ?? 1);
 
 	context.eventEmitter.subscribeOnMount({
@@ -77,7 +77,7 @@
 	const closeYtop = $derived(main.height * 0.5 - canvas.height / (2 * (main.scale || 1)));
 	const closeSize = $derived(Math.min(main.width, main.height) * 0.07);
 
-	// ── Dev-only tier preview: press 1–5 to force SWEET/WILD/EPIC/MYTHIC/LEGENDARY ────────────────
+	// ── Dev-only tier preview: press 1–6 to force SWEET/WILD/EPIC/MYTHIC/LEGENDARY/MAX ────────────────
 	onMount(() => {
 		if (!import.meta.env.DEV) return;
 		// Tier + a representative amount spanning the 3 font sizes (<100, <1000, above).
@@ -87,6 +87,7 @@
 			Digit3: { level: 8, amount: 41200 }, // ~412 (<1000)
 			Digit4: { level: 9, amount: 154300 }, // ~1,543
 			Digit5: { level: 10, amount: 812500 }, // ~8,125
+			Digit6: { level: 11, amount: 2500000 }, // MAX WIN: 25,000 (the cap at a 1.00 bet)
 		};
 		const onKey = (e: KeyboardEvent) => {
 			const preview = keyToPreview[e.code];
